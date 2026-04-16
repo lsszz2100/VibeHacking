@@ -1,0 +1,647 @@
+# 컨테이너 보안 완전 가이드
+
+## 컨테이너 보안 위협 모델
+
+```
+컨테이너 공격 표면
+─────────────────────────────────────────
+이미지 레이어          런타임 환경         오케스트레이션
+    │                      │                    │
+취약한 베이스          컨테이너 이스케이프   K8s RBAC 오설정
+하드코딩 시크릿        특권 실행            노출된 API 서버
+악성 레이어 삽입       Host 마운트          etcd 평문 저장
+─────────────────────────────────────────
+```
+
+---
+
+## 1. Docker 이미지 보안
+
+### 안전한 Dockerfile 작성
+
+```dockerfile
+# ✅ 보안 강화된 Dockerfile
+
+# 1. 공식 최소 베이스 이미지 사용 (alpine/distroless)
+FROM python:3.12-slim AS builder
+
+# 2. 비루트 사용자 생성
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# 3. 패키지 설치 후 캐시 정리
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# 4. 의존성 먼저 복사 (레이어 캐시 활용)
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 5. 소스 복사
+COPY --chown=appuser:appuser . .
+
+# 6. 멀티스테이지 빌드 (빌드 도구 제거)
+FROM python:3.12-slim AS runtime
+
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder --chown=appuser:appuser /app .
+
+# 7. 비루트 실행
+USER appuser
+
+# 8. 읽기 전용 파일시스템 (런타임 설정)
+# --read-only 플래그로 실행
+
+# 9. 헬스체크
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+
+EXPOSE 8000
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+```dockerfile
+# ❌ 취약한 Dockerfile 예시
+FROM ubuntu:latest          # 최신 태그 - 불안정
+RUN apt-get install -y wget curl git  # 불필요한 도구
+ADD . /app                  # ADD 대신 COPY 사용
+WORKDIR /app
+RUN pip install -r requirements.txt
+ENV DB_PASSWORD="secret123"  # 시크릿 하드코딩!
+EXPOSE 22                   # SSH 노출
+USER root                   # 루트 실행!
+CMD ["python", "app.py"]
+```
+
+### Trivy — 이미지 취약점 스캔
+
+```bash
+# 설치
+curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+# 이미지 스캔
+trivy image nginx:latest
+trivy image --severity CRITICAL,HIGH python:3.11
+
+# 파일시스템 스캔
+trivy fs --security-checks vuln,secret,config ./
+
+# Dockerfile 스캔
+trivy config Dockerfile
+
+# 결과 필터링 및 출력
+trivy image --format json --output results.json nginx:latest
+trivy image --exit-code 1 --severity CRITICAL nginx:latest  # Critical 발견 시 실패
+
+# 캐시 초기화 (최신 DB)
+trivy image --reset
+
+# CI 통합 (GitHub Actions)
+trivy image \
+    --format sarif \
+    --output trivy-results.sarif \
+    --severity CRITICAL,HIGH \
+    myapp:${{ github.sha }}
+```
+
+### Docker Bench Security
+
+```bash
+# CIS Docker 벤치마크 자동 검사
+git clone https://github.com/docker/docker-bench-security.git
+cd docker-bench-security
+sudo sh docker-bench-security.sh
+
+# 결과 분류:
+# [PASS] - 설정 양호
+# [WARN] - 검토 필요
+# [INFO] - 정보
+# [NOTE] - 권고사항
+
+# 주요 점검 항목:
+# 1.1 Docker 호스트 전용 OS 사용
+# 2.1 컨테이너 간 네트워크 트래픽 제한
+# 2.2 로깅 레벨 설정
+# 2.14 live restore 활성화
+# 4.1 루트가 아닌 사용자로 실행
+# 4.5 Content Trust 활성화
+# 5.3 특권 컨테이너 금지
+# 5.4 민감 호스트 디렉토리 마운트 금지
+```
+
+---
+
+## 2. 런타임 보안
+
+### Docker 런타임 보안 옵션
+
+```bash
+# 보안 강화 실행 옵션
+docker run \
+    --read-only \                          # 읽기 전용 루트 파일시스템
+    --tmpfs /tmp \                         # tmpfs로 임시 파일 허용
+    --no-new-privileges \                  # 권한 상승 금지
+    --security-opt=no-new-privileges \
+    --security-opt seccomp=seccomp.json \  # Seccomp 프로필
+    --cap-drop=ALL \                       # 모든 Capability 제거
+    --cap-add=NET_BIND_SERVICE \          # 필요한 것만 추가
+    --user 1000:1000 \                    # 비루트 사용자
+    --memory=512m \                       # 메모리 제한
+    --cpus=0.5 \                          # CPU 제한
+    --network=internal \                  # 격리된 네트워크
+    myapp:latest
+
+# Seccomp 프로필 생성
+cat > seccomp.json << 'EOF'
+{
+    "defaultAction": "SCMP_ACT_ERRNO",
+    "architectures": ["SCMP_ARCH_X86_64"],
+    "syscalls": [
+        {
+            "names": ["read", "write", "open", "close", "stat", 
+                     "fstat", "lstat", "poll", "lseek", "mmap",
+                     "mprotect", "munmap", "brk", "rt_sigaction",
+                     "rt_sigprocmask", "ioctl", "access", "pipe",
+                     "select", "sched_yield", "mremap", "msync",
+                     "mincore", "madvise", "dup", "dup2", "nanosleep",
+                     "getitimer", "alarm", "setitimer", "getpid",
+                     "sendfile", "socket", "connect", "accept",
+                     "sendto", "recvfrom", "sendmsg", "recvmsg",
+                     "shutdown", "bind", "listen", "getsockname",
+                     "getpeername", "socketpair", "setsockopt",
+                     "getsockopt", "clone", "fork", "vfork",
+                     "execve", "exit", "wait4", "kill", "uname",
+                     "fcntl", "flock", "fsync", "fdatasync",
+                     "truncate", "ftruncate", "getdents", "getcwd",
+                     "chdir", "rename", "mkdir", "rmdir", "creat",
+                     "link", "unlink", "symlink", "readlink", "chmod",
+                     "fchmod", "chown", "fchown", "lchown", "umask",
+                     "gettimeofday", "getrlimit", "getrusage",
+                     "sysinfo", "times", "ptrace", "getuid", "syslog",
+                     "getgid", "setuid", "setgid", "geteuid",
+                     "getegid", "setpgid", "getppid", "getpgrp",
+                     "setsid", "setreuid", "setregid", "getgroups",
+                     "setgroups", "setresuid", "getresuid",
+                     "setresgid", "getresgid", "getpgid", "setfsuid",
+                     "setfsgid", "getsid", "capget", "capset",
+                     "rt_sigpending", "rt_sigtimedwait",
+                     "rt_sigqueueinfo", "rt_sigsuspend",
+                     "sigaltstack", "utime", "mknod", "uselib",
+                     "personality", "ustat", "statfs", "fstatfs",
+                     "sysfs", "getpriority", "setpriority",
+                     "sched_setparam", "sched_getparam",
+                     "sched_setscheduler", "sched_getscheduler",
+                     "sched_get_priority_max",
+                     "sched_get_priority_min",
+                     "sched_rr_get_interval", "mlock", "munlock",
+                     "mlockall", "munlockall", "vhangup", "modify_ldt",
+                     "pivot_root", "_sysctl", "prctl", "arch_prctl",
+                     "adjtimex", "setrlimit", "chroot", "sync",
+                     "acct", "settimeofday", "mount", "umount2",
+                     "swapon", "swapoff", "reboot", "sethostname",
+                     "setdomainname", "iopl", "ioperm",
+                     "create_module", "init_module", "delete_module",
+                     "get_kernel_syms", "query_module", "quotactl",
+                     "nfsservctl", "getpmsg", "putpmsg", "afs_syscall",
+                     "tuxcall", "security", "gettid", "readahead",
+                     "setxattr", "lsetxattr", "fsetxattr", "getxattr",
+                     "lgetxattr", "fgetxattr", "listxattr",
+                     "llistxattr", "flistxattr", "removexattr",
+                     "lremovexattr", "fremovexattr", "tkill", "time",
+                     "futex", "sched_setaffinity", "sched_getaffinity",
+                     "set_thread_area", "io_setup", "io_destroy",
+                     "io_getevents", "io_submit", "io_cancel",
+                     "get_thread_area", "lookup_dcookie",
+                     "epoll_create", "epoll_ctl_old",
+                     "epoll_wait_old", "remap_file_pages",
+                     "getdents64", "set_tid_address", "restart_syscall",
+                     "semtimedop", "fadvise64", "timer_create",
+                     "timer_settime", "timer_gettime",
+                     "timer_getoverrun", "timer_delete",
+                     "clock_settime", "clock_gettime",
+                     "clock_getres", "clock_nanosleep",
+                     "exit_group", "epoll_wait", "epoll_ctl",
+                     "tgkill", "utimes", "vserver", "mbind",
+                     "set_mempolicy", "get_mempolicy",
+                     "mq_open", "mq_unlink", "mq_timedsend",
+                     "mq_timedreceive", "mq_notify",
+                     "mq_getsetattr", "kexec_load", "waitid",
+                     "add_key", "request_key", "keyctl",
+                     "ioprio_set", "ioprio_get", "inotify_init",
+                     "inotify_add_watch", "inotify_rm_watch",
+                     "migrate_pages", "openat", "mkdirat",
+                     "mknodat", "fchownat", "futimesat",
+                     "newfstatat", "unlinkat", "renameat",
+                     "linkat", "symlinkat", "readlinkat",
+                     "fchmodat", "faccessat", "pselect6",
+                     "ppoll", "unshare", "set_robust_list",
+                     "get_robust_list", "splice", "tee",
+                     "sync_file_range", "vmsplice",
+                     "move_pages", "utimensat",
+                     "epoll_pwait", "signalfd",
+                     "timerfd_create", "eventfd",
+                     "fallocate", "timerfd_settime",
+                     "timerfd_gettime", "accept4", "signalfd4",
+                     "eventfd2", "epoll_create1", "dup3",
+                     "pipe2", "inotify_init1", "preadv",
+                     "pwritev", "rt_tgsigqueueinfo", "perf_event_open",
+                     "recvmmsg", "fanotify_init",
+                     "fanotify_mark", "prlimit64", "name_to_handle_at",
+                     "open_by_handle_at", "clock_adjtime", "syncfs",
+                     "sendmmsg", "setns", "getcpu",
+                     "process_vm_readv", "process_vm_writev",
+                     "kcmp", "finit_module"],
+            "action": "SCMP_ACT_ALLOW"
+        }
+    ]
+}
+EOF
+```
+
+### Falco — 런타임 위협 탐지
+
+```bash
+# Falco 설치
+curl -s https://falco.org/repo/falcosecurity-packages.asc | gpg --dearmor | \
+    sudo tee /usr/share/keyrings/falco-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/falco-archive-keyring.gpg] \
+    https://download.falco.org/packages/deb stable main" | \
+    sudo tee /etc/apt/sources.list.d/falcosecurity.list
+sudo apt-get update && sudo apt-get install -y falco
+
+# Falco 규칙 예시
+```
+
+```yaml
+# custom_falco_rules.yaml
+- rule: 컨테이너 내 쉘 실행
+  desc: 컨테이너 안에서 쉘이 실행됨 (침해 지표)
+  condition: >
+    spawned_process and
+    container and
+    not container.image.repository in (allowed_shell_containers) and
+    proc.name in (shell_binaries)
+  output: >
+    컨테이너 내 쉘 실행 (user=%user.name container=%container.id 
+    image=%container.image.repository cmd=%proc.cmdline)
+  priority: WARNING
+  tags: [container, shell]
+
+- rule: 민감 파일 접근
+  desc: /etc/shadow, /etc/passwd 등 민감 파일 읽기
+  condition: >
+    open_read and
+    container and
+    fd.name in (/etc/shadow, /etc/sudoers, /root/.ssh/authorized_keys)
+  output: >
+    민감 파일 접근 (user=%user.name container=%container.id 
+    file=%fd.name)
+  priority: ERROR
+  tags: [container, filesystem]
+
+- rule: 외부 네트워크 연결 (예상치 못한)
+  desc: 허가되지 않은 외부 IP 연결
+  condition: >
+    outbound and
+    container and
+    not fd.rip in (allowed_outbound_ips) and
+    not fd.rport in (80, 443, 53)
+  output: >
+    예상치 못한 외부 연결 (container=%container.id 
+    dst=%fd.rip:%fd.rport)
+  priority: WARNING
+  tags: [network, container]
+```
+
+```bash
+# Falco 실행
+sudo falco -r custom_falco_rules.yaml
+
+# Kubernetes에서 Falco
+helm repo add falcosecurity https://falcosecurity.github.io/charts
+helm install falco falcosecurity/falco \
+    --set driver.kind=ebpf \
+    --set falcosidekick.enabled=true \
+    --set falcosidekick.config.slack.webhookurl=SLACK_HOOK
+```
+
+---
+
+## 3. Kubernetes 보안 강화
+
+### Pod Security Standards
+
+```yaml
+# namespace-security.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+  labels:
+    # Baseline: 기본 보안 (특권 컨테이너 금지)
+    # Restricted: 최고 보안 (권장)
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+# restricted Pod 요구사항
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secure-pod
+  namespace: production
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+    seccompProfile:
+      type: RuntimeDefault  # 기본 Seccomp 프로필
+  
+  containers:
+  - name: app
+    image: myapp:1.0.0  # latest 태그 금지
+    
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+    
+    resources:
+      limits:
+        memory: "256Mi"
+        cpu: "500m"
+      requests:
+        memory: "128Mi"
+        cpu: "250m"
+    
+    volumeMounts:
+    - name: tmp
+      mountPath: /tmp
+    - name: cache
+      mountPath: /app/cache
+  
+  volumes:
+  - name: tmp
+    emptyDir: {}
+  - name: cache
+    emptyDir: {}
+  
+  automountServiceAccountToken: false  # SA 토큰 자동 마운트 비활성화
+```
+
+### RBAC 최소 권한 설정
+
+```yaml
+# rbac-minimal.yaml
+# 최소 권한 ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: myapp-sa
+  namespace: production
+---
+# 읽기 전용 Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: myapp-role
+  namespace: production
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list"]  # 읽기만
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["myapp-secret"]  # 특정 시크릿만
+  verbs: ["get"]
+---
+# RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: myapp-rolebinding
+  namespace: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: myapp-role
+subjects:
+- kind: ServiceAccount
+  name: myapp-sa
+  namespace: production
+```
+
+### NetworkPolicy — 마이크로세그멘테이션
+
+```yaml
+# network-policy.yaml
+# 기본: 모든 인바운드/아웃바운드 차단
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: production
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+# API 서버만 DB 접근 허용
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-to-db
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: database
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: api-server
+    ports:
+    - protocol: TCP
+      port: 5432
+---
+# 외부 DNS/HTTPS만 허용
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-external-egress
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: api-server
+  policyTypes:
+  - Egress
+  egress:
+  - ports:
+    - port: 53       # DNS
+      protocol: UDP
+    - port: 443      # HTTPS
+      protocol: TCP
+```
+
+---
+
+## 4. 이미지 공급망 보안
+
+### Cosign — 이미지 서명
+
+```bash
+# cosign 설치
+curl -sSfL https://github.com/sigstore/cosign/releases/download/v2.2.0/cosign-linux-amd64 \
+    -o /usr/local/bin/cosign && chmod +x /usr/local/bin/cosign
+
+# 키 생성
+cosign generate-key-pair
+
+# 이미지 서명
+cosign sign --key cosign.key registry.io/myapp:v1.0
+
+# 서명 검증
+cosign verify --key cosign.pub registry.io/myapp:v1.0
+
+# Keyless 서명 (Sigstore/OIDC)
+COSIGN_EXPERIMENTAL=1 cosign sign registry.io/myapp:v1.0
+COSIGN_EXPERIMENTAL=1 cosign verify registry.io/myapp:v1.0
+
+# Kubernetes에서 서명 검증 강제 (policy-controller)
+helm install policy-controller sigstore/policy-controller
+```
+
+```yaml
+# cluster-image-policy.yaml - 서명된 이미지만 허용
+apiVersion: policy.sigstore.dev/v1beta1
+kind: ClusterImagePolicy
+metadata:
+  name: signed-images-only
+spec:
+  images:
+  - glob: "registry.io/**"
+  authorities:
+  - key:
+      data: |
+        -----BEGIN PUBLIC KEY-----
+        MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE...
+        -----END PUBLIC KEY-----
+```
+
+### SBOM (Software Bill of Materials)
+
+```bash
+# Syft로 SBOM 생성
+curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+# 이미지 SBOM
+syft registry.io/myapp:v1.0 -o spdx-json=sbom.spdx.json
+
+# Grype로 SBOM 취약점 스캔
+curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+grype sbom:sbom.spdx.json
+grype registry.io/myapp:v1.0
+```
+
+---
+
+## 5. Docker Compose 보안 설정
+
+```yaml
+# docker-compose.secure.yml
+version: '3.8'
+
+services:
+  app:
+    image: myapp:1.0.0
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:seccomp.json
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE  # 필요 시만
+    networks:
+      - internal
+    environment:
+      - APP_ENV=production
+    secrets:
+      - db_password
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: postgres:16-alpine
+    user: "999:999"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
+    environment:
+      - POSTGRES_DB=mydb
+      - POSTGRES_USER_FILE=/run/secrets/db_user
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    volumes:
+      - type: volume
+        source: db_data
+        target: /var/lib/postgresql/data
+        read_only: false
+    networks:
+      - internal
+    secrets:
+      - db_user
+      - db_password
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  internal:
+    internal: true  # 외부 연결 차단
+  external:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  db_user:
+    file: ./secrets/db_user.txt
+```

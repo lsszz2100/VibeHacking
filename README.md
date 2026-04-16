@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-17-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-85%2B%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-35%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-18-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-95%2B%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-45%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -55,6 +55,7 @@
 | 15 | [**WiFi 해킹**](#15-wifi-해킹) | WPA2 크랙, PMKID, Evil Twin, 자동화 | 3 |
 | 16 | [**암호학**](#16-암호학) | 해커를 위한 암호학, 해시 공격, 응용 암호학 | 3 |
 | 17 | [**레드팀 운영**](#17-레드팀-운영) | 플레이북, 피싱/사회공학, API 해킹 | 3 |
+| 18 | [**DevSecOps**](#18-devsecops) | SAST/SCA/DAST, 컨테이너 보안, CI/CD 파이프라인 | 3 |
 
 ---
 
@@ -73,7 +74,7 @@
                                                         │
 [전문가]                                                 ▼
   WiFi 해킹  ──►  클라우드 보안  ──►  레드팀 운영  ──►  버그바운티
-  암호학     ──►  SOC/Blue Team  ──►  AI 보안 연구
+  암호학     ──►  SOC/Blue Team  ──►  AI 보안 연구  ──►  DevSecOps
 ```
 
 ---
@@ -123,11 +124,12 @@
 
 ```
 03_System_Hacking/
-├── 01_password_cracking.md   ← Hashcat, John, Rainbow Table, 온라인 크랙
-└── 02_buffer_overflow.md     ← 스택 BOF 원리, 쉘코드, 실습 예제
+├── 01_password_cracking.md      ← Hashcat, John, Rainbow Table, 온라인 크랙
+├── 02_buffer_overflow.md        ← 스택 BOF 원리, 쉘코드, 실습 예제
+└── 03_active_directory_attack.md ← AD 공격 완전 가이드, Kerberoasting, DCSync
 ```
 
-**핵심 내용:** 해시 크래킹 전략, BOF 원리부터 익스플로잇까지, setUID 취약점
+**핵심 내용:** 해시 크래킹 전략, BOF 원리부터 익스플로잇까지, Active Directory 공격 체인 완전 정복
 
 ---
 
@@ -201,10 +203,11 @@
 ```
 09_Exploit_Techniques/
 ├── 01_advanced_exploitation.md   ← ROP Chain, Heap Spray, SEH, Win32 셸코딩
-└── 02_linux_exploitation.md      ← Linux BOF, Ret2Libc, 포맷 스트링, 권한 상승
+├── 02_linux_exploitation.md      ← Linux BOF, Ret2Libc, 포맷 스트링, 권한 상승
+└── 03_heap_exploitation.md       ← tcache 포이즈닝, UAF, House of 시리즈, pwndbg
 ```
 
-**핵심 내용:** DEP/ASLR/NX 우회, ROP 체인 구성, 포맷 스트링 익스플로잇, pwntools 실전
+**핵심 내용:** DEP/ASLR/NX 우회, ROP 체인 구성, 포맷 스트링 익스플로잇, 힙 익스플로잇 완전 정복
 
 ---
 
@@ -318,6 +321,19 @@
 ```
 
 **핵심 내용:** 레드팀 vs 펜테스트 차이, C2 프레임워크 운영, 피싱 인프라, API 취약점 완전 정복
+
+---
+
+## 18. DevSecOps
+
+```
+18_DevSecOps/
+├── 01_devsecops_fundamentals.md    ← Shift Left, Semgrep, SonarQube, Snyk, ZAP
+├── 02_container_security.md        ← Dockerfile 보안, Trivy, Falco, K8s RBAC, cosign
+└── 03_github_actions_security.md   ← CI/CD 보안, OIDC, SHA 핀닝, 전체 보안 파이프라인
+```
+
+**핵심 내용:** 보안 내재화(Shift Left), SAST/SCA/DAST/IaC 스캔 자동화, 컨테이너 런타임 탐지, GitLab/Jenkins/GitHub Actions 보안 파이프라인 완전 구현
 
 ---
 
