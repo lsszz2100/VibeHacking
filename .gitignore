@@ -1,0 +1,46 @@
+# 보안 민감 파일
+*.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+secrets.*
+private/
+credentials.*
+config.local.*
+*.token
+*_token.txt
+api_keys.*
+
+# 실습 결과물 (로컬에만 보관)
+*.pcap
+*.cap
+*.hccapx
+*.hc22000
+*.dump
+memdump.*
+*.raw
+wordlists/
+passwords/
+crack_results.*
+hashes_cracked.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.py.bak
+.venv/
+venv/
