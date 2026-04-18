@@ -127,28 +127,105 @@ OAT-021 Denial of Inventory — 재고 선점으로 구매 방해 (v1.2 신규)
 
 ### 안전한 비밀번호 해싱 알고리즘
 ```python
-# 나쁜 방법 (MD5, SHA-1, SHA-256 단순 해싱)
+#!/usr/bin/env python3
+"""
+비밀번호 해싱 알고리즘 비교 및 검증 도구
+사용법: python3 pw_hash.py --hash argon2 --password "MyP@ss123"
+"""
+import argparse
 import hashlib
-hashed = hashlib.md5(password.encode()).hexdigest()  # 위험!
+import os
+import time
+from typing import Callable
 
-# 좋은 방법 (적응형 해싱 + 솔트)
-# Argon2 (가장 권장 - Password Hashing Competition 2015 우승)
-from argon2 import PasswordHasher
-ph = PasswordHasher(time_cost=2, memory_cost=65536, parallelism=2)
-hashed = ph.hash(password)
 
-# bcrypt (널리 사용)
-import bcrypt
-hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12))
+# ── 나쁜 방법 (절대 사용 금지) ──────────────────────────────────────────────
+def bad_md5(password: str) -> str:
+    return hashlib.md5(password.encode()).hexdigest()  # 레인보우 테이블로 즉시 복원
 
-# PBKDF2 (Python 내장)
-import hashlib, os
-salt = os.urandom(32)
-key = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 310000)
 
-# scrypt (메모리 집약적)
-import hashlib
-hashed = hashlib.scrypt(password.encode(), salt=salt, n=16384, r=8, p=1)
+def bad_sha256_no_salt(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()  # 솔트 없으면 사전 공격 취약
+
+
+# ── 좋은 방법 ─────────────────────────────────────────────────────────────────
+def good_argon2(password: str) -> str:
+    """Argon2id — 2015 PHC 우승, NIST SP 800-63B 권장"""
+    from argon2 import PasswordHasher, Type
+    ph = PasswordHasher(
+        time_cost=3,           # 반복 횟수 (최소 3)
+        memory_cost=65536,     # 메모리 64MB
+        parallelism=2,         # 병렬성 2
+        hash_len=32,
+        type=Type.ID,          # Argon2id (side-channel 저항)
+    )
+    return ph.hash(password)
+
+
+def good_bcrypt(password: str) -> bytes:
+    """bcrypt — cost factor 12 이상 권장"""
+    import bcrypt
+    salt = bcrypt.gensalt(rounds=12)
+    return bcrypt.hashpw(password.encode("utf-8"), salt)
+
+
+def good_pbkdf2(password: str) -> str:
+    """PBKDF2-HMAC-SHA256 — Python 내장, NIST 승인"""
+    salt = os.urandom(32)
+    key = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt,
+        iterations=600_000,    # OWASP 2023 권장: 600,000회
+    )
+    return salt.hex() + ":" + key.hex()
+
+
+def good_scrypt(password: str) -> str:
+    """scrypt — 메모리 집약적, GPU 공격에 강함"""
+    salt = os.urandom(32)
+    key = hashlib.scrypt(
+        password.encode("utf-8"),
+        salt=salt,
+        n=2**17,    # 메모리 파라미터 (최소 2^14)
+        r=8,
+        p=1,
+        dklen=32,
+    )
+    return salt.hex() + ":" + key.hex()
+
+
+def benchmark(name: str, fn: Callable, password: str) -> None:
+    start = time.perf_counter()
+    result = fn(password)
+    elapsed = time.perf_counter() - start
+    truncated = str(result)[:40] + "..."
+    print(f"  [{name:<20}] {elapsed*1000:6.1f}ms  → {truncated}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="비밀번호 해싱 비교 도구")
+    parser.add_argument("--password", default="P@ssw0rd!2024",
+                        help="테스트할 비밀번호")
+    parser.add_argument("--benchmark", action="store_true",
+                        help="속도 벤치마크 실행")
+    args = parser.parse_args()
+
+    pw = args.password
+    print(f"[*] 비밀번호: {pw}\n")
+    print("[나쁜 예시 (공격 대상)]")
+    benchmark("MD5 (위험)", bad_md5, pw)
+    benchmark("SHA256 no-salt (위험)", bad_sha256_no_salt, pw)
+
+    print("\n[권장 알고리즘]")
+    benchmark("Argon2id", good_argon2, pw)
+    benchmark("bcrypt (cost=12)", good_bcrypt, pw)
+    benchmark("PBKDF2 (600k)", good_pbkdf2, pw)
+    benchmark("scrypt (n=2^17)", good_scrypt, pw)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### TLS 설정 점검
@@ -334,33 +411,156 @@ echo serialize($obj);
 
 ### SIEM 연동 로깅 구현
 ```python
-import logging
+#!/usr/bin/env python3
+"""
+구조화된 보안 이벤트 로거 — JSON 형식, ELK/SIEM 연동 지원
+사용법: python3 sec_logger.py (모듈로 import 후 사용)
+"""
 import json
-from datetime import datetime
+import logging
+import logging.handlers
+import os
+import sys
+from datetime import datetime, timezone
+from dataclasses import dataclass, field, asdict
+from typing import Any
 
-# 구조화된 보안 로그
-def log_security_event(event_type, user, ip, details, severity="INFO"):
-    event = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "event_type": event_type,
-        "severity": severity,
-        "user": user,
-        "source_ip": ip,
-        "details": details
-    }
-    security_logger.warning(json.dumps(event))
 
-# 사용 예시
-log_security_event(
-    event_type="AUTH_FAILURE",
-    user="admin",
-    ip="192.168.1.100",
-    details={"attempts": 5, "reason": "invalid_password"},
-    severity="HIGH"
-)
+# ── 이벤트 타입 상수 ──────────────────────────────────────────────────────────
+class EventType:
+    AUTH_SUCCESS     = "AUTH_SUCCESS"
+    AUTH_FAILURE     = "AUTH_FAILURE"
+    ACCOUNT_LOCKED   = "ACCOUNT_LOCKED"
+    PRIVESC_ATTEMPT  = "PRIVESC_ATTEMPT"
+    SQL_INJECTION    = "SQL_INJECTION"
+    XSS_ATTEMPT      = "XSS_ATTEMPT"
+    PATH_TRAVERSAL   = "PATH_TRAVERSAL"
+    BRUTE_FORCE      = "BRUTE_FORCE"
+    MASS_DOWNLOAD    = "MASS_DOWNLOAD"
+    ADMIN_ACCESS     = "ADMIN_ACCESS"
 
-# ELK Stack (Elasticsearch-Logstash-Kibana) 연동
-# Logstash 설정 → Elasticsearch 인덱싱 → Kibana 대시보드
+
+@dataclass
+class SecurityEvent:
+    event_type: str
+    severity: str                          # CRITICAL / HIGH / MEDIUM / LOW / INFO
+    user: str = "anonymous"
+    source_ip: str = "0.0.0.0"
+    endpoint: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
+    timestamp: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
+    host: str = field(default_factory=lambda: os.uname().nodename)
+
+    def to_json(self) -> str:
+        return json.dumps(asdict(self), ensure_ascii=False)
+
+
+class SecurityLogger:
+    """구조화된 보안 로거 (파일 + 콘솔 동시 출력, 자동 로테이션)"""
+
+    def __init__(
+        self,
+        log_file: str = "/var/log/security.json",
+        max_bytes: int = 50 * 1024 * 1024,  # 50MB
+        backup_count: int = 10,
+    ) -> None:
+        self._logger = logging.getLogger("security")
+        self._logger.setLevel(logging.DEBUG)
+        self._logger.propagate = False
+
+        # 파일 핸들러 (로테이션)
+        try:
+            fh = logging.handlers.RotatingFileHandler(
+                log_file, maxBytes=max_bytes, backupCount=backup_count
+            )
+            fh.setFormatter(logging.Formatter("%(message)s"))
+            self._logger.addHandler(fh)
+        except PermissionError:
+            pass  # 권한 없으면 파일 핸들러 생략
+
+        # 콘솔 핸들러
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setFormatter(logging.Formatter("%(message)s"))
+        self._logger.addHandler(ch)
+
+        # 임계값 기반 경보 (브루트포스 탐지)
+        self._fail_counter: dict[str, int] = {}
+
+    def log(self, event: SecurityEvent) -> None:
+        level_map = {
+            "CRITICAL": logging.CRITICAL,
+            "HIGH":     logging.ERROR,
+            "MEDIUM":   logging.WARNING,
+            "LOW":      logging.INFO,
+            "INFO":     logging.INFO,
+        }
+        level = level_map.get(event.severity, logging.INFO)
+        self._logger.log(level, event.to_json())
+        self._check_brute_force(event)
+
+    def _check_brute_force(self, event: SecurityEvent) -> None:
+        if event.event_type != EventType.AUTH_FAILURE:
+            return
+        key = f"{event.source_ip}:{event.user}"
+        self._fail_counter[key] = self._fail_counter.get(key, 0) + 1
+        if self._fail_counter[key] >= 5:
+            alert = SecurityEvent(
+                event_type=EventType.BRUTE_FORCE,
+                severity="HIGH",
+                user=event.user,
+                source_ip=event.source_ip,
+                details={"fail_count": self._fail_counter[key]},
+            )
+            self._logger.error(alert.to_json())
+
+
+# 싱글톤 인스턴스
+_logger_instance: SecurityLogger | None = None
+
+
+def get_logger() -> SecurityLogger:
+    global _logger_instance
+    if _logger_instance is None:
+        _logger_instance = SecurityLogger()
+    return _logger_instance
+
+
+# ── 사용 예시 ─────────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    logger = get_logger()
+
+    # 인증 실패 5회 → 브루트포스 경보 자동 발생
+    for i in range(6):
+        logger.log(SecurityEvent(
+            event_type=EventType.AUTH_FAILURE,
+            severity="MEDIUM",
+            user="admin",
+            source_ip="192.168.1.100",
+            endpoint="/api/login",
+            details={"attempt": i + 1, "reason": "invalid_password"},
+        ))
+
+    # SQL Injection 탐지
+    logger.log(SecurityEvent(
+        event_type=EventType.SQL_INJECTION,
+        severity="CRITICAL",
+        user="anonymous",
+        source_ip="10.0.0.1",
+        endpoint="/api/users",
+        details={"payload": "' OR 1=1--", "param": "id"},
+    ))
+
+    # 관리자 접근 성공 로그
+    logger.log(SecurityEvent(
+        event_type=EventType.ADMIN_ACCESS,
+        severity="HIGH",
+        user="admin",
+        source_ip="203.0.113.1",
+        endpoint="/admin/dashboard",
+        details={"method": "GET", "user_agent": "curl/8.2"},
+    ))
 ```
 
 ### 1-10-60 탐지 규칙 (CrowdStrike 기준)
@@ -756,27 +956,126 @@ echo $content;
 
 ### SSRF 방어
 ```python
+#!/usr/bin/env python3
+"""
+SSRF 방어 유틸리티 — URL 검증 + 안전한 HTTP 요청 래퍼
+DNS 리바인딩 방지를 위해 연결 전 IP 재검증 수행
+"""
 import ipaddress
+import socket
 import urllib.parse
+from typing import Optional
+import requests
+from requests.adapters import HTTPAdapter
 
-def is_safe_url(url):
-    parsed = urllib.parse.urlparse(url)
-    hostname = parsed.hostname
-    
+
+ALLOWED_SCHEMES = {"https", "http"}
+# 화이트리스트 기반 허용 도메인 (실환경에서 반드시 설정)
+ALLOWED_HOSTS: set[str] = {
+    "api.example.com",
+    "cdn.example.com",
+    "storage.example.com",
+}
+
+
+class SSRFBlockedError(Exception):
+    """SSRF 차단 시 발생하는 예외"""
+
+
+def is_private_ip(ip_str: str) -> bool:
+    """사설/루프백/링크로컬/멀티캐스트 IP 탐지"""
     try:
-        ip = ipaddress.ip_address(hostname)
-        # 사설 IP, 루프백, 링크로컬 차단
-        if ip.is_private or ip.is_loopback or ip.is_link_local:
-            return False
+        ip = ipaddress.ip_address(ip_str)
+        return (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or str(ip) in ("0.0.0.0", "::")
+        )
     except ValueError:
-        pass  # IP가 아닌 도메인명
-    
-    # 화이트리스트 기반
-    allowed = ['api.example.com', 'cdn.example.com']
-    if hostname not in allowed:
-        return False
-    
-    return True
+        return True  # 파싱 실패 → 차단
+
+
+def validate_ssrf_url(url: str, use_whitelist: bool = True) -> str:
+    """
+    URL의 SSRF 안전성 검증.
+    - 허용 스킴 확인
+    - DNS 조회 후 IP 레인지 검증
+    - (선택) 화이트리스트 기반 호스트 검증
+    반환: 검증된 URL (실패 시 SSRFBlockedError)
+    """
+    parsed = urllib.parse.urlparse(url)
+
+    if parsed.scheme not in ALLOWED_SCHEMES:
+        raise SSRFBlockedError(f"허용되지 않은 스킴: {parsed.scheme}")
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise SSRFBlockedError("호스트명 없음")
+
+    # 화이트리스트 검증
+    if use_whitelist and hostname not in ALLOWED_HOSTS:
+        raise SSRFBlockedError(f"화이트리스트 미등록 호스트: {hostname}")
+
+    # DNS 조회 결과의 IP 검증 (DNS 리바인딩 방지)
+    try:
+        addr_infos = socket.getaddrinfo(hostname, parsed.port or 443,
+                                        proto=socket.IPPROTO_TCP)
+    except socket.gaierror as e:
+        raise SSRFBlockedError(f"DNS 조회 실패: {e}") from e
+
+    for *_, sockaddr in addr_infos:
+        ip = sockaddr[0]
+        if is_private_ip(ip):
+            raise SSRFBlockedError(
+                f"내부망 IP 접근 차단: {hostname} → {ip}"
+            )
+
+    return url
+
+
+class SafeRequester:
+    """SSRF 방어가 적용된 HTTP 클라이언트"""
+
+    def __init__(self, timeout: float = 10.0, use_whitelist: bool = True) -> None:
+        self.timeout = timeout
+        self.use_whitelist = use_whitelist
+        self._session = requests.Session()
+        # 리다이렉트 비활성화 (리다이렉트로 내부망 우회 방지)
+        self._session.max_redirects = 0
+
+    def get(self, url: str, **kwargs) -> requests.Response:
+        safe_url = validate_ssrf_url(url, self.use_whitelist)
+        return self._session.get(safe_url, timeout=self.timeout,
+                                 allow_redirects=False, **kwargs)
+
+    def post(self, url: str, **kwargs) -> requests.Response:
+        safe_url = validate_ssrf_url(url, self.use_whitelist)
+        return self._session.post(safe_url, timeout=self.timeout,
+                                  allow_redirects=False, **kwargs)
+
+
+# ── 테스트 ─────────────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    requester = SafeRequester(use_whitelist=False)  # 화이트리스트 없이 IP만 검증
+
+    test_cases = [
+        "http://127.0.0.1/admin",
+        "http://169.254.169.254/latest/meta-data/",
+        "http://192.168.1.1/",
+        "http://10.0.0.1:8080/",
+        "file:///etc/passwd",
+        "https://api.example.com/data",
+    ]
+
+    for url in test_cases:
+        try:
+            validated = validate_ssrf_url(url, use_whitelist=False)
+            print(f"[허용] {url}")
+        except SSRFBlockedError as e:
+            print(f"[차단] {url}  →  {e}")
 ```
 
 ---

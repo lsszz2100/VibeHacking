@@ -859,49 +859,248 @@ print(f"URL-safe: {url_safe}")
 ```python
 #!/usr/bin/env python3
 """
-간단한 모의해킹 프레임워크 구조
+모의해킹 자동화 프레임워크 (Python 3.10+)
+용도: 정찰 → 스캔 → 취약점 분석 → 보고서 생성 파이프라인 구조화
+사용법: python3 pentest_framework.py <target> [--phase recon|scan|all]
+의존성: pip install requests dnspython
 """
+from __future__ import annotations
+import argparse
+import json
+import socket
+import sys
+import threading
+from collections import defaultdict
+from dataclasses import dataclass, field, asdict
+from datetime import datetime
+from pathlib import Path
+from queue import Queue
+from typing import Callable
 
-class HackFramework:
-    def __init__(self, target):
-        self.target = target
-        self.results = {}
-    
-    def recon(self):
-        """1단계: 정찰"""
-        print(f"[RECON] Starting reconnaissance on {self.target}")
-        # DNS 조회, 포트 스캔, 서비스 탐지 등
-    
-    def scan(self):
-        """2단계: 스캐닝"""
-        print(f"[SCAN] Scanning {self.target} for vulnerabilities")
-        # 취약점 스캔, 버전 탐지 등
-    
-    def exploit(self):
-        """3단계: 익스플로잇"""
-        print(f"[EXPLOIT] Attempting exploitation")
-        # 발견된 취약점 공격
-    
-    def post_exploit(self):
-        """4단계: 사후 익스플로잇"""
-        print("[POST] Post-exploitation phase")
-        # 권한 상승, 내부 이동, 데이터 수집
-    
-    def report(self):
-        """5단계: 보고서"""
-        print("[REPORT] Generating report")
-        # 발견사항 정리 및 보고서 생성
-    
-    def run_all(self):
-        """전체 파이프라인 실행"""
-        for phase in [self.recon, self.scan, self.exploit, 
-                      self.post_exploit, self.report]:
+
+# ─── 데이터 모델 ────────────────────────────────────────────────
+
+@dataclass
+class Finding:
+    phase: str
+    severity: str    # CRITICAL / HIGH / MEDIUM / LOW / INFO
+    title: str
+    detail: str
+    evidence: str = ""
+
+    def __str__(self) -> str:
+        return f"[{self.severity:8s}] {self.title}: {self.detail}"
+
+
+@dataclass
+class EngagementResult:
+    target: str
+    start_time: str = field(default_factory=lambda: datetime.now().isoformat())
+    end_time: str = ""
+    open_ports: list[tuple[int, str]] = field(default_factory=list)
+    dns_records: dict[str, list[str]] = field(default_factory=dict)
+    findings: list[Finding] = field(default_factory=list)
+
+    def add_finding(self, *args, **kwargs) -> None:
+        self.findings.append(Finding(*args, **kwargs))
+
+    def summary(self) -> dict:
+        counts: dict[str, int] = defaultdict(int)
+        for f in self.findings:
+            counts[f.severity] += 1
+        return dict(counts)
+
+
+# ─── 정찰 모듈 ──────────────────────────────────────────────────
+
+def recon_dns(target: str, result: EngagementResult) -> None:
+    """DNS 레코드 수집 (A, MX, NS, TXT)."""
+    try:
+        import dns.resolver  # pip install dnspython
+        for rtype in ("A", "MX", "NS", "TXT"):
             try:
-                phase()
-            except Exception as e:
-                print(f"[ERROR] Phase failed: {e}")
+                answers = dns.resolver.resolve(target, rtype, lifetime=5)
+                result.dns_records[rtype] = [str(r) for r in answers]
+            except Exception:
+                pass
+        if result.dns_records:
+            result.add_finding("RECON", "INFO", "DNS 레코드 수집",
+                               f"{target}", json.dumps(result.dns_records))
+    except ImportError:
+        # dnspython 없을 때 기본 조회
+        try:
+            ip = socket.gethostbyname(target)
+            result.dns_records["A"] = [ip]
+            result.add_finding("RECON", "INFO", "DNS A 레코드", target, ip)
+        except socket.gaierror:
+            pass
 
-# 사용
-# framework = HackFramework("192.168.1.100")
-# framework.run_all()
+
+def recon_whois(target: str, result: EngagementResult) -> None:
+    """Whois 조회 (python-whois 있을 때)."""
+    try:
+        import whois  # pip install python-whois
+        w = whois.whois(target)
+        detail = f"등록자: {w.registrant_name}  등록일: {w.creation_date}"
+        result.add_finding("RECON", "INFO", "Whois 조회", target, detail)
+    except Exception:
+        pass
+
+
+# ─── 스캔 모듈 ──────────────────────────────────────────────────
+
+def scan_ports(
+    target: str,
+    result: EngagementResult,
+    ports: list[int] | None = None,
+    n_threads: int = 200,
+    timeout: float = 0.8,
+) -> None:
+    """멀티스레드 TCP 포트 스캐너."""
+    port_list = ports or list(range(1, 1025))
+    q: Queue[int] = Queue()
+    for p in port_list:
+        q.put(p)
+    lock = threading.Lock()
+
+    def worker() -> None:
+        while not q.empty():
+            port = q.get()
+            try:
+                with socket.create_connection((target, port), timeout=timeout) as s:
+                    banner = b""
+                    try:
+                        s.settimeout(0.5)
+                        banner = s.recv(256)
+                    except Exception:
+                        pass
+                    svc = banner.decode("utf-8", errors="replace").strip()[:50]
+                    with lock:
+                        result.open_ports.append((port, svc))
+            except (socket.timeout, ConnectionRefusedError, OSError):
+                pass
+            finally:
+                q.task_done()
+
+    threads = [threading.Thread(target=worker, daemon=True)
+               for _ in range(min(n_threads, len(port_list)))]
+    for t in threads:
+        t.start()
+    q.join()
+    result.open_ports.sort()
+
+
+def scan_http_headers(target: str, port: int, result: EngagementResult) -> None:
+    """HTTP 보안 헤더 점검."""
+    try:
+        import requests
+        import urllib3
+        urllib3.disable_warnings()
+        scheme = "https" if port == 443 else "http"
+        url = f"{scheme}://{target}:{port}"
+        resp = requests.get(url, timeout=8, verify=False,
+                            headers={"User-Agent": "Mozilla/5.0"})
+        missing = [
+            h for h in [
+                "Strict-Transport-Security", "X-Frame-Options",
+                "X-Content-Type-Options", "Content-Security-Policy",
+            ]
+            if h not in resp.headers
+        ]
+        if missing:
+            result.add_finding(
+                "SCAN", "MEDIUM", "보안 헤더 누락",
+                f"{url}",
+                "누락: " + ", ".join(missing),
+            )
+        server = resp.headers.get("Server", "")
+        if server:
+            result.add_finding("SCAN", "INFO", "서버 버전 노출", url, server)
+    except Exception:
+        pass
+
+
+def scan_ftp_anonymous(target: str, result: EngagementResult) -> None:
+    """FTP 익명 로그인 점검."""
+    try:
+        import ftplib
+        ftp = ftplib.FTP()
+        ftp.connect(target, 21, timeout=5)
+        ftp.login("anonymous", "anon@test.com")
+        ftp.quit()
+        result.add_finding("SCAN", "HIGH", "FTP 익명 로그인 허용",
+                           f"{target}:21", "anonymous/anon@test.com 로그인 성공")
+    except Exception:
+        pass
+
+
+# ─── 보고서 모듈 ─────────────────────────────────────────────────
+
+def generate_report(result: EngagementResult, output_path: str = "report.json") -> None:
+    result.end_time = datetime.now().isoformat()
+    data = asdict(result)
+    Path(output_path).write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"[+] 보고서 저장: {output_path}")
+
+
+# ─── 프레임워크 진입점 ───────────────────────────────────────────
+
+class PentestFramework:
+    PHASES: dict[str, list[Callable]] = {
+        "recon": [recon_dns, recon_whois],
+        "scan":  [scan_ports],
+    }
+
+    def __init__(self, target: str) -> None:
+        self.target = target
+        self.result = EngagementResult(target=target)
+
+    def run(self, phases: list[str] = ("recon", "scan")) -> EngagementResult:
+        print(f"[*] 대상: {self.target}")
+        for phase_name in phases:
+            funcs = self.PHASES.get(phase_name, [])
+            print(f"\n[Phase: {phase_name.upper()}]")
+            for fn in funcs:
+                print(f"  [+] {fn.__name__}")
+                fn(self.target, self.result)
+
+        # 포트 스캔 후 서비스별 추가 점검
+        if "scan" in phases:
+            for port, _ in self.result.open_ports:
+                print(f"  [+] 포트 {port} 서비스 점검")
+                if port in (80, 443, 8080, 8443):
+                    scan_http_headers(self.target, port, self.result)
+                elif port == 21:
+                    scan_ftp_anonymous(self.target, self.result)
+
+        print(f"\n[결과 요약]  열린 포트: {len(self.result.open_ports)}개")
+        for port, banner in self.result.open_ports:
+            print(f"  {port:5d}/tcp  {banner[:60]}")
+
+        print(f"\n[발견사항]  {self.result.summary()}")
+        for f in self.result.findings:
+            print(f"  {f}")
+
+        return self.result
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="모의해킹 자동화 프레임워크")
+    parser.add_argument("target", help="대상 호스트명 또는 IP")
+    parser.add_argument(
+        "--phase", nargs="+",
+        choices=["recon", "scan", "all"], default=["all"],
+        help="실행할 단계 (기본값: all)",
+    )
+    parser.add_argument("--output", default="pentest_report.json", help="보고서 파일 경로")
+    args = parser.parse_args()
+
+    phases = ["recon", "scan"] if "all" in args.phase else args.phase
+    fw = PentestFramework(args.target)
+    result = fw.run(phases)
+    generate_report(result, args.output)
+
+
+if __name__ == "__main__":
+    main()
 ```

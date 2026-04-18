@@ -50,27 +50,300 @@ Informational             : 보통 무보상, 감사 표시
 
 ### 3-1. 서브도메인 열거
 
-```bash
-# amass (가장 강력)
-amass enum -d target.com -o subdomains.txt
-amass enum -passive -d target.com  # 패시브만
+```python
+#!/usr/bin/env python3
+"""
+버그바운티 서브도메인 열거 자동화 파이프라인
+요구사항: pip install requests dnspython aiohttp
+외부 바이너리 (선택): subfinder, amass, httpx
+"""
 
-# subfinder + httpx (살아있는 서브도메인만)
-subfinder -d target.com -silent | httpx -silent -status-code -title -tech-detect
+from __future__ import annotations
 
-# 인증서 투명성 로그 (crt.sh)
-curl -s "https://crt.sh/?q=%.target.com&output=json" | \
-  python3 -c "import sys,json; [print(e['name_value']) for e in json.load(sys.stdin)]" | \
-  sort -u > crt_subs.txt
+import argparse
+import asyncio
+import json
+import subprocess
+import sys
+import textwrap
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional
+from urllib.parse import urlparse
 
-# 서브도메인 브루트포싱
-ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt \
-     -u "https://FUZZ.target.com" -mc 200,301,302,403
+import requests
 
-# 전체 통합 파이프라인
-subfinder -d target.com -silent | anew subs.txt
-amass enum -passive -d target.com | anew subs.txt
-cat subs.txt | httpx -silent | anew live_subs.txt
+
+# ── crt.sh ───────────────────────────────────────────────────────────────────
+
+def crtsh_enum(domain: str) -> set[str]:
+    url = f"https://crt.sh/?q=%.{domain}&output=json"
+    try:
+        data = requests.get(url, timeout=20).json()
+        subs: set[str] = set()
+        for entry in data:
+            for name in entry.get("name_value", "").splitlines():
+                name = name.strip().lstrip("*.")
+                if name.endswith(domain) and " " not in name:
+                    subs.add(name)
+        return subs
+    except Exception as exc:
+        print(f"[!] crt.sh: {exc}")
+        return set()
+
+
+def subfinder_enum(domain: str) -> set[str]:
+    try:
+        out = subprocess.check_output(
+            ["subfinder", "-d", domain, "-all", "-silent"],
+            stderr=subprocess.DEVNULL, timeout=120,
+        )
+        return {l.strip() for l in out.decode().splitlines() if l.strip()}
+    except FileNotFoundError:
+        print("[!] subfinder 없음")
+        return set()
+    except Exception:
+        return set()
+
+
+def amass_enum(domain: str, passive: bool = True) -> set[str]:
+    cmd = ["amass", "enum", "-d", domain] + (["-passive"] if passive else [])
+    try:
+        out = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=300)
+        return {l.strip() for l in out.decode().splitlines() if l.strip()}
+    except FileNotFoundError:
+        print("[!] amass 없음")
+        return set()
+    except Exception:
+        return set()
+
+
+# ── DNS 확인 ─────────────────────────────────────────────────────────────────
+
+def resolve_a(subdomain: str) -> Optional[list[str]]:
+    try:
+        import dns.resolver
+        r = dns.resolver.Resolver()
+        r.timeout = r.lifetime = 3
+        return [str(a) for a in r.resolve(subdomain, "A")]
+    except Exception:
+        return None
+
+
+# ── HTTP 생존 확인 ────────────────────────────────────────────────────────────
+
+def check_http(subdomain: str) -> Optional[dict]:
+    """HTTP/HTTPS 생존 확인 + 기본 정보 수집."""
+    for scheme in ("https", "http"):
+        url = f"{scheme}://{subdomain}"
+        try:
+            resp = requests.get(url, timeout=8, allow_redirects=True,
+                                headers={"User-Agent": "Mozilla/5.0"}, verify=False)
+            server = resp.headers.get("Server", "")
+            powered = resp.headers.get("X-Powered-By", "")
+            title_start = resp.text.find("<title>")
+            title_end = resp.text.find("</title>")
+            title = resp.text[title_start + 7:title_end].strip() if title_start != -1 else ""
+            return {
+                "url": resp.url,
+                "status": resp.status_code,
+                "title": title[:80],
+                "server": server,
+                "powered_by": powered,
+                "content_length": len(resp.content),
+            }
+        except Exception:
+            continue
+    return None
+
+
+# ── 서브도메인 탈취 탐지 ──────────────────────────────────────────────────────
+
+TAKEOVER_FINGERPRINTS = {
+    "github.io": "There isn't a GitHub Pages site here",
+    "s3.amazonaws.com": "NoSuchBucket",
+    "herokuapp.com": "No such app",
+    "azurewebsites.net": "404 Web Site not found",
+    "cloudfront.net": "The request could not be satisfied",
+    "ghost.io": "The thing you were looking for is no longer here",
+    "zendesk.com": "Help Center Closed",
+    "shopify.com": "Sorry, this shop is currently unavailable",
+    "fastly.net": "Fastly error: unknown domain",
+}
+
+
+def check_takeover(subdomain: str) -> Optional[str]:
+    """CNAME이 미등록 외부 서비스를 가리키는지 확인."""
+    try:
+        import dns.resolver
+        answers = dns.resolver.resolve(subdomain, "CNAME")
+        cname = str(answers[0].target).rstrip(".")
+        for service, fingerprint in TAKEOVER_FINGERPRINTS.items():
+            if service in cname:
+                try:
+                    resp = requests.get(f"https://{subdomain}", timeout=8, verify=False)
+                    if fingerprint.lower() in resp.text.lower():
+                        return f"TAKEOVER 가능: {cname} ({service})"
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return None
+
+
+# ── 결과 관리 ─────────────────────────────────────────────────────────────────
+
+@dataclass
+class SubInfo:
+    subdomain: str
+    ips: list[str] = field(default_factory=list)
+    http_info: Optional[dict] = None
+    takeover: Optional[str] = None
+
+    @property
+    def alive(self) -> bool:
+        return self.http_info is not None
+
+
+def run_pipeline(
+    domain: str,
+    use_amass: bool = False,
+    check_alive: bool = True,
+    check_takeovers: bool = True,
+    workers: int = 30,
+) -> list[SubInfo]:
+    all_subs: set[str] = set()
+
+    print("[*] crt.sh 열거 중...")
+    all_subs |= crtsh_enum(domain)
+    print(f"    crt.sh: {len(all_subs)}개")
+
+    print("[*] subfinder 실행 중...")
+    sf = subfinder_enum(domain)
+    all_subs |= sf
+    print(f"    subfinder: {len(sf)}개 | 누적: {len(all_subs)}개")
+
+    if use_amass:
+        print("[*] amass 실행 중 (느림)...")
+        am = amass_enum(domain)
+        all_subs |= am
+        print(f"    amass: {len(am)}개 | 누적: {len(all_subs)}개")
+
+    print(f"\n[+] 중복 제거 후: {len(all_subs)}개")
+
+    results: list[SubInfo] = []
+
+    # DNS 확인
+    try:
+        import dns.resolver  # noqa
+        print(f"[*] DNS 확인 중 ({workers} workers)...")
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            future_map = {pool.submit(resolve_a, s): s for s in sorted(all_subs)}
+            for future in as_completed(future_map):
+                sub = future_map[future]
+                ips = future.result() or []
+                results.append(SubInfo(subdomain=sub, ips=ips))
+    except ImportError:
+        results = [SubInfo(subdomain=s) for s in sorted(all_subs)]
+
+    if check_alive:
+        print(f"[*] HTTP 생존 확인 중 ({workers} workers)...")
+        import urllib3
+        urllib3.disable_warnings()
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            future_map = {pool.submit(check_http, r.subdomain): r for r in results}
+            for future in as_completed(future_map):
+                rec = future_map[future]
+                rec.http_info = future.result()
+
+    if check_takeovers:
+        print("[*] 서브도메인 탈취 취약점 확인 중...")
+        with ThreadPoolExecutor(max_workers=20) as pool:
+            future_map = {pool.submit(check_takeover, r.subdomain): r for r in results}
+            for future in as_completed(future_map):
+                rec = future_map[future]
+                rec.takeover = future.result()
+
+    return sorted(results, key=lambda r: (not r.alive, r.subdomain))
+
+
+def save_results(results: list[SubInfo], out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    (out_dir / "all.txt").write_text(
+        "\n".join(r.subdomain for r in results), encoding="utf-8"
+    )
+    alive = [r for r in results if r.alive]
+    (out_dir / "alive.txt").write_text(
+        "\n".join(r.subdomain for r in alive), encoding="utf-8"
+    )
+    takeovers = [r for r in results if r.takeover]
+    if takeovers:
+        (out_dir / "takeovers.txt").write_text(
+            "\n".join(f"{r.subdomain}: {r.takeover}" for r in takeovers),
+            encoding="utf-8",
+        )
+        print(f"\n[!] 서브도메인 탈취 후보: {len(takeovers)}개 → {out_dir}/takeovers.txt")
+
+    json_data = [
+        {
+            "subdomain": r.subdomain,
+            "ips": r.ips,
+            "alive": r.alive,
+            "http": r.http_info,
+            "takeover": r.takeover,
+        }
+        for r in results
+    ]
+    (out_dir / "results.json").write_text(
+        json.dumps(json_data, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(f"[+] 저장: {out_dir}/ | 전체: {len(results)} | 응답: {len(alive)}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="버그바운티 서브도메인 열거 자동화 파이프라인",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            사용 예시:
+              python subdomain_pipeline.py -d target.com
+              python subdomain_pipeline.py -d target.com --amass --no-takeover
+              python subdomain_pipeline.py -d target.com -o ./recon/ -w 50
+            """
+        ),
+    )
+    parser.add_argument("-d", "--domain", required=True)
+    parser.add_argument("--amass", action="store_true", help="amass 포함 (느림)")
+    parser.add_argument("--no-alive", action="store_true", help="HTTP 생존 확인 건너뜀")
+    parser.add_argument("--no-takeover", action="store_true", help="탈취 확인 건너뜀")
+    parser.add_argument("-w", "--workers", type=int, default=30)
+    parser.add_argument("-o", "--output", type=Path, default=None)
+    args = parser.parse_args()
+
+    out_dir = args.output or Path(f"recon_{args.domain}")
+    results = run_pipeline(
+        domain=args.domain,
+        use_amass=args.amass,
+        check_alive=not args.no_alive,
+        check_takeovers=not args.no_takeover,
+        workers=args.workers,
+    )
+
+    for r in results[:20]:
+        status = f"[{r.http_info['status']}] {r.http_info['title'][:40]}" if r.alive else "[dead]"
+        to = f" !! {r.takeover}" if r.takeover else ""
+        print(f"  {r.subdomain:<50} {status}{to}")
+    if len(results) > 20:
+        print(f"  ... 외 {len(results) - 20}개")
+
+    save_results(results, out_dir)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### 3-2. URL/파라미터 수집
@@ -266,20 +539,183 @@ Target → Scope 설정:
 ### 5-3. Turbo Intruder로 레이스 컨디션
 
 ```python
-# 쿠폰 코드 중복 사용 테스트
+# race_condition_coupon.py — Turbo Intruder 스크립트
+# 쿠폰 코드 중복 사용 / 포인트 중복 적립 테스트
+#
+# 사용법: Burp Suite Repeater에서 요청 선택
+#         Extensions > Turbo Intruder > Send to Turbo Intruder
+#         이 스크립트를 붙여넣고 Attack 클릭
+#
+# gate 방식: 모든 요청을 큐에 넣은 뒤 동시에 전송 (HTTP/1 pipeline)
+
 def queueRequests(target, wordlists):
-    engine = RequestEngine(endpoint=target.endpoint,
-                           concurrentConnections=30,
-                           requestsPerConnection=100,
-                           pipeline=True)
-    
-    for i in range(50):
+    engine = RequestEngine(
+        endpoint=target.endpoint,
+        concurrentConnections=30,   # 동시 연결 수 (높을수록 레이스 효과)
+        requestsPerConnection=1,
+        pipeline=False,             # HTTP/2 환경이면 True로 변경
+        engine=Engine.THREADED,
+    )
+
+    # gate 방식: 모든 요청을 큐에 등록한 뒤 동시 해제
+    for i in range(30):
         engine.queue(target.req, gate='race1')
-    
+
     engine.openGate('race1')
+    engine.complete(timeout=20)
+
 
 def handleResponse(req, interesting):
-    table.add(req)
+    # 성공 응답(200, "success", "applied" 등)만 테이블에 추가
+    if req.status == 200 and any(
+        kw in req.response.lower()
+        for kw in ('success', 'applied', 'redeemed', 'credited', 'ok')
+    ):
+        table.add(req)
+```
+
+```python
+#!/usr/bin/env python3
+"""
+레이스 컨디션 테스트 — requests-futures 기반 독립 실행 버전
+요구사항: pip install requests
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import textwrap
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
+
+import requests
+
+
+def race_test(
+    url: str,
+    method: str = "POST",
+    headers: dict[str, str] | None = None,
+    body: str | None = None,
+    count: int = 30,
+    workers: int = 30,
+    success_codes: list[int] | None = None,
+    success_keywords: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    """동시 요청을 보내 레이스 컨디션 취약점 확인."""
+
+    success_codes = success_codes or [200, 201]
+    success_keywords = success_keywords or ["success", "ok", "applied", "credited"]
+    default_headers = {"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"}
+    if headers:
+        default_headers.update(headers)
+
+    wins: list[dict[str, Any]] = []
+
+    def send_request(idx: int) -> dict[str, Any]:
+        try:
+            kwargs: dict[str, Any] = {
+                "headers": default_headers,
+                "timeout": 15,
+                "verify": False,
+            }
+            if body:
+                kwargs["data"] = body
+            resp = getattr(requests, method.lower())(url, **kwargs)
+            text_lower = resp.text.lower()
+            hit = resp.status_code in success_codes and any(
+                kw in text_lower for kw in success_keywords
+            )
+            return {
+                "idx": idx,
+                "status": resp.status_code,
+                "length": len(resp.content),
+                "time_ms": int(resp.elapsed.total_seconds() * 1000),
+                "hit": hit,
+                "snippet": resp.text[:100],
+            }
+        except requests.RequestException as exc:
+            return {"idx": idx, "error": str(exc), "hit": False}
+
+    print(f"[*] 레이스 컨디션 테스트: {count}개 동시 요청 → {url}")
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(send_request, i) for i in range(count)]
+        for future in as_completed(futures):
+            result = future.result()
+            if result.get("hit"):
+                wins.append(result)
+
+    return wins
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="레이스 컨디션 취약점 테스트",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            사용 예시:
+              # 쿠폰 중복 적용 테스트
+              python race_test.py -u https://target.com/api/coupon/apply \\
+                  -X POST -d '{"code":"SAVE10"}' \\
+                  -H 'Authorization: Bearer TOKEN' --count 30
+
+              # OTP 브루트포스 레이스
+              python race_test.py -u https://target.com/api/verify-otp \\
+                  -X POST -d '{"otp":"123456"}' --count 20
+            """
+        ),
+    )
+    parser.add_argument("-u", "--url", required=True)
+    parser.add_argument("-X", "--method", default="POST")
+    parser.add_argument("-d", "--data", default=None, help="요청 바디")
+    parser.add_argument(
+        "-H", "--header", action="append", default=[],
+        metavar="KEY:VALUE", help="추가 헤더 (여러 번 사용 가능)",
+    )
+    parser.add_argument("--count", type=int, default=30, help="동시 요청 수")
+    parser.add_argument("--workers", type=int, default=30)
+    parser.add_argument(
+        "--keywords", nargs="+",
+        default=["success", "ok", "applied", "credited"],
+        help="성공 키워드",
+    )
+    args = parser.parse_args()
+
+    headers: dict[str, str] = {}
+    for h in args.header:
+        if ":" in h:
+            k, v = h.split(":", 1)
+            headers[k.strip()] = v.strip()
+
+    import urllib3
+    urllib3.disable_warnings()
+
+    wins = race_test(
+        url=args.url,
+        method=args.method,
+        headers=headers or None,
+        body=args.data,
+        count=args.count,
+        workers=args.workers,
+        success_keywords=args.keywords,
+    )
+
+    print(f"\n[+] 성공 응답: {len(wins)}개 / {args.count}개")
+    if len(wins) > 1:
+        print("[!] 레이스 컨디션 취약점 의심! 복수 성공 응답 확인됨.")
+        for w in wins:
+            print(f"    [{w['idx']}] {w.get('status')} | {w.get('length')}B | {w.get('snippet', '')[:60]}")
+    elif len(wins) == 0:
+        print("[*] 레이스 컨디션 미탐지 — 더 많은 동시 요청 또는 다른 엔드포인트 시도")
+    else:
+        print("[*] 단일 성공 — 정상 동작")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

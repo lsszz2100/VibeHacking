@@ -82,32 +82,67 @@ CMD ["python", "app.py"]
 ### Trivy — 이미지 취약점 스캔
 
 ```bash
-# 설치
-curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+# ── Trivy 설치 ────────────────────────────────────────────────
+curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+    | sh -s -- -b /usr/local/bin
 
-# 이미지 스캔
+# ── 이미지 취약점 스캔 ───────────────────────────────────────
+# 기본 스캔
 trivy image nginx:latest
-trivy image --severity CRITICAL,HIGH python:3.11
 
-# 파일시스템 스캔
-trivy fs --security-checks vuln,secret,config ./
+# 심각도 필터 (CRITICAL, HIGH 만)
+trivy image --severity CRITICAL,HIGH python:3.12-slim
 
-# Dockerfile 스캔
+# JSON 출력 (파이프라인 연동)
+trivy image --format json --output trivy-results.json myapp:v1.0
+
+# SARIF 출력 (GitHub Security 탭 업로드)
+trivy image --format sarif --output trivy-results.sarif \
+    --severity CRITICAL,HIGH myapp:latest
+
+# Critical 발견 시 exit-code 1 (CI 빌드 실패)
+trivy image --exit-code 1 --severity CRITICAL myapp:latest
+
+# ── 파일시스템 / Dockerfile / IaC 스캔 ──────────────────────
+# 소스코드 전체 (취약 의존성 + 시크릿 + 설정 오류)
+trivy fs --scanners vuln,secret,misconfig ./
+
+# Dockerfile 설정 분석
 trivy config Dockerfile
 
-# 결과 필터링 및 출력
-trivy image --format json --output results.json nginx:latest
-trivy image --exit-code 1 --severity CRITICAL nginx:latest  # Critical 발견 시 실패
+# Terraform / Kubernetes 매니페스트
+trivy config ./terraform/
+trivy config ./k8s/
 
-# 캐시 초기화 (최신 DB)
-trivy image --reset
+# ── SBOM 생성 + 취약점 스캔 ─────────────────────────────────
+# Syft로 SBOM 생성
+syft myapp:v1.0 -o spdx-json=sbom.spdx.json
 
-# CI 통합 (GitHub Actions)
-trivy image \
-    --format sarif \
-    --output trivy-results.sarif \
-    --severity CRITICAL,HIGH \
-    myapp:${{ github.sha }}
+# SBOM 기반 취약점 스캔 (Grype)
+grype sbom:sbom.spdx.json
+grype myapp:v1.0 --output json --file grype-results.json
+
+# ── 결과 파싱 Python 스크립트 ────────────────────────────────
+python3 - << 'EOF'
+import json, sys
+with open("trivy-results.json") as f:
+    data = json.load(f)
+
+crit = high = 0
+for result in data.get("Results", []):
+    for v in result.get("Vulnerabilities") or []:
+        sev = v.get("Severity", "")
+        if sev == "CRITICAL": crit += 1
+        elif sev == "HIGH":   high += 1
+        if sev in ("CRITICAL", "HIGH"):
+            print(f"[{sev}] {v.get('VulnerabilityID')} "
+                  f"{v.get('PkgName')}@{v.get('InstalledVersion')} "
+                  f"→ fix: {v.get('FixedVersion','N/A')}")
+
+print(f"\nCRITICAL={crit}  HIGH={high}")
+if crit > 0:
+    sys.exit(1)   # CI 게이트
+EOF
 ```
 
 ### Docker Bench Security
@@ -320,15 +355,195 @@ sudo apt-get update && sudo apt-get install -y falco
 ```
 
 ```bash
-# Falco 실행
+# Falco 실행 (커스텀 규칙 포함)
 sudo falco -r custom_falco_rules.yaml
 
-# Kubernetes에서 Falco
+# Kubernetes에서 Falco (Helm)
 helm repo add falcosecurity https://falcosecurity.github.io/charts
 helm install falco falcosecurity/falco \
     --set driver.kind=ebpf \
     --set falcosidekick.enabled=true \
     --set falcosidekick.config.slack.webhookurl=SLACK_HOOK
+
+# Falco 실시간 알림 수신 (Python)
+# falcosidekick → webhook → 아래 스크립트로 Slack/PagerDuty 전달
+```
+
+```python
+#!/usr/bin/env python3
+"""
+Falco 알림 Webhook 수신 서버 + 심각도 기반 자동 대응
+사용: python3 falco_webhook.py --port 2802 --slack-url https://hooks.slack.com/...
+      환경변수: SLACK_WEBHOOK_URL, PAGERDUTY_KEY
+
+Falco → falcosidekick → POST http://this-server:2802/falco
+"""
+
+from __future__ import annotations
+import argparse
+import json
+import logging
+import os
+import sys
+from datetime import datetime
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+try:
+    import requests
+except ImportError:
+    sys.exit("pip install requests")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+logger = logging.getLogger("falco-webhook")
+
+# ── 설정 (환경변수 또는 CLI) ──────────────────────────────────
+
+SLACK_URL      = os.getenv("SLACK_WEBHOOK_URL", "")
+PAGERDUTY_KEY  = os.getenv("PAGERDUTY_KEY", "")
+ALERT_HISTORY: list[dict] = []
+
+
+# ── 대응 함수 ─────────────────────────────────────────────────
+
+def send_slack(event: dict, slack_url: str) -> None:
+    priority = event.get("priority", "").upper()
+    name     = event.get("rule", "Unknown Rule")
+    output   = event.get("output", "")
+    ts       = event.get("time", datetime.utcnow().isoformat())
+
+    color = {"CRITICAL": "#FF0000", "ERROR": "#FF6600",
+             "WARNING": "#FFCC00"}.get(priority, "#999999")
+
+    payload = {
+        "attachments": [{
+            "color": color,
+            "title": f"[Falco {priority}] {name}",
+            "text": output[:500],
+            "footer": f"Container Security | {ts}",
+        }]
+    }
+    try:
+        requests.post(slack_url, json=payload, timeout=10)
+        logger.info("Slack 알림 전송: %s", name)
+    except requests.RequestException as e:
+        logger.error("Slack 전송 실패: %s", e)
+
+
+def trigger_pagerduty(event: dict, key: str) -> None:
+    """CRITICAL 이벤트를 PagerDuty 인시던트로 에스컬레이션"""
+    payload = {
+        "routing_key": key,
+        "event_action": "trigger",
+        "dedup_key": event.get("rule", "falco") + "_" + event.get("hostname", ""),
+        "payload": {
+            "summary": f"[Falco CRITICAL] {event.get('rule','?')}",
+            "severity": "critical",
+            "source": event.get("hostname", "unknown"),
+            "custom_details": event,
+        },
+    }
+    try:
+        requests.post(
+            "https://events.pagerduty.com/v2/enqueue",
+            json=payload, timeout=10,
+        )
+        logger.info("PagerDuty 에스컬레이션: %s", event.get("rule"))
+    except requests.RequestException as e:
+        logger.error("PagerDuty 실패: %s", e)
+
+
+def handle_event(event: dict, slack_url: str, pd_key: str) -> None:
+    priority = event.get("priority", "").upper()
+    ALERT_HISTORY.append({"time": datetime.utcnow().isoformat(),
+                           "priority": priority,
+                           "rule": event.get("rule", "")})
+
+    logger.warning("[%s] %s | %s",
+                   priority, event.get("rule"), event.get("output", "")[:120])
+
+    if priority in ("WARNING", "ERROR", "CRITICAL") and slack_url:
+        send_slack(event, slack_url)
+
+    if priority == "CRITICAL" and pd_key:
+        trigger_pagerduty(event, pd_key)
+
+
+# ── HTTP 핸들러 ───────────────────────────────────────────────
+
+def make_handler(slack_url: str, pd_key: str) -> type:
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, fmt: str, *args) -> None:
+            pass  # 기본 로그 억제
+
+        def do_POST(self) -> None:
+            if self.path != "/falco":
+                self.send_response(404)
+                self.end_headers()
+                return
+            length = int(self.headers.get("Content-Length", 0))
+            body   = self.rfile.read(length)
+            try:
+                event = json.loads(body)
+                handle_event(event, slack_url, pd_key)
+                self.send_response(200)
+            except (json.JSONDecodeError, Exception) as e:
+                logger.error("이벤트 파싱 오류: %s", e)
+                self.send_response(400)
+            self.end_headers()
+
+        def do_GET(self) -> None:
+            if self.path == "/health":
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"OK")
+            elif self.path == "/stats":
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                from collections import Counter
+                cnt = Counter(a["priority"] for a in ALERT_HISTORY)
+                self.wfile.write(
+                    json.dumps({"total": len(ALERT_HISTORY),
+                                "by_priority": dict(cnt)}).encode()
+                )
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+    return Handler
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Falco Webhook 수신 서버")
+    parser.add_argument("--port",      type=int, default=2802)
+    parser.add_argument("--host",      default="0.0.0.0")
+    parser.add_argument("--slack-url", default=SLACK_URL)
+    parser.add_argument("--pd-key",    default=PAGERDUTY_KEY,
+                        help="PagerDuty Routing Key")
+    args = parser.parse_args()
+
+    handler = make_handler(args.slack_url, args.pd_key)
+    server  = HTTPServer((args.host, args.port), handler)
+
+    logger.info("Falco Webhook 서버 시작: %s:%d", args.host, args.port)
+    if args.slack_url:
+        logger.info("Slack 알림: 활성화")
+    if args.pd_key:
+        logger.info("PagerDuty 에스컬레이션: 활성화")
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        logger.info("서버 종료")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

@@ -542,6 +542,187 @@ tshark -i wlan0mon -Y "wlan.fc.type_subtype == 0x04 && wlan.ssid" \
     -T fields -e wlan.ta -e wlan.ssid 2>/dev/null | sort -u
 ```
 
+### 무선 네트워크 분석 자동화 도구 (Python — Scapy 기반)
+
+```python
+#!/usr/bin/env python3
+"""
+802.11 무선 패킷 분석기 — AP 탐지, Deauth 공격 감지, Probe 수집
+실행: sudo python3 wifi_analyzer.py [-i wlan0mon] [--deauth-threshold 5]
+"""
+import argparse
+import sys
+import threading
+import time
+from collections import Counter, defaultdict
+from datetime import datetime
+from typing import Optional
+
+try:
+    from scapy.all import (
+        sniff, Dot11, Dot11Beacon, Dot11ProbeReq,
+        Dot11Deauth, Dot11Disas, RadioTap,
+        Dot11Elt,
+    )
+except ImportError:
+    sys.exit("[!] scapy가 필요합니다: pip3 install scapy")
+
+
+def get_ssid(packet) -> Optional[str]:
+    """Dot11Elt에서 SSID 추출."""
+    try:
+        elt = packet[Dot11Elt]
+        while elt:
+            if elt.ID == 0:  # SSID element
+                return elt.info.decode("utf-8", errors="replace")
+            elt = elt.payload if hasattr(elt, "payload") else None
+    except Exception:
+        pass
+    return None
+
+
+def get_signal(packet) -> Optional[int]:
+    """RadioTap 헤더에서 신호 강도(dBm) 추출."""
+    try:
+        if packet.haslayer(RadioTap):
+            return packet[RadioTap].dBm_AntSignal
+    except Exception:
+        pass
+    return None
+
+
+class WifiAnalyzer:
+    def __init__(self, deauth_threshold: int) -> None:
+        self.deauth_threshold = deauth_threshold
+        self._lock = threading.Lock()
+
+        # AP 정보: {bssid: {ssid, channel, signal, security, beacon_count}}
+        self.aps: dict[str, dict] = {}
+        # Probe Request: {client_mac: [ssid, ...]}
+        self.probes: defaultdict[str, list] = defaultdict(list)
+        # Deauth: {src_mac: count}
+        self.deauth_counts: Counter = Counter()
+        self.stats = {"total": 0, "beacon": 0, "probe": 0, "deauth": 0, "data": 0}
+
+    def _extract_security(self, packet) -> str:
+        """AP 보안 방식 추출 (WPA3/WPA2/WPA/WEP/Open)."""
+        cap = packet[Dot11Beacon].cap if packet.haslayer(Dot11Beacon) else 0
+        if cap & 0x0010:  # Privacy bit
+            # RSN IE (ID=48) → WPA2/WPA3
+            elt = packet[Dot11Elt] if packet.haslayer(Dot11Elt) else None
+            while elt:
+                if elt.ID == 48:
+                    return "WPA2/WPA3"
+                if elt.ID == 221 and elt.info[:4] == b"\x00\x50\xf2\x01":
+                    return "WPA"
+                elt = elt.payload if hasattr(elt, "payload") else None
+            return "WEP"
+        return "Open"
+
+    def process(self, pkt) -> None:
+        with self._lock:
+            self.stats["total"] += 1
+
+            if not pkt.haslayer(Dot11):
+                return
+
+            dot11 = pkt[Dot11]
+            src = dot11.addr2 or "?"
+            dst = dot11.addr1 or "?"
+
+            # Beacon 프레임 (AP 탐지)
+            if pkt.haslayer(Dot11Beacon):
+                self.stats["beacon"] += 1
+                bssid = dot11.addr3 or src
+                ssid = get_ssid(pkt) or "<hidden>"
+                signal = get_signal(pkt)
+                security = self._extract_security(pkt)
+
+                if bssid not in self.aps:
+                    self.aps[bssid] = {
+                        "ssid": ssid, "signal": signal,
+                        "security": security, "beacon_count": 0,
+                        "first_seen": datetime.now().strftime("%H:%M:%S"),
+                    }
+                    print(f"  [AP] {ssid:<25}  {bssid}  {security}  {signal or '?'}dBm")
+                self.aps[bssid]["beacon_count"] += 1
+                if signal:
+                    self.aps[bssid]["signal"] = signal
+
+            # Probe Request (클라이언트 연결 이력)
+            elif pkt.haslayer(Dot11ProbeReq):
+                self.stats["probe"] += 1
+                ssid = get_ssid(pkt)
+                if ssid and ssid not in self.probes[src]:
+                    self.probes[src].append(ssid)
+
+            # Deauth / Disassociation 공격 탐지
+            elif pkt.haslayer(Dot11Deauth) or pkt.haslayer(Dot11Disas):
+                self.stats["deauth"] += 1
+                self.deauth_counts[src] += 1
+                if self.deauth_counts[src] == self.deauth_threshold:
+                    ts = datetime.now().strftime("%H:%M:%S")
+                    frame_type = "Deauth" if pkt.haslayer(Dot11Deauth) else "Disassoc"
+                    print(
+                        f"\n  [!] {frame_type} 공격 의심!  {ts}"
+                        f"\n      공격자: {src}  →  대상: {dst}"
+                        f"\n      횟수: {self.deauth_counts[src]}"
+                    )
+
+    def print_summary(self) -> None:
+        print("\n" + "=" * 60)
+        print("  Wi-Fi 분석 요약")
+        print("=" * 60)
+        s = self.stats
+        print(f"  총 패킷:  {s['total']}  |  Beacon: {s['beacon']}  |  "
+              f"Probe: {s['probe']}  |  Deauth: {s['deauth']}")
+
+        print(f"\n  발견된 AP ({len(self.aps)}개)")
+        for bssid, info in sorted(self.aps.items(), key=lambda x: -(x[1]["beacon_count"])):
+            print(f"    {info['ssid']:<25}  {bssid}  "
+                  f"{info['security']:<10}  {info['signal'] or '?':>4}dBm")
+
+        print(f"\n  클라이언트 Probe 기록 ({len(self.probes)}개)")
+        for mac, ssids in list(self.probes.items())[:15]:
+            print(f"    {mac}  →  {', '.join(ssids[:5])}")
+
+        if self.deauth_counts:
+            print(f"\n  Deauth 발신 Top 5")
+            for mac, count in self.deauth_counts.most_common(5):
+                print(f"    {mac}  {count}회")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="802.11 무선 패킷 분석기")
+    parser.add_argument("-i", "--iface", default="wlan0mon",
+                        help="모니터 모드 인터페이스 (기본값: wlan0mon)")
+    parser.add_argument("--deauth-threshold", type=int, default=5,
+                        help="Deauth 공격 경보 임계값 (기본값: 5)")
+    parser.add_argument("-t", "--timeout", type=int, default=0,
+                        help="캡처 시간(초). 0=무제한")
+    args = parser.parse_args()
+
+    analyzer = WifiAnalyzer(args.deauth_threshold)
+    print(f"[*] 무선 모니터링 시작: {args.iface}")
+    print(f"[*] Deauth 임계값: {args.deauth_threshold}회  |  종료: Ctrl+C\n")
+
+    try:
+        sniff(
+            iface=args.iface,
+            prn=analyzer.process,
+            store=False,
+            timeout=args.timeout if args.timeout > 0 else None,
+        )
+    except KeyboardInterrupt:
+        pass
+    finally:
+        analyzer.print_summary()
+
+
+if __name__ == "__main__":
+    main()
+```
+
 ---
 
 ## 14. 무선 네트워크 포렌식

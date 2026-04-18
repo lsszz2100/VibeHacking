@@ -96,47 +96,124 @@ def kasiski_test(ciphertext: str, min_len: int = 3) -> dict:
 ### XOR 암호
 
 ```python
+#!/usr/bin/env python3
+"""XOR 암호화 및 단일/반복 키 크래킹 CLI 도구"""
+
+import argparse
+import sys
+from typing import Optional
+
+
 def xor_encrypt(data: bytes, key: bytes) -> bytes:
     """XOR 암호화/복호화 (동일 연산)"""
     key_len = len(key)
     return bytes([b ^ key[i % key_len] for i, b in enumerate(data)])
 
-def xor_crack_single_byte(ciphertext: bytes) -> tuple:
-    """단일 바이트 XOR 크랙 (빈도 분석)"""
-    best_key = 0
-    best_score = 0
-    
-    english_freq = {
+
+def xor_crack_single_byte(ciphertext: bytes) -> tuple[int, bytes, float]:
+    """단일 바이트 XOR 크랙 — 영어 빈도 분석"""
+    english_freq: dict[str, float] = {
         'e': 12.7, 't': 9.1, 'a': 8.2, 'o': 7.5, 'i': 7.0,
-        'n': 6.7, 's': 6.3, 'h': 6.1, 'r': 6.0, 'd': 4.3
+        'n': 6.7, 's': 6.3, 'h': 6.1, 'r': 6.0, 'd': 4.3,
+        ' ': 13.0,  # 공백 가중치
     }
-    
-    for key in range(256):
-        decrypted = bytes([b ^ key for b in ciphertext])
-        
+    best_key, best_score, best_plain = 0, 0.0, b""
+
+    for key_byte in range(256):
+        decrypted = bytes([b ^ key_byte for b in ciphertext])
         try:
             text = decrypted.decode('ascii')
-        except:
+        except (UnicodeDecodeError, ValueError):
             continue
-        
         score = sum(english_freq.get(c.lower(), 0) for c in text)
-        
         if score > best_score:
-            best_score = score
-            best_key = key
-    
-    return best_key, bytes([b ^ best_key for b in ciphertext])
+            best_score, best_key, best_plain = score, key_byte, decrypted
 
-# CryptoPals 챌린지 스타일
-if __name__ == "__main__":
-    import base64
-    
-    ciphertext = bytes.fromhex(
-        "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+    return best_key, best_plain, best_score
+
+
+def crack_repeating_xor(ciphertext: bytes, max_keysize: int = 40) -> tuple[bytes, bytes]:
+    """반복 키 XOR 크랙 (CryptoPals Set1 Ch6 스타일)"""
+
+    def hamming(a: bytes, b: bytes) -> int:
+        return sum(bin(x ^ y).count('1') for x, y in zip(a, b))
+
+    # 1단계: 키 크기 추정
+    scores: dict[int, float] = {}
+    for ks in range(2, min(max_keysize + 1, len(ciphertext) // 4 + 1)):
+        blocks = [ciphertext[i * ks:(i + 1) * ks] for i in range(4)]
+        pairs = [(blocks[i], blocks[j]) for i in range(4) for j in range(i + 1, 4)
+                 if len(blocks[i]) == ks and len(blocks[j]) == ks]
+        if not pairs:
+            continue
+        avg = sum(hamming(a, b) / ks for a, b in pairs) / len(pairs)
+        scores[ks] = avg
+
+    best_ks = min(scores, key=scores.get)
+
+    # 2단계: 각 키 바이트 복원
+    key = bytes(
+        xor_crack_single_byte(
+            bytes([ciphertext[j] for j in range(i, len(ciphertext), best_ks)])
+        )[0]
+        for i in range(best_ks)
     )
-    key, plaintext = xor_crack_single_byte(ciphertext)
-    print(f"Key: {key} ({chr(key)})")
-    print(f"Plaintext: {plaintext}")
+
+    plaintext = xor_encrypt(ciphertext, key)
+    return key, plaintext
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="XOR 암호화/크래킹 도구")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    enc_p = sub.add_parser("encrypt", help="XOR 암호화/복호화")
+    enc_p.add_argument("--hex-input", required=True, help="입력 데이터 (hex)")
+    enc_p.add_argument("--key", required=True, help="키 (hex 또는 문자열)")
+    enc_p.add_argument("--key-hex", action="store_true", help="키를 hex로 해석")
+
+    crack_p = sub.add_parser("crack", help="단일/반복 바이트 XOR 크랙")
+    crack_p.add_argument("--hex-input", required=True, help="암호문 (hex)")
+    crack_p.add_argument("--mode", choices=["single", "repeating"], default="single")
+    crack_p.add_argument("--max-keysize", type=int, default=40)
+
+    args = parser.parse_args()
+
+    if args.cmd == "encrypt":
+        data = bytes.fromhex(args.hex_input)
+        key = bytes.fromhex(args.key) if args.key_hex else args.key.encode()
+        result = xor_encrypt(data, key)
+        print(f"Result (hex): {result.hex()}")
+        try:
+            print(f"Result (ascii): {result.decode('ascii')}")
+        except (UnicodeDecodeError, ValueError):
+            pass
+
+    elif args.cmd == "crack":
+        ct = bytes.fromhex(args.hex_input)
+        if args.mode == "single":
+            k, plain, score = xor_crack_single_byte(ct)
+            print(f"Key byte : 0x{k:02x}  ({chr(k) if 32 <= k < 127 else '?'})")
+            print(f"Score    : {score:.2f}")
+            print(f"Plaintext: {plain}")
+        else:
+            key, plain = crack_repeating_xor(ct, args.max_keysize)
+            print(f"Key (hex)  : {key.hex()}")
+            print(f"Key (ascii): {key.decode('latin-1')}")
+            print(f"Plaintext  :\n{plain.decode('latin-1')}")
+
+
+if __name__ == "__main__":
+    # 빠른 데모 (인수 없이 실행 시)
+    if len(sys.argv) == 1:
+        demo_ct = bytes.fromhex(
+            "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+        )
+        k, plain, score = xor_crack_single_byte(demo_ct)
+        print(f"[Demo] Key: 0x{k:02x} ({chr(k)})  Score: {score:.2f}")
+        print(f"[Demo] Plaintext: {plain}")
+    else:
+        main()
 ```
 
 ---
@@ -146,111 +223,164 @@ if __name__ == "__main__":
 ### AES 암호화 모드별 취약점
 
 ```python
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
-import os
+#!/usr/bin/env python3
+"""AES 모드별 취약점 PoC — CBC 비트플리핑, CTR 논스 재사용, ECB 패턴 공격, AES-GCM 올바른 구현"""
 
-# CBC 모드 - 비트 플리핑 공격 가능
+import argparse
+import os
+import sys
+
+try:
+    from Crypto.Cipher import AES
+    from Crypto.Util.Padding import pad, unpad
+except ImportError:
+    print("[-] pycryptodome 필요: pip install pycryptodome", file=sys.stderr)
+    sys.exit(1)
+
+
+# ── 보조 함수 ────────────────────────────────────────────────
+
 def aes_cbc_encrypt(plaintext: bytes, key: bytes, iv: bytes) -> bytes:
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    return cipher.encrypt(pad(plaintext, 16))
+    return AES.new(key, AES.MODE_CBC, iv).encrypt(pad(plaintext, 16))
+
 
 def aes_cbc_decrypt(ciphertext: bytes, key: bytes, iv: bytes) -> bytes:
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    return unpad(cipher.decrypt(ciphertext), 16)
+    return unpad(AES.new(key, AES.MODE_CBC, iv).decrypt(ciphertext), 16)
 
-# CBC 비트 플리핑 공격
-def cbc_bit_flip_attack():
+
+# ── 공격 1: CBC 비트 플리핑 ──────────────────────────────────
+
+def cbc_bit_flip_demo() -> None:
     """
-    CBC 비트 플리핑: IV 또는 이전 블록 변조로 복호화 결과 조작
-    
-    블록 N 복호화 = AES_Dec(블록 N) XOR 블록 N-1
-    
-    목표: "role=user" → "role=admi" 로 변조
+    CBC 비트 플리핑: 이전 암호문 블록 조작 → 복호화 결과 변조
+      P'[i] = AES_Dec(C[i]) XOR C'[i-1]
+    목표: 2번째 블록 'role=user&admin=' 중 'user' → 'admi' 변조
     """
     key = os.urandom(16)
-    iv = os.urandom(16)
-    
-    # 원본 데이터
+    iv  = os.urandom(16)
+
+    # 블록0(16B) = 패딩, 블록1(16B) = 'role=user&admin='
     plaintext = b"A" * 16 + b"role=user&admin="
     ciphertext = aes_cbc_encrypt(plaintext, key, iv)
-    
-    # 공격: 첫 번째 블록을 변조해서 두 번째 블록의 복호화 결과를 바꿈
-    # 변조할 블록 인덱스 계산
-    original = b"role=user"
-    target   = b"role=admi"
-    
-    modified_ciphertext = bytearray(ciphertext)
-    
-    for i, (orig, targ) in enumerate(zip(original, target)):
-        modified_ciphertext[16 + i] ^= orig ^ targ  # 비트 플립
-    
-    decrypted = aes_cbc_decrypt(bytes(modified_ciphertext), key, iv)
-    print(f"변조 결과: {decrypted}")
 
-# CTR 모드 - 키스트림 재사용 취약점
-def ctr_keystream_reuse():
+    original_bytes = b"role=user"
+    target_bytes   = b"role=admi"
+
+    modified = bytearray(ciphertext)
+    for i, (orig, targ) in enumerate(zip(original_bytes, target_bytes)):
+        modified[16 + i] ^= orig ^ targ   # 블록0 (인덱스 16~31) 변조
+
+    try:
+        result = aes_cbc_decrypt(bytes(modified), key, iv)
+        print(f"[CBC Bit-Flip] 복호화 결과: {result}")
+    except ValueError as e:
+        print(f"[CBC Bit-Flip] 패딩 오류 (일부 바이트 변조됨): {e}")
+
+
+# ── 공격 2: CTR 논스 재사용 ──────────────────────────────────
+
+def ctr_nonce_reuse_demo() -> None:
     """
-    CTR 모드에서 동일 키+논스 재사용 시:
-    C1 = P1 XOR KeyStream
-    C2 = P2 XOR KeyStream
-    C1 XOR C2 = P1 XOR P2
-    → 하나의 평문 알면 다른 평문 복원 가능
+    CTR 모드 논스 재사용:
+      C1 = P1 ⊕ KS,  C2 = P2 ⊕ KS  →  C1⊕C2 = P1⊕P2
+    P1을 알면 P2 완전 복원 가능
     """
-    key = os.urandom(16)
-    nonce = 0  # 치명적 실수: 논스 재사용
-    
+    key   = os.urandom(16)
+    nonce = b"\x00" * 8   # 치명적 실수: 고정 논스
+
+    def ctr_enc(pt: bytes) -> bytes:
+        return AES.new(key, AES.MODE_CTR, nonce=nonce).encrypt(pt)
+
     msg1 = b"Hello, World!!!!!"
     msg2 = b"Secret Password!!"
-    
-    def ctr_encrypt(plaintext, key, nonce):
-        cipher = AES.new(key, AES.MODE_CTR, nonce=nonce.to_bytes(8, 'little'))
-        return cipher.encrypt(plaintext)
-    
-    c1 = ctr_encrypt(msg1, key, nonce)
-    c2 = ctr_encrypt(msg2, key, nonce)  # 동일 논스!
-    
-    # 공격: c1 XOR c2 = msg1 XOR msg2
-    xored = bytes([a ^ b for a, b in zip(c1, c2)])
-    
-    # msg1을 알면 msg2 복원
-    recovered = bytes([a ^ b for a, b in zip(xored, msg1)])
-    print(f"복원된 msg2: {recovered}")
 
-# ECB 모드 - 패턴 노출 취약점
-def ecb_penguin_attack():
+    c1 = ctr_enc(msg1)
+    c2 = ctr_enc(msg2)   # 동일 논스 재사용!
+
+    # 공격자가 msg1과 c1, c2를 알 때
+    keystream = bytes(a ^ b for a, b in zip(c1, msg1))
+    recovered = bytes(a ^ b for a, b in zip(c2, keystream))
+    print(f"[CTR Nonce Reuse] 복원된 msg2: {recovered}")
+
+
+# ── 공격 3: ECB Cut-and-Paste ────────────────────────────────
+
+def ecb_cut_and_paste_demo() -> None:
     """
-    ECB 모드: 동일 평문 블록 → 동일 암호문 블록
-    → 패턴 분석으로 정보 유출
+    ECB 모드: 동일 16B 블록 → 동일 암호문 블록
+    admin 패딩 블록을 잘라서 role=user 자리에 붙여넣기
     """
     key = os.urandom(16)
-    
-    # 예: 사용자 프로파일 암호화
+
     def encrypt_profile(email: str) -> bytes:
         profile = f"email={email}&uid=10&role=user"
-        cipher = AES.new(key, AES.MODE_ECB)
-        return cipher.encrypt(pad(profile.encode(), 16))
-    
-    # 블록 경계 조작으로 "role=admin" 블록 생성
-    # 블록 1: "email=AAAAAAAAA"  (16바이트)
-    # 블록 2: "admin\x0b\x0b\x0b..." (패딩된 admin 블록)
-    # 블록 3: "&uid=10&role=us"
-    # ...
-    
-    malicious = "AAAAAAAAAA" + "admin" + "\x0b" * 11
-    encrypted = encrypt_profile(malicious)
-    
-    # 블록 2가 "admin" 블록
+        return AES.new(key, AES.MODE_ECB).encrypt(pad(profile.encode(), 16))
+
+    # 블록0: "email=AAAAAAAAAA" (16B)
+    # 블록1: "admin\x0b\x0b...\x0b" — 패딩된 admin 블록 (16B)
+    # 블록2: "&uid=10&role=use"
+    craft_email = "AAAAAAAAAA" + "admin" + chr(11) * 11
+    encrypted   = encrypt_profile(craft_email)
     admin_block = encrypted[16:32]
-    
-    # 정상 이메일로 만든 암호문의 마지막 블록을 교체
-    normal = encrypt_profile("test@test.co")  # 블록 경계 맞춤
-    
-    forged = normal[:32] + admin_block
-    
-    cipher = AES.new(key, AES.MODE_ECB)
-    decrypted = unpad(cipher.decrypt(forged), 16)
-    print(f"위조 결과: {decrypted.decode()}")
+
+    # role=user 가 정확히 블록 경계에 오도록 이메일 길이 조정
+    # "email=" = 6, "&uid=10&role=" = 13  → 6 + email_len ≡ 0 (mod 16) → len=10
+    normal_enc = encrypt_profile("test@ex.co")   # 10자
+    forged     = normal_enc[:-16] + admin_block  # 마지막 블록 교체
+
+    decrypted = unpad(AES.new(key, AES.MODE_ECB).decrypt(forged), 16)
+    print(f"[ECB Cut-Paste] 위조 결과: {decrypted.decode()}")
+
+
+# ── 올바른 구현: AES-256-GCM ────────────────────────────────
+
+def aes_gcm_demo() -> None:
+    """AES-256-GCM — AEAD (인증 + 암호화), 논스는 매번 새로 생성"""
+    key   = os.urandom(32)   # 256-bit
+    nonce = os.urandom(12)   # 96-bit (GCM 권장)
+    aad   = b"authenticated-but-not-encrypted"
+
+    plaintext = b"Sensitive data: TOP SECRET"
+
+    cipher     = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    cipher.update(aad)
+    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+    print(f"[AES-GCM] CT={ciphertext.hex()}  TAG={tag.hex()}")
+
+    # 복호화 + 인증 검증
+    dec = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    dec.update(aad)
+    try:
+        recovered = dec.decrypt_and_verify(ciphertext, tag)
+        print(f"[AES-GCM] 복호화 성공: {recovered}")
+    except ValueError:
+        print("[AES-GCM] 인증 실패 — 데이터 변조 감지!")
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    demos = {
+        "cbc-flip":   cbc_bit_flip_demo,
+        "ctr-reuse":  ctr_nonce_reuse_demo,
+        "ecb-paste":  ecb_cut_and_paste_demo,
+        "gcm":        aes_gcm_demo,
+    }
+
+    parser = argparse.ArgumentParser(description="AES 모드별 취약점 PoC")
+    parser.add_argument("demo", choices=list(demos) + ["all"],
+                        nargs="?", default="all",
+                        help="실행할 데모 (기본: all)")
+    args = parser.parse_args()
+
+    targets = list(demos.values()) if args.demo == "all" else [demos[args.demo]]
+    for fn in targets:
+        fn()
+        print()
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -279,121 +409,191 @@ RSA 키 생성:
 ### RSA 취약점 공격
 
 ```python
-from math import gcd, isqrt
-from sympy import factorint
+#!/usr/bin/env python3
+"""RSA 취약점 공격 도구 — Small-e, GCD, Wiener, Hastad 브로드캐스트"""
 
-# 1. 작은 공개 지수 (e=3) + 작은 메시지 → 세제곱근 공격
-def small_e_attack(ciphertext: int, e: int = 3) -> int:
+from __future__ import annotations
+import argparse
+import sys
+from math import gcd, isqrt
+from functools import reduce
+
+
+# ── 정수 e제곱근 (작은 지수 공격용) ─────────────────────────
+
+def iroot(n: int, e: int) -> tuple[int, bool]:
+    """n의 e제곱근 정수 부분 반환 (정확한지 여부도 함께)"""
+    if n < 0:
+        return 0, False
+    if e == 1:
+        return n, True
+    # 뉴턴 방법
+    x = int(round(n ** (1 / e)))
+    for candidate in range(max(0, x - 2), x + 3):
+        if candidate ** e == n:
+            return candidate, True
+    return x, False
+
+
+# ── 1. Small-e 공격 ──────────────────────────────────────────
+
+def small_e_attack(ciphertext: int, e: int = 3) -> int | None:
     """
-    e=3, M이 작을 때: C = M^3 mod n
-    M^3 < n이면: M = cbrt(C)
+    e=3, M^e < n 이면 모듈러 감소 없이 C = M^e
+    → 정수 e제곱근으로 평문 복원
     """
-    # 세제곱근 계산
-    m = round(ciphertext ** (1/e))
-    for candidate in range(m-2, m+3):
-        if candidate ** e == ciphertext:
-            return candidate
+    m, exact = iroot(ciphertext, e)
+    if exact:
+        print(f"[+] Small-e 성공: M = {m}")
+        return m
+    print("[-] Small-e 실패: M^e >= n 이거나 정확한 제곱근 없음")
     return None
 
-# 2. 공통 소인수 공격 (GCD 공격)
-def common_factor_attack(n1: int, n2: int, e: int, c1: int) -> int:
+
+# ── 2. 공통 소인수 공격 ──────────────────────────────────────
+
+def common_factor_attack(n1: int, n2: int, e: int, c1: int) -> int | None:
     """
-    두 RSA 키가 공통 소수를 공유할 때
-    gcd(n1, n2) = p → 두 키 모두 해독 가능
+    두 RSA 모듈러스가 소수 p를 공유할 때 gcd(n1, n2) = p
+    → n1 인수분해 → d 복원 → c1 복호화
     """
     p = gcd(n1, n2)
     if p == 1:
-        print("공통 소인수 없음")
+        print("[-] 공통 소인수 없음")
         return None
-    
-    q = n1 // p
-    phi_n = (p-1) * (q-1)
-    d = pow(e, -1, phi_n)  # 모듈러 역수
-    
-    m = pow(c1, d, n1)
+
+    q     = n1 // p
+    phi_n = (p - 1) * (q - 1)
+    d     = pow(e, -1, phi_n)
+    m     = pow(c1, d, n1)
+    print(f"[+] 공통 소인수 p = {p}")
+    print(f"[+] 복호화 결과 M = {m}")
     return m
 
-# 3. 위너 공격 (작은 d)
-def wiener_attack(e: int, n: int):
+
+# ── 3. Wiener 공격 (작은 d) ──────────────────────────────────
+
+def wiener_attack(e: int, n: int) -> int | None:
     """
-    d < n^0.25 일 때 연분수 전개로 d 복원
+    d < n^0.25 일 때 e/n의 연분수 수렴값으로 d 복원
     """
-    from fractions import Fraction
-    
-    def continued_fraction(numerator, denominator):
-        quotients = []
-        while denominator:
-            quotients.append(numerator // denominator)
-            numerator, denominator = denominator, numerator % denominator
-        return quotients
-    
-    def convergents(quotients):
-        convergents = []
-        for i in range(len(quotients)):
+
+    def continued_fraction(num: int, den: int) -> list[int]:
+        cf: list[int] = []
+        while den:
+            cf.append(num // den)
+            num, den = den, num % den
+        return cf
+
+    def convergents(cf: list[int]) -> list[tuple[int, int]]:
+        convs: list[tuple[int, int]] = []
+        for i, q in enumerate(cf):
             if i == 0:
-                convergents.append((quotients[0], 1))
+                convs.append((q, 1))
             elif i == 1:
-                h = quotients[0] * quotients[1] + 1
-                k = quotients[1]
-                convergents.append((h, k))
+                convs.append((q * cf[0] + 1, q))
             else:
-                h = quotients[i] * convergents[i-1][0] + convergents[i-2][0]
-                k = quotients[i] * convergents[i-1][1] + convergents[i-2][1]
-                convergents.append((h, k))
-        return convergents
-    
-    quotients = continued_fraction(e, n)
-    convs = convergents(quotients)
-    
-    for (k, d) in convs:
-        if k == 0:
+                h = q * convs[-1][0] + convs[-2][0]
+                k = q * convs[-1][1] + convs[-2][1]
+                convs.append((h, k))
+        return convs
+
+    for k, d in convergents(continued_fraction(e, n)):
+        if k == 0 or (e * d - 1) % k != 0:
             continue
-        
-        # φ(n) 추정
         phi_n = (e * d - 1) // k
-        
-        # p, q 복원 시도
-        # n = p*q, p+q = n - φ(n) + 1, p-q = sqrt((p+q)^2 - 4n)
-        b = n - phi_n + 1
-        discriminant = b*b - 4*n
-        
-        if discriminant < 0:
+        # p + q = n - phi_n + 1,  판별식 = (p+q)^2 - 4n
+        b    = n - phi_n + 1
+        disc = b * b - 4 * n
+        if disc < 0:
             continue
-        
-        sqrt_disc = isqrt(discriminant)
-        if sqrt_disc * sqrt_disc == discriminant:
-            p = (b + sqrt_disc) // 2
-            q = (b - sqrt_disc) // 2
-            
+        sq = isqrt(disc)
+        if sq * sq == disc:
+            p, q = (b + sq) // 2, (b - sq) // 2
             if p * q == n:
-                print(f"[+] 개인키 d 발견: {d}")
+                print(f"[+] Wiener 성공: d = {d}")
                 return d
-    
+
+    print("[-] Wiener 공격 실패: d가 충분히 작지 않음")
     return None
 
-# 4. Hastad 브로드캐스트 공격
-def hastad_broadcast(ciphertexts: list, moduli: list, e: int = 3):
+
+# ── 4. Hastad 브로드캐스트 공격 ──────────────────────────────
+
+def hastad_broadcast(ciphertexts: list[int], moduli: list[int],
+                     e: int = 3) -> int | None:
     """
-    동일 메시지를 e개 다른 공개키로 암호화한 경우
-    중국인 나머지 정리(CRT)로 M^e 복원 후 e제곱근
+    동일 평문을 e개의 다른 공개키로 암호화 → CRT로 M^e 복원 후 e제곱근
+    요구: len(ciphertexts) == len(moduli) == e
     """
-    from functools import reduce
-    
-    def crt(remainders, moduli):
-        M = reduce(lambda x, y: x*y, moduli)
-        result = 0
-        for r, m in zip(remainders, moduli):
-            Mi = M // m
-            yi = pow(Mi, -1, m)
-            result += r * Mi * yi
-        return result % M
-    
-    x = crt(ciphertexts, moduli)
-    m = round(x ** (1/e))
-    
-    if pow(m, e) == x:
+    if len(ciphertexts) < e or len(moduli) < e:
+        print(f"[-] 암호문/모듈러스가 {e}개 미만")
+        return None
+
+    # 중국인 나머지 정리
+    M = reduce(lambda a, b: a * b, moduli[:e])
+    x = 0
+    for ci, ni in zip(ciphertexts[:e], moduli[:e]):
+        Mi = M // ni
+        yi = pow(Mi, -1, ni)
+        x  = (x + ci * Mi * yi) % M
+
+    m, exact = iroot(x, e)
+    if exact:
+        print(f"[+] Hastad 성공: M = {m}")
         return m
+    print("[-] Hastad 실패: CRT 복원값의 e제곱근이 정수가 아님")
     return None
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="RSA 공격 도구")
+    sub = parser.add_subparsers(dest="attack", required=True)
+
+    # small-e
+    p1 = sub.add_parser("small-e", help="Small public exponent attack")
+    p1.add_argument("--ciphertext", type=lambda x: int(x, 0), required=True)
+    p1.add_argument("--e", type=int, default=3)
+
+    # gcd
+    p2 = sub.add_parser("gcd", help="Common prime factor attack")
+    p2.add_argument("--n1", type=lambda x: int(x, 0), required=True)
+    p2.add_argument("--n2", type=lambda x: int(x, 0), required=True)
+    p2.add_argument("--e", type=int, required=True)
+    p2.add_argument("--c1", type=lambda x: int(x, 0), required=True)
+
+    # wiener
+    p3 = sub.add_parser("wiener", help="Wiener small-d attack")
+    p3.add_argument("--e", type=lambda x: int(x, 0), required=True)
+    p3.add_argument("--n", type=lambda x: int(x, 0), required=True)
+
+    # hastad
+    p4 = sub.add_parser("hastad", help="Hastad broadcast attack")
+    p4.add_argument("--e", type=int, default=3)
+    p4.add_argument("--ciphertexts", nargs="+", type=lambda x: int(x, 0), required=True)
+    p4.add_argument("--moduli",      nargs="+", type=lambda x: int(x, 0), required=True)
+
+    args = parser.parse_args()
+
+    if args.attack == "small-e":
+        small_e_attack(args.ciphertext, args.e)
+    elif args.attack == "gcd":
+        common_factor_attack(args.n1, args.n2, args.e, args.c1)
+    elif args.attack == "wiener":
+        wiener_attack(args.e, args.n)
+    elif args.attack == "hastad":
+        hastad_broadcast(args.ciphertexts, args.moduli, args.e)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        # 기본 데모: small-e
+        print("[Demo] small-e: M=42, e=3, C=42^3=74088")
+        small_e_attack(74088, 3)
+    else:
+        main()
 ```
 
 ---

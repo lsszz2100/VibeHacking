@@ -264,6 +264,120 @@ grep "Accepted" /var/log/auth.log
 grep "session opened for user root" /var/log/auth.log
 ```
 
+### SSH 로그 분석기 (Python)
+
+```python
+#!/usr/bin/env python3
+"""
+SSH 인증 로그 분석기 — auth.log에서 공격 패턴 탐지
+"""
+import argparse
+import re
+import sys
+from collections import Counter, defaultdict
+from datetime import datetime
+from pathlib import Path
+
+
+LOG_PATTERNS = {
+    "failed": re.compile(
+        r"(\w+\s+\d+\s+\d+:\d+:\d+).*Failed password for (?:invalid user )?(\S+) from ([\d.]+)"
+    ),
+    "accepted": re.compile(
+        r"(\w+\s+\d+\s+\d+:\d+:\d+).*Accepted (\w+) for (\S+) from ([\d.]+)"
+    ),
+    "invalid": re.compile(
+        r"(\w+\s+\d+\s+\d+:\d+:\d+).*Invalid user (\S+) from ([\d.]+)"
+    ),
+}
+
+
+def parse_log(log_path: Path, threshold: int) -> None:
+    failed_by_ip: Counter = Counter()
+    failed_by_user: Counter = Counter()
+    accepted: list[tuple[str, str, str, str]] = []
+    invalid_users: list[tuple[str, str, str]] = []
+    hourly_failed: defaultdict[str, int] = defaultdict(int)
+
+    try:
+        with log_path.open("r", errors="replace") as fh:
+            for line in fh:
+                if m := LOG_PATTERNS["failed"].search(line):
+                    ts, user, ip = m.group(1), m.group(2), m.group(3)
+                    failed_by_ip[ip] += 1
+                    failed_by_user[user] += 1
+                    hour = ts.rsplit(":", 1)[0]
+                    hourly_failed[hour] += 1
+
+                elif m := LOG_PATTERNS["accepted"].search(line):
+                    accepted.append((m.group(1), m.group(3), m.group(2), m.group(4)))
+
+                elif m := LOG_PATTERNS["invalid"].search(line):
+                    invalid_users.append((m.group(1), m.group(2), m.group(3)))
+
+    except FileNotFoundError:
+        sys.exit(f"[!] 로그 파일을 찾을 수 없습니다: {log_path}")
+    except PermissionError:
+        sys.exit(f"[!] 파일 읽기 권한이 없습니다 (sudo로 실행하세요): {log_path}")
+
+    print("=" * 60)
+    print("  SSH 공격 분석 보고서")
+    print(f"  생성 시각: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 60)
+
+    print(f"\n[*] 실패한 로그인 — 공격 IP Top 15 (임계값: {threshold}회)")
+    found = False
+    for ip, count in failed_by_ip.most_common(15):
+        marker = "  [!] 잠재적 공격자" if count >= threshold else ""
+        print(f"    {count:>6}회  {ip}{marker}")
+        found = True
+    if not found:
+        print("    (데이터 없음)")
+
+    print("\n[*] 실패한 로그인 — 타겟 계정 Top 10")
+    for user, count in failed_by_user.most_common(10):
+        print(f"    {count:>6}회  {user}")
+
+    print("\n[*] 성공한 로그인")
+    if accepted:
+        for ts, user, method, ip in accepted[-20:]:  # 최근 20건
+            print(f"    {ts}  {user}@{ip}  [{method}]")
+    else:
+        print("    (기록 없음)")
+
+    print("\n[*] 존재하지 않는 계정 접근 시도 (최근 10건)")
+    for ts, user, ip in invalid_users[-10:]:
+        print(f"    {ts}  user={user}  from={ip}")
+
+    print("\n[*] 시간대별 실패 통계 (상위 5구간)")
+    for hour, count in sorted(hourly_failed.items(), key=lambda x: -x[1])[:5]:
+        bar = "█" * min(count // 5, 40)
+        print(f"    {hour}  {count:>4}회  {bar}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="SSH auth.log 분석기 — 공격 IP 및 패턴 탐지"
+    )
+    parser.add_argument(
+        "-f", "--file",
+        default="/var/log/auth.log",
+        help="분석할 로그 파일 경로 (기본값: /var/log/auth.log)",
+    )
+    parser.add_argument(
+        "-t", "--threshold",
+        type=int,
+        default=10,
+        help="공격자로 판단하는 최소 실패 횟수 (기본값: 10)",
+    )
+    args = parser.parse_args()
+    parse_log(Path(args.file), args.threshold)
+
+
+if __name__ == "__main__":
+    main()
+```
+
 ---
 
 ## 11. 사용자 계정 보안 관리 (심화)
@@ -597,6 +711,169 @@ find / -perm -o+w -type d 2>/dev/null | grep -v proc
 # 소유자 없는 파일 탐지 (공격자가 만든 임시 파일)
 find / -nouser -print 2>/dev/null
 find / -nogroup -print 2>/dev/null
+```
+
+### 파일 무결성 검사 도구 (Python)
+
+```python
+#!/usr/bin/env python3
+"""
+파일 무결성 검사기 — 중요 파일의 해시를 기록하고 변경 감지
+"""
+import argparse
+import hashlib
+import json
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+
+CRITICAL_PATHS = [
+    "/etc/passwd",
+    "/etc/shadow",
+    "/etc/group",
+    "/etc/gshadow",
+    "/etc/sudoers",
+    "/etc/ssh/sshd_config",
+    "/etc/crontab",
+    "/bin/su",
+    "/usr/bin/sudo",
+    "/usr/bin/passwd",
+]
+
+
+def compute_hash(file_path: Path, algorithm: str = "sha256") -> Optional[str]:
+    """파일 해시 계산. 읽기 실패 시 None 반환."""
+    hasher = hashlib.new(algorithm)
+    try:
+        with file_path.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(65536), b""):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+    except (PermissionError, FileNotFoundError, OSError):
+        return None
+
+
+def scan_directory(target_dir: Path, algorithm: str, workers: int) -> dict[str, str]:
+    """디렉토리를 병렬로 스캔하여 {경로: 해시} 딕셔너리 반환."""
+    files = [p for p in target_dir.rglob("*") if p.is_file()]
+    results: dict[str, str] = {}
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        future_to_path = {pool.submit(compute_hash, f, algorithm): f for f in files}
+        for future in as_completed(future_to_path):
+            path = future_to_path[future]
+            digest = future.result()
+            if digest is not None:
+                results[str(path)] = digest
+
+    return results
+
+
+def create_baseline(target_dir: Path, baseline_file: Path, algorithm: str, workers: int) -> None:
+    """기준선(baseline) 해시 데이터베이스 생성."""
+    print(f"[*] 기준선 생성 중: {target_dir}")
+    hashes = scan_directory(target_dir, algorithm, workers)
+
+    # 중요 시스템 파일 추가
+    for path_str in CRITICAL_PATHS:
+        p = Path(path_str)
+        if p.exists():
+            digest = compute_hash(p, algorithm)
+            if digest:
+                hashes[path_str] = digest
+
+    baseline = {
+        "created_at": datetime.now().isoformat(),
+        "algorithm": algorithm,
+        "target": str(target_dir),
+        "files": hashes,
+    }
+    baseline_file.write_text(json.dumps(baseline, indent=2, ensure_ascii=False))
+    print(f"[+] 기준선 저장 완료: {baseline_file}  ({len(hashes)}개 파일)")
+
+
+def verify_integrity(baseline_file: Path, workers: int) -> int:
+    """기준선과 현재 상태를 비교하여 변경 사항 보고. 변경 수 반환."""
+    if not baseline_file.exists():
+        sys.exit(f"[!] 기준선 파일이 없습니다: {baseline_file}")
+
+    baseline = json.loads(baseline_file.read_text())
+    algorithm: str = baseline["algorithm"]
+    saved: dict[str, str] = baseline["files"]
+
+    print(f"[*] 무결성 검사 시작  (기준선: {baseline['created_at']})")
+
+    target_dir = Path(baseline["target"])
+    current = scan_directory(target_dir, algorithm, workers)
+
+    # 중요 시스템 파일 재검사
+    for path_str in CRITICAL_PATHS:
+        p = Path(path_str)
+        if p.exists():
+            digest = compute_hash(p, algorithm)
+            if digest:
+                current[path_str] = digest
+
+    changes = 0
+    new_files = set(current) - set(saved)
+    deleted_files = set(saved) - set(current)
+    modified_files = {
+        p for p in set(current) & set(saved) if current[p] != saved[p]
+    }
+
+    for path in sorted(modified_files):
+        print(f"  [변경] {path}")
+        print(f"         이전: {saved[path]}")
+        print(f"         현재: {current[path]}")
+        changes += 1
+
+    for path in sorted(new_files):
+        print(f"  [추가] {path}")
+        changes += 1
+
+    for path in sorted(deleted_files):
+        print(f"  [삭제] {path}")
+        changes += 1
+
+    status = "이상 없음" if changes == 0 else f"{changes}건 변경 감지"
+    print(f"\n[{'OK' if changes == 0 else '!'}] 검사 완료: {status}")
+    return changes
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="파일 무결성 검사기 (hashlib 기반)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""사용 예시:
+  sudo python3 file_integrity.py create -d /etc -b /root/etc_baseline.json
+  sudo python3 file_integrity.py verify -b /root/etc_baseline.json
+        """,
+    )
+    parser.add_argument(
+        "action", choices=["create", "verify"],
+        help="create: 기준선 생성 / verify: 무결성 검증",
+    )
+    parser.add_argument("-d", "--directory", default="/etc", help="검사 대상 디렉토리")
+    parser.add_argument("-b", "--baseline", default="baseline.json", help="기준선 파일 경로")
+    parser.add_argument("-a", "--algorithm", default="sha256",
+                        choices=["md5", "sha1", "sha256", "sha512"],
+                        help="해시 알고리즘 (기본값: sha256)")
+    parser.add_argument("-w", "--workers", type=int, default=8, help="병렬 스레드 수")
+
+    args = parser.parse_args()
+
+    if args.action == "create":
+        create_baseline(Path(args.directory), Path(args.baseline), args.algorithm, args.workers)
+    else:
+        changes = verify_integrity(Path(args.baseline), args.workers)
+        sys.exit(1 if changes > 0 else 0)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### Apache httpd.conf 보안 설정 핵심

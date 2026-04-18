@@ -431,55 +431,253 @@ MITRE 매핑으로:
 ### 위협 인텔리전스 피드 통합
 
 ```python
-import requests
-import json
+#!/usr/bin/env python3
+"""
+멀티소스 위협 인텔리전스 조회 CLI
+사용: python3 threat_intel.py --ip 1.2.3.4 --abuseipdb-key KEY --vt-key KEY
+"""
 
-class ThreatIntelFeed:
-    def __init__(self):
-        self.feeds = {
-            'alienvault': 'https://otx.alienvault.com/api/v1/pulses/subscribed',
-            'abuseipdb': 'https://api.abuseipdb.com/api/v2/blacklist',
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from dataclasses import dataclass, field
+from typing import Optional
+
+import requests
+
+
+@dataclass
+class IOCResult:
+    indicator: str
+    indicator_type: str
+    sources: dict = field(default_factory=dict)
+    is_malicious: bool = False
+    confidence: int = 0
+
+    def to_dict(self) -> dict:
+        return {
+            "indicator": self.indicator,
+            "type": self.indicator_type,
+            "is_malicious": self.is_malicious,
+            "confidence": self.confidence,
+            "sources": self.sources,
         }
-    
-    def check_ip(self, ip: str) -> dict:
-        """IP를 여러 위협 인텔리전스 소스에서 확인"""
-        results = {}
-        
-        # AbuseIPDB
-        headers = {'Key': 'YOUR_API_KEY', 'Accept': 'application/json'}
-        resp = requests.get(
-            f'https://api.abuseipdb.com/api/v2/check',
-            params={'ipAddress': ip, 'maxAgeInDays': 90},
-            headers=headers
-        )
-        if resp.status_code == 200:
-            data = resp.json().get('data', {})
-            results['abuseipdb'] = {
-                'score': data.get('abuseConfidenceScore'),
-                'country': data.get('countryCode'),
-                'reports': data.get('totalReports')
+
+
+class ThreatIntelClient:
+    """AbuseIPDB + VirusTotal 멀티소스 위협 인텔리전스 클라이언트"""
+
+    ABUSEIPDB_URL = "https://api.abuseipdb.com/api/v2/check"
+    VT_IP_URL = "https://www.virustotal.com/api/v3/ip_addresses/{ip}"
+    VT_HASH_URL = "https://www.virustotal.com/api/v3/files/{hash}"
+    VT_DOMAIN_URL = "https://www.virustotal.com/api/v3/domains/{domain}"
+
+    def __init__(
+        self,
+        abuseipdb_key: Optional[str] = None,
+        vt_key: Optional[str] = None,
+        timeout: int = 10,
+    ) -> None:
+        self.abuseipdb_key = abuseipdb_key
+        self.vt_key = vt_key
+        self.timeout = timeout
+        self.session = requests.Session()
+        self.session.headers["User-Agent"] = "ThreatIntelCLI/1.0"
+
+    # ------------------------------------------------------------------ #
+    #  AbuseIPDB
+    # ------------------------------------------------------------------ #
+    def _query_abuseipdb(self, ip: str) -> dict:
+        if not self.abuseipdb_key:
+            return {}
+        try:
+            resp = self.session.get(
+                self.ABUSEIPDB_URL,
+                params={"ipAddress": ip, "maxAgeInDays": 90, "verbose": ""},
+                headers={"Key": self.abuseipdb_key, "Accept": "application/json"},
+                timeout=self.timeout,
+            )
+            resp.raise_for_status()
+            data = resp.json().get("data", {})
+            return {
+                "abuse_confidence_score": data.get("abuseConfidenceScore", 0),
+                "country": data.get("countryCode", ""),
+                "total_reports": data.get("totalReports", 0),
+                "last_reported": data.get("lastReportedAt", ""),
+                "isp": data.get("isp", ""),
+                "domain": data.get("domain", ""),
+                "is_tor": data.get("isTor", False),
             }
-        
-        # VirusTotal
-        headers = {'x-apikey': 'YOUR_VT_KEY'}
-        resp = requests.get(
-            f'https://www.virustotal.com/api/v3/ip_addresses/{ip}',
-            headers=headers
-        )
-        if resp.status_code == 200:
-            stats = resp.json()['data']['attributes']['last_analysis_stats']
-            results['virustotal'] = {
-                'malicious': stats.get('malicious'),
-                'suspicious': stats.get('suspicious')
+        except requests.RequestException as exc:
+            return {"error": str(exc)}
+
+    # ------------------------------------------------------------------ #
+    #  VirusTotal
+    # ------------------------------------------------------------------ #
+    def _query_vt(self, url: str) -> dict:
+        if not self.vt_key:
+            return {}
+        try:
+            resp = self.session.get(
+                url,
+                headers={"x-apikey": self.vt_key},
+                timeout=self.timeout,
+            )
+            resp.raise_for_status()
+            attrs = resp.json().get("data", {}).get("attributes", {})
+            stats = attrs.get("last_analysis_stats", {})
+            return {
+                "malicious": stats.get("malicious", 0),
+                "suspicious": stats.get("suspicious", 0),
+                "harmless": stats.get("harmless", 0),
+                "undetected": stats.get("undetected", 0),
+                "reputation": attrs.get("reputation", 0),
+                "tags": attrs.get("tags", []),
             }
-        
+        except requests.RequestException as exc:
+            return {"error": str(exc)}
+
+    # ------------------------------------------------------------------ #
+    #  공개 조회 메서드
+    # ------------------------------------------------------------------ #
+    def check_ip(self, ip: str, malicious_threshold: int = 30) -> IOCResult:
+        result = IOCResult(indicator=ip, indicator_type="ip")
+        abuse = self._query_abuseipdb(ip)
+        vt = self._query_vt(self.VT_IP_URL.format(ip=ip))
+        result.sources = {"abuseipdb": abuse, "virustotal": vt}
+
+        score = abuse.get("abuse_confidence_score", 0)
+        vt_malicious = vt.get("malicious", 0)
+        result.confidence = max(score, min(vt_malicious * 10, 100))
+        result.is_malicious = score >= malicious_threshold or vt_malicious >= 3
+        return result
+
+    def check_hash(self, file_hash: str) -> IOCResult:
+        result = IOCResult(indicator=file_hash, indicator_type="hash")
+        vt = self._query_vt(self.VT_HASH_URL.format(hash=file_hash))
+        result.sources = {"virustotal": vt}
+        vt_malicious = vt.get("malicious", 0)
+        result.confidence = min(vt_malicious * 10, 100)
+        result.is_malicious = vt_malicious >= 3
+        return result
+
+    def check_domain(self, domain: str) -> IOCResult:
+        result = IOCResult(indicator=domain, indicator_type="domain")
+        vt = self._query_vt(self.VT_DOMAIN_URL.format(domain=domain))
+        result.sources = {"virustotal": vt}
+        vt_malicious = vt.get("malicious", 0)
+        result.confidence = min(vt_malicious * 10, 100)
+        result.is_malicious = vt_malicious >= 3
+        return result
+
+    def bulk_check(
+        self, indicators: list[str], ioc_type: str = "ip", rate_limit: float = 0.5
+    ) -> list[IOCResult]:
+        """여러 IOC를 레이트 리밋을 지키며 일괄 조회"""
+        results: list[IOCResult] = []
+        dispatch = {"ip": self.check_ip, "hash": self.check_hash, "domain": self.check_domain}
+        checker = dispatch.get(ioc_type)
+        if checker is None:
+            raise ValueError(f"지원하지 않는 유형: {ioc_type}. 가능한 값: {list(dispatch)}")
+
+        for idx, indicator in enumerate(indicators, 1):
+            print(f"[{idx}/{len(indicators)}] {indicator} 조회 중...", file=sys.stderr)
+            res = checker(indicator)
+            results.append(res)
+            if idx < len(indicators):
+                time.sleep(rate_limit)
         return results
-    
-    def is_malicious(self, ip: str, threshold: int = 50) -> bool:
-        result = self.check_ip(ip)
-        score = result.get('abuseipdb', {}).get('score', 0)
-        vt_malicious = result.get('virustotal', {}).get('malicious', 0)
-        return score > threshold or vt_malicious > 3
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="멀티소스 위협 인텔리전스 IOC 조회 도구",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  python3 threat_intel.py --ip 8.8.8.8\n"
+               "  python3 threat_intel.py --hash d41d8cd98f00b204e9800998ecf8427e\n"
+               "  python3 threat_intel.py --domain evil.example.com\n"
+               "  python3 threat_intel.py --file iocs.txt --type ip --json",
+    )
+    parser.add_argument("--ip", metavar="IP", help="단일 IP 주소 조회")
+    parser.add_argument("--hash", metavar="HASH", help="파일 해시 조회 (MD5/SHA256)")
+    parser.add_argument("--domain", metavar="DOMAIN", help="도메인 조회")
+    parser.add_argument("--file", metavar="FILE", help="IOC 목록 파일 (한 줄에 하나)")
+    parser.add_argument(
+        "--type",
+        choices=["ip", "hash", "domain"],
+        default="ip",
+        help="--file 사용 시 IOC 유형 (기본: ip)",
+    )
+    parser.add_argument("--abuseipdb-key", metavar="KEY", help="AbuseIPDB API 키")
+    parser.add_argument("--vt-key", metavar="KEY", help="VirusTotal API 키")
+    parser.add_argument("--threshold", type=int, default=30, help="악성 판단 임계값 0-100 (기본: 30)")
+    parser.add_argument("--json", action="store_true", help="JSON 형식으로 출력")
+    parser.add_argument("--rate-limit", type=float, default=0.5, help="요청 간 대기 시간(초, 기본: 0.5)")
+    return parser
+
+
+def print_result(res: IOCResult, as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return
+    verdict = "악성" if res.is_malicious else "정상"
+    color = "\033[91m" if res.is_malicious else "\033[92m"
+    reset = "\033[0m"
+    print(f"\n{'='*60}")
+    print(f"IOC       : {res.indicator} ({res.indicator_type})")
+    print(f"판정      : {color}{verdict}{reset}  (신뢰도: {res.confidence}%)")
+    for src, data in res.sources.items():
+        if data and "error" not in data:
+            print(f"\n[{src}]")
+            for k, v in data.items():
+                print(f"  {k:<30}: {v}")
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    client = ThreatIntelClient(
+        abuseipdb_key=args.abuseipdb_key,
+        vt_key=args.vt_key,
+    )
+
+    results: list[IOCResult] = []
+
+    if args.ip:
+        results.append(client.check_ip(args.ip, malicious_threshold=args.threshold))
+    elif args.hash:
+        results.append(client.check_hash(args.hash))
+    elif args.domain:
+        results.append(client.check_domain(args.domain))
+    elif args.file:
+        try:
+            with open(args.file, encoding="utf-8") as fh:
+                indicators = [line.strip() for line in fh if line.strip()]
+        except OSError as exc:
+            parser.error(f"파일 읽기 실패: {exc}")
+        results = client.bulk_check(indicators, ioc_type=args.type, rate_limit=args.rate_limit)
+    else:
+        parser.print_help()
+        sys.exit(1)
+
+    for res in results:
+        print_result(res, as_json=args.json)
+
+    malicious_count = sum(1 for r in results if r.is_malicious)
+    if len(results) > 1:
+        print(f"\n총 {len(results)}개 중 악성 {malicious_count}개")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -968,16 +1166,217 @@ DB 허니팟:       SQL 인젝션 패턴 수집 (가짜 민감 데이터)
 ```
 
 ### 허니팟 환경별 구축 (Linux)
-```bash
-# Cowrie (SSH 허니팟) 설치
-pip install cowrie
+```python
+#!/usr/bin/env python3
+"""
+Cowrie SSH 허니팟 로그 분석기 CLI
+사용: python3 honeypot_analyzer.py --log /var/log/cowrie/cowrie.json [--top 20] [--json]
+"""
 
-# 실행
-cowrie start
+from __future__ import annotations
 
-# 공격자 세션 로그 확인
-cat /var/log/cowrie/cowrie.log | grep "New connection"
-cat /var/log/cowrie/cowrie.json   # JSON 형식 로그
+import argparse
+import json
+import re
+import sys
+from collections import Counter, defaultdict
+from datetime import datetime
+from pathlib import Path
+from typing import Iterator
+
+
+# ------------------------------------------------------------------ #
+#  로그 파서
+# ------------------------------------------------------------------ #
+def iter_cowrie_json(log_path: Path) -> Iterator[dict]:
+    """Cowrie JSON 로그를 한 줄씩 파싱"""
+    with log_path.open(encoding="utf-8", errors="replace") as fh:
+        for lineno, line in enumerate(fh, 1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError as exc:
+                print(f"[경고] 줄 {lineno} 파싱 실패: {exc}", file=sys.stderr)
+
+
+def parse_cowrie_text(log_path: Path) -> Iterator[dict]:
+    """Cowrie 텍스트 로그 파싱 (fallback)"""
+    pattern = re.compile(
+        r"(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[^\s]*)\s+"
+        r"\[(?P<component>[^\]]+)\]\s+(?P<message>.+)"
+    )
+    with log_path.open(encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            m = pattern.match(line.strip())
+            if m:
+                yield {
+                    "timestamp": m.group("ts"),
+                    "eventid": "",
+                    "src_ip": "",
+                    "message": m.group("message"),
+                }
+
+
+# ------------------------------------------------------------------ #
+#  통계 집계
+# ------------------------------------------------------------------ #
+def analyze(events: list[dict], top_n: int = 10) -> dict:
+    stats: dict = {
+        "total_events": len(events),
+        "unique_src_ips": set(),
+        "event_counts": Counter(),
+        "top_attackers": Counter(),
+        "commands_run": [],
+        "credentials_tried": [],
+        "sessions": defaultdict(list),
+        "timeline": defaultdict(int),
+    }
+
+    for ev in events:
+        eid = ev.get("eventid", "")
+        src = ev.get("src_ip", "")
+        session = ev.get("session", "")
+        ts = ev.get("timestamp", "")[:10]  # YYYY-MM-DD
+
+        stats["event_counts"][eid] += 1
+        if src:
+            stats["unique_src_ips"].add(src)
+            stats["top_attackers"][src] += 1
+        if ts:
+            stats["timeline"][ts] += 1
+        if session:
+            stats["sessions"][session].append(eid)
+
+        # 실행된 명령어 수집
+        if eid == "cowrie.command.input":
+            stats["commands_run"].append(
+                {"time": ts, "src": src, "cmd": ev.get("input", "")}
+            )
+
+        # 자격증명 시도 수집
+        if eid in ("cowrie.login.failed", "cowrie.login.success"):
+            stats["credentials_tried"].append(
+                {
+                    "time": ts,
+                    "src": src,
+                    "username": ev.get("username", ""),
+                    "password": ev.get("password", ""),
+                    "success": eid == "cowrie.login.success",
+                }
+            )
+
+    # set → list 직렬화 가능하게
+    stats["unique_src_ips"] = list(stats["unique_src_ips"])
+    stats["top_attackers_list"] = stats["top_attackers"].most_common(top_n)
+    stats["top_commands"] = Counter(
+        c["cmd"] for c in stats["commands_run"]
+    ).most_common(top_n)
+    stats["top_usernames"] = Counter(
+        c["username"] for c in stats["credentials_tried"]
+    ).most_common(top_n)
+    stats["top_passwords"] = Counter(
+        c["password"] for c in stats["credentials_tried"]
+    ).most_common(top_n)
+
+    return stats
+
+
+# ------------------------------------------------------------------ #
+#  출력
+# ------------------------------------------------------------------ #
+def print_report(stats: dict, as_json: bool = False) -> None:
+    if as_json:
+        serializable = {
+            k: (list(v) if isinstance(v, set) else dict(v) if isinstance(v, Counter) else v)
+            for k, v in stats.items()
+            if k != "sessions"
+        }
+        print(json.dumps(serializable, ensure_ascii=False, indent=2))
+        return
+
+    print(f"\n{'='*60}")
+    print(f"총 이벤트    : {stats['total_events']:,}")
+    print(f"고유 공격자  : {len(stats['unique_src_ips']):,}")
+    print(f"실행 명령어  : {len(stats['commands_run']):,}")
+    print(f"자격증명 시도: {len(stats['credentials_tried']):,}")
+
+    print("\n[상위 공격자 IP]")
+    for ip, cnt in stats["top_attackers_list"]:
+        print(f"  {ip:<20} {cnt:>6}회")
+
+    print("\n[가장 많이 실행된 명령어]")
+    for cmd, cnt in stats["top_commands"]:
+        short = cmd[:60] + "..." if len(cmd) > 60 else cmd
+        print(f"  {cnt:>5}회  {short}")
+
+    print("\n[가장 많이 시도된 비밀번호]")
+    for pw, cnt in stats["top_passwords"]:
+        print(f"  {cnt:>5}회  {pw}")
+
+    print("\n[일별 공격 추이]")
+    for day in sorted(stats["timeline"])[-14:]:
+        bar = "#" * min(stats["timeline"][day] // 10, 50)
+        print(f"  {day}  {bar} {stats['timeline'][day]}")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Cowrie SSH 허니팟 로그 분석기",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  python3 honeypot_analyzer.py --log cowrie.json\n"
+               "  python3 honeypot_analyzer.py --log cowrie.json --top 20 --json",
+    )
+    parser.add_argument(
+        "--log",
+        required=True,
+        metavar="FILE",
+        help="Cowrie JSON 로그 파일 경로",
+    )
+    parser.add_argument(
+        "--top",
+        type=int,
+        default=10,
+        metavar="N",
+        help="상위 N개 표시 (기본: 10)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="JSON 형식으로 출력",
+    )
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    log_path = Path(args.log)
+    if not log_path.exists():
+        parser.error(f"파일을 찾을 수 없음: {log_path}")
+
+    # JSON 로그 우선, 실패 시 텍스트 파싱 시도
+    if log_path.suffix in (".json", ".jsonl"):
+        events = list(iter_cowrie_json(log_path))
+    else:
+        events = list(parse_cowrie_text(log_path))
+
+    if not events:
+        print("분석할 이벤트가 없습니다.", file=sys.stderr)
+        sys.exit(1)
+
+    stats = analyze(events, top_n=args.top)
+    print_report(stats, as_json=args.json)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

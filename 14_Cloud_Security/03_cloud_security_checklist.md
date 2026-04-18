@@ -439,6 +439,301 @@ helm install falco falcosecurity/falco
 polaris audit --format=json --output-file=results.json
 ```
 
+### Kubernetes RBAC 취약점 자동 분석
+
+```python
+#!/usr/bin/env python3
+"""
+Kubernetes RBAC 과잉 권한 및 취약점 자동 분석 CLI
+사용: python3 k8s_rbac_audit.py [--kubeconfig ~/.kube/config] [--namespace all] [--json]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from dataclasses import dataclass, field
+from typing import Optional
+
+try:
+    from kubernetes import client, config as k8s_config
+    from kubernetes.client.exceptions import ApiException
+    HAS_K8S = True
+except ImportError:
+    HAS_K8S = False
+
+
+# ------------------------------------------------------------------ #
+#  위험 권한 정의 (CIS Kubernetes Benchmark 기반)
+# ------------------------------------------------------------------ #
+_CRITICAL_VERBS = {"*"}
+_CRITICAL_RESOURCES = {
+    "*", "secrets", "nodes", "pods/exec",
+    "clusterroles", "clusterrolebindings",
+    "roles", "rolebindings",
+}
+_DANGEROUS_VERBS = {"create", "update", "patch", "delete", "deletecollection"}
+_SENSITIVE_RESOURCES = {
+    "secrets", "serviceaccounts/token", "pods/exec",
+    "pods/portforward", "nodes", "namespaces",
+}
+
+# 클러스터 관리자 수준 권한 조합
+_WILDCARD_FULL = {"verbs": "*", "resources": "*", "apiGroups": "*"}
+
+
+@dataclass
+class RBACFinding:
+    severity: str
+    kind: str          # Role | ClusterRole
+    name: str
+    namespace: str
+    subject_kind: Optional[str] = None   # ServiceAccount | User | Group
+    subject_name: Optional[str] = None
+    title: str = ""
+    detail: str = ""
+    remediation: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "severity": self.severity,
+            "kind": self.kind,
+            "name": self.name,
+            "namespace": self.namespace,
+            "subject": f"{self.subject_kind}/{self.subject_name}" if self.subject_kind else "",
+            "title": self.title,
+            "detail": self.detail,
+            "remediation": self.remediation,
+        }
+
+
+# ------------------------------------------------------------------ #
+#  분석 로직
+# ------------------------------------------------------------------ #
+class K8sRBACAuditor:
+    def __init__(self, kubeconfig: Optional[str] = None) -> None:
+        if not HAS_K8S:
+            raise RuntimeError("kubernetes 라이브러리 필요: pip install kubernetes")
+        if kubeconfig:
+            k8s_config.load_kube_config(config_file=kubeconfig)
+        else:
+            try:
+                k8s_config.load_kube_config()
+            except Exception:
+                k8s_config.load_incluster_config()
+
+        self.rbac = client.RbacAuthorizationV1Api()
+        self.core = client.CoreV1Api()
+        self.findings: list[RBACFinding] = []
+
+    # ── 규칙 평가 ─────────────────────────────────────────────────────
+    @staticmethod
+    def _rule_is_dangerous(rule) -> tuple[bool, str]:
+        verbs = set(getattr(rule, "verbs", []) or [])
+        resources = set(getattr(rule, "resources", []) or [])
+        api_groups = set(getattr(rule, "api_groups", []) or [])
+
+        # 와일드카드 전체 허용
+        if "*" in verbs and "*" in resources:
+            return True, "모든 리소스에 대한 와일드카드 권한 (사실상 클러스터 관리자)"
+
+        # 민감 리소스에 위험 동사
+        dangerous_combo = (verbs & _DANGEROUS_VERBS) and (resources & _SENSITIVE_RESOURCES)
+        if dangerous_combo:
+            return True, (
+                f"민감 리소스({resources & _SENSITIVE_RESOURCES})에 위험 동사"
+                f"({verbs & _DANGEROUS_VERBS}) 허용"
+            )
+
+        # 시크릿 읽기
+        if "secrets" in resources and ("get" in verbs or "list" in verbs or "watch" in verbs):
+            return True, "secrets 리소스 읽기 권한 (자격증명 탈취 위험)"
+
+        # pods/exec
+        if "pods/exec" in resources or "pods" in resources and "create" in verbs:
+            return True, "pods/exec 접근 또는 Pod 생성 권한 (컨테이너 탈출 가능)"
+
+        return False, ""
+
+    def _analyze_role_rules(
+        self,
+        role_kind: str,
+        role_name: str,
+        namespace: str,
+        rules: list,
+        subject_kind: Optional[str] = None,
+        subject_name: Optional[str] = None,
+    ) -> None:
+        for rule in rules or []:
+            is_dangerous, reason = self._rule_is_dangerous(rule)
+            if is_dangerous:
+                verbs = list(getattr(rule, "verbs", []) or [])
+                resources = list(getattr(rule, "resources", []) or [])
+                severity = "CRITICAL" if ("*" in verbs and "*" in resources) else "HIGH"
+                self.findings.append(RBACFinding(
+                    severity=severity,
+                    kind=role_kind,
+                    name=role_name,
+                    namespace=namespace,
+                    subject_kind=subject_kind,
+                    subject_name=subject_name,
+                    title=f"과잉 권한: {role_kind}/{role_name}",
+                    detail=f"{reason} | verbs={verbs} resources={resources}",
+                    remediation="최소 권한 원칙 적용 — 필요한 리소스/동사만 허용",
+                ))
+
+    # ── ClusterRole 분석 ──────────────────────────────────────────────
+    def audit_cluster_roles(self) -> None:
+        try:
+            roles = self.rbac.list_cluster_role()
+        except ApiException as exc:
+            print(f"[경고] ClusterRole 조회 실패: {exc}", file=sys.stderr)
+            return
+
+        # ClusterRoleBinding 수집
+        bindings_map: dict[str, list[tuple]] = {}
+        try:
+            crbs = self.rbac.list_cluster_role_binding()
+            for crb in crbs.items:
+                ref = crb.role_ref
+                if ref.kind == "ClusterRole":
+                    for subj in crb.subjects or []:
+                        bindings_map.setdefault(ref.name, []).append((subj.kind, subj.name))
+        except ApiException:
+            pass
+
+        for role in roles.items:
+            name = role.metadata.name
+            subjects = bindings_map.get(name, [(None, None)])
+            for sk, sn in subjects:
+                self._analyze_role_rules(
+                    "ClusterRole", name, "cluster-wide",
+                    role.rules, sk, sn,
+                )
+
+    # ── 네임스페이스 Role 분석 ─────────────────────────────────────────
+    def audit_namespaced_roles(self, namespace: str = "") -> None:
+        ns_arg = namespace if namespace and namespace != "all" else None
+        try:
+            if ns_arg:
+                roles = self.rbac.list_namespaced_role(namespace=ns_arg)
+            else:
+                roles = self.rbac.list_role_for_all_namespaces()
+        except ApiException as exc:
+            print(f"[경고] Role 조회 실패: {exc}", file=sys.stderr)
+            return
+
+        for role in roles.items:
+            ns = role.metadata.namespace
+            name = role.metadata.name
+            self._analyze_role_rules("Role", name, ns, role.rules)
+
+    # ── default ServiceAccount 권한 확인 ────────────────────────────
+    def check_default_sa(self) -> None:
+        """default ServiceAccount에 ClusterRoleBinding 연결 여부"""
+        try:
+            crbs = self.rbac.list_cluster_role_binding()
+            for crb in crbs.items:
+                for subj in crb.subjects or []:
+                    if subj.kind == "ServiceAccount" and subj.name == "default":
+                        self.findings.append(RBACFinding(
+                            severity="HIGH",
+                            kind="ClusterRoleBinding",
+                            name=crb.metadata.name,
+                            namespace=subj.namespace or "all",
+                            subject_kind="ServiceAccount",
+                            subject_name="default",
+                            title="default ServiceAccount에 ClusterRole 바인딩",
+                            detail=f"ClusterRole '{crb.role_ref.name}'이 default SA에 바인딩",
+                            remediation="전용 ServiceAccount 생성 후 최소 권한 Role 바인딩",
+                        ))
+        except ApiException:
+            pass
+
+    def run(self, namespace: str = "all") -> list[RBACFinding]:
+        print("[*] ClusterRole 분석...", file=sys.stderr)
+        self.audit_cluster_roles()
+        print("[*] Namespaced Role 분석...", file=sys.stderr)
+        self.audit_namespaced_roles(namespace)
+        print("[*] default ServiceAccount 점검...", file=sys.stderr)
+        self.check_default_sa()
+        return sorted(
+            self.findings,
+            key=lambda f: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2}.get(f.severity, 9),
+        )
+
+
+# ------------------------------------------------------------------ #
+#  출력
+# ------------------------------------------------------------------ #
+def print_report(findings: list[RBACFinding], as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps([f.to_dict() for f in findings], ensure_ascii=False, indent=2))
+        return
+
+    _C = {"CRITICAL": "\033[91m", "HIGH": "\033[93m", "MEDIUM": "\033[94m"}
+    _R = "\033[0m"
+
+    print(f"\n{'='*65}")
+    print(f"RBAC 취약 항목: {len(findings)}개")
+    for sev in ("CRITICAL", "HIGH", "MEDIUM"):
+        cnt = sum(1 for f in findings if f.severity == sev)
+        if cnt:
+            print(f"  {_C.get(sev,'')}{sev}{_R}: {cnt}개")
+
+    print()
+    for f in findings:
+        c = _C.get(f.severity, "")
+        subj = f" ← {f.subject_kind}/{f.subject_name}" if f.subject_kind else ""
+        print(f"[{c}{f.severity}{_R}] {f.kind}/{f.name} [{f.namespace}]{subj}")
+        print(f"  {f.title}")
+        print(f"  상세  : {f.detail}")
+        print(f"  조치  : {f.remediation}\n")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Kubernetes RBAC 과잉 권한 분석 도구",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  python3 k8s_rbac_audit.py\n"
+               "  python3 k8s_rbac_audit.py --namespace production\n"
+               "  python3 k8s_rbac_audit.py --kubeconfig ~/.kube/prod --json",
+    )
+    parser.add_argument("--kubeconfig", metavar="FILE", help="kubeconfig 파일 경로")
+    parser.add_argument("--namespace", default="all", help="분석할 네임스페이스 (기본: all)")
+    parser.add_argument("--json", action="store_true", help="JSON 형식 출력")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if not HAS_K8S:
+        print("kubernetes 라이브러리 필요: pip install kubernetes", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        auditor = K8sRBACAuditor(kubeconfig=args.kubeconfig)
+        findings = auditor.run(namespace=args.namespace)
+        print_report(findings, as_json=args.json)
+    except RuntimeError as exc:
+        print(f"[-] 오류: {exc}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as exc:
+        print(f"[-] 예상치 못한 오류: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
 ---
 
 ## 5. GCP/Azure 공통 체크리스트

@@ -261,38 +261,142 @@ cat /etc/shadow | awk -F: '$2!="!"&&$2!="*"{print $1}'  # 활성 계정
 ```
 
 ### Volatility (메모리 분석)
-```bash
-# 설치
-pip install volatility3
-# 또는
-git clone https://github.com/volatilityfoundation/volatility3
+```python
+#!/usr/bin/env python3
+"""
+volatility3 자동화 분석 스크립트
+용도: 메모리 덤프에서 핵심 포렌식 아티팩트를 일괄 추출
+의존성: pip install volatility3
+"""
+from __future__ import annotations
+import argparse
+import subprocess
+import sys
+import json
+from pathlib import Path
+from datetime import datetime
 
-# OS 프로파일 식별
-vol.py -f memory.lime banners.Banners   # Linux
-vol.py -f memory.dmp windows.info       # Windows
 
-# 프로세스 목록
-vol.py -f memory.dmp windows.pslist
-vol.py -f memory.dmp windows.pstree    # 트리 형태
-vol.py -f memory.dmp windows.psscan    # 숨겨진 프로세스 탐지
+PLUGINS: dict[str, str] = {
+    "windows": [
+        "windows.info",
+        "windows.pslist",
+        "windows.pstree",
+        "windows.psscan",       # 숨겨진 프로세스 탐지
+        "windows.cmdline",
+        "windows.netstat",
+        "windows.malfind",      # 주입된 코드 탐지
+        "windows.dlllist",
+        "windows.hashdump",
+        "windows.registry.hivelist",
+    ],
+    "linux": [
+        "banners.Banners",
+        "linux.pslist",
+        "linux.netstat",
+        "linux.bash",
+    ],
+}
 
-# 네트워크 연결
-vol.py -f memory.dmp windows.netstat
 
-# 악성코드 탐지
-vol.py -f memory.dmp windows.malfind   # 주입된 코드 탐지
-vol.py -f memory.dmp windows.dlllist   # DLL 목록
-vol.py -f memory.dmp windows.cmdline   # 명령줄 인자
+def run_plugin(
+    vol_bin: str,
+    dump_path: str,
+    plugin: str,
+    extra_args: list[str] | None = None,
+) -> tuple[int, str, str]:
+    """단일 플러그인 실행 후 (returncode, stdout, stderr) 반환."""
+    cmd = [vol_bin, "-f", dump_path, plugin]
+    if extra_args:
+        cmd.extend(extra_args)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    return result.returncode, result.stdout, result.stderr
 
-# 레지스트리 분석
-vol.py -f memory.dmp windows.registry.hivelist  # 하이브 목록
-vol.py -f memory.dmp windows.registry.printkey --key "Software\Microsoft\Windows\CurrentVersion\Run"
 
-# 파일 복구
-vol.py -f memory.dmp windows.dumpfiles --physaddr 0x1234  # 특정 파일
+def analyze_dump(
+    dump_path: str,
+    os_type: str,
+    output_dir: str,
+    vol_bin: str = "vol",
+) -> dict[str, str]:
+    """
+    메모리 덤프를 대상으로 플러그인 목록을 순차 실행하고
+    결과를 output_dir 아래에 저장한다.
+    반환값: {plugin_name: output_file_path}
+    """
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
 
-# 해시 덤프
-vol.py -f memory.dmp windows.hashdump  # SAM 해시 추출
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    results: dict[str, str] = {}
+    plugins = PLUGINS.get(os_type, [])
+
+    print(f"[*] 분석 시작: {dump_path}  ({os_type.upper()})")
+    print(f"[*] 출력 디렉토리: {out.resolve()}")
+
+    for plugin in plugins:
+        safe_name = plugin.replace(".", "_")
+        out_file = out / f"{timestamp}_{safe_name}.txt"
+        print(f"  [+] {plugin} ... ", end="", flush=True)
+
+        try:
+            rc, stdout, stderr = run_plugin(vol_bin, dump_path, plugin)
+            out_file.write_text(stdout, encoding="utf-8")
+            status = "OK" if rc == 0 else f"RC={rc}"
+            print(status)
+            results[plugin] = str(out_file)
+        except subprocess.TimeoutExpired:
+            print("TIMEOUT")
+        except Exception as exc:
+            print(f"ERROR: {exc}")
+
+    # 추가: Run 키 (Windows 지속성)
+    if os_type == "windows":
+        run_key = "Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+        rc, stdout, _ = run_plugin(
+            vol_bin, dump_path,
+            "windows.registry.printkey",
+            ["--key", run_key],
+        )
+        key_file = out / f"{timestamp}_registry_run.txt"
+        key_file.write_text(stdout, encoding="utf-8")
+        results["registry.Run"] = str(key_file)
+        print(f"  [+] registry.printkey (Run) ... OK")
+
+    summary_path = out / f"{timestamp}_summary.json"
+    summary_path.write_text(json.dumps(results, indent=2, ensure_ascii=False))
+    print(f"\n[*] 요약 저장: {summary_path}")
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="volatility3 플러그인 자동화 분석기"
+    )
+    parser.add_argument("dump", help="메모리 덤프 파일 경로 (.dmp/.lime/.raw)")
+    parser.add_argument(
+        "--os", choices=["windows", "linux"], default="windows",
+        help="대상 OS (기본값: windows)"
+    )
+    parser.add_argument(
+        "--output", default="vol_output",
+        help="결과 저장 디렉토리 (기본값: vol_output)"
+    )
+    parser.add_argument(
+        "--vol", default="vol",
+        help="vol3 실행 경로 (기본값: vol)"
+    )
+    args = parser.parse_args()
+
+    if not Path(args.dump).exists():
+        print(f"[!] 파일을 찾을 수 없습니다: {args.dump}", file=sys.stderr)
+        sys.exit(1)
+
+    analyze_dump(args.dump, args.os, args.output, args.vol)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -344,32 +448,171 @@ psort.py -o L2tcsv case.plaso > timeline.csv
 ## 6. 웹 서버 포렌식
 
 ### Apache 로그 분석
-```bash
-# access.log 형식:
-# IP - - [날짜] "메서드 경로 프로토콜" 상태코드 크기 "Referer" "User-Agent"
+```python
+#!/usr/bin/env python3
+"""
+Apache/Nginx access.log 포렌식 분석기
+용도: 공격 패턴(SQLi, XSS, 경로탐색, 브루트포스) 탐지 및 통계 생성
+"""
+from __future__ import annotations
+import argparse
+import re
+import sys
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Iterator
 
-# 공격 IP 상위 10개
-awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -10
 
-# 에러 응답 (공격 탐지)
-grep " 404 " access.log | head
-grep " 500 " access.log | head
+# Combined Log Format 정규식
+LOG_RE = re.compile(
+    r'(?P<ip>\S+) \S+ \S+ \[(?P<time>[^\]]+)\] '
+    r'"(?P<method>\S+) (?P<uri>\S+) \S+" '
+    r'(?P<status>\d{3}) (?P<size>\S+)'
+    r'(?: "(?P<referer>[^"]*)" "(?P<ua>[^"]*)")?'
+)
 
-# SQL Injection 시도 탐지
-grep -i "union\|select\|drop\|insert\|delete\|update" access.log
-grep -i "'\|%27\|1=1\|or 1" access.log
+ATTACK_PATTERNS: dict[str, list[str]] = {
+    "SQLi": [
+        r"(?i)(union.+select|select.+from|insert.+into|drop.+table)",
+        r"(?i)(%27|'|%22|\"|%60|`)(\s|%20)*(or|and|union|select)",
+        r"(?i)(1=1|1%3d1|or%201|'%20or%20'1)",
+        r"(?i)(sleep\s*\(|benchmark\s*\(|waitfor\s+delay)",
+    ],
+    "XSS": [
+        r"(?i)<script[\s>]",
+        r"(?i)(onerror|onload|onmouseover|onclick)\s*=",
+        r"(?i)javascript\s*:",
+        r"(?i)%3cscript|%3e",
+    ],
+    "PathTraversal": [
+        r"\.\./|\.\.%2f|%2e%2e/|%252e%252e",
+        r"(?i)(etc/passwd|windows/system32|win\.ini)",
+    ],
+    "ScannerUA": [
+        r"(?i)(nikto|sqlmap|nmap|masscan|acunetix|nessus|dirb|gobuster|wfuzz)",
+    ],
+}
 
-# XSS 시도 탐지
-grep -i "script\|javascript\|onerror\|onload" access.log
 
-# 디렉토리 탐색 시도
-grep "\.\./\|\.\.%2f\|%2e%2e" access.log
+@dataclass
+class LogEntry:
+    ip: str
+    time: str
+    method: str
+    uri: str
+    status: int
+    size: int
+    ua: str = ""
 
-# 특정 시간대 분석
-awk '$4 >= "[01/Jan/2024:09:00:00" && $4 <= "[01/Jan/2024:10:00:00"' access.log
 
-# 상태 코드별 통계
-awk '{print $9}' access.log | sort | uniq -c | sort -rn
+@dataclass
+class AnalysisResult:
+    total: int = 0
+    top_ips: Counter = field(default_factory=Counter)
+    status_dist: Counter = field(default_factory=Counter)
+    attack_hits: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list))
+    large_responses: list[tuple[int, str]] = field(default_factory=list)
+
+
+def parse_log(path: Path) -> Iterator[LogEntry]:
+    with path.open(encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            m = LOG_RE.match(line)
+            if not m:
+                continue
+            try:
+                yield LogEntry(
+                    ip=m["ip"],
+                    time=m["time"],
+                    method=m["method"],
+                    uri=m["uri"],
+                    status=int(m["status"]),
+                    size=int(m["size"]) if m["size"].isdigit() else 0,
+                    ua=m["ua"] or "",
+                )
+            except (ValueError, TypeError):
+                continue
+
+
+def analyze(path: Path, top_n: int = 10, large_threshold: int = 1_000_000) -> AnalysisResult:
+    res = AnalysisResult()
+    compiled = {
+        category: [re.compile(p) for p in patterns]
+        for category, patterns in ATTACK_PATTERNS.items()
+    }
+
+    for entry in parse_log(path):
+        res.total += 1
+        res.top_ips[entry.ip] += 1
+        res.status_dist[entry.status] += 1
+
+        # 공격 패턴 매칭 (URI + UA 대상)
+        target = entry.uri + " " + entry.ua
+        for category, regexes in compiled.items():
+            for rx in regexes:
+                if rx.search(target):
+                    res.attack_hits[category].append(
+                        f"[{entry.time}] {entry.ip} {entry.method} {entry.uri[:120]}"
+                    )
+                    break
+
+        # 비정상적으로 큰 응답 (데이터 유출 가능성)
+        if entry.size >= large_threshold:
+            res.large_responses.append((entry.size, entry.uri[:100]))
+
+    return res
+
+
+def print_report(res: AnalysisResult, top_n: int) -> None:
+    print(f"\n{'='*60}")
+    print(f"  Apache 로그 포렌식 분석 보고서  (총 {res.total:,}줄)")
+    print(f"{'='*60}")
+
+    print(f"\n[상위 IP {top_n}개]")
+    for ip, cnt in res.top_ips.most_common(top_n):
+        print(f"  {ip:<20} {cnt:>6}회")
+
+    print(f"\n[HTTP 상태 코드 분포]")
+    for code, cnt in sorted(res.status_dist.items()):
+        bar = "█" * min(cnt // 50, 40)
+        print(f"  {code}  {cnt:>7}  {bar}")
+
+    print(f"\n[공격 패턴 탐지]")
+    for category, hits in res.attack_hits.items():
+        print(f"  {category}: {len(hits)}건")
+        for h in hits[:5]:
+            print(f"    {h}")
+        if len(hits) > 5:
+            print(f"    ... 외 {len(hits)-5}건")
+
+    if res.large_responses:
+        print(f"\n[대용량 응답 (데이터 유출 의심)]")
+        for size, uri in sorted(res.large_responses, reverse=True)[:10]:
+            print(f"  {size/1024:.1f} KB  {uri}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Apache access.log 포렌식 분석기")
+    parser.add_argument("logfile", help="access.log 경로")
+    parser.add_argument("--top", type=int, default=10, help="상위 IP 표시 개수 (기본값: 10)")
+    parser.add_argument(
+        "--large-threshold", type=int, default=1_000_000,
+        help="대용량 응답 임계값(바이트, 기본값: 1MB)"
+    )
+    args = parser.parse_args()
+
+    log_path = Path(args.logfile)
+    if not log_path.exists():
+        print(f"[!] 파일 없음: {log_path}", file=sys.stderr)
+        sys.exit(1)
+
+    result = analyze(log_path, args.top, args.large_threshold)
+    print_report(result, args.top)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### IIS 로그 분석 (Windows)

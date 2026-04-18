@@ -63,6 +63,177 @@ steps:
       echo "API Key: ${{ secrets.API_KEY }}"  # 로그에 노출!
       export API_KEY=${{ secrets.API_KEY }}    # 쉘 히스토리에 저장
       curl -H "Authorization: $API_KEY" ...
+
+# ── GitHub Actions 시크릿 탐지 스크립트 ────────────────────
+# 아래 Python 스크립트로 로컬/CI에서 워크플로우 파일의
+# 시크릿 오용 패턴을 사전에 탐지
+
+```python
+#!/usr/bin/env python3
+"""
+GitHub Actions 워크플로우 파일 보안 감사 도구
+사용: python3 actions_audit.py --dir .github/workflows
+      python3 actions_audit.py --file .github/workflows/deploy.yml
+      python3 actions_audit.py --dir .github/workflows --output audit.json
+"""
+
+from __future__ import annotations
+import argparse
+import json
+import re
+import sys
+from dataclasses import dataclass, asdict
+from pathlib import Path
+
+import yaml  # pip install pyyaml
+
+
+# ── 위험 패턴 정의 ────────────────────────────────────────────
+
+@dataclass
+class AuditFinding:
+    file: str
+    line: int
+    rule: str
+    severity: str
+    detail: str
+
+
+RULES: list[tuple[str, str, str, str]] = [
+    # (rule_id, severity, pattern, description)
+    ("SEC001", "CRITICAL",
+     r"echo\s+.*\$\{\{\s*secrets\.",
+     "시크릿을 echo/print — 로그에 노출"),
+    ("SEC002", "CRITICAL",
+     r"run:\s*\|[^|]*\$\{\{\s*secrets\.[^}]+\}\}\s*\n",
+     "run 블록에서 시크릿 직접 인라인 사용"),
+    ("SEC003", "HIGH",
+     r"uses:\s+\S+@(main|master|HEAD|latest)",
+     "Actions 버전이 SHA가 아닌 브랜치/태그 참조"),
+    ("SEC004", "HIGH",
+     r"permissions:\s*write-all",
+     "과도한 GITHUB_TOKEN 권한 (write-all)"),
+    ("SEC005", "MEDIUM",
+     r"pull_request_target:",
+     "pull_request_target 트리거 — fork PR 공격 가능"),
+    ("SEC006", "MEDIUM",
+     r"\$\{\{\s*github\.event\.(issue|comment|pull_request)\.body",
+     "사용자 제공 데이터 직접 사용 — 스크립트 인젝션 위험"),
+    ("SEC007", "MEDIUM",
+     r"ACTIONS_ALLOW_UNSECURE_COMMANDS.*true",
+     "구형 명령 방식 활성화 — 환경변수 인젝션 가능"),
+    ("SEC008", "LOW",
+     r"curl\s+.*\|\s*(bash|sh)",
+     "인터넷에서 다운로드 후 파이프 실행"),
+    ("SEC009", "LOW",
+     r"--privileged",
+     "특권 컨테이너 실행"),
+]
+
+
+def scan_file(path: Path) -> list[AuditFinding]:
+    findings: list[AuditFinding] = []
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return []
+
+    lines = text.splitlines()
+
+    for rule_id, severity, pattern, desc in RULES:
+        for i, line in enumerate(lines, 1):
+            if re.search(pattern, line, re.IGNORECASE):
+                findings.append(AuditFinding(
+                    file=str(path),
+                    line=i,
+                    rule=rule_id,
+                    severity=severity,
+                    detail=f"{desc} | {line.strip()[:120]}",
+                ))
+
+    # YAML 구조적 분석 (permissions 누락 체크)
+    try:
+        wf = yaml.safe_load(text)
+        if isinstance(wf, dict):
+            # 최상위 permissions 없으면 기본 write 권한
+            if "permissions" not in wf:
+                findings.append(AuditFinding(
+                    file=str(path), line=1, rule="SEC010",
+                    severity="MEDIUM",
+                    detail="워크플로우 수준 permissions 미설정 — 기본값은 write",
+                ))
+            # environment protection 없는 production 배포
+            for job_name, job in (wf.get("jobs") or {}).items():
+                if isinstance(job, dict):
+                    env = job.get("environment")
+                    if env and isinstance(env, str) and "prod" in env.lower():
+                        if not job.get("permissions"):
+                            findings.append(AuditFinding(
+                                file=str(path), line=1, rule="SEC011",
+                                severity="LOW",
+                                detail=f"프로덕션 배포 잡 '{job_name}'에 permissions 미설정",
+                            ))
+    except yaml.YAMLError:
+        pass
+
+    return findings
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="GitHub Actions 워크플로우 보안 감사"
+    )
+    grp = parser.add_mutually_exclusive_group(required=True)
+    grp.add_argument("--dir",  type=Path, help="워크플로우 디렉토리")
+    grp.add_argument("--file", type=Path, help="단일 워크플로우 파일")
+    parser.add_argument("--output", type=Path, help="결과 JSON 저장")
+    parser.add_argument("--fail-on", choices=["CRITICAL", "HIGH", "MEDIUM"],
+                        default="HIGH", help="이 이상 심각도 발견 시 exit(1)")
+    args = parser.parse_args()
+
+    files: list[Path] = []
+    if args.file:
+        files = [args.file]
+    else:
+        files = list(args.dir.rglob("*.yml")) + list(args.dir.rglob("*.yaml"))
+
+    all_findings: list[AuditFinding] = []
+    for f in files:
+        found = scan_file(f)
+        all_findings.extend(found)
+
+    # 결과 출력
+    sev_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+    all_findings.sort(key=lambda x: sev_order.get(x.severity, 9))
+
+    for f in all_findings:
+        print(f"[{f.severity:8s}] {f.rule}  {f.file}:{f.line}")
+        print(f"           {f.detail}")
+
+    print(f"\n[요약] 파일 {len(files)}개 스캔, 발견 {len(all_findings)}건")
+    for sev in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
+        cnt = sum(1 for x in all_findings if x.severity == sev)
+        if cnt:
+            print(f"  {sev}: {cnt}")
+
+    if args.output:
+        args.output.write_text(
+            json.dumps([asdict(f) for f in all_findings],
+                       indent=2, ensure_ascii=False)
+        )
+        print(f"[*] 결과 저장: {args.output}")
+
+    # 품질 게이트
+    fail_sevs = [s for s in ["CRITICAL", "HIGH", "MEDIUM"]
+                 if sev_order.get(s, 9) <= sev_order.get(args.fail_on, 9)]
+    if any(f.severity in fail_sevs for f in all_findings):
+        print(f"[FAIL] {args.fail_on} 이상 발견 — 빌드 실패")
+        sys.exit(1)
+    print("[PASS] 보안 감사 통과")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### GITHUB_TOKEN 최소 권한
@@ -409,7 +580,7 @@ deploy-production:
 ## 4. Jenkins 파이프라인 보안
 
 ```groovy
-// Jenkinsfile
+// Jenkinsfile — 보안 강화 파이프라인 (SAST + Container + DAST)
 pipeline {
     agent {
         kubernetes {
@@ -426,85 +597,193 @@ spec:
     securityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
+    volumeMounts:
+    - name: tmp
+      mountPath: /tmp
+  volumes:
+  - name: tmp
+    emptyDir: {}
 """
         }
     }
-    
+
     environment {
-        // 시크릿은 Credentials에서 로드
-        AWS_CREDS = credentials('aws-credentials')
-        SONAR_TOKEN = credentials('sonar-token')
+        AWS_CREDS    = credentials('aws-credentials')
+        SONAR_TOKEN  = credentials('sonar-token')
+        SNYK_TOKEN   = credentials('snyk-token')
+        SLACK_HOOK   = credentials('slack-webhook')
+        IMAGE_NAME   = "myapp:${BUILD_NUMBER}"
     }
-    
+
+    options {
+        timeout(time: 60, unit: 'MINUTES')
+        disableConcurrentBuilds()
+    }
+
     stages {
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
-        
-        stage('SAST') {
+
+        stage('SAST + SCA') {
             parallel {
                 stage('SonarQube') {
                     steps {
                         withSonarQubeEnv('SonarQube') {
-                            sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+                            sh 'mvn -B sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+                        }
+                        timeout(time: 5, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: true
                         }
                     }
                 }
-                stage('OWASP DepCheck') {
+                stage('Snyk SCA') {
                     steps {
-                        dependencyCheck additionalArguments: 
-                            '--enableExperimental --suppression suppression.xml',
-                            odcInstallation: 'OWASP-DC'
-                        dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+                        sh """
+                            snyk auth \$SNYK_TOKEN
+                            snyk test --all-projects \
+                                      --severity-threshold=high \
+                                      --json > snyk-results.json || true
+                            snyk-to-html -i snyk-results.json -o snyk-report.html || true
+                        """
+                    }
+                    post {
+                        always {
+                            archiveArtifacts artifacts: 'snyk-report.html',
+                                             allowEmptyArchive: true
+                        }
+                    }
+                }
+                stage('Semgrep') {
+                    steps {
+                        sh """
+                            pip install semgrep --quiet
+                            semgrep --config=p/security-audit \
+                                    --config=p/owasp-top-ten \
+                                    --json --output=semgrep.json . || true
+                        """
+                    }
+                }
+                stage('Gitleaks') {
+                    steps {
+                        sh """
+                            docker run --rm -v \$(pwd):/repo \
+                                zricethezav/gitleaks:latest detect \
+                                --source /repo --report-format json \
+                                --report-path /repo/gitleaks.json \
+                                --exit-code 0
+                        """
                     }
                 }
             }
         }
-        
-        stage('Quality Gate') {
+
+        stage('Build Image') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                sh 'docker build --no-cache -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('Container Security') {
+            parallel {
+                stage('Trivy') {
+                    steps {
+                        sh """
+                            trivy image --exit-code 1 \
+                                        --severity CRITICAL \
+                                        --format sarif \
+                                        --output trivy.sarif \
+                                        \$IMAGE_NAME
+                        """
+                    }
+                }
+                stage('Docker Bench') {
+                    steps {
+                        sh """
+                            docker run --rm --net host --pid host --userns host \
+                                --cap-add audit_control \
+                                -v /etc:/etc:ro \
+                                -v /usr/bin/containerd:/usr/bin/containerd:ro \
+                                -v /var/lib:/var/lib:ro \
+                                -v /var/run/docker.sock:/var/run/docker.sock:ro \
+                                docker/docker-bench-security \
+                                2>&1 | tee docker-bench.txt || true
+                        """
+                    }
                 }
             }
         }
-        
-        stage('Build & Scan Image') {
+
+        stage('DAST') {
+            when { branch 'main' }
             steps {
-                sh 'docker build -t myapp:${BUILD_NUMBER} .'
-                sh 'trivy image --exit-code 1 --severity CRITICAL myapp:${BUILD_NUMBER}'
+                sh 'docker compose up -d --wait'
+                sh """
+                    docker run --rm --network host \
+                        -v \$(pwd)/.zap:/zap/wrk:rw \
+                        ghcr.io/zaproxy/zaproxy:stable \
+                        zap-api-scan.py \
+                        -t http://localhost:8080/v3/api-docs \
+                        -f openapi \
+                        -J zap-report.json \
+                        -r zap-report.html \
+                        -x zap-report.xml \
+                        -z "-config scanner.strength=HIGH" \
+                        -I
+                """
+            }
+            post {
+                always {
+                    sh 'docker compose down'
+                    archiveArtifacts artifacts: 'zap-report.*',
+                                     allowEmptyArchive: true
+                    // SARIF 업로드 (Jenkins + GitHub 연동)
+                    recordIssues tools: [
+                        sarif(id: 'zap', name: 'ZAP DAST',
+                              pattern: 'zap-report.xml')
+                    ]
+                }
             }
         }
-        
+
         stage('Deploy') {
-            when {
-                branch 'main'
-            }
+            when { branch 'main' }
             steps {
                 withAWS(credentials: 'aws-credentials', region: 'ap-northeast-2') {
-                    sh 'aws eks update-kubeconfig --name my-cluster'
-                    sh 'kubectl apply -f k8s/'
+                    sh """
+                        aws ecr get-login-password | \
+                            docker login --username AWS \
+                            --password-stdin \$AWS_ACCOUNT.dkr.ecr.ap-northeast-2.amazonaws.com
+                        docker tag \$IMAGE_NAME \$ECR_REPO:\$BUILD_NUMBER
+                        docker push \$ECR_REPO:\$BUILD_NUMBER
+                        aws eks update-kubeconfig --name my-cluster
+                        kubectl set image deployment/myapp \
+                            myapp=\$ECR_REPO:\$BUILD_NUMBER
+                        kubectl rollout status deployment/myapp --timeout=120s
+                    """
                 }
             }
         }
     }
-    
+
     post {
         always {
-            publishHTML([
-                allowMissing: false,
-                reportDir: 'target/site/jacoco',
-                reportFiles: 'index.html',
-                reportName: 'Coverage Report'
-            ])
+            archiveArtifacts artifacts: '**/*.json,**/*.sarif,**/*.html',
+                             allowEmptyArchive: true
         }
         failure {
-            slackSend(
-                channel: '#security-alerts',
-                message: "빌드 실패: ${JOB_NAME} #${BUILD_NUMBER}"
-            )
+            script {
+                def msg = "빌드 실패: ${JOB_NAME} #${BUILD_NUMBER} — ${BUILD_URL}"
+                sh "curl -s -X POST -H 'Content-type: application/json' " +
+                   "--data '{\"text\":\"${msg}\"}' \$SLACK_HOOK"
+            }
+        }
+        success {
+            script {
+                def msg = "빌드 성공: ${JOB_NAME} #${BUILD_NUMBER} (보안 검사 모두 통과)"
+                sh "curl -s -X POST -H 'Content-type: application/json' " +
+                   "--data '{\"text\":\"${msg}\"}' \$SLACK_HOOK"
+            }
         }
     }
 }

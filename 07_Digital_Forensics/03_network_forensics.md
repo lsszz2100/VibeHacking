@@ -174,56 +174,255 @@ JA3 해시 (TLS 클라이언트 지문)
 ### IOC 추출 자동화
 
 ```python
-# PCAP에서 IOC 자동 추출
-import dpkt
+#!/usr/bin/env python3
+"""
+PCAP IOC 자동 추출기
+용도: 패킷 캡처 파일에서 IP, 도메인, URL, User-Agent, DNS 쿼리 등 IOC 추출
+의존성: pip install dpkt scapy
+사용법: python3 pcap_ioc.py capture.pcap [--output iocs.json]
+"""
+from __future__ import annotations
+import argparse
+import json
+import re
 import socket
+import sys
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Iterator
 
-def extract_iocs(pcap_file):
-    iocs = {'ips': set(), 'domains': set(), 'urls': set()}
-    
-    with open(pcap_file, 'rb') as f:
-        pcap = dpkt.pcap.Reader(f)
-        
-        for ts, buf in pcap:
+try:
+    import dpkt
+except ImportError:
+    print("[!] 의존성 누락: pip install dpkt", file=sys.stderr)
+    sys.exit(1)
+
+# RFC1918 사설 주소 필터 (외부 C2 탐지 목적)
+PRIVATE_NETS = [
+    re.compile(r"^10\."),
+    re.compile(r"^172\.(1[6-9]|2\d|3[01])\."),
+    re.compile(r"^192\.168\."),
+    re.compile(r"^127\."),
+    re.compile(r"^::1$"),
+]
+
+SUSPICIOUS_PORTS = {4444, 5555, 1337, 8888, 31337, 9001, 9002}  # 역방향 쉘 / Tor
+
+DNS_TUNNEL_THRESHOLD = 50  # 도메인 길이 임계값
+
+
+def is_public(ip: str) -> bool:
+    return not any(rx.match(ip) for rx in PRIVATE_NETS)
+
+
+def inet_str(raw: bytes) -> str:
+    try:
+        if len(raw) == 4:
+            return socket.inet_ntop(socket.AF_INET, raw)
+        return socket.inet_ntop(socket.AF_INET6, raw)
+    except Exception:
+        return ""
+
+
+@dataclass
+class IOCResult:
+    external_ips: Counter = field(default_factory=Counter)
+    dns_queries: Counter = field(default_factory=Counter)
+    http_urls: list[str] = field(default_factory=list)
+    user_agents: Counter = field(default_factory=Counter)
+    suspicious_connections: list[dict] = field(default_factory=list)
+    dns_tunnel_candidates: list[str] = field(default_factory=list)
+    beaconing_candidates: dict[str, list[float]] = field(default_factory=lambda: defaultdict(list))
+    total_packets: int = 0
+
+
+def _parse_http(data: bytes, src: str, dst: str, result: IOCResult) -> None:
+    try:
+        req = dpkt.http.Request(data)
+        host = req.headers.get("host", dst)
+        url = f"http://{host}{req.uri}"
+        result.http_urls.append(url)
+        ua = req.headers.get("user-agent", "")
+        if ua:
+            result.user_agents[ua] += 1
+    except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
+        pass
+
+
+def _parse_dns(data: bytes, result: IOCResult) -> None:
+    try:
+        dns = dpkt.dns.DNS(data)
+        for q in dns.qd:
+            name = q.name if isinstance(q.name, str) else q.name.decode("utf-8", errors="replace")
+            name = name.rstrip(".")
+            result.dns_queries[name] += 1
+            # DNS 터널링 탐지: 서브도메인이 비정상적으로 긴 경우
+            labels = name.split(".")
+            if labels and len(labels[0]) >= DNS_TUNNEL_THRESHOLD:
+                result.dns_tunnel_candidates.append(name)
+    except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError, UnicodeDecodeError):
+        pass
+
+
+def extract_iocs(pcap_path: str) -> IOCResult:
+    result = IOCResult()
+
+    with open(pcap_path, "rb") as fh:
+        try:
+            reader: Iterator = dpkt.pcap.Reader(fh)
+        except ValueError:
+            fh.seek(0)
+            reader = dpkt.pcapng.Reader(fh)
+
+        last_ts: dict[str, float] = {}
+
+        for ts, buf in reader:
+            result.total_packets += 1
             try:
                 eth = dpkt.ethernet.Ethernet(buf)
-                if not isinstance(eth.data, dpkt.ip.IP):
-                    continue
-                
-                ip = eth.data
-                src = socket.inet_ntoa(ip.src)
-                dst = socket.inet_ntoa(ip.dst)
-                iocs['ips'].add(dst)
-                
-                if isinstance(ip.data, dpkt.tcp.TCP):
-                    tcp = ip.data
-                    # HTTP 파싱
-                    if tcp.dport == 80 and len(tcp.data) > 0:
-                        try:
-                            req = dpkt.http.Request(tcp.data)
-                            iocs['urls'].add(f"http://{req.headers.get('host', dst)}{req.uri}")
-                        except:
-                            pass
-                    
-                elif isinstance(ip.data, dpkt.udp.UDP):
-                    udp = ip.data
-                    # DNS 파싱
-                    if udp.dport == 53:
-                        try:
-                            dns = dpkt.dns.DNS(udp.data)
-                            for q in dns.qd:
-                                iocs['domains'].add(q.name.decode())
-                        except:
-                            pass
-            except:
+            except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
                 continue
-    
-    return iocs
 
-iocs = extract_iocs('capture.pcap')
-print("의심 IP:", iocs['ips'])
-print("접근 도메인:", iocs['domains'])
-print("요청 URL:", iocs['urls'])
+            ip = getattr(eth, "data", None)
+            if not isinstance(ip, (dpkt.ip.IP, dpkt.ip6.IP6)):
+                continue
+
+            src_ip = inet_str(ip.src)
+            dst_ip = inet_str(ip.dst)
+
+            # 외부 IP 수집
+            for addr in (src_ip, dst_ip):
+                if addr and is_public(addr):
+                    result.external_ips[addr] += 1
+
+            transport = getattr(ip, "data", None)
+
+            # TCP 처리
+            if isinstance(transport, dpkt.tcp.TCP):
+                dport = transport.dport
+                sport = transport.sport
+
+                # 의심 포트 연결
+                if dport in SUSPICIOUS_PORTS or sport in SUSPICIOUS_PORTS:
+                    result.suspicious_connections.append({
+                        "ts": round(ts, 3),
+                        "src": f"{src_ip}:{sport}",
+                        "dst": f"{dst_ip}:{dport}",
+                        "reason": f"의심 포트 {dport if dport in SUSPICIOUS_PORTS else sport}",
+                    })
+
+                payload = bytes(transport.data)
+                if payload:
+                    if dport == 80:
+                        _parse_http(payload, src_ip, dst_ip, result)
+
+                # 비컨 탐지: 동일 src→dst 연결 간격 기록
+                conn_key = f"{src_ip}->{dst_ip}:{dport}"
+                if conn_key in last_ts:
+                    interval = ts - last_ts[conn_key]
+                    result.beaconing_candidates[conn_key].append(interval)
+                last_ts[conn_key] = ts
+
+            # UDP 처리 (DNS)
+            elif isinstance(transport, dpkt.udp.UDP):
+                if transport.dport == 53:
+                    _parse_dns(bytes(transport.data), result)
+
+    # 비컨 탐지: 일정 간격(±5%)이 10회 이상 반복되는 연결
+    beaconing_confirmed: dict[str, float] = {}
+    for conn, intervals in result.beaconing_candidates.items():
+        if len(intervals) < 10:
+            continue
+        avg = sum(intervals) / len(intervals)
+        if avg < 1:
+            continue
+        variance = sum((x - avg) ** 2 for x in intervals) / len(intervals)
+        cv = (variance ** 0.5) / avg  # 변동계수
+        if cv < 0.1:  # 매우 규칙적인 패턴
+            beaconing_confirmed[conn] = round(avg, 2)
+
+    result.beaconing_candidates = beaconing_confirmed  # type: ignore[assignment]
+    return result
+
+
+def print_report(result: IOCResult, top_n: int = 20) -> None:
+    print(f"\n{'='*65}")
+    print(f"  PCAP IOC 분석 보고서  (총 패킷: {result.total_packets:,})")
+    print(f"{'='*65}")
+
+    print(f"\n[외부 IP 상위 {top_n}개]")
+    for ip, cnt in result.external_ips.most_common(top_n):
+        print(f"  {ip:<20} {cnt:>6}회")
+
+    print(f"\n[DNS 쿼리 상위 {top_n}개]")
+    for domain, cnt in result.dns_queries.most_common(top_n):
+        print(f"  {domain:<50} {cnt:>5}회")
+
+    print(f"\n[HTTP URL 샘플 (최대 20개)]")
+    seen: set[str] = set()
+    for url in result.http_urls:
+        if url not in seen:
+            print(f"  {url[:100]}")
+            seen.add(url)
+        if len(seen) >= 20:
+            break
+
+    if result.suspicious_connections:
+        print(f"\n[의심 포트 연결 ({len(result.suspicious_connections)}건)]")
+        for c in result.suspicious_connections[:20]:
+            print(f"  {c['ts']:>12.3f}s  {c['src']:<25} → {c['dst']:<25} ({c['reason']})")
+
+    if result.dns_tunnel_candidates:
+        print(f"\n[DNS 터널링 의심 도메인 ({len(result.dns_tunnel_candidates)}건)]")
+        for d in result.dns_tunnel_candidates[:10]:
+            print(f"  {d[:100]}")
+
+    if result.beaconing_candidates:
+        print(f"\n[비컨 통신 의심 연결 (규칙적 인터벌)]")
+        for conn, avg_interval in list(result.beaconing_candidates.items())[:10]:
+            print(f"  {conn:<50} 평균 간격: {avg_interval}s")
+
+    if result.user_agents:
+        print(f"\n[User-Agent 상위 10개]")
+        for ua, cnt in result.user_agents.most_common(10):
+            print(f"  {cnt:>5}회  {ua[:80]}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="PCAP IOC 자동 추출기")
+    parser.add_argument("pcap", help=".pcap 또는 .pcapng 파일 경로")
+    parser.add_argument("--output", help="결과를 저장할 JSON 파일 경로")
+    parser.add_argument("--top", type=int, default=20, help="상위 항목 표시 수 (기본값: 20)")
+    args = parser.parse_args()
+
+    if not Path(args.pcap).exists():
+        print(f"[!] 파일 없음: {args.pcap}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"[*] 분석 중: {args.pcap}")
+    result = extract_iocs(args.pcap)
+    print_report(result, args.top)
+
+    if args.output:
+        out_data = {
+            "total_packets": result.total_packets,
+            "external_ips": dict(result.external_ips.most_common(100)),
+            "dns_queries": dict(result.dns_queries.most_common(100)),
+            "http_urls": list(dict.fromkeys(result.http_urls))[:200],
+            "user_agents": dict(result.user_agents.most_common(50)),
+            "suspicious_connections": result.suspicious_connections[:100],
+            "dns_tunnel_candidates": result.dns_tunnel_candidates[:50],
+            "beaconing_candidates": result.beaconing_candidates,
+        }
+        Path(args.output).write_text(
+            json.dumps(out_data, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        print(f"\n[+] JSON IOC 저장: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

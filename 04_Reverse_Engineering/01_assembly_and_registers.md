@@ -41,14 +41,45 @@
 | PEDA/pwndbg | Linux | GDB 확장, 익스플로잇 특화 |
 
 ### 분석 환경 구성
-```
-분석 환경 기본 구성:
-- OS: Windows XP/7 또는 Windows 10 (VM 권장)
-- 컴파일러: Visual C++ 6.0 (레거시 분석 시)
-- 디버거: OllyDbg (32비트) / x64dbg (64비트)
-- 역어셈블러: IDA Pro 또는 Ghidra (무료)
-- Release Mode로 컴파일된 바이너리 분석 권장
-  (Debug Mode는 디버깅 심볼이 포함되어 실제와 다름)
+```bash
+# 분석 환경 자동 구성 스크립트 (Ubuntu/Kali)
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[*] 리버싱 분석 환경 구성 시작"
+
+# 기본 도구 설치
+sudo apt-get update -qq
+sudo apt-get install -y \
+    gdb gdb-multiarch \
+    nasm binutils \
+    python3-pip \
+    upx-ucl \
+    file binwalk
+
+# pwntools 및 분석 라이브러리 설치
+pip3 install --quiet \
+    pwntools \
+    pefile \
+    capstone \
+    unicorn \
+    keystone-engine \
+    r2pipe
+
+# GDB 확장 설치 (pwndbg 권장)
+if [ ! -d "$HOME/pwndbg" ]; then
+    git clone https://github.com/pwndbg/pwndbg.git "$HOME/pwndbg"
+    cd "$HOME/pwndbg" && ./setup.sh
+fi
+
+# checksec 설치
+pip3 install --quiet checksec.py
+
+echo "[+] 환경 구성 완료"
+echo "    GDB+pwndbg, pwntools, pefile, r2pipe 사용 가능"
+
+# 학습용 취약 바이너리 컴파일 옵션 (보호 기법 비활성화)
+# gcc -o vuln vuln.c -fno-stack-protector -z execstack -no-pie -m32
 ```
 
 ---
@@ -520,15 +551,95 @@ CALL MessageBoxA
 
 ### DLL 로드 방식
 ```c
-// 암시적 로드 (프로그램 시작 시 자동 로드)
+// 암시적 로드 (컴파일 시 자동 링크 — IAT에 기록됨)
 #include <windows.h>
-MessageBox(NULL, "Hello", "Title", MB_OK);
+int main(void) {
+    MessageBoxA(NULL, "Hello", "Title", MB_OK);
+    return 0;
+}
 
-// 명시적 로드 — 동적으로 필요 시 로드 (분석 어려움)
-HMODULE hModule = LoadLibrary("user32.dll");
-FARPROC pMB = GetProcAddress(hModule, "MessageBoxA");
-// 사용 후
-FreeLibrary(hModule);
+// 명시적 로드 — 런타임에 동적으로 로드 (IAT에 기록 안 됨, 분석 어려움)
+#include <windows.h>
+#include <stdio.h>
+
+typedef int (WINAPI *PFN_MessageBoxA)(HWND, LPCSTR, LPCSTR, UINT);
+
+int main(void) {
+    HMODULE hMod = LoadLibraryA("user32.dll");
+    if (!hMod) { fprintf(stderr, "LoadLibrary 실패\n"); return 1; }
+
+    PFN_MessageBoxA pMB = (PFN_MessageBoxA)GetProcAddress(hMod, "MessageBoxA");
+    if (pMB) {
+        pMB(NULL, "Dynamic load", "Info", MB_OK);
+    }
+    FreeLibrary(hMod);
+    return 0;
+}
+```
+
+```python
+#!/usr/bin/env python3
+"""
+pefile로 IAT(Import Address Table) 분석 — 의심 API 자동 탐지
+사용법: python3 iat_analyzer.py <PE파일>
+"""
+import sys
+import pefile
+
+SUSPICIOUS: dict[str, list[str]] = {
+    "네트워크":    ["WSAStartup", "connect", "send", "recv",
+                  "URLDownloadToFile", "InternetOpen", "InternetConnectA"],
+    "코드인젝션":  ["VirtualAllocEx", "WriteProcessMemory", "CreateRemoteThread",
+                  "SetWindowsHookEx", "NtUnmapViewOfSection"],
+    "지속성":      ["RegSetValueEx", "RegCreateKeyEx", "CreateServiceA",
+                  "StartServiceA"],
+    "안티분석":    ["IsDebuggerPresent", "CheckRemoteDebuggerPresent",
+                  "NtQueryInformationProcess", "GetTickCount"],
+    "암호화":      ["CryptEncrypt", "CryptCreateHash", "CryptDeriveKey"],
+}
+
+
+def analyze_iat(path: str) -> None:
+    pe = pefile.PE(path)
+    if not hasattr(pe, "DIRECTORY_ENTRY_IMPORT"):
+        print("[-] Import 디렉토리가 없습니다.")
+        return
+
+    found_flags: dict[str, list[str]] = {}
+    print(f"\n[*] IAT 분석: {path}\n{'='*50}")
+
+    for entry in pe.DIRECTORY_ENTRY_IMPORT:
+        dll_name = entry.dll.decode(errors="replace")
+        for imp in entry.imports:
+            if not imp.name:
+                continue
+            func = imp.name.decode(errors="replace")
+            for category, apis in SUSPICIOUS.items():
+                if func in apis:
+                    found_flags.setdefault(category, []).append(
+                        f"{dll_name}!{func}"
+                    )
+
+    if found_flags:
+        print("[!] 의심 API 탐지:")
+        for cat, funcs in found_flags.items():
+            print(f"\n  [{cat}]")
+            for f in funcs:
+                print(f"    - {f}")
+    else:
+        print("[+] 의심 API 없음")
+
+    # 전체 임포트 출력
+    print(f"\n[*] 전체 임포트 DLL 목록:")
+    for entry in pe.DIRECTORY_ENTRY_IMPORT:
+        print(f"  {entry.dll.decode(errors='replace')}")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print(f"Usage: {sys.argv[0]} <PE파일>")
+        sys.exit(1)
+    analyze_iat(sys.argv[1])
 ```
 
 ---
@@ -582,32 +693,78 @@ Stack 영역: 지역변수, 리턴 주소, 함수 인자 (매개변수)
 
 ### CUI 프로그램 (콘솔)
 ```c
-// main 함수 — 기본 인자 3개
+// main 함수 — 기본 인자 3개 (Linux/Windows CUI 공통)
 int main(int argc, char *argv[], char **envp)
 {
-    // argc: 전달된 인자 개수
+    // argc: 전달된 인자 개수 (프로그램명 포함)
     // argv: 인자 값 배열 (argv[0] = 실행 파일 경로)
-    // envp: 환경 변수 배열
-    return 0;
+    // envp: 환경 변수 배열 (NULL 종료)
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <input>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+    printf("arg: %s\n", argv[1]);
+    return EXIT_SUCCESS;
 }
 ```
 
 ### GUI 프로그램 (Windows)
 ```c
-// WinMain 함수 — 기본 인자 4개
+// WinMain 함수 — 기본 인자 4개 (Windows GUI)
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                      LPSTR lpszCmdParam, int nCmdShow)
 {
     // hInstance: 현재 프로그램 인스턴스 핸들
-    // hPrevInstance: 이전 인스턴스 (현재는 항상 NULL)
-    // lpszCmdParam: 커맨드 라인 인자 문자열
-    // nCmdShow: 윈도우 표시 방식
+    // hPrevInstance: 항상 NULL (Win32 이후 사용 안 함)
+    // lpszCmdParam: 커맨드 라인 인자 문자열 (argv 아님!)
+    // nCmdShow: 윈도우 표시 방식 (SW_SHOW, SW_HIDE 등)
+    MessageBoxA(NULL, "Hello, Reverser!", "Info", MB_OK);
     return 0;
 }
 ```
 
-```asm
-; OllyDbg에서 WinMain 인식:
-; main 또는 WinMain 함수 호출 전에 CRT 초기화 코드가 있음
-; 함수 인자 4개가 PUSH로 쌓인 후 CALL이 나오면 WinMain
+```python
+#!/usr/bin/env python3
+"""
+main 함수 진입점 자동 탐지 스크립트 (r2pipe 사용)
+사용법: python3 find_main.py <binary>
+"""
+import sys
+import r2pipe
+import json
+
+
+def find_main_entry(binary_path: str) -> None:
+    r2 = r2pipe.open(binary_path, flags=["-2"])  # 경고 억제
+    r2.cmd("aaa")  # 전체 분석
+
+    # 엔트리포인트 확인
+    entry_info = json.loads(r2.cmd("iej"))
+    print(f"[*] 엔트리포인트: {[e for e in entry_info]}")
+
+    # main 함수 탐지 (심볼 또는 패턴 매칭)
+    symbols = json.loads(r2.cmd("isj"))
+    main_syms = [s for s in symbols if "main" in s.get("name", "").lower()]
+    for sym in main_syms:
+        print(f"[+] main 후보: {sym['name']} @ {hex(sym['vaddr'])}")
+
+    # CRT 초기화 이후 첫 CALL 대상 (심볼 없는 경우)
+    if not main_syms:
+        entry_addr = entry_info[0]["vaddr"] if entry_info else None
+        if entry_addr:
+            r2.cmd(f"s {entry_addr}")
+            # 엔트리포인트에서 CALL 명령 목록 추출
+            disasm = json.loads(r2.cmd("pdj 30"))
+            calls = [i for i in disasm if i.get("type") == "call"]
+            if calls:
+                print(f"[+] WinMain/main 추정 주소: {hex(calls[-1]['jump'])}")
+
+    r2.quit()
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print(f"Usage: {sys.argv[0]} <binary>")
+        sys.exit(1)
+    find_main_entry(sys.argv[1])
 ```

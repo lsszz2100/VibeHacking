@@ -196,6 +196,185 @@ tcpdump -i eth0 -n port 53 | awk '{print $9}' | sort | uniq -c | sort -rn | head
 tshark -r capture.pcap -T fields -e dns.qry.name | awk 'length > 50' | sort | uniq
 ```
 
+### Scapy PCAP 분석기 (Python)
+
+```python
+#!/usr/bin/env python3
+"""
+PCAP 다층 분석기 — 포트 스캔/ARP 스푸핑/DNS 터널링/자격증명 패턴 탐지
+실행: python3 pcap_analyzer.py capture.pcap [-v]
+"""
+import argparse
+import re
+import sys
+from collections import Counter, defaultdict
+from datetime import datetime
+from pathlib import Path
+
+try:
+    from scapy.all import (
+        rdpcap, IP, TCP, UDP, ARP, DNS, DNSQR, Raw,
+        Ether, ICMP,
+    )
+except ImportError:
+    sys.exit("[!] scapy가 필요합니다: pip3 install scapy")
+
+
+# ── 분석 함수 ──────────────────────────────────────────
+
+def detect_port_scan(packets: list, threshold: int = 15) -> list[dict]:
+    """단일 출발지에서 짧은 시간 내 다수 포트 접근 탐지."""
+    # {src_ip: {dst_port}}
+    scan_map: defaultdict[str, set] = defaultdict(set)
+    for pkt in packets:
+        if pkt.haslayer(TCP) and pkt.haslayer(IP):
+            tcp = pkt[TCP]
+            ip = pkt[IP]
+            if tcp.flags & 0x02:  # SYN
+                scan_map[ip.src].add(tcp.dport)
+
+    results = []
+    for src, ports in scan_map.items():
+        if len(ports) >= threshold:
+            results.append({
+                "type": "포트 스캔",
+                "src": src,
+                "port_count": len(ports),
+                "sample_ports": sorted(ports)[:10],
+            })
+    return results
+
+
+def detect_arp_spoof(packets: list) -> list[dict]:
+    """동일 IP에 복수 MAC이 나타나는 ARP 스푸핑 탐지."""
+    ip_mac: defaultdict[str, set] = defaultdict(set)
+    for pkt in packets:
+        if pkt.haslayer(ARP) and pkt[ARP].op == 2:  # ARP Reply
+            arp = pkt[ARP]
+            if arp.psrc and arp.psrc != "0.0.0.0":
+                ip_mac[arp.psrc].add(arp.hwsrc.lower())
+
+    return [
+        {"type": "ARP 스푸핑", "ip": ip, "macs": list(macs)}
+        for ip, macs in ip_mac.items()
+        if len(macs) > 1
+    ]
+
+
+def detect_dns_tunneling(packets: list, min_length: int = 50) -> list[dict]:
+    """비정상적으로 긴 DNS 쿼리 이름(터널링 징후) 탐지."""
+    findings: list[dict] = []
+    for pkt in packets:
+        if pkt.haslayer(DNS) and pkt.haslayer(DNSQR):
+            try:
+                qname = pkt[DNSQR].qname.decode("utf-8", errors="replace").rstrip(".")
+                if len(qname) >= min_length:
+                    findings.append({
+                        "type": "DNS 터널링 의심",
+                        "src": pkt[IP].src if pkt.haslayer(IP) else "?",
+                        "query": qname,
+                        "length": len(qname),
+                    })
+            except Exception:
+                continue
+    return findings
+
+
+def extract_credentials(packets: list) -> list[dict]:
+    """평문 프로토콜(FTP/HTTP/SMTP)에서 자격증명 패턴 추출."""
+    creds: list[dict] = []
+    patterns = {
+        "FTP_USER": re.compile(rb"USER\s+(\S+)", re.IGNORECASE),
+        "FTP_PASS": re.compile(rb"PASS\s+(\S+)", re.IGNORECASE),
+        "HTTP_AUTH": re.compile(rb"Authorization:\s+Basic\s+(\S+)", re.IGNORECASE),
+        "HTTP_FORM": re.compile(rb"(?:password|passwd|pwd)=([^&\s]+)", re.IGNORECASE),
+        "SMTP_AUTH": re.compile(rb"AUTH LOGIN|AUTH PLAIN", re.IGNORECASE),
+    }
+    for pkt in packets:
+        if not pkt.haslayer(Raw):
+            continue
+        payload: bytes = pkt[Raw].load
+        src = pkt[IP].src if pkt.haslayer(IP) else "?"
+        for name, pattern in patterns.items():
+            match = pattern.search(payload)
+            if match:
+                value = match.group(1).decode("utf-8", errors="replace")[:40] if match.lastindex else "detected"
+                creds.append({"type": name, "src": src, "value": value})
+    return creds
+
+
+def protocol_stats(packets: list) -> dict[str, int]:
+    """프로토콜별 패킷 수 집계."""
+    stats: Counter = Counter()
+    for pkt in packets:
+        if pkt.haslayer(TCP):   stats["TCP"] += 1
+        elif pkt.haslayer(UDP): stats["UDP"] += 1
+        elif pkt.haslayer(ICMP): stats["ICMP"] += 1
+        elif pkt.haslayer(ARP): stats["ARP"] += 1
+        else:                   stats["Other"] += 1
+    return dict(stats)
+
+
+# ── 메인 ───────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="PCAP 다층 분석기 — 포트 스캔/ARP 스푸핑/DNS 터널링/자격증명 탐지",
+    )
+    parser.add_argument("pcap", help="분석할 .pcap / .pcapng 파일")
+    parser.add_argument("-v", "--verbose", action="store_true", help="상세 출력")
+    parser.add_argument("--scan-threshold", type=int, default=15,
+                        help="포트 스캔 탐지 최소 포트 수 (기본값: 15)")
+    parser.add_argument("--dns-min-len", type=int, default=50,
+                        help="DNS 터널링 의심 최소 쿼리 길이 (기본값: 50)")
+    args = parser.parse_args()
+
+    pcap_path = Path(args.pcap)
+    if not pcap_path.exists():
+        sys.exit(f"[!] 파일 없음: {pcap_path}")
+
+    print(f"[*] 로딩: {pcap_path}  ({pcap_path.stat().st_size // 1024} KB)")
+    try:
+        packets = rdpcap(str(pcap_path))
+    except Exception as e:
+        sys.exit(f"[!] PCAP 읽기 오류: {e}")
+
+    print(f"[*] 총 패킷: {len(packets)}개\n")
+
+    # 프로토콜 통계
+    stats = protocol_stats(packets)
+    print("[*] 프로토콜 분포")
+    for proto, count in sorted(stats.items(), key=lambda x: -x[1]):
+        print(f"    {proto:<8}  {count:>6}개")
+
+    # 탐지 실행
+    for findings, label in [
+        (detect_port_scan(packets, args.scan_threshold), "포트 스캔"),
+        (detect_arp_spoof(packets), "ARP 스푸핑"),
+        (detect_dns_tunneling(packets, args.dns_min_len), "DNS 터널링"),
+        (extract_credentials(packets), "자격증명"),
+    ]:
+        print(f"\n[*] {label} 탐지: {len(findings)}건")
+        for f in findings[:10]:  # 최대 10건 출력
+            if args.verbose:
+                print(f"    {f}")
+            else:
+                summary = f.get("src", "") or f.get("ip", "")
+                detail = (
+                    f.get("port_count") or f.get("macs") or
+                    f.get("query", "")[:40] or f.get("value", "")
+                )
+                print(f"    [{f['type']}] {summary}  →  {detail}")
+        if len(findings) > 10:
+            print(f"    ... 외 {len(findings) - 10}건")
+
+    print(f"\n[*] 분석 완료: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
 ---
 
 ## 5. Wireshark 색상 규칙 이해
@@ -362,6 +541,140 @@ tshark -r capture.pcap -T json > capture.json
 # 실시간 캡처와 분석 동시 (파이프)
 tshark -i eth0 -Y "tcp.flags.syn==1 and tcp.flags.ack==0" \
     -T fields -e ip.src -e tcp.dstport | sort | uniq -c | sort -rn
+```
+
+### 실시간 네트워크 이상 탐지 스크립트 (Python)
+
+```python
+#!/usr/bin/env python3
+"""
+실시간 네트워크 이상 탐지기 — SYN 플러드, 포트 스캔, 비정상 ICMP 모니터링
+실행: sudo python3 net_monitor.py [-i eth0] [--syn-limit 100]
+"""
+import argparse
+import sys
+import threading
+import time
+from collections import defaultdict
+from datetime import datetime
+
+try:
+    from scapy.all import sniff, IP, TCP, UDP, ICMP, ARP
+except ImportError:
+    sys.exit("[!] scapy가 필요합니다: pip3 install scapy")
+
+
+class NetworkMonitor:
+    def __init__(self, iface: str, syn_limit: int, scan_limit: int, window: int) -> None:
+        self.iface = iface
+        self.syn_limit = syn_limit      # 시간 창 내 최대 SYN 수
+        self.scan_limit = scan_limit    # 포트 스캔 탐지 임계값
+        self.window = window            # 집계 시간 창(초)
+
+        self._lock = threading.Lock()
+        self.stats = {
+            "total": 0, "tcp": 0, "udp": 0,
+            "icmp": 0, "arp": 0, "alerts": 0,
+        }
+        # {src_ip: count}
+        self._syn_counts: defaultdict[str, int] = defaultdict(int)
+        # {src_ip: {dst_port}}
+        self._scan_map: defaultdict[str, set] = defaultdict(set)
+
+        # 주기적으로 카운터 초기화
+        self._reset_thread = threading.Thread(target=self._reset_loop, daemon=True)
+        self._reset_thread.start()
+
+    def _reset_loop(self) -> None:
+        while True:
+            time.sleep(self.window)
+            with self._lock:
+                self._syn_counts.clear()
+                self._scan_map.clear()
+
+    def _alert(self, msg: str) -> None:
+        ts = datetime.now().strftime("%H:%M:%S")
+        print(f"\n  [ALERT] {ts}  {msg}")
+        self.stats["alerts"] += 1
+
+    def process(self, pkt) -> None:
+        with self._lock:
+            self.stats["total"] += 1
+
+            if pkt.haslayer(TCP):
+                self.stats["tcp"] += 1
+                tcp = pkt[TCP]
+                ip = pkt[IP] if pkt.haslayer(IP) else None
+                if not ip:
+                    return
+
+                # SYN 플러드 탐지
+                if tcp.flags & 0x02 and not (tcp.flags & 0x10):
+                    self._syn_counts[ip.src] += 1
+                    if self._syn_counts[ip.src] == self.syn_limit:
+                        self._alert(
+                            f"SYN 플러드 의심: {ip.src} → "
+                            f"{self._syn_counts[ip.src]}개/{self.window}s"
+                        )
+
+                    # 포트 스캔 탐지
+                    self._scan_map[ip.src].add(tcp.dport)
+                    if len(self._scan_map[ip.src]) == self.scan_limit:
+                        self._alert(
+                            f"포트 스캔 의심: {ip.src} → "
+                            f"{len(self._scan_map[ip.src])}포트/{self.window}s"
+                        )
+
+            elif pkt.haslayer(UDP):
+                self.stats["udp"] += 1
+            elif pkt.haslayer(ICMP):
+                self.stats["icmp"] += 1
+            elif pkt.haslayer(ARP):
+                self.stats["arp"] += 1
+
+    def print_stats(self) -> None:
+        s = self.stats
+        print(
+            f"\r  패킷: {s['total']:>7}  "
+            f"TCP:{s['tcp']:>6}  UDP:{s['udp']:>6}  "
+            f"ICMP:{s['icmp']:>5}  ARP:{s['arp']:>5}  "
+            f"경보:{s['alerts']:>4}",
+            end="", flush=True,
+        )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="실시간 네트워크 이상 탐지기")
+    parser.add_argument("-i", "--iface", default="eth0", help="캡처 인터페이스 (기본값: eth0)")
+    parser.add_argument("--syn-limit", type=int, default=100,
+                        help="SYN 플러드 경보 임계값 (기본값: 100)")
+    parser.add_argument("--scan-limit", type=int, default=20,
+                        help="포트 스캔 경보 임계값 포트 수 (기본값: 20)")
+    parser.add_argument("--window", type=int, default=5,
+                        help="집계 시간 창 초 (기본값: 5)")
+    args = parser.parse_args()
+
+    monitor = NetworkMonitor(args.iface, args.syn_limit, args.scan_limit, args.window)
+    print(f"[*] 모니터링 시작: {args.iface}  |  Ctrl+C로 종료")
+
+    # 통계 출력 스레드
+    def stats_printer() -> None:
+        while True:
+            time.sleep(1)
+            monitor.print_stats()
+
+    threading.Thread(target=stats_printer, daemon=True).start()
+
+    try:
+        sniff(iface=args.iface, prn=monitor.process, store=False)
+    except KeyboardInterrupt:
+        print("\n\n[*] 종료")
+        monitor.print_stats()
+        print()
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### pcap 파일 조작 도구

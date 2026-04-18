@@ -35,6 +35,211 @@ hash-identifier
 # $apr1$ → Apache MD5
 ```
 
+### 해시 자동 식별 및 크래킹 자동화 (Python)
+
+```python
+#!/usr/bin/env python3
+"""
+해시 식별 및 크래킹 자동화 도구
+- 해시 형식 자동 감지
+- John the Ripper / hashcat 자동 호출
+- 복수 해시 일괄 처리
+사용법: python3 hash_cracker.py -H '<hash>' -w rockyou.txt
+        python3 hash_cracker.py -f hashes.txt -w wordlist.txt --tool hashcat
+"""
+import argparse
+import hashlib
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+
+# 해시 패턴 → (이름, hashcat 모드, john 형식)
+HASH_SIGNATURES: list[tuple[re.Pattern, str, str, str]] = [
+    (re.compile(r"^\$6\$[./A-Za-z0-9]{1,16}\$[./A-Za-z0-9]{86}$"),
+     "SHA-512 crypt", "1800", "sha512crypt"),
+    (re.compile(r"^\$5\$[./A-Za-z0-9]{1,16}\$[./A-Za-z0-9]{43}$"),
+     "SHA-256 crypt", "7400", "sha256crypt"),
+    (re.compile(r"^\$2[ayb]\$\d{2}\$[./A-Za-z0-9]{53}$"),
+     "bcrypt", "3200", "bcrypt"),
+    (re.compile(r"^\$1\$[./A-Za-z0-9]{1,8}\$[./A-Za-z0-9]{22}$"),
+     "MD5 crypt", "500", "md5crypt"),
+    (re.compile(r"^\$apr1\$[./A-Za-z0-9]{1,8}\$[./A-Za-z0-9]{22}$"),
+     "Apache MD5", "1600", "md5crypt-opencl"),
+    (re.compile(r"^[0-9a-fA-F]{128}$"),
+     "SHA-512", "1700", "raw-sha512"),
+    (re.compile(r"^[0-9a-fA-F]{64}$"),
+     "SHA-256", "1400", "raw-sha256"),
+    (re.compile(r"^[0-9a-fA-F]{40}$"),
+     "SHA-1", "100", "raw-sha1"),
+    (re.compile(r"^[0-9a-fA-F]{32}$"),
+     "MD5", "0", "raw-md5"),
+    (re.compile(r"^[0-9a-fA-F]{32}:[0-9a-fA-F]{32}$"),
+     "NTLM (LM:NTLM)", "1000", "nt"),
+    (re.compile(r"^aad3b435b51404eeaad3b435b51404ee:[0-9a-fA-F]{32}$"),
+     "NTLM (empty LM)", "1000", "nt"),
+]
+
+
+def identify_hash(hash_str: str) -> tuple[str, str, str]:
+    """해시 문자열을 분석하여 (이름, hashcat_mode, john_format) 반환."""
+    h = hash_str.strip()
+    for pattern, name, hc_mode, john_fmt in HASH_SIGNATURES:
+        if pattern.match(h):
+            return name, hc_mode, john_fmt
+    return "Unknown", "", ""
+
+
+def verify_hash(plaintext: str, hash_str: str, hash_name: str) -> bool:
+    """간단한 로컬 검증 (MD5/SHA-1/SHA-256/SHA-512)."""
+    name_lower = hash_name.lower()
+    algo_map = {
+        "md5": hashlib.md5,
+        "sha-1": hashlib.sha1,
+        "sha-256": hashlib.sha256,
+        "sha-512": hashlib.sha512,
+    }
+    for key, fn in algo_map.items():
+        if key in name_lower:
+            return fn(plaintext.encode()).hexdigest().lower() == hash_str.lower()
+    return False
+
+
+def crack_with_john(hash_str: str, john_fmt: str, wordlist: Path) -> str | None:
+    """John the Ripper로 단일 해시 크래킹. 성공 시 평문 반환."""
+    john_bin = shutil.which("john")
+    if not john_bin:
+        print("[!] john을 찾을 수 없습니다")
+        return None
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as tf:
+        tf.write(f"target:{hash_str}\n")
+        hash_file = tf.name
+
+    try:
+        cmd = [john_bin, f"--wordlist={wordlist}", f"--format={john_fmt}", hash_file]
+        print(f"  [*] 실행: {' '.join(cmd)}")
+        subprocess.run(cmd, capture_output=True, timeout=300)
+
+        # 결과 조회
+        result = subprocess.run(
+            [john_bin, "--show", f"--format={john_fmt}", hash_file],
+            capture_output=True, text=True, timeout=10,
+        )
+        for line in result.stdout.splitlines():
+            if ":" in line and not line.startswith("0 password"):
+                return line.split(":", 1)[1].strip()
+    except subprocess.TimeoutExpired:
+        print("[!] john 실행 시간 초과")
+    finally:
+        Path(hash_file).unlink(missing_ok=True)
+
+    return None
+
+
+def crack_with_hashcat(hash_str: str, hc_mode: str, wordlist: Path) -> str | None:
+    """hashcat으로 단일 해시 크래킹. 성공 시 평문 반환."""
+    hashcat_bin = shutil.which("hashcat")
+    if not hashcat_bin:
+        print("[!] hashcat을 찾을 수 없습니다")
+        return None
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as tf:
+        tf.write(f"{hash_str}\n")
+        hash_file = tf.name
+
+    outfile = hash_file + ".cracked"
+    try:
+        cmd = [
+            hashcat_bin, "-m", hc_mode, "-a", "0",
+            "--quiet", "--potfile-disable",
+            "-o", outfile,
+            hash_file, str(wordlist),
+        ]
+        print(f"  [*] 실행: hashcat -m {hc_mode} ...")
+        subprocess.run(cmd, capture_output=True, timeout=600)
+
+        cracked = Path(outfile)
+        if cracked.exists():
+            content = cracked.read_text().strip()
+            if ":" in content:
+                return content.split(":", 1)[1]
+    except subprocess.TimeoutExpired:
+        print("[!] hashcat 실행 시간 초과")
+    finally:
+        Path(hash_file).unlink(missing_ok=True)
+        Path(outfile).unlink(missing_ok=True)
+
+    return None
+
+
+def process_hashes(hashes: list[str], wordlist: Path, tool: str) -> None:
+    for i, h in enumerate(hashes, 1):
+        h = h.strip()
+        if not h:
+            continue
+        print(f"\n[{i}/{len(hashes)}] 해시: {h[:60]}{'...' if len(h) > 60 else ''}")
+        name, hc_mode, john_fmt = identify_hash(h)
+        print(f"  형식 감지: {name}  (hashcat={hc_mode}, john={john_fmt})")
+
+        if name == "Unknown":
+            print("  [!] 알 수 없는 형식 — 수동 확인 필요")
+            continue
+
+        cracked: str | None = None
+        if tool in ("john", "auto") and john_fmt:
+            cracked = crack_with_john(h, john_fmt, wordlist)
+        if cracked is None and tool in ("hashcat", "auto") and hc_mode:
+            cracked = crack_with_hashcat(h, hc_mode, wordlist)
+
+        if cracked:
+            print(f"  [+] 크랙 성공: {cracked}")
+            if verify_hash(cracked, h, name):
+                print(f"  [+] 검증 완료")
+        else:
+            print(f"  [-] 크랙 실패 (워드리스트로 못 찾음)")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="해시 자동 식별 및 크래킹 도구",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""예시:
+  python3 hash_cracker.py -H '5f4dcc3b5aa765d61d8327deb882cf99' -w rockyou.txt
+  python3 hash_cracker.py -f hashes.txt -w wordlist.txt --tool hashcat
+  python3 hash_cracker.py -H '$6$salt$hash...' -w rockyou.txt --tool john
+        """,
+    )
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-H", "--hash", help="단일 해시 문자열")
+    group.add_argument("-f", "--file", type=Path, help="해시 목록 파일 (한 줄에 하나)")
+
+    parser.add_argument("-w", "--wordlist", type=Path, required=True, help="워드리스트 파일")
+    parser.add_argument("--tool", choices=["john", "hashcat", "auto"], default="auto",
+                        help="사용할 크래킹 도구 (기본값: auto)")
+    args = parser.parse_args()
+
+    if not args.wordlist.exists():
+        sys.exit(f"[!] 워드리스트 파일 없음: {args.wordlist}")
+
+    if args.hash:
+        hashes = [args.hash]
+    else:
+        if not args.file.exists():
+            sys.exit(f"[!] 해시 파일 없음: {args.file}")
+        hashes = args.file.read_text().splitlines()
+
+    print(f"[*] 처리할 해시: {len(hashes)}개  |  워드리스트: {args.wordlist}")
+    process_hashes(hashes, args.wordlist, args.tool)
+
+
+if __name__ == "__main__":
+    main()
+```
+
 ---
 
 ## 2. Linux 패스워드 구조
@@ -99,6 +304,85 @@ int main(void) {
 gcc -o hashtest hashtest.c -lcrypt
 ./hashtest
 # 출력된 해시를 /etc/shadow의 해시와 비교하여 검증
+```
+
+### Python으로 해시 생성 및 검증
+
+```python
+#!/usr/bin/env python3
+"""
+Linux shadow 호환 해시 생성 및 검증 도구
+사용법: python3 shadow_hash.py generate <password> [--algorithm sha512]
+        python3 shadow_hash.py verify <password> <shadow_entry>
+"""
+import argparse
+import hashlib
+import os
+import secrets
+import sys
+
+
+def generate_salt(length: int = 16) -> str:
+    """shadow 호환 솔트 문자열 생성 (./A-Za-z0-9)."""
+    alphabet = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def make_shadow_hash(password: str, algorithm: str = "sha512", salt: str | None = None) -> str:
+    """Linux shadow 파일 호환 해시 생성."""
+    algo_map = {"md5": "1", "sha256": "5", "sha512": "6"}
+    if algorithm not in algo_map:
+        sys.exit(f"[!] 지원하지 않는 알고리즘: {algorithm}")
+
+    import crypt  # Python 3.9 이하에서 사용 가능 (3.13에서 제거됨)
+    prefix = algo_map[algorithm]
+    salt = salt or generate_salt(16)
+    salt_str = f"${prefix}${salt}$"
+    return crypt.crypt(password, salt_str)
+
+
+def verify_shadow_entry(password: str, shadow_hash: str) -> bool:
+    """shadow 해시와 평문 비밀번호 일치 여부 확인."""
+    import crypt
+    return crypt.crypt(password, shadow_hash) == shadow_hash
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Linux shadow 해시 생성/검증")
+    sub = parser.add_subparsers(dest="action")
+
+    gen = sub.add_parser("generate", help="해시 생성")
+    gen.add_argument("password", help="해시할 비밀번호")
+    gen.add_argument("-a", "--algorithm", choices=["md5", "sha256", "sha512"],
+                     default="sha512", help="해시 알고리즘 (기본값: sha512)")
+    gen.add_argument("--salt", help="고정 솔트 (미지정 시 랜덤 생성)")
+
+    ver = sub.add_parser("verify", help="해시 검증")
+    ver.add_argument("password", help="검증할 평문 비밀번호")
+    ver.add_argument("hash", help="shadow 해시 문자열")
+
+    args = parser.parse_args()
+    if not args.action:
+        parser.print_help()
+        return
+
+    try:
+        if args.action == "generate":
+            h = make_shadow_hash(args.password, args.algorithm, args.salt)
+            print(f"해시: {h}")
+            print(f"shadow 형식: username:{h}:...")
+        else:
+            match = verify_shadow_entry(args.password, args.hash)
+            print(f"[{'+' if match else '-'}] 비밀번호 {'일치' if match else '불일치'}")
+            sys.exit(0 if match else 1)
+    except ImportError:
+        sys.exit("[!] crypt 모듈 없음 — passlib 사용: pip3 install passlib")
+    except Exception as e:
+        sys.exit(f"[!] 오류: {e}")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

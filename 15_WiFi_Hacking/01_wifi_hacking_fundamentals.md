@@ -352,17 +352,253 @@ bettercap    → MITM/Evil Twin 자동화
 
 ## 7. 실습 환경 구성
 
-```bash
-# 가상 무선 인터페이스 생성 (실습용)
-sudo modprobe mac80211_hwsim radios=2
+```python
+#!/usr/bin/env python3
+"""
+Scapy 기반 WiFi AP 스캔 및 Deauthentication 탐지 도구
+사용: sudo python3 wifi_scanner.py --iface wlan0mon [--timeout 30] [--detect-deauth]
+주의: 모니터 모드 인터페이스 필요 (airmon-ng start wlan0)
+"""
 
-# 생성된 인터페이스 확인
-iwconfig
+from __future__ import annotations
 
-# 무선 어댑터 권장 사항 (실제 공격)
-# Alfa AWUS036ACH (AC1200, 2.4/5GHz)
-# Alfa AWUS036NHA (300Mbps, 강력한 주입 지원)
-# TP-Link TL-WN722N v1 (저렴, 주입 지원)
+import argparse
+import signal
+import sys
+import time
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Optional
+
+try:
+    from scapy.all import sniff, conf
+    from scapy.layers.dot11 import (
+        Dot11, Dot11Beacon, Dot11Elt, Dot11Deauth,
+        Dot11Disas, Dot11ProbeReq, RadioTap,
+    )
+    HAS_SCAPY = True
+except ImportError:
+    HAS_SCAPY = False
+
+
+# ------------------------------------------------------------------ #
+#  데이터 구조
+# ------------------------------------------------------------------ #
+@dataclass
+class APInfo:
+    bssid: str
+    ssid: str
+    channel: int
+    rssi: int
+    enc: str
+    vendor: str = ""
+    first_seen: str = field(default_factory=lambda: datetime.now().strftime("%H:%M:%S"))
+    last_seen: str = field(default_factory=lambda: datetime.now().strftime("%H:%M:%S"))
+    beacon_count: int = 0
+
+
+@dataclass
+class DeauthAlert:
+    timestamp: str
+    src_mac: str
+    dst_mac: str
+    bssid: str
+    reason_code: int
+    frame_type: str  # Deauth | Disassoc
+
+    _REASON_CODES = {
+        1: "Unspecified reason",
+        2: "Previous auth no longer valid",
+        3: "Deauth leaving BSS",
+        4: "Inactivity",
+        7: "Class 3 frame received (가장 흔한 스푸핑 코드)",
+        8: "Disassoc leaving BSS",
+    }
+
+    def reason_str(self) -> str:
+        return self._REASON_CODES.get(self.reason_code, f"Code {self.reason_code}")
+
+
+# ------------------------------------------------------------------ #
+#  스캐너
+# ------------------------------------------------------------------ #
+class WiFiScanner:
+    def __init__(self, iface: str, detect_deauth: bool = False) -> None:
+        self.iface = iface
+        self.detect_deauth = detect_deauth
+        self.aps: dict[str, APInfo] = {}
+        self.deauth_alerts: list[DeauthAlert] = []
+        self.deauth_counter: Counter = Counter()
+        self._stop = False
+
+    # ── 패킷 핸들러 ───────────────────────────────────────────────────
+    def _handle(self, pkt) -> None:
+        if not pkt.haslayer(Dot11):
+            return
+
+        # AP Beacon 처리
+        if pkt.haslayer(Dot11Beacon):
+            self._process_beacon(pkt)
+
+        # Deauth / Disassoc 탐지
+        if self.detect_deauth:
+            if pkt.haslayer(Dot11Deauth) or pkt.haslayer(Dot11Disas):
+                self._process_deauth(pkt)
+
+    def _process_beacon(self, pkt) -> None:
+        dot11 = pkt[Dot11]
+        bssid = dot11.addr2 or ""
+        if not bssid:
+            return
+
+        # SSID 추출
+        ssid = ""
+        channel = 0
+        enc = "OPEN"
+        elt = pkt.getlayer(Dot11Elt)
+        while elt:
+            if elt.ID == 0:    # SSID
+                try:
+                    ssid = elt.info.decode("utf-8", errors="replace")
+                except Exception:
+                    ssid = "[binary]"
+            elif elt.ID == 3:  # DS Parameter Set (채널)
+                try:
+                    channel = int.from_bytes(elt.info, "little")
+                except Exception:
+                    pass
+            elif elt.ID == 48: # RSN Information (WPA2)
+                enc = "WPA2"
+            elif elt.ID == 221 and elt.info[:4] == b"\x00\x50\xf2\x01":  # WPA1
+                if enc != "WPA2":
+                    enc = "WPA"
+            elt = elt.payload.getlayer(Dot11Elt) if elt.payload else None
+
+        # RadioTap에서 신호 강도
+        rssi = 0
+        if pkt.haslayer(RadioTap):
+            rssi = getattr(pkt[RadioTap], "dBm_AntSignal", 0) or 0
+
+        ts = datetime.now().strftime("%H:%M:%S")
+        if bssid in self.aps:
+            ap = self.aps[bssid]
+            ap.last_seen = ts
+            ap.beacon_count += 1
+            ap.rssi = rssi
+        else:
+            self.aps[bssid] = APInfo(
+                bssid=bssid, ssid=ssid or "(hidden)",
+                channel=channel, rssi=rssi, enc=enc,
+            )
+            print(f"  [+] AP: {ssid or '(hidden)':<30} BSSID:{bssid}  CH:{channel:2d}  {enc}  RSSI:{rssi}dBm")
+
+    def _process_deauth(self, pkt) -> None:
+        dot11 = pkt[Dot11]
+        src = dot11.addr2 or "??"
+        dst = dot11.addr1 or "??"
+        bssid = dot11.addr3 or src
+
+        layer = pkt[Dot11Deauth] if pkt.haslayer(Dot11Deauth) else pkt[Dot11Disas]
+        frame_type = "Deauth" if pkt.haslayer(Dot11Deauth) else "Disassoc"
+        reason = getattr(layer, "reason", 0)
+
+        alert = DeauthAlert(
+            timestamp=datetime.now().strftime("%H:%M:%S"),
+            src_mac=src,
+            dst_mac=dst,
+            bssid=bssid,
+            reason_code=reason,
+            frame_type=frame_type,
+        )
+        self.deauth_alerts.append(alert)
+        self.deauth_counter[src] += 1
+
+        # 초당 10회 이상 → 공격 경보
+        count = self.deauth_counter[src]
+        warning = " [!!! DEAUTH ATTACK DETECTED !!!]" if count >= 10 else ""
+        print(
+            f"  [{alert.timestamp}] {frame_type:8s} {src} → {dst}  "
+            f"이유:{alert.reason_str()}  총:{count}회{warning}"
+        )
+
+    # ── 스캔 실행 ─────────────────────────────────────────────────────
+    def start(self, timeout: int = 0) -> None:
+        def _sigint(sig, frame):
+            print("\n[*] 스캔 중단...", file=sys.stderr)
+            self._stop = True
+
+        signal.signal(signal.SIGINT, _sigint)
+        print(f"[*] WiFi 스캔 시작: {self.iface}", file=sys.stderr)
+        if self.detect_deauth:
+            print("[*] Deauth/Disassoc 탐지 활성화", file=sys.stderr)
+
+        sniff(
+            iface=self.iface,
+            prn=self._handle,
+            store=False,
+            timeout=timeout if timeout > 0 else None,
+            stop_filter=lambda _: self._stop,
+        )
+
+    def print_summary(self) -> None:
+        print(f"\n{'='*65}")
+        print(f"발견된 AP: {len(self.aps)}개")
+        print(f"\n{'BSSID':<20} {'SSID':<30} {'CH':>4} {'ENC':<6} {'RSSI':>6}")
+        print("-" * 70)
+        for ap in sorted(self.aps.values(), key=lambda a: -a.rssi):
+            print(f"{ap.bssid:<20} {ap.ssid:<30} {ap.channel:>4} {ap.enc:<6} {ap.rssi:>5}dBm")
+
+        if self.deauth_alerts:
+            print(f"\nDeauth/Disassoc 탐지: {len(self.deauth_alerts)}회")
+            print("\n[상위 발신자]")
+            for mac, cnt in self.deauth_counter.most_common(5):
+                label = " ← 공격 의심" if cnt >= 10 else ""
+                print(f"  {mac}  {cnt}회{label}")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Scapy 기반 WiFi AP 스캔 및 Deauth 탐지 도구",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  sudo python3 wifi_scanner.py --iface wlan0mon\n"
+               "  sudo python3 wifi_scanner.py --iface wlan0mon --timeout 60 --detect-deauth",
+    )
+    parser.add_argument(
+        "--iface", required=True,
+        help="모니터 모드 무선 인터페이스 (예: wlan0mon)",
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=0,
+        metavar="SEC",
+        help="스캔 시간(초). 0=무한 (기본: 0)",
+    )
+    parser.add_argument(
+        "--detect-deauth", action="store_true",
+        help="Deauthentication/Disassociation 패킷 탐지 활성화",
+    )
+    return parser
+
+
+def main() -> None:
+    if not HAS_SCAPY:
+        print("scapy 라이브러리 필요: pip install scapy", file=sys.stderr)
+        sys.exit(1)
+
+    parser = build_parser()
+    args = parser.parse_args()
+
+    scanner = WiFiScanner(iface=args.iface, detect_deauth=args.detect_deauth)
+    scanner.start(timeout=args.timeout)
+    scanner.print_summary()
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

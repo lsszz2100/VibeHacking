@@ -526,75 +526,224 @@ pre-commit run --all-files  # 전체 파일 검사
 
 ```python
 #!/usr/bin/env python3
-"""ZAP API를 통한 자동화 스캔"""
+"""
+OWASP ZAP DAST 자동화 스캐너 CLI
+사전 조건: ZAP 데몬 실행 → docker run -d -p 8080:8080 \
+              ghcr.io/zaproxy/zaproxy:stable \
+              zap.sh -daemon -port 8080 -host 0.0.0.0 \
+              -config api.key=zap-api-key -config api.addrs.addr.name=.* \
+              -config api.addrs.addr.enabled=true
 
+사용: python3 zap_scan.py scan   --target http://app:8000 --output zap.json
+      python3 zap_scan.py openapi --target http://app:8000 \
+                                   --spec http://app:8000/v3/api-docs
+      python3 zap_scan.py report  --input zap.json --format html
+"""
+
+from __future__ import annotations
+import argparse
+import json
+import sys
 import time
-import requests
+from pathlib import Path
 
-ZAP_URL = "http://localhost:8080"
-API_KEY = "your-zap-api-key"
-TARGET = "http://app:8000"
+try:
+    import requests
+except ImportError:
+    sys.exit("pip install requests")
 
-def run_zap_scan(target_url: str) -> dict:
-    """ZAP 기본 스캔 실행"""
-    
-    # 스파이더 실행
-    print("[*] 스파이더 실행...")
-    resp = requests.get(f"{ZAP_URL}/JSON/spider/action/scan/",
-                       params={"apikey": API_KEY, "url": target_url})
-    scan_id = resp.json()["scan"]
-    
-    # 스파이더 완료 대기
-    while True:
-        prog = requests.get(f"{ZAP_URL}/JSON/spider/view/status/",
-                           params={"apikey": API_KEY, "scanId": scan_id})
-        if int(prog.json()["status"]) >= 100:
-            break
-        time.sleep(2)
-    
-    # 능동 스캔
-    print("[*] 능동 스캔 실행...")
-    resp = requests.get(f"{ZAP_URL}/JSON/ascan/action/scan/",
-                       params={"apikey": API_KEY, "url": target_url,
-                               "recurse": "true", "scanPolicyName": ""})
-    scan_id = resp.json()["scan"]
-    
-    # 능동 스캔 완료 대기
-    while True:
-        prog = requests.get(f"{ZAP_URL}/JSON/ascan/view/status/",
-                           params={"apikey": API_KEY, "scanId": scan_id})
-        status = int(prog.json()["status"])
-        print(f"\r[*] 진행률: {status}%", end="", flush=True)
-        if status >= 100:
-            break
-        time.sleep(5)
-    
-    print("\n[*] 결과 수집...")
-    alerts = requests.get(f"{ZAP_URL}/JSON/alert/view/alerts/",
-                         params={"apikey": API_KEY, "baseurl": target_url})
-    
-    return alerts.json()
 
-def generate_report(alerts: dict, output_file: str = "zap_report.html"):
-    resp = requests.get(f"{ZAP_URL}/OTHER/core/other/htmlreport/",
-                       params={"apikey": API_KEY})
-    with open(output_file, "wb") as f:
-        f.write(resp.content)
-    print(f"[+] 보고서 저장: {output_file}")
+class ZAPClient:
+    def __init__(self, zap_url: str = "http://localhost:8080",
+                 api_key: str = "zap-api-key") -> None:
+        self.base  = zap_url.rstrip("/")
+        self.key   = api_key
+        self.sess  = requests.Session()
+        self.sess.headers["X-ZAP-API-Key"] = api_key
+
+    def _get(self, path: str, **params) -> dict:
+        params.setdefault("apikey", self.key)
+        r = self.sess.get(f"{self.base}{path}", params=params, timeout=30)
+        r.raise_for_status()
+        return r.json()
+
+    # ── 세션 초기화 ────────────────────────────────────────
+
+    def new_session(self) -> None:
+        self._get("/JSON/core/action/newSession/", overwrite="true")
+        print("[*] ZAP 세션 초기화")
+
+    # ── 인증 설정 (Bearer 토큰) ──────────────────────────────
+
+    def set_bearer_token(self, token: str) -> None:
+        self._get("/JSON/script/action/enable/",
+                  scriptName="JWT Header")
+        # 대안: replacer 규칙으로 Authorization 헤더 삽입
+        self._get("/JSON/replacer/action/addRule/",
+                  description="Bearer Token",
+                  enabled="true",
+                  matchType="REQ_HEADER",
+                  matchString="Authorization",
+                  matchRegex="false",
+                  replacement=f"Bearer {token}")
+        print("[*] Bearer 토큰 설정 완료")
+
+    # ── 스파이더 ────────────────────────────────────────────
+
+    def spider(self, target: str, max_depth: int = 5) -> None:
+        print("[*] 스파이더 크롤링 시작...")
+        resp = self._get("/JSON/spider/action/scan/",
+                         url=target, maxChildren=50, recurse="true",
+                         subtreeOnly="true")
+        scan_id = resp["scan"]
+        while True:
+            status = int(self._get("/JSON/spider/view/status/",
+                                   scanId=scan_id)["status"])
+            print(f"\r    진행률: {status}%", end="", flush=True)
+            if status >= 100:
+                break
+            time.sleep(2)
+        print(f"\n[+] 스파이더 완료")
+
+    def ajax_spider(self, target: str, duration: int = 60) -> None:
+        """Ajax Spider (SPA 크롤링)"""
+        print("[*] Ajax 스파이더 시작...")
+        self._get("/JSON/ajaxSpider/action/scan/", url=target)
+        deadline = time.time() + duration
+        while time.time() < deadline:
+            status = self._get("/JSON/ajaxSpider/view/status/")["status"]
+            if status == "stopped":
+                break
+            time.sleep(5)
+        self._get("/JSON/ajaxSpider/action/stop/")
+        print("[+] Ajax 스파이더 완료")
+
+    # ── OpenAPI 가져오기 ─────────────────────────────────────
+
+    def import_openapi(self, spec_url: str, target: str) -> None:
+        print(f"[*] OpenAPI 스펙 가져오기: {spec_url}")
+        self._get("/JSON/openapi/action/importUrl/",
+                  url=spec_url, hostOverride=target)
+
+    # ── 능동 스캔 ────────────────────────────────────────────
+
+    def active_scan(self, target: str, policy: str = "") -> None:
+        print("[*] 능동 스캔 시작...")
+        resp = self._get("/JSON/ascan/action/scan/",
+                         url=target, recurse="true",
+                         scanPolicyName=policy)
+        scan_id = resp["scan"]
+        while True:
+            status = int(self._get("/JSON/ascan/view/status/",
+                                   scanId=scan_id)["status"])
+            print(f"\r    능동 스캔: {status}%", end="", flush=True)
+            if status >= 100:
+                break
+            time.sleep(5)
+        print("\n[+] 능동 스캔 완료")
+
+    # ── 결과 수집 ────────────────────────────────────────────
+
+    def get_alerts(self, target: str | None = None) -> list[dict]:
+        params: dict = {}
+        if target:
+            params["baseurl"] = target
+        return self._get("/JSON/alert/view/alerts/", **params).get("alerts", [])
+
+    def get_html_report(self) -> bytes:
+        r = self.sess.get(f"{self.base}/OTHER/core/other/htmlreport/",
+                          params={"apikey": self.key}, timeout=60)
+        r.raise_for_status()
+        return r.content
+
+    def get_json_report(self) -> bytes:
+        r = self.sess.get(f"{self.base}/OTHER/core/other/jsonreport/",
+                          params={"apikey": self.key}, timeout=60)
+        r.raise_for_status()
+        return r.content
+
+
+# ── CLI 명령 ──────────────────────────────────────────────────
+
+def cmd_scan(args: argparse.Namespace) -> None:
+    zap = ZAPClient(args.zap_url, args.api_key)
+    zap.new_session()
+    if args.token:
+        zap.set_bearer_token(args.token)
+
+    zap.spider(args.target)
+    if args.ajax:
+        zap.ajax_spider(args.target, duration=args.ajax_duration)
+    zap.active_scan(args.target)
+
+    alerts = zap.get_alerts(args.target)
+    high   = [a for a in alerts if a.get("risk") in ("High", "Critical")]
+
+    print(f"\n[결과] 총 {len(alerts)}개  High/Critical: {len(high)}개")
+    for a in sorted(high, key=lambda x: x.get("risk", "")):
+        print(f"  [{a.get('risk')}] {a.get('name')} — {a.get('url','')[:80]}")
+
+    if args.output:
+        Path(args.output).write_bytes(zap.get_json_report())
+        print(f"[+] JSON 보고서 저장: {args.output}")
+    if args.html:
+        Path(args.html).write_bytes(zap.get_html_report())
+        print(f"[+] HTML 보고서 저장: {args.html}")
+
+    if args.fail_on_high and high:
+        print("[FAIL] High/Critical 취약점 발견 — 빌드 실패")
+        sys.exit(1)
+
+
+def cmd_openapi(args: argparse.Namespace) -> None:
+    zap = ZAPClient(args.zap_url, args.api_key)
+    zap.new_session()
+    if args.token:
+        zap.set_bearer_token(args.token)
+
+    zap.import_openapi(args.spec, args.target)
+    zap.active_scan(args.target)
+
+    alerts = zap.get_alerts(args.target)
+    high   = [a for a in alerts if a.get("risk") in ("High", "Critical")]
+    print(f"\n[결과] 총 {len(alerts)}개  High/Critical: {len(high)}개")
+
+    if args.output:
+        Path(args.output).write_bytes(zap.get_json_report())
+        print(f"[+] 보고서 저장: {args.output}")
+
+    if args.fail_on_high and high:
+        sys.exit(1)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="ZAP DAST 자동화 스캐너")
+    parser.add_argument("--zap-url",  default="http://localhost:8080")
+    parser.add_argument("--api-key",  default="zap-api-key")
+    parser.add_argument("--token",    help="Bearer 토큰 (인증된 스캔)")
+    parser.add_argument("--fail-on-high", action="store_true",
+                        help="High 이상 발견 시 exit(1)")
+
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    sc = sub.add_parser("scan", help="전체 스파이더 + 능동 스캔")
+    sc.add_argument("--target",       required=True)
+    sc.add_argument("--ajax",         action="store_true")
+    sc.add_argument("--ajax-duration",type=int, default=60)
+    sc.add_argument("--output",       help="JSON 보고서 경로")
+    sc.add_argument("--html",         help="HTML 보고서 경로")
+
+    oa = sub.add_parser("openapi", help="OpenAPI 스펙 기반 스캔")
+    oa.add_argument("--target",  required=True)
+    oa.add_argument("--spec",    required=True, help="OpenAPI URL 또는 파일")
+    oa.add_argument("--output",  help="JSON 보고서 경로")
+
+    args = parser.parse_args()
+    {"scan": cmd_scan, "openapi": cmd_openapi}[args.cmd](args)
+
 
 if __name__ == "__main__":
-    results = run_zap_scan(TARGET)
-    high_alerts = [a for a in results["alerts"] 
-                   if a["risk"] in ["High", "Critical"]]
-    
-    print(f"\n[결과] 총 {len(results['alerts'])}개 취약점")
-    print(f"  High/Critical: {len(high_alerts)}개")
-    
-    generate_report(results)
-    
-    # CI에서 High 이상 발견 시 빌드 실패
-    if len(high_alerts) > 0:
-        exit(1)
+    main()
 ```
 
 ---
@@ -663,100 +812,278 @@ kubectl apply -f constraints/
 
 ```python
 #!/usr/bin/env python3
-"""취약점 관리 대시보드 생성"""
-
-import json
-from collections import defaultdict
-from datetime import datetime
-
-class VulnManager:
-    def __init__(self):
-        self.vulnerabilities = []
-    
-    def load_trivy(self, file: str):
-        """Trivy JSON 결과 로드"""
-        with open(file) as f:
-            data = json.load(f)
-        
-        for result in data.get("Results", []):
-            for vuln in result.get("Vulnerabilities", []):
-                self.vulnerabilities.append({
-                    "tool": "trivy",
-                    "id": vuln.get("VulnerabilityID"),
-                    "package": vuln.get("PkgName"),
-                    "version": vuln.get("InstalledVersion"),
-                    "severity": vuln.get("Severity"),
-                    "title": vuln.get("Title"),
-                    "fix_version": vuln.get("FixedVersion"),
-                })
-    
-    def load_semgrep(self, file: str):
-        """Semgrep JSON 결과 로드"""
-        with open(file) as f:
-            data = json.load(f)
-        
-        for result in data.get("results", []):
-            self.vulnerabilities.append({
-                "tool": "semgrep",
-                "id": result.get("check_id"),
-                "file": result.get("path"),
-                "line": result.get("start", {}).get("line"),
-                "severity": result.get("extra", {}).get("severity", "MEDIUM"),
-                "message": result.get("extra", {}).get("message", ""),
-            })
-    
-    def get_summary(self) -> dict:
-        by_severity = defaultdict(int)
-        for v in self.vulnerabilities:
-            by_severity[v.get("severity", "UNKNOWN")] += 1
-        return dict(by_severity)
-    
-    def generate_report(self) -> str:
-        summary = self.get_summary()
-        
-        critical = summary.get("CRITICAL", 0)
-        high = summary.get("HIGH", 0)
-        
-        status = "FAIL" if critical > 0 or high > 5 else "PASS"
-        
-        report = f"""
-# 보안 스캔 결과 보고서
-날짜: {datetime.now().strftime('%Y-%m-%d %H:%M')}
-상태: {status}
-
-## 요약
-| 심각도 | 수 |
-|--------|---|
 """
-        for sev in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']:
-            count = summary.get(sev, 0)
-            report += f"| {sev} | {count} |\n"
-        
-        report += f"\n총 발견: {len(self.vulnerabilities)}개\n"
-        
-        if critical > 0:
-            report += "\n## Critical 취약점 (즉시 수정 필요)\n"
-            for v in self.vulnerabilities:
-                if v.get("severity") == "CRITICAL":
-                    report += f"- [{v.get('id')}] {v.get('package', v.get('file'))}: {v.get('title', v.get('message', ''))[:80]}\n"
-        
-        return report
+통합 보안 스캔 결과 집계 및 보고서 생성 CLI
+지원 도구: Trivy, Semgrep, Bandit, pip-audit, Gitleaks
+
+사용: python3 vuln_manager.py aggregate \
+          --trivy trivy.json --semgrep semgrep.json \
+          --bandit bandit.json --pip-audit pip_audit.json \
+          --output report.json
+      python3 vuln_manager.py report --input report.json --format markdown
+      python3 vuln_manager.py gate  --input report.json \
+          --max-critical 0 --max-high 5
+"""
+
+from __future__ import annotations
+import argparse
+import json
+import sys
+from collections import defaultdict
+from dataclasses import dataclass, field, asdict
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+
+SEV_ORDER = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3,
+             "INFO": 4, "UNKNOWN": 5}
+
+
+@dataclass
+class Vuln:
+    tool: str
+    vuln_id: str
+    severity: str
+    title: str
+    location: str          # 파일:줄 또는 패키지@버전
+    fix: str = ""
+    url: str = ""
+
+    @property
+    def sev_order(self) -> int:
+        return SEV_ORDER.get(self.severity.upper(), 5)
+
+
+# ── 로더 ─────────────────────────────────────────────────────
+
+def load_trivy(path: Path) -> list[Vuln]:
+    data = json.loads(path.read_text())
+    vulns: list[Vuln] = []
+    for result in data.get("Results", []):
+        target = result.get("Target", "")
+        for v in result.get("Vulnerabilities", []) or []:
+            vulns.append(Vuln(
+                tool="trivy",
+                vuln_id=v.get("VulnerabilityID", ""),
+                severity=v.get("Severity", "UNKNOWN").upper(),
+                title=v.get("Title", v.get("Description", "")[:80]),
+                location=f"{target}: {v.get('PkgName','?')}@{v.get('InstalledVersion','?')}",
+                fix=v.get("FixedVersion", ""),
+                url=v.get("PrimaryURL", ""),
+            ))
+    return vulns
+
+
+def load_semgrep(path: Path) -> list[Vuln]:
+    data = json.loads(path.read_text())
+    vulns: list[Vuln] = []
+    for r in data.get("results", []):
+        extra = r.get("extra", {})
+        meta  = extra.get("metadata", {})
+        sev   = extra.get("severity", "MEDIUM").upper()
+        line  = r.get("start", {}).get("line", 0)
+        vulns.append(Vuln(
+            tool="semgrep",
+            vuln_id=r.get("check_id", ""),
+            severity=sev,
+            title=extra.get("message", "")[:120],
+            location=f"{r.get('path', '?')}:{line}",
+            url=meta.get("references", [""])[0] if meta.get("references") else "",
+        ))
+    return vulns
+
+
+def load_bandit(path: Path) -> list[Vuln]:
+    data = json.loads(path.read_text())
+    vulns: list[Vuln] = []
+    sev_map = {"HIGH": "HIGH", "MEDIUM": "MEDIUM", "LOW": "LOW"}
+    for r in data.get("results", []):
+        sev = sev_map.get(r.get("issue_severity", "").upper(), "LOW")
+        vulns.append(Vuln(
+            tool="bandit",
+            vuln_id=r.get("test_id", ""),
+            severity=sev,
+            title=r.get("issue_text", "")[:120],
+            location=f"{r.get('filename','?')}:{r.get('line_number',0)}",
+            url=r.get("more_info", ""),
+        ))
+    return vulns
+
+
+def load_pip_audit(path: Path) -> list[Vuln]:
+    data = json.loads(path.read_text())
+    vulns: list[Vuln] = []
+    # pip-audit JSON: {"dependencies": [{"name":..., "vulns":[...]}]}
+    for dep in data.get("dependencies", []):
+        for v in dep.get("vulns", []):
+            cvss = v.get("fix_versions", [])
+            vulns.append(Vuln(
+                tool="pip-audit",
+                vuln_id=v.get("id", ""),
+                severity="HIGH",   # pip-audit은 severity 없음 → HIGH 기본
+                title=v.get("description", "")[:120],
+                location=f"{dep.get('name','?')}@{dep.get('version','?')}",
+                fix=", ".join(cvss) if cvss else "",
+                url=f"https://osv.dev/vulnerability/{v.get('id','')}",
+            ))
+    return vulns
+
+
+def load_gitleaks(path: Path) -> list[Vuln]:
+    """Gitleaks JSON 결과 (배열 형식)"""
+    data = json.loads(path.read_text())
+    if not isinstance(data, list):
+        return []
+    return [
+        Vuln(
+            tool="gitleaks",
+            vuln_id=r.get("RuleID", ""),
+            severity="CRITICAL",
+            title=f"Secret detected: {r.get('Description', '')}",
+            location=f"{r.get('File','?')}:{r.get('StartLine',0)}",
+        )
+        for r in data
+    ]
+
+
+LOADERS = {
+    "trivy":     load_trivy,
+    "semgrep":   load_semgrep,
+    "bandit":    load_bandit,
+    "pip-audit": load_pip_audit,
+    "gitleaks":  load_gitleaks,
+}
+
+
+# ── 보고서 생성 ──────────────────────────────────────────────
+
+def build_summary(vulns: list[Vuln]) -> dict[str, int]:
+    summary: dict[str, int] = defaultdict(int)
+    for v in vulns:
+        summary[v.severity] += 1
+    return dict(summary)
+
+
+def render_markdown(vulns: list[Vuln], status: str) -> str:
+    summary = build_summary(vulns)
+    lines = [
+        f"# 통합 보안 스캔 보고서",
+        f"날짜: {datetime.now().strftime('%Y-%m-%d %H:%M')}  상태: **{status}**\n",
+        "## 심각도별 요약",
+        "| 심각도 | 건수 |",
+        "|--------|------|",
+    ]
+    for sev in ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]:
+        cnt = summary.get(sev, 0)
+        if cnt:
+            lines.append(f"| {sev} | {cnt} |")
+    lines.append(f"\n총 {len(vulns)}건\n")
+
+    for sev in ["CRITICAL", "HIGH"]:
+        items = [v for v in vulns if v.severity == sev]
+        if items:
+            lines.append(f"## {sev} 취약점")
+            for v in items:
+                ref = f"  [{v.url}]" if v.url else ""
+                fix = f"  → fix: {v.fix}" if v.fix else ""
+                lines.append(
+                    f"- **[{v.vuln_id}]** ({v.tool}) {v.title[:80]}\n"
+                    f"  `{v.location}`{fix}{ref}"
+                )
+            lines.append("")
+    return "\n".join(lines)
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def cmd_aggregate(args: argparse.Namespace) -> None:
+    all_vulns: list[Vuln] = []
+    for tool, loader in LOADERS.items():
+        attr = tool.replace("-", "_")
+        path_val = getattr(args, attr, None)
+        if path_val:
+            p = Path(path_val)
+            if p.exists():
+                loaded = loader(p)
+                all_vulns.extend(loaded)
+                print(f"[*] {tool}: {len(loaded)}건")
+            else:
+                print(f"[-] {tool} 파일 없음: {p}", file=sys.stderr)
+
+    all_vulns.sort(key=lambda v: v.sev_order)
+    out = Path(args.output)
+    out.write_text(
+        json.dumps([asdict(v) for v in all_vulns],
+                   indent=2, ensure_ascii=False)
+    )
+    print(f"[+] 집계 완료: {len(all_vulns)}건 → {out}")
+
+
+def cmd_report(args: argparse.Namespace) -> None:
+    vulns = [Vuln(**v) for v in json.loads(Path(args.input).read_text())]
+    summary = build_summary(vulns)
+    has_critical = summary.get("CRITICAL", 0) > 0
+    has_high     = summary.get("HIGH", 0) > 0
+    status = "FAIL" if has_critical else ("WARN" if has_high else "PASS")
+
+    if args.format == "markdown":
+        report = render_markdown(vulns, status)
+    else:
+        report = json.dumps({"status": status, "summary": summary,
+                              "findings": [asdict(v) for v in vulns]},
+                            indent=2, ensure_ascii=False)
+
+    if args.output:
+        Path(args.output).write_text(report)
+        print(f"[+] 보고서 저장: {args.output}")
+    else:
+        print(report)
+
+
+def cmd_gate(args: argparse.Namespace) -> None:
+    """품질 게이트 — 임계값 초과 시 exit(1)"""
+    vulns   = [Vuln(**v) for v in json.loads(Path(args.input).read_text())]
+    summary = build_summary(vulns)
+    critical = summary.get("CRITICAL", 0)
+    high     = summary.get("HIGH", 0)
+
+    print(f"[Gate] CRITICAL={critical}/{args.max_critical}  HIGH={high}/{args.max_high}")
+    if critical > args.max_critical or high > args.max_high:
+        print("[FAIL] 품질 게이트 실패 — 빌드를 중단합니다")
+        sys.exit(1)
+    print("[PASS] 품질 게이트 통과")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="통합 보안 스캔 집계 도구")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    agg = sub.add_parser("aggregate", help="여러 도구 결과 통합")
+    agg.add_argument("--trivy")
+    agg.add_argument("--semgrep")
+    agg.add_argument("--bandit")
+    agg.add_argument("--pip_audit", "--pip-audit")
+    agg.add_argument("--gitleaks")
+    agg.add_argument("--output", default="findings.json")
+
+    rep = sub.add_parser("report", help="보고서 생성")
+    rep.add_argument("--input", required=True)
+    rep.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    rep.add_argument("--output")
+
+    gate = sub.add_parser("gate", help="품질 게이트 (CI 빌드 실패 판단)")
+    gate.add_argument("--input",       required=True)
+    gate.add_argument("--max-critical", type=int, default=0)
+    gate.add_argument("--max-high",     type=int, default=5)
+
+    args = parser.parse_args()
+    {"aggregate": cmd_aggregate, "report": cmd_report,
+     "gate": cmd_gate}[args.cmd](args)
+
 
 if __name__ == "__main__":
-    mgr = VulnManager()
-    mgr.load_trivy("trivy-results.json")
-    mgr.load_semgrep("semgrep-results.json")
-    
-    report = mgr.generate_report()
-    print(report)
-    
-    with open("security-report.md", "w") as f:
-        f.write(report)
-    
-    # 심각 취약점 있으면 빌드 실패
-    summary = mgr.get_summary()
-    if summary.get("CRITICAL", 0) > 0:
-        exit(1)
+    main()
 ```
 
 ---

@@ -178,6 +178,140 @@ arpspoof -i eth0 -t 192.168.1.100 192.168.1.1  # 피해자에게 ARP 조작
 arpspoof -i eth0 -t 192.168.1.1 192.168.1.100  # 게이트웨이에게 ARP 조작
 ```
 
+### ARP 스푸핑 탐지기 (Python — Scapy 기반)
+
+```python
+#!/usr/bin/env python3
+"""
+ARP 스푸핑 탐지기 — 네트워크에서 비정상적인 ARP Reply 모니터링
+실행: sudo python3 arp_detect.py [-i eth0] [-t 60]
+"""
+import argparse
+import sys
+import time
+from collections import defaultdict
+from datetime import datetime
+
+try:
+    from scapy.all import ARP, Ether, sniff, get_if_hwaddr
+except ImportError:
+    sys.exit("[!] scapy가 필요합니다: pip3 install scapy")
+
+
+class ArpSpoofDetector:
+    """ARP 캐시를 관리하며 IP-MAC 불일치를 탐지."""
+
+    def __init__(self, iface: str, alert_threshold: int = 3) -> None:
+        self.iface = iface
+        self.alert_threshold = alert_threshold
+        # {ip: {mac: count}}
+        self.arp_table: defaultdict[str, defaultdict[str, int]] = defaultdict(
+            lambda: defaultdict(int)
+        )
+        self.alerts: list[dict] = []
+        self.packet_count = 0
+
+    def process_packet(self, packet) -> None:
+        self.packet_count += 1
+
+        if not packet.haslayer(ARP):
+            return
+
+        arp = packet[ARP]
+        # ARP Reply (op=2) 또는 Gratuitous ARP만 처리
+        if arp.op not in (1, 2):
+            return
+
+        src_ip: str = arp.psrc
+        src_mac: str = arp.hwsrc.lower()
+
+        if not src_ip or src_ip == "0.0.0.0":
+            return
+
+        self.arp_table[src_ip][src_mac] += 1
+
+        # 동일 IP에 대해 여러 MAC이 감지되면 경보
+        mac_set = set(self.arp_table[src_ip].keys())
+        if len(mac_set) > 1:
+            ts = datetime.now().strftime("%H:%M:%S")
+            total = sum(self.arp_table[src_ip].values())
+            alert = {
+                "time": ts,
+                "ip": src_ip,
+                "macs": list(mac_set),
+                "count": total,
+            }
+            self.alerts.append(alert)
+
+            # 임계값 이상이면 즉시 출력
+            if total >= self.alert_threshold:
+                print(
+                    f"\n[!] ARP 스푸핑 의심!  {ts}"
+                    f"\n    IP:  {src_ip}"
+                    f"\n    MACs: {', '.join(mac_set)}"
+                    f"\n    총 ARP 횟수: {total}"
+                )
+
+    def print_summary(self) -> None:
+        print("\n" + "=" * 55)
+        print("  ARP 탐지 요약")
+        print("=" * 55)
+        print(f"  분석 패킷: {self.packet_count}개")
+        print(f"  발견된 IP: {len(self.arp_table)}개")
+        print(f"  의심 이벤트: {len(self.alerts)}건\n")
+
+        suspicious = {
+            ip: macs
+            for ip, macs in self.arp_table.items()
+            if len(macs) > 1
+        }
+        if suspicious:
+            print("  [!] 의심 IP 목록:")
+            for ip, macs in suspicious.items():
+                for mac, count in macs.items():
+                    print(f"      {ip:18}  {mac}  ({count}회)")
+        else:
+            print("  [OK] 이상 없음")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="실시간 ARP 스푸핑 탐지기 (Scapy)",
+    )
+    parser.add_argument("-i", "--iface", default="eth0", help="모니터링 인터페이스 (기본값: eth0)")
+    parser.add_argument("-t", "--timeout", type=int, default=0, help="캡처 시간(초). 0=무제한")
+    parser.add_argument("--threshold", type=int, default=3, help="경보 발생 최소 ARP 횟수 (기본값: 3)")
+    args = parser.parse_args()
+
+    try:
+        get_if_hwaddr(args.iface)
+    except Exception:
+        sys.exit(f"[!] 인터페이스를 찾을 수 없습니다: {args.iface}")
+
+    detector = ArpSpoofDetector(args.iface, args.threshold)
+    print(f"[*] ARP 모니터링 시작: {args.iface}")
+    print(f"[*] 종료: Ctrl+C")
+    if args.timeout:
+        print(f"[*] 자동 종료: {args.timeout}초")
+
+    try:
+        sniff(
+            iface=args.iface,
+            filter="arp",
+            prn=detector.process_packet,
+            timeout=args.timeout if args.timeout > 0 else None,
+            store=False,
+        )
+    except KeyboardInterrupt:
+        pass
+    finally:
+        detector.print_summary()
+
+
+if __name__ == "__main__":
+    main()
+```
+
 ---
 
 ## 7. DNS 프로토콜 (DNS 공격의 기초)

@@ -180,35 +180,231 @@ Microsoft-Windows-TerminalServices-LocalSessionManager%4Operational.evtx → RDP
 
 ### 3-2. 이벤트 로그 분석 도구
 
-```bash
-# Windows 이벤트 뷰어
-eventvwr.msc
+```python
+#!/usr/bin/env python3
+"""
+Windows EVTX 이벤트 로그 포렌식 분석기
+용도: .evtx 파일에서 IOC·공격 패턴 추출, CSV/JSON 리포트 생성
+의존성: pip install python-evtx
+"""
+from __future__ import annotations
+import argparse
+import csv
+import json
+import sys
+import xml.etree.ElementTree as ET
+from collections import Counter, defaultdict
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
 
-# PowerShell로 이벤트 검색
-Get-WinEvent -LogName Security -FilterXPath "*[System[EventID=4624]]" | 
-  Select-Object TimeCreated, Message | Format-List
+try:
+    import Evtx.Evtx as evtx
+    import Evtx.Views as e_views
+except ImportError:
+    print("[!] 의존성 누락: pip install python-evtx", file=sys.stderr)
+    sys.exit(1)
 
-# 특정 기간 이벤트 검색
-Get-WinEvent -LogName Security -FilterXPath "*[System[EventID=4624 and TimeCreated[@SystemTime>='2024-01-01T00:00:00']]]"
+# 탐지 대상 이벤트 ID 정의
+SECURITY_EVENTS: dict[int, str] = {
+    4624: "로그인 성공",
+    4625: "로그인 실패 (브루트포스 의심)",
+    4634: "로그오프",
+    4648: "명시적 자격증명 로그인 (Runas)",
+    4672: "관리자 권한 로그인",
+    4720: "사용자 계정 생성",
+    4722: "사용자 계정 활성화",
+    4732: "Administrators 그룹에 구성원 추가",
+    4756: "전역 그룹에 구성원 추가",
+    4776: "NTLM 자격증명 검증",
+    4688: "프로세스 생성",
+    7045: "새 서비스 설치 (악성 서비스 의심)",
+    1102: "감사 로그 삭제 (로그 조작 의심)",
+    4104: "PowerShell 스크립트 블록 로깅",
+}
 
-# 로그인 실패 IP 추출
-Get-WinEvent -LogName Security | 
-  Where-Object {$_.Id -eq 4625} | 
-  ForEach-Object {
-    $xml = [xml]$_.ToXml()
-    $xml.Event.EventData.Data | Where-Object {$_.Name -eq "IpAddress"}
-  }
-```
+NS = "{http://schemas.microsoft.com/win/2004/08/events/event}"
 
-```bash
-# EvtxECmd (KAPE 도구)
-EvtxECmd.exe -f Security.evtx --csv output\ --csvf security_events.csv
 
-# Chainsaw (Rust 기반 빠른 분석)
-chainsaw hunt Security.evtx --rules rules/ --sigma sigma/
+@dataclass
+class EventRecord:
+    event_id: int
+    time_created: str
+    description: str
+    computer: str
+    user_sid: str
+    ip_address: str
+    raw_data: dict
 
-# Hayabusa (Windows 이벤트 로그 분석)
-hayabusa-2.x.x-win-x64.exe csv-timeline -f Security.evtx -o timeline.csv
+
+def _get_text(elem: ET.Element | None) -> str:
+    return (elem.text or "").strip() if elem is not None else ""
+
+
+def parse_event(xml_str: str) -> EventRecord | None:
+    try:
+        root = ET.fromstring(xml_str)
+    except ET.ParseError:
+        return None
+
+    system = root.find(f"{NS}System")
+    if system is None:
+        return None
+
+    eid_elem = system.find(f"{NS}EventID")
+    event_id = int(_get_text(eid_elem)) if eid_elem is not None else 0
+
+    time_elem = system.find(f"{NS}TimeCreated")
+    time_str = time_elem.get("SystemTime", "") if time_elem is not None else ""
+
+    computer = _get_text(system.find(f"{NS}Computer"))
+
+    security = system.find(f"{NS}Security")
+    user_sid = security.get("UserID", "") if security is not None else ""
+
+    # EventData 파싱
+    raw_data: dict[str, str] = {}
+    event_data = root.find(f"{NS}EventData")
+    if event_data is not None:
+        for data in event_data.findall(f"{NS}Data"):
+            name = data.get("Name", "")
+            value = _get_text(data)
+            if name:
+                raw_data[name] = value
+
+    ip_address = raw_data.get("IpAddress", raw_data.get("WorkstationName", ""))
+    description = SECURITY_EVENTS.get(event_id, f"EventID {event_id}")
+
+    return EventRecord(
+        event_id=event_id,
+        time_created=time_str,
+        description=description,
+        computer=computer,
+        user_sid=user_sid,
+        ip_address=ip_address,
+        raw_data=raw_data,
+    )
+
+
+def analyze_evtx(
+    evtx_path: str,
+    target_ids: set[int] | None = None,
+    output_fmt: str = "console",
+    output_file: str | None = None,
+) -> list[EventRecord]:
+    """
+    EVTX 파일 분석 후 매칭 레코드 목록 반환.
+    target_ids가 None이면 SECURITY_EVENTS 전체를 대상으로 함.
+    """
+    if target_ids is None:
+        target_ids = set(SECURITY_EVENTS.keys())
+
+    records: list[EventRecord] = []
+    stats: Counter = Counter()
+
+    with evtx.Evtx(evtx_path) as log:
+        for record in log.records():
+            try:
+                xml_str = record.xml()
+            except Exception:
+                continue
+            parsed = parse_event(xml_str)
+            if parsed is None:
+                continue
+            stats[parsed.event_id] += 1
+            if parsed.event_id in target_ids:
+                records.append(parsed)
+
+    # 브루트포스 탐지 (4625 IP 집계)
+    fail_ips: Counter = Counter(
+        r.ip_address for r in records if r.event_id == 4625 and r.ip_address
+    )
+
+    _output(records, stats, fail_ips, output_fmt, output_file)
+    return records
+
+
+def _output(
+    records: list[EventRecord],
+    stats: Counter,
+    fail_ips: Counter,
+    fmt: str,
+    output_file: str | None,
+) -> None:
+    if fmt == "json":
+        data = {
+            "total_matched": len(records),
+            "stats": dict(stats.most_common(20)),
+            "brute_force_ips": fail_ips.most_common(10),
+            "events": [asdict(r) for r in records],
+        }
+        text = json.dumps(data, indent=2, ensure_ascii=False)
+        if output_file:
+            Path(output_file).write_text(text, encoding="utf-8")
+            print(f"[+] JSON 저장: {output_file}")
+        else:
+            print(text)
+
+    elif fmt == "csv":
+        rows = [asdict(r) for r in records]
+        if rows:
+            out = Path(output_file) if output_file else Path("evtx_analysis.csv")
+            with out.open("w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+                writer.writeheader()
+                # raw_data는 JSON 직렬화
+                for row in rows:
+                    row["raw_data"] = json.dumps(row["raw_data"], ensure_ascii=False)
+                    writer.writerow(row)
+            print(f"[+] CSV 저장: {out}")
+
+    else:  # console
+        print(f"\n[*] 매칭 이벤트: {len(records)}건")
+        print(f"\n[상위 이벤트 ID]")
+        for eid, cnt in stats.most_common(10):
+            desc = SECURITY_EVENTS.get(eid, "기타")
+            print(f"  {eid:5d}  {cnt:6d}회  {desc}")
+
+        if fail_ips:
+            print(f"\n[브루트포스 의심 IP (4625 로그인 실패)]")
+            for ip, cnt in fail_ips.most_common(10):
+                print(f"  {ip:<20} {cnt}회")
+
+        print(f"\n[최근 이벤트 (최대 20개)]")
+        for r in records[-20:]:
+            ts = r.time_created[:19].replace("T", " ")
+            target = r.raw_data.get("TargetUserName", r.raw_data.get("SubjectUserName", ""))
+            print(f"  [{ts}] EID={r.event_id:5d} {r.description:<30} {target} {r.ip_address}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Windows EVTX 이벤트 로그 포렌식 분석기")
+    parser.add_argument("evtx", help=".evtx 파일 경로")
+    parser.add_argument(
+        "--ids", nargs="+", type=int,
+        help="분석할 EventID 목록 (미지정 시 기본 보안 이벤트 전체)"
+    )
+    parser.add_argument(
+        "--format", choices=["console", "json", "csv"], default="console",
+        help="출력 형식 (기본값: console)"
+    )
+    parser.add_argument("--output", help="출력 파일 경로 (json/csv 형식 사용 시)")
+    args = parser.parse_args()
+
+    if not Path(args.evtx).exists():
+        print(f"[!] 파일 없음: {args.evtx}", file=sys.stderr)
+        sys.exit(1)
+
+    analyze_evtx(
+        args.evtx,
+        target_ids=set(args.ids) if args.ids else None,
+        output_fmt=args.format,
+        output_file=args.output,
+    )
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -293,15 +489,168 @@ Bookmarks        → 북마크 (JSON)
 Extensions\      → 설치된 확장
 ```
 
-```bash
-# SQLite로 히스토리 추출
-sqlite3 History "SELECT datetime(last_visit_time/1000000-11644473600,'unixepoch','localtime'), url, title FROM urls ORDER BY last_visit_time DESC LIMIT 100;"
+```python
+#!/usr/bin/env python3
+"""
+Chrome/Edge 브라우저 포렌식 분석기
+용도: History SQLite DB에서 방문기록·다운로드·저장 폼 데이터 추출
+의존성: 표준 라이브러리만 사용 (sqlite3, shutil)
+"""
+from __future__ import annotations
+import argparse
+import json
+import shutil
+import sqlite3
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
 
-# HindsightBrowser (자동화)
-hindsight.py -i "C:\Users\user\AppData\Local\Google\Chrome\User Data\Default" -o output
+# Chrome epoch: 1601-01-01 기준 마이크로초
+CHROME_EPOCH_OFFSET = 11_644_473_600
 
-# NirSoft BrowsingHistoryView (GUI)
-BrowsingHistoryView.exe /shtml output.html
+
+def chrome_ts(microseconds: int) -> str:
+    """Chrome 타임스탬프 → 사람이 읽을 수 있는 UTC 문자열."""
+    if not microseconds:
+        return ""
+    try:
+        ts = microseconds / 1_000_000 - CHROME_EPOCH_OFFSET
+        return datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    except (OSError, OverflowError):
+        return str(microseconds)
+
+
+def safe_copy(src: Path) -> Path:
+    """
+    Chrome이 잠근 DB를 직접 열면 오류 발생 → 임시 복사본 사용.
+    """
+    tmp = Path("/tmp") / f"chrome_forensic_{src.name}"
+    shutil.copy2(src, tmp)
+    return tmp
+
+
+def extract_history(db_path: Path, limit: int = 200) -> list[dict]:
+    tmp = safe_copy(db_path)
+    records = []
+    try:
+        con = sqlite3.connect(f"file:{tmp}?mode=ro", uri=True)
+        cur = con.execute(
+            """
+            SELECT url, title, visit_count, last_visit_time
+            FROM urls
+            ORDER BY last_visit_time DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        for row in cur:
+            records.append({
+                "url": row[0],
+                "title": row[1],
+                "visit_count": row[2],
+                "last_visit": chrome_ts(row[3]),
+            })
+        con.close()
+    finally:
+        tmp.unlink(missing_ok=True)
+    return records
+
+
+def extract_downloads(db_path: Path) -> list[dict]:
+    tmp = safe_copy(db_path)
+    records = []
+    try:
+        con = sqlite3.connect(f"file:{tmp}?mode=ro", uri=True)
+        cur = con.execute(
+            """
+            SELECT target_path, tab_url, total_bytes, start_time, end_time, state
+            FROM downloads
+            ORDER BY start_time DESC
+            LIMIT 200
+            """
+        )
+        for row in cur:
+            state_map = {0: "진행중", 1: "완료", 2: "취소", 4: "중단"}
+            records.append({
+                "path": row[0],
+                "source_url": row[1],
+                "size_bytes": row[2],
+                "start": chrome_ts(row[3]),
+                "end": chrome_ts(row[4]),
+                "state": state_map.get(row[5], str(row[5])),
+            })
+        con.close()
+    finally:
+        tmp.unlink(missing_ok=True)
+    return records
+
+
+def analyze_profile(profile_dir: str, output_json: str | None = None) -> None:
+    base = Path(profile_dir)
+    history_db = base / "History"
+    if not history_db.exists():
+        print(f"[!] History DB 없음: {history_db}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"[*] 프로파일 분석: {base}")
+
+    history = extract_history(history_db)
+    downloads = extract_downloads(history_db)
+
+    # 의심 도메인 플래그
+    suspicious_keywords = [".onion", "pastebin", "ngrok", "raw.githubusercontent", "temp.sh"]
+    flagged = [
+        h for h in history
+        if any(kw in h["url"].lower() for kw in suspicious_keywords)
+    ]
+
+    result = {
+        "profile": str(base),
+        "history_count": len(history),
+        "download_count": len(downloads),
+        "flagged_count": len(flagged),
+        "recent_history": history[:50],
+        "downloads": downloads,
+        "flagged_urls": flagged,
+    }
+
+    if output_json:
+        Path(output_json).write_text(
+            json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        print(f"[+] JSON 저장: {output_json}")
+    else:
+        print(f"\n[방문 기록 최근 20건]")
+        for h in history[:20]:
+            print(f"  {h['last_visit']}  {h['visit_count']:>3}회  {h['url'][:80]}")
+
+        print(f"\n[다운로드 기록 ({len(downloads)}건)]")
+        for d in downloads[:10]:
+            print(f"  {d['start']}  {d['state']:<6}  {Path(d['path']).name}")
+
+        if flagged:
+            print(f"\n[의심 URL ({len(flagged)}건)]")
+            for f in flagged:
+                print(f"  {f['last_visit']}  {f['url']}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Chrome/Edge 브라우저 포렌식 분석기")
+    parser.add_argument(
+        "profile",
+        help=(
+            "Chrome 프로파일 디렉토리 경로\n"
+            "  예: C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data\\Default"
+        ),
+    )
+    parser.add_argument("--output", help="결과를 저장할 JSON 파일 경로")
+    args = parser.parse_args()
+
+    analyze_profile(args.profile, args.output)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

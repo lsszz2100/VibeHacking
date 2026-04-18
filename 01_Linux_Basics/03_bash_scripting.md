@@ -113,47 +113,98 @@ check_port 192.168.1.1 443
 
 ## 2. 보안 자동화 스크립트 모음
 
-### 2-1. 호스트 탐지 스캐너
+### 2-1. 호스트 탐지 스캐너 (병렬 처리)
 ```bash
-#!/bin/bash
-# 네트워크 내 활성 호스트 탐지
+#!/usr/bin/env bash
+# 네트워크 내 활성 호스트 병렬 탐지 (xargs + ping)
+set -euo pipefail
 
-NETWORK="192.168.1"
-ALIVE_HOSTS=()
+NETWORK="${1:-192.168.1}"
+MAX_JOBS="${2:-50}"      # 동시 ping 수
+TIMEOUT=1                # ping 응답 대기 시간(초)
+TMPFILE=$(mktemp /tmp/hostscan_XXXXXX.txt)
+trap 'rm -f "$TMPFILE"' EXIT
 
-echo "[*] Scanning network: $NETWORK.0/24"
+echo "[*] 네트워크 스캔: ${NETWORK}.0/24  (병렬 ${MAX_JOBS}개)"
 echo "================================================"
+START=$(date +%s)
 
-for i in $(seq 1 254); do
-    ip="$NETWORK.$i"
-    if ping -c 1 -W 1 "$ip" &>/dev/null; then
-        echo "[+] $ip is ALIVE"
-        ALIVE_HOSTS+=("$ip")
+# 병렬 ping: 각 서브쉘에서 ping 후 생존 IP를 임시파일에 기록
+scan_host() {
+    local ip="$1"
+    if ping -c 1 -W "$TIMEOUT" "$ip" &>/dev/null; then
+        echo "$ip"
     fi
-done
+}
+export -f scan_host
+export TIMEOUT
 
+seq 1 254 | \
+    xargs -P "$MAX_JOBS" -I{} bash -c 'scan_host "'"$NETWORK"'.{}"' | \
+    sort -t. -k4 -n | \
+    tee "$TMPFILE" | \
+    while IFS= read -r ip; do
+        # 호스트명 역조회 (실패 시 생략)
+        hostname=$(host "$ip" 2>/dev/null | grep -oP '(?<=pointer ).*' || echo "")
+        echo "[+] ${ip}${hostname:+  (${hostname%.})}"
+    done
+
+END=$(date +%s)
+COUNT=$(wc -l < "$TMPFILE")
 echo ""
-echo "[*] Scan Complete. ${#ALIVE_HOSTS[@]} hosts found."
-for host in "${ALIVE_HOSTS[@]}"; do
-    echo "    → $host"
-done
+echo "[*] 완료: ${COUNT}개 호스트 발견  (소요: $((END - START))초)"
 ```
 
-### 2-2. 포트 스캐너 (Bash 기반)
+### 2-2. 포트 스캐너 (Bash /dev/tcp 병렬 기반)
 ```bash
-#!/bin/bash
-# TCP 포트 스캔 (Bash /dev/tcp 활용)
+#!/usr/bin/env bash
+# TCP 포트 병렬 스캔 (/dev/tcp 활용, 배너 그래빙 선택)
+set -uo pipefail
 
-HOST=${1:-"192.168.1.1"}
-START_PORT=${2:-1}
-END_PORT=${3:-1024}
+HOST="${1:-192.168.1.1}"
+PORT_SPEC="${2:-1-1024}"    # "22,80,1-1024" 형식 지원
+MAX_JOBS="${3:-100}"
+TIMEOUT=1
 
-echo "[*] Scanning $HOST ports $START_PORT-$END_PORT"
+# 포트 범위 파싱 (22,80,100-200 → 배열)
+expand_ports() {
+    local spec="$1"
+    local -a ports=()
+    IFS=',' read -ra parts <<< "$spec"
+    for part in "${parts[@]}"; do
+        if [[ "$part" == *-* ]]; then
+            IFS='-' read -r start end <<< "$part"
+            for p in $(seq "$start" "$end"); do ports+=("$p"); done
+        else
+            ports+=("$part")
+        fi
+    done
+    printf '%s\n' "${ports[@]}" | sort -nu
+}
+
+scan_port() {
+    local host="$1" port="$2"
+    if (echo >/dev/tcp/"$host"/"$port") 2>/dev/null; then
+        # 간단한 배너 수신 시도 (0.3초 대기)
+        local banner=""
+        banner=$(bash -c "exec 3<>/dev/tcp/$host/$port
+                          echo -e 'HEAD / HTTP/1.0\r\n\r\n' >&3
+                          read -t 0.3 -r line <&3
+                          echo \$line" 2>/dev/null || true)
+        printf "[OPEN] %-6s  %s\n" "$port" "${banner:0:60}"
+    fi
+}
+export -f scan_port
+
+echo "[*] 스캔 대상: $HOST  포트: $PORT_SPEC  (병렬: $MAX_JOBS)"
 echo "================================================"
 
-for port in $(seq $START_PORT $END_PORT); do
-    (echo >/dev/tcp/$HOST/$port) 2>/dev/null && echo "[OPEN] Port $port"
-done
+mapfile -t PORTS < <(expand_ports "$PORT_SPEC")
+printf '%s\n' "${PORTS[@]}" | \
+    xargs -P "$MAX_JOBS" -I{} bash -c "scan_port '$HOST' '{}'" | \
+    sort -t' ' -k2 -n
+
+echo "[*] 완료 (${#PORTS[@]}개 포트 스캔)"
 ```
 
 ### 2-3. 웹 디렉토리 브루트포서
@@ -213,36 +264,99 @@ done < "$WORDLIST"
 echo "[-] Attack finished. Password not found."
 ```
 
-### 2-5. 로그 분석 자동화
+### 2-5. 로그 분석 자동화 (에러 처리 및 보고서 생성 포함)
 ```bash
-#!/bin/bash
-# auth.log 분석 — 공격 IP 탐지
+#!/usr/bin/env bash
+# auth.log 분석 — 공격 IP 탐지 및 보고서 생성
+set -euo pipefail
 
-LOG_FILE="/var/log/auth.log"
-THRESHOLD=10  # 10번 이상 실패한 IP를 공격자로 간주
+LOG_FILE="${1:-/var/log/auth.log}"
+THRESHOLD="${2:-10}"
+REPORT_DIR="${3:-/tmp}"
+REPORT_FILE="${REPORT_DIR}/ssh_report_$(date +%Y%m%d_%H%M%S).txt"
 
-echo "[*] SSH Brute Force Detection Report"
-echo "======================================"
+# 의존성 확인
+for cmd in grep awk sort uniq; do
+    command -v "$cmd" &>/dev/null || { echo "[!] 필요 명령어 없음: $cmd"; exit 1; }
+done
+
+[[ -f "$LOG_FILE" ]] || { echo "[!] 로그 파일 없음: $LOG_FILE"; exit 1; }
+[[ -r "$LOG_FILE" ]] || { echo "[!] 읽기 권한 없음 (sudo 필요): $LOG_FILE"; exit 1; }
+
+generate_report() {
+    local log="$1"
+    local threshold="$2"
+
+    echo "======================================"
+    echo "  SSH 보안 분석 보고서"
+    echo "  생성: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "  대상: $log"
+    echo "======================================"
+
+    local total_failed
+    total_failed=$(grep -c "Failed password" "$log" 2>/dev/null || echo 0)
+    local total_success
+    total_success=$(grep -c "Accepted" "$log" 2>/dev/null || echo 0)
+    local unique_ips
+    unique_ips=$(grep "Failed password" "$log" 2>/dev/null | \
+                 grep -oP 'from \K[\d.]+' | sort -u | wc -l || echo 0)
+
+    echo ""
+    echo "[요약]"
+    printf "  총 실패 횟수   : %d\n" "$total_failed"
+    printf "  총 성공 횟수   : %d\n" "$total_success"
+    printf "  고유 공격 IP   : %d\n" "$unique_ips"
+
+    echo ""
+    echo "[공격 IP Top 20]  (임계값: ${threshold}회 이상)"
+    grep "Failed password" "$log" 2>/dev/null | \
+        grep -oP 'from \K[\d.]+' | \
+        sort | uniq -c | sort -rn | head -20 | \
+        while read -r count ip; do
+            if (( count >= threshold )); then
+                printf "  [!] %-18s  %5d회  ← 잠재적 공격자\n" "$ip" "$count"
+            else
+                printf "  [-] %-18s  %5d회\n" "$ip" "$count"
+            fi
+        done
+
+    echo ""
+    echo "[공격받은 계정 Top 10]"
+    grep "Failed password" "$log" 2>/dev/null | \
+        grep -oP 'for (?:invalid user )?\K\S+(?= from)' | \
+        sort | uniq -c | sort -rn | head -10 | \
+        while read -r count user; do
+            printf "  %-20s  %5d회\n" "$user" "$count"
+        done
+
+    echo ""
+    echo "[성공한 로그인 (최근 20건)]"
+    grep "Accepted" "$log" 2>/dev/null | tail -20 | \
+        awk '{
+            ts=$1" "$2" "$3
+            for(i=1;i<=NF;i++){
+                if($i=="for") user=$(i+1)
+                if($i=="from") ip=$(i+1)
+                if($i=="via" || $i=="port") break
+            }
+            printf "  %-20s  %-18s  %s\n", ts, user, ip
+        }'
+
+    echo ""
+    echo "[시간대별 공격 분포 (Top 5)]"
+    grep "Failed password" "$log" 2>/dev/null | \
+        awk '{print substr($3,1,2)":00"}' | \
+        sort | uniq -c | sort -rn | head -5 | \
+        while read -r count hour; do
+            bar=$(printf '%0.s█' $(seq 1 $((count / 10 + 1))))
+            printf "  %s  %5d회  %s\n" "$hour" "$count" "${bar:0:30}"
+        done
+}
+
+# 보고서 생성 및 파일 저장
+generate_report "$LOG_FILE" "$THRESHOLD" | tee "$REPORT_FILE"
 echo ""
-echo "[*] Top Attacking IPs:"
-grep "Failed password" "$LOG_FILE" 2>/dev/null | \
-    grep -oP 'from \K[\d.]+' | \
-    sort | \
-    uniq -c | \
-    sort -rn | \
-    while read count ip; do
-        if [ $count -ge $THRESHOLD ]; then
-            echo "  [!] $ip — $count attempts (POTENTIAL ATTACKER)"
-        else
-            echo "  [-] $ip — $count attempts"
-        fi
-    done
-
-echo ""
-echo "[*] Successful Logins:"
-grep "Accepted" "$LOG_FILE" 2>/dev/null | \
-    grep -oP 'for \K\S+ from \K[\d.]+' | \
-    sort | uniq -c | sort -rn
+echo "[*] 보고서 저장: $REPORT_FILE"
 ```
 
 ### 2-6. 시스템 정보 수집 (내부 침투 후)
@@ -522,28 +636,79 @@ echo "[+] 스캔 완료: $TMPDIR/nmap_result.txt"
 
 ### 로깅 기능 포함 스크립트
 ```bash
-#!/bin/bash
-# 로깅이 포함된 스크립트 템플릿
+#!/usr/bin/env bash
+# 로깅이 포함된 펜테스트 자동화 템플릿
+# 사용법: sudo bash pentest_template.sh <TARGET_IP> [-o output_dir]
+set -euo pipefail
+IFS=$'\n\t'
 
-LOG_FILE="/var/log/pentest_$(date +%Y%m%d).log"
-TARGET="$1"
+TARGET="${1:-}"
+OUTPUT_DIR="${2:-.}"
+LOG_FILE="${OUTPUT_DIR}/pentest_$(date +%Y%m%d_%H%M%S).log"
+SEVERITY_COUNTS=( [DEBUG]=0 [INFO]=0 [WARN]=0 [ERROR]=0 )
 
+# --- 로깅 유틸리티 ---
 log() {
-    local level=$1
-    shift
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $*" | tee -a "$LOG_FILE"
+    local level="$1"; shift
+    local msg="$*"
+    local ts; ts="$(date '+%Y-%m-%d %H:%M:%S')"
+    local color=""
+    case "$level" in
+        DEBUG) color="\033[0;37m" ;;
+        INFO)  color="\033[0;32m" ;;
+        WARN)  color="\033[1;33m" ;;
+        ERROR) color="\033[0;31m" ;;
+    esac
+    printf "${color}[%s] [%-5s] %s\033[0m\n" "$ts" "$level" "$msg" | tee -a "$LOG_FILE"
+    (( SEVERITY_COUNTS[$level]++ )) || true
 }
 
-log "INFO" "스크립트 시작: $0 $*"
-log "INFO" "대상 호스트: $TARGET"
+run_step() {
+    local description="$1"; shift
+    log INFO "시작: $description"
+    if "$@" >> "$LOG_FILE" 2>&1; then
+        log INFO "완료: $description"
+        return 0
+    else
+        local exit_code=$?
+        log WARN "실패 (exit $exit_code): $description"
+        return $exit_code
+    fi
+}
 
-# 실행 예시
-if nmap -sV "$TARGET" >> "$LOG_FILE" 2>&1; then
-    log "SUCCESS" "Nmap 스캔 완료"
-else
-    log "ERROR" "Nmap 스캔 실패"
+cleanup() {
+    log INFO "정리 중..."
+    # 임시 파일 삭제 등 종료 처리
+}
+trap cleanup EXIT
+
+# --- 입력 검증 ---
+if [[ -z "$TARGET" ]]; then
+    log ERROR "사용법: $0 <TARGET_IP> [출력_디렉토리]"
     exit 1
 fi
 
-log "INFO" "스크립트 종료"
+if ! [[ "$TARGET" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]]; then
+    log ERROR "유효하지 않은 IP 주소: $TARGET"
+    exit 1
+fi
+
+mkdir -p "$OUTPUT_DIR"
+log INFO "=== 펜테스트 시작: $TARGET ==="
+
+# --- 스캔 단계 ---
+run_step "Nmap 빠른 스캔 (top-100 포트)" \
+    nmap -sC -sV --top-ports 100 -oN "${OUTPUT_DIR}/nmap_quick.txt" "$TARGET"
+
+run_step "Nmap 전체 포트 스캔" \
+    nmap -sS -p- --min-rate 5000 -oN "${OUTPUT_DIR}/nmap_full.txt" "$TARGET" || true
+
+run_step "취약점 스크립트 실행" \
+    nmap --script vuln -oN "${OUTPUT_DIR}/nmap_vuln.txt" "$TARGET" || true
+
+# --- 완료 요약 ---
+log INFO "=== 스캔 완료 ==="
+log INFO "결과 디렉토리: $OUTPUT_DIR"
+log INFO "로그 파일: $LOG_FILE"
+log INFO "경고 수: ${SEVERITY_COUNTS[WARN]}  오류 수: ${SEVERITY_COUNTS[ERROR]}"
 ```

@@ -109,89 +109,287 @@ index=security EventCode=4624 LogonType=3
 
 ```python
 #!/usr/bin/env python3
-"""랜섬웨어 IOC 자동 추출"""
-import os
+"""
+랜섬웨어 IOC 자동 추출 및 YARA/Sigma 룰 생성기 CLI
+사용: python3 ioc_extractor.py --file malware.exe --rule-name Ransomware_XYZ --out-dir ./rules
+"""
+
+from __future__ import annotations
+
+import argparse
 import hashlib
 import json
+import re
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 
-def extract_ioc_from_sample(filepath: str) -> dict:
-    """악성 파일에서 IOC 추출"""
-    ioc = {
-        "file_hash": {},
-        "strings": [],
-        "ips": [],
-        "domains": [],
-        "files": [],
-        "registry": []
-    }
-    
-    # 파일 해시
-    with open(filepath, 'rb') as f:
-        data = f.read()
-    ioc["file_hash"]["md5"] = hashlib.md5(data).hexdigest()
-    ioc["file_hash"]["sha256"] = hashlib.sha256(data).hexdigest()
-    
-    # 문자열 추출 (PE 바이너리)
-    import subprocess
-    result = subprocess.run(['strings', filepath], 
-                          capture_output=True, text=True)
-    strings = result.stdout.split('\n')
-    
-    # IP 주소 추출
-    import re
-    ip_pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
-    ioc["ips"] = list(set(re.findall(ip_pattern, result.stdout)))
-    
-    # 도메인 추출
-    domain_pattern = r'\b(?:[a-zA-Z0-9-]+\.)+(?:com|net|org|io|onion)\b'
-    ioc["domains"] = list(set(re.findall(domain_pattern, result.stdout)))
-    
-    # 레지스트리 키 추출
-    reg_pattern = r'(?:HKEY_[A-Z_]+|HKLM|HKCU)\\[^\s"\'<>]+'
-    ioc["registry"] = list(set(re.findall(reg_pattern, result.stdout)))
-    
-    # 파일 경로 추출
-    file_pattern = r'[A-Za-z]:\\[^\s"\'<>]+'
-    ioc["files"] = list(set(re.findall(file_pattern, result.stdout)))
-    
-    return ioc
 
-def generate_yara_rule(ioc: dict, rule_name: str) -> str:
-    """IOC에서 YARA 룰 자동 생성"""
-    yara = f"""
-rule {rule_name} {{
-    meta:
-        description = "Auto-generated from IOC extraction"
-        date = "{__import__('datetime').date.today()}"
-        hash = "{ioc['file_hash']['sha256']}"
-    
-    strings:
-"""
-    # 문자열 추가
-    for i, domain in enumerate(ioc['domains'][:5]):
-        yara += f'        $domain_{i} = "{domain}" nocase\n'
-    
-    for i, reg in enumerate(ioc['registry'][:3]):
-        yara += f'        $reg_{i} = "{reg}" nocase wide\n'
-    
-    yara += """    
-    condition:
-        uint16(0) == 0x5A4D  // PE 파일
-        and filesize < 5MB
-        and (any of ($domain_*) or any of ($reg_*))
+# ------------------------------------------------------------------ #
+#  데이터 구조
+# ------------------------------------------------------------------ #
+@dataclass
+class IOCBundle:
+    filepath: str
+    file_hashes: dict = field(default_factory=dict)
+    ips: list[str] = field(default_factory=list)
+    domains: list[str] = field(default_factory=list)
+    urls: list[str] = field(default_factory=list)
+    registry_keys: list[str] = field(default_factory=list)
+    file_paths: list[str] = field(default_factory=list)
+    mutex_names: list[str] = field(default_factory=list)
+    raw_strings: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {
+            "filepath": self.filepath,
+            "hashes": self.file_hashes,
+            "ips": self.ips,
+            "domains": self.domains,
+            "urls": self.urls,
+            "registry_keys": self.registry_keys,
+            "file_paths": self.file_paths,
+            "mutex_names": self.mutex_names,
+        }
+
+
+# ------------------------------------------------------------------ #
+#  IOC 추출
+# ------------------------------------------------------------------ #
+def compute_hashes(data: bytes) -> dict[str, str]:
+    return {
+        "md5":    hashlib.md5(data).hexdigest(),
+        "sha1":   hashlib.sha1(data).hexdigest(),
+        "sha256": hashlib.sha256(data).hexdigest(),
+    }
+
+
+_IP_RE      = re.compile(r'\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b')
+_DOMAIN_RE  = re.compile(r'\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+(?:com|net|org|io|onion|xyz|ru|cn|info|biz)\b', re.I)
+_URL_RE     = re.compile(r'https?://[^\s\'"<>]+', re.I)
+_REG_RE     = re.compile(r'(?:HKEY_[A-Z_]+|HKLM|HKCU|HKU)\\[^\s\'"<>\x00]+')
+_WINPATH_RE = re.compile(r'[A-Za-z]:\\(?:[^\s\'"<>\x00\\/:*?|]+\\)*[^\s\'"<>\x00\\/:*?|]+')
+_MUTEX_RE   = re.compile(r'(?:Global\\|Local\\)?[A-Za-z0-9_\-]{8,40}Mutex', re.I)
+
+# 내부 IP 제외 필터
+_PRIVATE_IP_RE = re.compile(
+    r'^(?:127\.|10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)'
+)
+
+# 정상 Windows 도메인 제외
+_BENIGN_DOMAINS = {
+    "microsoft.com", "windows.com", "windowsupdate.com",
+    "msftncsi.com", "msn.com", "bing.com",
 }
+
+
+def extract_strings(filepath: Path) -> list[str]:
+    """strings 명령으로 출력 가능한 문자열 추출 (Linux/macOS) — 없으면 자체 구현"""
+    try:
+        result = subprocess.run(
+            ["strings", "-n", "6", str(filepath)],
+            capture_output=True, text=True, timeout=30,
+        )
+        return result.stdout.splitlines()
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        # strings 없는 환경 대비 자체 추출
+        data = filepath.read_bytes()
+        printable = re.compile(rb'[ -~]{6,}')
+        return [m.group().decode("ascii", errors="replace") for m in printable.finditer(data)]
+
+
+def extract_iocs(filepath: Path) -> IOCBundle:
+    bundle = IOCBundle(filepath=str(filepath))
+    data = filepath.read_bytes()
+    bundle.file_hashes = compute_hashes(data)
+
+    strings = extract_strings(filepath)
+    bundle.raw_strings = strings
+    combined = "\n".join(strings)
+
+    # IP (사설 IP 제외)
+    bundle.ips = sorted({
+        ip for ip in _IP_RE.findall(combined)
+        if not _PRIVATE_IP_RE.match(ip)
+    })
+
+    # 도메인 (정상 도메인 제외)
+    bundle.domains = sorted({
+        d.lower() for d in _DOMAIN_RE.findall(combined)
+        if d.lower() not in _BENIGN_DOMAINS
+    })
+
+    bundle.urls = sorted(set(_URL_RE.findall(combined)))
+    bundle.registry_keys = sorted(set(_REG_RE.findall(combined)))
+    bundle.file_paths = sorted(set(_WINPATH_RE.findall(combined)))
+    bundle.mutex_names = sorted(set(_MUTEX_RE.findall(combined)))
+
+    return bundle
+
+
+# ------------------------------------------------------------------ #
+#  YARA 룰 생성
+# ------------------------------------------------------------------ #
+def generate_yara(bundle: IOCBundle, rule_name: str) -> str:
+    sha256 = bundle.file_hashes.get("sha256", "unknown")
+    today = date.today().isoformat()
+
+    strings_block = ""
+    for i, domain in enumerate(bundle.domains[:5]):
+        strings_block += f'        $domain_{i} = "{domain}" ascii nocase\n'
+    for i, reg in enumerate(bundle.registry_keys[:4]):
+        escaped = reg.replace("\\", "\\\\")
+        strings_block += f'        $reg_{i} = "{escaped}" ascii nocase wide\n'
+    for i, url in enumerate(bundle.urls[:3]):
+        strings_block += f'        $url_{i} = "{url}" ascii nocase\n'
+    for i, mutex in enumerate(bundle.mutex_names[:3]):
+        strings_block += f'        $mutex_{i} = "{mutex}" ascii nocase wide\n'
+
+    if not strings_block:
+        strings_block = '        $hash = "placeholder"\n'
+
+    condition_parts = []
+    if bundle.domains:
+        condition_parts.append("any of ($domain_*)")
+    if bundle.registry_keys:
+        condition_parts.append("any of ($reg_*)")
+    if bundle.urls:
+        condition_parts.append("any of ($url_*)")
+    if bundle.mutex_names:
+        condition_parts.append("any of ($mutex_*)")
+    condition = " or\n        ".join(condition_parts) if condition_parts else "true"
+
+    return f"""rule {rule_name}
+{{
+    meta:
+        description = "Auto-generated IOC rule"
+        date        = "{today}"
+        sha256      = "{sha256}"
+        filepath    = "{bundle.filepath}"
+
+    strings:
+{strings_block}
+    condition:
+        uint16(0) == 0x5A4D and  // PE 파일
+        filesize < 10MB and
+        (
+        {condition}
+        )
+}}
 """
-    return yara
+
+
+# ------------------------------------------------------------------ #
+#  Sigma 룰 생성
+# ------------------------------------------------------------------ #
+def generate_sigma(bundle: IOCBundle, rule_name: str) -> str:
+    today = date.today().isoformat()
+    domains_yaml = "\n            - ".join(bundle.domains[:5]) if bundle.domains else "placeholder.evil.com"
+    ips_yaml = "\n            - ".join(bundle.ips[:5]) if bundle.ips else "198.51.100.1"
+
+    return f"""title: {rule_name} Network IOC Detection
+id: auto-generated-{bundle.file_hashes.get('md5', 'unknown')[:8]}
+status: experimental
+description: |
+    Auto-generated Sigma rule from IOC extraction of {Path(bundle.filepath).name}
+date: {today}
+tags:
+    - attack.command_and_control
+    - attack.t1071
+
+detection:
+    selection_domain:
+        dns.query.name|contains:
+            - {domains_yaml}
+    selection_ip:
+        destination.ip:
+            - {ips_yaml}
+    condition: selection_domain or selection_ip
+
+falsepositives:
+    - Unknown
+level: high
+
+fields:
+    - src_ip
+    - dest_ip
+    - dns.query.name
+"""
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="악성 파일 IOC 추출 및 YARA/Sigma 룰 자동 생성기",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  python3 ioc_extractor.py --file malware.exe\n"
+               "  python3 ioc_extractor.py --file malware.exe --rule-name Ransomware_XYZ --out-dir ./rules\n"
+               "  python3 ioc_extractor.py --file malware.exe --json",
+    )
+    parser.add_argument("--file", required=True, metavar="FILE", help="분석할 파일 경로")
+    parser.add_argument("--rule-name", default="Malware_AutoGenerated", help="생성할 룰 이름")
+    parser.add_argument("--out-dir", metavar="DIR", help="룰 파일 출력 디렉토리")
+    parser.add_argument("--json", action="store_true", help="IOC를 JSON으로 출력")
+    parser.add_argument("--no-yara", action="store_true", help="YARA 룰 생성 건너뜀")
+    parser.add_argument("--no-sigma", action="store_true", help="Sigma 룰 생성 건너뜀")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    target = Path(args.file)
+    if not target.exists():
+        parser.error(f"파일 없음: {target}")
+
+    print(f"[*] IOC 추출 중: {target}", file=sys.stderr)
+    bundle = extract_iocs(target)
+
+    # JSON 출력
+    if args.json:
+        print(json.dumps(bundle.to_dict(), ensure_ascii=False, indent=2))
+    else:
+        print(f"\n{'='*60}")
+        print(f"파일     : {target.name}")
+        print(f"MD5      : {bundle.file_hashes['md5']}")
+        print(f"SHA256   : {bundle.file_hashes['sha256']}")
+        print(f"IP       : {len(bundle.ips)}개  {bundle.ips[:5]}")
+        print(f"도메인   : {len(bundle.domains)}개  {bundle.domains[:5]}")
+        print(f"URL      : {len(bundle.urls)}개")
+        print(f"레지스트리: {len(bundle.registry_keys)}개")
+        print(f"파일경로 : {len(bundle.file_paths)}개")
+        print(f"Mutex    : {len(bundle.mutex_names)}개")
+
+    out_dir = Path(args.out_dir) if args.out_dir else Path(".")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if not args.no_yara:
+        yara_path = out_dir / f"{args.rule_name}.yar"
+        yara_rule = generate_yara(bundle, args.rule_name)
+        yara_path.write_text(yara_rule, encoding="utf-8")
+        print(f"[+] YARA 룰 생성: {yara_path}")
+
+    if not args.no_sigma:
+        sigma_path = out_dir / f"{args.rule_name}.yml"
+        sigma_rule = generate_sigma(bundle, args.rule_name)
+        sigma_path.write_text(sigma_rule, encoding="utf-8")
+        print(f"[+] Sigma 룰 생성: {sigma_path}")
+
+    ioc_path = out_dir / f"{args.rule_name}_iocs.json"
+    ioc_path.write_text(
+        json.dumps(bundle.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(f"[+] IOC JSON 저장: {ioc_path}")
+
 
 if __name__ == "__main__":
-    ioc = extract_ioc_from_sample("malware_sample.exe")
-    print(json.dumps(ioc, indent=2))
-    
-    yara_rule = generate_yara_rule(ioc, "Ransomware_Custom_001")
-    with open("ransomware.yar", "w") as f:
-        f.write(yara_rule)
-    print("[+] YARA 룰 생성: ransomware.yar")
+    main()
 ```
 
 ---
@@ -456,73 +654,556 @@ alert http any any -> $HTTP_SERVERS any (
 ### STIX/TAXII 포맷
 
 ```python
-from stix2 import Indicator, Bundle, ThreatActor, Malware, Relationship
+#!/usr/bin/env python3
+"""
+STIX2 IOC 공유 스크립트 — IOC를 STIX2 Bundle로 패키징하고 MISP/TAXII 서버로 전송
+사용: python3 stix_share.py --ioc-file iocs.json --misp-url https://misp.corp --misp-key KEY
+"""
 
-# IOC 생성
-ip_indicator = Indicator(
-    name="Malicious IP - Ransomware C2",
-    pattern="[ipv4-addr:value = '192.168.100.1']",
-    pattern_type="stix",
-    valid_from="2024-01-15T00:00:00Z",
-    labels=["malicious-activity"]
-)
+from __future__ import annotations
 
-malware = Malware(
-    name="RansomGroup_2024",
-    is_family=True,
-    labels=["ransomware"]
-)
+import argparse
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional
 
-relationship = Relationship(
-    relationship_type="indicates",
-    source_ref=ip_indicator.id,
-    target_ref=malware.id
-)
+try:
+    from stix2 import (
+        Bundle, Indicator, Malware, Relationship,
+        ThreatActor, AttackPattern, ExternalReference,
+    )
+    from stix2.exceptions import STIXError
+    HAS_STIX2 = True
+except ImportError:
+    HAS_STIX2 = False
 
-bundle = Bundle(objects=[ip_indicator, malware, relationship])
+try:
+    import requests
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
 
-# MISP에 업로드
-import requests
-requests.post(
-    "https://misp.corp/events/add",
-    json=bundle,
-    headers={"Authorization": "MISP_API_KEY"}
-)
+
+# ------------------------------------------------------------------ #
+#  STIX2 객체 생성 헬퍼
+# ------------------------------------------------------------------ #
+def now_utc() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def make_ip_indicator(ip: str, description: str = "", labels: Optional[list] = None) -> "Indicator":
+    return Indicator(
+        name=f"Malicious IP: {ip}",
+        description=description or f"Threat intelligence IOC: {ip}",
+        pattern=f"[ipv4-addr:value = '{ip}']",
+        pattern_type="stix",
+        valid_from=now_utc(),
+        labels=labels or ["malicious-activity"],
+        confidence=75,
+    )
+
+
+def make_domain_indicator(domain: str, description: str = "") -> "Indicator":
+    return Indicator(
+        name=f"Malicious Domain: {domain}",
+        description=description or f"C2 Domain: {domain}",
+        pattern=f"[domain-name:value = '{domain}']",
+        pattern_type="stix",
+        valid_from=now_utc(),
+        labels=["malicious-activity", "c2"],
+        confidence=70,
+    )
+
+
+def make_hash_indicator(sha256: str, filename: str = "", description: str = "") -> "Indicator":
+    name = filename or f"Malicious File ({sha256[:8]}...)"
+    return Indicator(
+        name=name,
+        description=description or "Malware file hash",
+        pattern=f"[file:hashes.'SHA-256' = '{sha256}']",
+        pattern_type="stix",
+        valid_from=now_utc(),
+        labels=["malicious-activity"],
+        confidence=90,
+    )
+
+
+def make_malware_object(name: str, malware_types: Optional[list] = None) -> "Malware":
+    return Malware(
+        name=name,
+        is_family=True,
+        malware_types=malware_types or ["ransomware"],
+    )
+
+
+def build_bundle(ioc_list: list[dict]) -> "Bundle":
+    """
+    IOC 목록을 STIX2 Bundle로 변환
+    ioc_list 항목 형식:
+      {"type": "ip",     "value": "1.2.3.4",   "description": "...", "malware": "..."}
+      {"type": "domain", "value": "evil.com",   ...}
+      {"type": "hash",   "value": "sha256hex",  "filename": "..."}
+    """
+    objects: list = []
+    relationships: list = []
+
+    malware_cache: dict[str, "Malware"] = {}
+
+    for item in ioc_list:
+        itype = item.get("type", "").lower()
+        value = item.get("value", "").strip()
+        desc = item.get("description", "")
+        malware_name = item.get("malware", "")
+
+        if not value:
+            continue
+
+        if itype == "ip":
+            indicator = make_ip_indicator(value, desc)
+        elif itype == "domain":
+            indicator = make_domain_indicator(value, desc)
+        elif itype in ("hash", "sha256", "md5"):
+            indicator = make_hash_indicator(
+                value, filename=item.get("filename", ""), description=desc
+            )
+        else:
+            print(f"[경고] 알 수 없는 IOC 유형 '{itype}', 건너뜀", file=sys.stderr)
+            continue
+
+        objects.append(indicator)
+
+        # 관련 악성코드 객체 연결
+        if malware_name:
+            if malware_name not in malware_cache:
+                mal = make_malware_object(malware_name, item.get("malware_types"))
+                malware_cache[malware_name] = mal
+                objects.append(mal)
+            rel = Relationship(
+                relationship_type="indicates",
+                source_ref=indicator.id,
+                target_ref=malware_cache[malware_name].id,
+            )
+            relationships.append(rel)
+
+    return Bundle(objects=objects + relationships)
+
+
+# ------------------------------------------------------------------ #
+#  전송 함수
+# ------------------------------------------------------------------ #
+def send_to_misp(bundle: "Bundle", misp_url: str, misp_key: str, verify_ssl: bool = True) -> bool:
+    if not HAS_REQUESTS:
+        print("[-] requests 라이브러리 없음: pip install requests", file=sys.stderr)
+        return False
+
+    headers = {
+        "Authorization": misp_key,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    endpoint = f"{misp_url.rstrip('/')}/events/add"
+    payload = json.loads(bundle.serialize())
+
+    try:
+        resp = requests.post(endpoint, json=payload, headers=headers,
+                             timeout=15, verify=verify_ssl)
+        resp.raise_for_status()
+        print(f"[+] MISP 업로드 성공: {resp.status_code}")
+        return True
+    except requests.RequestException as exc:
+        print(f"[-] MISP 업로드 실패: {exc}", file=sys.stderr)
+        return False
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="STIX2 IOC 패키징 및 MISP 공유 도구",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="IOC JSON 파일 형식 (배열):\n"
+               '  [{"type":"ip","value":"1.2.3.4","malware":"Ransomware_X"},\n'
+               '   {"type":"domain","value":"c2.evil.com"},\n'
+               '   {"type":"hash","value":"sha256hex","filename":"loader.exe"}]\n\n'
+               "예시:\n"
+               "  python3 stix_share.py --ioc-file iocs.json --out bundle.json\n"
+               "  python3 stix_share.py --ioc-file iocs.json --misp-url https://misp.corp --misp-key KEY",
+    )
+    parser.add_argument("--ioc-file", required=True, metavar="FILE",
+                        help="IOC 목록 JSON 파일")
+    parser.add_argument("--out", metavar="FILE",
+                        help="STIX2 Bundle 출력 파일 (기본: 화면 출력)")
+    parser.add_argument("--misp-url", metavar="URL",
+                        help="MISP 서버 URL (예: https://misp.corp)")
+    parser.add_argument("--misp-key", metavar="KEY",
+                        help="MISP API 키")
+    parser.add_argument("--no-verify-ssl", action="store_true",
+                        help="SSL 인증서 검증 비활성화")
+    return parser
+
+
+def main() -> None:
+    if not HAS_STIX2:
+        print("stix2 라이브러리 필요: pip install stix2", file=sys.stderr)
+        sys.exit(1)
+
+    parser = build_parser()
+    args = parser.parse_args()
+
+    ioc_path = Path(args.ioc_file)
+    if not ioc_path.exists():
+        parser.error(f"파일 없음: {ioc_path}")
+
+    try:
+        ioc_list: list[dict] = json.loads(ioc_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        parser.error(f"IOC 파일 읽기 실패: {exc}")
+
+    print(f"[*] {len(ioc_list)}개 IOC 처리 중...", file=sys.stderr)
+
+    try:
+        bundle = build_bundle(ioc_list)
+    except STIXError as exc:
+        print(f"[-] STIX2 Bundle 생성 실패: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    bundle_json = bundle.serialize(pretty=True)
+    indicator_count = sum(1 for o in bundle.objects if o.type == "indicator")
+    print(f"[+] Bundle 생성: {indicator_count}개 Indicator, "
+          f"{len(bundle.objects)}개 객체 총합", file=sys.stderr)
+
+    if args.out:
+        Path(args.out).write_text(bundle_json, encoding="utf-8")
+        print(f"[+] Bundle 저장: {args.out}")
+    else:
+        print(bundle_json)
+
+    if args.misp_url:
+        if not args.misp_key:
+            parser.error("--misp-key 필요")
+        send_to_misp(bundle, args.misp_url, args.misp_key,
+                     verify_ssl=not args.no_verify_ssl)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### IOC를 Splunk에 자동 적용
 
 ```python
-import requests
-import json
+#!/usr/bin/env python3
+"""
+Elastic Security Python API 위협 헌팅 쿼리 도구
+사용: python3 elastic_hunt.py --host https://es:9200 --user elastic --password PASS --hunt lateral
+"""
 
-def update_splunk_lookup(iocs: list, lookup_name: str):
-    """수집된 IOC를 Splunk 룩업 테이블에 자동 추가"""
-    
-    splunk_url = "https://splunk.corp:8089"
-    headers = {"Authorization": "Splunk YOUR_TOKEN"}
-    
-    # 현재 룩업 테이블 조회
-    resp = requests.get(
-        f"{splunk_url}/servicesNS/admin/search/data/transforms/lookups/{lookup_name}",
-        headers=headers,
-        verify=False
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from datetime import datetime, timezone, timedelta
+from typing import Any, Iterator
+
+try:
+    from elasticsearch import Elasticsearch, AuthenticationException
+    HAS_ES = True
+except ImportError:
+    HAS_ES = False
+
+
+# ------------------------------------------------------------------ #
+#  헌팅 쿼리 라이브러리
+# ------------------------------------------------------------------ #
+HUNT_QUERIES: dict[str, dict[str, Any]] = {
+
+    "lateral_movement": {
+        "description": "내부 SMB/WMI/PSExec 이동 탐지",
+        "index": "winlogbeat-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {"terms": {"event.code": ["4624", "4625", "7045"]}},
+                    {"term": {"winlog.event_data.LogonType": "3"}},
+                    {"range": {"@timestamp": {"gte": "now-24h"}}},
+                ],
+                "must_not": [
+                    {"term": {"source.ip": "127.0.0.1"}},
+                ],
+            }
+        },
+        "aggs": {
+            "by_source_ip": {
+                "terms": {"field": "source.ip", "size": 20},
+                "aggs": {
+                    "unique_hosts": {
+                        "cardinality": {"field": "host.name"}
+                    }
+                },
+            }
+        },
+    },
+
+    "kerberoasting": {
+        "description": "Kerberoasting 탐지 (RC4 암호화 TGS 요청)",
+        "index": "winlogbeat-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {"term": {"event.code": "4769"}},
+                    {"term": {"winlog.event_data.TicketEncryptionType": "0x17"}},
+                    {"range": {"@timestamp": {"gte": "now-1h"}}},
+                ]
+            }
+        },
+        "aggs": {
+            "by_user": {
+                "terms": {"field": "winlog.event_data.SubjectUserName.keyword", "size": 10},
+                "aggs": {
+                    "services": {
+                        "terms": {"field": "winlog.event_data.ServiceName.keyword", "size": 10}
+                    }
+                },
+            }
+        },
+    },
+
+    "password_spray": {
+        "description": "패스워드 스프레이 탐지 (다수 계정 소수 시도)",
+        "index": "winlogbeat-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {"term": {"event.code": "4625"}},
+                    {"range": {"@timestamp": {"gte": "now-5m"}}},
+                ]
+            }
+        },
+        "aggs": {
+            "by_src_ip": {
+                "terms": {"field": "source.ip", "size": 20},
+                "aggs": {
+                    "unique_users": {
+                        "cardinality": {"field": "winlog.event_data.TargetUserName.keyword"}
+                    },
+                    "attempt_count": {"value_count": {"field": "@timestamp"}},
+                },
+            }
+        },
+    },
+
+    "lolbins": {
+        "description": "LOLBins 실행 탐지 (certutil/mshta/regsvr32 등)",
+        "index": "winlogbeat-*,sysmon-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {"term": {"event.code": "1"}},
+                    {"range": {"@timestamp": {"gte": "now-24h"}}},
+                ],
+                "should": [
+                    {"wildcard": {"process.executable": "*certutil*"}},
+                    {"wildcard": {"process.executable": "*mshta*"}},
+                    {"wildcard": {"process.executable": "*regsvr32*"}},
+                    {"wildcard": {"process.executable": "*rundll32*"}},
+                    {"wildcard": {"process.executable": "*bitsadmin*"}},
+                    {"wildcard": {"process.executable": "*wscript*"}},
+                    {"wildcard": {"process.executable": "*cscript*"}},
+                ],
+                "minimum_should_match": 1,
+            }
+        },
+        "aggs": {
+            "by_process": {
+                "terms": {"field": "process.name", "size": 20},
+                "aggs": {
+                    "by_host": {"terms": {"field": "host.name", "size": 5}}
+                },
+            }
+        },
+    },
+
+    "dns_tunneling": {
+        "description": "DNS 터널링 탐지 (비정상적으로 긴 서브도메인)",
+        "index": "packetbeat-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {"term": {"type": "dns"}},
+                    {"range": {"@timestamp": {"gte": "now-1h"}}},
+                    {"script": {
+                        "script": {
+                            "source": "doc['dns.question.name'].value.length() > 50",
+                            "lang": "painless",
+                        }
+                    }},
+                ]
+            }
+        },
+        "aggs": {
+            "by_src": {
+                "terms": {"field": "source.ip", "size": 10},
+                "aggs": {
+                    "unique_domains": {
+                        "cardinality": {"field": "dns.question.name"}
+                    }
+                },
+            }
+        },
+    },
+}
+
+
+# ------------------------------------------------------------------ #
+#  Elasticsearch 클라이언트
+# ------------------------------------------------------------------ #
+class ElasticHunter:
+    def __init__(
+        self,
+        host: str,
+        user: str = "elastic",
+        password: str = "",
+        verify_certs: bool = True,
+    ) -> None:
+        if not HAS_ES:
+            raise RuntimeError("elasticsearch 라이브러리 필요: pip install elasticsearch")
+        self.es = Elasticsearch(
+            host,
+            basic_auth=(user, password),
+            verify_certs=verify_certs,
+        )
+
+    def run_hunt(self, hunt_name: str, size: int = 100) -> dict[str, Any]:
+        if hunt_name not in HUNT_QUERIES:
+            raise ValueError(
+                f"헌팅 쿼리 없음: {hunt_name}. 가능한 목록: {list(HUNT_QUERIES)}"
+            )
+        spec = HUNT_QUERIES[hunt_name]
+        body: dict[str, Any] = {
+            "query": spec["query"],
+            "size": size,
+        }
+        if "aggs" in spec:
+            body["aggs"] = spec["aggs"]
+
+        try:
+            resp = self.es.search(index=spec["index"], body=body)
+        except AuthenticationException:
+            raise RuntimeError("Elasticsearch 인증 실패")
+
+        hits = resp["hits"]["hits"]
+        aggs = resp.get("aggregations", {})
+
+        return {
+            "hunt": hunt_name,
+            "description": spec["description"],
+            "total_hits": resp["hits"]["total"]["value"],
+            "returned": len(hits),
+            "aggregations": aggs,
+            "hits": [h["_source"] for h in hits[:10]],
+        }
+
+    def list_hunts(self) -> None:
+        for name, spec in HUNT_QUERIES.items():
+            print(f"  {name:<25} — {spec['description']}")
+
+
+# ------------------------------------------------------------------ #
+#  출력
+# ------------------------------------------------------------------ #
+def print_result(result: dict[str, Any], as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return
+
+    print(f"\n{'='*60}")
+    print(f"헌팅  : {result['hunt']}")
+    print(f"설명  : {result['description']}")
+    print(f"총 히트: {result['total_hits']:,}개 (표시: {result['returned']})")
+
+    aggs = result.get("aggregations", {})
+    for agg_name, agg_data in aggs.items():
+        buckets = agg_data.get("buckets", [])
+        if buckets:
+            print(f"\n[집계: {agg_name}]")
+            for b in buckets[:10]:
+                key = b.get("key", "")
+                count = b.get("doc_count", 0)
+                # 중첩 집계 출력
+                nested = {k: v for k, v in b.items()
+                          if isinstance(v, dict) and "buckets" in v}
+                print(f"  {key:<40} {count:>6}건")
+                for nested_name, nested_data in nested.items():
+                    for nb in nested_data.get("buckets", [])[:3]:
+                        print(f"    └─ {nb.get('key','')}: {nb.get('doc_count',0)}")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Elastic Security 위협 헌팅 쿼리 도구",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  python3 elastic_hunt.py --list\n"
+               "  python3 elastic_hunt.py --host https://es:9200 --hunt lateral_movement\n"
+               "  python3 elastic_hunt.py --host https://es:9200 --hunt kerberoasting --json",
     )
-    
-    # IOC 형식으로 변환
-    csv_content = "ip,type,threat,date\n"
-    for ioc in iocs:
-        csv_content += f"{ioc['ip']},{ioc['type']},{ioc['threat']},{ioc['date']}\n"
-    
-    # 룩업 파일 업로드
-    requests.post(
-        f"{splunk_url}/servicesNS/admin/search/data/lookup-table-files/{lookup_name}.csv",
-        headers=headers,
-        data=csv_content,
-        verify=False
-    )
-    
-    print(f"[+] {len(iocs)}개 IOC를 Splunk에 업데이트 완료")
+    parser.add_argument("--host", default="https://localhost:9200",
+                        help="Elasticsearch 호스트 (기본: https://localhost:9200)")
+    parser.add_argument("--user", default="elastic", help="사용자명 (기본: elastic)")
+    parser.add_argument("--password", default="", help="비밀번호")
+    parser.add_argument("--hunt", metavar="NAME",
+                        help="실행할 헌팅 쿼리 이름")
+    parser.add_argument("--list", action="store_true",
+                        help="사용 가능한 헌팅 쿼리 목록 표시")
+    parser.add_argument("--size", type=int, default=100,
+                        help="반환할 최대 문서 수 (기본: 100)")
+    parser.add_argument("--json", action="store_true", help="JSON 형식으로 출력")
+    parser.add_argument("--no-verify-ssl", action="store_true",
+                        help="SSL 인증서 검증 비활성화")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.list:
+        print("[사용 가능한 헌팅 쿼리]")
+        for name, spec in HUNT_QUERIES.items():
+            print(f"  {name:<25} — {spec['description']}")
+        return
+
+    if not args.hunt:
+        parser.print_help()
+        sys.exit(1)
+
+    if not HAS_ES:
+        print("elasticsearch 라이브러리 필요: pip install elasticsearch", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        hunter = ElasticHunter(
+            host=args.host,
+            user=args.user,
+            password=args.password,
+            verify_certs=not args.no_verify_ssl,
+        )
+        result = hunter.run_hunt(args.hunt, size=args.size)
+        print_result(result, as_json=args.json)
+    except (ValueError, RuntimeError) as exc:
+        print(f"[-] 오류: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

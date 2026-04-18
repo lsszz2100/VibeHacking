@@ -266,71 +266,250 @@ echo "source ~/peda/peda.py" >> ~/.gdbinit
 
 ### GDB 명령어
 ```gdb
-(gdb) run arg1 arg2       # 실행
-(gdb) run < input.txt     # 파일에서 입력
-(gdb) break main          # 함수에 브레이크포인트
-(gdb) break *0x804851a    # 주소에 브레이크포인트
-(gdb) continue            # 계속 실행
-(gdb) next                # 다음 줄 (Step Over)
-(gdb) step                # 함수 내부로 (Step Into)
-(gdb) finish              # 현재 함수 종료까지
-(gdb) info registers      # 레지스터 값
-(gdb) x/10x $esp          # ESP부터 10개 hex
-(gdb) x/10i $eip          # EIP부터 10개 명령어
-(gdb) x/s 0x804a0c0       # 메모리를 문자열로
-(gdb) set $eax = 0        # 레지스터 값 변경
-(gdb) disassemble main    # 함수 역어셈블
-(gdb) info frame          # 현재 스택 프레임
-(gdb) backtrace           # 콜 스택
+(gdb) run arg1 arg2          # 인자와 함께 실행
+(gdb) run < input.txt        # 파일에서 stdin 입력
+(gdb) break main             # 함수 이름으로 BP 설정
+(gdb) break *0x804851a       # 절대 주소로 BP 설정
+(gdb) break *main+42         # 상대 오프셋으로 BP 설정
+(gdb) info breakpoints       # BP 목록 확인
+(gdb) delete 1               # 1번 BP 삭제
+(gdb) continue               # 다음 BP까지 실행
+(gdb) next                   # Step Over (함수 단위)
+(gdb) step                   # Step Into (명령어 단위)
+(gdb) finish                 # 현재 함수 끝까지 실행 후 리턴
+(gdb) info registers         # 전체 레지스터 값 출력
+(gdb) p/x $eax               # eax 값 16진수 출력
+(gdb) x/10xw $esp            # esp 기준 10개 word (4B) hex 출력
+(gdb) x/10i $eip             # eip 기준 10개 명령어 디스어셈블
+(gdb) x/s 0x804a0c0          # 해당 주소를 문자열로 출력
+(gdb) set $eax = 0           # 레지스터 값 수동 변경
+(gdb) set *(int*)0x804a010=1 # 메모리 값 수동 변경
+(gdb) disassemble main       # 함수 전체 역어셈블
+(gdb) disassemble /r main    # raw bytes 포함 역어셈블
+(gdb) info frame             # 현재 스택 프레임 정보
+(gdb) backtrace              # 콜 스택 (call chain)
+(gdb) watch *(int*)0x804a010 # 메모리 와치포인트 설정
+```
+
+### GDB 자동화 스크립트 (Python GDB API)
+```python
+#!/usr/bin/env python3
+"""
+GDB Python API를 이용한 바이너리 자동 분석 스크립트
+사용법: gdb -x gdb_auto.py ./target
+"""
+import gdb
+import re
+
+
+class MalwareTracer(gdb.Command):
+    """의심 함수 호출 시 자동 로깅하는 GDB 커맨드"""
+
+    WATCH_FUNCS = [
+        "system", "execve", "execvp",
+        "popen", "fopen", "fwrite",
+        "connect", "send", "recv",
+        "strcmp", "strncmp",          # 시리얼 비교 탐지
+    ]
+
+    def __init__(self) -> None:
+        super().__init__("trace-malware", gdb.COMMAND_USER)
+        self.log: list[str] = []
+
+    def invoke(self, arg: str, from_tty: bool) -> None:
+        print("[*] 의심 함수 BP 설정 중...")
+        for func in self.WATCH_FUNCS:
+            try:
+                bp = gdb.Breakpoint(func, internal=True)
+                bp.commands = (
+                    f'python gdb.execute("set logging file /tmp/trace.log")\n'
+                    f'python gdb.execute("set logging on")\n'
+                    f'info args\n'
+                    f'backtrace 3\n'
+                    f'continue\n'
+                )
+                print(f"  [+] BP @ {func}")
+            except gdb.error:
+                pass  # 심볼 없으면 스킵
+
+        gdb.execute("run")
+        print(f"[*] 트레이스 완료 → /tmp/trace.log 확인")
+
+
+class EIPController(gdb.Command):
+    """EIP/RIP 강제 변경 헬퍼"""
+
+    def __init__(self) -> None:
+        super().__init__("set-eip", gdb.COMMAND_USER)
+
+    def invoke(self, arg: str, from_tty: bool) -> None:
+        addr = int(arg.strip(), 16)
+        arch = gdb.selected_frame().architecture().name()
+        reg = "rip" if "x86-64" in arch else "eip"
+        gdb.execute(f"set ${reg} = {addr}")
+        print(f"[+] {reg.upper()} → {hex(addr)}")
+
+
+MalwareTracer()
+EIPController()
+print("[*] 커스텀 GDB 커맨드 로드: trace-malware, set-eip")
+
+
+# 자동 실행 — 바이너리 로드 직후 main에 BP 설정
+def on_new_objfile(event: gdb.ObjfileEvent) -> None:
+    try:
+        gdb.execute("break main")
+        print("[+] main BP 자동 설정")
+    except gdb.error:
+        pass
+
+gdb.events.new_objfile.connect(on_new_objfile)
 ```
 
 ### Linux 환경 컴파일 & 디버깅
 ```bash
-# ~/.bashrc에 gcc alias 추가 (스택 경계 정렬)
-alias gcc='gcc -mpreferred-stack-boundary=2'
+# 인텔 문법 어셈블리 출력으로 컴파일
+gcc -masm=intel -S -O0 test.c -o test.s
+cat test.s
 
-# 어셈블리 출력으로 컴파일
-gcc -masm=intel -S test.c
-cat test.s  # 인텔 문법 어셈블리 확인
+# 보호 기법 비활성화 후 컴파일 (학습용, 32비트)
+gcc -m32 -o vuln32 vuln.c \
+    -fno-stack-protector \
+    -z execstack \
+    -no-pie \
+    -mpreferred-stack-boundary=2
 
-# 보호 기법 비활성화 후 컴파일 (학습용)
-gcc -o vuln vuln.c -fno-stack-protector -z execstack -no-pie
+# 보호 기법 비활성화 후 컴파일 (학습용, 64비트)
+gcc -o vuln64 vuln.c \
+    -fno-stack-protector \
+    -z execstack \
+    -no-pie
 
-# 실행 파일 보호 기법 확인
-checksec --file=vuln
-# RELRO:    Full
-# STACK CANARY: No canary found
-# NX:       NX disabled
-# PIE:      No PIE
+# 실행 파일 보호 기법 자동 확인 (pwntools checksec)
+python3 -c "
+from pwn import *
+elf = ELF('./vuln64')
+print(f'  RELRO:     {\"Full\" if elf.relro == \"full\" else elf.relro}')
+print(f'  Canary:    {elf.canary}')
+print(f'  NX:        {elf.nx}')
+print(f'  PIE:       {elf.pie}')
+"
+
+# ASLR 비활성화 (학습/디버깅용, 재부팅 전까지 유효)
+echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
 ```
 
 ### Linux C 코드 → 어셈블리 변환 실전
 
 ```c
-// test.c
+// test.c — 기본 산술 연산 어셈블리 확인
 #include <stdio.h>
-int main() {
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int main(void) {
     int a = 10;
     int b = 20;
-    int c;
-    c = a + b;
+    int c = add(a, b);
+    printf("c = %d\n", c);
+    return 0;
 }
 ```
 
-컴파일 후 생성되는 어셈블리(`gcc -masm=intel -S test.c`):
+컴파일 후 생성되는 어셈블리(`gcc -m32 -masm=intel -S -O0 test.c`):
 
 ```asm
+; add 함수 — 인자 2개, 합산 후 eax로 반환
+add:
+    push    ebp
+    mov     ebp, esp
+    mov     eax, DWORD PTR [ebp+8]   ; a (첫 번째 인자)
+    add     eax, DWORD PTR [ebp+12]  ; eax += b (두 번째 인자)
+    pop     ebp
+    ret                               ; 반환값은 eax
+
+; main 함수 — 지역변수 3개 (a, b, c) → 스택 12바이트 확보
 main:
-    push    %ebp
-    mov     %ebp, %esp
-    sub     %esp, 12                     ; 지역변수 공간 확보 (a, b, c = 4*3)
-    mov     DWORD PTR [%ebp-4],  10      ; a = 10
-    mov     DWORD PTR [%ebp-8],  20      ; b = 20
-    mov     %eax, DWORD PTR [%ebp-8]     ; eax = b
-    add     %eax, DWORD PTR [%ebp-4]     ; eax = b + a
-    mov     DWORD PTR [%ebp-12], %eax    ; c = eax
+    push    ebp
+    mov     ebp, esp
+    sub     esp, 12                      ; 지역변수 공간 확보
+    mov     DWORD PTR [ebp-4],  10       ; a = 10
+    mov     DWORD PTR [ebp-8],  20       ; b = 20
+    push    DWORD PTR [ebp-8]            ; 인자2: b (역순 push)
+    push    DWORD PTR [ebp-4]            ; 인자1: a
+    call    add                          ; add(a, b)
+    add     esp, 8                       ; __cdecl: caller가 스택 정리
+    mov     DWORD PTR [ebp-12], eax      ; c = 반환값
+    push    DWORD PTR [ebp-12]
+    push    OFFSET .LC0                  ; "c = %d\n"
+    call    printf
+    add     esp, 8
+    mov     eax, 0
     leave
     ret
+```
+
+```python
+#!/usr/bin/env python3
+"""
+r2pipe를 이용한 함수 자동 역어셈블 + 제어 흐름 분석
+사용법: python3 r2_disasm.py <binary> [함수명]
+"""
+import sys
+import json
+import argparse
+import r2pipe
+
+
+def disasm_function(binary: str, func_name: str = "main") -> None:
+    r2 = r2pipe.open(binary, flags=["-2"])
+    r2.cmd("aaa")  # 전체 분석 수행
+
+    # 함수 목록에서 대상 검색
+    funcs = json.loads(r2.cmd("aflj") or "[]")
+    target = next(
+        (f for f in funcs if func_name in f.get("name", "")), None
+    )
+    if not target:
+        print(f"[-] 함수 '{func_name}' 를 찾을 수 없습니다.")
+        avail = [f["name"] for f in funcs[:20]]
+        print(f"    사용 가능한 함수 (최대 20개): {avail}")
+        r2.quit()
+        return
+
+    addr = target["offset"]
+    print(f"\n[+] {func_name} @ {hex(addr)}")
+    print(f"    크기: {target.get('size', '?')} bytes")
+    print(f"    호출 횟수: {target.get('cc', '?')}\n")
+
+    # 인텔 문법으로 역어셈블
+    r2.cmd("e asm.syntax=intel")
+    r2.cmd(f"s {addr}")
+    print(r2.cmd(f"pdf"))  # 함수 전체 디스어셈블
+
+    # 제어 흐름 그래프 (텍스트)
+    print("\n[*] 제어 흐름 블록:")
+    blocks = json.loads(r2.cmd(f"afbj @ {addr}") or "[]")
+    for blk in blocks:
+        print(f"  블록 {hex(blk['addr'])}: {blk.get('ninstr', 0)}개 명령어"
+              f"  → jump: {hex(blk['jump']) if blk.get('jump') else 'None'}"
+              f"  / fail: {hex(blk['fail']) if blk.get('fail') else 'None'}")
+
+    r2.quit()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="r2pipe 함수 역어셈블러")
+    parser.add_argument("binary", help="분석 대상 바이너리")
+    parser.add_argument("func", nargs="?", default="main", help="함수명 (기본: main)")
+    args = parser.parse_args()
+    disasm_function(args.binary, args.func)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -420,4 +599,114 @@ JNZ  debugger_detected
 
 ; 우회: [EAX+2] 값을 0으로 직접 수정 (Memory 창에서)
 ; 또는 JNZ → JZ 로 조건 반전
+```
+
+```python
+#!/usr/bin/env python3
+"""
+pwntools 기반 안티디버깅 우회 자동화 스크립트
+IsDebuggerPresent / PEB.IsDebugged 패치 후 바이너리 실행
+사용법: python3 anti_debug_bypass.py ./target [인자...]
+"""
+import sys
+import argparse
+from pwn import (
+    ELF, process, remote,
+    context, log, p32, p64,
+    u32, u64,
+)
+
+
+def patch_is_debugger_present(binary_path: str) -> str:
+    """
+    IsDebuggerPresent 임포트를 NOP 패턴으로 패치한 바이너리를 반환.
+    Windows PE 전용 — Linux ELF에서는 동적 훅킹 방식 사용 권장.
+    """
+    import pefile
+    import shutil
+    import os
+
+    patched = binary_path + ".patched"
+    shutil.copy2(binary_path, patched)
+
+    pe = pefile.PE(patched)
+    if not hasattr(pe, "DIRECTORY_ENTRY_IMPORT"):
+        log.warning("Import 디렉토리 없음")
+        return patched
+
+    with open(patched, "r+b") as f:
+        for entry in pe.DIRECTORY_ENTRY_IMPORT:
+            for imp in entry.imports:
+                if imp.name and b"IsDebuggerPresent" in imp.name:
+                    # IAT 엔트리를 0으로 초기화 → 호출 시 NULL 포인터
+                    # 실전에서는 xor eax,eax/ret 셸코드 주소로 대체
+                    f.seek(imp.address - pe.OPTIONAL_HEADER.ImageBase)
+                    f.write(b"\x00\x00\x00\x00")
+                    log.success(f"IsDebuggerPresent IAT 패치 완료 @ {hex(imp.address)}")
+
+    return patched
+
+
+def run_with_antidebug_bypass_frida(binary_path: str, args: list[str]) -> None:
+    """
+    Frida를 이용한 런타임 안티디버깅 우회 (Windows/Linux 공통)
+    frida-tools 필요: pip install frida-tools
+    """
+    frida_script = r"""
+    // IsDebuggerPresent 반환값 항상 0으로 패치
+    var isDbgPresent = Module.findExportByName(null, "IsDebuggerPresent");
+    if (isDbgPresent) {
+        Interceptor.replace(isDbgPresent, new NativeCallback(function() {
+            return 0;
+        }, 'int', []));
+        send("[+] IsDebuggerPresent 후킹 완료");
+    }
+
+    // CheckRemoteDebuggerPresent 우회
+    var checkRemote = Module.findExportByName(null, "CheckRemoteDebuggerPresent");
+    if (checkRemote) {
+        Interceptor.attach(checkRemote, {
+            onLeave: function(retval) {
+                // pbDebuggerPresent 포인터가 가리키는 값을 FALSE로
+                var ptr = this.context.ecx || this.context.rdx;
+                if (ptr) Memory.writeU32(ptr, 0);
+            }
+        });
+        send("[+] CheckRemoteDebuggerPresent 후킹 완료");
+    }
+
+    // GetTickCount 시간 차이 우회 (항상 이전 값 +1 반환)
+    var prevTick = 0;
+    var getTickCount = Module.findExportByName(null, "GetTickCount");
+    if (getTickCount) {
+        Interceptor.replace(getTickCount, new NativeCallback(function() {
+            prevTick += 1;
+            return prevTick;
+        }, 'uint32', []));
+        send("[+] GetTickCount 후킹 완료");
+    }
+    """
+    print("[*] Frida 안티디버깅 우회 스크립트:")
+    print(frida_script)
+    print(f"\n[*] 실행: frida -l script.js {binary_path}")
+    print(f"    또는: frida --no-pause -f {binary_path}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="안티디버깅 우회 도구")
+    parser.add_argument("binary", help="대상 바이너리")
+    parser.add_argument("args", nargs="*", help="프로그램 인자")
+    parser.add_argument("--frida", action="store_true",
+                        help="Frida 스크립트 출력 모드")
+    args = parser.parse_args()
+
+    if args.frida:
+        run_with_antidebug_bypass_frida(args.binary, args.args)
+    else:
+        patched = patch_is_debugger_present(args.binary)
+        log.info(f"패치된 바이너리: {patched}")
+
+
+if __name__ == "__main__":
+    main()
 ```

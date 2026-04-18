@@ -462,53 +462,291 @@ output {
 ### Shuffle SOAR 워크플로우 예시
 
 ```python
-# 자동 IP 차단 스크립트
+#!/usr/bin/env python3
+"""
+SOAR 자동화 대응 스크립트 — SIEM 알림 수신 → IP 차단 → TheHive 케이스 생성
+사용: python3 soar_response.py --ip 1.2.3.4 --reason "Brute force detected" --firewall-url https://fw.corp --thehive-url https://thehive.corp
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import sys
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Optional
+
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-def block_ip_firewall(ip_address: str, reason: str):
-    """방화벽 API를 통한 자동 IP 차단"""
-    
-    # Palo Alto API
-    payload = {
-        "ip": ip_address,
-        "action": "block",
-        "duration": 3600,  # 1시간
-        "reason": reason
-    }
-    
-    resp = requests.post(
-        "https://firewall.corp/api/block",
-        json=payload,
-        headers={"X-API-Key": "FIREWALL_API_KEY"},
-        verify=False
-    )
-    
-    if resp.status_code == 200:
-        print(f"[+] IP 차단 성공: {ip_address}")
-        # TheHive에 케이스 생성
-        create_thehive_alert(ip_address, reason)
-        return True
-    return False
+logging.basicConfig(
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    level=logging.INFO,
+)
+log = logging.getLogger(__name__)
 
-def create_thehive_alert(ip: str, reason: str):
-    """TheHive 인시던트 케이스 자동 생성"""
-    
-    alert = {
-        "title": f"자동 차단: {ip}",
-        "type": "malicious_ip",
-        "source": "SIEM",
-        "severity": 2,
-        "description": f"SIEM 자동 탐지에 의해 차단된 IP\n사유: {reason}",
-        "artifacts": [
-            {"dataType": "ip", "data": ip}
-        ]
-    }
-    
-    requests.post(
-        "https://thehive.corp/api/alert",
-        json=alert,
-        headers={"Authorization": "Bearer THEHIVE_TOKEN"}
+
+class Severity(int, Enum):
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    CRITICAL = 4
+
+
+@dataclass
+class SOARAction:
+    ip: str
+    reason: str
+    severity: Severity = Severity.MEDIUM
+    duration_seconds: int = 3600
+    tags: list[str] | None = None
+
+
+# ------------------------------------------------------------------ #
+#  HTTP 클라이언트 (재시도 포함)
+# ------------------------------------------------------------------ #
+def make_session(retries: int = 3, backoff: float = 0.5) -> requests.Session:
+    session = requests.Session()
+    retry = Retry(
+        total=retries,
+        backoff_factor=backoff,
+        status_forcelist=[429, 500, 502, 503, 504],
     )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
+
+
+# ------------------------------------------------------------------ #
+#  방화벽 차단 (Palo Alto REST API 모델)
+# ------------------------------------------------------------------ #
+class FirewallClient:
+    def __init__(self, base_url: str, api_key: str, verify_ssl: bool = True) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.api_key = api_key
+        self.verify_ssl = verify_ssl
+        self._session = make_session()
+
+    def block_ip(self, action: SOARAction) -> bool:
+        payload = {
+            "ip": action.ip,
+            "action": "block",
+            "duration": action.duration_seconds,
+            "reason": action.reason,
+            "severity": action.severity.name,
+        }
+        try:
+            resp = self._session.post(
+                f"{self.base_url}/api/v1/block",
+                json=payload,
+                headers={"X-API-Key": self.api_key},
+                timeout=10,
+                verify=self.verify_ssl,
+            )
+            resp.raise_for_status()
+            log.info("[FW] IP 차단 성공: %s (기간: %ds)", action.ip, action.duration_seconds)
+            return True
+        except requests.RequestException as exc:
+            log.error("[FW] IP 차단 실패: %s — %s", action.ip, exc)
+            return False
+
+    def unblock_ip(self, ip: str) -> bool:
+        try:
+            resp = self._session.delete(
+                f"{self.base_url}/api/v1/block/{ip}",
+                headers={"X-API-Key": self.api_key},
+                timeout=10,
+                verify=self.verify_ssl,
+            )
+            resp.raise_for_status()
+            log.info("[FW] IP 차단 해제: %s", ip)
+            return True
+        except requests.RequestException as exc:
+            log.error("[FW] 차단 해제 실패: %s", exc)
+            return False
+
+
+# ------------------------------------------------------------------ #
+#  TheHive 케이스 생성
+# ------------------------------------------------------------------ #
+class TheHiveClient:
+    def __init__(self, base_url: str, api_key: str, verify_ssl: bool = True) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.api_key = api_key
+        self.verify_ssl = verify_ssl
+        self._session = make_session()
+        self._headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+    def create_alert(self, action: SOARAction) -> Optional[str]:
+        """TheHive v4 알림 생성, 성공 시 alert ID 반환"""
+        alert = {
+            "title": f"[자동차단] 악성 IP: {action.ip}",
+            "type": "malicious_ip",
+            "source": "SIEM-SOAR",
+            "sourceRef": f"soar-{action.ip}-{int(datetime.now().timestamp())}",
+            "severity": action.severity.value,
+            "date": int(datetime.now(timezone.utc).timestamp() * 1000),
+            "description": (
+                f"SIEM 자동 탐지에 의해 차단된 IP\n\n"
+                f"**IP:** {action.ip}\n"
+                f"**사유:** {action.reason}\n"
+                f"**차단 기간:** {action.duration_seconds // 60}분\n"
+                f"**심각도:** {action.severity.name}"
+            ),
+            "tags": (action.tags or []) + ["auto-block", "soar"],
+            "observables": [
+                {
+                    "dataType": "ip",
+                    "data": action.ip,
+                    "message": action.reason,
+                    "tlp": 2,
+                    "ioc": True,
+                    "tags": ["malicious"],
+                }
+            ],
+        }
+
+        try:
+            resp = self._session.post(
+                f"{self.base_url}/api/alert",
+                json=alert,
+                headers=self._headers,
+                timeout=10,
+                verify=self.verify_ssl,
+            )
+            resp.raise_for_status()
+            alert_id = resp.json().get("id", "")
+            log.info("[TheHive] 알림 생성: %s (ID: %s)", action.ip, alert_id)
+            return alert_id
+        except requests.RequestException as exc:
+            log.error("[TheHive] 알림 생성 실패: %s", exc)
+            return None
+
+
+# ------------------------------------------------------------------ #
+#  SOAR 오케스트레이터
+# ------------------------------------------------------------------ #
+class SOAROrchestrator:
+    def __init__(
+        self,
+        firewall: Optional[FirewallClient] = None,
+        thehive: Optional[TheHiveClient] = None,
+    ) -> None:
+        self.firewall = firewall
+        self.thehive = thehive
+
+    def respond(self, action: SOARAction) -> dict:
+        results: dict = {"ip": action.ip, "actions": []}
+
+        if self.firewall:
+            fw_ok = self.firewall.block_ip(action)
+            results["actions"].append({
+                "component": "firewall",
+                "success": fw_ok,
+                "detail": f"차단 {'성공' if fw_ok else '실패'}: {action.ip}",
+            })
+
+        if self.thehive:
+            alert_id = self.thehive.create_alert(action)
+            results["actions"].append({
+                "component": "thehive",
+                "success": alert_id is not None,
+                "alert_id": alert_id,
+            })
+
+        results["overall_success"] = all(a["success"] for a in results["actions"])
+        return results
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="SOAR 자동화 대응 — IP 차단 + TheHive 케이스 생성",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="예시:\n"
+               "  python3 soar_response.py --ip 1.2.3.4 --reason 'Brute force'\n"
+               "  python3 soar_response.py --ip 1.2.3.4 --severity HIGH "
+               "--firewall-url https://fw.corp --thehive-url https://thehive.corp",
+    )
+    parser.add_argument("--ip", required=True, help="차단할 IP 주소")
+    parser.add_argument("--reason", required=True, help="차단 사유")
+    parser.add_argument(
+        "--severity",
+        choices=[s.name for s in Severity],
+        default="MEDIUM",
+        help="심각도 (기본: MEDIUM)",
+    )
+    parser.add_argument(
+        "--duration",
+        type=int,
+        default=3600,
+        metavar="SECONDS",
+        help="차단 지속 시간(초, 기본: 3600)",
+    )
+    parser.add_argument("--tags", nargs="*", default=[], help="추가 태그")
+    parser.add_argument("--firewall-url", metavar="URL", help="방화벽 API URL")
+    parser.add_argument("--firewall-key", metavar="KEY", help="방화벽 API 키")
+    parser.add_argument("--thehive-url", metavar="URL", help="TheHive URL")
+    parser.add_argument("--thehive-key", metavar="KEY", help="TheHive API 키")
+    parser.add_argument("--no-verify-ssl", action="store_true")
+    parser.add_argument("--json", action="store_true", help="결과를 JSON으로 출력")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    action = SOARAction(
+        ip=args.ip,
+        reason=args.reason,
+        severity=Severity[args.severity],
+        duration_seconds=args.duration,
+        tags=args.tags,
+    )
+
+    verify = not args.no_verify_ssl
+    fw_client = None
+    hive_client = None
+
+    if args.firewall_url:
+        if not args.firewall_key:
+            parser.error("--firewall-url 사용 시 --firewall-key 필요")
+        fw_client = FirewallClient(args.firewall_url, args.firewall_key, verify)
+
+    if args.thehive_url:
+        if not args.thehive_key:
+            parser.error("--thehive-url 사용 시 --thehive-key 필요")
+        hive_client = TheHiveClient(args.thehive_url, args.thehive_key, verify)
+
+    if not fw_client and not hive_client:
+        parser.error("--firewall-url 또는 --thehive-url 중 하나 이상 지정 필요")
+
+    orchestrator = SOAROrchestrator(firewall=fw_client, thehive=hive_client)
+    results = orchestrator.respond(action)
+
+    if args.json:
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+    else:
+        status = "성공" if results["overall_success"] else "일부 실패"
+        print(f"\n[SOAR 대응 결과: {status}]")
+        for act in results["actions"]:
+            icon = "+" if act["success"] else "-"
+            print(f"  [{icon}] {act['component']}: {act.get('detail', act.get('alert_id', ''))}")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

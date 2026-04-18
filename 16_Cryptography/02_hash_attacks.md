@@ -248,143 +248,255 @@ hashcat -m 18200 asrep_hashes.txt wordlist.txt
 
 ```python
 #!/usr/bin/env python3
-"""해시 크래킹 자동화 파이프라인"""
+"""
+해시 자동 크래킹 파이프라인 CLI
+사용: python3 hash_cracker.py crack --hash 5f4dcc3b5aa765d61d8327deb882cf99
+      python3 hash_cracker.py crack --file hashes.txt --wordlist rockyou.txt
+      python3 hash_cracker.py identify --hash '$6$rounds=5000$salt$HASH'
+"""
 
+from __future__ import annotations
+import argparse
 import hashlib
-import subprocess
 import json
+import re
+import subprocess
+import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 
-class HashCracker:
-    def __init__(self, wordlist: str = '/usr/share/wordlists/rockyou.txt'):
-        self.wordlist = wordlist
-        self.rules = [
-            '/usr/share/hashcat/rules/best64.rule',
-            '/usr/share/hashcat/rules/d3ad0ne.rule'
-        ]
-    
-    def identify(self, hash_str: str) -> tuple:
-        """해시 유형 및 hashcat 모드 반환"""
-        patterns = {
-            (r'^[a-f0-9]{32}$', None): [('MD5', 0), ('NTLM', 1000)],
-            (r'^[a-f0-9]{40}$', None): [('SHA1', 100)],
-            (r'^[a-f0-9]{64}$', None): [('SHA256', 1400)],
-            (r'^\$2[ayb]\$.+', None): [('bcrypt', 3200)],
-            (r'^\$6\$.+', None): [('sha512crypt', 1800)],
-            (r'^\$1\$.+', None): [('md5crypt', 500)],
-            (r'^\$krb5tgs\$23\$.+', None): [('Kerberoast_RC4', 13100)],
-            (r'^\$krb5asrep\$23\$.+', None): [('AS-REP', 18200)],
-        }
-        
-        import re
-        for (pattern, _), types in patterns.items():
-            if re.match(pattern, hash_str, re.IGNORECASE):
-                return types
-        
-        return [('Unknown', -1)]
-    
-    def crack_online(self, hash_str: str) -> str:
-        """온라인 DB에서 해시 검색"""
-        import urllib.request
-        
-        # CrackStation API (MD5/SHA1/SHA256)
-        url = f"https://crackstation.net/crack/{hash_str}"
-        try:
-            with urllib.request.urlopen(url, timeout=5) as r:
-                data = json.loads(r.read())
-                if data.get('result'):
-                    return data['result']
-        except:
-            pass
-        
+
+# ── 해시 패턴 정의 ───────────────────────────────────────────
+
+HASH_SIGNATURES: list[tuple[str, str, int]] = [
+    # (pattern, name, hashcat_mode)
+    (r"^\$krb5tgs\$23\$.+",    "Kerberoast-RC4",   13100),
+    (r"^\$krb5tgs\$18\$.+",    "Kerberoast-AES",   19700),
+    (r"^\$krb5asrep\$23\$.+",  "AS-REP-RC4",       18200),
+    (r"^\$krb5asrep\$18\$.+",  "AS-REP-AES",       19800),
+    (r"^\$2[ayb]\$.{56}$",     "bcrypt",            3200),
+    (r"^\$6\$.+",              "sha512crypt",        1800),
+    (r"^\$5\$.+",              "sha256crypt",        7400),
+    (r"^\$1\$.+",              "md5crypt",            500),
+    (r"^\$y\$.+",              "yescrypt",           None),
+    (r"^[a-f0-9]{128}$",       "SHA-512",            1700),
+    (r"^[a-f0-9]{64}$",        "SHA-256",            1400),
+    (r"^[a-f0-9]{56}$",        "SHA-224",            1300),
+    (r"^[a-f0-9]{40}$",        "SHA-1",               100),
+    (r"^[a-f0-9]{32}$",        "MD5/NTLM",            0),  # 0 → dict, 1000 도 시도
+]
+
+NTLM_EMPTY = "31d6cfe0d16ae931b73c59d7e0c089c0"
+
+
+def identify_hash(h: str) -> list[tuple[str, int | None]]:
+    """해시 문자열 → [(유형명, hashcat_mode), ...]"""
+    results: list[tuple[str, int | None]] = []
+    for pattern, name, mode in HASH_SIGNATURES:
+        if re.match(pattern, h, re.IGNORECASE):
+            results.append((name, mode))
+            # 32자 16진수는 NTLM 모드도 추가
+            if name == "MD5/NTLM":
+                results.append(("NTLM", 1000))
+    return results or [("Unknown", None)]
+
+
+# ── 로컬 딕셔너리 크래커 ────────────────────────────────────
+
+_DIGEST_FUNCS: dict[str, object] = {
+    "md5":    hashlib.md5,
+    "sha1":   hashlib.sha1,
+    "sha256": hashlib.sha256,
+    "sha512": hashlib.sha512,
+}
+
+
+def crack_local(hash_str: str, wordlist: Path,
+                algo: str = "md5") -> str | None:
+    """Python 순수 딕셔너리 크래킹 (MD5/SHA 계열)"""
+    fn = _DIGEST_FUNCS.get(algo)
+    if fn is None:
         return None
-    
-    def crack_hashcat(self, hash_str: str, mode: int, 
-                      attack_type: str = 'dict') -> str:
-        """hashcat으로 크래킹"""
-        
-        hash_file = Path('/tmp/crack_hash.txt')
-        hash_file.write_text(hash_str)
-        
-        cmd = ['hashcat', '-m', str(mode), str(hash_file)]
-        
-        if attack_type == 'dict':
-            cmd += [self.wordlist]
-        elif attack_type == 'rules':
-            cmd += [self.wordlist]
-            for rule in self.rules:
-                cmd += ['-r', rule]
-        elif attack_type == 'brute':
-            cmd += ['-a', '3', '?a?a?a?a?a?a?a?a']  # 8자리
-        
-        cmd += ['--quiet', '--potfile-disable']
-        
-        try:
-            result = subprocess.run(cmd, capture_output=True, 
-                                   text=True, timeout=300)
-            
-            # 결과 파싱
-            if ':' in result.stdout:
-                return result.stdout.split(':')[-1].strip()
-        except subprocess.TimeoutExpired:
-            print(f"[-] 타임아웃 (5분)")
-        
-        return None
-    
-    def crack(self, hash_str: str) -> dict:
-        """자동 크래킹 파이프라인"""
-        result = {'hash': hash_str, 'type': None, 'password': None}
-        
-        # 1단계: 유형 식별
-        types = self.identify(hash_str)
-        result['type'] = types[0][0] if types else 'Unknown'
-        print(f"[*] 해시 유형: {result['type']}")
-        
-        # 2단계: 온라인 DB 검색 (빠름)
-        print("[*] 온라인 DB 검색...")
-        online_result = self.crack_online(hash_str)
-        if online_result:
-            result['password'] = online_result
-            result['method'] = 'online'
-            return result
-        
-        # 3단계: hashcat 딕셔너리
+    h_lower = hash_str.lower()
+    try:
+        with wordlist.open("r", encoding="latin-1", errors="replace") as fp:
+            for line in fp:
+                word = line.rstrip("\n")
+                if fn(word.encode()).hexdigest() == h_lower:
+                    return word
+    except OSError as e:
+        print(f"[-] 워드리스트 오류: {e}", file=sys.stderr)
+    return None
+
+
+# ── Hashcat 래퍼 ─────────────────────────────────────────────
+
+def crack_hashcat(
+    hash_str: str,
+    mode: int,
+    wordlist: Path,
+    rules: list[Path] | None = None,
+    brute_mask: str | None = None,
+    timeout: int = 300,
+) -> str | None:
+    """hashcat 실행 후 크래킹 결과 반환"""
+    tmp = Path("/tmp/_hc_target.txt")
+    tmp.write_text(hash_str + "\n")
+
+    cmd = ["hashcat", "-m", str(mode), str(tmp), "--quiet",
+           "--potfile-disable", "--status-timer=10"]
+
+    if brute_mask:
+        cmd += ["-a", "3", brute_mask]
+    else:
+        cmd += [str(wordlist)]
+        for r in (rules or []):
+            cmd += ["-r", str(r)]
+
+    try:
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout
+        )
+        # hashcat --show 로 결과 추출
+        show = subprocess.run(
+            ["hashcat", "-m", str(mode), str(tmp), "--show", "--potfile-disable"],
+            capture_output=True, text=True, timeout=10,
+        )
+        for line in show.stdout.splitlines():
+            if ":" in line:
+                return line.split(":", 1)[-1].strip()
+    except FileNotFoundError:
+        print("[-] hashcat 미설치", file=sys.stderr)
+    except subprocess.TimeoutExpired:
+        print(f"[-] hashcat 타임아웃 ({timeout}s)", file=sys.stderr)
+    return None
+
+
+# ── 메인 크래킹 파이프라인 ───────────────────────────────────
+
+@dataclass
+class CrackResult:
+    hash_str: str
+    hash_type: str = "Unknown"
+    password: str | None = None
+    method: str = ""
+    errors: list[str] = field(default_factory=list)
+
+
+def crack_pipeline(
+    hash_str: str,
+    wordlist: Path,
+    rules: list[Path] | None = None,
+    use_hashcat: bool = True,
+    timeout: int = 300,
+) -> CrackResult:
+    res = CrackResult(hash_str=hash_str)
+    types = identify_hash(hash_str)
+    res.hash_type = " / ".join(t for t, _ in types)
+    print(f"[*] {hash_str[:32]}...  유형: {res.hash_type}")
+
+    # 1. Python 로컬 크래킹 (MD5/SHA1)
+    for name, _ in types:
+        algo = {"MD5/NTLM": "md5", "SHA-1": "sha1",
+                "SHA-256": "sha256", "SHA-512": "sha512"}.get(name)
+        if algo:
+            print(f"    [Python] {algo} 딕셔너리 크래킹...")
+            pw = crack_local(hash_str, wordlist, algo)
+            if pw:
+                res.password, res.method = pw, f"python_{algo}"
+                return res
+
+    # 2. hashcat
+    if use_hashcat:
         for name, mode in types:
-            if mode == -1:
+            if mode is None:
                 continue
-            
-            print(f"[*] hashcat 딕셔너리 공격 (mode {mode})...")
-            password = self.crack_hashcat(hash_str, mode, 'dict')
-            if password:
-                result['password'] = password
-                result['method'] = f'hashcat_dict_{name}'
-                return result
-            
-            # 4단계: 규칙 기반
-            print(f"[*] hashcat 규칙 공격...")
-            password = self.crack_hashcat(hash_str, mode, 'rules')
-            if password:
-                result['password'] = password
-                result['method'] = f'hashcat_rules_{name}'
-                return result
-        
-        print("[-] 크랙 실패")
-        return result
+            print(f"    [hashcat -m {mode}] 딕셔너리...")
+            pw = crack_hashcat(hash_str, mode, wordlist, rules, timeout=timeout)
+            if pw:
+                res.password, res.method = pw, f"hashcat_dict_{name}"
+                return res
+
+            if mode in (0, 100, 1000, 1400):   # 빠른 해시만 브루트
+                print(f"    [hashcat -m {mode}] 브루트 (6자리)...")
+                pw = crack_hashcat(hash_str, mode, wordlist,
+                                   brute_mask="?l?l?l?l?l?l", timeout=60)
+                if pw:
+                    res.password, res.method = pw, f"hashcat_brute_{name}"
+                    return res
+
+    print("    [-] 크래킹 실패")
+    return res
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="해시 크래킹 파이프라인")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    # identify
+    id_p = sub.add_parser("identify", help="해시 유형 식별")
+    id_p.add_argument("--hash", required=True)
+
+    # crack
+    cr_p = sub.add_parser("crack", help="해시 크래킹")
+    cr_p.add_argument("--hash", help="단일 해시")
+    cr_p.add_argument("--file", type=Path, help="해시 목록 파일 (한 줄당 하나)")
+    cr_p.add_argument("--wordlist", type=Path,
+                      default=Path("/usr/share/wordlists/rockyou.txt"))
+    cr_p.add_argument("--rules", nargs="*", type=Path)
+    cr_p.add_argument("--no-hashcat", action="store_true")
+    cr_p.add_argument("--timeout", type=int, default=300)
+    cr_p.add_argument("--output", type=Path, help="결과 JSON 저장")
+
+    args = parser.parse_args()
+
+    if args.cmd == "identify":
+        types = identify_hash(args.hash)
+        print(f"해시: {args.hash}")
+        for name, mode in types:
+            hc = f"hashcat -m {mode}" if mode is not None else "N/A"
+            print(f"  {name:20s}  {hc}")
+        return
+
+    hashes: list[str] = []
+    if args.hash:
+        hashes.append(args.hash)
+    if args.file:
+        try:
+            hashes.extend(
+                l.strip() for l in args.file.read_text().splitlines() if l.strip()
+            )
+        except OSError as e:
+            print(f"[-] 파일 오류: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    if not hashes:
+        print("[-] --hash 또는 --file 을 지정하세요.", file=sys.stderr)
+        sys.exit(1)
+
+    results: list[dict] = []
+    for h in hashes:
+        res = crack_pipeline(
+            h, args.wordlist, args.rules or [],
+            not args.no_hashcat, args.timeout,
+        )
+        if res.password:
+            print(f"[+] {res.hash_str[:32]}... → {res.password}  ({res.method})")
+        results.append({"hash": res.hash_str, "type": res.hash_type,
+                        "password": res.password, "method": res.method})
+
+    if args.output:
+        args.output.write_text(json.dumps(results, indent=2, ensure_ascii=False))
+        print(f"[*] 결과 저장: {args.output}")
+
+    cracked = sum(1 for r in results if r["password"])
+    print(f"\n[요약] {cracked}/{len(results)} 크래킹 성공")
+
 
 if __name__ == "__main__":
-    cracker = HashCracker()
-    
-    test_hashes = [
-        "5f4dcc3b5aa765d61d8327deb882cf99",  # MD5("password")
-        "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",  # SHA1
-        "aad3b435b51404eeaad3b435b51404ee:31d6...",  # NTLM
-    ]
-    
-    for hash_str in test_hashes:
-        result = cracker.crack(hash_str)
-        if result['password']:
-            print(f"[+] 크랙 성공: {result['hash']} → {result['password']}")
-        print()
+    main()
 ```
 
 ---
@@ -394,51 +506,138 @@ if __name__ == "__main__":
 ### 타이밍 공격
 
 ```python
+#!/usr/bin/env python3
+"""
+타이밍 공격 데모 & 안전한 HMAC 비교
+사용: python3 timing_attack.py demo
+      python3 timing_attack.py safe-compare --a "abc" --b "abc"
+"""
+
+from __future__ import annotations
+import argparse
 import hmac
-import time
 import statistics
+import sys
+import time
+
+
+# ── 취약한 비교 (타이밍 공격 표적) ──────────────────────────
 
 def vulnerable_compare(a: str, b: str) -> bool:
-    """취약한 문자열 비교 (타이밍 공격에 취약)"""
+    """
+    취약: 첫 불일치 문자에서 즉시 반환
+    → 일치 바이트 수에 따라 실행 시간이 달라짐
+    """
     if len(a) != len(b):
         return False
     for x, y in zip(a, b):
         if x != y:
-            return False  # 첫 불일치에서 즉시 반환 → 시간 차이 발생
+            return False      # 조기 반환 → 시간 누출
     return True
 
-def timing_attack_demo(target_mac: str):
-    """타이밍 공격으로 HMAC 바이트 단위 복원"""
-    
-    charset = '0123456789abcdef'
+
+# ── 상수 시간 비교 (안전) ─────────────────────────────────
+
+def safe_compare(a: str, b: str) -> bool:
+    """hmac.compare_digest — 항상 전체 비교, 시간 누출 없음"""
+    return hmac.compare_digest(a.encode(), b.encode())
+
+
+# ── 타이밍 공격 시뮬레이션 ───────────────────────────────────
+
+def timing_attack(
+    target: str,
+    charset: str = "0123456789abcdef",
+    samples: int = 200,
+    verbose: bool = True,
+) -> str:
+    """
+    vulnerable_compare 를 이용한 바이트 단위 타이밍 공격
+    각 위치에서 가장 오래 걸리는 문자 = 일치하는 문자
+
+    주의: 실제 네트워크 공격은 측정 노이즈가 훨씬 크므로
+          수천~수만 샘플이 필요합니다.
+    """
     recovered = ""
-    
-    for position in range(len(target_mac)):
-        times = {}
-        
-        for char in charset:
-            guess = recovered + char + "0" * (len(target_mac) - len(recovered) - 1)
-            
-            # 여러 번 시도해서 평균 시간 측정
-            measurements = []
-            for _ in range(100):
-                start = time.perf_counter_ns()
-                vulnerable_compare(guess, target_mac)
-                end = time.perf_counter_ns()
-                measurements.append(end - start)
-            
-            times[char] = statistics.median(measurements)
-        
-        # 가장 오래 걸린 문자 = 일치하는 문자
-        best_char = max(times, key=times.get)
-        recovered += best_char
-        print(f"[*] 위치 {position}: {best_char} (복원: {recovered})")
-    
+
+    for pos in range(len(target)):
+        char_times: dict[str, float] = {}
+
+        for ch in charset:
+            guess = recovered + ch + "0" * (len(target) - len(recovered) - 1)
+            measurements: list[int] = []
+
+            for _ in range(samples):
+                t0 = time.perf_counter_ns()
+                vulnerable_compare(guess, target)
+                t1 = time.perf_counter_ns()
+                measurements.append(t1 - t0)
+
+            # 중앙값 사용 (이상값 제거)
+            char_times[ch] = statistics.median(measurements)
+
+        best = max(char_times, key=char_times.get)
+        recovered += best
+
+        if verbose:
+            top3 = sorted(char_times.items(), key=lambda kv: kv[1], reverse=True)[:3]
+            print(f"  위치 {pos:02d}: '{best}'  복원: {recovered!r:20s}  "
+                  f"상위3={[(c, f'{t:.0f}ns') for c, t in top3]}")
+
     return recovered
 
-# 안전한 비교 (상수 시간)
-def safe_compare(a: str, b: str) -> bool:
-    return hmac.compare_digest(a.encode(), b.encode())
+
+def run_demo() -> None:
+    """취약 vs 안전 비교 데모"""
+    secret_mac = "deadbeef1234"
+    print(f"=== 타이밍 공격 데모 ===")
+    print(f"실제 MAC: {secret_mac}\n")
+
+    print("[*] 타이밍 공격 시작 (vulnerable_compare)...")
+    recovered = timing_attack(secret_mac, samples=300)
+    success = recovered == secret_mac
+    print(f"\n[{'+'if success else '-'}] 복원 결과: {recovered!r}  "
+          f"({'성공' if success else '실패'})\n")
+
+    print("[*] safe_compare 정확성 확인")
+    print(f"  올바른 MAC 비교: {safe_compare(secret_mac, secret_mac)}")
+    print(f"  틀린 MAC 비교  : {safe_compare(secret_mac, 'deadbeef0000')}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="타이밍 공격 데모")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("demo", help="취약 vs 안전 비교 데모 실행")
+
+    atk = sub.add_parser("attack", help="타이밍 공격 실행")
+    atk.add_argument("--target",  required=True, help="공격 대상 문자열")
+    atk.add_argument("--charset", default="0123456789abcdef")
+    atk.add_argument("--samples", type=int, default=200)
+
+    cmp = sub.add_parser("safe-compare", help="상수 시간 비교")
+    cmp.add_argument("--a", required=True)
+    cmp.add_argument("--b", required=True)
+
+    args = parser.parse_args()
+
+    if args.cmd == "demo":
+        run_demo()
+    elif args.cmd == "attack":
+        print(f"[*] 타이밍 공격: target={args.target!r}")
+        result = timing_attack(args.target, args.charset, args.samples)
+        print(f"\n[결과] {result!r}")
+    elif args.cmd == "safe-compare":
+        match = safe_compare(args.a, args.b)
+        print(f"비교 결과: {'일치' if match else '불일치'}")
+        sys.exit(0 if match else 1)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        run_demo()
+    else:
+        main()
 ```
 
 ---

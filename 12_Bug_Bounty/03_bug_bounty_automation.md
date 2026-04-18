@@ -33,100 +33,378 @@ Burp Suite + 브라우저
 
 ## 1. 정찰 자동화 스크립트
 
-### recon.sh - 종합 정찰 스크립트
+### recon_pipeline.py — 종합 정찰 자동화 CLI
 
-```bash
-#!/bin/bash
-# recon.sh - 버그바운티 자동 정찰 도구
+```python
+#!/usr/bin/env python3
+"""
+버그바운티 종합 정찰 파이프라인 — Python 3.10+
+요구사항: pip install requests dnspython
+외부 바이너리 (선택): subfinder, amass, naabu, nuclei, waybackurls, gau, katana, gowitness
+"""
 
-TARGET=$1
-OUTPUT_DIR="./recon_$TARGET"
-mkdir -p $OUTPUT_DIR/{subdomains,urls,screenshots,nuclei,ports}
+from __future__ import annotations
 
-echo "[*] 타겟: $TARGET"
-echo "[*] 출력 디렉토리: $OUTPUT_DIR"
+import argparse
+import json
+import re
+import subprocess
+import sys
+import textwrap
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
 
-# ===== 서브도메인 열거 =====
-echo "[1/7] 서브도메인 열거 중..."
+import requests
 
-# 다중 소스 병렬 실행
-subfinder -d $TARGET -silent -o $OUTPUT_DIR/subdomains/subfinder.txt &
-amass enum -passive -d $TARGET -o $OUTPUT_DIR/subdomains/amass.txt &
-assetfinder --subs-only $TARGET > $OUTPUT_DIR/subdomains/assetfinder.txt &
-findomain -t $TARGET -q > $OUTPUT_DIR/subdomains/findomain.txt &
 
-# GitHub 서브도메인 (토큰 필요)
-# github-subdomains -d $TARGET -t $GITHUB_TOKEN > $OUTPUT_DIR/subdomains/github.txt &
+# ── 유틸리티 ─────────────────────────────────────────────────────────────────
 
-wait
+def run_tool(cmd: list[str], output_file: Optional[Path] = None,
+             timeout: int = 300) -> list[str]:
+    """외부 도구 실행. stdout 라인 목록 반환. 도구 없으면 빈 리스트."""
+    try:
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout
+        )
+        lines = [l.strip() for l in result.stdout.splitlines() if l.strip()]
+        if output_file and lines:
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            output_file.write_text("\n".join(lines), encoding="utf-8")
+        return lines
+    except FileNotFoundError:
+        print(f"[!] {cmd[0]} 없음 — 건너뜀")
+        return []
+    except subprocess.TimeoutExpired:
+        print(f"[!] {cmd[0]} 타임아웃 — 부분 결과 사용")
+        return []
+    except Exception as exc:
+        print(f"[!] {cmd[0]} 오류: {exc}")
+        return []
 
-# 중복 제거 및 병합
-cat $OUTPUT_DIR/subdomains/*.txt | sort -u > $OUTPUT_DIR/subdomains/all_subdomains.txt
-echo "[+] 서브도메인 발견: $(wc -l < $OUTPUT_DIR/subdomains/all_subdomains.txt)개"
 
-# ===== 생존 호스트 확인 =====
-echo "[2/7] 생존 호스트 확인 중..."
-cat $OUTPUT_DIR/subdomains/all_subdomains.txt | \
-    httpx -silent -status-code -title -tech-detect \
-          -o $OUTPUT_DIR/subdomains/alive_hosts.txt
+def crtsh_enum(domain: str) -> list[str]:
+    """crt.sh 인증서 투명성 로그 서브도메인 열거."""
+    try:
+        resp = requests.get(
+            f"https://crt.sh/?q=%.{domain}&output=json", timeout=20
+        )
+        entries = resp.json()
+        subs: set[str] = set()
+        for entry in entries:
+            for name in entry.get("name_value", "").splitlines():
+                name = name.strip().lstrip("*.")
+                if name.endswith(domain) and " " not in name:
+                    subs.add(name)
+        return sorted(subs)
+    except Exception as exc:
+        print(f"[!] crt.sh: {exc}")
+        return []
 
-echo "[+] 생존 호스트: $(wc -l < $OUTPUT_DIR/subdomains/alive_hosts.txt)개"
 
-# ===== 포트 스캔 =====
-echo "[3/7] 포트 스캔 중..."
-cat $OUTPUT_DIR/subdomains/all_subdomains.txt | \
-    naabu -top-ports 1000 -silent \
-          -o $OUTPUT_DIR/ports/open_ports.txt
+def check_http_alive(subdomain: str) -> Optional[dict]:
+    """HTTP/HTTPS 생존 확인 + 기본 정보."""
+    import urllib3
+    urllib3.disable_warnings()
+    for scheme in ("https", "http"):
+        try:
+            resp = requests.get(
+                f"{scheme}://{subdomain}", timeout=8, verify=False,
+                allow_redirects=True, headers={"User-Agent": "Mozilla/5.0"},
+            )
+            t_start = resp.text.find("<title>")
+            t_end = resp.text.find("</title>")
+            title = resp.text[t_start + 7:t_end].strip()[:60] if t_start != -1 else ""
+            return {
+                "url": resp.url,
+                "status": resp.status_code,
+                "title": title,
+                "server": resp.headers.get("Server", ""),
+                "tech": resp.headers.get("X-Powered-By", ""),
+            }
+        except Exception:
+            continue
+    return None
 
-# ===== URL 수집 =====
-echo "[4/7] URL 수집 중..."
 
-# Wayback Machine + CommonCrawl
-cat $OUTPUT_DIR/subdomains/all_subdomains.txt | \
-    waybackurls > $OUTPUT_DIR/urls/wayback.txt &
+def scan_js_secrets(js_url: str) -> list[str]:
+    """JS 파일에서 민감 패턴 검색."""
+    SECRET_PATTERNS = [
+        r'(?i)(api[_-]?key|apikey)\s*[:=]\s*["\']?([a-zA-Z0-9_\-]{20,})',
+        r'(?i)(secret|token)\s*[:=]\s*["\']?([a-zA-Z0-9_\-]{20,})',
+        r'(?i)(password|passwd)\s*[:=]\s*["\']([^"\']{6,})',
+        r'(?i)aws[_\-]?access[_\-]?key[_\-]?id\s*[:=]\s*["\']?([A-Z0-9]{20})',
+        r'(?i)-----BEGIN (RSA|EC|OPENSSH) PRIVATE KEY-----',
+    ]
+    try:
+        resp = requests.get(js_url, timeout=10, verify=False,
+                             headers={"User-Agent": "Mozilla/5.0"})
+        findings: list[str] = []
+        for pattern in SECRET_PATTERNS:
+            matches = re.findall(pattern, resp.text)
+            for match in matches[:3]:
+                val = match[-1] if isinstance(match, tuple) else match
+                findings.append(f"{js_url} → {val[:60]}")
+        return findings
+    except Exception:
+        return []
 
-cat $OUTPUT_DIR/subdomains/all_subdomains.txt | \
-    gau --subs > $OUTPUT_DIR/urls/gau.txt &
 
-# 웹 크롤링
-katana -list $OUTPUT_DIR/subdomains/alive_hosts.txt \
-       -d 5 -jc -o $OUTPUT_DIR/urls/katana.txt &
+# ── 파이프라인 단계 ───────────────────────────────────────────────────────────
 
-wait
-cat $OUTPUT_DIR/urls/*.txt | sort -u > $OUTPUT_DIR/urls/all_urls.txt
-echo "[+] URL 수집: $(wc -l < $OUTPUT_DIR/urls/all_urls.txt)개"
+@dataclass
+class ReconResult:
+    domain: str
+    output_dir: Path
+    subdomains: list[str] = field(default_factory=list)
+    alive_hosts: list[dict] = field(default_factory=list)
+    open_ports: list[str] = field(default_factory=list)
+    urls: list[str] = field(default_factory=list)
+    nuclei_results: list[str] = field(default_factory=list)
+    js_secrets: list[str] = field(default_factory=list)
+    start_time: str = field(default_factory=lambda: datetime.now().isoformat())
 
-# ===== 스크린샷 =====
-echo "[5/7] 스크린샷 캡처 중..."
-gowitness file -f $OUTPUT_DIR/subdomains/alive_hosts.txt \
-               -d $OUTPUT_DIR/screenshots/ \
-               --screenshot-path $OUTPUT_DIR/screenshots/
 
-# ===== Nuclei 스캔 =====
-echo "[6/7] Nuclei 취약점 스캔 중..."
-nuclei -list $OUTPUT_DIR/subdomains/alive_hosts.txt \
-       -t ~/nuclei-templates/ \
-       -severity low,medium,high,critical \
-       -o $OUTPUT_DIR/nuclei/results.txt \
-       -stats
+def step_subdomains(result: ReconResult, use_amass: bool = False) -> None:
+    print("\n[1/6] 서브도메인 열거 중...")
+    sub_dir = result.output_dir / "subdomains"
+    sub_dir.mkdir(parents=True, exist_ok=True)
 
-# ===== JS 파일 분석 =====
-echo "[7/7] JS 파일 분석 중..."
-cat $OUTPUT_DIR/urls/all_urls.txt | \
-    grep "\.js$" | \
-    httpx -silent > $OUTPUT_DIR/urls/js_files.txt
+    all_subs: set[str] = set()
 
-# Secrets 탐지
-cat $OUTPUT_DIR/urls/js_files.txt | while read url; do
-    curl -s "$url" | grep -E "(api_key|apikey|secret|token|password|passwd|aws_)" | \
-    head -5 >> $OUTPUT_DIR/urls/js_secrets.txt
-done
+    # crt.sh
+    crt = crtsh_enum(result.domain)
+    all_subs.update(crt)
+    print(f"    crt.sh: {len(crt)}개")
 
-echo "[완료] 정찰 결과: $OUTPUT_DIR/"
-echo "  - 서브도메인: $(wc -l < $OUTPUT_DIR/subdomains/all_subdomains.txt)개"
-echo "  - 생존 호스트: $(wc -l < $OUTPUT_DIR/subdomains/alive_hosts.txt)개"
-echo "  - URL: $(wc -l < $OUTPUT_DIR/urls/all_urls.txt)개"
-echo "  - Nuclei 결과: $(wc -l < $OUTPUT_DIR/nuclei/results.txt)개"
+    # subfinder
+    sf = run_tool(
+        ["subfinder", "-d", result.domain, "-all", "-silent"],
+        sub_dir / "subfinder.txt",
+    )
+    all_subs.update(sf)
+    print(f"    subfinder: {len(sf)}개")
+
+    # amass (선택)
+    if use_amass:
+        am = run_tool(
+            ["amass", "enum", "-passive", "-d", result.domain],
+            sub_dir / "amass.txt",
+            timeout=600,
+        )
+        all_subs.update(am)
+        print(f"    amass: {len(am)}개")
+
+    result.subdomains = sorted(all_subs)
+    (sub_dir / "all.txt").write_text(
+        "\n".join(result.subdomains), encoding="utf-8"
+    )
+    print(f"    [+] 중복 제거 후: {len(result.subdomains)}개")
+
+
+def step_alive_check(result: ReconResult, workers: int = 30) -> None:
+    print("\n[2/6] HTTP 생존 확인 중...")
+    import urllib3
+    urllib3.disable_warnings()
+
+    alive: list[dict] = []
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(check_http_alive, s): s for s in result.subdomains}
+        for future in as_completed(futures):
+            info = future.result()
+            if info:
+                alive.append(info)
+
+    result.alive_hosts = sorted(alive, key=lambda h: h["url"])
+    alive_dir = result.output_dir / "subdomains"
+    (alive_dir / "alive.txt").write_text(
+        "\n".join(h["url"] for h in alive), encoding="utf-8"
+    )
+    print(f"    [+] 응답 호스트: {len(alive)}개 / {len(result.subdomains)}개")
+
+
+def step_port_scan(result: ReconResult) -> None:
+    print("\n[3/6] 포트 스캔 중 (naabu)...")
+    port_dir = result.output_dir / "ports"
+    port_dir.mkdir(parents=True, exist_ok=True)
+
+    subs_file = result.output_dir / "subdomains" / "all.txt"
+    if not subs_file.exists():
+        return
+
+    ports = run_tool(
+        ["naabu", "-list", str(subs_file), "-top-ports", "1000", "-silent"],
+        port_dir / "open_ports.txt",
+        timeout=600,
+    )
+    result.open_ports = ports
+    print(f"    [+] 열린 포트: {len(ports)}개")
+
+
+def step_url_collection(result: ReconResult) -> None:
+    print("\n[4/6] URL 수집 중...")
+    url_dir = result.output_dir / "urls"
+    url_dir.mkdir(parents=True, exist_ok=True)
+
+    all_urls: set[str] = set()
+
+    # waybackurls
+    wb = run_tool(
+        ["waybackurls", result.domain],
+        url_dir / "wayback.txt",
+        timeout=180,
+    )
+    all_urls.update(wb)
+    print(f"    waybackurls: {len(wb)}개")
+
+    # gau
+    gau = run_tool(
+        ["gau", "--subs", result.domain],
+        url_dir / "gau.txt",
+        timeout=180,
+    )
+    all_urls.update(gau)
+    print(f"    gau: {len(gau)}개")
+
+    result.urls = sorted(all_urls)
+    (url_dir / "all.txt").write_text("\n".join(result.urls), encoding="utf-8")
+    print(f"    [+] 총 URL: {len(result.urls)}개")
+
+
+def step_nuclei_scan(result: ReconResult, severity: str = "low,medium,high,critical") -> None:
+    print("\n[5/6] Nuclei 취약점 스캔 중...")
+    nuclei_dir = result.output_dir / "nuclei"
+    nuclei_dir.mkdir(parents=True, exist_ok=True)
+
+    alive_file = result.output_dir / "subdomains" / "alive.txt"
+    if not alive_file.exists() or alive_file.stat().st_size == 0:
+        print("    [!] 생존 호스트 파일 없음 — 건너뜀")
+        return
+
+    output_file = nuclei_dir / "results.jsonl"
+    run_tool(
+        [
+            "nuclei",
+            "-list", str(alive_file),
+            "-j", "-o", str(output_file),
+            "-severity", severity,
+            "-rate-limit", "50",
+            "-stats",
+        ],
+        timeout=900,
+    )
+
+    if output_file.exists():
+        lines = [l for l in output_file.read_text().splitlines() if l.strip()]
+        result.nuclei_results = lines
+        print(f"    [+] Nuclei 결과: {len(lines)}개")
+    else:
+        print("    [!] Nuclei 결과 없음")
+
+
+def step_js_secrets(result: ReconResult, max_files: int = 50) -> None:
+    print("\n[6/6] JS 시크릿 탐지 중...")
+    js_urls = [u for u in result.urls if u.endswith(".js")][:max_files]
+    print(f"    JS 파일: {len(js_urls)}개 분석")
+
+    all_secrets: list[str] = []
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        futures = [pool.submit(scan_js_secrets, url) for url in js_urls]
+        for future in as_completed(futures):
+            all_secrets.extend(future.result())
+
+    result.js_secrets = all_secrets
+    if all_secrets:
+        secrets_file = result.output_dir / "urls" / "js_secrets.txt"
+        secrets_file.write_text("\n".join(all_secrets), encoding="utf-8")
+        print(f"    [!] 시크릿 후보: {len(all_secrets)}개 → {secrets_file}")
+    else:
+        print("    [*] 시크릿 미탐지")
+
+
+def save_summary(result: ReconResult) -> None:
+    summary = {
+        "domain": result.domain,
+        "start_time": result.start_time,
+        "end_time": datetime.now().isoformat(),
+        "stats": {
+            "subdomains": len(result.subdomains),
+            "alive_hosts": len(result.alive_hosts),
+            "open_ports": len(result.open_ports),
+            "urls": len(result.urls),
+            "nuclei_results": len(result.nuclei_results),
+            "js_secrets": len(result.js_secrets),
+        },
+    }
+    summary_file = result.output_dir / "summary.json"
+    summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    print(f"\n{'=' * 60}")
+    print(f"  정찰 완료: {result.domain}")
+    print(f"  출력 디렉토리: {result.output_dir}/")
+    print(f"  서브도메인:    {summary['stats']['subdomains']}개")
+    print(f"  응답 호스트:   {summary['stats']['alive_hosts']}개")
+    print(f"  URL:           {summary['stats']['urls']}개")
+    print(f"  Nuclei 발견:   {summary['stats']['nuclei_results']}개")
+    if result.js_secrets:
+        print(f"  JS 시크릿:     {summary['stats']['js_secrets']}개 [!]")
+    print(f"{'=' * 60}")
+
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="버그바운티 종합 정찰 파이프라인",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            사용 예시:
+              python recon_pipeline.py -d target.com
+              python recon_pipeline.py -d target.com --amass --no-ports
+              python recon_pipeline.py -d target.com -o ./recon/ -w 50
+              python recon_pipeline.py -d target.com --nuclei-severity critical,high
+            """
+        ),
+    )
+    parser.add_argument("-d", "--domain", required=True, help="대상 도메인")
+    parser.add_argument("-o", "--output", type=Path, default=None, help="출력 디렉토리")
+    parser.add_argument("-w", "--workers", type=int, default=30, help="병렬 스레드 수")
+    parser.add_argument("--amass", action="store_true", help="amass 포함 (느림)")
+    parser.add_argument("--no-ports", action="store_true", help="포트 스캔 건너뜀")
+    parser.add_argument("--no-urls", action="store_true", help="URL 수집 건너뜀")
+    parser.add_argument("--no-nuclei", action="store_true", help="Nuclei 스캔 건너뜀")
+    parser.add_argument("--no-js", action="store_true", help="JS 분석 건너뜀")
+    parser.add_argument(
+        "--nuclei-severity", default="low,medium,high,critical",
+        help="Nuclei 심각도 필터",
+    )
+    args = parser.parse_args()
+
+    out_dir = args.output or Path(f"recon_{args.domain}_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    result = ReconResult(domain=args.domain, output_dir=out_dir)
+
+    step_subdomains(result, use_amass=args.amass)
+    step_alive_check(result, workers=args.workers)
+
+    if not args.no_ports:
+        step_port_scan(result)
+    if not args.no_urls:
+        step_url_collection(result)
+    if not args.no_nuclei:
+        step_nuclei_scan(result, severity=args.nuclei_severity)
+    if not args.no_js and result.urls:
+        step_js_secrets(result)
+
+    save_summary(result)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -520,164 +798,678 @@ trufflehog github --repo=... --only-verified
 
 ## 7. 스코프 관리 및 자동화
 
-### scope_manager.py
+### scope_manager.py — 버그바운티 스코프 관리 CLI
 
 ```python
 #!/usr/bin/env python3
-"""버그바운티 스코프 관리 도구"""
-import re
-import json
-import subprocess
-from pathlib import Path
+"""
+버그바운티 스코프 관리 CLI — HackerOne / Bugcrowd 프로그램 스코프 관리
+요구사항: Python 3.10+ 표준 라이브러리만 사용
+"""
 
-class ScopeManager:
-    def __init__(self, program_name: str):
-        self.program = program_name
-        self.in_scope = []
-        self.out_of_scope = []
-        self.targets_file = Path(f"scope_{program_name}.json")
-    
-    def add_scope(self, domain: str, scope_type: str = "in"):
-        """스코프 추가"""
-        if scope_type == "in":
-            self.in_scope.append(domain)
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+import textwrap
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Literal
+from urllib.parse import urlparse
+
+
+# ── 데이터 모델 ───────────────────────────────────────────────────────────────
+
+ScopeType = Literal["in", "out"]
+
+SCOPE_TYPE_MAP = {
+    "web_application": "웹 애플리케이션",
+    "api": "API",
+    "mobile": "모바일 앱",
+    "other": "기타",
+}
+
+
+@dataclass
+class ScopeEntry:
+    pattern: str        # *.target.com, 192.168.1.0/24, https://app.target.com 등
+    scope_type: ScopeType
+    category: str = "web_application"
+    note: str = ""
+
+    def matches(self, target: str) -> bool:
+        """패턴이 대상 URL/도메인/IP와 일치하는지 확인."""
+        # URL에서 호스트 추출
+        parsed = urlparse(target)
+        host = parsed.netloc or parsed.path
+        host = host.split(":")[0]  # 포트 제거
+
+        pattern = self.pattern.lstrip("*.")
+
+        if self.pattern.startswith("*."):
+            # 와일드카드 서브도메인: *.target.com
+            return host == pattern or host.endswith("." + pattern)
+        elif "/" in self.pattern and not self.pattern.startswith("http"):
+            # CIDR 범위
+            return self._cidr_match(host, self.pattern)
+        elif self.pattern.startswith("http"):
+            # URL 정확 매칭 또는 접두사 매칭
+            return target.startswith(self.pattern)
         else:
-            self.out_of_scope.append(domain)
-        self._save()
-    
-    def is_in_scope(self, url: str) -> bool:
-        """URL이 스코프 내에 있는지 확인"""
-        # Out of scope 먼저 확인
-        for oos in self.out_of_scope:
-            if oos in url:
-                return False
-        
-        # In scope 확인
-        for scope in self.in_scope:
-            if "*" in scope:
-                pattern = scope.replace(".", r"\.").replace("*", ".*")
-                if re.match(pattern, url):
-                    return True
-            elif scope in url:
-                return True
-        
+            # 도메인 정확 매칭
+            return host == self.pattern or host.endswith("." + self.pattern)
+
+    @staticmethod
+    def _cidr_match(ip: str, cidr: str) -> bool:
+        try:
+            import ipaddress
+            return ipaddress.ip_address(ip) in ipaddress.ip_network(cidr, strict=False)
+        except ValueError:
+            return False
+
+
+@dataclass
+class ScopeManager:
+    program: str
+    platform: str = "hackerone"
+    entries: list[ScopeEntry] = field(default_factory=list)
+    _path: Path = field(init=False)
+
+    def __post_init__(self) -> None:
+        self._path = Path(f"scope_{self.program}.json")
+
+    # ── 스코프 관리 ──────────────────────────────────────────────────────────
+
+    def add(self, pattern: str, scope_type: ScopeType = "in",
+            category: str = "web_application", note: str = "") -> None:
+        # 중복 방지
+        for e in self.entries:
+            if e.pattern == pattern and e.scope_type == scope_type:
+                print(f"[!] 이미 존재: {scope_type}:{pattern}")
+                return
+        self.entries.append(ScopeEntry(pattern, scope_type, category, note))
+        self.save()
+        print(f"[+] 추가: [{scope_type}] {pattern}")
+
+    def remove(self, pattern: str) -> bool:
+        before = len(self.entries)
+        self.entries = [e for e in self.entries if e.pattern != pattern]
+        if len(self.entries) < before:
+            self.save()
+            print(f"[+] 제거: {pattern}")
+            return True
+        print(f"[-] 미발견: {pattern}")
         return False
-    
-    def filter_urls(self, urls_file: str) -> list:
-        """URL 파일에서 스코프 내 URL만 추출"""
-        filtered = []
-        with open(urls_file) as f:
-            for url in f:
-                url = url.strip()
-                if self.is_in_scope(url):
-                    filtered.append(url)
-        return filtered
-    
-    def _save(self):
+
+    def is_in_scope(self, target: str) -> tuple[bool, Optional[ScopeEntry]]:
+        """스코프 내 여부 확인. (in_scope, 매칭된 항목)"""
+        # out-of-scope 먼저 확인
+        for entry in self.entries:
+            if entry.scope_type == "out" and entry.matches(target):
+                return False, entry
+
+        # in-scope 확인
+        for entry in self.entries:
+            if entry.scope_type == "in" and entry.matches(target):
+                return True, entry
+
+        return False, None
+
+    # ── 필터링 ───────────────────────────────────────────────────────────────
+
+    def filter_file(self, input_path: Path, output_path: Optional[Path] = None) -> list[str]:
+        """파일의 URL/도메인 목록에서 스코프 내 항목만 추출."""
+        lines = input_path.read_text(encoding="utf-8").splitlines()
+        in_scope: list[str] = []
+        out_scope: list[str] = []
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            result, _ = self.is_in_scope(line)
+            if result:
+                in_scope.append(line)
+            else:
+                out_scope.append(line)
+
+        if output_path:
+            output_path.write_text("\n".join(in_scope), encoding="utf-8")
+            print(f"[+] 스코프 내: {len(in_scope)}개 → {output_path}")
+
+        print(f"    전체: {len(lines)} | 스코프 내: {len(in_scope)} | 제외: {len(out_scope)}")
+        return in_scope
+
+    # ── 직렬화 ───────────────────────────────────────────────────────────────
+
+    def save(self) -> None:
         data = {
             "program": self.program,
-            "in_scope": self.in_scope,
-            "out_of_scope": self.out_of_scope
+            "platform": self.platform,
+            "entries": [
+                {"pattern": e.pattern, "type": e.scope_type,
+                 "category": e.category, "note": e.note}
+                for e in self.entries
+            ],
         }
-        self.targets_file.write_text(json.dumps(data, indent=2))
+        self._path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-# 사용 예시
+    @classmethod
+    def load(cls, path: Path) -> "ScopeManager":
+        data = json.loads(path.read_text(encoding="utf-8"))
+        mgr = cls(program=data["program"], platform=data.get("platform", "hackerone"))
+        mgr._path = path
+        for e in data.get("entries", []):
+            mgr.entries.append(ScopeEntry(
+                pattern=e["pattern"],
+                scope_type=e["type"],
+                category=e.get("category", "web_application"),
+                note=e.get("note", ""),
+            ))
+        return mgr
+
+    def show(self) -> None:
+        in_scope = [e for e in self.entries if e.scope_type == "in"]
+        out_scope = [e for e in self.entries if e.scope_type == "out"]
+        print(f"\n프로그램: {self.program} ({self.platform})")
+        print(f"\n  IN-SCOPE ({len(in_scope)}개):")
+        for e in in_scope:
+            note = f"  # {e.note}" if e.note else ""
+            print(f"    {e.pattern:<50} [{e.category}]{note}")
+        if out_scope:
+            print(f"\n  OUT-OF-SCOPE ({len(out_scope)}개):")
+            for e in out_scope:
+                print(f"    {e.pattern}")
+        print()
+
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="버그바운티 스코프 관리 CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            사용 예시:
+              # 새 프로그램 초기화 및 스코프 추가
+              python scope_manager.py init -p my_program --platform hackerone
+              python scope_manager.py add -p my_program *.target.com
+              python scope_manager.py add -p my_program status.target.com --out
+              python scope_manager.py add -p my_program 10.0.0.0/24 --category api
+
+              # 스코프 확인
+              python scope_manager.py show -p my_program
+              python scope_manager.py check -p my_program https://api.target.com/v1/users
+
+              # URL 필터링
+              python scope_manager.py filter -p my_program --input all_urls.txt --output in_scope.txt
+            """
+        ),
+    )
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    # init
+    p_init = sub.add_parser("init", help="프로그램 초기화")
+    p_init.add_argument("-p", "--program", required=True)
+    p_init.add_argument("--platform", default="hackerone",
+                        choices=["hackerone", "bugcrowd", "intigriti", "synack", "custom"])
+
+    # add
+    p_add = sub.add_parser("add", help="스코프 항목 추가")
+    p_add.add_argument("-p", "--program", required=True)
+    p_add.add_argument("pattern", help="도메인/CIDR/URL 패턴")
+    p_add.add_argument("--out", action="store_true", help="out-of-scope로 추가")
+    p_add.add_argument("--category", default="web_application",
+                       choices=list(SCOPE_TYPE_MAP.keys()))
+    p_add.add_argument("--note", default="")
+
+    # remove
+    p_rm = sub.add_parser("remove", help="스코프 항목 제거")
+    p_rm.add_argument("-p", "--program", required=True)
+    p_rm.add_argument("pattern")
+
+    # show
+    p_show = sub.add_parser("show", help="스코프 목록 출력")
+    p_show.add_argument("-p", "--program", required=True)
+
+    # check
+    p_check = sub.add_parser("check", help="단일 대상 스코프 확인")
+    p_check.add_argument("-p", "--program", required=True)
+    p_check.add_argument("target", help="확인할 URL/도메인")
+
+    # filter
+    p_filter = sub.add_parser("filter", help="파일에서 스코프 내 항목 추출")
+    p_filter.add_argument("-p", "--program", required=True)
+    p_filter.add_argument("--input", type=Path, required=True)
+    p_filter.add_argument("--output", type=Path, default=None)
+
+    args = parser.parse_args()
+
+    def load_or_exit(program: str) -> ScopeManager:
+        path = Path(f"scope_{program}.json")
+        if not path.exists():
+            sys.exit(f"[-] 프로그램 파일 없음: {path}\n    먼저 'init' 명령 실행")
+        return ScopeManager.load(path)
+
+    if args.cmd == "init":
+        mgr = ScopeManager(program=args.program, platform=args.platform)
+        mgr.save()
+        print(f"[+] 초기화 완료: scope_{args.program}.json")
+
+    elif args.cmd == "add":
+        mgr = load_or_exit(args.program)
+        mgr.add(
+            pattern=args.pattern,
+            scope_type="out" if args.out else "in",
+            category=args.category,
+            note=args.note,
+        )
+
+    elif args.cmd == "remove":
+        mgr = load_or_exit(args.program)
+        mgr.remove(args.pattern)
+
+    elif args.cmd == "show":
+        mgr = load_or_exit(args.program)
+        mgr.show()
+
+    elif args.cmd == "check":
+        mgr = load_or_exit(args.program)
+        in_scope, matched = mgr.is_in_scope(args.target)
+        if in_scope:
+            print(f"[+] IN-SCOPE: {args.target}")
+            if matched:
+                print(f"    매칭 패턴: {matched.pattern} ({matched.category})")
+        else:
+            status = "OUT-OF-SCOPE" if matched else "스코프 미정의"
+            print(f"[-] {status}: {args.target}")
+            if matched:
+                print(f"    차단 패턴: {matched.pattern}")
+
+    elif args.cmd == "filter":
+        mgr = load_or_exit(args.program)
+        out_path = args.output or args.input.with_suffix(".scoped.txt")
+        mgr.filter_file(args.input, out_path)
+
+
 if __name__ == "__main__":
-    mgr = ScopeManager("hackerone_target")
-    mgr.add_scope("*.target.com", "in")
-    mgr.add_scope("api.target.com", "in")
-    mgr.add_scope("status.target.com", "out")  # 제외
-    
-    # URL 필터링
-    in_scope_urls = mgr.filter_urls("all_urls.txt")
-    print(f"[+] 스코프 내 URL: {len(in_scope_urls)}개")
-    
-    with open("scoped_urls.txt", "w") as f:
-        f.write("\n".join(in_scope_urls))
+    main()
 ```
 
 ---
 
 ## 8. 버그 트리아지 자동화
 
-### auto_triage.py
-
 ```python
 #!/usr/bin/env python3
-"""Nuclei 결과 자동 분류 및 중복 제거"""
+"""
+Nuclei 결과 파서 + 자동 트리아지 + Markdown/JSON 보고서 생성기
+요구사항: pip install jinja2 requests
+사용: nuclei -u targets.txt -j -o results.jsonl 로 JSONL 출력 생성 후 이 도구 실행
+"""
+
+from __future__ import annotations
+
+import argparse
 import json
-from collections import defaultdict
+import sys
+import textwrap
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
 
-def parse_nuclei_json(filepath: str) -> list:
-    results = []
-    with open(filepath) as f:
-        for line in f:
+try:
+    from jinja2 import Environment, BaseLoader
+except ImportError:
+    sys.exit("[-] pip install jinja2")
+
+
+# ── 데이터 모델 ───────────────────────────────────────────────────────────────
+
+SEVERITY_ORDER = ["critical", "high", "medium", "low", "info", "unknown"]
+
+
+@dataclass
+class NucleiIssue:
+    template_id: str
+    name: str
+    severity: str
+    host: str
+    matched_at: str
+    tags: list[str]
+    description: str
+    cvss_score: float
+    cve_id: str
+    curl_command: str
+    extractor_data: dict
+    raw: dict = field(default_factory=dict, repr=False)
+
+    @property
+    def severity_rank(self) -> int:
+        return SEVERITY_ORDER.index(self.severity) if self.severity in SEVERITY_ORDER else 99
+
+    def dedup_key(self) -> str:
+        return f"{self.template_id}:{self.host}:{self.matched_at}"
+
+    def is_false_positive_candidate(self) -> bool:
+        """간단한 False Positive 필터 — info 심각도 + 특정 태그."""
+        fp_tags = {"ssl", "tls", "tech", "version-detect", "waf-detect"}
+        return self.severity == "info" and bool(set(self.tags) & fp_tags)
+
+
+def parse_nuclei_jsonl(path: Path) -> list[NucleiIssue]:
+    """Nuclei JSONL 결과 파일 파싱."""
+    issues: list[NucleiIssue] = []
+    errors = 0
+
+    with open(path, encoding="utf-8", errors="ignore") as f:
+        for lineno, line in enumerate(f, 1):
+            line = line.strip()
+            if not line:
+                continue
             try:
-                results.append(json.loads(line))
+                r = json.loads(line)
             except json.JSONDecodeError:
-                pass
-    return results
+                errors += 1
+                continue
 
-def deduplicate(results: list) -> list:
-    """동일 취약점 중복 제거"""
-    seen = set()
-    unique = []
-    for r in results:
-        key = f"{r.get('template-id')}:{r.get('host')}:{r.get('matched-at')}"
+            info = r.get("info", {})
+            classification = info.get("classification", {})
+
+            issue = NucleiIssue(
+                template_id=r.get("template-id", "unknown"),
+                name=info.get("name", "Unknown"),
+                severity=info.get("severity", "info").lower(),
+                host=r.get("host", ""),
+                matched_at=r.get("matched-at", ""),
+                tags=info.get("tags", []) if isinstance(info.get("tags"), list)
+                     else [t.strip() for t in str(info.get("tags", "")).split(",") if t.strip()],
+                description=info.get("description", "")[:500],
+                cvss_score=float(classification.get("cvss-score", 0) or 0),
+                cve_id=classification.get("cve-id", [None])[0]
+                       if isinstance(classification.get("cve-id"), list)
+                       else str(classification.get("cve-id", "")),
+                curl_command=r.get("curl-command", ""),
+                extractor_data=r.get("extracted-results", {}),
+                raw=r,
+            )
+            issues.append(issue)
+
+    if errors:
+        print(f"[!] 파싱 오류: {errors}줄 건너뜀")
+    return issues
+
+
+# ── 트리아지 로직 ─────────────────────────────────────────────────────────────
+
+def deduplicate(issues: list[NucleiIssue]) -> list[NucleiIssue]:
+    seen: set[str] = set()
+    unique: list[NucleiIssue] = []
+    for issue in issues:
+        key = issue.dedup_key()
         if key not in seen:
             seen.add(key)
-            unique.append(r)
+            unique.append(issue)
+    removed = len(issues) - len(unique)
+    if removed:
+        print(f"[*] 중복 제거: {removed}개 제거 → {len(unique)}개 남음")
     return unique
 
-def triage(results: list) -> dict:
-    """심각도별 분류"""
-    triaged = defaultdict(list)
-    for r in results:
-        severity = r.get('info', {}).get('severity', 'info')
-        triaged[severity].append({
-            'name': r.get('info', {}).get('name'),
-            'host': r.get('host'),
-            'matched': r.get('matched-at'),
-            'curl': r.get('curl-command'),
-        })
-    return dict(triaged)
 
-def generate_report(triaged: dict):
-    """Markdown 보고서 생성"""
-    report = "# 자동 취약점 트리아지 보고서\n\n"
-    
-    for severity in ['critical', 'high', 'medium', 'low', 'info']:
-        if severity not in triaged:
-            continue
-        
-        items = triaged[severity]
-        emoji = {'critical': '🔴', 'high': '🟠', 'medium': '🟡', 
-                 'low': '🟢', 'info': '🔵'}.get(severity, '')
-        
-        report += f"## {emoji} {severity.upper()} ({len(items)}개)\n\n"
-        
-        for item in items[:10]:  # 상위 10개만
-            report += f"### {item['name']}\n"
-            report += f"- **호스트:** {item['host']}\n"
-            report += f"- **위치:** {item['matched']}\n"
-            if item.get('curl'):
-                report += f"- **재현:**\n```\n{item['curl']}\n```\n"
-            report += "\n"
-    
-    return report
+def filter_false_positives(issues: list[NucleiIssue], aggressive: bool = False) -> list[NucleiIssue]:
+    """False Positive 후보 필터링."""
+    if not aggressive:
+        return [i for i in issues if not i.is_false_positive_candidate()]
+    # 공격적 필터: info 전체 제거
+    return [i for i in issues if i.severity != "info"]
+
+
+def group_by_severity(issues: list[NucleiIssue]) -> dict[str, list[NucleiIssue]]:
+    grouped: dict[str, list[NucleiIssue]] = defaultdict(list)
+    for issue in issues:
+        grouped[issue.severity].append(issue)
+    # 각 그룹 내 host 기준 정렬
+    return {k: sorted(v, key=lambda i: i.host) for k, v in grouped.items()}
+
+
+def group_by_host(issues: list[NucleiIssue]) -> dict[str, list[NucleiIssue]]:
+    grouped: dict[str, list[NucleiIssue]] = defaultdict(list)
+    for issue in issues:
+        grouped[issue.host].append(issue)
+    return {k: sorted(v, key=lambda i: i.severity_rank) for k, v in grouped.items()}
+
+
+def calculate_host_risk_score(issues: list[NucleiIssue]) -> float:
+    weights = {"critical": 10, "high": 7, "medium": 4, "low": 1, "info": 0}
+    score = sum(weights.get(i.severity, 0) for i in issues)
+    return min(score, 100.0)
+
+
+# ── 보고서 생성 ───────────────────────────────────────────────────────────────
+
+MARKDOWN_REPORT = """\
+# Nuclei 취약점 트리아지 보고서
+
+**생성일:** {{ now }}
+**대상 파일:** {{ source }}
+**총 발견:** {{ total }}개 | **고유:** {{ unique_count }}개
+
+---
+
+## 요약
+
+| 심각도 | 발견 수 | 영향 호스트 |
+|--------|---------|------------|
+{% for sev in severity_order %}
+{%- set items = by_severity.get(sev, []) %}
+{%- if items %}
+| {{ sev_icon[sev] }} {{ sev.upper() }} | {{ items|length }} | {{ items|map(attribute='host')|unique|list|length }} |
+{%- endif %}
+{% endfor %}
+| **합계** | **{{ total }}** | **{{ host_count }}** |
+
+---
+{% for sev in severity_order %}
+{%- set items = by_severity.get(sev, []) %}
+{%- if items %}
+
+## {{ sev_icon[sev] }} {{ sev.upper() }} ({{ items|length }}개)
+
+{% for issue in items %}
+### {{ issue.name }}
+
+- **Template ID:** `{{ issue.template_id }}`
+- **호스트:** `{{ issue.host }}`
+- **위치:** `{{ issue.matched_at }}`
+{%- if issue.cve_id %}- **CVE:** {{ issue.cve_id }}{% endif %}
+{%- if issue.cvss_score > 0 %}- **CVSS:** {{ issue.cvss_score }}{% endif %}
+{%- if issue.tags %}- **태그:** {{ issue.tags | join(', ') }}{% endif %}
+{%- if issue.description %}
+
+> {{ issue.description }}
+{% endif %}
+{%- if issue.curl_command %}
+
+```bash
+{{ issue.curl_command }}
+```
+{%- endif %}
+
+{% endfor %}
+{%- endif %}
+{% endfor %}
+
+---
+
+## 호스트별 위험도
+
+| 호스트 | 위험 점수 | Critical | High | Medium | Low |
+|--------|-----------|---------|------|--------|-----|
+{% for host, host_issues in by_host.items() | sort(attribute='1', key=lambda x: -calculate_risk(x[1])) %}
+{%- set counts = host_issues | groupby('severity') | list %}
+| {{ host }} | {{ "%.1f" | format(calculate_risk(host_issues)) }} | {% set c = host_issues | selectattr('severity', 'eq', 'critical') | list | length %}{{ c }} | {% set h = host_issues | selectattr('severity', 'eq', 'high') | list | length %}{{ h }} | {% set m = host_issues | selectattr('severity', 'eq', 'medium') | list | length %}{{ m }} | {% set l = host_issues | selectattr('severity', 'eq', 'low') | list | length %}{{ l }} |
+{% endfor %}
+"""
+
+SEV_ICON = {
+    "critical": "[CRITICAL]",
+    "high": "[HIGH]",
+    "medium": "[MEDIUM]",
+    "low": "[LOW]",
+    "info": "[INFO]",
+    "unknown": "[?]",
+}
+
+
+def render_markdown(
+    issues: list[NucleiIssue],
+    source: str = "",
+) -> str:
+    by_severity = group_by_severity(issues)
+    by_host = group_by_host(issues)
+    host_count = len(set(i.host for i in issues))
+
+    env = Environment(loader=BaseLoader(), autoescape=False)
+    env.globals["calculate_risk"] = calculate_host_risk_score
+
+    tmpl = env.from_string(MARKDOWN_REPORT)
+    return tmpl.render(
+        now=datetime.now().strftime("%Y-%m-%d %H:%M"),
+        source=source,
+        total=len(issues),
+        unique_count=len(set(i.dedup_key() for i in issues)),
+        by_severity=by_severity,
+        by_host=by_host,
+        severity_order=SEVERITY_ORDER,
+        sev_icon=SEV_ICON,
+        host_count=host_count,
+    )
+
+
+def render_json_summary(issues: list[NucleiIssue]) -> str:
+    counts = Counter(i.severity for i in issues)
+    by_host = group_by_host(issues)
+    return json.dumps(
+        {
+            "generated_at": datetime.now().isoformat(),
+            "total": len(issues),
+            "by_severity": dict(counts),
+            "host_risk": {
+                host: {
+                    "risk_score": calculate_host_risk_score(h_issues),
+                    "issue_count": len(h_issues),
+                    "severities": dict(Counter(i.severity for i in h_issues)),
+                }
+                for host, h_issues in sorted(
+                    by_host.items(),
+                    key=lambda x: -calculate_host_risk_score(x[1]),
+                )
+            },
+            "issues": [
+                {
+                    "template_id": i.template_id,
+                    "name": i.name,
+                    "severity": i.severity,
+                    "host": i.host,
+                    "matched_at": i.matched_at,
+                    "cve": i.cve_id,
+                    "cvss": i.cvss_score,
+                    "tags": i.tags,
+                    "curl": i.curl_command,
+                }
+                for i in sorted(issues, key=lambda i: (i.severity_rank, i.host))
+            ],
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
+# ── CLI ───────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Nuclei 결과 파서 + 자동 트리아지 보고서 생성기",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            사용 예시:
+              # nuclei 스캔 후 JSONL 생성
+              nuclei -l targets.txt -j -o results.jsonl -severity low,medium,high,critical
+
+              # 트리아지 보고서 생성
+              python nuclei_triage.py results.jsonl
+              python nuclei_triage.py results.jsonl -o triage.md --json-out triage.json
+              python nuclei_triage.py results.jsonl --no-dedup --filter aggressive
+            """
+        ),
+    )
+    parser.add_argument("input", type=Path, help="Nuclei JSONL 결과 파일")
+    parser.add_argument("-o", "--output", type=Path, default=None, help="Markdown 보고서 출력")
+    parser.add_argument("--json-out", type=Path, default=None, help="JSON 요약 출력")
+    parser.add_argument("--no-dedup", action="store_true", help="중복 제거 건너뜀")
+    parser.add_argument(
+        "--filter", choices=["none", "conservative", "aggressive"],
+        default="conservative", help="FP 필터 수준 (기본: conservative)",
+    )
+    parser.add_argument(
+        "--min-severity",
+        choices=SEVERITY_ORDER, default="info",
+        help="최소 심각도 필터 (기본: info)",
+    )
+    parser.add_argument("--host", help="특정 호스트만 표시")
+    args = parser.parse_args()
+
+    if not args.input.exists():
+        sys.exit(f"[-] 파일 없음: {args.input}")
+
+    print(f"[*] 파싱 중: {args.input}")
+    issues = parse_nuclei_jsonl(args.input)
+    print(f"[+] 파싱 완료: {len(issues)}개")
+
+    if not args.no_dedup:
+        issues = deduplicate(issues)
+
+    if args.filter != "none":
+        before = len(issues)
+        issues = filter_false_positives(issues, aggressive=(args.filter == "aggressive"))
+        removed = before - len(issues)
+        if removed:
+            print(f"[*] FP 필터: {removed}개 제거")
+
+    # 최소 심각도 필터
+    min_rank = SEVERITY_ORDER.index(args.min_severity)
+    issues = [i for i in issues if i.severity_rank <= min_rank]
+
+    # 특정 호스트 필터
+    if args.host:
+        issues = [i for i in issues if args.host in i.host]
+
+    print(f"[+] 최종 이슈: {len(issues)}개")
+    counts = Counter(i.severity for i in issues)
+    for sev in SEVERITY_ORDER:
+        if sev in counts:
+            print(f"    {SEV_ICON[sev]} {sev.upper()}: {counts[sev]}")
+
+    # 보고서 생성
+    md_out = args.output or args.input.with_suffix(".triage.md")
+    md_content = render_markdown(issues, source=str(args.input))
+    md_out.write_text(md_content, encoding="utf-8")
+    print(f"\n[+] Markdown 보고서: {md_out}")
+
+    if args.json_out:
+        json_content = render_json_summary(issues)
+        args.json_out.write_text(json_content, encoding="utf-8")
+        print(f"[+] JSON 요약: {args.json_out}")
+
 
 if __name__ == "__main__":
-    results = parse_nuclei_json("nuclei_results.json")
-    results = deduplicate(results)
-    triaged = triage(results)
-    
-    report = generate_report(triaged)
-    with open("triage_report.md", "w") as f:
-        f.write(report)
-    
-    print(f"[+] 처리 완료:")
-    for sev, items in triaged.items():
-        print(f"  {sev}: {len(items)}개")
+    main()
 ```
 
 ---

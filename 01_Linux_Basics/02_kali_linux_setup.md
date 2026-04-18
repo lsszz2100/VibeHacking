@@ -24,6 +24,163 @@ chmod +x ~/VBoxLinuxAdditions.run
 reboot
 ```
 
+### Kali 초기 설정 자동화 스크립트
+
+```bash
+#!/usr/bin/env bash
+# Kali Linux 초기 설정 자동화 스크립트
+# 사용법: sudo bash kali_setup.sh [--skip-update] [--minimal]
+set -euo pipefail
+IFS=$'\n\t'
+
+# --- 색상 출력 ---
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+info()    { echo -e "${GREEN}[+]${NC} $*"; }
+warn()    { echo -e "${YELLOW}[!]${NC} $*"; }
+error()   { echo -e "${RED}[-]${NC} $*" >&2; }
+
+# --- 옵션 파싱 ---
+SKIP_UPDATE=false
+MINIMAL=false
+for arg in "$@"; do
+    case $arg in
+        --skip-update) SKIP_UPDATE=true ;;
+        --minimal)     MINIMAL=true ;;
+    esac
+done
+
+# --- root 확인 ---
+if [[ $EUID -ne 0 ]]; then
+    error "root 권한으로 실행해야 합니다: sudo bash $0"
+    exit 1
+fi
+
+LOG_FILE="/var/log/kali_setup_$(date +%Y%m%d_%H%M%S).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+info "로그 저장 위치: $LOG_FILE"
+
+# --- 시스템 업데이트 ---
+if [[ "$SKIP_UPDATE" == false ]]; then
+    info "시스템 패키지 업데이트 중..."
+    apt-get update -qq
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq
+    apt-get autoremove -y -qq
+    info "업데이트 완료"
+fi
+
+# --- 필수 도구 설치 ---
+CORE_PACKAGES=(
+    nmap masscan wireshark tcpdump netcat-traditional socat
+    john hashcat hydra medusa
+    burpsuite sqlmap nikto gobuster ffuf
+    aircrack-ng reaver wifite bettercap
+    impacket-scripts python3-impacket evil-winrm
+    git curl wget vim tmux screen
+    python3-pip python3-venv
+)
+
+EXTRA_PACKAGES=(
+    metasploit-framework msfdb
+    volatility3 foremost binwalk
+    bloodhound neo4j
+    crackmapexec
+)
+
+if [[ "$MINIMAL" == false ]]; then
+    ALL_PACKAGES=("${CORE_PACKAGES[@]}" "${EXTRA_PACKAGES[@]}")
+else
+    ALL_PACKAGES=("${CORE_PACKAGES[@]}")
+    warn "--minimal 모드: 핵심 도구만 설치합니다"
+fi
+
+info "도구 설치 중 (${#ALL_PACKAGES[@]}개 패키지)..."
+DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${ALL_PACKAGES[@]}" \
+    || warn "일부 패키지 설치 실패 (계속 진행)"
+
+# --- Python 보안 도구 ---
+info "Python 보안 라이브러리 설치 중..."
+pip3 install --quiet --upgrade pip
+pip3 install --quiet pwntools scapy requests colorama dnspython
+
+# --- .bashrc 커스터마이징 ---
+BASHRC_APPEND='
+# === Kali 보안 환경 설정 ===
+PS1="\[\033[01;31m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
+
+alias ll="ls -alh --color=auto"
+alias la="ls -A --color=auto"
+alias ..="cd .."
+alias ...="cd ../.."
+alias grep="grep --color=auto"
+alias ports="ss -tuln"
+alias myip="curl -s ifconfig.me && echo"
+alias update="apt-get update && apt-get upgrade -y"
+alias msfstart="service postgresql start && msfdb init 2>/dev/null; msfconsole"
+alias scan="nmap -sC -sV -oN"
+
+# 히스토리 강화
+HISTSIZE=50000
+HISTFILESIZE=100000
+HISTTIMEFORMAT="%F %T "
+HISTCONTROL=ignoredups:erasedups
+shopt -s histappend
+PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
+
+# PATH 보강
+export PATH="$PATH:/opt/tools/bin:$HOME/.local/bin"
+'
+
+TARGET_BASHRC="/root/.bashrc"
+if ! grep -q "Kali 보안 환경 설정" "$TARGET_BASHRC" 2>/dev/null; then
+    echo "$BASHRC_APPEND" >> "$TARGET_BASHRC"
+    info ".bashrc 커스터마이징 완료"
+else
+    warn ".bashrc 이미 설정되어 있습니다 (건너뜀)"
+fi
+
+# --- Vim 설정 ---
+cat > /root/.vimrc << 'VIMEOF'
+syntax on
+set number relativenumber
+set tabstop=4 shiftwidth=4 expandtab
+set autoindent smartindent
+set hlsearch incsearch ignorecase smartcase
+set background=dark
+set mouse=a
+set clipboard=unnamedplus
+colorscheme desert
+VIMEOF
+info "Vim 설정 완료"
+
+# --- SSH 서버 보안 강화 ---
+SSHD_CONFIG="/etc/ssh/sshd_config"
+if [[ -f "$SSHD_CONFIG" ]]; then
+    cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak.$(date +%Y%m%d)"
+    sed -i 's/^#*PermitRootLogin.*/PermitRootLogin prohibit-password/' "$SSHD_CONFIG"
+    sed -i 's/^#*MaxAuthTries.*/MaxAuthTries 3/' "$SSHD_CONFIG"
+    sed -i 's/^#*LoginGraceTime.*/LoginGraceTime 30/' "$SSHD_CONFIG"
+    sed -i 's/^#*X11Forwarding.*/X11Forwarding no/' "$SSHD_CONFIG"
+    info "SSH 보안 설정 적용"
+fi
+
+# --- Metasploit DB 초기화 ---
+if [[ "$MINIMAL" == false ]]; then
+    info "Metasploit 데이터베이스 초기화 중..."
+    service postgresql start 2>/dev/null || true
+    msfdb init 2>/dev/null || warn "MSF DB 초기화 실패 (수동으로 'msfdb init' 실행)"
+fi
+
+# --- 완료 요약 ---
+echo ""
+echo "========================================"
+info "Kali 초기 설정 완료!"
+echo "========================================"
+echo "  로그: $LOG_FILE"
+echo "  변경 적용: source ~/.bashrc"
+echo "  MSF 시작: msfstart"
+echo "========================================"
+```
+
 ---
 
 ## 2. 한국어 입력 설정
@@ -238,6 +395,156 @@ nmap -O 192.168.1.100              # OS 탐지
 nmap -sV 192.168.1.100             # 서비스 버전 탐지
 nmap --script vuln 192.168.1.100   # 취약점 스크립트 실행
 nmap -sS -T4 -A -v 192.168.1.0/24  # 빠른 종합 스캔
+```
+
+### 멀티스레드 포트 스캐너 (Python — 배너 그래빙 포함)
+
+```python
+#!/usr/bin/env python3
+"""
+멀티스레드 TCP 포트 스캐너 — 배너 그래빙 및 서비스 식별 포함
+"""
+import argparse
+import ipaddress
+import socket
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from typing import Optional
+
+
+COMMON_PORTS = [
+    21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143,
+    443, 445, 993, 995, 1433, 1521, 3306, 3389, 5432,
+    5900, 6379, 8080, 8443, 8888, 27017,
+]
+
+SERVICE_NAMES: dict[int, str] = {
+    21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP",
+    53: "DNS", 80: "HTTP", 110: "POP3", 135: "RPC",
+    139: "NetBIOS", 143: "IMAP", 443: "HTTPS", 445: "SMB",
+    993: "IMAPS", 995: "POP3S", 1433: "MSSQL", 1521: "Oracle",
+    3306: "MySQL", 3389: "RDP", 5432: "PostgreSQL", 5900: "VNC",
+    6379: "Redis", 8080: "HTTP-Alt", 8443: "HTTPS-Alt",
+    27017: "MongoDB",
+}
+
+
+def grab_banner(host: str, port: int, timeout: float) -> Optional[str]:
+    """열린 포트에서 배너 문자열 수신."""
+    probes = {
+        80: b"HEAD / HTTP/1.0\r\n\r\n",
+        8080: b"HEAD / HTTP/1.0\r\n\r\n",
+        8443: b"HEAD / HTTP/1.0\r\n\r\n",
+        21: None, 22: None, 25: None,  # 서버가 먼저 전송
+    }
+    try:
+        with socket.create_connection((host, port), timeout=timeout) as sock:
+            probe = probes.get(port, b"\r\n")
+            if probe:
+                sock.sendall(probe)
+            data = sock.recv(1024)
+            return data.decode("utf-8", errors="replace").strip()[:80]
+    except Exception:
+        return None
+
+
+def scan_port(host: str, port: int, timeout: float, banner: bool) -> Optional[dict]:
+    """단일 포트 스캔. 열려 있으면 결과 딕셔너리 반환."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            result: dict = {
+                "port": port,
+                "service": SERVICE_NAMES.get(port, "unknown"),
+                "banner": "",
+            }
+            if banner:
+                result["banner"] = grab_banner(host, port, timeout) or ""
+            return result
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return None
+
+
+def parse_ports(port_spec: str) -> list[int]:
+    """'22,80,1000-2000' 형식을 포트 목록으로 변환."""
+    ports: list[int] = []
+    for part in port_spec.split(","):
+        part = part.strip()
+        if "-" in part:
+            start, end = part.split("-", 1)
+            ports.extend(range(int(start), int(end) + 1))
+        elif part == "common":
+            ports.extend(COMMON_PORTS)
+        else:
+            ports.append(int(part))
+    return sorted(set(ports))
+
+
+def scan_host(host: str, ports: list[int], workers: int, timeout: float, banner: bool) -> None:
+    open_ports: list[dict] = []
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(scan_port, host, p, timeout, banner): p for p in ports}
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                open_ports.append(result)
+
+    open_ports.sort(key=lambda x: x["port"])
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    print(f"\n스캔 결과: {host}  [{ts}]")
+    print(f"{'포트':<8}{'서비스':<14}{'배너'}")
+    print("-" * 70)
+    if open_ports:
+        for r in open_ports:
+            print(f"{r['port']:<8}{r['service']:<14}{r['banner']}")
+    else:
+        print("  열린 포트 없음")
+    print(f"\n총 {len(open_ports)}개 포트 열림 / {len(ports)}개 스캔")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="멀티스레드 TCP 포트 스캐너 (배너 그래빙 포함)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""예시:
+  python3 portscan.py 192.168.1.1
+  python3 portscan.py 192.168.1.1 -p 1-1024
+  python3 portscan.py 192.168.1.1 -p common --banner -w 200
+  python3 portscan.py 192.168.1.1 -p 22,80,443,3306,3389
+        """,
+    )
+    parser.add_argument("host", help="대상 호스트 IP 또는 도메인")
+    parser.add_argument(
+        "-p", "--ports",
+        default="common",
+        help="포트 범위: '22,80', '1-1024', 'common' (기본값: common)",
+    )
+    parser.add_argument("-w", "--workers", type=int, default=100, help="동시 스레드 수 (기본값: 100)")
+    parser.add_argument("-t", "--timeout", type=float, default=1.0, help="연결 타임아웃 초 (기본값: 1.0)")
+    parser.add_argument("--banner", action="store_true", help="배너 그래빙 활성화")
+
+    args = parser.parse_args()
+
+    try:
+        resolved = socket.gethostbyname(args.host)
+    except socket.gaierror:
+        sys.exit(f"[!] 호스트 이름을 해석할 수 없습니다: {args.host}")
+
+    try:
+        ports = parse_ports(args.ports)
+    except ValueError as e:
+        sys.exit(f"[!] 잘못된 포트 형식: {e}")
+
+    print(f"[*] 대상: {args.host} ({resolved})")
+    print(f"[*] 포트: {len(ports)}개  |  스레드: {args.workers}  |  타임아웃: {args.timeout}s")
+
+    scan_host(resolved, ports, args.workers, args.timeout, args.banner)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---

