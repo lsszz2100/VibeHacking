@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-18-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-95%2B%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-45%2C000%2B-orange)](#목차)
+[![Files](https://img.shields.io/badge/Docs-97%2B%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-48%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -47,8 +47,8 @@
 | 07 | [디지털 포렌식](#07-디지털-포렌식) | 포렌식 절차, Windows 아티팩트, 네트워크 | 3 |
 | 08 | [파이썬 해킹](#08-파이썬-해킹) | 도구 개발, 네트워크 스캐너, 웹 자동화 | 3 |
 | 09 | [익스플로잇 기법](#09-익스플로잇-기법) | ROP Chain, SEH, Linux BOF, 권한 상승 | 2 |
-| 10 | [침투 테스트 방법론](#10-침투-테스트-방법론) | 모의해킹 절차, OSINT 정찰 | 2 |
-| 11 | [**AI 기반 사이버보안**](#11-ai-기반-사이버보안) | Mythos, GPT-5.4-Cyber, LLM 취약점 연구 | 3 |
+| 10 | [침투 테스트 방법론](#10-침투-테스트-방법론) | 모의해킹 절차, OSINT 정찰, 보고서 작성 | 3 |
+| 11 | [**AI 기반 사이버보안**](#11-ai-기반-사이버보안) | Mythos, GPT-5.4-Cyber, LLM 취약점 연구, CTF 자동화 | 4 |
 | 12 | [**버그바운티**](#12-버그바운티) | 방법론, Burp Suite 심화, 자동화 도구 | 3 |
 | 13 | [**SOC & Blue Team**](#13-soc--blue-team) | SOC 운영, Splunk 분석, 위협 헌팅 | 3 |
 | 14 | [**클라우드 보안**](#14-클라우드-보안) | AWS/Azure/GCP 공격벡터, 침투테스트, 체크리스트 | 3 |
@@ -216,10 +216,11 @@
 ```
 10_Pentest_Methodology/
 ├── 01_pentest_methodology.md   ← 전체 모의해킹 절차, MITRE ATT&CK, 보고서 작성
-└── 02_osint_recon.md           ← Google Dorks, Shodan, 서브도메인 열거, GitHub 비밀 탐지
+├── 02_osint_recon.md           ← Google Dorks, Shodan, 서브도메인 열거, GitHub 비밀 탐지
+└── 03_report_writing.md        ← 전문 보고서 작성, CVSS 산정, PoC 작성, 경영진/기술 보고서 템플릿
 ```
 
-**핵심 내용:** 체계적 침투 테스트 방법론, OSINT 도구 완전 활용, 전문 보고서 작성
+**핵심 내용:** 체계적 침투 테스트 방법론, OSINT 도구 완전 활용, 전문 보고서 작성 (CVSS·PoC·규정 준수 포함)
 
 ---
 
@@ -231,7 +232,8 @@
 11_AI_Powered_Security/
 ├── 01_ai_security_landscape_2026.md   ← Mythos·GPT-5.4-Cyber·Project Glasswing 전체 지형도
 ├── 02_llm_vulnerability_research.md   ← LLM으로 제로데이 발견, AI 퍼징, 코드 분석 자동화
-└── 03_ai_assisted_pentesting.md       ← AI 보조 침투 테스트 워크플로우, 프롬프트 엔지니어링
+├── 03_ai_assisted_pentesting.md       ← AI 보조 침투 테스트 워크플로우, 프롬프트 엔지니어링
+└── 04_ai_ctf_automation.md            ← CTF 자동화 AI 에이전트, 암호학·웹·포렌식 전문 서브에이전트
 ```
 
 ### 2026년 AI 보안 지형도
@@ -242,7 +244,7 @@
 | **GPT-5.4-Cyber** | OpenAI | 바이너리 리버싱, CTF 76% 자율 해결, YARA 생성 | TAC 인증 (chatgpt.com/cyber) |
 | **Claude Opus 4.6** | Anthropic | 코드 취약점 분석, CTF 보조, YARA 자동화 | 일반 접근 가능 |
 
-**핵심 내용:** AI 보안 생태계 완전 분석, Claude API 기반 취약점 스캐너 구현, AI 보조 침투 테스트 자동화
+**핵심 내용:** AI 보안 생태계 완전 분석, Claude API 기반 취약점 스캐너 구현, AI 보조 침투 테스트 자동화, CTF 풀이 AI 에이전트 (암호학·웹·포렌식·리버싱 전문 서브에이전트 포함)
 
 ---
 
