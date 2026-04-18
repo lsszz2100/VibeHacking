@@ -437,3 +437,125 @@ IAM:
   □ Security Hub 활성화
   □ Config Rules 설정
 ```
+
+---
+
+## 9. 클라우드 보안 위협 현황 (2020년대)
+
+### 주요 클라우드 보안 위협 트렌드
+
+```
+클라우드 침해 사고 주요 원인 (비율 순):
+  1. 잘못된 설정 (Misconfiguration) ─────── 68%
+     - 공개 S3 버킷
+     - 과도한 IAM 권한
+     - 보안 그룹 과다 개방
+  
+  2. 취약한 자격증명 관리 ────────────────── 19%
+     - 하드코딩된 API 키
+     - 미사용 접근 키 미삭제
+     - MFA 미적용
+  
+  3. 내부자 위협 ─────────────────────────── 8%
+     - 과도한 권한 남용
+     - 데이터 무단 유출
+  
+  4. 취약한 인터페이스/API ───────────────── 5%
+     - 인증 없는 API 엔드포인트
+     - 취약한 인증 메커니즘
+```
+
+### 클라우드 공유 책임 모델
+```
+             사용자 책임    │    클라우드 제공자 책임
+─────────────────────────────────────────────────────
+IaaS:    데이터, OS, 앱     │    물리, 네트워크, 하이퍼바이저
+PaaS:    데이터, 앱         │    물리~런타임
+SaaS:    데이터, 설정       │    물리~앱
+─────────────────────────────────────────────────────
+공통:    계정 관리, MFA, 암호화 키 관리, 데이터 분류
+```
+
+### 클라우드 보안 도구 및 프레임워크
+```bash
+# ScoutSuite — 다중 클라우드 보안 감사
+pip install scoutsuite
+scout aws
+scout azure --tenant TENANT_ID
+scout gcp --project PROJECT_ID
+
+# Prowler — AWS 보안 감사
+pip install prowler
+prowler aws                          # 전체 점검
+prowler aws --checks s3_bucket_public  # 특정 점검
+
+# Pacu — AWS 레드팀 프레임워크
+git clone https://github.com/RhinoSecurityLabs/pacu
+python3 pacu.py
+# pacu> import_keys PROFILE_NAME
+# pacu> run iam__enum_users_roles_policies_groups
+```
+
+---
+
+## 10. Zero Trust 보안 모델
+
+### Zero Trust 핵심 원칙
+
+```
+기존 경계 보안:                    Zero Trust:
+  외부 = 신뢰 안함                  모든 것 = 신뢰 안함
+  내부 = 신뢰함              →      항상 검증
+  경계 방화벽 중심                   최소 권한 원칙
+                                    지속적 모니터링
+```
+
+### Zero Trust 5대 기둥 (NIST SP 800-207 기반)
+```
+1. ID 및 접근 관리 (Identity)
+   - 강력한 MFA 강제
+   - 지속적 사용자 검증
+   - 조건부 접근 정책
+
+2. 디바이스 보안 (Device)
+   - 디바이스 건강 상태 검증
+   - 인증된 디바이스만 접근
+   - MDM/EDR 필수
+
+3. 네트워크 (Network)
+   - 마이크로세그멘테이션
+   - 암호화된 통신 (TLS 1.3)
+   - 네트워크 트래픽 검사
+
+4. 애플리케이션 워크로드 (Application)
+   - API 보안
+   - 앱별 접근 제어
+   - 런타임 보호
+
+5. 데이터 (Data)
+   - 데이터 분류 및 레이블
+   - 데이터 암호화 (저장/전송)
+   - DLP(데이터 유출 방지)
+```
+
+### Zero Trust 구현 단계
+```
+단계 1: 가시성 확보
+  - 모든 자산 식별 및 인벤토리
+  - 트래픽 흐름 파악
+  - 데이터 분류
+
+단계 2: 마이크로세그멘테이션
+  - 레거시 VLAN → 세밀한 정책 기반 분리
+  - 동서 트래픽 통제
+
+단계 3: 최소 권한 적용
+  - Just-in-Time (JIT) 접근
+  - Just-Enough-Access (JEA)
+  - 특권 계정 격리 (PAM)
+
+단계 4: 지속적 검증 및 모니터링
+  - SIEM/SOAR 통합
+  - UEBA (사용자/엔티티 행동 분석)
+  - 자동 대응
+```

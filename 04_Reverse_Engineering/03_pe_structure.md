@@ -336,3 +336,184 @@ apt-get install libhivex-bin
 hivexls SAM
 hivexregedit SAM  # 레지스트리 탐색
 ```
+
+---
+
+## 8. PE 가상 주소 공간 (VAS) 심화
+
+### 가상 주소 공간 개요
+```
+VAS (Virtual Address Space):
+- 각 프로세스는 독립된 4GB 가상 주소 공간을 갖는다
+- 실제 물리 메모리와 별개로, OS가 가상→물리 매핑을 관리
+- 프로세스 간 메모리 격리 → 한 프로세스 버그가 다른 프로세스에 영향 없음
+
+32비트 Windows 분할:
+  0x00000000 ~ 0x7FFFFFFF : 사용자 공간 (2GB)
+  0x80000000 ~ 0xFFFFFFFF : 커널 공간 (2GB, Ring 0 전용)
+```
+
+### RVA / VA / 파일 오프셋 변환
+```
+핵심 주소 개념:
+  VA  (Virtual Address)    : 실제 메모리에 로드된 후의 주소
+  RVA (Relative VA)        : ImageBase를 기준으로 한 상대 주소
+  File Offset              : 파일 내 물리적 위치 (디스크에서)
+
+변환 공식:
+  VA = ImageBase + RVA
+  File Offset = RVA - VirtualAddress(섹션) + PointerToRawData(섹션)
+
+예시:
+  ImageBase = 0x00400000
+  .text 섹션 VirtualAddress = 0x1000
+  .text 섹션 PointerToRawData = 0x400
+
+  VA  0x00401234 → RVA = 0x1234
+  File Offset = 0x1234 - 0x1000 + 0x400 = 0x634
+```
+
+---
+
+## 9. PE 공유 메모리와 DLL 메모리 구조
+
+### 여러 프로세스의 DLL 공유 방식
+```
+프로세스 A           프로세스 B
+  ┌─────────┐          ┌─────────┐
+  │VAS (2GB)│          │VAS (2GB)│
+  │         │          │         │
+  │user32.dll─────────→│user32.dll (동일 물리 페이지)
+  │ .text   │  공유     │ .text   │ ← 코드는 공유 (읽기 전용)
+  │ .data   │ 별도      │ .data   │ ← 데이터는 각자 복사본 (CoW)
+  └─────────┘          └─────────┘
+
+Copy-on-Write (CoW):
+- 데이터 섹션은 처음에 동일 물리 페이지를 참조
+- 한 프로세스가 쓰기를 시도하면 해당 페이지만 복사 후 수정
+- 메모리 절약 + 프로세스 격리 동시 달성
+```
+
+### Memory Mapped File (MMF) 분석 활용
+```c
+// PE 분석 도구에서 MMF를 사용하는 이유:
+// - 파일 전체를 메모리에 로드하지 않아도 대용량 파일 처리 가능
+// - OS의 페이지 캐시를 이용하므로 효율적
+
+HANDLE hFile = CreateFile("target.exe", GENERIC_READ, FILE_SHARE_READ,
+                           NULL, OPEN_EXISTING, 0, NULL);
+HANDLE hMap  = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+LPVOID base  = MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
+
+// base 포인터로 PE 헤더 직접 파싱
+PIMAGE_DOS_HEADER dosHdr = (PIMAGE_DOS_HEADER)base;
+PIMAGE_NT_HEADERS ntHdr  = (PIMAGE_NT_HEADERS)((BYTE*)base + dosHdr->e_lfanew);
+```
+
+---
+
+## 10. DLL 명시적/암시적 로딩 상세
+
+### 암시적 로딩 (Implicit Loading)
+```
+- 컴파일 시 import library(.lib)를 링크
+- 프로그램 시작 시 Windows Loader가 자동으로 DLL 로드
+- IAT(Import Address Table)에 함수 주소 채워짐
+- 분석 용이: dumpbin /imports로 바로 확인 가능
+```
+
+### 명시적 로딩 (Explicit Loading)
+```c
+// 실행 중 동적으로 DLL 로드 — 분석을 어렵게 만드는 기법
+HMODULE hDll = LoadLibrary("악성DLL.dll");
+if (hDll) {
+    // 문자열을 동적으로 구성하여 GetProcAddress 호출
+    char funcName[] = {'C','r','e','a','t','e','\0'};
+    FARPROC func = GetProcAddress(hDll, funcName);
+    if (func) func(...);
+    FreeLibrary(hDll);
+}
+
+// 악성코드는 LoadLibrary + GetProcAddress 패턴을 자주 사용
+// OllyDbg에서: LoadLibrary / GetProcAddress에 BP 설정하면 탐지 가능
+```
+
+```asm
+; OllyDbg에서 동적 로딩 탐지
+; CALL DWORD PTR [<&KERNEL32.LoadLibraryA>]  에 BP → 로드되는 DLL 확인
+; CALL DWORD PTR [<&KERNEL32.GetProcAddress>] 에 BP → 로드하는 함수명 확인
+; 스택 창에서 인자(DLL명, 함수명) 확인
+```
+
+---
+
+## 11. Tiny PE — 최소 크기 PE 파일
+
+### PE 파일 크기 최적화 원리
+PE 파일 스펙의 많은 필드는 0이어도 동작한다.
+불필요한 헤더 필드를 제거하고 섹션들을 겹치게 배치하면
+극단적으로 작은 실행 파일을 만들 수 있다.
+
+```
+일반적인 최소화 과정:
+45056byte (정상 .exe)
+→ 1024byte (불필요 섹션 제거)
+→  486byte (헤더 일부 겹치기)
+→  356byte (섹션 헤더 최소화)
+→  296byte (Optional Header 축소)
+→  168byte (DOS Stub 제거)
+→   97byte (현재 알려진 최소 PE)
+
+97byte PE 구조:
+- DOS Header 크기 축소 (e_lfanew 직후 PE 시작)
+- PE Header와 코드 섹션 겹치기
+- 섹션 정렬 무시 (SectionAlignment = FileAlignment = 4)
+```
+
+### PE 분석 시 확인 포인트
+```
+헥스 에디터로 확인해야 할 오프셋:
+  0x00: 4D 5A           → MZ 시그니처
+  0x3C: [4바이트]        → PE 헤더 오프셋 (e_lfanew)
+  [e_lfanew+0]: 50 45 00 00 → PE 시그니처
+  [e_lfanew+4]: [2바이트] → Machine (0x014C = x86, 0x8664 = x64)
+  [e_lfanew+6]: [2바이트] → NumberOfSections (섹션 수)
+  [Optional+16]: [4바이트] → AddressOfEntryPoint (진입점 RVA)
+  [Optional+28]: [4바이트] → ImageBase
+```
+
+---
+
+## 12. EXT2 (Linux) vs NTFS vs FAT32 비교
+
+| 특성 | FAT32 | NTFS | EXT2 |
+|------|-------|------|------|
+| OS | Windows 9x, USB | Windows XP+ | Linux |
+| 최대 파일 크기 | 4GB | 16TB+ | 2TB |
+| 저널링 | 없음 | 있음 | 없음 (EXT3부터) |
+| 권한 관리 | 없음 | ACL 지원 | Unix 권한 |
+| 포렌식 복구 | FAT 테이블로 추적 | MFT 항목 분석 | inode 분석 |
+
+### EXT2 (Linux) 파일시스템 구조
+```
+EXT2 레이아웃:
+  ┌──────────────┬──────────────┬──────────────┬───────────┐
+  │ Boot Block   │ Block Group 0│ Block Group 1 │    ...    │
+  └──────────────┴──────────────┴──────────────┴───────────┘
+
+Block Group 내부:
+  ┌────────────┬────────────┬──────────┬──────────┬────────────┐
+  │ Superblock │ Group Desc │ Block    │ Inode    │ Data       │
+  │            │ Table      │ Bitmap   │ Bitmap   │ Blocks     │
+  └────────────┴────────────┴──────────┴──────────┴────────────┘
+
+Inode:
+  - 파일의 메타데이터 저장 (권한, 크기, 타임스탬프, 데이터 블록 포인터)
+  - 파일명은 inode에 없음 → 디렉토리 항목(dentry)에 저장
+  - 삭제 시: inode가 초기화됨, 데이터 블록은 남아있을 수 있음 (복구 가능)
+
+포렌식 관점:
+  - inode 타임스탬프: atime (접근), mtime (수정), ctime (변경)
+  - 'debugfs' 도구로 삭제된 inode 확인 가능
+  - 저널링 없으므로 삭제 후 데이터 복구 확률이 NTFS보다 높음
+```

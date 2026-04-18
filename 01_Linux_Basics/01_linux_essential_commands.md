@@ -263,3 +263,394 @@ grep "Accepted" /var/log/auth.log
 # su 사용 이력
 grep "session opened for user root" /var/log/auth.log
 ```
+
+---
+
+## 11. 사용자 계정 보안 관리 (심화)
+
+### /etc/passwd 구조 이해
+```
+root:x:0:0:root:/root:/bin/bash
+ │   │ │ │  │     │       └── 로그인 쉘
+ │   │ │ │  │     └── 홈 디렉토리
+ │   │ │ │  └── GECOS (설명)
+ │   │ │ └── GID (그룹 ID)
+ │   │ └── UID (사용자 ID)
+ │   └── 패스워드 필드 (x = shadow 파일 참조)
+ └── 사용자명
+```
+
+### /etc/shadow 구조 이해
+```
+root:$6$salt$hash:15285:0:99999:7:::
+      │              │   │   │   └── 비활성화 기간
+      │              │   │   └── 최대 사용 기간 (99999 = 무제한)
+      │              │   └── 최소 사용 기간
+      │              └── 마지막 변경일 (1970-01-01 기준 일수)
+      └── 해시 ($6$ = SHA-512)
+```
+
+### 해시 알고리즘 식별
+```
+$1$  → MD5
+$2a$ → Blowfish (bcrypt)
+$5$  → SHA-256
+$6$  → SHA-512 (리눅스 기본)
+```
+
+### shadow 파일과 passwd 파일 병합 (크랙용)
+```bash
+# unshadow — passwd와 shadow를 합쳐 John the Ripper 형식으로
+unshadow /etc/passwd /etc/shadow > combined.txt
+john combined.txt
+john --wordlist=wordlist.txt combined.txt
+john --show combined.txt  # 크랙된 결과 출력
+```
+
+### 계정 잠금 및 상태 확인
+```bash
+passwd -l username      # 계정 잠금
+passwd -u username      # 잠금 해제
+passwd -S username      # 계정 상태 확인
+chage -l username       # 비밀번호 만료 정보 확인
+chage -M 90 username    # 최대 90일마다 변경 강제
+chage -E 2025-12-31 username  # 계정 만료일 설정
+```
+
+### UID 0 계정 탐지 (루트 권한 백도어 탐지)
+```bash
+# UID가 0인 계정 전수 확인 (root 외에 있으면 위험)
+awk -F: '$3==0 {print $1}' /etc/passwd
+
+# 로그인 쉘이 있는 계정만 확인
+awk -F: '$7 !~ /nologin|false/ {print $1, $7}' /etc/passwd
+```
+
+---
+
+## 12. Linux PAM (Pluggable Authentication Modules)
+
+### PAM 개요
+```
+PAM = 리눅스 인증 시스템의 핵심 모듈
+위치: /etc/pam.d/
+설정 형식: [type] [control] [module] [arguments]
+```
+
+### PAM 타입
+```
+auth     → 사용자 신원 확인 (비밀번호 검증)
+account  → 계정 조건 확인 (만료, 시간 제한 등)
+password → 비밀번호 업데이트 규칙
+session  → 로그인/로그아웃 시 환경 설정
+```
+
+### PAM 컨트롤 플래그
+```
+required   → 실패해도 계속 진행, 최종적으로 실패
+requisite  → 실패 즉시 중단
+sufficient → 성공하면 이후 생략
+optional   → 결과가 최종 판단에 영향 없음
+```
+
+### 주요 PAM 모듈
+
+#### pam_tally2 — 로그인 실패 횟수 제한
+```bash
+# /etc/pam.d/login 또는 /etc/pam.d/sshd 에 추가
+auth required pam_tally2.so deny=5 unlock_time=600 onerr=fail
+
+# 현재 실패 횟수 확인
+pam_tally2 --user=username
+
+# 수동으로 카운터 초기화
+pam_tally2 --user=username --reset
+```
+
+#### pam_time — 시간 기반 접근 제어
+```bash
+# /etc/security/time.conf 설정 예시
+# 서비스;터미널;사용자;시간
+login;*;username;Mo-Fr0900-1800   # 월~금 09:00~18:00만 허용
+sshd;*;ALL;Al0000-2400            # 모든 시간 허용
+
+# /etc/pam.d/login 에 추가
+account required pam_time.so
+```
+
+#### pam_access — 호스트 기반 접근 제어
+```bash
+# /etc/security/access.conf 설정
+# 형식: + 또는 - : 사용자 : 호스트/IP
++:root:192.168.1.0/24     # 내부망에서만 root 허용
+-:root:ALL                # 그 외 root 거부
++:ALL:LOCAL               # 로컬 로그인은 모두 허용
+-:ALL:ALL                 # 나머지 전부 거부
+
+# /etc/pam.d/sshd 에 추가
+account required pam_access.so
+```
+
+#### pam_pwquality — 비밀번호 복잡도 정책
+```bash
+# /etc/security/pwquality.conf
+minlen = 12           # 최소 12자
+minclass = 3          # 최소 3가지 문자 클래스
+maxrepeat = 3         # 동일 문자 최대 3회 반복
+dcredit = -1          # 숫자 최소 1개
+ucredit = -1          # 대문자 최소 1개
+lcredit = -1          # 소문자 최소 1개
+ocredit = -1          # 특수문자 최소 1개
+
+# /etc/pam.d/common-password 에 추가
+password requisite pam_pwquality.so retry=3
+```
+
+---
+
+## 13. 방화벽 설정 (iptables)
+
+### iptables 기본 구조
+```
+테이블: filter, nat, mangle, raw
+체인:
+  INPUT   → 들어오는 패킷 (서버로 향하는)
+  OUTPUT  → 나가는 패킷 (서버에서 나가는)
+  FORWARD → 통과하는 패킷 (라우터 역할 시)
+
+규칙 평가: 위에서 아래로 순서대로, 매칭되면 즉시 적용
+기본 정책: ACCEPT 또는 DROP
+```
+
+### 기본 iptables 명령어
+```bash
+# 현재 규칙 확인
+iptables -L -n -v          # 기본 (filter 테이블)
+iptables -L -n -v --line-numbers  # 줄 번호 포함
+
+# 규칙 추가
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT   # SSH 허용
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT   # HTTP 허용
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT  # HTTPS 허용
+
+# 특정 IP 허용/차단
+iptables -A INPUT -s 192.168.1.100 -j ACCEPT    # 특정 IP 허용
+iptables -A INPUT -s 10.0.0.0/8 -j DROP         # 대역 차단
+
+# 기본 정책 설정 (화이트리스트 방식)
+iptables -P INPUT DROP     # 기본적으로 모두 차단
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT  # 나가는 것은 허용
+
+# 이미 연결된 세션 유지 (필수)
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -i lo -j ACCEPT   # 루프백 허용
+
+# 규칙 삭제
+iptables -D INPUT 3        # 3번 규칙 삭제
+iptables -F                # 전체 초기화 (주의!)
+
+# 규칙 저장 및 복원
+iptables-save > /etc/iptables/rules.v4
+iptables-restore < /etc/iptables/rules.v4
+```
+
+### 기본 서버 보안 정책 예시
+```bash
+#!/bin/bash
+# 기본 서버 방화벽 설정 스크립트
+
+# 기존 규칙 초기화
+iptables -F
+iptables -X
+
+# 기본 정책: 차단
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+# 루프백 및 기존 연결 허용
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# SSH 허용 (관리용)
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+# 웹 서비스 허용
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+# ICMP (ping) 허용
+iptables -A INPUT -p icmp -j ACCEPT
+
+# 로그 기록 후 차단
+iptables -A INPUT -j LOG --log-prefix "DROPPED: " --log-level 4
+iptables -A INPUT -j DROP
+
+echo "[+] 방화벽 규칙 적용 완료"
+iptables -L -n -v
+```
+
+### nftables (iptables 후속)
+```bash
+# 현재 규칙 확인
+nft list ruleset
+
+# 기본 설정
+nft add table inet filter
+nft add chain inet filter input { type filter hook input priority 0 \; policy drop \; }
+nft add chain inet filter output { type filter hook output priority 0 \; policy accept \; }
+
+# SSH 허용
+nft add rule inet filter input tcp dport 22 accept
+
+# 규칙 저장
+nft list ruleset > /etc/nftables.conf
+```
+
+---
+
+## 리눅스 서버 기본 보안 정책
+
+### SSH 브루트포스 방어 — /etc/passwd 계정 관리
+```bash
+# 사용하지 않는 계정 비활성화 (앞에 # 추가)
+# /etc/passwd 파일에서 쉘이 /bin/bash 인 미사용 계정 확인
+grep "/bin/bash\|/bin/sh" /etc/passwd
+
+# 미사용 계정 로그인 차단 (쉘을 nologin으로 변경)
+usermod -s /sbin/nologin [계정명]
+
+# 또는 /etc/passwd에서 직접 주석 처리
+# rpm:x:37:37::/var/lib/rpm:/bin/bash
+# → #rpm:x:37:37::/var/lib/rpm:/bin/bash
+
+# 강력한 패스워드 정책 (브루트포스 방어):
+# - 특수문자 조합
+# - 사전 파일에 없는 문자열
+# - 8자 이상 권장
+```
+
+### PortSentry — 포트 스캔 탐지 및 자동 차단
+```bash
+# PortSentry 설정 파일
+# /etc/portsentry/portsentry.conf
+
+# 스텔스 모드 설정 (TCP/UDP)
+BLOCK_UDP="1"
+BLOCK_TCP="1"
+
+# 공격자 자동 차단 (hosts.deny 추가)
+KILL_ROUTE="/sbin/route add -host $TARGET$ reject"
+# 또는 iptables로 차단
+KILL_ROUTE="/sbin/iptables -I INPUT -s $TARGET$ -j DROP"
+
+# 차단된 IP 확인
+cat /etc/hosts.deny | grep "ALL:"
+
+# PortSentry 실행 (스텔스 모드)
+portsentry -stcp   # TCP 스텔스 스캔 탐지
+portsentry -sudp   # UDP 스텔스 스캔 탐지
+```
+
+### chkrootkit — 백도어 탐지
+```bash
+# 설치
+apt-get install chkrootkit
+# 또는
+yum install chkrootkit
+
+# 전체 시스템 루트킷 검사
+chkrootkit
+
+# 특정 테스트만 실행
+chkrootkit sniffer    # 스니퍼 탐지
+chkrootkit bindshell  # 백도어 바인드 쉘 탐지
+chkrootkit lkm        # 커널 모듈 루트킷 탐지
+
+# 주기적 실행 (cron)
+echo "0 3 * * * root /usr/sbin/chkrootkit 2>&1 | mail -s 'chkrootkit report' admin@example.com" >> /etc/crontab
+
+# INFECTED 결과 시 조치:
+# 1. 네트워크 즉시 분리
+# 2. 포렌식 이미지 생성
+# 3. 클린 시스템에서 재구축 고려
+```
+
+### 파일 퍼미션 강화
+```bash
+# 주요 설정 파일 권한 제한
+chmod 600 /etc/shadow         # root만 읽기
+chmod 644 /etc/passwd         # 모두 읽기, root만 쓰기
+chmod 644 /etc/group
+chmod 600 /etc/gshadow
+chmod 700 /root                # root 홈 디렉토리
+
+# 불필요한 SUID 비트 제거
+find / -perm -4000 -type f 2>/dev/null  # SUID 파일 목록
+chmod u-s /path/to/suspicious_file
+
+# World-writable 파일/디렉토리 탐지
+find / -perm -o+w -type f 2>/dev/null | grep -v proc
+find / -perm -o+w -type d 2>/dev/null | grep -v proc
+
+# 소유자 없는 파일 탐지 (공격자가 만든 임시 파일)
+find / -nouser -print 2>/dev/null
+find / -nogroup -print 2>/dev/null
+```
+
+### Apache httpd.conf 보안 설정 핵심
+```apache
+# 서버 정보 숨기기
+ServerSignature Off
+ServerTokens Prod
+
+# 디렉토리 리스팅 비활성화
+Options -Indexes
+
+# 심볼릭 링크 따라가기 비활성화
+Options -FollowSymLinks
+
+# 불필요한 HTTP 메서드 비활성화
+<LimitExcept GET POST>
+    Deny from all
+</LimitExcept>
+
+# .htaccess 파일 Override 비활성화 (성능 + 보안)
+AllowOverride None
+
+# CGI 실행 금지 (필요한 경우만 허용)
+Options -ExecCGI
+
+# 파일 포함 방지
+Options -Includes
+```
+
+### PHP 보안 설정 (php.ini)
+```ini
+# 오류 정보 외부 노출 방지
+display_errors = Off
+log_errors = On
+error_log = /var/log/php_errors.log
+
+# 원격 파일 포함 비활성화 (RFI 방지)
+allow_url_include = Off
+allow_url_fopen = Off
+
+# 파일 업로드 제한
+file_uploads = On
+upload_max_filesize = 2M
+max_file_uploads = 20
+
+# 위험한 함수 비활성화
+disable_functions = exec,passthru,shell_exec,system,proc_open,popen,
+                    curl_exec,curl_multi_exec,parse_ini_file,show_source
+
+# PHP 버전 정보 숨기기
+expose_php = Off
+
+# 세션 보안
+session.cookie_httponly = 1
+session.cookie_secure = 1
+session.use_strict_mode = 1
+```

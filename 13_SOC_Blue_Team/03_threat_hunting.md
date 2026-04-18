@@ -524,3 +524,283 @@ def update_splunk_lookup(iocs: list, lookup_name: str):
     
     print(f"[+] {len(iocs)}개 IOC를 Splunk에 업데이트 완료")
 ```
+
+---
+
+## 8. MITRE ATT&CK 프레임워크 심화
+
+### 8-1. ATT&CK 개요
+
+MITRE ATT&CK(Adversarial Tactics, Techniques, and Common Knowledge)은 실제 관찰된 공격자 전술·기법을 기반으로 한 글로벌 지식 베이스다. 민간·정부·보안 제품 개발에 위협 모델과 방어 방법론을 수립하는 데 사용되며 무료로 공개되어 있다.
+
+### 8-2. ATT&CK Enterprise 14가지 전술 (Tactics)
+
+| 번호 | 전술 | 설명 | 예시 기법 |
+|------|------|------|-----------|
+| TA0043 | Reconnaissance | 미래 작전을 위한 정보 수집 | 조직 정보 수집, OSINT |
+| TA0042 | Resource Development | 작전 지원 자원 확보 | C2 인프라 구축 |
+| TA0001 | Initial Access | 네트워크 초기 침투 | 스피어 피싱, 취약점 익스플로잇 |
+| TA0002 | Execution | 악성 코드 실행 | 원격 접근 도구 실행 |
+| TA0003 | Persistence | 거점 유지 | 설정 변경, 자동 시작 등록 |
+| TA0004 | Privilege Escalation | 상위 권한 획득 | 취약점으로 권한 상승 |
+| TA0005 | Defense Evasion | 탐지 회피 | 신뢰 프로세스로 악성코드 은닉 |
+| TA0006 | Credential Access | 계정 정보 탈취 | 키로깅, 자격 증명 덤프 |
+| TA0007 | Discovery | 환경 정찰 | 시스템·네트워크 탐색 |
+| TA0008 | Lateral Movement | 내부 이동 | 정상 자격 증명으로 다른 시스템 피벗 |
+| TA0009 | Collection | 데이터 수집 | 클라우드 스토리지 데이터 접근 |
+| TA0011 | Command and Control | 침해 시스템 제어 | 정상 웹 트래픽 모방 C2 통신 |
+| TA0010 | Exfiltration | 데이터 유출 | 클라우드 계정으로 데이터 전송 |
+| TA0040 | Impact | 시스템·데이터 파괴/방해 | 랜섬웨어로 데이터 암호화 |
+
+### 8-3. ATT&CK vs. Cyber Kill Chain 비교
+
+| MITRE ATT&CK | Cyber Kill Chain (Lockheed Martin) |
+|---|---|
+| Initial Access | Reconnaissance → Intrusion |
+| Execution | Exploitation |
+| Persistence | — |
+| Privilege Escalation | Privilege Escalation |
+| Defense Evasion | Obfuscation / Anti-forensics |
+| Credential Access | — |
+| Discovery | — |
+| Lateral Movement | Lateral Movement |
+| Collection | — |
+| Exfiltration | Exfiltration |
+| Command and Control | — |
+| Impact | Denial of Service |
+
+ATT&CK는 Kill Chain보다 세분화된 기법 수준의 맵핑을 제공하므로 탐지 규칙 작성과 갭 분석에 더 유용하다.
+
+### 8-4. ATT&CK 활용 방법
+
+```
+1. 위협 탐지 우선순위 설정
+   - 자신의 환경에서 가장 많이 사용되는 기법 식별
+   - 탐지 커버리지 갭 분석
+   - 높은 영향도 기법부터 탐지 규칙 적용
+
+2. 레드팀/블루팀 연동
+   - 레드팀: ATT&CK 기법 기반 TTP 시뮬레이션
+   - 블루팀: 탐지 로직 검증 및 개선
+   - ATT&CK Evaluations 결과 참고
+
+3. 인텔리전스 매핑
+   - 위협 행위자 그룹(APT)의 TTP를 ATT&CK로 매핑
+   - STIX/TAXII 형식으로 위협 인텔 공유
+   - MISP와 연동하여 자동 IOC 매핑
+
+4. SIEM 탐지 규칙 개발
+   - ATT&CK 기법별 Sigma 규칙 작성
+   - Splunk, QRadar, Elastic SIEM에 적용
+   - Atomic Red Team으로 탐지 검증
+```
+
+### 8-5. 주요 기법별 탐지 포인트
+
+| ATT&CK 기법 | ID | 탐지 방법 |
+|-------------|-----|-----------|
+| PowerShell 실행 | T1059.001 | Event 4104 (Script Block Logging), `-EncodedCommand` 파라미터 |
+| 예약 작업 생성 | T1053.005 | Event 4698, `schtasks` 명령어 모니터링 |
+| 자격 증명 덤프 | T1003.001 | Event 4656 (lsass.exe 핸들), Mimikatz 시그니처 |
+| Pass-the-Hash | T1550.002 | Event 4624 (Type 3 로그인), NTLM 인증 모니터링 |
+| DLL 사이드로딩 | T1574.002 | 비표준 경로에서 로드된 DLL, 서명 없는 DLL |
+| Living off the Land | T1218 | certutil, regsvr32, mshta 등 LOLBin 실행 |
+| DNS 터널링 | T1071.004 | 비정상적으로 긴 DNS 쿼리, 높은 TXT 레코드 빈도 |
+| 데이터 스테이징 | T1074 | 대용량 파일 임시 폴더 집중, 압축 도구 사용 |
+| VSSAdmin 삭제 | T1490 | `vssadmin delete shadows`, WMI 기반 VSS 삭제 |
+| 원격 서비스 | T1021.002 | Event 4624/4625, SMB 횡이동, psexec 패턴 |
+
+### 8-6. ATT&CK Navigator 활용
+
+```
+ATT&CK Navigator (https://mitre-attack.github.io/attack-navigator/)
+
+활용 시나리오:
+1. 방어 커버리지 시각화
+   - 현재 탐지 가능한 기법을 녹색으로 표시
+   - 탐지 불가 기법을 빨간색으로 표시
+   - 갭(Gap)을 한눈에 파악
+
+2. 위협 그룹 TTP 오버레이
+   - APT29, Lazarus 등 그룹의 TTP 레이어 불러오기
+   - 자신의 환경과 비교하여 우선순위 도출
+
+3. 레드팀 캠페인 계획
+   - 시뮬레이션할 기법 선택 및 색상 분류
+   - 팀 간 캠페인 계획 공유
+```
+
+---
+
+## 9. ATT&CK 매핑 모범 사례 (CISA 가이드)
+
+### ATT&CK 4계층 구조
+```
+1. 전술 (Tactics)
+   - "무엇을", "왜" → 공격자의 기술적 목표
+   - 예: Credential Access (자격증명 획득)
+   - 주의: ATT&CK 전술은 선형 순서가 아님
+   - 공격자가 모든 전술을 사용할 필요 없음
+
+2. 기법 (Techniques)
+   - "어떻게" → 목표 달성 방법
+   - 예: Credential Dumping (자격증명 덤프)
+   - 정당한 시스템 기능을 악용하는 경우 多 (LOtL)
+
+3. 서브기법 (Sub-techniques)
+   - 기법의 더 세분화된 설명
+   - 예: OS Credential Dumping → LSASS Memory [T1003.001]
+   - OS/플랫폼 특화인 경우 많음
+
+4. 절차 (Procedures)
+   - 특정 기법/서브기법의 실제 사용 사례
+   - 적대자 에뮬레이션 및 탐지에 유용
+```
+
+### 정확한 ATT&CK 매핑 5단계 프로세스
+```
+1단계: 행위 찾기
+   - IOC(해시, URL, IP) 찾기 → X
+   - 공격자가 플랫폼과 상호작용한 방식 찾기 → O
+   - Living-off-the-Land 기법 여부 확인
+   - 초기 침해 방법 + 침해 후 활동 모두 식별
+
+2단계: 행위 연구
+   - 의심 행위 이해를 위한 추가 연구
+   - 원본 CTI 보고서, 보안 벤더 보고서, CERT 자료 참조
+   - ATT&CK 웹사이트에서 핵심 동사 검색
+     (예: "명령 실행", "지속성 생성", "예약 작업 생성")
+
+3단계: 전술 식별
+   - 공격자가 달성하려는 목표 파악
+   - 예:
+     "사용자에게 SYSTEM 권한 부여" → TA0004 (권한 상승)
+     "cmd.exe /C whoami" → TA0007 (탐색)
+     "예약 작업 생성" → TA0003 (지속성)
+
+4단계: 기법 식별
+   - 전술 달성 방법 기술 세부사항 검토
+   - 여러 기법이 동시에 적용 가능 예:
+     "포트 8088을 통한 HTTP C2" → T1571 (비표준 포트) + T1071.001 (웹 프로토콜)
+   - 명시적으로 언급되지 않으면 추론 금지
+
+5단계: 서브기법 식별
+   - 충분한 컨텍스트 없으면 부모 기법만 매핑
+   - 예: Brute Force [T1110]의 서브기법:
+     T1110.001 패스워드 추측
+     T1110.002 패스워드 크래킹
+     T1110.003 패스워드 스프레이
+     T1110.004 자격증명 스터핑
+```
+
+### ATT&CK 기술 도메인별 범위
+```
+Enterprise ATT&CK:
+  - Windows, Linux, MacOS 환경
+  - 클라우드: AWS, GCP, Azure, Office 365, Azure AD, SaaS
+  - 네트워크: 네트워크 인프라 장치
+
+Mobile ATT&CK:
+  - Android, iOS 플랫폼
+  - 네트워크 기반 효과 (장치 접근 없이 사용 가능한 기법)
+
+ICS ATT&CK (산업제어시스템):
+  - SCADA 및 산업 제어 시스템 특화
+  - 산업 프로세스 방해를 목표로 하는 기법
+```
+
+### ATT&CK 매핑 시 주의사항
+```
+매핑 품질 기준:
+  ✓ 탐지, 완화, 대응 목적으로 실행 가능한 수준
+  ✗ 단순 전술/기법 목록 (컨텍스트 없는 매핑) → 가치 낮음
+
+서브기법 주의 사례:
+  Obfuscated Files: Software Packing [T1027.002]
+    = 실행 파일 압축/암호화 → Defense Evasion
+  vs Data Encoding [T1132]
+    = C2 트래픽 콘텐츠 인코딩 → Command and Control
+  (전술이 다름!)
+
+  Masquerading [T1036] = 일반적 위장
+  vs Masquerade Task/Service [T1036.004] = 시스템 작업 위장
+  (서브기법 세부 구별 필요)
+
+ATT&CK Navigator 활용 팁:
+  - 이미지/그래픽/커맨드라인 예시에 추가 기법 숨어있음
+  - 한 번에 모든 매핑을 찾기 어려움 → 2차 검토 필수
+  - 세부 정보 부족 시 전술 수준에서만 매핑
+```
+
+---
+
+## 10. 공격 그래프(Attack Graphs) 활용 — Purple Team
+
+### 원자적 vs 멀티스테이지 위협 분석 비교
+```
+원자적 분석 (Atomic Approach):
+  - 단일 TTP 하나씩 분리 테스트
+  - 장점: ATT&CK 기반 첫 발걸음으로 유용
+  - 단점:
+    1. 전체 공격 시퀀스 연결 미흡
+    2. AI/ML 기반 보안 도구 트리거 어려움
+       (단독 행위는 실제 공격처럼 보이지 않음)
+    3. 블루팀 적절한 대응 준비 어려움
+
+멀티스테이지 공격 그래프 (Attack Graph/Flow):
+  - 전체 Kill Chain을 연결된 TTP 시퀀스로 표현
+  - 장점:
+    1. 실제 공격과 동일한 현실적 시뮬레이션
+    2. AI/ML 보안 도구 효과적 테스트
+    3. 블루팀 방어 갭 식별 및 Kill Chain 차단점 파악
+```
+
+### WannaCry 공격 그래프 예시
+```
+STEP 0: 스캔
+  WannaCry가 CVE-2017-0144(EternalBlue) 취약 시스템 스캔
+  ATT&CK: T1595 (Active Scanning)
+    ↓
+STEP 1: 익스플로잇
+  SMBv1 취약점 익스플로잇, WannaCry 페이로드 전달
+  ATT&CK: T1190 (Exploit Public-Facing Application)
+    ↓ [방어 실패 시]
+STEP 2: 파일시스템 저장
+  페이로드를 파일시스템에 저장
+    ↓ [방어 실패 시]
+STEP 3: 측면 이동
+  추가 취약 시스템으로 전파 (SMB)
+  ATT&CK: T1021.002 (SMB/Windows Admin Shares)
+    ↓
+STEP 4: 시스템 탐색
+  주변 장치/원격 시스템 탐색
+  ATT&CK: T1082, T1018
+    ↓
+STEP 5: C2 통신
+  Tor 채널 암호화 C2 연결
+  ATT&CK: T1573 (Encrypted Channel)
+    ↓
+STEP 6: 암호화 (최종 목표)
+  파일 암호화 후 몸값 요구
+  ATT&CK: T1486 (Data Encrypted for Impact)
+```
+
+### Purple Team에서의 공격 그래프 활용
+```
+Purple Team = Red Team + Blue Team 협력
+
+공격 그래프 기반 Purple Team 절차:
+1. 공격 시나리오 선택 (특정 위협 그룹 또는 랜섬웨어)
+2. 공격 그래프 작성 (전체 TTP 시퀀스 맵핑)
+3. Red Team: 공격 그래프대로 단계별 공격 실행
+4. Blue Team: 각 단계에서 탐지/차단 여부 검증
+5. 결과 기록:
+   - 탐지된 단계 vs 탐지 실패 단계
+   - 어느 단계에서 Kill Chain 차단 가능한지
+6. 탐지 갭 식별 → 새 탐지 규칙 생성
+
+대표 활용 도구:
+  - MITRE Caldera: 자동화된 ATT&CK 기반 에뮬레이션
+  - Atomic Red Team: 기법별 테스트 케이스
+  - AttackIQ: 엔터프라이즈급 BAS(Breach and Attack Simulation)
+```

@@ -355,3 +355,259 @@ REP STOS DWORD PTR ES:[EDI]  ; [EDI] = 0, EDI += 4, ECX-- (ECX=0 될 때까지)
 | `&var` | `LEA EAX, DWORD PTR [var]` |
 | `a & b` | `AND EAX, ECX` |
 | `a ^ b` | `XOR EAX, ECX` |
+
+---
+
+## 9. 데이터 이동 확장 명령어 (MOVSX / MOVZX)
+
+크기가 다른 레지스터 간에 값을 이동할 때 단순 MOV는 오류를 발생시킨다.
+이 경우 부호 확장 여부에 따라 MOVSX 또는 MOVZX를 사용한다.
+
+```asm
+; al = 1111 1111b (= -1 signed, 255 unsigned)
+
+; MOVSX : Signed 확장 (부호 비트를 상위로 복사)
+MOVSX ECX, AL
+; → ECX = 1000 0000 0000 0000 0000 0000 0111 1111b (= -1 signed)
+; 상위 비트가 부호 비트(1)로 채워짐
+
+; MOVZX : Unsigned 확장 (상위를 0으로 채움)
+MOVZX ECX, AL
+; → ECX = 0000 0000 0000 0000 0000 0000 1111 1111b (= 255)
+; 상위 비트가 0으로 채워짐
+```
+
+```asm
+; 실전 예시 - char → int 대입
+char b = 'a';    ; 0x61 = 97
+int a;
+a = b;
+
+; 어셈블리 변환
+MOV BYTE PTR [EBP-8], 61h       ; b = 'a'
+MOVSX EAX, BYTE PTR [EBP-8]     ; signed 확장하여 EAX에 로드
+MOV DWORD PTR [EBP-4], EAX      ; a = (int)b
+```
+
+---
+
+## 10. 시프트 연산 (Shift)
+
+```asm
+; SHL (Shift Left Logical) — 왼쪽 시프트 (= *2)
+SHL EAX, 1       ; EAX = EAX * 2
+SHL EAX, 3       ; EAX = EAX * 8 (2^3)
+
+; SHR (Shift Right Logical) — 오른쪽 시프트, 부호 없음 (= /2)
+SHR EAX, 1       ; EAX = EAX / 2 (상위에 0 채움)
+
+; SAR (Shift Arithmetic Right) — 오른쪽 시프트, 부호 있음
+SAR EAX, 1       ; EAX = EAX / 2 (부호 비트 유지)
+; 음수일 때: -8 >> 1 = -4 (SAR), 2147483644 (SHR)
+
+; 활용: 곱셈/나눗셈 최적화
+; 컴파일러는 2의 거듭제곱 곱셈을 SHL로 최적화하는 경우 많음
+```
+
+---
+
+## 11. 조건 분기 명령어 완전 목록
+
+CMP 명령어 실행 후 플래그 값에 따라 분기한다.
+`***` 표시는 리버싱에서 자주 등장하는 핵심 명령어이다.
+
+```
+*** JE  / JZ   : ZF=1          → Equal / Zero
+*** JNE / JNZ  : ZF=0          → Not Equal / Not Zero
+*** JG  / JNLE : ZF=0, SF=OF   → Greater (signed)
+*** JGE / JNL  : SF=OF         → Greater or Equal (signed)
+*** JL  / JNGE : SF≠OF         → Less (signed)
+*** JLE / JNG  : ZF=1 or SF≠OF → Less or Equal (signed)
+    JA  / JNBE : CF=0, ZF=0    → Above (unsigned)
+    JAE / JNB  : CF=0          → Above or Equal (unsigned)
+    JB  / JNAE : CF=1          → Below (unsigned)
+    JBE / JNA  : CF=1 or ZF=1  → Below or Equal (unsigned)
+    JC         : CF=1          → Carry flag set
+    JNC        : CF=0          → Carry flag not set
+    JO         : OF=1          → Overflow flag set
+    JNO        : OF=0          → Overflow flag not set
+    JS         : SF=1          → Sign flag set
+    JNS        : SF=0          → Sign flag not set
+    JP  / JPE  : PF=1          → Parity Even
+    JNP / JPO  : PF=0          → Parity Odd
+    JCXZ       : CX=0          → CX register is zero
+    JECXZ      : ECX=0         → ECX register is zero
+    JMP        : 무조건          → Unconditional jump
+```
+
+```asm
+; 실전 예시 — if/else 패턴
+; if (a != b) { a = 1000; }
+
+MOV DWORD PTR SS:[EBP-4], 0Ah   ; a = 10
+MOV DWORD PTR SS:[EBP-8], 14h   ; b = 20
+MOV EAX, DWORD PTR SS:[EBP-4]
+CMP EAX, DWORD PTR SS:[EBP-8]
+JE  SHORT equal_label             ; a == b 이면 건너뜀
+MOV DWORD PTR SS:[EBP-4], 3E8h  ; a = 1000
+equal_label:
+
+; 실전 예시 — 비교 연산 흐름
+MOV EAX, 30
+CMP EAX, 31     ; EAX - 31 = -1 → SF 설정
+JG  label       ; -1 > 0 아니므로 미분기
+CMP EAX, 29     ; EAX - 29 = 1
+JG  label       ; 1 > 0 이므로 분기 발생
+```
+
+---
+
+## 12. 함수 호출 규약 (Calling Convention)
+
+Caller(호출하는 함수)와 Callee(호출되는 함수) 사이의 인자 전달 및 스택 정리 규칙이다.
+
+| 규약 | 인자 전달 | 스택 정리 | 주 사용처 |
+|------|----------|----------|---------|
+| `__cdecl` | 스택 (우→좌 push) | Caller가 정리 `ADD ESP, XX` | C 라이브러리 함수 |
+| `__stdcall` | 스택 (우→좌 push) | Callee가 정리 `RETN XX` | Win32 API |
+| `__fastcall` | ECX, EDX (1~2개), 나머지는 스택 | Callee가 정리 `RETN XX` | 빠른 함수 호출 |
+
+```asm
+; __cdecl 예시 — C 함수 호출
+PUSH 인자2
+PUSH 인자1          ; 스택에 역순으로 push
+CALL 함수주소
+ADD ESP, 8          ; caller가 인자 크기만큼 스택 복구
+
+; __stdcall 예시 — Win32 API 호출
+PUSH MB_OK          ; 인자4
+PUSH 0              ; 인자3 (hWnd)
+PUSH "Title"        ; 인자2
+PUSH "Message"      ; 인자1
+CALL MessageBoxA
+; callee 내부에서 RETN 10h (4*4=16 바이트 정리)
+
+; __fastcall 예시
+; func(int a, int b)  → ECX=a, EDX=b
+; func(int a, int b, int c) → ECX=a, EDX=b, PUSH c
+```
+
+```
+스택 프레임 구조 (함수 내부):
+  [EBP+0C] = 두 번째 인자 (arg2)
+  [EBP+08] = 첫 번째 인자 (arg1)
+  [EBP+04] = 리턴 주소 (Return Address)
+  [EBP+00] = 이전 EBP
+  [EBP-04] = 첫 번째 지역변수 (local1)
+  [EBP-08] = 두 번째 지역변수 (local2)
+```
+
+---
+
+## 13. 라이브러리 (Library)
+
+함수의 실행 코드가 모여 있는 파일이다. 링크 방식에 따라 두 가지로 나뉜다.
+
+### 정적 링크 라이브러리 (Static Link Library, .lib)
+- 컴파일 시 라이브러리 코드가 실행 파일에 직접 포함됨
+- 장점: 런타임에 외부 파일 불필요
+- 단점: 실행 파일 크기 증가, 메모리 낭비, 라이브러리 업데이트 반영 불가
+
+### 동적 링크 라이브러리 (Dynamic Link Library, .dll)
+- 프로그램 실행 중 필요한 시점에 DLL에서 코드 로드
+- 장점: 실행 파일 크기 감소, 라이브러리 업데이트 시 프로그램도 반영
+- 단점: DLL 파일이 반드시 필요
+
+### DLL 로드 방식
+```c
+// 암시적 로드 (프로그램 시작 시 자동 로드)
+#include <windows.h>
+MessageBox(NULL, "Hello", "Title", MB_OK);
+
+// 명시적 로드 — 동적으로 필요 시 로드 (분석 어려움)
+HMODULE hModule = LoadLibrary("user32.dll");
+FARPROC pMB = GetProcAddress(hModule, "MessageBoxA");
+// 사용 후
+FreeLibrary(hModule);
+```
+
+---
+
+## 14. 자료형과 메모리 할당
+
+### 자료형 종류
+```
+기본 자료형 (Primitive Types): int, char, float, double, short, long
+사용자 정의 자료형:
+  - 구조체 (struct)
+  - 공용체 (union)
+```
+
+### 스택 메모리에서의 지역변수 위치
+```asm
+; 함수 내 지역변수는 EBP 기준 음수 오프셋
+EBP - 4  → 첫 번째 지역변수 (int a)
+EBP - 8  → 두 번째 지역변수 (int b)
+EBP - C  → 세 번째 지역변수 (int c)
+
+; 함수 인자는 EBP 기준 양수 오프셋
+EBP + 8  → 첫 번째 인자 (arg1)
+EBP + C  → 두 번째 인자 (arg2)
+```
+
+### 메모리 할당 종류
+| 구분 | 방식 | 영역 | 특징 |
+|------|------|------|------|
+| 정적 메모리 할당 | 컴파일 시 결정 | Stack, Data | 프로그램 시작 시 할당, 종료 시 해제 |
+| 동적 메모리 할당 | Runtime 결정 | Heap | malloc, calloc, VirtualAlloc 등으로 할당 |
+
+### RAM 메모리 구조
+```
+Code  영역: 프로그램 실행 코드 (기계어)
+Data  영역: 전역변수, 정적변수, 문자열 상수 등 초기화된 값
+Heap  영역: 동적 할당 요청 시 사용 (malloc, calloc, VirtualAlloc)
+Stack 영역: 지역변수, 리턴 주소, 함수 인자 (매개변수)
+
+특징:
+- Windows: PE 포맷을 기반으로 메모리에 올라감
+- Linux: ELF 포맷을 기반으로 메모리에 올라감
+- 메모리 최소 단위: 4바이트
+- Stack은 IA-32에서 4바이트 단위로 관리됨
+- Stack 위치는 Runtime 시 Random으로 결정됨 (ASLR)
+```
+
+---
+
+## 15. main 함수와 WinMain
+
+### CUI 프로그램 (콘솔)
+```c
+// main 함수 — 기본 인자 3개
+int main(int argc, char *argv[], char **envp)
+{
+    // argc: 전달된 인자 개수
+    // argv: 인자 값 배열 (argv[0] = 실행 파일 경로)
+    // envp: 환경 변수 배열
+    return 0;
+}
+```
+
+### GUI 프로그램 (Windows)
+```c
+// WinMain 함수 — 기본 인자 4개
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                     LPSTR lpszCmdParam, int nCmdShow)
+{
+    // hInstance: 현재 프로그램 인스턴스 핸들
+    // hPrevInstance: 이전 인스턴스 (현재는 항상 NULL)
+    // lpszCmdParam: 커맨드 라인 인자 문자열
+    // nCmdShow: 윈도우 표시 방식
+    return 0;
+}
+```
+
+```asm
+; OllyDbg에서 WinMain 인식:
+; main 또는 WinMain 함수 호출 전에 CRT 초기화 코드가 있음
+; 함수 인자 4개가 PUSH로 쌓인 후 CALL이 나오면 WinMain
+```

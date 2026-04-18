@@ -3,18 +3,80 @@
 ## API 보안 위협 지형도
 
 ```
-OWASP API Security Top 10 (2023)
+OWASP API Security Top 10 (2019) — 최초 API 전용 Top 10
 
 API1  Broken Object Level Authorization (BOLA/IDOR)
+        → 가장 많이 발생하는 API 취약점. 객체 ID 조작으로 타 사용자 데이터 접근
+        → Exploitability: 3, Prevalence: 3, Detectability: 2
 API2  Broken Authentication
-API3  Broken Object Property Level Authorization
-API4  Unrestricted Resource Consumption
+        → 자격증명 스터핑, 브루트포스, 약한 JWT, 취약한 비밀번호 재설정
+        → 인증 엔드포인트는 일반 엔드포인트보다 추가 보호 레이어 필요
+API3  Excessive Data Exposure
+        → 클라이언트가 필터링할 것을 믿고 모든 객체 속성을 노출
+        → 응답에 불필요한 민감 필드 포함
+API4  Lack of Resources & Rate Limiting
+        → 요청 크기/수 제한 없음 → DoS, 브루트포스 공격 가능
+        → SMS 인증코드 6자리를 제한 없이 시도 가능한 시나리오
 API5  Broken Function Level Authorization
-API6  Unrestricted Access to Sensitive Business Flows
-API7  Server Side Request Forgery
-API8  Security Misconfiguration
-API9  Improper Inventory Management
-API10 Unsafe Consumption of APIs
+        → 관리자 기능을 일반 사용자가 접근 가능
+        → 복잡한 역할/그룹/계층 구조로 인한 권한 혼동
+API6  Mass Assignment
+        → 클라이언트 제공 데이터를 화이트리스트 없이 데이터 모델에 바인딩
+        → role, is_admin, balance 등 민감 필드 임의 변경
+API7  Security Misconfiguration
+        → 불안전한 기본 설정, 불완전한 설정, 과도한 CORS, 상세 오류 메시지
+API8  Injection
+        → SQL, NoSQL, Command Injection — API 파라미터를 통한 인젝션
+API9  Improper Assets Management
+        → 구버전 API, 비공개 엔드포인트, 디버그 엔드포인트 노출
+        → API 인벤토리 미관리 → 레거시 버전 공격 가능
+API10 Insufficient Logging & Monitoring
+        → 침해 탐지 평균 200일 소요
+        → API 요청 로깅 부재 → 공격 추적/대응 불가
+```
+
+### API2 — Broken Authentication 상세 공격 시나리오
+```
+시나리오 1: 자격증명 스터핑 (Credential Stuffing)
+  - 유출된 username/password 목록으로 API 로그인 대량 시도
+  - Rate Limiting, CAPTCHA, 계정 잠금 미설정 시 성공
+
+시나리오 2: SMS OTP 브루트포스
+  POST /api/system/verification-codes (SMS 발송 요청)
+  → 6자리 코드 = 1,000,000 가지 경우
+  → Rate Limiting 없으면 멀티스레드로 수 분 내 전수 탐색
+
+시나리오 3: 약한 JWT 토큰
+  - alg: none → 서명 없는 토큰 허용
+  - 약한 HS256 비밀키 → hashcat으로 오프라인 크랙
+  - 만료일(exp) 미검증 → 영구 토큰
+
+대응책:
+  - 인증 엔드포인트 Rate Limiting (5회/분)
+  - CAPTCHA / account lockout
+  - MFA (Multi-Factor Authentication) 적용
+  - JWT: 강한 비밀키(256bit), 짧은 만료, 알고리즘 고정
+  - OAuth 2.0 + PKCE 표준 준수
+```
+
+### API9 — Improper Assets Management 탐지
+```bash
+# 구버전 API 엔드포인트 탐지
+# /v1/, /v2/, /api/v1/, /api/v2/ 등 버전별 접근 시도
+ffuf -u https://api.target.com/FUZZ/users \
+     -w /usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt
+
+# Swagger/OpenAPI 문서 발견
+curl https://api.target.com/swagger.json
+curl https://api.target.com/openapi.yaml
+curl https://api.target.com/docs
+curl https://api.target.com/v1/swagger-ui
+
+# 디버그/내부 엔드포인트 탐지
+nuclei -u https://api.target.com -tags debug,exposure,api
+
+# 과거 API 엔드포인트 (Wayback Machine)
+echo "api.target.com" | waybackurls | grep "/api/" | sort -u
 ```
 
 ---

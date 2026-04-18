@@ -739,6 +739,58 @@ echo "PATH에 ~/go/bin 추가: echo 'export PATH=\$PATH:~/go/bin' >> ~/.bashrc"
 
 ---
 
+## 9-2. Firebase / ElasticSearch / MongoDB 공개 DB 탐지
+
+### Google Firebase 오설정
+```bash
+# Firebase Realtime Database 공개 접근 탐지
+# 기본 URL 패턴: https://[project-id].firebaseio.com/.json
+
+curl https://target-app.firebaseio.com/.json
+# 응답에 데이터가 있으면 → 인증 없이 공개 접근 가능
+
+# Firebase 규칙 확인
+curl "https://target-app.firebaseio.com/.json?auth=" 
+
+# 구글 도크로 Firebase URL 탐지
+site:firebaseio.com "target"
+# 또는 Shodan
+shodan search "firebaseio.com"
+```
+
+### ElasticSearch 오설정 탐지
+```bash
+# ElasticSearch 인증 없이 공개된 경우
+curl http://target.com:9200/
+curl http://target.com:9200/_cat/indices   # 모든 인덱스 목록
+curl http://target.com:9200/_search?pretty # 전체 데이터 검색
+
+# Shodan 검색
+shodan search "port:9200 elasticsearch"
+shodan search 'port:9200 "cluster_name"'
+
+# 인덱스 내 데이터 추출
+curl http://target.com:9200/users/_search?size=100&pretty
+```
+
+### MongoDB 오설정 탐지
+```bash
+# MongoDB 기본 포트 (27017) 인증 없이 접근
+# Shodan 검색
+shodan search "port:27017 -authentication"
+
+# MongoDB 클라이언트로 직접 접속
+mongo target.com:27017
+> show dbs
+> use admin
+> db.getCollectionNames()
+
+# Nuclei MongoDB 탐지
+nuclei -u target.com -tags mongodb,database,exposure
+```
+
+---
+
 ## 10. 보고서 자동 생성
 
 ```python

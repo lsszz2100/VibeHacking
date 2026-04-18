@@ -303,3 +303,121 @@ checksec --file=vuln
 # NX:       NX disabled
 # PIE:      No PIE
 ```
+
+### Linux C 코드 → 어셈블리 변환 실전
+
+```c
+// test.c
+#include <stdio.h>
+int main() {
+    int a = 10;
+    int b = 20;
+    int c;
+    c = a + b;
+}
+```
+
+컴파일 후 생성되는 어셈블리(`gcc -masm=intel -S test.c`):
+
+```asm
+main:
+    push    %ebp
+    mov     %ebp, %esp
+    sub     %esp, 12                     ; 지역변수 공간 확보 (a, b, c = 4*3)
+    mov     DWORD PTR [%ebp-4],  10      ; a = 10
+    mov     DWORD PTR [%ebp-8],  20      ; b = 20
+    mov     %eax, DWORD PTR [%ebp-8]     ; eax = b
+    add     %eax, DWORD PTR [%ebp-4]     ; eax = b + a
+    mov     DWORD PTR [%ebp-12], %eax    ; c = eax
+    leave
+    ret
+```
+
+---
+
+## 8. 리버싱 기초 실습 과제 상세 분석
+
+### 과제 유형별 접근법
+
+#### 유형 1: 조건 분기 조작
+```asm
+; 프로그램이 특정 값을 비교하고 성공/실패를 나눌 때
+
+; 원본 코드 — 분기 지점 찾기
+CMP EAX, 특정값
+JE  success_label      ; 같으면 성공
+JMP fail_label         ; 나머지는 실패
+
+; 패치 방법 A: JE → JMP (항상 성공으로)
+; Spacebar → JMP success_label
+
+; 패치 방법 B: JE를 NOP으로 (조건 무력화 후 다음 줄 실행)
+; JE (0x74 또는 0x0F 0x84) → NOP (0x90)
+
+; 패치 방법 C: CMP 자체 제거
+; CMP 명령어를 NOP으로 채우면 ZF가 변하지 않음
+```
+
+#### 유형 2: sum 값 계산 패치
+```asm
+; 목표: sum이 특정 값(15, 21 등)이 되도록 패치
+; 접근: sum을 계산하는 루프를 찾아 조건 변경 또는 직접 값 주입
+
+; 예시: sum == 21 이 되어야 success
+; 방법 1: MOV [sum_address], 15h (직접 값 주입)
+; 방법 2: 루프 조건 CMP를 원하는 값으로 변경
+```
+
+#### 유형 3: MessageBox 추가/수정
+```asm
+; 스택 창에서 직접 인자 확인
+PUSH 0              ; uType (MB_OK)
+PUSH 타이틀주소      ; lpCaption
+PUSH 메시지주소      ; lpText
+PUSH 0              ; hWnd
+CALL MessageBox
+
+; OllyDbg에서:
+; F7로 CALL 내부 진입 → EBP+8=hWnd, EBP+C=lpText 확인
+; 스택 창에서 직접 값 수정 가능
+```
+
+#### 유형 4: new(동적 할당) 분석
+```asm
+; C++ new 연산자 역어셈블 패턴
+PUSH 크기            ; 할당할 바이트 수
+CALL operator new   ; 내부적으로 HeapAlloc 호출
+ADD ESP, 4
+MOV [포인터변수], EAX ; EAX에 할당된 주소 반환
+
+; OllyDbg에서 Heap 추적:
+; Alt+M → Memory Map에서 Heap 영역 확인
+; Heap 주소에 Memory BP 설정하여 접근 시 멈춤
+```
+
+---
+
+## 9. 안티 디버깅 기법 목록
+
+### 탐지 방법과 우회법
+
+| 안티디버깅 기법 | 동작 원리 | 우회 방법 |
+|--------------|---------|---------|
+| IsDebuggerPresent | PEB.IsDebugged 필드 확인 | EAX를 0으로 수동 설정 후 JNZ→NOP |
+| CheckRemoteDebuggerPresent | NtQueryInformationProcess 호출 | 반환 bool 포인터 값을 0으로 패치 |
+| GetTickCount 타이밍 | 실행 시간이 너무 길면 디버거로 판단 | JA/JG → NOP 또는 EAX를 작은 값으로 변경 |
+| QueryPerformanceCounter | 고해상도 타이머로 시간 측정 | 결과 비교 분기 NOP |
+| INT 3 (0xCC) 탐지 | 코드에서 0xCC 바이트 스캔 | Hardware BP 사용 (DR 레지스터, INT 3 없음) |
+| TLS 콜백 | main 이전에 실행되는 코드 | TLS 콜백 함수에 직접 BP 설정 |
+| SEH 핸들러 | 예외 발생 시 디버거 존재 확인 | FS:[0] 체인 추적, 핸들러 내 분기 패치 |
+
+```asm
+; PEB를 이용한 디버거 탐지 (수동 방식)
+MOV EAX, DWORD PTR FS:[30h]   ; EAX = PEB 주소
+MOV AL,  BYTE PTR [EAX+2]     ; AL = PEB.IsDebugged (offset 0x2)
+TEST AL, AL
+JNZ  debugger_detected
+
+; 우회: [EAX+2] 값을 0으로 직접 수정 (Memory 창에서)
+; 또는 JNZ → JZ 로 조건 반전
+```

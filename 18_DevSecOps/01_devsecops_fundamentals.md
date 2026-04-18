@@ -758,3 +758,304 @@ if __name__ == "__main__":
     if summary.get("CRITICAL", 0) > 0:
         exit(1)
 ```
+
+---
+
+## 9. DevSecOps 보안 체크리스트
+
+### 코드 및 의존성 보안
+```
+소스코드:
+  □ 하드코딩된 자격증명 없음 (gitleaks 검사)
+  □ SAST 도구 통과 (Semgrep/SonarQube/Bandit)
+  □ 안전하지 않은 함수 미사용 (strcpy, system 등)
+  □ SQL/커맨드 인젝션 방어 코드
+  □ 입력 검증 및 출력 인코딩
+
+의존성:
+  □ SCA 도구로 알려진 CVE 없음 (Snyk/Dependency-Check)
+  □ 최신 버전 의존성 사용
+  □ 라이선스 컴플라이언스 확인
+  □ 서드파티 라이브러리 출처 신뢰 확인
+
+컨테이너:
+  □ 공식 베이스 이미지 사용 (alpine, slim 권장)
+  □ Trivy/Grype로 이미지 취약점 스캔
+  □ 루트가 아닌 사용자로 실행 (USER 지시어)
+  □ 읽기 전용 파일시스템 설정
+  □ 최소 capabilities만 허용
+  □ latest 태그 사용 금지 (버전 고정)
+```
+
+### 인프라 및 배포 보안
+```
+인프라 as Code:
+  □ Checkov/tfsec으로 Terraform 코드 점검
+  □ kube-bench로 Kubernetes CIS 벤치마크 점검
+  □ 퍼블릭 노출 리소스 최소화
+  □ 암호화 설정 (저장소, 전송 중)
+
+배포 파이프라인:
+  □ CI/CD 파이프라인 접근 제어
+  □ 빌드 아티팩트 서명 (cosign)
+  □ 배포 승인 프로세스 (Change Management)
+  □ 롤백 절차 문서화 및 테스트
+
+운영:
+  □ RBAC (역할 기반 접근 제어) 적용
+  □ 네트워크 정책 (Network Policy) 설정
+  □ 시크릿은 Vault/환경변수 아닌 시크릿 관리자 사용
+  □ 로그 중앙 집중화 (ELK, Splunk 등)
+  □ 알림 및 인시던트 대응 절차
+```
+
+### 보안 테스트 체크리스트
+```
+SAST (정적):
+  □ 코드 커밋 시 자동 실행
+  □ PR 차단 정책 (HIGH/CRITICAL)
+  □ False Positive 관리 (suppress 정책)
+
+DAST (동적):
+  □ 스테이징 환경에서 정기 실행
+  □ 인증된 스캔 (로그인 세션 포함)
+  □ API 엔드포인트 커버리지
+
+침투 테스트:
+  □ 연 1회 이상 외부 전문가 테스트
+  □ 주요 변경 시 집중 테스트
+  □ 발견사항 추적 및 재테스트
+```
+
+---
+
+## 10. NIST Cybersecurity Framework (CSF) 적용
+
+### CSF 5대 핵심 기능
+
+```
+IDENTIFY (식별)
+  - 자산 관리: 하드웨어/소프트웨어/데이터 인벤토리
+  - 비즈니스 환경 이해
+  - 위험 평가 및 위험 관리 전략
+  - 공급망 위험 관리
+
+PROTECT (보호)
+  - 접근 제어 (IAM, MFA, 최소 권한)
+  - 인식 제고 및 훈련
+  - 데이터 보안 (암호화, DLP)
+  - 정보 보호 프로세스 및 절차
+  - 유지 관리
+  - 보호 기술 (방화벽, AV, EDR)
+
+DETECT (탐지)
+  - 이상 및 이벤트 탐지
+  - 보안 모니터링 (SIEM)
+  - 탐지 프로세스
+
+RESPOND (대응)
+  - 대응 계획 수립
+  - 커뮤니케이션 (내부/외부)
+  - 분석 (포렌식, 영향 평가)
+  - 완화 조치
+  - 개선
+
+RECOVER (복구)
+  - 복구 계획
+  - 개선 (교훈 적용)
+  - 커뮤니케이션 (이해관계자)
+```
+
+### DevSecOps와 CSF 매핑
+```
+개발 단계             CSF 기능         DevSecOps 도구
+─────────────────────────────────────────────────────────
+요구사항 분석    →   IDENTIFY      →  위험 분류, 데이터 분류
+코드 작성        →   PROTECT       →  SAST, Pre-commit Hook
+CI/CD 파이프라인 →   DETECT        →  SCA, DAST, Container Scan
+스테이징 배포    →   DETECT/PROTECT →  Pen Test, IaC Scan
+프로덕션 운영    →   DETECT/RESPOND →  SIEM, EDR, WAF
+인시던트 발생    →   RESPOND/RECOVER→  SOAR, 포렌식, 복구 절차
+```
+
+### 성숙도 측정 (CSF 구현 티어)
+```
+Tier 1 (부분적):
+  - 비공식적 프로세스
+  - 위험 인식 부족
+  - 사후 대응
+
+Tier 2 (위험 인지):
+  - 위험 관리 프로세스 존재
+  - 외부 정보 일부 활용
+
+Tier 3 (반복 가능):
+  - 공식 정책 및 절차
+  - 위험 기반 의사결정
+  - 외부 파트너 협력
+
+Tier 4 (적응):
+  - 지속적 개선
+  - 위협 인텔리전스 통합
+  - 자동화된 대응
+```
+
+---
+
+## 11. 컨테이너 보안 강화 (Hardening)
+
+### Dockerfile 보안 모범 사례
+```dockerfile
+# 나쁜 예
+FROM ubuntu:latest
+RUN apt-get install -y curl wget git
+COPY . /app
+CMD ["python", "app.py"]
+
+# 좋은 예
+FROM python:3.11-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.11-slim
+# 루트가 아닌 사용자 생성
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+WORKDIR /app
+COPY --from=builder /app /app
+# 소유권 설정
+RUN chown -R appuser:appuser /app
+# 루트가 아닌 사용자로 실행
+USER appuser
+# 헬스체크
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8080/health || exit 1
+EXPOSE 8080
+CMD ["python", "-m", "gunicorn", "app:app"]
+```
+
+### Kubernetes 보안 컨텍스트
+```yaml
+# Pod 보안 설정 예시
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secure-pod
+spec:
+  # 서비스 계정 토큰 자동 마운트 비활성화
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 2000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+  - name: app
+    image: myapp:1.2.3  # 명시적 버전 태그
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+    resources:
+      limits:
+        cpu: "500m"
+        memory: "256Mi"
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+    volumeMounts:
+    - name: tmp
+      mountPath: /tmp
+  volumes:
+  - name: tmp
+    emptyDir: {}
+```
+
+---
+
+## 12. DevSecOps 확장 체크리스트
+
+### 개발 프로세스 보안
+```
+개발 단계:
+  □ 보안을 기능 요구사항과 동일한 우선순위로 처리
+  □ 보안 컨트롤 및 자동화 프로세스 추가
+  □ 알려진 취약점을 개발 초기에 해결
+  □ "Yes, let's figure out how to do this securely" 문화 조성
+    (보안이 저지하는 역할이 아닌 가능하게 하는 역할)
+
+지속적 테스트:
+  □ 앱, API, 컨테이너, 데이터, 마이크로서비스 전체 테스트
+  □ Pre-commit, commit-time, build-time, test-time, deploy-time 검사
+  □ SAST(정적) + DAST(동적) 통합 적용
+
+자동화:
+  □ 기능적/비기능적 보안 테스트 자동화
+  □ 인프라 설정 및 컨피규레이션 관리 자동화
+  □ Puppet, Chef, Ansible 등 DSC 도구 활용
+```
+
+### API 보안 체크리스트
+```
+인증/인가:
+  □ API ID/키로 사용자·장치·앱 식별
+  □ OAuth 프레임워크로 접근 제어
+  □ 모든 API 엔드포인트에 인증 강제
+
+보안 정책:
+  □ 요청 정보 전송 시 암호화
+  □ API 오류 메시지에 민감 정보 노출 금지
+  □ ID, 키, 토큰, 인증서 정책 로그/감사
+
+전송 보안:
+  □ 모든 연결 암호화 (Man-in-the-Middle 방지)
+  □ SSL/TLS 강제 (HTTPS Only)
+  □ 오래된 TLS 버전(1.0, 1.1) 비활성화
+```
+
+### 혼돈 엔지니어링 (Chaos Engineering)
+```
+목적:
+  - 예기치 않은 운영 환경에서 시스템 보안 준비성 테스트
+  - "Moving Target Defense" 구축
+
+실행 방법:
+  - 서버 인스턴스 무작위 종료 스크립트
+  - 컨테이너 무작위 중단
+  - 특정 서비스 장애 유발
+  - 네트워크 단절 시뮬레이션
+
+도구:
+  - Netflix Chaos Monkey
+  - Gremlin
+  - AWS Fault Injection Simulator
+
+기대 효과:
+  - 보안 탄력성 검증
+  - 예상치 못한 공격 시나리오 대비
+  - 인시던트 대응 자동화 검증
+```
+
+### Security-as-Code 원칙
+```
+"보안을 나중에 추가하는 것이 아니라 코드에 내재화"
+
+실천 방법:
+  □ 보안 요구사항을 코드 레벨에서 적용
+  □ 개발자가 보안 결정을 쉽게 내릴 수 있는 환경 조성
+  □ 안전한 선택이 가장 쉬운 선택이 되도록 설계
+
+오픈소스/서드파티 의존성:
+  □ 항상 최신 버전 유지
+  □ 정기적 취약점 확인 (CVE 체크)
+  □ 라이선스 컴플라이언스 확인
+  □ dependabot 등으로 자동 업데이트 알림
+
+보안 분석 프로그램 지표:
+  □ 심각한 취약점 수 및 잔존 기간 추적
+  □ 자동화 테스트 범위 및 빈도
+  □ 앱에 대한 공격 횟수 및 유형
+```

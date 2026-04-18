@@ -228,21 +228,56 @@ SAM 파일 위치: C:\Windows\System32\config\SAM
 SYSTEM 파일:   C:\Windows\System32\config\SYSTEM
 ```
 
-### Windows 인증 프로토콜
+### Windows 인증 아키텍처 (상세)
 ```
-1. LM (LAN Manager) — 구버전, 매우 취약
-   - 14자를 7자 + 7자로 분할
-   - 모두 대문자로 변환 후 DES 암호화
-   - 취약: 7자 이하면 쉽게 크랙
+Winlogon → LSA → SAM → SRM
 
-2. NTLM — MD4 해시 사용
+1. Winlogon
+   - 사용자 로그인을 처리하는 프로세스
+   - 자격증명을 LSA로 전달
+
+2. LSA (Local Security Authority)
+   - 로컬 로그인 처리
+   - 보안 정책 검사
+   - SID(Security Identifier) 생성
+   - 보안 로그 기록
+
+3. SAM (Security Accounts Manager)
+   - 사용자/그룹 계정 정보를 저장하는 데이터베이스
+   - 입력 자격증명을 SAM 데이터베이스와 비교하여 인증
+   - SAM 파일 위치: %SystemRoot%\system32\config\sam
+   - 시스템 실행 중에는 잠금 상태 (직접 접근 불가)
+
+4. SRM (Security Reference Monitor)
+   - SID를 객체에 할당
+   - SID 기반으로 파일/디렉토리 접근(Access) 제어
+   - 감사(Audit) 로그 기록
+```
+
+### Windows 인증 프로토콜 — Challenge & Response
+```
+네트워크 인증 방식: Challenge-Response 프로토콜
+(클라이언트가 챌린지에 대한 응답을 네트워크로 전송)
+
+Response 생성 알고리즘:
+
+1. LM (LAN Manager) — 매우 취약, 구버전
+   - 비밀번호를 14자로 패딩, 14자 초과 시 잘라냄
+   - 모두 대문자로 변환
+   - 7자씩 분리하여 DES 암호화
+   - 결과: 한글 또는 특수문자 포함 시 문제 발생
+   - 취약성: 7자 이하 단위 공격 가능
+
+2. NTLM — DES 암호화 기반, 1세대
+   - MD4 해시 사용
    - LM보다 강하지만 여전히 취약
    - Pass-the-Hash 공격에 취약
 
-3. NTLMv2 — 현재 Windows 기본 (XP SP3 이후)
+3. NTLMv2 — Windows XP 이후 기본 방식
    - Challenge-Response 방식
-   - 서버 챌린지 + 클라이언트 챌린지 포함
-   - 상대적으로 안전하나 여전히 크래킹 가능
+   - 서버 챌린지 + 클라이언트 챌린지 조합
+   - 타임스탬프 포함으로 재전송 공격 방어
+   - 상대적으로 안전하나 크래킹 가능
 ```
 
 ### Cain & Abel 사용법
@@ -358,7 +393,61 @@ WinRTGen은 직접 레인보우 테이블을 생성하는 도구
 
 ---
 
-## 8. 온라인 크래킹 도구
+## 8. FTP 브루트포스 — white.c 실습 도구
+
+### white.c 컴파일 및 실행
+```bash
+# 소스 컴파일 (pthread 링크 필수)
+gcc -o ftpcrack white.c -lpthread
+
+# 실행 시 대상 서버 정보 입력
+./ftpcrack
+# 서버 IP  : 192.168.203.129  (Windows Server 2008)
+# 대상 ID  : tester           (FTP 계정 ID)
+```
+
+### 공격 메뉴 구성
+```
+white> help
+
+번호  설명                           단축키
+----  ----------------------------   ------
+1     순차 브루트포스 (단일 프로세스)  a. [One Process] Sequence Brute Forcing Attack
+2     랜덤 브루트포스 (단일 프로세스)  b. [One Process] Random Brute Forcing Attack
+3     사전 공격 (단일 프로세스)        c. [One Process] Dictionary Attack
+4     순차 브루트포스 (멀티 스레딩)   d. [Multi Threading] Sequence Brute Forcing Attack
+5     프로그램 종료                   e. [Multi Threading] Random Brute Forcing Attack
+                                     f. [Multi Threading] Random Brute Forcing Attack + 첫자리 소/대문자 교환
+
+기본 대상 문자열:
+  0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+```
+
+### 사전 공격 실행 예시
+```bash
+# c 입력 → [One Process] Dictionary Attack 실행
+# wordlist.txt 파일의 단어로 순차 공격
+white> c
+
+# 멀티 스레딩 공격 (d 입력)
+# 다중 스레드로 순차 브루트포스 → 속도 향상
+white> d
+```
+
+### 환경 구성
+```
+1. Windows Server 2008 설치 (FTP 서버)
+2. IIS FTP 설치 및 계정 생성
+   net user /add test1 12345
+   net user /add test2 asdf
+   net user /add test3 qwer12
+3. 방화벽 ICMP 허용 (ping 통신 확인용)
+4. CentOS (공격자)에서 white.c 컴파일 후 실행
+```
+
+---
+
+## 8-2. 온라인 크래킹 도구
 
 ### Hydra (네트워크 서비스 브루트포서)
 ```bash

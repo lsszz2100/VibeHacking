@@ -403,3 +403,151 @@ grep "Ban " /var/log/fail2ban.log | awk '{print $NF}' | sort | uniq -c | sort -r
 # 현재 차단 상태
 fail2ban-client status sshd
 ```
+
+---
+
+## 11. Blue Team 기본 네트워크 도구
+
+### ping / tracert / pathping
+```bash
+# 기본 연결 확인
+ping -c 4 192.168.1.1              # Linux
+ping 192.168.1.1                   # Windows
+
+# 경로 추적
+traceroute 8.8.8.8                 # Linux
+tracert 8.8.8.8                    # Windows
+
+# traceroute + 통계 결합 (Windows)
+# pathping: 각 홉에서 패킷 손실률 통계 제공
+pathping 8.8.8.8
+
+# WinMTR: traceroute + ping 실시간 통합
+# → 경로별 지연 및 패킷 손실 실시간 확인
+```
+
+### nslookup / DNS 분석
+```bash
+# 기본 쿼리
+nslookup example.com
+nslookup -querytype=mx example.com    # MX 레코드 (메일 서버)
+nslookup -querytype=txt example.com   # TXT 레코드 (SPF, DMARC)
+nslookup -querytype=ns example.com    # NS 레코드 (네임서버)
+
+# 역방향 조회 (IP → 도메인)
+nslookup 8.8.8.8
+
+# dig (Linux 심화)
+dig example.com ANY          # 모든 레코드
+dig @8.8.8.8 example.com    # 특정 DNS 서버 조회
+dig +trace example.com       # 재귀 추적
+```
+
+### NetStat 활용
+```bash
+# 활성 연결 목록
+netstat -an        # 모든 연결 (숫자 표시)
+netstat -antp      # TCP + PID 포함 (Linux)
+netstat -ano       # Windows (PID 포함)
+
+# 통계 정보 확인
+netstat -s         # 프로토콜별 통계
+
+# 포트가 열려있는지 확인
+netstat -an | grep :80
+netstat -an | grep LISTEN
+```
+
+### OSSEC — 로그 기반 침입 탐지
+```bash
+# OSSEC 설치 (서버 모드)
+./install.sh
+
+# 에이전트 등록
+/var/ossec/bin/manage_agents
+
+# OSSEC 주요 기능:
+# - 로그 분석 (syslog, event log)
+# - 파일 무결성 모니터링 (FIM)
+# - 루트킷 탐지
+# - 실시간 알림
+
+# 로그 위치
+/var/ossec/logs/ossec.log      # 주 로그
+/var/ossec/logs/alerts/        # 알림 로그
+
+# 규칙 경로
+/var/ossec/rules/              # 기본 탐지 규칙
+
+# 에이전트 상태 확인
+/var/ossec/bin/agent_control -l
+
+# OSSEC 알림 예시 (ID 1002 = 알 수 없는 오류):
+# Rule: 1002 (level 2) -> 'Unknown problem somewhere in the system.'
+```
+
+### inSSIDer / 무선 네트워크 보안
+```
+IEEE 802.11 표준:
+  802.11a: 5GHz, 54 Mbps
+  802.11b: 2.4GHz, 11 Mbps
+  802.11g: 2.4GHz, 54 Mbps
+  802.11n: 2.4/5GHz, 300+ Mbps
+  802.11ac: 5GHz, 1+ Gbps
+  802.11ax: Wi-Fi 6, 다중 사용자 최적화
+
+무선 보안 취약점:
+  - WEP: 취약 (사용 금지)
+  - WPA: 취약점 존재
+  - WPA2: KRACK 취약점 (패치 필요)
+  - WPA3: 현재 권장 표준
+
+무선 네트워크 모니터링 도구:
+  - inSSIDer: Wi-Fi 신호 시각화
+  - Wireless Network Watcher: 연결된 장치 목록
+  - Wireshark: 무선 패킷 캡처
+
+기업 무선 보안:
+  - WPA2-Enterprise (802.1X + RADIUS 인증)
+  - 손님 네트워크 분리 (VLAN)
+  - 무선 침입 탐지 (WIDS)
+```
+
+---
+
+## 12. CIS 컨트롤 v7 상위 6개 (Blue Team 필수)
+
+### CIS Basic Controls — Top 6
+```
+1. 허가된 및 비허가된 장치 인벤토리 (Hardware Inventory)
+   - 모든 하드웨어 자산 목록 유지
+   - 비허가 장치 즉시 탐지 및 차단
+   - 네트워크 스캐닝으로 알 수 없는 장치 식별
+   - 도구: Nmap, 네트워크 접근 제어(NAC)
+
+2. 허가된 및 비허가된 소프트웨어 인벤토리 (Software Inventory)
+   - 모든 소프트웨어 목록 유지
+   - 비허가 소프트웨어 실행 차단 (화이트리스트)
+   - 도구: SCCM, Ansible, Puppet
+
+3. 지속적인 취약점 평가 및 교정 (Vulnerability Management)
+   - 정기 취약점 스캔 실행
+   - CVSS 기반 우선순위 패치 적용
+   - 도구: Nessus, OpenVAS, Nexpose
+
+4. 관리자 권한의 통제된 사용 (Controlled Use of Admin Privileges)
+   - 최소 권한 원칙 적용
+   - 관리자 계정 일상 업무에 사용 금지
+   - MFA 강제, 특권 접근 관리(PAM)
+
+5. 모바일 장치, 노트북, 워크스테이션 하드웨어/소프트웨어 보안 설정 유지
+   - CIS 벤치마크 기반 하드닝 적용
+   - 기본 패스워드 변경, 불필요한 서비스 비활성화
+   - 도구: CIS-CAT, Lynis
+
+6. 감사 로그 유지, 모니터링, 분석
+   - 모든 중요 시스템의 로그 수집
+   - 중앙 집중식 로그 관리 (SIEM)
+   - 로그 보존 기간 정책 수립 (최소 1년 권장)
+   - 도구: Splunk, ELK Stack, Graylog
+```

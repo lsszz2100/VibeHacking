@@ -255,3 +255,225 @@ nmap -sS -T4 -A -v 192.168.1.0/24  # 빠른 종합 스캔
 - 모든 VM을 **Host-only** 또는 **Internal Network**로 설정
 - 인터넷 차단으로 안전한 실습 환경 구성
 - 공격자 머신과 타겟이 같은 네트워크 대역 사용
+
+---
+
+## 10. Kali 필수 명령어 카테고리 정리
+
+### 정보 수집 (Information Gathering)
+```bash
+nmap           # 포트 스캔, 서비스 탐지
+masscan        # 초고속 포트 스캔 (인터넷 규모)
+theHarvester   # 이메일/도메인 OSINT
+recon-ng       # 모듈형 정찰 프레임워크
+maltego        # 그래프 기반 OSINT
+dnsenum        # DNS 열거
+dnsrecon       # DNS 정찰
+fierce         # DNS 브루트포스
+shodan         # 인터넷 장치 검색
+```
+
+### 취약점 스캔 (Vulnerability Analysis)
+```bash
+nessus         # 상용 취약점 스캐너 (평가판)
+openvas        # 오픈소스 취약점 스캐너
+nikto          # 웹 서버 취약점 스캔
+wpscan         # WordPress 취약점 스캔
+joomscan       # Joomla 취약점 스캔
+lynis          # 리눅스 시스템 보안 감사
+```
+
+### 웹 애플리케이션 (Web Application)
+```bash
+burpsuite      # 웹 프록시 및 스캐너
+zaproxy        # OWASP ZAP (오픈소스 웹 스캐너)
+sqlmap         # SQL 인젝션 자동화
+dirb           # 웹 디렉토리 브루트포스
+gobuster       # 고성능 디렉토리/서브도메인 스캔
+ffuf           # 고성능 웹 퍼저
+wfuzz          # 웹 퍼저
+commix         # 커맨드 인젝션 도구
+whatweb        # 웹 기술 스택 탐지
+```
+
+### 패스워드 공격 (Password Attacks)
+```bash
+john           # John the Ripper (오프라인 크랙)
+hashcat        # GPU 기반 해시 크랙
+hydra          # 온라인 브루트포스 (다중 프로토콜)
+medusa         # 병렬 로그인 브루트포서
+ncrack         # 네트워크 인증 크래킹
+crunch         # 커스텀 워드리스트 생성
+cewl           # 웹 페이지 기반 워드리스트 생성
+```
+
+### 익스플로잇 (Exploitation)
+```bash
+msfconsole     # Metasploit Framework
+searchsploit   # Exploit-DB 오프라인 검색
+armitage       # Metasploit GUI
+beef           # 브라우저 익스플로잇 프레임워크
+```
+
+### 스니핑 & 스푸핑 (Sniffing & Spoofing)
+```bash
+wireshark      # GUI 패킷 분석
+tcpdump        # CLI 패킷 캡처
+ettercap       # 중간자 공격 (MITM)
+bettercap      # 고급 MITM 프레임워크
+arpspoof       # ARP 스푸핑
+dsniff         # 패스워드 스니핑 도구 모음
+```
+
+### 무선 해킹 (Wireless)
+```bash
+aircrack-ng    # WEP/WPA 크랙 스위트
+airodump-ng    # 무선 네트워크 패킷 캡처
+aireplay-ng    # 패킷 인젝션 (deauth 등)
+airmon-ng      # 모니터 모드 관리
+reaver         # WPS 브루트포스
+wifite         # 자동화 무선 공격
+kismet         # 무선 IDS/탐지
+```
+
+### 포스트 익스플로잇 (Post Exploitation)
+```bash
+# Meterpreter 세션에서
+getsystem      # 권한 상승
+hashdump       # 해시 추출
+run post/multi/recon/local_exploit_suggester  # 권한 상승 제안
+
+# LinPEAS — 리눅스 권한 상승 자동 탐색
+curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh | sh
+
+# LinEnum — 리눅스 열거 스크립트
+./LinEnum.sh -s -k keyword -r report -e /tmp/ -t
+```
+
+### 포렌식 (Forensics)
+```bash
+autopsy        # 디지털 포렌식 GUI
+volatility     # 메모리 포렌식
+foremost       # 파일 카빙
+dd             # 디스크 이미징
+md5sum/sha256sum  # 무결성 검증
+strings        # 바이너리에서 문자열 추출
+binwalk        # 펌웨어 분석
+```
+
+---
+
+## 11. BackTrack/Kali 침투 테스팅 단계
+
+```
+침투 테스팅 표준 단계:
+1. 정보수집 (Information Gathering)
+   - Web 검색엔진 활용 (Google Dorks, Harvester)
+   - DNS 정보 수집 (NSlookup, dig, dnsenum, fierce)
+   - SNMP 정보 수집 (SNMPcheck, Onesixtyone)
+   - ICMP 정보 수집 (Scapy, traceroute)
+   - Whois / Netcraft / Host 정보 수집
+
+2. 스캐닝 (Scanning)
+   - 포트 스캔 (Nmap, Masscan)
+   - 서비스 버전 탐지
+   - OS 핑거프린팅
+
+3. 취약점 분석 (Vulnerability Analysis)
+   - Metasploit search 모듈
+   - Nessus / OpenVAS
+
+4. 익스플로잇 (Exploitation)
+   - Metasploit Framework
+   - Armitage (GUI)
+
+5. 포스트 익스플로잇 (Post Exploitation)
+   - Meterpreter 세션 활용
+   - 권한 상승 / 지속성 유지
+```
+
+### BackTrack → Kali Linux 전환 이력
+```
+BackTrack 5 r3 → Kali Linux 1.0 (2013)
+- BackTrack은 Ubuntu 기반
+- Kali Linux는 Debian 기반으로 전환
+- 패키지 관리: apt-get (동일)
+- 도구 구성: 대부분 동일하나 경로/명령어 일부 변경
+```
+
+---
+
+## 12. fcrackzip — 압축파일 비밀번호 크랙
+
+```bash
+# 설치
+apt-get install fcrackzip
+
+# 옵션
+# -b  : 무차별대입 (brute force)
+# -D  : 사전파일 사용 (dictionary attack)
+# -c  : 문자 집합 지정
+#        a = 소문자, A = 대문자, 1 = 숫자, ! = 특수문자
+# -l  : 글자 수 범위 (예: 4-9 = 4~9자)
+# -u  : 틀린 패스워드 제외
+# -v  : 상세 출력
+# -p  : 사전파일 경로 지정 (dictionary 모드)
+
+# 무차별대입 (소문자+숫자, 4~9자)
+fcrackzip -b -v -l 4-9 -c a1 -u target.zip
+
+# 사전파일 공격
+fcrackzip -D -p wordlist.txt -u target.zip
+```
+
+---
+
+## 13. IP 네트워크 설정 (실습 환경)
+
+### 정적 IP 설정 (Kali Linux)
+```bash
+# /etc/network/interfaces 편집 방식
+auto eth0
+iface eth0 inet static
+    address 192.168.1.100
+    netmask 255.255.255.0
+    gateway 192.168.1.1
+    dns-nameservers 8.8.8.8 8.8.4.4
+
+# 적용
+service networking restart
+# 또는
+ifdown eth0 && ifup eth0
+```
+
+### nmcli (NetworkManager CLI)
+```bash
+# 현재 연결 확인
+nmcli con show
+
+# 정적 IP 설정
+nmcli con mod "Wired connection 1" \
+    ipv4.method manual \
+    ipv4.addresses "192.168.1.100/24" \
+    ipv4.gateway "192.168.1.1" \
+    ipv4.dns "8.8.8.8"
+
+# 연결 재시작
+nmcli con up "Wired connection 1"
+
+# DHCP로 전환
+nmcli con mod "Wired connection 1" ipv4.method auto
+```
+
+### 멀티 네트워크 인터페이스 설정
+```bash
+# VMware 환경에서 두 NIC 설정
+# eth0: NAT (인터넷 접속)
+# eth1: Host-only (실습 네트워크)
+
+ip addr add 192.168.56.100/24 dev eth1
+ip link set eth1 up
+
+# 라우팅 확인
+ip route show
+```

