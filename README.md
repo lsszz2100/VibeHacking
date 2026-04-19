@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-18-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-97%2B%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-48%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-22-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-109%2B%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-65%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -60,6 +60,10 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 16 | [**암호학**](#16-암호학) | 해커를 위한 암호학, 해시 공격, 응용 암호학 | 3 |
 | 17 | [**레드팀 운영**](#17-레드팀-운영) | 플레이북, 피싱/사회공학, API 해킹 | 3 |
 | 18 | [**DevSecOps**](#18-devsecops) | SAST/SCA/DAST, 컨테이너 보안, CI/CD 파이프라인 | 3 |
+| 19 | [**어셈블리 언어**](#19-어셈블리-언어) | x86/x64 기초, 셸코드 개발, 디스어셈블리 분석 | 3 |
+| 20 | [**셸 스크립팅**](#20-셸-스크립팅) | Bash 기초, 침투 자동화, 사후 익스플로잇 | 3 |
+| 21 | [**Windows 익스플로잇**](#21-windows-익스플로잇) | Windows 내부 구조, 권한 상승, 방어 우회 | 3 |
+| 22 | [**패스워드 크래킹**](#22-패스워드-크래킹) | 해시 종류/워드리스트, Hashcat/John, 고급 기법 | 3 |
 
 ---
 
@@ -340,6 +344,58 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 ```
 
 **핵심 내용:** 보안 내재화(Shift Left), SAST/SCA/DAST/IaC 스캔 자동화, 컨테이너 런타임 탐지, GitLab/Jenkins/GitHub Actions 보안 파이프라인 완전 구현
+
+---
+
+## 19. 어셈블리 언어
+
+```
+19_Assembly_Language/
+├── 01_x86_x64_Fundamentals.md   ← 레지스터, 명령어, 스택 프레임, 호출 규약
+├── 02_Shellcode_Development.md  ← 셸코드 작성, bad byte 제거, ctypes 실행 테스트
+└── 03_Disassembly_Analysis.md   ← GDB/pwndbg, IDA/Ghidra, Capstone 자동화
+```
+
+**핵심 내용:** x86/x64 레지스터 완전 정복, NASM 코딩, 64비트 execve 셸코드 구현, Capstone 기반 자동 디스어셈블러
+
+---
+
+## 20. 셸 스크립팅
+
+```
+20_Shell_Scripting/
+├── 01_Bash_Scripting_Basics.md       ← 변수/배열/조건/반복/함수, awk/sed, 포트 스캐너
+├── 02_Pentest_Automation.md          ← 정찰 자동화, 서브도메인 열거, 취약점 스캔 래퍼
+└── 03_Post_Exploitation_Scripts.md   ← 리버스 셸, 지속성 확보, Python C2 소켓 구현
+```
+
+**핵심 내용:** Bash 실전 스크립팅, 정찰~사후 익스플로잇 전 과정 자동화, 리버스 셸 원라이너 7종, Python C2 구현
+
+---
+
+## 21. Windows 익스플로잇
+
+```
+21_Windows_Exploitation/
+├── 01_Windows_Internals.md              ← PE 포맷, PEB/TEB, WinAPI 핵심 함수, PE 파서 코드
+├── 02_Windows_Privilege_Escalation.md   ← 서비스/레지스트리/DLL 하이재킹, UAC 바이패스, 토큰 임퍼스네이션
+└── 03_Defense_Evasion.md                ← AMSI/ETW 우회, 프로세스 인젝션 6종, LOLBAS, AES 페이로드 암호화
+```
+
+**핵심 내용:** Windows 내부 구조 심층 분석, 권한 상승 완전 정복, AMSI/AV/EDR 우회 기법
+
+---
+
+## 22. 패스워드 크래킹
+
+```
+22_Password_Cracking/
+├── 01_Hash_Types_and_Wordlists.md      ← 해시 알고리즘 비교, hashid, CeWL/Crunch/CUPP, Python 크래커
+├── 02_Hashcat_and_John.md              ← 전체 공격 모드, 해시 타입별 모드 번호, 규칙 작성, 실전 워크플로우
+└── 03_Advanced_Cracking_Techniques.md  ← 레인보우 테이블, PRINCE, 마스크 고급, 패스워드 스프레이 도구
+```
+
+**핵심 내용:** NTLM/WPA/ZIP/PDF 크래킹 전략, GPU 최적화, 레이트 리밋 우회 패스워드 스프레이 자동화
 
 ---
 
