@@ -7,6 +7,8 @@
 | [01_ai_security_landscape_2026.md](./01_ai_security_landscape_2026.md) | Mythos, GPT-5.4-Cyber, Project Glasswing — AI 보안 생태계 전체 지형도 |
 | [02_llm_vulnerability_research.md](./02_llm_vulnerability_research.md) | LLM으로 제로데이 발견, 코드 취약점 분석, AI 퍼징 |
 | [03_ai_assisted_pentesting.md](./03_ai_assisted_pentesting.md) | AI를 활용한 침투 테스트 워크플로우, 프롬프트 엔지니어링, 실전 활용 |
+| [04_ai_ctf_automation.md](./04_ai_ctf_automation.md) | AI 기반 CTF 자동화 — 웹/바이너리/포렌식/크립토 전 분야 |
+| [05_claude_gpt_cyber_integration.md](./05_claude_gpt_cyber_integration.md) | Claude + GPT-5.4-Cyber 통합 활용 — TAC 접근법, 이중 분석 파이프라인 |
 
 ## 학습 목표
 - 2026년 AI 보안 생태계와 주요 모델 이해
