@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-22-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-109%2B%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-65%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-26-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-125%2B%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-80%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -64,6 +64,10 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 20 | [**셸 스크립팅**](#20-셸-스크립팅) | Bash 기초, 침투 자동화, 사후 익스플로잇 | 3 |
 | 21 | [**Windows 익스플로잇**](#21-windows-익스플로잇) | Windows 내부 구조, 권한 상승, 방어 우회 | 3 |
 | 22 | [**패스워드 크래킹**](#22-패스워드-크래킹) | 해시 종류/워드리스트, Hashcat/John, 고급 기법 | 3 |
+| 23 | [**Database Hacking**](#23-database-hacking) | Oracle/MySQL 공격, DB 권한 상승, 포렌식·감사 | 3 |
+| 24 | [**네트워크 인프라 보안**](#24-네트워크-인프라-보안) | DNS 공격, 메일 서버(SPF/DKIM/DMARC), SSH 터널링 | 3 |
+| 25 | [**위협 인텔리전스**](#25-위협-인텔리전스) | CTI 기초, OSINT/Shodan, 인시던트 대응, 허니팟 | 3 |
+| 26 | [**Linux Hardening**](#26-linux-hardening) | iptables/nftables, PAM 인증, KISA 취약점 평가 | 3 |
 
 ---
 
