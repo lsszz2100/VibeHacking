@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-26-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-125%2B%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-80%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-30-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-137%2B%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-95%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -68,6 +68,10 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 24 | [**네트워크 인프라 보안**](#24-네트워크-인프라-보안) | DNS 공격, 메일 서버(SPF/DKIM/DMARC), SSH 터널링 | 3 |
 | 25 | [**위협 인텔리전스**](#25-위협-인텔리전스) | CTI 기초, OSINT/Shodan, 인시던트 대응, 허니팟 | 3 |
 | 26 | [**Linux Hardening**](#26-linux-hardening) | iptables/nftables, PAM 인증, KISA 취약점 평가 | 3 |
+| 27 | [**IoT 해킹**](#27-iot-해킹) | 공격 면 분석, 펌웨어 분석, IoT 익스플로잇 | 3 |
+| 28 | [**모바일 해킹**](#28-모바일-해킹) | Android 펜테스팅, iOS 펜테스팅, 모바일 트래픽 분석 | 3 |
+| 29 | [**컨테이너/쿠버네티스 보안**](#29-컨테이너쿠버네티스-보안) | Docker 보안, Kubernetes 공격, 컨테이너 탈출 | 3 |
+| 30 | [**취약점 연구**](#30-취약점-연구) | 퍼징 기법, 취약점 분석, 고급 익스플로잇 개발 | 3 |
 
 ---
 
@@ -400,6 +404,58 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 ```
 
 **핵심 내용:** NTLM/WPA/ZIP/PDF 크래킹 전략, GPU 최적화, 레이트 리밋 우회 패스워드 스프레이 자동화
+
+---
+
+## 27. IoT 해킹
+
+```
+27_IoT_Hacking/
+├── 01_iot_attack_surface.md    ← IoT 공격 면 분석, OWASP IoT Top 10, Shodan/Censys 스캐닝
+├── 02_firmware_analysis.md     ← 펌웨어 추출·분석, binwalk/Ghidra, 하드코딩 취약점 탐지
+└── 03_iot_exploitation.md      ← UART/JTAG 접근, 임베디드 익스플로잇, 실전 공격 시나리오
+```
+
+**핵심 내용:** OWASP IoT Top 10 기반 공격 면 분석, 펌웨어 역공학(binwalk·Ghidra), UART/JTAG 하드웨어 해킹, IoT 장비 실전 침투
+
+---
+
+## 28. 모바일 해킹
+
+```
+28_Mobile_Hacking/
+├── 01_android_pentesting.md        ← APK 분석, ADB 루팅, Frida 동적 계측, SSL Pinning 우회
+├── 02_ios_pentesting.md            ← IPA 추출, Objective-C/Swift 리버싱, Jailbreak 탐지 우회
+└── 03_mobile_traffic_analysis.md   ← Burp Suite 모바일 프록시, 인증서 고정 우회, API 퍼징
+```
+
+**핵심 내용:** Android/iOS 완전 분석 파이프라인, Frida 기반 런타임 계측, 모바일 트래픽 중간자 공격, SSL Pinning 우회 기법
+
+---
+
+## 29. 컨테이너/쿠버네티스 보안
+
+```
+29_Container_Kubernetes_Security/
+├── 01_docker_security.md      ← Docker 보안 설정, 컨테이너 탈출 기법, 이미지 취약점 스캐닝
+├── 02_kubernetes_attack.md    ← RBAC 권한 상승, etcd 탈취, Kubernetes 공격 벡터 완전 분석
+└── 03_container_escape.md     ← cgroup/namespace 탈출, runc 취약점, 실전 컨테이너 탈출 PoC
+```
+
+**핵심 내용:** Docker/Kubernetes 공격·방어 전략, RBAC 권한 상승, 컨테이너 탈출 기법, Trivy·Falco 기반 런타임 보안
+
+---
+
+## 30. 취약점 연구
+
+```
+30_Vulnerability_Research/
+├── 01_fuzzing_techniques.md            ← AFL++/libFuzzer/Boofuzz, 커버리지 기반 퍼징, 네트워크 퍼징
+├── 02_vulnerability_analysis.md        ← CVSS 분석, CWE 분류, 정적/동적 분석, 소스 코드 감사
+└── 03_exploit_development_advanced.md  ← 고급 힙 익스플로잇, 브라우저 익스플로잇, 커널 취약점 개발
+```
+
+**핵심 내용:** AFL++/libFuzzer 기반 자동화 취약점 탐지, CVSS·CWE 체계적 분석, 고급 힙/브라우저/커널 익스플로잇 개발
 
 ---
 
