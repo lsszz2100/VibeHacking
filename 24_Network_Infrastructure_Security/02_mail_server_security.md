@@ -47,6 +47,8 @@ v=spf1 ip4:203.0.113.0/24 include:_spf.google.com -all
 
 ### 2-2. SPF 조회 및 분석
 
+SPF(Sender Policy Framework) 레코드를 조회하고 분석합니다. 허용된 발신 IP 목록을 확인하고 설정 오류나 너무 허용적인 정책을 탐지합니다.
+
 ```bash
 # SPF 레코드 확인
 dig TXT example.com | grep spf
@@ -79,6 +81,8 @@ dig TXT example.com
 ## 3. DKIM 설정 및 검증
 
 ### 3-1. DKIM 키 생성 및 DNS 게시
+
+OpenDKIM으로 DKIM 서명 키 쌍을 생성하고 공개키를 DNS에 게시합니다. 이메일 발신자 인증으로 스푸핑 공격을 방지합니다.
 
 ```bash
 # OpenDKIM으로 키 생성
@@ -124,6 +128,8 @@ systemctl restart opendkim postfix
 
 ## 4. DMARC 설정
 
+DMARC(Domain-based Message Authentication) 레코드를 설정합니다. SPF/DKIM 인증 실패 시 메일을 거부(reject)하거나 격리(quarantine)하는 정책을 정의합니다.
+
 ```bash
 # DMARC 레코드 구조
 # _dmarc.example.com IN TXT "v=DMARC1; p=reject; rua=mailto:dmarc@example.com; ruf=mailto:dmarc@example.com; pct=100"
@@ -148,6 +154,9 @@ dig TXT _dmarc.example.com
 
 ### 5-1. SMTP 오픈 릴레이 탐지
 
+
+오픈 릴레이(Open Relay)는 인증 없이 외부→외부 메일 전송을 허용하는 잘못된 메일 서버 설정입니다. 스팸 발송에 악용되며, Postfix에서 `smtpd_recipient_restrictions`을 올바르게 설정하여 차단합니다.
+
 ```bash
 # nmap으로 SMTP 릴레이 탐지
 nmap -p 25 --script smtp-open-relay <target>
@@ -167,6 +176,8 @@ QUIT
 
 ### 5-2. SMTP 사용자 열거 (VRFY/EXPN)
 
+SMTP VRFY/EXPN 명령으로 서버에 등록된 사용자 계정을 열거합니다. 스피어 피싱이나 브루트포스 공격의 사전 정찰 단계에 사용합니다.
+
 ```bash
 # VRFY 명령으로 사용자 존재 확인
 nmap -p 25 --script smtp-enum-users \
@@ -184,6 +195,8 @@ smtp-user-enum -M VRFY -U /usr/share/wordlists/users.txt -t <target>
 ```
 
 ### 5-3. 이메일 헤더 위조 (스푸핑)
+
+Python smtplib으로 발신자 주소를 위조한 이메일을 전송합니다. SPF/DKIM/DMARC가 없거나 잘못 설정된 서버에서 스푸핑이 가능합니다.
 
 ```python
 import smtplib
@@ -229,6 +242,8 @@ if __name__ == "__main__":
 
 ### 5-4. qmail 보안 설정 (레거시 서버)
 
+레거시 qmail 서버의 SPF 패치 적용 여부를 확인합니다. 구버전 메일 서버는 최신 이메일 보안 표준을 지원하지 않는 경우가 많습니다.
+
 ```bash
 # qmail SPF 패치 확인
 qmail --version | grep spf
@@ -248,6 +263,8 @@ echo "외부@anotherdomain.com" | /var/qmail/bin/qmail-inject
 ---
 
 ## 6. 메일 서버 보안 점검 자동화
+
+메일 서버 보안 설정(SPF, DKIM, DMARC)을 자동으로 점검합니다. DNS 레코드를 조회하여 각 보안 메커니즘의 설정 상태를 확인합니다.
 
 ```python
 import dns.resolver

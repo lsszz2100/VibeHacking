@@ -3,6 +3,9 @@
 ## 1. 메모리 구조 기초
 
 ### 프로세스 메모리 레이아웃
+
+프로세스 메모리는 코드·데이터·힙·스택 영역으로 분리되어 있습니다. 버퍼 오버플로우 공격은 스택 영역에서 할당된 버퍼 크기를 초과하여 리턴 주소(Return Address)를 덮어쓰는 원리로 동작합니다.
+
 ```
 High Address
 ┌─────────────────────────┐
@@ -24,6 +27,9 @@ Low Address
 ```
 
 ### 스택(Stack) 구조
+
+스택은 높은 주소에서 낮은 주소 방향으로 성장하며, ESP가 현재 스택 최상단을 가리킵니다. 함수 호출 시 리턴 주소와 지역 변수가 이 영역에 쌓이므로, 버퍼 오버플로우로 리턴 주소를 조작하면 실행 흐름을 바꿀 수 있습니다.
+
 ```
 IA-32 (32비트) 스택:
 - 높은 주소에서 낮은 주소 방향으로 성장
@@ -51,6 +57,9 @@ IA-32 (32비트) 스택:
 ## 2. Buffer Overflow 원리
 
 ### 취약한 코드 예시
+
+크기 검사 없이 사용자 입력을 버퍼에 복사하는 `strcpy()`, `gets()` 등의 함수가 버퍼 오버플로우의 주요 원인입니다. 아래 코드는 64바이트 버퍼에 임의 크기의 입력을 받아 스택을 오염시킬 수 있는 취약한 예시입니다.
+
 ```c
 #include <stdio.h>
 #include <string.h>
@@ -91,6 +100,9 @@ int main(int argc, char *argv[]) {
 ## 3. gets() 함수 취약점
 
 ### gets() vs fgets() 비교
+
+gets() 함수는 입력 길이를 제한하지 않아 버퍼 오버플로우에 취약합니다. 반드시 fgets()나 입력 길이를 검증하는 함수로 대체해야 합니다.
+
 ```c
 // 위험: gets()는 입력 길이 제한 없음
 char buf[64];
@@ -148,6 +160,9 @@ payload += struct.pack('<I', 0xbfff1234)  # Return Address 덮기
 ## 5. 메모리 Hexdump 분석
 
 ### gdb로 메모리 확인
+
+GDB(GNU Debugger)는 리눅스 환경에서 버퍼 오버플로우를 분석하고 검증하는 핵심 도구입니다. PEDA 또는 pwndbg 플러그인을 함께 사용하면 레지스터·스택·힙 상태를 컬러로 시각화하여 분석이 훨씬 편리해집니다.
+
 ```bash
 # 컴파일 (보호 기법 비활성화)
 gcc -o vuln vuln.c -fno-stack-protector -z execstack -no-pie
@@ -204,6 +219,9 @@ gdb ./vuln
 ```
 
 ### Cyclic 패턴으로 오프셋 계산
+
+pwntools의 cyclic 패턴으로 EIP까지의 오프셋을 정확하게 계산합니다. 패턴을 입력 후 충돌 시 EIP 값으로 정확한 덮어쓰기 오프셋을 구합니다.
+
 ```python
 from pwn import *
 
@@ -233,6 +251,9 @@ def measure_offset(binary: str, pattern_size: int = 300, timeout: int = 5) -> in
 ```
 
 ### 셸코드 (Linux x86)
+
+execve("/bin/sh") 셸코드를 익스플로잇 페이로드에 삽입합니다. null 바이트가 없는 23바이트 셸코드로 /bin/sh를 실행합니다.
+
 ```python
 # execve("/bin/sh", 0, 0) 셸코드 (23바이트)
 shellcode = (
@@ -251,6 +272,9 @@ shellcode = (
 ```
 
 ### 완성된 익스플로잇 (NOP Sled + Shellcode)
+
+
+EIP를 제어한 후에는 실제 실행할 셸코드를 버퍼에 삽입해야 합니다. 셸코드는 보통 `/bin/sh` 실행이나 리버스 셸 연결을 수행하는 소형 기계어 코드이며, `msfvenom`으로 다양한 플랫폼과 페이로드를 생성할 수 있습니다.
 
 ```python
 #!/usr/bin/env python3
@@ -442,6 +466,9 @@ if __name__ == "__main__":
 ## 7. setUID 비트를 이용한 권한 상승
 
 ### setUID 개념
+
+setUID 비트가 설정된 파일은 실행 시 파일 소유자 권한으로 동작합니다. root 소유의 setUID 프로그램이 취약하면 권한 상승에 악용됩니다.
+
 ```bash
 # setUID: 파일 실행 시 소유자(보통 root) 권한으로 실행
 ls -la /usr/bin/passwd
@@ -453,6 +480,9 @@ find / -perm -4000 -type f 2>/dev/null
 ```
 
 ### setUID 취약 프로그램 공격 예시
+
+버퍼 오버플로우 취약점이 있는 setUID 프로그램 예시입니다. 이 프로그램을 익스플로잇하면 root 권한의 셸을 획득할 수 있습니다.
+
 ```c
 // 취약한 setUID 프로그램 (./vuln_suid)
 // 소유자: root, setUID 설정됨
@@ -497,6 +527,9 @@ print(repr(payload))
 ## 8. 보호 기법
 
 ### ASLR (Address Space Layout Randomization)
+
+ASLR(주소 공간 배치 난수화) 상태를 확인합니다. ASLR이 활성화되면 스택, 힙, 라이브러리의 주소가 매 실행마다 변경되어 익스플로잇이 어려워집니다.
+
 ```bash
 # ASLR 상태 확인
 cat /proc/sys/kernel/randomize_va_space
@@ -514,6 +547,9 @@ echo 0 > /proc/sys/kernel/randomize_va_space
 ```
 
 ### Stack Canary
+
+스택 카나리(Canary)는 버퍼 오버플로우를 탐지하는 보호 기법입니다. 함수 리턴 전에 카나리 값이 변경되면 스택 스매싱 오류를 발생시킵니다.
+
 ```bash
 # GCC 컴파일 시 기본 활성화
 gcc -fstack-protector-all vuln.c -o vuln  # 활성화
@@ -524,6 +560,9 @@ gcc -fno-stack-protector vuln.c -o vuln   # 비활성화 (실습용)
 ```
 
 ### DEP/NX (Data Execution Prevention / No-Execute)
+
+DEP/NX는 스택과 힙 메모리에서 코드 실행을 차단합니다. 이 보호를 우회하려면 ROP(Return Oriented Programming) 기법이 필요합니다.
+
 ```bash
 # 스택 실행 불가 설정 (기본값)
 gcc -z noexecstack vuln.c  # NX 활성화
@@ -534,6 +573,9 @@ gcc -z execstack vuln.c    # NX 비활성화 (실습용)
 ```
 
 ### PIE (Position Independent Executable)
+
+PIE(위치 독립 실행 파일)는 ASLR과 결합하여 바이너리 자체도 랜덤 주소에 로드합니다. PIE가 활성화되면 코드 베이스 주소를 먼저 리크해야 합니다.
+
 ```bash
 # ASLR + PIE 조합 시 바이너리 자체도 랜덤 주소에 로드
 gcc -pie -fPIE vuln.c  # PIE 활성화
@@ -565,6 +607,9 @@ print "m3u File Created Successfully\n";
 
 ### 9-2. EIP 오프셋 계산 (Metasploit Pattern)
 
+
+Metasploit Framework는 취약점 익스플로잇 자동화 플랫폼입니다. `search`로 취약점에 맞는 모듈을 찾고, `use`로 선택 후 `set RHOSTS`, `set PAYLOAD`로 대상과 페이로드를 지정하여 공격을 실행합니다.
+
 ```bash
 # Metasploit pattern_create로 고유 패턴 생성
 ./pattern_create.rb 5000
@@ -584,6 +629,9 @@ print(offset)  # 1072
 ```
 
 ### 9-3. EIP 제어 확인
+
+
+퍼저로 충돌 발생 지점을 찾은 뒤 MSF 패턴으로 정확한 오프셋을 계산합니다. `msf-pattern_create`로 고유 패턴을 생성해 전송하고, 충돌 후 EIP 값을 `msf-pattern_offset`으로 분석하면 EIP까지의 정확한 바이트 오프셋을 구할 수 있습니다.
 
 ```perl
 # 오프셋 확인 스크립트
@@ -612,12 +660,16 @@ findjmp MSRMCcodec02.dll esp
 # → 0x01BBF23A  jmp esp  (null 바이트 없는 주소 선택)
 ```
 
+JMP ESP 주소를 EIP에 덮어써서 스택 위의 셸코드로 실행 흐름을 전환합니다. 모듈 중 null 바이트가 없는 주소를 선택합니다.
+
 ```perl
 # JMP ESP 주소로 EIP 덮어쓰기
 my $eip = pack('V', 0x01bbf23a);  # little-endian 패킹
 ```
 
 ### 9-5. NOP Sled + 셸코드 삽입
+
+NOP Sled는 셸코드 앞에 배치하는 NOP(0x90) 명령어 배열입니다. 주소가 정확하지 않아도 NOP를 타고 셸코드까지 도달하여 안정성을 높입니다.
 
 ```perl
 # 최종 익스플로잇 구조
@@ -637,6 +689,8 @@ close($FILE);
 ```
 
 ### 9-6. msfvenom으로 셸코드 생성
+
+msfvenom으로 Windows용 셸코드를 생성합니다. 인코더로 null 바이트를 제거하고 AV 탐지를 우회하는 옵션을 사용할 수 있습니다.
 
 ```bash
 # Windows x86 계산기 실행 셸코드
@@ -668,6 +722,8 @@ findjmp kernel32.dll esp
 # 0x7C86467B  jmp esp
 ```
 
+JMP ESP 주소를 EIP에 덮어써서 스택 위의 셸코드로 실행 흐름을 전환합니다. 모듈 중 null 바이트가 없는 주소를 선택합니다.
+
 ```perl
 my $eip = pack('V', 0x7c8369f0);  # CALL ESP 주소
 my $extra = "XXXX";                # ESP가 셸코드 시작을 가리키도록 4바이트 추가
@@ -688,6 +744,8 @@ POP 기계어:
 pop/pop/ret 기계어: 58 5d c3 (또는 다른 레지스터 조합)
 ```
 
+POP/POP/RET은 SEH(구조화 예외 처리) 기반 익스플로잇에서 사용됩니다. 두 번의 POP으로 예외 핸들러 포인터를 적재하고 RET으로 점프합니다.
+
 ```perl
 # pop/pop/ret 주소로 EIP 덮어쓰기
 # ESP+8에 JMP ESP 주소를, 그 뒤에 셸코드 배치
@@ -700,6 +758,8 @@ my $jmpesp = pack('V', 0x01bbf23a); # JMP ESP 주소 (ESP+8 위치에)
 
 ### 10-3. PUSH ESP + RET
 
+'push esp; ret' 가젯은 ESP 값을 스택에 저장하고 그 주소로 점프합니다. 셸코드가 ESP 이하에 위치할 때 사용하는 기법입니다.
+
 ```bash
 # 'push esp; ret' 기계어: 54 c3
 # DLL에서 검색
@@ -707,11 +767,15 @@ findjmp MSRMCcodec00.dll esp
 # → 0x019557F6  push esp / ret
 ```
 
+'push esp; ret' 가젯 주소로 EIP를 덮어쓴 최종 익스플로잇입니다. 셸코드 위치를 정확히 파악한 후 적용합니다.
+
 ```perl
 my $eip = pack('V', 0x019557f6);  # push esp / ret 주소
 ```
 
 ### 10-4. JMP [ESP+offset]
+
+JMP [ESP+offset]은 ESP에 상수 오프셋을 더한 주소로 점프하는 가젯입니다. 셸코드 위치가 ESP에서 일정 거리 떨어진 경우에 사용합니다.
 
 ```bash
 # JMP [ESP+8] 기계어: ff 64 24 08
@@ -786,6 +850,8 @@ main()
 | unsigned char | 1바이트 | 0 | 255 |
 | unsigned short int | 2바이트 | 0 | 65535 |
 | unsigned int | 4바이트 | 0 | 4294967295 (= 2^32-1) |
+
+C 언어의 배열 버퍼 선언과 사용법 예시입니다. 입력 크기를 검증하지 않으면 버퍼 오버플로우 취약점이 발생합니다.
 
 ```c
 // 배열 변수로 버퍼 선언 (ex3.c ~ ex5.c)
@@ -1218,6 +1284,8 @@ $ chmod ug+s 파일명  # SetUID + SetGID 동시 설정
 | 31337 (0x7A69) | `\x69\x7a` |
 
 ### 실습 명령어 정리
+
+버퍼 오버플로우 실습을 위한 컴파일 및 디버깅 명령어 모음입니다. -fno-stack-protector와 -z execstack 옵션으로 보호 기법을 비활성화합니다.
 
 ```bash
 # 프로그램 컴파일

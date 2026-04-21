@@ -82,6 +82,9 @@ tcpdump -i eth0 -w capture-%Y%m%d-%H%M%S.pcap -C 100 -G 3600
 ```
 
 ### 출력 형식 옵션
+
+tcpdump는 리눅스 CLI 기반의 패킷 캡처 도구입니다. BPF(Berkeley Packet Filter) 문법으로 캡처 조건을 세밀하게 지정할 수 있으며, `-w`로 pcap 파일에 저장 후 Wireshark로 분석하는 방식도 자주 사용됩니다.
+
 ```bash
 tcpdump -i eth0 -n      # IP 주소를 숫자로 표시 (DNS 조회 안 함)
 tcpdump -i eth0 -nn     # IP와 포트 모두 숫자로
@@ -101,6 +104,9 @@ tcpdump -i eth0 -c 100  # 100개 패킷 캡처 후 종료
 ### 주요 디스플레이 필터
 
 #### 기본 필터
+
+Wireshark 디스플레이 필터는 캡처된 패킷 중 원하는 조건의 패킷만 보여주는 표현식입니다. `&&`(AND), `||`(OR), `!`(NOT) 논리 연산자로 여러 조건을 조합하여 특정 통신 세션을 빠르게 추적할 수 있습니다.
+
 ```
 ip.addr == 192.168.1.100      # 특정 IP
 ip.src == 192.168.1.100       # 출발지 IP
@@ -165,6 +171,9 @@ Statistics → HTTP → Requests       # HTTP 요청 목록
 ## 4. 패킷 캡처로 알 수 있는 것들
 
 ### FTP 크리덴셜 추출
+
+FTP는 평문으로 자격증명을 전송하므로 패킷 캡처만으로 사용자명과 패스워드를 획득할 수 있습니다. 스위치 환경에서는 ARP 스푸핑으로 트래픽을 가로채거나 SPAN 포트 미러링을 이용해야 합니다.
+
 ```bash
 # tcpdump로 FTP 크리덴셜 캡처
 tcpdump -i eth0 -A 'tcp port 21'
@@ -178,6 +187,9 @@ ftp contains "USER" or ftp contains "PASS"
 ```
 
 ### HTTP 기본 인증 크리덴셜
+
+HTTP Basic 인증은 자격증명을 Base64로 인코딩하여 전송합니다. Base64는 암호화가 아니므로 패킷을 캡처하면 즉시 디코딩하여 원본 계정 정보를 획득할 수 있습니다.
+
 ```bash
 # HTTP Authorization 헤더 캡처
 tcpdump -i eth0 -A 'tcp port 80' | grep -i "authorization:"
@@ -439,6 +451,9 @@ tshark 자동 추출:
 ## 7. SSH 터널링 & 포트 포워딩
 
 ### 로컬 포트 포워딩
+
+SSH 포트 포워딩은 방화벽과 NAT를 우회하여 원격 서버를 통해 내부 서비스에 접근하는 기법입니다. `-L`(로컬), `-R`(리버스), `-D`(SOCKS 프록시) 세 가지 방식이 있으며, 침투 테스트에서 내부망 피버팅에 핵심적으로 활용됩니다.
+
 ```bash
 # 로컬 8080 → 서버의 80포트 (방화벽 우회)
 ssh -L 8080:localhost:80 user@server.com
@@ -450,6 +465,9 @@ ssh -L 3389:internal.host:3389 user@jumphost.com
 ```
 
 ### 리버스 포트 포워딩 (방화벽 우회)
+
+SSH 포트 포워딩은 방화벽과 NAT를 우회하여 원격 서버를 통해 내부 서비스에 접근하는 기법입니다. `-L`(로컬), `-R`(리버스), `-D`(SOCKS 프록시) 세 가지 방식이 있으며, 침투 테스트에서 내부망 피버팅에 핵심적으로 활용됩니다.
+
 ```bash
 # 서버의 2222 → 로컬 22 (NAT 뒤에 있는 서버에 접근)
 ssh -R 2222:localhost:22 user@public.server.com
@@ -459,6 +477,9 @@ ssh -p 2222 localhost
 ```
 
 ### SOCKS 프록시 (동적 포트 포워딩)
+
+SSH 포트 포워딩은 방화벽과 NAT를 우회하여 원격 서버를 통해 내부 서비스에 접근하는 기법입니다. `-L`(로컬), `-R`(리버스), `-D`(SOCKS 프록시) 세 가지 방식이 있으며, 침투 테스트에서 내부망 피버팅에 핵심적으로 활용됩니다.
+
 ```bash
 # SSH를 통한 SOCKS5 프록시 생성
 ssh -D 1080 user@server.com
@@ -516,6 +537,9 @@ icmp.type == 11                  # Time Exceeded (TTL 만료)
 ```
 
 ### tshark 자동화 분석
+
+tshark는 Wireshark의 CLI 버전으로, 스크립트와 파이프라인에서 패킷 분석을 자동화할 때 사용합니다. `-T fields -e` 옵션으로 특정 필드만 추출하여 자동화된 침입 탐지나 증거 수집에 활용할 수 있습니다.
+
 ```bash
 # 특정 필드만 추출
 tshark -r capture.pcap -T fields -e ip.src -e ip.dst -e tcp.port
@@ -678,6 +702,9 @@ if __name__ == "__main__":
 ```
 
 ### pcap 파일 조작 도구
+
+editcap, mergecap, capinfos 등은 Wireshark 패키지에 포함된 pcap 파일 조작 도구입니다. 대용량 pcap을 분할하거나 시간 범위로 필터링하고, 여러 파일을 하나로 합쳐 분석할 때 사용합니다.
+
 ```bash
 # editcap — pcap 편집/분할
 editcap -c 1000 large.pcap split.pcap      # 1000 패킷씩 분할

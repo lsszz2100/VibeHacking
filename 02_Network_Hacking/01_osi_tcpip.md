@@ -2,6 +2,9 @@
 
 ## 1. OSI 7계층 모델
 
+
+OSI 7계층 모델은 네트워크 통신을 7단계로 분류한 개념 모델입니다. 각 계층별로 사용하는 프로토콜과 주요 공격 기법이 다르므로, 해킹 기법을 학습할 때 어느 계층에서 작동하는지 이해하는 것이 중요합니다.
+
 ```
 ┌─────────────────────────────────────────────┐
 │  7. 응용 계층  (Application)   HTTP, FTP, SMTP │
@@ -28,6 +31,9 @@
 
 ## 2. TCP/IP 4계층 모델
 
+
+OSI 7계층 모델은 네트워크 통신을 7단계로 분류한 개념 모델입니다. 각 계층별로 사용하는 프로토콜과 주요 공격 기법이 다르므로, 해킹 기법을 학습할 때 어느 계층에서 작동하는지 이해하는 것이 중요합니다.
+
 ```
 ┌────────────────────────────────────────────┐
 │  4. 응용 계층  HTTP, FTP, SMTP, DNS         │
@@ -40,6 +46,9 @@
 ---
 
 ## 3. TCP 3-Way Handshake (핵심 개념)
+
+
+TCP 3-Way Handshake는 TCP 연결 수립 시 사용하는 3단계 절차입니다. SYN→SYN+ACK→ACK 순서로 진행되며, 이 과정의 취약점을 이용한 SYN Flood 공격이나 세션 하이재킹 공격을 이해하는 기초가 됩니다.
 
 ```
 Client                    Server
@@ -65,6 +74,9 @@ Client                    Server
 | URG | Urgent | 긴급 데이터 |
 
 ### TCP 4-Way Disconnect
+
+TCP 4-Way Disconnect는 TCP 연결을 정상적으로 종료하는 4단계 절차입니다. FIN→ACK→FIN→ACK 과정으로 양측이 합의하여 연결을 끊으며, FIN 스캔 등의 스텔스 포트 스캔 기법도 이 원리를 이용합니다.
+
 ```
 Client                    Server
   │                          │
@@ -88,6 +100,9 @@ Client                    Server
 | E | 240.0.0.0 ~ 255.255.255.255 | - | 연구용 |
 
 ### 사설 IP 대역 (Private IP)
+
+사설 IP 주소는 인터넷에서 라우팅되지 않는 내부 네트워크 전용 대역입니다. 침투 테스트 시 내부망 스캔 대상 IP 범위를 파악하거나, NAT 환경에서 실제 내부 IP를 추측하는 데 필요한 지식입니다.
+
 ```
 10.0.0.0    ~ 10.255.255.255  (클래스 A)
 172.16.0.0  ~ 172.31.255.255  (클래스 B)
@@ -95,6 +110,9 @@ Client                    Server
 ```
 
 ### 서브넷 마스크 계산
+
+서브넷 마스크 계산은 IP 주소에서 네트워크 주소, 브로드캐스트 주소, 사용 가능한 호스트 범위를 구하는 방법입니다. 내부망 구조 파악 및 스캔 범위 설정 시 반드시 필요한 기초 계산입니다.
+
 ```
 예시: 192.168.1.0/24
 
@@ -168,6 +186,8 @@ ARP 스푸핑 후:
                             (모든 트래픽 도청 가능)
 ```
 
+ARP 스푸핑 공격을 실행하는 명령어입니다. 공격자가 게이트웨이와 피해자 사이에서 트래픽을 가로채는 중간자(MITM) 공격을 수행합니다.
+
 ```bash
 # ARP 스푸핑 실행 (ettercap)
 ettercap -T -M arp:remote /192.168.1.1// /192.168.1.100//
@@ -179,6 +199,8 @@ arpspoof -i eth0 -t 192.168.1.1 192.168.1.100  # 게이트웨이에게 ARP 조�
 ```
 
 ### ARP 스푸핑 탐지기 (Python — Scapy 기반)
+
+Scapy 라이브러리로 ARP 패킷을 모니터링하여 ARP 스푸핑 공격을 실시간으로 탐지하는 Python 스크립트입니다.
 
 ```python
 #!/usr/bin/env python3
@@ -329,6 +351,9 @@ if __name__ == "__main__":
 | SOA | 존 권한 정보 | 시작 권한 레코드 |
 
 ### DNS 열거 (Zone Transfer 취약점)
+
+DNS Zone Transfer(AXFR)는 DNS 슬레이브 서버가 마스터로부터 전체 존 데이터를 복제하는 프로토콜입니다. 서버 설정이 잘못되어 있으면 누구나 모든 서브도메인과 내부 IP를 한 번에 덤프할 수 있어 정보 수집에 매우 유용합니다.
+
 ```bash
 # Zone Transfer 시도 (취약한 설정에서 전체 레코드 덤프)
 dig @ns1.example.com example.com AXFR
@@ -342,6 +367,9 @@ gobuster dns -d example.com -w /usr/share/seclists/Discovery/DNS/subdomains-top1
 ```
 
 ### Zone Transfer 방어 설정 (BIND)
+
+DNS Zone Transfer(AXFR)는 DNS 슬레이브 서버가 마스터로부터 전체 존 데이터를 복제하는 프로토콜입니다. 서버 설정이 잘못되어 있으면 누구나 모든 서브도메인과 내부 IP를 한 번에 덤프할 수 있어 정보 수집에 매우 유용합니다.
+
 ```
 // named.conf
 zone "example.com" {
@@ -371,6 +399,9 @@ zone "example.com" {
 | 메트릭 | 비용 (Cost) | 복합 메트릭 |
 
 ### Cisco 라우터 기본 설정
+
+Cisco IOS 라우터의 초기 설정 흐름입니다. `enable`로 특권 모드 진입 후 `configure terminal`로 설정 모드로 전환하며, 패스워드 암호화와 배너 메시지 설정은 기본 보안 강화 사항입니다.
+
 ```
 Router> enable
 Router# configure terminal
@@ -471,6 +502,9 @@ Router(config-router)# network 192.168.1.0 0.0.0.255 area 0
 ## 10. EIGRP 및 OSPF 상세 설정
 
 ### EIGRP 설정
+
+EIGRP는 Cisco 독점 하이브리드 라우팅 프로토콜입니다. AS(자율 시스템) 번호를 지정하고 `network` 명령으로 광고할 네트워크를 선언합니다. `no auto-summary`는 서브넷 분리 환경에서 필수로 설정해야 합니다.
+
 ```
 Router(config)# router eigrp 100           # AS 번호 100
 Router(config-router)# network 192.168.1.0
@@ -489,6 +523,9 @@ Router# show ip route eigrp               # EIGRP 라우팅 경로
 ```
 
 ### OSPF 상세 설정
+
+OSPF는 링크 상태 기반의 개방형 표준 라우팅 프로토콜입니다. `router-id`를 수동 설정하면 DR/BDR 선출에서 예측 가능한 동작을 보장하며, Hello/Dead 타이머 조정으로 수렴 시간을 단축할 수 있습니다.
+
 ```
 Router(config)# router ospf 1
 Router(config-router)# router-id 1.1.1.1  # 라우터 ID 수동 설정
@@ -514,6 +551,9 @@ Router# debug ip ospf events            # 실시간 이벤트 디버그
 ## 11. Access Control List (ACL) — 트래픽 제어
 
 ### Standard ACL (표준, 출발지 IP만 제어)
+
+Cisco Standard ACL은 출발지 IP 주소만으로 트래픽을 허용/거부하는 기본적인 접근 제어 목록입니다. 번호 1-99(또는 1300-1999)를 사용하며, 목적지에 가까운 인터페이스에 적용하는 것이 원칙입니다.
+
 ```
 # Standard ACL 생성 (번호 1-99, 1300-1999)
 Router(config)# access-list 10 deny   192.168.1.100 0.0.0.0   # 특정 호스트 차단
@@ -530,6 +570,9 @@ Router(config-std-nacl)# permit any
 ```
 
 ### Extended ACL (확장, 출발지/목적지/프로토콜/포트 제어)
+
+Cisco Extended ACL은 출발지/목적지 IP, 프로토콜, 포트 번호까지 세밀하게 제어할 수 있는 확장 접근 제어 목록입니다. 번호 100-199를 사용하며, 출발지에 가까운 인터페이스에 적용하여 불필요한 트래픽을 조기에 차단합니다.
+
 ```
 # Extended ACL 생성 (번호 100-199, 2000-2699)
 # 형식: access-list <번호> <permit|deny> <프로토콜> <출발지> <목적지> [포트]
@@ -557,6 +600,9 @@ Router# show ip interface FastEthernet0/0  # 적용된 ACL 확인
 ```
 
 ### ACL 해킹 관점
+
+ACL 설정 오류는 공격자에게 우회 경로를 제공합니다. 규칙 순서가 잘못되거나 `permit any`가 너무 앞에 있으면 뒤의 `deny` 규칙이 무시됩니다. IP 스푸핑이나 DNS 포트 터널링으로 허용 규칙을 악용할 수 있습니다.
+
 ```
 취약점:
 1. implicit deny all 때문에 마지막에 permit any 누락 시 전체 차단
@@ -590,6 +636,9 @@ Router# show ip interface FastEthernet0/0  # 적용된 ACL 확인
 ```
 
 ### STP 공격 벡터
+
+STP 루트 하이재킹 공격은 공격자가 낮은 Bridge Priority를 브로드캐스트하여 Root Bridge로 선출되도록 유도하는 기법입니다. `Yersinia`로 BPDU를 조작하면 네트워크 전체 트래픽이 공격자 스위치를 경유하게 됩니다.
+
 ```
 # STP 루트 하이재킹 (BPDU 조작)
 공격자가 낮은 Bridge Priority로 Root Bridge 선출 유도
@@ -635,6 +684,9 @@ Switch# show interfaces trunk
 ```
 
 ### VLAN 공격 (VLAN Hopping)
+
+VLAN Hopping 공격은 서로 다른 VLAN 간의 격리를 우회하는 기법입니다. Switch Spoofing은 DTP를 악용하고, Double Tagging은 이중 VLAN 태그로 Native VLAN 경계를 넘습니다. Native VLAN을 사용하지 않는 전용 VLAN으로 설정하면 방어할 수 있습니다.
+
 ```
 공격 1: Switch Spoofing
 - 공격자 포트가 Trunk로 협상되도록 유도
@@ -692,6 +744,9 @@ options {
 ```
 
 #### TSIG (Transaction Signature) — 인증된 Zone Transfer
+
+DNS Zone Transfer(AXFR)는 DNS 슬레이브 서버가 마스터로부터 전체 존 데이터를 복제하는 프로토콜입니다. 서버 설정이 잘못되어 있으면 누구나 모든 서브도메인과 내부 IP를 한 번에 덤프할 수 있어 정보 수집에 매우 유용합니다.
+
 ```
 # TSIG 키 생성
 dnssec-keygen -a HMAC-MD5 -b 128 -n HOST transfer-key
@@ -752,6 +807,9 @@ echo "2" > /var/qmail/control/spfbehavior
 ```
 
 ### DNS 서버 설치 및 설정 (BIND)
+
+BIND DNS 서버를 설치하고 기본 설정을 구성합니다. 권위 있는(authoritative) DNS 서버를 직접 운영하거나 테스트 환경을 구축할 때 사용합니다.
+
 ```bash
 # BIND 설치
 apt-get install bind9 bind9utils
@@ -810,6 +868,9 @@ Router(config-router)# # Routing Protocol Mode
 ```
 
 ### 기본 초기 설정 흐름
+
+Cisco IOS 라우터의 초기 설정 흐름입니다. `enable`로 특권 모드 진입 후 `configure terminal`로 설정 모드로 전환하며, 패스워드 암호화와 배너 메시지 설정은 기본 보안 강화 사항입니다.
+
 ```
 Router> enable
 Router# configure terminal
@@ -951,6 +1012,9 @@ Switch# show vtp counters
 ```
 
 ### VTP 보안 취약점
+
+VTP(VLAN Trunking Protocol)는 편리하지만 Revision Number가 높은 스위치가 연결되면 기존 VLAN 설정이 덮어쓰여질 위험이 있습니다. 스위치를 Transparent 모드로 설정하거나 강력한 패스워드를 적용하여 이 공격을 방어합니다.
+
 ```
 위험: VTP Revision Number가 높은 스위치가 연결되면
       기존 VLAN 설정이 덮어쓰여질 수 있음 (VLAN 삭제 위험)
@@ -1001,6 +1065,9 @@ systemctl restart sshd
 ```
 
 ### SSH 키 기반 인증 설정
+
+SSH 키 기반 인증을 설정합니다. 비밀번호 대신 공개키/개인키 쌍을 사용하여 더 안전하게 원격 서버에 접속할 수 있습니다.
+
 ```bash
 # 클라이언트에서 키 생성
 ssh-keygen -t ed25519 -C "attacker@kali"        # Ed25519 (권장)
@@ -1017,6 +1084,9 @@ ssh -i ~/.ssh/id_ed25519 user@server
 ```
 
 ### SSH 포트 포워딩 심화
+
+SSH 포트 포워딩은 방화벽과 NAT를 우회하여 원격 서버를 통해 내부 서비스에 접근하는 기법입니다. `-L`(로컬), `-R`(리버스), `-D`(SOCKS 프록시) 세 가지 방식이 있으며, 침투 테스트에서 내부망 피버팅에 핵심적으로 활용됩니다.
+
 ```bash
 # 로컬 포트 포워딩 (-L)
 # 내 로컬 포트 → 원격 서버를 통해 → 목적지
@@ -1062,6 +1132,9 @@ Host jumphost
 ## 19. Zone Transfer 공격 실전 절차
 
 ### Zone Transfer 취약점 확인 절차
+
+DNS Zone Transfer(AXFR)는 DNS 슬레이브 서버가 마스터로부터 전체 존 데이터를 복제하는 프로토콜입니다. 서버 설정이 잘못되어 있으면 누구나 모든 서브도메인과 내부 IP를 한 번에 덤프할 수 있어 정보 수집에 매우 유용합니다.
+
 ```bash
 # Step 1: 도메인의 네임서버 확인
 whois target.com
@@ -1089,6 +1162,9 @@ nmap --script dns-zone-transfer -p 53 ns1.target.com
 ```
 
 ### Zone Transfer가 허용된 경우 정보 수집
+
+DNS Zone Transfer(AXFR)는 DNS 슬레이브 서버가 마스터로부터 전체 존 데이터를 복제하는 프로토콜입니다. 서버 설정이 잘못되어 있으면 누구나 모든 서브도메인과 내부 IP를 한 번에 덤프할 수 있어 정보 수집에 매우 유용합니다.
+
 ```bash
 # 수집 가능한 정보:
 # - 내부 서버 IP 대역
@@ -1106,6 +1182,9 @@ dig @ns1.target.com target.com AXFR | grep " A " | awk '{print $5}' | \
 ```
 
 ### Zone Transfer 방어 방법 우선순위
+
+DNS Zone Transfer(AXFR)는 DNS 슬레이브 서버가 마스터로부터 전체 존 데이터를 복제하는 프로토콜입니다. 서버 설정이 잘못되어 있으면 누구나 모든 서브도메인과 내부 IP를 한 번에 덤프할 수 있어 정보 수집에 매우 유용합니다.
+
 ```
 1순위: named.conf allow-transfer 설정
   zone "example.com" {
@@ -1129,6 +1208,9 @@ dig @ns1.target.com target.com AXFR | grep " A " | awk '{print $5}' | \
 ```
 
 ### Split DNS (내부/외부 분리)
+
+Split DNS는 내부와 외부 네트워크에 다른 DNS 응답을 제공하는 설정입니다. BIND의 view 기능으로 구현하며 내부 서버를 외부에서 숨길 수 있습니다.
+
 ```bash
 # named.conf — 뷰를 이용한 Split DNS
 view "internal" {

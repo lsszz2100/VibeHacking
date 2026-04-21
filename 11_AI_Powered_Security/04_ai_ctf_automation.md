@@ -2,6 +2,9 @@
 
 ## CTF 자동화의 핵심 개념
 
+
+CTF(Capture The Flag) 자동화 스크립트입니다. AI가 문제 유형을 분류하고 적합한 도구(pwntools, z3, requests 등)를 선택하여 풀이 코드를 자동 생성하거나 힌트를 제공합니다.
+
 ```
 CTF 자동화 구조:
 
@@ -32,6 +35,9 @@ CTF 자동화 구조:
 ## 1. 핵심 에이전트 아키텍처
 
 ### 1-1. 메인 오케스트레이터
+
+
+AI를 활용한 CTF 자동 풀이 스크립트입니다. 문제 설명을 분석하여 카테고리를 분류하고, 적절한 도구와 페이로드를 자동 선택하며, LLM API로 풀이 전략을 생성합니다.
 
 ```python
 import anthropic
@@ -315,6 +321,9 @@ if __name__ == "__main__":
 
 ### 2-1. 암호학 전문 에이전트
 
+
+AI를 활용한 CTF 자동 풀이 스크립트입니다. 문제 설명을 분석하여 카테고리를 분류하고, 적절한 도구와 페이로드를 자동 선택하며, LLM API로 풀이 전략을 생성합니다.
+
 ```python
 from anthropic import Anthropic
 import math
@@ -542,6 +551,9 @@ def crypto_agent(problem: str) -> str:
 
 ### 2-2. 웹 CTF 전문 에이전트
 
+
+CTF(Capture The Flag) 자동화 스크립트입니다. AI가 문제 유형을 분류하고 적합한 도구(pwntools, z3, requests 등)를 선택하여 풀이 코드를 자동 생성하거나 힌트를 제공합니다.
+
 ```python
 import requests
 from anthropic import Anthropic
@@ -719,6 +731,9 @@ def web_ctf_agent(problem: str, target_url: str) -> str:
 
 ### 3-1. 파일 분석 체인
 
+
+AI를 활용한 CTF 자동 풀이 스크립트입니다. 문제 설명을 분석하여 카테고리를 분류하고, 적절한 도구와 페이로드를 자동 선택하며, LLM API로 풀이 전략을 생성합니다.
+
 ```python
 import subprocess
 import re
@@ -848,6 +863,9 @@ ZIP 내용: {pipeline_result.get('zip_contents', '해당 없음')}
 
 ## 4. 리버싱 보조 에이전트
 
+
+AI를 활용한 CTF 자동 풀이 스크립트입니다. 문제 설명을 분석하여 카테고리를 분류하고, 적절한 도구와 페이로드를 자동 선택하며, LLM API로 풀이 전략을 생성합니다.
+
 ```python
 import subprocess
 import re
@@ -937,6 +955,9 @@ main 함수 디스어셈블:
 ## 5. CTF 팀 자동화 시스템
 
 ### 5-1. 멀티 에이전트 CTF 팀
+
+
+CTF(Capture The Flag) 자동화 스크립트입니다. AI가 문제 유형을 분류하고 적합한 도구(pwntools, z3, requests 등)를 선택하여 풀이 코드를 자동 생성하거나 힌트를 제공합니다.
 
 ```python
 import threading
@@ -1065,6 +1086,9 @@ if __name__ == "__main__":
 
 ## 6. 실전 CTF 팁 — AI 활용 전략
 
+
+CTF(Capture The Flag) 자동화 스크립트입니다. AI가 문제 유형을 분류하고 적합한 도구(pwntools, z3, requests 등)를 선택하여 풀이 코드를 자동 생성하거나 힌트를 제공합니다.
+
 ```
 자동화가 잘 되는 문제 유형:
 ┌──────────────┬────────────────────────────────┬──────────────────┐
@@ -1093,6 +1117,9 @@ if __name__ == "__main__":
 ---
 
 ## 7. 환경 설정 스크립트
+
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
 
 ```bash
 #!/bin/bash

@@ -3,6 +3,9 @@
 ## 1. 파일 및 디렉토리 조작
 
 ### 기본 탐색
+
+리눅스 파일시스템 탐색에 가장 기본이 되는 명령어들입니다. `pwd`로 현재 위치를 확인하고 `ls -al`로 숨김 파일을 포함한 전체 목록을 출력하며, `find`는 조건(이름, 권한 등)에 따라 파일을 검색할 때 사용합니다.
+
 ```bash
 pwd                    # 현재 디렉토리 확인
 ls -al                 # 숨김 파일 포함 상세 목록
@@ -16,6 +19,9 @@ locate passwd          # 데이터베이스 기반 빠른 파일 검색
 ```
 
 ### 파일 조작
+
+파일과 디렉토리를 복사·이동·삭제하는 기본 명령어입니다. `rm -rf`는 되돌릴 수 없으므로 경로를 반드시 확인하고 실행해야 하며, `ln -s`로 심볼릭 링크를 만들어 설정 파일 관리에 활용합니다.
+
 ```bash
 cp -r src/ dst/        # 디렉토리 재귀 복사
 mv oldname newname     # 파일 이동/이름 변경
@@ -26,6 +32,9 @@ ln -s /etc/passwd sym  # 심볼릭 링크 생성
 ```
 
 ### 파일 내용 확인
+
+파일 내용을 읽고 검색하는 명령어들입니다. `tail -f`는 로그를 실시간으로 모니터링할 때 필수이며, `grep`과 `awk`는 침투테스트 시 로그 파싱·자격증명 추출 등에 자주 조합해 사용합니다.
+
 ```bash
 cat /etc/passwd        # 파일 전체 출력
 head -20 /etc/log      # 앞 20줄 출력
@@ -42,6 +51,9 @@ awk -F: '{print $1}' /etc/passwd  # 필드 구분자로 파싱
 ## 2. 사용자 및 권한 관리
 
 ### 사용자 계정 관리
+
+리눅스 사용자 계정을 생성·수정·삭제하는 명령어입니다. `usermod -aG sudo`는 계정에 관리자 권한을 부여하고, `last`·`lastlog`는 로그인 이력 포렌식에 활용합니다.
+
 ```bash
 useradd username       # 사용자 추가
 useradd -m -s /bin/bash username  # 홈 디렉토리와 쉘 지정
@@ -56,6 +68,9 @@ lastlog                # 마지막 로그인 시간
 ```
 
 ### 파일 권한
+
+파일 접근 권한을 설정하는 명령어입니다. 숫자(8진수)로 `소유자/그룹/기타` 권한을 한 번에 지정할 수 있으며, 웹 서버 파일은 644~755 범위로 관리하는 것이 기본 보안 원칙입니다.
+
 ```bash
 chmod 755 file         # rwxr-xr-x
 chmod 644 file         # rw-r--r--
@@ -65,6 +80,9 @@ chown -R www-data /var/www  # 재귀적 소유자 변경
 ```
 
 #### 권한 숫자 계산
+
+리눅스 파일 권한은 r(읽기)=4, w(쓰기)=2, x(실행)=1의 합으로 표현됩니다. 예를 들어 755는 소유자에게 전체 권한, 그룹과 기타 사용자에게 읽기·실행만 허용한 것입니다.
+
 ```
 r(읽기)  = 4
 w(쓰기)  = 2
@@ -75,6 +93,9 @@ x(실행)  = 1
 ```
 
 ### SetUID / SetGID (보안 핵심)
+
+SetUID(SUID)가 설정된 파일은 실행 시 파일 소유자의 권한으로 동작합니다. 공격자는 `find / -perm -4000`으로 SUID 파일을 전수조사하여 권한 상승 경로로 악용할 수 있으므로, 불필요한 SUID 비트는 반드시 제거해야 합니다.
+
 ```bash
 # SetUID: 파일 실행 시 소유자 권한으로 실행
 chmod 4755 file        # SetUID 설정
@@ -97,6 +118,9 @@ ls -la /usr/bin/sudo
 
 ## 3. 프로세스 관리
 
+
+실행 중인 프로세스를 확인하고 제어하는 명령어들입니다. 침투 후 내부 정찰 시 `ps aux`로 실행 중인 서비스를 파악하고, `nohup command &`로 세션 종료 후에도 백도어를 유지하는 기법에도 활용됩니다.
+
 ```bash
 ps aux                 # 전체 프로세스 목록
 ps -ef | grep apache   # 특정 프로세스 검색
@@ -111,6 +135,9 @@ nohup command &        # 터미널 종료 후에도 실행 유지
 ---
 
 ## 4. 네트워크 명령어
+
+
+네트워크 상태를 확인하는 명령어들입니다. `netstat -antp`나 `ss -tuln`으로 열린 포트와 연결을 확인하고, `curl`·`wget`은 침투 테스트 시 파일 다운로드나 HTTP 헤더 수집에 활용합니다.
 
 ```bash
 ifconfig               # 네트워크 인터페이스 정보 (구버전)
@@ -133,6 +160,9 @@ wget http://site.com/file  # 파일 다운로드
 
 ## 5. 아카이브 및 압축
 
+
+파일을 압축·해제하는 명령어입니다. `tar`의 옵션 조합을 외워두면 데이터 수집 및 전송, 포렌식 이미지 보존 등 다양한 상황에서 활용할 수 있습니다.
+
 ```bash
 tar -czvf archive.tar.gz dir/    # gzip 압축
 tar -xzvf archive.tar.gz         # gzip 해제
@@ -148,6 +178,9 @@ unzip -P password archive.zip    # 암호화된 zip 해제
 ## 6. 패키지 관리
 
 ### Debian/Ubuntu/Kali 계열
+
+Debian/Ubuntu/Kali 계열 리눅스의 패키지 관리 명령어입니다. `apt-get update`로 저장소 목록을 갱신한 후 `apt-get install`로 도구를 설치하며, 침투테스트 환경 구성 시 반드시 숙지해야 합니다.
+
 ```bash
 apt-get update              # 패키지 목록 갱신
 apt-get upgrade             # 설치된 패키지 업그레이드
@@ -158,6 +191,9 @@ dpkg -l | grep nmap         # 설치 여부 확인
 ```
 
 ### RedHat/CentOS/Fedora 계열
+
+RedHat/CentOS/Fedora 계열 리눅스의 패키지 관리 명령어입니다. 엔터프라이즈 환경에서는 RHEL 계열이 많으므로 `yum` 또는 `dnf` 명령어 사용법도 함께 익혀두는 것이 좋습니다.
+
 ```bash
 yum update                  # 패키지 업데이트
 yum install nmap            # 패키지 설치
@@ -167,6 +203,9 @@ rpm -qa | grep nmap         # 설치 확인
 ---
 
 ## 7. 텍스트 처리 (보안 분석에 필수)
+
+
+로그 파일과 텍스트 데이터를 분석하는 파이프라인 명령어입니다. `grep | awk | sort | uniq -c` 조합은 공격 IP 추출, 접근 패턴 파악 등 보안 분석에서 가장 많이 사용하는 원라이너입니다.
 
 ```bash
 # 로그에서 특정 IP만 추출
@@ -194,6 +233,9 @@ cat /var/log/auth.log | grep "Failed" | awk '{print $11}' | sort | uniq -c | sor
 
 ## 8. 시스템 정보 수집 (해킹 후 내부 정찰)
 
+
+시스템 침투 후 내부 정찰(Post-Exploitation) 단계에서 수집하는 정보들입니다. 커널 버전, 환경변수, 크론 작업 목록은 권한 상승 취약점을 찾는 첫 번째 단계입니다.
+
 ```bash
 uname -a               # 커널 버전 및 시스템 정보
 cat /etc/os-release    # OS 버전
@@ -216,6 +258,9 @@ sudo -l                # sudo 가능한 명령어 목록 (권한 상승 벡터)
 
 ## 9. SSH 및 원격 접속
 
+
+SSH 원격 접속 및 파일 전송 명령어입니다. 포트 포워딩(`-L`, `-R`, `-D`)은 방화벽을 우회하여 내부망에 접근하거나 SOCKS 프록시를 구성할 때 핵심적으로 활용됩니다.
+
 ```bash
 ssh user@192.168.1.100          # SSH 접속
 ssh -p 2222 user@host           # 포트 지정
@@ -229,6 +274,9 @@ rsync -avz dir/ user@host:/tmp/ # 동기화 방식 복사
 ```
 
 ### SSH 키 생성 및 관리
+
+SSH 공개키/개인키 쌍을 생성하고 서버에 등록하는 과정입니다. `ed25519` 알고리즘은 RSA보다 짧은 키로 높은 보안성을 제공하며, 패스워드 없는 키 기반 인증은 자동화 스크립트에서도 자주 사용됩니다.
+
 ```bash
 ssh-keygen -t rsa -b 4096 -C "email@example.com"
 ssh-keygen -t ed25519          # 더 안전한 알고리즘
@@ -244,6 +292,9 @@ ssh-keyscan host >> ~/.ssh/known_hosts
 ---
 
 ## 10. 로그 분석 (포렌식/보안 감사)
+
+
+리눅스 시스템의 주요 로그 파일 위치와 분석 명령어입니다. 포렌식 및 보안 감사 시 `/var/log/auth.log`의 실패 로그인 패턴을 분석하면 브루트포스 공격 출처를 특정할 수 있습니다.
 
 ```bash
 # 주요 로그 파일
@@ -265,6 +316,9 @@ grep "session opened for user root" /var/log/auth.log
 ```
 
 ### SSH 로그 분석기 (Python)
+
+
+리눅스 시스템의 주요 로그 파일 위치와 분석 명령어입니다. 포렌식 및 보안 감사 시 `/var/log/auth.log`의 실패 로그인 패턴을 분석하면 브루트포스 공격 출처를 특정할 수 있습니다.
 
 ```python
 #!/usr/bin/env python3
@@ -413,6 +467,9 @@ $6$  → SHA-512 (리눅스 기본)
 ```
 
 ### shadow 파일과 passwd 파일 병합 (크랙용)
+
+`unshadow`는 `/etc/passwd`와 `/etc/shadow`를 병합하여 John the Ripper가 읽을 수 있는 형식으로 만드는 도구입니다. 해시 파일을 획득한 후 오프라인에서 사전 공격이나 무차별 대입 공격으로 패스워드를 복구할 때 사용합니다.
+
 ```bash
 # unshadow — passwd와 shadow를 합쳐 John the Ripper 형식으로
 unshadow /etc/passwd /etc/shadow > combined.txt
@@ -470,6 +527,9 @@ optional   → 결과가 최종 판단에 영향 없음
 ### 주요 PAM 모듈
 
 #### pam_tally2 — 로그인 실패 횟수 제한
+
+`pam_tally2`는 로그인 실패 횟수를 누적하여 일정 횟수 초과 시 계정을 잠그는 PAM 모듈입니다. `deny=5`로 5회 실패 시 잠금, `unlock_time=600`으로 600초 후 자동 해제하도록 설정할 수 있습니다.
+
 ```bash
 # /etc/pam.d/login 또는 /etc/pam.d/sshd 에 추가
 auth required pam_tally2.so deny=5 unlock_time=600 onerr=fail
@@ -482,6 +542,9 @@ pam_tally2 --user=username --reset
 ```
 
 #### pam_time — 시간 기반 접근 제어
+
+`pam_time`은 시간과 터미널 유형에 따라 사용자 접근을 제한하는 PAM 모듈입니다. `/etc/security/time.conf`에서 특정 서비스에 대해 허용 요일·시간대를 세밀하게 제어할 수 있습니다.
+
 ```bash
 # /etc/security/time.conf 설정 예시
 # 서비스;터미널;사용자;시간
@@ -493,6 +556,9 @@ account required pam_time.so
 ```
 
 #### pam_access — 호스트 기반 접근 제어
+
+`pam_access`는 호스트 주소 기반으로 접근을 제어하는 PAM 모듈입니다. `/etc/security/access.conf`에서 허용/거부 규칙을 설정하며, root 계정의 원격 접속을 내부망 IP로만 제한하는 데 자주 활용됩니다.
+
 ```bash
 # /etc/security/access.conf 설정
 # 형식: + 또는 - : 사용자 : 호스트/IP
@@ -506,6 +572,9 @@ account required pam_access.so
 ```
 
 #### pam_pwquality — 비밀번호 복잡도 정책
+
+`pam_pwquality`는 패스워드 복잡도 정책을 강제하는 PAM 모듈입니다. 최소 길이, 문자 클래스(대소문자·숫자·특수문자), 연속 반복 제한 등을 설정하여 취약한 패스워드 사용을 방지합니다.
+
 ```bash
 # /etc/security/pwquality.conf
 minlen = 12           # 최소 12자
@@ -537,6 +606,9 @@ password requisite pam_pwquality.so retry=3
 ```
 
 ### 기본 iptables 명령어
+
+iptables로 Linux 방화벽 규칙을 설정합니다. 인바운드/아웃바운드 트래픽을 제어하고 불필요한 서비스 접근을 차단합니다.
+
 ```bash
 # 현재 규칙 확인
 iptables -L -n -v          # 기본 (filter 테이블)
@@ -570,6 +642,9 @@ iptables-restore < /etc/iptables/rules.v4
 ```
 
 ### 기본 서버 보안 정책 예시
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
+
 ```bash
 #!/bin/bash
 # 기본 서버 방화벽 설정 스크립트
@@ -606,6 +681,9 @@ iptables -L -n -v
 ```
 
 ### nftables (iptables 후속)
+
+nftables는 iptables의 후속으로 리눅스 커널 3.13 이후에 도입된 차세대 패킷 필터링 프레임워크입니다. 단일 명령어로 IPv4/IPv6를 동시에 처리할 수 있으며, `nft list ruleset`으로 전체 규칙을 확인합니다.
+
 ```bash
 # 현재 규칙 확인
 nft list ruleset
@@ -646,6 +724,9 @@ usermod -s /sbin/nologin [계정명]
 ```
 
 ### PortSentry — 포트 스캔 탐지 및 자동 차단
+
+PortSentry는 포트 스캔을 실시간으로 탐지하고 공격자 IP를 자동으로 차단하는 도구입니다. `hosts.deny`나 `iptables`를 통해 스캔을 감지한 즉시 해당 IP를 차단하여 공격 조기 차단에 효과적입니다.
+
 ```bash
 # PortSentry 설정 파일
 # /etc/portsentry/portsentry.conf
@@ -668,6 +749,9 @@ portsentry -sudp   # UDP 스텔스 스캔 탐지
 ```
 
 ### chkrootkit — 백도어 탐지
+
+`chkrootkit`은 시스템에 설치된 루트킷(rootkit)을 탐지하는 도구입니다. 스니퍼 탐지, 백도어 바인드 쉘, 커널 모듈 루트킷 등을 검사하며, INFECTED 결과가 나오면 즉시 네트워크 차단 후 포렌식 이미지를 생성해야 합니다.
+
 ```bash
 # 설치
 apt-get install chkrootkit
@@ -904,6 +988,9 @@ Options -Includes
 ```
 
 ### PHP 보안 설정 (php.ini)
+
+PHP 실행 환경의 보안 강화 설정입니다. `display_errors = Off`로 오류 정보 노출을 막고, `allow_url_include = Off`로 원격 파일 인클루전(RFI) 공격을 방지합니다. `disable_functions`로 위험한 시스템 함수 실행도 제한합니다.
+
 ```ini
 # 오류 정보 외부 노출 방지
 display_errors = Off

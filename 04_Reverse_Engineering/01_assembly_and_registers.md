@@ -41,6 +41,9 @@
 | PEDA/pwndbg | Linux | GDB 확장, 익스플로잇 특화 |
 
 ### 분석 환경 구성
+
+리버싱 분석 환경을 자동으로 구성하는 스크립트입니다. GDB와 NASM, pwntools, pwndbg 등 익스플로잇·역공학에 필수적인 도구들을 한 번에 설치하고 GDB 플러그인 설정까지 완료합니다.
+
 ```bash
 # 분석 환경 자동 구성 스크립트 (Ubuntu/Kali)
 #!/usr/bin/env bash
@@ -87,6 +90,9 @@ echo "    GDB+pwndbg, pwntools, pefile, r2pipe 사용 가능"
 ## 3. CPU 레지스터 완전 이해
 
 ### IA-32 (Intel 32비트) 레지스터 구조
+
+
+x86/x64 레지스터는 CPU가 직접 접근하는 초고속 저장 공간입니다. EAX는 함수 반환값, ESP는 스택 포인터, EIP는 다음 실행할 명령 주소를 가리키며, 익스플로잇 개발 시 이 레지스터들을 조작하는 것이 핵심입니다.
 
 ```
 32-bit (EAX):
@@ -148,6 +154,9 @@ echo "    GDB+pwndbg, pwntools, pefile, r2pipe 사용 가능"
 
 ## 4. 플래그 레지스터 (EFLAGS)
 
+
+x86/x64 레지스터는 CPU가 직접 접근하는 초고속 저장 공간입니다. EAX는 함수 반환값, ESP는 스택 포인터, EIP는 다음 실행할 명령 주소를 가리키며, 익스플로잇 개발 시 이 레지스터들을 조작하는 것이 핵심입니다.
+
 ```
 플래그 레지스터는 각 비트가 0 또는 1의 플래그 값을 가짐
 주요 분석 대상 플래그:
@@ -168,6 +177,9 @@ echo "    GDB+pwndbg, pwntools, pefile, r2pipe 사용 가능"
 ## 5. 어셈블리 명령어 완전 정리
 
 ### MOV 명령어 (데이터 이동)
+
+어셈블리 데이터 이동 명령어들입니다. `MOV`는 가장 기본적인 데이터 복사이고, `LEA`는 메모리를 실제로 읽지 않고 주소 계산만 수행합니다. PIE 바이너리에서는 `lea rdi, [rip + offset]` 형태로 전역 변수에 접근합니다.
+
 ```asm
 MOV DST, SRC    ; SRC의 값을 DST로 복사
 
@@ -186,6 +198,9 @@ MOV AX, EDX   ; 크기 불일치 (AX=16bit, EDX=32bit)
 ```
 
 ### LEA 명령어 (주소 로드)
+
+LEA(Load Effective Address) 명령어는 메모리 주소를 계산하여 레지스터에 저장합니다. MOV와 달리 메모리를 실제로 읽지 않고 주소 값만 계산합니다.
+
 ```asm
 ; MOV와의 차이 — LEA는 주소 자체를 로드
 MOV EAX, DWORD PTR [00406000h]   ; EAX = 메모리[0x406000]의 값
@@ -202,6 +217,9 @@ MOV DWORD PTR [00406004h], EAX   ; p = &a
 ```
 
 ### 산술 연산
+
+어셈블리 수준의 산술 연산 명령어입니다. ADD, SUB, MUL, DIV 등의 연산이 CPU 레지스터와 플래그 레지스터에 어떤 영향을 미치는지 보여줍니다.
+
 ```asm
 ; 덧셈
 ADD EAX, 3       ; EAX = EAX + 3
@@ -233,6 +251,9 @@ MOV DWORD PTR [c], EDX    ; 나머지
 ```
 
 ### 비트 연산
+
+어셈블리의 비트 연산 명령어(AND, OR, XOR, NOT)입니다. 악성코드 분석 시 XOR은 데이터 난독화와 암호화에 자주 사용됩니다.
+
 ```asm
 ; AND
 AND EAX, ECX     ; EAX = EAX & ECX
@@ -255,6 +276,9 @@ XOR EAX, 20h     ; → 0x41 = 'A'
 ```
 
 ### 비교 및 조건 분기
+
+CMP 명령어로 두 값을 비교하고 조건 분기(JE, JNE, JG 등)로 프로그램 흐름을 제어합니다. 리버싱에서 시리얼 검증 로직 분석의 핵심입니다.
+
 ```asm
 ; CMP: 두 값을 비교 (뺄셈 수행 후 결과 버림, 플래그만 변경)
 CMP EAX, 3       ; EAX - 3 결과로 플래그 설정
@@ -288,6 +312,9 @@ equal_label:
 ## 6. 스택 연산
 
 ### PUSH / POP
+
+PUSH와 POP으로 스택에 데이터를 저장하고 꺼냅니다. 함수 호출 시 인자 전달과 레지스터 보존에 사용됩니다.
+
 ```asm
 ; PUSH 내부 동작
 PUSH 10h
@@ -309,6 +336,9 @@ POP EAX
 ```
 
 ### 함수 호출 (CALL / RET)
+
+CALL 명령어는 리턴 주소를 스택에 저장하고 함수로 점프합니다. RET은 스택에서 리턴 주소를 꺼내 원래 위치로 돌아옵니다.
+
 ```asm
 ; CALL 내부 동작
 CALL 00401000h
@@ -334,12 +364,18 @@ RETN              ; = POP EIP → 호출자로 복귀
 ## 7. 반복문 어셈블리 변환
 
 ### for 루프
+
+C 언어의 for 루프 코드입니다. 이 코드가 어셈블리로 변환되면 어떻게 표현되는지 비교하여 컴파일러 최적화를 이해합니다.
+
 ```c
 // C 코드
 for (int i = 0; i < 10; i++) {
     // 작업
 }
 ```
+
+C 언어의 for 루프가 어셈블리로 변환된 모습입니다. 카운터 초기화, 조건 비교, 증감, 점프 명령어의 조합으로 반복이 구현됩니다.
+
 ```asm
 ; 어셈블리 변환
 MOV ECX, 0Ah      ; ECX = 10 (반복 횟수)
@@ -362,6 +398,9 @@ loop_start:
 ```
 
 ### 대량 초기화 (memset 최적화)
+
+대량 메모리 초기화 시 컴파일러가 사용하는 최적화된 어셈블리 패턴입니다. REP STOSD 명령어로 한 번에 여러 바이트를 초기화합니다.
+
 ```asm
 ; char buf[12] = {0};  → 어셈블리 최적화
 MOV ECX, 3             ; 3 * 4 = 12바이트
@@ -408,6 +447,8 @@ MOVZX ECX, AL
 ; 상위 비트가 0으로 채워짐
 ```
 
+MOVSX(부호 확장)와 MOVZX(제로 확장) 명령어입니다. 작은 데이터 타입(char, short)을 큰 레지스터로 이동할 때 부호 비트 처리 방식이 다릅니다.
+
 ```asm
 ; 실전 예시 - char → int 대입
 char b = 'a';    ; 0x61 = 97
@@ -423,6 +464,8 @@ MOV DWORD PTR [EBP-4], EAX      ; a = (int)b
 ---
 
 ## 10. 시프트 연산 (Shift)
+
+SHL/SHR 시프트 연산은 2의 거듭제곱 곱셈/나눗셈을 빠르게 수행합니다. 악성코드에서 암호화나 데이터 조작에 자주 사용됩니다.
 
 ```asm
 ; SHL (Shift Left Logical) — 왼쪽 시프트 (= *2)
@@ -471,6 +514,8 @@ CMP 명령어 실행 후 플래그 값에 따라 분기한다.
     JMP        : 무조건          → Unconditional jump
 ```
 
+조건 분기 명령어 전체 목록입니다. 각 명령어가 어떤 플래그 조건에서 분기하는지 이해하면 리버싱 시 프로그램 로직을 빠르게 파악할 수 있습니다.
+
 ```asm
 ; 실전 예시 — if/else 패턴
 ; if (a != b) { a = 1000; }
@@ -502,6 +547,8 @@ Caller(호출하는 함수)와 Callee(호출되는 함수) 사이의 인자 전�
 | `__cdecl` | 스택 (우→좌 push) | Caller가 정리 `ADD ESP, XX` | C 라이브러리 함수 |
 | `__stdcall` | 스택 (우→좌 push) | Callee가 정리 `RETN XX` | Win32 API |
 | `__fastcall` | ECX, EDX (1~2개), 나머지는 스택 | Callee가 정리 `RETN XX` | 빠른 함수 호출 |
+
+CALL 명령어는 리턴 주소를 스택에 저장하고 함수로 점프합니다. RET은 스택에서 리턴 주소를 꺼내 원래 위치로 돌아옵니다.
 
 ```asm
 ; __cdecl 예시 — C 함수 호출
@@ -550,6 +597,9 @@ CALL MessageBoxA
 - 단점: DLL 파일이 반드시 필요
 
 ### DLL 로드 방식
+
+DLL을 암시적(컴파일 시)과 명시적(런타임)으로 로드하는 C 코드입니다. 악성코드는 탐지 회피를 위해 런타임 로드를 선호합니다.
+
 ```c
 // 암시적 로드 (컴파일 시 자동 링크 — IAT에 기록됨)
 #include <windows.h>
@@ -655,6 +705,9 @@ if __name__ == "__main__":
 ```
 
 ### 스택 메모리에서의 지역변수 위치
+
+함수 내 지역변수는 EBP(또는 RBP) 기준 음수 오프셋으로 스택에 위치합니다. 버퍼 오버플로우 취약점 분석 시 변수 레이아웃을 파악하는 데 필수적입니다.
+
 ```asm
 ; 함수 내 지역변수는 EBP 기준 음수 오프셋
 EBP - 4  → 첫 번째 지역변수 (int a)
@@ -692,6 +745,9 @@ Stack 영역: 지역변수, 리턴 주소, 함수 인자 (매개변수)
 ## 15. main 함수와 WinMain
 
 ### CUI 프로그램 (콘솔)
+
+CUI(콘솔) 프로그램의 main 함수 시그니처입니다. argc/argv로 명령줄 인자를, envp로 환경 변수를 받습니다.
+
 ```c
 // main 함수 — 기본 인자 3개 (Linux/Windows CUI 공통)
 int main(int argc, char *argv[], char **envp)
@@ -709,6 +765,9 @@ int main(int argc, char *argv[], char **envp)
 ```
 
 ### GUI 프로그램 (Windows)
+
+Windows GUI 프로그램의 WinMain 함수 시그니처입니다. 메시지 루프를 통해 이벤트를 처리하는 Windows 특유의 구조입니다.
+
 ```c
 // WinMain 함수 — 기본 인자 4개 (Windows GUI)
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,

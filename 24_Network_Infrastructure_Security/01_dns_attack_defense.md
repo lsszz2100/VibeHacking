@@ -30,6 +30,9 @@ DNS 레코드 유형:
 
 ### 2-1. Zone Transfer 시도
 
+
+DNS 공격 시나리오 테스트 명령어입니다. Zone Transfer 취약점 확인(`dig axfr`), 서브도메인 열거, DNS 캐시 상태 확인 등 DNS 보안 점검의 기본 명령어들입니다.
+
 ```bash
 # 기본 AXFR 시도
 dig axfr example.com @ns1.example.com
@@ -65,6 +68,9 @@ fierce --domain example.com
 ```
 
 ### 2-3. 방어 — Zone Transfer 제한
+
+
+BIND DNS 서버 보안 설정입니다. Zone Transfer를 슬레이브 서버 IP로만 제한하고, 재귀 쿼리를 내부 네트워크로만 허용하며, DNSSEC를 활성화하여 DNS 스푸핑을 방어합니다.
 
 ```bash
 # BIND named.conf — 특정 IP만 허용
@@ -109,6 +115,8 @@ dig axfr example.com @ns1.example.com
 
 ### DNSSEC 설정 (BIND)
 
+DNSSEC(DNS 보안 확장)을 설정합니다. Zone에 디지털 서명을 추가하여 DNS 응답의 무결성을 보장하고 DNS 스푸핑을 방지합니다.
+
 ```bash
 # Zone 서명 키 생성
 dnssec-keygen -a RSASHA256 -b 2048 -n ZONE example.com     # ZSK
@@ -150,6 +158,8 @@ dnssec-dsfromkey Kexample.com.+008+XXXXX.key
 ```
 
 ### DNS Tunneling 탐지 및 차단
+
+DNS 터널링을 탐지하는 Python 스크립트입니다. 비정상적으로 긴 DNS 쿼리, 높은 쿼리 빈도, 비표준 레코드 타입을 모니터링합니다.
 
 ```python
 import dns.resolver
@@ -255,6 +265,8 @@ curl -I https://sub.example.com
 ---
 
 ## 6. DNS 정보 수집 자동화
+
+Python dnspython으로 DNS 정보 수집을 자동화합니다. 서브도메인 브루트포스, 레코드 타입별 조회, Zone Transfer 시도를 자동화합니다.
 
 ```python
 import dns.resolver

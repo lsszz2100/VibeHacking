@@ -42,6 +42,8 @@ cat /usr/share/rainbowcrack/charset.txt
 
 ### rcrack — 레인보우 테이블 크래킹
 
+rcrack으로 미리 생성된 레인보우 테이블을 사용하여 해시를 크래킹합니다. 저장 공간과 계산 시간을 교환(time-memory trade-off)하는 방식입니다.
+
 ```bash
 # 단일 해시 크래킹
 rcrack /path/to/tables/ -h 5f4dcc3b5aa765d61d8327deb882cf99
@@ -58,6 +60,8 @@ rcracki_mt -h 5f4dcc3b... /path/to/tables/*.rt
 
 ### 온라인 레인보우 테이블 서비스
 
+CrackStation, hashes.com 등 온라인 레인보우 테이블 서비스를 활용합니다. MD5, SHA-1 등 솔트 없는 해시는 빠르게 조회할 수 있습니다.
+
 ```bash
 # crackstation.net, hashes.com, md5decrypt.net 등
 # curl로 자동화 (예: crackstation API 예시)
@@ -70,6 +74,9 @@ curl -s 'https://crackstation.net/crack.js' \
 ## 룰 기반 변형
 
 ### Leetspeak 변형
+
+
+고급 hashcat 크래킹 기법입니다. 규칙 기반 변형(`-r`)으로 단어에 숫자·특수문자를 추가하거나, 마스크 공격(`-a 3`)으로 특정 패턴을 전수 조사합니다. GPU 여러 개를 조합하면 크래킹 속도를 대폭 높일 수 있습니다.
 
 ```bash
 # hashcat 리트스피크 규칙 파일 사용
@@ -102,6 +109,8 @@ hashcat -m 0 -a 0 hash.txt wordlist.txt -r leet.rule
 
 ### 대소문자 변형
 
+대소문자 변형 규칙을 작성합니다. hashcat 규칙 파일로 동일 단어의 다양한 대소문자 조합을 자동 생성하여 크래킹 범위를 확장합니다.
+
 ```bash
 cat << 'EOF' > case_rules.rule
 # 소문자 전체
@@ -126,6 +135,8 @@ hashcat -m 0 -a 0 hash.txt wordlist.txt -r case_rules.rule
 ```
 
 ### 숫자 추가 변형
+
+숫자를 단어 앞뒤에 추가하는 변형 규칙입니다. 비밀번호에 연도나 숫자를 추가하는 일반적인 패턴을 커버합니다.
 
 ```bash
 cat << 'EOF' > append_rules.rule
@@ -227,6 +238,8 @@ hashcat -m 0 -a 9 hash.txt wordlist.txt -r /usr/share/hashcat/rules/best64.rule
 
 ### .hcmask 파일 사용
 
+.hcmask 파일로 다수의 마스크를 순차적으로 적용합니다. 길이와 문자 집합이 다른 여러 마스크를 한 파일에 정의하여 자동으로 실행합니다.
+
 ```bash
 # hcmask 파일: 한 줄 = 하나의 마스크
 cat << 'EOF' > custom.hcmask
@@ -257,6 +270,9 @@ hashcat -m 1000 -a 3 ntlm_hashes.txt smart.hcmask
 
 ### 커스텀 문자셋 조합
 
+
+고급 hashcat 크래킹 기법입니다. 규칙 기반 변형(`-r`)으로 단어에 숫자·특수문자를 추가하거나, 마스크 공격(`-a 3`)으로 특정 패턴을 전수 조사합니다. GPU 여러 개를 조합하면 크래킹 속도를 대폭 높일 수 있습니다.
+
 ```bash
 # -1 ~ -4 로 최대 4개 커스텀 문자셋 정의
 # 대소문자+특수문자 세트
@@ -286,6 +302,8 @@ hashcat -m 0 -a 3 hash.txt ?a?a?a?a?a?a?a?a \
 ---
 
 ## 온라인 브루트포스 — Hydra
+
+Hydra로 다양한 서비스에 온라인 브루트포스 공격을 수행합니다. HTTP, FTP, SSH, RDP 등 50개 이상의 프로토콜을 지원합니다.
 
 ```bash
 # 기본 문법
@@ -347,6 +365,8 @@ hydra -l admin -P rockyou.txt -M hosts.txt ssh
 
 ## 온라인 브루트포스 — Medusa
 
+Medusa는 병렬 처리 방식의 온라인 로그인 브루트포스 도구입니다. FTP, SSH, HTTP 등 다양한 프로토콜을 지원합니다.
+
 ```bash
 # 기본 문법
 medusa -h <host> -u <user> -P <passlist> -M <module>
@@ -389,6 +409,8 @@ medusa -d
 ---
 
 ## Python 3.10+ 패스워드 스프레이 도구
+
+Python으로 패스워드 스프레이 도구를 구현합니다. 계정 잠금을 피하기 위해 여러 계정에 소수의 비밀번호만 시도하고 시간 간격을 조절합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -729,6 +751,8 @@ if __name__ == "__main__":
 
 ### CrackMapExec 패스워드 스프레이 (SMB/WinRM)
 
+CrackMapExec으로 SMB/WinRM 프로토콜에 패스워드 스프레이를 수행합니다. 도메인 환경에서 유효한 자격증명을 찾는 데 효율적입니다.
+
 ```bash
 # SMB 스프레이
 crackmapexec smb 192.168.1.0/24 -u users.txt -p passwords.txt \
@@ -749,6 +773,8 @@ crackmapexec ldap 192.168.1.10 -u users.txt -p 'Password2024!'
 ```
 
 ### Kerbrute — Kerberos 기반 스프레이 (계정 잠금 위험 낮음)
+
+Kerbrute로 Kerberos 기반 사용자 열거와 패스워드 스프레이를 수행합니다. 이벤트 로그 4625 대신 Kerberos 오류 코드를 사용하여 탐지를 낮춥니다.
 
 ```bash
 # 설치
@@ -771,6 +797,8 @@ kerbrute passwordspray --dc 192.168.1.10 -d domain.local \
 
 ### Spray365 (Microsoft 365)
 
+Spray365는 Microsoft 365 환경에서 패스워드 스프레이를 수행합니다. 스마트 잠금을 우회하기 위해 시간 간격과 IP를 자동으로 조절합니다.
+
 ```bash
 # 설치
 pip install spray365
@@ -783,6 +811,8 @@ spray365 spray -e emails.txt -p passwords.txt \
 ```
 
 ### o365spray
+
+o365spray로 Microsoft 365 계정 열거와 패스워드 스프레이를 수행합니다. 여러 엔드포인트를 활용하여 계정 잠금을 최소화합니다.
 
 ```bash
 git clone https://github.com/0xZDH/o365spray /opt/o365spray
@@ -805,6 +835,8 @@ python3 /opt/o365spray/o365spray.py --spray \
 ---
 
 ## 계정 잠금 정책 우회 전략
+
+도메인의 계정 잠금 정책을 확인합니다. 잠금 임계값, 관찰 기간, 잠금 지속 시간을 파악하여 탐지 없이 스프레이할 최대 시도 횟수를 결정합니다.
 
 ```bash
 # 1. 잠금 임계값 확인 (AD 환경)
@@ -831,6 +863,9 @@ net accounts /domain
 ---
 
 ## 크래킹 결과 활용
+
+
+고급 hashcat 크래킹 기법입니다. 규칙 기반 변형(`-r`)으로 단어에 숫자·특수문자를 추가하거나, 마스크 공격(`-a 3`)으로 특정 패턴을 전수 조사합니다. GPU 여러 개를 조합하면 크래킹 속도를 대폭 높일 수 있습니다.
 
 ```bash
 # hashcat pot 파일에서 결과 추출

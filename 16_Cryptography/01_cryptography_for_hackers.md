@@ -23,6 +23,8 @@
 
 ### Caesar Cipher (시저 암호)
 
+시저 암호(Caesar Cipher) 구현입니다. 알파벳을 고정된 자릿수만큼 이동시키는 가장 단순한 치환 암호로, 26가지 모든 키를 시도하면 즉시 해독됩니다.
+
 ```python
 def caesar_encrypt(text: str, shift: int) -> str:
     result = ""
@@ -46,6 +48,8 @@ caesar_brute_force(ciphertext)
 ```
 
 ### Vigenere Cipher
+
+비제네르 암호 복호화 구현입니다. 여러 시저 암호를 키 길이만큼 반복 사용하지만 Kasiski 분석이나 Index of Coincidence로 키 길이를 파악하면 해독됩니다.
 
 ```python
 def vigenere_decrypt(ciphertext: str, key: str) -> str:
@@ -94,6 +98,8 @@ def kasiski_test(ciphertext: str, min_len: int = 3) -> dict:
 ```
 
 ### XOR 암호
+
+XOR 암호 구현입니다. 동일한 키 길이의 단순 XOR은 crib-dragging 공격으로 해독됩니다. 악성코드에서 페이로드 난독화에 자주 사용됩니다.
 
 ```python
 #!/usr/bin/env python3
@@ -221,6 +227,8 @@ if __name__ == "__main__":
 ## 2. 현대 암호학
 
 ### AES 암호화 모드별 취약점
+
+AES 운용 모드별 취약점을 보여주는 코드입니다. ECB 모드는 동일 블록이 동일 암호문으로 나타나는 패턴 노출 취약점이 있습니다.
 
 ```python
 #!/usr/bin/env python3
@@ -407,6 +415,8 @@ RSA 키 생성:
 ```
 
 ### RSA 취약점 공격
+
+RSA 취약 구현을 공격하는 코드입니다. 작은 지수(e=3) 공격, 공통 모듈러스 공격, 패딩 오라클 공격 등 RSA 구현 오류를 이용합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -602,6 +612,8 @@ if __name__ == "__main__":
 
 ### 해시 유형 식별
 
+hashid 또는 hash-identifier로 해시 알고리즘 유형을 식별합니다. 해시 길이와 문자 집합 패턴으로 MD5, SHA-1, bcrypt 등을 구분합니다.
+
 ```bash
 # hashid로 해시 유형 식별
 hashid "5f4dcc3b5aa765d61d8327deb882cf99"
@@ -671,6 +683,8 @@ for name, mode in types:
 
 ### 알려진 TLS 공격
 
+알려진 TLS 취약점(BEAST, POODLE, FREAK, Heartbleed)을 점검합니다. 취약한 TLS 버전과 암호 스위트가 사용되는지 확인합니다.
+
 ```bash
 # BEAST (TLS 1.0 CBC)
 # 대응: TLS 1.2+ 사용
@@ -703,6 +717,9 @@ sslyze target.com --regular
 
 ### 인증서 분석
 
+
+OpenSSL CLI 명령어로 다양한 암호화 작업을 수행합니다. 대칭 암호화(`enc`), 비대칭 키 생성(`genrsa`, `genpkey`), 인증서 생성(`req`), TLS 서버 테스트(`s_client`) 등 보안 실습에 필수적인 도구입니다.
+
 ```bash
 # 인증서 정보 추출
 echo | openssl s_client -connect target.com:443 2>/dev/null | \
@@ -725,6 +742,8 @@ curl -s "https://crt.sh/?q=%.target.com&output=json" | \
 ---
 
 ## 6. 난수 생성기 취약점
+
+취약한 난수 생성기(PRNG) 상태를 예측하는 공격 코드입니다. 예측 가능한 시드나 짧은 주기를 가진 PRNG는 암호학적으로 안전하지 않습니다.
 
 ```python
 # 취약한 난수 생성기 예측
@@ -774,6 +793,8 @@ def crack_php_rand(known_output: int):
 
 ### CryptoPals 챌린지 스타일
 
+CryptoPals 암호 챌린지 스타일의 구현입니다. 반복 키 XOR 크래킹은 키 길이를 Hamming Distance로 추정한 후 단일 바이트 XOR 분석을 적용합니다.
+
 ```python
 # Set 1, Challenge 6: 반복 키 XOR 크랙
 def crack_repeating_xor(ciphertext: bytes) -> str:
@@ -822,6 +843,8 @@ def crack_repeating_xor(ciphertext: bytes) -> str:
 ---
 
 ## 8. 실전 암호 분석 도구
+
+암호 분석에 사용하는 주요 도구들입니다. CyberChef는 브라우저 기반으로 다양한 인코딩/암호화 변환을 지원합니다.
 
 ```bash
 # CyberChef - 브라우저 기반 암호 분석

@@ -27,6 +27,8 @@ Netfilter 훅 포인트:
 
 ### 2-1. 정책 초기화 및 기본 차단
 
+iptables 규칙을 초기화하고 기본 차단 정책을 설정합니다. 모든 인바운드/포워딩 트래픽을 DROP으로 설정한 후 필요한 서비스만 허용합니다.
+
 ```bash
 # 기존 규칙 초기화
 iptables -F
@@ -48,6 +50,8 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ```
 
 ### 2-2. 서비스별 규칙
+
+SSH, HTTP, HTTPS 등 서비스별 방화벽 규칙을 추가합니다. 관리 서비스는 허용된 IP만, 공개 서비스는 전체 허용으로 최소 권한을 적용합니다.
 
 ```bash
 # SSH — 관리자 IP만 허용
@@ -76,6 +80,8 @@ iptables -A INPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j DROP
 
 ### 2-3. 규칙 영구 저장
 
+iptables 규칙을 파일에 저장하여 재부팅 후에도 유지합니다. iptables-persistent(Debian/Ubuntu)나 iptables-services(RHEL/CentOS)를 사용합니다.
+
 ```bash
 # Debian/Ubuntu
 apt install iptables-persistent
@@ -91,6 +97,9 @@ iptables-save > /etc/sysconfig/iptables
 ---
 
 ## 3. nftables (현대적 방화벽)
+
+
+nftables는 iptables를 대체하는 현대적 패킷 필터링 프레임워크입니다. `inet` 패밀리로 IPv4/IPv6를 단일 규칙으로 처리하며, `/etc/nftables.conf`에 규칙을 저장하고 `systemd`로 부팅 시 자동 로드합니다.
 
 ```bash
 # 기본 설정 파일 /etc/nftables.conf
@@ -179,6 +188,8 @@ firewall-cmd --list-all
 ---
 
 ## 5. 방화벽 감사 자동화
+
+Python subprocess로 방화벽 규칙을 자동으로 감사합니다. iptables 출력을 파싱하여 보안 정책 위반 규칙을 탐지합니다.
 
 ```python
 import subprocess
@@ -282,6 +293,8 @@ if __name__ == "__main__":
 ---
 
 ## 6. 커널 네트워크 보안 파라미터
+
+sysctl.conf로 커널 수준의 네트워크 보안 파라미터를 설정합니다. IP 스푸핑 방지, ICMP 리다이렉트 차단, SYN 쿠키 활성화 등을 적용합니다.
 
 ```bash
 # /etc/sysctl.conf 보안 강화 설정

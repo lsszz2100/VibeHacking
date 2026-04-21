@@ -37,6 +37,8 @@ C:\Users\[사용자]\
 
 ### 2-1. 사용자 계정 분석 (SAM)
 
+impacket 도구로 Windows SAM 데이터베이스에서 사용자 계정 해시를 덤프합니다. 오프라인 포렌식 분석이나 침투 테스트 시 자격증명을 수집합니다.
+
 ```bash
 # impacket으로 해시 덤프
 secretsdump.py -sam SAM -system SYSTEM LOCAL
@@ -77,6 +79,8 @@ HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit
 [AppInit DLL (모든 프로세스에 로드)]
 HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows\AppInit_DLLs
 ```
+
+Autoruns(Sysinternals)로 시스템 자동 시작 항목을 분석합니다. 악성코드는 레지스트리 Run 키나 서비스를 통해 지속성을 확보하는 경우가 많습니다.
 
 ```bash
 # Autoruns (Sysinternals) - GUI 도구
@@ -126,6 +130,9 @@ rip.pl -r SYSTEM -p usbstor
 ## 3. 이벤트 로그 포렌식
 
 ### 주요 이벤트 로그 파일
+
+Windows 이벤트 로그는 시스템 활동의 핵심 증거입니다. 로그인 성공(4624)·실패(4625), 프로세스 생성(4688), 서비스 설치(7045) 등의 이벤트 ID를 중심으로 침해 흔적을 추적합니다.
+
 ```
 C:\Windows\System32\winevt\Logs\
 
@@ -179,6 +186,9 @@ Microsoft-Windows-TerminalServices-LocalSessionManager%4Operational.evtx → RDP
 ```
 
 ### 3-2. 이벤트 로그 분석 도구
+
+
+Windows 이벤트 로그는 시스템 활동의 핵심 증거입니다. 로그인 성공(4624)·실패(4625), 프로세스 생성(4688), 서비스 설치(7045) 등의 이벤트 ID를 중심으로 침해 흔적을 추적합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -412,6 +422,9 @@ if __name__ == "__main__":
 ## 4. Prefetch 분석
 
 ### Prefetch란?
+
+Prefetch 파일은 프로그램 실행 이력을 `.pf` 형식으로 보관합니다. 악성코드가 삭제된 후에도 Prefetch 파일이 남아 있으면 실행 시각과 경로를 복원할 수 있습니다.
+
 ```
 Windows가 앱 로딩 속도 향상을 위해 저장하는 파일
 C:\Windows\Prefetch\*.pf
@@ -427,6 +440,8 @@ C:\Windows\Prefetch\*.pf
 HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters
 EnablePrefetcher = 1 또는 3
 ```
+
+PECmd로 Windows Prefetch 파일을 분석합니다. 프리패치는 프로그램 실행 기록을 저장하므로 악성 실행 파일의 흔적을 확인할 수 있습니다.
 
 ```bash
 # PECmd (EricZimmerman 도구)
@@ -453,6 +468,8 @@ C:\Users\[사용자]\AppData\Roaming\Microsoft\Windows\Recent\*.lnk
 - 볼륨 시리얼 번호 (어떤 드라이브인지)
 - 호스트명 (네트워크 파일인 경우)
 ```
+
+LECmd로 Windows LNK(바로가기) 파일을 파싱합니다. 원본 파일 경로, 접근 시간, 볼륨 정보 등 유용한 포렌식 아티팩트가 포함됩니다.
 
 ```bash
 # LECmd (LNK 파서)
@@ -488,6 +505,8 @@ Cookies          → 쿠키 (SQLite)
 Bookmarks        → 북마크 (JSON)
 Extensions\      → 설치된 확장
 ```
+
+Chrome/Edge 브라우저 아티팩트(History, Cookies, Downloads)를 Python으로 파싱합니다. SQLite 데이터베이스 형식으로 저장되어 있습니다.
 
 ```python
 #!/usr/bin/env python3
@@ -659,6 +678,8 @@ if __name__ == "__main__":
 
 ### 통합 타임라인 생성
 
+Plaso(log2timeline)로 여러 포렌식 소스를 통합한 Super Timeline을 생성합니다. 대용량 증거를 체계적으로 분석하는 데 필수 도구입니다.
+
 ```bash
 # Plaso (log2timeline) — 강력한 타임라인 도구
 # 이미지에서 모든 아티팩트 추출 → 통합 타임라인
@@ -675,6 +696,8 @@ docker-compose up  # 설치 후
 ```
 
 ### 수동 타임라인 구성
+
+KAPE(Kroll Artifact Parser and Extractor)로 포렌식 아티팩트를 수집하고 파싱합니다. 빠른 트리아지와 증거 수집에 최적화된 도구입니다.
 
 ```bash
 # KAPE (Kroll Artifact Parser and Extractor)
@@ -867,6 +890,9 @@ ControlSet 구조:
 ```
 
 ### 휘발성 정보 수집 명령어 (Windows)
+
+Windows 시스템에서 휘발성 정보를 수집하는 CMD 명령어입니다. 날짜/시간을 가장 먼저 기록한 후 사용자, 프로세스, 연결 정보를 수집합니다.
+
 ```cmd
 :: 날짜/시간 확인 (가장 먼저 수행)
 date /t & time /t
@@ -926,6 +952,9 @@ net share
 ```
 
 ### Windows 이벤트 로그 파일 위치
+
+Windows 이벤트 로그는 시스템 활동의 핵심 증거입니다. 로그인 성공(4624)·실패(4625), 프로세스 생성(4688), 서비스 설치(7045) 등의 이벤트 ID를 중심으로 침해 흔적을 추적합니다.
+
 ```
 C:\WINDOWS\system32\config\
   AppEvent.evt   → 응용프로그램 이벤트 (구버전 Windows)
@@ -959,6 +988,8 @@ IIS 로그:
 ```
 
 ### 증거 무결성 보장
+
+디스크 이미지를 생성하고 해시로 무결성을 검증합니다. 쓰기 방지 장치를 사용하여 원본 증거를 훼손하지 않아야 법적 증거 능력이 유지됩니다.
 
 ```bash
 # 디스크 이미지 생성 (쓰기 방지 필수!)
@@ -1004,6 +1035,9 @@ setupapi.log 위치:
 ```
 
 ### Windows 이벤트 로그 파일 포맷 역사
+
+Windows 이벤트 로그는 시스템 활동의 핵심 증거입니다. 로그인 성공(4624)·실패(4625), 프로세스 생성(4688), 서비스 설치(7045) 등의 이벤트 ID를 중심으로 침해 흔적을 추적합니다.
+
 ```
 Windows XP/2003 (구버전):
   - 확장자: .evt

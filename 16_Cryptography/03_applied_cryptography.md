@@ -4,6 +4,9 @@
 
 ### 인증서 위조 및 중간자 공격
 
+
+SSL/TLS 인증서 관련 작업입니다. `openssl req`로 CSR을 생성하고, `openssl x509`로 자체 서명 인증서를 발급하며, `s_client`로 서버의 TLS 설정·인증서·지원 암호 스위트를 점검합니다.
+
 ```bash
 # mitmproxy로 HTTPS 인터셉트
 mitmproxy --mode transparent
@@ -24,6 +27,8 @@ https.proxy on
 ```
 
 ### 인증서 투명성 (Certificate Transparency) 활용
+
+crt.sh와 인증서 투명성(CT) 로그에서 발급된 SSL/TLS 인증서를 검색합니다. 숨겨진 서브도메인과 내부 도메인 이름을 발굴하는 데 유용합니다.
 
 ```bash
 # crt.sh - 발급된 인증서 검색
@@ -54,6 +59,8 @@ for d in sorted(domains):
 ---
 
 ## 2. PGP/GPG 운용
+
+GPG(GNU Privacy Guard)로 키 쌍을 생성하고 파일을 암호화합니다. 공개키 기반 암호화와 전자서명으로 데이터 무결성과 기밀성을 보장합니다.
 
 ```bash
 # GPG 키 생성
@@ -92,6 +99,8 @@ gpg --list-sigs | grep "SHA1"
 ## 3. JWT (JSON Web Token) 심층 분석
 
 ### JWT 구조 및 알고리즘
+
+JWT(JSON Web Token)의 구조와 알고리즘을 분석합니다. Header, Payload, Signature 각 부분을 파싱하고 alg 조작 공격 가능성을 확인합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -320,6 +329,8 @@ if __name__ == "__main__":
 
 ### Padding Oracle 공격
 
+Padding Oracle 공격으로 CBC 모드 암호문을 복호화합니다. 패딩 검증 오류 메시지를 오라클로 사용하여 비밀 키 없이 평문을 추출합니다.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -528,6 +539,9 @@ if __name__ == "__main__":
 
 ### ECDSA 논스 재사용 공격
 
+
+암호화 프로토콜을 Python으로 구현하는 코드입니다. 키 교환, 서명 검증, 하이브리드 암호화 구조를 직접 구현하면 프로토콜의 취약점과 올바른 사용 방법을 깊이 이해할 수 있습니다.
+
 ```python
 from ecdsa import NIST256p, SigningKey
 from hashlib import sha256
@@ -574,6 +588,9 @@ def ecdsa_nonce_reuse_attack(r: int, s1: int, s2: int,
 ## 5. 암호화 API 올바른 사용법
 
 ### Python 암호화 올바른 사용
+
+
+암호화 프로토콜을 Python으로 구현하는 코드입니다. 키 교환, 서명 검증, 하이브리드 암호화 구조를 직접 구현하면 프로토콜의 취약점과 올바른 사용 방법을 깊이 이해할 수 있습니다.
 
 ```python
 # cryptography 라이브러리 사용 (권장)
@@ -691,6 +708,9 @@ print(f"토큰: {token}")
 
 ### 예측 가능한 UUID 생성
 
+
+암호화 프로토콜을 Python으로 구현하는 코드입니다. 키 교환, 서명 검증, 하이브리드 암호화 구조를 직접 구현하면 프로토콜의 취약점과 올바른 사용 방법을 깊이 이해할 수 있습니다.
+
 ```python
 import uuid
 import time
@@ -715,6 +735,8 @@ def extract_timestamp_from_uuid_v1(uuid_str: str):
 ```
 
 ### 잘못된 랜덤 IV 재사용
+
+IV(초기화 벡터) 재사용의 위험성을 보여주는 코드입니다. CBC 모드에서 동일한 IV를 재사용하면 암호문 패턴 분석으로 평문을 추론할 수 있습니다.
 
 ```python
 # 취약한 구현
@@ -783,6 +805,8 @@ class SecureEncryption:
   CyberChef (변환/분석)
   RsaCtfTool (RSA 자동 공격)
 ```
+
+RSA CTF 자동 풀이 도구입니다. 작은 지수, 공통 소인수, Wiener 공격 등 다양한 RSA 취약점을 자동으로 탐지하고 익스플로잇합니다.
 
 ```bash
 # RsaCtfTool - RSA CTF 자동 풀이

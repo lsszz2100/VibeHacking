@@ -20,6 +20,8 @@ echo "set pagination off" >> ~/.gdbinit
 
 ### 1.2 pwndbg 전용 명령어
 
+GDB 디버거 명령어입니다. 리버싱이나 익스플로잇 개발 시 프로그램 실행을 단계별로 제어하고 메모리/레지스터 상태를 확인합니다.
+
 ```gdb
 # 컨텍스트 출력 (레지스터 + 스택 + 코드 한눈에)
 context           # 현재 상태 전체 출력
@@ -54,6 +56,8 @@ plt               # PLT 항목 목록
 
 ### 1.3 브레이크포인트 고급 활용
 
+GDB 디버거 명령어입니다. 리버싱이나 익스플로잇 개발 시 프로그램 실행을 단계별로 제어하고 메모리/레지스터 상태를 확인합니다.
+
 ```gdb
 # 함수 진입/반환 지점
 break *main       # main 시작
@@ -78,6 +82,8 @@ awatch *0x601060  # 읽기+쓰기 감시
 ```
 
 ### 1.4 메모리 조작 및 패치
+
+GDB 디버거 명령어입니다. 리버싱이나 익스플로잇 개발 시 프로그램 실행을 단계별로 제어하고 메모리/레지스터 상태를 확인합니다.
 
 ```gdb
 # 메모리 쓰기
@@ -223,6 +229,9 @@ print(f"\n총 {len(results)}개 호출 위치")
 
 ### 3.2 Ghidra Script (Python 3)
 
+
+Ghidra는 NSA가 개발한 오픈소스 리버스 엔지니어링 프레임워크입니다. C 코드 수준의 디컴파일, 멀티아키텍처 지원, 협업 기능이 장점이며, IDA Pro의 무료 대안으로 많이 활용됩니다.
+
 ```python
 # GhidraScript — 함수 목록 및 크기 출력
 # Ghidra Script Manager에서 실행
@@ -255,6 +264,9 @@ for name, addr, size in funcs[:20]:
 ## 4. objdump / readelf 활용
 
 ### 4.1 objdump 주요 옵션
+
+
+바이너리 역어셈블리 분석 명령어입니다. `objdump -d`로 모든 실행 섹션을, `-M intel`로 Intel 문법으로 출력합니다. 특정 함수 분석 시 `grep -A 30 '<함수명>'`으로 해당 부분만 추출합니다.
 
 ```bash
 # 전체 디스어셈블 (Intel 문법)
@@ -909,6 +921,8 @@ objdump -d -M intel -j .plt ./challenge | grep "@plt"
 
 ### 7.2 GDB + pwndbg 리버싱 세션 예시
 
+GDB 디버거 명령어입니다. 리버싱이나 익스플로잇 개발 시 프로그램 실행을 단계별로 제어하고 메모리/레지스터 상태를 확인합니다.
+
 ```gdb
 gdb ./challenge
 
@@ -939,6 +953,8 @@ end
 ```
 
 ### 7.3 Capstone + pwntools 연동
+
+pwntools 라이브러리로 EIP 오프셋 계산과 익스플로잇 작성을 자동화합니다. cyclic, p32, remote, process 함수를 활용합니다.
 
 ```python
 #!/usr/bin/env python3

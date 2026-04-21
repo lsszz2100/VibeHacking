@@ -19,6 +19,9 @@ Search Head Cluster: 분산 검색
 
 ### 기본 검색 구문
 
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
+
 ```spl
 # 기본 검색
 index=security EventCode=4625
@@ -38,6 +41,9 @@ index=security earliest="01/01/2024:00:00:00" latest="01/02/2024:00:00:00"
 ```
 
 ### 변환 명령어
+
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
 
 ```spl
 # stats - 통계 집계
@@ -76,6 +82,9 @@ index=security EventCode=4688
 
 ### 파이프라인 조합
 
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
+
 ```spl
 # 브루트포스 탐지
 index=security EventCode=4625
@@ -98,6 +107,9 @@ index=security (EventCode=4624 OR EventCode=4625)
 ## 2. 핵심 SOC 탐지 쿼리 100+
 
 ### 2.1 계정 침해 탐지
+
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
 
 ```spl
 # [1] 짧은 시간 내 동일 계정 다중 지역 로그인
@@ -134,6 +146,9 @@ index=security (EventCode=4740 OR EventCode=4624)
 
 ### 2.2 프로세스/실행 탐지
 
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
+
 ```spl
 # [6] LOLBins (Living off the Land Binaries) 탐지
 index=sysmon EventCode=1
@@ -167,6 +182,9 @@ index=sysmon (EventCode=10 OR EventCode=1)
 ```
 
 ### 2.3 네트워크 이상 탐지
+
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
 
 ```spl
 # [11] 내부 네트워크 스캔 탐지
@@ -203,6 +221,9 @@ index=ssl dest_port NOT IN (443, 8443, 8080)
 
 ### 2.4 지속성/권한 상승 탐지
 
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
+
 ```spl
 # [16] 새 서비스 설치 탐지
 index=windows EventCode=7045
@@ -236,6 +257,8 @@ index=sysmon EventCode=1
 ## 3. 대시보드 구성
 
 ### SOC 운영 대시보드 XML
+
+XML 데이터 예시입니다. XXE(XML External Entity) 인젝션은 XML 파서의 외부 엔티티 처리 기능을 악용하는 웹 취약점입니다.
 
 ```xml
 <dashboard>
@@ -300,6 +323,9 @@ index=sysmon EventCode=1
 
 ### 실시간 알림 설정
 
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
+
 ```spl
 # 알림 쿼리: 랜섬웨어 행위 탐지
 index=sysmon EventCode=1
@@ -316,6 +342,9 @@ index=sysmon EventCode=1
 
 ### 알림 억제 (FP 감소)
 
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
+
 ```spl
 # 정상 작업 제외
 index=sysmon EventCode=1
@@ -329,6 +358,8 @@ index=sysmon EventCode=1
 ## 5. IBM QRadar 핵심 쿼리 (AQL)
 
 ### AQL (Ariel Query Language) 기초
+
+SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 로그인 실패 조회
@@ -384,6 +415,8 @@ _exists_: user.name AND NOT user.name: "SYSTEM"
 
 ### Elastic Detection Rule (YAML)
 
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
+
 ```yaml
 name: PowerShell Encoded Command Execution
 description: Detects PowerShell executing encoded commands
@@ -408,6 +441,8 @@ references:
 ## 7. 로그 파싱 및 정규화
 
 ### Logstash 파이프라인 설정
+
+Ruby 스크립트입니다. Metasploit Framework가 Ruby로 작성되어 있어 익스플로잇 모듈 개발에 Ruby가 자주 사용됩니다.
 
 ```ruby
 # logstash.conf - Windows 이벤트 로그 처리
@@ -752,6 +787,9 @@ if __name__ == "__main__":
 ---
 
 ## 9. 위협 헌팅 쿼리
+
+
+Splunk SPL(Search Processing Language) 쿼리입니다. `index=`로 데이터 저장소를 지정하고 `sourcetype`으로 로그 형식을 필터링합니다. `stats count by` 집계로 이벤트 빈도를 분석하고 상위 발생 항목을 추출합니다.
 
 ```spl
 # 헌팅: 비정상 시간대 관리도구 실행

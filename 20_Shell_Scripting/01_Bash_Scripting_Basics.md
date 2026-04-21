@@ -6,6 +6,9 @@
 
 ### 기본 변수
 
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
+
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail   # 오류 즉시 종료, 미정의 변수 오류, 파이프 오류 전파
@@ -88,6 +91,9 @@ let "TOTAL = COUNT * 2"
 ---
 
 ## 3. 조건문
+
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
 
 ```bash
 #!/usr/bin/env bash
@@ -188,6 +194,9 @@ done
 
 ## 5. 함수
 
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
+
 ```bash
 #!/usr/bin/env bash
 
@@ -265,6 +274,9 @@ trap cleanup EXIT INT TERM
 ---
 
 ## 6. 파일 입출력
+
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
 
 ```bash
 #!/usr/bin/env bash
@@ -417,6 +429,9 @@ awk 'FNR==1{print "=== " FILENAME " ==="}1' /etc/passwd /etc/group
 
 ## 8. 프로세스 관리
 
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
+
 ```bash
 #!/usr/bin/env bash
 
@@ -496,6 +511,9 @@ list_network_procs() {
 
 ### 9-1. TCP 포트 스캐너
 
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
+
 ```bash
 #!/usr/bin/env bash
 # 순수 bash TCP 포트 스캐너 (nmap 없이)
@@ -570,6 +588,9 @@ main
 ```
 
 ### 9-2. 로그 분석기
+
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
 
 ```bash
 #!/usr/bin/env bash

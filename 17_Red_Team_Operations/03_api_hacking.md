@@ -60,6 +60,9 @@ API10 Insufficient Logging & Monitoring
 ```
 
 ### API9 — Improper Assets Management 탐지
+
+이전 버전이나 미문서화된 API 엔드포인트를 탐지합니다. /v1/, /api/old/, /debug/ 등 구버전 경로에 접근하여 보안 업데이트가 누락된 엔드포인트를 찾습니다.
+
 ```bash
 # 구버전 API 엔드포인트 탐지
 # /v1/, /v2/, /api/v1/, /api/v2/ 등 버전별 접근 시도
@@ -84,6 +87,8 @@ echo "api.target.com" | waybackurls | grep "/api/" | sort -u
 ## 1. API 정찰
 
 ### API 엔드포인트 발견
+
+JavaScript 파일을 분석하여 숨겨진 API 엔드포인트를 추출합니다. 프론트엔드 코드에 하드코딩된 API 경로와 파라미터를 파악합니다.
 
 ```bash
 # JS 파일에서 API 엔드포인트 추출
@@ -112,6 +117,8 @@ ffuf -u https://target.com/FUZZ -w api_paths.txt -fc 404
 ```
 
 ### API 문서 분석
+
+Swagger/OpenAPI 문서에서 API 엔드포인트 목록을 추출합니다. 노출된 API 스펙으로 파라미터와 인증 방식을 파악하여 테스트 계획을 수립합니다.
 
 ```bash
 # Swagger UI에서 API 목록 추출
@@ -143,6 +150,8 @@ for path in spec.get('paths', {}).keys():
 ## 2. BOLA/IDOR (API1)
 
 ### BOLA 탐지 및 익스플로잇
+
+BOLA(Broken Object Level Authorization) 취약점을 테스트합니다. 객체 ID를 변경하여 다른 사용자의 데이터에 접근할 수 있는지 확인합니다.
 
 ```bash
 # 기본 IDOR 테스트
@@ -177,6 +186,8 @@ python3 uuid_brute.py --start-time "2024-01-01" --end-time "2024-01-02"
 ```
 
 ### 간접 객체 참조 변환
+
+객체 참조를 변환하는 Python 코드입니다. UUID나 HMAC 기반 참조로 직접 ID 열거를 방지하지만 알고리즘이 취약하면 우회 가능합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -239,6 +250,9 @@ class IDORScanner:
 
 ### JWT 공격
 
+
+JWT(JSON Web Token) 취약점 테스트입니다. 알고리즘을 None으로 설정하거나 HS256에서 RS256으로 변환하는 공격, 약한 시크릿 브루트포스 등 다양한 JWT 우회 기법을 확인합니다.
+
 ```python
 import requests
 import json
@@ -279,6 +293,8 @@ def test_jwt_attacks(api_url: str, valid_token: str):
 
 ### API Key 브루트포스
 
+API 키의 엔트로피를 분석하고 예측 가능한 패턴을 찾습니다. 짧거나 낮은 엔트로피의 API 키는 브루트포스에 취약합니다.
+
 ```python
 def test_api_key_entropy(api_url: str, sample_keys: list):
     """API 키 엔트로피 분석 및 패턴 발견"""
@@ -307,6 +323,8 @@ def test_api_key_entropy(api_url: str, sample_keys: list):
 ---
 
 ## 4. Mass Assignment / Object Property (API3)
+
+Mass Assignment 취약점은 사용자가 전송한 모든 필드를 서버가 자동으로 바인딩할 때 발생합니다. admin, role 같은 민감한 필드를 포함시켜 권한을 상승시킵니다.
 
 ```python
 # 취약한 API: 모든 필드 자동 바인딩
@@ -365,6 +383,8 @@ def test_mass_assignment(api_url: str, token: str):
 
 ## 5. GraphQL 보안 테스트
 
+GraphQL 인트로스펙션으로 API 스키마 전체를 추출합니다. 모든 쿼리, 뮤테이션, 타입 정보를 파악하여 인가 결함과 인젝션 취약점을 탐지합니다.
+
 ```bash
 # GraphQL 인트로스펙션 (스키마 추출)
 curl -X POST https://target.com/graphql \
@@ -416,6 +436,9 @@ curl -X POST https://target.com/graphql \
 ---
 
 ## 6. REST API 퍼징
+
+
+REST API 해킹의 핵심은 인증 토큰 노출, IDOR(Insecure Direct Object Reference), 과도한 데이터 반환, 속도 제한 미적용 등의 취약점을 찾는 것입니다. Burp Suite와 Postman으로 API 엔드포인트를 체계적으로 테스트합니다.
 
 ```python
 #!/usr/bin/env python3

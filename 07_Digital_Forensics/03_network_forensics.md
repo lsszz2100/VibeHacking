@@ -25,6 +25,8 @@
 
 ### 2-1. 기본 필터
 
+Wireshark 필터 표현식입니다. 디스플레이 필터로 특정 조건의 패킷만 표시하여 대용량 캡처에서 관심 있는 트래픽을 빠르게 찾습니다.
+
 ```wireshark
 # IP 필터
 ip.addr == 192.168.1.1          # 해당 IP 관련 모든 패킷
@@ -59,6 +61,8 @@ http.request.uri contains "/shell"
 
 ### 2-2. HTTP 분석
 
+Wireshark에서 HTTP 트래픽을 분석하는 필터입니다. 웹 요청/응답, 인증 시도, 악성 페이로드 전송 등을 확인합니다.
+
 ```wireshark
 # HTTP 요청
 http.request
@@ -83,6 +87,8 @@ http.cookie contains "PHPSESSID"
 
 ### 2-3. DNS 분석
 
+Wireshark DNS 필터로 도메인 조회 패턴을 분석합니다. DNS 터널링, C2 통신, DGA(Domain Generation Algorithm) 사용 여부를 탐지합니다.
+
 ```wireshark
 # DNS 쿼리
 dns.flags.response == 0         # DNS 요청만
@@ -97,6 +103,8 @@ dns.qry.name.len > 50          # 비정상적으로 긴 도메인
 ```
 
 ### 2-4. 악성 트래픽 패턴
+
+Wireshark에서 포트 스캔, SYN Flood 등 악성 트래픽 패턴을 탐지하는 필터입니다. 비정상적인 연결 시도와 대량 패킷을 식별합니다.
 
 ```wireshark
 # 포트 스캔 탐지 (SYN 스캔)
@@ -133,6 +141,9 @@ DNS       → DNS 쿼리 목록
 ---
 
 ## 4. tcpdump 실전
+
+
+네트워크 포렌식을 위한 tcpdump 캡처 명령어입니다. 인시던트 발생 시 즉시 패킷 캡처를 시작하고, BPF 필터로 의심 IP나 포트의 트래픽만 저장합니다. `-w`로 pcap 파일에 저장 후 Wireshark로 상세 분석합니다.
 
 ```bash
 # 기본 캡처
@@ -429,6 +440,8 @@ if __name__ == "__main__":
 
 ## 6. Zeek (Bro) 네트워크 분석
 
+Zeek(구 Bro) 네트워크 분석 프레임워크를 설치하고 실행합니다. 패킷을 구조화된 로그로 변환하여 대용량 트래픽 분석에 효율적입니다.
+
 ```bash
 # 설치
 sudo apt install zeek
@@ -457,6 +470,8 @@ cat ssl.log | zeek-cut id.orig_h id.resp_h server_name ja3
 ---
 
 ## 7. Suricata IDS 규칙
+
+Suricata IDS/IPS를 설치하고 규칙을 관리합니다. Snort 규칙과 호환되며 멀티스레드 처리로 고속 트래픽 분석이 가능합니다.
 
 ```bash
 # 설치
@@ -508,6 +523,8 @@ DKIM-Signature: 도메인 서명
 SPF:       발신 서버 검증
 DMARC:     SPF/DKIM 정책
 ```
+
+이메일 헤더를 분석하여 발신 경로, 위조 여부, 스팸 점수를 확인합니다. 피싱 이메일 조사 시 Received 헤더를 역추적합니다.
 
 ```bash
 # 이메일 헤더 분석 도구
@@ -566,6 +583,8 @@ DMARC:     SPF/DKIM 정책
 
 ### 로그 분석 기본
 
+Apache 액세스 로그를 grep, awk, sort 등으로 분석합니다. 가장 많은 요청을 보낸 IP, 접근 빈도 높은 URL, 에러 코드 분포를 파악합니다.
+
 ```bash
 # Apache 액세스 로그 분석
 # SQL Injection 시도 탐지
@@ -591,6 +610,8 @@ grep "01/Jan/2024:14:" access.log | wc -l
 ```
 
 ### fail2ban 로그 분석
+
+fail2ban 로그에서 SSH 브루트포스 차단 기록을 확인합니다. 어떤 IP가 차단되었는지, 얼마나 많은 시도가 있었는지 분석합니다.
 
 ```bash
 # SSH 브루트포스 차단 기록
@@ -643,6 +664,9 @@ dig +trace example.com       # 재귀 추적
 ```
 
 ### NetStat 활용
+
+netstat으로 활성 네트워크 연결과 대기 포트를 확인합니다. 비정상적인 외부 연결이나 알 수 없는 리스닝 포트를 탐지합니다.
+
 ```bash
 # 활성 연결 목록
 netstat -an        # 모든 연결 (숫자 표시)
@@ -658,6 +682,9 @@ netstat -an | grep LISTEN
 ```
 
 ### OSSEC — 로그 기반 침입 탐지
+
+OSSEC 호스트 기반 침입 탐지 시스템을 설치합니다. 로그 분석, 파일 무결성 모니터링, 루트킷 탐지 기능을 제공합니다.
+
 ```bash
 # OSSEC 설치 (서버 모드)
 ./install.sh

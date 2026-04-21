@@ -29,6 +29,9 @@
 
 ## 2. 위협 행위자 분류 (TTPs)
 
+
+MITRE ATT&CK 프레임워크는 실제 공격자의 전술(Tactics)과 기법(Techniques)을 분류한 지식 베이스입니다. 위협 인텔리전스 분석, 보안 탐지 룰 작성, 레드팀 시뮬레이션 계획 수립에 표준 참조 체계로 활용됩니다.
+
 ```
 MITRE ATT&CK 프레임워크:
   Tactics (전술) → Techniques (기법) → Procedures (절차)
@@ -50,6 +53,9 @@ MITRE ATT&CK 프레임워크:
 ---
 
 ## 3. IOC 유형 및 수집
+
+
+IoC(Indicator of Compromise)는 침해 발생 증거인 MD5 해시, IP 주소, 도메인, 파일 경로 등의 기술적 식별자입니다. SIEM이나 방화벽에 IoC를 등록하면 동일 공격자의 재방문을 자동으로 탐지하고 차단합니다.
 
 ```
 IOC 신뢰도 피라미드 (David Bianco의 Pyramid of Pain):
@@ -100,6 +106,8 @@ CTI 플랫폼:
 ---
 
 ## 5. CTI 수집 자동화
+
+CTI(사이버 위협 인텔리전스) 수집을 자동화합니다. VirusTotal, AbuseIPDB 등 공개 API에서 IOC 데이터를 수집하여 분석합니다.
 
 ```python
 import requests
@@ -177,6 +185,8 @@ if __name__ == "__main__":
 
 ## 6. MISP — 오픈소스 CTI 공유 플랫폼
 
+MISP(Malware Information Sharing Platform)를 Docker로 설치합니다. 위협 인텔리전스를 구조화하고 조직 간 IOC를 공유하는 플랫폼입니다.
+
 ```bash
 # MISP Docker 설치
 git clone https://github.com/MISP/misp-docker.git
@@ -196,6 +206,8 @@ curl -H "Authorization: YOUR_API_KEY" \
        "comment": "Cobalt Strike C2"
      }'
 ```
+
+PyMISP 라이브러리로 MISP API에 접근합니다. IOC를 이벤트와 속성으로 추가하고 자동화된 위협 인텔리전스 수집 파이프라인을 구축합니다.
 
 ```python
 from pymisp import PyMISP, MISPEvent, MISPAttribute

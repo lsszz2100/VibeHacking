@@ -37,6 +37,8 @@
 
 ### 3.1 기본 버전
 
+NASM(Netwide Assembler) 어셈블리 코드입니다. x86/x64 셸코드 개발이나 저수준 프로그래밍에 사용하는 어셈블러 문법입니다.
+
 ```nasm
 ; execve_shell.asm
 ; execve("/bin/sh", ["/bin/sh", NULL], NULL)
@@ -101,6 +103,9 @@ objdump -d execve_shell.o | grep '^\s' | \
 
 ### 3.3 더 짧은 버전 (자기참조 방식)
 
+
+NASM으로 작성한 셸코드 소스입니다. `section .text`에 실행 코드를 배치하고, `global _start`로 진입점을 선언합니다. 컴파일 후 `objdump -d`로 생성된 기계어 바이트를 추출하여 익스플로잇에 삽입합니다.
+
 ```nasm
 ; execve_short.asm — RIP-relative 주소 활용
 ; 28바이트 버전
@@ -141,6 +146,8 @@ _start:
 
 ### 4.2 0x00 제거 기법
 
+NASM(Netwide Assembler) 어셈블리 코드입니다. x86/x64 셸코드 개발이나 저수준 프로그래밍에 사용하는 어셈블러 문법입니다.
+
 ```nasm
 ; 문제: mov rax, 59 → 48 c7 c0 3b 00 00 00 (0x00 포함)
 ; 해결 1: xor 후 AL 사용
@@ -165,6 +172,8 @@ push rbx
 ```
 
 ### 4.3 인코더/디코더 패턴
+
+NASM(Netwide Assembler) 어셈블리 코드입니다. x86/x64 셸코드 개발이나 저수준 프로그래밍에 사용하는 어셈블러 문법입니다.
 
 ```nasm
 ; XOR 인코딩된 셸코드 실행 패턴
@@ -193,6 +202,9 @@ decoder_stub:
 ---
 
 ## 5. 셸코드 테스트 Python 스크립트
+
+
+셸코드를 테스트 환경에서 실행하는 코드입니다. Python의 `ctypes`나 C로 메모리를 할당하고 셸코드를 복사 후 실행하여 동작을 검증합니다. 실제 익스플로잇 전 격리된 환경에서 반드시 테스트해야 합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -442,6 +454,9 @@ custom_sc = asm("""
 
 ### 6.2 셸코드 검증 스크립트
 
+
+셸코드를 테스트 환경에서 실행하는 코드입니다. Python의 `ctypes`나 C로 메모리를 할당하고 셸코드를 복사 후 실행하여 동작을 검증합니다. 실제 익스플로잇 전 격리된 환경에서 반드시 테스트해야 합니다.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -641,6 +656,9 @@ if __name__ == "__main__":
 
 ## 7. C에 셸코드 삽입 및 테스트
 
+
+셸코드를 테스트 환경에서 실행하는 코드입니다. Python의 `ctypes`나 C로 메모리를 할당하고 셸코드를 복사 후 실행하여 동작을 검증합니다. 실제 익스플로잇 전 격리된 환경에서 반드시 테스트해야 합니다.
+
 ```c
 /* shellcode_test.c — 셸코드 실행 테스트 (교육 목적) */
 #include <stdio.h>
@@ -699,6 +717,8 @@ gcc -z execstack -fno-stack-protector -no-pie shellcode_test.c -o shellcode_test
 
 ## 8. 셸코드 크기 최적화 팁
 
+NASM(Netwide Assembler) 어셈블리 코드입니다. x86/x64 셸코드 개발이나 저수준 프로그래밍에 사용하는 어셈블러 문법입니다.
+
 ```nasm
 ; 크기를 줄이는 어셈블리 트릭
 
@@ -738,6 +758,9 @@ dec al          ; al = 0x3b (execve)
 
 ### 9.1 /bin/sh 실행 (27 바이트)
 
+
+셸코드를 테스트 환경에서 실행하는 코드입니다. Python의 `ctypes`나 C로 메모리를 할당하고 셸코드를 복사 후 실행하여 동작을 검증합니다. 실제 익스플로잇 전 격리된 환경에서 반드시 테스트해야 합니다.
+
 ```python
 shellcode = (
     b"\x48\x31\xd2"           # xor rdx, rdx
@@ -755,6 +778,9 @@ shellcode = (
 ```
 
 ### 9.2 setuid(0) + /bin/sh
+
+
+셸코드를 테스트 환경에서 실행하는 코드입니다. Python의 `ctypes`나 C로 메모리를 할당하고 셸코드를 복사 후 실행하여 동작을 검증합니다. 실제 익스플로잇 전 격리된 환경에서 반드시 테스트해야 합니다.
 
 ```python
 shellcode = (

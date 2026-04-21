@@ -31,6 +31,9 @@
 ## 2. 증거 수집 및 이미징
 
 ### 디스크 이미징 도구
+
+`dd`는 디스크나 파티션의 비트 단위 복사본(포렌식 이미지)을 생성하는 도구입니다. 원본 증거를 변경하지 않고 이미지를 만들어 분석하는 것이 포렌식의 기본 원칙이며, `sha256sum`으로 이미지 무결성을 검증합니다.
+
 ```bash
 # dd (기본 도구)
 dd if=/dev/sda of=/evidence/disk.img bs=4096
@@ -55,6 +58,9 @@ md5sum disk.img        # 분석 후
 ```
 
 ### 메모리 이미징
+
+실행 중인 시스템의 메모리를 덤프하여 포렌식 이미지를 생성합니다. 휘발성 증거(실행 프로세스, 네트워크 연결, 암호화 키)를 보존하기 위해 최우선으로 수행합니다.
+
 ```bash
 # Linux 메모리 덤프
 # LiME (Linux Memory Extractor) 커널 모듈 사용
@@ -130,6 +136,8 @@ winpmem_mini_x64.exe memory.aff4
 - 4688: 새 프로세스 생성 (Process Create, 정책 활성화 필요)
 ```
 
+PowerShell로 Windows 이벤트 로그를 쿼리하고 분석합니다. 로그인 기록(4624), 프로세스 생성(4688), 서비스 설치(7045) 등 보안 이벤트를 확인합니다.
+
 ```powershell
 # PowerShell로 이벤트 로그 분석
 # 로그인 실패 조회
@@ -195,6 +203,9 @@ lnkparse file.lnk
 ## 4. Linux 포렌식
 
 ### 주요 로그 파일
+
+Linux 시스템의 주요 로그 파일 위치와 분석 방법입니다. /var/log/auth.log에서 인증 이벤트, /var/log/syslog에서 시스템 이벤트를 확인합니다.
+
 ```bash
 # 인증 로그
 /var/log/auth.log    # Debian/Ubuntu
@@ -221,6 +232,9 @@ dmesg
 ```
 
 ### 침해 사고 분석 명령어 모음
+
+침해 의심 시스템에서 초기 트리아지(triage)를 위한 명령어 모음입니다. 현재 로그인 사용자, 실행 프로세스, 네트워크 연결을 빠르게 확인합니다.
+
 ```bash
 # 현재 로그인 사용자
 who
@@ -261,6 +275,9 @@ cat /etc/shadow | awk -F: '$2!="!"&&$2!="*"{print $1}'  # 활성 계정
 ```
 
 ### Volatility (메모리 분석)
+
+Volatility 메모리 분석 프레임워크를 Python으로 활용합니다. 메모리 덤프에서 프로세스, 네트워크 연결, 레지스트리 하이브 등을 추출합니다.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -416,6 +433,8 @@ E - Entry     : MFT 엔트리 수정 시간
 - 나노초 값이 모두 0이면 조작 의심 (일부 도구는 나노초 미지원)
 ```
 
+파일의 MACE(수정, 접근, 변경, 생성) 타임스탬프를 분석합니다. 공격자가 타임스탬프를 조작했는지(Timestomping) 확인하는 것도 중요합니다.
+
 ```bash
 # Linux에서 파일 타임스탬프 확인
 stat file.txt
@@ -429,6 +448,9 @@ find / -printf "%M;%U;%G;%s;%a;%t;%c;%n;%p\n" 2>/dev/null > timeline.csv
 ```
 
 ### log2timeline / Plaso
+
+log2timeline/Plaso로 여러 소스(이벤트 로그, 파일 시스템, 브라우저 기록)를 통합한 타임라인을 생성합니다. 사고 시퀀스를 재구성하는 데 사용합니다.
+
 ```bash
 # 여러 소스에서 통합 타임라인 생성
 pip install plaso
@@ -448,6 +470,9 @@ psort.py -o L2tcsv case.plaso > timeline.csv
 ## 6. 웹 서버 포렌식
 
 ### Apache 로그 분석
+
+Apache 액세스 로그를 Python으로 파싱하여 공격 패턴을 분석합니다. SQL 인젝션 시도, 디렉토리 트래버설, 대량 요청 등을 자동으로 탐지합니다.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -616,6 +641,9 @@ if __name__ == "__main__":
 ```
 
 ### IIS 로그 분석 (Windows)
+
+Windows IIS 웹 서버 로그를 PowerShell로 분석합니다. W3C 형식의 로그에서 공격 패턴과 비정상적인 요청을 필터링합니다.
+
 ```powershell
 # IIS 로그 경로: C:\inetpub\logs\LogFiles\W3SVC1\
 # 형식: u-ex{날짜}.log
@@ -657,6 +685,9 @@ Get-Content u-ex240101.log | Where-Object {$_ -match " 404 "}
 ```
 
 ### CMD로 복구 (숨김 파일 복원)
+
+숨겨진 파일과 시스템 파일을 복원하는 Windows CMD 명령어입니다. ATTRIB 명령어로 파일 속성을 변경하여 숨겨진 악성 파일을 찾습니다.
+
 ```cmd
 ATTRIB -H -R -S /S /D X:*.*
 :: X를 실제 드라이브 문자로 교체
@@ -939,6 +970,9 @@ VSS (Volume Shadow Service) 관련:
 ## 15. DDoS 공격 대응 가이드 (CISA)
 
 ### OSI 계층별 DDoS 공격 및 완화
+
+`dd`는 디스크나 파티션의 비트 단위 정확한 복사본(포렌식 이미지)을 생성합니다. 원본 증거를 쓰기 방지 장치 없이 직접 다루지 않고 이미지를 만들어 분석하는 것이 포렌식의 기본 원칙입니다.
+
 ```
 7계층 (Application):
   공격: HTTP GET/POST 플러드, Slowloris
@@ -971,6 +1005,9 @@ VSS (Volume Shadow Service) 관련:
 ```
 
 ### DDoS 대응 전략
+
+`dd`는 디스크나 파티션의 비트 단위 정확한 복사본(포렌식 이미지)을 생성합니다. 원본 증거를 쓰기 방지 장치 없이 직접 다루지 않고 이미지를 만들어 분석하는 것이 포렌식의 기본 원칙입니다.
+
 ```
 블랙홀링(Blackholing):
   - ISP 수준에서 공격 트래픽 차단

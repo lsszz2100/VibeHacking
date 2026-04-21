@@ -2,6 +2,9 @@
 
 ## 1. Bettercap - MITM 자동화
 
+
+`bettercap`은 MITM 공격을 위한 고급 프레임워크입니다. ARP 스푸핑, DNS 스푸핑, SSL 스트리핑, HTTP 트래픽 인젝션을 단일 도구로 수행하며, 커피숍 Wi-Fi 보안 감사 시나리오에서 활용합니다.
+
 ```bash
 # Bettercap 설치
 sudo apt install bettercap
@@ -39,6 +42,8 @@ ticker on
 
 ## 2. Airgeddon - 올인원 WiFi 공격 프레임워크
 
+airgeddon은 Evil Twin, 핸드셰이크 캡처, DoS 등 다양한 무선 공격을 메뉴 기반으로 자동화합니다. 초보자도 쉽게 무선 공격을 수행할 수 있습니다.
+
 ```bash
 # 설치
 git clone https://github.com/v1s1t0r1sh3r3/airgeddon.git
@@ -75,6 +80,8 @@ Karma:
 → MITM 위치 확보
 ```
 
+Karma 공격으로 클라이언트의 Probe Request에 응답하여 자동 연결을 유도합니다. 클라이언트가 알려진 네트워크로 착각하여 가짜 AP에 연결합니다.
+
 ```bash
 # Hostapd-WPE (Karma 모드)
 cat > /etc/hostapd-wpe/karma.conf << 'EOF'
@@ -105,6 +112,8 @@ sudo hostapd-wpe karma.conf
 
 ## 4. PMKID + GPU 클러스터 크래킹
 
+PMKID 공격은 클라이언트 연결 없이도 AP에서 PMKID를 추출하여 WPA2 키를 오프라인으로 크래킹합니다. 2018년 발견된 기법으로 핸드셰이크 캡처보다 효율적입니다.
+
 ```bash
 # 여러 GPU를 가진 시스템 설정
 # hashcat 자동으로 모든 GPU 활용
@@ -128,6 +137,8 @@ python3 hashtopolis.zip \
 ---
 
 ## 5. 드라이브바이 무선 스캔 (Wardriving)
+
+Kismet과 GPS를 결합하여 지역 무선 네트워크를 지도에 기록합니다. 이동하며 AP 정보를 수집하고 지리적 분포를 시각화합니다.
 
 ```bash
 # Kismet + GPS로 지도 작성
@@ -367,6 +378,8 @@ if __name__ == "__main__":
 
 ## 6. 채널 호핑 및 5GHz 공격
 
+5GHz 대역의 무선 네트워크를 스캔합니다. 2.4GHz보다 짧은 범위를 가지지만 채널 수가 많고 혼잡도가 낮습니다. 지원 어댑터가 필요합니다.
+
 ```bash
 # 5GHz 대역 스캔
 sudo airodump-ng --band a wlan0mon  # 5GHz only
@@ -386,6 +399,8 @@ iw phy phy0 info | grep -A5 "Band 2"  # 5GHz 지원 여부
 ---
 
 ## 7. 무선 패킷 주입 테스트
+
+무선 어댑터의 패킷 주입 기능을 테스트합니다. 주입이 가능해야 Deauth 공격, 재연결 유도, ARP 리플레이 등의 공격을 수행할 수 있습니다.
 
 ```bash
 # 주입 가능 여부 테스트
@@ -704,6 +719,9 @@ if __name__ == "__main__":
 ---
 
 ## 9. 무선 보안 평가 자동화
+
+
+배시 스크립트의 시작 부분입니다. `set -euo pipefail`을 추가하면 오류 발생 시 즉시 종료하는 안전한 스크립트를 작성할 수 있습니다.
 
 ```bash
 #!/bin/bash

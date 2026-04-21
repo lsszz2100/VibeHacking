@@ -38,6 +38,9 @@ Windows 실행 파일(.exe, .dll, .sys 등)의 파일 포맷.
 ```
 
 ### MZ 헤더 (DOS Header)
+
+PE 파일은 `MZ`(0x4D5A) 시그니처로 시작하는 DOS 헤더로 시작합니다. `e_lfanew` 필드가 실제 PE 헤더의 파일 오프셋을 가리키며, 악성코드 분석 시 헥스 에디터로 이 구조를 확인하는 것이 첫 단계입니다.
+
 ```c
 typedef struct _IMAGE_DOS_HEADER {
     WORD  e_magic;    // "MZ" = 0x4D5A (Mark Zbikowski)
@@ -134,6 +137,9 @@ VA  = 0x00401000 (실제 시작 주소)
 ```
 
 ### IAT 확인 도구
+
+`dumpbin`(Windows) 또는 `objdump`(Linux)로 PE 파일의 임포트/익스포트 테이블, 섹션 정보, 헤더 상세를 출력합니다. 임포트 함수 목록만 봐도 악성코드의 주요 기능을 빠르게 파악할 수 있습니다.
+
 ```bash
 # Windows에서 (Visual Studio 빌드 도구)
 dumpbin /imports malware.exe
@@ -318,6 +324,9 @@ pMB(NULL, "Hello", "Title", MB_OK);
 ```
 
 ### Memory Mapped File (MMF)
+
+Memory Mapped File(MMF)로 파일을 메모리에 직접 매핑합니다. PE 분석 도구에서 파일을 효율적으로 읽고 수정하는 데 사용합니다.
+
 ```c
 // 파일을 메모리에 직접 매핑
 HANDLE hFile = CreateFile("data.bin", GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -388,6 +397,9 @@ MFT (Master File Table):
 ```
 
 ### NTFS 데이터 스트림 (ADS)
+
+NTFS의 대체 데이터 스트림(ADS)으로 파일 안에 파일을 숨깁니다. 악성코드가 탐지를 피하기 위해 ADS에 페이로드를 숨기는 기법입니다.
+
 ```bash
 # ADS (Alternate Data Stream) — 파일 숨기기 기법
 # 정상 파일에 숨겨진 데이터 첨부 가능
@@ -463,6 +475,9 @@ C:\Windows\System32\config\
 ```
 
 ### 포렌식 관점 레지스트리 분석
+
+Windows 레지스트리를 포렌식 관점에서 분석합니다. 소프트웨어 설치 기록, 자동 실행 항목, 사용자 활동 흔적을 확인합니다.
+
 ```bash
 # Windows 내에서
 regedit.exe       # GUI 레지스터 편집기
@@ -479,6 +494,9 @@ hivexregedit SAM  # 레지스트리 탐색
 ## 8. PE 가상 주소 공간 (VAS) 심화
 
 ### 가상 주소 공간 개요
+
+VA(Virtual Address)는 프로세스 메모리에서의 절대 주소이며, RVA(Relative Virtual Address)는 ImageBase를 기준으로 한 상대 주소입니다. ASLR 환경에서는 ImageBase가 실행마다 달라지므로 RVA 기반으로 분석해야 합니다.
+
 ```
 VAS (Virtual Address Space):
 - 각 프로세스는 독립된 4GB 가상 주소 공간을 갖는다
@@ -645,6 +663,9 @@ if __name__ == "__main__":
 ```
 
 ### 명시적 로딩 (Explicit Loading)
+
+런타임에 LoadLibrary/GetProcAddress로 DLL을 동적으로 로드합니다. 악성코드가 정적 분석을 어렵게 만들기 위해 자주 사용하는 기법입니다.
+
 ```c
 // 실행 중 동적으로 DLL 로드 — 분석을 어렵게 만드는 기법
 HMODULE hDll = LoadLibrary("악성DLL.dll");
@@ -659,6 +680,8 @@ if (hDll) {
 // 악성코드는 LoadLibrary + GetProcAddress 패턴을 자주 사용
 // OllyDbg에서: LoadLibrary / GetProcAddress에 BP 설정하면 탐지 가능
 ```
+
+OllyDbg에서 동적 DLL 로딩 패턴을 탐지합니다. LoadLibraryA/GetProcAddress 호출 시 브레이크포인트를 설정하여 로드되는 DLL을 파악합니다.
 
 ```asm
 ; OllyDbg에서 동적 로딩 탐지

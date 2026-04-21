@@ -54,6 +54,9 @@ CI/CD 파이프라인:
 
 ### Semgrep — 코드 패턴 분석
 
+
+Semgrep는 소스코드의 보안 패턴을 탐지하는 오픈소스 SAST 도구입니다. 언어별 규칙 세트로 SQL 인젝션, XSS, 하드코딩된 시크릿 등을 탐지하며, CI 파이프라인에 간단히 통합할 수 있습니다.
+
 ```bash
 # 설치
 pip install semgrep
@@ -73,6 +76,8 @@ semgrep --config=custom_rules.yml .
 # CI 통합
 semgrep --config=auto --json --output=results.json .
 ```
+
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
 
 ```yaml
 # custom_rules.yml — 커스텀 보안 규칙
@@ -114,6 +119,9 @@ rules:
 ```
 
 ### SonarQube — 엔터프라이즈 코드 품질
+
+
+CI/CD 파이프라인에서 보안 검사를 자동화하는 명령어입니다. 컨테이너 이미지 빌드 시 Trivy로 취약점을 스캔하고, SAST 도구로 소스코드를 분석하며, 통과하지 못하면 배포를 중단합니다.
 
 ```bash
 # Docker로 SonarQube 실행
@@ -178,6 +186,8 @@ bandit -r ./src -s B105,B106  # 약한 비밀번호 체크 제외
 
 ### Snyk — 의존성 취약점 스캔
 
+취약점 스캐너 도구 목록입니다. Nessus, OpenVAS 등을 사용하여 시스템의 알려진 취약점을 자동으로 탐지합니다.
+
 ```bash
 # 설치
 npm install -g snyk
@@ -206,6 +216,9 @@ snyk monitor
 ```
 
 ### OWASP Dependency-Check
+
+
+개발 환경에서 보안 관련 Git 훅과 시크릿 탐지 도구 설정입니다. `pre-commit` 훅으로 커밋 전 자동 검사를 실행하고, `trufflehog`나 `detect-secrets`로 코드에 포함된 API 키·패스워드를 탐지합니다.
 
 ```bash
 # 설치
@@ -256,6 +269,9 @@ pip-audit -r requirements.txt --fix --dry-run
 ## 4. CI/CD 파이프라인 보안
 
 ### GitHub Actions 보안 파이프라인
+
+
+GitHub Actions 보안 워크플로우 설정 파일입니다. 코드 푸시마다 취약점 스캔, 의존성 검사, 컨테이너 이미지 스캔을 자동으로 실행하여 보안을 CI/CD 파이프라인에 내장합니다.
 
 ```yaml
 # .github/workflows/security.yml
@@ -377,6 +393,8 @@ jobs:
 
 ### GitLab CI/CD 보안 파이프라인
 
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
+
 ```yaml
 # .gitlab-ci.yml
 stages:
@@ -478,6 +496,8 @@ db_password = secret['data']['data']['db_password']
 ```
 
 ### Pre-commit 훅 설정
+
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
 
 ```yaml
 # .pre-commit-config.yaml
@@ -1232,6 +1252,9 @@ Tier 4 (적응):
 ## 11. 컨테이너 보안 강화 (Hardening)
 
 ### Dockerfile 보안 모범 사례
+
+Dockerfile로 컨테이너 이미지를 정의합니다. 보안 관점에서 최소 권한 원칙을 적용하여 불필요한 패키지와 루트 실행을 피해야 합니다.
+
 ```dockerfile
 # 나쁜 예
 FROM ubuntu:latest
@@ -1261,6 +1284,9 @@ CMD ["python", "-m", "gunicorn", "app:app"]
 ```
 
 ### Kubernetes 보안 컨텍스트
+
+GitHub Actions 보안 워크플로우 설정 파일입니다. 코드 푸시마다 취약점 스캔, 의존성 검사, 컨테이너 이미지 스캔을 자동으로 실행하여 보안을 CI/CD 파이프라인에 내장합니다.
+
 ```yaml
 # Pod 보안 설정 예시
 apiVersion: v1

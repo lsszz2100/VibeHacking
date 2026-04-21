@@ -44,6 +44,9 @@ Data Frames (데이터 프레임)
 
 ### WPA (Wi-Fi Protected Access)
 
+
+WPA2 핸드셰이크 캡처는 WPA2 크래킹의 핵심 단계입니다. `airodump-ng`로 대상 AP를 타깃팅하고 `aireplay-ng --deauth`로 연결된 클라이언트를 강제 재연결시켜 4-way 핸드셰이크를 캡처합니다.
+
 ```
 발표: 2003년 (WEP 긴급 대체)
 암호화: TKIP (RC4 기반, 개선된 IV)
@@ -57,6 +60,9 @@ Data Frames (데이터 프레임)
 ```
 
 ### WPA2 (Wi-Fi Protected Access 2)
+
+
+WPA2 핸드셰이크 캡처는 WPA2 크래킹의 핵심 단계입니다. `airodump-ng`로 대상 AP를 타깃팅하고 `aireplay-ng --deauth`로 연결된 클라이언트를 강제 재연결시켜 4-way 핸드셰이크를 캡처합니다.
 
 ```
 발표: 2004년
@@ -73,6 +79,9 @@ Data Frames (데이터 프레임)
 ```
 
 ### WPA3
+
+
+WPA2 핸드셰이크 캡처는 WPA2 크래킹의 핵심 단계입니다. `airodump-ng`로 대상 AP를 타깃팅하고 `aireplay-ng --deauth`로 연결된 클라이언트를 강제 재연결시켜 4-way 핸드셰이크를 캡처합니다.
 
 ```
 발표: 2018년
@@ -95,6 +104,8 @@ Data Frames (데이터 프레임)
 
 ### Airmon-ng - 모니터 모드
 
+airmon-ng으로 무선 인터페이스를 확인하고 모니터 모드를 활성화합니다. 패킷 캡처와 인젝션을 위해 반드시 모니터 모드로 전환해야 합니다.
+
 ```bash
 # 무선 인터페이스 확인
 iwconfig
@@ -115,6 +126,8 @@ sudo airmon-ng stop wlan0mon
 ```
 
 ### Airodump-ng - 패킷 캡처
+
+airodump-ng으로 주변의 모든 무선 AP와 클라이언트를 스캔합니다. BSSID, ESSID, 채널, 암호화 방식, 신호 강도 등의 정보를 수집합니다.
 
 ```bash
 # 모든 AP 스캔
@@ -145,6 +158,8 @@ sudo airodump-ng --band a wlan0mon
 ```
 
 ### Kismet - 고급 무선 정찰
+
+Kismet 무선 네트워크 탐지기를 설치하고 실행합니다. 숨겨진 SSID, 비인가 AP, 클라이언트 추적 등 고급 무선 정찰 기능을 제공합니다.
 
 ```bash
 # Kismet 설치 및 실행
@@ -193,6 +208,8 @@ kismetdb_to_pcap --in wardriving.kismet --out capture.pcap
 
 ### Deauthentication 공격 (핸드셰이크 강제 수집)
 
+aireplay-ng로 특정 클라이언트에 Deauthentication 패킷을 전송합니다. 강제 재연결을 유도하여 WPA2 4-way 핸드셰이크를 캡처하기 위해 사용합니다.
+
 ```bash
 # 특정 클라이언트에 Deauth 패킷 전송
 sudo aireplay-ng \
@@ -223,6 +240,8 @@ aircrack-ng handshake-01.cap
 ## 4. WPS (Wi-Fi Protected Setup) 취약점
 
 ### WPS 핀 브루트포스
+
+Reaver 또는 Bully로 WPS PIN 브루트포스를 수행합니다. WPS가 활성화된 AP에서 8자리 PIN을 체계적으로 시도하여 WPA2 키를 복구합니다.
 
 ```bash
 # WPS 활성화된 AP 탐색
@@ -255,6 +274,8 @@ sudo reaver \
 ## 5. Evil Twin (가짜 AP) 공격
 
 ### 기본 Evil Twin 설정
+
+합법적 AP를 복제한 Evil Twin AP를 생성하는 기본 설정입니다. hostapd로 가짜 AP를 만들고 dnsmasq로 DHCP/DNS를 제공합니다.
 
 ```bash
 # 1. 합법적 AP 정보 수집
@@ -298,6 +319,8 @@ sudo iptables -A FORWARD -i wlan1 -j ACCEPT
 
 ### Captive Portal (인증 페이지) 설정
 
+아파치 웹서버로 Captive Portal 인증 페이지를 설정합니다. Evil Twin AP에 연결한 피해자를 피싱 페이지로 유도하여 Wi-Fi 비밀번호를 탈취합니다.
+
 ```bash
 # Apache 웹서버 + 피싱 페이지
 sudo apt install apache2
@@ -331,6 +354,9 @@ sudo iptables -t nat -A PREROUTING -i wlan1 -p tcp --dport 443 \
 ---
 
 ## 6. 무선 도구 빠른 참조
+
+
+aircrack-ng 스위트의 핵심 도구들입니다. `airmon-ng`로 무선 카드를 모니터 모드로 전환하고, `airodump-ng`로 주변 AP와 클라이언트를 스캔하며, `aireplay-ng`로 패킷 인젝션(deauth 등)을 수행합니다.
 
 ```
 airmon-ng    → 모니터 모드 관리
@@ -606,6 +632,9 @@ if __name__ == "__main__":
 ## 8. MAC 주소 스푸핑 (익명성 확보)
 
 ### MAC 주소 변경 이유와 방법
+
+macchanger로 MAC 주소를 변경하여 무선 공격 시 추적을 어렵게 합니다. 공격 전에 실제 MAC 주소를 숨기는 것이 opsec의 기본입니다.
+
 ```bash
 # MAC 주소란?
 # 네트워크 인터페이스에 하드웨어 수준으로 부여된 고유 식별자
@@ -634,6 +663,9 @@ sudo ip link set wlan0 up
 ## 9. WPA2 크랙 실전 — 핸드셰이크 수집부터 크랙까지
 
 ### 단계별 전체 흐름
+
+무선 해킹의 전체 단계별 절차입니다. 모니터 모드 활성화 → AP 스캔 → 핸드셰이크 캡처 → 오프라인 크래킹 순서로 진행합니다.
+
 ```bash
 # 1단계: 모니터 모드 활성화 + MAC 변경
 sudo airmon-ng check kill
@@ -660,6 +692,9 @@ hashcat -a 0 -m 22000 hash.hc22000 wordlist.txt
 ```
 
 ### PMKID 공격 (클라이언트 없이 크랙 — 2018)
+
+PMKID 공격은 클라이언트 연결 없이도 AP에서 PMKID를 추출하여 WPA2 키를 오프라인으로 크래킹합니다. 2018년 발견된 기법으로 핸드셰이크 캡처보다 효율적입니다.
+
 ```bash
 # 클라이언트가 연결되지 않아도 AP의 PMKID 수집 가능
 # hcxdumptool 사용

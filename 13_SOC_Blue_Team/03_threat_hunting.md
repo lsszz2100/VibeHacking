@@ -18,6 +18,9 @@
 
 ### 가설 기반 헌팅 (TaHiTI 모델)
 
+
+위협 헌팅은 '공격자가 이미 내부에 있다'는 가정 하에 능동적으로 침해 흔적을 찾는 활동입니다. MITRE ATT&CK 기법을 가설로 설정하고, 로그와 메모리를 분석하여 탐지 시스템이 놓친 공격자 활동을 추적합니다.
+
 ```
 1. 인텔리전스 수집
    - 최신 위협 보고서 분석
@@ -81,6 +84,8 @@
 
 ### 랜섬웨어 타임라인 재구성
 
+Splunk SPL 쿼리로 랜섬웨어 공격의 타임라인을 재구성합니다. 초기 침투부터 파일 암호화까지 각 단계의 이벤트를 시계열로 조합합니다.
+
 ```spl
 # 랜섬웨어 초기 지표 탐지
 index=sysmon (EventCode=1 OR EventCode=11 OR EventCode=13)
@@ -106,6 +111,8 @@ index=security EventCode=4624 LogonType=3
 ```
 
 ### 랜섬웨어 IOC 추출
+
+메모리 덤프나 악성 파일에서 랜섬웨어 IOC를 추출합니다. 암호화 확장자, 랜섬노트 파일명, C2 주소, 비트코인 지갑 주소를 탐지합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -414,6 +421,8 @@ if __name__ == "__main__":
 
 ### Cobalt Strike 탐지
 
+Splunk로 Cobalt Strike 비콘의 HTTP 통신 패턴을 탐지합니다. 비콘의 주기적인 체크인 패턴과 기본 Malleable C2 프로필 특징을 탐지합니다.
+
 ```spl
 # HTTP 비콘 패턴 (기본 프로필)
 index=proxy
@@ -498,6 +507,8 @@ cat ssl.log | zeek-cut ts id.orig_h id.resp_h ja3 server_name \
 
 ### Zeek 스크립트 - C2 탐지
 
+Zeek 스크립트로 C2 통신을 탐지합니다. 비콘 주기, 데이터 크기, 통신 패턴을 기반으로 의심스러운 연결을 실시간으로 탐지하고 알림을 발생시킵니다.
+
 ```zeek
 # c2_detection.zeek
 @load base/protocols/http
@@ -550,6 +561,9 @@ event http_request(c: connection, method: string, original_URI: string,
 ```
 
 ### 조사 (4-24시간)
+
+
+로그 파일에서 위협 헌팅 패턴을 검색합니다. 알려진 C2 도메인, 비정상 명령 실행, base64 인코딩된 PowerShell, 의심스러운 프로세스 이름 등을 grep으로 빠르게 탐색합니다.
 
 ```bash
 # 랜섬웨어 초기 진입점 찾기
@@ -652,6 +666,8 @@ alert http any any -> $HTTP_SERVERS any (
 ## 7. 침해 지표(IOC) 공유
 
 ### STIX/TAXII 포맷
+
+STIX/TAXII 형식으로 위협 인텔리전스를 공유합니다. STIX 2.1 오브젝트로 IOC를 구조화하고 TAXII 서버를 통해 자동으로 배포합니다.
 
 ```python
 #!/usr/bin/env python3

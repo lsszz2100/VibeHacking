@@ -2,6 +2,8 @@
 
 ## 1. 소켓 프로그래밍 기초
 
+Python socket 모듈로 TCP/UDP 네트워크 통신을 구현합니다. 클라이언트/서버 소켓 생성, 연결, 데이터 송수신의 기본 구조입니다.
+
 ```python
 import socket
 import threading
@@ -24,6 +26,8 @@ if check_port("192.168.1.1", 80):
 ---
 
 ## 2. 멀티스레드 포트 스캐너
+
+threading 모듈로 병렬 포트 스캔을 구현합니다. 스레드 풀로 여러 포트를 동시에 스캔하여 속도를 크게 향상시킵니다.
 
 ```python
 import socket
@@ -145,6 +149,9 @@ if __name__ == "__main__":
 
 ## 3. 네트워크 호스트 탐지 (ARP 스캔)
 
+
+Scapy는 Python으로 네트워크 패킷을 직접 생성·송수신·분석할 수 있는 강력한 라이브러리입니다. ARP 스푸핑, 포트 스캔, 패킷 인젝션 등 저수준 네트워크 공격을 파이썬 코드로 구현할 때 활용됩니다.
+
 ```python
 from scapy.all import ARP, Ether, srp
 import ipaddress
@@ -200,6 +207,9 @@ if __name__ == "__main__":
 ---
 
 ## 4. 패킷 스니퍼
+
+
+Scapy는 Python으로 네트워크 패킷을 직접 생성·송수신·분석할 수 있는 강력한 라이브러리입니다. ARP 스푸핑, 포트 스캔, 패킷 인젝션 등 저수준 네트워크 공격을 파이썬 코드로 구현할 때 활용됩니다.
 
 ```python
 from scapy.all import sniff, IP, TCP, UDP, DNS, Raw
@@ -296,6 +306,8 @@ def credential_sniffer(interface="eth0"):
 
 ## 5. DNS 열거 도구
 
+dnspython 라이브러리로 DNS 레코드를 열거합니다. A, MX, NS, TXT 레코드 조회와 서브도메인 브루트포스를 자동화합니다.
+
 ```python
 import dns.resolver
 import concurrent.futures
@@ -385,6 +397,8 @@ if __name__ == "__main__":
 ---
 
 ## 6. SSH 브루트포서
+
+paramiko SSH 라이브러리로 SSH 브루트포스 공격을 구현합니다. 워드리스트 기반으로 SSH 자격증명을 시도합니다.
 
 ```python
 import paramiko
@@ -503,6 +517,8 @@ class SSHBruteForcer:
 
 ## 7. 취약점 스캐너 (CVE 기반)
 
+소켓 기반 CVE 취약점 스캐너입니다. 배너 그래빙으로 서비스 버전을 파악하고 알려진 취약점 데이터베이스와 매칭합니다.
+
 ```python
 import socket
 import re
@@ -618,6 +634,8 @@ class VulnScanner:
 ---
 
 ## 8. 실전 OSINT 도구 모음
+
+OSINT 자동화 도구입니다. Shodan, Censys, VirusTotal API를 활용하여 대상에 대한 공개 정보를 수집합니다.
 
 ```python
 import requests

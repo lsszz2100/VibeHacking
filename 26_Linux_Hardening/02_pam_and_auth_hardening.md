@@ -31,6 +31,8 @@ PAM 구조:
 
 ### 2-1. pam_pwquality 설정
 
+PAM 설정으로 Linux 인증 정책을 강화합니다. 패스워드 복잡도, 계정 잠금, 로그인 시도 제한 등을 구성합니다.
+
 ```bash
 # 설치
 apt install libpam-pwquality  # Debian
@@ -58,6 +60,8 @@ EOF
 
 ### 2-2. 패스워드 이력 및 만료 정책
 
+pam_pwhistory.so로 이전에 사용한 비밀번호의 재사용을 차단합니다. remember=5로 최근 5개 비밀번호와 동일한 것을 사용하지 못하게 합니다.
+
 ```bash
 # /etc/pam.d/common-password에 이력 추가
 # password required pam_pwhistory.so remember=12 use_authtok
@@ -77,6 +81,8 @@ chage -l username
 ```
 
 ### 2-3. 계정 잠금 정책 (pam_faillock)
+
+PAM 설정으로 Linux 인증 정책을 강화합니다. 패스워드 복잡도, 계정 잠금, 로그인 시도 제한 등을 구성합니다.
 
 ```bash
 # /etc/pam.d/common-auth 상단에 추가 (Ubuntu 20.04+)
@@ -103,6 +109,8 @@ faillock --user username --reset
 ## 3. SSH 인증 강화
 
 ### 3-1. SSH 키 인증 전용 설정
+
+SSH 키 기반 인증을 설정합니다. 비밀번호 대신 공개키/개인키 쌍을 사용하여 더 안전하게 원격 서버에 접속할 수 있습니다.
 
 ```bash
 # /etc/ssh/sshd_config
@@ -143,6 +151,9 @@ sshd -t && systemctl reload sshd
 
 ### 3-2. SSH 2FA (Google Authenticator)
 
+
+SSH에 OTP(One-Time Password) 2단계 인증을 추가하는 설정입니다. Google Authenticator PAM 모듈을 설치하고 `sshd_config`에서 `ChallengeResponseAuthentication yes`를 설정하면 패스워드+OTP 인증이 적용됩니다.
+
 ```bash
 # 설치
 apt install libpam-google-authenticator
@@ -165,6 +176,8 @@ systemctl reload sshd
 ---
 
 ## 4. sudo 보안 강화
+
+sudoers 파일로 sudo 권한을 세밀하게 제어합니다. visudo로만 편집해야 문법 오류를 방지할 수 있으며 최소 권한 원칙을 적용합니다.
 
 ```bash
 # /etc/sudoers (visudo 사용 필수)
@@ -193,6 +206,8 @@ Defaults syslog=auth
 ---
 
 ## 5. 계정 및 세션 보안
+
+불필요한 시스템 계정을 잠그고 셸 접속을 차단합니다. /sbin/nologin이나 /bin/false를 셸로 설정하여 로그인을 방지합니다.
 
 ```bash
 # 불필요 시스템 계정 잠금
@@ -229,6 +244,8 @@ EOF
 ---
 
 ## 6. 감사 로깅 (auditd)
+
+auditd 감사 데몬을 설치하고 시작합니다. 파일 접근, 명령어 실행, 권한 변경 등 보안 이벤트를 로그로 기록합니다.
 
 ```bash
 # auditd 설치 및 시작

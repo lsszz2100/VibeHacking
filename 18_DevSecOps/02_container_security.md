@@ -19,6 +19,9 @@
 
 ### 안전한 Dockerfile 작성
 
+
+컨테이너 보안 점검 명령어입니다. 컨테이너는 경량화 환경이지만 잘못 설정된 권한, 불필요한 capabilities, 루트 실행 등이 탈출 취약점으로 이어질 수 있습니다.
+
 ```dockerfile
 # ✅ 보안 강화된 Dockerfile
 
@@ -66,6 +69,8 @@ EXPOSE 8000
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
+Dockerfile로 컨테이너 이미지를 정의합니다. 보안 관점에서 최소 권한 원칙을 적용하여 불필요한 패키지와 루트 실행을 피해야 합니다.
+
 ```dockerfile
 # ❌ 취약한 Dockerfile 예시
 FROM ubuntu:latest          # 최신 태그 - 불안정
@@ -80,6 +85,9 @@ CMD ["python", "app.py"]
 ```
 
 ### Trivy — 이미지 취약점 스캔
+
+
+컨테이너 이미지 취약점 스캐너입니다. `trivy image`로 도커 이미지 내 OS 패키지와 언어 라이브러리의 알려진 CVE를 검사하여 CI/CD 파이프라인에 통합할 수 있습니다.
 
 ```bash
 # ── Trivy 설치 ────────────────────────────────────────────────
@@ -146,6 +154,9 @@ EOF
 ```
 
 ### Docker Bench Security
+
+
+컨테이너 보안 점검 명령어입니다. 컨테이너는 경량화 환경이지만 잘못 설정된 권한, 불필요한 capabilities, 루트 실행 등이 탈출 취약점으로 이어질 수 있습니다.
 
 ```bash
 # CIS Docker 벤치마크 자동 검사
@@ -312,6 +323,8 @@ sudo apt-get update && sudo apt-get install -y falco
 
 # Falco 규칙 예시
 ```
+
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
 
 ```yaml
 # custom_falco_rules.yaml
@@ -552,6 +565,8 @@ if __name__ == "__main__":
 
 ### Pod Security Standards
 
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
+
 ```yaml
 # namespace-security.yaml
 apiVersion: v1
@@ -617,6 +632,8 @@ spec:
 
 ### RBAC 최소 권한 설정
 
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
+
 ```yaml
 # rbac-minimal.yaml
 # 최소 권한 ServiceAccount
@@ -658,6 +675,8 @@ subjects:
 ```
 
 ### NetworkPolicy — 마이크로세그멘테이션
+
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
 
 ```yaml
 # network-policy.yaml
@@ -742,6 +761,8 @@ COSIGN_EXPERIMENTAL=1 cosign verify registry.io/myapp:v1.0
 helm install policy-controller sigstore/policy-controller
 ```
 
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
+
 ```yaml
 # cluster-image-policy.yaml - 서명된 이미지만 허용
 apiVersion: policy.sigstore.dev/v1beta1
@@ -778,6 +799,9 @@ grype registry.io/myapp:v1.0
 ---
 
 ## 5. Docker Compose 보안 설정
+
+
+컨테이너 보안 점검 명령어입니다. 컨테이너는 경량화 환경이지만 잘못 설정된 권한, 불필요한 capabilities, 루트 실행 등이 탈출 취약점으로 이어질 수 있습니다.
 
 ```yaml
 # docker-compose.secure.yml

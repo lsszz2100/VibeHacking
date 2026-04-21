@@ -451,6 +451,9 @@ if __name__ == "__main__":
 
 ## 6. SIEM 룰 자동 생성 (Claude API)
 
+
+Claude/GPT API를 보안 자동화에 통합하는 코드입니다. 프롬프트 설계 시 명확한 역할과 출력 형식을 지정하면 취약점 분석·익스플로잇 코드 설명·보안 권고 생성 등에서 일관된 결과를 얻을 수 있습니다.
+
 ```python
 import anthropic
 import argparse
@@ -462,6 +465,9 @@ SIEM_SYSTEM = """SIEM 엔지니어. 악성 행위 설명을 Sigma 룰과 Splunk 
 
 응답 형식:
 ## Sigma Rule
+
+YAML 설정 파일입니다. 쿠버네티스, CI/CD 파이프라인, 보안 도구 설정에 널리 사용되며 잘못된 설정이 보안 취약점으로 이어질 수 있습니다.
+
 ```yaml
 [sigma 룰]
 ```

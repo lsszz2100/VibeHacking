@@ -50,6 +50,9 @@
 
 ### hashid
 
+
+`hashid`와 `hash-identifier`는 해시 문자열의 형식을 자동으로 식별하는 도구입니다. 해시의 길이, 문자 집합, 접두사(`$6$`, `$2y$` 등)를 분석하여 가능한 해시 알고리즘 목록을 반환합니다.
+
 ```bash
 # 설치
 pip install hashid
@@ -77,6 +80,8 @@ Analyzing '5f4dcc3b5aa765d61d8327deb882cf99'
 
 ### hash-identifier
 
+hash-identifier 도구를 설치합니다. 해시 값의 길이와 형식을 분석하여 알고리즘 종류를 추정합니다.
+
 ```bash
 # 설치
 sudo apt install hash-identifier
@@ -92,6 +97,8 @@ python3 hash-id.py
 ```
 
 ### name-that-hash (현대적 대안)
+
+name-that-hash는 현대적인 해시 식별 도구입니다. hashid보다 더 많은 해시 유형을 지원하고 확률 기반으로 결과를 정렬합니다.
 
 ```bash
 pip install name-that-hash
@@ -111,6 +118,8 @@ nth --text 'abc123...' --json
 ## 워드리스트 구조
 
 ### rockyou.txt
+
+칼리 리눅스에 포함된 rockyou.txt 워드리스트 경로입니다. 약 1,400만 개의 실제 유출된 비밀번호를 포함하며 패스워드 크래킹의 기본 시작점입니다.
 
 ```bash
 # Kali Linux 기본 경로
@@ -132,6 +141,8 @@ grep '[0-9]\{4\}$' /usr/share/wordlists/rockyou.txt | wc -l
 ```
 
 ### SecLists
+
+SecLists는 침투 테스트에 필요한 다양한 목록을 모은 컬렉션입니다. 서브도메인, 디렉토리, 비밀번호, 사용자명 등 수십 가지 카테고리를 포함합니다.
 
 ```bash
 # 설치
@@ -160,6 +171,9 @@ ls /usr/share/seclists/Passwords/
 
 ### CeWL — 웹사이트 크롤링
 
+
+`cewl`은 지정한 웹사이트를 크롤링하여 단어를 수집하고 커스텀 워드리스트를 생성합니다. 대상 조직 관련 단어(직원명, 제품명, 슬로건)가 패스워드에 포함될 가능성이 높아 타겟형 공격에 효과적입니다.
+
 ```bash
 # 기본 사용법 (깊이 2, 최소 길이 6)
 cewl http://target.com -d 2 -m 6 -w wordlist.txt
@@ -180,6 +194,9 @@ cewl http://target.com -d 2 -m 6 --with-numbers -w raw.txt
 ```
 
 ### Crunch — 패턴 기반 생성
+
+
+`crunch`는 지정한 문자 집합과 길이로 커스텀 워드리스트를 생성하는 도구입니다. 특정 패스워드 정책(길이, 포함 문자)을 알고 있을 때 효율적인 타겟 워드리스트를 만들 수 있습니다.
 
 ```bash
 # crunch <min> <max> <charset> [options]
@@ -203,6 +220,8 @@ crunch 1 1 -p admin user guest root -o keywords.txt
 
 ### CUPP — 개인정보 기반 생성
 
+CUPP(Common User Password Profiler)는 대상자 개인 정보 기반 맞춤형 워드리스트를 생성합니다. 이름, 생일, 관심사 등을 조합하여 개인화된 비밀번호를 생성합니다.
+
 ```bash
 # 설치
 git clone https://github.com/Mebus/cupp /opt/cupp
@@ -221,6 +240,8 @@ wc -l cupp_output.txt
 ```
 
 ### 워드리스트 후처리
+
+수집한 워드리스트를 중복 제거하고 정렬하여 최적화합니다. 크기를 줄이고 중복 제거로 크래킹 효율을 높입니다.
 
 ```bash
 # 중복 제거 및 정렬
@@ -460,6 +481,8 @@ if __name__ == "__main__":
 
 ### 스크립트 실행 예시
 
+해시 식별 및 크래킹 스크립트의 실행 예시입니다. 해시 값을 입력하면 자동으로 유형을 판별하고 적합한 크래킹 도구를 선택합니다.
+
 ```bash
 # 단일 MD5 해시 크래킹
 python3 hash_cracker.py -H 5f4dcc3b5aa765d61d8327deb882cf99 \
@@ -482,6 +505,8 @@ python3 hash_cracker.py -f hashes.txt -w /opt/SecLists/Passwords/rockyou-75.txt 
 ---
 
 ## 해시 샘플 레퍼런스
+
+각 알고리즘별 해시를 직접 생성하여 참고 샘플을 만듭니다. MD5, SHA-1, SHA-256, bcrypt 등의 출력 형식을 비교합니다.
 
 ```bash
 # 직접 해시 생성 (테스트용)

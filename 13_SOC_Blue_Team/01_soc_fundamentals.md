@@ -716,6 +716,8 @@ SIEM/로그 분석:
 
 ### 9-1. 사용자 계정 조사
 
+침해 의심 시스템의 사용자 계정과 권한을 조사합니다. 알 수 없는 계정이나 관리자 그룹에 추가된 계정이 있는지 확인합니다.
+
 ```bash
 # 모든 사용자 계정 목록 확인 (수상한 계정 탐지)
 cat /etc/passwd
@@ -812,6 +814,9 @@ echo $PATH
 ```
 
 ### 9-5. 파일 조사
+
+
+최근 변경된 파일을 탐색합니다. 악성코드는 종종 `/tmp`, `/var/tmp`, 홈 디렉토리에 실행 파일을 드롭합니다. `find`로 최근 24~48시간 내 생성·수정된 파일을 수집하여 악성 파일을 식별합니다.
 
 ```bash
 # 홈 디렉토리에서 512KB 초과 파일 탐지
@@ -988,6 +993,9 @@ Advanced Level (고급):
 
 ### 10-1. 사용자 계정 조사
 
+
+침해 의심 시스템의 사용자 계정을 조사합니다. 숨겨진 관리자 계정, 최근 생성된 계정, 패스워드 없는 계정 등을 확인하여 공격자가 만든 백도어 계정을 탐지합니다.
+
 ```cmd
 REM GUI: 로컬 사용자 관리
 lusrmgr.msc
@@ -999,12 +1007,17 @@ REM 관리자 그룹 멤버 확인
 net localgroup administrators
 ```
 
+PowerShell Get 커맨드렛으로 시스템 정보를 조회합니다. 프로세스, 서비스, 레지스트리 항목 등 시스템 상태를 확인하는 데 사용합니다.
+
 ```powershell
 # PowerShell: 로컬 사용자 목록 (활성화 여부 포함)
 Get-LocalUser
 ```
 
 ### 10-2. 프로세스 조사
+
+
+Windows 프로세스 조사 명령어입니다. `tasklist /svc`로 각 프로세스가 실행하는 서비스를, `wmic process get`으로 부모 프로세스 ID 포함 상세 정보를 수집합니다.
 
 ```cmd
 REM 프로세스 목록 (PID, 메모리 포함)
@@ -1013,6 +1026,8 @@ tasklist
 REM 프로세스별 서비스 연결 확인
 tasklist /svc
 ```
+
+PowerShell Get 커맨드렛으로 시스템 정보를 조회합니다. 프로세스, 서비스, 레지스트리 항목 등 시스템 상태를 확인하는 데 사용합니다.
 
 ```powershell
 # PowerShell: 프로세스 목록
@@ -1030,6 +1045,9 @@ wmic process where 'ProcessID=1234' get Commandline
 
 ### 10-3. 서비스 및 자동 실행
 
+
+서비스와 자동 실행 항목을 조사합니다. `sc query`로 실행 중인 서비스를, `reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`으로 레지스트리 자동 실행 항목을 확인합니다.
+
 ```cmd
 REM 실행 중인 서비스 목록
 net start
@@ -1040,6 +1058,8 @@ sc query | more
 REM 스케줄 작업 목록
 schtasks
 ```
+
+PowerShell Get 커맨드렛으로 시스템 정보를 조회합니다. 프로세스, 서비스, 레지스트리 항목 등 시스템 상태를 확인하는 데 사용합니다.
 
 ```powershell
 # 시작 프로그램 목록 (WMIC)
@@ -1061,6 +1081,9 @@ reg query HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 
 ### 10-5. 네트워크 조사
 
+
+활성 네트워크 연결을 분석합니다. 알 수 없는 외부 IP 연결, 비표준 포트 사용, ESTABLISHED 상태에서 비정상적으로 많은 연결을 확인하여 C2 통신 징후를 탐지합니다.
+
 ```cmd
 REM 활성 TCP/UDP 연결 (PID 포함)
 netstat -ano
@@ -1072,6 +1095,8 @@ REM 세션 연결 확인 (외부 시스템과 세션)
 net use
 net session
 ```
+
+PowerShell Get 커맨드렛으로 시스템 정보를 조회합니다. 프로세스, 서비스, 레지스트리 항목 등 시스템 상태를 확인하는 데 사용합니다.
 
 ```powershell
 # TCP 연결 상태 확인
@@ -1091,6 +1116,8 @@ netsh advfirewall show currentprofile
 REM 보안 이벤트 로그 내보내기
 wevtutil qe security
 ```
+
+PowerShell Get 커맨드렛으로 시스템 정보를 조회합니다. 프로세스, 서비스, 레지스트리 항목 등 시스템 상태를 확인하는 데 사용합니다.
 
 ```powershell
 # 이벤트 로그 목록

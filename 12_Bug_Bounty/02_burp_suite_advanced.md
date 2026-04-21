@@ -90,6 +90,9 @@ Options → Attack Results:
 
 ### Intruder 속도 제한 우회
 
+
+Burp Suite Intruder는 특정 파라미터에 페이로드를 자동 삽입하는 공격 자동화 도구입니다. Sniper(단일 삽입점), Battering ram(전체 동시), Pitchfork(병렬), Cluster bomb(조합) 모드로 다양한 공격 시나리오를 실행합니다.
+
 ```
 Options → Request Engine:
   Number of threads: 1
@@ -235,6 +238,9 @@ Options:
 ```
 
 ### Turbo Intruder (고속 요청)
+
+
+Burp Suite Intruder는 특정 파라미터에 페이로드를 자동 삽입하는 공격 자동화 도구입니다. Sniper(단일 삽입점), Battering ram(전체 동시), Pitchfork(병렬), Cluster bomb(조합) 모드로 다양한 공격 시나리오를 실행합니다.
 
 ```python
 # race_condition.py — Turbo Intruder 스크립트 (Burp Suite 내에서 실행)
@@ -855,6 +861,8 @@ if __name__ == "__main__":
 
 ### CL.TE 스머글링 (Content-Length + Transfer-Encoding)
 
+HTTP 요청/응답 예시입니다. 웹 취약점 분석 시 실제 HTTP 패킷 구조를 이해하면 정확한 페이로드를 작성하는 데 도움이 됩니다.
+
 ```http
 POST / HTTP/1.1
 Host: vulnerable.com
@@ -867,6 +875,8 @@ SMUGGLED
 ```
 
 ### TE.CL 스머글링
+
+HTTP 요청/응답 예시입니다. 웹 취약점 분석 시 실제 HTTP 패킷 구조를 이해하면 정확한 페이로드를 작성하는 데 도움이 됩니다.
 
 ```http
 POST / HTTP/1.1

@@ -27,6 +27,8 @@ WPA2 크랙 방법론
 
 ### 핸드셰이크 파일 변환
 
+aircrack-ng 형식(.cap)의 핸드셰이크 파일을 hashcat이 처리할 수 있는 형식으로 변환합니다. hcxtools의 hcxpcapngtool을 사용합니다.
+
 ```bash
 # aircrack-ng 캡처 파일 → hashcat 형식
 # hcxdumptool/hcxtools 사용 (권장)
@@ -57,6 +59,8 @@ hcxhashtool -i capture.hc22000 --info=short
 ```
 
 ### Hashcat WPA2 크래킹
+
+hashcat 모드 22000으로 WPA2 핸드셰이크나 PMKID를 크래킹합니다. GPU 가속으로 사전 공격과 마스크 공격을 결합하여 효율을 높입니다.
 
 ```bash
 # 모드 22000 (WPA2 PMKID/핸드셰이크 통합)
@@ -98,6 +102,8 @@ hashcat -m 22000 capture.hc22000 --show
 
 ### Aircrack-ng를 이용한 크래킹
 
+rcrack으로 미리 생성된 레인보우 테이블을 사용하여 해시를 크래킹합니다. 저장 공간과 계산 시간을 교환(time-memory trade-off)하는 방식입니다.
+
 ```bash
 # 딕셔너리 공격
 aircrack-ng capture-01.cap -w /usr/share/wordlists/rockyou.txt
@@ -115,6 +121,9 @@ aircrack-ng capture-01.cap -w wordlist.txt -q
 
 ## 2. PMKID 공격 (2018)
 
+
+PMKID 공격은 클라이언트 없이도 AP의 EAPOL 첫 번째 프레임에서 PMKID를 추출하여 오프라인 크래킹을 수행합니다. `hcxdumptool`과 `hcxtools`로 캡처 후 hashcat으로 크래킹합니다.
+
 ```
 기존: 클라이언트 핸드셰이크 필요 (시간 소요)
 PMKID: AP에 연결 시도만으로 수집 가능
@@ -123,6 +132,8 @@ PMKID = HMAC-SHA1(PMK, "PMK Name" || BSSID || Client_MAC)
 → PMK = PBKDF2(PSK, SSID)
 → 오프라인 딕셔너리 공격 가능
 ```
+
+PMKID 공격은 클라이언트 연결 없이도 AP에서 PMKID를 추출하여 WPA2 키를 오프라인으로 크래킹합니다. 2018년 발견된 기법으로 핸드셰이크 캡처보다 효율적입니다.
 
 ```bash
 # PMKID 수집 (hcxdumptool)
@@ -147,6 +158,8 @@ hashcat -m 22000 pmkid.hc22000 wordlist.txt
 ## 3. Wordlist 최적화
 
 ### 효과적인 워드리스트 구성
+
+WPA2 크래킹에 효과적인 워드리스트를 구성합니다. rockyou.txt를 기반으로 한국어 패턴(생년월일, 전화번호 등)을 추가하면 성공률이 높아집니다.
 
 ```bash
 # 기본 워드리스트
@@ -245,6 +258,8 @@ john john_file.hccap --mask="?d?d?d?d?d?d?d?d"
 
 ## 5. Wifite2 - 자동화 공격
 
+Wifite2는 무선 공격을 자동화하는 도구입니다. 주변 AP를 스캔하고 핸드셰이크 캡처, WPS 공격, PMKID 공격 등을 자동으로 수행합니다.
+
 ```bash
 # Wifite2 설치
 sudo apt install wifite
@@ -274,6 +289,9 @@ sudo wifite \
 ---
 
 ## 6. 고급: PMKID 캐시 테이블
+
+
+PMKID 공격은 클라이언트 없이도 AP의 EAPOL 첫 번째 프레임에서 PMKID를 추출하여 오프라인 크래킹을 수행합니다. `hcxdumptool`과 `hcxtools`로 캡처 후 hashcat으로 크래킹합니다.
 
 ```python
 #!/usr/bin/env python3
@@ -501,6 +519,8 @@ if __name__ == "__main__":
 
 ## 7. 성능 벤치마크
 
+hashcat 벤치마크로 GPU 성능을 측정합니다. WPA2 모드의 초당 해시 수(H/s)를 확인하여 크래킹 예상 시간을 계산합니다.
+
 ```bash
 # hashcat 성능 테스트
 hashcat -b -m 22000
@@ -526,6 +546,8 @@ hashcat -b -m 22000
 ---
 
 ## 8. WPA Enterprise (802.1X) 공격
+
+WPA Enterprise(802.1X) 환경에서 PEAP/MSCHAPv2 자격증명을 캡처합니다. hostapd-wpe로 가짜 RADIUS 서버를 운영하여 자격증명을 가로챕니다.
 
 ```bash
 # PEAP/MSCHAPv2 캡처 및 크래킹

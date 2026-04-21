@@ -19,6 +19,8 @@ OSINT 소스:
 
 ## 2. Shodan — 인터넷 노출 자산 탐색
 
+Shodan CLI로 인터넷에 노출된 기기와 서비스를 탐색합니다. 특정 취약점을 가진 서버, 기본 비밀번호를 사용하는 장치 등을 검색합니다.
+
 ```bash
 # Shodan CLI 설치
 pip install shodan
@@ -46,6 +48,8 @@ shodan domain example.com
 shodan search 'product:"Cobalt Strike Beacon"'
 shodan search 'ssl.jarm:07d14d16d21d21d07c42d41d00041d24a458a375eef0c576d23a7bab9a9fb1'
 ```
+
+Shodan API로 Cobalt Strike C2 서버를 탐지합니다. 비콘 설정의 특징적인 응답 패턴으로 악성 인프라를 식별합니다.
 
 ```python
 import shodan
@@ -102,6 +106,8 @@ if __name__ == "__main__":
 ---
 
 ## 3. 패시브 DNS 및 인증서 투명성
+
+패시브 DNS와 인증서 투명성(CT) 로그를 활용하여 도메인 히스토리와 서브도메인을 수집합니다. SecurityTrails, Censys 등 서비스를 활용합니다.
 
 ```bash
 # SecurityTrails — 패시브 DNS, 서브도메인 이력
@@ -200,6 +206,8 @@ curl -X POST https://threatfox-api.abuse.ch/api/v1/ \
   -d '{"query":"get_iocs","days":1}'
 ```
 
+ThreatFox API로 최신 IOC 피드를 수집합니다. IP, 도메인, URL, 해시 등의 IOC를 자동으로 가져와 방어 시스템에 적용합니다.
+
 ```python
 import requests
 import argparse
@@ -266,6 +274,8 @@ if __name__ == "__main__":
 ---
 
 ## 5. C2 인프라 추적
+
+Cobalt Strike, Metasploit 등 C2 프레임워크의 특징적인 네트워크 패턴을 분석합니다. Malleable C2 프로필과 비콘 응답으로 공격 인프라를 추적합니다.
 
 ```bash
 # Cobalt Strike Beacon 프로파일 분석
@@ -357,6 +367,8 @@ if __name__ == "__main__":
 
 자동화 (Tor 경유 크롤링):
 ```
+
+Tor 프록시를 통해 다크웹에서 위협 인텔리전스를 합법적으로 수집합니다. 유출된 자격증명이나 조직 관련 데이터를 모니터링합니다.
 
 ```python
 import requests

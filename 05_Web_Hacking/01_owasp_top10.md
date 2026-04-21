@@ -30,6 +30,9 @@ OAT-021 Denial of Inventory — 재고 선점으로 구매 방해 (v1.2 신규)
 ```
 
 ### 자동화 위협 대응 전략
+
+자동화 위협(봇 공격)에 대응하기 위한 다계층 방어 전략입니다. Rate Limiting으로 요청 빈도를 제한하고, CAPTCHA와 디바이스 핑거프린팅을 조합하며, 봇 관리 솔루션(Cloudflare, AWS WAF)으로 알려진 봇 IP를 차단합니다.
+
 ```
 탐지 레이어:
   - 행동 분석 (요청 빈도, 패턴)
@@ -126,6 +129,9 @@ OAT-021 Denial of Inventory — 재고 선점으로 구매 방해 (v1.2 신규)
 ```
 
 ### 안전한 비밀번호 해싱 알고리즘
+
+bcrypt, Argon2 등 안전한 패스워드 해싱 알고리즘을 Python으로 구현합니다. MD5/SHA 같은 일반 해시 대신 반드시 단방향 패스워드 해시를 사용해야 합니다.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -229,6 +235,9 @@ if __name__ == "__main__":
 ```
 
 ### TLS 설정 점검
+
+TLS 버전과 암호 스위트를 점검합니다. TLS 1.0/1.1과 취약한 암호화 알고리즘(RC4, DES)이 비활성화되어 있는지 확인합니다.
+
 ```bash
 # TLS 버전 및 암호 스위트 점검
 nmap --script ssl-enum-ciphers -p 443 target.com
@@ -250,6 +259,9 @@ add_header Strict-Transport-Security "max-age=63072000" always;
 ## A4:2017 XXE (XML External Entities)
 
 ### XXE 공격 원리
+
+XXE(XML External Entity) 취약점은 XML 파서가 외부 엔티티를 처리할 때 발생합니다. `<!ENTITY xxe SYSTEM 'file:///etc/passwd'>`처럼 파일 읽기나 SSRF 공격에 활용됩니다. 외부 엔티티 처리를 비활성화하여 방어합니다.
+
 ```xml
 <!-- 정상 XML -->
 <user><name>admin</name></user>
@@ -264,6 +276,9 @@ add_header Strict-Transport-Security "max-age=63072000" always;
 ```
 
 ### Billion Laughs (DoS 공격)
+
+XML Billion Laughs 공격(XML 폭탄)입니다. 중첩된 엔티티 참조로 메모리를 기하급수적으로 소진시켜 DoS를 유발합니다.
+
 ```xml
 <!-- XML 폭탄 — 메모리 소진 DoS -->
 <?xml version="1.0"?>
@@ -279,6 +294,9 @@ add_header Strict-Transport-Security "max-age=63072000" always;
 ```
 
 ### SAML XXE (인증 우회)
+
+XXE(XML External Entity) 취약점은 XML 파서가 외부 엔티티를 처리할 때 발생합니다. `<!ENTITY xxe SYSTEM 'file:///etc/passwd'>`처럼 파일 읽기나 SSRF 공격에 활용됩니다. 외부 엔티티 처리를 비활성화하여 방어합니다.
+
 ```
 SAML Response (Base64 인코딩된 XML)를 디코딩 후 XXE 삽입
 → SSO 인증 과정에서 XXE 실행
@@ -293,6 +311,9 @@ SAML Response (Base64 인코딩된 XML)를 디코딩 후 XXE 삽입
 ```
 
 ### XXE 방어
+
+XXE(XML External Entity) 취약점은 XML 파서가 외부 엔티티를 처리할 때 발생합니다. `<!ENTITY xxe SYSTEM 'file:///etc/passwd'>`처럼 파일 읽기나 SSRF 공격에 활용됩니다. 외부 엔티티 처리를 비활성화하여 방어합니다.
+
 ```java
 // Java: DocumentBuilderFactory 설정 (XXE 비활성화)
 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -324,6 +345,9 @@ parser = etree.XMLParser(resolve_entities=False, no_network=True)
 ```
 
 ### Java 역직렬화 공격
+
+Java 역직렬화 취약점이 있는 코드 패턴입니다. 신뢰할 수 없는 입력을 ObjectInputStream으로 역직렬화하면 임의 코드가 실행될 수 있습니다.
+
 ```java
 // 취약한 코드: 신뢰할 수 없는 입력을 역직렬화
 ObjectInputStream ois = new ObjectInputStream(inputStream);
@@ -333,6 +357,8 @@ Object obj = ois.readObject();  // 위험!
 // java -jar ysoserial.jar CommonsCollections1 "calc.exe" > payload.ser
 // → 역직렬화 시 calc.exe 실행
 ```
+
+ysoserial 도구로 Java 역직렬화 RCE 페이로드를 생성합니다. Commons Collections 등 취약한 가젯 체인을 이용한 공격입니다.
 
 ```bash
 # ysoserial로 RCE 페이로드 생성
@@ -345,6 +371,9 @@ curl -X POST http://target.com/api/object \
 ```
 
 ### PHP 역직렬화 공격
+
+PHP unserialize() 취약점 코드입니다. 마법 메서드(__destruct, __wakeup)를 이용한 객체 인젝션으로 임의 코드를 실행할 수 있습니다.
+
 ```php
 // 취약한 코드
 $data = unserialize($_COOKIE['user_data']);  // 위험!
@@ -410,6 +439,9 @@ echo serialize($obj);
 ```
 
 ### SIEM 연동 로깅 구현
+
+보안 이벤트를 SIEM 시스템에 전송하는 로깅 구현입니다. 구조화된 로그 형식으로 공격 탐지와 사고 대응을 용이하게 합니다.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -631,6 +663,9 @@ SELECT * FROM users WHERE id='admin' --' AND pw='...'
 ```
 
 ### 기본 SQL Injection 페이로드
+
+SQL 인젝션은 사용자 입력 값이 SQL 쿼리에 직접 삽입될 때 쿼리 구조를 변조하여 데이터베이스를 공격하는 기법입니다. `sqlmap`은 이를 자동화하여 DB 종류 탐지부터 데이터 덤프까지 원클릭으로 수행합니다.
+
 ```sql
 -- 인증 우회
 ' OR '1'='1
@@ -655,6 +690,9 @@ admin'--
 ```
 
 ### Blind SQL Injection
+
+SQL 인젝션은 사용자 입력 값이 SQL 쿼리에 직접 삽입될 때 쿼리 구조를 변조하여 데이터베이스를 공격하는 기법입니다. `sqlmap`은 이를 자동화하여 DB 종류 탐지부터 데이터 덤프까지 원클릭으로 수행합니다.
+
 ```sql
 -- Boolean-based (참/거짓으로 데이터 추출)
 -- 조건이 참이면 정상 페이지, 거짓이면 다른 결과
@@ -677,6 +715,9 @@ admin'--
 ```
 
 ### SQLMap 자동화
+
+SQLMap으로 SQL 인젝션 취약점을 자동으로 탐지하고 익스플로잇합니다. --dbs, --tables, --dump 옵션으로 데이터베이스 내용을 추출할 수 있습니다.
+
 ```bash
 # 기본 사용법
 sqlmap -u "http://target.com/page.php?id=1"
@@ -705,6 +746,9 @@ sqlmap -u "http://target.com/?id=1" --random-agent  # User-Agent 랜덤화
 ```
 
 ### SQL Injection 방어
+
+SQL 인젝션은 사용자 입력 값이 SQL 쿼리에 직접 삽입될 때 쿼리 구조를 변조하여 데이터베이스를 공격하는 기법입니다. `sqlmap`은 이를 자동화하여 DB 종류 탐지부터 데이터 덤프까지 원클릭으로 수행합니다.
+
 ```php
 // PDO Prepared Statement (가장 안전)
 $stmt = $pdo->prepare('SELECT * FROM users WHERE id = ? AND pw = ?');
@@ -727,6 +771,9 @@ $id = intval($id);  // 숫자만 허용
 ### XSS 종류
 
 #### 1. Reflected XSS (반사형)
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```
 공격자가 악성 링크를 피해자에게 전달
 피해자 클릭 → 서버에서 입력값 그대로 반영 → 브라우저에서 실행
@@ -738,6 +785,9 @@ URL: http://target.com/search?q=<script>alert('XSS')</script>
 ```
 
 #### 2. Stored XSS (저장형, 더 위험)
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```
 공격자가 악성 스크립트를 DB에 저장
 다른 사용자가 해당 페이지 방문 시 자동 실행
@@ -747,6 +797,9 @@ URL: http://target.com/search?q=<script>alert('XSS')</script>
 ```
 
 #### 3. DOM-based XSS
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```
 서버 응답 없이 JavaScript로만 처리되는 XSS
 개발자 도구로만 탐지 가능 (서버 로그에 안 남음)
@@ -758,6 +811,9 @@ document.getElementById('output').innerHTML = location.hash.slice(1);
 ```
 
 ### XSS 페이로드 모음
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```javascript
 // 기본 테스트
 <script>alert('XSS')</script>
@@ -796,6 +852,9 @@ document.getElementById('output').innerHTML = location.hash.slice(1);
 ```
 
 ### XSS 방어
+
+XSS(Cross-Site Scripting)는 악성 스크립트를 웹 페이지에 삽입하여 피해자의 브라우저에서 실행시키는 공격입니다. 반사형, 저장형, DOM 기반으로 구분되며, 세션 쿠키 탈취나 키로거 삽입에 활용됩니다.
+
 ```php
 // PHP에서 출력 시 HTML 엔티티 인코딩
 echo htmlspecialchars($user_input, ENT_QUOTES, 'UTF-8');
@@ -804,6 +863,9 @@ echo htmlentities($user_input, ENT_QUOTES, 'UTF-8');
 // JavaScript 컨텍스트에 삽입 시
 echo json_encode($user_input);
 ```
+
+JavaScript에서 DOM 조작 시 XSS를 방어하는 안전한 코드입니다. innerHTML 대신 textContent나 createElement를 사용하여 스크립트 인젝션을 차단합니다.
+
 ```javascript
 // JavaScript에서 DOM 조작 시
 element.textContent = userInput;    // 안전 (HTML 해석 안 함)
@@ -887,6 +949,9 @@ Set-Cookie: sessionid=abc123; HttpOnly; Secure; SameSite=Strict
 ## A05: Security Misconfiguration
 
 ### 기본 설정의 위험성
+
+기기나 서비스의 기본 자격증명(admin/admin, admin/password 등) 목록입니다. 배포 전에 반드시 변경해야 하는 보안 취약점입니다.
+
 ```bash
 # 흔한 기본 자격 증명
 admin:admin
@@ -931,6 +996,9 @@ curl http://target.com:27017/            # MongoDB
 ## A10: SSRF (Server Side Request Forgery)
 
 ### SSRF 원리
+
+SSRF(Server-Side Request Forgery)는 서버가 공격자가 지정한 URL로 요청을 보내도록 유도하는 취약점입니다. AWS 메타데이터 서버(`169.254.169.254`)에 접근하거나 내부망 서비스를 프록시로 사용하는 공격이 대표적입니다.
+
 ```
 서버가 사용자가 제공한 URL에 요청을 보낼 때 발생
 → 내부 네트워크 접근, 클라우드 메타데이터 접근 등
@@ -955,6 +1023,9 @@ echo $content;
 ```
 
 ### SSRF 방어
+
+SSRF(Server-Side Request Forgery)는 서버가 공격자가 지정한 URL로 요청을 보내도록 유도하는 취약점입니다. AWS 메타데이터 서버(`169.254.169.254`)에 접근하거나 내부망 서비스를 프록시로 사용하는 공격이 대표적입니다.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -1083,6 +1154,9 @@ if __name__ == "__main__":
 ## 웹 해킹 실전 도구 정리
 
 ### Burp Suite 기본 사용
+
+Burp Suite는 웹 애플리케이션 보안 테스트의 핵심 프록시 도구입니다. 브라우저와 서버 사이에서 HTTP 요청을 가로채고 수정하며, Intruder로 자동화 공격, Repeater로 요청 재전송 테스트를 수행합니다.
+
 ```
 1. Proxy → Intercept 활성화
 2. 브라우저 프록시: 127.0.0.1:8080
@@ -1093,6 +1167,9 @@ if __name__ == "__main__":
 ```
 
 ### Nikto (웹 서버 취약점 스캐너)
+
+Nikto 웹 서버 취약점 스캐너로 알려진 취약점과 설정 오류를 탐지합니다. 빠른 웹 서버 초기 점검에 유용합니다.
+
 ```bash
 nikto -h http://target.com
 nikto -h http://target.com -p 8080
@@ -1101,6 +1178,9 @@ nikto -h http://target.com -output report.html -Format htm
 ```
 
 ### Gobuster (디렉토리/파일 열거)
+
+Gobuster로 숨겨진 디렉토리와 파일을 브루트포스로 열거합니다. 워드리스트를 이용해 존재하는 경로를 빠르게 찾아냅니다.
+
 ```bash
 # 디렉토리 열거
 gobuster dir -u http://target.com -w /usr/share/wordlists/dirb/common.txt
@@ -1120,6 +1200,9 @@ gobuster vhost -u http://target.com -w subdomains.txt
 ## CORS 취약점 (Cross-Origin Resource Sharing)
 
 ### CORS 오설정 탐지
+
+CORS(Cross-Origin Resource Sharing) 헤더 설정 오류를 탐지합니다. Origin 헤더를 임의 값으로 변경해 응답을 확인합니다.
+
 ```bash
 # CORS 헤더 확인
 curl -H "Origin: https://evil.com" -I https://target.com/api/data
@@ -1131,6 +1214,9 @@ Access-Control-Allow-Credentials: true            # 쿠키 포함 허용
 ```
 
 ### CORS 공격 익스플로잇
+
+CORS 오설정을 이용한 공격자 사이트의 익스플로잇 페이지입니다. 피해자 브라우저에서 대상 API에 요청을 보내 민감한 데이터를 탈취합니다.
+
 ```html
 <!-- 공격자 사이트에서 실행 -->
 <script>
@@ -1160,6 +1246,9 @@ fetch('https://target.com/api/sensitive-data', {
 ```
 
 ### CORS 방어
+
+허용된 Origin만 CORS 요청을 받도록 화이트리스트 기반으로 검증하는 코드입니다. 와일드카드(*) 사용을 피하고 명시적으로 도메인을 지정해야 합니다.
+
 ```python
 # 화이트리스트 기반 CORS 검증
 ALLOWED_ORIGINS = ['https://app.example.com', 'https://admin.example.com']
@@ -1194,6 +1283,9 @@ CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=True)
 ```
 
 ### JWT 클레임 변조 탐지 실습
+
+JWT(JSON Web Token)를 Base64 디코딩하여 헤더와 페이로드를 분석합니다. alg:none 공격이나 알고리즘 혼동 공격 여부를 확인합니다.
+
 ```bash
 # 1. JWT 디코딩 (base64)
 echo "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" | base64 -d
@@ -1209,6 +1301,9 @@ hashcat -a 0 -m 16500 jwt_token.txt wordlist.txt
 ```
 
 ### JWT 안전한 구현
+
+JWT를 안전하게 생성하고 검증하는 Python 코드입니다. 강력한 서명 알고리즘(RS256, HS256)을 사용하고 만료 시간을 반드시 설정합니다.
+
 ```python
 import jwt
 from datetime import datetime, timedelta
