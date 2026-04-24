@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-30-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-137%2B%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-95%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-31-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-118%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-85%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -72,6 +72,7 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 28 | [**모바일 해킹**](#28-모바일-해킹) | Android 펜테스팅, iOS 펜테스팅, 모바일 트래픽 분석 | 3 |
 | 29 | [**컨테이너/쿠버네티스 보안**](#29-컨테이너쿠버네티스-보안) | Docker 보안, Kubernetes 공격, 컨테이너 탈출 | 3 |
 | 30 | [**취약점 연구**](#30-취약점-연구) | 퍼징 기법, 취약점 분석, 고급 익스플로잇 개발 | 3 |
+| 31 | [**AI/ML 시스템 보안**](#31-aiml-시스템-보안) | 적대적 예제, 프롬프트 인젝션, 모델 추출, 에이전트 보안 | 4 |
 
 ---
 
@@ -456,6 +457,20 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 ```
 
 **핵심 내용:** AFL++/libFuzzer 기반 자동화 취약점 탐지, CVSS·CWE 체계적 분석, 고급 힙/브라우저/커널 익스플로잇 개발
+
+---
+
+## 31. AI/ML 시스템 보안
+
+```
+31_AI_ML_Security/
+├── 01_adversarial_examples.md         ← FGSM/PGD/C&W, 전이 공격, adversarial training·randomized smoothing 방어
+├── 02_prompt_injection_jailbreak.md   ← 직접·간접 프롬프트 인젝션, 탈옥, garak/PyRIT 자동 레드팀
+├── 03_model_extraction_inversion.md   ← 모델 추출, 멤버십 추론(LiRA), 학습 데이터 재구성, DP-SGD 방어
+└── 04_llm_agent_security.md           ← 도구 호출 SSRF/RCE, RAG 인덱스 오염, MCP 보안, 더블 LLM 아키텍처
+```
+
+**관점 차이:** 섹션 11이 "AI를 공격 도구로 사용"하는 쪽이라면, 섹션 31은 **AI/ML 시스템 자체가 표적**인 공격과 방어를 다룹니다. OWASP LLM Top 10·NIST AI 100-2·MITRE ATLAS 분류 체계 기반, 재현 가능한 PyTorch/Anthropic SDK PoC 포함.
 
 ---
 
