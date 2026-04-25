@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-32-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-123%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-87%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-33-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-128%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-93%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -74,6 +74,7 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 30 | [**취약점 연구**](#30-취약점-연구) | 퍼징 기법, 취약점 분석, 고급 익스플로잇 개발 | 3 |
 | 31 | [**AI/ML 시스템 보안**](#31-aiml-시스템-보안) | 적대적 예제, 프롬프트 인젝션, 모델 추출, 에이전트 보안 | 4 |
 | 32 | [**네트워크 장비 해킹**](#32-네트워크-장비-해킹) | IOS 정찰, L2 공격, 라우팅 프로토콜 조작, 관리 평면 익스플로잇 | 4 |
+| 33 | [**OSINT & 소셜 엔지니어링**](#33-osint--소셜-엔지니어링) | 정보 수집 방법론, 타겟 프로파일링, 피싱 인프라 구축·우회 | 4 |
 
 ---
 
@@ -486,6 +487,20 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 ```
 
 **관점 차이:** 섹션 02가 트래픽 스니핑·MITM 관점, 섹션 24가 DNS·메일·SSH 등 서비스 레벨 관점이라면, 섹션 32는 **라우터·스위치 자체의 관리/제어/데이터 평면**을 직접 공격합니다. 2025–2026 Cisco/FRRouting CVE(CVE-2025-20188, CVE-2026-20084 등) 재현 PoC와 GNS3·EVE-NG 실습 토폴로지 포함.
+
+---
+
+## 33. OSINT & 소셜 엔지니어링
+
+```
+33_OSINT_Social_Engineering/
+├── 01_osint_methodology_and_search.md  ← 정보 수집 방법론, Shodan/Censys/FOFA, dorking 고급 기법
+├── 02_target_profiling.md              ← 인물·조직 프로파일링, SNS 분석, 이메일 검증, 도메인 정찰
+├── 03_social_engineering_attacks.md    ← 피싱·스피어피싱·비싱·스미싱, BEC, 프리텍스팅
+└── 04_phishing_infra_and_evasion.md    ← GoPhish/Evilginx2 인프라, URL 우회, 안티피싱 탐지 우회
+```
+
+OSINT를 단순 정보 검색이 아닌 **공격 체인의 정찰 단계**로 활용하는 방법론에 집중합니다. Shodan·FOFA·Censys 쿼리 자동화, LinkedIn/GitHub/SNS 기반 타겟 프로파일링, GoPhish·Evilginx2 피싱 인프라 구축까지 레드팀 실전 관점으로 다룹니다.
 
 ---
 
