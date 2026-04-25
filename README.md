@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-31-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-118%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-85%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-32-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-123%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-87%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -73,6 +73,7 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 29 | [**컨테이너/쿠버네티스 보안**](#29-컨테이너쿠버네티스-보안) | Docker 보안, Kubernetes 공격, 컨테이너 탈출 | 3 |
 | 30 | [**취약점 연구**](#30-취약점-연구) | 퍼징 기법, 취약점 분석, 고급 익스플로잇 개발 | 3 |
 | 31 | [**AI/ML 시스템 보안**](#31-aiml-시스템-보안) | 적대적 예제, 프롬프트 인젝션, 모델 추출, 에이전트 보안 | 4 |
+| 32 | [**네트워크 장비 해킹**](#32-네트워크-장비-해킹) | IOS 정찰, L2 공격, 라우팅 프로토콜 조작, 관리 평면 익스플로잇 | 4 |
 
 ---
 
@@ -471,6 +472,20 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 ```
 
 **관점 차이:** 섹션 11이 "AI를 공격 도구로 사용"하는 쪽이라면, 섹션 31은 **AI/ML 시스템 자체가 표적**인 공격과 방어를 다룹니다. OWASP LLM Top 10·NIST AI 100-2·MITRE ATLAS 분류 체계 기반, 재현 가능한 PyTorch/Anthropic SDK PoC 포함.
+
+---
+
+## 32. 네트워크 장비 해킹
+
+```
+32_Network_Device_Hacking/
+├── 01_ios_fundamentals_and_recon.md      ← Cisco IOS/IOS XE 구조, 장비 핑거프린팅, 관리 프로토콜 정찰
+├── 02_layer2_attacks.md                  ← VLAN hopping, STP/DHCP 공격, CAM overflow, DAI 우회
+├── 03_routing_protocol_attacks.md        ← OSPF/EIGRP/BGP 경로 주입, HSRP/VRRP 하이재킹
+└── 04_management_plane_exploitation.md   ← SNMP·TACACS+·NETCONF·설정 파일 추출, 장비 백도어 식별
+```
+
+**관점 차이:** 섹션 02가 트래픽 스니핑·MITM 관점, 섹션 24가 DNS·메일·SSH 등 서비스 레벨 관점이라면, 섹션 32는 **라우터·스위치 자체의 관리/제어/데이터 평면**을 직접 공격합니다. 2025–2026 Cisco/FRRouting CVE(CVE-2025-20188, CVE-2026-20084 등) 재현 PoC와 GNS3·EVE-NG 실습 토폴로지 포함.
 
 ---
 
