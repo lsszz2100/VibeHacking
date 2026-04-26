@@ -5,9 +5,9 @@
 ### Master Practical Cybersecurity — The Hacking Bible for the AI Era
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-33-blueviolet)](#table-of-contents)
-[![Files](https://img.shields.io/badge/Docs-128%20Files-brightgreen)](#table-of-contents)
-[![Lines](https://img.shields.io/badge/Lines-93%2C000%2B-orange)](#table-of-contents)
+[![Sections](https://img.shields.io/badge/Sections-37-blueviolet)](#table-of-contents)
+[![Files](https://img.shields.io/badge/Docs-143%20Files-brightgreen)](#table-of-contents)
+[![Lines](https://img.shields.io/badge/Lines-105%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 

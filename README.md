@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-33-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-128%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-93%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-37-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-143%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-105%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -75,6 +75,10 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 31 | [**AI/ML 시스템 보안**](#31-aiml-시스템-보안) | 적대적 예제, 프롬프트 인젝션, 모델 추출, 에이전트 보안 | 4 |
 | 32 | [**네트워크 장비 해킹**](#32-네트워크-장비-해킹) | IOS 정찰, L2 공격, 라우팅 프로토콜 조작, 관리 평면 익스플로잇 | 4 |
 | 33 | [**OSINT & 소셜 엔지니어링**](#33-osint--소셜-엔지니어링) | 정보 수집 방법론, 타겟 프로파일링, 피싱 인프라 구축·우회 | 4 |
+| 34 | [**하드웨어 해킹**](#34-하드웨어-해킹) | 인터페이스 분석(UART/JTAG/SPI), 펌웨어 추출·분석, 사이드채널·폴트 인젝션 | 4 |
+| 35 | [**공급망 공격**](#35-공급망-공격) | 소프트웨어 공급망 침해, CI/CD 파이프라인 독화, SolarWinds·XZ 패턴 분석 | 3 |
+| 36 | [**자동차 해킹**](#36-자동차-해킹) | CAN 버스 분석, ECU 익스플로잇, 텔레매틱스·OTA 공격 | 4 |
+| 37 | [**ICS/SCADA 보안**](#37-icsscada-보안) | ICS 프로토콜 정찰, SCADA 익스플로잇, OT 네트워크 공격·방어 | 4 |
 
 ---
 
@@ -501,6 +505,61 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 ```
 
 OSINT를 단순 정보 검색이 아닌 **공격 체인의 정찰 단계**로 활용하는 방법론에 집중합니다. Shodan·FOFA·Censys 쿼리 자동화, LinkedIn/GitHub/SNS 기반 타겟 프로파일링, GoPhish·Evilginx2 피싱 인프라 구축까지 레드팀 실전 관점으로 다룹니다.
+
+---
+
+## 34. 하드웨어 해킹
+
+```
+34_Hardware_Hacking/
+├── 01_hardware_recon_and_interfaces.md  ← UART/JTAG/SPI/I²C 인터페이스 식별·덤프, 핀아웃 분석
+├── 02_firmware_analysis.md              ← binwalk 추출, 파일시스템 분석, 하드코딩 비밀, 취약 함수 탐지
+├── 03_side_channel_and_fault_injection.md ← 전력 분석(SPA/DPA), 타이밍 공격, 글리칭, ChipWhisperer
+└── README.md
+```
+
+전자 장치 자체의 물리적 공격 표면을 다룹니다. UART 시리얼 콘솔로 root 셸을 획득하고, JTAG로 펌웨어를 통째로 덤프하며, 사이드채널 분석으로 암호화 키를 추출하는 기법까지 — IoT·임베디드·하드웨어 보안 연구의 핵심 기술을 실전 도구(minicom, OpenOCD, binwalk, ChipWhisperer)와 함께 정리했습니다.
+
+---
+
+## 35. 공급망 공격
+
+```
+35_Supply_Chain_Attacks/
+├── 01_software_supply_chain.md   ← 오픈소스 패키지 독화, typosquatting, 의존성 혼동 공격
+├── 02_build_and_ci_poisoning.md  ← CI/CD 파이프라인 침해, GitHub Actions 악용, SolarWinds·XZ Utils 패턴
+└── README.md
+```
+
+SolarWinds·XZ Utils·3CX 등 실제 공급망 침해 사례를 해부합니다. PyPI·npm·Maven 패키지 독화 기법, GitHub Actions 워크플로 권한 탈취, 빌드 시스템 백도어 삽입까지 — 소프트웨어 개발 파이프라인 전 과정이 공격 표면임을 보여주는 실전 분석입니다.
+
+---
+
+## 36. 자동차 해킹
+
+```
+36_Automotive_Hacking/
+├── 01_can_bus_analysis.md           ← CAN 버스 구조, OBD-II 진단, 메시지 스니핑·재전송
+├── 02_ecu_exploitation.md           ← ECU 펌웨어 분석, UDS 진단 프로토콜 악용, 리맵핑
+├── 03_telematics_and_ota_attacks.md ← V2X 통신, 텔레매틱스 유닛 침투, OTA 업데이트 가로채기
+└── README.md
+```
+
+현대 자동차는 100개 이상의 ECU와 수십 가지 통신 프로토콜이 얽힌 이동하는 컴퓨터입니다. CAN 버스 스니핑부터 UDS 진단 프로토콜 악용, 텔레매틱스 원격 공격, Jeep Cherokee·Tesla 실제 해킹 재현까지 — 자동차 보안 연구의 전 스택을 python-can·Scapy·CANalyzer 관점으로 다룹니다.
+
+---
+
+## 37. ICS/SCADA 보안
+
+```
+37_ICS_SCADA/
+├── 01_ics_protocols_and_recon.md  ← Modbus/DNP3/IEC 61850/EtherNet/IP 심화, Shodan 정찰, 멀티프로토콜 스캐너
+├── 02_scada_exploitation.md       ← HMI/Historian/PLC 취약점, TRITON·INDUSTROYER 분석, SCADA 스캐너
+├── 03_ot_network_attacks.md       ← Purdue 계층별 공격, IT→OT 횡이동, 무선 OT, OT 토폴로지 매퍼
+└── README.md
+```
+
+발전소·정유·수처리·철도 등 핵심 인프라를 제어하는 ICS/OT 환경을 분석합니다. Stuxnet·TRITON·INDUSTROYER·PIPEDREAM 등 실제 사이버 무기를 해부하고, Modbus 코일 강제 쓰기부터 PLC DB 블록 패치, Historian 데이터 역주입, OT 전용 토폴로지 자동 매핑까지 — 가용성 최우선 환경의 공격과 방어를 실전 코드와 함께 정리했습니다.
 
 ---
 
