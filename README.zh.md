@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-37-blueviolet)](#目录)
-[![Files](https://img.shields.io/badge/Docs-143%20Files-brightgreen)](#目录)
-[![Lines](https://img.shields.io/badge/Lines-105%2C000%2B-orange)](#目录)
+[![Files](https://img.shields.io/badge/Docs-148%20Files-brightgreen)](#目录)
+[![Lines](https://img.shields.io/badge/Lines-110%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -60,6 +60,25 @@
 | 16 | [**密码学**](#16-密码学) | 黑客密码学、哈希攻击、应用密码学 | 3 |
 | 17 | [**红队行动**](#17-红队行动) | 作战手册、钓鱼/社会工程学、API渗透 | 3 |
 | 18 | [**DevSecOps**](#18-devsecops) | SAST/SCA/DAST、容器安全、CI/CD流水线 | 3 |
+| 19 | [**汇编语言**](#19-汇编语言) | x86/x64基础、shellcode开发、反汇编分析 | 3 |
+| 20 | [**Shell脚本**](#20-shell脚本) | Bash基础、渗透自动化、后渗透脚本 | 3 |
+| 21 | [**Windows漏洞利用**](#21-windows漏洞利用) | Windows内部结构、提权、防御规避 | 3 |
+| 22 | [**密码破解**](#22-密码破解) | 哈希类型/字典、Hashcat/John、高级技术 | 3 |
+| 23 | [**数据库攻击**](#23-数据库攻击) | Oracle/MySQL攻击、DB提权、取证与审计 | 4 |
+| 24 | [**网络基础设施安全**](#24-网络基础设施安全) | DNS攻击、邮件服务器(SPF/DKIM/DMARC)、SSH隧道 | 4 |
+| 25 | [**威胁情报**](#25-威胁情报) | CTI基础、OSINT/Shodan、事件响应、蜜罐 | 4 |
+| 26 | [**Linux加固**](#26-linux加固) | iptables/nftables、PAM认证、KISA漏洞评估 | 4 |
+| 27 | [**IoT黑客技术**](#27-iot黑客技术) | 攻击面分析、固件分析、IoT漏洞利用 | 3 |
+| 28 | [**移动端攻击**](#28-移动端攻击) | Android渗透测试、iOS渗透测试、移动流量分析 | 3 |
+| 29 | [**容器/Kubernetes安全**](#29-容器kubernetes安全) | Docker安全、Kubernetes攻击、容器逃逸 | 3 |
+| 30 | [**漏洞研究**](#30-漏洞研究) | 模糊测试技术、漏洞分析、高级利用开发 | 3 |
+| 31 | [**AI/ML系统安全**](#31-aiml系统安全) | 对抗样本、提示注入、模型提取、智能体安全 | 5 |
+| 32 | [**网络设备攻击**](#32-网络设备攻击) | IOS侦察、L2攻击、路由协议操控、管理平面利用 | 5 |
+| 33 | [**OSINT与社会工程学**](#33-osint与社会工程学) | 信息收集方法论、目标画像、钓鱼基础设施构建与规避 | 5 |
+| 34 | [**硬件攻击**](#34-硬件攻击) | 接口分析(UART/JTAG/SPI)、固件提取、侧信道与故障注入 | 4 |
+| 35 | [**供应链攻击**](#35-供应链攻击) | 软件供应链入侵、CI/CD投毒、SolarWinds·XZ模式分析 | 3 |
+| 36 | [**汽车黑客技术**](#36-汽车黑客技术) | CAN总线分析、ECU利用、车联网与OTA攻击 | 4 |
+| 37 | [**ICS/SCADA安全**](#37-icsscada安全) | ICS协议侦察、SCADA利用、OT网络攻防 | 4 |
 
 ---
 
@@ -340,6 +359,255 @@
 ```
 
 **核心内容：** 安全左移（Shift Left）、SAST/SCA/DAST/IaC扫描自动化、容器运行时检测、GitLab/Jenkins/GitHub Actions安全流水线完整实现
+
+---
+
+## 19. 汇编语言
+
+```
+19_Assembly_Language/
+├── 01_x86_x64_Fundamentals.md   ← 寄存器、指令、栈帧、调用约定
+├── 02_Shellcode_Development.md  ← shellcode编写、坏字节去除、ctypes执行测试
+└── 03_Disassembly_Analysis.md   ← GDB/pwndbg、IDA/Ghidra、Capstone自动化
+```
+
+**核心内容：** x86/x64寄存器完全攻略、NASM编码、64位execve shellcode实现、基于Capstone的自动反汇编器
+
+---
+
+## 20. Shell脚本
+
+```
+20_Shell_Scripting/
+├── 01_Bash_Scripting_Basics.md       ← 变量/数组/条件/循环/函数、awk/sed、端口扫描器
+├── 02_Pentest_Automation.md          ← 侦察自动化、子域名枚举、漏洞扫描封装
+└── 03_Post_Exploitation_Scripts.md   ← 反弹Shell、持久化、Python C2套接字实现
+```
+
+**核心内容：** Bash实战脚本、从侦察到后渗透全流程自动化、7种反弹Shell一行命令、Python C2实现
+
+---
+
+## 21. Windows漏洞利用
+
+```
+21_Windows_Exploitation/
+├── 01_Windows_Internals.md              ← PE格式、PEB/TEB、WinAPI核心函数、PE解析器代码
+├── 02_Windows_Privilege_Escalation.md   ← 服务/注册表/DLL劫持、UAC绕过、令牌模拟
+└── 03_Defense_Evasion.md                ← AMSI/ETW绕过、6种进程注入、LOLBAS、AES载荷加密
+```
+
+**核心内容：** Windows内部结构深度解析、提权完全攻略、AMSI/AV/EDR绕过技术
+
+---
+
+## 22. 密码破解
+
+```
+22_Password_Cracking/
+├── 01_Hash_Types_and_Wordlists.md      ← 哈希算法对比、hashid、CeWL/Crunch/CUPP、Python破解器
+├── 02_Hashcat_and_John.md              ← 所有攻击模式、哈希类型模式号、规则编写、实战工作流
+└── 03_Advanced_Cracking_Techniques.md  ← 彩虹表、PRINCE、高级掩码、密码喷洒工具
+```
+
+**核心内容：** NTLM/WPA/ZIP/PDF破解策略、GPU优化、限速绕过密码喷洒自动化
+
+---
+
+## 23. 数据库攻击
+
+```
+23_Database_Hacking/
+├── 01_oracle_mysql_attack.md       ← Oracle/MySQL/MSSQL攻击向量、盲注、带外数据提取
+├── 02_db_privilege_escalation.md   ← 数据库用户提权、存储过程滥用、UDF注入、链接服务器
+└── 03_db_forensics_defense.md      ← 数据库取证、审计日志、查询监控、加固清单
+```
+
+**核心内容：** 跨多DB的攻击链、通过数据库引擎提权、取证分析与防御加固
+
+---
+
+## 24. 网络基础设施安全
+
+```
+24_Network_Infrastructure_Security/
+├── 01_dns_attack_defense.md                ← DNS劫持、区域传送、缓存投毒、DNSSEC绕过
+├── 02_mail_server_security.md              ← SPF/DKIM/DMARC绕过、邮件服务器入侵、邮件伪造
+└── 03_ssh_tunneling_port_forwarding.md     ← SSH隧道、动态端口转发、SOCKS代理、内网穿透
+```
+
+**核心内容：** DNS/邮件/SSH基础设施层面攻击、服务利用、通过内网穿透横向移动
+
+---
+
+## 25. 威胁情报
+
+```
+25_Threat_Intelligence/
+├── 01_cti_fundamentals.md          ← CTI框架(MITRE ATT&CK/STIX/TAXII)、威胁行为者画像
+├── 02_osint_for_threat_intel.md    ← Shodan/Censys自动化、暗网OSINT、IOC收集流水线
+└── 03_incident_response.md         ← IR手册、证据收集、恶意代码分类、蜜罐
+```
+
+**核心内容：** CTI生命周期、威胁行为者归因分析、IOC管理、自动化事件响应流程
+
+---
+
+## 26. Linux加固
+
+```
+26_Linux_Hardening/
+├── 01_firewall_and_iptables.md          ← iptables/nftables/ufw规则、防火墙审计、状态过滤
+├── 02_pam_and_auth_hardening.md         ← PAM配置、SSH加固、MFA设置、sudo策略
+└── 03_kisa_vulnerability_assessment.md  ← KISA安全检查清单、CIS基准、自动化评估脚本
+```
+
+**核心内容：** 防火墙规则设计、认证加固、符合KISA/CIS标准的自动化安全评估
+
+---
+
+## 27. IoT黑客技术
+
+```
+27_IoT_Hacking/
+├── 01_iot_attack_surface.md    ← 攻击面分析、OWASP IoT Top 10、Shodan/Censys扫描
+├── 02_firmware_analysis.md     ← 固件提取分析、binwalk/Ghidra、硬编码凭据检测
+└── 03_iot_exploitation.md      ← UART/JTAG接入、嵌入式漏洞利用、实战攻击场景
+```
+
+**核心内容：** 基于OWASP IoT Top 10的攻击面分析、固件逆向(binwalk/Ghidra)、UART/JTAG硬件攻击、IoT设备实战渗透
+
+---
+
+## 28. 移动端攻击
+
+```
+28_Mobile_Hacking/
+├── 01_android_pentesting.md        ← APK分析、ADB Root、Frida动态插桩、SSL Pinning绕过
+├── 02_ios_pentesting.md            ← IPA提取、Objective-C/Swift逆向、越狱检测绕过
+└── 03_mobile_traffic_analysis.md   ← Burp Suite移动代理、证书固定绕过、API模糊测试
+```
+
+**核心内容：** Android/iOS完整分析流水线、基于Frida的运行时插桩、移动端中间人攻击、SSL Pinning绕过技术
+
+---
+
+## 29. 容器/Kubernetes安全
+
+```
+29_Container_Kubernetes_Security/
+├── 01_docker_security.md      ← Docker安全配置、容器逃逸技术、镜像漏洞扫描
+├── 02_kubernetes_attack.md    ← RBAC提权、etcd夺取、Kubernetes攻击向量完整分析
+└── 03_container_escape.md     ← cgroup/namespace逃逸、runc漏洞、实战容器逃逸PoC
+```
+
+**核心内容：** Docker/Kubernetes攻防策略、RBAC提权、容器逃逸技术、基于Trivy/Falco的运行时安全
+
+---
+
+## 30. 漏洞研究
+
+```
+30_Vulnerability_Research/
+├── 01_fuzzing_techniques.md            ← AFL++/libFuzzer/Boofuzz、覆盖率引导模糊测试、网络模糊测试
+├── 02_vulnerability_analysis.md        ← CVSS分析、CWE分类、静态/动态分析、源码审计
+└── 03_exploit_development_advanced.md  ← 高级堆漏洞利用、浏览器漏洞利用、内核漏洞开发
+```
+
+**核心内容：** 基于AFL++/libFuzzer的自动化漏洞发现、系统化CVSS/CWE分析、高级堆/浏览器/内核漏洞利用开发
+
+---
+
+## 31. AI/ML系统安全
+
+```
+31_AI_ML_Security/
+├── 01_adversarial_examples.md         ← FGSM/PGD/C&W、迁移攻击、对抗训练与随机平滑防御
+├── 02_prompt_injection_jailbreak.md   ← 直接/间接提示注入、越狱、garak/PyRIT自动红队测试
+├── 03_model_extraction_inversion.md   ← 模型提取、成员推断(LiRA)、训练数据重构、DP-SGD防御
+└── 04_llm_agent_security.md           ← 工具调用SSRF/RCE、RAG索引投毒、MCP安全、双LLM架构
+```
+
+如果第11章是"将AI用作攻击工具"，那么第31章聚焦于**AI/ML系统本身作为攻击目标**的攻防。基于OWASP LLM Top 10 / NIST AI 100-2 / MITRE ATLAS，包含可复现的PyTorch/Anthropic SDK PoC。
+
+---
+
+## 32. 网络设备攻击
+
+```
+32_Network_Device_Hacking/
+├── 01_ios_fundamentals_and_recon.md      ← Cisco IOS/IOS XE结构、设备指纹识别、管理协议侦察
+├── 02_layer2_attacks.md                  ← VLAN跳跃、STP/DHCP攻击、CAM溢出、DAI绕过
+├── 03_routing_protocol_attacks.md        ← OSPF/EIGRP/BGP路由注入、HSRP/VRRP劫持
+└── 04_management_plane_exploitation.md   ← SNMP/TACACS+/NETCONF利用、配置文件提取、后门识别
+```
+
+第02章聚焦流量嗅探/MITM，第24章聚焦DNS/邮件/SSH服务层面，第32章则直接攻击**路由器/交换机的管理/控制/数据平面**。收录2025–2026年Cisco CVE复现PoC（CVE-2025-20188等）和GNS3/EVE-NG实验拓扑。
+
+---
+
+## 33. OSINT与社会工程学
+
+```
+33_OSINT_Social_Engineering/
+├── 01_osint_methodology_and_search.md  ← 信息收集方法论、Shodan/Censys/FOFA、高级Dork技巧
+├── 02_target_profiling.md              ← 人员/组织画像、社交媒体分析、邮件验证、域名侦察
+├── 03_social_engineering_attacks.md    ← 钓鱼/鱼叉钓鱼/语音钓鱼/短信钓鱼、BEC、托词攻击
+└── 04_phishing_infra_and_evasion.md    ← GoPhish/Evilginx2基础设施、URL绕过、反钓鱼检测规避
+```
+
+将OSINT作为**攻击链侦察阶段**而非简单信息检索。涵盖Shodan/FOFA/Censys查询自动化、基于LinkedIn/GitHub/社交媒体的目标画像，以及GoPhish/Evilginx2钓鱼基础设施构建，以红队实战视角呈现。
+
+---
+
+## 34. 硬件攻击
+
+```
+34_Hardware_Hacking/
+├── 01_hardware_recon_and_interfaces.md    ← UART/JTAG/SPI/I²C接口识别与数据提取、引脚分析
+├── 02_firmware_analysis.md                ← binwalk提取、文件系统分析、硬编码密钥、危险函数检测
+└── 03_side_channel_and_fault_injection.md ← 功耗分析(SPA/DPA)、时序攻击、毛刺注入、ChipWhisperer
+```
+
+涵盖电子设备的物理攻击面——通过UART串口获取root Shell、通过JTAG完整转储固件，以及通过侧信道分析提取加密密钥。使用minicom、OpenOCD、binwalk、ChipWhisperer等工具，覆盖硬件安全研究的核心技术。
+
+---
+
+## 35. 供应链攻击
+
+```
+35_Supply_Chain_Attacks/
+├── 01_software_supply_chain.md   ← 开源包投毒、域名抢注、依赖混淆攻击
+└── 02_build_and_ci_poisoning.md  ← CI/CD流水线入侵、GitHub Actions滥用、SolarWinds·XZ Utils模式分析
+```
+
+解剖SolarWinds、XZ Utils、3CX等真实供应链入侵案例。涵盖PyPI/npm/Maven包投毒、GitHub Actions工作流权限劫持、构建系统后门植入——证明整个软件开发流水线都是攻击面。
+
+---
+
+## 36. 汽车黑客技术
+
+```
+36_Automotive_Hacking/
+├── 01_can_bus_analysis.md           ← CAN总线结构、OBD-II诊断、报文嗅探与重放
+├── 02_ecu_exploitation.md           ← ECU固件分析、UDS诊断协议滥用、刷写调参
+└── 03_telematics_and_ota_attacks.md ← V2X通信、车联网单元渗透、OTA更新拦截
+```
+
+现代汽车是拥有100+个ECU和数十种通信协议的移动计算机。从CAN总线嗅探到UDS诊断协议滥用、车联网远程攻击，以及Jeep Cherokee/Tesla真实入侵复现——以python-can、Scapy、CANalyzer为工具，全栈覆盖汽车安全研究。
+
+---
+
+## 37. ICS/SCADA安全
+
+```
+37_ICS_SCADA/
+├── 01_ics_protocols_and_recon.md  ← Modbus/DNP3/IEC 61850/EtherNet/IP深度解析、Shodan侦察、多协议扫描器
+├── 02_scada_exploitation.md       ← HMI/Historian/PLC漏洞、TRITON·INDUSTROYER分析、SCADA扫描器
+└── 03_ot_network_attacks.md       ← Purdue模型分层攻击、IT→OT横向移动、无线OT、OT拓扑映射器
+```
+
+分析控制发电站、炼油厂、水处理、铁路等关键基础设施的ICS/OT环境。解剖Stuxnet、TRITON、INDUSTROYER、PIPEDREAM等真实网络武器——从Modbus线圈强制写入到PLC DB块补丁、Historian数据逆注入、OT拓扑自动映射，全面呈现可用性优先环境的攻防实战。
 
 ---
 

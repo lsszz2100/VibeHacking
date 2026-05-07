@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-37-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-143%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-105%2C000%2B-orange)](#목차)
+[![Files](https://img.shields.io/badge/Docs-148%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-110%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -147,12 +147,13 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 
 ```
 03_System_Hacking/
-├── 01_password_cracking.md      ← Hashcat, John, Rainbow Table, 온라인 크랙
-├── 02_buffer_overflow.md        ← 스택 BOF 원리, 쉘코드, 실습 예제
-└── 03_active_directory_attack.md ← AD 공격 완전 가이드, Kerberoasting, DCSync
+├── 01_password_cracking.md          ← Hashcat, John, Rainbow Table, 온라인 크랙
+├── 02_buffer_overflow.md            ← 스택 BOF 원리, 쉘코드, 실습 예제
+├── 03_active_directory_attack.md    ← AD 공격 완전 가이드, Kerberoasting, DCSync
+└── 04_kerberos_delegation_attacks.md ← 비제약/제약/RBCD 위임 공격 완전 실습
 ```
 
-**핵심 내용:** 해시 크래킹 전략, BOF 원리부터 익스플로잇까지, Active Directory 공격 체인 완전 정복
+**핵심 내용:** 해시 크래킹 전략, BOF 원리부터 익스플로잇까지, Active Directory 공격 체인 완전 정복, Kerberos 위임(Unconstrained/Constrained/RBCD) 공격 체인
 
 ---
 
@@ -160,12 +161,13 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 
 ```
 04_Reverse_Engineering/
-├── 01_assembly_and_registers.md   ← x86/x64 어셈블리, 레지스터, 스택 프레임
-├── 02_ollydbg_practical.md        ← OllyDbg/x64dbg 실전 분석
-└── 03_pe_structure.md             ← PE 파일 구조, IAT/EAT, 패킹
+├── 01_assembly_and_registers.md        ← x86/x64 어셈블리, 레지스터, 스택 프레임
+├── 02_ollydbg_practical.md             ← OllyDbg/x64dbg 실전 분석
+├── 03_pe_structure.md                  ← PE 파일 구조, IAT/EAT, 패킹
+└── 04_ghidra_and_dynamic_analysis.md   ← Ghidra 완전 정복 + WorstFit Unicode 취약점
 ```
 
-**핵심 내용:** 어셈블리 언어, 디버거 사용법, PE 구조 심층 분석, IDA Pro/Ghidra
+**핵심 내용:** 어셈블리 언어, 디버거 사용법, PE 구조 심층 분석, Ghidra 실전 분석·PyGhidra 자동화, WorstFit Best-Fit 매핑 공격 (CVE-2024-21338 등)
 
 ---
 
@@ -175,10 +177,11 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 05_Web_Hacking/
 ├── 01_owasp_top10.md              ← OWASP Top 10 (2021), Burp Suite, Nikto
 ├── 02_sql_injection_advanced.md   ← Blind/Time-based SQLi, NoSQL, SQLMap 실전
-└── 03_xss_csrf_file_upload.md     ← Stored/Reflected/DOM XSS, CSRF, 웹쉘
+├── 03_xss_csrf_file_upload.md     ← Stored/Reflected/DOM XSS, CSRF, 웹쉘
+└── 04_waf_bypass_advanced_web.md  ← WAF 탐지·우회 완전 치트시트, XFF 주입, Cache Poisoning
 ```
 
-**핵심 내용:** OWASP Top 10 실습, SQL Injection 완전 정복, XSS/CSRF/파일 업로드/XXE/SSRF
+**핵심 내용:** OWASP Top 10 실습, SQL Injection 완전 정복, XSS/CSRF/파일 업로드/XXE/SSRF, WAF 우회 전기법 (Cloudflare/AWS WAF/ModSecurity), HTTP Request Smuggling, Web Cache Poisoning
 
 ---
 
@@ -277,10 +280,11 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 12_Bug_Bounty/
 ├── 01_bug_bounty_methodology.md   ← HackerOne/Bugcrowd 방법론, IDOR, XSS 우회, 자동화
 ├── 02_burp_suite_advanced.md      ← Burp Suite 완전 정복, JWT 공격, Request Smuggling
-└── 03_bug_bounty_automation.md    ← Nuclei, ffuf, dalfox, 자동화 파이프라인
+├── 03_bug_bounty_automation.md    ← Nuclei, ffuf, dalfox, 자동화 파이프라인
+└── 04_api_security_testing.md     ← OWASP API Top 10 (2023) 완전 실습, GraphQL 공격, BOLA 자동화
 ```
 
-**핵심 내용:** 버그바운티 전체 워크플로우, Burp Suite 고급 기능, 정찰→취약점→보고서 자동화
+**핵심 내용:** 버그바운티 전체 워크플로우, Burp Suite 고급 기능, 정찰→취약점→보고서 자동화, OWASP API Security Top 10 전 취약점 실습 (BOLA/Mass Assignment/JWT/SSRF), GraphQL Batching 공격
 
 ---
 
@@ -288,12 +292,13 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 
 ```
 13_SOC_Blue_Team/
-├── 01_soc_fundamentals.md       ← SOC 구조, 인시던트 대응, 핵심 이벤트 ID, EDR
-├── 02_splunk_siem_analysis.md   ← Splunk SPL 완전 정복, 100+ 탐지 쿼리
-└── 03_threat_hunting.md         ← 위협 헌팅, 랜섬웨어 침해 조사, APT 추적
+├── 01_soc_fundamentals.md          ← SOC 구조, 인시던트 대응, 핵심 이벤트 ID, EDR
+├── 02_splunk_siem_analysis.md      ← Splunk SPL 완전 정복, 100+ 탐지 쿼리
+├── 03_threat_hunting.md            ← 위협 헌팅, 랜섬웨어 침해 조사, APT 추적
+└── 04_qradar_xdr_blue_team.md      ← IBM QRadar AQL 심화 + Microsoft Sentinel KQL + XDR 플랫폼 비교
 ```
 
-**핵심 내용:** SOC 티어별 역할, 공격 탐지 패턴 100+, Splunk/QRadar/ELK 쿼리, 위협 헌팅 방법론
+**핵심 내용:** SOC 티어별 역할, 공격 탐지 패턴 100+, Splunk/QRadar AQL/Sentinel KQL/Cortex XQL 쿼리, XDR 플랫폼(CrowdStrike/SentinelOne/Defender XDR), Blue Team Field Manual 절차, SOC 40 필수 도구
 
 ---
 
@@ -411,6 +416,62 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 ```
 
 **핵심 내용:** NTLM/WPA/ZIP/PDF 크래킹 전략, GPU 최적화, 레이트 리밋 우회 패스워드 스프레이 자동화
+
+---
+
+## 23. Database Hacking
+
+```
+23_Database_Hacking/
+├── 01_oracle_mysql_attack.md       ← Oracle/MySQL/MSSQL 공격 벡터, 블라인드 SQLi, OOB 추출
+├── 02_db_privilege_escalation.md   ← DB 사용자 권한 상승, 저장 프로시저 악용, UDF 인젝션
+├── 03_db_forensics_defense.md      ← 데이터베이스 포렌식, 감사 로그, 쿼리 모니터링, 하드닝
+└── README.md
+```
+
+**핵심 내용:** 다중 DB 공격 체인, DB 엔진 경유 권한 상승, 포렌식 분석 및 방어 강화
+
+---
+
+## 24. 네트워크 인프라 보안
+
+```
+24_Network_Infrastructure_Security/
+├── 01_dns_attack_defense.md                ← DNS 하이재킹, 영역 전송, 캐시 포이즈닝, DNSSEC 우회
+├── 02_mail_server_security.md              ← SPF/DKIM/DMARC 우회, 메일 서버 침해, 이메일 스푸핑
+├── 03_ssh_tunneling_port_forwarding.md     ← SSH 터널링, 동적 포트 포워딩, SOCKS 프록시, 피버팅
+└── README.md
+```
+
+**핵심 내용:** DNS/메일/SSH 인프라 레벨 공격, 서비스 익스플로잇, 피버팅을 통한 횡이동
+
+---
+
+## 25. 위협 인텔리전스
+
+```
+25_Threat_Intelligence/
+├── 01_cti_fundamentals.md          ← CTI 프레임워크(MITRE ATT&CK/STIX/TAXII), 위협 행위자 프로파일링
+├── 02_osint_for_threat_intel.md    ← Shodan/Censys 자동화, 다크웹 OSINT, IOC 수집 파이프라인
+├── 03_incident_response.md         ← IR 플레이북, 증거 수집, 악성코드 트리아지, 허니팟
+└── README.md
+```
+
+**핵심 내용:** CTI 라이프사이클, 위협 행위자 귀속 분석, IOC 관리, 자동화 인시던트 대응 절차
+
+---
+
+## 26. Linux Hardening
+
+```
+26_Linux_Hardening/
+├── 01_firewall_and_iptables.md          ← iptables/nftables/ufw 규칙, 방화벽 감사, 상태 기반 필터링
+├── 02_pam_and_auth_hardening.md         ← PAM 설정, SSH 하드닝, MFA 구성, sudo 정책
+├── 03_kisa_vulnerability_assessment.md  ← KISA 보안 체크리스트, CIS 벤치마크, 자동화 평가 스크립트
+└── README.md
+```
+
+**핵심 내용:** 방화벽 규칙 설계, 인증 강화, KISA/CIS 준수 자동화 보안 평가
 
 ---
 
