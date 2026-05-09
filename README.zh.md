@@ -5,9 +5,9 @@
 ### 实战网络安全完全攻略 — AI时代的黑客圣经
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-40-blueviolet)](#目录)
-[![Files](https://img.shields.io/badge/Docs-175%20Files-brightgreen)](#目录)
-[![Lines](https://img.shields.io/badge/Lines-126%2C000%2B-orange)](#目录)
+[![Sections](https://img.shields.io/badge/Sections-41-blueviolet)](#目录)
+[![Files](https://img.shields.io/badge/Docs-180%20Files-brightgreen)](#目录)
+[![Lines](https://img.shields.io/badge/Lines-129%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
