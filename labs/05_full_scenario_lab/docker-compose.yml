@@ -1,0 +1,190 @@
+version: "3.8"
+
+# -------------------------------------------------------
+# 기업 환경 시뮬레이션 — 전체 공격 체인 실습
+# DMZ 영역: 172.30.1.0/24  (외부 노출)
+# 내부 영역: 172.30.2.0/24  (내부망)
+# -------------------------------------------------------
+
+networks:
+  dmz_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.1.0/24
+    driver_opts:
+      com.docker.network.bridge.name: "dmz_br0"
+
+  internal_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.2.0/24
+    driver_opts:
+      com.docker.network.bridge.name: "internal_br0"
+
+services:
+  # -------------------------------------------------------
+  # dmz-web: 취약한 웹 앱 (SSRF + XXE 취약)
+  # DMZ에 위치, 외부에서 접근 가능
+  # -------------------------------------------------------
+  dmz-web:
+    build:
+      context: ./dmz-web
+      dockerfile: Dockerfile
+    container_name: full_lab_dmz_web
+    restart: unless-stopped
+    hostname: www.corp-demo.local
+    networks:
+      dmz_net:
+        ipv4_address: 172.30.1.10
+      internal_net:
+        ipv4_address: 172.30.2.10
+    ports:
+      - "8888:5000"
+    environment:
+      - INTERNAL_API=http://172.30.2.20
+      - DB_HOST=172.30.2.30
+      - SECRET_FLAG=FLAG{dmz_w3b_ssrf_xxe_pwn3d}
+    labels:
+      - "lab=full-scenario"
+      - "zone=dmz"
+
+  # -------------------------------------------------------
+  # internal-api: 내부 API 서버 (인증 없는 엔드포인트)
+  # 내부망에만 위치
+  # -------------------------------------------------------
+  internal-api:
+    build:
+      context: ./internal-api
+      dockerfile: Dockerfile
+    container_name: full_lab_internal_api
+    restart: unless-stopped
+    hostname: api.internal.corp.local
+    networks:
+      internal_net:
+        ipv4_address: 172.30.2.20
+    expose:
+      - "8000"
+    environment:
+      - DB_HOST=172.30.2.30
+      - DB_USER=app_user
+      - DB_PASS=AppP4ssw0rd!
+      - SECRET_FLAG=FLAG{1nt3rn4l_4p1_n0_4uth}
+      - LDAP_SERVER=172.30.2.40
+    labels:
+      - "lab=full-scenario"
+      - "zone=internal"
+
+  # -------------------------------------------------------
+  # db-server: MySQL (약한 크리덴셜)
+  # -------------------------------------------------------
+  db-server:
+    image: mysql:8.0
+    container_name: full_lab_db
+    restart: unless-stopped
+    hostname: db.internal.corp.local
+    networks:
+      internal_net:
+        ipv4_address: 172.30.2.30
+    expose:
+      - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: corpdb
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: AppP4ssw0rd!
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    labels:
+      - "lab=full-scenario"
+      - "zone=internal"
+
+  # -------------------------------------------------------
+  # ldap-server: OpenLDAP (기본 설정, 인증 취약)
+  # -------------------------------------------------------
+  ldap-server:
+    image: bitnami/openldap:latest
+    container_name: full_lab_ldap
+    restart: unless-stopped
+    hostname: ldap.internal.corp.local
+    networks:
+      internal_net:
+        ipv4_address: 172.30.2.40
+    expose:
+      - "1389"
+      - "1636"
+    environment:
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=admin123
+      - LDAP_ROOT=dc=corp,dc=local
+      - LDAP_SKIP_DEFAULT_TREE=no
+      - LDAP_USERS=alice,bob,charlie,sysadmin
+      - LDAP_PASSWORDS=alice123,bob123,charlie123,Sup3rS3cr3t!
+    labels:
+      - "lab=full-scenario"
+      - "zone=internal"
+
+  # -------------------------------------------------------
+  # file-server: SMB/FTP 파일 서버 (약한 공유 설정)
+  # -------------------------------------------------------
+  file-server:
+    image: alpine:3.18
+    container_name: full_lab_fileserver
+    restart: unless-stopped
+    hostname: files.internal.corp.local
+    networks:
+      internal_net:
+        ipv4_address: 172.30.2.50
+    expose:
+      - "21"
+      - "445"
+      - "139"
+    command: >
+      sh -c "
+        apk add --no-cache vsftpd samba &&
+        mkdir -p /shares/public /shares/confidential /shares/backup &&
+        echo 'FLAG{f1l3_s3rv3r_c0nf1d3nt14l}' > /shares/confidential/flag.txt &&
+        echo 'DB_BACKUP_CREDS: root/root123' > /shares/backup/db_backup.conf &&
+        echo 'LDAP_ADMIN: admin/admin123' > /shares/backup/ldap_backup.conf &&
+        adduser -D -s /bin/sh fileuser &&
+        echo 'fileuser:file123' | chpasswd &&
+        cp /etc/samba/smb.conf /etc/samba/smb.conf.bak &&
+        printf '[global]\nworkgroup = CORP\nsecurity = user\nmap to guest = bad user\n\n[public]\npath = /shares/public\nread only = no\nguest ok = yes\n\n[confidential]\npath = /shares/confidential\nread only = no\nguest ok = yes\n\n[backup]\npath = /shares/backup\nread only = no\nguest ok = yes\n' > /etc/samba/smb.conf &&
+        echo -e 'file123\nfile123\n' | smbpasswd -a fileuser 2>/dev/null || true &&
+        vsftpd &
+        smbd --foreground --no-process-group &
+        nmbd --foreground --no-process-group &
+        tail -f /dev/null
+      "
+    labels:
+      - "lab=full-scenario"
+      - "zone=internal"
+
+  # -------------------------------------------------------
+  # attacker: 침투 테스트 도구 컨테이너
+  # DMZ 접근 가능 (외부 공격자 시뮬레이션)
+  # -------------------------------------------------------
+  attacker:
+    image: ubuntu:22.04
+    container_name: full_lab_attacker
+    restart: unless-stopped
+    hostname: attacker
+    networks:
+      dmz_net:
+        ipv4_address: 172.30.1.100
+    tty: true
+    stdin_open: true
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq
+          nmap curl wget python3 python3-pip
+          netcat-openbsd smbclient ldap-utils
+          mysql-client ftp git jq &&
+        pip3 install -q requests impacket &&
+        tail -f /dev/null
+      "
+    labels:
+      - "lab=full-scenario"
+      - "zone=external"

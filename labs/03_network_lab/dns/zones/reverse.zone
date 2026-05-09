@@ -1,0 +1,16 @@
+$TTL 86400
+@   IN  SOA ns1.corp.local. admin.corp.local. (
+            2024010101
+            3600
+            1800
+            604800
+            86400 )
+
+@       IN  NS  ns1.corp.local.
+
+; PTR 레코드
+10.1    IN  PTR linux01.corp.local.
+20.1    IN  PTR ftp.corp.local.
+30.1    IN  PTR ns1.corp.local.
+40.1    IN  PTR mail.corp.local.
+100.0   IN  PTR attacker.corp.local.

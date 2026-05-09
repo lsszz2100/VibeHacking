@@ -1,0 +1,152 @@
+version: "3.8"
+
+networks:
+  cloud_lab_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24
+
+services:
+  # -------------------------------------------------------
+  # k8s-simulator: 취약한 Kubernetes API 서버 시뮬레이터
+  # -------------------------------------------------------
+  k8s-simulator:
+    build:
+      context: ./k8s-simulator
+      dockerfile: Dockerfile
+    container_name: cloud_lab_k8s
+    restart: unless-stopped
+    networks:
+      cloud_lab_net:
+        ipv4_address: 172.18.0.10
+    ports:
+      - "8443:8443"
+    environment:
+      - K8S_ADMIN_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.DEMO_ADMIN_TOKEN
+      - SECRET_FLAG=FLAG{k8s_4p1_s3rv3r_unauth_4cc3ss}
+    labels:
+      - "lab=cloud"
+      - "service=k8s-simulator"
+
+  # -------------------------------------------------------
+  # metadata-server: AWS IMDS 시뮬레이터 (169.254.169.254)
+  # -------------------------------------------------------
+  metadata-server:
+    build:
+      context: ./metadata-server
+      dockerfile: Dockerfile
+    container_name: cloud_lab_imds
+    restart: unless-stopped
+    networks:
+      cloud_lab_net:
+        ipv4_address: 172.18.0.20
+    expose:
+      - "80"
+    environment:
+      - AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+      - AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      - AWS_SESSION_TOKEN=AQoDYXdzEJr...EXAMPLETOKEN
+      - SECRET_FLAG=FLAG{1mds_ssrf_cr3d3nt14l_th3ft}
+      - INSTANCE_ID=i-1234567890abcdef0
+      - REGION=ap-northeast-2
+      - ROLE_NAME=ec2-prod-role
+    labels:
+      - "lab=cloud"
+      - "service=imds"
+
+  # -------------------------------------------------------
+  # vulnerable-registry: 인증 없는 Docker 레지스트리
+  # -------------------------------------------------------
+  vulnerable-registry:
+    image: registry:2
+    container_name: cloud_lab_registry
+    restart: unless-stopped
+    networks:
+      cloud_lab_net:
+        ipv4_address: 172.18.0.30
+    ports:
+      - "5000:5000"
+    environment:
+      # 인증 비활성화 (취약 설정)
+      - REGISTRY_AUTH=
+      - REGISTRY_HTTP_ADDR=0.0.0.0:5000
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+    labels:
+      - "lab=cloud"
+      - "service=registry"
+
+  # -------------------------------------------------------
+  # privileged-container: 과도한 권한 컨테이너 (탈출 실습)
+  # -------------------------------------------------------
+  privileged-container:
+    image: ubuntu:22.04
+    container_name: cloud_lab_privileged
+    restart: unless-stopped
+    networks:
+      cloud_lab_net:
+        ipv4_address: 172.18.0.40
+    # 취약 설정: privileged 모드
+    privileged: true
+    # 호스트 볼륨 마운트 (탈출 벡터)
+    volumes:
+      - /:/host:rw
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq curl wget python3 &&
+        echo 'FLAG{c0nt41n3r_3sc4p3_pr1v1l3g3d}' > /flag.txt &&
+        echo 'FLAG{h0st_f1l3sy5t3m_4cc3ss}' > /host/tmp/container_escape_flag.txt 2>/dev/null || true &&
+        tail -f /dev/null
+      "
+    labels:
+      - "lab=cloud"
+      - "service=privileged"
+
+  # -------------------------------------------------------
+  # ssrf-target: SSRF 취약한 웹 앱 (IMDS 접근 가능)
+  # -------------------------------------------------------
+  ssrf-target:
+    build:
+      context: ./ssrf-target
+      dockerfile: Dockerfile
+    container_name: cloud_lab_ssrf
+    restart: unless-stopped
+    networks:
+      cloud_lab_net:
+        ipv4_address: 172.18.0.50
+    ports:
+      - "8080:5000"
+    environment:
+      - METADATA_SERVER=http://172.18.0.20
+      - SECRET_FLAG=FLAG{ssrf_t0_1mds_pwn3d}
+    labels:
+      - "lab=cloud"
+      - "service=ssrf-target"
+
+  # -------------------------------------------------------
+  # attacker: 공격 도구 설치 컨테이너
+  # -------------------------------------------------------
+  attacker:
+    image: ubuntu:22.04
+    container_name: cloud_lab_attacker
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    networks:
+      cloud_lab_net:
+        ipv4_address: 172.18.0.100
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq
+          curl wget python3 python3-pip
+          nmap netcat-openbsd jq
+          docker.io git &&
+        pip3 install -q requests boto3 kubernetes &&
+        echo 'alias k=\"kubectl\"' >> /root/.bashrc &&
+        tail -f /dev/null
+      "
+    labels:
+      - "lab=cloud"
+      - "service=attacker"

@@ -1,0 +1,73 @@
+version: "3.8"
+
+networks:
+  pwn_lab_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.17.0.0/24
+
+services:
+  # -------------------------------------------------------
+  # pwn-server: 취약한 C 바이너리 5개를 xinetd로 서비스
+  # -------------------------------------------------------
+  pwn-server:
+    build:
+      context: ./pwn-server
+      dockerfile: Dockerfile
+    container_name: pwn_lab_server
+    restart: unless-stopped
+    ports:
+      - "10001:10001"   # chal01: BOF 기초 (NX 없음)
+      - "10002:10002"   # chal02: ret2libc (NX 있음, ASLR 없음)
+      - "10003:10003"   # chal03: ROP 체인
+      - "10004:10004"   # chal04: 포맷 스트링
+      - "10005:10005"   # chal05: 힙 익스플로잇 (tcache poisoning)
+    networks:
+      pwn_lab_net:
+        ipv4_address: 172.17.0.10
+    # 힙 익스플로잇 실습을 위해 ASLR을 컨테이너 수준에서만 비활성화
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    ulimits:
+      nofile:
+        soft: 1024
+        hard: 1024
+    environment:
+      - FLAG_01=FLAG{st4ck_0v3rfl0w_no_nx_pwned}
+      - FLAG_02=FLAG{r3t2l1bc_byp4ss_nx}
+      - FLAG_03=FLAG{r0p_ch41n_m4st3r}
+      - FLAG_04=FLAG{f0rm4t_str1ng_4rb1tr4ry_wr1t3}
+      - FLAG_05=FLAG{tc4ch3_p01s0n1ng_h34p_pwn}
+    labels:
+      - "lab=pwn"
+      - "service=pwn-server"
+
+  # -------------------------------------------------------
+  # pwntools-client: 공격 도구 컨테이너
+  # -------------------------------------------------------
+  pwntools-client:
+    build:
+      context: ./pwntools-client
+      dockerfile: Dockerfile
+    container_name: pwn_lab_client
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    networks:
+      pwn_lab_net:
+        ipv4_address: 172.17.0.20
+    volumes:
+      - ./exploits:/home/ctf/exploits
+      - ./shared:/home/ctf/shared:ro
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    environment:
+      - TARGET_HOST=172.17.0.10
+    labels:
+      - "lab=pwn"
+      - "service=pwntools-client"

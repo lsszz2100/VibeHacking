@@ -1,0 +1,186 @@
+version: "3.8"
+
+networks:
+  corp_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: "corp_br0"
+
+services:
+  # -------------------------------------------------------
+  # victim-linux: 취약한 SSH 설정 (약한 패스워드, root 허용)
+  # -------------------------------------------------------
+  victim-linux:
+    image: ubuntu:22.04
+    container_name: net_lab_victim_linux
+    restart: unless-stopped
+    hostname: corp-linux-01
+    networks:
+      corp_net:
+        ipv4_address: 172.20.1.10
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq openssh-server python3 curl wget net-tools &&
+        useradd -m -s /bin/bash employee &&
+        echo 'employee:employee123' | chpasswd &&
+        echo 'root:toor' | chpasswd &&
+        sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config &&
+        sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+        echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config &&
+        echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config &&
+        service ssh start &&
+        echo 'FLAG{ssh_w34k_p4ssw0rd_r00t}' > /root/flag.txt &&
+        echo 'corpserver01' > /etc/hostname &&
+        tail -f /dev/null
+      "
+    expose:
+      - "22"
+    labels:
+      - "lab=network"
+      - "service=victim-linux"
+
+  # -------------------------------------------------------
+  # victim-windows-like: 취약한 FTP/Telnet 서비스 (Alpine 기반)
+  # -------------------------------------------------------
+  victim-windows-like:
+    image: alpine:3.18
+    container_name: net_lab_victim_ftp
+    restart: unless-stopped
+    hostname: corp-ftp-server
+    networks:
+      corp_net:
+        ipv4_address: 172.20.1.20
+    command: >
+      sh -c "
+        apk add --no-cache vsftpd busybox-extras &&
+        adduser -D -s /bin/sh ftpuser &&
+        echo 'ftpuser:ftp123' | chpasswd &&
+        echo 'anonymous_enable=YES' > /etc/vsftpd/vsftpd.conf &&
+        echo 'local_enable=YES' >> /etc/vsftpd/vsftpd.conf &&
+        echo 'write_enable=YES' >> /etc/vsftpd/vsftpd.conf &&
+        echo 'local_umask=022' >> /etc/vsftpd/vsftpd.conf &&
+        echo 'dirmessage_enable=YES' >> /etc/vsftpd/vsftpd.conf &&
+        echo 'xferlog_enable=YES' >> /etc/vsftpd/vsftpd.conf &&
+        echo 'connect_from_port_20=YES' >> /etc/vsftpd/vsftpd.conf &&
+        echo 'pasv_enable=YES' >> /etc/vsftpd/vsftpd.conf &&
+        echo 'pasv_min_port=30000' >> /etc/vsftpd/vsftpd.conf &&
+        echo 'pasv_max_port=30100' >> /etc/vsftpd/vsftpd.conf &&
+        mkdir -p /home/ftpuser/public &&
+        echo 'FLAG{ftp_4n0nym0us_4cc3ss}' > /home/ftpuser/public/flag.txt &&
+        echo 'CONFIDENTIAL: internal_api_key=sk-prod-abc123xyz' > /home/ftpuser/public/config.txt &&
+        chown -R ftpuser:ftpuser /home/ftpuser &&
+        vsftpd /etc/vsftpd/vsftpd.conf &
+        telnetd -l /bin/sh -p 23 &
+        tail -f /dev/null
+      "
+    ports:
+      - "2121:21"
+      - "2323:23"
+    expose:
+      - "21"
+      - "23"
+    labels:
+      - "lab=network"
+      - "service=victim-ftp"
+
+  # -------------------------------------------------------
+  # dns-server: zone transfer 허용하는 취약한 DNS 서버
+  # -------------------------------------------------------
+  dns-server:
+    image: ubuntu/bind9:latest
+    container_name: net_lab_dns
+    restart: unless-stopped
+    hostname: ns1.corp.local
+    networks:
+      corp_net:
+        ipv4_address: 172.20.1.30
+    volumes:
+      - ./dns/named.conf:/etc/bind/named.conf:ro
+      - ./dns/zones/:/etc/bind/zones/:ro
+    expose:
+      - "53/tcp"
+      - "53/udp"
+    labels:
+      - "lab=network"
+      - "service=dns"
+
+  # -------------------------------------------------------
+  # mail-server: SMTP 릴레이 허용 취약한 메일 서버
+  # -------------------------------------------------------
+  mail-server:
+    image: alpine:3.18
+    container_name: net_lab_mail
+    restart: unless-stopped
+    hostname: mail.corp.local
+    networks:
+      corp_net:
+        ipv4_address: 172.20.1.40
+    command: >
+      sh -c "
+        apk add --no-cache postfix &&
+        postconf -e 'myhostname = mail.corp.local' &&
+        postconf -e 'mynetworks = 0.0.0.0/0' &&
+        postconf -e 'smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, permit_auth_destination' &&
+        postconf -e 'smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, defer_unauth_destination' &&
+        postconf -e 'inet_interfaces = all' &&
+        postconf -e 'smtpd_banner = \$myhostname ESMTP Postfix corp.local' &&
+        postfix start &&
+        echo 'FLAG{smtp_0p3n_r3l4y_pwn3d}' > /tmp/mail_flag.txt &&
+        tail -f /var/log/maillog
+      "
+    expose:
+      - "25"
+    labels:
+      - "lab=network"
+      - "service=mail"
+
+  # -------------------------------------------------------
+  # attacker: 공격 도구 컨테이너 (Kali 호환 툴셋)
+  # -------------------------------------------------------
+  attacker:
+    image: ubuntu:22.04
+    container_name: net_lab_attacker
+    restart: unless-stopped
+    hostname: attacker
+    networks:
+      corp_net:
+        ipv4_address: 172.20.0.100
+    tty: true
+    stdin_open: true
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq
+          nmap
+          hydra
+          medusa
+          nikto
+          netcat-openbsd
+          curl
+          wget
+          ftp
+          telnet
+          dnsutils
+          python3
+          python3-pip
+          masscan
+          smbclient
+          whois
+          tcpdump
+          net-tools
+          iputils-ping &&
+        pip3 install -q impacket &&
+        echo 'alias ll=\"ls -la\"' >> /root/.bashrc &&
+        echo 'alias scan=\"nmap -sV -sC\"' >> /root/.bashrc &&
+        tail -f /dev/null
+      "
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    labels:
+      - "lab=network"
+      - "service=attacker"

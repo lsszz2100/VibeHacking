@@ -1,0 +1,16 @@
+service chal05
+{
+    type            = UNLISTED
+    socket_type     = stream
+    protocol        = tcp
+    wait            = no
+    user            = ctf
+    server          = /challenges/bin/chal05
+    port            = 10005
+    bind            = 0.0.0.0
+    flags           = REUSE
+    per_source      = 10
+    log_on_success  = HOST
+    log_on_failure  = HOST
+    disable         = no
+}

@@ -1,0 +1,34 @@
+$TTL 86400
+@   IN  SOA ns1.corp.local. admin.corp.local. (
+            2024010101  ; Serial
+            3600        ; Refresh
+            1800        ; Retry
+            604800      ; Expire
+            86400 )     ; Minimum TTL
+
+; NS 레코드
+@       IN  NS  ns1.corp.local.
+
+; A 레코드
+ns1         IN  A   172.20.1.30
+mail        IN  A   172.20.1.40
+ftp         IN  A   172.20.1.20
+linux01     IN  A   172.20.1.10
+web         IN  A   172.20.2.10
+intranet    IN  A   172.20.2.20
+db          IN  A   172.20.2.30
+dev         IN  A   172.20.3.10
+staging     IN  A   172.20.3.20
+vpn         IN  A   172.20.0.50
+
+; MX 레코드
+@       IN  MX  10  mail.corp.local.
+
+; TXT 레코드 (정보 노출)
+@       IN  TXT "v=spf1 ip4:172.20.0.0/16 ~all"
+_dmarc  IN  TXT "v=DMARC1; p=none; rua=mailto:admin@corp.local"
+
+; 내부 메모 (실수로 노출)
+secret  IN  TXT "admin_password=Sup3rS3cr3t!2024"
+backup  IN  A   172.20.4.10
+internal-api IN A 172.20.2.20
