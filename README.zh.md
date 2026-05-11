@@ -5,9 +5,9 @@
 ### 实战网络安全完全攻略 — AI时代的黑客圣经
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-41-blueviolet)](#目录)
-[![Files](https://img.shields.io/badge/Docs-180%20Files-brightgreen)](#目录)
-[![Lines](https://img.shields.io/badge/Lines-129%2C000%2B-orange)](#目录)
+[![Sections](https://img.shields.io/badge/Sections-46-blueviolet)](#目录)
+[![Files](https://img.shields.io/badge/Docs-174%20Files-brightgreen)](#目录)
+[![Lines](https://img.shields.io/badge/Lines-135%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -79,6 +79,16 @@
 | 35 | [**供应链攻击**](#35-供应链攻击) | 软件供应链入侵、CI/CD投毒、SolarWinds·XZ模式分析 | 3 |
 | 36 | [**汽车黑客技术**](#36-汽车黑客技术) | CAN总线分析、ECU利用、车联网与OTA攻击 | 4 |
 | 37 | [**ICS/SCADA安全**](#37-icsscada安全) | ICS协议侦察、SCADA利用、OT网络攻防 | 4 |
+| 38 | [**云原生安全**](#38-云原生安全) | CNAPP、eBPF运行时安全、镜像加固、容器逃逸 | 4 |
+| 39 | [**零信任架构**](#39-零信任架构) | ZTA原则、身份/设备信任、微分段、SASE | 4 |
+| 40 | [**威胁狩猎**](#40-威胁狩猎) | 狩猎方法论、MITRE ATT&CK场景、100+ KQL/SPL查询、SOAR自动化 | 4 |
+| 41 | [**韩国安全认证**](#41-韩国安全认证) | 信息安全工程师、ISMS-P、CISSP/OSCP路线图、安全法规 | 5 |
+| 42 | [**区块链/Web3安全**](#42-区块链web3安全) | EVM结构、智能合约审计、DeFi攻击、Web3渗透工具 | 4 |
+| 43 | [**物理安全渗透**](#43-物理安全渗透) | 物理渗透测试方法论、门锁破解、RFID克隆、社会工程学 | 4 |
+| 44 | [**事件响应/DFIR**](#44-事件响应dfir) | IR手册、内存/磁盘取证、网络取证、封控与清除 | 4 |
+| 45 | [**恶意代码开发**](#45-恶意代码开发) | PE结构、shellcode/注入、C2框架、AV/EDR规避 | 4 |
+| 46 | [**CTF技巧**](#46-ctf技巧) | CTF方法论/工具、PWN/REV、Web/密码学、自动化框架 | 4 |
+| 🧪 | [**CTF实验环境（labs/）**](#ctf实验环境labs) | Web/二进制/网络/云原生/综合场景Docker CTF实验 | 50 |
 
 ---
 
@@ -608,6 +618,150 @@
 ```
 
 分析控制发电站、炼油厂、水处理、铁路等关键基础设施的ICS/OT环境。解剖Stuxnet、TRITON、INDUSTROYER、PIPEDREAM等真实网络武器——从Modbus线圈强制写入到PLC DB块补丁、Historian数据逆注入、OT拓扑自动映射，全面呈现可用性优先环境的攻防实战。
+
+---
+
+## 38. 云原生安全
+
+```
+38_Cloud_Native_Security/
+├── 01_cloud_native_threat_model.md      ← STRIDE威胁建模、CNAPP、容器/无服务器/服务网格威胁
+├── 02_ebpf_runtime_security.md          ← Falco/Tetragon/Cilium、eBPF运行时检测与网络策略
+├── 03_image_hardening_supply_chain.md   ← Trivy/Grype镜像扫描、Cosign签名、SBOM、OPA Gatekeeper
+└── 04_cloud_native_attack_techniques.md ← 容器逃逸、服务网格MITM、无服务器事件注入、KSPM
+```
+
+涵盖云原生环境（Kubernetes、无服务器、服务网格）的攻防技术。从eBPF运行时安全（Falco/Tetragon）、容器镜像签名与SBOM、OPA策略网关，到实际容器逃逸技术、服务网格MITM、AWS Lambda事件注入——以CNAPP视角系统整理。
+
+---
+
+## 39. 零信任架构
+
+```
+39_Zero_Trust_Architecture/
+├── 01_zero_trust_principles.md         ← BeyondCorp模型、NIST SP 800-207、ZTA成熟度模型
+├── 02_identity_and_device_trust.md     ← IdP/MFA/通行密钥、设备信任（MDM/EDR）、SCIM预置
+├── 03_microsegmentation_and_network.md ← 微分段、mTLS、SASE/SD-WAN、eBPF网络策略
+└── 04_zero_trust_implementation.md     ← Cloudflare/Zscaler/BeyondCorp实施、ZTA审计自动化
+```
+
+"永不信任，始终验证" — 基于NIST SP 800-207的零信任架构实务解析。涵盖BeyondCorp案例、身份/设备信任体系、微分段、SASE引入，以及ZTA成熟度自评工具。
+
+---
+
+## 40. 威胁狩猎
+
+```
+40_Threat_Hunting/
+├── 01_threat_hunting_methodology.md  ← 狩猎周期、假设驱动狩猎、PEAK框架、TTP漂移
+├── 02_mitre_attack_hunting.md        ← ATT&CK战术狩猎场景、组织画像、Atomic Red Team
+├── 03_hunting_queries_kql_spl.md     ← 100+ Sentinel KQL/Splunk SPL狩猎查询、异常检测模式
+└── 04_automated_threat_hunting.md    ← SOAR自动化、ML异常检测、狩猎剧本自动化
+```
+
+主动威胁狩猎——发现日志未告诉你的内容。涵盖PEAK框架假设构建、MITRE ATT&CK战术狩猎场景、100+ Sentinel KQL/Splunk SPL查询示例，以及SOAR自动化剧本，可在SOC中即时部署。
+
+---
+
+## 41. 韩国安全认证
+
+```
+41_Korean_Certifications/
+├── 01_information_security_engineer.md           ← 信息安全工程师笔试 — 5科目完全攻略
+├── 02_information_security_engineer_practical.md ← 实操题型、密码学/网络/系统实验
+├── 03_ISMS_P_certification.md                    ← ISMS-P认证体系、80项控制措施、审核准备
+├── 04_international_certifications.md            ← CISSP/CEH/OSCP/CISA路线图、域比较
+└── 05_security_laws_and_compliance.md            ← 韩国个人信息保护法·IT安全法规、GDPR对比
+```
+
+将韩国安全认证（信息安全工程师、ISMS-P）与国际认证（CISSP/CEH/OSCP/CISA）汇聚一处。包含法律法规与合规（个人信息保护法、GDPR），涵盖韩国安全从业者必须掌握的制度基础。
+
+---
+
+## 42. 区块链/Web3安全
+
+```
+42_Blockchain_Web3_Security/
+├── 01_blockchain_fundamentals_and_threats.md ← EVM架构、UTXO vs 账户模型、51%攻击、eclipse攻击
+├── 02_smart_contract_auditing.md             ← 重入/整数溢出/tx.origin/delegatecall、Slither/Mythril/Echidna
+├── 03_defi_protocol_attacks.md               ← 闪电贷、预言机操控、MEV三明治攻击、Rug Pull检测
+└── 04_web3_pentest_tools.md                  ← Foundry（forge/cast/anvil/chisel）、静态分析工具、RPC安全评估
+```
+
+从区块链基础到DeFi攻击分析与智能合约审计，一站式学习。使用web3.py 6.x和Foundry进行实操PoC演示。涵盖真实事件（Euler Finance $197M闪电贷）、MEV机器人原理、Slither/Mythril漏洞扫描、RPC端点安全评估。
+
+---
+
+## 43. 物理安全渗透
+
+```
+43_Physical_Security_Pentesting/
+├── 01_physical_pentest_methodology.md    ← PTES物理领域5阶段、授权书模板、漏洞检查清单
+├── 02_lock_bypass_and_access_control.md  ← 弹子锁拨片（SPP/梳妆/碰撞）、电子门禁缺陷分析
+├── 03_rfid_nfc_cloning.md                ← Proxmark3 LF/HF、MIFARE Classic嵌套攻击、nfcpy NFC分析
+└── 04_physical_recon_and_social_engineering.md ← 被动侦察、尾随、借口攻击、西奥迪尼6原则
+```
+
+从方法论到实施，全面覆盖物理渗透测试。涵盖锁具破解、RFID/NFC克隆（Proxmark3）、基于西奥迪尼影响原则的社会工程学。包含门禁日志异常检测与物理渗透报告生成的Python CLI工具。
+
+---
+
+## 44. 事件响应/DFIR
+
+```
+44_Incident_Response_DFIR/
+├── 01_ir_methodology_and_playbooks.md     ← NIST SP 800-61r2、PICERL、勒索软件/钓鱼手册、日志时间线
+├── 02_memory_and_disk_forensics.md        ← Volatility3、MFT分析、MACB时间戳、Plaso时间线
+├── 03_network_forensics_and_log_analysis.md ← 100+ tshark过滤器、Zeek日志、Windows Event ID、Sysmon、PCAP C2 IOC
+└── 04_threat_containment_and_eradication.md ← 网络隔离、持久化痕迹收集、5-Why分析
+```
+
+完整的DFIR工作流：检测→分析→封控→清除→恢复。Python CLI工具涵盖可疑进程检测（白名单比对、名称伪装）、基于PCAP的C2 IOC提取（信标检测/DNS隧道）、Windows持久化痕迹收集与风险评分。
+
+---
+
+## 45. 恶意代码开发
+
+```
+45_Malware_Development/
+├── 01_malware_fundamentals_and_pe_structure.md ← PE文件结构、IAT、香农熵、可疑API分类
+├── 02_shellcode_and_injection_techniques.md    ← PIC shellcode、XOR编码、CreateRemoteThread/APC/进程镂空
+├── 03_c2_framework_development.md              ← C2架构、HTTP C2服务端+代理、DNS隧道、商用C2对比
+└── 04_av_edr_evasion.md                        ← 直接系统调用、NTDLL解钩、ETW/AMSI补丁、沙箱检测
+```
+
+面向红队和恶意代码分析师的开发与规避技术。Python CLI涵盖PE文件分析（熵/API分类）、shellcode XOR编码/反汇编、字符串混淆、沙箱检测。深入讲解直接syscall（NASM存根）、NTDLL解钩、ETW补丁、AMSI绕过等概念。
+
+---
+
+## 46. CTF技巧
+
+```
+46_CTF_Techniques/
+├── 01_ctf_methodology_and_tools.md        ← CTF类型、工具生态、Docker Pwnbox Dockerfile、平台指南
+├── 02_pwn_and_rev_ctf.md                  ← 完整pwntools模板（ret2win/ret2libc/格式字符串/堆）、angr解题
+├── 03_web_and_crypto_ctf.md               ← 盲注自动化、SSTI利用、JWT攻击、RSA/AES/哈希长度扩展攻击
+└── 04_ctf_automation_and_frameworks.md    ← DynELF、GDB tmux分屏、angr自动化、Frida Android、取证流水线
+```
+
+从方法论到自动化，全方位覆盖CTF技巧。包含所有常见二进制题型的pwntools模板、angr符号执行、Frida动态插桩（Android CTF）、取证自动化流水线，以及CTFd API客户端用于题目管理和Flag提交。
+
+---
+
+## CTF实验环境（labs/）
+
+```
+labs/
+├── 01_web_hacking_lab/      ← SQLi/XSS/SSRF/JWT漏洞Flask应用（Docker）
+├── 02_pwn_lab/              ← BOF/格式字符串/堆利用漏洞二进制环境
+├── 03_network_lab/          ← 数据包分析/MITM/ARP欺骗pcap+实验环境
+├── 04_cloud_container_lab/  ← 漏洞Docker/K8s环境、容器逃逸场景
+├── 05_full_scenario_lab/    ← 侦察→入侵→横向移动→权限提升→数据外泄综合场景
+├── start_lab.sh             ← 一键docker-compose up启动全部实验
+└── stop_all.sh              ← 停止全部实验
+```
+
+5个Docker化CTF漏洞环境——Web、二进制、网络、云原生、综合场景，可在本地即时实验。共12个Flag，`start_lab.sh`一键启动全部环境。
 
 ---
 

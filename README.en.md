@@ -5,9 +5,9 @@
 ### Master Practical Cybersecurity — The Hacking Bible for the AI Era
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-41-blueviolet)](#table-of-contents)
-[![Files](https://img.shields.io/badge/Docs-180%20Files-brightgreen)](#table-of-contents)
-[![Lines](https://img.shields.io/badge/Lines-129%2C000%2B-orange)](#table-of-contents)
+[![Sections](https://img.shields.io/badge/Sections-46-blueviolet)](#table-of-contents)
+[![Files](https://img.shields.io/badge/Docs-174%20Files-brightgreen)](#table-of-contents)
+[![Lines](https://img.shields.io/badge/Lines-135%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -79,6 +79,16 @@ From CTF to Bug Bounty, Red Team to AI Security: a **practical, hands-on knowled
 | 35 | [**Supply Chain Attacks**](#35-supply-chain-attacks) | Software supply chain compromise, CI/CD poisoning, SolarWinds/XZ patterns | 3 |
 | 36 | [**Automotive Hacking**](#36-automotive-hacking) | CAN bus analysis, ECU exploitation, telematics & OTA attacks | 4 |
 | 37 | [**ICS/SCADA Security**](#37-icsscada-security) | ICS protocol recon, SCADA exploitation, OT network attacks & defense | 4 |
+| 38 | [**Cloud Native Security**](#38-cloud-native-security) | CNAPP, eBPF runtime security, image hardening, container escape | 4 |
+| 39 | [**Zero Trust Architecture**](#39-zero-trust-architecture) | ZTA principles, identity/device trust, microsegmentation, SASE | 4 |
+| 40 | [**Threat Hunting**](#40-threat-hunting) | Hunting methodology, MITRE ATT&CK scenarios, 100+ KQL/SPL queries, SOAR | 4 |
+| 41 | [**Korean Security Certifications**](#41-korean-security-certifications) | 정보보안기사, ISMS-P, CISSP/OSCP roadmap, security laws | 5 |
+| 42 | [**Blockchain/Web3 Security**](#42-blockchainweb3-security) | EVM structure, smart contract auditing, DeFi attacks, Web3 pentest tools | 4 |
+| 43 | [**Physical Security Pentesting**](#43-physical-security-pentesting) | Physical pentest methodology, lock bypass, RFID cloning, social engineering | 4 |
+| 44 | [**Incident Response/DFIR**](#44-incident-responsedfir) | IR playbooks, memory/disk forensics, network forensics, containment/eradication | 4 |
+| 45 | [**Malware Development**](#45-malware-development) | PE structure, shellcode/injection, C2 framework, AV/EDR evasion | 4 |
+| 46 | [**CTF Techniques**](#46-ctf-techniques) | CTF methodology/tools, PWN/REV, Web/Crypto, automation frameworks | 4 |
+| 🧪 | [**CTF Practice Labs (labs/)**](#ctf-practice-labs-labs) | Web/binary/network/cloud/full-scenario Docker CTF labs | 50 |
 
 ---
 
@@ -608,6 +618,150 @@ Modern vehicles are mobile computers with 100+ ECUs and dozens of protocols. Fro
 ```
 
 Analyzes ICS/OT environments controlling critical infrastructure (power plants, refineries, water treatment, railways). Dissects real cyber weapons including Stuxnet, TRITON, INDUSTROYER, and PIPEDREAM — covering Modbus coil forced writes to PLC DB block patching, Historian data injection, and OT topology auto-mapping.
+
+---
+
+## 38. Cloud Native Security
+
+```
+38_Cloud_Native_Security/
+├── 01_cloud_native_threat_model.md      ← STRIDE threat modeling, CNAPP, container/serverless/service mesh threats
+├── 02_ebpf_runtime_security.md          ← Falco/Tetragon/Cilium, eBPF-based runtime detection & network policy
+├── 03_image_hardening_supply_chain.md   ← Trivy/Grype image scanning, Cosign signing, SBOM, OPA Gatekeeper
+└── 04_cloud_native_attack_techniques.md ← Container escape, service mesh MITM, serverless event injection, KSPM
+```
+
+Covers attack and defense in Cloud Native environments (Kubernetes, serverless, service mesh). From eBPF-based runtime security (Falco/Tetragon), container image signing, SBOM, and OPA policy gateways to real container escape techniques, service mesh MITM, and AWS Lambda event injection — organized from a CNAPP perspective.
+
+---
+
+## 39. Zero Trust Architecture
+
+```
+39_Zero_Trust_Architecture/
+├── 01_zero_trust_principles.md         ← BeyondCorp model, NIST SP 800-207, ZTA maturity model
+├── 02_identity_and_device_trust.md     ← IdP/MFA/passkeys, device trust (MDM/EDR), SCIM provisioning
+├── 03_microsegmentation_and_network.md ← Microsegmentation, mTLS, SASE/SD-WAN, eBPF network policy
+└── 04_zero_trust_implementation.md     ← Cloudflare/Zscaler/BeyondCorp implementation, ZTA audit automation
+```
+
+"Never trust, always verify" — Zero Trust Architecture based on NIST SP 800-207 from a practical standpoint. Covers BeyondCorp case studies, identity/device trust frameworks, microsegmentation, SASE adoption, and ZTA maturity self-assessment tooling.
+
+---
+
+## 40. Threat Hunting
+
+```
+40_Threat_Hunting/
+├── 01_threat_hunting_methodology.md  ← Hunting cycle, hypothesis-based hunting, PEAK framework, TTP drift
+├── 02_mitre_attack_hunting.md        ← ATT&CK tactic hunting scenarios, group profiling, Atomic Red Team
+├── 03_hunting_queries_kql_spl.md     ← 100+ Sentinel KQL/Splunk SPL hunting queries, anomaly detection patterns
+└── 04_automated_threat_hunting.md    ← SOAR automation, ML-based anomaly detection, hunting playbook automation
+```
+
+Proactive threat hunting — finding what the logs won't tell you. Covers PEAK framework hypothesis building, MITRE ATT&CK tactic hunting scenarios, 100+ Sentinel KQL/Splunk SPL query examples, and SOAR-based automated playbooks ready for immediate SOC deployment.
+
+---
+
+## 41. Korean Security Certifications
+
+```
+41_Korean_Certifications/
+├── 01_information_security_engineer.md           ← Information Security Engineer exam — 5 subject complete guide
+├── 02_information_security_engineer_practical.md ← Practical exam types, cryptography/network/system labs
+├── 03_ISMS_P_certification.md                    ← ISMS-P certification framework, 80 control items, audit prep
+├── 04_international_certifications.md            ← CISSP/CEH/OSCP/CISA roadmap, domain comparison
+└── 05_security_laws_and_compliance.md            ← Korean privacy/IT security laws, GDPR comparison
+```
+
+Korean security certifications (정보보안기사, ISMS-P) and international certifications (CISSP/CEH/OSCP/CISA) in one place. Includes Korean laws and compliance (Personal Information Protection Act, GDPR) — covering the regulatory foundations every Korean security practitioner must know.
+
+---
+
+## 42. Blockchain/Web3 Security
+
+```
+42_Blockchain_Web3_Security/
+├── 01_blockchain_fundamentals_and_threats.md ← EVM architecture, UTXO vs account model, 51% attack, eclipse attack
+├── 02_smart_contract_auditing.md             ← Reentrancy/overflow/tx.origin/delegatecall, Slither/Mythril/Echidna
+├── 03_defi_protocol_attacks.md               ← Flash Loan, oracle manipulation, MEV sandwich, Rug Pull detection
+└── 04_web3_pentest_tools.md                  ← Foundry (forge/cast/anvil/chisel), static analysis tools, RPC security
+```
+
+Blockchain fundamentals to DeFi attack analysis and smart contract auditing in one place. Uses web3.py 6.x and Foundry for hands-on PoC. Covers real-world incidents (Euler Finance $197M flash loan), MEV bot mechanics, Slither/Mythril vulnerability scanning, and live RPC endpoint security assessment.
+
+---
+
+## 43. Physical Security Pentesting
+
+```
+43_Physical_Security_Pentesting/
+├── 01_physical_pentest_methodology.md    ← PTES physical domain 5-stage, authorization template, vulnerability checklist
+├── 02_lock_bypass_and_access_control.md  ← Pin tumbler picking (SPP/raking/bumping), electronic access control flaws
+├── 03_rfid_nfc_cloning.md                ← Proxmark3 LF/HF, MIFARE Classic nested attack, nfcpy NFC analysis
+└── 04_physical_recon_and_social_engineering.md ← Passive recon, tailgating, pretexting, Cialdini's 6 principles
+```
+
+Physical penetration testing from methodology to execution. Covers lock picking, RFID/NFC cloning (Proxmark3), and social engineering using Cialdini's influence principles. Python CLIs for access control log anomaly detection and physical pentest report generation.
+
+---
+
+## 44. Incident Response/DFIR
+
+```
+44_Incident_Response_DFIR/
+├── 01_ir_methodology_and_playbooks.md     ← NIST SP 800-61r2, PICERL, ransomware/phishing playbooks, log timeline
+├── 02_memory_and_disk_forensics.md        ← Volatility3, MFT analysis, MACB timestamps, Plaso timeline
+├── 03_network_forensics_and_log_analysis.md ← 100+ tshark filters, Zeek logs, Windows Event IDs, Sysmon, PCAP C2 IOC
+└── 04_threat_containment_and_eradication.md ← Network isolation, persistence artifact collection, 5-Why analysis
+```
+
+Complete DFIR workflow: detection → analysis → containment → eradication → recovery. Python CLIs for suspicious process detection (whitelist comparison, name spoofing), PCAP-based C2 IOC extraction (beaconing/DNS tunneling), and Windows persistence artifact collection with risk scoring.
+
+---
+
+## 45. Malware Development
+
+```
+45_Malware_Development/
+├── 01_malware_fundamentals_and_pe_structure.md ← PE file layout, IAT, Shannon entropy, suspicious API categorization
+├── 02_shellcode_and_injection_techniques.md    ← PIC shellcode, XOR encoding, CreateRemoteThread/APC/process hollowing
+├── 03_c2_framework_development.md              ← C2 architecture, HTTP C2 server+agent, DNS tunneling, commercial C2 comparison
+└── 04_av_edr_evasion.md                        ← Direct syscalls, NTDLL unhooking, ETW/AMSI patching, sandbox detection
+```
+
+Malware development and defense evasion for red teamers and malware analysts. Python CLIs cover PE file analysis (entropy/API categorization), shellcode XOR encoding/disassembly, string obfuscation, and sandbox detection. Covers direct syscalls (NASM stub), NTDLL unhooking, ETW patching, and AMSI bypass concepts.
+
+---
+
+## 46. CTF Techniques
+
+```
+46_CTF_Techniques/
+├── 01_ctf_methodology_and_tools.md        ← CTF types, tool ecosystem, Docker Pwnbox Dockerfile, CTF platform guide
+├── 02_pwn_and_rev_ctf.md                  ← Complete pwntools template (ret2win/ret2libc/format string/heap), angr crackme
+├── 03_web_and_crypto_ctf.md               ← Blind SQLi automation, SSTI exploitation, JWT attacks, RSA/AES/Hash attacks
+└── 04_ctf_automation_and_frameworks.md    ← DynELF, GDB tmux split, angr automation, Frida Android, forensics pipeline
+```
+
+CTF from methodology to automation. Full pwntools exploit templates for every common binary challenge type, angr symbolic execution for reversing, Frida dynamic instrumentation for Android CTFs, and a forensics automation pipeline. Includes a CTFd API client for challenge tracking and flag submission.
+
+---
+
+## CTF Practice Labs (labs/)
+
+```
+labs/
+├── 01_web_hacking_lab/      ← SQLi/XSS/SSRF/JWT vulnerable Flask app (Docker-based)
+├── 02_pwn_lab/              ← BOF/format string/heap exploit vulnerable binary environment
+├── 03_network_lab/          ← Packet analysis/MITM/ARP spoofing pcap + practice environment
+├── 04_cloud_container_lab/  ← Vulnerable Docker/K8s environment, container escape scenarios
+├── 05_full_scenario_lab/    ← Recon→Intrusion→Lateral movement→Privilege escalation→Exfiltration
+├── start_lab.sh             ← Full lab docker-compose up automation
+└── stop_all.sh              ← Stop all labs
+```
+
+5 Docker-based CTF vulnerable environments — web, binary, network, cloud, and full scenario, ready for local practice. 12 flags total, one `start_lab.sh` command to spin up the entire environment.
 
 ---
 

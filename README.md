@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-41-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-180%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-129%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-46-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-174%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-135%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -79,6 +79,16 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 35 | [**공급망 공격**](#35-공급망-공격) | 소프트웨어 공급망 침해, CI/CD 파이프라인 독화, SolarWinds·XZ 패턴 분석 | 3 |
 | 36 | [**자동차 해킹**](#36-자동차-해킹) | CAN 버스 분석, ECU 익스플로잇, 텔레매틱스·OTA 공격 | 4 |
 | 37 | [**ICS/SCADA 보안**](#37-icsscada-보안) | ICS 프로토콜 정찰, SCADA 익스플로잇, OT 네트워크 공격·방어 | 4 |
+| 38 | [**Cloud Native 보안**](#38-cloud-native-보안) | CNAPP, eBPF 런타임 보안, 이미지 하드닝, 컨테이너 탈출 기법 | 4 |
+| 39 | [**Zero Trust 아키텍처**](#39-zero-trust-아키텍처) | ZTA 원칙, 아이덴티티/장치 신뢰, 마이크로세그멘테이션, SASE | 4 |
+| 40 | [**위협 헌팅**](#40-위협-헌팅) | 헌팅 방법론, MITRE ATT&CK 시나리오, KQL/SPL 쿼리 100+, SOAR 자동화 | 4 |
+| 41 | [**한국 정보보안 자격증**](#41-한국-정보보안-자격증) | 정보보안기사·ISMS-P·CISSP/OSCP 로드맵, 보안 법령 | 5 |
+| 42 | [**블록체인/Web3 보안**](#42-블록체인web3-보안) | EVM 구조, 스마트 컨트랙트 감사, DeFi 공격, Web3 침투 도구 | 4 |
+| 43 | [**물리적 침투 테스트**](#43-물리적-침투-테스트) | 물리 보안 방법론, 잠금장치 우회, RFID 클로닝, 사회공학 | 4 |
+| 44 | [**인시던트 대응/DFIR**](#44-인시던트-대응dfir) | IR 플레이북, 메모리·디스크 포렌식, 네트워크 포렌식, 박멸·복구 | 4 |
+| 45 | [**악성코드 개발**](#45-악성코드-개발) | PE 구조, 셸코드·인젝션, C2 프레임워크, AV/EDR 우회 | 4 |
+| 46 | [**CTF 기법**](#46-ctf-기법) | CTF 방법론·도구, PWN/REV, Web/Crypto, 자동화 프레임워크 | 4 |
+| 🧪 | [**CTF 실습 환경 (labs/)**](#ctf-실습-환경-labs) | 웹·바이너리·네트워크·클라우드·통합 시나리오 도커 랩 5종 | 50 |
 
 ---
 
@@ -621,6 +631,150 @@ SolarWinds·XZ Utils·3CX 등 실제 공급망 침해 사례를 해부합니다.
 ```
 
 발전소·정유·수처리·철도 등 핵심 인프라를 제어하는 ICS/OT 환경을 분석합니다. Stuxnet·TRITON·INDUSTROYER·PIPEDREAM 등 실제 사이버 무기를 해부하고, Modbus 코일 강제 쓰기부터 PLC DB 블록 패치, Historian 데이터 역주입, OT 전용 토폴로지 자동 매핑까지 — 가용성 최우선 환경의 공격과 방어를 실전 코드와 함께 정리했습니다.
+
+---
+
+## 38. Cloud Native 보안
+
+```
+38_Cloud_Native_Security/
+├── 01_cloud_native_threat_model.md      ← STRIDE 위협 모델, CNAPP, 컨테이너·서버리스·서비스메시 위협
+├── 02_ebpf_runtime_security.md          ← Falco/Tetragon/Cilium, eBPF 기반 런타임 탐지·네트워크 정책
+├── 03_image_hardening_supply_chain.md   ← Trivy/Grype 이미지 스캔, Cosign 서명, SBOM, OPA Gatekeeper
+└── 04_cloud_native_attack_techniques.md ← 컨테이너 탈출, 서비스메시 MITM, 서버리스 이벤트 주입, KSPM
+```
+
+Cloud Native 환경(Kubernetes·서버리스·서비스메시)에서의 공격·방어를 다룹니다. eBPF 기반 런타임 보안(Falco/Tetragon), 컨테이너 이미지 서명·SBOM, OPA 정책 게이트웨이부터 실제 컨테이너 탈출 기법, 서비스메시 MITM, AWS Lambda 이벤트 주입까지 — CNAPP 관점으로 정리했습니다.
+
+---
+
+## 39. Zero Trust 아키텍처
+
+```
+39_Zero_Trust_Architecture/
+├── 01_zero_trust_principles.md         ← BeyondCorp 모델, NIST SP 800-207, ZTA 성숙도 모델
+├── 02_identity_and_device_trust.md     ← IdP/MFA/패스키, 장치 신뢰(MDM/EDR), SCIM 프로비저닝
+├── 03_microsegmentation_and_network.md ← 마이크로세그멘테이션, mTLS, SASE/SD-WAN, eBPF 네트워크 정책
+└── 04_zero_trust_implementation.md     ← Cloudflare/Zscaler/BeyondCorp 구현, ZTA 감사 자동화
+```
+
+"절대 신뢰하지 말고, 항상 검증하라" — NIST SP 800-207 기반 Zero Trust 아키텍처를 실무 관점에서 다룹니다. BeyondCorp 사례, 아이덴티티/장치 신뢰 체계, 마이크로세그멘테이션, SASE 도입까지 실전 구현 가이드와 ZTA 성숙도 자가 평가 도구를 포함합니다.
+
+---
+
+## 40. 위협 헌팅
+
+```
+40_Threat_Hunting/
+├── 01_threat_hunting_methodology.md  ← 헌팅 사이클, 가설 기반 헌팅, PEAK 프레임워크, TTP 드리프트
+├── 02_mitre_attack_hunting.md        ← ATT&CK 전술별 헌팅 시나리오, 그룹 프로파일, Atomic Red Team
+├── 03_hunting_queries_kql_spl.md     ← Sentinel KQL/Splunk SPL 헌팅 쿼리 100+, 이상 탐지 패턴
+└── 04_automated_threat_hunting.md    ← SOAR 자동화, ML 기반 이상 탐지, 헌팅 플레이북 자동화
+```
+
+로그가 말해주지 않는 것을 찾아내는 능동적 위협 헌팅을 다룹니다. PEAK 프레임워크 기반 가설 설정, MITRE ATT&CK 전술별 헌팅 시나리오, Sentinel KQL/Splunk SPL 쿼리 100+ 예제, SOAR 기반 자동화 플레이북까지 — SOC에서 즉시 적용 가능한 실전 헌팅 기법을 정리했습니다.
+
+---
+
+## 41. 한국 정보보안 자격증
+
+```
+41_Korean_Certifications/
+├── 01_information_security_engineer.md           ← 정보보안기사 필기 핵심이론 (5과목 완전 정복)
+├── 02_information_security_engineer_practical.md ← 실기 기출 유형, 암호화·네트워크·시스템 실습
+├── 03_ISMS_P_certification.md                    ← ISMS-P 인증 체계, 80개 통제항목, 심사 준비
+├── 04_international_certifications.md            ← CISSP/CEH/OSCP/CISA 로드맵, 도메인 비교
+└── 05_security_laws_and_compliance.md            ← 개인정보보호법·정보통신망법·전자금융거래법, GDPR 비교
+```
+
+한국 정보보안 자격증(정보보안기사·ISMS-P)과 국제 자격증(CISSP/CEH/OSCP/CISA)을 한 곳에 정리했습니다. 법령·컴플라이언스(개인정보보호법·GDPR)까지 포함하여 국내 보안 실무자가 반드시 알아야 할 제도적 기반을 다룹니다.
+
+---
+
+## 42. 블록체인/Web3 보안
+
+```
+42_Blockchain_Web3_Security/
+├── 01_blockchain_fundamentals_and_threats.md  ← EVM 구조, UTXO vs 계정 모델, 51% 공격, 이클립스 공격
+├── 02_smart_contract_auditing.md              ← 재진입·오버플로우·delegatecall 취약점, Slither/Mythril, PoC
+├── 03_defi_protocol_attacks.md               ← Flash Loan 공격, 오라클 조작, MEV 샌드위치, Rug Pull 탐지
+└── 04_web3_pentest_tools.md                  ← Foundry/Cast/Anvil, RPC 보안 평가, CTF 이더리움 챌린지
+```
+
+블록체인 아키텍처부터 DeFi 해킹까지 Web3 보안 전 영역을 다룹니다. EVM 스토리지 레이아웃, 스마트 컨트랙트 자동 감사(Slither), Flash Loan 공격 분석, Foundry 기반 PoC 작성, RPC 보안 평가 CLI까지 실전 도구 중심으로 구성했습니다.
+
+---
+
+## 43. 물리적 침투 테스트
+
+```
+43_Physical_Security_Pentesting/
+├── 01_physical_pentest_methodology.md         ← PTES 물리 도메인, 허가서 구성, 취약점 체크리스트
+├── 02_lock_bypass_and_access_control.md       ← 락피킹·범핑, REX 센서 공격, 접근 제어 로그 이상 탐지
+├── 03_rfid_nfc_cloning.md                    ← EM4100/HID Proxmark3 클로닝, MIFARE nested 공격, nfcpy
+└── 04_physical_recon_and_social_engineering.md ← OSINT 정찰, 테일게이팅, 프리텍스팅, 보고서 생성
+```
+
+허가된 물리적 침투 테스트의 전 과정을 다룹니다. PTES 방법론, 잠금장치 우회 기법, RFID/NFC 클로닝(Proxmark3/FlipperZero), 사회공학 기법, 접근 제어 로그 이상 탐지 CLI까지 실전 중심으로 구성했습니다.
+
+---
+
+## 44. 인시던트 대응/DFIR
+
+```
+44_Incident_Response_DFIR/
+├── 01_ir_methodology_and_playbooks.md         ← NIST SP 800-61r2, 랜섬웨어·피싱 플레이북, 타임라인 CLI
+├── 02_memory_and_disk_forensics.md            ← Volatility3, MFT 분석, 의심 프로세스 자동 플래깅 CLI
+├── 03_network_forensics_and_log_analysis.md   ← Zeek 로그, Windows 이벤트 ID, PCAP C2 IOC 추출 CLI
+└── 04_threat_containment_and_eradication.md   ← 격리·박멸·복구, VSS 복원, Windows 지속성 수집 CLI
+```
+
+인시던트 발생부터 복구까지 DFIR 전 과정을 다룹니다. NIST 기반 플레이북, Volatility3 메모리 포렌식, Zeek/Sysmon 로그 분석, PCAP C2 탐지, 랜섬웨어 복구 절차까지 실전 IR 도구 모음입니다.
+
+---
+
+## 45. 악성코드 개발
+
+```
+45_Malware_Development/
+├── 01_malware_fundamentals_and_pe_structure.md ← PE 파일 구조, IAT 분석, 엔트로피 탐지, pefile CLI
+├── 02_shellcode_and_injection_techniques.md    ← PIC 셸코드, XOR 인코더, 프로세스 인젝션 기법 비교
+├── 03_c2_framework_development.md              ← HTTP C2 서버·에이전트, DNS 터널링, Cobalt Strike 비교
+└── 04_av_edr_evasion.md                       ← 직접 시스템콜, NTDLL 언훅, ETW/AMSI 패치, 샌드박스 탐지
+```
+
+레드팀 작전과 보안 연구를 위한 악성코드 기술을 다룹니다. PE 구조 분석, 셸코드 인코딩, 다양한 프로세스 인젝션 기법, Python HTTP C2 구현, AV/EDR 우회 기법 등 — 허가된 레드팀·CTF·보안 연구 목적으로 작성했습니다.
+
+---
+
+## 46. CTF 기법
+
+```
+46_CTF_Techniques/
+├── 01_ctf_methodology_and_tools.md   ← CTF 유형, 분야별 도구셋, Docker pwnbox, 노트 자동화 CLI
+├── 02_pwn_and_rev_ctf.md             ← ret2win/ret2libc/ROP/힙, pwntools 완전 템플릿, angr 크랙미
+├── 03_web_and_crypto_ctf.md          ← 블라인드 SQLi 자동화, SSTI, JWT 공격, RSA CTF 솔버 CLI
+└── 04_ctf_automation_and_frameworks.md ← DynELF, angr 자동화, Frida 계측, 포렌식 파이프라인, CTFd API
+```
+
+CTF 대회를 체계적으로 공략하는 방법을 다룹니다. 분야별 도구 체계, pwntools 완성형 익스플로잇 템플릿, angr/z3 심볼릭 실행, Frida 동적 계측, 포렌식 자동화 파이프라인, CTFd API 자동화까지 — 실전 CTF에서 즉시 사용 가능한 코드 모음입니다.
+
+---
+
+## CTF 실습 환경 (labs/)
+
+```
+labs/
+├── 01_web_hacking_lab/      ← SQLi·XSS·SSRF·JWT 취약 Flask 앱 (도커 기반)
+├── 02_pwn_lab/              ← BOF·포맷스트링·힙 익스플로잇 취약 바이너리 환경
+├── 03_network_lab/          ← 패킷 분석·MITM·ARP 스푸핑 pcap + 실습 환경
+├── 04_cloud_container_lab/  ← 취약 Docker/K8s 환경, 컨테이너 탈출 시나리오
+├── 05_full_scenario_lab/    ← 정찰→침투→횡이동→권한상승→유출 통합 시나리오
+├── start_lab.sh             ← 전체 랩 docker-compose up 자동화
+└── stop_all.sh              ← 전체 랩 종료
+```
+
+5개 도커 기반 CTF 취약 환경 — 웹·바이너리·네트워크·클라우드·통합 시나리오를 로컬에서 즉시 실습할 수 있습니다. 플래그 12개, `start_lab.sh` 한 번으로 전체 환경 기동.
 
 ---
 

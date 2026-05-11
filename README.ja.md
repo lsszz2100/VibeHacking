@@ -5,9 +5,9 @@
 ### 実践サイバーセキュリティ完全攻略 — AI時代のハッキングバイブル
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-41-blueviolet)](#目次)
-[![Files](https://img.shields.io/badge/Docs-180%20Files-brightgreen)](#目次)
-[![Lines](https://img.shields.io/badge/Lines-129%2C000%2B-orange)](#目次)
+[![Sections](https://img.shields.io/badge/Sections-46-blueviolet)](#目次)
+[![Files](https://img.shields.io/badge/Docs-174%20Files-brightgreen)](#目次)
+[![Lines](https://img.shields.io/badge/Lines-135%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -79,6 +79,16 @@ CTF・バグバウンティ・レッドチーム・AIセキュリティまで、
 | 35 | [**サプライチェーン攻撃**](#35-サプライチェーン攻撃) | ソフトウェア供給網侵害、CI/CDパイプライン汚染、SolarWinds・XZパターン分析 | 3 |
 | 36 | [**自動車ハッキング**](#36-自動車ハッキング) | CANバス分析、ECUエクスプロイト、テレマティクス・OTA攻撃 | 4 |
 | 37 | [**ICS/SCADA セキュリティ**](#37-icsscada-セキュリティ) | ICSプロトコル偵察、SCADAエクスプロイト、OTネットワーク攻撃・防御 | 4 |
+| 38 | [**Cloud Nativeセキュリティ**](#38-cloud-nativeセキュリティ) | CNAPP、eBPFランタイムセキュリティ、イメージ強化、コンテナ脱出 | 4 |
+| 39 | [**Zero Trustアーキテクチャ**](#39-zero-trustアーキテクチャ) | ZTA原則、アイデンティティ/デバイス信頼、マイクロセグメンテーション、SASE | 4 |
+| 40 | [**脅威ハンティング**](#40-脅威ハンティング) | ハンティング方法論、MITRE ATT&CKシナリオ、100+ KQL/SPLクエリ、SOAR | 4 |
+| 41 | [**韓国セキュリティ資格**](#41-韓国セキュリティ資格) | 情報セキュリティ技術士、ISMS-P、CISSP/OSCPロードマップ、安全法令 | 5 |
+| 42 | [**ブロックチェーン/Web3セキュリティ**](#42-ブロックチェーンweb3セキュリティ) | EVM構造、スマートコントラクト監査、DeFi攻撃、Web3ペンテストツール | 4 |
+| 43 | [**物理セキュリティペンテスト**](#43-物理セキュリティペンテスト) | 物理ペンテスト方法論、錠前解除、RFIDクローン、ソーシャルエンジニアリング | 4 |
+| 44 | [**インシデントレスポンス/DFIR**](#44-インシデントレスポンスdfir) | IRプレイブック、メモリ/ディスクフォレンジクス、ネットワークフォレンジクス、封じ込め | 4 |
+| 45 | [**マルウェア開発**](#45-マルウェア開発) | PE構造、シェルコード/インジェクション、C2フレームワーク、AV/EDR回避 | 4 |
+| 46 | [**CTF技法**](#46-ctf技法) | CTF方法論/ツール、PWN/REV、Web/暗号、自動化フレームワーク | 4 |
+| 🧪 | [**CTF実習環境（labs/）**](#ctf実習環境labs) | Web・バイナリ・ネットワーク・クラウド・統合DockerラボCTF | 50 |
 
 ---
 
@@ -608,6 +618,150 @@ SolarWinds・XZ Utils・3CXなどの実際のサプライチェーン侵害事�
 ```
 
 発電所・製油所・水処理・鉄道などの重要インフラを制御するICS/OT環境を分析します。Stuxnet・TRITON・INDUSTROYER・PIPEDREAMなどの実際のサイバー兵器を解剖し、Modbusコイル強制書き込みからPLC DBブロックパッチ、Historianデータ逆注入、OT専用トポロジ自動マッピングまで — 可用性最優先環境の攻撃と防御を実戦コードとともに解説。
+
+---
+
+## 38. Cloud Nativeセキュリティ
+
+```
+38_Cloud_Native_Security/
+├── 01_cloud_native_threat_model.md      ← STRIDE脅威モデル、CNAPP、コンテナ・サーバレス・サービスメッシュの脅威
+├── 02_ebpf_runtime_security.md          ← Falco/Tetragon/Cilium、eBPFベースランタイム検知・ネットワークポリシー
+├── 03_image_hardening_supply_chain.md   ← Trivy/Grypeイメージスキャン、Cosign署名、SBOM、OPA Gatekeeper
+└── 04_cloud_native_attack_techniques.md ← コンテナ脱出、サービスメッシュMITM、サーバレスイベント注入、KSPM
+```
+
+Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）の攻防を解説。eBPFベースのランタイムセキュリティ（Falco/Tetragon）、コンテナイメージ署名・SBOM、OPAポリシーゲートウェイから、実際のコンテナ脱出手法、サービスメッシュMITM、AWS Lambdaイベント注入まで — CNAPPの観点でまとめました。
+
+---
+
+## 39. Zero Trustアーキテクチャ
+
+```
+39_Zero_Trust_Architecture/
+├── 01_zero_trust_principles.md         ← BeyondCorpモデル、NIST SP 800-207、ZTA成熟度モデル
+├── 02_identity_and_device_trust.md     ← IdP/MFA/パスキー、デバイス信頼（MDM/EDR）、SCIMプロビジョニング
+├── 03_microsegmentation_and_network.md ← マイクロセグメンテーション、mTLS、SASE/SD-WAN、eBPFネットワークポリシー
+└── 04_zero_trust_implementation.md     ← Cloudflare/Zscaler/BeyondCorp実装、ZTA監査自動化
+```
+
+「決して信頼せず、常に検証せよ」 — NIST SP 800-207ベースのZero Trustアーキテクチャを実務視点で解説。BeyondCorpの事例、アイデンティティ/デバイス信頼フレームワーク、マイクロセグメンテーション、SASE導入まで、実践的な実装ガイドとZTA成熟度自己評価ツールを含みます。
+
+---
+
+## 40. 脅威ハンティング
+
+```
+40_Threat_Hunting/
+├── 01_threat_hunting_methodology.md  ← ハンティングサイクル、仮説ベースハンティング、PEAKフレームワーク
+├── 02_mitre_attack_hunting.md        ← ATT&CK戦術別ハンティングシナリオ、グループプロファイル
+├── 03_hunting_queries_kql_spl.md     ← Sentinel KQL/Splunk SPLハンティングクエリ100+、異常検知パターン
+└── 04_automated_threat_hunting.md    ← SOAR自動化、ML異常検知、ハンティングプレイブック自動化
+```
+
+ログが語らないものを探し出す能動的脅威ハンティング。PEAKフレームワークによる仮説設定、MITRE ATT&CK戦術別ハンティングシナリオ、Sentinel KQL/Splunk SPLクエリ100+例、SOARベースの自動化プレイブックまで — SOCで即座に適用できる実戦的なハンティング技術を解説。
+
+---
+
+## 41. 韓国セキュリティ資格
+
+```
+41_Korean_Certifications/
+├── 01_information_security_engineer.md           ← 情報セキュリティ技術士筆記試験 — 5科目完全攻略
+├── 02_information_security_engineer_practical.md ← 実技試験傾向、暗号化・ネットワーク・システム実習
+├── 03_ISMS_P_certification.md                    ← ISMS-P認証体系、80の管理項目、審査準備
+├── 04_international_certifications.md            ← CISSP/CEH/OSCP/CISAロードマップ、ドメイン比較
+└── 05_security_laws_and_compliance.md            ← 韓国個人情報保護法・IT安全法令、GDPR比較
+```
+
+韓国のセキュリティ資格（情報セキュリティ技術士・ISMS-P）と国際資格（CISSP/CEH/OSCP/CISA）を一か所にまとめました。法令・コンプライアンス（個人情報保護法・GDPR）も含め、韓国のセキュリティ実務者が知るべき制度的基盤を解説します。
+
+---
+
+## 42. ブロックチェーン/Web3セキュリティ
+
+```
+42_Blockchain_Web3_Security/
+├── 01_blockchain_fundamentals_and_threats.md ← EVMアーキテクチャ、UTXO vs アカウントモデル、51%攻撃、eclipse攻撃
+├── 02_smart_contract_auditing.md             ← Reentrancy/overflow/tx.origin/delegatecall、Slither/Mythril/Echidna
+├── 03_defi_protocol_attacks.md               ← Flash Loan、オラクル操作、MEVサンドイッチ、Rug Pull検出
+└── 04_web3_pentest_tools.md                  ← Foundry（forge/cast/anvil/chisel）、静的解析ツール、RPCセキュリティ
+```
+
+ブロックチェーン基礎からDeFi攻撃分析・スマートコントラクト監査まで一か所にまとめました。web3.py 6.xとFoundryを使ったハンズオンPoC付き。実際のインシデント（Euler Finance $197Mフラッシュローン）、MEVボットの仕組み、Slither/Mythril脆弱性スキャン、RPCエンドポイントセキュリティ評価を解説。
+
+---
+
+## 43. 物理セキュリティペンテスト
+
+```
+43_Physical_Security_Pentesting/
+├── 01_physical_pentest_methodology.md    ← PTES物理ドメイン5段階、委任状テンプレート、脆弱性チェックリスト
+├── 02_lock_bypass_and_access_control.md  ← ピンタンブラー錠前解除（SPP/レーキング/バンピング）、電子アクセス制御の欠陥
+├── 03_rfid_nfc_cloning.md                ← Proxmark3 LF/HF、MIFARE Classicネスト攻撃、nfcpy NFC分析
+└── 04_physical_recon_and_social_engineering.md ← パッシブ偵察、テールゲーティング、プリテキスティング、チャルディーニの6原則
+```
+
+方法論から実行まで、物理ペネトレーションテストを完全解説。錠前解除、RFID/NFCクローン（Proxmark3）、チャルディーニの影響原則を用いたソーシャルエンジニアリングをカバー。アクセス制御ログ異常検出と物理ペンテストレポート生成のPython CLIを収録。
+
+---
+
+## 44. インシデントレスポンス/DFIR
+
+```
+44_Incident_Response_DFIR/
+├── 01_ir_methodology_and_playbooks.md     ← NIST SP 800-61r2、PICERL、ランサムウェア/フィッシングプレイブック
+├── 02_memory_and_disk_forensics.md        ← Volatility3、MFT分析、MACBタイムスタンプ、Plasoタイムライン
+├── 03_network_forensics_and_log_analysis.md ← 100+ tsharkフィルタ、Zeekログ、Windows Event ID、Sysmon、PCAP C2 IOC
+└── 04_threat_containment_and_eradication.md ← ネットワーク隔離、永続化アーティファクト収集、5-Why分析
+```
+
+検出→分析→封じ込め→根絶→復旧の完全DFIRワークフロー。不審プロセス検出（ホワイトリスト比較・名前なりすまし）、PCAPベースC2 IOC抽出（ビーコニング/DNSトンネリング）、Windowsパーシスタンスアーティファクト収集のPython CLIを収録。
+
+---
+
+## 45. マルウェア開発
+
+```
+45_Malware_Development/
+├── 01_malware_fundamentals_and_pe_structure.md ← PEファイルレイアウト、IAT、シャノンエントロピー、不審API分類
+├── 02_shellcode_and_injection_techniques.md    ← PICシェルコード、XORエンコード、CreateRemoteThread/APC/プロセスホローイング
+├── 03_c2_framework_development.md              ← C2アーキテクチャ、HTTP C2サーバ+エージェント、DNSトンネリング、商用C2比較
+└── 04_av_edr_evasion.md                        ← 直接システムコール、NTDLLアンフッキング、ETW/AMSIパッチ、サンドボックス検出
+```
+
+レッドチームとマルウェアアナリスト向けのマルウェア開発と防御回避。PEファイル解析（エントロピー/API分類）、シェルコードXORエンコード/逆アセンブリ、文字列難読化、サンドボックス検出のPython CLIを収録。直接syscall（NASMスタブ）、NTDLLアンフッキング、ETWパッチ、AMSIバイパスの概念を解説。
+
+---
+
+## 46. CTF技法
+
+```
+46_CTF_Techniques/
+├── 01_ctf_methodology_and_tools.md        ← CTF種別、ツールエコシステム、Docker Pwnbox Dockerfile、プラットフォームガイド
+├── 02_pwn_and_rev_ctf.md                  ← 完全pwntoolsテンプレート（ret2win/ret2libc/フォーマット文字列/ヒープ）、angrクラックミー
+├── 03_web_and_crypto_ctf.md               ← ブラインドSQLi自動化、SSTI攻撃、JWT攻撃、RSA/AES/ハッシュ拡張攻撃
+└── 04_ctf_automation_and_frameworks.md    ← DynELF、GDB tmux分割、angr自動化、Frida Android、フォレンジクスパイプライン
+```
+
+CTF方法論から自動化まで完全網羅。全バイナリチャレンジタイプのpwntoolsテンプレート、angrシンボリック実行、Fridaダイナミックインストゥルメンテーション、フォレンジクス自動化パイプラインを収録。CTFdクライアントによるチャレンジ管理とフラグ提出機能付き。
+
+---
+
+## CTF実習環境（labs/）
+
+```
+labs/
+├── 01_web_hacking_lab/      ← SQLi・XSS・SSRF・JWT脆弱Flaskアプリ（Docker）
+├── 02_pwn_lab/              ← BOF・フォーマット文字列・ヒープ脆弱バイナリ環境
+├── 03_network_lab/          ← パケット分析・MITM・ARPスプーフィングpcap+実習環境
+├── 04_cloud_container_lab/  ← 脆弱Docker/K8s環境、コンテナ脱出シナリオ
+├── 05_full_scenario_lab/    ← 偵察→侵入→横断移動→権限昇格→流出 統合シナリオ
+├── start_lab.sh             ← 全ラボdocker-compose up自動化
+└── stop_all.sh              ← 全ラボ停止
+```
+
+5つのDockerベースCTF脆弱環境 — Web・バイナリ・ネットワーク・クラウド・統合シナリオをローカルで即座に実習。フラグ12個、`start_lab.sh` 一発で全環境起動。
 
 ---
 
