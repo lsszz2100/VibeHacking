@@ -5,9 +5,9 @@
 ### Master Practical Cybersecurity — The Hacking Bible for the AI Era
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-46-blueviolet)](#table-of-contents)
-[![Files](https://img.shields.io/badge/Docs-206%20Files-brightgreen)](#table-of-contents)
-[![Lines](https://img.shields.io/badge/Lines-140%2C000%2B-orange)](#table-of-contents)
+[![Sections](https://img.shields.io/badge/Sections-51-blueviolet)](#table-of-contents)
+[![Files](https://img.shields.io/badge/Docs-226%20Files-brightgreen)](#table-of-contents)
+[![Lines](https://img.shields.io/badge/Lines-160%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -745,6 +745,76 @@ Malware development and defense evasion for red teamers and malware analysts. Py
 ```
 
 CTF from methodology to automation. Full pwntools exploit templates for every common binary challenge type, angr symbolic execution for reversing, Frida dynamic instrumentation for Android CTFs, and a forensics automation pipeline. Includes a CTFd API client for challenge tracking and flag submission.
+
+---
+
+## 47. Mobile Forensics
+
+```
+47_Mobile_Forensics/
+├── 01_android_forensics.md          ← Android filesystem/ADB forensics/SQLite artifacts/backup parser CLI
+├── 02_ios_forensics.md              ← iOS APFS structure/iTunes backup parsing/iMessage/Health data CLI
+├── 03_mobile_evidence_extraction.md ← Logical/filesystem/physical extraction/hash integrity/evidence CLI
+└── 04_mobile_forensics_tools.md     ← Autopsy/MVT/Frida/jadx/APK auto-analysis CLI
+```
+
+Complete mobile forensics for Android and iOS. ADB artifact extraction, iTunes backup decryption/parsing, Pegasus spyware detection with MVT, Frida dynamic analysis, APK reverse engineering — with legal evidence integrity procedures.
+
+---
+
+## 48. Threat Modeling
+
+```
+48_Threat_Modeling/
+├── 01_stride_methodology.md         ← STRIDE 6 categories/DFD/trust boundaries/auto analysis CLI
+├── 02_pasta_dread_attack_trees.md   ← PASTA 7 stages/DREAD scoring/Attack Trees/Kill Chain/ATT&CK
+├── 03_threat_modeling_tools.md      ← MS TMT/Threat Dragon/IriusRisk/CI/CD integration/XML→HTML CLI
+└── 04_threat_modeling_practice.md   ← E-commerce/mobile banking/K8s scenarios/full workflow CLI
+```
+
+Practical threat modeling with STRIDE, PASTA, and DREAD. From DFD creation to threat identification, mitigation controls, and CI/CD pipeline integration — automate the entire process with a single Python CLI.
+
+---
+
+## 49. Red Team Infrastructure
+
+```
+49_Red_Team_Infrastructure/
+├── 01_c2_frameworks.md               ← Cobalt Strike/Sliver/Havoc structure/HTTP C2 impl/detection rules
+├── 02_domain_fronting_redirectors.md ← CDN fronting/Apache/Nginx redirectors/DNS tunneling/traffic filter CLI
+├── 03_opsec_infrastructure.md        ← OPSEC 5 steps/Long-Short Haul C2/CT logs/OPSEC audit CLI
+└── 04_red_team_automation.md         ← Ansible/Terraform infra/payload pipeline/campaign management CLI
+```
+
+Red team C2 infrastructure and OPSEC. Sliver/Havoc frameworks, Apache redirectors, DNS tunneling, Terraform AWS automation — for authorized red team engagements, CTF, and security research.
+
+---
+
+## 50. Game Hacking
+
+```
+50_Game_Hacking/
+├── 01_memory_manipulation.md        ← Game memory/ReadProcessMemory/AOB scan/pointer chain CLI
+├── 02_cheat_engine_advanced.md      ← CE Lua scripting/auto assembler/struct dissect/CT file parser CLI
+├── 03_packet_manipulation.md        ← Game packet capture/mitmproxy/protobuf reverse/replay CLI
+└── 04_anti_cheat_analysis.md        ← VAC/EAC/BattlEye internals/detection techniques/process analysis CLI
+```
+
+Game security research and CTF game hacking. Cheat Engine memory manipulation, packet MITM analysis, anti-cheat internals — for educational, CTF, and security research purposes.
+
+---
+
+## 51. Browser Extension Security
+
+```
+51_Browser_Extension_Security/
+├── 01_extension_architecture.md       ← MV2/V3 comparison/Background/Content Script/CSP/attack surface
+├── 02_malicious_extension_analysis.md ← Malicious extension types/IOCs/obfuscation analysis/CRX analyzer CLI
+├── 03_extension_pentesting.md         ← Content Script XSS/cross-extension attacks/Selenium auto-scan CLI
+└── 04_extension_security_hardening.md ← MV3 hardening/least privilege/enterprise GPO/risk assessment CLI
+```
+
+Complete browser extension security. Malicious extension IOC detection, CRX auto-analysis, Content Script XSS and postMessage attacks, Selenium dynamic vulnerability scanner, enterprise policy management.
 
 ---
 

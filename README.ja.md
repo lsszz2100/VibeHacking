@@ -5,9 +5,9 @@
 ### 実践サイバーセキュリティ完全攻略 — AI時代のハッキングバイブル
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-46-blueviolet)](#目次)
-[![Files](https://img.shields.io/badge/Docs-206%20Files-brightgreen)](#目次)
-[![Lines](https://img.shields.io/badge/Lines-140%2C000%2B-orange)](#目次)
+[![Sections](https://img.shields.io/badge/Sections-51-blueviolet)](#目次)
+[![Files](https://img.shields.io/badge/Docs-226%20Files-brightgreen)](#目次)
+[![Lines](https://img.shields.io/badge/Lines-160%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -745,6 +745,76 @@ Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）�
 ```
 
 CTF方法論から自動化まで完全網羅。全バイナリチャレンジタイプのpwntoolsテンプレート、angrシンボリック実行、Fridaダイナミックインストゥルメンテーション、フォレンジクス自動化パイプラインを収録。CTFdクライアントによるチャレンジ管理とフラグ提出機能付き。
+
+---
+
+## 47. モバイルフォレンジクス
+
+```
+47_Mobile_Forensics/
+├── 01_android_forensics.md          ← Androidファイルシステム・ADBフォレンジクス・SQLiteアーティファクト・バックアップCLI
+├── 02_ios_forensics.md              ← iOS APFS構造・iTunesバックアップ解析・iMessage/Health抽出CLI
+├── 03_mobile_evidence_extraction.md ← 論理/ファイルシステム/物理抽出・ハッシュ検証・証拠収集CLI
+└── 04_mobile_forensics_tools.md     ← Autopsy・MVT・Frida・jadx・APK自動解析CLI
+```
+
+Android/iOSモバイルフォレンジクスの全工程。ADBアーティファクト抽出、iTunesバックアップ復号/解析、MVTによるPegasusスパイウェア検出、APKリバースエンジニアリングまで。
+
+---
+
+## 48. 脅威モデリング
+
+```
+48_Threat_Modeling/
+├── 01_stride_methodology.md         ← STRIDE 6カテゴリ・DFD作成・信頼境界・自動分析CLI
+├── 02_pasta_dread_attack_trees.md   ← PASTA 7段階・DREADスコア・Attack Tree・Kill Chain・ATT&CK
+├── 03_threat_modeling_tools.md      ← MS TMT・Threat Dragon・IriusRisk・CI/CD統合・XML→HTML CLI
+└── 04_threat_modeling_practice.md   ← EC/モバイルバンキング/K8s実践シナリオ・完全ワークフローCLI
+```
+
+STRIDE・PASTA・DREADを実践に適用。DFD作成から脅威識別、緩和策導出、CI/CDパイプライン統合まで。
+
+---
+
+## 49. レッドチームインフラ
+
+```
+49_Red_Team_Infrastructure/
+├── 01_c2_frameworks.md               ← Cobalt Strike/Sliver/Havoc構造・HTTP C2実装・検出ルール
+├── 02_domain_fronting_redirectors.md ← CDNフロンティング・Apache/Nginxリダイレクター・DNSトンネリングCLI
+├── 03_opsec_infrastructure.md        ← OPSEC 5段階・Long/Short Haul C2・CT ログ・OPSEC監査CLI
+└── 04_red_team_automation.md         ← Ansible/Terraform・ペイロードパイプライン・キャンペーン管理CLI
+```
+
+レッドチームC2インフラとOPSEC。Sliver/Havocフレームワーク、Apacheリダイレクター、DNSTunneling、Terraform AWS自動化まで — 許可されたレッドチーム・CTF・セキュリティ研究目的。
+
+---
+
+## 50. ゲームハッキング
+
+```
+50_Game_Hacking/
+├── 01_memory_manipulation.md        ← ゲームメモリ・ReadProcessMemory・AOBスキャン・ポインタチェーンCLI
+├── 02_cheat_engine_advanced.md      ← CE Luaスクリプト・自動アセンブラ・構造体解析・CTファイルパーサCLI
+├── 03_packet_manipulation.md        ← ゲームパケットキャプチャ・mitmproxy・protobuf逆解析・リプレイCLI
+└── 04_anti_cheat_analysis.md        ← VAC/EAC/BattlEye内部構造・検出技法・プロセス解析CLI・CTF対策
+```
+
+ゲームセキュリティ研究とCTFゲームハッキング。Cheat Engineメモリ操作、パケットMITM分析、アンチチート内部構造理解まで — 教育・CTF・セキュリティ研究目的。
+
+---
+
+## 51. ブラウザ拡張機能セキュリティ
+
+```
+51_Browser_Extension_Security/
+├── 01_extension_architecture.md       ← MV2/V3比較・Background/Content Script・CSP・攻撃面分析
+├── 02_malicious_extension_analysis.md ← 悪意ある拡張機能・IOC・難読化解析・CRX自動解析CLI
+├── 03_extension_pentesting.md         ← Content Script XSS・クロス拡張攻撃・Selenium自動スキャンCLI
+└── 04_extension_security_hardening.md ← MV3セキュリティ強化・最小権限・企業GPO・リスク評価CLI
+```
+
+ブラウザ拡張機能セキュリティの全範囲。悪意ある拡張機能IOC検出、CRX自動解析、Content Script XSS攻撃、Seleniumダイナミック脆弱性スキャナ、企業ポリシー管理まで。
 
 ---
 

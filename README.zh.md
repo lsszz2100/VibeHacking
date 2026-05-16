@@ -5,9 +5,9 @@
 ### 实战网络安全完全攻略 — AI时代的黑客圣经
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-46-blueviolet)](#目录)
-[![Files](https://img.shields.io/badge/Docs-206%20Files-brightgreen)](#目录)
-[![Lines](https://img.shields.io/badge/Lines-140%2C000%2B-orange)](#目录)
+[![Sections](https://img.shields.io/badge/Sections-51-blueviolet)](#目录)
+[![Files](https://img.shields.io/badge/Docs-226%20Files-brightgreen)](#目录)
+[![Lines](https://img.shields.io/badge/Lines-160%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -745,6 +745,76 @@
 ```
 
 从方法论到自动化，全方位覆盖CTF技巧。包含所有常见二进制题型的pwntools模板、angr符号执行、Frida动态插桩（Android CTF）、取证自动化流水线，以及CTFd API客户端用于题目管理和Flag提交。
+
+---
+
+## 47. 移动取证
+
+```
+47_Mobile_Forensics/
+├── 01_android_forensics.md          ← Android文件系统/ADB取证/SQLite制品/备份解析CLI
+├── 02_ios_forensics.md              ← iOS APFS结构/iTunes备份解析/iMessage/Health数据提取CLI
+├── 03_mobile_evidence_extraction.md ← 逻辑/文件系统/物理提取/哈希完整性/自动取证CLI
+└── 04_mobile_forensics_tools.md     ← Autopsy/MVT/Frida/jadx/APK自动分析CLI
+```
+
+Android/iOS移动取证全流程。ADB制品提取、iTunes备份解密/解析、MVT检测Pegasus间谍软件、APK逆向工程，含法律证据完整性维护方法。
+
+---
+
+## 48. 威胁建模
+
+```
+48_Threat_Modeling/
+├── 01_stride_methodology.md         ← STRIDE六类/DFD绘制/信任边界/自动分析CLI
+├── 02_pasta_dread_attack_trees.md   ← PASTA七步/DREAD评分/攻击树/Kill Chain/ATT&CK
+├── 03_threat_modeling_tools.md      ← MS TMT/Threat Dragon/IriusRisk/CI/CD集成/XML→HTML CLI
+└── 04_threat_modeling_practice.md   ← 电商/移动银行/K8s实战场景/完整工作流CLI
+```
+
+实战应用STRIDE、PASTA、DREAD方法论。从DFD绘制到威胁识别、缓解措施推导、CI/CD流水线集成，一个Python CLI自动化全流程。
+
+---
+
+## 49. 红队基础设施
+
+```
+49_Red_Team_Infrastructure/
+├── 01_c2_frameworks.md               ← Cobalt Strike/Sliver/Havoc结构/HTTP C2实现/检测规则
+├── 02_domain_fronting_redirectors.md ← CDN前置/Apache/Nginx重定向器/DNS隧道/流量过滤CLI
+├── 03_opsec_infrastructure.md        ← OPSEC五步/Long-Short Haul C2/CT日志/OPSEC审计CLI
+└── 04_red_team_automation.md         ← Ansible/Terraform基础设施/载荷流水线/行动管理CLI
+```
+
+红队C2基础设施与OPSEC。Sliver/Havoc框架、Apache重定向器、DNS隧道、Terraform AWS自动化，适用于授权红队演练、CTF和安全研究。
+
+---
+
+## 50. 游戏安全
+
+```
+50_Game_Hacking/
+├── 01_memory_manipulation.md        ← 游戏内存/ReadProcessMemory/AOB扫描/指针链CLI
+├── 02_cheat_engine_advanced.md      ← CE Lua脚本/自动汇编/结构体分析/CT文件解析CLI
+├── 03_packet_manipulation.md        ← 游戏包捕获/mitmproxy/protobuf逆向/重放CLI
+└── 04_anti_cheat_analysis.md        ← VAC/EAC/BattlEye原理/检测技术/进程分析CLI/CTF题型
+```
+
+游戏安全研究与CTF游戏题目。Cheat Engine内存操作、数据包中间人分析、反作弊内部机制，适用于教育、CTF和安全研究目的。
+
+---
+
+## 51. 浏览器扩展安全
+
+```
+51_Browser_Extension_Security/
+├── 01_extension_architecture.md       ← MV2/V3对比/Background/Content Script/CSP/攻击面分析
+├── 02_malicious_extension_analysis.md ← 恶意扩展类型/IOC/混淆分析/CRX自动分析CLI
+├── 03_extension_pentesting.md         ← Content Script XSS/跨扩展攻击/Selenium自动扫描CLI
+└── 04_extension_security_hardening.md ← MV3安全加固/最小权限/企业GPO/风险评估CLI
+```
+
+浏览器扩展安全全面覆盖。恶意扩展IOC检测、CRX自动分析、Content Script XSS和postMessage攻击、Selenium动态漏洞扫描器、企业策略管理。
 
 ---
 

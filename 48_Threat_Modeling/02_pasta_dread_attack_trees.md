@@ -1,0 +1,1225 @@
+# PASTA, DREAD, Attack Trees, Kill Chain
+
+## 목차
+1. [PASTA 7단계 방법론](#pasta-7단계-방법론)
+2. [DREAD 점수 계산](#dread-점수-계산)
+3. [Attack Trees 작성법](#attack-trees-작성법)
+4. [Lockheed Martin Cyber Kill Chain](#lockheed-martin-cyber-kill-chain)
+5. [MITRE ATT&CK 프레임워크 연계](#mitre-attck-프레임워크-연계)
+6. [DREAD 자동화 스크립트](#dread-자동화-스크립트)
+
+---
+
+## PASTA 7단계 방법론
+
+PASTA(Process for Attack Simulation and Threat Analysis)는 비즈니스 목표와 기술적 요구사항을 연계한 위험 중심(Risk-centric) 위협 모델링 방법론이다. Tony UcedaVelez가 개발했으며 7단계 프로세스로 구성된다.
+
+### 단계 1: 비즈니스 목표 정의 (Define Objectives)
+
+비즈니스 관점에서 보안 요구사항을 정의한다.
+
+```
+질문 항목:
+□ 이 시스템이 보호해야 할 핵심 비즈니스 자산은?
+□ 규제 준수 요구사항은? (PCI-DSS, HIPAA, GDPR)
+□ 가용성 요구사항 (SLA)은?
+□ 보안 사고 발생 시 비즈니스 영향은?
+□ 허용 가능한 위험 수준(Risk Appetite)은?
+
+예시 (전자상거래):
+비즈니스 목표:
+- 결제 정보 보호 (PCI-DSS 준수)
+- 99.9% 서비스 가용성 유지
+- 고객 개인정보 보호 (GDPR)
+- 사기 거래 최소화
+```
+
+### 단계 2: 기술 범위 정의 (Define Technical Scope)
+
+분석 대상 시스템의 기술 스택과 범위를 문서화한다.
+
+```
+산출물:
+- 기술 스택 인벤토리
+  - 언어/프레임워크: Python 3.11, FastAPI, React
+  - DB: PostgreSQL 15, Redis 7
+  - 인프라: AWS EKS, RDS, ElastiCache
+  - 네트워크: VPC, ALB, WAF
+
+- 의존성 목록
+  - 외부 API: Stripe 결제, SendGrid 메일
+  - 오픈소스 라이브러리 목록
+
+- 배포 아키텍처 다이어그램
+  - 컨테이너 구성
+  - 네트워크 토폴로지
+  - 데이터 흐름
+```
+
+### 단계 3: 애플리케이션 분해 (Decompose Application)
+
+시스템을 구성 요소로 분해하고 데이터 흐름을 식별한다.
+
+```
+DFD 작성:
+[사용자] → [ALB] → [API Gateway] → [서비스 메시]
+                                        ├── [인증 서비스] → [사용자 DB]
+                                        ├── [주문 서비스] → [주문 DB]
+                                        └── [결제 서비스] → [Stripe API]
+
+진입점(Entry Points) 식별:
+EP001: HTTPS /api/v1/* (공개 API)
+EP002: HTTPS /admin/* (관리자 콘솔)
+EP003: SSH 22 (배포 서버)
+EP004: kubectl (K8s API 서버)
+EP005: RDS 5432 (VPN 내부만)
+
+자산(Assets) 식별:
+A001: 결제 카드 정보 (Critical)
+A002: 사용자 개인정보 (High)
+A003: 세션 토큰 (High)
+A004: 소스 코드 (Medium)
+A005: 시스템 로그 (Medium)
+```
+
+### 단계 4: 위협 분석 (Threat Analysis)
+
+위협 인텔리전스를 활용하여 관련 위협 행위자와 공격 패턴을 식별한다.
+
+```
+위협 행위자 프로파일링:
+┌───────────────────┬──────────────┬──────────────────┬────────────────┐
+│ 위협 행위자       │ 동기         │ 능력             │ 관련 위협      │
+├───────────────────┼──────────────┼──────────────────┼────────────────┤
+│ 사이버 범죄 조직  │ 금전적 이익  │ 높음             │ 결제 정보 탈취 │
+│ 내부자            │ 불만/이익    │ 중간             │ 데이터 유출    │
+│ 국가 지원 해커    │ 정보 수집    │ 매우 높음        │ APT 공격       │
+│ 핵티비스트        │ 이념적 목적  │ 중간             │ DDoS, 변조     │
+│ 스크립트 키디     │ 재미/명성    │ 낮음             │ 취약점 스캔    │
+└───────────────────┴──────────────┴──────────────────┴────────────────┘
+
+위협 인텔리전스 소스:
+- CVE 데이터베이스
+- MITRE ATT&CK
+- OWASP Top 10
+- 업계 ISAC (FS-ISAC, H-ISAC)
+- 보안 뉴스 (Krebs on Security, DarkReading)
+```
+
+### 단계 5: 취약점 분석 (Vulnerability Analysis)
+
+식별된 위협에 대한 시스템 취약점을 분석한다.
+
+```
+취약점 식별 방법:
+1. 자동화 스캔
+   - SAST: Bandit, Semgrep, SonarQube
+   - DAST: OWASP ZAP, Burp Suite
+   - SCA: Snyk, OWASP Dependency-Check
+   - 인프라: Trivy, Checkov
+
+2. 수동 코드 리뷰
+   - 인증/인가 로직
+   - 암호화 구현
+   - 입력 검증
+
+3. 구성 검토
+   - 클라우드 보안 설정 (AWS Config)
+   - K8s RBAC 설정
+   - TLS 설정
+
+취약점 매핑 예시:
+위협 T001 (SQL Injection) → CVE 참조
+→ 애플리케이션 코드: 취약한 쿼리 패턴 발견
+→ CVSS 점수: 9.8 (Critical)
+→ 영향받는 컴포넌트: 사용자 서비스, 주문 서비스
+```
+
+### 단계 6: 공격 모델링 (Attack Modeling)
+
+공격 트리와 Attack Chains를 구성하여 실제 공격 경로를 시뮬레이션한다.
+
+```
+공격 시나리오 구성:
+시나리오: 결제 정보 탈취
+
+공격 체인:
+1. 정찰: 공개 API 엔드포인트 스캔
+2. 초기 접근: SQLI via 상품 검색 API
+3. 권한 상승: DB 관리자 계정 탈취
+4. 측면 이동: 내부 네트워크 피벗
+5. 자산 탈취: 결제 정보 테이블 덤프
+
+MITRE ATT&CK 매핑:
+T1190 - Exploit Public-Facing Application
+T1078 - Valid Accounts
+T1021 - Remote Services
+T1041 - Exfiltration Over C2 Channel
+```
+
+### 단계 7: 위험 및 영향 분석 (Risk and Impact Analysis)
+
+비즈니스 영향을 정량화하고 위험을 우선순위화한다.
+
+```
+위험 계산:
+위험 = 위협 가능성(Likelihood) × 비즈니스 영향(Business Impact)
+
+비즈니스 영향 요소:
+- 재무적 손실 (벌금, 소송, 수익 손실)
+- 평판 손상
+- 규제 위반
+- 운영 중단
+
+위험 매트릭스:
+           │  낮음  │  중간  │  높음  │
+───────────┼────────┼────────┼────────┤
+높은 가능성 │  중간  │  높음  │ 긴급   │
+중간 가능성 │  낮음  │  중간  │  높음  │
+낮은 가능성 │  낮음  │  낮음  │  중간  │
+
+우선순위 권고:
+긴급: 즉시 해결 (24시간 내)
+높음: 단기 해결 (1주일 내)
+중간: 계획 해결 (1개월 내)
+낮음: 백로그 관리
+```
+
+---
+
+## DREAD 점수 계산
+
+DREAD는 위협의 심각도를 5가지 기준으로 정량화하는 위험 평가 프레임워크다.
+
+### DREAD 기준 상세
+
+```
+D - Damage (피해 규모)
+  10: 전체 시스템 장악, 모든 데이터 탈취
+  7-9: 민감 데이터 탈취, 권한 상승
+  4-6: 제한적 데이터 노출, 부분 기능 중단
+  1-3: 최소한의 피해, 공개 정보만 노출
+  0: 피해 없음
+
+R - Reproducibility (재현성)
+  10: HTTP 요청 1개로 항상 성공
+  7-9: 약간의 조건 필요, 쉽게 재현
+  4-6: 여러 시도 필요, 일부 조건 의존
+  1-3: 재현이 어렵고 조건이 복잡
+  0: 재현 불가능
+
+E - Exploitability (악용 용이성)
+  10: 초보자도 도구 없이 가능
+  7-9: 공개 익스플로잇 존재
+  4-6: 중급 기술 필요
+  1-3: 고급 기술 필요, 맞춤 익스플로잇
+  0: 실질적 악용 불가능
+
+A - Affected Users (영향받는 사용자)
+  10: 전체 사용자
+  7-9: 대부분 사용자 또는 기본값 사용자
+  4-6: 일부 사용자
+  1-3: 소수의 사용자
+  0: 사용자 영향 없음
+
+D - Discoverability (발견 용이성)
+  10: 브라우저 주소창에서 쉽게 발견
+  7-9: 공개 도구로 발견 가능
+  4-6: 기술적 탐색 필요
+  1-3: 소스코드 접근 또는 내부자 필요
+  0: 발견 불가능 (이론적)
+```
+
+### DREAD 점수 해석
+
+```
+총점 = (D + R + E + A + D) / 5
+
+임계값:
+12-10: Critical - 즉시 패치 필요
+9-7:   High - 빠른 대응 필요
+6-4:   Medium - 계획된 수정
+3-1:   Low - 장기 개선 계획
+
+취약점 우선순위 예시:
+┌─────────────────────┬────┬────┬────┬────┬────┬───────┬──────────┐
+│ 취약점              │ D  │ R  │ E  │ A  │ D  │ 점수  │ 우선순위 │
+├─────────────────────┼────┼────┼────┼────┼────┼───────┼──────────┤
+│ SQL Injection       │ 9  │ 9  │ 8  │ 10 │ 8  │ 8.8   │ Critical │
+│ XSS (Stored)        │ 7  │ 8  │ 7  │ 8  │ 7  │ 7.4   │ High     │
+│ IDOR (주문 조회)    │ 6  │ 9  │ 9  │ 8  │ 8  │ 8.0   │ Critical │
+│ JWT alg:none        │ 10 │ 10 │ 7  │ 10 │ 6  │ 8.6   │ Critical │
+│ 취약한 비밀번호정책 │ 5  │ 5  │ 5  │ 7  │ 5  │ 5.4   │ Medium   │
+│ 불필요한 HTTP 헤더  │ 2  │ 9  │ 9  │ 10 │ 9  │ 7.8   │ High     │
+└─────────────────────┴────┴────┴────┴────┴────┴───────┴──────────┘
+```
+
+---
+
+## Attack Trees 작성법
+
+Attack Tree는 공격 목표를 루트 노드로, 가능한 공격 방법을 하위 노드로 구성하는 계층적 위협 모델이다.
+
+### Attack Tree 구조
+
+```
+노드 유형:
+OR 노드: 하위 조건 중 하나만 달성해도 상위 목표 달성
+AND 노드: 모든 하위 조건을 달성해야 상위 목표 달성
+
+표기법:
+[목표] - 루트 또는 중간 노드
+(OR)   - OR 게이트
+(AND)  - AND 게이트
+{조건} - 리프 노드 (실제 공격 행위)
+```
+
+### 예시: 관리자 계정 탈취
+
+```
+[관리자 계정 탈취]
+        (OR)
+        ├── [자격증명 탈취]
+        │       (OR)
+        │       ├── {피싱 공격}
+        │       ├── {키로거 설치}
+        │       ├── {DB 덤프 후 크래킹}
+        │       └── [중간자 공격]
+        │               (AND)
+        │               ├── {네트워크 위치 확보}
+        │               └── {TLS 다운그레이드}
+        │
+        ├── [인증 우회]
+        │       (OR)
+        │       ├── {SQL Injection on Login}
+        │       ├── {세션 토큰 예측}
+        │       └── {JWT 서명 알고리즘 혼동}
+        │
+        └── [권한 상승]
+                (OR)
+                ├── {IDOR를 통한 관리자 API 접근}
+                ├── {역할 파라미터 변조}
+                └── [OS 권한 상승]
+                        (AND)
+                        ├── {RCE 취약점 악용}
+                        └── {SUID 바이너리 악용}
+```
+
+### 예시: 결제 정보 탈취
+
+```
+[결제 정보 탈취]
+        (OR)
+        ├── [전송 중 도청]
+        │       (AND)
+        │       ├── {MITM 위치 확보}
+        │       └── {TLS 암호화 해제}
+        │               (OR)
+        │               ├── {인증서 위조}
+        │               └── {BEAST/POODLE 공격}
+        │
+        ├── [저장된 데이터 탈취]
+        │       (OR)
+        │       ├── {DB 직접 접근}
+        │       │       (OR)
+        │       │       ├── {자격증명 탈취}
+        │       │       └── {SQLi를 통한 DB 쿼리}
+        │       └── {백업 파일 접근}
+        │
+        └── [애플리케이션 메모리 덤프]
+                (AND)
+                ├── {RCE 획득}
+                └── {메모리 스캔}
+```
+
+### Attack Tree에 비용/확률 주석
+
+```
+각 리프 노드에 속성 부여:
+{SQL Injection on Login}
+  - 비용: $0 (공개 도구 사용)
+  - 기술 수준: 낮음
+  - 탐지 가능성: 높음
+  - 성공 확률: 0.3 (WAF 있는 경우)
+
+AND 노드 확률 = P(A) × P(B)
+OR 노드 확률 = 1 - (1-P(A)) × (1-P(B))
+
+예시:
+[중간자 공격] (AND)
+  P = P(네트워크 위치 확보) × P(TLS 다운그레이드)
+  P = 0.1 × 0.05 = 0.005 (0.5%)
+
+[자격증명 탈취] (OR: 피싱, 키로거, DB크래킹)
+  P = 1 - (1-0.4) × (1-0.1) × (1-0.05)
+  P ≈ 0.51 (51%)
+```
+
+---
+
+## Lockheed Martin Cyber Kill Chain
+
+Kill Chain은 사이버 공격의 7단계를 설명하는 모델로, 각 단계에서 공격을 탐지/차단할 수 있다.
+
+### Kill Chain 7단계
+
+```
+1단계: 정찰 (Reconnaissance)
+   공격자 행위:
+   - 오픈소스 정보 수집 (OSINT)
+   - 기술 스택 파악
+   - 직원 SNS 프로파일링
+   - 취약점 스캔 (Shodan, Censys)
+   - 도메인/서브도메인 열거
+
+   탐지/대응:
+   - 웹 스캐너 트래픽 탐지
+   - 비정상 DNS 조회 모니터링
+   - 공개 정보 최소화
+
+2단계: 무기화 (Weaponization)
+   공격자 행위:
+   - 익스플로잇 코드 개발
+   - 악성 문서/링크 제작
+   - RAT/백도어 패키징
+   - C2 인프라 구축
+
+   탐지/대응:
+   - 위협 인텔리전스 구독
+   - 악성 도구 시그니처 업데이트
+
+3단계: 전달 (Delivery)
+   공격자 행위:
+   - 스피어 피싱 이메일 발송
+   - 악성 웹사이트 운영 (Watering Hole)
+   - USB 드롭 공격
+   - 공급망 오염
+
+   탐지/대응:
+   - 이메일 필터링 (SPF, DKIM, DMARC)
+   - 웹 프록시 필터링
+   - 사용자 보안 인식 교육
+
+4단계: 익스플로잇 (Exploitation)
+   공격자 행위:
+   - 취약점 악용
+   - 코드 실행 유발
+   - 브라우저/플러그인 취약점 활용
+
+   탐지/대응:
+   - EDR 솔루션
+   - 취약점 패치 관리
+   - 애플리케이션 화이트리스팅
+
+5단계: 설치 (Installation)
+   공격자 행위:
+   - 백도어/RAT 설치
+   - Rootkit 설치
+   - 지속성(Persistence) 확보
+
+   탐지/대응:
+   - 파일 무결성 모니터링
+   - 이상 프로세스 탐지
+   - 레지스트리/시스템 모니터링
+
+6단계: C2 통신 (Command & Control)
+   공격자 행위:
+   - C2 채널 수립
+   - 비컨 통신 (Beacon)
+   - DNS 터널링
+   - HTTPS 기반 은닉 통신
+
+   탐지/대응:
+   - 비정상 아웃바운드 트래픽 탐지
+   - DNS 이상 탐지
+   - 네트워크 행동 분석 (NBA)
+
+7단계: 목표 달성 (Actions on Objectives)
+   공격자 행위:
+   - 데이터 탈취 (Exfiltration)
+   - 랜섬웨어 배포
+   - 서비스 파괴
+   - 측면 이동 (Lateral Movement)
+
+   탐지/대응:
+   - DLP 솔루션
+   - 이상 데이터 전송 탐지
+   - 네트워크 세그멘테이션
+```
+
+### Kill Chain 기반 위협 모델 매핑
+
+```
+공격 시나리오 → Kill Chain 매핑:
+
+시나리오: 웹앱을 통한 내부망 침투
+
+1. Reconnaissance
+   → Shodan으로 443 포트 서비스 파악
+   → whatweb으로 기술 스택 식별
+   → gobuster로 디렉토리 열거
+
+2. Weaponization
+   → CVE-2024-XXXX PoC 코드 수집
+   → Metasploit 모듈 커스터마이징
+
+3. Delivery
+   → 취약한 API 엔드포인트 직접 공격
+
+4. Exploitation
+   → SQL Injection → RCE
+   → CVE 악용
+
+5. Installation
+   → 웹쉘 업로드 (/uploads/shell.php)
+   → Cron 등록으로 지속성 확보
+
+6. C2
+   → DNS 터널링 (dnscat2)
+   → HTTPS 역방향 쉘
+
+7. Actions
+   → 내부 DB 스캔
+   → 결제 정보 추출
+   → 데이터 압축 후 외부 전송
+```
+
+---
+
+## MITRE ATT&CK 프레임워크 연계
+
+### ATT&CK 매트릭스 구조
+
+```
+전술(Tactics) - 14개:
+TA0001: Initial Access       (초기 접근)
+TA0002: Execution            (실행)
+TA0003: Persistence          (지속성)
+TA0004: Privilege Escalation (권한 상승)
+TA0005: Defense Evasion      (방어 회피)
+TA0006: Credential Access    (자격증명 접근)
+TA0007: Discovery            (탐색)
+TA0008: Lateral Movement     (측면 이동)
+TA0009: Collection           (수집)
+TA0010: Exfiltration         (유출)
+TA0011: Command and Control  (명령제어)
+TA0040: Impact               (영향)
+TA0042: Resource Development (리소스 개발)
+TA0043: Reconnaissance       (정찰)
+
+기법(Techniques) 예시:
+T1190: Exploit Public-Facing Application
+T1059: Command and Scripting Interpreter
+T1078: Valid Accounts
+T1110: Brute Force
+T1055: Process Injection
+```
+
+### ATT&CK Navigator 활용
+
+```bash
+# ATT&CK Navigator 로컬 실행
+git clone https://github.com/mitre-attack/attack-navigator
+cd attack-navigator/nav-app
+npm install
+npm start
+# http://localhost:4200 접속
+
+# Python으로 ATT&CK 데이터 조회
+pip3 install attackcti
+
+python3 << 'EOF'
+from attackcti import attack_client
+
+client = attack_client()
+
+# 웹 애플리케이션 관련 기법 조회
+techniques = client.get_techniques_by_platform("Windows")
+for t in techniques[:5]:
+    print(f"{t['external_references'][0]['external_id']}: {t['name']}")
+EOF
+```
+
+### 위협 모델과 ATT&CK 연계
+
+```
+STRIDE ↔ ATT&CK 매핑:
+
+Spoofing (스푸핑):
+  → T1078 Valid Accounts
+  → T1134 Access Token Manipulation
+  → T1539 Steal Web Session Cookie
+
+Tampering (변조):
+  → T1565 Data Manipulation
+  → T1491 Defacement
+  → T1059 Command and Scripting Interpreter
+
+Repudiation (부인):
+  → T1562 Impair Defenses
+  → T1070 Indicator Removal
+
+Information Disclosure (정보 노출):
+  → T1552 Unsecured Credentials
+  → T1530 Data from Cloud Storage
+  → T1213 Data from Information Repositories
+
+Denial of Service:
+  → T1499 Endpoint Denial of Service
+  → T1498 Network Denial of Service
+
+Elevation of Privilege:
+  → T1068 Exploitation for Privilege Escalation
+  → T1548 Abuse Elevation Control Mechanism
+  → T1055 Process Injection
+```
+
+---
+
+## DREAD 자동화 스크립트
+
+```python
+#!/usr/bin/env python3
+"""
+DREAD 위험 점수 계산 및 우선순위 정렬 도구
+
+사용법:
+    python3 dread_calculator.py --input threats.json --output report.json
+    python3 dread_calculator.py --interactive
+    python3 dread_calculator.py --input threats.json --format html --output report.html
+    python3 dread_calculator.py --demo
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from dataclasses import dataclass, asdict, field
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Optional
+
+
+class RiskLevel(str, Enum):
+    CRITICAL = "Critical"
+    HIGH = "High"
+    MEDIUM = "Medium"
+    LOW = "Low"
+
+    @staticmethod
+    def from_score(score: float) -> "RiskLevel":
+        if score >= 8.0:
+            return RiskLevel.CRITICAL
+        elif score >= 6.0:
+            return RiskLevel.HIGH
+        elif score >= 3.0:
+            return RiskLevel.MEDIUM
+        else:
+            return RiskLevel.LOW
+
+    @property
+    def color(self) -> str:
+        colors = {
+            "Critical": "#dc3545",
+            "High": "#fd7e14",
+            "Medium": "#ffc107",
+            "Low": "#28a745",
+        }
+        return colors[self.value]
+
+    @property
+    def priority_order(self) -> int:
+        order = {"Critical": 0, "High": 1, "Medium": 2, "Low": 3}
+        return order[self.value]
+
+
+@dataclass
+class DREADScores:
+    damage: int           # 0-10: 성공 시 피해 규모
+    reproducibility: int  # 0-10: 공격 재현 용이성
+    exploitability: int   # 0-10: 익스플로잇 난이도
+    affected_users: int   # 0-10: 영향받는 사용자 수
+    discoverability: int  # 0-10: 취약점 발견 용이성
+
+    def __post_init__(self) -> None:
+        for field_name in ["damage", "reproducibility", "exploitability",
+                           "affected_users", "discoverability"]:
+            val = getattr(self, field_name)
+            if not 0 <= val <= 10:
+                raise ValueError(
+                    f"{field_name} 점수는 0-10 사이여야 합니다. 입력값: {val}"
+                )
+
+    @property
+    def total(self) -> float:
+        return (
+            self.damage
+            + self.reproducibility
+            + self.exploitability
+            + self.affected_users
+            + self.discoverability
+        ) / 5.0
+
+    @property
+    def risk_level(self) -> RiskLevel:
+        return RiskLevel.from_score(self.total)
+
+    def to_dict(self) -> dict:
+        return {
+            "damage": self.damage,
+            "reproducibility": self.reproducibility,
+            "exploitability": self.exploitability,
+            "affected_users": self.affected_users,
+            "discoverability": self.discoverability,
+            "total": round(self.total, 1),
+            "risk_level": self.risk_level.value,
+        }
+
+
+@dataclass
+class AttackTreeNode:
+    id: str
+    name: str
+    description: str
+    node_type: str  # "OR", "AND", "LEAF"
+    children: list["AttackTreeNode"] = field(default_factory=list)
+    cost: Optional[str] = None
+    probability: Optional[float] = None
+    skill_level: Optional[str] = None
+
+    def calculate_probability(self) -> float:
+        """Attack Tree 확률 계산"""
+        if self.node_type == "LEAF":
+            return self.probability or 0.0
+
+        child_probs = [c.calculate_probability() for c in self.children]
+
+        if not child_probs:
+            return 0.0
+
+        if self.node_type == "OR":
+            # OR: 1 - ∏(1 - P(i))
+            result = 1.0
+            for p in child_probs:
+                result *= (1 - p)
+            return 1 - result
+
+        elif self.node_type == "AND":
+            # AND: ∏P(i)
+            result = 1.0
+            for p in child_probs:
+                result *= p
+            return result
+
+        return 0.0
+
+
+@dataclass
+class Threat:
+    id: str
+    name: str
+    description: str
+    affected_component: str
+    attack_vector: str
+    dread: DREADScores
+    mitigations: list[str] = field(default_factory=list)
+    cve_references: list[str] = field(default_factory=list)
+    mitre_techniques: list[str] = field(default_factory=list)
+    kill_chain_stage: Optional[str] = None
+    status: str = "Open"
+    attack_tree: Optional[AttackTreeNode] = None
+
+    @property
+    def priority_score(self) -> float:
+        return self.dread.total
+
+    def to_dict(self) -> dict:
+        d = {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "affected_component": self.affected_component,
+            "attack_vector": self.attack_vector,
+            "dread": self.dread.to_dict(),
+            "mitigations": self.mitigations,
+            "cve_references": self.cve_references,
+            "mitre_techniques": self.mitre_techniques,
+            "kill_chain_stage": self.kill_chain_stage,
+            "status": self.status,
+        }
+        if self.attack_tree:
+            d["attack_tree_probability"] = round(
+                self.attack_tree.calculate_probability(), 3
+            )
+        return d
+
+
+class DREADAnalyzer:
+    """DREAD 분석 엔진"""
+
+    def __init__(self) -> None:
+        self.threats: list[Threat] = []
+
+    def add_threat(self, threat: Threat) -> None:
+        self.threats.append(threat)
+
+    def load_from_json(self, path: Path) -> None:
+        """JSON 파일에서 위협 목록 로드"""
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as e:
+            raise ValueError(f"JSON 파일 로드 실패: {e}") from e
+
+        for item in data.get("threats", []):
+            try:
+                dread_data = item["dread"]
+                dread = DREADScores(
+                    damage=dread_data["damage"],
+                    reproducibility=dread_data["reproducibility"],
+                    exploitability=dread_data["exploitability"],
+                    affected_users=dread_data["affected_users"],
+                    discoverability=dread_data["discoverability"],
+                )
+                threat = Threat(
+                    id=item["id"],
+                    name=item["name"],
+                    description=item.get("description", ""),
+                    affected_component=item.get("affected_component", ""),
+                    attack_vector=item.get("attack_vector", ""),
+                    dread=dread,
+                    mitigations=item.get("mitigations", []),
+                    cve_references=item.get("cve_references", []),
+                    mitre_techniques=item.get("mitre_techniques", []),
+                    kill_chain_stage=item.get("kill_chain_stage"),
+                    status=item.get("status", "Open"),
+                )
+                self.threats.append(threat)
+            except (KeyError, ValueError) as e:
+                print(f"경고: 위협 {item.get('id', '?')} 로드 실패 - {e}",
+                      file=sys.stderr)
+
+    def get_sorted_threats(self) -> list[Threat]:
+        """DREAD 점수 내림차순 정렬"""
+        return sorted(
+            self.threats,
+            key=lambda t: (-t.priority_score, t.dread.risk_level.priority_order),
+        )
+
+    def get_by_risk_level(self) -> dict[str, list[Threat]]:
+        result: dict[str, list[Threat]] = {
+            level.value: [] for level in RiskLevel
+        }
+        for threat in self.threats:
+            result[threat.dread.risk_level.value].append(threat)
+        return result
+
+    def generate_summary(self) -> dict:
+        by_level = self.get_by_risk_level()
+        avg_score = (
+            sum(t.priority_score for t in self.threats) / len(self.threats)
+            if self.threats else 0
+        )
+
+        # Kill Chain 분포
+        kill_chain_dist: dict[str, int] = {}
+        for t in self.threats:
+            if t.kill_chain_stage:
+                kill_chain_dist[t.kill_chain_stage] = (
+                    kill_chain_dist.get(t.kill_chain_stage, 0) + 1
+                )
+
+        return {
+            "total_threats": len(self.threats),
+            "by_risk_level": {k: len(v) for k, v in by_level.items()},
+            "average_score": round(avg_score, 1),
+            "open_threats": sum(1 for t in self.threats if t.status == "Open"),
+            "kill_chain_distribution": kill_chain_dist,
+        }
+
+    def generate_json_report(self) -> str:
+        sorted_threats = self.get_sorted_threats()
+        return json.dumps({
+            "metadata": {
+                "generated_at": datetime.now().isoformat(),
+                "tool": "DREAD Analyzer",
+                "version": "1.0",
+            },
+            "summary": self.generate_summary(),
+            "threats": [t.to_dict() for t in sorted_threats],
+        }, ensure_ascii=False, indent=2)
+
+    def generate_html_report(self) -> str:
+        summary = self.generate_summary()
+        sorted_threats = self.get_sorted_threats()
+
+        rows = []
+        for t in sorted_threats:
+            color = t.dread.risk_level.color
+            mitigations_html = "<br>".join(f"• {m}" for m in t.mitigations)
+            mitre_html = ", ".join(t.mitre_techniques) or "-"
+            rows.append(
+                f"<tr>"
+                f"<td><strong>{t.id}</strong></td>"
+                f"<td>{t.name}</td>"
+                f"<td>{t.affected_component}</td>"
+                f"<td style='text-align:center'>{t.dread.damage}</td>"
+                f"<td style='text-align:center'>{t.dread.reproducibility}</td>"
+                f"<td style='text-align:center'>{t.dread.exploitability}</td>"
+                f"<td style='text-align:center'>{t.dread.affected_users}</td>"
+                f"<td style='text-align:center'>{t.dread.discoverability}</td>"
+                f"<td style='text-align:center;font-weight:bold'>{t.dread.total:.1f}</td>"
+                f"<td><span style='color:{color};font-weight:bold'>"
+                f"{t.dread.risk_level.value}</span></td>"
+                f"<td>{mitre_html}</td>"
+                f"<td>{mitigations_html}</td>"
+                f"<td>{t.status}</td>"
+                f"</tr>"
+            )
+
+        summary_cards = []
+        for level in RiskLevel:
+            count = summary["by_risk_level"].get(level.value, 0)
+            summary_cards.append(
+                f"<div style='display:inline-block;margin:10px;padding:15px;"
+                f"background:{level.color}22;border:2px solid {level.color};"
+                f"border-radius:8px;text-align:center;min-width:100px'>"
+                f"<div style='font-size:2em;font-weight:bold;color:{level.color}'>"
+                f"{count}</div>"
+                f"<div>{level.value}</div>"
+                f"</div>"
+            )
+
+        return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>DREAD 위협 분석 보고서</title>
+<style>
+  body {{ font-family: 'Malgun Gothic', Arial, sans-serif; margin: 20px; background: #f8f9fa; }}
+  h1, h2 {{ color: #333; }}
+  .summary {{ background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+  table {{ width: 100%; border-collapse: collapse; background: white;
+           box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; }}
+  th {{ background: #343a40; color: white; padding: 12px 8px; text-align: left; font-size: 0.9em; }}
+  td {{ padding: 8px; border-bottom: 1px solid #dee2e6; font-size: 0.85em; vertical-align: top; }}
+  tr:hover {{ background: #f5f5f5; }}
+  .stat {{ color: #666; }}
+</style>
+</head>
+<body>
+<h1>DREAD 위협 분석 보고서</h1>
+<p class="stat">생성 일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+
+<div class="summary">
+  <h2>요약</h2>
+  {''.join(summary_cards)}
+  <p>총 위협: <strong>{summary['total_threats']}</strong> |
+     평균 DREAD 점수: <strong>{summary['average_score']}</strong> |
+     미해결 위협: <strong>{summary['open_threats']}</strong></p>
+</div>
+
+<h2>위협 목록 (DREAD 점수 기준 정렬)</h2>
+<table>
+<tr>
+  <th>ID</th><th>위협명</th><th>영향 컴포넌트</th>
+  <th>D</th><th>R</th><th>E</th><th>A</th><th>D</th>
+  <th>점수</th><th>위험도</th><th>ATT&CK</th><th>완화방안</th><th>상태</th>
+</tr>
+{''.join(rows)}
+</table>
+
+<p style="margin-top:30px;color:#999;font-size:0.8em">
+DREAD: D=Damage, R=Reproducibility, E=Exploitability, A=Affected Users, D=Discoverability
+</p>
+</body>
+</html>"""
+
+    def interactive_input(self) -> None:
+        """대화형 위협 입력"""
+        print("\n=== DREAD 대화형 위협 입력 ===")
+        print("점수 범위: 0(낮음) ~ 10(높음)\n")
+
+        count = 0
+        while True:
+            count += 1
+            print(f"\n--- 위협 {count} ---")
+            name = input("위협 이름 (빈 줄로 종료): ").strip()
+            if not name:
+                break
+
+            desc = input("설명: ").strip()
+            component = input("영향받는 컴포넌트: ").strip()
+            attack_vector = input("공격 벡터: ").strip()
+
+            print("\nDREAD 점수 입력 (0-10):")
+            scores = {}
+            labels = {
+                "damage": "D - 피해 규모",
+                "reproducibility": "R - 재현 용이성",
+                "exploitability": "E - 익스플로잇 난이도",
+                "affected_users": "A - 영향받는 사용자",
+                "discoverability": "D - 발견 용이성",
+            }
+            for key, label in labels.items():
+                while True:
+                    try:
+                        val = int(input(f"  {label}: "))
+                        if 0 <= val <= 10:
+                            scores[key] = val
+                            break
+                        print("  0-10 사이 값을 입력하세요.")
+                    except ValueError:
+                        print("  숫자를 입력하세요.")
+
+            dread = DREADScores(**scores)
+            threat = Threat(
+                id=f"T{count:03d}",
+                name=name,
+                description=desc,
+                affected_component=component,
+                attack_vector=attack_vector,
+                dread=dread,
+            )
+
+            self.threats.append(threat)
+            print(f"\n  → DREAD 점수: {dread.total:.1f} ({dread.risk_level.value})")
+
+
+def create_demo_threats() -> list[Threat]:
+    """데모용 위협 목록 생성"""
+    demo_data = [
+        {
+            "id": "T001", "name": "로그인 SQL Injection",
+            "description": "로그인 폼 username 파라미터에 SQL 인젝션",
+            "affected_component": "인증 서비스", "attack_vector": "HTTP POST /api/login",
+            "dread": DREADScores(9, 9, 8, 10, 8),
+            "mitigations": ["파라미터화 쿼리 사용", "ORM 적용", "WAF 배포"],
+            "mitre_techniques": ["T1190"],
+            "kill_chain_stage": "Exploitation",
+        },
+        {
+            "id": "T002", "name": "JWT 알고리즘 혼동",
+            "description": "alg:none 또는 RS256→HS256 알고리즘 혼동 공격",
+            "affected_component": "인증 미들웨어", "attack_vector": "HTTP 헤더 조작",
+            "dread": DREADScores(10, 10, 7, 10, 6),
+            "mitigations": ["알고리즘 명시적 검증", "최신 JWT 라이브러리 사용"],
+            "mitre_techniques": ["T1078", "T1134"],
+            "kill_chain_stage": "Exploitation",
+        },
+        {
+            "id": "T003", "name": "IDOR 주문 데이터 접근",
+            "description": "다른 사용자의 주문 조회/수정 가능",
+            "affected_component": "주문 서비스", "attack_vector": "GET /api/orders/{id}",
+            "dread": DREADScores(6, 9, 9, 8, 8),
+            "mitigations": ["서버 측 소유권 검증", "UUID 사용"],
+            "mitre_techniques": ["T1078"],
+            "kill_chain_stage": "Actions on Objectives",
+        },
+        {
+            "id": "T004", "name": "Stored XSS in 리뷰",
+            "description": "상품 리뷰에 악성 스크립트 삽입",
+            "affected_component": "상품 서비스", "attack_vector": "POST /api/reviews",
+            "dread": DREADScores(7, 8, 7, 8, 7),
+            "mitigations": ["출력 인코딩", "CSP 헤더", "DOMPurify 적용"],
+            "mitre_techniques": ["T1059.007"],
+            "kill_chain_stage": "Delivery",
+        },
+        {
+            "id": "T005", "name": "결제 금액 파라미터 변조",
+            "description": "결제 요청 시 금액 파라미터 클라이언트 측 변조",
+            "affected_component": "결제 서비스", "attack_vector": "POST /api/payment",
+            "dread": DREADScores(9, 9, 9, 10, 7),
+            "mitigations": ["서버 측 금액 재계산", "서명된 결제 요청"],
+            "mitre_techniques": ["T1565"],
+            "kill_chain_stage": "Actions on Objectives",
+        },
+        {
+            "id": "T006", "name": "API Rate Limit 미적용",
+            "description": "로그인 API에 브루트포스 가능",
+            "affected_component": "API Gateway", "attack_vector": "HTTP POST /api/login",
+            "dread": DREADScores(7, 10, 10, 9, 9),
+            "mitigations": ["Rate Limiting (5req/min)", "계정 잠금", "CAPTCHA"],
+            "mitre_techniques": ["T1110"],
+            "kill_chain_stage": "Reconnaissance",
+        },
+        {
+            "id": "T007", "name": "환경변수 민감정보 노출",
+            "description": "/api/debug 엔드포인트에서 환경변수 노출",
+            "affected_component": "웹 서버", "attack_vector": "GET /api/debug",
+            "dread": DREADScores(8, 10, 10, 10, 9),
+            "mitigations": ["디버그 엔드포인트 비활성화", "민감 환경변수 Secret Manager 이전"],
+            "mitre_techniques": ["T1552"],
+            "kill_chain_stage": "Reconnaissance",
+        },
+    ]
+
+    threats = []
+    for d in demo_data:
+        threat = Threat(
+            id=d["id"],
+            name=d["name"],
+            description=d["description"],
+            affected_component=d["affected_component"],
+            attack_vector=d["attack_vector"],
+            dread=d["dread"],
+            mitigations=d["mitigations"],
+            mitre_techniques=d["mitre_techniques"],
+            kill_chain_stage=d["kill_chain_stage"],
+        )
+        threats.append(threat)
+
+    return threats
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="DREAD 위험 점수 계산 및 우선순위 정렬 도구",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+예시:
+  %(prog)s --demo --format html --output demo_report.html
+  %(prog)s --input threats.json --output sorted_report.json
+  %(prog)s --interactive --format html --output my_threats.html
+        """,
+    )
+
+    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument("--input", type=Path, help="위협 목록 JSON 파일")
+    input_group.add_argument("--interactive", action="store_true", help="대화형 입력")
+    input_group.add_argument("--demo", action="store_true", help="데모 위협 목록 사용")
+
+    parser.add_argument(
+        "--format", choices=["json", "html"], default="json",
+        help="출력 형식",
+    )
+    parser.add_argument(
+        "--output", type=Path, default=Path("dread_report.json"),
+        help="출력 파일 경로",
+    )
+    parser.add_argument(
+        "--top", type=int, default=0,
+        help="상위 N개 위협만 출력 (0=전체)",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    analyzer = DREADAnalyzer()
+
+    try:
+        if args.demo:
+            for threat in create_demo_threats():
+                analyzer.add_threat(threat)
+            print(f"데모 위협 {len(analyzer.threats)}개 로드됨")
+
+        elif args.interactive:
+            analyzer.interactive_input()
+            if not analyzer.threats:
+                print("입력된 위협이 없습니다.", file=sys.stderr)
+                return 1
+
+        elif args.input:
+            analyzer.load_from_json(args.input)
+            print(f"{len(analyzer.threats)}개 위협 로드됨")
+
+    except ValueError as e:
+        print(f"오류: {e}", file=sys.stderr)
+        return 1
+
+    # 요약 출력
+    summary = analyzer.generate_summary()
+    print(f"\n=== DREAD 분석 결과 ===")
+    print(f"총 위협: {summary['total_threats']}")
+    print(f"평균 DREAD 점수: {summary['average_score']}")
+    for level in RiskLevel:
+        count = summary["by_risk_level"].get(level.value, 0)
+        if count > 0:
+            print(f"  {level.value}: {count}건")
+
+    # 상위 위협 출력
+    sorted_threats = analyzer.get_sorted_threats()
+    if args.top > 0:
+        sorted_threats = sorted_threats[:args.top]
+        analyzer.threats = sorted_threats
+
+    print(f"\n상위 위협 Top {min(5, len(sorted_threats))}:")
+    for i, t in enumerate(sorted_threats[:5], 1):
+        print(f"  {i}. [{t.dread.risk_level.value}] {t.name} (DREAD: {t.dread.total:.1f})")
+
+    # 보고서 생성
+    try:
+        if args.format == "json":
+            report = analyzer.generate_json_report()
+        else:
+            report = analyzer.generate_html_report()
+
+        args.output.write_text(report, encoding="utf-8")
+        print(f"\n보고서 저장: {args.output}")
+    except OSError as e:
+        print(f"저장 실패: {e}", file=sys.stderr)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+### 실행 예시
+
+```bash
+# 데모 데이터로 HTML 보고서 생성
+python3 dread_calculator.py --demo --format html --output demo.html
+
+# 상위 5개 위협 JSON 보고서
+python3 dread_calculator.py --demo --top 5 --output top5.json
+
+# 기존 위협 JSON 파일 분석
+python3 dread_calculator.py --input threats.json --format html --output report.html
+
+# 대화형 입력
+python3 dread_calculator.py --interactive --format html --output my_report.html
+```
+
+### 입력 JSON 형식
+
+```json
+{
+  "threats": [
+    {
+      "id": "T001",
+      "name": "SQL Injection",
+      "description": "로그인 폼 SQL 인젝션",
+      "affected_component": "인증 서비스",
+      "attack_vector": "POST /api/login",
+      "dread": {
+        "damage": 9,
+        "reproducibility": 9,
+        "exploitability": 8,
+        "affected_users": 10,
+        "discoverability": 8
+      },
+      "mitigations": ["파라미터화 쿼리", "WAF"],
+      "mitre_techniques": ["T1190"],
+      "kill_chain_stage": "Exploitation",
+      "status": "Open"
+    }
+  ]
+}
+```
+
+---
+
+## 참고 자료
+
+- [PASTA Threat Modeling](https://www.wiley.com/en-us/Risk+Centric+Threat+Modeling-p-9780470500965)
+- [DREAD Risk Rating Model](https://docs.microsoft.com/en-us/archive/blogs/david_leblanc/dread)
+- [Attack Trees (Bruce Schneier)](https://www.schneier.com/academic/archives/1999/12/attack_trees.html)
+- [Lockheed Martin Cyber Kill Chain](https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html)
+- [MITRE ATT&CK Framework](https://attack.mitre.org/)
+- [MITRE ATT&CK Navigator](https://mitre-attack.github.io/attack-navigator/)

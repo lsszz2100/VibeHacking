@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-46-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-206%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-140%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-51-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-226%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-160%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -758,6 +758,76 @@ Cloud Native 환경(Kubernetes·서버리스·서비스메시)에서의 공격·
 ```
 
 CTF 대회를 체계적으로 공략하는 방법을 다룹니다. 분야별 도구 체계, pwntools 완성형 익스플로잇 템플릿, angr/z3 심볼릭 실행, Frida 동적 계측, 포렌식 자동화 파이프라인, CTFd API 자동화까지 — 실전 CTF에서 즉시 사용 가능한 코드 모음입니다.
+
+---
+
+## 47. 모바일 포렌식
+
+```
+47_Mobile_Forensics/
+├── 01_android_forensics.md          ← Android 파일시스템·ADB 포렌식·SQLite 아티팩트·백업 파싱 CLI
+├── 02_ios_forensics.md              ← iOS APFS 구조·iTunes 백업 파싱·iMessage/Health 데이터 추출 CLI
+├── 03_mobile_evidence_extraction.md ← 논리/파일시스템/물리 추출·해시 무결성·자동 증거 수집 CLI
+└── 04_mobile_forensics_tools.md     ← Autopsy·MVT·Frida·jadx·APK 자동 분석 CLI
+```
+
+Android/iOS 모바일 기기 포렌식 전 과정을 다룹니다. ADB 기반 아티팩트 추출, iTunes 백업 복호화/파싱, MVT로 Pegasus 스파이웨어 탐지, Frida 동적 분석, APK 역분석까지 — 법적 증거 무결성 유지 방법 포함.
+
+---
+
+## 48. 위협 모델링
+
+```
+48_Threat_Modeling/
+├── 01_stride_methodology.md         ← STRIDE 6범주·DFD 작성·신뢰경계·자동 분석 CLI
+├── 02_pasta_dread_attack_trees.md   ← PASTA 7단계·DREAD 점수·Attack Tree·Kill Chain·MITRE ATT&CK
+├── 03_threat_modeling_tools.md      ← MS TMT·Threat Dragon·IriusRisk·CI/CD 통합·XML→HTML 보고서 CLI
+└── 04_threat_modeling_practice.md   ← 전자상거래/모바일뱅킹/K8s 실전 시나리오·완전 워크플로우 CLI
+```
+
+STRIDE·PASTA·DREAD 방법론을 실전에 적용합니다. DFD 작성부터 위협 식별, 완화 통제 도출, CI/CD 파이프라인 통합까지 — Python CLI 한 줄로 전체 위협 모델링 자동화.
+
+---
+
+## 49. 레드팀 인프라
+
+```
+49_Red_Team_Infrastructure/
+├── 01_c2_frameworks.md              ← Cobalt Strike/Sliver/Havoc 구조·HTTP C2 구현·탐지 규칙
+├── 02_domain_fronting_redirectors.md ← CDN 프론팅·Apache/Nginx 리다이렉터·DNS 터널링·트래픽 필터 CLI
+├── 03_opsec_infrastructure.md       ← OPSEC 5단계·Long/Short Haul 분리·CT 로그·자동 OPSEC 점검 CLI
+└── 04_red_team_automation.md        ← Ansible/Terraform 인프라·페이로드 파이프라인·캠페인 관리 CLI
+```
+
+레드팀 C2 인프라 구축과 OPSEC을 다룹니다. Sliver/Havoc 프레임워크, Apache 리다이렉터, DNS 터널링, Terraform AWS 인프라 자동화까지 — 허가된 레드팀·CTF·보안 연구 목적.
+
+---
+
+## 50. 게임 해킹
+
+```
+50_Game_Hacking/
+├── 01_memory_manipulation.md        ← 게임 메모리 구조·ReadProcessMemory·AOB 스캔·포인터체인 CLI
+├── 02_cheat_engine_advanced.md      ← CE Lua 스크립팅·자동어셈블러·구조체 분석·CT 파일 파서 CLI
+├── 03_packet_manipulation.md        ← 게임 패킷 캡처·mitmproxy·protobuf 역분석·패킷 재전송 CLI
+└── 04_anti_cheat_analysis.md        ← VAC/EAC/BattlEye 구조·탐지 기법·프로세스 분석 CLI·CTF 유형
+```
+
+게임 보안 연구 및 CTF 게임 해킹을 다룹니다. Cheat Engine 메모리 조작, 패킷 중간자 분석, 안티치트 동작 원리 이해까지 — 교육·CTF·보안 연구 목적.
+
+---
+
+## 51. 브라우저 확장 보안
+
+```
+51_Browser_Extension_Security/
+├── 01_extension_architecture.md    ← MV2/V3 비교·Background/Content Script·CSP·공격 표면 분석
+├── 02_malicious_extension_analysis.md ← 악성 확장 유형·IOC·난독화 분석·CRX 자동 분석 CLI
+├── 03_extension_pentesting.md      ← Content Script XSS·Cross-extension 공격·Selenium 자동 스캔 CLI
+└── 04_extension_security_hardening.md ← MV3 보안 강화·최소권한·기업 GPO·위험도 평가 CLI
+```
+
+Chrome/Firefox 확장 보안 전반을 다룹니다. 악성 확장 탐지 IOC, CRX 자동 분석, Content Script XSS/postMessage 공격, Selenium 기반 동적 취약점 스캐너, 기업 정책 관리까지.
 
 ---
 
