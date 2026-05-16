@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-46-blueviolet)](#table-of-contents)
-[![Files](https://img.shields.io/badge/Docs-174%20Files-brightgreen)](#table-of-contents)
-[![Lines](https://img.shields.io/badge/Lines-135%2C000%2B-orange)](#table-of-contents)
+[![Files](https://img.shields.io/badge/Docs-206%20Files-brightgreen)](#table-of-contents)
+[![Lines](https://img.shields.io/badge/Lines-140%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
