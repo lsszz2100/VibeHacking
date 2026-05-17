@@ -5,9 +5,9 @@
 ### 实战网络安全完全攻略 — AI时代的黑客圣经
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-51-blueviolet)](#目录)
-[![Files](https://img.shields.io/badge/Docs-226%20Files-brightgreen)](#目录)
-[![Lines](https://img.shields.io/badge/Lines-160%2C000%2B-orange)](#目录)
+[![Sections](https://img.shields.io/badge/Sections-55-blueviolet)](#目录)
+[![Files](https://img.shields.io/badge/Docs-242%20Files-brightgreen)](#目录)
+[![Lines](https://img.shields.io/badge/Lines-169%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -88,6 +88,15 @@
 | 44 | [**事件响应/DFIR**](#44-事件响应dfir) | IR手册、内存/磁盘取证、网络取证、封控与清除 | 4 |
 | 45 | [**恶意代码开发**](#45-恶意代码开发) | PE结构、shellcode/注入、C2框架、AV/EDR规避 | 4 |
 | 46 | [**CTF技巧**](#46-ctf技巧) | CTF方法论/工具、PWN/REV、Web/密码学、自动化框架 | 4 |
+| 47 | [**移动取证**](#47-移动取证) | Android/iOS取证、证据提取、移动取证工具 | 4 |
+| 48 | [**威胁建模**](#48-威胁建模) | STRIDE/PASTA/DREAD、攻击树、威胁建模工具 | 4 |
+| 49 | [**红队基础设施**](#49-红队基础设施) | C2框架、域前置、OPSEC、基础设施自动化 | 4 |
+| 50 | [**游戏黑客**](#50-游戏黑客) | 内存操控、Cheat Engine、数据包操控、反作弊分析 | 4 |
+| 51 | [**浏览器扩展安全**](#51-浏览器扩展安全) | MV2/V3、恶意扩展分析、Content Script XSS | 4 |
+| 52 | [**API安全**](#52-api安全) | OWASP API Top 10、BOLA、GraphQL、模糊测试、OAuth2 | 4 |
+| 53 | [**无服务器安全**](#53-无服务器安全) | Lambda攻击、事件注入、IAM滥用、IaC扫描 | 4 |
+| 54 | [**Active Directory攻击**](#54-active-directory攻击) | AD枚举、Kerberoasting、DCSync、黄金票据 | 4 |
+| 55 | [**检测规避技术**](#55-检测规避技术) | AV/EDR绕过、IDS/IPS规避、直接syscall、痕迹清除 | 4 |
 | 🧪 | [**CTF实验环境（labs/）**](#ctf实验环境labs) | Web/二进制/网络/云原生/综合场景Docker CTF实验 | 50 |
 
 ---

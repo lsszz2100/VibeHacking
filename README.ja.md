@@ -5,9 +5,9 @@
 ### 実践サイバーセキュリティ完全攻略 — AI時代のハッキングバイブル
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-51-blueviolet)](#目次)
-[![Files](https://img.shields.io/badge/Docs-226%20Files-brightgreen)](#目次)
-[![Lines](https://img.shields.io/badge/Lines-160%2C000%2B-orange)](#目次)
+[![Sections](https://img.shields.io/badge/Sections-55-blueviolet)](#目次)
+[![Files](https://img.shields.io/badge/Docs-242%20Files-brightgreen)](#目次)
+[![Lines](https://img.shields.io/badge/Lines-169%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -88,6 +88,15 @@ CTF・バグバウンティ・レッドチーム・AIセキュリティまで、
 | 44 | [**インシデントレスポンス/DFIR**](#44-インシデントレスポンスdfir) | IRプレイブック、メモリ/ディスクフォレンジクス、ネットワークフォレンジクス、封じ込め | 4 |
 | 45 | [**マルウェア開発**](#45-マルウェア開発) | PE構造、シェルコード/インジェクション、C2フレームワーク、AV/EDR回避 | 4 |
 | 46 | [**CTF技法**](#46-ctf技法) | CTF方法論/ツール、PWN/REV、Web/暗号、自動化フレームワーク | 4 |
+| 47 | [**モバイルフォレンジクス**](#47-モバイルフォレンジクス) | Android/iOSフォレンジクス、証拠抽出、モバイルツール | 4 |
+| 48 | [**脅威モデリング**](#48-脅威モデリング) | STRIDE/PASTA/DREAD、アタックツリー、ツール | 4 |
+| 49 | [**レッドチームインフラ**](#49-レッドチームインフラ) | C2フレームワーク、ドメインフロンティング、OPSEC | 4 |
+| 50 | [**ゲームハッキング**](#50-ゲームハッキング) | メモリ操作、Cheat Engine、パケット操作、アンチチート分析 | 4 |
+| 51 | [**ブラウザ拡張セキュリティ**](#51-ブラウザ拡張セキュリティ) | MV2/V3、悪意ある拡張分析、Content Script XSS | 4 |
+| 52 | [**APIセキュリティ**](#52-apiセキュリティ) | OWASP API Top 10、BOLA、GraphQL、ファジング、OAuth2 | 4 |
+| 53 | [**サーバーレスセキュリティ**](#53-サーバーレスセキュリティ) | Lambda攻撃、イベントインジェクション、IAM乱用、IaCスキャン | 4 |
+| 54 | [**Active Directory攻撃**](#54-active-directory攻撃) | AD列挙、Kerberoasting、DCSync、ゴールデンチケット | 4 |
+| 55 | [**検知回避技法**](#55-検知回避技法) | AV/EDR回避、IDS/IPS回避、syscall直接呼出し、痕跡削除 | 4 |
 | 🧪 | [**CTF実習環境（labs/）**](#ctf実習環境labs) | Web・バイナリ・ネットワーク・クラウド・統合DockerラボCTF | 50 |
 
 ---

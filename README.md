@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-51-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-226%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-160%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-55-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-242%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-169%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -88,6 +88,15 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 44 | [**인시던트 대응/DFIR**](#44-인시던트-대응dfir) | IR 플레이북, 메모리·디스크 포렌식, 네트워크 포렌식, 박멸·복구 | 4 |
 | 45 | [**악성코드 개발**](#45-악성코드-개발) | PE 구조, 셸코드·인젝션, C2 프레임워크, AV/EDR 우회 | 4 |
 | 46 | [**CTF 기법**](#46-ctf-기법) | CTF 방법론·도구, PWN/REV, Web/Crypto, 자동화 프레임워크 | 4 |
+| 47 | [**모바일 포렌식**](#47-모바일-포렌식) | Android/iOS 포렌식, 증거 추출, 모바일 포렌식 도구 | 4 |
+| 48 | [**위협 모델링**](#48-위협-모델링) | STRIDE/PASTA/DREAD, Attack Tree, 위협 모델링 도구 | 4 |
+| 49 | [**레드팀 인프라**](#49-레드팀-인프라) | C2 프레임워크, 도메인 프론팅, OPSEC, 인프라 자동화 | 4 |
+| 50 | [**게임 해킹**](#50-게임-해킹) | 메모리 조작, Cheat Engine, 패킷 조작, 안티치트 분석 | 4 |
+| 51 | [**브라우저 확장 보안**](#51-브라우저-확장-보안) | MV2/V3, 악성 확장 분석, Content Script XSS, 하드닝 | 4 |
+| 52 | [**API 보안**](#52-api-보안) | OWASP API Top 10, BOLA, GraphQL, 퍼징, OAuth2 | 4 |
+| 53 | [**서버리스 보안**](#53-서버리스-보안) | Lambda 공격, 이벤트 인젝션, IAM 남용, IaC 스캔 | 4 |
+| 54 | [**Active Directory 공격**](#54-active-directory-공격) | AD 열거, Kerberoasting, DCSync, Golden Ticket | 4 |
+| 55 | [**탐지 우회 기법**](#55-탐지-우회-기법) | AV/EDR 우회, IDS/IPS 우회, syscall, 흔적 제거 | 4 |
 | 🧪 | [**CTF 실습 환경 (labs/)**](#ctf-실습-환경-labs) | 웹·바이너리·네트워크·클라우드·통합 시나리오 도커 랩 5종 | 50 |
 
 ---
@@ -828,6 +837,62 @@ STRIDE·PASTA·DREAD 방법론을 실전에 적용합니다. DFD 작성부터 �
 ```
 
 Chrome/Firefox 확장 보안 전반을 다룹니다. 악성 확장 탐지 IOC, CRX 자동 분석, Content Script XSS/postMessage 공격, Selenium 기반 동적 취약점 스캐너, 기업 정책 관리까지.
+
+---
+
+## 52. API 보안
+
+```
+52_API_Security/
+├── 01_rest_api_security.md         ← OWASP API Top 10·BOLA 스캐너·JWT 취약점 분석 CLI
+├── 02_graphql_security.md          ← 인트로스펙션·배치 쿼리·깊이 공격·스키마 자동 분석 CLI
+├── 03_api_fuzzing.md               ← ffuf·OpenAPI 기반 자동 퍼저·파라미터 오염·응답 분석 CLI
+└── 04_api_security_hardening.md    ← OAuth2 PKCE·Rate Limiting·Kong/NGINX 게이트웨이·감사 CLI
+```
+
+REST·GraphQL API 취약점 전반을 다룹니다. BOLA 자동 스캐너, JWT 위조·크래킹, GraphQL 배치 공격·깊이 DoS, OpenAPI 기반 퍼저, OAuth2 PKCE 구현, API 게이트웨이 보안 설정까지.
+
+---
+
+## 53. 서버리스 보안
+
+```
+53_Serverless_Security/
+├── 01_lambda_function_attacks.md   ← 환경 변수 탈취·IMDSv1 SSRF·이벤트 인젝션·런타임 탐지 CLI
+├── 02_serverless_injection.md      ← SQS/S3 이벤트 인젝션·타이포스쿼팅·커맨드 인젝션 정적 분석
+├── 03_serverless_iam_abuse.md      ← 역할 과다 권한·AssumeRole 체인·최소 권한 정책 자동 생성 CLI
+└── 04_serverless_hardening.md      ← IaC 보안 스캔·Terraform 보안 설정·Lambda Extension·감사 CLI
+```
+
+AWS Lambda 서버리스 환경 공격·방어를 다룹니다. IMDSv1 SSRF, 이벤트 소스 인젝션, IAM 역할 남용, 타이포스쿼팅 탐지, IaC(Checkov/cfn-guard) 스캔, Lambda Extension 런타임 보호까지.
+
+---
+
+## 54. Active Directory 공격
+
+```
+54_Active_Directory_Attacks/
+├── 01_ad_enumeration.md            ← BloodHound·LDAP 열거·SPN/AS-REP 계정 자동 열거 CLI
+├── 02_kerberos_attacks.md          ← Kerberoasting·AS-REP Roasting·Pass-the-Ticket·자동화 CLI
+├── 03_lateral_movement_ad.md       ← PtH·NTLM 릴레이·DCSync·다중 호스트 횡이동 자동화 CLI
+└── 04_ad_persistence.md            ← Golden Ticket·Shadow Credentials·ACL 남용·지속성 탐지 CLI
+```
+
+Active Directory 침투 전 과정을 다룹니다. BloodHound 수집·Cypher 쿼리, Kerberoasting/AS-REP Roasting 자동화, NTLM 릴레이·DCSync, Golden/Silver Ticket, AdminSDHolder·Shadow Credentials 지속성까지.
+
+---
+
+## 55. 탐지 우회 기법
+
+```
+55_Evasion_Techniques/
+├── 01_av_evasion.md                ← XOR 인코더·샌드박스 탐지·프로세스 인젝션·AMSI 우회 CLI
+├── 02_ids_ips_evasion.md           ← 패킷 단편화·DNS 터널링·트래픽 위장·Snort 룰 분석 CLI
+├── 03_edr_bypass.md                ← 직접 syscall·NTDLL 후킹 탐지·메모리 인젝션 탐지 CLI
+└── 04_log_evasion.md               ← 이벤트 로그 조작·타임스탬프 위조·흔적 제거 자동화 CLI
+```
+
+AV/EDR/IDS 우회 기법 전반을 다룹니다. XOR/AES 페이로드 인코더, 샌드박스 탐지·분기, 직접/간접 syscall, NTDLL 후킹 탐지, DNS/ICMP 터널링, C2 트래픽 위장, 침투 후 흔적 제거 체크리스트까지.
 
 ---
 

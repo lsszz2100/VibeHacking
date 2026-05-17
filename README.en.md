@@ -5,9 +5,9 @@
 ### Master Practical Cybersecurity — The Hacking Bible for the AI Era
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-51-blueviolet)](#table-of-contents)
-[![Files](https://img.shields.io/badge/Docs-226%20Files-brightgreen)](#table-of-contents)
-[![Lines](https://img.shields.io/badge/Lines-160%2C000%2B-orange)](#table-of-contents)
+[![Sections](https://img.shields.io/badge/Sections-55-blueviolet)](#table-of-contents)
+[![Files](https://img.shields.io/badge/Docs-242%20Files-brightgreen)](#table-of-contents)
+[![Lines](https://img.shields.io/badge/Lines-169%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -88,6 +88,15 @@ From CTF to Bug Bounty, Red Team to AI Security: a **practical, hands-on knowled
 | 44 | [**Incident Response/DFIR**](#44-incident-responsedfir) | IR playbooks, memory/disk forensics, network forensics, containment/eradication | 4 |
 | 45 | [**Malware Development**](#45-malware-development) | PE structure, shellcode/injection, C2 framework, AV/EDR evasion | 4 |
 | 46 | [**CTF Techniques**](#46-ctf-techniques) | CTF methodology/tools, PWN/REV, Web/Crypto, automation frameworks | 4 |
+| 47 | [**Mobile Forensics**](#47-mobile-forensics) | Android/iOS forensics, evidence extraction, mobile forensic tools | 4 |
+| 48 | [**Threat Modeling**](#48-threat-modeling) | STRIDE/PASTA/DREAD, Attack Trees, threat modeling tools | 4 |
+| 49 | [**Red Team Infrastructure**](#49-red-team-infrastructure) | C2 frameworks, domain fronting, OPSEC, infrastructure automation | 4 |
+| 50 | [**Game Hacking**](#50-game-hacking) | Memory manipulation, Cheat Engine, packet manipulation, anti-cheat analysis | 4 |
+| 51 | [**Browser Extension Security**](#51-browser-extension-security) | MV2/V3, malicious extension analysis, Content Script XSS, hardening | 4 |
+| 52 | [**API Security**](#52-api-security) | OWASP API Top 10, BOLA, GraphQL, fuzzing, OAuth2 | 4 |
+| 53 | [**Serverless Security**](#53-serverless-security) | Lambda attacks, event injection, IAM abuse, IaC scanning | 4 |
+| 54 | [**Active Directory Attacks**](#54-active-directory-attacks) | AD enumeration, Kerberoasting, DCSync, Golden Ticket | 4 |
+| 55 | [**Evasion Techniques**](#55-evasion-techniques) | AV/EDR bypass, IDS/IPS evasion, syscall, trace removal | 4 |
 | 🧪 | [**CTF Practice Labs (labs/)**](#ctf-practice-labs-labs) | Web/binary/network/cloud/full-scenario Docker CTF labs | 50 |
 
 ---
@@ -815,6 +824,62 @@ Game security research and CTF game hacking. Cheat Engine memory manipulation, p
 ```
 
 Complete browser extension security. Malicious extension IOC detection, CRX auto-analysis, Content Script XSS and postMessage attacks, Selenium dynamic vulnerability scanner, enterprise policy management.
+
+---
+
+## 52. API Security
+
+```
+52_API_Security/
+├── 01_rest_api_security.md         ← OWASP API Top 10/BOLA scanner/JWT vulnerability analysis CLI
+├── 02_graphql_security.md          ← Introspection/batch query/depth DoS/schema auto-analysis CLI
+├── 03_api_fuzzing.md               ← ffuf/OpenAPI-based auto-fuzzer/HPP/response analysis CLI
+└── 04_api_security_hardening.md    ← OAuth2 PKCE/Rate Limiting/Kong/NGINX gateway/audit CLI
+```
+
+Complete REST/GraphQL API security. BOLA auto-scanner, JWT forgery/cracking, GraphQL batch attacks and depth DoS, OpenAPI-based fuzzer, OAuth2 PKCE implementation, API gateway security configuration.
+
+---
+
+## 53. Serverless Security
+
+```
+53_Serverless_Security/
+├── 01_lambda_function_attacks.md   ← Env var exfil/IMDSv1 SSRF/event injection/runtime detection CLI
+├── 02_serverless_injection.md      ← SQS/S3 event injection/typosquatting/command injection static analysis
+├── 03_serverless_iam_abuse.md      ← Over-privileged roles/AssumeRole chaining/least privilege policy generator CLI
+└── 04_serverless_hardening.md      ← IaC scanning/Terraform secure config/Lambda Extension/audit CLI
+```
+
+AWS Lambda serverless attack and defense. IMDSv1 SSRF, event source injection, IAM role abuse, typosquatting detection, IaC (Checkov/cfn-guard) scanning, Lambda Extension runtime protection.
+
+---
+
+## 54. Active Directory Attacks
+
+```
+54_Active_Directory_Attacks/
+├── 01_ad_enumeration.md            ← BloodHound/LDAP enumeration/SPN/AS-REP account auto-enum CLI
+├── 02_kerberos_attacks.md          ← Kerberoasting/AS-REP Roasting/Pass-the-Ticket/automation CLI
+├── 03_lateral_movement_ad.md       ← PtH/NTLM relay/DCSync/multi-host lateral movement automation CLI
+└── 04_ad_persistence.md            ← Golden Ticket/Shadow Credentials/ACL abuse/persistence detection CLI
+```
+
+Complete Active Directory attack chain. BloodHound collection and Cypher queries, Kerberoasting/AS-REP Roasting automation, NTLM relay/DCSync, Golden/Silver Ticket, AdminSDHolder/Shadow Credentials persistence.
+
+---
+
+## 55. Evasion Techniques
+
+```
+55_Evasion_Techniques/
+├── 01_av_evasion.md                ← XOR encoder/sandbox detection/process injection/AMSI bypass CLI
+├── 02_ids_ips_evasion.md           ← Packet fragmentation/DNS tunneling/traffic masquerade/Snort rule analysis CLI
+├── 03_edr_bypass.md                ← Direct syscall/NTDLL hook detection/memory injection detection CLI
+└── 04_log_evasion.md               ← Event log manipulation/timestomping/trace removal automation CLI
+```
+
+Complete AV/EDR/IDS evasion techniques. XOR/AES payload encoder, sandbox detection, direct/indirect syscall, NTDLL hook detection, DNS/ICMP tunneling, C2 traffic masquerading, post-exploitation cleanup checklist.
 
 ---
 
