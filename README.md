@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-55-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-242%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-169%2C000%2B-orange)](#목차)
+[![Files](https://img.shields.io/badge/Docs-270%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-182%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
