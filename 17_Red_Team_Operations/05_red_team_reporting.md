@@ -1,0 +1,387 @@
+# 레드팀 리포팅 — 결과 분석·익스플로잇 체인 문서화·경영진 보고서
+
+## 1. 레드팀 보고서 구조
+
+```
+레드팀 리포트
+    │
+    ├── 경영진 요약 (Executive Summary)
+    │     - 전체 보안 수준 평가 (등급)
+    │     - 핵심 위험 사항 3~5개
+    │     - 즉각 조치 권고사항
+    │
+    ├── 기술 상세 (Technical Details)
+    │     - 공격 타임라인
+    │     - 익스플로잇 체인 다이어그램
+    │     - 발견된 취약점 목록 (CVSS)
+    │     - PoC 스크린샷·코드
+    │
+    └── 개선 권고사항 (Recommendations)
+          - 즉각 조치 (Critical/High)
+          - 단기 계획 (Medium)
+          - 장기 로드맵 (Low)
+```
+
+---
+
+## 2. 레드팀 결과 집계 CLI
+
+```python
+#!/usr/bin/env python3
+"""레드팀 결과 집계 — 취약점 목록에서 리포트 자동 생성."""
+
+import argparse
+import json
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+
+
+CVSS_SEVERITY = {
+    (9.0, 10.0): "Critical",
+    (7.0, 8.9): "High",
+    (4.0, 6.9): "Medium",
+    (0.1, 3.9): "Low",
+    (0.0, 0.0): "Informational",
+}
+
+MITRE_TACTICS = [
+    "Initial Access", "Execution", "Persistence", "Privilege Escalation",
+    "Defense Evasion", "Credential Access", "Discovery", "Lateral Movement",
+    "Collection", "Exfiltration", "Impact",
+]
+
+
+def cvss_to_severity(score: float) -> str:
+    for (low, high), label in CVSS_SEVERITY.items():
+        if low <= score <= high:
+            return label
+    return "Unknown"
+
+
+@dataclass
+class Finding:
+    id: str
+    title: str
+    cvss: float
+    tactic: str
+    technique_id: str
+    affected_systems: list[str]
+    description: str
+    evidence: str
+    remediation: str
+    severity: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.severity = cvss_to_severity(self.cvss)
+
+
+def load_findings(findings_file: Path) -> list[Finding]:
+    data = json.loads(findings_file.read_text())
+    return [Finding(**item) for item in data]
+
+
+def generate_executive_summary(findings: list[Finding]) -> str:
+    severity_counts = Counter(f.severity for f in findings)
+    total = len(findings)
+
+    lines = [
+        "## 경영진 요약",
+        "",
+        f"**평가 기간**: {datetime.now().strftime('%Y-%m-%d')} 기준",
+        f"**총 발견 사항**: {total}개",
+        "",
+        "### 심각도별 분류",
+    ]
+
+    for severity in ["Critical", "High", "Medium", "Low", "Informational"]:
+        count = severity_counts.get(severity, 0)
+        icon = {"Critical": "🔴", "High": "🟠", "Medium": "🟡",
+                "Low": "🔵", "Informational": "⚪"}.get(severity, "")
+        lines.append(f"- **{severity}**: {count}개")
+
+    # 최고 위험 발견 사항
+    critical_high = [f for f in findings if f.severity in ("Critical", "High")]
+    critical_high.sort(key=lambda x: x.cvss, reverse=True)
+
+    if critical_high:
+        lines += [
+            "",
+            "### 핵심 위험 사항",
+        ]
+        for f in critical_high[:5]:
+            lines.append(f"- **[{f.severity} | CVSS {f.cvss}]** {f.title}")
+            lines.append(f"  - 영향 시스템: {', '.join(f.affected_systems[:3])}")
+
+    # 전체 보안 등급
+    if severity_counts.get("Critical", 0) > 0:
+        grade = "F (심각)"
+    elif severity_counts.get("High", 0) > 2:
+        grade = "D (취약)"
+    elif severity_counts.get("High", 0) > 0:
+        grade = "C (개선 필요)"
+    elif severity_counts.get("Medium", 0) > 3:
+        grade = "B (보통)"
+    else:
+        grade = "A (양호)"
+
+    lines.insert(3, f"**전체 보안 등급**: {grade}")
+
+    return "\n".join(lines)
+
+
+def generate_attack_timeline(findings: list[Finding]) -> str:
+    tactic_order = {t: i for i, t in enumerate(MITRE_TACTICS)}
+    sorted_findings = sorted(
+        findings,
+        key=lambda f: tactic_order.get(f.tactic, 99),
+    )
+
+    lines = ["## 공격 타임라인 (ATT&CK 전술 순)", ""]
+    tactic_groups: dict[str, list[Finding]] = defaultdict(list)
+    for f in sorted_findings:
+        tactic_groups[f.tactic].append(f)
+
+    for tactic in MITRE_TACTICS:
+        group = tactic_groups.get(tactic, [])
+        if group:
+            lines.append(f"### {tactic}")
+            for f in group:
+                lines.append(f"- [{f.technique_id}] **{f.title}** (CVSS {f.cvss})")
+                lines.append(f"  - {f.description[:100]}...")
+            lines.append("")
+
+    return "\n".join(lines)
+
+
+def generate_remediation_plan(findings: list[Finding]) -> str:
+    urgent = [f for f in findings if f.severity in ("Critical", "High")]
+    medium = [f for f in findings if f.severity == "Medium"]
+    low = [f for f in findings if f.severity in ("Low", "Informational")]
+
+    lines = ["## 개선 권고사항", ""]
+
+    if urgent:
+        lines.append("### 즉각 조치 (48시간 내)")
+        for f in sorted(urgent, key=lambda x: x.cvss, reverse=True):
+            lines.append(f"- **{f.title}** [CVSS {f.cvss}]")
+            lines.append(f"  - {f.remediation}")
+        lines.append("")
+
+    if medium:
+        lines.append("### 단기 계획 (30일 내)")
+        for f in medium:
+            lines.append(f"- {f.title}: {f.remediation}")
+        lines.append("")
+
+    if low:
+        lines.append("### 장기 로드맵 (90일 내)")
+        for f in low:
+            lines.append(f"- {f.title}")
+
+    return "\n".join(lines)
+
+
+def generate_full_report(findings: list[Finding], output: Path) -> None:
+    sections = [
+        f"# 레드팀 평가 보고서\n\n**생성일**: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        generate_executive_summary(findings),
+        generate_attack_timeline(findings),
+        generate_remediation_plan(findings),
+    ]
+
+    report = "\n\n---\n\n".join(sections)
+    output.write_text(report, encoding="utf-8")
+    print(f"[+] 보고서 생성: {output} ({len(report)}자)")
+
+
+def create_sample_findings(output: Path) -> None:
+    """샘플 취약점 데이터 생성."""
+    samples = [
+        {
+            "id": "RT-001",
+            "title": "초기 접근 — VPN 기본 자격증명",
+            "cvss": 9.8,
+            "tactic": "Initial Access",
+            "technique_id": "T1078",
+            "affected_systems": ["vpn.example.com"],
+            "description": "VPN 게이트웨이에서 기본 관리자 자격증명 발견",
+            "evidence": "admin:admin123 로그인 성공",
+            "remediation": "즉시 패스워드 변경, MFA 강제 적용",
+        },
+        {
+            "id": "RT-002",
+            "title": "내부망 횡이동 — PtH 공격",
+            "cvss": 8.5,
+            "tactic": "Lateral Movement",
+            "technique_id": "T1550.002",
+            "affected_systems": ["DC01", "FILE-SERVER-01", "HR-PC-05"],
+            "description": "NTLM 해시로 도메인 내 횡이동 성공",
+            "evidence": "mimikatz sekurlsa::pth 실행 성공",
+            "remediation": "Credential Guard 활성화, NTLM 비활성화",
+        },
+        {
+            "id": "RT-003",
+            "title": "도메인 어드민 획득 — Kerberoasting",
+            "cvss": 9.0,
+            "tactic": "Credential Access",
+            "technique_id": "T1558.003",
+            "affected_systems": ["CORP\\svc_backup"],
+            "description": "서비스 계정 SPN에서 TGS 요청 후 오프라인 크랙",
+            "evidence": "Hashcat으로 48시간 내 패스워드 크랙",
+            "remediation": "서비스 계정 패스워드 복잡도 강화, 관리형 서비스 계정(gMSA) 사용",
+        },
+        {
+            "id": "RT-004",
+            "title": "데이터 유출 — S3 공개 버킷",
+            "cvss": 7.5,
+            "tactic": "Exfiltration",
+            "technique_id": "T1567",
+            "affected_systems": ["s3://company-backup-2024"],
+            "description": "공개 설정된 S3 버킷에서 고객 데이터 접근 가능",
+            "evidence": "aws s3 ls s3://company-backup-2024 (인증 없이 접근)",
+            "remediation": "S3 Block Public Access 활성화, 버킷 정책 검토",
+        },
+        {
+            "id": "RT-005",
+            "title": "Jenkins 취약한 설정",
+            "cvss": 5.3,
+            "tactic": "Discovery",
+            "technique_id": "T1082",
+            "affected_systems": ["ci.internal.example.com"],
+            "description": "Jenkins 관리 콘솔 인증 없이 접근 가능",
+            "evidence": "/script 경로로 Groovy 코드 실행 시도",
+            "remediation": "Jenkins 접근 제어 강화, 내부망 격리",
+        },
+    ]
+    output.write_text(json.dumps(samples, indent=2, ensure_ascii=False))
+    print(f"[+] 샘플 데이터: {output}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="레드팀 보고서 생성기")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    report_p = sub.add_parser("report", help="보고서 생성")
+    report_p.add_argument("findings", type=Path, help="취약점 JSON 파일")
+    report_p.add_argument("-o", "--output", type=Path, default=Path("redteam_report.md"))
+
+    sample_p = sub.add_parser("sample", help="샘플 취약점 데이터 생성")
+    sample_p.add_argument("-o", "--output", type=Path, default=Path("findings_sample.json"))
+
+    summary_p = sub.add_parser("summary", help="요약만 출력")
+    summary_p.add_argument("findings", type=Path)
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "report":
+            findings = load_findings(args.findings)
+            generate_full_report(findings, args.output)
+        case "sample":
+            create_sample_findings(args.output)
+        case "summary":
+            findings = load_findings(args.findings)
+            print(generate_executive_summary(findings))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. 익스플로잇 체인 문서화
+
+```python
+#!/usr/bin/env python3
+"""익스플로잇 체인 다이어그램 생성 — Mermaid flowchart 자동 생성."""
+
+import argparse
+import json
+from pathlib import Path
+
+
+def findings_to_mermaid(findings: list[dict]) -> str:
+    """취약점 목록에서 Mermaid 공격 체인 다이어그램 생성."""
+    from collections import defaultdict
+
+    tactic_order = [
+        "Initial Access", "Execution", "Persistence", "Privilege Escalation",
+        "Defense Evasion", "Credential Access", "Discovery", "Lateral Movement",
+        "Collection", "Exfiltration", "Impact",
+    ]
+
+    tactic_map: dict[str, list[dict]] = defaultdict(list)
+    for f in findings:
+        tactic_map[f["tactic"]].append(f)
+
+    lines = ["flowchart TD"]
+    prev_node = None
+
+    for tactic in tactic_order:
+        group = tactic_map.get(tactic, [])
+        if not group:
+            continue
+
+        for finding in group:
+            node_id = finding["id"].replace("-", "_")
+            severity = finding.get("severity", "Medium")
+            style = {
+                "Critical": ":::critical",
+                "High": ":::high",
+                "Medium": ":::medium",
+                "Low": ":::low",
+            }.get(severity, "")
+
+            label = f"{finding['id']}: {finding['title'][:40]}"
+            lines.append(f'    {node_id}["{label}\\n{tactic}"]' + style)
+
+            if prev_node:
+                lines.append(f"    {prev_node} --> {node_id}")
+            prev_node = node_id
+
+    lines += [
+        "    classDef critical fill:#ff4444,color:#fff",
+        "    classDef high fill:#ff8800,color:#fff",
+        "    classDef medium fill:#ffcc00,color:#000",
+        "    classDef low fill:#4488ff,color:#fff",
+    ]
+
+    return "\n".join(lines)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="익스플로잇 체인 다이어그램")
+    parser.add_argument("findings", type=Path)
+    parser.add_argument("-o", "--output", type=Path, default=Path("chain.mmd"))
+    args = parser.parse_args()
+
+    data = json.loads(args.findings.read_text())
+    diagram = findings_to_mermaid(data)
+    args.output.write_text(diagram)
+    print(f"[+] Mermaid 다이어그램: {args.output}")
+    print("\n렌더링: https://mermaid.live 에 붙여넣기")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. 레드팀 리포트 품질 체크리스트
+
+| 항목 | 확인 |
+|------|------|
+| 모든 발견 사항에 CVSS 점수 포함 | |
+| ATT&CK 기법 ID (Txx.xxx) 매핑 | |
+| 재현 가능한 PoC 포함 | |
+| 영향 받는 시스템 명시 | |
+| 스크린샷/증거 첨부 | |
+| 구체적 수정 방법 제시 | |
+| 경영진 요약 (기술 용어 최소화) | |
+| 공격 타임라인 포함 | |
+| 탐지 가능성 평가 | |
+| 비즈니스 영향 분석 | |
