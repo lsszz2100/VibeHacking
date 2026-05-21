@@ -5,9 +5,9 @@
 ### 실전 사이버보안 완전 정복 — AI 시대의 해킹 바이블
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-55-blueviolet)](#목차)
-[![Files](https://img.shields.io/badge/Docs-288%20Files-brightgreen)](#목차)
-[![Lines](https://img.shields.io/badge/Lines-191%2C000%2B-orange)](#목차)
+[![Sections](https://img.shields.io/badge/Sections-60-blueviolet)](#목차)
+[![Files](https://img.shields.io/badge/Docs-312%20Files-brightgreen)](#목차)
+[![Lines](https://img.shields.io/badge/Lines-215%2C000%2B-orange)](#목차)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-기반-사이버보안)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
@@ -97,6 +97,11 @@ CTF·버그바운티·레드팀·AI 보안까지, **처음부터 한국어로 �
 | 53 | [**서버리스 보안**](#53-서버리스-보안) | Lambda 공격, 이벤트 인젝션, IAM 남용, IaC 스캔 | 4 |
 | 54 | [**Active Directory 공격**](#54-active-directory-공격) | AD 열거, Kerberoasting, DCSync, Golden Ticket | 4 |
 | 55 | [**탐지 우회 기법**](#55-탐지-우회-기법) | AV/EDR 우회, IDS/IPS 우회, syscall, 흔적 제거 | 4 |
+| 56 | [**AI 레드팀**](#56-ai-레드팀) | AI 공격 기초, 프롬프트 인젝션, 모델 추출, 적대적 예제, 방어 | 5 |
+| 57 | [**양자 암호학**](#57-양자-암호학) | 양자 컴퓨팅, QKD, 후양자 알고리즘, NIST PQC, 마이그레이션 | 5 |
+| 58 | [**클라우드 침해 대응**](#58-클라우드-침해-대응) | Cloud IR, AWS/Azure/GCP 포렌식, 클라우드 위협 헌팅 | 5 |
+| 59 | [**공급망 보안**](#59-공급망-보안) | 공급망 공격, 소프트웨어 공급망, 의존성 혼동, 빌드 무결성 | 5 |
+| 60 | [**브라우저 보안 심화**](#60-브라우저-보안-심화) | 공격 표면, JS엔진 익스플로잇, 샌드박스 탈출, 확장 보안, 하드닝 | 5 |
 | 🧪 | [**CTF 실습 환경 (labs/)**](#ctf-실습-환경-labs) | 웹·바이너리·네트워크·클라우드·통합 시나리오 도커 랩 5종 | 50 |
 
 ---
