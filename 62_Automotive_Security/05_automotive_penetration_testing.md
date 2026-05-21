@@ -1,0 +1,335 @@
+# 자동차 침투 테스트
+
+## 방법론
+
+자동차 침투 테스트는 ISO/SAE 21434의 TARA(위협 분석 및 리스크 평가)와 연동한다.
+
+```
+자동차 침투 테스트 단계
+1. 범위 정의 및 위협 모델링
+2. 공격 표면 매핑
+3. 수동 정찰
+4. 자동화 스캐닝
+5. 취약점 익스플로잇
+6. 영향도 검증
+7. 보고 및 개선 권고
+```
+
+## 테스트 환경 구성
+
+```bash
+# HIL (Hardware-In-the-Loop) 테스트 벤치
+# - 실제 ECU + 시뮬레이션 환경
+# - 실제 차량 위험 없이 테스트
+
+# 필요 장비
+# 1. OBD-II → USB 어댑터 (ELM327, Kvaser, PEAK PCAN)
+# 2. CAN 버스 분석기 (CANalyzer, Wireshark + can-utils)
+# 3. 무선 분석 (SDR, WiFi Pineapple, Bluetooth 어댑터)
+# 4. 소프트웨어 (Wireshark, UDS Explorer, CANdb++)
+
+# 가상 테스트 환경
+sudo ip link add dev vcan0 type vcan && sudo ip link set up vcan0
+```
+
+## 공격 표면별 테스트
+
+### OBD-II 포트 테스트
+
+```python
+#!/usr/bin/env python3
+"""자동차 침투 테스트 자동화 프레임워크."""
+
+import argparse
+import can
+import time
+import sys
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class Severity(Enum):
+    CRITICAL = "CRITICAL"
+    HIGH     = "HIGH"
+    MEDIUM   = "MEDIUM"
+    LOW      = "LOW"
+    INFO     = "INFO"
+
+
+@dataclass
+class Finding:
+    title: str
+    severity: Severity
+    description: str
+    evidence: str
+    recommendation: str
+
+
+@dataclass
+class PentestReport:
+    target: str
+    start_time: float = field(default_factory=time.time)
+    findings: list[Finding] = field(default_factory=list)
+
+    def add(self, finding: Finding) -> None:
+        self.findings.append(finding)
+        icon = {
+            Severity.CRITICAL: "[!!]",
+            Severity.HIGH: "[!]",
+            Severity.MEDIUM: "[*]",
+            Severity.LOW: "[-]",
+            Severity.INFO: "[i]",
+        }[finding.severity]
+        print(f"  {icon} {finding.severity.value}: {finding.title}")
+
+    def summary(self) -> str:
+        counts = {s: 0 for s in Severity}
+        for f in self.findings:
+            counts[f.severity] += 1
+        lines = [
+            f"\n{'='*60}",
+            f"침투 테스트 결과: {self.target}",
+            f"{'='*60}",
+            f"총 발견사항: {len(self.findings)}개",
+        ]
+        for sev in Severity:
+            if counts[sev]:
+                lines.append(f"  {sev.value:10s}: {counts[sev]}개")
+        return "\n".join(lines)
+
+
+def test_unauthenticated_services(
+    bus: can.Bus,
+    report: PentestReport,
+    tx_id: int = 0x7E0,
+    rx_id: int = 0x7E8,
+) -> None:
+    """인증 없이 접근 가능한 UDS 서비스 테스트."""
+
+    def send_recv(data: bytes, timeout: float = 1.0) -> bytes | None:
+        frame = can.Message(
+            arbitration_id=tx_id,
+            data=bytes([len(data)]) + data + bytes(7 - len(data)),
+            is_extended_id=False,
+        )
+        bus.send(frame)
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            msg = bus.recv(timeout=0.1)
+            if msg and msg.arbitration_id == rx_id:
+                return bytes(msg.data)
+        return None
+
+    # 확장 세션 비인증 접근
+    resp = send_recv(bytes([0x10, 0x03]))  # 확장 진단 세션
+    if resp and resp[1] == 0x50:
+        report.add(Finding(
+            title="비인증 확장 진단 세션 접근",
+            severity=Severity.HIGH,
+            description="인증 없이 확장 진단 세션(0x03) 진입 가능",
+            evidence=f"응답: {resp.hex()}",
+            recommendation="세션 접근에 SecurityAccess(0x27) 선행 요구",
+        ))
+
+    # 쓰기 DID 비인증 테스트
+    test_dids = [0xF190, 0xF197, 0x0101, 0x0102]
+    for did in test_dids:
+        write_req = bytes([0x2E, did >> 8, did & 0xFF, 0x00])
+        resp = send_recv(write_req)
+        if resp and resp[1] != 0x7F:
+            report.add(Finding(
+                title=f"DID 0x{did:04X} 비인증 쓰기 가능",
+                severity=Severity.CRITICAL,
+                description=f"보안 접근 없이 DID {did:04X} 쓰기 허용",
+                evidence=f"응답: {resp.hex()}",
+                recommendation="WriteDataByIdentifier에 보안 접근 필수화",
+            ))
+
+    # RoutineControl 비인증 테스트
+    routines = [0x0203, 0xFF00, 0x0101]
+    for routine in routines:
+        req = bytes([0x31, 0x01, routine >> 8, routine & 0xFF])
+        resp = send_recv(req)
+        if resp and resp[1] == 0x71:  # RoutineControl 긍정 응답
+            report.add(Finding(
+                title=f"루틴 0x{routine:04X} 비인증 실행",
+                severity=Severity.HIGH,
+                description="보안 접근 없이 루틴 실행 가능",
+                evidence=f"응답: {resp.hex()}",
+                recommendation="RoutineControl 보안 레벨 상향",
+            ))
+
+
+def test_can_injection(
+    bus: can.Bus,
+    report: PentestReport,
+    duration: float = 5.0,
+) -> None:
+    """CAN 메시지 인젝션 가능성 테스트."""
+
+    # 유효한 것처럼 보이는 임의 메시지 전송
+    test_ids = [0x018, 0x244, 0x3B2, 0x5A1]
+    for can_id in test_ids:
+        frame = can.Message(
+            arbitration_id=can_id,
+            data=bytes([0xFF] * 8),
+            is_extended_id=False,
+        )
+        try:
+            bus.send(frame)
+            report.add(Finding(
+                title=f"CAN ID 0x{can_id:03X} 인젝션 가능",
+                severity=Severity.MEDIUM,
+                description="임의 CAN 메시지 전송 가능 (인증 없음)",
+                evidence=f"CAN ID 0x{can_id:03X} 전송 성공",
+                recommendation="게이트웨이 ECU에서 메시지 출처 검증 및 서명 적용",
+            ))
+        except can.CanError:
+            pass
+
+
+def test_firmware_update(
+    bus: can.Bus,
+    report: PentestReport,
+    tx_id: int = 0x7E0,
+    rx_id: int = 0x7E8,
+) -> None:
+    """펌웨어 업데이트 프로세스 보안 테스트."""
+
+    def send_recv(data: bytes, timeout: float = 1.0) -> bytes | None:
+        frame = can.Message(
+            arbitration_id=tx_id,
+            data=bytes([len(data)]) + data + bytes(7 - len(data)),
+            is_extended_id=False,
+        )
+        bus.send(frame)
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            msg = bus.recv(timeout=0.1)
+            if msg and msg.arbitration_id == rx_id:
+                return bytes(msg.data)
+        return None
+
+    # 프로그래밍 세션 비인증 접근
+    resp = send_recv(bytes([0x10, 0x02]))  # 프로그래밍 세션
+    if resp and resp[1] == 0x50:
+        report.add(Finding(
+            title="프로그래밍 세션 비인증 접근",
+            severity=Severity.CRITICAL,
+            description="인증 없이 프로그래밍 세션 진입 → 펌웨어 플래시 가능",
+            evidence=f"응답: {resp.hex()}",
+            recommendation="프로그래밍 세션에 멀티팩터 SecurityAccess 요구",
+        ))
+
+    # RequestDownload 비인증 테스트
+    resp = send_recv(bytes([0x34, 0x00, 0x44, 0x00, 0x00, 0x00]))
+    if resp and resp[1] != 0x7F:
+        report.add(Finding(
+            title="비인증 펌웨어 다운로드 요청 허용",
+            severity=Severity.CRITICAL,
+            description="서명 검증 없는 펌웨어 다운로드 허용 → RCE 가능",
+            evidence=f"응답: {resp.hex()}",
+            recommendation="ECDSA 서명 검증, 루트 CA 기반 인증서 체인 적용",
+        ))
+
+
+def test_wireless_interfaces(report: PentestReport, host: str) -> None:
+    """무선 인터페이스 보안 테스트 (WiFi, Bluetooth)."""
+    import subprocess
+
+    # Wi-Fi 스캔
+    result = subprocess.run(
+        ["nmcli", "-t", "-f", "SSID,SECURITY", "dev", "wifi"],
+        capture_output=True, text=True,
+    )
+    for line in result.stdout.splitlines():
+        if host.lower() in line.lower():
+            parts = line.split(":")
+            if len(parts) >= 2 and parts[1] in ("--", "WEP", ""):
+                report.add(Finding(
+                    title=f"취약한 Wi-Fi 보안: {parts[0]}",
+                    severity=Severity.HIGH,
+                    description=f"Wi-Fi '{parts[0]}' 취약한 암호화 또는 개방형",
+                    evidence=line,
+                    recommendation="WPA3 Enterprise 또는 WPA2-AES 적용",
+                ))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="자동차 침투 테스트 프레임워크")
+    parser.add_argument("interface", help="CAN 인터페이스")
+    parser.add_argument("--target", default="Unknown Vehicle",
+                        help="테스트 대상 이름")
+    parser.add_argument("--tx-id", type=lambda x: int(x, 16), default=0x7E0)
+    parser.add_argument("--rx-id", type=lambda x: int(x, 16), default=0x7E8)
+    parser.add_argument("--all", action="store_true", help="전체 테스트")
+    args = parser.parse_args()
+
+    report = PentestReport(target=args.target)
+    bus = can.interface.Bus(args.interface, interface="socketcan")
+
+    print(f"[*] 자동차 침투 테스트 시작: {args.target}")
+    print(f"[*] CAN 인터페이스: {args.interface}")
+    print(f"[*] TX: 0x{args.tx_id:03X} | RX: 0x{args.rx_id:03X}\n")
+
+    try:
+        print("[*] 1. 비인증 UDS 서비스 테스트...")
+        test_unauthenticated_services(bus, report, args.tx_id, args.rx_id)
+
+        print("\n[*] 2. CAN 인젝션 테스트...")
+        test_can_injection(bus, report)
+
+        print("\n[*] 3. 펌웨어 업데이트 보안 테스트...")
+        test_firmware_update(bus, report, args.tx_id, args.rx_id)
+
+        print(report.summary())
+
+        if report.findings:
+            print(f"\n[상세 발견사항]")
+            for i, f in enumerate(report.findings, 1):
+                print(f"\n{i}. [{f.severity.value}] {f.title}")
+                print(f"   설명: {f.description}")
+                print(f"   권고: {f.recommendation}")
+    finally:
+        bus.shutdown()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## 보고서 작성 템플릿
+
+```markdown
+# 자동차 사이버보안 침투 테스트 보고서
+
+## 요약
+- **대상**: [차량 모델/ECU]
+- **테스트 기간**: [날짜]
+- **위험도 분포**: CRITICAL N, HIGH N, MEDIUM N
+
+## 주요 발견사항
+### [CRITICAL] 비인증 펌웨어 업데이트
+**CVSS**: 9.8 (AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)
+**영향**: 원격 코드 실행, 차량 제어권 탈취 가능
+**재현 절차**: ...
+**권고**: ECDSA 서명 검증 적용
+
+## ISO/SAE 21434 매핑
+| 발견사항 | TARA 위협 | ASIL 레벨 | 우선순위 |
+```
+
+## 취약점 영향도 평가 (EVITA)
+
+```
+EVITA (E-safety Vehicle Intrusion proTected Applications)
+보안 레벨:
+  HIGH   — 생명 안전 위협 (브레이크, 스티어링)
+  MEDIUM — 재산 피해 (엔진, 변속기)
+  LOW    — 불편 초래 (인포테인먼트, 조명)
+
+SFOP (Safety, Financial, Operational, Privacy)
+각 차원별 영향도 1~3 평가 → 종합 위험도 산출
+```
+
+자동차 보안은 가장 높은 윤리적 책임이 요구되는 분야다. 모든 테스트는 통제된 환경에서, 명시적 승인하에 수행해야 한다.

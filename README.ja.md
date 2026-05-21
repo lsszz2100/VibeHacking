@@ -5,9 +5,9 @@
 ### 実践サイバーセキュリティ完全攻略 — AI時代のハッキングバイブル
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-60-blueviolet)](#目次)
-[![Files](https://img.shields.io/badge/Docs-312%20Files-brightgreen)](#目次)
-[![Lines](https://img.shields.io/badge/Lines-215%2C000%2B-orange)](#目次)
+[![Sections](https://img.shields.io/badge/Sections-64-blueviolet)](#目次)
+[![Files](https://img.shields.io/badge/Docs-343%20Files-brightgreen)](#目次)
+[![Lines](https://img.shields.io/badge/Lines-225%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-gray)](https://claude.ai/code)
 
