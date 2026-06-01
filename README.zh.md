@@ -857,6 +857,5 @@ labs/
 
 **⚔️ VibeHacking** — 成为实战安全专家的旅程
 
-*Built with [Claude Code](https://claude.ai/code)*
 
 </div>

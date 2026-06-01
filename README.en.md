@@ -913,6 +913,5 @@ labs/
 
 **⚔️ VibeHacking** — Your Journey to Becoming a Practical Security Professional
 
-*Built with [Claude Code](https://claude.ai/code)*
 
 </div>

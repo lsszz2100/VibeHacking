@@ -935,6 +935,5 @@ labs/
 
 **⚔️ VibeHacking** — 실전 보안 전문가를 향한 여정
 
-*Built with [Claude Code](https://claude.ai/code)*
 
 </div>
