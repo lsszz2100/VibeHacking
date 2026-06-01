@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Web3 사고 대응
 
 DeFi 익스플로잇, NFT 러그풀, 스마트 컨트랙트 해킹 발생 시 온체인 포렌식과 피해 최소화를 위한 신속 대응 절차를 다룬다. 블록체인 특성상 트랜잭션 불변성으로 인해 사전 방어와 신속한 피해 확산 차단이 핵심이다.
@@ -451,4 +457,176 @@ if __name__ == "__main__":
 4. 피해 금액 및 토큰 종류
 5. 법적 근거 (경찰 신고 접수번호 등)
 6. 담당자 연락처 및 소속 법인
+```
+
+---
+
+<a name="english"></a>
+
+# Web3 Incident Response
+
+This document covers on-chain forensics and rapid response procedures to minimize damage when DeFi exploits, NFT rug pulls, or smart contract hacks occur. Due to blockchain's transaction immutability, pre-emptive defense and rapid containment of damage spread are the key priorities.
+
+---
+
+## 1. Web3 Incident Response Framework
+
+### 1.1 Incident Classification
+
+| Incident Type | Characteristics | Response Urgency |
+|--------------|----------------|-----------------|
+| Smart contract vulnerability exploit | Immediate fund theft | Immediate (minutes) |
+| Private key theft | Entire wallet taken | Immediate |
+| Flash loan attack | Completed within single transaction | Post-analysis |
+| Governance attack | Malicious proposal passes through vote manipulation | Within hours |
+| Oracle manipulation | Liquidation triggered by price feed manipulation | Immediate |
+| Rug pull | Development team intentionally drains funds | Post-investigation |
+
+### 1.2 Initial Response 5-Minute Checklist
+
+```bash
+# 1. Check suspicious transactions
+curl -s "https://api.etherscan.io/api?module=account&action=txlist\
+&address=VICTIM_CONTRACT&sort=desc&apikey=YourApiKey" | \
+  python3 -c "import sys,json; txs=json.load(sys.stdin)['result'][:5]; \
+  [print(f'{t[\"timeStamp\"]}: {t[\"hash\"][:20]}... value={int(t[\"value\"])/1e18:.2f}ETH') for t in txs]"
+
+# 2. Check contract funds
+cast balance CONTRACT_ADDRESS --rpc-url $RPC_URL
+
+# 3. Check suspicious address against OFAC blocklist
+# Query Chainalysis, TRM Labs API
+
+# 4. If Pause function exists, execute immediately
+cast send CONTRACT_ADDRESS "pause()" --private-key $ADMIN_KEY --rpc-url $RPC_URL
+
+# 5. Emergency alert to community/team
+```
+
+---
+
+## 2. On-Chain Forensics
+
+### 2.1 Transaction Backtracing
+
+The forensic tool traces attack transactions on-chain, reconstructs attacker fund flow, and calculates profit/loss for post-incident analysis.
+
+### 2.2 Dune Analytics Query (SQL)
+
+```sql
+-- Detect abnormal large withdrawals from DeFi protocol
+SELECT
+  block_time,
+  tx_hash,
+  "from",
+  "to",
+  value / 1e18 AS eth_value,
+  gas_used
+FROM ethereum.transactions
+WHERE
+  block_time >= NOW() - INTERVAL '24 hours'
+  AND "to" = LOWER('0xVICTIM_CONTRACT')
+  AND value / 1e18 > 100  -- 100+ ETH withdrawals
+ORDER BY value DESC
+LIMIT 50;
+
+-- Flash loan attack pattern (large borrow+repay in same block)
+SELECT
+  block_number,
+  COUNT(*) AS tx_count,
+  SUM(value) / 1e18 AS total_eth
+FROM ethereum.transactions
+WHERE block_number BETWEEN 19000000 AND 19000010
+GROUP BY block_number
+HAVING COUNT(*) > 5 AND SUM(value) / 1e18 > 1000;
+```
+
+---
+
+## 3. Containment of Damage Spread
+
+### 3.1 Emergency Contract Pause (Pause Pattern)
+
+```solidity
+// Security pattern: Pausable contract
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+
+contract SecureVault is Pausable, AccessControl {
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
+
+    // Daily withdrawal limit
+    mapping(address => uint256) public dailyWithdrawn;
+    mapping(address => uint256) public lastWithdrawDay;
+    uint256 public constant DAILY_LIMIT = 10 ether;
+
+    event EmergencyPause(address indexed by, string reason);
+
+    constructor() {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(PAUSER_ROLE, msg.sender);
+        _grantRole(GUARDIAN_ROLE, msg.sender);
+    }
+
+    // Guardian triggers emergency pause
+    function emergencyPause(string calldata reason) external onlyRole(GUARDIAN_ROLE) {
+        _pause();
+        emit EmergencyPause(msg.sender, reason);
+    }
+
+    function withdraw(uint256 amount) external whenNotPaused {
+        uint256 today = block.timestamp / 86400;
+        if (lastWithdrawDay[msg.sender] != today) {
+            dailyWithdrawn[msg.sender] = 0;
+            lastWithdrawDay[msg.sender] = today;
+        }
+
+        require(
+            dailyWithdrawn[msg.sender] + amount <= DAILY_LIMIT,
+            "Daily limit exceeded"
+        );
+        dailyWithdrawn[msg.sender] += amount;
+
+        (bool ok, ) = msg.sender.call{value: amount}("");
+        require(ok, "Transfer failed");
+    }
+}
+```
+
+### 3.2 Whitehat Rescue Operation
+
+Move vulnerable funds to a safe wallet before the attacker can drain them. Always notify the protocol team in advance that this is a whitehat action.
+
+---
+
+## 4. Post-Incident Recovery Procedures
+
+### 4.1 Damage Assessment and Reporting
+
+Calculate total losses in ETH and tokens, generate incident report including attack timeline, affected amounts, and countermeasures.
+
+---
+
+## 5. Exchange Cooperation Requests
+
+| Exchange | Contact | Response Time |
+|----------|---------|--------------|
+| Binance | law_enforcement@binance.com | 24~48h |
+| Coinbase | compliance@coinbase.com | 24~72h |
+| Kraken | support@kraken.com | 24~48h |
+| OKX | legal@okx.com | 24~48h |
+
+### 5.1 Information to Include in Request
+
+```
+1. List of attack transaction hashes
+2. Attacker wallet address
+3. Fund movement path (on-chain tracking results)
+4. Damage amount and token types
+5. Legal basis (police report number, etc.)
+6. Contact information and affiliated legal entity
 ```

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # GCP 포렌식
 
 ## 1. GCP 로그 소스
@@ -759,6 +765,198 @@ gcloud logging read \
 
 ```sql
 -- 최근 30일 SetIamPolicy 이벤트 분석
+SELECT
+    timestamp,
+    protopayload_auditlog.authenticationinfo.principalemail AS caller,
+    protopayload_auditlog.requestmetadata.callerip AS source_ip,
+    protopayload_auditlog.resourcename AS resource,
+    protopayload_auditlog.methodname AS method
+FROM
+    `my-project.my_dataset.cloudaudit_googleapis_com_activity_*`
+WHERE
+    _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))
+        AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())
+    AND protopayload_auditlog.methodname LIKE '%SetIamPolicy%'
+ORDER BY timestamp DESC
+LIMIT 1000;
+```
+
+---
+
+<a name="english"></a>
+
+# GCP Forensics
+
+## 1. GCP Log Sources
+
+This section summarizes the key log sources available for forensic investigations in Google Cloud Platform (GCP) environments. GCP manages all logs centrally through Cloud Logging and supports large-scale log analysis via BigQuery integration.
+
+| Log Source | Log Type | Enabled by Default | Retention Period | Key Forensic Uses |
+|------------|---------|-------------------|-----------------|-------------------|
+| Cloud Audit Log - Admin Activity | Administrative operation logs | Yes | 400 days | IAM changes, resource manipulation |
+| Cloud Audit Log - Data Access | Data access logs | No | 30 days | GCS/BigQuery access tracking |
+| Cloud Audit Log - System Event | System events | Yes | 400 days | GCP internal automated events |
+| Cloud Audit Log - Policy Denied | Policy denial events | Yes | 30 days | Unauthorized access attempts |
+| VPC Flow Logs | Network flows | No | 30 days (default) | Lateral movement, C2 communication |
+| Firewall Rules Logging | Firewall allow/deny | No | 30 days | Network access patterns |
+| Cloud IDS | Intrusion detection events | No | — | Network-level attack detection |
+| GKE Audit Log | Kubernetes auditing | Yes (GKE) | 400 days | Container environment investigation |
+| Cloud DNS Log | DNS queries | No | 30 days | C2 domain access |
+| Cloud Storage Access Log | GCS object access | No | Data Access activation | Data exfiltration tracking |
+| BigQuery Audit Log | BQ queries/access | Data Access settings | 30 days | Large-scale data query tracking |
+| Secret Manager Audit | Secret access | Data Access settings | 30 days | Credential access detection |
+
+### 1.1 Cloud Audit Log JSON Lines Format
+
+GCP logs can be collected in JSON Lines (.jsonl) format via Cloud Logging API or Cloud Storage export.
+
+```json
+{
+    "logName": "projects/my-project/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2024-01-15T09:23:11.456Z",
+    "severity": "NOTICE",
+    "resource": {
+        "type": "service_account",
+        "labels": {"project_id": "my-project", "unique_id": "1234567890"}
+    },
+    "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "serviceName": "iam.googleapis.com",
+        "methodName": "google.iam.admin.v1.CreateServiceAccountKey",
+        "authenticationInfo": {
+            "principalEmail": "attacker@my-project.iam.gserviceaccount.com"
+        },
+        "requestMetadata": {
+            "callerIp": "203.0.113.42",
+            "callerSuppliedUserAgent": "python-requests/2.28.0"
+        },
+        "resourceName": "projects/my-project/serviceAccounts/target-sa@my-project.iam.gserviceaccount.com",
+        "status": {}
+    },
+    "insertId": "unique-log-entry-id"
+}
+```
+
+---
+
+## 2. GCP IAM Permission Analysis
+
+GCP's IAM has a different hierarchy from AWS. Permissions are inherited in the order: Organization > Folder > Project > Resource, and permissions at higher levels apply to all lower levels.
+
+### 2.1 GCP IAM Escalation Patterns
+
+| Escalation Technique | Required Initial Permission | Obtainable Permissions | Detection Event |
+|---------------------|----------------------------|------------------------|----------------|
+| Service account key creation | iam.serviceAccountKeys.create | Service account permissions | CreateServiceAccountKey |
+| Service account token generation | iam.serviceAccounts.actAs | Target SA permissions | GenerateAccessToken |
+| Add IAM binding | resourcemanager.projects.setIamPolicy | Grant arbitrary roles | SetIamPolicy |
+| Modify org policy | orgpolicy.policy.set | Lift constraints | SetOrgPolicy |
+| Workload identity federation | iam.workloadIdentityPoolProviders.create | GCP access with external ID | CreateWorkloadIdentityPoolProvider |
+| Create custom role | iam.roles.create | Arbitrary permission combinations | CreateRole |
+| Deploy Cloud Function | cloudfunctions.functions.create + actAs | Function execution SA permissions | CreateFunction |
+| Abuse Cloud Build | cloudbuild.builds.create + actAs | Cloud Build SA permissions | CreateBuild |
+
+### 2.2 Service Account Analysis Commands
+
+```bash
+# List all service accounts in project
+gcloud iam service-accounts list --project=my-project
+
+# List keys for a specific service account (detect old keys)
+gcloud iam service-accounts keys list \
+    --iam-account=sa@my-project.iam.gserviceaccount.com \
+    --managed-by=user
+
+# Check roles granted to a service account
+gcloud projects get-iam-policy my-project \
+    --flatten="bindings[].members" \
+    --format="table(bindings.role, bindings.members)" \
+    --filter="bindings.members:serviceAccount:target-sa@*"
+
+# Analyze organization-level IAM policy
+gcloud organizations get-iam-policy ORGANIZATION_ID \
+    --format=json | jq '.bindings[] | select(.role | contains("admin"))'
+```
+
+---
+
+## 3. BigQuery Data Exfiltration Detection
+
+BigQuery often stores large datasets, making it a prime target for data exfiltration. Enabling Data Access audit logs allows tracking of all queries and data access.
+
+### 3.1 BigQuery Data Exfiltration Patterns
+
+| Exfiltration Technique | Description | Detection Indicators |
+|------------------------|-------------|---------------------|
+| SELECT * mass queries | Full table scan | Abnormally large scannedBytes |
+| External table export | Export BQ data to GCS | EXPORT DATA query execution |
+| Dataset copy | Copy dataset to another project | DatasetService.CopyDataset |
+| Public dataset setting | Change IAM to allUsers | SetIamPolicy (allUsers) |
+| BQ Storage API | High-speed parallel reads | bigquerystorage.ReadRows |
+
+### 3.2 BigQuery Exfiltration Detection Query (Cloud Logging)
+
+```bash
+# Detect large queries (scanning more than 1GB)
+gcloud logging read \
+    'protoPayload.serviceName="bigquery.googleapis.com"
+     AND protoPayload.methodName="jobservice.jobcompleted"
+     AND protoPayload.serviceData.jobCompletedEvent.job.jobStatistics.totalBilledBytes > 1073741824' \
+    --project=my-project \
+    --format=json \
+    --freshness=7d
+```
+
+---
+
+## 4. Python CLI: GCP Cloud Audit Log Parser
+
+See the Korean section for the full Python code listing.
+
+### Usage
+
+```bash
+# Basic analysis
+python gcp_audit_parser.py --log-file audit.jsonl
+
+# Filter by specific project
+python gcp_audit_parser.py --log-file audit.jsonl --project-id my-prod-project
+
+# Only GCP severity WARNING and above
+python gcp_audit_parser.py --log-file audit.jsonl --severity-filter WARNING ERROR CRITICAL
+
+# Only detection results HIGH and above
+python gcp_audit_parser.py --log-file audit.jsonl --min-detection-severity HIGH
+
+# Skip SA analysis
+python gcp_audit_parser.py --log-file audit.jsonl --no-sa-analysis
+```
+
+---
+
+## 5. Additional GCP Evidence Collection Notes
+
+### 5.1 Log Collection via Cloud Storage
+
+```bash
+# Export recent 7 days of Admin Activity logs
+gcloud logging read \
+    'logName="projects/my-project/logs/cloudaudit.googleapis.com%2Factivity"' \
+    --project=my-project \
+    --format=json \
+    --freshness=7d > admin_activity_7d.json
+
+# Collect only events related to a specific service account
+gcloud logging read \
+    'protoPayload.authenticationInfo.principalEmail="suspect-sa@my-project.iam.gserviceaccount.com"' \
+    --project=my-project \
+    --format=json > sa_activity.json
+```
+
+### 5.2 Large-Scale Log Analysis with BigQuery
+
+```sql
+-- Analyze SetIamPolicy events in the past 30 days
 SELECT
     timestamp,
     protopayload_auditlog.authenticationinfo.principalemail AS caller,

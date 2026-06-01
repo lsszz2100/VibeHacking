@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 57-5. PQC 마이그레이션 전략: 암호화 자산 인벤토리부터 전환까지
 
 ## 개요
@@ -832,3 +838,209 @@ response = session.get('https://example.com')
 실제 Python에서의 PQC-TLS는 현재 `liboqs` 라이브러리를 통해 실험적으로 가능하다:
 - `pip install liboqs-python`
 - OpenSSL 포크(OQS-OpenSSL) 필요
+
+---
+
+<a name="english"></a>
+
+# 57-5. PQC Migration Strategy: From Cryptographic Asset Inventory to Full Transition
+
+## Overview
+
+Post-Quantum Cryptography (PQC) migration is not a simple algorithm swap—it is a complete rebuild of an organization's cryptographic governance. After NIST finalized FIPS 203/204/205 in August 2024, enterprises and government agencies are required to establish systematic transition plans. In particular, to defend against "Harvest Now, Decrypt Later (HNDL)" attacks, organizations must begin cryptographic inventory work immediately.
+
+---
+
+## 1. Cryptographic Asset Inventory Methodology
+
+### 1.1 Why Inventory Is Necessary
+
+Without knowing where and what cryptography is used, organizations cannot determine the scope of migration. A cryptographic inventory must include:
+
+- Algorithms in use (RSA, ECDSA, ECDH, AES, SHA, etc.)
+- Key lengths and parameters
+- Locations of use (code, config files, HSM, cloud KMS, etc.)
+- Data security lifetime (how long must this remain secret?)
+- Dependent systems (which services use this key?)
+
+### 1.2 CBOM (Cryptographic Bill of Materials)
+
+The cryptographic equivalent of a Software Bill of Materials (SBOM):
+
+| Item | Collected Data | Risk Classification |
+|------|---------------|---------------------|
+| Algorithm name | RSA-2048, ECDSA-P256, AES-128, etc. | Quantum vulnerability |
+| Key size | In bits | Insufficient size detection |
+| Usage purpose | Signing, encryption, key exchange, MAC | Replacement priority |
+| Data sensitivity | Confidential, internal, public | HNDL risk assessment |
+| Location of use | File paths, library names, APIs | Impact scope measurement |
+| Validity period | Certificate expiration date | Replacement timing |
+| Standard dependencies | TLS 1.2, legacy APIs | Compatibility impact |
+
+### 1.3 Detection Methodology
+
+**Static Analysis:**
+- Source code scanning (AST, regex)
+- Configuration file analysis (openssl.cnf, nginx.conf, etc.)
+- Dependency analysis (cryptography, pycryptodome versions)
+
+**Dynamic Analysis:**
+- Network traffic capture and TLS negotiation analysis
+- HSM/KMS API log analysis
+- Runtime cryptographic function call tracing
+
+**Document-Based:**
+- Architecture design document review
+- Security policy and standard document review
+- Third-party audit report review
+
+---
+
+## 2. Detecting Vulnerable RSA/ECC Usage
+
+### 2.1 Quantum-Vulnerable Algorithm List
+
+| Algorithm | Vulnerability | Replacement PQC Algorithm | Priority |
+|-----------|---------------|--------------------------|----------|
+| RSA (all key lengths) | Fully vulnerable | ML-KEM + ML-DSA | Critical |
+| ECDH (all curves) | Fully vulnerable | ML-KEM | Critical |
+| ECDSA (all curves) | Fully vulnerable | ML-DSA or SLH-DSA | Critical |
+| DSA (DLP-based) | Fully vulnerable | ML-DSA | High |
+| DH (Diffie-Hellman) | Fully vulnerable | ML-KEM | High |
+| AES-128 | Partially vulnerable | AES-256 | Medium |
+| SHA-1 | Already broken (classical) | SHA-256+ | High (immediate) |
+| MD5 | Already broken (classical) | SHA-256+ | High (immediate) |
+| AES-256 | Safe | Retain | Low |
+| SHA-256/384/512 | Safe | Retain | Low |
+
+### 2.2 Vulnerable Patterns in Code
+
+**Vulnerable patterns in Python code:**
+```python
+# Vulnerable patterns
+from Crypto.PublicKey import RSA          # pycryptodome
+from cryptography.hazmat.primitives.asymmetric import rsa, ec, dh
+import ssl; ssl.PROTOCOL_TLS             # default settings (allows RSA)
+paramiko.RSAKey                           # SSH RSA key
+jose.rsa                                  # JWT RS256
+
+# Safe pattern (short-term)
+from cryptography.hazmat.primitives.asymmetric import x25519
+```
+
+---
+
+## 3. Phased Hybrid Cryptography Migration Roadmap
+
+### 3.1 Migration Phase Table
+
+| Phase | Timeline | Key Activities | Deliverables |
+|-------|----------|----------------|--------------|
+| **0. Preparation** | Immediate–3 months | Build CBOM, risk assessment, team training | Cryptographic inventory, risk register |
+| **1. Pilot** | 3–6 months | Apply PQC testing to non-critical systems | Technical validation report |
+| **2. Hybrid** | 6–18 months | Deploy hybrid mode to critical systems | Hybrid TLS deployment |
+| **3. PQC-first** | 18–36 months | PQC as default, classical as fallback | PQC default policy |
+| **4. PQC-only** | 36–60 months | Full removal of classical algorithms | Complete PQC infrastructure |
+| **5. Verification** | Ongoing | Periodic crypto audits, new threat monitoring | Annual audit reports |
+
+### 3.2 Transition Priority by System Type
+
+| System Type | Data Lifetime | HNDL Risk | Transition Priority | Recommended Start |
+|-------------|--------------|-----------|--------------------|--------------------|
+| Classified communications (gov, military) | 25+ years | Critical | Critical | Immediate |
+| Financial transaction records | 15–20 years | High | High | 2025 |
+| Medical records (HIPAA) | 10–30 years | High | High | 2026 |
+| Long-term contract document signing | 10–15 years | Medium | High | 2026 |
+| General web TLS (HTTPS) | 1–3 years | Low | Medium | 2027 |
+| Software update signing | 5–10 years | Medium | Medium | 2027 |
+| Short-term session keys | <1 day | Very Low | Low | 2028–2030 |
+
+### 3.3 Hybrid Mode Implementation Example
+
+```
+TLS 1.3 Hybrid:
+  KeyShare: [x25519, X25519MLKEM768]
+  Server signature: ECDSA-P256 + ML-DSA-65
+  → Secure as long as either one remains secure
+```
+
+---
+
+## 4. Python CLI: Codebase Cryptographic Vulnerability Scanner
+
+See the Korean section for full Python code listing.
+
+---
+
+## 5. Migration Risk Management
+
+### 5.1 Key Migration Risk Table
+
+| Risk Factor | Impact | Likelihood | Mitigation Strategy |
+|-------------|--------|------------|---------------------|
+| **Backward compatibility breaks** | Service disruption | High | Staged hybrid mode transition |
+| **Performance degradation** | Increased response time | Medium | Run performance benchmarks first, optimize caching |
+| **Increased certificate sizes** | Network latency | High | CDN optimization, HTTP/3 utilization |
+| **Legacy system support** | Some client failures | High | Set dual-stack operation period |
+| **HSM/KMS lacks PQC support** | Key management impossible | Medium | Check vendor roadmap, use software HSM temporarily |
+| **Regulatory compliance gaps** | Audit failure | Low | Track NIST/ISO standards, document transition evidence |
+| **New algorithm vulnerabilities** | Security failure | Low | Maintain hybrid mode, monitor |
+
+### 5.2 Emergency Response Scenario (if CRQC appears early)
+
+If a Cryptographically Relevant Quantum Computer (CRQC) emerges earlier than expected:
+
+1. **Immediate (within 24 hours)**: Stop key exchange for all long-term secret data, or transition to PQC
+2. **Short-term (within 1 week)**: Renew certificates, activate PQC KEM in TLS
+3. **Medium-term (within 1 month)**: Reissue entire PKI, rotate code signing keys
+4. **Long-term (within 6 months)**: Completely remove legacy RSA/ECC
+
+### 5.3 Organizational PQC Governance Structure
+
+| Role | Responsibility |
+|------|----------------|
+| **CISO** | Approve PQC transition budget, report to board |
+| **Crypto Officer** | Manage CBOM, establish algorithm selection criteria |
+| **Development Team** | Scan codebase, update libraries |
+| **Infrastructure Team** | TLS configuration, PKI infrastructure upgrade |
+| **Compliance** | Track regulatory requirements, prepare for audits |
+| **Vendor Management** | Confirm third-party PQC support plans |
+
+---
+
+## 6. Hybrid TLS Configuration Examples
+
+### 6.1 Nginx + OpenSSL 3.x PQC Configuration (Conceptual)
+
+```nginx
+# /etc/nginx/nginx.conf (conceptual example — using OQS-OpenSSL)
+ssl_protocols TLSv1.3;
+ssl_ciphers TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256;
+
+# Hybrid KEM group (X25519 + ML-KEM-768)
+ssl_ecdh_curve X25519MLKEM768:X25519:prime256v1;
+
+# PQC certificate (ML-DSA-65)
+ssl_certificate /etc/ssl/pqc/ml-dsa-65-cert.pem;
+ssl_certificate_key /etc/ssl/pqc/ml-dsa-65-key.pem;
+
+# Classical certificate fallback (during hybrid period)
+ssl_certificate /etc/ssl/classic/ecdsa-p256-cert.pem;
+ssl_certificate_key /etc/ssl/classic/ecdsa-p256-key.pem;
+```
+
+### 6.2 Python requests Library PQC Activation (Conceptual)
+
+```python
+# Currently requests does not support PQC — expected code when supported
+import requests
+
+# Hybrid TLS adapter (using liboqs-python)
+session = requests.Session()
+# session.mount('https://', OQSAdapter(kem='X25519MLKEM768'))
+response = session.get('https://example.com')
+```
+
+PQC-TLS in actual Python is currently experimentally possible via the `liboqs` library:
+- `pip install liboqs-python`
+- Requires OpenSSL fork (OQS-OpenSSL)

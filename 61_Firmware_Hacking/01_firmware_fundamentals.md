@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 펌웨어 해킹 기초
 
 ## 펌웨어란?
@@ -320,3 +326,330 @@ find squashfs-root/ -name "shadow" -o -name "passwd" 2>/dev/null
 ```
 
 펌웨어 분석의 핵심은 **추출 → 파일시스템 탐색 → 취약점 식별** 3단계다. 다음 파일에서 실제 추출 기법을 심화한다.
+
+---
+
+<a name="english"></a>
+
+# Firmware Hacking Fundamentals
+
+## What is Firmware?
+
+Firmware is low-level software that controls hardware devices, stored in ROM/Flash memory. It exists in every embedded device — IoT gadgets, routers, embedded systems, industrial control equipment — and vulnerable firmware can lead to complete compromise of the entire device.
+
+## Firmware Types
+
+### Classification by Storage Medium
+| Type | Characteristics | Examples |
+|------|----------------|---------|
+| **NOR Flash** | Random read, slow write/erase | Bootloaders, BIOS |
+| **NAND Flash** | Sequential read, fast write | Filesystems, large storage |
+| **eMMC** | NAND + integrated controller | Smartphones, SBCs |
+| **EEPROM** | Small capacity, byte-level modification | Config storage, serial numbers |
+
+### Classification by Architecture
+```
+x86/x64   — PC BIOS/UEFI, industrial PCs
+ARM       — Smartphones, IoT, Raspberry Pi
+MIPS      — Home routers, embedded network equipment
+PowerPC   — Automotive ECUs, avionics systems
+RISC-V    — New embedded platforms
+```
+
+## Filesystem Structure
+
+### Typical Firmware Layout
+```
++------------------+
+| Bootloader       |  U-Boot, RedBoot, GRUB
++------------------+
+| Kernel Image     |  Linux zImage, uImage
++------------------+
+| Filesystem       |  SquashFS, JFFS2, YAFFS2
++------------------+
+| Config Partition |  NVRAM, user settings
++------------------+
+```
+
+### Common Embedded Filesystems
+```
+SquashFS   — Read-only, compressed, most common
+JFFS2      — Read/write, optimized for NAND/NOR
+UBIFS      — Optimized for large NAND
+CramFS     — Small, read-only
+ROMFS      — Very simple read-only
+ext2/4     — Standard Linux filesystem
+```
+
+## Vulnerability Classes
+
+### 1. Hardcoded Credentials
+```bash
+# Common patterns
+admin:admin, root:root, admin:password
+admin:1234, user:user, guest:guest
+
+# Search in firmware
+strings firmware.bin | grep -i "password\|passwd\|credential\|secret"
+grep -r "admin" /extracted_fs/etc/
+```
+
+### 2. Exposed Debug Interfaces
+```
+UART console — Serial debug port, often provides root shell
+JTAG         — Direct memory access, debugging
+SSH/Telnet   — Left enabled in production builds
+Web debug    — Hidden administrative endpoints
+```
+
+### 3. Unencrypted Updates
+```
+Unsigned updates    → Malicious firmware can be flashed
+Unencrypted transit → MITM update interception
+No rollback protection → Downgrade to older vulnerable firmware
+```
+
+### 4. Vulnerable Web Interface
+```
+Command injection — Ping, traceroute, DNS lookup fields
+Path traversal    — File download functionality
+Authentication bypass — Hidden admin pages
+CSRF              — Cross-site request forgery
+```
+
+## Toolchain
+
+### Essential Tools
+```bash
+# Binary analysis
+binwalk      — Firmware extraction/analysis
+file         — File type detection
+strings      — Printable string extraction
+hexdump/xxd  — Hex dump
+
+# Disassembly
+radare2      — Multi-architecture reversing
+Ghidra       — NSA free decompiler
+IDA Pro      — Commercial industry standard
+
+# Filesystem
+jefferson    — JFFS2 extractor
+unsquashfs   — SquashFS extraction
+mtd-utils    — MTD device utilities
+```
+
+### Installation
+```bash
+# Install binwalk (with extraction dependencies)
+sudo apt install binwalk python3-pip
+pip3 install binwalk
+
+# Additional extraction tools
+sudo apt install squashfs-tools jefferson mtd-utils
+
+# Emulation tools
+sudo apt install qemu-user-static qemu-system
+```
+
+## Basic Analysis Workflow
+
+```
+1. Firmware Acquisition
+   ├── Download from vendor website
+   ├── Dump directly from device (UART/JTAG)
+   └── Intercept update mechanism
+
+2. Initial Reconnaissance
+   ├── file firmware.bin      → Identify format
+   ├── binwalk firmware.bin   → Embedded files/signatures
+   └── strings firmware.bin   → Printable strings
+
+3. Extraction
+   ├── binwalk -e firmware.bin
+   ├── dd + manual offset extraction
+   └── Custom scripts
+
+4. Filesystem Analysis
+   ├── Config files → Credentials, endpoints
+   ├── Binaries    → Vulnerable functions, backdoors
+   └── Scripts     → Startup logic, services
+
+5. Dynamic Analysis
+   ├── QEMU emulation
+   ├── Real hardware debugging
+   └── Network service analysis
+```
+
+## Firmware Reconnaissance CLI
+
+```python
+#!/usr/bin/env python3
+"""Firmware initial reconnaissance tool."""
+
+import argparse
+import subprocess
+import hashlib
+import sys
+from pathlib import Path
+from dataclasses import dataclass, field
+
+
+@dataclass
+class FirmwareInfo:
+    path: Path
+    size: int
+    md5: str
+    sha256: str
+    file_type: str
+    entropy: float
+    strings_count: int
+    interesting_strings: list[str] = field(default_factory=list)
+
+
+INTERESTING_PATTERNS = [
+    "password", "passwd", "secret", "token", "key",
+    "admin", "root", "backdoor", "debug", "telnet",
+    "ssh", "ftp", "http", "https", "192.168", "10.0.",
+    "eval(", "system(", "exec(", "popen(",
+]
+
+
+def compute_hashes(path: Path) -> tuple[str, str]:
+    data = path.read_bytes()
+    return (
+        hashlib.md5(data).hexdigest(),
+        hashlib.sha256(data).hexdigest(),
+    )
+
+
+def get_file_type(path: Path) -> str:
+    result = subprocess.run(
+        ["file", "-b", str(path)],
+        capture_output=True, text=True
+    )
+    return result.stdout.strip()
+
+
+def compute_entropy(path: Path) -> float:
+    import math
+    data = path.read_bytes()
+    if not data:
+        return 0.0
+    freq = [0] * 256
+    for byte in data:
+        freq[byte] += 1
+    entropy = 0.0
+    length = len(data)
+    for count in freq:
+        if count:
+            p = count / length
+            entropy -= p * math.log2(p)
+    return round(entropy, 4)
+
+
+def extract_interesting_strings(path: Path) -> tuple[int, list[str]]:
+    result = subprocess.run(
+        ["strings", "-n", "8", str(path)],
+        capture_output=True, text=True
+    )
+    all_strings = result.stdout.splitlines()
+    interesting = [
+        s for s in all_strings
+        if any(pat in s.lower() for pat in INTERESTING_PATTERNS)
+    ]
+    return len(all_strings), interesting[:50]
+
+
+def analyze_firmware(path: Path) -> FirmwareInfo:
+    md5, sha256 = compute_hashes(path)
+    file_type = get_file_type(path)
+    entropy = compute_entropy(path)
+    strings_count, interesting = extract_interesting_strings(path)
+
+    return FirmwareInfo(
+        path=path,
+        size=path.stat().st_size,
+        md5=md5,
+        sha256=sha256,
+        file_type=file_type,
+        entropy=entropy,
+        strings_count=strings_count,
+        interesting_strings=interesting,
+    )
+
+
+def run_binwalk(path: Path, extract: bool = False) -> str:
+    cmd = ["binwalk"]
+    if extract:
+        cmd.append("-e")
+    cmd.append(str(path))
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    return result.stdout
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Firmware initial reconnaissance tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("firmware", type=Path, help="Firmware file to analyze")
+    parser.add_argument("-e", "--extract", action="store_true",
+                        help="Auto-extract with binwalk")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Verbose output")
+    args = parser.parse_args()
+
+    if not args.firmware.exists():
+        print(f"[!] File not found: {args.firmware}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"[*] Analyzing firmware: {args.firmware}")
+    info = analyze_firmware(args.firmware)
+
+    print(f"\n{'='*60}")
+    print(f"File size  : {info.size:,} bytes ({info.size/1024/1024:.2f} MB)")
+    print(f"MD5        : {info.md5}")
+    print(f"SHA256     : {info.sha256}")
+    print(f"File type  : {info.file_type}")
+    print(f"Entropy    : {info.entropy:.4f} (7.0+ = encrypted/compressed suspected)")
+    print(f"String count: {info.strings_count:,}")
+    print(f"{'='*60}")
+
+    if info.interesting_strings:
+        print(f"\n[!] Notable strings ({len(info.interesting_strings)}):")
+        for s in info.interesting_strings:
+            print(f"    {s}")
+
+    print(f"\n[*] Binwalk analysis:")
+    bw_out = run_binwalk(args.firmware, extract=args.extract)
+    print(bw_out)
+
+    if args.extract:
+        extract_dir = args.firmware.parent / f"_{args.firmware.name}.extracted"
+        if extract_dir.exists():
+            print(f"[+] Extraction complete: {extract_dir}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## Practical Tips
+
+```bash
+# Find high-entropy regions (encrypted/compressed)
+binwalk -E firmware.bin
+
+# Extract from specific offset
+dd if=firmware.bin bs=1 skip=0x100000 count=0x200000 of=squashfs.bin
+
+# Mount SquashFS
+unsquashfs squashfs.bin
+# Mounted filesystem: ./squashfs-root/
+
+# Quick search for hardcoded credentials
+grep -r "password\|passwd" squashfs-root/etc/ 2>/dev/null
+find squashfs-root/ -name "shadow" -o -name "passwd" 2>/dev/null
+```
+
+The core of firmware analysis is the three-step process: **extraction → filesystem exploration → vulnerability identification**. The next file covers actual extraction techniques in depth.

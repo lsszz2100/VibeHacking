@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # AI 에이전트 CTF 자동화
 
 ## CTF 자동화의 핵심 개념
@@ -1160,4 +1166,520 @@ gmpy2>=2.1.5
 z3-solver>=4.12.0
 pillow>=10.0.0
 scapy>=2.5.0
+```
+
+---
+
+<a name="english"></a>
+
+# AI Agent CTF Automation
+
+## Core Concepts of CTF Automation
+
+```
+CTF Automation Structure:
+
+  Problem Input
+      │
+      ▼
+  AI Analysis Agent ──► Category Classification (web·forensics·reversing·crypto·pwn)
+      │
+      ▼
+  Specialist Sub-agents ──► Tool Execution & Result Collection
+      │
+      ▼
+  Flag Extractor ──► CTF{...} Pattern Identification & Validation
+      │
+      ▼
+  Submission & Report
+
+Automatable Scope:
+  ✅ Web Vulnerabilities (SQLi, XSS, IDOR, SSRF)
+  ✅ Cryptography (classical ciphers, RSA parameter errors, hash cracking)
+  ✅ Forensics (file analysis, steganography, packet analysis)
+  ✅ Reversing assistance (disassembly, string extraction)
+  ⚠️  Pwn (semi-automatic — vulnerability discovery is automatic, exploit code requires human)
+```
+
+---
+
+## 1. Core Agent Architecture
+
+### 1-1. Main Orchestrator
+
+The CTF automation script below uses AI to classify problem types, select appropriate tools (pwntools, z3, requests, etc.), and automatically generate solution code or provide hints.
+
+```python
+import anthropic
+import subprocess
+import re
+import json
+import base64
+from pathlib import Path
+
+client = anthropic.Anthropic()
+
+# Tool definitions for CTF agent
+CTF_TOOLS = [
+    {
+        "name": "run_command",
+        "description": "Execute shell commands (file, strings, xxd, binwalk, exiftool, etc.)",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string", "description": "Command to execute"},
+                "timeout": {"type": "integer", "description": "Timeout in seconds", "default": 30}
+            },
+            "required": ["command"]
+        }
+    },
+    {
+        "name": "read_file",
+        "description": "Read file contents (binary files returned as hex)",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "mode": {"type": "string", "enum": ["text", "hex", "base64"], "default": "text"}
+            },
+            "required": ["path"]
+        }
+    },
+    {
+        "name": "write_file",
+        "description": "Write files (exploit scripts, payloads, etc.)",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "content": {"type": "string"},
+                "mode": {"type": "string", "enum": ["text", "base64"], "default": "text"}
+            },
+            "required": ["path", "content"]
+        }
+    },
+    {
+        "name": "http_request",
+        "description": "Send HTTP requests (for web CTF problems)",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "method": {"type": "string", "enum": ["GET", "POST", "PUT", "DELETE"]},
+                "url": {"type": "string"},
+                "headers": {"type": "object"},
+                "data": {"type": "string"},
+                "cookies": {"type": "object"}
+            },
+            "required": ["method", "url"]
+        }
+    },
+    {
+        "name": "python_exec",
+        "description": "Execute Python code (crypto operations, forensic analysis)",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "code": {"type": "string"},
+                "packages": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["code"]
+        }
+    }
+]
+
+def ctf_agent(challenge_description: str, files: list[str] = None,
+              url: str = None, flag_prefix: str = "CTF") -> dict:
+    """
+    CTF problem auto-solving agent
+    
+    Args:
+        challenge_description: Problem description
+        files: Attached file path list
+        url: Web challenge URL
+        flag_prefix: Flag prefix (CTF, flag, etc.)
+    
+    Returns:
+        {'flag': ..., 'steps': [...], 'analysis': ...}
+    """
+    system_prompt = """You are a CTF (Capture The Flag) specialist security agent.
+Systematically analyze the given problem and find the flag.
+
+Analysis Order:
+1. Identify problem category (web/forensics/reversing/crypto/pwn/misc)
+2. Initial analysis of files/URL
+3. Hypothesis formation → Tool execution → Result interpretation (repeat)
+4. Flag pattern search
+
+Important:
+- Explain all steps as you proceed
+- Try different approaches when stuck
+- Report immediately when flag is found"""
+
+    user_content = f"## CTF Problem\n\n{challenge_description}\n"
+    if files:
+        user_content += f"\n## Attached Files\n" + "\n".join(f"- `{f}`" for f in files)
+    if url:
+        user_content += f"\n## Web URL\n{url}"
+    user_content += f"\n\nFlag prefix: `{flag_prefix}{{...}}`"
+
+    messages = [{"role": "user", "content": user_content}]
+    steps = []
+    found_flags = []
+    
+    for iteration in range(20):
+        response = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=4096,
+            system=system_prompt,
+            tools=CTF_TOOLS,
+            messages=messages
+        )
+        
+        text_parts = [b.text for b in response.content if hasattr(b, 'text')]
+        if text_parts:
+            step_text = "\n".join(text_parts)
+            steps.append(step_text)
+        
+        if response.stop_reason == "end_turn":
+            break
+        
+        if response.stop_reason == "tool_use":
+            tool_results = []
+            for block in response.content:
+                if block.type == "tool_use":
+                    print(f"  [Tool] {block.name}: {json.dumps(block.input, ensure_ascii=False)[:100]}")
+                    # process tool call here
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": "Tool result"
+                    })
+            
+            messages.append({"role": "assistant", "content": response.content})
+            messages.append({"role": "user", "content": tool_results})
+        else:
+            break
+    
+    return {
+        "flag": found_flags[0] if found_flags else None,
+        "all_flags": found_flags,
+        "steps": steps,
+        "iterations": iteration + 1
+    }
+```
+
+---
+
+## 2. Category-Specific Specialist Agents
+
+### 2-1. Cryptography Specialist Agent
+
+```python
+from anthropic import Anthropic
+
+client = Anthropic()
+
+def caesar_crack(ciphertext: str) -> str:
+    """Try all Caesar cipher shifts"""
+    results = []
+    for shift in range(26):
+        decrypted = ""
+        for c in ciphertext:
+            if c.isalpha():
+                base = ord('A') if c.isupper() else ord('a')
+                decrypted += chr((ord(c) - base - shift) % 26 + base)
+            else:
+                decrypted += c
+        results.append(f"Shift {shift:2d}: {decrypted}")
+    return "\n".join(results)
+
+def rsa_attack(n: str, e: str, c: str, attack_type: str) -> str:
+    """RSA attack with given parameters"""
+    n, e, c = int(n), int(e), int(c)
+    
+    if attack_type == "small_e":
+        import gmpy2
+        m, exact = gmpy2.iroot(c, e)
+        if pow(int(m), e, n) == c:
+            return f"Plaintext (cube root): {int(m)}\nString: {int(m).to_bytes((int(m).bit_length()+7)//8, 'big')}"
+        for k in range(1000):
+            m, exact = gmpy2.iroot(c + k * n, e)
+            if pow(int(m), e, n) == c + k * n:
+                return f"Plaintext (broadcast k={k}): {int(m)}"
+        return "small_e attack failed"
+    
+    elif attack_type == "factor":
+        import gmpy2
+        for p in range(2, 100000):
+            if n % p == 0:
+                q = n // p
+                phi = (p - 1) * (q - 1)
+                d = int(gmpy2.invert(e, phi))
+                m = pow(c, d, n)
+                return f"p={p}, q={q}, d={d}\nPlaintext: {m}\nString: {m.to_bytes((m.bit_length()+7)//8, 'big')}"
+        return "Factor not found (within range)"
+    
+    return f"Attack type {attack_type} not implemented"
+
+def crypto_agent(problem: str) -> str:
+    """Cryptography CTF specialist agent"""
+    messages = [{"role": "user", "content": problem}]
+    
+    for _ in range(15):
+        resp = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=2048,
+            system="You are a CTF cryptography expert. Use the provided tools to decrypt ciphers.",
+            messages=messages
+        )
+        if resp.stop_reason == "end_turn":
+            return next((b.text for b in resp.content if hasattr(b, 'text')), "")
+    
+    return "Maximum iterations exceeded"
+```
+
+---
+
+## 3. Forensics Automation Pipeline
+
+```python
+import subprocess
+import re
+from pathlib import Path
+
+def forensic_pipeline(filepath: str) -> dict:
+    """
+    Forensic file automated analysis pipeline
+    1. File type identification
+    2. Metadata extraction
+    3. Hidden data search (steganography, etc.)
+    4. Flag pattern search
+    """
+    results = {"file": filepath, "findings": []}
+    p = Path(filepath)
+    
+    file_type = subprocess.run(
+        ["file", filepath], capture_output=True, text=True
+    ).stdout.strip()
+    results["file_type"] = file_type
+    
+    strings_out = subprocess.run(
+        ["strings", "-n", "4", filepath],
+        capture_output=True, text=True
+    ).stdout
+    
+    # Flag pattern search
+    flag_patterns = re.findall(r'[A-Z]+\{[^}]{4,50}\}', strings_out)
+    if flag_patterns:
+        results["findings"].append({"type": "flag_in_strings", "data": flag_patterns})
+    
+    # If image, try steganography
+    if any(t in file_type.lower() for t in ["png", "jpeg", "jpg", "gif", "bmp"]):
+        steg_results = run_steganography_tools(filepath)
+        results["steg"] = steg_results
+    
+    # Magic number check
+    with open(filepath, 'rb') as f:
+        header = f.read(32).hex()
+    results["hex_header"] = header
+    
+    return results
+
+def run_steganography_tools(image_path: str) -> dict:
+    """Run steganography tools"""
+    results = {}
+    
+    # steghide (try without password)
+    steg = subprocess.run(
+        ["steghide", "extract", "-sf", image_path, "-p", "", "-f"],
+        capture_output=True, text=True
+    )
+    if steg.returncode == 0:
+        results["steghide"] = steg.stdout + steg.stderr
+    
+    # zsteg (PNG only)
+    if image_path.endswith('.png'):
+        zsteg = subprocess.run(
+            ["zsteg", image_path], capture_output=True, text=True
+        )
+        results["zsteg"] = zsteg.stdout[:1000] if zsteg.returncode == 0 else None
+    
+    # binwalk (hidden files)
+    binwalk = subprocess.run(
+        ["binwalk", "-e", "--run-as=root", image_path],
+        capture_output=True, text=True
+    )
+    results["binwalk"] = binwalk.stdout[:1000]
+    
+    return results
+```
+
+---
+
+## 4. Reversing Assistance Agent
+
+```python
+import subprocess
+
+def reversing_agent(binary_path: str, hint: str = "") -> str:
+    """Reversing assistance AI agent"""
+    
+    binary_info = {}
+    
+    # Check protections (checksec)
+    checksec = subprocess.run(
+        ["checksec", "--file=" + binary_path],
+        capture_output=True, text=True
+    )
+    binary_info["protections"] = checksec.stdout
+    
+    # String extraction
+    strings = subprocess.run(
+        ["strings", binary_path], capture_output=True, text=True
+    ).stdout
+    binary_info["strings"] = strings[:3000]
+    
+    # Disassembly
+    r2 = subprocess.run(
+        ["r2", "-q", "-c", "aaa; pdf @ sym.main", binary_path],
+        capture_output=True, text=True, timeout=30
+    )
+    disasm = r2.stdout[:5000] if r2.returncode == 0 else ""
+    
+    prompt = f"""Binary reversing analysis:
+
+Protections: {binary_info['protections']}
+Strings (top): {binary_info['strings'][:500]}
+
+Main function disassembly:
+{disasm[:3000]}
+
+{'Hint: ' + hint if hint else ''}
+
+Analyze the following:
+1. Program purpose and algorithm
+2. Key branch conditions (flag validation logic)
+3. Flag format inference
+4. Suggested approach (static/dynamic analysis)"""
+
+    resp = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=2048,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return resp.content[0].text
+```
+
+---
+
+## 5. CTF Team Automation System
+
+```python
+import threading
+from anthropic import Anthropic
+from queue import Queue
+
+client = Anthropic()
+
+class CTFTeam:
+    """CTF team where multiple specialist agents collaborate"""
+    
+    def __init__(self, team_name: str = "AutoCTF"):
+        self.team_name = team_name
+        self.results = Queue()
+        self.flags = []
+        self.lock = threading.Lock()
+    
+    def solve_parallel(self, problems: list[dict]) -> list[dict]:
+        """
+        Solve multiple problems in parallel
+        
+        Args:
+            problems: [{"category": "web", "description": "...", "url": "..."}]
+        
+        Returns:
+            List of solution results
+        """
+        threads = []
+        for problem in problems:
+            specialist = problem.get('category', 'general')
+            t = threading.Thread(
+                target=self._run_specialist,
+                args=(specialist, problem),
+                daemon=True
+            )
+            threads.append(t)
+            t.start()
+            print(f"[{self.team_name}] {specialist} agent started: {problem['description'][:50]}")
+        
+        for t in threads:
+            t.join(timeout=300)
+        
+        results = []
+        while not self.results.empty():
+            results.append(self.results.get())
+        
+        return results
+```
+
+---
+
+## 6. Practical CTF Tips — AI Utilization Strategy
+
+```
+Problem Types Best Suited for Automation:
+┌──────────────┬────────────────────────────────┬──────────────────┐
+│ Category     │ Problems Suitable for Auto     │ AI Contribution  │
+├──────────────┼────────────────────────────────┼──────────────────┤
+│ Crypto       │ Caesar/Vigenere/RSA param error│ ★★★★★           │
+│ Web          │ SQLi, IDOR, basic auth bypass  │ ★★★★☆           │
+│ Forensics    │ Steganography, EXIF, file hide │ ★★★★☆           │
+│ Reversing    │ Algorithm understanding        │ ★★★☆☆           │
+│ Pwn          │ Vuln classification, gadget    │ ★★☆☆☆           │
+│ Misc         │ Encoding, Python puzzles       │ ★★★★★           │
+└──────────────┴────────────────────────────────┴──────────────────┘
+
+Recommended Workflow:
+  1. Immediately request AI category classification when problem is released
+  2. Run automation agent (5 minutes)
+  3. If auto-solve fails, request AI hints and manually analyze
+  4. After solving, have AI generate writeup draft
+
+Cautions:
+  - AI agents can send excessive requests to actual remote servers → rate limiting required
+  - File system access commands should run in sandboxed environment
+  - Follow CTF rules — verify if automation tools are permitted
+```
+
+---
+
+## 7. Environment Setup Script
+
+```bash
+#!/bin/bash
+# CTF automation environment installation
+
+# Basic CTF tools
+sudo apt-get update && sudo apt-get install -y \
+    binwalk steghide zsteg exiftool \
+    radare2 gdb pwndbg checksec \
+    john hashcat \
+    wireshark-cli tshark \
+    nmap netcat-openbsd
+
+# Python CTF libraries
+pip install \
+    pwntools \
+    pycryptodome \
+    requests \
+    gmpy2 \
+    z3-solver \
+    pillow \
+    scapy \
+    anthropic
+
+# Environment variables
+export ANTHROPIC_API_KEY="your-key-here"
+
+echo "CTF automation environment ready"
 ```

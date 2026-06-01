@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 위협 격리, 박멸, 복구
 
 인시던트 격리는 피해 확산을 막는 첫 번째 방어선이다. 악성코드 박멸은 루트 원인을 제거하고, 복구는 서비스를 안전하게 정상화한다.
@@ -490,3 +496,352 @@ Why 5: 왜 인력이 부족한가?
 | P2 | EDR 전사 배포 | 높음 | 중간 | 3개월 |
 | P3 | 오프라인 백업 구성 | 중간 | 스토리지 | 1개월 |
 | P3 | 직원 피싱 인식 교육 | 낮음 | 낮음 | 분기별 |
+
+---
+
+<a name="english"></a>
+
+# Threat Containment, Eradication, and Recovery
+
+Incident containment is the first line of defense against further damage. Malware eradication removes the root cause, while recovery safely restores services to normal operation.
+
+---
+
+## 1. Containment Strategies
+
+### 1.1 Short-Term Containment (Immediate Response)
+
+```powershell
+# Windows — Network isolation (block all traffic with firewall)
+# Allow only IR team IP
+$irTeamIP = "10.0.0.100"
+
+netsh advfirewall set allprofiles state on
+netsh advfirewall set allprofiles firewallpolicy blockinbound,blockoutbound
+
+# Allow IR team access
+netsh advfirewall firewall add rule name="IR_ALLOW_IN" dir=in `
+    action=allow remoteip=$irTeamIP
+netsh advfirewall firewall add rule name="IR_ALLOW_OUT" dir=out `
+    action=allow remoteip=$irTeamIP
+
+# Verify isolation
+netsh advfirewall show allprofiles
+```
+
+```bash
+# Linux — iptables isolation
+IR_IP="10.0.0.100"
+
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+
+# Allow IR team
+iptables -A INPUT -s $IR_IP -j ACCEPT
+iptables -A OUTPUT -d $IR_IP -j ACCEPT
+
+# Allow loopback
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+
+# Terminate current connections (optional — omit if evidence preservation required)
+# ss -K dst [suspicious_ip]
+```
+
+### 1.2 Active Directory Account Isolation
+
+```powershell
+# Immediately disable compromised accounts
+$compromisedUsers = @("jsmith", "admin_backup", "svc_webapp")
+
+foreach ($user in $compromisedUsers) {
+    # Disable account
+    Disable-ADAccount -Identity $user
+    
+    # Force password change (invalidates all sessions)
+    $newPass = ConvertTo-SecureString -AsPlainText "IR_Temp2026#$(Get-Random)" -Force
+    Set-ADAccountPassword -Identity $user -Reset -NewPassword $newPass
+    
+    # Remove group memberships (admin groups, etc.)
+    Get-ADPrincipalGroupMembership $user | 
+        Where-Object {$_.Name -ne "Domain Users"} |
+        ForEach-Object { Remove-ADGroupMember -Identity $_ -Members $user -Confirm:$false }
+    
+    Write-Host "[+] Isolation complete: $user"
+}
+
+# Force terminate active sessions
+Invoke-Command -ComputerName $targetPC -ScriptBlock {
+    query session | Select-String "jsmith" | ForEach-Object {
+        $sessionId = ($_ -split '\s+')[2]
+        logoff $sessionId
+    }
+}
+```
+
+### 1.3 Network Segment Isolation
+
+```
+Isolation levels (increasing impact):
+Level 1: Isolate only suspected hosts (VLAN move)
+Level 2: Isolate suspected subnet (remove routing)
+Level 3: Block internet connectivity (remove BGP routes or firewall)
+Level 4: Full network shutdown (last resort)
+
+VLAN isolation (Cisco):
+interface GigabitEthernet0/1
+  switchport access vlan 999  # Move to isolation VLAN
+
+# Isolation VLAN 999 — no routing, IR team access only
+```
+
+---
+
+## 2. Malware Eradication
+
+### 2.1 Full Persistence Mechanism Audit
+
+```powershell
+# 1. Registry auto-run keys
+$runKeys = @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
+    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce",
+    "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run",
+)
+
+foreach ($key in $runKeys) {
+    if (Test-Path $key) {
+        Write-Host "`n[$key]"
+        Get-ItemProperty $key | Format-List
+    }
+}
+
+# 2. Scheduled tasks
+Get-ScheduledTask | Where-Object {$_.State -ne "Disabled"} |
+    Select-Object TaskName, TaskPath,
+        @{N='Command'; E={$_.Actions.Execute}},
+        @{N='Args'; E={$_.Actions.Arguments}} |
+    Format-Table -AutoSize
+
+# 3. Services
+Get-Service | Where-Object {$_.StartType -ne "Disabled"} |
+    Select-Object Name, DisplayName, Status, StartType |
+    Sort-Object StartType | Format-Table
+
+# 4. WMI event subscriptions (fileless persistence)
+Get-WMIObject -Namespace root\subscription -Class __EventFilter
+Get-WMIObject -Namespace root\subscription -Class __EventConsumer
+Get-WMIObject -Namespace root\subscription -Class __FilterToConsumerBinding
+
+# 5. Startup folders
+$startupFolders = @(
+    "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup",
+    "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"
+)
+foreach ($folder in $startupFolders) {
+    Get-ChildItem $folder -ErrorAction SilentlyContinue
+}
+
+# 6. Drivers (rootkits)
+Get-WmiObject Win32_SystemDriver | 
+    Where-Object {$_.State -eq "Running"} |
+    Select-Object Name, PathName |
+    Where-Object {$_.PathName -notmatch "Windows\\System32\\drivers"}
+```
+
+### 2.2 Persistence Removal
+
+```powershell
+# Delete malicious registry entries
+Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" `
+    -Name "MaliciousApp" -ErrorAction SilentlyContinue
+
+# Delete scheduled tasks
+Unregister-ScheduledTask -TaskName "MaliciousTask" -Confirm:$false
+
+# Delete malicious service
+Stop-Service "MaliciousService" -Force
+sc.exe delete "MaliciousService"
+
+# Delete WMI subscriptions
+$filter = Get-WMIObject -Namespace root\subscription -Class __EventFilter -Filter "Name='MalFilter'"
+$filter.Delete()
+$consumer = Get-WMIObject -Namespace root\subscription -Class __EventConsumer -Filter "Name='MalConsumer'"
+$consumer.Delete()
+$binding = Get-WMIObject -Namespace root\subscription -Class __FilterToConsumerBinding
+$binding | Where-Object {$_.Filter -match "MalFilter"} | ForEach-Object { $_.Delete() }
+```
+
+---
+
+## 3. Ransomware Recovery
+
+### 3.1 Recovery Option Evaluation Order
+
+```
+1. Restore from clean backup (verify offline backup first)
+   → Check if backups were also encrypted
+   → Check if NAS/cloud backups were overwritten by sync
+
+2. Volume Shadow Copies (VSS)
+   vssadmin list shadows  # List available snapshots
+   mklink /D C:\Shadow \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\
+
+3. Public decryption tools
+   https://www.nomoreransom.org  # Decryption tools by ransomware type
+   Use ID Ransomware to identify variant, then check for tools
+
+4. Law enforcement cooperation
+   Cybercrime unit, national CERT
+
+5. Negotiation (last resort, not recommended)
+   → Payment does not guarantee decryption
+   → Legal issues (paying sanctioned groups may be illegal in some countries)
+```
+
+### 3.2 File Recovery Using VSS
+
+```powershell
+# Check available shadow copies
+vssadmin list shadows /for=C:
+
+# Mount (symlink)
+$shadowPath = "\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1"
+cmd /c mklink /D "C:\Shadow" "$shadowPath\"
+
+# Copy files
+Copy-Item "C:\Shadow\Users\victim\Documents\important.docx" `
+    "C:\Recovered\important.docx"
+
+# Unmount
+cmd /c rmdir "C:\Shadow"
+```
+
+---
+
+## 4. Windows Persistence Artifact Auto-Collection CLI
+
+```python
+#!/usr/bin/env python3
+"""Windows Persistence Artifact Auto-Collection CLI (Remote WMI/Registry Analysis)"""
+
+import argparse
+import json
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+
+@dataclass
+class PersistenceArtifact:
+    category: str
+    name: str
+    value: str
+    path: str
+    risk: str = "unknown"
+    note: str = ""
+
+
+KNOWN_LEGIT = {
+    "OneDrive", "SecurityHealth", "WindowsDefender",
+    "MicrosoftEdgeAutoLaunch", "Teams", "Discord",
+}
+
+SUSPICIOUS_KEYWORDS = [
+    "powershell", "cmd.exe", "wscript", "cscript", "mshta",
+    "regsvr32", "rundll32 ..", "certutil", "bitsadmin",
+    "AppData\\Local\\Temp", "Temp\\", "ProgramData\\Temp",
+    "\\Users\\Public\\", "base64", "-enc", "-encodedcommand",
+]
+
+
+def run_ps_command(cmd: str, target: Optional[str] = None) -> str:
+    """Execute PowerShell command"""
+    if target:
+        full_cmd = f'Invoke-Command -ComputerName {target} -ScriptBlock {{{cmd}}}'
+    else:
+        full_cmd = cmd
+
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-NonInteractive", "-Command", full_cmd],
+        capture_output=True, text=True, timeout=30
+    )
+    return result.stdout.strip()
+
+
+def assess_risk(name: str, value: str) -> str:
+    """Risk assessment"""
+    value_lower = value.lower()
+    if any(kw.lower() in value_lower for kw in SUSPICIOUS_KEYWORDS):
+        return "high"
+    if name in KNOWN_LEGIT:
+        return "low"
+    if "temp" in value_lower or "appdata\\local\\temp" in value_lower:
+        return "high"
+    if any(ext in value_lower for ext in ['.vbs', '.js', '.hta', '.bat', '.ps1']):
+        return "medium"
+    return "low"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Windows Persistence Artifact Collection CLI")
+    parser.add_argument("--target", help="Remote computer name (local if not specified)")
+    parser.add_argument("--show-low", action="store_true", help="Also show low-risk items")
+    parser.add_argument("--export", metavar="FILE", help="Export to JSON")
+    parser.add_argument("--all", action="store_true", help="Collect all categories")
+
+    args = parser.parse_args()
+
+    if sys.platform != 'win32' and not args.target:
+        print("[!] Windows-only tool. Use --target to specify remote Windows host", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"[*] Collecting artifacts {'(remote: ' + args.target + ')' if args.target else '(local)'}...")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Post-Incident Review
+
+### 5.1 5-Why Analysis Template
+
+```
+Incident: Ransomware infection and data encryption
+
+Why 1: Why did the ransomware execute?
+→ Employee executed malicious attachment from phishing email
+
+Why 2: Why was execution of the malicious file allowed?
+→ Macro auto-execution was not disabled
+
+Why 3: Why wasn't the macro policy configured?
+→ GPO management was not systematic
+
+Why 4: Why was GPO management inadequate?
+→ IT security team was understaffed and hardening settings were not applied
+
+Why 5: Why was there insufficient staff?
+→ Security budget was not prioritized
+
+Root Cause: Insufficient security investment at the executive level
+Improvement Direction: Establish CISO role, increase security budget, GPO hardening
+```
+
+### 5.2 Improvement Recommendation Structure
+
+| Priority | Item | Implementation Difficulty | Estimated Cost | Deadline |
+|----------|------|--------------------------|----------------|----------|
+| P1 | Disable macros via GPO | Low | Free | 1 week |
+| P1 | Email attachment sandbox | Medium | License | 1 month |
+| P2 | Enterprise-wide EDR deployment | High | Medium | 3 months |
+| P3 | Offline backup configuration | Medium | Storage | 1 month |
+| P3 | Employee phishing awareness training | Low | Low | Quarterly |

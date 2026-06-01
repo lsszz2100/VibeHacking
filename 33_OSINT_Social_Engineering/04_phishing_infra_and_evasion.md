@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 33-04. 피싱 인프라와 탐지 회피 — MFA 우회, 메일 정상값, 로깅 격차
 > 한 줄 요약: 현대 피싱은 "가짜처럼 안 보이는 것"이 아니라 "정상값을 빠짐없이 갖춘 것"이 핵심이며, 레드팀은 인프라의 합법성과 운영의 윤리적 통제를 동시에 설계해야 한다.
 
@@ -746,3 +752,44 @@ tags:
 ---
 
 *이 문서는 학습용 합성 자료다. 실제 적용은 명시적 허가가 있는 격리 환경에서만 수행한다.*
+
+---
+
+<a name="english"></a>
+
+# 33-04. Phishing Infrastructure and Detection Evasion — MFA Bypass, Mail Legitimacy, Logging Gaps
+
+> One-line summary: Modern phishing's core is not "not looking fake" but "having all legitimate-looking attributes in place." Red teams must simultaneously design the legitimacy of infrastructure and ethical controls over operations.
+
+## 0. Ethics and Legal Prerequisites
+
+All techniques in this document apply only under the following conditions:
+
+- Within a penetration testing contract with **explicit written consent**
+- Only in isolated environments with authorization
+
+## Key Infrastructure Components
+
+- **Phishing domains**: Typosquatting, homoglyph attacks, subdomain abuse
+- **AiTM (Adversary-in-the-Middle) proxy**: Evilginx2, Modlishka for MFA bypass
+- **Mail legitimacy**: SPF/DKIM/DMARC configuration for mail delivery
+- **Redirect chains**: Using legitimate services as redirectors
+- **Logging gaps**: Exploiting blind spots between different security tools
+
+## Key Defense Strategies
+
+- **Phishing-resistant MFA**: FIDO2/Passkey instead of TOTP/SMS
+- **Conditional Access Policies**: Block logins from unexpected geolocations
+- **Token Binding**: Prevent session token theft
+- **DMARC p=reject**: Block spoofed emails at the mail gateway
+- **Canary tokens**: Detect when phishing pages are accessed
+
+## Appendix B. Next Section Candidates
+
+- 34. AiTM blocking architecture (Passkey, Token Binding, DPoP)
+- 35. M365/Workspace audit log SIEM normalization pipeline
+- 36. Social engineering simulation statistical measurement (Bayesian click rate)
+
+---
+
+*This document is synthetic material for educational use. Real-world application is only performed in isolated environments with explicit authorization.*

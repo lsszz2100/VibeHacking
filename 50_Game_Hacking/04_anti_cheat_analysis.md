@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 04. 안티치트 분석 (Anti-Cheat Analysis)
 
 안티치트 시스템의 동작 원리를 이해하고 보안 연구 및 CTF 관점에서 분석하는 방법을 다룬다. 방어자(개발자) 관점의 강화 방안도 포함한다.
@@ -1023,5 +1029,1037 @@ python proto_decode.py --hex "0a0548656c6c6f"
 python anticheat_sim.py fim game.exe game_data.dat
 
 # 7. 블랙리스트 프로세스 체크 (탐지 회피 연구)
+python anticheat_sim.py proccheck
+```
+
+---
+
+<a name="english"></a>
+
+# 04. Anti-Cheat Analysis
+
+This section covers how to understand the operating principles of anti-cheat systems and how to analyze them from a security research and CTF perspective. It also includes hardening recommendations from the defender (developer) point of view.
+
+---
+
+## 1. Types of Anti-Cheat Systems
+
+### 1.1 Major Anti-Cheat Comparison
+
+| Anti-Cheat | Game Examples        | Method                    | Kernel Driver      | Cloud Integration |
+|------------|---------------------|---------------------------|--------------------|-------------------|
+| VAC        | CS2, Dota2          | Server-side, post-process | None               | Yes               |
+| EAC        | Fortnite, Apex      | Client-side, real-time    | Yes (optional)     | Yes               |
+| BattlEye   | PUBG, DayZ          | Client-side, real-time    | Yes                | Yes               |
+| FACEIT     | CS2 (3rd party)     | Kernel + cloud            | Yes                | Yes               |
+| Vanguard   | Valorant            | Kernel Ring-0, at boot    | Yes (required)     | Yes               |
+| nProtect   | Korean MMORPGs      | Kernel, local             | Yes                | Partial           |
+| XIGNCODE   | Asian MMORPGs       | Kernel, local             | Yes                | Partial           |
+
+### 1.2 Operating Layer Classification
+
+```
+Ring 3 (User Mode)
+  ├── Memory Scanner — searches for known cheat signatures
+  ├── Process Monitor — checks list of suspicious processes
+  ├── File Scanner — verifies game file integrity
+  └── Timing Check — detects abnormal frame rates
+
+Ring 0 (Kernel Mode)
+  ├── DKOM Detection — detects hidden processes/drivers
+  ├── Callback Registration — PsSetCreateProcessNotifyRoutine
+  ├── SSDT Hook Detection — detects system call table tampering
+  └── Page Table Scan — detects memory disguise
+```
+
+---
+
+## 2. Kernel-Level Anti-Cheat Operating Principles
+
+### 2.1 Windows Kernel Driver Mechanisms
+
+```c
+// Key APIs used by anti-cheat drivers (for conceptual explanation)
+
+// 1. Register process creation callback
+PsSetCreateProcessNotifyRoutineEx(MyProcessCreateCallback, FALSE);
+
+// 2. Image (DLL/EXE) load callback
+PsSetLoadImageNotifyRoutine(MyImageLoadCallback);
+
+// 3. Thread creation callback
+PsSetCreateThreadNotifyRoutine(MyThreadCreateCallback);
+
+// 4. Object handle callback (intercept OpenProcess)
+ObRegisterCallbacks(&registration, &handle);
+
+// 5. Collect process info via direct EPROCESS struct access
+PEPROCESS target = PsGetCurrentProcess();
+```
+
+### 2.2 Detection Technique Classification
+
+**Signature Detection**
+```
+Searches memory/files for byte patterns of known cheat tools
+- Advantage: Fast and accurate
+- Disadvantage: Can be bypassed by changing patterns (packers, polymorphic)
+```
+
+**Behavioral Detection**
+```
+Monitors suspicious API call patterns
+- Frequency of ReadProcessMemory calls
+- VirtualAllocEx followed by WriteProcessMemory + CreateRemoteThread
+- Abnormal accuracy in-game (aimbot detection)
+```
+
+**Integrity Check**
+```
+Continuously verifies checksums of game files and memory
+- Executable file hash comparison
+- In-memory code section verification (IAT hook, inline hook detection)
+```
+
+**Timing Check**
+```
+Detects abnormal reaction speeds
+- Aiming speed beyond human capability
+- Consistent reaction time patterns (macro detection)
+```
+
+---
+
+## 3. Python Game Process Analysis Tool
+
+### 3.1 Complete Process Analyzer
+
+```python
+#!/usr/bin/env python3
+"""
+Game process analysis tool (for CTF/security research purposes)
+Detects module list, handles, hooks, and injected DLLs
+"""
+
+import ctypes
+import ctypes.wintypes as wt
+import argparse
+import sys
+import struct
+import json
+from dataclasses import dataclass, field, asdict
+from pathlib import Path
+from typing import Optional
+
+
+# Windows API constants
+TH32CS_SNAPALL       = 0x0000001F
+TH32CS_SNAPPROCESS   = 0x00000002
+TH32CS_SNAPMODULE    = 0x00000008
+TH32CS_SNAPMODULE32  = 0x00000010
+TH32CS_SNAPTHREAD    = 0x00000004
+PROCESS_ALL_ACCESS   = 0x1F0FFF
+PAGE_EXECUTE         = 0x10
+PAGE_EXECUTE_READ    = 0x20
+PAGE_EXECUTE_READWRITE = 0x40
+PAGE_EXECUTE_WRITECOPY = 0x80
+MEM_COMMIT           = 0x1000
+MEM_IMAGE            = 0x1000000
+MEM_MAPPED           = 0x40000
+MEM_PRIVATE          = 0x20000
+
+
+class PROCESSENTRY32(ctypes.Structure):
+    _fields_ = [
+        ("dwSize",              wt.DWORD),
+        ("cntUsage",            wt.DWORD),
+        ("th32ProcessID",       wt.DWORD),
+        ("th32DefaultHeapID",   ctypes.POINTER(ctypes.c_ulong)),
+        ("th32ModuleID",        wt.DWORD),
+        ("cntThreads",          wt.DWORD),
+        ("th32ParentProcessID", wt.DWORD),
+        ("pcPriClassBase",      ctypes.c_long),
+        ("dwFlags",             wt.DWORD),
+        ("szExeFile",           ctypes.c_char * 260),
+    ]
+
+
+class MODULEENTRY32(ctypes.Structure):
+    _fields_ = [
+        ("dwSize",        wt.DWORD),
+        ("th32ModuleID",  wt.DWORD),
+        ("th32ProcessID", wt.DWORD),
+        ("GlblcntUsage",  wt.DWORD),
+        ("ProccntUsage",  wt.DWORD),
+        ("modBaseAddr",   ctypes.POINTER(wt.BYTE)),
+        ("modBaseSize",   wt.DWORD),
+        ("hModule",       wt.HMODULE),
+        ("szModule",      ctypes.c_char * 256),
+        ("szExePath",     ctypes.c_char * 260),
+    ]
+
+
+class THREADENTRY32(ctypes.Structure):
+    _fields_ = [
+        ("dwSize",             wt.DWORD),
+        ("cntUsage",           wt.DWORD),
+        ("th32ThreadID",       wt.DWORD),
+        ("th32OwnerProcessID", wt.DWORD),
+        ("tpBasePri",          ctypes.c_long),
+        ("tpDeltaPri",         ctypes.c_long),
+        ("dwFlags",            wt.DWORD),
+    ]
+
+
+class MEMORY_BASIC_INFORMATION(ctypes.Structure):
+    _fields_ = [
+        ("BaseAddress",       ctypes.c_void_p),
+        ("AllocationBase",    ctypes.c_void_p),
+        ("AllocationProtect", wt.DWORD),
+        ("PartitionId",       wt.WORD),
+        ("RegionSize",        ctypes.c_size_t),
+        ("State",             wt.DWORD),
+        ("Protect",           wt.DWORD),
+        ("Type",              wt.DWORD),
+    ]
+
+
+@dataclass
+class ModuleInfo:
+    name: str
+    path: str
+    base_address: int
+    size: int
+    is_suspicious: bool = False
+    reason: str = ""
+
+
+@dataclass
+class MemoryRegion:
+    base: int
+    size: int
+    protect: int
+    state: int
+    mem_type: int
+    is_executable: bool = False
+    is_private_exec: bool = False
+
+
+@dataclass
+class ProcessAnalysis:
+    pid: int
+    name: str
+    modules: list[ModuleInfo] = field(default_factory=list)
+    threads: list[dict] = field(default_factory=list)
+    memory_regions: list[MemoryRegion] = field(default_factory=list)
+    suspicious_modules: list[ModuleInfo] = field(default_factory=list)
+    private_exec_regions: list[MemoryRegion] = field(default_factory=list)
+
+
+class GameProcessAnalyzer:
+    """Game process analyzer"""
+
+    # Known cheat tool DLL signatures (partial)
+    SUSPICIOUS_MODULES: set[str] = {
+        "speedhack.dll",
+        "cheatengine",
+        "injector",
+        "trainer",
+        "hack",
+        "aimbot",
+        "esp",
+        "wallhack",
+        "triggerbot",
+        "bhop",
+    }
+
+    # Known system DLL whitelist (partial)
+    KNOWN_SYSTEM_DLLS: set[str] = {
+        "ntdll.dll", "kernel32.dll", "kernelbase.dll",
+        "user32.dll", "gdi32.dll", "advapi32.dll",
+        "msvcrt.dll", "ucrtbase.dll", "vcruntime140.dll",
+        "d3d11.dll", "d3d12.dll", "dxgi.dll",
+        "opengl32.dll", "vulkan-1.dll",
+        "ws2_32.dll", "wininet.dll",
+    }
+
+    def __init__(self, process_name_or_pid: str) -> None:
+        self._target = process_name_or_pid
+        self._k32 = ctypes.windll.kernel32  # type: ignore
+        self._pid: int = 0
+        self._handle: Optional[wt.HANDLE] = None
+        self._setup_api()
+
+    def _setup_api(self) -> None:
+        k32 = self._k32
+        k32.OpenProcess.restype = wt.HANDLE
+        k32.OpenProcess.argtypes = [wt.DWORD, wt.BOOL, wt.DWORD]
+        k32.ReadProcessMemory.restype = wt.BOOL
+        k32.ReadProcessMemory.argtypes = [
+            wt.HANDLE, ctypes.c_void_p, ctypes.c_void_p,
+            ctypes.c_size_t, ctypes.POINTER(ctypes.c_size_t)
+        ]
+        k32.VirtualQueryEx.restype = ctypes.c_size_t
+        k32.VirtualQueryEx.argtypes = [
+            wt.HANDLE, ctypes.c_void_p,
+            ctypes.POINTER(MEMORY_BASIC_INFORMATION),
+            ctypes.c_size_t
+        ]
+
+    def _find_pid(self) -> int:
+        """Return PID from process name or PID string"""
+        try:
+            return int(self._target)
+        except ValueError:
+            pass
+
+        snapshot = self._k32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+        entry = PROCESSENTRY32()
+        entry.dwSize = ctypes.sizeof(PROCESSENTRY32)
+
+        try:
+            if self._k32.Process32First(snapshot, ctypes.byref(entry)):
+                while True:
+                    name = entry.szExeFile.decode("utf-8", errors="ignore").lower()
+                    if name == self._target.lower():
+                        return entry.th32ProcessID
+                    if not self._k32.Process32Next(snapshot, ctypes.byref(entry)):
+                        break
+        finally:
+            self._k32.CloseHandle(snapshot)
+
+        raise RuntimeError(f"Process not found: {self._target}")
+
+    def open(self) -> None:
+        self._pid = self._find_pid()
+        self._handle = self._k32.OpenProcess(PROCESS_ALL_ACCESS, False, self._pid)
+        if not self._handle:
+            raise PermissionError(f"Failed to open process (admin rights required), PID={self._pid}")
+        print(f"[*] Successfully opened process: PID={self._pid}")
+
+    def get_modules(self) -> list[ModuleInfo]:
+        """Collect list of loaded modules"""
+        modules: list[ModuleInfo] = []
+        flags = TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32
+        snapshot = self._k32.CreateToolhelp32Snapshot(flags, self._pid)
+        entry = MODULEENTRY32()
+        entry.dwSize = ctypes.sizeof(MODULEENTRY32)
+
+        try:
+            if self._k32.Module32First(snapshot, ctypes.byref(entry)):
+                while True:
+                    name = entry.szModule.decode("utf-8", errors="ignore")
+                    path = entry.szExePath.decode("utf-8", errors="ignore")
+                    base = ctypes.cast(entry.modBaseAddr, ctypes.c_void_p).value or 0
+
+                    mod = ModuleInfo(
+                        name=name,
+                        path=path,
+                        base_address=base,
+                        size=entry.modBaseSize,
+                    )
+
+                    # Determine if module is suspicious
+                    name_lower = name.lower()
+                    if any(keyword in name_lower for keyword in self.SUSPICIOUS_MODULES):
+                        mod.is_suspicious = True
+                        mod.reason = "Contains known cheat tool keyword"
+                    elif name_lower not in self.KNOWN_SYSTEM_DLLS:
+                        path_lower = path.lower()
+                        if "system32" not in path_lower and "syswow64" not in path_lower:
+                            mod.is_suspicious = True
+                            mod.reason = "Unverified DLL from non-system path"
+
+                    modules.append(mod)
+                    if not self._k32.Module32Next(snapshot, ctypes.byref(entry)):
+                        break
+        finally:
+            self._k32.CloseHandle(snapshot)
+
+        return modules
+
+    def get_threads(self) -> list[dict]:
+        """List of process threads"""
+        threads: list[dict] = []
+        snapshot = self._k32.CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0)
+        entry = THREADENTRY32()
+        entry.dwSize = ctypes.sizeof(THREADENTRY32)
+
+        try:
+            if self._k32.Thread32First(snapshot, ctypes.byref(entry)):
+                while True:
+                    if entry.th32OwnerProcessID == self._pid:
+                        threads.append({
+                            "tid": entry.th32ThreadID,
+                            "base_priority": entry.tpBasePri,
+                        })
+                    if not self._k32.Thread32Next(snapshot, ctypes.byref(entry)):
+                        break
+        finally:
+            self._k32.CloseHandle(snapshot)
+
+        return threads
+
+    def scan_memory_regions(self) -> list[MemoryRegion]:
+        """Scan memory regions — detect executable private regions"""
+        if not self._handle:
+            raise RuntimeError("Process is not open")
+
+        regions: list[MemoryRegion] = []
+        mbi = MEMORY_BASIC_INFORMATION()
+        addr = 0
+
+        exec_flags = (
+            PAGE_EXECUTE | PAGE_EXECUTE_READ |
+            PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY
+        )
+
+        while True:
+            result = self._k32.VirtualQueryEx(
+                self._handle, addr, ctypes.byref(mbi), ctypes.sizeof(mbi)
+            )
+            if result == 0:
+                break
+
+            if mbi.State == MEM_COMMIT:
+                is_exec = bool(mbi.Protect & exec_flags)
+                is_private = mbi.Type == MEM_PRIVATE
+
+                region = MemoryRegion(
+                    base=mbi.BaseAddress or 0,
+                    size=mbi.RegionSize,
+                    protect=mbi.Protect,
+                    state=mbi.State,
+                    mem_type=mbi.Type,
+                    is_executable=is_exec,
+                    is_private_exec=is_exec and is_private,
+                )
+                regions.append(region)
+
+            next_addr = (mbi.BaseAddress or 0) + mbi.RegionSize
+            if next_addr <= addr:
+                break
+            addr = next_addr
+
+        return regions
+
+    def check_iat_hooks(self, module_base: int, module_size: int) -> list[dict]:
+        """Detect IAT (Import Address Table) hooking"""
+        if not self._handle:
+            return []
+
+        hooks: list[dict] = []
+
+        try:
+            # Read PE header
+            buf_size = min(module_size, 0x1000)
+            buffer = ctypes.create_string_buffer(buf_size)
+            bytes_read = ctypes.c_size_t(0)
+            self._k32.ReadProcessMemory(
+                self._handle, module_base, buffer, buf_size, ctypes.byref(bytes_read)
+            )
+            data = bytes(buffer.raw)
+
+            # DOS header → PE header
+            if data[:2] != b"MZ":
+                return []
+
+            pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
+            if pe_offset + 24 > len(data):
+                return []
+
+            if data[pe_offset:pe_offset + 4] != b"PE\x00\x00":
+                return []
+
+            # Check machine type (x64: 0x8664, x86: 0x014C)
+            machine = struct.unpack_from("<H", data, pe_offset + 4)[0]
+            is_64bit = machine == 0x8664
+
+            optional_offset = pe_offset + 24
+            if is_64bit:
+                # 64-bit: import directory RVA is at Optional Header +104
+                import_dir_rva = struct.unpack_from("<I", data, optional_offset + 104)[0]
+            else:
+                # 32-bit: import directory RVA is at Optional Header +80
+                import_dir_rva = struct.unpack_from("<I", data, optional_offset + 80)[0]
+
+            # Simple hook detection: check if IAT entries fall outside known system module ranges
+            # (actual implementation is far more complex; this is a conceptual demonstration)
+            if import_dir_rva > 0:
+                hooks.append({
+                    "type": "IAT_CHECK",
+                    "module_base": hex(module_base),
+                    "import_dir_rva": hex(import_dir_rva),
+                    "status": "IAT structure found (detailed analysis required)",
+                })
+
+        except Exception as e:
+            hooks.append({"error": str(e)})
+
+        return hooks
+
+    def analyze(self) -> ProcessAnalysis:
+        """Run full analysis"""
+        analysis = ProcessAnalysis(pid=self._pid, name=self._target)
+
+        print("[*] Collecting module list...")
+        analysis.modules = self.get_modules()
+        analysis.suspicious_modules = [m for m in analysis.modules if m.is_suspicious]
+
+        print("[*] Collecting thread list...")
+        analysis.threads = self.get_threads()
+
+        print("[*] Scanning memory regions...")
+        try:
+            analysis.memory_regions = self.scan_memory_regions()
+            analysis.private_exec_regions = [
+                r for r in analysis.memory_regions if r.is_private_exec
+            ]
+        except Exception as e:
+            print(f"[!] Memory scan error: {e}")
+
+        return analysis
+
+    def close(self) -> None:
+        if self._handle:
+            self._k32.CloseHandle(self._handle)
+            self._handle = None
+
+
+def print_analysis_report(analysis: ProcessAnalysis) -> None:
+    """Print analysis results"""
+    print(f"\n{'='*60}")
+    print(f"  Process Analysis Report")
+    print(f"  PID: {analysis.pid}  Name: {analysis.name}")
+    print(f"{'='*60}")
+
+    print(f"\n[Module List] Total: {len(analysis.modules)}")
+    for mod in analysis.modules:
+        flag = " [!]" if mod.is_suspicious else ""
+        print(f"  0x{mod.base_address:016X}  {mod.size:>10,} bytes  "
+              f"{mod.name:<40}{flag}")
+        if mod.is_suspicious:
+            print(f"      └ Reason: {mod.reason}")
+
+    if analysis.suspicious_modules:
+        print(f"\n[Suspicious Modules] {len(analysis.suspicious_modules)} detected")
+        for mod in analysis.suspicious_modules:
+            print(f"  [!] {mod.name}")
+            print(f"      Path: {mod.path}")
+            print(f"      Reason: {mod.reason}")
+    else:
+        print("\n[Suspicious Modules] None")
+
+    print(f"\n[Threads] Total: {len(analysis.threads)}")
+    for t in analysis.threads[:10]:
+        print(f"  TID={t['tid']}  Priority={t['base_priority']}")
+    if len(analysis.threads) > 10:
+        print(f"  ... (+{len(analysis.threads) - 10} more)")
+
+    if analysis.private_exec_regions:
+        print(f"\n[Executable Private Memory Regions] {len(analysis.private_exec_regions)} detected")
+        print("  (Suspected DLL injection or shellcode injection)")
+        for r in analysis.private_exec_regions[:10]:
+            print(f"  0x{r.base:016X}  Size={r.size:>10,} bytes  "
+                  f"Protect={r.protect:#010x}")
+    else:
+        print("\n[Executable Private Memory] None")
+
+    print(f"\n[Memory Regions] Total committed: {len(analysis.memory_regions)}")
+    exec_count = sum(1 for r in analysis.memory_regions if r.is_executable)
+    print(f"  Executable regions: {exec_count}")
+
+
+# ─── CLI ──────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Game process analysis tool (CTF/security research)")
+    parser.add_argument("target", help="Process name or PID")
+    parser.add_argument("--output", "-o", help="Path to save JSON results")
+    parser.add_argument("--modules-only", action="store_true", help="Print module list only")
+    args = parser.parse_args()
+
+    analyzer = GameProcessAnalyzer(args.target)
+    try:
+        analyzer.open()
+    except (RuntimeError, PermissionError) as e:
+        print(f"[!] Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        analysis = analyzer.analyze()
+        print_analysis_report(analysis)
+
+        if args.output:
+            data = {
+                "pid": analysis.pid,
+                "name": analysis.name,
+                "modules": [asdict(m) for m in analysis.modules],
+                "suspicious_modules": [asdict(m) for m in analysis.suspicious_modules],
+                "threads": analysis.threads,
+                "private_exec_regions": [asdict(r) for r in analysis.private_exec_regions],
+            }
+            with open(args.output, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            print(f"\n[*] Results saved: {args.output}")
+    finally:
+        analyzer.close()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. DLL Injection Detection Concepts
+
+### 4.1 DLL Injection Methodologies (Detection Perspective)
+
+```
+Method 1: CreateRemoteThread + LoadLibrary
+  Detection: Monitor CreateRemoteThread API
+             Check for DLL path strings in remote memory
+
+Method 2: SetWindowsHookEx
+  Detection: Check registered hook list for hooks targeting known game processes
+             Combine EnumWindows + GetWindowThreadProcessId
+
+Method 3: Process Hollowing
+  Detection: Hash mismatch between actual file and in-memory image
+             Mismatch between original path in PE header and actual load path
+
+Method 4: Manual Mapping
+  Detection: Executable memory regions not backed by a file (private exec)
+             Modules not registered in PEB LDR
+```
+
+### 4.2 Reading Module List from PEB (Direct Access)
+
+```c
+// Access PEB via NtQueryInformationProcess (for detecting detection bypass)
+#include <windows.h>
+#include <winternl.h>
+
+typedef NTSTATUS(WINAPI* pNtQueryInformationProcess)(
+    HANDLE, PROCESSINFOCLASS, PVOID, ULONG, PULONG
+);
+
+void enumerate_peb_modules(HANDLE hProc) {
+    pNtQueryInformationProcess NtQIP = (pNtQueryInformationProcess)
+        GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
+
+    PROCESS_BASIC_INFORMATION pbi = {0};
+    ULONG ret_len = 0;
+    NtQIP(hProc, ProcessBasicInformation, &pbi, sizeof(pbi), &ret_len);
+
+    // Read PEB
+    PEB peb = {0};
+    ReadProcessMemory(hProc, pbi.PebBaseAddress, &peb, sizeof(peb), NULL);
+
+    // Read LDR data
+    PEB_LDR_DATA ldr_data = {0};
+    ReadProcessMemory(hProc, peb.Ldr, &ldr_data, sizeof(ldr_data), NULL);
+
+    // Traverse module list (InMemoryOrderModuleList)
+    LIST_ENTRY* head = &ldr_data.InMemoryOrderModuleList;
+    LIST_ENTRY entry = {0};
+    ReadProcessMemory(hProc, head->Flink, &entry, sizeof(entry), NULL);
+
+    while (entry.Flink != head->Flink) {
+        LDR_DATA_TABLE_ENTRY mod_entry = {0};
+        ReadProcessMemory(
+            hProc,
+            CONTAINING_RECORD(entry.Flink, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks),
+            &mod_entry, sizeof(mod_entry), NULL
+        );
+        // Can print mod_entry.BaseDllName, mod_entry.DllBase
+        // ... 
+        ReadProcessMemory(hProc, entry.Flink, &entry, sizeof(entry), NULL);
+    }
+}
+```
+
+---
+
+## 5. Anti-Cheat Bypass Research Methodology (CTF/Security Research Perspective)
+
+### 5.1 Setting Up a Research Environment
+
+```
+1. Isolated VM environment (Hyper-V, VMware) is mandatory
+   - Use snapshot functionality to set up a safe experimental environment
+   - Network isolation to prevent impact on real game servers
+
+2. Install analysis tools
+   - WinDbg + Symbol Server configuration
+   - x64dbg / OllyDbg
+   - Process Hacker / Process Monitor
+   - Wireshark / Fiddler
+
+3. Kernel debugging environment
+   - Enable test signing mode
+   - Configure KDNET (remote kernel debugging)
+```
+
+### 5.2 Approach by CTF Game Hacking Challenge Type
+
+**Type 1: Memory Value Modification**
+```
+Goal: Obtain the flag by changing a specific value
+Approach:
+  1. Scan values with Cheat Engine
+  2. Trace pointer chains
+  3. Modify value then trigger game event
+  4. Or automate with Python ctypes script
+
+Example CTF problems:
+  - Reach 1000 HP in-game → print flag
+  - Set gold to a specific value → unlock special item purchase → flag
+```
+
+**Type 2: Packet Manipulation**
+```
+Goal: Trigger server-side event by modifying network packets
+Approach:
+  1. Capture traffic with Wireshark
+  2. Analyze protocol structure (header + payload)
+  3. Modify in real-time with mitmproxy
+  4. Or send custom packets directly
+
+Example CTF problems:
+  - Manipulate reward value in quest completion packet → excess reward → flag
+  - Modify privilege level in login response packet → admin menu → flag
+```
+
+**Type 3: Reversing + Code Patching**
+```
+Goal: Bypass specific validation logic in game executable
+Approach:
+  1. Analyze binary with x64dbg / IDA
+  2. Search for conditional branches (JZ, JNZ, etc.)
+  3. Bypass with NOP or JMP patch
+  4. Or automate AOB pattern patching
+
+Example CTF problems:
+  - Bypass "score validation" routine → set arbitrary score → flag
+  - NOP "purchase availability" check → free purchase → special item → flag
+```
+
+**Type 4: Protocol Reverse Engineering**
+```
+Goal: Decrypt a proprietary encryption/serialization protocol
+Approach:
+  1. Collect packets with Wireshark
+  2. Entropy analysis (determine if encrypted)
+  3. Search for key exchange logic (handshake phase)
+  4. Or search for encrypt/decrypt functions in client code
+
+Example CTF problems:
+  - Decrypt XOR-encrypted packets → understand server commands → send flag packet
+  - Parse custom serialization format → set specific flag field → server responds with flag
+```
+
+---
+
+## 6. Python Anti-Cheat Simulator (Educational)
+
+```python
+#!/usr/bin/env python3
+"""
+Simple anti-cheat simulator (for learning/research purposes)
+Implements concepts of memory integrity checking and process monitoring
+"""
+
+import hashlib
+import time
+import threading
+import argparse
+import sys
+from pathlib import Path
+from dataclasses import dataclass, field
+from typing import Callable
+
+
+@dataclass
+class IntegrityRecord:
+    """File integrity record"""
+    path: str
+    sha256: str
+    size: int
+    last_checked: float = 0.0
+    is_tampered: bool = False
+
+
+class FileIntegrityMonitor:
+    """File integrity monitor"""
+
+    def __init__(self, check_interval: float = 5.0) -> None:
+        self.check_interval = check_interval
+        self._records: dict[str, IntegrityRecord] = {}
+        self._running = False
+        self._on_tamper: list[Callable[[IntegrityRecord], None]] = []
+
+    def register(self, filepath: str) -> None:
+        """Register file (compute initial hash)"""
+        path = Path(filepath)
+        if not path.exists():
+            raise FileNotFoundError(f"File not found: {filepath}")
+
+        data = path.read_bytes()
+        sha256 = hashlib.sha256(data).hexdigest()
+        record = IntegrityRecord(
+            path=filepath,
+            sha256=sha256,
+            size=len(data),
+            last_checked=time.time(),
+        )
+        self._records[filepath] = record
+        print(f"[*] Registered: {path.name}  SHA256={sha256[:16]}...")
+
+    def on_tamper(self, callback: Callable[[IntegrityRecord], None]) -> None:
+        """Register tampering detection callback"""
+        self._on_tamper.append(callback)
+
+    def check_once(self) -> list[IntegrityRecord]:
+        """Check once, return tampered records"""
+        tampered: list[IntegrityRecord] = []
+
+        for filepath, record in self._records.items():
+            path = Path(filepath)
+            if not path.exists():
+                record.is_tampered = True
+                tampered.append(record)
+                continue
+
+            data = path.read_bytes()
+            current_hash = hashlib.sha256(data).hexdigest()
+            record.last_checked = time.time()
+
+            if current_hash != record.sha256 or len(data) != record.size:
+                record.is_tampered = True
+                tampered.append(record)
+                for cb in self._on_tamper:
+                    cb(record)
+            else:
+                record.is_tampered = False
+
+        return tampered
+
+    def start_monitoring(self) -> None:
+        """Start background monitoring"""
+        self._running = True
+        t = threading.Thread(target=self._monitor_loop, daemon=True)
+        t.start()
+        print(f"[*] File integrity monitoring started (interval: {self.check_interval}s)")
+
+    def _monitor_loop(self) -> None:
+        while self._running:
+            tampered = self.check_once()
+            if tampered:
+                for r in tampered:
+                    print(f"[!] Tampering detected: {r.path}")
+            time.sleep(self.check_interval)
+
+    def stop(self) -> None:
+        self._running = False
+
+
+class ProcessWhitelist:
+    """Process whitelist check"""
+
+    BLACKLISTED_PROCESSES: set[str] = {
+        "cheatengine-x86_64.exe",
+        "cheatengine-x86_64-SSE4-AVX2.exe",
+        "processhacker.exe",
+        "x64dbg.exe",
+        "x32dbg.exe",
+        "ollydbg.exe",
+        "ida64.exe",
+        "idaq64.exe",
+        "wireshark.exe",
+        "fiddler.exe",
+        "artmoney.exe",
+        "tsearch.exe",
+    }
+
+    def check(self) -> list[str]:
+        """Return running blacklisted processes"""
+        import ctypes
+        import ctypes.wintypes as wt
+
+        found: list[str] = []
+
+        try:
+            TH32CS_SNAPPROCESS = 0x00000002
+
+            class PROCESSENTRY32(ctypes.Structure):
+                _fields_ = [
+                    ("dwSize", wt.DWORD),
+                    ("cntUsage", wt.DWORD),
+                    ("th32ProcessID", wt.DWORD),
+                    ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
+                    ("th32ModuleID", wt.DWORD),
+                    ("cntThreads", wt.DWORD),
+                    ("th32ParentProcessID", wt.DWORD),
+                    ("pcPriClassBase", ctypes.c_long),
+                    ("dwFlags", wt.DWORD),
+                    ("szExeFile", ctypes.c_char * 260),
+                ]
+
+            k32 = ctypes.windll.kernel32  # type: ignore
+            snapshot = k32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+            entry = PROCESSENTRY32()
+            entry.dwSize = ctypes.sizeof(PROCESSENTRY32)
+
+            try:
+                if k32.Process32First(snapshot, ctypes.byref(entry)):
+                    while True:
+                        name = entry.szExeFile.decode("utf-8", errors="ignore").lower()
+                        if name in self.BLACKLISTED_PROCESSES:
+                            found.append(name)
+                        if not k32.Process32Next(snapshot, ctypes.byref(entry)):
+                            break
+            finally:
+                k32.CloseHandle(snapshot)
+
+        except Exception as e:
+            print(f"[!] Process enumeration error: {e}", file=sys.stderr)
+
+        return found
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Anti-cheat simulator (for learning/research)")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    # File integrity monitor
+    p_fim = sub.add_parser("fim", help="File integrity monitoring")
+    p_fim.add_argument("files", nargs="+", help="File paths to monitor")
+    p_fim.add_argument("--interval", type=float, default=5.0, help="Check interval (seconds)")
+
+    # Blacklist process check
+    sub.add_parser("proccheck", help="Detect blacklisted processes")
+
+    args = parser.parse_args()
+
+    if args.command == "fim":
+        monitor = FileIntegrityMonitor(check_interval=args.interval)
+        monitor.on_tamper(lambda r: print(f"[WARNING] Tampering detected: {r.path}"))
+
+        for f in args.files:
+            try:
+                monitor.register(f)
+            except FileNotFoundError as e:
+                print(f"[!] {e}", file=sys.stderr)
+
+        monitor.start_monitoring()
+        print("[*] Press Ctrl+C to stop")
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            monitor.stop()
+            print("\n[*] Monitoring stopped")
+
+    elif args.command == "proccheck":
+        wl = ProcessWhitelist()
+        found = wl.check()
+        if found:
+            print(f"[!] Blacklisted processes detected: {len(found)}")
+            for name in found:
+                print(f"    - {name}")
+        else:
+            print("[*] No blacklisted processes found")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 7. Game Security Hardening Recommendations (Developer Perspective)
+
+### 7.1 Client-Side Security
+
+```
+1. Prioritize server-side validation
+   - All game state (HP, score, position) is finalized on the server
+   - Client is used for display purposes only
+
+2. Input value range validation
+   - Movement speed: accept only within normal maximum + allowed tolerance
+   - Damage: calculate maximum based on character stats, then validate
+   - Trade price: validate against actual price in server DB
+
+3. Timing validation
+   - Track attack cooldowns on the server
+   - Detect abnormally rapid consecutive actions
+
+4. Encrypted communication
+   - Use TLS 1.3 (defense against packet sniffing)
+   - Use unique keys per session (defense against replay attacks)
+   - Prevent retransmission with packet sequence numbers + timestamps
+```
+
+### 7.2 Anti-Tampering
+
+```
+5. Code signature verification
+   - Verify digital signature of executable at boot time
+   - Periodically hash-compare in-memory code sections
+
+6. Obfuscation
+   - Obfuscate key validation functions
+   - String encryption to increase static analysis difficulty
+
+7. Anti-debugging
+   - IsDebuggerPresent / CheckRemoteDebuggerPresent
+   - Timing-based debugger detection (RDTSC technique)
+   - Exception-based detection
+```
+
+### 7.3 Monitoring and Response
+
+```
+8. Behavioral logging
+   - Record and analyze suspicious patterns server-side
+   - Statistical outlier detection (AimBot: aiming accuracy > 99%)
+
+9. Soft ban strategy
+   - Observe for a period instead of immediate ban, then batch ban
+   - Minimize false positive damage to legitimate players
+
+10. Vulnerability reporting program
+    - Establish a Responsible Disclosure policy
+    - Collaborate with security researchers via bug bounty
+```
+
+---
+
+## 8. Practical CTF Challenge — Solution Workflow
+
+```bash
+# 1. Analyze game process
+python process_analyzer.py game.exe
+
+# 2. Check loaded modules (detect suspicious DLLs)
+python process_analyzer.py game.exe --output report.json
+
+# 3. Scan for specific values (instead of Cheat Engine)
+python mem_tool.py game.exe aob "89 45 ?? 8B 4D ??"
+
+# 4. Capture + analyze packets
+python packet_tool.py sniff eth0 7777 -d 60 -o capture.json
+python packet_tool.py pcap capture.pcap --output packets.json
+
+# 5. Reverse engineer protobuf
+python proto_decode.py --hex "0a0548656c6c6f"
+
+# 6. File integrity monitoring (anti-cheat learning)
+python anticheat_sim.py fim game.exe game_data.dat
+
+# 7. Blacklist process check (detection evasion research)
 python anticheat_sim.py proccheck
 ```

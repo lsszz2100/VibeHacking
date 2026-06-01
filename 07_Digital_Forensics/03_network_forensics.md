@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 네트워크 포렌식 — 패킷 분석 및 침해 대응
 
 ## 1. 네트워크 포렌식 개요
@@ -141,7 +147,6 @@ DNS       → DNS 쿼리 목록
 ---
 
 ## 4. tcpdump 실전
-
 
 네트워크 포렌식을 위한 tcpdump 캡처 명령어입니다. 인시던트 발생 시 즉시 패킷 캡처를 시작하고, BPF 필터로 의심 IP나 포트의 트래픽만 저장합니다. `-w`로 pcap 파일에 저장 후 Wireshark로 상세 분석합니다.
 
@@ -681,64 +686,6 @@ netstat -an | grep :80
 netstat -an | grep LISTEN
 ```
 
-### OSSEC — 로그 기반 침입 탐지
-
-OSSEC 호스트 기반 침입 탐지 시스템을 설치합니다. 로그 분석, 파일 무결성 모니터링, 루트킷 탐지 기능을 제공합니다.
-
-```bash
-# OSSEC 설치 (서버 모드)
-./install.sh
-
-# 에이전트 등록
-/var/ossec/bin/manage_agents
-
-# OSSEC 주요 기능:
-# - 로그 분석 (syslog, event log)
-# - 파일 무결성 모니터링 (FIM)
-# - 루트킷 탐지
-# - 실시간 알림
-
-# 로그 위치
-/var/ossec/logs/ossec.log      # 주 로그
-/var/ossec/logs/alerts/        # 알림 로그
-
-# 규칙 경로
-/var/ossec/rules/              # 기본 탐지 규칙
-
-# 에이전트 상태 확인
-/var/ossec/bin/agent_control -l
-
-# OSSEC 알림 예시 (ID 1002 = 알 수 없는 오류):
-# Rule: 1002 (level 2) -> 'Unknown problem somewhere in the system.'
-```
-
-### inSSIDer / 무선 네트워크 보안
-```
-IEEE 802.11 표준:
-  802.11a: 5GHz, 54 Mbps
-  802.11b: 2.4GHz, 11 Mbps
-  802.11g: 2.4GHz, 54 Mbps
-  802.11n: 2.4/5GHz, 300+ Mbps
-  802.11ac: 5GHz, 1+ Gbps
-  802.11ax: Wi-Fi 6, 다중 사용자 최적화
-
-무선 보안 취약점:
-  - WEP: 취약 (사용 금지)
-  - WPA: 취약점 존재
-  - WPA2: KRACK 취약점 (패치 필요)
-  - WPA3: 현재 권장 표준
-
-무선 네트워크 모니터링 도구:
-  - inSSIDer: Wi-Fi 신호 시각화
-  - Wireless Network Watcher: 연결된 장치 목록
-  - Wireshark: 무선 패킷 캡처
-
-기업 무선 보안:
-  - WPA2-Enterprise (802.1X + RADIUS 인증)
-  - 손님 네트워크 분리 (VLAN)
-  - 무선 침입 탐지 (WIDS)
-```
-
 ---
 
 ## 12. CIS 컨트롤 v7 상위 6개 (Blue Team 필수)
@@ -776,4 +723,438 @@ IEEE 802.11 표준:
    - 중앙 집중식 로그 관리 (SIEM)
    - 로그 보존 기간 정책 수립 (최소 1년 권장)
    - 도구: Splunk, ELK Stack, Graylog
+```
+
+---
+
+<a name="english"></a>
+
+# Network Forensics — Packet Analysis and Incident Response
+
+## 1. Network Forensics Overview
+
+```
+Network Forensics = Evidence collection and analysis from network traffic
+
+Collection methods:
+1. PCAP file analysis (pre-captured packets)
+2. NetFlow/IPFIX analysis (summarized traffic data)
+3. Firewall/IDS log analysis
+4. DNS log analysis
+
+Analysis objectives:
+✔ Detect C&C server communication
+✔ Detect data exfiltration
+✔ Detect lateral movement
+✔ Identify malicious domains/IPs
+✔ Detect protocol anomalies
+```
+
+---
+
+## 2. Wireshark Practical Analysis
+
+### 2-1. Basic Filters
+
+Wireshark filter expressions. Use display filters to show only packets matching specific conditions, enabling quick identification of traffic of interest in large captures.
+
+```wireshark
+# IP filters
+ip.addr == 192.168.1.1          # All packets related to this IP
+ip.src == 192.168.1.1           # Source IP
+ip.dst == 10.0.0.1              # Destination IP
+ip.addr == 192.168.1.0/24       # Subnet
+
+# Port filters
+tcp.port == 80                  # HTTP
+tcp.port == 443                 # HTTPS
+tcp.dstport == 4444             # Reverse shell port (suspicious)
+udp.port == 53                  # DNS
+
+# Protocol filters
+http                            # HTTP
+dns                             # DNS
+ftp                             # FTP
+ssh                             # SSH
+smtp                            # Email
+icmp                            # ICMP (ping)
+
+# Combined filters
+ip.src == 192.168.1.100 && tcp.dstport == 80
+http.request.method == "POST"
+http && ip.dst != 192.168.1.1   # External HTTP
+
+# Packet content search
+frame contains "password"
+tcp contains "cmd.exe"
+http.request.uri contains "/shell"
+```
+
+### 2-2. HTTP Analysis
+
+```wireshark
+# HTTP requests
+http.request
+http.request.method == "GET"
+http.request.method == "POST"
+http.request.uri contains "login"
+http.request.uri contains ".php?cmd="   # Webshell suspected
+
+# HTTP responses
+http.response.code == 200
+http.response.code == 404
+http.response.code >= 400       # Error responses
+
+# HTTP headers
+http.user_agent contains "curl"        # Automation tools
+http.user_agent contains "sqlmap"      # SQL Injection tools
+http.cookie contains "PHPSESSID"
+
+# File download reassembly
+# File → Export Objects → HTTP → Save
+```
+
+### 2-3. DNS Analysis
+
+```wireshark
+# DNS queries
+dns.flags.response == 0         # DNS requests only
+dns.flags.response == 1         # DNS responses only
+dns.qry.name contains ".onion"  # Tor domain
+dns.qry.name matches ".*[0-9]{5,}.*"  # Suspicious domain (long numbers)
+
+# DNS tunneling detection
+dns.qry.name.len > 50          # Abnormally long domain
+# DNS tunneling: data encoded in DNS query subdomains
+# Example: aGVsbG8gd29ybGQ=.attacker.com (Base64 data)
+```
+
+### 2-4. Malicious Traffic Patterns
+
+```wireshark
+# Port scan detection (SYN scan)
+tcp.flags.syn == 1 && tcp.flags.ack == 0 && ip.src == [scannerIP]
+
+# Reverse shell (non-standard port connection)
+tcp.dstport > 1024 && tcp.dstport < 65535 && !tcp.port == 443
+
+# Large data exfiltration
+# Statistics → Conversations → TCP → Sort by Bytes
+# Check for abnormally large transfer volumes
+
+# Beaconing (periodic C&C communication) detection
+# Statistics → IO Graphs → Look for regular patterns
+```
+
+---
+
+## 3. NetworkMiner Analysis
+
+```
+NetworkMiner = PCAP file parsing GUI tool
+
+Main tabs:
+Hosts       → All hosts participating in communication
+Files       → Automatically extracted transferred files (HTTP, SMB, FTP)
+Images      → Transferred image files
+Messages    → Emails, chat
+Credentials → Captured credentials (plaintext)
+Sessions    → Session list
+DNS         → DNS query list
+```
+
+---
+
+## 4. tcpdump in Practice
+
+```bash
+# Basic capture
+tcpdump -i eth0 -w capture.pcap
+
+# Specific host
+tcpdump -i eth0 host 192.168.1.1 -w capture.pcap
+
+# Specific port
+tcpdump -i eth0 port 80 -w capture.pcap
+tcpdump -i eth0 'port 80 or port 443' -w capture.pcap
+
+# Specific network
+tcpdump -i eth0 net 192.168.1.0/24 -w capture.pcap
+
+# File size/count limits
+tcpdump -i eth0 -C 100 -W 10 -w capture.pcap  # 100MB rotating, 10 files
+
+# Read PCAP
+tcpdump -r capture.pcap
+tcpdump -r capture.pcap -n -A  # ASCII output
+tcpdump -r capture.pcap 'tcp port 80' | head -50
+```
+
+---
+
+## 5. Indicator of Compromise (IOC) Analysis
+
+### Network IOC Types
+```
+IP addresses (C&C servers, attackers)
+Domains (malicious domains)
+URLs (malicious URLs, phishing pages)
+File hashes (malicious files)
+User-Agent (malicious tool identifiers)
+JA3 hash (TLS client fingerprint)
+```
+
+---
+
+## 6. Zeek (Bro) Network Analysis
+
+Zeek (formerly Bro) is a network analysis framework. It converts packets to structured logs, making it efficient for large-scale traffic analysis.
+
+```bash
+# Install
+sudo apt install zeek
+
+# Analyze PCAP
+zeek -r capture.pcap
+
+# Generated log files:
+# conn.log    → All connections (source, destination, port, bytes)
+# http.log    → HTTP requests/responses
+# dns.log     → DNS queries
+# ssl.log     → TLS/SSL sessions
+# files.log   → Transferred files
+# weird.log   → Abnormal protocol behavior
+
+# Analyze conn.log
+cat conn.log | zeek-cut id.orig_h id.resp_h id.resp_p proto duration orig_bytes | sort -k7 -rn | head -20
+
+# DNS query list
+cat dns.log | zeek-cut query | sort | uniq -c | sort -rn | head -20
+
+# HTTPS connections (JA3 fingerprint)
+cat ssl.log | zeek-cut id.orig_h id.resp_h server_name ja3
+```
+
+---
+
+## 7. Suricata IDS Rules
+
+```bash
+# Install
+sudo apt install suricata
+
+# Analyze PCAP
+suricata -r capture.pcap -l output/
+
+# Example rules:
+
+# Reverse shell detection
+alert tcp any any -> any 4444 (msg:"Suspicious Reverse Shell - Port 4444"; sid:100001;)
+
+# Meterpreter traffic detection (Metasploit)
+alert tcp any any -> any any (msg:"Meterpreter HTTPS"; 
+  content:"METERPRETER"; nocase; sid:100002;)
+
+# Webshell access detection
+alert http any any -> any any (msg:"Webshell Access - cmd parameter";
+  http.uri; content:"cmd="; nocase; sid:100003;)
+
+# DNS tunneling detection
+alert dns any any -> any any (msg:"Long DNS Query - Possible Tunneling";
+  dns.query; dsize:>100; sid:100004;)
+
+# Port scan detection (Threshold)
+alert tcp any any -> $HOME_NET any (msg:"Port Scan Detected";
+  flags:S; threshold: type both, track by_src, count 20, seconds 60;
+  sid:100005;)
+```
+
+---
+
+## 8. Email Forensics
+
+### Email Header Analysis
+
+```
+From:       Sender (can be forged)
+To:         Recipient
+Subject:    Subject line
+Date:       Sending time
+Message-ID: Unique message ID
+Received:   Mail server chain traversed (read in reverse → identify origin server)
+X-Originating-IP: Actual sender IP (some servers)
+DKIM-Signature: Domain signature
+SPF:        Sender server verification
+DMARC:      SPF/DKIM policy
+```
+
+```bash
+# Email header analysis tools
+# Google Admin Toolbox: https://toolbox.googleapps.com/apps/messageheader/
+# MX Toolbox: https://mxtoolbox.com/EmailHeaders.aspx
+
+# Spear phishing analysis checklist
+□ Actual sender IP in Received header
+□ Check if Reply-To differs from From
+□ Link domain (display text vs actual URL)
+□ Attachment hash → VirusTotal
+□ Check for domain typosquatting
+```
+
+---
+
+## 9. Real-world Scenario: APT Breach Investigation
+
+### Step-by-Step Investigation
+
+```
+Step 1: Confirm Initial Access
+- Spear phishing email logs
+- Web server access logs (web exploits)
+- VPN/RDP authentication failure logs
+
+Step 2: Confirm Execution
+- Abnormal process execution in Prefetch
+- Event ID 4688 (process creation)
+- PowerShell logs (4104) - encoded commands
+
+Step 3: Confirm Persistence
+- Registry Run keys
+- Scheduled tasks
+- Service creation (Event 7045)
+
+Step 4: Confirm Lateral Movement
+- Event ID 4624 Type 3 (network login)
+- SMB traffic
+- PsExec artifacts
+
+Step 5: Confirm Exfiltration
+- Large external transfers
+- Cloud storage uploads
+- DNS tunneling
+
+Step 6: Confirm C&C Communication
+- Periodic outbound connections
+- Non-standard port usage
+- TLS/SSL encrypted communication → JA3 fingerprint
+```
+
+---
+
+## 10. Firewall/IDS Log Analysis
+
+### Log Analysis Basics
+
+```bash
+# Apache access log analysis
+# SQL Injection attempt detection
+grep -E "UNION|SELECT|INSERT|DROP|OR%201=1" access.log
+
+# Webshell access attempts
+grep -E "cmd=|shell=|exec=|eval\(" access.log
+
+# Scanner User-Agent
+grep -Ei "nikto|nmap|masscan|sqlmap|acunetix|nessus" access.log
+
+# Brute force (many requests from same IP)
+awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -20
+
+# Multiple 404 errors (directory enumeration)
+grep " 404 " access.log | awk '{print $1}' | sort | uniq -c | sort -rn | head -10
+
+# Large response size (data exfiltration)
+awk '{print $10, $7}' access.log | sort -rn | head -20
+
+# Specific time period analysis
+grep "01/Jan/2024:14:" access.log | wc -l
+```
+
+---
+
+## 11. Blue Team Essential Network Tools
+
+### ping / tracert / pathping
+```bash
+# Basic connectivity check
+ping -c 4 192.168.1.1              # Linux
+ping 192.168.1.1                   # Windows
+
+# Route tracing
+traceroute 8.8.8.8                 # Linux
+tracert 8.8.8.8                    # Windows
+
+# pathping: combined traceroute + statistics (Windows)
+pathping 8.8.8.8
+```
+
+### nslookup / DNS Analysis
+```bash
+# Basic query
+nslookup example.com
+nslookup -querytype=mx example.com    # MX record (mail server)
+nslookup -querytype=txt example.com   # TXT record (SPF, DMARC)
+nslookup -querytype=ns example.com    # NS record (nameserver)
+
+# Reverse lookup (IP → domain)
+nslookup 8.8.8.8
+
+# dig (Linux advanced)
+dig example.com ANY          # All records
+dig @8.8.8.8 example.com    # Query specific DNS server
+dig +trace example.com       # Recursive trace
+```
+
+### NetStat Usage
+
+```bash
+# Active connection list
+netstat -an        # All connections (numeric display)
+netstat -antp      # TCP + PID included (Linux)
+netstat -ano       # Windows (PID included)
+
+# Protocol statistics
+netstat -s
+
+# Check if a port is open
+netstat -an | grep :80
+netstat -an | grep LISTEN
+```
+
+---
+
+## 12. CIS Controls v7 Top 6 (Blue Team Essentials)
+
+### CIS Basic Controls — Top 6
+```
+1. Inventory of Authorized and Unauthorized Devices (Hardware Inventory)
+   - Maintain list of all hardware assets
+   - Immediately detect and block unauthorized devices
+   - Identify unknown devices through network scanning
+   - Tools: Nmap, Network Access Control (NAC)
+
+2. Inventory of Authorized and Unauthorized Software (Software Inventory)
+   - Maintain list of all software
+   - Block execution of unauthorized software (whitelisting)
+   - Tools: SCCM, Ansible, Puppet
+
+3. Continuous Vulnerability Assessment and Remediation (Vulnerability Management)
+   - Run regular vulnerability scans
+   - Apply CVSS-based priority patching
+   - Tools: Nessus, OpenVAS, Nexpose
+
+4. Controlled Use of Administrative Privileges
+   - Apply principle of least privilege
+   - Do not use admin accounts for daily tasks
+   - Enforce MFA, Privileged Access Management (PAM)
+
+5. Secure Configuration for Hardware and Software on Mobile Devices, Laptops, Workstations
+   - Apply CIS benchmark-based hardening
+   - Change default passwords, disable unnecessary services
+   - Tools: CIS-CAT, Lynis
+
+6. Maintenance, Monitoring and Analysis of Audit Logs
+   - Collect logs from all critical systems
+   - Centralized log management (SIEM)
+   - Establish log retention policy (minimum 1 year recommended)
+   - Tools: Splunk, ELK Stack, Graylog
 ```

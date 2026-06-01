@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 마이크로세그멘테이션과 네트워크 보안
 
 ## 1. 마이크로세그멘테이션 개념
@@ -1103,3 +1109,298 @@ if __name__ == "__main__":
 ---
 
 *최종 업데이트: 2024년*
+
+---
+
+<a name="english"></a>
+
+# Microsegmentation and Network Security
+
+## 1. Microsegmentation Concept
+
+### 1.1 Definition
+
+Microsegmentation is a technique that divides data centers and cloud environments into small security zones, enabling fine-grained control of traffic between each workload, application, and service.
+
+Unlike traditional VLAN-based segmentation that operates only at the network layer, microsegmentation applies policies at the workload level.
+
+```
+Traditional Segmentation:
+┌──────────────────────────────────────┐
+│  Internal Network (VLAN 10)           │
+│  ┌──────┐  ┌──────┐  ┌──────┐       │
+│  │ Web  │  │ App  │  │  DB  │       │
+│  │Server│◀▶│Server│◀▶│Server│       │
+│  └──────┘  └──────┘  └──────┘       │
+│   Same VLAN = Free communication      │
+└──────────────────────────────────────┘
+
+Microsegmentation:
+┌──────────────────────────────────────┐
+│  ┌────────┐  Allowed ports only  ┌─────┐│
+│  │  Web   │──────────────────────▶│ App ││
+│  │(80,443)│  Only 80→8080 allowed │Server││
+│  └────────┘                      └──┬──┘│
+│                                     │   │
+│                          Only 3306 allowed│
+│                                     │   │
+│                               ┌───▼──┐│
+│                               │  DB  ││
+│                               └──────┘│
+└──────────────────────────────────────┘
+```
+
+### 1.2 Benefits of Microsegmentation
+
+| Benefit | Description |
+|---------|-------------|
+| Lateral movement blocking | Attacker cannot move to other servers after compromising one |
+| Fine-grained access control | Port, protocol, IP-level policies |
+| Improved visibility | Complete visibility of East-West traffic |
+| Compliance | Meets PCI DSS, HIPAA isolation requirements |
+| Blast radius minimization | Limits impact scope when breach occurs |
+
+---
+
+## 2. Key Microsegmentation Technologies
+
+### 2.1 VMware NSX
+
+VMware NSX is a network virtualization platform that operates at the hypervisor layer.
+
+**Core Features:**
+```
+Distributed Firewall (DFW):
+- Operates at vNIC level of each VM
+- Built into hypervisor kernel → minimal performance degradation
+- Supports unidirectional/bidirectional rules
+- Application layer awareness (Layer 7)
+
+Microsegmentation Policy Example:
+Rule 1: Web-Tier → App-Tier, TCP:8080, ALLOW
+Rule 2: App-Tier → DB-Tier, TCP:3306, ALLOW
+Rule 3: ANY → DB-Tier, ANY, DENY (default deny)
+```
+
+### 2.2 Calico (Kubernetes)
+
+Calico is the most widely used network policy solution in Kubernetes environments.
+
+**Network Policy Modes:**
+- **Standard Kubernetes NetworkPolicy**: Basic Pod network policy
+- **Calico GlobalNetworkPolicy**: Cluster-wide policy
+- **Calico NetworkSet**: External IP/CIDR group management
+- **eBPF dataplane**: High-performance kernel-level processing
+
+### 2.3 Cilium
+
+Cilium is a next-generation Kubernetes network solution based on eBPF (extended Berkeley Packet Filter).
+
+**Advantages of eBPF:**
+```
+Traditional method: Kernel module → system call overhead
+eBPF:              Safe program execution in kernel → minimal overhead
+
+Performance comparison:
+iptables-based: Linear search O(n) with 1M rules
+eBPF-based:    Hash map lookup O(1)
+```
+
+**Key Cilium Features:**
+```
+- L3/L4 network policies (IP, port)
+- L7 policies (HTTP, Kafka, gRPC, DNS)
+- mTLS support without service mesh
+- Hubble: Real-time network visibility
+- BGP support: Native routing
+- Cluster Mesh: Multi-cluster connectivity
+```
+
+---
+
+## 3. East-West Traffic Control
+
+### 3.1 East-West vs North-South Traffic
+
+```
+North-South Traffic (traditional security focus):
+[Internet] ←→ [Perimeter Firewall] ←→ [Internal Network]
+                                              ↑ ↓
+
+East-West Traffic (microsegmentation focus):
+Internal network server-to-server communication:
+[Server A] ←→ [Server B] ←→ [Server C]
+```
+
+**Statistical Facts:**
+- 75-80% of modern enterprise traffic is East-West
+- Lateral movement after breach uses 100% East-West traffic
+- Traditional perimeter firewalls cannot see East-West traffic
+
+### 3.2 Service Mesh
+
+A service mesh transparently controls communication between microservices.
+
+**Istio Architecture:**
+```
+Control Plane:
+┌─────────────────────────────────┐
+│  istiod                         │
+│  ├── Pilot (traffic management)  │
+│  ├── Citadel (certificate mgmt)  │
+│  └── Galley (config validation)  │
+└─────────────────────────────────┘
+              │ xDS API
+Data Plane:
+┌─────────────────────────────────┐
+│  Pod A                Pod B     │
+│  ┌────┐ ┌─────────┐  ┌────┐   │
+│  │App │◀│ Envoy   │  │App │   │
+│  │    │ │ Sidecar │  │    │   │
+│  └────┘ └─────────┘  └────┘   │
+└─────────────────────────────────┘
+```
+
+---
+
+## 4. Software-Defined Perimeter (SDP)
+
+### 4.1 SDP Concept
+
+SDP is a network security architecture defined by the Cloud Security Alliance (CSA) that hides infrastructure from the internet and allows only authorized users to access it.
+
+**Core Principles:**
+- Servers/services are invisible (Dark Cloud) until authentication
+- Single Packet Authorization (SPA)
+- Dynamically created one-to-one network connections
+- mTLS-based encrypted communication
+
+### 4.2 How SDP Works
+
+```
+1. SPA (Single Packet Authorization):
+   [Client] → Send SPA packet (encrypted authentication info)
+   [SDP Controller] → Validate SPA packet
+   [Firewall] → Port hidden (default DROP, invisible)
+
+2. On successful authentication:
+   [Controller] → Create temporary firewall rule
+   [Controller] → Allow only client IP
+   [Client] ←→ [Gateway] establish mTLS tunnel
+
+3. Session termination:
+   [Controller] → Delete firewall rule
+   [Server] → Invisible from internet again
+```
+
+---
+
+## 5. ZTNA vs VPN
+
+### 5.1 Limitations of Traditional VPN
+
+```
+VPN Model:
+[Remote User] → [VPN Tunnel] → [Entire Internal Network]
+                               └── Access to all servers possible
+                               └── Risk of lateral movement
+                               └── Excessive access permissions
+```
+
+### 5.2 ZTNA (Zero Trust Network Access)
+
+```
+ZTNA Model:
+[Remote User] → [ZTNA Controller]
+                      │
+              Identity + device + context verification
+                      │
+              Connected only to authorized apps
+                      │
+         [App A only]  [App B only]  [App C only]
+```
+
+### 5.3 ZTNA vs VPN Comparison
+
+| Property | Traditional VPN | ZTNA |
+|----------|----------------|------|
+| Access unit | Entire network | Individual applications |
+| Authentication | Password/certificate | Identity+device+context |
+| Visibility | Limited | Detailed session logs |
+| Performance | Central bottleneck | Distributed processing |
+| Lateral movement | Allowed | Blocked |
+| Installation | Complex (server needed) | Cloud-based |
+| Legacy app support | Good | Limited |
+| User experience | Moderate | Excellent (transparent access) |
+
+---
+
+## 6. Application Layer Access Control
+
+### 6.1 API Gateway
+
+```
+API Gateway Functions:
+├── Authentication/authorization (JWT, OAuth2 token verification)
+├── Rate Limiting (block excessive requests)
+├── Input validation (payload inspection)
+├── Traffic logging (audit trail)
+├── API versioning
+└── Circuit breaker (fault isolation)
+
+Implementation example:
+[Client] → [API Gateway (Kong/AWS API GW)] → [Backend Service]
+                │
+          Token verification (IdP)
+          Policy enforcement (OPA)
+          Logging (SIEM)
+```
+
+### 6.2 OPA (Open Policy Agent)
+
+OPA is a unified policy engine that defines policies as code.
+
+---
+
+## 7. Microsegmentation Design Principles
+
+### 7.1 Layered Approach
+
+```
+Step 1: Environment separation (easiest)
+   Production | Staging | Development | DMZ
+
+Step 2: Application tier separation
+   Web-Tier | App-Tier | DB-Tier
+
+Step 3: Workload separation (microsegmentation)
+   Policy at each service/Pod/VM level
+
+Step 4: Process-level separation (highest level)
+   Host-based firewall, eBPF
+```
+
+### 7.2 Zero Trust Segmentation Principles
+
+1. **Default Deny**: Block all traffic not explicitly allowed
+2. **Least Connection**: Allow only required ports/protocols
+3. **Bidirectional policy**: Specify allowed directions (distinguish Ingress/Egress)
+4. **Continuous validation**: Periodically verify policies are actually applied
+5. **Change management**: Audit trail for all policy changes
+
+---
+
+## 8. References
+
+- Cloud Security Alliance: Software Defined Perimeter Specification v2.0
+- NIST SP 800-207: Zero Trust Architecture
+- VMware NSX-T Data Center Administration Guide
+- Calico: Network Policy Documentation
+- Cilium: Network Policy Concepts
+- Istio: Security Best Practices
+- fwknop: Single Packet Authorization
+- CISA: Zero Trust Architecture Technical Reference Model
+
+---
+
+*Last updated: 2024*

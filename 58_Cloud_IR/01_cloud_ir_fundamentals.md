@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 클라우드 사고 대응(IR) 기초
 
 ## 1. 온프레미스 vs 클라우드 IR 비교
@@ -621,3 +627,148 @@ python cloud_ir_checklist.py --provider aws --incident-type custom --template-fi
 | CSP 지원 | 플랫폼 레이어 지원 | CSP 내부 시스템 |
 
 > **핵심 원칙**: 사고 대응 계정은 평소에 비활성화 상태로 유지하고, 실제 사고 발생 시 Break Glass 절차에 따라 활성화한다. 모든 접근은 별도 로그로 기록한다.
+
+---
+
+<a name="english"></a>
+
+# Cloud Incident Response (IR) Fundamentals
+
+## 1. On-Premises vs Cloud IR Comparison
+
+Incident response in cloud environments requires a fundamentally different approach from traditional on-premises environments. The key differences are that you cannot physically access hardware, infrastructure control is divided between the cloud provider and the customer, and evidence exists in the form of API calls and log streams.
+
+| Aspect | On-Premises IR | Cloud IR |
+|--------|---------------|---------|
+| Physical Access | Direct access to server room | No physical access; via API/console only |
+| Evidence Collection | Direct disk imaging, memory dumps | Snapshots, log APIs |
+| Evidence Retention Period | Permanent while system is preserved | Auto-deleted by default settings (90 days–1 year) |
+| Network Forensics | Full packet capture possible | VPC flow logs (metadata only) |
+| Volatile Data | Direct RAM dump | Lost immediately upon instance termination |
+| Timeline Construction | Filesystem timestamps | API call event timestamps |
+| Jurisdiction | Single physical location | Multi-region, complex multinational legal jurisdiction |
+| Cost | Fixed hardware cost | Log storage/query costs incurred |
+| Scalability | Manual scaling | Auto-scaling creates risk of evidence loss |
+| Authentication/Access | Local accounts, AD | IAM, federation, temporary credentials |
+
+---
+
+## 2. Shared Responsibility Model and IR Scope
+
+IR responsibilities differ by cloud service model between provider and customer. Upon an incident, quickly identifying which layer was breached determines the scope of investigation and direction of evidence collection.
+
+### 2.1 Responsibility Separation by Service Model
+
+| Layer | IaaS (EC2/VM) | PaaS (RDS/AppSvc) | SaaS (Office365/Workspace) |
+|-------|--------------|------------------|---------------------------|
+| Physical Infrastructure | CSP | CSP | CSP |
+| Hypervisor | CSP | CSP | CSP |
+| Operating System | Customer | CSP | CSP |
+| Runtime/Middleware | Customer | CSP | CSP |
+| Application | Customer | Customer | CSP |
+| Data | Customer | Customer | Customer |
+| Identity/Access Management | Customer | Customer | Customer |
+| Network Configuration | Customer | Partial customer | CSP |
+
+### 2.2 IR Scope Determination Principles
+
+- **CSP-layer breach**: Report incident to cloud provider, request support, collaborate with provider's forensics team
+- **Customer-layer breach**: Deploy internal IR team or external DFIR firm
+- **IAM breach**: Common to both layers; immediately disable credentials, then analyze CloudTrail/Activity Log
+- **Data exfiltration**: Customer responsibility, but CSP support tools (Macie, DLP) can be leveraged
+
+---
+
+## 3. Special Characteristics of Cloud Evidence Collection
+
+### 3.1 Volatile Data First Collection Principle
+
+The principle of collecting the most volatile data first applies in the cloud too, but the target list is different.
+
+| Priority | On-Premises | Cloud |
+|----------|-------------|-------|
+| 1st | RAM contents | Running process info (SSM session) |
+| 2nd | Network connection state | VPC flow logs (real-time) |
+| 3rd | Filesystem timestamps | CloudTrail/Activity Log current session |
+| 4th | Log files | Temporary credential session token list |
+| 5th | Disk image | EBS/disk snapshot |
+
+### 3.2 Log Retention Period Cautions
+
+| Service | Default Retention | Max Retention | Notes |
+|---------|-------------------|---------------|-------|
+| AWS CloudTrail | 90 days (Event History) | Unlimited in S3 | Deleted after 90 days if Trail not configured |
+| AWS VPC Flow Log | None (auto-deleted) | Requires CloudWatch/S3 setup | Default: no retention |
+| AWS GuardDuty | 90 days | — | Export settings recommended |
+| Azure Activity Log | 90 days | 2 years with Log Analytics | Diagnostic Settings required |
+| Azure AD Sign-in | 30 days (P1/P2) | Storage integration | Free tier: 7 days |
+| GCP Cloud Audit | 400 days (Admin) | Cloud Storage integration | Data Access disabled by default |
+| GCP VPC Flow | None | BigQuery/Storage | Explicit activation required |
+
+### 3.3 Evidence Integrity Assurance Methods
+
+```
+1. Record timestamp at log collection (UTC)
+2. Compute SHA-256 hash of collected log files
+3. Transfer to immutable storage (S3 Object Lock, Azure Immutable Storage)
+4. Log access history of archived logs separately
+5. Create Chain of Custody document for legal validity
+```
+
+---
+
+## 4. Cloud Attack Kill Chain Stages
+
+| Stage | Description | Cloud-Specific Techniques | Detection Indicators |
+|-------|-------------|--------------------------|---------------------|
+| Reconnaissance | Public information gathering | S3 bucket enumeration, public AMI lookup | Surge in unauthenticated API calls |
+| Initial Access | Establish first entry point | Credential theft, public instance vulnerabilities | Logins from abnormal regions |
+| Execution | Execute malicious code/commands | Lambda function abuse, SSM command execution | Abnormal Lambda invocation patterns |
+| Persistence | Establish re-access mechanism | Create backdoor IAM user, issue access keys | CreateUser, CreateAccessKey events |
+| Privilege Escalation | Gain higher privileges | Attach IAM policy, assume role | AttachUserPolicy, AssumeRole events |
+| Defense Evasion | Avoid detection | Disable CloudTrail, delete GuardDuty | StopLogging, DeleteDetector events |
+| Credential Access | Steal additional credentials | Query Secrets Manager, access env vars | Bulk GetSecretValue calls |
+| Lateral Movement | Move within environment | Role switching, cross-account access | AssumeRole chains |
+| Collection | Gather data | Enumerate S3 buckets, create RDS snapshots | ListBuckets, CreateDBSnapshot |
+| Exfiltration | Transfer data externally | Copy to S3, share public snapshots | Bulk S3 GetObject, ModifySnapshotAttribute |
+| Impact | Destroy/ransom | Delete instances, encrypt | TerminateInstances, KMS key deletion |
+
+---
+
+## 5. Python CLI: Cloud IR Checklist Generator
+
+See the Korean section for the full Python code listing.
+
+### Usage
+
+```bash
+# Generate AWS credential compromise checklist (stdout)
+python cloud_ir_checklist.py --provider aws --incident-type credential_compromise
+
+# Save Azure credential compromise checklist to file
+python cloud_ir_checklist.py --provider azure --incident-type credential_compromise --output azure_cc_checklist.md
+
+# Generate GCP checklist
+python cloud_ir_checklist.py --provider gcp --incident-type credential_compromise
+
+# List available built-in templates
+python cloud_ir_checklist.py --list-templates
+
+# Use custom JSON checklist file
+python cloud_ir_checklist.py --provider aws --incident-type custom --template-file my_checklist.json --output result.md
+```
+
+---
+
+## 6. Cloud IR Organizational Structure
+
+| Role | Responsibility | Required Access |
+|------|----------------|-----------------|
+| IR Lead | Coordinate overall response, decision-making | Read-only + escalation |
+| Cloud Forensics Analyst | Evidence collection, log analysis | CloudTrail/log read access |
+| Cloud Engineer | Execute containment measures | Limited write access |
+| Security Engineer | Detection rules, SIEM integration | Security service management |
+| Legal/Compliance | Legal requirements, regulatory reporting | Document access |
+| CSP Support | Platform layer support | CSP internal systems |
+
+> **Key Principle**: Keep incident response accounts disabled at all times, and activate them via Break Glass procedures only during actual incidents. All access must be logged separately.

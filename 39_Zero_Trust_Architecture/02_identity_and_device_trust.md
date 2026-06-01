@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 신원 및 기기 신뢰 (Identity & Device Trust)
 
 ## 1. 신원 제공자 (Identity Provider, IdP) 연동
@@ -1139,3 +1145,378 @@ if __name__ == "__main__":
 ---
 
 *최종 업데이트: 2024년*
+
+---
+
+<a name="english"></a>
+
+# Identity and Device Trust
+
+## 1. Identity Provider (IdP) Integration
+
+### 1.1 Role of IdP
+
+In Zero Trust, the IdP is the core component of the "new perimeter." It is the central authority that issues and verifies the identity of all users, devices, and services.
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                   IdP Ecosystem                           │
+│                                                          │
+│  ┌──────────┐    ┌──────────┐    ┌──────────────────┐   │
+│  │  Okta    │    │ Azure AD │    │  Google Workspace │   │
+│  │          │    │  (Entra) │    │       IdP        │   │
+│  └─────┬────┘    └────┬─────┘    └────────┬─────────┘   │
+│        └──────────────┼──────────────────┘             │
+│                       │ SAML / OIDC / OAuth2            │
+│                  ┌────▼──────┐                          │
+│                  │  SP/RP    │ (Service Provider/Relying Party)│
+│                  │ (App/Service)│                         │
+│                  └───────────┘                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+### 1.2 Comparison of Major IdP Solutions
+
+#### Okta
+
+**Strengths:**
+- Platform-neutral (not tied to a specific cloud)
+- Integration with 6,500+ apps
+- Powerful MFA options
+- Okta Verify, FIDO2 support
+- Provides Workforce Identity + Customer Identity
+
+**Key Features:**
+```
+- Universal Directory: Unified management of all users/groups
+- Adaptive MFA: Risk-based MFA enforcement
+- Lifecycle Management: Automatic provisioning/deprovisioning
+- API Access Management: OAuth server functionality
+- Device Trust: Device trust policy integration
+```
+
+#### Azure Active Directory (Microsoft Entra ID)
+
+**Strengths:**
+- Native integration with Microsoft 365 and Azure
+- Supports hybrid environments (on-premises AD + cloud)
+- Powerful Conditional Access policies
+- Risk-based access control with Entra ID Protection
+
+**Key Features:**
+```
+- Conditional Access: Fine-grained access condition policies
+- PIM (Privileged Identity Management): JIT privileged access
+- Identity Protection: ML-based risk detection
+- B2B/B2C: External partner and customer identity management
+- Seamless SSO: Transparent Single Sign-On
+```
+
+#### Google Workspace IdP
+
+**Strengths:**
+- BeyondCorp-based design
+- Built-in Context-Aware Access
+- Native Google Cloud integration
+
+**Key Features:**
+```
+- Google Sign-In / OIDC support
+- Context-Aware Access: Device state, location-based policies
+- Cloud Identity: Standalone IdP service
+- BeyondCorp Enterprise: Complete Zero Trust solution
+```
+
+---
+
+## 2. MFA and Passkeys (FIDO2)
+
+### 2.1 MFA Authentication Factors
+
+```
+Authentication Factor Classification:
+├── Knowledge-based (Something You Know)
+│   ├── Password
+│   ├── PIN
+│   └── Security questions (not recommended)
+│
+├── Possession-based (Something You Have)
+│   ├── TOTP (Google Authenticator, Authy)
+│   ├── HOTP (hardware tokens)
+│   ├── SMS OTP (vulnerable, not recommended)
+│   ├── Push notifications (Okta Verify, MS Authenticator)
+│   └── Hardware keys (YubiKey)
+│
+└── Inherence-based (Something You Are)
+    ├── Fingerprint recognition
+    ├── Facial recognition
+    └── Retina/iris recognition
+```
+
+### 2.2 FIDO2/Passkey
+
+FIDO2 is the standard for phishing-resistant MFA.
+
+**Components:**
+- **WebAuthn**: W3C standard, browser-server protocol
+- **CTAP2**: Authenticator-client protocol
+
+**How Passkeys Work:**
+```
+1. Registration:
+   [Server] → Send challenge → [Authenticator (passkey)]
+   [Authenticator] → Generate public key pair → Store public key on server
+   [Authenticator] → Store private key on device/cloud
+
+2. Authentication:
+   [Server] → Send challenge → [Client]
+   [Client] → Activate authenticator with biometrics/PIN
+   [Authenticator] → Sign challenge with private key
+   [Server] → Verify signature with public key → Authentication complete
+```
+
+**Advantages of Passkeys:**
+| Property | Password+OTP | Passkey |
+|----------|-------------|---------|
+| Phishing resistance | Low | Very high (domain binding) |
+| SIM swapping vulnerability | Yes (SMS OTP) | No |
+| User convenience | Moderate | Very high |
+| Credential reuse | Possible | Impossible |
+| On server breach | Hash exposure risk | Only public key exposed |
+
+### 2.3 Adaptive MFA
+
+Dynamically adjusts MFA strength based on risk.
+
+```
+Low risk → Require biometrics only
+Medium risk → Require additional TOTP
+High risk → Require hardware key or deny
+```
+
+---
+
+## 3. Device Trust Assessment
+
+### 3.1 Device Trust Assessment Framework
+
+```
+Device Trust Assessment Items:
+│
+├── Managed State
+│   ├── MDM enrollment (Intune, Jamf, Google MDM)
+│   ├── EMM policy compliance
+│   └── MDM certificate validity
+│
+├── OS Security Posture
+│   ├── OS version (EOL version detection)
+│   ├── Security patch level
+│   ├── Secure Boot activation
+│   └── Kernel integrity protection
+│
+├── Endpoint Security
+│   ├── EDR/AV running state
+│   ├── Last scan time
+│   ├── Threat detection state
+│   └── Firewall activation
+│
+├── Encryption State
+│   ├── Full disk encryption (BitLocker/FileVault)
+│   └── Storage encryption key protection
+│
+└── Certificate
+    ├── Device certificate validity
+    ├── Certificate expiry date
+    └── PKI chain verification
+```
+
+### 3.2 MDM (Mobile Device Management)
+
+#### Microsoft Intune
+```
+Policy Examples:
+- Minimum OS version: Windows 11 22H2+
+- BitLocker required
+- Windows Defender running required
+- Screen lock: within 5 minutes
+- Password complexity: 8+ chars, special characters required
+```
+
+#### Jamf (macOS/iOS)
+```
+Policy Examples:
+- FileVault required
+- Gatekeeper activation
+- SIP (System Integrity Protection) disabling prohibited
+- Only certified apps allowed
+```
+
+### 3.3 Device Certificate
+
+```
+PKI-Based Device Trust:
+
+CA (Certificate Authority)
+└── Intermediate CA
+    └── Device certificate issued
+        ├── Subject: CN=DEVICE-ID, O=CORP
+        ├── Validity: 1 year
+        └── EKU: Client Authentication
+
+Device Authentication Flow:
+[Device] → Present TLS client certificate
+[Server] → Verify certificate chain + CRL/OCSP check
+[Server] → Cross-validate MDM enrollment status
+[Server] → Allow/deny access
+```
+
+---
+
+## 4. Conditional Access Policy
+
+### 4.1 Concept
+
+Conditional access controls access using if-then policies.
+
+```
+IF (all conditions are met)
+THEN (allow/deny/require MFA/limit session)
+```
+
+### 4.2 Condition Types
+
+| Condition Category | Example |
+|-------------------|---------|
+| User/Group | Specific department, role, guest account |
+| Application | Specific SaaS app, on-premises app |
+| Location | Country, IP range, Named Location |
+| Device Platform | Windows, macOS, iOS, Android |
+| Device State | Compliant, Hybrid AD Join |
+| Client App | Browser, legacy auth clients |
+| Sign-in Risk | Microsoft Entra ID Protection risk score |
+| User Risk | Account breach risk score |
+
+### 4.3 Policy Examples
+
+**Example 1: Force MFA for external access**
+```
+IF location = external corporate network
+AND app = Microsoft 365
+THEN MFA required
+```
+
+**Example 2: Block non-compliant devices**
+```
+IF device state ≠ compliant
+AND app = sensitive HR system
+THEN block
+```
+
+**Example 3: Block legacy authentication**
+```
+IF client app = legacy authentication (Basic Auth)
+THEN block
+```
+
+**Example 4: Country-based blocking**
+```
+IF location = [list of unapproved countries]
+THEN block
+```
+
+---
+
+## 5. Comparison of SAML, OAuth2, OIDC
+
+### 5.1 SAML 2.0 (Security Assertion Markup Language)
+
+**Purpose:** SSO (Single Sign-On), primarily enterprise web apps
+
+**Flow:**
+```
+[User] → [SP (Service Provider)]
+[SP] → SAML request → [IdP]
+[User] → Authenticates at IdP
+[IdP] → SAML Assertion (XML) → [SP]
+[SP] → Verify Assertion → Allow access
+```
+
+**Characteristics:**
+- XML-based (heavy)
+- Mainly B2B enterprise
+- Includes session management
+- Disadvantage: Not suitable for mobile/API
+
+### 5.2 OAuth 2.0
+
+**Purpose:** Authorization delegation, API access
+
+**Key Grant Types:**
+```
+Authorization Code (+ PKCE): Web apps, mobile apps (recommended)
+Client Credentials: Server-to-server communication
+Implicit: Legacy SPA (no longer recommended)
+Device Code: TV, IoT devices
+```
+
+### 5.3 OIDC (OpenID Connect)
+
+**Purpose:** Authentication — built on top of OAuth2
+
+**OAuth2 vs OIDC:**
+```
+OAuth2: "Is it OK for this app to access your data?"
+OIDC:   "Verifying who you are" + OAuth2
+```
+
+### 5.4 Comparison Summary
+
+| Property | SAML 2.0 | OAuth 2.0 | OIDC |
+|----------|----------|-----------|------|
+| Main purpose | Auth+authz (SSO) | Authorization delegation | Authentication |
+| Data format | XML | JSON/JWT | JSON/JWT |
+| Mobile suitability | Low | High | High |
+| API access | Unsuitable | Suitable | Suitable |
+| Complexity | High | Medium | Medium |
+| Enterprise adoption | Very high | High | High |
+
+---
+
+## 6. Identity Governance and Administration (IGA)
+
+### 6.1 Core IGA Functions
+
+| Function | Description |
+|----------|-------------|
+| Access request/approval | Self-service portal, workflow-based approval |
+| Access certification | Periodic access rights review and re-approval |
+| Role management (RBAC) | Role-based permission definition and assignment |
+| Separation of duties (SoD) | Automatic detection of conflicting permissions |
+| Provisioning/deprovisioning | Automatic permission grant/revocation on join/leave |
+
+### 6.2 JIT (Just-In-Time) Access
+
+Grant privileged access only when needed and only for the required time.
+
+```
+Request: "Need admin access to DB server for 10 minutes"
+Approval: Automatic (ITSM ticket integration) or admin approval
+Grant: Issue temporary credentials (10-minute TTL)
+Expiry: Automatic revocation, session log saved
+```
+
+---
+
+## 7. References
+
+- FIDO Alliance: FIDO2/WebAuthn specifications (https://fidoalliance.org)
+- NIST SP 800-63B: Digital Identity Guidelines - Authentication
+- Microsoft: Zero Trust Deployment Guide
+- Okta: Zero Trust Security Whitepaper
+- Google: BeyondCorp Enterprise technical documentation
+- RFC 6749: OAuth 2.0 Authorization Framework
+- RFC 7636: PKCE for OAuth Public Clients
+
+---
+
+*Last updated: 2024*

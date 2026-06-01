@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 위협 피드 및 IoC 강화
 
 ## 무료 위협 피드 목록
@@ -495,3 +501,505 @@ if __name__ == "__main__":
 ```
 
 다음 파일에서 IoC 관리 자동화를 다룬다.
+
+---
+
+<a name="english"></a>
+
+# Threat Feeds and IoC Enrichment
+
+## Free Threat Feed List
+
+```
+OSINT feeds (free)
+├── AlienVault OTX — https://otx.alienvault.com/
+├── Abuse.ch — URLhaus, MalwareBazaar, FeodoTracker
+├── CIRCL OSINT — MISP format
+├── Emerging Threats — Suricata/Snort rules
+├── Malware Domain List — Malicious domains
+├── PhishTank — Phishing URLs
+├── Spamhaus — IP/domain blocklists
+├── GreyNoise — Internet scanner IPs
+└── Shodan InternetDB — Vulnerable hosts
+
+Commercial feeds (subscription)
+├── Recorded Future — Broad dark web/surface web coverage
+├── Intel 471 — Cybercrime forum specialization
+├── Mandiant Advantage — APT group focus
+├── CrowdStrike Falcon X — Malware analysis
+└── Flashpoint — Dark web intelligence
+```
+
+## Threat Feed Collection Automation
+
+```python
+#!/usr/bin/env python3
+"""Automated collection and normalization of multiple threat feeds."""
+
+import argparse
+import urllib.request
+import urllib.error
+import json
+import csv
+import hashlib
+import time
+import sys
+from pathlib import Path
+from dataclasses import dataclass, field
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timezone
+
+
+@dataclass
+class ThreatIndicator:
+    value: str
+    ioc_type: str
+    source: str
+    first_seen: str
+    last_seen: str
+    tags: list[str] = field(default_factory=list)
+    confidence: int = 50
+    description: str = ""
+
+    def __hash__(self) -> int:
+        return hash(f"{self.ioc_type}:{self.value}")
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ThreatIndicator):
+            return False
+        return self.ioc_type == other.ioc_type and self.value == other.value
+
+
+@dataclass
+class FeedConfig:
+    name: str
+    url: str
+    format: str  # csv, json, txt, misp
+    ioc_type: str | None = None
+    auth_header: str | None = None
+    confidence: int = 70
+
+
+FEED_CONFIGS = [
+    FeedConfig(
+        name="URLhaus_URLs",
+        url="https://urlhaus.abuse.ch/downloads/csv_recent/",
+        format="csv",
+        ioc_type="url",
+        confidence=85,
+    ),
+    FeedConfig(
+        name="Feodo_C2",
+        url="https://feodotracker.abuse.ch/downloads/ipblocklist.txt",
+        format="txt",
+        ioc_type="ip-dst",
+        confidence=90,
+    ),
+    FeedConfig(
+        name="PhishTank",
+        url="https://data.phishtank.com/data/online-valid.json",
+        format="json",
+        ioc_type="url",
+        confidence=80,
+    ),
+]
+
+
+def fetch_feed(config: FeedConfig, timeout: int = 30) -> bytes | None:
+    """Download a feed."""
+    req = urllib.request.Request(config.url)
+    req.add_header("User-Agent", "ThreatIntelCollector/1.0")
+    if config.auth_header:
+        req.add_header("Authorization", config.auth_header)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.read()
+    except urllib.error.URLError as e:
+        print(f"[!] {config.name} download failed: {e}", file=sys.stderr)
+        return None
+
+
+def parse_txt_feed(
+    raw: bytes, ioc_type: str, source: str, confidence: int
+) -> list[ThreatIndicator]:
+    """Plain text feed (one IoC per line)."""
+    indicators: list[ThreatIndicator] = []
+    now = datetime.now(timezone.utc).isoformat()
+    for line in raw.decode("utf-8", errors="ignore").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        indicators.append(ThreatIndicator(
+            value=line,
+            ioc_type=ioc_type,
+            source=source,
+            first_seen=now,
+            last_seen=now,
+            confidence=confidence,
+        ))
+    return indicators
+
+
+def parse_csv_urlhaus(raw: bytes, source: str) -> list[ThreatIndicator]:
+    """Parse URLhaus CSV feed."""
+    indicators: list[ThreatIndicator] = []
+    now = datetime.now(timezone.utc).isoformat()
+    lines = raw.decode("utf-8", errors="ignore").splitlines()
+    # Skip headers (# comments)
+    data_lines = [l for l in lines if not l.startswith("#") and l.strip()]
+    reader = csv.DictReader(data_lines)
+    for row in reader:
+        url = row.get("url", "").strip()
+        tags = [t.strip() for t in row.get("tags", "").split(",") if t.strip()]
+        if url:
+            indicators.append(ThreatIndicator(
+                value=url,
+                ioc_type="url",
+                source=source,
+                first_seen=row.get("dateadded", now),
+                last_seen=now,
+                tags=tags,
+                confidence=85,
+                description=f"URLhaus: {row.get('threat', '')}",
+            ))
+    return indicators
+
+
+def parse_phishtank(raw: bytes, source: str) -> list[ThreatIndicator]:
+    """Parse PhishTank JSON feed."""
+    indicators: list[ThreatIndicator] = []
+    now = datetime.now(timezone.utc).isoformat()
+    try:
+        entries = json.loads(raw)
+        for entry in entries[:1000]:  # Top 1000 entries only
+            url = entry.get("url", "").strip()
+            if url:
+                indicators.append(ThreatIndicator(
+                    value=url,
+                    ioc_type="url",
+                    source=source,
+                    first_seen=entry.get("submission_time", now),
+                    last_seen=now,
+                    tags=["phishing"],
+                    confidence=80,
+                    description=f"PhishTank ID: {entry.get('phish_id')}",
+                ))
+    except json.JSONDecodeError:
+        pass
+    return indicators
+
+
+def deduplicate(indicators: list[ThreatIndicator]) -> list[ThreatIndicator]:
+    """Remove duplicates while retaining the highest confidence score."""
+    seen: dict[tuple, ThreatIndicator] = {}
+    for ind in indicators:
+        key = (ind.ioc_type, ind.value)
+        if key not in seen or ind.confidence > seen[key].confidence:
+            seen[key] = ind
+    return list(seen.values())
+
+
+def export_csv(indicators: list[ThreatIndicator], path: Path) -> None:
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=[
+            "value", "ioc_type", "source", "confidence",
+            "first_seen", "last_seen", "tags", "description",
+        ])
+        writer.writeheader()
+        for ind in indicators:
+            writer.writerow({
+                "value": ind.value,
+                "ioc_type": ind.ioc_type,
+                "source": ind.source,
+                "confidence": ind.confidence,
+                "first_seen": ind.first_seen,
+                "last_seen": ind.last_seen,
+                "tags": ",".join(ind.tags),
+                "description": ind.description,
+            })
+
+
+def export_stix2_bundle(indicators: list[ThreatIndicator], path: Path) -> None:
+    """Generate a simple STIX 2.1 bundle."""
+    objects = []
+    for ind in indicators:
+        pattern = f"[{ind.ioc_type}:value = '{ind.value}']"
+        # Normalize IP type
+        if ind.ioc_type in ("ip-src", "ip-dst"):
+            pattern = f"[ipv4-addr:value = '{ind.value}']"
+        elif ind.ioc_type == "url":
+            safe_val = ind.value.replace("'", "\\'")
+            pattern = f"[url:value = '{safe_val}']"
+        elif ind.ioc_type in ("md5", "sha1", "sha256"):
+            pattern = f"[file:hashes.{ind.ioc_type.upper()} = '{ind.value}']"
+        elif ind.ioc_type == "domain":
+            pattern = f"[domain-name:value = '{ind.value}']"
+
+        obj_id = f"indicator--{hashlib.sha256(f'{ind.ioc_type}:{ind.value}'.encode()).hexdigest()[:36]}"
+        objects.append({
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": obj_id,
+            "created": ind.first_seen,
+            "modified": ind.last_seen,
+            "name": f"{ind.ioc_type}: {ind.value[:50]}",
+            "description": ind.description,
+            "indicator_types": ["malicious-activity"],
+            "pattern": pattern,
+            "pattern_type": "stix",
+            "valid_from": ind.first_seen,
+            "labels": ind.tags,
+            "confidence": ind.confidence,
+        })
+
+    bundle = {
+        "type": "bundle",
+        "id": f"bundle--{hashlib.sha256(str(time.time()).encode()).hexdigest()[:36]}",
+        "spec_version": "2.1",
+        "objects": objects,
+    }
+    path.write_text(json.dumps(bundle, indent=2))
+
+
+def collect_all_feeds(configs: list[FeedConfig]) -> list[ThreatIndicator]:
+    """Collect all feeds in parallel."""
+    all_indicators: list[ThreatIndicator] = []
+
+    def fetch_and_parse(config: FeedConfig) -> list[ThreatIndicator]:
+        raw = fetch_feed(config)
+        if not raw:
+            return []
+        match config.format:
+            case "txt":
+                return parse_txt_feed(raw, config.ioc_type or "unknown",
+                                      config.name, config.confidence)
+            case "csv" if config.name.startswith("URLhaus"):
+                return parse_csv_urlhaus(raw, config.name)
+            case "json" if config.name == "PhishTank":
+                return parse_phishtank(raw, config.name)
+            case _:
+                return []
+
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        futures = {ex.submit(fetch_and_parse, c): c for c in configs}
+        for fut in as_completed(futures):
+            config = futures[fut]
+            try:
+                indicators = fut.result()
+                print(f"[+] {config.name}: {len(indicators)} IoCs")
+                all_indicators.extend(indicators)
+            except Exception as e:
+                print(f"[!] {config.name} error: {e}", file=sys.stderr)
+
+    return deduplicate(all_indicators)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Automated threat feed collection tool")
+    parser.add_argument("-o", "--output-dir", type=Path, default=Path("."))
+    parser.add_argument("--format", choices=["csv", "stix", "both"], default="csv")
+    parser.add_argument("--max-age-hours", type=int, default=24,
+                        help="Use latest cache (hours)")
+    args = parser.parse_args()
+
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"[*] Feed collection started ({len(FEED_CONFIGS)} feeds)")
+    indicators = collect_all_feeds(FEED_CONFIGS)
+    print(f"\n[+] Total collected (deduplicated): {len(indicators)} IoCs")
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    if args.format in ("csv", "both"):
+        csv_path = args.output_dir / f"iocs_{timestamp}.csv"
+        export_csv(indicators, csv_path)
+        print(f"[+] CSV saved: {csv_path}")
+
+    if args.format in ("stix", "both"):
+        stix_path = args.output_dir / f"bundle_{timestamp}.json"
+        export_stix2_bundle(indicators, stix_path)
+        print(f"[+] STIX saved: {stix_path}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## IoC Enrichment
+
+```python
+#!/usr/bin/env python3
+"""IoC enrichment — VirusTotal, Shodan, AbuseIPDB integration."""
+
+import argparse
+import urllib.request
+import urllib.parse
+import json
+import time
+import sys
+from dataclasses import dataclass
+
+
+@dataclass
+class EnrichmentResult:
+    ioc: str
+    ioc_type: str
+    vt_score: str = "N/A"
+    vt_tags: list[str] | None = None
+    abuse_score: int = 0
+    shodan_ports: list[int] | None = None
+    whois_org: str = ""
+    malicious: bool = False
+
+
+class VirusTotalEnricher:
+    BASE_URL = "https://www.virustotal.com/api/v3"
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    def _get(self, endpoint: str) -> dict | None:
+        req = urllib.request.Request(
+            f"{self.BASE_URL}/{endpoint}",
+            headers={"x-apikey": self.api_key},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return json.loads(resp.read())
+        except Exception:
+            return None
+
+    def check_ip(self, ip: str) -> dict | None:
+        data = self._get(f"ip_addresses/{ip}")
+        if not data:
+            return None
+        attrs = data.get("data", {}).get("attributes", {})
+        stats = attrs.get("last_analysis_stats", {})
+        malicious = stats.get("malicious", 0)
+        total = sum(stats.values())
+        return {
+            "score": f"{malicious}/{total}",
+            "country": attrs.get("country"),
+            "tags": attrs.get("tags", []),
+            "malicious": malicious > 3,
+        }
+
+    def check_domain(self, domain: str) -> dict | None:
+        data = self._get(f"domains/{domain}")
+        if not data:
+            return None
+        attrs = data.get("data", {}).get("attributes", {})
+        stats = attrs.get("last_analysis_stats", {})
+        malicious = stats.get("malicious", 0)
+        total = sum(stats.values())
+        return {
+            "score": f"{malicious}/{total}",
+            "categories": attrs.get("categories", {}),
+            "malicious": malicious > 3,
+        }
+
+    def check_hash(self, file_hash: str) -> dict | None:
+        data = self._get(f"files/{file_hash}")
+        if not data:
+            return None
+        attrs = data.get("data", {}).get("attributes", {})
+        stats = attrs.get("last_analysis_stats", {})
+        malicious = stats.get("malicious", 0)
+        total = sum(stats.values())
+        return {
+            "score": f"{malicious}/{total}",
+            "name": attrs.get("meaningful_name", ""),
+            "type": attrs.get("type_description", ""),
+            "malware_family": attrs.get("popular_threat_name", ""),
+            "malicious": malicious > 5,
+        }
+
+
+class AbuseIPDBEnricher:
+    BASE_URL = "https://api.abuseipdb.com/api/v2"
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    def check_ip(self, ip: str, max_age_days: int = 30) -> dict | None:
+        url = f"{self.BASE_URL}/check?ipAddress={ip}&maxAgeInDays={max_age_days}"
+        req = urllib.request.Request(
+            url,
+            headers={
+                "Key": self.api_key,
+                "Accept": "application/json",
+            }
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read())
+                d = data.get("data", {})
+                return {
+                    "score": d.get("abuseConfidenceScore", 0),
+                    "country": d.get("countryCode"),
+                    "reports": d.get("totalReports", 0),
+                    "malicious": d.get("abuseConfidenceScore", 0) > 50,
+                }
+        except Exception:
+            return None
+
+
+def enrich_ioc(
+    ioc: str,
+    ioc_type: str,
+    vt_key: str | None = None,
+    abuse_key: str | None = None,
+) -> EnrichmentResult:
+    result = EnrichmentResult(ioc=ioc, ioc_type=ioc_type)
+
+    if vt_key:
+        vt = VirusTotalEnricher(vt_key)
+        vt_data = None
+        match ioc_type:
+            case "ip-src" | "ip-dst":
+                vt_data = vt.check_ip(ioc)
+            case "domain" | "hostname":
+                vt_data = vt.check_domain(ioc)
+            case "md5" | "sha1" | "sha256":
+                vt_data = vt.check_hash(ioc)
+        if vt_data:
+            result.vt_score = vt_data.get("score", "N/A")
+            result.vt_tags = vt_data.get("tags", [])
+            result.malicious = result.malicious or vt_data.get("malicious", False)
+
+    if abuse_key and ioc_type in ("ip-src", "ip-dst"):
+        abuse = AbuseIPDBEnricher(abuse_key)
+        abuse_data = abuse.check_ip(ioc)
+        if abuse_data:
+            result.abuse_score = abuse_data.get("score", 0)
+            result.malicious = result.malicious or abuse_data.get("malicious", False)
+
+    return result
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="IoC enrichment tool")
+    parser.add_argument("ioc", help="IoC to enrich")
+    parser.add_argument("--type", required=True,
+                        choices=["ip-dst", "domain", "md5", "sha256"],
+                        dest="ioc_type")
+    parser.add_argument("--vt-key", help="VirusTotal API key")
+    parser.add_argument("--abuse-key", help="AbuseIPDB API key")
+    args = parser.parse_args()
+
+    result = enrich_ioc(args.ioc, args.ioc_type, args.vt_key, args.abuse_key)
+
+    print(f"\n{'='*50}")
+    print(f"IoC        : {result.ioc}")
+    print(f"Type       : {result.ioc_type}")
+    print(f"VT Score   : {result.vt_score}")
+    print(f"Abuse Score: {result.abuse_score}")
+    if result.vt_tags:
+        print(f"Tags       : {', '.join(result.vt_tags)}")
+    print(f"Malicious  : {'Yes' if result.malicious else 'No'}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+The next file covers IoC management automation.

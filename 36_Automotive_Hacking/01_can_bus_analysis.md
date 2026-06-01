@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 01 CAN Bus Analysis
 
 ## 1. CAN 프로토콜 심화
@@ -1045,5 +1051,57 @@ python can_analyzer.py inject --interface vcan0 --id 0x7DF \
     --data "02 01 0C 00 00 00 00 00" --count 10 --interval 0.1
 
 # 0.5배 속도로 재전송
+python can_analyzer.py replay --interface vcan0 --input capture.csv --rate 0.5
+```
+
+---
+
+<a name="english"></a>
+
+# 01 CAN Bus Analysis
+
+## 1. CAN Protocol Deep Dive
+
+### 1.1 Physical Layer
+
+CAN (Controller Area Network) is defined by ISO 11898-1 (data link and physical layer) and ISO 11898-2 (high-speed physical layer up to 1 Mbit/s). It uses a 2-wire differential signal bus (CAN_H, CAN_L) with 120Ω termination resistors at both ends.
+
+## Overview
+
+CAN bus is the backbone network connecting ECUs (Electronic Control Units) in modern vehicles. Security analysis involves:
+
+- **Passive sniffing**: Capturing traffic with SocketCAN tools
+- **Frame injection**: Sending crafted CAN frames to control ECU behavior
+- **Fuzzing**: Sending random/malformed frames to find vulnerabilities
+- **OBD-II**: Standardized diagnostic interface (PIDs for reading vehicle data)
+
+## Key Tools
+
+```bash
+# SocketCAN setup
+ip link set can0 type can bitrate 500000
+ip link set can0 up
+
+# Capture traffic
+candump can0
+
+# Inject frame
+cansend can0 0x7DF#0201050000000000
+
+# Log to file
+candump -L can0 > capture.log
+```
+
+## Usage Examples
+
+```bash
+# Full OBD-II scan
+python can_analyzer.py scan --interface vcan0 --mode obd2
+
+# Inject specific frame 10 times
+python can_analyzer.py inject --interface vcan0 --id 0x7DF \
+    --data "02 01 0C 00 00 00 00 00" --count 10 --interval 0.1
+
+# Replay at 0.5x speed
 python can_analyzer.py replay --interface vcan0 --input capture.csv --rate 0.5
 ```

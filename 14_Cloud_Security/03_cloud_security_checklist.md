@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 클라우드 보안 체크리스트 & 아키텍처
 
 ## 클라우드 보안 책임 모델
@@ -800,6 +806,817 @@ aws ec2 revoke-security-group-ingress \
     --ip-permissions '[{"IpProtocol":"-1","IpRanges":[{"CidrIp":"0.0.0.0/0"}]}]'
 
 # 5. CloudTrail 로그에서 공격자 행위 추출
+aws cloudtrail lookup-events \
+    --lookup-attributes AttributeKey=AccessKeyId,AttributeValue=COMPROMISED_KEY \
+    --start-time "2024-01-15T00:00:00Z" \
+    --end-time "2024-01-16T00:00:00Z" \
+    --output json
+```
+
+---
+
+<a name="english"></a>
+
+# Cloud Security Checklist & Architecture
+
+## Cloud Security Responsibility Model
+
+These are penetration testing commands for cloud environments using the AWS CLI. Misconfigured S3 buckets, excessive IAM permissions, and exposed metadata services (SSRF vulnerabilities) are the primary attack vectors.
+
+```
+                    Customer         AWS
+                    Responsibility   Responsibility
+────────────────────────────────────────────────────
+Data                ████████
+Identity/Access Mgmt ████████
+OS/Network/Firewall ████████
+Server-side Encrypt ████████
+Client-side Encrypt ████████
+Network Traffic     ████████
+Compute                              ████████
+Storage                              ████████
+Database                             ████████
+Networking                           ████████
+Hardware/AZ/Regions                  ████████
+Global Infrastructure                ████████
+────────────────────────────────────────────────────
+```
+
+---
+
+## 1. AWS Complete Security Checklist
+
+### Account-Level Security
+
+```
+Root Account:
+  □ Enable MFA on root account (hardware token recommended)
+  □ Delete root access keys
+  □ Prohibit daily use of root account
+  □ Set up SNS alerts for root account access
+
+IAM Policies:
+  □ Principle of Least Privilege
+  □ IAM Password Policy:
+    - Minimum 14 characters
+    - Uppercase + lowercase + numbers + special characters
+    - Rotation every 90 days
+    - Prevent reuse of last 24 passwords
+  □ Enforce MFA for all IAM users
+  □ Disable credentials unused for 90+ days
+  □ Enable IAM Access Analyzer
+  □ Minimize trust policies on service roles
+```
+
+### Network Security
+
+```
+VPC Configuration:
+  □ Do not use the default VPC (create dedicated VPCs)
+  □ Separate public/private subnets
+  □ Minimize internet gateways
+  □ Control outbound traffic with NAT Gateway
+  □ Enable VPC Flow Logs
+
+Security Groups:
+  □ Minimize 0.0.0.0/0 inbound rules
+  □ Restrict SSH (22)/RDP (3389) to specific IPs only
+  □ Require descriptions on all security groups
+  □ Clean up unused security groups
+
+Network ACLs:
+  □ Add explicit deny rules
+  □ Consider using non-standard ports for management
+  □ Minimize ephemeral port ranges
+
+AWS WAF:
+  □ Attach WAF to CloudFront/ALB
+  □ Enable OWASP rule sets
+  □ Configure rate limiting rules
+  □ Geo-blocking (where necessary)
+```
+
+### Data Security
+
+These are penetration testing commands for cloud environments using the AWS CLI. Misconfigured S3 buckets, excessive IAM permissions, and exposed metadata services (SSRF vulnerabilities) are the primary attack vectors.
+
+```
+S3:
+  □ Block public access at account level
+  □ Block public access per bucket
+  □ Server-side encryption (SSE-KMS)
+  □ Enable versioning
+  □ Enable MFA Delete for critical buckets
+  □ Enable S3 access logging
+  □ HTTPS-only bucket policy
+  □ Minimize cross-account access
+
+RDS:
+  □ Enable encryption (data at rest)
+  □ Enforce TLS connections
+  □ Enable automated backups (7+ days)
+  □ Multi-AZ deployment
+  □ Disable public access
+  □ Automate certificate rotation
+
+KMS:
+  □ Use Customer Managed Keys (CMK)
+  □ Automate key rotation (annual)
+  □ Minimize key access
+  □ Consider CloudHSM (for compliance)
+```
+
+### Monitoring and Auditing
+
+```
+CloudTrail:
+  □ Enable multi-region trail for all regions
+  □ Enable log file validation
+  □ Protect S3 log integrity
+  □ Integrate with CloudWatch Logs
+  □ Record management events + data events
+
+CloudWatch:
+  □ Alert on root account usage
+  □ Alert on console login failures
+  □ Alert on security group changes
+  □ Alert on IAM policy changes
+  □ Alert on CloudTrail disabling
+  □ Alert on internet gateway changes
+
+AWS Config:
+  □ Enable (all regions)
+  □ Configure compliance rules:
+    - MFA enablement
+    - S3 public access blocking
+    - CloudTrail enabled
+    - RDS encryption
+    - IAM password policy
+
+Security Hub:
+  □ Enable
+  □ AWS Foundational Security Best Practices
+  □ CIS AWS Foundations Benchmark
+  □ PCI DSS (if applicable)
+```
+
+---
+
+## 2. Multi-Account AWS Architecture
+
+### AWS Organizations Security Structure
+
+```
+Master Account
+    │
+    ├── Security Account (centralized security tools)
+    │     ├── GuardDuty (aggregated across all accounts)
+    │     ├── Security Hub (all accounts)
+    │     └── CloudTrail (log collection for all accounts)
+    │
+    ├── Log Archive Account (log storage)
+    │     └── S3 (centralized logs from all accounts)
+    │
+    ├── Production Account
+    ├── Staging Account
+    ├── Development Account
+    └── Shared Services Account
+```
+
+### Service Control Policy (SCP) Example
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyLeaveOrganization",
+      "Effect": "Deny",
+      "Action": "organizations:LeaveOrganization",
+      "Resource": "*"
+    },
+    {
+      "Sid": "DenyRootAccess",
+      "Effect": "Deny",
+      "Action": "*",
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "aws:PrincipalArn": "arn:aws:iam::*:root"
+        }
+      }
+    },
+    {
+      "Sid": "DenyDisableCloudTrail",
+      "Effect": "Deny",
+      "Action": [
+        "cloudtrail:StopLogging",
+        "cloudtrail:DeleteTrail",
+        "cloudtrail:UpdateTrail"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "DenyDisableGuardDuty",
+      "Effect": "Deny",
+      "Action": [
+        "guardduty:DeleteDetector",
+        "guardduty:DisassociateFromMasterAccount"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EnforceIMDSv2",
+      "Effect": "Deny",
+      "Action": "ec2:RunInstances",
+      "Resource": "arn:aws:ec2:*:*:instance/*",
+      "Condition": {
+        "StringNotEquals": {
+          "ec2:MetadataHttpTokens": "required"
+        }
+      }
+    },
+    {
+      "Sid": "DenyNonApprovedRegions",
+      "Effect": "Deny",
+      "NotAction": [
+        "iam:*",
+        "sts:*",
+        "s3:*",
+        "cloudfront:*",
+        "route53:*",
+        "waf:*",
+        "budgets:*",
+        "support:*",
+        "organizations:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": [
+            "ap-northeast-2",
+            "us-east-1"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+---
+
+## 3. Codifying Security Infrastructure with Terraform
+
+```hcl
+# security_baseline.tf
+# Automated AWS security baseline configuration
+
+# Enable GuardDuty
+resource "aws_guardduty_detector" "main" {
+  enable = true
+  
+  datasources {
+    s3_logs { enable = true }
+    kubernetes { audit_logs { enable = true } }
+    malware_protection {
+      scan_ec2_instance_with_findings { 
+        ebs_volumes { enable = true } 
+      }
+    }
+  }
+}
+
+# Enable CloudTrail
+resource "aws_cloudtrail" "main" {
+  name                          = "company-cloudtrail"
+  s3_bucket_name                = aws_s3_bucket.cloudtrail.bucket
+  include_global_service_events = true
+  is_multi_region_trail         = true
+  enable_log_file_validation    = true
+  
+  event_selector {
+    read_write_type           = "All"
+    include_management_events = true
+    
+    data_resource {
+      type   = "AWS::S3::Object"
+      values = ["arn:aws:s3:::"]
+    }
+  }
+  
+  cloud_watch_logs_group_arn = "${aws_cloudwatch_log_group.cloudtrail.arn}:*"
+  cloud_watch_logs_role_arn  = aws_iam_role.cloudtrail_cw.arn
+}
+
+# Block S3 bucket public access
+resource "aws_s3_account_public_access_block" "main" {
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# IAM password policy
+resource "aws_iam_account_password_policy" "strict" {
+  minimum_password_length        = 14
+  require_uppercase_characters   = true
+  require_lowercase_characters   = true
+  require_numbers                = true
+  require_symbols                = true
+  allow_users_to_change_password = true
+  password_reuse_prevention      = 24
+  max_password_age               = 90
+  hard_expiry                    = false
+}
+
+# Enable Security Hub
+resource "aws_securityhub_account" "main" {}
+
+resource "aws_securityhub_standards_subscription" "cis" {
+  depends_on    = [aws_securityhub_account.main]
+  standards_arn = "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+}
+
+resource "aws_securityhub_standards_subscription" "aws_best_practices" {
+  depends_on    = [aws_securityhub_account.main]
+  standards_arn = "arn:aws:securityhub:ap-northeast-2::standards/aws-foundational-security-best-practices/v/1.0.0"
+}
+
+# CloudWatch alarm - root account usage
+resource "aws_cloudwatch_metric_alarm" "root_usage" {
+  alarm_name          = "root-account-usage"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "RootAccountUsage"
+  namespace           = "CloudTrailMetrics"
+  period              = "60"
+  statistic           = "Sum"
+  threshold           = "1"
+  alarm_description   = "Root account has been used"
+  alarm_actions       = [aws_sns_topic.security_alerts.arn]
+}
+
+# Default metadata options to enforce IMDSv2
+resource "aws_launch_template" "secure_baseline" {
+  name = "secure-baseline"
+  
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"  # Enforce IMDSv2
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
+}
+```
+
+---
+
+## 4. Container Security Checklist (Kubernetes)
+
+YAML configuration files are widely used in Kubernetes, CI/CD pipelines, and security tool setups. Misconfigurations can lead to security vulnerabilities.
+
+```yaml
+# pod-security-policy.yaml
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: restricted
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1
+        max: 65535
+  readOnlyRootFilesystem: true
+---
+# network-policy.yaml - default deny policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: production
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# resource-limits.yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+spec:
+  limits:
+    - type: Container
+      default:
+        memory: 256Mi
+        cpu: 100m
+      defaultRequest:
+        memory: 128Mi
+        cpu: 50m
+      max:
+        memory: 1Gi
+        cpu: 1000m
+```
+
+### Kubernetes Security Auditing Tools
+
+```bash
+# kube-bench (CIS benchmark checks)
+kubectl apply -f https://raw.githubusercontent.com/aquasecurity/kube-bench/main/job.yaml
+kubectl logs job/kube-bench
+
+# trivy (container vulnerability scanning)
+trivy image nginx:latest
+trivy k8s --report=all cluster
+
+# kubesec (YAML security analysis)
+kubesec scan pod.yaml
+
+# falco (runtime security)
+helm install falco falcosecurity/falco
+
+# polaris (policy checks)
+polaris audit --format=json --output-file=results.json
+```
+
+### Automated Kubernetes RBAC Vulnerability Analysis
+
+```python
+#!/usr/bin/env python3
+"""
+Kubernetes RBAC over-privilege and vulnerability automated analysis CLI
+Usage: python3 k8s_rbac_audit.py [--kubeconfig ~/.kube/config] [--namespace all] [--json]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from dataclasses import dataclass, field
+from typing import Optional
+
+try:
+    from kubernetes import client, config as k8s_config
+    from kubernetes.client.exceptions import ApiException
+    HAS_K8S = True
+except ImportError:
+    HAS_K8S = False
+
+
+# ------------------------------------------------------------------ #
+#  Dangerous permission definitions (based on CIS Kubernetes Benchmark)
+# ------------------------------------------------------------------ #
+_CRITICAL_VERBS = {"*"}
+_CRITICAL_RESOURCES = {
+    "*", "secrets", "nodes", "pods/exec",
+    "clusterroles", "clusterrolebindings",
+    "roles", "rolebindings",
+}
+_DANGEROUS_VERBS = {"create", "update", "patch", "delete", "deletecollection"}
+_SENSITIVE_RESOURCES = {
+    "secrets", "serviceaccounts/token", "pods/exec",
+    "pods/portforward", "nodes", "namespaces",
+}
+
+# Cluster-admin level permission combinations
+_WILDCARD_FULL = {"verbs": "*", "resources": "*", "apiGroups": "*"}
+
+
+@dataclass
+class RBACFinding:
+    severity: str
+    kind: str          # Role | ClusterRole
+    name: str
+    namespace: str
+    subject_kind: Optional[str] = None   # ServiceAccount | User | Group
+    subject_name: Optional[str] = None
+    title: str = ""
+    detail: str = ""
+    remediation: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "severity": self.severity,
+            "kind": self.kind,
+            "name": self.name,
+            "namespace": self.namespace,
+            "subject": f"{self.subject_kind}/{self.subject_name}" if self.subject_kind else "",
+            "title": self.title,
+            "detail": self.detail,
+            "remediation": self.remediation,
+        }
+
+
+# ------------------------------------------------------------------ #
+#  Analysis logic
+# ------------------------------------------------------------------ #
+class K8sRBACAuditor:
+    def __init__(self, kubeconfig: Optional[str] = None) -> None:
+        if not HAS_K8S:
+            raise RuntimeError("kubernetes library required: pip install kubernetes")
+        if kubeconfig:
+            k8s_config.load_kube_config(config_file=kubeconfig)
+        else:
+            try:
+                k8s_config.load_kube_config()
+            except Exception:
+                k8s_config.load_incluster_config()
+
+        self.rbac = client.RbacAuthorizationV1Api()
+        self.core = client.CoreV1Api()
+        self.findings: list[RBACFinding] = []
+
+    # ── Rule evaluation ────────────────────────────────────────────────
+    @staticmethod
+    def _rule_is_dangerous(rule) -> tuple[bool, str]:
+        verbs = set(getattr(rule, "verbs", []) or [])
+        resources = set(getattr(rule, "resources", []) or [])
+        api_groups = set(getattr(rule, "api_groups", []) or [])
+
+        # Wildcard full access
+        if "*" in verbs and "*" in resources:
+            return True, "Wildcard permission on all resources (effectively cluster-admin)"
+
+        # Dangerous verbs on sensitive resources
+        dangerous_combo = (verbs & _DANGEROUS_VERBS) and (resources & _SENSITIVE_RESOURCES)
+        if dangerous_combo:
+            return True, (
+                f"Dangerous verbs ({verbs & _DANGEROUS_VERBS}) allowed on"
+                f" sensitive resources ({resources & _SENSITIVE_RESOURCES})"
+            )
+
+        # Secret read access
+        if "secrets" in resources and ("get" in verbs or "list" in verbs or "watch" in verbs):
+            return True, "Read access to secrets resource (credential theft risk)"
+
+        # pods/exec
+        if "pods/exec" in resources or "pods" in resources and "create" in verbs:
+            return True, "pods/exec access or Pod creation permission (container escape possible)"
+
+        return False, ""
+
+    def _analyze_role_rules(
+        self,
+        role_kind: str,
+        role_name: str,
+        namespace: str,
+        rules: list,
+        subject_kind: Optional[str] = None,
+        subject_name: Optional[str] = None,
+    ) -> None:
+        for rule in rules or []:
+            is_dangerous, reason = self._rule_is_dangerous(rule)
+            if is_dangerous:
+                verbs = list(getattr(rule, "verbs", []) or [])
+                resources = list(getattr(rule, "resources", []) or [])
+                severity = "CRITICAL" if ("*" in verbs and "*" in resources) else "HIGH"
+                self.findings.append(RBACFinding(
+                    severity=severity,
+                    kind=role_kind,
+                    name=role_name,
+                    namespace=namespace,
+                    subject_kind=subject_kind,
+                    subject_name=subject_name,
+                    title=f"Excessive privilege: {role_kind}/{role_name}",
+                    detail=f"{reason} | verbs={verbs} resources={resources}",
+                    remediation="Apply principle of least privilege — allow only necessary resources/verbs",
+                ))
+
+    # ── ClusterRole analysis ───────────────────────────────────────────
+    def audit_cluster_roles(self) -> None:
+        try:
+            roles = self.rbac.list_cluster_role()
+        except ApiException as exc:
+            print(f"[WARNING] Failed to list ClusterRoles: {exc}", file=sys.stderr)
+            return
+
+        # Collect ClusterRoleBindings
+        bindings_map: dict[str, list[tuple]] = {}
+        try:
+            crbs = self.rbac.list_cluster_role_binding()
+            for crb in crbs.items:
+                ref = crb.role_ref
+                if ref.kind == "ClusterRole":
+                    for subj in crb.subjects or []:
+                        bindings_map.setdefault(ref.name, []).append((subj.kind, subj.name))
+        except ApiException:
+            pass
+
+        for role in roles.items:
+            name = role.metadata.name
+            subjects = bindings_map.get(name, [(None, None)])
+            for sk, sn in subjects:
+                self._analyze_role_rules(
+                    "ClusterRole", name, "cluster-wide",
+                    role.rules, sk, sn,
+                )
+
+    # ── Namespaced Role analysis ───────────────────────────────────────
+    def audit_namespaced_roles(self, namespace: str = "") -> None:
+        ns_arg = namespace if namespace and namespace != "all" else None
+        try:
+            if ns_arg:
+                roles = self.rbac.list_namespaced_role(namespace=ns_arg)
+            else:
+                roles = self.rbac.list_role_for_all_namespaces()
+        except ApiException as exc:
+            print(f"[WARNING] Failed to list Roles: {exc}", file=sys.stderr)
+            return
+
+        for role in roles.items:
+            ns = role.metadata.namespace
+            name = role.metadata.name
+            self._analyze_role_rules("Role", name, ns, role.rules)
+
+    # ── Check default ServiceAccount permissions ─────────────────────
+    def check_default_sa(self) -> None:
+        """Check whether ClusterRoleBinding is attached to default ServiceAccount"""
+        try:
+            crbs = self.rbac.list_cluster_role_binding()
+            for crb in crbs.items:
+                for subj in crb.subjects or []:
+                    if subj.kind == "ServiceAccount" and subj.name == "default":
+                        self.findings.append(RBACFinding(
+                            severity="HIGH",
+                            kind="ClusterRoleBinding",
+                            name=crb.metadata.name,
+                            namespace=subj.namespace or "all",
+                            subject_kind="ServiceAccount",
+                            subject_name="default",
+                            title="ClusterRole bound to default ServiceAccount",
+                            detail=f"ClusterRole '{crb.role_ref.name}' is bound to default SA",
+                            remediation="Create a dedicated ServiceAccount and bind a minimal privilege Role",
+                        ))
+        except ApiException:
+            pass
+
+    def run(self, namespace: str = "all") -> list[RBACFinding]:
+        print("[*] Analyzing ClusterRoles...", file=sys.stderr)
+        self.audit_cluster_roles()
+        print("[*] Analyzing Namespaced Roles...", file=sys.stderr)
+        self.audit_namespaced_roles(namespace)
+        print("[*] Checking default ServiceAccount...", file=sys.stderr)
+        self.check_default_sa()
+        return sorted(
+            self.findings,
+            key=lambda f: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2}.get(f.severity, 9),
+        )
+
+
+# ------------------------------------------------------------------ #
+#  Output
+# ------------------------------------------------------------------ #
+def print_report(findings: list[RBACFinding], as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps([f.to_dict() for f in findings], ensure_ascii=False, indent=2))
+        return
+
+    _C = {"CRITICAL": "\033[91m", "HIGH": "\033[93m", "MEDIUM": "\033[94m"}
+    _R = "\033[0m"
+
+    print(f"\n{'='*65}")
+    print(f"RBAC vulnerable items: {len(findings)}")
+    for sev in ("CRITICAL", "HIGH", "MEDIUM"):
+        cnt = sum(1 for f in findings if f.severity == sev)
+        if cnt:
+            print(f"  {_C.get(sev,'')}{sev}{_R}: {cnt}")
+
+    print()
+    for f in findings:
+        c = _C.get(f.severity, "")
+        subj = f" <- {f.subject_kind}/{f.subject_name}" if f.subject_kind else ""
+        print(f"[{c}{f.severity}{_R}] {f.kind}/{f.name} [{f.namespace}]{subj}")
+        print(f"  {f.title}")
+        print(f"  Detail      : {f.detail}")
+        print(f"  Remediation : {f.remediation}\n")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Kubernetes RBAC over-privilege analysis tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Examples:\n"
+               "  python3 k8s_rbac_audit.py\n"
+               "  python3 k8s_rbac_audit.py --namespace production\n"
+               "  python3 k8s_rbac_audit.py --kubeconfig ~/.kube/prod --json",
+    )
+    parser.add_argument("--kubeconfig", metavar="FILE", help="Path to kubeconfig file")
+    parser.add_argument("--namespace", default="all", help="Namespace to analyze (default: all)")
+    parser.add_argument("--json", action="store_true", help="Output in JSON format")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if not HAS_K8S:
+        print("kubernetes library required: pip install kubernetes", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        auditor = K8sRBACAuditor(kubeconfig=args.kubeconfig)
+        findings = auditor.run(namespace=args.namespace)
+        print_report(findings, as_json=args.json)
+    except RuntimeError as exc:
+        print(f"[-] Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as exc:
+        print(f"[-] Unexpected error: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. GCP/Azure Common Checklist
+
+```
+GCP Security Checklist:
+  □ Configure organization-level policy constraints
+  □ Enable VPC Service Controls
+  □ Enable Cloud Audit Logs
+  □ Enable Cloud Security Command Center
+  □ Use IAM Conditional Access
+  □ Minimize service account keys (use Workload Identity)
+  □ Enable Container Analysis
+  □ Configure Binary Authorization
+  □ Configure Cloud Armor WAF
+
+Azure Security Checklist:
+  □ Azure AD Conditional Access Policies
+  □ Enable Azure Defender for Cloud
+  □ Integrate Azure Sentinel SIEM
+  □ Enforce MFA for all users
+  □ Use Privileged Identity Management (PIM)
+  □ Just-in-Time access for admin accounts
+  □ Azure Policy compliance rules
+  □ Use Key Vault (centralize secrets)
+  □ Enable DDoS Protection Standard
+  □ Network Watcher flow logs
+```
+
+---
+
+## 6. Cloud Security Incident Response
+
+These are penetration testing commands for cloud environments using the AWS CLI. Misconfigured S3 buckets, excessive IAM permissions, and exposed metadata services (SSRF vulnerabilities) are the primary attack vectors.
+
+```bash
+# Immediate response to AWS account compromise
+# 1. Immediately disable suspicious credentials
+aws iam update-access-key \
+    --access-key-id COMPROMISED_KEY \
+    --status Inactive
+
+# 2. Forcibly terminate active sessions
+aws iam delete-user-policy --user-name compromised-user --policy-name *
+aws iam delete-login-profile --user-name compromised-user
+
+# 3. Create snapshots of affected resources
+aws ec2 create-snapshot \
+    --volume-id vol-xxx \
+    --description "Forensic snapshot - incident-2024-01-15"
+
+# 4. Block all security group inbound traffic
+aws ec2 revoke-security-group-ingress \
+    --group-id sg-xxx \
+    --ip-permissions '[{"IpProtocol":"-1","IpRanges":[{"CidrIp":"0.0.0.0/0"}]}]'
+
+# 5. Extract attacker activity from CloudTrail logs
 aws cloudtrail lookup-events \
     --lookup-attributes AttributeKey=AccessKeyId,AttributeValue=COMPROMISED_KEY \
     --start-time "2024-01-15T00:00:00Z" \

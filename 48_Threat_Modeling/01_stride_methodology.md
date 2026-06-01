@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # STRIDE 위협 모델링 방법론
 
 ## 목차
@@ -1302,5 +1308,1318 @@ python3 stride_analyzer.py --interactive --format json --output custom.json
 
 - [Microsoft STRIDE 위협 모델링](https://docs.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)
 - [OWASP 위협 모델링 치트 시트](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html)
+- [Shostack, A. (2014). Threat Modeling: Designing for Security]
+- [NIST SP 800-154: Guide to Data-Centric System Threat Modeling]
+
+---
+
+<a name="english"></a>
+
+# STRIDE Threat Modeling Methodology
+
+## Table of Contents
+1. [STRIDE Overview](#stride-overview)
+2. [Detailed Analysis by Threat Type](#detailed-analysis-by-threat-type)
+3. [How to Create DFDs](#how-to-create-dfds)
+4. [Trust Boundary Identification](#trust-boundary-identification)
+5. [STRIDE per Element Technique](#stride-per-element-technique)
+6. [Real-World Scenarios](#real-world-scenarios)
+7. [STRIDE Automation Script](#stride-automation-script)
+
+---
+
+## STRIDE Overview
+
+STRIDE is a threat modeling framework developed by Microsoft in 1999 that classifies threats in software systems into six categories.
+
+| Threat Type | Full Name | Security Property Violated | Violated Principle |
+|-------------|-----------|---------------------------|-------------------|
+| Spoofing | Spoofing | Authentication | Identity forgery |
+| Tampering | Tampering | Integrity | Data modification |
+| Repudiation | Repudiation | Non-repudiation | Denial of action |
+| Information Disclosure | Information Disclosure | Confidentiality | Unauthorized access |
+| Denial of Service | Denial of Service | Availability | Service disruption |
+| Elevation of Privilege | Elevation of Privilege | Authorization | Privilege escalation |
+
+### STRIDE Process
+
+```
+1. Decompose the System
+   ↓
+2. Identify Threats
+   ↓
+3. Rate the Threats
+   ↓
+4. Mitigate Threats
+   ↓
+5. Validate Mitigations
+```
+
+---
+
+## Detailed Analysis by Threat Type
+
+### S - Spoofing
+
+An attacker impersonates another user, system, or service to forge their identity.
+
+**Web Application Examples:**
+```
+Attack scenarios:
+- Steal session token and impersonate victim
+- JWT signature algorithm confusion attack (alg:none)
+- Exploit victim's permissions via CSRF attack
+- Steal credentials via phishing and log in
+
+Example vulnerability:
+POST /api/login
+{
+  "username": "admin",
+  "token": "<stolen_session_token>"
+}
+```
+
+**API Examples:**
+```
+OAuth2 Token Spoofing:
+- Reuse Access Token (replay attack)
+- Expose Client ID/Secret to impersonate another client
+- Steal API Key (Git history, log files)
+
+Microservice examples:
+- mTLS not applied in Service-to-Service communication
+- Forge internal service IP
+- Intercept service requests via DNS spoofing
+```
+
+**Mitigations:**
+- Strong authentication mechanisms (MFA, FIDO2)
+- Hardened session management (HttpOnly, Secure, SameSite cookies)
+- mTLS for service-to-service authentication
+- Explicit JWT signature algorithm validation
+
+---
+
+### T - Tampering
+
+Unauthorized modification of data, code, or configuration.
+
+**Web Application Examples:**
+```
+Parameter tampering:
+GET /api/order?price=0.01&quantity=100
+→ Tamper price parameter to 0.01
+
+Hidden field tampering:
+<input type="hidden" name="discount" value="0">
+→ Modify discount=100 using browser developer tools
+
+DB modification via SQL Injection:
+UPDATE users SET role='admin' WHERE id=1--
+```
+
+**File System Tampering:**
+```bash
+# Configuration file modification via Path Traversal
+GET /download?file=../../../../etc/passwd
+
+# Web shell insertion via uploaded file
+POST /upload
+Content-Disposition: form-data; name="file"; filename="shell.php"
+<?php system($_GET['cmd']); ?>
+```
+
+**Mitigations:**
+- Server-side input validation (never rely solely on client-side)
+- File integrity monitoring (AIDE, Tripwire)
+- Digital signatures to guarantee code/configuration integrity
+- WAF deployment
+
+---
+
+### R - Repudiation
+
+An attacker denies their actions, or the system fails to prove actions performed by legitimate users.
+
+**Scenarios:**
+```
+Financial transaction repudiation:
+- "I never requested that transfer"
+- Cannot prove it if logs are absent or tampered
+
+Administrator action repudiation:
+- After deleting data: "That was an intentional attack, not a mistake"
+- Cannot track insider behavior due to insufficient audit logs
+```
+
+**Mitigations:**
+```
+Audit log requirements:
+- Who: User ID, IP address
+- When: Timestamp (UTC, tamper-proof)
+- What: Details of the action performed
+- Result: Success/Failure
+
+Implementation:
+- Immutable log storage (WORM storage)
+- Log signing (HMAC or digital signature)
+- Centralized log collection (ELK, Splunk)
+- Require digital signatures for critical transactions
+```
+
+---
+
+### I - Information Disclosure
+
+Sensitive information is exposed to unauthorized parties.
+
+**Web Application Examples:**
+```
+Error message information disclosure:
+- Stack trace exposure: "java.sql.SQLException at com.example..."
+- DB query exposure: "ERROR: relation 'users' doesn't exist"
+- Internal path exposure: "/var/www/html/config/database.php"
+
+Directory listing:
+http://example.com/backup/ → file list exposed
+
+Sensitive file exposure:
+/.git/ → source code exposed
+/.env → environment variables exposed
+/backup.sql → DB dump exposed
+```
+
+**API over-exposure:**
+```json
+// Vulnerable response - contains unnecessary internal information
+{
+  "id": 1,
+  "username": "alice",
+  "password_hash": "$2b$12$...",
+  "internal_role_id": 3,
+  "created_by_admin": "bob@company.com"
+}
+
+// Safe response - returns only necessary information
+{
+  "id": 1,
+  "username": "alice"
+}
+```
+
+**Mitigations:**
+- Use generic error messages
+- Minimize API responses (field filtering)
+- Place sensitive files outside web root
+- TLS transport encryption
+- Disable unused endpoints
+
+---
+
+### D - Denial of Service
+
+Attacks that prevent legitimate users from using a service.
+
+**Classification by Type:**
+```
+Volumetric attacks:
+- UDP/ICMP Flood
+- DNS Amplification
+- NTP Amplification
+
+Protocol attacks:
+- SYN Flood
+- Slowloris (slow HTTP requests)
+- SSL/TLS handshake attacks
+
+Application layer:
+- HTTP Flood (GET/POST)
+- Complex query attacks (GraphQL, ReDoS)
+- Resource exhaustion (file uploads, large requests)
+```
+
+**ReDoS Vulnerability Example:**
+```python
+import re
+
+# Vulnerable regular expression (exponential backtracking)
+pattern = r'^(a+)+$'
+# Input: "aaaaaaaaaaaaaaab" → 100% CPU usage
+
+# Mitigation: apply timeout
+import signal
+
+def regex_with_timeout(pattern, text, timeout=1):
+    def handler(signum, frame):
+        raise TimeoutError("Regex timeout")
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(timeout)
+    try:
+        return re.match(pattern, text)
+    finally:
+        signal.alarm(0)
+```
+
+**Mitigations:**
+- Rate Limiting (API, login)
+- CAPTCHA
+- CDN/DDoS protection services
+- Resource limits (request size, query complexity)
+- Auto-scaling
+
+---
+
+### E - Elevation of Privilege
+
+A low-privileged entity gains higher privileges.
+
+**Vertical Privilege Escalation:**
+```
+Regular user → Administrator
+IDOR attack:
+GET /api/admin/users → regular user accesses admin API
+
+JWT manipulation:
+{
+  "sub": "user123",
+  "role": "user"  →  "role": "admin"
+}
+```
+
+**Horizontal Privilege Escalation:**
+```
+User A → accesses User B's data
+GET /api/users/456/profile  (own ID is 123)
+
+Parameter tampering:
+POST /transfer
+{"from_account": "456", "to_account": "attacker_account"}
+```
+
+**Microservice Privilege Escalation:**
+```
+Container escape → host access:
+docker run --privileged ...
+→ Mount host filesystem from inside container
+
+Internal service access via SSRF:
+POST /api/fetch
+{"url": "http://169.254.169.254/latest/meta-data/"}
+→ Obtain IAM credentials via AWS metadata
+```
+
+**Mitigations:**
+- Principle of Least Privilege (PoLP)
+- Authorization checks on all APIs
+- Server-side permission validation (never trust client data)
+- Separation of Duties
+
+---
+
+## How to Create DFDs
+
+### DFD Components
+
+```
+Symbol descriptions:
+┌─────────┐
+│ Process │  → Circle/oval: Process (data transformation)
+└─────────┘
+
+┌═════════╗
+║External ║  → Rectangle: External Entity (person/system)
+║ Entity  ║
+╚═════════╝
+
+═══════════  → Parallel lines: Data Store
+ Data Store
+═══════════
+
+────────→    → Arrow: Data Flow
+```
+
+### Level 0 DFD (Context Diagram) Example
+
+```
+                    ┌─────────────────────────────────┐
+                    │         Trust Boundary           │
+  [Customer] ─────→│  [Web Server]  ─────→  [DB Server]│
+             ←─────│               ←─────              │
+                    │                ║Users║            │
+                    │                ║Orders║           │
+                    └─────────────────────────────────┘
+                              ↕
+                         [Payment Gateway]
+                         (External Trust Boundary)
+```
+
+### Level 1 DFD (Detailed Decomposition) Example
+
+```
+[Browser]
+    │ HTTPS Request
+    ↓
+[Load Balancer]
+    │ HTTP Forwarding
+    ↓
+[Web Application Server]──────────────[Session Store (Redis)]
+    │ SQL Query                               │
+    ↓                                         │
+[Database]                              [Cache Layer]
+    │
+    ↓
+[Backup Storage]
+
+Trust boundary markers:
+- Internet ↔ DMZ
+- DMZ ↔ Internal Network
+- Internal Network ↔ DB Server
+```
+
+### DFD Creation Procedure
+
+```
+Step 1: Define system boundaries
+   - Determine analysis scope
+   - Identify external entities
+
+Step 2: Identify processes
+   - All components that transform/process data
+   - Assign a number to each process
+
+Step 3: Map data flows
+   - Show all data movement paths
+   - Specify data formats and protocols
+
+Step 4: Identify data stores
+   - DB, files, cache, cookies
+
+Step 5: Mark trust boundaries
+   - All points where the trust level changes
+```
+
+---
+
+## Trust Boundary Identification
+
+### What is a Trust Boundary?
+
+A Trust Boundary is the point at which data or control moves between contexts of different trust levels. All data crossing these boundaries is a potential threat vector.
+
+### Common Types of Trust Boundaries
+
+```
+Network-based:
+┌──────────────────────────────────────────┐
+│  Internet (Trust level 0)                │
+│  ┌────────────────────────────────────┐  │
+│  │  DMZ (Trust level 1)               │  │
+│  │  ┌──────────────────────────────┐  │  │
+│  │  │  Internal Network (Level 2)  │  │  │
+│  │  │  ┌────────────────────────┐  │  │  │
+│  │  │  │  DB Server (Level 3)   │  │  │  │
+│  │  │  └────────────────────────┘  │  │  │
+│  │  └──────────────────────────────┘  │  │
+│  └────────────────────────────────────┘  │
+└──────────────────────────────────────────┘
+
+Process-based:
+- User space ↔ Kernel space
+- Unprivileged process ↔ Privileged process
+- Container ↔ Host
+
+Data-based:
+- Authenticated session ↔ Unauthenticated session
+- Encrypted channel ↔ Plaintext channel
+```
+
+### Items to Validate at Boundaries
+
+```
+Input validation:
+□ Data type validation
+□ Length/range validation
+□ Format validation (whitelist)
+□ Encoding/escaping applied
+
+Authentication/Authorization:
+□ Credential validation
+□ Session validity check
+□ Permission check
+□ CSRF token validation
+
+Encryption:
+□ Encryption in transit (TLS)
+□ Encryption at rest
+□ Key management
+```
+
+---
+
+## STRIDE per Element Technique
+
+A method for systematically applying STRIDE to each DFD element.
+
+### Applicable Threats by Element Type
+
+```
+Process:
+┌─────────────────────────────────────┐
+│  S - Process identity spoofing       │
+│  T - Tampering with data the process │
+│      handles                         │
+│  R - Repudiation of actions          │
+│  I - Information disclosure during   │
+│      processing                      │
+│  D - Process interruption/overload   │
+│  E - Execution with elevated rights  │
+└─────────────────────────────────────┘
+
+Data Flow:
+┌─────────────────────────────────────┐
+│  T - Tampering with data in transit  │
+│  I - Eavesdropping in transit        │
+│  D - Data flow interruption          │
+└─────────────────────────────────────┘
+
+Data Store:
+┌─────────────────────────────────────┐
+│  T - Tampering with stored data      │
+│  R - Absence of access records       │
+│  I - Disclosure of stored data       │
+│  D - Store inaccessible              │
+└─────────────────────────────────────┘
+
+External Entity:
+┌─────────────────────────────────────┐
+│  S - External entity identity spoof  │
+│  R - Repudiation by external entity  │
+└─────────────────────────────────────┘
+```
+
+### Analysis Matrix Example (REST API Server)
+
+```
+Component: /api/v1/auth/login endpoint
+
+┌──────┬──────────────────────────────┬──────────────────────────────┐
+│Threat│ Scenario                      │ Mitigation                   │
+├──────┼──────────────────────────────┼──────────────────────────────┤
+│  S   │ Login with stolen credentials │ MFA, anomalous login detect. │
+│  T   │ Password tampering in transit │ TLS 1.3 required             │
+│  R   │ Login attempts not logged     │ Audit logs + SIEM            │
+│  I   │ Account existence in errors   │ Generic error responses      │
+│  D   │ Brute-force account lockout   │ Rate Limit, CAPTCHA          │
+│  E   │ SQL Injection to gain admin   │ Parameterized queries, ORM   │
+└──────┴──────────────────────────────┴──────────────────────────────┘
+```
+
+---
+
+## Real-World Scenarios
+
+### Scenario 1: E-commerce API
+
+```
+Components:
+- Client (mobile/web)
+- API Gateway
+- Authentication Service
+- Order Service
+- Payment Service
+- Product Service
+- PostgreSQL DB
+- Redis Cache
+- S3 File Storage
+
+Trust Boundaries:
+B1: Internet ↔ API Gateway
+B2: API Gateway ↔ Internal Services
+B3: Services ↔ Database
+
+STRIDE Analysis (Order Service):
+S: View/modify another user's orders (IDOR)
+T: Tamper with order amount, quantity
+R: Order creation/cancellation history not recorded
+I: Payment information, shipping address exposed
+D: Service overload by creating massive orders
+E: Infinite discounts by bypassing coupon system
+```
+
+### Scenario 2: Kubernetes Microservices
+
+```
+Components:
+- Ingress Controller
+- API Pod
+- Auth Pod
+- DB StatefulSet
+- ConfigMap/Secret
+- Service Account
+
+STRIDE Analysis:
+S: Steal service account token to impersonate K8s API
+T: Modify ConfigMap to change service configuration
+R: Pod logs not collected — actions untraceable
+I: Secrets stored in plaintext (base64 ≠ encryption)
+D: OOM due to missing resource limits
+E: Node escape via privileged container
+```
+
+---
+
+## STRIDE Automation Script
+
+```python
+#!/usr/bin/env python3
+"""
+STRIDE Threat Modeling Automation Tool
+
+Usage:
+    python3 stride_analyzer.py --system ecommerce --output report.json
+    python3 stride_analyzer.py --system kubernetes --format html --output report.html
+    python3 stride_analyzer.py --interactive
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from dataclasses import dataclass, field, asdict
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Optional
+
+
+class StrideCategory(str, Enum):
+    SPOOFING = "S"
+    TAMPERING = "T"
+    REPUDIATION = "R"
+    INFORMATION_DISCLOSURE = "I"
+    DENIAL_OF_SERVICE = "D"
+    ELEVATION_OF_PRIVILEGE = "E"
+
+    @property
+    def full_name(self) -> str:
+        names = {
+            "S": "Spoofing",
+            "T": "Tampering",
+            "R": "Repudiation",
+            "I": "Information Disclosure",
+            "D": "Denial of Service",
+            "E": "Elevation of Privilege",
+        }
+        return names[self.value]
+
+    @property
+    def violated_property(self) -> str:
+        props = {
+            "S": "Authentication",
+            "T": "Integrity",
+            "R": "Non-repudiation",
+            "I": "Confidentiality",
+            "D": "Availability",
+            "E": "Authorization",
+        }
+        return props[self.value]
+
+
+class Severity(str, Enum):
+    CRITICAL = "Critical"
+    HIGH = "High"
+    MEDIUM = "Medium"
+    LOW = "Low"
+    INFO = "Info"
+
+
+class ElementType(str, Enum):
+    PROCESS = "Process"
+    DATA_FLOW = "DataFlow"
+    DATA_STORE = "DataStore"
+    EXTERNAL_ENTITY = "ExternalEntity"
+
+
+@dataclass
+class TrustBoundary:
+    id: str
+    name: str
+    description: str
+    from_zone: str
+    to_zone: str
+
+
+@dataclass
+class DFDElement:
+    id: str
+    name: str
+    element_type: ElementType
+    description: str
+    trust_boundary: Optional[str] = None
+    technologies: list[str] = field(default_factory=list)
+
+
+@dataclass
+class Threat:
+    id: str
+    stride_category: StrideCategory
+    title: str
+    description: str
+    affected_element: str
+    attack_scenario: str
+    impact: str
+    severity: Severity
+    likelihood: str
+    mitigation: list[str] = field(default_factory=list)
+    references: list[str] = field(default_factory=list)
+    status: str = "Open"
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        d["stride_category"] = self.stride_category.value
+        d["stride_full_name"] = self.stride_category.full_name
+        d["violated_property"] = self.stride_category.violated_property
+        d["element_type_label"] = self.severity.value
+        return d
+
+
+@dataclass
+class ThreatModel:
+    name: str
+    description: str
+    version: str
+    created_at: str
+    elements: list[DFDElement] = field(default_factory=list)
+    trust_boundaries: list[TrustBoundary] = field(default_factory=list)
+    threats: list[Threat] = field(default_factory=list)
+
+    def add_element(self, element: DFDElement) -> None:
+        self.elements.append(element)
+
+    def add_trust_boundary(self, boundary: TrustBoundary) -> None:
+        self.trust_boundaries.append(boundary)
+
+    def add_threat(self, threat: Threat) -> None:
+        self.threats.append(threat)
+
+    def get_threats_by_severity(self) -> dict[str, list[Threat]]:
+        result: dict[str, list[Threat]] = {s.value: [] for s in Severity}
+        for threat in self.threats:
+            result[threat.severity.value].append(threat)
+        return result
+
+    def get_threats_by_category(self) -> dict[str, list[Threat]]:
+        result: dict[str, list[Threat]] = {c.value: [] for c in StrideCategory}
+        for threat in self.threats:
+            result[threat.stride_category.value].append(threat)
+        return result
+
+    def get_summary(self) -> dict:
+        by_severity = self.get_threats_by_severity()
+        by_category = self.get_threats_by_category()
+        return {
+            "total_threats": len(self.threats),
+            "by_severity": {k: len(v) for k, v in by_severity.items()},
+            "by_category": {k: len(v) for k, v in by_category.items()},
+            "open_threats": sum(1 for t in self.threats if t.status == "Open"),
+            "mitigated_threats": sum(1 for t in self.threats if t.status == "Mitigated"),
+        }
+
+
+class StrideTemplateLibrary:
+    """STRIDE threat template library"""
+
+    ELEMENT_THREAT_MAP: dict[ElementType, list[StrideCategory]] = {
+        ElementType.PROCESS: [
+            StrideCategory.SPOOFING,
+            StrideCategory.TAMPERING,
+            StrideCategory.REPUDIATION,
+            StrideCategory.INFORMATION_DISCLOSURE,
+            StrideCategory.DENIAL_OF_SERVICE,
+            StrideCategory.ELEVATION_OF_PRIVILEGE,
+        ],
+        ElementType.DATA_FLOW: [
+            StrideCategory.TAMPERING,
+            StrideCategory.INFORMATION_DISCLOSURE,
+            StrideCategory.DENIAL_OF_SERVICE,
+        ],
+        ElementType.DATA_STORE: [
+            StrideCategory.TAMPERING,
+            StrideCategory.REPUDIATION,
+            StrideCategory.INFORMATION_DISCLOSURE,
+            StrideCategory.DENIAL_OF_SERVICE,
+        ],
+        ElementType.EXTERNAL_ENTITY: [
+            StrideCategory.SPOOFING,
+            StrideCategory.REPUDIATION,
+        ],
+    }
+
+    @staticmethod
+    def get_threat_templates(
+        element: DFDElement,
+    ) -> list[dict]:
+        """Return threat templates based on element type"""
+        categories = StrideTemplateLibrary.ELEMENT_THREAT_MAP.get(
+            element.element_type, []
+        )
+        templates = []
+
+        for category in categories:
+            template = StrideTemplateLibrary._build_template(element, category)
+            templates.append(template)
+
+        return templates
+
+    @staticmethod
+    def _build_template(element: DFDElement, category: StrideCategory) -> dict:
+        title_map = {
+            StrideCategory.SPOOFING: f"{element.name} Identity Spoofing",
+            StrideCategory.TAMPERING: f"{element.name} Data Tampering",
+            StrideCategory.REPUDIATION: f"{element.name} Action Repudiation",
+            StrideCategory.INFORMATION_DISCLOSURE: f"{element.name} Information Disclosure",
+            StrideCategory.DENIAL_OF_SERVICE: f"{element.name} Denial of Service",
+            StrideCategory.ELEVATION_OF_PRIVILEGE: f"{element.name} Privilege Escalation",
+        }
+
+        scenario_map = {
+            StrideCategory.SPOOFING: f"Attacker spoofs the identity of {element.name} to access the system",
+            StrideCategory.TAMPERING: f"Attacker unauthorizedly modifies data in {element.name}",
+            StrideCategory.REPUDIATION: f"Insufficient audit logs for actions performed on {element.name}",
+            StrideCategory.INFORMATION_DISCLOSURE: f"Attacker accesses sensitive information from {element.name}",
+            StrideCategory.DENIAL_OF_SERVICE: f"Attacker overloads {element.name} causing service disruption",
+            StrideCategory.ELEVATION_OF_PRIVILEGE: f"Attacker gains elevated privileges through {element.name}",
+        }
+
+        mitigation_map = {
+            StrideCategory.SPOOFING: [
+                "Apply strong authentication mechanisms (MFA)",
+                "Harden session management",
+                "mTLS service-to-service authentication",
+            ],
+            StrideCategory.TAMPERING: [
+                "Input validation and integrity checks",
+                "Apply digital signatures",
+                "WAF deployment",
+            ],
+            StrideCategory.REPUDIATION: [
+                "Implement immutable audit logs",
+                "Digital signatures for critical operations",
+                "SIEM integration",
+            ],
+            StrideCategory.INFORMATION_DISCLOSURE: [
+                "Apply principle of least privilege",
+                "Data encryption (in transit/at rest)",
+                "Minimize API responses",
+            ],
+            StrideCategory.DENIAL_OF_SERVICE: [
+                "Apply Rate Limiting",
+                "Set resource limits",
+                "Use CDN/DDoS protection services",
+            ],
+            StrideCategory.ELEVATION_OF_PRIVILEGE: [
+                "Apply principle of least privilege",
+                "Server-side authorization validation",
+                "Implement separation of duties",
+            ],
+        }
+
+        return {
+            "stride_category": category,
+            "title": title_map[category],
+            "attack_scenario": scenario_map[category],
+            "mitigation": mitigation_map[category],
+            "severity": Severity.MEDIUM,
+        }
+
+
+class StrideAnalyzer:
+    """STRIDE analysis engine"""
+
+    def __init__(self, model: ThreatModel) -> None:
+        self.model = model
+        self._threat_counter = 0
+
+    def _next_threat_id(self) -> str:
+        self._threat_counter += 1
+        return f"T{self._threat_counter:04d}"
+
+    def analyze_element(self, element: DFDElement) -> list[Threat]:
+        """Perform STRIDE analysis on a specific DFD element"""
+        templates = StrideTemplateLibrary.get_threat_templates(element)
+        threats = []
+
+        for tmpl in templates:
+            threat = Threat(
+                id=self._next_threat_id(),
+                stride_category=tmpl["stride_category"],
+                title=tmpl["title"],
+                description=f"{tmpl['stride_category'].full_name} threat related to {element.name} ({element.element_type.value})",
+                affected_element=element.id,
+                attack_scenario=tmpl["attack_scenario"],
+                impact="Violation of system security properties",
+                severity=tmpl["severity"],
+                likelihood="Medium",
+                mitigation=tmpl["mitigation"],
+            )
+            threats.append(threat)
+
+        return threats
+
+    def analyze_all(self) -> None:
+        """Automated analysis of all DFD elements"""
+        for element in self.model.elements:
+            threats = self.analyze_element(element)
+            for threat in threats:
+                self.model.add_threat(threat)
+
+    def generate_report(self, fmt: str = "json") -> str:
+        if fmt == "json":
+            return self._generate_json_report()
+        elif fmt == "html":
+            return self._generate_html_report()
+        elif fmt == "markdown":
+            return self._generate_markdown_report()
+        else:
+            raise ValueError(f"Unsupported format: {fmt}")
+
+    def _generate_json_report(self) -> str:
+        summary = self.model.get_summary()
+        report = {
+            "metadata": {
+                "name": self.model.name,
+                "description": self.model.description,
+                "version": self.model.version,
+                "generated_at": datetime.now().isoformat(),
+                "created_at": self.model.created_at,
+            },
+            "summary": summary,
+            "elements": [
+                {
+                    "id": e.id,
+                    "name": e.name,
+                    "type": e.element_type.value,
+                    "description": e.description,
+                    "technologies": e.technologies,
+                }
+                for e in self.model.elements
+            ],
+            "trust_boundaries": [
+                {
+                    "id": b.id,
+                    "name": b.name,
+                    "from": b.from_zone,
+                    "to": b.to_zone,
+                }
+                for b in self.model.trust_boundaries
+            ],
+            "threats": [t.to_dict() for t in self.model.threats],
+        }
+        return json.dumps(report, ensure_ascii=False, indent=2)
+
+    def _generate_markdown_report(self) -> str:
+        summary = self.model.get_summary()
+        lines = [
+            f"# Threat Model Report: {self.model.name}",
+            f"\nGenerated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"\n## Overview\n\n{self.model.description}",
+            "\n## Summary",
+            f"\n- Total threats: **{summary['total_threats']}**",
+            f"- Open threats: **{summary['open_threats']}**",
+            f"- Mitigated threats: **{summary['mitigated_threats']}**",
+            "\n### Distribution by Severity\n",
+        ]
+
+        for sev, count in summary["by_severity"].items():
+            if count > 0:
+                lines.append(f"- {sev}: {count}")
+
+        lines.append("\n### Distribution by STRIDE Category\n")
+        by_cat = self.model.get_threats_by_category()
+        for cat_code, threats in by_cat.items():
+            if threats:
+                cat_name = StrideCategory(cat_code).full_name
+                lines.append(f"- {cat_name}: {len(threats)}")
+
+        lines.append("\n## Threat List\n")
+        for threat in sorted(
+            self.model.threats,
+            key=lambda t: ["Critical", "High", "Medium", "Low", "Info"].index(
+                t.severity.value
+            ),
+        ):
+            lines.extend([
+                f"### [{threat.id}] {threat.title}",
+                f"\n- **Category**: {threat.stride_category.full_name}",
+                f"- **Severity**: {threat.severity.value}",
+                f"- **Likelihood**: {threat.likelihood}",
+                f"- **Status**: {threat.status}",
+                f"\n**Attack Scenario**: {threat.attack_scenario}",
+                f"\n**Impact**: {threat.impact}",
+                "\n**Mitigations**:",
+            ])
+            for mitigation in threat.mitigation:
+                lines.append(f"- {mitigation}")
+            lines.append("")
+
+        return "\n".join(lines)
+
+    def _generate_html_report(self) -> str:
+        json_data = self._generate_json_report()
+        summary = self.model.get_summary()
+
+        severity_colors = {
+            "Critical": "#dc3545",
+            "High": "#fd7e14",
+            "Medium": "#ffc107",
+            "Low": "#28a745",
+            "Info": "#17a2b8",
+        }
+
+        threat_rows = []
+        for t in self.model.threats:
+            color = severity_colors.get(t.severity.value, "#6c757d")
+            mitigations = "<br>".join(f"• {m}" for m in t.mitigation)
+            threat_rows.append(
+                f"<tr>"
+                f"<td>{t.id}</td>"
+                f"<td>{t.stride_category.full_name}</td>"
+                f"<td>{t.title}</td>"
+                f"<td><span style='color:{color};font-weight:bold'>{t.severity.value}</span></td>"
+                f"<td>{t.attack_scenario}</td>"
+                f"<td>{mitigations}</td>"
+                f"<td>{t.status}</td>"
+                f"</tr>"
+            )
+
+        return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>STRIDE Threat Model Report</title>
+<style>
+  body {{ font-family: Arial, sans-serif; margin: 20px; }}
+  h1 {{ color: #333; }}
+  .summary {{ background: #f5f5f5; padding: 15px; border-radius: 5px; }}
+  table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+  th {{ background: #333; color: white; padding: 10px; text-align: left; }}
+  td {{ padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }}
+  tr:nth-child(even) {{ background: #f9f9f9; }}
+</style>
+</head>
+<body>
+<h1>STRIDE Threat Model Report: {self.model.name}</h1>
+<div class="summary">
+  <h2>Summary</h2>
+  <p>Total threats: <strong>{summary['total_threats']}</strong> |
+     Open: <strong>{summary['open_threats']}</strong> |
+     Mitigated: <strong>{summary['mitigated_threats']}</strong></p>
+</div>
+<table>
+<tr>
+  <th>ID</th><th>STRIDE</th><th>Threat Name</th><th>Severity</th>
+  <th>Attack Scenario</th><th>Mitigations</th><th>Status</th>
+</tr>
+{''.join(threat_rows)}
+</table>
+</body>
+</html>"""
+
+
+def build_ecommerce_model() -> ThreatModel:
+    """Build threat model for an e-commerce system"""
+    model = ThreatModel(
+        name="E-commerce Platform",
+        description="STRIDE threat model for a REST API-based e-commerce system",
+        version="1.0",
+        created_at=datetime.now().isoformat(),
+    )
+
+    # Add trust boundaries
+    model.add_trust_boundary(TrustBoundary(
+        id="TB001", name="Internet-DMZ Boundary",
+        description="Boundary between external internet and DMZ",
+        from_zone="Internet", to_zone="DMZ",
+    ))
+    model.add_trust_boundary(TrustBoundary(
+        id="TB002", name="DMZ-Internal Boundary",
+        description="Boundary between DMZ and internal network",
+        from_zone="DMZ", to_zone="Internal Network",
+    ))
+
+    # Add DFD elements
+    elements = [
+        DFDElement("E001", "Web Browser", ElementType.EXTERNAL_ENTITY,
+                   "End-user web browser", trust_boundary="TB001"),
+        DFDElement("P001", "API Gateway", ElementType.PROCESS,
+                   "Request routing and authentication handling", technologies=["Nginx", "Kong"]),
+        DFDElement("P002", "Auth Service", ElementType.PROCESS,
+                   "User authentication/authorization", technologies=["JWT", "OAuth2"]),
+        DFDElement("P003", "Order Service", ElementType.PROCESS,
+                   "Order creation/retrieval/cancellation", technologies=["Python", "FastAPI"]),
+        DFDElement("P004", "Payment Service", ElementType.PROCESS,
+                   "Payment processing and gateway integration", technologies=["Python"]),
+        DFDElement("DS001", "User DB", ElementType.DATA_STORE,
+                   "User accounts and profiles", technologies=["PostgreSQL"]),
+        DFDElement("DS002", "Order DB", ElementType.DATA_STORE,
+                   "Order data storage", technologies=["PostgreSQL"]),
+        DFDElement("DS003", "Session Cache", ElementType.DATA_STORE,
+                   "User session token storage", technologies=["Redis"]),
+        DFDElement("DF001", "HTTPS Request", ElementType.DATA_FLOW,
+                   "HTTPS communication between client and server"),
+        DFDElement("DF002", "Internal API Call", ElementType.DATA_FLOW,
+                   "HTTP communication between microservices"),
+        DFDElement("E002", "Payment Gateway", ElementType.EXTERNAL_ENTITY,
+                   "External payment processing service", trust_boundary="TB001"),
+    ]
+
+    for element in elements:
+        model.add_element(element)
+
+    return model
+
+
+def build_kubernetes_model() -> ThreatModel:
+    """Build threat model for a Kubernetes cluster"""
+    model = ThreatModel(
+        name="Kubernetes Cluster",
+        description="STRIDE threat model for a multi-tenant Kubernetes cluster",
+        version="1.0",
+        created_at=datetime.now().isoformat(),
+    )
+
+    model.add_trust_boundary(TrustBoundary(
+        id="TB001", name="Internet-Cluster Boundary",
+        description="External traffic entry point",
+        from_zone="Internet", to_zone="Cluster",
+    ))
+    model.add_trust_boundary(TrustBoundary(
+        id="TB002", name="Namespace Boundary",
+        description="Isolation boundary between tenants",
+        from_zone="Tenant A", to_zone="Tenant B",
+    ))
+
+    elements = [
+        DFDElement("E001", "Developer", ElementType.EXTERNAL_ENTITY,
+                   "Developer using kubectl"),
+        DFDElement("P001", "kube-apiserver", ElementType.PROCESS,
+                   "Kubernetes API server", technologies=["Go", "RBAC"]),
+        DFDElement("P002", "kubelet", ElementType.PROCESS,
+                   "Node agent", technologies=["Go"]),
+        DFDElement("P003", "Application Pod", ElementType.PROCESS,
+                   "Workload container", technologies=["Docker", "containerd"]),
+        DFDElement("DS001", "etcd", ElementType.DATA_STORE,
+                   "Cluster state store", technologies=["etcd"]),
+        DFDElement("DS002", "Secret", ElementType.DATA_STORE,
+                   "K8s Secret object", technologies=["Kubernetes"]),
+        DFDElement("DF001", "API Communication", ElementType.DATA_FLOW,
+                   "kubectl ↔ kube-apiserver TLS communication"),
+    ]
+
+    for element in elements:
+        model.add_element(element)
+
+    return model
+
+
+def interactive_mode() -> ThreatModel:
+    """Build threat model interactively"""
+    print("\n=== STRIDE Threat Modeling Interactive Mode ===\n")
+
+    name = input("System name: ").strip() or "Unnamed System"
+    description = input("System description: ").strip() or ""
+
+    model = ThreatModel(
+        name=name,
+        description=description,
+        version="1.0",
+        created_at=datetime.now().isoformat(),
+    )
+
+    print("\n--- Add DFD elements (empty line to finish) ---")
+    element_count = 0
+    type_map = {
+        "1": ElementType.PROCESS,
+        "2": ElementType.DATA_FLOW,
+        "3": ElementType.DATA_STORE,
+        "4": ElementType.EXTERNAL_ENTITY,
+    }
+
+    while True:
+        print(f"\nElement {element_count + 1}:")
+        elem_name = input("  Name (empty line to finish): ").strip()
+        if not elem_name:
+            break
+
+        print("  Type: 1=Process, 2=DataFlow, 3=DataStore, 4=ExternalEntity")
+        type_choice = input("  Select: ").strip()
+        elem_type = type_map.get(type_choice, ElementType.PROCESS)
+
+        elem_desc = input("  Description: ").strip()
+        element_count += 1
+
+        element = DFDElement(
+            id=f"E{element_count:03d}",
+            name=elem_name,
+            element_type=elem_type,
+            description=elem_desc,
+        )
+        model.add_element(element)
+        print(f"  Added: {elem_name} ({elem_type.value})")
+
+    return model
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="STRIDE threat modeling automation tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s --system ecommerce --output report.json
+  %(prog)s --system kubernetes --format html --output k8s_threats.html
+  %(prog)s --system ecommerce --format markdown --output threats.md
+  %(prog)s --interactive --format json --output custom.json
+        """,
+    )
+    parser.add_argument(
+        "--system",
+        choices=["ecommerce", "kubernetes"],
+        help="Select a predefined system to analyze",
+    )
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Define system in interactive mode",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["json", "html", "markdown"],
+        default="json",
+        help="Output format (default: json)",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("stride_report.json"),
+        help="Output file path",
+    )
+    parser.add_argument(
+        "--summary-only",
+        action="store_true",
+        help="Print summary information only",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+
+    if not args.system and not args.interactive:
+        print("Error: specify either --system or --interactive.", file=sys.stderr)
+        return 1
+
+    # Build model
+    if args.interactive:
+        model = interactive_mode()
+    elif args.system == "ecommerce":
+        model = build_ecommerce_model()
+    elif args.system == "kubernetes":
+        model = build_kubernetes_model()
+    else:
+        print(f"Unknown system: {args.system}", file=sys.stderr)
+        return 1
+
+    # Run analysis
+    analyzer = StrideAnalyzer(model)
+    analyzer.analyze_all()
+
+    # Print summary
+    summary = model.get_summary()
+    print(f"\n[{model.name}] STRIDE analysis complete")
+    print(f"  Elements: {len(model.elements)}")
+    print(f"  Total threats: {summary['total_threats']}")
+    print(f"  Critical: {summary['by_severity']['Critical']}")
+    print(f"  High: {summary['by_severity']['High']}")
+    print(f"  Medium: {summary['by_severity']['Medium']}")
+
+    if args.summary_only:
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return 0
+
+    # Generate report
+    try:
+        report = analyzer.generate_report(fmt=args.format)
+        args.output.write_text(report, encoding="utf-8")
+        print(f"\nReport saved: {args.output}")
+    except (OSError, ValueError) as e:
+        print(f"Report generation failed: {e}", file=sys.stderr)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+### How to Run
+
+```bash
+# E-commerce system JSON report
+python3 stride_analyzer.py --system ecommerce --output ecom_threats.json
+
+# Kubernetes HTML report
+python3 stride_analyzer.py --system kubernetes --format html --output k8s.html
+
+# Markdown report
+python3 stride_analyzer.py --system ecommerce --format markdown --output threats.md
+
+# Print summary only
+python3 stride_analyzer.py --system kubernetes --summary-only
+
+# Interactive mode
+python3 stride_analyzer.py --interactive --format json --output custom.json
+```
+
+### Sample JSON Output
+
+```json
+{
+  "metadata": {
+    "name": "E-commerce Platform",
+    "version": "1.0",
+    "generated_at": "2025-01-15T10:00:00"
+  },
+  "summary": {
+    "total_threats": 42,
+    "by_severity": {
+      "Critical": 0,
+      "High": 0,
+      "Medium": 42,
+      "Low": 0
+    },
+    "open_threats": 42
+  },
+  "threats": [
+    {
+      "id": "T0001",
+      "stride_category": "S",
+      "stride_full_name": "Spoofing",
+      "title": "Web Browser Identity Spoofing",
+      "severity": "Medium",
+      "status": "Open"
+    }
+  ]
+}
+```
+
+---
+
+## References
+
+- [Microsoft STRIDE Threat Modeling](https://docs.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)
+- [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html)
 - [Shostack, A. (2014). Threat Modeling: Designing for Security]
 - [NIST SP 800-154: Guide to Data-Centric System Threat Modeling]

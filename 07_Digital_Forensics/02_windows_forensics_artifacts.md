@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Windows 포렌식 아티팩트 완전 분석
 
 ## 1. Windows 포렌식 핵심 아티팩트
@@ -1138,4 +1144,1149 @@ VSS 마운트 (관리자 권한):
   vssadmin delete shadows /all  → 랜섬웨어의 전형적 행위
   wmic shadowcopy delete        → WMI 기반 VSS 삭제 (동일 목적)
   → 이 명령 실행 = 랜섬웨어 또는 악의적 행위 강한 의심
+```
+
+---
+
+<a name="english"></a>
+
+# Complete Analysis of Windows Forensics Artifacts
+
+## 1. Core Windows Forensic Artifacts
+
+```
+Artifact = Digital traces of user/system activity
+
+Key artifact locations:
+├── Registry hives
+├── Event logs (.evtx)
+├── Prefetch files
+├── LNK files (shortcuts)
+├── Jump Lists
+├── Thumbnail cache
+├── Browser history
+├── Windows page file / hibernation
+└── $MFT (Master File Table)
+```
+
+---
+
+## 2. Registry Forensics
+
+### Key Hive File Locations
+```
+C:\Windows\System32\config\
+├── SAM         → User account information (password hashes)
+├── SECURITY    → Security policy and LSA secrets
+├── SYSTEM      → Hardware settings, services, network
+├── SOFTWARE    → Installed programs, system settings
+└── DEFAULT     → Default user profile
+
+C:\Users\[username]\
+├── NTUSER.DAT  → Per-user settings, MRU lists
+└── AppData\Local\Microsoft\Windows\UsrClass.dat → Shell Bags
+```
+
+### 2-1. User Account Analysis (SAM)
+
+Dump user account hashes from the Windows SAM database using impacket tools. Used to collect credentials during offline forensic analysis or penetration testing.
+
+```bash
+# Dump hashes with impacket
+secretsdump.py -sam SAM -system SYSTEM LOCAL
+
+# Volatility (from memory)
+python3 vol.py -f memdump.raw windows.hashdump
+
+# Output format:
+# Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+#  username      RID         LM Hash                              NT Hash
+
+# Crack NT Hash (hashcat)
+hashcat -m 1000 -a 0 hashes.txt rockyou.txt
+hashcat -m 1000 -a 3 31d6cfe0d16ae931b73c59d7e0c089c0 ?a?a?a?a?a?a?a?a
+```
+
+### 2-2. Autorun Analysis (Persistence)
+
+```
+Key autorun registry keys:
+
+[System-wide]
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run  (32-bit on 64-bit)
+HKLM\SYSTEM\CurrentControlSet\Services  (services)
+
+[Current user]
+HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+HKCU\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows\Load
+
+[Hidden autoruns]
+HKCU\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell  (normally explorer.exe)
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit
+
+[AppInit DLL (loaded into every process)]
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows\AppInit_DLLs
+```
+
+Analyze system autostart entries using Autoruns (Sysinternals). Malware commonly establishes persistence through registry Run keys or services.
+
+```bash
+# Autoruns (Sysinternals) - GUI tool
+autoruns.exe  # display all autorun entries + VirusTotal integration
+
+# RegRipper
+rip.pl -r NTUSER.DAT -p run  # extract Run key
+rip.pl -r SOFTWARE -p autoruns  # all autoruns
+```
+
+### 2-3. Recently Executed Programs (MRU)
+
+```
+Recently executed file list:
+HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs
+HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RunMRU
+HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\TypedPaths
+
+Recently opened files:
+HKCU\SOFTWARE\Microsoft\Office\[version]\Word\File MRU
+HKCU\SOFTWARE\Microsoft\Office\[version]\Excel\File MRU
+
+Search history:
+HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\WordWheelQuery
+```
+
+### 2-4. USB Connection History
+
+```
+Connected USB devices:
+HKLM\SYSTEM\CurrentControlSet\Enum\USBSTOR
+├── Manufacturer_ModelName_Version
+│   └── Unique serial number
+│       ├── FriendlyName (display name)
+│       └── Last connection time
+
+HKLM\SYSTEM\CurrentControlSet\Enum\USB  (USB controller)
+HKLM\SYSTEM\MountedDevices  (drive letter mapping)
+HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2
+
+# Extract USB records with RegRipper
+rip.pl -r SYSTEM -p usbstor
+```
+
+---
+
+## 3. Event Log Forensics
+
+### Key Event Log Files
+
+Windows event logs are critical evidence of system activity. Track compromise indicators focusing on event IDs such as successful login (4624), failed login (4625), process creation (4688), and service installation (7045).
+
+```
+C:\Windows\System32\winevt\Logs\
+
+Security.evtx     → Login/logout, file access, permission changes
+System.evtx       → System events, service start/stop
+Application.evtx  → Application events
+Microsoft-Windows-PowerShell%4Operational.evtx  → PowerShell command history
+Microsoft-Windows-Sysmon%4Operational.evtx      → Sysmon (if present)
+Microsoft-Windows-TaskScheduler%4Operational.evtx → Scheduled tasks
+Microsoft-Windows-TerminalServices-LocalSessionManager%4Operational.evtx → RDP sessions
+```
+
+### 3-1. Important Event IDs
+
+```
+[Login/Logout]
+4624  → Successful login
+4625  → Failed login (check for brute force)
+4634  → Logoff
+4648  → Login with explicit credentials (Runas)
+4672  → Admin privilege login (special privileges)
+4768  → Kerberos TGT request
+4769  → Kerberos service ticket request
+4776  → NTLM authentication
+
+[Account Management]
+4720  → User account created
+4722  → User account enabled
+4724  → Password reset attempt
+4728  → User added to group
+4732  → User added to Administrators group!
+4756  → Member added to Universal group
+
+[Process/Execution]
+4688  → Process created (when audit policy is enabled)
+4689  → Process terminated
+7045  → New service installed (System log)
+7036  → Service state changed
+
+[File/Registry]
+4663  → File/registry access (requires audit settings)
+4656  → File/registry handle requested
+
+[PowerShell]
+4103  → Pipeline execution (module logging)
+4104  → Script block logging (records code content)
+
+[Network]
+5156  → Windows Filtering Platform allowed
+5158  → Socket bind allowed
+```
+
+### 3-2. Event Log Analysis Tools
+
+Windows event logs are critical evidence of system activity. Track compromise indicators focusing on event IDs such as successful login (4624), failed login (4625), process creation (4688), and service installation (7045).
+
+```python
+#!/usr/bin/env python3
+"""
+Windows EVTX Event Log Forensics Analyzer
+Purpose: Extract IOCs and attack patterns from .evtx files, generate CSV/JSON reports
+Dependency: pip install python-evtx
+"""
+from __future__ import annotations
+import argparse
+import csv
+import json
+import sys
+import xml.etree.ElementTree as ET
+from collections import Counter, defaultdict
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+
+try:
+    import Evtx.Evtx as evtx
+    import Evtx.Views as e_views
+except ImportError:
+    print("[!] Missing dependency: pip install python-evtx", file=sys.stderr)
+    sys.exit(1)
+
+# Define target event IDs for detection
+SECURITY_EVENTS: dict[int, str] = {
+    4624: "Successful Login",
+    4625: "Failed Login (Possible Brute Force)",
+    4634: "Logoff",
+    4648: "Explicit Credential Login (Runas)",
+    4672: "Admin Privilege Login",
+    4720: "User Account Created",
+    4722: "User Account Enabled",
+    4732: "Member Added to Administrators Group",
+    4756: "Member Added to Global Group",
+    4776: "NTLM Credential Validation",
+    4688: "Process Created",
+    7045: "New Service Installed (Possible Malicious Service)",
+    1102: "Audit Log Cleared (Possible Log Tampering)",
+    4104: "PowerShell Script Block Logging",
+}
+
+NS = "{http://schemas.microsoft.com/win/2004/08/events/event}"
+
+
+@dataclass
+class EventRecord:
+    event_id: int
+    time_created: str
+    description: str
+    computer: str
+    user_sid: str
+    ip_address: str
+    raw_data: dict
+
+
+def _get_text(elem: ET.Element | None) -> str:
+    return (elem.text or "").strip() if elem is not None else ""
+
+
+def parse_event(xml_str: str) -> EventRecord | None:
+    try:
+        root = ET.fromstring(xml_str)
+    except ET.ParseError:
+        return None
+
+    system = root.find(f"{NS}System")
+    if system is None:
+        return None
+
+    eid_elem = system.find(f"{NS}EventID")
+    event_id = int(_get_text(eid_elem)) if eid_elem is not None else 0
+
+    time_elem = system.find(f"{NS}TimeCreated")
+    time_str = time_elem.get("SystemTime", "") if time_elem is not None else ""
+
+    computer = _get_text(system.find(f"{NS}Computer"))
+
+    security = system.find(f"{NS}Security")
+    user_sid = security.get("UserID", "") if security is not None else ""
+
+    # Parse EventData
+    raw_data: dict[str, str] = {}
+    event_data = root.find(f"{NS}EventData")
+    if event_data is not None:
+        for data in event_data.findall(f"{NS}Data"):
+            name = data.get("Name", "")
+            value = _get_text(data)
+            if name:
+                raw_data[name] = value
+
+    ip_address = raw_data.get("IpAddress", raw_data.get("WorkstationName", ""))
+    description = SECURITY_EVENTS.get(event_id, f"EventID {event_id}")
+
+    return EventRecord(
+        event_id=event_id,
+        time_created=time_str,
+        description=description,
+        computer=computer,
+        user_sid=user_sid,
+        ip_address=ip_address,
+        raw_data=raw_data,
+    )
+
+
+def analyze_evtx(
+    evtx_path: str,
+    target_ids: set[int] | None = None,
+    output_fmt: str = "console",
+    output_file: str | None = None,
+) -> list[EventRecord]:
+    """
+    Analyze EVTX file and return list of matching records.
+    If target_ids is None, targets all SECURITY_EVENTS.
+    """
+    if target_ids is None:
+        target_ids = set(SECURITY_EVENTS.keys())
+
+    records: list[EventRecord] = []
+    stats: Counter = Counter()
+
+    with evtx.Evtx(evtx_path) as log:
+        for record in log.records():
+            try:
+                xml_str = record.xml()
+            except Exception:
+                continue
+            parsed = parse_event(xml_str)
+            if parsed is None:
+                continue
+            stats[parsed.event_id] += 1
+            if parsed.event_id in target_ids:
+                records.append(parsed)
+
+    # Brute force detection (aggregate 4625 IPs)
+    fail_ips: Counter = Counter(
+        r.ip_address for r in records if r.event_id == 4625 and r.ip_address
+    )
+
+    _output(records, stats, fail_ips, output_fmt, output_file)
+    return records
+
+
+def _output(
+    records: list[EventRecord],
+    stats: Counter,
+    fail_ips: Counter,
+    fmt: str,
+    output_file: str | None,
+) -> None:
+    if fmt == "json":
+        data = {
+            "total_matched": len(records),
+            "stats": dict(stats.most_common(20)),
+            "brute_force_ips": fail_ips.most_common(10),
+            "events": [asdict(r) for r in records],
+        }
+        text = json.dumps(data, indent=2, ensure_ascii=False)
+        if output_file:
+            Path(output_file).write_text(text, encoding="utf-8")
+            print(f"[+] JSON saved: {output_file}")
+        else:
+            print(text)
+
+    elif fmt == "csv":
+        rows = [asdict(r) for r in records]
+        if rows:
+            out = Path(output_file) if output_file else Path("evtx_analysis.csv")
+            with out.open("w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+                writer.writeheader()
+                # serialize raw_data as JSON
+                for row in rows:
+                    row["raw_data"] = json.dumps(row["raw_data"], ensure_ascii=False)
+                    writer.writerow(row)
+            print(f"[+] CSV saved: {out}")
+
+    else:  # console
+        print(f"\n[*] Matching events: {len(records)}")
+        print(f"\n[Top Event IDs]")
+        for eid, cnt in stats.most_common(10):
+            desc = SECURITY_EVENTS.get(eid, "Other")
+            print(f"  {eid:5d}  {cnt:6d} times  {desc}")
+
+        if fail_ips:
+            print(f"\n[Suspected Brute Force IPs (4625 Login Failures)]")
+            for ip, cnt in fail_ips.most_common(10):
+                print(f"  {ip:<20} {cnt} times")
+
+        print(f"\n[Recent Events (up to 20)]")
+        for r in records[-20:]:
+            ts = r.time_created[:19].replace("T", " ")
+            target = r.raw_data.get("TargetUserName", r.raw_data.get("SubjectUserName", ""))
+            print(f"  [{ts}] EID={r.event_id:5d} {r.description:<30} {target} {r.ip_address}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Windows EVTX Event Log Forensics Analyzer")
+    parser.add_argument("evtx", help=".evtx file path")
+    parser.add_argument(
+        "--ids", nargs="+", type=int,
+        help="List of EventIDs to analyze (defaults to all standard security events)"
+    )
+    parser.add_argument(
+        "--format", choices=["console", "json", "csv"], default="console",
+        help="Output format (default: console)"
+    )
+    parser.add_argument("--output", help="Output file path (for json/csv format)")
+    args = parser.parse_args()
+
+    if not Path(args.evtx).exists():
+        print(f"[!] File not found: {args.evtx}", file=sys.stderr)
+        sys.exit(1)
+
+    analyze_evtx(
+        args.evtx,
+        target_ids=set(args.ids) if args.ids else None,
+        output_fmt=args.format,
+        output_file=args.output,
+    )
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. Prefetch Analysis
+
+### What is Prefetch?
+
+Prefetch files store program execution history in `.pf` format. Even after malware is deleted, if a Prefetch file remains, the execution time and path can be recovered.
+
+```
+Files saved by Windows to speed up app loading
+C:\Windows\Prefetch\*.pf
+
+Included information:
+- Executable file name
+- Execution count
+- Last execution time (up to 8 times)
+- List of DLLs/files loaded during execution
+- Executable file path
+
+Verify activation:
+HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters
+EnablePrefetcher = 1 or 3
+```
+
+Analyze Windows Prefetch files with PECmd. Since Prefetch stores program execution records, you can check for traces of malicious executables.
+
+```bash
+# PECmd (EricZimmerman tool)
+PECmd.exe -f MALWARE.EXE-XXXXXXXX.pf
+PECmd.exe -d C:\Windows\Prefetch --csv output\ --csvf prefetch.csv
+
+# Python (prefetch parser)
+pip install prefetch-parser
+python -m prefetch_parser MALWARE.EXE-XXXXXXXX.pf
+```
+
+---
+
+## 5. LNK Files and Jump Lists
+
+### LNK (Shortcut) Files
+```
+Shortcuts to recently opened files:
+C:\Users\[username]\AppData\Roaming\Microsoft\Windows\Recent\*.lnk
+
+Included information:
+- Original file path (local/network)
+- File size, creation/modification/access times
+- Volume serial number (which drive)
+- Hostname (for network files)
+```
+
+Parse Windows LNK (shortcut) files with LECmd. These contain useful forensic artifacts including original file paths, access times, and volume information.
+
+```bash
+# LECmd (LNK parser)
+LECmd.exe -f malware.lnk
+LECmd.exe -d "C:\Users\user\Recent" --csv output\
+
+# Python
+from lnkparse3 import lnk_file
+lnk = lnk_file("file.lnk")
+print(lnk.get_json())
+```
+
+### Jump Lists
+```
+Recent files and task list (taskbar/start menu):
+C:\Users\[username]\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations\
+C:\Users\[username]\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations\
+```
+
+---
+
+## 6. Browser Forensics
+
+### Chrome/Edge Artifacts
+```
+C:\Users\[username]\AppData\Local\Google\Chrome\User Data\Default\
+
+History          → Browsing history (SQLite)
+Cache\           → Cache files
+Downloads        → Download history (SQLite)
+Login Data       → Saved passwords (encrypted SQLite)
+Cookies          → Cookies (SQLite)
+Bookmarks        → Bookmarks (JSON)
+Extensions\      → Installed extensions
+```
+
+Parse Chrome/Edge browser artifacts (History, Cookies, Downloads) with Python. These are stored in SQLite database format.
+
+```python
+#!/usr/bin/env python3
+"""
+Chrome/Edge Browser Forensics Analyzer
+Purpose: Extract browsing history, downloads, and saved form data from the History SQLite DB
+Dependency: uses standard library only (sqlite3, shutil)
+"""
+from __future__ import annotations
+import argparse
+import json
+import shutil
+import sqlite3
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+# Chrome epoch: microseconds since 1601-01-01
+CHROME_EPOCH_OFFSET = 11_644_473_600
+
+
+def chrome_ts(microseconds: int) -> str:
+    """Convert Chrome timestamp to a human-readable UTC string."""
+    if not microseconds:
+        return ""
+    try:
+        ts = microseconds / 1_000_000 - CHROME_EPOCH_OFFSET
+        return datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    except (OSError, OverflowError):
+        return str(microseconds)
+
+
+def safe_copy(src: Path) -> Path:
+    """
+    Opening a DB locked by Chrome directly causes an error → use a temporary copy.
+    """
+    tmp = Path("/tmp") / f"chrome_forensic_{src.name}"
+    shutil.copy2(src, tmp)
+    return tmp
+
+
+def extract_history(db_path: Path, limit: int = 200) -> list[dict]:
+    tmp = safe_copy(db_path)
+    records = []
+    try:
+        con = sqlite3.connect(f"file:{tmp}?mode=ro", uri=True)
+        cur = con.execute(
+            """
+            SELECT url, title, visit_count, last_visit_time
+            FROM urls
+            ORDER BY last_visit_time DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        for row in cur:
+            records.append({
+                "url": row[0],
+                "title": row[1],
+                "visit_count": row[2],
+                "last_visit": chrome_ts(row[3]),
+            })
+        con.close()
+    finally:
+        tmp.unlink(missing_ok=True)
+    return records
+
+
+def extract_downloads(db_path: Path) -> list[dict]:
+    tmp = safe_copy(db_path)
+    records = []
+    try:
+        con = sqlite3.connect(f"file:{tmp}?mode=ro", uri=True)
+        cur = con.execute(
+            """
+            SELECT target_path, tab_url, total_bytes, start_time, end_time, state
+            FROM downloads
+            ORDER BY start_time DESC
+            LIMIT 200
+            """
+        )
+        for row in cur:
+            state_map = {0: "In Progress", 1: "Complete", 2: "Cancelled", 4: "Interrupted"}
+            records.append({
+                "path": row[0],
+                "source_url": row[1],
+                "size_bytes": row[2],
+                "start": chrome_ts(row[3]),
+                "end": chrome_ts(row[4]),
+                "state": state_map.get(row[5], str(row[5])),
+            })
+        con.close()
+    finally:
+        tmp.unlink(missing_ok=True)
+    return records
+
+
+def analyze_profile(profile_dir: str, output_json: str | None = None) -> None:
+    base = Path(profile_dir)
+    history_db = base / "History"
+    if not history_db.exists():
+        print(f"[!] History DB not found: {history_db}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"[*] Analyzing profile: {base}")
+
+    history = extract_history(history_db)
+    downloads = extract_downloads(history_db)
+
+    # Flag suspicious domains
+    suspicious_keywords = [".onion", "pastebin", "ngrok", "raw.githubusercontent", "temp.sh"]
+    flagged = [
+        h for h in history
+        if any(kw in h["url"].lower() for kw in suspicious_keywords)
+    ]
+
+    result = {
+        "profile": str(base),
+        "history_count": len(history),
+        "download_count": len(downloads),
+        "flagged_count": len(flagged),
+        "recent_history": history[:50],
+        "downloads": downloads,
+        "flagged_urls": flagged,
+    }
+
+    if output_json:
+        Path(output_json).write_text(
+            json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        print(f"[+] JSON saved: {output_json}")
+    else:
+        print(f"\n[Recent 20 browsing history entries]")
+        for h in history[:20]:
+            print(f"  {h['last_visit']}  {h['visit_count']:>3} visits  {h['url'][:80]}")
+
+        print(f"\n[Download history ({len(downloads)} entries)]")
+        for d in downloads[:10]:
+            print(f"  {d['start']}  {d['state']:<12}  {Path(d['path']).name}")
+
+        if flagged:
+            print(f"\n[Suspicious URLs ({len(flagged)} entries)]")
+            for f in flagged:
+                print(f"  {f['last_visit']}  {f['url']}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Chrome/Edge Browser Forensics Analyzer")
+    parser.add_argument(
+        "profile",
+        help=(
+            "Chrome profile directory path\n"
+            "  e.g.: C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data\\Default"
+        ),
+    )
+    parser.add_argument("--output", help="JSON file path to save results")
+    args = parser.parse_args()
+
+    analyze_profile(args.profile, args.output)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 7. Timeline Analysis
+
+### Generating a Unified Timeline
+
+Generate a Super Timeline integrating multiple forensic sources using Plaso (log2timeline). An essential tool for systematically analyzing large volumes of evidence.
+
+```bash
+# Plaso (log2timeline) — powerful timeline tool
+# Extract all artifacts from image → unified timeline
+
+# Parse image (takes time)
+log2timeline.py timeline.plaso disk_image.dd
+
+# Filter timeline
+psort.py -o l2tcsv timeline.plaso "date > '2024-01-01 00:00:00' and date < '2024-01-02 00:00:00'" > timeline.csv
+
+# Timesketch (web-based timeline analysis)
+docker-compose up  # after installation
+# Browser: http://localhost
+```
+
+### Manual Timeline Construction
+
+Collect and parse forensic artifacts using KAPE (Kroll Artifact Parser and Extractor). Optimized for fast triage and evidence collection.
+
+```bash
+# KAPE (Kroll Artifact Parser and Extractor)
+kape.exe --tsource C:\ --tdest output\ --tflux Windows
+kape.exe --msource output\ --mdest results\ --mflux !EZParser
+
+# Automated collection of key artifacts:
+# - Registry hives
+# - Event logs
+# - Prefetch
+# - LNK files
+# - Browser history
+# - Amcache.hve
+```
+
+---
+
+## 8. Malicious Activity Detection Scenarios
+
+### Scenario 1: Malware Execution Traces
+
+```
+Investigation path:
+1. Prefetch → check whether/when malicious executable was run
+2. Registry Run keys → check persistence mechanisms
+3. Event ID 4688 → process creation (including command-line arguments)
+4. Amcache.hve → record of first-executed executables
+5. ShimCache/AppCompatCache → execution history
+
+# Amcache analysis (first-run programs)
+AmcacheParser.exe -f Amcache.hve --csv output\
+
+# AppCompatCache (ShimCache) analysis
+AppCompatCacheParser.exe -f SYSTEM --csv output\
+```
+
+### Scenario 2: Lateral Movement
+
+```
+Investigation path:
+1. Event ID 4624 (login) + logon type
+   - Type 3: Network login (PsExec, net use)
+   - Type 10: RemoteInteractive (RDP)
+2. Event ID 4648 (explicit credentials)
+3. C:\Windows\System32\winevt\Logs\Microsoft-Windows-TerminalServices-*.evtx
+4. Service creation (Event ID 7045) - when PsExec is used
+
+Logon type meanings:
+Type 2  → Interactive (local login)
+Type 3  → Network (SMB, PsExec)
+Type 4  → Batch (scheduled task)
+Type 5  → Service account
+Type 7  → Unlock
+Type 8  → Network cleartext
+Type 9  → New credentials (RunAs)
+Type 10 → Remote interactive (RDP)
+Type 11 → Cached interactive
+```
+
+### Scenario 3: Data Exfiltration
+
+```
+Investigation path:
+1. Browser download/upload history
+2. USB connection history (USBSTOR)
+3. Email client attachments (Outlook PST)
+4. Cloud sync folders (OneDrive, Dropbox)
+5. Network share connection history
+   HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2
+6. Recent file list (LNK, Jump Lists)
+```
+
+---
+
+## 9. Advanced Registry Entries (Essential for Forensic Exams)
+
+### Registry Hive File Mapping
+```
+HKLM\Hardware          → Stored in memory only (analyze directly in live forensics)
+HKLM\SAM               → WINDOWS\system32\config\SAM
+HKLM\Security          → WINDOWS\system32\config\SECURITY
+HKLM\Software          → WINDOWS\system32\config\software
+HKLM\SYSTEM            → WINDOWS\system32\config\system
+HKU                    → Documents and Settings\username\ntuser.dat
+HKU\.DEFAULT           → WINDOWS\system32\config\default
+```
+
+### Key Registry Keys for Forensics
+```
+[OS Installation Information]
+HKLM\Software\Microsoft\WindowsNT\CurrentVersion
+  - installDate   : Decode with DCode program (Unix: 32bit Hex Value - Big Endian)
+  - CurrentVersion: OS version (5.1 = WindowsXP)
+  - CSDVersion    : Installed service pack
+
+[Last Logged-In User]
+HKLM\Software\Microsoft\Winnt\CurrentVersion\Winlogon
+  - default Username   : last user
+  - default Domainname : computer name
+
+[System Shutdown Time]
+HKLM\SYSTEM\CurrentControlSet\Control\Windows
+  - ShutdownTime : most recent system shutdown time
+  - Decode: DCode → Windows: 64bit Hex Value - Little Endian
+
+[Time Zone]
+HKLM\SYSTEM\CurrentControlSet\Control\TimeZoneInformation
+  - Korea Standard Time: UTC +09:00
+
+[UserAssist - Program Execution Records]
+HKU\{SID}\Software\Microsoft\Windows\CurrentVersion\Explorer\Userassist\75...\Count
+  - ROT13 encoded (A→N, B→O...)
+  - Decodable at www.rot13.org
+
+[SID Structure]
+S-1-5-21-{system-unique-number}-{user-number}
+  - 500 = Administrator
+  - 501 = Guest
+  - 1000 and above = regular accounts (assigned sequentially)
+
+[MRU (Most Recently Used) List]
+HKU\{SID}\Software\Microsoft\Windows\CurrentVersion\Explorer\Comdlg32\OpenSaveMRU\{extension}
+  → List of last opened or saved files
+
+HKU\{SID}\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU
+  → History of entries in the Run dialog
+
+[MUI Cache - Traces of Installed Programs]
+HKU\{SID}\Software\Microsoft\Windows\ShellNoRoam\MUICache
+
+[Network Interface Information]
+HKLM\System\CurrentControlSet\Service\Tcpip\Parameters\Interfaces\{GUID}
+  → IP addresses, subnets, and other network settings for current/past NICs
+
+[Shared Resource Records]
+HKLM\SYSTEM\CurrentControlSet\Services\LANmanserver\Shares
+  → Manually configured shared items
+```
+
+### Autorun-Related Registry Keys (Malware Persistence Detection)
+```
+System-wide autoruns:
+HKLM\SYSTEM\CurrentControlSet\Services\*
+HKLM\Software\Microsoft\Windows\CurrentVersion\Run      ← runs without logon
+HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+
+User-specific autoruns:
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run      ← runs at user logon
+HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce
+
+Note: Services created by attackers often have an empty Description field
+```
+
+### Removable Storage Connection Records (USB Forensics Details)
+```
+HKLM\System\CurrentControlSet\Enum\USB
+  - Vendor Id (16bit): Hardware manufacturer unique ID
+  - Device ID (=Product ID): Hardware model unique ID
+  - Reference: pciids.sourceforge.net
+
+ControlSet Structure:
+  HKLM\SYSTEM\CurrentControlSet → shortcut
+  ControlSet001 → key values used in most recent boot (normal)
+  ControlSet002 → last known good configuration key values
+```
+
+---
+
+## 10. Windows Live Data Collection (Order of Volatile Data Collection)
+
+### Collection Priority (Most Volatile First)
+```
+① Physical memory dump
+② Basic system information (date/time, OS version, hostname)
+③ Network information
+④ Process information
+⑤ DLL file list
+⑥ Logged-on users
+⑦ Open files
+⑧ Service / startup program information
+⑨ Command history
+⑩ Scheduled tasks
+⑪ Clipboard
+⑫ Shared resources
+
+Note: When collecting live data, prefer CLI (Command Line Interface) tools
+  - Uses less memory
+  - Lower DLL dependency
+  - Minimizes impact on the system
+```
+
+### Commands for Collecting Volatile Data (Windows)
+
+Windows CMD commands for collecting volatile information. Record date/time first, then collect user, process, and connection information.
+
+```cmd
+:: Check date/time (do this first)
+date /t & time /t
+now.exe
+
+:: Basic system information
+hostname
+ver
+echo %username% %userdomain%
+uptime
+systeminfo
+
+:: Network information
+netstat -nao          :: all connections (including PID)
+                      :: investigate ports above 1024 in detail
+ipconfig /all
+promiscdetect         :: check if NIC is in promiscuous mode
+
+:: Process information
+tasklist
+pslist                :: PID, priority, threads, handles, virtual memory
+tlist [PID]           :: check path of specific process
+listdlls              :: DLL list per process
+listdlls [PID]        :: DLLs for specific process
+
+:: Verify location of key processes (suspicious if abnormal)
+:: smss.exe, lsass.exe, taskmgr, wininit, winlogon.exe
+:: → normal location: C:\Windows\system32\
+
+:: Logged-on users
+net session            :: current logon sessions
+psloggedon             :: local + remote connected users
+logonsessions          :: includes SID, auth method, logon type, logon time
+
+:: Open files
+psfile                 :: files being executed remotely
+
+:: Services / startup programs
+psservice              :: full list of services + details
+autorunsc              :: startup program list
+
+:: Command history
+doskey /history
+
+:: Scheduled tasks (check for backdoors)
+at
+
+:: Clipboard
+clipbrd
+
+:: Shared resources (malware propagation paths)
+net share
+
+:: Remote data transfer via NC
+:: Investigating system: nc -l -p 5555 > c:\output.txt
+:: Victim system: psinfo.exe | nc [investigator_IP] 5555
+```
+
+### Windows Event Log File Locations
+
+Windows event logs are critical evidence of system activity. Track compromise indicators focusing on event IDs such as successful login (4624), failed login (4625), process creation (4688), and service installation (7045).
+
+```
+C:\WINDOWS\system32\config\
+  AppEvent.evt   → Application events (older Windows)
+  SecEvent.evt   → Security events
+  SysEvent.evt   → System events
+
+C:\Windows\System32\winevt\Logs\  (Vista and later, .evtx format)
+  Security.evtx
+  System.evtx
+  Application.evtx
+
+IIS logs:
+  C:\WINDOWS\system32\Logfiles\W3SVC1\ex{date}.log
+  Fields: date time s-ip cs-method cs-uri-stem s-port c-ip sc-status
+```
+
+---
+
+## 11. Digital Evidence Collection Procedures
+
+### On-Site Collection Order (By Evidence Volatility)
+
+```
+1. CPU registers, cache
+2. Memory (RAM) ← analyze with Volatility
+3. Network traffic, state (netstat, arp)
+4. Running process list
+5. Disk image (FTK Imager, dd)
+6. Log files
+7. Time zone settings
+```
+
+### Ensuring Evidence Integrity
+
+Create a disk image and verify integrity with hashes. A write-blocker must be used to avoid contaminating original evidence and maintain legal evidentiary value.
+
+```bash
+# Create disk image (write blocker required!)
+# After connecting a write-blocking device:
+dd if=/dev/sdb of=evidence.dd bs=4096 conv=noerror,sync status=progress
+
+# Or FTK Imager (GUI, auto hash generation)
+# Or dcfldd (simultaneous hash generation)
+dcfldd if=/dev/sdb of=evidence.dd hash=sha256 hashlog=hash.txt
+
+# Verify image integrity
+sha256sum evidence.dd > evidence.dd.sha256
+sha256sum -c evidence.dd.sha256  # for subsequent verification
+
+# Evidence seal memo (Chain of Custody)
+echo "Evidence: evidence.dd" > chain_of_custody.txt
+echo "Collection date/time: $(date)" >> chain_of_custody.txt
+echo "Collector: [name]" >> chain_of_custody.txt
+echo "SHA256: $(sha256sum evidence.dd)" >> chain_of_custody.txt
+```
+
+---
+
+## 12. Advanced Registry — Essential for Forensic Exams
+
+### Determining First USBSTOR Device Install Time
+```
+Additional USBSTOR connection record information:
+HKLM\SYSTEM\CurrentControlSet\Enum\USBSTOR\{product}\{serial}
+
+Derived information:
+  - 0064 entry: Device first install time (manual calculation)
+  - FriendlyName: Drive name shown to user
+  - Timestamp: First connection time can be confirmed in setupapi.log
+
+setupapi.log location:
+  XP:    C:\WINDOWS\setupapi.log
+  Vista+: C:\Windows\inf\setupapi.dev.log
+
+Analysis:
+  - Search for "[Device Install" string
+  - Match with corresponding serial number to confirm first connection date/time
+```
+
+### History of Windows Event Log File Formats
+
+Windows event logs are critical evidence of system activity. Track compromise indicators focusing on event IDs such as successful login (4624), failed login (4625), process creation (4688), and service installation (7045).
+
+```
+Windows XP/2003 (legacy):
+  - Extension: .evt
+  - Location: C:\WINDOWS\system32\config\
+  - Files: AppEvent.evt, SecEvent.evt, SysEvent.evt
+
+Windows Vista and later (current):
+  - Extension: .evtx
+  - Location: C:\Windows\System32\winevt\Logs\
+  - Files: Security.evtx, System.evtx, Application.evtx
+
+IIS log location and format:
+  C:\WINDOWS\system32\Logfiles\W3SVC1\ex{date}.log
+  Key fields: date time s-ip cs-method cs-uri-stem s-port c-ip sc-status
+```
+
+### UserAssist Decoding
+```
+UserAssist key path:
+HKU\{SID}\Software\Microsoft\Windows\CurrentVersion\
+  Explorer\UserAssist\{GUID}\Count
+
+Characteristics:
+  - ROT13 encoded (A↔N, B↔O, ... Z↔M)
+  - Includes execution count and last execution time
+  - Decoding tool: www.rot13.org
+
+ROT13 decoding examples:
+  URYHF.RKR → HELUS.EXE (Hulu.exe)
+  PZQYL.RKR → cmd.exe
+
+GUID meanings:
+  {75048700-...} → File system objects
+  {CEBFF5CD-...} → Executable files
+```
+
+---
+
+## 13. Core Concepts in File System Forensics
+
+### NTFS $MFT (Master File Table)
+```
+$MFT structure:
+  - Metadata records for all files/folders on the NTFS volume
+  - Each record: 1KB (default)
+  - When a file is deleted, the MFT record is marked "available" → content remains
+
+Key $MFT attributes:
+  $STANDARD_INFORMATION  → MACE timestamps (modifiable — timestomping)
+  $FILE_NAME             → Timestamps tied to filename (harder to manipulate)
+  $DATA                  → Actual file data
+  $BITMAP                → Cluster allocation state
+
+Timestomping detection:
+  $STANDARD_INFORMATION modification time < $FILE_NAME creation time
+    → Suspected timestomping (nanosecond value = 0 is also a suspicious indicator)
+```
+
+### How Deleted File Recovery Works
+```
+OS behavior when a file is deleted:
+  1. MFT record is marked "unused"
+  2. The corresponding clusters are marked "available" in $Bitmap
+  3. Actual data remains on disk until overwritten
+
+Factors determining recoverability:
+  - Time elapsed since deletion (shorter = higher chance)
+  - Degree of system use (more use = more chance of overwriting)
+  - SSD vs HDD: SSDs may instantly delete data with the TRIM command
+
+File Carving:
+  - Recover files by file signature even without MFT records
+  - Scan based on file header/footer signatures
+  - Tools: PhotoRec, Foremost, Scalpel
+
+File signature examples:
+  JPG: FF D8 FF (header) ... FF D9 (footer)
+  PNG: 89 50 4E 47 0D 0A 1A 0A (header)
+  PDF: 25 50 44 46 (header, "%PDF")
+  ZIP: 50 4B 03 04 (header)
+  DOCX: 50 4B 03 04 (ZIP-based)
+```
+
+### Volume Shadow Copy (VSS) Forensics
+```
+VSS location and access:
+  vssadmin list shadows  → list shadow copies
+
+Forensic uses:
+  - Recover previous versions of deleted files
+  - Restore previous state of registry hives
+  - Analyze system state before malware execution
+
+Mount VSS (admin privileges required):
+  mklink /d C:\shadow \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\
+
+Ransomware perspective:
+  vssadmin delete shadows /all  → typical ransomware behavior
+  wmic shadowcopy delete        → WMI-based VSS deletion (same purpose)
+  → Executing these commands is a strong indicator of ransomware or malicious activity
 ```

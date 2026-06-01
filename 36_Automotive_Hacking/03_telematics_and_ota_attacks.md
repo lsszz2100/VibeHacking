@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 텔레매틱스 & OTA 업데이트 공격
 
 ## 1. 텔레매틱스 유닛(TCU) 구조
@@ -1141,3 +1147,60 @@ git clone https://github.com/alexmwu/v2x-security-scanner
 ---
 
 > 이 문서의 모든 기법은 **테스트 환경** 또는 **서면 허가를 받은 차량**에서만 적용할 것. 공공 도로에서의 V2X 스푸핑은 도로교통법 위반이며 인명 피해로 이어질 수 있다.
+
+---
+
+<a name="english"></a>
+
+# Telematics & OTA Update Attacks
+
+## 1. Telematics Unit (TCU) Architecture
+
+### 1.1 TCU Hardware Components
+
+## Overview
+
+Telematics units provide vehicles with cellular connectivity for remote diagnostics, tracking, and OTA updates. Attack vectors include:
+
+- **OTA update interception**: MITM on unencrypted/unverified update channels
+- **Backend API attacks**: Weak authentication on cloud APIs
+- **V2X (Vehicle-to-Everything) spoofing**: Fake traffic signals, infrastructure messages
+- **Cellular interface**: Modem exploitation, SIM attacks
+
+## Key Attack Scenarios
+
+### OTA Update MITM
+
+If firmware updates are delivered without proper TLS verification or signature validation:
+1. Set up rogue access point or cellular MITM
+2. Intercept firmware download request
+3. Serve modified firmware
+4. ECU accepts and installs malicious firmware
+
+### Backend API Exploitation
+
+Vehicle telematics APIs often expose:
+- Vehicle tracking endpoints (IDOR vulnerabilities)
+- Remote command APIs (start/stop, unlock)
+- Weak JWT or API key authentication
+- Excessive data exposure in responses
+
+### V2X Infrastructure Attacks
+
+- **BSM spoofing**: Fake Basic Safety Messages to trigger AEB
+- **RSU exploitation**: Attack roadside unit firmware/APIs
+- **GNSS spoofing**: Feed false GPS coordinates
+
+## Learning Environment
+
+| Environment | Purpose | Cost |
+|------------|---------|------|
+| vcan + canplayer | CAN learning | Free |
+| Python-can + USB-CAN | Real CAN interface | ~$30 |
+| Raspberry Pi + MCP2515 | CAN gateway practice | ~$50 |
+| USRP B210 | LTE/DSRC RF | ~$1,500 |
+| V2X RSU development board | DSRC testing | ~$800 |
+
+---
+
+> All techniques in this document must only be applied in **test environments** or **vehicles with written authorization**. V2X spoofing on public roads violates traffic laws and can cause injuries or fatalities.

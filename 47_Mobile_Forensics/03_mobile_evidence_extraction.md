@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 모바일 증거 추출
 
 ## 목차
@@ -1211,6 +1217,604 @@ autopsy &
 
 # Volatility (메모리 포렌식, 연계 활용)
 # 모바일 RAM 덤프 분석
+vol.py -f memory.lime --profile=LinuxAndroid imageinfo
+vol.py -f memory.lime --profile=LinuxAndroid linux_pslist
+```
+
+---
+
+<a name="english"></a>
+
+# Mobile Evidence Extraction
+
+## Table of Contents
+1. Extraction Method Comparison
+2. JTAG/Chip-off Method Overview
+3. Raw Image Extraction with dd/nanddump
+4. Hash Verification and Evidence Chain of Integrity
+5. Python Automated Evidence Collection Script
+6. Legal Admissibility Requirements
+
+---
+
+## 1. Extraction Method Comparison
+
+### Extraction Method Hierarchy
+
+```
+Physical Extraction
+    └─ Most data, most difficult
+File System Extraction
+    └─ Full filesystem access
+Logical Extraction
+    └─ Uses standard APIs/backups
+Cloud Extraction
+    └─ Requires account credentials or warrant
+```
+
+### Logical Extraction
+
+```
+Definition: Collect data via the device's standard interface (USB, API, backup)
+            Uses the operating system's normal channels
+
+Advantages:
+- No risk of device damage
+- Fast collection
+- Clear legal basis
+
+Disadvantages:
+- Cannot recover deleted files
+- Some partitions inaccessible
+- Requires device unlock
+
+Tools/Methods:
+- ADB (Android Debug Bridge)
+- iTunes/Finder backup
+- Cellebrite UFED Logical
+- MSAB XRY Logical
+```
+
+```bash
+# Android logical extraction
+adb backup -apk -shared -all -nosystem \
+    -f logical_backup_$(date +%Y%m%d_%H%M%S).ab
+
+# Extract specific app only
+adb backup -apk com.kakao.talk \
+    -f kakao_backup_$(date +%Y%m%d).ab
+
+# iOS logical extraction (iTunes)
+# macOS
+idevicebackup2 backup --full ./ios_backup/
+# Linux (libimobiledevice)
+sudo apt install libimobiledevice-utils
+idevicebackup2 backup ./ios_backup/
+```
+
+### File System Extraction
+
+```
+Definition: Full filesystem access (requires root/jailbreak)
+            More data than logical extraction
+
+Android prerequisites:
+- Rooted device or ADB root access
+- Or exploit a vulnerability (CVE)
+
+iOS prerequisites:
+- Jailbroken device
+- Or Cellebrite/GrayKey exploit
+```
+
+```bash
+# Android filesystem extraction (rooted device)
+adb root
+adb shell "tar czf /sdcard/fs_backup.tar.gz /data/ /system/"
+adb pull /sdcard/fs_backup.tar.gz ./evidence/
+
+# Specific directory only
+adb shell "su -c 'cp -r /data/data /sdcard/app_data/'"
+adb pull /sdcard/app_data/ ./evidence/app_data/
+
+# iOS filesystem extraction (jailbroken device, requires OpenSSH)
+ssh root@<device_ip> "tar czf - /private/var/mobile/" > ios_filesystem.tar.gz
+
+# Compute SHA256 immediately
+sha256sum ios_filesystem.tar.gz > ios_filesystem.sha256
+```
+
+### Physical Extraction
+
+```
+Definition: Acquire raw byte-level image from storage chip
+            Includes deleted files and unallocated areas
+
+Methods:
+1. JTAG (Joint Test Action Group)
+   - Connect directly to test points on PCB
+   - Requires partial device disassembly
+   - Effective on older devices
+
+2. Chip-off
+   - Physically remove memory chip (eMMC/UFS/NAND)
+   - Read directly with dedicated programmer
+   - Risk of device destruction
+   - Last resort
+
+3. ISP (In-System Programming)
+   - Read directly from PCB without removing chip
+   - Less destructive than chip-off
+
+4. eMMC/UFS direct read
+   - Find eMMC on motherboard and attach probe
+   - Use dedicated interface adapter
+```
+
+### Cloud Extraction
+
+```
+Target services:
+- iCloud (Apple)
+- Google account (Android)
+- Samsung Cloud
+- Kakao server data
+- SNS platforms (WhatsApp, Telegram)
+
+Methods:
+1. Credential-based access
+   - When suspect/victim account info is obtained
+   - May require 2FA bypass
+
+2. Legal request (court warrant)
+   - Apple: https://www.apple.com/legal/privacy/law-enforcement/
+   - Google: https://safety.google/transparency/
+   - Meta: https://transparency.fb.com/
+
+3. Token/cookie-based
+   - Extract auth tokens from device and reuse
+   - Session hijacking
+```
+
+---
+
+## 2. JTAG/Chip-off Method Overview
+
+### JTAG (Joint Test Action Group)
+
+```
+Standard: IEEE 1149.1
+Purpose: Originally used for circuit testing in PCB manufacturing
+Forensic use: Read memory directly without bypassing device lock
+
+JTAG pin configuration:
+- TDI (Test Data In)    : Data input
+- TDO (Test Data Out)   : Data output
+- TCK (Test Clock)      : Clock signal
+- TMS (Test Mode Select): Mode selection
+- TRST (Test Reset)     : Reset (optional)
+
+Procedure:
+1. Disassemble device (expose PCB)
+2. Locate JTAG pins (via datasheet or reverse engineering)
+3. Connect JTAG interface (RIFF Box, HTC Box, etc.)
+4. Dump memory with dedicated software
+5. Analyze dump file with forensic tools
+
+Supported tools:
+- RIFF Box 2 (www.riffbox.org)
+- Octoplus Box
+- Easy JTAG Box
+- UFED Pro (Cellebrite, includes JTAG)
+```
+
+### Chip-off
+
+```
+Target chips:
+- eMMC (Embedded MultiMediaCard): Dominant in smartphones
+- UFS (Universal Flash Storage): Latest high-end devices
+- NAND Flash: Older devices
+
+eMMC package types:
+- BGA (Ball Grid Array): Most common, requires soldering
+- LGA (Land Grid Array): Pad-based
+
+Procedure:
+1. Fully disassemble device
+2. Identify PCB, locate eMMC chip
+3. Remove chip with rework station (hot air or BGA rework)
+4. Clean pads (remove flux)
+5. Mount in eMMC socket adapter
+6. Create raw dump with eMMC programmer
+7. Reflow (remount) if needed after analysis
+
+eMMC programmers:
+- UFi Box (UFi Soft)
+- Easy JTAG Plus (Z3X)
+- Medusa Pro 2
+- ISP Pro (Moorc)
+
+Chip-off precautions:
+- Heat damage risk: Excessive heat can cause data loss
+- Reflowing required: Remount in original device after reading
+- Encryption: FDE/FBE renders raw dump meaningless alone
+- Anti-static: Wear ESD gloves
+```
+
+### Encryption Considerations
+
+```
+Android FDE (Full Disk Encryption, Android 5-9):
+- Master key: Stored in TEE (Trusted Execution Environment)
+- Cannot decrypt without PIN/password
+- Raw dump obtained via chip-off remains encrypted
+
+Android FBE (File-Based Encryption, Android 7+):
+- Individual file encryption
+- CE (Credential Encrypted): Accessible after PIN entry
+- DE (Device Encrypted): Accessible immediately after boot
+- Some DE files can be read without PIN
+
+iOS:
+- Hardware encryption by default (AES-256)
+- Per-file protection class assignment
+- Secure Enclave: Manages encryption keys
+- Practically impossible to decrypt without PIN (except older devices)
+```
+
+---
+
+## 3. Raw Image Extraction with dd/nanddump
+
+### Image Extraction with dd
+
+```bash
+# Basic syntax
+dd if=<input> of=<output> bs=<block_size> [conv=options]
+
+# Create full disk image
+dd if=/dev/sda of=disk_image.raw bs=4M status=progress conv=noerror,sync
+
+# Partition image
+dd if=/dev/sda2 of=data_partition.raw bs=4M status=progress
+
+# Continue on error (noerror), fill error blocks with zeros (sync)
+dd if=/dev/mmcblk0 of=emmc_dump.raw bs=512 conv=noerror,sync status=progress
+
+# Remote transfer over network (send disk image to another PC)
+# On receiver side first:
+nc -l -p 9999 > remote_disk.raw
+# On extraction side:
+dd if=/dev/mmcblk0 bs=4M | nc <receiver_ip> 9999
+
+# Split extraction (large disks)
+dd if=/dev/mmcblk0 bs=4M | split -b 2G - disk_split_
+# Reassemble:
+cat disk_split_* > disk_image.raw
+```
+
+### Partition Extraction from Rooted Android Device
+
+```bash
+# List partitions
+adb shell "su -c 'cat /proc/partitions'"
+adb shell "su -c 'ls -la /dev/block/platform/*/by-name/'"
+
+# Key partitions
+# /dev/block/bootdevice/by-name/userdata  → /data partition
+# /dev/block/bootdevice/by-name/system    → /system partition
+
+# Extract partition image from rooted device
+adb shell "su -c 'dd if=/dev/block/bootdevice/by-name/userdata of=/sdcard/userdata.img bs=4096 conv=noerror,sync'"
+adb pull /sdcard/userdata.img ./evidence/
+
+# Or pipe directly
+adb shell "su -c 'dd if=/dev/block/bootdevice/by-name/userdata bs=4096 conv=noerror,sync'" > userdata.img
+
+# Hash verification (immediate during extraction)
+adb shell "su -c 'dd if=/dev/block/bootdevice/by-name/userdata bs=4096 conv=noerror,sync | tee /sdcard/userdata.img | sha256sum'" > extraction_hash.txt
+```
+
+### nanddump (NAND Flash)
+
+```bash
+# nanddump: MTD NAND device dump tool
+# Mainly used for older Android devices or embedded devices
+
+# Check MTD partitions
+cat /proc/mtd
+# Example output:
+# dev:    size   erasesize  name
+# mtd0: 00040000 00020000 "bootloader"
+# mtd1: 00400000 00020000 "boot"
+# mtd4: 0bc00000 00040000 "userdata"
+
+# nanddump basic usage
+nanddump /dev/mtd4 -f userdata.nanddump
+
+# Dump ignoring ECC errors
+nanddump -o /dev/mtd4 -f userdata_no_ecc.nanddump
+
+# Include OOB (Out-Of-Band) data
+nanddump --oob /dev/mtd4 -f userdata_with_oob.nanddump
+
+# Dump from specific offset
+nanddump -s 0x1000000 -l 0x4000000 /dev/mtd4 -f partial_dump.nanddump
+
+# Show progress
+nanddump -p /dev/mtd4 -f userdata.nanddump
+
+# Remote nanddump via ADB
+adb shell "su -c 'nanddump /dev/mtd4 -f /sdcard/mtd4.dump'"
+adb pull /sdcard/mtd4.dump ./evidence/
+```
+
+### dcfldd (Forensic-Specialized dd)
+
+```bash
+# Install dcfldd
+sudo apt install dcfldd
+
+# Copy with simultaneous hash computation (MD5 + SHA256)
+dcfldd if=/dev/mmcblk0 of=device_image.raw \
+    hash=md5,sha256 \
+    hashwindow=1G \
+    hashlog=hash_log.txt \
+    errlog=error_log.txt \
+    bs=4M \
+    status=on
+
+# Verify result
+md5sum -c <(grep md5 hash_log.txt | awk '{print $3, $1}')
+
+# Split output
+dcfldd if=/dev/sdb of=evidence_image.001 \
+    hash=sha256 \
+    hashlog=evidence_hash.txt \
+    bs=512 \
+    split=2G \
+    splitformat=aa
+```
+
+---
+
+## 4. Hash Verification and Evidence Chain of Integrity
+
+### Hash Computation Commands
+
+```bash
+# SHA256 (recommended)
+sha256sum evidence.img
+sha256sum -c evidence.img.sha256   # Verify
+
+# MD5 (for compatibility)
+md5sum evidence.img
+md5sum -c evidence.img.md5
+
+# SHA1
+sha1sum evidence.img
+
+# Hash multiple files simultaneously
+find ./evidence/ -type f -exec sha256sum {} \; > all_files_hashes.txt
+
+# Live hash (compute simultaneously while extracting)
+dd if=/dev/mmcblk0 bs=4M | tee >(sha256sum > live_hash.txt) > device.img
+
+# Python hash for large files
+python3 -c "
+import hashlib, sys
+h = hashlib.sha256()
+with open(sys.argv[1], 'rb') as f:
+    for chunk in iter(lambda: f.read(65536), b''):
+        h.update(chunk)
+print(h.hexdigest(), sys.argv[1])
+" evidence.img
+```
+
+### Chain of Custody
+
+```
+Evidence collection procedure:
+1. Photograph the scene (device condition, screen)
+2. Record device identification info (model, IMEI, serial, phone number)
+3. Compute original hash (before collection)
+4. Extract image
+5. Compute image hash (after collection)
+6. Compare hashes (original = image)
+7. Seal and sign
+8. Store (keep original separately)
+
+If hash mismatch:
+- Extraction process error → Re-extract
+- Equipment failure → Retry with different equipment
+- Never modify the original
+```
+
+### Evidence Tag Generation
+
+```bash
+# Device info collection script (Android)
+cat << 'EOF' > collect_device_info.sh
+#!/bin/bash
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+EVIDENCE_DIR="./evidence_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$EVIDENCE_DIR"
+
+echo "=== Evidence Collection Start ===" | tee "$EVIDENCE_DIR/collection_log.txt"
+echo "Collection time (UTC): $TIMESTAMP" | tee -a "$EVIDENCE_DIR/collection_log.txt"
+echo "Collector: $(whoami)@$(hostname)" | tee -a "$EVIDENCE_DIR/collection_log.txt"
+
+# Device info collection
+echo "--- Device Info ---" | tee -a "$EVIDENCE_DIR/collection_log.txt"
+adb shell getprop ro.product.model | tee -a "$EVIDENCE_DIR/collection_log.txt"
+adb shell getprop ro.serialno | tee -a "$EVIDENCE_DIR/collection_log.txt"
+adb shell getprop ro.build.version.release | tee -a "$EVIDENCE_DIR/collection_log.txt"
+adb shell settings get secure android_id | tee -a "$EVIDENCE_DIR/collection_log.txt"
+
+echo "=== Collection Complete ===" | tee -a "$EVIDENCE_DIR/collection_log.txt"
+EOF
+chmod +x collect_device_info.sh
+```
+
+---
+
+## 5. Python Automated Evidence Collection Script
+
+(See Korean section for the full Python script — code blocks are identical)
+
+---
+
+## 6. Legal Admissibility Requirements
+
+### Key Articles of Korean Criminal Procedure Act
+
+**Key provisions on digital evidence**
+
+```
+Criminal Procedure Act Article 106 (Seizure)
+- The court may seize evidence or items believed subject to confiscation
+  limited to items recognizable as related to the case
+
+Criminal Procedure Act Article 215 (Seizure, Search, Inspection)
+- A prosecutor or judicial police officer may, when necessary for investigation,
+  with reasonable grounds to suspect the suspect committed the offense,
+  seize, search, or inspect items limited to those recognizable as related
+  to the case, by warrant issued by a district court judge
+
+Admissibility of digital evidence:
+- Identity: Is the copy identical to the original? (proven by hash values)
+- Integrity: Was there no alteration after collection? (Chain of Custody)
+- Authenticity: Was it actually collected from the device?
+- Reliability: Are the collection tools and procedures reliable?
+```
+
+### Digital Evidence Collection Principles
+
+```
+1. Original Preservation Principle
+   - Never modify original device/data
+   - Use write blockers
+   - Analyze using read-only mount or image copy
+
+2. Integrity Principle
+   - Record and compare hash values before and after collection
+   - Stop collection and re-collect if hash mismatch
+   - Maintain records of all steps
+
+3. Documentation Principle
+   - Record collection date/time, location, examiner
+   - Record tools and versions used
+   - Maintain logs of all operational steps
+
+4. Chain of Custody
+   - Sign and record each time evidence is transferred
+   - Record storage conditions (temperature, humidity, access records)
+   - Maintain packaging and seal integrity
+```
+
+### Precautions When Seizing Mobile Devices
+
+```bash
+Upon arrival at scene:
+1. Photograph device screen condition (if on)
+2. Check device power state (on/off)
+3. Network isolation (airplane mode or Faraday bag)
+4. Maintain charge state (prevent discharge)
+
+Handling powered-on devices:
+- Before First Unlock (BFU): Do not turn off → preserve as-is
+- After First Unlock (AFU): More data accessible
+- Check USB Restricted Mode (iOS)
+
+Handling powered-off devices:
+- Principle: Do not turn on (maintain BFU state without PIN entry)
+- Consider JTAG/Chip-off methods
+
+Faraday bag (electromagnetic shielding):
+- Completely blocks RF signals (prevents remote wipe)
+- Maintains no-network environment
+- Prevents electromagnetic interference
+```
+
+### Consent Forms and Warrants
+
+```
+Voluntary submission:
+- Suspect/witness voluntarily submits
+- Collection possible without warrant
+- Must complete consent form
+- Clearly specify scope of consent (full device vs. specific data)
+
+Search and seizure warrant:
+- Specify offense charged
+- Specify items to seize (device type, data type)
+- Collection only within warrant scope
+- Cannot collect unrelated data
+
+Communications verification data:
+- Criminal Procedure Act Article 215-2 et seq.
+- Call records, location information, etc.
+- Requires court authorization
+- Retention period: call records 12 months, texts 3 months (Telecommunications Business Act)
+```
+
+### Elements of a Digital Evidence Expert Report
+
+```
+1. Background of examination
+   - Requesting agency, request date
+   - How examined items were received
+   - Purpose of examination
+
+2. Condition of examined items
+   - Photographs of device exterior
+   - Identification info (model, serial, IMEI)
+   - Condition upon receipt
+
+3. Examination method
+   - Tools and versions used
+   - Collection procedure
+   - Analysis method
+
+4. Examination results
+   - Original hash values
+   - Image hash values
+   - Discovered artifacts
+   - Timeline
+
+5. Expert opinion
+   - Summary of findings
+   - Technical facts supporting legal determination
+
+6. Attachments
+   - Hash comparison table
+   - Screenshots
+   - DB analysis results
+```
+
+---
+
+## Quick Reference Commands
+
+```bash
+# Read-only mount without write blocker
+mount -o ro,noexec,nosuid /dev/sdb1 /mnt/evidence
+
+# Check partition info from image
+mmls device.img
+fdisk -l device.img
+
+# Using The Sleuth Kit (TSK)
+fls -r device.img 1                    # File list of partition 1
+icat device.img 1 <inode>              # Extract specific inode content
+ils device.img 1                       # List deleted inodes
+
+# Run Autopsy GUI
+autopsy &
+
+# Volatility (memory forensics, combined use)
+# Android RAM dump analysis
 vol.py -f memory.lime --profile=LinuxAndroid imageinfo
 vol.py -f memory.lime --profile=LinuxAndroid linux_pslist
 ```

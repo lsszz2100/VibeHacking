@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 31-01. 적대적 예제 — 입력 단계에서 모델을 속이는 기술
 
 > **한 줄 요약**: 학습된 모델의 결정 경계는 매끄럽지 않다. 경계에 직교하는 방향으로 아주 작은 벡터를 더하면 사람 눈엔 안 보이는데 모델만 완전히 잘못 본다.
@@ -350,3 +356,36 @@ x_adv = aa.run_standard_evaluation(x, y, bs=64)
 6. **모니터링**: adversarial 샘플 후보를 로깅하고 수동 검토 큐에 넣는다.
 
 적대적 예제는 "완전히 없애는" 문제가 아니라 **공격자의 비용을 올리는** 문제다. 비용이 ROI를 넘기도록 설계한다.
+
+---
+
+<a name="english"></a>
+
+# 31-01. Adversarial Examples — Techniques for Deceiving Models at the Input Stage
+
+> **One-line summary**: The decision boundaries of trained models are not smooth. Adding a tiny vector orthogonal to the boundary creates perturbations invisible to humans that completely fool the model.
+> This document implements the standard attack lineage from FGSM → PGD → C&W, and extends to defenses.
+
+## 1. Why Adversarial Examples Are Possible — The Linearity Hypothesis
+
+Goodfellow et al. (2014)'s intuition: modern neural networks are **locally almost linear**.
+In high-dimensional input space, taking just one step in the direction of the loss gradient by a small ε causes the output logits to shift linearly by a large amount.
+
+## Key Concepts
+
+- **FGSM (Fast Gradient Sign Method)**: A single-step attack that adds perturbation in the gradient sign direction. Fast but relatively weak.
+- **PGD (Projected Gradient Descent)**: A multi-step iterative attack. The current standard for adversarial training.
+- **C&W Attack**: Finds the minimum perturbation needed for misclassification. Formulated as an optimization problem.
+
+## Practical Defense Guidance
+
+For teams serving production classifiers:
+
+1. **Write a threat model first**: Who knows what, and what L-norm budget do they have?
+2. **Measure AutoAttack results on open benchmarks**. Draw a robustness curve against attack complexity.
+3. **Train with PGD-AT as a baseline**. TRADES suffers less clean accuracy loss.
+4. **Input sanity check**: Flag samples where the max probability is too low or entropy spikes.
+5. **Query rate limiting**: This becomes the baseline cost for black-box attacks. N requests per IP per minute, detect anomalous patterns.
+6. **Monitoring**: Log adversarial sample candidates and put them in a manual review queue.
+
+Adversarial examples are not a problem of "completely eliminating" but of **raising the attacker's cost**. Design so the cost exceeds ROI.

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 네트워크 보안 자동화
 
 대규모 인프라의 보안 점검은 수작업으로 한계가 있다. Nmap 스크립트 엔진, Scapy 패킷 조작, 방화벽 규칙 자동 감사 등 Python 기반 네트워크 보안 자동화 기법을 정리한다.
@@ -563,3 +569,304 @@ python3 firewall_audit.py --table filter > audit_report.txt
 python3 arp_monitor.py -i eth0 &
 python3 dns_tunnel_detect.py -i eth0 &
 ```
+
+---
+
+<a name="english"></a>
+
+# Network Security Automation
+
+Security auditing of large-scale infrastructure has limitations when done manually. This section covers Python-based network security automation techniques including Nmap scripting engine, Scapy packet manipulation, and firewall rule automated auditing.
+
+---
+
+## 1. Nmap Automation
+
+```python
+#!/usr/bin/env python3
+"""Automated network scanning and analysis"""
+import subprocess
+import json
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+def run_nmap_scan(target: str, options: str = "-sV -sC --open") -> dict:
+    """Run nmap and parse results"""
+    xml_output = "/tmp/nmap_result.xml"
+    
+    cmd = f"nmap {options} -oX {xml_output} {target}"
+    subprocess.run(cmd.split(), capture_output=True, timeout=300)
+    
+    return parse_nmap_xml(xml_output)
+
+def parse_nmap_xml(xml_file: str) -> dict:
+    """Parse nmap XML output"""
+    results = {"hosts": []}
+    
+    try:
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+        
+        for host in root.findall(".//host"):
+            host_data = {
+                "ip": "",
+                "hostname": "",
+                "open_ports": []
+            }
+            
+            addr = host.find("address[@addrtype='ipv4']")
+            if addr is not None:
+                host_data["ip"] = addr.get("addr")
+            
+            hostname = host.find(".//hostname")
+            if hostname is not None:
+                host_data["hostname"] = hostname.get("name", "")
+            
+            for port in host.findall(".//port[@protocol='tcp']"):
+                state = port.find("state")
+                if state is not None and state.get("state") == "open":
+                    service = port.find("service")
+                    port_data = {
+                        "port": port.get("portid"),
+                        "service": service.get("name", "") if service is not None else "",
+                        "version": service.get("version", "") if service is not None else "",
+                        "product": service.get("product", "") if service is not None else ""
+                    }
+                    host_data["open_ports"].append(port_data)
+            
+            if host_data["open_ports"]:
+                results["hosts"].append(host_data)
+    
+    except Exception as e:
+        results["error"] = str(e)
+    
+    return results
+
+def find_vulnerable_services(scan_results: dict) -> list:
+    """Identify potentially vulnerable services"""
+    findings = []
+    
+    RISKY_SERVICES = {
+        "telnet": "HIGH - Telnet transmits data in cleartext",
+        "ftp": "MEDIUM - FTP transmits credentials in cleartext",
+        "rsh": "HIGH - Remote Shell with no encryption",
+        "rlogin": "HIGH - Remote Login with no encryption",
+        "vnc": "MEDIUM - VNC may have weak authentication",
+        "rdp": "MEDIUM - RDP exposed to internet",
+        "ms-sql": "MEDIUM - Database exposed",
+        "mysql": "MEDIUM - Database exposed",
+        "mongodb": "HIGH - NoSQL database potentially unauthenticated",
+        "redis": "HIGH - Redis potentially unauthenticated",
+    }
+    
+    for host in scan_results.get("hosts", []):
+        for port in host.get("open_ports", []):
+            service = port.get("service", "").lower()
+            for risky_service, risk_desc in RISKY_SERVICES.items():
+                if risky_service in service:
+                    findings.append({
+                        "ip": host["ip"],
+                        "port": port["port"],
+                        "service": service,
+                        "risk": risk_desc
+                    })
+    
+    return findings
+
+if __name__ == "__main__":
+    import sys
+    target = sys.argv[1] if len(sys.argv) > 1 else "192.168.1.0/24"
+    
+    print(f"[*] Scanning: {target}")
+    results = run_nmap_scan(target)
+    
+    print(f"[+] Found {len(results['hosts'])} hosts with open ports")
+    
+    findings = find_vulnerable_services(results)
+    if findings:
+        print(f"\n[!] Potentially vulnerable services ({len(findings)}):")
+        for f in findings:
+            print(f"  {f['ip']}:{f['port']} ({f['service']}) - {f['risk']}")
+    
+    # Save JSON
+    Path("scan_results.json").write_text(json.dumps(results, indent=2))
+    print("\n[+] Full results saved: scan_results.json")
+```
+
+---
+
+## 2. Scapy Packet Analysis
+
+```python
+#!/usr/bin/env python3
+"""Network packet analysis and anomaly detection with Scapy"""
+from scapy.all import sniff, IP, TCP, UDP, ARP, DNS, DNSQR
+from collections import defaultdict
+import time
+
+class NetworkAnomalyDetector:
+    def __init__(self, interface: str = "eth0"):
+        self.interface = interface
+        self.connection_counts = defaultdict(int)
+        self.dns_queries = defaultdict(list)
+        self.arp_table = {}
+        self.alerts = []
+    
+    def detect_port_scan(self, packet):
+        """Detect SYN port scan"""
+        if TCP in packet and packet[TCP].flags == 0x002:  # SYN only
+            src = packet[IP].src
+            self.connection_counts[src] += 1
+            
+            if self.connection_counts[src] > 50:  # More than 50 SYN in time window
+                self.alert(f"Port scan detected from {src}: {self.connection_counts[src]} SYN packets")
+    
+    def detect_arp_spoofing(self, packet):
+        """Detect ARP spoofing"""
+        if ARP in packet and packet[ARP].op == 2:  # ARP reply
+            ip = packet[ARP].psrc
+            mac = packet[ARP].hwsrc
+            
+            if ip in self.arp_table:
+                if self.arp_table[ip] != mac:
+                    self.alert(f"ARP Spoofing detected! IP {ip}: {self.arp_table[ip]} → {mac}")
+            else:
+                self.arp_table[ip] = mac
+    
+    def detect_dns_tunneling(self, packet):
+        """Detect DNS tunneling (long/many subdomain queries)"""
+        if DNS in packet and DNSQR in packet:
+            query = packet[DNSQR].qname.decode('utf-8', errors='replace')
+            src = packet[IP].src if IP in packet else "unknown"
+            
+            # Long subdomain queries suggest tunneling
+            parts = query.split('.')
+            longest_label = max(len(p) for p in parts) if parts else 0
+            
+            if longest_label > 50:
+                self.alert(f"Possible DNS tunneling from {src}: {query[:80]}")
+            
+            self.dns_queries[src].append(query)
+            
+            # Many unique domains = possible tunneling
+            if len(self.dns_queries[src]) > 100:
+                unique_domains = len(set('.'.join(q.split('.')[-2:]) 
+                                        for q in self.dns_queries[src]))
+                if unique_domains > 50:
+                    self.alert(f"High DNS entropy from {src}: {unique_domains} unique domains")
+    
+    def alert(self, message: str):
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        alert_msg = f"[{timestamp}] ALERT: {message}"
+        print(alert_msg)
+        self.alerts.append(alert_msg)
+    
+    def packet_handler(self, packet):
+        if IP in packet:
+            self.detect_port_scan(packet)
+            self.detect_dns_tunneling(packet)
+        if ARP in packet:
+            self.detect_arp_spoofing(packet)
+    
+    def start_monitoring(self):
+        print(f"[*] Starting network monitoring on {self.interface}")
+        sniff(iface=self.interface, prn=self.packet_handler, store=0)
+
+if __name__ == "__main__":
+    detector = NetworkAnomalyDetector("eth0")
+    detector.start_monitoring()
+```
+
+---
+
+## 3. Firewall Rule Auditing
+
+```python
+#!/usr/bin/env python3
+"""Automated firewall rule audit"""
+import subprocess
+import json
+
+def get_iptables_rules(table: str = "filter") -> list:
+    """Get current iptables rules"""
+    try:
+        result = subprocess.run(
+            ["iptables", "-t", table, "-L", "-n", "--line-numbers", "-v"],
+            capture_output=True, text=True
+        )
+        return parse_iptables_output(result.stdout)
+    except Exception as e:
+        return [{"error": str(e)}]
+
+def parse_iptables_output(output: str) -> list:
+    """Parse iptables output"""
+    rules = []
+    current_chain = None
+    
+    for line in output.splitlines():
+        if line.startswith("Chain "):
+            current_chain = line.split()[1]
+        elif line.strip() and not line.startswith("num") and not line.startswith("pkts"):
+            parts = line.split()
+            if len(parts) >= 4 and parts[0].isdigit():
+                rules.append({
+                    "chain": current_chain,
+                    "num": parts[0],
+                    "target": parts[3],
+                    "prot": parts[4] if len(parts) > 4 else "",
+                    "source": parts[7] if len(parts) > 7 else "",
+                    "destination": parts[8] if len(parts) > 8 else "",
+                    "raw": line.strip()
+                })
+    
+    return rules
+
+def audit_firewall() -> dict:
+    """Audit firewall rules for security issues"""
+    issues = []
+    rules = get_iptables_rules()
+    
+    for rule in rules:
+        target = rule.get("target", "")
+        source = rule.get("source", "0.0.0.0/0")
+        
+        # Check for overly permissive rules
+        if target == "ACCEPT" and source == "0.0.0.0/0":
+            issues.append({
+                "severity": "Medium",
+                "rule": rule.get("raw"),
+                "issue": "Rule accepts all source IPs"
+            })
+    
+    return {
+        "total_rules": len(rules),
+        "issues": issues,
+        "issue_count": len(issues)
+    }
+
+# Usage
+result = audit_firewall()
+print(f"Rules audited: {result['total_rules']}")
+print(f"Issues found: {result['issue_count']}")
+for issue in result["issues"]:
+    print(f"  [{issue['severity']}] {issue['issue']}")
+    print(f"    Rule: {issue['rule']}")
+```
+
+---
+
+## 4. Quick Reference — Network Security Automation
+
+```bash
+# 1. Quick port scan
+nmap -sV --open -T4 target.com
+
+# 2. Find exposed databases
+jq '.hosts[] | select(.open_ports[].service == "telnet")' scan.json
+
+# 3. Firewall rule audit
+python3 firewall_audit.py --table filter > audit_report.txt
+
+# 4. Real-time anomaly detection (background)
+python3 arp_monitor.py -i eth0 &
+python3 dns_tunnel_detect.py -i eth0 &

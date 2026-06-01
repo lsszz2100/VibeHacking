@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # AI 통합 — Claude + GPT-5.4-Cyber 보안 분석 도구 활용법
 
 ## 1. 모델 선택 가이드
@@ -552,3 +558,419 @@ TAC 접근 후에도:
 | Anthropic 레드팀 연구 | red.anthropic.com |
 | Project Glasswing 문의 | glasswing@anthropic.com |
 | OpenAI 기업 TAC 신청 | OpenAI 영업 담당자 통해 |
+
+---
+
+<a name="english"></a>
+
+# AI Integration — Claude + GPT-5.4-Cyber Security Analysis Tools Guide
+
+## 1. Model Selection Guide
+
+```
+Optimal Model by Task:
+
+┌─────────────────────────────┬──────────────────┬──────────────────┐
+│ Task                         │ 1st Choice       │ 2nd Choice       │
+├─────────────────────────────┼──────────────────┼──────────────────┤
+│ Source code vuln analysis    │ Claude Opus 4.6  │ GPT-5.4          │
+│ Binary reverse engineering   │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ Malware sample analysis      │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ YARA/Sigma rule creation     │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ CTF — web/forensics          │ Claude Opus 4.6  │ GPT-5.4          │
+│ CTF — reversing/binary       │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ Auto security code review    │ Claude Opus 4.6  │ —                │
+│ SIEM rule gen (Splunk/Sigma) │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ Pentest report writing       │ Claude Opus 4.6  │ GPT-5.4          │
+│ Zero-day research (post-TAC) │ GPT-5.4-Cyber    │ Claude Mythos    │
+└─────────────────────────────┴──────────────────┴──────────────────┘
+
+Access Methods:
+  Claude Opus 4.6  → claude.ai or Anthropic API (general access)
+  GPT-5.4          → chatgpt.com (general access)
+  GPT-5.4-Cyber    → chatgpt.com/cyber (TAC certification required)
+  Claude Mythos    → Project Glasswing (enterprise partners only)
+```
+
+---
+
+## 2. GPT-5.4-Cyber TAC Access Method
+
+### 2-1. Individual Certification (chatgpt.com/cyber)
+
+```
+Requirements:
+  - Security professional credentials (OSCP, CISSP, CEH, bug bounty profile, etc.)
+  - Government-issued ID (KYC auto-verification)
+  - Legitimate defensive purpose confirmation
+
+Certification Tiers:
+  Tier 1 — Basic Certification
+    Target: Identity-verified individual security professionals
+    Access: Existing model versions with reduced cyber friction
+    Method: Submit credentials at chatgpt.com/cyber
+
+  Tier 2 — Advanced Certification
+    Target: Those wanting additional verification beyond Tier 1
+    Access: Direct access to GPT-5.4-Cyber
+    Method: Request additional certification after completing Tier 1
+
+  Tier 3 — Enterprise
+    Target: Security vendors, research institutions, large teams
+    Access: GPT-5.4-Cyber + team-level management
+    Method: Apply through OpenAI sales representative
+
+Tasks available after approval:
+  ✔ Security Education
+  ✔ Defensive Programming
+  ✔ Responsible Vulnerability Research
+  ✔ Malware sample analysis (authorized environment)
+  ✔ Binary reverse engineering
+  ✔ SIEM/IDS rule creation
+```
+
+---
+
+## 3. Building Security Analysis Tools with Claude API
+
+### 3-1. Source Code Vulnerability Auto-Scanner
+
+```python
+import anthropic
+import subprocess
+import json
+import sys
+from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+client = anthropic.Anthropic()
+
+VULN_SYSTEM_PROMPT = """You are a professional security code reviewer.
+Analyze code to find vulnerabilities based on OWASP Top 10, CWE Top 25, and CVE patterns.
+
+Response format (JSON):
+{
+  "vulnerabilities": [
+    {
+      "type": "vulnerability type",
+      "cwe": "CWE-XXX",
+      "severity": "CRITICAL|HIGH|MEDIUM|LOW",
+      "line": line_number,
+      "description": "description",
+      "exploit_scenario": "exploit scenario",
+      "fix": "remediation method"
+    }
+  ],
+  "summary": "overall summary"
+}"""
+
+def analyze_file(file_path: Path) -> dict:
+    code = file_path.read_text(errors="replace")
+    if len(code) > 50_000:
+        code = code[:50_000] + "\n[Truncated — file too large]"
+
+    resp = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=4096,
+        system=VULN_SYSTEM_PROMPT,
+        messages=[{
+            "role": "user",
+            "content": f"File: {file_path.name}\n\n```\n{code}\n```"
+        }]
+    )
+    try:
+        return json.loads(resp.content[0].text)
+    except json.JSONDecodeError:
+        return {"raw": resp.content[0].text, "vulnerabilities": []}
+
+def scan_directory(target_dir: str, extensions: list[str] | None = None) -> None:
+    extensions = extensions or [".py", ".js", ".ts", ".php", ".go", ".java", ".c", ".cpp"]
+    target = Path(target_dir)
+    files = [f for f in target.rglob("*") if f.suffix in extensions]
+
+    print(f"[*] Starting scan of {len(files)} files")
+    all_vulns: list[dict] = []
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {executor.submit(analyze_file, f): f for f in files}
+        for future in as_completed(futures):
+            path = futures[future]
+            result = future.result()
+            vulns = result.get("vulnerabilities", [])
+            if vulns:
+                print(f"\n[!] {path.name} — {len(vulns)} vulnerabilities")
+                for v in vulns:
+                    sev = v.get("severity", "?")
+                    vtype = v.get("type", "?")
+                    print(f"    [{sev}] {vtype}")
+                all_vulns.extend(
+                    {"file": str(path), **v} for v in vulns
+                )
+
+    critical = [v for v in all_vulns if v.get("severity") == "CRITICAL"]
+    high     = [v for v in all_vulns if v.get("severity") == "HIGH"]
+    print(f"\n[Results] CRITICAL: {len(critical)}, HIGH: {len(high)}, Total: {len(all_vulns)}")
+
+if __name__ == "__main__":
+    scan_directory(sys.argv[1] if len(sys.argv) > 1 else ".")
+```
+
+### 3-2. Malware IOC Auto-Extractor
+
+```python
+import anthropic
+import re
+import json
+import argparse
+from pathlib import Path
+
+client = anthropic.Anthropic()
+
+IOC_SYSTEM_PROMPT = """You are a malware analysis expert.
+Extract and analyze IOCs from provided code/strings.
+
+JSON format response:
+{
+  "iocs": {
+    "ips": [],
+    "domains": [],
+    "urls": [],
+    "hashes": [],
+    "registry_keys": [],
+    "file_paths": [],
+    "mutexes": []
+  },
+  "behavior": {
+    "persistence": [],
+    "c2_communication": [],
+    "anti_analysis": [],
+    "lateral_movement": []
+  },
+  "family": "estimated malware family",
+  "confidence": "HIGH|MEDIUM|LOW"
+}"""
+
+def extract_iocs(sample_path: str) -> dict:
+    content = Path(sample_path).read_text(errors="replace")
+
+    # First-pass regex extraction
+    ips      = re.findall(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', content)
+    domains  = re.findall(r'\b[a-zA-Z0-9-]+\.[a-zA-Z]{2,}\b', content)
+    hashes   = re.findall(r'\b[a-fA-F0-9]{32,64}\b', content)
+
+    resp = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=4096,
+        system=IOC_SYSTEM_PROMPT,
+        messages=[{
+            "role": "user",
+            "content": (
+                f"Sample file: {sample_path}\n\n"
+                f"Regex first-pass extraction:\nIPs: {ips[:20]}\nDomains: {domains[:20]}\nHashes: {hashes[:10]}\n\n"
+                f"Full content:\n```\n{content[:8000]}\n```"
+            )
+        }]
+    )
+
+    try:
+        result = json.loads(resp.content[0].text)
+    except json.JSONDecodeError:
+        result = {"raw": resp.content[0].text}
+
+    result.setdefault("regex_extracted", {"ips": ips, "domains": domains, "hashes": hashes})
+    return result
+```
+
+---
+
+## 4. GPT-5.4-Cyber Usage — Binary Analysis Workflow
+
+### 4-1. Binary Analysis Prompt Patterns
+
+```
+[Basic binary analysis request]
+
+Preparation:
+  $ objdump -d target_binary > disasm.txt
+  $ strings target_binary > strings.txt
+  $ readelf -a target_binary > elf_info.txt
+
+Prompt structure to submit to GPT-5.4-Cyber:
+
+---
+Role: Binary reverse engineering expert
+
+Based on the following binary analysis results:
+1. Determine malware status
+2. Identify vulnerability classes (BOF, UAF, format string, etc.)
+3. C2 communication patterns (if any)
+4. Anti-analysis technique identification
+5. YARA rule generation
+
+[paste disasm.txt contents]
+[paste strings.txt contents]
+---
+```
+
+### 4-2. YARA Rule Auto-Generation Pipeline
+
+```python
+import subprocess
+import anthropic
+import argparse
+from pathlib import Path
+
+client = anthropic.Anthropic()
+
+YARA_SYSTEM = """You are a malware analyst. Generate accurate YARA rules from provided binary analysis data.
+
+Rule format:
+rule MalwareName_Variant {
+    meta:
+        description = "..."
+        author = "AI-Generated"
+        date = "YYYY-MM-DD"
+        hash = "..."
+    strings:
+        $s1 = "..."
+        $hex1 = { ?? ?? ?? }
+    condition:
+        uint16(0) == 0x5A4D and 2 of ($s*)
+}"""
+
+def generate_yara_rule(binary_path: str) -> str:
+    cmds = {
+        "strings": ["strings", "-n", "6", binary_path],
+        "imports": ["objdump", "-p", binary_path],
+        "sections": ["objdump", "-h", binary_path],
+        "disasm":   ["objdump", "-d", "--no-show-raw-insn", binary_path],
+    }
+    results = {}
+    for key, cmd in cmds.items():
+        try:
+            out = subprocess.run(cmd, capture_output=True, text=True, timeout=30).stdout
+            results[key] = out[:5000]
+        except Exception as e:
+            results[key] = f"Failed: {e}"
+    
+    prompt = "\n\n".join(f"### {k.upper()}\n{v}" for k, v in results.items())
+
+    resp = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=2048,
+        system=YARA_SYSTEM,
+        messages=[{"role": "user", "content": f"Binary: {binary_path}\n\n{prompt}"}]
+    )
+    return resp.content[0].text
+```
+
+---
+
+## 5. Combining Both Models — Analysis Pipeline
+
+### 5-1. Claude (Code Analysis) + GPT-5.4-Cyber (Binary) Dual Analysis
+
+```
+Practical Workflow:
+
+[Step 1] Claude Opus 4.6 — Source Code Review
+  → Full static analysis of codebase when source is available
+  → Identify vulnerable functions/lines
+  → Auto-generate fix code
+
+[Step 2] GPT-5.4-Cyber — Compiled Binary Cross-Verification
+  → Verify if vulnerabilities found in Step 1 persist after compilation
+  → Identify new vulnerabilities from compiler optimizations
+  → Assess actual exploit feasibility
+
+[Step 3] Claude Opus 4.6 — Report Writing
+  → Integrate results from both analyses
+  → Calculate CVSS scores
+  → Prioritize fixes
+  → Generate executive/developer reports
+
+Benefits of Dual Analysis:
+  - Static analysis + binary analysis = higher vulnerability detection rate
+  - Cross-validate false positives
+  - Source-binary discrepancy detection (detect build supply chain attacks)
+```
+
+---
+
+## 6. SIEM Rule Auto-Generation (Claude API)
+
+```python
+import anthropic
+import argparse
+from pathlib import Path
+
+client = anthropic.Anthropic()
+
+SIEM_SYSTEM = """SIEM engineer. Convert malicious behavior descriptions to Sigma rules and Splunk SPL.
+
+Response format:
+## Sigma Rule
+
+```yaml
+[sigma rule]
+```
+
+## Splunk SPL
+```
+[SPL query]
+```
+
+## Detection Logic Explanation
+[explanation]"""
+
+def generate_siem_rule(behavior_desc: str, log_sample: str = "") -> str:
+    content = f"Malicious behavior:\n{behavior_desc}"
+    if log_sample:
+        content += f"\n\nLog sample:\n```\n{log_sample[:3000]}\n```"
+
+    resp = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=3000,
+        system=SIEM_SYSTEM,
+        messages=[{"role": "user", "content": content}]
+    )
+    return resp.content[0].text
+```
+
+---
+
+## 7. Precautions and Ethics Guidelines
+
+```
+Legal Use Cases:
+  ✔ Authorized penetration testing (written contract required)
+  ✔ Analysis of systems you own
+  ✔ CTF challenges
+  ✔ Bug bounty (authorized scope only)
+  ✔ Malware sample analysis (isolated environment)
+  ✔ SIEM/IDS rule creation (defensive purpose)
+
+Absolutely Prohibited:
+  ✗ Unauthorized infiltration of external systems
+  ✗ Unauthorized disclosure of vulnerability information (Responsible Disclosure required)
+  ✗ Use for data exfiltration
+  ✗ Requesting actual attack code generation
+
+Even after TAC access:
+  - Obligation to comply with terms of service (same for GPT-5.4-Cyber)
+  - Automatic downgrade to GPT-5.2 upon suspicious activity detection
+  - Permanent account ban for serious violations
+```
+
+---
+
+## 8. Related Resources
+
+| Resource | URL |
+|----------|-----|
+| GPT-5.4-Cyber Access (TAC) | chatgpt.com/cyber |
+| Claude API Official Docs | docs.anthropic.com |
+| OpenAI TAC Official Blog | openai.com/index/scaling-trusted-access-for-cyber-defense |
+| Anthropic Red Team Research | red.anthropic.com |
+| Project Glasswing Inquiry | glasswing@anthropic.com |
+| OpenAI Enterprise TAC | Through OpenAI sales representative |

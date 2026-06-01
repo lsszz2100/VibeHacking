@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 위협 헌팅 & 랜섬웨어 침해 대응
 
 ## 위협 헌팅이란
@@ -1500,4 +1506,263 @@ Purple Team = Red Team + Blue Team 협력
   - MITRE Caldera: 자동화된 ATT&CK 기반 에뮬레이션
   - Atomic Red Team: 기법별 테스트 케이스
   - AttackIQ: 엔터프라이즈급 BAS(Breach and Attack Simulation)
+```
+
+---
+
+<a name="english"></a>
+
+# Threat Hunting & Ransomware Incident Response
+
+## What is Threat Hunting
+
+```
+Reactive vs Proactive Security:
+
+Traditional SOC (Reactive):
+  Waiting for alerts → Alert arrives → Investigate → Respond
+  Problem: Average dwell time 200+ days (attacker stays undetected)
+
+Threat Hunting (Proactive):
+  Hypothesis → Data search → Evidence collection → Detection rule creation
+  Goal: Find attackers that bypassed automated detection
+```
+
+---
+
+## 1. Threat Hunting Methodology
+
+### Intelligence-Driven Hunting
+
+```
+Process:
+1. Hypothesis formulation (based on threat intel, TTPs)
+   Example: "Our industry is experiencing APT29 attacks using WMI persistence"
+
+2. ATT&CK technique mapping
+   APT29 → T1047 (WMI), T1543 (Create/Modify Service), T1055 (Process Injection)
+
+3. Data source identification
+   WMI → Windows Event ID 5857, 5860, 5861
+   Service → Event ID 7045, registry HKLM\SYSTEM\CurrentControlSet\Services
+
+4. SPL/KQL query writing
+   index=windows (EventCode=5857 OR EventCode=5860)
+   | table _time, host, user, Consumer, Filter
+
+5. Analysis and IOC extraction
+   - Legitimate WMI subscriptions vs malicious ones
+   - Known malware patterns
+```
+
+---
+
+## 2. Ransomware Incident Response
+
+### Initial Response Checklist
+
+```bash
+# 1. Isolate infected system (immediate)
+# - Disconnect from network (but do NOT power off)
+# - Preserve memory dump
+
+# 2. Collect volatile data
+# Windows
+wmic process list full > processes.txt
+netstat -anob > network.txt
+ipconfig /all > network_config.txt
+
+# 3. Identify ransomware strain
+# Check ransom note contents
+# Search file extension on https://id-ransomware.malwarehunterteam.com/
+
+# 4. Timeline creation
+# EventCode=4663 (file access), EventCode=4688 (process creation)
+# Find first encrypted file → work backwards
+
+# 5. Determine attack vector
+# Phishing email? RDP brute force? VPN vulnerability?
+```
+
+### Ransomware Detection SPL
+
+```spl
+# Mass file rename/extension change detection
+index=windows EventCode=4663 ObjectType=File
+| eval extension=mvindex(split(ObjectName, "."), -1)
+| where extension IN ("encrypted", "locked", "ransom", "crypted", "enc")
+| stats count dc(ObjectName) as UniqueFiles by host, ProcessName, User
+| where UniqueFiles > 50
+| eval severity="CRITICAL - Possible Ransomware"
+| table _time, host, User, ProcessName, UniqueFiles, severity
+
+# VSS (shadow copy) deletion detection
+index=windows EventCode=4688
+| where CommandLine LIKE "%vssadmin%delete%" OR
+        CommandLine LIKE "%wmic%shadowcopy%delete%" OR
+        CommandLine LIKE "%bcdedit%recoveryenabled%no%"
+| table _time, host, User, CommandLine
+```
+
+---
+
+## 3. Lateral Movement Hunting
+
+### Pass-the-Hash Detection
+
+```spl
+# PtH: NTLM auth from workstation to workstation
+index=windows EventCode=4624 LogonType=3
+| where AuthPackage="NTLM"
+| lookup asset_lookup src_ip OUTPUT asset_type as src_type
+| lookup asset_lookup dest_ip OUTPUT asset_type as dest_type
+| where src_type="workstation" AND dest_type="workstation"
+| stats count dc(dest_ip) as TargetCount by src_ip, user
+| where TargetCount > 3
+| eval alert="Possible Pass-the-Hash"
+```
+
+### Kerberoasting Detection
+
+```spl
+# Service ticket requests targeting many SPNs from single account
+index=windows EventCode=4769
+| where TicketEncryptionType="0x17"  # RC4 - weak encryption
+| stats count dc(ServiceName) as SPNCount by user, src_ip
+| where SPNCount > 5
+| table _time, user, src_ip, SPNCount
+```
+
+---
+
+## 4. Memory Forensics
+
+```bash
+# Volatility 3 analysis
+# Process list
+vol -f memory.dmp windows.pslist
+
+# Network connections
+vol -f memory.dmp windows.netstat
+
+# Inject code detection
+vol -f memory.dmp windows.malfind
+
+# Process memory extraction
+vol -f memory.dmp windows.dumpfiles --pid 1234
+
+# Registry analysis
+vol -f memory.dmp windows.registry.hivelist
+vol -f memory.dmp windows.registry.printkey \
+    --key "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+```
+
+---
+
+## 5. Threat Hunting Automation
+
+```python
+#!/usr/bin/env python3
+"""Threat hunting automation using Splunk API"""
+import requests
+import json
+import time
+
+class ThreatHunter:
+    def __init__(self, splunk_url: str, token: str):
+        self.base_url = splunk_url
+        self.headers = {"Authorization": f"Bearer {token}"}
+        self.findings = []
+    
+    def run_hunt(self, hunt_name: str, spl_query: str, 
+                 time_range: str = "-24h") -> list:
+        """Execute hunting query and collect results"""
+        
+        # Submit search job
+        resp = requests.post(
+            f"{self.base_url}/services/search/jobs",
+            headers=self.headers,
+            data={
+                "search": f"search {spl_query}",
+                "earliest_time": time_range,
+                "latest_time": "now",
+                "output_mode": "json"
+            },
+            verify=False
+        )
+        
+        job_id = resp.json().get("sid")
+        print(f"[{hunt_name}] Job started: {job_id}")
+        
+        # Wait for completion
+        while True:
+            status_resp = requests.get(
+                f"{self.base_url}/services/search/jobs/{job_id}",
+                headers=self.headers,
+                params={"output_mode": "json"},
+                verify=False
+            )
+            status = status_resp.json()["entry"][0]["content"]["dispatchState"]
+            if status == "DONE":
+                break
+            time.sleep(2)
+        
+        # Retrieve results
+        results_resp = requests.get(
+            f"{self.base_url}/services/search/jobs/{job_id}/results",
+            headers=self.headers,
+            params={"output_mode": "json", "count": 1000},
+            verify=False
+        )
+        
+        results = results_resp.json().get("results", [])
+        if results:
+            print(f"[{hunt_name}] Found {len(results)} suspicious events")
+            self.findings.extend([{**r, "hunt": hunt_name} for r in results])
+        
+        return results
+    
+    def run_playbook(self):
+        """Execute all hunting queries"""
+        hunts = [
+            ("Ransomware Detection", 
+             'index=windows EventCode=4663 | eval ext=mvindex(split(ObjectName,"."), -1) | where ext IN ("encrypted","locked") | stats count by host,user | where count > 50'),
+            ("Lateral Movement - PtH",
+             'index=windows EventCode=4624 LogonType=3 AuthPackage=NTLM | stats dc(dest_ip) as targets by src_ip,user | where targets > 3'),
+            ("Kerberoasting",
+             'index=windows EventCode=4769 TicketEncryptionType=0x17 | stats dc(ServiceName) as spns by user | where spns > 5'),
+        ]
+        
+        for hunt_name, query in hunts:
+            self.run_hunt(hunt_name, query)
+        
+        return self.findings
+```
+
+---
+
+## 6. Breach and Attack Simulation (BAS)
+
+```
+Purple Team Approach:
+
+1. Attack preparation
+   - Choose ATT&CK technique
+   - Create test environment (sandbox)
+
+2. Execute attack
+   - MITRE Caldera or Atomic Red Team
+   - Record exact commands, network traffic, artifacts
+
+3. Detection validation
+   - Were SIEM alerts triggered?
+   - Detected stages vs undetected stages
+   - At which stage can the Kill Chain be blocked?
+
+4. Detection gap identification → Create new detection rules
+
+Key tools:
+  - MITRE Caldera: Automated ATT&CK-based emulation
+  - Atomic Red Team: Test cases per technique
+  - AttackIQ: Enterprise-grade BAS (Breach and Attack Simulation)
 ```

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # OT/ICS 보안 기초 심화
 
 ## OT vs IT 보안 패러다임
@@ -345,3 +351,355 @@ if __name__ == "__main__":
 ```
 
 다음 파일에서 SCADA 공격 기법을 다룬다.
+
+---
+
+<a name="english"></a>
+
+# OT/ICS Security Fundamentals (Advanced)
+
+## OT vs IT Security Paradigm
+
+```
+IT Security Priorities        OT Security Priorities
+1. Confidentiality (C)       1. Availability (A)
+2. Integrity (I)             2. Integrity (I)
+3. Availability (A)          3. Confidentiality (C)
+
+→ In OT, system outages can lead to physical disasters
+  (explosions, environmental contamination, loss of life)
+```
+
+## OT/ICS Architecture
+
+### Purdue Reference Model (ISA-99)
+```
+Level 5 — Internet (External)
+Level 4 — Enterprise Network (ERP, Email)
+──────── DMZ (Demilitarized Zone) ────────
+Level 3 — Operations Network (MES, Historian)
+Level 2 — Supervisory Control (SCADA, HMI, Engineering Workstation)
+Level 1 — Basic Control (PLC, RTU, DCS)
+Level 0 — Process (Sensors, Actuators, Physical Process)
+```
+
+### Key Components
+```
+PLC (Programmable Logic Controller)
+├── Executes ladder logic
+├── Controls I/O modules
+├── Real-time operation (deterministic)
+└── Vulnerabilities: remote access, firmware updates
+
+RTU (Remote Terminal Unit)
+├── Monitors remote devices
+├── Communicates with SCADA
+└── Vulnerabilities: unencrypted communications
+
+DCS (Distributed Control System)
+├── Continuous process control (chemical, refinery)
+├── Centralized vs. distributed architecture
+└── Vulnerabilities: legacy OS, difficulty patching
+
+HMI (Human Machine Interface)
+├── Operator interface
+├── Process visualization
+└── Vulnerabilities: Windows XP/7, VNC, RDP
+```
+
+## OT Communication Protocols
+
+### Industrial Protocol Overview
+```
+Protocol      Layer   Characteristics          Security
+Modbus        L7      Simple, widely used      No authentication
+DNP3          L2-7    Power/water sector       Weak authentication
+IEC 61850     L7      Substation automation    Partial encryption
+OPC-UA        L7      Modern, built-in security TLS/auth support
+EtherNet/IP   L7      Rockwell standard        Limited security
+PROFINET      L2      Siemens standard         Limited security
+Modbus TCP    L7      IP-based Modbus          No authentication
+BACnet        L7      Building automation      Weak security
+```
+
+### Modbus Protocol In-Depth
+```
+Function Codes
+0x01 — Read Coils (digital outputs)
+0x02 — Read Discrete Inputs (digital inputs)
+0x03 — Read Holding Registers (analog outputs)
+0x04 — Read Input Registers (analog inputs)
+0x05 — Write Single Coil
+0x06 — Write Single Register
+0x0F — Write Multiple Coils
+0x10 — Write Multiple Registers
+
+Vulnerabilities:
+- No authentication → anyone can control the PLC
+- No encryption → eavesdropping/tampering possible
+- No request validation → out-of-range values can be written
+```
+
+## Major OT Cyber Attack Case Studies
+
+```
+Stuxnet (2010)
+├── Iran's Natanz nuclear facility
+├── Targeted Siemens S7-315/S7-417 PLCs
+├── Manipulated centrifuge RPM (exceeding safe range)
+└── Displayed normal readings on HMI → evaded detection
+
+Ukraine Power Grid (2015/2016)
+├── BlackEnergy/Industroyer malware
+├── Manipulated circuit breakers via SCADA HMI
+└── Approximately 225,000 homes lost power
+
+Colonial Pipeline (2021)
+├── Ransomware infected the IT network
+├── OT network was not directly compromised
+└── Pipeline voluntarily shut down as a precaution
+
+Triton/TRISIS (2017)
+├── Saudi petrochemical facility
+├── Attacked Schneider Electric Triconex SIS
+└── Attempted to disable the Safety Instrumented System (SIS)
+```
+
+## OT Asset Discovery
+
+```python
+#!/usr/bin/env python3
+"""OT/ICS network asset discovery tool."""
+
+import argparse
+import socket
+import struct
+import ipaddress
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
+
+
+@dataclass
+class OTDevice:
+    ip: str
+    port: int
+    protocol: str
+    banner: str
+    device_info: dict
+
+
+OT_PORTS = {
+    102:  "S7comm (Siemens)",
+    502:  "Modbus TCP",
+    503:  "Modbus TLS",
+    789:  "Red Lion Controls",
+    1089: "FF Annunciation",
+    1090: "FF Fieldbus",
+    1091: "FF System Management",
+    1911: "Niagara Fox",
+    2404: "IEC 60870-5-104",
+    4000: "Emerson DeltaV",
+    4840: "OPC-UA",
+    9600: "OMRON FINS",
+    18245: "GE EGD",
+    20000: "DNP3",
+    44818: "EtherNet/IP",
+    47808: "BACnet",
+}
+
+
+def grab_banner(ip: str, port: int, timeout: float = 2.0) -> str:
+    try:
+        with socket.create_connection((ip, port), timeout=timeout) as s:
+            s.settimeout(timeout)
+            try:
+                return s.recv(256).decode(errors="replace").strip()
+            except TimeoutError:
+                return "(connected, no banner)"
+    except Exception:
+        return ""
+
+
+def probe_modbus(ip: str, port: int = 502) -> dict | None:
+    """Detect Modbus TCP device."""
+    # Modbus TCP request: Read Device Identification (FC 43)
+    request = struct.pack(">HHHBBBB",
+        0x0001,  # Transaction ID
+        0x0000,  # Protocol ID
+        0x0006,  # Length
+        0x01,    # Unit ID
+    ) + bytes([0x2B, 0x0E, 0x01, 0x00])  # MEI, Device ID
+
+    try:
+        with socket.create_connection((ip, port), timeout=2.0) as s:
+            s.send(request)
+            data = s.recv(256)
+            if data and len(data) >= 8:
+                return {
+                    "protocol": "Modbus TCP",
+                    "unit_id": data[6] if len(data) > 6 else "?",
+                    "raw": data.hex(),
+                }
+    except Exception:
+        pass
+
+    # Retry with basic FC03 (read registers)
+    basic = struct.pack(">HHHHBBHH",
+        0x0001, 0x0000, 0x0006, 0x0001,
+        0x01,   # Unit ID
+        0x03,   # FC03
+        0x0000, # Start address
+        0x0001, # Quantity
+    )
+    try:
+        with socket.create_connection((ip, port), timeout=2.0) as s:
+            s.send(basic)
+            data = s.recv(64)
+            if data:
+                return {"protocol": "Modbus TCP", "raw": data.hex()}
+    except Exception:
+        pass
+    return None
+
+
+def probe_s7(ip: str, port: int = 102) -> dict | None:
+    """Detect Siemens S7 device (COTP + S7comm)."""
+    # COTP Connection Request
+    cotp_cr = bytes([
+        0x03, 0x00, 0x00, 0x16,  # TPKT
+        0x11, 0xE0, 0x00, 0x00,  # COTP CR
+        0x00, 0x01, 0x00,
+        0xC0, 0x01, 0x0A,
+        0xC1, 0x02, 0x01, 0x00,
+        0xC2, 0x02, 0x01, 0x02,
+    ])
+    try:
+        s = socket.create_connection((ip, port), timeout=2.0)
+        s.send(cotp_cr)
+        resp = s.recv(256)
+        if resp and resp[5] == 0xD0:  # COTP CC
+            # S7 communication setup
+            s7_setup = bytes([
+                0x03, 0x00, 0x00, 0x19,
+                0x02, 0xF0, 0x80,
+                0x32, 0x01, 0x00, 0x00,
+                0x04, 0x00, 0x00, 0x08,
+                0x00, 0x00, 0xF0, 0x00,
+                0x00, 0x01, 0x00, 0x01,
+                0x01, 0xE0,
+            ])
+            s.send(s7_setup)
+            s7_resp = s.recv(256)
+            s.close()
+            return {
+                "protocol": "S7comm",
+                "raw": s7_resp.hex() if s7_resp else "",
+            }
+        s.close()
+    except Exception:
+        pass
+    return None
+
+
+def scan_host(ip: str) -> OTDevice | None:
+    """Scan a single host for OT ports."""
+    for port, protocol in OT_PORTS.items():
+        try:
+            with socket.create_connection((ip, port), timeout=1.0):
+                banner = grab_banner(ip, port)
+                device_info: dict = {}
+
+                if port == 502:
+                    info = probe_modbus(ip, port)
+                    if info:
+                        device_info = info
+                elif port == 102:
+                    info = probe_s7(ip, port)
+                    if info:
+                        device_info = info
+
+                return OTDevice(
+                    ip=ip,
+                    port=port,
+                    protocol=protocol,
+                    banner=banner[:80],
+                    device_info=device_info,
+                )
+        except (ConnectionRefusedError, TimeoutError, OSError):
+            continue
+    return None
+
+
+def scan_network(
+    network: str,
+    max_workers: int = 50,
+) -> list[OTDevice]:
+    net = ipaddress.ip_network(network, strict=False)
+    hosts = list(net.hosts())
+    devices: list[OTDevice] = []
+
+    print(f"[*] Scanning: {network} ({len(hosts)} hosts)")
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = {ex.submit(scan_host, str(h)): h for h in hosts}
+        for i, fut in enumerate(as_completed(futures), 1):
+            device = fut.result()
+            if device:
+                devices.append(device)
+                print(f"  [+] {device.ip}:{device.port} — {device.protocol}")
+            if i % 50 == 0:
+                print(f"  Progress: {i}/{len(hosts)}", end="\r")
+    return devices
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="OT/ICS asset discovery tool")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--host", help="Single host")
+    group.add_argument("--network", help="CIDR network (e.g., 192.168.1.0/24)")
+    parser.add_argument("-w", "--workers", type=int, default=30)
+    args = parser.parse_args()
+
+    if args.host:
+        device = scan_host(args.host)
+        if device:
+            print(f"\n[+] OT device found:")
+            print(f"  IP       : {device.ip}")
+            print(f"  Port     : {device.port}")
+            print(f"  Protocol : {device.protocol}")
+            print(f"  Banner   : {device.banner}")
+            if device.device_info:
+                print(f"  Info     : {device.device_info}")
+        else:
+            print(f"[-] No OT service found: {args.host}")
+    else:
+        devices = scan_network(args.network, args.workers)
+        print(f"\n[+] OT devices found: {len(devices)}")
+        for d in devices:
+            print(f"  {d.ip}:{d.port} [{d.protocol}]")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## Key Security Challenges
+
+```
+Legacy Systems
+├── Windows XP/2003/7 HMIs (cannot be patched)
+├── Devices with 10–30 year lifespans (difficult to replace)
+└── Cannot reboot/update (24/7 operations)
+
+The Air Gap Myth
+├── True air gaps are rare
+├── USB drives, consultant laptops, OEM remote access
+└── Stuxnet: a prime example of defeating an air gap
+
+Supply Chain Threats
+├── Backdoors implanted during manufacturing
+├── Vulnerable firmware updates
+└── Malicious engineering software
+```
+
+The next file covers SCADA attack techniques.

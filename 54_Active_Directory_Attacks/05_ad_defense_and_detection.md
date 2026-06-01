@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Active Directory 방어 및 탐지
 
 AD 공격(Pass-the-Hash, Kerberoasting, DCSync, BloodHound 경로 악용)을 탐지하는 방법과 계층적 방어 전략을 다룬다. SIEM 쿼리, 허니팟 계정, 탐지 룰을 중심으로 정리한다.
@@ -541,6 +547,562 @@ def main() -> None:
 
     risks = analyze_bloodhound_data(Path(args.data_dir))
     print(f"[+] 발견된 위험: {len(risks)}개")
+
+    for risk in sorted(risks, key=lambda r: {"Critical": 0, "High": 1, "Medium": 2}.get(r["severity"], 3)):
+        print(f"  [{risk['severity']}] {risk['type']}: {risk['source']}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+<a name="english"></a>
+
+# Active Directory Defense and Detection
+
+This section covers how to detect AD attacks (Pass-the-Hash, Kerberoasting, DCSync, BloodHound path abuse) and layered defense strategies. Focused on SIEM queries, honeypot accounts, and detection rules.
+
+---
+
+## 1. Core AD Detection Events
+
+### 1.1 Windows Event ID Mapping
+
+| Event ID  | Description                        | Related Attack                              |
+|-----------|------------------------------------|---------------------------------------------|
+| 4624      | Logon success                      | Pass-the-Hash (LogonType 3)                 |
+| 4625      | Logon failure                      | Password spray, brute force                 |
+| 4648      | Explicit credential logon          | Overpass-the-Hash                           |
+| 4662      | AD object access                   | DCSync (DS-Replication-Get-Changes)         |
+| 4672      | Special privilege logon            | Administrator logon                         |
+| 4720      | Account created                    | Backdoor account                            |
+| 4728/4732 | Security group member added        | Privilege escalation                        |
+| 4769      | Kerberos service ticket request    | Kerberoasting                               |
+| 4771      | Kerberos pre-authentication failed | AS-REP Roasting                             |
+| 4776      | NTLM authentication attempt        | Pass-the-Hash                               |
+| 7045      | New service installed              | Persistence establishment                   |
+
+---
+
+## 2. Automated Detection System
+
+### 2.1 Real-Time Detection Based on Event Logs
+
+```python
+#!/usr/bin/env python3
+"""AD attack detection based on Windows Event Logs (Elasticsearch/Python)"""
+import argparse
+import json
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+from elasticsearch import Elasticsearch
+
+
+@dataclass
+class ADThreatRule:
+    rule_id: str
+    name: str
+    severity: str
+    event_ids: list[int]
+    conditions: dict
+    description: str
+    mitre: str
+
+
+AD_THREAT_RULES: list[ADThreatRule] = [
+    ADThreatRule(
+        "AD-001", "Kerberoasting Detection",
+        "High",
+        [4769],
+        {
+            "TicketEncryptionType": "0x17",  # RC4-HMAC
+            "ServiceName|not": ["krbtgt", "$"],  # Exclude computer accounts
+        },
+        "Bulk request of RC4-encrypted Kerberos service tickets",
+        "T1558.003",
+    ),
+    ADThreatRule(
+        "AD-002", "DCSync Detection",
+        "Critical",
+        [4662],
+        {
+            "ObjectType": "19195a5b-6da0-11d0-afd3-00c04fd930c9",  # Domain NC
+            "AccessMask": "0x100",  # DS-Replication-Get-Changes
+        },
+        "Use of DC replication rights (DCSync attack)",
+        "T1003.006",
+    ),
+    ADThreatRule(
+        "AD-003", "Pass-the-Hash Detection",
+        "High",
+        [4624],
+        {
+            "LogonType": "3",
+            "LogonProcessName": "NtLmSsp",
+            "AuthenticationPackageName": "NTLM",
+        },
+        "Suspected NTLMv2 Pass-the-Hash",
+        "T1550.002",
+    ),
+    ADThreatRule(
+        "AD-004", "Admin Group Modification",
+        "Critical",
+        [4728, 4732],
+        {
+            "GroupName": ["Domain Admins", "Enterprise Admins", "Schema Admins"],
+        },
+        "High-privilege group membership changed",
+        "T1098",
+    ),
+    ADThreatRule(
+        "AD-005", "AS-REP Roasting",
+        "High",
+        [4771],
+        {
+            "PreAuthType": "0",  # No pre-authentication
+        },
+        "Detection of accounts with Kerberos pre-auth disabled",
+        "T1558.004",
+    ),
+    ADThreatRule(
+        "AD-006", "Golden Ticket Suspected",
+        "Critical",
+        [4624, 4634],
+        {
+            "LogonType": "3",
+            "TicketLifetime|gt": 600,  # Abnormally long ticket
+        },
+        "Suspected golden ticket created with krbtgt hash",
+        "T1558.001",
+    ),
+]
+
+
+class ADThreatDetector:
+    def __init__(self, es_host: str = "localhost", es_port: int = 9200) -> None:
+        self.es = Elasticsearch(f"http://{es_host}:{es_port}")
+
+    def search_events(
+        self,
+        event_ids: list[int],
+        time_window_minutes: int = 60,
+        conditions: Optional[dict] = None,
+    ) -> list[dict]:
+        now = datetime.now(timezone.utc)
+        start = now - timedelta(minutes=time_window_minutes)
+
+        query = {
+            "bool": {
+                "must": [
+                    {"terms": {"EventID": event_ids}},
+                    {"range": {"@timestamp": {"gte": start.isoformat(), "lte": now.isoformat()}}},
+                ]
+            }
+        }
+
+        if conditions:
+            for field_name, value in conditions.items():
+                if "|not" in field_name:
+                    actual_field = field_name.replace("|not", "")
+                    query["bool"].setdefault("must_not", []).append(
+                        {"terms": {actual_field: value if isinstance(value, list) else [value]}}
+                    )
+                elif "|gt" in field_name:
+                    actual_field = field_name.replace("|gt", "")
+                    query["bool"]["must"].append({"range": {actual_field: {"gt": value}}})
+                else:
+                    query["bool"]["must"].append(
+                        {"terms": {field_name: value if isinstance(value, list) else [value]}}
+                    )
+
+        result = self.es.search(
+            index="winlogbeat-*",
+            body={"query": query, "size": 100, "sort": [{"@timestamp": "desc"}]},
+        )
+        return [hit["_source"] for hit in result["hits"]["hits"]]
+
+    def run_detection(self, time_window: int = 60) -> list[dict]:
+        findings = []
+
+        for rule in AD_THREAT_RULES:
+            events = self.search_events(rule.event_ids, time_window, rule.conditions)
+
+            # Kerberoasting: multiple requests within a short time
+            if rule.rule_id == "AD-001" and len(events) > 5:
+                findings.append({
+                    "rule": rule.rule_id,
+                    "name": rule.name,
+                    "severity": rule.severity,
+                    "count": len(events),
+                    "mitre": rule.mitre,
+                    "description": f"Detected {len(events)} RC4 service ticket requests",
+                })
+
+            elif rule.rule_id != "AD-001" and events:
+                for event in events[:3]:
+                    findings.append({
+                        "rule": rule.rule_id,
+                        "name": rule.name,
+                        "severity": rule.severity,
+                        "event": event,
+                        "mitre": rule.mitre,
+                    })
+
+        return findings
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="AD threat detection")
+    parser.add_argument("--es-host", default="localhost")
+    parser.add_argument("--es-port", type=int, default=9200)
+    parser.add_argument("--window", type=int, default=60, help="Detection time window (minutes)")
+    args = parser.parse_args()
+
+    detector = ADThreatDetector(args.es_host, args.es_port)
+    findings = detector.run_detection(args.window)
+
+    if findings:
+        print(f"[!!!] {len(findings)} AD threats detected")
+        for f in findings:
+            print(f"  [{f['severity']}] {f['name']} ({f['mitre']}): {f.get('description', '')}")
+    else:
+        print("[*] No threats detected")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Honeypot Accounts (Canary Accounts)
+
+### 3.1 Honeypot Account Setup and Monitoring
+
+```python
+#!/usr/bin/env python3
+"""AD honeypot account monitoring — immediate alert on access"""
+import argparse
+import smtplib
+import subprocess
+from dataclasses import dataclass
+from datetime import datetime
+from email.mime.text import MIMEText
+from pathlib import Path
+from typing import Optional
+
+
+HONEYPOT_ACCOUNTS = [
+    "svc_admin",      # Name that looks like a service account
+    "backup_admin",   # Backup administrator
+    "helpdesk",       # Help desk
+    "sql_svc",        # SQL service account
+]
+
+
+@dataclass
+class HoneypotAlert:
+    account: str
+    source_ip: str
+    timestamp: str
+    event_type: str
+
+
+def parse_security_log(log_path: Optional[Path] = None) -> list[HoneypotAlert]:
+    alerts = []
+
+    if log_path and log_path.exists():
+        content = log_path.read_text()
+    else:
+        try:
+            output = subprocess.check_output(
+                ["wevtutil", "qe", "Security",
+                 "/q:*[System[EventID=4624 or EventID=4625 or EventID=4769]]",
+                 "/f:text", "/c:100"],
+                text=True,
+                shell=True,
+            )
+            content = output
+        except Exception:
+            return []
+
+    for account in HONEYPOT_ACCOUNTS:
+        if account.lower() in content.lower():
+            alerts.append(HoneypotAlert(
+                account=account,
+                source_ip="unknown",
+                timestamp=datetime.now().isoformat(),
+                event_type="Access attempt",
+            ))
+
+    return alerts
+
+
+def send_alert(alert: HoneypotAlert, smtp_host: str, smtp_to: str) -> None:
+    msg = MIMEText(
+        f"Honeypot account access detected!\n\n"
+        f"Account: {alert.account}\n"
+        f"Source IP: {alert.source_ip}\n"
+        f"Time: {alert.timestamp}\n"
+        f"Event: {alert.event_type}\n\n"
+        f"Immediate investigation required"
+    )
+    msg["Subject"] = f"[Security Alert] Honeypot account access: {alert.account}"
+    msg["From"] = "security@company.com"
+    msg["To"] = smtp_to
+
+    try:
+        with smtplib.SMTP(smtp_host) as server:
+            server.send_message(msg)
+        print(f"[+] Alert sent to: {smtp_to}")
+    except Exception as e:
+        print(f"[-] Failed to send alert: {e}")
+
+
+def setup_honeypot_accounts(domain: str) -> None:
+    """Create honeypot accounts with PowerShell (requires admin execution)"""
+    for account in HONEYPOT_ACCOUNTS:
+        ps_cmd = f"""
+Import-Module ActiveDirectory
+$SecurePassword = ConvertTo-SecureString "HoneyPot!@#2024NoAccess" -AsPlainText -Force
+New-ADUser -Name "{account}" `
+    -SamAccountName "{account}" `
+    -UserPrincipalName "{account}@{domain}" `
+    -AccountPassword $SecurePassword `
+    -PasswordNeverExpires $true `
+    -Description "Legacy service account - do not use" `
+    -Enabled $true
+
+# Induce Kerberoasting (set SPN)
+Set-ADUser "{account}" -ServicePrincipalNames @{{Add="MSSQLSvc/{account}.{domain}:1433"}}
+
+# Enable audit policy (generate event on access to this account)
+Set-ADUser "{account}" -Add @{{'msDS-SupportedEncryptionTypes'=28}}
+"""
+        print(f"[*] Honeypot account setup command:")
+        print(ps_cmd[:200])
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Honeypot account monitoring")
+    parser.add_argument("--setup", action="store_true", help="Create honeypot accounts")
+    parser.add_argument("--domain", help="AD domain name")
+    parser.add_argument("--smtp", help="SMTP server")
+    parser.add_argument("--alert-to", help="Alert email address")
+    args = parser.parse_args()
+
+    if args.setup and args.domain:
+        setup_honeypot_accounts(args.domain)
+    else:
+        alerts = parse_security_log()
+        if alerts:
+            print(f"[!!!] {len(alerts)} honeypot accesses detected!")
+            for alert in alerts:
+                print(f"  [{alert.account}] {alert.event_type} @ {alert.timestamp}")
+                if args.smtp and args.alert_to:
+                    send_alert(alert, args.smtp, args.alert_to)
+        else:
+            print("[*] No honeypot accesses")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. AD Tier Model Defense
+
+### 4.1 3-Tier Administration Model
+
+```
+Tier 0 (Domain Controllers):
+  - Domain admins, krbtgt
+  - Access only from dedicated PAW (Privileged Access Workstation)
+  - Isolated environment with no internet connectivity
+
+Tier 1 (Servers):
+  - Server admins, service accounts
+  - Access via dedicated Tier 1 management server
+  - Prohibited from logging in with Tier 0 credentials
+
+Tier 2 (Workstations/Users):
+  - Regular users, helpdesk
+  - Internet access permitted
+  - Direct access to Tier 0/1 resources prohibited
+```
+
+```python
+#!/usr/bin/env python3
+"""AD Tier model violation detection"""
+import argparse
+
+
+TIER_MAPPING = {
+    "tier0": ["CORP\\Domain Admins", "CORP\\Enterprise Admins", "CORP\\Schema Admins",
+               "CORP\\krbtgt", "dc01$", "dc02$"],
+    "tier1": ["CORP\\Server Admins", "CORP\\svc_sql", "CORP\\svc_iis",
+               "srv01$", "srv02$"],
+    "tier2": ["CORP\\Domain Users", "CORP\\helpdesk"],
+}
+
+
+def detect_tier_violation(
+    account: str,
+    source_computer: str,
+    target_computer: str,
+) -> list[str]:
+    findings = []
+
+    account_tier = None
+    for tier, members in TIER_MAPPING.items():
+        if any(m.lower() in account.lower() for m in members):
+            account_tier = tier
+            break
+
+    target_tier = None
+    for tier, members in TIER_MAPPING.items():
+        if any(m.lower() in target_computer.lower() for m in members):
+            target_tier = tier
+            break
+
+    if account_tier and target_tier:
+        tier_order = {"tier0": 0, "tier1": 1, "tier2": 2}
+        if tier_order.get(account_tier, 2) > tier_order.get(target_tier, 2):
+            findings.append(
+                f"Tier violation: {account_tier} account ({account}) "
+                f"accessed {target_tier} resource ({target_computer})"
+            )
+
+    return findings
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="AD Tier violation detection")
+    parser.add_argument("--account", required=True)
+    parser.add_argument("--source", required=True)
+    parser.add_argument("--target", required=True)
+    args = parser.parse_args()
+
+    findings = detect_tier_violation(args.account, args.source, args.target)
+    for f in findings:
+        print(f"[!] {f}")
+    if not findings:
+        print("[*] No tier violations")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. AD Hardening Configuration Automation
+
+### 5.1 PowerShell Hardening Script
+
+```powershell
+# AD security hardening — key settings
+
+# 1. Periodic krbtgt account password change (at least twice a year)
+# Automation script
+$krbtgt = Get-ADUser krbtgt
+$NewPassword = [System.Web.Security.Membership]::GeneratePassword(64, 10)
+Set-ADAccountPassword -Identity krbtgt -Reset -NewPassword (ConvertTo-SecureString $NewPassword -AsPlainText -Force)
+Write-Host "[+] krbtgt password changed successfully"
+
+# 2. Disable unused accounts (inactive for 90 days)
+$Inactive = Search-ADAccount -AccountInactive -TimeSpan 90 -UsersOnly
+foreach ($user in $Inactive) {
+    Disable-ADAccount -Identity $user
+    Write-Host "[+] Disabled: $($user.SamAccountName)"
+}
+
+# 3. Check AdminSDHolder protected objects
+Get-ADUser -Filter {AdminCount -eq 1} | Select-Object SamAccountName, Enabled
+
+# 4. Restrict Kerberos delegation
+# Find accounts with unconstrained delegation
+Get-ADComputer -Filter {TrustedForDelegation -eq $True} | Select-Object Name
+Get-ADUser -Filter {TrustedForDelegation -eq $True} | Select-Object SamAccountName
+
+# 5. Enforce LDAP signing
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" `
+    -Name "LDAPServerIntegrity" -Value 2 -Type DWord
+
+# 6. Enforce SMB signing
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" `
+    -Name "RequireSecuritySignature" -Value 1 -Type DWord
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" `
+    -Name "RequireSecuritySignature" -Value 1 -Type DWord
+```
+
+---
+
+## 6. BloodHound Attack Path Defense
+
+```python
+#!/usr/bin/env python3
+"""BloodHound JSON data analysis — automated detection of risky paths"""
+import argparse
+import json
+from pathlib import Path
+
+
+def analyze_bloodhound_data(data_dir: Path) -> list[dict]:
+    risks = []
+
+    for json_file in data_dir.glob("*.json"):
+        with json_file.open() as f:
+            data = json.load(f)
+
+        # Check for direct paths to Domain Admins
+        for node_type in ["users", "computers", "groups"]:
+            for item in data.get(node_type, []):
+                props = item.get("Properties", {})
+                aces = item.get("Aces", [])
+
+                for ace in aces:
+                    if "Domain Admins" in ace.get("PrincipalSID", ""):
+                        right = ace.get("RightName", "")
+                        if right in ("GenericAll", "WriteDacl", "WriteOwner", "GenericWrite"):
+                            risks.append({
+                                "type": "Direct DA path",
+                                "source": props.get("name", ""),
+                                "right": right,
+                                "severity": "Critical",
+                            })
+
+                # AS-REP Roasting targets
+                if props.get("dontreqpreauth"):
+                    risks.append({
+                        "type": "AS-REP Roasting target account",
+                        "source": props.get("name", ""),
+                        "severity": "High",
+                    })
+
+                # Kerberoasting targets (accounts with SPN)
+                if props.get("hasspn") and not props.get("name", "").endswith("$"):
+                    risks.append({
+                        "type": "Kerberoasting target account",
+                        "source": props.get("name", ""),
+                        "severity": "Medium",
+                    })
+
+    return risks
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="BloodHound data risk analysis")
+    parser.add_argument("data_dir", help="Directory containing BloodHound JSON files")
+    args = parser.parse_args()
+
+    risks = analyze_bloodhound_data(Path(args.data_dir))
+    print(f"[+] Risks found: {len(risks)}")
 
     for risk in sorted(risks, key=lambda r: {"Critical": 0, "High": 1, "Medium": 2}.get(r["severity"], 3)):
         print(f"  [{risk['severity']}] {risk['type']}: {risk['source']}")

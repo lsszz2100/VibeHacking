@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 05 — Zero Trust 성숙도 평가 및 운영
 
 ## 목차
@@ -669,4 +675,348 @@ Phase 4 (12개월+): 최적화
 - **NIST SP 800-207** — Zero Trust Architecture 공식 문서
 - **DoD Zero Trust Reference Architecture v2.0** — 미 국방부 ZTA 가이드
 - **Google BeyondCorp** — 기업 네트워크 없는 Zero Trust 사례
+- **Microsoft Zero Trust Guidance** — [https://aka.ms/zerotrust](https://aka.ms/zerotrust)
+
+---
+
+<a name="english"></a>
+
+# 05 — Zero Trust Maturity Assessment and Operations
+
+## Table of Contents
+1. Deep Dive into Zero Trust Maturity Models
+2. Identity-Centric Zero Trust Operations
+3. Device Trust Assessment Framework
+4. Advanced Network Access Control
+5. Continuous Access Evaluation (CAE)
+6. Zero Trust Operations Automation
+7. Python Tool: Zero Trust Configuration Auditor
+8. Zero Trust Maturity KPIs and Measurement
+
+---
+
+## 1. Deep Dive into Zero Trust Maturity Models
+
+### 1.1 CISA Zero Trust Maturity Model v2.0
+
+Based on the U.S. Cybersecurity and Infrastructure Security Agency (CISA) 2023 v2.0: 5 Pillars × 4 Stages.
+
+```
+5 Pillars:
+  1. Identity     (ID and authentication)
+  2. Devices      (device trust)
+  3. Networks     (network microsegmentation)
+  4. Applications (app workload protection)
+  5. Data         (data classification and protection)
+
+4 Maturity Stages:
+  Traditional → Initial → Advanced → Optimal
+
+Cross-cutting Capabilities (applied to all pillars):
+  - Visibility and Analytics
+  - Automation and Orchestration
+  - Governance
+```
+
+### 1.2 Optimal Level Requirements by Pillar
+
+| Pillar | Traditional | Optimal |
+|--------|-------------|---------|
+| Identity | Static password | Risk-based continuous auth + passwordless |
+| Devices | Domain join only | Real-time posture validation + EDR required |
+| Networks | Perimeter firewall | Microsegmentation + BeyondProd model |
+| Applications | VPN access | ZTNA + inline threat prevention |
+| Data | File server ACL | Dynamic DLP + encryption + auto classification |
+
+### 1.3 DoD Zero Trust Reference Architecture
+
+U.S. Department of Defense's 7-layer Zero Trust model (2022):
+
+```
+User ─────────────────────────────────────────────►
+  │  Device → App/Workload → Data → Network
+  │  Automation and Orchestration
+  │  Visibility and Analytics
+  └─────────────────────────────────────────────────
+     Governance and Compliance (Cross-Cutting)
+```
+
+---
+
+## 2. Identity-Centric Zero Trust Operations
+
+### 2.1 IDaaS Platform Functional Requirements
+
+```
+Required Features:
+  □ MFA (FIDO2/WebAuthn preferred)
+  □ Conditional Access policies
+  □ Risk-Based Authentication
+  □ SSO + SAML 2.0 / OIDC
+  □ Privileged Access Management (PAM) integration
+  □ Guest/partner identity lifecycle
+
+Risk Signal Sources:
+  - Login location anomaly detection
+  - Impossible Travel detection
+  - Dark web credential leak monitoring
+  - Device posture score
+  - User behavior analytics (UEBA)
+```
+
+### 2.2 Conditional Access Policy Examples (Azure AD / Entra ID)
+
+```
+Policy 1: Unmanaged device → MFA required + app restrictions
+  Condition: device.isCompliant = false
+  Control: Require MFA + apply app protection policy
+
+Policy 2: High-risk login → Force password reset
+  Condition: signInRiskLevel = high
+  Control: Issue session after password change
+
+Policy 3: Legacy authentication → Complete block
+  Condition: clientAppTypes = exchangeActiveSync, other
+  Control: Block
+
+Policy 4: Admin accounts → Always MFA + Compliant device
+  Condition: userRole = GlobalAdmin OR SecurityAdmin
+  Control: Both MFA + compliantDevice required
+```
+
+### 2.3 FIDO2/WebAuthn Passkey Deployment
+
+```
+Passkey Advantages:
+  - Phishing resistance: Authentication binding (Relying Party ID)
+  - No password: Biometric or PIN
+  - MITM prevention: Signature-based challenge-response
+
+Deployment Steps:
+  1. Enable FIDO2 in IdP
+  2. User passkey registration campaign
+  3. Disable SMS OTP fallback
+  4. Issue hardware keys (admin accounts)
+  5. Establish periodic passkey revocation procedures
+```
+
+---
+
+## 3. Device Trust Assessment Framework
+
+### 3.1 Device Posture Score Components
+
+```
+Device Trust Score = f(hardware, OS, software, behavior)
+
+Components:
+  Hardware (25%):
+    + TPM 2.0 present: +10 points
+    + Secure Boot enabled: +8 points
+    + BitLocker/FileVault encryption: +7 points
+
+  OS State (30%):
+    + Latest patches (within 30 days): +15 points
+    + Firewall enabled: +8 points
+    + Updated antivirus: +7 points
+
+  Agent State (25%):
+    + EDR agent running: +15 points
+    + MDM enrolled: +10 points
+
+  Behavior Pattern (20%):
+    - Recent anomaly detected: -10 points/incident
+    - Non-business hours access: -5 points
+```
+
+### 3.2 MDM Policy (Microsoft Intune Example)
+
+```
+Compliance Policy:
+  Minimum OS version: Windows 11 22H2+
+  BitLocker: Required
+  Windows Defender: Real-time protection required
+  Firewall: Must be enabled
+  TPM: 2.0 required
+
+Actions on Non-compliance:
+  Immediately: Send email notification
+  After 3 days: Block with Conditional Access
+  After 7 days: Remote wipe device (if lost/stolen)
+
+App Protection Policy (MAM):
+  - Block copy-paste between apps
+  - Block screenshots
+  - Require PIN (after 5 minutes idle)
+  - Remote wipe of company data possible
+```
+
+---
+
+## 4. Advanced Network Access Control
+
+### 4.1 Software-Defined Perimeter (SDP)
+
+```
+Traditional VPN vs SDP Comparison:
+
+VPN:                          SDP (ZTNA):
+─────────────────            ─────────────────────────
+IP-based tunnel               Per-app microtunnel
+Broad access after connect    Access specific apps after auth
+Always connected              Just-in-Time connection
+Internal network visible      Internal infrastructure hidden (Dark Cloud)
+Single authentication point   Continuous authentication
+```
+
+### 4.2 Microsegmentation Implementation Patterns
+
+```
+Pattern 1: Agent-based (Host-based)
+  - Install agent on each server
+  - Centrally manage OS firewall rules
+  - Tools: Illumio, Guardicore (Akamai)
+  - Advantage: Consistency across cloud/on-premises
+  - Disadvantage: Agent management overhead
+
+Pattern 2: Network-based (Network Enforcement)
+  - SDN or switch-level policy
+  - Dynamic VLAN + ACL changes
+  - Tools: Cisco SD-Access, VMware NSX
+  - Advantage: No agent required
+  - Disadvantage: Physical infrastructure dependency
+
+Pattern 3: Service Mesh (App/API level)
+  - mTLS for all service communications
+  - Sidecar proxy (Envoy)
+  - Tools: Istio, Linkerd, Consul Connect
+  - Advantage: App-level visibility
+  - Disadvantage: Dependent on Kubernetes environment
+```
+
+---
+
+## 5. Continuous Access Evaluation (CAE)
+
+### 5.1 Continuous Access Evaluation
+
+Immediately invalidate tokens when events occur in OAuth 2.0-based sessions.
+
+```
+Traditional Model:
+  Login → Token issued (1 hour) → Valid until expiry
+  Problem: Account remains accessible for 1 hour after compromise
+
+CAE Model:
+  Login → Short-lived token → Immediate re-validation on CAE event
+  Events: Password change, account deactivation, risk increase, IP change
+  Result: Real-time session invalidation (< 1 minute)
+```
+
+### 5.2 JIT (Just-in-Time) Access
+
+```
+Regular Access:
+  User → Always holds permission → Attacker can always use it
+
+JIT Access:
+  User → Request access → Approval → Temporary permission (30 min) → Auto-expires
+  
+JIT Workflow:
+  1. User: Request access to System A (reason, duration)
+  2. Admin: Approve/deny via Slack/email
+  3. On approval: Temporarily add IAM policy + start session recording
+  4. On expiry: Auto-remove permission + preserve audit log
+
+Tools:
+  - CyberArk Endpoint Privilege Manager
+  - BeyondTrust PAM
+  - AWS IAM Identity Center (time-limited roles)
+  - Microsoft PIM (Privileged Identity Management)
+```
+
+---
+
+## 6. Zero Trust Operations Automation
+
+### 6.1 Zero Trust Orchestration
+
+```
+Trigger → Detection → Automated Response Workflow:
+
+Event: Impossible Travel detected (Seoul login → New York login 5 min later)
+  ↓
+SIEM alert → SOAR playbook execution
+  ↓
+1. Immediately terminate current session
+2. Temporarily lock account (2 hours)
+3. Notify user via SMS/email
+4. Create security team ticket
+5. Allow re-login after additional MFA
+```
+
+### 6.2 Automation Tool Stack
+
+```
+SIEM:       Splunk, Microsoft Sentinel, IBM QRadar
+SOAR:       Palo Alto XSOAR, Splunk SOAR, IBM SOAR
+IdP:        Okta, Azure AD (Entra), Ping Identity
+PAM:        CyberArk, BeyondTrust, HashiCorp Vault
+ZTNA:       Zscaler ZPA, Cloudflare Access, Palo Alto Prisma
+MDM:        Microsoft Intune, Jamf, VMware Workspace ONE
+Micro-seg:  Illumio, Guardicore, Prisma Cloud
+```
+
+---
+
+## 7. Zero Trust Maturity KPIs and Measurement
+
+### 7.1 Key Performance Indicators
+
+| KPI | Measurement Method | Target |
+|-----|-------------------|--------|
+| MFA coverage | MFA-applied accounts / total accounts | > 99% |
+| Device management rate | MDM-enrolled devices / total devices | > 95% |
+| Legacy auth block rate | Blocked legacy auth / total attempts | > 99% |
+| Average session lifetime | Active session average TTL | < 8 hours |
+| JIT access rate | JIT sessions / total admin sessions | > 80% |
+| Microsegmentation coverage | Policy-applied workloads / total | > 90% |
+| Conditional access block count | Monthly policy block events | Monitor trend |
+
+### 7.2 Zero Trust Roadmap Phases
+
+```
+Phase 1 (0~3 months): Foundation Building
+  □ Complete asset/ID inventory
+  □ Company-wide MFA rollout
+  □ Enforce MDM enrollment
+  □ Block legacy authentication
+
+Phase 2 (3~6 months): Gain Visibility
+  □ Configure Conditional Access policies
+  □ SIEM integration and dashboard
+  □ Implement device posture score
+  □ Network traffic visibility
+
+Phase 3 (6~12 months): Policy Enforcement
+  □ Microsegmentation pilot
+  □ Implement JIT privileged access
+  □ Transition from VPN to ZTNA
+  □ Apply data classification framework
+
+Phase 4 (12+ months): Optimization
+  □ AI-based anomaly detection
+  □ Fully passwordless authentication
+  □ Automated orchestration
+  □ Continuous compliance measurement
+```
+
+---
+
+## References
+
+- **CISA Zero Trust Maturity Model v2.0** — [https://www.cisa.gov/zero-trust-maturity-model](https://www.cisa.gov/zero-trust-maturity-model)
+- **NIST SP 800-207** — Zero Trust Architecture official documentation
+- **DoD Zero Trust Reference Architecture v2.0** — US DoD ZTA guide
+- **Google BeyondCorp** — Zero Trust case study without corporate network
 - **Microsoft Zero Trust Guidance** — [https://aka.ms/zerotrust](https://aka.ms/zerotrust)

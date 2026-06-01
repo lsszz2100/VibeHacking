@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # IBM QRadar & Azure Sentinel KQL & XDR 블루팀 실전
 > AI_Innovation_Studio | SOC Analyst Practical Lab
 
@@ -984,4 +990,187 @@ if __name__ == "__main__":
      → Slack #soc-alerts 채널 알림
      → Jira 티켓 자동 생성
      → SIEM에 이벤트 기록
+```
+
+---
+
+<a name="english"></a>
+
+# IBM QRadar & Azure Sentinel KQL & XDR Blue Team Practical Guide
+
+> AI_Innovation_Studio | SOC Analyst Practical Lab
+
+---
+
+## 1. IBM QRadar Fundamentals
+
+### QRadar Architecture
+
+```
+Log Sources → Event Collectors → Event Processors → Console
+                                      │
+                                      ▼
+                               Offense Manager
+                               (Correlation Rules)
+```
+
+### AQL (Ariel Query Language)
+
+```sql
+-- Basic event search
+SELECT DATEFORMAT(starttime,'YYYY-MM-dd HH:mm:ss') as Time,
+       sourceip, destinationip, username, eventname
+FROM events
+WHERE LOGSOURCETYPENAME(devicetype) = 'Microsoft Windows Security Event Log'
+  AND eventname IN ('An account failed to log on')
+  AND DATEFORMAT(starttime,'YYYY-MM-dd') = DATEFORMAT(NOW(),'YYYY-MM-dd')
+ORDER BY starttime DESC
+LAST 24 HOURS
+
+-- Brute force detection
+SELECT sourceip, username, COUNT(*) as FailCount
+FROM events
+WHERE eventname = 'An account failed to log on'
+GROUP BY sourceip, username
+HAVING COUNT(*) > 20
+LAST 1 HOURS
+
+-- Lateral movement detection
+SELECT sourceip, destinationip, username,
+       COUNT(DISTINCT destinationip) as UniqueTargets
+FROM events
+WHERE eventname = 'An account was successfully logged on'
+  AND LOGSOURCETYPENAME(devicetype) = 'Microsoft Windows Security Event Log'
+GROUP BY sourceip, username
+HAVING COUNT(DISTINCT destinationip) > 5
+LAST 4 HOURS
+```
+
+---
+
+## 2. Microsoft Sentinel KQL
+
+### KQL Fundamentals
+
+```kql
+// Basic search
+SecurityEvent
+| where TimeGenerated > ago(24h)
+| where EventID == 4625
+| project TimeGenerated, Computer, Account, IpAddress, LogonTypeName
+
+// Aggregation
+SecurityEvent
+| where TimeGenerated > ago(1h)
+| where EventID == 4625
+| summarize FailCount=count() by IpAddress, Account
+| where FailCount > 10
+| order by FailCount desc
+
+// Join
+SecurityEvent
+| where EventID == 4624
+| join kind=inner (
+    ThreatIntelligenceIndicator
+    | where TimeGenerated > ago(7d)
+    | where Active == true
+) on $left.IpAddress == $right.NetworkIP
+| project TimeGenerated, Computer, Account, IpAddress, ThreatType, Confidence
+```
+
+### Advanced Sentinel Detections
+
+```kql
+// Suspicious PowerShell execution
+SecurityEvent
+| where EventID == 4688
+| where Process has_any ("powershell", "pwsh")
+| where CommandLine has_any (
+    "-enc", "-EncodedCommand", "-nop", "-NonInteractive",
+    "IEX", "Invoke-Expression", "DownloadString", "bypass"
+)
+| project TimeGenerated, Computer, Account, CommandLine
+| order by TimeGenerated desc
+
+// Ransomware detection
+DeviceFileEvents
+| where TimeGenerated > ago(1h)
+| where ActionType == "FileRenamed"
+| where FileName has_any (".encrypted", ".locked", ".ransom", ".crypted")
+| summarize FileCount=count() by DeviceName, InitiatingProcessFileName
+| where FileCount > 50
+| extend Severity="High", Alert="Possible Ransomware Activity"
+```
+
+---
+
+## 3. XDR (Extended Detection and Response)
+
+### XDR Architecture
+
+```
+Endpoint (EDR) ──┐
+Network (NDR)  ──┼──► XDR Platform ──► Unified Detection & Response
+Email          ──┘
+Cloud          ──┘
+Identity       ──┘
+
+Key XDR Solutions:
+  Microsoft Defender XDR (formerly M365 Defender)
+  CrowdStrike Falcon XDR
+  Palo Alto Cortex XDR
+  SentinelOne Singularity XDR
+```
+
+### Microsoft Defender XDR KQL
+
+```kql
+// Cross-product correlation: Email → Endpoint
+EmailEvents
+| where ThreatTypes has "Phishing"
+| join kind=inner DeviceProcessEvents on $left.RecipientEmailAddress == $right.AccountName
+| where Timestamp between (EmailTimestamp .. (EmailTimestamp + 1h))
+| project EmailTimestamp, SenderMailFromAddress, RecipientEmailAddress,
+          DeviceName, FileName, ProcessCommandLine
+
+// Incident hunting across all signals
+AlertInfo
+| join AlertEvidence on AlertId
+| where Severity in ("High", "Critical")
+| where DetectionSource in ("MDO", "MDE", "MCAS")
+| project Timestamp, AlertId, Title, Severity, DetectionSource, EntityType, EvidenceRole
+| order by Timestamp desc
+```
+
+---
+
+## 4. SOAR (Security Orchestration, Automation, Response)
+
+### Phishing Email Playbook
+
+```
+Automated Phishing Analysis Process:
+
+1. Email receipt (via SIEM/email gateway alert)
+   → Extract: sender, subject, attachment hash, URLs
+
+2. Attachment analysis
+   → Submit hash to VirusTotal API
+   → Sandbox detonation (Cuckoo/Any.run)
+
+3. URL extraction and reputation check
+   → Query URLhaus, VirusTotal, UrlScan.io simultaneously
+
+4. Risk assessment
+   → IF (VT detection rate > 30% OR Sandbox = malicious):
+        → Block sender, notify admin, create ticket (Priority: Critical)
+   → ELSE IF (suspicious patterns found):
+        → Move to manual review queue, create ticket (Priority: Medium)
+   → ELSE:
+        → Mark as clean, create ticket (Priority: Low)
+
+5. Result reporting
+   → Slack #soc-alerts channel notification
+   → Jira ticket auto-creation
+   → Log event to SIEM
 ```

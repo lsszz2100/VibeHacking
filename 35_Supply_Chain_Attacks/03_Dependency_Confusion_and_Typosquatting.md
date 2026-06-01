@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 의존성 혼동 공격 및 타이포스쿼팅
 
 ## 개요
@@ -438,3 +444,125 @@ npm config set @company:registry https://artifactory.company.com/api/npm/npm/
 | 해시 고정(pinning) | requirements.txt에 해시 명시 |
 | 의존성 감사 | pip-audit, npm audit 정기 실행 |
 | CI/CD 검증 | SBOM 생성 및 허용 목록 비교 |
+
+---
+
+<a name="english"></a>
+
+# Dependency Confusion Attacks and Typosquatting
+
+## Overview
+
+Alex Birsan's 2021 dependency confusion research achieved RCE at over 35 companies including Apple, Microsoft, and PayPal. This attack exploits a bug in package managers that prioritize public registries over internal ones when a package with the same name exists in both.
+
+---
+
+## Dependency Confusion Attack Principle
+
+### Background
+
+Companies host internal packages in private registries (Artifactory, AWS CodeArtifact, etc.). However, some package managers automatically select the higher version — so if an attacker publishes a package with the same name and a very high version number to a public registry, the package manager will install the attacker's package instead.
+
+```
+Corporate Internal:
+  Private registry → internal-utils v1.0.0
+
+Attacker:
+  Registers internal-utils v9999.0.0 on PyPI
+
+When npm/pip/Maven installs packages:
+  Public registry v9999.0.0 > Private registry v1.0.0
+  → Attacker's package gets installed!
+```
+
+### Discovering Vulnerable Package Names
+
+Search techniques include:
+- Examining `package.json`, `requirements.txt`, `pom.xml` in public GitHub repositories
+- Checking npm for organization-scoped packages that don't exist publicly
+- Checking PyPI for package names that appear in bundles but aren't registered
+- Analyzing Docker image layers and error messages for internal package names
+
+---
+
+## PyPI Dependency Confusion Attack (Educational)
+
+### Malicious Package Structure
+
+The attack uses `setup.py` `cmdclass` hooks or npm `postinstall` scripts to execute code at install time. See Korean section for full code examples.
+
+Key elements:
+- **Package name**: matches the internal package name exactly
+- **Version**: set extremely high (e.g., `9999.0.0`) to win version resolution
+- **Install hook**: executes a callback/beacon to confirm successful installation
+
+---
+
+## npm Dependency Confusion
+
+npm `preinstall`/`postinstall` scripts run automatically during `npm install`, making them ideal injection points. Use `--ignore-scripts` flag to prevent this.
+
+---
+
+## Typosquatting
+
+Unlike dependency confusion, typosquatting targets users who make typos when manually installing packages.
+
+### Common Typosquatting Examples
+
+| Real Package | Typosquatting Variants |
+|--------------|------------------------|
+| `requests` | `reqeusts`, `request`, `requets` |
+| `numpy` | `nunpy`, `nupmy`, `numapy` |
+| `urllib3` | `urliib3`, `urlib3` |
+| `boto3` | `bot03`, `boto-3` |
+| `django` | `dajngo`, `djano` |
+
+### Typosquatting Pattern Generation
+
+Common transformation patterns:
+- Character deletion
+- Adjacent character swap
+- Keyboard-neighbor character insertion
+- Hyphen/underscore substitution
+
+See Korean section for the Python `generate_typos()` implementation.
+
+---
+
+## Python: Package Name Similarity Checker
+
+A CLI tool for detecting typosquatting and dependency confusion risks in your dependency lists. See Korean section for full code.
+
+Key features:
+- Checks whether each package exists on PyPI or npm
+- Packages not found on public registries are flagged as HIGH risk (attackers could register them)
+- Computes string similarity to known popular packages to detect typosquatting
+
+---
+
+## Defense Methods
+
+### Private Registry Isolation
+
+```bash
+# pip: use only the private registry
+pip config set global.index-url https://artifactory.company.com/api/pypi/pypi/simple
+pip config set global.extra-index-url ""  # disable public registry
+
+# npm: scope-based registry routing
+npm config set @company:registry https://artifactory.company.com/api/npm/npm/
+```
+
+### Reserve Internal Package Names on Public Registries
+
+Pre-register internal package names on PyPI/npm as empty/dummy packages to prevent attackers from claiming them.
+
+| Defense Technique | Implementation |
+|-------------------|----------------|
+| Private registry isolation | Block public registry access, allow only private |
+| Package name reservation | Register internal names on public registries as dummies |
+| Unique namespaces | Use npm `@scope/`, Python company-name prefix |
+| Hash pinning | Specify hashes in `requirements.txt` |
+| Dependency auditing | Run `pip-audit`, `npm audit` regularly |
+| CI/CD verification | Generate SBOM and compare against allowlist |

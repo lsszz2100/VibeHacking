@@ -866,3 +866,101 @@ if __name__ == "__main__":
 | **syft** | SBOM 생성 | Apache 2.0 | Go |
 | **grype** | 아티팩트 취약점 스캔 | Apache 2.0 | Go |
 | **trivy** | 컨테이너/코드 취약점 스캔 | Apache 2.0 | Go |
+
+---
+
+<a name="english"></a>
+
+# Build Integrity Verification
+
+## 1. What is Build Integrity?
+
+Build Integrity is the property that guarantees a software artifact was produced from its declared source code through a verified build process without tampering. It provides cryptographic evidence (Provenance, signatures) so that end users can detect any attacker interference in the build process.
+
+---
+
+## 2. Code Signing System Comparison
+
+| Item | Sigstore / Cosign | GPG Signing | Notary v2 (TUF) |
+|------|-------------------|-------------|-----------------|
+| **Purpose** | Artifact signing and transparency log | File/tag signing | Container image signing |
+| **Key management** | Keyless (OIDC-based, short-lived certs) | Long-term private key management | Role-based key hierarchy |
+| **Transparency log** | Rekor (immutable log) | None | TUF metadata |
+| **Infrastructure dependency** | Fulcio CA + Rekor | SKS/HKP key servers | Notary server |
+| **Ease of use** | High (GitHub Actions integration) | Medium (key management required) | Medium (complex setup) |
+| **Representative use** | npm, PyPI, OCI images | Git tags, Debian packages | Docker Hub, GHCR |
+| **Offline verification** | Not possible (requires Rekor query) | Possible (public key only) | Possible (metadata cache) |
+| **Standard** | OpenSSF Sigstore | RFC 4880 | OCI Spec + TUF |
+| **Adoption** | Rapidly expanding | Widely used | Container ecosystem |
+
+---
+
+## 3. SLSA Provenance Verification Procedure
+
+### 3.1 SLSA Provenance JSON Structure
+
+(See code block above — content is identical)
+
+### 3.2 SLSA Verification Steps
+
+| Step | Verification Item | Verification Method | Action on Failure |
+|------|-------------------|---------------------|-------------------|
+| **Step 1** | Artifact hash match | Recalculate SHA-256 and compare with Provenance | Reject immediately |
+| **Step 2** | Provenance signature verification | Verify Cosign/GPG signature | Reject immediately |
+| **Step 3** | Builder ID trust | Compare with trusted builder list | Reject per policy |
+| **Step 4** | Source repository verification | Verify URI + commit hash | Reject per policy |
+| **Step 5** | Completeness check | Review completeness field | Warn or reject |
+| **Step 6** | Timestamp check | Check interval between build and deployment time | Warn if anomalous |
+
+---
+
+## 4. in-toto Framework Overview
+
+in-toto is a framework that cryptographically chains each step (link) in the software supply chain.
+
+### 4.1 Core Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Layout** | Defines the entire supply chain (steps, owners, rules) |
+| **Link** | Execution evidence for each step (input/output hashes + signature) |
+| **Step** | Individual supply chain steps (clone, build, test, package) |
+| **Inspection** | Additional checks performed during final verification |
+| **Functionary** | Entity that performs each step (identified by public key) |
+
+### 4.2 in-toto Layout Example
+
+(See code block above)
+
+---
+
+## 5. Reproducible Builds
+
+| Condition | Problem Cause | Solution |
+|-----------|---------------|----------|
+| **Remove timestamps** | Build time embedded in binary | Set `SOURCE_DATE_EPOCH` environment variable |
+| **Remove paths** | Build machine path included in debug info | `-fdebug-prefix-map` compiler flag |
+| **Sorted file processing** | Non-determinism from filesystem ordering | Use sorted glob patterns |
+| **Fixed locale** | String sort differences by locale | Set `LC_ALL=C` |
+| **Fixed tool versions** | Compiler/linker version differences | Container-based build environment |
+| **Remove random values** | UUID/random values embedded in binary | Use deterministic random seed |
+
+---
+
+## 6. Python CLI: Build Artifact Integrity Verifier
+
+(See code block above)
+
+---
+
+## 7. Build Integrity Tool Comparison
+
+| Tool | Purpose | License | Primary Language |
+|------|---------|---------|-----------------|
+| **cosign** | Container/artifact signing | Apache 2.0 | Go |
+| **slsa-verifier** | SLSA Provenance verification | Apache 2.0 | Go |
+| **in-toto-run** | in-toto link generation | Apache 2.0 | Python |
+| **rekor-cli** | Transparency log queries | Apache 2.0 | Go |
+| **syft** | SBOM generation | Apache 2.0 | Go |
+| **grype** | Artifact vulnerability scanning | Apache 2.0 | Go |
+| **trivy** | Container/code vulnerability scanning | Apache 2.0 | Go |

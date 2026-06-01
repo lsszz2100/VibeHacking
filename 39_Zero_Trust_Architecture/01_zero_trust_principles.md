@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Zero Trust 아키텍처 원칙
 
 ## 1. Zero Trust란 무엇인가
@@ -924,3 +930,143 @@ Zero Trust 성숙 조직:   평균 침해 비용 $3.28M
 ---
 
 *최종 업데이트: 2024년*
+
+---
+
+<a name="english"></a>
+
+# Zero Trust Architecture Principles
+
+## 1. What is Zero Trust?
+
+Zero Trust is a security paradigm with "Never Trust, Always Verify" as its core philosophy. Unlike traditional perimeter-based security models that trust internal networks, Zero Trust treats all access requests as adversarial regardless of location (internal/external) and continuously verifies them.
+
+### Core Principles
+
+| Principle | Description |
+|-----------|-------------|
+| Never Trust | Internal network location does not imply trust |
+| Always Verify | All requests are verified based on identity, device, and context |
+| Least Privilege | Access only to the minimum necessary resources |
+| Assume Breach | Designed assuming a breach has already occurred |
+| Explicit Verification | Use all available data points to verify |
+
+---
+
+## 2. Limitations of Traditional Perimeter Security
+
+### Castle-and-Moat Model Shortcomings
+
+1. **Insider Threat**: Malicious employee actions; account takeover with free internal movement; ~34% of 2023 breaches involved insiders
+2. **Lateral Movement**: Attacker moves freely within internal network after compromising one system; hard to detect due to internal trust
+3. **Cloud/Mobile Environment Mismatch**: Network perimeters have effectively disappeared with BYOD, remote work, multi-cloud, and SaaS
+4. **VPN Limitations**: All traffic routed centrally → performance degradation; VPN credential theft exposes entire internal network
+
+Real-world examples:
+- **2020 SolarWinds**: VPN access → lateral movement exploiting internal trust → malicious updates to 18,000 organizations
+- **2021 Colonial Pipeline**: VPN account theft → ransomware deployment → $44M ransom paid
+
+---
+
+## 3. NIST SP 800-207 Zero Trust Architecture
+
+### Core Components
+
+```
+Subject (User/Device/Service)
+    → Request →
+Policy Decision Point (PDP)
+    ├── Policy Engine (PE)
+    └── Policy Administrator (PA)
+        → Allow/Deny →
+Policy Enforcement Point (PEP)
+    → Access →
+Enterprise Resources
+```
+
+### NIST 7 Zero Trust Tenets
+
+1. All data sources and computing services are considered resources
+2. All communications are secured regardless of network location
+3. Access to individual enterprise resources is granted per-session
+4. Resource access is determined by client identity, application/service, and observable asset state
+5. Monitor and measure the integrity and security posture of all assets
+6. All resource authentication and authorization is dynamic and strictly enforced
+7. Collect information about assets, network infrastructure, and communications to improve security posture
+
+---
+
+## 4. Five Core Components
+
+### 4.1 Identity (New Perimeter)
+
+Covers people, devices, services, and applications. Components: strong authentication (MFA, passkeys), Identity Governance (IGA), Privileged Access Management (PAM), service account/API key management.
+
+### 4.2 Device
+
+Continuously evaluate device security posture: OS version/patches, endpoint security solutions, MDM enrollment, disk encryption, Secure Boot.
+- **Full Trust**: MDM enrolled + latest patches + EDR running + encryption
+- **Partial Trust**: Some conditions met → limited access
+- **Untrusted**: Conditions not met → access denied or isolated environment
+
+### 4.3 Network
+
+No longer the basis of trust. All traffic encrypted (TLS 1.3+), microsegmentation, Software-Defined Perimeter (SDP), ZTNA.
+
+### 4.4 Workload
+
+Protect all computing workloads (VMs, containers, serverless functions, APIs): image signing/verification, runtime security (Falco, Sysdig), service mesh (Istio, Linkerd), API gateway access control.
+
+### 4.5 Data
+
+Data-centric security: classify (public/internal/confidential/restricted), encrypt (at rest, in transit, in use), DLP, data access auditing.
+
+---
+
+## 5. BeyondCorp Model (Google Case Study)
+
+Developed after the 2009 Operation Aurora cyberattack to enable secure employee work from anywhere without VPN.
+
+**Core Principles**:
+1. Access is based on device and user identity, not network location
+2. All access is encrypted
+3. Corporate applications are exposed to the internet and accessible from untrusted networks
+4. Access control is dynamic and context-aware
+
+**Components**: Access Proxy, Access Control Engine, Device Inventory Database (managed device list, device certificates, security status), Trust Inferrer (determines device trust level, combines with user role, applies access policy).
+
+---
+
+## 6. Python Tool: Access Request Risk Scoring
+
+A Zero Trust risk scoring engine that evaluates access requests across four dimensions:
+- **User Score** (30%): MFA status, password age, failed login attempts, travel mode
+- **Device Score** (35%): MDM enrollment, encryption, antivirus, patch level, certificate validity, Secure Boot
+- **Network Score** (20%): Tor detection, threat intelligence score, unusual location, datacenter IP
+- **Behavioral Score** (15%): Business hours check, role-based access validation, resource sensitivity level
+
+Access decisions: ALLOW, ALLOW_WITH_MFA, ALLOW_LIMITED, or DENY based on total risk score and resource-specific thresholds.
+
+---
+
+## 7. Zero Trust Adoption Impact
+
+| Metric | Traditional Model | Zero Trust |
+|--------|-----------------|------------|
+| Breach detection time | Average 207 days | Minutes to hours |
+| Lateral movement prevention | Limited | Blocked by microsegmentation |
+| Insider threat detection | Difficult | Detected via behavioral analysis |
+| Cloud security | Weak | Native support |
+
+IBM 2023 Cost of Data Breach: Zero Trust immature organizations average $5.04M vs. mature organizations $3.28M — approximately 35% reduction.
+
+---
+
+## References
+
+- NIST SP 800-207: Zero Trust Architecture (2020)
+- Google BeyondCorp Paper Series (2014-2020)
+- Forrester Zero Trust eXtended (ZTX) Framework
+- CISA Zero Trust Maturity Model (2023)
+- Cloud Security Alliance: Software Defined Perimeter Specification
+- Gartner: Zero Trust Network Access Market Guide

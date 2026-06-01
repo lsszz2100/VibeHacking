@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 04 — ICS 보안 아키텍처 및 방어 전략
 
 ## 목차
@@ -643,3 +649,122 @@ IEC 62443 시리즈 구조:
 - **Dragos Year In Review** — OT 위협 연간 보고서
 - **ENISA ICS/SCADA** — 유럽 OT 보안 프레임워크
 - **Idaho National Lab** — ICS-CERT 합동 훈련 자료
+
+---
+
+<a name="english"></a>
+
+# 04 — ICS Security Architecture and Defense Strategy
+
+## 1. ICS Security Architecture Design Principles
+
+### Defense-in-Depth Model
+
+ICS defense-in-depth layers physical, logical, and administrative controls:
+
+- **Level 5**: Enterprise Network (IT zone) — Firewall + DMZ + SIEM
+- **DMZ**: Historian mirror, file transfer server — unidirectional data diode or dual firewall
+- **Level 3**: Operations Network — MES, SCADA servers, engineering workstations
+- **Level 2**: Control Network — HMI, DCS controllers
+- **Level 1**: Field Level — PLC, RTU, IEDs
+- **Level 0**: Physical Process — sensors, actuators, valves, motors
+
+Core principles: **Least Privilege** (only necessary communications per level), **Isolation** (no direct OT internet connection), **Availability First** (security must not compromise operational continuity), **Legacy Consideration** (compensating controls for unpatchable systems).
+
+### Zero Trust OT Model
+
+Moving away from traditional perimeter trust model toward continuous verification of all connections, least-privilege session-based access, MFA + session recording for remote access, and on-demand isolated channels for vendor access.
+
+---
+
+## 2. Network Segmentation and DMZ Design
+
+### Dual Firewall DMZ
+
+IT Network → Firewall A (IT policy, standard firewall) → DMZ (Historian mirror, file transfer, remote access gateway, patch distribution) → Firewall B (OT policy, whitelist-based) → OT Network.
+
+**Firewall B Whitelist Rules**: Allow DMZ Historian → OT Historian on MSSQL 1433, patch server → WSUS agents on HTTPS 8530, remote gateway → HMI on RDP 3389, all OT → SIEM on Syslog 514.
+
+### Data Diodes (Unidirectional Gateways)
+
+Physically permit only OT→IT data flow (no reverse path): OT Historian ──TX──► [Fiber Optic Unidirectional] ──► IT Historian Mirror. Solutions include Owl Cyber Defense, Waterfall Security, Fox DataDiode.
+
+---
+
+## 3. ICS-Specific Security Solutions
+
+| Solution | Vendor | Key Features | Supported Protocols |
+|----------|--------|--------------|---------------------|
+| Dragos Platform | Dragos | Threat detection, asset inventory | 250+ OT protocols |
+| Claroty xDome | Claroty | Asset visibility, vulnerability management | Modbus, DNP3, PROFINET |
+| Nozomi Networks | Nozomi | AI anomaly detection, network visibility | 150+ protocols |
+| Tenable OT | Tenable | Vulnerability scanning, compliance | Major ICS protocols |
+| Microsoft Defender for IoT | Microsoft | Agentless detection | IT/OT integrated |
+
+ICS-specific firewalls support OT protocol DPI: allow Modbus FC 03 (read only), block FC 05/06 (coil/register writes), alert on FC 08 (diagnostic commands).
+
+---
+
+## 4. Vulnerability Management and Patch Strategy
+
+| Challenge | Description | Mitigation |
+|-----------|-------------|------------|
+| No downtime allowed | 24/7 operating systems | Use planned maintenance windows |
+| Vendor certification required | Unapproved patches void warranty | Apply only vendor-approved patches |
+| Legacy OS | End-of-life Windows XP/7 | Virtualized isolation, compensating controls |
+| No test environment | Cannot test patches pre-deployment | Build digital twin/simulator |
+| Long patch cycles | Quarterly/semi-annual patches | Reduce risk via network segmentation |
+
+---
+
+## 5. ICS Security Monitoring Framework
+
+Four monitoring levels:
+1. **Asset Visibility**: Full OT asset inventory (IP, MAC, firmware, protocols), communication baseline
+2. **Anomaly Detection**: Communication pattern deviation from baseline, known OT vulnerability exploitation, abnormal Modbus/DNP3 function codes
+3. **Threat Intelligence Integration**: OT-specific CTI (Dragos WorldView, ICS-CERT), APT TTP mapping (TRITON, Industroyer), automated IOC comparison
+4. **Correlation Analysis**: IT/OT event correlation, physical and cyber event linkage, multi-stage attack sequence detection
+
+---
+
+## 6. Incident Response and Recovery
+
+**OT Incident Response Phases**:
+1. Detection & Analysis — notify OT security team, verify physical process safety, determine affected scope
+2. Containment — network isolation of affected segments, switch to manual operation if needed, block remote access
+3. Eradication — remove malware/config changes, verify PLC program integrity, consider factory reset, restore from known-good snapshot
+4. Recovery — validation checklist before network reconnection, staged process restart, 30-day enhanced monitoring
+5. Lessons Learned — timeline documentation, root cause analysis, regulatory reporting (NERC CIP, ICS-CERT), security architecture improvements
+
+---
+
+## 7. Python Tool: ICS Asset Risk Assessor
+
+A multi-dimensional risk scoring tool for OT network assets. Calculates weighted risk scores across four dimensions: CVSS (35%), Network Exposure (25%), Business Impact (25%), and Patch Status (15%). Risk bands: CRITICAL (≥9.0), HIGH (≥7.0), MEDIUM (≥4.0), LOW (≥0.0). Supports CSV/JSON input, text/JSON output formats, and minimum severity filtering.
+
+---
+
+## 8. ICS Security Compliance
+
+### NERC CIP (North American Electric Grid)
+
+| Standard | Title | Key Requirements |
+|----------|-------|-----------------|
+| CIP-002 | Asset Classification | Identify BES Cyber Systems |
+| CIP-005 | Electronic Security Perimeter | Define ESP, control remote access |
+| CIP-007 | System Security | Port management, patching, account management |
+| CIP-010 | Configuration Management | Baseline configuration, change management |
+| CIP-013 | Supply Chain Risk | Vendor risk management |
+
+### IEC 62443 (Industrial Automation Security)
+
+Security Levels (SL) 0–4: SL 0 (no requirements) through SL 4 (nation-state attack resistance). The standard series covers general concepts (62443-1), policies/procedures (62443-2), system security requirements (62443-3), and component security requirements (62443-4).
+
+---
+
+## References
+
+- **NIST SP 800-82 r3** — Industrial Control Systems Security Guide
+- **ICS-CERT Advisory** — https://www.cisa.gov/ics-advisories
+- **Dragos Year In Review** — OT Threat Annual Report
+- **ENISA ICS/SCADA** — European OT Security Framework

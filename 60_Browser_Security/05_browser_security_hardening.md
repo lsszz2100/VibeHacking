@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 브라우저 보안 강화
 
 ## 1. 엔터프라이즈 브라우저 보안 정책
@@ -442,21 +448,12 @@ def fetch_headers(
     follow_redirects: bool,
     timeout: float = 15.0,
 ) -> tuple[int, str, dict[str, str]]:
-    """
-    URL에 HEAD 요청을 보내 (status_code, final_url, headers) 를 반환한다.
-    표준 라이브러리 urllib만 사용한다.
-    """
     headers_out = {
         "User-Agent": "Mozilla/5.0 (SecurityAudit/1.0; +https://github.com/)",
     }
     req = urllib.request.Request(url, headers=headers_out, method="HEAD")
 
     if not follow_redirects:
-        opener = urllib.request.build_opener(urllib.request.HTTPRedirectHandler())
-        # 리다이렉트 핸들러를 제거하여 수동 처리
-        no_redirect_opener = urllib.request.build_opener()
-        no_redirect_opener.handler_order.clear()
-        # 간단히 — urllib은 리다이렉트 비활성화가 복잡하므로 일반 open 사용
         response_handler = urllib.request.urlopen
     else:
         response_handler = urllib.request.urlopen
@@ -464,7 +461,6 @@ def fetch_headers(
     try:
         with response_handler(req, timeout=timeout) as resp:
             raw_headers = dict(resp.headers)
-            # 키를 소문자로 정규화
             normalized: dict[str, str] = {k.lower(): v for k, v in raw_headers.items()}
             return resp.status, resp.url, normalized
     except urllib.error.HTTPError as exc:
@@ -481,7 +477,6 @@ def fetch_headers(
 # ---------------------------------------------------------------------------
 
 def run_audit(url: str, follow_redirects: bool) -> AuditResult:
-    """URL을 분석하고 AuditResult를 반환한다."""
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
 
@@ -502,7 +497,6 @@ def run_audit(url: str, follow_redirects: bool) -> AuditResult:
         server_info=headers.get("server", "미공개"),
     )
 
-    # HTTPS 여부 점수
     if is_https:
         result.total_score += 10
     else:
@@ -516,7 +510,6 @@ def run_audit(url: str, follow_redirects: bool) -> AuditResult:
         ))
     result.max_score += 10
 
-    # 개별 헤더 검사
     single_checks: list[tuple[str, str | None, Any, int]] = [
         ("Strict-Transport-Security", headers.get("strict-transport-security"),
          check_strict_transport_security, 20),
@@ -548,7 +541,6 @@ def run_audit(url: str, follow_redirects: bool) -> AuditResult:
         result.total_score += score
         result.max_score   += max_sc
 
-    # COOP / COEP / CORP 복합 점검
     co_score, co_grade, co_recs = check_cross_origin_headers(headers)
     result.checks.append(HeaderCheckResult(
         header="Cross-Origin-*",
@@ -563,7 +555,6 @@ def run_audit(url: str, follow_redirects: bool) -> AuditResult:
     result.total_score += co_score
     result.max_score   += 13
 
-    # 서버 정보 노출 점검
     server = headers.get("server", "")
     x_powered = headers.get("x-powered-by", "")
     info_recs: list[str] = []
@@ -789,3 +780,223 @@ if __name__ == "__main__":
 - Mozilla Observatory (https://observatory.mozilla.org/)
 - Google Web Fundamentals — Security Headers
 - NIST SP 800-44 (웹 서버 보안 가이드)
+
+---
+
+<a name="english"></a>
+
+# Browser Security Hardening
+
+## 1. Enterprise Browser Security Policies
+
+### 1.1 Key Management Channel Comparison
+
+| Management Method | Supported Browsers | OS | Policy Scope | Features |
+|------------------|-------------------|----|--------------|----------|
+| Group Policy (GPO) | Chrome, Edge, Firefox | Windows | Domain-joined devices | Requires AD infrastructure, immediate application |
+| MDM (Intune, Jamf) | Chrome, Edge, Safari | All OS | Enrolled mobile/PC | Cloud management, BYOD support |
+| Chrome Browser Cloud Management | Chrome | All OS | Cloud accounts | No AD required, cloud policies |
+| Enterprise Policy JSON (Linux) | Chrome, Firefox | Linux | Local policy files | /etc/opt/chrome/policies/ |
+| Firefox AutoConfig | Firefox | All OS | .cfg files | Script-based fine-grained settings |
+| Edge Policy Templates | Edge | Windows, macOS | ADMX templates | GPO-based |
+
+### 1.2 Essential Enterprise Security Policy Items
+
+| Policy Name | Chrome Policy Key | Firefox Policy Key | Recommended Value | Purpose |
+|-------------|------------------|-------------------|-------------------|---------|
+| Enable safe browsing | SafeBrowsingEnabled | EnableTrackingProtection | true | Block phishing/malware |
+| Force auto-update | AutoUpdateCheckPeriodMinutes | AppAutoUpdate | Min 720 (12h) | Vulnerability patching |
+| Extension install allowlist | ExtensionInstallAllowlist | ExtensionSettings | Approved IDs only | Block malicious extensions |
+| Block third-party cookies | BlockThirdPartyCookies | Cookies | true | Prevent tracking |
+| Disable developer tools | DeveloperToolsDisabled | BlockAboutConfig | true | Block insider attacks |
+| Force HTTPS | HttpsOnlyMode | HttpsOnlyMode | force_enabled | MitM defense |
+| Disable guest mode | BrowserGuestModeEnabled | DisablePrivateBrowsing | false | Prevent policy bypass |
+| Disable password saving | PasswordManagerEnabled | PasswordManagerEnabled | false | Credential isolation |
+| Disable autofill | AutofillAddressEnabled | DisableFormHistory | false | Prevent data exposure |
+| Disable remote access | RemoteAccessHostFirewallTraversal | - | false | Prevent remote control |
+| Prohibit certificate error override | SSLErrorOverrideAllowed | - | false | MitM defense |
+| Restrict printing | PrintingEnabled | PrintingEnabled | Per policy | Prevent data leakage |
+
+---
+
+## 2. CSP (Content Security Policy) Design Principles
+
+### 2.1 Complete List of CSP Directives
+
+| Directive | Role | Recommended Setting | Security Considerations |
+|-----------|------|---------------------|------------------------|
+| `default-src` | Default policy for all resources | `'self'` | Whitelist-based |
+| `script-src` | Control JS sources | `'self'` + nonce/hash | Never use `'unsafe-eval'` |
+| `style-src` | Control CSS sources | `'self'` + nonce | Avoid `'unsafe-inline'` |
+| `img-src` | Control image sources | `'self' data: https:` | Block external tracking pixels |
+| `connect-src` | XHR/fetch/WebSocket targets | Explicit domains only | Defense against data exfiltration |
+| `frame-src` | Control iframe sources | `'none'` or explicit | Clickjacking defense |
+| `object-src` | Control plugin sources | `'none'` | Block vulnerable plugins like Flash |
+| `base-uri` | Restrict `<base>` tag | `'self'` | Base URI injection defense |
+| `form-action` | Restrict form submission targets | `'self'` | CSRF + XSS defense |
+| `frame-ancestors` | Restrict parent embeds | `'none'` or `'self'` | Clickjacking defense (replaces X-Frame-Options) |
+| `upgrade-insecure-requests` | Upgrade HTTP to HTTPS | Include | Mixed Content defense |
+| `require-trusted-types-for` | DOM XSS defense (Trusted Types) | `'script'` | DOM XSS root prevention |
+| `trusted-types` | Define Trusted Types policies | Named policies | Enforce safe DOM manipulation |
+| `report-to` | Violation reporting endpoint | Monitoring server | Real-time violation detection |
+
+### 2.2 CSP Bypass Defense Techniques
+
+**Replacing 'unsafe-inline' — Nonce-based:**
+```html
+<!-- Server generates new nonce per request -->
+<meta http-equiv="Content-Security-Policy"
+      content="script-src 'nonce-r4nd0m1337Base64=='">
+<script nonce="r4nd0m1337Base64==">
+    // Only this script is allowed to execute
+</script>
+```
+
+**Hash-based (static scripts):**
+```
+Content-Security-Policy: script-src 'sha256-base64encodedHash=='
+```
+
+**CSP Bypass Patterns and Defenses:**
+
+| Bypass Technique | Condition | Defense |
+|-----------------|-----------|---------|
+| JSONP endpoint abuse | Trusted domain in `script-src` | Allow minimal domains, use `strict-dynamic` |
+| Angular template injection | `unsafe-eval` or Angular in allowlist | Use Angular compiled mode, remove `unsafe-eval` |
+| Existing JS file abuse (CSPBYPASS) | Uploadable JS exists on trusted domain | Restrict file uploads, `strict-dynamic` |
+| `data:` URI abuse | `script-src data:` allowed | Never allow `data:` |
+| `base-uri` not set | Base tag injection changes relative paths | Explicitly set `base-uri 'self'` |
+| `object-src` not set | Flash, PDF injection | Must have `object-src 'none'` |
+
+### 2.3 CSP Security Level by Version
+
+| CSP Level | Features | Recommended Use |
+|-----------|----------|-----------------|
+| Level 1 | Includes `'unsafe-inline'`, `'unsafe-eval'` | Legacy — should be avoided |
+| Level 2 | Nonce/Hash-based, `strict-dynamic` | Most modern applications |
+| Level 3 | Trusted Types, `require-trusted-types-for 'script'` | High-security finance/healthcare |
+
+---
+
+## 3. Cookie Security, HSTS, Certificate Transparency
+
+### 3.1 SameSite Cookie Attribute
+
+| SameSite Value | Behavior | Protection | Side Effects |
+|----------------|----------|------------|--------------|
+| `Strict` | No cookie sent on cross-site requests | Full CSRF protection | Logout experience on external link clicks |
+| `Lax` | Sent only on safe top-level navigation (GET) | Most CSRF protection | Cannot protect against POST CSRF |
+| `None` | Always sent | None | Must be accompanied by `Secure` attribute |
+
+**Recommended cookie setting combination:**
+```
+Set-Cookie: session=abc123; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600
+```
+
+| Attribute | Purpose |
+|-----------|---------|
+| `Secure` | Transmitted only over HTTPS connections |
+| `HttpOnly` | Inaccessible via JS (prevents XSS theft) |
+| `SameSite=Strict` | CSRF defense |
+| `Path=/` | Minimum scope restriction |
+| `Max-Age` | Explicit expiration time |
+
+### 3.2 HSTS (HTTP Strict Transport Security)
+
+| HSTS Item | Description | Recommended Value |
+|-----------|-------------|-------------------|
+| `max-age` | Duration to maintain HSTS (seconds) | 31536000 (1 year) or more |
+| `includeSubDomains` | Include subdomains | Recommended to include |
+| `preload` | List in browser's built-in HSTS list | Register if possible |
+
+**Example:**
+```
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+```
+
+Requirements for HSTS Preload registration:
+- Valid HTTPS certificate
+- HTTP → HTTPS redirect
+- HTTPS applied to all subdomains
+- Includes `includeSubDomains` + `preload` directives
+- `max-age` of at least 1 year
+
+### 3.3 Certificate Transparency (CT)
+
+| Item | Description |
+|------|-------------|
+| Concept | Record all TLS certificates in public logs to ensure auditability |
+| Implementation | CA submits certificates to CT log upon issuance, receives SCT |
+| Browser validation | Chrome: Displays error for certificates without SCT since 2018 |
+| Expect-CT header | Enforce CT compliance and report violations to browser |
+| Purpose | Detect root CA misuse/theft (e.g., DigiNotar incident) |
+
+```
+Expect-CT: max-age=86400, enforce, report-uri="https://report.example.com/ct"
+```
+
+---
+
+## 4. Python CLI: Website Browser Security Header Auditor
+
+```python
+#!/usr/bin/env python3
+"""
+Website Browser Security Header Auditor
+Collects HTTP response headers from target URL, analyzes security header
+configuration, scores it, and outputs improvement recommendations.
+"""
+
+# (See Korean section above for full implementation — same code with English comments)
+# Key functions:
+# - fetch_headers(): Collects HTTP headers via HEAD request
+# - run_audit(): Runs full security header audit
+# - format_text/json/md(): Output formatters
+# - check_*(): Individual header check functions
+```
+
+---
+
+## 5. Browser Security Hardening Checklist
+
+### 5.1 Server/Developer Perspective
+
+| Item | Required | Implementation Example |
+|------|----------|----------------------|
+| HTTPS-only operation | Required | Let's Encrypt, automatic certificate renewal |
+| HSTS + preload | Strongly recommended | max-age=63072000; includeSubDomains; preload |
+| CSP configuration | Required | nonce/hash-based, no unsafe-eval |
+| X-Frame-Options | Required | DENY |
+| X-Content-Type-Options | Required | nosniff |
+| Referrer-Policy | Recommended | strict-origin-when-cross-origin |
+| Permissions-Policy | Recommended | Explicitly disable unnecessary features |
+| SameSite=Strict | Required | Apply to session cookies |
+| HttpOnly cookies | Required | All session cookies |
+| Remove server version info | Recommended | Minimize Server: header |
+| COOP/COEP | Recommended | When Spectre defense required |
+| Certificate Transparency | Required (CA enforced) | Use certificates with SCT |
+| Subresource Integrity (SRI) | Recommended | integrity attribute on CDN resources |
+
+### 5.2 End-User/Enterprise Perspective
+
+| Item | Description | Tool/Method |
+|------|-------------|-------------|
+| Keep browser up to date | Vulnerability patching | Enable auto-update |
+| Install uBlock Origin | Block ads/tracking | Install from store |
+| HTTPS Everywhere | Force HTTP sites to HTTPS | Browser extension |
+| Remove unnecessary extensions | Minimize attack surface | Periodic audit |
+| DNS over HTTPS (DoH) | Encrypt DNS queries | Built-in browser settings |
+| Manage cookie expiration | Remove stale sessions | Browser settings |
+| Apply enterprise MDM policies | Enforce standard security settings | Intune, Jamf |
+
+---
+
+## 6. References
+
+- OWASP Secure Headers Project (https://owasp.org/www-project-secure-headers/)
+- CSP evaluation tool — csp-evaluator.withgoogle.com
+- Security Headers scanner — securityheaders.com
+- HSTS Preload registration — hstspreload.org
+- Mozilla Observatory (https://observatory.mozilla.org/)
+- Google Web Fundamentals — Security Headers
+- NIST SP 800-44 (Web Server Security Guide)

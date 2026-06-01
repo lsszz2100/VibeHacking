@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 피싱 및 사회공학 공격
 
 ## 사회공학 공격 분류
@@ -451,4 +457,235 @@ print(metrics.generate_report())
   □ 금융 이체 2인 승인
   □ 급한 요청 시 전화 확인 절차
   □ 대역 외 인증 채널
+```
+
+---
+
+<a name="english"></a>
+
+# Phishing and Social Engineering Attacks
+
+## Social Engineering Attack Classification
+
+```
+Social Engineering Taxonomy:
+  
+  Technical:
+    Phishing (email-based)
+    Smishing (SMS-based)
+    Vishing (voice-based)
+    Spear Phishing (targeted)
+    Whaling (C-level targeting)
+    BEC (Business Email Compromise)
+  
+  Physical:
+    Pretexting (impersonation)
+    Baiting (USB drops, etc.)
+    Tailgating (physical access)
+    Dumpster Diving (document collection)
+  
+  Combined:
+    Hybrid attacks (email + phone + physical)
+```
+
+---
+
+## 1. Phishing Infrastructure Setup
+
+### GoPhish Campaign Setup
+
+```bash
+# GoPhish installation
+wget https://github.com/gophish/gophish/releases/download/v0.12.1/gophish-v0.12.1-linux-64bit.zip
+unzip gophish-v0.12.1-linux-64bit.zip
+./gophish
+
+# Dashboard: https://localhost:3333
+# Default credentials: admin / gophish
+
+# Campaign components:
+# 1. Sending Profile (SMTP settings)
+# 2. Landing Page (credential capture page)
+# 3. Email Template
+# 4. User & Group (target list)
+# 5. Campaign (combine all above)
+```
+
+### Email Template Design
+
+```html
+<!-- Convincing phishing email template -->
+Subject: [URGENT] Your account will be suspended - Action Required
+
+Dear {{.FirstName}},
+
+Our security team has detected unusual activity on your account.
+To prevent unauthorized access, please verify your credentials immediately.
+
+<a href="{{.URL}}">Verify Account Now</a>
+
+This link expires in 24 hours.
+
+Best regards,
+IT Security Team
+```
+
+---
+
+## 2. Credential Harvesting
+
+```bash
+# Evilginx2 — reverse proxy phishing (bypasses 2FA)
+# Captures actual session cookies, not just credentials
+
+# Installation
+git clone https://github.com/kgretzky/evilginx2
+cd evilginx2
+make
+
+# Configure phishlet
+evilginx> phishlets hostname microsoft your-domain.com
+evilginx> phishlets enable microsoft
+
+# Create lure
+evilginx> lures create microsoft
+evilginx> lures get-url 0
+
+# View captured sessions
+evilginx> sessions
+evilginx> sessions 1  # View specific session details
+```
+
+---
+
+## 3. Spear Phishing OSINT
+
+```python
+#!/usr/bin/env python3
+"""Spear phishing target research automation"""
+import requests
+import json
+
+def gather_target_intel(name: str, company: str, email: str) -> dict:
+    """Collect target intelligence for spear phishing"""
+    
+    intel = {
+        "target": {"name": name, "company": company, "email": email},
+        "findings": []
+    }
+    
+    # LinkedIn-style search (via search engines)
+    search_queries = [
+        f'"{name}" "{company}" site:linkedin.com',
+        f'"{name}" "{company}" filetype:pdf',
+        f'"{email}" site:github.com',
+        f'"{name}" "{company}" "conference" OR "presentation"',
+    ]
+    
+    intel["search_queries"] = search_queries
+    
+    # Email breach check (HaveIBeenPwned-style)
+    intel["breach_check_url"] = f"https://haveibeenpwned.com/api/v3/breachedaccount/{email}"
+    
+    return intel
+
+def create_pretexting_scenario(intel: dict) -> str:
+    """Create pretexting scenario based on gathered intelligence"""
+    
+    import anthropic
+    client = anthropic.Anthropic()
+    
+    prompt = f"""
+Based on the following target intelligence, create a realistic pretexting scenario
+for an authorized red team social engineering exercise.
+
+Target: {intel['target']['name']}
+Company: {intel['target']['company']}
+
+Create:
+1. Pretext story (who you're impersonating)
+2. Conversation script
+3. Requested action (callback phone number, visit link, etc.)
+4. Urgency factor
+
+Keep it realistic but clearly marked as an exercise.
+"""
+    
+    resp = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=1000,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    return resp.content[0].text
+```
+
+---
+
+## 4. Vishing (Voice Phishing)
+
+```
+Vishing Script Template:
+
+"Hello, this is [Name] from IT security team. 
+We've detected unauthorized access attempts on your account 
+and need to verify your identity to protect your data.
+
+Could you please confirm:
+1. Your employee ID
+2. The last 4 digits of your badge number
+3. Your current location (for security verification)
+
+This will only take 2 minutes and protects your account."
+
+Psychological Triggers Used:
+  - Authority (IT Security Team)
+  - Urgency (unauthorized access detected)
+  - Reciprocity (protecting their account)
+  - Social proof (standard security procedure)
+```
+
+---
+
+## 5. BEC (Business Email Compromise)
+
+```bash
+# BEC scenario types:
+# 1. CEO Fraud — impersonate CEO, request wire transfer
+# 2. Invoice Fraud — spoof vendor, change payment details
+# 3. Attorney Impersonation — impersonate lawyer, request confidential info
+# 4. Data Theft — impersonate HR, request employee W-2 forms
+
+# Email spoofing check
+# Check if target domain has SPF, DKIM, DMARC
+dig TXT target.com | grep -E "spf|dmarc"
+dig TXT _dmarc.target.com
+
+# If no DMARC: spoofed emails may deliver
+# If DMARC=none: monitoring only, no blocking
+# If DMARC=quarantine/reject: harder to spoof
+```
+
+---
+
+## 6. Defenses Against Social Engineering
+
+```
+Technical Defenses:
+  □ DMARC/DKIM/SPF email authentication
+  □ Email gateway with phishing detection (Proofpoint, Mimecast)
+  □ Browser isolation for suspicious links
+  □ MFA enforcement (phishing-resistant: FIDO2/WebAuthn preferred)
+  □ DNS filtering (block malicious domains)
+
+Training Defenses:
+  □ Regular phishing simulation campaigns
+  □ Phishing reporting mechanism (one-click reporting button)
+  □ Auto-display education page on click
+  □ Executive-specific BEC training
+
+Procedural Defenses:
+  □ Dual approval for financial transfers
+  □ Phone verification for urgent requests
+  □ Out-of-band authentication channels
 ```

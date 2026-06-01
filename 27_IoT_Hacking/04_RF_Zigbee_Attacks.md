@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # RF/Zigbee/Z-Wave IoT 무선 프로토콜 공격
 
 ## 개요
@@ -357,3 +363,45 @@ tshark -r zigbee.pcap \
 | 미암호화 통신 | 네트워크 레이어 암호화 (AES-128 이상) |
 | 디폴트 키 | 페어링 시 고유 키 생성, 하드코딩 키 금지 |
 | 신호 재밍 | 재밍 탐지 및 알림 기능 |
+
+---
+
+<a name="english"></a>
+
+# RF/Zigbee/Z-Wave IoT Wireless Protocol Attacks
+
+## Overview
+
+IoT devices use a variety of wireless protocols beyond WiFi, including Zigbee, Z-Wave, 433MHz, and 915MHz. The low-power, low-cost design often leads to weak security implementations.
+
+## SDR (Software Defined Radio) Overview
+
+Traditional hardware radio receivers are replaced by software-based signal processing.
+
+### Key SDR Hardware
+
+| Device | Frequency Range | Price | Use Case |
+|--------|----------------|-------|----------|
+| RTL-SDR v3 | 500kHz~1.75GHz | ~$30 | Beginner, receive only |
+| HackRF One | 1MHz~6GHz | ~$300 | Transmit and receive |
+| YARD Stick One | Sub-1GHz | ~$100 | 433/868/915MHz dedicated |
+| USRP B210 | 70MHz~6GHz | ~$1,500 | Research-grade high performance |
+| Flipper Zero | Sub-1GHz + NFC | ~$170 | All-in-one security tool |
+
+## Key Attack Techniques
+
+- **Rolling code attacks**: Capture and replay garage door/car fob signals
+- **Zigbee network injection**: Join Zigbee networks, intercept/inject frames
+- **Z-Wave downgrade**: Force downgrade from S2 to S0 security
+- **RF replay attacks**: Record and replay 433MHz/315MHz static codes
+- **Signal jamming**: Disrupt wireless communications for DoS
+
+## Defense Recommendations
+
+| Vulnerability | Countermeasure |
+|--------------|---------------|
+| 433MHz static code | Use rolling code (KeeLoq) or encrypted protocol |
+| Zigbee S0 | Upgrade to Z-Wave S2 or Thread protocol |
+| Unencrypted communication | Network layer encryption (AES-128 or higher) |
+| Default keys | Generate unique keys during pairing, prohibit hardcoded keys |
+| Signal jamming | Add jamming detection and alerting features |

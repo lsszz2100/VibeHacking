@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # ISMS-P 정보보호 및 개인정보보호 관리체계 인증
 
 ## ISMS-P 개요
@@ -621,3 +627,198 @@ if __name__ == "__main__":
 - [ ] 결함 식별 항목 개선 조치 완료 또는 이행 계획서 준비
 - [ ] 심사팀 안내 자료 준비 (조직도, 시스템 구성도)
 - [ ] 심사 당일 인터뷰 담당자 역할 배정
+
+---
+
+<a name="english"></a>
+
+# ISMS-P Information Security and Privacy Management System Certification
+
+## ISMS-P Overview
+
+ISMS-P (Information Security Management System - Privacy) is an integrated certification system that has been in operation since November 2018, combining the existing ISMS (Information Security Management System) and PIMS (Privacy Information Management System). It is jointly issued by the Ministry of Science and ICT and the Personal Information Protection Commission, with the Korea Internet and Security Agency (KISA) conducting certification activities.
+
+### Mandatory Certification Targets (ISMS Criteria)
+
+| Target | Criteria |
+|--------|---------|
+| Information and communications service providers | Annual revenue of 10 billion KRW or more, or average daily users of 1 million or more |
+| Colocation facilities operators | IDC operators |
+| Hospitals | 100+ beds |
+| Universities | 10,000+ enrolled students |
+| Public institutions | Public institutions providing information and communications network services |
+
+---
+
+## 102 Control Items — Full Configuration
+
+### Domain 1: Management System Establishment and Operations (16 control items)
+
+#### 1.1 Management System Foundation (6 items)
+
+| Number | Control Item | Core Requirements |
+|--------|-------------|-------------------|
+| 1.1.1 | Management participation | CEO approval of information security policy, CISO appointment |
+| 1.1.2 | Chief officer designation | Designate CISO and grant roles/authority |
+| 1.1.3 | Organization composition | Compose information security organization, define roles and responsibilities |
+| 1.1.4 | Scope setting | Document management system application scope |
+| 1.1.5 | Policy establishment | Establish, approve, and publish information security policy |
+| 1.1.6 | Resource allocation | Secure sufficient resources including budget and personnel |
+
+#### 1.2 Risk Management (4 items)
+
+| Number | Control Item | Core Requirements |
+|--------|-------------|-------------------|
+| 1.2.1 | Information asset identification | Create information asset inventory, evaluate importance |
+| 1.2.2 | Current status and flow analysis | Create service and information flow diagrams |
+| 1.2.3 | Risk assessment | Conduct risk assessment at least once per year |
+| 1.2.4 | Protection measure selection | Risk acceptance criteria, derive protection measures |
+
+#### 1.3 Management System Operations (3 items)
+
+| Number | Control Item | Core Requirements |
+|--------|-------------|-------------------|
+| 1.3.1 | Protection measure implementation | Actual implementation of selected protection measures |
+| 1.3.2 | Protection measure sharing | Share protection measures with stakeholders |
+| 1.3.3 | Operations status management | Record operational status of implemented protection measures |
+
+#### 1.4 Management System Review and Improvement (3 items)
+
+| Number | Control Item | Core Requirements |
+|--------|-------------|-------------------|
+| 1.4.1 | Legal requirement compliance review | Monitor regulatory changes and review compliance |
+| 1.4.2 | Management system review | Conduct internal audit (at least once per year) |
+| 1.4.3 | Management system improvement | Corrective action when issues found |
+
+---
+
+### Domain 2: Protection Measure Requirements (64 control items)
+
+Key control categories include:
+- **2.1** Policy, organization, asset management (3 items)
+- **2.2** Personnel security (6 items) — security pledges, separation of duties, training
+- **2.3** External party security (4 items) — contracts, monitoring
+- **2.4** Physical security (7 items) — protected zones, access control
+- **2.5** Authentication and authorization management (6 items) — account management, MFA
+- **2.6** Access control (7 items) — network, application, database access
+- **2.7** Encryption (2 items) — cryptography policy, key management
+- **2.8** System development and change (7 items) — security requirements, test environment separation
+- **2.9** System and service operations (7 items) — change management, backup, log management
+- **2.10** System and service security management (9 items) — patches, malware control, cloud security
+- **2.11** Incident prevention and response (5 items) — response procedures, monitoring, drills
+- **2.12** Disaster recovery (1 item) — BCP/DRP
+
+---
+
+### Domain 3: Personal Information Processing Requirements (22 control items)
+
+#### 3.1 Protection Measures During Personal Information Collection (7 items)
+
+| Number | Control Item | Core Requirements |
+|--------|-------------|-------------------|
+| 3.1.1 | Personal information status management | Document personal information processing status and flow |
+| 3.1.2 | Personal information collection restriction | Minimum collection principle, distinguish required/optional |
+| 3.1.3 | National ID number processing restriction | Prohibit collection without legal basis |
+| 3.1.4 | Sensitive information processing restriction | Obtain separate consent for sensitive information |
+| 3.1.5 | Indirect collection protection | Notify when collecting third-party provided information |
+| 3.1.6 | Video surveillance management | Install CCTV notice, designate manager |
+| 3.1.7 | Marketing personal information collection | Marketing consent is optional |
+
+#### 3.2 Protection During Storage and Use (5 items)
+#### 3.3 Protection During Third-party Provision (3 items)
+#### 3.4 Protection During Disposal (2 items)
+#### 3.5 Data Subject Rights Protection (5 items)
+
+---
+
+## Audit Preparation Checklist
+
+### Pre-Preparation Stage (3 months before audit)
+
+- [ ] Complete management system scope setting and documentation
+- [ ] Update information asset inventory (IT assets, personal information assets)
+- [ ] Write risk assessment report
+- [ ] Update security policies/guidelines/procedures (including approval signatures)
+- [ ] Conduct internal mock audit and pre-remediate findings
+- [ ] Create evidence document list and organize files
+
+### Management System Operations Evidence
+
+- [ ] Information Security Committee meeting minutes (at least once per half-year)
+- [ ] CISO appointment document
+- [ ] Risk assessment report (at least once per year)
+- [ ] Internal audit report (at least once per year)
+- [ ] Security training completion records (all employees)
+- [ ] Security pledge agreements (employees, external personnel)
+
+### Protection Measure Operations Evidence
+
+- [ ] Firewall policy list and review records
+- [ ] Account and permission status + periodic review records
+- [ ] Vulnerability assessment results and remediation records
+- [ ] Incident response drill result report
+- [ ] Backup execution records and recovery test results
+- [ ] Log management status (retention period per system)
+- [ ] Patch management status (reason stated if unable to apply)
+
+---
+
+## Types of Findings and Response Cases
+
+### Finding Type Classification
+
+#### Minor Finding
+- Insufficient document version management (missing dates, version numbers)
+- Below training completion rate (some employees not completed)
+- Partial non-compliance with log retention periods
+
+#### Major Finding
+- Risk assessment not conducted or documentation insufficient
+- Admin account shared usage
+- Personal information processing policy not published
+- Missing security clauses in external vendor contracts
+
+#### Critical Finding
+- Massive personal information breach
+- Firewall not in operation
+- Overall absence of security management framework
+
+### Finding Response Cases
+
+**Case 1: Access Permission Review Not Conducted**
+- Finding: Accounts of resigned employees not deleted
+- Immediate action: Immediately deactivate accounts and change passwords
+- Root cause: Account revocation procedure missing from resignation process
+- Corrective action: Add account revocation item to resignation checklist, integrate with HR system
+
+**Case 2: Personal Information Encryption Not Applied**
+- Finding: National ID numbers stored in plaintext in DB
+- Immediate action: Minimize access permissions and strengthen log monitoring
+- Improvement plan: Apply full encryption within 3 months (submit implementation plan)
+
+**Case 3: Risk Assessment Not Conducted**
+- Finding: No risk assessment records for the past 2 years
+- Immediate action: Immediately conduct risk assessment and document results
+- Corrective action: Establish annual risk assessment schedule, designate responsible person
+
+---
+
+## Final Audit Preparation Checklist
+
+### D-30: Document Organization
+- [ ] Verify version and approval signatures on all policies/guidelines/procedures
+- [ ] Update personal information processing policy and verify public posting
+- [ ] Confirm latest risk assessment conducted (within 1 year)
+- [ ] Complete internal audit report
+
+### D-14: Evidence Collection
+- [ ] Security training completion records (including participant signatures)
+- [ ] Vulnerability assessment results and remediation completion certificates
+- [ ] Firewall policy review records
+- [ ] Account and permission periodic review records
+
+### D-7: Final Check
+- [ ] Verify implementation status of all control items using self-assessment tool
+- [ ] Complete corrective actions for identified findings or prepare implementation plans
+- [ ] Prepare guidance materials for audit team (org chart, system diagram)
+- [ ] Assign interview roles for audit day

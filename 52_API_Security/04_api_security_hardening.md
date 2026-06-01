@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # API 보안 강화 — 게이트웨이·OAuth2·자동화 감사
 
 ## 1. API 보안 아키텍처
@@ -446,3 +452,456 @@ server {
 | 로깅 | 요청/응답 감사 로그 (민감 데이터 마스킹) |
 | 버전 관리 | 구형 버전 명시적 폐기 일정 |
 | 의존성 관리 | `pip audit` / `safety check` 자동화 |
+
+---
+
+<a name="english"></a>
+
+# API Security Hardening — Gateway, OAuth2, and Automated Auditing
+
+## 1. API Security Architecture
+
+```
+Client
+  │
+  ▼
+[API Gateway] ─── Rate Limiting / DDoS Defense
+  │              ─── Authentication & Authorization (OAuth2/JWT)
+  │              ─── WAF / Input Validation
+  │              ─── TLS Termination
+  ▼
+[Backend Services]
+  │
+  ▼
+[Service Mesh] ─── mTLS (inter-service encryption)
+  │             ─── Internal authorization (RBAC/ABAC)
+  ▼
+[Database] ─── Least privilege accounts
+```
+
+---
+
+## 2. OAuth2 / OIDC Security
+
+### 2.1 Common OAuth2 Vulnerabilities
+
+| Vulnerability | Description | Attack |
+|---------------|-------------|--------|
+| State parameter not validated | CSRF attack possible | Code theft via manipulated callback URL |
+| Open redirect | Missing redirect_uri validation | `redirect_uri=https://attacker.com` |
+| Implicit flow | Token exposed in URL fragment | Browser history, Referer header |
+| Code reuse | Authorization Code single-use not enforced | Reusing stolen code |
+| PKCE not applied | Code interception in SPA/mobile apps | Intercept attack |
+
+### 2.2 PKCE Implementation (Python)
+
+```python
+#!/usr/bin/env python3
+"""OAuth2 PKCE flow implementation — enhanced security for authorization code flow."""
+
+import hashlib
+import base64
+import os
+import secrets
+import urllib.parse
+import argparse
+import httpx
+
+
+def generate_pkce_pair() -> tuple[str, str]:
+    """Generate code_verifier and code_challenge."""
+    verifier = base64.urlsafe_b64encode(os.urandom(40)).rstrip(b"=").decode()
+    challenge = base64.urlsafe_b64encode(
+        hashlib.sha256(verifier.encode()).digest()
+    ).rstrip(b"=").decode()
+    return verifier, challenge
+
+
+def build_auth_url(
+    auth_endpoint: str,
+    client_id: str,
+    redirect_uri: str,
+    scopes: list[str],
+    code_challenge: str,
+    state: str | None = None,
+) -> str:
+    if state is None:
+        state = secrets.token_urlsafe(32)
+
+    params = {
+        "response_type": "code",
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "scope": " ".join(scopes),
+        "state": state,
+        "code_challenge": code_challenge,
+        "code_challenge_method": "S256",
+    }
+    return f"{auth_endpoint}?{urllib.parse.urlencode(params)}"
+
+
+def exchange_code(
+    token_endpoint: str,
+    code: str,
+    verifier: str,
+    client_id: str,
+    redirect_uri: str,
+) -> dict:
+    with httpx.Client() as client:
+        resp = client.post(
+            token_endpoint,
+            data={
+                "grant_type": "authorization_code",
+                "code": code,
+                "client_id": client_id,
+                "redirect_uri": redirect_uri,
+                "code_verifier": verifier,
+            },
+        )
+        return resp.json()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="OAuth2 PKCE flow")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    init_p = sub.add_parser("init", help="Generate authorization URL")
+    init_p.add_argument("--auth-url", required=True)
+    init_p.add_argument("--client-id", required=True)
+    init_p.add_argument("--redirect-uri", required=True)
+    init_p.add_argument("--scopes", default="openid profile email")
+
+    exchange_p = sub.add_parser("exchange", help="Exchange code for token")
+    exchange_p.add_argument("--token-url", required=True)
+    exchange_p.add_argument("--code", required=True)
+    exchange_p.add_argument("--verifier", required=True)
+    exchange_p.add_argument("--client-id", required=True)
+    exchange_p.add_argument("--redirect-uri", required=True)
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "init":
+            verifier, challenge = generate_pkce_pair()
+            url = build_auth_url(
+                args.auth_url, args.client_id, args.redirect_uri,
+                args.scopes.split(), challenge,
+            )
+            print(f"Authorization URL:\n{url}")
+            print(f"\ncode_verifier (save this):\n{verifier}")
+
+        case "exchange":
+            import json
+            tokens = exchange_code(
+                args.token_url, args.code, args.verifier,
+                args.client_id, args.redirect_uri,
+            )
+            print(json.dumps(tokens, indent=2))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Rate Limiting Implementation (FastAPI)
+
+```python
+#!/usr/bin/env python3
+"""FastAPI-based API Rate Limiting middleware."""
+
+import time
+from collections import defaultdict
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
+
+app = FastAPI()
+
+# Token bucket implementation
+class TokenBucket:
+    def __init__(self, rate: float, capacity: int) -> None:
+        self.rate = rate          # Refill rate per second
+        self.capacity = capacity  # Maximum tokens
+        self.tokens = capacity
+        self.last_refill = time.monotonic()
+
+    def consume(self, tokens: int = 1) -> bool:
+        now = time.monotonic()
+        elapsed = now - self.last_refill
+        self.tokens = min(
+            self.capacity,
+            self.tokens + elapsed * self.rate,
+        )
+        self.last_refill = now
+
+        if self.tokens >= tokens:
+            self.tokens -= tokens
+            return True
+        return False
+
+
+buckets: dict[str, TokenBucket] = defaultdict(lambda: TokenBucket(rate=10, capacity=60))
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    client_ip = request.client.host if request.client else "unknown"
+    token = request.headers.get("Authorization", "")
+    identifier = token if token else client_ip
+
+    if not buckets[identifier].consume():
+        return JSONResponse(
+            status_code=429,
+            content={"error": "Too Many Requests"},
+            headers={
+                "Retry-After": "60",
+                "X-RateLimit-Limit": "60",
+                "X-RateLimit-Remaining": "0",
+            },
+        )
+    return await call_next(request)
+```
+
+---
+
+## 4. Automated API Security Audit CLI
+
+```python
+#!/usr/bin/env python3
+"""Automated API security audit — headers, TLS, authentication, and response validation."""
+
+import argparse
+import json
+import ssl
+import socket
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import httpx
+
+
+@dataclass
+class AuditResult:
+    endpoint: str
+    checks: dict[str, bool] = field(default_factory=dict)
+    issues: list[str] = field(default_factory=list)
+
+
+SECURITY_HEADERS = [
+    "Strict-Transport-Security",
+    "Content-Security-Policy",
+    "X-Content-Type-Options",
+    "X-Frame-Options",
+    "X-XSS-Protection",
+    "Referrer-Policy",
+    "Permissions-Policy",
+    "Cache-Control",
+]
+
+
+def check_tls(hostname: str, port: int = 443) -> dict[str, bool | str]:
+    result: dict[str, bool | str] = {}
+    try:
+        ctx = ssl.create_default_context()
+        with ctx.wrap_socket(socket.create_connection((hostname, port)), server_hostname=hostname) as sock:
+            cert = sock.getpeercert()
+            result["tls_valid"] = True
+            result["tls_version"] = sock.version()
+            result["cipher"] = sock.cipher()[0] if sock.cipher() else "unknown"
+    except ssl.SSLError as e:
+        result["tls_valid"] = False
+        result["tls_error"] = str(e)
+    return result
+
+
+def audit_endpoint(url: str, token: str | None = None) -> AuditResult:
+    result = AuditResult(endpoint=url)
+    headers: dict[str, str] = {}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    try:
+        with httpx.Client(verify=True, follow_redirects=True) as client:
+            resp = client.get(url, headers=headers, timeout=15)
+
+        # Check security headers
+        for header in SECURITY_HEADERS:
+            present = header in resp.headers
+            result.checks[f"header_{header}"] = present
+            if not present:
+                result.issues.append(f"Missing security header: {header}")
+
+        # Check HTTPS enforcement
+        result.checks["https"] = url.startswith("https://")
+        if not result.checks["https"]:
+            result.issues.append("HTTPS not in use")
+
+        # Check for sensitive info in response
+        import re
+        body = resp.text
+        sensitive_patterns = {
+            "stack_trace": r"Traceback|at \w+\.\w+\(",
+            "internal_path": r"/var/www|/home/\w+|C:\\",
+            "sql_error": r"SQL syntax|mysql_error|ORA-\d+",
+            "debug_info": r'"debug":\s*true|DEBUG=True',
+        }
+        for name, pattern in sensitive_patterns.items():
+            if re.search(pattern, body, re.IGNORECASE):
+                result.checks[f"no_{name}"] = False
+                result.issues.append(f"{name} exposed in response")
+            else:
+                result.checks[f"no_{name}"] = True
+
+        # Check for unnecessary HTTP methods
+        options_resp = client.options(url, headers=headers, timeout=10)
+        allow_header = options_resp.headers.get("Allow", "")
+        dangerous_methods = {"TRACE", "CONNECT", "DEBUG"}
+        exposed = dangerous_methods & set(allow_header.split(", "))
+        if exposed:
+            result.issues.append(f"Dangerous HTTP methods allowed: {exposed}")
+
+    except httpx.RequestError as e:
+        result.issues.append(f"Connection error: {e}")
+
+    return result
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="API security audit")
+    parser.add_argument("targets", nargs="+", help="List of endpoint URLs to audit")
+    parser.add_argument("-t", "--token", help="Authentication token")
+    parser.add_argument("-o", "--output", type=Path, help="Result save path")
+    args = parser.parse_args()
+
+    all_results = []
+    for url in args.targets:
+        print(f"[*] Auditing: {url}")
+        result = audit_endpoint(url, args.token)
+        all_results.append(result)
+
+        passed = sum(v for v in result.checks.values() if isinstance(v, bool))
+        total = len(result.checks)
+        print(f"  Checks: {passed}/{total} passed")
+        for issue in result.issues:
+            print(f"  [!] {issue}")
+
+    if args.output:
+        args.output.write_text(
+            json.dumps(
+                [{"endpoint": r.endpoint, "checks": r.checks, "issues": r.issues} for r in all_results],
+                indent=2, ensure_ascii=False,
+            )
+        )
+        print(f"\nResults saved: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. API Gateway Security Configuration
+
+### 5.1 Kong Gateway Configuration
+
+```yaml
+# kong.yml — API security plugin configuration
+services:
+  - name: api-service
+    url: http://backend:8080
+    plugins:
+      # JWT authentication
+      - name: jwt
+        config:
+          claims_to_verify: ["exp", "nbf"]
+          key_claim_name: "iss"
+
+      # Rate Limiting
+      - name: rate-limiting
+        config:
+          minute: 100
+          hour: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+
+      # Request size limiting
+      - name: request-size-limiting
+        config:
+          allowed_payload_size: 10  # MB
+
+      # CORS
+      - name: cors
+        config:
+          origins: ["https://app.example.com"]
+          methods: ["GET", "POST", "PUT", "DELETE"]
+          headers: ["Authorization", "Content-Type"]
+          credentials: true
+          max_age: 3600
+
+      # Bot detection
+      - name: bot-detection
+        config:
+          allow: []
+          deny: ["bot", "spider", "crawler"]
+```
+
+### 5.2 NGINX API Gateway Configuration
+
+```nginx
+# /etc/nginx/conf.d/api-gateway.conf
+upstream backend {
+    server backend:8080;
+    keepalive 32;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name api.example.com;
+
+    ssl_certificate /etc/ssl/certs/api.crt;
+    ssl_certificate_key /etc/ssl/private/api.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305;
+
+    # Security headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Content-Security-Policy "default-src 'none'" always;
+
+    # Rate Limiting (zone defined in http block)
+    limit_req zone=api_limit burst=20 nodelay;
+    limit_req_status 429;
+
+    # Request size limit
+    client_max_body_size 10m;
+
+    location /api/ {
+        proxy_pass http://backend;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_hide_header X-Powered-By;
+        proxy_hide_header Server;
+    }
+}
+```
+
+---
+
+## 6. API Security Checklist
+
+| Item | Implementation Method |
+|------|-----------------------|
+| HTTPS enforcement | HSTS + HTTP→HTTPS redirect |
+| Authentication | OAuth2 + PKCE / Hashed API Key storage |
+| Authorization | RBAC/ABAC + object-level permissions |
+| Rate Limiting | Token bucket / sliding window |
+| Input validation | JSON Schema / Pydantic models |
+| Output encoding | Fixed types during response serialization |
+| Error handling | Hide stack traces and internal information |
+| Logging | Request/response audit logs (sensitive data masking) |
+| Version management | Explicit deprecation schedule for legacy versions |
+| Dependency management | `pip audit` / `safety check` automation |

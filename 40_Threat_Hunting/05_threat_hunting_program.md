@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 05 — 위협 헌팅 프로그램 운영
 
 ## 목차
@@ -779,3 +785,385 @@ C2           |   16    |    6     |    4    | HIGH
 - **Sqrrl Threat Hunting Reference Guide** — 헌팅 기초 가이드
 - **SANS FOR508** — Advanced Incident Response & Threat Hunting
 - **Cyb3rWard0g 블로그** — 실전 헌팅 사례 연구
+
+---
+
+<a name="english"></a>
+
+# 05 — Threat Hunting Program Operations
+
+## Table of Contents
+1. Threat Hunting Program Establishment and Governance
+2. Hunting Intelligence Collection Framework
+3. Data Pipeline and Platform Configuration
+4. Hunting Team Capability Development
+5. Hunting Result Management and Feedback Loop
+6. Industry-Specific Hunting Scenarios
+7. Hunting Program Maturity Measurement
+
+---
+
+## 1. Threat Hunting Program Establishment and Governance
+
+### 1.1 Three Models of Hunting Programs
+
+```
+Model 1: Intelligence-Led
+  - CTI team threat reports → Hunting hypothesis → Investigation
+  - Advantage: High hit rate for known threats
+  - Disadvantage: Depends on CTI quality
+
+Model 2: Situational Awareness
+  - Environmental changes (mergers, new services) → New attack surface hunting
+  - Advantage: Reflects organizational context
+  - Disadvantage: Difficult to set scope
+
+Model 3: Hypothesis-Driven
+  - MITRE ATT&CK TTP → Can it occur in our environment? → Validate
+  - Advantage: Systematic coverage
+  - Disadvantage: Labor-intensive
+```
+
+### 1.2 Hunting Charter Components
+
+Formal authorization and scope-defining document for the hunting program within the organization.
+
+```
+Hunting Charter Contents:
+  1. Program purpose and vision
+  2. Scope: Coverage environment, excluded systems
+  3. Priorities: Crown jewels, critical infrastructure
+  4. Team composition and roles/responsibilities (RACI)
+  5. Data access rights and procedures
+  6. Escalation paths (CISO, legal team)
+  7. Performance metrics (KPIs) and reporting cycle
+  8. Budget and tool allocation
+```
+
+### 1.3 Position of Hunting Program in Organization
+
+```
+SOC Organization Chart:
+
+CISO
+ └── SOC Director
+      ├── L1/L2 Analysts (Alert Triage)
+      ├── L3 Incident Response
+      ├── Threat Intelligence Team ←→ Hunting hypothesis supply
+      └── Threat Hunting Team ←────────────────────────────────
+           ├── Hunt Lead
+           ├── Senior Hunters (2~4 people)
+           └── Junior Hunters / Rotation Program
+```
+
+---
+
+## 2. Hunting Intelligence Collection Framework
+
+### 2.1 Hunting Intel Source Prioritization
+
+| Priority | Intel Source | Type | Hunting Usage |
+|----------|-------------|------|---------------|
+| P1 | CISA KEV | Known exploited vulnerabilities | Check vulnerable assets in our environment |
+| P1 | Internal IR reports | Previous breach TTPs | Confirm same TTPs hunting |
+| P2 | Industry-specific ISAC | Same-industry threats | Industry-specific hunting hypotheses |
+| P2 | Dragos/Mandiant | APT reports | Specific group TTP-based hunting |
+| P3 | VirusTotal / OTX | IOC feeds | IOC-based retrohunting |
+| P3 | Twitter/X CTI | Real-time public | Initial info on new campaigns |
+
+### 2.2 Threat Intel → Hunting Hypothesis Conversion
+
+```
+Example intel report received:
+"APT29 used TEARDROP malware in SolarWinds Orion supply chain attack,
+ dropped before Cobalt Strike Beacon"
+
+Conversion Process:
+
+Step 1: Extract TTPs
+  T1059.001: PowerShell execution
+  T1055: Process injection (DLL side-loading)
+  T1078: Valid account usage (Gold SAML)
+  T1036: Masquerading — svchost impersonation
+
+Step 2: Evaluate environmental applicability
+  Q: Do we have SolarWinds Orion? → Check asset DB
+  Q: Does our IdP use SAML? → Check AD FS usage
+  Q: Do we have PowerShell execution logs? → Sysmon Event ID 4688
+
+Step 3: Write hunting hypothesis
+  Hypothesis: "Orion server (192.168.10.5) may have had abnormal PowerShell
+              communicate with external C2 after DLL side-loading"
+
+Step 4: Query development → Execute → Analyze
+```
+
+---
+
+## 3. Data Pipeline and Platform Configuration
+
+### 3.1 Hunting Data Stack
+
+```
+Data Sources:
+  Endpoints: Sysmon (Win), auditd (Linux), EDR telemetry
+  Network: NetFlow, DNS logs, Proxy logs, PCAP
+  Cloud: CloudTrail, Azure Activity, GCP Audit
+  Identity: AD events, Okta logs, PAM sessions
+
+Collection Layer:
+  Elastic Agent / Filebeat → Kafka → Elasticsearch
+  or
+  Cribl Stream → Splunk / Microsoft Sentinel
+
+Hunting Layer:
+  Jupyter Notebook + pandas + Elasticsearch-DSL
+  or
+  Splunk SPL / KQL query interface
+
+Long-term Storage:
+  S3/Azure Blob (cold storage, minimum 13 months)
+  Parquet format for retrohunting
+```
+
+---
+
+## 4. Hunting Team Capability Development
+
+### 4.1 Hunter Capability Matrix
+
+| Capability | Junior Hunter | Senior Hunter | Hunt Lead |
+|-----------|--------------|---------------|-----------|
+| MITRE ATT&CK understanding | Basic tactics | Deep TTP knowledge | Framework contributions |
+| Query writing | Basic KQL/SPL | Complex correlation queries | Query library management |
+| Malware analysis | IOC identification | Sandbox analysis | Reversing, YARA |
+| Forensics | Basic artifacts | Memory forensics | Timeline reconstruction |
+| Programming | Python basics | Automation scripts | Hunting platform development |
+| Reporting | Describe findings | Impact analysis | Executive reporting |
+
+### 4.2 Hunter Capability Development Program
+
+```
+Junior Hunter Curriculum (12 months):
+
+M1-3: Foundations
+  - Master MITRE ATT&CK Navigator
+  - Practice 50 Splunk/Elastic queries
+  - Participate in CTF (HTB, BTLO)
+  - 1:1 shadowing with senior hunter
+
+M4-6: Advanced
+  - Lead 1 independent hunt
+  - Write 10 YARA rules
+  - Analyze 20 malware samples
+  - Attempt to win Blue Team CTF
+
+M7-9: Specialization
+  - Acquire expertise on specific threat group
+  - Write 2 hunting playbooks
+  - Present threat briefing to team
+
+M10-12: Independence
+  - Independently conduct full hunting campaign
+  - Report findings to CISO
+  - Mentor new hunters
+```
+
+### 4.3 Purple Team Collaboration
+
+```
+Purple Team Session Structure:
+
+1. Preparation (Pre-session)
+   Red Team: Select attack scenario (based on ATT&CK TTPs)
+   Blue Team: Map current detection coverage
+
+2. Execution
+   Red Team: Execute TTPs (in limited environment)
+   Blue Team: Attempt real-time detection
+
+3. Analysis
+   Detected: Record detection method and time
+   Not detected: Why was it missed? → Convert to hunting hypothesis
+
+4. Improvement
+   Update detection rules
+   Add hunting queries
+   Update runbooks
+
+5. Validation
+   Re-execute same TTPs → Confirm detection
+```
+
+---
+
+## 5. Hunting Result Management and Feedback Loop
+
+### 5.1 Hunt Finding Classification
+
+```
+Classification 1: Confirmed Threat
+  → Immediately escalate to IR team
+  → Handle as P1 incident
+
+Classification 2: Benign/Explained
+  → Update exceptions list (reduce false positives)
+  → Query tuning
+
+Classification 3: Risky but Not Malicious
+  → Policy violation → Security training or policy change
+  → Add rule (preventive detection)
+
+Classification 4: Visibility Gap
+  → Confirm absence of log source → Expand logging
+  → Request data pipeline improvement
+
+Classification 5: Novel TTP
+  → Immediately write and deploy detection rule
+  → Share with threat intel team
+  → Share with CTI community if publicly disclosable
+```
+
+### 5.2 Feedback Loop Structure
+
+```
+Hunting results → SOC L1/L2 improvement
+  Add detection rules → Generate alerts
+  Reduce false positives → Improve alert precision
+
+Hunting results → IR team improvement
+  New IOCs → Update blocklists
+  New TTPs → Update playbooks
+  Forensic results → Improve investigation techniques
+
+Hunting results → CTI team improvement
+  New actor TTPs → Update threat reports
+  Campaign connections → Strengthen actor tracking
+
+Hunting results → Security architecture improvement
+  Repeatedly detected TTPs → Eliminate root vulnerabilities
+  Visibility gaps → Improve logging infrastructure
+```
+
+---
+
+## 6. Industry-Specific Hunting Scenarios
+
+### 6.1 Financial Sector
+
+```
+Scenario 1: SWIFT System Lateral Movement
+  Hypothesis: Attacker may have accessed SWIFT system using employee account
+  Hunting Query:
+    SELECT user, src_ip, dst_ip, action, timestamp
+    FROM auth_logs
+    WHERE dst_system LIKE '%swift%'
+      AND login_hour NOT BETWEEN 8 AND 18
+      AND login_day_of_week IN ('Saturday', 'Sunday')
+    ORDER BY timestamp DESC;
+
+Scenario 2: Trading System Insider Threat
+  Indicator: Same account sequentially accessing multiple systems
+  → Compare with access pattern baseline
+  → Detect abnormal access time/volume
+```
+
+### 6.2 Healthcare Sector
+
+```
+Scenario: Ransomware Precursor Indicator Detection
+  Known precursor TTPs (Ryuk, Conti):
+    1. Cobalt Strike Beacon → SMB lateral movement
+    2. ADFind.exe execution (AD enumeration)
+    3. net view, net use commands
+    4. Large-scale file copying (data exfiltration)
+    5. vssadmin delete shadows (just before ransomware)
+
+  Hunting priority: vssadmin execution → ADFind execution → SMB connection surge
+```
+
+### 6.3 OT/ICS Environment
+
+```
+Scenario: IT/OT Boundary Crossing Detection
+  Hypothesis: Attacker may have reached engineering workstation
+              through IT network → OT DMZ
+
+  Data sources: IT/OT boundary firewall logs, EWS event logs
+  
+  Anomaly indicators:
+    - IT IP → DMZ firewall → OT VLAN (no baseline communication)
+    - Non-business hours EWS login
+    - Abnormal execution of PLC connection tools (Step7, TIA Portal) on EWS
+    - Small outbound traffic (< 100KB) C2 communication patterns
+```
+
+---
+
+## 7. Hunting Program Maturity Measurement
+
+### 7.1 Maturity Framework (Based on OTHF)
+
+Open Threat Hunting Framework 5-level maturity:
+
+```
+Level 1 — Initial
+  □ Ad-hoc hunting, no documentation
+  □ Alert-based reactive investigation
+  □ Basic SIEM query capability
+
+Level 2 — Managed
+  □ Formal hunting process exists
+  □ Hunt results tracked and documented
+  □ ATT&CK-based hypothesis formulation
+
+Level 3 — Defined
+  □ Standardized hunting playbooks
+  □ Regular hunting calendar (monthly)
+  □ Feedback loop → detection rule improvement
+  □ Regular Purple Team exercises
+
+Level 4 — Measured
+  □ Regular KPI/KRI reporting
+  □ Hunting coverage mapping (ATT&CK)
+  □ Data quality measurement
+  □ Measurable ROI
+
+Level 5 — Optimized
+  □ ML-based anomaly detection integration
+  □ Automated hunting
+  □ Community CTI sharing
+  □ Continuous self-improvement loop
+```
+
+### 7.2 Hunting Coverage Dashboard
+
+```
+MITRE ATT&CK Coverage Tracking:
+
+Tactic              | Techniques | Hunt Coverage | Detection Rules | Priority
+────────────────────|────────────|───────────────|─────────────────|─────────
+Initial Access      |     9      |       6       |        4        | HIGH
+Execution           |    14      |       8       |        7        | HIGH
+Persistence         |    19      |       5       |        3        | MEDIUM
+Privilege Escalation|    13      |       4       |        2        | HIGH
+Defense Evasion     |    42      |      12       |        8        | CRITICAL
+Credential Access   |    17      |       9       |        6        | HIGH
+Discovery           |    31      |      10       |        5        | MEDIUM
+Lateral Movement    |     9      |       5       |        4        | HIGH
+Collection          |    17      |       3       |        2        | MEDIUM
+C2                  |    16      |       6       |        4        | HIGH
+Exfiltration        |     9      |       2       |        1        | HIGH
+Impact              |    14      |       3       |        2        | MEDIUM
+```
+
+---
+
+## References
+
+- **MITRE ATT&CK** — [https://attack.mitre.org](https://attack.mitre.org)
+- **Open Threat Hunting Framework (OTHF)** — Hunting maturity model
+- **TaHiTI** — Threat hunting methodology by ABN AMRO Bank
+- **Sqrrl Threat Hunting Reference Guide** — Hunting fundamentals guide
+- **SANS FOR508** — Advanced Incident Response & Threat Hunting
+- **Cyb3rWard0g Blog** — Real-world hunting case studies

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 위협 모델링 도구 및 자동화
 
 ## 목차
@@ -1221,3 +1227,717 @@ DevSecOps 통합 단계:
 - [draw.io / diagrams.net](https://app.diagrams.net)
 - [Threat Modeling Manifesto](https://www.threatmodelingmanifesto.org)
 - [OWASP 위협 모델링 치트 시트](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html)
+
+---
+
+<a name="english"></a>
+
+# Threat Modeling Tools and Automation
+
+## Table of Contents
+1. [Microsoft Threat Modeling Tool](#microsoft-threat-modeling-tool-en)
+2. [OWASP Threat Dragon](#owasp-threat-dragon-en)
+3. [IriusRisk](#iriusrisk-en)
+4. [Creating DFDs with draw.io](#creating-dfds-with-drawio)
+5. [Threat Modeling Manifesto](#threat-modeling-manifesto-en)
+6. [TMT XML → HTML Report Script](#tmt-xml--html-report-script)
+7. [CI/CD Pipeline Integration](#cicd-pipeline-integration)
+
+---
+
+<a name="microsoft-threat-modeling-tool-en"></a>
+## Microsoft Threat Modeling Tool
+
+Microsoft TMT (Threat Modeling Tool) is a free desktop tool that supports STRIDE-based threat modeling.
+
+### Installation and Environment
+
+```
+Supported OS: Windows 10/11
+Download: https://aka.ms/threatmodelingtool
+
+Latest version: Threat Modeling Tool 2016 (7.x)
+File format: .tm7 (XML-based)
+```
+
+### Key Features
+
+```
+1. Visual DFD Editor
+   - Add elements via drag and drop
+   - Visualize trust boundaries
+   - Pre-defined stencils (Web Application, Azure, Generic)
+
+2. Automatic Threat Generation
+   - Automatic threat detection based on element types and connections
+   - Automatic application of STRIDE per Element
+
+3. Threat Management
+   - Track threat status (Needs Investigation, Mitigated, Not Applicable)
+   - Document mitigations
+
+4. Report Generation
+   - Export HTML reports
+   - Export CSV
+```
+
+### TMT Usage Procedure
+
+```
+1. Create a new threat model
+   File → New → Select template
+
+2. Select stencil
+   - Web Application (optimal for web app analysis)
+   - Azure (Azure service analysis)
+   - Generic (general systems)
+
+3. Build DFD
+   a. Place external entities (browser, external services)
+   b. Place processes (web server, API, services)
+   c. Place data stores (DB, files, cache)
+   d. Connect data flows (arrows)
+   e. Set trust boundary boxes
+
+4. Threat analysis
+   View → Analysis View
+   → Review auto-generated threat list
+
+5. Update threat status
+   Enter status and mitigation for each threat
+
+6. Generate report
+   Reports → Generate Report
+```
+
+### TMT File Structure (.tm7)
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ThreatModel Name="E-commerce System">
+  <DrawingSurfaceModel>
+    <Elements>
+      <ExternalInteractor Id="1" Name="Web Browser">
+        <Properties>
+          <Property Name="Out Of Scope" Value="false"/>
+        </Properties>
+      </ExternalInteractor>
+      <Process Id="2" Name="Web Server">
+        <Properties>
+          <Property Name="Code Type" Value="Managed"/>
+          <Property Name="Implementation Languages" Value="Python"/>
+          <Property Name="Out Of Scope" Value="false"/>
+        </Properties>
+      </Process>
+      <DataStore Id="3" Name="User DB">
+        <Properties>
+          <Property Name="Store Type" Value="SQL"/>
+          <Property Name="CIA Requirements" Value="High-High-High"/>
+        </Properties>
+      </DataStore>
+      <Flow Id="4" Name="HTTPS Request"
+            SourceGuid="1" TargetGuid="2">
+        <Properties>
+          <Property Name="Protocol" Value="HTTP"/>
+          <Property Name="HTTP Protocol" Value="HTTPS"/>
+        </Properties>
+      </Flow>
+    </Elements>
+    <Threats>
+      <Threat Id="5" Category="Spoofing" Status="Mitigated">
+        <Title>Web Server Identity Spoofing</Title>
+        <Description>Attacker impersonates the web server</Description>
+        <Mitigation>Apply mTLS</Mitigation>
+      </Threat>
+    </Threats>
+  </DrawingSurfaceModel>
+</ThreatModel>
+```
+
+### Custom Template Creation
+
+```
+TMT supports custom stencils in .tb7 format
+
+Adding custom threat rules:
+1. Copy existing .tb7 file
+2. Add new threats to ThreatCategories section
+3. Set trigger conditions (ThreatApplicabilityCondition)
+
+Useful custom rules:
+- Kubernetes Pod: container escape threats
+- API Gateway: missing JWT validation
+- Microservices: no inter-service authentication
+```
+
+---
+
+<a name="owasp-threat-dragon-en"></a>
+## OWASP Threat Dragon
+
+OWASP Threat Dragon is an open-source threat modeling tool providing both web-based and desktop versions.
+
+### Installation
+
+```bash
+# Method 1: npm global install (desktop)
+npm install -g @owasp-threat-dragon/td-desktop
+
+# Method 2: Docker
+docker pull owasp/threat-dragon:stable
+docker run -d \
+  -p 3000:3000 \
+  -e GITHUB_CLIENT_ID=your_id \
+  -e GITHUB_CLIENT_SECRET=your_secret \
+  owasp/threat-dragon:stable
+
+# Method 3: Build from source
+git clone https://github.com/OWASP/threat-dragon
+cd threat-dragon
+npm install
+npm start
+# http://localhost:3000
+
+# Method 4: Local use without GitHub integration
+docker run -d -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e SERVER_API_PROTOCOL=http \
+  owasp/threat-dragon:stable
+```
+
+### Threat Dragon File Format (.json)
+
+```json
+{
+  "summary": {
+    "title": "E-commerce Threat Model",
+    "owner": "",
+    "description": "REST API-based online shop",
+    "id": 0
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "title": "Main DFD",
+        "diagramType": "STRIDE",
+        "id": 0,
+        "cells": [
+          {
+            "type": "tm.Process",
+            "attrs": {
+              "text": { "text": "API Server" }
+            },
+            "threats": [
+              {
+                "title": "SQL Injection",
+                "type": "Tampering",
+                "description": "Execute DB query without input validation",
+                "mitigation": "Use parameterized queries",
+                "modelType": "STRIDE",
+                "status": "Open",
+                "severity": "High"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "diagramTop": 0,
+    "reviewer": "",
+    "threatTop": 0
+  }
+}
+```
+
+### CLI Tool Usage
+
+```bash
+# Install Threat Dragon CLI
+pip3 install threatdragon-cli
+
+# Validate threat model
+td-cli validate --model mymodel.json
+
+# Generate report
+td-cli report --model mymodel.json --format pdf --output report.pdf
+
+# Extract threat list
+td-cli list-threats --model mymodel.json --format csv
+```
+
+### GitHub Integration Setup
+
+```bash
+# Create GitHub OAuth App
+# Settings → Developer Settings → OAuth Apps → New OAuth App
+# Homepage URL: http://localhost:3000
+# Callback URL: http://localhost:3000/oauth/github
+
+# Set environment variables
+export GITHUB_CLIENT_ID="your_client_id"
+export GITHUB_CLIENT_SECRET="your_client_secret"
+export SESSION_SIGNING_KEY=$(openssl rand -hex 32)
+export SESSION_ENCRYPTION_KEYS='[{"isPrimary": true, "id": 0, "value": "0123456789abcdef0123456789abcdef"}]'
+```
+
+---
+
+<a name="iriusrisk-en"></a>
+## IriusRisk
+
+IriusRisk is an enterprise-grade threat modeling platform supporting automated threat identification and security requirements management.
+
+### Key Features
+
+```
+Free Version (Community Edition):
+- Basic threat modeling
+- STRIDE support
+- PDF/CSV export
+- API access
+
+Paid Version (Enterprise):
+- JIRA/ServiceNow integration
+- CI/CD pipeline integration
+- Custom threat library
+- Regulatory compliance mapping (PCI-DSS, HIPAA, GDPR)
+- SSO support
+
+URL: https://www.iriusrisk.com
+Community: https://community.iriusrisk.com
+```
+
+### IriusRisk API Usage
+
+```bash
+# Set API key
+export IRIUS_API_KEY="your_api_key"
+export IRIUS_URL="https://app.iriusrisk.com"
+
+# List projects
+curl -s -H "api-token: $IRIUS_API_KEY" \
+  "$IRIUS_URL/api/v1/products" | python3 -m json.tool
+
+# List threats
+curl -s -H "api-token: $IRIUS_API_KEY" \
+  "$IRIUS_URL/api/v1/products/{product_id}/threats" \
+  | python3 -m json.tool
+
+# Update threat status
+curl -X PUT \
+  -H "api-token: $IRIUS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "IMPLEMENTED"}' \
+  "$IRIUS_URL/api/v1/products/{product_id}/threats/{threat_id}"
+```
+
+---
+
+<a name="creating-dfds-with-drawio"></a>
+## Creating DFDs with draw.io
+
+draw.io (diagrams.net) is a free diagramming tool that can be used to create DFDs.
+
+### Installation and Access
+
+```bash
+# Web version: https://app.diagrams.net
+
+# Desktop version installation
+# Windows
+winget install JGraph.Draw
+
+# Linux
+wget https://github.com/jgraph/drawio-desktop/releases/latest/download/drawio-amd64-*.deb
+sudo dpkg -i drawio-amd64-*.deb
+
+# Docker
+docker run -p 8080:8080 \
+  -e DRAWIO_SERVER_URL=http://localhost:8080 \
+  jgraph/drawio
+```
+
+### DFD Stencil Configuration
+
+```
+draw.io DFD element settings:
+
+1. Process (circle/ellipse)
+   Shape: Ellipse
+   Color: light blue (#dae8fc)
+   Border: blue (#6c8ebf)
+
+2. Data Store (parallel lines)
+   Shape: mxgraph.flowchart.annotation (or Cylinder)
+   Color: light yellow (#fff2cc)
+
+3. External Entity (rectangle)
+   Shape: Rectangle
+   Color: light green (#d5e8d4)
+
+4. Data Flow (arrow)
+   Arrow: solid arrow
+   Label: data name + protocol
+
+5. Trust Boundary (dashed box)
+   Shape: Rectangle (dashed)
+   Style: dashed=1;strokeColor=#FF0000;fillColor=none;
+```
+
+### DFD XML Template
+
+```xml
+<mxfile>
+  <diagram name="DFD - E-commerce">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Trust boundary -->
+        <mxCell id="tb1" value="Trust Boundary: Internet-DMZ"
+          style="rounded=1;dashed=1;strokeColor=#FF0000;fillColor=none;
+                 fontSize=12;fontStyle=1;verticalAlign=top;"
+          vertex="1" parent="1">
+          <mxGeometry x="10" y="10" width="600" height="400" as="geometry"/>
+        </mxCell>
+
+        <!-- External entity: Browser -->
+        <mxCell id="e1" value="Web Browser"
+          style="shape=mxgraph.dfd.externalEntity;fillColor=#d5e8d4;strokeColor=#82b366;"
+          vertex="1" parent="1">
+          <mxGeometry x="50" y="200" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Process: API Server -->
+        <mxCell id="p1" value="API Server"
+          style="ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;"
+          vertex="1" parent="1">
+          <mxGeometry x="250" y="180" width="120" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Data store: DB -->
+        <mxCell id="ds1" value="User DB"
+          style="shape=cylinder3;fillColor=#fff2cc;strokeColor=#d6b656;"
+          vertex="1" parent="1">
+          <mxGeometry x="450" y="180" width="120" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Data flows -->
+        <mxCell id="df1" value="HTTPS Request"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;"
+          edge="1" source="e1" target="p1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="df2" value="SQL Query"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;"
+          edge="1" source="p1" target="ds1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+```
+
+### draw.io Usage Tips
+
+```
+Adding threat annotations:
+1. Right-click element → Edit Tooltip
+2. Enter the STRIDE threat list for that element
+3. View → Tooltips to verify
+
+Color-coding rules:
+- Red border: trust boundary
+- Orange highlight: threat occurrence point
+- Green check: mitigation applied
+
+Using layers:
+1. View → Layers → Add new layer
+2. Toggle "Show Threats" layer to separately manage DFD and threats
+
+Export:
+File → Export As → PNG/SVG/PDF
+Edit → XML to directly edit diagram source
+```
+
+---
+
+<a name="threat-modeling-manifesto-en"></a>
+## Threat Modeling Manifesto
+
+The Threat Modeling Manifesto (2020) represents core principles agreed upon by 15 threat modeling experts.
+
+### Core Values
+
+```
+1. "A culture of security" over "a compliance checkbox"
+   → Threat modeling must be continuously integrated into the SDLC
+
+2. "People and collaboration" over "methodology and tools"
+   → The right people's participation matters more than perfect tools
+
+3. "Appropriate simplification" over "perfection"
+   → Pursuing excessive perfection hinders execution
+
+4. "Iterative improvement" over "single delivery"
+   → An incrementally evolving threat model is more realistic
+```
+
+### Core Principles
+
+```
+1. Everyone can and should do threat modeling
+   - Not the exclusive domain of security professionals
+   - Developers, architects, and QA all participate
+
+2. The goal of threat modeling is to produce the best outcomes
+   - Focus on the question "What can go wrong?"
+   - Substance matters more than form
+
+3. Diagrams are a means, not an end
+   - DFDs are a tool to aid understanding, not the goal itself
+
+4. Start early, iterate continuously
+   - Begin at the architecture design phase
+   - Update whenever changes occur
+
+5. Threat modeling outputs must be actionable
+   - Concrete improvement actions, not abstract threat lists
+```
+
+### Four Key Questions
+
+```
+1. What are we building?
+   → Architecture diagrams, DFDs
+
+2. What can go wrong?
+   → STRIDE, PASTA, Attack Trees
+
+3. What are we going to do about it?
+   → Mitigations, design changes, acceptance
+
+4. Did we do a good job?
+   → Threat model review, validation
+```
+
+---
+
+<a name="tmt-xml--html-report-script"></a>
+## TMT XML → HTML Report Script
+
+```python
+#!/usr/bin/env python3
+"""
+Microsoft Threat Modeling Tool (.tm7) XML parser and HTML/JSON report generator
+
+Usage:
+    python3 tmt_parser.py --input model.tm7 --output report.html
+    python3 tmt_parser.py --input model.tm7 --format json --output model.json
+    python3 tmt_parser.py --input model.tm7 --summary
+    python3 tmt_parser.py --demo --output demo_report.html
+"""
+# (See Korean section for full source code — identical implementation)
+```
+
+### Running the Script
+
+```bash
+# Demo HTML report
+python3 tmt_parser.py --demo --output demo_report.html
+
+# Parse actual .tm7 file
+python3 tmt_parser.py --input mymodel.tm7 --output report.html
+
+# JSON format output
+python3 tmt_parser.py --input mymodel.tm7 --format json --output model.json
+
+# Summary only
+python3 tmt_parser.py --demo --summary
+```
+
+---
+
+<a name="cicd-pipeline-integration"></a>
+## CI/CD Pipeline Integration
+
+### GitHub Actions Integration
+
+```yaml
+# .github/workflows/threat-model.yml
+name: Threat Model Validation
+
+on:
+  push:
+    paths:
+      - 'threat-models/**'
+      - 'architecture/**'
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-threat-model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements-security.txt
+
+      - name: Validate threat model
+        run: |
+          python3 tmt_parser.py \
+            --input threat-models/main.tm7 \
+            --format json \
+            --output /tmp/threat_model.json
+          
+          python3 scripts/validate_threats.py \
+            --input /tmp/threat_model.json \
+            --fail-on-unmitigated
+
+      - name: Generate HTML report
+        run: |
+          python3 tmt_parser.py \
+            --input threat-models/main.tm7 \
+            --format html \
+            --output threat_report.html
+
+      - name: Save report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: threat-model-report
+          path: threat_report.html
+          retention-days: 30
+
+  check-new-threats:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for new threats
+        run: |
+          # Verify that all threats added in the PR are in mitigated state
+          python3 scripts/check_pr_threats.py \
+            --base-branch main \
+            --fail-on-new-unmitigated
+```
+
+### Threat Validation Script
+
+```python
+#!/usr/bin/env python3
+"""Threat model validation script for CI/CD"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+
+def validate_threats(input_path: Path, fail_on_unmitigated: bool = True) -> int:
+    """Validate threat model JSON — check for unmitigated threats"""
+    try:
+        data = json.loads(input_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"Failed to load file: {e}", file=sys.stderr)
+        return 1
+
+    threats = data.get("threats", [])
+    unmitigated = [
+        t for t in threats
+        if t.get("status") == "Needs Investigation"
+    ]
+
+    print(f"Total threats: {len(threats)}")
+    print(f"Unmitigated threats: {len(unmitigated)}")
+
+    if unmitigated:
+        print("\nUnmitigated threat list:")
+        for t in unmitigated:
+            print(f"  - [{t.get('id')}] {t.get('title')} ({t.get('category')})")
+
+        if fail_on_unmitigated:
+            print("\nBuild failed due to unmitigated threats.")
+            return 1
+
+    print("\nThreat model validation complete.")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Threat model validation")
+    parser.add_argument("--input", type=Path, required=True)
+    parser.add_argument("--fail-on-unmitigated", action="store_true")
+    args = parser.parse_args()
+    return validate_threats(args.input, args.fail_on_unmitigated)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+### pre-commit Hook Integration
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: threat-model-check
+        name: Threat model validation
+        entry: python3 scripts/validate_threats.py
+        language: python
+        files: '\.tm7$|threat_model\.json$'
+        args: ["--input", "threat-models/main.tm7"]
+        pass_filenames: false
+```
+
+### Pipeline Integration Strategy
+
+```
+DevSecOps integration phases:
+
+1. Design Phase
+   - Mandatory threat model update when architecture changes
+   - Add threat model checklist to PR template
+
+2. Development Phase
+   - Review threats for new features during code review
+   - Link SAST tools with threat model
+
+3. Testing Phase
+   - Create security test cases for each threat in the threat model
+   - Validate mitigations
+
+4. Deployment Phase
+   - Block deployment if unmitigated Critical/High threats exist
+   - Tag threat model version alongside code version
+
+5. Operations Phase
+   - Re-examine threat model when new CVEs are discovered
+   - Quarterly threat model review
+```
+
+---
+
+## References
+
+- [Microsoft Threat Modeling Tool](https://aka.ms/threatmodelingtool)
+- [OWASP Threat Dragon](https://owasp.org/www-project-threat-dragon/)
+- [IriusRisk Community](https://community.iriusrisk.com)
+- [draw.io / diagrams.net](https://app.diagrams.net)
+- [Threat Modeling Manifesto](https://www.threatmodelingmanifesto.org)
+- [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html)

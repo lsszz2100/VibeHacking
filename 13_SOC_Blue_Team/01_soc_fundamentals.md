@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # SOC 핵심 개념 및 Blue Team 기초
 
 ## SOC (Security Operations Center) 개요
@@ -1454,4 +1460,1463 @@ SIEM에서의 UBA 통합:
   - 정상 로그인 패턴 학습 후 이탈 감지
   - Splunk UBA, Elastic ML, Microsoft Sentinel 등
   - 알림을 관리자 이메일/SMS로 즉시 전달
+```
+
+---
+
+<a name="english"></a>
+
+# SOC Core Concepts and Blue Team Fundamentals
+
+## SOC (Security Operations Center) Overview
+
+```
+SOC Organizational Chart
+─────────────────────────────────────────────
+                  CISO
+                   │
+              SOC Manager
+                   │
+     ┌─────────────┼─────────────┐
+     │             │             │
+  Tier 1         Tier 2        Tier 3
+ (Alert)      (Analysis)   (Threat Hunt)
+ Monitoring  Investigate/  APT Tracking
+              Respond
+─────────────────────────────────────────────
+
+Tier 1: Alert triage, initial response, escalation
+Tier 2: In-depth analysis, incident response, forensics
+Tier 3: Threat hunting, zero-days, malware reversing
+```
+
+---
+
+## 1. Core SOC Processes
+
+### Incident Response Cycle (PICERL)
+
+```
+Preparation → Identification → Containment
+     │                               │
+ Recovery ← Eradication ← Lessons Learned
+```
+
+| Phase | Actions |
+|-------|---------|
+| **Preparation** | Tool readiness, playbook creation, training |
+| **Identification** | Anomaly detection, alert classification, initial investigation |
+| **Containment** | Isolation, network blocking, account lockout |
+| **Eradication** | Malware removal, vulnerability patching |
+| **Recovery** | System restoration, service resumption, enhanced monitoring |
+| **Lessons Learned** | Post-mortem analysis, documentation, improvements |
+
+### SOC Metrics (KPIs)
+
+```
+MTTD (Mean Time to Detect): Average time to detect a threat
+MTTR (Mean Time to Respond): Average time to respond
+MTTC (Mean Time to Contain): Average time to contain
+
+Industry Averages:
+  MTTD: 197 days (IBM Cost of Data Breach 2023)
+  MTTR: 70 days
+  Target: MTTD < 1 hour, MTTR < 4 hours
+```
+
+---
+
+## 2. SIEM Architecture
+
+### Data Collection Flow
+
+```
+Endpoints/Servers   Network Devices    Cloud/Apps
+       │                  │                │
+  Syslog/WEF          SNMP/NetFlow      API/Webhook
+       └─────────────────┬───────────────┘
+                         │
+                     Log Shipper
+                 (Fluentd/Logstash/
+                  NXLog/Winlogbeat)
+                         │
+                     [SIEM Engine]
+                 (Splunk/QRadar/ELK)
+                         │
+             ┌───────────┼───────────┐
+         Parsing/     Correlation  Alerts/
+        Normalization  Analysis   Dashboard
+```
+
+### Key Log Sources to Collect
+
+```
+Priority 1 (Required):
+  ✓ Windows Security Event Log (IDs 4624, 4625, 4688...)
+  ✓ Active Directory (logins, policy changes, group changes)
+  ✓ Firewall/IDS/IPS logs
+  ✓ DNS query logs
+  ✓ DHCP logs
+  ✓ Proxy/web filter logs
+  ✓ EDR (Endpoint Detection & Response) alerts
+
+Priority 2 (Recommended):
+  ✓ VPN access logs
+  ✓ Email gateway logs
+  ✓ Cloud services (AWS CloudTrail, Azure Activity)
+  ✓ Web servers (Apache/Nginx/IIS)
+  ✓ Database audit logs
+
+Priority 3 (Advanced):
+  ✓ NetFlow/IPFIX network flows
+  ✓ Certificate transparency logs
+  ✓ Honeypot alerts
+```
+
+---
+
+## 3. Key Windows Event IDs
+
+### Authentication-Related
+
+```
+4624  - Successful logon
+  Logon Type 2  = Interactive logon (console)
+  Logon Type 3  = Network logon (SMB, file share)
+  Logon Type 4  = Batch job
+  Logon Type 5  = Service logon
+  Logon Type 7  = Workstation unlock
+  Logon Type 8  = Network cleartext credentials
+  Logon Type 10 = Remote interactive (RDP)
+  Logon Type 11 = Cached credentials
+
+4625  - Failed logon
+  Sub Status:
+  0xC000006D = Bad username or password
+  0xC000006A = Bad password
+  0xC0000064 = Non-existent user
+  0xC000006F = Login outside allowed hours
+  0xC0000070 = Unauthorized workstation
+  0xC0000234 = Account locked out
+
+4648  - Logon with explicit credentials (RunAs)
+4768  - Kerberos TGT request
+4769  - Kerberos service ticket request
+4771  - Kerberos pre-authentication failure
+4776  - NTLM authentication attempt
+```
+
+### Process-Related
+
+```
+4688  - New process created (CommandLine logging required)
+4689  - Process terminated
+4698  - Scheduled task created
+4702  - Scheduled task modified
+7045  - New service installed
+4697  - New service installed (Security log)
+```
+
+### Account/Privilege-Related
+
+```
+4720  - User account created
+4722  - User account enabled
+4725  - User account disabled
+4726  - User account deleted
+4728  - Member added to security group
+4732  - Member added to local group
+4756  - Member added to universal group
+4738  - User account changed
+4740  - User account locked out
+4767  - User account unlocked
+
+1102  - Audit log cleared (suspicious behavior!)
+4719  - Audit policy changed
+```
+
+### Network/Share-Related
+
+```
+5140  - Network share accessed
+5145  - Shared file access checked
+5156  - Windows Firewall connection allowed
+5157  - Windows Firewall connection blocked
+4776  - NTLM credential validation
+```
+
+---
+
+## 4. Key Attack Detection Patterns
+
+### Brute Force Detection
+
+```
+Pattern: Multiple 4625 events from the same IP within a short time
+
+Example Query (Splunk):
+index=security EventCode=4625
+| stats count as FailedLogins, values(TargetUserName) as Users
+  by IpAddress, host
+| where FailedLogins > 10
+| sort -FailedLogins
+
+Alert Thresholds:
+  10+ failures from the same IP within 5 minutes → Alert
+  30+ failures from the same IP within 1 minute → Immediate block
+```
+
+### Password Spray Detection
+
+```
+Pattern: Few login attempts across many accounts
+         (opposite direction from brute force)
+
+Query:
+index=security EventCode=4625
+| bucket _time span=5m
+| stats dc(TargetUserName) as UniqueUsers, count as Attempts
+  by IpAddress, _time
+| where UniqueUsers > 20 AND Attempts < 50
+→ Many accounts, few attempts = spray attack
+```
+
+### Pass-the-Hash Detection
+
+```
+Pattern: Logon Type 3 + NTLM authentication + admin share access
+
+index=security EventCode=4624 LogonType=3
+| search AuthenticationPackageName="NTLM"
+| search TargetUserName="*$" OR IpPort IN (445)
+| table _time, IpAddress, TargetUserName, WorkstationName
+
+Additional signals:
+  - Access outside normal hours
+  - Admin account moving to multiple hosts
+  - Defense: Protected Users group + Credential Guard
+```
+
+### Kerberoasting Detection
+
+```
+Pattern: Multiple 4769 events, RC4 encryption (0x17)
+
+index=security EventCode=4769
+| where TicketEncryptionType="0x17"  
+| stats count by SubjectUserName, ServiceName, IpAddress
+| where count > 5
+| sort -count
+
+→ RC4 ticket requests for multiple SPNs in short time = Kerberoasting
+```
+
+### Golden Ticket Detection
+
+```
+Pattern: Disguised as tickets issued by the krbtgt account
+         Abnormally long ticket lifetime (exceeds default 10 hours)
+
+index=security EventCode=4769
+| eval ticket_lifetime_hours = (TicketEndTime - TicketStartTime) / 3600
+| where ticket_lifetime_hours > 10
+| table _time, AccountName, ServiceName, ticket_lifetime_hours
+
+Or:
+EventCode=4768 AND TicketOptions=0x40810010 AND EncryptionType=0x17
+```
+
+### Lateral Movement Detection
+
+```
+Pattern: Single host connecting to many internal hosts
+
+# PsExec detection
+EventCode=7045 AND ImagePath CONTAINS "PSEXESVC"
+
+# WMI remote execution
+EventCode=4688 AND Process_Command_Line CONTAINS "wmic"
+                AND Process_Command_Line CONTAINS "/node:"
+
+# PowerShell Remoting
+EventCode=4688 AND Process_Command_Line CONTAINS "Enter-PSSession"
+EventCode=4688 AND Process_Command_Line CONTAINS "Invoke-Command"
+
+# Abnormal network connections (port-based)
+index=network dest_port IN (445, 135, 139, 5985, 5986)
+| stats dc(dest) as UniqueTargets by src
+| where UniqueTargets > 10
+```
+
+---
+
+## 5. EDR Alert Analysis
+
+### EDR Tool Comparison
+
+| Tool | Strengths | Notes |
+|------|-----------|-------|
+| **CrowdStrike Falcon** | Cloud-based, intelligence | #1 market share |
+| **Microsoft Defender for Endpoint** | Windows integration | Included in M365 E5 |
+| **SentinelOne** | AI-based autonomous response | Rollback capability |
+| **Carbon Black** | Process tree visualization | Acquired by VMware |
+| **Elastic Security** | Open source + ELK | Cost-effective |
+
+### EDR Alert Classification Guide
+
+```
+True Positive (TP): Actual threat → Immediate response
+False Positive (FP): Normal behavior → Add to whitelist
+True Negative (TN): Normal pass → Benign
+False Negative (FN): Missed threat → Improve detection rules
+
+FP Handling Process:
+1. Analyze alert context (time, user, behavior)
+2. Confirm with the relevant user/team
+3. Add exception if confirmed as normal business activity
+4. Document the reason for the exception
+5. Periodically review the exception list
+```
+
+---
+
+## 6. Incident Response Playbooks
+
+### Malware Infection Response
+
+```
+1. Detection
+   - Receive EDR alert
+   - Identify affected hosts
+   
+2. Initial Triage (within 15 minutes)
+   - Decide whether to isolate the host
+   - Assess business impact
+   - Decide whether to escalate
+
+3. Containment (immediately after decision)
+   - Network isolation (EDR/NAC)
+   - Password change (affected accounts)
+   - Temporarily block related systems
+
+4. Investigation (1-4 hours)
+   - Analyze process tree
+   - Analyze network connections
+   - Check filesystem changes
+   - Trace infection vector (email? web? USB?)
+
+5. Eradication (4-8 hours)
+   - Delete malicious files
+   - Clean registry
+   - Remove persistence mechanisms
+   - Patch vulnerabilities
+
+6. Recovery
+   - Restore from clean image OR clean and validate
+   - Resume services
+   - Intensive monitoring for 72 hours
+
+7. Post-Incident Analysis
+   - Reconstruct timeline
+   - Extract and share IOCs
+   - Identify detection gaps
+   - Recommend preventive measures
+```
+
+### Phishing Email Response
+
+```
+1. Report Intake
+   - Obtain complete email headers
+   - Never click attachments/links
+
+2. Analysis
+   - Check sender domain/IP
+   - Analyze links (VirusTotal, URLScan)
+   - Analyze attachments (Sandbox)
+   - Identify recipients of the same email (SIEM)
+
+3. Containment
+   - Block the same email at the email gateway
+   - Identify users who already clicked
+   - Block links/attachments (proxy/firewall)
+
+4. User Notification
+   - Immediately notify affected users
+   - Direct password change
+   - Verify MFA
+
+5. Post-Incident Analysis
+   - Classify phishing type (credential harvesting? malware delivery?)
+   - Strengthen SPF/DKIM/DMARC policies
+   - Update security awareness training
+```
+
+---
+
+## 7. Threat Intelligence Utilization
+
+### IOC (Indicator of Compromise) Types
+
+```
+Network-Based:
+  IP address: 192.168.1.100
+  Domain: malware.evil.com
+  URL: http://evil.com/payload.exe
+  SSL certificate hash
+  JA3/JA3S fingerprint
+
+Host-Based:
+  File hashes (MD5, SHA1, SHA256)
+  File path: C:\Users\Public\svchot.exe
+  Registry keys
+  Mutex names
+  Pipe names
+
+Behavior-Based (TTPs):
+  MITRE ATT&CK technique IDs
+  PowerShell obfuscation patterns
+  Network communication patterns
+```
+
+### MITRE ATT&CK Framework Usage
+
+```
+Tactics → Techniques → Procedures
+
+Example: Cobalt Strike detection
+  Tactic: Command and Control (TA0011)
+  Technique: Application Layer Protocol (T1071)
+  Procedure: C2 beacon over HTTP/S
+
+Using MITRE mapping to:
+1. Standardize attacker behavior
+2. Identify detection gaps
+3. Measure coverage
+
+Tool: ATT&CK Navigator
+  https://mitre-attack.github.io/attack-navigator/
+```
+
+### Threat Intelligence Feed Integration
+
+```python
+#!/usr/bin/env python3
+"""
+Multi-source threat intelligence lookup CLI
+Usage: python3 threat_intel.py --ip 1.2.3.4 --abuseipdb-key KEY --vt-key KEY
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from dataclasses import dataclass, field
+from typing import Optional
+
+import requests
+
+
+@dataclass
+class IOCResult:
+    indicator: str
+    indicator_type: str
+    sources: dict = field(default_factory=dict)
+    is_malicious: bool = False
+    confidence: int = 0
+
+    def to_dict(self) -> dict:
+        return {
+            "indicator": self.indicator,
+            "type": self.indicator_type,
+            "is_malicious": self.is_malicious,
+            "confidence": self.confidence,
+            "sources": self.sources,
+        }
+
+
+class ThreatIntelClient:
+    """AbuseIPDB + VirusTotal multi-source threat intelligence client"""
+
+    ABUSEIPDB_URL = "https://api.abuseipdb.com/api/v2/check"
+    VT_IP_URL = "https://www.virustotal.com/api/v3/ip_addresses/{ip}"
+    VT_HASH_URL = "https://www.virustotal.com/api/v3/files/{hash}"
+    VT_DOMAIN_URL = "https://www.virustotal.com/api/v3/domains/{domain}"
+
+    def __init__(
+        self,
+        abuseipdb_key: Optional[str] = None,
+        vt_key: Optional[str] = None,
+        timeout: int = 10,
+    ) -> None:
+        self.abuseipdb_key = abuseipdb_key
+        self.vt_key = vt_key
+        self.timeout = timeout
+        self.session = requests.Session()
+        self.session.headers["User-Agent"] = "ThreatIntelCLI/1.0"
+
+    # ------------------------------------------------------------------ #
+    #  AbuseIPDB
+    # ------------------------------------------------------------------ #
+    def _query_abuseipdb(self, ip: str) -> dict:
+        if not self.abuseipdb_key:
+            return {}
+        try:
+            resp = self.session.get(
+                self.ABUSEIPDB_URL,
+                params={"ipAddress": ip, "maxAgeInDays": 90, "verbose": ""},
+                headers={"Key": self.abuseipdb_key, "Accept": "application/json"},
+                timeout=self.timeout,
+            )
+            resp.raise_for_status()
+            data = resp.json().get("data", {})
+            return {
+                "abuse_confidence_score": data.get("abuseConfidenceScore", 0),
+                "country": data.get("countryCode", ""),
+                "total_reports": data.get("totalReports", 0),
+                "last_reported": data.get("lastReportedAt", ""),
+                "isp": data.get("isp", ""),
+                "domain": data.get("domain", ""),
+                "is_tor": data.get("isTor", False),
+            }
+        except requests.RequestException as exc:
+            return {"error": str(exc)}
+
+    # ------------------------------------------------------------------ #
+    #  VirusTotal
+    # ------------------------------------------------------------------ #
+    def _query_vt(self, url: str) -> dict:
+        if not self.vt_key:
+            return {}
+        try:
+            resp = self.session.get(
+                url,
+                headers={"x-apikey": self.vt_key},
+                timeout=self.timeout,
+            )
+            resp.raise_for_status()
+            attrs = resp.json().get("data", {}).get("attributes", {})
+            stats = attrs.get("last_analysis_stats", {})
+            return {
+                "malicious": stats.get("malicious", 0),
+                "suspicious": stats.get("suspicious", 0),
+                "harmless": stats.get("harmless", 0),
+                "undetected": stats.get("undetected", 0),
+                "reputation": attrs.get("reputation", 0),
+                "tags": attrs.get("tags", []),
+            }
+        except requests.RequestException as exc:
+            return {"error": str(exc)}
+
+    # ------------------------------------------------------------------ #
+    #  Public lookup methods
+    # ------------------------------------------------------------------ #
+    def check_ip(self, ip: str, malicious_threshold: int = 30) -> IOCResult:
+        result = IOCResult(indicator=ip, indicator_type="ip")
+        abuse = self._query_abuseipdb(ip)
+        vt = self._query_vt(self.VT_IP_URL.format(ip=ip))
+        result.sources = {"abuseipdb": abuse, "virustotal": vt}
+
+        score = abuse.get("abuse_confidence_score", 0)
+        vt_malicious = vt.get("malicious", 0)
+        result.confidence = max(score, min(vt_malicious * 10, 100))
+        result.is_malicious = score >= malicious_threshold or vt_malicious >= 3
+        return result
+
+    def check_hash(self, file_hash: str) -> IOCResult:
+        result = IOCResult(indicator=file_hash, indicator_type="hash")
+        vt = self._query_vt(self.VT_HASH_URL.format(hash=file_hash))
+        result.sources = {"virustotal": vt}
+        vt_malicious = vt.get("malicious", 0)
+        result.confidence = min(vt_malicious * 10, 100)
+        result.is_malicious = vt_malicious >= 3
+        return result
+
+    def check_domain(self, domain: str) -> IOCResult:
+        result = IOCResult(indicator=domain, indicator_type="domain")
+        vt = self._query_vt(self.VT_DOMAIN_URL.format(domain=domain))
+        result.sources = {"virustotal": vt}
+        vt_malicious = vt.get("malicious", 0)
+        result.confidence = min(vt_malicious * 10, 100)
+        result.is_malicious = vt_malicious >= 3
+        return result
+
+    def bulk_check(
+        self, indicators: list[str], ioc_type: str = "ip", rate_limit: float = 0.5
+    ) -> list[IOCResult]:
+        """Bulk lookup of multiple IOCs while respecting rate limits"""
+        results: list[IOCResult] = []
+        dispatch = {"ip": self.check_ip, "hash": self.check_hash, "domain": self.check_domain}
+        checker = dispatch.get(ioc_type)
+        if checker is None:
+            raise ValueError(f"Unsupported type: {ioc_type}. Valid values: {list(dispatch)}")
+
+        for idx, indicator in enumerate(indicators, 1):
+            print(f"[{idx}/{len(indicators)}] Looking up {indicator}...", file=sys.stderr)
+            res = checker(indicator)
+            results.append(res)
+            if idx < len(indicators):
+                time.sleep(rate_limit)
+        return results
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Multi-source threat intelligence IOC lookup tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Examples:\n"
+               "  python3 threat_intel.py --ip 8.8.8.8\n"
+               "  python3 threat_intel.py --hash d41d8cd98f00b204e9800998ecf8427e\n"
+               "  python3 threat_intel.py --domain evil.example.com\n"
+               "  python3 threat_intel.py --file iocs.txt --type ip --json",
+    )
+    parser.add_argument("--ip", metavar="IP", help="Single IP address lookup")
+    parser.add_argument("--hash", metavar="HASH", help="File hash lookup (MD5/SHA256)")
+    parser.add_argument("--domain", metavar="DOMAIN", help="Domain lookup")
+    parser.add_argument("--file", metavar="FILE", help="IOC list file (one per line)")
+    parser.add_argument(
+        "--type",
+        choices=["ip", "hash", "domain"],
+        default="ip",
+        help="IOC type when using --file (default: ip)",
+    )
+    parser.add_argument("--abuseipdb-key", metavar="KEY", help="AbuseIPDB API key")
+    parser.add_argument("--vt-key", metavar="KEY", help="VirusTotal API key")
+    parser.add_argument("--threshold", type=int, default=30, help="Malicious verdict threshold 0-100 (default: 30)")
+    parser.add_argument("--json", action="store_true", help="Output in JSON format")
+    parser.add_argument("--rate-limit", type=float, default=0.5, help="Delay between requests in seconds (default: 0.5)")
+    return parser
+
+
+def print_result(res: IOCResult, as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return
+    verdict = "MALICIOUS" if res.is_malicious else "CLEAN"
+    color = "\033[91m" if res.is_malicious else "\033[92m"
+    reset = "\033[0m"
+    print(f"\n{'='*60}")
+    print(f"IOC       : {res.indicator} ({res.indicator_type})")
+    print(f"Verdict   : {color}{verdict}{reset}  (Confidence: {res.confidence}%)")
+    for src, data in res.sources.items():
+        if data and "error" not in data:
+            print(f"\n[{src}]")
+            for k, v in data.items():
+                print(f"  {k:<30}: {v}")
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    client = ThreatIntelClient(
+        abuseipdb_key=args.abuseipdb_key,
+        vt_key=args.vt_key,
+    )
+
+    results: list[IOCResult] = []
+
+    if args.ip:
+        results.append(client.check_ip(args.ip, malicious_threshold=args.threshold))
+    elif args.hash:
+        results.append(client.check_hash(args.hash))
+    elif args.domain:
+        results.append(client.check_domain(args.domain))
+    elif args.file:
+        try:
+            with open(args.file, encoding="utf-8") as fh:
+                indicators = [line.strip() for line in fh if line.strip()]
+        except OSError as exc:
+            parser.error(f"Failed to read file: {exc}")
+        results = client.bulk_check(indicators, ioc_type=args.type, rate_limit=args.rate_limit)
+    else:
+        parser.print_help()
+        sys.exit(1)
+
+    for res in results:
+        print_result(res, as_json=args.json)
+
+    malicious_count = sum(1 for r in results if r.is_malicious)
+    if len(results) > 1:
+        print(f"\nTotal: {malicious_count} malicious out of {len(results)}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 8. SOC Tool Stack (Open Source)
+
+```
+SIEM/Log Analysis:
+  Elastic SIEM (ELK Stack + Security)
+  Wazuh (Open Source SIEM + EDR)
+  Graylog
+
+Network Detection:
+  Zeek (Network traffic analysis)
+  Suricata (IDS/IPS)
+  NetworkMiner (Packet analysis)
+
+Threat Intelligence Platforms:
+  MISP (Malware Information Sharing Platform)
+  OpenCTI
+
+Incident Response:
+  TheHive (Case management)
+  Cortex (Automated analysis)
+  Shuffle (SOAR automation)
+
+Forensics:
+  Velociraptor (Remote forensics)
+  GRR Rapid Response
+  Timesketch (Timeline analysis)
+```
+
+---
+
+## 9. Incident Response Checklist — Linux
+
+### 9-1. User Account Investigation
+
+Investigate user accounts and privileges on a suspected compromised system. Check for unknown accounts or accounts added to administrator groups.
+
+```bash
+# List all user accounts (detect suspicious accounts)
+cat /etc/passwd
+
+# Check specific user status (password status)
+passwd -S username
+
+# Check UID 0 (root-level) accounts — detect unauthorized root accounts
+grep :0: /etc/passwd
+
+# Detect files with no owner — temporary files created by attackers
+find / -nouser -print
+
+# Check encrypted passwords (root only)
+cat /etc/shadow
+
+# Check group information
+cat /etc/group
+
+# Check sudo privilege configuration
+cat /etc/sudoers
+```
+
+### 9-2. Log Investigation
+
+```bash
+# Check recent login history
+lastlog
+
+# Check SSH/telnet authentication logs (detect suspicious logins)
+cd /var/log && tail auth.log
+
+# Check command history
+history | less
+```
+
+### 9-3. System Resources / Processes
+
+```bash
+# System uptime and load
+uptime
+
+# Memory usage
+free
+
+# Detailed memory information
+cat /proc/meminfo
+
+# Mount information (check for unknown mounts)
+cat /proc/mounts
+
+# Real-time process list
+top
+
+# Full process status (detect malicious processes)
+ps aux
+
+# List of open files for a specific PID
+lsof -p [PID]
+```
+
+### 9-4. Services and Network
+
+```bash
+# Check all running services
+service --status-all
+
+# Check scheduled tasks (detect malicious cron jobs)
+cat /etc/crontab
+
+# Check DNS configuration
+more /etc/resolv.conf
+
+# Check hosts file (detect DNS redirection)
+more /etc/hosts
+
+# Check firewall rules
+iptables -L -n
+
+# Check network interfaces
+ifconfig -a
+
+# List processes listening on ports
+lsof -i
+
+# Check all connected ports
+netstat -nap
+
+# Check ARP cache (detect ARP spoofing)
+arp -a
+
+# Check PATH environment variable (detect PATH hijacking)
+echo $PATH
+```
+
+### 9-5. File Investigation
+
+Search for recently modified files. Malware often drops executables in `/tmp`, `/var/tmp`, and home directories. Use `find` to collect files created or modified within the last 24-48 hours to identify malicious files.
+
+```bash
+# Detect files larger than 512KB in home directories
+find /home/ -type f -size +512k -exec ls -lh {} \;
+
+# Detect files modified within the last 2 days
+find / -mtime -2 -ls
+```
+
+---
+
+---
+
+## 11. Core SOC Building Principles (Budget-Conscious)
+
+### SOC 4-5 Person Team Role Matrix
+```
+Tier 1 Triage Specialist:
+  Skills: Linux/Mac/Windows administration, Python/Java/C programming, CISSP/GCIA/GCIH
+  Roles:
+  - Review latest alert severity and determine relevance/urgency
+  - Create Tier 2 escalation tickets
+  - Run vulnerability scans and review reports
+  - Manage security monitoring tools (IDS/correlation rules)
+
+Tier 2 Incident Responder:
+  Skills: Tier 1 + natural curiosity, root cause tracking ability, composure under pressure
+  Roles:
+  - Review Tier 1 tickets, utilize threat intel (IOCs/rules)
+  - Confirm affected systems and attack scope
+  - Collect asset data (configurations, running processes)
+  - Determine and direct recovery actions
+
+Tier 3 Threat Hunter:
+  Skills: Tier 1+2 + data visualization/penetration testing tool proficiency
+  Roles:
+  - Review asset/vulnerability data
+  - Identify stealthy threats (using latest intelligence)
+  - Penetration test operational systems (validate resilience)
+  - Recommend security monitoring tool optimizations
+
+Tier 4 SOC Manager:
+  Skills: All tiers + strong leadership/communication abilities
+  Roles:
+  - Oversee SOC team, handle hiring/training/evaluation
+  - Review escalation processes, oversee incident reports
+  - Develop and execute crisis communication plans for CISO
+  - Compliance reporting, measure SOC performance metrics
+```
+
+### SOC Core Process — 4 Stages
+```
+1. Event Classification and Triage
+   Goal: Find signals in the noise
+   - Detect IOCs (file hashes, IPs, domains) in log data
+   - Review highest-severity events first
+   - Document all activities (notes, tickets, etc.)
+
+2. Prioritization and Analysis
+   - Classify by Cyber Kill Chain stage
+   - Analyze environment/infrastructure from attacker's perspective
+   - Earlier detection in the kill chain increases success probability
+
+3. Recovery and Remediation
+   - Isolate threats, remove malicious files, patch vulnerabilities
+   - Restore affected systems
+
+4. Evaluation and Audit
+   - Measure progress through regular reviews
+   - Drive improvements based on SOC performance metrics
+
+Cyber Kill Chain Alert Types (by severity):
+  Reconnaissance/Weaponization → Low
+  Delivery/Exploitation → Medium
+  Installation/C2 → High
+  Action on Objectives → Critical
+```
+
+### Core SOC Infrastructure Configuration (Minimum Viable)
+```
+Required Log Sources (all forwarded to SIEM):
+  ✓ Firewall (Accept/Deny logs)
+  ✓ Domain Controller (Active Directory)
+  ✓ DNS server
+  ✓ Email gateway
+  ✓ Web servers/proxy
+  ✓ File servers
+  ✓ Database servers
+
+Key Tools:
+  Asset Discovery: Network scanning → detect unknown devices
+  Vulnerability Assessment: CVSS-based prioritized vulnerability management
+  Intrusion Detection: IDS/IPS (signature + behavior-based)
+  Behavior Monitoring: Detect abnormal user/system activity
+  SIEM/Security Analysis: Log correlation, dashboards, alerts
+
+When to Use MSSP:
+  - When the team lacks confidence in detection/isolation/response
+  - When resources are focused on priorities other than security
+```
+
+---
+
+## 12. Zero Trust Architecture (DoD Standard)
+
+### Zero Trust Core Principles
+```
+"Never Trust, Always Verify"
+
+Limitations of Traditional Perimeter Security:
+  - Trust internal network → free movement after breach
+  - Location-based trust → nullified by VPN bypass and similar techniques
+
+Zero Trust Transition:
+  - User, asset, and resource-centric security (no network perimeter)
+  - Multi-attribute-based trust level assessment
+  - Least-privilege access (only when needed, only what is needed)
+```
+
+### DoD 7 Zero Trust Pillars
+```
+1. Users
+   - Mandatory MFA, continuous identity verification
+   - Special management of privileged accounts
+
+2. Devices
+   - Continuously monitor health status of all endpoints
+   - Block access from non-compliant devices
+
+3. Networks
+   - Block lateral movement via micro-segmentation
+   - Enforce encrypted communications
+
+4. Applications & Workloads
+   - Application-level access controls
+   - Protect containers/cloud workloads
+
+5. Data
+   - Data classification and labeling
+   - DLP (Data Loss Prevention) policies
+
+6. Visibility & Analytics
+   - Continuous monitoring and log collection
+   - SIEM + behavior analysis (UEBA)
+
+7. Automation & Orchestration
+   - Automate detection → response (SOAR)
+   - Automate policy enforcement
+```
+
+### Zero Trust Implementation Maturity Levels
+```
+Target Level (Basic):
+  - Enterprise-wide MFA deployment
+  - Begin micro-segmentation
+  - Centralized log collection
+  - Establish data classification policies
+
+Advanced Level:
+  - Continuous multi-factor authentication
+  - AI/ML-based behavior analysis
+  - Automated threat response
+  - Real-time policy adjustment
+
+Key Transformation Challenges:
+  - Mindset shift from "trust but verify" to "verify and verify again"
+  - Complexity of applying Zero Trust to legacy systems
+  - Balancing user experience with security
+```
+
+---
+
+## 13. Incident Response Checklist — Windows
+
+### 10-1. User Account Investigation
+
+Investigate user accounts on a suspected compromised system. Check for hidden administrator accounts, recently created accounts, and accounts without passwords to detect backdoor accounts created by attackers.
+
+```cmd
+REM GUI: Local user management
+lusrmgr.msc
+
+REM List local users
+net user
+
+REM Check administrator group members
+net localgroup administrators
+```
+
+Use PowerShell Get cmdlets to query system information. Used to check system state including processes, services, and registry entries.
+
+```powershell
+# PowerShell: List local users (including enabled status)
+Get-LocalUser
+```
+
+### 10-2. Process Investigation
+
+Windows process investigation commands. Use `tasklist /svc` to see services run by each process, and `wmic process get` to collect detailed information including parent process IDs.
+
+```cmd
+REM Process list (includes PID and memory)
+tasklist
+
+REM Check service associations per process
+tasklist /svc
+```
+
+Use PowerShell Get cmdlets to query system information. Used to check system state including processes, services, and registry entries.
+
+```powershell
+# PowerShell: Process list
+Get-Process
+
+# WMIC: Full process information
+wmic process list full
+
+# WMIC: Identify parent-child process relationships
+wmic process get name,parentprocessid,processid
+
+# WMIC: Check command line for a specific PID
+wmic process where 'ProcessID=1234' get Commandline
+```
+
+### 10-3. Services and Auto-Start Entries
+
+Investigate services and auto-start entries. Use `sc query` to check running services, and `reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run` to check registry auto-run entries.
+
+```cmd
+REM List running services
+net start
+
+REM Detailed service information
+sc query | more
+
+REM List scheduled tasks
+schtasks
+```
+
+Use PowerShell Get cmdlets to query system information. Used to check system state including processes, services, and registry entries.
+
+```powershell
+# Startup program list (WMIC)
+wmic startup get caption,command
+
+# Startup program details (PowerShell)
+Get-CimInstance Win32_StartupCommand | Select-Object Name, command, Location, User | Format-List
+```
+
+### 10-4. Registry Run Key Inspection
+
+```powershell
+# HKLM Run key (system-wide auto-run)
+reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+
+# HKCU Run key (current user auto-run)
+reg query HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+```
+
+### 10-5. Network Investigation
+
+Analyze active network connections. Check for unknown external IP connections, non-standard port usage, and abnormally high numbers of ESTABLISHED connections to detect C2 communication indicators.
+
+```cmd
+REM Active TCP/UDP connections (with PID)
+netstat -ano
+
+REM Check file shares
+net view \\127.0.0.1
+
+REM Check session connections (sessions with external systems)
+net use
+net session
+```
+
+Use PowerShell Get cmdlets to query system information. Used to check system state including processes, services, and registry entries.
+
+```powershell
+# Check TCP connection status
+Get-NetTCPConnection -LocalAddress 192.168.x.x | Sort-Object LocalPort
+
+# List file shares
+Get-SMBShare
+```
+
+### 10-6. Firewall and Logs
+
+```cmd
+REM Check firewall configuration
+netsh firewall show config
+netsh advfirewall show currentprofile
+
+REM Export security event logs
+wevtutil qe security
+```
+
+Use PowerShell Get cmdlets to query system information. Used to check system state including processes, services, and registry entries.
+
+```powershell
+# List event logs
+Get-EventLog -List
+
+# Detect recently modified files (executable files from last 10 days)
+forfiles /D -10 /S /M *.exe /C "cmd /c echo @path"
+forfiles /D -10 /S /M *.exe /C "cmd /c echo @ext @fname @fdate"
+forfiles /p c: /S /D -10
+```
+
+---
+
+## 14. Honeypot Operations
+
+### Honeypot Types
+```
+Classification by Interaction Level:
+
+Low-Interaction:
+  - Limited service/port simulation
+  - Monitors UDP, TCP, ICMP ports
+  - Lures attackers with fake databases/files
+  - Tools: Honeytrap, Specter, KFsensor
+
+Medium-Interaction:
+  - Emulates real OS and applications
+  - Keeps attackers engaged longer to gain response time
+  - Tools: Cowrie, HoneyPy
+
+High-Interaction:
+  - Operates real vulnerable systems (actual OS + apps)
+  - Collects the most information, but complex to manage
+  - Tools: Honeynet
+
+Pure Honeypot:
+  - Mimics a real production environment
+  - Motivates attackers to invest the most time
+
+Production Honeypot:
+  - Deployed within the actual network → useful for detecting internal attackers
+
+Research Honeypot:
+  - Used by government/military agencies for studying attack behavior
+```
+
+### Honeypot Types by Purpose
+```
+Malware Honeypot:   Collects malware behavior patterns
+Email Honeypot:     Collects spam/phishing sender information
+DB Honeypot:        Collects SQL injection patterns (with fake sensitive data)
+Spider Honeypot:    Detects web crawlers/scrapers
+Spam Honeypot:      Analyzes spammer behavior
+Honeynet:           A network of honeypots in a virtual/isolated environment
+```
+
+### Attacker Information Collected by Honeypots
+```
+- Attacker IP addresses
+- Keystrokes entered (password guesses, commands)
+- Usernames and privilege levels used
+- Data accessed/deleted/modified
+- Tools and exploitation methods used
+```
+
+### Honeypot Deployment by Environment (Windows)
+```bash
+# Windows: Deploy HoneyBOT
+# Displays hundreds of fake open ports during nmap scans
+# Logs FTP, SSH, and other connection attempts
+# Can save logs in CSV format
+# Can configure email alerts
+```
+
+### Honeypot Deployment by Environment (Linux)
+```python
+#!/usr/bin/env python3
+"""
+Cowrie SSH Honeypot Log Analyzer CLI
+Usage: python3 honeypot_analyzer.py --log /var/log/cowrie/cowrie.json [--top 20] [--json]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from collections import Counter, defaultdict
+from datetime import datetime
+from pathlib import Path
+from typing import Iterator
+
+
+# ------------------------------------------------------------------ #
+#  Log Parser
+# ------------------------------------------------------------------ #
+def iter_cowrie_json(log_path: Path) -> Iterator[dict]:
+    """Parse Cowrie JSON log line by line"""
+    with log_path.open(encoding="utf-8", errors="replace") as fh:
+        for lineno, line in enumerate(fh, 1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError as exc:
+                print(f"[WARNING] Failed to parse line {lineno}: {exc}", file=sys.stderr)
+
+
+def parse_cowrie_text(log_path: Path) -> Iterator[dict]:
+    """Parse Cowrie text logs (fallback)"""
+    pattern = re.compile(
+        r"(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[^\s]*)\s+"
+        r"\[(?P<component>[^\]]+)\]\s+(?P<message>.+)"
+    )
+    with log_path.open(encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            m = pattern.match(line.strip())
+            if m:
+                yield {
+                    "timestamp": m.group("ts"),
+                    "eventid": "",
+                    "src_ip": "",
+                    "message": m.group("message"),
+                }
+
+
+# ------------------------------------------------------------------ #
+#  Statistics Aggregation
+# ------------------------------------------------------------------ #
+def analyze(events: list[dict], top_n: int = 10) -> dict:
+    stats: dict = {
+        "total_events": len(events),
+        "unique_src_ips": set(),
+        "event_counts": Counter(),
+        "top_attackers": Counter(),
+        "commands_run": [],
+        "credentials_tried": [],
+        "sessions": defaultdict(list),
+        "timeline": defaultdict(int),
+    }
+
+    for ev in events:
+        eid = ev.get("eventid", "")
+        src = ev.get("src_ip", "")
+        session = ev.get("session", "")
+        ts = ev.get("timestamp", "")[:10]  # YYYY-MM-DD
+
+        stats["event_counts"][eid] += 1
+        if src:
+            stats["unique_src_ips"].add(src)
+            stats["top_attackers"][src] += 1
+        if ts:
+            stats["timeline"][ts] += 1
+        if session:
+            stats["sessions"][session].append(eid)
+
+        # Collect executed commands
+        if eid == "cowrie.command.input":
+            stats["commands_run"].append(
+                {"time": ts, "src": src, "cmd": ev.get("input", "")}
+            )
+
+        # Collect credential attempts
+        if eid in ("cowrie.login.failed", "cowrie.login.success"):
+            stats["credentials_tried"].append(
+                {
+                    "time": ts,
+                    "src": src,
+                    "username": ev.get("username", ""),
+                    "password": ev.get("password", ""),
+                    "success": eid == "cowrie.login.success",
+                }
+            )
+
+    # Convert set to list for serialization
+    stats["unique_src_ips"] = list(stats["unique_src_ips"])
+    stats["top_attackers_list"] = stats["top_attackers"].most_common(top_n)
+    stats["top_commands"] = Counter(
+        c["cmd"] for c in stats["commands_run"]
+    ).most_common(top_n)
+    stats["top_usernames"] = Counter(
+        c["username"] for c in stats["credentials_tried"]
+    ).most_common(top_n)
+    stats["top_passwords"] = Counter(
+        c["password"] for c in stats["credentials_tried"]
+    ).most_common(top_n)
+
+    return stats
+
+
+# ------------------------------------------------------------------ #
+#  Output
+# ------------------------------------------------------------------ #
+def print_report(stats: dict, as_json: bool = False) -> None:
+    if as_json:
+        serializable = {
+            k: (list(v) if isinstance(v, set) else dict(v) if isinstance(v, Counter) else v)
+            for k, v in stats.items()
+            if k != "sessions"
+        }
+        print(json.dumps(serializable, ensure_ascii=False, indent=2))
+        return
+
+    print(f"\n{'='*60}")
+    print(f"Total Events      : {stats['total_events']:,}")
+    print(f"Unique Attackers  : {len(stats['unique_src_ips']):,}")
+    print(f"Commands Executed : {len(stats['commands_run']):,}")
+    print(f"Credential Attempts: {len(stats['credentials_tried']):,}")
+
+    print("\n[Top Attacker IPs]")
+    for ip, cnt in stats["top_attackers_list"]:
+        print(f"  {ip:<20} {cnt:>6} times")
+
+    print("\n[Most Executed Commands]")
+    for cmd, cnt in stats["top_commands"]:
+        short = cmd[:60] + "..." if len(cmd) > 60 else cmd
+        print(f"  {cnt:>5}x  {short}")
+
+    print("\n[Most Attempted Passwords]")
+    for pw, cnt in stats["top_passwords"]:
+        print(f"  {cnt:>5}x  {pw}")
+
+    print("\n[Daily Attack Trend]")
+    for day in sorted(stats["timeline"])[-14:]:
+        bar = "#" * min(stats["timeline"][day] // 10, 50)
+        print(f"  {day}  {bar} {stats['timeline'][day]}")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Cowrie SSH Honeypot Log Analyzer",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Examples:\n"
+               "  python3 honeypot_analyzer.py --log cowrie.json\n"
+               "  python3 honeypot_analyzer.py --log cowrie.json --top 20 --json",
+    )
+    parser.add_argument(
+        "--log",
+        required=True,
+        metavar="FILE",
+        help="Path to Cowrie JSON log file",
+    )
+    parser.add_argument(
+        "--top",
+        type=int,
+        default=10,
+        metavar="N",
+        help="Show top N results (default: 10)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output in JSON format",
+    )
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    log_path = Path(args.log)
+    if not log_path.exists():
+        parser.error(f"File not found: {log_path}")
+
+    # Prefer JSON log; fall back to text parsing if needed
+    if log_path.suffix in (".json", ".jsonl"):
+        events = list(iter_cowrie_json(log_path))
+    else:
+        events = list(parse_cowrie_text(log_path))
+
+    if not events:
+        print("No events to analyze.", file=sys.stderr)
+        sys.exit(1)
+
+    stats = analyze(events, top_n=args.top)
+    print_report(stats, as_json=args.json)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 15. UBA/UEBA (User Behavior Analytics)
+
+### How UBA Differs from Traditional Security
+```
+Limitations of Traditional Audit Methods:
+  - Threshold-based alerts → fail to detect slow attacks and insider threats
+  - High false positives → miss actual threats
+  - 68% of 2017 breaches went undetected for over a month
+
+UBA (User Behavior Analytics) Characteristics:
+  - ML-based establishment of normal behavior baseline for each user
+  - Automatic anomaly detection when deviating from baseline
+  - Can detect slow attacks without threshold settings
+```
+
+### UBA Detection Areas
+```
+Anomalous Behavior Detection:
+  - Abnormal volume of specific events (sudden spike in logins, etc.)
+  - Login or resource access at abnormal hours
+  - Logging into systems not normally used
+  - First-time access attempt to a specific resource
+  - Abnormal file activity (mass modifications/copies/deletions)
+
+Privilege Abuse Detection:
+  - Privileged users accessing large numbers of sensitive files
+  - Abnormal behavior by administrator accounts
+  - Querying sensitive data with excessive privileges
+
+Insider Threat:
+  - Approximately 28% of internal breach incidents
+  - Data exfiltration attempts by employees about to resign or disgruntled employees
+  - Repeated access attempts to unauthorized resources
+```
+
+### Utilizing UBA Risk Assessment Reports
+```
+Risk Assessment Indicators:
+  - Accounts connected to the most assets
+  - Identifying hyperactive accounts
+  - Activity count for high-risk accounts (file activity volume, etc.)
+
+UBA Integration in SIEM:
+  - Learn normal login patterns and detect deviations
+  - Splunk UBA, Elastic ML, Microsoft Sentinel, etc.
+  - Immediately deliver alerts to admin email/SMS
 ```

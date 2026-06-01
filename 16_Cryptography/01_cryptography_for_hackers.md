@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 해커를 위한 암호학
 
 ## 암호학 기초 개념
@@ -866,6 +872,882 @@ curl http://factordb.com/api?query=LARGE_NUMBER
 sage -c "factor(n)"
 
 # OpenSSL 종합 분석
+openssl rsa -text -noout -in private.pem
+openssl x509 -text -noout -in cert.pem
+openssl dgst -sha256 file.txt
+```
+
+---
+
+<a name="english"></a>
+
+# Cryptography for Hackers
+
+## Fundamental Cryptography Concepts
+
+```
+Plaintext → [Encryption] → Ciphertext → [Decryption] → Plaintext
+                ↑                                ↑
+              Key                              Key
+
+Symmetric Cipher: Encryption Key = Decryption Key
+  AES, DES, 3DES, ChaCha20, Blowfish
+
+Asymmetric Cipher: Public Key (encryption) ≠ Private Key (decryption)
+  RSA, ECC, DSA, ElGamal
+
+Hash Function: One-way transformation (cannot be decrypted)
+  MD5, SHA-1, SHA-256, SHA-3, bcrypt, Argon2
+```
+
+---
+
+## 1. Classical Ciphers (Understanding Vulnerabilities)
+
+### Caesar Cipher
+
+This is an implementation of the Caesar Cipher. It is the simplest substitution cipher, shifting each letter by a fixed number of positions. Since there are only 26 possible keys, it can be broken immediately by brute force.
+
+```python
+def caesar_encrypt(text: str, shift: int) -> str:
+    result = ""
+    for char in text:
+        if char.isalpha():
+            base = ord('A') if char.isupper() else ord('a')
+            result += chr((ord(char) - base + shift) % 26 + base)
+        else:
+            result += char
+    return result
+
+def caesar_brute_force(ciphertext: str):
+    """Caesar cipher brute-force attack (all 26 keys)"""
+    for shift in range(26):
+        decrypted = caesar_encrypt(ciphertext, -shift)
+        print(f"Shift {shift:2d}: {decrypted}")
+
+# Example
+ciphertext = "Khoor, Zruog!"  # Hello, World! (shift=3)
+caesar_brute_force(ciphertext)
+```
+
+### Vigenere Cipher
+
+This implements Vigenere cipher decryption. It uses multiple Caesar ciphers repeated over the key length. However, once the key length is determined via Kasiski analysis or the Index of Coincidence, it can be broken.
+
+```python
+def vigenere_decrypt(ciphertext: str, key: str) -> str:
+    """Vigenere cipher decryption"""
+    result = ""
+    key_len = len(key)
+    key_idx = 0
+    
+    for char in ciphertext:
+        if char.isalpha():
+            shift = ord(key[key_idx % key_len].upper()) - ord('A')
+            base = ord('A') if char.isupper() else ord('a')
+            result += chr((ord(char) - base - shift) % 26 + base)
+            key_idx += 1
+        else:
+            result += char
+    
+    return result
+
+def kasiski_test(ciphertext: str, min_len: int = 3) -> dict:
+    """Kasiski test — estimate key length"""
+    from math import gcd
+    from functools import reduce
+    
+    distances = {}
+    clean = ciphertext.replace(" ", "").upper()
+    
+    # Find repeated patterns
+    for length in range(min_len, 6):
+        for i in range(len(clean) - length):
+            seq = clean[i:i+length]
+            occurrences = [j for j in range(i+1, len(clean)-length)
+                          if clean[j:j+length] == seq]
+            if occurrences:
+                for occ in occurrences:
+                    distance = occ - i
+                    distances[seq] = distances.get(seq, []) + [distance]
+    
+    # GCD of distances → estimated key length
+    all_distances = [d for dists in distances.values() for d in dists]
+    if all_distances:
+        key_length = reduce(gcd, all_distances)
+        print(f"Estimated key length: {key_length}")
+    
+    return distances
+```
+
+### XOR Cipher
+
+This implements XOR encryption. Simple single-key-length XOR can be broken by crib-dragging attacks. It is commonly used in malware to obfuscate payloads.
+
+```python
+#!/usr/bin/env python3
+"""XOR encryption and single/repeating key cracking CLI tool"""
+
+import argparse
+import sys
+from typing import Optional
+
+
+def xor_encrypt(data: bytes, key: bytes) -> bytes:
+    """XOR encrypt/decrypt (same operation)"""
+    key_len = len(key)
+    return bytes([b ^ key[i % key_len] for i, b in enumerate(data)])
+
+
+def xor_crack_single_byte(ciphertext: bytes) -> tuple[int, bytes, float]:
+    """Single-byte XOR crack — English frequency analysis"""
+    english_freq: dict[str, float] = {
+        'e': 12.7, 't': 9.1, 'a': 8.2, 'o': 7.5, 'i': 7.0,
+        'n': 6.7, 's': 6.3, 'h': 6.1, 'r': 6.0, 'd': 4.3,
+        ' ': 13.0,  # space weight
+    }
+    best_key, best_score, best_plain = 0, 0.0, b""
+
+    for key_byte in range(256):
+        decrypted = bytes([b ^ key_byte for b in ciphertext])
+        try:
+            text = decrypted.decode('ascii')
+        except (UnicodeDecodeError, ValueError):
+            continue
+        score = sum(english_freq.get(c.lower(), 0) for c in text)
+        if score > best_score:
+            best_score, best_key, best_plain = score, key_byte, decrypted
+
+    return best_key, best_plain, best_score
+
+
+def crack_repeating_xor(ciphertext: bytes, max_keysize: int = 40) -> tuple[bytes, bytes]:
+    """Repeating-key XOR crack (CryptoPals Set1 Ch6 style)"""
+
+    def hamming(a: bytes, b: bytes) -> int:
+        return sum(bin(x ^ y).count('1') for x, y in zip(a, b))
+
+    # Step 1: Estimate key size
+    scores: dict[int, float] = {}
+    for ks in range(2, min(max_keysize + 1, len(ciphertext) // 4 + 1)):
+        blocks = [ciphertext[i * ks:(i + 1) * ks] for i in range(4)]
+        pairs = [(blocks[i], blocks[j]) for i in range(4) for j in range(i + 1, 4)
+                 if len(blocks[i]) == ks and len(blocks[j]) == ks]
+        if not pairs:
+            continue
+        avg = sum(hamming(a, b) / ks for a, b in pairs) / len(pairs)
+        scores[ks] = avg
+
+    best_ks = min(scores, key=scores.get)
+
+    # Step 2: Recover each key byte
+    key = bytes(
+        xor_crack_single_byte(
+            bytes([ciphertext[j] for j in range(i, len(ciphertext), best_ks)])
+        )[0]
+        for i in range(best_ks)
+    )
+
+    plaintext = xor_encrypt(ciphertext, key)
+    return key, plaintext
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="XOR encryption/cracking tool")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    enc_p = sub.add_parser("encrypt", help="XOR encrypt/decrypt")
+    enc_p.add_argument("--hex-input", required=True, help="Input data (hex)")
+    enc_p.add_argument("--key", required=True, help="Key (hex or string)")
+    enc_p.add_argument("--key-hex", action="store_true", help="Interpret key as hex")
+
+    crack_p = sub.add_parser("crack", help="Single/repeating byte XOR crack")
+    crack_p.add_argument("--hex-input", required=True, help="Ciphertext (hex)")
+    crack_p.add_argument("--mode", choices=["single", "repeating"], default="single")
+    crack_p.add_argument("--max-keysize", type=int, default=40)
+
+    args = parser.parse_args()
+
+    if args.cmd == "encrypt":
+        data = bytes.fromhex(args.hex_input)
+        key = bytes.fromhex(args.key) if args.key_hex else args.key.encode()
+        result = xor_encrypt(data, key)
+        print(f"Result (hex): {result.hex()}")
+        try:
+            print(f"Result (ascii): {result.decode('ascii')}")
+        except (UnicodeDecodeError, ValueError):
+            pass
+
+    elif args.cmd == "crack":
+        ct = bytes.fromhex(args.hex_input)
+        if args.mode == "single":
+            k, plain, score = xor_crack_single_byte(ct)
+            print(f"Key byte : 0x{k:02x}  ({chr(k) if 32 <= k < 127 else '?'})")
+            print(f"Score    : {score:.2f}")
+            print(f"Plaintext: {plain}")
+        else:
+            key, plain = crack_repeating_xor(ct, args.max_keysize)
+            print(f"Key (hex)  : {key.hex()}")
+            print(f"Key (ascii): {key.decode('latin-1')}")
+            print(f"Plaintext  :\n{plain.decode('latin-1')}")
+
+
+if __name__ == "__main__":
+    # Quick demo (when run with no arguments)
+    if len(sys.argv) == 1:
+        demo_ct = bytes.fromhex(
+            "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+        )
+        k, plain, score = xor_crack_single_byte(demo_ct)
+        print(f"[Demo] Key: 0x{k:02x} ({chr(k)})  Score: {score:.2f}")
+        print(f"[Demo] Plaintext: {plain}")
+    else:
+        main()
+```
+
+---
+
+## 2. Modern Cryptography
+
+### AES Encryption Mode Vulnerabilities
+
+This code demonstrates vulnerabilities in different AES modes of operation. ECB mode has a pattern exposure weakness where identical input blocks produce identical ciphertext blocks.
+
+```python
+#!/usr/bin/env python3
+"""AES mode vulnerability PoC — CBC bit-flipping, CTR nonce reuse, ECB pattern attack, AES-GCM correct implementation"""
+
+import argparse
+import os
+import sys
+
+try:
+    from Crypto.Cipher import AES
+    from Crypto.Util.Padding import pad, unpad
+except ImportError:
+    print("[-] pycryptodome required: pip install pycryptodome", file=sys.stderr)
+    sys.exit(1)
+
+
+# ── Helper functions ────────────────────────────────────────────────
+
+def aes_cbc_encrypt(plaintext: bytes, key: bytes, iv: bytes) -> bytes:
+    return AES.new(key, AES.MODE_CBC, iv).encrypt(pad(plaintext, 16))
+
+
+def aes_cbc_decrypt(ciphertext: bytes, key: bytes, iv: bytes) -> bytes:
+    return unpad(AES.new(key, AES.MODE_CBC, iv).decrypt(ciphertext), 16)
+
+
+# ── Attack 1: CBC Bit Flipping ──────────────────────────────────
+
+def cbc_bit_flip_demo() -> None:
+    """
+    CBC bit flipping: manipulate a previous ciphertext block → tamper with the decrypted output
+      P'[i] = AES_Dec(C[i]) XOR C'[i-1]
+    Goal: in the second block 'role=user&admin=', change 'user' → 'admi'
+    """
+    key = os.urandom(16)
+    iv  = os.urandom(16)
+
+    # Block0 (16B) = padding, Block1 (16B) = 'role=user&admin='
+    plaintext = b"A" * 16 + b"role=user&admin="
+    ciphertext = aes_cbc_encrypt(plaintext, key, iv)
+
+    original_bytes = b"role=user"
+    target_bytes   = b"role=admi"
+
+    modified = bytearray(ciphertext)
+    for i, (orig, targ) in enumerate(zip(original_bytes, target_bytes)):
+        modified[16 + i] ^= orig ^ targ   # Tamper with block0 (indices 16–31)
+
+    try:
+        result = aes_cbc_decrypt(bytes(modified), key, iv)
+        print(f"[CBC Bit-Flip] Decryption result: {result}")
+    except ValueError as e:
+        print(f"[CBC Bit-Flip] Padding error (some bytes modified): {e}")
+
+
+# ── Attack 2: CTR Nonce Reuse ──────────────────────────────────
+
+def ctr_nonce_reuse_demo() -> None:
+    """
+    CTR mode nonce reuse:
+      C1 = P1 ⊕ KS,  C2 = P2 ⊕ KS  →  C1⊕C2 = P1⊕P2
+    If P1 is known, P2 can be fully recovered
+    """
+    key   = os.urandom(16)
+    nonce = b"\x00" * 8   # Fatal mistake: fixed nonce
+
+    def ctr_enc(pt: bytes) -> bytes:
+        return AES.new(key, AES.MODE_CTR, nonce=nonce).encrypt(pt)
+
+    msg1 = b"Hello, World!!!!!"
+    msg2 = b"Secret Password!!"
+
+    c1 = ctr_enc(msg1)
+    c2 = ctr_enc(msg2)   # Same nonce reused!
+
+    # When attacker knows msg1, c1, and c2
+    keystream = bytes(a ^ b for a, b in zip(c1, msg1))
+    recovered = bytes(a ^ b for a, b in zip(c2, keystream))
+    print(f"[CTR Nonce Reuse] Recovered msg2: {recovered}")
+
+
+# ── Attack 3: ECB Cut-and-Paste ────────────────────────────────
+
+def ecb_cut_and_paste_demo() -> None:
+    """
+    ECB mode: identical 16-byte blocks → identical ciphertext blocks
+    Cut the admin-padded block and paste it over the role=user position
+    """
+    key = os.urandom(16)
+
+    def encrypt_profile(email: str) -> bytes:
+        profile = f"email={email}&uid=10&role=user"
+        return AES.new(key, AES.MODE_ECB).encrypt(pad(profile.encode(), 16))
+
+    # Block0: "email=AAAAAAAAAA" (16B)
+    # Block1: "admin\x0b\x0b...\x0b" — padded admin block (16B)
+    # Block2: "&uid=10&role=use"
+    craft_email = "AAAAAAAAAA" + "admin" + chr(11) * 11
+    encrypted   = encrypt_profile(craft_email)
+    admin_block = encrypted[16:32]
+
+    # Adjust email length so role=user falls exactly on a block boundary
+    # "email=" = 6, "&uid=10&role=" = 13  → 6 + email_len ≡ 0 (mod 16) → len=10
+    normal_enc = encrypt_profile("test@ex.co")   # 10 chars
+    forged     = normal_enc[:-16] + admin_block  # Replace last block
+
+    decrypted = unpad(AES.new(key, AES.MODE_ECB).decrypt(forged), 16)
+    print(f"[ECB Cut-Paste] Forged result: {decrypted.decode()}")
+
+
+# ── Correct Implementation: AES-256-GCM ────────────────────────────────
+
+def aes_gcm_demo() -> None:
+    """AES-256-GCM — AEAD (authentication + encryption), fresh nonce every time"""
+    key   = os.urandom(32)   # 256-bit
+    nonce = os.urandom(12)   # 96-bit (recommended for GCM)
+    aad   = b"authenticated-but-not-encrypted"
+
+    plaintext = b"Sensitive data: TOP SECRET"
+
+    cipher     = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    cipher.update(aad)
+    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+    print(f"[AES-GCM] CT={ciphertext.hex()}  TAG={tag.hex()}")
+
+    # Decrypt + verify authentication tag
+    dec = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    dec.update(aad)
+    try:
+        recovered = dec.decrypt_and_verify(ciphertext, tag)
+        print(f"[AES-GCM] Decryption successful: {recovered}")
+    except ValueError:
+        print("[AES-GCM] Authentication failed — data tampering detected!")
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    demos = {
+        "cbc-flip":   cbc_bit_flip_demo,
+        "ctr-reuse":  ctr_nonce_reuse_demo,
+        "ecb-paste":  ecb_cut_and_paste_demo,
+        "gcm":        aes_gcm_demo,
+    }
+
+    parser = argparse.ArgumentParser(description="AES mode vulnerability PoC")
+    parser.add_argument("demo", choices=list(demos) + ["all"],
+                        nargs="?", default="all",
+                        help="Demo to run (default: all)")
+    args = parser.parse_args()
+
+    targets = list(demos.values()) if args.demo == "all" else [demos[args.demo]]
+    for fn in targets:
+        fn()
+        print()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. RSA Attack Techniques
+
+### RSA Basics
+
+```
+RSA Key Generation:
+  1. Select large primes p, q
+  2. n = p * q (modulus)
+  3. φ(n) = (p-1)(q-1) (Euler's totient)
+  4. Choose e such that gcd(e, φ(n)) = 1 (commonly 65537)
+  5. d = e^(-1) mod φ(n) (private key)
+  
+  Public key:  (n, e)
+  Private key: (n, d)
+
+Encryption: C = M^e mod n
+Decryption: M = C^d mod n
+Signing:    S = M^d mod n
+Verify:     M = S^e mod n
+```
+
+### RSA Vulnerability Attacks
+
+This code attacks weak RSA implementations. It exploits small public exponent (e=3), common modulus attacks, padding oracle attacks, and other RSA implementation flaws.
+
+```python
+#!/usr/bin/env python3
+"""RSA vulnerability attack toolkit — Small-e, GCD, Wiener, Hastad broadcast"""
+
+from __future__ import annotations
+import argparse
+import sys
+from math import gcd, isqrt
+from functools import reduce
+
+
+# ── Integer e-th root (for small exponent attacks) ─────────────────────────
+
+def iroot(n: int, e: int) -> tuple[int, bool]:
+    """Return the integer e-th root of n, and whether it is exact"""
+    if n < 0:
+        return 0, False
+    if e == 1:
+        return n, True
+    # Newton's method
+    x = int(round(n ** (1 / e)))
+    for candidate in range(max(0, x - 2), x + 3):
+        if candidate ** e == n:
+            return candidate, True
+    return x, False
+
+
+# ── 1. Small-e Attack ──────────────────────────────────────────
+
+def small_e_attack(ciphertext: int, e: int = 3) -> int | None:
+    """
+    If e=3 and M^e < n, then C = M^e with no modular reduction
+    → Recover plaintext by taking the integer e-th root
+    """
+    m, exact = iroot(ciphertext, e)
+    if exact:
+        print(f"[+] Small-e success: M = {m}")
+        return m
+    print("[-] Small-e failed: M^e >= n or no exact integer root")
+    return None
+
+
+# ── 2. Common Factor Attack ──────────────────────────────────────
+
+def common_factor_attack(n1: int, n2: int, e: int, c1: int) -> int | None:
+    """
+    When two RSA moduli share a common prime p, gcd(n1, n2) = p
+    → Factor n1 → recover d → decrypt c1
+    """
+    p = gcd(n1, n2)
+    if p == 1:
+        print("[-] No common factor found")
+        return None
+
+    q     = n1 // p
+    phi_n = (p - 1) * (q - 1)
+    d     = pow(e, -1, phi_n)
+    m     = pow(c1, d, n1)
+    print(f"[+] Common factor p = {p}")
+    print(f"[+] Decrypted M = {m}")
+    return m
+
+
+# ── 3. Wiener Attack (small d) ──────────────────────────────────
+
+def wiener_attack(e: int, n: int) -> int | None:
+    """
+    When d < n^0.25, recover d via convergents of the continued fraction of e/n
+    """
+
+    def continued_fraction(num: int, den: int) -> list[int]:
+        cf: list[int] = []
+        while den:
+            cf.append(num // den)
+            num, den = den, num % den
+        return cf
+
+    def convergents(cf: list[int]) -> list[tuple[int, int]]:
+        convs: list[tuple[int, int]] = []
+        for i, q in enumerate(cf):
+            if i == 0:
+                convs.append((q, 1))
+            elif i == 1:
+                convs.append((q * cf[0] + 1, q))
+            else:
+                h = q * convs[-1][0] + convs[-2][0]
+                k = q * convs[-1][1] + convs[-2][1]
+                convs.append((h, k))
+        return convs
+
+    for k, d in convergents(continued_fraction(e, n)):
+        if k == 0 or (e * d - 1) % k != 0:
+            continue
+        phi_n = (e * d - 1) // k
+        # p + q = n - phi_n + 1,  discriminant = (p+q)^2 - 4n
+        b    = n - phi_n + 1
+        disc = b * b - 4 * n
+        if disc < 0:
+            continue
+        sq = isqrt(disc)
+        if sq * sq == disc:
+            p, q = (b + sq) // 2, (b - sq) // 2
+            if p * q == n:
+                print(f"[+] Wiener success: d = {d}")
+                return d
+
+    print("[-] Wiener attack failed: d is not small enough")
+    return None
+
+
+# ── 4. Hastad Broadcast Attack ──────────────────────────────────
+
+def hastad_broadcast(ciphertexts: list[int], moduli: list[int],
+                     e: int = 3) -> int | None:
+    """
+    Same plaintext encrypted with e different public keys → recover M^e via CRT, then take e-th root
+    Requires: len(ciphertexts) == len(moduli) == e
+    """
+    if len(ciphertexts) < e or len(moduli) < e:
+        print(f"[-] Fewer than {e} ciphertexts/moduli provided")
+        return None
+
+    # Chinese Remainder Theorem
+    M = reduce(lambda a, b: a * b, moduli[:e])
+    x = 0
+    for ci, ni in zip(ciphertexts[:e], moduli[:e]):
+        Mi = M // ni
+        yi = pow(Mi, -1, ni)
+        x  = (x + ci * Mi * yi) % M
+
+    m, exact = iroot(x, e)
+    if exact:
+        print(f"[+] Hastad success: M = {m}")
+        return m
+    print("[-] Hastad failed: CRT result has no exact integer e-th root")
+    return None
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="RSA attack toolkit")
+    sub = parser.add_subparsers(dest="attack", required=True)
+
+    # small-e
+    p1 = sub.add_parser("small-e", help="Small public exponent attack")
+    p1.add_argument("--ciphertext", type=lambda x: int(x, 0), required=True)
+    p1.add_argument("--e", type=int, default=3)
+
+    # gcd
+    p2 = sub.add_parser("gcd", help="Common prime factor attack")
+    p2.add_argument("--n1", type=lambda x: int(x, 0), required=True)
+    p2.add_argument("--n2", type=lambda x: int(x, 0), required=True)
+    p2.add_argument("--e", type=int, required=True)
+    p2.add_argument("--c1", type=lambda x: int(x, 0), required=True)
+
+    # wiener
+    p3 = sub.add_parser("wiener", help="Wiener small-d attack")
+    p3.add_argument("--e", type=lambda x: int(x, 0), required=True)
+    p3.add_argument("--n", type=lambda x: int(x, 0), required=True)
+
+    # hastad
+    p4 = sub.add_parser("hastad", help="Hastad broadcast attack")
+    p4.add_argument("--e", type=int, default=3)
+    p4.add_argument("--ciphertexts", nargs="+", type=lambda x: int(x, 0), required=True)
+    p4.add_argument("--moduli",      nargs="+", type=lambda x: int(x, 0), required=True)
+
+    args = parser.parse_args()
+
+    if args.attack == "small-e":
+        small_e_attack(args.ciphertext, args.e)
+    elif args.attack == "gcd":
+        common_factor_attack(args.n1, args.n2, args.e, args.c1)
+    elif args.attack == "wiener":
+        wiener_attack(args.e, args.n)
+    elif args.attack == "hastad":
+        hastad_broadcast(args.ciphertexts, args.moduli, args.e)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        # Default demo: small-e
+        print("[Demo] small-e: M=42, e=3, C=42^3=74088")
+        small_e_attack(74088, 3)
+    else:
+        main()
+```
+
+---
+
+## 4. Hash Cracking
+
+### Hash Type Identification
+
+Use hashid or hash-identifier to determine the hash algorithm. The hash length and character set pattern help distinguish MD5, SHA-1, bcrypt, and others.
+
+```bash
+# Identify hash type with hashid
+hashid "5f4dcc3b5aa765d61d8327deb882cf99"
+hashid "e3b0c44298fc1c149afbf4c8996fb924"
+
+# Key hashcat modes
+# -m 0    MD5
+# -m 100  SHA1
+# -m 1400 SHA256
+# -m 1700 SHA512
+# -m 1800 sha512crypt ($6$) (Linux /etc/shadow)
+# -m 500  md5crypt ($1$) (Linux /etc/shadow)
+# -m 3200 bcrypt ($2*$)
+# -m 1000 NTLM (Windows)
+# -m 5600 NetNTLMv2
+# -m 13100 Kerberoast ($krb5tgs$)
+# -m 18200 AS-REP Roast ($krb5asrep$)
+```
+
+```python
+#!/usr/bin/env python3
+"""Automatic hash type identification and crack preparation"""
+
+import re
+import hashlib
+
+HASH_PATTERNS = {
+    'MD5': (r'^[a-f0-9]{32}$', 0),
+    'SHA1': (r'^[a-f0-9]{40}$', 100),
+    'SHA256': (r'^[a-f0-9]{64}$', 1400),
+    'SHA512': (r'^[a-f0-9]{128}$', 1700),
+    'NTLM': (r'^[a-f0-9]{32}$', 1000),  # Same length as MD5
+    'bcrypt': (r'^\$2[ayb]\$.{56}$', 3200),
+    'sha512crypt': (r'^\$6\$.{8,16}\$.{86}$', 1800),
+    'md5crypt': (r'^\$1\$.{8}\$.{22}$', 500),
+}
+
+def identify_hash(hash_str: str) -> list:
+    matches = []
+    for name, (pattern, mode) in HASH_PATTERNS.items():
+        if re.match(pattern, hash_str, re.IGNORECASE):
+            matches.append((name, mode))
+    return matches
+
+def crack_md5(hash_str: str, wordlist: str) -> str:
+    """MD5 hash dictionary cracking"""
+    with open(wordlist, 'r', encoding='latin-1') as f:
+        for word in f:
+            word = word.strip()
+            if hashlib.md5(word.encode()).hexdigest() == hash_str:
+                return word
+    return None
+
+# Usage example
+test_hash = "5f4dcc3b5aa765d61d8327deb882cf99"
+types = identify_hash(test_hash)
+print(f"Candidate hash types: {types}")
+
+# Generate hashcat commands
+for name, mode in types:
+    print(f"hashcat -m {mode} {test_hash} wordlist.txt")
+```
+
+---
+
+## 5. TLS/SSL Vulnerabilities
+
+### Known TLS Attacks
+
+Check for known TLS vulnerabilities (BEAST, POODLE, FREAK, Heartbleed). Verify whether vulnerable TLS versions and cipher suites are in use.
+
+```bash
+# BEAST (TLS 1.0 CBC)
+# Mitigation: use TLS 1.2+
+
+# POODLE (SSL 3.0 CBC padding oracle)
+# Check
+openssl s_client -ssl3 -connect target.com:443
+# Mitigation: disable SSL 3.0
+
+# HEARTBLEED (OpenSSL 1.0.1-1.0.1f)
+# CVE-2014-0160
+nmap --script ssl-heartbleed target.com
+python3 heartbleed.py target.com
+
+# DROWN (SSLv2 shared keys)
+# Check if SSLv2 is enabled
+openssl s_client -ssl2 -connect target.com:443
+nmap --script sslv2 target.com
+
+# FREAK (512-bit RSA export keys)
+openssl s_client -cipher EXPORT -connect target.com:443
+
+# LOGJAM (512-bit DH)
+openssl s_client -cipher DHE -connect target.com:443
+
+# Comprehensive TLS scan
+testssl.sh target.com
+sslyze target.com --regular
+```
+
+### Certificate Analysis
+
+OpenSSL CLI commands for various cryptographic operations. Essential tools for security practice: symmetric encryption (`enc`), asymmetric key generation (`genrsa`, `genpkey`), certificate generation (`req`), and TLS server testing (`s_client`).
+
+```bash
+# Extract certificate information
+echo | openssl s_client -connect target.com:443 2>/dev/null | \
+    openssl x509 -noout -text
+
+# Check certificate expiry
+echo | openssl s_client -connect target.com:443 2>/dev/null | \
+    openssl x509 -noout -dates
+
+# Certificate hash (for certificate pinning bypass research)
+echo | openssl s_client -connect target.com:443 2>/dev/null | \
+    openssl x509 -noout -fingerprint -sha256
+
+# Certificate Transparency search
+curl -s "https://crt.sh/?q=%.target.com&output=json" | \
+    python3 -c "import json,sys; [print(e['name_value']) for e in json.load(sys.stdin)]" | \
+    sort -u
+```
+
+---
+
+## 6. Random Number Generator Vulnerabilities
+
+This code demonstrates attacks that predict the state of a weak pseudo-random number generator (PRNG). PRNGs with predictable seeds or short cycles are not cryptographically secure.
+
+```python
+# Predicting a weak random number generator
+import random
+import time
+
+# Bad example: time-based seed
+def bad_token_generation():
+    random.seed(int(time.time()))  # Predictable!
+    return hex(random.getrandbits(64))
+
+# Reversing a weak seed
+def crack_time_seed(leaked_token: int, time_window: int = 3600):
+    """
+    For a time-based seed:
+    Try all seeds within current time ± time_window
+    """
+    current_time = int(time.time())
+    
+    for seed in range(current_time - time_window, current_time + 1):
+        random.seed(seed)
+        candidate = random.getrandbits(64)
+        
+        if candidate == leaked_token:
+            print(f"[+] Seed found: {seed}")
+            # Next token can now be predicted
+            next_token = hex(random.getrandbits(64))
+            print(f"[+] Predicted next token: {next_token}")
+            return seed
+    
+    return None
+
+# PHP rand() crack (32-bit seed)
+def crack_php_rand(known_output: int):
+    """PHP mt_rand() crack (exhaustive search)"""
+    # mt_srand vulnerability prior to PHP 7
+    for seed in range(0, 2**32):
+        # PHP mt_rand simulation (actually more complex)
+        import ctypes
+        # ...actual implementation requires reverse engineering PHP internals
+        pass
+```
+
+---
+
+## 7. Cryptographic Challenges (CTF Style)
+
+### CryptoPals Challenge Style
+
+This is a CryptoPals-style implementation. Repeating-key XOR cracking first estimates the key length using Hamming distance, then applies single-byte XOR frequency analysis.
+
+```python
+# Set 1, Challenge 6: Repeating-key XOR crack
+def crack_repeating_xor(ciphertext: bytes) -> str:
+    """
+    1. Estimate key size using Hamming distance
+    2. Crack each position as single-byte XOR
+    3. Reassemble the key
+    """
+    def hamming_distance(a: bytes, b: bytes) -> int:
+        return sum(bin(x ^ y).count('1') for x, y in zip(a, b))
+    
+    # Step 1: Estimate key size
+    scores = {}
+    for keysize in range(2, 41):
+        if len(ciphertext) < keysize * 4:
+            break
+        
+        blocks = [ciphertext[i*keysize:(i+1)*keysize] for i in range(4)]
+        
+        distances = []
+        for i in range(len(blocks)-1):
+            for j in range(i+1, len(blocks)):
+                d = hamming_distance(blocks[i], blocks[j]) / keysize
+                distances.append(d)
+        
+        scores[keysize] = sum(distances) / len(distances)
+    
+    best_keysize = min(scores, key=scores.get)
+    print(f"Estimated key size: {best_keysize}")
+    
+    # Step 2: Crack each key byte
+    key = []
+    for i in range(best_keysize):
+        block = bytes([ciphertext[j] for j in range(i, len(ciphertext), best_keysize)])
+        best_byte, _ = xor_crack_single_byte(block)  # Defined above
+        key.append(best_byte)
+    
+    # Step 3: Decrypt
+    key_bytes = bytes(key)
+    plaintext = bytes([c ^ key_bytes[i % len(key_bytes)] 
+                       for i, c in enumerate(ciphertext)])
+    
+    return plaintext.decode('utf-8', errors='replace'), key_bytes
+```
+
+---
+
+## 8. Practical Cryptanalysis Tools
+
+Key tools used in cryptanalysis. CyberChef is a browser-based tool that supports a wide range of encoding and encryption transformations.
+
+```bash
+# CyberChef - browser-based cryptanalysis
+# https://gchq.github.io/CyberChef/
+
+# hashcat - hash cracking
+hashcat -m 0 hash.txt wordlist.txt
+
+# John the Ripper
+john hash.txt --wordlist=wordlist.txt
+
+# rsatool - RSA calculations
+python3 rsatool.py -n N -e E -p P -q Q
+
+# factordb - factorization database lookup
+curl http://factordb.com/api?query=LARGE_NUMBER
+
+# SageMath - mathematical cryptanalysis
+sage -c "factor(n)"
+
+# OpenSSL comprehensive analysis
 openssl rsa -text -noout -in private.pem
 openssl x509 -text -noout -in cert.pem
 openssl dgst -sha256 file.txt

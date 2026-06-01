@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 31-02. 프롬프트 인젝션·탈옥 — LLM 애플리케이션의 SQLi급 취약점
 
 > **핵심 관점**: LLM 애플리케이션에서 "지시문(instruction)"과 "데이터(data)"는 같은 토큰 스트림으로 들어간다.
@@ -400,3 +406,33 @@ sanitized_response, out_results, _ = scan_output(output_scanners, sanitized_prom
 - 로그·모니터링·레이트 리밋으로 **공격 비용을 올린다**.
 
 이 세 가지가 2026년 현재 실용적인 합의점이다.
+
+---
+
+<a name="english"></a>
+
+# 31-02. Prompt Injection and Jailbreaking — SQLi-Class Vulnerabilities in LLM Applications
+
+> **Core perspective**: In LLM applications, "instructions" and "data" enter through the same token stream.
+> Since there is no structural mechanism for the model to distinguish between them, instructions mixed into data can override the system prompt.
+> This is exactly the same problem as the boundary between 'strings' and 'queries' breaking down in SQLi.
+
+## 1. Classification — Terminology
+
+| Type | Definition | Representative Example |
+|------|-----------|----------------------|
+| Prompt Injection | User data overrides system prompt | "Ignore above. New instruction: ..." |
+| Jailbreak | Bypass safety guardrails built into the model | DAN (Do Anything Now), roleplay abuse |
+| Indirect Injection | Injected through external content (web pages, files) | "The webpage content says: ignore instructions..." |
+
+## Key Defense Strategies
+
+At the current state of technology, **prompt injection cannot be completely prevented**. Until the model architecture changes, it is a problem of "probabilistically reducing" it.
+
+Therefore, the design strategy should be "making serious damage impossible even if injection succeeds."
+
+- **Dangerous actions are caught by decision logic outside the LLM**.
+- Keep the LLM as an **advisor**, minimize execution permissions.
+- **Raise attack costs** with logging, monitoring, and rate limiting.
+
+These three are the practical consensus as of 2026.

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 적대적 예제 (Adversarial Examples)
 
 ## 개요
@@ -670,3 +676,680 @@ if __name__ == "__main__":
 - "Hidden Voice Commands" (Carlini et al., 2016) — 음성 적대적 예제
 - CleverHans 라이브러리: https://github.com/cleverhans-lab/cleverhans
 - ART(Adversarial Robustness Toolbox): https://github.com/Trusted-AI/adversarial-robustness-toolbox
+
+---
+
+<a name="english"></a>
+
+# Adversarial Examples
+
+## Overview
+
+Adversarial examples are inputs with subtle perturbations that are imperceptible to humans, yet cause machine learning models to misclassify them. A small pixel-level noise can make a model mistake "cat" for "airplane", or a "stop sign" for a "speed limit" sign. This vulnerability exists across all modalities — images, text, and audio.
+
+---
+
+## 1. Major Adversarial Attack Techniques
+
+### 1.1 Image Attack Comparison
+
+| Technique | Full Name | Type | Queries | Compute Cost | Transferability |
+|---|---|---|---|---|---|
+| **FGSM** | Fast Gradient Sign Method | White-box, single-step | 1 | Very low | Medium |
+| **I-FGSM** | Iterative FGSM | White-box, iterative | n | Low | Low |
+| **PGD** | Projected Gradient Descent | White-box, iterative | n | Low | Medium |
+| **CW** | Carlini & Wagner | White-box, optimization | Very many | High | High |
+| **DeepFool** | DeepFool | White-box, iterative | Medium | Medium | Medium |
+| **Square** | Square Attack | Black-box, iterative | Many | Medium | Low |
+| **NES** | Natural Evolution Strategies | Black-box | Many | High | Low |
+| **Boundary** | Boundary Attack | Black-box, decision-based | Very many | High | Low |
+
+### 1.2 FGSM Attack Principle
+
+FGSM uses the sign of the gradient of the model's loss function with respect to the input.
+
+```
+x_adv = x + ε × sign(∇_x J(θ, x, y))
+```
+
+- `x`: original input
+- `ε`: perturbation magnitude (epsilon)
+- `∇_x J(θ, x, y)`: loss gradient with respect to the input
+- `sign()`: sign function (-1 or +1)
+
+### 1.3 PGD Attack Principle
+
+PGD applies FGSM iteratively, projecting the perturbation back into the ε-ball at each step.
+
+```
+x_adv^{t+1} = Clip_{x,ε}(x_adv^t + α × sign(∇_x J(θ, x_adv^t, y)))
+```
+
+- `α`: step size per iteration
+- `Clip_{x,ε}`: clipping within radius ε around x
+
+### 1.4 CW Attack Principle
+
+The CW attack generates adversarial examples with minimal perturbation by solving the following optimization problem.
+
+```
+minimize ‖δ‖_p + c × f(x + δ)
+subject to x + δ ∈ [0, 1]^n
+```
+
+- `δ`: perturbation vector
+- `‖δ‖_p`: Lp norm (L0, L2, L∞)
+- `f()`: confidence-based loss function for misclassification
+
+---
+
+## 2. Physical Adversarial Patches
+
+Research has demonstrated that adversarial examples can also be effective in the physical world.
+
+| Attack Method | Target | Characteristics |
+|---|---|---|
+| **Adversarial glasses** | Face recognition | Induces identity misrecognition with specially patterned glasses |
+| **Adversarial t-shirt** | Pedestrian detection | Evades human detection models |
+| **Adversarial patch** | Traffic sign classification | Causes misclassification by attaching a sticker to a stop sign |
+| **Adversarial lighting** | CCTV systems | Disrupts face recognition with special lighting patterns |
+| **Adversarial makeup** | Face recognition | Evades identity recognition through makeup/disguise |
+| **Adversarial laser** | Camera-based systems | Disrupts sensors with low-power lasers |
+
+Physical attacks must satisfy the following conditions:
+- Effectiveness must persist after color transformation during printing
+- Effectiveness must hold across various angles, distances, and lighting conditions
+- Must not appear suspicious to a human observer
+
+---
+
+## 3. Audio Adversarial Examples
+
+### 3.1 Acoustic Adversarial Attack Categories
+
+| Attack Name | Attack Method | Target System | Detectability |
+|---|---|---|---|
+| **Ultrasonic attack** | Commands sent via frequencies above 20kHz | Smart speakers, voice assistants | Low |
+| **Psychoacoustic attack** | Exploits human auditory masking | Speech recognition APIs | Very low |
+| **Commands in music** | Hides voice commands inside music | Smart devices | Low |
+| **Backmasking** | Commands embedded in reverse playback | Speech recognition models | Low |
+| **Speaker spoofing** | Bypasses speaker authentication with synthetic voice | Speaker verification systems | Medium |
+
+### 3.2 Attack Principle (Psychoacoustic)
+
+The human auditory system fails to perceive a quiet sound next to a loud one (acoustic masking effect). This is exploited by adding an adversarially masked signal to the original audio.
+
+```
+x_adv = x_original + δ
+where δ is a signal below the human auditory threshold but causes ASR model misrecognition
+```
+
+---
+
+## 4. FGSM Adversarial Example Generator CLI
+
+```python
+#!/usr/bin/env python3
+"""
+FGSM Adversarial Example Generator
+Generates FGSM-based adversarial examples using only numpy and PIL.
+Uses manual gradient approximation without torch, and supports batch processing.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+
+try:
+    import numpy as np
+    from PIL import Image
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
+
+
+@dataclass
+class AdversarialConfig:
+    """Adversarial example generation configuration."""
+    epsilon: float = 0.03          # Perturbation magnitude (0~1 range, pixel value scale)
+    iterations: int = 1            # Number of iterations (1=FGSM, >1=I-FGSM)
+    step_size: float | None = None # Step size per iteration (None = epsilon/iterations)
+    norm: str = "linf"             # Norm type: linf / l2
+    clip_min: float = 0.0
+    clip_max: float = 1.0
+    targeted: bool = False         # If True, targeted attack steering toward a specific class
+
+
+@dataclass
+class GenerationResult:
+    """Adversarial example generation result for a single image."""
+    input_path: str
+    output_path: str
+    original_shape: tuple[int, ...]
+    epsilon_used: float
+    l_inf_norm: float              # L∞ norm of the applied perturbation
+    l2_norm: float                 # L2 norm of the applied perturbation
+    success: bool
+    error: str = ""
+    duration_ms: float = 0.0
+
+
+def load_image_as_array(path: Path) -> np.ndarray:
+    """Load an image as a float32 array in the [0, 1] range."""
+    if not HAS_PIL:
+        raise RuntimeError("PIL is required: pip install Pillow numpy")
+    img = Image.open(path).convert("RGB")
+    arr = np.array(img, dtype=np.float32) / 255.0
+    return arr  # shape: (H, W, 3)
+
+
+def save_array_as_image(arr: np.ndarray, path: Path) -> None:
+    """Save a float32 array in [0, 1] range as an image file."""
+    clipped = np.clip(arr * 255.0, 0, 255).astype(np.uint8)
+    img = Image.fromarray(clipped)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    img.save(path)
+
+
+def estimate_gradient_sign(
+    image: np.ndarray,
+    true_class: int,
+    n_classes: int,
+    probe_epsilon: float = 1e-4,
+) -> np.ndarray:
+    """
+    Approximate the sign of the loss gradient using finite differences.
+    In a real environment, model confidence is obtained by querying the model API.
+
+    Here, for demo purposes, the direction of higher-frequency components is used as the gradient.
+    (In a real attack, this would be replaced by confidence differences from the target model.)
+    """
+    # Use per-channel Sobel edge detection as gradient approximation (demo)
+    H, W, C = image.shape
+    grad_sign = np.zeros_like(image)
+
+    for c in range(C):
+        channel = image[:, :, c]
+        # Horizontal gradient
+        gx = np.zeros_like(channel)
+        gx[:, :-1] = channel[:, 1:] - channel[:, :-1]
+        # Vertical gradient
+        gy = np.zeros_like(channel)
+        gy[:-1, :] = channel[1:, :] - channel[:-1, :]
+
+        grad_magnitude = np.sqrt(gx**2 + gy**2)
+        # Determine gradient sign (based on edge direction)
+        grad_sign[:, :, c] = np.where(grad_magnitude > probe_epsilon, 1.0, -1.0)
+
+    return grad_sign
+
+
+def apply_fgsm(
+    image: np.ndarray,
+    grad_sign: np.ndarray,
+    epsilon: float,
+    targeted: bool,
+    clip_min: float,
+    clip_max: float,
+) -> np.ndarray:
+    """Apply FGSM perturbation."""
+    direction = -1.0 if targeted else 1.0  # Targeted attack: minimize loss direction
+    perturbation = direction * epsilon * grad_sign
+    adversarial = image + perturbation
+    return np.clip(adversarial, clip_min, clip_max)
+
+
+def apply_ifgsm(
+    image: np.ndarray,
+    grad_sign: np.ndarray,
+    config: AdversarialConfig,
+) -> np.ndarray:
+    """
+    Apply I-FGSM (Iterative FGSM).
+    Projects the result into the epsilon ball at each step.
+    """
+    step = config.step_size or (config.epsilon / config.iterations)
+    direction = -1.0 if config.targeted else 1.0
+
+    x_adv = image.copy()
+    for _ in range(config.iterations):
+        # Single-step perturbation
+        perturbation = direction * step * grad_sign
+        x_adv = x_adv + perturbation
+
+        # Project into epsilon ball (L∞ norm)
+        delta = x_adv - image
+        delta_clipped = np.clip(delta, -config.epsilon, config.epsilon)
+        x_adv = image + delta_clipped
+
+        # Clip to valid pixel range
+        x_adv = np.clip(x_adv, config.clip_min, config.clip_max)
+
+    return x_adv
+
+
+def compute_perturbation_stats(
+    original: np.ndarray,
+    adversarial: np.ndarray,
+) -> tuple[float, float]:
+    """Compute the L∞ and L2 norms of the perturbation."""
+    delta = adversarial - original
+    l_inf = float(np.max(np.abs(delta)))
+    l2 = float(np.sqrt(np.sum(delta**2)))
+    return l_inf, l2
+
+
+def add_visual_marker(
+    image: np.ndarray,
+    l_inf: float,
+    epsilon: float,
+) -> np.ndarray:
+    """
+    Display perturbation magnitude information at the bottom-right of the image for analysis.
+    Not included in actual attack examples.
+    """
+    marked = image.copy()
+    # Color the bottom-right 10x10 pixels according to perturbation ratio
+    ratio = min(l_inf / epsilon, 1.0) if epsilon > 0 else 0.0
+    H, W = marked.shape[:2]
+    marked[H-10:H, W-10:W, 0] = ratio       # Red channel
+    marked[H-10:H, W-10:W, 1] = 1.0 - ratio  # Green channel
+    marked[H-10:H, W-10:W, 2] = 0.0
+    return marked
+
+
+def generate_adversarial_single(
+    input_path: Path,
+    output_path: Path,
+    config: AdversarialConfig,
+    true_class: int,
+    n_classes: int,
+    add_marker: bool,
+) -> GenerationResult:
+    """Generate an adversarial example for a single image."""
+    start = time.time()
+
+    if not input_path.exists():
+        return GenerationResult(
+            input_path=str(input_path),
+            output_path=str(output_path),
+            original_shape=(),
+            epsilon_used=config.epsilon,
+            l_inf_norm=0.0,
+            l2_norm=0.0,
+            success=False,
+            error=f"File not found: {input_path}",
+        )
+
+    try:
+        original = load_image_as_array(input_path)
+        grad_sign = estimate_gradient_sign(original, true_class, n_classes)
+
+        if config.iterations <= 1:
+            adversarial = apply_fgsm(
+                original, grad_sign, config.epsilon,
+                config.targeted, config.clip_min, config.clip_max
+            )
+        else:
+            adversarial = apply_ifgsm(original, grad_sign, config)
+
+        if add_marker:
+            l_inf_check, _ = compute_perturbation_stats(original, adversarial)
+            adversarial = add_visual_marker(adversarial, l_inf_check, config.epsilon)
+
+        save_array_as_image(adversarial, output_path)
+
+        l_inf, l2 = compute_perturbation_stats(original, adversarial)
+        elapsed = (time.time() - start) * 1000
+
+        return GenerationResult(
+            input_path=str(input_path),
+            output_path=str(output_path),
+            original_shape=original.shape,
+            epsilon_used=config.epsilon,
+            l_inf_norm=l_inf,
+            l2_norm=l2,
+            success=True,
+            duration_ms=elapsed,
+        )
+    except Exception as e:
+        elapsed = (time.time() - start) * 1000
+        return GenerationResult(
+            input_path=str(input_path),
+            output_path=str(output_path),
+            original_shape=(),
+            epsilon_used=config.epsilon,
+            l_inf_norm=0.0,
+            l2_norm=0.0,
+            success=False,
+            error=str(e),
+            duration_ms=elapsed,
+        )
+
+
+def collect_image_paths(source: Path, extensions: set[str]) -> list[Path]:
+    """Collect image paths from a directory or a single file."""
+    if source.is_file():
+        return [source]
+    if source.is_dir():
+        paths: list[Path] = []
+        for ext in extensions:
+            paths.extend(source.rglob(f"*.{ext}"))
+            paths.extend(source.rglob(f"*.{ext.upper()}"))
+        return sorted(paths)
+    return []
+
+
+def build_output_path(
+    input_path: Path,
+    input_base: Path,
+    output_dir: Path,
+    suffix: str,
+) -> Path:
+    """Compute the output path while preserving the input directory structure."""
+    try:
+        relative = input_path.relative_to(input_base)
+    except ValueError:
+        relative = Path(input_path.name)
+
+    stem = relative.stem
+    ext = relative.suffix
+    new_name = f"{stem}{suffix}{ext}"
+    return output_dir / relative.parent / new_name
+
+
+def print_batch_summary(results: list[GenerationResult]) -> None:
+    """Print a summary of batch processing results."""
+    total = len(results)
+    success = [r for r in results if r.success]
+    failed = [r for r in results if not r.success]
+
+    avg_l_inf = sum(r.l_inf_norm for r in success) / len(success) if success else 0
+    avg_l2 = sum(r.l2_norm for r in success) / len(success) if success else 0
+    avg_ms = sum(r.duration_ms for r in success) / len(success) if success else 0
+
+    print("\n" + "=" * 60)
+    print("Adversarial Example Batch Generation Results")
+    print("=" * 60)
+    print(f"Total images    : {total}")
+    print(f"Succeeded       : {len(success)}")
+    print(f"Failed          : {len(failed)}")
+    print(f"Avg L∞ norm     : {avg_l_inf:.4f}")
+    print(f"Avg L2 norm     : {avg_l2:.4f}")
+    print(f"Avg process time: {avg_ms:.1f}ms/image")
+
+    if failed:
+        print()
+        print("[Failed list]")
+        for r in failed[:5]:
+            print(f"  {r.input_path}: {r.error}")
+        if len(failed) > 5:
+            print(f"  ... and {len(failed) - 5} more")
+
+    print("=" * 60)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="fgsm-generator",
+        description="FGSM Adversarial Example Generator (numpy/PIL based, no torch required)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Usage examples:
+  # Single image
+  python 04_adversarial_examples.py \\
+      --model dummy \\
+      --image cat.jpg \\
+      --epsilon 0.05 \\
+      --output adversarial_cat.jpg
+
+  # Batch processing (entire directory)
+  python 04_adversarial_examples.py \\
+      --model dummy \\
+      --image ./dataset/images/ \\
+      --epsilon 0.03 \\
+      --output ./adversarial_output/ \\
+      --iterations 10 \\
+      --workers 4
+
+  # Strong perturbation (for visual inspection)
+  python 04_adversarial_examples.py \\
+      --model dummy \\
+      --image stop_sign.jpg \\
+      --epsilon 0.2 \\
+      --output adversarial_stop.jpg \\
+      --add-marker
+        """,
+    )
+    parser.add_argument(
+        "--model",
+        default="dummy",
+        metavar="MODEL",
+        help="Target model identifier (currently uses gradient approximation, default: dummy)",
+    )
+    parser.add_argument(
+        "--image",
+        required=True,
+        type=Path,
+        metavar="PATH",
+        help="Input image file or directory",
+    )
+    parser.add_argument(
+        "--epsilon",
+        type=float,
+        default=0.03,
+        metavar="FLOAT",
+        help="Perturbation magnitude (0~1 range, default: 0.03)",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        metavar="PATH",
+        help="Output image file or directory",
+    )
+    parser.add_argument(
+        "--iterations",
+        type=int,
+        default=1,
+        metavar="N",
+        help="Number of iterations (1=FGSM, >1=I-FGSM, default: 1)",
+    )
+    parser.add_argument(
+        "--step-size",
+        type=float,
+        default=None,
+        metavar="FLOAT",
+        help="Step size for iterative attack (default: epsilon/iterations)",
+    )
+    parser.add_argument(
+        "--norm",
+        choices=["linf", "l2"],
+        default="linf",
+        help="Perturbation norm type (default: linf)",
+    )
+    parser.add_argument(
+        "--targeted",
+        action="store_true",
+        help="Targeted attack mode (loss minimization direction)",
+    )
+    parser.add_argument(
+        "--true-class",
+        type=int,
+        default=0,
+        metavar="N",
+        help="True class index of the original image (default: 0)",
+    )
+    parser.add_argument(
+        "--n-classes",
+        type=int,
+        default=1000,
+        metavar="N",
+        help="Total number of model classes (default: 1000)",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=2,
+        metavar="N",
+        help="Number of parallel worker processes (default: 2)",
+    )
+    parser.add_argument(
+        "--suffix",
+        default="_adv",
+        metavar="STR",
+        help="Output filename suffix in batch mode (default: _adv)",
+    )
+    parser.add_argument(
+        "--add-marker",
+        action="store_true",
+        help="Add visual perturbation magnitude marker for analysis",
+    )
+    parser.add_argument(
+        "--output-json",
+        type=Path,
+        default=None,
+        metavar="FILE",
+        help="Path to save result JSON",
+    )
+    return parser
+
+
+def main() -> int:
+    if not HAS_PIL:
+        print("[!] Required packages missing: pip install Pillow numpy", file=sys.stderr)
+        return 1
+
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.epsilon <= 0 or args.epsilon > 1:
+        print(f"[!] epsilon must be in range 0~1: {args.epsilon}", file=sys.stderr)
+        return 1
+
+    config = AdversarialConfig(
+        epsilon=args.epsilon,
+        iterations=args.iterations,
+        step_size=args.step_size,
+        norm=args.norm,
+        targeted=args.targeted,
+    )
+
+    IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "bmp", "webp"}
+    image_paths = collect_image_paths(args.image, IMAGE_EXTENSIONS)
+
+    if not image_paths:
+        print(f"[!] No images found: {args.image}", file=sys.stderr)
+        return 1
+
+    # Determine single file vs batch mode
+    is_batch = len(image_paths) > 1 or args.image.is_dir()
+
+    print(f"[*] Starting FGSM adversarial example generation")
+    print(f"    Images: {len(image_paths)} | ε={args.epsilon} | iterations={args.iterations} | norm={args.norm}")
+
+    # Determine output paths
+    if is_batch:
+        input_base = args.image if args.image.is_dir() else args.image.parent
+        output_paths = [
+            build_output_path(p, input_base, args.output, args.suffix)
+            for p in image_paths
+        ]
+    else:
+        output_paths = [args.output]
+
+    # Batch processing
+    results: list[GenerationResult] = []
+    tasks = list(zip(image_paths, output_paths))
+
+    if args.workers > 1 and len(tasks) > 1:
+        with ProcessPoolExecutor(max_workers=args.workers) as executor:
+            future_map = {
+                executor.submit(
+                    generate_adversarial_single,
+                    inp, out, config,
+                    args.true_class, args.n_classes, args.add_marker
+                ): (inp, out)
+                for inp, out in tasks
+            }
+            completed = 0
+            for future in as_completed(future_map):
+                result = future.result()
+                results.append(result)
+                completed += 1
+                status = "done" if result.success else "failed"
+                print(f"  [{completed}/{len(tasks)}] {status}: {result.input_path}")
+    else:
+        for i, (inp, out) in enumerate(tasks, 1):
+            result = generate_adversarial_single(
+                inp, out, config,
+                args.true_class, args.n_classes, args.add_marker
+            )
+            results.append(result)
+            status = "done" if result.success else "failed"
+            print(f"  [{i}/{len(tasks)}] {status}: {inp.name}")
+            if not result.success:
+                print(f"    error: {result.error}")
+
+    print_batch_summary(results)
+
+    if args.output_json:
+        import dataclasses
+        args.output_json.parent.mkdir(parents=True, exist_ok=True)
+        with args.output_json.open("w", encoding="utf-8") as f:
+            serialized = [dataclasses.asdict(r) for r in results]
+            json.dump(serialized, f, ensure_ascii=False, indent=2)
+        print(f"[+] Result JSON saved: {args.output_json}")
+
+    failed_count = sum(1 for r in results if not r.success)
+    return 1 if failed_count > 0 else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+---
+
+## 5. Adversarial Robustness Evaluation Metrics
+
+| Metric | Description | Calculation Method |
+|---|---|---|
+| **Robust accuracy** | Classification accuracy under adversarial attack | Correctly classified count after attack / total samples |
+| **Attack success rate** | Rate of induced misclassifications | Misclassified count / total attacks |
+| **Minimum perturbation** | Minimum ε needed to cause misclassification | Binary search for minimum epsilon |
+| **Transfer rate** | Success rate of attacks generated on other models | Attack success rate on the target model |
+| **Perceptibility** | Degree to which humans can perceive the modification | SSIM, LPIPS, user studies |
+
+---
+
+## 6. Defense Technique Comparison
+
+| Defense Technique | Principle | Advantages | Disadvantages |
+|---|---|---|---|
+| **Adversarial training** | Include attack examples in training data | Most effective | Increased training cost, vulnerable to unseen attacks |
+| **Input preprocessing** | Remove perturbations via JPEG compression, smoothing | Easy to implement | Ineffective against strong attacks |
+| **Differential privacy** | Add Gaussian noise during training | Theoretical guarantees | Accuracy loss |
+| **Randomized smoothing** | Add random noise at inference + majority vote | Can certify L2 robustness | Compute cost, no L∞ support |
+| **Detector addition** | Detect adversarial examples with a separate neural network | Can reject after detection | Detector itself can be attacked |
+| **Input transformation ensemble** | Ensemble after various preprocessing steps | Partially resistant to adaptive attacks | Compute cost |
+
+---
+
+## References
+
+- "Explaining and Harnessing Adversarial Examples" (Goodfellow et al., 2014) — Original FGSM paper
+- "Towards Evaluating the Robustness of Neural Networks" (Carlini & Wagner, 2016) — CW attack
+- "Towards Deep Learning Models Resistant to Adversarial Attacks" (Madry et al., 2017) — PGD attack
+- "Adversarial Patch" (Brown et al., 2017) — Physical patch attack
+- "Hidden Voice Commands" (Carlini et al., 2016) — Audio adversarial examples
+- CleverHans library: https://github.com/cleverhans-lab/cleverhans
+- ART (Adversarial Robustness Toolbox): https://github.com/Trusted-AI/adversarial-robustness-toolbox

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 03. 게임 패킷 조작 (Game Packet Manipulation)
 
 게임 네트워크 트래픽을 분석하고 조작하는 방법을 다룬다. TCP/UDP 프로토콜 분석, 패킷 스니핑, 중간자 공격, 커스텀 프로토콜 역분석까지 포함한다. 모든 내용은 CTF, 보안 연구 목적으로 작성되었다.
@@ -368,7 +374,6 @@ class PcapReader:
 def extract_tcp_payload(frame: bytes) -> Optional[bytes]:
     """Ethernet + IP + TCP 헤더 제거 후 페이로드 추출"""
     try:
-        # Ethernet (14바이트) + IP (가변, IHL 필드) + TCP (가변, Data Offset)
         if len(frame) < 14:
             return None
 
@@ -839,4 +844,275 @@ python packet_tool.py send target.server.com 7777 \
 5. 관심 있는 패킷 우클릭 → Copy as Hex Stream
 6. Python protobuf 역분석 도구로 구조 파악
 7. 조작된 페이로드 생성 후 replay 도구로 전송
+```
+
+---
+
+<a name="english"></a>
+
+# 03. Game Packet Manipulation
+
+This document covers methods for analyzing and manipulating game network traffic, including TCP/UDP protocol analysis, packet sniffing, man-in-the-middle attacks, and reverse engineering of custom protocols. All content is written for CTF and security research purposes.
+
+---
+
+## 1. Game Network Protocol Overview
+
+### 1.1 TCP vs UDP Game Traffic
+
+| Item         | TCP                              | UDP                                |
+|-------------|----------------------------------|------------------------------------|
+| Games       | MMORPG, card games, strategy     | FPS, racing, RTS                   |
+| Features    | Reliability, ordered delivery    | Fast transmission, loss tolerant   |
+| Packet Header | Complex (20+ bytes)            | Simple (8 bytes)                   |
+| Vulnerabilities | Retransmission attacks while connected | UDP Flood, packet replay attacks |
+
+### 1.2 Game Packet Structure (General Form)
+
+```
+┌──────────────────────────────────────────────┐
+│  Packet Header                                │
+│  ┌──────────┬──────────┬──────────────────┐  │
+│  │  Length  │ Packet ID│  Sequence Number │  │
+│  │  2 bytes │  2 bytes │    4 bytes       │  │
+│  └──────────┴──────────┴──────────────────┘  │
+├──────────────────────────────────────────────┤
+│  Payload (variable length)                   │
+│  ┌────────────────────────────────────────┐  │
+│  │  Data (plaintext or encrypted/compressed)│ │
+│  └────────────────────────────────────────┘  │
+├──────────────────────────────────────────────┤
+│  Checksum/HMAC (optional)                    │
+└──────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Wireshark Game Packet Analysis
+
+### 2.1 Basic Capture Filters
+
+```bash
+# Filter by specific port (most game servers: 7777, 25565, 27015, etc.)
+tcp.port == 7777 or udp.port == 7777
+
+# Filter by specific IP address
+ip.addr == 192.168.1.100
+
+# Filter by packet size (focusing on short game packets)
+frame.len < 100
+
+# TCP stream reassembly
+tcp.stream eq 5
+
+# UDP game traffic (payload excluding header)
+udp.length > 8 and udp.port == 27015
+```
+
+### 2.2 Command-line Capture (tshark)
+
+```bash
+# Capture on a specific port (run in background)
+tshark -i eth0 -f "port 7777" -w game_traffic.pcap
+
+# Print packet contents in real-time
+tshark -i eth0 -f "port 7777" -T fields \
+  -e frame.time -e ip.src -e tcp.srcport \
+  -e data.data -E separator=, -E quote=d
+
+# Analyze pcap file (specific stream)
+tshark -r game_traffic.pcap -z "follow,tcp,ascii,0"
+
+# Print UDP payload as hex
+tshark -r game_traffic.pcap -T fields \
+  -e frame.number -e udp.payload -Y "udp.port==7777"
+```
+
+### 2.3 Writing a Game Protocol Decoder with a Lua Plugin
+
+```lua
+-- Wireshark Lua plugin example (game protocol decoder)
+-- Save location: ~/.config/wireshark/plugins/game_proto.lua
+
+local proto_game = Proto("gameproto", "Custom Game Protocol")
+
+-- Field definitions
+local f_len      = ProtoField.uint16("gameproto.length",    "Packet Length", base.DEC)
+local f_id       = ProtoField.uint16("gameproto.id",        "Packet ID",     base.HEX)
+local f_seq      = ProtoField.uint32("gameproto.seq",       "Sequence",      base.DEC)
+local f_payload  = ProtoField.bytes ("gameproto.payload",   "Payload")
+
+proto_game.fields = { f_len, f_id, f_seq, f_payload }
+
+-- Packet ID mapping
+local PACKET_NAMES = {
+    [0x0001] = "LOGIN_REQUEST",
+    [0x0002] = "LOGIN_RESPONSE",
+    [0x0010] = "MOVE",
+    [0x0011] = "ATTACK",
+    [0x0020] = "CHAT",
+    [0x0030] = "ITEM_USE",
+    [0x00FF] = "HEARTBEAT",
+}
+
+function proto_game.dissector(buffer, pinfo, tree)
+    if buffer:len() < 8 then return end
+    pinfo.cols.protocol = proto_game.name
+    -- (same dissector logic as Korean section)
+end
+
+local tcp_port_table = DissectorTable.get("tcp.port")
+tcp_port_table:add(7777, proto_game)
+```
+
+---
+
+## 3. Man-in-the-Middle Attack with mitmproxy
+
+### 3.1 Basic Setup
+
+```bash
+# Install mitmproxy
+pip install mitmproxy
+
+# Transparent proxy mode (TCP stream)
+mitmproxy --mode transparent --rawtcp
+
+# Forward a specific port
+mitmproxy -p 8080 --mode regular
+
+# Command-line mode (run a script)
+mitmdump -s game_intercept.py -p 8080
+```
+
+### 3.2 Game TCP Traffic Interceptor Script
+
+```python
+#!/usr/bin/env python3
+"""
+mitmproxy game traffic interceptor script
+Usage: mitmdump -s game_intercept.py --mode transparent --rawtcp
+"""
+
+from mitmproxy import tcp, ctx
+import struct
+
+PACKET_IDS = {
+    0x0001: "LOGIN_REQUEST",
+    0x0002: "LOGIN_RESPONSE",
+    0x0010: "PLAYER_MOVE",
+    0x0011: "PLAYER_ATTACK",
+    0x0020: "CHAT_MESSAGE",
+    0x0030: "ITEM_USE",
+}
+
+def parse_game_packet(data: bytes) -> dict | None:
+    """Parse game packet header (length + ID + sequence = 8 bytes)"""
+    if len(data) < 8:
+        return None
+    try:
+        length, pkt_id, seq = struct.unpack(">HHI", data[:8])
+        payload = data[8:8 + length - 8] if length > 8 else b""
+        return {
+            "length": length,
+            "id": pkt_id,
+            "id_name": PACKET_IDS.get(pkt_id, f"UNKNOWN_0x{pkt_id:04X}"),
+            "seq": seq,
+            "payload": payload,
+        }
+    except struct.error:
+        return None
+
+def tcp_start(flow: tcp.TCPFlow) -> None:
+    ctx.log.info(f"[TCP] Connection started: {flow.client_conn.address} -> {flow.server_conn.address}")
+
+def tcp_message(flow: tcp.TCPFlow) -> None:
+    msg = flow.messages[-1]
+    direction = "C→S" if msg.from_client else "S→C"
+    raw = bytes(msg.content)
+    pkt = parse_game_packet(raw)
+    if pkt:
+        ctx.log.info(
+            f"[{direction}] {pkt['id_name']} seq={pkt['seq']} "
+            f"len={pkt['length']} payload={pkt['payload'].hex()}"
+        )
+        # Example: modify PLAYER_MOVE packet coordinates
+        if pkt["id"] == 0x0010 and msg.from_client:
+            payload = bytearray(pkt["payload"])
+            if len(payload) >= 12:
+                x, y, z = struct.unpack_from("<fff", payload, 0)
+                ctx.log.info(f"  Coords: X={x:.2f} Y={y:.2f} Z={z:.2f}")
+    else:
+        ctx.log.debug(f"[{direction}] RAW: {raw.hex()[:64]}...")
+
+def tcp_end(flow: tcp.TCPFlow) -> None:
+    ctx.log.info(f"[TCP] Connection ended: {flow.client_conn.address}")
+```
+
+---
+
+## 4. Custom Packet Sending Tool
+
+### 4.1 Complete Game Packet Sniffer/Modifier Tool
+
+The Python tool above (in the Korean section) provides:
+- `pcap` subcommand: analyze pcap files
+- `replay` subcommand: replay specific packet IDs from a pcap
+- `sniff` subcommand: live packet sniffing (requires root)
+- `send` subcommand: send custom packets
+
+---
+
+## 5. Protocol Buffer Reverse Engineering
+
+### 5.1 Manual Protobuf Parsing
+
+The Python tool decodes binary protobuf data without a `.proto` file, supporting all wire types: VARINT, 64-bit, length-delimited (strings, bytes, nested messages), and 32-bit.
+
+---
+
+## 6. Server-Side Validation Bypass Case Analysis
+
+### 6.1 Common Vulnerable Patterns
+
+```
+Vulnerable implementation (server):
+  Trusts the item price sent by the client directly
+  → Packet: {item_id: 1, price: 1, quantity: 1}
+  → Manipulated: {item_id: 1, price: -9999, quantity: 999}
+  → Result: Gold increases
+
+Correct implementation (server):
+  Looks up the price from the server DB using the item ID
+  Ignores the price value received from the client
+```
+
+### 6.2 Replay Attack Scenario
+
+```bash
+# 1. Capture normal transaction packets
+python packet_tool.py sniff eth0 7777 --duration 60 --output trades.json
+
+# 2. Filter specific transaction packet IDs
+python packet_tool.py pcap game.pcap --filter-id 0x0030
+
+# 3. Repeatedly send the same transaction packet (duplicates processed if no server check)
+python packet_tool.py replay game.pcap target.server.com 7777 --ids 0x0030
+
+# 4. Send a custom packet directly (with tampered values)
+python packet_tool.py send target.server.com 7777 \
+  --id 0x0030 --seq 1 \
+  --payload "01000000FFFFFFFFFFFFFF7F"  # item_id=1, price=-1 (manipulated)
+```
+
+### 6.3 Wireshark Packet Analysis Workflow
+
+```
+1. tshark -i eth0 -f "host gameserver.com" -w capture.pcap
+2. Open capture.pcap in Wireshark
+3. Apply filter: tcp.port == 7777
+4. Follow TCP Stream → understand packet structure
+5. Right-click a packet of interest → Copy as Hex Stream
+6. Use Python protobuf reverse engineering tool to understand structure
+7. Generate a manipulated payload and send it using the replay tool
 ```

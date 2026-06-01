@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Cloud Native 보안 위협 모델
 
 ## 목차
@@ -802,6 +808,818 @@ python k8s_audit.py --format json | jq '.findings[] | select(.severity == "HIGH"
 ---
 
 ## 참고 자료
+
+- [MITRE ATT&CK for Containers](https://attack.mitre.org/matrices/enterprise/containers/)
+- [Microsoft Kubernetes Threat Matrix](https://www.microsoft.com/security/blog/2021/03/23/secure-containerized-environments-with-updated-threat-matrix-for-kubernetes/)
+- [CNCF Cloud Native Security Whitepaper](https://github.com/cncf/tag-security/blob/main/security-whitepaper/CNCF_cloud-native-security-whitepaper-Nov2020.pdf)
+- [NSA/CISA Kubernetes Hardening Guide](https://media.defense.gov/2022/Aug/29/2003066362/-1/-1/0/CTR_KUBERNETES_HARDENING_GUIDANCE_1.2_20220829.PDF)
+- [Kubernetes Security Checklist](https://kubernetes.io/docs/concepts/security/security-checklist/)
+
+---
+
+<a name="english"></a>
+
+# Cloud Native Security Threat Model
+
+## Table of Contents
+1. Cloud Native Security Overview
+2. Applying the STRIDE Threat Model
+3. MITRE ATT&CK for Containers
+4. CNAPP (Cloud Native Application Protection Platform)
+5. CSPM / CWPP / CIEM Comparison
+6. Container Threat Model
+7. Kubernetes Attack Matrix
+8. Python: Kubernetes Security Audit Automation Tool
+
+---
+
+## 1. Cloud Native Security Overview
+
+The Cloud Native environment is a complex ecosystem combining containers, microservices, orchestration (Kubernetes), serverless, and CI/CD pipelines. Traditional perimeter security models do not work in this environment, and new threat models and response methodologies are required.
+
+### The 4C Layers of Cloud Native Security
+
+```
+┌─────────────────────────────────┐
+│           Code                  │  ← Application vulnerabilities, SAST/DAST
+├─────────────────────────────────┤
+│       Container                 │  ← Image vulnerabilities, runtime security
+├─────────────────────────────────┤
+│        Cluster                  │  ← Kubernetes RBAC, network policies
+├─────────────────────────────────┤
+│          Cloud                  │  ← IAM, network, storage security
+└─────────────────────────────────┘
+```
+
+Each layer trusts the security of the layer below it, so if a lower layer is compromised, the upper layers are also exposed to risk.
+
+---
+
+## 2. Applying the STRIDE Threat Model
+
+STRIDE is a threat modeling methodology developed by Microsoft. It applies to Cloud Native environments as follows.
+
+### S - Spoofing
+- **Threat**: A malicious container masquerading as a trusted service
+- **Examples**: Service account token theft, mTLS certificate forgery
+- **Mitigation**: Enforce mTLS (Istio/Linkerd), least-privilege service accounts
+
+### T - Tampering
+- **Threat**: Tampering with container images, configuration files, or etcd data
+- **Examples**: Deploying malicious images via supply chain attacks, direct etcd access
+- **Mitigation**: Image signing (Cosign), etcd encryption, GitOps integrity verification
+
+### R - Repudiation
+- **Threat**: Absence of audit logs that allows attackers to deny malicious actions
+- **Examples**: Unable to trace lateral movement inside containers
+- **Mitigation**: Centralized logging (EFK/Loki), immutable audit logs, eBPF-based syscall tracing
+
+### I - Information Disclosure
+- **Threat**: Secret exposure, network traffic sniffing
+- **Examples**: DB passwords stored as environment variables, unencrypted inter-Pod communication
+- **Mitigation**: Kubernetes Secrets encryption, HashiCorp Vault, network encryption
+
+### D - Denial of Service
+- **Threat**: Service disruption due to resource exhaustion
+- **Examples**: Unlimited CPU/memory consumption without container resource limits, etcd capacity saturation
+- **Mitigation**: Apply ResourceQuota, LimitRange, PodDisruptionBudget
+
+### E - Elevation of Privilege
+- **Threat**: Container escape, RBAC escalation
+- **Examples**: Accessing the host from a privileged container, obtaining ClusterAdmin rights
+- **Mitigation**: Pod Security Standards, RBAC least privilege, OPA Gatekeeper
+
+---
+
+## 3. MITRE ATT&CK for Containers
+
+MITRE ATT&CK for Containers is a framework that systematizes attack tactics and techniques specific to container environments.
+
+### Tactics and Key Techniques
+
+#### TA0001 - Initial Access
+| Technique ID | Technique Name | Description |
+|---------|--------|------|
+| T1190 | Public-Facing Application Exploit | Exploiting exposed Kubernetes Dashboard, API server |
+| T1078 | Valid Accounts | Using stolen cloud credentials |
+| T1195.002 | Supply Chain Compromise | Distributing malicious container images |
+
+#### TA0002 - Execution
+| Technique ID | Technique Name | Description |
+|---------|--------|------|
+| T1609 | Container Administration Command | Abusing kubectl exec, docker exec |
+| T1610 | Deploy Container | Deploying new malicious containers |
+| T1059 | Command Interpreter | Executing a shell inside a container |
+
+#### TA0004 - Privilege Escalation
+| Technique ID | Technique Name | Description |
+|---------|--------|------|
+| T1611 | Escape to Host | Container escape techniques |
+| T1078.001 | Default Accounts | Abusing default service account tokens |
+| T1548 | Abuse Elevation Control | Bypassing RBAC policies |
+
+#### TA0008 - Lateral Movement
+| Technique ID | Technique Name | Description |
+|---------|--------|------|
+| T1210 | Exploitation of Remote Services | Exploiting internal service vulnerabilities |
+| T1552.007 | Container API | Moving via the internal Kubernetes API |
+
+#### TA0010 - Exfiltration
+| Technique ID | Technique Name | Description |
+|---------|--------|------|
+| T1537 | Transfer Data to Cloud Account | Transferring data to cloud storage |
+| T1041 | Exfiltration Over C2 Channel | Exfiltrating data through C&C channels |
+
+---
+
+## 4. CNAPP (Cloud Native Application Protection Platform)
+
+CNAPP is a platform that provides unified protection for cloud-native applications from build time to runtime. First defined by Gartner in 2021, it integrates CSPM, CWPP, and CIEM capabilities.
+
+### CNAPP Architecture
+
+```
+┌────────────────────────────────────────────────────────┐
+│                      CNAPP                             │
+│                                                        │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
+│  │  CSPM    │  │  CWPP    │  │  CIEM    │            │
+│  │ (Cloud   │  │(Workload │  │(Identity/│            │
+│  │ Posture) │  │Protection│  │  Access) │            │
+│  └──────────┘  └──────────┘  └──────────┘            │
+│                                                        │
+│  ┌────────────────────────────────────────┐           │
+│  │        CI/CD Pipeline Security         │           │
+│  │    (IaC scanning, image scanning, SAST)│           │
+│  └────────────────────────────────────────┘           │
+└────────────────────────────────────────────────────────┘
+```
+
+### Key CNAPP Solutions
+- **Prisma Cloud (Palo Alto Networks)**: Most comprehensive CNAPP offering
+- **Wiz**: Agentless approach, rapid deployment
+- **Lacework**: AI-based anomaly detection
+- **Aqua Security**: Container-specialized security
+- **SentinelOne Singularity Cloud**: EDR-based CNAPP
+
+---
+
+## 5. CSPM / CWPP / CIEM Comparison
+
+### CSPM (Cloud Security Posture Management)
+
+**Purpose**: Detect cloud infrastructure misconfigurations and verify regulatory compliance
+
+**Key Features**:
+- Detecting publicly exposed AWS S3 buckets
+- Detecting overly permissive security group rules
+- Multi-cloud compliance (CIS Benchmark, SOC2, PCI-DSS)
+- Static analysis of IaC (Terraform, CloudFormation)
+
+**Representative Tools**: Prowler, ScoutSuite, CloudSploit, Wiz
+
+```bash
+# Example AWS security audit using Prowler
+prowler aws -c check11,check12 -r us-east-1
+```
+
+### CWPP (Cloud Workload Protection Platform)
+
+**Purpose**: Runtime protection for container, VM, and serverless workloads
+
+**Key Features**:
+- Container runtime anomaly detection (abnormal processes, file access)
+- Vulnerability scanning (image layers, packages)
+- Network microsegmentation
+- Drift detection (detecting changes to running containers)
+
+**Representative Tools**: Falco, Aqua, Sysdig Secure
+
+### CIEM (Cloud Infrastructure Entitlement Management)
+
+**Purpose**: Detect and manage over-provisioned cloud identities and permissions
+
+**Key Features**:
+- IAM policy analysis (actual usage vs. granted permissions)
+- Detection and removal recommendations for unused permissions
+- Visualization of privilege escalation paths
+- Just-In-Time access control
+
+**Representative Tools**: Ermetic, CloudKnox, AWS IAM Access Analyzer
+
+### Comparison Table
+
+| Criteria | CSPM | CWPP | CIEM |
+|------|------|------|------|
+| Focus | Infrastructure configuration | Workload runtime | Identity/permissions |
+| Timing | Build/deploy | Runtime | Continuous |
+| Agent required | No | Yes | No |
+| Primary threats | Misconfigurations | Runtime attacks | Permission abuse |
+
+---
+
+## 6. Container Threat Model
+
+### 6.1 Image Vulnerabilities
+
+Container images contain hundreds of packages and libraries, each of which becomes an attack surface for vulnerabilities.
+
+```
+Image Layer Structure:
+┌─────────────────────────────┐
+│   Application Code Layer    │  ← SAST, SCA
+├─────────────────────────────┤
+│   Runtime Dependency Layer  │  ← Package vulnerability scanning
+├─────────────────────────────┤
+│   OS Package Layer          │  ← CVE database mapping
+├─────────────────────────────┤
+│   Base Image Layer          │  ← Minimization (Distroless/Scratch)
+└─────────────────────────────┘
+```
+
+**Key Attack Scenarios**:
+1. **Outdated base images**: Hundreds of CVEs in ubuntu:18.04
+2. **Log4Shell (CVE-2021-44228)**: Mass deployment of images containing the Log4j vulnerability
+3. **Malicious images**: Typosquatting images on Docker Hub (nginx vs. ngnix)
+
+### 6.2 Runtime Attacks
+
+Runtime attacks occur while a container is running.
+
+**Container Escape Techniques**:
+1. **Abusing privileged containers**: Direct access to host devices
+2. **Host path mounts**: Access to the host filesystem
+3. **Vulnerable runtime**: runc CVE-2019-5736 (runC vulnerability)
+4. **Kernel vulnerabilities**: Privilege escalation due to shared host kernel
+
+```yaml
+# Example of a dangerous Pod configuration
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dangerous-pod
+spec:
+  hostPID: true           # Share host PID namespace (DANGEROUS!)
+  hostNetwork: true       # Share host network (DANGEROUS!)
+  containers:
+  - name: app
+    securityContext:
+      privileged: true    # Privileged container (DANGEROUS!)
+      runAsRoot: true     # Run as root (DANGEROUS!)
+    volumeMounts:
+    - mountPath: /host
+      name: host-vol
+  volumes:
+  - name: host-vol
+    hostPath:
+      path: /             # Mount host root (VERY DANGEROUS!)
+```
+
+### 6.3 Lateral Movement
+
+**Inter-Pod Communication Attacks**:
+- Default Kubernetes allows all communication between Pods
+- Without network policies, internal services can be scanned
+- Service discovery via CoreDNS
+
+```
+Attacker Pod → Internal service scan → API server access → Secret theft
+             → Direct etcd access → Full cluster takeover
+```
+
+---
+
+## 7. Kubernetes Attack Matrix (Microsoft)
+
+The Kubernetes attack matrix provided by Microsoft Azure Security Center:
+
+### Initial Access
+- **Using Cloud Credentials**: Accessing the cluster with cloud credentials
+- **Compromised Image in Registry**: Using a malicious image registry
+- **Kubeconfig File**: Stealing the kubeconfig file
+- **Exposed Dashboard**: An unsecured Kubernetes Dashboard
+- **Exposed Sensitive Interfaces**: Direct exposure of the Kubelet API, etcd
+
+### Execution
+- **Exec into Container**: Abusing kubectl exec
+- **New Container**: Creating a new malicious container
+- **Application Exploit**: Exploiting app vulnerabilities inside a container
+- **SSH Server Running in Container**: Running an SSH server inside a container
+
+### Persistence
+- **Backdoor Container**: Replacing with a backdoored image
+- **Writable hostPath Mount**: Registering a crontab on the host filesystem
+- **Kubernetes CronJob**: Creating a malicious CronJob
+- **Malicious Admission Controller**: Registering a malicious Webhook
+
+### Privilege Escalation
+- **Privileged Container**: Accessing the host from a privileged container
+- **Cluster-admin Binding**: Creating a ClusterRoleBinding
+- **hostPath Mount**: Accessing /etc/cron.d, /var/spool/cron
+- **Access Cloud Resources**: IAM permissions via the metadata API
+
+### Defense Evasion
+- **Clear Container Logs**: Deleting container logs
+- **Delete K8s Events**: Deleting Kubernetes events
+- **Pod/Container Name Similarity**: Using names similar to legitimate Pods
+- **Connect from Proxy Server**: Anonymous access through a proxy
+
+---
+
+## 8. Python: Kubernetes Security Audit Automation Tool
+
+```python
+#!/usr/bin/env python3
+"""
+Kubernetes Security Audit Checklist Automation Tool
+Automatically inspects security configurations in Cloud Native environments.
+"""
+
+import argparse
+import json
+import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
+
+
+class Severity(Enum):
+    CRITICAL = "CRITICAL"
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+    INFO = "INFO"
+
+
+@dataclass
+class Finding:
+    check_id: str
+    title: str
+    severity: Severity
+    resource: str
+    namespace: str
+    description: str
+    remediation: str
+    passed: bool = False
+
+
+@dataclass
+class AuditResult:
+    total_checks: int = 0
+    passed: int = 0
+    failed: int = 0
+    findings: list[Finding] = field(default_factory=list)
+
+    def add_finding(self, finding: Finding) -> None:
+        self.total_checks += 1
+        if finding.passed:
+            self.passed += 1
+        else:
+            self.failed += 1
+            self.findings.append(finding)
+
+
+def run_kubectl(args: list[str], namespace: str | None = None) -> dict[str, Any] | None:
+    """Execute a kubectl command and return the JSON result."""
+    cmd = ["kubectl"] + args + ["-o", "json"]
+    if namespace:
+        cmd.extend(["-n", namespace])
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=True,
+        )
+        return json.loads(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"[WARNING] kubectl error: {e.stderr.strip()}", file=sys.stderr)
+        return None
+    except (json.JSONDecodeError, subprocess.TimeoutExpired) as e:
+        print(f"[WARNING] Command failed: {e}", file=sys.stderr)
+        return None
+
+
+def check_privileged_containers(namespace: str) -> list[Finding]:
+    """Check for privileged containers."""
+    findings: list[Finding] = []
+    data = run_kubectl(["get", "pods"], namespace=namespace)
+    if not data:
+        return findings
+
+    for pod in data.get("items", []):
+        pod_name = pod["metadata"]["name"]
+        ns = pod["metadata"]["namespace"]
+        for container in pod["spec"].get("containers", []):
+            sc = container.get("securityContext", {})
+            if sc.get("privileged", False):
+                findings.append(
+                    Finding(
+                        check_id="K8S-001",
+                        title="Privileged Container Detected",
+                        severity=Severity.CRITICAL,
+                        resource=f"Pod/{pod_name}/{container['name']}",
+                        namespace=ns,
+                        description=(
+                            f"Container '{container['name']}' is running with privileged=true. "
+                            "It has full access to the host kernel."
+                        ),
+                        remediation="Set or remove securityContext.privileged to false.",
+                        passed=False,
+                    )
+                )
+    return findings
+
+
+def check_host_path_mounts(namespace: str) -> list[Finding]:
+    """Check for hostPath volume mounts."""
+    findings: list[Finding] = []
+    dangerous_paths = ["/", "/etc", "/var/run", "/proc", "/sys", "/root"]
+    data = run_kubectl(["get", "pods"], namespace=namespace)
+    if not data:
+        return findings
+
+    for pod in data.get("items", []):
+        pod_name = pod["metadata"]["name"]
+        ns = pod["metadata"]["namespace"]
+        for volume in pod["spec"].get("volumes", []):
+            if "hostPath" in volume:
+                host_path = volume["hostPath"].get("path", "")
+                is_dangerous = any(
+                    host_path == dp or host_path.startswith(dp + "/")
+                    for dp in dangerous_paths
+                )
+                severity = Severity.CRITICAL if is_dangerous else Severity.HIGH
+                findings.append(
+                    Finding(
+                        check_id="K8S-002",
+                        title="Dangerous hostPath Mount Detected",
+                        severity=severity,
+                        resource=f"Pod/{pod_name}",
+                        namespace=ns,
+                        description=(
+                            f"Volume '{volume['name']}' mounts host path '{host_path}'."
+                        ),
+                        remediation="Remove the hostPath mount or restrict it to read-only.",
+                        passed=False,
+                    )
+                )
+    return findings
+
+
+def check_root_containers(namespace: str) -> list[Finding]:
+    """Check for containers running as the root user."""
+    findings: list[Finding] = []
+    data = run_kubectl(["get", "pods"], namespace=namespace)
+    if not data:
+        return findings
+
+    for pod in data.get("items", []):
+        pod_name = pod["metadata"]["name"]
+        ns = pod["metadata"]["namespace"]
+        pod_sc = pod["spec"].get("securityContext", {})
+        for container in pod["spec"].get("containers", []):
+            c_sc = container.get("securityContext", {})
+            run_as_user = c_sc.get("runAsUser", pod_sc.get("runAsUser", None))
+            run_as_non_root = c_sc.get(
+                "runAsNonRoot", pod_sc.get("runAsNonRoot", False)
+            )
+            if run_as_user == 0 or (run_as_user is None and not run_as_non_root):
+                findings.append(
+                    Finding(
+                        check_id="K8S-003",
+                        title="Container Running as Root",
+                        severity=Severity.HIGH,
+                        resource=f"Pod/{pod_name}/{container['name']}",
+                        namespace=ns,
+                        description="Container is running as root (UID=0) or with an unspecified user.",
+                        remediation=(
+                            "Set securityContext.runAsNonRoot=true and "
+                            "runAsUser to 1000 or higher."
+                        ),
+                        passed=False,
+                    )
+                )
+    return findings
+
+
+def check_rbac_cluster_admin(namespace: str) -> list[Finding]:
+    """Check for ClusterAdmin role bindings (namespace-independent)."""
+    findings: list[Finding] = []
+    data = run_kubectl(["get", "clusterrolebindings"])
+    if not data:
+        return findings
+
+    for binding in data.get("items", []):
+        binding_name = binding["metadata"]["name"]
+        role_ref = binding.get("roleRef", {})
+        if role_ref.get("name") == "cluster-admin":
+            subjects = binding.get("subjects", [])
+            for subject in subjects:
+                if subject.get("kind") in ("ServiceAccount", "User", "Group"):
+                    findings.append(
+                        Finding(
+                            check_id="K8S-004",
+                            title="cluster-admin Role Binding Detected",
+                            severity=Severity.CRITICAL,
+                            resource=f"ClusterRoleBinding/{binding_name}",
+                            namespace="cluster-wide",
+                            description=(
+                                f"'{subject.get('name')}' ({subject.get('kind')}) "
+                                "has been granted cluster-admin privileges."
+                            ),
+                            remediation="Apply the principle of least privilege and grant only necessary permissions.",
+                            passed=False,
+                        )
+                    )
+    return findings
+
+
+def check_default_service_account(namespace: str) -> list[Finding]:
+    """Check for automatic mounting of the default service account token."""
+    findings: list[Finding] = []
+    data = run_kubectl(["get", "pods"], namespace=namespace)
+    if not data:
+        return findings
+
+    for pod in data.get("items", []):
+        pod_name = pod["metadata"]["name"]
+        ns = pod["metadata"]["namespace"]
+        sa_name = pod["spec"].get("serviceAccountName", "default")
+        auto_mount = pod["spec"].get("automountServiceAccountToken", True)
+        if sa_name == "default" and auto_mount:
+            findings.append(
+                Finding(
+                    check_id="K8S-005",
+                    title="Default Service Account Token Auto-Mounted",
+                    severity=Severity.MEDIUM,
+                    resource=f"Pod/{pod_name}",
+                    namespace=ns,
+                    description=(
+                        "The Pod uses the default service account and "
+                        "the token is auto-mounted."
+                    ),
+                    remediation=(
+                        "Set automountServiceAccountToken: false or "
+                        "use a dedicated service account."
+                    ),
+                    passed=False,
+                )
+            )
+    return findings
+
+
+def check_resource_limits(namespace: str) -> list[Finding]:
+    """Check for containers with no resource limits set."""
+    findings: list[Finding] = []
+    data = run_kubectl(["get", "pods"], namespace=namespace)
+    if not data:
+        return findings
+
+    for pod in data.get("items", []):
+        pod_name = pod["metadata"]["name"]
+        ns = pod["metadata"]["namespace"]
+        for container in pod["spec"].get("containers", []):
+            resources = container.get("resources", {})
+            limits = resources.get("limits", {})
+            if not limits.get("cpu") or not limits.get("memory"):
+                findings.append(
+                    Finding(
+                        check_id="K8S-006",
+                        title="Resource Limits Not Set",
+                        severity=Severity.MEDIUM,
+                        resource=f"Pod/{pod_name}/{container['name']}",
+                        namespace=ns,
+                        description="CPU or memory limits are not configured.",
+                        remediation=(
+                            "Set resources.limits.cpu and resources.limits.memory."
+                        ),
+                        passed=False,
+                    )
+                )
+    return findings
+
+
+def check_network_policies(namespace: str) -> list[Finding]:
+    """Check whether NetworkPolicies are applied."""
+    findings: list[Finding] = []
+    data = run_kubectl(["get", "networkpolicies"], namespace=namespace)
+    if data is None:
+        return findings
+
+    policies = data.get("items", [])
+    if not policies:
+        findings.append(
+            Finding(
+                check_id="K8S-007",
+                title="NetworkPolicy Not Applied",
+                severity=Severity.HIGH,
+                resource="Namespace",
+                namespace=namespace,
+                description=(
+                    f"Namespace '{namespace}' has no NetworkPolicy. "
+                    "All inter-Pod communication is allowed."
+                ),
+                remediation="Apply a default deny-all NetworkPolicy and allow only required traffic.",
+                passed=False,
+            )
+        )
+    return findings
+
+
+def audit_namespace(namespace: str) -> AuditResult:
+    """Run a security audit for a specific namespace."""
+    result = AuditResult()
+    check_functions = [
+        check_privileged_containers,
+        check_host_path_mounts,
+        check_root_containers,
+        check_default_service_account,
+        check_resource_limits,
+        check_network_policies,
+    ]
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {
+            executor.submit(fn, namespace): fn.__name__
+            for fn in check_functions
+        }
+        for future in as_completed(futures):
+            fn_name = futures[future]
+            try:
+                findings = future.result()
+                for finding in findings:
+                    result.add_finding(finding)
+            except Exception as e:
+                print(f"[ERROR] {fn_name} failed: {e}", file=sys.stderr)
+
+    # ClusterAdmin check runs separately (namespace-independent)
+    ca_findings = check_rbac_cluster_admin(namespace)
+    for finding in ca_findings:
+        result.add_finding(finding)
+
+    return result
+
+
+def print_report(result: AuditResult, output_format: str) -> None:
+    """Print audit results."""
+    if output_format == "json":
+        report = {
+            "summary": {
+                "total_checks": result.total_checks,
+                "passed": result.passed,
+                "failed": result.failed,
+            },
+            "findings": [
+                {
+                    "check_id": f.check_id,
+                    "title": f.title,
+                    "severity": f.severity.value,
+                    "resource": f.resource,
+                    "namespace": f.namespace,
+                    "description": f.description,
+                    "remediation": f.remediation,
+                }
+                for f in result.findings
+            ],
+        }
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return
+
+    # Text output
+    print("\n" + "=" * 70)
+    print("  Kubernetes Security Audit Results")
+    print("=" * 70)
+    print(f"  Total Checks: {result.total_checks}")
+    print(f"  Passed:       {result.passed}")
+    print(f"  Failed:       {result.failed}")
+    print("=" * 70)
+
+    severity_order = [
+        Severity.CRITICAL,
+        Severity.HIGH,
+        Severity.MEDIUM,
+        Severity.LOW,
+        Severity.INFO,
+    ]
+    sorted_findings = sorted(
+        result.findings,
+        key=lambda f: severity_order.index(f.severity),
+    )
+
+    for finding in sorted_findings:
+        severity_colors = {
+            Severity.CRITICAL: "\033[91m",
+            Severity.HIGH: "\033[93m",
+            Severity.MEDIUM: "\033[94m",
+            Severity.LOW: "\033[92m",
+            Severity.INFO: "\033[0m",
+        }
+        color = severity_colors.get(finding.severity, "\033[0m")
+        reset = "\033[0m"
+
+        print(f"\n{color}[{finding.severity.value}]{reset} {finding.check_id}: {finding.title}")
+        print(f"  Resource:     {finding.resource} ({finding.namespace})")
+        print(f"  Description:  {finding.description}")
+        print(f"  Remediation:  {finding.remediation}")
+
+    print("\n" + "=" * 70)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Kubernetes Security Audit Automation Tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Usage examples:
+  %(prog)s -n default
+  %(prog)s -n kube-system --format json
+  %(prog)s -n default -n production --format json
+        """,
+    )
+    parser.add_argument(
+        "-n",
+        "--namespace",
+        action="append",
+        dest="namespaces",
+        default=["default"],
+        help="Namespace to audit (default: default, can be repeated)",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    parser.add_argument(
+        "--all-namespaces",
+        action="store_true",
+        help="Audit all namespaces",
+    )
+    return parser.parse_args()
+
+
+def get_all_namespaces() -> list[str]:
+    """Retrieve a list of all namespaces in the cluster."""
+    data = run_kubectl(["get", "namespaces"])
+    if not data:
+        return ["default"]
+    return [
+        ns["metadata"]["name"]
+        for ns in data.get("items", [])
+    ]
+
+
+def main() -> int:
+    args = parse_args()
+
+    namespaces = args.namespaces
+    if args.all_namespaces:
+        namespaces = get_all_namespaces()
+        print(f"[INFO] Starting audit of {len(namespaces)} namespaces...")
+
+    combined_result = AuditResult()
+    for namespace in namespaces:
+        print(f"[INFO] Auditing namespace '{namespace}'...", file=sys.stderr)
+        result = audit_namespace(namespace)
+        combined_result.total_checks += result.total_checks
+        combined_result.passed += result.passed
+        combined_result.failed += result.failed
+        combined_result.findings.extend(result.findings)
+
+    print_report(combined_result, args.format)
+    return 0 if combined_result.failed == 0 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+### Tool Usage
+
+```bash
+# Basic usage (default namespace)
+python k8s_audit.py
+
+# Audit a specific namespace
+python k8s_audit.py -n production
+
+# Audit multiple namespaces simultaneously
+python k8s_audit.py -n default -n kube-system -n production
+
+# Output in JSON format (for CI/CD integration)
+python k8s_audit.py --all-namespaces --format json | jq '.findings[] | select(.severity == "CRITICAL")'
+
+# Filter by severity
+python k8s_audit.py --format json | jq '.findings[] | select(.severity == "HIGH" or .severity == "CRITICAL")'
+```
+
+---
+
+## References
 
 - [MITRE ATT&CK for Containers](https://attack.mitre.org/matrices/enterprise/containers/)
 - [Microsoft Kubernetes Threat Matrix](https://www.microsoft.com/security/blog/2021/03/23/secure-containerized-environments-with-updated-threat-matrix-for-kubernetes/)

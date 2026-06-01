@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 33-01. OSINT 방법론과 고급 검색 — 공개 정보를 표적 정찰로 바꾸는 체계
 
 > 한 줄 요약: 공개된 단편 정보를 사이클·연산자·자동화 파이프라인으로 엮어 "표적이 무엇을 노출했는지" 한 페이지로 압축하는 기술이다.
@@ -809,3 +815,481 @@ export HUNTER_API_KEY="..."
 ---
 
 이 문서가 끝나면 표적의 외형 90%는 손에 들어와 있다. 다음 33-02에서 그 외형에 사람을 채워 넣는다.
+
+---
+
+<a name="english"></a>
+
+# 33-01. OSINT Methodology and Advanced Search — Turning Public Information into Targeted Reconnaissance
+
+> One-line summary: The technique of weaving scattered public information through cycles, operators, and automated pipelines to compress "what the target has exposed" into a single page.
+
+---
+
+## 1. Why Start with OSINT?
+
+Whether it's a penetration test or a red team operation, the first few days are almost entirely spent on reconnaissance. In Korean practice, roughly 30–40% of total effort goes into OSINT and external asset mapping. Before writing a single line of code, identifying the target's domain tree, subcontractors, employee email patterns, exposed S3 buckets, and even an RDP port accidentally left open during a closed-network inspection saves enormous time overall.
+
+Three things have changed significantly by 2026:
+
+- **Accelerated automatic indexing**: Shodan, Censys, FOFA, ZoomEye, and Hunter scan all IPv4 addresses multiple times a day, and code hosting platforms like GitHub, GitLab, and HuggingFace reflect pushes in search indexes within minutes. A "backup SQL uploaded yesterday" can be exposed to the outside world by lunchtime.
+- **AI-assisted reconnaissance**: LLM-based tools like ReconAgent and OSINT-GPT automatically vary and retry hundreds of dorking queries that humans previously had to run manually. Defenders use the same tools.
+- **Strengthened privacy regulations**: The Korean Personal Information Protection Act 2024 amendment, EU AI Act, and US state-level CCPA variants now apply simultaneously, raising the constant question "just because it's public, can we collect everything?"
+
+Therefore, OSINT is no longer a preliminary "I googled it" step — it must be treated as a formalized procedure covering **requirements definition → collection → analysis → evidence preservation**.
+
+---
+
+## 2. The OSINT Cycle — Practical Application of 5-Stage Intelligence Analysis
+
+The intelligence cycle used by the US ODNI and UK SIS, rewritten in Korean penetration/forensics practice terms.
+
+```
+                  ┌─────────────────────────┐
+                  │ 1) Direction            │
+                  │  - Define what to find  │
+                  │  - Scope/time/legal limits│
+                  └────────────┬────────────┘
+                               │
+                  ┌────────────▼────────────┐
+                  │ 2) Collection           │
+                  │  - Public search/API/   │
+                  │    scraping             │
+                  │  - passive / active     │
+                  └────────────┬────────────┘
+                               │
+                  ┌────────────▼────────────┐
+                  │ 3) Processing           │
+                  │  - Normalization/dedup  │
+                  │  - Language/charset     │
+                  │    unification          │
+                  └────────────┬────────────┘
+                               │
+                  ┌────────────▼────────────┐
+                  │ 4) Analysis             │
+                  │  - Hypothesis/linking/  │
+                  │    prioritization       │
+                  │  - Target map           │
+                  └────────────┬────────────┘
+                               │
+                  ┌────────────▼────────────┐
+                  │ 5) Dissemination        │
+                  │  - Report/ticket/MISP   │
+                  │  - Handoff to ops team  │
+                  └─────────────────────────┘
+```
+
+### 2-1. Direction
+
+- **What**: External exposed assets? Employee list? Specific executive's social media patterns?
+- **Why**: Pre-penetration reconnaissance? M&A due diligence? Incident response?
+- **Audience**: Technical team, legal team, client executives
+- **Legal limits**: Korean Personal Information Protection Act, Information and Communications Network Act, Communications Secrets Protection Act, contractual NDA/RoE
+
+If you don't answer questions like "Are we allowed to trace a GitHub commit with plaintext passwords all the way through?" at this stage, your hands will stop during analysis.
+
+### 2-2. Collection
+
+Collection splits into two branches:
+
+| Category | Definition | Examples |
+|---|---|---|
+| Passive | No direct communication with target | crt.sh, Shodan cache, Google dork, archive.org |
+| Active | Direct communication with target infrastructure | nmap, dirbuster, direct HTTP header requests |
+
+The word OSINT usually refers to the passive domain, but in practice the line is often blurry (e.g., banner grabbing by Shodan may appear active from the target's perspective).
+
+### 2-3. Processing
+
+Collected data is almost always dirty:
+
+- Domains need case normalization, trailing-dot handling, and IDN (internationalized domain) processing
+- Emails need `+`, `.`, and case normalization (Gmail ignores `.`)
+- IPs need IPv4/IPv6/CIDR unification
+- Encoding: unify to UTF-8, prepare auto-recovery scripts for garbled Korean text
+
+### 2-4. Analysis
+
+Cluster processed data into **hypotheses**. Example: "This company uses AWS Seoul region, and an outsourced developer runs a self-hosted GitLab. It's likely that company employee SSH keys are registered in that outsourcer's GitLab."
+
+Analysis outputs are one of the following:
+
+- Target map: domain → asset → vulnerability candidates
+- Org chart: employees, roles, email patterns
+- Technology stack matrix: frameworks, versions, CVE mapping
+
+### 2-5. Dissemination
+
+- Penetration team: direct handoff to next stage (e.g., BloodHound input)
+- Client report: PDF/HTML including sources and timestamps
+- Threat intel: share as MISP/OpenCTI objects
+
+---
+
+## 3. Advanced Search Operators — Finishing 90% from the Search Bar
+
+### 3-1. Google Dorking
+
+The most commonly used operators:
+
+| Operator | Meaning | Example |
+|---|---|---|
+| `site:` | Restrict to domain | `site:example.co.kr` |
+| `-site:` | Exclude domain | `site:example.co.kr -site:blog.example.co.kr` |
+| `intext:` | Body text match | `intext:"DB_PASSWORD"` |
+| `intitle:` | Title match | `intitle:"index of /backup"` |
+| `inurl:` | URL match | `inurl:admin inurl:login` |
+| `filetype:` | Extension | `filetype:env` |
+| `cache:` | Google cache | `cache:example.co.kr` (effectively deprecated after 2024) |
+| `before:` / `after:` | Date range | `after:2025-01-01 before:2026-01-01` |
+| `"..."` | Exact match | `"-----BEGIN RSA PRIVATE KEY-----"` |
+
+Practical dork collection (use only on authorized domains):
+
+```
+site:example.co.kr filetype:env
+site:example.co.kr filetype:sql intext:"INSERT INTO"
+site:example.co.kr intitle:"phpinfo()"
+site:example.co.kr inurl:"/.git/"
+site:example.co.kr "DB_PASSWORD" OR "AWS_ACCESS_KEY"
+site:s3.amazonaws.com "example"
+site:trello.com "example.co.kr"
+site:pastebin.com "example.co.kr"
+```
+
+> Caution: Google automatically detects dorking traffic and triggers reCAPTCHA/blocking. Don't run hundreds of queries from the same IP in a short time; use official APIs like SerpAPI or Brave Search API for stable results.
+
+### 3-2. Differences Between Bing, DuckDuckGo
+
+- **Bing**: `site:` and `filetype:` work identically. The `contains:` operator is still active, enabling patterns like `site:example.co.kr contains:bak`. The Bing Web Search v7 API ended in August 2025; its successor is being integrated into the Microsoft Copilot Search API.
+- **DuckDuckGo**: Emphasizes privacy protection, so dorking results are sparser than Google/Bing. However, bang commands like `!g`, `!so`, `!gh` immediately delegate to other engines.
+- **Naver/Daum**: For Korean domains like `.go.kr` or `.or.kr` with content indexed only domestically, Naver and Daum find more. However, advanced operators are weaker than Google.
+
+### 3-3. GitHub Dorking
+
+GitHub is by far the #1 channel for credential leaks.
+
+```
+org:exampleinc AWS_ACCESS_KEY_ID
+org:exampleinc filename:.env DB_PASSWORD
+org:exampleinc filename:id_rsa
+org:exampleinc language:python "boto3.client" "aws_secret_access_key"
+org:exampleinc path:.github/workflows secret
+org:exampleinc extension:pem
+"example.co.kr" "BEGIN OPENSSH PRIVATE KEY"
+"@example.co.kr" filename:.env
+```
+
+Common credential patterns:
+
+| Service | Regex |
+|---|---|
+| AWS Access Key | `AKIA[0-9A-Z]{16}` |
+| AWS Secret | `(?i)aws.{0,20}?(secret|key).{0,20}?[a-z0-9/+=]{40}` |
+| Slack Token | `xox[abprs]-[0-9a-zA-Z-]{10,48}` |
+| GitHub PAT | `ghp_[A-Za-z0-9]{36}` |
+| Stripe Live | `sk_live_[0-9a-zA-Z]{24}` |
+| Google API | `AIza[0-9A-Za-z\\-_]{35}` |
+
+### 3-4. What Never to Do in Code Search
+
+- **GitHub TOS**: Automated multi-account scraping and rate limit circumvention are prohibited. The Search API caps at 30 authenticated calls per minute.
+- **Korean Information and Communications Network Act Article 48**: Prohibits intrusion into information and communications systems. Public searching itself is legal, but using found credentials constitutes "unauthorized intrusion."
+- **Personal Information Protection Act**: Scraping employee lists from GitHub and storing them in a separate DB is a processing (storage) act that may constitute processing without consent. A penetration testing contract must have an explicit delegation clause.
+
+---
+
+## 4. Device and Service Search Engines
+
+### 4-1. Shodan
+
+Shodan periodically scans all of IPv4 plus some IPv6 and indexes banners. Free accounts are limited to 10 results per page and 1 page; paid plans (`Membership`, `Freelancer`, `Corporate`) unlock filters, CSV export, and API.
+
+Commonly used filters:
+
+```
+org:"Example Corp"
+asn:AS17596
+country:KR
+port:3389
+port:445 os:"Windows Server 2008"
+ssl.cert.issuer.cn:"R3"
+ssl.cert.subject.cn:*.example.co.kr
+hostname:example.co.kr
+http.title:"login"
+http.favicon.hash:-247388890
+product:nginx version:1.18.0
+vuln:CVE-2024-3094
+tag:ics
+```
+
+`http.favicon.hash` uses the mmh3 hash of a favicon to group all hosts with the same hash at once. Very powerful for identifying company assets whose admin panels share the same favicon.
+
+### 4-2. Censys
+
+Censys searches certificate, host, and software indexes with SQL-like queries similar to BigQuery. Since the 2025 redesign, the search UI is split into `Hosts`, `Certificates`, and `Web`.
+
+```
+services.tls.certificates.leaf_data.subject.common_name: *.example.co.kr
+services.service_name: HTTP and services.http.response.body: "phpMyAdmin"
+location.country: "South Korea" and services.port: 5432
+autonomous_system.asn: 17596
+```
+
+### 4-3. FOFA / ZoomEye / Hunter.io
+
+| Engine | Strengths | Weaknesses |
+|---|---|---|
+| FOFA (China) | ICS, domestically un-indexed assets | Lack of English UI, pricing |
+| ZoomEye (China) | Industrial control, IoT firmware | Strict API limits |
+| Hunter.io | Employee email patterns, per-domain lists | Many overlaps with public SNS |
+| Quake (China, 360) | Fast indexing of new assets | Difficult registration |
+
+For Korean IDC, KT, and LG U+ IP ranges, Shodan, Censys, and FOFA (in that order) are best. Running all three simultaneously and taking the union of results is a standard practice.
+
+### 4-4. Pricing Comparison (Approximate 2026 figures, subject to change)
+
+- Shodan Membership: $69/year (one-time), Freelancer $59/month, Corporate $1,099/month
+- Censys Pro: $99/month
+- FOFA Pro: approximately ¥4,200/year
+- Hunter.io Starter: $49/month
+
+For a company-level pentest team, the **Shodan Freelancer + Censys Pro + Hunter Growth** combination offers the best value.
+
+---
+
+## 5. Certificate Transparency (CT) Logs
+
+CT (Certificate Transparency) is the RFC 6962 system that forces all issued certificates to be registered in public logs. If a target embeds a private hostname like `*.internal.example.co.kr` in a certificate, the entire world sees it instantly.
+
+Commonly used sources:
+
+- **crt.sh**: PostgreSQL-based, supports JSON output
+- **Censys Certificates**: Rich metadata
+- **Cloudflare Merkle Town**: Visualization + real-time stream
+- **Google Argon/Yeti/Sabre**: Original log servers
+
+### 5-1. Automated Subdomain Collection via crt.sh JSON (asyncio)
+
+(See Korean section for full Python code — code comments are self-explanatory)
+
+Run:
+
+```bash
+python ct_subdomains.py example.co.kr | tee subs.txt
+```
+
+If crt.sh is slow, use `https://api.certspotter.com/v1/issuances?domain=example.co.kr&include_subdomains=true&expand=dns_names` as a backup.
+
+### 5-2. CT Result Pitfalls
+
+- **Staging certificates**: Items issued by `Let's Encrypt Staging` CA may not be production certificates. Filter by `issuer_ca_id`.
+- **Precertificates**: The same host appears twice. Sort by `min_cert_id` and deduplicate.
+- **Expired certificates**: Separate items where `not_after` has passed into a different column. Separate DNS verification is needed to confirm assets are still live.
+
+---
+
+## 6. DNS and WHOIS-Based Asset Identification
+
+CT is certificate-based, so assets using only plaintext HTTP won't appear. DNS and WHOIS must be checked as well.
+
+### 6-1. Passive DNS
+
+- **SecurityTrails**: 5 years of A/AAAA/MX/NS change history
+- **VirusTotal Graph**: Domain ↔ IP ↔ sample graph
+- **DNSDB (Farsight, now under DomainTools)**: Largest commercial DB
+- **CIRCL Passive DNS**: Operated by European CERT, free registration
+
+Usage is similar for all: submit a domain with an API key and receive a list of "IPs this domain pointed to in the past / domains this IP pointed to."
+
+### 6-2. WHOIS / RDAP
+
+Traditional WHOIS formats vary between KISA, Verisign, and APNIC. **RDAP** (RFC 7480) is the JSON-based successor standard, queried like `https://rdap.krnic.net/rdap/domain/example.co.kr`.
+
+```bash
+curl -s https://rdap.krnic.net/rdap/domain/example.co.kr | jq '.entities[].vcardArray[1]'
+```
+
+For Korean `.co.kr` domains, registrant information is often masked. Even just collecting the admin/technical contact email pattern (`@example.co.kr`) is a sufficient starting point.
+
+### 6-3. Using Korean KISA Resources
+
+- **KISA DNS Sinkhole Information**: Malware C2-classified domain lists updated daily. Cross-referencing whether target-owned domains appear here can provide IR incident clues.
+- **KrCERT Security Advisories/Vulnerability Reports**: Understanding incident patterns in the target's industry.
+- **Whois.kisa.or.kr**: Bulk lookup of `.kr` domains.
+
+### 6-4. Asset Classification Table Example
+
+Collected data organized in the following table can serve directly as input for the next phase (vulnerability mapping):
+
+| Asset | Type | Source | First Observed | Notes |
+|---|---|---|---|---|
+| api.example.co.kr | Domain | crt.sh | 2024-08-12 | TLS 1.2, nginx 1.18 |
+| 203.0.113.42 | IPv4 | Shodan | 2025-12-03 | port 22, 80, 443, 8080 |
+| s3://example-backup | S3 Bucket | Google dork | 2026-02-19 | Suspected public-read |
+
+---
+
+## 7. Data Preservation and Provenance Management
+
+OSINT results disappear in just a few days — CDN cache refreshes, GitHub force pushes, article edits/deletions, S3 permission changes. Therefore, **capture immediately upon collection** is the principle.
+
+### 7-1. Capture Tools
+
+- **SingleFile (browser extension)**: Saves HTML + images + CSS as a single `.html` file
+- **Hunchly**: Automatic session-based capture, case ID assignment, OCR
+- **archive.org Wayback Machine "Save Page Now"**: Obtain permanent URL
+- **shot-scraper**: Headless Chrome-based CLI screenshot tool
+- **wkhtmltopdf / weasyprint**: PDF conversion
+
+### 7-2. Integrity Assurance Procedure
+
+1. Save original capture (`.html`, `.png`, `.warc`)
+2. Calculate SHA-256 hash → CSV log
+3. Submit the log itself to an RFC 3161 timestamp server for signing
+4. Separate folder per case, folder name includes ISO 8601 datetime
+
+(See Korean section for full Python code)
+
+If the evidence may be used in court, the operator's PC must be NTP-synchronized from the capture moment, and the tool/version/OS used for capture must also be recorded (so-called "provenance").
+
+---
+
+## 8. Automation Pipeline Example
+
+A pipeline to run everything covered so far in one shot. Input: one domain. Output:
+
+- Subdomains (CT logs)
+- Email pattern (Hunter.io)
+- Employee candidates (Hunter.io results + LinkedIn public IDs handled separately)
+- Technology stack estimate (HTTP headers, favicon hash)
+
+Concurrency controlled with httpx + asyncio + semaphore. Hunter.io and Shodan keys are injected via environment variables.
+
+(See Korean section for full Python code)
+
+The resulting JSON contains:
+
+```json
+{
+  "domain": "example.co.kr",
+  "subdomains": ["api.example.co.kr", "mail.example.co.kr", "..."],
+  "email_pattern": "{first}.{last}@example.co.kr",
+  "employees": [{"email": "kim.jinho@example.co.kr", "position": "DevOps"}],
+  "tech": [
+    {"host": "api.example.co.kr", "server": "nginx/1.18.0",
+     "powered_by": null, "favicon_mmh3": -247388890}
+  ]
+}
+```
+
+This single JSON becomes the input for the next document (02 Target Profiling).
+
+### 8-1. Operational Tips
+
+- **Respect rate limits**: crt.sh handles 1–2 concurrent requests; Hunter allows 25 requests per minute.
+- **Cache results**: Since the same domain is repeatedly investigated, SQLite or diskcache caching is recommended.
+- **Evasion ≠ circumvention**: They're different. Identifying yourself with a User-Agent like `vibe-recon/1.0` makes accountability easier if an incident occurs.
+- **Logging**: Record all external calls as `(timestamp, url, status, bytes)` in NDJSON format.
+
+---
+
+## 9. Legal and Ethical Boundaries
+
+### 9-1. Korean and International Legal Matrix
+
+| Action | Korean PIPA | Korean ICNA | Korean CSPA | EU GDPR | US CCPA |
+|---|---|---|---|---|---|
+| Collecting public employee names/titles | Caution (must specify purpose/retention) | Permitted | Permitted | Caution (legitimate interest) | Caution (right to cancel) |
+| Collecting public employee email addresses | Caution (identifiable personal info) | Permitted | Permitted | Caution | Caution |
+| Collecting public password hashes/plaintext | Prohibited (special info) | Effectively prohibited | Caution | Prohibited | Prohibited |
+| Simply viewing GitHub-exposed credentials | Permitted | Permitted | Permitted | Permitted | Permitted |
+| Logging in with GitHub-exposed credentials | Prohibited (unauthorized processing) | Prohibited (Art. 48) | Prohibited | Prohibited | Prohibited |
+| Full nmap scan on target system | Caution | Prohibited (requires authorization) | Caution | Prohibited | Prohibited |
+| Intercepting communications | Prohibited | Prohibited | Prohibited (very severe) | Prohibited | Prohibited |
+| Purchasing leaked data on dark web markets | Prohibited | Prohibited | Prohibited | Prohibited | Prohibited |
+
+### 9-2. Practical Checklist
+
+Before starting work, confirm you can answer "yes" to all 5 questions:
+
+1. Are the RoE (Rules of Engagement) and NDA signed?
+2. Is the target asset scope (in-scope) clearly defined at the domain/CIDR/service level?
+3. If collected data includes personal information, are retention and disposal procedures defined?
+4. Is the capture storage location a controlled environment (encrypted disk, access control)?
+5. Is there a 24/7 available client contact to notify in case of an incident?
+
+### 9-3. Your Own Domain is the Safest
+
+For learning practice, limit to **domains you or your company own**, **legal labs on HackTheBox/TryHackMe/PortSwigger Web Security Academy**, or **CTF servers**. The dork and Shodan queries shown above can be used as-is for monitoring your own assets.
+
+---
+
+## 10. Conclusion — Bridge to the Next Document
+
+What we've gathered here is the **external appearance of assets**: domains, IPs, ports, employee email patterns, exposed credential candidates. But targets move through people and organizations. The next document (33-02 Target Profiling) elevates this asset data to the **people, roles, and relationships** dimension:
+
+- Who has access to which systems
+- What SaaS tools and messengers they use
+- Who is the weakest link in social engineering scenarios
+
+Once this is organized, the next step (33-03 Phishing Infrastructure) becomes almost entirely code and domain registration work. So the core deliverable of this stage compresses to one thing:
+
+> "A single JSON containing all of the target's external assets and employee email patterns, and an evidence.csv recording the source, time, and hash of each."
+
+Once these two files exist, 33-01 is complete. If either is missing, re-run `recon_pipeline.py` from section 8 and `capture_log.py` from section 7.
+
+---
+
+### Appendix A. Frequently Used Dork/Query Collection (for own asset verification)
+
+```
+# Google
+site:example.co.kr (ext:env OR ext:bak OR ext:sql OR ext:log)
+site:example.co.kr intext:"-----BEGIN RSA PRIVATE KEY-----"
+site:example.co.kr inurl:wp-admin
+site:s3.amazonaws.com "example"
+site:trello.com "example"
+site:atlassian.net "example.co.kr"
+
+# GitHub
+org:example "AKIA"
+org:example filename:.env
+"@example.co.kr" "BEGIN OPENSSH PRIVATE KEY"
+
+# Shodan
+hostname:example.co.kr
+ssl.cert.subject.cn:*.example.co.kr
+org:"Example Inc" port:3389
+http.favicon.hash:-247388890
+
+# Censys
+services.tls.certificates.leaf_data.subject.common_name: *.example.co.kr
+services.http.response.body: "Welcome to Example" and location.country: "South Korea"
+
+# crt.sh
+https://crt.sh/?q=%25.example.co.kr&output=json
+```
+
+### Appendix B. One-Line Environment Setup
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install "httpx>=0.27" "mmh3>=4.1" "rich>=13.7" "tldextract>=5.1"
+export SHODAN_API_KEY="..."
+export HUNTER_API_KEY="..."
+```
+
+### Appendix C. One-Page Practical Checklist
+
+- [ ] RoE/NDA signed, scope documented
+- [ ] No active scanning outside own domain/lab
+- [ ] crt.sh + Shodan + Censys results merged into same JSON schema
+- [ ] All captures have SHA-256 + ISO 8601 timestamp
+- [ ] Paid APIs like Hunter and SecurityTrails have per-minute call counts documented
+- [ ] After work: compress and encrypt `evidence.csv` + JSON in case folder
+- [ ] Report body cites source URL, capture time, and hash as footnotes
+
+---
+
+When this document is complete, 90% of the target's external appearance is in hand. In 33-02, we fill that appearance with people.

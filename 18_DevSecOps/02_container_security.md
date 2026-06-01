@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 컨테이너 보안 완전 가이드
 
 ## 컨테이너 보안 위협 모델
@@ -871,6 +877,893 @@ services:
 networks:
   internal:
     internal: true  # 외부 연결 차단
+  external:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  db_user:
+    file: ./secrets/db_user.txt
+```
+
+---
+
+<a name="english"></a>
+
+# Complete Guide to Container Security
+
+## Container Security Threat Model
+
+```
+Container Attack Surface
+─────────────────────────────────────────
+Image Layers           Runtime Environment    Orchestration
+    │                        │                     │
+Vulnerable base image   Container escape      K8s RBAC misconfiguration
+Hardcoded secrets       Privileged execution  Exposed API server
+Malicious layer inject  Host mount            etcd plaintext storage
+─────────────────────────────────────────
+```
+
+---
+
+## 1. Docker Image Security
+
+### Writing a Secure Dockerfile
+
+Container security check commands. Although containers are lightweight environments, misconfigured permissions, unnecessary capabilities, and running as root can lead to container escape vulnerabilities.
+
+```dockerfile
+# ✅ Security-hardened Dockerfile
+
+# 1. Use official minimal base image (alpine/distroless)
+FROM python:3.12-slim AS builder
+
+# 2. Create a non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# 3. Clean up package cache after installation
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# 4. Copy dependencies first (leverage layer cache)
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 5. Copy source code
+COPY --chown=appuser:appuser . .
+
+# 6. Multi-stage build (remove build tools)
+FROM python:3.12-slim AS runtime
+
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder --chown=appuser:appuser /app .
+
+# 7. Run as non-root user
+USER appuser
+
+# 8. Read-only filesystem (runtime config)
+# Run with --read-only flag
+
+# 9. Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+
+EXPOSE 8000
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+A Dockerfile defines a container image. From a security perspective, apply the principle of least privilege by avoiding unnecessary packages and root execution.
+
+```dockerfile
+# ❌ Vulnerable Dockerfile example
+FROM ubuntu:latest          # latest tag - unstable
+RUN apt-get install -y wget curl git  # unnecessary tools
+ADD . /app                  # use COPY instead of ADD
+WORKDIR /app
+RUN pip install -r requirements.txt
+ENV DB_PASSWORD="secret123"  # hardcoded secret!
+EXPOSE 22                   # SSH exposed
+USER root                   # running as root!
+CMD ["python", "app.py"]
+```
+
+### Trivy — Image Vulnerability Scanning
+
+Container image vulnerability scanner. Use `trivy image` to check known CVEs in OS packages and language libraries within Docker images; it can be integrated into CI/CD pipelines.
+
+```bash
+# ── Install Trivy ────────────────────────────────────────────
+curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+    | sh -s -- -b /usr/local/bin
+
+# ── Image vulnerability scan ─────────────────────────────────
+# Basic scan
+trivy image nginx:latest
+
+# Severity filter (CRITICAL and HIGH only)
+trivy image --severity CRITICAL,HIGH python:3.12-slim
+
+# JSON output (pipeline integration)
+trivy image --format json --output trivy-results.json myapp:v1.0
+
+# SARIF output (upload to GitHub Security tab)
+trivy image --format sarif --output trivy-results.sarif \
+    --severity CRITICAL,HIGH myapp:latest
+
+# Exit code 1 on CRITICAL findings (fail CI build)
+trivy image --exit-code 1 --severity CRITICAL myapp:latest
+
+# ── Filesystem / Dockerfile / IaC scan ──────────────────────
+# Full source scan (vulnerable dependencies + secrets + misconfig)
+trivy fs --scanners vuln,secret,misconfig ./
+
+# Dockerfile configuration analysis
+trivy config Dockerfile
+
+# Terraform / Kubernetes manifests
+trivy config ./terraform/
+trivy config ./k8s/
+
+# ── SBOM generation + vulnerability scan ─────────────────────
+# Generate SBOM with Syft
+syft myapp:v1.0 -o spdx-json=sbom.spdx.json
+
+# SBOM-based vulnerability scan (Grype)
+grype sbom:sbom.spdx.json
+grype myapp:v1.0 --output json --file grype-results.json
+
+# ── Python script to parse results ───────────────────────────
+python3 - << 'EOF'
+import json, sys
+with open("trivy-results.json") as f:
+    data = json.load(f)
+
+crit = high = 0
+for result in data.get("Results", []):
+    for v in result.get("Vulnerabilities") or []:
+        sev = v.get("Severity", "")
+        if sev == "CRITICAL": crit += 1
+        elif sev == "HIGH":   high += 1
+        if sev in ("CRITICAL", "HIGH"):
+            print(f"[{sev}] {v.get('VulnerabilityID')} "
+                  f"{v.get('PkgName')}@{v.get('InstalledVersion')} "
+                  f"→ fix: {v.get('FixedVersion','N/A')}")
+
+print(f"\nCRITICAL={crit}  HIGH={high}")
+if crit > 0:
+    sys.exit(1)   # CI gate
+EOF
+```
+
+### Docker Bench Security
+
+Container security check commands. Although containers are lightweight environments, misconfigured permissions, unnecessary capabilities, and running as root can lead to container escape vulnerabilities.
+
+```bash
+# Automated CIS Docker benchmark check
+git clone https://github.com/docker/docker-bench-security.git
+cd docker-bench-security
+sudo sh docker-bench-security.sh
+
+# Result classification:
+# [PASS] - Configuration is good
+# [WARN] - Needs review
+# [INFO] - Informational
+# [NOTE] - Recommendation
+
+# Key check items:
+# 1.1 Use a dedicated OS for the Docker host
+# 2.1 Restrict network traffic between containers
+# 2.2 Configure logging level
+# 2.14 Enable live restore
+# 4.1 Run as a non-root user
+# 4.5 Enable Content Trust
+# 5.3 Prohibit privileged containers
+# 5.4 Prohibit mounting sensitive host directories
+```
+
+---
+
+## 2. Runtime Security
+
+### Docker Runtime Security Options
+
+```bash
+# Security-hardened run options
+docker run \
+    --read-only \                          # Read-only root filesystem
+    --tmpfs /tmp \                         # Allow temp files via tmpfs
+    --no-new-privileges \                  # Prohibit privilege escalation
+    --security-opt=no-new-privileges \
+    --security-opt seccomp=seccomp.json \  # Seccomp profile
+    --cap-drop=ALL \                       # Drop all capabilities
+    --cap-add=NET_BIND_SERVICE \          # Add only what's needed
+    --user 1000:1000 \                    # Non-root user
+    --memory=512m \                       # Memory limit
+    --cpus=0.5 \                          # CPU limit
+    --network=internal \                  # Isolated network
+    myapp:latest
+
+# Create Seccomp profile
+cat > seccomp.json << 'EOF'
+{
+    "defaultAction": "SCMP_ACT_ERRNO",
+    "architectures": ["SCMP_ARCH_X86_64"],
+    "syscalls": [
+        {
+            "names": ["read", "write", "open", "close", "stat", 
+                     "fstat", "lstat", "poll", "lseek", "mmap",
+                     "mprotect", "munmap", "brk", "rt_sigaction",
+                     "rt_sigprocmask", "ioctl", "access", "pipe",
+                     "select", "sched_yield", "mremap", "msync",
+                     "mincore", "madvise", "dup", "dup2", "nanosleep",
+                     "getitimer", "alarm", "setitimer", "getpid",
+                     "sendfile", "socket", "connect", "accept",
+                     "sendto", "recvfrom", "sendmsg", "recvmsg",
+                     "shutdown", "bind", "listen", "getsockname",
+                     "getpeername", "socketpair", "setsockopt",
+                     "getsockopt", "clone", "fork", "vfork",
+                     "execve", "exit", "wait4", "kill", "uname",
+                     "fcntl", "flock", "fsync", "fdatasync",
+                     "truncate", "ftruncate", "getdents", "getcwd",
+                     "chdir", "rename", "mkdir", "rmdir", "creat",
+                     "link", "unlink", "symlink", "readlink", "chmod",
+                     "fchmod", "chown", "fchown", "lchown", "umask",
+                     "gettimeofday", "getrlimit", "getrusage",
+                     "sysinfo", "times", "ptrace", "getuid", "syslog",
+                     "getgid", "setuid", "setgid", "geteuid",
+                     "getegid", "setpgid", "getppid", "getpgrp",
+                     "setsid", "setreuid", "setregid", "getgroups",
+                     "setgroups", "setresuid", "getresuid",
+                     "setresgid", "getresgid", "getpgid", "setfsuid",
+                     "setfsgid", "getsid", "capget", "capset",
+                     "rt_sigpending", "rt_sigtimedwait",
+                     "rt_sigqueueinfo", "rt_sigsuspend",
+                     "sigaltstack", "utime", "mknod", "uselib",
+                     "personality", "ustat", "statfs", "fstatfs",
+                     "sysfs", "getpriority", "setpriority",
+                     "sched_setparam", "sched_getparam",
+                     "sched_setscheduler", "sched_getscheduler",
+                     "sched_get_priority_max",
+                     "sched_get_priority_min",
+                     "sched_rr_get_interval", "mlock", "munlock",
+                     "mlockall", "munlockall", "vhangup", "modify_ldt",
+                     "pivot_root", "_sysctl", "prctl", "arch_prctl",
+                     "adjtimex", "setrlimit", "chroot", "sync",
+                     "acct", "settimeofday", "mount", "umount2",
+                     "swapon", "swapoff", "reboot", "sethostname",
+                     "setdomainname", "iopl", "ioperm",
+                     "create_module", "init_module", "delete_module",
+                     "get_kernel_syms", "query_module", "quotactl",
+                     "nfsservctl", "getpmsg", "putpmsg", "afs_syscall",
+                     "tuxcall", "security", "gettid", "readahead",
+                     "setxattr", "lsetxattr", "fsetxattr", "getxattr",
+                     "lgetxattr", "fgetxattr", "listxattr",
+                     "llistxattr", "flistxattr", "removexattr",
+                     "lremovexattr", "fremovexattr", "tkill", "time",
+                     "futex", "sched_setaffinity", "sched_getaffinity",
+                     "set_thread_area", "io_setup", "io_destroy",
+                     "io_getevents", "io_submit", "io_cancel",
+                     "get_thread_area", "lookup_dcookie",
+                     "epoll_create", "epoll_ctl_old",
+                     "epoll_wait_old", "remap_file_pages",
+                     "getdents64", "set_tid_address", "restart_syscall",
+                     "semtimedop", "fadvise64", "timer_create",
+                     "timer_settime", "timer_gettime",
+                     "timer_getoverrun", "timer_delete",
+                     "clock_settime", "clock_gettime",
+                     "clock_getres", "clock_nanosleep",
+                     "exit_group", "epoll_wait", "epoll_ctl",
+                     "tgkill", "utimes", "vserver", "mbind",
+                     "set_mempolicy", "get_mempolicy",
+                     "mq_open", "mq_unlink", "mq_timedsend",
+                     "mq_timedreceive", "mq_notify",
+                     "mq_getsetattr", "kexec_load", "waitid",
+                     "add_key", "request_key", "keyctl",
+                     "ioprio_set", "ioprio_get", "inotify_init",
+                     "inotify_add_watch", "inotify_rm_watch",
+                     "migrate_pages", "openat", "mkdirat",
+                     "mknodat", "fchownat", "futimesat",
+                     "newfstatat", "unlinkat", "renameat",
+                     "linkat", "symlinkat", "readlinkat",
+                     "fchmodat", "faccessat", "pselect6",
+                     "ppoll", "unshare", "set_robust_list",
+                     "get_robust_list", "splice", "tee",
+                     "sync_file_range", "vmsplice",
+                     "move_pages", "utimensat",
+                     "epoll_pwait", "signalfd",
+                     "timerfd_create", "eventfd",
+                     "fallocate", "timerfd_settime",
+                     "timerfd_gettime", "accept4", "signalfd4",
+                     "eventfd2", "epoll_create1", "dup3",
+                     "pipe2", "inotify_init1", "preadv",
+                     "pwritev", "rt_tgsigqueueinfo", "perf_event_open",
+                     "recvmmsg", "fanotify_init",
+                     "fanotify_mark", "prlimit64", "name_to_handle_at",
+                     "open_by_handle_at", "clock_adjtime", "syncfs",
+                     "sendmmsg", "setns", "getcpu",
+                     "process_vm_readv", "process_vm_writev",
+                     "kcmp", "finit_module"],
+            "action": "SCMP_ACT_ALLOW"
+        }
+    ]
+}
+EOF
+```
+
+### Falco — Runtime Threat Detection
+
+```bash
+# Install Falco
+curl -s https://falco.org/repo/falcosecurity-packages.asc | gpg --dearmor | \
+    sudo tee /usr/share/keyrings/falco-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/falco-archive-keyring.gpg] \
+    https://download.falco.org/packages/deb stable main" | \
+    sudo tee /etc/apt/sources.list.d/falcosecurity.list
+sudo apt-get update && sudo apt-get install -y falco
+
+# Falco rule examples
+```
+
+YAML configuration file. Widely used in Kubernetes, CI/CD pipelines, and security tool configurations; misconfiguration can lead to security vulnerabilities.
+
+```yaml
+# custom_falco_rules.yaml
+- rule: Shell Executed in Container
+  desc: A shell was spawned inside a container (indicator of compromise)
+  condition: >
+    spawned_process and
+    container and
+    not container.image.repository in (allowed_shell_containers) and
+    proc.name in (shell_binaries)
+  output: >
+    Shell executed in container (user=%user.name container=%container.id 
+    image=%container.image.repository cmd=%proc.cmdline)
+  priority: WARNING
+  tags: [container, shell]
+
+- rule: Sensitive File Access
+  desc: Read of sensitive files such as /etc/shadow, /etc/passwd
+  condition: >
+    open_read and
+    container and
+    fd.name in (/etc/shadow, /etc/sudoers, /root/.ssh/authorized_keys)
+  output: >
+    Sensitive file access (user=%user.name container=%container.id 
+    file=%fd.name)
+  priority: ERROR
+  tags: [container, filesystem]
+
+- rule: Unexpected Outbound Network Connection
+  desc: Unauthorized connection to external IP
+  condition: >
+    outbound and
+    container and
+    not fd.rip in (allowed_outbound_ips) and
+    not fd.rport in (80, 443, 53)
+  output: >
+    Unexpected outbound connection (container=%container.id 
+    dst=%fd.rip:%fd.rport)
+  priority: WARNING
+  tags: [network, container]
+```
+
+```bash
+# Run Falco with custom rules
+sudo falco -r custom_falco_rules.yaml
+
+# Falco on Kubernetes (Helm)
+helm repo add falcosecurity https://falcosecurity.github.io/charts
+helm install falco falcosecurity/falco \
+    --set driver.kind=ebpf \
+    --set falcosidekick.enabled=true \
+    --set falcosidekick.config.slack.webhookurl=SLACK_HOOK
+
+# Receive Falco real-time alerts (Python)
+# falcosidekick → webhook → script below forwards to Slack/PagerDuty
+```
+
+```python
+#!/usr/bin/env python3
+"""
+Falco Alert Webhook Receiver Server + Severity-based Auto Response
+Usage: python3 falco_webhook.py --port 2802 --slack-url https://hooks.slack.com/...
+       Environment variables: SLACK_WEBHOOK_URL, PAGERDUTY_KEY
+
+Falco → falcosidekick → POST http://this-server:2802/falco
+"""
+
+from __future__ import annotations
+import argparse
+import json
+import logging
+import os
+import sys
+from datetime import datetime
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+try:
+    import requests
+except ImportError:
+    sys.exit("pip install requests")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+logger = logging.getLogger("falco-webhook")
+
+# ── Configuration (environment variables or CLI) ──────────────
+
+SLACK_URL      = os.getenv("SLACK_WEBHOOK_URL", "")
+PAGERDUTY_KEY  = os.getenv("PAGERDUTY_KEY", "")
+ALERT_HISTORY: list[dict] = []
+
+
+# ── Response functions ────────────────────────────────────────
+
+def send_slack(event: dict, slack_url: str) -> None:
+    priority = event.get("priority", "").upper()
+    name     = event.get("rule", "Unknown Rule")
+    output   = event.get("output", "")
+    ts       = event.get("time", datetime.utcnow().isoformat())
+
+    color = {"CRITICAL": "#FF0000", "ERROR": "#FF6600",
+             "WARNING": "#FFCC00"}.get(priority, "#999999")
+
+    payload = {
+        "attachments": [{
+            "color": color,
+            "title": f"[Falco {priority}] {name}",
+            "text": output[:500],
+            "footer": f"Container Security | {ts}",
+        }]
+    }
+    try:
+        requests.post(slack_url, json=payload, timeout=10)
+        logger.info("Slack alert sent: %s", name)
+    except requests.RequestException as e:
+        logger.error("Slack send failed: %s", e)
+
+
+def trigger_pagerduty(event: dict, key: str) -> None:
+    """Escalate CRITICAL events to PagerDuty incidents."""
+    payload = {
+        "routing_key": key,
+        "event_action": "trigger",
+        "dedup_key": event.get("rule", "falco") + "_" + event.get("hostname", ""),
+        "payload": {
+            "summary": f"[Falco CRITICAL] {event.get('rule','?')}",
+            "severity": "critical",
+            "source": event.get("hostname", "unknown"),
+            "custom_details": event,
+        },
+    }
+    try:
+        requests.post(
+            "https://events.pagerduty.com/v2/enqueue",
+            json=payload, timeout=10,
+        )
+        logger.info("PagerDuty escalation: %s", event.get("rule"))
+    except requests.RequestException as e:
+        logger.error("PagerDuty failed: %s", e)
+
+
+def handle_event(event: dict, slack_url: str, pd_key: str) -> None:
+    priority = event.get("priority", "").upper()
+    ALERT_HISTORY.append({"time": datetime.utcnow().isoformat(),
+                           "priority": priority,
+                           "rule": event.get("rule", "")})
+
+    logger.warning("[%s] %s | %s",
+                   priority, event.get("rule"), event.get("output", "")[:120])
+
+    if priority in ("WARNING", "ERROR", "CRITICAL") and slack_url:
+        send_slack(event, slack_url)
+
+    if priority == "CRITICAL" and pd_key:
+        trigger_pagerduty(event, pd_key)
+
+
+# ── HTTP handler ──────────────────────────────────────────────
+
+def make_handler(slack_url: str, pd_key: str) -> type:
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, fmt: str, *args) -> None:
+            pass  # suppress default logs
+
+        def do_POST(self) -> None:
+            if self.path != "/falco":
+                self.send_response(404)
+                self.end_headers()
+                return
+            length = int(self.headers.get("Content-Length", 0))
+            body   = self.rfile.read(length)
+            try:
+                event = json.loads(body)
+                handle_event(event, slack_url, pd_key)
+                self.send_response(200)
+            except (json.JSONDecodeError, Exception) as e:
+                logger.error("Event parse error: %s", e)
+                self.send_response(400)
+            self.end_headers()
+
+        def do_GET(self) -> None:
+            if self.path == "/health":
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"OK")
+            elif self.path == "/stats":
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                from collections import Counter
+                cnt = Counter(a["priority"] for a in ALERT_HISTORY)
+                self.wfile.write(
+                    json.dumps({"total": len(ALERT_HISTORY),
+                                "by_priority": dict(cnt)}).encode()
+                )
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+    return Handler
+
+
+# ── CLI ──────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Falco Webhook Receiver Server")
+    parser.add_argument("--port",      type=int, default=2802)
+    parser.add_argument("--host",      default="0.0.0.0")
+    parser.add_argument("--slack-url", default=SLACK_URL)
+    parser.add_argument("--pd-key",    default=PAGERDUTY_KEY,
+                        help="PagerDuty Routing Key")
+    args = parser.parse_args()
+
+    handler = make_handler(args.slack_url, args.pd_key)
+    server  = HTTPServer((args.host, args.port), handler)
+
+    logger.info("Falco Webhook server started: %s:%d", args.host, args.port)
+    if args.slack_url:
+        logger.info("Slack alerts: enabled")
+    if args.pd_key:
+        logger.info("PagerDuty escalation: enabled")
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        logger.info("Server stopped")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Kubernetes Security Hardening
+
+### Pod Security Standards
+
+YAML configuration file. Widely used in Kubernetes, CI/CD pipelines, and security tool configurations; misconfiguration can lead to security vulnerabilities.
+
+```yaml
+# namespace-security.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+  labels:
+    # Baseline: basic security (prohibit privileged containers)
+    # Restricted: highest security (recommended)
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+# Requirements for restricted Pods
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secure-pod
+  namespace: production
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+    seccompProfile:
+      type: RuntimeDefault  # default Seccomp profile
+  
+  containers:
+  - name: app
+    image: myapp:1.0.0  # latest tag prohibited
+    
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+    
+    resources:
+      limits:
+        memory: "256Mi"
+        cpu: "500m"
+      requests:
+        memory: "128Mi"
+        cpu: "250m"
+    
+    volumeMounts:
+    - name: tmp
+      mountPath: /tmp
+    - name: cache
+      mountPath: /app/cache
+  
+  volumes:
+  - name: tmp
+    emptyDir: {}
+  - name: cache
+    emptyDir: {}
+  
+  automountServiceAccountToken: false  # disable auto-mounting SA token
+```
+
+### RBAC Least Privilege Configuration
+
+YAML configuration file. Widely used in Kubernetes, CI/CD pipelines, and security tool configurations; misconfiguration can lead to security vulnerabilities.
+
+```yaml
+# rbac-minimal.yaml
+# Least-privilege ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: myapp-sa
+  namespace: production
+---
+# Read-only Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: myapp-role
+  namespace: production
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list"]  # read only
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["myapp-secret"]  # specific secret only
+  verbs: ["get"]
+---
+# RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: myapp-rolebinding
+  namespace: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: myapp-role
+subjects:
+- kind: ServiceAccount
+  name: myapp-sa
+  namespace: production
+```
+
+### NetworkPolicy — Microsegmentation
+
+YAML configuration file. Widely used in Kubernetes, CI/CD pipelines, and security tool configurations; misconfiguration can lead to security vulnerabilities.
+
+```yaml
+# network-policy.yaml
+# Default: deny all inbound/outbound traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: production
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+# Allow only API server to access DB
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-to-db
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: database
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: api-server
+    ports:
+    - protocol: TCP
+      port: 5432
+---
+# Allow only external DNS/HTTPS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-external-egress
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: api-server
+  policyTypes:
+  - Egress
+  egress:
+  - ports:
+    - port: 53       # DNS
+      protocol: UDP
+    - port: 443      # HTTPS
+      protocol: TCP
+```
+
+---
+
+## 4. Image Supply Chain Security
+
+### Cosign — Image Signing
+
+```bash
+# Install cosign
+curl -sSfL https://github.com/sigstore/cosign/releases/download/v2.2.0/cosign-linux-amd64 \
+    -o /usr/local/bin/cosign && chmod +x /usr/local/bin/cosign
+
+# Generate key pair
+cosign generate-key-pair
+
+# Sign image
+cosign sign --key cosign.key registry.io/myapp:v1.0
+
+# Verify signature
+cosign verify --key cosign.pub registry.io/myapp:v1.0
+
+# Keyless signing (Sigstore/OIDC)
+COSIGN_EXPERIMENTAL=1 cosign sign registry.io/myapp:v1.0
+COSIGN_EXPERIMENTAL=1 cosign verify registry.io/myapp:v1.0
+
+# Enforce signature verification in Kubernetes (policy-controller)
+helm install policy-controller sigstore/policy-controller
+```
+
+YAML configuration file. Widely used in Kubernetes, CI/CD pipelines, and security tool configurations; misconfiguration can lead to security vulnerabilities.
+
+```yaml
+# cluster-image-policy.yaml - allow signed images only
+apiVersion: policy.sigstore.dev/v1beta1
+kind: ClusterImagePolicy
+metadata:
+  name: signed-images-only
+spec:
+  images:
+  - glob: "registry.io/**"
+  authorities:
+  - key:
+      data: |
+        -----BEGIN PUBLIC KEY-----
+        MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE...
+        -----END PUBLIC KEY-----
+```
+
+### SBOM (Software Bill of Materials)
+
+```bash
+# Generate SBOM with Syft
+curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+# Image SBOM
+syft registry.io/myapp:v1.0 -o spdx-json=sbom.spdx.json
+
+# Scan SBOM for vulnerabilities with Grype
+curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+grype sbom:sbom.spdx.json
+grype registry.io/myapp:v1.0
+```
+
+---
+
+## 5. Docker Compose Security Configuration
+
+Container security check commands. Although containers are lightweight environments, misconfigured permissions, unnecessary capabilities, and running as root can lead to container escape vulnerabilities.
+
+```yaml
+# docker-compose.secure.yml
+version: '3.8'
+
+services:
+  app:
+    image: myapp:1.0.0
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:seccomp.json
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE  # only when needed
+    networks:
+      - internal
+    environment:
+      - APP_ENV=production
+    secrets:
+      - db_password
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: postgres:16-alpine
+    user: "999:999"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
+    environment:
+      - POSTGRES_DB=mydb
+      - POSTGRES_USER_FILE=/run/secrets/db_user
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    volumes:
+      - type: volume
+        source: db_data
+        target: /var/lib/postgresql/data
+        read_only: false
+    networks:
+      - internal
+    secrets:
+      - db_user
+      - db_password
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  internal:
+    internal: true  # block external connections
   external:
     driver: bridge
 

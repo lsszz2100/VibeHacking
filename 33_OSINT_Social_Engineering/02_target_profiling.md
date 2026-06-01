@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 33-02. 타깃 프로파일링 — 도메인 하나에서 사람과 인프라 전체로 확장
 
 > 한 줄 요약: 도메인 한 개를 입력으로 받아 인프라·사람·자격증명 노출까지 한 장의 프로파일 카드로 합치는 절차와 자동화.
@@ -663,3 +669,38 @@ jobs:
 정찰의 끝은 침투의 시작이 아니라 **"가설"의 시작**이다. 가설이 정확할수록 다음 단계의 노이즈가 줄고, 노이즈가 줄수록 표적 시스템에 남기는 흔적이 줄고, 흔적이 줄수록 모의침투의 실전성이 올라간다.
 
 — 33-02 끝.
+
+---
+
+<a name="english"></a>
+
+# 33-02. Target Profiling — Expanding from a Single Domain to People and Full Infrastructure
+
+> One-line summary: The procedure and automation for taking a single domain as input and combining infrastructure, people, and credential exposures into a single profile card.
+
+## Overview
+
+In the previous document (33-01), we covered the big picture of OSINT and its legality boundaries. This document goes one level deeper, covering **what to collect in what order when given a domain, and how to organize it into a cohesive body of data**. The assumptions are:
+
+- You are operating within a lawful penetration testing engagement
+- You need to build a target profile from a single domain
+- The goal is to create hypotheses about attack vectors
+
+## Key Collection Steps
+
+1. **Infrastructure mapping**: Subdomains, open ports, web technologies, cloud services
+2. **Personnel mapping**: Employee names, email formats, GitHub accounts
+3. **Credential exposure**: HIBP checks, credential dumps, leaked tokens
+4. **Technology stack fingerprinting**: Detect CMS, frameworks, CDN, hosting providers
+
+## Defense Perspective
+
+**External asset monitoring.** Running `subfinder + httpx` against your own domain once daily with Slack alerts for new assets, subscribing to certificate transparency log (`crt.sh`) RSS for immediate detection of new certificate issuance, and using HIBP Domain Search to force immediate password changes when employee emails appear in new breaches.
+
+**Job posting review.** Even 30 seconds of review — HR → Security → Post — can block 70% of external reconnaissance. Companies where the security team performs primary review of job postings are still rare.
+
+## Conclusion
+
+The end of reconnaissance is not the beginning of penetration but the beginning of **"hypotheses"**. The more accurate the hypothesis, the less noise in the next stage, the less noise the fewer traces left on the target system, and the fewer the traces the higher the realism of the penetration test.
+
+— End of 33-02.

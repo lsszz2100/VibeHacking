@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 공급망 보안 — 의존성 공격·SLSA·서명 검증
 
 ## 1. 소프트웨어 공급망 공격 유형
@@ -443,3 +449,259 @@ if __name__ == "__main__":
 | 취약한 의존성 | 주기적 CVE 스캔 | Dependabot, Snyk |
 | CI/CD 침해 | 비밀 스캔, 최소 권한 | gitleaks, trufflehog |
 | SBOM 부재 | 의존성 트리 자동 생성 | syft, cyclonedx |
+
+---
+
+<a name="english"></a>
+
+# Supply Chain Security — Dependency Attacks, SLSA, Signature Verification
+
+## 1. Software Supply Chain Attack Types
+
+```
+Supply Chain Attack Categories:
+
+Source Code Attacks:
+  - Compromised developer accounts
+  - Malicious code injection into open source
+  - Typosquatting (e.g., "requets" instead of "requests")
+
+Build System Attacks:
+  - Compromised build servers
+  - Malicious build scripts
+  - Artifact tampering
+
+Dependency Attacks:
+  - Dependency confusion
+  - Version pinning bypass
+  - Transitive dependency exploitation
+
+Distribution Attacks:
+  - Package registry compromise
+  - Man-in-the-middle during download
+  - Update mechanism hijacking
+
+Real-world examples:
+  SolarWinds (2020) — Build system backdoor
+  Log4Shell (2021) — Critical library vulnerability
+  XZ Utils (2024) — Long-term supply chain infiltration
+```
+
+---
+
+## 2. Dependency Confusion Attack
+
+```
+How Dependency Confusion Works:
+
+Organization has internal package: "@company/auth-lib"
+Published on internal npm registry
+
+Attacker publishes malicious package: "company-auth-lib"
+on public npm with higher version number
+
+When npm resolves packages:
+  - Checks public registry first
+  - Finds higher version on public npm
+  - Installs malicious package instead!
+
+Defense:
+  - Use scoped packages (@company/)
+  - Configure npm to use internal registry
+  - Use .npmrc or pip.conf to pin registries
+```
+
+```bash
+# Python: Pin to internal registry
+# pip.conf
+[global]
+index-url = https://internal.company.com/simple/
+extra-index-url = https://pypi.org/simple/
+
+# npm: Pin to internal registry
+# .npmrc
+@company:registry=https://internal.company.com/npm/
+always-auth=true
+
+# Verify package source
+pip show requests | grep Location
+npm info lodash dist.tarball
+```
+
+---
+
+## 3. SLSA Framework (Supply Chain Levels for Software Artifacts)
+
+```
+SLSA Levels:
+
+Level 1 — Provenance
+  - Build process documented
+  - Who built it, when, from what source
+
+Level 2 — Signed Provenance
+  - Provenance signed by build service
+  - Hosted build service used
+
+Level 3 — Hardened Builds
+  - Source and build platform meet audit requirements
+  - Non-falsifiable provenance
+
+Level 4 — Reproducible Builds
+  - Hermetic (isolated) builds
+  - Reproducible build process
+
+Implementation:
+  GitHub Actions → SLSA GitHub Generator → Signed provenance
+```
+
+### SLSA with GitHub Actions
+
+```yaml
+# Generate SLSA provenance
+name: SLSA Build
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      digests: ${{ steps.hash.outputs.digests }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build binary
+        run: make release
+      
+      - name: Generate hash
+        id: hash
+        run: |
+          sha256sum ./dist/app > checksums.txt
+          echo "digests=$(cat checksums.txt | base64 -w0)" >> $GITHUB_OUTPUT
+  
+  provenance:
+    needs: build
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.9.0
+    with:
+      base64-subjects: ${{ needs.build.outputs.digests }}
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+```
+
+---
+
+## 4. Artifact Signing with Sigstore/Cosign
+
+```bash
+# Sign container image
+cosign sign --key cosign.key myimage:latest
+
+# Verify signature
+cosign verify --key cosign.pub myimage:latest
+
+# Keyless signing (using OIDC identity)
+cosign sign myimage:latest  # Uses GitHub Actions OIDC token
+
+# Sign and verify artifact with certificate
+cosign sign-blob --key cosign.key ./dist/app.tar.gz
+
+# Verify signed artifact
+cosign verify-blob --key cosign.pub \
+  --signature app.tar.gz.sig ./dist/app.tar.gz
+
+# Generate and sign SBOM
+syft myimage:latest -o cyclonedx-json > sbom.json
+cosign attest --key cosign.key --predicate sbom.json myimage:latest
+```
+
+---
+
+## 5. Dependency Security Automation
+
+```python
+#!/usr/bin/env python3
+"""
+Automated dependency vulnerability scanner
+Integrates with CI/CD to block vulnerable dependencies
+"""
+import subprocess
+import json
+import sys
+
+def check_python_dependencies() -> list:
+    """Check Python dependencies for vulnerabilities"""
+    result = subprocess.run(
+        ["pip-audit", "--format=json", "--output=/dev/stdout"],
+        capture_output=True, text=True
+    )
+    
+    if result.returncode == 0:
+        return []
+    
+    try:
+        vulns = json.loads(result.stdout)
+        return [v for v in vulns if v.get("vulns")]
+    except:
+        return []
+
+def check_node_dependencies() -> dict:
+    """Check Node.js dependencies"""
+    result = subprocess.run(
+        ["npm", "audit", "--json"],
+        capture_output=True, text=True
+    )
+    
+    try:
+        audit_data = json.loads(result.stdout)
+        return audit_data.get("metadata", {}).get("vulnerabilities", {})
+    except:
+        return {}
+
+def gate_build(allow_severity: list = ["low", "moderate"]) -> bool:
+    """Block build if critical vulnerabilities found"""
+    
+    python_vulns = check_python_dependencies()
+    node_vulns = check_node_dependencies()
+    
+    # Check for critical/high vulnerabilities
+    critical_found = False
+    
+    for vuln in python_vulns:
+        for v in vuln.get("vulns", []):
+            severity = v.get("fix_versions", [])
+            # Logic to check severity
+    
+    high_count = node_vulns.get("high", 0)
+    critical_count = node_vulns.get("critical", 0)
+    
+    if critical_count > 0 or high_count > 5:
+        print(f"[FAIL] Build blocked: {critical_count} critical, {high_count} high vulnerabilities")
+        return False
+    
+    print("[PASS] No blocking vulnerabilities found")
+    return True
+
+if __name__ == "__main__":
+    if not gate_build():
+        sys.exit(1)
+```
+
+---
+
+## 6. Supply Chain Security Countermeasures Summary
+
+| Threat | Countermeasure | Tool |
+|--------|---------------|------|
+| Typosquatting | Package name validation, allowlist management | pip-audit, npm audit |
+| Dependency confusion | Internal registry priority configuration | Artifactory, Nexus |
+| Malicious packages | Static analysis before installation | Bandit, semgrep |
+| Build integrity | SLSA compliance, artifact signing | cosign, sigstore |
+| Vulnerable dependencies | Regular CVE scanning | Dependabot, Snyk |
+| CI/CD compromise | Secret scanning, least privilege | gitleaks, trufflehog |
+| Missing SBOM | Automated dependency tree generation | syft, cyclonedx |

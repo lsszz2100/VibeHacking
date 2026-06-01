@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # OT/ICS 방어 및 모니터링
 
 ## OT 보안 아키텍처 설계
@@ -470,3 +476,480 @@ if __name__ == "__main__":
 ```
 
 OT 보안은 기술적 대책 외에 **운영 절차, 직원 교육, 공급망 관리**가 동등하게 중요하다. 모든 변경사항은 MOC(Management of Change) 프로세스를 거쳐야 한다.
+
+---
+
+<a name="english"></a>
+
+# OT/ICS Defense and Monitoring
+
+## OT Security Architecture Design
+
+### Defense in Depth
+```
+Layer 7 — Policy/Procedures: CSMS, incident response, training
+Layer 6 — Physical Security: facility access control, locks
+Layer 5 — Perimeter Security: firewalls, DMZ, data diodes
+Layer 4 — Network Segmentation: VLAN, zone separation
+Layer 3 — Host Security: whitelisting, patch management
+Layer 2 — Application Security: authentication, encryption, validation
+Layer 1 — Device Security: firmware signing, secure boot
+```
+
+### Network Zoning (IEC 62443)
+```
+Security Zone concepts
+├── Zone: A group of assets with the same security requirements
+├── Conduit: Communication path between zones (firewall/DMZ)
+└── Security Level (SL): 0–4 (SL2 or higher recommended)
+
+Typical Zone configuration
+Zone A — Enterprise IT (SL1)
+Zone B — IT/OT DMZ (SL2)
+Zone C — SCADA/DCS network (SL3)
+Zone D — Control network (SL3)
+Zone E — Field devices (SL2)
+Zone F — Safety instrumented systems (SL4)
+```
+
+## OT-Specific IDS/IPS
+
+### Detection Approaches
+```
+Whitelist-based (recommended for OT)
+├── Profiling normal communication patterns
+├── Immediate alert on abnormal commands
+└── Low false-positive rate (prevents process disruption)
+
+Signature-based
+├── Known OT malware patterns
+├── Vulnerability exploit signatures
+└── Fast detection but misses variants
+
+Anomaly detection (ML-based)
+├── Network baseline learning
+├── Statistical anomaly detection
+└── Requires understanding of OT process context
+```
+
+### OT IDS Implementation
+
+```python
+#!/usr/bin/env python3
+"""OT/ICS network anomaly detection system."""
+
+import argparse
+import socket
+import struct
+import time
+import json
+from collections import defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+from threading import Thread, Event
+import queue
+
+
+@dataclass
+class OTEvent:
+    timestamp: float
+    src_ip: str
+    dst_ip: str
+    protocol: str
+    function_code: int
+    address: int
+    value: int | None
+    severity: str
+    message: str
+
+
+@dataclass
+class ModbusStats:
+    src_ip: str
+    function_codes: dict[int, int] = field(default_factory=dict)
+    write_addresses: set[int] = field(default_factory=set)
+    read_rate: float = 0.0
+    write_rate: float = 0.0
+    last_seen: float = field(default_factory=time.time)
+
+
+class OTIDSRules:
+    """OT IDS detection rule engine."""
+
+    DANGEROUS_FC = {
+        0x05: "Write Coil (change digital output)",
+        0x06: "Write Register (change analog output)",
+        0x0F: "Write Multiple Coils",
+        0x10: "Write Multiple Registers",
+    }
+
+    def __init__(self, whitelist_path: Path | None = None):
+        self.whitelist: dict[str, list[int]] = {}
+        self.alert_queue: queue.Queue[OTEvent] = queue.Queue()
+        if whitelist_path and whitelist_path.exists():
+            self._load_whitelist(whitelist_path)
+
+    def _load_whitelist(self, path: Path) -> None:
+        try:
+            data = json.loads(path.read_text())
+            self.whitelist = data.get("allowed_sources", {})
+        except Exception:
+            pass
+
+    def check_modbus(
+        self,
+        src_ip: str,
+        dst_ip: str,
+        raw: bytes,
+    ) -> list[OTEvent]:
+        events: list[OTEvent] = []
+        if len(raw) < 8:
+            return events
+
+        fc = raw[7]
+        now = time.time()
+
+        # Detect write commands
+        if fc in self.DANGEROUS_FC:
+            severity = "HIGH"
+            # Check whitelist
+            if src_ip in self.whitelist:
+                if fc in self.whitelist[src_ip]:
+                    severity = "INFO"
+
+            address = 0
+            value = None
+            if len(raw) >= 10:
+                address = struct.unpack(">H", raw[8:10])[0]
+            if len(raw) >= 12:
+                value = struct.unpack(">H", raw[10:12])[0]
+
+            events.append(OTEvent(
+                timestamp=now,
+                src_ip=src_ip,
+                dst_ip=dst_ip,
+                protocol="Modbus",
+                function_code=fc,
+                address=address,
+                value=value,
+                severity=severity,
+                message=f"Modbus write: {self.DANGEROUS_FC[fc]} "
+                        f"address={address} value={value}",
+            ))
+
+        # Scan detection (many FC attempts)
+        if fc == 0x2B:  # Device identification
+            events.append(OTEvent(
+                timestamp=now,
+                src_ip=src_ip,
+                dst_ip=dst_ip,
+                protocol="Modbus",
+                function_code=fc,
+                address=0,
+                value=None,
+                severity="MEDIUM",
+                message=f"Modbus device identification request from {src_ip}",
+            ))
+
+        return events
+
+    def check_rate_anomaly(
+        self,
+        src_ip: str,
+        stats: ModbusStats,
+        threshold: float = 100.0,
+    ) -> OTEvent | None:
+        """Detect request rate anomalies."""
+        if stats.write_rate > threshold:
+            return OTEvent(
+                timestamp=time.time(),
+                src_ip=src_ip,
+                dst_ip="N/A",
+                protocol="Modbus",
+                function_code=0,
+                address=0,
+                value=None,
+                severity="HIGH",
+                message=f"Abnormal write rate: {stats.write_rate:.1f}/s (threshold: {threshold})",
+            )
+        return None
+
+
+class OTPacketCapture:
+    """Simple OT packet capture (Modbus TCP)."""
+
+    def __init__(self, host: str = "0.0.0.0", port: int = 502):
+        self.host = host
+        self.port = port
+        self._stop = Event()
+
+    def start_capture(
+        self, callback, duration: float = 60.0
+    ) -> None:
+        """Capture Modbus packets from a TCP socket."""
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server.bind((self.host, self.port))
+        server.listen(10)
+        server.settimeout(1.0)
+
+        end = time.time() + duration
+        print(f"[*] Capture started: {self.host}:{self.port}")
+
+        while time.time() < end and not self._stop.is_set():
+            try:
+                conn, addr = server.accept()
+                Thread(
+                    target=self._handle_client,
+                    args=(conn, addr, callback),
+                    daemon=True,
+                ).start()
+            except TimeoutError:
+                continue
+        server.close()
+
+    def _handle_client(
+        self, conn: socket.socket, addr: tuple, callback
+    ) -> None:
+        src_ip = addr[0]
+        try:
+            while not self._stop.is_set():
+                data = conn.recv(512)
+                if not data:
+                    break
+                callback(src_ip, data)
+        finally:
+            conn.close()
+
+    def stop(self) -> None:
+        self._stop.set()
+
+
+class OTIDS:
+    """OT/ICS Intrusion Detection System."""
+
+    def __init__(
+        self,
+        whitelist_path: Path | None = None,
+        log_path: Path | None = None,
+    ):
+        self.rules = OTIDSRules(whitelist_path)
+        self.stats: dict[str, ModbusStats] = defaultdict(
+            lambda: ModbusStats(src_ip="")
+        )
+        self.events: list[OTEvent] = []
+        self.log_path = log_path
+        self._rate_window: dict[str, list[float]] = defaultdict(list)
+
+    def process_packet(self, src_ip: str, raw: bytes) -> None:
+        """Process packet and perform anomaly detection."""
+        # Validate Modbus TCP
+        if len(raw) < 8:
+            return
+
+        # Update statistics
+        now = time.time()
+        stat = self.stats[src_ip]
+        stat.src_ip = src_ip
+        stat.last_seen = now
+
+        fc = raw[7]
+        stat.function_codes[fc] = stat.function_codes.get(fc, 0) + 1
+
+        # Calculate write rate
+        if fc in OTIDSRules.DANGEROUS_FC:
+            self._rate_window[src_ip].append(now)
+            cutoff = now - 1.0
+            self._rate_window[src_ip] = [
+                t for t in self._rate_window[src_ip] if t > cutoff
+            ]
+            stat.write_rate = len(self._rate_window[src_ip])
+
+        # Evaluate rules
+        events = self.rules.check_modbus(src_ip, "PLC", raw)
+        rate_event = self.rules.check_rate_anomaly(src_ip, stat)
+        if rate_event:
+            events.append(rate_event)
+
+        for event in events:
+            self.events.append(event)
+            self._alert(event)
+
+    def _alert(self, event: OTEvent) -> None:
+        severity_icons = {
+            "CRITICAL": "[!!]",
+            "HIGH": "[! ]",
+            "MEDIUM": "[* ]",
+            "LOW": "[- ]",
+            "INFO": "[i ]",
+        }
+        icon = severity_icons.get(event.severity, "[?]")
+        print(
+            f"{icon} {time.strftime('%H:%M:%S', time.localtime(event.timestamp))} "
+            f"| {event.src_ip:15s} | {event.message}"
+        )
+
+        if self.log_path:
+            with self.log_path.open("a") as f:
+                f.write(json.dumps({
+                    "time": event.timestamp,
+                    "src": event.src_ip,
+                    "severity": event.severity,
+                    "msg": event.message,
+                }) + "\n")
+
+    def report(self) -> None:
+        print(f"\n{'='*60}")
+        print(f"Detection Report")
+        print(f"{'='*60}")
+        print(f"Total events: {len(self.events)}")
+        by_severity: dict[str, int] = defaultdict(int)
+        for e in self.events:
+            by_severity[e.severity] += 1
+        for sev in ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]:
+            if by_severity[sev]:
+                print(f"  {sev:10s}: {by_severity[sev]}")
+
+        print(f"\nCommunication statistics:")
+        for ip, stat in self.stats.items():
+            print(f"  {ip:15s} | FC distribution: {stat.function_codes}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="OT/ICS Intrusion Detection System")
+    parser.add_argument("-p", "--port", type=int, default=502,
+                        help="Modbus listening port")
+    parser.add_argument("-t", "--time", type=float, default=60.0,
+                        help="Capture duration (seconds)")
+    parser.add_argument("-w", "--whitelist", type=Path,
+                        help="Whitelist JSON file")
+    parser.add_argument("-l", "--log", type=Path,
+                        help="Event log file")
+    args = parser.parse_args()
+
+    ids = OTIDS(args.whitelist, args.log)
+    capture = OTPacketCapture(port=args.port)
+
+    print(f"[*] OT IDS started (port: {args.port}, duration: {args.time}s)")
+    try:
+        capture.start_capture(ids.process_packet, args.time)
+    except KeyboardInterrupt:
+        capture.stop()
+
+    ids.report()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## OT Security Monitoring Tools
+
+```bash
+# Zeek (Bro) OT protocol parsers
+zeek -i eth0 -C icsnpp-modbus icsnpp-dnp3 icsnpp-s7comm
+
+# Wireshark OT filters
+# Modbus: modbus
+# DNP3: dnp3
+# S7comm: s7comm
+# EtherNet/IP: enip
+# OPC-UA: opcua
+
+# OT-specific commercial solutions
+Claroty    — OT visibility and detection
+Dragos     — OT threat intelligence
+Nozomi     — OT asset management
+Armis      — Agentless OT security
+Microsoft Defender for IoT — Integrated OT security
+```
+
+## Incident Response for OT Environments
+
+```
+OT Incident Response Priorities
+1. Ensure human safety (physical process safety first)
+2. Prevent environmental damage
+3. Stabilize the process (prevent unplanned shutdowns)
+4. Collect evidence
+5. Restore systems
+
+OT Forensics Specifics
+├── Real-time data overwriting → fast collection required
+├── PLC memory dump (ladder logic)
+├── Historian data (process history)
+├── Network packet capture
+└── HMI event logs
+
+Recovery Procedure
+1. Rebuild from a clean image (do not use contaminated systems)
+2. Restore backup from a known-good state
+3. Patch vulnerabilities before restarting
+4. Resume operations with enhanced monitoring
+```
+
+## IEC 62443 Compliance Assessment
+
+```python
+#!/usr/bin/env python3
+"""IEC 62443 OT security requirements self-assessment tool."""
+
+from dataclasses import dataclass
+
+
+@dataclass
+class SecurityRequirement:
+    id: str
+    description: str
+    sl_level: int
+    met: bool | None = None
+    notes: str = ""
+
+
+REQUIREMENTS = [
+    SecurityRequirement("IAC-1", "User identification and authentication required", 1),
+    SecurityRequirement("IAC-2", "Strong password policy", 2),
+    SecurityRequirement("IAC-3", "Multi-factor authentication (MFA)", 3),
+    SecurityRequirement("UC-1", "Account lockout mechanism", 1),
+    SecurityRequirement("UC-2", "Least privilege principle applied", 2),
+    SecurityRequirement("SI-1", "Communication integrity (checksum/hash)", 1),
+    SecurityRequirement("SI-2", "Malicious code protection", 2),
+    SecurityRequirement("DC-1", "Data confidentiality (encryption)", 2),
+    SecurityRequirement("RDF-1", "Audit log collection", 1),
+    SecurityRequirement("RDF-2", "Anomaly detection system", 2),
+    SecurityRequirement("NM-1", "Network segmentation", 1),
+    SecurityRequirement("NM-2", "Wireless access control", 2),
+    SecurityRequirement("RA-1", "Risk assessment conducted", 1),
+    SecurityRequirement("RM-1", "Vulnerability patch management", 2),
+    SecurityRequirement("SWM-1", "Software change control", 2),
+]
+
+
+def run_assessment(target_sl: int = 2) -> None:
+    print(f"IEC 62443 Security Self-Assessment (Target SL: {target_sl})")
+    print("=" * 60)
+
+    applicable = [r for r in REQUIREMENTS if r.sl_level <= target_sl]
+
+    for req in applicable:
+        ans = input(f"[{req.id}] {req.description}? (y/n): ").strip().lower()
+        req.met = ans == "y"
+
+    met = [r for r in applicable if r.met]
+    not_met = [r for r in applicable if not r.met]
+
+    print(f"\nResult: {len(met)}/{len(applicable)} satisfied")
+    score = len(met) / len(applicable) * 100
+    print(f"Score: {score:.0f}%")
+
+    if not_met:
+        print(f"\nUnmet requirements ({len(not_met)}):")
+        for r in not_met:
+            print(f"  [{r.id}] {r.description}")
+
+
+if __name__ == "__main__":
+    run_assessment()
+```
+
+In OT security, **operational procedures, employee training, and supply chain management** are equally important alongside technical controls. All changes must go through a MOC (Management of Change) process.

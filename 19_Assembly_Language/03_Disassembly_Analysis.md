@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 디스어셈블리 분석
 
 ## 1. GDB / pwndbg 실전 명령어
@@ -998,4 +1004,190 @@ if __name__ == "__main__":
         print(f"사용법: {sys.argv[0]} <binary>")
         sys.exit(1)
     analyze_binary(sys.argv[1])
+```
+
+---
+
+<a name="english"></a>
+
+# Disassembly Analysis
+
+## 1. GDB / pwndbg Practical Commands
+
+### pwndbg Installation and Configuration
+
+```bash
+# Install pwndbg
+git clone https://github.com/pwndbg/pwndbg
+cd pwndbg && ./setup.sh
+
+# Basic usage
+gdb ./binary
+gdb -q ./binary    # Quiet mode
+
+# Attach to running process
+gdb -p PID
+```
+
+### Core pwndbg Commands
+
+```bash
+# Basic commands
+run [args]         # Run program
+continue / c       # Continue execution
+break *0x401234    # Set breakpoint at address
+break main         # Set breakpoint at function
+info breakpoints   # List breakpoints
+delete 1           # Delete breakpoint 1
+
+# Information
+info registers     # Show all registers
+registers          # pwndbg: colored register display
+stack 20           # Show stack (20 entries)
+telescope esp 20   # pwndbg: annotated stack
+backtrace / bt     # Call stack
+
+# Memory examination
+x/10x $esp         # Hex, 10 words from esp
+x/s 0x4040a0       # Show as string
+x/20i $rip         # Show 20 instructions
+disass main        # Disassemble function
+
+# pwndbg specific
+checksec           # Binary protection check
+vmmap              # Memory map
+heap               # Heap analysis
+```
+
+---
+
+## 2. Ghidra Usage Guide
+
+```
+Ghidra workflow:
+
+1. Create new project
+   File → New Project → Non-Shared Project
+
+2. Import binary
+   File → Import File → select binary
+
+3. Auto-analysis
+   When prompted: Analyze → Yes
+   Wait for analysis to complete (~30 seconds)
+
+4. Key views
+   - Symbol Tree: Functions, imports, exports
+   - Listing: Disassembly view
+   - Decompiler: C pseudocode (window)
+   - Function Graph: Visual flow
+
+5. Rename functions/variables
+   Press 'L' on function name → Rename
+   Context menu → Edit Function Signature
+
+6. Find key functions
+   Ctrl+Shift+F → Search for text in decompiled code
+   Look for: strcmp, strcpy, scanf, gets, malloc, free
+```
+
+---
+
+## 3. radare2 Analysis
+
+```bash
+# Basic analysis
+r2 ./binary          # Open binary
+r2 -A ./binary       # Open and auto-analyze
+r2 -d ./binary       # Open in debug mode
+
+# Analysis commands (prefix: a)
+aa               # Auto-analyze
+aaa              # Deep analysis (more thorough)
+afl              # List all functions
+afn main         # Rename function to "main"
+af @ sym.main    # Analyze specific function
+
+# Navigation
+s main           # Seek to main
+s 0x401234       # Seek to address
+pdf @ sym.main   # Print disassembly of function
+
+# Print/display (prefix: p)
+pd 20            # Print 20 disassembly lines
+px 32            # Print 32 bytes in hex
+ps @ 0x4040a0    # Print string at address
+pf xxx @ 0x1234  # Print formatted struct
+
+# Cross-references
+axt 0x4040a0     # Find all references to address
+axf 0x401234     # Find all calls from function
+
+# Visual mode
+V                # Visual mode
+p                # Cycle display formats
+:               # Enter command
+```
+
+---
+
+## 4. Binary Analysis Script
+
+```python
+#!/usr/bin/env python3
+"""Automated binary analysis using pwntools and radare2"""
+import subprocess
+import json
+from pwn import ELF, context
+
+def analyze_binary(binary_path: str) -> dict:
+    """Comprehensive binary analysis"""
+    
+    results = {
+        "path": binary_path,
+        "protections": {},
+        "functions": [],
+        "strings": [],
+        "imports": []
+    }
+    
+    # pwntools ELF analysis
+    try:
+        elf = ELF(binary_path)
+        results["protections"] = {
+            "ASLR": "check /proc/sys/kernel/randomize_va_space",
+            "NX": elf.nx,
+            "PIE": elf.pie,
+            "RELRO": "full" if elf.relro == "full" else "partial" if elf.relro else "none",
+            "Canary": elf.canary
+        }
+        
+        # Get functions
+        results["functions"] = [
+            {"name": name, "address": hex(addr)} 
+            for name, addr in elf.symbols.items() 
+            if addr > 0
+        ]
+        
+        # Get strings (dangerous ones)
+        dangerous_funcs = ['gets', 'strcpy', 'sprintf', 'scanf', 
+                          'system', 'exec', 'popen']
+        results["dangerous_imports"] = [
+            f for f in dangerous_funcs 
+            if f in elf.plt
+        ]
+        
+    except Exception as e:
+        results["error"] = str(e)
+    
+    return results
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) != 2:
+        print(f"Usage: {sys.argv[0]} <binary>")
+        sys.exit(1)
+    
+    result = analyze_binary(sys.argv[1])
+    print(json.dumps(result, indent=2))
 ```

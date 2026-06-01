@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 57-2. 양자 키 분배(QKD): 원리, 프로토콜, 실제 구현
 
 ## 개요
@@ -642,3 +648,652 @@ if __name__ == "__main__":
 3. **대칭 계층**: AES-256으로 실제 데이터 암호화
 
 이 구조는 QKD 장애 시에도 PQC로 폴백할 수 있어 실용성이 높다.
+
+---
+
+<a name="english"></a>
+
+# 57-2. Quantum Key Distribution (QKD): Principles, Protocols, and Real-World Implementation
+
+## Overview
+
+Quantum Key Distribution (QKD) is a secret key sharing method that uses the laws of quantum mechanics to make eavesdropping physically detectable. Unlike classical cryptography where keys are exchanged securely without a secret channel, QKD provides **information-theoretic security**.
+
+---
+
+## 1. Theoretical Foundation of QKD
+
+### 1.1 No-Cloning Theorem
+
+**Definition**: It is quantum-mechanically impossible to perfectly copy an unknown quantum state.
+
+**Proof outline**:
+- Assume a linear operator U performs |ψ⟩|0⟩ → |ψ⟩|ψ⟩
+- For two states |ψ⟩, |φ⟩, ⟨φ|ψ⟩ = ⟨φ|ψ⟩² must hold
+- This is only possible when ⟨φ|ψ⟩ = 0 or 1 → generally impossible
+
+**Cryptographic implication**: It is impossible for an eavesdropper (Eve) to copy qubits from the quantum channel, measure them, and forward the originals. The act of measurement itself disturbs the quantum state and is detectable.
+
+### 1.2 Heisenberg Uncertainty Principle
+
+Conjugate observables (e.g., X basis and Z basis) cannot both be measured accurately at the same time. In BB84, measuring in the wrong basis introduces errors.
+
+---
+
+## 2. QKD Protocol Comparison
+
+### 2.1 Key Protocol Characteristics
+
+| Property | BB84 | B92 | E91 (Ekert) | SARG04 | Twin-Field QKD |
+|----------|------|-----|------------|--------|---------------|
+| **Year proposed** | 1984 | 1992 | 1991 | 2004 | 2018 |
+| **Proposers** | Bennett, Brassard | Bennett | Ekert | Scarani et al. | Lucamarini et al. |
+| **Qubit states** | 4 states | 2 states | Entangled pairs | 4 states | Interference-based |
+| **Security basis** | No-cloning | No-cloning | Bell inequality | Unambiguity | Phase coding |
+| **Efficiency** | 25–50% | 25% | 25% | 25% | ~50% |
+| **PNS attack resistance** | Low | Low | Medium | High | High |
+| **Distance limit** | ~100 km | ~50 km | ~100 km | ~100 km | ~600 km |
+| **Implementation complexity** | Low | Very low | High | Low | Very high |
+
+### 2.2 BB84 Protocol in Detail
+
+BB84 is the most widely implemented QKD protocol.
+
+**Bases and states used:**
+
+| Basis | Bit 0 | Bit 1 | Symbol |
+|-------|-------|-------|--------|
+| Z basis (rectilinear) | Horizontal polarization → | Vertical polarization ↑ | + |
+| X basis (diagonal) | 45° polarization ↗ | 135° polarization ↖ | × |
+
+**Protocol steps:**
+
+1. Alice selects random bit strings and random bases, then transmits photons
+2. Bob selects random bases and measures
+3. Basis comparison over public channel (sifting)
+4. Keep only bits where bases matched (~50% of key)
+5. Estimate QBER using sampling
+6. If QBER is below threshold (typically 11%), proceed
+7. Error correction to reconcile mismatches
+8. Privacy amplification to compress the key
+
+### 2.3 E91 Protocol (Entanglement-based)
+
+E91, proposed by Ekert, exploits quantum entanglement of EPR pairs.
+
+- Uses **Bell inequality violation** for eavesdropping detection
+- Eavesdropping destroys entanglement so Bell inequality is no longer violated
+- Detects attacks disguised as classical correlations
+- Theoretical basis for Device-Independent QKD (DI-QKD)
+
+---
+
+## 3. Real-World QKD Deployments
+
+### 3.1 Major QKD Network Status
+
+| Project | Country | Scale | Features | Status |
+|---------|---------|-------|---------|--------|
+| **Micius satellite (墨子)** | China | Satellite-ground 1,200 km | World's first satellite QKD | Operational since 2016 |
+| **Beijing-Shanghai QKD backbone** | China | 2,000 km terrestrial network | 32 relay nodes | Completed 2017 |
+| **SECOQC project** | Europe | Vienna, 6 nodes | Multi-protocol integration | Demo 2008 |
+| **Tokyo QKD network** | Japan | Greater Tokyo metro area | NTT, Toshiba participation | Operational since 2010 |
+| **UK QKD network** | UK | Bristol-Bath | Standardization research | Ongoing |
+| **SK Telecom QKD** | South Korea | Parts of Seoul | Commercial service launched | 2023~ |
+| **US DoD QKD** | USA | Classified military network | NSA involvement | Classified |
+
+### 3.2 Micius (墨子) Satellite Details
+
+World's first dedicated QKD satellite, launched by China's USTC in 2016:
+
+- **Orbit**: ~500 km low Earth orbit
+- **Distance achieved**: Satellite-ground QKD over 1,203 km (2020)
+- **Key generation rate**: ~1.1 kbps (ground reference)
+- **Key experiment**: Quantum-encrypted video call between Beijing and Vienna (2017)
+- **Limitation**: Operational only at night due to daytime atmospheric scattering
+
+---
+
+## 4. Limitations and Challenges of QKD
+
+### 4.1 Technical Limitations
+
+| Constraint | Cause | Current Solution |
+|-----------|-------|----------------|
+| **Distance limit** | Fiber loss, photon absorption | Use trusted repeater nodes |
+| **Low key generation rate** | Single-photon detection efficiency | High-efficiency SPD, multiplexing |
+| **Expensive equipment** | Single-photon sources/detectors | Integrated photonic chips under research |
+| **Repeater vulnerability** | Trusted repeaters required | Quantum repeater research ongoing |
+| **Authentication channel needed** | Prevent public channel eavesdropping | Existing PKI or pre-shared keys |
+
+### 4.2 Attack Types
+
+Known attacks against real QKD implementations:
+
+| Attack Type | Target | Description |
+|------------|--------|-------------|
+| PNS (Photon Number Splitting) | BB84 weak laser | Extract and store photon from multi-photon pulses |
+| Time-shift attack | Measurement device | Exploit detector timing vulnerabilities |
+| Trojan horse attack | Alice's device | Illuminate device to extract state information |
+| Detector blinding | Bob's device | Control detector classically using bright light |
+| Solved by MDI-QKD | All detector attacks | Protocol that does not trust the detectors |
+
+---
+
+## 5. Python CLI: BB84 Protocol Simulator
+
+```python
+#!/usr/bin/env python3
+"""
+BB84 Quantum Key Distribution Protocol Simulator
+Simulates the roles of Alice, Bob, and Eve (eavesdropper) to compute QBER
+"""
+
+from __future__ import annotations
+
+import argparse
+import random
+import sys
+from dataclasses import dataclass, field
+from typing import Optional
+
+
+@dataclass
+class QuantumChannel:
+    """
+    Quantum channel: transmits qubits from Alice to Bob.
+    Simulates channel noise and Eve's eavesdropping.
+    """
+    channel_noise: float       # Inherent channel error rate
+    eve_present: bool          # Whether Eve is eavesdropping
+    eve_intercept_rate: float  # Fraction of qubits Eve intercepts
+
+    def transmit(
+        self,
+        bit: int,
+        alice_basis: int
+    ) -> tuple[int, int]:
+        """
+        Simulate qubit transmission.
+        Returns: (received bit, received basis)
+        Basis: 0=Z basis (rectilinear), 1=X basis (diagonal)
+        """
+        received_bit = bit
+        received_basis = alice_basis
+
+        # Simulate Eve's eavesdropping
+        if self.eve_present and random.random() < self.eve_intercept_rate:
+            # Eve measures in a random basis and retransmits
+            eve_basis = random.randint(0, 1)
+            if eve_basis != alice_basis:
+                # Basis mismatch: 50% chance of bit error
+                received_bit = random.randint(0, 1)
+
+        # Apply channel noise
+        if random.random() < self.channel_noise:
+            received_bit = 1 - received_bit
+
+        return received_bit, received_basis
+
+
+@dataclass
+class Alice:
+    """Alice: the sending party"""
+    key_length: int
+    bits: list[int] = field(default_factory=list)
+    bases: list[int] = field(default_factory=list)
+
+    def prepare_qubits(self) -> None:
+        """Generate random bits and bases"""
+        self.bits = [random.randint(0, 1) for _ in range(self.key_length)]
+        self.bases = [random.randint(0, 1) for _ in range(self.key_length)]
+
+    def sift_key(self, bob_bases: list[int]) -> list[int]:
+        """Select bits where Alice's and Bob's bases match"""
+        return [
+            self.bits[i]
+            for i in range(self.key_length)
+            if self.bases[i] == bob_bases[i]
+        ]
+
+    def sift_indices(self, bob_bases: list[int]) -> list[int]:
+        """Return list of matching basis indices"""
+        return [
+            i for i in range(self.key_length)
+            if self.bases[i] == bob_bases[i]
+        ]
+
+
+@dataclass
+class Bob:
+    """Bob: the receiving party"""
+    key_length: int
+    bases: list[int] = field(default_factory=list)
+    received_bits: list[int] = field(default_factory=list)
+
+    def choose_bases(self) -> None:
+        """Select random bases"""
+        self.bases = [random.randint(0, 1) for _ in range(self.key_length)]
+
+    def measure(
+        self,
+        channel: QuantumChannel,
+        alice_bits: list[int],
+        alice_bases: list[int]
+    ) -> None:
+        """Measure qubits received through the channel"""
+        self.received_bits = []
+        for i in range(self.key_length):
+            received_bit, _ = channel.transmit(alice_bits[i], alice_bases[i])
+            # Bob measures in his own basis (random result on basis mismatch)
+            if self.bases[i] != alice_bases[i]:
+                # Basis mismatch: measurement result is meaningless (random)
+                received_bit = random.randint(0, 1)
+            self.received_bits.append(received_bit)
+
+    def sift_key(self, alice_bases: list[int]) -> list[int]:
+        """Select bits where Bob's and Alice's bases match"""
+        return [
+            self.received_bits[i]
+            for i in range(self.key_length)
+            if alice_bases[i] == self.bases[i]
+        ]
+
+
+@dataclass
+class Eve:
+    """Eve: the eavesdropper (optional)"""
+    intercept_rate: float
+    intercepted_count: int = 0
+    correct_guess_count: int = 0
+
+    def intercept(
+        self,
+        bit: int,
+        alice_basis: int
+    ) -> tuple[int, int]:
+        """
+        Simulate qubit interception and retransmission.
+        Returns: (bit Eve measured, basis Eve used)
+        """
+        if random.random() < self.intercept_rate:
+            self.intercepted_count += 1
+            eve_basis = random.randint(0, 1)
+            if eve_basis == alice_basis:
+                self.correct_guess_count += 1
+                return bit, eve_basis
+            else:
+                # Measured in wrong basis → random result
+                return random.randint(0, 1), eve_basis
+        return bit, alice_basis
+
+
+def calculate_qber(
+    alice_sifted: list[int],
+    bob_sifted: list[int],
+    sample_size: Optional[int] = None
+) -> tuple[float, int, int]:
+    """
+    Calculate QBER (Quantum Bit Error Rate).
+    Returns: (QBER, error count, compared bit count)
+    """
+    if len(alice_sifted) != len(bob_sifted):
+        raise ValueError("Alice and Bob sifted key lengths differ.")
+
+    if len(alice_sifted) == 0:
+        return 0.0, 0, 0
+
+    if sample_size is None:
+        sample_size = len(alice_sifted)
+
+    sample_size = min(sample_size, len(alice_sifted))
+    indices = random.sample(range(len(alice_sifted)), sample_size)
+
+    errors = sum(
+        1 for i in indices
+        if alice_sifted[i] != bob_sifted[i]
+    )
+    qber = errors / sample_size if sample_size > 0 else 0.0
+    return qber, errors, sample_size
+
+
+def privacy_amplification(
+    sifted_key: list[int],
+    qber: float,
+    sample_ratio: float = 0.5
+) -> list[int]:
+    """
+    Simulate privacy amplification.
+    Compresses key considering information Eve may have learned.
+    In practice, a 2-universal hash function is used.
+    """
+    # Simplified implementation: XOR of consecutive bits
+    amplified = []
+    step = max(1, int(1 / (1 - qber))) if qber < 1 else len(sifted_key)
+    for i in range(0, len(sifted_key) - step + 1, step):
+        xor_bit = 0
+        for j in range(step):
+            xor_bit ^= sifted_key[i + j]
+        amplified.append(xor_bit)
+    return amplified
+
+
+def print_protocol_visualization(
+    alice: Alice,
+    bob: Bob,
+    alice_sifted: list[int],
+    bob_sifted: list[int],
+    max_display: int = 20
+) -> None:
+    """Visualize BB84 protocol steps (first N bits)"""
+    basis_symbol = {0: "+", 1: "×"}  # Z basis, X basis
+    display_n = min(max_display, alice.key_length)
+
+    print("\n  BB84 Protocol Step-by-Step Visualization (first {} bits):".format(display_n))
+    print(f"  {'No.':>4}  {'Alice bit':>9}  {'Alice basis':>11}  "
+          f"{'Bob basis':>9}  {'Bob recv':>8}  {'Match':>5}  {'Bob bit':>7}")
+    print(f"  {'-'*72}")
+
+    match_count = 0
+    for i in range(display_n):
+        a_bit = alice.bits[i]
+        a_basis = basis_symbol[alice.bases[i]]
+        b_basis = basis_symbol[bob.bases[i]]
+        b_recv = bob.received_bits[i]
+        match = alice.bases[i] == bob.bases[i]
+        if match:
+            match_count += 1
+        match_str = "Y" if match else "-"
+        b_sifted_str = str(b_recv) if match else "-"
+
+        print(
+            f"  {i+1:>4}  {a_bit:>9}  {a_basis:>11}  "
+            f"{b_basis:>9}  {b_recv:>8}  {match_str:>5}  {b_sifted_str:>7}"
+        )
+
+    print(f"\n  Basis matches among {display_n} displayed bits: {match_count}")
+
+
+def print_qber_interpretation(qber: float) -> str:
+    """Interpret QBER value"""
+    if qber < 0.05:
+        return "Normal (no eavesdropping, low channel noise)"
+    elif qber < 0.11:
+        return "Caution (slight noise or limited eavesdropping possible)"
+    elif qber < 0.15:
+        return "Warning (strong suspicion of eavesdropping, reconsider key use)"
+    else:
+        return "Danger (eavesdropping almost certain, discard key)"
+
+
+def run_bb84_simulation(args: argparse.Namespace) -> int:
+    """Main execution of BB84 simulation"""
+    key_length: int = args.key_length
+    error_rate: float = args.error_rate
+    channel_noise: float = args.channel_noise
+    eve_present: bool = args.eve
+    eve_intercept: float = args.eve_intercept_rate
+    verbose: bool = args.verbose
+
+    print("=" * 68)
+    print("  BB84 Quantum Key Distribution Protocol Simulator")
+    print("=" * 68)
+    print(f"\n  Parameter settings:")
+    print(f"  - Target key length  : {key_length} bits")
+    print(f"  - Channel noise rate : {channel_noise:.1%}")
+    print(f"  - Eavesdropper (Eve) : {'Present' if eve_present else 'Absent'}")
+    if eve_present:
+        print(f"  - Eve intercept rate : {eve_intercept:.1%}")
+
+    random.seed(args.seed if hasattr(args, "seed") and args.seed else None)
+
+    # Total qubits to transmit (~50% discarded due to basis mismatch)
+    raw_length = key_length * 4  # Generate 4x for headroom
+
+    # Initialize Alice and prepare qubits
+    alice = Alice(key_length=raw_length)
+    alice.prepare_qubits()
+
+    # Initialize Bob and choose bases
+    bob = Bob(key_length=raw_length)
+    bob.choose_bases()
+
+    # Set up quantum channel
+    channel = QuantumChannel(
+        channel_noise=channel_noise,
+        eve_present=eve_present,
+        eve_intercept_rate=eve_intercept
+    )
+
+    print(f"\n  Transmission phase:")
+    print(f"  - Total qubits transmitted: {raw_length}")
+
+    # Bob measures
+    bob.measure(channel, alice.bits, alice.bases)
+
+    # Basis comparison (sifting)
+    alice_sifted = alice.sift_key(bob.bases)
+    bob_sifted = bob.sift_key(alice.bases)
+    sift_indices = alice.sift_indices(bob.bases)
+
+    sifted_length = len(alice_sifted)
+    sift_ratio = sifted_length / raw_length
+
+    print(f"  - Basis matches (sifted): {sifted_length} ({sift_ratio:.1%})")
+
+    if sifted_length == 0:
+        print("Error: sifted key is empty. Increase --key-length.", file=sys.stderr)
+        return 1
+
+    # Calculate QBER (using 25% of total as sample)
+    sample_n = max(10, sifted_length // 4)
+    qber, errors, compared = calculate_qber(alice_sifted, bob_sifted, sample_n)
+
+    print(f"\n  QBER measurement results:")
+    print(f"  - Sample bit count   : {compared}")
+    print(f"  - Error bit count    : {errors}")
+    print(f"  - QBER               : {qber:.4f} ({qber:.2%})")
+    print(f"  - Assessment         : {print_qber_interpretation(qber)}")
+
+    # Check BB84 threshold (11%)
+    QBER_THRESHOLD = 0.11
+    if qber > QBER_THRESHOLD:
+        print(f"\n  Warning: QBER {qber:.2%} exceeds threshold {QBER_THRESHOLD:.0%}!")
+        print(f"  Eavesdropping detected or channel quality is too poor.")
+        print(f"  This key should not be used.")
+        if not args.force:
+            print("  Use --force to continue the simulation anyway.")
+            return 1
+
+    # Generate final key (remove sampled bits)
+    # In practice: error correction + privacy amplification required
+    remaining_sifted = alice_sifted[compared:]
+    bob_remaining = bob_sifted[compared:]
+
+    # Simulate privacy amplification
+    final_key = privacy_amplification(remaining_sifted, qber)
+    final_key_length = len(final_key)
+
+    print(f"\n  Final key generation:")
+    print(f"  - Bits remaining after sampling: {len(remaining_sifted)}")
+    print(f"  - After privacy amplification  : {final_key_length} bits")
+
+    key_efficiency = final_key_length / raw_length
+    print(f"  - Overall efficiency: {key_efficiency:.2%} (vs. transmitted qubits)")
+
+    # Display part of key
+    if final_key_length > 0:
+        display_n = min(32, final_key_length)
+        key_str = "".join(str(b) for b in final_key[:display_n])
+        print(f"  - Final key (first {display_n} bits): {key_str}{'...' if final_key_length > display_n else ''}")
+
+    # Detailed visualization
+    if verbose:
+        print_protocol_visualization(alice, bob, alice_sifted, bob_sifted)
+
+    # Eve detection summary
+    if eve_present:
+        print(f"\n  Eve eavesdropping analysis:")
+        print(f"  - Eve intercept rate          : {eve_intercept:.1%}")
+        expected_qber_from_eve = eve_intercept * 0.25
+        print(f"  - Expected QBER from Eve      : {expected_qber_from_eve:.2%}")
+        print(f"  - Measured QBER               : {qber:.2%}")
+        detected = qber > 0.03
+        print(f"  - Eve detection result        : {'Detected' if detected else 'Not detected (passed by luck)'}")
+
+    # Summary statistics
+    print("\n" + "=" * 68)
+    print("  Simulation Summary")
+    print("=" * 68)
+    rows = [
+        ("Transmitted qubits", f"{raw_length}"),
+        ("Sifted key", f"{sifted_length}"),
+        ("QBER sample", f"{compared}"),
+        ("QBER", f"{qber:.2%}"),
+        ("Final key length", f"{final_key_length} bits"),
+        ("Eve detected", "Yes" if eve_present and qber > 0.03 else "No" if eve_present else "N/A"),
+    ]
+    for label, value in rows:
+        print(f"  {label:>20} : {value}")
+
+    print("\n  Simulation complete.")
+    return 0
+
+
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments"""
+    parser = argparse.ArgumentParser(
+        prog="bb84_simulator",
+        description="BB84 Quantum Key Distribution Protocol Simulator",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python 02_quantum_key_distribution.py --key-length 256
+  python 02_quantum_key_distribution.py --key-length 512 --channel-noise 0.02
+  python 02_quantum_key_distribution.py --key-length 1024 --eve --eve-intercept-rate 0.5
+  python 02_quantum_key_distribution.py --key-length 256 --verbose
+
+QBER thresholds:
+  < 5%   : Normal (no eavesdropping)
+  5-11%  : Caution (weak eavesdropping or noise)
+  > 11%  : Danger (discard key recommended)
+        """
+    )
+    parser.add_argument(
+        "--key-length",
+        type=int,
+        default=256,
+        metavar="N",
+        help="Target final key length (bits, default: 256)"
+    )
+    parser.add_argument(
+        "--error-rate",
+        type=float,
+        default=0.0,
+        metavar="R",
+        help="Override QBER threshold (default: 0.0, use standard 11%%)"
+    )
+    parser.add_argument(
+        "--channel-noise",
+        type=float,
+        default=0.01,
+        metavar="N",
+        help="Channel bit error rate (default: 0.01 = 1%%)"
+    )
+    parser.add_argument(
+        "--eve",
+        action="store_true",
+        help="Activate eavesdropper Eve"
+    )
+    parser.add_argument(
+        "--eve-intercept-rate",
+        type=float,
+        default=0.5,
+        metavar="R",
+        help="Fraction of qubits Eve intercepts (default: 0.5 = 50%%)"
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Continue simulation even if QBER exceeds threshold"
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print detailed per-step protocol visualization"
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed (for reproducibility)"
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    """Main entry point"""
+    args = parse_arguments()
+
+    # Input validation
+    if args.key_length < 10:
+        print("Error: --key-length must be at least 10.", file=sys.stderr)
+        sys.exit(1)
+    if not (0.0 <= args.channel_noise <= 0.5):
+        print("Error: --channel-noise must be in range 0.0–0.5.", file=sys.stderr)
+        sys.exit(1)
+    if not (0.0 <= args.eve_intercept_rate <= 1.0):
+        print("Error: --eve-intercept-rate must be in range 0.0–1.0.", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        exit_code = run_bb84_simulation(args)
+        sys.exit(exit_code)
+    except KeyboardInterrupt:
+        print("\n\nSimulation interrupted.")
+        sys.exit(0)
+    except Exception as e:
+        print(f"\nUnexpected error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Comparison: QKD vs. Classical Cryptography
+
+| Property | QKD | Classical DH/ECDH | Pre-shared Key |
+|----------|-----|------------------|---------------|
+| **Security basis** | Laws of quantum mechanics | Mathematical hardness | Physical key delivery |
+| **Quantum computer resistance** | Complete | None (broken by Shor's) | Complete |
+| **Eavesdropping detection** | Automatic (QBER) | Not possible | Not possible |
+| **Long-distance support** | Limited (~hundreds of km) | Unlimited | Unlimited |
+| **Implementation cost** | Very high | Low | Medium |
+| **Ease of deployment** | Dedicated infrastructure required | Software only | Physical delivery required |
+| **Standardization** | Immature | NIST, IETF | — |
+| **Future security** | Perpetual | Needs PQC replacement | Perpetual |
+
+---
+
+## 7. Hybrid QKD Architecture
+
+In practical deployments, **hybrid architectures** combining QKD with classical cryptography are used rather than QKD alone:
+
+```
+[Alice] ─── QKD channel (fiber/satellite) ─── [Bob]
+   │                                              │
+   └── QKD key → AES-256 encryption → Data ──────┘
+                       ↑
+                Additionally authenticated
+                with PQC algorithm
+```
+
+**Role of each layer:**
+1. **QKD layer**: Generates physically secure random keys
+2. **PQC layer**: Protects the QKD public (authentication) channel
+3. **Symmetric layer**: Encrypts actual data with AES-256
+
+This structure allows fallback to PQC if QKD fails, making it highly practical.

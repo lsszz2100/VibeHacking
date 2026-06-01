@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 위협 인텔리전스 플랫폼 기초
 
 ## 위협 인텔리전스 개요
@@ -276,3 +282,286 @@ if __name__ == "__main__":
 ```
 
 다음 파일에서 MISP 플랫폼 활용을 다룬다.
+
+---
+
+<a name="english"></a>
+
+# Threat Intelligence Platform Fundamentals
+
+## Threat Intelligence Overview
+
+Threat Intelligence (TI) is evidence-based knowledge about current or potential threats that supports decision-making. It must be actionable information with context — not merely a collection of IoCs (Indicators of Compromise).
+
+## Intelligence Types
+
+### Strategic Intelligence
+- Audience: C-Suite, executives
+- Content: Threat actor trends, geopolitical risks, industry trends
+- Format: Executive reports, risk assessments
+
+### Operational Intelligence
+- Audience: SOC managers, incident response teams
+- Content: Campaign analysis, TTPs, attack timelines
+- Format: Threat reports, campaign briefings
+
+### Tactical Intelligence
+- Audience: Defenders, threat hunting teams
+- Content: TTPs (MITRE ATT&CK), attack patterns
+- Format: ATT&CK mappings, hunting playbooks
+
+### Technical Intelligence
+- Audience: SOC analysts, SIEM administrators
+- Content: IoCs (IPs, domains, hashes, certificates)
+- Format: STIX/TAXII, CSV, JSON, OpenIOC
+
+## Intelligence Lifecycle
+
+```
+Plan → Collect → Process → Analyze → Disseminate → Feedback
+  ↑___________________________________________________|
+
+Plan        : Define intelligence requirements (RFI, PIR)
+Collect     : OSINT, commercial feeds, human intelligence
+Process     : Normalization, deduplication, format conversion
+Analyze     : Contextualization, correlation analysis, attribution
+Disseminate : SIEM integration, reports, API
+Feedback    : Evaluate usefulness, adjust priorities
+```
+
+## Core Standards and Frameworks
+
+### STIX 2.1 (Structured Threat Information eXpression)
+```json
+{
+    "type": "indicator",
+    "spec_version": "2.1",
+    "id": "indicator--a720571b-de4b-4a8a-b71f-a5bef2a4afe5",
+    "created": "2024-01-15T10:00:00.000Z",
+    "modified": "2024-01-15T10:00:00.000Z",
+    "name": "Malicious IP address",
+    "indicator_types": ["malicious-activity"],
+    "pattern": "[ipv4-addr:value = '192.0.2.1']",
+    "pattern_type": "stix",
+    "valid_from": "2024-01-01T00:00:00Z",
+    "labels": ["malicious-activity"]
+}
+```
+
+### TAXII 2.1 (Trusted Automated eXchange of Intelligence Information)
+```
+TAXII Collections API
+GET /taxii/   — Server information
+GET /api1/    — API root
+GET /api1/collections/   — Collection list
+GET /api1/collections/{id}/objects/ — STIX objects
+POST /api1/collections/{id}/objects/ — Upload STIX
+```
+
+### MITRE ATT&CK
+```
+Enterprise ATT&CK
+├── 14 Tactics
+├── 200+ Techniques
+├── 400+ Sub-techniques
+└── Threat actor / software mapping
+
+ICS ATT&CK (OT)
+└── OT environment-specific tactics and techniques
+```
+
+## TIP Platform Comparison
+
+```
+Open Source
+├── MISP (Malware Information Sharing Platform)
+│   — Most active, strong community
+├── OpenCTI
+│   — STIX 2.1 native, modern UI
+├── Hive/Cortex
+│   — Incident response integration
+└── IntelOwl
+│   — Multi-analyzer integration
+
+Commercial
+├── Anomali ThreatStream
+├── Recorded Future
+├── ThreatConnect
+├── Mandiant Advantage
+└── IBM X-Force Exchange
+```
+
+## Intelligence Quality Assessment
+
+```
+Confidence
+  Admiralty Scale: A-F (source reliability) × 1-6 (information reliability)
+  Percentage: 0–100%
+
+Timeliness
+  IP/Domain IoCs: hours to days
+  Hashes: days to weeks
+  TTPs: months to years
+
+Relevance
+  Matching industry sector, region, and technology stack
+
+Actionability
+  Whether detection rules can be directly generated
+```
+
+## TIP Environment Setup
+
+```python
+#!/usr/bin/env python3
+"""Threat Intelligence Platform configuration validation tool."""
+
+import argparse
+import urllib.request
+import urllib.error
+import json
+import sys
+from dataclasses import dataclass
+
+
+@dataclass
+class TIPEndpoint:
+    name: str
+    url: str
+    api_key: str
+    platform: str
+
+
+def check_misp_connection(url: str, api_key: str) -> dict:
+    """Test MISP connection."""
+    endpoint = f"{url.rstrip('/')}/servers/getPyMISPVersion.json"
+    req = urllib.request.Request(
+        endpoint,
+        headers={
+            "Authorization": api_key,
+            "Accept": "application/json",
+        }
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read())
+            return {"status": "ok", "version": data.get("version")}
+    except urllib.error.HTTPError as e:
+        return {"status": "error", "code": e.code}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+def check_opencti_connection(url: str, api_key: str) -> dict:
+    """Test OpenCTI GraphQL connection."""
+    endpoint = f"{url.rstrip('/')}/graphql"
+    query = '{"query": "{ about { version } }"}'
+    req = urllib.request.Request(
+        endpoint,
+        data=query.encode(),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read())
+            version = data.get("data", {}).get("about", {}).get("version")
+            return {"status": "ok", "version": version}
+    except Exception as e:
+        return {"status": "error", "message": str(e)[:100]}
+
+
+def check_taxii_server(url: str, auth_header: str | None = None) -> dict:
+    """Test TAXII 2.1 server connection."""
+    discovery_url = f"{url.rstrip('/')}/taxii/"
+    headers: dict = {"Accept": "application/taxii+json;version=2.1"}
+    if auth_header:
+        headers["Authorization"] = auth_header
+    req = urllib.request.Request(discovery_url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read())
+            return {
+                "status": "ok",
+                "title": data.get("title"),
+                "description": data.get("description", "")[:100],
+            }
+    except Exception as e:
+        return {"status": "error", "message": str(e)[:100]}
+
+
+def validate_stix_bundle(bundle_path: str) -> dict:
+    """Basic validation of a STIX bundle."""
+    import pathlib
+    try:
+        data = json.loads(pathlib.Path(bundle_path).read_text())
+        if data.get("type") != "bundle":
+            return {"valid": False, "error": "Not a bundle type"}
+        objects = data.get("objects", [])
+        types = {}
+        for obj in objects:
+            t = obj.get("type", "unknown")
+            types[t] = types.get(t, 0) + 1
+        return {
+            "valid": True,
+            "spec_version": data.get("spec_version"),
+            "object_count": len(objects),
+            "types": types,
+        }
+    except json.JSONDecodeError as e:
+        return {"valid": False, "error": f"JSON parse error: {e}"}
+    except FileNotFoundError:
+        return {"valid": False, "error": "File not found"}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="TIP connection and validation tool")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    misp_p = sub.add_parser("misp", help="Test MISP connection")
+    misp_p.add_argument("url")
+    misp_p.add_argument("api_key")
+
+    octi_p = sub.add_parser("opencti", help="Test OpenCTI connection")
+    octi_p.add_argument("url")
+    octi_p.add_argument("api_key")
+
+    taxii_p = sub.add_parser("taxii", help="Test TAXII server")
+    taxii_p.add_argument("url")
+    taxii_p.add_argument("--auth", help="Authorization header value")
+
+    stix_p = sub.add_parser("validate-stix", help="Validate STIX bundle")
+    stix_p.add_argument("bundle_path")
+
+    args = parser.parse_args()
+
+    if args.cmd == "misp":
+        result = check_misp_connection(args.url, args.api_key)
+        print(f"MISP: {result}")
+
+    elif args.cmd == "opencti":
+        result = check_opencti_connection(args.url, args.api_key)
+        print(f"OpenCTI: {result}")
+
+    elif args.cmd == "taxii":
+        result = check_taxii_server(args.url, args.auth)
+        print(f"TAXII: {result}")
+
+    elif args.cmd == "validate-stix":
+        result = validate_stix_bundle(args.bundle_path)
+        if result["valid"]:
+            print(f"[+] Valid STIX bundle")
+            print(f"    Version: {result.get('spec_version')}")
+            print(f"    Objects: {result.get('object_count')}")
+            print(f"    Types: {result.get('types')}")
+        else:
+            print(f"[!] Invalid: {result.get('error')}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+The next file covers MISP platform usage.

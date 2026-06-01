@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # CTF 방법론과 도구 체계
 
 CTF(Capture The Flag)는 실제 보안 기술을 경쟁 형식으로 연습하는 최고의 방법이다. Jeopardy 스타일 CTF에서 다양한 보안 분야의 문제를 풀며 실전 기술을 쌓는다.
@@ -369,3 +375,225 @@ if __name__ == "__main__":
 | OverTheWire | overthewire.org | Linux 워게임 |
 | CryptoHack | cryptohack.org | 암호학 특화 |
 | pwn.college | pwn.college | PWN 단계별 학습 |
+
+---
+
+<a name="english"></a>
+
+# CTF Methodology and Tool System
+
+CTF (Capture The Flag) is the best way to practice real security skills in a competitive format. By solving problems across various security domains in Jeopardy-style CTFs, you build hands-on skills.
+
+---
+
+## 1. CTF Competition Types
+
+| Type | Description | Characteristics |
+|------|-------------|-----------------|
+| Jeopardy | Solve problems by category | Most common, individual/team participation |
+| Attack-Defense | Defend your own service + attack opponent's server | Real-time offense/defense, patching strategy critical |
+| King of the Hill | Capture and hold a server | Maintain persistent exploits |
+| Boot2Root (CTF+HTB) | From initial access to root | Real penetration test simulation |
+
+---
+
+## 2. Core Tools by Category
+
+### 2.1 PWN (Binary Exploitation)
+
+```bash
+# Setup
+pip install pwntools
+sudo apt install gdb gdb-multiarch
+
+# GDB plugins (choose one)
+# pwndbg: https://github.com/pwndbg/pwndbg
+git clone https://github.com/pwndbg/pwndbg && cd pwndbg && ./setup.sh
+
+# GEF (GDB Enhanced Features)
+bash -c "$(curl -fsSL https://gef.blah.cat/sh)"
+
+# Check binary protections
+checksec --file=./binary
+checksec binary  # pwntools CLI
+
+# Core tools
+# pwntools    - exploit framework
+# ROPgadget   - ROP gadget finder
+# ropper      - ROP chain builder
+# one_gadget  - libc one-gadget RCE finder
+# LibcSearcher / libc-database - libc version identification
+```
+
+### 2.2 REV (Reverse Engineering)
+
+```bash
+# Static analysis
+ghidra          # Powerful free disassembler (NSA)
+cutter          # Radare2 GUI frontend
+binary ninja    # Commercial, scripting-friendly
+objdump -d binary   # Quick disassembly
+
+# Dynamic analysis
+gdb -q ./binary
+strace ./binary       # System call tracing
+ltrace ./binary       # Library call tracing
+frida-trace -i "strcmp" ./binary  # Function tracing
+
+# Symbolic execution
+angr            # Python-based symbolic execution
+z3              # SMT solver (Python bindings)
+manticore       # Ethereum/binary symbolic execution
+
+# Unpacking/deobfuscation
+upx -d packed_binary
+python pyinstxtractor.py packed.exe  # PyInstaller unpacking
+```
+
+### 2.3 WEB
+
+```bash
+# HTTP analysis
+burpsuite       # Primary HTTP proxy
+caido           # Modern Burp alternative (Rust)
+ffuf            # Fuzzing (directories/parameters)
+sqlmap          # SQL injection automation
+nuclei          # Vulnerability scanner (template-based)
+
+# Specialized tools
+jwt_tool        # JWT analysis and attacks
+python-jwt      # JWT creation and parsing
+hashcat         # Hash cracking
+flask-unsign    # Flask session cookie attacks
+
+# Development tools
+python requests + BeautifulSoup  # Automation scripts
+```
+
+### 2.4 CRYPTO (Cryptography)
+
+```bash
+pip install pycryptodome gmpy2 sympy
+
+# Online tools
+# CyberChef: https://gchq.github.io/CyberChef/
+# FactorDB:  http://factordb.com/
+# Alpertron: https://www.alpertron.com.ar/ECM.HTM (factorization)
+
+# RSA weak key detection
+python -c "from Crypto.PublicKey import RSA; k=RSA.import_key(open('key.pem').read()); print(k.n, k.e)"
+
+# Hash identification
+hash-identifier [hash]
+hashid [hash]
+```
+
+### 2.5 FORENSICS
+
+```bash
+# File analysis
+file suspicious_file     # File type
+xxd file | head          # Hex dump
+binwalk -e image.bin     # File extraction
+foremost -i disk.img     # File carving
+
+# Image steganography
+steghide extract -sf image.jpg
+zsteg image.png          # LSB detection
+stegsolve                # GUI steganography analysis
+
+# Memory forensics
+volatility3 -f memory.raw windows.pslist.PsList
+volatility3 -f memory.raw linux.bash.Bash
+
+# Network
+wireshark dump.pcap
+tshark -r dump.pcap -Y "http" -T fields -e http.request.uri
+```
+
+### 2.6 MISC
+
+```bash
+# QR code/barcode
+zbar-tools: zbarimg image.png
+
+# Audio steganography
+sonic-visualiser    # Spectrogram analysis
+deepsound           # Audio hiding detection
+audacity            # Reverse playback, spectrum analysis
+
+# Encoding analysis
+CyberChef "Magic" mode  # Automatic encoding detection
+```
+
+---
+
+## 3. Docker Pwnbox Environment Setup
+
+```dockerfile
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive TZ=Asia/Seoul
+
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-dev \
+    gdb gdb-multiarch \
+    gcc gcc-multilib g++ \
+    nasm binutils \
+    git curl wget vim \
+    patchelf ltrace strace \
+    netcat-openbsd socat \
+    libssl-dev libffi-dev \
+    file binwalk foremost \
+    && rm -rf /var/lib/apt/lists/*
+
+# pwntools, pycryptodome, gmpy2
+RUN pip3 install pwntools pycryptodome gmpy2 sympy z3-solver angr
+
+# pwndbg
+RUN git clone https://github.com/pwndbg/pwndbg /opt/pwndbg && \
+    cd /opt/pwndbg && bash setup.sh
+
+# ROPgadget, one_gadget
+RUN pip3 install ROPgadget && gem install one_gadget
+
+# Ghidra
+RUN wget -q https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.0_build/ghidra_11.0_PUBLIC_20240110.zip \
+    -O /tmp/ghidra.zip && \
+    unzip -q /tmp/ghidra.zip -d /opt/ && \
+    rm /tmp/ghidra.zip
+
+WORKDIR /ctf
+CMD ["/bin/bash"]
+```
+
+```bash
+# Build and run
+docker build -t pwnbox .
+docker run -it --cap-add=SYS_PTRACE --security-opt seccomp=unconfined pwnbox
+```
+
+---
+
+## 4. CTF Note Automation CLI
+
+The Python CLI above tracks CTF progress, records flags, and shows status by category. Key commands:
+- `event` — add a new CTF event
+- `add` — add a challenge to an event
+- `solve` — record a solved challenge with its flag
+- `status` — display current solve progress for an event
+
+---
+
+## 5. Major CTF Platforms
+
+| Platform | URL | Features |
+|----------|-----|----------|
+| DreamHack | dreamhack.io | Korean, integrated courses + CTF |
+| pwnable.kr | pwnable.kr | Korean, PWN-focused |
+| picoCTF | picoctf.org | Beginner-friendly, always-on |
+| Hack The Box | hackthebox.com | Real machines, year-round |
+| CTFtime | ctftime.org | Competition schedule and rankings |
+| OverTheWire | overthewire.org | Linux wargames |
+| CryptoHack | cryptohack.org | Cryptography-focused |
+| pwn.college | pwn.college | Structured PWN learning |

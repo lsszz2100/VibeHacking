@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # PASTA, DREAD, Attack Trees, Kill Chain
 
 ## 목차
@@ -1216,6 +1222,1150 @@ python3 dread_calculator.py --interactive --format html --output my_report.html
 ---
 
 ## 참고 자료
+
+- [PASTA Threat Modeling](https://www.wiley.com/en-us/Risk+Centric+Threat+Modeling-p-9780470500965)
+- [DREAD Risk Rating Model](https://docs.microsoft.com/en-us/archive/blogs/david_leblanc/dread)
+- [Attack Trees (Bruce Schneier)](https://www.schneier.com/academic/archives/1999/12/attack_trees.html)
+- [Lockheed Martin Cyber Kill Chain](https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html)
+- [MITRE ATT&CK Framework](https://attack.mitre.org/)
+- [MITRE ATT&CK Navigator](https://mitre-attack.github.io/attack-navigator/)
+
+---
+
+<a name="english"></a>
+
+# PASTA, DREAD, Attack Trees, Kill Chain
+
+## Table of Contents
+1. [PASTA 7-Step Methodology](#pasta-7-step-methodology)
+2. [DREAD Score Calculation](#dread-score-calculation)
+3. [Writing Attack Trees](#writing-attack-trees)
+4. [Lockheed Martin Cyber Kill Chain](#lockheed-martin-cyber-kill-chain-en)
+5. [MITRE ATT&CK Framework Integration](#mitre-attck-framework-integration)
+6. [DREAD Automation Script](#dread-automation-script)
+
+---
+
+## PASTA 7-Step Methodology
+
+PASTA (Process for Attack Simulation and Threat Analysis) is a risk-centric threat modeling methodology that aligns business objectives with technical requirements. Developed by Tony UcedaVelez, it consists of a 7-stage process.
+
+### Stage 1: Define Objectives
+
+Define security requirements from a business perspective.
+
+```
+Questions:
+□ What are the core business assets this system must protect?
+□ What are the regulatory compliance requirements? (PCI-DSS, HIPAA, GDPR)
+□ What are the availability requirements (SLA)?
+□ What is the business impact of a security incident?
+□ What is the acceptable risk level (Risk Appetite)?
+
+Example (e-commerce):
+Business objectives:
+- Protect payment information (PCI-DSS compliance)
+- Maintain 99.9% service availability
+- Protect customer personal data (GDPR)
+- Minimize fraudulent transactions
+```
+
+### Stage 2: Define Technical Scope
+
+Document the technology stack and scope of the systems being analyzed.
+
+```
+Deliverables:
+- Technology stack inventory
+  - Languages/Frameworks: Python 3.11, FastAPI, React
+  - DB: PostgreSQL 15, Redis 7
+  - Infrastructure: AWS EKS, RDS, ElastiCache
+  - Network: VPC, ALB, WAF
+
+- Dependency list
+  - External APIs: Stripe payments, SendGrid email
+  - Open-source library list
+
+- Deployment architecture diagram
+  - Container configuration
+  - Network topology
+  - Data flows
+```
+
+### Stage 3: Decompose Application
+
+Decompose the system into components and identify data flows.
+
+```
+DFD construction:
+[User] → [ALB] → [API Gateway] → [Service Mesh]
+                                    ├── [Auth Service] → [User DB]
+                                    ├── [Order Service] → [Order DB]
+                                    └── [Payment Service] → [Stripe API]
+
+Entry Points identification:
+EP001: HTTPS /api/v1/* (public API)
+EP002: HTTPS /admin/* (admin console)
+EP003: SSH 22 (deployment server)
+EP004: kubectl (K8s API server)
+EP005: RDS 5432 (internal VPN only)
+
+Asset identification:
+A001: Payment card information (Critical)
+A002: User personal data (High)
+A003: Session tokens (High)
+A004: Source code (Medium)
+A005: System logs (Medium)
+```
+
+### Stage 4: Threat Analysis
+
+Use threat intelligence to identify relevant threat actors and attack patterns.
+
+```
+Threat actor profiling:
+┌───────────────────┬──────────────┬──────────────────┬────────────────┐
+│ Threat Actor      │ Motivation   │ Capability       │ Related Threat │
+├───────────────────┼──────────────┼──────────────────┼────────────────┤
+│ Cybercrime org    │ Financial    │ High             │ Payment theft  │
+│ Insider           │ Grudge/Gain  │ Medium           │ Data exfil     │
+│ Nation-state      │ Intelligence │ Very High        │ APT attacks    │
+│ Hacktivist        │ Ideological  │ Medium           │ DDoS, defacing │
+│ Script kiddie     │ Fun/Fame     │ Low              │ Vuln scanning  │
+└───────────────────┴──────────────┴──────────────────┴────────────────┘
+
+Threat intelligence sources:
+- CVE database
+- MITRE ATT&CK
+- OWASP Top 10
+- Industry ISACs (FS-ISAC, H-ISAC)
+- Security news (Krebs on Security, DarkReading)
+```
+
+### Stage 5: Vulnerability Analysis
+
+Analyze system vulnerabilities against identified threats.
+
+```
+Vulnerability identification methods:
+1. Automated scanning
+   - SAST: Bandit, Semgrep, SonarQube
+   - DAST: OWASP ZAP, Burp Suite
+   - SCA: Snyk, OWASP Dependency-Check
+   - Infrastructure: Trivy, Checkov
+
+2. Manual code review
+   - Authentication/authorization logic
+   - Cryptography implementation
+   - Input validation
+
+3. Configuration review
+   - Cloud security settings (AWS Config)
+   - K8s RBAC settings
+   - TLS settings
+
+Vulnerability mapping example:
+Threat T001 (SQL Injection) → CVE reference
+→ Application code: vulnerable query pattern found
+→ CVSS score: 9.8 (Critical)
+→ Affected components: user service, order service
+```
+
+### Stage 6: Attack Modeling
+
+Construct attack trees and attack chains to simulate actual attack paths.
+
+```
+Attack scenario construction:
+Scenario: Payment information theft
+
+Attack chain:
+1. Reconnaissance: scan public API endpoints
+2. Initial access: SQLi via product search API
+3. Privilege escalation: capture DB admin credentials
+4. Lateral movement: pivot to internal network
+5. Asset exfiltration: dump payment information table
+
+MITRE ATT&CK mapping:
+T1190 - Exploit Public-Facing Application
+T1078 - Valid Accounts
+T1021 - Remote Services
+T1041 - Exfiltration Over C2 Channel
+```
+
+### Stage 7: Risk and Impact Analysis
+
+Quantify business impact and prioritize risks.
+
+```
+Risk calculation:
+Risk = Threat Likelihood × Business Impact
+
+Business impact factors:
+- Financial loss (fines, litigation, revenue loss)
+- Reputational damage
+- Regulatory violations
+- Operational disruption
+
+Risk matrix:
+             │  Low   │ Medium │  High  │
+─────────────┼────────┼────────┼────────┤
+High likelihood│ Medium │  High  │Urgent  │
+Med likelihood │  Low   │ Medium │  High  │
+Low likelihood │  Low   │  Low   │ Medium │
+
+Priority recommendations:
+Urgent: Resolve immediately (within 24 hours)
+High: Resolve short-term (within 1 week)
+Medium: Planned resolution (within 1 month)
+Low: Backlog management
+```
+
+---
+
+## DREAD Score Calculation
+
+DREAD is a risk assessment framework that quantifies the severity of threats across 5 criteria.
+
+### DREAD Criteria Details
+
+```
+D - Damage (damage potential)
+  10: Full system compromise, all data exfiltrated
+  7-9: Sensitive data theft, privilege escalation
+  4-6: Limited data exposure, partial service disruption
+  1-3: Minimal damage, only public information exposed
+  0: No damage
+
+R - Reproducibility
+  10: Always succeeds with a single HTTP request
+  7-9: Minor conditions needed, easily reproducible
+  4-6: Multiple attempts needed, some condition dependency
+  1-3: Difficult to reproduce, complex conditions
+  0: Not reproducible
+
+E - Exploitability
+  10: Even a beginner can do it without tools
+  7-9: Public exploit exists
+  4-6: Intermediate skills required
+  1-3: Advanced skills required, custom exploit needed
+  0: Practically not exploitable
+
+A - Affected Users
+  10: All users
+  7-9: Most users or users with default settings
+  4-6: Some users
+  1-3: A small number of users
+  0: No user impact
+
+D - Discoverability
+  10: Easily found in browser address bar
+  7-9: Discoverable with public tools
+  4-6: Technical exploration required
+  1-3: Source code access or insider required
+  0: Cannot be discovered (theoretical)
+```
+
+### DREAD Score Interpretation
+
+```
+Total = (D + R + E + A + D) / 5
+
+Thresholds:
+10-12: Critical - Immediate patch required
+7-9:   High - Rapid response required
+4-6:   Medium - Planned fix
+1-3:   Low - Long-term improvement plan
+
+Vulnerability prioritization example:
+┌─────────────────────┬────┬────┬────┬────┬────┬───────┬──────────┐
+│ Vulnerability       │ D  │ R  │ E  │ A  │ D  │ Score │ Priority │
+├─────────────────────┼────┼────┼────┼────┼────┼───────┼──────────┤
+│ SQL Injection       │ 9  │ 9  │ 8  │ 10 │ 8  │ 8.8   │ Critical │
+│ XSS (Stored)        │ 7  │ 8  │ 7  │ 8  │ 7  │ 7.4   │ High     │
+│ IDOR (order lookup) │ 6  │ 9  │ 9  │ 8  │ 8  │ 8.0   │ Critical │
+│ JWT alg:none        │ 10 │ 10 │ 7  │ 10 │ 6  │ 8.6   │ Critical │
+│ Weak password policy│ 5  │ 5  │ 5  │ 7  │ 5  │ 5.4   │ Medium   │
+│ Unnecessary headers │ 2  │ 9  │ 9  │ 10 │ 9  │ 7.8   │ High     │
+└─────────────────────┴────┴────┴────┴────┴────┴───────┴──────────┘
+```
+
+---
+
+## Writing Attack Trees
+
+An Attack Tree is a hierarchical threat model with the attack goal as the root node and possible attack methods as child nodes.
+
+### Attack Tree Structure
+
+```
+Node types:
+OR node: achieving any one child condition achieves the parent goal
+AND node: all child conditions must be achieved to reach the parent goal
+
+Notation:
+[goal]  - root or intermediate node
+(OR)    - OR gate
+(AND)   - AND gate
+{condition} - leaf node (actual attack action)
+```
+
+### Example: Administrator Account Takeover
+
+```
+[Administrator Account Takeover]
+        (OR)
+        ├── [Credential Theft]
+        │       (OR)
+        │       ├── {Phishing attack}
+        │       ├── {Install keylogger}
+        │       ├── {DB dump then crack}
+        │       └── [Man-in-the-Middle Attack]
+        │               (AND)
+        │               ├── {Gain network position}
+        │               └── {TLS downgrade}
+        │
+        ├── [Authentication Bypass]
+        │       (OR)
+        │       ├── {SQL Injection on Login}
+        │       ├── {Session token prediction}
+        │       └── {JWT signature algorithm confusion}
+        │
+        └── [Privilege Escalation]
+                (OR)
+                ├── {Admin API access via IDOR}
+                ├── {Role parameter tampering}
+                └── [OS Privilege Escalation]
+                        (AND)
+                        ├── {Exploit RCE vulnerability}
+                        └── {Exploit SUID binary}
+```
+
+### Example: Payment Information Theft
+
+```
+[Payment Information Theft]
+        (OR)
+        ├── [Intercept in Transit]
+        │       (AND)
+        │       ├── {Establish MITM position}
+        │       └── {Break TLS encryption}
+        │               (OR)
+        │               ├── {Forge certificate}
+        │               └── {BEAST/POODLE attack}
+        │
+        ├── [Steal Stored Data]
+        │       (OR)
+        │       ├── {Direct DB access}
+        │       │       (OR)
+        │       │       ├── {Steal credentials}
+        │       │       └── {DB query via SQLi}
+        │       └── {Access backup files}
+        │
+        └── [Application Memory Dump]
+                (AND)
+                ├── {Obtain RCE}
+                └── {Scan memory}
+```
+
+### Attack Tree Cost/Probability Annotations
+
+```
+Assign attributes to each leaf node:
+{SQL Injection on Login}
+  - Cost: $0 (using public tools)
+  - Skill level: Low
+  - Detectability: High
+  - Success probability: 0.3 (with WAF)
+
+AND node probability = P(A) × P(B)
+OR node probability = 1 - (1-P(A)) × (1-P(B))
+
+Example:
+[Man-in-the-Middle Attack] (AND)
+  P = P(gain network position) × P(TLS downgrade)
+  P = 0.1 × 0.05 = 0.005 (0.5%)
+
+[Credential Theft] (OR: phishing, keylogger, DB cracking)
+  P = 1 - (1-0.4) × (1-0.1) × (1-0.05)
+  P ≈ 0.51 (51%)
+```
+
+---
+
+<a name="lockheed-martin-cyber-kill-chain-en"></a>
+## Lockheed Martin Cyber Kill Chain
+
+The Kill Chain is a model describing 7 stages of a cyber attack, where the attack can be detected/blocked at each stage.
+
+### Kill Chain 7 Stages
+
+```
+Stage 1: Reconnaissance
+   Attacker actions:
+   - Open-source intelligence gathering (OSINT)
+   - Identify technology stack
+   - Employee social media profiling
+   - Vulnerability scanning (Shodan, Censys)
+   - Domain/subdomain enumeration
+
+   Detection/Response:
+   - Detect web scanner traffic
+   - Monitor abnormal DNS lookups
+   - Minimize publicly available information
+
+Stage 2: Weaponization
+   Attacker actions:
+   - Develop exploit code
+   - Create malicious documents/links
+   - Package RAT/backdoor
+   - Build C2 infrastructure
+
+   Detection/Response:
+   - Subscribe to threat intelligence
+   - Update malicious tool signatures
+
+Stage 3: Delivery
+   Attacker actions:
+   - Send spear phishing emails
+   - Operate malicious websites (Watering Hole)
+   - USB drop attacks
+   - Supply chain compromise
+
+   Detection/Response:
+   - Email filtering (SPF, DKIM, DMARC)
+   - Web proxy filtering
+   - User security awareness training
+
+Stage 4: Exploitation
+   Attacker actions:
+   - Exploit vulnerabilities
+   - Trigger code execution
+   - Exploit browser/plugin vulnerabilities
+
+   Detection/Response:
+   - EDR solutions
+   - Vulnerability patch management
+   - Application whitelisting
+
+Stage 5: Installation
+   Attacker actions:
+   - Install backdoor/RAT
+   - Install rootkit
+   - Establish persistence
+
+   Detection/Response:
+   - File integrity monitoring
+   - Anomalous process detection
+   - Registry/system monitoring
+
+Stage 6: Command & Control (C2)
+   Attacker actions:
+   - Establish C2 channel
+   - Beacon communication
+   - DNS tunneling
+   - HTTPS-based covert communication
+
+   Detection/Response:
+   - Detect abnormal outbound traffic
+   - DNS anomaly detection
+   - Network behavior analysis (NBA)
+
+Stage 7: Actions on Objectives
+   Attacker actions:
+   - Data exfiltration
+   - Ransomware deployment
+   - Service destruction
+   - Lateral movement
+
+   Detection/Response:
+   - DLP solutions
+   - Anomalous data transfer detection
+   - Network segmentation
+```
+
+### Kill Chain-Based Threat Model Mapping
+
+```
+Attack scenario → Kill Chain mapping:
+
+Scenario: Internal network infiltration via web app
+
+1. Reconnaissance
+   → Identify port 443 services with Shodan
+   → Identify technology stack with whatweb
+   → Enumerate directories with gobuster
+
+2. Weaponization
+   → Collect CVE-2024-XXXX PoC code
+   → Customize Metasploit module
+
+3. Delivery
+   → Direct attack on vulnerable API endpoint
+
+4. Exploitation
+   → SQL Injection → RCE
+   → CVE exploitation
+
+5. Installation
+   → Upload webshell (/uploads/shell.php)
+   → Register cron for persistence
+
+6. C2
+   → DNS tunneling (dnscat2)
+   → HTTPS reverse shell
+
+7. Actions
+   → Scan internal DB
+   → Extract payment information
+   → Compress and exfiltrate data
+```
+
+---
+
+## MITRE ATT&CK Framework Integration
+
+### ATT&CK Matrix Structure
+
+```
+Tactics (14):
+TA0001: Initial Access
+TA0002: Execution
+TA0003: Persistence
+TA0004: Privilege Escalation
+TA0005: Defense Evasion
+TA0006: Credential Access
+TA0007: Discovery
+TA0008: Lateral Movement
+TA0009: Collection
+TA0010: Exfiltration
+TA0011: Command and Control
+TA0040: Impact
+TA0042: Resource Development
+TA0043: Reconnaissance
+
+Techniques (examples):
+T1190: Exploit Public-Facing Application
+T1059: Command and Scripting Interpreter
+T1078: Valid Accounts
+T1110: Brute Force
+T1055: Process Injection
+```
+
+### Using ATT&CK Navigator
+
+```bash
+# Run ATT&CK Navigator locally
+git clone https://github.com/mitre-attack/attack-navigator
+cd attack-navigator/nav-app
+npm install
+npm start
+# Access http://localhost:4200
+
+# Query ATT&CK data with Python
+pip3 install attackcti
+
+python3 << 'EOF'
+from attackcti import attack_client
+
+client = attack_client()
+
+# Query techniques related to web applications
+techniques = client.get_techniques_by_platform("Windows")
+for t in techniques[:5]:
+    print(f"{t['external_references'][0]['external_id']}: {t['name']}")
+EOF
+```
+
+### Linking Threat Model with ATT&CK
+
+```
+STRIDE ↔ ATT&CK Mapping:
+
+Spoofing:
+  → T1078 Valid Accounts
+  → T1134 Access Token Manipulation
+  → T1539 Steal Web Session Cookie
+
+Tampering:
+  → T1565 Data Manipulation
+  → T1491 Defacement
+  → T1059 Command and Scripting Interpreter
+
+Repudiation:
+  → T1562 Impair Defenses
+  → T1070 Indicator Removal
+
+Information Disclosure:
+  → T1552 Unsecured Credentials
+  → T1530 Data from Cloud Storage
+  → T1213 Data from Information Repositories
+
+Denial of Service:
+  → T1499 Endpoint Denial of Service
+  → T1498 Network Denial of Service
+
+Elevation of Privilege:
+  → T1068 Exploitation for Privilege Escalation
+  → T1548 Abuse Elevation Control Mechanism
+  → T1055 Process Injection
+```
+
+---
+
+## DREAD Automation Script
+
+```python
+#!/usr/bin/env python3
+"""
+DREAD risk score calculation and priority sorting tool
+
+Usage:
+    python3 dread_calculator.py --input threats.json --output report.json
+    python3 dread_calculator.py --interactive
+    python3 dread_calculator.py --input threats.json --format html --output report.html
+    python3 dread_calculator.py --demo
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from dataclasses import dataclass, asdict, field
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Optional
+
+
+class RiskLevel(str, Enum):
+    CRITICAL = "Critical"
+    HIGH = "High"
+    MEDIUM = "Medium"
+    LOW = "Low"
+
+    @staticmethod
+    def from_score(score: float) -> "RiskLevel":
+        if score >= 8.0:
+            return RiskLevel.CRITICAL
+        elif score >= 6.0:
+            return RiskLevel.HIGH
+        elif score >= 3.0:
+            return RiskLevel.MEDIUM
+        else:
+            return RiskLevel.LOW
+
+    @property
+    def color(self) -> str:
+        colors = {
+            "Critical": "#dc3545",
+            "High": "#fd7e14",
+            "Medium": "#ffc107",
+            "Low": "#28a745",
+        }
+        return colors[self.value]
+
+    @property
+    def priority_order(self) -> int:
+        order = {"Critical": 0, "High": 1, "Medium": 2, "Low": 3}
+        return order[self.value]
+
+
+@dataclass
+class DREADScores:
+    damage: int           # 0-10: damage potential on success
+    reproducibility: int  # 0-10: ease of reproducing the attack
+    exploitability: int   # 0-10: ease of exploitation
+    affected_users: int   # 0-10: number of affected users
+    discoverability: int  # 0-10: ease of discovering the vulnerability
+
+    def __post_init__(self) -> None:
+        for field_name in ["damage", "reproducibility", "exploitability",
+                           "affected_users", "discoverability"]:
+            val = getattr(self, field_name)
+            if not 0 <= val <= 10:
+                raise ValueError(
+                    f"{field_name} score must be between 0-10. Input value: {val}"
+                )
+
+    @property
+    def total(self) -> float:
+        return (
+            self.damage
+            + self.reproducibility
+            + self.exploitability
+            + self.affected_users
+            + self.discoverability
+        ) / 5.0
+
+    @property
+    def risk_level(self) -> RiskLevel:
+        return RiskLevel.from_score(self.total)
+
+    def to_dict(self) -> dict:
+        return {
+            "damage": self.damage,
+            "reproducibility": self.reproducibility,
+            "exploitability": self.exploitability,
+            "affected_users": self.affected_users,
+            "discoverability": self.discoverability,
+            "total": round(self.total, 1),
+            "risk_level": self.risk_level.value,
+        }
+
+
+@dataclass
+class AttackTreeNode:
+    id: str
+    name: str
+    description: str
+    node_type: str  # "OR", "AND", "LEAF"
+    children: list["AttackTreeNode"] = field(default_factory=list)
+    cost: Optional[str] = None
+    probability: Optional[float] = None
+    skill_level: Optional[str] = None
+
+    def calculate_probability(self) -> float:
+        """Calculate Attack Tree probability"""
+        if self.node_type == "LEAF":
+            return self.probability or 0.0
+
+        child_probs = [c.calculate_probability() for c in self.children]
+
+        if not child_probs:
+            return 0.0
+
+        if self.node_type == "OR":
+            # OR: 1 - ∏(1 - P(i))
+            result = 1.0
+            for p in child_probs:
+                result *= (1 - p)
+            return 1 - result
+
+        elif self.node_type == "AND":
+            # AND: ∏P(i)
+            result = 1.0
+            for p in child_probs:
+                result *= p
+            return result
+
+        return 0.0
+
+
+@dataclass
+class Threat:
+    id: str
+    name: str
+    description: str
+    affected_component: str
+    attack_vector: str
+    dread: DREADScores
+    mitigations: list[str] = field(default_factory=list)
+    cve_references: list[str] = field(default_factory=list)
+    mitre_techniques: list[str] = field(default_factory=list)
+    kill_chain_stage: Optional[str] = None
+    status: str = "Open"
+    attack_tree: Optional[AttackTreeNode] = None
+
+    @property
+    def priority_score(self) -> float:
+        return self.dread.total
+
+    def to_dict(self) -> dict:
+        d = {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "affected_component": self.affected_component,
+            "attack_vector": self.attack_vector,
+            "dread": self.dread.to_dict(),
+            "mitigations": self.mitigations,
+            "cve_references": self.cve_references,
+            "mitre_techniques": self.mitre_techniques,
+            "kill_chain_stage": self.kill_chain_stage,
+            "status": self.status,
+        }
+        if self.attack_tree:
+            d["attack_tree_probability"] = round(
+                self.attack_tree.calculate_probability(), 3
+            )
+        return d
+
+
+class DREADAnalyzer:
+    """DREAD analysis engine"""
+
+    def __init__(self) -> None:
+        self.threats: list[Threat] = []
+
+    def add_threat(self, threat: Threat) -> None:
+        self.threats.append(threat)
+
+    def load_from_json(self, path: Path) -> None:
+        """Load threat list from JSON file"""
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as e:
+            raise ValueError(f"Failed to load JSON file: {e}") from e
+
+        for item in data.get("threats", []):
+            try:
+                dread_data = item["dread"]
+                dread = DREADScores(
+                    damage=dread_data["damage"],
+                    reproducibility=dread_data["reproducibility"],
+                    exploitability=dread_data["exploitability"],
+                    affected_users=dread_data["affected_users"],
+                    discoverability=dread_data["discoverability"],
+                )
+                threat = Threat(
+                    id=item["id"],
+                    name=item["name"],
+                    description=item.get("description", ""),
+                    affected_component=item.get("affected_component", ""),
+                    attack_vector=item.get("attack_vector", ""),
+                    dread=dread,
+                    mitigations=item.get("mitigations", []),
+                    cve_references=item.get("cve_references", []),
+                    mitre_techniques=item.get("mitre_techniques", []),
+                    kill_chain_stage=item.get("kill_chain_stage"),
+                    status=item.get("status", "Open"),
+                )
+                self.threats.append(threat)
+            except (KeyError, ValueError) as e:
+                print(f"Warning: Failed to load threat {item.get('id', '?')} - {e}",
+                      file=sys.stderr)
+
+    def get_sorted_threats(self) -> list[Threat]:
+        """Sort threats by DREAD score descending"""
+        return sorted(
+            self.threats,
+            key=lambda t: (-t.priority_score, t.dread.risk_level.priority_order),
+        )
+
+    def get_by_risk_level(self) -> dict[str, list[Threat]]:
+        result: dict[str, list[Threat]] = {
+            level.value: [] for level in RiskLevel
+        }
+        for threat in self.threats:
+            result[threat.dread.risk_level.value].append(threat)
+        return result
+
+    def generate_summary(self) -> dict:
+        by_level = self.get_by_risk_level()
+        avg_score = (
+            sum(t.priority_score for t in self.threats) / len(self.threats)
+            if self.threats else 0
+        )
+
+        # Kill Chain distribution
+        kill_chain_dist: dict[str, int] = {}
+        for t in self.threats:
+            if t.kill_chain_stage:
+                kill_chain_dist[t.kill_chain_stage] = (
+                    kill_chain_dist.get(t.kill_chain_stage, 0) + 1
+                )
+
+        return {
+            "total_threats": len(self.threats),
+            "by_risk_level": {k: len(v) for k, v in by_level.items()},
+            "average_score": round(avg_score, 1),
+            "open_threats": sum(1 for t in self.threats if t.status == "Open"),
+            "kill_chain_distribution": kill_chain_dist,
+        }
+
+    def generate_json_report(self) -> str:
+        sorted_threats = self.get_sorted_threats()
+        return json.dumps({
+            "metadata": {
+                "generated_at": datetime.now().isoformat(),
+                "tool": "DREAD Analyzer",
+                "version": "1.0",
+            },
+            "summary": self.generate_summary(),
+            "threats": [t.to_dict() for t in sorted_threats],
+        }, ensure_ascii=False, indent=2)
+
+    def interactive_input(self) -> None:
+        """Interactive threat input"""
+        print("\n=== DREAD Interactive Threat Input ===")
+        print("Score range: 0 (low) ~ 10 (high)\n")
+
+        count = 0
+        while True:
+            count += 1
+            print(f"\n--- Threat {count} ---")
+            name = input("Threat name (empty line to finish): ").strip()
+            if not name:
+                break
+
+            desc = input("Description: ").strip()
+            component = input("Affected component: ").strip()
+            attack_vector = input("Attack vector: ").strip()
+
+            print("\nEnter DREAD scores (0-10):")
+            scores = {}
+            labels = {
+                "damage": "D - Damage potential",
+                "reproducibility": "R - Reproducibility",
+                "exploitability": "E - Exploitability",
+                "affected_users": "A - Affected users",
+                "discoverability": "D - Discoverability",
+            }
+            for key, label in labels.items():
+                while True:
+                    try:
+                        val = int(input(f"  {label}: "))
+                        if 0 <= val <= 10:
+                            scores[key] = val
+                            break
+                        print("  Please enter a value between 0-10.")
+                    except ValueError:
+                        print("  Please enter a number.")
+
+            dread = DREADScores(**scores)
+            threat = Threat(
+                id=f"T{count:03d}",
+                name=name,
+                description=desc,
+                affected_component=component,
+                attack_vector=attack_vector,
+                dread=dread,
+            )
+
+            self.threats.append(threat)
+            print(f"\n  → DREAD score: {dread.total:.1f} ({dread.risk_level.value})")
+
+
+def create_demo_threats() -> list[Threat]:
+    """Create demo threat list"""
+    demo_data = [
+        {
+            "id": "T001", "name": "Login SQL Injection",
+            "description": "SQL injection in login form username parameter",
+            "affected_component": "Auth Service", "attack_vector": "HTTP POST /api/login",
+            "dread": DREADScores(9, 9, 8, 10, 8),
+            "mitigations": ["Use parameterized queries", "Apply ORM", "Deploy WAF"],
+            "mitre_techniques": ["T1190"],
+            "kill_chain_stage": "Exploitation",
+        },
+        {
+            "id": "T002", "name": "JWT Algorithm Confusion",
+            "description": "alg:none or RS256→HS256 algorithm confusion attack",
+            "affected_component": "Auth Middleware", "attack_vector": "HTTP header manipulation",
+            "dread": DREADScores(10, 10, 7, 10, 6),
+            "mitigations": ["Explicit algorithm validation", "Use latest JWT library"],
+            "mitre_techniques": ["T1078", "T1134"],
+            "kill_chain_stage": "Exploitation",
+        },
+        {
+            "id": "T003", "name": "IDOR Order Data Access",
+            "description": "View/modify other users' orders",
+            "affected_component": "Order Service", "attack_vector": "GET /api/orders/{id}",
+            "dread": DREADScores(6, 9, 9, 8, 8),
+            "mitigations": ["Server-side ownership validation", "Use UUID"],
+            "mitre_techniques": ["T1078"],
+            "kill_chain_stage": "Actions on Objectives",
+        },
+        {
+            "id": "T004", "name": "Stored XSS in Reviews",
+            "description": "Inject malicious script into product reviews",
+            "affected_component": "Product Service", "attack_vector": "POST /api/reviews",
+            "dread": DREADScores(7, 8, 7, 8, 7),
+            "mitigations": ["Output encoding", "CSP header", "Apply DOMPurify"],
+            "mitre_techniques": ["T1059.007"],
+            "kill_chain_stage": "Delivery",
+        },
+        {
+            "id": "T005", "name": "Payment Amount Parameter Tampering",
+            "description": "Client-side tampering of payment amount parameter",
+            "affected_component": "Payment Service", "attack_vector": "POST /api/payment",
+            "dread": DREADScores(9, 9, 9, 10, 7),
+            "mitigations": ["Server-side amount recalculation", "Signed payment request"],
+            "mitre_techniques": ["T1565"],
+            "kill_chain_stage": "Actions on Objectives",
+        },
+        {
+            "id": "T006", "name": "No API Rate Limit",
+            "description": "Brute force possible on login API",
+            "affected_component": "API Gateway", "attack_vector": "HTTP POST /api/login",
+            "dread": DREADScores(7, 10, 10, 9, 9),
+            "mitigations": ["Rate Limiting (5req/min)", "Account lockout", "CAPTCHA"],
+            "mitre_techniques": ["T1110"],
+            "kill_chain_stage": "Reconnaissance",
+        },
+        {
+            "id": "T007", "name": "Environment Variable Sensitive Info Exposure",
+            "description": "Environment variables exposed at /api/debug endpoint",
+            "affected_component": "Web Server", "attack_vector": "GET /api/debug",
+            "dread": DREADScores(8, 10, 10, 10, 9),
+            "mitigations": ["Disable debug endpoint", "Move sensitive env vars to Secret Manager"],
+            "mitre_techniques": ["T1552"],
+            "kill_chain_stage": "Reconnaissance",
+        },
+    ]
+
+    threats = []
+    for d in demo_data:
+        threat = Threat(
+            id=d["id"],
+            name=d["name"],
+            description=d["description"],
+            affected_component=d["affected_component"],
+            attack_vector=d["attack_vector"],
+            dread=d["dread"],
+            mitigations=d["mitigations"],
+            mitre_techniques=d["mitre_techniques"],
+            kill_chain_stage=d["kill_chain_stage"],
+        )
+        threats.append(threat)
+
+    return threats
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="DREAD risk score calculation and priority sorting tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s --demo --format html --output demo_report.html
+  %(prog)s --input threats.json --output sorted_report.json
+  %(prog)s --interactive --format html --output my_threats.html
+        """,
+    )
+
+    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument("--input", type=Path, help="Threat list JSON file")
+    input_group.add_argument("--interactive", action="store_true", help="Interactive input")
+    input_group.add_argument("--demo", action="store_true", help="Use demo threat list")
+
+    parser.add_argument(
+        "--format", choices=["json", "html"], default="json",
+        help="Output format",
+    )
+    parser.add_argument(
+        "--output", type=Path, default=Path("dread_report.json"),
+        help="Output file path",
+    )
+    parser.add_argument(
+        "--top", type=int, default=0,
+        help="Output only top N threats (0=all)",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    analyzer = DREADAnalyzer()
+
+    try:
+        if args.demo:
+            for threat in create_demo_threats():
+                analyzer.add_threat(threat)
+            print(f"Loaded {len(analyzer.threats)} demo threats")
+
+        elif args.interactive:
+            analyzer.interactive_input()
+            if not analyzer.threats:
+                print("No threats entered.", file=sys.stderr)
+                return 1
+
+        elif args.input:
+            analyzer.load_from_json(args.input)
+            print(f"Loaded {len(analyzer.threats)} threats")
+
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+
+    # Print summary
+    summary = analyzer.generate_summary()
+    print(f"\n=== DREAD Analysis Results ===")
+    print(f"Total threats: {summary['total_threats']}")
+    print(f"Average DREAD score: {summary['average_score']}")
+    for level in RiskLevel:
+        count = summary["by_risk_level"].get(level.value, 0)
+        if count > 0:
+            print(f"  {level.value}: {count}")
+
+    # Print top threats
+    sorted_threats = analyzer.get_sorted_threats()
+    if args.top > 0:
+        sorted_threats = sorted_threats[:args.top]
+        analyzer.threats = sorted_threats
+
+    print(f"\nTop {min(5, len(sorted_threats))} threats:")
+    for i, t in enumerate(sorted_threats[:5], 1):
+        print(f"  {i}. [{t.dread.risk_level.value}] {t.name} (DREAD: {t.dread.total:.1f})")
+
+    # Generate report
+    try:
+        if args.format == "json":
+            report = analyzer.generate_json_report()
+        else:
+            report = analyzer.generate_html_report()
+
+        args.output.write_text(report, encoding="utf-8")
+        print(f"\nReport saved: {args.output}")
+    except OSError as e:
+        print(f"Save failed: {e}", file=sys.stderr)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+### Execution Examples
+
+```bash
+# Generate HTML report with demo data
+python3 dread_calculator.py --demo --format html --output demo.html
+
+# Top 5 threats JSON report
+python3 dread_calculator.py --demo --top 5 --output top5.json
+
+# Analyze existing threat JSON file
+python3 dread_calculator.py --input threats.json --format html --output report.html
+
+# Interactive input
+python3 dread_calculator.py --interactive --format html --output my_report.html
+```
+
+### Input JSON Format
+
+```json
+{
+  "threats": [
+    {
+      "id": "T001",
+      "name": "SQL Injection",
+      "description": "SQL injection in login form",
+      "affected_component": "Auth Service",
+      "attack_vector": "POST /api/login",
+      "dread": {
+        "damage": 9,
+        "reproducibility": 9,
+        "exploitability": 8,
+        "affected_users": 10,
+        "discoverability": 8
+      },
+      "mitigations": ["Parameterized queries", "WAF"],
+      "mitre_techniques": ["T1190"],
+      "kill_chain_stage": "Exploitation",
+      "status": "Open"
+    }
+  ]
+}
+```
+
+---
+
+## References
 
 - [PASTA Threat Modeling](https://www.wiley.com/en-us/Risk+Centric+Threat+Modeling-p-9780470500965)
 - [DREAD Risk Rating Model](https://docs.microsoft.com/en-us/archive/blogs/david_leblanc/dread)

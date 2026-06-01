@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 위협 모델링 실전 연습
 
 ## 목차
@@ -1478,6 +1484,728 @@ k8s_threats/
 ---
 
 ## 참고 자료
+
+- [OWASP MASVS](https://mobile-security.gitbook.io/masvs/)
+- [CIS Kubernetes Benchmark](https://www.cisecurity.org/benchmark/kubernetes)
+- [NSA/CISA Kubernetes Hardening Guide](https://media.defense.gov/2022/Aug/29/2003066362/-1/-1/0/CTR_KUBERNETES_HARDENING_GUIDANCE_1.2_20220829.PDF)
+- [OWASP Top 10 API Security Risks](https://owasp.org/www-project-api-security/)
+- [Shostack, A. - Threat Modeling: Designing for Security (2014)]
+- [NIST SP 800-154 - Data-Centric System Threat Modeling]
+- [MITRE ATT&CK for Mobile](https://attack.mitre.org/matrices/mobile/)
+
+---
+
+<a name="english"></a>
+
+# Threat Modeling Practice Exercises
+
+## Table of Contents
+1. [E-Commerce Web App Threat Modeling](#e-commerce-web-app-threat-modeling)
+2. [Mobile Banking App Threat Modeling](#mobile-banking-app-threat-modeling)
+3. [Kubernetes Cluster Threat Modeling](#kubernetes-cluster-threat-modeling)
+4. [Deriving Mitigation Controls](#deriving-mitigation-controls)
+5. [Threat → Security Requirement → Test Case Linkage](#threat--security-requirement--test-case-linkage)
+6. [Full Workflow CLI Tool](#full-workflow-cli-tool)
+
+---
+
+## E-Commerce Web App Threat Modeling
+
+### System Architecture
+
+```
+[Client]
+  ├── Web Browser (React SPA)
+  └── Mobile App (iOS/Android)
+         │ HTTPS/TLS 1.3
+         ↓
+[CDN/WAF] ← Cloudflare / AWS CloudFront
+         │
+         ↓
+[Load Balancer] ── AWS ALB
+         │
+         ↓
+[API Gateway] ── Kong / AWS API Gateway
+  ├── Rate Limiting
+  ├── JWT Validation
+  └── Request Logging
+         │
+         ├──────────────────────┬───────────────────────┐
+         ↓                      ↓                       ↓
+[Auth Service]          [Product Service]        [Order Service]
+ Python/FastAPI          Python/FastAPI           Python/FastAPI
+         │                      │                       │
+         ↓                      ↓                       ↓
+[User DB]               [Product DB]             [Order DB]
+ PostgreSQL              PostgreSQL               PostgreSQL
+         │
+         ├──[Redis Session Cache]
+         └──[AWS S3 File Storage]
+                                          ↓
+                              [Payment Service] ── Stripe API
+```
+
+### DFD Trust Boundaries
+
+```
+Trust Boundary Definitions:
+TB-01: Internet (Trust Level 0) ↔ CDN/WAF (Trust Level 1)
+TB-02: CDN/WAF ↔ API Gateway (Trust Level 2)
+TB-03: API Gateway ↔ Microservices (Trust Level 3)
+TB-04: Microservices ↔ Databases (Trust Level 4)
+TB-05: Internal Services ↔ External Payment Service (Trust Level 1)
+```
+
+### STRIDE Analysis Matrix
+
+```
+Component: Authentication Service (/api/v1/auth)
+
+┌──────┬────────────────────────────────────┬──────────┬──────────────────────────────────────┐
+│STRIDE│ Threat Scenario                     │ Severity │ Mitigation                           │
+├──────┼────────────────────────────────────┼──────────┼──────────────────────────────────────┤
+│  S   │ JWT algorithm confusion (alg:none)  │ Critical │ Explicit algorithm allowlist          │
+│  S   │ Stolen refresh token reuse          │ High     │ Refresh Token Rotation + blacklist    │
+│  T   │ Password reset token prediction     │ High     │ CSPRNG token gen, expiry enforcement  │
+│  R   │ Missing login/logout audit logs     │ Medium   │ Structured logging for all auth events│
+│  I   │ Account existence revealed in error │ Medium   │ Unified "invalid email or password"   │
+│  I   │ Access token logged in debug logs   │ High     │ Sensitive data log masking            │
+│  D   │ Brute force on login API            │ High     │ Lockout after 5 fails, IP rate limit  │
+│  D   │ Mass account creation (stuffing)    │ Medium   │ CAPTCHA, mandatory email verification │
+│  E   │ IDOR to modify other user profiles  │ Critical │ Server-side ownership validation      │
+│  E   │ Exposed admin password reset API    │ Critical │ Admin API RBAC + IP whitelist         │
+└──────┴────────────────────────────────────┴──────────┴──────────────────────────────────────┘
+
+Component: Order Service (/api/v1/orders)
+
+┌──────┬────────────────────────────────────┬──────────┬──────────────────────────────────────┐
+│STRIDE│ Threat Scenario                     │ Severity │ Mitigation                           │
+├──────┼────────────────────────────────────┼──────────┼──────────────────────────────────────┤
+│  S   │ IDOR to view other user's orders    │ High     │ Server-side order owner validation    │
+│  T   │ Order amount parameter tampering    │ Critical │ Server-side recalculation, signed cart│
+│  T   │ Duplicate coupon code usage         │ High     │ Atomic coupon handling (Redis lock)   │
+│  R   │ No audit trail for order events     │ Medium   │ Apply event sourcing pattern          │
+│  I   │ Other user's data in order list API │ High     │ Force user_id filter on queries       │
+│  D   │ Mass order attempts on zero stock   │ Medium   │ Inventory validation, rate limiting   │
+│  E   │ Order status change without payment │ Critical │ Payment callback validation, state machine│
+└──────┴────────────────────────────────────┴──────────┴──────────────────────────────────────┘
+```
+
+### Attack Tree: Payment Data Theft
+
+```
+[Payment Data Theft]
+     (OR)
+     ├── [In-Transit Theft] (AND)
+     │       ├── {Obtain MITM Position: ARP Spoofing}
+     │       └── {SSL Strip or Certificate Forgery}
+     │
+     ├── [Stored Data Theft] (OR)
+     │       ├── [Direct DB Access] (OR)
+     │       │       ├── {SQL Injection → DB Dump}
+     │       │       │     Probability: 0.3 (WAF bypass rate)
+     │       │       └── {Credential theft → Direct DB connection}
+     │       │             Probability: 0.1
+     │       └── {S3 Bucket Public Exposure}
+     │               Probability: 0.05
+     │
+     └── [Application Layer] (OR)
+             ├── {Card number included in payment API response}
+             │     Probability: 0.2
+             └── {Card number logged in log files}
+                   Probability: 0.15
+```
+
+### Kill Chain Mapping
+
+```
+Scenario: Internal Network Breach via SQL Injection
+
+1. Reconnaissance
+   - subfinder -d example.com → subdomain enumeration
+   - nuclei -t technologies/ -u https://shop.example.com → tech stack detection
+   - waybackurls shop.example.com | gf sqli → potential SQLI endpoints
+
+2. Weaponization
+   - Prepare sqlmap automation script
+   - UNION-based injection payloads
+
+3. Delivery
+   - GET /api/products?category=1' OR '1'='1
+   - POST /api/search {"q": "'; SELECT version()--"}
+
+4. Exploitation
+   sqlmap -u "https://shop.example.com/api/products?id=1" \
+     --dbms=postgresql --batch --level=3 --risk=2
+
+5. Installation
+   - Deploy webshell via xp_cmdshell or COPY TO/FROM file write
+
+6. C2
+   - DNS over HTTPS tunneling
+   - C2 via legitimate services (Pastebin)
+
+7. Actions on Objectives
+   - SELECT card_number, cvv FROM payment_methods
+   - Compress data and exfiltrate via HTTPS
+```
+
+---
+
+## Mobile Banking App Threat Modeling
+
+### System Architecture
+
+```
+[Mobile App]
+  ├── iOS (Swift)
+  └── Android (Kotlin)
+       │
+       │ HTTPS + Certificate Pinning
+       ↓
+[Mobile API Gateway]
+  ├── Device Authentication (Device Fingerprint)
+  ├── mTLS
+  └── API Key Validation
+       │
+       ├──[Account Service]──[Account DB]
+       ├──[Transfer Service]──[Transfer DB]
+       ├──[Notification Service]──[APNs/FCM]
+       └──[Auth Service]──[User DB]
+                              │
+                         [HSM] (Hardware Security Module)
+                         [Key Management Service]
+```
+
+### OWASP MASVS-Based Threat Analysis
+
+```
+MASVS (Mobile Application Security Verification Standard)
+
+Level 1 (Basic): MASVS-L1
+Level 2 (Advanced): MASVS-L2 (required for banking apps)
+R (Resilience): MASVS-R (root/jailbreak detection)
+
+Threat Areas:
+┌─────────────────────┬──────────────────────────────────────────┐
+│ Area                │ Threat Scenario                          │
+├─────────────────────┼──────────────────────────────────────────┤
+│ Architecture/Design │ Direct backend API exposure, hardcoded URLs│
+│ Data Storage        │ Auth tokens stored in plaintext SharedPrefs│
+│ Cryptography        │ Weak algorithms (MD5, DES) used          │
+│ Authentication      │ Biometric bypass, PIN guessing allowed   │
+│ Network Comms       │ Certificate pinning not implemented      │
+│ Platform Interaction│ Intent snooping, clipboard data exposure │
+│ Code Quality        │ Debug logs exposed in production         │
+│ Tamper Resistance   │ App runs on rooted/jailbroken devices    │
+└─────────────────────┴──────────────────────────────────────────┘
+```
+
+### STRIDE Analysis (Mobile Banking)
+
+```
+Area: Transfer Service
+
+┌──────┬──────────────────────────────────────────┬──────────┬─────────────────────────────────────┐
+│STRIDE│ Threat                                    │ Severity │ Mitigation                          │
+├──────┼──────────────────────────────────────────┼──────────┼─────────────────────────────────────┤
+│  S   │ Session token reuse from another device  │ Critical │ Device-bound tokens, change alerts  │
+│  S   │ CSRF transfer via deep link              │ High     │ Transfer reconfirmation (OTP/biometric)│
+│  T   │ Transfer amount tampering after pinning  │ Critical │ Request signing (HMAC + timestamp)  │
+│  T   │ Local SQLite DB modification             │ High     │ Encrypt DB with SQLCipher           │
+│  R   │ Transfer transaction ID replay           │ Critical │ Include Nonce in request, 24h validity│
+│  I   │ Account numbers logged in logcat         │ High     │ ProGuard + remove sensitive logs    │
+│  I   │ Account info captured in screenshot      │ Medium   │ Set FLAG_SECURE                     │
+│  D   │ Full outage when biometric server fails  │ High     │ Fallback to PIN authentication      │
+│  E   │ Auth bypass with Frida on rooted device  │ Critical │ Root detection + server-side check  │
+│  E   │ Signature check bypass after app tamper  │ Critical │ App integrity check, Play Integrity │
+└──────┴──────────────────────────────────────────┴──────────┴─────────────────────────────────────┘
+```
+
+### Mobile Security Testing Commands
+
+```bash
+# MobSF (Mobile Security Framework) static analysis
+docker pull opensecurity/mobile-security-framework-mobsf
+docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf
+
+# Manual APK analysis
+apktool d app.apk -o decompiled/
+grep -r "password\|secret\|api_key\|token" decompiled/ --include="*.xml" --include="*.smali"
+
+# Check SSL Pinning (Android)
+grep -r "CertificatePinner\|TrustManager\|pinCertificate" decompiled/
+
+# Decompile APK with jadx
+jadx -d output/ app.apk
+find output/ -name "*.java" | xargs grep -l "http://"
+
+# Runtime analysis with frida
+pip3 install frida-tools
+frida-ps -U  # List processes on connected device
+
+# SSL Pinning bypass script
+frida -U -f com.example.bankapp \
+  --codeshare 0xdea/frida-scripts/api-monitor \
+  -l ssl_pinning_bypass.js
+
+# Burp Suite Certificate Pinning bypass (rooted device)
+adb push burp_cert.der /sdcard/
+adb shell "su -c 'cp /sdcard/burp_cert.der /system/etc/security/cacerts/'"
+
+# drozer dynamic analysis
+drozer console connect
+dz> run app.package.attacksurface com.example.bankapp
+dz> run app.activity.info -a com.example.bankapp
+dz> run app.provider.finduri com.example.bankapp
+```
+
+---
+
+## Kubernetes Cluster Threat Modeling
+
+### Cluster Architecture
+
+```
+[Developers/Operators]
+  ├── kubectl (OIDC auth)
+  └── Helm
+         │
+         ↓
+[Control Plane]
+  ├── kube-apiserver (6443/TCP)
+  ├── etcd (2379-2380/TCP, encrypted internal)
+  ├── kube-scheduler
+  └── kube-controller-manager
+         │
+         ↓
+[Worker Nodes]
+  ├── kubelet (10250/TCP)
+  ├── kube-proxy
+  ├── containerd/CRI-O
+  └── Pods
+         ├── Application Pods
+         ├── Monitoring Pods (Prometheus/Grafana)
+         └── Ingress Controller (NGINX)
+
+[Add-ons]
+  ├── Istio Service Mesh (mTLS)
+  ├── OPA Gatekeeper (policy enforcement)
+  ├── Falco (runtime security)
+  └── Vault (secret management)
+```
+
+### STRIDE Analysis (Kubernetes)
+
+```
+Component: kube-apiserver
+
+┌──────┬──────────────────────────────────────────────┬──────────┬─────────────────────────────────────┐
+│STRIDE│ Threat                                        │ Severity │ Mitigation                          │
+├──────┼──────────────────────────────────────────────┼──────────┼─────────────────────────────────────┤
+│  S   │ Stolen service account token used for API    │ Critical │ Short-lived tokens (1h), Projected Volumes│
+│  S   │ Anonymous API access (--anonymous-auth=true) │ Critical │ Disable anonymous authentication     │
+│  T   │ Direct etcd access to modify Secrets         │ Critical │ Encrypt etcd, network isolation     │
+│  R   │ Audit Log not configured                     │ High     │ Configure Audit Policy, SIEM integration│
+│  I   │ Cross-namespace Secret access                │ High     │ RBAC least privilege, NetworkPolicy │
+│  D   │ Mass API requests overloading kube-apiserver │ High     │ API Priority and Fairness settings  │
+│  E   │ ClusterRole escalation via RBAC              │ Critical │ RBAC permission audit, OPA policy   │
+└──────┴──────────────────────────────────────────────┴──────────┴─────────────────────────────────────┘
+
+Component: Container Runtime / Pod
+
+┌──────┬──────────────────────────────────────────────┬──────────┬─────────────────────────────────────┐
+│STRIDE│ Threat                                        │ Severity │ Mitigation                          │
+├──────┼──────────────────────────────────────────────┼──────────┼─────────────────────────────────────┤
+│  S   │ Masquerading as a legitimate container image │ High     │ Image signing verification (cosign, Notary)│
+│  T   │ Host filesystem modification from container  │ Critical │ privileged: false, readOnlyRoot     │
+│  I   │ Secrets passed as environment variables      │ High     │ Vault sidecar, CSI Secret driver    │
+│  D   │ OOM/CPU exhaustion due to no resource limits │ High     │ LimitRange, ResourceQuota           │
+│  E   │ Host access via hostPID/hostNetwork          │ Critical │ PodSecurityAdmission, PSP           │
+│  E   │ SSRF to IMDS (169.254.169.254)               │ Critical │ NetworkPolicy, enforce IMDSv2       │
+└──────┴──────────────────────────────────────────────┴──────────┴─────────────────────────────────────┘
+```
+
+### K8s Security Configuration Commands
+
+```bash
+# CIS Kubernetes Benchmark scan
+docker run --rm \
+  --pid=host \
+  -v /etc:/etc:ro \
+  -v /var:/var:ro \
+  -v /usr/bin/kubectl:/usr/bin/kubectl:ro \
+  aquasec/kube-bench:latest
+
+# kube-score (static manifest analysis)
+kube-score score deployment.yaml
+kube-score score --output-format ci k8s/
+
+# Scan K8s cluster with Trivy
+trivy k8s --report all cluster
+
+# Check Falco runtime rules
+kubectl get configmap falco-config -n falco -o yaml
+
+# RBAC analysis
+kubectl auth can-i --list --as=system:serviceaccount:default:myapp
+kubectl get clusterrolebindings -o json | \
+  python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for item in data['items']:
+    name = item['metadata']['name']
+    subjects = item.get('subjects', [])
+    role = item.get('roleRef', {}).get('name', '')
+    for s in subjects:
+        if s.get('name') != 'system:masters':
+            print(f'{name}: {s[\"name\"]} → {role}')
+"
+
+# Verify Secret encryption
+kubectl get secret mysecret -o jsonpath='{.data.password}' | base64 -d
+
+# Verify NetworkPolicy
+kubectl get networkpolicies -A
+kubectl describe networkpolicy default-deny-all
+
+# Check Pod Security Standards
+kubectl label namespace production \
+  pod-security.kubernetes.io/enforce=restricted \
+  pod-security.kubernetes.io/enforce-version=latest
+
+# Check Audit Log configuration
+kubectl get pod kube-apiserver-* -n kube-system -o yaml | \
+  grep -A5 audit
+```
+
+---
+
+## Deriving Mitigation Controls
+
+### Mitigation Control Classification Framework
+
+```
+Control Types:
+┌──────────────┬──────────────────────────────────────┐
+│ Type         │ Description                          │
+├──────────────┼──────────────────────────────────────┤
+│ Preventive   │ Prevent threats from occurring       │
+│ Detective    │ Detect threats in real time          │
+│ Corrective   │ Minimize damage / recover after event│
+│ Deterrent    │ Discourage attacker intent (legal)   │
+└──────────────┴──────────────────────────────────────┘
+
+STRIDE → Mitigation Control Mapping:
+
+Spoofing Mitigations:
+  Preventive: MFA, strong password policy, mTLS
+  Detective: Anomalous login detection, SIEM alerts
+  Corrective: Automatic account lockout, forced logout
+
+Tampering Mitigations:
+  Preventive: Input validation, parameterized queries, WAF
+  Detective: FIM (File Integrity Monitoring), DB audit
+  Corrective: Automatic rollback, backup recovery
+
+Repudiation Mitigations:
+  Preventive: Require digital signatures, session binding
+  Detective: Centralized audit logs, SIEM
+  Corrective: Forensic analysis, log retention
+
+Information Disclosure Mitigations:
+  Preventive: Encryption (transit/rest), RBAC, least privilege
+  Detective: DLP solutions, anomalous query detection
+  Corrective: Data classification, exposure scope assessment
+
+Denial of Service Mitigations:
+  Preventive: Rate limiting, resource limits, caching
+  Detective: Anomaly traffic detection, APM monitoring
+  Corrective: Auto Scaling, DDoS protection services
+
+Elevation of Privilege Mitigations:
+  Preventive: Least privilege, RBAC, input validation
+  Detective: Privilege change monitoring, UEBA
+  Corrective: Permission revocation, breach isolation
+```
+
+### NIST 800-53 Control Mapping
+
+```
+Threat → NIST Control Mapping:
+
+Spoofing:
+  IA-2: Identification and Authentication (Organizational Users)
+  IA-3: Device Identification and Authentication
+  SC-8: Transmission Confidentiality and Integrity
+
+Tampering:
+  SI-10: Information Input Validation
+  SI-7: Software, Firmware, and Information Integrity
+  SC-28: Protection of Information at Rest
+
+Repudiation:
+  AU-2: Event Logging
+  AU-9: Protection of Audit Information
+  AU-12: Audit Record Generation
+
+Information Disclosure:
+  SC-8: Transmission Confidentiality and Integrity
+  SC-28: Protection of Information at Rest
+  AC-3: Access Enforcement
+
+Denial of Service:
+  SC-5: Denial-of-Service Protection
+  SI-13: Predictable Failure Prevention
+  CP-10: Information System Recovery and Reconstitution
+
+Elevation of Privilege:
+  AC-6: Least Privilege
+  AC-3: Access Enforcement
+  CM-7: Least Functionality
+```
+
+---
+
+## Threat → Security Requirement → Test Case Linkage
+
+### Linkage Mapping Structure
+
+```
+Threat T001 (SQL Injection)
+    ↓
+Security Requirement SR-001
+    "All DB queries must use parameterized queries or ORM"
+    ↓
+Test Case TC-001
+    "Test each input field with SQLI payloads"
+    ↓
+Automated Tests (pytest + httpx)
+    ↓
+Continuous execution in CI/CD pipeline
+```
+
+### Security Requirement Examples (E-Commerce)
+
+```
+SR-AUTH-001: Password Policy
+  - Minimum 12 characters
+  - Must include upper/lowercase, numbers, special chars
+  - Prohibit reuse of last 10 passwords
+  - Mandatory 90-day rotation
+  Source threat: T001 (Spoofing - weak password brute force)
+
+SR-AUTH-002: MFA Enforcement
+  - MFA required for sensitive actions (transfer, password change)
+  - Support TOTP or SMS OTP
+  Source threat: T002 (Spoofing - login after credential theft)
+
+SR-INPUT-001: Input Validation
+  - Server-side validation for all inputs
+  - Parameterize SQL special characters
+  - File upload: restrict type and size
+  Source threat: T003 (Tampering - SQL Injection)
+
+SR-API-001: API Design
+  - Use GUID/UUID-based resource identifiers
+  - Authorization check required on all API requests
+  - Do not include unnecessary internal info in responses
+  Source threat: T004 (Elevation of Privilege - IDOR)
+
+SR-LOG-001: Audit Logging
+  - Log login/logout/failure events
+  - Log access to sensitive data
+  - Tamper-resistant logging (WORM storage)
+  - Log retention period: 1 year
+  Source threat: T005 (Repudiation - untracked actions)
+```
+
+### Security Test Case Examples
+
+```python
+# security_tests/test_auth_security.py
+import pytest
+import httpx
+
+BASE_URL = "http://localhost:8000"
+
+class TestAuthenticationSecurity:
+    """Tests for SR-AUTH-001, SR-AUTH-002"""
+
+    def test_brute_force_protection(self):
+        """TC-AUTH-001: Account lockout after 5 failed attempts"""
+        client = httpx.Client()
+        for i in range(5):
+            resp = client.post(f"{BASE_URL}/api/auth/login", json={
+                "email": "test@example.com",
+                "password": f"wrong_password_{i}"
+            })
+        # 6th attempt should receive lockout response
+        resp = client.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "test@example.com",
+            "password": "any_password"
+        })
+        assert resp.status_code == 429  # Too Many Requests
+
+    def test_jwt_algorithm_confusion(self):
+        """TC-AUTH-002: Defend against JWT alg:none attack"""
+        # Generate unsigned JWT
+        import base64
+        header = base64.b64encode(
+            b'{"alg":"none","typ":"JWT"}'
+        ).rstrip(b'=').decode()
+        payload = base64.b64encode(
+            b'{"sub":"admin","role":"admin"}'
+        ).rstrip(b'=').decode()
+        fake_jwt = f"{header}.{payload}."
+
+        resp = httpx.get(
+            f"{BASE_URL}/api/admin/users",
+            headers={"Authorization": f"Bearer {fake_jwt}"}
+        )
+        assert resp.status_code == 401
+
+    def test_error_message_enumeration(self):
+        """TC-AUTH-003: Prevent account existence disclosure"""
+        r1 = httpx.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "nonexistent@example.com",
+            "password": "password123"
+        })
+        r2 = httpx.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "existing@example.com",
+            "password": "wrong_password"
+        })
+        # Should return identical error messages
+        assert r1.json().get("message") == r2.json().get("message")
+        assert r1.status_code == r2.status_code == 401
+
+
+class TestInputValidation:
+    """Tests for SR-INPUT-001"""
+
+    SQL_INJECTION_PAYLOADS = [
+        "' OR '1'='1",
+        "'; DROP TABLE users; --",
+        "1 UNION SELECT * FROM users",
+        "1' AND SLEEP(5)--",
+    ]
+
+    XSS_PAYLOADS = [
+        "<script>alert(1)</script>",
+        '"><img src=x onerror=alert(1)>',
+        "javascript:alert(1)",
+    ]
+
+    @pytest.mark.parametrize("payload", SQL_INJECTION_PAYLOADS)
+    def test_sqli_in_search(self, payload: str):
+        """TC-INPUT-001: SQLI defense in search API"""
+        resp = httpx.get(
+            f"{BASE_URL}/api/products",
+            params={"q": payload}
+        )
+        # Should return normal response (400 or empty result)
+        assert resp.status_code in (200, 400)
+        # DB error messages must not be exposed
+        body = resp.text.lower()
+        for keyword in ["sql", "syntax error", "postgresql", "mysql"]:
+            assert keyword not in body
+
+    @pytest.mark.parametrize("payload", XSS_PAYLOADS)
+    def test_xss_in_review(self, payload: str):
+        """TC-INPUT-002: XSS defense in review API"""
+        resp = httpx.post(
+            f"{BASE_URL}/api/reviews",
+            json={"product_id": 1, "content": payload, "rating": 5},
+            headers={"Authorization": "Bearer valid_token_here"}
+        )
+        if resp.status_code == 201:
+            # Stored content must have scripts escaped
+            review_id = resp.json()["id"]
+            get_resp = httpx.get(f"{BASE_URL}/api/reviews/{review_id}")
+            assert "<script>" not in get_resp.text
+```
+
+---
+
+## Full Workflow CLI Tool
+
+```python
+#!/usr/bin/env python3
+"""
+Threat Modeling Full Workflow CLI Tool
+
+DFD input → STRIDE analysis → DREAD scoring → Report generation
+
+Usage:
+    python3 threat_modeling_cli.py init --name "E-Commerce" --output model.json
+    python3 threat_modeling_cli.py add-element --model model.json --interactive
+    python3 threat_modeling_cli.py analyze --model model.json --method stride
+    python3 threat_modeling_cli.py score --model model.json --method dread
+    python3 threat_modeling_cli.py report --model model.json --format html --output report.html
+    python3 threat_modeling_cli.py full-pipeline --name "Shopping Mall" --system ecommerce
+"""
+
+# (Code is identical to Korean section above; see full implementation there)
+```
+
+### Full Workflow Execution Examples
+
+```bash
+# 1. Full pipeline (run all at once)
+python3 threat_modeling_cli.py full-pipeline \
+  --name "E-Commerce" \
+  --system ecommerce \
+  --output-dir ./ecom_threat_model
+
+# 2. Step-by-step execution
+# Initialize model
+python3 threat_modeling_cli.py init \
+  --name "Banking App" \
+  --description "Mobile banking app threat model" \
+  --output banking_model.json
+
+# Add elements (interactive)
+python3 threat_modeling_cli.py add-element \
+  --model banking_model.json \
+  --interactive
+
+# STRIDE auto analysis
+python3 threat_modeling_cli.py analyze \
+  --model banking_model.json
+
+# DREAD scoring (interactive)
+python3 threat_modeling_cli.py score \
+  --model banking_model.json
+
+# Generate HTML report
+python3 threat_modeling_cli.py report \
+  --model banking_model.json \
+  --format html \
+  --output banking_report.html
+
+# Kubernetes pipeline
+python3 threat_modeling_cli.py full-pipeline \
+  --name "K8s Cluster" \
+  --system kubernetes \
+  --output-dir ./k8s_threats
+```
+
+### Output Structure
+
+```
+Output directory:
+ecom_threat_model/
+├── E-Commerce_model.json      ← Structured threat model data
+└── E-Commerce_report.html     ← Visual HTML report
+
+k8s_threats/
+├── K8s_Cluster_model.json
+└── K8s_Cluster_report.html
+```
+
+---
+
+## References
 
 - [OWASP MASVS](https://mobile-security.gitbook.io/masvs/)
 - [CIS Kubernetes Benchmark](https://www.cisecurity.org/benchmark/kubernetes)

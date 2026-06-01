@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Active Directory 열거 — BloodHound·LDAP·자동화
 
 ## 1. AD 공격 로드맵
@@ -247,21 +253,21 @@ class ADEnumerator:
 
     def enumerate_all(self) -> ADEnumResult:
         result = ADEnumResult(domain=self.domain)
-        print("[*] 사용자 열거 중...")
+        print("[*] Enumerating users...")
         result.users = self.enum_users()
-        print(f"  발견: {len(result.users)}개")
+        print(f"  Found: {len(result.users)}")
 
-        print("[*] SPN 계정 열거 중 (Kerberoasting 대상)...")
+        print("[*] Enumerating SPN accounts (Kerberoasting targets)...")
         result.spn_accounts = self.enum_spn_accounts()
-        print(f"  발견: {len(result.spn_accounts)}개")
+        print(f"  Found: {len(result.spn_accounts)}")
 
-        print("[*] AS-REP Roasting 대상 열거 중...")
+        print("[*] Enumerating AS-REP Roasting targets...")
         result.asrep_accounts = self.enum_asrep_accounts()
-        print(f"  발견: {len(result.asrep_accounts)}개")
+        print(f"  Found: {len(result.asrep_accounts)}")
 
-        print("[*] 컴퓨터 열거 중...")
+        print("[*] Enumerating computers...")
         result.computers = self.enum_computers()
-        print(f"  발견: {len(result.computers)}개")
+        print(f"  Found: {len(result.computers)}")
 
         return result
 
@@ -270,13 +276,13 @@ class ADEnumerator:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Active Directory 자동 열거")
-    parser.add_argument("dc", help="도메인 컨트롤러 IP")
-    parser.add_argument("domain", help="도메인 (예: corp.local)")
-    parser.add_argument("-u", "--user", required=True, help="사용자명")
-    parser.add_argument("-p", "--password", required=True, help="패스워드")
-    parser.add_argument("--tls", action="store_true", help="LDAPS 사용")
-    parser.add_argument("-o", "--output", type=Path, help="결과 저장 경로")
+    parser = argparse.ArgumentParser(description="Active Directory Auto Enumeration")
+    parser.add_argument("dc", help="Domain Controller IP")
+    parser.add_argument("domain", help="Domain (e.g.: corp.local)")
+    parser.add_argument("-u", "--user", required=True, help="Username")
+    parser.add_argument("-p", "--password", required=True, help="Password")
+    parser.add_argument("--tls", action="store_true", help="Use LDAPS")
+    parser.add_argument("-o", "--output", type=Path, help="Save results path")
     args = parser.parse_args()
 
     try:
@@ -286,19 +292,19 @@ def main() -> None:
         result = enumerator.enumerate_all()
         enumerator.close()
 
-        print(f"\n=== 결과 요약: {args.domain} ===")
-        print(f"총 사용자: {len(result.users)}")
-        print(f"Kerberoasting 대상: {len(result.spn_accounts)}")
-        print(f"AS-REP Roasting 대상: {len(result.asrep_accounts)}")
-        print(f"컴퓨터: {len(result.computers)}")
+        print(f"\n=== Results Summary: {args.domain} ===")
+        print(f"Total users: {len(result.users)}")
+        print(f"Kerberoasting targets: {len(result.spn_accounts)}")
+        print(f"AS-REP Roasting targets: {len(result.asrep_accounts)}")
+        print(f"Computers: {len(result.computers)}")
 
         if result.spn_accounts:
-            print("\n[!] Kerberoasting 대상 계정:")
+            print("\n[!] Kerberoasting target accounts:")
             for obj in result.spn_accounts:
                 print(f"  {obj.attributes.get('sAMAccountName', ['?'])[0]}")
 
         if result.asrep_accounts:
-            print("\n[!] AS-REP Roasting 대상:")
+            print("\n[!] AS-REP Roasting targets:")
             for obj in result.asrep_accounts:
                 print(f"  {obj.attributes.get('sAMAccountName', ['?'])[0]}")
 
@@ -311,10 +317,10 @@ def main() -> None:
                 "computers": [o.attributes for o in result.computers],
             }
             args.output.write_text(json.dumps(data, indent=2, default=str, ensure_ascii=False))
-            print(f"\n결과 저장: {args.output}")
+            print(f"\nResults saved: {args.output}")
 
     except LDAPException as e:
-        print(f"LDAP 오류: {e}")
+        print(f"LDAP error: {e}")
         raise SystemExit(1)
 
 
@@ -336,3 +342,111 @@ if __name__ == "__main__":
 | `rpcclient` | RPC 기반 AD 열거 |
 | `enum4linux-ng` | Linux SMB/AD 열거 |
 | `ADRecon` | 포렌식 친화적 AD 정보 수집 |
+
+---
+
+<a name="english"></a>
+
+# Active Directory Enumeration — BloodHound, LDAP, and Automation
+
+## 1. AD Attack Roadmap
+
+```
+Initial Access
+    │
+    ▼
+AD Enumeration ←── Start here
+    │  - Domain info, users, groups, computers
+    │  - Trust relationships, GPOs, ACLs
+    ▼
+Kerberos Attacks
+    │  - Kerberoasting, AS-REP Roasting
+    ▼
+Lateral Movement
+    │  - Pass-the-Hash, Pass-the-Ticket
+    │  - NTLM Relay, DCSync
+    ▼
+Domain Dominance
+       - Golden Ticket, Silver Ticket
+       - AdminSDHolder, ACL abuse
+```
+
+---
+
+## 2. Basic AD Enumeration Commands
+
+### 2.1 PowerShell-based
+
+Key enumeration commands:
+- `Get-ADUser -Filter * -Properties *` — enumerate all domain users with full attributes
+- `Get-ADGroupMember "Domain Admins" -Recursive` — list members of privileged groups
+- `Get-ADDomainController -Filter *` — discover domain controllers
+- `Get-ADUser -Filter {ServicePrincipalName -ne "$null"}` — find Kerberoasting targets (accounts with SPNs)
+- `Get-ADUser -Filter {DoesNotRequirePreAuth -eq $true}` — find AS-REP Roasting targets (pre-auth not required)
+- `Get-GPO -All` — enumerate Group Policy Objects
+
+### 2.2 LDAP Queries (Linux)
+
+Using `ldapsearch` from Linux without domain membership:
+- Anonymous enumeration to discover naming contexts
+- Authenticated user/SPN enumeration via LDAP filters
+- LDAP filter `(&(servicePrincipalName=*)(objectClass=user))` finds Kerberoastable accounts
+
+---
+
+## 3. BloodHound Collection and Analysis
+
+### 3.1 SharpHound Data Collection
+
+SharpHound collection methods:
+- `Default` — sessions, local admins, group memberships
+- `All` — complete collection
+- `Session` — active sessions only
+- `DCOnly` — DC-only collection (minimal network noise)
+
+On Linux, `bloodhound-python` provides equivalent collection without domain membership.
+
+### 3.2 BloodHound Cypher Queries
+
+| Query Purpose | Cypher Pattern |
+|--------------|---------------|
+| Shortest path to Domain Admins | `shortestPath((u:User {owned:true})-[*1..]->(g:Group {...}))` |
+| Kerberoastable accounts | `MATCH (u:User {hasspn:true})` |
+| AS-REP Roastable | `MATCH (u:User {dontreqpreauth:true})` |
+| DCSync rights holders | `MATCH (n)-[:DCSync|AllExtendedRights|GenericAll]->(d:Domain)` |
+| Password never expires | `MATCH (u:User {pwdneverexpires:true, enabled:true})` |
+| Trust relationships | `MATCH (d1:Domain)-[r:TrustedBy]->(d2:Domain)` |
+
+---
+
+## 4. AD Auto Enumeration CLI
+
+The `ADEnumerator` class connects to a Domain Controller via NTLM authentication over LDAP/LDAPS and performs systematic enumeration:
+
+**`enum_users()`** — all user accounts with account control flags, last logon timestamps, and group memberships
+
+**`enum_spn_accounts()`** — accounts with SPNs registered (Kerberoasting targets) using LDAP filter `(&(objectClass=user)(servicePrincipalName=*)(!(objectClass=computer)))`
+
+**`enum_asrep_accounts()`** — accounts with `DONT_REQ_PREAUTH` flag (userAccountControl bit 4194304) set — AS-REP Roasting targets
+
+**`enum_computers()`** — all computer accounts with OS information and last logon
+
+**Usage:**
+```bash
+python3 ad_enum.py 10.10.10.100 corp.local -u lowpriv -p Password123 --tls -o enum_results.json
+```
+
+---
+
+## 5. Reference Tools
+
+| Tool | Purpose |
+|------|---------|
+| `BloodHound` | AD attack path visualization |
+| `SharpHound` | BloodHound data collection (Windows) |
+| `bloodhound-python` | BloodHound collection from Linux |
+| `ldapdomaindump` | LDAP data HTML dump |
+| `CrackMapExec` / `NetExec` | SMB and AD bulk enumeration |
+| `rpcclient` | RPC-based AD enumeration |
+| `enum4linux-ng` | Linux SMB/AD enumeration |
+| `ADRecon` | Forensic-friendly AD information collection |

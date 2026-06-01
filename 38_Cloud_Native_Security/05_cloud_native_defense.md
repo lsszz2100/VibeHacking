@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 05 — Cloud Native 보안 방어 체계
 
 ## 목차
@@ -793,3 +799,164 @@ python k8s_security_auditor.py ./manifests/ --fail-on CRITICAL --format json -o 
 - **NSA/CISA K8s Hardening Guide** — NSA 공식 K8s 보안 지침
 - **Falco Rules Library** — [https://github.com/falcosecurity/rules](https://github.com/falcosecurity/rules)
 - **SLSA Framework** — [https://slsa.dev](https://slsa.dev)
+
+---
+
+<a name="english"></a>
+
+# 05 — Cloud Native Security Defense Framework
+
+## 1. Cloud Native Security Framework
+
+### 1.1 4C Security Model
+
+The CNCF-defined layered security model:
+
+```
+Code        → SAST/DAST, dependency scanning, static analysis
+Container   → Image scanning, runtime protection, least privilege
+Cluster     → RBAC, network policies, audit logs, OPA
+Cloud       → IAM, infrastructure config audit, data encryption
+```
+
+### 1.2 CNCF Security Technology Radar
+
+| Layer | Tools | Purpose |
+|-------|-------|---------|
+| Supply Chain | Cosign, Syft, Grype | Image signing, SBOM, vulnerabilities |
+| Runtime | Falco, Tetragon | Anomaly behavior detection |
+| Network | Cilium, Calico | eBPF-based policy enforcement |
+| Secrets | Vault, External Secrets | Dynamic credential management |
+| Posture Management | Trivy, kube-bench | Config audit, CIS compliance |
+| Policy | OPA Gatekeeper, Kyverno | Admission control |
+
+---
+
+## 2. Runtime Security (Falco / eBPF)
+
+### 2.1 Falco Rule Writing
+
+Custom Falco rules for cloud-native environments include:
+- **Shell in Container**: Detects shell execution in containers not in trusted image list — WARNING priority, tags [container, shell, mitre_execution]
+- **Read Sensitive File Untrusted**: Detects untrusted processes accessing sensitive files — ERROR priority, tags [filesystem, mitre_credential_access]
+- **Network Tool in Container**: Detects network reconnaissance tools (nmap, nc, tcpdump, curl, wget) — NOTICE priority, tags [network, container, mitre_discovery]
+
+### 2.2 Tetragon (eBPF Runtime Enforcement)
+
+Cilium Tetragon can enforce policies at the kernel level using eBPF. TracingPolicy example: terminates processes that attempt to read /etc/shadow using `action: Sigkill` on the `fd_install` kprobe.
+
+---
+
+## 3. Secret Management and Encryption
+
+### HashiCorp Vault Dynamic Secrets
+
+Static secrets in .env files risk permanent access on leak. Vault dynamic secrets:
+- App authenticates to Vault with a token → Vault issues temporary DB credentials
+- TTL auto-expiry → automatic revocation
+- Audit log records all issuance
+
+Kubernetes authentication setup: enable kubernetes auth method, configure cluster CA cert, create roles binding service accounts to Vault policies with 1h TTL.
+
+### External Secrets Operator
+
+Synchronizes Kubernetes Secrets with external secret stores (Vault, AWS SM, GCP SM). Configures `ExternalSecret` resources with `refreshInterval`, `secretStoreRef`, and field mappings.
+
+### Sealed Secrets
+
+Allows encrypting secrets with a public key and safely committing `SealedSecret` YAMLs to Git. Only the controller with the private key can decrypt them.
+
+---
+
+## 4. Supply Chain Security (SLSA / Sigstore)
+
+### SLSA Framework Levels
+
+- Level 0: No guarantees
+- Level 1: Documented build process, provenance generated
+- Level 2: Version control + signed provenance
+- Level 3: Isolated build environment, verifiable provenance
+- Level 4: Two-person review, hermetic build
+
+### Cosign Image Signing and Verification
+
+```bash
+# Sign image (keyless — OIDC-based)
+cosign sign --identity-token=$(gcloud auth print-identity-token) gcr.io/myproject/myapp:v1.0.0
+
+# Verify signature
+cosign verify --certificate-identity=ci@myproject.iam.gserviceaccount.com gcr.io/myproject/myapp:v1.0.0
+```
+
+Kyverno policy `verify-image-signature` enforces that only signed images from approved identities can be deployed.
+
+### SBOM (Software Bill of Materials)
+
+Generate SBOMs with Syft, scan for vulnerabilities with Grype, and attest SBOMs to images with Cosign for complete supply chain transparency.
+
+---
+
+## 5. Cloud Security Posture Management (CSPM)
+
+| Tool | Key Features | Target |
+|------|-------------|--------|
+| Trivy | All-in-one (image+IaC+SBOM+secret) | General purpose |
+| kube-bench | CIS Kubernetes Benchmark | K8s cluster |
+| Checkov | IaC static analysis (Terraform, K8s YAML) | DevSecOps |
+| Prowler | AWS/Azure/GCP config audit | Cloud |
+| ScoutSuite | Multi-cloud audit | Cloud |
+
+---
+
+## 6. Kubernetes Audit and Compliance
+
+Audit policy configuration: Metadata level for secrets/configmaps and network policy access; RequestResponse level for pod exec/attach/portforward and ClusterRole binding changes.
+
+OPA Gatekeeper `K8sNoRoot` constraint template rejects containers where `securityContext.runAsNonRoot != true`, applied to production and staging namespaces.
+
+---
+
+## 7. Python Tool: K8s Security Configuration Auditor
+
+Automatically audits Kubernetes manifest YAML files for security misconfigurations. Checks include:
+
+**Container-level**: root user (UID 0), missing `runAsNonRoot`, privileged containers, dangerous Linux capabilities, missing `drop: [ALL]`, `allowPrivilegeEscalation: true`, writable root filesystem, missing CPU/memory limits, `latest` image tags
+
+**Pod-level**: missing pod-level `runAsNonRoot`, auto-mounted service account tokens, `hostPath` volumes, `hostPID`, `hostNetwork`
+
+**Resource-level**: `ClusterRoleBinding` to `system:unauthenticated`
+
+Supports text and JSON output formats, minimum severity filtering, and CI exit code 1 on configurable severity threshold.
+
+---
+
+## 8. Cloud Native Security Maturity Model
+
+### CNCF Cloud Native Security Maturity Levels
+
+```
+Level 1 — Baseline:    Basic RBAC, manual image scanning, K8s Secrets
+Level 2 — Intermediate: OPA/Kyverno admission policies, CI image scanning, Falco runtime monitoring, audit logs to SIEM
+Level 3 — Advanced:    Image signing (Cosign), SBOM management, Vault dynamic secrets, Tetragon eBPF enforcement, GitOps + IaC security scanning
+Level 4 — Optimized:   SLSA Level 3+, zero-trust service mesh (mTLS everywhere), automated vulnerability response, chaos engineering security validation, continuous compliance automation
+```
+
+### DevSecOps Pipeline Integration
+
+```
+Code → Build → Deploy → Operate
+SAST   Image Build  OPA Validation  Falco
+SCA    Vuln Scan    Signature Check CSPM
+IaC    SBOM         Policy Enforce  Audit Logs
+Secret Image Sign   GitOps          Incident Response
+```
+
+---
+
+## References
+
+- **CNCF Cloud Native Security Whitepaper** — Official security guide
+- **CIS Kubernetes Benchmark** — https://www.cisecurity.org
+- **NSA/CISA K8s Hardening Guide** — Official K8s security guidelines
+- **Falco Rules Library** — https://github.com/falcosecurity/rules
+- **SLSA Framework** — https://slsa.dev

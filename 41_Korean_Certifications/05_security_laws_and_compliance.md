@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 한국 정보보안 관련 법령 완전 정리
 
 ## 정보보안 법령 체계 개요
@@ -752,3 +758,370 @@ if __name__ == "__main__":
 8. **클라우드 서비스 중단**: "30일 전" 이용자 통지
 9. **과징금 상한**: 전체 매출액의 "3%" (2023년 개정)
 10. **아동 개인정보**: 만 "14세" 미만, 법정대리인 동의
+
+---
+
+<a name="english"></a>
+
+# Korean Information Security Laws and Compliance — Complete Guide
+
+## Overview of the Information Security Legal Framework
+
+Korea's information security laws are broadly categorized into personal data protection, telecommunications security, financial security, and cloud/infrastructure security. Each law imposes specific obligations on defined entities and situations; violations may result in administrative fines and criminal penalties applied concurrently.
+
+### Key Legal Framework
+
+```
+Information Security Laws
+├── Personal Information Protection Act (PIPA) — Personal Information Protection Commission
+├── Act on Promotion of Information and Communications Network Utilization and Information Protection (Network Act)
+│   └── Oversight: Ministry of Science and ICT, Korea Communications Commission
+├── Electronic Financial Transactions Act — Financial Services Commission
+├── Act on the Development of Cloud Computing and Protection of Its Users (Cloud Act)
+├── Framework Act on National Informatization
+├── Digital Signature Act
+└── Credit Information Use and Protection Act
+```
+
+---
+
+## Key Provisions of the Network Act
+
+### Full Official Title
+Act on Promotion of Information and Communications Network Utilization and Information Protection, etc.
+
+### Primary Subjects
+- Information and communications service providers (portals, SNS, online shopping malls, etc.)
+- Business operators providing services via information and communications networks
+
+### Summary of Key Provisions
+
+#### Article 22: Consent for Collection and Use of Personal Information
+- Prohibition on collecting or using personal information without user consent
+- Required disclosures at time of consent: items collected, purpose of use, retention period, right to refuse
+- Mandatory separation of required vs. optional items when obtaining consent
+
+#### Article 24: Prohibition on Third-Party Provision of Personal Information
+- Prohibition on providing personal information to third parties without user consent
+- Exceptions: statutory requirements, law enforcement requests (warrant required), imminent danger
+
+#### Article 28: Personal Information Protection Measures
+Mandatory protective measures for service providers:
+1. **Administrative measures**: establishment of internal management plans, employee training
+2. **Technical measures**: access control, encryption, retention of access logs
+3. **Physical measures**: server room access control, locking devices
+
+#### Article 28-2: Encryption of Personal Information
+- Mandatory encryption of resident registration numbers, passwords, and biometric information
+- Encryption required when storing unique identification information
+
+#### Article 45: Information Security Measures
+Information and communications service providers must implement the following:
+- Designation of a Chief Information Security Officer (CISO)
+- Certification of an Information Security Management System (ISMS) (for mandatory subjects)
+- Vulnerability inspection and remediation
+
+#### Article 45-3: Designation of CISO
+- Mandatory designation applies to service providers with annual revenue of KRW 10 billion or more
+- CISO qualification requirements: degree or career experience in information security
+- CISO must be reported to the Minister of the Interior and Safety
+
+#### Article 47: ISMS Certification
+Mandatory certification subjects:
+- Service providers with annual revenue of KRW 10 billion or more, or average daily users of 1 million or more
+- Operators of co-located data centers (IDC)
+- Some cloud computing service providers
+
+#### Article 48: Incident Reporting
+- **Reporting obligation**: report to KISA without delay (within 24 hours) upon occurrence of an intrusion incident
+- Report contents: damage status, cause of incident, measures taken
+- Reporting method: Internet Incident Response Center (KISA 118), online reporting
+
+#### Article 48-4: Root Cause Analysis of Incidents
+- In large-scale incidents, KISA support may be requested for root cause analysis
+- Government may conduct investigations for root cause analysis
+
+#### Article 49-2: Prohibition on Distribution of Malicious Programs
+- Prohibition on creating, distributing, importing, or circulating malicious programs
+- Prohibition on delivering or distributing malicious programs to others' information systems without authorization
+
+#### Articles 50–52: Spam and Advertising Information Transmission
+- Prohibition on transmitting commercial advertisements without recipient consent
+- Prohibition on sending advertisements at night (9 PM–8 AM)
+- Mandatory indication of opt-out method
+
+---
+
+## Key Provisions of the Personal Information Protection Act (PIPA)
+
+### Scope of Application
+- Applies to all public institutions, enterprises, organizations, and individuals processing personal information
+- In principle, applies to all workplaces with 5 or more employees
+
+### Personal Information Processing Principles (Article 3)
+
+1. **Principle of collection limitation**: collect only the minimum personal information necessary for the purpose
+2. **Principle of purpose specification**: clearly specify the purpose of collection
+3. **Prohibition on use beyond the specified purpose**: process only within the scope of the collection purpose
+4. **Accuracy principle**: maintain personal information accurately and up-to-date
+5. **Security principle**: implement safety measures to prevent leakage, alteration, or destruction
+6. **Transparency principle**: disclose processing policies, guarantee right to access and correction
+7. **Minimum privacy infringement principle**: infringe on personal privacy to the minimum extent necessary
+
+### Rights of Data Subjects (Article 4)
+
+| Right | Content |
+|-------|---------|
+| Right of access | Demand to review the status of one's personal information processing |
+| Right to rectification and erasure | Demand correction or deletion of inaccurate personal information |
+| Right to restriction of processing | Demand to stop processing of personal information |
+| Right to damages | Claim compensation for damages caused by personal information violations |
+| Right to withdraw consent | Withdraw consent for collection, use, or provision at any time |
+
+### Key 2023 Amendments
+
+#### 1. Stricter Breach Notification Standards
+- **Before amendment**: notify government agencies when 10,000 or more records are breached
+- **After amendment**: notify the Personal Information Protection Commission within **72 hours** when **1,000 or more** records are breached
+- Obligation to immediately notify data subjects
+
+#### 2. Introduction of Data Portability Rights
+- Data subjects may request transmission of their personal information to other businesses
+- Phased implementation by sector (finance, healthcare, etc.)
+
+#### 3. Right to Refuse Automated Decision-Making
+- Right to refuse or demand explanation for fully automated decisions based on algorithms and AI
+
+#### 4. Strengthened Special Rules for Children's Personal Information
+- Personal information of children under 14: legal guardian consent is mandatory
+- Obligation to prepare child-friendly personal information processing policies
+
+#### 5. Stricter Administrative Fine Standards
+- Before amendment: up to 3% of revenue related to the violation
+- After amendment: up to **3%** of total revenue (raised cap for stronger deterrence)
+
+### Restrictions on Processing Sensitive Information (Article 23)
+
+Sensitive information items:
+- Political views, religious beliefs
+- Joining or withdrawing from labor unions or political parties
+- Political opinions
+- Health and sex life information
+- Genetic information
+- Criminal history
+- **Biometric information** (added 2020): fingerprints, iris, facial data, etc.
+
+Processing conditions: separate consent or special statutory provisions
+
+### Restrictions on Processing Unique Identification Information (Article 24)
+
+Unique identification information items:
+- Resident registration number
+- Passport number
+- Driver's license number
+- Alien registration number
+
+Processing conditions: separate consent or statutory provisions
+When stored: **encryption mandatory** (reversible encryption permitted, excluding one-way hash)
+
+### Disposal of Personal Information (Article 21)
+- Dispose **within 5 days** after retention period expires or processing purpose is achieved
+- Disposal method: electronic files — irreversible method; paper documents — shredding or incineration
+
+---
+
+## Electronic Financial Transactions Act — Security Requirements
+
+### Applicable Entities
+- Financial companies (banks, securities firms, insurance companies, card companies)
+- Electronic financial business operators (simple payment, electronic money, P2P finance)
+
+### Key Security Obligations
+
+#### Electronic Financial Transaction Security Requirements (Article 21)
+
+1. **Access control**: restrict access rights for internet banking, etc.
+2. **Encryption**: encrypt financial information during transmission and storage
+3. **Authentication**: enhanced authentication including authorized electronic signatures, OTP, biometric authentication
+4. **Abnormal transaction detection**: operate a Fraud Detection System (FDS)
+5. **Log retention**: retain transaction logs for 5 years or more
+
+#### Network Separation Obligations (Electronic Financial Supervisory Regulations)
+
+**Entities required to implement physical network separation:**
+- Financial companies with assets of KRW 2 trillion or more
+- Electronic financial business operators with average daily users of 1 million or more
+
+**Entities permitted to use logical network separation:**
+- Small financial institutions (assets under KRW 2 trillion)
+- Fintech companies (when meeting certain conditions)
+
+**Network separation standards:**
+- Complete separation of business network (internal) and internet network (external)
+- Use of dedicated one-way systems for data transfer
+- Separation of development/test environments from production environment
+
+#### Electronic Financial Fraud Prevention System (FDS)
+- Real-time detection and blocking of abnormal transactions
+- Monitoring of abnormal access patterns (multiple logins, overseas access, etc.)
+- Additional authentication for high-value transfers
+
+#### Prohibition on Mandatory Security Program Installation
+- From 2023, financial institutions are prohibited from forcing users to install security programs
+- Transition to standard authentication methods is encouraged
+
+---
+
+## Cloud Computing Act
+
+### Full Official Title
+Act on the Development of Cloud Computing and Protection of Its Users
+
+### Cloud Service Security Obligations
+
+#### Standards for Public Institution Cloud Use (Article 20-2)
+- Public institutions may use cloud services
+- **Cloud Security Assurance Program (CSAP)** certification is mandatory
+- Sensitive information: dedicated (private) or hybrid cloud
+
+#### CSAP Rating Levels
+
+| Level | Target | Requirement Level |
+|-------|--------|-------------------|
+| High | Processing of classified information or above | Physical network separation, dedicated cloud |
+| Medium | Sensitive public data | Logical network separation, dedicated zone |
+| Low | General public data | Standard security requirements |
+
+#### Cloud Service Provider Obligations
+- Domestic storage of user data (overseas transfer without separate consent is prohibited)
+- Prior notification to users before service interruption (30 days in advance)
+- Return or destruction of user data upon contract termination
+
+---
+
+## Scope and Standards for Mandatory Network Separation
+
+### Legal Basis for Network Separation
+
+| Law | Subject | Standard |
+|-----|---------|----------|
+| Electronic Financial Supervisory Regulations | Financial companies, e-finance operators | Assets KRW 2 trillion or users 1 million+ |
+| PIPA Enforcement Decree | Personal information processors | Processing 1 million+ individuals' data |
+| Network Act | Information and communications service providers | Businesses above a certain scale |
+| Public Institution Information Security Guidelines | Public institutions | All public institutions (phased application) |
+
+### Network Separation Implementation Methods
+
+#### Physical Network Separation
+- Separate business PCs and internet PCs
+- Complete separation of network cables and switches
+- Use of authorized media for data transfer (USB, etc.)
+- Cost: High / Security: Highest
+
+#### Logical Network Separation (VDI Method)
+- Separation into virtual desktop environments on a single PC
+- Complete separation of business network VMs and internet network
+- Restrictions on copying and pasting data
+- Cost: Medium / Security: High
+
+### Penalties for Violations of Network Separation Obligations
+- Violation of Electronic Financial Supervisory Regulations: institutional warning, officer disciplinary action
+- Violation of PIPA: administrative fines up to KRW 30 million
+- Repeated violations: possible suspension of business or revocation of license
+
+---
+
+## Standards for Administrative Fines and Criminal Penalties
+
+### PIPA Administrative Fines and Penalties
+
+#### Criminal Penalties
+
+| Violation | Penalty |
+|-----------|---------|
+| Illegal collection or processing of personal information | Up to 5 years imprisonment or KRW 50 million fine |
+| Processing sensitive information without consent | Up to 5 years imprisonment or KRW 50 million fine |
+| Illegal provision of personal information to third parties | Up to 5 years imprisonment or KRW 50 million fine |
+| Failure to report breach | Administrative fine up to KRW 30 million |
+| Failure to implement security measures | Administrative fine up to KRW 30 million |
+| Refusal of access request | Administrative fine up to KRW 30 million |
+
+#### Administrative Fines
+- **Large-scale data breach** or **failure to implement security measures** resulting in infringement
+- Up to **3%** of total revenue (increased by 2023 amendment)
+- Minimum KRW 3 million
+
+### Network Act Administrative Fines and Penalties
+
+| Violation | Penalty |
+|-----------|---------|
+| Distribution of malicious programs | Up to 7 years imprisonment or KRW 70 million fine |
+| Intrusion into information and communications networks | Up to 5 years imprisonment or KRW 50 million fine |
+| Failure to report intrusion incidents | Administrative fine up to KRW 10 million |
+| Failure to obtain ISMS certification (mandatory subjects) | Administrative fine up to KRW 30 million |
+| Sending spam (unauthorized) | Administrative fine up to KRW 30 million |
+
+### Electronic Financial Transactions Act Penalties
+
+| Violation | Penalty |
+|-----------|---------|
+| Electronic financial fraud | Up to 10 years imprisonment or KRW 100 million fine |
+| Intentional neglect of security vulnerabilities | Institutional sanctions, officer disciplinary action |
+| Failure to implement network separation obligations | Institutional warning, up to suspension of business |
+
+### Joint Penalty Rule
+- When an officer or employee violates the law in connection with corporate business, **fines are imposed on the corporation separately from penalties on the individual**
+- Exception: if the corporation has not neglected reasonable care and supervision to prevent violations
+
+---
+
+## Python CLI: Law Keyword Search and Quiz Tool
+
+```python
+#!/usr/bin/env python3
+"""
+Korean Information Security Law Keyword Search and Quiz CLI Tool
+Usage: python3 law_tool.py [--search KEYWORD] [--quiz] [--law LAW_NAME]
+"""
+# (See Korean section above for full implementation)
+```
+
+---
+
+## Key Summary Tables for Memorization
+
+### Notification Deadline Comparison
+
+| Situation | Law | Deadline | Reporting Body |
+|-----------|-----|----------|----------------|
+| Personal data breach (1,000+ records) | PIPA Article 34 | Within 72 hours | Personal Information Protection Commission |
+| Intrusion incident reporting | Network Act Article 48 | Within 24 hours | KISA (118) |
+| Personal information disposal | PIPA Article 21 | Within 5 days | Self-handled |
+| Notification to data subjects after breach | PIPA Article 34 | Without delay | Data subjects directly |
+| Cloud service interruption notice | Cloud Act Article 23 | 30 days in advance | Users |
+
+### Penalty Severity Comparison
+
+| Violation | Law | Maximum Penalty |
+|-----------|-----|----------------|
+| Distribution of malicious programs | Network Act Article 49-2 | 7 years / KRW 70 million fine |
+| Illegal personal data processing | PIPA | 5 years / KRW 50 million fine |
+| Electronic financial fraud | Electronic Financial Transactions Act | 10 years / KRW 100 million fine |
+| Failure to report intrusion incident | Network Act | Administrative fine up to KRW 10 million |
+| Failure to obtain ISMS certification | Network Act Article 47 | Administrative fine up to KRW 30 million |
+| Failure to implement personal data security measures | PIPA | Administrative fine up to KRW 30 million |
+
+---
+
+## Key Memorization Points for Frequently Tested Provisions
+
+1. **Personal data breach notification threshold**: "1,000" or more, within "72 hours"
+2. **Intrusion incident reporting**: KISA, within "24 hours", Network Act Article 48
+3. **Personal information disposal**: within "5 days" after retention period expires
+4. **Statutory damages**: up to "KRW 3 million" (can be claimed without proof of damage)
+5. **Mandatory ISMS subjects**: annual revenue "KRW 10 billion" or users "1 million"
+6. **Network separation obligation threshold**: financial company assets "KRW 2 trillion" or more
+7. **Sensitive information processing**: "separate consent" or special statutory provisions
+8. **Cloud service interruption**: notify users "30 days" in advance
+9. **Administrative fine cap**: "3%" of total revenue (2023 amendment)
+10. **Children's personal information**: under "14 years" of age, legal guardian consent required

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # MITRE ATT&CK 기반 위협 헌팅
 
 ## 1. MITRE ATT&CK 프레임워크 심화
@@ -897,3 +903,495 @@ if __name__ == "__main__":
 | T1055 | 중간 | 높음 | 낮음 | High |
 | T1021.001 | 높음 | 중간 | 높음 | Medium |
 | T1083 | 높음 | 낮음 | 낮음 | Low |
+
+---
+
+<a name="english"></a>
+
+# MITRE ATT&CK-Based Threat Hunting
+
+## 1. Deep Dive into the MITRE ATT&CK Framework
+
+### 1.1 Framework Overview
+
+MITRE ATT&CK (Adversarial Tactics, Techniques, and Common Knowledge) is a cyber attack knowledge base built on real-world observed adversary behaviors. Started as an internal project by MITRE Corporation in 2013, it has become the standard language of the global security community.
+
+**Three Matrices**:
+- **Enterprise**: Targeting Windows/Linux/macOS/Network/Cloud
+- **Mobile**: Targeting Android/iOS
+- **ICS**: Targeting Industrial Control Systems
+
+### 1.2 Tactics
+
+Tactics represent the adversary's **goal (Why)**. The Enterprise matrix currently contains 14 tactics.
+
+```
+TA0043 - Reconnaissance       : Pre-attack information gathering
+TA0042 - Resource Development : Preparing infrastructure, accounts, malware
+TA0001 - Initial Access       : Gaining entry to the internal network
+TA0002 - Execution            : Running malicious code
+TA0003 - Persistence          : Maintaining presence after system restarts
+TA0004 - Privilege Escalation : Gaining higher-level permissions
+TA0005 - Defense Evasion      : Avoiding detection
+TA0006 - Credential Access    : Stealing credentials
+TA0007 - Discovery            : Exploring the environment
+TA0008 - Lateral Movement     : Moving through the network
+TA0009 - Collection           : Gathering data of interest
+TA0011 - Command and Control  : Communicating with compromised systems
+TA0010 - Exfiltration         : Stealing data out of the network
+TA0040 - Impact               : Disruption, encryption, destruction
+```
+
+### 1.3 Techniques and Sub-techniques
+
+**Technique**: The **method (How)** an adversary achieves a tactical goal. Currently 200+.
+**Sub-technique**: A more specific implementation of a technique. Currently 400+.
+
+```
+T1059 - Command and Scripting Interpreter (Technique)
+  ├── T1059.001 - PowerShell (Sub-technique)
+  ├── T1059.002 - AppleScript
+  ├── T1059.003 - Windows Command Shell
+  ├── T1059.004 - Unix Shell
+  ├── T1059.005 - Visual Basic
+  ├── T1059.006 - Python
+  └── T1059.007 - JavaScript
+```
+
+### 1.4 Data Components
+
+Introduced in ATT&CK v12, this concept specifies the data needed to detect each technique.
+
+- **Data Source**: The source collecting the data (e.g., Process, Network Traffic)
+- **Data Component**: Specific data types within a source (e.g., Process Creation, Network Connection)
+
+---
+
+## 2. Hunting Query Patterns by Tactic
+
+### 2.1 Initial Access (TA0001)
+
+**T1566 — Phishing**:
+```
+# Splunk SPL: Processes spawned from email attachments
+index=endpoint source="WinEventLog:Security" EventCode=4688
+| eval parent_proc=lower(ParentProcessName)
+| where match(parent_proc, "outlook\.exe|thunderbird\.exe|winword\.exe|excel\.exe")
+| where NOT match(NewProcessName, "splunkd|svchost|conhost")
+| stats count by NewProcessName, ParentProcessName, Computer, _time
+| where count < 3
+```
+
+```
+# KQL (Microsoft Sentinel): Detect phishing document execution
+DeviceProcessEvents
+| where InitiatingProcessFileName in~ ("WINWORD.EXE", "EXCEL.EXE", "POWERPNT.EXE", "OUTLOOK.EXE")
+| where FileName in~ ("powershell.exe", "cmd.exe", "wscript.exe", "cscript.exe", "mshta.exe")
+| project TimeGenerated, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName
+| order by TimeGenerated desc
+```
+
+**T1190 — Exploit Public-Facing Application**:
+```
+# KQL: Abnormal child processes from web servers
+DeviceProcessEvents
+| where InitiatingProcessFileName in~ ("w3wp.exe", "httpd.exe", "nginx.exe", "tomcat9.exe")
+| where FileName in~ ("cmd.exe", "powershell.exe", "sh", "bash", "python.exe")
+| summarize count() by DeviceName, FileName, InitiatingProcessFileName
+```
+
+### 2.2 Execution (TA0002)
+
+**T1059.001 — PowerShell**:
+```
+# SPL: Detect encoded PowerShell commands
+index=endpoint EventCode=4688
+| where CommandLine like "%powershell%"
+| eval has_encoded=if(match(CommandLine, "-[Ee][Nn][Cc]|-[Ee][Nn][Cc][Oo][Dd][Ee][Dd]"), 1, 0)
+| eval has_bypass=if(match(CommandLine, "-[Ee][Xx][Ee][Cc].*[Bb][Yy][Pp][Aa][Ss][Ss]"), 1, 0)
+| eval has_hidden=if(match(CommandLine, "-[Ww][Ii][Nn][Dd][Oo][Ww][Ss][Tt][Yy][Ll][Ee].*[Hh][Ii][Dd][Dd][Ee][Nn]"), 1, 0)
+| where has_encoded=1 OR has_bypass=1 OR has_hidden=1
+| stats count by Computer, CommandLine, _time
+```
+
+**T1047 — WMI**:
+```
+# KQL: Remote execution via WMI
+DeviceProcessEvents
+| where InitiatingProcessFileName =~ "WmiPrvSE.exe"
+| where FileName in~ ("cmd.exe", "powershell.exe", "cscript.exe")
+| project TimeGenerated, DeviceName, FileName, ProcessCommandLine, RemoteIP
+```
+
+### 2.3 Persistence (TA0003)
+
+**T1547.001 — Registry Run Keys**:
+```
+# KQL: Abnormal registry autorun key modifications
+DeviceRegistryEvents
+| where RegistryKey has_any (
+    @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
+    @"SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce",
+    @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run"
+)
+| where ActionType == "RegistryValueSet"
+| where not(InitiatingProcessFileName in~ ("svchost.exe", "MsMpEng.exe", "msiexec.exe"))
+| project TimeGenerated, DeviceName, RegistryKey, RegistryValueName, RegistryValueData, InitiatingProcessFileName
+```
+
+**T1053.005 — Scheduled Task**:
+```
+# SPL: Detect scheduled task creation
+index=wineventlog EventCode=4698
+| eval task_name=xml_decode(Task_Name)
+| eval command=xml_decode(Command)
+| where NOT (match(task_name, "Microsoft|Windows|MicrosoftEdge"))
+| stats count by Computer, task_name, command, User, _time
+```
+
+### 2.4 Privilege Escalation (TA0004)
+
+**T1055 — Process Injection**:
+```
+# KQL: Abnormal memory allocation patterns
+DeviceEvents
+| where ActionType == "CreateRemoteThreadApiCall"
+| where not(InitiatingProcessFileName in~ ("svchost.exe", "csrss.exe", "lsass.exe"))
+| project TimeGenerated, DeviceName, InitiatingProcessFileName, ProcessId, FileName, RemoteUrl
+```
+
+### 2.5 Defense Evasion (TA0005)
+
+**T1036 — Masquerading**:
+```
+# SPL: Processes impersonating known system process names
+index=endpoint EventCode=4688
+| eval proc_name=lower(mvindex(split(NewProcessName, "\\"), -1))
+| where proc_name IN ("svchost.exe", "lsass.exe", "explorer.exe", "csrss.exe")
+| eval expected_path=case(
+    proc_name="svchost.exe", "c:\\windows\\system32\\svchost.exe",
+    proc_name="lsass.exe", "c:\\windows\\system32\\lsass.exe",
+    proc_name="explorer.exe", "c:\\windows\\explorer.exe",
+    true(), "unknown"
+)
+| where NOT match(lower(NewProcessName), replace(lower(expected_path), "\\\\", "\\\\\\\\"))
+| stats count by Computer, NewProcessName, ParentProcessName
+```
+
+**T1027 — Obfuscated Files/Information**:
+```
+# KQL: High-entropy PowerShell commands (Base64 encoding)
+DeviceProcessEvents
+| where FileName =~ "powershell.exe"
+| where strlen(ProcessCommandLine) > 500
+| extend b64_chunks = extract_all(@"[A-Za-z0-9+/]{100,}={0,2}", ProcessCommandLine)
+| where array_length(b64_chunks) > 0
+| project TimeGenerated, DeviceName, ProcessCommandLine
+```
+
+### 2.6 Credential Access (TA0006)
+
+**T1003.001 — LSASS Memory**:
+```
+# KQL: Detect LSASS process access
+DeviceEvents
+| where ActionType == "OpenProcessApiCall"
+| where FileName =~ "lsass.exe"
+| where not(InitiatingProcessFileName in~ ("MsMpEng.exe", "csrss.exe", "wininit.exe", "svchost.exe"))
+| project TimeGenerated, DeviceName, InitiatingProcessFileName, ProcessCommandLine
+```
+
+### 2.7 Lateral Movement (TA0008)
+
+**T1021.001 — RDP**:
+```
+# SPL: RDP access during abnormal hours
+index=wineventlog EventCode=4624 Logon_Type=10
+| eval hour=strftime(_time, "%H")
+| where hour < 6 OR hour > 22
+| stats count by src_ip, dest, Account_Name, _time
+| where count > 3
+```
+
+**T1021.002 — SMB/Windows Admin Shares**:
+```
+# KQL: PsExec pattern detection
+DeviceProcessEvents
+| where ProcessCommandLine has_any ("\\ADMIN$", "\\C$", "\\IPC$")
+| where FileName in~ ("psexec.exe", "psexesvc.exe", "paexec.exe", "remcom.exe")
+```
+
+### 2.8 Exfiltration (TA0010)
+
+**T1048 — Exfiltration Over Alternative Protocol**:
+```
+# SPL: Abnormal DNS queries (DNS tunneling)
+index=dns
+| eval query_len=len(query)
+| where query_len > 50
+| eval subdomain_count=len(split(query, ".")) - 2
+| where subdomain_count > 4
+| stats avg(query_len) as avg_len, count by src, query
+| where count > 100
+| sort - avg_len
+```
+
+---
+
+## 3. Using ATT&CK Navigator
+
+### 3.1 What is Navigator
+
+ATT&CK Navigator is a web-based tool for visualizing the MITRE ATT&CK matrix. It represents detection coverage, threat group TTPs, and hunting plans as layers.
+
+**Installation (local)**:
+```bash
+git clone https://github.com/mitre-attack/attack-navigator.git
+cd attack-navigator
+npm install
+ng serve
+```
+
+### 3.2 Layer Use Cases
+
+1. **Coverage Layer**: Show currently detectable techniques
+2. **Threat Group Layer**: Highlight techniques used by specific APTs
+3. **Comparison Layer**: Overlay coverage and threat group layers to identify gaps
+
+### 3.3 JSON Layer Format
+
+```json
+{
+  "name": "Hunt Coverage Layer",
+  "versions": {"attack": "14", "navigator": "4.9"},
+  "domain": "enterprise-attack",
+  "techniques": [
+    {
+      "techniqueID": "T1059.001",
+      "score": 100,
+      "color": "#4caf50",
+      "comment": "PowerShell Script Block Logging enabled"
+    },
+    {
+      "techniqueID": "T1003.001",
+      "score": 50,
+      "color": "#ffeb3b",
+      "comment": "Partial detection - Mimikatz only"
+    },
+    {
+      "techniqueID": "T1055",
+      "score": 0,
+      "color": "#f44336",
+      "comment": "No detection - hunting required"
+    }
+  ]
+}
+```
+
+---
+
+## 4. Campaign-Level TTP Analysis
+
+### 4.1 APT28 (Fancy Bear, Sofacy)
+
+**Background**: Under Russian GRU. Espionage targeting political, military, and intelligence agencies.
+
+**Key TTPs**:
+```
+Initial Access   : T1566 (Spearphishing), T1189 (Drive-by Compromise)
+Execution        : T1059.003 (CMD), T1106 (Native API)
+Persistence      : T1547.001 (Run Keys), T1543.003 (Windows Service)
+Defense Evasion  : T1140 (Deobfuscate), T1027 (Obfuscation)
+C2               : T1071.001 (Web Protocols), T1573 (Encrypted Channel)
+Exfiltration     : T1041 (C2 Channel), T1048.003 (Non-C2 Protocol)
+```
+
+**Characteristic Tools**: X-Agent, Sofacy, Zebrocy, Drovorub
+
+**Hunting Points**:
+- Abnormal beacon patterns over HTTPS (regular interval communications)
+- Connections from Russian IP ranges (do not use as standalone IOC)
+- Malware execution via .lnk files
+
+### 4.2 Lazarus Group (APT38)
+
+**Background**: Under North Korean Reconnaissance General Bureau. Financial institution attacks and cyber theft.
+
+**Key TTPs**:
+```
+Initial Access   : T1566.001 (Spearphishing Attachment)
+Execution        : T1059.005 (VBScript), T1059.001 (PowerShell)
+Persistence      : T1543.003 (Windows Service)
+Defense Evasion  : T1036.005 (Match Legitimate Name)
+Credential Access: T1555 (Credentials from Store)
+Lateral Movement : T1021.001 (RDP), T1570 (Lateral Tool Transfer)
+Exfiltration     : T1048 (Alternative Protocol)
+```
+
+**Characteristic Tools**: BLINDINGCAN, HOPLIGHT, ELECTRICFISH
+
+**Hunting Points**:
+- Child process spawning from financial software (SWIFT terminal) processes
+- Abnormal FTP/SFTP connections
+- Data transfer via non-standard ports
+
+### 4.3 FIN7 (Carbanak)
+
+**Background**: Financial crime organization targeting POS terminals, hotels, and restaurant chains.
+
+**Key TTPs**:
+```
+Initial Access   : T1566.001 (Spearphishing), T1566.002 (Spearphishing Link)
+Execution        : T1059.005 (VBS), T1204 (User Execution)
+Persistence      : T1053.005 (Scheduled Task)
+Collection       : T1056.001 (Keylogging), T1115 (Clipboard Data)
+Exfiltration     : T1041 (C2 Channel)
+```
+
+**Characteristic Tools**: Carbanak, GRIFFON, BOOSTWRITE
+
+**Hunting Points**:
+- Process chains initiated by VBS/JScript
+- DLL execution via `regsvr32.exe`
+- POS process memory access
+
+---
+
+## 5. Detection Validation with Atomic Red Team
+
+### 5.1 What is Atomic Red Team
+
+An open-source test library developed by Red Canary. Provides small unit (atomic) tests for each ATT&CK technique to validate detection effectiveness.
+
+**Installation**:
+```powershell
+# PowerShell (Windows)
+IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing);
+Install-AtomicRedTeam -getAtomics
+```
+
+```bash
+# Linux/macOS
+git clone https://github.com/redcanaryco/atomic-red-team.git
+pip install atomicredteam
+```
+
+### 5.2 Test Execution Examples
+
+```powershell
+# T1003.001: LSASS memory dump test
+Invoke-AtomicTest T1003.001 -ShowDetails       # View details
+Invoke-AtomicTest T1003.001 -TestNumbers 1     # Run specific test
+Invoke-AtomicTest T1003.001 -Cleanup           # Clean up
+
+# T1059.001: PowerShell encoded execution
+Invoke-AtomicTest T1059.001 -TestNumbers 1,2,3
+
+# Detection validation workflow:
+# 1. Run Atomic test -> 2. Confirm detection in SIEM -> 3. If not detected, improve rules
+```
+
+### 5.3 Detection Gap Analysis Process
+
+```
+Run Atomic Test
+       |
+Confirm event in SIEM/EDR
+       |
+Detected? --YES--> Existing detection rule valid -> Record coverage
+       |
+      NO
+       |
+Log exists? --YES--> Detection rule missing -> Write new rule
+       |
+      NO
+       |
+Insufficient logging config -> Improve log collection settings
+```
+
+---
+
+## 6. Python: ATT&CK API Query and TTP Mapping Tool
+
+```python
+#!/usr/bin/env python3
+"""
+MITRE ATT&CK API Query and TTP Mapping CLI Tool
+Dependencies: pip install requests
+
+Usage: python3 attack_mapper.py [command] [options]
+"""
+
+import argparse
+import json
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+from typing import Any, Optional
+from urllib.request import urlopen, Request
+from urllib.error import URLError, HTTPError
+from urllib.parse import urlencode
+
+ATTACK_STIX_URL = "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json"
+CACHE_PATH = Path.home() / ".threat_hunting" / "attack_cache.json"
+CACHE_MAX_AGE_HOURS = 24
+
+# Threat group TTP data (offline reference)
+KNOWN_GROUPS: dict[str, dict[str, Any]] = {
+    "APT28": {
+        "alias": ["Fancy Bear", "Sofacy", "Pawn Storm"],
+        "country": "Russia",
+        "sector": ["Government", "Military", "Political"],
+        "techniques": [
+            "T1566", "T1189", "T1059.003", "T1106", "T1547.001",
+            "T1543.003", "T1140", "T1027", "T1071.001", "T1573",
+            "T1041", "T1048.003", "T1003", "T1056",
+        ],
+    },
+    # ... (same structure for other groups)
+}
+
+def fetch_attack_data(force_refresh: bool = False) -> dict:
+    """Load ATT&CK STIX data (cache-first)."""
+    if not force_refresh:
+        cached = _load_cache()
+        if cached:
+            print("[*] Using cached ATT&CK data")
+            return cached
+
+    print("[*] Downloading ATT&CK STIX data... (may take a moment)")
+    try:
+        req = Request(ATTACK_STIX_URL, headers={"User-Agent": "ThreatHunter/1.0"})
+        with urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        _save_cache(data)
+        print("[+] ATT&CK data download complete")
+        return data
+    except (URLError, HTTPError) as e:
+        print(f"[ERROR] Failed to download ATT&CK data: {e}", file=sys.stderr)
+        print("[*] Switching to offline mode.", file=sys.stderr)
+        return {}
+```
+
+---
+
+## 7. Best Practices for Writing Hunting Queries
+
+### 7.1 Principles for Effective ATT&CK-Based Queries
+
+1. **Start with specific techniques**: Target specific sub-techniques rather than broad detection
+2. **Include context**: Consider process hierarchy, user context, and time of day
+3. **Use whitelists**: Exclude known legitimate behaviors to reduce noise
+4. **Compare to baselines**: Detect anomalies by measuring deviation from averages
+5. **Correlate multiple data sources**: Improve confidence with multi-source correlation vs. single source
+
+### 7.2 TTP Coverage Prioritization Matrix
+
+| Technique | Attack Frequency | Impact Severity | Current Coverage | Priority |
+|-----------|-----------------|-----------------|-----------------|----------|
+| T1003.001 | High | High | Low | Critical |
+| T1059.001 | High | Medium | Medium | High |
+| T1055 | Medium | High | Low | High |
+| T1021.001 | High | Medium | High | Medium |
+| T1083 | High | Low | Low | Low |

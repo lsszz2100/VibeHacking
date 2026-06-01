@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # CTF 자동화와 프레임워크
 
 pwntools 고급 기능, angr 심볼릭 실행, Frida 동적 계측, 포렌식 자동화 파이프라인, CTFd API 자동화까지 CTF를 체계적으로 공략하는 자동화 기법을 다룬다.
@@ -621,3 +627,125 @@ curl -X POST $DISCORD_WEBHOOK \
     -H "Content-Type: application/json" \
     -d '{"content": "🚩 **login_bypass** 풀이 완료!\nCTF{flag_here}"}'
 ```
+
+---
+
+<a name="english"></a>
+
+# CTF Automation and Frameworks
+
+This document covers advanced pwntools features, angr symbolic execution, Frida dynamic instrumentation, forensics automation pipelines, and CTFd API automation for a systematic approach to CTF challenges.
+
+---
+
+## 1. Advanced pwntools Features
+
+### 1.1 DynELF — Runtime libc Symbol Resolution
+
+`DynELF` resolves libc symbols dynamically at runtime using only a memory leak function. Provide any function that reads arbitrary memory addresses and DynELF will identify `system` and `/bin/sh` without a local copy of the target libc.
+
+### 1.2 gdb.attach() Debugging Integration
+
+The `gdb.attach()` API attaches GDB to a running process and executes a GDB script automatically. Combined with pwndbg, this enables:
+- Setting conditional breakpoints
+- Memory watchpoints
+- Automated register/stack inspection
+
+### 1.3 Advanced ROP Usage
+
+The pwntools `ROP` class builds ROP chains with high-level abstractions:
+- `rop.call('puts', [got_address])` — Call a function with arguments
+- `rop.mprotect(addr, size, prot)` — Make memory executable
+- `rop.find_gadget(['pop rdi', 'ret'])` — Search for specific gadgets
+
+---
+
+## 2. angr Symbolic Execution Automation
+
+### 2.1 Flag Search Patterns
+
+angr explores all execution paths symbolically to find inputs that satisfy desired conditions (reaching a success address, printing "Correct", etc.).
+
+Key techniques:
+- **Symbolic stdin**: Inject a symbolic variable as stdin input and solve for the flag value
+- **ASCII constraints**: Constrain each byte to printable ASCII range
+- **Flag prefix constraints**: Fix known prefix bytes (e.g., `CTF{`)
+- **veritesting**: Enable mixed concrete/symbolic execution for speed
+
+```bash
+# Analyze binary for interesting functions
+python3 angr_ctf.py binary --analyze
+
+# Find flag reaching address 0x401234, avoiding 0x401500
+python3 angr_ctf.py binary --find-addr 0x401234 --avoid-addr 0x401500 --length 32 --prefix "CTF{"
+```
+
+---
+
+## 3. Frida Dynamic Instrumentation
+
+### 3.1 Android CTF Frida Scripts
+
+Frida enables real-time hooking of Java and native methods without modifying the APK:
+
+- **strcmp hooking** — Intercept string comparisons to extract flag candidates
+- **checkFlag bypass** — Force authentication checks to return true
+- **Cipher.doFinal hooking** — Log encryption/decryption inputs and outputs
+
+```bash
+# Attach to running app
+frida -U -n "com.ctf.challenge" -l script.js
+
+# Spawn app with hooks from startup
+frida -U -f "com.ctf.challenge" -l script.js --no-pause
+
+# Trace specific function calls
+frida-trace -U -i "strcmp" com.ctf.challenge
+```
+
+---
+
+## 4. Forensics Automation Pipeline
+
+The pipeline automatically:
+1. Identifies file type using `file`
+2. Extracts strings and searches for flag patterns
+3. Runs type-specific tools (exiftool/steghide/zsteg for images, tshark for pcaps, binwalk for archives)
+4. Reports all flag candidates found
+
+Supported flag formats: `CTF{...}`, `flag{...}`, custom prefixes, and raw hex hashes.
+
+```bash
+# Analyze single file
+python3 forensics_pipeline.py challenge.png
+
+# Recursively analyze directory
+python3 forensics_pipeline.py ./challenge_files/ --recursive
+```
+
+---
+
+## 5. CTFd API Automation
+
+The `CTFdClient` provides a programmatic interface to CTFd platforms:
+
+```bash
+# View unsolved challenges
+python3 ctfd_client.py --url https://ctf.example.com --token <token> status
+
+# Show scoreboard
+python3 ctfd_client.py --url https://ctf.example.com --token <token> scoreboard
+
+# Submit a flag
+python3 ctfd_client.py --url https://ctf.example.com --token <token> submit 42 "CTF{flag_here}"
+```
+
+---
+
+## 6. Team Collaboration Workflow
+
+Recommended team CTF workflow:
+1. **Shared notes repo** — Track challenge status and writeups in Git
+2. **Category directories** — Separate workspaces per challenge
+3. **tmux sessions** — Share shell sessions for real-time collaboration
+4. **Discord webhooks** — Automatically broadcast flag submissions to the team channel

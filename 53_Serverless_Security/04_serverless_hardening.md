@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 서버리스 보안 강화 — SAST·런타임 보호·자동 감사
 
 ## 1. 서버리스 보안 아키텍처
@@ -449,3 +455,112 @@ if __name__ == "__main__":
 | 동시성 | Reserved Concurrency 제한 | 권장 |
 | WAF | API Gateway WAF 연동 | 권장 |
 | GuardDuty | Lambda 보호 기능 활성화 | 권장 |
+
+---
+
+<a name="english"></a>
+
+# Serverless Security Hardening — SAST, Runtime Protection, and Automated Auditing
+
+## 1. Serverless Security Architecture
+
+Security controls are applied at three stages:
+
+**Development (Shift-Left):** IDE plugins → Git hooks → CI/CD SAST → dependency auditing
+
+**Deployment:** IaC scanning (cfn-guard/checkov) → code signing → vulnerable package blocking → IAM least-privilege verification
+
+**Runtime:** AWS Lambda Insights → X-Ray tracing → GuardDuty Lambda Protection → CloudTrail auditing
+
+---
+
+## 2. IaC Security Scanning (Terraform/CloudFormation)
+
+### 2.1 Checkov Lambda Configuration Scan
+
+Key Checkov checks for Lambda:
+- `CKV_AWS_50` — X-Ray tracing enabled
+- `CKV_AWS_116` — Dead Letter Queue configured
+- `CKV_AWS_117` — Deployed inside a VPC
+- `CKV_AWS_272` — Code signing configured
+
+### 2.2 Secure Terraform Lambda Configuration
+
+The secure Terraform template demonstrates all required hardening settings:
+
+| Setting | Security Purpose |
+|---------|-----------------|
+| `kms_key_arn` | Encrypts environment variables at rest |
+| `vpc_config` | Isolates function from public internet |
+| `tracing_config { mode = "Active" }` | Enables X-Ray distributed tracing |
+| `dead_letter_config` | Captures failed invocations for investigation |
+| `code_signing_config_arn` | Prevents unauthorized code deployment |
+| `reserved_concurrent_executions` | Limits blast radius of DoS attacks |
+| `permissions_boundary` | Caps maximum IAM permissions |
+
+---
+
+## 3. Serverless SAST CI/CD Integration
+
+The GitHub Actions workflow runs four parallel security checks on every push:
+
+1. **pip-audit + safety** — checks for known CVEs in Python dependencies
+2. **Semgrep** — runs SAST rules for Python, AWS Lambda, and OWASP Top 10
+3. **Checkov** — scans Terraform IaC for misconfigurations, outputs SARIF
+4. **Bandit** — Python-specific security linter targeting common vulnerabilities
+
+Results are uploaded to GitHub's security dashboard via the CodeQL SARIF upload action.
+
+---
+
+## 4. Runtime Protection — Lambda Extension
+
+The Lambda Extension registers itself with the Lambda Runtime API to receive `INVOKE` and `SHUTDOWN` lifecycle events. On each invocation, it checks `/proc/net/tcp` for active network connections to the EC2 Instance Metadata Service (169.254.169.254), which may indicate an SSRF attack attempting to steal IAM credentials.
+
+Security events are emitted as structured JSON logs to CloudWatch Logs, where they can trigger alarms or be processed by SIEM systems.
+
+---
+
+## 5. Automated Serverless Security Audit CLI
+
+The audit CLI scores each Lambda function from 100 points, deducting points for missing security controls:
+
+| Check | Deduction | Severity |
+|-------|-----------|----------|
+| X-Ray tracing disabled | -10 | FAIL |
+| No Dead Letter Queue | -10 | FAIL |
+| Not in VPC | -5 | WARN |
+| No KMS encryption | -15 | FAIL |
+| No concurrency limit | -5 | WARN |
+| No code signing | -10 | WARN |
+| Deprecated runtime | -15 | FAIL |
+
+Grade thresholds: A ≥ 90, B ≥ 80, C ≥ 70, D < 70
+
+**Usage:**
+```bash
+# Audit specific functions
+python3 serverless_audit.py my-function-1 my-function-2 --region us-east-1
+
+# Audit all functions, fail CI if any score below 80
+python3 serverless_audit.py --fail-below 80 -o audit_results.json
+```
+
+---
+
+## 6. Serverless Security Checklist
+
+| Category | Item | Priority |
+|----------|------|----------|
+| IAM | Dedicated role per function, least privilege | Required |
+| Encryption | KMS encryption for environment variables | Required |
+| Secrets | Use Secrets Manager | Required |
+| Runtime | Use latest supported version | Required |
+| Dependencies | Regular pip-audit/Snyk scans | Required |
+| Code Signing | Sign and verify deployed code | Recommended |
+| VPC | Isolate sensitive resources inside VPC | Recommended |
+| X-Ray | Enable request tracing | Recommended |
+| DLQ | Dead Letter Queue for failed events | Recommended |
+| Concurrency | Set Reserved Concurrency limit | Recommended |
+| WAF | Integrate WAF with API Gateway | Recommended |
+| GuardDuty | Enable Lambda Protection feature | Recommended |

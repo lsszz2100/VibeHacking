@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 스마트 컨트랙트 감사
 
 스마트 컨트랙트는 한번 배포하면 수정이 불가능하다. 취약점이 있으면 수억 달러의 자산이 탈취될 수 있고, 이는 실제로 반복적으로 발생해왔다. 이 문서는 스마트 컨트랙트의 주요 취약점 분류, 자동화 감사 도구, Python 기반 감사 파이프라인을 다룬다.
@@ -481,3 +487,165 @@ forge test -vvv --match-test test_reentrancy
 | 랜덤 | block.timestamp/blockhash 의존 | Slither (weak-prng) |
 | 이벤트 | 중요 상태 변경 이벤트 발생 여부 | 수동 검토 |
 | 입력 검증 | 주소 0 체크, 범위 검사 | 수동 검토 |
+
+---
+
+<a name="english"></a>
+
+# Smart Contract Auditing
+
+Smart contracts cannot be modified once deployed. Vulnerabilities can result in hundreds of millions of dollars in stolen assets, and this has happened repeatedly in practice. This document covers the major vulnerability classifications in smart contracts, automated audit tools, and Python-based audit pipelines.
+
+---
+
+## 1. Core Vulnerability Classification (SWC-based)
+
+### 1.1 Reentrancy Attack — SWC-107
+
+The Checks-Effects-Interactions (CEI) pattern violation enables attackers to repeatedly call back into a function before state changes are committed.
+
+**Vulnerable code:**
+```solidity
+function withdraw(uint256 amount) external {
+    require(balances[msg.sender] >= amount, "insufficient");
+    // ❌ External call before state change → reentrancy possible
+    (bool ok, ) = msg.sender.call{value: amount}("");
+    require(ok, "transfer failed");
+    balances[msg.sender] -= amount;  // Already re-entered by now
+}
+```
+
+**Secure code (CEI pattern):**
+```solidity
+function withdraw(uint256 amount) external {
+    require(balances[msg.sender] >= amount, "insufficient");
+    // ✅ State change first (Checks-Effects-Interactions)
+    balances[msg.sender] -= amount;
+    (bool ok, ) = msg.sender.call{value: amount}("");
+    require(ok, "transfer failed");
+}
+```
+
+### 1.2 Integer Overflow/Underflow — SWC-101
+
+In Solidity versions prior to 0.8.x, arithmetic lacks overflow/underflow checks. The solution is to use SafeMath or Solidity 0.8.x (which has built-in checks).
+
+### 1.3 tx.origin Authentication Bypass — SWC-115
+
+`tx.origin` is the original EOA, while `msg.sender` is the direct caller. Using `tx.origin` for authentication allows phishing attacks via malicious intermediary contracts.
+
+**Fix:** Use `msg.sender` instead of `tx.origin`.
+
+### 1.4 delegatecall Misuse — SWC-112
+
+Storage slot collision in proxy patterns can allow attackers to overwrite critical contract state, as seen in the Parity Multisig Hack (2017, $30M).
+
+### 1.5 Insufficient Access Control — SWC-105
+
+Initialization functions exposed as `external` without access control allow anyone to claim ownership.
+
+### 1.6 Other Key Vulnerabilities
+
+| SWC ID | Vulnerability | Description |
+|--------|--------------|-------------|
+| SWC-103 | Floating Pragma | Compiler version not fixed |
+| SWC-104 | Unchecked Call Return | call() return value not checked |
+| SWC-106 | Unprotected SELFDESTRUCT | Arbitrary destruction possible |
+| SWC-116 | Block Timestamp Manipulation | block.timestamp can be manipulated |
+| SWC-120 | Weak Sources of Randomness | blockhash-based randomness |
+
+---
+
+## 2. Automated Audit Tools
+
+### 2.1 Slither
+
+```bash
+# Install
+pip install slither-analyzer
+
+# Basic audit
+slither contract.sol
+
+# Run specific detectors only
+slither contract.sol --detect reentrancy-eth,controlled-delegatecall
+
+# JSON output
+slither contract.sol --json output.json
+
+# Print inheritance graph
+slither contract.sol --print inheritance-graph
+
+# Print function summary
+slither contract.sol --print function-summary
+```
+
+### 2.2 Mythril
+
+```bash
+# Install
+pip install mythril
+
+# Symbolic execution analysis
+myth analyze contract.sol --solv 0.8.19
+
+# Analyze on-chain contract
+myth analyze -a 0xContractAddress --rpc https://mainnet.infura.io/v3/KEY
+
+# JSON report
+myth analyze contract.sol -o json
+```
+
+### 2.3 Echidna (Fuzzing)
+
+Echidna uses property-based testing to find invariant violations in smart contracts. Define invariants as functions that return bool, then let Echidna try to falsify them.
+
+---
+
+## 3. Foundry PoC Patterns
+
+```solidity
+// Reentrancy Attack PoC (Foundry Test)
+contract ReentrancyPoC is Test {
+    VulnerableBank bank;
+
+    function setUp() public {
+        bank = new VulnerableBank();
+        deal(makeAddr("victim"), 10 ether);
+        vm.prank(makeAddr("victim"));
+        bank.deposit{value: 10 ether}();
+    }
+
+    function test_reentrancy() public {
+        AttackContract atk = new AttackContract(address(bank));
+        deal(address(atk), 1 ether);
+        
+        uint256 bankBefore = address(bank).balance;
+        atk.attack{value: 1 ether}();
+        uint256 stolen = bankBefore - address(bank).balance;
+        
+        console.log("Stolen:", stolen / 1e18, "ETH");
+        assertGt(stolen, 1 ether, "Reentrancy attack succeeded");
+    }
+}
+```
+
+```bash
+# Run
+forge test -vvv --match-test test_reentrancy
+```
+
+---
+
+## 4. Audit Checklist
+
+| Category | Check Item | Tool |
+|----------|-----------|------|
+| Reentrancy | State change before external call | Slither (reentrancy-eth) |
+| Access control | Sensitive function modifier check | Slither (suicidal, controlled-delegatecall) |
+| Arithmetic | unchecked block misuse | Slither (integer-overflow) |
+| Gas | SSTORE in loop, DoS possibility | Manual review |
+| Upgrade | Proxy slot collision check | Slither (uninitialized-local) |
+| Randomness | block.timestamp/blockhash dependency | Slither (weak-prng) |
+| Events | Key state change events emitted | Manual review |
+| Input validation | Zero address check, range validation | Manual review |

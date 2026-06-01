@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 브라우저 샌드박스 탈출
 
 ## 1. Chromium 샌드박스 아키텍처
@@ -699,3 +705,380 @@ if __name__ == "__main__":
 - seccomp-bpf 공식 문서 (https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html)
 - Project Zero: Browser Sandbox Escapes (https://googleprojectzero.blogspot.com/)
 - Mojo IPC 보안 모델 (https://chromium.googlesource.com/chromium/src/+/HEAD/mojo/docs/security.md)
+
+---
+
+<a name="english"></a>
+
+# Browser Sandbox Escape
+
+## 1. Chromium Sandbox Architecture
+
+### 1.1 Overview
+
+The Chromium sandbox provides OS-level isolation to prevent the renderer process from directly accessing the system. Even if an attacker exploits a JavaScript engine vulnerability in the renderer to achieve arbitrary code execution, a real attack against the OS is impossible without escaping the sandbox.
+
+### 1.2 Linux Chromium Sandbox Layers
+
+```
+[User Space Process]
+        ↓
+  Namespace Isolation
+  (user, pid, net, mnt, ipc namespace)
+        ↓
+  seccomp-bpf filter
+  (blocks syscalls not on the allowed list)
+        ↓
+  Zygote Process
+  (spawns renderer via fork(), minimizes privileges)
+        ↓
+  Renderer Process
+  (No root, No ptrace, limited file access)
+```
+
+### 1.3 Per-Component Sandbox Details
+
+| Component | Linux Isolation | Windows Isolation | macOS Isolation |
+|----------|-----------------|-------------------|-----------------|
+| Renderer | seccomp-bpf, user ns | Restricted Token, Job Object | Sandbox profile, App Sandbox |
+| GPU Process | seccomp-bpf (relaxed) | Restricted Token | GPU sandbox profile |
+| Network Service | seccomp-bpf, network ns | Restricted Token | App Sandbox |
+| Utility Process | seccomp-bpf | Restricted Token | App Sandbox |
+| PDF Plugin | seccomp-bpf | Restricted Token | App Sandbox |
+| Browser Process | Not applied | High privilege | Not applied |
+
+### 1.4 Zygote Process Model
+
+On Linux, Chromium uses the Zygote process to create renderers. Zygote pre-loads necessary libraries, creates the renderer via `fork()`, and immediately applies the sandbox. This architecture itself can be an attack surface.
+
+```
+Browser Process
+    ↓ (IPC: "new renderer needed")
+Zygote Process
+    ↓ fork()
+Renderer Process
+    ↓ apply seccomp-bpf
+Isolated renderer execution
+```
+
+### 1.5 seccomp-bpf Filter Structure
+
+seccomp-bpf uses BPF (Berkeley Packet Filter) programs to inspect syscall numbers and arguments. The major syscalls allowed in the renderer process are extremely limited.
+
+**Major syscalls allowed in the renderer (Linux x86_64):**
+
+| syscall | Allowed | Restriction |
+|---------|-----------|-----------|
+| read | Allowed | Only on open fds |
+| write | Allowed | stdout/stderr + pipe |
+| mmap | Conditional | PROT_EXEC restricted |
+| mprotect | Conditional | PROT_EXEC restricted |
+| futex | Allowed | - |
+| clock_gettime | Allowed | - |
+| exit / exit_group | Allowed | - |
+| sendmsg / recvmsg | Allowed | For Mojo IPC |
+| open / openat | Denied | - |
+| socket | Denied | - |
+| execve / execveat | Denied | - |
+| fork / clone | Denied | - |
+| ptrace | Denied | - |
+| keyctl | Denied | - |
+
+---
+
+## 2. Sandbox Escape Technique Classification
+
+### 2.1 Comprehensive Escape Technique Classification Table
+
+| Technique Category | Specific Technique | Prerequisites | Risk | Defense |
+|-----------|-----------|-----------|--------|-----------|
+| IPC Vulnerability | Mojo message handling bug | Renderer code execution | Critical | IPC interface fuzzing, validation hardening |
+| IPC Vulnerability | DXVA / GPU IPC error | Renderer code execution | High | GPU sandbox hardening |
+| Kernel Vulnerability | seccomp bypass syscall | Renderer code execution | Critical | Kernel patches, reduce seccomp allowlist |
+| Kernel Vulnerability | user namespace escape | Renderer code execution | High | Namespace privilege restrictions |
+| GPU Process | GPU driver vulnerability | Renderer→GPU IPC | High | GPU isolation hardening |
+| GPU Process | WebGL shader parser | GPU context | Medium | Shader validation |
+| Extension | Extension API vulnerability | Malicious extension installed | High | MV3, permission reduction |
+| Native Library | libpdf, libwebp parser | Induce file open | Medium-High | Library isolation |
+| Logic Vulnerability | CORS/SOP bypass for sensitive data | Web access | Medium | Policy hardening |
+| Side Channel | Spectre (timer-based cache measurement) | JS execution | Medium | Reduce timer resolution |
+
+### 2.2 Mojo IPC Vulnerability Details
+
+Mojo is Chromium's internal IPC framework that handles communication between the renderer and browser process. If a renderer can send malicious Mojo messages to the browser process, code execution in the browser process is possible.
+
+**Mojo vulnerability patterns:**
+- Integer overflow causing incorrect message size calculation
+- UAF: callback releases interface during message handling
+- TOCTOU: tampering between message parameter validation and actual use
+- Type confusion: reinterpreting InterfacePtr as a different interface
+
+---
+
+## 3. Real Escape CVE Cases and Patches
+
+### 3.1 Major Sandbox Escape CVE Analysis Table
+
+| CVE | Year | Vulnerability Location | Technique | CVSS | Patch |
+|-----|------|-------------|------|------|-----------|
+| CVE-2019-13764 | 2019 | Chrome IPC | Mojo UAF | 9.6 | Fixed browser-side interface lifetime management |
+| CVE-2020-6507 | 2020 | V8 + Sandbox | OOB → IPC manipulation | 9.6 | V8 bounds check, IPC validation hardening |
+| CVE-2021-21206 | 2021 | Chrome (Blink) | UAF in Blink | 8.8 | Fixed renderer-browser IPC object lifetime |
+| CVE-2021-30633 | 2021 | Chrome Indexed DB | UAF | 9.6 | Fixed IndexedDB IPC handler |
+| CVE-2022-2856 | 2022 | Chrome Intents | Insufficient input validation | 8.8 | Hardened URL Intent processing filter |
+| CVE-2022-3075 | 2022 | Mojo | Insufficient data validation | 9.6 | Mojo input validation patch |
+| CVE-2023-2033 | 2023 | V8 + IPC | Type confusion | 8.8 | JIT and IPC fix |
+| CVE-2023-3079 | 2023 | V8 | Type confusion (ITW) | 8.8 | V8 Map transition validation |
+| CVE-2023-5217 | 2023 | libvpx (VP8) | Heap buffer overflow | 8.8 | libvpx update |
+| CVE-2024-0519 | 2024 | V8 | OOB memory access (ITW) | 7.5 | Added V8 bounds check |
+
+### 3.2 Before/After Patch Comparison (CVE-2022-3075)
+
+**Before patch — Missing Mojo message size validation:**
+```cpp
+// Vulnerable code (conceptual example)
+void HandleMessage(const MojoMessage& msg) {
+    size_t len = msg.data_size;  // Trusts size provided by renderer
+    memcpy(buffer, msg.data, len);  // OOB write possible
+}
+```
+
+**After patch — Validation added:**
+```cpp
+void HandleMessage(const MojoMessage& msg) {
+    if (msg.data_size > kMaxAllowedSize) {
+        mojo::ReportBadMessage("Message size exceeded");
+        return;
+    }
+    memcpy(buffer, msg.data, msg.data_size);
+}
+```
+
+---
+
+## 4. Python CLI: Sandbox Escape Detection Monitor
+
+```python
+#!/usr/bin/env python3
+"""
+Sandbox Escape Detection Monitor
+Monitors /proc information of browser renderer processes to detect
+abnormal behavior. Linux only.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shlex
+import subprocess
+import sys
+import time
+from dataclasses import dataclass, field, asdict
+from pathlib import Path
+
+
+@dataclass
+class ProcessInfo:
+    pid:         int
+    ppid:        int
+    name:        str
+    state:       str
+    uid:         int
+    gid:         int
+    threads:     int
+    vm_rss_kb:   int
+    seccomp:     int   # 0=none, 1=strict, 2=filter
+    ns_pid:      str
+    ns_net:      str
+    ns_mnt:      str
+    ns_user:     str
+    cmdline:     str
+
+
+@dataclass
+class Alert:
+    timestamp:   float
+    pid:         int
+    alert_type:  str
+    detail:      str
+    severity:    str  # CRITICAL / HIGH / MEDIUM / LOW
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    def pretty(self) -> str:
+        ts  = time.strftime("%H:%M:%S", time.localtime(self.timestamp))
+        return (f"[{ts}] [{self.severity}] PID={self.pid} "
+                f"type={self.alert_type} — {self.detail}")
+
+
+@dataclass
+class MonitorState:
+    pid:               int
+    known_children:    set[int] = field(default_factory=set)
+    last_ns:           dict[str, str] = field(default_factory=dict)
+    last_seccomp:      int = -1
+    baseline_uid:      int = -1
+    alerts:            list[Alert] = field(default_factory=list)
+
+
+def check_seccomp_disabled(info: ProcessInfo, state: MonitorState) -> Alert | None:
+    """Generate alert if seccomp filter is disabled."""
+    if state.last_seccomp == -1:
+        state.last_seccomp = info.seccomp
+        return None
+    if state.last_seccomp >= 1 and info.seccomp == 0:
+        return Alert(
+            timestamp=time.time(),
+            pid=info.pid,
+            alert_type="SECCOMP_DISABLED",
+            detail=f"seccomp state changed {state.last_seccomp} → 0 (suspected sandbox removal)",
+            severity="CRITICAL",
+        )
+    state.last_seccomp = info.seccomp
+    return None
+
+
+def check_namespace_change(info: ProcessInfo, state: MonitorState) -> list[Alert]:
+    """Generate alert if namespace inode has changed."""
+    alerts: list[Alert] = []
+    current_ns = {
+        "pid": info.ns_pid,
+        "net": info.ns_net,
+        "mnt": info.ns_mnt,
+        "user": info.ns_user,
+    }
+    for ns_type, ns_id in current_ns.items():
+        prev = state.last_ns.get(ns_type)
+        if prev is None:
+            state.last_ns[ns_type] = ns_id
+            continue
+        if prev != ns_id and prev != "unknown" and ns_id != "unknown":
+            alerts.append(
+                Alert(
+                    timestamp=time.time(),
+                    pid=info.pid,
+                    alert_type="NAMESPACE_CHANGE",
+                    detail=f"{ns_type} namespace changed: {prev} → {ns_id} (possible escape attempt)",
+                    severity="CRITICAL",
+                )
+            )
+            state.last_ns[ns_type] = ns_id
+    return alerts
+
+
+def check_uid_change(info: ProcessInfo, state: MonitorState) -> Alert | None:
+    """Generate alert if UID escalates to 0 (root)."""
+    if state.baseline_uid == -1:
+        state.baseline_uid = info.uid
+        return None
+    if state.baseline_uid != 0 and info.uid == 0:
+        return Alert(
+            timestamp=time.time(),
+            pid=info.pid,
+            alert_type="UID_ESCALATION",
+            detail=f"UID escalated from {state.baseline_uid} → 0 (root)",
+            severity="CRITICAL",
+        )
+    return None
+
+
+def check_unexpected_children(pid: int, state: MonitorState) -> list[Alert]:
+    """Detect unexpected child process creation. Renderers normally don't spawn children."""
+    alerts: list[Alert] = []
+    # (implementation reads /proc for child PIDs)
+    return alerts
+
+
+def check_high_memory(info: ProcessInfo, threshold_mb: int = 2048) -> Alert | None:
+    """Alert if RSS memory exceeds threshold — possible heap spray."""
+    rss_mb = info.vm_rss_kb // 1024
+    if rss_mb > threshold_mb:
+        return Alert(
+            timestamp=time.time(),
+            pid=info.pid,
+            alert_type="HIGH_MEMORY_USAGE",
+            detail=f"RSS={rss_mb}MB > threshold {threshold_mb}MB (suspected heap spray)",
+            severity="MEDIUM",
+        )
+    return None
+
+
+def main() -> None:
+    if sys.platform != "linux":
+        print("[!] This tool only works on Linux.", file=sys.stderr)
+        sys.exit(1)
+
+    parser = argparse.ArgumentParser(
+        prog="sandbox_monitor",
+        description="Sandbox Escape Detection Monitor — /proc-based browser renderer surveillance",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Monitor Chrome renderer PID 12345
+  python3 03_sandbox_escape.py --pid 12345
+
+  # 0.5 second interval, run script on alert, record log
+  python3 03_sandbox_escape.py --pid 12345 \\
+      --watch-interval 0.5 \\
+      --alert-command "/usr/local/bin/send_alert.sh" \\
+      --log-file /var/log/sandbox_monitor.jsonl
+
+Note: Some /proc entries are inaccessible without root privileges.
+      Linux-only tool.
+        """,
+    )
+    parser.add_argument("--pid", type=int, required=True,
+                        help="PID of the browser renderer process to monitor")
+    parser.add_argument("--watch-interval", type=float, default=1.0,
+                        help="Check interval in seconds (default: 1.0)")
+    parser.add_argument("--alert-command", type=str, default="",
+                        help="External command to run on alert (ALERT_TYPE, ALERT_PID env vars passed)")
+    parser.add_argument("--log-file", type=Path, default=None,
+                        help="File path to save alerts in JSONL format")
+    args = parser.parse_args()
+
+    print(f"[+] Monitoring PID {args.pid} (interval: {args.watch_interval}s)")
+    print(f"    Watching /proc/{args.pid}/status, namespace, seccomp...")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. In-Depth Sandbox Escape Defense Strategies
+
+### 5.1 Renderer-Side Defenses
+
+| Defense Technique | Description | Implementation Status |
+|-----------|------|-----------|
+| seccomp-bpf minimization | Continuously reduce allowed syscall list | Chrome: continuously hardening |
+| ASLR + PIE | Unpredictable memory addresses | Default applied |
+| CFI (Control Flow Integrity) | Control flow integrity | Partially applied |
+| Stack Canary | Stack overflow detection | Default applied |
+| RELRO | Prevent GOT writes | Full RELRO |
+| Fortify Source | libc function bounds checking | Applied |
+
+### 5.2 IPC-Side Defenses
+
+| Defense Technique | Description |
+|-----------|------|
+| Mojo interface auditing | Input validation for all IPC interfaces |
+| ReportBadMessage | Terminate renderer on invalid message receipt |
+| Structured data | No raw pointer passing |
+| Privilege minimization | Each IPC interface requests only necessary privileges |
+
+---
+
+## 6. References
+
+- Chromium Sandbox Design (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/sandboxing.md)
+- "Breaking the Browser Sandbox" — Black Hat 2012
+- seccomp-bpf official docs (https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html)
+- Project Zero: Browser Sandbox Escapes (https://googleprojectzero.blogspot.com/)
+- Mojo IPC Security Model (https://chromium.googlesource.com/chromium/src/+/HEAD/mojo/docs/security.md)

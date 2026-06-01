@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 02. 펌웨어 분석 심화 (Firmware Analysis)
 
 ## 개요
@@ -1038,6 +1044,330 @@ checksec --file=/tmp/squashfs_root/usr/sbin/httpd
 # RELRO, STACK CANARY, NX, PIE, RPATH 확인
 
 # strings + grep 자동화
+strings -n 8 squashfs_root/usr/bin/cli | \
+    grep -iE "(password|secret|admin|root|key)" | \
+    sort -u > /tmp/cli_strings.txt
+```
+
+---
+
+<a name="english"></a>
+
+# 02. Advanced Firmware Analysis
+
+## Overview
+
+Firmware analysis is central to IoT security assessment. Understand the structure with binwalk, extract the filesystem, then combine static analysis (strings, Ghidra) with dynamic analysis (QEMU emulation). Goals: detect hardcoded credentials, private keys, weak configurations, and backdoors.
+
+---
+
+## 1. Firmware Collection Methods
+
+```bash
+# 1. Public source — download from vendor website
+wget https://www.vendor.com/firmware/router_v1.0.bin
+
+# 2. Extract from device — after UART/SSH access
+dd if=/dev/mtd0 of=/tmp/firmware.bin bs=1M
+# Or
+cat /proc/mtd                # Check MTD partition list
+dd if=/dev/mtdblock0 of=/tmp/boot.bin
+
+# 3. Capture OTA update traffic (MITM)
+mitmproxy --mode transparent --listen-port 8080
+# Intercept HTTP OTA updates with Burp Suite
+
+# 4. Direct SPI flash dump
+flashrom -p ch341a_spi -r firmware_dump.bin
+binwalk --dd='.*' firmware_dump.bin  # Extract all signatures
+
+# 5. JTAG memory dump (OpenOCD)
+openocd -f interface/jlink.cfg -f target/at91sam9.cfg
+# telnet localhost 4444
+# > dump_image /tmp/full_dump.bin 0x20000000 0x4000000
+```
+
+---
+
+## 2. Advanced binwalk Analysis
+
+### 2.1 Step-by-Step Analysis Commands
+
+```bash
+# Step 1: Identify file type and structure
+binwalk firmware.bin
+
+# Step 2: Entropy analysis (encrypted area = high entropy)
+binwalk --entropy firmware.bin
+binwalk -E --save firmware.bin  # Save PNG graph
+
+# Step 3: Hex + raw signature scan
+binwalk --raw='\x68\x73\x71\x73' firmware.bin  # squashfs magic bytes
+
+# Step 4: Extraction (DD mode — extract all matches)
+binwalk --dd='.*' firmware.bin
+
+# Step 5: Recursive extraction (handle nested compression)
+binwalk -Me firmware.bin  # -M: recursive, -e: extract
+
+# Step 6: Manual extraction from specific offset
+dd if=firmware.bin bs=1 skip=1048576 of=squashfs.img
+unsquashfs squashfs.img
+
+# Save log
+binwalk -Me firmware.bin 2>&1 | tee binwalk_output.log
+```
+
+### 2.2 Handling Different Filesystems
+
+```bash
+# SquashFS
+unsquashfs -d ./squashfs_root squashfs.img
+file squashfs.img
+# Non-standard SquashFS (LZMA compressed, modified magic)
+sasquatch squashfs.img  # sasquatch from firmware-mod-kit
+
+# CramFS
+fsck.cramfs cramfs.img
+mount -o loop,ro cramfs.img /mnt/cramfs
+
+# JFFS2 (NAND flash)
+jefferson jffs2.img -d /tmp/jffs2_extracted
+
+# YAFFS2
+unyaffs yaffs2.img /tmp/yaffs2_extracted
+
+# ext2/3/4
+e2fsck -f ext4.img
+mount -o loop,ro ext4.img /mnt/ext4
+
+# UBIFS
+ubireader_extract_images ubifs.img
+ubireader_extract_files ubifs.img
+
+# initramfs/cpio
+mkdir /tmp/initramfs && cd /tmp/initramfs
+zcat initramfs.cpio.gz | cpio -idmv
+# Or
+cpio -idmv < initramfs.cpio
+
+# Auto-detect compression type
+file firmware.bin
+strings firmware.bin | grep -E "(squashfs|cramfs|jffs2|ext[234])"
+```
+
+---
+
+## 3. Static Analysis
+
+### 3.1 strings Analysis
+
+```bash
+# Basic strings analysis
+strings -n 8 squashfs_root/bin/busybox | head -100
+
+# Search for credential patterns
+strings firmware.bin | grep -iE \
+    "(password|passwd|secret|key|token|api_key|private)" | sort -u
+
+# Extract IP addresses
+strings firmware.bin | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u
+
+# Extract URLs
+strings firmware.bin | grep -oE 'https?://[^\s"]+' | sort -u
+
+# Base64 encoded data
+strings firmware.bin | grep -oE '[A-Za-z0-9+/]{30,}={0,2}' | \
+    while read b64; do
+        decoded=$(echo "$b64" | base64 -d 2>/dev/null | strings -n 4)
+        [ -n "$decoded" ] && echo "B64: $b64 → $decoded"
+    done
+
+# Dump strings from all binaries in filesystem
+find squashfs_root/ -type f -executable | \
+    xargs -I{} strings -n 8 {} 2>/dev/null | \
+    grep -iE "(admin|root|pass|key|secret)" | sort -u
+```
+
+### 3.2 Ghidra Analysis
+
+```bash
+# Ghidra headless analysis (automated)
+$GHIDRA_HOME/support/analyzeHeadless \
+    /tmp/ghidra_project MyProject \
+    -import squashfs_root/usr/sbin/httpd \
+    -postScript PrintFunctionNames.java \
+    -scriptPath /path/to/scripts \
+    -deleteProject
+
+# Search for common vulnerable functions (Ghidra Python)
+# Find system() / strcpy() / sprintf() calls via GhidraScript:
+# from ghidra.app.script import GhidraScript
+# refs = getReferencesTo(toAddr(0x...))
+
+# radare2 alternative
+r2 -A squashfs_root/bin/busybox
+# > afl            — function list
+# > pdf @sym.main  — disassemble main function
+# > /ca system     — find system() call locations
+# > iz             — string list
+
+# rizin (radare2 fork)
+rizin -A squashfs_root/usr/sbin/httpd
+# > afl~http       — http-related functions
+# > pdg @sym.handle_cgi  — Ghidra-style decompile
+```
+
+### 3.3 Certificate and Key Detection
+
+```bash
+# Search for PEM-format keys/certificates
+grep -rl "BEGIN PRIVATE KEY\|BEGIN RSA PRIVATE KEY\|BEGIN EC PRIVATE KEY" squashfs_root/
+
+# SSH host keys
+find squashfs_root/ -name "ssh_host_*" -o -name "*.pem" -o -name "*.key"
+
+# SSL certificates
+find squashfs_root/ -name "*.crt" -o -name "*.cer" -exec openssl x509 -in {} -text -noout \; 2>/dev/null
+
+# Hardcoded AWS credentials
+grep -rn "AKIA[0-9A-Z]{16}" squashfs_root/
+
+# JWT secrets
+grep -rn "jwt.secret\|JWT_SECRET\|jwt_key" squashfs_root/ --include="*.conf" --include="*.json" --include="*.lua"
+```
+
+---
+
+## 4. Entropy Analysis
+
+```bash
+# Measure entropy with ent tool
+ent firmware.bin
+
+# Calculate Shannon entropy (Python one-liner)
+python3 -c "
+import math, sys
+data = open('firmware.bin','rb').read()
+freq = {}
+for b in data: freq[b] = freq.get(b,0)+1
+n = len(data)
+h = -sum((c/n)*math.log2(c/n) for c in freq.values())
+print(f'Entropy: {h:.4f} bits/byte')
+print(f'Maximum: 8.0 bits/byte (fully encrypted/compressed)')
+print(f'Classification: {\"encrypted\" if h > 7.5 else \"compressed\" if h > 6.5 else \"plaintext/structured\"}')"
+```
+
+---
+
+## 6. Usage Examples
+
+```bash
+# Install
+pip install binwalk  # or sudo apt install binwalk
+
+# Full firmware analysis (extraction + credential scan + static analysis)
+python3 firmware_analyzer.py analyze \
+    --firmware /tmp/router_v2.3.bin \
+    --output /tmp/fw_results \
+    --workers 8 \
+    --save-json /tmp/fw_report.json
+
+# Credential scan on already-extracted directory
+python3 firmware_analyzer.py cred-scan \
+    --directory /tmp/fw_results/extracted \
+    --workers 4 \
+    --min-confidence 0.7 \
+    --output text \
+    --save /tmp/creds.json
+
+# Entropy analysis only (block size 1024 bytes)
+python3 firmware_analyzer.py entropy \
+    --firmware /tmp/encrypted_fw.bin \
+    --block-size 1024 \
+    --output json > entropy_report.json
+
+# Extract only critical items from result JSON
+python3 -c "
+import json
+with open('/tmp/fw_report.json') as f:
+    r = json.load(f)
+crits = [c for c in r['credential_findings'] if c['severity'] == 'critical']
+print(f'Critical credentials: {len(crits)}')
+for c in crits:
+    print(f'  {c[\"file_path\"]}:{c[\"line_number\"]} — {c[\"matched_text\"][:80]}')
+"
+```
+
+---
+
+## 7. Analysis Workflow Checklist
+
+```
+Step 1: Collection
+□ Download latest firmware from vendor site
+□ Record SHA256/MD5 hash
+□ Verify file type (file firmware.bin)
+
+Step 2: Structure Analysis
+□ binwalk scan — filesystem type, compression method
+□ Entropy analysis — identify encrypted/compressed regions
+□ Check magic bytes with hex viewer
+
+Step 3: Extraction
+□ Run binwalk -Me
+□ Verify extracted filesystem type (squashfs/cramfs/jffs2)
+□ Try manual mounting (if automatic extraction fails)
+
+Step 4: Static Analysis
+□ Check etc/passwd, etc/shadow contents
+□ Web server config files (httpd.conf, nginx.conf)
+□ Network configuration (ifconfig, ip scripts)
+□ Startup scripts (init.d/*, rc.local)
+
+Step 5: Credential Detection
+□ Search for password patterns with strings + grep
+□ Search for private key/certificate files
+□ Hardcoded IP addresses and domains
+□ API keys / JWT secrets
+
+Step 6: Binary Analysis
+□ Analyze httpd / telnetd / sshd binaries
+□ Search for vulnerable function calls with Ghidra/radare2 (system, strcpy, sprintf)
+□ Command injection vulnerabilities (CGI handlers)
+
+Step 7: Dynamic Analysis
+□ Emulate binaries with QEMU
+□ Automated file analysis with firmwalker
+□ Use FACT (Firmware Analysis and Comparison Tool)
+```
+
+---
+
+## 8. Useful Auxiliary Tools
+
+```bash
+# firmwalker — automated interesting file search
+git clone https://github.com/craigz28/firmwalker.git
+cd firmwalker && bash firmwalker.sh /tmp/squashfs_root
+
+# FACT — web-based firmware analysis platform
+git clone https://github.com/fkie-cad/FACT_core
+cd FACT_core && sudo ./install/install.sh
+
+# EMBA — embedded Linux analyzer
+git clone https://github.com/e-m-b-a/emba.git
+cd emba && sudo ./emba.sh -f /tmp/firmware.bin -l /tmp/emba_log
+
+# Run ARM binaries with qemu-user-static
+sudo apt install qemu-user-static
+qemu-arm-static -L /tmp/squashfs_root /tmp/squashfs_root/usr/sbin/httpd
+
+# checksec — check binary security features
+checksec --file=/tmp/squashfs_root/usr/sbin/httpd
+# Check RELRO, STACK CANARY, NX, PIE, RPATH
+
+# strings + grep automation
 strings -n 8 squashfs_root/usr/bin/cli | \
     grep -iE "(password|secret|admin|root|key)" | \
     sort -u > /tmp/cli_strings.txt

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 모바일 트래픽 분석
 
 ## 목차
@@ -1101,3 +1107,35 @@ adb shell chmod 644 /system/etc/security/cacerts/${HASH}.0
 | 서버 정보 노출 | Server 헤더, X-Powered-By | LOW |
 | API 버전 관리 | 구버전 API 엔드포인트 접근 가능성 | MEDIUM |
 | Mass Assignment | 예상치 못한 파라미터 바인딩 | HIGH |
+
+---
+
+<a name="english"></a>
+
+# Mobile Traffic Analysis
+
+## Table of Contents
+1. Burp Suite Mobile Proxy Setup
+2. mitmproxy Automation
+3. SSL Pinning Bypass Techniques (Frida Scripts)
+4. Certificate Transparency Analysis
+5. Mobile API Vulnerabilities (BOLA / BFLA)
+6. Python CLI: mitmproxy-based Automated Traffic Analyzer
+
+## Key Findings Summary
+
+| Issue | Description | Severity |
+|-------|-------------|----------|
+| Sensitive data | Excessive information in response body | MEDIUM |
+| HTTP plaintext | Some requests use HTTP | HIGH |
+| Server info disclosure | Server header, X-Powered-By | LOW |
+| API versioning | Old API endpoint accessible | MEDIUM |
+| Mass Assignment | Unexpected parameter binding | HIGH |
+
+## Key Techniques
+
+- **Burp Suite proxy**: Configure Android/iOS to route traffic through Burp
+- **Frida SSL bypass**: Hook SSL validation to intercept pinned connections
+- **mitmproxy**: Scriptable Python-based proxy for automated analysis
+- **Certificate transparency**: Monitor CT logs for certificate issuance
+- **API fuzzing**: Test REST/GraphQL endpoints for authorization issues

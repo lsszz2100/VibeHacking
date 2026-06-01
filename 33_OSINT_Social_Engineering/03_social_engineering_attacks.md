@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 33-03. 사회공학 공격 기법 — 피싱·비싱·프리텍스팅의 설계와 측정
 > 한 줄 요약: 사람을 표적으로 삼는 공격은 기술이 아니라 시나리오이며, 시나리오는 정찰 데이터와 심리 트리거의 곱으로 만들어지고, 결과는 반드시 측정·교육으로 환류되어야 한다.
 
@@ -518,3 +524,37 @@ if __name__ == "__main__":
 - 측정 지표 임계값(예: "신고율 30% 이상이면 좋다")은 산업·조직 규모에 따라 달라진다. 자기 조직의 베이스라인을 먼저 잡고 추세로 보는 것을 권한다.
 
 마지막으로, 사회공학 평가는 **사람의 신뢰를 빌려 신뢰를 점검하는 일**이다. 평가가 끝났을 때 표적이 "내가 바보 같았다"가 아니라 "회사가 나를 학습시키려고 했고, 나는 다음에 더 잘 대응할 수 있겠다"고 느낄 수 있어야 한다. 그렇지 않은 평가는 보고서 숫자가 아무리 화려해도 실패다.
+
+---
+
+<a name="english"></a>
+
+# 33-03. Social Engineering Attack Techniques — Design and Measurement of Phishing, Vishing, and Pretexting
+
+> One-line summary: Attacks targeting people are scenarios, not technology. Scenarios are the product of reconnaissance data and psychological triggers, and results must be fed back through measurement and education.
+
+## Before We Begin — A Note on Tone
+
+This document is written for penetration testing consultants to reference when conducting social engineering assessments **within a contracted scope**. All scenarios, scripts, and personas in this document must be interpreted in the context of lawful assessments (red team engagements, phishing simulations).
+
+Social engineering ultimately involves deceiving people. A poorly designed campaign causes employees to self-blame, leads to retaliatory HR actions, and in severe cases can lead to serious consequences including depression and self-harm. A consultant's ethics begin with "not shaming the target." If you haven't designed the post-campaign debriefing before starting, you should not use any technique in this document.
+
+## Key Techniques
+
+- **Phishing**: Email-based attacks using deceptive messages
+- **Spear Phishing**: Targeted phishing using personalized information
+- **Vishing**: Voice-based social engineering (phone calls)
+- **Pretexting**: Creating a fabricated scenario/identity to gain trust
+- **Quishing**: QR code-based phishing
+- **Smishing**: SMS-based phishing
+
+## Measurement and Feedback Loop
+
+A social engineering assessment without measurement is just half the job:
+
+- **Click rate**: Percentage of targets who clicked the phishing link
+- **Report rate**: Percentage of targets who reported the phishing to security
+- **Credential submission rate**: Percentage who entered credentials
+- **Time to first click**: How quickly after delivery the first click occurred
+
+Finally, a social engineering assessment is **borrowing people's trust to assess trust**. When the assessment ends, targets should feel "the company was trying to educate me, and I can respond better next time" — not "I was stupid." An assessment that fails to achieve this is a failure no matter how impressive the report numbers are.

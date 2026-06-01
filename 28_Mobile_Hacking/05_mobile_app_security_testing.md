@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 모바일 앱 보안 테스트 — 자동화 분석·런타임 후킹·API 감사
 
 ## 1. 모바일 앱 테스트 방법론
@@ -384,3 +390,36 @@ if __name__ == "__main__":
 | 인증서 고정 | frida-ssl-pinning-bypass | 핀닝 우회 |
 | 저장소 분석 | adb shell | SharedPreferences, SQLite |
 | OWASP MASVS | MobSF | 자동 정적+동적 분석 |
+
+---
+
+<a name="english"></a>
+
+# Mobile App Security Testing — Automated Analysis, Runtime Hooking, API Auditing
+
+## 1. Mobile App Testing Methodology
+
+Key testing areas for mobile application security:
+
+- **OWASP MASVS**: Mobile Application Security Verification Standard
+- **Static analysis**: Source code, binary, configuration
+- **Dynamic analysis**: Runtime behavior, network traffic
+- **API security**: Authentication, authorization, data exposure
+
+## Key Testing Tools Summary
+
+| Testing Area | Tool | Method |
+|-------------|------|--------|
+| Runtime hooking | Frida | SSL pinning, encryption functions |
+| Traffic analysis | Burp Suite + ProxyDroid | API endpoints, tokens |
+| Certificate pinning | frida-ssl-pinning-bypass | Bypass pinning |
+| Storage analysis | adb shell | SharedPreferences, SQLite |
+| OWASP MASVS | MobSF | Automated static+dynamic analysis |
+
+## Common Vulnerabilities
+
+- **Insecure data storage**: Sensitive data in SharedPreferences, SQLite, log files
+- **Broken authentication**: Weak token handling, no expiry
+- **Insufficient cryptography**: Weak algorithms, hardcoded keys
+- **Client-side injection**: SQLite injection, JavaScript injection in WebViews
+- **Improper session handling**: Token reuse, inadequate logout

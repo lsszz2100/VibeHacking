@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # PAM 및 인증 강화 — 계정·접근 통제
 
 ## 1. PAM (Pluggable Authentication Modules) 개요
@@ -402,6 +408,422 @@ def run_audit() -> None:
     pw_issues = check_password_policy()
     if pw_issues:
         print(f"\n[!] 패스워드 정책 문제:")
+        for i in pw_issues:
+            print(f"  {i}")
+
+    print()
+
+if __name__ == "__main__":
+    run_audit()
+```
+
+---
+
+<a name="english"></a>
+
+# PAM and Authentication Hardening — Account and Access Control
+
+## 1. PAM (Pluggable Authentication Modules) Overview
+
+```
+PAM Architecture:
+  Application (ssh, login, sudo...)
+      ↓
+  PAM Library (/lib/security/)
+      ↓
+  Configuration files (/etc/pam.d/<service>)
+      ↓
+  Module chain execution (order matters)
+
+4 Management Groups:
+  auth     → Authentication (password, fingerprint, OTP)
+  account  → Account status (expiry, lock)
+  session  → Session setup/teardown (logging, environment)
+  password → Password change policy
+
+Control Flags:
+  required   → Continues on failure, returns failure at end
+  requisite  → Returns immediately on failure (fast reject)
+  sufficient → Skips remaining modules on success
+  optional   → Result has no effect
+```
+
+---
+
+## 2. Password Policy Hardening
+
+### 2-1. pam_pwquality Configuration
+
+Configure Linux authentication policies via PAM. Set up password complexity, account lockout, and login attempt limits.
+
+```bash
+# Install
+apt install libpam-pwquality  # Debian
+dnf install libpwquality      # RHEL
+
+# /etc/security/pwquality.conf
+cat > /etc/security/pwquality.conf << 'EOF'
+minlen = 14          # Minimum 14 characters
+minclass = 4         # All of: uppercase/lowercase/digits/special chars
+maxrepeat = 3        # No more than 3 consecutive identical characters
+maxclassrepeat = 4   # No more than 4 consecutive characters of same class
+gecoscheck = 1       # Prohibit use of account name
+dcredit = -1         # Minimum 1 digit
+ucredit = -1         # Minimum 1 uppercase
+lcredit = -1         # Minimum 1 lowercase
+ocredit = -1         # Minimum 1 special character
+dictcheck = 1        # Prohibit dictionary words
+usercheck = 1        # Prohibit username inclusion
+EOF
+
+# /etc/pam.d/common-password (Ubuntu)
+# /etc/pam.d/system-auth (RHEL)
+# password requisite pam_pwquality.so retry=3
+```
+
+### 2-2. Password History and Expiry Policy
+
+Use pam_pwhistory.so to block reuse of previously used passwords. Setting remember=5 prevents reuse of the last 5 passwords.
+
+```bash
+# Add history to /etc/pam.d/common-password
+# password required pam_pwhistory.so remember=12 use_authtok
+
+# /etc/login.defs — password expiry policy
+cat >> /etc/login.defs << 'EOF'
+PASS_MAX_DAYS   90    # Maximum 90 days
+PASS_MIN_DAYS   1     # Minimum 1 day (prevent immediate re-change)
+PASS_WARN_AGE   14    # Warn 14 days before expiry
+EOF
+
+# Apply expiry policy to existing accounts
+chage -M 90 -m 1 -W 14 username
+
+# Check account status
+chage -l username
+```
+
+### 2-3. Account Lockout Policy (pam_faillock)
+
+Configure Linux authentication policies via PAM. Set up password complexity, account lockout, and login attempt limits.
+
+```bash
+# Add to top of /etc/pam.d/common-auth (Ubuntu 20.04+)
+# auth required pam_faillock.so preauth silent deny=5 unlock_time=900
+# auth [default=die] pam_faillock.so authfail deny=5 unlock_time=900
+
+# /etc/security/faillock.conf
+cat > /etc/security/faillock.conf << 'EOF'
+deny = 5               # Lock after 5 failures
+unlock_time = 900      # Auto-unlock after 15 minutes
+fail_interval = 900    # Count failures within 15 minutes
+even_deny_root         # Apply to root account too
+EOF
+
+# Check lock status
+faillock --user username
+
+# Manually unlock
+faillock --user username --reset
+```
+
+---
+
+## 3. SSH Authentication Hardening
+
+### 3-1. SSH Key-Only Authentication
+
+Configure SSH key-based authentication. Use public/private key pairs instead of passwords for more secure remote server access.
+
+```bash
+# /etc/ssh/sshd_config
+cat >> /etc/ssh/sshd_config << 'EOF'
+
+# Authentication methods
+PasswordAuthentication no      # Disable password authentication
+PubkeyAuthentication yes       # Allow only key authentication
+PermitRootLogin no             # Prohibit direct root login
+AuthorizedKeysFile .ssh/authorized_keys
+
+# Access restrictions
+AllowUsers admin deploy        # Whitelist of allowed users
+MaxAuthTries 3
+LoginGraceTime 30
+MaxSessions 10
+
+# Feature restrictions
+X11Forwarding no
+AllowTcpForwarding no
+AllowAgentForwarding no
+PermitTunnel no
+
+# Security hardening
+Protocol 2
+IgnoreRhosts yes
+HostbasedAuthentication no
+PermitEmptyPasswords no
+
+# Allow only strong cryptographic algorithms
+KexAlgorithms curve25519-sha256,diffie-hellman-group16-sha512
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
+EOF
+
+sshd -t && systemctl reload sshd
+```
+
+### 3-2. SSH 2FA (Google Authenticator)
+
+Add OTP (One-Time Password) two-factor authentication to SSH. Install the Google Authenticator PAM module and set `ChallengeResponseAuthentication yes` in `sshd_config` to apply password+OTP authentication.
+
+```bash
+# Install
+apt install libpam-google-authenticator
+
+# Configure per user
+google-authenticator
+# → Scan QR code (register in app)
+# → Save secret key and emergency codes
+
+# Add to top of /etc/pam.d/sshd
+# auth required pam_google_authenticator.so
+
+# /etc/ssh/sshd_config
+# ChallengeResponseAuthentication yes
+# AuthenticationMethods publickey,keyboard-interactive
+
+systemctl reload sshd
+```
+
+---
+
+## 4. sudo Security Hardening
+
+Control sudo privileges precisely via the sudoers file. Only edit with visudo to prevent syntax errors, and apply the principle of least privilege.
+
+```bash
+# /etc/sudoers (must use visudo)
+
+# Basic principle: least privilege
+# Only allow sudo for admin group
+%admin ALL=(ALL:ALL) ALL
+
+# Allow only specific commands
+deploy ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart nginx
+deploy ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload nginx
+
+# Prevent obtaining root shell
+Defaults noexec          # Prohibit shell execution within commands
+Defaults requiretty      # sudo not allowed without TTY
+Defaults use_pty         # Allocate PTY (improved logging)
+Defaults logfile="/var/log/sudo.log"
+Defaults log_input, log_output  # Log all input/output
+Defaults passwd_timeout=1       # 1-minute password input timeout
+Defaults timestamp_timeout=5    # 5-minute authentication cache
+
+# Detect sudo abuse
+Defaults syslog=auth
+```
+
+---
+
+## 5. Account and Session Security
+
+Lock unnecessary system accounts and block shell access. Set shell to /sbin/nologin or /bin/false to prevent login.
+
+```bash
+# Lock unnecessary system accounts
+for user in games news uucp proxy www-data backup list irc gnats; do
+  usermod -L -s /usr/sbin/nologin $user 2>/dev/null
+done
+
+# Detect accounts with empty passwords
+awk -F: '($2 == "" ) { print $1 }' /etc/shadow
+
+# Detect UID 0 accounts (only root should have UID 0)
+awk -F: '($3 == 0) { print $1 }' /etc/passwd
+
+# Set nologin for service accounts
+usermod -s /usr/sbin/nologin serviceaccount
+
+# Session timeout
+cat >> /etc/profile.d/timeout.sh << 'EOF'
+TMOUT=600           # Auto-logout after 10 minutes of inactivity
+readonly TMOUT
+export TMOUT
+EOF
+
+# /etc/security/limits.conf — resource limits
+cat >> /etc/security/limits.conf << 'EOF'
+*    hard    nofile    65536
+*    soft    nofile    65536
+*    hard    nproc     1024
+*    soft    nproc     1024
+@users hard  maxlogins 3     # Limit to 3 simultaneous logins
+EOF
+```
+
+---
+
+## 6. Audit Logging (auditd)
+
+Install and start the auditd daemon. Log security events such as file access, command execution, and privilege changes.
+
+```bash
+# Install and start auditd
+apt install auditd audispd-plugins
+systemctl enable --now auditd
+
+# /etc/audit/rules.d/hardening.rules
+cat > /etc/audit/rules.d/hardening.rules << 'EOF'
+# Buffer size and failure behavior
+-b 8192
+-f 1
+
+# Audit system time changes
+-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change
+-a always,exit -F arch=b32 -S adjtimex -S settimeofday -k time-change
+
+# Audit user/group file changes
+-w /etc/passwd  -p wa -k identity
+-w /etc/shadow  -p wa -k identity
+-w /etc/group   -p wa -k identity
+-w /etc/sudoers -p wa -k identity
+-w /etc/ssh/sshd_config -p wa -k sshd-config
+
+# Audit logins
+-w /var/log/lastlog -p wa -k logins
+-w /var/log/faillog -p wa -k logins
+
+# Audit privilege escalation
+-a always,exit -F arch=b64 -S setuid -k setuid
+-a always,exit -F arch=b64 -S setgid -k setgid
+
+# Audit file deletions
+-a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat \
+  -F auid>=1000 -F auid!=4294967295 -k delete
+
+# Audit kernel module loading
+-w /sbin/insmod  -p x -k modules
+-w /sbin/modprobe -p x -k modules
+-a always,exit -F arch=b64 -S init_module -S delete_module -k modules
+
+# Audit network configuration changes
+-a always,exit -F arch=b64 -S sethostname -S setdomainname -k system-locale
+
+# Lock rules (no changes until reboot)
+-e 2
+EOF
+
+augenrules --load
+systemctl restart auditd
+```
+
+```bash
+# Query audit logs
+ausearch -k identity -ts today     # Today's account change events
+ausearch -k sshd-config -ts recent # SSH config changes
+ausearch -ua 0 -ts today           # root activity today
+aureport --summary                 # Overall summary
+aureport --failed                  # Failed events only
+```
+
+---
+
+## 7. Automated Audit Tool
+
+```python
+import subprocess
+import pwd
+import spwd
+import os
+import stat
+import argparse
+from pathlib import Path
+
+def check_empty_passwords() -> list[str]:
+    risky = []
+    try:
+        for entry in spwd.getspall():
+            if entry.sp_pwd in ("", "!!", None):
+                risky.append(entry.sp_nam)
+    except PermissionError:
+        risky.append("[root privileges required]")
+    return risky
+
+def check_uid_zero() -> list[str]:
+    return [p.pw_name for p in pwd.getpwall() if p.pw_uid == 0 and p.pw_name != "root"]
+
+def check_suid_files() -> list[str]:
+    suid_files = []
+    safe_suid = {"/usr/bin/sudo", "/usr/bin/passwd", "/bin/su",
+                 "/usr/bin/newgrp", "/usr/bin/gpasswd"}
+    try:
+        result = subprocess.run(
+            ["find", "/", "-type", "f", "-perm", "-4000",
+             "-not", "-path", "/proc/*", "-not", "-path", "/sys/*"],
+            capture_output=True, text=True, timeout=30
+        )
+        for f in result.stdout.splitlines():
+            if f not in safe_suid:
+                suid_files.append(f)
+    except subprocess.TimeoutExpired:
+        suid_files.append("[timeout]")
+    return suid_files
+
+def check_world_writable() -> list[str]:
+    try:
+        result = subprocess.run(
+            ["find", "/etc", "/usr", "/bin", "/sbin",
+             "-type", "f", "-perm", "-o+w"],
+            capture_output=True, text=True, timeout=20
+        )
+        return result.stdout.splitlines()
+    except Exception:
+        return []
+
+def check_password_policy() -> list[str]:
+    issues = []
+    login_defs = Path("/etc/login.defs").read_text()
+    if "PASS_MAX_DAYS" not in login_defs:
+        issues.append("PASS_MAX_DAYS not configured")
+    else:
+        for line in login_defs.splitlines():
+            if line.startswith("PASS_MAX_DAYS"):
+                days = int(line.split()[1])
+                if days > 90:
+                    issues.append(f"PASS_MAX_DAYS={days} (90 or less recommended)")
+    return issues
+
+def run_audit() -> None:
+    print("\n" + "=" * 50)
+    print("Linux Security Audit Results")
+    print("=" * 50)
+
+    empty_pw = check_empty_passwords()
+    print(f"\n[Empty Password Accounts]: {empty_pw or 'None'}")
+
+    uid_zero = check_uid_zero()
+    if uid_zero:
+        print(f"\n[!] Non-root UID 0 accounts: {uid_zero}")
+    else:
+        print("\n[UID 0]: Only root exists (normal)")
+
+    suid = check_suid_files()
+    if suid:
+        print(f"\n[!] Non-standard SUID files ({len(suid)}):")
+        for f in suid[:10]:
+            print(f"  {f}")
+
+    ww = check_world_writable()
+    if ww:
+        print(f"\n[!] World-writable files ({len(ww)}):")
+        for f in ww[:10]:
+            print(f"  {f}")
+
+    pw_issues = check_password_policy()
+    if pw_issues:
+        print(f"\n[!] Password policy issues:")
         for i in pw_issues:
             print(f"  {i}")
 

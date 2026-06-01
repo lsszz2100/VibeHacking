@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 국제 보안 자격증 비교 및 대비 가이드
 
 ## 자격증 개요 및 비교
@@ -589,3 +595,233 @@ if __name__ == "__main__":
 | CEH | 2~4개월 | ~$1,500 | 중간 |
 | OSCP | 3~6개월 | ~$1,500~2,500 | 매우 높음 (기술직) |
 | CISSP | 6~12개월 | ~$1,000 | 높음 (관리직) |
+
+---
+
+<a name="english"></a>
+
+# International Security Certification Comparison and Preparation Guide
+
+## Certification Overview and Comparison
+
+### Major International Certification Comparison
+
+| Certification | Issuer | Difficulty | Cost (USD) | Exam Format | Renewal | Target |
+|--------------|--------|------------|-----------|-------------|---------|--------|
+| CISSP | (ISC)² | High | $749 | CAT, max 175 questions | 3 years (120 CPE) | 5+ years security professionals |
+| CEH | EC-Council | Medium | $950~$1,199 | 125 questions, 4 hours | 3 years (120 ECE) | Pen testers, security analysts |
+| OSCP | Offensive Security | High | $1,499 | 24-hour practical | None (lifetime) | Pen testers |
+| OSED | Offensive Security | Very High | $1,499 | 48-hour practical | None (lifetime) | Exploit developers |
+| OSWE | Offensive Security | High | $1,499 | 48-hour practical | None (lifetime) | Web app hackers |
+| Security+ | CompTIA | Low | $404 | 90 questions, 90 min | 3 years (50 CE) | Beginners, job seekers |
+| CISM | ISACA | Medium-High | $575 | 150 questions, 4 hours | 3 years (120 CPE) | Security managers |
+
+---
+
+## CISSP (Certified Information Systems Security Professional)
+
+### Exam Overview
+
+**Issuer**: (ISC)² (International Information System Security Certification Consortium)
+**Exam Format**: CAT (Computer Adaptive Testing) — for English exam
+- Questions: 125~175 (125 on minimum pass, maximum 175)
+- Duration: 4 hours
+- Passing score: 700/1000
+- Language: English (CAT), Korean (linear, 250 questions, 6 hours)
+
+**Prerequisites**: 5 years of experience in information security (covering at least 2 CISSP domains)
+- Insufficient experience → Pass as Associate of (ISC)² and supplement experience
+
+### 8-Domain Core Summary
+
+#### Domain 1: Security and Risk Management (15%)
+- **CIA Triad**: Confidentiality, Integrity, Availability
+- **Governance**: Information security strategy, CISO role, board reporting
+- **Compliance**: SOX, HIPAA, GDPR, PCI-DSS
+- **Risk Management Frameworks**: NIST RMF, ISO 27005
+- **Threat Modeling**: STRIDE, DREAD, PASTA
+- **Business Continuity**: BCP/DRP, RTO/RPO, BIA
+
+Key Formulas:
+- ALE = SLE × ARO (Annual Loss Expectancy)
+- Risk = Threat × Vulnerability × Asset Value
+
+#### Domain 2: Asset Security (10%)
+- Data classification: Government (Classified/Secret/Internal/Public), Private (Confidential/Internal/Public)
+- Data owner vs administrator vs custodian role distinction
+- Data lifecycle: Create→Store→Use→Share→Archive→Destroy
+- Destruction methods: Clearing, Purging, Destroying
+- Privacy protection: GDPR, pseudonymization, anonymization
+
+#### Domain 3: Security Architecture and Engineering (13%)
+- **Security Models**:
+  - Bell-LaPadula: Confidentiality (No Read Up, No Write Down)
+  - Biba: Integrity (No Read Down, No Write Up)
+  - Clark-Wilson: Commercial environment integrity
+  - Chinese Wall (Brewer-Nash): Conflict of interest prevention
+- **System Evaluation**: Common Criteria (CC), EAL 1~7
+- **Cryptography**: Symmetric/asymmetric, hash, PKI, quantum-resistant cryptography
+- **Physical Security**: Locks, mantraps, biometrics, CPTED
+
+#### Domain 4: Communication and Network Security (13%)
+- OSI 7-layer protocols and security at each layer
+- Network devices: Routers, switches, firewalls, IDS/IPS
+- Wireless security: WPA3, EAP, 802.1X
+- VPN: IPsec, SSL/TLS, SD-WAN
+- Network attacks: DDoS, MITM, sniffing, spoofing
+
+#### Domain 5: Identity and Access Management (13%)
+- **Access Control Models**: DAC, MAC, RBAC, ABAC
+- **Authentication**: Knowledge (password), Possession (OTP), Inherence (biometric)
+- **MFA**: Combination of two or more authentication factors
+- **SSO**: Kerberos, SAML, OAuth 2.0, OIDC
+- **Authorization**: Least privilege, separation of duties, need to know
+- **Account Management**: Provisioning, periodic review, deprovisioning
+
+#### Domain 6: Security Assessment and Testing (12%)
+- **Vulnerability Assessment**: Nessus, OpenVAS, CVSS score
+- **Penetration Testing Stages**: Reconnaissance → Scanning → Access → Maintain → Cover Tracks
+- **Auditing**: Security audit, log review, code review
+- **Software Testing**: Unit, integration, regression, fuzzing
+- **SOC Reports**: SOC 1 (financial), SOC 2 (security), SOC 3 (public)
+
+#### Domain 7: Security Operations (13%)
+- **Incident Response**: Preparation→Detection→Containment→Eradication→Recovery→Lessons Learned
+- **Digital Forensics**: Evidence collection, chain of custody, legal evidence
+- **Disaster Recovery**: Hot/warm/cold sites, data mirroring
+- **SOC**: SIEM, SOAR, threat intelligence
+- **Change Management**: RFC, Change Advisory Board (CAB)
+
+#### Domain 8: Software Development Security (11%)
+- **SDLC Security**: Security requirements → Security design → Secure coding → Security testing
+- **Software Vulnerabilities**: OWASP, buffer overflow, injection
+- **DevSecOps**: Integrate security into CI/CD pipeline
+- **Code Review**: SAST (static), DAST (dynamic), SCA (component analysis)
+- **API Security**: Authentication, rate limiting, input validation
+
+### CISSP CAT Exam Strategy
+
+1. **Think Like a Manager**: Answer from management perspective (process over technical solutions)
+2. **Best Answer, Not Perfect Answer**: Most appropriate answer among 4 choices
+3. **CIA Triad Priority**: Identify security goal presented in the question
+4. **Time Management**: 125 questions / 4 hours ≈ 2 minutes per question
+5. **Master Abbreviations**: 200+ core abbreviations by domain
+
+---
+
+## CEH (Certified Ethical Hacker)
+
+### Exam Overview
+
+**Issuer**: EC-Council
+**Exam**: 125 questions, 4 hours, 70%+ to pass
+**Practical (optional)**: CEH Practical - 6 hours, 20 lab tasks
+
+### Core Modules
+
+#### Modules 1-5: Fundamentals and Reconnaissance
+- Hacking stages: Reconnaissance→Scanning→Enumeration→Vulnerability Assessment→Attack→Post-Attack
+- Passive recon: WHOIS, DNS lookup, social media OSINT
+- Active recon: Nmap, Ping Sweep, port scanning
+- Enumeration: NetBIOS, SNMP, LDAP, NFS, SMB enumeration
+
+#### Modules 6-10: System Hacking
+- Password attacks: Brute force, dictionary, rainbow tables
+- Privilege escalation: Horizontal (same-level), vertical (admin level)
+- Backdoors: Netcat, Metasploit payloads
+- Covering tracks: Log deletion, timestamp manipulation
+
+#### Modules 11-15: Network and Web Hacking
+- Sniffing: Wireshark, tcpdump, Ettercap
+- Social engineering: Phishing, spear phishing, vishing
+- DoS/DDoS: SYN Flood, Smurf, HTTP Flood
+- Session hijacking: Sequence number prediction, cookie theft
+- Web server attacks: Directory traversal, vulnerability scanning
+
+#### Modules 16-20: Advanced Techniques
+- SQL injection: Union-based, Blind, time-based
+- XSS/CSRF
+- Cryptographic attacks: Brute force, padding oracle
+- Cloud hacking: Misconfiguration, IAM vulnerabilities
+- IoT hacking: Default credentials, firmware analysis
+
+---
+
+## Offensive Security Certifications
+
+### OSCP
+
+**Course**: PEN-200 (PWK - Penetration Testing with Kali Linux)
+**Exam**: 24-hour CTF + 24-hour report writing
+- Compromise 6 servers (70+ points to pass)
+
+**Key Learning Topics:**
+- Active Directory attacks: Kerberoasting, Pass-the-Hash, BloodHound
+- Buffer overflow: 32-bit Windows/Linux stack-based BOF
+- Web application vulnerability practice
+- Privilege escalation: Linux (SUID, sudo, cron), Windows (services, registry)
+- Pivoting: Proxychains, SSH tunneling
+- AV bypass: Encoding, packing, case variation
+
+### OSED and OSWE
+
+**OSED (EXP-301)**: Exploit development — SEH exploitation, ASLR/DEP bypass, ROP chains, custom shellcode
+**OSWE (WEB-300)**: White-box web penetration testing — authentication bypass, advanced SQL injection, SSRF, XXE, deserialization
+
+---
+
+## CompTIA Security+
+
+### Domain Overview
+
+| Domain | Weight | Key Content |
+|--------|--------|-------------|
+| General Threats/Attacks/Vulnerabilities | 24% | Social engineering, malware, vulnerability types |
+| Architecture/Design | 21% | Security models, cloud, virtualization |
+| Implementation | 25% | Encryption, PKI, authentication, network security |
+| Operations and Incident Response | 16% | Pen testing, forensics, incident response |
+| Governance/Risk/Compliance | 14% | Policy, regulations, risk management |
+
+### Employment Relevance
+- U.S. DoD 8570 compliance recognized
+- Preferred for Korean finance and IT company hiring
+- Suitable as foundational certification before CISSP
+- Average preparation time: 1-3 months
+
+---
+
+## CISM (Certified Information Security Manager)
+
+### 4 Domains
+
+1. **Information Security Governance (17%)**: Security strategy, governance framework
+2. **Information Security Risk Management (20%)**: Risk identification, assessment, response, monitoring
+3. **Information Security Program (33%)**: Establish and operate security program
+4. **Incident Management (30%)**: Breach incident planning, response, recovery
+
+---
+
+## Certification Roadmap
+
+### Entry Level (0-1 year)
+1. **CompTIA Security+**: Build foundational concepts, employment connections
+2. **CEH**: Understand attack techniques, pen testing introduction
+3. **Korean Information Security Engineer**: Preferred for Korean employment, legal qualification
+
+### Intermediate Level (2-4 years)
+1. **OSCP**: Demonstrate practical penetration testing capabilities
+2. **CISM**: Obtain when transitioning to management role
+
+### Advanced Level (5+ years)
+1. **CISSP**: Highest certification for security professionals
+2. **OSED/OSWE**: Exploit development specialist
+
+### Cost and Preparation Time Summary
+
+| Certification | Preparation Time | Total Budget (USD) | Employment Value |
+|--------------|-----------------|-------------------|-----------------|
+| Security+ | 1-3 months | ~$500 | High (US/global) |
+| Korean Info Security Engineer | 3-6 months | ~$100 (KRW) | High (Korea) |
+| CEH | 2-4 months | ~$1,500 | Medium |
+| OSCP | 3-6 months | ~$1,500~2,500 | Very high (technical) |
+| CISSP | 6-12 months | ~$1,000 | High (management) |

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 정보보안기사 필기 완전 정복
 
 ## 시험 개요
@@ -590,3 +596,331 @@ if __name__ == "__main__":
 - [ ] 공격 유형별 원리와 대응 방법 세트 암기
 - [ ] ALE 계산 문제 5문제 이상 직접 풀기
 - [ ] 최신 기출문제 분석 및 출제 경향 파악
+
+---
+
+<a name="english"></a>
+
+# Information Security Engineer Written Exam: Complete Guide
+
+## Exam Overview
+
+The Information Security Engineer certification is a national technical qualification exam administered by the Korea Internet & Security Agency (KISA) and conducted by the Human Resources Development Service of Korea.
+It validates professional knowledge and skills in the information security field, and is a preferred qualification when recruiting security personnel at government agencies and corporations.
+
+### Exam Structure
+
+| Category | Subjects | Questions | Time | Passing Criteria |
+|----------|----------|-----------|------|-----------------|
+| Written | 5 subjects | 100 questions (20 per subject) | 150 min | 40+ per subject, average 60+ |
+| Practical | 1 subject | Short answer + essay | 180 min | 60 or above |
+
+### 5 Written Exam Subjects
+
+1. System Security
+2. Network Security
+3. Application Security
+4. Information Security Fundamentals
+5. Information Security Management and Regulations
+
+---
+
+## Subject 1: System Security
+
+### Key Concept Summary
+
+#### Operating System Security
+- **Kernel**: Core of the OS; interface between hardware and software
+- **Access Control Models**: DAC (Discretionary), MAC (Mandatory), RBAC (Role-Based), ABAC (Attribute-Based)
+- **Process Isolation**: Memory protection, virtual address spaces, sandboxing
+- **setuid/setgid**: Special permission bits that execute a file with the owner's privileges at runtime
+
+#### Authentication and Access Control
+- **Three Authentication Factors**: Knowledge (password), Possession (OTP token), Inherence (biometrics)
+- **SSO (Single Sign-On)**: Access multiple systems with a single authentication
+- **Kerberos**: Ticket-based network authentication protocol (KDC, TGT, service tickets)
+- **PAM (Pluggable Authentication Module)**: Modular authentication framework for Linux
+
+#### Vulnerabilities and Attack Techniques
+- **Buffer Overflow**: Stack/heap overflow, NOP sled, ROP chain
+- **Format String Attack**: Exploiting %n, %x format specifiers in printf-family functions
+- **Race Condition (TOCTOU)**: Competing for shared resources by exploiting time differences
+- **Privilege Escalation**: Gaining root privileges via local vulnerabilities
+
+### 30 High-Frequency Keywords
+
+1. **DAC (Discretionary Access Control)** — Resource owner decides access permissions
+2. **MAC (Mandatory Access Control)** — Enforced access control based on system policy
+3. **RBAC (Role-Based Access Control)** — Access permissions assigned based on user roles
+4. **TCB (Trusted Computing Base)** — System components responsible for enforcing security policy
+5. **Security Kernel** — Core of TCB; implements the reference monitor
+6. **Reference Monitor** — Concept that mediates all access requests
+7. **Buffer Overflow** — Memory intrusion due to missing bounds checking
+8. **Stack Overflow** — Overwriting the return address by exceeding stack capacity
+9. **Heap Overflow** — Intrusion into dynamically allocated memory regions
+10. **NOP Sled** — Sequence of No-Operation instructions used to guide shellcode execution
+11. **ROP (Return Oriented Programming)** — Attack that reuses existing code fragments (gadgets)
+12. **ASLR (Address Space Layout Randomization)** — Randomizes memory addresses to hinder attacks
+13. **DEP/NX (Data Execution Prevention)** — Prevents code execution in data regions
+14. **Stack Canary** — Sentinel value placed to detect return address tampering
+15. **setuid bit** — Executes a file with the file owner's privileges
+16. **Race Condition** — Bypassing permissions by exploiting a competitive condition
+17. **Symbolic Link Attack** — File manipulation using symbolic links
+18. **Kerberos** — Symmetric key-based network authentication protocol
+19. **TGT (Ticket Granting Ticket)** — Initial ticket issued during Kerberos authentication
+20. **KDC (Key Distribution Center)** — Core server in Kerberos
+21. **PAM** — Modular authentication system for Linux
+22. **chroot jail** — Isolates a process by changing its root directory
+23. **SELinux** — Linux security module based on mandatory access control
+24. **AppArmor** — Path-based MAC system
+25. **Sudo** — Delegates administrator privileges for specific commands
+26. **umask** — Default permission mask applied at file creation
+27. **Audit Log** — Records and tracks system events
+28. **Code Injection** — Inserting and executing malicious code in a vulnerable program
+29. **Format String** — Reading/writing memory via printf format specifiers
+30. **Privilege Separation** — Splitting processes according to the principle of least privilege
+
+---
+
+## Subject 2: Network Security
+
+### Key Concept Summary
+
+#### Network Protocol Security
+- **TCP/IP Vulnerabilities**: IP spoofing, SYN flooding, session hijacking
+- **ARP Spoofing**: Intercepting traffic by poisoning the ARP table
+- **DNS Spoofing**: Returning a wrong IP by forging DNS responses
+- **DHCP Starvation**: Exhausting the DHCP address pool
+
+#### Firewalls and VPNs
+- **Packet Filtering**: IP/port-based traffic blocking (1st generation)
+- **Stateful Inspection**: Connection state-tracking filtering (3rd generation)
+- **NGFW**: Application-aware, user-based policy firewall
+- **SSL/TLS VPN**: Browser-based VPN
+- **IPsec VPN**: Tunnel mode (full packet encryption) vs. Transport mode (payload encryption)
+
+#### Intrusion Detection/Prevention Systems
+- **Signature-based IDS**: Matches known patterns; low false positives, high false negatives
+- **Anomaly Detection**: Detects deviation from baseline; low false negatives, high false positives
+- **HIDS**: Host-based (logs, file integrity)
+- **NIDS**: Network-based (packet capture analysis)
+
+### 30 High-Frequency Keywords
+
+1. **ARP Spoofing** — Man-in-the-middle attack by forging MAC addresses
+2. **IP Spoofing** — Forging the source IP address of a packet
+3. **SYN Flooding** — DoS attack that exhausts server resources by leaving 3-way handshakes incomplete
+4. **TCP Session Hijacking** — Stealing a session by predicting sequence numbers
+5. **DNS Spoofing** — Returning a malicious IP via forged DNS responses
+6. **DNS Cache Poisoning** — Inserting false information into a DNS cache
+7. **Sniffing** — Eavesdropping on network packets
+8. **MITM (Man in the Middle)** — Attack that intercepts communication
+9. **DoS/DDoS** — Denial of service / distributed denial of service attack
+10. **ICMP Flood** — Attack sending large volumes of ICMP packets
+11. **Smurf Attack** — Amplification attack using broadcast addresses
+12. **Teardrop Attack** — Causing errors in reassembling fragmented packets
+13. **Land Attack** — Causing an infinite loop by setting source IP equal to destination IP
+14. **Packet Filtering Firewall** — IP/port-based access control
+15. **Stateful Firewall** — Connection state-tracking access control
+16. **Proxy Firewall** — Application-level gateway
+17. **NGFW (Next-Generation Firewall)** — DPI + application awareness
+18. **IPsec** — Network-layer encryption protocol
+19. **AH (Authentication Header)** — Provides authentication only (no encryption)
+20. **ESP (Encapsulating Security Payload)** — Provides encryption + authentication
+21. **SSL/TLS** — Transport-layer encryption protocol
+22. **IDS (Intrusion Detection System)** — Alerts after detecting an attack (cannot block)
+23. **IPS (Intrusion Prevention System)** — Immediately blocks upon detecting an attack
+24. **Signature Detection** — Matches known attack patterns
+25. **Anomaly Detection** — Detects deviation from normal behavior baseline
+26. **Honeypot** — Intentionally vulnerable system used to lure attackers
+27. **VPN Tunnel Mode** — Encrypts the entire IP packet
+28. **NAT (Network Address Translation)** — Translates internal IP addresses to external ones
+29. **DMZ (Demilitarized Zone)** — Buffer zone between internal and external networks
+30. **Port Scanning** — Discovering open ports (Nmap SYN/FIN/NULL scans)
+
+---
+
+## Subject 3: Application Security
+
+### Key Concept Summary
+
+#### Web Security
+- **OWASP Top 10**: SQL Injection, XSS, IDOR, SSRF, etc.
+- **SQL Injection**: Inserting SQL syntax into input values to manipulate queries
+- **XSS (Cross-Site Scripting)**: Reflected, Stored, DOM-based
+- **CSRF**: Sending forged requests using the victim's browser
+
+#### Cryptography Applications
+- **HTTPS**: HTTP operating over TLS
+- **Certificates**: X.509 structure, CA, certificate chains
+- **Session Management**: Session token security, cookie attributes (HttpOnly, Secure, SameSite)
+- **JWT (JSON Web Token)**: Header.Payload.Signature structure
+
+### 30 High-Frequency Keywords
+
+1. **SQL Injection** — Manipulating the database by inserting SQL syntax into input
+2. **Blind SQL Injection** — Extracting data through error messages or time delays
+3. **Stored XSS** — Storing malicious scripts in a database and executing them when rendered
+4. **Reflected XSS** — Script in a URL parameter is immediately reflected and executed
+5. **DOM XSS** — Script execution via client-side DOM manipulation
+6. **CSRF** — Sending forged requests using the victim's session
+7. **SSRF** — Accessing internal resources by using the server as an intermediary
+8. **XXE (XML External Entity)** — Reading files by exploiting XML parser vulnerabilities
+9. **IDOR (Insecure Direct Object Reference)** — Unauthorized access by manipulating object references
+10. **File Upload Vulnerability** — Uploading and executing malicious files
+11. **Path Traversal** — Accessing parent directories using ../
+12. **OWASP Top 10** — List of the top 10 web application vulnerabilities
+13. **Input Validation** — Whitelist-based input filtering
+14. **Output Encoding** — Escaping HTML special characters
+15. **Prepared Statement** — Parameterized queries to defend against SQL injection
+16. **CSP (Content Security Policy)** — HTTP security policy restricting content sources to prevent XSS
+17. **HTTPS** — TLS-based encrypted HTTP communication
+18. **X.509** — Standard format for digital certificates
+19. **PKI (Public Key Infrastructure)** — Trust framework based on CA, certificates, and CRL
+20. **OTP (One-Time Password)** — Two-factor authentication based on TOTP/HOTP
+21. **Session Fixation** — Forcing the use of a session ID before authentication
+22. **Session Hijacking** — Stealing and reusing a valid session token
+23. **JWT** — JSON-based signed authentication token
+24. **HttpOnly Cookie** — Cookie attribute that blocks JavaScript access to cookies
+25. **SameSite Cookie** — Restricts cookie transmission on cross-site requests
+26. **Clickjacking** — Tricking users into clicking via a transparent iframe
+27. **X-Frame-Options** — HTTP header to prevent iframe embedding
+28. **HSTS** — Forces HTTP to redirect to HTTPS
+29. **API Security** — Authentication, rate limiting, input validation
+30. **WAF (Web Application Firewall)** — Security device that detects and blocks web attacks
+
+---
+
+## Subject 4: Information Security Fundamentals
+
+### Key Concept Summary
+
+#### Cryptography
+- **Symmetric-Key Cryptography**: AES, DES, 3DES, SEED, ARIA (same key for encryption/decryption)
+- **Asymmetric-Key Cryptography**: RSA, ECC (encrypt with public key, decrypt with private key)
+- **Hash Functions**: MD5 (128-bit), SHA-1 (160-bit), SHA-256 (256-bit)
+- **Digital Signature**: Sign with private key, verify with public key (integrity + non-repudiation)
+
+#### Security Principles
+- **Confidentiality**: Only authorized parties can access information
+- **Integrity**: Prevents and detects unauthorized modification of information
+- **Availability**: Information services are accessible when needed
+- **Non-repudiation**: Parties cannot deny their actions
+
+### 30 High-Frequency Keywords
+
+1. **CIA Triad** — Three core security goals: Confidentiality, Integrity, Availability
+2. **AES** — Current standard symmetric-key algorithm with 128/192/256-bit keys
+3. **DES** — 56-bit key; considered weak and no longer recommended
+4. **3DES** — Applies DES three times; 112/168-bit effective security strength
+5. **SEED** — Korean standard symmetric-key algorithm (128-bit)
+6. **ARIA** — Korean standard lightweight symmetric-key algorithm
+7. **RSA** — Public-key cryptography based on the integer factorization problem
+8. **ECC (Elliptic Curve Cryptography)** — High security strength with shorter keys
+9. **Diffie-Hellman** — Key exchange protocol (provides forward secrecy)
+10. **MD5** — 128-bit hash; avoid due to collision vulnerabilities
+11. **SHA-1** — 160-bit hash; avoid due to discovered collisions
+12. **SHA-256** — 256-bit hash; currently the standard
+13. **HMAC** — Hash-based Message Authentication Code
+14. **Digital Signature** — Private key signature + public key verification
+15. **PKI** — Public Key Infrastructure; CA-based trust framework
+16. **CRL (Certificate Revocation List)** — List of certificates revoked before expiry
+17. **OCSP** — Real-time certificate status checking protocol
+18. **Steganography** — Concealing data within other data
+19. **Watermarking** — Embedding data for copyright protection
+20. **Random Number Generator** — PRNG vs. TRNG (use CSPRNG for security)
+21. **Kerckhoffs's Principle** — The algorithm is public; only the key is kept secret
+22. **Key Management** — Lifecycle: generation, distribution, storage, revocation
+23. **HSM (Hardware Security Module)** — Dedicated device for key storage and cryptographic operations
+24. **PFS (Perfect Forward Secrecy)** — Protects past sessions even if a session key is compromised
+25. **Block Cipher Modes** — ECB, CBC, CTR, GCM
+26. **CBC Mode** — XORs each plaintext block with the previous ciphertext block
+27. **GCM Mode** — Authenticated encryption that includes an authentication tag
+28. **Padding** — Fills blocks to the required size (PKCS#7)
+29. **KDF (Key Derivation Function)** — Derives a secure key from a password (PBKDF2, bcrypt)
+30. **Salt** — Random data added to defend against hash-based password attacks
+
+---
+
+## Subject 5: Information Security Management and Regulations
+
+### Key Concept Summary
+
+#### Information Security Management
+- **ISMS**: Information Security Management System (based on ISO 27001)
+- **Risk Management**: Asset identification → Threat/vulnerability analysis → Risk assessment → Response
+- **BCP/DRP**: Business Continuity Plan / Disaster Recovery Plan
+- **RPO/RTO**: Recovery Point Objective / Recovery Time Objective
+
+#### Related Laws and Regulations
+- **Act on Promotion of Information and Communications Network Utilization**: Personal data protection, mandatory incident reporting
+- **Personal Information Protection Act**: Principles for processing personal data, data subject rights
+- **Electronic Signature Act**: Legal validity of electronic signatures
+
+### 30 High-Frequency Keywords
+
+1. **ISMS** — Information Security Management System (ISO/IEC 27001)
+2. **ISMS-P** — Integrated certification combining ISMS + personal data protection
+3. **Risk Analysis** — Analyzing assets, threats, vulnerabilities, and impact
+4. **Quantitative Risk Analysis** — Quantifying risk as monetary loss (ALE = SLE × ARO)
+5. **Qualitative Risk Analysis** — Ranking risk levels based on expert judgment
+6. **SLE (Single Loss Expectancy)** — Expected monetary loss from a single incident
+7. **ARO (Annualized Rate of Occurrence)** — Expected number of times a threat occurs per year
+8. **ALE (Annualized Loss Expectancy)** — SLE × ARO
+9. **Residual Risk** — Risk remaining after countermeasures are applied
+10. **BCP (Business Continuity Plan)** — Plan to continue core business functions during a disaster
+11. **DRP (Disaster Recovery Plan)** — Detailed plan for IT system recovery
+12. **RPO (Recovery Point Objective)** — Maximum acceptable data loss point in time
+13. **RTO (Recovery Time Objective)** — Target time allowed for service recovery after a disaster
+14. **Hot Site** — Fully operational backup site with immediate failover capability
+15. **Warm Site** — Partially prepared backup site with failover within hours
+16. **Cold Site** — Basic-equipment-only backup site with failover within days
+17. **Information Security Policy** — Organization's top-level security direction document
+18. **Information Security Guidelines** — Detailed rules for implementing the policy
+19. **Security Procedures** — Specific methods for implementing the guidelines
+20. **Personal Information Protection Act** — Regulations on collection, processing, and disposal of personal data
+21. **Act on Information and Communications Network** — Security obligations for ICT service providers
+22. **Security Incident** — Security events such as hacking, DDoS, or malware infection
+23. **Incident Reporting Obligation** — Legal obligation to report incidents to KISA within 24 hours
+24. **Personal Information Impact Assessment** — Pre-assessment of risks in personal data processing systems
+25. **Network Separation** — Physical or logical separation of business and internet networks
+26. **Security Audit** — Review to verify compliance with security policies
+27. **Vulnerability Assessment** — Periodic diagnosis of security weaknesses in systems
+28. **Security Awareness Training** — Programs to improve employees' security awareness
+29. **Social Engineering Attack** — Deception-based attack targeting people rather than technology
+30. **Insider Threat** — Security threat posed by authorized internal users
+
+---
+
+## Memorization Tips and Exam Pattern Analysis
+
+### Exam Weight by Subject
+
+| Subject | Key Exam Areas | Memorization Strategy |
+|---------|---------------|----------------------|
+| System Security | Access control models, buffer overflow, Linux security | Memorize DAC/MAC/RBAC comparison table |
+| Network Security | DDoS types, firewall generations, IPsec | Distinguish characteristics by attack type |
+| Application Security | OWASP, SQL injection, XSS | Memorize attack principles and countermeasures as pairs |
+| Security Fundamentals | Cryptographic algorithms, hashing, PKI | Create tables of algorithm key lengths and features |
+| Management & Regulations | Risk analysis, ISMS, laws | Must memorize the formula: ALE = SLE × ARO |
+
+### High-Frequency Exam Patterns
+
+1. **Comparison questions**: DAC vs. MAC, IDS vs. IPS, symmetric vs. asymmetric key
+2. **Feature description questions**: Which of 4 characteristics of a specific protocol/algorithm is correct
+3. **Calculation questions**: Mutual calculation of ALE, SLE, ARO
+4. **Law application questions**: Which law applies in a given situation
+5. **Acronym expansion**: Exact full English name of an abbreviation
+
+---
+
+## Exam Preparation Checklist
+
+- [ ] Complete memorization of all core keywords across 5 subjects
+- [ ] Complete at least 3 practice exams per subject
+- [ ] Review wrong-answer note keywords at least 3 times
+- [ ] Memorize key legal article numbers and their content
+- [ ] Complete cryptographic algorithm comparison chart
+- [ ] Memorize attack types paired with their principles and countermeasures
+- [ ] Solve at least 5 ALE calculation problems directly
+- [ ] Analyze recent past exam questions and identify current trends

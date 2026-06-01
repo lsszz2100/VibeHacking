@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Splunk & SIEM 실전 분석
 
 ## Splunk 아키텍처
@@ -816,5 +822,224 @@ index=network
 | streamstats window=60 avg(count) as AvgCount stdev(count) as StdDev
   by src_ip, dest_ip, dest_port
 | where abs(count - AvgCount) < StdDev * 0.5  # 매우 일정한 트래픽 = 비콘
+| table src_ip, dest_ip, dest_port, AvgCount, StdDev
+```
+
+---
+
+<a name="english"></a>
+
+# Splunk & SIEM Practical Analysis
+
+## Splunk Architecture
+
+```
+Data Sources (Forwarders)
+    │
+    ▼
+Indexer Cluster ──► Search Head Cluster
+    │                       │
+    ▼                       ▼
+Index Storage          Analyst Interface
+(Hot/Warm/Cold)        (Dashboards, Alerts, Reports)
+```
+
+---
+
+## 1. SPL (Search Processing Language) Fundamentals
+
+### Basic Search Syntax
+
+```spl
+# Time range
+index=windows earliest=-24h latest=now
+
+# Field search
+index=windows EventCode=4624 LogonType=3
+
+# Wildcard
+index=web uri="*/admin*" status=200
+
+# Exclude
+index=network NOT dest_ip="10.0.0.0/8"
+
+# Comparison operators
+index=windows | where bytes_sent > 1000000
+
+# Multiple conditions (AND/OR)
+index=windows (EventCode=4624 OR EventCode=4625) LogonType=3
+```
+
+### Statistical Commands
+
+```spl
+# Count by field
+index=windows | stats count by EventCode
+
+# Unique count
+index=windows | stats dc(user) as unique_users by host
+
+# Time series
+index=windows | timechart span=1h count by EventCode
+
+# Top values
+index=web | top limit=20 uri
+
+# Rare values (anomaly)
+index=web | rare limit=10 user_agent
+
+# Average, max, min
+index=network | stats avg(bytes) as AvgBytes max(bytes) as MaxBytes by dest_ip
+```
+
+### Join and Subsearch
+
+```spl
+# Subsearch — filter with results from another search
+index=windows EventCode=4625
+  [search index=windows EventCode=4624 
+   | fields user | rename user as user]
+
+# Join — combine two datasets
+index=windows EventCode=4624
+| join user 
+  [search index=hr_data | fields user, department]
+| table _time, user, department, LogonType
+
+# Lookup — enrich with external file
+index=network
+| lookup geo_lookup dest_ip OUTPUT country, city
+| table _time, src_ip, dest_ip, country, city
+```
+
+---
+
+## 2. Key Security Detection Queries
+
+### Brute Force Detection
+
+```spl
+# Failed login 30+ times in 5 minutes from same IP
+index=windows EventCode=4625
+| bucket _time span=5m
+| stats count as FailCount dc(user) as UniqueUsers by _time, src_ip
+| where FailCount >= 30 AND UniqueUsers >= 5
+| table _time, src_ip, FailCount, UniqueUsers
+```
+
+### Privilege Escalation Detection
+
+```spl
+# Admin group membership changes
+index=windows EventCode IN (4728, 4732, 4756)
+| eval GroupName=mvindex(Group_Name, 0)
+| where GroupName IN ("Administrators", "Domain Admins", "Enterprise Admins")
+| table _time, host, SubjectUserName, MemberName, GroupName
+```
+
+### Lateral Movement Detection
+
+```spl
+# Pass-the-Hash (NTLM authentication from workstation to workstation)
+index=windows EventCode=4624 LogonType=3 AuthPackage=NTLM
+| where src_ip!=dest_ip
+| stats count dc(dest_ip) as TargetCount by src_ip, user
+| where TargetCount > 3
+```
+
+### C2 Communication Detection (Beacon)
+
+```spl
+index=network
+| bucket _time span=1m
+| stats count by _time, src_ip, dest_ip, dest_port
+| streamstats window=60 avg(count) as AvgCount stdev(count) as StdDev
+  by src_ip, dest_ip, dest_port
+| where abs(count - AvgCount) < StdDev * 0.5
+| table src_ip, dest_ip, dest_port, AvgCount, StdDev
+```
+
+---
+
+## 3. Alert Configuration
+
+### Critical Alert Examples
+
+```spl
+# Ransomware detection (mass file renaming)
+index=windows EventCode=4663 ObjectType=File
+| eval extension=mvindex(split(ObjectName, "."), -1)
+| where extension IN ("encrypted", "locked", "ransom", "crypted")
+| stats count dc(ObjectName) as FileCount by host, user
+| where FileCount > 100
+| eval severity="CRITICAL"
+```
+
+### Alert Action Settings
+
+```xml
+<!-- savedsearches.conf -->
+[Ransomware_Detection]
+search = index=windows EventCode=4663 ...
+alert.track = 1
+alert.severity = 5
+alert.digest_mode = 0
+action.email = 1
+action.email.to = soc@company.com
+action.email.subject = [CRITICAL] Ransomware Activity Detected
+action.script = 1
+action.script.filename = isolate_host.py
+```
+
+---
+
+## 4. Dashboard Creation
+
+### SOC Overview Dashboard (XML)
+
+```xml
+<dashboard>
+  <label>SOC Real-time Overview</label>
+  
+  <row>
+    <panel>
+      <title>Alerts by Severity (24h)</title>
+      <chart>
+        <search>
+          <query>index=notable | timechart span=1h count by urgency</query>
+          <earliest>-24h</earliest>
+        </search>
+        <option name="charting.chart">column</option>
+      </chart>
+    </panel>
+    
+    <panel>
+      <title>Top Attack Source IPs</title>
+      <table>
+        <search>
+          <query>index=network action=blocked | top limit=10 src_ip</query>
+        </search>
+      </table>
+    </panel>
+  </row>
+</dashboard>
+```
+
+---
+
+## 5. Threat Hunting SPL
+
+```spl
+# Hunting: WMI Subscription Persistence
+index=windows EventCode=5857 OR EventCode=5860
+| table _time, host, User, EventType, Consumer, Filter, Operation
+
+# Hunting: Beaconing pattern (abnormal traffic)
+index=network
+| bucket _time span=1m
+| stats count by _time, src_ip, dest_ip, dest_port
+| streamstats window=60 avg(count) as AvgCount stdev(count) as StdDev
+  by src_ip, dest_ip, dest_port
+| where abs(count - AvgCount) < StdDev * 0.5  # Very consistent traffic = beacon
 | table src_ip, dest_ip, dest_port, AvgCount, StdDev
 ```

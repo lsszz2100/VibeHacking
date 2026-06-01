@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 서버리스 사고 대응
 
 AWS Lambda, Azure Functions, GCP Cloud Functions 환경의 보안 사고 대응은 기존 서버와 다른 접근이 필요하다. 로그 수집, 함수 코드 분석, 환경 변수 노출 탐지, 자동화된 격리 절차를 정리한다.
@@ -445,3 +451,139 @@ P3: 자격증명 탈취 의심
 | 과도한 IAM | IAM Access Analyzer | 최소 권한 원칙 |
 | 함수 코드 변조 | CloudTrail 모니터링 | CI/CD 서명 적용 |
 | 의존성 취약점 | AWS Inspector | 정기 패치 |
+
+---
+
+<a name="english"></a>
+
+# Serverless Incident Response
+
+Security incident response in AWS Lambda, Azure Functions, and GCP Cloud Functions environments requires a fundamentally different approach from traditional server IR. This document covers log collection, function code analysis, environment variable exposure detection, and automated isolation procedures.
+
+---
+
+## 1. Serverless Security Incident Characteristics
+
+### 1.1 Traditional IR vs Serverless IR
+
+| Capability | Traditional Server | Serverless |
+|------------|-------------------|------------|
+| Memory dump | Yes | No — execution environment destroyed after invocation |
+| Filesystem forensics | Yes | No — ephemeral environment |
+| Process listing | Yes | No |
+| Infrastructure cost | High (always running) | No |
+| Log preservation | Manual setup | Automatic (CloudWatch/Stackdriver) |
+| Access log completeness | Varies | Full API Gateway access logs available |
+| Blast radius assessment | Complex | IAM permission analysis gives clear picture |
+
+### 1.2 Attack Vector Classification
+
+**Code Injection:**
+- Command injection via event parameters
+- Deserialization vulnerabilities
+- Dependency vulnerabilities (npm, pip packages)
+
+**Privilege Abuse:**
+- Excessive IAM permissions on Lambda execution role
+- SSRF to steal IMDSv1 credentials
+- Secrets exposed in environment variables
+
+**Supply Chain:**
+- Malicious Lambda Layers
+- Vulnerable container images
+- Third-party dependency poisoning
+
+---
+
+## 2. AWS Lambda Incident Response
+
+### 2.1 Initial Response Automation
+
+The `LambdaIncidentResponder` class provides four key capabilities:
+
+**`list_suspicious_functions()`** — Scans all Lambda functions for suspicious configurations:
+- Missing VPC configuration (no network isolation)
+- Timeout > 300 seconds (allows long-running exfiltration)
+- Environment variable keys containing "secret", "key", "password", "token", or "credential"
+- Function URLs with `AuthType = "NONE"` (publicly accessible)
+
+**`get_cloudwatch_logs()`** — Fetches and filters CloudWatch Logs for a specific function over a configurable time window with CloudWatch filter patterns.
+
+**`isolate_function()`** — Implements the isolation playbook:
+1. Sets `ReservedConcurrentExecutions = 0` to block all new invocations
+2. Disables all EventSourceMappings (SQS, Kinesis, DynamoDB triggers)
+3. Records the function code download URL for forensic snapshot
+
+**`search_exfiltration_patterns()`** — Searches 72 hours of logs for data exfiltration indicators: outbound HTTP calls, subprocess execution, eval usage, base64 decoding.
+
+**Usage:**
+```bash
+# Audit all functions
+python3 lambda_ir.py --region us-east-1 audit
+
+# Analyze logs for specific function
+python3 lambda_ir.py logs my-function --hours 48
+
+# Isolate suspicious function
+python3 lambda_ir.py isolate compromised-function
+```
+
+---
+
+## 3. SSRF / IMDSv1 Credential Theft Detection
+
+The SSRF detector checks every Lambda event for patterns indicating an attempt to access the EC2 Instance Metadata Service (169.254.254.254) or GCP metadata endpoint, which would allow an attacker to steal IAM role credentials.
+
+It also detects common SSRF trigger parameters (`url=`, `redirect=`, `callback=`, `proxy=`, etc.) that might be exploited to reach internal services.
+
+Any detected SSRF attempt returns HTTP 400 immediately and logs a security alert.
+
+---
+
+## 4. Serverless Security Monitoring
+
+### 4.1 CloudTrail Anomaly Detection
+
+The CloudTrail monitor tracks six high-risk Lambda API calls and flags any that originate from non-RFC1918 IP addresses (public internet):
+
+| Action | Risk | Concern |
+|--------|------|---------|
+| `UpdateFunctionCode` | HIGH | Backdoor insertion |
+| `AddPermission` | HIGH | Unauthorized trigger addition |
+| `CreateEventSourceMapping` | MEDIUM | New trigger from untrusted source |
+| `PutFunctionConcurrency` | MEDIUM | DoS attack setup |
+| `DeleteFunction` | MEDIUM | Evidence destruction |
+| `TagResource` | MEDIUM | Evasion / resource manipulation |
+
+---
+
+## 5. Serverless IR Playbook
+
+**P1: Suspected Data Exfiltration**
+1. Search CloudWatch Logs for outbound HTTP request patterns
+2. Check VPC Flow Logs for abnormal outbound traffic
+3. Set suspect function concurrency to 0 (block new invocations)
+4. Check CloudTrail for environment variable modification history
+5. Review Secrets Manager access logs
+
+**P2: Suspected Code Tampering**
+1. Review CloudTrail `UpdateFunctionCode` events
+2. Download function code (forensic snapshot)
+3. Diff against previous version
+4. Verify deployment pipeline integrity
+5. Audit IAM permissions
+
+**P3: Suspected Credential Theft**
+1. Verify IMDSv2 enforcement
+2. Detect anomalous `AssumeRole` calls in CloudTrail
+3. Immediately rotate stolen credentials (key rotation)
+4. Temporarily disable affected IAM roles
+5. Assess blast radius (which services were accessed)
+
+| Threat | Detection | Response |
+|--------|-----------|---------|
+| IMDSv1 SSRF | CloudTrail + force IMDSv2 | Enable IMDSv2 |
+| Secrets in env vars | Code review + Secrets Manager migration | Use Secrets Manager/SSM |
+| Excessive IAM | IAM Access Analyzer | Apply least privilege |
+| Function code tampering | CloudTrail monitoring | Apply CI/CD signing |
+| Dependency vulnerabilities | AWS Inspector | Regular patching |

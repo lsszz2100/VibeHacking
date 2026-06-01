@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 57-4. NIST PQC 표준화: 라운드별 현황, 최종 선정, FIPS 표준
 
 ## 개요
@@ -675,3 +681,206 @@ if __name__ == "__main__":
 | **한국 KISA** | 양자 내성 암호 전환 로드맵 수립 중 | 2030년 목표 |
 | **중국** | 독자 PQC 표준 개발 (SM-시리즈 확장) | 별도 국가 표준 |
 | **일본 CRYPTREC** | PQC 평가 연구 진행 | 2030년 목표 |
+
+---
+
+<a name="english"></a>
+
+# 57-4. NIST PQC Standardization: Round-by-Round Progress, Final Selections, and FIPS Standards
+
+## Overview
+
+The National Institute of Standards and Technology (NIST) launched a project in 2016 to standardize cryptographic algorithms that are secure against quantum computers. In August 2024, after eight years of in-depth evaluation, NIST officially published three final standards (FIPS 203, 204, and 205). This represents a historic turning point that affects the entire Internet security infrastructure.
+
+---
+
+## 1. NIST PQC Standardization Round-by-Round Progress
+
+### 1.1 Overall Timeline
+
+| Stage | Period | Key Events |
+|-------|--------|------------|
+| Call for Submissions | December 2016 | NIST announces algorithm submission request |
+| Submission Deadline | November 2017 | 69 complete candidates, 13 partial candidates |
+| Round 1 | 2017–2019 | 69 → 26 selected |
+| Round 2 | 2019–2020 | 26 → 15 (7 Finalists + 8 Alternates) |
+| Round 3 | 2020–2022 | 15 → 7 finalists |
+| Final Selection Announcement | July 2022 | 4 algorithms selected |
+| FIPS Draft Publication | August 2023 | FIPS 203/204/205 draft published |
+| **FIPS Final Confirmation** | **August 2024** | **FIPS 203/204/205 officially standardized** |
+| Round 4 (Signatures) | 2022–present | Additional signature algorithm evaluation beyond KEM |
+
+### 1.2 Round 1 Candidates (69) by Category
+
+| Category | Count | Key Submitted Algorithms |
+|----------|-------|--------------------------|
+| Lattice-based KEM | 21 | CRYSTALS-Kyber, NTRU, SABER, LAC, LIMA ... |
+| Lattice-based Signatures | 6 | CRYSTALS-Dilithium, FALCON, NTRU Prime ... |
+| Code-based | 17 | Classic McEliece, BIKE, HQC, NTS-KEM ... |
+| Hash-based Signatures | 2 | SPHINCS, GRAVITY-SPHINCS |
+| Multivariate | 7 | GeMSS, Rainbow, MQDSS ... |
+| Isogeny-based | 6 | SIKE, CSIDH, SIDH ... |
+| Other | 10 | Frodo, NewHope, ... |
+
+### 1.3 Round 2 Candidates (26)
+
+| Type | Finalists (7) | Alternates (8) | Elimination Reason |
+|------|---------------|----------------|-------------------|
+| KEM | CRYSTALS-Kyber, NTRU, SABER, Classic McEliece | BIKE, FrodoKEM, HQC, NTRU Prime | Insufficient performance/size balance |
+| Signature | CRYSTALS-Dilithium, FALCON, Rainbow, SPHINCS+ | GeMSS, Picnic, LUOV, ... | Security analysis concerns |
+
+### 1.4 Round 3 Results and Final Selections
+
+| Algorithm | Type | Result | Elimination Reason (if applicable) |
+|-----------|------|--------|-------------------------------------|
+| **CRYSTALS-Kyber** | KEM | **Selected** | — |
+| **CRYSTALS-Dilithium** | Signature | **Selected** | — |
+| **FALCON** | Signature | **Selected** | — |
+| **SPHINCS+** | Signature | **Selected** | — |
+| NTRU | KEM | Withdrawn | Patent issues, similar to Kyber |
+| SABER | KEM | Eliminated | Performance inferior to Kyber |
+| Rainbow | Signature | **Cryptanalytic break** | Practical attack by Ward Beullens (2022) |
+| Classic McEliece | KEM | Round 4 | Public key size issues |
+| BIKE, HQC | KEM | Round 4 | Under further analysis |
+| SIKE | KEM | **Complete break** | Isogeny attack breaks it in hours (2022) |
+| GeMSS | Signature | Eliminated | Security analysis concerns |
+
+---
+
+## 2. Final Selected Algorithms in Detail
+
+### 2.1 Algorithm Characteristics and Use Cases
+
+| Property | ML-KEM (Kyber) | ML-DSA (Dilithium) | SLH-DSA (SPHINCS+) | FN-DSA (FALCON) |
+|----------|----------------|-------------------|-------------------|----------------|
+| **FIPS Number** | FIPS 203 | FIPS 204 | FIPS 205 | FIPS 206 (upcoming) |
+| **Use** | Key Encapsulation (KEM) | Digital Signature | Digital Signature | Digital Signature |
+| **Math Basis** | Module-LWE | Module-LWE + SIS | Hash function | NTRU lattice |
+| **Security Levels** | 1/3/5 (128/192/256) | 2/3/5 | 1/3/5 | 1/5 |
+| **Public Key (L3)** | 1,184 B | 1,952 B | 32~64 B | — |
+| **Secret Key (L3)** | 2,400 B | 4,000 B | 64~128 B | — |
+| **Output Size (L3)** | 1,088 B (ciphertext) | 3,293 B (signature) | 7,856~49,856 B | 690~1,330 B |
+| **Key Generation Speed** | Very Fast | Fast | Fast | Slow (trapdoor) |
+| **Sign/Encrypt** | Very Fast | Fast | Very Slow | Fast |
+| **Verify/Decrypt** | Very Fast | Very Fast | Fast | Very Fast |
+| **Primary Use Cases** | TLS, key exchange | General signing, PKI | Long-term archival, patches | When compact signatures are needed |
+| **Implementation Complexity** | Low | Low | Low | High (Gaussian sampling) |
+| **Side-Channel Risk** | Medium | Low | Low | High caution needed |
+
+### 2.2 Security Level Definitions
+
+NIST defined five security levels:
+
+| Level | Classical Security | Quantum Security | Equivalent Classical Algorithm |
+|-------|-------------------|-----------------|-------------------------------|
+| 1 | ≥128 bits | AES-128 level | At least as hard as AES-128 exhaustive search |
+| 2 | — | SHA-256 collision level | At least as hard as SHA-256 collision finding |
+| 3 | ≥192 bits | AES-192 level | At least as hard as AES-192 exhaustive search |
+| 4 | — | SHA-384 collision level | At least as hard as SHA-384 collision finding |
+| 5 | ≥256 bits | AES-256 level | At least as hard as AES-256 exhaustive search |
+
+---
+
+## 3. FIPS Standards Overview
+
+### 3.1 FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard (ML-KEM)
+
+**Official Publication**: August 13, 2024
+
+**Key Contents:**
+- ML-KEM-512 (Security Level 1)
+- ML-KEM-768 (Security Level 3, **recommended**)
+- ML-KEM-1024 (Security Level 5)
+
+**Role of KEM:**
+```
+Alice                     Bob
+  |                        |
+  |--- Public Key pk ---->  |
+  |                        | Generate shared secret K, ciphertext c
+  |<-- Ciphertext c ------  |
+  | K = Decap(sk, c)       |
+```
+
+KEM replaces key agreement protocols (DH, ECDH) and is used in the key exchange phase of TLS 1.3.
+
+### 3.2 FIPS 204: Module-Lattice-Based Digital Signature Standard (ML-DSA)
+
+**Official Publication**: August 13, 2024
+
+**Key Contents:**
+- ML-DSA-44 (Security Level 2, corresponds to CRYSTALS-Dilithium2)
+- ML-DSA-65 (Security Level 3, corresponds to CRYSTALS-Dilithium3, **recommended**)
+- ML-DSA-87 (Security Level 5, corresponds to CRYSTALS-Dilithium5)
+
+Uses **Fiat-Shamir with Aborts** technique:
+- The signing algorithm retries on failure (averages ~4–7 attempts)
+- Non-deterministic, so extra care is needed in implementation
+
+### 3.3 FIPS 205: Stateless Hash-Based Digital Signature Standard (SLH-DSA)
+
+**Official Publication**: August 13, 2024
+
+**Key Contents:**
+- SLH-DSA-SHA2-128s/128f (Security Level 1)
+- SLH-DSA-SHA2-192s/192f (Security Level 3)
+- SLH-DSA-SHA2-256s/256f (Security Level 5)
+- SHA-3 variants also available (SLH-DSA-SHAKE-...)
+
+**s vs f variants:**
+
+| Variant | Signature Size | Signing Speed | Suitable For |
+|---------|---------------|--------------|--------------|
+| **-s (small)** | Small | Slow | When signature size is constrained |
+| **-f (fast)** | Large | Fast | When signing speed is critical |
+
+---
+
+## 4. Classic TLS vs Hybrid PQC-TLS Comparison
+
+### 4.1 TLS 1.3 Handshake Comparison
+
+| Stage | Classic TLS 1.3 | PQC-TLS 1.3 | Hybrid TLS 1.3 |
+|-------|----------------|------------|---------------|
+| Key Exchange | ECDHE (P-256) | ML-KEM-768 | X25519+Kyber768 |
+| Server Authentication | ECDSA P-256 | ML-DSA-65 | ECDSA+ML-DSA |
+| Client Authentication | RSA/ECDSA | ML-DSA-65 | RSA+ML-DSA |
+| Symmetric Cipher | AES-128-GCM | AES-256-GCM | AES-256-GCM |
+| Data Integrity | SHA-256 | SHA-256+ | SHA-256+ |
+| Handshake Size | ~300B | ~2,500B | ~2,800B |
+| Quantum Resistance | None | Full | Hybrid guarantee |
+
+### 4.2 Hybrid Key Exchange Standardization Status
+
+IETF is standardizing hybrid KEM groups for TLS 1.3:
+
+| Hybrid Group Name | Composition | Status |
+|------------------|-------------|--------|
+| `X25519Kyber768Draft00` | X25519 + Kyber-768 | Chrome/Firefox experimental support |
+| `SecP256r1Kyber768Draft00` | ECDH P-256 + Kyber-768 | Under testing |
+| `X25519MLKEM768` | X25519 + ML-KEM-768 | IETF RFC draft |
+
+**Google Chrome** has had hybrid KEM (X25519Kyber768) enabled by default since 2023.
+
+---
+
+## 5. Python CLI: PQC Certificate Generation Simulator
+
+See the Korean section above for the full Python code listing.
+
+---
+
+## 6. Global PQC Readiness Status
+
+### 6.1 Key Countries/Organizations
+
+| Country/Organization | Key Developments | Mandatory By |
+|---------------------|-----------------|--------------|
+| **US NSA** | CNSA 2.0 published (2022): PQC transition mandatory by 2030 | 2033 (some by 2030) |
+| **US CISA** | PQC transition guidelines published | Transition by 2035 |
+| **EU ENISA** | PQC advisory report published, hybrid mode recommended | After 2030 |
+| **Germany BSI** | PQC algorithms added to TR-02102 | Recommended from 2025 |
+| **UK NCSC** | PQC migration guide published | By 2035 |
+| **Korea KISA** | Quantum-resistant cryptography transition roadmap being developed | 2030 target |
+| **China** | Developing independent PQC standards (SM-series extension) | Separate national standards |
+| **Japan CRYPTREC** | PQC evaluation research underway | 2030 target |

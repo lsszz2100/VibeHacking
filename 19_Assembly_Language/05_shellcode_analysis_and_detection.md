@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 셸코드 분석 및 탐지 — 정적·동적 분석·시그니처 생성
 
 ## 1. 셸코드 분석 접근법
@@ -379,3 +385,389 @@ if __name__ == "__main__":
 | `\xff\xe4` | jmp rsp | 스택 피벗 |
 | 엔트로피 > 7.5 | 암호화/인코딩 | 고엔트로피 |
 | Null 없음 | Null-free 셸코드 | 네트워크 페이로드 |
+
+---
+
+<a name="english"></a>
+
+# Shellcode Analysis and Detection — Static/Dynamic Analysis and Signature Generation
+
+## 1. Shellcode Analysis Approaches
+
+```
+Shellcode Analysis
+    │
+    ├── Static Analysis
+    │     - Byte pattern identification (syscall, int 0x80)
+    │     - Encoding/decoding loop detection
+    │     - String extraction
+    │
+    ├── Dynamic Analysis
+    │     - Sandbox execution (libemu, unicorn)
+    │     - Memory tracing
+    │     - System call tracing
+    │
+    └── Signature Generation
+          - Byte patterns → YARA rules
+          - Entropy analysis
+          - Structural feature extraction
+```
+
+---
+
+## 2. Shellcode Static Analyzer
+
+```python
+#!/usr/bin/env python3
+"""Shellcode static analysis — byte pattern, syscall, and encoding detection."""
+
+import argparse
+import math
+import struct
+from collections import Counter
+from pathlib import Path
+
+
+# Linux x86-64 syscall number → name
+LINUX_SYSCALLS_X64: dict[int, str] = {
+    0: "read", 1: "write", 2: "open", 3: "close",
+    59: "execve", 60: "exit", 39: "getpid",
+    56: "clone", 57: "fork", 33: "dup2",
+    41: "socket", 42: "connect", 43: "accept",
+    49: "bind", 50: "listen",
+    105: "setuid", 106: "getuid",
+    231: "exit_group",
+}
+
+# Suspicious byte sequences
+SUSPICIOUS_PATTERNS: list[tuple[bytes, str]] = [
+    (b"\x0f\x05", "syscall (x86-64)"),
+    (b"\xcd\x80", "int 0x80 (x86)"),
+    (b"\x0f\x34", "sysenter"),
+    (b"\xff\xe4", "jmp rsp"),
+    (b"\xff\xe0", "jmp rax"),
+    (b"\x90\x90\x90\x90", "NOP sled"),
+    (b"\x31\xc0", "xor eax,eax"),
+    (b"\x48\x31\xc0", "xor rax,rax"),
+    (b"\x2f\x62\x69\x6e\x2f\x73\x68", "/bin/sh"),
+    (b"\x2f\x62\x69\x6e\x2f\x62\x61\x73\x68", "/bin/bash"),
+    (b"\xeb\xfe", "infinite loop (jmp -2)"),
+]
+
+
+def calculate_entropy(data: bytes) -> float:
+    if not data:
+        return 0.0
+    counts = Counter(data)
+    total = len(data)
+    entropy = 0.0
+    for count in counts.values():
+        prob = count / total
+        if prob > 0:
+            entropy -= prob * math.log2(prob)
+    return entropy
+
+
+def detect_encoding(data: bytes) -> list[str]:
+    """Detect XOR, ROT13, Base64 encoding."""
+    detected = []
+
+    # XOR encoding — detect repeating key pattern
+    for key_len in range(1, 5):
+        if len(data) < key_len * 4:
+            continue
+        key = data[:key_len]
+        decoded = bytes(b ^ key[i % key_len] for i, b in enumerate(data))
+        # If null byte ratio is low after decoding, suspect XOR
+        null_count = decoded.count(0)
+        if null_count < len(decoded) * 0.1 and key != bytes(key_len):
+            detected.append(f"XOR (key length {key_len}: {key.hex()})")
+
+    # High entropy → possible encryption/encoding
+    entropy = calculate_entropy(data)
+    if entropy > 7.0:
+        detected.append(f"High entropy ({entropy:.2f}/8.0) — possible encryption")
+
+    return detected
+
+
+def extract_syscalls_x64(data: bytes) -> list[dict]:
+    """Extract rax value before x86-64 syscall instructions."""
+    syscalls = []
+    for i in range(len(data) - 1):
+        if data[i:i+2] == b"\x0f\x05":
+            # Detect rax setup pattern in preceding bytes
+            context_start = max(0, i - 10)
+            context = data[context_start:i]
+
+            # mov rax, imm pattern (48 c7 c0 XX 00 00 00)
+            rax_val = None
+            for j in range(len(context) - 6):
+                if context[j:j+3] == b"\x48\xc7\xc0":
+                    rax_val = struct.unpack_from("<I", context, j + 3)[0]
+                    break
+
+            syscalls.append({
+                "offset": hex(i),
+                "syscall_num": rax_val,
+                "syscall_name": LINUX_SYSCALLS_X64.get(rax_val, "unknown") if rax_val is not None else "unknown",
+                "context_hex": context.hex(),
+            })
+
+    return syscalls
+
+
+def analyze_shellcode(data: bytes) -> dict:
+    result: dict = {
+        "size": len(data),
+        "entropy": round(calculate_entropy(data), 3),
+        "null_bytes": data.count(0),
+        "null_free": data.count(0) == 0,
+        "patterns": [],
+        "syscalls": [],
+        "encoding_suspects": [],
+        "strings": [],
+    }
+
+    # Detect suspicious patterns
+    for pattern, description in SUSPICIOUS_PATTERNS:
+        offset = 0
+        while True:
+            idx = data.find(pattern, offset)
+            if idx == -1:
+                break
+            result["patterns"].append({
+                "offset": hex(idx),
+                "pattern": pattern.hex(),
+                "description": description,
+            })
+            offset = idx + 1
+
+    # Extract syscalls
+    result["syscalls"] = extract_syscalls_x64(data)
+
+    # Detect encoding
+    result["encoding_suspects"] = detect_encoding(data)
+
+    # Extract strings (4+ ASCII characters)
+    current = []
+    for byte in data:
+        if 0x20 <= byte <= 0x7e:
+            current.append(chr(byte))
+        else:
+            if len(current) >= 4:
+                result["strings"].append("".join(current))
+            current = []
+
+    return result
+
+
+def generate_yara_rule(data: bytes, rule_name: str) -> str:
+    """Automatically generate YARA rule from analyzed shellcode."""
+    patterns = []
+
+    # Extract unique 4-byte sequences
+    for i in range(0, min(len(data) - 4, 100), 4):
+        chunk = data[i:i+4]
+        if chunk.count(0) < 3:  # chunks with few nulls
+            patterns.append(chunk.hex())
+
+    yara = [
+        f"rule {rule_name} {{",
+        "    meta:",
+        f'        description = "Auto-generated shellcode detection rule"',
+        f'        size = "{len(data)}"',
+        "    strings:",
+    ]
+
+    for i, pattern in enumerate(patterns[:5]):
+        pairs = " ".join(pattern[j:j+2] for j in range(0, len(pattern), 2))
+        yara.append(f'        $s{i} = {{ {pairs} }}')
+
+    yara += [
+        "    condition:",
+        f"        3 of ($s*) and filesize < {len(data) * 10}",
+        "}",
+    ]
+
+    return "\n".join(yara)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Shellcode static analyzer")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    analyze_p = sub.add_parser("analyze", help="Analyze binary file")
+    analyze_p.add_argument("file", type=Path)
+    analyze_p.add_argument("--hex", help="Direct input as hex string")
+
+    yara_p = sub.add_parser("yara", help="Generate YARA rule")
+    yara_p.add_argument("file", type=Path)
+    yara_p.add_argument("--name", default="shellcode_detection")
+    yara_p.add_argument("-o", "--output", type=Path)
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "analyze":
+            if hasattr(args, "hex") and args.hex:
+                data = bytes.fromhex(args.hex)
+            else:
+                data = args.file.read_bytes()
+
+            result = analyze_shellcode(data)
+
+            print(f"=== Shellcode Analysis ({result['size']} bytes) ===")
+            print(f"Entropy: {result['entropy']} / 8.0")
+            print(f"Null-free: {'Yes' if result['null_free'] else 'No'}")
+
+            if result["patterns"]:
+                print(f"\nSuspicious patterns ({len(result['patterns'])}):")
+                for p in result["patterns"]:
+                    print(f"  {p['offset']}: {p['description']}")
+
+            if result["syscalls"]:
+                print(f"\nSyscalls ({len(result['syscalls'])}):")
+                for s in result["syscalls"]:
+                    print(f"  {s['offset']}: {s['syscall_name']} (#{s['syscall_num']})")
+
+            if result["encoding_suspects"]:
+                print(f"\nEncoding suspects:")
+                for e in result["encoding_suspects"]:
+                    print(f"  {e}")
+
+            if result["strings"]:
+                print(f"\nStrings:")
+                for s in result["strings"][:10]:
+                    print(f"  {repr(s)}")
+
+        case "yara":
+            data = args.file.read_bytes()
+            rule = generate_yara_rule(data, args.name)
+            if args.output:
+                args.output.write_text(rule)
+                print(f"[+] YARA rule saved: {args.output}")
+            else:
+                print(rule)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Unicorn Engine Shellcode Emulation
+
+```python
+#!/usr/bin/env python3
+"""Safe shellcode emulation with Unicorn Engine — syscall tracing."""
+
+import argparse
+import struct
+from pathlib import Path
+
+try:
+    from unicorn import *
+    from unicorn.x86_const import *
+    UNICORN_AVAILABLE = True
+except ImportError:
+    UNICORN_AVAILABLE = False
+
+
+BASE_ADDR = 0x400000
+STACK_ADDR = 0x700000
+STACK_SIZE = 0x10000
+MAX_INSNS = 10000
+
+
+def emulate_shellcode(shellcode: bytes) -> list[dict]:
+    if not UNICORN_AVAILABLE:
+        print("unicorn required: pip install unicorn")
+        return []
+
+    mu = Uc(UC_ARCH_X86, UC_MODE_64)
+
+    # Memory mapping
+    mu.mem_map(BASE_ADDR, 0x100000)
+    mu.mem_map(STACK_ADDR, STACK_SIZE)
+
+    # Load shellcode
+    mu.mem_write(BASE_ADDR, shellcode)
+
+    # Initialize registers
+    mu.reg_write(UC_X86_REG_RSP, STACK_ADDR + STACK_SIZE // 2)
+    mu.reg_write(UC_X86_REG_RIP, BASE_ADDR)
+
+    syscall_log: list[dict] = []
+
+    def hook_syscall(mu, user_data):
+        rax = mu.reg_read(UC_X86_REG_RAX)
+        rdi = mu.reg_read(UC_X86_REG_RDI)
+        rsi = mu.reg_read(UC_X86_REG_RSI)
+        rdx = mu.reg_read(UC_X86_REG_RDX)
+        rip = mu.reg_read(UC_X86_REG_RIP)
+
+        from unicorn.x86_const import UC_X86_INS_SYSCALL
+        LINUX_SYSCALLS = {
+            59: "execve", 60: "exit", 1: "write", 2: "open",
+            41: "socket", 42: "connect", 0: "read",
+        }
+        name = LINUX_SYSCALLS.get(rax, f"syscall_{rax}")
+        entry = {
+            "rip": hex(rip),
+            "syscall": name,
+            "rax": rax,
+            "rdi": hex(rdi),
+            "rsi": hex(rsi),
+            "rdx": hex(rdx),
+        }
+        syscall_log.append(entry)
+        print(f"  [syscall] {name}(rdi={hex(rdi)}, rsi={hex(rsi)}, rdx={hex(rdx)})")
+
+        # Stop emulation when execve is detected
+        if rax == 59:
+            mu.emu_stop()
+
+    mu.hook_add(UC_HOOK_INSN, hook_syscall, None, 1, 0, UC_X86_INS_SYSCALL)
+
+    try:
+        mu.emu_start(BASE_ADDR, BASE_ADDR + len(shellcode), count=MAX_INSNS)
+    except UcError as e:
+        print(f"[Emulation error] {e}")
+
+    return syscall_log
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Safe shellcode emulation")
+    parser.add_argument("file", type=Path, help="Shellcode binary")
+    args = parser.parse_args()
+
+    data = args.file.read_bytes()
+    print(f"[*] Starting emulation: {args.file.name} ({len(data)} bytes)")
+    print("[!] Note: emulation only — no impact on real system\n")
+
+    syscalls = emulate_shellcode(data)
+    print(f"\nTotal syscalls detected: {len(syscalls)}")
+    if any(s["syscall"] == "execve" for s in syscalls):
+        print("[!] execve call detected — shell execution attempted")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. Shellcode Detection Signatures
+
+| Pattern | Description | YARA Condition |
+|---------|-------------|----------------|
+| `\x0f\x05` | x86-64 syscall | Frequent syscall |
+| `\xcd\x80` | x86 int 0x80 | Legacy shellcode |
+| `\x90` * N | NOP sled | 10+ consecutive |
+| `/bin/sh` string | execve argument | String present |
+| `\xff\xe4` | jmp rsp | Stack pivot |
+| Entropy > 7.5 | Encryption/encoding | High entropy |
+| No nulls | Null-free shellcode | Network payload |

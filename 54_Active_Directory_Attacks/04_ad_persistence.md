@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # AD 지속성 — Golden Ticket·ACL 조작·탐지 CLI
 
 ## 1. AD 지속성 기법 분류
@@ -211,32 +217,12 @@ class ADPersistenceDetector:
             auto_bind=True,
         )
 
-    def check_dcsync_acls(self) -> list[PersistenceIndicator]:
-        """DCSync 권한 보유 비표준 계정 탐지."""
-        indicators: list[PersistenceIndicator] = []
-
-        self.conn.search(
-            search_base=self.base_dn,
-            search_filter="(objectClass=domain)",
-            attributes=["nTSecurityDescriptor"],
-        )
-
-        for entry in self.conn.entries:
-            sd = entry.nTSecurityDescriptor.value if hasattr(entry.nTSecurityDescriptor, 'value') else None
-            if not sd:
-                continue
-
-        return indicators
-
     def check_admin_account_creation(self, days: int = 30) -> list[PersistenceIndicator]:
         """최근 생성된 관리자 그룹 멤버 탐지."""
         indicators: list[PersistenceIndicator] = []
         from datetime import timedelta
 
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-        # LDAP filetime 변환 (100ns 단위, 1601-01-01 기준)
-        EPOCH_DIFF = 11644473600
-        cutoff_filetime = int((cutoff.timestamp() + EPOCH_DIFF) * 10_000_000)
 
         for group in PROTECTED_GROUPS:
             group_dn = f"CN={group},CN=Users,{self.base_dn}"
@@ -249,7 +235,7 @@ class ADPersistenceDetector:
                 indicators.append(PersistenceIndicator(
                     indicator_type="NEW_ADMIN_ACCOUNT",
                     subject=str(entry.sAMAccountName),
-                    detail=f"그룹: {group}, 생성: {entry.whenCreated}",
+                    detail=f"Group: {group}, Created: {entry.whenCreated}",
                     risk="HIGH",
                 ))
 
@@ -277,7 +263,7 @@ class ADPersistenceDetector:
             indicators.append(PersistenceIndicator(
                 indicator_type="PWD_NEVER_EXPIRES",
                 subject=username,
-                detail=f"권한그룹 소속: {is_privileged}",
+                detail=f"In privileged group: {is_privileged}",
                 risk="HIGH" if is_privileged else "MEDIUM",
             ))
 
@@ -297,7 +283,7 @@ class ADPersistenceDetector:
             indicators.append(PersistenceIndicator(
                 indicator_type="SHADOW_CREDENTIALS",
                 subject=str(entry.sAMAccountName),
-                detail=f"KeyCredential 수 {len(entry['msDS-KeyCredentialLink'].values)}개",
+                detail=f"KeyCredential count: {len(entry['msDS-KeyCredentialLink'].values)}",
                 risk="HIGH",
             ))
 
@@ -306,13 +292,13 @@ class ADPersistenceDetector:
     def run_all_checks(self) -> list[PersistenceIndicator]:
         all_indicators: list[PersistenceIndicator] = []
 
-        print("[*] 관리자 계정 신규 생성 확인...")
+        print("[*] Checking new admin account creation...")
         all_indicators.extend(self.check_admin_account_creation())
 
-        print("[*] 패스워드 만료 없는 계정 확인...")
+        print("[*] Checking password never expires accounts...")
         all_indicators.extend(self.check_pwdneverexpires())
 
-        print("[*] Shadow Credentials 확인...")
+        print("[*] Checking Shadow Credentials...")
         all_indicators.extend(self.check_shadow_credentials())
 
         return all_indicators
@@ -322,9 +308,9 @@ class ADPersistenceDetector:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="AD 지속성 탐지")
+    parser = argparse.ArgumentParser(description="AD Persistence Detection")
     parser.add_argument("dc", help="DC IP")
-    parser.add_argument("domain", help="도메인 (예: corp.local)")
+    parser.add_argument("domain", help="Domain (e.g.: corp.local)")
     parser.add_argument("-u", "--user", required=True)
     parser.add_argument("-p", "--password", required=True)
     parser.add_argument("-o", "--output", type=Path)
@@ -339,10 +325,10 @@ def main() -> None:
         risk_counts[ind.risk] = risk_counts.get(ind.risk, 0) + 1
         icon = "!" if ind.risk == "HIGH" else "?"
         print(f"\n[{icon}] [{ind.risk}] {ind.indicator_type}")
-        print(f"  대상: {ind.subject}")
-        print(f"  상세: {ind.detail}")
+        print(f"  Subject: {ind.subject}")
+        print(f"  Detail: {ind.detail}")
 
-    print(f"\n총 {len(indicators)}개 — HIGH:{risk_counts['HIGH']} / MEDIUM:{risk_counts['MEDIUM']}")
+    print(f"\nTotal {len(indicators)} — HIGH:{risk_counts['HIGH']} / MEDIUM:{risk_counts['MEDIUM']}")
 
     if args.output:
         args.output.write_text(
@@ -370,3 +356,112 @@ if __name__ == "__main__":
 | AdminSDHolder | 5136 — AdminSDHolder 수정 | SDProp 로그 모니터링 |
 | 신규 관리자 | 4728, 4732 — 그룹 멤버 추가 | 보호 그룹 변경 알림 |
 | DSRM 활성화 | 레지스트리 변경 | DsrmAdminLogonBehavior=0 강제 |
+
+---
+
+<a name="english"></a>
+
+# AD Persistence — Golden Ticket, ACL Manipulation, and Detection CLI
+
+## 1. AD Persistence Technique Classification
+
+After domain dominance, attackers establish multiple persistence mechanisms to maintain long-term access even if their initial foothold is discovered.
+
+**Ticket-based persistence:**
+- **Golden Ticket** — forged TGT signed with krbtgt hash, valid for up to 20 years
+- **Silver Ticket** — forged service ticket, doesn't touch KDC (harder to detect)
+- **Diamond Ticket** — modified legitimate TGT (evades PAC validation)
+- **Sapphire Ticket** — maintains PAC encryption (bypasses FAST)
+
+**Account-based persistence:**
+- Create backdoor administrator accounts
+- Modify AdminSDHolder (propagates ACL to all protected accounts via SDProp)
+- Set DSRM password (every DC has a local admin account for offline recovery)
+- Steal gMSA account hash
+
+**Object-based persistence:**
+- Grant DCSync rights via ACL modification
+- Shadow Credentials — modify `msDS-KeyCredentialLink` for certificate-based auth backdoor
+- SID History injection
+- DCOM backdoor
+- GPO persistence
+
+---
+
+## 2. Golden Ticket
+
+The Golden Ticket attack forges a TGT that the KDC accepts as valid because it's correctly signed with the krbtgt secret. This grants the bearer access to any service in the domain.
+
+**Four steps:**
+1. Obtain krbtgt NTLM hash via DCSync
+2. Obtain domain SID
+3. Forge the Golden Ticket with `ticketer.py` or Mimikatz
+4. Use `KRB5CCNAME` to authenticate with the forged ticket
+
+**Note:** Since the ticket is valid even for non-existent usernames, this bypass works even after the compromised account is disabled.
+
+---
+
+## 3. Silver Ticket
+
+Unlike the Golden Ticket, the Silver Ticket targets a specific service and is signed with the service account's hash rather than krbtgt. The advantage is that no KDC communication occurs during authentication — the service validates the ticket directly. This makes Silver Tickets significantly harder to detect.
+
+**Common Silver Ticket targets:**
+- `cifs/server` — SMB file access
+- `host/server` — WMI, Task Scheduler
+- `http/server` — IIS web services
+- `mssql/server` — SQL Server access
+
+---
+
+## 4. ACL-based Persistence
+
+### 4.1 Granting DCSync Rights
+
+Adding `DS-Replication-Get-Changes` and `DS-Replication-Get-Changes-All` rights to a non-DC account allows that account to perform DCSync at any time. This is a stealthy persistence mechanism since the account appears normal.
+
+### 4.2 AdminSDHolder Abuse
+
+AdminSDHolder is a special container that serves as a template for protected group member ACLs. Every 60 minutes, SDProp copies ACLs from AdminSDHolder to all members of protected groups (Domain Admins, Enterprise Admins, etc.). By adding an attacker account to AdminSDHolder, the backdoor propagates to all protected accounts automatically.
+
+### 4.3 Shadow Credentials
+
+Shadow Credentials abuse the `msDS-KeyCredentialLink` attribute to add an X.509 certificate credential to a target account. The attacker can then authenticate as that account using the certificate's private key, bypassing password-based detection.
+
+---
+
+## 5. DSRM Backdoor
+
+Every Domain Controller has a local administrator account (DSRM account) used for offline directory recovery. By setting a known DSRM password and enabling network logon via registry key (`DsrmAdminLogonBehavior = 2`), an attacker gains persistent local admin access to all DCs even after domain credential resets.
+
+---
+
+## 6. AD Persistence Detection CLI
+
+The `ADPersistenceDetector` class performs three LDAP-based checks:
+
+**`check_admin_account_creation(days=30)`** — finds accounts created within the last N days that are members of protected groups (Domain Admins, Enterprise Admins, etc.)
+
+**`check_pwdneverexpires()`** — identifies user accounts with `DONT_EXPIRE_PASSWORD` flag set, especially those in privileged groups (potential backdoor accounts)
+
+**`check_shadow_credentials()`** — finds any account with a non-empty `msDS-KeyCredentialLink` attribute, which indicates Shadow Credentials have been set
+
+**Usage:**
+```bash
+python3 ad_persistence_detector.py 10.10.10.100 corp.local \
+    -u auditor -p AuditPass123 -o persistence_findings.json
+```
+
+---
+
+## 7. Persistence Defense and Detection
+
+| Persistence Technique | Detection Event | Defense |
+|-----------------------|----------------|---------|
+| Golden Ticket | Event 4769 — RC4 encrypted TGS / non-existent user | Reset krbtgt password twice + enforce AES |
+| Silver Ticket | Event 4627 — anomalous service access | Enable PAC validation |
+| DCSync | Event 4662 — DS-Replication events | SIEM rule / canary accounts |
+| Shadow Credentials | Event 5136 — directory service modification | Monitor msDS-KeyCredentialLink changes |
+| AdminSDHolder | Event 5136 — AdminSDHolder modification | Monitor SDProp logs |
+| New admin account | Events 4728, 4732 — group member addition | Alert on protected group changes |
+| DSRM activation | Registry change | Force DsrmAdminLogonBehavior=0 |

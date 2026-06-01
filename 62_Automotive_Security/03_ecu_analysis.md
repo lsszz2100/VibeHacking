@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # ECU 분석 및 펌웨어 해킹
 
 ## ECU 하드웨어 분석
@@ -104,7 +110,6 @@ def send_uds(
     timeout: float = 2.0,
 ) -> UDSResponse | None:
     """UDS 요청 전송 및 응답 수신."""
-    # ISO-TP 단일 프레임 (SF): 데이터 길이 ≤ 7
     if len(request) <= 7:
         frame_data = bytes([len(request)]) + request + bytes(7 - len(request))
         frame = can.Message(
@@ -114,11 +119,9 @@ def send_uds(
         )
         bus.send(frame)
     else:
-        # 멀티프레임 필요 (간략화 — 실제로는 ISO-TP 라이브러리 사용)
         print("[!] 멀티프레임 미지원 — isotp 라이브러리 사용 권장", file=sys.stderr)
         return None
 
-    # 응답 대기
     deadline = time.time() + timeout
     while time.time() < deadline:
         msg = bus.recv(timeout=0.1)
@@ -127,7 +130,7 @@ def send_uds(
             length = data[0] & 0x0F
             payload = data[1:1 + length]
 
-            if payload[0] == 0x7F:  # 부정 응답
+            if payload[0] == 0x7F:
                 return UDSResponse(
                     service_id=payload[1],
                     data=payload,
@@ -142,21 +145,14 @@ def send_uds(
     return None
 
 
-def change_session(
-    bus: can.Bus, tx_id: int, rx_id: int, session: int
-) -> bool:
-    resp = send_uds(bus, tx_id, rx_id,
-                    bytes([SID_DIAG_SESSION, session]))
+def change_session(bus: can.Bus, tx_id: int, rx_id: int, session: int) -> bool:
+    resp = send_uds(bus, tx_id, rx_id, bytes([SID_DIAG_SESSION, session]))
     return resp is not None and resp.is_positive
 
 
-def security_access(
-    bus: can.Bus, tx_id: int, rx_id: int, level: int
-) -> bool:
+def security_access(bus: can.Bus, tx_id: int, rx_id: int, level: int) -> bool:
     """시드-키 보안 접근 (키 알고리즘은 제조사마다 다름)."""
-    # 시드 요청
-    resp = send_uds(bus, tx_id, rx_id,
-                    bytes([SID_SECURITY_ACCESS, level]))
+    resp = send_uds(bus, tx_id, rx_id, bytes([SID_SECURITY_ACCESS, level]))
     if not resp or not resp.is_positive or len(resp.data) < 4:
         print(f"[!] 시드 요청 실패")
         return False
@@ -164,11 +160,9 @@ def security_access(
     seed = resp.data[:4]
     print(f"[*] 시드: {seed.hex().upper()}")
 
-    # 키 계산 (예시: 간단한 XOR — 실제는 역공학 필요)
     key = bytes(b ^ 0xFF for b in seed)
     print(f"[*] 키 (추정): {key.hex().upper()}")
 
-    # 키 전송
     resp2 = send_uds(bus, tx_id, rx_id,
                      bytes([SID_SECURITY_ACCESS, level + 1]) + key)
     if resp2 and resp2.is_positive:
@@ -179,23 +173,17 @@ def security_access(
     return False
 
 
-def read_data_by_id(
-    bus: can.Bus, tx_id: int, rx_id: int, did: int
-) -> bytes | None:
+def read_data_by_id(bus: can.Bus, tx_id: int, rx_id: int, did: int) -> bytes | None:
     """데이터 식별자(DID)로 ECU 데이터 읽기."""
     resp = send_uds(bus, tx_id, rx_id,
-                    bytes([SID_READ_DATA,
-                           (did >> 8) & 0xFF,
-                           did & 0xFF]))
+                    bytes([SID_READ_DATA, (did >> 8) & 0xFF, did & 0xFF]))
     if resp and resp.is_positive:
-        return resp.data[2:]  # DID 에코 건너뜀
+        return resp.data[2:]
     return None
 
 
-def enumerate_dids(
-    bus: can.Bus, tx_id: int, rx_id: int,
-    start: int = 0xF100, end: int = 0xF1FF,
-) -> dict[int, bytes]:
+def enumerate_dids(bus: can.Bus, tx_id: int, rx_id: int,
+                   start: int = 0xF100, end: int = 0xF1FF) -> dict[int, bytes]:
     """DID 열거 — 제조사 데이터 발견."""
     found: dict[int, bytes] = {}
     print(f"[*] DID 열거: 0x{start:04X}~0x{end:04X}")
@@ -203,10 +191,7 @@ def enumerate_dids(
         data = read_data_by_id(bus, tx_id, rx_id, did)
         if data:
             found[did] = data
-            printable = ''.join(
-                chr(b) if 32 <= b < 127 else '.'
-                for b in data
-            )
+            printable = ''.join(chr(b) if 32 <= b < 127 else '.' for b in data)
             print(f"  DID 0x{did:04X}: {data.hex()} | {printable}")
         time.sleep(0.05)
     return found
@@ -219,18 +204,13 @@ NRC_CODES = {
     0x13: "incorrectMessageLengthOrInvalidFormat",
     0x22: "conditionsNotCorrect",
     0x24: "requestSequenceError",
-    0x25: "noResponseFromSubnetComponent",
-    0x26: "failurePreventsExecutionOfRequestedAction",
     0x31: "requestOutOfRange",
     0x33: "securityAccessDenied",
     0x35: "invalidKey",
     0x36: "exceededNumberOfAttempts",
     0x37: "requiredTimeDelayNotExpired",
     0x70: "uploadDownloadNotAccepted",
-    0x71: "transferDataSuspended",
     0x72: "generalProgrammingFailure",
-    0x73: "wrongBlockSequenceCounter",
-    0x78: "requestCorrectlyReceivedResponsePending",
     0x7E: "subFunctionNotSupportedInActiveSession",
     0x7F: "serviceNotSupportedInActiveSession",
 }
@@ -239,10 +219,8 @@ NRC_CODES = {
 def main() -> None:
     parser = argparse.ArgumentParser(description="UDS ECU 분석 도구")
     parser.add_argument("interface", help="CAN 인터페이스 (vcan0)")
-    parser.add_argument("--tx-id", type=lambda x: int(x, 16),
-                        default=0x7E0, help="송신 CAN ID (기본: 0x7E0)")
-    parser.add_argument("--rx-id", type=lambda x: int(x, 16),
-                        default=0x7E8, help="수신 CAN ID (기본: 0x7E8)")
+    parser.add_argument("--tx-id", type=lambda x: int(x, 16), default=0x7E0)
+    parser.add_argument("--rx-id", type=lambda x: int(x, 16), default=0x7E8)
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("session", help="확장 세션 전환 테스트")
@@ -268,8 +246,7 @@ def main() -> None:
                 ("Extended", SESSION_EXTENDED),
             ]:
                 ok = change_session(bus, args.tx_id, args.rx_id, session_id)
-                print(f"  세션 {session_name} (0x{session_id:02X}): "
-                      f"{'✓' if ok else '✗'}")
+                print(f"  세션 {session_name} (0x{session_id:02X}): {'✓' if ok else '✗'}")
 
         elif args.cmd == "security":
             change_session(bus, args.tx_id, args.rx_id, SESSION_EXTENDED)
@@ -277,15 +254,13 @@ def main() -> None:
 
         elif args.cmd == "enum-did":
             change_session(bus, args.tx_id, args.rx_id, SESSION_EXTENDED)
-            found = enumerate_dids(bus, args.tx_id, args.rx_id,
-                                   args.start, args.end)
+            found = enumerate_dids(bus, args.tx_id, args.rx_id, args.start, args.end)
             print(f"\n[+] 발견된 DID: {len(found)}개")
 
         elif args.cmd == "read-did":
             data = read_data_by_id(bus, args.tx_id, args.rx_id, args.did)
             if data:
-                print(f"[+] DID 0x{args.did:04X}: {data.hex()} "
-                      f"| {data.decode(errors='replace')}")
+                print(f"[+] DID 0x{args.did:04X}: {data.hex()} | {data.decode(errors='replace')}")
             else:
                 print(f"[-] DID 0x{args.did:04X}: 응답 없음")
     finally:
@@ -317,3 +292,253 @@ grep -r "SecurityAccess\|0x27" ghidra_export/ 2>/dev/null
 ```
 
 다음 파일에서 V2X 통신 보안을 다룬다.
+
+---
+
+<a name="english"></a>
+
+# ECU Analysis and Firmware Hacking
+
+## ECU Hardware Analysis
+
+### Common ECU Architecture
+```
+ECU Board Components
+├── Microcontroller (MCU)
+│   ├── Renesas RH850, RL78
+│   ├── NXP S32K, MPC57xx
+│   ├── Infineon TC2xx, TC3xx (TriCore)
+│   └── STMicroelectronics SPC5xx
+├── Flash memory (1~32MB)
+├── EEPROM (configuration storage)
+├── CAN transceiver
+├── LIN transceiver (optional)
+└── Power management IC
+```
+
+### Physical Access Methods
+```bash
+# 1. JTAG/SWD debug interface
+#    — Pin discovery (logic analyzer, multimeter)
+#    — Connect with OpenOCD
+#    — Flash dump, memory access
+
+# 2. Bootloader mode entry
+#    — Set BOOT pin to specific level
+#    — CAN/LIN/FlexRay bootloader protocol
+
+# 3. Direct flash chip reading
+#    — Desolder chip or use clip
+#    — SPI flash: read with flashrom
+
+# 4. Diagnostic port access (CAN via OBD-II)
+#    — Use UDS protocol
+```
+
+## Firmware Dump
+
+### JTAG Dump
+```bash
+# OpenOCD configuration (Renesas RH850 example)
+cat > openocd.cfg <<'EOF'
+interface ftdi
+ftdi_device_desc "FTDI USB Serial"
+ftdi_vid_pid 0x0403 0x6010
+adapter_khz 1000
+
+set CHIP_NAME R7F701035
+source [find target/renesas_rh850.cfg]
+EOF
+
+openocd -f openocd.cfg
+
+# From another terminal
+telnet localhost 4444
+> halt
+> dump_image ecu_firmware.bin 0x00000000 0x200000
+> resume
+```
+
+### UDS Memory Read
+```python
+#!/usr/bin/env python3
+"""ECU data reading via UDS protocol."""
+
+import argparse
+import can
+import time
+import sys
+from dataclasses import dataclass
+
+
+# UDS Service IDs
+SID_DIAG_SESSION = 0x10
+SID_SECURITY_ACCESS = 0x27
+SID_READ_DATA = 0x22
+SID_WRITE_DATA = 0x2E
+SID_READ_MEMORY = 0x23
+SID_REQUEST_DOWNLOAD = 0x34
+SID_TRANSFER_DATA = 0x36
+SID_TESTER_PRESENT = 0x3E
+
+# UDS Session Types
+SESSION_DEFAULT = 0x01
+SESSION_PROGRAMMING = 0x02
+SESSION_EXTENDED = 0x03
+
+
+@dataclass
+class UDSResponse:
+    service_id: int
+    data: bytes
+    is_positive: bool
+    nrc: int = 0  # Negative Response Code
+
+
+def send_uds(bus: can.Bus, tx_id: int, rx_id: int, request: bytes, timeout: float = 2.0) -> UDSResponse | None:
+    """Send UDS request and receive response."""
+    if len(request) <= 7:
+        frame_data = bytes([len(request)]) + request + bytes(7 - len(request))
+        frame = can.Message(arbitration_id=tx_id, data=frame_data, is_extended_id=False)
+        bus.send(frame)
+    else:
+        print("[!] Multi-frame not supported — use isotp library", file=sys.stderr)
+        return None
+
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        msg = bus.recv(timeout=0.1)
+        if msg and msg.arbitration_id == rx_id:
+            data = bytes(msg.data)
+            length = data[0] & 0x0F
+            payload = data[1:1 + length]
+            if payload[0] == 0x7F:
+                return UDSResponse(service_id=payload[1], data=payload, is_positive=False,
+                                   nrc=payload[2] if len(payload) > 2 else 0)
+            return UDSResponse(service_id=payload[0], data=payload[1:], is_positive=True)
+    return None
+
+
+def change_session(bus: can.Bus, tx_id: int, rx_id: int, session: int) -> bool:
+    resp = send_uds(bus, tx_id, rx_id, bytes([SID_DIAG_SESSION, session]))
+    return resp is not None and resp.is_positive
+
+
+def security_access(bus: can.Bus, tx_id: int, rx_id: int, level: int) -> bool:
+    """Seed-key security access (key algorithm varies by manufacturer)."""
+    resp = send_uds(bus, tx_id, rx_id, bytes([SID_SECURITY_ACCESS, level]))
+    if not resp or not resp.is_positive or len(resp.data) < 4:
+        print("[!] Seed request failed")
+        return False
+
+    seed = resp.data[:4]
+    print(f"[*] Seed: {seed.hex().upper()}")
+
+    # Key calculation (example: simple XOR — real key requires reverse engineering)
+    key = bytes(b ^ 0xFF for b in seed)
+    print(f"[*] Key (estimated): {key.hex().upper()}")
+
+    resp2 = send_uds(bus, tx_id, rx_id, bytes([SID_SECURITY_ACCESS, level + 1]) + key)
+    if resp2 and resp2.is_positive:
+        print("[+] Security access successful!")
+        return True
+    nrc = resp2.nrc if resp2 else 0
+    print(f"[-] Security access failed (NRC: 0x{nrc:02X})")
+    return False
+
+
+def read_data_by_id(bus: can.Bus, tx_id: int, rx_id: int, did: int) -> bytes | None:
+    """Read ECU data by Data Identifier (DID)."""
+    resp = send_uds(bus, tx_id, rx_id, bytes([SID_READ_DATA, (did >> 8) & 0xFF, did & 0xFF]))
+    if resp and resp.is_positive:
+        return resp.data[2:]  # Skip DID echo
+    return None
+
+
+def enumerate_dids(bus: can.Bus, tx_id: int, rx_id: int,
+                   start: int = 0xF100, end: int = 0xF1FF) -> dict[int, bytes]:
+    """DID enumeration — discover manufacturer data."""
+    found: dict[int, bytes] = {}
+    print(f"[*] DID enumeration: 0x{start:04X}~0x{end:04X}")
+    for did in range(start, end + 1):
+        data = read_data_by_id(bus, tx_id, rx_id, did)
+        if data:
+            found[did] = data
+            printable = ''.join(chr(b) if 32 <= b < 127 else '.' for b in data)
+            print(f"  DID 0x{did:04X}: {data.hex()} | {printable}")
+        time.sleep(0.05)
+    return found
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="UDS ECU analysis tool")
+    parser.add_argument("interface", help="CAN interface (vcan0)")
+    parser.add_argument("--tx-id", type=lambda x: int(x, 16), default=0x7E0, help="TX CAN ID (default: 0x7E0)")
+    parser.add_argument("--rx-id", type=lambda x: int(x, 16), default=0x7E8, help="RX CAN ID (default: 0x7E8)")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("session", help="Extended session switch test")
+    sec_p = sub.add_parser("security", help="Security access test")
+    sec_p.add_argument("--level", type=int, default=1)
+    enum_p = sub.add_parser("enum-did", help="DID enumeration")
+    enum_p.add_argument("--start", type=lambda x: int(x, 16), default=0xF100)
+    enum_p.add_argument("--end", type=lambda x: int(x, 16), default=0xF1FF)
+    read_p = sub.add_parser("read-did", help="Read DID")
+    read_p.add_argument("did", type=lambda x: int(x, 16))
+
+    args = parser.parse_args()
+    bus = can.interface.Bus(args.interface, interface="socketcan")
+    try:
+        if args.cmd == "session":
+            for session_name, session_id in [
+                ("Default", SESSION_DEFAULT),
+                ("Programming", SESSION_PROGRAMMING),
+                ("Extended", SESSION_EXTENDED),
+            ]:
+                ok = change_session(bus, args.tx_id, args.rx_id, session_id)
+                print(f"  Session {session_name} (0x{session_id:02X}): {'OK' if ok else 'FAIL'}")
+
+        elif args.cmd == "security":
+            change_session(bus, args.tx_id, args.rx_id, SESSION_EXTENDED)
+            security_access(bus, args.tx_id, args.rx_id, args.level)
+
+        elif args.cmd == "enum-did":
+            change_session(bus, args.tx_id, args.rx_id, SESSION_EXTENDED)
+            found = enumerate_dids(bus, args.tx_id, args.rx_id, args.start, args.end)
+            print(f"\n[+] DIDs found: {len(found)}")
+
+        elif args.cmd == "read-did":
+            data = read_data_by_id(bus, args.tx_id, args.rx_id, args.did)
+            if data:
+                print(f"[+] DID 0x{args.did:04X}: {data.hex()} | {data.decode(errors='replace')}")
+            else:
+                print(f"[-] DID 0x{args.did:04X}: No response")
+    finally:
+        bus.shutdown()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## Firmware Reversing (TriCore Example)
+
+```bash
+# Add TriCore processor to Ghidra
+# After installing TriCore plugin
+
+# Analyze RH850 with IDA Pro
+# Processor module: Renesas RH850
+
+# Common analysis points
+# 1. Interrupt vector table
+# 2. CAN receive handler
+# 3. UDS service dispatcher
+# 4. Security access key algorithm
+
+# Reverse engineer key algorithm
+# Search for SecurityAccess subroutine
+grep -r "SecurityAccess\|0x27" ghidra_export/ 2>/dev/null
+```
+
+The next file covers V2X communication security.

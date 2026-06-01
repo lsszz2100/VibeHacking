@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 사이드채널 공격과 결함 주입
 
 ## 1. 사이드채널 공격 개요
@@ -917,3 +923,72 @@ uint8_t masked_sbox(uint8_t x, uint8_t mask_in, uint8_t mask_out) {
 ## 법적 고지
 
 이 자료의 기법은 **자신이 소유하거나 명시적 서면 허가를 받은 장치**에 한해 수행해야 한다. 전압·클락 글리칭은 장치를 영구 손상시킬 수 있다. 레이저 폴트 인젝션은 고출력 레이저 취급 안전 교육이 선행되어야 한다.
+
+---
+
+<a name="english"></a>
+
+# Side-Channel Attacks and Fault Injection
+
+## 1. Side-Channel Attack Overview
+
+Even if a cryptographic algorithm is mathematically secure, it is possible to recover the secret key through physical byproducts such as power consumption, electromagnetic radiation, processing time, and sound during the **implementation** stage. Side-channel attacks do not attack the algorithm itself, but measure physical characteristics of the execution environment.
+
+```
+Cryptographic operation → Power consumption pattern → Measurement → Statistical analysis → Key recovery
+                          Electromagnetic radiation
+                          Processing time
+```
+
+## Key Attack Types
+
+### Simple Power Analysis (SPA)
+- Directly reads the key from a single power trace
+- Visible differences between processing '0' and '1' bits
+- Example: RSA square-and-multiply algorithm leaks key bits
+
+### Differential Power Analysis (DPA)
+- Statistical attack using many power traces
+- Does not require knowledge of the algorithm's internal structure
+- Most effective against AES, DES implementations
+
+### Timing Attacks
+- Exploit time differences in algorithm execution
+- Classic example: RSA timing attack (Montgomery multiplication timing)
+- Remote attack possible via network timing
+
+### Electromagnetic Analysis (EMA)
+- Capture electromagnetic radiation emitted by the chip
+- More targeted than power analysis
+- Possible without physical contact
+
+## Fault Injection Overview
+
+```
+Fault injection methods:
+  Voltage glitching  → Brief voltage spike
+  Clock glitching    → Brief clock signal manipulation
+  Laser FI           → Laser irradiation on specific chip area
+  Electromagnetic FI → Electromagnetic pulse injection
+
+Goals:
+  → Skip security checks (secure boot bypass)
+  → Leak cryptographic keys
+  → Change register values (privilege escalation)
+  → Induce calculation errors (signature bypass)
+```
+
+## Countermeasures
+
+| Countermeasure | Effective Against | Implementation |
+|---------------|------------------|----------------|
+| Dual-rail logic | DPA | CMOS differential logic (constant power consumption) |
+| Glitch detector | Voltage/clock glitching | Voltage monitor, clock frequency detector |
+| Mesh protection layer | Laser | Metal mesh on top of chip (detected when irradiated) |
+| Temperature sensor | LFI | Detects temperature rise when laser irradiated |
+
+---
+
+## Legal Notice
+
+The techniques in this material must only be performed on **devices you own or have explicit written permission** for. Voltage and clock glitching can permanently damage devices. Laser fault injection requires prior safety training for high-power laser handling.

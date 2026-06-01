@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 03 — OT 네트워크 공격 및 방어
 
 ## 목차
@@ -752,3 +758,90 @@ zeek -C -r ot_capture.pcap detect_modbus_writes.zeek
 ---
 
 *이 문서는 허가된 모의해킹 및 교육 목적으로만 사용할 것.*
+
+---
+
+<a name="english"></a>
+
+# 03 — OT Network Attacks and Defense
+
+## 1. OT Network Architecture Overview
+
+### Purdue Enterprise Reference Architecture (PERA)
+
+The Purdue model defines 6 levels:
+- **Level 5**: Enterprise Network (ERP, email, internet)
+- **Level 4**: Business Planning (MES, ERP integration)
+- **IT/OT Boundary (DMZ)**
+- **Level 3**: Operations Management (SCADA, Historian, MES)
+- **Level 2**: Control Supervision (HMI, DCS, OPC servers)
+- **Level 1**: Basic Control (PLC, RTU, DCS controllers)
+- **Level 0**: Field Devices (sensors, actuators, motors, valves)
+
+---
+
+## 2. Purdue Model Layer-by-Layer Attacks
+
+**Level 3 — SCADA/Historian Attacks**: OPC UA server enumeration using asyncua, MES SQL injection via sqlmap targeting batch and quality data tables.
+
+**Level 2 — HMI/DCS Attacks**: OSIsoft PI System fake tag value injection via PI Web API (using requests with HTTPBasicAuth), inserting plausible-looking values with Gaussian noise to conceal actual anomalies.
+
+---
+
+## 3. IT/OT Boundary Lateral Movement
+
+**DMZ Breach Techniques**:
+- OPC tunneling: compromise DMZ server → use OPC protocol to move Level 3→Level 2
+- Tools: Chisel (tunneling), impacket (SMB relay)
+- VPN exploitation: Fortinet SSL-VPN CVE-2018-13379 (path traversal), Pulse Secure CVE-2019-11510 (unauthenticated file read)
+
+---
+
+## 4. OT-Specific Malware Analysis
+
+**TRITON/TRISIS (2017)**: Targeted Schneider Electric Triconex Safety Instrumented Systems, aiming to disable safety systems to cause physical explosions. Attack chain: IT network spear-phishing → Historian server → EWS → TriStation 1131 software abuse → malicious function block upload.
+
+**INDUSTROYER/CRASHOVERRIDE (2016)**: Attacked Ukrainian power grid using IEC 104, IEC 101, IEC 61850 GOOSE, and OPC DA payloads to open circuit breakers causing blackouts.
+
+**PIPEDREAM/INCONTROLLER (2022)**: Components include MOUSEHOLE (Omron PLC via Fins protocol), BADOMEN (OPC UA server), DUSTTUNNEL (Schneider Electric IPC backdoor), LAZYCARGO (ASRock driver BYOVD kernel privilege escalation).
+
+---
+
+## 5. Wireless OT Attacks (WirelessHART/ISA100)
+
+**WirelessHART** (IEC 62591, IEEE 802.15.4, 2.4GHz, AES-128 CCM):
+- Attack surface: default Join Key usage → network join + packet decryption; replay attacks due to weak timestamp validation; gateway DoS via 802.15.4 frame flooding
+- Tools: KillerBee, GoodFET, YARD Stick One
+
+---
+
+## 6. Clock Manipulation and GPS Spoofing
+
+NTP manipulation impacts ICS by corrupting log timestamps (hinders incident investigation), allowing GOOSE message replay (circuit breaker misoperation), causing certificate validity errors (forced TLS session termination).
+
+GPS spoofing using GPS-SDR-SIM with HackRF One can spoof GPS L1 (1575.42 MHz) to manipulate precision timing in power grid protection systems.
+
+---
+
+## 7. Python Tool: OT Network Topology Mapper
+
+An async OT network asset identification tool combining passive sniffing and active protocol probing. Identifies assets by Modbus, S7comm, EtherNet/IP, BACnet, OPC UA, HTTP, and RDP protocol responses, then infers the Purdue level for each asset and prints a visual topology map. Results are exported to JSON.
+
+---
+
+## 8. OT Security Monitoring and Detection
+
+**Splunk SPL** for Modbus anomaly detection: counts write FCs (5, 6, 15, 16) per destination IP per 5-minute window, alerts on write_count > 20 with severity classification.
+
+**Elastic SIEM** for S7comm CPU stop detection: matches s7comm function code 0x29 (CPU Stop) and subfunction 0x00 with CRITICAL severity.
+
+**OT-Specific IDS Solutions**: Claroty Platform, Dragos Platform, Nozomi Networks, Tenable OT Security, Fortinet FortiSIEM.
+
+**Defense Architecture**:
+1. Data diodes (unidirectional gateways) — IT→OT direction only
+2. Allowlist-based control: industrial firewalls, Modbus FC read-only (01,02,03,04)
+3. Asset inventory: passive sniffing + active enumeration combined
+4. Patch management: virtual patching via firewall signatures, physical patches during planned maintenance
+5. Incident response: dedicated OT IR team, "ensure process safety before isolation" principle
+
+*This document is for authorized penetration testing and educational purposes only.*

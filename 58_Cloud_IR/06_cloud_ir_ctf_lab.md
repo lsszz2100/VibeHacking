@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 클라우드 침해 대응 CTF 실습 랩
 
 ## 랩 개요
@@ -345,3 +351,48 @@ CloudTrail 분석 챌린지
 ```
 
 클라우드 IR에서 가장 중요한 것은 **로그 보존과 빠른 가시성 확보**다. 공격자가 로그를 삭제하기 전에 별도 저장소에 실시간 복제해야 한다.
+
+---
+
+<a name="english"></a>
+
+# Cloud Incident Response CTF Lab
+
+## Lab Overview
+
+Recreate cloud security incidents in AWS/Azure/GCP environments in CTF format. Practice log analysis, forensics, and threat hunting techniques.
+
+## Scenario Environment Setup
+
+See the Korean section for the full Python scenario generator code.
+
+The scenario simulates:
+1. Abnormal login attempt (failed root login)
+2. Successful root login without MFA
+3. IAM user enumeration
+4. Backdoor IAM user creation (`svc-backup-2024`)
+5. Administrator policy attachment
+6. Access key creation
+7. S3 bucket enumeration
+8. Sensitive bucket access
+9. Bulk data download
+10. Attempt to cover tracks (disabling CloudTrail)
+
+## Practice Exercises
+
+```
+CloudTrail Analysis Challenges
+☐ Identify initial intrusion time and source IP
+☐ Confirm name of created backdoor account
+☐ Extract list of exfiltrated S3 buckets and files
+☐ Identify the time attacker disabled logging
+☐ Reconstruct complete attack timeline
+
+Advanced Exercises
+☐ Analyze GuardDuty detection results
+☐ Detect C2 communication from VPC Flow Logs
+☐ Find traces of Lambda function abuse
+☐ Verify integrity of CloudTrail logs
+```
+
+The most important aspects of cloud IR are **log preservation and rapid visibility**. Logs must be replicated in real-time to a separate storage location before attackers can delete them.

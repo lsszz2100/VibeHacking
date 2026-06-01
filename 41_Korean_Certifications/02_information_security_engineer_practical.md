@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 정보보안기사 실기 완전 대비
 
 ## 실기 시험 개요
@@ -711,3 +717,275 @@ if __name__ == "__main__":
 | 비대칭키 | ECC | 256비트 | 타원곡선 기반 |
 | 해시 | SHA-256 | 256비트 출력 | 현재 표준 |
 | 해시 | MD5 | 128비트 출력 | 취약, 사용 지양 |
+
+---
+
+<a name="english"></a>
+
+# Information Security Engineer Practical Exam — Complete Preparation
+
+## Practical Exam Overview
+
+### Exam Format
+
+| Type | Percentage | Characteristics |
+|------|-----------|----------------|
+| Short answer | ~40% | 1-3 word answers for terms, protocols, concepts |
+| Descriptive | ~40% | 4-10 line explanations |
+| Practical (analytical) | ~20% | Log/code analysis, vulnerability diagnosis |
+
+### Passing Strategy
+- Short answer: Write exact Korean standard terms (abbreviations with full form recommended)
+- Descriptive: Include core keywords, write structured answers
+- Practical: Log pattern analysis ability, vulnerability identification and countermeasure presentation
+
+---
+
+## Vulnerability Analysis and Response
+
+### Web Vulnerabilities
+
+#### SQL Injection
+**Vulnerable code example:**
+```python
+query = "SELECT * FROM users WHERE id='" + user_input + "'"
+```
+**Attack payload:** `' OR '1'='1' --`
+**Countermeasures:**
+- Use Prepared Statement (parameterized query)
+- Whitelist input validation
+- Minimum privilege DB account
+- Apply WAF
+
+#### XSS (Cross-Site Scripting)
+**Attack payload:** `<script>Send document.cookie to external</script>`
+**Types:**
+- Stored XSS: Stored in DB and executed for multiple users
+- Reflected XSS: URL parameter immediately reflected
+- DOM XSS: Client-side DOM manipulation
+
+**Countermeasures:**
+- HTML entity encoding on output
+- Content-Security-Policy header configuration
+- HttpOnly cookie application
+- X-XSS-Protection header
+
+#### CSRF
+**Attack principle:** Sends forged requests using victim's authentication cookie
+**Countermeasures:**
+- Issue and validate CSRF tokens
+- Set SameSite cookie attribute
+- Verify Referer header
+- Double cookie submission pattern
+
+### System Vulnerabilities
+
+#### Buffer Overflow
+**Principle:** Unvalidated boundary input modifies stack return address
+**Countermeasures:**
+- ASLR (Address Space Layout Randomization)
+- Stack Canary (canary value validation)
+- DEP/NX (Data Execution Prevention)
+- Use safe functions (strncpy, snprintf)
+
+#### Privilege Escalation
+**Principle:** Uses setuid files, misconfigured sudo, kernel vulnerabilities
+**Countermeasures:**
+- Remove unnecessary setuid files
+- Minimum privilege sudo configuration
+- Regular privilege auditing
+- Keep kernel patches up to date
+
+### Network Vulnerabilities
+
+#### ARP Spoofing Detection
+**Symptoms:** MAC address changes in ARP responses for the same IP
+**Countermeasures:**
+- ARP spoofing detection tools (Arpwatch)
+- Static ARP table configuration
+- Dynamic ARP Inspection (DAI)
+- Use VPN
+
+---
+
+## Incident Response Procedures
+
+### 6-Stage Response Procedure (SANS Standard)
+
+#### Stage 1: Preparation
+- Assemble incident response team and define roles
+- Establish incident response policy and procedures
+- Prepare monitoring tools and forensics equipment
+- Establish contact information and escalation framework
+
+#### Stage 2: Identification
+- Analyze IDS/SIEM alerts
+- Identify abnormal behavior through log analysis
+- Collect indicators of compromise (IOC)
+- Initial assessment of incident scope and impact
+
+#### Stage 3: Containment
+- **Short-term containment**: Disconnect infected systems from network
+- **Long-term containment**: Switch operations to backup systems
+- System imaging for evidence preservation
+- Prevent further damage spread
+
+#### Stage 4: Eradication
+- Complete removal of malware
+- Rootkit detection and removal
+- Apply vulnerability patches
+- Restore changed accounts and configurations
+
+#### Stage 5: Recovery
+- Restore systems from safe backups
+- Restart services and verify normal operation
+- Enhance monitoring
+- Gradual service normalization
+
+#### Stage 6: Lessons Learned
+- Post-incident review meeting (within 2 weeks of incident)
+- Write breach incident report
+- Establish recurrence prevention measures
+- Update policies/procedures
+
+---
+
+## Security Solutions
+
+### Firewall
+
+**Definition:** Security device that analyzes network traffic and blocks unauthorized access
+
+**Generation Classification:**
+- 1st Gen: Packet filtering (IP, port, protocol-based)
+- 2nd Gen: Application gateway (proxy)
+- 3rd Gen: Stateful inspection (connection tracking)
+- 4th Gen: Next-gen firewall NGFW (DPI, application awareness)
+
+### IDS/IPS
+
+| Category | IDS | IPS |
+|----------|-----|-----|
+| Operation | Detect then alert | Detect then immediately block |
+| Position | Out-of-band | Inline |
+| False positive impact | Excessive alerts | Block legitimate traffic |
+| Performance impact | Low | Present |
+
+**Detection Methods:**
+- Signature-based: Known attack pattern matching (low false positive, high miss)
+- Anomaly detection: Deviation from normal baseline (high false positive, low miss)
+- Hybrid: Combination of both methods
+
+### WAF (Web Application Firewall)
+
+**Definition:** Security device that analyzes HTTP/HTTPS traffic to detect and block web attacks
+
+**Key Defense Targets:** SQL injection, XSS, CSRF, file upload vulnerabilities, path traversal
+
+### DLP (Data Loss Prevention)
+
+**Definition:** System that detects and blocks unauthorized external leakage of sensitive data
+
+**Detection Methods:**
+- Keyword filtering
+- Regular expressions (SSN, card numbers)
+- Digital fingerprinting
+- Machine learning-based classification
+
+### NAC (Network Access Control)
+
+**Definition:** System that inspects the security state of network-connected terminals and controls access for non-compliant terminals
+
+---
+
+## Key Practical Q&A (30 Questions)
+
+### Short Answer
+
+**Q1.** An attack where the attacker forges ARP Reply packets to manipulate the victim's ARP cache and redirect network traffic to themselves?
+**A:** ARP Spoofing
+
+**Q2.** The block cipher operation mode that generates an authentication tag to simultaneously provide encryption and authentication?
+**A:** GCM (Galois/Counter Mode)
+
+**Q3.** Write the four principles of digital forensics.
+**A:** Integrity, Chain of Custody, Reproducibility, Timeliness
+
+**Q4.** The malware type that operates at kernel level to hide itself and maintain administrator privileges after execution?
+**A:** Rootkit
+
+**Q5.** The first message sent from client to server during SSL/TLS handshake?
+**A:** ClientHello
+
+**Q6.** `../../../../etc/passwd` pattern found in web server logs. What type of attack is this?
+**A:** Directory Traversal / Path Traversal
+
+**Q7.** Write the four properties of hash functions.
+**A:** One-way property, Collision resistance, Preimage resistance, Second preimage resistance
+
+**Q8.** Write the two IPsec protocols and their functions.
+**A:** AH (Authentication Header) - provides authentication and integrity / ESP (Encapsulating Security Payload) - provides encryption, authentication, and integrity
+
+**Q9.** The most effective defense technique against SQL injection recommended by OWASP?
+**A:** Prepared Statement (parameterized query)
+
+**Q10.** Write the formula for calculating ALE in information security risk management.
+**A:** ALE (Annual Loss Expectancy) = SLE (Single Loss Expectancy) × ARO (Annual Rate of Occurrence)
+
+### Descriptive
+
+**Q11.** Describe three types of firewalls and their characteristics.
+**A:**
+1. **Packet filtering firewall**: Filters packets based on IP address, port number, protocol. Fast and simple implementation but vulnerable to application layer attacks
+2. **Stateful Inspection firewall**: Filters packets by tracking connection state. Provides stronger security than packet filtering by considering session state
+3. **Application gateway (proxy firewall)**: Operates at application layer and proxies traffic. Provides the strongest security but causes performance degradation
+
+**Q12.** List the 6 stages of incident response in order.
+**A:** Preparation → Identification → Containment → Eradication → Recovery → Lessons Learned
+
+**Q13.** Describe three types of XSS attacks and list two or more defense methods.
+**A:**
+Types:
+- Stored XSS: Malicious script stored in DB and continuously executed for multiple users
+- Reflected XSS: Script in URL parameter immediately reflected and executed in response
+- DOM XSS: Occurs when client-side JavaScript dynamically manipulates DOM
+
+Defense methods:
+- HTML special character entity encoding (output encoding)
+- Content-Security-Policy header configuration
+- HttpOnly cookie attribute application
+- Whitelist input validation
+
+**Q14.** Describe the components of PKI (Public Key Infrastructure).
+**A:**
+- CA (Certificate Authority): Issues, manages, and revokes digital certificates
+- RA (Registration Authority): Verifies identity of certificate applicants and forwards to CA
+- Certificate Repository: Stores and distributes issued certificates
+- CRL (Certificate Revocation List): Manages list of revoked certificates
+- OCSP: Real-time certificate validity verification protocol
+
+**Q15.** Describe three types of DDoS attacks and countermeasures for each.
+**A:**
+- SYN Flooding: Exhausts server connection queue with incomplete TCP 3-way handshake → Apply SYN Cookie
+- HTTP Flooding: Overloads web server with mass normal HTTP requests → User behavior analysis, CAPTCHA
+- DNS Amplification: Directs large DNS responses to victim using small queries → DNS response rate limiting, BCP38
+
+---
+
+## Python CLI: Random Question Generator and Scoring Tool
+
+(See Korean section for complete implementation — code structure identical)
+
+---
+
+## Key Encryption Algorithm Comparison Table
+
+| Category | Algorithm | Key Length | Characteristics |
+|----------|-----------|-----------|----------------|
+| Symmetric | AES | 128/192/256 bits | Current standard |
+| Symmetric | SEED | 128 bits | Korean standard |
+| Symmetric | ARIA | 128/192/256 bits | Lightweight Korean standard |
+| Asymmetric | RSA | 2048+ bits | Factorization-based |
+| Asymmetric | ECC | 256 bits | Elliptic curve-based |
+| Hash | SHA-256 | 256-bit output | Current standard |
+| Hash | MD5 | 128-bit output | Vulnerable, avoid use |

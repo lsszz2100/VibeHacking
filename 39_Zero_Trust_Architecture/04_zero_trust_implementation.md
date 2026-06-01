@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Zero Trust 구현 전략
 
 ## 1. Zero Trust 구현 로드맵
@@ -1202,3 +1208,334 @@ if __name__ == "__main__":
 ---
 
 *최종 업데이트: 2024년*
+
+---
+
+<a name="english"></a>
+
+# Zero Trust Implementation Strategy
+
+## 1. Zero Trust Implementation Roadmap
+
+### 1.1 CISA 5-Stage Zero Trust Maturity Model
+
+The U.S. Cybersecurity and Infrastructure Security Agency (CISA) defines Zero Trust maturity in 5 stages.
+
+```
+Stage 0: Traditional
+  └── Perimeter-based security, internal trust
+
+Stage 1: Initial
+  └── Adopt some Zero Trust principles
+  └── Apply MFA to certain high-risk areas
+
+Stage 2: Advanced
+  └── Apply Zero Trust to most systems
+  └── Begin automated policy enforcement
+
+Stage 3: Optimal
+  └── Complete Zero Trust implementation
+  └── AI/ML-based threat detection
+  └── Continuous automated improvement
+```
+
+### 1.2 Phased Implementation Roadmap
+
+#### Phase 1: Foundation Building (0-6 months)
+
+**Core Goals:**
+- Build complete asset inventory
+- Establish strong identity management foundation
+- Gain visibility
+
+**Action Items:**
+```
+Identity and Access Management:
+├── IdP integration (Okta, Azure AD)
+├── Enable MFA for all users
+├── Service account inventory and cleanup
+└── Establish privileged account (PAM) management
+
+Device Management:
+├── Implement MDM solution and register devices
+├── Achieve 100% device inventory
+└── Establish device security baseline policy
+
+Visibility:
+├── Build SIEM and integrate logs
+├── Gain network traffic visibility
+└── Asset classification (public/internal/confidential)
+```
+
+#### Phase 2: Control Strengthening (6-12 months)
+
+**Core Goals:**
+- Implement network segmentation
+- Apply conditional access policies
+- Classify and protect data
+
+#### Phase 3: Automation and Optimization (12-24 months)
+
+**Core Goals:**
+- Policy automation
+- Continuous verification
+- Full Zero Trust application
+
+---
+
+## 2. SASE (Secure Access Service Edge)
+
+### 2.1 SASE Concept
+
+SASE is an architecture defined by Gartner in 2019 that integrates networking and security as cloud services.
+
+```
+SASE = SD-WAN + Cloud Security Services
+
+┌────────────────────────────────────────────────┐
+│            SASE Cloud Platform                   │
+│                                                │
+│  Network Functions:        Security Functions:  │
+│  ┌──────────────┐         ┌──────────────────┐  │
+│  │   SD-WAN     │         │      ZTNA        │  │
+│  │   WAN opt.   │         │   SWG (web gw.)  │  │
+│  │   QoS        │         │   CASB           │  │
+│  └──────────────┘         │   FWaaS          │  │
+│                           │   UEBA/DLP       │  │
+│                           └──────────────────┘  │
+└────────────────────────────────────────────────┘
+         │                          │
+  [Branch/Remote users]      [HQ/Data center]
+```
+
+### 2.2 SASE Components
+
+**SD-WAN (Software-Defined WAN):**
+- Automatic optimization of multiple WAN links
+- Application-aware routing
+- Centralized management
+
+**SWG (Secure Web Gateway):**
+- URL filtering
+- Malware detection (including SSL inspection)
+- Data loss prevention
+
+**CASB (Cloud Access Security Broker):**
+- SaaS app visibility and control
+- Shadow IT detection
+- Cloud DLP
+
+**FWaaS (Firewall as a Service):**
+- Cloud-based next-generation firewall
+- L7 policies
+- Threat intelligence integration
+
+---
+
+## 3. Comparison of Major ZTNA/SASE Solutions
+
+### 3.1 Zscaler
+
+**Key Products:**
+- **Zscaler Internet Access (ZIA)**: SWG, CASB, DLP
+- **Zscaler Private Access (ZPA)**: ZTNA, internal app access
+- **Zscaler Digital Experience (ZDX)**: User experience monitoring
+
+### 3.2 Cloudflare One
+
+**Key Products:**
+- **Cloudflare Access**: ZTNA
+- **Cloudflare Gateway**: SWG, DNS filtering
+- **Magic WAN**: SD-WAN replacement
+- **Cloudflare Tunnel**: Internal app connectivity
+
+### 3.3 Palo Alto Networks Prisma Access
+
+**Key Products:**
+- **Prisma Access**: SASE (SD-WAN + security)
+- **Prisma Cloud**: Cloud-native security
+- **GlobalProtect**: Remote access
+
+### 3.4 Solution Selection Guide
+
+| Factor | Zscaler | Cloudflare One | Palo Alto Prisma |
+|--------|---------|----------------|-----------------|
+| Cost | High | Medium | Very high |
+| Enterprise features | Very high | High | Very high |
+| Threat prevention | High | Medium | Very high |
+| Configuration complexity | High | Medium | Very high |
+| SMB suitability | Low | High | Low |
+| Global PoP | Many | Very many | Many |
+
+---
+
+## 4. Legacy System Integration Strategy
+
+### 4.1 Challenges of Integrating Legacy Systems with Zero Trust
+
+```
+Legacy System Characteristics:
+├── No modern authentication support (only Kerberos, NTLM)
+├── No encryption support (plaintext communication)
+├── No API (uses outdated protocols like RPC, SOAP)
+├── Cannot be changed (no source code, end of support)
+└── Hardcoded service accounts
+```
+
+### 4.2 Integration Strategies
+
+#### Strategy 1: Proxy/Gateway Deployment
+
+Deploy a Zero Trust-aware proxy in front of legacy apps.
+
+```
+[User] → [ZTNA Gateway] → [Legacy App]
+               │
+        Identity + device verification
+        (No modification to legacy app)
+```
+
+#### Strategy 2: Identity Broker
+
+Deploy a broker connecting modern IdP with legacy authentication systems.
+
+```
+[SAML/OIDC] ←→ [Identity Broker] ←→ [LDAP/Kerberos]
+(Modern IdP)                        (Legacy AD)
+```
+
+**Tools:**
+- **Shibboleth**: SAML 2.0 IdP, LDAP integration
+- **Keycloak**: Open-source IdM, supports various protocols
+- **ADFS**: Active Directory Federation Services
+
+#### Strategy 3: PAM (Privileged Access Management)
+
+Manage service accounts in legacy systems with PAM.
+
+#### Strategy 4: Migration (Long-term)
+
+```
+Short-term: Control with proxy
+Medium-term: Add API layer (Strangler Fig pattern)
+Long-term: Complete replacement with modern architecture
+```
+
+---
+
+## 5. Zero Trust Maturity Model Assessment
+
+### 5.1 Forrester ZTX 7 Pillars
+
+Forrester's Zero Trust eXtended (ZTX) framework:
+
+1. **Networks**: Segmentation, encryption
+2. **Devices**: Device inventory, trust assessment
+3. **Identity**: Strong authentication, authorization management
+4. **Workloads**: Application, cloud security
+5. **Data**: Classification, encryption, DLP
+6. **Visibility & Analytics**: Visibility, SIEM, UEBA
+7. **Automation & Orchestration**: Automation, SOAR
+
+### 5.2 Maturity Level Definitions
+
+**Level 1 - Traditional:**
+- Perimeter-based firewall
+- Static username/password
+- Manual processes
+
+**Level 2 - Advancing:**
+- Some MFA applied
+- Basic segmentation (VLAN)
+- Partial log collection
+
+**Level 3 - Mature:**
+- Full MFA and RBAC
+- Microsegmentation
+- SIEM integrated logs
+
+**Level 4 - Optimal:**
+- Adaptive authentication
+- Automated policy enforcement
+- AI-based threat detection
+
+---
+
+## 6. Implementation Success Metrics (KPIs)
+
+### 6.1 Technical Metrics
+
+| Metric | Initial Target | Mature Target |
+|--------|---------------|---------------|
+| MFA coverage | 80% | 100% |
+| Device MDM enrollment | 70% | 100% |
+| Device compliance rate | 60% | 95% |
+| Patch completion rate (within 30 days) | 70% | 99% |
+| Legacy VPN usage reduction | 30% reduction | 100% ZTNA transition |
+| East-West microsegmentation coverage | 50% | 100% |
+
+### 6.2 Security Metrics
+
+| Metric | Target |
+|--------|--------|
+| MTTR (Mean Time to Detection and Response) | Within 4 hours |
+| Lateral movement incidents | 90% reduction |
+| Over-privileged accounts | 0 |
+| Unauthorized access attempt blocking rate | 99.9% |
+
+### 6.3 Business Metrics
+
+| Metric | Target |
+|--------|--------|
+| Security incident cost | 50% reduction |
+| Audit preparation time | 70% reduction |
+| New app security onboarding time | 80% shorter |
+| User productivity impact | Minimized (under 5%) |
+
+---
+
+## 7. Common Mistakes and Solutions
+
+### 7.1 Big Bang Approach
+
+**Problem:** Attempting to transition everything to Zero Trust at once
+
+**Solution:**
+- Start with high-risk/high-value assets
+- Pilot → expand in phases
+- Prove value at each stage before proceeding to the next
+
+### 7.2 Ignoring User Experience
+
+**Problem:** Excessive security friction increases user dissatisfaction and bypass attempts
+
+**Solution:**
+- Minimize login count with SSO
+- Transparent authentication for low-risk with adaptive MFA
+- User education and change management
+
+### 7.3 Accumulation of Legacy Exceptions
+
+**Problem:** Policy exceptions for legacy systems accumulate, making Zero Trust nominal
+
+**Solution:**
+- Apply time limits to exceptions
+- Establish legacy modernization roadmap
+- Execute long-term replacement plan while using proxy for temporary protection
+
+---
+
+## 8. References
+
+- CISA: Zero Trust Maturity Model v2.0 (2023)
+- Gartner: SASE Convergence Guide
+- Forrester: Zero Trust eXtended (ZTX) Research
+- NIST SP 800-207: Zero Trust Architecture
+- Zscaler: Zero Trust Transformation Playbook
+- Microsoft: Zero Trust Deployment Guide for Microsoft 365
+- Cloud Security Alliance: Zero Trust Advancement Center
+- IBM: Cost of a Data Breach Report 2023
+
+---
+
+*Last updated: 2024*

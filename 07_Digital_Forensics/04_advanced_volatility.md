@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Volatility3 심화 — 프로세스 분석·네트워크·악성코드 탐지
 
 ## 1. Volatility3 설치 및 기본 사용
@@ -354,3 +360,364 @@ python3 vol.py -f memory.dmp windows.prefetch.PrefetchScan
 | `windows.mftscan.MFTScan` | MFT 파일 타임라인 |
 | `windows.shimcache` | ShimCache 애플리케이션 기록 |
 | `windows.userassist` | UserAssist 프로그램 실행 기록 |
+
+---
+
+<a name="english"></a>
+
+# Volatility3 Advanced — Process Analysis, Network, and Malware Detection
+
+## 1. Volatility3 Installation and Basic Usage
+
+```bash
+# Install
+git clone https://github.com/volatilityfoundation/volatility3
+cd volatility3
+pip install -r requirements.txt
+
+# Download symbol tables (automatic)
+python3 vol.py -f memory.dmp windows.info
+
+# Basic command structure
+python3 vol.py -f <memory dump> <plugin>
+```
+
+---
+
+## 2. Process Analysis
+
+```bash
+# Full process list
+python3 vol.py -f memory.dmp windows.pslist
+
+# Process tree (parent-child relationships)
+python3 vol.py -f memory.dmp windows.pstree
+
+# Hidden process detection (DKOM bypass)
+python3 vol.py -f memory.dmp windows.psscan     # pool scan
+python3 vol.py -f memory.dmp windows.psxview    # cross-validation
+
+# Process DLL list
+python3 vol.py -f memory.dmp windows.dlllist --pid 1234
+
+# Process handles
+python3 vol.py -f memory.dmp windows.handles --pid 1234
+
+# Dump suspicious process memory
+python3 vol.py -f memory.dmp windows.memmap --pid 1234 --dump
+
+# VAD (Virtual Address Descriptor) — executable memory regions
+python3 vol.py -f memory.dmp windows.vadinfo --pid 1234
+python3 vol.py -f memory.dmp windows.vadwalk --pid 1234
+```
+
+### 2.1 Suspicious Process Detection Checklist
+
+```bash
+# 1. Check svchost.exe parent (normal: services.exe)
+python3 vol.py -f memory.dmp windows.pstree | grep svchost
+
+# 2. Detect multiple lsass.exe instances
+python3 vol.py -f memory.dmp windows.pslist | grep lsass
+
+# 3. Detect masquerading of legitimate process names (svchost.exe -> svch0st.exe)
+python3 vol.py -f memory.dmp windows.pslist | \
+  python3 -c "
+import sys, re
+for line in sys.stdin:
+    name = line.split()[1] if len(line.split()) > 1 else ''
+    legit = ['svchost.exe','lsass.exe','explorer.exe','csrss.exe','winlogon.exe']
+    if name and name not in legit:
+        # Levenshtein distance masquerade detection
+        for l in legit:
+            if abs(len(name)-len(l)) <= 2 and name != l:
+                print(f'Suspicious masquerade: {name} (similar: {l})')
+"
+```
+
+---
+
+## 3. Network Artifacts
+
+```bash
+# Current network connections (Vista+)
+python3 vol.py -f memory.dmp windows.netstat
+
+# Including older connections (XP/2003)
+python3 vol.py -f memory.dmp windows.netscan
+
+# Filter results — ESTABLISHED connections
+python3 vol.py -f memory.dmp windows.netscan | grep ESTABLISHED
+
+# Malicious C2 connection detection (external IP, non-standard port)
+python3 vol.py -f memory.dmp windows.netscan | awk '
+/ESTABLISHED/ {
+  split($3, local, ":");
+  split($4, remote, ":");
+  if (remote[2] != "80" && remote[2] != "443" && remote[2] != "53")
+    print "Suspicious port:", $0
+}'
+```
+
+---
+
+## 4. Registry Analysis
+
+```bash
+# Registry hive list
+python3 vol.py -f memory.dmp windows.registry.hivelist
+
+# Run/RunOnce keys (auto-start)
+python3 vol.py -f memory.dmp windows.registry.printkey \
+  --key "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+
+# Recently executed files
+python3 vol.py -f memory.dmp windows.registry.printkey \
+  --key "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs"
+
+# UserAssist (program execution history)
+python3 vol.py -f memory.dmp windows.registry.userassist
+
+# ShimCache (application compatibility cache)
+python3 vol.py -f memory.dmp windows.shimcache
+```
+
+---
+
+## 5. Malware Detection Automation CLI
+
+```python
+#!/usr/bin/env python3
+"""Volatility3-based memory forensics automation CLI."""
+
+import argparse
+import json
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class ForensicsReport:
+    dump_file: str
+    os_info: dict = field(default_factory=dict)
+    suspicious_processes: list[dict] = field(default_factory=list)
+    network_connections: list[dict] = field(default_factory=list)
+    injected_code: list[dict] = field(default_factory=list)
+    persistence: list[dict] = field(default_factory=list)
+
+
+def run_volatility(
+    dump_file: str,
+    plugin: str,
+    vol_path: str = "python3 vol.py",
+    extra_args: list[str] | None = None,
+) -> list[str]:
+    cmd = vol_path.split() + ["-f", dump_file, plugin]
+    if extra_args:
+        cmd.extend(extra_args)
+
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        return result.stdout.splitlines()
+    except subprocess.TimeoutExpired:
+        print(f"[!] Timeout: {plugin}")
+        return []
+    except Exception as e:
+        print(f"[!] Error: {plugin} — {e}")
+        return []
+
+
+SUSPICIOUS_PROCESS_NAMES = {
+    "mimikatz.exe", "pwdump.exe", "fgdump.exe",
+    "nc.exe", "ncat.exe", "netcat.exe",
+    "meterpreter", "payload.exe", "shell.exe",
+    "cobaltstrike.exe", "beacon.exe",
+}
+
+LEGITIMATE_PARENTS = {
+    "svchost.exe": {"services.exe"},
+    "lsass.exe": {"wininit.exe"},
+    "csrss.exe": {"smss.exe"},
+    "explorer.exe": {"userinit.exe"},
+    "taskhost.exe": {"services.exe", "svchost.exe"},
+}
+
+
+def analyze_processes(dump_file: str, vol_path: str) -> list[dict]:
+    suspicious = []
+    lines = run_volatility(dump_file, "windows.pslist", vol_path)
+
+    process_info: dict[int, dict] = {}
+    for line in lines[2:]:  # Skip 2 header lines
+        parts = line.split()
+        if len(parts) < 7:
+            continue
+        try:
+            pid = int(parts[2])
+            ppid = int(parts[3])
+            name = parts[1]
+            process_info[pid] = {"name": name, "pid": pid, "ppid": ppid}
+        except (ValueError, IndexError):
+            pass
+
+    for pid, proc in process_info.items():
+        name = proc["name"].lower()
+        ppid = proc["ppid"]
+        parent = process_info.get(ppid, {}).get("name", "unknown").lower()
+
+        reasons = []
+
+        if name in SUSPICIOUS_PROCESS_NAMES:
+            reasons.append(f"Known malicious process name: {name}")
+
+        expected_parents = LEGITIMATE_PARENTS.get(name, set())
+        if expected_parents and parent not in {p.lower() for p in expected_parents}:
+            reasons.append(f"Abnormal parent process: {parent} (expected: {expected_parents})")
+
+        if reasons:
+            suspicious.append({
+                "name": proc["name"],
+                "pid": pid,
+                "ppid": ppid,
+                "parent": parent,
+                "reasons": reasons,
+            })
+
+    return suspicious
+
+
+def analyze_network(dump_file: str, vol_path: str) -> list[dict]:
+    suspicious = []
+    lines = run_volatility(dump_file, "windows.netscan", vol_path)
+
+    for line in lines[2:]:
+        if "ESTABLISHED" not in line and "LISTEN" not in line:
+            continue
+        parts = line.split()
+        if len(parts) < 5:
+            continue
+
+        try:
+            remote = parts[3] if len(parts) > 3 else ""
+            if ":" in remote:
+                remote_port = int(remote.rsplit(":", 1)[1])
+                # Non-standard external port connections
+                if remote_port not in {80, 443, 53, 22, 8080, 8443}:
+                    suspicious.append({
+                        "connection": line.strip(),
+                        "remote_port": remote_port,
+                        "reason": f"Non-standard external port: {remote_port}",
+                    })
+        except (ValueError, IndexError):
+            pass
+
+    return suspicious
+
+
+def check_code_injection(dump_file: str, vol_path: str) -> list[dict]:
+    """Code injection detection using Malfind plugin."""
+    findings = []
+    lines = run_volatility(dump_file, "windows.malfind", vol_path)
+
+    current_entry: dict = {}
+    for line in lines:
+        if "Process:" in line:
+            if current_entry:
+                findings.append(current_entry)
+            parts = line.split()
+            current_entry = {"process": parts[1] if len(parts) > 1 else "?", "details": []}
+        elif current_entry and line.strip():
+            current_entry.setdefault("details", []).append(line.strip())
+
+    if current_entry:
+        findings.append(current_entry)
+
+    return findings
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Volatility3 Forensics Automation")
+    parser.add_argument("dump", help="Memory dump file")
+    parser.add_argument("--vol-path", default="python3 /opt/volatility3/vol.py",
+                        help="Volatility3 path")
+    parser.add_argument("-o", "--output", type=Path, help="Report save path")
+    parser.add_argument("--quick", action="store_true", help="Quick analysis (process+network only)")
+    args = parser.parse_args()
+
+    report = ForensicsReport(dump_file=args.dump)
+
+    print("[*] Analyzing processes...")
+    report.suspicious_processes = analyze_processes(args.dump, args.vol_path)
+    print(f"  Suspicious processes: {len(report.suspicious_processes)}")
+
+    print("[*] Analyzing network connections...")
+    report.network_connections = analyze_network(args.dump, args.vol_path)
+    print(f"  Suspicious connections: {len(report.network_connections)}")
+
+    if not args.quick:
+        print("[*] Detecting code injection...")
+        report.injected_code = check_code_injection(args.dump, args.vol_path)
+        print(f"  Suspected injections: {len(report.injected_code)}")
+
+    # Print results
+    print("\n=== Analysis Results ===")
+    for proc in report.suspicious_processes:
+        print(f"[!] Process: {proc['name']} (PID {proc['pid']})")
+        for r in proc["reasons"]:
+            print(f"    -> {r}")
+
+    for conn in report.network_connections:
+        print(f"[!] Network: {conn['reason']}")
+
+    if args.output:
+        data = {
+            "dump": report.dump_file,
+            "suspicious_processes": report.suspicious_processes,
+            "network_connections": report.network_connections,
+            "injected_code": report.injected_code,
+        }
+        args.output.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+        print(f"\nReport saved: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Timeline Analysis
+
+```bash
+# Extract MFT timeline
+python3 vol.py -f memory.dmp windows.mftscan.MFTScan | \
+  sort -k1 > timeline.txt
+
+# Events in the last 24 hours
+python3 vol.py -f memory.dmp windows.mftscan.MFTScan | \
+  awk -v cutoff="$(date -d '-24 hours' '+%Y-%m-%d')" '$1 >= cutoff'
+
+# Prefetch file analysis (program execution history)
+python3 vol.py -f memory.dmp windows.prefetch.PrefetchScan
+```
+
+---
+
+## 7. Volatility3 Plugin Reference
+
+| Plugin | Purpose |
+|--------|---------|
+| `windows.pslist` | Process list (EPROCESS linked list) |
+| `windows.psscan` | Process pool scan (hidden processes) |
+| `windows.cmdline` | Process command line arguments |
+| `windows.dlllist` | Loaded DLL list |
+| `windows.malfind` | Code injection detection |
+| `windows.netscan` | Network connections |
+| `windows.registry.hivelist` | Registry hives |
+| `windows.hashdump` | Password hash dump |
+| `windows.lsadump` | LSA secrets |
+| `windows.mftscan.MFTScan` | MFT file timeline |
+| `windows.shimcache` | ShimCache application history |
+| `windows.userassist` | UserAssist program execution history |

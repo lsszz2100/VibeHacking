@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 자동화 위협 헌팅
 
 ## 1. 헌팅 자동화 플랫폼
@@ -1175,3 +1181,326 @@ if __name__ == "__main__":
 | 샌드박스 | 제출 파일 분석 | Cuckoo, ANY.RUN |
 | 파일 서버 | 정기 스캔 | YARA CLI + 스케줄러 |
 | 메모리 포렌식 | 침해 조사 | Volatility3 |
+
+---
+
+<a name="english"></a>
+
+# Automated Threat Hunting
+
+## 1. Hunting Automation Platforms
+
+### 1.1 OpenCTI
+
+OpenCTI (Open Cyber Threat Intelligence) is an open-source platform for storing, structuring, visualizing, and sharing threat intelligence data. It is based on the STIX 2.1 standard and integrates with ATT&CK, MISP, TheHive, and others.
+
+**Installation (Docker Compose)**:
+```bash
+git clone https://github.com/OpenCTI-Platform/docker.git opencti-docker
+cd opencti-docker
+cp .env.sample .env
+# Set passwords and UUIDs in .env file, then:
+docker compose up -d
+```
+
+**Core Features**:
+- **Knowledge graph**: Visualize relationships between threat actors, campaigns, malware, and vulnerabilities
+- **TTP mapping**: Automatic MITRE ATT&CK mapping
+- **Feed integration**: MISP, AlienVault OTX, Shodan, VirusTotal connectors
+- **Alert rules**: Automatic notifications on new IOC/TTP discovery
+- **Playbook**: Trigger-based automatic response actions
+
+### 1.2 MISP (Malware Information Sharing Platform)
+
+MISP is an open-source platform specialized in threat intelligence sharing. It structures and shares IOCs, malware samples, and TTPs with the community.
+
+**Core Features**:
+- **Events**: Intelligence bundles per security incident/campaign
+- **Attributes**: IOCs such as IP, domain, hash, email
+- **Objects**: Complex entity representation (files, network connections, etc.)
+- **Feeds**: Automatic IOC collection from external sources
+- **Sharing Groups**: Controlled information sharing between trusted groups
+
+### 1.3 TheHive
+
+TheHive is a scalable incident response platform for security operations teams. It integrates with MISP and OpenCTI to automate workflows converting hunting results into incidents.
+
+**Core Features**:
+- **Cases**: Incident tracking units
+- **Tasks**: Action items within cases
+- **Observables**: IOCs for analysis
+- **Responders**: Automatic response actions (IP blocking, user deactivation, etc.)
+- **Analyzers**: Automatic IOC analysis (90+ integrations including VirusTotal, Shodan)
+
+---
+
+## 2. Writing and Converting Sigma Rules
+
+### 2.1 What is Sigma?
+
+Sigma is an open standard format for detecting log events. It allows writing SIEM/log platform-independent detection rules and converting them to platform-specific queries (KQL, SPL, Lucene, etc.) using conversion tools.
+
+### 2.2 Sigma Rule Structure
+
+```yaml
+title: Suspicious PowerShell Encoded Command
+id: 9b2c74f3-8e7a-4c1d-b8f2-3a5e6d9f1234
+status: experimental
+description: |
+  Detects attempts by attackers to bypass detection
+  using PowerShell encoding parameters.
+references:
+  - https://attack.mitre.org/techniques/T1059/001/
+author: threat-hunting-team
+date: 2024/01/15
+tags:
+  - attack.execution
+  - attack.t1059.001
+  - attack.defense_evasion
+  - attack.t1027
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    Image|endswith: '\powershell.exe'
+    CommandLine|contains|all:
+      - '-'
+      - 'enc'
+  filter_legitimate:
+    CommandLine|contains:
+      - 'MpCmdRun'
+      - 'WindowsDefender'
+  condition: selection and not filter_legitimate
+falsepositives:
+  - Some management scripts
+  - Backup software
+level: high
+```
+
+### 2.3 Sigma Conversion (sigma-cli)
+
+```bash
+# Install
+pip install sigma-cli
+
+# Install plugins
+sigma plugin install splunk
+sigma plugin install microsoft365defender  # For KQL
+sigma plugin install elasticsearch
+
+# Conversion examples
+sigma convert -t splunk -p ecs_windows sigma_rule.yml
+sigma convert -t microsoft365defender sigma_rule.yml
+sigma convert -t elasticsearch -p ecs_windows sigma_rule.yml
+
+# Convert entire directory
+sigma convert -t splunk -p ecs_windows ./sigma_rules/ -o output.txt
+```
+
+---
+
+## 3. Memory/File Hunting with YARA Rules
+
+### 3.1 YARA Basics
+
+YARA is a pattern matching tool for malware identification and classification. It detects malicious files using text/binary patterns, regular expressions, and boolean conditions.
+
+### 3.2 Writing YARA Rules
+
+**Mimikatz Detection**:
+```yara
+rule Mimikatz_Generic {
+    meta:
+        description = "Detect Mimikatz memory dump tool"
+        reference = "https://attack.mitre.org/software/S0002/"
+        tags = "T1003.001"
+
+    strings:
+        $s1 = "mimikatz" nocase
+        $s2 = "sekurlsa::" nocase
+        $s3 = "lsadump::" nocase
+        $s4 = "privilege::debug" nocase
+        $s5 = "crypto::capi" nocase
+
+    condition:
+        any of ($s1, $s2, $s3, $s4, $s5)
+}
+```
+
+**Webshell Detection**:
+```yara
+rule Webshell_Generic_PHP {
+    meta:
+        description = "Detect common PHP webshell patterns"
+        tags = "T1505.003"
+
+    strings:
+        $php_tag = "<?php"
+        $eval = "eval(" nocase
+        $base64 = "base64_decode(" nocase
+        $system = /system\s*\(/ nocase
+        $cmd = "$_GET" nocase
+        $post = "$_POST" nocase
+
+    condition:
+        $php_tag and (
+            ($eval and ($base64 or $cmd or $post))
+            or (any of ($system) and any of ($cmd, $post))
+        )
+}
+```
+
+**Running YARA**:
+```bash
+# Scan single file
+yara rule.yar target_file
+
+# Recursive directory scan
+yara -r rule.yar /suspicious/directory/
+
+# Scan process memory
+yara rule.yar -p <PID>
+
+# Apply all rules from directory
+yara -r /rules/*.yar /malware/samples/
+```
+
+---
+
+## 4. EDR API Usage
+
+### 4.1 CrowdStrike Falcon API
+
+**OAuth2 Authentication and Basic Usage**:
+```python
+from falconpy import Hosts
+
+falcon = Hosts(
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    base_url="https://api.crowdstrike.com"
+)
+
+# Query hosts
+response = falcon.query_devices_by_filter(
+    filter="hostname:'workstation-01'",
+    limit=10
+)
+device_ids = response["body"]["resources"]
+```
+
+### 4.2 Carbon Black Cloud API
+
+```python
+import requests
+
+API_URL = "https://defense.conferdeploy.net"
+ORG_KEY = "your_org_key"
+API_ID = "your_api_id"
+API_SECRET = "your_api_secret"
+
+headers = {
+    "X-Auth-Token": f"{API_SECRET}/{API_ID}",
+    "Content-Type": "application/json",
+}
+
+# Query process events
+payload = {
+    "criteria": {
+        "process_name": ["powershell.exe"],
+        "parent_name": ["winword.exe", "excel.exe"]
+    },
+    "time_range": {"window": "-1d"},
+    "rows": 100,
+}
+
+resp = requests.post(
+    f"{API_URL}/api/investigate/v2/orgs/{ORG_KEY}/processes/search_jobs",
+    json=payload,
+    headers=headers,
+    timeout=30,
+)
+```
+
+---
+
+## 5. Jupyter Notebook-Based Hunting Workflow
+
+### 5.1 Hunting Notebook Structure
+
+```
+hunt_notebook/
+├── 00_setup.ipynb            # Environment setup, data connections
+├── 01_data_collection.ipynb  # Data collection and preprocessing
+├── 02_hypothesis_testing.ipynb # Hypothesis testing
+├── 03_visualization.ipynb    # Visualization and analysis
+├── 04_findings_report.ipynb  # Results reporting
+└── data/
+    ├── raw/
+    └── processed/
+```
+
+### 5.2 Basic Hunting Patterns with pandas
+
+```python
+import pandas as pd
+
+# Load data
+df = pd.read_csv("process_events.csv", parse_dates=["timestamp"])
+
+# Detect suspicious PowerShell
+suspicious_ps = df[
+    (df["process_name"].str.lower() == "powershell.exe") &
+    (df["command_line"].str.contains(r"-[Ee][Nn][Cc]", regex=True, na=False))
+]
+
+# Process hierarchy analysis
+parent_child = df.groupby(["parent_name", "process_name"]).size().reset_index(name="count")
+rare_chains = parent_child[parent_child["count"] < 3]
+
+# Time-based aggregation
+df["hour"] = df["timestamp"].dt.hour
+hourly_counts = df.groupby(["hour", "process_name"]).size().unstack(fill_value=0)
+```
+
+---
+
+## 6. Hunting Automation Architecture
+
+### 6.1 Automated Hunting Pipeline
+
+```
+[Threat Intelligence]       [Hunting Rule Repository]
+     MISP/OpenCTI       →     Sigma/YARA rules
+          │                          │
+          ▼                          ▼
+     [Auto-conversion Engine]   [Rule Deployment]
+     sigma_converter        →   SIEM/EDR deployment
+          │
+          ▼
+     [Auto Execution]          [Result Collection]
+     Scheduler (cron)      →   Match events
+          │
+          ▼
+     [Alert/Escalation]
+     TheHive case creation → SOC team response
+```
+
+### 6.2 Sigma Rule Management Best Practices
+
+1. **Version control**: Manage rule history with Git
+2. **CI/CD integration**: Automatic validation and deployment when new rules are committed
+3. **Test data**: Validate rules using Atomic Red Team
+4. **False positive tracking**: Rule improvement process when false positives occur
+5. **Coverage dashboard**: Visualize which ATT&CK techniques are covered
+
+### 6.3 YARA Rule Deployment Strategy
+
+| Deployment Location | Purpose | Tool |
+|--------------------|---------|------|
+| EDR agent | Real-time file/memory scan | CrowdStrike Custom IOA |
+| Email gateway | Attachment scanning | Proofpoint, Mimecast |
+| Sandbox | Submitted file analysis | Cuckoo, ANY.RUN |
+| File server | Periodic scanning | YARA CLI + scheduler |
+| Memory forensics | Breach investigation | Volatility3 |

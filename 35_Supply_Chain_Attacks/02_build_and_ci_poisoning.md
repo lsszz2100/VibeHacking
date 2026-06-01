@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 02 — 빌드 환경 및 CI/CD 파이프라인 침해
 
 ## 1. CI/CD 파이프라인 공격 개요
@@ -1126,4 +1132,202 @@ Jenkins:
   □ SLSA provenance 생성
   □ 빌드 로그 감사 보존 (90일 이상)
   □ 비정상 빌드 시간 알림 설정
+```
+
+---
+
+<a name="english"></a>
+
+# 02 — Build Environment and CI/CD Pipeline Compromise
+
+## 1. CI/CD Pipeline Attack Overview
+
+CI/CD pipelines are core infrastructure in modern software development, automatically building, testing, and deploying code. Because these pipelines have access to source code, production environments, signing keys, and cloud credentials, they are the highest-value target for supply chain attacks.
+
+### Attack Surface
+
+```
+Source Repository (GitHub/GitLab/Bitbucket)
+    ↓
+CI/CD Pipeline (Actions/Jenkins/GitLab CI)
+    ↓
+Build Environment (Runner, Agent, Worker)
+    ↓
+Artifact Repository (JFrog, Nexus, ECR)
+    ↓
+Deployment Environment (Kubernetes, ECS, Lambda)
+```
+
+---
+
+## 2. GitHub Actions Pipeline Compromise
+
+### 2-1. Malicious GitHub Action Injection
+
+Attackers can inject malicious actions into CI workflows to steal credentials. See Korean section for code example.
+
+### 2-2. Using External Actions Without Pinning
+
+- **Vulnerable**: referencing actions by tag (`@v3`) — tags can be changed
+- **Secure**: pinning to a full commit SHA (immutable reference)
+
+### 2-3. Workflow Injection (Expression Injection)
+
+Attacker-controlled inputs like PR titles can be used for shell injection when embedded directly in `run:` blocks. Mitigate by passing user input through environment variables.
+
+### 2-4. Privilege Abuse — GITHUB_TOKEN
+
+Avoid `permissions: write-all`. Apply least-privilege at both workflow and job levels.
+
+### 2-5. Secret Exfiltration Vectors
+
+Common paths for secret leaks in CI:
+1. Direct output to logs
+2. Dumping environment variables to files
+3. Passing secrets via subprocess command-line arguments (visible in process list)
+4. Including `.env` files in uploaded artifacts
+5. Base64-encoding secrets bypasses GitHub's secret masking
+
+---
+
+## 3. Jenkins Pipeline Attacks
+
+### 3-1. Groovy Script Injection
+
+Injecting malicious code into Jenkins Shared Libraries allows credential theft via the Groovy Script Console.
+
+### 3-2. Jenkins Credential Theft
+
+Credentials stored in Jenkins can be decrypted using the built-in Groovy Script Console at `/script`.
+
+### 3-3. Build Agent Hijacking
+
+Jenkins agents connected via JNLP can be used for lateral movement to other systems on the same network, especially if SSH keys are stored on the agent.
+
+---
+
+## 4. GitLab CI Pipeline Attacks
+
+### 4-1. Runner Privilege Escalation
+
+SSH agent sockets on runners can be hijacked to steal deploy keys.
+
+### 4-2. Supply Chain Compromise via CI Variables
+
+Non-protected GitLab CI variables are accessible from fork Merge Request pipelines, allowing attackers to exfiltrate credentials.
+
+---
+
+## 5. Build Cache Poisoning
+
+### 5-1. Cache Key Collision Attack
+
+Insufficient cache key specificity (missing branch/OS) allows attackers to pre-populate cache with malicious packages.
+
+### 5-2. Artifact Poisoning
+
+Private artifact repositories that also proxy public repositories (e.g., Artifactory) can cache malicious packages via dependency confusion.
+
+---
+
+## 6. SLSA Level Defense Strategies
+
+### SLSA Level Definitions
+
+- **L0**: No guarantees
+- **L1**: Versioned build scripts, provenance documentation
+- **L2**: Hosted build service, signed provenance
+- **L3**: Hardened build service, isolated builds, auditable logs
+- **L4** (planned): Two-party review, fully reproducible builds, hermetic environment
+
+### GitHub Actions SLSA L3 Implementation
+
+Use the `slsa-framework/slsa-github-generator` reusable workflow to generate and verify SLSA Level 3 provenance for release artifacts. See Korean section for full YAML configuration.
+
+---
+
+## 7. GitHub Actions Workflow Security Auditor
+
+A Python CLI tool for auditing GitHub Actions workflows for security risks. See Korean section for full code.
+
+### Usage Examples
+
+```bash
+# Scan a public repository
+python ci_workflow_auditor.py scan --repo kubernetes/kubernetes
+
+# Scan a private repository with authentication
+export GH_TOKEN=$(cat ~/.config/gh/token)
+python ci_workflow_auditor.py scan \
+  --repo myorg/private-repo \
+  --token $GH_TOKEN \
+  --output audit.json
+
+# Scan a local project
+python ci_workflow_auditor.py local --dir /home/user/myproject
+
+# Batch scan all repositories in an organization
+gh repo list myorg --json nameWithOwner -q '.[].nameWithOwner' > repos.txt
+python ci_workflow_auditor.py batch \
+  --repos repos.txt \
+  --token $GH_TOKEN \
+  --output org_audit.json \
+  --workers 10
+```
+
+---
+
+## 8. Jenkins/GitLab CI Defense Configuration
+
+### Jenkins Hardening
+
+Key settings via Jenkins Configuration as Code (JCasC):
+- Disable user self-registration
+- Use project-matrix authorization strategy
+- Enable Script Security Plugin
+- Replace built-in credential storage with HashiCorp Vault
+
+### GitLab CI Least Privilege
+
+- Disable Docker-in-Docker when possible
+- Set `NPM_CONFIG_IGNORE_SCRIPTS=true`
+- Enforce `PIP_REQUIRE_HASHES=1`
+- Use non-privileged runners
+- Restrict deployment stages to protected branches only
+
+---
+
+## 9. Build Reproducibility Verification
+
+Reproducible Builds ensure that the same source always produces the same binary output. Key techniques:
+- Compare SHA-256 hashes of independently built packages
+- Use `diffoscope` to analyze binary differences
+- Fix timestamps with `SOURCE_DATE_EPOCH`
+
+---
+
+## 10. Pipeline Security Checklist
+
+```
+GitHub Actions:
+  □ Pin all external actions to commit SHA
+  □ Declare minimal permissions explicitly
+  □ Pass secrets via environment variables only (never inject into run: blocks)
+  □ Never check out fork code in pull_request_target workflows
+  □ Require code review for all workflow file changes
+  □ Target SLSA L3 using Reusable Workflows only
+  □ Use OIDC-based cloud authentication (eliminate long-lived credentials)
+
+Jenkins:
+  □ Enable Script Security Plugin
+  □ Enable Agent-to-Controller security
+  □ Run each build in an isolated container
+  □ Use Vault instead of Jenkins built-in credentials
+  □ Require separate approval process for Shared Libraries
+
+General:
+  □ Sign build artifacts (sigstore/cosign)
+  □ Generate SLSA provenance
+  □ Retain build logs for audit (90+ days)
+  □ Configure alerts for abnormal build times
 ```

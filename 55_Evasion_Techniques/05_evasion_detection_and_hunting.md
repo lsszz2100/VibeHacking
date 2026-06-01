@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 탐지 회피 기법 사냥 (Threat Hunting)
 
 공격자가 사용하는 탐지 회피 기법을 적극적으로 찾아내는 위협 헌팅 방법론을 다룬다. 가설 기반 헌팅, YARA/Sigma 룰 개발, 메모리 포렌식 기반 회피 기법 발견을 정리한다.
@@ -546,6 +552,112 @@ if __name__ == "__main__":
     2>> /var/log/hunting/errors.log
 
 # 결과 대시보드로 전송
+5 * * * * python3 /opt/hunting/send_to_siem.py \
+    /var/log/hunting/$(date +\%Y\%m\%d_\%H).json
+```
+
+---
+
+<a name="english"></a>
+
+# Evasion Technique Detection and Threat Hunting
+
+This section covers threat hunting methodologies for proactively detecting evasion techniques used by attackers. Topics include hypothesis-driven hunting, YARA/Sigma rule development, and memory forensics-based evasion technique discovery.
+
+---
+
+## 1. Threat Hunting Methodology
+
+### 1.1 Hunting Cycle
+
+```
+1. Hypothesis Formulation
+   └── "Attacker will execute without PowerShell using LOLBAS"
+   └── "Suspicious process downloads files via certutil"
+
+2. Data Collection
+   └── Sysmon logs, EDR telemetry, NetFlow
+
+3. Analysis and Detection
+   └── Anomaly baseline comparison, clustering, pattern matching
+
+4. Response to Findings
+   └── Create detection rules, escalate incidents
+
+5. Feedback Loop
+   └── Analyze missed techniques → formulate next hypothesis
+```
+
+### 1.2 Hypothesis-Driven Hunting Examples
+
+The Python code above implements an automated threat hunting framework. Key hypotheses include:
+
+- **H-001**: LOLBAS file download (certutil, bitsadmin, mshta via T1218)
+- **H-002**: Encoded PowerShell execution (-EncodedCommand/-enc flags via T1059.001)
+- **H-003**: Suspicious service installation (sc.exe or API via T1543.003)
+- **H-004**: In-memory code execution (fileless execution via T1620)
+- **H-005**: Credential access (LSASS process memory dump via T1003.001)
+
+---
+
+## 2. YARA Rules — Evasion Technique Detection
+
+### Key Rules
+
+- **Evasion_TimeStomp_Indicators**: Detects timestamp manipulation tools (T1070.006) — looks for timestomp strings and Meterpreter patterns
+- **Evasion_Parent_Process_Spoofing**: Detects parent process spoofing (T1134.004) — looks for UpdateProcThreadAttribute and NtCreateUserProcess calls
+- **Evasion_Heaven_Gate_WOW64**: Detects Heaven's Gate technique (T1055) — 32-bit process executing 64-bit code via far call to segment 0x33
+- **Evasion_ETW_Patching**: Detects ETW/AMSI patching (T1562.006) — looks for EtwEventWrite patches and AMSI bypass patterns
+- **Hunting_Suspicious_Scheduled_Task**: Detects hidden scheduled task creation (T1053.005)
+
+---
+
+## 3. Memory Forensics-Based Evasion Detection
+
+### 3.1 Detecting Abnormal Memory Regions
+
+The `MemoryHunter` class uses Volatility3 to detect:
+
+**Process Hollowing** (`hunt_hollowing`):
+- Enumerates processes and checks VAD (Virtual Address Descriptor) flags
+- Flags regions with `EXECUTE_READWRITE` protection in known system processes
+- High severity finding indicating potential code injection
+
+**Injected Threads** (`hunt_injected_threads`):
+- Uses `windows.malfind` plugin to detect memory-injected code
+- Identifies suspicious executable memory regions not backed by a file on disk
+
+**Rootkit Detection** (`hunt_rootkit`):
+- Cross-references `windows.pslist` vs `windows.psscan` — processes visible via scan but not in list indicate DKOM rootkits
+- Cross-references `windows.modules` vs `windows.driverscan` for hidden kernel drivers
+
+---
+
+## 4. Hunt Hypothesis Library
+
+| Hypothesis ID | Hypothesis | Data Sources | MITRE ATT&CK |
+|--------|------|-----------|-------------|
+| H-001 | LOLBAS File Download | Sysmon Event 1 | T1218 |
+| H-002 | Encoded PowerShell Execution | Sysmon Event 1, ScriptBlock | T1059.001 |
+| H-003 | Suspicious Service Installation | Windows Event 7045 | T1543.003 |
+| H-004 | ETW/AMSI Patching | Sysmon Event 10 (kernel32) | T1562.006 |
+| H-005 | LSASS Dump Attempt | Sysmon Event 10 | T1003.001 |
+| H-006 | Hidden Scheduled Task | Windows Event 4698, Registry | T1053.005 |
+| H-007 | Parent Process Spoofing | Sysmon Event 1 (parent-child relationship) | T1134.004 |
+| H-008 | Heaven's Gate | Sysmon Event 1, 8 | T1055 |
+| H-009 | Timestamp Manipulation | Sysmon Event 11, MFT Analysis | T1070.006 |
+| H-010 | Process Hollowing | Sysmon Event 8, EDR | T1055.012 |
+
+### 4.1 Automated Hunting Schedule
+
+```bash
+# Run hunting every hour (cron)
+0 * * * * python3 /opt/hunting/threat_hunter.py \
+    /var/log/sysmon/sysmon.jsonl \
+    -o /var/log/hunting/$(date +\%Y\%m\%d_\%H).json \
+    2>> /var/log/hunting/errors.log
+
+# Send results to dashboard
 5 * * * * python3 /opt/hunting/send_to_siem.py \
     /var/log/hunting/$(date +\%Y\%m\%d_\%H).json
 ```

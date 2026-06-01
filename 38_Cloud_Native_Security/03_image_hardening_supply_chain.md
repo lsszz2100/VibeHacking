@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 컨테이너 이미지 강화 및 공급망 보안
 
 ## 목차
@@ -1023,3 +1029,1033 @@ python image_security_analyzer.py nginx:latest --format json | \
 - [CISA SBOM 가이드라인](https://www.cisa.gov/sbom)
 - [SLSA 프레임워크](https://slsa.dev/)
 - [Docker 보안 모범 사례](https://docs.docker.com/develop/security-best-practices/)
+
+---
+
+<a name="english"></a>
+
+# Container Image Hardening and Supply Chain Security
+
+## Table of Contents
+1. Container Image Vulnerability Scanning Tools
+2. Distroless / Scratch Base Images
+3. Image Signing (Cosign, Sigstore)
+4. OPA / Gatekeeper Policy Enforcement
+5. SBOM Generation and Image Supply Chain Security
+6. Python: Image Layer Security Analysis Tool
+
+---
+
+## 1. Container Image Vulnerability Scanning Tools
+
+### 1.1 Trivy (Aqua Security)
+
+Trivy is the most widely used open-source container vulnerability scanner.
+
+**Scan targets**:
+- Container images (OS packages, language dependencies)
+- Filesystems
+- Git repositories
+- IaC (Terraform, CloudFormation, Kubernetes YAML)
+- SBOM
+
+```bash
+# Scan an image
+trivy image nginx:latest
+
+# Filter by severity (CRITICAL and HIGH only)
+trivy image --severity CRITICAL,HIGH nginx:latest
+
+# JSON output (CI/CD integration)
+trivy image --format json --output report.json nginx:latest
+
+# Scan a Kubernetes cluster
+trivy k8s --report summary cluster
+
+# Scan IaC
+trivy config ./terraform/
+
+# Generate SBOM
+trivy image --format cyclonedx nginx:latest -o sbom.json
+```
+
+**Configuration file (trivy.yaml)**:
+```yaml
+severity:
+  - CRITICAL
+  - HIGH
+
+exit-code: 1  # Exit with non-zero code when vulnerabilities found (blocks CI/CD)
+
+ignore-unfixed: true  # Ignore vulnerabilities with no available patch
+
+skip-dirs:
+  - usr/share/doc
+
+vulnerability:
+  type:
+    - os
+    - library
+```
+
+### 1.2 Grype (Anchore)
+
+Grype is a vulnerability scanner designed to work alongside Syft.
+
+```bash
+# Scan an image
+grype nginx:latest
+
+# Scan from SBOM (generate with Syft first)
+syft nginx:latest -o json > sbom.json
+grype sbom:sbom.json
+
+# Fail based on severity threshold
+grype nginx:latest --fail-on critical
+
+# Ignore specific vulnerabilities (.grype.yaml)
+```
+
+```yaml
+# .grype.yaml
+ignore:
+  - vulnerability: CVE-2020-14145
+    reason: "Feature not in use"
+  - fix-state: wont-fix
+```
+
+### 1.3 Snyk Container
+
+Snyk provides a developer-friendly interface with automatic fix PR capabilities.
+
+```bash
+# CLI scan
+snyk container test nginx:latest
+
+# Scan Dockerfile (includes base image recommendations)
+snyk container test nginx:latest --file=Dockerfile
+
+# Monitor (continuous scanning)
+snyk container monitor nginx:latest --project-name=my-app
+```
+
+### Vulnerability Scanner Comparison
+
+| Criteria | Trivy | Grype | Snyk |
+|----------|-------|-------|------|
+| Open source | Fully open source | Fully open source | Limited free tier |
+| SBOM support | CycloneDX, SPDX | SPDX | CycloneDX |
+| IaC scanning | Supported | Not supported | Supported |
+| Auto fix | Not supported | Not supported | Creates PR |
+| Update frequency | 6 hours | 24 hours | Real-time |
+| CI/CD integration | Very easy | Easy | Moderate |
+
+---
+
+## 2. Distroless / Scratch Base Images
+
+### 2.1 What Are Distroless Images?
+
+Distroless images, created by Google, contain only the application and its runtime dependencies,
+removing package managers, shells, and utilities — resulting in a minimized image.
+
+**Attack surface reduction effect**:
+```
+Standard ubuntu:22.04:  ~400 OS packages, bash, apt, curl, etc.
+Distroless Python:      ~30 packages, no shell, no package manager
+Scratch (empty image):  0 packages (static binaries only)
+```
+
+### 2.2 Using Distroless Images
+
+```dockerfile
+# Multi-stage build using Distroless
+# Build stage
+FROM python:3.12-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --target=/app/packages -r requirements.txt
+COPY app.py .
+
+# Runtime stage (Distroless)
+FROM gcr.io/distroless/python3-debian12
+WORKDIR /app
+COPY --from=builder /app/packages /app/packages
+COPY --from=builder /app/app.py .
+ENV PYTHONPATH=/app/packages
+USER nonroot:nonroot
+CMD ["app.py"]
+```
+
+```dockerfile
+# Go static binary - using Scratch image
+FROM golang:1.21-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server .
+
+FROM scratch
+COPY --from=builder /app/server /server
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+USER 65534:65534  # nobody
+ENTRYPOINT ["/server"]
+```
+
+### 2.3 Security-Hardened Dockerfile Best Practices
+
+```dockerfile
+FROM python:3.12-slim
+
+# Remove unnecessary privileged tools
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libgomp1 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -f /usr/bin/wget /usr/bin/curl
+
+# Create a dedicated non-root user
+RUN groupadd -r appgroup --gid=1001 && \
+    useradd -r -g appgroup --uid=1001 --no-log-init appuser
+
+WORKDIR /app
+
+# Copy dependencies first (layer caching optimization)
+COPY --chown=appuser:appgroup requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY --chown=appuser:appgroup . .
+
+# Switch to non-root user
+USER appuser
+
+# Read-only filesystem (pairs with runAsReadOnlyRootFilesystem: true)
+VOLUME ["/tmp", "/var/cache"]
+
+EXPOSE 8080
+ENTRYPOINT ["python", "app.py"]
+```
+
+---
+
+## 3. Image Signing (Cosign, Sigstore)
+
+### 3.1 The Sigstore Ecosystem
+
+Sigstore is a free, open-source infrastructure for signing and verifying
+software artifacts (images, binaries, SBOMs).
+
+**Components**:
+```
+Sigstore Ecosystem:
+├── Cosign    - Container image signing/verification
+├── Fulcio    - Short-lived signing certificate CA
+├── Rekor     - Immutable transparency log
+└── Gitsign   - Git commit signing
+```
+
+### 3.2 Signing Images with Cosign
+
+```bash
+# 1. Generate a key pair
+cosign generate-key-pair
+
+# 2. Sign an image (key-based)
+cosign sign --key cosign.key registry.example.com/myapp:v1.0.0
+
+# 3. OIDC-based signing (keyless - for CI/CD environments)
+# In GitHub Actions:
+cosign sign --yes registry.example.com/myapp:v1.0.0
+
+# 4. Verify a signature
+cosign verify \
+  --key cosign.pub \
+  registry.example.com/myapp:v1.0.0
+
+# 5. Attach and sign an SBOM
+cosign attach sbom --sbom sbom.cyclonedx.json \
+  registry.example.com/myapp:v1.0.0
+
+cosign sign --key cosign.key \
+  --attachment sbom \
+  registry.example.com/myapp:v1.0.0
+```
+
+### 3.3 GitHub Actions CI/CD Integration
+
+```yaml
+# .github/workflows/build-sign.yml
+name: Build and Sign Container Image
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build-sign:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write  # Required for OIDC signing
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and Push
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@v3
+
+    - name: Sign Image (Keyless)
+      run: |
+        cosign sign --yes \
+          ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+
+    - name: Scan with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
+        exit-code: '1'
+```
+
+---
+
+## 4. OPA / Gatekeeper Policy Enforcement
+
+### 4.1 OPA (Open Policy Agent)
+
+OPA is a unified policy engine that uses the Rego language to define policies.
+
+```rego
+# Rego policy: Block root containers
+package kubernetes.admission
+
+deny[msg] {
+    input.request.kind.kind == "Pod"
+    container := input.request.object.spec.containers[_]
+    container.securityContext.runAsUser == 0
+    msg := sprintf(
+        "Container '%v' in Pod '%v' runs as root (UID=0). Denied.",
+        [container.name, input.request.object.metadata.name]
+    )
+}
+
+deny[msg] {
+    input.request.kind.kind == "Pod"
+    container := input.request.object.spec.containers[_]
+    container.securityContext.privileged == true
+    msg := sprintf(
+        "Container '%v' has privileged=true set.",
+        [container.name]
+    )
+}
+```
+
+### 4.2 Gatekeeper (OPA for Kubernetes)
+
+```bash
+# Install Gatekeeper
+helm repo add gatekeeper https://open-policy-agent.github.io/gatekeeper/charts
+helm install gatekeeper/gatekeeper \
+  --name-template=gatekeeper \
+  --namespace gatekeeper-system \
+  --create-namespace \
+  --set replicas=2
+```
+
+```yaml
+# ConstraintTemplate: Allow only signed images
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredsignedimages
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredSignedImages
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            allowedRegistries:
+              type: array
+              items:
+                type: string
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8srequiredsignedimages
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.containers[_]
+        not starts_with_allowed_registry(container.image)
+        msg := sprintf(
+          "Image '%v' does not come from an allowed registry.",
+          [container.image]
+        )
+      }
+
+      starts_with_allowed_registry(image) {
+        registry := input.parameters.allowedRegistries[_]
+        startswith(image, registry)
+      }
+
+---
+# Constraint: Apply the policy
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredSignedImages
+metadata:
+  name: require-signed-images
+spec:
+  match:
+    kinds:
+    - apiGroups: [""]
+      kinds: ["Pod"]
+    namespaces:
+    - production
+  parameters:
+    allowedRegistries:
+    - "registry.company.com/"
+    - "ghcr.io/myorg/"
+```
+
+```yaml
+# Gatekeeper Mutation: Auto-inject security defaults
+apiVersion: mutations.gatekeeper.sh/v1
+kind: AssignMetadata
+metadata:
+  name: add-security-labels
+spec:
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+  location: "metadata.labels.security-scanned"
+  parameters:
+    assign:
+      value: "true"
+```
+
+---
+
+## 5. SBOM Generation and Image Supply Chain Security
+
+### 5.1 SBOM (Software Bill of Materials)
+
+An SBOM is a complete list of all components included in a piece of software.
+Since the U.S. Executive Order EO 14028, it has become a core element of supply chain security.
+
+**Standard formats**:
+- **CycloneDX**: Led by OWASP, security-focused
+- **SPDX**: Led by Linux Foundation, license-focused
+- **SWID**: ISO/IEC standard
+
+```bash
+# Generate SBOM with Syft
+syft nginx:latest -o cyclonedx-json > nginx-sbom.cyclonedx.json
+syft nginx:latest -o spdx-json > nginx-sbom.spdx.json
+
+# Generate SBOM with Trivy
+trivy image --format cyclonedx nginx:latest -o nginx-sbom.json
+
+# Vulnerability scan from SBOM
+grype sbom:nginx-sbom.cyclonedx.json
+```
+
+### 5.2 Supply Chain Attack Scenarios
+
+**Scenario 1: Typosquatting**
+```
+Attacker: Uploads a malicious image named "ngnix" (typo) to Docker Hub
+Victim: docker pull ngnix:latest (downloads malicious image due to typo)
+```
+
+**Scenario 2: Base Image Poisoning**
+```
+Attacker: Inserts a backdoor into a popular base image (python:3.12)
+Impact: Backdoor propagates to all apps using that image
+```
+
+**Scenario 3: Build Pipeline Compromise**
+```
+Attacker: Injects malicious code into the CI/CD pipeline
+Result: Malicious code is included in the image at build time
+```
+
+### 5.3 Supply Chain Security Hardening Strategy
+
+```
+Supply Chain Security Layers:
+├── Stage 1: Source Code
+│   ├── Branch protection (Signed Commits)
+│   ├── SAST (Semgrep, SonarQube)
+│   └── Dependency review (Dependabot)
+│
+├── Stage 2: Build
+│   ├── Build environment isolation (Ephemeral environments)
+│   ├── Reproducible Builds
+│   └── SLSA (Supply chain Levels for Software Artifacts)
+│
+├── Stage 3: Image Registry
+│   ├── Enforce image signing (Cosign)
+│   ├── Image scanning (Trivy)
+│   └── Allowed registry list
+│
+└── Stage 4: Deployment
+    ├── Signature verification (Admission Controller)
+    ├── Gatekeeper policies
+    └── Runtime monitoring (Falco)
+```
+
+---
+
+## 6. Python: Image Layer Security Analysis Tool
+
+```python
+#!/usr/bin/env python3
+"""
+Container Image Layer Security Analysis Tool
+
+Analyzes each layer of a container image to detect security risks.
+"""
+
+import argparse
+import json
+import re
+import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
+
+
+class RiskLevel(Enum):
+    CRITICAL = "CRITICAL"
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+    INFO = "INFO"
+
+
+@dataclass
+class LayerFinding:
+    layer_id: str
+    layer_index: int
+    risk_level: RiskLevel
+    category: str
+    description: str
+    command: str
+    recommendation: str
+
+
+@dataclass
+class ImageAnalysisResult:
+    image: str
+    total_layers: int
+    total_size_mb: float
+    findings: list[LayerFinding] = field(default_factory=list)
+    exposed_ports: list[int] = field(default_factory=list)
+    env_vars: list[str] = field(default_factory=list)
+    user: str = "root"
+    has_healthcheck: bool = False
+    trivy_critical: int = 0
+    trivy_high: int = 0
+
+    def summary(self) -> dict[str, Any]:
+        findings_by_level: dict[str, int] = {}
+        for f in self.findings:
+            findings_by_level[f.risk_level.value] = (
+                findings_by_level.get(f.risk_level.value, 0) + 1
+            )
+        return {
+            "image": self.image,
+            "total_layers": self.total_layers,
+            "size_mb": round(self.total_size_mb, 2),
+            "user": self.user,
+            "has_healthcheck": self.has_healthcheck,
+            "exposed_ports": self.exposed_ports,
+            "findings_count": findings_by_level,
+            "trivy_critical": self.trivy_critical,
+            "trivy_high": self.trivy_high,
+        }
+
+
+def run_docker(args: list[str]) -> dict[str, Any] | list[Any] | str | None:
+    """Execute a docker command."""
+    try:
+        result = subprocess.run(
+            ["docker"] + args,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"[WARNING] docker error: {e.stderr.strip()}", file=sys.stderr)
+        return None
+    except subprocess.TimeoutExpired:
+        print("[WARNING] docker command timed out", file=sys.stderr)
+        return None
+
+
+def get_image_inspect(image: str) -> dict[str, Any] | None:
+    """Retrieve image information via docker inspect."""
+    raw = run_docker(["inspect", image])
+    if not raw:
+        return None
+    try:
+        data = json.loads(str(raw))
+        return data[0] if isinstance(data, list) and data else None
+    except (json.JSONDecodeError, IndexError):
+        return None
+
+
+def get_image_history(image: str) -> list[dict[str, Any]]:
+    """Retrieve image layer history."""
+    raw = run_docker(["history", "--format", "json", "--no-trunc", image])
+    if not raw:
+        return []
+    try:
+        lines = str(raw).strip().split("\n")
+        return [json.loads(line) for line in lines if line.strip()]
+    except json.JSONDecodeError:
+        return []
+
+
+def analyze_layer_commands(
+    history: list[dict[str, Any]]
+) -> list[LayerFinding]:
+    """Detect security risks from layer commands."""
+    findings: list[LayerFinding] = []
+
+    # Define risk patterns
+    risk_patterns = [
+        (
+            RiskLevel.CRITICAL,
+            "Secret key exposure",
+            re.compile(
+                r"(password|passwd|secret|api_key|private_key|token)\s*[=:]\s*\S+",
+                re.IGNORECASE,
+            ),
+            "Pass via environment variables or ARG and use multi-stage builds.",
+        ),
+        (
+            RiskLevel.CRITICAL,
+            "SSH private key copy",
+            re.compile(r"COPY.*\.pem|COPY.*id_rsa|ADD.*\.key"),
+            "Use build secrets (--secret) and do not include keys in the final image.",
+        ),
+        (
+            RiskLevel.HIGH,
+            "Package cache not cleaned",
+            re.compile(r"apt-get install(?!.*rm -rf /var/lib/apt)"),
+            "Use RUN apt-get install && rm -rf /var/lib/apt/lists/* to clean the cache.",
+        ),
+        (
+            RiskLevel.HIGH,
+            "curl | bash pattern",
+            re.compile(r"curl.*\|.*bash|wget.*\|.*sh"),
+            "Download the script first, review it, then execute.",
+        ),
+        (
+            RiskLevel.HIGH,
+            "ADD with remote URL",
+            re.compile(r"^ADD\s+https?://"),
+            "Use COPY instead of ADD; download with wget/curl and verify checksums.",
+        ),
+        (
+            RiskLevel.MEDIUM,
+            "chmod 777 usage",
+            re.compile(r"chmod\s+777|chmod\s+-R\s+777"),
+            "Use the minimum required permissions (755 or 644).",
+        ),
+        (
+            RiskLevel.MEDIUM,
+            "setuid/setgid binaries",
+            re.compile(r"chmod\s+[0-9]*[46][0-9]*|chmod.*[su]"),
+            "Review whether setuid/setgid bits are necessary and remove them if not.",
+        ),
+        (
+            RiskLevel.MEDIUM,
+            "sudo installation",
+            re.compile(r"apt-get install.*sudo|yum install.*sudo"),
+            "sudo is unnecessary in containers. Manage permissions via the USER directive.",
+        ),
+        (
+            RiskLevel.LOW,
+            "Package installation without version pinning",
+            re.compile(r"apt-get install -y (?!--no-install-recommends)"),
+            "Use the --no-install-recommends flag and pin versions.",
+        ),
+        (
+            RiskLevel.INFO,
+            "Latest tag usage",
+            re.compile(r"FROM\s+\w+:latest"),
+            "Use a specific digest or version tag instead of latest.",
+        ),
+    ]
+
+    for idx, layer in enumerate(history):
+        cmd = layer.get("CreatedBy", "")
+        layer_id = layer.get("ID", f"layer-{idx}")[:12]
+
+        for risk_level, category, pattern, recommendation in risk_patterns:
+            if pattern.search(cmd):
+                findings.append(
+                    LayerFinding(
+                        layer_id=layer_id,
+                        layer_index=idx,
+                        risk_level=risk_level,
+                        category=category,
+                        description=f"Risk pattern detected in layer {idx}: {category}",
+                        command=cmd[:200],
+                        recommendation=recommendation,
+                    )
+                )
+
+    return findings
+
+
+def analyze_image_config(inspect: dict[str, Any]) -> list[LayerFinding]:
+    """Detect security risks from image configuration."""
+    findings: list[LayerFinding] = []
+    config = inspect.get("Config", {})
+
+    # Check User
+    user = config.get("User", "")
+    if not user or user in ("root", "0", "0:0"):
+        findings.append(
+            LayerFinding(
+                layer_id="config",
+                layer_index=-1,
+                risk_level=RiskLevel.HIGH,
+                category="Running as root",
+                description="The image is configured to run as the root user.",
+                command=f"USER {user or '(not set)'}",
+                recommendation="Add USER nonroot or USER 1000:1000 to the Dockerfile.",
+            )
+        )
+
+    # Check Healthcheck
+    if not config.get("Healthcheck"):
+        findings.append(
+            LayerFinding(
+                layer_id="config",
+                layer_index=-1,
+                risk_level=RiskLevel.LOW,
+                category="No HEALTHCHECK configured",
+                description="No HEALTHCHECK has been configured for container health monitoring.",
+                command="No HEALTHCHECK",
+                recommendation=(
+                    "HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost/ || exit 1"
+                ),
+            )
+        )
+
+    # Check environment variables for sensitive information
+    env_vars = config.get("Env", [])
+    sensitive_env_pattern = re.compile(
+        r"(password|secret|key|token|credential)=",
+        re.IGNORECASE,
+    )
+    for env_var in env_vars:
+        if sensitive_env_pattern.search(env_var):
+            var_name = env_var.split("=")[0]
+            findings.append(
+                LayerFinding(
+                    layer_id="config",
+                    layer_index=-1,
+                    risk_level=RiskLevel.CRITICAL,
+                    category="Sensitive environment variable",
+                    description=f"Sensitive information may be hardcoded in an environment variable: {var_name}",
+                    command=f"ENV {var_name}=***",
+                    recommendation=(
+                        "Inject at runtime using Kubernetes Secrets or HashiCorp Vault."
+                    ),
+                )
+            )
+
+    # Check exposed ports
+    exposed_ports = list(config.get("ExposedPorts", {}).keys())
+    for port in exposed_ports:
+        port_num = int(port.split("/")[0])
+        if port_num < 1024:
+            findings.append(
+                LayerFinding(
+                    layer_id="config",
+                    layer_index=-1,
+                    risk_level=RiskLevel.MEDIUM,
+                    category="Privileged port usage",
+                    description=f"Port below 1024 ({port}) is exposed. Requires root privileges.",
+                    command=f"EXPOSE {port}",
+                    recommendation=(
+                        f"Change to a higher port such as {port_num + 8000} "
+                        "and forward via a Kubernetes Service."
+                    ),
+                )
+            )
+
+    return findings
+
+
+def run_trivy_scan(image: str) -> tuple[int, int]:
+    """Run CVE scan with Trivy."""
+    try:
+        result = subprocess.run(
+            [
+                "trivy", "image",
+                "--format", "json",
+                "--quiet",
+                "--severity", "CRITICAL,HIGH",
+                image,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        if result.returncode not in (0, 1):
+            return 0, 0
+
+        data = json.loads(result.stdout)
+        critical = high = 0
+        for res in data.get("Results", []):
+            for vuln in res.get("Vulnerabilities", []):
+                if vuln.get("Severity") == "CRITICAL":
+                    critical += 1
+                elif vuln.get("Severity") == "HIGH":
+                    high += 1
+        return critical, high
+    except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
+        return 0, 0
+
+
+def analyze_image(image: str, skip_trivy: bool = False) -> ImageAnalysisResult:
+    """Comprehensive image security analysis."""
+    print(f"[INFO] Analyzing image: {image}", file=sys.stderr)
+
+    # Collect image information
+    inspect = get_image_inspect(image)
+    history = get_image_history(image)
+
+    if not inspect:
+        print(f"[ERROR] Image not found: {image}", file=sys.stderr)
+        sys.exit(1)
+
+    # Calculate image size
+    size_bytes = inspect.get("Size", 0)
+    size_mb = size_bytes / (1024 * 1024)
+
+    # Extract configuration
+    config = inspect.get("Config", {})
+    user = config.get("User", "root")
+    has_healthcheck = bool(config.get("Healthcheck"))
+    exposed_ports = [
+        int(p.split("/")[0])
+        for p in config.get("ExposedPorts", {}).keys()
+    ]
+    env_vars = config.get("Env", [])
+
+    result = ImageAnalysisResult(
+        image=image,
+        total_layers=len(history),
+        total_size_mb=size_mb,
+        user=user or "root",
+        has_healthcheck=has_healthcheck,
+        exposed_ports=exposed_ports,
+        env_vars=env_vars,
+    )
+
+    # Run analyses in parallel
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {
+            executor.submit(analyze_layer_commands, history): "layer",
+            executor.submit(analyze_image_config, inspect): "config",
+        }
+        if not skip_trivy:
+            futures[executor.submit(run_trivy_scan, image)] = "trivy"
+
+        for future in as_completed(futures):
+            analysis_type = futures[future]
+            try:
+                res = future.result()
+                if analysis_type in ("layer", "config"):
+                    result.findings.extend(res)
+                elif analysis_type == "trivy":
+                    result.trivy_critical, result.trivy_high = res
+            except Exception as e:
+                print(f"[WARNING] {analysis_type} analysis failed: {e}", file=sys.stderr)
+
+    return result
+
+
+def print_analysis_report(result: ImageAnalysisResult, fmt: str) -> None:
+    """Print the analysis report."""
+    if fmt == "json":
+        report = {
+            "summary": result.summary(),
+            "findings": [
+                {
+                    "layer_id": f.layer_id,
+                    "layer_index": f.layer_index,
+                    "risk_level": f.risk_level.value,
+                    "category": f.category,
+                    "description": f.description,
+                    "command": f.command,
+                    "recommendation": f.recommendation,
+                }
+                for f in result.findings
+            ],
+        }
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return
+
+    # Text report
+    print("\n" + "=" * 70)
+    print(f"  Image Layer Security Analysis Result: {result.image}")
+    print("=" * 70)
+    print(f"  Layers:       {result.total_layers}")
+    print(f"  Image size:   {result.total_size_mb:.1f} MB")
+    print(f"  Run as user:  {result.user}")
+    print(f"  Healthcheck:  {'Configured' if result.has_healthcheck else 'Not configured'}")
+    print(f"  Exposed ports:{result.exposed_ports or 'None'}")
+
+    if result.trivy_critical > 0 or result.trivy_high > 0:
+        print(f"\n  CVE Vulnerabilities:")
+        print(f"    CRITICAL: {result.trivy_critical}")
+        print(f"    HIGH:     {result.trivy_high}")
+
+    print("\n" + "-" * 70)
+    print(f"  Issues found: {len(result.findings)}")
+    print("-" * 70)
+
+    severity_order = [
+        RiskLevel.CRITICAL, RiskLevel.HIGH,
+        RiskLevel.MEDIUM, RiskLevel.LOW, RiskLevel.INFO,
+    ]
+    sorted_findings = sorted(
+        result.findings,
+        key=lambda f: severity_order.index(f.risk_level),
+    )
+
+    colors = {
+        RiskLevel.CRITICAL: "\033[91m",
+        RiskLevel.HIGH: "\033[93m",
+        RiskLevel.MEDIUM: "\033[94m",
+        RiskLevel.LOW: "\033[92m",
+        RiskLevel.INFO: "\033[0m",
+    }
+    reset = "\033[0m"
+
+    for finding in sorted_findings:
+        color = colors.get(finding.risk_level, reset)
+        print(
+            f"\n{color}[{finding.risk_level.value}]{reset} "
+            f"{finding.category} (layer: {finding.layer_id})"
+        )
+        print(f"  Description: {finding.description}")
+        print(f"  Command:     {finding.command[:100]}...")
+        print(f"  Action:      {finding.recommendation}")
+
+    print("\n" + "=" * 70)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Container image layer security analysis tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s nginx:latest
+  %(prog)s python:3.12-slim --format json
+  %(prog)s myapp:v1.0 --skip-trivy
+  %(prog)s alpine:3.18 --format json | jq '.findings[] | select(.risk_level == "CRITICAL")'
+        """,
+    )
+    parser.add_argument("image", help="Container image to analyze (e.g., nginx:latest)")
+    parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    parser.add_argument(
+        "--skip-trivy",
+        action="store_true",
+        help="Skip Trivy CVE scan (for environments without Trivy installed)",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    result = analyze_image(args.image, skip_trivy=args.skip_trivy)
+    print_analysis_report(result, args.format)
+
+    # Exit with non-zero code when CRITICAL findings exist (can block CI/CD)
+    critical_count = sum(
+        1 for f in result.findings
+        if f.risk_level == RiskLevel.CRITICAL
+    )
+    return 1 if critical_count > 0 or result.trivy_critical > 0 else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+### Tool Usage
+
+```bash
+# Analyze a single image
+python image_security_analyzer.py nginx:latest
+
+# JSON output (CI/CD integration)
+python image_security_analyzer.py myapp:v1.0 --format json
+
+# Run in an environment without Trivy
+python image_security_analyzer.py alpine:3.18 --skip-trivy
+
+# Use in a CI/CD pipeline (fail build on CRITICAL findings)
+python image_security_analyzer.py $IMAGE_TAG || exit 1
+
+# Filter CRITICAL items only
+python image_security_analyzer.py nginx:latest --format json | \
+  jq '.findings[] | select(.risk_level == "CRITICAL")'
+```
+
+---
+
+## References
+
+- [Trivy Documentation](https://aquasecurity.github.io/trivy/)
+- [Grype GitHub](https://github.com/anchore/grype)
+- [Cosign Documentation](https://docs.sigstore.dev/cosign/overview/)
+- [Google Distroless Images](https://github.com/GoogleContainerTools/distroless)
+- [OPA/Gatekeeper Documentation](https://open-policy-agent.github.io/gatekeeper/)
+- [CISA SBOM Guidelines](https://www.cisa.gov/sbom)
+- [SLSA Framework](https://slsa.dev/)
+- [Docker Security Best Practices](https://docs.docker.com/develop/security-best-practices/)

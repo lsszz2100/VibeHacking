@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # iOS 포렌식
 
 ## 목차
@@ -1195,4 +1201,1207 @@ wget https://raw.githubusercontent.com/AmnestyTech/investigations/master/2021-07
 □ 사진 EXIF 메타데이터 분석
 □ 삭제 파일 복구 시도
 □ 클라우드 동기화 상태 확인
+```
+
+---
+
+<a name="english"></a>
+
+# iOS Forensics
+
+## Table of Contents
+1. iOS Filesystem Structure
+2. iTunes Backup Structure Analysis
+3. iCloud Backup vs Local Backup Differences
+4. iOS Artifact Locations
+5. Python iOS Backup Decryption/Parsing Script
+6. GrayKey/Cellebrite Methods Overview
+
+---
+
+## 1. iOS Filesystem Structure
+
+### Partition Structure
+
+iOS devices consist of two primary partitions.
+
+```
+/dev/disk0s1    →  /           (System partition, read-only, ~7-10GB)
+/dev/disk0s2    →  /private/var (Data partition, read/write, remaining capacity)
+```
+
+**System Partition (Read-Only)**
+```
+/bin/           - Basic binaries
+/sbin/          - System binaries
+/lib/           - Shared libraries
+/usr/           - User utilities
+/System/        - iOS frameworks
+/Applications/  - Default apps (Phone, Safari, Messages, etc.)
+/private/etc/   - System configuration
+```
+
+**Data Partition (/private/var)**
+```
+/private/var/
+├── mobile/                  # Default user home directory
+│   ├── Applications/        # iOS 7 and below: app data
+│   ├── Containers/          # iOS 8+: app data
+│   │   ├── Bundle/          # App binaries (UUID-based)
+│   │   └── Data/            # App data (UUID-based)
+│   │       └── Application/
+│   │           └── <UUID>/
+│   │               ├── Documents/
+│   │               ├── Library/
+│   │               │   ├── Caches/
+│   │               │   └── Preferences/
+│   │               └── tmp/
+│   ├── Library/             # User library
+│   │   ├── AddressBook/     # Contacts
+│   │   ├── SMS/             # Text messages
+│   │   ├── CallHistory/     # Call history
+│   │   ├── Safari/          # Browser data
+│   │   ├── Mail/            # Email
+│   │   ├── Notes/           # Notes
+│   │   ├── Health/          # Health data
+│   │   ├── Voicemail/       # Voicemail
+│   │   ├── Maps/            # Maps/location
+│   │   └── Calendars/       # Calendar
+│   └── Media/               # User media
+│       ├── DCIM/            # Photos/videos
+│       ├── PhotoData/       # Photo metadata
+│       └── iTunes_Control/  # iTunes sync
+└── root/                    # Root user (jailbroken devices)
+```
+
+### HFS+ vs APFS
+
+**HFS+ (Mac OS Extended)**
+- Used on iOS 10.2 and below
+- Timestamps: Mac Absolute Time (epoch: January 1, 2001)
+- Journaling support
+
+**APFS (Apple File System)**
+- Used on iOS 10.3+
+- Snapshot support → allows recovery of pre-deletion state
+- Space sharing, Copy-on-Write
+- Encryption: per-file individual encryption keys
+- Timestamps: nanosecond precision
+
+```bash
+# Check filesystem on a jailbroken device
+ideviceinfo | grep FSType
+
+# Access via SSH (jailbroken device)
+ssh root@<device_ip>
+mount | grep /dev/disk
+df -h
+
+# Dump filesystem info
+diskutil list  # when connected on Mac
+```
+
+### Timestamp Conversion
+
+```python
+from datetime import datetime, timezone
+
+# Mac Absolute Time → Unix time
+# Mac Absolute Time: seconds since 2001-01-01 00:00:00 UTC
+MAC_EPOCH_OFFSET = 978307200  # in seconds
+
+def mac_absolute_to_datetime(mac_ts: float) -> datetime:
+    unix_ts = mac_ts + MAC_EPOCH_OFFSET
+    return datetime.fromtimestamp(unix_ts, tz=timezone.utc)
+
+# Example
+ts = mac_absolute_to_datetime(699123456)
+print(ts.strftime("%Y-%m-%d %H:%M:%S %Z"))
+
+# Nanosecond timestamp (APFS)
+def apfs_timestamp_to_datetime(ns_ts: int) -> datetime:
+    unix_ts = ns_ts / 1_000_000_000
+    return datetime.fromtimestamp(unix_ts, tz=timezone.utc)
+```
+
+---
+
+## 2. iTunes Backup Structure Analysis
+
+### Backup Storage Locations
+
+```
+# macOS
+~/Library/Application Support/MobileSync/Backup/<UDID>/
+
+# Windows
+%APPDATA%\Apple Computer\MobileSync\Backup\<UDID>\
+or
+%USERPROFILE%\Apple\MobileSync\Backup\<UDID>\
+```
+
+### Backup File Structure
+
+```
+<UDID>/
+├── Manifest.db          # Full file list (SQLite)
+├── Manifest.plist       # Backup metadata (encryption status, iOS version, etc.)
+├── Info.plist           # Device information (model, IMEI, phone number, etc.)
+├── Status.plist         # Backup status
+└── <xx>/                # File data (directory separated by first 2 chars of hash)
+    └── <40-char SHA1 hash>  # Actual file data (no extension)
+```
+
+### Manifest.db Analysis
+
+```sql
+-- Manifest.db table structure
+-- Files table: list of backed-up files
+SELECT fileID, domain, relativePath, flags, file
+FROM Files
+LIMIT 10;
+
+-- domain: app/data domain classification
+-- HomeDomain: files under /var/mobile/Library/
+-- AppDomain: app data
+-- MediaDomain: media files
+-- DatabaseDomain: databases
+-- WirelessDomain: Wi-Fi settings
+
+-- Search for specific files
+SELECT fileID, relativePath
+FROM Files
+WHERE relativePath LIKE '%SMS%';
+
+-- List of app domains
+SELECT DISTINCT domain FROM Files ORDER BY domain;
+```
+
+```bash
+# Extract specific files from backup (Python recommended)
+sqlite3 Manifest.db "SELECT fileID, domain, relativePath FROM Files WHERE relativePath LIKE '%sms%'"
+
+# Find file by fileID (first 2 chars are the directory name)
+# fileID = "abc123..." → ./ab/abc123...
+```
+
+### Info.plist Analysis
+
+```bash
+# Read plist file (macOS)
+plutil -p Info.plist
+
+# Linux (using libplist)
+apt install libplist-utils
+plistutil -i Info.plist -o Info.xml
+cat Info.xml
+```
+
+**Info.plist Key Fields**
+```xml
+<key>Build Version</key>          <!-- iOS build version -->
+<key>Device Name</key>            <!-- Device name -->
+<key>GUID</key>                   <!-- Device unique ID -->
+<key>IMEI</key>                   <!-- IMEI number -->
+<key>Last Backup Date</key>       <!-- Last backup time -->
+<key>Phone Number</key>           <!-- Phone number -->
+<key>Product Type</key>           <!-- iPhone model (e.g., iPhone14,2) -->
+<key>Serial Number</key>          <!-- Serial number -->
+```
+
+---
+
+## 3. iCloud Backup vs Local Backup Differences
+
+### Comparison Table
+
+| Item | Local Backup (iTunes/Finder) | iCloud Backup |
+|------|------------------------------|---------------|
+| Storage location | Local computer | Apple servers |
+| Encryption | Optional (password) | Encrypted by default |
+| Included data | Nearly all data | Some excluded (iCloud-synced data) |
+| Legal access | Device or computer seizure | Court warrant required |
+| Access method | Manifest.db analysis | Apple law enforcement request or account credentials |
+| Forensic convenience | High (direct access) | Low (requires Apple cooperation) |
+| iTunes backup encryption | Some data excluded without password | Not applicable |
+
+### Checking Local Backup Encryption Status
+
+```bash
+# Check encryption status in Manifest.plist
+python3 -c "
+import plistlib
+with open('Manifest.plist', 'rb') as f:
+    data = plistlib.load(f)
+print('Encrypted:', data.get('IsEncrypted', False))
+print('Backup date:', data.get('Date'))
+"
+```
+
+### iCloud Backup Data Requests (Law Enforcement)
+
+```
+Apple Law Enforcement Request Process:
+1. Obtain a court warrant from the relevant jurisdiction
+2. Submit to https://www.apple.com/legal/privacy/law-enforcement/
+3. Apple extracts and provides iCloud data
+
+Data included in iCloud backups:
+- SMS/iMessage (when iCloud Messages is disabled)
+- App data
+- Device settings
+- Photos (when iCloud Photos is not used)
+- Call history
+- Safari history
+- Contacts, calendars, notes
+```
+
+### Apple Transparency Report
+
+```
+https://www.apple.com/legal/transparency/
+
+Law enforcement request status:
+- Apple publishes request counts by country on a semi-annual basis
+- Distinguishes between account information requests and device information requests
+- Compliance Rate is disclosed
+```
+
+---
+
+## 4. iOS Artifact Locations
+
+### iMessage / SMS
+
+```
+In backup: HomeDomain/Library/SMS/sms.db
+
+Tables:
+- message          : Message content
+- chat             : Conversation list
+- chat_message_join: Conversation-message join
+- handle           : Sender/recipient information
+- attachment       : Attachments
+```
+
+```sql
+-- Full iMessage/SMS query
+SELECT
+    m.rowid,
+    h.id AS sender,
+    datetime(m.date/1000000000 + 978307200, 'unixepoch', 'localtime') AS timestamp,
+    m.text,
+    m.is_from_me,
+    m.service    -- 'SMS' or 'iMessage'
+FROM message m
+LEFT JOIN handle h ON m.handle_id = h.rowid
+ORDER BY m.date DESC;
+
+-- Messages with attachments
+SELECT m.text, a.filename, a.mime_type
+FROM message m
+JOIN message_attachment_join maj ON m.rowid = maj.message_id
+JOIN attachment a ON maj.attachment_id = a.rowid;
+
+-- Deleted messages (residual data such as cache_has_attachments)
+SELECT * FROM message WHERE text IS NULL AND cache_has_attachments = 1;
+```
+
+### Safari Browser
+
+```
+In backup:
+- HomeDomain/Library/Safari/History.db         # Browsing history
+- HomeDomain/Library/Safari/Bookmarks.db       # Bookmarks
+- HomeDomain/Library/Safari/BrowserState.db    # Tab state
+- HomeDomain/Library/Cookies/Cookies.binarycookies  # Cookies (binary)
+- HomeDomain/Library/Safari/Downloads.plist    # Download history
+```
+
+```sql
+-- Safari browsing history
+SELECT
+    hi.url,
+    hv.title,
+    datetime(hv.visit_time + 978307200, 'unixepoch', 'localtime') AS visited_at
+FROM history_visits hv
+JOIN history_items hi ON hv.history_item = hi.id
+ORDER BY hv.visit_time DESC;
+```
+
+```python
+# Parse Safari cookies (Binary Cookies format)
+import struct
+
+def parse_binarycookies(filepath: str) -> list[dict]:
+    """Parse Safari Binary Cookies file"""
+    cookies: list[dict] = []
+
+    with open(filepath, "rb") as f:
+        magic = f.read(4)
+        if magic != b"cook":
+            raise ValueError("Invalid Binary Cookies file")
+
+        num_pages = struct.unpack(">I", f.read(4))[0]
+        page_sizes = [struct.unpack(">I", f.read(4))[0] for _ in range(num_pages)]
+
+        for page_size in page_sizes:
+            page_data = f.read(page_size)
+            # Parse cookies within page (simplified)
+            page_header = struct.unpack("<I", page_data[:4])[0]
+            num_cookies = struct.unpack("<I", page_data[4:8])[0]
+
+            for i in range(num_cookies):
+                offset = struct.unpack("<I", page_data[8 + i * 4:12 + i * 4])[0]
+                cookies.append({"raw_offset": offset, "page_header": page_header})
+
+    return cookies
+```
+
+### Call History
+
+```
+In backup: HomeDomain/Library/CallHistory/CallHistory.storedata
+
+NSPersistentStore (Core Data) format → can be opened as SQLite
+
+SELECT
+    ZADDRESS,
+    ZDURATION,
+    ZDATE,
+    ZORIGINATED,  -- 0=incoming, 1=outgoing
+    ZCALLTYPE     -- 0=phone call, 1=FaceTime Audio, 8=FaceTime Video
+FROM ZCALLRECORD
+ORDER BY ZDATE DESC;
+
+-- Timestamps: Core Data (Mac Absolute Time)
+SELECT
+    ZADDRESS,
+    datetime(ZDATE + 978307200, 'unixepoch', 'localtime') AS call_time,
+    CAST(ZDURATION AS INT) || ' seconds' AS duration
+FROM ZCALLRECORD;
+```
+
+### Contacts
+
+```
+In backup: HomeDomain/Library/AddressBook/AddressBook.sqlitedb
+
+Tables:
+- ABPerson            : Basic contact information
+- ABMultiValue        : Phone numbers, emails, URLs, etc.
+- ABMultiValueEntry   : Multi-value entries
+```
+
+```sql
+-- Contacts + phone numbers
+SELECT
+    p.First || ' ' || COALESCE(p.Last, '') AS name,
+    mv.value AS phone,
+    datetime(p.CreationDate + 978307200, 'unixepoch') AS created_at
+FROM ABPerson p
+JOIN ABMultiValue mv ON p.ROWID = mv.record_id
+WHERE mv.property = 3   -- 3 = phone number
+ORDER BY p.CreationDate DESC;
+```
+
+### Health Data
+
+```
+In backup: HomeDomain/Library/Health/healthdb.sqlite
+           HomeDomain/Library/Health/healthdb_secure.sqlite
+
+Included data:
+- Step count, heart rate, blood pressure
+- Sleep patterns
+- Exercise records (including routes)
+- Menstrual cycle
+- Location-based data (during exercise)
+
+-- Heart rate records
+SELECT
+    quantity_samples.value,
+    datetime(quantity_samples.start_date + 978307200, 'unixepoch') AS measured_at
+FROM quantity_samples
+JOIN data_provenances ON quantity_samples.data_provenance_id = data_provenances.ROWID
+WHERE quantity_samples.data_type = 5  -- 5 = heart rate
+ORDER BY quantity_samples.start_date DESC;
+```
+
+### Location Data
+
+```
+In backup:
+- HomeDomain/Library/Caches/com.apple.routined/
+  └── Local.sqlite           # Frequently visited locations (Significant Locations)
+- AppDomain-com.apple.Maps/Library/Maps/
+  └── GeoHistory.mapsdata    # Map search/route history
+
+Direct access on jailbroken device:
+/private/var/mobile/Library/Caches/com.apple.routined/
+/private/var/mobile/Library/CoreLocation/
+```
+
+### Notes
+
+```
+In backup: AppDomain-com.apple.mobilenotes/Library/Notes/
+           HomeDomain/Library/Notes/
+
+SQLite Core Data format
+Tables: ZICNOTEDATA, ZNOTE, ZICATTACHMENT
+
+-- Extract note content (when not encrypted)
+SELECT ZTITLE, ZSNIPPET, datetime(ZCREATIONDATE + 978307200, 'unixepoch') AS created
+FROM ZNOTE
+ORDER BY ZCREATIONDATE DESC;
+```
+
+---
+
+## 5. Python iOS Backup Decryption/Parsing Script
+
+```python
+#!/usr/bin/env python3
+"""
+iOS iTunes Backup Parsing and Forensic Analysis Tool
+
+Decrypt encrypted backups and extract artifacts
+Dependencies: pip install cryptography pycryptodome
+
+Usage:
+    # Analyze unencrypted backup
+    python3 ios_backup_parser.py -b ~/Library/Application\ Support/MobileSync/Backup/<UDID> -o ./output
+
+    # Decrypt encrypted backup
+    python3 ios_backup_parser.py -b <backup_dir> -o ./output -p <password>
+
+    # Extract specific artifacts only
+    python3 ios_backup_parser.py -b <backup_dir> -o ./output --extract-sms --extract-calls
+"""
+
+import argparse
+import hashlib
+import json
+import os
+import plistlib
+import shutil
+import sqlite3
+import struct
+import sys
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional
+
+# Encryption-related (optional dependency)
+try:
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+    from cryptography.hazmat.primitives import hashes, padding as sym_padding
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    from cryptography.hazmat.backends import default_backend
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
+
+
+MAC_EPOCH_OFFSET = 978307200  # 2001-01-01 00:00:00 UTC → Unix epoch offset
+
+
+@dataclass
+class BackupFile:
+    file_id: str
+    domain: str
+    relative_path: str
+    flags: int
+    file_metadata: bytes
+
+
+@dataclass
+class SmsMessage:
+    rowid: int
+    sender: str
+    timestamp: datetime
+    text: str
+    is_from_me: bool
+    service: str
+
+
+@dataclass
+class CallRecord:
+    address: str
+    duration: float
+    date: datetime
+    originated: bool
+    call_type: int
+
+
+@dataclass
+class Contact:
+    name: str
+    phones: list[str]
+    emails: list[str]
+    created_at: Optional[datetime]
+
+
+def mac_ts_to_datetime(mac_ts: float) -> datetime:
+    """Convert Mac Absolute Time to datetime"""
+    try:
+        unix_ts = mac_ts + MAC_EPOCH_OFFSET
+        return datetime.fromtimestamp(unix_ts, tz=timezone.utc)
+    except (OSError, OverflowError, ValueError):
+        return datetime.fromtimestamp(0, tz=timezone.utc)
+
+
+def load_manifest_db(backup_dir: Path) -> list[BackupFile]:
+    """Load file list from Manifest.db"""
+    manifest_path = backup_dir / "Manifest.db"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Manifest.db not found: {manifest_path}")
+
+    files: list[BackupFile] = []
+    conn = sqlite3.connect(str(manifest_path))
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    try:
+        cur.execute("SELECT fileID, domain, relativePath, flags, file FROM Files")
+        for row in cur.fetchall():
+            files.append(BackupFile(
+                file_id=row["fileID"] or "",
+                domain=row["domain"] or "",
+                relative_path=row["relativePath"] or "",
+                flags=row["flags"] or 0,
+                file_metadata=row["file"] or b"",
+            ))
+    finally:
+        conn.close()
+
+    return files
+
+
+def load_backup_info(backup_dir: Path) -> dict:
+    """Load device information from Info.plist"""
+    info_path = backup_dir / "Info.plist"
+    if not info_path.exists():
+        return {}
+
+    with open(info_path, "rb") as f:
+        return plistlib.load(f)
+
+
+def get_backup_file_path(backup_dir: Path, file_id: str) -> Path:
+    """Calculate actual file path from fileID"""
+    return backup_dir / file_id[:2] / file_id
+
+
+def find_file_by_domain_path(
+    files: list[BackupFile],
+    domain: str,
+    relative_path: str,
+) -> Optional[BackupFile]:
+    """Search for a file by domain and relative path"""
+    for f in files:
+        if f.domain == domain and f.relative_path == relative_path:
+            return f
+    return None
+
+
+def find_files_by_domain(
+    files: list[BackupFile],
+    domain_prefix: str,
+) -> list[BackupFile]:
+    """Search file list by domain prefix"""
+    return [f for f in files if f.domain.startswith(domain_prefix)]
+
+
+def copy_file_from_backup(
+    backup_dir: Path,
+    backup_file: BackupFile,
+    output_path: Path,
+) -> bool:
+    """Copy file from backup to output path"""
+    src = get_backup_file_path(backup_dir, backup_file.file_id)
+    if not src.exists():
+        return False
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(str(src), str(output_path))
+    return True
+
+
+def extract_sms(backup_dir: Path, output_dir: Path, files: list[BackupFile]) -> list[SmsMessage]:
+    """Extract iMessage/SMS"""
+    messages: list[SmsMessage] = []
+
+    sms_file = find_file_by_domain_path(
+        files, "HomeDomain", "Library/SMS/sms.db"
+    )
+    if not sms_file:
+        print("  [WARNING] sms.db not found.", file=sys.stderr)
+        return messages
+
+    sms_db_path = output_dir / "sms.db"
+    if not copy_file_from_backup(backup_dir, sms_file, sms_db_path):
+        print("  [WARNING] Failed to copy sms.db.", file=sys.stderr)
+        return messages
+
+    try:
+        conn = sqlite3.connect(str(sms_db_path))
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT
+                m.rowid,
+                COALESCE(h.id, 'me') AS sender,
+                m.date,
+                m.text,
+                m.is_from_me,
+                m.service
+            FROM message m
+            LEFT JOIN handle h ON m.handle_id = h.rowid
+            WHERE m.text IS NOT NULL
+            ORDER BY m.date DESC
+            LIMIT 5000
+        """)
+
+        for row in cur.fetchall():
+            # iOS 11+: date unit is nanoseconds (>= 1e16)
+            # iOS 10 and below: Mac Absolute Time (seconds)
+            raw_date = row["date"]
+            if raw_date and raw_date > 1_000_000_000_000:
+                ts = mac_ts_to_datetime(raw_date / 1_000_000_000)
+            else:
+                ts = mac_ts_to_datetime(raw_date or 0)
+
+            messages.append(SmsMessage(
+                rowid=row["rowid"],
+                sender=row["sender"] or "",
+                timestamp=ts,
+                text=row["text"] or "",
+                is_from_me=bool(row["is_from_me"]),
+                service=row["service"] or "unknown",
+            ))
+
+        conn.close()
+    except sqlite3.DatabaseError as e:
+        print(f"  [ERROR] SMS analysis failed: {e}", file=sys.stderr)
+
+    return messages
+
+
+def extract_call_history(
+    backup_dir: Path,
+    output_dir: Path,
+    files: list[BackupFile],
+) -> list[CallRecord]:
+    """Extract call history"""
+    records: list[CallRecord] = []
+
+    call_file = find_file_by_domain_path(
+        files, "HomeDomain", "Library/CallHistory/CallHistory.storedata"
+    )
+    if not call_file:
+        print("  [WARNING] CallHistory.storedata not found.", file=sys.stderr)
+        return records
+
+    call_db_path = output_dir / "CallHistory.db"
+    if not copy_file_from_backup(backup_dir, call_file, call_db_path):
+        return records
+
+    try:
+        conn = sqlite3.connect(str(call_db_path))
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT ZADDRESS, ZDURATION, ZDATE, ZORIGINATED, ZCALLTYPE
+            FROM ZCALLRECORD
+            ORDER BY ZDATE DESC
+            LIMIT 1000
+        """)
+
+        for row in cur.fetchall():
+            records.append(CallRecord(
+                address=row["ZADDRESS"] or "Unknown",
+                duration=float(row["ZDURATION"] or 0),
+                date=mac_ts_to_datetime(row["ZDATE"] or 0),
+                originated=bool(row["ZORIGINATED"]),
+                call_type=row["ZCALLTYPE"] or 0,
+            ))
+
+        conn.close()
+    except sqlite3.DatabaseError as e:
+        print(f"  [ERROR] Call history analysis failed: {e}", file=sys.stderr)
+
+    return records
+
+
+def extract_contacts(
+    backup_dir: Path,
+    output_dir: Path,
+    files: list[BackupFile],
+) -> list[Contact]:
+    """Extract contacts"""
+    contacts: list[Contact] = []
+
+    ab_file = find_file_by_domain_path(
+        files, "HomeDomain", "Library/AddressBook/AddressBook.sqlitedb"
+    )
+    if not ab_file:
+        print("  [WARNING] AddressBook.sqlitedb not found.", file=sys.stderr)
+        return contacts
+
+    ab_path = output_dir / "AddressBook.db"
+    if not copy_file_from_backup(backup_dir, ab_file, ab_path):
+        return contacts
+
+    try:
+        conn = sqlite3.connect(str(ab_path))
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT ROWID, First, Last, CreationDate
+            FROM ABPerson
+            ORDER BY CreationDate DESC
+        """)
+        persons = cur.fetchall()
+
+        for person in persons:
+            name_parts = [
+                p for p in [person["First"], person["Last"]]
+                if p
+            ]
+            name = " ".join(name_parts) if name_parts else "(No name)"
+
+            phones: list[str] = []
+            emails: list[str] = []
+
+            try:
+                cur.execute("""
+                    SELECT value, property FROM ABMultiValue
+                    WHERE record_id = ?
+                      AND property IN (3, 4)  -- 3=phone, 4=email
+                """, (person["ROWID"],))
+
+                for row in cur.fetchall():
+                    if row["property"] == 3:
+                        phones.append(row["value"] or "")
+                    else:
+                        emails.append(row["value"] or "")
+            except sqlite3.DatabaseError:
+                pass
+
+            contacts.append(Contact(
+                name=name,
+                phones=phones,
+                emails=emails,
+                created_at=mac_ts_to_datetime(person["CreationDate"] or 0),
+            ))
+
+        conn.close()
+    except sqlite3.DatabaseError as e:
+        print(f"  [ERROR] Contacts analysis failed: {e}", file=sys.stderr)
+
+    return contacts
+
+
+def extract_safari_history(
+    backup_dir: Path,
+    output_dir: Path,
+    files: list[BackupFile],
+) -> list[dict]:
+    """Extract Safari browser history"""
+    history: list[dict] = []
+
+    history_file = find_file_by_domain_path(
+        files, "HomeDomain", "Library/Safari/History.db"
+    )
+    if not history_file:
+        print("  [WARNING] Safari History.db not found.", file=sys.stderr)
+        return history
+
+    hist_path = output_dir / "SafariHistory.db"
+    if not copy_file_from_backup(backup_dir, history_file, hist_path):
+        return history
+
+    try:
+        conn = sqlite3.connect(str(hist_path))
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT hi.url, hv.title, hv.visit_time
+            FROM history_visits hv
+            JOIN history_items hi ON hv.history_item = hi.id
+            ORDER BY hv.visit_time DESC
+            LIMIT 2000
+        """)
+
+        for row in cur.fetchall():
+            history.append({
+                "url": row["url"],
+                "title": row["title"] or "",
+                "visited_at": mac_ts_to_datetime(row["visit_time"] or 0).isoformat(),
+            })
+
+        conn.close()
+    except sqlite3.DatabaseError as e:
+        print(f"  [ERROR] Safari history analysis failed: {e}", file=sys.stderr)
+
+    return history
+
+
+def generate_forensics_report(
+    backup_dir: Path,
+    output_dir: Path,
+    device_info: dict,
+    sms_list: list[SmsMessage],
+    calls: list[CallRecord],
+    contacts: list[Contact],
+    browser_history: list[dict],
+) -> None:
+    """Generate forensics report"""
+    report = {
+        "analysis_time": datetime.now(tz=timezone.utc).isoformat(),
+        "backup_path": str(backup_dir),
+        "device_info": {
+            "model": device_info.get("Product Type", ""),
+            "name": device_info.get("Device Name", ""),
+            "ios_version": device_info.get("Product Version", ""),
+            "imei": device_info.get("IMEI", ""),
+            "phone_number": device_info.get("Phone Number", ""),
+            "serial": device_info.get("Serial Number", ""),
+            "last_backup": str(device_info.get("Last Backup Date", "")),
+        },
+        "message_analysis": {
+            "total_count": len(sms_list),
+            "iMessage": sum(1 for m in sms_list if m.service == "iMessage"),
+            "SMS": sum(1 for m in sms_list if m.service == "SMS"),
+            "received": sum(1 for m in sms_list if not m.is_from_me),
+            "sent": sum(1 for m in sms_list if m.is_from_me),
+            "recent_messages": [
+                {
+                    "sender": m.sender,
+                    "time": m.timestamp.isoformat(),
+                    "service": m.service,
+                    "direction": "sent" if m.is_from_me else "received",
+                    "content_preview": m.text[:100],
+                }
+                for m in sms_list[:30]
+            ],
+        },
+        "call_history": {
+            "total_count": len(calls),
+            "outgoing": sum(1 for c in calls if c.originated),
+            "incoming": sum(1 for c in calls if not c.originated),
+            "recent_calls": [
+                {
+                    "number": c.address,
+                    "time": c.date.isoformat(),
+                    "duration_seconds": int(c.duration),
+                    "direction": "outgoing" if c.originated else "incoming",
+                    "type": {0: "Phone", 1: "FaceTime Audio", 8: "FaceTime Video"}.get(c.call_type, "Other"),
+                }
+                for c in calls[:30]
+            ],
+        },
+        "contacts": {
+            "total_count": len(contacts),
+            "list": [
+                {"name": c.name, "phones": c.phones, "emails": c.emails}
+                for c in contacts[:50]
+            ],
+        },
+        "browser_history": {
+            "total_count": len(browser_history),
+            "recent": browser_history[:30],
+        },
+    }
+
+    json_path = output_dir / "ios_forensics_report.json"
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+
+    txt_path = output_dir / "ios_forensics_report.txt"
+    with open(txt_path, "w", encoding="utf-8") as f:
+        f.write("=" * 60 + "\n")
+        f.write("iOS Forensic Analysis Report\n")
+        f.write("=" * 60 + "\n\n")
+
+        gi = report["device_info"]
+        f.write(f"Device Model:   {gi['model']}\n")
+        f.write(f"Device Name:    {gi['name']}\n")
+        f.write(f"iOS Version:    {gi['ios_version']}\n")
+        f.write(f"IMEI:           {gi['imei']}\n")
+        f.write(f"Phone Number:   {gi['phone_number']}\n")
+        f.write(f"Serial Number:  {gi['serial']}\n")
+        f.write(f"Last Backup:    {gi['last_backup']}\n\n")
+
+        f.write(f"[iMessage/SMS] Total: {len(sms_list)}\n")
+        for msg in sms_list[:20]:
+            direction = "→" if msg.is_from_me else "←"
+            f.write(
+                f"  {direction} [{msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')}]"
+                f" {msg.sender} ({msg.service})\n"
+            )
+            f.write(f"     {msg.text[:80]}\n\n")
+
+        f.write(f"[Call History] Total: {len(calls)}\n")
+        for call in calls[:20]:
+            direction = "outgoing" if call.originated else "incoming"
+            f.write(
+                f"  [{call.date.strftime('%Y-%m-%d %H:%M:%S')}]"
+                f" {direction} | {call.address}"
+                f" | {int(call.duration)} seconds\n"
+            )
+
+        f.write(f"\n[Contacts] Total: {len(contacts)}\n")
+        for contact in contacts[:20]:
+            f.write(f"  {contact.name}: {', '.join(contact.phones)}\n")
+
+    print(f"  JSON: {json_path}")
+    print(f"  TXT:  {txt_path}")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="iOS iTunes Backup Forensic Analysis Tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s -b ~/MobileSync/Backup/<UDID> -o ./output
+  %(prog)s -b ./backup -o ./output --extract-sms --extract-calls
+  %(prog)s -b ./backup -o ./output --all
+        """,
+    )
+    parser.add_argument("-b", "--backup", required=True, help="iTunes backup directory path")
+    parser.add_argument("-o", "--output", required=True, help="Output directory path")
+    parser.add_argument("-p", "--password", help="Encrypted backup password")
+    parser.add_argument("--extract-sms", action="store_true", help="Extract iMessage/SMS")
+    parser.add_argument("--extract-calls", action="store_true", help="Extract call history")
+    parser.add_argument("--extract-contacts", action="store_true", help="Extract contacts")
+    parser.add_argument("--extract-safari", action="store_true", help="Extract Safari history")
+    parser.add_argument("--all", action="store_true", help="Extract all artifacts")
+
+    args = parser.parse_args()
+
+    if args.all:
+        args.extract_sms = True
+        args.extract_calls = True
+        args.extract_contacts = True
+        args.extract_safari = True
+
+    backup_dir = Path(args.backup)
+    output_dir = Path(args.output)
+
+    if not backup_dir.exists():
+        print(f"[ERROR] Backup directory not found: {backup_dir}", file=sys.stderr)
+        return 1
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    artifacts_dir = output_dir / "artifacts"
+    artifacts_dir.mkdir(exist_ok=True)
+
+    print(f"[*] Parsing iOS backup: {backup_dir}")
+    device_info = load_backup_info(backup_dir)
+    if device_info:
+        print(f"    Device: {device_info.get('Product Type', 'N/A')}")
+        print(f"    iOS:    {device_info.get('Product Version', 'N/A')}")
+        print(f"    IMEI:   {device_info.get('IMEI', 'N/A')}")
+
+    print("[*] Loading Manifest.db...")
+    try:
+        files = load_manifest_db(backup_dir)
+        print(f"    File count: {len(files):,}")
+    except FileNotFoundError as e:
+        print(f"[ERROR] {e}", file=sys.stderr)
+        return 1
+
+    sms_list: list[SmsMessage] = []
+    calls: list[CallRecord] = []
+    contacts: list[Contact] = []
+    browser_history: list[dict] = []
+
+    if args.extract_sms:
+        print("[*] Extracting iMessage/SMS...")
+        sms_list = extract_sms(backup_dir, artifacts_dir, files)
+        print(f"    Extracted: {len(sms_list)}")
+
+    if args.extract_calls:
+        print("[*] Extracting call history...")
+        calls = extract_call_history(backup_dir, artifacts_dir, files)
+        print(f"    Extracted: {len(calls)}")
+
+    if args.extract_contacts:
+        print("[*] Extracting contacts...")
+        contacts = extract_contacts(backup_dir, artifacts_dir, files)
+        print(f"    Extracted: {len(contacts)}")
+
+    if args.extract_safari:
+        print("[*] Extracting Safari history...")
+        browser_history = extract_safari_history(backup_dir, artifacts_dir, files)
+        print(f"    Extracted: {len(browser_history)}")
+
+    print("[*] Generating forensics report...")
+    generate_forensics_report(
+        backup_dir, output_dir, device_info,
+        sms_list, calls, contacts, browser_history,
+    )
+
+    print(f"\n[DONE] Results saved to: {output_dir}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+---
+
+## 6. GrayKey / Cellebrite Methods Overview
+
+### GrayKey (Grayshift)
+
+**Overview**
+- iOS unlock device developed by U.S.-based Grayshift
+- Primary customers: U.S. FBI, DEA, local police departments
+- Released around 2018, continuously updated for latest iOS versions
+
+**How It Works (Known Information)**
+1. Bootrom or software exploit using iOS vulnerabilities (Zero-Day or N-Day)
+2. Bypasses PIN code/password brute-force restrictions
+3. Attempts to bypass SEP (Secure Enclave Processor) limitations
+4. More data is accessible in the After First Unlock (AFU) state
+
+**Limitations**
+- USB Restricted Mode (iPhone X+, iOS 11.4.1+): blocks data transfer 1 hour after USB connection
+- A17 Pro / M-series chips: very difficult to access
+- USB Restricted Mode bypass: uses undisclosed vulnerabilities (GrayKey supports some devices)
+
+**Countermeasures (Defense from the forensic target's perspective)**
+```
+# Power off the device (to place in Before First Unlock state)
+# Verify USB Restricted Mode is enabled
+Settings → Face ID/Touch ID & Passcode → USB Accessories → Disable
+
+# Use a strong passcode
+Settings → Passcode → Custom Alphanumeric Code (8+ characters recommended)
+```
+
+### Cellebrite UFED
+
+**UFED (Universal Forensic Extraction Device)**
+- Product by Israel-based Cellebrite
+- Used by law enforcement agencies in 150+ countries worldwide
+- Supports iOS + Android + feature phones
+
+**Extraction Method Tiers**
+
+```
+1. Logical Extraction
+   - Access through backup files
+   - iCloud backup parsing
+   - Easiest and safest, but limited data
+
+2. Advanced Logical Extraction
+   - Install Cellebrite agent without jailbreak
+   - Access to more filesystem data
+
+3. File System Extraction
+   - Full /private/var access
+   - Can recover some deleted files
+   - Requires jailbreak or vulnerability
+
+4. Physical Extraction
+   - NAND flash raw dump
+   - JTAG or Chip-off
+   - Primarily applied to older devices
+```
+
+**UFED Output**
+```
+UFED_<DeviceID>.ufd          # Extraction metadata
+<device>_<date>/
+├── Extraction.xml            # Extraction information
+├── FileSystem/               # Filesystem image
+├── databases/                # Parsed DBs
+└── UFED_PA_Report.pdf        # Auto-generated report
+```
+
+### MVT (Mobile Verification Toolkit)
+
+**Development Background**
+- Developed by Amnesty International
+- Purpose: detect Pegasus spyware
+- Supports both iOS and Android
+
+```bash
+# Install MVT
+pip install mvt
+
+# Analyze iOS backup (using STIX2 IOC)
+mvt-ios check-backup \
+    --iocs ~/iocs/pegasus.stix2 \
+    --output ./mvt_output \
+    ~/Library/Application\ Support/MobileSync/Backup/<UDID>
+
+# Encrypted backup
+mvt-ios decrypt-backup \
+    --password <password> \
+    --destination ./decrypted_backup \
+    ~/Library/Application\ Support/MobileSync/Backup/<UDID>
+
+mvt-ios check-backup \
+    --iocs ~/iocs/pegasus.stix2 \
+    --output ./mvt_output \
+    ./decrypted_backup
+
+# Direct analysis on jailbroken device
+mvt-ios check-fs \
+    --iocs ~/iocs/pegasus.stix2 \
+    --output ./mvt_output \
+    /
+
+# Download IOCs
+wget https://raw.githubusercontent.com/AmnestyTech/investigations/master/2021-07-18_nso/pegasus.stix2
+```
+
+**Pegasus Detection Indicators**
+```
+- Abnormal process crashes (crash logs)
+- Unknown network connections
+- Abnormal processes in DataUsage.sqlite
+- Abnormal execution traces in process_info.plist
+- DNS lookup records for specific domains
+```
+
+---
+
+## Practical iOS Forensics Checklist
+
+```
+Preparation:
+□ Keep device powered on (do not restart → prevents transition to BFU state)
+□ Switch device to airplane mode (prevents remote wipe)
+□ Check USB Restricted Mode status
+□ Check device lock state (BFU vs AFU)
+
+Collection:
+□ Save Info.plist (device identification info)
+□ Save Manifest.db (file list)
+□ Calculate hash of entire backup
+□ Extract artifacts in order
+
+Analysis:
+□ Extract iMessage/SMS and reconstruct timeline
+□ Analyze call history
+□ Map visualization of location data
+□ Analyze Safari/Chrome history
+□ App data (KakaoTalk, WhatsApp, etc.)
+□ Analyze photo EXIF metadata
+□ Attempt deleted file recovery
+□ Check cloud sync status
 ```

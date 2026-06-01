@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # AI 공격 기초 (AI Attack Fundamentals)
 
 ## 개요
@@ -829,6 +835,847 @@ if __name__ == "__main__":
 ---
 
 ## 참고 자료
+
+- MITRE ATLAS: https://atlas.mitre.org/
+- OWASP Machine Learning Security Top 10
+- NIST AI Risk Management Framework (AI RMF)
+- "Adversarial Machine Learning: A Taxonomy and Terminology" (NIST IR 8269)
+
+---
+
+<a name="english"></a>
+
+# AI Attack Fundamentals
+
+## Overview
+
+Attacks against AI/ML systems have fundamentally different characteristics from traditional cybersecurity attacks. The model's training data, inference process, and output generation mechanism each become unique attack vectors. This document covers the threat models, attack classification frameworks, and practical tools that form the foundation of AI red team operations.
+
+---
+
+## 1. AI/ML Threat Model Classification
+
+### 1.1 Attacker Objective × Access Level Matrix
+
+| Attacker Objective \ Access Level | White-box (Full Internal Access) | Grey-box (Partial Access) | Black-box (API Only) |
+|---|---|---|---|
+| **Confidentiality Breach** | Direct weight theft, training data extraction | Partial parameter-based membership inference | Query-based model cloning, membership inference |
+| **Integrity Breach** | Backdoor insertion, weight manipulation | Gradient estimation-based adversarial examples | Black-box adversarial examples, prompt injection |
+| **Availability Breach** | Model destruction, training disruption | Selective input blocking bypass | Denial of service (input flooding), slowdown attacks |
+| **Accountability Evasion** | Log manipulation, audit bypass | Classification boundary probing | Output attribution spoofing, watermark removal |
+| **Privacy Breach** | Direct training set access | Gradient-based data reconstruction | Model inversion attacks, attribute inference |
+
+### 1.2 Attack Phase Classification
+
+| Phase | Attack Name | Target | Effect |
+|---|---|---|---|
+| Pre-training | Data Poisoning | Training dataset | Model performance degradation or backdoor insertion |
+| During Training | Weight Manipulation | Checkpoint files | Intentional misclassification for specific inputs |
+| Inference | Adversarial Examples | Input data | Inducing misclassification |
+| Inference | Prompt Injection | LLM input | Triggering unintended behavior |
+| Post-deployment | Model Extraction | API query responses | Replicating proprietary models |
+| Post-deployment | Membership Inference | API confidence scores | Determining training data membership |
+
+---
+
+## 2. Attack Approach Classification
+
+### 2.1 White-box Attack
+
+A scenario where the attacker has complete access to the model's architecture, weights, training data, and hyperparameters.
+
+**Characteristics:**
+- Can directly compute gradients to generate optimized adversarial examples
+- Most powerful but realistically rare scenario
+- Applicable in insider threat, supply chain attacks, and model file leakage situations
+
+**Representative Techniques:**
+- FGSM (Fast Gradient Sign Method): Manipulates input in the direction of the loss function gradient
+- PGD (Projected Gradient Descent): Iterative gradient-based optimization
+- CW (Carlini & Wagner): Based on minimizing L2/Linf/L0 norms
+
+### 2.2 Grey-box Attack
+
+An intermediate scenario where the attacker knows the model architecture but cannot access weights or training data.
+
+**Characteristics:**
+- Partial optimization possible using structural information
+- Common scenario when deploying open-source-based models (BERT, ResNet, etc.)
+- Effective for attacks leveraging transferability
+
+**Representative Techniques:**
+- Train a surrogate model, then perform white-box attacks against it
+- Gradient estimation (Finite Differences)-based approach
+
+### 2.3 Black-box Attack
+
+The most realistic scenario where the attacker can only observe inputs and outputs through an API.
+
+**Characteristics:**
+- Applies to most production AI service attacks
+- Query count is limited, requiring efficient search strategies
+- Divided into transfer attacks and query-based attacks
+
+**Representative Techniques:**
+- Query-based model extraction → white-box attack via surrogate model
+- Natural language paraphrasing-based prompt injection
+- Score-based: leverages output confidence scores
+- Decision-based: uses only the final classification result
+
+---
+
+## 3. MITRE ATLAS Tactics Framework
+
+MITRE ATLAS (Adversarial Threat Landscape for Artificial-Intelligence Systems) is a Tactics, Techniques, and Procedures (TTP) framework specifically designed for AI systems.
+
+### 3.1 Tactics List
+
+| Tactic ID | Tactic Name | Description | Example Techniques |
+|---|---|---|---|
+| AML.TA0001 | ML Attack Staging | Gathering information on target AI systems | Public model card analysis, API exploration |
+| AML.TA0002 | ML Attack Execution | Generating and injecting adversarial inputs | Adversarial example generation, prompt injection |
+| AML.TA0003 | ML Impact | Altering or extracting model behavior | Inducing misclassification, model theft |
+| AML.TA0004 | Credential Access | Gaining access to ML infrastructure | MLflow token theft, API key leakage |
+| AML.TA0005 | Defense Evasion | Evading detection systems | Input transformation, query rate throttling |
+| AML.TA0006 | Discovery | Understanding system structure | Model architecture inference, training data estimation |
+| AML.TA0007 | Collection | Gathering sensitive information | Training data reconstruction, attribute inference |
+| AML.TA0008 | Data Manipulation | Tampering with training/inference data | Data poisoning, label flipping |
+| AML.TA0009 | Model Manipulation | Directly modifying model parameters | Backdoor insertion, neuron deactivation |
+| AML.TA0010 | Exfiltration | Transmitting model or data externally | Model file exfiltration, query log theft |
+
+### 3.2 Technique-Tactic Mapping Examples
+
+| Technique ID | Technique Name | Related Tactic | Mitigation |
+|---|---|---|---|
+| AML.T0000 | Exploit Public ML Artifacts | TA0001 | Minimize model card information disclosure |
+| AML.T0006 | Poison Training Data | TA0008 | Data provenance verification, anomaly detection |
+| AML.T0020 | Adversarial Examples | TA0002 | Adversarial training, input preprocessing |
+| AML.T0025 | Model Extraction | TA0007 | Query rate limiting, output precision reduction |
+| AML.T0043 | Backdoor ML Model | TA0009 | Supply chain verification, model auditing |
+| AML.T0054 | LLM Prompt Injection | TA0002 | Input validation, output filtering |
+
+---
+
+## 4. MLflow Model Intelligence Gathering CLI
+
+```python
+#!/usr/bin/env python3
+"""
+MLflow Model Registry Intelligence Gathering Tool
+Collects model information from a target MLflow server during the AI red team reconnaissance phase.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from dataclasses import dataclass, field, asdict
+from pathlib import Path
+from typing import Any
+from urllib.parse import urljoin
+import urllib.request
+import urllib.error
+
+
+@dataclass
+class ModelInfo:
+    name: str
+    latest_version: str
+    stage: str
+    description: str
+    tags: dict[str, str] = field(default_factory=dict)
+    run_id: str = ""
+    artifact_uri: str = ""
+    creation_timestamp: int = 0
+    last_updated_timestamp: int = 0
+
+
+@dataclass
+class ExperimentInfo:
+    experiment_id: str
+    name: str
+    artifact_location: str
+    lifecycle_stage: str
+    tags: dict[str, str] = field(default_factory=dict)
+    run_count: int = 0
+
+
+@dataclass
+class ScanResult:
+    target_url: str
+    scan_timestamp: float
+    server_reachable: bool
+    models: list[ModelInfo] = field(default_factory=list)
+    experiments: list[ExperimentInfo] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+    raw_endpoints: dict[str, Any] = field(default_factory=dict)
+
+
+def make_request(
+    url: str,
+    token: str | None = None,
+    timeout: int = 10,
+) -> dict[str, Any]:
+    """Send a GET request to the MLflow REST API and return the JSON response."""
+    req = urllib.request.Request(url)
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+    req.add_header("Content-Type", "application/json")
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read().decode("utf-8")
+            return json.loads(raw)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"HTTP {e.code}: {e.reason} — {url}") from e
+    except urllib.error.URLError as e:
+        raise RuntimeError(f"Connection failed: {e.reason} — {url}") from e
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"JSON parse error: {e}") from e
+
+
+def probe_server(base_url: str, token: str | None, timeout: int) -> bool:
+    """Check whether the MLflow server is reachable."""
+    health_url = urljoin(base_url, "api/2.0/mlflow/experiments/list")
+    try:
+        make_request(health_url, token, timeout)
+        return True
+    except RuntimeError:
+        return False
+
+
+def collect_models(
+    base_url: str,
+    token: str | None,
+    timeout: int,
+    errors: list[str],
+) -> list[ModelInfo]:
+    """Collect information on all registered models from the model registry."""
+    models: list[ModelInfo] = []
+    url = urljoin(base_url, "api/2.0/mlflow/registered-models/list")
+
+    try:
+        data = make_request(url, token, timeout)
+        raw_models = data.get("registered_models", [])
+
+        for rm in raw_models:
+            latest_versions = rm.get("latest_versions", [{}])
+            latest = latest_versions[0] if latest_versions else {}
+
+            model = ModelInfo(
+                name=rm.get("name", ""),
+                latest_version=latest.get("version", "0"),
+                stage=latest.get("current_stage", "None"),
+                description=rm.get("description", ""),
+                tags={t["key"]: t["value"] for t in rm.get("tags", [])},
+                run_id=latest.get("run_id", ""),
+                artifact_uri=latest.get("source", ""),
+                creation_timestamp=rm.get("creation_timestamp", 0),
+                last_updated_timestamp=rm.get("last_updated_timestamp", 0),
+            )
+            models.append(model)
+    except RuntimeError as e:
+        errors.append(f"Model collection error: {e}")
+
+    return models
+
+
+def collect_experiments(
+    base_url: str,
+    token: str | None,
+    timeout: int,
+    errors: list[str],
+) -> list[ExperimentInfo]:
+    """Collect the experiment list and the run count for each experiment."""
+    experiments: list[ExperimentInfo] = []
+    url = urljoin(base_url, "api/2.0/mlflow/experiments/list")
+
+    try:
+        data = make_request(url, token, timeout)
+        raw_exps = data.get("experiments", [])
+
+        for exp in raw_exps:
+            exp_id = exp.get("experiment_id", "")
+            run_count = 0
+
+            # Query run count for each experiment
+            try:
+                runs_url = urljoin(
+                    base_url,
+                    f"api/2.0/mlflow/runs/search"
+                )
+                runs_req_url = f"{runs_url}?experiment_ids={exp_id}&max_results=1"
+                runs_data = make_request(runs_req_url, token, timeout)
+                # Check for existence rather than total count
+                run_count = len(runs_data.get("runs", []))
+            except RuntimeError:
+                pass
+
+            experiment = ExperimentInfo(
+                experiment_id=exp_id,
+                name=exp.get("name", ""),
+                artifact_location=exp.get("artifact_location", ""),
+                lifecycle_stage=exp.get("lifecycle_stage", ""),
+                tags={t["key"]: t["value"] for t in exp.get("tags", [])},
+                run_count=run_count,
+            )
+            experiments.append(experiment)
+    except RuntimeError as e:
+        errors.append(f"Experiment collection error: {e}")
+
+    return experiments
+
+
+def probe_additional_endpoints(
+    base_url: str,
+    token: str | None,
+    timeout: int,
+) -> dict[str, Any]:
+    """Probe additional endpoints for information disclosure."""
+    endpoints = {
+        "metrics_list": "api/2.0/mlflow/metrics/get-history",
+        "model_versions": "api/2.0/mlflow/model-versions/search",
+        "artifacts": "api/2.0/mlflow/artifacts/list",
+    }
+
+    results: dict[str, Any] = {}
+    for name, path in endpoints.items():
+        url = urljoin(base_url, path)
+        try:
+            data = make_request(url, token, timeout)
+            results[name] = {"accessible": True, "keys": list(data.keys())}
+        except RuntimeError as e:
+            results[name] = {"accessible": False, "error": str(e)}
+
+    return results
+
+
+def format_report(result: ScanResult, verbose: bool) -> str:
+    """Format the scan results into a human-readable report."""
+    lines: list[str] = []
+    lines.append("=" * 60)
+    lines.append("MLflow Reconnaissance Scan Results")
+    lines.append("=" * 60)
+    lines.append(f"Target URL  : {result.target_url}")
+    lines.append(f"Scan Time   : {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(result.scan_timestamp))}")
+    lines.append(f"Server      : {'Reachable' if result.server_reachable else 'Unreachable'}")
+    lines.append("")
+
+    if not result.server_reachable:
+        lines.append("[!] Server is not reachable.")
+        return "\n".join(lines)
+
+    lines.append(f"[Model Registry] {len(result.models)} found")
+    lines.append("-" * 40)
+    for model in result.models:
+        lines.append(f"  - {model.name} (v{model.latest_version}, {model.stage})")
+        if model.description:
+            lines.append(f"    Description: {model.description[:80]}")
+        if model.artifact_uri and verbose:
+            lines.append(f"    Artifact: {model.artifact_uri}")
+        if model.run_id and verbose:
+            lines.append(f"    Run ID: {model.run_id}")
+        if model.tags and verbose:
+            lines.append(f"    Tags: {model.tags}")
+
+    lines.append("")
+    lines.append(f"[Experiments] {len(result.experiments)} found")
+    lines.append("-" * 40)
+    for exp in result.experiments:
+        lines.append(f"  - [{exp.experiment_id}] {exp.name} ({exp.lifecycle_stage})")
+        if exp.artifact_location and verbose:
+            lines.append(f"    Artifact Location: {exp.artifact_location}")
+
+    if result.errors:
+        lines.append("")
+        lines.append("[Errors]")
+        for err in result.errors:
+            lines.append(f"  ! {err}")
+
+    if verbose and result.raw_endpoints:
+        lines.append("")
+        lines.append("[Additional Endpoint Probing]")
+        for ep_name, ep_data in result.raw_endpoints.items():
+            status = "Accessible" if ep_data.get("accessible") else "Blocked"
+            lines.append(f"  - {ep_name}: {status}")
+
+    lines.append("=" * 60)
+    return "\n".join(lines)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="mlflow-recon",
+        description="MLflow Server Reconnaissance Tool — AI Red Team Intelligence Gathering Phase",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python 01_ai_attack_fundamentals.py --target http://mlflow.internal:5000
+  python 01_ai_attack_fundamentals.py --target http://mlflow.internal:5000 --verbose
+  python 01_ai_attack_fundamentals.py --target http://mlflow.internal:5000 --output result.json
+        """,
+    )
+    parser.add_argument(
+        "--target",
+        required=True,
+        metavar="URL",
+        help="MLflow server base URL (e.g., http://localhost:5000)",
+    )
+    parser.add_argument(
+        "--token",
+        default=None,
+        metavar="TOKEN",
+        help="MLflow authentication token (optional)",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=10,
+        metavar="SEC",
+        help="Request timeout in seconds (default: 10)",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        metavar="FILE",
+        help="Save results to a JSON file",
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Print verbose output",
+    )
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    base_url = args.target.rstrip("/") + "/"
+    errors: list[str] = []
+
+    print(f"[*] Starting target scan: {base_url}")
+
+    # Check server reachability
+    reachable = probe_server(base_url, args.token, args.timeout)
+
+    result = ScanResult(
+        target_url=args.target,
+        scan_timestamp=time.time(),
+        server_reachable=reachable,
+        errors=errors,
+    )
+
+    if reachable:
+        print("[*] Server reachable — collecting intelligence...")
+        result.models = collect_models(base_url, args.token, args.timeout, errors)
+        print(f"    Models: {len(result.models)}")
+        result.experiments = collect_experiments(base_url, args.token, args.timeout, errors)
+        print(f"    Experiments: {len(result.experiments)}")
+
+        if args.verbose:
+            result.raw_endpoints = probe_additional_endpoints(
+                base_url, args.token, args.timeout
+            )
+    else:
+        print("[!] Server is not reachable.")
+
+    # Print results
+    report = format_report(result, args.verbose)
+    print(report)
+
+    # Save JSON file
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        with args.output.open("w", encoding="utf-8") as f:
+            json.dump(asdict(result), f, ensure_ascii=False, indent=2)
+        print(f"[+] Results saved: {args.output}")
+
+    return 0 if reachable else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+---
+
+## 5. AI Vulnerability Scanner
+
+```python
+#!/usr/bin/env python3
+"""
+AI Endpoint Vulnerability Scanner
+Detects security misconfigurations in OpenAI-compatible APIs and HuggingFace inference endpoints.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+import urllib.request
+import urllib.error
+
+
+@dataclass
+class VulnerabilityFinding:
+    endpoint: str
+    vuln_type: str
+    severity: str  # critical / high / medium / low / info
+    description: str
+    evidence: str = ""
+    recommendation: str = ""
+
+
+@dataclass
+class EndpointScanResult:
+    url: str
+    endpoint_type: str  # openai / huggingface / unknown
+    reachable: bool
+    auth_required: bool
+    findings: list[VulnerabilityFinding] = field(default_factory=list)
+    response_time_ms: float = 0.0
+
+
+def detect_endpoint_type(url: str) -> str:
+    """Determine the endpoint type based on URL patterns."""
+    lower = url.lower()
+    if "huggingface" in lower or "hf.co" in lower or "/models/" in lower:
+        return "huggingface"
+    if "openai" in lower or "/v1/chat" in lower or "/v1/completions" in lower:
+        return "openai"
+    return "unknown"
+
+
+def check_openai_endpoint(
+    url: str,
+    token: str | None,
+    timeout: int,
+) -> EndpointScanResult:
+    """Inspect security settings of an OpenAI-compatible endpoint."""
+    findings: list[VulnerabilityFinding] = []
+    start = time.time()
+
+    # Attempt access without authentication
+    test_payload = json.dumps({
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "test"}],
+        "max_tokens": 1,
+    }).encode()
+
+    req_no_auth = urllib.request.Request(
+        url,
+        data=test_payload,
+        method="POST",
+    )
+    req_no_auth.add_header("Content-Type", "application/json")
+
+    auth_required = True
+    reachable = False
+
+    try:
+        with urllib.request.urlopen(req_no_auth, timeout=timeout) as resp:
+            reachable = True
+            if resp.status == 200:
+                auth_required = False
+                findings.append(VulnerabilityFinding(
+                    endpoint=url,
+                    vuln_type="Authentication Bypass",
+                    severity="critical",
+                    description="API calls are permitted without authentication.",
+                    evidence="HTTP 200 response (no auth token)",
+                    recommendation="Require API key or Bearer token authentication.",
+                ))
+    except urllib.error.HTTPError as e:
+        reachable = True
+        if e.code == 401:
+            auth_required = True
+        elif e.code == 403:
+            findings.append(VulnerabilityFinding(
+                endpoint=url,
+                vuln_type="Access Control Configuration",
+                severity="info",
+                description="IP-based access control appears to be applied.",
+                evidence=f"HTTP 403 response",
+                recommendation="Use in conjunction with additional authentication layers.",
+            ))
+        elif e.code == 429:
+            findings.append(VulnerabilityFinding(
+                endpoint=url,
+                vuln_type="Rate Limiting",
+                severity="info",
+                description="Rate limiting is applied.",
+                evidence="HTTP 429 response",
+                recommendation="Effective defense against model extraction attacks.",
+            ))
+    except urllib.error.URLError:
+        reachable = False
+
+    elapsed = (time.time() - start) * 1000
+
+    # Check CORS headers (OPTIONS request)
+    if reachable:
+        cors_req = urllib.request.Request(url, method="OPTIONS")
+        try:
+            with urllib.request.urlopen(cors_req, timeout=timeout) as resp:
+                allow_origin = resp.headers.get("Access-Control-Allow-Origin", "")
+                if allow_origin == "*":
+                    findings.append(VulnerabilityFinding(
+                        endpoint=url,
+                        vuln_type="CORS Wildcard",
+                        severity="medium",
+                        description="CORS policy allows all origins.",
+                        evidence=f"Access-Control-Allow-Origin: *",
+                        recommendation="Explicitly allow only trusted origins.",
+                    ))
+        except (urllib.error.HTTPError, urllib.error.URLError):
+            pass
+
+    return EndpointScanResult(
+        url=url,
+        endpoint_type="openai",
+        reachable=reachable,
+        auth_required=auth_required,
+        findings=findings,
+        response_time_ms=elapsed,
+    )
+
+
+def check_huggingface_endpoint(
+    url: str,
+    token: str | None,
+    timeout: int,
+) -> EndpointScanResult:
+    """Inspect security settings of a HuggingFace inference endpoint."""
+    findings: list[VulnerabilityFinding] = []
+    start = time.time()
+
+    test_payload = json.dumps({"inputs": "test"}).encode()
+    req = urllib.request.Request(url, data=test_payload, method="POST")
+    req.add_header("Content-Type", "application/json")
+
+    reachable = False
+    auth_required = True
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            reachable = True
+            if resp.status == 200:
+                auth_required = False
+                findings.append(VulnerabilityFinding(
+                    endpoint=url,
+                    vuln_type="Public Inference Endpoint",
+                    severity="high",
+                    description="Model inference is possible without authentication.",
+                    evidence="HTTP 200 response (no authentication)",
+                    recommendation="Apply HuggingFace token authentication and set the endpoint to private.",
+                ))
+    except urllib.error.HTTPError as e:
+        reachable = True
+        if e.code not in (401, 403):
+            findings.append(VulnerabilityFinding(
+                endpoint=url,
+                vuln_type="Unexpected Response Code",
+                severity="low",
+                description=f"Non-standard HTTP error code: {e.code}",
+                evidence=f"HTTP {e.code}: {e.reason}",
+                recommendation="Configure the endpoint to return standard auth errors (401).",
+            ))
+    except urllib.error.URLError:
+        reachable = False
+
+    elapsed = (time.time() - start) * 1000
+
+    return EndpointScanResult(
+        url=url,
+        endpoint_type="huggingface",
+        reachable=reachable,
+        auth_required=auth_required,
+        findings=findings,
+        response_time_ms=elapsed,
+    )
+
+
+def scan_endpoint(
+    url: str,
+    token: str | None,
+    timeout: int,
+) -> EndpointScanResult:
+    """Detect endpoint type and perform the appropriate security check."""
+    ep_type = detect_endpoint_type(url)
+    if ep_type == "huggingface":
+        return check_huggingface_endpoint(url, token, timeout)
+    return check_openai_endpoint(url, token, timeout)
+
+
+def severity_order(s: str) -> int:
+    return {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}.get(s, 5)
+
+
+def print_scan_results(results: list[EndpointScanResult]) -> None:
+    """Print scan results to the console."""
+    total_findings = sum(len(r.findings) for r in results)
+    critical = sum(
+        1 for r in results
+        for f in r.findings if f.severity == "critical"
+    )
+
+    print("\n" + "=" * 60)
+    print("AI Endpoint Vulnerability Scan Results")
+    print("=" * 60)
+    print(f"Scanned: {len(results)} | Findings: {total_findings} | Critical: {critical}")
+    print()
+
+    for result in results:
+        status = "Reachable" if result.reachable else "Unreachable"
+        auth = "Auth Required" if result.auth_required else "No Auth Required(!)"
+        print(f"[{result.endpoint_type.upper()}] {result.url}")
+        print(f"  Status: {status} | Auth: {auth} | Response Time: {result.response_time_ms:.1f}ms")
+
+        sorted_findings = sorted(result.findings, key=lambda f: severity_order(f.severity))
+        for finding in sorted_findings:
+            sev_icon = {"critical": "[!]", "high": "[H]", "medium": "[M]", "low": "[L]", "info": "[I]"}.get(
+                finding.severity, "[?]"
+            )
+            print(f"  {sev_icon} {finding.vuln_type}: {finding.description}")
+            if finding.recommendation:
+                print(f"     Recommendation: {finding.recommendation}")
+        print()
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="ai-vuln-scanner",
+        description="AI Endpoint Vulnerability Scanner",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--targets",
+        nargs="+",
+        metavar="URL",
+        help="List of endpoint URLs to scan",
+    )
+    parser.add_argument(
+        "--targets-file",
+        type=Path,
+        metavar="FILE",
+        help="File containing target URLs (one per line)",
+    )
+    parser.add_argument(
+        "--token",
+        default=None,
+        metavar="TOKEN",
+        help="API authentication token",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=10,
+        metavar="SEC",
+        help="Request timeout (default: 10)",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=4,
+        metavar="N",
+        help="Number of parallel scan workers (default: 4)",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        metavar="FILE",
+        help="Path to save results as JSON",
+    )
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    urls: list[str] = []
+    if args.targets:
+        urls.extend(args.targets)
+    if args.targets_file:
+        if not args.targets_file.exists():
+            print(f"[!] File not found: {args.targets_file}", file=sys.stderr)
+            return 1
+        urls.extend(
+            line.strip()
+            for line in args.targets_file.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.startswith("#")
+        )
+
+    if not urls:
+        print("[!] No scan targets. Specify --targets or --targets-file.", file=sys.stderr)
+        return 1
+
+    print(f"[*] Starting scan of {len(urls)} endpoints (workers: {args.workers})")
+
+    results: list[EndpointScanResult] = []
+    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+        future_map = {
+            executor.submit(scan_endpoint, url, args.token, args.timeout): url
+            for url in urls
+        }
+        for future in as_completed(future_map):
+            url = future_map[future]
+            try:
+                result = future.result()
+                results.append(result)
+                print(f"  [Done] {url} — {len(result.findings)} findings")
+            except Exception as e:
+                print(f"  [Error] {url}: {e}", file=sys.stderr)
+
+    print_scan_results(results)
+
+    if args.output:
+        import dataclasses
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        serialized = [dataclasses.asdict(r) for r in results]
+        with args.output.open("w", encoding="utf-8") as f:
+            json.dump(serialized, f, ensure_ascii=False, indent=2)
+        print(f"[+] Results saved: {args.output}")
+
+    critical_count = sum(
+        1 for r in results for f in r.findings if f.severity == "critical"
+    )
+    return 1 if critical_count > 0 else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+---
+
+## 6. AI Red Team Reconnaissance Checklist
+
+| Item | What to Check | Priority |
+|---|---|---|
+| Public Model Card Analysis | Training data, architecture hints, performance metrics | High |
+| API Endpoint Discovery | Authentication requirements, rate limits, error messages | High |
+| Model Registry Access | MLflow, W&B, Neptune exposure | High |
+| Artifact Repository Inspection | S3/GCS bucket publicity, model file accessibility | High |
+| CI/CD Pipeline Analysis | Training scripts, data processing code exposure | Medium |
+| Monitoring Dashboard | Grafana, Prometheus public exposure | Medium |
+| Output Analysis | Confidence score exposure level, response precision | Medium |
+| Error Message Analysis | Stack traces, internal path disclosure | Low |
+
+---
+
+## References
 
 - MITRE ATLAS: https://atlas.mitre.org/
 - OWASP Machine Learning Security Top 10

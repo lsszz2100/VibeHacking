@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 의존성 혼란 공격 (Dependency Confusion)
 
 ## 1. 의존성 혼란이란
@@ -675,3 +681,77 @@ if __name__ == "__main__":
 | **프록시 레지스트리** | 공개 패키지를 내부 프록시(Nexus, Artifactory)를 통해 제공 | 인프라 구성 |
 | **CI/CD 검증** | 빌드 시 의존성 혼란 자동 검사 실행 | 이 스크립트를 CI에 통합 |
 | **모니터링** | 새 내부 패키지 추가 시 공개 등록 여부 자동 알림 | 웹훅 + 스크립트 |
+
+---
+
+<a name="english"></a>
+
+# Dependency Confusion Attack
+
+## 1. What Is Dependency Confusion
+
+The Dependency Confusion attack is a supply chain attack technique disclosed by Alex Birsan in 2021. It involves uploading a malicious package to a public registry (PyPI, npm, NuGet, etc.) with the same name as a package used internally by a company. If the build tool prioritizes public registries over internal ones, the malicious package is automatically installed.
+
+---
+
+## 2. Dependency Confusion vs Typosquatting Comparison
+
+| Comparison | Dependency Confusion | Typosquatting |
+|-----------|---------------------|---------------|
+| **Attack Method** | Register same name as internal package on public registry | Register similarly spelled name to popular package |
+| **Target** | Specific company using internal packages | Random developers who mistype package names |
+| **Package Name Discovery** | Analysis of build logs, GitHub leaks, job postings | Popular package list + common typo patterns |
+| **Success Condition** | Build tool configured to prefer public registry | Developer doesn't notice the typo |
+| **Impact Scale** | Targeted attack on specific company, high-value target | Widespread random victims |
+| **Detection Difficulty** | High (legitimate name, internal config issue) | Medium (similar names can be detected) |
+| **Representative Cases** | Birsan research (Apple, Microsoft, PayPal) | colourama, python-dateutil disguised packages |
+| **Defense Methods** | Reserve internal names on public registry, use scopes, fix registry priority | Verify exact package name, check download count |
+
+---
+
+## 3. Attack Cases by Package Registry
+
+### 3.1 PyPI (Python)
+
+| Case | Year | Content | Impact |
+|------|------|---------|--------|
+| **PyTorch nightly torchtriton** | 2022 | Internal package name `torchtriton` preempted on PyPI; crypto miner inserted | PyTorch nightly users |
+| **ctx/phpass** | 2022 | Abandoned package acquired; environment variable exfiltration code inserted | Package users |
+| **requests-html impersonation** | 2023 | Multiple similarly named packages registered | Developers with typos |
+| **Birsan research packages** | 2021 | 15 internal package names preempted; DNS pingback confirmed | Apple, Microsoft, PayPal, etc. |
+
+### 3.2 npm (Node.js)
+
+| Case | Year | Content | Impact |
+|------|------|---------|--------|
+| **event-stream** | 2018 | Malicious dependency `flatmap-stream` added after maintainer transfer | Millions of downloads |
+| **ua-parser-js** | 2021 | Crypto miner, XMRig inserted after account takeover | 8M weekly downloads |
+| **node-ipc (protestware)** | 2022 | File deletion executed on Russian/Belarusian IPs | vue-cli ecosystem |
+| **@azure/internal package preemption** | 2021 | Azure internal npm scope names preempted | Companies using Azure |
+
+### 3.3 NuGet (.NET)
+
+| Case | Year | Content | Impact |
+|------|------|---------|--------|
+| **Birsan NuGet research** | 2021 | Internal .NET package names preempted on NuGet | Large technology companies |
+| **Malicious NuGet packages** | 2023 | Crypto miners disguised as popular packages | .NET developers |
+
+---
+
+## 4. How Dependency Confusion Vulnerabilities Arise
+
+See the Korean section for detailed pip/npm/NuGet configuration examples and the Python CLI tool.
+
+---
+
+## 8. Dependency Confusion Defense Checklist
+
+| Category | Check Item | Implementation Method |
+|----------|-----------|----------------------|
+| **Package Name Management** | Reserve all internal package names on public registries with empty packages | Automated reservation script |
+| **Namespacing** | Mandate `@company/` scope or `company-` prefix | Package policy establishment |
+| **Registry Configuration** | Use only internal registry, remove public registry fallback | Audit pip.conf, .npmrc |
+| **Version Pinning** | Exact version + SHA hash checksum pinning | `pip install --require-hashes` |
+| **Proxy Registry** | Serve public packages through internal proxy (Nexus, Artifactory) | Infrastructure configuration |
+| **CI/CD Validation** | Run automated dependency confusion checks at build time | Integrate this script into CI |
+| **Monitoring** | Automatic alert when a new internal package is added to public registry | Webhook + script |

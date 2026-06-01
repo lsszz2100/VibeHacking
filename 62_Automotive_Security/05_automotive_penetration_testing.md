@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 자동차 침투 테스트
 
 ## 방법론
@@ -333,3 +339,343 @@ SFOP (Safety, Financial, Operational, Privacy)
 ```
 
 자동차 보안은 가장 높은 윤리적 책임이 요구되는 분야다. 모든 테스트는 통제된 환경에서, 명시적 승인하에 수행해야 한다.
+
+---
+
+<a name="english"></a>
+
+# Automotive Penetration Testing
+
+## Methodology
+
+Automotive penetration testing integrates with the TARA (Threat Analysis and Risk Assessment) framework defined in ISO/SAE 21434.
+
+```
+Automotive Penetration Testing Phases
+1. Scope definition and threat modeling
+2. Attack surface mapping
+3. Passive reconnaissance
+4. Automated scanning
+5. Vulnerability exploitation
+6. Impact verification
+7. Reporting and remediation recommendations
+```
+
+## Test Environment Setup
+
+```bash
+# HIL (Hardware-In-the-Loop) test bench
+# - Real ECU + simulation environment
+# - Test without risk to a real vehicle
+
+# Required equipment
+# 1. OBD-II → USB adapter (ELM327, Kvaser, PEAK PCAN)
+# 2. CAN bus analyzer (CANalyzer, Wireshark + can-utils)
+# 3. Wireless analysis (SDR, WiFi Pineapple, Bluetooth adapter)
+# 4. Software (Wireshark, UDS Explorer, CANdb++)
+
+# Virtual test environment
+sudo ip link add dev vcan0 type vcan && sudo ip link set up vcan0
+```
+
+## Attack Surface Testing
+
+### OBD-II Port Testing
+
+```python
+#!/usr/bin/env python3
+"""Automotive Penetration Testing Automation Framework."""
+
+import argparse
+import can
+import time
+import sys
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class Severity(Enum):
+    CRITICAL = "CRITICAL"
+    HIGH     = "HIGH"
+    MEDIUM   = "MEDIUM"
+    LOW      = "LOW"
+    INFO     = "INFO"
+
+
+@dataclass
+class Finding:
+    title: str
+    severity: Severity
+    description: str
+    evidence: str
+    recommendation: str
+
+
+@dataclass
+class PentestReport:
+    target: str
+    start_time: float = field(default_factory=time.time)
+    findings: list[Finding] = field(default_factory=list)
+
+    def add(self, finding: Finding) -> None:
+        self.findings.append(finding)
+        icon = {
+            Severity.CRITICAL: "[!!]",
+            Severity.HIGH: "[!]",
+            Severity.MEDIUM: "[*]",
+            Severity.LOW: "[-]",
+            Severity.INFO: "[i]",
+        }[finding.severity]
+        print(f"  {icon} {finding.severity.value}: {finding.title}")
+
+    def summary(self) -> str:
+        counts = {s: 0 for s in Severity}
+        for f in self.findings:
+            counts[f.severity] += 1
+        lines = [
+            f"\n{'='*60}",
+            f"Penetration Test Results: {self.target}",
+            f"{'='*60}",
+            f"Total findings: {len(self.findings)}",
+        ]
+        for sev in Severity:
+            if counts[sev]:
+                lines.append(f"  {sev.value:10s}: {counts[sev]}")
+        return "\n".join(lines)
+
+
+def test_unauthenticated_services(
+    bus: can.Bus,
+    report: PentestReport,
+    tx_id: int = 0x7E0,
+    rx_id: int = 0x7E8,
+) -> None:
+    """Test UDS services accessible without authentication."""
+
+    def send_recv(data: bytes, timeout: float = 1.0) -> bytes | None:
+        frame = can.Message(
+            arbitration_id=tx_id,
+            data=bytes([len(data)]) + data + bytes(7 - len(data)),
+            is_extended_id=False,
+        )
+        bus.send(frame)
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            msg = bus.recv(timeout=0.1)
+            if msg and msg.arbitration_id == rx_id:
+                return bytes(msg.data)
+        return None
+
+    # Unauthenticated access to extended session
+    resp = send_recv(bytes([0x10, 0x03]))  # Extended diagnostic session
+    if resp and resp[1] == 0x50:
+        report.add(Finding(
+            title="Unauthenticated Extended Diagnostic Session Access",
+            severity=Severity.HIGH,
+            description="Extended diagnostic session (0x03) accessible without authentication",
+            evidence=f"Response: {resp.hex()}",
+            recommendation="Require SecurityAccess (0x27) before granting session access",
+        ))
+
+    # Unauthenticated write DID test
+    test_dids = [0xF190, 0xF197, 0x0101, 0x0102]
+    for did in test_dids:
+        write_req = bytes([0x2E, did >> 8, did & 0xFF, 0x00])
+        resp = send_recv(write_req)
+        if resp and resp[1] != 0x7F:
+            report.add(Finding(
+                title=f"Unauthenticated Write to DID 0x{did:04X}",
+                severity=Severity.CRITICAL,
+                description=f"DID {did:04X} write allowed without security access",
+                evidence=f"Response: {resp.hex()}",
+                recommendation="Require security access for WriteDataByIdentifier",
+            ))
+
+    # Unauthenticated RoutineControl test
+    routines = [0x0203, 0xFF00, 0x0101]
+    for routine in routines:
+        req = bytes([0x31, 0x01, routine >> 8, routine & 0xFF])
+        resp = send_recv(req)
+        if resp and resp[1] == 0x71:  # RoutineControl positive response
+            report.add(Finding(
+                title=f"Unauthenticated Execution of Routine 0x{routine:04X}",
+                severity=Severity.HIGH,
+                description="Routine can be executed without security access",
+                evidence=f"Response: {resp.hex()}",
+                recommendation="Elevate security level for RoutineControl",
+            ))
+
+
+def test_can_injection(
+    bus: can.Bus,
+    report: PentestReport,
+    duration: float = 5.0,
+) -> None:
+    """Test CAN message injection possibility."""
+
+    # Send arbitrary messages that appear valid
+    test_ids = [0x018, 0x244, 0x3B2, 0x5A1]
+    for can_id in test_ids:
+        frame = can.Message(
+            arbitration_id=can_id,
+            data=bytes([0xFF] * 8),
+            is_extended_id=False,
+        )
+        try:
+            bus.send(frame)
+            report.add(Finding(
+                title=f"CAN ID 0x{can_id:03X} Injection Possible",
+                severity=Severity.MEDIUM,
+                description="Arbitrary CAN messages can be sent (no authentication)",
+                evidence=f"CAN ID 0x{can_id:03X} sent successfully",
+                recommendation="Apply message source validation and signing at gateway ECU",
+            ))
+        except can.CanError:
+            pass
+
+
+def test_firmware_update(
+    bus: can.Bus,
+    report: PentestReport,
+    tx_id: int = 0x7E0,
+    rx_id: int = 0x7E8,
+) -> None:
+    """Security test of the firmware update process."""
+
+    def send_recv(data: bytes, timeout: float = 1.0) -> bytes | None:
+        frame = can.Message(
+            arbitration_id=tx_id,
+            data=bytes([len(data)]) + data + bytes(7 - len(data)),
+            is_extended_id=False,
+        )
+        bus.send(frame)
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            msg = bus.recv(timeout=0.1)
+            if msg and msg.arbitration_id == rx_id:
+                return bytes(msg.data)
+        return None
+
+    # Unauthenticated programming session access
+    resp = send_recv(bytes([0x10, 0x02]))  # Programming session
+    if resp and resp[1] == 0x50:
+        report.add(Finding(
+            title="Unauthenticated Programming Session Access",
+            severity=Severity.CRITICAL,
+            description="Programming session accessible without authentication → firmware flash possible",
+            evidence=f"Response: {resp.hex()}",
+            recommendation="Require multi-factor SecurityAccess for programming session",
+        ))
+
+    # Unauthenticated RequestDownload test
+    resp = send_recv(bytes([0x34, 0x00, 0x44, 0x00, 0x00, 0x00]))
+    if resp and resp[1] != 0x7F:
+        report.add(Finding(
+            title="Unauthenticated Firmware Download Request Allowed",
+            severity=Severity.CRITICAL,
+            description="Firmware download without signature verification → RCE possible",
+            evidence=f"Response: {resp.hex()}",
+            recommendation="Apply ECDSA signature verification and root CA-based certificate chain",
+        ))
+
+
+def test_wireless_interfaces(report: PentestReport, host: str) -> None:
+    """Security test of wireless interfaces (WiFi, Bluetooth)."""
+    import subprocess
+
+    # Wi-Fi scan
+    result = subprocess.run(
+        ["nmcli", "-t", "-f", "SSID,SECURITY", "dev", "wifi"],
+        capture_output=True, text=True,
+    )
+    for line in result.stdout.splitlines():
+        if host.lower() in line.lower():
+            parts = line.split(":")
+            if len(parts) >= 2 and parts[1] in ("--", "WEP", ""):
+                report.add(Finding(
+                    title=f"Weak Wi-Fi Security: {parts[0]}",
+                    severity=Severity.HIGH,
+                    description=f"Wi-Fi '{parts[0]}' uses weak encryption or is open",
+                    evidence=line,
+                    recommendation="Apply WPA3 Enterprise or WPA2-AES",
+                ))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Automotive Penetration Testing Framework")
+    parser.add_argument("interface", help="CAN interface")
+    parser.add_argument("--target", default="Unknown Vehicle",
+                        help="Target name")
+    parser.add_argument("--tx-id", type=lambda x: int(x, 16), default=0x7E0)
+    parser.add_argument("--rx-id", type=lambda x: int(x, 16), default=0x7E8)
+    parser.add_argument("--all", action="store_true", help="Run all tests")
+    args = parser.parse_args()
+
+    report = PentestReport(target=args.target)
+    bus = can.interface.Bus(args.interface, interface="socketcan")
+
+    print(f"[*] Starting automotive penetration test: {args.target}")
+    print(f"[*] CAN interface: {args.interface}")
+    print(f"[*] TX: 0x{args.tx_id:03X} | RX: 0x{args.rx_id:03X}\n")
+
+    try:
+        print("[*] 1. Testing unauthenticated UDS services...")
+        test_unauthenticated_services(bus, report, args.tx_id, args.rx_id)
+
+        print("\n[*] 2. Testing CAN injection...")
+        test_can_injection(bus, report)
+
+        print("\n[*] 3. Testing firmware update security...")
+        test_firmware_update(bus, report, args.tx_id, args.rx_id)
+
+        print(report.summary())
+
+        if report.findings:
+            print(f"\n[Detailed Findings]")
+            for i, f in enumerate(report.findings, 1):
+                print(f"\n{i}. [{f.severity.value}] {f.title}")
+                print(f"   Description: {f.description}")
+                print(f"   Recommendation: {f.recommendation}")
+    finally:
+        bus.shutdown()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## Report Template
+
+```markdown
+# Automotive Cybersecurity Penetration Test Report
+
+## Summary
+- **Target**: [Vehicle model/ECU]
+- **Test period**: [Date]
+- **Risk distribution**: CRITICAL N, HIGH N, MEDIUM N
+
+## Key Findings
+### [CRITICAL] Unauthenticated Firmware Update
+**CVSS**: 9.8 (AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)
+**Impact**: Remote code execution, possible takeover of vehicle control
+**Reproduction steps**: ...
+**Recommendation**: Apply ECDSA signature verification
+
+## ISO/SAE 21434 Mapping
+| Finding | TARA Threat | ASIL Level | Priority |
+```
+
+## Vulnerability Impact Assessment (EVITA)
+
+```
+EVITA (E-safety Vehicle Intrusion proTected Applications)
+Security levels:
+  HIGH   — Life safety threat (brakes, steering)
+  MEDIUM — Property damage (engine, transmission)
+  LOW    — Inconvenience (infotainment, lighting)
+
+SFOP (Safety, Financial, Operational, Privacy)
+Impact rated 1~3 for each dimension → overall risk score calculated
+```
+
+Automotive security is the field that demands the highest level of ethical responsibility. All tests must be performed in a controlled environment with explicit authorization.

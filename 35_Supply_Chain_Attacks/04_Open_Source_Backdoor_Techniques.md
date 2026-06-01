@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 오픈소스 백도어 삽입 기법
 
 ## 개요
@@ -455,3 +461,68 @@ if __name__ == "__main__":
 | CI/CD 오염 | Actions SHA 핀닝, 권한 최소화 |
 | 신뢰 기반 사회공학 | 기여자 배경 조사, 다중 승인 |
 | XZ 스타일 | liblzma IFUNC 분석, 재현 빌드 |
+
+---
+
+<a name="english"></a>
+
+# Open Source Backdoor Insertion Techniques
+
+## Overview
+
+Supply chain attacks targeting the open source ecosystem have very high impact potential, as a single vulnerability can affect millions of systems. The XZ Utils case (CVE-2024-3094) was the most sophisticated supply chain attack in history, combining two years of elaborate social engineering with a technical backdoor.
+
+---
+
+## XZ Utils Backdoor Case Analysis (CVE-2024-3094)
+
+The XZ Utils backdoor was a 2-year long patient social engineering + technical backdoor attack:
+
+1. **Infiltration phase**: Attacker ("Jia Tan") becomes trusted maintainer over 2 years
+2. **Backdoor insertion**: Malicious binary in test files, build script modification
+3. **IFUNC hook**: Hook into IFUNC resolver during liblzma initialization
+4. **RSA authentication bypass**: Intercept RSA authentication in OpenSSH
+
+## Key Backdoor Techniques
+
+### Trojan Source
+Exploit Unicode bidirectional control characters to make code look different to humans vs compilers:
+```c
+// Looks like a comment but isn't parsed as one by the compiler
+if (access_level != ADMIN) /* never true for admin ʫ */ {
+    grant_access();
+}
+```
+
+### Build Script Backdoor
+Insert malicious code in configure/Makefile that only activates during packaging:
+```bash
+# In configure.ac — only triggers with specific environment conditions
+if test -n "$HAVE_IFUNC"; then
+    # Inject malicious object during build
+fi
+```
+
+### CI/CD Pipeline Contamination
+- Compromise GitHub Actions by injecting code into third-party actions
+- Modify build artifacts after CI passes
+- Exfiltrate secrets from CI environment variables
+
+## Defense Checklist
+
+### Prevention
+- [ ] Pin external GitHub Actions SHA
+- [ ] Code signing (Sigstore/cosign)
+
+### Detection
+- [ ] Alert when binary files are added to test directories
+- [ ] Audit build script changes
+- [ ] Runtime behavioral analysis (eBPF-based Falco, etc.)
+
+| Attack Technique | Detection Method |
+|-----------------|-----------------|
+| Trojan Source | grep for non-standard Unicode characters |
+| Build script backdoor | tarball vs git diff |
+| CI/CD contamination | Actions SHA pinning, privilege minimization |
+| Trust-based social engineering | Contributor background check, multiple approvals |
+| XZ-style | liblzma IFUNC analysis, reproducible builds |

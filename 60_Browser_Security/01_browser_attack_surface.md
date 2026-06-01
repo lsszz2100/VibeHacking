@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 브라우저 공격 표면 분석
 
 ## 1. 브라우저 아키텍처 개요
@@ -562,6 +568,426 @@ if __name__ == "__main__":
 ---
 
 ## 6. 참고 자료
+
+- Chromium Security Architecture (https://www.chromium.org/Home/chromium-security/)
+- Mozilla Security Blog (https://blog.mozilla.org/security/)
+- WebKit Security (https://webkit.org/security/)
+- CVE Details Browser Statistics (https://www.cvedetails.com/)
+- Google Project Zero Blog (https://googleprojectzero.blogspot.com/)
+
+---
+
+<a name="english"></a>
+
+# Browser Attack Surface Analysis
+
+## 1. Browser Architecture Overview
+
+Modern browsers adopt a multi-process architecture for security. Chromium-based browsers separate the browser process, renderer process, GPU process, utility process, and others so that the compromise of one component does not spread to the entire system.
+
+### 1.1 Major Process Role Comparison
+
+| Process | Role | Privilege Level | Sandboxed | Security Threat |
+|----------|------|-----------|---------------|-----------|
+| Browser Process | UI, tab management, file I/O, networking | High (OS level) | No | Ultimate target for privilege escalation |
+| Renderer Process | HTML/CSS parsing, JS execution, DOM | Low (sandboxed) | Yes | XSS, JS engine vulnerabilities |
+| GPU Process | WebGL, accelerated rendering | Medium | Partial | GPU driver vulnerabilities |
+| Network Service | HTTP requests, cache, cookies | Medium | Yes | SSRF, cookie theft |
+| Plugin/Extension | Third-party features | User-defined | Limited | Malicious code execution |
+| Utility Process | Audio, printing, file conversion | Low | Yes | Data exposure |
+| Zygote (Linux) | Process spawning | Medium | Partial | Sandbox bypass |
+
+### 1.2 IPC (Inter-Process Communication) Structure
+
+The renderer process and browser process communicate through the Mojo IPC framework. This communication channel is the primary path attackers use to escalate privileges from the renderer to the browser process.
+
+```
+[Renderer Process] ←→ Mojo IPC ←→ [Browser Process]
+       ↓                                    ↓
+  Inside sandbox                      Full OS access
+  (restricted privileges)             (files, network, etc.)
+```
+
+---
+
+## 2. Attack Surface Classification
+
+### 2.1 Major Attack Surface Analysis Table
+
+| Attack Surface | Description | Risk | Representative Vulnerability Types | Mitigation |
+|-----------|------|--------|------------------|-----------|
+| JavaScript Engine | V8/SpiderMonkey/JSC JIT compiler | Critical | Type confusion, UAF, OOB | Sandbox, Site Isolation |
+| DOM API | Web standard API implementation | High | UAF, race conditions | Isolation, CORS |
+| IPC Interface | Mojo bindings, message handling | High | Input validation failures, TOCTOU | Interface auditing |
+| Plugins (PDF, Flash) | NPAPI/PPAPI implementations | High | Heap overflow, format parsing errors | Flash removal, PDF isolation |
+| Network Stack | HTTP/2, QUIC, WebSocket | Medium | Header injection, SSRF | HSTS, Certificate Pinning |
+| Rendering Engine | Blink/Gecko CSS processing | Medium | OOB read, information leakage | Fuzzing, bounds checking |
+| Extension API | chrome.*, browser.* APIs | Medium | Permission abuse, message spoofing | MV3 restrictions, review policies |
+| WebAssembly | WASM execution environment | Medium | Memory safety, type confusion | Linear memory model |
+| Media Processing | Video/audio decoders | Medium | Parser vulnerabilities, heap corruption | Media process isolation |
+| GPU Driver | WebGL, WebGPU | Medium | Driver bugs, information leakage | GPU sandboxing |
+| File System API | File, IndexedDB, Cache | Low | Path traversal, information leakage | Origin isolation |
+| DevTools Protocol | CDP (Chrome DevTools Protocol) | Low-Medium | Remote code execution (if exposed) | Authentication, local binding |
+
+### 2.2 Attack Surface Entry Points Detail
+
+**JavaScript Engine Entry Points:**
+- `<script>` tag execution on web pages
+- eval(), Function() dynamic code generation
+- WebAssembly.compile() / instantiate()
+- Service Worker scripts
+
+**Network Stack Entry Points:**
+- HTTP/HTTPS request header parsing
+- TLS handshake processing
+- HTTP/2 HPACK header compression/decompression
+- WebSocket frame processing
+
+---
+
+## 3. CVE Statistics and Historical Vulnerability Overview
+
+### 3.1 Chrome (Chromium) Annual CVE Statistics
+
+| Year | Total CVEs | Critical | High | Medium | Low | Primary Vulnerability Types |
+|------|----------|----------|------|--------|-----|-----------------|
+| 2019 | 186 | 8 | 85 | 72 | 21 | UAF, heap buffer overflow |
+| 2020 | 276 | 3 | 143 | 95 | 35 | UAF, improper implementation |
+| 2021 | 312 | 7 | 165 | 102 | 38 | UAF, OOB read/write |
+| 2022 | 276 | 5 | 145 | 98 | 28 | Type confusion, UAF |
+| 2023 | 224 | 2 | 118 | 80 | 24 | OOB, heap corruption |
+| 2024 | 198 | 3 | 98 | 74 | 23 | UAF, integer overflow |
+
+### 3.2 Firefox (SpiderMonkey) Annual CVE Statistics
+
+| Year | Total CVEs | Critical | High | Medium | Low | Primary Vulnerability Types |
+|------|----------|----------|------|--------|-----|-----------------|
+| 2019 | 281 | 15 | 98 | 126 | 42 | Memory safety, XSS |
+| 2020 | 194 | 9 | 76 | 89 | 20 | UAF, buffer overflow |
+| 2021 | 178 | 7 | 81 | 72 | 18 | Memory corruption, CORS |
+| 2022 | 161 | 5 | 74 | 61 | 21 | Scripting vulnerabilities |
+| 2023 | 145 | 4 | 65 | 57 | 19 | OOB, type confusion |
+| 2024 | 128 | 3 | 58 | 49 | 18 | Memory safety |
+
+### 3.3 Safari (WebKit/JavaScriptCore) Annual CVE Statistics
+
+| Year | Total CVEs | Critical | High | Medium | Low | Primary Vulnerability Types |
+|------|----------|----------|------|--------|-----|-----------------|
+| 2019 | 243 | 6 | 87 | 115 | 35 | Arbitrary code execution, information leakage |
+| 2020 | 231 | 4 | 91 | 108 | 28 | Memory corruption, XSS |
+| 2021 | 198 | 5 | 84 | 88 | 21 | UAF, type confusion |
+| 2022 | 175 | 3 | 72 | 79 | 21 | Scripting, memory |
+| 2023 | 152 | 4 | 63 | 68 | 17 | Memory corruption |
+| 2024 | 134 | 2 | 56 | 58 | 18 | Arbitrary code execution |
+
+### 3.4 Vulnerability Distribution by Browser Component
+
+| Component | Chrome % | Firefox % | Safari % | Common Pattern |
+|-----------|-------------|-------------|------------|-----------|
+| JS Engine | 28% | 31% | 35% | JIT, parser |
+| Rendering Engine | 22% | 19% | 21% | CSS, HTML parsing |
+| IPC/Sandbox | 15% | 11% | 8% | Message validation |
+| Media Processing | 12% | 14% | 13% | Decoder parser |
+| Network Stack | 10% | 12% | 9% | HTTP handling |
+| Other | 13% | 13% | 14% | Various |
+
+---
+
+## 4. Python CLI: Browser Security Settings Auditor
+
+```python
+#!/usr/bin/env python3
+"""
+Browser Security Settings Auditor
+Reads Chrome and Firefox security-related configuration files
+and detects risky settings.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import os
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+from enum import Enum
+
+
+class Severity(str, Enum):
+    CRITICAL = "CRITICAL"
+    HIGH     = "HIGH"
+    MEDIUM   = "MEDIUM"
+    LOW      = "LOW"
+    INFO     = "INFO"
+
+
+@dataclass
+class AuditFinding:
+    """A single audit item result."""
+    setting_key: str
+    current_value: Any
+    expected_value: Any
+    severity: Severity
+    description: str
+    recommendation: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "setting_key":   self.setting_key,
+            "current_value": self.current_value,
+            "expected_value": self.expected_value,
+            "severity":      self.severity.value,
+            "description":   self.description,
+            "recommendation": self.recommendation,
+        }
+
+
+@dataclass
+class AuditReport:
+    """Full audit report results."""
+    browser:   str
+    profile:   str
+    findings:  list[AuditFinding] = field(default_factory=list)
+
+    @property
+    def score(self) -> int:
+        """Calculate security score out of 100."""
+        deductions = {
+            Severity.CRITICAL: 20,
+            Severity.HIGH:     10,
+            Severity.MEDIUM:    5,
+            Severity.LOW:       2,
+            Severity.INFO:      0,
+        }
+        total_deduction = sum(deductions[f.severity] for f in self.findings)
+        return max(0, 100 - total_deduction)
+
+    def summary(self) -> dict[str, int]:
+        counts: dict[str, int] = {s.value: 0 for s in Severity}
+        for f in self.findings:
+            counts[f.severity.value] += 1
+        return counts
+
+
+# ---------------------------------------------------------------------------
+# Chrome audit rules
+# ---------------------------------------------------------------------------
+
+CHROME_RULES: list[dict[str, Any]] = [
+    {
+        "key":         "profile.default_content_setting_values.mixed_script",
+        "bad_value":   1,
+        "severity":    Severity.HIGH,
+        "description": "Mixed Content Script allow setting is enabled",
+        "recommendation": "Block mixed scripts (0) or keep the default value.",
+    },
+    {
+        "key":         "profile.default_content_setting_values.notifications",
+        "bad_value":   1,
+        "severity":    Severity.MEDIUM,
+        "description": "Auto-allow notifications from all sites is set",
+        "recommendation": "Change to ask per site (3).",
+    },
+    {
+        "key":         "safebrowsing.enabled",
+        "bad_value":   False,
+        "severity":    Severity.CRITICAL,
+        "description": "Google Safe Browsing is disabled",
+        "recommendation": "Enable Safe Browsing (true).",
+    },
+    {
+        "key":         "safebrowsing.enhanced",
+        "bad_value":   False,
+        "severity":    Severity.LOW,
+        "description": "Safe Browsing Enhanced Protection mode is disabled",
+        "recommendation": "Recommended to enable Enhanced Protection.",
+    },
+    {
+        "key":         "net.network_prediction_options",
+        "bad_value":   0,
+        "severity":    Severity.LOW,
+        "description": "Network prediction (DNS Prefetch) is always enabled",
+        "recommendation": "Set network prediction to 2 (disabled).",
+    },
+    {
+        "key":         "profile.password_manager_enabled",
+        "bad_value":   False,
+        "severity":    Severity.INFO,
+        "description": "Built-in password manager is disabled",
+        "recommendation": "No issue if using an external manager.",
+    },
+    {
+        "key":         "sync.requested",
+        "bad_value":   True,
+        "severity":    Severity.MEDIUM,
+        "description": "Google account sync is enabled (risk in enterprise environments)",
+        "recommendation": "Disable sync in enterprise environments.",
+    },
+    {
+        "key":         "extensions.ui.developer_mode",
+        "bad_value":   True,
+        "severity":    Severity.MEDIUM,
+        "description": "Extension developer mode is enabled",
+        "recommendation": "Disable developer mode in production environments.",
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Firefox audit rules (based on user.js / prefs.js)
+# ---------------------------------------------------------------------------
+
+FIREFOX_RULES: list[dict[str, Any]] = [
+    {
+        "key":         "network.cookie.cookieBehavior",
+        "bad_value":   0,
+        "severity":    Severity.HIGH,
+        "description": "All third-party cookies are allowed",
+        "recommendation": "Set cookieBehavior to 1 (block third-party) or higher.",
+    },
+    {
+        "key":         "browser.privatebrowsing.autostart",
+        "bad_value":   False,
+        "severity":    Severity.INFO,
+        "description": "Auto private browsing mode is disabled",
+        "recommendation": "Consider enabling auto-start in sensitive environments.",
+    },
+    {
+        "key":         "security.mixed_content.block_active_content",
+        "bad_value":   False,
+        "severity":    Severity.CRITICAL,
+        "description": "Mixed Active Content blocking is disabled",
+        "recommendation": "Must be set to true.",
+    },
+    {
+        "key":         "security.mixed_content.block_display_content",
+        "bad_value":   False,
+        "severity":    Severity.MEDIUM,
+        "description": "Mixed Passive Content blocking is disabled",
+        "recommendation": "Recommended to set to true.",
+    },
+    {
+        "key":         "network.http.sendRefererHeader",
+        "bad_value":   2,
+        "severity":    Severity.LOW,
+        "description": "Referer header is always sent",
+        "recommendation": "Change to 1 (same domain only).",
+    },
+    {
+        "key":         "browser.safebrowsing.malware.enabled",
+        "bad_value":   False,
+        "severity":    Severity.HIGH,
+        "description": "Firefox malware download blocking is disabled",
+        "recommendation": "Must be set to true.",
+    },
+    {
+        "key":         "dom.storage.enabled",
+        "bad_value":   False,
+        "severity":    Severity.INFO,
+        "description": "Local storage is disabled (may cause some sites to malfunction)",
+        "recommendation": "Enable if needed.",
+    },
+    {
+        "key":         "network.dns.disablePrefetch",
+        "bad_value":   False,
+        "severity":    Severity.LOW,
+        "description": "DNS prefetching is enabled",
+        "recommendation": "Set to true to enhance privacy.",
+    },
+]
+
+
+def get_nested_value(data: dict[str, Any], dotted_key: str) -> Any:
+    """Retrieve a value from a nested dictionary using dot-separated key."""
+    keys = dotted_key.split(".")
+    current: Any = data
+    for k in keys:
+        if not isinstance(current, dict) or k not in current:
+            return None
+        current = current[k]
+    return current
+
+
+def audit_chrome(profile_path: Path) -> list[AuditFinding]:
+    """Parse Chrome Preferences file and check security settings."""
+    prefs_file = profile_path / "Preferences"
+    if not prefs_file.exists():
+        print(f"[!] Preferences file not found: {prefs_file}", file=sys.stderr)
+        return []
+
+    try:
+        data: dict[str, Any] = json.loads(prefs_file.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        print(f"[!] JSON parse error: {exc}", file=sys.stderr)
+        return []
+
+    findings: list[AuditFinding] = []
+    for rule in CHROME_RULES:
+        value = get_nested_value(data, rule["key"])
+        if value == rule["bad_value"]:
+            findings.append(
+                AuditFinding(
+                    setting_key=rule["key"],
+                    current_value=value,
+                    expected_value=f"!= {rule['bad_value']}",
+                    severity=rule["severity"],
+                    description=rule["description"],
+                    recommendation=rule["recommendation"],
+                )
+            )
+    return findings
+
+
+def format_report_text(report: AuditReport) -> str:
+    """Convert audit results to human-readable text."""
+    lines: list[str] = []
+    lines.append("=" * 60)
+    lines.append("Browser Security Settings Audit Report")
+    lines.append(f"Browser  : {report.browser}")
+    lines.append(f"Profile  : {report.profile}")
+    lines.append(f"Security Score : {report.score} / 100")
+    lines.append("=" * 60)
+
+    summary = report.summary()
+    lines.append(f"[Summary] CRITICAL={summary['CRITICAL']} HIGH={summary['HIGH']} "
+                 f"MEDIUM={summary['MEDIUM']} LOW={summary['LOW']} INFO={summary['INFO']}")
+    lines.append("")
+
+    severity_order = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM,
+                      Severity.LOW, Severity.INFO]
+    for sev in severity_order:
+        group = [f for f in report.findings if f.severity == sev]
+        if not group:
+            continue
+        lines.append(f"--- [{sev.value}] ---")
+        for finding in group:
+            lines.append(f"  Setting Key   : {finding.setting_key}")
+            lines.append(f"  Current Value : {finding.current_value}")
+            lines.append(f"  Issue         : {finding.description}")
+            lines.append(f"  Recommendation: {finding.recommendation}")
+            lines.append("")
+    return "\n".join(lines)
+```
+
+---
+
+## 5. Browser Core Security Mechanisms Summary
+
+| Security Mechanism | Description | Chrome | Firefox | Safari |
+|---------------|------|--------|---------|--------|
+| Site Isolation | Per-site renderer isolation | Full support | Partial support | Partial support |
+| Strict Mixed Content | Block HTTP resources | Supported | Supported | Supported |
+| HTTPS Upgrade | Automatic HTTP→HTTPS upgrade | Supported | Supported | Supported |
+| Spectre Mitigation | COOP/COEP headers | Supported | Supported | Supported |
+| Safe Browsing | Block malicious URLs | Google SB | Google SB | Safe Browsing |
+| Sandboxing | Process isolation | seccomp, namespace | seccomp | macOS sandbox |
+| CSP Support | Content Security Policy | Supported | Supported | Supported |
+| Certificate Transparency | CT log verification | Required | Optional | Required |
+
+---
+
+## 6. References
 
 - Chromium Security Architecture (https://www.chromium.org/Home/chromium-security/)
 - Mozilla Security Blog (https://blog.mozilla.org/security/)

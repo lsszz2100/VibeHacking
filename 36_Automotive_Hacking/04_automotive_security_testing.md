@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 자동차 보안 테스트 — 침투 테스트·퍼징·인증 검증
 
 ## 1. 자동차 보안 테스트 범위
@@ -391,3 +397,118 @@ if __name__ == "__main__":
 | Bluetooth 페어링 | btlejack, hcitool | MITM 공격 |
 | OTA 업데이트 위조 | Burp Suite | 악성 펌웨어 설치 |
 | V2X 스푸핑 | USRP + GNU Radio | 교통 신호 조작 |
+
+---
+
+<a name="english"></a>
+
+# Automotive Security Testing — Penetration Testing, Fuzzing & Authentication Validation
+
+## 1. Automotive Security Testing Scope
+
+```
+Automotive Attack Surface
+    │
+    ├── Internal Networks
+    │     CAN Bus, LIN, FlexRay, Ethernet (BroadR-Reach)
+    │
+    ├── External Connections
+    │     OBD-II Port, Wi-Fi, Bluetooth, Cellular (4G/5G)
+    │     V2X (Vehicle-to-Everything)
+    │
+    ├── ECU (Electronic Control Unit)
+    │     Engine/Transmission/ABS/Airbag/Infotainment
+    │     Firmware Extraction, Analysis & Modification
+    │
+    └── OTA (Over-the-Air) Updates
+          Update Servers, Signature Verification, Rollback Prevention
+```
+
+---
+
+## 2. CAN Bus Fuzzing Automation
+
+```python
+#!/usr/bin/env python3
+"""CAN Bus Security Testing — Fuzzing, Replay Attacks & Anomaly Detection."""
+
+import argparse
+import json
+import random
+import struct
+import time
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class CANFrame:
+    arbitration_id: int
+    data: bytes
+    timestamp: float = field(default_factory=time.time)
+    is_extended: bool = False
+
+    def to_dict(self) -> dict:
+        return {
+            "id": hex(self.arbitration_id),
+            "data": self.data.hex(),
+            "timestamp": self.timestamp,
+            "extended": self.is_extended,
+        }
+
+
+def send_can_frame(frame: CANFrame, interface: str = "vcan0") -> bool:
+    """Send a CAN frame using python-can."""
+    try:
+        import can
+        bus = can.interface.Bus(interface, bustype="socketcan")
+        msg = can.Message(
+            arbitration_id=frame.arbitration_id,
+            data=frame.data,
+            is_extended_id=frame.is_extended,
+        )
+        bus.send(msg)
+        bus.shutdown()
+        return True
+    except Exception as e:
+        print(f"Send failed: {e}")
+        return False
+
+
+def fuzz_can_id_range(
+    start_id: int,
+    end_id: int,
+    data_pattern: bytes | None = None,
+    delay: float = 0.01,
+    interface: str = "vcan0",
+) -> list[CANFrame]:
+    """Fuzz CAN ID range — send random data to each ID."""
+    sent = []
+    for arb_id in range(start_id, end_id + 1):
+        data = data_pattern or bytes([random.randint(0, 255) for _ in range(8)])
+        frame = CANFrame(arbitration_id=arb_id, data=data)
+        print(f"[>] CAN ID {hex(arb_id)}: {data.hex()}")
+        send_can_frame(frame, interface)
+        sent.append(frame)
+        time.sleep(delay)
+    return sent
+```
+
+---
+
+## 3. UDS Diagnostic Protocol Testing
+
+The UDS (Unified Diagnostic Services) protocol is used to diagnose ECUs. Key services include SecurityAccess (0x27), ReadDataByIdentifier (0x22), and WriteDataByIdentifier (0x2E). Testing involves enumerating available services and attempting SecurityAccess bypass using weak key algorithms (all-zeros, all-0xFF, bit-inversion, seed replay).
+
+---
+
+## 4. Automotive Security Testing Checklist
+
+| Test Item | Tool | Risk |
+|-----------|------|------|
+| CAN Fuzzing | python-can, Scapy | Safety feature deactivation |
+| UDS SecurityAccess Bypass | udsoncan | Unauthorized ECU access |
+| OBD-II Diagnostics | ELM327 + OBD Library | Driving data leakage |
+| Bluetooth Pairing | btlejack, hcitool | MITM attack |
+| OTA Update Forgery | Burp Suite | Malicious firmware installation |
+| V2X Spoofing | USRP + GNU Radio | Traffic signal manipulation |

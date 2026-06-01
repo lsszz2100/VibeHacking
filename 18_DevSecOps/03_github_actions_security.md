@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # GitHub Actions & CI/CD 파이프라인 보안
 
 ## CI/CD 파이프라인 공격 벡터
@@ -844,4 +850,238 @@ spec:
   □ 보안 스캔 결과 Security 탭 통합
   □ 주기적 의존성 업데이트
   □ 비밀 키 교체 일정
+```
+
+---
+
+<a name="english"></a>
+
+# GitHub Actions & CI/CD Pipeline Security
+
+## CI/CD Pipeline Attack Vectors
+
+```
+Common CI/CD Attack Vectors:
+
+Code-Level:
+  - Malicious dependency injection (dependency confusion)
+  - Compromised third-party GitHub Actions
+  - Secrets exposed in logs or artifacts
+
+Configuration-Level:
+  - Overly permissive GITHUB_TOKEN
+  - Unprotected branches with auto-merge
+  - Environment variable injection
+  - Workflow injection via PR titles/issues
+
+Infrastructure-Level:
+  - Compromised self-hosted runners
+  - Container registry poisoning
+  - Artifact tampering
+```
+
+---
+
+## 1. GitHub Actions Security Hardening
+
+### Secure Workflow Template
+
+```yaml
+name: Secure CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read        # Minimal permissions
+  security-events: write  # For SARIF upload only
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for secret scanning
+      
+      # Pin actions to specific commit SHA (not tags)
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: python, javascript
+      
+      - name: Build
+        run: make build
+      
+      - uses: github/codeql-action/analyze@v3
+```
+
+### Workflow Injection Prevention
+
+```yaml
+# VULNERABLE: Using PR title directly in shell
+- name: Check PR
+  run: echo "PR: ${{ github.event.pull_request.title }}"
+  # If title contains: $(malicious_command) → Command injection!
+
+# SECURE: Use environment variable to prevent injection
+- name: Check PR (safe)
+  env:
+    PR_TITLE: ${{ github.event.pull_request.title }}
+  run: echo "PR: $PR_TITLE"
+  # Environment variable assignment prevents injection
+```
+
+---
+
+## 2. Secrets Management
+
+### GitHub Secrets Best Practices
+
+```yaml
+# In workflow file
+- name: Deploy
+  env:
+    API_KEY: ${{ secrets.API_KEY }}    # From GitHub Secrets
+    DB_PASS: ${{ secrets.DB_PASSWORD }} # Never hardcode!
+  run: ./deploy.sh
+  
+# Never do this:
+# run: API_KEY=hardcoded_value ./deploy.sh
+# run: echo "${{ secrets.API_KEY }}"  # Leaks to logs!
+```
+
+### Secret Scanning
+
+```bash
+# GitLeaks — scan for secrets in git history
+gitleaks detect --source=. --verbose
+
+# truffleHog — high entropy string detection
+trufflehog git file://. --only-verified
+
+# GitHub native secret scanning
+# Settings → Security → Secret scanning → Enable
+
+# Custom secret patterns (gitleaks config)
+# .gitleaks.toml
+[[rules]]
+id = "company-api-key"
+description = "Company internal API key"
+regex = '''COMPANY_[A-Z]{3}_[a-zA-Z0-9]{32}'''
+tags = ["api", "company"]
+```
+
+---
+
+## 3. Supply Chain Security
+
+### Dependency Confusion Attack Prevention
+
+```bash
+# Check for internal packages that could be confused
+# A package named 'internal-utils' on npm could be hijacked
+# if the attacker publishes a higher version to public npm
+
+# Solution: Use scoped packages
+# "@company/internal-utils" instead of "internal-utils"
+
+# Verify package integrity
+npm audit
+pip-audit
+snyk test
+```
+
+### Pinning GitHub Actions
+
+```yaml
+# INSECURE: Using mutable tag
+- uses: actions/checkout@v4
+
+# SECURE: Pin to specific commit SHA
+- uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+# Use Dependabot to auto-update pinned SHA
+# .github/dependabot.yml
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+```
+
+---
+
+## 4. SAST/DAST in CI/CD
+
+### SAST Integration
+
+```yaml
+# CodeQL SAST
+- name: Initialize CodeQL
+  uses: github/codeql-action/init@v3
+  with:
+    languages: python
+    queries: security-extended  # More comprehensive checks
+
+# Semgrep SAST
+- name: Semgrep SAST
+  uses: semgrep/semgrep-action@v1
+  with:
+    config: >
+      p/default
+      p/owasp-top-ten
+      p/secrets
+```
+
+### Container Security
+
+```yaml
+# Trivy container scanning
+- name: Run Trivy vulnerability scanner
+  uses: aquasecurity/trivy-action@0.28.0
+  with:
+    image-ref: 'my-image:latest'
+    format: 'sarif'
+    output: 'trivy-results.sarif'
+    severity: 'CRITICAL,HIGH'
+
+- name: Upload Trivy results to GitHub Security
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: 'trivy-results.sarif'
+```
+
+---
+
+## 5. Security Checklist
+
+```
+Repository Configuration:
+  □ Branch protection rules enabled
+  □ Required PR reviews before merge
+  □ Status checks required
+  □ Signed commits enforced
+
+Workflow Security:
+  □ Minimal GITHUB_TOKEN permissions
+  □ Actions pinned to commit SHA
+  □ No secrets in workflow files
+  □ Workflow injection prevention (env vars)
+
+Scanning:
+  □ SAST enabled (CodeQL/Semgrep)
+  □ Secret scanning enabled
+  □ Dependency scanning enabled
+  □ Container scanning enabled
+
+Monitoring:
+  □ Pipeline failure notifications
+  □ Security scan results integrated in Security tab
+  □ Regular dependency updates
+  □ Secret rotation schedule
 ```

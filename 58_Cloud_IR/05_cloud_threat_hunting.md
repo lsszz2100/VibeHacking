@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 클라우드 위협 헌팅
 
 ## 1. 클라우드 위협 헌팅 방법론
@@ -930,3 +936,204 @@ LIMIT 20;
 | 헌팅 주기 | 위험 환경 주 1회, 일반 환경 월 1회 |
 | 결과 문서화 | 헌팅 노트북(Jupyter) 또는 위키에 기록 |
 | 팀 역량 강화 | 시뮬레이션(Atomic Red Team) 정기 실행 |
+
+---
+
+<a name="english"></a>
+
+# Cloud Threat Hunting
+
+## 1. Cloud Threat Hunting Methodology
+
+Threat Hunting is the proactive activity of seeking out advanced threats that automated detection systems may miss. In cloud environments, API events and logs serve as the primary hunting data sources.
+
+| Methodology | Description | Suitable Environment | Key Tools |
+|-------------|-------------|---------------------|-----------|
+| Hypothesis-based Hunting | Formulate attack scenario hypothesis then search for evidence | Mature SOC environment | SIEM, hunting platforms |
+| Indicator-based Hunting | Utilize known IOCs (IP/domain/hash) | Environments with threat intelligence | TIP-integrated SIEM |
+| TTP-based Hunting | Search for tactics/techniques based on MITRE ATT&CK | Advanced analysis capability | Sigma, KQL, SPL |
+| Anomaly Detection-based | ML/statistics-based baseline deviation detection | Sufficient log data | UEBA, machine learning |
+| Data Stack Hunting | Discover anomalous patterns via aggregation/statistics | Large-scale log environments | BigQuery, Athena, Spark |
+
+### 1.1 Cloud Hunting Process
+
+| Stage | Activity | Deliverable |
+|-------|----------|-------------|
+| 1. Define Objective | Determine target threat type | Hunting objective document |
+| 2. Form Hypothesis | "If attacker did X, Y would be observed" | Detection hypothesis list |
+| 3. Data Collection | Identify and collect relevant log sources | Refined dataset |
+| 4. Analysis | Query/visualization/statistical analysis | Suspicious event list |
+| 5. Validation | Confirm true positives among detected events | Confirmed threat report |
+| 6. Response | Escalate to IR team | Incident response request |
+| 7. Rule Creation | Create reusable detection rules | SIEM rules, Sigma |
+
+---
+
+## 2. Multi-Cloud Integrated Monitoring
+
+Organizations operating across AWS + Azure + GCP simultaneously require a SIEM or data lake to aggregate logs from each platform.
+
+| Integration Method | Description | Advantages | Disadvantages |
+|-------------------|-------------|------------|---------------|
+| Cloud-native SIEM | Microsoft Sentinel, Chronicle Security | Deep native integration | Tied to specific CSP |
+| Open-source SIEM | Elastic SIEM, OpenSearch | Cost-effective, customizable | Operational burden |
+| Commercial SIEM | Splunk, QRadar, LogRhythm | Mature feature set | High license costs |
+| Data Lake Hunting | Athena + S3, BigQuery | Large-scale low-cost analysis | Lower real-time capability |
+| XDR Platform | CrowdStrike, Palo Alto Cortex | Endpoint + cloud integration | Agent dependency |
+
+### 2.1 Unified Log Schema Design
+
+To integrate and analyze logs across multi-cloud environments, normalization to a common schema is necessary.
+
+| Common Field | AWS Source Field | Azure Source Field | GCP Source Field |
+|-------------|-----------------|-------------------|-----------------|
+| timestamp | eventTime | time | timestamp |
+| source_ip | sourceIPAddress | claims.ipaddr | protoPayload.requestMetadata.callerIp |
+| principal | userIdentity.userName | caller | protoPayload.authenticationInfo.principalEmail |
+| action | eventName | operationName.value | protoPayload.methodName |
+| resource | resources[].ARN | resourceId | protoPayload.resourceName |
+| status | errorCode (null=success) | status.value | protoPayload.status.code (0=success) |
+| region | awsRegion | location | resource.labels.location |
+| service | eventSource | operationName (prefix) | protoPayload.serviceName |
+
+---
+
+## 3. Key Techniques from the MITRE ATT&CK Cloud Matrix
+
+| Tactic | Technique ID | Technique Name | AWS Detection | Azure Detection | GCP Detection |
+|--------|-------------|----------------|--------------|----------------|--------------|
+| Initial Access | T1078.004 | Valid Cloud Accounts | Abnormal region/time login | Impossible Travel | SA key abnormal use |
+| Initial Access | T1190 | Public Application Vulnerability | WAF logs | App Gateway logs | Cloud Armor logs |
+| Execution | T1059.009 | Cloud API | CloudTrail API calls | Activity Log | Cloud Audit Log |
+| Execution | T1648 | Serverless Function Execution | Lambda Invoke | Function App | Cloud Functions |
+| Persistence | T1098.001 | Additional Cloud Credentials | CreateAccessKey | addPassword | CreateServiceAccountKey |
+| Persistence | T1136.003 | Cloud Account Creation | CreateUser | Guest invitation | CreateServiceAccount |
+| Privilege Escalation | T1548 | Temporary Elevated Privileges | AssumeRole | PIM activation | generateAccessToken |
+| Privilege Escalation | T1078.004 | Valid Account Abuse | Root account activity | Global admin | Owner role usage |
+| Defense Evasion | T1562.008 | Disable Cloud Logging | StopLogging | DeleteDiagnosticSetting | DeleteSink |
+| Credential Access | T1552.005 | Cloud Instance Metadata | IMDS access | IMDS access | Metadata Server |
+| Credential Access | T1555 | Credential Stores | SecretsManager | Key Vault | Secret Manager |
+| Lateral Movement | T1550.001 | Application Access Token | AssumeRole chain | Service principal token | SA role impersonation |
+| Collection | T1530 | Cloud Storage Objects | S3 GetObject | Blob download | GCS object read |
+| Exfiltration | T1537 | Transfer to Cloud Account | S3 public copy | Public container | GCS allUsers |
+| Impact | T1485 | Data Destruction | DeleteBucket | DeleteResourceGroup | DeleteBucket |
+| Impact | T1486 | Data Encryption (Ransomware) | KMS key deletion | Key Vault key deletion | KMS key deactivation |
+
+---
+
+## 4. Python CLI: Multi-Cloud Threat Hunting Dashboard Data Collector
+
+See the Korean section for the full Python code listing.
+
+### Usage
+
+```bash
+# Integrated hunting across AWS + Azure + GCP
+python cloud_threat_hunter.py \
+    --providers aws azure gcp \
+    --aws-log-file cloudtrail.json.gz \
+    --azure-log-file activity_log.json \
+    --gcp-log-file audit.jsonl \
+    --lookback-hours 48 \
+    --output-dir ./hunt_results
+
+# AWS-only directory-based auto-discovery
+python cloud_threat_hunter.py \
+    --providers aws \
+    --aws-log-dir /var/log/cloudtrail/ \
+    --lookback-hours 24 \
+    --output-dir ./aws_hunt
+
+# Adjust thread count (for large-scale processing)
+python cloud_threat_hunter.py \
+    --providers aws azure \
+    --aws-log-file trail.json \
+    --azure-log-file activity.json \
+    --max-workers 8 \
+    --output-dir ./output
+
+# Console output only, no file saving
+python cloud_threat_hunter.py \
+    --providers gcp \
+    --gcp-log-file audit.jsonl \
+    --no-save
+```
+
+---
+
+## 5. Cloud Threat Hunting Query Examples
+
+### 5.1 AWS Athena Hunting Queries
+
+```sql
+-- Potential IAM credential compromise: first-seen user activity from new IP
+SELECT
+    useridentity.username,
+    sourceipaddress,
+    COUNT(*) AS event_count,
+    MIN(eventtime) AS first_seen,
+    MAX(eventtime) AS last_seen,
+    ARRAY_AGG(DISTINCT eventname) AS actions
+FROM cloudtrail_logs
+WHERE year = '2024' AND month = '01'
+    AND useridentity.type = 'IAMUser'
+    AND sourceipaddress NOT LIKE 'AWS%'
+GROUP BY useridentity.username, sourceipaddress
+HAVING MIN(eventtime) > DATE_ADD('day', -7, NOW())
+ORDER BY event_count DESC;
+```
+
+### 5.2 Microsoft Sentinel KQL Hunting Queries
+
+```kusto
+// Multi-cloud credential escalation correlation analysis
+let timeWindow = 24h;
+let suspiciousOps = AzureActivity
+    | where TimeGenerated > ago(timeWindow)
+    | where OperationNameValue in (
+        "Microsoft.Authorization/roleAssignments/write",
+        "Microsoft.Authorization/roleDefinitions/write"
+    )
+    | summarize OpCount = count() by Caller, bin(TimeGenerated, 1h)
+    | where OpCount > 5;
+suspiciousOps
+| join kind=inner (
+    SigninLogs
+    | where TimeGenerated > ago(timeWindow)
+    | where RiskLevelDuringSignIn in ("medium", "high")
+) on $left.Caller == $right.UserPrincipalName
+| project TimeGenerated, Caller, OpCount, RiskLevelDuringSignIn, IPAddress
+| order by TimeGenerated desc
+```
+
+### 5.3 GCP BigQuery Hunting Queries
+
+```sql
+-- Service account anomaly: simultaneous activity across multiple projects
+SELECT
+    protopayload_auditlog.authenticationinfo.principalemail AS sa_email,
+    COUNT(DISTINCT resource.labels.project_id) AS project_count,
+    COUNT(*) AS total_events,
+    ARRAY_AGG(DISTINCT protopayload_auditlog.methodname LIMIT 10) AS methods
+FROM `my-org.audit_logs.cloudaudit_googleapis_com_activity_*`
+WHERE _TABLE_SUFFIX >= FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY))
+    AND protopayload_auditlog.authenticationinfo.principalemail LIKE '%.gserviceaccount.com'
+GROUP BY sa_email
+HAVING project_count > 3
+ORDER BY total_events DESC
+LIMIT 20;
+```
+
+---
+
+## 6. SIEM Integration and Operational Considerations
+
+| Item | Recommendation |
+|------|----------------|
+| Log collection frequency | Real-time streaming or max 5-minute intervals |
+| Data retention | 90 days hot storage, 1+ year cold storage |
+| Detection rule updates | Review at least monthly to incorporate new CVEs/TTPs |
+| False positive management | Regularly refresh baseline whitelist |
+| Hunting frequency | High-risk environments weekly, general monthly |
+| Result documentation | Record in hunting notebooks (Jupyter) or wiki |
+| Team capability building | Run simulations (Atomic Red Team) regularly |

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 02 — Firmware Analysis
 
 ## 1. binwalk 심화 분석
@@ -1136,4 +1142,56 @@ def compare_firmwares(dir1: str, dir2: str) -> None:
 
 compare_firmwares("squashfs-root-v1", "squashfs-root-v2")
 EOF
+```
+
+---
+
+<a name="english"></a>
+
+# 02 — Firmware Analysis
+
+## 1. Advanced binwalk Analysis
+
+### 1.1 Signature Scanning and Entropy Analysis
+
+```bash
+# Basic signature scan
+binwalk firmware.bin
+```
+
+## Overview
+
+Firmware analysis for hardware hacking shares many tools with IoT firmware analysis (see section 27/02), but hardware-specific considerations include:
+
+- **Physical extraction methods**: SPI/JTAG/UART-based dumps
+- **Proprietary formats**: Custom bootloaders, encrypted firmware
+- **Diff analysis**: Comparing firmware versions to find changes and patches
+- **QEMU emulation**: Running extracted binaries for dynamic analysis
+
+## Key Analysis Steps
+
+1. **Signature scan** with binwalk to identify components
+2. **Entropy analysis** to detect encrypted/compressed regions
+3. **Filesystem extraction** and mount
+4. **Static analysis**: strings, Ghidra/radare2, checksec
+5. **Firmware diff**: Compare versions to find security patches
+6. **Dynamic analysis**: QEMU emulation, GDB debugging
+
+## Firmware Diff Analysis
+
+Comparing firmware versions is valuable for:
+- Understanding what vulnerabilities were fixed
+- Finding regression vulnerabilities
+- Mapping security patch history
+
+```python
+# New files
+print(f"New files: {len(new_files)}")
+for f in sorted(new_files): print(f"  + {f}")
+print(f"\nRemoved files: {len(removed_files)}")
+for f in sorted(removed_files): print(f"  - {f}")
+print(f"\nChanged files: {len(changed)}")
+for f in sorted(changed): print(f"  ~ {f}")
+
+compare_firmwares("squashfs-root-v1", "squashfs-root-v2")
 ```

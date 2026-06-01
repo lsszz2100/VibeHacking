@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # OllyDbg & x64dbg 실전 사용 가이드
 
 ## 1. OllyDbg 기본 레이아웃
@@ -758,6 +764,775 @@ def main() -> None:
     else:
         patched = patch_is_debugger_present(args.binary)
         log.info(f"패치된 바이너리: {patched}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+<a name="english"></a>
+
+# OllyDbg & x64dbg Practical Usage Guide
+
+## 1. OllyDbg Basic Layout
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  [Menu Bar]  File, View, Debug, Plugins, Options          │
+├──────────────────────────┬───────────────────────────────┤
+│  [Disassembly Window]    │  [Register Window]            │
+│  Address | Opcode | Asm  │  EAX: 00000000               │
+│  004011A0 | 55 | PUSH EBP│  EBX: 7FFD7000               │
+│  004011A1 | 89E5 | MOV..  │  ECX: 00000001               │
+│                          │  EDX: 00000000               │
+│                          │  ESI: 00000000               │
+│                          │  EDI: 00000000               │
+│                          │  EBP: 0019FF94               │
+│                          │  ESP: 0019FF90               │
+│                          │  EIP: 004011A0               │
+├──────────────────────────┼───────────────────────────────┤
+│  [Memory/Dump Window]    │  [Stack Window]               │
+│  Address | Hex | ASCII   │  0019FF90: 004011C5           │
+└──────────────────────────┴───────────────────────────────┘
+```
+
+---
+
+## 2. OllyDbg Key Shortcuts
+
+| Shortcut | Function | Description |
+|---------|---------|------------|
+| **F2** | Set/Remove BreakPoint | Set breakpoint at current line |
+| **F7** | Step Into | Enter function interior |
+| **F8** | Step Over | Execute function as single line |
+| **F9** | Run | Execute (until next BreakPoint) |
+| **Ctrl+F2** | Restart | Restart program |
+| **Ctrl+G** | Go To Address | Navigate to specific address |
+| **Ctrl+F9** | Execute Till Return | Run to end of current function |
+| **Alt+M** | Memory Map | View memory map |
+| **Alt+K** | Call Stack | View call stack |
+| **Enter** | Follow | Move into jump/function |
+| **-** (minus) | Go Back | Return to previous view |
+| **Spacebar** | Assemble | Directly modify code |
+| **;** (semicolon) | Comment | Add comment |
+| **:** (colon) | Label | Add label |
+| **Ctrl+A** | Analyse | Rerun code analysis |
+
+---
+
+## 3. Breakpoint Types
+
+### Software Breakpoint (F2)
+
+Software breakpoints replace the first byte at the target address with `0xCC` (INT 3 instruction) to transfer control to the debugger. Since they modify memory content, anti-debugging code can detect this.
+
+```
+- Replaces first byte at target address with 0xCC (INT 3)
+- Most common type of breakpoint
+- When 0xCC executes during program run, control passes to debugger
+
+How to set:
+  1. Click desired line in disassembly window
+  2. Press F2 or double-click to set
+  3. Shown in red
+```
+
+### Hardware Breakpoint
+
+Hardware breakpoints use the CPU's DR0~DR3 debug registers without modifying code. Up to 4 can be set, and they can respond to memory read, write, or execute events separately — useful for bypassing anti-debugging.
+
+```
+- Uses DR0~DR3 debug registers
+- Maximum 4
+- Can specify execute/read/write conditions
+
+How to set:
+  1. Right-click on address
+  2. Breakpoint → Hardware → Execute/Write/Read
+  
+Use case: Anti-debugging bypass (when INT 3 is being checked)
+```
+
+### Memory Breakpoint
+
+Memory breakpoints modify the page attributes of a specific memory region to generate an exception on access. Useful for catching the moment when encrypted code is decrypted or specific data is accessed.
+
+```
+- Stops when specific memory region is accessed
+- Useful for tracking when values are written to buffers
+
+How to set (in Memory Map window):
+  1. Open Memory Map with Alt+M
+  2. Select desired region
+  3. Press F2 or right-click → Set Memory Breakpoint
+```
+
+### Conditional Breakpoint
+```
+Stops only when specific condition is met:
+  1. After setting a breakpoint
+  2. Right-click in Breakpoints window → Enter Condition
+  
+Example: Stop only when EAX == 1
+         Stop only when ECX > 100
+```
+
+---
+
+## 4. Practical Analysis Scenarios
+
+### Scenario 1: Serial Number Cracking
+```
+Goal: Find the routine that checks if entered serial is correct
+
+Method:
+1. Run program and enter wrong serial
+2. Search for "Wrong" or "Invalid" string
+   → Right-click → Search for → All referenced text strings
+3. Set breakpoint on error message line
+4. Run again → stops at breakpoint
+5. Work backward to find comparison routine (CMP/JE)
+6. Patch conditional jump with NOP or change direction
+```
+
+### Scenario 2: Conditional Branch Patching
+
+Modify conditional branch instructions in OllyDbg to change program execution flow. Changing JE to JMP can bypass serial validation.
+
+```asm
+; Original code (jumps to error when wrong serial)
+004011A0: CMP EAX, ECX
+004011A2: JNE 004011B0   ; if different, jump to error routine
+
+; Patch method 1: JNE → JMP (always go to success routine)
+  Spacebar → JMP 004011B0 → change to success routine address
+
+; Patch method 2: JNE → NOP (neutralize branch)
+  Fill two bytes with NOP(0x90)
+  JNE(0x75, distance) → 0x90 0x90
+
+; Applying patch:
+  Can directly edit assembly with Spacebar key
+```
+
+### Scenario 3: Anti-Debugging Bypass
+
+#### Bypassing IsDebuggerPresent
+
+Anti-debugging code pattern using the IsDebuggerPresent API. Detects debugger by checking the BeingDebugged field in the PEB (Process Environment Block).
+
+```asm
+; Anti-debugging code pattern
+CALL DWORD PTR [<&KERNEL32.IsDebuggerPresent>]
+TEST EAX, EAX
+JNZ  anti_debug_exit    ; exit if debugger detected
+
+; Bypass method 1: JNZ → NOP
+; Bypass method 2: Set EAX to 0 after CALL
+;   → Double-click EAX value in register window → change to 0
+```
+
+#### Timing Attack Bypass (GetTickCount)
+
+Anti-debugging technique that measures execution time using GetTickCount to detect debugger presence. Exploits the slower execution speed when a debugger is attached.
+
+```asm
+; Detect debugger by measuring execution time
+CALL GetTickCount
+MOV  saved_tick, EAX
+; ... code execution ...
+CALL GetTickCount
+SUB  EAX, saved_tick
+CMP  EAX, 1000h          ; if >4096ms, determine debugger present
+JA   anti_debug_exit
+
+; Bypass: JA → NOP
+;         or manually change EAX to small value
+```
+
+---
+
+## 5. Basic Reversing Practice Exercises
+
+### Exercise 1: Conditional Branch Analysis
+
+Binary for reversing practice. Practice identifying conditional branch logic by analyzing the binary without source code.
+
+```c
+// Target program (source unknown, analyze binary only)
+// Goal: find correct input or bypass
+
+/* Code visible as assembly:
+00401020: PUSH EBP
+00401021: MOV EBP, ESP
+00401023: MOV EAX, DWORD PTR [EBP+8]  ; input value
+00401026: CMP EAX, 3E7h               ; compare with 999
+0040102B: JNE 0040103A                 ; if different, fail
+0040102D: PUSH "Success!"
+00401032: CALL MessageBox
+...
+0040103A: PUSH "Fail!"
+...
+*/
+
+// Solution:
+// 1. Enter 999 (0x3E7) as input
+// 2. Or patch JNE with NOP
+```
+
+### Exercise 2: Variable Tracking
+
+How to track specific variable values in a running program with OllyDbg. Uses breakpoints and register/memory windows.
+
+```asm
+; Track specific variable value in code
+; Patch to make n=33670, m=178503
+
+; Approach:
+; 1. Set breakpoint before MessageBox call
+; 2. Work backward to find where n, m are calculated
+; 3. Manually change register/memory values to desired values
+; 4. Or patch calculation routine with MOV n, 33670h
+```
+
+### Exercise 3: Argument Analysis
+
+Analyze argument values passed to functions at the assembly level. Examine arguments in stack or registers and understand conditions.
+
+```asm
+; Analyze first argument condition of a function
+
+PUSH arg2
+PUSH arg1           ; store arguments on stack (reversed)
+CALL 00401050
+
+; Inside function
+00401050: PUSH EBP
+00401051: MOV EBP, ESP
+00401053: MOV EAX, DWORD PTR [EBP+8]  ; arg1 = first argument
+00401056: CMP EAX, specific_value
+...
+
+; In OllyDbg:
+; Press F7 at CALL to enter → check values at EBP+8, EBP+C
+```
+
+---
+
+## 6. IDA Pro Basics
+
+### Main Views
+```
+Graph View: Displays function flow as diagram
+Text View:  Traditional assembly text view
+Hex View:   Raw byte view
+Pseudocode: Decompiled C-like code (IDA Pro feature)
+```
+
+### Basic Shortcuts
+| Shortcut | Function |
+|---------|---------|
+| F5 | Decompile (Pseudocode) |
+| Space | Switch Graph/Text view |
+| G | Go to address |
+| N | Rename |
+| ; | Add comment |
+| Esc | Go to previous location |
+| X | Cross references |
+| Ctrl+F | Text search |
+| Alt+T | Text search (full) |
+
+### Cross Reference (XREF) Usage
+```
+Track who calls a specific function/variable:
+  1. Press X at function name or variable name
+  2. Displays list of all call locations
+  3. Essential for backward-tracing analysis path
+
+Example: X at "Wrong Serial" string → see where it's printed
+```
+
+---
+
+## 7. GDB (Linux) Practical Usage
+
+### Basic Commands
+```bash
+gdb ./binary              # load binary
+
+# Install PEDA/pwndbg (recommended)
+git clone https://github.com/longld/peda.git ~/peda
+echo "source ~/peda/peda.py" >> ~/.gdbinit
+```
+
+### GDB Commands
+
+Collection of core GDB debugger commands. Use run, break, step, info registers etc. to control program execution step by step.
+
+```gdb
+(gdb) run arg1 arg2          # run with arguments
+(gdb) run < input.txt        # stdin from file
+(gdb) break main             # set BP by function name
+(gdb) break *0x804851a       # set BP by absolute address
+(gdb) break *main+42         # set BP by relative offset
+(gdb) info breakpoints       # list BPs
+(gdb) delete 1               # delete BP #1
+(gdb) continue               # run to next BP
+(gdb) next                   # Step Over (function level)
+(gdb) step                   # Step Into (instruction level)
+(gdb) finish                 # run to end of current function then return
+(gdb) info registers         # print all register values
+(gdb) p/x $eax               # print eax in hex
+(gdb) x/10xw $esp            # print 10 words (4B) from esp in hex
+(gdb) x/10i $eip             # disassemble 10 instructions from eip
+(gdb) x/s 0x804a0c0          # print address as string
+(gdb) set $eax = 0           # manually change register value
+(gdb) set *(int*)0x804a010=1 # manually change memory value
+(gdb) disassemble main       # disassemble entire function
+(gdb) disassemble /r main    # disassemble with raw bytes
+(gdb) info frame             # current stack frame info
+(gdb) backtrace              # call stack (call chain)
+(gdb) watch *(int*)0x804a010 # set memory watchpoint
+```
+
+### GDB Automation Script (Python GDB API)
+
+Automate debugging tasks using the Python GDB API. Can handle repetitive analysis or specific conditional behavior via script.
+
+```python
+#!/usr/bin/env python3
+"""
+Binary auto-analysis script using GDB Python API
+Usage: gdb -x gdb_auto.py ./target
+"""
+import gdb
+import re
+
+
+class MalwareTracer(gdb.Command):
+    """GDB command for auto-logging when suspicious functions are called"""
+
+    WATCH_FUNCS = [
+        "system", "execve", "execvp",
+        "popen", "fopen", "fwrite",
+        "connect", "send", "recv",
+        "strcmp", "strncmp",          # detect serial comparison
+    ]
+
+    def __init__(self) -> None:
+        super().__init__("trace-malware", gdb.COMMAND_USER)
+        self.log: list[str] = []
+
+    def invoke(self, arg: str, from_tty: bool) -> None:
+        print("[*] Setting BPs on suspicious functions...")
+        for func in self.WATCH_FUNCS:
+            try:
+                bp = gdb.Breakpoint(func, internal=True)
+                bp.commands = (
+                    f'python gdb.execute("set logging file /tmp/trace.log")\n'
+                    f'python gdb.execute("set logging on")\n'
+                    f'info args\n'
+                    f'backtrace 3\n'
+                    f'continue\n'
+                )
+                print(f"  [+] BP @ {func}")
+            except gdb.error:
+                pass  # skip if no symbol
+
+        gdb.execute("run")
+        print(f"[*] Trace complete → check /tmp/trace.log")
+
+
+class EIPController(gdb.Command):
+    """Helper to force change EIP/RIP"""
+
+    def __init__(self) -> None:
+        super().__init__("set-eip", gdb.COMMAND_USER)
+
+    def invoke(self, arg: str, from_tty: bool) -> None:
+        addr = int(arg.strip(), 16)
+        arch = gdb.selected_frame().architecture().name()
+        reg = "rip" if "x86-64" in arch else "eip"
+        gdb.execute(f"set ${reg} = {addr}")
+        print(f"[+] {reg.upper()} → {hex(addr)}")
+
+
+MalwareTracer()
+EIPController()
+print("[*] Custom GDB commands loaded: trace-malware, set-eip")
+
+
+# Auto-run — set BP at main immediately after binary load
+def on_new_objfile(event: gdb.ObjfileEvent) -> None:
+    try:
+        gdb.execute("break main")
+        print("[+] main BP auto-set")
+    except gdb.error:
+        pass
+
+gdb.events.new_objfile.connect(on_new_objfile)
+```
+
+### Linux Compile & Debug
+
+Commands for compiling C source code on Linux and debugging with GDB. Include debug symbols with the -g flag.
+
+```bash
+# Compile with Intel syntax assembly output
+gcc -masm=intel -S -O0 test.c -o test.s
+cat test.s
+
+# Compile with protections disabled (for learning, 32-bit)
+gcc -m32 -o vuln32 vuln.c \
+    -fno-stack-protector \
+    -z execstack \
+    -no-pie \
+    -mpreferred-stack-boundary=2
+
+# Compile with protections disabled (for learning, 64-bit)
+gcc -o vuln64 vuln.c \
+    -fno-stack-protector \
+    -z execstack \
+    -no-pie
+
+# Auto-check executable protections (pwntools checksec)
+python3 -c "
+from pwn import *
+elf = ELF('./vuln64')
+print(f'  RELRO:     {\"Full\" if elf.relro == \"full\" else elf.relro}')
+print(f'  Canary:    {elf.canary}')
+print(f'  NX:        {elf.nx}')
+print(f'  PIE:       {elf.pie}')
+"
+
+# Disable ASLR (for learning/debugging, valid until reboot)
+echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
+```
+
+### Linux C Code → Assembly Translation Practice
+
+Assembly instructions are low-level commands directly executed by the CPU. `mov` moves data, `push/pop` manipulates the stack, `call/ret` is used for function call/return — recognizing these patterns is essential for reverse engineering.
+
+```c
+// test.c — check basic arithmetic assembly
+#include <stdio.h>
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int main(void) {
+    int a = 10;
+    int b = 20;
+    int c = add(a, b);
+    printf("c = %d\n", c);
+    return 0;
+}
+```
+
+Assembly generated after compilation (`gcc -m32 -masm=intel -S -O0 test.c`):
+
+```asm
+; add function — 2 args, sums them, returns via eax
+add:
+    push    ebp
+    mov     ebp, esp
+    mov     eax, DWORD PTR [ebp+8]   ; a (first arg)
+    add     eax, DWORD PTR [ebp+12]  ; eax += b (second arg)
+    pop     ebp
+    ret                               ; return value in eax
+
+; main function — 3 local vars (a, b, c) → reserve 12 bytes on stack
+main:
+    push    ebp
+    mov     ebp, esp
+    sub     esp, 12                      ; reserve space for local vars
+    mov     DWORD PTR [ebp-4],  10       ; a = 10
+    mov     DWORD PTR [ebp-8],  20       ; b = 20
+    push    DWORD PTR [ebp-8]            ; arg2: b (reversed push)
+    push    DWORD PTR [ebp-4]            ; arg1: a
+    call    add                          ; add(a, b)
+    add     esp, 8                       ; __cdecl: caller cleans up stack
+    mov     DWORD PTR [ebp-12], eax      ; c = return value
+    push    DWORD PTR [ebp-12]
+    push    OFFSET .LC0                  ; "c = %d\n"
+    call    printf
+    add     esp, 8
+    mov     eax, 0
+    leave
+    ret
+```
+
+```python
+#!/usr/bin/env python3
+"""
+Auto-disassembly + control flow analysis of functions using r2pipe
+Usage: python3 r2_disasm.py <binary> [function_name]
+"""
+import sys
+import json
+import argparse
+import r2pipe
+
+
+def disasm_function(binary: str, func_name: str = "main") -> None:
+    r2 = r2pipe.open(binary, flags=["-2"])
+    r2.cmd("aaa")  # full analysis
+
+    # Search target in function list
+    funcs = json.loads(r2.cmd("aflj") or "[]")
+    target = next(
+        (f for f in funcs if func_name in f.get("name", "")), None
+    )
+    if not target:
+        print(f"[-] Function '{func_name}' not found.")
+        avail = [f["name"] for f in funcs[:20]]
+        print(f"    Available functions (max 20): {avail}")
+        r2.quit()
+        return
+
+    addr = target["offset"]
+    print(f"\n[+] {func_name} @ {hex(addr)}")
+    print(f"    Size: {target.get('size', '?')} bytes")
+    print(f"    Call count: {target.get('cc', '?')}\n")
+
+    # Disassemble in Intel syntax
+    r2.cmd("e asm.syntax=intel")
+    r2.cmd(f"s {addr}")
+    print(r2.cmd(f"pdf"))  # disassemble entire function
+
+    # Control flow graph (text)
+    print("\n[*] Control flow blocks:")
+    blocks = json.loads(r2.cmd(f"afbj @ {addr}") or "[]")
+    for blk in blocks:
+        print(f"  Block {hex(blk['addr'])}: {blk.get('ninstr', 0)} instructions"
+              f"  → jump: {hex(blk['jump']) if blk.get('jump') else 'None'}"
+              f"  / fail: {hex(blk['fail']) if blk.get('fail') else 'None'}")
+
+    r2.quit()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="r2pipe function disassembler")
+    parser.add_argument("binary", help="Target binary")
+    parser.add_argument("func", nargs="?", default="main", help="Function name (default: main)")
+    args = parser.parse_args()
+    disasm_function(args.binary, args.func)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 8. Detailed Analysis of Basic Reversing Exercises
+
+### Approach by Exercise Type
+
+#### Type 1: Conditional Branch Manipulation
+
+Conditional branch manipulation pattern common in reversing CTFs. Patch JE/JNE compare-and-branch instructions or modify register values.
+
+```asm
+; When program compares a specific value and splits success/failure
+
+; Original code — find branch point
+CMP EAX, specific_value
+JE  success_label      ; if equal, success
+JMP fail_label         ; otherwise, fail
+
+; Patch method A: JE → JMP (always to success)
+; Spacebar → JMP success_label
+
+; Patch method B: JE to NOP (neutralize condition, execute next line)
+; JE (0x74 or 0x0F 0x84) → NOP (0x90)
+
+; Patch method C: Remove CMP itself
+; Filling CMP instruction with NOP prevents ZF from changing
+```
+
+#### Type 2: Sum Value Calculation Patching
+
+Technique to patch code or manipulate input to reach target sum value. Calculate required input value by working backward.
+
+```asm
+; Goal: patch so sum reaches specific value (15, 21, etc.)
+; Approach: find loop calculating sum, change condition or inject value directly
+
+; Example: must be success when sum == 21
+; Method 1: MOV [sum_address], 15h (direct value injection)
+; Method 2: Change CMP in loop to desired value
+```
+
+#### Type 3: MessageBox Addition/Modification
+
+Analyze or patch MessageBox API calls at assembly level. Practice checking arguments from the stack and changing output strings.
+
+```asm
+; Check arguments directly in stack window
+PUSH 0              ; uType (MB_OK)
+PUSH title_addr     ; lpCaption
+PUSH message_addr   ; lpText
+PUSH 0              ; hWnd
+CALL MessageBox
+
+; In OllyDbg:
+; Enter CALL interior with F7 → check EBP+8=hWnd, EBP+C=lpText
+; Can directly modify values in stack window
+```
+
+#### Type 4: new (Dynamic Allocation) Analysis
+
+Pattern of C++ new operator compiled to assembly. Analyzes the structure of calling operator new then calling the constructor.
+
+```asm
+; C++ new operator disassembly pattern
+PUSH size            ; bytes to allocate
+CALL operator new   ; internally calls HeapAlloc
+ADD ESP, 4
+MOV [pointer_var], EAX ; returns allocated address in EAX
+
+; Tracking Heap in OllyDbg:
+; Alt+M → check Heap region in Memory Map
+; Set Memory BP on heap address to stop on access
+```
+
+---
+
+## 9. Anti-Debugging Techniques List
+
+### Detection Methods and Bypasses
+
+| Anti-Debugging Technique | Operating Principle | Bypass Method |
+|-------------------------|-------------------|--------------|
+| IsDebuggerPresent | Checks PEB.IsDebugged field | Manually set EAX to 0, then JNZ→NOP |
+| CheckRemoteDebuggerPresent | Calls NtQueryInformationProcess | Patch return bool pointer value to 0 |
+| GetTickCount timing | Long execution time = debugger | JA/JG → NOP or change EAX to small value |
+| QueryPerformanceCounter | Measures time with high-res timer | NOP the result comparison branch |
+| INT 3 (0xCC) detection | Scans code for 0xCC bytes | Use Hardware BP (DR registers, no INT 3) |
+| TLS callbacks | Code running before main | Set BP directly on TLS callback function |
+| SEH handler | Check debugger presence on exception | Trace FS:[0] chain, patch branch in handler |
+
+Manual method of detecting debugger by directly referencing PEB (Process Environment Block). Directly checks the NtBeingDebugged field.
+
+```asm
+; Debugger detection via PEB (manual method)
+MOV EAX, DWORD PTR FS:[30h]   ; EAX = PEB address
+MOV AL,  BYTE PTR [EAX+2]     ; AL = PEB.IsDebugged (offset 0x2)
+TEST AL, AL
+JNZ  debugger_detected
+
+; Bypass: directly modify [EAX+2] to 0 (in Memory window)
+; Or reverse condition: JNZ → JZ
+```
+
+```python
+#!/usr/bin/env python3
+"""
+pwntools-based anti-debugging bypass automation script
+Patches IsDebuggerPresent / PEB.IsDebugged then runs binary
+Usage: python3 anti_debug_bypass.py ./target [args...]
+"""
+import sys
+import argparse
+from pwn import (
+    ELF, process, remote,
+    context, log, p32, p64,
+    u32, u64,
+)
+
+
+def patch_is_debugger_present(binary_path: str) -> str:
+    """
+    Returns binary with IsDebuggerPresent import patched with NOP pattern.
+    Windows PE only — recommend dynamic hooking for Linux ELF.
+    """
+    import pefile
+    import shutil
+    import os
+
+    patched = binary_path + ".patched"
+    shutil.copy2(binary_path, patched)
+
+    pe = pefile.PE(patched)
+    if not hasattr(pe, "DIRECTORY_ENTRY_IMPORT"):
+        log.warning("No import directory")
+        return patched
+
+    with open(patched, "r+b") as f:
+        for entry in pe.DIRECTORY_ENTRY_IMPORT:
+            for imp in entry.imports:
+                if imp.name and b"IsDebuggerPresent" in imp.name:
+                    # Zero out IAT entry → NULL pointer on call
+                    # In practice, replace with address of xor eax,eax/ret shellcode
+                    f.seek(imp.address - pe.OPTIONAL_HEADER.ImageBase)
+                    f.write(b"\x00\x00\x00\x00")
+                    log.success(f"IsDebuggerPresent IAT patched @ {hex(imp.address)}")
+
+    return patched
+
+
+def run_with_antidebug_bypass_frida(binary_path: str, args: list[str]) -> None:
+    """
+    Runtime anti-debugging bypass using Frida (Windows/Linux)
+    Requires frida-tools: pip install frida-tools
+    """
+    frida_script = r"""
+    // Always return 0 from IsDebuggerPresent
+    var isDbgPresent = Module.findExportByName(null, "IsDebuggerPresent");
+    if (isDbgPresent) {
+        Interceptor.replace(isDbgPresent, new NativeCallback(function() {
+            return 0;
+        }, 'int', []));
+        send("[+] IsDebuggerPresent hooked");
+    }
+
+    // Bypass CheckRemoteDebuggerPresent
+    var checkRemote = Module.findExportByName(null, "CheckRemoteDebuggerPresent");
+    if (checkRemote) {
+        Interceptor.attach(checkRemote, {
+            onLeave: function(retval) {
+                // Set value pointed to by pbDebuggerPresent to FALSE
+                var ptr = this.context.ecx || this.context.rdx;
+                if (ptr) Memory.writeU32(ptr, 0);
+            }
+        });
+        send("[+] CheckRemoteDebuggerPresent hooked");
+    }
+
+    // Bypass GetTickCount timing difference (always return previous value +1)
+    var prevTick = 0;
+    var getTickCount = Module.findExportByName(null, "GetTickCount");
+    if (getTickCount) {
+        Interceptor.replace(getTickCount, new NativeCallback(function() {
+            prevTick += 1;
+            return prevTick;
+        }, 'uint32', []));
+        send("[+] GetTickCount hooked");
+    }
+    """
+    print("[*] Frida anti-debugging bypass script:")
+    print(frida_script)
+    print(f"\n[*] Run: frida -l script.js {binary_path}")
+    print(f"    Or: frida --no-pause -f {binary_path}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Anti-debugging bypass tool")
+    parser.add_argument("binary", help="Target binary")
+    parser.add_argument("args", nargs="*", help="Program arguments")
+    parser.add_argument("--frida", action="store_true",
+                        help="Output Frida script mode")
+    args = parser.parse_args()
+
+    if args.frida:
+        run_with_antidebug_bypass_frida(args.binary, args.args)
+    else:
+        patched = patch_is_debugger_present(args.binary)
+        log.info(f"Patched binary: {patched}")
 
 
 if __name__ == "__main__":

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 보안 정책 및 윤리 지침
 
 ## 중요 공지
@@ -31,3 +37,41 @@
 ## 책임 한계
 
 이 자료를 악용하여 발생하는 모든 법적/윤리적 책임은 사용자 본인에게 있습니다.
+
+---
+
+<a name="english"></a>
+
+# Security Policy and Ethical Guidelines
+
+## Important Notice
+
+All technical content included in this repository is provided for **educational purposes only**.
+
+## Permitted Uses
+
+- CTF (Capture The Flag) competitions
+- Bug bounty programs (within explicitly authorized scope)
+- Legitimate penetration testing (when authorized by contract)
+- Learning on personally owned systems
+- Security research and defensive purposes
+
+## Prohibited Uses
+
+- Unauthorized access to systems
+- Personal information theft
+- Service disruption (DoS/DDoS)
+- Exploitation for financial gain
+
+## Legal Basis
+
+Under South Korean law:
+- Act on Promotion of Information and Communications Network Utilization and Information Protection
+- Criminal Act Article 314 (Obstruction of Business), Article 316 (Violation of Secrecy)
+
+Under US law:
+- CFAA (Computer Fraud and Abuse Act)
+
+## Disclaimer
+
+All legal and ethical responsibility arising from misuse of this material rests solely with the user.

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # DNS 공격과 방어
 
 ## 1. DNS 기초 및 공격 표면
@@ -343,6 +349,361 @@ def recon(domain: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="DNS 정보 수집")
+    parser.add_argument("domain")
+    args = parser.parse_args()
+    recon(args.domain)
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+<a name="english"></a>
+
+# DNS Attack and Defense
+
+## 1. DNS Fundamentals and Attack Surface
+
+```
+DNS Record Types:
+  A      → Domain → IPv4
+  AAAA   → Domain → IPv6
+  MX     → Mail server
+  NS     → Name server
+  CNAME  → Alias
+  TXT    → SPF, DKIM, DMARC, etc.
+  SOA    → Zone authority information
+  PTR    → Reverse lookup
+
+Attack Surface:
+  ┌─────────────────────────────────────────────┐
+  │ Zone Transfer (AXFR) — Internal map leakage │
+  │ DNS Cache Poisoning — Response forgery       │
+  │ DNS Rebinding — SOP bypass                  │
+  │ Subdomain Takeover — Delegation abuse       │
+  │ DNS Tunneling — C2 communication hiding     │
+  │ DNS Amplification — DDoS amplification      │
+  └─────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Zone Transfer Attack (AXFR)
+
+### 2-1. Zone Transfer Attempts
+
+These are commands for testing DNS attack scenarios. They cover checking Zone Transfer vulnerabilities (`dig axfr`), subdomain enumeration, DNS cache status verification, and other fundamental DNS security inspection commands.
+
+```bash
+# Basic AXFR attempt
+dig axfr example.com @ns1.example.com
+dig axfr example.com @8.8.8.8
+
+# host command
+host -t axfr example.com ns1.example.com
+
+# Detect zone transfer with nmap
+nmap --script dns-zone-transfer --script-args \
+  dns-zone-transfer.domain=example.com <ns-ip>
+
+# fierce — auto-discovers NS servers then attempts AXFR
+fierce --domain example.com
+```
+
+### 2-2. Information Collectable via Zone Transfer
+
+```
+Data obtained on success:
+  - All subdomains (including internal servers)
+  - Internal IP range mapping
+  - Mail server and backup server locations
+  - Development/staging environment domains
+  - Administrator naming convention patterns
+
+Example output:
+  dev.example.com.        A    192.168.1.10
+  staging.example.com.    A    192.168.1.20
+  vpn.example.com.        A    203.0.113.5
+  admin.example.com.      A    10.0.0.1
+  mail.example.com.       MX   10 mail1.example.com.
+```
+
+### 2-3. Defense — Restricting Zone Transfers
+
+This is the BIND DNS server security configuration. It restricts Zone Transfers to slave server IPs only, limits recursive queries to internal networks, and enables DNSSEC to defend against DNS spoofing.
+
+```bash
+# BIND named.conf — allow specific IPs only
+zone "example.com" {
+    type master;
+    file "/etc/bind/db.example.com";
+    allow-transfer { 192.168.1.2; };  # Allow slave NS only
+    also-notify    { 192.168.1.2; };
+};
+
+# Global restriction (all zones)
+options {
+    allow-transfer { none; };  # Block by default
+};
+
+# Test
+dig axfr example.com @ns1.example.com
+# Transfer failed. → Correctly blocked
+```
+
+---
+
+## 3. DNS Cache Poisoning (Kaminsky Attack)
+
+```
+Attack Principle:
+  1. Attacker sends large volumes of queries for non-existent domains to the target resolver
+  2. Injects forged responses before the authoritative NS can reply
+  3. Predicts Transaction ID (16-bit) + source port (Birthday Attack)
+  4. Stores forged records in cache → all users redirected to attacker's server
+
+Kaminsky (2008) Improvement:
+  - Forges glue records in NXDOMAIN responses
+  - Can poison an entire zone's cache with a single query
+
+Defense:
+  □ Deploy DNSSEC (verify response signatures)
+  □ Source port randomization (0~65535)
+  □ 0x20 encoding (randomize case to increase transaction entropy)
+  □ Keep BIND/Unbound updated to latest version
+```
+
+### DNSSEC Configuration (BIND)
+
+This configures DNSSEC (DNS Security Extensions). It adds digital signatures to zones to ensure the integrity of DNS responses and prevent DNS spoofing.
+
+```bash
+# Generate zone signing keys
+dnssec-keygen -a RSASHA256 -b 2048 -n ZONE example.com     # ZSK
+dnssec-keygen -a RSASHA256 -b 4096 -n ZONE -f KSK example.com  # KSK
+
+# Sign zone file
+dnssec-signzone -A -3 $(head -c 16 /dev/urandom | xxd -p) \
+  -N INCREMENT -o example.com -t db.example.com
+
+# Use signed zone in named.conf
+zone "example.com" {
+    type master;
+    file "/etc/bind/db.example.com.signed";
+    auto-dnssec maintain;
+    inline-signing yes;
+};
+
+# Register DS record with upstream registrar
+dnssec-dsfromkey Kexample.com.+008+XXXXX.key
+```
+
+---
+
+## 4. DNS Tunneling (Covert C2 Communication)
+
+```
+Principle:
+  Encode data inside DNS queries/responses to bypass firewalls
+  Attacker directly operates the authoritative NS for their domain (attacker.com)
+
+Data Flow:
+  Victim → query [base32-encoded data].attacker.com → Attacker's NS
+  Attacker's NS → encode commands in TXT records → respond to victim
+
+Common Tools:
+  iodine   — IP over DNS
+  dnscat2  — C2 channel
+  dns2tcp  — TCP over DNS
+```
+
+### DNS Tunneling Detection and Blocking
+
+This is a Python script that detects DNS tunneling. It monitors for abnormally long DNS queries, high query frequency, and non-standard record types.
+
+```python
+import dns.resolver
+import re
+import argparse
+from collections import Counter
+from pathlib import Path
+
+# DNS tunneling indicators: very long subdomains, high entropy, abnormal frequency
+def shannon_entropy(s: str) -> float:
+    from math import log2
+    freq = Counter(s.lower())
+    total = len(s)
+    return -sum((c/total) * log2(c/total) for c in freq.values())
+
+def analyze_dns_log(log_path: str) -> None:
+    """Analyze DNS query logs — detect tunneling patterns"""
+    pattern = re.compile(r'query: (\S+) IN (A|AAAA|TXT|MX|CNAME)')
+    domain_counter: Counter = Counter()
+    suspicious: list[tuple] = []
+
+    for line in Path(log_path).read_text().splitlines():
+        m = pattern.search(line)
+        if not m:
+            continue
+        qname, qtype = m.group(1), m.group(2)
+        parts = qname.rstrip('.').split('.')
+        if not parts:
+            continue
+
+        subdomain = '.'.join(parts[:-2]) if len(parts) > 2 else ''
+        domain = '.'.join(parts[-2:]) if len(parts) >= 2 else qname
+
+        domain_counter[domain] += 1
+
+        # Tunneling indicators
+        flags = []
+        if len(subdomain) > 40:
+            flags.append(f"Long subdomain ({len(subdomain)} chars)")
+        if subdomain and shannon_entropy(subdomain) > 3.8:
+            flags.append(f"High entropy ({shannon_entropy(subdomain):.2f})")
+        if qtype == "TXT" and subdomain:
+            flags.append("TXT query (used for data exfiltration)")
+
+        if flags:
+            suspicious.append((qname, qtype, flags))
+
+    print(f"\n[*] Top queried domains:")
+    for domain, cnt in domain_counter.most_common(10):
+        print(f"  {cnt:6d} times  {domain}")
+
+    if suspicious:
+        print(f"\n[!] {len(suspicious)} suspicious DNS queries:")
+        for qname, qtype, flags in suspicious[:20]:
+            print(f"  [{qtype}] {qname[:80]}")
+            for f in flags:
+                print(f"       → {f}")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="DNS Tunneling Detection")
+    parser.add_argument("log", help="DNS query log file (named.log, etc.)")
+    args = parser.parse_args()
+    analyze_dns_log(args.log)
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Subdomain Takeover
+
+```
+Conditions for Occurrence:
+  1. A subdomain CNAME record exists in DNS
+  2. The external service account (S3, GitHub Pages, Heroku, etc.) the CNAME points to is deleted
+  3. Attacker creates an account on that external service with the same name
+  4. → Attacker gains control of the victim's subdomain
+
+Examples of Vulnerable Services:
+  *.s3.amazonaws.com
+  *.github.io
+  *.herokuapp.com
+  *.azurewebsites.net
+  *.cloudfront.net
+```
+
+```bash
+# Auto-detect subdomain takeover vulnerabilities with Subjack
+go install github.com/haccer/subjack@latest
+subjack -w subdomains.txt -t 100 -timeout 30 \
+  -o results.txt -ssl -c fingerprints.json
+
+# nuclei templates
+nuclei -l subdomains.txt -t technologies/subdomain-takeover/
+
+# Manual verification
+dig CNAME sub.example.com
+curl -I https://sub.example.com
+# NXDOMAIN or 404 + external platform response → takeover possible
+```
+
+---
+
+## 6. Automated DNS Reconnaissance
+
+This automates DNS information gathering using Python dnspython. It automates subdomain brute-forcing, record type querying, and Zone Transfer attempts.
+
+```python
+import dns.resolver
+import dns.zone
+import dns.query
+import socket
+import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+RECORD_TYPES = ["A", "AAAA", "MX", "NS", "TXT", "SOA", "CNAME"]
+COMMON_SUBS  = ["www", "mail", "ftp", "vpn", "dev", "staging",
+                "api", "admin", "test", "beta", "shop", "blog",
+                "remote", "portal", "git", "jenkins", "jira"]
+
+def query_record(domain: str, rtype: str) -> list[str]:
+    try:
+        answers = dns.resolver.resolve(domain, rtype, lifetime=3)
+        return [str(r) for r in answers]
+    except Exception:
+        return []
+
+def try_axfr(domain: str, ns: str) -> list[str]:
+    try:
+        z = dns.zone.from_xfr(dns.query.xfr(ns, domain, timeout=5))
+        return [f"{n}.{domain}" for n in z.nodes.keys() if n != dns.name.empty]
+    except Exception:
+        return []
+
+def bruteforce_subs(domain: str) -> list[str]:
+    found = []
+    def check(sub: str):
+        fqdn = f"{sub}.{domain}"
+        try:
+            socket.gethostbyname(fqdn)
+            return fqdn
+        except socket.gaierror:
+            return None
+
+    with ThreadPoolExecutor(max_workers=30) as ex:
+        futures = {ex.submit(check, s): s for s in COMMON_SUBS}
+        for f in as_completed(futures):
+            result = f.result()
+            if result:
+                found.append(result)
+    return found
+
+def recon(domain: str) -> None:
+    print(f"\n{'='*50}")
+    print(f"[*] DNS Reconnaissance: {domain}")
+
+    for rtype in RECORD_TYPES:
+        records = query_record(domain, rtype)
+        if records:
+            print(f"\n  [{rtype}]")
+            for r in records:
+                print(f"    {r}")
+
+    ns_records = query_record(domain, "NS")
+    for ns in ns_records:
+        ns_clean = ns.rstrip('.')
+        print(f"\n[*] Zone Transfer attempt: {ns_clean}")
+        records = try_axfr(domain, ns_clean)
+        if records:
+            print(f"[!] AXFR successful! {len(records)} records")
+            for r in records[:20]:
+                print(f"    {r}")
+        else:
+            print("    → Blocked")
+
+    print(f"\n[*] Subdomain brute-force")
+    subs = bruteforce_subs(domain)
+    for s in subs:
+        print(f"  [Found] {s}")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="DNS Reconnaissance")
     parser.add_argument("domain")
     args = parser.parse_args()
     recon(args.domain)

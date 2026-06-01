@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 펌웨어 추출 기법
 
 ## 추출 방법 개요
@@ -329,3 +335,333 @@ done
 ```
 
 다음 파일에서 추출된 펌웨어의 정적 분석 기법을 다룬다.
+
+---
+
+<a name="english"></a>
+
+# Firmware Extraction Techniques
+
+## Extraction Method Overview
+
+```
+Software Methods           Hardware Methods
+├── Vendor update files    ├── UART/Serial console
+├── OTA capture            ├── JTAG/SWD debugger
+├── Management interface   ├── Direct flash chip read
+└── Firmware update API    └── In-Circuit Emulation (ICE)
+```
+
+## Software Extraction
+
+### 1. Analyzing Vendor-Provided Files
+```bash
+# Common container formats
+.bin   — Raw binary (most common)
+.img   — Disk/filesystem image
+.trx   — Broadcom router format
+.chk   — Netgear checksum format
+.dlf   — D-Link format
+.zip/.tar.gz — Compressed archives
+
+# Multi-part firmware
+binwalk -e firmware.bin
+# → Creates files in _firmware.bin.extracted/
+```
+
+### 2. OTA Update Interception
+```bash
+# Place device behind Burp Suite or mitmproxy
+mitmproxy --mode transparent --ssl-insecure
+
+# After capturing firmware download URL
+curl -O "https://firmware.vendor.com/model/fw_v2.1.bin"
+```
+
+### 3. Extraction via Web Interface
+```bash
+# Download backup file (often not encrypted)
+curl -c cookies.txt -b cookies.txt \
+     http://192.168.1.1/cgi-bin/backup.cgi \
+     -o backup.tar.gz
+
+# Extract configuration/binaries from backup
+tar xzf backup.tar.gz
+```
+
+## Hardware Extraction
+
+### UART Serial Console
+
+#### Hardware Setup
+```
+Locate UART pins on device PCB:
+  VCC  — 3.3V or 5V
+  GND  — Ground
+  TX   — Transmit from device
+  RX   — Receive to device
+
+Connect USB-UART adapter (3.3V!):
+  Adapter GND → Device GND
+  Adapter RX  → Device TX
+  Adapter TX  → Device RX
+```
+
+#### Software Setup
+```bash
+# Serial connection
+screen /dev/ttyUSB0 115200
+# or
+minicom -D /dev/ttyUSB0 -b 115200
+
+# Try common baud rates
+for baud in 9600 19200 38400 57600 115200; do
+    echo "Trying: $baud"
+    screen /dev/ttyUSB0 $baud
+done
+```
+
+#### Bootloader Interception
+```bash
+# Press key during power-on to interrupt U-Boot
+# Common interrupt keys: Space, 'a', 's', Enter
+
+U-Boot> printenv        # Show environment variables
+U-Boot> tftp 0x80000000 firmware.bin  # Load from TFTP server
+U-Boot> md 0x80000000 1000  # Memory dump
+
+# Filesystem dump via TFTP
+U-Boot> tftpput 0x80000000 4000000 dump.bin
+```
+
+### JTAG Extraction
+
+```bash
+# Connect JTAG with OpenOCD
+openocd -f interface/ftdi/mini-module.cfg \
+        -f target/at91sam3.cfg
+
+# From OpenOCD telnet
+telnet localhost 4444
+> halt
+> dump_image firmware_dump.bin 0x00000000 0x100000
+> exit
+
+# Common JTAG pinout (ARM SWD)
+SWDCLK — Clock
+SWDIO  — Data
+GND    — Ground
+VCC    — Reference voltage (3.3V)
+nRESET — Reset (optional)
+```
+
+### Direct Flash Chip Reading
+
+```bash
+# Identify SOP8/SOIC8 flash chip
+# Search chip part number in datasheet
+
+# Using CH341A programmer (SPI flash)
+flashrom -p ch341a_spi -r firmware_backup.bin
+flashrom -p ch341a_spi -V  # List supported chips
+
+# Read with clip attached (ISP)
+flashrom -p ch341a_spi \
+         -c "W25Q64BV/W25Q64CV" \
+         -r dump.bin
+```
+
+## Automated Extraction Pipeline
+
+```python
+#!/usr/bin/env python3
+"""Automated firmware extraction and analysis pipeline."""
+
+import argparse
+import subprocess
+import shutil
+import sys
+from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
+def run_cmd(cmd: list[str], cwd: Path | None = None) -> tuple[int, str, str]:
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
+    return result.returncode, result.stdout, result.stderr
+
+
+def extract_with_binwalk(fw: Path, out_dir: Path) -> bool:
+    rc, stdout, stderr = run_cmd(
+        ["binwalk", "--extract", "--directory", str(out_dir), str(fw)]
+    )
+    return rc == 0
+
+
+def extract_squashfs(sq_path: Path, out_dir: Path) -> bool:
+    rc, _, _ = run_cmd(["unsquashfs", "-d", str(out_dir), str(sq_path)])
+    return rc == 0
+
+
+def find_credentials(root: Path) -> list[dict[str, str]]:
+    credential_files = [
+        "etc/passwd", "etc/shadow", "etc/config/passwd",
+        "etc/htpasswd", "etc/lighttpd.user",
+    ]
+    creds: list[dict[str, str]] = []
+
+    for cf in credential_files:
+        p = root / cf
+        if p.exists():
+            try:
+                content = p.read_text(errors="ignore")
+                creds.append({"file": cf, "content": content[:500]})
+            except OSError:
+                pass
+
+    for path in root.rglob("*.conf"):
+        try:
+            text = path.read_text(errors="ignore")
+            if any(kw in text.lower() for kw in ["password", "passwd", "secret"]):
+                creds.append({
+                    "file": str(path.relative_to(root)),
+                    "content": text[:300],
+                })
+        except OSError:
+            pass
+
+    return creds
+
+
+def find_binaries_with_dangerous_functions(root: Path) -> list[str]:
+    dangerous = ["system", "popen", "strcpy", "gets", "sprintf"]
+    found: list[str] = []
+
+    def check_binary(bin_path: Path) -> str | None:
+        rc, stdout, _ = run_cmd(["strings", str(bin_path)])
+        if rc != 0:
+            return None
+        funcs = [f for f in dangerous if f in stdout]
+        if funcs:
+            return f"{bin_path.relative_to(root)}: {', '.join(funcs)}"
+        return None
+
+    binaries = [
+        p for p in root.rglob("*")
+        if p.is_file() and not p.suffix and p.stat().st_size > 1000
+    ]
+
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        futures = {ex.submit(check_binary, b): b for b in binaries[:100]}
+        for fut in as_completed(futures):
+            result = fut.result()
+            if result:
+                found.append(result)
+
+    return found
+
+
+def find_network_services(root: Path) -> list[str]:
+    services: list[str] = []
+    init_dirs = ["etc/init.d", "etc/rc.d", "etc/scripts"]
+    for d in init_dirs:
+        p = root / d
+        if not p.exists():
+            continue
+        for script in p.iterdir():
+            if script.is_file():
+                try:
+                    text = script.read_text(errors="ignore")
+                    if any(svc in text for svc in
+                           ["telnetd", "dropbear", "sshd", "ftpd",
+                            "httpd", "lighttpd", "uhttpd"]):
+                        services.append(str(script.relative_to(root)))
+                except OSError:
+                    pass
+    return services
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Firmware extraction and automated analysis pipeline",
+    )
+    parser.add_argument("firmware", type=Path)
+    parser.add_argument("-o", "--output", type=Path, default=Path("fw_analysis"))
+    parser.add_argument("--skip-extract", action="store_true")
+    args = parser.parse_args()
+
+    if not args.firmware.exists():
+        print(f"[!] File not found: {args.firmware}", file=sys.stderr)
+        sys.exit(1)
+
+    args.output.mkdir(parents=True, exist_ok=True)
+    extract_dir = args.output / "extracted"
+
+    if not args.skip_extract:
+        print(f"[*] Extracting with binwalk...")
+        extract_with_binwalk(args.firmware, extract_dir)
+
+    squashfs_files = list(extract_dir.rglob("*.squashfs")) + \
+                     list(extract_dir.rglob("squashfs-root"))
+
+    fs_root = extract_dir
+    for sq in squashfs_files:
+        if sq.suffix == ".squashfs":
+            sq_out = args.output / "squashfs_root"
+            print(f"[*] Extracting SquashFS: {sq}")
+            extract_squashfs(sq, sq_out)
+            fs_root = sq_out
+            break
+        elif sq.is_dir():
+            fs_root = sq
+
+    print(f"\n[*] Searching for credentials...")
+    creds = find_credentials(fs_root)
+    if creds:
+        print(f"[!] Found {len(creds)} credential file(s):")
+        for c in creds:
+            print(f"    {c['file']}")
+
+    print(f"\n[*] Searching for vulnerable binaries...")
+    dangerous = find_binaries_with_dangerous_functions(fs_root)
+    if dangerous:
+        print(f"[!] {len(dangerous)} binaries with dangerous functions:")
+        for d in dangerous[:10]:
+            print(f"    {d}")
+
+    print(f"\n[*] Identifying network services...")
+    services = find_network_services(fs_root)
+    if services:
+        print(f"[+] Services found in startup scripts:")
+        for s in services:
+            print(f"    {s}")
+
+    print(f"\n[+] Analysis complete. Results: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## Handling Encrypted Firmware
+
+```bash
+# Detect encryption
+binwalk -E firmware.bin  # High entropy → encrypted
+file firmware.bin        # "data" → compressed or encrypted
+
+# Possible strategies
+# 1. Extract key from older, unencrypted firmware
+# 2. Search for key in other partitions
+strings firmware.bin | grep -i "key\|aes\|rsa\|decrypt"
+
+# 3. Dump decrypted firmware from memory (after UART boot)
+# 4. Reverse update binary to understand encryption routine
+
+# OpenSSL brute force (if known format)
+for key in $(cat wordlist.txt); do
+    openssl aes-128-cbc -d -k "$key" -in enc.bin -out dec.bin 2>/dev/null
+    file dec.bin | grep -v "data" && echo "Key found: $key" && break
+done
+```
+
+The next file covers static analysis techniques for extracted firmware.

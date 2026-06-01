@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # eBPF 런타임 보안
 
 ## 목차
@@ -998,4 +1004,150 @@ python falco_responder.py --mode file --log-file /var/log/falco/falco.json
 - [Tetragon GitHub](https://github.com/cilium/tetragon)
 - [Tracee GitHub](https://github.com/aquasecurity/tracee)
 - [Cilium eBPF 라이브러리](https://github.com/cilium/ebpf)
+- [Linux man pages - syscalls](https://man7.org/linux/man-pages/man2/syscalls.2.html)
+
+---
+
+<a name="english"></a>
+
+# eBPF Runtime Security
+
+## 1. eBPF Overview
+
+### What is eBPF (Extended Berkeley Packet Filter)?
+
+eBPF is a revolutionary technology that enables sandboxed programs to run inside the Linux kernel. It allows safely observing and modifying kernel behavior without modifying kernel source code or loading kernel modules.
+
+### How eBPF Works
+
+1. **Write eBPF Program**: Written in C or Rust with restricted syntax
+2. **LLVM Compilation**: Compiled to eBPF bytecode
+3. **Verifier Validation**: Kernel performs safety checks (no infinite loops, memory access validation)
+4. **JIT Compilation**: Converted to native machine code
+5. **Hook Attachment**: Program connected to kernel events
+6. **Map Communication**: Data sharing between kernel and user space
+
+### eBPF Hook Points
+
+| Hook Type | Purpose |
+|-----------|---------|
+| kprobe/kretprobe | Kernel function entry/return |
+| uprobe/uretprobe | User function tracing |
+| tracepoint | Static kernel trace points |
+| XDP (eXpress Data Path) | Ultra-fast network packet processing |
+| TC (Traffic Control) | Network traffic control |
+| LSM | Linux Security Module security policies |
+| Cgroup | Container resource control |
+
+---
+
+## 2. Runtime Security Tool Comparison
+
+### Falco (CNCF Graduated Project)
+
+Developed by Sysdig and donated to CNCF. Detects abnormal container runtime behavior based on system calls using YAML-based rule language. Supports multiple output channels (stdout, Slack, PagerDuty, Kafka) and integrates with Kubernetes events.
+
+### Tetragon (Cilium Project)
+
+eBPF-based security tool by Isovalent. Processes events directly at the kernel level (can block at the kernel layer), has low overhead, defines policies using TracingPolicy CRD, and when integrated with Cilium provides powerful network security.
+
+### Tracee (Aqua Security)
+
+eBPF-based runtime security and forensics tool by Aqua Security. Tracks 400+ events, uses OPA (Open Policy Agent) based policies, integrates container image analysis, written in Go.
+
+| Criterion | Falco | Tetragon | Tracee |
+|-----------|-------|----------|--------|
+| Technology | eBPF/kernel module | eBPF | eBPF |
+| Real-time Blocking | Not supported | Supported | Not supported |
+| Rule Language | YAML | CRD | Rego/OPA |
+| K8s Integration | Excellent | Excellent | Good |
+| Performance Overhead | Medium | Low | Low |
+
+---
+
+## 3. Falco Rule Writing and Deployment
+
+### Rule Structure
+
+```yaml
+- rule: rule_name
+  desc: rule description
+  condition: event_filter_condition
+  output: alert_message_format
+  priority: CRITICAL|ERROR|WARNING|NOTICE|INFORMATIONAL|DEBUG
+  tags: [tag1, tag2]
+```
+
+### Key Falco Rules
+
+1. **Terminal Shell in Container**: Detects shell execution within running containers — priority NOTICE, tags [container, shell, T1059]
+2. **Read Sensitive File Untrusted**: Detects untrusted process accessing /etc/passwd, /etc/shadow, etc. — priority WARNING, tags [filesystem, T1552]
+3. **Drift Detected (chmod +x)**: Detects new executable creation in containers — priority ERROR, tags [container, drift, T1222]
+4. **Container Escape via nsenter**: Detects nsenter-based container escape attempts — priority CRITICAL, tags [container, escape, T1611]
+5. **Contact K8s API Server From Container**: Detects direct K8s API server access from containers — priority WARNING, tags [k8s, api, T1552.007]
+
+---
+
+## 4. Syscall-Based Anomaly Detection
+
+### Key Monitored Syscalls
+
+- **Process**: execve/execveat (process execution), fork/clone (process creation), ptrace (debugger)
+- **Filesystem**: open/openat (file open), write (file write), chmod/chown (permission change)
+- **Network**: connect (outbound), accept (inbound), bind (port binding)
+- **Privileges**: setuid/setgid (user/group change), capset (capability setting), chroot
+
+### Anomaly Detection Patterns
+
+1. **Unexpected External Connection**: Web server container connecting outbound to port 4444 (reverse shell)
+2. **Filesystem Drift**: Creating and executing a file in /tmp (dropper malware)
+3. **Privilege Escalation Attempt**: setuid(0) call or /usr/bin/sudo execution
+
+---
+
+## 5. eBPF Network Packet Filtering
+
+### XDP (eXpress Data Path)
+
+XDP operates at the network driver layer, processing packets before they reach the kernel stack:
+- **XDP_PASS**: Forward to kernel stack
+- **XDP_DROP**: Drop packet
+- **XDP_TX**: Retransmit on same interface
+- **XDP_REDIRECT**: Forward to different interface
+
+Cilium uses eBPF to enforce Kubernetes network policies at the kernel level, supporting L7 HTTP policy enforcement with method and path matching.
+
+---
+
+## 6. Python Tool: Falco Alert Parser and Auto-Response
+
+A webhook server and log file parser for Falco security events that automatically responds based on severity. Features:
+
+- **Alert Handler**: Maps rules to response actions (capture, isolate, notify, delete)
+- **Kubernetes Responder**: Executes kubectl commands to delete pods, isolate with NetworkPolicy, or capture pod state/logs for forensics
+- **Slack Integration**: Sends formatted notifications with alert details and response action results
+- **Auto-Delete**: Automatically deletes pods for EMERGENCY/ALERT priority events when auto-respond mode is enabled
+
+### Deployment
+
+```bash
+# Webhook server mode
+python falco_responder.py --mode server --port 8080
+
+# Auto-respond mode (caution: actual Pod isolation/deletion)
+python falco_responder.py --mode server --auto-respond --slack-webhook "$SLACK_WEBHOOK"
+
+# Analyze existing Falco log file
+python falco_responder.py --mode file --log-file /var/log/falco/falco.json
+```
+
+---
+
+## References
+
+- [eBPF Official Documentation](https://ebpf.io/)
+- [Falco Documentation](https://falco.org/docs/)
+- [Tetragon GitHub](https://github.com/cilium/tetragon)
+- [Tracee GitHub](https://github.com/aquasecurity/tracee)
+- [Cilium eBPF Library](https://github.com/cilium/ebpf)
 - [Linux man pages - syscalls](https://man7.org/linux/man-pages/man2/syscalls.2.html)

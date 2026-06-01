@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 펌웨어 정적 분석
 
 ## 분석 목표
@@ -244,7 +250,6 @@ def print_report(findings: list[BinaryFinding]) -> None:
     print(f"분석 결과: {len(findings)}개 바이너리에서 발견")
     print(f"{'='*70}")
 
-    # 위험 함수 없는 보호 미적용 바이너리 우선 출력
     high_risk = [
         f for f in findings
         if f.dangerous_funcs and not (f.has_nx and f.has_canary)
@@ -317,3 +322,306 @@ grep -r "BACKDOOR\|DEBUG_MODE\|FACTORY_MODE" squashfs-root/ 2>/dev/null
 ```
 
 다음 파일에서 QEMU를 활용한 펌웨어 에뮬레이션 기법을 다룬다.
+
+---
+
+<a name="english"></a>
+
+# Firmware Static Analysis
+
+## Analysis Goals
+
+Search for the following in extracted firmware:
+- Hardcoded credentials / backdoors
+- Function calls vulnerable to command injection
+- Buffer overflow vulnerabilities
+- Authentication bypass logic
+- Secret API endpoints
+
+## Filesystem Exploration
+
+```bash
+# Understand directory structure after extraction
+find squashfs-root/ -maxdepth 3 -type d | head -50
+ls squashfs-root/etc/
+ls squashfs-root/usr/sbin/
+
+# Quick list of important files
+find squashfs-root/ \( \
+    -name "*.conf" -o -name "*.cfg" -o \
+    -name "passwd"  -o -name "shadow" -o \
+    -name "*.sh"    -o -name "*.cgi"  \
+\) 2>/dev/null
+
+# SUID/SGID files (privilege escalation paths)
+find squashfs-root/ -perm /6000 -type f 2>/dev/null
+
+# Symbolic links
+find squashfs-root/ -type l 2>/dev/null
+```
+
+## Manual Credential Analysis
+
+```bash
+# Analyze /etc/passwd
+cat squashfs-root/etc/passwd
+# root:x:0:0:root:/root:/bin/bash  → normal
+# admin:$1$xyz...:0:0::/:/bin/sh   → MD5 hash, attempt cracking
+
+# If /etc/shadow exists
+john --wordlist=/usr/share/wordlists/rockyou.txt shadow
+
+# Web credentials
+cat squashfs-root/etc/htpasswd
+cat squashfs-root/etc/lighttpd.user
+
+# Credentials in nvram/config files
+grep -r "password\|passwd\|secret\|api_key\|token" \
+     squashfs-root/etc/ 2>/dev/null --include="*.conf" --include="*.cfg"
+
+# Hardcoded strings in binaries
+strings squashfs-root/usr/sbin/httpd | grep -i "admin\|password\|backdoor"
+```
+
+## CGI/Web Script Analysis
+
+```bash
+# Find CGI scripts
+find squashfs-root/ -name "*.cgi" -o -path "*/cgi-bin/*" 2>/dev/null
+
+# Search for command injection patterns
+grep -r "system\|popen\|exec\|passthru\|shell_exec" \
+     squashfs-root/www/ 2>/dev/null
+
+# Check for missing input filtering (shell script CGI)
+grep -l "QUERY_STRING\|HTTP_" squashfs-root/www/ 2>/dev/null | head -10
+
+# Example: vulnerable pattern
+# ping.cgi: system("ping -c 4 " . $_GET['ip']);
+# → Injection possible with ip=127.0.0.1; cat /etc/passwd
+```
+
+## Binary Analysis (Ghidra/Radare2)
+
+### Ghidra Usage
+```bash
+# Run Ghidra (GUI)
+ghidra
+
+# Script-based automated analysis
+analyzeHeadless /tmp/ghidra_project MyProject \
+    -import squashfs-root/usr/sbin/httpd \
+    -postScript FindStrings.java
+```
+
+### Radare2 Usage
+```bash
+# Basic analysis
+r2 squashfs-root/usr/sbin/httpd
+[0x...]> aaaa        # Full analysis
+[0x...]> iz          # String list
+[0x...]> afl         # Function list
+[0x...]> s main      # Jump to main
+[0x...]> pdf         # Disassemble function
+
+# Find dangerous function references
+[0x...]> axt sym.imp.system   # Locations calling system()
+[0x...]> axt sym.imp.strcpy   # Locations calling strcpy()
+[0x...]> axt sym.imp.gets     # Locations calling gets()
+```
+
+### Automated Binary Analysis
+```python
+#!/usr/bin/env python3
+"""Embedded binary vulnerability static analysis tool."""
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+from dataclasses import dataclass, field
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
+DANGEROUS_FUNCTIONS = {
+    "strcpy": "Buffer overflow (no length check)",
+    "strcat": "Buffer overflow (no length check)",
+    "gets": "Buffer overflow (prohibited function)",
+    "sprintf": "Format string/buffer overflow",
+    "vsprintf": "Format string/buffer overflow",
+    "system": "Command injection",
+    "popen": "Command injection",
+    "execl": "Command injection",
+    "execv": "Command injection",
+    "scanf": "Buffer overflow",
+}
+
+INTERESTING_STRINGS = [
+    "password", "passwd", "secret", "backdoor",
+    "admin", "debug", "telnet", "ssh", "ftp",
+    "/bin/sh", "/bin/bash", "eval", "system",
+    "192.168.", "10.0.", "172.16.",
+]
+
+
+@dataclass
+class BinaryFinding:
+    path: str
+    arch: str
+    dangerous_funcs: dict[str, str] = field(default_factory=dict)
+    interesting_strings: list[str] = field(default_factory=list)
+    has_nx: bool = False
+    has_canary: bool = False
+    has_pie: bool = False
+
+
+def detect_arch(binary: Path) -> str:
+    result = subprocess.run(["file", "-b", str(binary)], capture_output=True, text=True)
+    output = result.stdout
+    if "ARM" in output:
+        return "ARM" + (" 64" if "aarch64" in output else " 32")
+    if "MIPS" in output:
+        return "MIPS" + (" 64" if "64-bit" in output else " 32")
+    if "x86-64" in output or "x86_64" in output:
+        return "x86_64"
+    if "80386" in output or "x86" in output:
+        return "x86"
+    return "Unknown"
+
+
+def check_protections(binary: Path) -> dict[str, bool]:
+    checksec = {"nx": False, "canary": False, "pie": False}
+    result2 = subprocess.run(["checksec", "--file", str(binary)], capture_output=True, text=True)
+    out = result2.stdout.lower()
+    checksec["nx"] = "nx enabled" in out
+    checksec["canary"] = "canary found" in out
+    checksec["pie"] = "pie enabled" in out
+    return checksec
+
+
+def find_dangerous_imports(binary: Path) -> dict[str, str]:
+    result = subprocess.run(["nm", "-D", str(binary)], capture_output=True, text=True)
+    found = {}
+    for line in result.stdout.splitlines():
+        for func, desc in DANGEROUS_FUNCTIONS.items():
+            if f" U {func}@@" in line or f" U {func}\n" in line or line.endswith(f" {func}"):
+                found[func] = desc
+    return found
+
+
+def find_interesting_strings(binary: Path) -> list[str]:
+    result = subprocess.run(["strings", "-n", "6", str(binary)], capture_output=True, text=True)
+    return [
+        s for s in result.stdout.splitlines()
+        if any(kw in s.lower() for kw in INTERESTING_STRINGS)
+    ][:30]
+
+
+def analyze_binary(binary: Path) -> BinaryFinding:
+    arch = detect_arch(binary)
+    protections = check_protections(binary)
+    dangerous = find_dangerous_imports(binary)
+    strings = find_interesting_strings(binary)
+    return BinaryFinding(
+        path=str(binary), arch=arch,
+        dangerous_funcs=dangerous, interesting_strings=strings,
+        has_nx=protections["nx"], has_canary=protections["canary"],
+        has_pie=protections["pie"],
+    )
+
+
+def scan_directory(root: Path, max_files: int = 200) -> list[BinaryFinding]:
+    binaries = [
+        p for p in root.rglob("*")
+        if p.is_file() and not p.suffix and p.stat().st_size > 500
+    ][:max_files]
+
+    findings: list[BinaryFinding] = []
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        futures = {ex.submit(analyze_binary, b): b for b in binaries}
+        for i, fut in enumerate(as_completed(futures), 1):
+            try:
+                finding = fut.result()
+                if finding.dangerous_funcs or finding.interesting_strings:
+                    findings.append(finding)
+            except Exception:
+                pass
+            if i % 20 == 0:
+                print(f"    Progress: {i}/{len(binaries)}", end="\r")
+    return findings
+
+
+def print_report(findings: list[BinaryFinding]) -> None:
+    print(f"\n{'='*70}")
+    print(f"Analysis results: found in {len(findings)} binary/binaries")
+    print(f"{'='*70}")
+
+    high_risk = [f for f in findings if f.dangerous_funcs and not (f.has_nx and f.has_canary)]
+    print(f"\n[!] High-risk binaries ({len(high_risk)}) — no protections + dangerous functions:")
+    for f in high_risk[:15]:
+        print(f"\n  File: {f.path}")
+        print(f"  Arch: {f.arch} | NX:{f.has_nx} | Canary:{f.has_canary} | PIE:{f.has_pie}")
+        print(f"  Dangerous functions: {', '.join(f.dangerous_funcs.keys())}")
+        if f.interesting_strings:
+            print(f"  Notable string: {f.interesting_strings[0]}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Embedded binary static analysis")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-f", "--file", type=Path, help="Single binary")
+    group.add_argument("-d", "--dir", type=Path, help="Directory batch scan")
+    parser.add_argument("--max", type=int, default=200, help="Max files to analyze")
+    args = parser.parse_args()
+
+    if args.file:
+        if not args.file.exists():
+            print(f"[!] File not found: {args.file}", file=sys.stderr)
+            sys.exit(1)
+        finding = analyze_binary(args.file)
+        print_report([finding])
+    else:
+        if not args.dir.exists():
+            print(f"[!] Directory not found: {args.dir}", file=sys.stderr)
+            sys.exit(1)
+        print(f"[*] Scanning: {args.dir} (max {args.max} files)")
+        findings = scan_directory(args.dir, args.max)
+        print_report(findings)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## Network Service Analysis
+
+```bash
+# Detect open ports from binary
+strings squashfs-root/usr/sbin/httpd | grep -E ":[0-9]{2,5}"
+
+# Analyze startup scripts
+grep -r "listen\|port\|bind\|socket" squashfs-root/etc/init.d/ 2>/dev/null
+
+# Find Telnet daemon (explicit vulnerability)
+find squashfs-root/ -name "telnetd" -o -name "busybox" | xargs strings | grep -i telnet
+
+# Web server configuration
+cat squashfs-root/etc/lighttpd.conf 2>/dev/null
+cat squashfs-root/etc/httpd.conf 2>/dev/null
+```
+
+## Authentication Bypass Patterns
+
+```bash
+# Search for common authentication bypass patterns
+grep -r "strcmp.*admin\|strcmp.*password" squashfs-root/ 2>/dev/null
+grep -r "if.*0.*==\|if.*auth" squashfs-root/www/ 2>/dev/null
+
+# Magic packets/tokens
+strings squashfs-root/usr/sbin/* | grep -E "[A-Za-z0-9+/]{20,}={0,2}"
+
+# Debug backdoors
+grep -r "BACKDOOR\|DEBUG_MODE\|FACTORY_MODE" squashfs-root/ 2>/dev/null
+```
+
+The next file covers firmware emulation techniques using QEMU.

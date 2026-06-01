@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # IoT 보안 강화 — 펌웨어 서명·네트워크 격리·디바이스 감사
 
 ## 1. IoT 보안 취약점 구조
@@ -439,3 +445,43 @@ if __name__ == "__main__":
 | 디버그 포트 | JTAG/UART 물리 비활성화 | 하드웨어 퓨즈 |
 | 하드코딩 자격증명 | 환경 변수/HSM 사용 | SOPS, AWS IoT Core |
 | 네트워크 격리 | VLAN 분리 + 방화벽 | 802.1Q, iptables |
+
+---
+
+<a name="english"></a>
+
+# IoT Security Hardening — Firmware Signing, Network Isolation, Device Auditing
+
+## 1. IoT Security Vulnerability Structure
+
+```
+IoT Device Attack Surface
+    │
+    ├── Firmware
+    │     - Hardcoded credentials
+    │     - Updates without signing
+    │     - Debug interfaces enabled (UART/JTAG)
+    │
+    ├── Network
+    │     - Plaintext protocols (Telnet, HTTP, MQTT)
+    │     - UPnP auto-exposure
+    │     - Default ports open
+    │
+    ├── Cloud API
+    │     - Weak authentication (hardcoded API keys)
+    │     - IDOR — predictable device IDs
+    │
+    └── Mobile App
+          - Locally stored credentials
+          - No certificate pinning
+```
+
+## Key Hardening Measures
+
+| Vulnerability | Countermeasure | Recommended Tool |
+|--------------|---------------|-----------------|
+| Telnet/plaintext | SSH/TLS only | OpenSSH, mbedTLS |
+| Anonymous MQTT | Certificate + ACL | Mosquitto TLS |
+| Debug ports | Physically disable JTAG/UART | Hardware fuses |
+| Hardcoded credentials | Use env variables/HSM | SOPS, AWS IoT Core |
+| No network isolation | VLAN separation + firewall | 802.1Q, iptables |

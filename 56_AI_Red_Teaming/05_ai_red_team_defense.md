@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # AI 레드팀 방어 (AI Red Team Defense)
 
 ## 개요
@@ -849,6 +855,289 @@ if __name__ == "__main__":
 - OWASP Top 10 for Large Language Model Applications (owasp.org/www-project-top-10-for-large-language-model-applications/)
 - NIST AI Risk Management Framework 1.0 (nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf)
 - Microsoft AI Red Team 가이드 (learn.microsoft.com/en-us/azure/ai-services/openai/concepts/red-teaming)
+- Anthropic Responsible Scaling Policy
+- MITRE ATLAS: https://atlas.mitre.org/
+- "Red-Teaming Large Language Models" (Ganguli et al., 2022, Anthropic)
+
+---
+
+<a name="english"></a>
+
+# AI Red Team Defense
+
+## Overview
+
+The ultimate goal of AI red team activities is to make systems more secure based on discovered vulnerabilities. The cycle of attack discovery → analysis → defense design → validation must be continuous. This document covers defense frameworks for AI systems, design principles, and automated red team report generation tools.
+
+---
+
+## 1. AI System Defense Framework
+
+### 1.1 Defense-in-Depth Layered Model
+
+| Layer | Defense Target | Key Controls | Related Attacks |
+|---|---|---|---|
+| **Data Layer** | Training/inference data | Data provenance verification, anomaly detection, differential privacy | Data poisoning, membership inference |
+| **Model Layer** | Weights, architecture | Model signing, supply chain verification, access control | Backdoor insertion, weight manipulation |
+| **Inference Layer** | Input/output processing | Input validation, output filtering, rate limiting | Adversarial examples, prompt injection |
+| **API Layer** | Endpoint security | Authentication/authorization, rate limiting, query logging | Model extraction, DoS |
+| **Infrastructure Layer** | Compute, storage | Network isolation, encryption, IAM | Privilege escalation, credential theft |
+| **Governance Layer** | Policies, procedures | Risk assessment, incident response, audit | Insider threats, compliance violations |
+
+### 1.2 NIST AI RMF-Based Risk Management Cycle
+
+| Phase | Activities | Outputs |
+|---|---|---|
+| **Govern** | Define AI risk roles/responsibilities | RACI matrix, governance policies |
+| **Map** | Identify AI system threats/vulnerabilities | Threat model, asset inventory |
+| **Measure** | Quantify risk levels | Risk scorecards, vulnerability registry |
+| **Manage** | Implement/prioritize controls | Mitigation plans, residual risk acceptance criteria |
+| **Validate** | Red team / penetration testing | Red team reports, retest results |
+
+---
+
+## 2. Input Validation Strategy
+
+### 2.1 LLM Input Validation Framework
+
+| Validation Type | Method | Detection Target | Bypass Difficulty |
+|---|---|---|---|
+| **Length Limits** | Token/character count restriction | Context overflow | Low |
+| **Pattern Matching** | Regex, keyword blacklists | Known injection patterns | Low |
+| **Encoding Detection** | Base64/ROT13 detection | Token smuggling | Medium |
+| **Intent Classifier** | Separate LLM for input intent classification | Complex bypass techniques | High |
+| **Structural Parsing** | JSON/XML schema enforcement | Structural injection | Medium |
+| **Language Detection** | Language identification + policy application | Multilingual bypasses | Medium |
+
+### 2.2 Image/Multimodal Input Validation
+
+| Validation Method | Target Attack | Description |
+|---|---|---|
+| **OCR Scan + Text Validation** | Text injection via images | Extract text from images then validate separately |
+| **Image Preprocessing** | Adversarial examples | JPEG recompression, resolution changes to remove high-frequency noise |
+| **Steganography Detection** | Hidden commands | Statistical analysis to detect abnormal pixel patterns |
+| **Metadata Removal** | Information leakage | Strip EXIF and other metadata before processing |
+
+---
+
+## 3. Output Filtering Strategy
+
+### 3.1 LLM Output Filtering Layers
+
+| Stage | Method | Purpose |
+|---|---|---|
+| **Structure Validation** | Verify expected format (JSON, lists) | Detect format violations |
+| **Sensitive Data Detection** | Regex, NER for PII detection | Prevent personal data leakage |
+| **Policy Compliance Check** | Rule engine for response policy violations | Mitigate brand/legal risk |
+| **Injection Result Detection** | Check if system prompt was exposed | Block successful prompt injections |
+| **Confidence Threshold** | Request regeneration for low-confidence responses | Manage uncertain response quality |
+
+---
+
+## 4. Model Robustness Enhancement Strategies
+
+### 4.1 Training Phase Hardening
+
+| Technique | Target Attack | Effect | Cost |
+|---|---|---|---|
+| **Adversarial Training (AT)** | Adversarial examples | High | High (3-10x training time) |
+| **Differentially Private SGD** | Membership inference, model inversion | Theoretical guarantees | Medium |
+| **Data Augmentation** | Generalization vulnerabilities | Medium | Low |
+| **Enhanced Regularization** | Overfitting-based attacks | Medium | Low |
+| **Ensemble Learning** | Model extraction | Low-medium | High |
+
+### 4.2 Deployment Phase Hardening
+
+| Technique | Description | Mitigated Attacks |
+|---|---|---|
+| **Output Precision Reduction** | Limit Softmax decimal places | Membership inference, model extraction |
+| **Output Noise Addition** | Laplace/Gaussian noise | Membership inference |
+| **Query Rate Limiting** | Limit queries per time period | Model extraction, DoS |
+| **Query Anomaly Detection** | Detect abnormal query patterns | Model extraction |
+| **Model Watermarking** | Detect intellectual property violations | Track post-extraction |
+
+---
+
+## 5. LLM Guardrail Design Principles
+
+### 5.1 OWASP LLM Top 10 Response Principles
+
+| Threat | OWASP ID | Guardrail Principle |
+|---|---|---|
+| Prompt Injection | LLM01 | Separate trusted/untrusted inputs, least-privilege agents |
+| Insecure Output | LLM02 | Output encoding, downstream validation |
+| Training Data Poisoning | LLM03 | Source verification, data anomaly detection |
+| Model Denial of Service | LLM04 | Resource limits, input size restrictions |
+| Supply Chain Vulnerabilities | LLM05 | Third-party model auditing, signature verification |
+| Sensitive Information Exposure | LLM06 | Pre-training data sanitization, output filtering |
+| Insecure Plugin Design | LLM07 | Minimize plugin permissions, sandboxing |
+| Excessive Agency | LLM08 | Least privilege principle, human approval steps |
+| Overreliance | LLM09 | Output validation, maintain alternative paths |
+| Model Theft | LLM10 | Access control, limit output precision |
+
+### 5.2 Guardrail Architecture Pattern
+
+```
+User Input
+    │
+    ▼
+[Input Preprocessing]
+  - Length/encoding validation
+  - Pattern filtering
+  - Intent classification
+    │
+    ▼
+[Context Construction]
+  - Apply system prompt
+  - Attach trust labels
+  - Isolate sensitive variables
+    │
+    ▼
+[LLM Inference]
+    │
+    ▼
+[Output Postprocessing]
+  - PII detection/masking
+  - Policy compliance check
+  - Injection success verification
+    │
+    ▼
+Return Final Response
+```
+
+---
+
+## 6. AI Red Team Report Auto-Generator CLI
+
+```python
+#!/usr/bin/env python3
+"""
+AI Red Team Report Auto-Generator
+Accepts vulnerability data (JSON) and generates structured reports
+in Markdown or HTML format. Implemented with f-strings, no Jinja2 required.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+
+# Severity level definitions
+SEVERITY_LEVELS = ["critical", "high", "medium", "low", "info"]
+
+SEVERITY_COLORS_HTML = {
+    "critical": "#dc2626",
+    "high":     "#ea580c",
+    "medium":   "#ca8a04",
+    "low":      "#16a34a",
+    "info":     "#2563eb",
+}
+
+SEVERITY_EMOJI = {
+    "critical": "[CRITICAL]",
+    "high":     "[HIGH]",
+    "medium":   "[MEDIUM]",
+    "low":      "[LOW]",
+    "info":     "[INFO]",
+}
+
+
+@dataclass
+class Finding:
+    """A single vulnerability finding."""
+    id: str
+    title: str
+    severity: str
+    category: str
+    description: str
+    attack_vector: str = ""
+    impact: str = ""
+    evidence: str = ""
+    recommendation: str = ""
+    cve_id: str = ""
+    atlas_id: str = ""
+    cvss_score: float = 0.0
+    reproduced: bool = True
+
+    @property
+    def severity_order(self) -> int:
+        return SEVERITY_LEVELS.index(self.severity) if self.severity in SEVERITY_LEVELS else 99
+
+
+@dataclass
+class RedTeamReport:
+    """Full AI red team report data."""
+    title: str
+    target_system: str
+    engagement_period: str
+    executive_summary: str
+    scope: list[str] = field(default_factory=list)
+    methodology: list[str] = field(default_factory=list)
+    findings: list[Finding] = field(default_factory=list)
+    out_of_scope: list[str] = field(default_factory=list)
+    tools_used: list[str] = field(default_factory=list)
+    generated_at: str = ""
+
+    def stats(self) -> dict[str, int]:
+        """Return finding count statistics by severity."""
+        counts: dict[str, int] = {s: 0 for s in SEVERITY_LEVELS}
+        for f in self.findings:
+            if f.severity in counts:
+                counts[f.severity] += 1
+        counts["total"] = len(self.findings)
+        return counts
+
+    def category_stats(self) -> dict[str, int]:
+        """Return finding count statistics by category."""
+        counts: dict[str, int] = {}
+        for f in self.findings:
+            counts[f.category] = counts.get(f.category, 0) + 1
+        return counts
+
+    def risk_score(self) -> float:
+        """Calculate weighted risk score."""
+        weights = {"critical": 10.0, "high": 7.0, "medium": 4.0, "low": 1.0, "info": 0.1}
+        return sum(weights.get(f.severity, 0) for f in self.findings)
+```
+
+---
+
+## 7. Building a Continuous AI Security Program
+
+### 7.1 AI Red Team Operations Maturity Model
+
+| Maturity Level | Characteristics | Core Capabilities |
+|---|---|---|
+| **Lv.1 Initial** | Ad hoc, irregular security assessments | Basic prompt testing |
+| **Lv.2 Managed** | Regular assessments, basic processes | Systematic vulnerability tracking |
+| **Lv.3 Defined** | Standardized methodology, internal team | Automated continuous testing |
+| **Lv.4 Quantified** | Risk score-driven decision making | Metrics-driven security |
+| **Lv.5 Optimized** | Continuous improvement, leading AI security innovation | Research-grade red team |
+
+### 7.2 AI Security Incident Response Procedure
+
+| Phase | Activities | Responsible Party |
+|---|---|---|
+| **Detection** | Detect anomalous queries/responses, generate alerts | Monitoring systems |
+| **Triage** | Determine incident type and severity | Security team |
+| **Containment** | Isolate or restrict affected endpoints | Infrastructure team |
+| **Investigation** | Analyze attack path, scope, and impact | AI security team |
+| **Recovery** | Patch vulnerabilities, redeploy model | Development team |
+| **Post-Incident** | Extract lessons, strengthen defenses, write report | All teams |
+
+---
+
+## References
+
+- OWASP Top 10 for Large Language Model Applications (owasp.org/www-project-top-10-for-large-language-model-applications/)
+- NIST AI Risk Management Framework 1.0 (nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf)
+- Microsoft AI Red Team Guide (learn.microsoft.com/en-us/azure/ai-services/openai/concepts/red-teaming)
 - Anthropic Responsible Scaling Policy
 - MITRE ATLAS: https://atlas.mitre.org/
 - "Red-Teaming Large Language Models" (Ganguli et al., 2022, Anthropic)

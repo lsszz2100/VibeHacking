@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 헌팅 쿼리 — KQL 및 SPL 실전 가이드
 
 ## 1. KQL (Kusto Query Language) 기초
@@ -858,129 +864,6 @@ def print_anomalies(anomalies: list[dict[str, Any]], output_format: str = "table
                 print(f"    {k:<20}: {v}")
 
 
-def cmd_analyze_csv(args: argparse.Namespace) -> None:
-    """CSV 로그 파일 이상 탐지."""
-    path = Path(args.file)
-    if not path.exists():
-        print(f"[ERROR] 파일 없음: {args.file}", file=sys.stderr)
-        sys.exit(1)
-
-    rows = load_csv(path, args.time_col, args.value_col)
-    values = []
-    labels = []
-    for row in rows:
-        try:
-            values.append(float(row[args.value_col]))
-            labels.append(row[args.time_col])
-        except (ValueError, TypeError):
-            continue
-
-    if not values:
-        print("[ERROR] 유효한 수치 데이터가 없습니다.", file=sys.stderr)
-        sys.exit(1)
-
-    anomalies: list[dict[str, Any]] = []
-    if args.method in ("zscore", "all"):
-        anomalies.extend(detect_zscore_anomalies(values, labels, args.threshold, group_name=path.stem))
-    if args.method in ("iqr", "all"):
-        anomalies.extend(detect_iqr_anomalies(values, labels, group_name=path.stem))
-
-    print_anomalies(anomalies, args.format)
-
-    if args.output:
-        Path(args.output).write_text(json.dumps(anomalies, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"\n[+] 결과 저장: {args.output}")
-
-
-def cmd_analyze_process(args: argparse.Namespace) -> None:
-    """프로세스 실행 로그 희귀 프로세스 탐지."""
-    path = Path(args.file)
-    if not path.exists():
-        print(f"[ERROR] 파일 없음: {args.file}", file=sys.stderr)
-        sys.exit(1)
-
-    suffix = path.suffix.lower()
-    if suffix == ".json":
-        rows = load_json_log(path)
-    else:
-        rows = load_csv(path, args.time_col, args.proc_col)
-
-    print(f"[*] {len(rows)}개 이벤트 분석 중...")
-    anomalies = analyze_process_log(
-        rows,
-        proc_col=args.proc_col,
-        user_col=args.user_col,
-        threshold_pct=args.threshold_pct,
-    )
-    print_anomalies(anomalies, args.format)
-
-
-def cmd_analyze_auth(args: argparse.Namespace) -> None:
-    """인증 로그 무차별 대입 탐지."""
-    path = Path(args.file)
-    if not path.exists():
-        print(f"[ERROR] 파일 없음: {args.file}", file=sys.stderr)
-        sys.exit(1)
-
-    suffix = path.suffix.lower()
-    if suffix == ".json":
-        rows = load_json_log(path)
-    else:
-        rows = load_csv(path, args.time_col, args.user_col)
-
-    print(f"[*] {len(rows)}개 인증 이벤트 분석 중...")
-    anomalies = analyze_auth_log(
-        rows,
-        user_col=args.user_col,
-        result_col=args.result_col,
-        time_col=args.time_col,
-        fail_threshold=args.fail_threshold,
-        window_seconds=args.window,
-    )
-    print_anomalies(anomalies, args.format)
-
-
-def cmd_quick_stats(args: argparse.Namespace) -> None:
-    """로그 파일 빠른 통계 요약."""
-    path = Path(args.file)
-    if not path.exists():
-        print(f"[ERROR] 파일 없음: {args.file}", file=sys.stderr)
-        sys.exit(1)
-
-    suffix = path.suffix.lower()
-    if suffix == ".json":
-        rows = load_json_log(path)
-    else:
-        try:
-            with path.open(encoding="utf-8", newline="") as f:
-                rows = list(csv.DictReader(f))
-        except (OSError, csv.Error) as e:
-            print(f"[ERROR] {e}", file=sys.stderr)
-            sys.exit(1)
-
-    if not rows:
-        print("[-] 빈 파일")
-        return
-
-    print(f"\n파일: {path.name}")
-    print(f"총 이벤트: {len(rows)}")
-    print(f"컬럼: {', '.join(rows[0].keys())}")
-
-    # 각 컬럼의 카디널리티
-    print(f"\n[컬럼별 고유값 수]")
-    for col in rows[0].keys():
-        unique_count = len(set(r.get(col, "") for r in rows))
-        print(f"  {col:<25}: {unique_count}개")
-
-    # 지정 컬럼 분포
-    if args.group_col and args.group_col in rows[0]:
-        counter = Counter(r.get(args.group_col, "") for r in rows)
-        print(f"\n[{args.group_col} 상위 분포]")
-        for val, cnt in counter.most_common(10):
-            bar = "█" * min(cnt // max(1, len(rows) // 50), 50)
-            print(f"  {val:<30}: {bar} ({cnt})")
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="로그 데이터 통계적 이상 탐지 CLI 도구",
@@ -1083,3 +966,621 @@ if __name__ == "__main__":
 | 노이즈 관리 | 화이트리스트/예외 처리를 점진적으로 추가 |
 | 결과 검증 | 탐지 결과의 True Positive 여부 수동 확인 |
 | 문서화 | 쿼리, 결과, 조치사항 모두 기록 |
+
+---
+
+<a name="english"></a>
+
+# Hunting Queries — KQL and SPL Practical Guide
+
+## 1. KQL (Kusto Query Language) Fundamentals
+
+### 1.1 Overview
+
+KQL is the query language used in Microsoft Azure Data Explorer, Microsoft Sentinel, and Log Analytics. Designed to process large volumes of data quickly with read-only requests, it is optimized for threat hunting.
+
+### 1.2 Basic Syntax
+
+```kql
+// Basic table query structure
+TableName
+| operator1 [parameters]
+| operator2 [parameters]
+| ...
+
+// Example: Query logon failures from SecurityEvent table
+SecurityEvent
+| where EventID == 4625
+| where TimeGenerated > ago(24h)
+| project TimeGenerated, Account, Computer, IpAddress, LogonType
+| order by TimeGenerated desc
+```
+
+### 1.3 Core Operators
+
+**where**: Condition filtering
+```kql
+// Comparison operators
+where EventID == 4624
+where EventID != 4624
+where EventID in (4624, 4625, 4688)
+where EventID !in (4624, 4625)
+
+// String operators (case sensitivity)
+where ProcessName == "powershell.exe"          // Exact match (case-sensitive)
+where ProcessName =~ "powershell.exe"          // Exact match (case-insensitive)
+where CommandLine has "encodedcommand"         // Word boundary match (fast)
+where CommandLine contains "encoded"           // Substring match
+where CommandLine startswith "powershell"      // Starts with
+where CommandLine endswith ".ps1"              // Ends with
+where CommandLine matches regex @"enc\w+"      // Regular expression
+
+// Compound conditions
+where (EventID == 4688) and (SubjectUserName != "SYSTEM")
+where (EventID == 4624) or (EventID == 4625)
+```
+
+**project**: Column selection and renaming
+```kql
+SecurityEvent
+| project TimeGenerated, EventID, Account, Computer
+| project-rename UserName = Account, Hostname = Computer
+| project-away SubjectDomainName  // Exclude specific column
+```
+
+**extend**: Add new columns (derived fields)
+```kql
+DeviceProcessEvents
+| extend
+    ProcessNameLower = tolower(FileName),
+    CommandLineLen = strlen(ProcessCommandLine),
+    Hour = hourofday(TimeGenerated),
+    ParentName = tostring(split(InitiatingProcessFolderPath, "\\")[-1])
+```
+
+**summarize**: Aggregation
+```kql
+SecurityEvent
+| where EventID == 4625
+| summarize
+    FailCount = count(),
+    UniqueAccounts = dcount(Account),
+    FirstFail = min(TimeGenerated),
+    LastFail = max(TimeGenerated)
+    by Computer, IpAddress
+| where FailCount > 10
+```
+
+**join**: Table joining
+```kql
+let SuspiciousIPs = externaldata(ip: string) [@"https://example.com/blocklist.txt"] with (format="txt");
+DeviceNetworkEvents
+| join kind=inner SuspiciousIPs on $left.RemoteIP == $right.ip
+| project TimeGenerated, DeviceName, RemoteIP, RemotePort, InitiatingProcessFileName
+```
+
+**let**: Variable and function definitions
+```kql
+let LookbackDays = 7d;
+let SuspiciousProcesses = dynamic(["mimikatz.exe", "procdump.exe", "pwdump.exe"]);
+
+DeviceProcessEvents
+| where TimeGenerated > ago(LookbackDays)
+| where FileName in~ (SuspiciousProcesses)
+| project TimeGenerated, DeviceName, FileName, ProcessCommandLine
+```
+
+**mv-expand**: Expand arrays/dictionaries
+```kql
+SecurityEvent
+| where EventID == 4688
+| extend Tags = split(SubjectUserSid, "-")
+| mv-expand Tag = Tags
+| where tostring(Tag) startswith "S-1-5-21"
+```
+
+### 1.4 Time Series Analysis
+
+```kql
+// Event trend by time period
+SecurityEvent
+| where EventID == 4688
+| summarize EventCount = count() by bin(TimeGenerated, 1h)
+| render timechart
+
+// Anomaly detection using moving average
+let Baseline = SecurityEvent
+    | where TimeGenerated between(ago(14d)..ago(1d))
+    | summarize BaselineCount = count() by bin(TimeGenerated, 1h), Computer
+    | summarize AvgCount = avg(BaselineCount), StdDev = stdev(BaselineCount) by Computer;
+
+SecurityEvent
+| where TimeGenerated > ago(1d)
+| summarize CurrentCount = count() by bin(TimeGenerated, 1h), Computer
+| join Baseline on Computer
+| extend ZScore = (CurrentCount - AvgCount) / StdDev
+| where ZScore > 3
+| project TimeGenerated, Computer, CurrentCount, AvgCount, ZScore
+```
+
+---
+
+## 2. SPL (Search Processing Language) Fundamentals
+
+### 2.1 Overview
+
+SPL is Splunk's query language. It processes data through pipes and provides powerful statistical functions and visualization capabilities.
+
+### 2.2 Basic Syntax
+
+```splunk
+// Basic search structure
+index=<index> sourcetype=<sourcetype> <condition>
+| command1 [args]
+| command2 [args]
+```
+
+### 2.3 Core Commands
+
+**search/where**: Filtering
+```splunk
+// Basic search
+index=windows EventCode=4688 NewProcessName=*powershell*
+
+// where command
+index=windows EventCode=4688
+| where len(CommandLine) > 500
+| where match(CommandLine, "(?i)encodedcommand|(?i)-enc\b")
+```
+
+**eval**: Field calculation
+```splunk
+index=endpoint EventCode=4688
+| eval proc_name=lower(mvindex(split(NewProcessName, "\\"), -1))
+| eval cmd_len=len(CommandLine)
+| eval is_encoded=if(match(CommandLine, "(?i)-enc"), 1, 0)
+| eval hour=strftime(_time, "%H")
+| eval day_of_week=strftime(_time, "%A")
+```
+
+**stats**: Aggregation
+```splunk
+index=windows EventCode=4625
+| stats
+    count as fail_count,
+    dc(Account_Name) as unique_accounts,
+    values(Account_Name) as accounts,
+    min(_time) as first_fail,
+    max(_time) as last_fail
+    by src_ip, dest
+| where fail_count > 50
+| sort -fail_count
+```
+
+**transaction**: Session grouping
+```splunk
+// Analyze logon/logoff sessions for the same user
+index=windows (EventCode=4624 OR EventCode=4634)
+| transaction Account_Name startswith="EventCode=4624" endswith="EventCode=4634" maxpause=8h
+| eval duration_min=duration/60
+| where duration_min > 240
+| table Account_Name, host, EventCode, duration_min, _time
+```
+
+**timechart**: Time series visualization
+```splunk
+index=endpoint EventCode=4688
+| timechart span=1h count by NewProcessName limit=10
+```
+
+**lookup**: External data reference
+```splunk
+// IP geolocation lookup
+index=network src_ip!=10.0.0.0/8
+| lookup geoip clientip as src_ip OUTPUT country_name, city
+| stats count by country_name, src_ip
+| where country_name!="South Korea" AND count > 100
+```
+
+---
+
+## 3. Practical Hunting Query Collection
+
+### 3.1 Process Creation
+
+**Detecting suspicious parent-child process relationships**:
+```kql
+// KQL: Shell execution from Office applications
+DeviceProcessEvents
+| where InitiatingProcessFileName in~ (
+    "WINWORD.EXE", "EXCEL.EXE", "POWERPNT.EXE",
+    "OUTLOOK.EXE", "ONENOTE.EXE", "MSACCESS.EXE"
+)
+| where FileName in~ (
+    "powershell.exe", "cmd.exe", "wscript.exe", "cscript.exe",
+    "mshta.exe", "regsvr32.exe", "rundll32.exe", "certutil.exe"
+)
+| project TimeGenerated, DeviceName, InitiatingProcessFileName, FileName, ProcessCommandLine
+| order by TimeGenerated desc
+```
+
+```splunk
+// SPL: Abnormal child processes from browsers
+index=endpoint EventCode=4688
+| where ParentProcessName IN ("chrome.exe", "firefox.exe", "iexplore.exe", "msedge.exe")
+| where NewProcessName IN ("powershell.exe", "cmd.exe", "wscript.exe", "mshta.exe")
+| table _time, Computer, ParentProcessName, NewProcessName, CommandLine
+```
+
+**LOLBAS (Living Off The Land) Detection**:
+```kql
+// KQL: Abnormal certutil usage
+DeviceProcessEvents
+| where FileName =~ "certutil.exe"
+| where ProcessCommandLine has_any ("-urlcache", "-decode", "-encode", "-split", "http://", "https://")
+| project TimeGenerated, DeviceName, ProcessCommandLine, InitiatingProcessFileName
+```
+
+```splunk
+// SPL: regsvr32 scriptlet execution (Squiblydoo)
+index=endpoint EventCode=4688 NewProcessName="*regsvr32.exe"
+| where match(CommandLine, "(?i)/s|/i|scrobj\.dll|http|\.sct")
+| table _time, Computer, CommandLine, ParentProcessName
+```
+
+**Process name spoofing detection**:
+```kql
+// KQL: System processes running from abnormal paths
+DeviceProcessEvents
+| where FileName in~ ("svchost.exe", "lsass.exe", "csrss.exe", "winlogon.exe", "explorer.exe")
+| extend ExpectedPath = case(
+    FileName =~ "svchost.exe", @"c:\windows\system32\svchost.exe",
+    FileName =~ "lsass.exe", @"c:\windows\system32\lsass.exe",
+    FileName =~ "csrss.exe", @"c:\windows\system32\csrss.exe",
+    FileName =~ "winlogon.exe", @"c:\windows\system32\winlogon.exe",
+    FileName =~ "explorer.exe", @"c:\windows\explorer.exe",
+    "unknown"
+)
+| where tolower(FolderPath) != tolower(split(ExpectedPath, "\\", 0)[0])
+| project TimeGenerated, DeviceName, FileName, FolderPath, ExpectedPath
+```
+
+### 3.2 Network
+
+**Beaconing detection**:
+```kql
+// KQL: Repeated outbound connections at regular intervals
+DeviceNetworkEvents
+| where RemoteIPType == "Public"
+| where ActionType == "ConnectionSuccess"
+| where TimeGenerated > ago(24h)
+| summarize
+    ConnCount = count(),
+    UniqueTimestamps = dcount(bin(TimeGenerated, 5m)),
+    BytesSent = sum(SentBytes)
+    by DeviceName, RemoteIP, RemotePort, InitiatingProcessFileName
+| where ConnCount > 20
+| extend ConsistencyScore = UniqueTimestamps * 1.0 / ConnCount
+| where ConsistencyScore > 0.8  // More than 80% consistent intervals
+| order by ConsistencyScore desc
+```
+
+**DNS tunneling detection**:
+```kql
+// KQL: Detect abnormally long DNS queries
+DnsEvents
+| where strlen(Name) > 60
+| extend SubdomainCount = array_length(split(Name, ".")) - 2
+| where SubdomainCount > 5
+| summarize
+    QueryCount = count(),
+    AvgQueryLen = avg(strlen(Name)),
+    UniqueQueries = dcount(Name)
+    by Computer, ClientIP
+| where QueryCount > 50 or AvgQueryLen > 80
+```
+
+```splunk
+// SPL: Entropy-based DGA domain detection
+index=dns
+| eval domain=mvindex(split(query, "."), 0)
+| eval domain_len=len(domain)
+| where domain_len > 12
+| eval char_freq=mvcount(split(domain, ""))
+| stats avg(domain_len) as avg_len, count as query_count, dc(query) as unique_domains by src
+| where unique_domains > 100 AND avg_len > 15
+| sort -unique_domains
+```
+
+**Abnormal port communication detection**:
+```kql
+// KQL: Known processes using abnormal ports
+DeviceNetworkEvents
+| where ActionType == "ConnectionSuccess"
+| where RemoteIPType == "Public"
+| extend IsKnownPort = RemotePort in (80, 443, 22, 21, 25, 53, 8080, 8443)
+| where not(IsKnownPort)
+| where InitiatingProcessFileName !in~ ("svchost.exe", "lsass.exe")
+| summarize count() by InitiatingProcessFileName, RemotePort, RemoteIP
+| order by count_ desc
+```
+
+### 3.3 Registry
+
+**Detecting registry modifications for persistence**:
+```kql
+// KQL: Autorun registry key modifications
+DeviceRegistryEvents
+| where RegistryKey has_any (
+    @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
+    @"SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce",
+    @"SYSTEM\CurrentControlSet\Services",
+    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon",
+    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
+)
+| where ActionType in ("RegistryValueSet", "RegistryKeyCreated")
+| where InitiatingProcessFileName !in~ (
+    "svchost.exe", "MsMpEng.exe", "msiexec.exe", "TrustedInstaller.exe"
+)
+| project TimeGenerated, DeviceName, RegistryKey, RegistryValueName,
+    RegistryValueData, InitiatingProcessFileName, InitiatingProcessCommandLine
+```
+
+**COM hijacking detection**:
+```kql
+// KQL: HKCU CLSID registration (COM hijacking)
+DeviceRegistryEvents
+| where RegistryKey has @"HKEY_CURRENT_USER\Software\Classes\CLSID"
+| where ActionType == "RegistryKeyCreated" or ActionType == "RegistryValueSet"
+| project TimeGenerated, DeviceName, RegistryKey, RegistryValueData, InitiatingProcessFileName
+```
+
+### 3.4 File
+
+**Detecting dropped executables**:
+```kql
+// KQL: Executable file creation in temporary directories
+DeviceFileEvents
+| where ActionType == "FileCreated"
+| where FolderPath has_any (@"\Temp\", @"\AppData\Local\Temp\", @"\Downloads\", @"\Public\")
+| where FileName endswith_cs ".exe" or FileName endswith_cs ".dll"
+    or FileName endswith_cs ".ps1" or FileName endswith_cs ".bat"
+    or FileName endswith_cs ".vbs" or FileName endswith_cs ".hta"
+| where InitiatingProcessFileName !in~ ("msiexec.exe", "setup.exe", "installer.exe")
+| project TimeGenerated, DeviceName, FolderPath, FileName,
+    InitiatingProcessFileName, InitiatingProcessCommandLine
+```
+
+**Sensitive file access detection**:
+```kql
+// KQL: Access to NTDS.dit or SAM
+DeviceFileEvents
+| where FileName in~ ("ntds.dit", "SAM", "SYSTEM", "SECURITY")
+| where FolderPath has_any (@"\Windows\NTDS\", @"\Windows\System32\config\")
+| where not(InitiatingProcessFileName in~ ("svchost.exe", "csrss.exe", "wininit.exe"))
+| project TimeGenerated, DeviceName, FolderPath, FileName, InitiatingProcessFileName
+```
+
+---
+
+## 4. Baseline Deviation Detection Queries
+
+### 4.1 User Behavior Baseline
+
+```kql
+// KQL: Detect abnormal user logon times
+let UserBaseline = SigninLogs
+| where TimeGenerated between (ago(30d)..ago(1d))
+| extend Hour = hourofday(TimeGenerated)
+| summarize
+    TypicalHours = make_set(Hour),
+    AvgHour = avg(Hour)
+    by UserPrincipalName;
+
+SigninLogs
+| where TimeGenerated > ago(1d)
+| extend Hour = hourofday(TimeGenerated)
+| join kind=leftouter UserBaseline on UserPrincipalName
+| where not(Hour in (TypicalHours))
+| project TimeGenerated, UserPrincipalName, IPAddress, Location, Hour, TypicalHours
+```
+
+### 4.2 Process Execution Frequency Baseline
+
+```kql
+// KQL: Rare process hunting
+let RecentProcesses = DeviceProcessEvents
+| where TimeGenerated > ago(1d)
+| summarize RecentCount = count() by FileName, DeviceName;
+
+let HistoricalProcesses = DeviceProcessEvents
+| where TimeGenerated between (ago(30d)..ago(1d))
+| summarize HistoricalCount = count(), HistoricalDevices = dcount(DeviceName) by FileName;
+
+RecentProcesses
+| join kind=leftouter HistoricalProcesses on FileName
+| where isempty(HistoricalCount) or HistoricalDevices < 3
+| where RecentCount < 5
+| project FileName, RecentCount, HistoricalCount, HistoricalDevices
+| order by HistoricalDevices asc
+```
+
+### 4.3 Network Traffic Baseline
+
+```splunk
+// SPL: Detect high-volume data transfers compared to average
+index=network
+| bucket _time span=1h
+| stats sum(bytes_out) as hourly_bytes by src_ip, _time
+| eventstats avg(hourly_bytes) as avg_bytes, stdev(hourly_bytes) as std_bytes by src_ip
+| eval zscore=(hourly_bytes - avg_bytes) / if(std_bytes > 0, std_bytes, 1)
+| where zscore > 3 AND hourly_bytes > 100000000  // Z-score > 3 AND > 100MB
+| table _time, src_ip, hourly_bytes, avg_bytes, zscore
+| sort -zscore
+```
+
+---
+
+## 5. Time Series Anomaly Detection Queries
+
+### 5.1 Logon Failure Spike Detection
+
+```kql
+// KQL: Rolling window-based logon failure spike
+let Threshold = 50;
+let WindowSize = 15m;
+
+SecurityEvent
+| where EventID == 4625
+| where TimeGenerated > ago(24h)
+| summarize FailCount = count() by bin(TimeGenerated, WindowSize), Computer, TargetAccount
+| where FailCount > Threshold
+| extend AlertTime = TimeGenerated
+| project AlertTime, Computer, TargetAccount, FailCount
+| order by FailCount desc
+```
+
+### 5.2 Periodic Anomaly Detection (Periodicity Analysis)
+
+```kql
+// KQL: Periodicity analysis of network connections (beacon detection)
+DeviceNetworkEvents
+| where TimeGenerated > ago(6h)
+| where RemoteIPType == "Public"
+| summarize
+    Timestamps = make_list(TimeGenerated),
+    ConnCount = count()
+    by DeviceName, RemoteIP, RemotePort
+| where ConnCount > 10
+| extend TimeDiffs = array_sort_asc(Timestamps)
+| mv-apply with_itemindex=i TS to typeof(datetime) on (
+    extend Diff = iff(i > 0, datetime_diff("second", TS, prev(TS)), long(null))
+    | where isnotnull(Diff)
+    | summarize AvgDiff = avg(Diff), StdDiff = stdev(Diff)
+)
+| where StdDiff < AvgDiff * 0.3  // Variance less than 30% of mean = regular
+| where AvgDiff between (30 .. 3600)  // 30 second to 1 hour intervals
+| project DeviceName, RemoteIP, RemotePort, ConnCount, AvgDiff, StdDiff
+```
+
+### 5.3 New Connection Target Detection
+
+```kql
+// KQL: Detect new external communications not seen before
+let HistoricalConnections = DeviceNetworkEvents
+| where TimeGenerated between (ago(30d)..ago(1d))
+| where RemoteIPType == "Public"
+| distinct DeviceName, RemoteIP;
+
+let RecentConnections = DeviceNetworkEvents
+| where TimeGenerated > ago(1d)
+| where RemoteIPType == "Public"
+| distinct DeviceName, RemoteIP, RemotePort, InitiatingProcessFileName;
+
+RecentConnections
+| join kind=leftanti HistoricalConnections on DeviceName, RemoteIP
+| project DeviceName, RemoteIP, RemotePort, InitiatingProcessFileName
+| order by DeviceName
+```
+
+---
+
+## 6. Python: Statistical Log Anomaly Detection Tool
+
+```python
+#!/usr/bin/env python3
+"""
+Statistical Log Anomaly Detection CLI Tool
+Dependencies: pip install numpy (optional — uses pure Python stats if absent)
+
+Usage: python3 log_anomaly_detector.py [command] [options]
+"""
+
+import argparse
+import csv
+import json
+import math
+import sys
+from collections import Counter, defaultdict
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Optional
+
+
+def mean(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    return sum(values) / len(values)
+
+
+def stdev(values: list[float]) -> float:
+    if len(values) < 2:
+        return 0.0
+    m = mean(values)
+    return math.sqrt(sum((x - m) ** 2 for x in values) / (len(values) - 1))
+
+
+def zscore(value: float, mu: float, sigma: float) -> float:
+    if sigma == 0:
+        return 0.0
+    return (value - mu) / sigma
+
+
+def detect_zscore_anomalies(
+    values: list[float],
+    labels: list[str],
+    threshold: float = 3.0,
+    group_name: str = "unknown",
+) -> list[dict[str, Any]]:
+    """Z-score based anomaly detection."""
+    if len(values) < 3:
+        return []
+    mu = mean(values)
+    sigma = stdev(values)
+    anomalies = []
+    for label, val in zip(labels, values):
+        z = zscore(val, mu, sigma)
+        if abs(z) >= threshold:
+            anomalies.append({
+                "group": group_name,
+                "label": label,
+                "value": val,
+                "mean": round(mu, 2),
+                "stdev": round(sigma, 2),
+                "zscore": round(z, 2),
+                "method": "z-score",
+                "severity": "high" if abs(z) >= 5 else "medium",
+            })
+    return anomalies
+```
+
+---
+
+## 7. Query Optimization Tips
+
+### 7.1 KQL Optimization
+
+1. **Time range first**: Put `where TimeGenerated > ago(24h)` as the first pipe in the pipeline
+2. **Indexed fields first**: Filter first with indexed fields like `EventID`, `DeviceName`
+3. **Prefer `has` over `contains`**: `has` is faster as it uses word boundaries
+4. **Early `project`**: Remove unnecessary columns early to reduce transferred data
+5. **Use `summarize`**: Make anomaly decisions on aggregated results rather than individual rows
+
+### 7.2 SPL Optimization
+
+1. **Early filtering**: Minimize result counts at the front of the pipeline
+2. **Use `tstats`**: Use `tstats` which is faster than `stats` for large datasets
+3. **Specify index**: Use exact index names instead of `index=*`
+4. **Limit time range**: Minimize the search time window
+5. **Limit fields**: Use the `fields` command to process only required fields
+
+### 7.3 Common Hunting Principles
+
+| Principle | Description |
+|-----------|-------------|
+| Time constraints | Validate in narrow time windows, then expand |
+| Incremental approach | Broad search -> add specific conditions progressively |
+| Noise management | Incrementally add whitelists and exceptions |
+| Result validation | Manually verify True Positive status of detections |
+| Documentation | Record all queries, results, and actions taken |

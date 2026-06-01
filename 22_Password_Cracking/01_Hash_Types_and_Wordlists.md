@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 01 Hash Types and Wordlists
 
 ## 주요 해시 알고리즘 비교
@@ -528,6 +534,545 @@ print(f'NTLM: {ntlm}')
 "
 
 # OpenSSL로 bcrypt
+python3 -c "
+import bcrypt
+pw = b'password'
+hashed = bcrypt.hashpw(pw, bcrypt.gensalt(rounds=10))
+print(hashed.decode())
+"
+```
+
+---
+
+<a name="english"></a>
+
+# 01 Hash Types and Wordlists
+
+## Major Hash Algorithm Comparison
+
+| Algorithm | Length (hex) | Speed | Salt | Primary Use | hashcat Mode |
+|-----------|-------------|-------|------|-------------|-------------|
+| MD5 | 32 | Very Fast | None | Legacy web, file integrity | 0 |
+| SHA-1 | 40 | Fast | None | Git, legacy authentication | 100 |
+| SHA-256 | 64 | Fast | None | Modern web, blockchain | 1400 |
+| SHA-512 | 128 | Fast | None | Linux shadow (SHA512crypt separate) | 1700 |
+| SHA-512crypt | $6$ prefix | Slow | Yes | Linux /etc/shadow | 1800 |
+| bcrypt | 60 | Very Slow | Included | PHP/Rails/Node web apps | 3200 |
+| NTLM | 32 | Very Fast | None | Windows SAM/AD | 1000 |
+| NetNTLMv1 | Variable | Fast | Challenge | SMB authentication capture | 5500 |
+| NetNTLMv2 | Variable | Fast | Challenge | SMB authentication capture | 5600 |
+| WPA/WPA2 | Variable | Slow | SSID | Wireless LAN handshake | 22000 |
+| MD5crypt | $1$ prefix | Slow | Yes | Legacy Linux shadow | 500 |
+| PBKDF2-SHA256 | Variable | Slow | Yes | Django, iOS Keychain | 10900 |
+
+### Detailed Algorithm Characteristics
+
+**MD5 / SHA Family (Fast Hashes)**
+- Billions of operations per second possible (GPU-based)
+- Without salt, rainbow table attacks are feasible
+- Same plaintext → always same hash (deterministic)
+
+**bcrypt**
+- Speed adjustable via cost factor (work factor): `$2b$10$` = 2^10 = 1024 rounds
+- High resistance to GPU parallelization → only thousands of attempts per second even in hashcat
+- Automatically embeds a 22-character salt
+
+**NTLM**
+- `MD4(UTF-16LE(password))` — no salt, extremely fast
+- Can be directly used for Pass-the-Hash attacks
+- Stronger than LM hashes (legacy) but still vulnerable
+
+**NetNTLMv2**
+- Response value computed from NTLM hash + challenge
+- Capture with Responder → crack with hashcat mode 5600
+- Cannot be used directly for Pass-the-Hash
+
+**WPA/WPA2**
+- PBKDF2-SHA1(passphrase, SSID, 4096 iterations)
+- Offline cracking after capturing handshake (.cap) or PMKID
+- hashcat mode 22000 (hc22000 format)
+
+---
+
+## Hash Identification Tools
+
+### hashid
+
+`hashid` and `hash-identifier` are tools that automatically identify the format of hash strings. They analyze the hash's length, character set, and prefix (`$6$`, `$2y$`, etc.) and return a list of possible hash algorithms.
+
+```bash
+# Install
+pip install hashid
+
+# Identify a single hash
+hashid '5f4dcc3b5aa765d61d8327deb882cf99'
+
+# Batch identify hashes in a file
+hashid -f hashes.txt
+
+# Also output hashcat mode numbers
+hashid -m '5f4dcc3b5aa765d61d8327deb882cf99'
+
+# Also output John format
+hashid -mj '$2y$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa'
+```
+
+```
+# Example output
+Analyzing '5f4dcc3b5aa765d61d8327deb882cf99'
+[+] MD2
+[+] MD5 [Hashcat Mode: 0][JtR Format: raw-md5]
+[+] MD4 [Hashcat Mode: 900][JtR Format: raw-md4]
+```
+
+### hash-identifier
+
+Install the hash-identifier tool. It analyzes the length and format of the hash value to estimate the algorithm type.
+
+```bash
+# Install
+sudo apt install hash-identifier
+# or
+git clone https://github.com/blackploit/hash-identifier
+
+# Run
+hash-identifier
+# Enter hash at the prompt
+
+# Run directly with Python
+python3 hash-id.py
+```
+
+### name-that-hash (Modern Alternative)
+
+name-that-hash is a modern hash identification tool. It supports more hash types than hashid and sorts results by probability.
+
+```bash
+pip install name-that-hash
+
+# Single hash
+nth --text '5f4dcc3b5aa765d61d8327deb882cf99'
+
+# File
+nth --file hashes.txt
+
+# JSON output
+nth --text 'abc123...' --json
+```
+
+---
+
+## Wordlist Structure
+
+### rockyou.txt
+
+This is the path to the rockyou.txt wordlist included in Kali Linux. It contains approximately 14 million real leaked passwords and is the standard starting point for password cracking.
+
+```bash
+# Default path in Kali Linux
+ls -lh /usr/share/wordlists/rockyou.txt.gz
+
+# Decompress
+sudo gunzip /usr/share/wordlists/rockyou.txt.gz
+
+# Statistics
+wc -l /usr/share/wordlists/rockyou.txt
+# 14,344,391 lines
+
+# View top 20 entries
+head -20 /usr/share/wordlists/rockyou.txt
+
+# Search for specific patterns
+grep -i '^admin' /usr/share/wordlists/rockyou.txt | head -10
+grep '[0-9]\{4\}$' /usr/share/wordlists/rockyou.txt | wc -l
+```
+
+### SecLists
+
+SecLists is a collection of various lists needed for penetration testing. It includes dozens of categories such as subdomains, directories, passwords, and usernames.
+
+```bash
+# Install
+sudo apt install seclists
+# or
+git clone https://github.com/danielmiessler/SecLists /opt/SecLists
+
+# Directory structure
+ls /usr/share/seclists/
+# Discovery/  Fuzzing/  Miscellaneous/  Passwords/  Usernames/  ...
+
+# Key password lists
+ls /usr/share/seclists/Passwords/
+# Common-Credentials/  Leaked-Databases/  Default-Credentials/  ...
+
+# Frequently used lists
+/usr/share/seclists/Passwords/Common-Credentials/10k-most-common.txt
+/usr/share/seclists/Passwords/Common-Credentials/100k-most-used-passwords-NCSC.txt
+/usr/share/seclists/Passwords/Leaked-Databases/rockyou-75.txt
+/usr/share/seclists/Usernames/top-usernames-shortlist.txt
+```
+
+---
+
+## Custom Wordlist Generation
+
+### CeWL — Website Crawling
+
+`cewl` crawls a specified website to collect words and generate a custom wordlist. Words related to the target organization (employee names, product names, slogans) are likely to appear in passwords, making it effective for targeted attacks.
+
+```bash
+# Basic usage (depth 2, minimum length 6)
+cewl http://target.com -d 2 -m 6 -w wordlist.txt
+
+# Also collect email addresses
+cewl http://target.com -d 3 -m 5 -e -w wordlist.txt
+
+# Pages requiring authentication
+cewl http://target.com -d 2 -m 6 \
+  --auth_type basic \
+  --auth_user admin \
+  --auth_pass password \
+  -w wordlist.txt
+
+# Include case variations
+cewl http://target.com -d 2 -m 6 --with-numbers -w raw.txt
+# Generate variations via post-processing
+```
+
+### Crunch — Pattern-Based Generation
+
+`crunch` is a tool that generates custom wordlists with a specified character set and length. When you know the specific password policy (length, included characters), you can create efficient targeted wordlists.
+
+```bash
+# crunch <min> <max> <charset> [options]
+
+# All 4-digit numbers
+crunch 4 4 0123456789 -o pins.txt
+
+# 6-8 characters, lowercase + digits
+crunch 6 8 abcdefghijklmnopqrstuvwxyz0123456789 -o wordlist.txt
+
+# Using patterns (@=lowercase, ,=uppercase, %=digit, ^=special)
+crunch 8 8 -t @@@@%%%% -o pattern.txt    # 4 lowercase + 4 digits
+crunch 8 8 -t Pass%%%% -o pass_nums.txt   # Pass + 4 digits
+
+# Using built-in charsets
+crunch 8 8 -f /usr/share/crunch/charset.lst mixalpha-numeric -o out.txt
+
+# Include specific words
+crunch 1 1 -p admin user guest root -o keywords.txt
+```
+
+### CUPP — Personal Information-Based Generation
+
+CUPP (Common User Password Profiler) generates customized wordlists based on the target's personal information. It combines name, birthday, interests, etc. to generate personalized passwords.
+
+```bash
+# Install
+git clone https://github.com/Mebus/cupp /opt/cupp
+
+# Interactive mode (enter name, birthday, pet, etc.)
+python3 /opt/cupp/cupp.py -i
+
+# Improve existing wordlist (add leetspeak, numbers, etc.)
+python3 /opt/cupp/cupp.py -w wordlist.txt
+
+# Aladddin mode (online DB)
+python3 /opt/cupp/cupp.py -a
+
+# Check generated file
+wc -l cupp_output.txt
+```
+
+### Wordlist Post-Processing
+
+Optimize collected wordlists by removing duplicates and sorting. This reduces size and improves cracking efficiency by eliminating redundancy.
+
+```bash
+# Remove duplicates and sort
+sort wordlist.txt | uniq > clean_wordlist.txt
+
+# Filter by length
+awk 'length >= 8 && length <= 16' wordlist.txt > filtered.txt
+
+# Merge multiple lists, then sort and deduplicate
+cat list1.txt list2.txt list3.txt | sort -u > combined.txt
+
+# Only entries without special characters
+grep -P '^[a-zA-Z0-9]+$' wordlist.txt > alphanum_only.txt
+
+# Only entries containing uppercase letters
+grep '[A-Z]' wordlist.txt > has_upper.txt
+```
+
+---
+
+## Python Hash Identification + Cracking Script
+
+```python
+#!/usr/bin/env python3
+"""
+Hash identification and wordlist-based cracking tool
+Usage: python3 hash_cracker.py -H <hash> -w <wordlist> [-t <threads>]
+"""
+
+import argparse
+import hashlib
+import re
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+from typing import Optional
+
+
+# Hash pattern definitions
+HASH_PATTERNS: dict[str, tuple[str, int]] = {
+    "MD5":          (r"^[a-fA-F0-9]{32}$",   0),
+    "SHA-1":        (r"^[a-fA-F0-9]{40}$",   100),
+    "SHA-256":      (r"^[a-fA-F0-9]{64}$",   1400),
+    "SHA-512":      (r"^[a-fA-F0-9]{128}$",  1700),
+    "NTLM":         (r"^[a-fA-F0-9]{32}$",   1000),
+    "bcrypt":       (r"^\$2[ayb]\$.{56}$",    3200),
+    "MD5crypt":     (r"^\$1\$.{8}\$.{22}$",   500),
+    "SHA512crypt":  (r"^\$6\$.{8,16}\$.+$",   1800),
+}
+
+# Algorithm → hashlib mapping
+HASH_FUNCS: dict[str, str] = {
+    "MD5":     "md5",
+    "SHA-1":   "sha1",
+    "SHA-256": "sha256",
+    "SHA-512": "sha512",
+    "NTLM":    "md4",   # NTLM is MD4-based; verify hashlib support
+}
+
+
+def identify_hash(hash_str: str) -> list[str]:
+    """Return list of possible algorithms for a hash string."""
+    candidates: list[str] = []
+    for name, (pattern, _) in HASH_PATTERNS.items():
+        if re.match(pattern, hash_str):
+            candidates.append(name)
+    return candidates if candidates else ["Unknown"]
+
+
+def compute_hash(algorithm: str, plaintext: str) -> Optional[str]:
+    """Compute the hash of plaintext using the given algorithm."""
+    func_name = HASH_FUNCS.get(algorithm)
+    if not func_name:
+        return None
+    try:
+        h = hashlib.new(func_name, plaintext.encode("utf-8", errors="replace"))
+        return h.hexdigest()
+    except ValueError:
+        return None
+
+
+def try_word(word: str, target_hash: str, algorithm: str) -> Optional[str]:
+    """Attempt to crack with a single word. Returns plaintext on success."""
+    word = word.strip()
+    computed = compute_hash(algorithm, word)
+    if computed and computed.lower() == target_hash.lower():
+        return word
+    return None
+
+
+def crack_hash(
+    target_hash: str,
+    wordlist_path: Path,
+    algorithm: str,
+    max_workers: int = 8,
+) -> Optional[str]:
+    """
+    Read wordlist and attempt hash cracking with multiple threads.
+    Returns plaintext on success, None on failure.
+    """
+    if not wordlist_path.exists():
+        print(f"[!] Wordlist file not found: {wordlist_path}", file=sys.stderr)
+        return None
+
+    print(f"[*] Algorithm: {algorithm} | Hash: {target_hash[:16]}...")
+    print(f"[*] Wordlist: {wordlist_path}")
+
+    total = 0
+    found: Optional[str] = None
+
+    try:
+        with wordlist_path.open("r", encoding="utf-8", errors="ignore") as f:
+            words = f.readlines()
+
+        total = len(words)
+        print(f"[*] Loaded {total:,} words, threads: {max_workers}")
+
+        chunk_size = max(1, total // (max_workers * 10))
+        futures = {}
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            for i, word in enumerate(words):
+                if found:
+                    break
+                future = executor.submit(try_word, word, target_hash, algorithm)
+                futures[future] = i
+
+                # Print progress every 10,000 entries
+                if i % 10000 == 0 and i > 0:
+                    print(f"[*] Progress: {i:,}/{total:,} ({i/total*100:.1f}%)")
+
+            for future in as_completed(futures):
+                result = future.result()
+                if result is not None:
+                    found = result
+                    print(f"\n[+] Cracking successful!")
+                    print(f"[+] Plaintext: {result}")
+                    executor.shutdown(wait=False, cancel_futures=True)
+                    break
+
+    except KeyboardInterrupt:
+        print("\n[!] Interrupted by user")
+
+    return found
+
+
+def load_hash_file(path: Path) -> list[str]:
+    """Read list of hashes from a hash file."""
+    try:
+        return [line.strip() for line in path.read_text().splitlines() if line.strip()]
+    except OSError as e:
+        print(f"[!] Failed to read file: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Hash identification and wordlist cracking tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 hash_cracker.py -H 5f4dcc3b5aa765d61d8327deb882cf99 -w rockyou.txt
+  python3 hash_cracker.py -H 5f4dcc3b... -w rockyou.txt -a MD5 -t 16
+  python3 hash_cracker.py -f hashes.txt -w wordlist.txt --identify-only
+        """,
+    )
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-H", "--hash", help="Single hash to crack")
+    group.add_argument("-f", "--file", type=Path, help="File containing list of hashes")
+
+    parser.add_argument("-w", "--wordlist", type=Path, help="Path to wordlist file")
+    parser.add_argument(
+        "-a", "--algorithm",
+        choices=list(HASH_FUNCS.keys()),
+        default=None,
+        help="Force hash algorithm (auto-detected if not specified)",
+    )
+    parser.add_argument("-t", "--threads", type=int, default=8, help="Number of threads (default: 8)")
+    parser.add_argument(
+        "--identify-only", action="store_true",
+        help="Identify only, do not attempt cracking",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    # Prepare hash list
+    hashes: list[str] = []
+    if args.hash:
+        hashes = [args.hash]
+    elif args.file:
+        hashes = load_hash_file(args.file)
+
+    print(f"[*] Processing {len(hashes)} hashes\n")
+
+    for target in hashes:
+        print(f"{'='*60}")
+        print(f"[*] Target hash: {target}")
+
+        # Identify hash
+        candidates = identify_hash(target)
+        print(f"[*] Possible algorithms: {', '.join(candidates)}")
+
+        if args.identify_only:
+            continue
+
+        if not args.wordlist:
+            print("[!] Cracking requires -w option", file=sys.stderr)
+            continue
+
+        # Determine algorithm
+        algorithm = args.algorithm
+        if not algorithm:
+            # Select the first supported algorithm
+            for c in candidates:
+                if c in HASH_FUNCS:
+                    algorithm = c
+                    break
+
+        if not algorithm:
+            print(f"[!] Unsupported algorithm: {candidates}")
+            print("[!] Specify algorithm manually with -a option")
+            continue
+
+        result = crack_hash(target, args.wordlist, algorithm, args.threads)
+        if result is None:
+            print(f"[-] Cracking failed — not found in wordlist")
+
+    print(f"\n[*] Done")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Script Usage Examples
+
+These are usage examples for the hash identification and cracking script. When you provide a hash value, it automatically determines the type and selects the appropriate cracking approach.
+
+```bash
+# Crack a single MD5 hash
+python3 hash_cracker.py -H 5f4dcc3b5aa765d61d8327deb882cf99 \
+  -w /usr/share/wordlists/rockyou.txt
+
+# SHA-256 hash with explicit algorithm, 16 threads
+python3 hash_cracker.py \
+  -H a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 \
+  -w /usr/share/wordlists/rockyou.txt \
+  -a SHA-256 \
+  -t 16
+
+# Batch identify hashes in a file only
+python3 hash_cracker.py -f hashes.txt --identify-only
+
+# Batch crack hashes from a file
+python3 hash_cracker.py -f hashes.txt -w /opt/SecLists/Passwords/rockyou-75.txt -t 4
+```
+
+---
+
+## Hash Sample Reference
+
+Generate hashes directly for each algorithm to create reference samples. Compare the output formats of MD5, SHA-1, SHA-256, bcrypt, and others.
+
+```bash
+# Generate hashes directly (for testing)
+echo -n "password" | md5sum
+# 5f4dcc3b5aa765d61d8327deb882cf99
+
+echo -n "password" | sha1sum
+# 5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8
+
+echo -n "password" | sha256sum
+# 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
+
+# Compute NTLM hash with Python
+python3 -c "
+import hashlib
+pw = 'Password123'
+ntlm = hashlib.new('md4', pw.encode('utf-16le')).hexdigest()
+print(f'NTLM: {ntlm}')
+"
+
+# bcrypt with Python
 python3 -c "
 import bcrypt
 pw = b'password'

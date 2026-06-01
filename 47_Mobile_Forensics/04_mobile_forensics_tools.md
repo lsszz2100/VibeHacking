@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 모바일 포렌식 도구
 
 ## 목차
@@ -1511,4 +1517,416 @@ git clone https://github.com/abrignoni/ALEAPP
 cd ALEAPP
 pip install -r requirements.txt
 python aleapp.py -t fs -i /path/to/android_filesystem -o /path/to/output
+```
+
+---
+
+<a name="english"></a>
+
+# Mobile Forensics Tools
+
+## Table of Contents
+1. Autopsy Mobile Analysis Setup
+2. Cellebrite UFED / MSAB XRY Overview
+3. MVT - Pegasus Spyware Detection
+4. Dynamic App Analysis with Frida
+5. APK Reverse Engineering (jadx, apktool, dex2jar)
+6. Python APK Automated Analysis Script
+7. Practical CTF Mobile Forensics Scenarios
+
+---
+
+## 1. Autopsy Mobile Analysis Setup
+
+### Installation and Basic Configuration
+
+```bash
+# Ubuntu/Debian
+wget https://github.com/sleuthkit/autopsy/releases/download/autopsy-4.21.0/autopsy-4.21.0.zip
+unzip autopsy-4.21.0.zip
+
+# Install dependencies
+sudo apt install -y default-jdk testdisk autopsy
+
+# macOS (Homebrew)
+brew install sleuthkit
+
+# Windows: Download MSI installer and run
+# https://www.autopsy.com/download/
+
+# Launch Autopsy
+cd autopsy-4.21.0
+./bin/autopsy &
+```
+
+### Creating a Mobile Forensics Case
+
+```
+1. Create a new case
+   File → New Case
+   - Case Name: KN-2025-001
+   - Base Directory: /cases/
+   - Case Type: Single-user
+
+2. Add data source
+   Add Data Source → Select type:
+   - Disk Image or VM File  : raw/E01/AFF image
+   - Local Disk             : directly connected disk
+   - Logical Files          : extracted files/folders
+   - Unallocated Space Files: unallocated space
+
+3. When adding an Android image
+   - Select Disk Image (.img, .raw)
+   - Select Ingest Modules:
+     ☑ Android Analyzer      : parse Android artifacts
+     ☑ Keyword Search         : keyword search
+     ☑ Hash Lookup            : NSRL hash comparison
+     ☑ File Type Identification: file type detection
+     ☑ Exif Parser            : photo metadata
+     ☑ Extension Mismatch Detector: disguised file detection
+```
+
+### Android Analyzer Module Configuration
+
+```
+Artifacts parsed by Autopsy Android Analyzer:
+- SMS/MMS (mmssms.db)
+- Call Log (calllog.db)
+- Contacts (contacts2.db)
+- Browser History (browser.db, History)
+- Calendar
+- GPS movement history
+- Wi-Fi connection history
+- List of installed apps
+
+Viewing results:
+Autopsy → Data Artifacts → Communication Artifacts
+                         → GPS Artifacts
+                         → Web Artifacts
+                         → Installed Programs
+```
+
+### Autopsy CLI Mode (Automation)
+
+```bash
+# Automate case creation and analysis
+# autopsy_casecreate.py (Autopsy Python script)
+
+java -Xmx4g \
+    -cp "/opt/autopsy/autopsy/modules/ext/*:/opt/autopsy/platform/core/core.jar" \
+    org.sleuthkit.autopsy.commandlineingest.CommandLineIngestManager \
+    --createCase \
+    --caseDir /cases/ \
+    --caseName KN-2025-001 \
+    --dataSourcePath /evidence/device.img \
+    --outputDir /cases/KN-2025-001/
+
+# Results are saved in /cases/KN-2025-001/Reports/
+```
+
+### Autopsy Plugin Development (Python)
+
+```python
+# Autopsy Ingest Module example
+# File location: ~/.autopsy/dev/python_modules/MyAndroidModule/
+
+import jarray
+import inspect
+import os
+import sys
+
+from java.lang import System
+from org.sleuthkit.datamodel import SleuthkitCase, AbstractFile
+from org.sleuthkit.autopsy.casemodule import Case
+from org.sleuthkit.autopsy.datamodel import ContentUtils
+from org.sleuthkit.autopsy.ingest import DataSourceIngestModule
+from org.sleuthkit.autopsy.ingest import IngestMessage
+from org.sleuthkit.autopsy.ingest import IngestServices
+
+
+class AndroidKakaoTalkAnalyzerFactory:
+    """KakaoTalk DB analysis module"""
+    moduleDisplayName = "KakaoTalk Analyzer"
+    moduleDescription = "Extract KakaoTalk messages"
+
+    def getDisplayName(self):
+        return self.moduleDisplayName
+
+    def getDescription(self):
+        return self.moduleDescription
+
+    def createDataSourceIngestModule(self, settings):
+        return AndroidKakaoTalkAnalyzer()
+
+
+class AndroidKakaoTalkAnalyzer(DataSourceIngestModule):
+    KAKAO_DB = "KakaoTalk.db"
+
+    def process(self, data_source, progress_bar):
+        # Search for files
+        file_manager = Case.getCurrentCase().getServices().getFileManager()
+        files = file_manager.findFiles(data_source, self.KAKAO_DB)
+
+        for kakao_file in files:
+            IngestServices.getInstance().postMessage(
+                IngestMessage.createMessage(
+                    IngestMessage.MessageType.DATA,
+                    "KakaoTalk Analyzer",
+                    f"Found: {kakao_file.getName()}",
+                )
+            )
+
+        return IngestModule.ProcessResult.OK
+```
+
+---
+
+## 2. Cellebrite UFED / MSAB XRY Overview
+
+### Cellebrite UFED Touch 2 / 4PC
+
+```
+Product lineup:
+- UFED Touch 2   : standalone hardware device
+- UFED 4PC       : PC software version
+- UFED Premium   : unlock + advanced extraction
+- UFED Cloud     : cloud data collection
+
+Supported devices:
+- 35,000+ devices including Android/iOS
+- New devices added via periodic updates
+
+Extraction process (UFED 4PC):
+1. Launch UFED 4PC
+2. Connect device (USB)
+3. Auto-detect device model
+4. Select extraction method (logical/filesystem/physical)
+5. Run extraction
+6. Analyze results with Physical Analyzer
+
+Output formats:
+- .ufdx        : UFED extraction package
+- .zip         : logical extraction
+- Extraction.xml : extraction metadata
+
+Physical Analyzer features:
+- Timeline visualization
+- Deleted data recovery
+- Per-app artifact classification
+- Map visualization (location data)
+- Automatic report generation (PDF, HTML, Excel)
+```
+
+### MSAB XRY
+
+```
+Product line:
+- XRY Complete : hardware + software
+- XRY Logical  : logical extraction
+- XRY Physical : physical extraction
+- XAMN Analyst : analysis software
+
+XRY characteristics:
+- Originally developed by Swedish law enforcement
+- Independent validation possible
+- NIST CFTT certified
+
+XRY extraction procedure:
+1. Launch XRY and create a new case
+2. Connect device
+3. Auto-detect device or select manually
+4. Select extraction method
+5. Enter PIN if prompted (if available)
+6. Proceed with extraction
+7. Analyze results with XAMN
+
+Output files:
+- .xry        : XRY case file
+- .ufd        : extracted data
+```
+
+### Common Extraction Considerations
+
+```bash
+# Always check before extraction
+1. USB Restricted Mode (iOS 11.4.1+)
+   - USB must remain connected before device locks
+   - Data transfer possible if connected within 1 hour
+
+2. Set Airplane Mode
+   - Prevent remote wipe
+   - Prevent evidence modification
+
+3. Encryption status
+   - Android FBE: more data available when extracted after entering PIN
+   - iOS: most data encrypted without PIN
+
+4. Battery
+   - Prevent discharge during extraction
+   - Recommend connecting external power
+```
+
+---
+
+## 3. MVT (Mobile Verification Toolkit) - Pegasus Detection
+
+### MVT Installation
+
+```bash
+# Install via pip
+pip install mvt
+
+# Or install from source
+git clone https://github.com/mvt-project/mvt
+cd mvt
+pip install .
+
+# Verify installation
+mvt-ios --help
+mvt-android --help
+
+# Install libimobiledevice (iOS)
+# Ubuntu
+sudo apt install libimobiledevice-utils ideviceinstaller
+# macOS
+brew install libimobiledevice
+```
+
+### Download IOC (Indicators of Compromise)
+
+```bash
+# Pegasus IOC (Amnesty International)
+wget https://raw.githubusercontent.com/AmnestyTech/investigations/master/2021-07-18_nso/pegasus.stix2 \
+    -O pegasus.stix2
+
+# MVT official IOC repository (updated regularly)
+# https://github.com/mvt-project/mvt-indicators
+
+# Multiple IOC files can be merged and used
+ls *.stix2
+```
+
+### iOS Analysis
+
+```bash
+# 1. Analyze local backup (unencrypted)
+mvt-ios check-backup \
+    --iocs ./pegasus.stix2 \
+    --output ./mvt_output_ios \
+    ~/Library/Application\ Support/MobileSync/Backup/<UDID>
+
+# 2. Decrypt encrypted backup first
+mvt-ios decrypt-backup \
+    --password "backup_password" \
+    --destination ./decrypted_backup \
+    ~/Library/Application\ Support/MobileSync/Backup/<UDID>
+
+mvt-ios check-backup \
+    --iocs ./pegasus.stix2 \
+    --output ./mvt_output_ios \
+    ./decrypted_backup
+
+# 3. Directly analyze jailbroken device (requires SSH)
+mvt-ios check-fs \
+    --iocs ./pegasus.stix2 \
+    --output ./mvt_output_ios \
+    /   # root of jailbroken device
+
+# 4. Directly from connected device
+mvt-ios check-iocs \
+    --iocs ./pegasus.stix2 \
+    --output ./mvt_output_ios
+```
+
+### Android Analysis
+
+```bash
+# 1. Analysis via ADB
+mvt-android check-adb \
+    --iocs ./pegasus.stix2 \
+    --output ./mvt_output_android
+
+# 2. Analyze ADB backup
+mvt-android check-backup \
+    --iocs ./pegasus.stix2 \
+    --output ./mvt_output_android \
+    ./android_backup.ab
+
+# 3. Check APKs
+mvt-android download-apks \
+    --output ./apks/
+
+# Download specific apps only
+mvt-android download-apks \
+    --output ./apks/ \
+    --all-processes
+
+# 4. SMS analysis (phishing link detection)
+mvt-android check-adb \
+    --iocs ./pegasus.stix2 \
+    --output ./mvt_output \
+    --module SMSModule
+```
+
+### Interpreting MVT Results
+
+```bash
+# Output file structure
+ls ./mvt_output_ios/
+# Example output:
+# accessibility.json        - apps using accessibility services
+# calls.json                - call history
+# chrome_visits.json        - Chrome browsing history
+# datausage.json            - data usage per app
+# id.json                   - device identifiers
+# network_extensions.json   - network extensions
+# processes.json            - process list
+# sms.json                  - SMS history
+# sms_attachments.json      - SMS attachments
+# timeline.json             - full timeline
+# version_history.json      - iOS version history
+# wifi_networks.json        - Wi-Fi history
+# DETECTIONS.json           - detected IOCs (key file!)
+
+# Analyze DETECTIONS.json
+python3 -c "
+import json
+with open('./mvt_output_ios/DETECTIONS.json') as f:
+    detections = json.load(f)
+for d in detections:
+    print(f'[DETECTED] {d[\"type\"]}: {d[\"indicator\"]}')
+    print(f'  Found in: {d[\"file\"]}')
+    print(f'  Timestamp: {d.get(\"timestamp\", \"N/A\")}')
+"
+
+# Timeline visualization
+python3 -c "
+import json
+from datetime import datetime
+with open('./mvt_output_ios/timeline.json') as f:
+    events = json.load(f)
+for event in sorted(events, key=lambda x: x.get('timestamp', '')):
+    print(f\"{event.get('timestamp', 'N/A')[:19]} | {event.get('module', '')} | {event.get('event', '')[:80]}\")
+"
+```
+
+### Pegasus Infection Indicators
+
+```
+Known Pegasus domain patterns (IOC examples):
+- *.nsosrv.com
+- *.cloudfront.net (some)
+- specific 1-click or 0-click payload domains
+
+Process anomaly indicators:
+- bh (background hijacking)
+- roleaboutd (iOS persistence daemon)
+- coredistld
+- aggregatenotd
+- crash logs with unknown BundleID
+
+Network indicators:
+- abnormal DNS queries
+- encrypted C2 communication
+- short-interval pings
 ```

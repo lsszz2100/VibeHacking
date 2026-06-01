@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # DB 포렌식 및 방어 — 침해 탐지와 감사
 
 ## 1. DB 포렌식 개요
@@ -383,3 +389,181 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+<a name="english"></a>
+
+# DB Forensics and Defense — Breach Detection and Auditing
+
+## 1. DB Forensics Overview
+
+```
+Database Forensics Scope:
+
+Evidence Types:
+  - Query logs (who executed what, when)
+  - Audit logs (login/logout, privilege changes)
+  - Error logs (failed queries, connection errors)
+  - Binary logs (MySQL: data change records)
+  - Transaction logs (PostgreSQL WAL: write-ahead log)
+
+Forensic Goals:
+  - Identify attacker activity timeline
+  - Determine data breach scope (which tables, how many rows)
+  - Find backdoor accounts or privilege escalations
+  - Verify data integrity (were records tampered?)
+```
+
+---
+
+## 2. MySQL Forensics
+
+```sql
+-- Check current users and permissions
+SELECT user, host, authentication_string FROM mysql.user;
+SELECT * FROM information_schema.USER_PRIVILEGES;
+
+-- Recent login history
+SELECT user, host, time, command FROM information_schema.PROCESSLIST;
+
+-- Slow query log
+SHOW VARIABLES LIKE 'slow_query_log%';
+SHOW VARIABLES LIKE 'long_query_time';
+
+-- Enable general log (all queries)
+SET GLOBAL general_log = 'ON';
+SET GLOBAL general_log_file = '/var/log/mysql/general.log';
+
+-- Check for suspicious accounts
+SELECT user, host FROM mysql.user 
+WHERE user NOT IN ('root', 'mysql', 'debian-sys-maint')
+  AND host = '%';
+
+-- Find triggers (possible backdoors)
+SELECT trigger_name, event_manipulation, event_object_table,
+       action_statement
+FROM information_schema.TRIGGERS;
+```
+
+---
+
+## 3. PostgreSQL Forensics
+
+```sql
+-- Check pg_audit log
+-- Configure in postgresql.conf:
+-- shared_preload_libraries = 'pgaudit'
+-- pgaudit.log = 'all'
+
+-- Active connections
+SELECT pid, usename, application_name, client_addr, 
+       query_start, state, query
+FROM pg_stat_activity
+WHERE state != 'idle';
+
+-- User permission check
+SELECT grantee, table_name, privilege_type
+FROM information_schema.role_table_grants
+WHERE grantee NOT IN ('PUBLIC', 'postgres');
+
+-- Find suspicious functions
+SELECT routine_name, routine_definition
+FROM information_schema.routines
+WHERE routine_type = 'FUNCTION'
+  AND routine_definition ILIKE '%copy%'
+  OR routine_definition ILIKE '%pg_read_file%';
+```
+
+---
+
+## 4. Database Hardening Checklist
+
+```sql
+-- MySQL Hardening
+
+-- 1. Remove anonymous users
+DELETE FROM mysql.user WHERE user = '';
+FLUSH PRIVILEGES;
+
+-- 2. Remove test database
+DROP DATABASE IF EXISTS test;
+
+-- 3. Restrict root to localhost only
+UPDATE mysql.user SET host = 'localhost' WHERE user = 'root';
+FLUSH PRIVILEGES;
+
+-- 4. Enable binary logging (for point-in-time recovery)
+-- In my.cnf:
+-- log_bin = /var/log/mysql/mysql-bin.log
+-- binlog_format = ROW
+-- expire_logs_days = 7
+
+-- 5. Enable audit plugin
+INSTALL PLUGIN audit_log SONAME 'audit_log.so';
+SET GLOBAL audit_log_policy = ALL;
+```
+
+---
+
+## 5. Real-time Monitoring
+
+```python
+#!/usr/bin/env python3
+"""Real-time database activity monitoring"""
+import MySQLdb
+import time
+import smtplib
+from email.mime.text import MIMEText
+
+def monitor(host: str, user: str, password: str,
+            smtp_server: str = None, alert_to: str = None,
+            interval: int = 60) -> None:
+    """Monitor database for suspicious activity"""
+    
+    conn = MySQLdb.connect(host=host, user=user, passwd=password)
+    cursor = conn.cursor()
+    
+    known_users = set()
+    
+    while True:
+        # Check for new connections
+        cursor.execute("""
+            SELECT user, host, db, command, info
+            FROM information_schema.PROCESSLIST
+            WHERE command != 'Sleep'
+        """)
+        
+        for row in cursor.fetchall():
+            user_key = f"{row[0]}@{row[1]}"
+            query = row[4] or ""
+            
+            # Detect suspicious patterns
+            suspicious_patterns = [
+                "information_schema",
+                "mysql.user", 
+                "INTO OUTFILE",
+                "LOAD_FILE",
+                "xp_cmdshell",
+                "UNION SELECT",
+            ]
+            
+            for pattern in suspicious_patterns:
+                if pattern.lower() in query.lower():
+                    alert = f"SUSPICIOUS: {user_key} | {pattern} | {query[:100]}"
+                    print(f"[!] {alert}")
+                    
+                    # Send email alert
+                    if smtp_server and alert_to:
+                        send_alert(smtp_server, alert_to, alert)
+        
+        time.sleep(interval)
+
+def send_alert(smtp_server: str, to: str, message: str) -> None:
+    msg = MIMEText(message)
+    msg['Subject'] = '[DB SECURITY ALERT]'
+    msg['From'] = 'dbmonitor@company.com'
+    msg['To'] = to
+    
+    with smtplib.SMTP(smtp_server) as s:
+        s.send_message(msg)

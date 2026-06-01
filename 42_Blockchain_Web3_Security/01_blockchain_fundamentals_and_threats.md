@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 블록체인 기초와 위협 모델
 
 블록체인은 분산 원장(distributed ledger) 기술로, 불변성·탈중앙화·투명성을 핵심 특성으로 한다. 보안 관점에서 이 특성들은 새로운 공격 표면을 만들어낸다. 이 문서는 EVM 아키텍처부터 네트워크 레벨 공격까지 블록체인 보안의 기초를 다룬다.
@@ -390,3 +396,201 @@ python analyzer.py detect 0xabc123... --json
 | 트랜잭션 말리어빌리티 | 없음 | TxID 변조 | SegWit 이후 낮음 |
 | MEV/프론트러닝 | MEV 봇 운영 | 사용자 손실 | 현재 높음 |
 | 스마트 컨트랙트 취약점 | 코드 분석 능력 | 자금 탈취 | 높음 |
+
+---
+
+<a name="english"></a>
+
+# Blockchain Fundamentals and Threat Models
+
+Blockchain is a distributed ledger technology with immutability, decentralization, and transparency as its core properties. From a security perspective, these properties create new attack surfaces. This document covers blockchain security fundamentals from EVM architecture to network-level attacks.
+
+---
+
+## 1. Blockchain Architecture
+
+### 1.1 UTXO vs. Account Model
+
+| Property | UTXO (Bitcoin) | Account Model (Ethereum) |
+|----------|---------------|--------------------------|
+| Balance representation | Sum of unspent outputs | Account state |
+| Parallel processing | Excellent (independent UTXOs) | Limited (nonce ordering) |
+| Smart contracts | Limited (Script) | Native support (EVM) |
+| Privacy | Relatively higher | Lower (account address reuse) |
+| Attack surface | Double spending, UTXO dust attacks | Reentrancy, race conditions |
+
+```
+Bitcoin UTXO Transaction Structure:
+Input:  [Previous TxID + output index + signature script]
+Output: [Amount + locking script (ScriptPubKey)]
+
+Ethereum Transaction Structure:
+{nonce, gasPrice, gasLimit, to, value, data, v, r, s}
+```
+
+### 1.2 Merkle Trees and SPV Attacks
+
+```
+           Root Hash
+          /          \
+      H(AB)          H(CD)
+     /     \        /    \
+   H(A)   H(B)   H(C)   H(D)
+    A       B      C      D
+```
+
+**SPV (Simple Payment Verification) vulnerabilities:**
+- Light nodes only verify block headers → invalid Merkle proofs can be submitted
+- Isolating a light node via an eclipse attack allows injection of forged transactions
+
+### 1.3 Security Properties of Consensus Algorithms
+
+| Consensus | Representative Chain | Attack Resistance | Key Vulnerabilities |
+|-----------|---------------------|-------------------|---------------------|
+| PoW (Proof of Work) | Bitcoin | Requires 51%+ hashpower | 51% attack, selfish mining |
+| PoS (Proof of Stake) | Ethereum | Requires 51%+ stake | Long-range attacks, nothing-at-stake |
+| DPoS | EOS, TRON | Risk of delegate collusion | Cartel formation, censorship |
+| PBFT | Hyperledger | Tolerates up to 1/3 Byzantine nodes | Network partitions |
+
+---
+
+## 2. Ethereum EVM Internal Structure
+
+### 2.1 EVM Architecture
+
+```
+EVM Components:
+┌─────────────────────────────────────┐
+│  Stack        - up to 1024 items    │
+│  Memory       - volatile, byte array│
+│  Storage      - persistent, key-val │
+│  Calldata     - read-only           │
+│  Returndata                         │
+└─────────────────────────────────────┘
+
+Key Opcodes:
+SLOAD  (0x54) - storage read (100 gas cold, 100 hot)
+SSTORE (0x55) - storage write (20000 gas new, 2900 modify)
+CALL   (0xF1) - external call (reentrancy attack entry point)
+DELEGATECALL (0xF4) - context-preserving call (proxy pattern)
+SELFDESTRUCT (0xFF) - destroy contract + transfer ETH
+```
+
+### 2.2 Storage Layout
+
+Solidity state variables are stored sequentially starting from slot 0 in 32-byte units.
+
+```solidity
+contract StorageLayout {
+    uint256 public slot0;           // Slot 0
+    address public slot1;           // Slot 1 (20 bytes, 12-byte padding)
+    bool    public flag;            // Slot 1 (packed with address)
+    uint256[3] public arr;          // Slots 2, 3, 4
+    mapping(address => uint256) balances; // Slot 5 (key: keccak256(key||slot))
+}
+```
+
+### 2.3 ABI Encoding Structure
+
+```
+Function selector: keccak256("transfer(address,uint256)")[:4]
+                 = 0xa9059cbb
+
+Encoding example: transfer(0xABCD...1234, 1000)
+0xa9059cbb                                                           <- selector
+000000000000000000000000ABCD...1234                                  <- address (32-byte padded)
+00000000000000000000000000000000000000000000000000000000000003E8    <- uint256 1000
+```
+
+---
+
+## 3. Network-Level Attacks
+
+### 3.1 51% Attack (Double Spending)
+
+```
+Attack scenario:
+1. Attacker acquires 51%+ of total hashpower
+2. Deposits 1 BTC to exchange → withdraws and converts
+3. Secretly mines a longer alternative chain
+4. After exchange confirms deposit, publishes alternative chain → invalidates original deposit tx
+
+Defenses:
+- Exchanges: require more confirmations for large deposits (Bitcoin: 6 blocks)
+- Chains: Checkpointing, GHOST protocol
+```
+
+### 3.2 Selfish Mining
+
+```
+Normal mining:               Selfish mining:
+Find block → publish immediately   Find block → keep secret → publish when advantageous
+                                   → Induces network to waste blocks
+```
+
+Theoretically profitable with just 25%+ hashpower (Eyal & Sirer, 2014).
+
+### 3.3 Eclipse Attack
+
+An attack where the attacker occupies all P2P connections of the victim node to isolate it.
+
+```
+Attack conditions (Bitcoin P2P):
+- Induce victim node to restart
+- Fill all 117 outbound connection slots with attacker nodes
+
+Impact:
+- Exposure to 0-confirmation double spending
+- Injection of forged transactions to light clients
+- Inducing mining power wastage
+
+Defenses:
+- Diversify connections (AS-level diversity)
+- Use Feeler connections to discover new nodes
+```
+
+### 3.4 Transaction Malleability
+
+```
+Original TxID: a1b2c3...
+Signature modification: r, s → r, -s mod n (same valid signature)
+Modified TxID: x9y8z7...  ← different TxID but same transaction
+
+Bitcoin: resolved by SegWit (separates signature from TxID calculation)
+Ethereum: EIP-2 (restricts s value to half or less)
+```
+
+---
+
+## 4. Blockchain Transaction Analysis CLI
+
+```python
+#!/usr/bin/env python3
+"""Blockchain transaction analysis tool"""
+# (See Korean section above for full implementation)
+```
+
+**Usage examples:**
+```bash
+# Transaction analysis
+python analyzer.py tx 0xabc123... --rpc https://mainnet.infura.io/v3/KEY
+
+# Address scan
+python analyzer.py scan 0xDEAD... --start 19000000 --end 19000100 --rpc $RPC
+
+# Suspicious pattern detection
+python analyzer.py detect 0xabc123... --json
+```
+
+---
+
+## 5. Threat Model Summary
+
+| Attack Type | Attacker Requirements | Impact | Real-World Risk |
+|-------------|----------------------|--------|-----------------|
+| 51% attack | 51%+ hashpower/stake | Double spending, censorship | High on small chains |
+| Eclipse attack | Control of many IPs | Node isolation, fraud | Medium |
+| Selfish mining | 25%+ hashpower | Increased profit | Low |
+| Transaction malleability | None | TxID forgery | Low since SegWit |
+| MEV/front-running | Operating MEV bots | User losses | Currently high |
+| Smart contract vulnerabilities | Code analysis skills | Fund theft | High |

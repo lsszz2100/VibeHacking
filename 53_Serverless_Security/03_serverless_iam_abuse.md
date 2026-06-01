@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 서버리스 IAM 권한 남용 — 역할 체인·권한 상승·분석 CLI
 
 ## 1. 서버리스 IAM 위협 모델
@@ -409,3 +415,98 @@ if __name__ == "__main__":
 | 임시 자격증명 | 장기 자격증명 대신 STS 임시 토큰 |
 | SCP | AWS Organization SCP로 계정 레벨 가드레일 |
 | Access Analyzer | IAM Access Analyzer로 외부 접근 탐지 |
+
+---
+
+<a name="english"></a>
+
+# Serverless IAM Privilege Abuse — Role Chaining, Privilege Escalation, and Analysis CLI
+
+## 1. Serverless IAM Threat Model
+
+When Lambda functions are granted excessive IAM permissions, a single code vulnerability can lead to full AWS account compromise.
+
+| Attack Scenario | Impact |
+|----------------|--------|
+| Lambda → Full S3 access | Exfiltrate all bucket data |
+| Lambda → IAM management | Create new administrator accounts |
+| Lambda → EC2 access | Launch instances, steal instance profiles |
+| Lambda → Secrets Manager | Steal all secrets |
+| Lambda → STS AssumeRole | Chain roles for privilege escalation |
+
+---
+
+## 2. IAM Role Analysis
+
+The Lambda IAM auditor connects to AWS and examines each Lambda function's execution role for dangerous permissions.
+
+**Risk classification:**
+- **CRITICAL**: Wildcard actions (`*`, `iam:*`, `s3:*`, etc.)
+- **HIGH**: 3 or more dangerous individual actions
+- **MEDIUM**: 1–2 dangerous individual actions
+- **LOW**: No dangerous actions detected
+
+**Dangerous actions monitored** include privilege escalation actions (IAM user/policy manipulation, `iam:PassRole`), data exfiltration actions (`s3:GetObject`, `secretsmanager:GetSecretValue`, `kms:Decrypt`), and log tampering actions (`cloudtrail:DeleteTrail`, `logs:DeleteLogGroup`).
+
+**Usage:**
+```bash
+# Audit specific function
+python3 iam_auditor.py function my-lambda-function
+
+# Audit all functions (HIGH+ risk only)
+python3 iam_auditor.py all --region us-east-1 --min-risk HIGH -o findings.json
+```
+
+---
+
+## 3. STS AssumeRole Chain Attack
+
+Role chaining is a privilege escalation technique where an attacker uses one role to assume another role with higher privileges. The `assume_role_chain()` function demonstrates chaining through multiple roles sequentially, using each set of credentials to assume the next role.
+
+The `enumerate_assumable_roles()` function discovers which roles the current identity can assume by examining each role's trust policy document for principal entries matching the current ARN or wildcard principals.
+
+---
+
+## 4. Automated Least Privilege Policy Generation
+
+The policy generator parses Lambda function Python source code using the `ast` module to identify `boto3.client()` and `boto3.resource()` calls, then maps the detected service names and method calls to the minimum required IAM actions.
+
+**Example output:**
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "s3:GetObject",
+      "secretsmanager:GetSecretValue"
+    ],
+    "Resource": "*"
+  }]
+}
+```
+
+**Usage:**
+```bash
+python3 policy_generator.py ./lambda_src/ -o minimum_policy.json
+```
+
+---
+
+## 5. IAM Security Best Practices
+
+| Principle | Implementation |
+|-----------|---------------|
+| Least Privilege | Dedicated role per function — no shared roles |
+| Specific Resource ARNs | Use `arn:aws:s3:::my-bucket/*` format |
+| Condition Keys | Add `aws:SourceAccount`, `aws:SourceArn` conditions |
+| Permission Boundaries | Cap maximum permissions with Permission Boundary |
+| Role Session Tagging | Attach session tags for audit trail |
+| Temporary Credentials | Use STS temporary tokens instead of long-term credentials |
+| SCP | Use AWS Organization SCPs as account-level guardrails |
+| Access Analyzer | Use IAM Access Analyzer to detect external access |

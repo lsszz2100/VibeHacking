@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 메모리 및 디스크 포렌식
 
 메모리 포렌식은 실행 중인 악성코드, 네트워크 연결, 암호화 키를 살아있는 시스템에서 추출하는 기법이다. 디스크 포렌식은 삭제된 파일 복구와 타임라인 재구성에 중점을 둔다.
@@ -344,3 +350,354 @@ psort.py timeline.plaso "date > '2026-01-01' AND date < '2026-01-31'"
 | Event Logs | `C:\Windows\System32\winevt\Logs\` | Windows 이벤트 |
 | MFT | `C:\$MFT` | 파일 시스템 메타데이터 |
 | VSS | `\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy*` | 볼륨 섀도 복사본 |
+
+---
+
+<a name="english"></a>
+
+# Memory and Disk Forensics
+
+Memory forensics is the technique of extracting running malware, network connections, and encryption keys from a live system. Disk forensics focuses on recovering deleted files and reconstructing timelines.
+
+---
+
+## 1. Memory Forensics Fundamentals
+
+### 1.1 Memory Dump Collection
+
+```bash
+# Windows — collect dump before powering off
+# WinPmem (free, open source)
+winpmem_mini_x64_rc2.exe memory.raw
+
+# DumpIt (fast)
+DumpIt.exe /O memory.raw
+
+# ProcDump (specific process)
+procdump -ma lsass.exe lsass.dmp   # for credential extraction
+
+# Linux — /dev/mem or LiME
+# Load LiME kernel module
+insmod lime.ko "path=/tmp/memory.lime format=lime"
+
+# VMware — memory dump from snapshot
+# Use .vmem file in snapshot folder
+
+# Virtual machine: VirtualBox
+vboxmanage debugvm "VM Name" dumpvmcore --filename memory.elf
+```
+
+### 1.2 Volatility3 Basic Usage
+
+```bash
+# Auto-detect OS profile
+vol3 -f memory.raw windows.info.Info
+
+# Process list
+vol3 -f memory.raw windows.pslist.PsList
+
+# Process tree
+vol3 -f memory.raw windows.pstree.PsTree
+
+# Network connections
+vol3 -f memory.raw windows.netstat.NetStat
+
+# DLL list (specific process)
+vol3 -f memory.raw windows.dlllist.DllList --pid 1234
+
+# Process memory dump
+vol3 -f memory.raw windows.memmap.Memmap --pid 1234 --dump
+
+# Registry hives
+vol3 -f memory.raw windows.registry.hivelist.HiveList
+
+# Read registry values
+vol3 -f memory.raw windows.registry.printkey.PrintKey \
+    --key "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+
+# File cache
+vol3 -f memory.raw windows.filescan.FileScan
+
+# Browser artifacts
+vol3 -f memory.raw windows.registry.userassist.UserAssist
+```
+
+---
+
+## 2. Malicious Process Detection
+
+### 2.1 Process Name Masquerading Detection
+
+Detect malware that steals names by comparing against the list of legitimate Windows processes.
+
+```python
+#!/usr/bin/env python3
+"""Parse Volatility3 pslist output → auto-flag suspicious processes CLI"""
+
+import argparse
+import json
+import re
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional
+
+
+# Legitimate Windows system processes and expected parent-child relationships
+LEGIT_PROCESSES: dict[str, dict] = {
+    "System":         {"ppid_name": None,    "expected_count": 1, "expected_path": None},
+    "smss.exe":       {"ppid_name": "System","expected_count": 1, "expected_path": r"System32\smss.exe"},
+    "csrss.exe":      {"ppid_name": "smss.exe","expected_count": (1,3),"expected_path": r"System32\csrss.exe"},
+    "wininit.exe":    {"ppid_name": "smss.exe","expected_count": 1,"expected_path": r"System32\wininit.exe"},
+    "winlogon.exe":   {"ppid_name": "smss.exe","expected_count": (1,5),"expected_path": r"System32\winlogon.exe"},
+    "services.exe":   {"ppid_name": "wininit.exe","expected_count": 1,"expected_path": r"System32\services.exe"},
+    "lsass.exe":      {"ppid_name": "wininit.exe","expected_count": 1,"expected_path": r"System32\lsass.exe"},
+    "svchost.exe":    {"ppid_name": "services.exe","expected_count": (5,99),"expected_path": r"System32\svchost.exe"},
+    "explorer.exe":   {"ppid_name": "userinit.exe","expected_count": (1,5),"expected_path": r"explorer.exe"},
+    "taskhost.exe":   {"ppid_name": "services.exe","expected_count": (0,10),"expected_path": r"System32\taskhost.exe"},
+    "spoolsv.exe":    {"ppid_name": "services.exe","expected_count": 1,"expected_path": r"System32\spoolsv.exe"},
+}
+
+# Common lookalike characters used for name masquerading
+LOOKALIKE_MAP = {
+    "svchost.exe": ["svch0st.exe", "svchos1.exe", "svchosts.exe", "scvhost.exe"],
+    "lsass.exe":   ["lssas.exe", "lsass.exe.exe", "lsasss.exe", "isass.exe"],
+    "explorer.exe":["expl0rer.exe", "explor.exe", "iexplore.exe"],
+    "csrss.exe":   ["cssrs.exe", "csrs.exe"],
+    "winlogon.exe":["winiogon.exe", "winlogin.exe"],
+}
+
+
+@dataclass
+class ProcessEntry:
+    pid: int
+    ppid: int
+    name: str
+    offset: str
+    create_time: str
+    exit_time: str
+    path: str = ""
+    suspicion_flags: list[str] = field(default_factory=list)
+
+
+def run_volatility(memory_file: str, plugin: str) -> str:
+    """Run Volatility3 plugin"""
+    cmd = ["vol3", "-f", memory_file, plugin]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        return result.stdout
+    except FileNotFoundError:
+        print("[!] vol3 command not found. Install volatility3", file=sys.stderr)
+        sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print("[!] Volatility3 timed out", file=sys.stderr)
+        sys.exit(1)
+
+
+def parse_pslist(output: str) -> list[ProcessEntry]:
+    """Parse PsList output"""
+    processes = []
+    lines = output.strip().split('\n')
+
+    for line in lines:
+        # Parse PID PPID ImageFileName format
+        parts = re.split(r'\s{2,}', line.strip())
+        if len(parts) < 4:
+            continue
+        try:
+            pid = int(parts[0])
+            ppid = int(parts[1])
+            name = parts[2]
+            create_time = parts[3] if len(parts) > 3 else ""
+            processes.append(ProcessEntry(
+                pid=pid, ppid=ppid, name=name,
+                offset="", create_time=create_time, exit_time=""
+            ))
+        except (ValueError, IndexError):
+            continue
+
+    return processes
+
+
+def flag_suspicious(processes: list[ProcessEntry]) -> list[ProcessEntry]:
+    """Flag suspicious processes"""
+    name_counts: dict[str, int] = {}
+    pid_to_name: dict[int, str] = {p.pid: p.name for p in processes}
+
+    for p in processes:
+        name_counts[p.name.lower()] = name_counts.get(p.name.lower(), 0) + 1
+
+    # Set of lookalike names (lowercase)
+    all_lookalikes = set()
+    for fakes in LOOKALIKE_MAP.values():
+        all_lookalikes.update(f.lower() for f in fakes)
+
+    for proc in processes:
+        name_lower = proc.name.lower()
+
+        # Detect lookalike name masquerading
+        if name_lower in all_lookalikes:
+            proc.suspicion_flags.append(f"Name masquerading detected: {proc.name}")
+
+        # Abnormal parent process
+        legit = LEGIT_PROCESSES.get(proc.name)
+        if legit:
+            expected_ppid_name = legit.get("ppid_name")
+            actual_ppid_name = pid_to_name.get(proc.ppid, "Unknown")
+            if (expected_ppid_name and
+                    actual_ppid_name.lower() != expected_ppid_name.lower() and
+                    actual_ppid_name != "Unknown"):
+                proc.suspicion_flags.append(
+                    f"Abnormal parent: expected={expected_ppid_name}, actual={actual_ppid_name}"
+                )
+
+            # Abnormal instance count
+            expected_count = legit.get("expected_count", 1)
+            actual_count = name_counts.get(name_lower, 0)
+            if isinstance(expected_count, int) and actual_count != expected_count:
+                proc.suspicion_flags.append(
+                    f"Abnormal count: expected={expected_count}, actual={actual_count}"
+                )
+            elif isinstance(expected_count, tuple):
+                min_c, max_c = expected_count
+                if not (min_c <= actual_count <= max_c):
+                    proc.suspicion_flags.append(
+                        f"Abnormal count: {actual_count} instances (normal: {min_c}–{max_c})"
+                    )
+
+        # Process using lsass name that is not lsass.exe
+        if "lsass" in name_lower and proc.name != "lsass.exe":
+            proc.suspicion_flags.append("Suspected lsass masquerade")
+
+        # Process with no parent PID (orphan, excluding System)
+        if proc.ppid not in pid_to_name and proc.name not in ("System", "[System Process]"):
+            proc.suspicion_flags.append(f"Parent PID {proc.ppid} not found (orphan)")
+
+    return processes
+
+
+def print_analysis(processes: list[ProcessEntry], all_processes: bool = False) -> None:
+    suspicious = [p for p in processes if p.suspicion_flags]
+
+    print(f"\n{'='*60}")
+    print(f"Memory Forensics Process Analysis")
+    print(f"Total processes: {len(processes)} | Suspicious: {len(suspicious)}")
+    print(f"{'='*60}\n")
+
+    if suspicious:
+        print("[Suspicious Process List]")
+        for p in suspicious:
+            print(f"\n  ⚠  PID {p.pid} | PPID {p.ppid} | {p.name}")
+            for flag in p.suspicion_flags:
+                print(f"      → {flag}")
+
+    if all_processes:
+        print("\n[Full Process List]")
+        for p in sorted(processes, key=lambda x: x.pid):
+            icon = "⚠" if p.suspicion_flags else " "
+            print(f"  {icon} PID {p.pid:5d} | PPID {p.ppid:5d} | {p.name}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Memory forensics process analysis CLI")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    analyze_p = sub.add_parser("analyze", help="Analyze memory file directly")
+    analyze_p.add_argument("memory_file", help="Memory dump file")
+    analyze_p.add_argument("-a", "--all", action="store_true", help="Output all processes")
+
+    parse_p = sub.add_parser("parse", help="Parse PsList text output")
+    parse_p.add_argument("pslist_file", help="vol3 PsList output file")
+    parse_p.add_argument("-a", "--all", action="store_true")
+
+    args = parser.parse_args()
+
+    if args.command == "analyze":
+        print(f"[*] Running Volatility3: {args.memory_file}")
+        output = run_volatility(args.memory_file, "windows.pslist.PsList")
+        processes = parse_pslist(output)
+
+    else:
+        output = Path(args.pslist_file).read_text()
+        processes = parse_pslist(output)
+
+    processes = flag_suspicious(processes)
+    print_analysis(processes, getattr(args, 'all', False))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Disk Forensics
+
+### 3.1 Image Acquisition
+
+```bash
+# dd (Linux)
+dd if=/dev/sda of=/forensics/disk.img bs=4M status=progress conv=noerror,sync
+
+# dcfldd (simultaneous hash calculation)
+dcfldd if=/dev/sda of=disk.img hash=sha256 hashlog=hash.txt
+
+# ewfacquire (E01 format)
+ewfacquire /dev/sda
+
+# Integrity verification
+sha256sum disk.img > disk.img.sha256
+sha256sum -c disk.img.sha256
+```
+
+### 3.2 MFT (Master File Table) Analysis
+
+```bash
+# Extract MFT
+icat -f ntfs disk.img 0 > mft.raw  # The Sleuth Kit
+
+# Parse with MFTECmd (Windows)
+MFTECmd.exe -f mft.raw --csv mft_output.csv
+
+# Detect deleted files
+fls -rld disk.img  # -l: long format, -d: deleted files
+
+# Recover specific file
+icat disk.img [inode_number] > recovered_file
+```
+
+### 3.3 Timeline Analysis (MACB)
+
+| Timestamp | Meaning | NTFS Attribute |
+|-----------|---------|----------------|
+| M (Modified) | Last modification of file content | $DATA |
+| A (Accessed) | Last access | $STANDARD_INFO |
+| C (Changed) | Metadata change ($MFT modification) | $STANDARD_INFO |
+| B (Birth) | File creation time | $STANDARD_INFO |
+
+```bash
+# Generate timeline (Plaso)
+log2timeline.py timeline.plaso disk.img
+psort.py -o l2tcsv timeline.plaso > timeline.csv
+
+# Filter (specific time period)
+psort.py timeline.plaso "date > '2026-01-01' AND date < '2026-01-31'"
+```
+
+---
+
+## 4. Forensic Artifact Locations (Windows)
+
+| Artifact | Path | Information |
+|----------|------|-------------|
+| NTUSER.DAT | `%USERPROFILE%\NTUSER.DAT` | User registry |
+| Prefetch | `C:\Windows\Prefetch\*.pf` | Recently executed programs |
+| Amcache | `C:\Windows\AppCompat\Programs\Amcache.hve` | Executable metadata |
+| Shimcache | SYSTEM hive | Execution history |
+| LNK files | `%APPDATA%\Microsoft\Windows\Recent\` | Recent files |
+| Jump Lists | `%APPDATA%\Microsoft\Windows\Recent\AutomaticDestinations\` | Recent files per app |
+| Browser History | `%APPDATA%\Local\Google\Chrome\User Data\Default\History` | Web history |
+| Event Logs | `C:\Windows\System32\winevt\Logs\` | Windows events |
+| MFT | `C:\$MFT` | File system metadata |
+| VSS | `\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy*` | Volume Shadow Copies |

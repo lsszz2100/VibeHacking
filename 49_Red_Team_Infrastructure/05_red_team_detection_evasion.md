@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 레드팀 인프라 탐지 우회 (방어자 관점)
 
 레드팀이 사용하는 C2 트래픽 위장, 리다이렉터 체인, Living Off the Land 기법을 방어자 관점에서 분석한다. 이 내용은 블루팀이 레드팀 TTP를 이해하고 더 효과적인 탐지 룰을 구축하기 위한 참고 자료다.
@@ -518,3 +524,528 @@ tags:
 | 프로세스 인젝션 | API 호출 시퀀스 | 중간 | EDR, Sysmon |
 | Pass-the-Hash | NTLM 인증 소스 IP 불일치 | 낮음 | 윈도우 이벤트 로그 |
 | Kerberoasting | 서비스 티켓 대량 요청 | 낮음 | DC 이벤트 4769 |
+
+---
+
+<a name="english"></a>
+
+# Red Team Infrastructure Detection Evasion (Defender's Perspective)
+
+This document analyzes C2 traffic disguise, redirector chains, and Living Off the Land techniques used by red teams from a defender's perspective. This material serves as a reference for blue teams to understand red team TTPs and build more effective detection rules.
+
+---
+
+## 1. C2 Traffic Disguise Detection
+
+### 1.1 Domain Fronting Detection
+
+Domain Fronting is a technique that uses a CDN domain in the SNI and the actual C2 in the Host header. Defenders can detect mismatches between SNI and Host headers.
+
+```python
+#!/usr/bin/env python3
+"""CDN Domain Fronting Detection System"""
+import argparse
+from scapy.all import TLS, IP, TCP, sniff
+import re
+
+
+class DomainFrontingDetector:
+    CDN_PROVIDERS = {
+        "cloudfront.net", "azureedge.net", "akamaiedge.net",
+        "fastly.net", "cloudflare.com", "cdn.jsdelivr.net",
+    }
+
+    def __init__(self) -> None:
+        self.alerts: list[dict] = []
+
+    def extract_sni(self, pkt) -> str | None:
+        if not (pkt.haslayer(TLS) and pkt.haslayer(IP)):
+            return None
+        try:
+            # Extract TLS ClientHello SNI
+            tls = pkt[TLS]
+            payload = bytes(tls)
+            sni_match = re.search(b"\x00\x00(.{2})([\w\.\-]+)", payload)
+            if sni_match:
+                return sni_match.group(2).decode("utf-8", errors="replace")
+        except Exception:
+            pass
+        return None
+
+    def extract_http_host(self, pkt) -> str | None:
+        if not pkt.haslayer(TCP):
+            return None
+        try:
+            payload = bytes(pkt[TCP].payload)
+            host_match = re.search(rb"Host: ([^\r\n]+)", payload, re.IGNORECASE)
+            if host_match:
+                return host_match.group(1).decode("utf-8", errors="replace")
+        except Exception:
+            pass
+        return None
+
+    def check_fronting(self, pkt) -> None:
+        src = pkt[IP].src if pkt.haslayer(IP) else "unknown"
+        sni = self.extract_sni(pkt)
+        host = self.extract_http_host(pkt)
+
+        if sni and host and sni != host:
+            sni_is_cdn = any(cdn in sni for cdn in self.CDN_PROVIDERS)
+            if sni_is_cdn:
+                alert = {
+                    "src": src,
+                    "sni": sni,
+                    "host": host,
+                    "alert": "Suspected Domain Fronting",
+                }
+                self.alerts.append(alert)
+                print(f"[!] Domain Fronting: {src} | SNI={sni} | Host={host}")
+
+    def start(self, iface: str = "eth0") -> None:
+        print(f"[*] Domain Fronting detection started: {iface}")
+        sniff(iface=iface, filter="tcp port 443", prn=self.check_fronting, store=False)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Domain Fronting Detection")
+    parser.add_argument("-i", "--interface", default="eth0")
+    args = parser.parse_args()
+    DomainFrontingDetector().start(args.interface)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 1.2 C2 Profile-Based Detection (Malleable C2)
+
+Detects traffic characteristics that mimic Cobalt Strike Malleable C2 profiles.
+
+```python
+#!/usr/bin/env python3
+"""Cobalt Strike C2 Traffic Pattern Detection"""
+import re
+from dataclasses import dataclass
+
+
+@dataclass
+class C2Profile:
+    name: str
+    uri_patterns: list[str]
+    user_agent_patterns: list[str]
+    header_indicators: list[str]
+
+
+KNOWN_CS_PROFILES: list[C2Profile] = [
+    C2Profile(
+        "jQuery",
+        ["/jquery-3.3.1.slim.min.js", "/jquery-3.3.2.min.js"],
+        ["Mozilla/5.0.*jQuery"],
+        ["__utmc=", "MUID="],
+    ),
+    C2Profile(
+        "Office365",
+        ["/owa/auth/", "/autodiscover/"],
+        ["Microsoft Office.*"],
+        ["X-MS-Exchange", "X-FEServer"],
+    ),
+    C2Profile(
+        "Ocsp",
+        ["/ocsp", "/ocsp/"],
+        [""],
+        ["Content-Type: application/ocsp-request"],
+    ),
+]
+
+
+class MalleableC2Detector:
+    def __init__(self) -> None:
+        self.compiled_profiles = [
+            (
+                profile.name,
+                [re.compile(p, re.IGNORECASE) for p in profile.uri_patterns if p],
+                [re.compile(p, re.IGNORECASE) for p in profile.user_agent_patterns if p],
+                profile.header_indicators,
+            )
+            for profile in KNOWN_CS_PROFILES
+        ]
+
+    def analyze_request(
+        self,
+        uri: str,
+        user_agent: str,
+        headers: dict[str, str],
+        body: bytes = b"",
+    ) -> dict:
+        matches = []
+
+        for name, uri_pats, ua_pats, header_inds in self.compiled_profiles:
+            uri_match = any(p.search(uri) for p in uri_pats)
+            ua_match = any(p.search(user_agent) for p in ua_pats)
+            header_match = any(ind in str(headers) for ind in header_inds)
+
+            if uri_match or (ua_match and header_match):
+                matches.append(name)
+
+        # Cobalt Strike beacon characteristic detection
+        cs_beacon_indicators = []
+        if len(body) == 48 and not any(c > 127 for c in body[:4]):
+            cs_beacon_indicators.append("CS beacon size (48-byte check-in)")
+        if "Pragma: no-cache" in str(headers) and "Cache-Control: no-cache" in str(headers):
+            cs_beacon_indicators.append("CS default cache header pattern")
+
+        return {
+            "uri": uri,
+            "matched_profiles": matches,
+            "beacon_indicators": cs_beacon_indicators,
+            "suspicious": bool(matches or cs_beacon_indicators),
+        }
+```
+
+---
+
+## 2. Living Off the Land Detection
+
+### 2.1 LOLBAS Anomalous Behavior Detection
+
+```python
+#!/usr/bin/env python3
+"""LOLBAS (Living Off the Land Binaries) Anomalous Execution Detection"""
+import argparse
+import re
+from dataclasses import dataclass
+
+
+@dataclass
+class LOLBASRule:
+    binary: str
+    suspicious_args: list[str]
+    normal_parent_processes: list[str]
+    severity: str
+    description: str
+    mitre: str
+
+
+LOLBAS_RULES: list[LOLBASRule] = [
+    LOLBASRule(
+        "certutil.exe",
+        ["-decode", "-urlcache", "-f http", "-f ftp"],
+        ["cmd.exe", "explorer.exe"],
+        "High",
+        "Certificate utility abused for file download",
+        "T1218.crt",
+    ),
+    LOLBASRule(
+        "mshta.exe",
+        ["http://", "https://", "javascript:", "vbscript:"],
+        ["explorer.exe"],
+        "Critical",
+        "Script execution via HTA file execution",
+        "T1218.005",
+    ),
+    LOLBASRule(
+        "regsvr32.exe",
+        ["/s /n /u /i:http", "scrobj.dll"],
+        ["cmd.exe", "explorer.exe"],
+        "Critical",
+        "Remote script execution via COM object (Squiblydoo)",
+        "T1218.010",
+    ),
+    LOLBASRule(
+        "wmic.exe",
+        ["process call create", "/node:", "os get"],
+        ["cmd.exe"],
+        "High",
+        "Remote code execution via WMIC",
+        "T1047",
+    ),
+    LOLBASRule(
+        "powershell.exe",
+        ["-enc", "-EncodedCommand", "-nop -w hidden", "downloadstring", "iex("],
+        ["cmd.exe", "explorer.exe", "winword.exe", "excel.exe"],
+        "High",
+        "Encoded command execution via PowerShell",
+        "T1059.001",
+    ),
+    LOLBASRule(
+        "bitsadmin.exe",
+        ["/transfer", "/download", "/create"],
+        ["cmd.exe"],
+        "Medium",
+        "File download via BITS",
+        "T1197",
+    ),
+    LOLBASRule(
+        "rundll32.exe",
+        ["javascript:", "vbscript:", "shell32.dll,ShellExec_RunDLL http"],
+        ["cmd.exe", "explorer.exe"],
+        "High",
+        "Script execution via rundll32",
+        "T1218.011",
+    ),
+]
+
+
+class LOLBASDetector:
+    def __init__(self) -> None:
+        self.rules_map = {rule.binary.lower(): rule for rule in LOLBAS_RULES}
+
+    def analyze_process(
+        self,
+        image_name: str,
+        command_line: str,
+        parent_process: str,
+    ) -> list[dict]:
+        findings = []
+        binary = image_name.lower().split("\\")[-1]  # Extract filename from path
+        rule = self.rules_map.get(binary)
+
+        if not rule:
+            return findings
+
+        for suspicious_arg in rule.suspicious_args:
+            if suspicious_arg.lower() in command_line.lower():
+                # More suspicious if parent process is abnormal
+                parent_suspicious = not any(
+                    normal.lower() in parent_process.lower()
+                    for normal in rule.normal_parent_processes
+                )
+
+                findings.append({
+                    "binary": binary,
+                    "technique": rule.mitre,
+                    "severity": "Critical" if parent_suspicious else rule.severity,
+                    "description": rule.description,
+                    "command": command_line[:200],
+                    "parent": parent_process,
+                    "anomalous_parent": parent_suspicious,
+                })
+                break
+
+        return findings
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="LOLBAS Detection Tester")
+    parser.add_argument("--image", required=True, help="Process image name")
+    parser.add_argument("--cmdline", required=True, help="Command line")
+    parser.add_argument("--parent", default="explorer.exe", help="Parent process")
+    args = parser.parse_args()
+
+    detector = LOLBASDetector()
+    findings = detector.analyze_process(args.image, args.cmdline, args.parent)
+
+    if findings:
+        for f in findings:
+            print(f"[{f['severity']}] {f['binary']} — {f['technique']}: {f['description']}")
+    else:
+        print("[*] No anomalous behavior detected")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Redirector Chain Detection
+
+### 3.1 Multi-Hop C2 Traffic Graph Analysis
+
+```python
+#!/usr/bin/env python3
+"""Network Flow-Based C2 Redirector Chain Detection"""
+import argparse
+from collections import defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class NetworkFlow:
+    src_ip: str
+    dst_ip: str
+    dst_port: int
+    bytes_sent: int
+    bytes_recv: int
+    duration: float
+    protocol: str
+
+
+class C2ChainDetector:
+    def __init__(self) -> None:
+        self.connection_graph: dict[str, set[str]] = defaultdict(set)
+        self.flow_stats: dict[tuple, list[NetworkFlow]] = defaultdict(list)
+
+    def add_flow(self, flow: NetworkFlow) -> None:
+        self.connection_graph[flow.src_ip].add(flow.dst_ip)
+        key = (flow.src_ip, flow.dst_ip)
+        self.flow_stats[key].append(flow)
+
+    def detect_beaconing(self, min_beacons: int = 10, jitter_threshold: float = 0.2) -> list[dict]:
+        import statistics
+
+        beaconing = []
+        for (src, dst), flows in self.flow_stats.items():
+            if len(flows) < min_beacons:
+                continue
+
+            # Analyze connection intervals
+            flows_sorted = sorted(flows, key=lambda f: f.duration)
+            intervals = [
+                flows_sorted[i+1].duration - flows_sorted[i].duration
+                for i in range(len(flows_sorted) - 1)
+            ]
+
+            if not intervals:
+                continue
+
+            avg_interval = statistics.mean(intervals)
+            if avg_interval <= 0:
+                continue
+
+            std_interval = statistics.stdev(intervals) if len(intervals) > 1 else 0
+            jitter = std_interval / avg_interval
+
+            if jitter < jitter_threshold:  # Regular intervals = suspected beaconing
+                beaconing.append({
+                    "src": src,
+                    "dst": dst,
+                    "beacon_count": len(flows),
+                    "avg_interval_sec": round(avg_interval, 2),
+                    "jitter": round(jitter, 3),
+                    "confidence": "HIGH" if jitter < 0.1 else "MEDIUM",
+                })
+
+        return beaconing
+
+    def detect_relay_chain(self) -> list[list[str]]:
+        # Detect intermediate redirector nodes (nodes with both inbound and outbound connections)
+        all_sources = set(self.connection_graph.keys())
+        all_destinations = {dst for dsts in self.connection_graph.values() for dst in dsts}
+
+        relay_candidates = all_sources & all_destinations
+
+        chains = []
+        for relay in relay_candidates:
+            inbound = [src for src, dsts in self.connection_graph.items() if relay in dsts]
+            outbound = list(self.connection_graph[relay])
+
+            if inbound and outbound:
+                for src in inbound:
+                    for dst in outbound:
+                        chains.append([src, relay, dst])
+
+        return chains
+
+
+def parse_netflow(log_path: Path) -> list[NetworkFlow]:
+    flows = []
+    for line in log_path.read_text().splitlines()[1:]:  # Skip header
+        parts = line.split(",")
+        if len(parts) < 7:
+            continue
+        try:
+            flows.append(NetworkFlow(
+                src_ip=parts[0].strip(),
+                dst_ip=parts[1].strip(),
+                dst_port=int(parts[2].strip()),
+                bytes_sent=int(parts[3].strip()),
+                bytes_recv=int(parts[4].strip()),
+                duration=float(parts[5].strip()),
+                protocol=parts[6].strip(),
+            ))
+        except (ValueError, IndexError):
+            continue
+    return flows
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="C2 Redirector Chain Detection")
+    parser.add_argument("netflow_log", help="NetFlow CSV log")
+    parser.add_argument("--min-beacons", type=int, default=10)
+    args = parser.parse_args()
+
+    detector = C2ChainDetector()
+    flows = parse_netflow(Path(args.netflow_log))
+
+    for flow in flows:
+        detector.add_flow(flow)
+
+    print(f"[*] Detecting beaconing...")
+    beacons = detector.detect_beaconing(args.min_beacons)
+    for b in beacons:
+        print(f"  [{b['confidence']}] {b['src']} → {b['dst']} | Interval: {b['avg_interval_sec']}s | Jitter: {b['jitter']}")
+
+    print(f"\n[*] Detecting relay chains...")
+    chains = detector.detect_relay_chain()
+    for chain in chains[:10]:
+        print(f"  Chain: {' → '.join(chain)}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. Sigma Rules — Red Team TTP Detection
+
+```yaml
+# Beaconing interval detection (Zeek/Suricata)
+title: Periodic C2 Beaconing Pattern
+id: c3d4e5f6-a7b8-9012-cdef-012345678901
+description: Repeated external communication at regular intervals — suspected C2 beacon
+logsource:
+  product: zeek
+  service: conn
+detection:
+  selection:
+    resp_bytes|lt: 1000    # Only small amounts of data received
+    orig_bytes|lt: 500     # Only small amounts of data sent
+    duration|lt: 5         # Short connection duration
+  condition: selection
+falsepositives:
+  - Regular health checks, NTP, DNS updates
+level: medium
+
+
+---
+# PowerShell encoded command execution
+title: PowerShell Encoded Command with Suspicious Parent
+id: d4e5f6a7-b8c9-0123-def0-123456789012
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith: '\powershell.exe'
+    CommandLine|contains:
+      - '-EncodedCommand'
+      - '-enc '
+  suspicious_parent:
+    ParentImage|endswith:
+      - '\winword.exe'
+      - '\excel.exe'
+      - '\outlook.exe'
+      - '\acrobat.exe'
+  condition: selection and suspicious_parent
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001
+```
+
+---
+
+## 5. Red Team TTP vs Blue Team Detection Matrix
+
+| Red Team Technique | Detection Method | Detection Difficulty | Data Sources |
+|-----------|---------|-----------|-----------|
+| Domain Fronting | SNI/Host header mismatch | Medium | Proxy logs, TLS inspection |
+| DNS C2 | High-entropy subdomains, TXT records | High | DNS query logs |
+| HTTPS C2 | Beacon patterns, certificate analysis | High | NetFlow, TLS logs |
+| LOLBAS | Process parent-child relationships | Low | Sysmon, EDR |
+| Process Injection | API call sequences | Medium | EDR, Sysmon |
+| Pass-the-Hash | NTLM authentication source IP mismatch | Low | Windows Event Logs |
+| Kerberoasting | Mass service ticket requests | Low | DC Event 4769 |

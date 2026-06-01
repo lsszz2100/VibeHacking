@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 탐지 엔지니어링 — Sigma·MITRE ATT&CK 기반 룰 개발
 
 ## 1. 탐지 엔지니어링 개요
@@ -451,3 +457,222 @@ if __name__ == "__main__":
 | `Atomic Red Team` | 기법별 테스트 케이스 |
 | `Caldera` | 자동화 에드버서리 에뮬레이션 |
 | `Purple Teamer` | 탐지 검증 자동화 |
+
+---
+
+<a name="english"></a>
+
+# Detection Engineering — Sigma & MITRE ATT&CK Based Rule Development
+
+## 1. Detection Engineering Overview
+
+Detection engineering is the field of systematically developing rules and logic to analyze attack techniques and detect them.
+
+```
+Detection Engineering Lifecycle:
+  Intelligence → Hypothesis → Rule Development → Testing → Deployment → Tuning
+
+Key Standards:
+  MITRE ATT&CK — Attack technique taxonomy
+  Sigma        — SIEM-agnostic rule format
+  YARA         — File/memory pattern matching
+  Snort/Suricata — Network intrusion detection
+```
+
+---
+
+## 2. Sigma Rule Development
+
+### Sigma Rule Structure
+
+```yaml
+title: Suspicious PowerShell Encoded Command
+id: a2a4b2c3-d4e5-f6g7-h8i9-j0k1l2m3n4o5
+status: experimental
+description: Detects PowerShell execution with encoded commands that may indicate malicious activity
+references:
+  - https://attack.mitre.org/techniques/T1059/001/
+author: Detection Engineering Team
+date: 2024/01/15
+tags:
+  - attack.execution
+  - attack.t1059.001
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    Image|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+    CommandLine|contains|all:
+      - '-enc'
+      - '-nop'
+  condition: selection
+falsepositives:
+  - Legitimate automation scripts
+  - Software deployment tools
+level: medium
+```
+
+### Sigma Rule Conversion
+
+```bash
+# Convert to Splunk SPL
+sigma convert -t splunk rule.yml
+
+# Convert to Elastic EQL
+sigma convert -t elasticsearch-eql rule.yml
+
+# Convert to Microsoft Sentinel KQL
+sigma convert -t microsoft365defender rule.yml
+
+# Validate rule
+sigma check rule.yml
+
+# Batch conversion
+sigma convert -t splunk ./rules/ -o converted_rules/
+```
+
+---
+
+## 3. MITRE ATT&CK Framework
+
+### Technique Coverage Matrix
+
+```
+MITRE ATT&CK Tactics (in order):
+  TA0001 Initial Access        - T1190 Exploit Public-Facing Application
+  TA0002 Execution             - T1059 Command and Scripting Interpreter
+  TA0003 Persistence           - T1053 Scheduled Task/Job
+  TA0004 Privilege Escalation  - T1068 Exploitation for Privilege Escalation
+  TA0005 Defense Evasion       - T1055 Process Injection
+  TA0006 Credential Access     - T1003 OS Credential Dumping
+  TA0007 Discovery             - T1082 System Information Discovery
+  TA0008 Lateral Movement      - T1021 Remote Services
+  TA0009 Collection            - T1005 Data from Local System
+  TA0010 Exfiltration          - T1041 Exfiltration Over C2 Channel
+  TA0011 Command and Control   - T1071 Application Layer Protocol
+```
+
+---
+
+## 4. Detection Rule Development Process
+
+### Step 1: Threat Intelligence Analysis
+
+```python
+#!/usr/bin/env python3
+"""
+Detection rule auto-generation from threat intelligence
+"""
+import anthropic
+import json
+
+client = anthropic.Anthropic()
+
+def generate_detection_rule(ttp_description: str, log_sample: str = "") -> dict:
+    """Generate Sigma rule from ATT&CK technique description"""
+    
+    prompt = f"""
+You are a detection engineering expert.
+Create a Sigma detection rule for the following ATT&CK technique.
+
+Technique description: {ttp_description}
+
+{f"Log sample: {log_sample}" if log_sample else ""}
+
+Requirements:
+1. YAML format Sigma rule
+2. Appropriate log source (windows/linux/network)
+3. False positive minimization
+4. Include ATT&CK tags (attack.tXXXX)
+5. Include testing notes
+
+Respond in JSON format:
+{{
+  "sigma_rule": "YAML content",
+  "description": "rule description",
+  "false_positives": ["FP1", "FP2"],
+  "test_commands": ["command1", "command2"],
+  "mitre_technique": "TXXXX"
+}}
+"""
+    
+    resp = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=2048,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    try:
+        return json.loads(resp.content[0].text)
+    except:
+        return {"raw": resp.content[0].text}
+
+# Usage example
+result = generate_detection_rule(
+    ttp_description="T1003.001 - LSASS Memory Dump using procdump or mimikatz",
+    log_sample="EventID=10 TargetImage=C:\\Windows\\System32\\lsass.exe"
+)
+```
+
+### Step 2: Rule Testing
+
+```bash
+# Test with Atomic Red Team
+# https://github.com/redcanaryco/atomic-red-team
+
+# Execute technique T1059.001 (PowerShell)
+Invoke-AtomicTest T1059.001
+
+# Check if detection rule triggers
+# If no detection: Rule tuning needed
+# If detected: Rule valid
+
+# Cleanup
+Invoke-AtomicTest T1059.001 -Cleanup
+```
+
+---
+
+## 5. Detection Rule Quality Metrics
+
+```
+Detection Rule Evaluation Criteria:
+
+True Positive Rate (TPR):
+  = Actual attacks detected / Total actual attacks
+  Target: > 90%
+
+False Positive Rate (FPR):
+  = Legitimate activity flagged / Total legitimate activity
+  Target: < 5%
+
+Mean Time to Detect (MTTD):
+  = Average time from attack start to detection
+  Target: < 1 hour for critical techniques
+
+Coverage Score (ATT&CK):
+  = Detected techniques / Total ATT&CK techniques
+  Goal: 80%+ coverage for tier 1 techniques
+
+Rule Maintenance:
+  - Weekly: Review false positive rate
+  - Monthly: Add new threat intelligence
+  - Quarterly: Coverage gap analysis
+```
+
+---
+
+## 6. Key Tools
+
+| Tool | Purpose |
+|------|---------|
+| `sigma-cli` | Sigma rule conversion and validation |
+| `sigmac` | Sigma legacy converter |
+| `Uncoder.IO` | Online SIEM query conversion |
+| `MITRE ATT&CK Navigator` | Coverage visualization |
+| `Atomic Red Team` | Test cases per technique |
+| `Caldera` | Automated adversary emulation |
+| `Purple Teamer` | Detection validation automation |

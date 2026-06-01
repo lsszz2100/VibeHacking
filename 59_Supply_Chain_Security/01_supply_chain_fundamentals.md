@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 소프트웨어 공급망 보안 기초
 
 ## 1. 소프트웨어 공급망이란
@@ -548,3 +554,558 @@ if __name__ == "__main__":
 | in-toto 프레임워크 | NYU/Cloud Native | https://in-toto.io |
 | SSDF (SP 800-218) | NIST | https://csrc.nist.gov/Projects/ssdf |
 | OSV 취약점 DB | Google | https://osv.dev |
+
+---
+
+<a name="english"></a>
+
+# Software Supply Chain Security Fundamentals
+
+## 1. What is the Software Supply Chain
+
+The Software Supply Chain refers to the entire process from writing code to distributing software to end users.
+It encompasses open-source libraries, build tools, CI/CD pipelines, deployment infrastructure, and update mechanisms.
+Attackers can infiltrate any point in this chain to inject malicious code into trusted software.
+
+---
+
+## 2. Supply Chain Attack Classification Table
+
+| Attack Stage | Attack Type | Notable Example | Impact Scope | Detection Difficulty |
+|--------------|-------------|-----------------|--------------|----------------------|
+| **Source Code** | Malicious code injection into open-source packages | event-stream, XZ Utils | All users of the affected package | High |
+| **Source Code** | Typosquatting | colourama vs colorama | Users who install by mistake | Medium |
+| **Source Code** | Dependency confusion | Alex Birsan research (2021) | Organizations using internal package names | High |
+| **Source Code** | Account takeover | ua-parser-js (npm) | Packages with millions of downloads | Very High |
+| **Build** | Build server compromise | SolarWinds SUNBURST | 18,000+ organizations | Very High |
+| **Build** | Compiler backdoor | Ken Thompson's Trusting Trust | All compiled software | Extremely High |
+| **Build** | CI/CD pipeline attack | Codecov bash uploader | CI environment variable theft | High |
+| **Build** | Artifact tampering | Checksum bypass | Pre-distribution stage | Medium |
+| **Distribution** | Package registry compromise | Malicious PyPI packages | Users who download the affected package | Medium |
+| **Distribution** | CDN/mirror server attack | Package mirror compromise | Mirror users | High |
+| **Distribution** | Signing key theft | Code-signing certificate theft | Signature verification bypass | High |
+| **Update** | Auto-update mechanism abuse | NotPetya (M.E.Doc) | Ukrainian companies | High |
+| **Update** | Rollback attack | Reuse of old-version vulnerabilities | Update systems | Medium |
+| **Update** | Man-in-the-middle attack | TLS-bypassing updates | Systems without encryption | Low |
+
+---
+
+## 3. SLSA Framework Levels
+
+SLSA (Supply chain Levels for Software Artifacts) is a supply chain security framework proposed by Google.
+It defines tiered security requirements to ensure the integrity of software artifacts.
+
+| SLSA Level | Name | Core Requirements | Primary Protection | Achievement Difficulty |
+|------------|------|-------------------|-------------------|------------------------|
+| **Level 0** | None | SLSA not applied | None | N/A |
+| **Level 1** | Documented | Fully automated build process, Provenance generation | Accidental tampering | Low |
+| **Level 2** | Verified | Verified hosted build service, signed Provenance | Single insider threat | Medium |
+| **Level 3** | Hardened | Hardened build environment, non-falsifiable Provenance | Complex insider threats | High |
+| **Level 4** | Maximum Hardening | Two-person review required, hermetic reproducible builds | Advanced supply chain attacks | Very High |
+
+> **Note**: Starting from SLSA v1.0, Level 4 has been reorganized as a separate track.
+
+### 3.1 SLSA Provenance Required Elements
+
+| Element | Description | Example |
+|---------|-------------|---------|
+| `buildType` | Build system identifier | `https://github.com/slsa-framework/slsa-github-generator` |
+| `builder.id` | Build performer URI | Verified CI/CD service ID |
+| `invocation.configSource` | Source of build configuration | `.github/workflows/release.yml` at a specific commit |
+| `materials` | List of input artifacts | Source code hashes, dependency hashes |
+| `buildStartedOn` | Build start timestamp | ISO 8601 format |
+| `completeness` | Provenance completeness indicator | parameters, environment, materials |
+
+---
+
+## 4. Supply Chain Threat Actor Classification
+
+| Actor Type | Purpose | Skill Level | Notable Examples | Primary TTPs |
+|------------|---------|-------------|------------------|--------------|
+| **Nation-state APT** | Intelligence gathering, sabotage | Highest | Lazarus Group, APT29 | Build system compromise, long-term persistence |
+| **Cybercriminal organizations** | Financial gain | High | Cl0p, LockBit-affiliated groups | Ransomware delivery, credential theft |
+| **Hacktivists** | Political messaging | Medium | Anonymous-affiliated groups | Website defacement, DDoS |
+| **Insiders** | Personal gain/grievance | Variable | Disgruntled or former employees | Source code leakage, backdoor insertion |
+| **Malicious open-source contributors** | Varied | Medium–High | XZ Utils attacker | Build trust then insert malicious code |
+| **Researchers** | Vulnerability discovery/disclosure | High | Alex Birsan | Dependency confusion PoC |
+
+---
+
+## 5. SBOM (Software Bill of Materials) Overview
+
+An SBOM is a complete list of all components included in a piece of software.
+Like an ingredient list for food, it records every library, version, and license information in software.
+
+### 5.1 Major SBOM Standards
+
+| Standard | Governing Body | Formats | Key Characteristics |
+|----------|---------------|---------|---------------------|
+| **SPDX** | Linux Foundation | JSON, YAML, RDF, TV | ISO standard (ISO/IEC 5962:2021), license-focused |
+| **CycloneDX** | OWASP | JSON, XML | Security-focused, VEX support |
+| **SWID** | ISO/IEC | XML | Enterprise asset management focused |
+
+---
+
+## 6. Python CLI: SBOM Generator
+
+```python
+#!/usr/bin/env python3
+"""
+SBOM (Software Bill of Materials) Generator
+Supported formats: SPDX, CycloneDX, JSON
+Supported files: requirements.txt, package.json, pom.xml
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import sys
+import uuid
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+# ─────────────────────────── Data Classes ───────────────────────────
+
+@dataclass
+class Component:
+    """Software component"""
+    name: str
+    version: str
+    package_manager: str           # pip, npm, maven
+    license_info: str = "NOASSERTION"
+    purl: str = ""                 # Package URL
+    checksum_sha256: str = ""
+    homepage: str = ""
+    description: str = ""
+    dependencies: list[str] = field(default_factory=list)
+
+    def to_purl(self) -> str:
+        """Generate Package URL"""
+        pm_map = {
+            "pip": "pypi",
+            "npm": "npm",
+            "maven": "maven",
+        }
+        pkg_type = pm_map.get(self.package_manager, self.package_manager)
+        return f"pkg:{pkg_type}/{self.name}@{self.version}"
+
+
+@dataclass
+class SBOMDocument:
+    """SBOM document"""
+    document_name: str
+    document_namespace: str
+    spdx_version: str = "SPDX-2.3"
+    data_license: str = "CC0-1.0"
+    created: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
+    components: list[Component] = field(default_factory=list)
+    project_path: Path = field(default_factory=Path)
+
+
+# ─────────────────────────── Parsers ───────────────────────────
+
+class RequirementsTxtParser:
+    """Parse requirements.txt"""
+
+    COMMENT_RE = re.compile(r"#.*$")
+    VERSION_SPEC_RE = re.compile(
+        r"^([A-Za-z0-9_\-\.]+)\s*([><=!~^]+\s*[\d\.]+[\w\.\-\*]*)?.*$"
+    )
+    EXTRAS_RE = re.compile(r"\[.*?\]")
+
+    def parse(self, file_path: Path) -> list[Component]:
+        components: list[Component] = []
+        try:
+            text = file_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            print(f"[ERROR] Failed to read {file_path}: {exc}", file=sys.stderr)
+            return components
+
+        for raw_line in text.splitlines():
+            line = self.COMMENT_RE.sub("", raw_line).strip()
+            if not line or line.startswith(("-r", "-c", "--")):
+                continue
+            line = self.EXTRAS_RE.sub("", line)
+            m = self.VERSION_SPEC_RE.match(line)
+            if not m:
+                continue
+            name = m.group(1).strip()
+            version_spec = (m.group(2) or "").strip()
+            version = re.sub(r"[><=!~^]", "", version_spec).strip() or "unknown"
+            comp = Component(
+                name=name,
+                version=version,
+                package_manager="pip",
+            )
+            comp.purl = comp.to_purl()
+            components.append(comp)
+        return components
+
+
+class PackageJsonParser:
+    """Parse package.json"""
+
+    def parse(self, file_path: Path) -> list[Component]:
+        components: list[Component] = []
+        try:
+            data: dict[str, Any] = json.loads(file_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"[ERROR] Failed to parse {file_path}: {exc}", file=sys.stderr)
+            return components
+
+        all_deps: dict[str, str] = {}
+        for key in ("dependencies", "devDependencies", "peerDependencies"):
+            all_deps.update(data.get(key, {}))
+
+        for name, version_range in all_deps.items():
+            version = re.sub(r"[^0-9\.]", "", version_range) or version_range
+            comp = Component(
+                name=name,
+                version=version,
+                package_manager="npm",
+            )
+            comp.purl = comp.to_purl()
+            components.append(comp)
+        return components
+
+
+class PomXmlParser:
+    """Parse pom.xml (Maven)"""
+
+    NS = {"mvn": "http://maven.apache.org/POM/4.0.0"}
+
+    def parse(self, file_path: Path) -> list[Component]:
+        components: list[Component] = []
+        try:
+            tree = ET.parse(file_path)
+        except (OSError, ET.ParseError) as exc:
+            print(f"[ERROR] Failed to parse {file_path}: {exc}", file=sys.stderr)
+            return components
+
+        root = tree.getroot()
+        # Auto-detect namespace
+        ns_match = re.match(r"\{(.*?)\}", root.tag)
+        ns = {"mvn": ns_match.group(1)} if ns_match else {}
+        tag = lambda t: f"mvn:{t}" if ns else t  # noqa: E731
+
+        deps_elem = root.find(f".//{tag('dependencies')}", ns)
+        if deps_elem is None:
+            return components
+
+        for dep in deps_elem.findall(tag("dependency"), ns):
+            group_id_elem = dep.find(tag("groupId"), ns)
+            artifact_elem = dep.find(tag("artifactId"), ns)
+            version_elem = dep.find(tag("version"), ns)
+
+            group_id = group_id_elem.text.strip() if group_id_elem is not None else ""
+            artifact_id = artifact_elem.text.strip() if artifact_elem is not None else ""
+            version = version_elem.text.strip() if version_elem is not None else "unknown"
+
+            if not artifact_id:
+                continue
+
+            name = f"{group_id}:{artifact_id}" if group_id else artifact_id
+            comp = Component(
+                name=name,
+                version=version,
+                package_manager="maven",
+            )
+            comp.purl = comp.to_purl()
+            components.append(comp)
+        return components
+
+
+# ─────────────────────────── SBOM Generator ───────────────────────────
+
+class SBOMGenerator:
+    """Main SBOM generator class"""
+
+    PARSERS = {
+        "requirements.txt": RequirementsTxtParser,
+        "package.json": PackageJsonParser,
+        "pom.xml": PomXmlParser,
+    }
+
+    def __init__(self, project_path: Path):
+        self.project_path = project_path
+
+    def discover_manifest_files(self) -> list[tuple[str, Path]]:
+        """Discover dependency manifest files within the project"""
+        found: list[tuple[str, Path]] = []
+        for manifest_name in self.PARSERS:
+            for manifest_path in self.project_path.rglob(manifest_name):
+                # Exclude node_modules, .git, etc.
+                if any(part.startswith(".") or part in ("node_modules", "__pycache__")
+                       for part in manifest_path.parts):
+                    continue
+                found.append((manifest_name, manifest_path))
+        return found
+
+    def collect_components(self) -> list[Component]:
+        """Collect components from all manifests"""
+        all_components: list[Component] = []
+        manifest_files = self.discover_manifest_files()
+
+        if not manifest_files:
+            print("[WARNING] No dependency files found.", file=sys.stderr)
+            return all_components
+
+        for manifest_name, manifest_path in manifest_files:
+            print(f"[DETECTED] {manifest_path}", file=sys.stderr)
+            parser_cls = self.PARSERS[manifest_name]
+            parser = parser_cls()
+            components = parser.parse(manifest_path)
+            print(f"  -> {len(components)} components found", file=sys.stderr)
+            all_components.extend(components)
+
+        # Deduplicate (by name + version + package_manager)
+        seen: set[tuple[str, str, str]] = set()
+        unique: list[Component] = []
+        for comp in all_components:
+            key = (comp.name, comp.version, comp.package_manager)
+            if key not in seen:
+                seen.add(key)
+                unique.append(comp)
+        return unique
+
+    def build_document(self) -> SBOMDocument:
+        """Build SBOM document"""
+        components = self.collect_components()
+        doc = SBOMDocument(
+            document_name=self.project_path.name,
+            document_namespace=f"https://sbom.example.com/{uuid.uuid4()}",
+            project_path=self.project_path,
+            components=components,
+        )
+        return doc
+
+
+# ─────────────────────────── Output Formatters ───────────────────────────
+
+class SPDXFormatter:
+    """SPDX 2.3 format output"""
+
+    def format(self, doc: SBOMDocument) -> str:
+        lines: list[str] = [
+            f"SPDXVersion: {doc.spdx_version}",
+            f"DataLicense: {doc.data_license}",
+            f"SPDXID: SPDXRef-DOCUMENT",
+            f"DocumentName: {doc.document_name}",
+            f"DocumentNamespace: {doc.document_namespace}",
+            f"Created: {doc.created}",
+            f"Creator: Tool: sbom-generator-py",
+            "",
+        ]
+        for i, comp in enumerate(doc.components, start=1):
+            pkg_id = f"SPDXRef-Package-{i}"
+            lines += [
+                f"PackageName: {comp.name}",
+                f"SPDXID: {pkg_id}",
+                f"PackageVersion: {comp.version}",
+                f"PackageDownloadLocation: NOASSERTION",
+                f"FilesAnalyzed: false",
+                f"PackageLicenseConcluded: {comp.license_info}",
+                f"PackageLicenseDeclared: {comp.license_info}",
+                f"PackageCopyrightText: NOASSERTION",
+            ]
+            if comp.purl:
+                lines.append(f"ExternalRef: PACKAGE-MANAGER purl {comp.purl}")
+            lines.append("")
+        return "\n".join(lines)
+
+
+class CycloneDXFormatter:
+    """CycloneDX 1.4 JSON format output"""
+
+    def format(self, doc: SBOMDocument) -> str:
+        bom: dict[str, Any] = {
+            "bomFormat": "CycloneDX",
+            "specVersion": "1.4",
+            "serialNumber": f"urn:uuid:{uuid.uuid4()}",
+            "version": 1,
+            "metadata": {
+                "timestamp": doc.created,
+                "tools": [{"name": "sbom-generator-py", "version": "1.0.0"}],
+                "component": {
+                    "type": "application",
+                    "name": doc.document_name,
+                },
+            },
+            "components": [],
+        }
+        for comp in doc.components:
+            entry: dict[str, Any] = {
+                "type": "library",
+                "name": comp.name,
+                "version": comp.version,
+                "licenses": [{"expression": comp.license_info}],
+            }
+            if comp.purl:
+                entry["purl"] = comp.purl
+            if comp.checksum_sha256:
+                entry["hashes"] = [{"alg": "SHA-256", "content": comp.checksum_sha256}]
+            bom["components"].append(entry)
+        return json.dumps(bom, ensure_ascii=False, indent=2)
+
+
+class JSONFormatter:
+    """Simple JSON format output"""
+
+    def format(self, doc: SBOMDocument) -> str:
+        result: dict[str, Any] = {
+            "document": {
+                "name": doc.document_name,
+                "namespace": doc.document_namespace,
+                "created": doc.created,
+                "generator": "sbom-generator-py",
+            },
+            "statistics": {
+                "total_components": len(doc.components),
+                "by_package_manager": self._count_by_pm(doc.components),
+            },
+            "components": [
+                {
+                    "name": c.name,
+                    "version": c.version,
+                    "package_manager": c.package_manager,
+                    "purl": c.purl,
+                    "license": c.license_info,
+                }
+                for c in doc.components
+            ],
+        }
+        return json.dumps(result, ensure_ascii=False, indent=2)
+
+    def _count_by_pm(self, components: list[Component]) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for comp in components:
+            counts[comp.package_manager] = counts.get(comp.package_manager, 0) + 1
+        return counts
+
+
+FORMATTERS = {
+    "spdx": SPDXFormatter,
+    "cyclonedx": CycloneDXFormatter,
+    "json": JSONFormatter,
+}
+
+
+# ─────────────────────────── CLI ───────────────────────────
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="sbom-generator",
+        description="Software Supply Chain SBOM Generator",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Usage examples:
+  python3 01_supply_chain_fundamentals.py --project-path ./myproject
+  python3 01_supply_chain_fundamentals.py --project-path . --output-format cyclonedx
+  python3 01_supply_chain_fundamentals.py --project-path . --output-format spdx --output sbom.spdx
+        """,
+    )
+    parser.add_argument(
+        "--project-path",
+        type=Path,
+        default=Path("."),
+        metavar="PATH",
+        help="Path to the project to analyze (default: current directory)",
+    )
+    parser.add_argument(
+        "--output-format",
+        choices=["spdx", "cyclonedx", "json"],
+        default="json",
+        metavar="FORMAT",
+        help="Output format (spdx | cyclonedx | json, default: json)",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        metavar="FILE",
+        help="Output file path (prints to stdout if not specified)",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose logging",
+    )
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    project_path: Path = args.project_path.resolve()
+    if not project_path.exists():
+        print(f"[ERROR] Path does not exist: {project_path}", file=sys.stderr)
+        return 1
+    if not project_path.is_dir():
+        print(f"[ERROR] Not a directory: {project_path}", file=sys.stderr)
+        return 1
+
+    print(f"[START] Analyzing project: {project_path}", file=sys.stderr)
+
+    generator = SBOMGenerator(project_path)
+    doc = generator.build_document()
+
+    formatter_cls = FORMATTERS[args.output_format]
+    formatter = formatter_cls()
+    output_text = formatter.format(doc)
+
+    if args.output:
+        try:
+            args.output.write_text(output_text, encoding="utf-8")
+            print(f"[DONE] SBOM saved: {args.output}", file=sys.stderr)
+        except OSError as exc:
+            print(f"[ERROR] Failed to save file: {exc}", file=sys.stderr)
+            return 1
+    else:
+        print(output_text)
+
+    print(
+        f"[SUMMARY] Analysis complete for {len(doc.components)} components "
+        f"(format: {args.output_format})",
+        file=sys.stderr,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+---
+
+## 7. Supply Chain Security Adoption Roadmap
+
+| Phase | Activities | Duration | Priority |
+|-------|-----------|----------|----------|
+| **Phase 1: Gain Visibility** | Automate SBOM generation, identify dependency inventory | 1–2 months | Urgent |
+| **Phase 2: Vulnerability Management** | CVE scanning, establish patching process | 2–3 months | High |
+| **Phase 3: Build Hardening** | Reproducible builds, Provenance generation | 3–6 months | High |
+| **Phase 4: Signing Infrastructure** | Code signing, artifact signing adoption | 4–8 months | Medium |
+| **Phase 5: Continuous Monitoring** | Runtime verification, vendor assessment | Ongoing | Medium |
+
+---
+
+## 8. Key Reference Resources
+
+| Resource | Governing Body | URL |
+|----------|---------------|-----|
+| SLSA Framework | OpenSSF | https://slsa.dev |
+| SPDX Standard | Linux Foundation | https://spdx.dev |
+| CycloneDX | OWASP | https://cyclonedx.org |
+| in-toto Framework | NYU/Cloud Native | https://in-toto.io |
+| SSDF (SP 800-218) | NIST | https://csrc.nist.gov/Projects/ssdf |
+| OSV Vulnerability DB | Google | https://osv.dev |

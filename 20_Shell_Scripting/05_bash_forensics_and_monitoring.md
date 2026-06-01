@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Bash 포렌식·모니터링 자동화 — 로그 분석·이상 탐지·인시던트 대응
 
 ## 1. 시스템 포렌식 수집 자동화
@@ -407,3 +413,236 @@ echo "  4. 포렌식 이미징 후 시스템 종료"
 | 파일 무결성 | inotifywait | 실시간 변경 탐지 + 해시 비교 |
 | 인시던트 대응 | bash | 은닉 프로세스·지속성·악성 파일 |
 | 메모리 획득 | avml/LiME | 커널 모듈 없이 메모리 덤프 |
+
+---
+
+<a name="english"></a>
+
+# Bash Forensics & Monitoring Automation — Log Analysis, Anomaly Detection, Incident Response
+
+## 1. System Forensics Collection Automation
+
+```bash
+#!/bin/bash
+# forensics_collection.sh - Live forensics data collection
+OUTPUT_DIR="forensics_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$OUTPUT_DIR"
+
+echo "[*] Collecting forensic data..."
+
+# Process information
+ps auxf > "$OUTPUT_DIR/processes.txt"
+ls -la /proc/*/exe 2>/dev/null | grep -v Permission > "$OUTPUT_DIR/proc_exe.txt"
+
+# Network connections
+netstat -anltp 2>/dev/null > "$OUTPUT_DIR/network.txt"
+ss -anltp > "$OUTPUT_DIR/ss.txt"
+
+# Login history
+last -F > "$OUTPUT_DIR/login_history.txt"
+lastlog > "$OUTPUT_DIR/lastlog.txt"
+w > "$OUTPUT_DIR/current_users.txt"
+
+# Cron jobs
+for user in $(cut -d: -f1 /etc/passwd); do
+    crontab -l -u "$user" 2>/dev/null >> "$OUTPUT_DIR/crontabs.txt"
+done
+ls -la /etc/cron* > "$OUTPUT_DIR/system_crons.txt"
+
+# Startup/persistence mechanisms
+ls -la /etc/rc*.d/ >> "$OUTPUT_DIR/startup.txt"
+systemctl list-units --type=service >> "$OUTPUT_DIR/services.txt"
+
+# Recent file modifications (last 24h)
+find / -mtime -1 -type f 2>/dev/null | grep -v proc > "$OUTPUT_DIR/recent_files.txt"
+
+# SUID/SGID files
+find / -perm -4000 -o -perm -2000 2>/dev/null > "$OUTPUT_DIR/suid_sgid.txt"
+
+# Hash sensitive files
+for f in /etc/passwd /etc/shadow /etc/hosts /etc/sudoers; do
+    [ -f "$f" ] && md5sum "$f" >> "$OUTPUT_DIR/file_hashes.txt"
+done
+
+echo "[+] Forensic collection complete: $OUTPUT_DIR/"
+```
+
+---
+
+## 2. Log Analysis and Anomaly Detection
+
+```python
+#!/usr/bin/env python3
+"""
+Automated log analysis and anomaly detection
+Analyzes auth.log for brute force, user enumeration, off-hours logins
+"""
+import re
+from datetime import datetime
+from collections import defaultdict
+from pathlib import Path
+
+def analyze_auth_log(log_path: str = "/var/log/auth.log") -> dict:
+    """Analyze authentication logs for anomalies"""
+    
+    results = {
+        "brute_force": [],
+        "off_hours_logins": [],
+        "new_users": [],
+        "sudo_escalations": []
+    }
+    
+    # Parse log
+    failed_logins = defaultdict(list)
+    successful_logins = []
+    
+    log_pattern = re.compile(
+        r'(\w{3}\s+\d+\s+\d+:\d+:\d+)\s+\S+\s+sshd\[(\d+)\]:\s+(.*)'
+    )
+    
+    failed_pattern = re.compile(r'Failed password for (?:invalid user )?(\S+) from (\S+)')
+    success_pattern = re.compile(r'Accepted (\S+) for (\S+) from (\S+)')
+    
+    with open(log_path, 'r', errors='ignore') as f:
+        for line in f:
+            match = log_pattern.match(line)
+            if not match:
+                continue
+            
+            timestamp_str, pid, message = match.groups()
+            
+            # Failed login attempt
+            failed = failed_pattern.search(message)
+            if failed:
+                user, ip = failed.groups()
+                failed_logins[ip].append({
+                    "time": timestamp_str,
+                    "user": user
+                })
+            
+            # Successful login
+            success = success_pattern.search(message)
+            if success:
+                method, user, ip = success.groups()
+                successful_logins.append({
+                    "time": timestamp_str,
+                    "user": user,
+                    "ip": ip,
+                    "method": method
+                })
+    
+    # Detect brute force (>10 failures from same IP)
+    for ip, attempts in failed_logins.items():
+        if len(attempts) > 10:
+            results["brute_force"].append({
+                "ip": ip,
+                "count": len(attempts),
+                "users_tried": list(set(a["user"] for a in attempts))
+            })
+    
+    # Detect off-hours logins (outside 7am-7pm)
+    for login in successful_logins:
+        # Parse hour from timestamp
+        try:
+            hour = int(login["time"].split(":")[0].split()[-1])
+            if hour < 7 or hour > 19:
+                results["off_hours_logins"].append(login)
+        except:
+            pass
+    
+    return results
+
+if __name__ == "__main__":
+    results = analyze_auth_log()
+    
+    if results["brute_force"]:
+        print(f"[!] Brute force detected from {len(results['brute_force'])} IPs")
+        for bf in results["brute_force"][:5]:
+            print(f"    {bf['ip']}: {bf['count']} attempts")
+    
+    if results["off_hours_logins"]:
+        print(f"[!] Off-hours logins: {len(results['off_hours_logins'])}")
+```
+
+---
+
+## 3. File Integrity Monitoring
+
+```bash
+#!/bin/bash
+# file_integrity_monitor.sh - Real-time file change detection
+
+WATCH_DIRS="/etc /usr/bin /usr/sbin /bin /sbin"
+BASELINE_FILE="/var/lib/fim/baseline.db"
+ALERT_LOG="/var/log/fim_alerts.log"
+
+mkdir -p "$(dirname "$BASELINE_FILE")"
+
+# Create baseline
+create_baseline() {
+    echo "[*] Creating file integrity baseline..."
+    for dir in $WATCH_DIRS; do
+        find "$dir" -type f 2>/dev/null -exec sha256sum {} \; 2>/dev/null
+    done > "$BASELINE_FILE"
+    echo "[+] Baseline created: $(wc -l < "$BASELINE_FILE") files"
+}
+
+# Check against baseline
+check_integrity() {
+    echo "[*] Checking file integrity..."
+    local changes=0
+    
+    while IFS= read -r line; do
+        expected_hash="${line%% *}"
+        filepath="${line#* }"
+        filepath="${filepath:1}"  # Remove leading space
+        
+        if [ ! -f "$filepath" ]; then
+            echo "$(date): DELETED: $filepath" | tee -a "$ALERT_LOG"
+            ((changes++))
+        else
+            actual_hash=$(sha256sum "$filepath" 2>/dev/null | cut -d' ' -f1)
+            if [ "$expected_hash" != "$actual_hash" ]; then
+                echo "$(date): MODIFIED: $filepath" | tee -a "$ALERT_LOG"
+                ((changes++))
+            fi
+        fi
+    done < "$BASELINE_FILE"
+    
+    echo "[+] Check complete. Changes: $changes"
+}
+
+# Real-time monitoring with inotify
+monitor_realtime() {
+    echo "[*] Starting real-time monitoring..."
+    inotifywait -m -r -e modify,create,delete,move \
+        --format '%T %w%f %e' --timefmt '%Y-%m-%d %H:%M:%S' \
+        $WATCH_DIRS 2>/dev/null | \
+    while read -r event; do
+        echo "$event" | tee -a "$ALERT_LOG"
+        # Alert if critical file modified
+        if echo "$event" | grep -qE '/etc/passwd|/etc/shadow|/etc/sudoers'; then
+            logger -p security.critical "FIM ALERT: Critical file modified: $event"
+        fi
+    done
+}
+
+case "${1:-help}" in
+    baseline) create_baseline ;;
+    check)    check_integrity ;;
+    monitor)  monitor_realtime ;;
+    *) echo "Usage: $0 {baseline|check|monitor}" ;;
+esac
+```
+
+---
+
+## 4. Automated Log Collection Summary
+
+| Task | Tool | Collection Items |
+|------|------|----------------|
+| Live collection | bash + coreutils | processes, network, files, cron |
+| Log analysis | Python + re | brute force, user enumeration, off-hours logins |
+| File integrity | inotifywait | real-time change detection + hash comparison |
+| Incident response | bash | hidden processes, persistence, malicious files |
+| Memory acquisition | avml/LiME | memory dump without kernel module |

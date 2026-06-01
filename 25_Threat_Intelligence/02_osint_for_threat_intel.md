@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # OSINT — 위협 인텔리전스를 위한 오픈소스 정보 수집
 
 ## 1. OSINT 수집 체계
@@ -301,7 +307,7 @@ import struct
 import argparse
 
 async def jarm_fingerprint(host: str, port: int) -> str:
-    """간략화된 JARM 핑거프린트 (실전에서는 jarm 라이브러리 사용)"""
+    """Simplified JARM fingerprint (use jarm library in production)"""
     fingerprints = []
     tls_versions = [
         ssl.TLSVersion.TLSv1_2,
@@ -333,16 +339,16 @@ async def scan_c2_candidates(ips: list[str]) -> None:
     }
     for ip in ips:
         fp = await jarm_fingerprint(ip, 443)
-        label = "알 수 없음"
+        label = "Unknown"
         for sig, name in KNOWN_C2_JARMS.items():
             if sig in fp:
-                label = f"[!] {name} C2 의심"
+                label = f"[!] Suspected {name} C2"
                 break
         print(f"  {ip}: {fp[:32]}... — {label}")
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="C2 인프라 탐지")
-    parser.add_argument("ips", nargs="+", help="조사할 IP 목록")
+    parser = argparse.ArgumentParser(description="C2 Infrastructure Detection")
+    parser.add_argument("ips", nargs="+", help="IP list to investigate")
     args = parser.parse_args()
     asyncio.run(scan_c2_candidates(args.ips))
 
@@ -375,12 +381,12 @@ import requests
 import argparse
 
 def search_via_tor(query: str, timeout: int = 30) -> str:
-    """Tor SOCKS5 프록시 경유 검색 (Tor 데몬 실행 필요)"""
+    """Search via Tor SOCKS5 proxy (requires running Tor daemon)"""
     proxies = {
         "http":  "socks5h://127.0.0.1:9050",
         "https": "socks5h://127.0.0.1:9050",
     }
-    # Ahmia.fi — 다크웹 검색엔진 (합법적 서비스)
+    # Ahmia.fi — dark web search engine (legal service)
     resp = requests.get(
         "https://ahmia.fi/search/",
         params={"q": query},
@@ -390,7 +396,7 @@ def search_via_tor(query: str, timeout: int = 30) -> str:
     return resp.text
 
 def check_credential_leak(email_domain: str) -> None:
-    """Have I Been Pwned API로 도메인 크레덴셜 유출 확인"""
+    """Check domain credential leaks via Have I Been Pwned API"""
     resp = requests.get(
         f"https://haveibeenpwned.com/api/v3/breachesaccount/{email_domain}",
         headers={"hibp-api-key": "YOUR_API_KEY"},
@@ -398,15 +404,436 @@ def check_credential_leak(email_domain: str) -> None:
     )
     if resp.status_code == 200:
         breaches = resp.json()
-        print(f"[!] {email_domain} 유출 이력 {len(breaches)}건:")
+        print(f"[!] {email_domain} — {len(breaches)} breach(es) found:")
         for b in breaches:
             print(f"  {b['Name']} ({b['BreachDate']}) — {', '.join(b['DataClasses'][:3])}")
     elif resp.status_code == 404:
-        print(f"[+] {email_domain} 유출 이력 없음")
+        print(f"[+] {email_domain} — No breach history found")
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="다크웹 및 크레덴셜 인텔리전스")
-    parser.add_argument("--domain", help="유출 확인할 도메인")
+    parser = argparse.ArgumentParser(description="Dark Web and Credential Intelligence")
+    parser.add_argument("--domain", help="Domain to check for leaks")
+    args = parser.parse_args()
+    if args.domain:
+        check_credential_leak(args.domain)
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+<a name="english"></a>
+
+# OSINT — Open Source Intelligence for Threat Intelligence
+
+## 1. OSINT Collection Framework
+
+```
+OSINT Sources:
+  ┌──────────────────────────────────────────┐
+  │ Internet Scan Data: Shodan, Censys, FOFA │
+  │ Passive DNS: PassiveTotal, SecurityTrails │
+  │ Malware DB: VirusTotal, MalwareBazaar     │
+  │ Dark Web Forums: Tor-based intel feeds    │
+  │ Social Media: Twitter/X, Telegram channels│
+  │ Code Repositories: GitHub/GitLab leaks   │
+  │ Certificate Transparency: crt.sh, Censys  │
+  └──────────────────────────────────────────┘
+```
+
+---
+
+## 2. Shodan — Internet-Exposed Asset Discovery
+
+Use the Shodan CLI to discover internet-exposed devices and services. Search for servers with specific vulnerabilities or devices using default passwords.
+
+```bash
+# Install Shodan CLI
+pip install shodan
+shodan init YOUR_API_KEY
+
+# Basic search
+shodan search "apache 2.4"
+shodan search 'product:"Apache httpd" port:443 country:"KR"'
+
+# Assets with specific vulnerabilities
+shodan search 'vuln:CVE-2021-44228'   # Log4Shell
+shodan search 'vuln:CVE-2024-21762'   # Fortinet RCE
+
+# Organization-specific exposed assets
+shodan search 'org:"Company Name"'
+shodan search 'ssl.cert.subject.cn:"*.example.com"'
+
+# IP information
+shodan host 203.0.113.5
+
+# Subdomain enumeration for a domain
+shodan domain example.com
+
+# Cobalt Strike C2 detection (Beacon configuration fingerprints)
+shodan search 'product:"Cobalt Strike Beacon"'
+shodan search 'ssl.jarm:07d14d16d21d21d07c42d41d00041d24a458a375eef0c576d23a7bab9a9fb1'
+```
+
+Use the Shodan API to detect Cobalt Strike C2 servers. Identify malicious infrastructure using distinctive response patterns from beacon configurations.
+
+```python
+import shodan
+import argparse
+import json
+
+def scan_org_exposure(api_key: str, org: str) -> None:
+    api = shodan.Shodan(api_key)
+    try:
+        results = api.search(f'org:"{org}"', limit=100)
+        print(f"[*] {org} — {results['total']} exposed assets")
+
+        port_count: dict[int, int] = {}
+        cve_count:  dict[str, int] = {}
+        services:   list[dict]    = []
+
+        for match in results["matches"]:
+            port = match["port"]
+            port_count[port] = port_count.get(port, 0) + 1
+
+            for vuln in match.get("vulns", {}).keys():
+                cve_count[vuln] = cve_count.get(vuln, 0) + 1
+
+            services.append({
+                "ip":      match["ip_str"],
+                "port":    port,
+                "product": match.get("product", ""),
+                "version": match.get("version", ""),
+            })
+
+        print("\nTop exposed ports:")
+        for port, cnt in sorted(port_count.items(), key=lambda x: -x[1])[:10]:
+            print(f"  {port:5d}/tcp — {cnt} assets")
+
+        if cve_count:
+            print("\nDiscovered CVEs:")
+            for cve, cnt in sorted(cve_count.items(), key=lambda x: -x[1])[:10]:
+                print(f"  {cve} — {cnt} assets")
+
+    except shodan.APIError as e:
+        print(f"Error: {e}")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Shodan Organization Exposure Analysis")
+    parser.add_argument("--key", required=True)
+    parser.add_argument("--org", required=True)
+    args = parser.parse_args()
+    scan_org_exposure(args.key, args.org)
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Passive DNS and Certificate Transparency
+
+Use passive DNS and Certificate Transparency (CT) logs to collect domain history and subdomains. Leverage services such as SecurityTrails and Censys.
+
+```bash
+# SecurityTrails — passive DNS, subdomain history
+curl -H "apikey: YOUR_KEY" \
+  "https://api.securitytrails.com/v1/domain/example.com/subdomains"
+
+# crt.sh — subdomain discovery via certificate transparency
+curl "https://crt.sh/?q=%.example.com&output=json" \
+  | jq '.[].name_value' | sort -u
+
+# Amass — comprehensive subdomain enumeration
+amass enum -d example.com -passive -o subs.txt
+amass enum -d example.com -active -brute -min-for-recursive 2
+
+# theHarvester — collect emails/domains/IPs comprehensively
+theHarvester -d example.com -b all -f results.html
+```
+
+```python
+import requests
+import json
+import re
+import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def crtsh_subdomains(domain: str) -> set[str]:
+    try:
+        resp = requests.get(
+            f"https://crt.sh/?q=%.{domain}&output=json",
+            timeout=15
+        )
+        entries = resp.json()
+        subs = set()
+        for entry in entries:
+            for name in entry.get("name_value", "").split("\n"):
+                name = name.strip().lstrip("*.")
+                if name.endswith(domain) and name != domain:
+                    subs.add(name)
+        return subs
+    except Exception as e:
+        print(f"crt.sh error: {e}")
+        return set()
+
+def securitytrails_subdomains(domain: str, api_key: str) -> set[str]:
+    try:
+        resp = requests.get(
+            f"https://api.securitytrails.com/v1/domain/{domain}/subdomains",
+            headers={"apikey": api_key},
+            timeout=10
+        )
+        data = resp.json()
+        return {f"{s}.{domain}" for s in data.get("subdomains", [])}
+    except Exception as e:
+        print(f"SecurityTrails error: {e}")
+        return set()
+
+def passive_dns_lookup(domain: str, api_key: str = "") -> set[str]:
+    results: set[str] = set()
+    results |= crtsh_subdomains(domain)
+    if api_key:
+        results |= securitytrails_subdomains(domain, api_key)
+    return results
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Passive DNS Subdomain Collection")
+    parser.add_argument("domain")
+    parser.add_argument("--st-key", default="", help="SecurityTrails API key")
+    args = parser.parse_args()
+
+    print(f"[*] Collecting subdomains for {args.domain}...")
+    subs = passive_dns_lookup(args.domain, args.st_key)
+    print(f"[+] {len(subs)} subdomains found:")
+    for s in sorted(subs):
+        print(f"  {s}")
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. Malware Database Utilization
+
+```bash
+# MalwareBazaar — collect malware samples
+curl -X POST https://mb-api.abuse.ch/api/v1/ \
+  -d "query=get_recent&selector=time" | jq '.data[:5]'
+
+# URLhaus — malicious URL feed
+curl https://urlhaus-api.abuse.ch/v1/urls/recent/ \
+  | jq '.urls[] | select(.tags | contains(["Cobalt Strike"]))'
+
+# ThreatFox — IOC feed
+curl -X POST https://threatfox-api.abuse.ch/api/v1/ \
+  -H "Content-Type: application/json" \
+  -d '{"query":"get_iocs","days":1}'
+```
+
+Use the ThreatFox API to collect the latest IOC feeds. Automatically retrieve IOCs such as IPs, domains, URLs, and hashes to apply to defense systems.
+
+```python
+import requests
+import argparse
+
+ABUSE_CH_IOC_FEEDS = {
+    "threatfox": "https://threatfox-api.abuse.ch/api/v1/",
+    "urlhaus":   "https://urlhaus-api.abuse.ch/v1/",
+    "bazaar":    "https://mb-api.abuse.ch/api/v1/",
+}
+
+def get_recent_iocs(days: int = 1) -> list[dict]:
+    resp = requests.post(
+        ABUSE_CH_IOC_FEEDS["threatfox"],
+        json={"query": "get_iocs", "days": days},
+        timeout=15
+    )
+    data = resp.json()
+    return data.get("data", [])
+
+def check_hash(sha256: str) -> dict:
+    resp = requests.post(
+        ABUSE_CH_IOC_FEEDS["bazaar"],
+        data={"query": "get_info", "hash": sha256},
+        timeout=10
+    )
+    return resp.json()
+
+def check_url(url: str) -> dict:
+    resp = requests.post(
+        ABUSE_CH_IOC_FEEDS["urlhaus"],
+        data={"url": url},
+        timeout=10
+    )
+    return resp.json()
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="abuse.ch IOC Lookup")
+    parser.add_argument("--recent-iocs", type=int, metavar="DAYS")
+    parser.add_argument("--hash")
+    parser.add_argument("--url")
+    args = parser.parse_args()
+
+    if args.recent_iocs:
+        iocs = get_recent_iocs(args.recent_iocs)
+        print(f"[+] {len(iocs)} IOCs from the last {args.recent_iocs} day(s)")
+        for ioc in iocs[:10]:
+            print(f"  [{ioc.get('ioc_type')}] {ioc.get('ioc')} — {ioc.get('malware')}")
+
+    if args.hash:
+        result = check_hash(args.hash)
+        print(f"[Hash] {args.hash}: {result.get('query_status')}")
+        if result.get("data"):
+            d = result["data"][0]
+            print(f"  Malware: {d.get('signature')}, Tags: {d.get('tags')}")
+
+    if args.url:
+        result = check_url(args.url)
+        print(f"[URL] {args.url}: {result.get('query_status')}")
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. C2 Infrastructure Tracking
+
+Analyze distinctive network patterns from C2 frameworks such as Cobalt Strike and Metasploit. Track attack infrastructure using Malleable C2 profiles and beacon responses.
+
+```bash
+# Cobalt Strike Beacon profile analysis
+# Identify C2 servers via JARM fingerprinting
+pip install jarm
+
+# Measure JARM for a specific IP
+python3 jarm.py 203.0.113.5 443
+
+# Search Shodan with known JARM fingerprints
+# Cobalt Strike: 07d14d16d21d21d07c42d41d00041d24a458a375eef0c576d23a7bab9a9fb1
+shodan search "ssl.jarm:07d14d16d21d21d07c42d41d00041d24a458a375eef0c576d23a7bab9a9fb1"
+
+# Metasploit C2: 07d14d16d21d21d00042d43d00041d2aa5ce6a70de7ba95aef77a77b00a0af
+# Covenant: 29d29d15d29d29d21c29d29d29d29dea1d44b09b7b1b1b1e6b0a0b1b2b3b4b5
+```
+
+```python
+import asyncio
+import ssl
+import hashlib
+import struct
+import argparse
+
+async def jarm_fingerprint(host: str, port: int) -> str:
+    """Simplified JARM fingerprint (use jarm library in production)"""
+    fingerprints = []
+    tls_versions = [
+        ssl.TLSVersion.TLSv1_2,
+        ssl.TLSVersion.TLSv1_3,
+    ]
+    for ver in tls_versions:
+        try:
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            ctx.minimum_version = ver
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+
+            reader, writer = await asyncio.wait_for(
+                asyncio.open_connection(host, port, ssl=ctx), timeout=5
+            )
+            cert = writer.get_extra_info("ssl_object").getpeercert(binary_form=True)
+            fp = hashlib.sha256(cert).hexdigest()[:16] if cert else "0" * 16
+            fingerprints.append(fp)
+            writer.close()
+        except Exception:
+            fingerprints.append("0" * 16)
+
+    return "|".join(fingerprints)
+
+async def scan_c2_candidates(ips: list[str]) -> None:
+    KNOWN_C2_JARMS = {
+        "07d14d16d21d21d0": "Cobalt Strike",
+        "29d29d15d29d29d2": "Covenant",
+    }
+    for ip in ips:
+        fp = await jarm_fingerprint(ip, 443)
+        label = "Unknown"
+        for sig, name in KNOWN_C2_JARMS.items():
+            if sig in fp:
+                label = f"[!] Suspected {name} C2"
+                break
+        print(f"  {ip}: {fp[:32]}... — {label}")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="C2 Infrastructure Detection")
+    parser.add_argument("ips", nargs="+", help="IP list to investigate")
+    args = parser.parse_args()
+    asyncio.run(scan_c2_candidates(args.ips))
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Dark Web Intelligence (Lawful Collection)
+
+```
+Access Methods:
+  Tor Browser → Monitor dark web forums/markets
+  Legitimate CTI services: Recorded Future, Intel 471, Flashpoint
+
+Key Monitoring Targets:
+  - Posts selling your organization's credentials
+  - Listings selling vulnerabilities in your infrastructure
+  - Advance warnings of targeted attacks
+  - New exploit kit transactions
+
+Automation (crawling via Tor):
+```
+
+Lawfully collect threat intelligence from the dark web via a Tor proxy. Monitor for leaked credentials or data related to your organization.
+
+```python
+import requests
+import argparse
+
+def search_via_tor(query: str, timeout: int = 30) -> str:
+    """Search via Tor SOCKS5 proxy (requires running Tor daemon)"""
+    proxies = {
+        "http":  "socks5h://127.0.0.1:9050",
+        "https": "socks5h://127.0.0.1:9050",
+    }
+    # Ahmia.fi — dark web search engine (legal service)
+    resp = requests.get(
+        "https://ahmia.fi/search/",
+        params={"q": query},
+        proxies=proxies,
+        timeout=timeout
+    )
+    return resp.text
+
+def check_credential_leak(email_domain: str) -> None:
+    """Check domain credential leaks via Have I Been Pwned API"""
+    resp = requests.get(
+        f"https://haveibeenpwned.com/api/v3/breachesaccount/{email_domain}",
+        headers={"hibp-api-key": "YOUR_API_KEY"},
+        timeout=10
+    )
+    if resp.status_code == 200:
+        breaches = resp.json()
+        print(f"[!] {email_domain} — {len(breaches)} breach(es) found:")
+        for b in breaches:
+            print(f"  {b['Name']} ({b['BreachDate']}) — {', '.join(b['DataClasses'][:3])}")
+    elif resp.status_code == 404:
+        print(f"[+] {email_domain} — No breach history found")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Dark Web and Credential Intelligence")
+    parser.add_argument("--domain", help="Domain to check for leaks")
     args = parser.parse_args()
     if args.domain:
         check_credential_leak(args.domain)

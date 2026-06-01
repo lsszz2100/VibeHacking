@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # GitHub 업로드 가이드
 
 ## 1. Git 초기화 및 첫 커밋
@@ -58,6 +64,99 @@ vibe-hacking/
 ├── README.md                          # 메인 페이지
 ├── SECURITY.md                        # 보안 정책
 ├── .gitignore                         # 제외 파일 목록
+├── 01_Linux_Basics/
+│   ├── 01_linux_essential_commands.md
+│   ├── 02_kali_linux_setup.md
+│   └── 03_bash_scripting.md
+├── 02_Network_Hacking/
+│   ├── 01_osi_tcpip.md
+│   ├── 02_packet_analysis.md
+│   └── 03_wireless_hacking.md
+├── 03_System_Hacking/
+│   ├── 01_password_cracking.md
+│   └── 02_buffer_overflow.md
+├── 04_Reverse_Engineering/
+│   ├── 01_assembly_and_registers.md
+│   ├── 02_ollydbg_practical.md
+│   └── 03_pe_structure.md
+├── 05_Web_Hacking/
+│   └── 01_owasp_top10.md
+├── 06_Malware_Analysis/
+│   └── 01_malware_analysis.md
+├── 07_Digital_Forensics/
+│   └── 01_digital_forensics.md
+├── 08_Python_Hacking/
+│   └── 01_python_hacking_tools.md
+├── 09_Exploit_Techniques/
+│   └── 01_advanced_exploitation.md
+└── 10_Pentest_Methodology/
+    └── 01_pentest_methodology.md
+```
+
+---
+
+<a name="english"></a>
+
+# GitHub Upload Guide
+
+## 1. Git Initialization and First Commit
+
+```bash
+# Navigate to the vibe-hacking folder
+cd /path/to/vibe-hacking
+
+# Initialize Git
+git init
+
+# Add all files
+git add .
+
+# First commit
+git commit -m "Initial commit: vibe-hacking security reference complete collection"
+```
+
+## 2. Creating and Connecting a GitHub Repository
+
+```bash
+# After creating a new repository on GitHub:
+# Repository name: vibe-hacking
+# Description: Complete Practical Cybersecurity - From Theory to Practice
+# Select Public
+
+# Connect remote repository
+git remote add origin https://github.com/YOUR_USERNAME/vibe-hacking.git
+
+# Upload
+git branch -M main
+git push -u origin main
+```
+
+## 3. GitHub Pages Setup (Optional)
+
+```
+Settings → Pages → Source → main branch → /docs
+```
+
+## 4. Recommended Repository Settings
+
+```
+Add Topics:
+cybersecurity, hacking, penetration-testing, 
+security, kali-linux, ctf, exploit, reverse-engineering,
+malware-analysis, digital-forensics, python-security
+
+Description:
+Complete Practical Cybersecurity — Linux, Network, System, Web,
+Reverse Engineering, Malware Analysis, Digital Forensics, Python Security Tool Development
+```
+
+## 5. Final File Structure Verification
+
+```
+vibe-hacking/
+├── README.md                          # Main page
+├── SECURITY.md                        # Security policy
+├── .gitignore                         # Excluded files list
 ├── 01_Linux_Basics/
 │   ├── 01_linux_essential_commands.md
 │   ├── 02_kali_linux_setup.md

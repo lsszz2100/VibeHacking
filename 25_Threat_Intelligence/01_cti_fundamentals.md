@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 위협 인텔리전스 기초 (CTI)
 
 ## 1. CTI 개요
@@ -311,4 +317,322 @@ Mitigation & Recommendations:
   즉시 조치 (24시간)
   단기 조치 (1주)
   장기 조치 (1개월+)
+```
+
+---
+
+<a name="english"></a>
+
+# Cyber Threat Intelligence (CTI) Fundamentals
+
+## 1. CTI Overview
+
+```
+Cyber Threat Intelligence (CTI):
+  Not just raw security event data, but
+  contextualized information about
+  "who is attacking, why, and how."
+
+Intelligence Tiers:
+  ┌────────────────────────────────────┐
+  │  Strategic                          │
+  │  "Which threat actors are           │
+  │   targeting our industry?"          │
+  │  Audience: CISO, Executives         │
+  ├────────────────────────────────────┤
+  │  Operational                        │
+  │  "What TTPs does this campaign use?"│
+  │  Audience: Security Analysis Team   │
+  ├────────────────────────────────────┤
+  │  Tactical                           │
+  │  IOCs — IPs, domains, hashes,       │
+  │  YARA rules                         │
+  │  Audience: SOC, SIEM                │
+  └────────────────────────────────────┘
+```
+
+---
+
+## 2. Threat Actor Classification (TTPs)
+
+The MITRE ATT&CK framework is a knowledge base classifying real attackers' Tactics and Techniques. It is used as a standard reference for threat intelligence analysis, writing security detection rules, and planning red team simulations.
+
+```
+MITRE ATT&CK Framework:
+  Tactics → Techniques → Procedures
+
+  TA0001 Initial Access     T1566 Phishing, T1190 Exploit Public-Facing App
+  TA0002 Execution          T1059 Command-Line, T1203 Client-Side Exploit
+  TA0003 Persistence        T1053 Scheduled Task, T1547 Boot Autorun
+  TA0004 Privilege Escalation T1055 Process Injection, T1548 UAC Bypass
+  TA0005 Defense Evasion    T1070 Indicator Removal, T1027 Obfuscation
+  TA0006 Credential Access  T1110 Brute Force, T1555 Password Stores
+  TA0007 Discovery          T1082 System Info, T1083 File Discovery
+  TA0008 Lateral Movement   T1021 Remote Services, T1534 Internal Spearphishing
+  TA0009 Collection         T1113 Screen Capture, T1056 Keylogging
+  TA0010 Exfiltration       T1041 C2 Channel, T1567 Web Service
+  TA0011 Command & Control  T1071 App Layer Protocol (HTTP/DNS)
+  TA0040 Impact             T1486 Ransomware, T1485 Data Destruction
+```
+
+---
+
+## 3. IOC Types and Collection
+
+An IoC (Indicator of Compromise) is a technical identifier such as an MD5 hash, IP address, domain, or file path that serves as evidence of a breach. Registering IoCs in a SIEM or firewall allows automatic detection and blocking of returning attackers.
+
+```
+IOC Confidence Pyramid (David Bianco's Pyramid of Pain):
+
+  ┌────────────────────────────────────┐  Most painful
+  │  TTPs (Behavioral Patterns)        │  ← Hardest for attacker to change
+  │  Tools (Attack Toolkit)            │
+  │  Network/Host Artifacts            │
+  │  Domains/IPs                       │
+  │  Hash Values                       │  ← Easiest to change
+  └────────────────────────────────────┘  Least painful
+
+IOC Types:
+  File Hashes:  MD5, SHA-1, SHA-256
+  IPs/Domains:  C2 servers, malware distribution points
+  URLs:         Download paths, phishing pages
+  Email:        Sender addresses, subject patterns
+  Registry:     Persistence keys
+  Mutex:        Malware singleton enforcement
+  Certificates: TLS certificate fingerprints
+```
+
+---
+
+## 4. Major CTI Feeds and Platforms
+
+```
+Free Feeds:
+  AlienVault OTX   → https://otx.alienvault.com
+  VirusTotal       → https://virustotal.com
+  Abuse.ch         → URLhaus, MalwareBazaar, ThreatFox
+  Shodan           → Internet-exposed assets
+  Censys           → Internet scan data
+  Have I Been Pwned → Credential leak verification
+
+Threat Reports:
+  CrowdStrike Global Threat Report
+  Verizon DBIR (Data Breach Investigations Report)
+  Mandiant M-Trends
+  Microsoft MSTIC
+
+CTI Platforms:
+  MISP    → Open-source threat intelligence sharing
+  OpenCTI → Open-source CTI management platform
+  TheHive → Incident response + CTI integration
+```
+
+---
+
+## 5. CTI Collection Automation
+
+Automates CTI (Cyber Threat Intelligence) collection. Collects and analyzes IOC data from public APIs such as VirusTotal and AbuseIPDB.
+
+```python
+import requests
+import hashlib
+import json
+import argparse
+from pathlib import Path
+from datetime import datetime
+
+# VirusTotal API v3 wrapper
+VT_BASE = "https://www.virustotal.com/api/v3"
+
+def vt_file_report(api_key: str, file_path: str) -> dict:
+    sha256 = hashlib.sha256(Path(file_path).read_bytes()).hexdigest()
+    headers = {"x-apikey": api_key}
+    resp = requests.get(f"{VT_BASE}/files/{sha256}", headers=headers, timeout=10)
+    if resp.status_code == 404:
+        return {"error": "File not found", "sha256": sha256}
+    return resp.json()
+
+def vt_url_scan(api_key: str, url: str) -> dict:
+    headers = {"x-apikey": api_key, "Content-Type": "application/x-www-form-urlencoded"}
+    submit = requests.post(f"{VT_BASE}/urls", headers=headers,
+                           data=f"url={url}", timeout=10)
+    analysis_id = submit.json()["data"]["id"]
+
+    import time; time.sleep(5)
+    result = requests.get(f"{VT_BASE}/analyses/{analysis_id}", headers=headers, timeout=10)
+    return result.json()
+
+def vt_ip_report(api_key: str, ip: str) -> dict:
+    headers = {"x-apikey": api_key}
+    resp = requests.get(f"{VT_BASE}/ip_addresses/{ip}", headers=headers, timeout=10)
+    return resp.json()
+
+def parse_vt_result(data: dict) -> dict[str, object]:
+    try:
+        attrs = data["data"]["attributes"]
+        stats = attrs.get("last_analysis_stats", {})
+        return {
+            "malicious":  stats.get("malicious", 0),
+            "suspicious": stats.get("suspicious", 0),
+            "undetected": stats.get("undetected", 0),
+            "verdict":    "malicious" if stats.get("malicious", 0) >= 5 else
+                          "suspicious" if stats.get("suspicious", 0) >= 3 else "clean",
+            "names":      attrs.get("names", [])[:5],
+            "tags":       attrs.get("tags", []),
+        }
+    except (KeyError, TypeError):
+        return {"raw": data}
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="VirusTotal IOC Lookup")
+    parser.add_argument("--api-key",  required=True)
+    parser.add_argument("--file",     help="File path")
+    parser.add_argument("--ip",       help="IP address")
+    parser.add_argument("--url",      help="URL")
+    args = parser.parse_args()
+
+    if args.file:
+        raw = vt_file_report(args.api_key, args.file)
+        result = parse_vt_result(raw)
+        print(f"[File] {args.file}\n  {json.dumps(result, ensure_ascii=False, indent=2)}")
+
+    if args.ip:
+        raw = vt_ip_report(args.api_key, args.ip)
+        result = parse_vt_result(raw)
+        print(f"[IP] {args.ip}\n  {json.dumps(result, ensure_ascii=False, indent=2)}")
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. MISP — Open-Source CTI Sharing Platform
+
+Install MISP (Malware Information Sharing Platform) via Docker. A platform for structuring threat intelligence and sharing IOCs between organizations.
+
+```bash
+# Install MISP via Docker
+git clone https://github.com/MISP/misp-docker.git
+cd misp-docker
+cp template.env .env
+docker compose up -d
+
+# Add IOC via MISP API
+curl -H "Authorization: YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -X POST https://misp.local/attributes \
+     -d '{
+       "value": "185.234.218.23",
+       "type": "ip-dst",
+       "category": "Network activity",
+       "to_ids": true,
+       "comment": "Cobalt Strike C2"
+     }'
+```
+
+Access the MISP API using the PyMISP library. Add IOCs as events and attributes, and build an automated threat intelligence collection pipeline.
+
+```python
+from pymisp import PyMISP, MISPEvent, MISPAttribute
+import argparse
+
+def push_iocs_to_misp(
+    misp_url: str, api_key: str,
+    iocs: list[dict], event_info: str
+) -> None:
+    misp = PyMISP(misp_url, api_key, ssl=False)
+
+    event = MISPEvent()
+    event.info = event_info
+    event.distribution = 1  # Community
+    event.threat_level_id = 2  # Medium
+    event.analysis = 1  # Ongoing
+
+    created = misp.add_event(event)
+    event_id = created["Event"]["id"]
+
+    for ioc in iocs:
+        attr = MISPAttribute()
+        attr.type     = ioc["type"]
+        attr.value    = ioc["value"]
+        attr.to_ids   = ioc.get("to_ids", True)
+        attr.comment  = ioc.get("comment", "")
+        misp.add_attribute(event_id, attr)
+
+    print(f"[+] MISP event created: ID={event_id}, {len(iocs)} IOCs")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="MISP IOC Upload")
+    parser.add_argument("--url",     required=True)
+    parser.add_argument("--key",     required=True)
+    parser.add_argument("--event",   default="Automated CTI Feed")
+    parser.add_argument("--ioc-file", required=True, help="JSON file path")
+    args = parser.parse_args()
+
+    import json
+    iocs = json.loads(open(args.ioc_file).read())
+    push_iocs_to_misp(args.url, args.key, iocs, args.event)
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 7. Threat Actor Profiling
+
+```
+Major APT Group Classification:
+
+[Nation-State Sponsored]
+  APT28 (Fancy Bear)  — Russia, GRU, political/military espionage
+  APT29 (Cozy Bear)   — Russia, SVR, diplomatic & think-tank targets
+  APT41               — China, espionage + financial motivation
+  Lazarus Group       — North Korea, financial institutions & cryptocurrency
+  APT33 (Elfin)       — Iran, energy & aerospace
+
+[Financially Motivated]
+  FIN7/Carbanak  — PoS systems, banking trojans
+  Evil Corp      — Dridex, ransomware distribution
+  REvil/Sodinokibi → Ransomware-as-a-Service (RaaS)
+
+Profile Items:
+  - Motivation (espionage / financial / hacktivism)
+  - Primary target industries
+  - Initial access vectors
+  - Preferred malware/tools
+  - C2 infrastructure characteristics
+  - MITRE ATT&CK mapping
+```
+
+---
+
+## 8. CTI Report Structure
+
+```
+Executive Summary (1 page):
+  - Threat actor identification or campaign name
+  - Target and potential impact
+  - Top 3 key recommendations
+
+Technical Analysis:
+  1. Attack timeline
+  2. Initial access vector
+  3. Malware analysis (hashes, behaviors)
+  4. C2 infrastructure (IPs, domains, certificates)
+  5. MITRE ATT&CK mapping table
+  6. Detection signatures (YARA, Sigma)
+
+Indicators of Compromise:
+  MD5/SHA-256 hash list
+  IP address list
+  Domain list
+  URL list
+  Registry keys
+
+Mitigation & Recommendations:
+  Immediate actions (24 hours)
+  Short-term actions (1 week)
+  Long-term actions (1 month+)
 ```

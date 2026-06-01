@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # OPSEC 인프라 관리
 
 > **목적**: 교육, 연구, CTF, 공인된 레드팀 작전 환경에서의 학습용 자료
@@ -1034,3 +1040,1044 @@ if __name__ == "__main__":
 - "Red Team Development and Operations" - Joe Vest & James Tubberville
 - Certificate Transparency: crt.sh
 - OPSEC 5단계 미 해군 교범 (OPNAVINST 3070.1)
+
+---
+
+<a name="english"></a>
+
+# OPSEC Infrastructure Management
+
+> **Purpose**: Learning material for educational, research, CTF, and authorized red team operation environments
+
+---
+
+## 1. OPSEC Principles
+
+### 1.1 Overview of OPSEC (Operations Security)
+
+OPSEC (Operations Security) is a concept originating from military tactics — it is the process of preventing adversaries from collecting and analyzing information about our operations.
+
+```
+OPSEC 5-Step Process:
+
+Step 1: Critical Information Identification
+  - Attacker's real IP address
+  - C2 server location
+  - Tools/techniques in use
+  - Attack timing/schedule
+  - Internal collaborator information
+
+Step 2: Threat Analysis
+  - Assess blue team capabilities
+  - EDR/SIEM/SOAR solutions in use
+  - Presence of threat intelligence team
+  - Level of network monitoring
+
+Step 3: Vulnerability Analysis
+  - Where can information be exposed?
+  - Certificate Transparency logs
+  - WHOIS information
+  - Domain registration patterns
+  - VPS reuse
+
+Step 4: Risk Assessment
+  - Likelihood of exposure × impact
+  - Prioritization
+
+Step 5: Countermeasures
+  - Technical measures
+  - Procedural measures
+  - Physical measures
+```
+
+### 1.2 Common Red Team OPSEC Failure Patterns
+
+```
+Common OPSEC Failures:
+
+1. Infrastructure Reuse
+   - Reusing IPs/domains from previous operations
+   - Working against multiple clients from the same IP
+   - → Risk of cross-contamination
+
+2. Metadata Exposure
+   - Using real name during domain registration
+   - Entering real information in SSL certificates
+   - GitHub commit email addresses
+   - → Makes attribution possible
+
+3. Tool Signatures (Toolmarks)
+   - Using default Cobalt Strike configuration as-is
+   - Known C2 framework default ports
+   - Open-source tools used without modification
+   - → Enables automatic detection
+
+4. Timing Patterns
+   - Active only during business hours (9am-6pm)
+   - Fixed timezone (allows attacker location inference)
+   - Regular beaconing patterns
+
+5. Neglected Log Management
+   - VPS provider logs left unattended
+   - C2 server access logs retained
+   - No post-operation cleanup
+```
+
+---
+
+## 2. Attacker Infrastructure Separation
+
+### 2.1 Long Haul vs Short Haul C2
+
+```
+Short Haul C2:
+  Purpose: Initial compromise, rapid command execution
+  Characteristics:
+  - Fast response time (seconds)
+  - High noise (greater detection risk)
+  - Quick replacement upon detection
+  - Examples: Metasploit/meterpreter, fast Beacon sleep
+
+Long Haul C2:
+  Purpose: Maintaining persistent access
+  Characteristics:
+  - Slow response (beaconing in hours)
+  - Minimal traffic
+  - Goal is long-term detection evasion
+  - Examples: DNS C2, multi-hour sleep Beacons
+
+Architecture:
+  Initial Access
+      │
+      ├─► Short Haul C2 (for fast tasks)
+      │     └─ Replace upon detection
+      │
+      └─► Long Haul C2 (for persistent access)
+            └─ Managed to never be exposed
+```
+
+### 2.2 Infrastructure Separation Layers
+
+```
+Layer 1: Operational Infrastructure
+  - Runs actual attack tools
+  - Team servers, exploit servers
+  - Never directly exposed
+
+Layer 2: Staging Infrastructure
+  - Hosts payloads
+  - Receives initial callbacks
+  - Connected to redirectors
+
+Layer 3: Forwarder Infrastructure
+  - Exposed to the public internet
+  - Quickly replaceable (cheap VPS)
+  - Acts as a filtering layer
+
+Communication between layers:
+  - Encrypted via VPN or SSH tunnel
+  - Whitelist-based firewalls
+  - One-directional communication principle
+```
+
+---
+
+## 3. VPS Selection and Anonymous Purchase Strategy
+
+### 3.1 VPS Provider Selection Criteria
+
+```
+Considerations:
+
+1. Abuse Handling Policy
+   - Speed of suspension (AWS, GCP: fast)
+   - Prefer providers with slower response times
+   - Review: OVH, Hetzner, Vultr, Linode
+
+2. Legal Jurisdiction
+   - Consider providers outside the US (MLAT processing time)
+   - Key countries to consider: Netherlands, Romania, Iceland
+
+3. Payment Traceability
+   - Whether cryptocurrency payment is supported
+   - Bitcoin (use with caution), Monero (more anonymous)
+   - Prepaid gift cards (beware of tracking)
+
+4. Registration Requirements
+   - Whether KYC (Know Your Customer) is required
+   - Email-only registration vs. ID requirement
+
+5. Network Quality
+   - Low latency
+   - No bandwidth limits
+   - Reverse DNS customization available
+```
+
+### 3.2 VPS Initial Setup Hardening
+
+```bash
+# Initial setup script for new VPS (Debian/Ubuntu)
+
+# 1. Basic update
+apt-get update && apt-get upgrade -y
+
+# 2. Disable unnecessary services
+systemctl disable avahi-daemon
+systemctl disable cups
+systemctl stop avahi-daemon cups
+
+# 3. SSH hardening
+cat >> /etc/ssh/sshd_config << 'EOF'
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+MaxAuthTries 3
+ClientAliveInterval 300
+ClientAliveCountMax 2
+AllowUsers operator
+EOF
+
+# 4. Create new operator account (disable root)
+useradd -m -s /bin/bash operator
+mkdir -p /home/operator/.ssh
+# Add SSH public key
+echo "ssh-ed25519 AAAA... operator@redteam" > /home/operator/.ssh/authorized_keys
+chmod 700 /home/operator/.ssh
+chmod 600 /home/operator/.ssh/authorized_keys
+chown -R operator:operator /home/operator/.ssh
+
+# 5. Firewall configuration (UFW)
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow from <operator-IP> to any port 22
+ufw allow 443/tcp
+ufw allow 80/tcp
+ufw enable
+
+# 6. Change hostname (to avoid suspicion)
+hostnamectl set-hostname mail.example.com
+
+# 7. Install Fail2ban (brute-force defense)
+apt-get install fail2ban -y
+systemctl enable fail2ban
+
+# 8. Set timezone (UTC)
+timedatectl set-timezone UTC
+
+# 9. Minimize system logs
+echo "*.* stop" >> /etc/rsyslog.conf
+systemctl restart rsyslog
+```
+
+---
+
+## 4. Domain Categorization and Reputation
+
+### 4.1 Domain Selection Strategy
+
+```
+Goal: "Trustworthy-looking" domains to evade blocking/detection
+
+Strategy 1: Typosquatting Domains
+  - microsoft-updates.com (actual: microsoft.com)
+  - windowsupdate-cdn.net
+  - Risk: Immediately identifiable, legal issues
+
+Strategy 2: Generic Business Domains
+  - cloudsync-services.com
+  - api-gateway-prod.net
+  - data-analytics-hub.com
+  → Appear normal in corporate environments
+
+Strategy 3: Expired Domain Reuse
+  - Domains previously used by legitimate sites
+  - Already registered in trusted categories
+  - Search: expireddomains.net, domcop.com
+
+Strategy 4: Domain Aging
+  - Register domain in advance (months ahead)
+  - Initially publish actual legitimate content
+  - Convert to C2 at operation time
+  → Bypasses domain creation date checks
+```
+
+### 4.2 Domain Category Registration
+
+```
+Target Categories (allowed by default in firewalls):
+  - Business/Corporate
+  - Technology
+  - CDN/Hosting
+  - Software Updates
+  - News/Information
+
+How to register categories:
+  1. Symantec (BlueCoat) site category lookup
+     → sitereview.symantec.com
+
+  2. Fortiguard URL category
+     → fortiguard.com/webfilter
+
+  3. Palo Alto URL Filtering
+     → urlfiltering.paloaltonetworks.com
+
+  4. McAfee WebAdvisor
+     → siteadvisor.com
+
+Use "re-categorization request" feature on each site:
+  → Submit after publishing legitimate content
+  → Processing time: days to weeks
+
+Automation tools:
+  - Chameleon (domain category check)
+  - Goddi (multi-vendor verification)
+```
+
+### 4.3 DNS Record Configuration
+
+```bash
+# DNS settings to increase credibility
+
+# SPF record (for email spoofing defense, makes domain look legitimate)
+@ TXT "v=spf1 include:_spf.google.com ~all"
+
+# MX record (makes it look like email service exists)
+@ MX 10 mail.example.com.
+
+# A record (main domain)
+@ A 1.2.3.4
+
+# www CNAME (makes it look like a normal website)
+www CNAME @
+
+# Redirector subdomains
+cdn A 5.6.7.8
+api A 5.6.7.8
+updates A 5.6.7.8
+```
+
+---
+
+## 5. Log Management and Evidence Handling
+
+### 5.1 Log Minimization Configuration
+
+```bash
+# Nginx log minimization
+# /etc/nginx/nginx.conf
+http {
+    access_log off;           # Disable access logs
+    error_log /dev/null;      # Send error logs to /dev/null
+}
+
+# Apache log minimization
+# /etc/apache2/apache2.conf
+CustomLog /dev/null combined
+ErrorLog /dev/null
+
+# Disable Bash history
+export HISTFILE=/dev/null
+export HISTSIZE=0
+unset HISTFILE
+
+# Or add to .bashrc
+echo "export HISTFILE=/dev/null" >> ~/.bashrc
+echo "unset HISTFILE" >> ~/.bashrc
+
+# Minimize systemd journal
+# /etc/systemd/journald.conf
+[Journal]
+Storage=none
+Compress=no
+```
+
+### 5.2 Post-Operation Cleanup Checklist
+
+```bash
+# Post-operation cleanup script (conceptual)
+
+# 1. Trigger agent/implant self-destruct
+# (Send self-destruct command to agents)
+
+# 2. Delete C2 server logs
+rm -rf /var/log/*
+journalctl --vacuum-time=1s
+> /root/.bash_history
+> /home/operator/.bash_history
+
+# 3. Delete temporary files
+rm -rf /tmp/*
+rm -rf /dev/shm/*
+
+# 4. Delete payload files
+find /opt/c2/ -name "*.exe" -delete
+find /opt/c2/ -name "*.dll" -delete
+find /opt/c2/ -name "*.bin" -delete
+
+# 5. Secure deletion of data (non-recoverable)
+shred -u /path/to/sensitive/file
+srm -rf /path/to/directory  # secure-delete package
+
+# 6. Reset firewall rules
+iptables -F
+iptables -t nat -F
+
+# 7. Delete VPS (if possible)
+# → Completely delete instance via cloud API
+```
+
+---
+
+## 6. HTTPS Certificate OPSEC
+
+### 6.1 Certificate Transparency (CT) Logs
+
+```
+What are CT logs:
+  - Public records of all certificates issued by publicly trusted CAs
+  - Searchable via crt.sh, censys.io, etc.
+  - Published immediately upon certificate issuance
+
+OPSEC risks:
+  - New domain/subdomain issued → immediately recorded in CT logs
+  - Defenders can detect via wildcard monitoring
+  - Example: Subscribe to *.target-company.com → discover phishing domain
+
+Countermeasures:
+  1. Use CT log searches to understand defender's perspective
+     → Check your own domain on crt.sh
+
+  2. Use self-signed certificates (for internal use)
+     → Not recorded in CT logs
+     → Agent must have certificate validation disabled
+
+  3. Use private CA instead of Let's Encrypt
+     → Build internal CA
+
+  4. Review certificate transparency policies
+     → Validate with --preferred-challenges dns challenge
+```
+
+### 6.2 Self-Signed Certificate Generation
+
+```bash
+# Generate root CA
+openssl genrsa -out root-ca.key 4096
+openssl req -new -x509 \
+  -key root-ca.key \
+  -out root-ca.crt \
+  -days 3650 \
+  -subj "/C=US/ST=California/L=San Francisco/O=Tech Corp/CN=Root CA"
+
+# Generate server key and CSR
+openssl genrsa -out server.key 2048
+openssl req -new \
+  -key server.key \
+  -out server.csr \
+  -subj "/C=US/ST=California/L=San Francisco/O=Tech Corp/CN=updates.legitimate-cdn.com"
+
+# Sign with SAN (Subject Alternative Name) extension
+cat > server.ext << 'EOF'
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = updates.legitimate-cdn.com
+DNS.2 = api.legitimate-cdn.com
+DNS.3 = *.legitimate-cdn.com
+IP.1 = 10.0.0.5
+EOF
+
+openssl x509 -req \
+  -in server.csr \
+  -CA root-ca.crt \
+  -CAkey root-ca.key \
+  -CAcreateserial \
+  -out server.crt \
+  -days 365 \
+  -extfile server.ext
+
+# Configure agent to trust only this CA via pinning
+```
+
+---
+
+## 7. Cobalt Strike Malleable C2 Profile
+
+### 7.1 Profile Concept
+
+```
+A Malleable C2 Profile is a configuration file that allows
+complete customization of Beacon's network traffic appearance.
+
+Customizable elements:
+  - HTTP methods (GET/POST)
+  - URI paths
+  - HTTP headers (Host, Cookie, User-Agent, etc.)
+  - Data encoding methods (base64, xor, netbios, etc.)
+  - Payload location (URI parameters, headers, body)
+  - Sleep time and Jitter
+  - Process creation method
+  - Memory permission settings
+```
+
+### 7.2 Profile Structure Example
+
+```
+# Profile concept for disguising as Office365 traffic
+
+set useragent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+set sleeptime "30000";   # 30 seconds
+set jitter    "20";      # ±20%
+set maxdns    "255";
+set dns_idle  "8.8.4.4";
+
+https-certificate {
+    set CN "outlook.microsoft.com";
+    set O  "Microsoft Corporation";
+    set C  "US";
+    set ST "Washington";
+    set L  "Redmond";
+}
+
+http-get {
+    set uri "/owa/auth/logon.aspx /ecp/default.aspx";
+    
+    client {
+        header "Accept" "text/html,application/xhtml+xml";
+        header "Accept-Language" "en-US,en;q=0.9";
+        header "Connection" "keep-alive";
+        
+        metadata {
+            base64url;
+            parameter "session";
+        }
+    }
+    
+    server {
+        header "Content-Type" "text/html; charset=utf-8";
+        header "Server" "Microsoft-IIS/10.0";
+        header "X-Powered-By" "ASP.NET";
+        
+        output {
+            base64url;
+            prepend "<!DOCTYPE html><html><head>";
+            append "</head><body></body></html>";
+            print;
+        }
+    }
+}
+
+http-post {
+    set uri "/owa/auth/oauthtoken";
+    
+    client {
+        header "Content-Type" "application/x-www-form-urlencoded";
+        
+        id {
+            base64url;
+            parameter "client_id";
+        }
+        
+        output {
+            base64url;
+            parameter "code";
+        }
+    }
+    
+    server {
+        header "Content-Type" "application/json";
+        
+        output {
+            base64url;
+            print;
+        }
+    }
+}
+
+post-ex {
+    set spawnto_x86 "%windir%\\syswow64\\svchost.exe";
+    set spawnto_x64 "%windir%\\system32\\svchost.exe";
+    set obfuscate    "true";
+    set smartinject  "true";
+}
+
+process-inject {
+    set allocator "NtMapViewOfSection";
+    set min_alloc "16700";
+    set userwx    "false";
+    
+    transform-x64 {
+        prepend "\x90\x90\x90";  # NOP sled
+    }
+    
+    execute {
+        CreateThread;
+        NtQueueApcThread;
+        CreateRemoteThread;
+    }
+}
+```
+
+### 7.3 Profile Validation
+
+```bash
+# Validate profile with c2lint (included with Cobalt Strike)
+./c2lint profile.c2
+
+# Direct testing without profile
+curl -v -A "Mozilla/5.0 ..." \
+  http://teamserver.local/owa/auth/logon.aspx?session=dGVzdA==
+
+# Malleable C2 profile collections
+# https://github.com/rsmudge/Malleable-C2-Profiles
+# https://github.com/threatexpress/malleable-c2
+```
+
+---
+
+## 8. Python OPSEC Checklist Automation
+
+```python
+#!/usr/bin/env python3
+"""
+Red team infrastructure OPSEC automated check script
+For educational/CTF environments only
+"""
+
+from __future__ import annotations
+
+import argparse
+import ipaddress
+import json
+import re
+import socket
+import ssl
+import sys
+import urllib.request
+import urllib.error
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
+
+
+class Severity(Enum):
+    CRITICAL = "CRITICAL"
+    HIGH     = "HIGH"
+    MEDIUM   = "MEDIUM"
+    LOW      = "LOW"
+    INFO     = "INFO"
+
+
+@dataclass
+class CheckResult:
+    name: str
+    severity: Severity
+    passed: bool
+    message: str
+    recommendation: str = ""
+
+
+@dataclass
+class OpsecReport:
+    target: str
+    checks: list[CheckResult] = field(default_factory=list)
+
+    def add(self, result: CheckResult) -> None:
+        self.checks.append(result)
+
+    def summary(self) -> dict[str, int]:
+        return {
+            "total": len(self.checks),
+            "passed": sum(1 for c in self.checks if c.passed),
+            "failed": sum(1 for c in self.checks if not c.passed),
+            "critical": sum(1 for c in self.checks if not c.passed and c.severity == Severity.CRITICAL),
+            "high":     sum(1 for c in self.checks if not c.passed and c.severity == Severity.HIGH),
+        }
+
+    def print_report(self) -> None:
+        print(f"\n{'='*60}")
+        print(f"OPSEC Check Report: {self.target}")
+        print(f"{'='*60}")
+
+        for check in self.checks:
+            icon = "✓" if check.passed else "✗"
+            status = "PASS" if check.passed else f"FAIL [{check.severity.value}]"
+            print(f"\n[{icon}] {check.name}: {status}")
+            print(f"    └─ {check.message}")
+            if not check.passed and check.recommendation:
+                print(f"    [Recommendation] {check.recommendation}")
+
+        s = self.summary()
+        print(f"\n{'='*60}")
+        print(f"Summary: {s['passed']}/{s['total']} passed")
+        print(f"Failures: CRITICAL={s['critical']}, HIGH={s['high']}")
+        print(f"{'='*60}\n")
+
+
+def check_whois_privacy(domain: str) -> CheckResult:
+    """Check WHOIS privacy protection (simplified DNS-based)"""
+    try:
+        socket.gethostbyname(domain)
+        # Actual implementation requires whois query (python-whois library)
+        return CheckResult(
+            name="WHOIS Privacy",
+            severity=Severity.HIGH,
+            passed=False,
+            message=f"{domain}: Manual WHOIS verification required",
+            recommendation="Enable Privacy Protection during domain registration (Namecheap, Cloudflare, etc.)",
+        )
+    except socket.gaierror:
+        return CheckResult(
+            name="WHOIS Privacy",
+            severity=Severity.HIGH,
+            passed=False,
+            message=f"{domain}: DNS resolution failed",
+            recommendation="Check domain DNS configuration",
+        )
+
+
+def check_ssl_certificate(host: str, port: int = 443) -> CheckResult:
+    """Check SSL certificate information"""
+    try:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        with socket.create_connection((host, port), timeout=5) as sock:
+            with ctx.wrap_socket(sock, server_hostname=host) as ssock:
+                cert = ssock.getpeercert()
+
+        # Check certificate subject
+        subject = dict(x[0] for x in cert.get("subject", []))
+        issuer = dict(x[0] for x in cert.get("issuer", []))
+        cn = subject.get("commonName", "")
+        org = subject.get("organizationName", "")
+        issuer_cn = issuer.get("commonName", "")
+
+        issues = []
+        if "localhost" in cn.lower():
+            issues.append("CN contains localhost")
+        if "test" in cn.lower() or "dev" in cn.lower():
+            issues.append(f"Test/development CN: {cn}")
+        if "Let's Encrypt" in issuer_cn:
+            issues.append("Let's Encrypt certificate (recorded in CT logs)")
+
+        if issues:
+            return CheckResult(
+                name="SSL Certificate OPSEC",
+                severity=Severity.MEDIUM,
+                passed=False,
+                message=f"{host}: {', '.join(issues)}",
+                recommendation="Use a trusted CA or self-signed CA certificate, monitor CT logs",
+            )
+
+        return CheckResult(
+            name="SSL Certificate OPSEC",
+            severity=Severity.MEDIUM,
+            passed=True,
+            message=f"{host}: Certificate basic check passed (CN={cn})",
+        )
+
+    except (ssl.SSLError, socket.timeout, ConnectionRefusedError, OSError) as e:
+        return CheckResult(
+            name="SSL Certificate OPSEC",
+            severity=Severity.MEDIUM,
+            passed=False,
+            message=f"{host}:{port} SSL connection failed: {e}",
+            recommendation="Check SSL configuration",
+        )
+
+
+def check_default_ports(host: str) -> CheckResult:
+    """Check for exposure of known C2 default ports"""
+    known_c2_ports = {
+        50050: "Cobalt Strike team server",
+        4444: "Metasploit default handler",
+        8888: "Sliver default mTLS",
+        40056: "Havoc team server",
+        55553: "Armitage",
+        8443: "Generic C2 HTTPS alternative",
+    }
+
+    exposed_ports: list[str] = []
+    for port, service in known_c2_ports.items():
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(2)
+            result = sock.connect_ex((host, port))
+            sock.close()
+            if result == 0:
+                exposed_ports.append(f"{port}({service})")
+        except OSError:
+            pass
+
+    if exposed_ports:
+        return CheckResult(
+            name="C2 Default Port Exposure",
+            severity=Severity.CRITICAL,
+            passed=False,
+            message=f"Known C2 ports found: {', '.join(exposed_ports)}",
+            recommendation="Use non-standard ports or restrict with firewall (allow operator IP only)",
+        )
+
+    return CheckResult(
+        name="C2 Default Port Exposure",
+        severity=Severity.CRITICAL,
+        passed=True,
+        message=f"{host}: No known C2 default ports exposed",
+    )
+
+
+def check_http_headers(host: str, port: int = 80) -> CheckResult:
+    """Check HTTP response headers (C2 server identification information exposure)"""
+    suspicious_headers = [
+        ("server", ["cobalt strike", "metasploit", "havoc", "sliver"]),
+        ("x-powered-by", ["python", "ruby", "go/", "node"]),
+    ]
+
+    try:
+        protocol = "https" if port == 443 else "http"
+        url = f"{protocol}://{host}:{port}/"
+        req = urllib.request.Request(url)
+        req.add_header("User-Agent", "Mozilla/5.0")
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
+            headers = dict(resp.headers)
+
+        issues = []
+        for header_name, keywords in suspicious_headers:
+            val = headers.get(header_name, "").lower()
+            if any(kw in val for kw in keywords):
+                issues.append(f"{header_name}: {headers.get(header_name)}")
+
+        if issues:
+            return CheckResult(
+                name="HTTP Response Headers",
+                severity=Severity.HIGH,
+                passed=False,
+                message=f"Headers that can identify C2 tools: {issues}",
+                recommendation="Disguise Server header as Apache/nginx/etc.",
+            )
+
+        return CheckResult(
+            name="HTTP Response Headers",
+            severity=Severity.HIGH,
+            passed=True,
+            message=f"{host}: Response header basic check passed",
+        )
+
+    except Exception as e:
+        return CheckResult(
+            name="HTTP Response Headers",
+            severity=Severity.HIGH,
+            passed=False,
+            message=f"HTTP connection failed: {e}",
+            recommendation="Check HTTP/HTTPS service status",
+        )
+
+
+def check_domain_age(domain: str) -> CheckResult:
+    """Check domain registration age (simplified version)"""
+    # Actual implementation requires whois library
+    # This is a conceptual check
+    return CheckResult(
+        name="Domain Aging",
+        severity=Severity.MEDIUM,
+        passed=False,
+        message=f"{domain}: Manual verification of domain registration period required",
+        recommendation="Domain should be registered at least 1 month in advance. Check with whois tool: whois " + domain,
+    )
+
+
+def check_reverse_dns(ip: str) -> CheckResult:
+    """Check reverse DNS configuration"""
+    try:
+        hostname, _, _ = socket.gethostbyaddr(ip)
+        suspicious = any(
+            kw in hostname.lower()
+            for kw in ["vps", "cloud", "dedicated", "server", "host", "ip"]
+        )
+        if suspicious:
+            return CheckResult(
+                name="Reverse DNS",
+                severity=Severity.LOW,
+                passed=False,
+                message=f"{ip} → {hostname} (hosting provider exposed)",
+                recommendation="Change PTR record to a legitimate domain",
+            )
+        return CheckResult(
+            name="Reverse DNS",
+            severity=Severity.LOW,
+            passed=True,
+            message=f"{ip} → {hostname}",
+        )
+    except socket.herror:
+        return CheckResult(
+            name="Reverse DNS",
+            severity=Severity.LOW,
+            passed=False,
+            message=f"{ip}: No reverse DNS found",
+            recommendation="Set PTR record or request rDNS change from VPS provider",
+        )
+
+
+def check_cdn_detection(host: str) -> CheckResult:
+    """Check for direct CDN/cloud service exposure"""
+    try:
+        ip = socket.gethostbyname(host)
+        addr = ipaddress.IPv4Address(ip)
+
+        # Known cloud ranges (simplified)
+        cloud_ranges = {
+            "AWS": [
+                ipaddress.IPv4Network("52.0.0.0/6"),
+                ipaddress.IPv4Network("18.128.0.0/9"),
+            ],
+            "GCP": [
+                ipaddress.IPv4Network("34.64.0.0/10"),
+                ipaddress.IPv4Network("35.184.0.0/13"),
+            ],
+            "Azure": [
+                ipaddress.IPv4Network("20.0.0.0/8"),
+            ],
+        }
+
+        for provider, ranges in cloud_ranges.items():
+            if any(addr in net for net in ranges):
+                return CheckResult(
+                    name="Cloud Provider Exposure",
+                    severity=Severity.MEDIUM,
+                    passed=False,
+                    message=f"{host} ({ip}): {provider} IP range",
+                    recommendation="Hide behind a CDN or use a less well-known VPS provider",
+                )
+
+        return CheckResult(
+            name="Cloud Provider Exposure",
+            severity=Severity.MEDIUM,
+            passed=True,
+            message=f"{host} ({ip}): Not in major cloud ranges",
+        )
+    except socket.gaierror as e:
+        return CheckResult(
+            name="Cloud Provider Exposure",
+            severity=Severity.MEDIUM,
+            passed=False,
+            message=f"DNS resolution failed: {e}",
+        )
+
+
+def run_opsec_checks(target: str, port: int) -> OpsecReport:
+    """Run all OPSEC checks"""
+    report = OpsecReport(target=target)
+
+    # Determine if target is IP or domain
+    is_ip = False
+    try:
+        ipaddress.IPv4Address(target)
+        is_ip = True
+    except ValueError:
+        pass
+
+    print(f"[*] Starting OPSEC checks: {target}:{port}")
+
+    if not is_ip:
+        print("[*] Checking WHOIS privacy...")
+        report.add(check_whois_privacy(target))
+
+        print("[*] Checking domain aging...")
+        report.add(check_domain_age(target))
+
+        print("[*] Checking CDN detection...")
+        report.add(check_cdn_detection(target))
+
+        # Resolve IP
+        try:
+            ip = socket.gethostbyname(target)
+            print(f"[*] Checking reverse DNS ({ip})...")
+            report.add(check_reverse_dns(ip))
+        except socket.gaierror:
+            pass
+    else:
+        print(f"[*] Checking reverse DNS...")
+        report.add(check_reverse_dns(target))
+
+    print("[*] Checking SSL certificate...")
+    report.add(check_ssl_certificate(target, 443))
+
+    print("[*] Checking C2 default ports...")
+    report.add(check_default_ports(target))
+
+    print("[*] Checking HTTP response headers...")
+    report.add(check_http_headers(target, port))
+
+    return report
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Red team infrastructure OPSEC automated check (CTF/educational only)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Usage examples:
+  python3 opsec_check.py --target redirector.example.com
+  python3 opsec_check.py --target 1.2.3.4 --port 443
+  python3 opsec_check.py --target c2.example.com --output report.json
+        """,
+    )
+    parser.add_argument("--target", required=True, help="Host/domain/IP to check")
+    parser.add_argument("--port", type=int, default=80, help="HTTP port (default: 80)")
+    parser.add_argument("--output", help="Save results to JSON file")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    report = run_opsec_checks(args.target, args.port)
+    report.print_report()
+
+    if args.output:
+        data = {
+            "target": report.target,
+            "summary": report.summary(),
+            "checks": [
+                {
+                    "name": c.name,
+                    "severity": c.severity.value,
+                    "passed": c.passed,
+                    "message": c.message,
+                    "recommendation": c.recommendation,
+                }
+                for c in report.checks
+            ],
+        }
+        with open(args.output, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"[+] Results saved: {args.output}")
+
+    # Exit with error if any CRITICAL items failed
+    s = report.summary()
+    if s["critical"] > 0:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## References
+
+- MITRE ATT&CK: Defense Evasion (TA0005)
+- "Advanced Threat Tactics" - Raphael Mudge
+- "Red Team Development and Operations" - Joe Vest & James Tubberville
+- Certificate Transparency: crt.sh
+- OPSEC 5-Step Process - U.S. Navy Manual (OPNAVINST 3070.1)

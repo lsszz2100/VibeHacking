@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 고급 CTF 실습 랩 — Pwn·Crypto·Forensics·Misc 종합
 
 ## 1. CTF 대회 전략 개요
@@ -1448,3 +1454,1071 @@ if __name__ == "__main__":
 - [PicoCTF](https://picoctf.org) — 입문자 친화적 CTF
 - CTFtime.org — 전 세계 CTF 일정 및 팀 랭킹
 - pwntools 공식 문서 — CTF 바이너리 익스플로잇 자동화
+
+---
+
+<a name="english"></a>
+
+# Advanced CTF Practical Lab — Pwn · Crypto · Forensics · Misc Comprehensive
+
+## 1. CTF Competition Strategy Overview
+
+### Category Approach Priority
+
+| Priority | Category  | Expected Score Range | Recommended Time | Team Assignment Criteria |
+|----------|-----------|---------------------|------------------|--------------------------|
+| 1        | Misc      | 50–150              | 10–30 min        | Whole team quick check   |
+| 2        | Crypto    | 100–300             | 30–90 min        | Math/algorithm specialists |
+| 3        | Forensics | 100–300             | 30–90 min        | Tool-proficient members  |
+| 4        | Web       | 150–500             | 60–180 min       | Web specialists          |
+| 5        | Pwn       | 200–500+            | 90–300 min       | Binary specialists       |
+| 6        | Reversing | 150–400             | 60–240 min       | Reversing specialists    |
+
+### Team Collaboration Tools and Workflow
+
+| Phase         | Tools/Methods                          | Description                                          |
+|---------------|----------------------------------------|------------------------------------------------------|
+| Task assignment | CTFd / rCTF dashboard + Notion       | Real-time sharing of challenge status (in-progress/solved/abandoned) |
+| Communication | Discord (channels per category)        | Operate #pwn, #crypto, #forensics, #misc channels   |
+| File sharing  | Nextcloud / Google Drive               | Share challenge files and exploit scripts            |
+| Code collaboration | Git + GitHub Private Repo         | Version control for exploits, review via PRs         |
+| Hint tracking | Shared Google Doc                      | Record used hints and deducted points                |
+| Timeline      | Pomodoro 50/10 cycles                  | Review challenge redistribution every 90 minutes     |
+| Flag submission | Automated scripts (watch rate limit) | Send team alert on consecutive failures              |
+
+---
+
+## 2. Advanced Pwn: Introduction to Kernel Exploitation
+
+### Kernel Pwn Environment Setup (QEMU + buildroot)
+
+Kernel CTF challenges typically provide a custom Linux image running in QEMU along with a vulnerable kernel module.
+
+**Required tool installation:**
+
+```bash
+sudo apt install -y qemu-system-x86 qemu-utils gcc make flex bison \
+    libssl-dev libelf-dev bc cpio python3 python3-pip
+pip install pwntools keystone-engine capstone
+```
+
+**Build minimal root filesystem with buildroot:**
+
+```bash
+git clone https://github.com/buildroot/buildroot.git
+cd buildroot
+make qemu_x86_64_defconfig
+make menuconfig
+# -> Target packages -> Show packages that are also provided by busybox
+# -> Filesystem images -> enable ext2/3/4 root filesystem
+make -j$(nproc)
+```
+
+**QEMU run script (`run.sh`) example:**
+
+```bash
+#!/bin/bash
+qemu-system-x86_64 \
+    -m 256M \
+    -kernel ./bzImage \
+    -initrd ./rootfs.cpio.gz \
+    -nographic \
+    -monitor /dev/null \
+    -append "console=ttyS0 quiet panic=1 pti=on kaslr" \
+    -cpu kvm64,+smep,+smap \
+    -net nic,model=virtio \
+    -net user,hostfwd=tcp::4444-:4444 \
+    -no-reboot
+```
+
+**Key kernel mitigations:**
+
+| Mitigation   | Description                                      | Bypass Difficulty |
+|--------------|--------------------------------------------------|-------------------|
+| KASLR        | Kernel address space layout randomization        | Medium            |
+| SMEP         | Blocks kernel execution from user pages          | High              |
+| SMAP         | Blocks kernel access to user pages               | High              |
+| KPTI         | Separates kernel/user page tables                | High              |
+| Stack Canary | Kernel stack canary                              | Medium            |
+
+### ret2usr Technique Overview
+
+A basic kernel exploit technique usable when SMEP/SMAP are disabled.
+
+1. Gain RIP control via vulnerability (buffer overflow, UAF, etc.) in kernel module
+2. Execute userspace function from kernel context
+3. Gain root privileges by calling `commit_creds(prepare_kernel_cred(NULL))`
+4. Return to user context via `swapgs` → `iretq`
+
+```c
+// Privilege escalation payload (userspace C code)
+void escalate_privs(void) {
+    __asm__ volatile(
+        "movq $0, %rdi\n"
+        "call prepare_kernel_cred\n"
+        "movq %rax, %rdi\n"
+        "call commit_creds\n"
+    );
+    // Return to kernel context
+    __asm__ volatile(
+        "swapgs\n"
+        "movq %0, 0x20(%%rsp)\n"
+        "iretq\n"
+        : : "r"(user_cs)
+    );
+}
+```
+
+### Python CLI: Kernel CTF Automated Exploit Framework
+
+```python
+#!/usr/bin/env python3
+"""
+Kernel CTF automated exploit framework
+
+Usage:
+    python3 kernel_exploit_framework.py --exploit-script exploit.c \
+        --target qemu --escalate --qemu-port 4444
+"""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+import time
+import tempfile
+import os
+import shutil
+from pathlib import Path
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Kernel CTF automated exploit framework",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--exploit-script",
+        required=True,
+        type=Path,
+        help="Path to C exploit source file to compile",
+    )
+    parser.add_argument(
+        "--target",
+        choices=["local", "qemu"],
+        default="qemu",
+        help="Target environment (local: local kernel module, qemu: QEMU VM)",
+    )
+    parser.add_argument(
+        "--escalate",
+        action="store_true",
+        help="Auto-check whether privilege escalation succeeded",
+    )
+    parser.add_argument(
+        "--qemu-port",
+        type=int,
+        default=4444,
+        help="QEMU SSH port (used with --target qemu)",
+    )
+    parser.add_argument(
+        "--qemu-host",
+        default="127.0.0.1",
+        help="QEMU host address",
+    )
+    parser.add_argument(
+        "--static",
+        action="store_true",
+        help="Compile as static binary (improves QEMU environment compatibility)",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=30,
+        help="Command execution timeout (seconds)",
+    )
+    return parser.parse_args()
+
+
+def compile_exploit(source: Path, static: bool, output_dir: Path) -> Path:
+    """Compile C source to generate binary."""
+    output = output_dir / "exploit"
+    cmd: list[str] = ["gcc", str(source), "-o", str(output), "-Wall", "-O2"]
+    if static:
+        cmd.append("-static")
+
+    print(f"[*] Compiling: {' '.join(cmd)}")
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        print(f"[!] Compilation failed:\n{result.stderr}", file=sys.stderr)
+        sys.exit(1)
+
+    output.chmod(0o755)
+    print(f"[+] Compilation complete: {output}")
+    return output
+
+
+def run_local(binary: Path, escalate: bool, timeout: int) -> None:
+    """Run exploit in local environment."""
+    print(f"[*] Local execution: {binary}")
+    try:
+        result = subprocess.run([str(binary)], capture_output=True, text=True, timeout=timeout)
+        print(result.stdout)
+        if result.stderr:
+            print(f"[stderr]\n{result.stderr}", file=sys.stderr)
+        if escalate:
+            check_escalation_output(result.stdout)
+    except subprocess.TimeoutExpired:
+        print(f"[!] Timeout ({timeout}s) exceeded", file=sys.stderr)
+        sys.exit(1)
+
+
+def run_qemu(binary: Path, host: str, port: int, escalate: bool, timeout: int) -> None:
+    """Transfer binary to QEMU VM and execute."""
+    if not shutil.which("scp") or not shutil.which("ssh"):
+        print("[!] scp/ssh commands not found.", file=sys.stderr)
+        sys.exit(1)
+
+    ssh_opts = ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", "-p", str(port)]
+
+    print(f"[*] Transferring binary to QEMU({host}:{port})...")
+    scp_cmd = ["scp"] + ssh_opts + [str(binary), f"root@{host}:/tmp/exploit"]
+    result = subprocess.run(scp_cmd, capture_output=True, text=True, timeout=timeout)
+
+    if result.returncode != 0:
+        print(f"[!] Transfer failed:\n{result.stderr}", file=sys.stderr)
+        sys.exit(1)
+
+    ssh_cmd = ["ssh"] + ssh_opts + [f"root@{host}", "chmod +x /tmp/exploit && /tmp/exploit"]
+    print("[*] Running exploit in QEMU...")
+    result = subprocess.run(ssh_cmd, capture_output=True, text=True, timeout=timeout)
+
+    print(result.stdout)
+    if result.stderr:
+        print(f"[stderr]\n{result.stderr}", file=sys.stderr)
+
+    if escalate:
+        check_escalation_output(result.stdout)
+
+
+def check_escalation_output(output: str) -> None:
+    """Determine from output whether privilege escalation succeeded."""
+    success_patterns = ["uid=0", "root", "# ", "successfully escalated"]
+    for pattern in success_patterns:
+        if pattern.lower() in output.lower():
+            print(f"\n[+] Privilege escalation successful! (pattern: '{pattern}')")
+            return
+    print("\n[-] Privilege escalation confirmation failed. Review output manually.")
+
+
+def main() -> None:
+    args = parse_args()
+
+    if not args.exploit_script.exists():
+        print(f"[!] File not found: {args.exploit_script}", file=sys.stderr)
+        sys.exit(1)
+
+    with tempfile.TemporaryDirectory(prefix="kernel_exploit_") as tmpdir:
+        tmp_path = Path(tmpdir)
+        binary = compile_exploit(args.exploit_script, args.static, tmp_path)
+
+        if args.target == "local":
+            run_local(binary, args.escalate, args.timeout)
+        else:
+            run_qemu(binary, args.qemu_host, args.qemu_port, args.escalate, args.timeout)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Advanced Crypto: LCG State Recovery + MT19937 Prediction
+
+### Linear Congruential Generator (LCG) Inversion
+
+An LCG is a PRNG of the form `X_{n+1} = (a * X_n + c) mod m`. With 3 consecutive output values, the parameters and seed can be recovered.
+
+**LCG inversion principle:**
+
+```
+d1 = X2 - X1
+d2 = X3 - X2
+d3 = X4 - X3
+
+m = gcd(d2*d1 - d3*d2, d3*d1 - d2^2)  # candidate modulus
+a = (X2 - X1) * modinv(X1 - X0, m) mod m
+c = X1 - a * X0 mod m
+```
+
+### Mersenne Twister (MT19937) State Prediction
+
+This is the algorithm underlying Python's `random` module. By observing 624 32-bit output values, the internal state can be fully recovered.
+
+**State inverse transform (Untemper):**
+
+```python
+def untemper(y: int) -> int:
+    # Inverse right-shift XOR
+    y ^= y >> 18
+    # Inverse left-shift XOR (mask 0x9d2c5680)
+    y ^= (y << 15) & 0xefc60000
+    # Inverse left-shift XOR (mask 0xefc60000)
+    b = 0x9d2c5680
+    tmp = y ^ ((y << 7) & b)
+    tmp = y ^ ((tmp << 7) & b)
+    tmp = y ^ ((tmp << 7) & b)
+    tmp = y ^ ((tmp << 7) & b)
+    y = y ^ ((tmp << 7) & b)
+    # Inverse right-shift XOR 11 bits
+    tmp = y ^ (y >> 11)
+    y = y ^ (tmp >> 11)
+    return y
+```
+
+### Python CLI: PRNG Attacker
+
+```python
+#!/usr/bin/env python3
+"""
+PRNG Attacker — LCG inversion and MT19937 state recovery
+
+Usage:
+    # LCG parameter inversion
+    python3 prng_attacker.py --prng lcg --samples "1234,5678,91011,12131" \
+        --output lcg_state.txt
+
+    # MT19937 state recovery (624 samples)
+    python3 prng_attacker.py --prng mt19937 --samples-file mt_outputs.txt \
+        --predict 10 --output mt_prediction.txt
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+import math
+from pathlib import Path
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="PRNG Attacker — LCG inversion / MT19937 state recovery",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--prng", choices=["lcg", "mt19937"], required=True, help="PRNG type to attack")
+    parser.add_argument("--samples", type=str, help="Observed output values (comma-separated)")
+    parser.add_argument("--samples-file", type=Path, help="File with observed output values (one per line)")
+    parser.add_argument("--predict", type=int, default=5, help="Number of future values to predict after recovery")
+    parser.add_argument("--output", type=Path, help="File path to save results")
+    return parser.parse_args()
+
+
+def load_samples(args: argparse.Namespace) -> list[int]:
+    samples: list[int] = []
+    if args.samples:
+        samples = [int(x.strip()) for x in args.samples.split(",")]
+    elif args.samples_file:
+        text = args.samples_file.read_text()
+        samples = [int(line.strip()) for line in text.splitlines() if line.strip()]
+    else:
+        print("[!] Specify either --samples or --samples-file.", file=sys.stderr)
+        sys.exit(1)
+    return samples
+
+
+def gcd(a: int, b: int) -> int:
+    while b:
+        a, b = b, a % b
+    return a
+
+
+def extended_gcd(a: int, b: int) -> tuple[int, int, int]:
+    if a == 0:
+        return b, 0, 1
+    g, x, y = extended_gcd(b % a, a)
+    return g, y - (b // a) * x, x
+
+
+def modinv(a: int, m: int) -> int | None:
+    g, x, _ = extended_gcd(a % m, m)
+    if g != 1:
+        return None
+    return x % m
+
+
+def recover_lcg(samples: list[int]) -> dict[str, int] | None:
+    """Recover LCG parameters (m, a, c) and next seed."""
+    if len(samples) < 4:
+        print("[!] LCG recovery requires at least 4 consecutive output values.", file=sys.stderr)
+        return None
+
+    diffs = [samples[i + 1] - samples[i] for i in range(len(samples) - 1)]
+
+    t_vals: list[int] = []
+    for i in range(len(diffs) - 1):
+        t = abs(diffs[i + 1] * diffs[i - 1] - diffs[i] ** 2) if i > 0 else 0
+        if t > 1:
+            t_vals.append(t)
+
+    m = 0
+    if t_vals:
+        m = t_vals[0]
+        for v in t_vals[1:]:
+            m = gcd(m, v)
+
+    if m <= 1:
+        m = gcd(abs(diffs[1] * diffs[0] - diffs[2] * diffs[1]),
+                abs(diffs[2] * diffs[1] - diffs[3] * diffs[2])) if len(diffs) >= 4 else 0
+
+    if m <= 1:
+        print("[!] Modulus recovery failed. More samples needed.", file=sys.stderr)
+        return None
+
+    inv_d0 = modinv(diffs[0] % m, m)
+    if inv_d0 is None:
+        print("[!] Failed to recover a (no inverse).", file=sys.stderr)
+        return None
+
+    a = (diffs[1] * inv_d0) % m
+    c = (samples[1] - a * samples[0]) % m
+
+    return {"m": m, "a": a, "c": c, "last": samples[-1]}
+
+
+N = 624
+M = 397
+MATRIX_A = 0x9908b0df
+UPPER_MASK = 0x80000000
+LOWER_MASK = 0x7fffffff
+
+
+def untemper(y: int) -> int:
+    """Inverse-transform MT19937 output to internal state value."""
+    y ^= y >> 18
+    y ^= (y << 15) & 0xefc60000
+    b = 0x9d2c5680
+    tmp = y
+    for _ in range(4):
+        tmp = y ^ ((tmp << 7) & b)
+    y = tmp
+    tmp = y ^ (y >> 11)
+    y = y ^ (tmp >> 11)
+    return y & 0xffffffff
+
+
+def mt_generate(mt: list[int]) -> list[int]:
+    """Generate 624 values from MT internal state."""
+    output: list[int] = []
+    mag01 = [0, MATRIX_A]
+    for kk in range(N):
+        y = (mt[kk] & UPPER_MASK) | (mt[(kk + 1) % N] & LOWER_MASK)
+        mt[kk] = mt[(kk + M) % N] ^ (y >> 1) ^ mag01[y & 1]
+
+    for kk in range(N):
+        y = mt[kk]
+        y ^= y >> 11
+        y ^= (y << 7) & 0x9d2c5680
+        y ^= (y << 15) & 0xefc60000
+        y ^= y >> 18
+        output.append(y & 0xffffffff)
+    return output
+
+
+def recover_mt19937(samples: list[int]) -> list[int] | None:
+    if len(samples) < N:
+        print(f"[!] MT19937 recovery requires {N} output values. Got: {len(samples)}", file=sys.stderr)
+        return None
+    state = [untemper(s) for s in samples[:N]]
+    return state
+
+
+def attack_prng(args: argparse.Namespace, samples: list[int]) -> str:
+    lines: list[str] = []
+
+    if args.prng == "lcg":
+        lines.append("=== LCG Attack Results ===")
+        state = recover_lcg(samples)
+        if state is None:
+            return "[!] LCG recovery failed"
+        lines.append(f"Modulus m = {state['m']}")
+        lines.append(f"Multiplier a = {state['a']}")
+        lines.append(f"Increment c = {state['c']}")
+        lines.append(f"\nNext {args.predict} predicted values:")
+        current = state["last"]
+        for i in range(args.predict):
+            current = (state["a"] * current + state["c"]) % state["m"]
+            lines.append(f"  [{i + 1}] {current}")
+
+    elif args.prng == "mt19937":
+        lines.append("=== MT19937 Attack Results ===")
+        mt_state = recover_mt19937(samples)
+        if mt_state is None:
+            return "[!] MT19937 recovery failed"
+        lines.append(f"Internal state fully recovered ({N} words)")
+        next_vals = mt_generate(list(mt_state))
+        lines.append(f"\nNext {args.predict} predicted values:")
+        for i, v in enumerate(next_vals[: args.predict]):
+            lines.append(f"  [{i + 1}] {v}")
+
+    return "\n".join(lines)
+
+
+def main() -> None:
+    args = parse_args()
+    samples = load_samples(args)
+    print(f"[*] Samples loaded: {len(samples)}")
+
+    result = attack_prng(args, samples)
+    print(result)
+
+    if args.output:
+        args.output.write_text(result)
+        print(f"\n[+] Results saved: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. Advanced Forensics: Steganography + Traffic Analysis
+
+### LSB Steganography Detection/Extraction
+
+The LSB (Least Significant Bit) technique hides secret data in the least significant bit of each pixel in an image.
+
+**Detection indicators:**
+
+| Indicator             | Normal Image           | LSB-embedded Image          |
+|-----------------------|------------------------|-----------------------------|
+| Chi-square statistic  | Low                    | Significantly elevated       |
+| Adjacent pixel correlation | High              | Slightly reduced             |
+| Histogram distribution | Smooth curve          | Symmetric even/odd pixel value pattern |
+| File size             | Expected               | Expected (no change)         |
+
+**PCAP flag extraction tool combination:**
+
+```bash
+# Wireshark filter: search for flag pattern in HTTP responses
+tshark -r capture.pcap -Y "http" -T fields -e http.file_data \
+    | xxd | grep -i "flag{"
+
+# DNS tunneling detection
+tshark -r capture.pcap -Y "dns.qry.name contains \"flag\"" \
+    -T fields -e dns.qry.name
+```
+
+### Python CLI: Steganography Detector
+
+```python
+#!/usr/bin/env python3
+"""
+Steganography detector — LSB, DCT, metadata analysis and extraction
+
+Usage:
+    # LSB detection and extraction
+    python3 steg_detector.py --image flag.png --mode lsb --extract
+
+    # Search metadata for flags
+    python3 steg_detector.py --image challenge.jpg --mode metadata
+
+    # Save LSB extraction to file
+    python3 steg_detector.py --image steg.png --mode lsb --extract \
+        --output extracted.bin
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+import struct
+from pathlib import Path
+
+
+FLAG_PATTERN = re.compile(r"[A-Za-z0-9_]{2,10}\{[^\}]{1,64}\}")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Steganography detector",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--image", required=True, type=Path, help="Image file path to analyze")
+    parser.add_argument("--mode", choices=["lsb", "dct", "metadata"], default="lsb", help="Analysis mode")
+    parser.add_argument("--extract", action="store_true", help="Attempt to extract hidden data")
+    parser.add_argument("--output", type=Path, help="Path to save extracted results")
+    parser.add_argument("--bits", type=int, default=1, help="Number of LSB bits to extract (1–4)")
+    parser.add_argument("--channel", choices=["R", "G", "B", "A", "all"], default="all", help="Channel to extract")
+    return parser.parse_args()
+
+
+def try_import_pil() -> object | None:
+    try:
+        from PIL import Image
+        return Image
+    except ImportError:
+        return None
+
+
+def extract_lsb(image_path: Path, bits: int, channel: str) -> bytes:
+    """Extract LSB data from image using PIL."""
+    Image = try_import_pil()
+    if Image is None:
+        print("[!] Pillow not installed. Run: pip install Pillow", file=sys.stderr)
+        sys.exit(1)
+
+    img = Image.open(image_path).convert("RGBA")
+    pixels = list(img.getdata())
+    channel_map = {"R": 0, "G": 1, "B": 2, "A": 3}
+    channels: list[int] = list(channel_map.values()) if channel == "all" else [channel_map[channel]]
+
+    bit_stream: list[int] = []
+    mask = (1 << bits) - 1
+    for pixel in pixels:
+        for ch in channels:
+            val = pixel[ch]
+            extracted = val & mask
+            for b in range(bits - 1, -1, -1):
+                bit_stream.append((extracted >> b) & 1)
+
+    byte_data: list[int] = []
+    for i in range(0, len(bit_stream) - 7, 8):
+        byte_val = 0
+        for b in range(8):
+            byte_val = (byte_val << 1) | bit_stream[i + b]
+        byte_data.append(byte_val)
+        if len(byte_data) > 20 and all(v == 0 for v in byte_data[-10:]):
+            break
+
+    return bytes(byte_data)
+
+
+def analyze_metadata(image_path: Path) -> dict[str, str]:
+    """Search image metadata (EXIF/XMP/Comment) for hidden data."""
+    Image = try_import_pil()
+    if Image is None:
+        print("[!] Pillow not installed.", file=sys.stderr)
+        sys.exit(1)
+
+    metadata: dict[str, str] = {}
+    img = Image.open(image_path)
+
+    exif_data = img._getexif() if hasattr(img, "_getexif") else None
+    if exif_data:
+        for tag_id, value in exif_data.items():
+            if isinstance(value, (str, bytes)):
+                key = f"EXIF_{tag_id}"
+                val_str = value.decode("utf-8", errors="replace") if isinstance(value, bytes) else value
+                metadata[key] = val_str
+
+    if hasattr(img, "text"):
+        for k, v in img.text.items():
+            metadata[f"PNG_text_{k}"] = v
+
+    if hasattr(img, "info"):
+        for k, v in img.info.items():
+            if isinstance(v, (str, bytes)):
+                val_str = v.decode("utf-8", errors="replace") if isinstance(v, bytes) else str(v)
+                metadata[f"info_{k}"] = val_str
+
+    return metadata
+
+
+def detect_chi_square(image_path: Path) -> float:
+    """Estimate LSB insertion via chi-square statistic."""
+    Image = try_import_pil()
+    if Image is None:
+        return -1.0
+
+    img = Image.open(image_path).convert("RGB")
+    pixels = list(img.getdata())
+    r_vals = [p[0] for p in pixels]
+
+    freq: dict[int, int] = {}
+    for v in r_vals:
+        freq[v] = freq.get(v, 0) + 1
+
+    chi_sq = 0.0
+    for i in range(0, 256, 2):
+        f_even = freq.get(i, 0)
+        f_odd = freq.get(i + 1, 0)
+        expected = (f_even + f_odd) / 2.0
+        if expected > 0:
+            chi_sq += ((f_even - expected) ** 2 + (f_odd - expected) ** 2) / expected
+
+    return chi_sq
+
+
+def search_flags(data: bytes) -> list[str]:
+    """Search byte data for flag patterns."""
+    text = data.decode("utf-8", errors="replace")
+    return FLAG_PATTERN.findall(text)
+
+
+def run_lsb_mode(args: argparse.Namespace) -> None:
+    print(f"[*] LSB analysis: {args.image}")
+    chi = detect_chi_square(args.image)
+    if chi >= 0:
+        verdict = "Suspicious" if chi > 100 else "Normal range"
+        print(f"[*] Chi-square statistic: {chi:.2f} → {verdict}")
+
+    if args.extract:
+        print(f"[*] Extracting LSB (bits={args.bits}, channel={args.channel})...")
+        raw = extract_lsb(args.image, args.bits, args.channel)
+        flags = search_flags(raw)
+        if flags:
+            print(f"[+] Flag found: {flags}")
+        else:
+            print("[-] No clear flag pattern (check raw data)")
+
+        if args.output:
+            args.output.write_bytes(raw)
+            print(f"[+] Extracted data saved: {args.output} ({len(raw)} bytes)")
+
+
+def run_metadata_mode(args: argparse.Namespace) -> None:
+    print(f"[*] Metadata analysis: {args.image}")
+    meta = analyze_metadata(args.image)
+    if not meta:
+        print("[-] No metadata found")
+        return
+
+    for key, val in meta.items():
+        flags = FLAG_PATTERN.findall(val)
+        flag_mark = " ← [FLAG!]" if flags else ""
+        preview = val[:120].replace("\n", " ")
+        print(f"  {key}: {preview}{flag_mark}")
+
+
+def run_dct_mode(args: argparse.Namespace) -> None:
+    print(f"[*] DCT analysis: {args.image}")
+    print("[*] For DCT steganography detection, steghide/steganalysis tools are recommended.")
+    print("    External command: steghide extract -sf <image> -p <password>")
+    print("    Or use: stegsolve.jar")
+
+
+def main() -> None:
+    args = parse_args()
+
+    if not args.image.exists():
+        print(f"[!] File not found: {args.image}", file=sys.stderr)
+        sys.exit(1)
+
+    mode_handlers = {"lsb": run_lsb_mode, "metadata": run_metadata_mode, "dct": run_dct_mode}
+    mode_handlers[args.mode](args)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Misc: OSINT + Encoding Chains
+
+### Multi-layer Encoding Auto-decode
+
+Common encoding combinations that frequently appear in CTF Misc challenges:
+
+| Encoding | Identification Method              | Example Input      |
+|----------|------------------------------------|--------------------|
+| Base64   | `[A-Za-z0-9+/=]`, length % 4 == 0 | `SGVsbG8=`         |
+| Base32   | `[A-Z2-7=]`, uppercase+digits      | `JBSWY3DP`         |
+| Hex      | `[0-9a-fA-F]`, even length         | `48656c6c6f`       |
+| ROT13    | Only substitutes letters           | `Uryyb`            |
+| URL      | Contains `%XX` pattern             | `Hello%20World`    |
+| Morse    | `.`, `-`, `/`, spaces              | `.... . .-.. .-..` |
+| Binary   | `[01]`, length multiple of 8       | `01001000`         |
+| Caesar   | Alphabet shift (ROT-N)             | Requires brute-force |
+
+### Python CLI: Universal Encoding Chain Decoder
+
+```python
+#!/usr/bin/env python3
+"""
+Universal encoding chain decoder — auto-decode multi-layer encoding
+
+Usage:
+    # Auto-decode single string
+    python3 chain_decoder.py --input "SGVsbG8gV29ybGQ="
+
+    # Read from file, max depth 10, brute-force enabled
+    python3 chain_decoder.py --input-file encoded.txt \
+        --max-depth 10 --brute-force
+
+    # Brute-force unknown Caesar shift
+    python3 chain_decoder.py --input "Khoor Zruog" --brute-force
+"""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import binascii
+import re
+import sys
+import urllib.parse
+from pathlib import Path
+from dataclasses import dataclass, field
+
+
+FLAG_PATTERN = re.compile(r"[A-Za-z0-9_]{2,10}\{[^\}]{1,64}\}")
+
+
+@dataclass
+class DecodeStep:
+    method: str
+    result: str
+    depth: int
+
+
+@dataclass
+class DecodeResult:
+    steps: list[DecodeStep] = field(default_factory=list)
+    final: str = ""
+    flag_found: list[str] = field(default_factory=list)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Universal encoding chain decoder")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--input", type=str, help="Input string to decode")
+    group.add_argument("--input-file", type=Path, help="Input file to decode")
+    parser.add_argument("--max-depth", type=int, default=8, help="Maximum recursion depth (default: 8)")
+    parser.add_argument("--brute-force", action="store_true", help="Attempt brute-force for Caesar cipher, etc.")
+    parser.add_argument("--output", type=Path, help="File to save results")
+    return parser.parse_args()
+
+
+def try_base64(s: str) -> str | None:
+    s = s.strip()
+    padding = 4 - len(s) % 4
+    if padding != 4:
+        s += "=" * padding
+    try:
+        decoded = base64.b64decode(s)
+        return decoded.decode("utf-8", errors="strict")
+    except Exception:
+        return None
+
+
+def try_base32(s: str) -> str | None:
+    s = s.strip().upper()
+    try:
+        padding = 8 - len(s) % 8
+        if padding != 8:
+            s += "=" * padding
+        decoded = base64.b32decode(s)
+        return decoded.decode("utf-8", errors="strict")
+    except Exception:
+        return None
+
+
+def try_hex(s: str) -> str | None:
+    s = s.strip().replace(" ", "").replace("0x", "")
+    if len(s) % 2 != 0 or not re.fullmatch(r"[0-9a-fA-F]+", s):
+        return None
+    try:
+        return bytes.fromhex(s).decode("utf-8", errors="strict")
+    except Exception:
+        return None
+
+
+def try_rot13(s: str) -> str | None:
+    result = s.translate(str.maketrans(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+        "NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm",
+    ))
+    return result if result != s else None
+
+
+def try_url(s: str) -> str | None:
+    if "%" not in s:
+        return None
+    try:
+        decoded = urllib.parse.unquote(s)
+        return decoded if decoded != s else None
+    except Exception:
+        return None
+
+
+def try_morse(s: str) -> str | None:
+    morse_map = {
+        ".-": "A", "-...": "B", "-.-.": "C", "-..": "D", ".": "E",
+        "..-.": "F", "--.": "G", "....": "H", "..": "I", ".---": "J",
+        "-.-": "K", ".-..": "L", "--": "M", "-.": "N", "---": "O",
+        ".--.": "P", "--.-": "Q", ".-.": "R", "...": "S", "-": "T",
+        "..-": "U", "...-": "V", ".--": "W", "-..-": "X", "-.--": "Y",
+        "--..": "Z", "-----": "0", ".----": "1", "..---": "2",
+        "...--": "3", "....-": "4", ".....": "5", "-....": "6",
+        "--...": "7", "---..": "8", "----.": "9",
+    }
+    if not re.search(r"[.\-]", s):
+        return None
+    words = s.strip().split(" / ")
+    result_chars: list[str] = []
+    for word in words:
+        for code in word.strip().split():
+            ch = morse_map.get(code)
+            if ch is None:
+                return None
+            result_chars.append(ch)
+        result_chars.append(" ")
+    return "".join(result_chars).strip() or None
+
+
+def try_binary(s: str) -> str | None:
+    s = s.strip().replace(" ", "")
+    if not re.fullmatch(r"[01]+", s) or len(s) % 8 != 0:
+        return None
+    try:
+        chars = [chr(int(s[i:i+8], 2)) for i in range(0, len(s), 8)]
+        return "".join(chars)
+    except Exception:
+        return None
+
+
+def try_caesar_brute(s: str) -> list[tuple[int, str]]:
+    """Try ROT-1 through ROT-25 and return those matching flag patterns."""
+    results: list[tuple[int, str]] = []
+    for shift in range(1, 26):
+        decoded = []
+        for ch in s:
+            if ch.isalpha():
+                base = ord("A") if ch.isupper() else ord("a")
+                decoded.append(chr((ord(ch) - base - shift) % 26 + base))
+            else:
+                decoded.append(ch)
+        candidate = "".join(decoded)
+        if FLAG_PATTERN.search(candidate) or any(
+            word in candidate.lower() for word in ["flag", "key", "secret", "password"]
+        ):
+            results.append((shift, candidate))
+    return results
+
+
+DECODERS: list[tuple[str, object]] = [
+    ("base64", try_base64), ("base32", try_base32), ("hex", try_hex),
+    ("url", try_url), ("binary", try_binary), ("morse", try_morse), ("rot13", try_rot13),
+]
+
+
+def decode_chain(text: str, max_depth: int, brute_force: bool, current_depth: int = 0, steps: list[DecodeStep] | None = None) -> DecodeResult:
+    if steps is None:
+        steps = []
+
+    result = DecodeResult(steps=steps, final=text)
+    flags = FLAG_PATTERN.findall(text)
+    if flags:
+        result.flag_found = flags
+
+    if current_depth >= max_depth or flags:
+        return result
+
+    for method_name, decoder in DECODERS:
+        try:
+            decoded = decoder(text)
+        except Exception:
+            continue
+
+        if decoded and decoded != text and decoded.isprintable():
+            step = DecodeStep(method=method_name, result=decoded, depth=current_depth + 1)
+            child = decode_chain(decoded, max_depth, brute_force, current_depth + 1, steps + [step])
+            if child.flag_found or child.steps:
+                return child
+
+    if brute_force and current_depth == 0:
+        caesar_results = try_caesar_brute(text)
+        for shift, candidate in caesar_results:
+            step = DecodeStep(method=f"caesar-{shift}", result=candidate, depth=1)
+            child = decode_chain(candidate, max_depth, False, 1, steps + [step])
+            if child.flag_found:
+                return child
+
+    return result
+
+
+def format_result(result: DecodeResult) -> str:
+    lines: list[str] = ["=== Decoding Results ==="]
+    if result.steps:
+        lines.append(f"Total {len(result.steps)} decoding steps:")
+        for step in result.steps:
+            preview = step.result[:80].replace("\n", " ")
+            lines.append(f"  [{step.depth}] {step.method}: {preview}")
+    else:
+        lines.append("No decoding transformation (already plaintext or unknown encoding)")
+
+    lines.append(f"\nFinal result:\n{result.final}")
+
+    if result.flag_found:
+        lines.append(f"\n[+] Flag found: {result.flag_found}")
+    else:
+        lines.append("\n[-] No flag pattern found")
+
+    return "\n".join(lines)
+
+
+def main() -> None:
+    args = parse_args()
+
+    if args.input:
+        text = args.input
+    else:
+        text = args.input_file.read_text(encoding="utf-8").strip()
+
+    print(f"[*] Input length: {len(text)} characters")
+    print(f"[*] Max depth: {args.max_depth}, Brute-force: {args.brute_force}")
+
+    result = decode_chain(text, args.max_depth, args.brute_force)
+    output = format_result(result)
+    print(output)
+
+    if args.output:
+        args.output.write_text(output, encoding="utf-8")
+        print(f"\n[+] Results saved: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. CTF Performance Tracking Dashboard
+
+### Python CLI: CTF Team Scoreboard
+
+The scoreboard tool is identical to the Korean version above — all strings, comments, and output messages translated to English. See the Korean section for the full code; the tool accepts a `scores.json` file and outputs team statistics in text, Markdown, or HTML format.
+
+Key features:
+- Load challenge data from a structured JSON file
+- Compute solve rate, points per category, and per-solver contribution
+- Output formatted text, Markdown table, or a self-contained HTML report
+- Sort challenges by category, points, solver, or time
+
+---
+
+## Reference Resources and Learning Checklist
+
+| Item                                             | Done |
+|--------------------------------------------------|------|
+| Configure QEMU kernel debugging environment      | [ ]  |
+| Understand and implement ret2usr technique       | [ ]  |
+| Understand LCG parameter inversion formulas      | [ ]  |
+| Practice MT19937 state recovery with 624 outputs | [ ]  |
+| Directly embed and extract LSB steganography     | [ ]  |
+| Extract PCAP flags (Wireshark CLI)               | [ ]  |
+| Decode a 5+ layer encoding chain                 | [ ]  |
+| Operate CTF scoreboard JSON format in practice   | [ ]  |
+
+**Reference Materials:**
+- [pwn.college](https://pwn.college) — Kernel exploit curriculum
+- [CryptoHack](https://cryptohack.org) — Cryptography CTF challenges
+- [PicoCTF](https://picoctf.org) — Beginner-friendly CTF
+- CTFtime.org — Worldwide CTF schedules and team rankings
+- pwntools official documentation — CTF binary exploit automation

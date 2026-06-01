@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 01 — ICS 프로토콜 심화 및 정찰
 
 ## 목차
@@ -1247,6 +1253,142 @@ for host_data in data:
 ---
 
 ## 참고 문헌
+
+- Modbus Application Protocol Specification V1.1b3 (modbus.org)
+- DNP3 Technical Bulletin (Triangle MicroWorks)
+- IEC 61850 Edition 2.0 (IEC TC57)
+- NIST SP 800-82 Rev.3: Guide to OT Security
+- Project Redpoint — Digital Bond (github.com/digitalbond/Redpoint)
+
+---
+
+<a name="english"></a>
+
+# 01 — ICS Protocols Deep Dive and Reconnaissance
+
+## Table of Contents
+1. Modbus Protocol In-Depth
+2. DNP3 Protocol In-Depth
+3. IEC 61850 Protocol
+4. EtherNet/IP Protocol
+5. Shodan ICS Reconnaissance
+6. S7scan and Redpoint NSE Scripts
+7. PLC Fingerprinting and Tag Enumeration
+8. Python Tool: Modbus Full Scanner
+
+---
+
+## 1. Modbus Protocol In-Depth
+
+### Protocol Structure
+
+Modbus is a serial communication protocol developed by Modicon in 1979, and is the most widely used protocol in ICS environments. It uses TCP port 502 and has **no authentication whatsoever**.
+
+```
+[MBAP Header (7 bytes)] + [PDU (max 253 bytes)]
+
+MBAP Header:
+  Transaction ID : 2 bytes
+  Protocol ID   : 2 bytes (always 0x0000)
+  Length        : 2 bytes (byte count that follows)
+  Unit ID       : 1 byte (slave address)
+
+PDU:
+  Function Code : 1 byte
+  Data          : variable
+```
+
+### Complete Function Code (FC) List
+
+| FC | Name | Data Type | Read/Write |
+|----|------|-----------|------------|
+| 0x01 | Read Coils | Digital Output | Read |
+| 0x02 | Read Discrete Inputs | Digital Input | Read |
+| 0x03 | Read Holding Registers | Analog Output | Read |
+| 0x04 | Read Input Registers | Analog Input | Read |
+| 0x05 | Write Single Coil | Digital Output | Write |
+| 0x06 | Write Single Register | Analog Output | Write |
+| 0x0F | Write Multiple Coils | Digital Output | Write |
+| 0x10 | Write Multiple Registers | Analog Output | Write |
+
+---
+
+## 2. DNP3 Protocol In-Depth
+
+DNP3 (Distributed Network Protocol 3) is widely used in SCADA for utilities such as electricity, water, and gas. It uses TCP port 20000. Key function codes include READ (0x01), WRITE (0x02), DIRECT_OPERATE (0x05), and COLD_RESTART (0x0D). The protocol lacks encryption and authentication in many implementations.
+
+---
+
+## 3. IEC 61850 Protocol
+
+IEC 61850 is an international standard for substation automation comprising multiple sub-protocols:
+
+- **MMS (Manufacturing Message Specification)**: TCP port 102, SCADA ↔ IED communication
+- **GOOSE (Generic Object Oriented Substation Event)**: Multicast, circuit breaker state events
+- **SV (Sampled Values)**: Multicast, current/voltage measurements
+- **CID files**: Device configuration described in Substation Configuration Language (SCL)
+
+---
+
+## 4. EtherNet/IP Protocol
+
+EtherNet/IP (Ethernet Industrial Protocol) is an industrial Ethernet protocol developed by Rockwell Automation, and the default communication method for Allen-Bradley PLCs.
+
+- **TCP port 44818**: Explicit messaging (configuration, programming)
+- **UDP port 2222**: Implicit messaging (real-time I/O)
+- Operates over **CIP (Common Industrial Protocol)**
+
+---
+
+## 5. Shodan ICS Reconnaissance
+
+Effective Shodan queries for ICS asset discovery:
+- `port:502 modbus` — Modbus devices
+- `port:102 "S7"` — Siemens S7 PLCs
+- `port:44818 "Allen-Bradley"` — EtherNet/IP devices
+- `port:20000 "DNP3"` — DNP3 RTUs
+- `tag:ics country:KR` — Korean ICS assets
+
+---
+
+## 6. S7scan and Redpoint NSE Scripts
+
+S7scan enumerates Siemens S7 PLC information including system name, module type, serial number, AS name, firmware version, and plant ID. Nmap Redpoint NSE scripts support modbus-discover, s7-info, enip-info, dnp3-info, and bacnet-info for comprehensive ICS scanning.
+
+---
+
+## 7. PLC Fingerprinting and Tag Enumeration
+
+- **Siemens S7**: Use python-snap7 to read CPU info (module name, serial number, AS name, CPU state)
+- **Allen-Bradley**: Use pycomm3 LogixDriver to list all tags, data types, and program names, then read values
+- **Schneider Modicon**: Use pymodbus to read holding registers and input registers directly via Modbus TCP
+
+---
+
+## 8. Python Tool: Modbus Full Scanner
+
+A complete CLI tool that enumerates all coils and registers of a Modbus device and saves results as JSON/CSV. Features include multi-host scanning with thread pools, slave ID range sweeping, zero-value filtering, device identification (FC 0x2B), and parallel chunk reading.
+
+### Usage Examples
+
+```bash
+# Basic full scan of single host
+python3 modbus_scanner.py -t 192.168.1.100
+
+# Holding/input registers only, skip zeros
+python3 modbus_scanner.py -t 192.168.1.100 \
+    --types holding input --start 0 --end 999 --skip-zeros
+
+# Subnet multi-host scan
+python3 modbus_scanner.py \
+    -t 192.168.1.1 192.168.1.2 192.168.1.50 \
+    --host-workers 16 --workers 8 \
+    -o scan_results.json --format json
+```
+
+---
+
+## References
 
 - Modbus Application Protocol Specification V1.1b3 (modbus.org)
 - DNP3 Technical Bulletin (Triangle MicroWorks)

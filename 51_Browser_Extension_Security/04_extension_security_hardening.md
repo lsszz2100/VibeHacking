@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 브라우저 확장 보안 강화
 
 ## 1. Manifest V3 보안 개선사항
@@ -1279,6 +1285,628 @@ class SecureMessenger {
 ---
 
 ## 참고 자료
+
+- Chrome Extensions Security: https://developer.chrome.com/docs/extensions/mv3/security/
+- OWASP Browser Extension Security: https://owasp.org/
+- Chrome Enterprise Policy: https://chromeenterprise.google/policies/
+- Web Crypto API: https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API
+- Cure53 Extension Security Audits: https://cure53.de/
+
+---
+
+<a name="english"></a>
+
+# Browser Extension Security Hardening
+
+## 1. Manifest V3 Security Improvements
+
+### 1.1 Service Worker vs Background Page
+
+```
+Manifest V2 Background Page         Manifest V3 Service Worker
+────────────────────────────────    ──────────────────────────────
+Always resident in memory            Event-driven — terminated when idle
+eval() allowed                       eval() completely forbidden
+Remote code loading allowed          Remote code loading forbidden
+Uses webRequestBlocking              Uses declarativeNetRequest
+No DOM access (already restricted)   No DOM access
+```
+
+**Security Implications:**
+- Removal of persistent background processes → harder to run persistent malicious code
+- eval() ban → dynamic code injection impossible
+- Remote code ban → blocks malicious code insertion via updates
+
+### 1.2 declarativeNetRequest Security Model
+
+```json
+// rules.json — static rule definitions
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||malicious-tracker.example.com",
+      "resourceTypes": ["script", "xmlhttprequest"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 2,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        { "header": "Referer", "operation": "remove" }
+      ]
+    },
+    "condition": {
+      "urlFilter": "||third-party-analytics.example.com",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  }
+]
+```
+
+```json
+// Register rule file in manifest.json
+{
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "permissions": ["declarativeNetRequest"]
+}
+```
+
+V3's declarativeNetRequest is rule-based, so extensions cannot arbitrarily read or modify request content. The browser processes only the rules, enabling filtering without exposing user traffic.
+
+---
+
+## 2. Secure Extension Development Guidelines (OWASP-based)
+
+### 2.1 Input Validation and Output Encoding
+
+```javascript
+// Safe DOM manipulation utility
+class SafeDOM {
+  /**
+   * Insert text without XSS
+   * @param {HTMLElement} container
+   * @param {string} text
+   */
+  static setText(container, text) {
+    container.textContent = String(text);
+  }
+
+  /**
+   * Safe HTML insertion with only allowed tags
+   * @param {HTMLElement} container
+   * @param {string} html
+   */
+  static setSafeHTML(container, html) {
+    // Whitelist of allowed tags
+    const ALLOWED_TAGS = new Set(['b', 'i', 'em', 'strong', 'span', 'div', 'p', 'br']);
+    
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    
+    // Traverse all elements and remove disallowed tags
+    const removeDisallowed = (node) => {
+      const children = Array.from(node.childNodes);
+      for (const child of children) {
+        if (child.nodeType === Node.ELEMENT_NODE) {
+          if (!ALLOWED_TAGS.has(child.tagName.toLowerCase())) {
+            // Disallowed tag: keep content but remove tag
+            child.replaceWith(...child.childNodes);
+          } else {
+            // Remove all event attributes
+            Array.from(child.attributes).forEach((attr) => {
+              if (attr.name.startsWith('on') || attr.name === 'href' && attr.value.startsWith('javascript:')) {
+                child.removeAttribute(attr.name);
+              }
+            });
+            removeDisallowed(child);
+          }
+        }
+      }
+    };
+    
+    removeDisallowed(template.content);
+    container.innerHTML = '';
+    container.appendChild(template.content);
+  }
+
+  /**
+   * URL safety validation
+   * @param {string} url
+   * @returns {string|null} safe URL or null
+   */
+  static sanitizeURL(url) {
+    try {
+      const parsed = new URL(url);
+      const allowedProtocols = new Set(['https:', 'http:']);
+      if (!allowedProtocols.has(parsed.protocol)) {
+        return null;  // Block javascript:, data:, etc.
+      }
+      return parsed.href;
+    } catch {
+      return null;
+    }
+  }
+}
+```
+
+### 2.2 Message Validation Middleware
+
+```javascript
+// message-validator.js — Message validation middleware for Background Script
+
+class MessageValidator {
+  constructor() {
+    // Define allowed message types and schemas
+    this.schemas = new Map();
+  }
+
+  /**
+   * Register message type
+   * @param {string} type - message type
+   * @param {object} schema - field validation schema
+   * @param {string[]} allowedSenders - allowed senders (tab URL patterns or 'extension')
+   */
+  register(type, schema, allowedSenders = ['extension']) {
+    this.schemas.set(type, { schema, allowedSenders });
+    return this;
+  }
+
+  /**
+   * Validate message
+   * @param {object} message
+   * @param {chrome.runtime.MessageSender} sender
+   * @returns {{ valid: boolean, error?: string }}
+   */
+  validate(message, sender) {
+    if (!message || typeof message !== 'object') {
+      return { valid: false, error: 'Message is not an object' };
+    }
+    if (!message.type || typeof message.type !== 'string') {
+      return { valid: false, error: 'Missing type field' };
+    }
+
+    const config = this.schemas.get(message.type);
+    if (!config) {
+      return { valid: false, error: `Unknown message type: ${message.type}` };
+    }
+
+    // Validate sender
+    if (!this._validateSender(sender, config.allowedSenders)) {
+      return { valid: false, error: `Unauthorized sender: ${sender.url || sender.id}` };
+    }
+
+    // Field schema validation
+    const fieldError = this._validateFields(message, config.schema);
+    if (fieldError) {
+      return { valid: false, error: fieldError };
+    }
+
+    return { valid: true };
+  }
+
+  _validateSender(sender, allowedSenders) {
+    for (const allowed of allowedSenders) {
+      if (allowed === 'extension' && !sender.tab) return true;
+      if (allowed === 'content_script' && sender.tab) return true;
+      if (sender.url && sender.url.startsWith(allowed)) return true;
+      if (sender.id === allowed) return true;
+    }
+    return false;
+  }
+
+  _validateFields(message, schema) {
+    for (const [field, rules] of Object.entries(schema)) {
+      const value = message[field];
+      if (rules.required && value === undefined) {
+        return `Required field missing: ${field}`;
+      }
+      if (value !== undefined && rules.type && typeof value !== rules.type) {
+        return `Type error: ${field} (${typeof value} != ${rules.type})`;
+      }
+      if (rules.maxLength && typeof value === 'string' && value.length > rules.maxLength) {
+        return `Field length exceeded: ${field}`;
+      }
+      if (rules.pattern && typeof value === 'string' && !rules.pattern.test(value)) {
+        return `Pattern mismatch: ${field}`;
+      }
+    }
+    return null;
+  }
+}
+```
+
+---
+
+## 3. Extension Code Audit Checklist
+
+### 3.1 Manifest Security Check
+
+```
+[ ] Use manifest_version: 3 (avoid V2)
+[ ] name, version, description properly set
+[ ] Apply least privilege principle to permissions
+    [ ] Prefer activeTab (safer than tabs)
+    [ ] Do not use <all_urls>
+    [ ] Remove unused permissions
+[ ] host_permissions limited to required domains
+[ ] content_security_policy specified
+    [ ] Only allow script-src 'self'
+    [ ] object-src 'none' or 'self'
+    [ ] No unsafe-eval
+    [ ] No unsafe-inline
+    [ ] No external CDN
+[ ] externally_connectable explicit allowlist
+[ ] Minimize web_accessible_resources
+    [ ] Do not expose unnecessary files
+    [ ] Restrict matches to specific domains
+```
+
+### 3.2 JavaScript Code Security Check
+
+```
+Content Script:
+[ ] No postMessage handling without origin validation
+[ ] No direct innerHTML/outerHTML assignment
+[ ] No document.write usage
+[ ] Validate data received from page before use
+[ ] Handle lastError in chrome.runtime.sendMessage
+
+Background Script:
+[ ] Validate all message senders
+[ ] Fetch only from allowed URL list
+[ ] No eval(), new Function() usage
+[ ] No remote code loading
+[ ] Store sensitive data encrypted in chrome.storage
+
+Popup / Options Page:
+[ ] No direct insertion of user input into innerHTML
+[ ] Use textContent when rendering chrome.storage data
+[ ] No loading external scripts
+[ ] No inline event handlers (onclick="..." format)
+[ ] Verify CSP applies to popup as well
+```
+
+### 3.3 Automated Code Audit Script
+
+```bash
+#!/bin/bash
+# extension_audit.sh — Basic extension security audit
+
+EXT_DIR="$1"
+if [ -z "$EXT_DIR" ]; then
+    echo "Usage: $0 <extension_directory>"
+    exit 1
+fi
+
+echo "=== Browser Extension Security Audit ==="
+echo "Target: $EXT_DIR"
+echo ""
+
+# 1. Dangerous permissions check
+echo "[1] Dangerous Permission Analysis"
+python3 -c "
+import json, sys
+try:
+    m = json.load(open('$EXT_DIR/manifest.json'))
+    dangerous = ['<all_urls>', 'webRequestBlocking', 'nativeMessaging', 'debugger', 'management', 'proxy', 'cookies', 'history']
+    perms = m.get('permissions', []) + m.get('host_permissions', [])
+    found = [p for p in perms if p in dangerous or p.startswith('https://*/*')]
+    if found:
+        print('  [WARNING] Dangerous permissions:', found)
+    else:
+        print('  [OK] No dangerous permissions found')
+except Exception as e:
+    print('  [ERROR]', e)
+"
+
+# 2. CSP inspection
+echo ""
+echo "[2] CSP Analysis"
+python3 -c "
+import json
+m = json.load(open('$EXT_DIR/manifest.json'))
+csp = m.get('content_security_policy', {})
+if isinstance(csp, dict):
+    csp = csp.get('extension_pages', '')
+if not csp:
+    print('  [WARNING] CSP not set')
+elif 'unsafe-eval' in csp:
+    print('  [WARNING] Contains unsafe-eval')
+elif 'unsafe-inline' in csp:
+    print('  [WARNING] Contains unsafe-inline')
+else:
+    print('  [OK] CSP configured:', csp[:60])
+"
+
+# 3. Code pattern check
+echo ""
+echo "[3] Dangerous Code Patterns"
+
+patterns=(
+    "eval("
+    "innerHTML ="
+    "document.write"
+    "new Function("
+    "atob("
+    "_0x[0-9a-f]"
+)
+
+for pattern in "${patterns[@]}"; do
+    count=$(grep -rn "$pattern" "$EXT_DIR" --include="*.js" 2>/dev/null | wc -l)
+    if [ "$count" -gt 0 ]; then
+        echo "  [WARNING] '$pattern' found $count times:"
+        grep -rn "$pattern" "$EXT_DIR" --include="*.js" 2>/dev/null | head -3 | sed 's/^/    /'
+    fi
+done
+
+# 4. External URL list
+echo ""
+echo "[4] External URL List"
+grep -rEoh "https?://[a-zA-Z0-9._/-]+" "$EXT_DIR" --include="*.js" 2>/dev/null | \
+    grep -v "chrome-extension://" | sort -u | head -20
+
+echo ""
+echo "=== Audit Complete ==="
+```
+
+---
+
+## 4. Principle of Least Privilege
+
+### 4.1 Permission Downgrade Patterns
+
+```javascript
+// Bad: requesting tabs permission for all tabs
+// manifest.json: "permissions": ["tabs"]
+
+// Good: use only activeTab — access only on user click
+// manifest.json: "permissions": ["activeTab"]
+
+// activeTab usage pattern
+chrome.action.onClicked.addListener(async (tab) => {
+  // activeTab permission allows current tab URL access (after user click)
+  console.log('Current tab URL:', tab.url);
+  
+  // Execute code with scripting.executeScript
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: () => {
+      return document.title;
+    }
+  });
+});
+```
+
+### 4.2 Optional Permissions
+
+```json
+// manifest.json
+{
+  "permissions": ["storage"],
+  "optional_permissions": ["history", "bookmarks", "cookies"],
+  "optional_host_permissions": ["https://*/*"]
+}
+```
+
+```javascript
+// Request permissions only when needed
+async function requestHistoryAccess() {
+  const granted = await chrome.permissions.request({
+    permissions: ['history'],
+  });
+  
+  if (granted) {
+    console.log('[+] history permission granted');
+    return true;
+  } else {
+    console.log('[-] User denied permission');
+    return false;
+  }
+}
+
+// Check permissions
+async function checkPermissions() {
+  const hasHistory = await chrome.permissions.contains({ permissions: ['history'] });
+  console.log('history permission:', hasHistory);
+  return { history: hasHistory };
+}
+
+// Revoke unneeded permissions
+async function revokeUnneededPermissions() {
+  await chrome.permissions.remove({ permissions: ['history', 'bookmarks'] });
+  console.log('[+] Unnecessary permissions revoked');
+}
+```
+
+---
+
+## 5. Enterprise Extension Management (Chrome Enterprise Policy)
+
+### 5.1 Policy File Configuration
+
+```json
+// /etc/opt/chrome/policies/managed/extensions.json (Linux)
+// HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome (Windows)
+
+{
+  // Allow only specific extensions
+  "ExtensionAllowlist": [
+    "cjpalhdlnbpafiamejdnhcphjbkeiagm",  // uBlock Origin
+    "mnjggcdmjocbbbhaepdhchncahnbgone"   // Approved security extension
+  ],
+  
+  // Block specific extensions
+  "ExtensionBlocklist": [
+    "*",  // Block all extensions (those not in AllowList)
+    "aapocclcgogkmnckokdopfmhonfmgoek"  // Block specific ID
+  ],
+  
+  // Force-install extensions
+  "ExtensionInstallForcelist": [
+    "cjpalhdlnbpafiamejdnhcphjbkeiagm;https://clients2.google.com/service/update2/crx"
+  ],
+  
+  // Block dangerous permissions
+  "ExtensionSettings": {
+    "*": {
+      "blocked_permissions": [
+        "history",
+        "nativeMessaging", 
+        "debugger"
+      ]
+    }
+  },
+  
+  // Restrict extension installation sources
+  "ExtensionInstallSources": [
+    "https://clients2.google.com/service/update2/crx",
+    "https://internal-ext-server.company.example.com/*"
+  ]
+}
+```
+
+### 5.2 Policy Deployment (Linux)
+
+```bash
+# Create policy directory
+sudo mkdir -p /etc/opt/chrome/policies/managed/
+
+# Write policy file
+sudo tee /etc/opt/chrome/policies/managed/security_policy.json << 'EOF'
+{
+  "ExtensionBlocklist": ["*"],
+  "ExtensionAllowlist": [
+    "cjpalhdlnbpafiamejdnhcphjbkeiagm"
+  ],
+  "BrowserSignin": 1,
+  "RestrictSigninToPattern": ".*@company.example.com"
+}
+EOF
+
+# Set permissions
+sudo chmod 644 /etc/opt/chrome/policies/managed/security_policy.json
+
+# Verify policy (in Chrome)
+# Visit chrome://policy to confirm policy application
+```
+
+### 5.3 Deployment via Windows GPO
+
+```powershell
+# PowerShell — Set Chrome extension policy
+$chromePolicyPath = "HKLM:\SOFTWARE\Policies\Google\Chrome"
+$extensionPath = "$chromePolicyPath\ExtensionInstallForcelist"
+
+# Create registry path
+New-Item -Path $extensionPath -Force | Out-Null
+
+# Add force-install extension
+$extensionId = "cjpalhdlnbpafiamejdnhcphjbkeiagm"
+$updateUrl = "https://clients2.google.com/service/update2/crx"
+Set-ItemProperty -Path $extensionPath -Name "1" -Value "$extensionId;$updateUrl"
+
+# Set blocklist
+$blockPath = "$chromePolicyPath\ExtensionBlocklist"
+New-Item -Path $blockPath -Force | Out-Null
+Set-ItemProperty -Path $blockPath -Name "1" -Value "*"
+
+Write-Host "[+] Policy configuration complete"
+```
+
+---
+
+## 6. Extension Update Integrity Verification
+
+See the Korean section above for the full CRX verification tool — code blocks are preserved as-is.
+
+---
+
+## 7. Organization-wide Extension Risk Assessment
+
+See the Korean section above for the full risk assessment tool — code blocks are preserved as-is.
+
+---
+
+## 8. Secure Extension Architecture Design Patterns
+
+### 8.1 Least Privilege Architecture
+
+```
+[Least Privilege Extension Design]
+
+Permission selection by use case:
+
+Case: Analyze current page
+  No: "tabs" permission + host_permissions: ["<all_urls>"]
+  Yes: Only "activeTab" permission (access only current tab on user click)
+
+Case: Communicate with specific site
+  No: host_permissions: ["<all_urls>"]
+  Yes: host_permissions: ["https://api.myservice.example.com/*"]
+
+Case: HTTP request filtering
+  No: "webRequestBlocking" (V2)
+  Yes: "declarativeNetRequest" + rules.json (V3)
+
+Case: Data synchronization
+  No: chrome.storage.sync + plaintext storage
+  Yes: chrome.storage.local + AES-GCM encryption
+```
+
+### 8.2 Encrypted Storage Pattern
+
+See the Korean section above for the full SecureStorage implementation — code blocks are preserved as-is.
+
+### 8.3 Secure Content Script Communication Pattern
+
+See the Korean section above for the full SecureMessenger implementation — code blocks are preserved as-is.
+
+---
+
+## 9. Extension Security Checklist Summary
+
+```
+Development Phase:
+✓ Use Manifest V3
+✓ Least privilege principle (prefer activeTab)
+✓ Strict CSP (no unsafe-eval/unsafe-inline)
+✓ All external communication over HTTPS
+✓ Validate message senders
+✓ Handle user input with textContent
+✓ Encrypt sensitive data before storage
+✓ Apply SRI (Subresource Integrity)
+
+Code Review:
+✓ No eval(), Function(), setTimeout(string)
+✓ No direct innerHTML assignment
+✓ Validate postMessage origin
+✓ No chrome.storage.get(null)
+✓ No hardcoded secrets
+
+Deployment and Operations:
+✓ Code signing (keep CRX signing key secure)
+✓ Review changes before updates
+✓ Chrome Web Store two-factor authentication
+✓ Enterprise ExtensionBlocklist policy
+✓ Regular audit of installed extensions
+```
+
+---
+
+## References
 
 - Chrome Extensions Security: https://developer.chrome.com/docs/extensions/mv3/security/
 - OWASP Browser Extension Security: https://owasp.org/

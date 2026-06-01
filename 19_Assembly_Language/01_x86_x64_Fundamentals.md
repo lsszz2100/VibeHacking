@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # x86/x64 어셈블리 기초
 
 ## 1. 레지스터 체계
@@ -635,3 +641,604 @@ nop DWORD PTR [rax] ; 다중 바이트 NOP
 | execve  | 59        | rdi=path, rsi=argv, rdx=envp |
 | exit    | 60        | rdi=code |
 | mmap    | 9         | rdi=addr, rsi=len, rdx=prot, r10=flags, r8=fd, r9=off |
+
+---
+
+<a name="english"></a>
+
+# x86/x64 Assembly Fundamentals
+
+## 1. Register Architecture
+
+### 1.1 General Purpose Registers
+
+| 64bit | 32bit | 16bit | 8bit(H) | 8bit(L) | Primary Use |
+|-------|-------|-------|---------|---------|-------------|
+| RAX   | EAX   | AX    | AH      | AL      | Accumulator, function return value |
+| RBX   | EBX   | BX    | BH      | BL      | Base address |
+| RCX   | ECX   | CX    | CH      | CL      | Counter, 4th argument |
+| RDX   | EDX   | DX    | DH      | DL      | Data, 3rd argument |
+| RSI   | ESI   | SI    | -       | SIL     | Source index, 2nd argument |
+| RDI   | EDI   | DI    | -       | DIL     | Destination index, 1st argument |
+| RSP   | ESP   | SP    | -       | SPL     | Stack pointer |
+| RBP   | EBP   | BP    | -       | BPL     | Base pointer (frame) |
+| R8    | R8D   | R8W   | -       | R8B     | 5th argument |
+| R9    | R9D   | R9W   | -       | R9B     | 6th argument |
+| R10~R15 | ... | ...  | -       | ...     | Temporary storage |
+
+```
+RAX (64bit)
+├── EAX (lower 32bit)
+│   ├── AX (lower 16bit)
+│   │   ├── AH (bits 8~15)
+│   │   └── AL (bits 0~7)
+```
+
+### 1.2 Special Purpose Registers
+
+| Register | Description |
+|----------|-------------|
+| RIP      | Instruction Pointer — address of the next instruction to execute |
+| RFLAGS   | Flags register (collection of status bits) |
+
+### 1.3 Segment Registers
+
+| Register | Purpose |
+|----------|---------|
+| CS       | Code Segment |
+| DS       | Data Segment |
+| SS       | Stack Segment |
+| ES       | Extra Segment |
+| FS       | Thread-local storage (Linux: TLS, Windows: TEB) |
+| GS       | Kernel structure access (Linux: percpu, Windows: TEB) |
+
+### 1.4 Key RFLAGS Bits
+
+| Bit | Name | Description |
+|-----|------|-------------|
+| CF (0)  | Carry Flag       | Carry/borrow occurred |
+| PF (2)  | Parity Flag      | Even number of 1-bits in low byte of result |
+| AF (4)  | Auxiliary Flag   | BCD arithmetic carry |
+| ZF (6)  | Zero Flag        | Result is zero |
+| SF (7)  | Sign Flag        | Most significant bit of result (sign) |
+| TF (8)  | Trap Flag        | Single-step execution mode |
+| IF (9)  | Interrupt Flag   | External interrupts enabled |
+| DF (10) | Direction Flag   | String operation direction |
+| OF (11) | Overflow Flag    | Signed overflow |
+
+---
+
+## 2. Core Instructions
+
+### 2.1 Data Movement
+
+x86/x64 assembly data movement instructions. Use `MOV` to copy data between registers and memory, and `LEA` to compute addresses without actually accessing memory. Square brackets `[]` indicate pointer dereference for memory access.
+
+```nasm
+; MOV — copy data
+mov rax, 0x1234          ; immediate → register
+mov rax, rbx             ; register → register
+mov rax, [rbx]           ; memory (address rbx points to) → register
+mov [rax], rbx           ; register → memory
+mov [rax + 8], rcx       ; offset memory access
+mov BYTE PTR [rax], 0x41 ; sized memory write
+
+; LEA — compute effective address (no actual memory access)
+lea rax, [rbx + rcx*4 + 8]  ; address computation only
+lea rdi, [rip + msg]         ; RIP-relative address (common in PIE code)
+
+; XCHG — exchange
+xchg rax, rbx
+
+; MOVZX / MOVSX — zero-extend / sign-extend
+movzx rax, BYTE PTR [rbx]   ; zero-extend 8bit to 64bit
+movsx rax, DWORD PTR [rbx]  ; sign-extend 32bit to 64bit
+```
+
+### 2.2 Stack Manipulation
+
+Assembly code for stack manipulation and function call/return. `PUSH` saves a value to the stack and `POP` retrieves it. `CALL` saves the return address to the stack then jumps. `RET` returns execution to the address popped from the stack.
+
+```nasm
+; PUSH — decrement RSP by 8 and store value
+push rax          ; [rsp-8] = rax, rsp -= 8
+push 0x1234       ; push immediate value
+push QWORD PTR [rbx]  ; push memory value
+
+; POP — retrieve value and increment RSP by 8
+pop rax           ; rax = [rsp], rsp += 8
+pop QWORD PTR [rbx]   ; pop to memory
+
+; PUSHA/POPA — save/restore all general registers (32bit only)
+; Use individual push/pop in 64bit mode
+```
+
+### 2.3 Control Flow
+
+NASM (Netwide Assembler) assembly syntax used for x86/x64 shellcode development and low-level programming.
+
+```nasm
+; JMP — unconditional jump
+jmp 0x401000      ; absolute address
+jmp rax           ; indirect jump via register
+jmp [rax]         ; indirect jump via memory
+jmp short .label  ; short jump (±127 bytes)
+
+; Conditional jumps (used after CMP/TEST)
+je  .equal        ; ZF=1 (equal)
+jne .not_equal    ; ZF=0
+jz  .zero         ; ZF=1 (same as je)
+jnz .not_zero     ; ZF=0
+jg  .greater      ; SF=OF, ZF=0 (signed greater than)
+jge .greater_eq   ; SF=OF (signed greater or equal)
+jl  .less         ; SF≠OF (signed less than)
+jle .less_eq      ; SF≠OF or ZF=1
+ja  .above        ; CF=0, ZF=0 (unsigned above)
+jb  .below        ; CF=1 (unsigned below)
+jae .above_eq     ; CF=0
+jbe .below_eq     ; CF=1 or ZF=1
+js  .sign         ; SF=1 (negative)
+jns .not_sign     ; SF=0
+jo  .overflow     ; OF=1
+jno .not_overflow ; OF=0
+
+; CALL / RET
+call 0x401234     ; [rsp-8] = rip+5, rsp -= 8, jmp 0x401234
+call rax          ; indirect call
+ret               ; rip = [rsp], rsp += 8
+ret 0x10          ; ret + stack cleanup (stdcall)
+
+; LOOP
+loop .label       ; rcx -= 1, jump if rcx != 0
+```
+
+### 2.4 Arithmetic/Logical Operations
+
+```nasm
+; Arithmetic
+add rax, rbx      ; rax += rbx
+sub rax, rbx      ; rax -= rbx
+mul rbx           ; rdx:rax = rax * rbx (unsigned)
+imul rax, rbx     ; rax = rax * rbx (signed)
+imul rax, rbx, 5  ; rax = rbx * 5
+div rbx           ; rax = rdx:rax / rbx, rdx = remainder (unsigned)
+idiv rbx          ; signed division
+inc rax           ; rax++
+dec rax           ; rax--
+neg rax           ; rax = -rax
+
+; Logical
+and rax, rbx      ; bitwise AND
+or  rax, rbx      ; bitwise OR
+xor rax, rax      ; rax = 0 (XOR with itself = register clear)
+not rax           ; bitwise NOT
+test rax, rax     ; AND operation (discard result, set ZF only)
+cmp  rax, rbx     ; SUB operation (discard result, set flags only)
+
+; Shifts
+shl rax, 3        ; logical left shift (×8)
+shr rax, 3        ; logical right shift (÷8)
+sar rax, 3        ; arithmetic right shift (preserves sign)
+rol rax, 1        ; rotate left
+ror rax, 1        ; rotate right
+```
+
+### 2.5 String Instructions
+
+```nasm
+; Used with REP prefix
+rep  movsb        ; repeat RCX times: [rdi] = [rsi], rsi++, rdi++
+rep  stosd        ; repeat RCX times: [rdi] = eax, rdi += 4
+repe cmpsb        ; repeat while ZF=1, compare bytes
+repne scasb       ; repeat while ZF=0, scan for AL value
+```
+
+---
+
+## 3. Stack Frame Structure
+
+### 3.1 Stack Layout During Function Call (x64)
+
+```
+High address
+┌─────────────────────┐
+│   ...caller frame..  │
+├─────────────────────┤ ← caller's RBP (saved RBP)
+│  Saved RBP           │ ← current RBP
+├─────────────────────┤
+│  Local variable 1    │ ← [rbp - 8]
+├─────────────────────┤
+│  Local variable 2    │ ← [rbp - 16]
+├─────────────────────┤
+│  ...                 │
+├─────────────────────┤ ← RSP (top of stack)
+Low address
+```
+
+### 3.2 Function Prologue/Epilogue
+
+```nasm
+; Prologue — function entry
+push rbp          ; save previous base pointer
+mov  rbp, rsp     ; set current stack as new frame base
+sub  rsp, 0x30    ; allocate local variable space (16-byte alignment required)
+
+; Epilogue — function exit
+mov  rsp, rbp     ; restore stack (or use leave instruction)
+pop  rbp          ; restore previous base pointer
+ret               ; return
+
+; LEAVE instruction = mov rsp, rbp + pop rbp
+leave
+ret
+```
+
+### 3.3 Stack Alignment Requirements
+
+- **x64**: RSP must be **16-byte aligned** immediately before a CALL
+- CALL pushes 8 bytes (RIP) → prologue pushes RBP (8 bytes) → maintains 16-byte total
+
+---
+
+## 4. Calling Conventions
+
+### 4.1 cdecl (x86 32bit)
+
+```
+Arguments: pushed to stack right-to-left
+Return:    EAX (64bit values in EDX:EAX)
+Cleanup:   caller responsible
+Preserved: EBX, ESI, EDI, EBP
+```
+
+```nasm
+; cdecl example: add(1, 2)
+push 2            ; second argument
+push 1            ; first argument
+call add_func
+add  esp, 8       ; caller cleans stack (2 args × 4 bytes)
+; result in EAX
+```
+
+### 4.2 stdcall (x86 32bit, Windows API)
+
+```
+Arguments: pushed to stack right-to-left
+Return:    EAX
+Cleanup:   callee cleans stack with RET n
+Preserved: EBX, ESI, EDI, EBP
+```
+
+```nasm
+; stdcall function return
+ret 8             ; clean 8 bytes (2 args) from stack then return
+```
+
+### 4.3 fastcall (x86 32bit, MSVC)
+
+```
+Arguments: ECX (1st), EDX (2nd), rest on stack
+Return:    EAX
+Cleanup:   callee
+```
+
+### 4.4 System V AMD64 ABI (Linux/macOS x64)
+
+```
+Integer/pointer args: RDI, RSI, RDX, RCX, R8, R9 (in order)
+Floating-point args:  XMM0~XMM7
+Additional args:      stack (left to right)
+Return:               RAX (integer/pointer), XMM0 (float)
+64bit return:         RAX:RDX
+Cleanup:              caller
+Callee-saved:         RBX, RBP, R12~R15
+Caller-saved:         RAX, RCX, RDX, RSI, RDI, R8~R11, XMM0~XMM15
+```
+
+```nasm
+; System V AMD64 example: write(1, buf, len)
+mov rax, 1        ; syscall number (write)
+mov rdi, 1        ; fd = stdout
+lea rsi, [buf]    ; buf address
+mov rdx, 13       ; length
+syscall
+```
+
+### 4.5 Windows x64 ABI
+
+```
+Integer/pointer args: RCX, RDX, R8, R9 (in order)
+Floating-point args:  XMM0~XMM3 (also fills corresponding integer slots)
+Additional args:      stack (32-byte shadow space required)
+Return:               RAX
+Callee-saved:         RBX, RBP, RDI, RSI, R12~R15, XMM6~XMM15
+```
+
+---
+
+## 5. GDB Practical Commands
+
+### 5.1 Getting Started
+
+```bash
+gdb ./binary                    # load binary
+gdb -p 1234                     # attach to running process
+gdb --args ./binary arg1 arg2   # start with arguments
+
+# Useful .gdbinit settings
+set disassembly-flavor intel    # change from AT&T to Intel syntax
+set pagination off
+set print pretty on
+```
+
+### 5.2 Execution Control
+
+```gdb
+run                     # run (r)
+run arg1 arg2           # run with arguments
+continue                # continue execution (c)
+next                    # next line (skip over function calls) (n)
+nexti                   # next single instruction (ni)
+step                    # next line (step into function calls) (s)
+stepi                   # step single instruction (si)
+finish                  # run until end of current function (fin)
+until 0x401234          # run until that address
+```
+
+### 5.3 Breakpoints
+
+```gdb
+break main              # breakpoint at function name
+break *0x401234         # breakpoint at address
+break main+10           # breakpoint at offset
+info breakpoints        # list breakpoints (i b)
+delete 1                # delete breakpoint #1
+disable 2               # disable breakpoint
+enable 2                # enable breakpoint
+condition 1 rax==0      # conditional breakpoint
+watch *0x601060         # memory write watchpoint
+rwatch *0x601060        # memory read watchpoint
+```
+
+### 5.4 Examining Registers
+
+```gdb
+info registers          # print all registers (i r)
+info registers rax rbx  # specific registers only
+print $rax              # print RAX value
+print/x $rax            # print in hexadecimal
+print/d $rax            # print in decimal
+set $rax = 0x1234       # modify register value
+
+# View register state at a glance
+layout regs             # show register window in TUI mode
+```
+
+### 5.5 Memory Examination (examine)
+
+```gdb
+# x/[count][format][size] address
+x/10gx $rsp             # 10 64bit(g) values from RSP in hex(x)
+x/20wx 0x601000         # 20 32bit(w) values
+x/s 0x401234            # print as string
+x/i $rip                # disassemble current instruction
+x/20i main              # 20 instructions from main
+x/b $rax                # byte-by-byte
+
+# sizes: b=1byte, h=2byte, w=4byte, g=8byte
+# formats: x=hex, d=dec, u=udec, o=oct, t=bin, a=addr, s=str, i=inst
+```
+
+### 5.6 Stack Analysis
+
+```gdb
+info frame              # current stack frame info
+backtrace               # print call stack (bt)
+backtrace full          # call stack with local variables
+frame 2                 # switch to frame #2
+info locals             # local variables in current frame
+info args               # current function arguments
+
+x/20gx $rsp             # inspect stack contents directly
+```
+
+### 5.7 Disassembly
+
+```gdb
+disassemble main        # disassemble main function (disas)
+disassemble 0x401000,0x401050  # address range
+disassemble /r main     # include byte codes
+set disassembly-flavor intel   # Intel syntax
+```
+
+---
+
+## 6. NASM Assembly Examples
+
+### 6.1 Hello World (64bit Linux)
+
+```nasm
+; hello.asm — 64bit Linux
+; Build: nasm -f elf64 hello.asm -o hello.o && ld hello.o -o hello
+
+section .data
+    msg db "Hello, World!", 0x0a
+    msglen equ $ - msg
+
+section .text
+    global _start
+
+_start:
+    ; write(1, msg, msglen)
+    mov rax, 1          ; sys_write
+    mov rdi, 1          ; fd = stdout
+    lea rsi, [rel msg]  ; message address
+    mov rdx, msglen     ; length
+    syscall
+
+    ; exit(0)
+    mov rax, 60         ; sys_exit
+    xor rdi, rdi        ; exit code = 0
+    syscall
+```
+
+```bash
+nasm -f elf64 hello.asm -o hello.o
+ld hello.o -o hello
+./hello
+```
+
+### 6.2 Function Call Example (System V AMD64 ABI)
+
+```nasm
+; func_example.asm — calling convention demo
+; Build: nasm -f elf64 func_example.asm -o func_example.o
+;        gcc -no-pie func_example.o -o func_example
+
+section .data
+    fmt db "%d", 0x0a, 0
+
+section .text
+    global main
+    extern printf
+
+; int add(int a, int b) — returns sum of two numbers
+add_func:
+    push rbp
+    mov  rbp, rsp
+    ; args: rdi=a, rsi=b
+    mov  rax, rdi
+    add  rax, rsi
+    pop  rbp
+    ret
+
+; int factorial(int n)
+factorial:
+    push rbp
+    mov  rbp, rsp
+
+    cmp  rdi, 1
+    jle  .base_case
+
+    push rdi            ; save n
+    dec  rdi
+    call factorial      ; factorial(n-1)
+    pop  rdi
+    imul rax, rdi       ; n * factorial(n-1)
+    jmp  .done
+
+.base_case:
+    mov rax, 1
+
+.done:
+    pop rbp
+    ret
+
+main:
+    push rbp
+    mov  rbp, rsp
+    sub  rsp, 0x20      ; maintain 16-byte alignment (shadow space)
+
+    ; call add(3, 7)
+    mov rdi, 3
+    mov rsi, 7
+    call add_func
+    ; result: rax = 10
+
+    ; printf("%d\n", result)
+    lea rdi, [rel fmt]
+    mov rsi, rax
+    xor eax, eax        ; no floating-point args
+    call printf
+
+    ; call factorial(10)
+    mov rdi, 10
+    call factorial
+
+    lea rdi, [rel fmt]
+    mov rsi, rax
+    xor eax, eax
+    call printf
+
+    xor eax, eax
+    leave
+    ret
+```
+
+### 6.3 Loop and String Processing Example
+
+```nasm
+; loop_str.asm — compute string length
+section .text
+    global strlen_asm
+
+; size_t strlen_asm(const char *s)
+; argument: rdi = string pointer
+strlen_asm:
+    push rbp
+    mov  rbp, rsp
+
+    xor  rcx, rcx       ; counter = 0
+.loop:
+    cmp  BYTE PTR [rdi + rcx], 0   ; null check
+    je   .done
+    inc  rcx
+    jmp  .loop
+.done:
+    mov  rax, rcx       ; return length
+    pop  rbp
+    ret
+
+; Same functionality using REPNE SCASB
+strlen_asm2:
+    push rbp
+    mov  rbp, rsp
+
+    mov  rdi, rdi       ; string pointer (already in rdi)
+    xor  al,  al        ; value to find = 0 (null)
+    mov  rcx, -1        ; maximum scan count
+    repne scasb         ; compare [rdi] with al, if mismatch rdi++, rcx--
+    not  rcx            ; ~(-match_pos - 2) = length
+    dec  rcx            ; exclude null byte
+    mov  rax, rcx
+
+    pop  rbp
+    ret
+```
+
+---
+
+## 7. Common Patterns Reference
+
+### 7.1 Register Zeroing
+
+```nasm
+xor rax, rax        ; rax = 0 (shorter than mov rax, 0)
+xor eax, eax        ; zero out entire RAX (upper 32bit auto-cleared)
+```
+
+### 7.2 Stack Alignment
+
+```nasm
+; Ensure RSP is 16-byte aligned before function calls
+and rsp, ~0xf       ; clear lower 4 bits (force alignment)
+```
+
+### 7.3 NOP Sled
+
+```nasm
+nop                 ; 0x90, does nothing
+nop DWORD PTR [rax] ; multi-byte NOP
+```
+
+### 7.4 Linux x64 Syscall Number Reference
+
+| syscall | Number (RAX) | Arguments |
+|---------|-------------|-----------|
+| read    | 0           | rdi=fd, rsi=buf, rdx=count |
+| write   | 1           | rdi=fd, rsi=buf, rdx=count |
+| open    | 2           | rdi=path, rsi=flags, rdx=mode |
+| close   | 3           | rdi=fd |
+| execve  | 59          | rdi=path, rsi=argv, rdx=envp |
+| exit    | 60          | rdi=code |
+| mmap    | 9           | rdi=addr, rsi=len, rdx=prot, r10=flags, r8=fd, r9=off |

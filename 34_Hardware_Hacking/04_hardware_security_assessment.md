@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 하드웨어 보안 평가 — 디바이스 감사·물리 보안·탬퍼 방지
 
 ## 1. 하드웨어 보안 평가 프레임워크
@@ -262,3 +268,115 @@ lsblk -f | grep -E "crypto_LUKS|BitLocker"
 | 민감 키 저장 | 소스 코드 분석 | HSM/TPM 사용 |
 | SPI 플래시 | flashrom 읽기 시도 | 암호화 또는 읽기 불가 |
 | 사이드채널 | ChipWhisperer 분석 | 마스킹 적용 확인 |
+
+---
+
+<a name="english"></a>
+
+# Hardware Security Assessment — Device Auditing, Physical Security, and Tamper Protection
+
+## 1. Hardware Security Assessment Framework
+
+```
+Hardware Security Assessment
+    │
+    ├── External Interface Analysis
+    │     UART, JTAG, SPI, I2C, USB, PCIe
+    │
+    ├── Firmware Security
+    │     Encryption status, signature verification, debug mode
+    │
+    ├── Physical Security
+    │     Tamper detection, epoxy potting, mesh shielding
+    │
+    ├── Side-Channel Resistance
+    │     Power analysis, timing, electromagnetic
+    │
+    └── Cryptographic Implementation
+          HSM/TPM, key storage, boot chain
+```
+
+---
+
+## 2. Automated Hardware Interface Detection
+
+```python
+#!/usr/bin/env python3
+"""Hardware interface detection and analysis automation CLI."""
+
+import argparse
+import json
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class InterfaceResult:
+    interface_type: str
+    port: str
+    detected: bool
+    baud_rate: int | None = None
+    protocol: str | None = None
+    notes: str = ""
+
+
+def detect_uart_ports() -> list[InterfaceResult]:
+    """Detect available UART/serial ports."""
+    results = []
+    uart_paths = list(Path("/dev").glob("ttyUSB*")) + \
+                 list(Path("/dev").glob("ttyACM*")) + \
+                 list(Path("/dev").glob("ttyS[0-9]"))
+
+    for port in uart_paths:
+        results.append(InterfaceResult(
+            interface_type="UART",
+            port=str(port),
+            detected=True,
+            notes="Serial port present",
+        ))
+
+    return results
+```
+
+(Code blocks identical to Korean section — see above for full implementation)
+
+---
+
+## 3. TPM/HSM Security Inspection
+
+```bash
+# Check TPM presence and version
+ls /dev/tpm* 2>/dev/null && echo "TPM present" || echo "No TPM"
+cat /sys/class/tpm/tpm0/tpm_version_major 2>/dev/null
+tpm2_getcap properties-fixed 2>/dev/null | head -20
+
+# TPM manufacturer and firmware info
+tpm2_getcap properties-fixed 2>/dev/null | grep -E "TPM2_PT_(MANUFACTURER|VENDOR|FIRMWARE)"
+
+# Secure Boot status
+mokutil --sb-state 2>/dev/null
+efivar --list 2>/dev/null | grep -i secure
+
+# Boot chain validation
+dmesg | grep -i "secure boot\|tpm\|measured boot"
+
+# Disk encryption status
+lsblk -f | grep -E "crypto_LUKS|BitLocker"
+```
+
+---
+
+## 4. Hardware Security Assessment Checklist
+
+| Item | Test Method | Pass Criteria |
+|------|-------------|---------------|
+| JTAG/UART disabled | Physical pin inspection + communication attempt | No response |
+| Firmware signature | Signature file + public key verification | RSA/EC signature confirmed |
+| Boot chain | Secure Boot status check | Secure Boot enabled |
+| Debug ports | JTAG/SWD voltage measurement | Pins inactive or removed |
+| Tamper detection | Physical inspection | Epoxy/mesh present |
+| Sensitive key storage | Source code analysis | HSM/TPM in use |
+| SPI flash | flashrom read attempt | Encrypted or unreadable |
+| Side-channel | ChipWhisperer analysis | Masking applied confirmed |

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 02. Cheat Engine 고급 활용 (Advanced Cheat Engine)
 
 Cheat Engine의 Lua 스크립팅, 자동 어셈블러, 구조체 분석 기능을 활용한 고급 치트 제작 방법을 다룬다. CTF 게임 해킹 챌린지 및 보안 연구 목적으로 활용한다.
@@ -837,3 +843,553 @@ python ct_parser.py chall.ct export records.json
 | F7        | 스텝 인 (디버거)             |
 | F8        | 스텝 오버 (디버거)           |
 | Ctrl+F2   | 프로세스 재시작              |
+
+---
+
+<a name="english"></a>
+
+# 02. Advanced Cheat Engine Usage
+
+This document covers advanced cheat creation techniques using Cheat Engine's Lua scripting, Auto Assembler, and structure analysis features. All content is intended for CTF game hacking challenges and security research purposes.
+
+---
+
+## 1. Cheat Engine Lua Scripting
+
+Cheat Engine provides a built-in Lua 5.3 interpreter. Run scripts from the `Lua Engine` window (Ctrl+Alt+L).
+
+### 1.1 Basic Lua API
+
+```lua
+-- Basic process and memory manipulation
+
+-- Get the module base address of the currently opened process
+local base = getAddress("game.exe")
+print(string.format("Base: 0x%X", base))
+
+-- Read memory
+local hp_addr = base + 0xA1B2C3
+local hp_value = readFloat(hp_addr)
+print(string.format("Current HP: %.1f", hp_value))
+
+-- Write memory
+writeFloat(hp_addr, 9999.0)
+print("Infinite HP applied")
+
+-- Read/write integers
+local gold = readInteger(base + 0xB2C3D4)
+writeInteger(base + 0xB2C3D4, 999999)
+
+-- Dereference a pointer chain
+local ptr1 = readPointer(base + 0xA1B2C3)
+local ptr2 = readPointer(ptr1 + 0x10)
+local final = ptr2 + 0x5C
+writeFloat(final, 9999.0)
+```
+
+### 1.2 Memory Record Manipulation
+
+```lua
+-- Access memory records in the Cheat Table
+local mr = getAddressList()
+
+-- Find a record by description
+local hp_record = mr.getMemoryRecordByDescription("Health")
+if hp_record then
+    hp_record.Active = true   -- Activate (freeze)
+    hp_record.Value = "9999"  -- Set value
+end
+
+-- Access by index
+local record = mr[0]  -- First record
+print(record.Description, record.Address, record.Value)
+
+-- Iterate records
+for i = 0, mr.Count - 1 do
+    local r = mr[i]
+    print(i, r.Description, r.Address, r.Type)
+end
+```
+
+### 1.3 Periodic Patching with a Timer
+
+```lua
+-- Maintain HP every 100ms (infinite health)
+local base = getAddress("game.exe")
+local hp_ptr_chain = {0xA1B2C3, 0x10, 0x5C, 0x08}
+
+local function resolve_chain(b, chain)
+    local addr = b
+    for i = 1, #chain - 1 do
+        addr = readPointer(addr + chain[i])
+        if addr == 0 then return nil end
+    end
+    return addr + chain[#chain]
+end
+
+local timer = createTimer(nil, false)
+timer.Interval = 100  -- 100ms
+
+timer.OnTimer = function(sender)
+    local hp_addr = resolve_chain(base, hp_ptr_chain)
+    if hp_addr and hp_addr ~= 0 then
+        writeFloat(hp_addr, 9999.0)
+    end
+end
+
+timer.Enabled = true
+print("[+] Infinite HP timer started")
+
+-- To stop: timer.Enabled = false
+```
+
+### 1.4 Registering Hotkeys
+
+```lua
+-- Toggle god mode with F1
+local god_mode = false
+local god_timer = nil
+
+registerHotkey(VK_F1, function()
+    god_mode = not god_mode
+    if god_mode then
+        if not god_timer then
+            god_timer = createTimer(nil, false)
+            god_timer.Interval = 50
+            god_timer.OnTimer = function()
+                local base = getAddress("game.exe")
+                local addr = resolve_chain(base, {0xA1B2C3, 0x10, 0x08})
+                if addr then writeFloat(addr, 9999.0) end
+            end
+        end
+        god_timer.Enabled = true
+        print("[+] God mode ON")
+    else
+        if god_timer then god_timer.Enabled = false end
+        print("[-] God mode OFF")
+    end
+end)
+
+-- Add gold with F2
+registerHotkey(VK_F2, function()
+    local base = getAddress("game.exe")
+    local gold_addr = base + 0xB2C3D4
+    local current = readInteger(gold_addr)
+    writeInteger(gold_addr, current + 100000)
+    print(string.format("[+] Gold added: %d -> %d", current, current + 100000))
+end)
+```
+
+---
+
+## 2. Auto Assembler
+
+CE's Auto Assembler is a powerful tool that directly injects x86/x64 assembly code. Open it with `Ctrl+A` or from the Memory Viewer with `Ctrl+A`.
+
+### 2.1 Basic Template
+
+```asm
+[ENABLE]
+; Code injection template
+aobscanmodule(INJECT_HOOK, game.exe, 89 87 A8 00 00 00)  // AOB scan to find address
+alloc(newmem, 128, INJECT_HOOK)                            // Allocate code cave
+
+label(code)
+label(return)
+
+newmem:
+code:
+  ; Execute original code (if needed)
+  mov [edi+000000A8], eax
+  ; Additional logic: always set health to maximum
+  mov eax, 461C4000    // Hex representation of float 9999.0
+  jmp return
+
+INJECT_HOOK:
+  jmp newmem
+  nop
+return:
+
+[DISABLE]
+INJECT_HOOK:
+  db 89 87 A8 00 00 00  // Restore original bytes
+dealloc(newmem)
+```
+
+### 2.2 Value Interception (Code Injection)
+
+Example that hooks a damage handler function to set incoming damage to zero.
+
+```asm
+[ENABLE]
+; Hook damage receive function (x86 example)
+; Original: mov [eax+08], ecx  — stores new HP in ECX
+aobscanmodule(DMG_HOOK, game.exe, 89 48 08 8B 55 FC)
+alloc(dmg_cave, 64, DMG_HOOK)
+
+label(dmg_code)
+label(dmg_ret)
+
+dmg_cave:
+dmg_code:
+  ; Prevent HP decrease from ECX
+  ; If HP drops to 100 or below, restore to 9999
+  cmp ecx, 00000064    ; Compare with 100
+  jg dmg_original      ; If above 100, normal processing
+  mov ecx, 0000270F    ; Force set to 9999 (integer)
+dmg_original:
+  mov [eax+08], ecx    ; Execute original instruction
+  jmp dmg_ret
+
+DMG_HOOK:
+  jmp dmg_cave
+  nop
+  nop
+dmg_ret:
+
+[DISABLE]
+DMG_HOOK:
+  db 89 48 08 8B 55 FC
+dealloc(dmg_cave)
+```
+
+### 2.3 x64 Code Injection
+
+```asm
+[ENABLE]
+; JMP hook for 64-bit games (14-byte absolute jump)
+aobscanmodule(HOOK64, game.exe, 89 87 A8 00 00 00 48 8B 5C 24 30)
+alloc(cave64, 128, HOOK64)
+
+label(cave_code)
+label(cave_ret)
+
+cave64:
+cave_code:
+  ; Preserve registers
+  push rax
+  push rcx
+
+  ; Custom logic: write max health to RDI+A8
+  mov eax, 461C4000        ; float 9999.0
+  mov [rdi+000000A8], eax
+
+  pop rcx
+  pop rax
+
+  ; Re-execute original code
+  mov [rdi+000000A8], eax  ; Same as what was written above
+  jmp cave_ret
+
+HOOK64:
+  jmp cave64
+  nop
+  nop
+cave_ret:
+
+[DISABLE]
+HOOK64:
+  db 89 87 A8 00 00 00
+dealloc(cave64)
+```
+
+### 2.4 NOP Patch
+
+```asm
+[ENABLE]
+; Neutralize specific code
+aobscanmodule(NOP_TARGET, game.exe, FF 50 14 83 C4 04 85 C0)
+NOP_TARGET:
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+  nop
+
+[DISABLE]
+NOP_TARGET:
+  db FF 50 14 83 C4 04 85 C0
+```
+
+---
+
+## 3. Structure Reverse Engineering (Structure Dissect)
+
+### 3.1 Using the Structure Viewer
+
+```
+1. Find the base address of the target object (e.g., player struct start address)
+2. Memory View → Tools → Dissect data/structures
+3. Add object address via "Add extra address"
+4. Automatically displays values at each offset
+
+Offset   Size  Value        Estimated Meaning
++0x00    4     1            Player ID
++0x04    4     0.0          Unused/padding
++0x08    4     9999.0       Health (float)
++0x0C    4     9999.0       Max Health
++0x10    4     500.0        Mana (float)
++0x14    4     500.0        Max Mana
++0x18    8     (pointer)    Inventory struct pointer
++0x20    4     100          Level
++0x24    4     987654       Experience
+```
+
+### 3.2 Structure Definition Example (C-style Reverse Engineering)
+
+```c
+// Representing CE Structure Dissect results as a C struct
+#pragma pack(push, 1)
+
+typedef struct {
+    int32_t  player_id;          // +0x00
+    int32_t  padding;            // +0x04
+    float    health;             // +0x08
+    float    max_health;         // +0x0C
+    float    mana;               // +0x10
+    float    max_mana;           // +0x14
+    void*    inventory_ptr;      // +0x18
+    int32_t  level;              // +0x20
+    int32_t  experience;         // +0x24
+    float    pos_x;              // +0x28
+    float    pos_y;              // +0x2C
+    float    pos_z;              // +0x30
+    uint8_t  is_alive;           // +0x34
+    uint8_t  is_invincible;      // +0x35
+    uint8_t  team_id;            // +0x36
+    uint8_t  flags;              // +0x37
+} PlayerStruct;
+
+#pragma pack(pop)
+```
+
+---
+
+## 4. Building a CE Trainer
+
+### 4.1 Lua-based GUI Trainer
+
+```lua
+-- Creating a trainer window using CE's built-in GUI library
+
+local base = getAddress("game.exe")
+
+-- Create main form
+local form = createForm()
+form.Caption = "Game Trainer v1.0 (CTF)"
+form.Width = 300
+form.Height = 400
+form.Position = poScreenCenter
+
+-- God mode checkbox
+local chk_godmode = createCheckBox(form)
+chk_godmode.Caption = "God Mode (F1)"
+chk_godmode.Left = 20
+chk_godmode.Top = 20
+
+local godmode_timer = createTimer(nil, false)
+godmode_timer.Interval = 100
+
+chk_godmode.OnChange = function(sender)
+    godmode_timer.Enabled = sender.Checked
+    if sender.Checked then
+        godmode_timer.OnTimer = function()
+            local addr = readPointer(base + 0xA1B2C3)
+            if addr ~= 0 then
+                writeFloat(addr + 0x08, 9999.0)
+            end
+        end
+    end
+end
+
+-- Gold setting button
+local lbl_gold = createLabel(form)
+lbl_gold.Caption = "Set Gold:"
+lbl_gold.Left = 20
+lbl_gold.Top = 60
+
+local edit_gold = createEdit(form)
+edit_gold.Text = "999999"
+edit_gold.Left = 20
+edit_gold.Top = 80
+edit_gold.Width = 150
+
+local btn_gold = createButton(form)
+btn_gold.Caption = "Apply"
+btn_gold.Left = 180
+btn_gold.Top = 78
+btn_gold.Width = 80
+btn_gold.OnClick = function(sender)
+    local gold_addr = base + 0xB2C3D4
+    local amount = tonumber(edit_gold.Text)
+    if amount then
+        writeInteger(gold_addr, amount)
+        showMessage(string.format("Gold set to %d", amount))
+    end
+end
+
+-- Speed setting
+local lbl_speed = createLabel(form)
+lbl_speed.Caption = "Movement Speed Multiplier:"
+lbl_speed.Left = 20
+lbl_speed.Top = 120
+
+local track_speed = createTrackBar(form)
+track_speed.Min = 10
+track_speed.Max = 500
+track_speed.Position = 100
+track_speed.Left = 20
+track_speed.Top = 140
+track_speed.Width = 240
+
+local lbl_speed_val = createLabel(form)
+lbl_speed_val.Caption = "1.0x"
+lbl_speed_val.Left = 20
+lbl_speed_val.Top = 170
+
+track_speed.OnChange = function(sender)
+    local multiplier = sender.Position / 100.0
+    lbl_speed_val.Caption = string.format("%.1fx", multiplier)
+    local speed_addr = base + 0xC3D4E5
+    writeFloat(speed_addr, multiplier * 5.0)  -- Assume base speed is 5.0
+end
+
+-- Hotkey
+registerHotkey(VK_F1, function()
+    chk_godmode.Checked = not chk_godmode.Checked
+end)
+
+form.show()
+```
+
+---
+
+## 5. Speed Hack Implementation Principles
+
+### 5.1 Timer/Tick-based Manipulation
+
+Game speed is usually controlled by an internal timer or a fixed tick rate.
+
+```
+Manipulating the DeltaTime variable in the game loop can change the overall game speed
+Searching for DeltaTime: "Unknown initial value" → "Increased value" after time passes
+```
+
+```lua
+-- DeltaTime speed hack (Lua)
+local delta_addr = nil  -- DeltaTime address found by scanning
+local speed_multiplier = 2.0  -- 2x speed
+
+local spdhack_timer = createTimer(nil, false)
+spdhack_timer.Interval = 16  -- ~60fps
+
+spdhack_timer.OnTimer = function()
+    if delta_addr and delta_addr ~= 0 then
+        local dt = readFloat(delta_addr)
+        -- Apply multiplier to DeltaTime (only once per frame)
+        if dt > 0 and dt < 0.1 then  -- Sanity check for normal range
+            writeFloat(delta_addr, dt * speed_multiplier)
+        end
+    end
+end
+```
+
+### 5.2 Hooking the Game Clock Function
+
+```asm
+[ENABLE]
+; Accelerate game time by hooking a GetTickCount wrapper
+; Apply a multiplier to the original GetTickCount return value
+aobscanmodule(TICK_HOOK, game.exe, FF 15 ?? ?? ?? ?? 89 45 F8)
+alloc(tick_cave, 64, TICK_HOOK)
+
+label(tick_code)
+label(tick_ret)
+
+tick_cave:
+tick_code:
+  ; Original GetTickCount has been called (result already in EAX)
+  ; EAX *= 2 (2x speed)
+  shl eax, 1
+  jmp tick_ret
+
+TICK_HOOK:
+  jmp tick_cave
+  nop
+tick_ret:
+
+[DISABLE]
+TICK_HOOK:
+  db FF 15
+  db ?? ?? ?? ??
+  db 89 45 F8
+dealloc(tick_cave)
+```
+
+---
+
+## 6. Python Cheat Engine Table (.CT) Parser
+
+### 6.1 CT File Structure
+
+`.CT` files are XML-based and contain memory records, descriptions, hotkeys, and Lua scripts.
+
+```python
+#!/usr/bin/env python3
+"""
+Cheat Engine Table (.CT) parser and analysis tool
+Extracts addresses, offsets, and hotkey information from CE tables.
+"""
+# (same code as Korean section above)
+```
+
+---
+
+## 7. Real-World AOB Pattern Search and Lua Automation
+
+### 7.1 AOB Scan + Auto-Hooking Lua Script
+
+```lua
+-- Find target address via AOB scan and auto-hook
+local pattern = "89 87 A8 00 00 00 8B 4D FC"
+local result = AOBScan(pattern, "+X")  -- Scan only executable regions
+
+if result == nil then
+    print("[!] Pattern not found: " .. pattern)
+else
+    print(string.format("[+] Pattern found: 0x%X", result))
+    -- Generate and execute Auto Assembler script
+    -- (same structure as above)
+    print("[+] Auto Assembler executed successfully")
+end
+```
+
+### 7.2 Practical Tips — Reusing CT Files
+
+```
+# Analyze CT files from the command line in a CTF environment
+python ct_parser.py chall.ct summary
+python ct_parser.py chall.ct search "health"
+python ct_parser.py chall.ct lua extracted.lua
+python ct_parser.py chall.ct export records.json
+```
+
+---
+
+## 8. Key Cheat Engine Shortcuts
+
+| Shortcut   | Function                          |
+|-----------|-----------------------------------|
+| Ctrl+A    | Open Auto Assembler               |
+| Ctrl+B    | Byte Array Scan                   |
+| Ctrl+L    | Open Lua Engine                   |
+| Ctrl+D    | Structure Dissect                 |
+| F5        | Memory view at selected address   |
+| Ctrl+G    | Go to address                     |
+| Space     | Disassembly popup                 |
+| F7        | Step Into (debugger)              |
+| F8        | Step Over (debugger)              |
+| Ctrl+F2   | Restart process                   |

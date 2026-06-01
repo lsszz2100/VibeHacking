@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 펌웨어 에뮬레이션
 
 ## 에뮬레이션 개요
@@ -277,7 +283,6 @@ def main() -> None:
     binary_path = args.root / args.binary.lstrip("/")
     if not binary_path.exists():
         print(f"[!] 바이너리 없음: {binary_path}", file=sys.stderr)
-        # 대안 탐색
         alternatives = list(args.root.rglob("httpd")) + \
                        list(args.root.rglob("lighttpd")) + \
                        list(args.root.rglob("uhttpd"))
@@ -363,3 +368,347 @@ nmap -sV 192.168.100.0/24
 ```
 
 다음 파일에서 발견된 취약점을 실제로 익스플로잇하는 방법을 다룬다.
+
+---
+
+<a name="english"></a>
+
+# Firmware Emulation
+
+## Emulation Overview
+
+Methods for running firmware without actual hardware. Essential for network service testing, dynamic analysis, and fuzzing.
+
+```
+Emulation Levels
+├── System emulation — Full hardware platform (QEMU)
+├── User emulation — Single binary (QEMU usermode)
+└── Partial emulation — Specific components (Firmadyne, FirmAE)
+```
+
+## QEMU User Mode Emulation
+
+### Running ARM Binaries
+```bash
+# Required packages
+sudo apt install qemu-user-static binfmt-support
+
+# Run ARM binary standalone
+qemu-arm-static -L squashfs-root/ squashfs-root/bin/busybox
+
+# Run in chroot environment (more complete environment)
+sudo cp $(which qemu-arm-static) squashfs-root/usr/bin/
+sudo chroot squashfs-root/ /bin/sh
+
+# Inside chroot
+ls /
+/usr/sbin/httpd &   # Start web server
+netstat -tlnp       # Check open ports
+```
+
+### Running MIPS Binaries
+```bash
+# MIPS big-endian
+qemu-mips-static -L squashfs-root/ squashfs-root/usr/sbin/httpd
+
+# MIPS little-endian (EL)
+qemu-mipsel-static -L squashfs-root/ squashfs-root/usr/sbin/httpd
+
+# chroot MIPS
+sudo cp $(which qemu-mips-static) squashfs-root/usr/bin/
+sudo chroot squashfs-root/ /usr/sbin/httpd -f /etc/httpd.conf
+```
+
+## Firmadyne / FirmAE
+
+### Firmadyne Installation and Usage
+```bash
+git clone --recursive https://github.com/firmadyne/firmadyne.git
+cd firmadyne
+
+# Setup
+sudo ./setup.sh
+sudo -u postgres createdb -O firmadyne firmware
+
+# Firmware extraction and analysis
+python3 extractor/extractor.py \
+    -b Netgear \
+    -sql 127.0.0.1 \
+    -np -nk \
+    firmware.bin \
+    images/
+
+# Emulation
+sudo ./scratch/1/run.sh   # Emulate with image ID 1
+```
+
+### FirmAE (Improved Firmadyne)
+```bash
+git clone https://github.com/pr0v3rbs/FirmAE.git
+cd FirmAE && ./download.sh && ./install.sh
+
+# Run
+sudo ./run.sh -r brand firmware.bin  # Full emulation
+sudo ./run.sh -a brand firmware.bin  # Analysis mode
+sudo ./run.sh -d brand firmware.bin  # Debug mode
+```
+
+## QEMU System Emulation
+
+```bash
+# ARM Raspberry Pi image emulation example
+qemu-system-arm \
+    -machine versatilepb \
+    -cpu arm1176 \
+    -m 256 \
+    -kernel kernel.img \
+    -dtb bcm2708-rpi-b.dtb \
+    -drive file=rootfs.img,format=raw \
+    -append "root=/dev/sda2 console=ttyAMA0" \
+    -serial stdio \
+    -net nic \
+    -net user,hostfwd=tcp::8080-:80
+
+# MIPS router emulation
+qemu-system-mips \
+    -M malta \
+    -kernel vmlinux \
+    -drive file=rootfs.img,format=raw \
+    -append "root=/dev/hda console=tty0" \
+    -net nic,model=pcnet \
+    -net user,hostfwd=tcp::8080-:80,hostfwd=tcp::2222-:22 \
+    -nographic
+```
+
+## Emulation Automation Tool
+
+```python
+#!/usr/bin/env python3
+"""Firmware emulation automation and service detection."""
+
+import argparse
+import subprocess
+import time
+import socket
+import sys
+from pathlib import Path
+from dataclasses import dataclass
+
+
+QEMU_BINS = {
+    "arm":    "qemu-arm-static",
+    "armeb":  "qemu-armeb-static",
+    "mips":   "qemu-mips-static",
+    "mipsel": "qemu-mipsel-static",
+    "mips64": "qemu-mips64-static",
+    "ppc":    "qemu-ppc-static",
+    "x86_64": None,  # Native
+}
+
+COMMON_SERVICES = [
+    ("http",   80),
+    ("https",  443),
+    ("telnet", 23),
+    ("ssh",    22),
+    ("ftp",    21),
+    ("upnp",   1900),
+    ("http-alt", 8080),
+    ("http-alt", 8888),
+]
+
+
+@dataclass
+class EmulationResult:
+    binary: str
+    arch: str
+    exit_code: int
+    stdout: str
+    stderr: str
+    open_ports: list[int]
+
+
+def detect_arch(binary: Path) -> str:
+    result = subprocess.run(["file", "-b", str(binary)], capture_output=True, text=True)
+    out = result.stdout.lower()
+    if "aarch64" in out or "arm64" in out:
+        return "arm64"
+    if "arm" in out:
+        return "armeb" if "big-endian" in out else "arm"
+    if "mips" in out:
+        return "mips" if "big-endian" in out else "mipsel"
+    if "powerpc" in out or "ppc" in out:
+        return "ppc"
+    if "x86-64" in out or "x86_64" in out:
+        return "x86_64"
+    return "unknown"
+
+
+def prepare_chroot(root: Path, arch: str) -> bool:
+    qemu_bin = QEMU_BINS.get(arch)
+    if not qemu_bin:
+        return True  # Native
+
+    qemu_path = Path("/usr/bin") / qemu_bin
+    if not qemu_path.exists():
+        qemu_path = Path("/usr/bin/qemu-arm-static")
+        if not qemu_path.exists():
+            print(f"[!] QEMU not found: {qemu_bin}")
+            return False
+
+    dest = root / "usr" / "bin" / qemu_bin
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if not dest.exists():
+        import shutil
+        shutil.copy2(str(qemu_path), str(dest))
+    return True
+
+
+def scan_ports(host: str = "127.0.0.1", timeout: float = 0.5) -> list[int]:
+    open_ports: list[int] = []
+    for _, port in COMMON_SERVICES:
+        try:
+            with socket.create_connection((host, port), timeout=timeout):
+                open_ports.append(port)
+        except (ConnectionRefusedError, OSError, TimeoutError):
+            pass
+    return open_ports
+
+
+def run_binary_in_chroot(root: Path, binary: str, arch: str, timeout: int = 10) -> EmulationResult:
+    qemu_bin = QEMU_BINS.get(arch)
+    if qemu_bin:
+        cmd = ["sudo", "chroot", str(root), f"/usr/bin/{qemu_bin}", binary]
+    else:
+        cmd = ["sudo", "chroot", str(root), binary]
+
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        ports = scan_ports()
+        return EmulationResult(
+            binary=binary, arch=arch, exit_code=result.returncode,
+            stdout=result.stdout[:1000], stderr=result.stderr[:1000], open_ports=ports,
+        )
+    except subprocess.TimeoutExpired:
+        ports = scan_ports()
+        return EmulationResult(
+            binary=binary, arch=arch, exit_code=-1,
+            stdout="(Timeout — service may be running)", stderr="", open_ports=ports,
+        )
+
+
+def test_http_service(port: int = 80) -> dict[str, str]:
+    import urllib.request
+    results: dict[str, str] = {}
+    endpoints = ["/", "/cgi-bin/", "/admin/", "/index.html", "/login.html"]
+    for ep in endpoints:
+        try:
+            url = f"http://127.0.0.1:{port}{ep}"
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                results[ep] = f"{resp.status} {resp.reason}"
+        except Exception as e:
+            results[ep] = str(e)[:50]
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Firmware emulation automation")
+    parser.add_argument("root", type=Path, help="Firmware root filesystem")
+    parser.add_argument("-b", "--binary", default="/usr/sbin/httpd",
+                        help="Binary to execute (default: /usr/sbin/httpd)")
+    parser.add_argument("--arch", help="Force architecture (arm/mips/mipsel)")
+    parser.add_argument("--http-test", action="store_true", help="Test HTTP service endpoints")
+    parser.add_argument("-t", "--timeout", type=int, default=15)
+    args = parser.parse_args()
+
+    if not args.root.exists():
+        print(f"[!] Root directory not found: {args.root}", file=sys.stderr)
+        sys.exit(1)
+
+    binary_path = args.root / args.binary.lstrip("/")
+    if not binary_path.exists():
+        print(f"[!] Binary not found: {binary_path}", file=sys.stderr)
+        alternatives = list(args.root.rglob("httpd")) + \
+                       list(args.root.rglob("lighttpd")) + \
+                       list(args.root.rglob("uhttpd"))
+        if alternatives:
+            print(f"[*] Alternative found: {alternatives[0]}")
+            binary_path = alternatives[0]
+            args.binary = "/" + str(binary_path.relative_to(args.root))
+        else:
+            sys.exit(1)
+
+    arch = args.arch or detect_arch(binary_path)
+    print(f"[*] Architecture: {arch}")
+    print(f"[*] Binary: {args.binary}")
+    print(f"[*] Preparing chroot environment...")
+    if not prepare_chroot(args.root, arch):
+        sys.exit(1)
+
+    print(f"[*] Starting emulation (timeout: {args.timeout}s)...")
+    result = run_binary_in_chroot(args.root, args.binary, arch, args.timeout)
+
+    print(f"\n{'='*60}")
+    print(f"Exit code: {result.exit_code}")
+    if result.stdout:
+        print(f"STDOUT: {result.stdout[:300]}")
+    if result.stderr:
+        print(f"STDERR: {result.stderr[:300]}")
+
+    if result.open_ports:
+        print(f"\n[+] Open ports: {result.open_ports}")
+        if args.http_test and 80 in result.open_ports:
+            print("\n[*] HTTP endpoint test:")
+            http_results = test_http_service(80)
+            for ep, status in http_results.items():
+                print(f"    {ep:30s} → {status}")
+    else:
+        print("\n[-] No open ports")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## Dynamic Debugging
+
+```bash
+# QEMU + GDB remote debugging
+# Terminal 1: Run QEMU (with built-in gdbserver)
+sudo chroot squashfs-root/ \
+    qemu-arm-static -g 1234 /usr/sbin/httpd
+
+# Terminal 2: Connect GDB
+gdb-multiarch squashfs-root/usr/sbin/httpd
+(gdb) target remote :1234
+(gdb) break *0x10000   # Breakpoint at start
+(gdb) continue
+
+# Breakpoint at function
+(gdb) break strcpy
+(gdb) info registers
+(gdb) x/20x $sp        # Stack dump
+```
+
+## Network Interface Setup
+
+```bash
+# Real network emulation with tap interface
+sudo ip tuntap add tap0 mode tap
+sudo ip addr add 192.168.100.1/24 dev tap0
+sudo ip link set tap0 up
+
+# Attach tap to QEMU
+qemu-system-arm \
+    -M versatilepb \
+    -kernel kernel.img \
+    -drive file=rootfs.img,format=raw \
+    -net nic \
+    -net tap,ifname=tap0,script=no,downscript=no \
+    -nographic
+
+# Scan emulated device
+nmap -sV 192.168.100.0/24
+```
+
+The next file covers methods for actually exploiting discovered vulnerabilities.

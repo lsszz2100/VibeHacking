@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 자동차 보안 기초
 
 ## 자동차 사이버보안 개요
@@ -254,3 +260,264 @@ if __name__ == "__main__":
 ```
 
 다음 파일에서 CAN 버스 해킹 실전 기법을 다룬다.
+
+---
+
+<a name="english"></a>
+
+# Automotive Security Fundamentals
+
+## Overview of Automotive Cybersecurity
+
+Modern vehicles are complex cyber-physical systems containing over 100 ECUs (Electronic Control Units) and tens of millions of lines of code. Because automotive hacking is directly tied to physical safety, ethical and legal responsibilities are especially critical.
+
+## Automotive Architecture
+
+### Network Topology
+```
+External Interfaces
+├── OBD-II Port (direct CAN bus access)
+├── Telematics Unit (4G/5G)
+├── Wi-Fi / Bluetooth (infotainment)
+├── USB Port
+└── V2X (Vehicle-to-Everything)
+
+Internal Networks
+├── CAN (Controller Area Network)  — most common vehicle bus
+├── LIN (Local Interconnect Network) — low-speed sensors
+├── MOST (Media Oriented Systems Transport) — multimedia
+├── FlexRay — safety-critical systems (X-by-Wire)
+└── Automotive Ethernet — modern high-speed communication
+```
+
+### Domain Separation
+```
+Powertrain Domain — engine, transmission ECUs
+Chassis Domain    — ABS, ESC, steering
+ADAS Domain       — autonomous driving, collision avoidance
+Infotainment      — navigation, Bluetooth
+Telematics        — OTA, remote diagnostics
+```
+
+## ECU (Electronic Control Unit)
+
+### Major ECU Types
+```
+ECU Name       Function                       Attack Impact
+ECM/PCM       — Engine control               Very High
+BCM           — Body functions (locks, lights) High
+ADAS          — Autonomous driving           Very High (life-critical)
+TCU           — Telematics                   High (remote access)
+IVI/HU        — Infotainment                 Medium (entry point)
+GW            — Gateway ECU                  Very High (hub)
+```
+
+### ECU Software Stack
+```
+AUTOSAR Standard
+├── Application Layer — control algorithms
+├── RTE (Runtime Environment)
+├── Basic Software (BSW)
+│   ├── Services Layer (OS, diagnostics)
+│   ├── ECU Abstraction Layer
+│   └── Microcontroller Abstraction Layer
+└── Microcontroller Hardware
+```
+
+## CAN Bus Fundamentals
+
+### CAN Frame Structure
+```
+SOF  ID(11/29 bits)  RTR  IDE  r0  DLC  DATA(0-8B)  CRC  ACK  EOF
+ 1       11/29        1    1   1   4      0-64       15   2    7  bits
+```
+
+### CAN Characteristics and Vulnerabilities
+```
+Characteristics
+├── CSMA/CR — priority arbitration on collision
+├── Multi-master — any node can transmit
+├── Broadcast — all nodes on the bus receive every message
+└── No authentication — messages distinguished by ID only
+
+Vulnerabilities
+├── Spoofing — transmit messages with arbitrary IDs
+├── Eavesdropping — bus sniffing
+├── Denial of Service — flooding with high-priority messages
+└── Replay — retransmitting captured messages
+```
+
+## OBD-II Port
+
+```
+OBD-II Pinout (DB-9 style, 16 pins)
+ 1 — Manufacturer-defined
+ 4 — Chassis GND
+ 5 — Signal GND
+ 6 — CAN High (J-2284)
+ 7 — ISO 9141-2 K-Line
+ 9 — Manufacturer-defined
+14 — CAN Low (J-2284)
+15 — ISO 9141-2 L-Line
+16 — Battery power (12V)
+
+→ Direct access to CAN bus (no security!)
+```
+
+## Attack Surface
+
+```
+Remote Attack Surface
+├── Telematics (OTA updates, remote diagnostics)
+├── V2X communication (V2V, V2I)
+├── Infotainment (Wi-Fi, Bluetooth, DAB)
+└── Mobile app ↔ vehicle communication
+
+Short-Range Attack Surface
+├── Bluetooth BLE (smart key, app pairing)
+├── Wi-Fi (hotspot, updates)
+└── TPMS (Tire Pressure Monitoring System)
+
+Physical Attack Surface
+├── OBD-II port (direct CAN access)
+├── USB port (media, updates)
+├── JTAG/UART (ECU debug)
+└── Smart key relay attack
+```
+
+## Legal and Ethical Considerations
+
+```
+⚠️ Precautions for Automotive Security Research
+
+1. Test only in authorized environments (your own vehicle, test bench)
+2. Never attempt attacks on public roads (risk to human life)
+3. Responsibly disclose vulnerabilities to manufacturers
+4. Comply with applicable laws (CFAA, national cybersecurity laws)
+5. Use automotive manufacturer bug bounty programs
+
+Key Regulations
+- USA: CFAA (Computer Fraud and Abuse Act)
+- Europe: UN-ECE WP.29 Regulation (R155/R156)
+- South Korea: Motor Vehicle Management Act, Act on Promotion of Information and Communications Network Utilization
+```
+
+## Automotive Security Standards
+
+```
+ISO/SAE 21434 — Automotive Cybersecurity Engineering
+UN R155        — Cybersecurity Management System (CSMS)
+UN R156        — Software Update Management System (SUMS)
+ISO 26262      — Functional Safety (ASIL)
+AUTOSAR        — Software Architecture Standard
+
+TARA (Threat Analysis and Risk Assessment)
+├── Asset identification
+├── Threat scenario derivation
+├── Impact assessment (safety / financial / privacy / operational)
+└── Risk-based security countermeasure definition
+```
+
+## Setting Up a Research Environment
+
+```python
+#!/usr/bin/env python3
+"""Automotive security research environment setup verification tool."""
+
+import subprocess
+import shutil
+import sys
+from dataclasses import dataclass
+
+
+@dataclass
+class ToolStatus:
+    name: str
+    available: bool
+    version: str
+
+
+def check_tool(name: str, version_arg: str = "--version") -> ToolStatus:
+    if not shutil.which(name):
+        return ToolStatus(name=name, available=False, version="not installed")
+    result = subprocess.run(
+        [name, version_arg], capture_output=True, text=True
+    )
+    version = (result.stdout or result.stderr).split("\n")[0][:50]
+    return ToolStatus(name=name, available=True, version=version)
+
+
+REQUIRED_TOOLS = [
+    ("python3",       "--version"),
+    ("can-utils",     None),        # candump, cansend, etc.
+    ("wireshark",     "--version"),
+    ("openssl",       "version"),
+    ("r2",            "-version"),  # radare2
+]
+
+PYTHON_LIBS = [
+    "can",          # python-can
+    "scapy",
+    "pwntools",
+    "requests",
+]
+
+
+def check_python_lib(lib: str) -> ToolStatus:
+    try:
+        import importlib
+        mod = importlib.import_module(lib)
+        version = getattr(mod, "__version__", "unknown")
+        return ToolStatus(name=lib, available=True, version=version)
+    except ImportError:
+        return ToolStatus(name=lib, available=False, version="not installed")
+
+
+def main() -> None:
+    print("Automotive Security Research Environment Check")
+    print("=" * 50)
+
+    print("\n[System Tools]")
+    for name, varg in REQUIRED_TOOLS:
+        if name == "can-utils":
+            status = ToolStatus(
+                name="can-utils",
+                available=bool(shutil.which("candump")),
+                version="(candump, cansend, canplayer, etc.)",
+            )
+        else:
+            status = check_tool(name, varg or "--version")
+        icon = "✓" if status.available else "✗"
+        print(f"  {icon} {status.name:20s} {status.version}")
+
+    print("\n[Python Libraries]")
+    for lib in PYTHON_LIBS:
+        status = check_python_lib(lib)
+        icon = "✓" if status.available else "✗"
+        print(f"  {icon} {lib:20s} {status.version}")
+
+    print("\n[CAN Interfaces]")
+    result = subprocess.run(
+        ["ip", "link", "show"], capture_output=True, text=True
+    )
+    can_ifaces = [
+        line.split(":")[1].strip() for line in result.stdout.splitlines()
+        if "can" in line.lower() or "vcan" in line.lower()
+    ]
+    if can_ifaces:
+        print(f"  Detected CAN interfaces: {', '.join(can_ifaces)}")
+    else:
+        print("  No CAN interfaces found (recommend setting up vcan0)")
+        print("  Setup command: sudo modprobe vcan && sudo ip link add dev vcan0 type vcan")
+        print("                 sudo ip link set up vcan0")
+
+    print("\n[Installation Commands]")
+    print("  sudo apt install can-utils python3-can wireshark")
+    print("  pip3 install python-can scapy pwntools")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+The next file covers practical CAN bus hacking techniques.

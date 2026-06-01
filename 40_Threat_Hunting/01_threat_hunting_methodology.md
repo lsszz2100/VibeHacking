@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 위협 헌팅 방법론 (Threat Hunting Methodology)
 
 ## 1. 위협 헌팅이란 무엇인가
@@ -668,3 +674,256 @@ if __name__ == "__main__":
 | Mean Hunt Duration | 평균 헌팅 소요 시간 |
 | Automation Conversion Rate | 헌팅 → 탐지 규칙 전환 비율 |
 | Dwell Time Reduction | 헌팅 도입 후 평균 잠복 기간 감소 |
+
+---
+
+<a name="english"></a>
+
+# Threat Hunting Methodology
+
+## 1. What is Threat Hunting?
+
+### 1.1 Definition
+
+Threat Hunting is a cybersecurity activity that **proactively and iteratively searches** for hidden threats that existing security tools have failed to detect. Rather than simply responding to alerts, analysts search networks and endpoints based on hypotheses and intelligence.
+
+- **Goal**: Reduce dwell time of lurking attackers, discover new TTPs, improve detection logic
+- **Keywords**: Proactive, Hypothesis-driven, Iterative
+
+### 1.2 Differences from Reactive Security
+
+| Category | Reactive Security | Threat Hunting (Proactive) |
+|----------|------------------|---------------------------|
+| Trigger | Alert or incident occurrence | Analyst hypothesis |
+| Starting point | Alert | Intelligence and data |
+| Purpose | Incident response and recovery | Discover hidden threats |
+| Detection time | Average 207 days (IBM report) | Goal: reduce dwell time |
+| Output | Incident report | New detection rules, TTP identification |
+
+### 1.3 Value of Threat Hunting
+
+1. **MTTD (Mean Time to Detect) reduction**: Reduce dwell time
+2. **Detection gap discovery**: Identify blind spots in existing SIEM rules
+3. **Threat intelligence generation**: IOC/TTP data tailored to internal environment
+4. **Security operations maturity improvement**: Hunting results convert to automated detection
+
+---
+
+## 2. Hunting Maturity Model (HMM)
+
+Proposed by Sqrrl and adopted as industry standard, HMM evaluates an organization's hunting capabilities on a 0-4 scale.
+
+### HMM Level 0 — Initial
+
+- **Characteristics**: No log collection, detection relies only on AV/IDS alerts
+- **Data quality**: Nearly none
+- **Automation**: None
+- **Hunting**: Impossible
+- **Actions**: Enable basic logging, implement SIEM
+
+### HMM Level 1 — Minimal
+
+- **Characteristics**: Some log collection, basic IOC search possible
+- **Data quality**: IP/domain/hash-based matching
+- **Automation**: Manual query execution
+- **Hunting**: Simple IOC-based search
+- **Actions**: Integrate threat intelligence feeds
+
+### HMM Level 2 — Procedural
+
+- **Characteristics**: Follow hunting procedures from other teams
+- **Data quality**: Structured logs, EDR data available
+- **Automation**: Some query automation
+- **Hunting**: TTP-based, using documented playbooks
+- **Actions**: Standardize internal procedures, write playbooks
+
+### HMM Level 3 — Innovative
+
+- **Characteristics**: Create own TTP-based hunting procedures
+- **Data quality**: Rich context, behavioral data
+- **Automation**: Repetitive hunting automation
+- **Hunting**: Hypothesis-based, custom analysis
+- **Actions**: Internal research, develop new detection techniques
+
+### HMM Level 4 — Leading
+
+- **Characteristics**: ML-based anomaly detection, industry-leading
+- **Data quality**: Complete visibility, real-time streaming
+- **Automation**: Advanced automation, feedback loop
+- **Hunting**: Predictive hunting, behavioral analysis
+- **Actions**: Publish research, community contributions
+
+---
+
+## 3. Hypothesis-Based Hunting Process
+
+### 3.1 The Hunting Loop
+
+```
+[Form Hypothesis] → [Collect Data] → [Perform Analysis] → [Find Patterns] → [Respond/Report] → [Automate]
+     ↑                                                                                                |
+     └────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.2 Hypothesis Generation Methods
+
+**Method 1: Intelligence-Based**
+- Reference latest threat reports (Mandiant, CrowdStrike, etc.)
+- Apply TTPs of industry-specific threat groups
+- Example: "Reports indicate APT28 uses T1566 (phishing) for initial access followed by T1059 (command-line)"
+
+**Method 2: Environment-Based**
+- Utilize internal vulnerability scan results
+- Target recently unpatched vulnerabilities
+- Example: "Log4Shell vulnerable systems may exist in our environment"
+
+**Method 3: Analyst Experience**
+- Past incident patterns
+- "In the last breach, the attacker used WMI for lateral movement"
+
+**Method 4: MITRE ATT&CK**
+- Select techniques with low coverage in the matrix
+- Example: "T1003 (credential dumping) detection is insufficient"
+
+### 3.3 Hypothesis Documentation Format
+
+```
+Hypothesis ID: HYP-2024-001
+Title: Abnormal Process Execution via PowerShell
+MITRE ATT&CK: T1059.001 (PowerShell)
+Hypothesis:
+  The attacker will execute PowerShell with encoded commands
+  to bypass security solution detection.
+Data Sources: Windows Event Log (ID 4104), EDR Process logs
+Hunting Queries:
+  - Detect encoded parameters (-enc, -encodedcommand)
+  - Base64 encoding length exceeds threshold
+  - Abnormal parent process (Office → PowerShell)
+Success Criteria: Find suspicious instances or confirm normal behavior
+Estimated Time: 4 hours
+```
+
+### 3.4 Processing Hunting Results
+
+- **When threat found**: Escalate to incident response team → Create detection rule
+- **When no threat found**: Strengthen normal behavior baseline → Move to next hypothesis
+- **All cases**: Document results, measure KPIs (detection rate, time spent, etc.)
+
+---
+
+## 4. Data Sources
+
+### 4.1 EDR (Endpoint Detection and Response)
+
+EDR is the core data source for threat hunting, collecting detailed endpoint-level behaviors.
+
+**Collected Data**:
+- Process creation/termination (including command-line arguments)
+- File creation/modification/deletion
+- Registry changes
+- Network connections (per process)
+- Driver loading
+- WMI event subscriptions
+
+**Key EDR Solutions**: CrowdStrike Falcon, Microsoft Defender for Endpoint, Carbon Black, SentinelOne
+
+### 4.2 NDR (Network Detection and Response)
+
+**Collected Data**:
+- Full packet capture (PCAP)
+- Flow data (NetFlow, IPFIX)
+- DNS queries/responses
+- HTTP/HTTPS metadata
+- Certificate information
+- Protocol anomaly detection
+
+### 4.3 Logs
+
+**Key Windows Event Log IDs**:
+| Event ID | Description |
+|----------|-------------|
+| 4624 | Logon success |
+| 4625 | Logon failure |
+| 4688 | Process creation |
+| 4698 | Scheduled task creation |
+| 4720 | Account creation |
+| 7045 | New service installation |
+| 4104 | PowerShell script block logging |
+
+**Key Linux Logs**:
+- `/var/log/auth.log`: Authentication events
+- `/var/log/syslog`: System events
+- Auditd: System call auditing
+- `/proc/`: Process information
+
+### 4.4 NetFlow
+
+NetFlow provides IP traffic statistics, analyzing network behavior with less storage space than full packet capture.
+
+**Hunting Use Cases**:
+- Abnormal data transfer volume (data exfiltration detection)
+- New communication pairs (C2 connection detection)
+- Port scanning patterns
+- Non-standard port usage
+- Beaconing pattern analysis
+
+---
+
+## 5. MITRE ATT&CK-Based Hunting Prioritization
+
+### 5.1 Prioritization Criteria
+
+1. **Impact**: Damage scale if the technique succeeds
+2. **Frequency**: Frequency of use in actual attacks (ATT&CK statistics)
+3. **Detection gap**: Areas with insufficient current detection coverage
+4. **Environment suitability**: Feasible attack paths in the internal environment
+
+### 5.2 Priority by Tactic
+
+```
+Priority 1 (Immediate Hunting):
+  - T1003: OS Credential Dumping (Lsass dump)
+  - T1055: Process Injection
+  - T1059: Command and Scripting Interpreter
+  - T1078: Valid Accounts
+
+Priority 2 (Weekly Hunting):
+  - T1566: Phishing
+  - T1021: Remote Services
+  - T1547: Boot/Logon Autostart Execution
+  - T1053: Scheduled Task/Job
+
+Priority 3 (Monthly Hunting):
+  - T1190: Exploit Public-Facing Application
+  - T1027: Obfuscated Files or Information
+  - T1083: File and Directory Discovery
+```
+
+---
+
+## 6. Hunting Tips and Best Practices
+
+### 6.1 Principles for Effective Hunting
+
+1. **Data quality first**: No logs, no hunting. Check the collection environment first.
+2. **Document hypotheses**: Record all hypotheses and results. They become reusable assets.
+3. **Time-boxing**: Set maximum time per hypothesis. Stop when criteria are met even without results.
+4. **Baseline required**: Cannot find anomalous behavior without knowing normal behavior.
+5. **Team collaboration**: A team of 2-3 is more effective than hunting alone.
+
+### 6.2 Common Mistakes
+
+- Setting too broad a hypothesis → narrow scope to specific TTPs
+- Forming hypothesis without data → first check data availability
+- Mistaking detection failure for success → "nothing found" is also a result
+- Not converting results to detection rules → all hunting should lead to automation
+
+### 6.3 KPI Measurement Items
+
+| Metric | Description |
+|--------|-------------|
+| Hunt Coverage | Percentage of MITRE ATT&CK techniques covered |
+| True Positive Rate | Percentage of actual threats found through hunting |
+| Mean Hunt Duration | Average hunting time |
+| Automation Conversion Rate | Hunting → detection rule conversion rate |
+| Dwell Time Reduction | Reduction in average dwell time after introducing hunting |

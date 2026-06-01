@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 디지털 포렌식 — 이론과 실전 완전 가이드
 
 ## 1. 디지털 포렌식 개요
@@ -1020,4 +1026,1032 @@ VSS (Volume Shadow Service) 관련:
 CDN/클라우드 DDoS 보호:
   - Cloudflare, AWS Shield, Azure DDoS Protection
   - 분산 인프라로 공격 트래픽 흡수
+```
+
+---
+
+<a name="english"></a>
+
+# Digital Forensics — Complete Theory and Practical Guide
+
+## 1. Overview of Digital Forensics
+
+### Definition of Forensics
+The scientific process of collecting, preserving, analyzing, and presenting digital evidence with legal evidentiary value from digital devices.
+
+### Forensic Principles
+1. **Integrity Preservation**: Never alter original evidence (verified with hashes)
+2. **Chain of Custody**: Maintain a complete record of evidence handling history
+3. **Reproducibility**: The same tools must produce identical results
+4. **Documentation**: Record all procedures in detail
+
+### Forensic Investigation Procedure
+```
+1. Scene Preservation
+   ↓
+2. Evidence Collection (Imaging)
+   ↓
+3. Integrity Verification (Hash Comparison)
+   ↓
+4. Evidence Analysis
+   ↓
+5. Report Writing
+   ↓
+6. Court Submission
+```
+
+---
+
+## 2. Evidence Collection and Imaging
+
+### Disk Imaging Tools
+
+`dd` is a tool for creating bit-for-bit copies (forensic images) of disks or partitions. The fundamental forensic principle is to create an image for analysis without modifying the original evidence, and `sha256sum` is used to verify image integrity.
+
+```bash
+# dd (basic tool)
+dd if=/dev/sda of=/evidence/disk.img bs=4096
+# if: input file (source disk)
+# of: output file (image)
+# bs: block size (4096 recommended)
+
+# Generate hash simultaneously
+dd if=/dev/sda | tee /evidence/disk.img | md5sum > /evidence/hash.md5
+
+# dcfldd (enhanced dd, forensics-specific)
+dcfldd if=/dev/sda of=/evidence/disk.img hash=md5,sha256 hashlog=/evidence/hash.log
+
+# ewfacquire (E01 format, FTK/EnCase compatible)
+ewfacquire /dev/sda -t /evidence/disk
+# → creates /evidence/disk.E01
+
+# Integrity verification
+md5sum disk.img        # immediately after image creation
+md5sum disk.img        # after analysis
+# both values must be identical
+```
+
+### Memory Imaging
+
+Dumps memory from a running system to create a forensic image. This should be performed as a top priority to preserve volatile evidence (running processes, network connections, encryption keys).
+
+```bash
+# Linux memory dump
+# Using LiME (Linux Memory Extractor) kernel module
+
+# Install and run LiME
+apt-get install build-essential linux-headers-$(uname -r)
+git clone https://github.com/504ensicsLabs/LiME
+cd LiME/src
+make
+
+insmod lime-$(uname -r).ko "path=/evidence/memory.lime format=lime"
+
+# Windows memory dump tools
+# - WinPmem
+# - Magnet RAM Capture (GUI)
+# - DumpIt (one-click)
+# - FTK Imager (commercial)
+
+# WinPmem usage
+winpmem_mini_x64.exe memory.aff4
+```
+
+---
+
+## 3. Windows Forensics
+
+### Key Artifact Locations
+```
+User Activity Records:
+├── %USERPROFILE%\AppData\Local\Microsoft\Windows\History  ← IE/Edge history
+├── %USERPROFILE%\AppData\Roaming\Mozilla\Firefox\Profiles  ← Firefox
+├── %USERPROFILE%\AppData\Local\Google\Chrome\User Data    ← Chrome
+├── %USERPROFILE%\Recent  ← Recent files
+├── %USERPROFILE%\AppData\Roaming\Microsoft\Windows\Recent ← Recent file links
+└── %TEMP%  ← Temporary files
+
+System Information:
+├── C:\Windows\System32\config\SAM     ← Account information
+├── C:\Windows\System32\config\SYSTEM  ← System settings
+├── C:\Windows\System32\config\SOFTWARE← Software list
+├── C:\Windows\System32\winevt\Logs\   ← Event logs (.evtx)
+└── C:\Windows\Prefetch\               ← Program execution records (.pf)
+
+Network:
+├── C:\Windows\System32\drivers\etc\hosts  ← Hosts file
+└── C:\Windows\System32\config\SYSTEM (network settings)
+```
+
+### Windows Event Log Analysis
+```
+Key Event IDs:
+
+Security Log (Security.evtx):
+- 4624: Successful login
+- 4625: Failed login (brute force detection)
+- 4634: Logoff
+- 4648: Login with explicit credentials (runas)
+- 4720: User account created
+- 4722: User account enabled
+- 4728: Member added to security group
+- 4732: Member added to local group
+- 4756: Member added to global group
+- 4776: Credential validation (at DC)
+
+System Log (System.evtx):
+- 7034: Service crashed unexpectedly
+- 7035: Service state changed (start/stop)
+- 7036: Service state change notification
+- 7045: New service installed (malicious service detection)
+
+Application Log (Application.evtx):
+- 1102: Audit log cleared (log deletion detected!)
+- 4688: New process created (Process Create, requires policy activation)
+```
+
+Query and analyze Windows event logs with PowerShell. Check security events such as login history (4624), process creation (4688), and service installation (7045).
+
+```powershell
+# Analyze event logs with PowerShell
+# Query failed logins
+Get-WinEvent -LogName Security | 
+    Where-Object {$_.Id -eq 4625} | 
+    Select-Object TimeCreated, Message | 
+    Format-List
+
+# Service installation events
+Get-WinEvent -LogName System | 
+    Where-Object {$_.Id -eq 7045} |
+    Select-Object TimeCreated, Message
+
+# Query events for a specific time period
+$start = [DateTime]"2024-01-01"
+$end   = [DateTime]"2024-01-31"
+Get-WinEvent -LogName Security -FilterXPath "*[System[TimeCreated[@SystemTime>='$start' and @SystemTime<='$end']]]"
+```
+
+### Prefetch Analysis (Program Execution Tracking)
+```
+Prefetch file location: C:\Windows\Prefetch\*.pf
+Format: PROGRAMNAME-XXXXXXXX.pf
+
+Analyzable information:
+1. Program name
+2. Execution count
+3. Last execution time (up to 8 execution timestamps)
+4. List of loaded DLLs/files
+
+Tools:
+WinPrefetchView (NirSoft) — GUI analysis tool
+prefetch-parser.py — offline analysis
+
+From command prompt:
+dir C:\Windows\Prefetch\ | findstr "POWERSHELL"  # PowerShell execution traces
+dir C:\Windows\Prefetch\ | findstr "CMD"          # CMD execution traces
+```
+
+### LNK (Shortcut) File Analysis
+```
+.lnk files store original information about recently opened files:
+- Original file path
+- Timestamps
+- File size
+- MAC address (if a network file)
+- Volume serial number (removable disk)
+
+Location:
+%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Recent\
+
+Tools:
+lnkparse (Python) — analyze on Linux
+Windows File Analyzer — GUI tool
+
+# Using lnkparse
+pip install lnkparse
+lnkparse file.lnk
+```
+
+---
+
+## 4. Linux Forensics
+
+### Key Log Files
+
+Key log file locations and analysis methods for Linux systems. Check authentication events in /var/log/auth.log and system events in /var/log/syslog.
+
+```bash
+# Authentication logs
+/var/log/auth.log    # Debian/Ubuntu
+/var/log/secure      # RHEL/CentOS
+
+# System logs
+/var/log/syslog      # Debian/Ubuntu
+/var/log/messages    # RHEL/CentOS
+
+# Kernel logs
+/var/log/kern.log
+dmesg
+
+# Web server
+/var/log/apache2/access.log
+/var/log/apache2/error.log
+/var/log/nginx/access.log
+
+# FTP
+/var/log/vsftpd.log
+
+# Cron jobs
+/var/log/cron.log
+```
+
+### Incident Analysis Command Reference
+
+A collection of commands for initial triage on a suspected compromised system. Quickly check currently logged-in users, running processes, and network connections.
+
+```bash
+# Currently logged-in users
+who
+w
+last | head -20        # recent login history
+lastlog                # last login for all accounts
+
+# Running process analysis
+ps auxf                # process tree
+lsof -p PID            # files opened by a process
+lsof -i TCP:4444       # process using a specific port
+
+# Network connection analysis
+ss -antp               # all TCP connections (with PID)
+netstat -antp          # same
+ss -anup               # UDP connections
+cat /proc/net/tcp      # raw data
+
+# File system analysis
+# Files modified in the last 24 hours
+find / -mtime -1 -type f 2>/dev/null | grep -v proc
+
+# Files accessed in the last 1 hour
+find / -atime -0.04 -type f 2>/dev/null
+
+# SetUID file check
+find / -perm -4000 -type f 2>/dev/null
+
+# Hidden files
+find / -name ".*" -type f 2>/dev/null | head -20
+
+# Deleted files (still running)
+lsof | grep "(deleted)"
+
+# Account analysis
+cat /etc/passwd | awk -F: '$3==0{print}'  # accounts with UID=0 (root privileges)
+cat /etc/shadow | awk -F: '$2!="!"&&$2!="*"{print $1}'  # active accounts
+```
+
+### Volatility (Memory Analysis)
+
+Use the Volatility memory analysis framework with Python. Extract processes, network connections, registry hives, and more from memory dumps.
+
+```python
+#!/usr/bin/env python3
+"""
+volatility3 automated analysis script
+Purpose: batch extraction of key forensic artifacts from memory dumps
+Dependency: pip install volatility3
+"""
+from __future__ import annotations
+import argparse
+import subprocess
+import sys
+import json
+from pathlib import Path
+from datetime import datetime
+
+
+PLUGINS: dict[str, str] = {
+    "windows": [
+        "windows.info",
+        "windows.pslist",
+        "windows.pstree",
+        "windows.psscan",       # hidden process detection
+        "windows.cmdline",
+        "windows.netstat",
+        "windows.malfind",      # injected code detection
+        "windows.dlllist",
+        "windows.hashdump",
+        "windows.registry.hivelist",
+    ],
+    "linux": [
+        "banners.Banners",
+        "linux.pslist",
+        "linux.netstat",
+        "linux.bash",
+    ],
+}
+
+
+def run_plugin(
+    vol_bin: str,
+    dump_path: str,
+    plugin: str,
+    extra_args: list[str] | None = None,
+) -> tuple[int, str, str]:
+    """Run a single plugin and return (returncode, stdout, stderr)."""
+    cmd = [vol_bin, "-f", dump_path, plugin]
+    if extra_args:
+        cmd.extend(extra_args)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    return result.returncode, result.stdout, result.stderr
+
+
+def analyze_dump(
+    dump_path: str,
+    os_type: str,
+    output_dir: str,
+    vol_bin: str = "vol",
+) -> dict[str, str]:
+    """
+    Sequentially run the plugin list against the memory dump
+    and save results under output_dir.
+    Returns: {plugin_name: output_file_path}
+    """
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    results: dict[str, str] = {}
+    plugins = PLUGINS.get(os_type, [])
+
+    print(f"[*] Analysis started: {dump_path}  ({os_type.upper()})")
+    print(f"[*] Output directory: {out.resolve()}")
+
+    for plugin in plugins:
+        safe_name = plugin.replace(".", "_")
+        out_file = out / f"{timestamp}_{safe_name}.txt"
+        print(f"  [+] {plugin} ... ", end="", flush=True)
+
+        try:
+            rc, stdout, stderr = run_plugin(vol_bin, dump_path, plugin)
+            out_file.write_text(stdout, encoding="utf-8")
+            status = "OK" if rc == 0 else f"RC={rc}"
+            print(status)
+            results[plugin] = str(out_file)
+        except subprocess.TimeoutExpired:
+            print("TIMEOUT")
+        except Exception as exc:
+            print(f"ERROR: {exc}")
+
+    # Additional: Run key (Windows persistence)
+    if os_type == "windows":
+        run_key = "Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+        rc, stdout, _ = run_plugin(
+            vol_bin, dump_path,
+            "windows.registry.printkey",
+            ["--key", run_key],
+        )
+        key_file = out / f"{timestamp}_registry_run.txt"
+        key_file.write_text(stdout, encoding="utf-8")
+        results["registry.Run"] = str(key_file)
+        print(f"  [+] registry.printkey (Run) ... OK")
+
+    summary_path = out / f"{timestamp}_summary.json"
+    summary_path.write_text(json.dumps(results, indent=2, ensure_ascii=False))
+    print(f"\n[*] Summary saved: {summary_path}")
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="volatility3 plugin automation analyzer"
+    )
+    parser.add_argument("dump", help="Memory dump file path (.dmp/.lime/.raw)")
+    parser.add_argument(
+        "--os", choices=["windows", "linux"], default="windows",
+        help="Target OS (default: windows)"
+    )
+    parser.add_argument(
+        "--output", default="vol_output",
+        help="Output directory (default: vol_output)"
+    )
+    parser.add_argument(
+        "--vol", default="vol",
+        help="vol3 executable path (default: vol)"
+    )
+    args = parser.parse_args()
+
+    if not Path(args.dump).exists():
+        print(f"[!] File not found: {args.dump}", file=sys.stderr)
+        sys.exit(1)
+
+    analyze_dump(args.dump, args.os, args.output, args.vol)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Timeline Analysis
+
+### File Timestamp Analysis (MACE)
+```
+MACE:
+M - Modified  : Time file content was last modified
+A - Accessed  : Time file was last accessed (including reads)
+C - Changed   : Time metadata was changed (rename, move, etc.)
+E - Entry     : MFT entry modification time
+
+Detecting Timestamp Manipulation (Timestomping):
+- Suspicious if M time is earlier than C/B time
+- Suspicious if all nanosecond values are 0 (some tools don't support nanoseconds)
+```
+
+Analyze the MACE (Modified, Accessed, Changed, Entry) timestamps of files. It is also important to check whether an attacker has manipulated timestamps (Timestomping).
+
+```bash
+# Check file timestamps on Linux
+stat file.txt
+# Access: 2024-01-01 09:00:00
+# Modify: 2024-01-01 08:00:00
+# Change: 2024-01-01 08:00:00
+# Birth:  2024-01-01 08:00:00
+
+# Create timeline
+find / -printf "%M;%U;%G;%s;%a;%t;%c;%n;%p\n" 2>/dev/null > timeline.csv
+```
+
+### log2timeline / Plaso
+
+Generate a unified timeline from multiple sources (event logs, file system, browser history) using log2timeline/Plaso. Used to reconstruct the sequence of an incident.
+
+```bash
+# Generate unified timeline from multiple sources
+pip install plaso
+
+# Extract timeline from image
+log2timeline.py --storage-file case.plaso disk.img
+
+# Filter and output
+psort.py -o L2tcsv case.plaso > timeline.csv
+
+# Analyze with Excel/LibreOffice
+# Sort by time and identify anomalous activity
+```
+
+---
+
+## 6. Web Server Forensics
+
+### Apache Log Analysis
+
+Parse Apache access logs with Python to analyze attack patterns. Automatically detects SQL injection attempts, directory traversal, and mass requests.
+
+```python
+#!/usr/bin/env python3
+"""
+Apache/Nginx access.log forensics analyzer
+Purpose: detect attack patterns (SQLi, XSS, path traversal, brute force) and generate statistics
+"""
+from __future__ import annotations
+import argparse
+import re
+import sys
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Iterator
+
+
+# Combined Log Format regex
+LOG_RE = re.compile(
+    r'(?P<ip>\S+) \S+ \S+ \[(?P<time>[^\]]+)\] '
+    r'"(?P<method>\S+) (?P<uri>\S+) \S+" '
+    r'(?P<status>\d{3}) (?P<size>\S+)'
+    r'(?: "(?P<referer>[^"]*)" "(?P<ua>[^"]*)")?'
+)
+
+ATTACK_PATTERNS: dict[str, list[str]] = {
+    "SQLi": [
+        r"(?i)(union.+select|select.+from|insert.+into|drop.+table)",
+        r"(?i)(%27|'|%22|\"|%60|`)(\s|%20)*(or|and|union|select)",
+        r"(?i)(1=1|1%3d1|or%201|'%20or%20'1)",
+        r"(?i)(sleep\s*\(|benchmark\s*\(|waitfor\s+delay)",
+    ],
+    "XSS": [
+        r"(?i)<script[\s>]",
+        r"(?i)(onerror|onload|onmouseover|onclick)\s*=",
+        r"(?i)javascript\s*:",
+        r"(?i)%3cscript|%3e",
+    ],
+    "PathTraversal": [
+        r"\.\./|\.\.%2f|%2e%2e/|%252e%252e",
+        r"(?i)(etc/passwd|windows/system32|win\.ini)",
+    ],
+    "ScannerUA": [
+        r"(?i)(nikto|sqlmap|nmap|masscan|acunetix|nessus|dirb|gobuster|wfuzz)",
+    ],
+}
+
+
+@dataclass
+class LogEntry:
+    ip: str
+    time: str
+    method: str
+    uri: str
+    status: int
+    size: int
+    ua: str = ""
+
+
+@dataclass
+class AnalysisResult:
+    total: int = 0
+    top_ips: Counter = field(default_factory=Counter)
+    status_dist: Counter = field(default_factory=Counter)
+    attack_hits: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list))
+    large_responses: list[tuple[int, str]] = field(default_factory=list)
+
+
+def parse_log(path: Path) -> Iterator[LogEntry]:
+    with path.open(encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            m = LOG_RE.match(line)
+            if not m:
+                continue
+            try:
+                yield LogEntry(
+                    ip=m["ip"],
+                    time=m["time"],
+                    method=m["method"],
+                    uri=m["uri"],
+                    status=int(m["status"]),
+                    size=int(m["size"]) if m["size"].isdigit() else 0,
+                    ua=m["ua"] or "",
+                )
+            except (ValueError, TypeError):
+                continue
+
+
+def analyze(path: Path, top_n: int = 10, large_threshold: int = 1_000_000) -> AnalysisResult:
+    res = AnalysisResult()
+    compiled = {
+        category: [re.compile(p) for p in patterns]
+        for category, patterns in ATTACK_PATTERNS.items()
+    }
+
+    for entry in parse_log(path):
+        res.total += 1
+        res.top_ips[entry.ip] += 1
+        res.status_dist[entry.status] += 1
+
+        # Attack pattern matching (against URI + UA)
+        target = entry.uri + " " + entry.ua
+        for category, regexes in compiled.items():
+            for rx in regexes:
+                if rx.search(target):
+                    res.attack_hits[category].append(
+                        f"[{entry.time}] {entry.ip} {entry.method} {entry.uri[:120]}"
+                    )
+                    break
+
+        # Abnormally large response (possible data exfiltration)
+        if entry.size >= large_threshold:
+            res.large_responses.append((entry.size, entry.uri[:100]))
+
+    return res
+
+
+def print_report(res: AnalysisResult, top_n: int) -> None:
+    print(f"\n{'='*60}")
+    print(f"  Apache Log Forensics Analysis Report  (Total {res.total:,} lines)")
+    print(f"{'='*60}")
+
+    print(f"\n[Top {top_n} IPs]")
+    for ip, cnt in res.top_ips.most_common(top_n):
+        print(f"  {ip:<20} {cnt:>6} times")
+
+    print(f"\n[HTTP Status Code Distribution]")
+    for code, cnt in sorted(res.status_dist.items()):
+        bar = "█" * min(cnt // 50, 40)
+        print(f"  {code}  {cnt:>7}  {bar}")
+
+    print(f"\n[Attack Pattern Detection]")
+    for category, hits in res.attack_hits.items():
+        print(f"  {category}: {len(hits)} hits")
+        for h in hits[:5]:
+            print(f"    {h}")
+        if len(hits) > 5:
+            print(f"    ... and {len(hits)-5} more")
+
+    if res.large_responses:
+        print(f"\n[Large Responses (Possible Data Exfiltration)]")
+        for size, uri in sorted(res.large_responses, reverse=True)[:10]:
+            print(f"  {size/1024:.1f} KB  {uri}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Apache access.log forensics analyzer")
+    parser.add_argument("logfile", help="access.log path")
+    parser.add_argument("--top", type=int, default=10, help="Number of top IPs to display (default: 10)")
+    parser.add_argument(
+        "--large-threshold", type=int, default=1_000_000,
+        help="Large response threshold in bytes (default: 1MB)"
+    )
+    args = parser.parse_args()
+
+    log_path = Path(args.logfile)
+    if not log_path.exists():
+        print(f"[!] File not found: {log_path}", file=sys.stderr)
+        sys.exit(1)
+
+    result = analyze(log_path, args.top, args.large_threshold)
+    print_report(result, args.top)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### IIS Log Analysis (Windows)
+
+Analyze Windows IIS web server logs with PowerShell. Filter attack patterns and abnormal requests from W3C format logs.
+
+```powershell
+# IIS log path: C:\inetpub\logs\LogFiles\W3SVC1\
+# Format: u-ex{date}.log
+
+# Analyze with PowerShell
+Import-Csv -Delimiter " " u-ex240101.log | 
+    Group-Object "cs-ip" | 
+    Sort-Object Count -Descending | 
+    Select-Object -First 10
+
+# Query 404 errors
+Get-Content u-ex240101.log | Where-Object {$_ -match " 404 "}
+```
+
+---
+
+## 7. Deleted File Recovery (Digital Forensics Playbook)
+
+### Precautions Before Recovery
+```
+1. Immediately stop using the target drive
+   - If deleted data is overwritten with new content, recovery is impossible
+2. Do not format external drives
+3. Do not attempt to repair the hard drive
+```
+
+### Recovery with Software
+```
+1. Download recovery software
+2. Select the disk/card where deleted files were located → Scan
+3. Select files to recover
+4. Choose a save location (must save to a different location than the original!)
+
+Example tools:
+  - Recuva (free, Windows)
+  - PhotoRec / TestDisk (cross-platform, free)
+  - R-Studio (commercial)
+  - Stellar Data Recovery (commercial)
+```
+
+### Recovery via CMD (Restoring Hidden Files)
+
+Windows CMD commands for restoring hidden and system files. Use the ATTRIB command to change file attributes and find hidden malicious files.
+
+```cmd
+ATTRIB -H -R -S /S /D X:*.*
+:: Replace X with the actual drive letter
+:: -H: remove hidden attribute, -R: remove read-only, -S: remove system attribute
+:: /S: include subdirectories, /D: include folders
+```
+
+### Recovery from Previous Versions (Volume Shadow Copy)
+```
+1. Right-click the folder where the file was located → Properties
+2. Click the Previous Versions tab
+3. Select the version to recover
+4. Click Restore
+
+VSS (Volume Shadow Service) related:
+  vssadmin list shadows         → list shadow copies
+  vssadmin delete shadows /all  → delete all shadows (ransomware behavior!)
+```
+
+---
+
+## 8. Incident Response Do's and Don'ts
+
+### Do's During Incident Response
+```
+1. Collect volatile data and artifacts using forensic tools
+2. Gather external threat intelligence based on identified IOCs
+3. Maintain security of systems and media for forensic collection
+4. Collect logs at network and endpoint levels
+5. Communicate promptly with customers/stakeholders
+```
+
+### Don'ts During Incident Response
+```
+1. Do not panic (leads to mistakes)
+2. Do not immediately shut down compromised systems (memory evidence loss)
+3. Do not share incident details externally without authorization
+4. Do not use domain administrator credentials on compromised systems
+5. Do not run non-forensic software on compromised systems
+```
+
+### Benefits of a Cyber Security Incident Response Plan (CSIRP)
+```
+✓ Respond to threats with confidence
+✓ Minimize incident impact
+✓ Improve overall cybersecurity posture
+✓ Strengthen customer trust
+✓ Maintain brand reputation
+✓ Ensure compliance
+✓ Maintain business continuity
+✓ Prevent threat spread
+```
+
+---
+
+## 10. Tool Reference
+
+| Tool | Purpose | Platform |
+|------|---------|----------|
+| Autopsy | Comprehensive forensic analysis | Cross |
+| FTK Imager | Image creation/mounting | Windows |
+| EnCase | Commercial forensic tool | Windows |
+| Volatility | Memory analysis | Cross |
+| Plaso | Timeline generation | Cross |
+| SIFT Workstation | Forensic analysis VM | Linux |
+| REMnux | Malware analysis VM | Linux |
+| Wireshark | Network analysis | Cross |
+| NetworkMiner | Network forensics | Windows |
+| Redline | Memory analysis (Mandiant) | Windows |
+| WinPrefetchView | Prefetch analysis | Windows |
+| RegRipper | Registry analysis | Cross |
+| bulk_extractor | Large-scale data extraction | Cross |
+| TestDisk/PhotoRec | Deleted file recovery | Cross |
+
+---
+
+## 11. CISA Incident Response Playbook (FCEB Standard)
+
+### Playbook Applicability by Incident Type
+```
+Applicable incidents:
+✓ Lateral Movement, credential access, data exfiltration
+✓ Network compromise spanning multiple users/systems
+✓ Administrator account compromise
+
+Not applicable:
+✗ Classified information leakage suspected to be unintentional
+✗ Phishing email clicked with no confirmed compromise
+✗ Generic malware on a single machine (low potential for widespread damage)
+```
+
+### Types of Threat Intelligence Indicators
+```
+1. Atomic Indicators
+   - Domains, IP addresses → useful for detecting known campaigns
+   - Drawback: attackers frequently rotate infrastructure (short shelf-life)
+
+2. Computed Indicators
+   - YARA rules, regular expressions → detect known malicious artifacts
+
+3. Behavioral Indicators (TTP Patterns)
+   - Based on MITRE ATT&CK techniques → most durable
+   - Even when attackers change infrastructure, TTPs remain similar
+```
+
+### CISA Preparedness Activity Checklist
+```
+Policy/Procedures:
+□ Document incident response plan (including coordination leader designation)
+□ Establish major incident escalation/reporting procedures
+□ Law enforcement notification and evidence sharing policy
+
+Instrumentation:
+□ Broad deployment of AV/EDR, DLP, IDPS
+□ Centralized collection of host/app/cloud logs
+□ Operate SIEM + integrate threat intelligence feeds
+□ Log retention period: meets EO 14028 Sec.8 requirements
+
+Active Defense:
+□ Ability to lure attackers into honeypots/honeynets
+□ Set alerts for malicious activity using honeytokens (fictitious data)
+□ Delay attacker discovery of legitimate infrastructure via darknet
+
+High-Value Assets (HVA):
+□ Inventory business HVAs (servers, apps, data, identities)
+□ Apply enhanced protection/detection controls to HVAs
+□ Document and validate HVA recovery procedures
+```
+
+### Incident Crisis Communication Principles
+```
+Effective crisis communication principles:
+1. Transparency
+   - Provide regular updates based on facts
+   - Speculation or suppressed information causes greater confusion
+
+2. Tailored communication by stakeholder
+   - Internal: CEO, CRO, GC, business unit leaders
+   - External: customers, partners, regulators, media
+   - Share only what each group needs to know (Need-to-know)
+
+3. Rapid response
+   - Silence generates more speculation
+   - Proactively counter misinformation on social media
+
+Communication precautions:
+✗ Do not disclose unverified technical details
+✗ Do not allow technical personnel to respond directly to external media (vulnerable under pressure)
+✗ Prevent information leaks from partners/consultants (NDA required)
+```
+
+---
+
+## 12. Vulnerability Response Playbook (CISA FCEB Standard)
+
+### 4-Stage Vulnerability Response Process
+```
+1. Identification
+   - Identify vulnerabilities based on CISA directives/alerts, scanner results, vendor advisories
+   - Confirm CVE ID, CVSS score, and exploitability
+   - Inventory affected assets (inventory-based)
+
+2. Evaluation
+   - Prioritize based on business impact and exploit risk
+   - Determine whether patching is feasible (immediate patch / mitigation / acceptance)
+   - Review dependencies and rollback plans
+
+3. Remediation
+   - High risk: target patch application within 24-72 hours
+   - Medium risk: address within 30 days
+   - Low risk: quarterly patch cycle
+   - If patch is unavailable: network isolation, firewall rules, enhanced monitoring
+
+4. Reporting
+   - Verify patch completion (re-run scans)
+   - Confirm CISA reporting requirements are met
+   - Write report (vulnerability → action → verification timeline)
+```
+
+### Vulnerability Response Checklist (CISA)
+```
+Preparation:
+□ Keep asset inventory up to date (software, hardware)
+□ Configure patch management tools (WSUS, Ansible, Puppet)
+□ Run vulnerability scan tools regularly (Nessus, OpenVAS)
+□ Subscribe to vendor security advisories
+
+Identification/Evaluation:
+□ CVSS v3.1 score of 9.0 or above → immediate action
+□ Check CISA KEV (Known Exploited Vulnerabilities) catalog
+□ Check whether exploit code has been published
+
+Mitigation:
+□ Document patch application or interim mitigations
+□ Re-scan after mitigation to verify remediation
+□ Establish measures to prevent recurrence
+```
+
+---
+
+## 13. Recovery Decision Framework (Incident Response Reference Guide)
+
+### Pre-Recovery Preparation
+```
+Technical Preparation:
+✓ Validate trusted software deployment system
+  → Ability to rapidly execute scripts/installers on all endpoints
+✓ Validate offline backups and ransomware-resistant backups (recovery test)
+✓ Document compromised account recovery procedures
+  - Handling by level of compromise confidence (active attacker vs. suspected account)
+  - Criteria for password reset vs. account recreation
+✓ Host OS rebuild procedures (by workstation/server type)
+✓ Procedures to detect/block C2 channels at internet egress points
+
+Operational Preparation:
+✓ Apply ICS (Incident Command System) framework
+✓ Conduct regular crisis simulations and tabletop exercises
+✓ Establish emergency rapid approval processes
+✓ Document escalation thresholds (criteria for internal vs. external expert handoff)
+
+Legal/Communication Preparation:
+✓ Pre-review incident reporting requirements with legal team
+✓ Establish crisis communication plan and designate spokesperson
+✓ Customer/partner notification procedures
+
+Key Lessons:
+- Password resets + C2 blocking alone are insufficient
+  → Must also detect and remove malware from hosts
+- Assigning security staff to double as IT operations reduces effectiveness
+- Purchasing tools without the skills or time to use them is wasteful
+```
+
+---
+
+## 14. Crisis Communication (Cyber Crisis Communication)
+
+### Crisis Communication Stakeholder Classification
+```
+Internal Stakeholders (high notification priority):
+  CEO, CRO, GC (Legal), CFO, COO, CMO, Business Leaders
+
+External Stakeholders (Need-to-Know principle):
+  Customers, partners, supply chain, regulators, media, insurers
+
+Crisis Communication 4R Principles:
+  Readiness    - Communication playbooks for each crisis scenario
+  Response     - Rapid, fact-based initial response
+  Reassurance  - Messages to restore stakeholder trust
+  Recovery     - Share improvements and measures to prevent recurrence
+```
+
+### Crisis Communication Playbook Essentials
+```
+"What to communicate, When, to Whom, How, Why, by Who"
+
+Example scenarios to define (15-20):
+  - Ransomware incident
+  - Sensitive information leaked to the dark web
+  - DDoS attack
+  - Internal system vulnerability disclosed
+  - Large-scale data exfiltration attempt
+  - Malware spreading across internal network
+
+Avoiding crisis communication pitfalls:
+✗ Do not immediately disclose unverified technical details
+✗ Do not allow technical staff (SOC) to directly respond to external media
+  → SOC personnel are prone to mistakes under pressure
+✗ Prevent information leaks from partners/consultants (NDA is mandatory)
+✗ Prioritize factual disclosure over denial ("we were not hacked")
+  → If it comes out later, trust cannot be recovered
+
+Social media response:
+  - Silence generates more speculation
+  - Proactively block misinformation on social media
+  - Provide regular updates through official channels
+```
+
+---
+
+## 15. DDoS Attack Response Guide (CISA)
+
+### DDoS Attacks and Mitigations by OSI Layer
+
+`dd` creates a bit-for-bit exact copy (forensic image) of a disk or partition. The fundamental forensic principle is to create an image for analysis rather than handling the original evidence directly without a write-blocker.
+
+```
+Layer 7 (Application):
+  Attack: HTTP GET/POST flood, Slowloris
+  Impact: Exhausts service resources
+  Mitigation: Application monitoring, WAF, rate limiting
+
+Layer 6 (Presentation):
+  Attack: Malformed SSL requests (SSL inspection is resource-intensive)
+  Impact: Unable to process SSL connections
+  Mitigation: SSL offloading, Application Delivery Platform (ADP)
+
+Layer 5 (Session):
+  Attack: Telnet DDoS (session management vulnerabilities)
+  Impact: Switch management functions paralyzed
+
+Layer 4 (Transport):
+  Attack: SYN Flood, UDP Flood
+  Impact: Exceeds bandwidth/connection limits
+  Mitigation: Blackholing, rate limiting
+
+Layer 3 (Network):
+  Attack: ICMP Flooding (Smurf Attack)
+  Impact: Network bandwidth saturation
+  Mitigation: ICMP traffic rate limiting
+
+Layer 2 (Data Link):
+  Attack: MAC address flooding
+  Impact: Switch CAM table saturation
+  Mitigation: Limit MAC addresses per port, AAA server authentication
+```
+
+### DDoS Response Strategies
+
+`dd` creates a bit-for-bit exact copy (forensic image) of a disk or partition. The fundamental forensic principle is to create an image for analysis rather than handling the original evidence directly without a write-blocker.
+
+```
+Blackholing:
+  - Block attack traffic at the ISP level
+  - Drawback: legitimate traffic is also blocked
+
+Scrubbing Centers:
+  - Divert traffic to a scrubbing center
+  - Remove malicious traffic, then forward clean traffic to the origin server
+
+CDN/Cloud DDoS Protection:
+  - Cloudflare, AWS Shield, Azure DDoS Protection
+  - Absorb attack traffic with distributed infrastructure
 ```

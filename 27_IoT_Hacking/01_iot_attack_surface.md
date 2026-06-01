@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 01. IoT 공격 면 분석 (Attack Surface Analysis)
 
 ## 개요
@@ -860,6 +866,342 @@ nmap -sU -p 161 --script snmp-brute 192.168.1.1
 wash -i wlan0mon
 
 # 블루투스 LE 장치 스캔
+hcitool lescan
+gatttool -b AA:BB:CC:DD:EE:FF --interactive
+```
+
+---
+
+<a name="english"></a>
+
+# 01. IoT Attack Surface Analysis
+
+## Overview
+
+IoT devices have a broad attack surface due to the combination of embedded OS, proprietary protocols, and weak default configurations. Analysis targets include: firmware, physical interfaces (UART/JTAG), network protocols (MQTT/CoAP), cloud APIs, and mobile app integration.
+
+---
+
+## 1. Physical Interface Attack Surface
+
+### 1.1 UART (Universal Asynchronous Receiver-Transmitter)
+
+UART is most commonly exposed as a debug console in embedded devices.
+
+```
+# Required hardware: USB-UART adapter (CH340, CP2102, FTDI)
+# Common voltage: 3.3V (some devices use 1.8V — verify first)
+
+# Board pin identification
+# - GND: Continuity test with multimeter
+# - VCC: 3.3V or 5V
+# - TX: Data transmit (check signal with oscilloscope)
+# - RX: Data receive
+
+# Connect with minicom
+minicom -D /dev/ttyUSB0 -b 115200
+
+# Connect with screen
+screen /dev/ttyUSB0 115200
+
+# Common UART baud rates
+# 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600
+
+# Auto-detect baud rate (try multiple speeds)
+for baud in 9600 19200 38400 57600 115200 230400; do
+    echo "Testing $baud..."
+    timeout 3 stty -F /dev/ttyUSB0 $baud && \
+    timeout 3 cat /dev/ttyUSB0 | xxd | head -5
+done
+```
+
+### 1.2 JTAG (Joint Test Action Group)
+
+JTAG is a chip-level debugging interface that allows reading/writing memory and controlling execution.
+
+```
+# Connect JTAG with OpenOCD
+# Example config file: target.cfg
+# source [find interface/ftdi/jlink.cfg]
+# transport select jtag
+# source [find target/at91sam9g20.cfg]
+
+openocd -f interface/jlink.cfg -f target/stm32f1x.cfg
+
+# Control OpenOCD via Telnet
+telnet localhost 4444
+
+# Dump memory
+> dump_image /tmp/firmware.bin 0x08000000 0x100000
+
+# Read registers
+> reg
+
+# Halt execution
+> halt
+
+# Step execution
+> step
+
+# JTAG pin detection tool: JTAGulator
+# https://github.com/grandideastudio/jtagulator
+```
+
+### 1.3 SPI/I2C Flash Memory Direct Dump
+
+```
+# Read SPI flash with flashrom
+flashrom -p ch341a_spi -r firmware_dump.bin
+
+# Specify chip
+flashrom -p ch341a_spi -c "W25Q64BV/W25Q64CV" -r firmware_dump.bin
+
+# Read I2C EEPROM
+i2cdump -y 1 0x50
+i2cget -y 1 0x50 0x00 w
+```
+
+---
+
+## 2. Firmware Extraction — binwalk in Practice
+
+### 2.1 Basic Analysis
+
+```bash
+# Scan firmware information
+binwalk firmware.bin
+
+# Recursive extraction (automatically extracts internal filesystems)
+binwalk -e --run-as=root firmware.bin
+
+# Entropy analysis (detects encrypted/compressed regions)
+binwalk -E firmware.bin
+
+# Signature scan + extract + recursive
+binwalk -Me firmware.bin
+
+# Example output interpretation:
+# DECIMAL   HEXADECIMAL   DESCRIPTION
+# 0         0x0           DLOB firmware header
+# 116       0x74          LZMA compressed data
+# 1048576   0x100000      Squashfs filesystem, LE, v4.0
+```
+
+### 2.2 Filesystem Mounting
+
+```bash
+# Mount squashfs
+unsquashfs -d /tmp/squashfs_root squashfs.img
+mount -o loop squashfs.img /mnt/squashfs  # alternative
+
+# Mount cramfs
+mount -t cramfs -o loop cramfs.img /mnt/cramfs
+
+# Mount JFFS2
+modprobe mtdram total_size=65536 erase_size=256
+modprobe mtdblock
+dd if=jffs2.img of=/dev/mtd0
+mount -t jffs2 /dev/mtdblock0 /mnt/jffs2
+
+# ubifs (NAND flash)
+modprobe ubi mtd=/dev/mtd0
+ubiattach /dev/ubi_ctrl -m 0
+mount -t ubifs /dev/ubi0_0 /mnt/ubifs
+```
+
+---
+
+## 3. Default Credential Scanning
+
+### 3.1 Known IoT Default Credentials
+
+```
+admin:admin
+admin:password
+admin:1234
+admin:12345
+admin:(blank)
+root:root
+root:toor
+root:alpine
+root:admin
+user:user
+guest:guest
+support:support
+telnetadmin:telnetadmin
+```
+
+### 3.2 Telnet/SSH Credential Testing
+
+```bash
+# Detect Telnet/SSH services with nmap
+nmap -p 22,23,80,443,8080 192.168.1.0/24 --open -sV
+
+# SSH brute force with hydra (known credentials)
+hydra -L iot_users.txt -P iot_passwords.txt ssh://192.168.1.1
+
+# Telnet brute force with hydra
+hydra -L iot_users.txt -P iot_passwords.txt telnet://192.168.1.1
+
+# medusa alternative
+medusa -h 192.168.1.1 -U iot_users.txt -P iot_passwords.txt -M telnet
+```
+
+---
+
+## 4. Shodan IoT Search
+
+### 4.1 Shodan Search Queries (Dorks)
+
+```
+# Basic IoT device search
+port:23 telnet                          # Telnet exposed
+port:8080 login                         # Web interface
+"Server: GoAhead-Webs"                  # Embedded web server
+"Server: thttpd"                        # Lightweight HTTP
+"default password" port:80              # Default password mention
+
+# Cameras
+"webcamXP" port:8080
+"IP Camera" port:554                    # RTSP
+"/view/view.shtml" port:80              # Axis cameras
+"Server: DVRDVS-Webs" port:80          # DVR
+
+# Routers
+"Router" port:80 country:KR
+"DD-WRT" port:80
+"OpenWrt" port:80
+"MikroTik" port:8291                    # Winbox
+
+# Industrial Control Systems
+port:502                                # Modbus
+port:102                                # Siemens S7
+port:44818                              # EtherNet/IP
+"SCADA" port:80
+
+# MQTT brokers
+port:1883                               # MQTT (unauthenticated)
+port:8883                               # MQTT over TLS
+
+# CoAP
+port:5683                               # CoAP UDP
+
+# Zigbee/Z-Wave gateways
+"Zigbee2MQTT" port:8080
+"Home Assistant" port:8123
+```
+
+---
+
+## 5. MQTT Protocol Vulnerabilities
+
+### 5.1 MQTT Basics
+
+```
+MQTT Topic Structure:
+home/livingroom/temperature
+home/+/temperature       # + : single-level wildcard
+home/#                   # # : multi-level wildcard
+$SYS/#                   # broker system information
+```
+
+### 5.2 mosquitto_sub/pub in Practice
+
+```bash
+# Anonymous connection (no authentication)
+mosquitto_sub -h 192.168.1.100 -p 1883 -t '#' -v
+
+# Subscribe to all topics (vulnerable broker)
+mosquitto_sub -h target.com -t '#' -v --retained-only
+
+# Collect broker information via $SYS topics
+mosquitto_sub -h 192.168.1.100 -t '$SYS/#' -v
+
+# Publish a message (attempt command injection)
+mosquitto_pub -h 192.168.1.100 -t 'home/switch/set' -m 'ON'
+
+# With credentials
+mosquitto_sub -h target.com -u admin -P admin123 -t '#' -v
+
+# TLS connection
+mosquitto_sub -h target.com -p 8883 --cafile ca.crt -t '#' -v
+```
+
+### 5.3 CoAP Vulnerability Detection
+
+```bash
+# After installing libcoap
+# Use coap-client
+
+# Resource discovery (CoAP discovery)
+coap-client -m get coap://192.168.1.1/.well-known/core
+
+# GET request
+coap-client -m get coap://192.168.1.1/sensors/temperature
+
+# Change configuration via PUT
+coap-client -m put -e '{"value": "OFF"}' coap://192.168.1.1/actuators/switch
+
+# Observe - continuous monitoring
+coap-client -m get -s 60 coap://192.168.1.1/sensors/temperature
+```
+
+---
+
+## 7. Attack Surface Checklist
+
+```
+Physical Interfaces
+□ Identify UART ports and attempt access
+□ Detect JTAG pins (use JTAGulator)
+□ Direct SPI/I2C flash memory dump
+□ Check for exposed debug pads
+
+Network Services
+□ Open port scan (nmap -sV -p- target)
+□ Check Telnet(23), SSH(22), HTTP(80/8080), HTTPS(443)
+□ Check MQTT(1883), CoAP(5683), UPnP(1900)
+□ Test default credentials
+
+Firmware
+□ Check if firmware can be downloaded (public sources)
+□ binwalk analysis — filesystem type
+□ Search for hardcoded credentials
+□ Check for included private keys/certificates
+
+Cloud/API
+□ Analyze mobile app API endpoints
+□ Authentication token handling
+□ TLS configuration validation (certificate validation bypass)
+□ Endpoints accessible without API authentication
+
+Update Mechanism
+□ OTA update signature verification
+□ MITM possibility when firmware downloaded via HTTP
+□ Rollback prevention mechanism presence
+```
+
+---
+
+## Reference Command Summary
+
+```bash
+# Quick IoT device detection
+nmap -sV -p 22,23,80,443,1883,5683,8080,8443,8883 --open 192.168.1.0/24
+
+# UPnP device discovery
+nmap -sU -p 1900 --script upnp-info 192.168.1.0/24
+
+# RTSP camera stream detection
+nmap -p 554 --script rtsp-url-brute 192.168.1.0/24
+
+# SNMP community string brute force
+nmap -sU -p 161 --script snmp-brute 192.168.1.1
+
+# WPS vulnerability scan (wireless routers)
+wash -i wlan0mon
+
+# Bluetooth LE device scan
 hcitool lescan
 gatttool -b AA:BB:CC:DD:EE:FF --interactive
 ```

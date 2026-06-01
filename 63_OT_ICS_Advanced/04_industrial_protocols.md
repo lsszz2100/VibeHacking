@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 산업용 프로토콜 보안
 
 ## EtherNet/IP (CIP)
@@ -330,3 +336,340 @@ OT DMZ의 프로토콜 변환기 취약점
 ```
 
 다음 파일에서 OT 방어 및 모니터링을 다룬다.
+
+---
+
+<a name="english"></a>
+
+# Industrial Protocol Security
+
+## EtherNet/IP (CIP)
+
+### Protocol Overview
+```
+EtherNet/IP = Ethernet + CIP (Common Industrial Protocol)
+Ports: TCP 44818 (explicit), UDP 2222 (implicit)
+
+CIP Service Codes
+0x01 — Get_Attributes_All
+0x0E — Get_Attribute_Single
+0x10 — Set_Attribute_Single
+0x4B — Execute_Program  (PLC execution)
+0x4C — Get_Attribute_List
+0x52 — Read_Tag
+0x53 — Write_Tag
+0x54 — Read_Tag_Fragmented
+0x55 — Write_Tag_Fragmented
+
+Class Codes
+0x01 — Identity (device information)
+0x64 — Tag (Logix5000 tags)
+```
+
+### EtherNet/IP Analysis
+```python
+#!/usr/bin/env python3
+"""EtherNet/IP / CIP protocol analysis."""
+
+import socket
+import struct
+import argparse
+from dataclasses import dataclass
+
+
+EIP_REGISTER_SESSION = 0x0065
+EIP_LIST_IDENTITY = 0x0063
+EIP_SEND_RR_DATA = 0x0065
+
+
+@dataclass
+class EIPSession:
+    host: str
+    port: int
+    session_handle: int = 0
+
+
+def list_identity(host: str, port: int = 44818) -> dict | None:
+    """Query device information (List Identity)."""
+    request = struct.pack("<HHIIQII",
+        EIP_LIST_IDENTITY,  # Command
+        0x0000,             # Length
+        0x00000000,         # Session Handle
+        0x00000000,         # Status
+        0x0000000000000000, # Sender Context
+        0x00000000,         # Options
+        0x00000000,         # Interface Handle
+    )
+    # In practice, this is a 24-byte header
+    request = struct.pack("<HHI8sII",
+        0x0063, 0, 0,
+        b'\x00' * 8,
+        0, 0,
+    )
+    try:
+        with socket.create_connection((host, port), timeout=3.0) as s:
+            s.send(request)
+            resp = s.recv(512)
+            if len(resp) < 24:
+                return None
+            cmd, length, sess, status = struct.unpack("<HHII", resp[:12])
+            if cmd == 0x0063 and length > 0:
+                # Parse response (simplified)
+                return {
+                    "command": f"0x{cmd:04X}",
+                    "length": length,
+                    "raw": resp[24:].hex(),
+                }
+    except Exception:
+        pass
+    return None
+
+
+def register_session(host: str, port: int = 44818) -> int | None:
+    """Register an EIP session."""
+    request = struct.pack("<HHI8sIIHH",
+        0x0065,     # Register Session
+        4,          # Length
+        0,          # Session Handle (initially 0)
+        b'\x00' * 8,  # Sender Context
+        0, 0,       # Options, Interface Handle
+        1,          # Protocol Version
+        0,          # Option Flags
+    )
+    try:
+        with socket.create_connection((host, port), timeout=3.0) as s:
+            s.send(request)
+            resp = s.recv(256)
+            if len(resp) >= 8:
+                session_handle = struct.unpack("<I", resp[4:8])[0]
+                return session_handle
+    except Exception:
+        pass
+    return None
+
+
+def read_tag(
+    host: str,
+    port: int,
+    session: int,
+    tag_name: str,
+    count: int = 1,
+) -> bytes | None:
+    """Read a Logix5000 tag (CIP Read Tag Service)."""
+    # Encode tag name
+    name_encoded = tag_name.encode("ascii")
+    request_path = bytes([
+        0x91,                    # ANSI Extended Symbol
+        len(name_encoded),       # Symbol length
+    ]) + name_encoded
+    if len(request_path) % 2:
+        request_path += b'\x00'  # Padding
+
+    cip_req = bytes([
+        0x4C,                    # Read Tag Service
+        len(request_path) // 2, # Path size (words)
+    ]) + request_path + struct.pack("<H", count)
+
+    # CIP encapsulation
+    encap = struct.pack("<HHIIII",
+        0x0070,     # Interface Handle (CIP)
+        0x000A,     # Timeout
+        0x0002,     # Item Count
+        0x0000,     # Type: Null Address
+        0x0000,     # Length: 0
+        0x00B2,     # Type: Unconnected Data
+    ) + struct.pack("<H", len(cip_req)) + cip_req
+
+    eip_header = struct.pack("<HHI8sII",
+        0x006F,         # Send RR Data
+        len(encap),
+        session,
+        b'\x00' * 8,
+        0, 0,
+    )
+
+    try:
+        with socket.create_connection((host, port), timeout=3.0) as s:
+            s.send(eip_header + encap)
+            resp = s.recv(512)
+            # Parse response (Service + data)
+            if len(resp) > 40 and resp[40] == 0xCC:  # Read Tag Response
+                data_type = struct.unpack("<H", resp[44:46])[0]
+                data = resp[46:]
+                return data
+    except Exception:
+        pass
+    return None
+
+
+def enumerate_tags(host: str, port: int = 44818) -> list[str]:
+    """Enumerate Logix5000 tags (Get Instance List)."""
+    # Full implementation iterates CIP Class 0x6B (Symbol)
+    return []  # Simplified
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="EtherNet/IP analysis tool")
+    parser.add_argument("host")
+    parser.add_argument("-p", "--port", type=int, default=44818)
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("identity", help="Query device information")
+    sub.add_parser("session", help="Register session")
+    
+    rt = sub.add_parser("read-tag", help="Read tag")
+    rt.add_argument("tag", help="Tag name")
+    rt.add_argument("-n", "--count", type=int, default=1)
+
+    args = parser.parse_args()
+
+    if args.cmd == "identity":
+        info = list_identity(args.host, args.port)
+        if info:
+            print(f"[+] Device info: {info}")
+        else:
+            print("[-] No response")
+
+    elif args.cmd == "session":
+        sess = register_session(args.host, args.port)
+        if sess:
+            print(f"[+] Session: 0x{sess:08X}")
+        else:
+            print("[-] Session registration failed")
+
+    elif args.cmd == "read-tag":
+        sess = register_session(args.host, args.port)
+        if not sess:
+            print("[-] Session failed")
+            return
+        data = read_tag(args.host, args.port, sess, args.tag, args.count)
+        if data:
+            print(f"[+] Tag '{args.tag}': {data.hex()} | {data}")
+        else:
+            print(f"[-] Read failed: {args.tag}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## OPC-UA Security
+
+```python
+#!/usr/bin/env python3
+"""OPC-UA server detection and security assessment."""
+
+import socket
+import struct
+import argparse
+
+
+OPC_UA_PORT = 4840
+OPC_UA_MAGIC = b"HELF"  # Hello message magic
+
+
+def send_opcua_hello(host: str, port: int = 4840) -> bytes | None:
+    """Send an OPC-UA Hello message."""
+    # OPC-UA Hello message
+    endpoint_url = b"opc.tcp://" + host.encode() + f":{port}".encode()
+    hello = struct.pack("<4sBIIIII",
+        b"HEL",       # Message type
+        b"F",         # Final chunk
+        28 + len(endpoint_url),  # Message size
+        0,            # Protocol version
+        65536,        # Receive Buffer Size
+        65536,        # Send Buffer Size
+        4096,         # Max Message Size
+        512,          # Max Chunk Count
+    ) + struct.pack("<I", len(endpoint_url)) + endpoint_url
+
+    try:
+        with socket.create_connection((host, port), timeout=3.0) as s:
+            s.send(hello)
+            resp = s.recv(512)
+            return resp
+    except Exception:
+        pass
+    return None
+
+
+def check_opcua_security(host: str, port: int = 4840) -> dict:
+    """Check OPC-UA security configuration."""
+    results: dict = {
+        "host": host,
+        "port": port,
+        "responds": False,
+        "security_mode": "Unknown",
+        "anonymous_allowed": False,
+    }
+
+    resp = send_opcua_hello(host, port)
+    if resp and resp[:3] == b"ACK":
+        results["responds"] = True
+        print(f"  [+] OPC-UA server response: {resp[:20].hex()}")
+
+    # Enumerate security policies via GetEndpoints request
+    # (for full implementation, use the asyncua library)
+    return results
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="OPC-UA security assessment")
+    parser.add_argument("host")
+    parser.add_argument("-p", "--port", type=int, default=4840)
+    args = parser.parse_args()
+
+    print(f"[*] OPC-UA check: {args.host}:{args.port}")
+    results = check_opcua_security(args.host, args.port)
+
+    if results["responds"]:
+        print(f"[+] OPC-UA server active")
+        if results["anonymous_allowed"]:
+            print(f"[!] Anonymous access allowed — vulnerability!")
+    else:
+        print(f"[-] No response")
+
+    print(f"\n[!] Security recommendations:")
+    print(f"  - Use SignAndEncrypt mode (None/Sign prohibited)")
+    print(f"  - Disable anonymous access")
+    print(f"  - Enforce user authentication")
+    print(f"  - Apply OPC-UA firewall policy")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## BACnet Attacks (Building Automation)
+
+```bash
+# BACnet scanning (UDP port 47808)
+nmap -sU -p 47808 --script bacnet-info 192.168.1.0/24
+
+# Who-Is broadcast (discover all BACnet devices)
+# BACnet/IP Who-Is packet
+echo -n "810b000c0120ffff00ffc40b010000" | xxd -r -p | \
+    nc -u -w1 255.255.255.255 47808
+
+# BACnet vulnerabilities
+# - No authentication (original BACnet design)
+# - Read-Property: read arbitrary objects
+# - Write-Property: change settings (temperature, lighting, access control)
+# - BBMD (BACnet Broadcast Management Device) abuse
+```
+
+## Protocol Converter Attacks
+
+```
+Protocol converter vulnerabilities in the OT DMZ
+├── Modbus → OPC-UA gateway
+├── DNP3 → IEC 60870-5-104 conversion
+└── Serial → Ethernet converters
+
+Attack scenarios
+1. Exploit vulnerable gateway web interface
+2. Manipulate gateway firmware
+3. Command injection during protocol conversion
+```
+
+The next file covers OT defense and monitoring.

@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 메일 서버 보안 — SPF/DKIM/DMARC 및 공격 기법
 
 ## 1. 메일 인증 체계 개요
@@ -363,3 +369,177 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+<a name="english"></a>
+
+# Mail Server Security — SPF/DKIM/DMARC and Attack Techniques
+
+## 1. Email Authentication Overview
+
+```
+Email Authentication Standards:
+
+SPF (Sender Policy Framework):
+  - DNS TXT record listing authorized sending IP addresses
+  - Receiving server checks if sender IP is in SPF record
+  - v=spf1 ip4:192.168.1.0/24 include:_spf.google.com ~all
+
+DKIM (DomainKeys Identified Mail):
+  - Cryptographic signature added to email header
+  - Public key stored in DNS, private key used to sign
+  - Verifies email wasn't tampered in transit
+
+DMARC (Domain-based Message Authentication, Reporting & Conformance):
+  - Policy for handling SPF/DKIM failures
+  - Three policies: none (monitor), quarantine, reject
+  - Provides reporting on authentication failures
+
+Attack Protection:
+  SPF: Prevents IP spoofing
+  DKIM: Prevents content tampering
+  DMARC: Enforces policy + reporting
+```
+
+---
+
+## 2. SPF Configuration and Testing
+
+```bash
+# Check SPF record
+dig TXT example.com | grep spf
+
+# Common SPF record formats
+v=spf1 ip4:192.168.1.0/24 include:_spf.google.com ~all
+
+# SPF mechanisms:
+# ip4: - specific IPv4 address or range
+# ip6: - IPv6 address
+# include: - include another domain's SPF
+# a:      - domain's A record
+# mx:     - domain's MX records
+# ~all    - softfail (mark but deliver)
+# -all    - hardfail (reject)
+# +all    - pass all (DANGEROUS)
+
+# Test SPF validity
+pip install pyspf
+python3 -c "import spf; print(spf.check2('1.2.3.4', 'test@example.com', 'example.com'))"
+
+# spfquery tool
+spfquery --ip 1.2.3.4 --sender user@example.com --helo mail.example.com
+```
+
+---
+
+## 3. DKIM Configuration
+
+```bash
+# Check DKIM record
+dig TXT default._domainkey.example.com
+
+# DKIM public key record format:
+v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3...
+
+# Generate DKIM key pair
+openssl genrsa -out dkim_private.pem 2048
+openssl rsa -in dkim_private.pem -pubout -out dkim_public.pem
+
+# DNS record (publish public key):
+# default._domainkey.example.com TXT "v=DKIM1; k=rsa; p=<base64-public-key>"
+
+# Test DKIM signing
+# opendkim-testkey -d example.com -s default -vvv
+```
+
+---
+
+## 4. DMARC Configuration
+
+```bash
+# Check DMARC record
+dig TXT _dmarc.example.com
+
+# DMARC record example:
+v=DMARC1; p=reject; rua=mailto:dmarc@example.com; ruf=mailto:forensics@example.com; pct=100
+
+# Parameters:
+# p=none       - Monitor only, no action
+# p=quarantine - Mark as spam
+# p=reject     - Reject email
+# rua=         - Aggregate report recipient
+# ruf=         - Forensic report recipient
+# pct=         - Percentage to apply policy to
+
+# Test DMARC configuration
+curl "https://dmarcian.com/dmarc-inspector/?domain=example.com"
+```
+
+---
+
+## 5. Email Spoofing Attack Detection
+
+```python
+#!/usr/bin/env python3
+"""Email security configuration checker"""
+import dns.resolver
+import sys
+
+def check_spf(domain: str) -> dict:
+    """Check SPF record"""
+    try:
+        answers = dns.resolver.resolve(domain, 'TXT')
+        for rdata in answers:
+            txt = str(rdata).strip('"')
+            if txt.startswith('v=spf1'):
+                return {"found": True, "record": txt, 
+                        "issues": check_spf_issues(txt)}
+        return {"found": False, "issues": ["No SPF record found"]}
+    except Exception as e:
+        return {"found": False, "error": str(e)}
+
+def check_spf_issues(spf: str) -> list:
+    issues = []
+    if '+all' in spf:
+        issues.append("CRITICAL: +all allows any server to send")
+    if '?all' in spf:
+        issues.append("WARNING: ?all is neutral, provides no protection")
+    if '~all' in spf and '-all' not in spf:
+        issues.append("INFO: ~all softfail; consider -all for stricter policy")
+    return issues
+
+def check_dmarc(domain: str) -> dict:
+    """Check DMARC record"""
+    try:
+        answers = dns.resolver.resolve(f'_dmarc.{domain}', 'TXT')
+        for rdata in answers:
+            txt = str(rdata).strip('"')
+            if 'v=DMARC1' in txt:
+                return {"found": True, "record": txt,
+                        "issues": check_dmarc_issues(txt)}
+        return {"found": False, "issues": ["No DMARC record found"]}
+    except Exception as e:
+        return {"found": False, "error": str(e)}
+
+def check_dmarc_issues(dmarc: str) -> list:
+    issues = []
+    if 'p=none' in dmarc:
+        issues.append("WARNING: p=none only monitors, no enforcement")
+    if 'rua=' not in dmarc:
+        issues.append("INFO: No aggregate report address configured")
+    return issues
+
+def check_domain_security(domain: str):
+    print(f"\n=== Email Security Check: {domain} ===")
+    
+    for check_name, check_func in [("SPF", check_spf), ("DMARC", check_dmarc)]:
+        result = check_func(domain)
+        status = "[+]" if result.get("found") else "[-]"
+        print(f"\n{status} {check_name}: {result.get('record', 'Not found')}")
+        for issue in result.get("issues", []):
+            print(f"    → {issue}")
+
+if __name__ == "__main__":
+    domain = sys.argv[1] if len(sys.argv) > 1 else "example.com"
+    check_domain_security(domain)

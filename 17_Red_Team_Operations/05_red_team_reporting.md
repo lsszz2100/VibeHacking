@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 레드팀 리포팅 — 결과 분석·익스플로잇 체인 문서화·경영진 보고서
 
 ## 1. 레드팀 보고서 구조
@@ -385,3 +391,220 @@ if __name__ == "__main__":
 | 공격 타임라인 포함 | |
 | 탐지 가능성 평가 | |
 | 비즈니스 영향 분석 | |
+
+---
+
+<a name="english"></a>
+
+# Red Team Reporting — Results Analysis, Exploit Chain Documentation, Executive Reports
+
+## 1. Red Team Report Structure
+
+```
+Red Team Assessment Report Structure:
+
+1. Executive Summary (2-3 pages)
+   - Overall risk assessment
+   - Key findings summary
+   - Business impact
+   - Priority recommendations
+
+2. Methodology
+   - Scope and objectives
+   - Timeline
+   - Tools used
+   - Attack scenarios tested
+
+3. Findings
+   - Attack narrative (chronological)
+   - Each vulnerability detailed
+   - Exploit chains documented
+   - ATT&CK technique mapping
+
+4. Evidence
+   - Screenshots
+   - Log excerpts
+   - PoC code
+   - Network captures
+
+5. Recommendations
+   - Prioritized remediation list
+   - 30/60/90 day roadmap
+   - Quick wins vs long-term fixes
+
+6. Appendices
+   - Complete findings list
+   - Tool output
+   - IOCs generated
+```
+
+---
+
+## 2. Exploit Chain Documentation
+
+```markdown
+## Attack Chain: Initial Access → Domain Compromise
+
+### Summary
+Starting from a phishing email, attacker gained domain admin
+privileges within 4 hours using a 5-step attack chain.
+
+### Attack Timeline
+
+**Step 1: Initial Access (T1566.001 - Spear Phishing)**
+- Time: 2024-01-15 09:23 UTC
+- Vector: Email with malicious macro document
+- Target: finance@target.com
+- Result: Code execution as user "jsmith"
+- Evidence: [Screenshot 1]
+
+**Step 2: Persistence (T1053.005 - Scheduled Task)**
+- Time: 2024-01-15 09:25 UTC
+- Command: `schtasks /create /tn "WindowsUpdate" /tr "C:\temp\beacon.exe"`
+- Result: Persistence established
+- Detection: No alert triggered
+
+**Step 3: Credential Dumping (T1003.001 - LSASS)**
+- Time: 2024-01-15 09:31 UTC
+- Tool: Mimikatz via process injection
+- Result: 3 domain accounts harvested including IT admin
+- Credentials obtained: IT-admin NTLM hash
+
+**Step 4: Lateral Movement (T1021.002 - SMB)**
+- Time: 2024-01-15 10:15 UTC
+- Method: Pass-the-Hash to file server FS01
+- Target: \\FS01\ADMIN$
+- Result: SYSTEM access on FS01
+
+**Step 5: Domain Privilege Escalation (T1078.002 - Domain Account)**
+- Time: 2024-01-15 11:45 UTC
+- Method: DCSync attack via Domain Replication rights
+- Result: Domain Administrator hash extracted
+- Impact: Complete Active Directory compromise
+```
+
+---
+
+## 3. Executive Summary Writing
+
+```
+Executive Summary Template:
+
+RISK RATING: CRITICAL
+
+During the [DATE] red team assessment of [COMPANY], our team successfully:
+- Gained initial access within [X] hours
+- Escalated to Domain Administrator privileges
+- Accessed [sensitive data/systems]
+- Maintained undetected presence for [X] days
+
+KEY FINDINGS:
+  1. Phishing resistance is insufficient — 34% click rate
+  2. Credential theft detection gap — no SIEM alert triggered
+  3. Lateral movement unchecked — moved across 15 systems undetected
+  4. Critical data accessible without MFA — [database/system]
+
+BUSINESS IMPACT:
+  If this were a real attack:
+  - Customer PII exposure: ~50,000 records
+  - Financial fraud risk: Wire transfer approval bypassed
+  - Regulatory penalties: GDPR/PCI DSS non-compliance
+
+IMMEDIATE ACTIONS REQUIRED:
+  1. Deploy EDR with behavioral detection
+  2. Enable MFA on all privileged accounts
+  3. Implement network segmentation
+  4. Conduct phishing awareness training
+```
+
+---
+
+## 4. AI-Assisted Report Generation
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+
+def generate_finding_writeup(finding_data: dict) -> str:
+    """Generate professional finding writeup from raw data"""
+    
+    prompt = f"""
+Write a professional penetration testing finding based on the following data.
+Format as a standalone finding section for inclusion in a security report.
+
+Finding Data:
+- Title: {finding_data.get('title')}
+- Severity: {finding_data.get('severity')}
+- CVSS Score: {finding_data.get('cvss')}
+- Location: {finding_data.get('location')}
+- Technical Details: {finding_data.get('technical_details')}
+- Evidence: {finding_data.get('evidence_description')}
+
+Write the finding with:
+1. Clear description (technical but readable)
+2. Business impact statement
+3. Step-by-step reproduction
+4. Specific remediation recommendation
+5. References (OWASP, CWE, CVE if applicable)
+
+Tone: Professional, objective, constructive
+"""
+    
+    resp = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=2000,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    return resp.content[0].text
+
+def generate_executive_summary(findings: list, engagement_info: dict) -> str:
+    """Generate executive summary from findings"""
+    
+    critical = [f for f in findings if f.get('severity') == 'Critical']
+    high = [f for f in findings if f.get('severity') == 'High']
+    
+    prompt = f"""
+Write an executive summary for a red team assessment report.
+
+Engagement: {engagement_info.get('company')} - {engagement_info.get('dates')}
+Scope: {engagement_info.get('scope')}
+Objectives: {engagement_info.get('objectives')}
+
+Key Statistics:
+- Critical findings: {len(critical)}
+- High findings: {len(high)}
+- Total findings: {len(findings)}
+- Objectives achieved: {engagement_info.get('objectives_achieved')}
+
+Critical Findings:
+{chr(10).join([f"- {f['title']}: {f.get('impact', '')}" for f in critical])}
+
+Write 2-3 pages max. Non-technical audience. Focus on business risk.
+"""
+    
+    resp = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=3000,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    return resp.content[0].text
+```
+
+---
+
+## 5. Report Quality Checklist
+
+| Checklist Item | Status |
+|---------------|--------|
+| ATT&CK technique ID mapping (Txx.xxx) | |
+| Reproducible PoC included | |
+| Affected systems specified | |
+| Screenshots/evidence attached | |
+| Specific remediation methods provided | |
+| Executive summary (minimize technical jargon) | |
+| Attack timeline included | |
+| Detectability assessment | |
+| Business impact analysis | |

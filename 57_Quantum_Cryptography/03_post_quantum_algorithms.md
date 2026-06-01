@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 57-3. 포스트 양자 알고리즘(PQC): 분류, 원리, 성능 분석
 
 ## 개요
@@ -694,4 +700,218 @@ if __name__ == "__main__":
 하이브리드 서명:
   서명 = ECDSA_sig || Dilithium_sig
   → 둘 다 유효해야 전체 유효
+```
+
+---
+
+<a name="english"></a>
+
+# 57-3. Post-Quantum Algorithms (PQC): Classification, Principles, and Performance Analysis
+
+## Overview
+
+Post-Quantum Cryptography (PQC) is a collection of cryptographic algorithms expected to remain secure against attacks from quantum computers. Unlike traditional RSA, ECDH, and ECDSA, PQC algorithms are based on mathematical problems that cannot be efficiently solved by Shor's algorithm. Importantly, PQC algorithms run as software on classical computers.
+
+---
+
+## 1. PQC Algorithm Classification
+
+### 1.1 Classification by Mathematical Foundation
+
+| Category | Mathematical Basis | Representative Algorithms | Key Size | Performance | Maturity | Quantum Resistance |
+|----------|-------------------|--------------------------|----------|-------------|----------|--------------------|
+| **Lattice-based** | LWE, RLWE, NTRU | Kyber, Dilithium, FALCON | Medium | Fast | High | Strong |
+| **Hash-based** | Hash function security | SPHINCS+, XMSS, LMS | Medium | Slow | Very High | Very Strong |
+| **Code-based** | Error-correcting codes | McEliece, BIKE, HQC | Very Large | Fast | High | Strong |
+| **Multivariate** | MQ problem | Rainbow, GeMSS | Small~Medium | Mixed | Low (several broken) | Medium |
+| **Isogeny-based** | Elliptic curve isogenies | SIKE (deprecated), CSIDH | Very Small | Very Slow | Low | Uncertain |
+| **Lattice+Ideal** | Ideal lattices | NTRU Prime | Medium | Fast | Medium | Strong |
+
+### 1.2 Comparison of NIST-Selected Algorithms
+
+| Algorithm | Use | Hard Problem | Public Key Size | Secret Key Size | Sig/Ciphertext Size | Performance |
+|-----------|-----|-------------|-----------------|-----------------|----------------------|-------------|
+| **CRYSTALS-Kyber (ML-KEM)** | KEM | Module-LWE | 1,184B (L3) | 2,400B (L3) | 1,088B (L3) | Very Fast |
+| **CRYSTALS-Dilithium (ML-DSA)** | Signature | Module-LWE+SIS | 1,952B (L3) | 4,000B (L3) | 3,293B (L3) | Fast |
+| **FALCON** | Signature | NTRU lattice | 897B (L1) | 1,281B (L1) | 690B (L1) | Fast (signing slow) |
+| **SPHINCS+** | Signature | Hash function | 32~64B | 64~128B | 8~50KB | Slow |
+
+---
+
+## 2. Mathematical Foundations of Lattice-Based Cryptography
+
+### 2.1 LWE (Learning With Errors) Problem
+
+**Definition**: It is computationally hard to distinguish between:
+- (A, As + e): matrix A, secret vector s, small error vector e
+- (A, u): a uniformly random vector u
+
+Mathematically: find s from **b = As + e (mod q)**
+
+```
+A (m×n random matrix)  ×  s (n-dim secret)  +  e (small error)  =  b (mod q)
+```
+
+**Why is it hard?**
+- Without error e, Gaussian elimination solves it easily
+- With small error e, even the best quantum algorithms require exponential time
+
+### 2.2 RLWE (Ring-LWE) Problem
+
+An efficient variant of LWE: uses polynomial rings instead of matrices.
+
+**Ring**: R_q = Z_q[x] / (x^n + 1)  (n is a power of 2)
+
+**RLWE**: b = a·s + e (mod q, mod x^n+1)
+
+- Key size reduction vs LWE: O(n²) → O(n)
+- Performance: matrix multiplication → polynomial multiplication (O(n log n) with NTT)
+
+### 2.3 Core Structure of Kyber (ML-KEM)
+
+```
+Key Generation:
+  A ← random (public), s, e ← small error distribution
+  pk = (A, b = As + e),  sk = s
+
+Encryption:
+  r, e1, e2 ← small distribution
+  u = Aᵀr + e1
+  v = bᵀr + e2 + ⌊q/2⌋·m  (m: plaintext bit)
+
+Decryption:
+  m' = ⌊(v - sᵀu)⌋  (sᵀ(Aᵀr + e1) ≈ bᵀr - eᵀr, error cancellation)
+```
+
+---
+
+## 3. Hash-Based Signatures: SPHINCS+
+
+### 3.1 Principle
+
+Hash-based signatures assume only the one-wayness of hash functions. Quantum computers cannot significantly accelerate preimage attacks on SHA-256.
+
+**SPHINCS+ Structure:**
+1. **WOTS+ (Winternitz OTS)**: One-time signing key pairs
+2. **Merkle Tree**: Hash tree of WOTS+ public keys
+3. **Hypertree**: Multi-level Merkle tree
+
+**Pros and Cons:**
+
+| Aspect | Details |
+|--------|---------|
+| Advantage | Assumes only hash functions; most conservative security |
+| Disadvantage | Signature size 8KB~50KB, very large |
+| Suitable For | Software update signing, long-term document preservation |
+| Not Suitable For | TLS handshakes, high-frequency signing |
+
+---
+
+## 4. Code-Based Cryptography: Classic McEliece
+
+### 4.1 Hard Problem
+
+Based on the NP-hardness of decoding a general linear code:
+- Public key: scrambled generator matrix (large - several MB)
+- Secret key: efficient Goppa code structure for error correction
+
+**Characteristics:**
+
+| Aspect | Details |
+|--------|---------|
+| History | Proposed in 1978 (same era as RSA), 50 years of security |
+| Public Key Size | 261~1,357 KB (very large) |
+| Encryption Speed | Fast |
+| Suitable For | Server-to-server communication without key size constraints |
+
+---
+
+## 5. FALCON: NTRU-Based Signature
+
+### 5.1 Characteristics
+
+FALCON uses short bases of NTRU lattices for signing:
+
+- **Signature Size**: Much smaller than Dilithium (~690B vs 3293B)
+- **Verification Speed**: Very fast
+- **Signing Speed**: Relatively slow due to Gaussian sampling; complex to implement
+- **Side-Channel Vulnerability**: Timing attacks and lattice-assisted analysis require careful attention
+
+**Signing Principle (simplified):**
+```
+Key Generation: Find short basis (f,g,F,G) of NTRU lattice
+Signing       : For message hash c, compute s = B⁻¹c (Gaussian sampling)
+Verification  : Check sᵀs ≤ threshold (short vector verification)
+```
+
+---
+
+## 6. Python CLI: PQC Algorithm Performance Benchmark
+
+```python
+#!/usr/bin/env python3
+"""
+PQC Algorithm Performance Benchmark Tool
+Simulates core operations of lattice-based cryptography in pure Python
+and compares performance characteristics of each algorithm
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import os
+import sys
+import time
+from dataclasses import dataclass, field
+from typing import Optional
+
+
+# PQC algorithm parameter definitions (based on actual NIST standards)
+PQC_PARAMS: dict[str, dict] = {
+    "kyber512": {
+        "name": "CRYSTALS-Kyber 512 (ML-KEM-512)",
+        "level": 1,
+        "pk_size": 800,
+        "sk_size": 1632,
+        "ct_size": 768,
+        "n": 256,
+        "q": 3329,
+        "k": 2,
+        "eta1": 3,
+        "eta2": 2,
+        "du": 10,
+        "dv": 4,
+    },
+    # ... (same as Korean section)
+}
+```
+
+---
+
+## 7. Algorithm Selection Guide
+
+### 7.1 Recommended Algorithms by Use Case
+
+| Use Case | Recommended Algorithm | Reason |
+|----------|-----------------------|--------|
+| **General Key Exchange (TLS)** | Kyber-768 (ML-KEM-768) | Fast, balanced size |
+| **Code Signing** | Dilithium3 (ML-DSA-65) | Stable, fast verification |
+| **Compact Signature Needed** | FALCON-512 | Minimum signature size |
+| **Long-Term Archival Signatures** | SPHINCS+-SHA2-256s | Most conservative, hash-only assumption |
+| **Constrained Environment (IoT)** | Kyber-512 | Minimum key size |
+| **Highest Security Required** | Kyber-1024 + Dilithium5 | NIST Level 5 |
+
+### 7.2 Hybrid Deployment Strategy
+
+In practice, **hybrid mode** combining classical algorithms with PQC is recommended:
+
+```
+Hybrid KEM:
+  Shared Secret = KDF(ECDH_secret || Kyber_secret)
+  → Secure as long as either one remains secure
+
+Hybrid Signature:
+  Signature = ECDSA_sig || Dilithium_sig
+  → Both must be valid for the combined signature to be valid
 ```

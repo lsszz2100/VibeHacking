@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 소프트웨어 공급망 공격 분석
 
 ## 1. 실제 공급망 공격 사례 분석
@@ -634,3 +640,89 @@ if __name__ == "__main__":
 | **아티팩트** | SLSA Provenance 생성 | 중간 |
 | **모니터링** | 빌드 로그 이상 행위 탐지 | 중간 |
 | **거버넌스** | 외부 Action/플러그인 승인 프로세스 | 낮음 |
+
+---
+
+<a name="english"></a>
+
+# Software Supply Chain Attack Analysis
+
+## 1. Real-World Supply Chain Attack Case Analysis
+
+### 1.1 Key Incident Timeline
+
+| Year | Incident | Attack Type | Impact | Technique |
+|------|---------|-------------|--------|-----------|
+| 2017 | NotPetya (M.E.Doc) | Update mechanism compromise | $10B+ worldwide | Compromised update server of Ukrainian accounting SW |
+| 2018 | event-stream (npm) | Malicious code in open-source package | Millions of downloads | Malicious code inserted after maintainer account transfer |
+| 2020 | SolarWinds SUNBURST | Build system compromise | 18,000+ organizations | Backdoor injected into Orion build process |
+| 2020 | Octopus Scanner | CI/CD attack | 26 GitHub projects | Spread via Maven build files |
+| 2021 | Codecov bash uploader | CI/CD script tampering | Thousands of companies | Env variable exfiltration code in bash uploader script |
+| 2021 | Kaseya VSA | RMM software attack | 1,500+ companies | Zero-day + auto-update abuse |
+| 2021 | ua-parser-js (npm) | Account takeover | 8M weekly downloads | Crypto miner/backdoor inserted after npm account hijack |
+| 2022 | PyTorch nightly (pip) | Dependency confusion | PyTorch users | Internal package name `torchtriton` preempted on PyPI |
+| 2023 | 3CX Desktop App | Double supply chain attack | Tens of thousands of companies | 3CX build environment compromised via X_TRADER software |
+| 2024 | XZ Utils (liblzma) | Open-source contributor infiltration | glibc-based Linux with systemd | SSH backdoor inserted after gaining trust through social engineering |
+
+### 1.2 SolarWinds SUNBURST Detailed Analysis
+
+| Aspect | Details |
+|--------|---------|
+| **Attack Group** | APT29 (Cozy Bear, Russian SVR) |
+| **Breach Time** | October 2019 (detected: December 2020) |
+| **Attack Vector** | SolarWinds Orion build environment compromise |
+| **Duration** | Approximately 14 months |
+| **Affected Organizations** | US Treasury, State Department, NSA, FireEye, etc. |
+| **Detection Method** | FireEye detected theft of their own red team tools |
+| **Key Techniques** | DLL sideloading, domain generation algorithm, legitimate traffic masquerade |
+
+### 1.3 XZ Utils Backdoor (CVE-2024-3094) Detailed Analysis
+
+| Aspect | Details |
+|--------|---------|
+| **Attack Group** | "Jia Tan" (unknown identity, suspected nation-state level) |
+| **Infiltration Method** | Built trust through 2 years of open-source contributions |
+| **Malware Location** | liblzma build script (only in tarball) |
+| **Affected Targets** | OpenSSH on glibc-based systemd systems |
+| **Attack Effect** | SSH access without authentication using a specific RSA key |
+| **Detection** | Andres Freund noticed abnormal SSH slowdown |
+| **CVSS Score** | 10.0 (Critical) |
+
+---
+
+## 2. Build Pipeline Attack Vectors
+
+| Attack Vector | Description | Detection Indicators | Defense Methods |
+|--------------|-------------|---------------------|-----------------|
+| **Source code repository compromise** | Direct modification of Git repository | Abnormal commits, unsigned commits | Signed commits, branch protection |
+| **Build script tampering** | Modification of Makefile, CMakeLists, build.gradle | Build file hash changes | Build file integrity verification |
+| **Build server compromise** | Rootkit installation on CI/CD server itself | Abnormal processes, external connections | Isolated build environments, ephemeral builders |
+| **Inline execution of external scripts** | `curl \| bash` pattern | Code execution during network connection | Allowlist-based external dependencies |
+| **Environment variable exfiltration** | CI secret environment variable exfiltration | Outbound connections, secret access logs | Secret masking, least privilege |
+| **Artifact repository poisoning** | Tampered build artifacts released | Checksum mismatch | Artifact signing and verification |
+| **Dependency cache poisoning** | Malicious package inserted into CI cache | Cache integrity errors | Cache key hash verification |
+
+---
+
+## 3. Vulnerabilities by CI/CD System
+
+See the Korean section for detailed tool-specific vulnerabilities and Python code.
+
+---
+
+## 5. Build Pipeline Security Hardening Checklist
+
+| Category | Check Item | Priority |
+|----------|-----------|----------|
+| **Source Control** | Require all commits to be signed (GPG/SSH) | High |
+| **Source Control** | Branch protection rules + minimum 2-person review | High |
+| **Build Environment** | Use ephemeral (one-time) build environments | High |
+| **Build Environment** | Implement reproducible builds | Medium |
+| **Dependencies** | Allowlist-based dependency registry | High |
+| **Dependencies** | Pin dependency versions + checksum verification | High |
+| **Secret Management** | Minimize CI environment variables + masking | High |
+| **Secret Management** | Use short-lived credentials (OIDC) | Medium |
+| **Artifacts** | Sign build artifacts | Medium |
+| **Artifacts** | Generate SLSA Provenance | Medium |
+| **Monitoring** | Detect anomalous behavior in build logs | Medium |
+| **Governance** | Approval process for external Actions/plugins | Low |

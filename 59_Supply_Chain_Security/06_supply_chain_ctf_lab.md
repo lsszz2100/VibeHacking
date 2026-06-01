@@ -442,3 +442,49 @@ if __name__ == "__main__":
 ```
 
 공급망 보안의 핵심은 **신뢰 연쇄(Chain of Trust)** 유지다. 모든 의존성은 해시로 고정하고, SBOM을 자동 생성·분석해야 한다.
+
+---
+
+<a name="english"></a>
+
+# Supply Chain Security CTF Lab
+
+## Lab Overview
+
+Reproduces software supply chain attacks in CTF format. Practice dependency confusion, typosquatting, malicious packages, and build integrity verification.
+
+## Challenge 1: Malicious Package Analysis
+
+(See code block above — Python code analyzes malicious package code for suspicious patterns)
+
+Key concepts demonstrated:
+- Typosquatting detection ("reqeusts" instead of "requests")
+- Static analysis of suspicious patterns (eval, exec, base64 decoding)
+- Detection of C2 communication URLs
+- Credential theft via environment variable access
+- Scoring system with CTF flags
+
+## Challenge 2: SBOM Analysis
+
+(See code block above — Python code analyzes Software Bill of Materials for known vulnerabilities)
+
+Key vulnerable components in the scenario:
+- log4j 2.14.0 — CVE-2021-44228 (Log4Shell, JNDI injection RCE, CVSS 10.0)
+- openssl 1.0.2k — CVE-2022-0778 (Infinite loop DoS, CVSS 7.5)
+- requests 2.6.0 — CVE-2018-18074 (Credential exposure, CVSS 7.5)
+- django 3.2.0 — CVE-2021-33203 (Path traversal, CVSS 4.9)
+- pillow 8.3.1 — CVE-2021-34552 (Buffer overflow, CVSS 9.8)
+
+## Practice Checklist
+
+```
+Supply Chain CTF Tasks
+☐ Extract C2 server URL from malicious package code
+☐ Identify 5 typosquatting packages
+☐ Find unpinned version packages in requirements.txt
+☐ Discover CVSS 9.0+ vulnerabilities in SBOM
+☐ Detect tampering via package hash verification
+☐ Analyze CI/CD pipeline injection scenario
+```
+
+The core of supply chain security is maintaining the **Chain of Trust**. All dependencies must be hash-pinned, and SBOMs must be automatically generated and analyzed.

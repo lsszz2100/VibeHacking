@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 01 — Hardware Recon & Interfaces
 
 ## 1. 물리적 정찰 (Physical Recon)
@@ -1039,3 +1045,43 @@ openocd -f /tmp/mips_jtag.cfg
 3. SPI Flash (8핀 SOIC)    → 펌웨어 직접 덤프
 4. I2C EEPROM              → 설정/키 추출
 ```
+
+---
+
+<a name="english"></a>
+
+# 01 — Hardware Recon & Interfaces
+
+## 1. Physical Reconnaissance
+
+### 1.1 PCB Analysis Procedure
+
+```bash
+# Pre-disassembly checklist
+# 1) Identify case screw types — identify special screws (Torx, Pentalobe, Tri-wing)
+# 2) Adhesive cases — soften glue with heat gun at 50~60°C
+```
+
+## Key Interface Overview
+
+Hardware hacking starts with identifying debug interfaces on the PCB. The most common interfaces are:
+
+- **UART**: Most commonly exposed debug console (serial output, often shell access)
+- **JTAG**: Full chip-level debug/dump capability, requires pin identification
+- **SPI Flash**: Direct flash memory dump, 8-pin SOIC package
+- **I2C EEPROM**: Configuration/key extraction
+
+## Interface Voltage Reference
+
+| Voltage | Logic Level | Notes |
+|---------|------------|-------|
+| 3.3V    | TTL/CMOS   | Most common |
+| 5V      | TTL        | Older devices |
+| 1.8V    | -          | Level shifter required |
+| 1.2V    | -          | Dedicated level shifter needed |
+
+Interface Identification Priority:
+1. UART (3 pins: TX, RX, GND) → Log/shell access
+2. JTAG (4~5 pins)            → Full debug/dump
+3. SPI Flash (8-pin SOIC)     → Direct firmware dump
+4. I2C EEPROM                 → Configuration/key extraction

