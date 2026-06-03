@@ -49,6 +49,7 @@ python3 vhack.py list        # 64セクション一覧を表示
 
 > 📖 詳細インストールガイド → **[INSTALL.md](./INSTALL.md)**
 > 📘 コマンドリファレンス → **[USAGE.md](./USAGE.md)**
+> 🤖 AI CLIで自然言語学習 → **[AI_LEARNING.md](./AI_LEARNING.md)**
 
 ### `vhack` 主要コマンド
 

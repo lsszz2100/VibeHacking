@@ -85,6 +85,7 @@ python3 vhack.py list        # 64개 섹션 목록 확인
 
 > 📖 자세한 설치 가이드 → **[INSTALL.md](./INSTALL.md)**
 > 📘 전체 명령어 레퍼런스 → **[USAGE.md](./USAGE.md)**
+> 🤖 AI CLI로 자연어 학습 → **[AI_LEARNING.md](./AI_LEARNING.md)**
 
 ### `vhack` 주요 명령어
 

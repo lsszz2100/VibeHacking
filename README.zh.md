@@ -49,6 +49,7 @@ python3 vhack.py list        # 浏览全部 64 个章节
 
 > 📖 详细安装指南 → **[INSTALL.md](./INSTALL.md)**
 > 📘 完整命令参考 → **[USAGE.md](./USAGE.md)**
+> 🤖 用 AI CLI 自然语言学习 → **[AI_LEARNING.md](./AI_LEARNING.md)**
 
 ### `vhack` 主要命令
 

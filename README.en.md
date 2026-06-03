@@ -49,6 +49,7 @@ python3 vhack.py list        # Browse all 64 sections
 
 > 📖 Full installation guide → **[INSTALL.md](./INSTALL.md)**
 > 📘 Complete command reference → **[USAGE.md](./USAGE.md)**
+> 🤖 Learn with AI CLI (natural language) → **[AI_LEARNING.md](./AI_LEARNING.md)**
 
 ### `vhack` Key Commands
 
