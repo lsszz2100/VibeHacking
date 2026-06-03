@@ -119,6 +119,35 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 
 ---
 
+## 🤖 Learn with AI CLI (Natural Language)
+
+Run `claude` / `codex` / `gemini` **inside the repo directory** and the AI reads all 64 sections as context — becoming your interactive tutor. No need to search files manually; just ask in plain English.
+
+```bash
+cd VibeHacking
+claude   # or: codex / gemini
+```
+
+| AI CLI | Install | Strength |
+|--------|---------|----------|
+| **Claude Code** | `npm i -g @anthropic-ai/claude-code` | File reading + command execution, natural language |
+| **Codex CLI** | `npm i -g @openai/codex` | Code generation & analysis |
+| **Gemini CLI** | `npm i -g @google/gemini-cli` | Largest context window (1M+ tokens) |
+
+**Ready-to-use prompts:**
+
+```
+"I'm a complete beginner — what order should I study this repo in?"
+"Read 05_Web_Hacking/02_sql_injection_advanced.md and explain the key techniques"
+"Start web hacking Lab 01 and guide me through a DVWA SQL injection exercise step by step"
+"Give me hints only for this CTF challenge — don't spoil the solution"
+"Explain Kerberoasting and walk me through setting up the practice environment"
+```
+
+> 🤖 Full guide + 4 learning scenarios + prompt templates → **[AI_LEARNING.md](./AI_LEARNING.md)**
+
+---
+
 ## Table of Contents
 
 | # | Section | Key Topics | Files |
