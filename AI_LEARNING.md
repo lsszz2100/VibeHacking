@@ -1,4 +1,4 @@
-> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english) | [🇯🇵 日本語](#japanese) | [🇨🇳 中文](#chinese)
 
 ---
 
@@ -518,3 +518,694 @@ git pull origin main
 
 > 📖 Installation guide → [INSTALL.md](./INSTALL.md)
 > 📘 vhack CLI reference → [USAGE.md](./USAGE.md)
+
+---
+
+<a name="japanese"></a>
+
+# AI CLIでVibeHackingを学ぶ
+
+> 1回クローン、1回質問 — AIが64セクション全てのチューターになります。
+
+## 核心アイデア
+
+`claude`・`codex`・`gemini` などのAI CLIツールを**レポジトリのディレクトリ内で**実行すると、AIが全マークダウンファイルをコンテキストとして読み込み、自然言語で質問に答えます。
+
+```
+VibeHacking レポジトリ
+├── 全 .md ファイル (学習資料)   ← AIが読むコンテキスト
+└── labs/ (Docker 実習環境)      ← AIが代わりに実行
+```
+
+ファイルを手動で探さなくても **「SQL インジェクション実習を案内して」** の一言で：
+- 関連セクションを自動検索して説明
+- 実習環境を自動起動
+- ステップごとに実習を案内
+
+---
+
+## 目次
+
+1. [Claude Code](#claude-code-ja)
+2. [OpenAI Codex CLI](#codex-cli-ja)
+3. [Gemini CLI](#gemini-cli-ja)
+4. [共通プロンプトテンプレート](#prompt-templates-ja)
+5. [AI活用学習シナリオ](#scenarios-ja)
+
+---
+
+<a name="claude-code-ja"></a>
+
+## 1. Claude Code
+
+ファイル読み取り・コマンド実行・コード作成を組み合わせたターミナルAIエージェントです。VibeHackingディレクトリで実行すると、全資料をコンテキストとして活用します。
+
+### インストール
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+### 基本フロー
+
+```bash
+git clone https://github.com/lsszz2100/VibeHacking.git
+cd VibeHacking
+claude
+```
+
+### 学習プロンプト例
+
+```
+# 入門経路の推薦
+「セキュリティを初めて学ぶのですが、このリポジトリでどんな順番で学べばいいですか？」
+
+# 概念説明
+「SQL インジェクションとは何か、初心者にわかるように説明してください。
+ 05_Web_Hacking フォルダの内容を参考にして」
+
+# ファイルを直接読んで要約
+「02_sql_injection_advanced.md を読んで、核心的な攻撃技法を5つ整理して」
+
+# 実習開始まで自動化
+「Webハッキングラボ環境を起動して、DVWAでSQL インジェクション初級実習を
+ ステップごとに案内してください」
+
+# CTF問題を解く
+「labs/01_web_hacking_lab にCTF形式の問題があります。
+ ヒントだけ教えてください。解答は自分でやります」
+
+# コード解説
+「08_Python_Hacking/01_python_hacking_tools.md の
+ ポートスキャナコードがどのように動作するか説明して」
+```
+
+### Claude Code だけの強み
+
+| 機能 | 説明 |
+|------|------|
+| **ファイル自動参照** | `@ファイル名` なしでもディレクトリ構造を把握し関連ファイルを自動参照 |
+| **コマンド実行** | Dockerラボの起動・停止を会話中に直接実行 |
+| **コード作成** | 学習中にPythonエクスプロイトコードをその場で作成・修正 |
+| **マルチファイル分析** | 複数セクションを同時に読んでクロス分析 |
+
+---
+
+<a name="codex-cli-ja"></a>
+
+## 2. OpenAI Codex CLI
+
+OpenAIのターミナルエージェントです。コード生成・解説・実行に特化しています。
+
+### インストール
+
+```bash
+npm install -g @openai/codex
+```
+
+### 基本フロー
+
+```bash
+cd VibeHacking
+codex
+```
+
+### 学習プロンプト例
+
+```
+# セクション要約
+「19_Assembly_Language フォルダを確認して
+ x86 アセンブリの学習順序を教えて」
+
+# 脆弱性コード解析
+「09_Exploit_Techniques/03_heap_exploitation.md の
+ ヒープオーバーフローのサンプルコードを一行ずつ説明して」
+
+# エクスプロイトスクリプト作成
+「pwntools でスタックオーバーフローエクスプロイトスクリプトを書いて。
+ 19_Assembly_Language を参考にして」
+
+# 実習環境構成
+「labs/02_pwn_lab を起動して
+ BOFチャレンジでリターンアドレスを見つける方法をヒントだけ教えて」
+
+# 概念 → コード連携
+「Kerberoasting攻撃の原理を説明して
+ 54_Active_Directory_Attacks に載っているimpacketコマンドも見せて」
+```
+
+---
+
+<a name="gemini-cli-ja"></a>
+
+## 3. Gemini CLI
+
+Googleのターミナルエージェントです。大容量コンテキスト処理に強みがあります。
+
+### インストール
+
+```bash
+npm install -g @google/gemini-cli
+```
+
+### 基本フロー
+
+```bash
+cd VibeHacking
+gemini
+```
+
+### 学習プロンプト例
+
+```
+# 大容量資料を一度に分析
+「このリポジトリ全体を分析して、セキュリティ学習6ヶ月のロードマップを作って。
+ 私はCTF入門者です」
+
+# 比較分析
+「16_Cryptography と 57_Quantum_Cryptography セクションを比較して
+ 現在の暗号技術が量子コンピュータにどんな脅威を受けるか説明して」
+
+# 資格試験連携学習
+「情報処理安全確保支援士の試験対策として
+ 41_Korean_Certifications を参考に学習計画を立てて」
+
+# 最新技法の説明
+「56_AI_Red_Teaming セクションを読んで
+ AIを使ったセキュリティ攻撃が従来の攻撃とどう違うか説明して」
+```
+
+---
+
+<a name="prompt-templates-ja"></a>
+
+## 4. 共通プロンプトテンプレート
+
+どのAI CLIでもそのまま貼り付けて使えます。
+
+### 📚 学習経路の推薦
+
+```
+私の状況: [現在のスキル — 例: Linuxの基礎のみ / Web開発2年経験 / CTF入門]
+目標: [例: バグバウンティを始める / OSCP取得 / CTFスキル向上]
+
+このリポジトリから私に合った学習順序を推薦してください。
+各セクションで最初に読むべきファイルも教えてください。
+```
+
+### 🔍 概念理解
+
+```
+[セクション名またはファイル名]を読んで：
+1. 核心概念を初心者にもわかるように説明して
+2. 実際の攻撃/防御でどう使われるか例を挙げて
+3. この概念を練習できる実習環境はどれ？
+```
+
+### 🧪 実習案内
+
+```
+[ラボ番号またはテーマ] の実習をやりたい。
+1. 必要な前提知識を先に説明して
+2. 実習環境の起動方法を教えて
+3. ステップごとに実習を案内して
+4. 詰まったらヒントを教えて (解答はすぐに教えないで)
+```
+
+### 🚩 CTFヒントのみ
+
+```
+[問題の説明またはファイル名]
+このCTF問題を自分で解きたい。
+直接的な解答ではなく、どの方向で攻略すればいいかヒントだけ教えて。
+このリポジトリ内の関連学習資料も探して。
+```
+
+### 🔎 コード分析
+
+```
+[ファイル名またはコードの貼り付け]
+このコードを：
+1. 一行ずつコメントで説明して
+2. セキュリティ上の脆弱な部分があれば教えて
+3. Python 3.10+ スタイルで改善して
+```
+
+### 📝 理解度テスト
+
+```
+[セクション名]を勉強しました。
+正しく理解できているか確認するために
+難易度別のクイズを5問出してください。
+(択一式2問、短答式2問、記述式1問)
+```
+
+---
+
+<a name="scenarios-ja"></a>
+
+## 5. AI活用学習シナリオ
+
+### シナリオA: 完全初心者の初日
+
+```bash
+cd VibeHacking
+claude
+
+「セキュリティを初めて勉強する大学生です。
+ このリポジトリが何で、どこから始めればいいか教えてください」
+
+「01_Linux_Basics/01_linux_essential_commands.md を読んで
+ 今日絶対に覚えるべきコマンドTOP10をまとめて」
+
+「今の自分のターミナルで練習できる
+ Linuxの基礎実習を5つ出して」
+```
+
+### シナリオB: Webハッキング集中攻略
+
+```bash
+cd VibeHacking
+claude
+
+「05_Web_Hacking セクション全体をスキャンして
+ OWASP Top 10の各項目を一行で要約して」
+
+「Lab 01 Webハッキング環境を起動して
+ Dockerコンテナが正常に動いているか確認して」
+
+「DVWAでSQL インジェクション Low難易度実習をステップごとに案内して。
+ 各ステップでどんな原理が動いているか説明しながら」
+```
+
+### シナリオC: CTF大会準備
+
+```bash
+cd VibeHacking
+codex
+
+「46_CTF_Techniques セクションを読んで
+ Pwn / Web / Crypto / Forensics 各分野の
+ 必須ツールと技法を表にまとめて」
+
+「labs/02_pwn_lab を起動して
+ BOF-01問題でオフセットを見つける方法だけヒントで教えて」
+
+「pwntools で64ビットバイナリエクスプロイトスクリプトの
+ 基本テンプレートを書いて」
+```
+
+### シナリオD: 資格試験対策
+
+```bash
+cd VibeHacking
+gemini
+
+「41_Korean_Certifications/01_information_security_engineer.md を読んで
+ 5科目の核心キーワードを科目別にまとめて」
+
+「暗号学が苦手なので
+ 16_Cryptography セクションから試験に頻出の内容だけ抜き出して」
+
+「情報処理安全確保支援士スタイルで
+ ネットワークセキュリティの問題を10問出して」
+```
+
+---
+
+## AI CLI 特性比較
+
+| | Claude Code | Codex CLI | Gemini CLI |
+|--|:-----------:|:---------:|:----------:|
+| **コマンド実行** | ✅ 直接実行 | ✅ 直接実行 | ✅ 直接実行 |
+| **ファイル読み取り** | ✅ 自動探索 | ✅ 自動探索 | ✅ 自動探索 |
+| **コンテキスト窓** | 大容量 | 大容量 | 最大 (100万トークン+) |
+| **コード特化** | ✅ 強い | ✅ 非常に強い | ✅ 強い |
+| **日本語対応** | ✅ 自然 | ✅ 良好 | ✅ 良好 |
+| **Docker連携** | ✅ | ✅ | ✅ |
+
+> **推薦**: どのツールでも構いません。  
+> VibeHackingディレクトリで実行して自然言語で質問するだけです。
+
+---
+
+## ヒント
+
+**リポジトリを常に最新にしてください**
+
+```bash
+git pull origin main
+# または
+vhack update
+```
+
+**最初の質問は具体的なほど良いです**
+
+```
+❌ 「セキュリティを教えて」
+✅ 「05_Web_Hacking/02_sql_injection_advanced.md を読んで
+    核心概念3つと実習方法を教えて」
+```
+
+---
+
+> 📖 インストールガイド → [INSTALL.md](./INSTALL.md)
+> 📘 vhack CLI リファレンス → [USAGE.md](./USAGE.md)
+
+---
+
+<a name="chinese"></a>
+
+# 用 AI CLI 学习 VibeHacking
+
+> 克隆一次，提问一次 — AI 成为 64 个章节的专属导师。
+
+## 核心理念
+
+在**仓库目录内**运行 `claude`、`codex`、`gemini` 等 AI CLI 工具，AI 会将所有 Markdown 文件作为上下文读取，并用自然语言回答问题。
+
+```
+VibeHacking 仓库目录
+├── 全部 .md 文件 (学习资料)   ← AI 读取的上下文
+└── labs/ (Docker 实验环境)    ← AI 可以代为执行
+```
+
+无需手动搜索文件，只需一句话 **「帮我进行 SQL 注入实验」**，AI 就会：
+- 自动找到相关章节并进行讲解
+- 自动启动实验环境
+- 逐步引导实践
+
+---
+
+## 目录
+
+1. [Claude Code](#claude-code-zh)
+2. [OpenAI Codex CLI](#codex-cli-zh)
+3. [Gemini CLI](#gemini-cli-zh)
+4. [通用提示词模板](#prompt-templates-zh)
+5. [AI 辅助学习场景](#scenarios-zh)
+
+---
+
+<a name="claude-code-zh"></a>
+
+## 1. Claude Code
+
+结合文件读取、命令执行和代码编写的终端 AI 代理。在 VibeHacking 目录下运行，可将全部资料作为上下文使用。
+
+### 安装
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+### 基本流程
+
+```bash
+git clone https://github.com/lsszz2100/VibeHacking.git
+cd VibeHacking
+claude
+```
+
+### 学习提示词示例
+
+```
+# 推荐入门路径
+「我是完全的安全初学者，这个仓库应该按什么顺序学习？」
+
+# 概念讲解
+「请用初学者能理解的方式解释 SQL 注入。
+ 参考 05_Web_Hacking 文件夹的内容」
+
+# 直接读取文件并总结
+「读取 02_sql_injection_advanced.md，整理核心攻击技术 5 个」
+
+# 自动化到实验开始
+「启动 Web 渗透实验室环境，一步步引导我在 DVWA 上完成
+ SQL 注入初级实验」
+
+# CTF 解题
+「labs/01_web_hacking_lab 里有 CTF 格式的题目。
+ 只给我提示，解答我自己来」
+
+# 代码解读
+「解释 08_Python_Hacking/01_python_hacking_tools.md 中的
+ 端口扫描器代码是如何工作的」
+```
+
+### Claude Code 独有优势
+
+| 功能 | 说明 |
+|------|------|
+| **文件自动参考** | 无需 `@文件名`，自动掌握目录结构并参考相关文件 |
+| **命令执行** | 在对话中直接启动/停止 Docker 实验室 |
+| **代码编写** | 学习过程中即时编写并修改 Python 漏洞利用代码 |
+| **多文件分析** | 同时读取多个章节进行交叉分析 |
+
+---
+
+<a name="codex-cli-zh"></a>
+
+## 2. OpenAI Codex CLI
+
+OpenAI 的终端代理，专注于代码生成、解说和执行。
+
+### 安装
+
+```bash
+npm install -g @openai/codex
+```
+
+### 基本流程
+
+```bash
+cd VibeHacking
+codex
+```
+
+### 学习提示词示例
+
+```
+# 章节摘要
+「浏览 19_Assembly_Language 文件夹，告诉我 x86 汇编的学习顺序」
+
+# 漏洞代码分析
+「逐行解释 09_Exploit_Techniques/03_heap_exploitation.md 中
+ 堆溢出的示例代码」
+
+# 编写利用脚本
+「用 pwntools 编写栈溢出利用脚本，参考 19_Assembly_Language」
+
+# 实验环境配置
+「启动 labs/02_pwn_lab，只给我提示如何在 BOF 挑战中找到返回地址」
+
+# 概念 → 代码联动
+「解释 Kerberoasting 攻击原理，并展示
+ 54_Active_Directory_Attacks 中的 impacket 命令」
+```
+
+---
+
+<a name="gemini-cli-zh"></a>
+
+## 3. Gemini CLI
+
+Google 的终端 AI 代理，在处理大容量上下文方面具有优势。
+
+### 安装
+
+```bash
+npm install -g @google/gemini-cli
+```
+
+### 基本流程
+
+```bash
+cd VibeHacking
+gemini
+```
+
+### 学习提示词示例
+
+```
+# 一次分析大量资料
+「分析整个仓库，为 CTF 入门者制定 6 个月学习路线图」
+
+# 对比分析
+「对比 16_Cryptography 和 57_Quantum_Cryptography 章节，
+ 解释量子计算机对当前密码技术构成怎样的威胁」
+
+# 认证考试联动学习
+「基于 41_Korean_Certifications 内容，制定备考计划」
+
+# 最新技术讲解
+「读取 56_AI_Red_Teaming，解释 AI 驱动的安全攻击与传统攻击有何不同」
+```
+
+---
+
+<a name="prompt-templates-zh"></a>
+
+## 4. 通用提示词模板
+
+任何 AI CLI 均可直接复制使用。
+
+### 📚 学习路径推荐
+
+```
+我的情况: [当前水平 — 例：只懂 Linux 基础 / 两年 Web 开发经验 / CTF 入门]
+目标: [例：开始漏洞赏金 / 备考 OSCP / 提升 CTF 水平]
+
+请推荐这个仓库中适合我的学习顺序，并告诉我每个章节最先应该读哪些文件。
+```
+
+### 🔍 概念理解
+
+```
+读取 [章节名或文件名]，并：
+1. 用初学者能理解的方式解释核心概念
+2. 举例说明它在实际攻击/防御中如何使用
+3. 我可以在哪个实验环境中练习这个概念？
+```
+
+### 🧪 实验引导
+
+```
+我想进行 [实验编号或主题] 的实验。
+1. 先给我讲解必要的背景知识
+2. 告诉我如何启动实验环境
+3. 逐步引导我完成实验
+4. 卡住时给我提示（不要直接给解答）
+```
+
+### 🚩 CTF 仅提示
+
+```
+[题目描述或文件名]
+我想自己解这道 CTF 题。
+只告诉我解题方向，不要直接给出解答。
+也帮我在仓库里找相关学习资料。
+```
+
+### 🔎 代码分析
+
+```
+[文件名或粘贴代码]
+请对这段代码：
+1. 逐行添加注释说明
+2. 指出存在安全漏洞的部分
+3. 用 Python 3.10+ 风格进行改进
+```
+
+### 📝 理解度测试
+
+```
+我刚学完 [章节名]。
+请出 5 道题测试我是否真正理解：
+（选择题 2 道、简答题 2 道、论述题 1 道）
+```
+
+---
+
+<a name="scenarios-zh"></a>
+
+## 5. AI 辅助学习场景
+
+### 场景 A：完全初学者的第一天
+
+```bash
+cd VibeHacking
+claude
+
+「我是刚开始学安全的大学生。
+ 请告诉我这个仓库是什么、应该从哪里开始」
+
+「读取 01_Linux_Basics/01_linux_essential_commands.md，
+ 整理今天必须记住的命令 TOP 10」
+
+「出 5 道我现在就能在终端上练习的 Linux 基础实验题」
+```
+
+### 场景 B：Web 渗透集中突破
+
+```bash
+cd VibeHacking
+claude
+
+「扫描整个 05_Web_Hacking 章节，用一句话总结 OWASP Top 10 每一项」
+
+「启动 Lab 01 Web 渗透环境，并确认 Docker 容器是否正常运行」
+
+「一步步引导我在 DVWA 上完成 SQL 注入 Low 难度实验，
+ 并在每个步骤解释其中的原理」
+```
+
+### 场景 C：CTF 备赛
+
+```bash
+cd VibeHacking
+codex
+
+「读取 46_CTF_Techniques，用表格整理
+ Pwn / Web / Crypto / Forensics 各方向的必备工具和技术」
+
+「启动 labs/02_pwn_lab，只给我提示如何在 BOF-01 题目中找到偏移量」
+
+「用 pwntools 写一个 64 位二进制利用脚本的基础模板」
+```
+
+### 场景 D：备考认证
+
+```bash
+cd VibeHacking
+gemini
+
+「读取 41_Korean_Certifications/01_information_security_engineer.md，
+ 按科目整理 5 门课程的核心关键词」
+
+「密码学部分比较薄弱，
+ 从 16_Cryptography 中筛选出考试高频内容」
+
+「用信息安全工程师考试风格出 10 道网络安全单元题」
+```
+
+---
+
+## AI CLI 特性对比
+
+| | Claude Code | Codex CLI | Gemini CLI |
+|--|:-----------:|:---------:|:----------:|
+| **执行命令** | ✅ 直接执行 | ✅ 直接执行 | ✅ 直接执行 |
+| **读取文件** | ✅ 自动探索 | ✅ 自动探索 | ✅ 自动探索 |
+| **上下文窗口** | 大容量 | 大容量 | 最大 (100万+ token) |
+| **代码专精** | ✅ 强 | ✅ 非常强 | ✅ 强 |
+| **中文支持** | ✅ 流畅 | ✅ 良好 | ✅ 良好 |
+| **Docker 集成** | ✅ | ✅ | ✅ |
+
+> **推荐**：使用哪个工具都可以。  
+> 在 VibeHacking 目录中运行，用自然语言提问即可。
+
+---
+
+## 使用技巧
+
+**保持仓库最新**
+
+```bash
+git pull origin main
+# 或
+vhack update
+```
+
+**第一个问题越具体越好**
+
+```
+❌ 「教我安全知识」
+✅ 「读取 05_Web_Hacking/02_sql_injection_advanced.md，
+    解释 3 个核心概念和练习方法」
+```
+
+---
+
+> 📖 安装指南 → [INSTALL.md](./INSTALL.md)
+> 📘 vhack CLI 参考 → [USAGE.md](./USAGE.md)
