@@ -42,11 +42,12 @@
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
 
-# 2. CLI 동작 확인
-python3 vhack.py list
+# 2. alias 등록 → 어디서나 vhack 으로 사용
+python3 vhack.py alias install
+source ~/.bashrc          # 현재 세션 즉시 적용 (zsh: source ~/.zshrc)
 
 # 3. (선택) 웹 해킹 실습 환경 시작 — Docker 필요
-python3 vhack.py lab start 01
+vhack lab start 01
 # → 브라우저: http://localhost:8080
 ```
 
@@ -77,18 +78,27 @@ cd VibeHacking
 ### 3-3. (선택) vhack 명령어를 어디서든 실행
 
 ```bash
-# 방법 A: PATH에 심볼릭 링크 추가
-sudo ln -s "$(pwd)/vhack.py" /usr/local/bin/vhack
-sudo chmod +x /usr/local/bin/vhack
-
-# 방법 B: alias 추가 (~/.bashrc 또는 ~/.zshrc)
-echo 'alias vhack="python3 '$PWD'/vhack.py"' >> ~/.bashrc
-source ~/.bashrc
+# 권장: alias 자동 등록 명령어 (셸 자동 감지)
+python3 vhack.py alias install
+source ~/.bashrc      # bash 즉시 적용
+# source ~/.zshrc     # zsh인 경우
 
 # 이후 어디서나 사용 가능
 vhack list
 vhack study 5
+
+# 현황 확인
+vhack alias status
+
+# 제거가 필요한 경우
+vhack alias remove
 ```
+
+> `alias install` 은 `$SHELL` 환경변수로 현재 셸을 자동 감지하고
+> (`bash` → `~/.bashrc`, `zsh` → `~/.zshrc`, `fish` → `~/.config/fish/config.fish`)
+> 해당 RC 파일에 alias 줄을 추가합니다. 중복 실행해도 안전합니다.
+>
+> 특정 파일에만 설치하려면: `python3 vhack.py alias install --profile ~/.zshrc`
 
 ### 3-4. Docker 설치 (실습 환경 필요 시)
 
@@ -127,12 +137,13 @@ sudo apt update && sudo apt install -y python3 python3-pip git
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
 
-# vhack alias 설정
-echo 'alias vhack="python3 '$PWD'/vhack.py"' >> ~/.bashrc
+# alias 자동 등록
+python3 vhack.py alias install
 source ~/.bashrc
 
 # 확인
 vhack list
+vhack alias status
 ```
 
 ### 4-3. Docker Desktop (WSL2 통합)
@@ -172,15 +183,21 @@ python vhack.py study 5
 ### 5-4. (선택) 명령어 단축
 
 ```powershell
-# PowerShell 프로필에 함수 추가
-notepad $PROFILE
+# alias 자동 등록 (PowerShell 프로파일에 function 추가)
+python vhack.py alias install
 
-# 아래 줄 추가 후 저장:
-function vhack { python "C:\path\to\VibeHacking\vhack.py" @args }
+# 현재 세션에 즉시 적용
+. $PROFILE
 
-# 새 PowerShell 터미널에서 사용
+# 이후 PowerShell 어디서나 사용
 vhack list
+vhack alias status
 ```
+
+> `alias install` 이 PowerShell 감지에 실패하면 수동으로 지정:
+> ```powershell
+> python vhack.py alias install --profile $PROFILE
+> ```
 
 ---
 
@@ -252,11 +269,16 @@ bash stop_all.sh
 ### 정상 설치 확인
 
 ```bash
-# CLI 버전 확인
+# CLI 동작 확인
 python3 vhack.py --help
 
 # 섹션 목록 확인
 python3 vhack.py list
+
+# alias 등록 확인 (등록한 경우)
+python3 vhack.py alias status
+# ● /home/user/.bashrc  설치됨
+# ✓ 현재 세션에서 사용 가능: /usr/local/bin/vhack (source 적용 후)
 
 # Docker 확인 (실습 환경 사용 시)
 python3 vhack.py lab status
@@ -404,11 +426,12 @@ sudo apt install binwalk
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
 
-# 2. Verify CLI works
-python3 vhack.py list
+# 2. Register alias → use vhack from anywhere
+python3 vhack.py alias install
+source ~/.bashrc          # apply to current session (zsh: source ~/.zshrc)
 
 # 3. (Optional) Start web hacking lab — requires Docker
-python3 vhack.py lab start 01
+vhack lab start 01
 # → Open browser: http://localhost:8080
 ```
 
@@ -425,9 +448,9 @@ brew install python3 git                               # macOS
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
 
-# Optional: create global alias
-echo 'alias vhack="python3 '$PWD'/vhack.py"' >> ~/.bashrc
-source ~/.bashrc
+# Register alias (auto-detects bash/zsh/fish)
+python3 vhack.py alias install
+source ~/.bashrc    # or: source ~/.zshrc
 
 # Install Docker (for labs)
 curl -fsSL https://get.docker.com | sh
@@ -446,7 +469,9 @@ wsl --install
 sudo apt update && sudo apt install -y python3 git
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
-python3 vhack.py list
+python3 vhack.py alias install   # register alias
+source ~/.bashrc
+vhack list
 
 # 3. Install Docker Desktop for Windows
 # https://www.docker.com/products/docker-desktop/
@@ -461,10 +486,12 @@ python3 vhack.py list
 # 1. Install Python from https://python.org (check "Add to PATH")
 # 2. Install git from https://git-scm.com
 
-# Clone & run
+# Clone & register alias
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
-python vhack.py list
+python vhack.py alias install   # adds function vhack { ... } to $PROFILE
+. $PROFILE                      # apply to current session
+vhack list
 ```
 
 ---
@@ -495,11 +522,13 @@ python3 vhack.py lab stop --all
 ```bash
 python3 vhack.py --help        # Show help
 python3 vhack.py list          # List all 64 sections
+python3 vhack.py alias status  # Check alias registration
 python3 vhack.py lab status    # Show running containers
 
 # Common fixes:
 # "python3: not found"     → Install Python 3.10+
 # "docker: not found"      → Install Docker Desktop
+# "vhack: not found"       → Run: python3 vhack.py alias install && source ~/.bashrc
 # Port 8080 conflict       → Edit ports in docker-compose.yml
 ```
 
