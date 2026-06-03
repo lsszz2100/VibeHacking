@@ -112,6 +112,28 @@ python3 vhack.py alias remove           # alias 제거
 python3 vhack.py update                 # git pull
 ```
 
+### 전체 명령어 Quick Reference
+
+| 명령어 | 설명 |
+|--------|------|
+| `vhack list` | 전체 64개 섹션 목록 |
+| `vhack list --search <키워드>` | 섹션명 필터링 |
+| `vhack study <번호>` | 섹션 파일 목록 |
+| `vhack study <번호> <파일>` | 터미널에서 파일 읽기 |
+| `vhack search <키워드>` | 전체 문서 전문 검색 |
+| `vhack info <번호>` | 섹션 상세 정보 |
+| `vhack lab ls` | 실습 환경 목록 + 접속 URL |
+| `vhack lab start <id>` | 실습 환경 시작 |
+| `vhack lab stop <id>` | 실습 환경 종료 |
+| `vhack lab stop --all` | 전체 종료 |
+| `vhack lab status` | 실행 중인 컨테이너 확인 |
+| `vhack lab logs <id>` | 실시간 로그 보기 |
+| `vhack alias install` | 셸 alias 자동 등록 |
+| `vhack alias install --profile <파일>` | 특정 프로파일에 등록 |
+| `vhack alias status` | 설치 현황 확인 |
+| `vhack alias remove` | alias 제거 |
+| `vhack update` | `git pull` 로 최신화 |
+
 ### 실습 환경 (Docker 기반)
 
 | 번호 | 랩 이름 | 내용 | 접속 | 난이도 |

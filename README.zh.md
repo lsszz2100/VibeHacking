@@ -76,6 +76,28 @@ python3 vhack.py alias remove            # 删除 alias
 python3 vhack.py update                  # git pull 获取最新内容
 ```
 
+### 快速参考
+
+| 命令 | 说明 |
+|------|------|
+| `vhack list` | 列出全部 64 个章节 |
+| `vhack list --search <关键词>` | 按关键词过滤章节 |
+| `vhack study <编号>` | 章节文件列表 |
+| `vhack study <编号> <文件>` | 在终端中阅读文件 |
+| `vhack search <关键词>` | 全文搜索所有文档 |
+| `vhack info <编号>` | 章节详细信息 |
+| `vhack lab ls` | 实验室列表 + 访问地址 |
+| `vhack lab start <id>` | 启动实验室 |
+| `vhack lab stop <id>` | 停止实验室 |
+| `vhack lab stop --all` | 停止所有实验室 |
+| `vhack lab status` | 查看运行中的容器 |
+| `vhack lab logs <id>` | 实时日志流 |
+| `vhack alias install` | 注册 shell alias |
+| `vhack alias install --profile <文件>` | 指定配置文件 |
+| `vhack alias status` | 查看安装状态 |
+| `vhack alias remove` | 删除 alias |
+| `vhack update` | `git pull` 更新内容 |
+
 ### 实验环境 (基于 Docker)
 
 | # | 实验室名称 | 内容 | 访问地址 | 难度 |

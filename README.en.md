@@ -76,6 +76,28 @@ python3 vhack.py alias remove            # unregister alias
 python3 vhack.py update                  # git pull latest content
 ```
 
+### Quick Reference
+
+| Command | Description |
+|---------|-------------|
+| `vhack list` | List all 64 sections |
+| `vhack list --search <kw>` | Filter by keyword |
+| `vhack study <n>` | Section file list |
+| `vhack study <n> <f>` | Read file in terminal |
+| `vhack search <kw>` | Full-text search across all docs |
+| `vhack info <n>` | Section details |
+| `vhack lab ls` | List labs with access URLs |
+| `vhack lab start <id>` | Start lab environment |
+| `vhack lab stop <id>` | Stop lab environment |
+| `vhack lab stop --all` | Stop all labs |
+| `vhack lab status` | Show running containers |
+| `vhack lab logs <id>` | Live log stream |
+| `vhack alias install` | Register shell alias |
+| `vhack alias install --profile <file>` | Target specific profile |
+| `vhack alias status` | Check installation |
+| `vhack alias remove` | Unregister alias |
+| `vhack update` | `git pull` latest content |
+
 ### Lab Environments (Docker-based)
 
 | # | Lab Name | Content | Access | Difficulty |

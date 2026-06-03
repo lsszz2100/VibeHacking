@@ -76,6 +76,28 @@ python3 vhack.py alias remove            # エイリアス削除
 python3 vhack.py update                  # git pull で最新コンテンツ取得
 ```
 
+### クイックリファレンス
+
+| コマンド | 説明 |
+|----------|------|
+| `vhack list` | 64セクション全一覧 |
+| `vhack list --search <キーワード>` | セクション名でフィルタ |
+| `vhack study <番号>` | セクションのファイル一覧 |
+| `vhack study <番号> <ファイル>` | ターミナルでファイルを読む |
+| `vhack search <キーワード>` | 全ドキュメント全文検索 |
+| `vhack info <番号>` | セクション詳細情報 |
+| `vhack lab ls` | 実習環境一覧 + アクセスURL |
+| `vhack lab start <id>` | 実習環境を起動 |
+| `vhack lab stop <id>` | 実習環境を停止 |
+| `vhack lab stop --all` | 全ラボ停止 |
+| `vhack lab status` | 実行中コンテナ確認 |
+| `vhack lab logs <id>` | ライブログ表示 |
+| `vhack alias install` | シェルエイリアス登録 |
+| `vhack alias install --profile <ファイル>` | 特定プロファイルに登録 |
+| `vhack alias status` | インストール状況確認 |
+| `vhack alias remove` | エイリアス削除 |
+| `vhack update` | `git pull` で最新化 |
+
 ### 実習環境 (Dockerベース)
 
 | # | ラボ名 | 内容 | アクセス | 難易度 |
