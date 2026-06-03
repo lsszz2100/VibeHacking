@@ -6,6 +6,77 @@
 
 # Linux 보안 감사
 
+## 0. 초보자를 위한 개념 이해
+
+### 보안 감사(Security Audit)란?
+
+**보안 감사**는 시스템의 보안 설정을 체계적으로 검사해서 취약점과 정책 위반을 찾아내는 활동입니다.
+
+```
+보안 감사 vs 침투 테스트:
+  보안 감사:
+    - 내부 설정 검토 (계정, 권한, 서비스)
+    - 정책 준수 여부 확인
+    - 도구: Lynis, OpenSCAP
+    
+  침투 테스트:
+    - 외부 공격자 관점
+    - 실제 취약점 익스플로잇
+    - 도구: nmap, Metasploit
+```
+
+### 주요 보안 감사 도구
+
+**Lynis:**
+```
+오픈소스 Linux/Unix 보안 감사 도구
+실행 후 점수(Hardening Index)와 개선 사항 제공
+예시 출력:
+  [+] Kernel modules
+  [.] Found loadable kernel module: bluetooth [ DISABLED ]
+  ...
+  Lynis security scan details:
+    Hardening index : 64 [############# ]
+    Tests performed : 233
+    Plugins enabled : 0
+  → 64/100점: 보안 수준이 보통
+```
+
+**CIS 벤치마크:**
+```
+CIS(Center for Internet Security)의 서버 보안 설정 기준
+CIS Level 1: 기본 보안 (운영 영향 최소)
+CIS Level 2: 강화 보안 (일부 기능 제한)
+  
+OpenSCAP으로 CIS 벤치마크 자동 검사 가능
+```
+
+### 보안 감사 항목 분류
+
+```
+시스템 설정:
+  - 불필요 서비스 비활성화
+  - 커널 파라미터 (sysctl)
+  - 파일시스템 마운트 옵션
+  
+계정 보안:
+  - 비밀번호 정책
+  - 계정 잠금 설정
+  - root 계정 사용 제한
+  
+네트워크:
+  - 방화벽 규칙
+  - 리스닝 포트
+  - 원격 접속 설정
+  
+로깅:
+  - syslog/rsyslog 설정
+  - 감사 로그(auditd) 설정
+  - 로그 보존 기간
+```
+
+---
+
 Lynis, OpenSCAP, CIS 벤치마크를 활용한 체계적인 Linux 보안 감사 방법과 Python 기반 자동화 도구를 다룬다. 감사 결과를 구조화된 보고서로 생성하고 지속적인 컴플라이언스 모니터링을 구축하는 방법을 정리한다.
 
 ---

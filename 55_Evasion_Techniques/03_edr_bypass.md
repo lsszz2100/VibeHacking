@@ -6,6 +6,68 @@
 
 # EDR 우회 — API 후킹 우회·메모리 주입·탐지 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### API 후킹(Hooking)이란?
+
+**API 후킹**은 EDR이 Windows API 함수 호출을 가로채어 분석하는 기법입니다.
+
+```
+정상 프로그램의 API 호출:
+  내 코드 → CreateProcess() 호출 → Windows API 실행
+
+EDR의 API 후킹:
+  내 코드 → CreateProcess() 호출
+            → EDR이 가로챔 (후크)
+            → EDR 분석: 악성인가?
+            → 안전하면 실제 API 실행
+            → 위험하면 차단
+```
+
+**비유:** 우체국에서 모든 편지를 X-ray로 검사하는 것처럼, EDR이 모든 API 호출을 검사합니다.
+
+### Windows 호출 스택 이해
+
+```
+사용자 코드
+    ↓
+Win32 API (kernel32.dll)         ← 고수준 API
+    ↓
+Native API (ntdll.dll)           ← 저수준 API ← EDR이 여기 주로 후킹
+    ↓
+System Call (syscall)            ← 커널 진입점
+    ↓
+Windows 커널 (ntoskrnl.exe)
+    ↓
+하드웨어
+
+EDR 후킹 위치:
+  ntdll.dll에 주요 함수 후킹:
+  - NtAllocateVirtualMemory: 메모리 할당
+  - NtWriteVirtualMemory: 다른 프로세스에 쓰기
+  - NtCreateThread: 새 스레드 생성
+  → 이 API들로 악성코드 주입 패턴 탐지
+```
+
+### 왜 이것을 배우는가?
+
+```
+보안 연구 관점:
+  EDR의 동작 원리를 이해해야 → 방어 전략 개선 가능
+  "공격자가 어떻게 우회하는지 알아야 막을 수 있다"
+
+레드팀 관점:
+  실제 APT 공격자들이 사용하는 기법으로 테스트
+  → 방어팀의 EDR 탐지 능력 평가
+  
+CTF:
+  "Heap exploitation with EDR bypass" 문제 유형에 필요
+```
+
+> ⚠️ 허가된 보안 평가, CTF, 보안 연구 목적으로만 사용하세요.
+
+---
+
 ## 1. EDR 동작 원리
 
 ```

@@ -6,6 +6,51 @@
 
 # 위협 피드 및 IoC 강화
 
+## 0. 초보자를 위한 개념 이해
+
+### 위협 피드(Threat Feed)란?
+
+**위협 피드**는 지속적으로 업데이트되는 위협 인텔리전스 데이터 스트림입니다.
+
+```
+피드 구독 비유:
+  뉴스 RSS 피드: 새 기사가 올라오면 자동으로 받음
+  위협 피드:    새 IOC가 추가되면 자동으로 시스템에 반영
+  
+위협 피드 종류:
+  무료 피드:
+    - Abuse.ch의 MalwareBazaar: 악성코드 샘플 해시
+    - Abuse.ch의 ThreatFox: C2 서버 IOC
+    - URLhaus: 악성 URL
+    - AlienVault OTX: 커뮤니티 위협 공유
+    
+  유료 피드:
+    - CrowdStrike Intel
+    - Recorded Future
+    - Mandiant Threat Intelligence
+```
+
+### IOC 강화(Enrichment)란?
+
+```
+기본 IOC: IP 주소 "203.0.113.42"
+
+강화 후:
+  - ASN: AS12345 (알려진 불량 호스팅 회사)
+  - 위치: 러시아 모스크바
+  - 신뢰도: VirusTotal 72/90 엔진에서 악성
+  - 카테고리: C2 서버 (Cobalt Strike)
+  - 관련 캠페인: APT29 "Cozy Bear"
+  - 첫 발견: 2026-01-15
+  
+강화 데이터 소스:
+  - VirusTotal, Shodan, Censys
+  - WHOIS, BGP 정보
+  - 패시브 DNS
+```
+
+---
+
 ## 무료 위협 피드 목록
 
 ```

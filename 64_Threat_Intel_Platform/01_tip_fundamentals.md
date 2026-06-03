@@ -6,6 +6,76 @@
 
 # 위협 인텔리전스 플랫폼 기초
 
+## 0. 초보자를 위한 개념 이해
+
+### TIP(위협 인텔리전스 플랫폼)이란?
+
+**TIP(Threat Intelligence Platform)**는 위협 정보를 수집, 처리, 분석, 공유하는 전용 소프트웨어 플랫폼입니다.
+
+```
+TIP 없을 때:
+  팀원 A: 스프레드시트에 IOC 관리
+  팀원 B: 별도 텍스트 파일에 IOC 저장
+  팀원 C: 이메일로 IOC 공유
+  → 중복, 오류, 최신성 유지 불가
+
+TIP 있을 때:
+  중앙 플랫폼에서 IOC 통합 관리
+  → 자동 중복 제거
+  → API로 SIEM/방화벽에 자동 동기화
+  → 팀 간 실시간 공유
+  → 신뢰도/만료일 자동 관리
+```
+
+### 주요 TIP 솔루션 비교
+
+| TIP | 유형 | 특징 |
+|-----|------|------|
+| **MISP** | 오픈소스 (무료) | 커뮤니티 공유 중심, 가장 널리 사용 |
+| **OpenCTI** | 오픈소스 (무료) | 그래프 기반 관계 분석, 현대적 UI |
+| **ThreatConnect** | 상용 | 기업용, 자동화 워크플로우 |
+| **Anomali ThreatStream** | 상용 | 대용량 피드 처리 |
+| **Recorded Future** | 상용 | AI 기반 예측 인텔리전스 |
+
+### STIX와 TAXII란?
+
+```
+STIX (Structured Threat Information Expression):
+  위협 인텔리전스 데이터의 표준 형식
+  "이 데이터를 어떻게 표현할 것인가?"
+  
+  STIX 객체 예시:
+  {
+    "type": "indicator",
+    "id": "indicator--...",
+    "name": "Cobalt Strike C2",
+    "pattern": "[network-traffic:dst_port = 443 AND ...]",
+    "valid_from": "2026-01-01T00:00:00Z"
+  }
+
+TAXII (Trusted Automated Exchange of Intelligence Information):
+  위협 인텔리전스 데이터의 전송 프로토콜
+  "이 데이터를 어떻게 주고받을 것인가?"
+  
+  TAXII 서버 → TAXII 클라이언트 (자동화된 IOC 구독)
+```
+
+### 왜 TIP가 필요한가?
+
+```
+SOC 팀의 실제 문제:
+  하루에 수천 개의 IOC 업데이트
+  → 수동 관리 불가능
+
+TIP로 해결:
+  1. 자동 수집: AlienVault, VirusTotal, ISAC 피드 자동 수집
+  2. 자동 처리: 중복 제거, 만료 관리, 신뢰도 계산
+  3. 자동 배포: 방화벽, SIEM, EDR에 자동 업데이트
+  4. 공유: 같은 업종 다른 기업과 IOC 공유 (ISAC)
+```
+
+---
+
 ## 위협 인텔리전스 개요
 
 위협 인텔리전스(TI)는 현재 또는 잠재적 위협에 대한 근거 기반 지식으로, 의사결정을 지원한다. 단순한 IoC(침해 지표) 수집이 아닌, 맥락(Context)이 있는 실행 가능한 정보여야 한다.

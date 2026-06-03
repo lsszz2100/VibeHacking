@@ -6,6 +6,55 @@
 
 # MISP 플랫폼 활용
 
+## 0. 초보자를 위한 개념 이해
+
+### MISP란?
+
+**MISP(Malware Information Sharing Platform)**는 사이버 위협 정보를 공유하기 위한 오픈소스 플랫폼입니다.
+
+```
+MISP의 핵심 기능:
+  - 이벤트(보안 사고) 기록 및 관리
+  - IOC(침해 지표) 공유
+  - 자동화된 위협 피드 수집
+  - STIX/TAXII 표준 지원
+  - 조직 간 위협 인텔리전스 공유
+```
+
+**실제 MISP 활용 시나리오:**
+```
+시나리오 1: 악성코드 분석 후 공유
+  보안팀이 새 랜섬웨어 분석
+  → MISP에 IOC 등록 (C2 IP, 악성 도메인, 파일 해시)
+  → 같은 MISP 서버 공유하는 다른 조직에 자동 전파
+  → 모든 조직의 방화벽/SIEM 업데이트
+
+시나리오 2: ISAC을 통한 위협 공유
+  KISA가 APT 공격 정보 수집
+  → MISP를 통해 국내 기업들에게 공유
+  → 기업들이 해당 IOC로 방어 준비
+```
+
+### MISP 이벤트 구조 이해
+
+```
+Event (사건):
+  └── Attribute (속성/IOC):
+        - ip-dst: 악성 목적지 IP 주소
+        - domain: 악성 도메인
+        - md5: 악성 파일 MD5 해시
+        - url: 악성 URL
+        - email-src: 피싱 발신 이메일
+  └── Object (복합 오브젝트):
+        - File (파일명 + 해시 + 크기 묶음)
+        - Network Connection
+  └── Galaxy (위협 분류):
+        - Threat Actor: APT28 (러시아 APT)
+        - Attack Pattern: MITRE T1566.001
+```
+
+---
+
 ## MISP 설치 및 구성
 
 ```bash

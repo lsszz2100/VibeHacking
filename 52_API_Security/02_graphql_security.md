@@ -6,6 +6,77 @@
 
 # GraphQL 보안 — 인트로스펙션·배치 공격·권한 우회
 
+## 0. 초보자를 위한 개념 이해
+
+### GraphQL이란?
+
+**GraphQL**은 Facebook이 2015년에 만든 API 쿼리 언어입니다. REST API의 단점을 개선하기 위해 설계되었습니다.
+
+```
+REST API:
+  GET /api/users/123        → 사용자 정보 (필요한 것보다 많이)
+  GET /api/users/123/posts  → 포스트 목록
+  GET /api/users/123/followers → 팔로워 목록
+  = 3번의 요청 필요
+
+GraphQL:
+  POST /graphql
+  {
+    user(id: "123") {
+      name, email
+      posts { title }
+      followers { count }
+    }
+  }
+  = 1번의 요청으로 필요한 데이터만 가져옴
+```
+
+### GraphQL의 보안 특성
+
+```
+REST API vs GraphQL 보안 차이:
+
+REST:
+  /api/v1/users     → 엔드포인트마다 권한 확인
+  /api/v1/orders    → 각각 독립적으로 보안 설정
+
+GraphQL:
+  단일 엔드포인트 /graphql
+  → 모든 기능이 하나의 입구로
+  → 잘못 설정 시 의도치 않은 데이터 노출
+  → 복잡한 쿼리로 서버 과부하 가능
+```
+
+**왜 GraphQL 보안이 어려운가:**
+```
+1. 인트로스펙션 (자기 탐색)
+   - 클라이언트가 서버에 "어떤 기능이 있어?" 물어볼 수 있음
+   - 전체 스키마(데이터 구조) 자동 노출
+   - 공격자가 자동으로 공격 대상 파악
+
+2. 배치 쿼리 (여러 작업을 한 번에)
+   - 하나의 요청에 수백 개의 쿼리 포함 가능
+   - Rate Limit (요청 수 제한) 우회 가능
+   - DoS 공격이 쉬워짐
+
+3. 깊은 중첩 쿼리
+   user → posts → comments → user → posts → comments → ...
+   → 재귀적 쿼리로 서버 CPU/메모리 과부하
+```
+
+### GraphQL이 사용되는 서비스
+
+- Facebook/Meta
+- GitHub API v4
+- Shopify
+- Twitter/X
+- Airbnb
+- Netflix
+
+→ 많은 대형 서비스가 사용하므로 GraphQL 보안 능력이 중요합니다.
+
+---
+
 ## 1. GraphQL 공격 표면
 
 GraphQL은 단일 엔드포인트(`/graphql`)에서 복잡한 쿼리를 수행하므로 REST API와 다른 공격 벡터를 제공한다.

@@ -6,6 +6,63 @@
 
 # REST API 보안과 OWASP API Top 10
 
+## 0. 초보자를 위한 개념 이해
+
+### REST API란?
+
+**REST API(Representational State Transfer Application Programming Interface)**는 HTTP를 사용해 서버와 클라이언트가 데이터를 주고받는 방식입니다.
+
+```
+카카오맵 앱 사용 예시:
+  앱 → GET /api/v1/places?q=스타벅스&lat=37.5&lng=127.0
+  ← 응답: [{name: "스타벅스 강남점", ...}, ...]
+  
+  앱이 카카오맵 서버에 REST API로 요청하는 것
+
+REST API의 특징:
+  - HTTP 메서드 사용: GET(조회), POST(생성), PUT/PATCH(수정), DELETE(삭제)
+  - JSON 형식으로 데이터 교환
+  - Stateless: 각 요청이 독립적 (세션 없음)
+  - URL로 리소스 표현: /api/users/123, /api/orders/456
+```
+
+### API 보안이 중요한 이유
+
+```
+앱(모바일/웹) → API → 서버 → DB
+
+API를 통해 모든 것이 이루어집니다:
+  - 로그인/로그아웃
+  - 데이터 조회/수정/삭제
+  - 결제 처리
+  - 개인정보 접근
+
+API에 취약점이 있으면:
+  - 다른 사람의 데이터에 접근 (BOLA)
+  - 관리자 기능 무단 실행
+  - 대량 데이터 탈취
+  - 서비스 마비 (DoS)
+```
+
+### 실제 API 보안 사고
+
+```
+2021년 Peloton API 취약점 (BOLA):
+  운동기기 회사 Peloton의 사용자 프로필 API
+  GET /api/v2/users/{user_id}
+  → 인증 없이 다른 사용자 ID로 접근 가능
+  → 수백만 명의 나이, 위치, 운동 데이터 노출
+  
+2020년 Twitter API 취약점:
+  전화번호로 계정 조회 가능한 API
+  → 공격자가 대량 전화번호로 계정 확인
+  → 수백만 계정 전화번호 수집
+  
+교훈: API 엔드포인트마다 인가 검증 필수
+```
+
+---
+
 ## 1. OWASP API Security Top 10 (2023)
 
 | # | 취약점 | 설명 |

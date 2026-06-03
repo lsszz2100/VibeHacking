@@ -6,6 +6,77 @@
 
 # CTI 플랫폼 운영
 
+## 0. 초보자를 위한 개념 이해
+
+### CTI 플랫폼을 직접 운영해야 하는가?
+
+대부분의 조직은 상용 CTI 서비스(VirusTotal, CrowdStrike 등)를 사용하지만, 자체 플랫폼이 필요한 경우도 있습니다.
+
+```
+상용 CTI 서비스를 사용하면 좋은 경우:
+  - 소규모 팀 (인력 부족)
+  - 빠른 구축 필요
+  - 유지관리 부담 없이 사용
+  
+자체 MISP/OpenCTI 운영이 필요한 경우:
+  - 기밀 정보를 외부 서비스에 올릴 수 없는 조직
+    (정부기관, 군, 방산, 금융)
+  - 다른 조직과 IOC를 비공개로 공유
+  - 커스터마이징이 필요한 경우
+  - 비용 절감이 중요한 경우
+```
+
+### CTI 플랫폼 생태계
+
+```
+수집 → 처리 → 분석 → 공유 → 탐지
+
+수집:
+  OSINT 피드, 다크웹 모니터링
+  ISAC, 파트너사 공유
+
+처리:
+  MISP, OpenCTI → IOC 정규화, 중복 제거
+
+분석:
+  Maltego → 관계 시각화
+  MITRE ATT&CK → TTP 매핑
+
+공유:
+  TAXII 서버 → 자동 배포
+  STIX 형식 → 표준화된 교환
+
+탐지:
+  SIEM (Splunk, Elastic) → 룰 적용
+  방화벽, EDR → 차단 목록 업데이트
+```
+
+### STIX/TAXII 실전 이해
+
+```
+STIX (Structured Threat Information Expression):
+  위협 정보를 JSON 형태로 구조화
+
+  예시 STIX Indicator:
+  {
+    "type": "indicator",
+    "spec_version": "2.1",
+    "id": "indicator--8e2e2d2b-...",
+    "name": "악성 C2 IP",
+    "pattern": "[ipv4-addr:value = '203.0.113.42']",
+    "valid_from": "2026-01-01T00:00:00Z",
+    "labels": ["malicious-activity"]
+  }
+
+TAXII (Trusted Automated Exchange of Intelligence):
+  STIX 데이터를 주고받는 API 규약
+  
+  TAXII 서버 → 구독 클라이언트들에게 자동 배포
+  (마치 RSS 피드처럼 IOC를 구독)
+```
+
+---
+
 MISP, OpenCTI 같은 오픈소스 위협 인텔리전스 플랫폼 운영과 IOC 관리, 위협 피드 자동화, STIX/TAXII 표준 연동을 다룬다. 실제 운영 환경에서 활용하는 자동화 스크립트를 중심으로 정리한다.
 
 ---

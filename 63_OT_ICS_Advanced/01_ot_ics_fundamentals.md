@@ -1,10 +1,73 @@
-> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)
+> 🌐 **Language / 언어**: [🇰🇷 한국어](#한국어) | [🇴🇸 English](#english)
 
 ---
 
 <a name="한국어"></a>
 
 # OT/ICS 보안 기초 심화
+
+## 0. 초보자를 위한 개념 이해
+
+### OT와 ICS란?
+
+```
+IT (Information Technology, 정보 기술):
+  컴퓨터, 서버, 네트워크, 소프트웨어
+  → 정보를 처리하고 저장
+
+OT (Operational Technology, 운영 기술):
+  공장 기계, 발전소 터빈, 댐 수문
+  → 물리적 장치를 제어하고 모니터링
+
+ICS (Industrial Control System, 산업 제어 시스템):
+  OT의 핵심 시스템
+  → PLC, SCADA, DCS 등으로 구성
+```
+
+### 실생활에서 OT/ICS가 있는 곳
+
+```
+전력 인프라:
+  발전소 터빈 제어 → ICS
+  변전소 차단기 제어 → SCADA
+  
+수자원 인프라:
+  정수 처리 (염소 농도 조절) → PLC
+  댐 수문 제어 → ICS
+  
+제조업:
+  자동차 조립 로봇 → PLC
+  반도체 공정 제어 → DCS
+  
+빌딩 자동화:
+  냉난방 시스템 → BMS
+  엘리베이터 제어 → ICS
+```
+
+### OT 장비의 특수성
+
+```
+PLC (Programmable Logic Controller, 프로그래머블 논리 제어기):
+  - 공장 자동화의 핵심 장치
+  - 실시간으로 센서 데이터를 읽고 액추에이터 제어
+  - 예: 온도가 100도 이상이면 냉각 펌프 가동
+  
+  보안 특성:
+    수명: 20~30년 (패치 거의 불가)
+    인증: 없거나 매우 약함
+    프로토콜: Modbus, PROFIBUS 등 구형 프로토콜
+
+SCADA (Supervisory Control And Data Acquisition):
+  - 원거리 PLC를 원격으로 모니터링/제어
+  - 수도 시설, 전력망, 가스관 등에 사용
+  - 중앙에서 수백 개의 현장 장치를 관리
+
+DCS (Distributed Control System, 분산 제어 시스템):
+  - 대규모 공정 자동화 (석유화학, 제지 공장)
+  - PLC보다 규모가 크고 복잡
+```
+
+---
 
 ## OT vs IT 보안 패러다임
 

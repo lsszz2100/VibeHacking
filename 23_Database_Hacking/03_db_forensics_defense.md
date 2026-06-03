@@ -6,30 +6,122 @@
 
 # DB 포렌식 및 방어 — 침해 탐지와 감사
 
-## 1. DB 포렌식 개요
+## 0. 초보자를 위한 개념 이해
+
+### DB 포렌식이란?
+
+**데이터베이스 포렌식(DB Forensics)**은 데이터베이스가 해킹되거나 데이터가 유출됐을 때, **"무슨 일이 있었는지"를 추적하고 증거를 수집하는 작업**입니다.
+
+**비유:** 편의점 절도 사건에서 CCTV 영상을 분석하는 것처럼, DB 로그와 감사 기록을 분석해 침해 사실을 증명합니다.
+
+### DB 포렌식이 필요한 상황들
 
 ```
+상황 1: 고객 데이터 유출 의심
+  - 수백만 명의 개인정보가 다크웹에 올라옴
+  - "우리 DB에서 가져간 게 맞나요?"
+  - → binlog, 감사 로그 분석으로 확인
+
+상황 2: DB 계정 탈취
+  - 알 수 없는 IP에서 DBA 계정 로그인
+  - 새벽 3시에 대량 SELECT 쿼리 실행
+  - → 로그인 기록, 쿼리 로그 분석
+
+상황 3: 내부자 위협
+  - 퇴직 직원이 고객 데이터를 빼낸 것 같음
+  - "누가, 언제, 얼마나 가져갔나?"
+  - → 감사 로그 + 네트워크 트래픽 분석
+
+상황 4: 랜섬웨어 공격
+  - DB 데이터가 암호화됨
+  - 복구를 위해 어떤 테이블이 얼마나 손상됐는지 파악
+  - → binlog, redo log로 복구 가능한 시점 확인
+```
+
+### DB 포렌식 vs 일반 포렌식
+
+| 항목 | 일반 파일시스템 포렌식 | DB 포렌식 |
+|------|----------------------|-----------|
+| 증거 위치 | 파일 삭제 흔적, 임시 파일 | 감사 로그, binlog, redo log |
+| 주요 도구 | Autopsy, FTK, dd | mysqlbinlog, LogMiner, pgaudit |
+| 복구 가능성 | 클러스터 미사용 영역 | 언두 로그, binlog 재적용 |
+| 쿼리 추적 | 불가 | 감사 로그 활성화 시 가능 |
+| 법적 증거력 | 높음 (불변성 중요) | 감사 로그 무결성 검증 필요 |
+
+---
+
+## 1. DB 포렌식 개요
+
+### 증거 수집 우선순위
+
+```
+1순위 (휘발성 높음, 즉시 수집):
+  - 현재 활성 연결/세션 목록
+  - 실행 중인 쿼리 (processlist)
+  - 메모리에 있는 버퍼/캐시
+
+2순위 (지속성 있지만 롤오버 가능):
+  - 트랜잭션 로그 (MySQL binlog, Oracle redo log)
+  - 에러 로그
+  - 슬로우 쿼리 로그
+
+3순위 (장기 보존):
+  - DB 감사 로그 (audit trail)
+  - 네트워크 패킷 캡처
+  - OS 레벨 로그 (auth.log, syslog)
+  - DB 스냅샷/백업
+
 수집 대상:
-  1. DB 감사 로그 (audit trail)
-  2. 트랜잭션 로그 / redo log / binlog
-  3. 에러 로그
-  4. 네트워크 캡처 (DB 쿼리 재구성)
-  5. 메모리 덤프 (실행 중인 쿼리, 연결 목록)
+  1. DB 감사 로그 (audit trail) — 누가 무엇을 했는지
+  2. 트랜잭션 로그 / redo log / binlog — 데이터 변경 이력
+  3. 에러 로그 — 실패한 접근 시도, 비정상 동작
+  4. 네트워크 캡처 — DB 쿼리 재구성 (암호화 없는 경우)
+  5. 메모리 덤프 — 실행 중인 쿼리, 연결 목록
 
 핵심 질문:
-  - 언제 침해가 발생했나?
-  - 어떤 계정이 사용됐나?
-  - 어떤 데이터가 접근/유출됐나?
-  - DB에서 OS로 이동했나?
+  - 언제 침해가 발생했나? (타임라인 재구성)
+  - 어떤 계정이 사용됐나? (정상 계정 탈취? 새 계정 생성?)
+  - 어떤 데이터가 접근/유출됐나? (SELECT 쿼리, INTO OUTFILE)
+  - DB에서 OS로 이동했나? (xp_cmdshell, INTO OUTFILE, UDF)
+  - 얼마나 많은 데이터가 빠져나갔나? (행 수, 데이터 크기)
+```
+
+### DB 포렌식 체인 오브 커스터디
+
+**법적 증거로 사용하려면 증거가 변조되지 않았음을 증명해야 합니다:**
+
+```bash
+# 1. 로그 파일 해시 계산 (무결성 증명)
+sha256sum /var/log/mysql/mysql-bin.000001 > mysql-bin.000001.sha256
+
+# 2. 로그 파일을 읽기 전용으로 마운트 또는 즉시 백업
+cp -p /var/log/mysql/audit.log /evidence/$(date +%Y%m%d_%H%M%S)_audit.log
+sha256sum /evidence/*_audit.log >> /evidence/checksums.txt
+
+# 3. 증거 수집 타임스탬프 기록
+date -u +"%Y-%m-%dT%H:%M:%SZ" > /evidence/collection_time.txt
 ```
 
 ---
 
 ## 2. Oracle 포렌식
 
-### 2-1. 감사 로그 분석
+### Oracle DB 기본 구조 (초보자용)
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+```
+Oracle DB 주요 로그:
+  Alert Log (경보 로그): DB 시작/종료, 오류, 보안 이벤트
+  Audit Trail: 설정된 감사 정책에 따라 사용자 활동 기록
+  Redo Log: 모든 데이터 변경 사항 기록 (복구용 + 포렌식용)
+  Archived Log: Redo Log의 아카이브 (장기 보존)
+  
+Oracle 포렌식의 핵심:
+  - Unified Auditing (12c+): 중앙화된 감사 뷰 (UNIFIED_AUDIT_TRAIL)
+  - LogMiner: Redo Log를 분석해 삭제/수정된 데이터 복구
+  - V$ 뷰: DB 내부 상태 실시간 조회 (활성 세션, SQL 등)
+```
+
+### 2-1. 감사 로그 분석
 
 ```sql
 -- Oracle Unified Auditing (12c+) 감사 이벤트 조회
@@ -64,7 +156,7 @@ ORDER BY event_timestamp DESC;
 
 ### 2-2. Redo Log로 삭제/변경 데이터 복구
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+**Oracle LogMiner란?** Redo Log에 기록된 모든 변경 사항을 SQL 형태로 재구성하는 툴입니다. `sql_undo` 컬럼에는 변경 전 상태를 복구하는 SQL이 자동 생성됩니다. 삭제된 데이터도 이 방법으로 복구할 수 있습니다.
 
 ```sql
 -- LogMiner로 Redo Log 분석
@@ -94,7 +186,7 @@ EXECUTE DBMS_LOGMNR.END_LOGMNR;
 
 ### 2-3. 현재 세션 및 이상 연결 탐지
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+**V$ 뷰:** Oracle의 동적 성능 뷰로, DB 내부 상태를 실시간으로 조회합니다. 침해 발생 시 가장 먼저 확인해야 할 뷰들입니다.
 
 ```sql
 -- 현재 활성 세션
@@ -125,10 +217,31 @@ HAVING COUNT(*) > 10;
 
 ## 3. MySQL 포렌식
 
+### MySQL Binary Log란?
+
+**Binary Log(binlog)**는 MySQL에서 데이터를 변경하는 모든 SQL 문(INSERT, UPDATE, DELETE, DDL)을 기록하는 파일입니다. 원래 목적은 복제(Replication)와 복구지만, 포렌식에서도 필수 증거입니다.
+
+```
+binlog 활성화 확인:
+mysql> SHOW VARIABLES LIKE 'log_bin';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| log_bin       | ON    |  ← 활성화된 경우에만 포렌식 가능
++---------------+-------+
+
+binlog 파일 위치:
+/var/lib/mysql/mysql-bin.000001
+/var/lib/mysql/mysql-bin.000002  ← 파일 크기 한계 도달 시 새 파일
+...
+
+binlog 포맷 종류:
+- STATEMENT: SQL 문 그대로 기록 (공간 효율, 분석 쉬움)
+- ROW: 변경된 행 데이터 기록 (정확한 데이터 복구 가능)
+- MIXED: 상황에 따라 둘 중 하나 선택
+```
+
 ### 3-1. Binary Log 분석 (변경 이력 추적)
-
-
-데이터베이스 침해 흔적을 분석합니다. 쿼리 이력, 접속 로그, 감사 로그에서 비정상적인 대용량 SELECT, 권한 변경, 시스템 함수 호출 등 공격 패턴을 추적합니다.
 
 ```bash
 # binlog 목록 확인
@@ -150,7 +263,9 @@ mysqlbinlog --base64-output=DECODE-ROWS \
 
 ### 3-2. 일반 쿼리 로그 / 에러 로그 분석
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+**일반 쿼리 로그(General Query Log):** MySQL에 실행된 **모든** SQL 쿼리를 기록합니다. 성능에 영향을 주므로 평상시에는 끄고, 침해 의심 시 일시적으로 켭니다.
+
+> ⚠️ 주의: general_log를 항상 켜두면 성능 저하 및 디스크 소진 위험이 있습니다.
 
 ```sql
 -- 일반 쿼리 로그 위치 확인
@@ -170,6 +285,10 @@ LIMIT 100;
 
 ### 3-3. InnoDB 언두 로그로 데이터 복구
 
+**InnoDB 언두 로그란?** 트랜잭션이 롤백될 때 데이터를 원상 복구하기 위한 로그입니다. 커밋된 후에도 일정 기간 보존되어 포렌식에 활용할 수 있습니다.
+
+> 💡 **언제 사용하나:** `DELETE FROM users WHERE id = 1`이 실행됐는데 binlog가 없을 때, 언두 로그에서 복구를 시도할 수 있습니다.
+
 ```bash
 # undrop-for-innodb 도구 사용
 git clone https://github.com/twindb/undrop-for-innodb.git
@@ -188,7 +307,36 @@ cd undrop-for-innodb && make
 
 ## 4. 네트워크 레벨 DB 트래픽 분석
 
+### 왜 네트워크 레벨 분석이 필요한가?
+
+DB 감사 로그는 공격자가 삭제할 수 있습니다. 반면 네트워크 패킷은 DB 서버 밖에서 수집되므로 공격자가 조작하기 어렵습니다.
+
+**전제 조건:** DB 트래픽이 암호화되지 않아야 합니다 (SSL/TLS 미적용). 암호화된 경우에는 SSLKEYLOGFILE 또는 인증서 개인키로 복호화가 필요합니다.
+
+**MySQL 패킷 구조:**
+```
+TCP 페이로드 구조:
+  [0-3] 패킷 길이 (3바이트 리틀엔디안 + 1바이트 시퀀스)
+  [4]   커맨드 바이트 (0x03 = COM_QUERY = SQL 실행)
+  [5+]  SQL 문 본문
+
+예: 패킷 페이로드 hex 덤프
+00 00 00 03 53 45 4c 45 43 54 20 2a 20 46 52 4f 4d 20 75 73 65 72 73
+              ^  ^-- "SELECT * FROM users" (ASCII)
+              |
+              0x03 = COM_QUERY
+```
+
 ```python
+#!/usr/bin/env python3
+"""MySQL/Oracle 네트워크 트래픽 분석 — DB 쿼리 재구성 및 공격 탐지.
+
+pcap 파일에서 암호화되지 않은 DB 쿼리를 추출하고 공격 패턴을 탐지합니다.
+
+요구사항:
+  pip install scapy
+"""
+
 from scapy.all import rdpcap, TCP
 import re
 import argparse
@@ -196,7 +344,12 @@ import argparse
 MYSQL_PORT = 3306
 ORACLE_PORT = 1521
 
+
 def extract_db_queries(pcap_file: str, port: int = MYSQL_PORT) -> list[str]:
+    """pcap 파일에서 DB 쿼리 추출.
+    
+    MySQL COM_QUERY 패킷의 구조를 이용해 SQL 문을 재구성합니다.
+    """
     packets = rdpcap(pcap_file)
     queries: list[str] = []
 
@@ -255,9 +408,29 @@ if __name__ == "__main__":
 
 ## 5. DB 감사 정책 설정
 
+### 감사(Auditing) vs 로깅의 차이
+
+```
+일반 로그:
+  - 에러, 슬로우 쿼리 등을 기록
+  - 보안 감사 목적으로 설계되지 않음
+  - 무결성 보장 없음
+
+감사(Auditing):
+  - 보안 이벤트를 전용으로 기록
+  - 누가, 언제, 무엇을 했는지 추적
+  - 법적 증거 요건을 고려한 설계
+  - 일반적으로 별도 저장소에 보관
+```
+
+**감사 설정의 원칙:**
+1. **최소 필요 항목**: 모든 쿼리를 감사하면 성능 저하. 고위험 작업만 선택
+2. **감사 로그 보호**: DB 내부에만 저장하면 DBA가 삭제 가능 → 외부 SIEM으로 전송
+3. **보존 기간**: 법규에 따라 최소 1~3년 이상 보존 필요
+
 ### 5-1. Oracle 감사 활성화
 
-SQL 쿼리문입니다. SQL 인젝션 공격은 사용자 입력이 쿼리에 직접 포함될 때 발생하며 데이터베이스 전체를 침해할 수 있습니다.
+**Oracle Unified Auditing (12c+)이란?** 감사 설정을 정책으로 관리하는 통합 감사 시스템입니다.
 
 ```sql
 -- Unified Auditing 정책 생성
@@ -281,8 +454,10 @@ AUDIT POLICY failed_logins WHENEVER NOT SUCCESSFUL;
 
 ### 5-2. MySQL 감사 활성화 (MariaDB Audit Plugin)
 
-
-데이터베이스 침해 흔적을 분석합니다. 쿼리 이력, 접속 로그, 감사 로그에서 비정상적인 대용량 SELECT, 권한 변경, 시스템 함수 호출 등 공격 패턴을 추적합니다.
+**MySQL 감사 플러그인 옵션:**
+- **MariaDB Audit Plugin**: 무료, MariaDB/MySQL 모두 지원
+- **MySQL Enterprise Audit**: MySQL Enterprise Edition 전용 (유료)
+- **Percona Audit Log**: Percona Server 전용 (무료)
 
 ```bash
 # MariaDB Audit Plugin 설치
@@ -304,7 +479,37 @@ EOF
 
 ## 6. 침해 탐지 자동화
 
+### 실시간 모니터링이 중요한 이유
+
+수동으로 로그를 확인하면 공격 발생 후 수일이 지나서야 발견할 수 있습니다. 자동화된 모니터링으로 실시간 탐지가 가능합니다.
+
+**탐지해야 할 의심 패턴:**
+| 패턴 | 의미 | 공격 유형 |
+|------|------|-----------|
+| `INTO OUTFILE` | 파일로 데이터 저장 | 데이터 유출, 웹쉘 업로드 |
+| `LOAD_FILE` | 파일 내용 읽기 | 민감 파일 탈취 |
+| `sys_exec`, `sys_eval` | UDF로 OS 명령 실행 | 권한 상승, RCE |
+| `DROP TABLE` | 테이블 삭제 | 랜섬웨어, 데이터 파괴 |
+| `xp_cmdshell` | MSSQL OS 명령 실행 | MSSQL RCE |
+| `GRANT ALL` | 모든 권한 부여 | 백도어 계정 생성 |
+| `CREATE USER` | 새 계정 생성 | 지속성 확보 |
+| `INFORMATION_SCHEMA` | 스키마 정보 수집 | SQL 인젝션 정찰 단계 |
+
 ```python
+#!/usr/bin/env python3
+"""MySQL 실시간 감사 모니터.
+
+general_log를 주기적으로 조회해 의심 쿼리를 탐지하고 이메일로 알림을 보냅니다.
+
+전제 조건:
+  - MySQL general_log가 활성화되어 있어야 함
+  - pip install pymysql
+
+보안 주의:
+  - 비밀번호는 명령행 인수 대신 환경 변수나 설정 파일에서 읽어야 함
+  - 운영 환경에서는 .env 파일 또는 AWS Secrets Manager 사용 권장
+"""
+
 import pymysql
 import smtplib
 import time
@@ -396,6 +601,57 @@ if __name__ == "__main__":
 
 # DB Forensics and Defense — Breach Detection and Auditing
 
+## 0. Beginner Concepts
+
+### What is DB Forensics?
+
+**Database Forensics** is the process of investigating what happened when a database was compromised or data was leaked, collecting and analyzing evidence systematically.
+
+**Analogy:** Like reviewing CCTV footage after a shoplifting incident, you analyze DB logs and audit records to prove a breach occurred.
+
+### Common DB Forensics Scenarios
+
+```
+Scenario 1: Customer data leaked to dark web
+  - Millions of personal records appeared online
+  - "Did it come from our DB?"
+  - → Analyze binlog, audit logs to verify
+
+Scenario 2: Unknown IP logged into DBA account
+  - Mass SELECT queries at 3 AM
+  - → Analyze login history, query logs
+
+Scenario 3: Insider threat
+  - Departing employee may have exfiltrated customer data
+  - "Who took what, when, and how much?"
+  - → Audit logs + network traffic analysis
+
+Scenario 4: Ransomware attack
+  - DB data was encrypted
+  - Need to assess damage before recovery
+  - → binlog/redo log to find last clean recovery point
+```
+
+### Evidence Collection Priority
+
+```
+Priority 1 (highly volatile — collect immediately):
+  - Active connection/session list
+  - Running queries (processlist)
+  - In-memory buffer/cache state
+
+Priority 2 (persists but can be overwritten):
+  - Transaction logs (MySQL binlog, Oracle redo log)
+  - Error logs
+  - Slow query log
+
+Priority 3 (long-term preservation):
+  - DB audit logs
+  - Network packet captures
+  - OS-level logs (auth.log, syslog)
+  - DB snapshots/backups
+```
+
 ## 1. DB Forensics Overview
 
 ```
@@ -413,6 +669,8 @@ Forensic Goals:
   - Determine data breach scope (which tables, how many rows)
   - Find backdoor accounts or privilege escalations
   - Verify data integrity (were records tampered?)
+  - Determine if attacker moved from DB to OS
+  - Quantify exfiltrated data volume
 ```
 
 ---

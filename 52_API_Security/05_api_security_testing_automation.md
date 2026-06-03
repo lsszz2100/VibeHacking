@@ -6,6 +6,81 @@
 
 # API 보안 테스트 자동화
 
+## 0. 초보자를 위한 개념 이해
+
+### API 보안 테스트란?
+
+**API(Application Programming Interface)**는 소프트웨어 시스템들이 서로 통신하는 규약입니다. 모든 모바일 앱, 웹 서비스, 마이크로서비스는 API를 통해 데이터를 주고받습니다.
+
+```
+API 통신 예시:
+  카카오뱅크 앱 → API 요청 → 서버
+  GET /api/v1/accounts/123/balance
+  Authorization: Bearer eyJhbGc...
+  
+  ← 응답
+  {"balance": 1500000, "currency": "KRW"}
+```
+
+**API가 공격 대상이 되는 이유:**
+```
+전통적인 웹 공격:          API 공격:
+  HTML 폼 → XSS              JSON 파라미터 → 인젝션
+  URL → SQL 인젝션            JWT 토큰 → 조작
+  쿠키 → 세션 하이재킹         API 키 → 무단 사용
+```
+
+### API 보안 테스트 자동화가 필요한 이유
+
+```
+수동 테스트의 한계:
+  API 엔드포인트가 수십~수백 개
+  각 엔드포인트마다 수백 가지 테스트
+  → 사람이 일일이 테스트하면 수주 소요
+
+자동화의 장점:
+  1. OpenAPI 명세(swagger.json)만 있으면 자동으로 테스트 생성
+  2. CI/CD에 통합 → 코드 변경 시마다 자동 실행
+  3. 반복 가능 (같은 테스트 조건으로 재실행)
+  4. 야간에도 실행 (사람 없어도 됨)
+```
+
+### OWASP API Security Top 10 (2023)
+
+```
+API1:2023  — Broken Object Level Authorization (BOLA)
+  예: /api/orders/123 → /api/orders/124로 바꿔서 다른 사람 주문 조회
+
+API2:2023  — Broken Authentication
+  예: 약한 JWT 검증, 만료된 토큰 수락
+
+API3:2023  — Broken Object Property Level Authorization
+  예: 응답에 숨겨야 할 필드 포함 (내부 ID, 관리자 상태)
+
+API4:2023  — Unrestricted Resource Consumption
+  예: 속도 제한 없이 무한 요청 → 서버 과부하 또는 과금
+
+API5:2023  — Broken Function Level Authorization
+  예: 일반 사용자가 /admin/users API 호출 가능
+
+API6:2023  — Unrestricted Access to Sensitive Business Flows
+  예: 봇이 무한 쿠폰 발급, 티켓팅 사재기
+
+API7:2023  — Server Side Request Forgery (SSRF)
+  예: URL 파라미터에 내부 서비스 주소 삽입
+
+API8:2023  — Security Misconfiguration
+  예: CORS 와일드카드 (*), 불필요한 HTTP 메서드 허용
+
+API9:2023  — Improper Inventory Management
+  예: 구형 API 버전이 여전히 활성화 (/api/v1/... 숨어있음)
+
+API10:2023 — Unsafe Consumption of APIs
+  예: 외부 API 응답을 검증 없이 신뢰하고 처리
+```
+
+---
+
 OpenAPI 명세 기반 자동 퍼징, OAuth/JWT 보안 테스트, GraphQL 취약점 자동화, 비즈니스 로직 취약점 테스트를 Python으로 구현한다.
 
 ---

