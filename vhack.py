@@ -11,6 +11,7 @@ vhack — VibeHacking CLI
   python3 vhack.py lab start 01         # 웹 해킹 랩 시작
   python3 vhack.py lab status           # 실행 중인 컨테이너 확인
   python3 vhack.py search "SQL 인젝션"   # 전체 MD 검색
+  python3 vhack.py alias install        # 쉘 alias 자동 등록 → vhack 으로 바로 사용
   python3 vhack.py update               # 최신 버전으로 업데이트
 """
 
@@ -566,6 +567,261 @@ def cmd_info(args: argparse.Namespace) -> None:
     print()
 
 
+# ── 명령어: alias ────────────────────────────────────────────────────────────
+_ALIAS_TAG    = "# vhack-alias"                       # 설치 마커 (삭제 시 기준)
+_SCRIPT_PATH  = Path(__file__).resolve()              # vhack.py 절대 경로
+_PYTHON       = "python3"
+
+
+def _alias_line(shell: str) -> str:
+    """셸 종류에 맞는 alias 한 줄 반환."""
+    if shell == "fish":
+        return f'alias vhack "{_PYTHON} {_SCRIPT_PATH}"  {_ALIAS_TAG}'
+    if shell == "powershell":
+        return f'function vhack {{ {_PYTHON} "{_SCRIPT_PATH}" @args }}  {_ALIAS_TAG}'
+    # bash / zsh / sh 공통
+    return f'alias vhack="{_PYTHON} {_SCRIPT_PATH}"  {_ALIAS_TAG}'
+
+
+def _reload_hint(profile: Path, shell: str) -> str:
+    """설치 후 reload 안내 문자열."""
+    if shell == "fish":
+        return f"source {profile}"
+    if shell == "powershell":
+        return f". $PROFILE"
+    return f"source {profile}"
+
+
+def _detect_profiles() -> list[tuple[Path, str]]:
+    """
+    현재 환경에서 유효한 (셸 프로파일 경로, 셸 이름) 목록을 반환.
+
+    우선순위:
+      1. $SHELL 환경 변수 기반 → 활성 셸의 주요 RC 파일
+      2. 홈 디렉토리에 존재하는 다른 RC 파일
+      3. fish / PowerShell 보조 탐지
+    최소 1개는 항상 반환 (기본: ~/.bashrc).
+    """
+    home = Path.home()
+    active_shell = Path(os.environ.get("SHELL", "")).stem  # "bash", "zsh", "fish", ""
+
+    # (경로, 셸이름, 우선도) — 낮을수록 우선
+    candidates: list[tuple[Path, str, int]] = [
+        (home / ".bashrc",                           "bash",       1 if active_shell == "bash" else 3),
+        (home / ".zshrc",                            "zsh",        1 if active_shell == "zsh"  else 3),
+        (home / ".bash_profile",                     "bash",       4),
+        (home / ".profile",                          "sh",         5),
+        (home / ".config" / "fish" / "config.fish",  "fish",       1 if active_shell == "fish" else 6),
+    ]
+
+    # PowerShell 프로파일 (Windows / pwsh on Linux)
+    ps_profile = _powershell_profile()
+    if ps_profile:
+        pri = 1 if active_shell in ("pwsh", "powershell") else 6
+        candidates.append((ps_profile, "powershell", pri))
+
+    # 실제로 파일이 존재하는 것만, 우선도 순 정렬
+    existing = [(p, s) for p, s, _ in sorted(candidates, key=lambda x: x[2]) if p.exists()]
+
+    # 아무것도 없으면 기본값 ~/.bashrc 반환 (생성 예정)
+    return existing or [(home / ".bashrc", "bash")]
+
+
+def _powershell_profile() -> Path | None:
+    """PowerShell 프로파일 경로 탐지. 없으면 None."""
+    # pwsh (Linux/macOS) / Windows PowerShell
+    for cmd in (["pwsh", "-NoProfile", "-Command", "echo $PROFILE"],
+                ["powershell", "-NoProfile", "-Command", "echo $PROFILE"]):
+        try:
+            out = subprocess.run(cmd, capture_output=True, text=True, timeout=3).stdout.strip()
+            if out:
+                return Path(out)
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+    return None
+
+
+def _is_installed(profile: Path) -> bool:
+    """해당 프로파일에 alias가 이미 설치되어 있는지 확인."""
+    if not profile.exists():
+        return False
+    return _ALIAS_TAG in profile.read_text(encoding="utf-8", errors="ignore")
+
+
+def _do_install(profile: Path, shell: str) -> bool:
+    """
+    profile 파일에 alias 줄 추가.
+    이미 설치된 경우 False, 새로 설치한 경우 True.
+    """
+    if _is_installed(profile):
+        return False
+
+    line = _alias_line(shell)
+    # 파일이 없으면 생성 (부모 디렉토리도 함께)
+    profile.parent.mkdir(parents=True, exist_ok=True)
+    with profile.open("a", encoding="utf-8") as f:
+        f.write(f"\n{line}\n")
+    return True
+
+
+def _do_remove(profile: Path) -> bool:
+    """
+    profile 파일에서 alias 줄 제거.
+    제거한 경우 True, 없었으면 False.
+    """
+    if not profile.exists() or not _is_installed(profile):
+        return False
+
+    lines = profile.read_text(encoding="utf-8", errors="ignore").splitlines(keepends=True)
+    new_lines = [ln for ln in lines if _ALIAS_TAG not in ln]
+    # 연속 공백 줄 2개 이상 → 1개로 압축
+    cleaned: list[str] = []
+    prev_blank = False
+    for ln in new_lines:
+        is_blank = ln.strip() == ""
+        if is_blank and prev_blank:
+            continue
+        cleaned.append(ln)
+        prev_blank = is_blank
+
+    profile.write_text("".join(cleaned), encoding="utf-8")
+    return True
+
+
+def cmd_alias(args: argparse.Namespace) -> None:
+    sub = args.alias_cmd
+
+    if sub == "install":
+        _alias_cmd_install(getattr(args, "profile", None))
+    elif sub == "remove":
+        _alias_cmd_remove()
+    elif sub == "status":
+        _alias_cmd_status()
+    else:
+        print(red(f"✗ 알 수 없는 alias 서브명령: {sub}"))
+        sys.exit(1)
+
+
+def _alias_cmd_install(target_profile: str | None) -> None:
+    print(bold(cyan("\n🔗 vhack alias 설치\n")))
+
+    if target_profile:
+        # 사용자가 직접 파일 지정
+        profiles = [(Path(target_profile).expanduser(), _guess_shell(Path(target_profile)))]
+    else:
+        profiles = _detect_profiles()
+
+    installed_any = False
+    reload_hints: list[str] = []
+
+    for profile, shell in profiles:
+        tag = f"[{shell}]"
+        if _is_installed(profile):
+            print(f"  {yellow('⚠')} {tag} 이미 설치됨: {dim(str(profile))}")
+            continue
+
+        if _do_install(profile, shell):
+            print(f"  {green('✓')} {tag} 설치 완료: {cyan(str(profile))}")
+            print(f"      {dim('추가된 줄:')} {dim(_alias_line(shell))}")
+            reload_hints.append((profile, shell))
+            installed_any = True
+
+    if not installed_any:
+        print(yellow("\n  모든 대상 프로파일에 이미 설치되어 있습니다.\n"))
+        print(f"  확인: {cyan('vhack alias status')}")
+        print(f"  제거: {cyan('vhack alias remove')}\n")
+        return
+
+    print(bold(green("\n✓ 설치 완료!")))
+    print("\n  지금 바로 적용하려면 아래 명령어를 실행하세요:\n")
+    for profile, shell in reload_hints:
+        hint = _reload_hint(profile, shell)
+        print(f"    {cyan(hint)}")
+    print(f"\n  이후 새 터미널에서 {bold(cyan('vhack'))} 으로 바로 사용 가능합니다.\n")
+
+
+def _alias_cmd_remove() -> None:
+    print(bold(cyan("\n🗑️  vhack alias 제거\n")))
+
+    profiles = _detect_profiles()
+    # 설치된 모든 파일 탐색 (detect_profiles 외의 파일에도 있을 수 있음)
+    extra = [
+        Path.home() / ".bashrc",
+        Path.home() / ".zshrc",
+        Path.home() / ".bash_profile",
+        Path.home() / ".profile",
+        Path.home() / ".config" / "fish" / "config.fish",
+    ]
+    all_candidates = {p for p, _ in profiles} | set(extra)
+
+    removed_any = False
+    for profile in sorted(all_candidates):
+        if _do_remove(profile):
+            print(f"  {green('✓')} 제거 완료: {cyan(str(profile))}")
+            removed_any = True
+
+    if not removed_any:
+        print(yellow("  설치된 alias를 찾지 못했습니다.\n"))
+    else:
+        print(bold(green("\n✓ 제거 완료!")))
+        print(dim("  새 터미널을 열거나 source <프로파일>을 실행하면 적용됩니다.\n"))
+
+
+def _alias_cmd_status() -> None:
+    print(bold(cyan("\n📋 vhack alias 설치 현황\n")))
+
+    candidates = [
+        Path.home() / ".bashrc",
+        Path.home() / ".zshrc",
+        Path.home() / ".bash_profile",
+        Path.home() / ".profile",
+        Path.home() / ".config" / "fish" / "config.fish",
+    ]
+    ps_profile = _powershell_profile()
+    if ps_profile:
+        candidates.append(ps_profile)
+
+    found_any = False
+    for profile in candidates:
+        if not profile.exists():
+            continue
+        if _is_installed(profile):
+            print(f"  {green('●')} {cyan(str(profile))}  {green('설치됨')}")
+            # 실제 alias 줄 표시
+            for ln in profile.read_text(encoding="utf-8", errors="ignore").splitlines():
+                if _ALIAS_TAG in ln:
+                    print(f"      {dim(ln.strip())}")
+            found_any = True
+        else:
+            print(f"  {dim('○')} {dim(str(profile))}  {dim('미설치')}")
+
+    if not found_any:
+        print(yellow("  설치된 alias가 없습니다.\n"))
+        print(f"  설치: {cyan('python3 vhack.py alias install')}\n")
+    else:
+        print()
+        # 현재 세션에서 vhack 명령 사용 가능한지 확인
+        which = subprocess.run(["which", "vhack"], capture_output=True, text=True)
+        if which.returncode == 0:
+            print(f"  {green('✓')} 현재 세션에서 사용 가능: {cyan(which.stdout.strip())}\n")
+        else:
+            print(f"  {yellow('⚠')} 현재 세션 미적용 — 터미널을 재시작하거나 아래를 실행하세요:")
+            for profile in candidates:
+                if profile.exists() and _is_installed(profile):
+                    shell = _guess_shell(profile)
+                    print(f"    {cyan(_reload_hint(profile, shell))}")
+            print()
+
+
+def _guess_shell(profile: Path) -> str:
+    """파일명으로 셸 종류 추측."""
+    name = profile.name
+    if "zsh" in name:    return "zsh"
+    if "fish" in name or "fish" in str(profile): return "fish"
+    if "powershell" in name.lower() or name.endswith(".ps1"): return "powershell"
+    return "bash"
+
+
 # ── 명령어: update ────────────────────────────────────────────────────────────
 def cmd_update(args: argparse.Namespace) -> None:
     print(bold(cyan("\n🔄 최신 버전으로 업데이트 중...\n")))
@@ -629,6 +885,9 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py lab logs 01        랩 로그 보기
           python3 vhack.py search "Kerberos"  전체 문서 검색
           python3 vhack.py info 54            섹션 상세 정보
+          python3 vhack.py alias install      쉘 alias 자동 등록
+          python3 vhack.py alias remove       alias 제거
+          python3 vhack.py alias status       설치 현황 확인
           python3 vhack.py update             git pull
         """),
     )
@@ -665,6 +924,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_info = sub.add_parser("info", help="섹션 상세 정보")
     p_info.add_argument("section", type=int, metavar="섹션번호", help="1~64")
 
+    # alias
+    p_alias = sub.add_parser("alias", help="쉘 alias 자동 등록/제거/확인")
+    alias_sub = p_alias.add_subparsers(dest="alias_cmd", metavar="<서브명령>")
+    p_ai = alias_sub.add_parser("install", help="alias 설치 (vhack 으로 바로 사용)")
+    p_ai.add_argument(
+        "--profile", metavar="파일경로",
+        help="설치할 프로파일 직접 지정 (기본: 현재 셸 자동 감지)",
+    )
+    alias_sub.add_parser("remove", help="설치된 alias 제거")
+    alias_sub.add_parser("status", help="설치 현황 확인")
+
     # update
     sub.add_parser("update", help="git pull로 최신 버전 업데이트")
 
@@ -686,6 +956,7 @@ def main() -> None:
         "lab":    cmd_lab,
         "search": cmd_search,
         "info":   cmd_info,
+        "alias":  cmd_alias,
         "update": cmd_update,
     }
 
