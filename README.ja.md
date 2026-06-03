@@ -67,6 +67,11 @@ python3 vhack.py lab start 02            # バイナリエクスプロイトラ�
 python3 vhack.py lab status              # 実行中コンテナ確認
 python3 vhack.py lab stop --all          # 全ラボ停止
 
+# シェルエイリアス — どこからでも vhack を実行 (初回のみ)
+python3 vhack.py alias install           # シェル自動検出 → RCファイルに登録
+python3 vhack.py alias status            # インストール状況確認
+python3 vhack.py alias remove            # エイリアス削除
+
 # アップデート
 python3 vhack.py update                  # git pull で最新コンテンツ取得
 ```

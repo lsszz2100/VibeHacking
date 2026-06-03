@@ -67,6 +67,11 @@ python3 vhack.py lab start 02            # Start binary exploitation lab
 python3 vhack.py lab status              # Show running containers
 python3 vhack.py lab stop --all          # Stop all labs
 
+# Shell alias — run vhack from anywhere (one-time setup)
+python3 vhack.py alias install           # auto-detect shell → add to RC file
+python3 vhack.py alias status            # check installation
+python3 vhack.py alias remove            # unregister alias
+
 # Update
 python3 vhack.py update                  # git pull latest content
 ```

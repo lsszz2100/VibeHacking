@@ -67,6 +67,11 @@ python3 vhack.py lab start 02            # 启动二进制漏洞利用实验室
 python3 vhack.py lab status              # 查看运行中的容器
 python3 vhack.py lab stop --all          # 停止所有实验室
 
+# Shell alias — 全局使用 vhack（一次性设置）
+python3 vhack.py alias install           # 自动检测 shell → 写入 RC 文件
+python3 vhack.py alias status            # 查看安装状态
+python3 vhack.py alias remove            # 删除 alias
+
 # 更新
 python3 vhack.py update                  # git pull 获取最新内容
 ```

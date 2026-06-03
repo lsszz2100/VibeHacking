@@ -103,6 +103,11 @@ python3 vhack.py lab start 02           # 바이너리 익스플로잇 랩
 python3 vhack.py lab status             # 실행 중인 컨테이너 확인
 python3 vhack.py lab stop --all         # 모든 랩 종료
 
+# alias 등록 (한 번만 → 이후 vhack 으로 바로 사용 가능)
+python3 vhack.py alias install          # 셸 자동 감지 → RC 파일에 등록
+python3 vhack.py alias status           # 설치 현황 확인
+python3 vhack.py alias remove           # alias 제거
+
 # 업데이트
 python3 vhack.py update                 # git pull
 ```
