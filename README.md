@@ -73,6 +73,60 @@ assert all(features.values()), "All checks passed ✓"
 
 ---
 
+## 🛠️ CLI + 실습 환경 — 바로 시작하기
+
+### 1분 설치
+
+```bash
+git clone https://github.com/lsszz2100/VibeHacking.git
+cd VibeHacking
+python3 vhack.py list        # 64개 섹션 목록 확인
+```
+
+> 📖 자세한 설치 가이드 → **[INSTALL.md](./INSTALL.md)**
+> 📘 전체 명령어 레퍼런스 → **[USAGE.md](./USAGE.md)**
+
+### `vhack` 주요 명령어
+
+```bash
+# 학습 탐색
+python3 vhack.py list                   # 전체 64개 섹션 목록
+python3 vhack.py list --search web      # "web" 관련 섹션 필터
+python3 vhack.py study 5                # 웹 해킹 섹션 파일 목록
+python3 vhack.py study 5 1              # OWASP Top 10 문서 읽기
+python3 vhack.py search "Kerberoasting" # 전체 문서 키워드 검색
+
+# Docker 실습 환경 관리 (Docker 필요)
+python3 vhack.py lab ls                 # 실습 환경 목록 + 접속 URL
+python3 vhack.py lab start 01           # 웹 해킹 랩 시작 → localhost:8080
+python3 vhack.py lab start 02           # 바이너리 익스플로잇 랩
+python3 vhack.py lab status             # 실행 중인 컨테이너 확인
+python3 vhack.py lab stop --all         # 모든 랩 종료
+
+# 업데이트
+python3 vhack.py update                 # git pull
+```
+
+### 실습 환경 (Docker 기반)
+
+| 번호 | 랩 이름 | 내용 | 접속 | 난이도 |
+|:----:|---------|------|------|:------:|
+| **01** | 웹 해킹 랩 | DVWA · Juice Shop · WebGoat | http://localhost:8080 | ★★☆ |
+| **02** | 바이너리 익스플로잇 랩 | BOF · ROP · heap · fmtstr | nc localhost 10001 | ★★★ |
+| **03** | 네트워크 해킹 랩 | SSH · FTP · DNS · SMTP 취약 서비스 | docker exec 진입 | ★★☆ |
+| **04** | 클라우드/컨테이너 보안 랩 | SSRF · AWS IMDS · K8s 탈출 | http://localhost:8080 | ★★★ |
+| **05** | 전체 시나리오 통합 랩 | APT 공격 체인 시뮬레이션 | http://localhost:8888 | ★★★★ |
+
+```bash
+# 빠른 실습 예시: 웹 해킹
+python3 vhack.py study 5 1        # ① OWASP Top 10 이론 학습
+python3 vhack.py lab start 01     # ② DVWA/Juice Shop 랩 시작
+# ③ 브라우저에서 http://localhost:8080 접속하여 실습
+python3 vhack.py lab stop 01      # ④ 완료 후 종료
+```
+
+---
+
 ## 📡 목차
 
 > 🟢 입문 · 🟡 중급 · 🔴 고급 · ⚫ 전문가
