@@ -14,9 +14,10 @@
 4. [vhack lab — 실습 환경 관리](#4-vhack-lab--실습-환경-관리)
 5. [vhack search — 전체 문서 검색](#5-vhack-search--전체-문서-검색)
 6. [vhack info — 섹션 상세 정보](#6-vhack-info--섹션-상세-정보)
-7. [vhack update — 업데이트](#7-vhack-update--업데이트)
-8. [학습 로드맵 예시](#8-학습-로드맵-예시)
-9. [실습 시나리오 예시](#9-실습-시나리오-예시)
+7. [vhack alias — 셸 alias 등록](#7-vhack-alias--셸-alias-등록)
+8. [vhack update — 업데이트](#8-vhack-update--업데이트)
+9. [학습 로드맵 예시](#9-학습-로드맵-예시)
+10. [실습 시나리오 예시](#10-실습-시나리오-예시)
 
 ---
 
@@ -35,6 +36,7 @@ vhack — VibeHacking CLI
   lab       Docker 실습 환경 관리
   search    전체 마크다운 문서 검색
   info      섹션 상세 정보
+  alias     셸 alias 자동 등록/제거/확인
   update    git pull로 최신 버전 업데이트
 ```
 
@@ -44,9 +46,9 @@ vhack — VibeHacking CLI
 # 방법 1: python3으로 직접 실행 (설치 불필요)
 python3 vhack.py list
 
-# 방법 2: alias 등록 후 vhack 으로 사용
-echo 'alias vhack="python3 /path/to/VibeHacking/vhack.py"' >> ~/.bashrc
-source ~/.bashrc
+# 방법 2: alias 자동 등록 → vhack 으로 바로 사용 (권장)
+python3 vhack.py alias install
+source ~/.bashrc   # 현재 세션에 즉시 적용
 vhack list
 ```
 
@@ -352,7 +354,106 @@ vhack info 54
 
 ---
 
-## 7. vhack update — 업데이트
+## 7. vhack alias — 셸 alias 등록
+
+```
+사용법:
+  vhack alias install [--profile <파일경로>]   셸 프로파일에 alias 등록
+  vhack alias remove                           등록된 alias 제거
+  vhack alias status                           설치 현황 확인
+
+지원 셸: bash · zsh · fish · sh · PowerShell(pwsh)
+```
+
+### 7-1. alias 설치 (`alias install`)
+
+`$SHELL` 환경변수로 현재 셸을 자동 감지하고, 홈 디렉토리의 RC 파일에 alias 줄을 추가합니다.
+이후 `vhack` 만 입력하면 어느 디렉토리에서든 CLI를 실행할 수 있습니다.
+
+```bash
+# 자동 감지 설치 (권장)
+python3 vhack.py alias install
+
+# 출력 예시:
+# 🔗 vhack alias 설치
+#
+#   ✓ [bash] 설치 완료: /home/user/.bashrc
+#       추가된 줄: alias vhack="python3 /path/to/vhack.py"  # vhack-alias
+#
+# ✓ 설치 완료!
+#   지금 바로 적용하려면 아래 명령어를 실행하세요:
+#     source /home/user/.bashrc
+
+# 현재 세션에 즉시 적용
+source ~/.bashrc   # bash
+source ~/.zshrc    # zsh
+```
+
+```bash
+# 특정 프로파일에만 설치
+python3 vhack.py alias install --profile ~/.zshrc
+python3 vhack.py alias install --profile ~/.bash_profile
+```
+
+**셸별 자동 감지 파일:**
+
+| 셸 | 탐색 파일 (우선순위 순) |
+|----|------------------------|
+| bash | `~/.bashrc` → `~/.bash_profile` → `~/.profile` |
+| zsh  | `~/.zshrc` |
+| fish | `~/.config/fish/config.fish` |
+| PowerShell | `$PROFILE` (pwsh 실행 경로 자동 탐지) |
+
+> 이미 설치된 프로파일은 건너뜁니다 — 중복 실행해도 안전합니다.
+
+### 7-2. alias 제거 (`alias remove`)
+
+모든 프로파일에서 등록된 alias 줄을 찾아 삭제합니다.
+
+```bash
+vhack alias remove
+
+# 출력 예시:
+# 🗑️  vhack alias 제거
+#   ✓ 제거 완료: /home/user/.bashrc
+# ✓ 제거 완료!
+```
+
+### 7-3. 설치 현황 확인 (`alias status`)
+
+어떤 프로파일에 alias가 등록됐는지, 현재 세션에서 활성화됐는지 확인합니다.
+
+```bash
+vhack alias status
+
+# 출력 예시 (설치 후):
+# 📋 vhack alias 설치 현황
+#
+#   ● /home/user/.bashrc  설치됨
+#       alias vhack="python3 /path/to/vhack.py"  # vhack-alias
+#   ○ /home/user/.profile  미설치
+#
+#   ✓ 현재 세션에서 사용 가능: /usr/local/bin/vhack
+
+# 출력 예시 (미설치):
+# 📋 vhack alias 설치 현황
+#   ○ /home/user/.bashrc  미설치
+#   설치된 alias가 없습니다.
+#   설치: python3 vhack.py alias install
+```
+
+### 7-4. 빠른 참고
+
+```bash
+python3 vhack.py alias install          # 자동 감지 설치
+python3 vhack.py alias install --profile ~/.zshrc  # 파일 직접 지정
+python3 vhack.py alias status           # 현황 확인
+python3 vhack.py alias remove           # 제거
+```
+
+---
+
+## 8. vhack update — 업데이트
 
 ```bash
 # 최신 학습 자료 업데이트 (git pull)
@@ -367,7 +468,7 @@ vhack update
 
 ---
 
-## 8. 학습 로드맵 예시
+## 9. 학습 로드맵 예시
 
 ### 초보자 로드맵 (6개월)
 
@@ -425,7 +526,7 @@ vhack study 21      # 윈도우 익스플로잇
 
 ---
 
-## 9. 실습 시나리오 예시
+## 10. 실습 시나리오 예시
 
 ### 시나리오 1: 웹 해킹 기초 (Lab 01)
 
@@ -518,11 +619,35 @@ python3 vhack.py lab stop --all        # Stop all labs
 python3 vhack.py lab status            # Running containers
 python3 vhack.py lab logs 01           # Live logs
 
+# Shell alias (run vhack from anywhere)
+python3 vhack.py alias install           # Auto-detect shell → register alias
+python3 vhack.py alias install --profile ~/.zshrc  # Target specific file
+python3 vhack.py alias status            # Check installation
+python3 vhack.py alias remove            # Unregister alias
+
 # Search & info
 python3 vhack.py search "SQL injection"  # Search all docs
 python3 vhack.py info 54                 # Section details
 python3 vhack.py update                  # Git pull
 ```
+
+## Alias Quick Reference
+
+```bash
+# After install, use vhack from any directory
+python3 vhack.py alias install   # installs → alias vhack="python3 /path/vhack.py"
+source ~/.bashrc                  # apply to current session
+vhack list                        # no more "python3 vhack.py" needed
+```
+
+| Command | Description |
+|---------|-------------|
+| `alias install` | Detect shell, add alias to RC file. Idempotent. |
+| `alias install --profile <path>` | Target a specific profile file |
+| `alias status` | Show which profiles have the alias; whether active in current session |
+| `alias remove` | Remove alias from all profiles |
+
+**Supported shells:** bash · zsh · fish · sh · PowerShell (pwsh)
 
 ## Lab Quick Access
 
@@ -536,9 +661,10 @@ python3 vhack.py update                  # Git pull
 
 ## Study Tips
 
-1. **Start with section 0** — Every file begins with `## 0. 초보자를 위한 개념 이해` (Beginner Guide) — plain-language explanations with ASCII diagrams
-2. **Learn → Practice** — Read the theory (`vhack study`), then start the related lab (`vhack lab start`)
-3. **Search first** — Use `vhack search` to find relevant content before diving into a section
-4. **Stop labs when done** — `vhack lab stop --all` frees up resources
+1. **Register alias first** — Run `python3 vhack.py alias install` once, then use `vhack` everywhere
+2. **Start with section 0** — Every file begins with `## 0. 초보자를 위한 개념 이해` (Beginner Guide) — plain-language explanations with ASCII diagrams
+3. **Learn → Practice** — Read the theory (`vhack study`), then start the related lab (`vhack lab start`)
+4. **Search first** — Use `vhack search` to find relevant content before diving into a section
+5. **Stop labs when done** — `vhack lab stop --all` frees up resources
 
 > ⚠️ **Legal Notice**: Use all content for authorized security research, CTF competitions, and learning only. Unauthorized use against real systems is illegal.
