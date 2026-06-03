@@ -37,6 +37,60 @@ From CTF to Bug Bounty, Red Team to AI Security: a **practical, hands-on knowled
 
 ---
 
+## 🛠️ CLI + Lab Environments — Get Started Now
+
+### 1-Minute Setup
+
+```bash
+git clone https://github.com/lsszz2100/VibeHacking.git
+cd VibeHacking
+python3 vhack.py list        # Browse all 64 sections
+```
+
+> 📖 Full installation guide → **[INSTALL.md](./INSTALL.md)**
+> 📘 Complete command reference → **[USAGE.md](./USAGE.md)**
+
+### `vhack` Key Commands
+
+```bash
+# Browse & study
+python3 vhack.py list                    # All 64 sections
+python3 vhack.py list --search web       # Filter by keyword
+python3 vhack.py study 5                 # Web Hacking section — file list
+python3 vhack.py study 5 1               # Read OWASP Top 10 in terminal
+python3 vhack.py search "Kerberoasting"  # Full-text search across all docs
+
+# Docker lab management (requires Docker)
+python3 vhack.py lab ls                  # List labs with access URLs
+python3 vhack.py lab start 01            # Start web hacking lab → localhost:8080
+python3 vhack.py lab start 02            # Start binary exploitation lab
+python3 vhack.py lab status              # Show running containers
+python3 vhack.py lab stop --all          # Stop all labs
+
+# Update
+python3 vhack.py update                  # git pull latest content
+```
+
+### Lab Environments (Docker-based)
+
+| # | Lab Name | Content | Access | Difficulty |
+|:-:|----------|---------|--------|:----------:|
+| **01** | Web Hacking Lab | DVWA · Juice Shop · WebGoat | http://localhost:8080 | ★★☆ |
+| **02** | Binary Exploitation Lab | BOF · ROP · heap · fmtstr | nc localhost 10001 | ★★★ |
+| **03** | Network Hacking Lab | SSH · FTP · DNS · SMTP vulnerable services | docker exec shell | ★★☆ |
+| **04** | Cloud/Container Security Lab | SSRF · AWS IMDS · K8s escape | http://localhost:8080 | ★★★ |
+| **05** | Full Scenario Lab | APT attack chain simulation | http://localhost:8888 | ★★★★ |
+
+```bash
+# Quick practice example: Web Hacking
+python3 vhack.py study 5 1        # ① Read OWASP Top 10 theory
+python3 vhack.py lab start 01     # ② Start DVWA/Juice Shop lab
+# ③ Open http://localhost:8080 and practice
+python3 vhack.py lab stop 01      # ④ Stop when done
+```
+
+---
+
 ## Table of Contents
 
 | # | Section | Key Topics | Files |

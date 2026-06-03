@@ -37,6 +37,60 @@ CTF・バグバウンティ・レッドチーム・AIセキュリティまで、
 
 ---
 
+## 🛠️ CLI + 実習環境 — すぐに始める
+
+### 1分セットアップ
+
+```bash
+git clone https://github.com/lsszz2100/VibeHacking.git
+cd VibeHacking
+python3 vhack.py list        # 64セクション一覧を表示
+```
+
+> 📖 詳細インストールガイド → **[INSTALL.md](./INSTALL.md)**
+> 📘 コマンドリファレンス → **[USAGE.md](./USAGE.md)**
+
+### `vhack` 主要コマンド
+
+```bash
+# 学習コンテンツを探索
+python3 vhack.py list                    # 64セクション全一覧
+python3 vhack.py list --search web       # キーワードでフィルタ
+python3 vhack.py study 5                 # Webハッキング セクション ファイル一覧
+python3 vhack.py study 5 1               # OWASP Top 10 をターミナルで読む
+python3 vhack.py search "Kerberoasting"  # 全ドキュメント全文検索
+
+# Docker実習環境管理 (Docker必要)
+python3 vhack.py lab ls                  # 実習環境一覧 + アクセスURL
+python3 vhack.py lab start 01            # Webハッキングラボ起動 → localhost:8080
+python3 vhack.py lab start 02            # バイナリエクスプロイトラボ起動
+python3 vhack.py lab status              # 実行中コンテナ確認
+python3 vhack.py lab stop --all          # 全ラボ停止
+
+# アップデート
+python3 vhack.py update                  # git pull で最新コンテンツ取得
+```
+
+### 実習環境 (Dockerベース)
+
+| # | ラボ名 | 内容 | アクセス | 難易度 |
+|:-:|--------|------|----------|:------:|
+| **01** | Webハッキングラボ | DVWA · Juice Shop · WebGoat | http://localhost:8080 | ★★☆ |
+| **02** | バイナリエクスプロイトラボ | BOF · ROP · heap · fmtstr | nc localhost 10001 | ★★★ |
+| **03** | ネットワークハッキングラボ | SSH · FTP · DNS · SMTP脆弱サービス | docker exec シェル | ★★☆ |
+| **04** | クラウド/コンテナセキュリティラボ | SSRF · AWS IMDS · K8s脱出 | http://localhost:8080 | ★★★ |
+| **05** | 総合シナリオラボ | APT攻撃チェーンシミュレーション | http://localhost:8888 | ★★★★ |
+
+```bash
+# 実習例: Webハッキング
+python3 vhack.py study 5 1        # ① OWASP Top 10 理論学習
+python3 vhack.py lab start 01     # ② DVWA/Juice Shop ラボ起動
+# ③ ブラウザで http://localhost:8080 を開いて実習
+python3 vhack.py lab stop 01      # ④ 完了後に停止
+```
+
+---
+
 ## 目次
 
 | # | セクション | 主要内容 | ファイル数 |

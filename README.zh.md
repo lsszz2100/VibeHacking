@@ -37,6 +37,60 @@
 
 ---
 
+## 🛠️ CLI + 实验环境 — 立即开始
+
+### 1分钟安装
+
+```bash
+git clone https://github.com/lsszz2100/VibeHacking.git
+cd VibeHacking
+python3 vhack.py list        # 浏览全部 64 个章节
+```
+
+> 📖 详细安装指南 → **[INSTALL.md](./INSTALL.md)**
+> 📘 完整命令参考 → **[USAGE.md](./USAGE.md)**
+
+### `vhack` 主要命令
+
+```bash
+# 浏览与学习
+python3 vhack.py list                    # 全部 64 个章节列表
+python3 vhack.py list --search web       # 按关键词过滤章节
+python3 vhack.py study 5                 # Web 渗透章节文件列表
+python3 vhack.py study 5 1               # 在终端阅读 OWASP Top 10
+python3 vhack.py search "Kerberoasting"  # 全文搜索所有文档
+
+# Docker 实验环境管理 (需要 Docker)
+python3 vhack.py lab ls                  # 实验环境列表 + 访问地址
+python3 vhack.py lab start 01            # 启动 Web 渗透实验室 → localhost:8080
+python3 vhack.py lab start 02            # 启动二进制漏洞利用实验室
+python3 vhack.py lab status              # 查看运行中的容器
+python3 vhack.py lab stop --all          # 停止所有实验室
+
+# 更新
+python3 vhack.py update                  # git pull 获取最新内容
+```
+
+### 实验环境 (基于 Docker)
+
+| # | 实验室名称 | 内容 | 访问地址 | 难度 |
+|:-:|-----------|------|----------|:----:|
+| **01** | Web 渗透实验室 | DVWA · Juice Shop · WebGoat | http://localhost:8080 | ★★☆ |
+| **02** | 二进制漏洞利用实验室 | BOF · ROP · heap · fmtstr | nc localhost 10001 | ★★★ |
+| **03** | 网络渗透实验室 | SSH · FTP · DNS · SMTP 漏洞服务 | docker exec shell | ★★☆ |
+| **04** | 云/容器安全实验室 | SSRF · AWS IMDS · K8s 逃逸 | http://localhost:8080 | ★★★ |
+| **05** | 综合场景实验室 | APT 攻击链模拟 | http://localhost:8888 | ★★★★ |
+
+```bash
+# 快速实践示例：Web 渗透
+python3 vhack.py study 5 1        # ① 阅读 OWASP Top 10 理论
+python3 vhack.py lab start 01     # ② 启动 DVWA/Juice Shop 实验室
+# ③ 打开 http://localhost:8080 开始实践
+python3 vhack.py lab stop 01      # ④ 完成后停止
+```
+
+---
+
 ## 目录
 
 | # | 章节 | 核心内容 | 文件数 |
