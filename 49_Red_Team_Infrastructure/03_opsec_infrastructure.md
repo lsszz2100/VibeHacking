@@ -8,6 +8,170 @@
 
 > **목적**: 교육, 연구, CTF, 공인된 레드팀 작전 환경에서의 학습용 자료
 
+## 0. 초보자를 위한 개념 이해
+
+### OPSEC 인프라 관리란?
+
+OPSEC(Operations Security, 작전 보안)은 레드팀 작전 중 공격자(레드팀)의 신원, 위치, 방법론이 방어자(블루팀)에게 노출되지 않도록 관리하는 원칙이다. 실제 APT 공격자들이 사용하는 은폐 기법을 레드팀이 적용해 블루팀이 실전과 같은 탐지 훈련을 할 수 있게 한다.
+
+**왜 배우는가:**
+```
+OPSEC이 없는 레드팀의 문제:
+
+  시나리오: 레드팀이 회사 내부망 침투 시뮬레이션
+    나쁜 OPSEC:
+      - 레드팀 VPN IP가 C2에 직접 연결
+      - 블루팀이 "저 IP는 우리 레드팀이네" → 탐지 무의미
+      - Metasploit 기본 설정 그대로 사용 → 즉시 탐지
+
+    좋은 OPSEC:
+      - 실제 APT처럼 CDN/리다이렉터 사용
+      - 커스텀 에이전트로 시그니처 변경
+      - 블루팀이 진짜 APT처럼 대응 훈련 가능
+
+  OPSEC이 중요한 또 다른 이유:
+    - 레드팀 인프라 노출 → 사고 조사 시 증거 오염
+    - 고객사 기밀 정보를 안전하게 보호해야 할 책임
+    - 레드팀 TTP 노출 → 다음 작전에서 블루팀이 준비됨
+```
+
+### 핵심 개념 정리
+
+```
+OPSEC 5단계 프로세스:
+
+1. 중요 정보 식별 (Critical Information)
+   - 팀서버 실제 IP
+   - 레드팀 운영자 신원
+   - 사용 중인 C2 프레임워크 종류
+   - 작전 일정 및 범위
+
+2. 위협 분석 (Threat Analysis)
+   - 블루팀의 SIEM/EDR 탐지 능력
+   - 네트워크 트래픽 분석 도구
+   - 포렌식 팀의 역량
+
+3. 취약점 분석 (Vulnerability Analysis)
+   - DNS 리버스 룩업으로 팀서버 발견 가능성
+   - 디폴트 에이전트 User-Agent 탐지 가능성
+   - 인증서의 CN(Common Name) 노출
+
+4. 위험 평가 (Risk Assessment)
+   - 각 취약점 발견 시 작전에 미치는 영향
+
+5. 대응책 적용 (Countermeasures)
+   - 팀서버 IP 보호: CDN/리다이렉터
+   - User-Agent 커스터마이징
+   - 인증서 정보 최소화
+```
+
+### 필요한 도구 및 환경
+- **ProtonVPN / Mullvad**: 레드팀 운영자 IP 보호
+- **Whois Privacy**: 도메인 등록 정보 보호
+- **Let's Encrypt**: 의심스럽지 않은 TLS 인증서
+- **Terraform / Ansible**: 인프라 코드화 (빠른 재배포/폐기)
+- **Pass (Password Store)**: 작전 자격증명 암호화 관리
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+OPSEC 체크리스트 자동 점검 도구
+레드팀 작전 시작 전 OPSEC 요소를 점검한다.
+"""
+import json
+import socket
+from dataclasses import dataclass, field
+from datetime import datetime
+
+
+@dataclass
+class OpsecCheckItem:
+    """OPSEC 점검 항목"""
+    category: str
+    item: str
+    status: str = "미점검"  # 완료, 미완, 미점검, 해당없음
+    notes: str = ""
+
+
+def create_opsec_checklist() -> list[OpsecCheckItem]:
+    """레드팀 작전 전 OPSEC 체크리스트를 생성한다."""
+    return [
+        # 인프라 보호
+        OpsecCheckItem("인프라", "팀서버 IP가 공개 WHOIS에 노출되지 않는가"),
+        OpsecCheckItem("인프라", "리다이렉터와 팀서버 사이 VPN/전용선 연결 확인"),
+        OpsecCheckItem("인프라", "팀서버 SSH 기본 포트(22) 변경 여부"),
+        OpsecCheckItem("인프라", "팀서버 방화벽: 리다이렉터 IP만 허용"),
+        # C2 설정
+        OpsecCheckItem("C2", "에이전트 User-Agent 커스터마이징 완료"),
+        OpsecCheckItem("C2", "비콘 Sleep 간격 및 Jitter 설정 확인"),
+        OpsecCheckItem("C2", "C2 도메인 Categorization 확인 (의심 카테고리 아닌가)"),
+        OpsecCheckItem("C2", "C2 트래픽이 정상 업무 트래픽과 유사한 포트 사용"),
+        # 운영자 보호
+        OpsecCheckItem("운영자", "레드팀 운영자 VPN 연결 상태 확인"),
+        OpsecCheckItem("운영자", "작전 전용 장비 사용 (개인 장비 금지)"),
+        OpsecCheckItem("운영자", "작전 정보 암호화 저장"),
+        # 법적 보호
+        OpsecCheckItem("법적", "서명된 작전 범위(Rules of Engagement) 문서 보관"),
+        OpsecCheckItem("법적", "긴급 연락처 목록 준비 (고객사 보안팀, 법무팀)"),
+        OpsecCheckItem("법적", "작전 종료 후 데이터 삭제 계획 수립"),
+    ]
+
+
+def check_domain_exposure(domain: str) -> dict:
+    """도메인의 기본적인 노출 상태를 확인한다."""
+    result = {"도메인": domain, "점검결과": []}
+
+    # DNS 조회
+    try:
+        ip = socket.gethostbyname(domain)
+        result["점검결과"].append({"항목": "DNS 해석", "결과": f"IP: {ip}", "상태": "확인됨"})
+    except socket.gaierror:
+        result["점검결과"].append({"항목": "DNS 해석", "결과": "해석 불가", "상태": "주의"})
+
+    return result
+
+
+def generate_opsec_report(checklist: list[OpsecCheckItem]) -> dict:
+    """OPSEC 체크리스트 보고서를 생성한다."""
+    completed = sum(1 for item in checklist if item.status == "완료")
+    pending = sum(1 for item in checklist if item.status == "미완")
+    not_checked = sum(1 for item in checklist if item.status == "미점검")
+
+    categories: dict[str, list] = {}
+    for item in checklist:
+        if item.category not in categories:
+            categories[item.category] = []
+        categories[item.category].append({
+            "항목": item.item,
+            "상태": item.status,
+            "메모": item.notes,
+        })
+
+    readiness = (completed / len(checklist) * 100) if checklist else 0
+
+    return {
+        "점검일시": datetime.now().isoformat(),
+        "작전준비도": f"{readiness:.0f}%",
+        "요약": {"완료": completed, "미완": pending, "미점검": not_checked},
+        "카테고리별": categories,
+        "권고": "모든 항목 완료 후 작전 시작" if readiness < 100 else "작전 시작 가능",
+    }
+
+
+if __name__ == "__main__":
+    checklist = create_opsec_checklist()
+
+    # 일부 항목 완료 처리 시뮬레이션
+    for item in checklist[:5]:
+        item.status = "완료"
+    checklist[5].status = "미완"
+    checklist[5].notes = "도메인 카테고리 변경 신청 중 (3일 소요 예상)"
+
+    report = generate_opsec_report(checklist)
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+```
+
 ---
 
 ## 1. OPSEC 원칙

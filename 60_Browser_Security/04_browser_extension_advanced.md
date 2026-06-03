@@ -6,6 +6,151 @@
 
 # 브라우저 확장프로그램 심화 공격
 
+## 0. 초보자를 위한 개념 이해
+
+### 브라우저 확장프로그램 공격이란?
+
+브라우저 확장프로그램은 브라우저에 추가 기능을 제공하지만, 과도한 권한을 가진 악성 확장은 모든 웹 페이지의 내용을 읽고 수정하거나, 사용자 입력을 가로채거나, 쿠키와 비밀번호를 탈취할 수 있다. 2022년 3200만 명이 설치한 악성 확장 'Great Suspender' 사례처럼, 정상 확장이 악성으로 전환될 수도 있다.
+
+**왜 배우는가:**
+```
+[확장프로그램의 권한 수준]
+
+일반 웹페이지:
+  - 자신의 출처(origin) 데이터만 접근
+  - 다른 탭 접근 불가
+
+확장프로그램 (넓은 권한 허용 시):
+  - 모든 탭의 URL, 내용 읽기/수정
+  - 모든 요청/응답 가로채기 (webRequest API)
+  - 쿠키, 세션, 비밀번호 접근
+  - 로컬 파일 시스템 접근 (일부)
+  - 다른 웹사이트에 JS 삽입
+
+[악성 확장의 공격 시나리오]
+1. 유명 확장 복제 + 악성 코드 추가 → 스토어에 업로드
+2. 정상 확장 개발자 계정 탈취 → 업데이트에 악성코드 삽입
+3. 확장 개발사 인수 → 악성 업데이트 배포
+→ 수백만 사용자 자동 감염
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- Manifest V3 (MV3): Chrome의 새 확장 API (2023~) - 보안 강화, 일부 기능 제한
+- 콘텐츠 스크립트: 웹 페이지 컨텍스트에서 실행되는 확장 코드
+- 배경 서비스 워커: 확장의 핵심 로직을 실행하는 이벤트 기반 백그라운드
+- 메시지 패싱: 콘텐츠 스크립트 ↔ 배경 스크립트 간 통신 API
+- 선언적 네트워크 요청 (DNR): MV3의 새 요청 차단/수정 API (webRequest 대체)
+- 교차 출처 격리: 확장이 모든 사이트에 접근 가능한 넓은 권한의 위험성
+- 확장 CSP: 확장 내 인라인 스크립트 실행을 제한하는 콘텐츠 보안 정책
+```
+
+### 필요한 도구 및 환경
+- **Chrome/Firefox 개발자 모드**: 로컬 확장 로드 및 디버깅
+- **Chrome DevTools**: 확장 배경 스크립트 디버깅
+- **CRXcavator (crxcavator.io)**: 확장 권한 및 위험도 분석
+- **ExtAnalysis**: 오프라인 확장 패키지 분석 도구
+
+### 기초 실습 예제
+```python
+import json
+import zipfile
+import re
+from pathlib import Path
+
+def analyze_extension_permissions(crx_or_dir_path: str) -> dict:
+    """
+    Chrome 확장프로그램의 권한 위험도 분석
+    manifest.json을 분석하여 악성 가능성이 높은 권한 조합 탐지
+    """
+    # 고위험 권한 목록과 설명
+    HIGH_RISK_PERMISSIONS = {
+        "<all_urls>": "모든 웹사이트 접근 (가장 위험)",
+        "tabs": "모든 탭 URL 및 내용 접근",
+        "webRequest": "모든 HTTP 요청 가로채기",
+        "webRequestBlocking": "HTTP 요청 차단/수정 가능",
+        "cookies": "모든 사이트 쿠키 접근",
+        "history": "브라우저 방문 기록 접근",
+        "downloads": "파일 다운로드 제어",
+        "nativeMessaging": "로컬 앱과 통신 (OS 접근)",
+        "debugger": "탭 디버깅 (임의 JS 실행 가능)",
+        "contentSettings": "사이트별 콘텐츠 설정 변경",
+    }
+
+    MEDIUM_RISK_PERMISSIONS = {
+        "storage": "로컬 저장소 접근",
+        "identity": "Google 계정 접근",
+        "bookmarks": "북마크 읽기/쓰기",
+        "clipboardRead": "클립보드 읽기",
+        "clipboardWrite": "클립보드 쓰기",
+    }
+
+    path = Path(crx_or_dir_path)
+
+    # manifest.json 읽기
+    if path.is_dir():
+        manifest_path = path / "manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+    elif path.suffix == ".zip":
+        with zipfile.ZipFile(path) as zf:
+            manifest = json.loads(zf.read("manifest.json"))
+    else:
+        # 샘플 데이터로 시연
+        manifest = {
+            "name": "Super PDF Viewer",
+            "version": "2.1.0",
+            "manifest_version": 3,
+            "permissions": ["tabs", "cookies", "storage", "history", "clipboardRead"],
+            "host_permissions": ["<all_urls>"],
+            "content_scripts": [{"matches": ["<all_urls>"], "js": ["content.js"]}],
+        }
+        print("(실제 파일 없음 - 샘플 manifest.json으로 시연)\n")
+
+    # 권한 분석
+    all_perms = set(manifest.get("permissions", []) + manifest.get("host_permissions", []))
+    found_high = {p: HIGH_RISK_PERMISSIONS[p] for p in all_perms if p in HIGH_RISK_PERMISSIONS}
+    found_medium = {p: MEDIUM_RISK_PERMISSIONS[p] for p in all_perms if p in MEDIUM_RISK_PERMISSIONS}
+
+    risk_score = len(found_high) * 20 + len(found_medium) * 5
+    risk_level = "매우 높음" if risk_score >= 60 else "높음" if risk_score >= 30 else "중간" if risk_score >= 10 else "낮음"
+
+    result = {
+        "name": manifest.get("name"),
+        "version": manifest.get("version"),
+        "manifest_version": manifest.get("manifest_version", 2),
+        "risk_score": min(risk_score, 100),
+        "risk_level": risk_level,
+        "high_risk_permissions": found_high,
+        "medium_risk_permissions": found_medium,
+    }
+
+    print(f"=== 확장프로그램 권한 분석 ===\n")
+    print(f"이름: {result['name']} v{result['version']}")
+    print(f"Manifest 버전: V{result['manifest_version']}")
+    print(f"위험도: {result['risk_level']} ({result['risk_score']}점)\n")
+
+    if found_high:
+        print("[고위험 권한]")
+        for perm, desc in found_high.items():
+            print(f"  ! {perm}: {desc}")
+    if found_medium:
+        print("[중간 위험 권한]")
+        for perm, desc in found_medium.items():
+            print(f"  ~ {perm}: {desc}")
+
+    if risk_score >= 40:
+        print("\n권고: 이 확장은 높은 위험을 가지고 있습니다.")
+        print("      실제로 이 권한이 모두 필요한지 검토 후 설치하세요.")
+
+    return result
+
+analyze_extension_permissions(".")
+```
+
+---
+
 ## 1. Manifest V2 vs V3 보안 비교
 
 ### 1.1 핵심 차이점 비교표

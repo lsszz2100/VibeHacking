@@ -6,6 +6,125 @@
 
 # Azure 포렌식
 
+## 0. 초보자를 위한 개념 이해
+
+### Azure 포렌식이란?
+
+Azure 포렌식은 Microsoft Azure 클라우드 환경에서 발생한 보안 사고를 조사하는 기술이다. Azure Activity Log, Microsoft Entra ID(구 Azure AD) 로그, Microsoft Sentinel(SIEM) 등 Azure 고유의 서비스가 주요 증거 소스이다. 특히 하이브리드 환경(온프레미스 + 클라우드)에서의 측면 이동 추적이 중요하다.
+
+**왜 배우는가:**
+```
+[Azure 포렌식 증거 생태계]
+
+공격자 진입
+     │
+     ▼
+Microsoft Entra ID (구 Azure AD)
+  ├─ 로그인 로그 (성공/실패, MFA 상태, 위치)
+  ├─ 감사 로그 (권한 변경, 앱 등록)
+  └─ 위험 이벤트 (불가능한 여행, 유출된 자격증명)
+     │
+     ▼
+Azure Activity Log
+  └─ 리소스 생성/삭제/수정 모든 관리 작업
+     │
+     ▼
+Microsoft Defender for Cloud
+  └─ 취약점, 이상 행위, 위협 경고
+     │
+     ▼
+Microsoft Sentinel
+  └─ 모든 로그를 통합·상관 분석하는 SIEM/SOAR
+
+키 포인트: Office 365 + Azure + Entra ID 통합 조사가 필요
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- Microsoft Entra ID: Azure의 클라우드 ID 관리 서비스 (구 Azure Active Directory)
+- Azure Activity Log: 구독 레벨의 모든 관리 작업 기록 (90일 보존)
+- Microsoft Sentinel: Azure 기반 클라우드 SIEM/SOAR 플랫폼
+- Log Analytics Workspace: Azure 로그를 저장하고 KQL로 쿼리하는 공간
+- KQL (Kusto Query Language): Azure 로그 분석에 사용하는 쿼리 언어
+- RBAC (Role-Based Access Control): 역할 기반 접근 제어 - 권한 상승 추적에 중요
+- Managed Identity: Azure 서비스에 부여된 자동 관리 ID (탈취 대상이 될 수 있음)
+```
+
+### 필요한 도구 및 환경
+- **Azure CLI**: az 명령으로 로그 조회 및 리소스 관리
+- **PowerShell Az 모듈**: Windows 환경에서 Azure 관리
+- **Python 3.10+**: azure-mgmt-monitor, azure-identity 라이브러리
+- **Microsoft Sentinel**: KQL 쿼리로 위협 헌팅
+
+### 기초 실습 예제
+```python
+# pip install azure-identity azure-mgmt-monitor azure-mgmt-resource
+from datetime import datetime, timezone, timedelta
+
+def azure_forensics_kql_examples():
+    """
+    Microsoft Sentinel/Log Analytics에서 사용하는 핵심 KQL 쿼리 모음
+    Sentinel 포털의 'Logs' 탭에서 직접 실행 가능
+    """
+    queries = {
+        "의심스러운 로그인 탐지": """
+// Entra ID 로그인 실패 후 성공 패턴 (무차별 대입 공격)
+SigninLogs
+| where TimeGenerated > ago(24h)
+| where ResultType != "0"  // 실패 로그인
+| summarize FailCount = count() by UserPrincipalName, IPAddress
+| where FailCount > 10
+| join kind=inner (
+    SigninLogs
+    | where TimeGenerated > ago(24h)
+    | where ResultType == "0"  // 성공 로그인
+) on UserPrincipalName
+| project UserPrincipalName, IPAddress, FailCount
+| sort by FailCount desc
+""",
+        "불가능한 여행 탐지": """
+// 짧은 시간 내 서로 다른 국가에서 로그인
+SigninLogs
+| where TimeGenerated > ago(1h)
+| summarize Locations = make_set(Location),
+            LoginCount = count() by UserPrincipalName
+| where array_length(Locations) > 1  // 여러 국가
+| project UserPrincipalName, Locations, LoginCount
+""",
+        "권한 상승 탐지": """
+// 사용자에게 관리자 역할이 부여된 이벤트
+AuditLogs
+| where TimeGenerated > ago(24h)
+| where OperationName contains "Add member to role"
+| extend RoleName = tostring(TargetResources[0].displayName)
+| where RoleName contains "Admin" or RoleName contains "Owner"
+| project TimeGenerated, InitiatedBy, RoleName, TargetResources
+""",
+        "Azure 리소스 대량 삭제": """
+// 짧은 시간 내 다수 리소스 삭제 (랜섬웨어/파괴 공격)
+AzureActivity
+| where TimeGenerated > ago(1h)
+| where OperationNameValue endswith "delete"
+| where ActivityStatusValue == "Success"
+| summarize DeleteCount = count() by Caller, SubscriptionId
+| where DeleteCount > 5
+| sort by DeleteCount desc
+""",
+    }
+
+    print("=== Azure 포렌식 핵심 KQL 쿼리 ===\n")
+    for name, query in queries.items():
+        print(f"[{name}]")
+        print(query.strip())
+        print("-" * 50)
+
+azure_forensics_kql_examples()
+```
+
+---
+
 ## 1. Azure 로그 소스
 
 Azure 환경에서 포렌식 조사를 수행할 때 활용 가능한 주요 로그 소스는 다음과 같다. Azure는 Microsoft Sentinel을 중심으로 다양한 보안 신호를 통합 관리하는 구조를 갖추고 있다.

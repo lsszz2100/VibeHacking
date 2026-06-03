@@ -6,6 +6,114 @@
 
 # 01 CAN Bus Analysis
 
+## 0. 초보자를 위한 개념 이해
+
+### CAN 버스란?
+
+CAN(Controller Area Network) 버스는 자동차 내부의 수십~수백 개 ECU(전자 제어 장치)들이 서로 통신하기 위한 네트워크 프로토콜이다. 1986년 Bosch가 개발했으며, 2선식 차동 신호 방식으로 잡음에 강하고 최대 1Mbit/s 속도를 지원한다. 현대 차량 해킹의 핵심은 이 CAN 버스를 통해 브레이크, 조향, 엔진 등 물리적 장치에 임의 명령을 전달할 수 있다는 점이다.
+
+**왜 배우는가:**
+```
+[자동차 내부 네트워크 구조]
+
+  엔진 ECU ─────┐
+  변속기 ECU ───┤
+  ABS ECU ──────┤── CAN 버스 ──── OBD-II 포트
+  에어백 ECU ───┤               (외부 접근점)
+  계기판 ECU ───┤
+  ADAS ECU ─────┘
+
+  ★ OBD-II 포트(자동차 진단 포트)에
+    장치를 연결하면 CAN 버스 직접 접근!
+
+  [알려진 해킹 사례]
+  2015년 Jeep Cherokee: 원격 제어로 고속도로
+  주행 중 브레이크·조향 제어 성공
+  → 140만 대 리콜
+```
+
+### 핵심 개념 정리
+
+```
+[CAN 버스 핵심 개념]
+
+CAN 프레임 구조:
+  SOF | ID(11/29비트) | RTR | DLC(4비트) | Data(0-8바이트) | CRC | EOF
+
+  ID  : 메시지 종류 식별 (낮을수록 높은 우선순위)
+  DLC : 데이터 길이 (0~8 바이트)
+  Data: 실제 제어 데이터 (예: 브레이크 압력, 속도 값)
+
+주요 자동차 네트워크:
+  CAN (고속):  파워트레인, 브레이크, 조향 (500kbps~1Mbps)
+  CAN (저속):  바디 제어, 조명 (125kbps)
+  LIN:         저비용 단방향 (윈도우, 미러 등)
+  MOST:        멀티미디어 (광섬유, 150Mbps)
+  FlexRay:     안전-critical 시스템 (10Mbps, 결정적)
+  Ethernet:    ADAS, 카메라 (100Mbps~1Gbps)
+
+OBD-II:
+  - 모든 2008년 이후 차량에 의무 탑재
+  - CAN 버스 직접 접근 포트
+  - 위치: 운전석 아래 대시보드 근처
+```
+
+### 필요한 도구 및 환경
+- **SocketCAN**: Linux 커널 내장 CAN 버스 드라이버
+- **can-utils**: `candump`, `cansend`, `cansniffer` 등 CLI 도구
+- **python-can**: Python에서 CAN 버스 제어 라이브러리
+- **OBD-II 어댑터**: ELM327 기반 USB/Bluetooth (실습용)
+- **USB2CAN / PCAN**: 전문 CAN 인터페이스 어댑터
+
+### 기초 실습 예제
+```python
+# pip install python-can
+import can
+import time
+
+def sniff_can_bus(interface: str = 'vcan0', duration: int = 10):
+    """
+    CAN 버스 메시지를 캡처해 분석한다.
+    실습: 가상 CAN 인터페이스(vcan0) 사용
+    설정: sudo modprobe vcan && sudo ip link add vcan0 type vcan && sudo ip link set vcan0 up
+    """
+    message_stats: dict[int, int] = {}  # ID → 수신 횟수
+
+    print(f"[*] {interface} 스니핑 시작 ({duration}초)...")
+
+    try:
+        bus = can.interface.Bus(interface, bustype='socketcan')
+        start_time = time.time()
+
+        while time.time() - start_time < duration:
+            msg = bus.recv(timeout=1.0)
+            if msg:
+                arb_id = msg.arbitration_id
+                message_stats[arb_id] = message_stats.get(arb_id, 0) + 1
+
+                # 주목할 만한 메시지 출력
+                print(f"  ID: 0x{arb_id:03X}  "
+                      f"DLC: {msg.dlc}  "
+                      f"Data: {msg.data.hex(' ')}")
+
+        bus.shutdown()
+
+    except Exception as e:
+        print(f"[-] 오류: {e}")
+        print("    가상 CAN: sudo ip link add vcan0 type vcan")
+        return
+
+    print("\n[*] 자주 등장한 ID (상위 10개):")
+    sorted_ids = sorted(message_stats.items(), key=lambda x: -x[1])
+    for arb_id, count in sorted_ids[:10]:
+        print(f"  0x{arb_id:03X}: {count}회")
+
+# 사용 예시 (가상 CAN 인터페이스)
+# sniff_can_bus('vcan0', duration=10)
+```
+
+---
+
 ## 1. CAN 프로토콜 심화
 
 ### 1.1 물리 계층

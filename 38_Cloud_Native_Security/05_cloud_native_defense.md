@@ -6,6 +6,123 @@
 
 # 05 — Cloud Native 보안 방어 체계
 
+## 0. 초보자를 위한 개념 이해
+
+### Cloud Native 보안 방어 체계란?
+
+Cloud Native 보안 방어 체계는 컨테이너, Kubernetes, 클라우드 인프라를 종합적으로 보호하기 위한 다층 방어 전략이다. 단일 보안 제품으로 해결할 수 없으며, 코드 작성 단계부터 배포, 런타임까지 각 레이어에 보안을 내재화(Security by Design)하는 접근이 필요하다. CNCF(Cloud Native Computing Foundation)가 권장하는 4C 모델을 기반으로 각 레이어의 방어 기법을 학습한다.
+
+**왜 배우는가:**
+```
+[방어 없는 Kubernetes 클러스터의 취약점]
+
+  ★ 기본 설정으로 생성한 클러스터의 문제점:
+  - API 서버: 익명 접근 허용 가능
+  - etcd: 시크릿 평문 저장 (기본)
+  - 컨테이너: root로 실행
+  - 네트워크: 모든 Pod 간 통신 허용
+  - RBAC: default SA에 과도한 권한
+
+  [방어 체계 도입 후 효과]
+  etcd 암호화 → 시크릿 탈취해도 평문 불가
+  네트워크 정책 → 컨테이너 간 횡적 이동 차단
+  PodSecurity → 특권 컨테이너 실행 거부
+  Falco → 의심 행동 실시간 탐지·알림
+```
+
+### 핵심 개념 정리
+
+```
+[Cloud Native 방어 핵심 요소]
+
+1. 시크릿 관리
+   ❌ 환경 변수에 비밀번호 직접 입력
+   ✅ HashiCorp Vault, AWS Secrets Manager
+   ✅ Kubernetes Secrets (etcd 암호화 필수)
+   ✅ External Secrets Operator
+
+2. 네트워크 정책 (Network Policy)
+   기본: 모든 Pod 간 통신 허용 (위험!)
+   개선: 명시적 허용 목록만 통신 가능
+   도구: Calico, Cilium, WeaveNet
+
+3. Pod 보안 (PodSecurityAdmission)
+   privileged: false
+   runAsNonRoot: true
+   readOnlyRootFilesystem: true
+   allowPrivilegeEscalation: false
+
+4. 공급망 보안 (SLSA)
+   Level 1: 빌드 프로세스 문서화
+   Level 2: 서명된 Provenance 생성
+   Level 3: 격리된 빌드 환경
+   Level 4: 재현 가능한 빌드
+
+5. 보안 태세 관리 (CSPM)
+   Kube-bench: CIS 벤치마크 자동 점검
+   Trivy: 취약점 지속 스캔
+   OPA/Gatekeeper: 정책 강제 적용
+```
+
+### 필요한 도구 및 환경
+- **kube-bench**: CIS Kubernetes Benchmark 자동 점검 도구
+- **OPA Gatekeeper**: Kubernetes Admission Controller로 정책 강제
+- **HashiCorp Vault**: 시크릿 중앙 관리 및 동적 자격증명
+- **Falco**: eBPF 기반 런타임 이상 탐지
+
+### 기초 실습 예제
+```python
+import subprocess
+import json
+from pathlib import Path
+
+def generate_network_policy(
+    app_name: str,
+    allowed_ingress_ports: list[int],
+    allowed_egress_ports: list[int] = [443, 53]
+) -> str:
+    """
+    최소 권한 원칙에 따른 Kubernetes NetworkPolicy YAML을 생성한다.
+    """
+    ingress_rules = "\n".join([
+        f"  - ports:\n    - port: {port}" for port in allowed_ingress_ports
+    ])
+    egress_rules = "\n".join([
+        f"  - ports:\n    - port: {port}" for port in allowed_egress_ports
+    ])
+
+    policy = f"""apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {app_name}-netpol
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: {app_name}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+{ingress_rules}
+  egress:
+{egress_rules}
+  # DNS(53) 항상 허용 - 서비스 디스커버리에 필수
+"""
+    return policy
+
+# 사용 예시
+policy_yaml = generate_network_policy(
+    app_name="my-web-app",
+    allowed_ingress_ports=[80, 443],
+    allowed_egress_ports=[443, 53, 5432]  # HTTPS + DNS + PostgreSQL
+)
+print(policy_yaml)
+# 적용: kubectl apply -f - <<< "$policy_yaml"
+```
+
+---
+
 ## 목차
 1. Cloud Native 보안 프레임워크
 2. 런타임 보안 (Falco·eBPF)

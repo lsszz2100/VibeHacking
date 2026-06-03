@@ -6,6 +6,97 @@
 
 # Active Directory 공격 완전 가이드
 
+## 0. 초보자를 위한 개념 이해
+
+### Active Directory란?
+
+Active Directory(AD)는 Microsoft가 개발한 네트워크 디렉토리 서비스로, 기업 내 모든 사용자, 컴퓨터, 프린터, 정책을 중앙에서 관리합니다. 전 세계 기업의 90% 이상이 사용하고 있어 침투 테스트에서 가장 중요한 공격 대상 중 하나입니다.
+
+**왜 배우는가:**
+```
+AD가 공격의 핵심인 이유:
+
+  AD 없는 네트워크:     각 PC 개별 관리 → 영향 범위 제한
+  AD 있는 기업 네트워크: DC 한 대 장악 → 전체 도메인 제어
+
+  공격 시나리오:
+  1. 직원 PC 침해        → 도메인 사용자 권한 획득
+  2. AD 열거             → 취약 계정, 그룹 정책 파악
+  3. 권한 상승 공격       → 도메인 관리자 권한 탈취
+  4. Golden Ticket 생성  → 영구 접근 권한 확보
+
+  실제 랜섬웨어 공격의 90% 이상이 AD를 통해 전파됨
+```
+
+### 핵심 개념 정리
+
+```
+AD 핵심 구성 요소:
+
+Domain Controller (DC):
+  - LDAP (389/636): 사용자/그룹 디렉토리 서비스
+  - Kerberos (88):  티켓 기반 인증 시스템
+  - DNS (53):       도메인 이름 해석
+  - SMB (445):      파일 공유, 원격 실행
+
+인증 프로토콜:
+  NTLM: 챌린지-응답 방식 → Pass-the-Hash 공격 가능
+  Kerberos: 티켓 기반    → Pass-the-Ticket, Golden Ticket
+
+중요한 권한 그룹:
+  Domain Admins    → 도메인 전체 관리자 (최고 권한)
+  Enterprise Admins → 포레스트 전체 관리자
+  Backup Operators → 백업 권한 → 해시 덤프 가능
+  Account Operators → 계정 생성 → 권한 상승 경로
+```
+
+### 필요한 도구 및 환경
+- **Windows 환경**: 도메인 가입된 Windows VM 또는 실습 AD 환경 (HackTheBox, TryHackMe 등)
+- **열거 도구**: BloodHound — AD 관계를 그래프로 시각화, 공격 경로 자동 발견
+- **인증 공격 도구**: Impacket(Python) — 원격 명령 실행, 해시 추출 등 다수 공격 구현
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""LDAP을 통한 AD 기본 정보 열거 (교육용)."""
+import ldap3
+from ldap3 import Server, Connection, ALL, NTLM
+
+def enumerate_ad_users(
+    dc_host: str,
+    domain: str,
+    username: str,
+    password: str,
+) -> list[dict[str, str]]:
+    """
+    AD에서 사용자 목록 열거.
+    실습 환경(HackTheBox, TryHackMe)에서만 사용.
+    """
+    server = Server(dc_host, get_info=ALL)
+    user_dn = f"{domain}\\{username}"
+    conn = Connection(server, user=user_dn, password=password, authentication=NTLM)
+
+    if not conn.bind():
+        raise ConnectionError(f"LDAP 바인드 실패: {conn.result}")
+
+    base_dn = ",".join(f"DC={part}" for part in domain.split("."))
+    conn.search(
+        search_base=base_dn,
+        search_filter="(objectClass=user)",
+        attributes=["sAMAccountName", "memberOf", "adminCount"],
+    )
+    users: list[dict[str, str]] = []
+    for entry in conn.entries:
+        users.append({
+            "username": str(entry.sAMAccountName),
+            "groups": str(entry.memberOf),
+            "admin": str(entry.adminCount),
+        })
+    return users
+```
+
+---
+
 ## AD 구조 이해
 
 

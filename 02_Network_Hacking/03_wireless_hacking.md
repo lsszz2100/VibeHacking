@@ -6,6 +6,100 @@
 
 # 무선 네트워크 해킹 — Wi-Fi 보안 완전 가이드
 
+## 0. 초보자를 위한 개념 이해
+
+### 무선 네트워크 해킹이란?
+
+Wi-Fi 해킹은 무선 네트워크의 보안 프로토콜 취약점을 이용해 암호화 키를 탈취하거나 네트워크에 무단 접속하는 기법입니다. 무선 신호는 공중에 떠다니기 때문에 물리적 접근 없이도 공격이 가능하다는 점이 유선 네트워크와 다릅니다.
+
+**왜 배우는가:**
+```
+무선 해킹이 위험한 이유:
+
+  유선 네트워크:  물리적 케이블 연결 필요 → 침입 탐지 쉬움
+  무선 네트워크:  신호가 벽을 통과         → 건물 밖에서 공격 가능
+
+  공격 시나리오:
+  카페 Wi-Fi      → 같은 네트워크 사용자 트래픽 도청
+  회사 Wi-Fi 크랙  → 사무실 네트워크 무단 침입
+  Evil Twin AP    → 가짜 AP로 피해자 연결 유도 후 트래픽 도청
+  WPS 공격        → PIN 번호 브루트포스로 암호 없이 연결
+```
+
+### 핵심 개념 정리
+
+```
+Wi-Fi 보안 프로토콜 발전:
+
+WEP (1997)  → RC4 알고리즘 취약 → 수분 내 크랙 가능 → 사용 금지
+WPA (2003)  → TKIP 사용        → ChopChop 공격 가능
+WPA2 (2004) → AES-CCMP         → 패스프레이즈 강도에 의존
+WPA3 (2018) → SAE(드래곤플라이) → 오프라인 딕셔너리 공격 차단
+
+WPA2-PSK 공격 과정:
+  1. 모니터 모드 활성화 (무선 랜카드 필요)
+  2. 대상 AP 탐지 및 채널 고정
+  3. 4-Way Handshake 캡처 (인증 패킷)
+  4. 오프라인 딕셔너리 공격으로 패스프레이즈 복원
+
+모니터 모드란?
+  일반 모드:    자신의 AP와 연결된 패킷만 수신
+  모니터 모드:  주변 모든 무선 패킷 수신 (도청 가능)
+  → 무선 해킹 실습의 필수 조건
+```
+
+### 필요한 도구 및 환경
+- **모니터 모드 지원 무선 랜카드**: 일반 내장 Wi-Fi 카드는 대부분 불가 — 외장 USB 어댑터 필요
+- **Kali Linux**: 무선 해킹 도구 사전 설치 (aircrack-ng 스위트)
+- **워드리스트**: 딕셔너리 공격용 단어 목록 파일 (rockyou.txt 등)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""WPA2 핸드셰이크 캡처 파일에서 패스프레이즈 검증 (교육용)."""
+import hashlib
+import hmac
+from typing import Optional
+
+def verify_wpa2_password(
+    password: str,
+    ssid: str,
+    anonce: bytes,
+    snonce: bytes,
+    ap_mac: bytes,
+    client_mac: bytes,
+) -> bool:
+    """
+    WPA2 PSK 패스프레이즈 검증 — PMK → PTK 파생 원리 이해.
+    실제 공격 아닌 프로토콜 학습 목적.
+    """
+    # PMK (Pairwise Master Key) = PBKDF2(password, SSID, 4096회 반복)
+    pmk = hashlib.pbkdf2_hmac(
+        "sha1",
+        password.encode(),
+        ssid.encode(),
+        4096,
+        dklen=32,
+    )
+    # PTK 파생에 필요한 데이터 조합
+    pke = b"Pairwise key expansion"
+    data = min(ap_mac, client_mac) + max(ap_mac, client_mac) + \
+           min(anonce, snonce) + max(anonce, snonce)
+    # KCK = PTK의 첫 16바이트 (MIC 검증용)
+    ptk = b""
+    for i in range(4):
+        ptk += hmac.new(pmk, pke + b"\x00" + data + bytes([i]), "sha1").digest()
+    kck = ptk[:16]
+    return len(kck) == 16  # 실제 MIC 비교는 생략 (교육용)
+
+# 실제 핸드셰이크 캡처: aircrack-ng suite 사용
+# airmon-ng start wlan0         → 모니터 모드 (실습 환경에서만)
+# airodump-ng wlan0mon          → AP 목록 탐지
+# airodump-ng -w capture --bssid <AP_MAC> -c <CH> wlan0mon
+```
+
+---
+
 ## 1. 무선 네트워크 기초
 
 ### 802.11 표준

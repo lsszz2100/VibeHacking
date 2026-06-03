@@ -2,6 +2,143 @@
 
 PWN(바이너리 익스플로잇)과 REV(리버스 엔지니어링)는 CTF에서 가장 기술적인 분야다. pwntools를 이용한 완전한 익스플로잇 작성부터 angr/z3를 이용한 크랙미 자동화까지 실전 기법을 다룬다.
 
+## 0. 초보자를 위한 개념 이해
+
+### PWN과 REV란?
+
+PWN(Pwnable)은 실행 파일(바이너리)의 메모리 취약점을 찾아 악용하는 CTF 분야다. 스택 오버플로우, 힙 오버플로우 등을 이용해 프로그램 흐름을 제어하고 쉘(명령 실행 권한)을 획득하는 것이 목표다. REV(Reverse Engineering)는 소스 코드 없이 실행 파일을 분석해 동작을 이해하거나 숨겨진 플래그를 찾는 분야다.
+
+**왜 배우는가:**
+```
+PWN 공격 흐름:
+
+  정상 프로그램:
+    입력 버퍼(20바이트) → [데이터 | 리턴 주소]
+
+  PWN 공격 (버퍼 오버플로우):
+    긴 입력(100바이트) → [데이터AAAA... | [쉘 주소로 덮기!]]
+                                                │
+                                                ▼
+                                         쉘(Shell) 획득
+                                         → 플래그 파일 읽기
+
+  REV 분석 흐름:
+    바이너리 파일 → Ghidra 디컴파일 → 의사 C코드 →
+    알고리즘 이해 → 역연산으로 플래그 계산
+```
+
+### 핵심 개념 정리
+
+```
+보호 기법 (checksec 결과 해석):
+
+NX (No-Execute)
+  - 스택/힙에서 코드 실행 불가
+  - 우회: ROP(Return Oriented Programming) 체인
+
+ASLR (Address Space Layout Randomization)
+  - 라이브러리/스택 주소를 매 실행마다 무작위화
+  - 우회: 주소 유출(leak) → 실제 주소 계산
+
+Canary (스택 카나리)
+  - 리턴 주소 앞에 랜덤 값 배치, 덮이면 종료
+  - 우회: 카나리 값 유출 후 동일값으로 덮기
+
+PIE (Position Independent Executable)
+  - 실행 파일 자체도 무작위 주소에 로드
+  - 우회: 바이너리 내 주소 유출
+
+리버싱 핵심 도구:
+  Ghidra   → NSA 제공 무료 디컴파일러 (C 코드로 복원)
+  IDA Free → 강력한 디어셈블러 (무료 버전)
+  GDB      → Linux 디버거 (pwndbg 플러그인 필수)
+  angr     → Python 심볼릭 실행 엔진 (자동 풀이)
+```
+
+### 필요한 도구 및 환경
+- **pwntools**: `pip install pwntools` — 바이너리 익스플로잇 프레임워크
+- **GDB + pwndbg**: `git clone https://github.com/pwndbg/pwndbg && ./setup.sh`
+- **Ghidra**: https://ghidra-sre.org — 무료 디컴파일러
+- **ROPgadget**: `pip install ROPgadget` — ROP 가젯 검색
+- **Docker**: 문제 환경과 동일한 libc 버전 맞추기 위해 필요
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+PWN 입문: 간단한 버퍼 오버플로우 취약점 패턴 분석 도구
+실제 CTF 문제 풀이 전 오프셋(offset) 계산 방법 시연
+"""
+import struct
+
+
+def create_cyclic_pattern(length: int) -> bytes:
+    """
+    고유한 순환 패턴 생성 — 충돌 발생 시 어느 위치인지 파악용
+    pwntools의 cyclic() 함수와 동일한 개념
+    """
+    charset = b"abcdefghijklmnopqrstuvwxyz"
+    pattern = b""
+    for i in range(length):
+        # 4바이트 단위로 고유한 패턴 생성
+        a = (i // (26 ** 0)) % 26
+        b = (i // (26 ** 1)) % 26
+        c = (i // (26 ** 2)) % 26
+        d = (i // (26 ** 3)) % 26
+        pattern += bytes([charset[a], charset[b], charset[c], charset[d]])[i % 4:i % 4 + 1]
+    return pattern[:length]
+
+
+def find_offset(crash_value: int, pattern_length: int = 200) -> int | None:
+    """
+    크래시 발생 시 RIP/EIP 레지스터 값으로 오프셋을 찾는다.
+    GDB에서 크래시 시 'i r rip' 또는 'i r eip'로 값 확인
+    """
+    pattern = create_cyclic_pattern(pattern_length)
+    crash_bytes = struct.pack("<I", crash_value & 0xFFFFFFFF)
+    try:
+        offset = pattern.index(crash_bytes)
+        return offset
+    except ValueError:
+        return None
+
+
+def demonstrate_bof_concept() -> None:
+    """버퍼 오버플로우 기초 개념 시연"""
+    print("[1단계] 순환 패턴 생성 (pwntools cyclic과 동일 개념)")
+    pattern = create_cyclic_pattern(100)
+    print(f"  패턴: {pattern[:40].decode('latin-1')}...")
+    print(f"  길이: {len(pattern)} 바이트")
+
+    print("\n[2단계] 실제 CTF PWN 문제 풀이 흐름:")
+    print("  1. checksec ./binary                  # 보호 기법 확인")
+    print("  2. python3 -c \"print('A'*200)\" | ./binary  # 크래시 유발")
+    print("  3. GDB: run < <(python3 -c \"print('A'*200)\")  # 디버깅")
+    print("  4. GDB 크래시 시 RIP 값 확인 (예: 0x6161616c)")
+    print("  5. find_offset(0x6161616c) 로 오프셋 계산")
+    print("  6. pwntools로 페이로드 작성 후 익스플로잇")
+
+    print("\n[3단계] pwntools 페이로드 작성 템플릿:")
+    print("""
+  from pwn import *
+  p = process("./binary")       # 로컬 바이너리 실행
+  offset = 40                    # 위에서 찾은 오프셋
+  ret_addr = 0x401234            # 이동할 함수 주소 (win function 등)
+  payload = b"A" * offset + p64(ret_addr)
+  p.sendline(payload)
+  p.interactive()                # 쉘 획득 시 상호작용 모드
+""")
+
+
+if __name__ == "__main__":
+    demonstrate_bof_concept()
+    # 오프셋 찾기 예제
+    example_crash = 0x6161616c  # 'laaa' in little-endian
+    result = find_offset(example_crash)
+    if result is not None:
+        print(f"\n[오프셋 계산 결과]: {result} 바이트")
+```
+
 ---
 
 ## 1. 보호 기법 이해

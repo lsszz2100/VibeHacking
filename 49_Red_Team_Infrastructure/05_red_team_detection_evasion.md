@@ -6,7 +6,69 @@
 
 # 레드팀 인프라 탐지 우회 (방어자 관점)
 
-레드팀이 사용하는 C2 트래픽 위장, 리다이렉터 체인, Living Off the Land 기법을 방어자 관점에서 분석한다. 이 내용은 블루팀이 레드팀 TTP를 이해하고 더 효과적인 탐지 룰을 구축하기 위한 참고 자료다.
+## 0. 초보자를 위한 개념 이해
+
+### 레드팀 탐지 우회란?
+
+**레드팀 탐지 우회(Detection Evasion)**는 공격 활동이 보안 솔루션(IDS, EDR, SIEM)에 탐지되지 않도록 하는 기술입니다. 방어자(블루팀) 관점에서는 이 기법을 이해해야 더 효과적인 탐지 룰을 만들 수 있습니다.
+
+> 📌 이 문서는 **방어자가 공격자 TTP를 이해하고 탐지를 강화**하는 목적으로 작성됐습니다.
+
+**왜 배우는가:**
+```
+블루팀 입장:
+  공격자가 어떻게 우회하는지 모르면 → 탐지 룰 허점 발생
+
+레드팀 입장:
+  현실적인 위협 시뮬레이션 → 방어 수준 정확히 평가
+
+균형:
+  탐지 우회 기법 이해 = 더 강한 탐지 시스템 구축 가능
+```
+
+### 핵심 우회 기법 개요
+
+```
+1. 네트워크 트래픽 위장
+   - C2 통신을 HTTPS처럼 보이게 (도메인 프론팅)
+   - Malleable C2 Profile: Cobalt Strike 트래픽 위장
+   - DNS over HTTPS (DoH) 터널링
+
+2. 메모리 내 실행 (Fileless)
+   - 디스크에 파일 없이 메모리에서만 실행
+   - PowerShell IEX (Invoke-Expression)
+   - Process Injection (다른 프로세스 메모리에 코드 삽입)
+
+3. Living Off the Land (LOTL)
+   - 시스템 기본 도구만 사용
+   - certutil.exe, wmic.exe, mshta.exe
+   - EDR이 정상 도구로 인식 → 탐지 어려움
+
+4. 타임스탬프 조작
+   - 파일 생성·수정 시간 변경
+   - 정상 시스템 파일과 같은 시간대로 변경
+```
+
+### 필요한 도구
+- **Cobalt Strike Malleable C2**: C2 트래픽 위장
+- **Sysmon + ELK**: 공격 탐지 테스트 환경
+
+### 기초 실습 예제
+```python
+# 탐지 우회 기법 분류 및 MITRE ATT&CK 매핑
+evasion_techniques = [
+    ("T1055", "Process Injection", "High", "EDR 프로세스 모니터링 강화"),
+    ("T1140", "Deobfuscate/Decode Files", "Medium", "난독화 패턴 시그니처 추가"),
+    ("T1218", "System Binary Proxy Execution", "High", "LOTL 도구 실행 로깅"),
+    ("T1071", "Application Layer Protocol", "Medium", "비정상 HTTPS 패턴 탐지"),
+]
+
+print("MITRE ATT&CK 탐지 우회 기법\n")
+print(f"{'ID':<8} {'기법':<35} {'위험도':<8} {'대응'}")
+print("-" * 80)
+for tid, name, risk, response in evasion_techniques:
+    print(f"{tid:<8} {name:<35} {risk:<8} {response}")
+```
 
 ---
 

@@ -6,6 +6,116 @@
 
 # OWASP Top 10 — 웹 취약점 완전 정복
 
+## 0. 초보자를 위한 개념 이해
+
+### OWASP Top 10이란?
+
+OWASP(Open Web Application Security Project)는 웹 애플리케이션 보안의 가장 심각한 위협 10가지를 선정한 가이드라인입니다. 전 세계 수천 개의 취약점 데이터를 분석하여 발표하며, 웹 개발자와 보안 전문가 모두에게 기준점이 됩니다.
+
+**왜 배우는가:**
+```
+OWASP Top 10이 중요한 이유:
+
+  현실 침해 사고의 대부분이 이 10가지 중 하나:
+  ┌────────────────────────────────────────────────┐
+  │ A01: 접근 제어 실패   → 무단 데이터 접근        │
+  │ A02: 암호화 실패      → 평문 패스워드 저장      │
+  │ A03: 인젝션           → SQL/Command Injection  │
+  │ A04: 안전하지 않은 설계 → 비즈니스 로직 결함   │
+  │ A05: 보안 구성 오류   → 기본 패스워드, 디버그   │
+  │ A06: 취약한 컴포넌트  → 패치 안 된 라이브러리  │
+  │ A07: 인증 실패        → 세션 하이재킹           │
+  │ A08: 소프트웨어 무결성 → Supply Chain Attack   │
+  │ A09: 로깅 모니터링 실패 → 침해 탐지 불가       │
+  │ A10: SSRF             → 내부 서버 접근          │
+  └────────────────────────────────────────────────┘
+
+  버그바운티/CTF/모의해킹에서 가장 자주 발견되는 유형
+```
+
+### 핵심 개념 정리
+
+```
+가장 중요한 3가지 취약점 이해:
+
+1. SQL Injection (A03):
+   일반 쿼리: SELECT * FROM users WHERE id='입력값'
+   공격 입력: ' OR '1'='1
+   실행 쿼리: SELECT * FROM users WHERE id='' OR '1'='1'
+   → 모든 사용자 데이터 반환!
+
+2. XSS (A03 - Cross-Site Scripting):
+   공격자가 웹 페이지에 악성 JavaScript 삽입
+   피해자가 페이지 방문 → 브라우저에서 스크립트 실행
+   → 세션 쿠키 탈취, 피싱 페이지 표시
+
+3. 접근 제어 실패 (A01):
+   /admin/delete?id=1 → id=2, id=3으로 변경
+   → 다른 사용자 데이터 삭제 가능 (IDOR)
+```
+
+### 필요한 도구 및 환경
+- **취약한 실습 환경**: DVWA(Damn Vulnerable Web App), WebGoat — 로컬에 설치해서 안전하게 실습
+- **프록시 도구**: Burp Suite Community Edition — HTTP 요청 가로채기, 수정, 반복 전송
+- **브라우저 개발자 도구**: F12 → 쿠키, 세션, 요청 헤더 직접 확인
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""OWASP Top 10 취약점 기본 탐지 스캐너 (교육용)."""
+import re
+from dataclasses import dataclass
+
+@dataclass
+class VulnFinding:
+    category: str
+    severity: str
+    description: str
+    evidence: str
+
+def check_sql_injection_basic(url_params: dict[str, str]) -> list[VulnFinding]:
+    """URL 파라미터에서 SQL Injection 위험 패턴 검사."""
+    findings: list[VulnFinding] = []
+    sql_patterns = [r"'", r"--", r";", r"UNION", r"SELECT", r"DROP"]
+    for param, value in url_params.items():
+        for pattern in sql_patterns:
+            if re.search(pattern, value, re.IGNORECASE):
+                findings.append(VulnFinding(
+                    category="A03: SQL Injection",
+                    severity="Critical",
+                    description=f"파라미터 '{param}'에 SQL 특수문자 포함",
+                    evidence=f"{param}={value}",
+                ))
+    return findings
+
+def check_xss_basic(user_input: str) -> list[VulnFinding]:
+    """사용자 입력에서 XSS 위험 패턴 검사."""
+    findings: list[VulnFinding] = []
+    xss_patterns = [r"<script", r"javascript:", r"onerror=", r"onload="]
+    for pattern in xss_patterns:
+        if re.search(pattern, user_input, re.IGNORECASE):
+            findings.append(VulnFinding(
+                category="A03: XSS",
+                severity="High",
+                description="스크립트 인젝션 패턴 탐지",
+                evidence=user_input[:50],
+            ))
+    return findings
+
+if __name__ == "__main__":
+    # SQL Injection 테스트
+    params = {"id": "1' OR '1'='1", "name": "admin"}
+    for finding in check_sql_injection_basic(params):
+        print(f"[{finding.severity}] {finding.category}: {finding.description}")
+
+    # XSS 테스트
+    xss_input = "<script>alert('XSS')</script>"
+    for finding in check_xss_basic(xss_input):
+        print(f"[{finding.severity}] {finding.category}: {finding.description}")
+```
+
+---
+
 ## OWASP 자동화 위협 분류 (Automated Threat Handbook)
 
 OWASP는 웹 애플리케이션에 대한 자동화 위협을 21개 OAT(Ontology of Automated Threats)로 분류합니다.

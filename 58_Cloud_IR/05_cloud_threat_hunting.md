@@ -6,6 +6,129 @@
 
 # 클라우드 위협 헌팅
 
+## 0. 초보자를 위한 개념 이해
+
+### 클라우드 위협 헌팅이란?
+
+클라우드 위협 헌팅은 자동화된 보안 탐지 시스템이 놓쳤을 수 있는 고도화된 공격자를 사람이 직접 능동적으로 찾아내는 활동이다. 경보가 없어도 "혹시 공격자가 이미 들어와 있지 않을까?"라는 가설에서 출발하여 로그를 분석한다. 클라우드에서는 API 이벤트, 네트워크 흐름, IAM 활동이 주요 헌팅 데이터 소스이다.
+
+**왜 배우는가:**
+```
+[위협 헌팅 vs 일반 보안 탐지 비교]
+
+일반 SIEM/탐지:            위협 헌팅:
+경보 → 조사                 가설 → 로그 분석 → 침해 발견
+(반응적)                    (능동적)
+
+[헌팅이 필요한 이유]
+APT(고급 지속 위협) 공격자는 수개월간 탐지 없이 내부에 존재 가능
+  ├─ 정상적인 관리자 계정 사용 (경보 없음)
+  ├─ 작은 양의 데이터를 천천히 유출
+  └─ 신뢰할 수 있는 서비스처럼 위장
+
+헌팅 사이클:
+가설 수립 → 데이터 수집 → 패턴 분석 → 침해 지표(IoC) 발견 → 대응
+     ↑___________________________________|
+                   피드백 루프
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 위협 헌팅(Threat Hunting): 가설 기반으로 숨겨진 위협을 능동적으로 탐지하는 활동
+- IoC(Indicator of Compromise): 침해를 나타내는 지표 (IP, 도메인, 파일 해시 등)
+- TTP(Tactics, Techniques, Procedures): 공격자의 전술·기법·절차 체계
+- MITRE ATT&CK for Cloud: 클라우드 환경 공격 기법 분류 프레임워크
+- 피벗팅(Pivoting): 한 침해 지점에서 연관된 다른 자산으로 조사 확장
+- 베이스라인(Baseline): 정상 활동 기준선 - 이상값 탐지의 기준
+- UEBA(User and Entity Behavior Analytics): 사용자·엔티티 행동 이상 탐지
+```
+
+### 필요한 도구 및 환경
+- **Jupyter Notebook**: 대화형 로그 분석 환경
+- **Python 3.10+**: pandas, matplotlib (로그 분석·시각화)
+- **Sigma Rules**: 클라우드 위협 탐지 규칙 프레임워크
+- **MITRE ATT&CK Navigator**: 클라우드 공격 기법 매핑 도구
+
+### 기초 실습 예제
+```python
+import json
+from collections import defaultdict, Counter
+from datetime import datetime
+
+def cloud_threat_hunting_demo():
+    """
+    클라우드 위협 헌팅 시뮬레이션
+    샘플 CloudTrail 로그에서 이상 패턴 탐지
+    """
+
+    # 샘플 클라우드 활동 로그 (실제 환경: CloudTrail/Audit Log JSON)
+    sample_logs = [
+        {"time": "2025-01-15T00:01:00Z", "user": "alice", "action": "S3:GetObject",    "ip": "10.0.1.5",     "region": "us-east-1"},
+        {"time": "2025-01-15T00:02:00Z", "user": "alice", "action": "S3:GetObject",    "ip": "10.0.1.5",     "region": "us-east-1"},
+        {"time": "2025-01-15T02:15:00Z", "user": "alice", "action": "ConsoleLogin",    "ip": "203.0.113.42", "region": "us-east-1"},  # 새벽 해외 IP
+        {"time": "2025-01-15T02:16:00Z", "user": "alice", "action": "IAM:CreateKey",   "ip": "203.0.113.42", "region": "us-east-1"},  # 의심
+        {"time": "2025-01-15T02:17:00Z", "user": "alice", "action": "S3:ListBuckets",  "ip": "203.0.113.42", "region": "us-east-1"},
+        {"time": "2025-01-15T02:18:00Z", "user": "alice", "action": "S3:GetObject",    "ip": "203.0.113.42", "region": "us-east-1"},
+        {"time": "2025-01-15T02:18:10Z", "user": "alice", "action": "S3:GetObject",    "ip": "203.0.113.42", "region": "us-east-1"},
+        {"time": "2025-01-15T02:18:20Z", "user": "alice", "action": "S3:GetObject",    "ip": "203.0.113.42", "region": "us-east-1"},  # 대량 조회
+        {"time": "2025-01-15T02:19:00Z", "user": "alice", "action": "EC2:RunInstances","ip": "203.0.113.42", "region": "ap-southeast-1"},  # 다른 리전
+        {"time": "2025-01-15T09:00:00Z", "user": "bob",   "action": "S3:GetObject",    "ip": "10.0.1.8",     "region": "us-east-1"},
+    ]
+
+    print("=== 클라우드 위협 헌팅 분석 ===\n")
+
+    # ── 헌팅 가설 1: 새벽 시간 해외 IP 로그인 ──
+    print("[가설 1] 비정상 시간대 + 비정상 IP에서의 로그인")
+    for log in sample_logs:
+        hour = int(log["time"][11:13])
+        is_external = not log["ip"].startswith("10.")
+        if log["action"] == "ConsoleLogin" and is_external and (hour < 6 or hour > 22):
+            print(f"  발견: {log['user']} | {log['time']} | IP: {log['ip']} [비업무시간 외부 IP]")
+
+    # ── 헌팅 가설 2: 로그인 직후 IAM 키 생성 (백도어) ──
+    print("\n[가설 2] 로그인 후 5분 내 IAM 키 생성 (백도어 심기)")
+    user_login_time = {}
+    for log in sorted(sample_logs, key=lambda x: x["time"]):
+        if log["action"] == "ConsoleLogin":
+            user_login_time[log["user"]] = log["time"]
+        elif log["action"] == "IAM:CreateKey" and log["user"] in user_login_time:
+            login_t = datetime.fromisoformat(user_login_time[log["user"]].replace("Z", "+00:00"))
+            action_t = datetime.fromisoformat(log["time"].replace("Z", "+00:00"))
+            diff_min = (action_t - login_t).seconds / 60
+            if diff_min < 5:
+                print(f"  발견: {log['user']} | 로그인 {diff_min:.1f}분 후 키 생성 | IP: {log['ip']}")
+
+    # ── 헌팅 가설 3: S3 대량 접근 (데이터 유출) ──
+    print("\n[가설 3] 단일 IP에서 S3 대량 접근 (데이터 유출)")
+    ip_s3_count = Counter(
+        log["ip"] for log in sample_logs
+        if "S3:Get" in log["action"]
+    )
+    for ip, count in ip_s3_count.items():
+        if count >= 3:
+            external = "외부" if not ip.startswith("10.") else "내부"
+            flag = " ← 의심" if not ip.startswith("10.") else ""
+            print(f"  IP {ip} ({external}): S3 접근 {count}회{flag}")
+
+    # ── 헌팅 가설 4: 멀티 리전 활동 ──
+    print("\n[가설 4] 동일 세션에서 여러 리전 활동 (측면 이동)")
+    user_regions = defaultdict(set)
+    for log in sample_logs:
+        if not log["ip"].startswith("10."):  # 외부 IP만
+            user_regions[f"{log['user']}@{log['ip']}"].add(log["region"])
+    for user_ip, regions in user_regions.items():
+        if len(regions) > 1:
+            print(f"  발견: {user_ip} → 리전: {regions} [멀티 리전 활동]")
+
+    print("\n헌팅 완료: 발견된 침해 지표를 MITRE ATT&CK에 매핑 후 대응 권고서 작성")
+
+cloud_threat_hunting_demo()
+```
+
+---
+
 ## 1. 클라우드 위협 헌팅 방법론
 
 위협 헌팅(Threat Hunting)은 자동화된 탐지 시스템이 놓칠 수 있는 고도화된 위협을 능동적으로 찾아내는 활동이다. 클라우드 환경에서는 API 이벤트와 로그가 주요 헌팅 데이터 소스가 된다.

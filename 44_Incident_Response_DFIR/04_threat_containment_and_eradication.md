@@ -8,6 +8,133 @@
 
 인시던트 격리는 피해 확산을 막는 첫 번째 방어선이다. 악성코드 박멸은 루트 원인을 제거하고, 복구는 서비스를 안전하게 정상화한다.
 
+## 0. 초보자를 위한 개념 이해
+
+### 위협 격리, 박멸, 복구란?
+
+침해사고 대응(Incident Response)의 핵심 3단계다. 격리(Containment)는 감염된 시스템을 네트워크에서 차단해 피해가 번지지 않도록 막는다. 박멸(Eradication)은 악성코드, 백도어, 공격자가 남긴 흔적을 완전히 제거한다. 복구(Recovery)는 시스템을 안전한 상태로 되돌리고 서비스를 정상화한다.
+
+**왜 배우는가:**
+```
+침해사고 대응 3단계:
+
+  [감염 탐지]
+      │
+      ▼
+  1단계: 격리 (Containment)
+     ├── 즉각 격리: 네트워크 케이블 뽑기, 방화벽 차단
+     ├── 단기 격리: VPN 차단, 계정 비활성화
+     └── 목표: 피해 확산 방지
+
+      │
+      ▼
+  2단계: 박멸 (Eradication)
+     ├── 악성코드 파일 삭제
+     ├── 레지스트리 자동실행 항목 제거
+     ├── 백도어 계정 삭제
+     └── 취약점 패치 적용
+
+      │
+      ▼
+  3단계: 복구 (Recovery)
+     ├── 깨끗한 백업에서 시스템 복원
+     ├── 모니터링 강화 후 서비스 재개
+     └── 재감염 여부 24~72시간 관찰
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+
+격리 전략 선택 기준:
+  즉각 격리 → 랜섬웨어, 웜처럼 빠른 확산 위협
+  단기 격리 → 일반 악성코드, 포렌식 증거 수집 필요 시
+  장기 격리 → APT, 공격자 행동 추가 관찰 필요 시
+
+IOC (Indicator of Compromise)
+  - 침해 지표: 악성 IP, 파일 해시, 레지스트리 키 등
+  - 박멸 단계에서 IOC 기반으로 모든 감염 흔적 제거
+
+루트 원인 분석 (Root Cause Analysis)
+  - 단순 악성코드 제거가 아닌 "어떻게 침입했는가" 파악
+  - 원인 미제거 시 동일 경로로 재감염 발생
+
+회귀 테스트 (Regression Test)
+  - 복구 후 시스템이 다시 취약하지 않은지 확인
+  - 패치 적용, 계정 재검토, 보안 설정 강화 포함
+```
+
+### 필요한 도구 및 환경
+- **netsh / iptables**: Windows/Linux 방화벽 격리 명령
+- **CrowdStrike Falcon / Carbon Black**: EDR 원격 격리 기능
+- **Autoruns (Sysinternals)**: 자동실행 악성 항목 탐지·제거
+- **Volatility**: 메모리 포렌식으로 악성코드 잔재 확인
+- **Veeam / rsync**: 검증된 백업에서 복구
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""Windows 시스템 격리 및 박멸 체크리스트 자동 생성기"""
+import json
+from datetime import datetime
+
+
+def create_containment_plan(hostname: str, threat_type: str) -> dict:
+    """침해된 시스템에 대한 격리·박멸 계획을 생성한다."""
+
+    # 위협 유형별 격리 우선순위 결정
+    urgency_map = {
+        "ransomware": "즉각",
+        "worm": "즉각",
+        "apt": "단기",
+        "malware": "단기",
+        "phishing": "단기",
+    }
+    urgency = urgency_map.get(threat_type.lower(), "단기")
+
+    plan = {
+        "대상호스트": hostname,
+        "위협유형": threat_type,
+        "격리우선순위": urgency,
+        "생성시각": datetime.now().isoformat(),
+        "격리_단계": {
+            "즉각조치": [
+                f"[{hostname}] 네트워크 격리: iptables -P INPUT DROP",
+                f"[{hostname}] 활성 세션 강제 종료",
+                "SIEM에 격리 완료 이벤트 기록",
+            ],
+            "증거수집": [
+                "메모리 덤프 생성 (winpmem 또는 LiME)",
+                "실행 중인 프로세스 목록 저장",
+                "네트워크 연결 상태 저장",
+                "디스크 이미지 생성 (격리 후)",
+            ],
+        },
+        "박멸_체크리스트": [
+            "악성 파일/폴더 식별 및 해시 기록",
+            "레지스트리 자동실행 항목 점검 (Run, RunOnce)",
+            "예약 작업(Task Scheduler) 점검",
+            "서비스 목록 비교 (기준값 vs 현재)",
+            "백도어 계정 확인 (net user 비교)",
+            "취약점 패치 적용 (CVE 목록 확인)",
+        ],
+        "복구_체크리스트": [
+            "깨끗한 백업 날짜 확인 (감염 이전)",
+            "백업 무결성 검증 (SHA256 해시)",
+            "스테이징 환경에서 복원 테스트",
+            "EDR 에이전트 재설치 및 최신 업데이트",
+            "72시간 집중 모니터링 후 정상 운영 전환",
+        ],
+    }
+    return plan
+
+
+if __name__ == "__main__":
+    plan = create_containment_plan("WORKSTATION-042", "ransomware")
+    print(json.dumps(plan, ensure_ascii=False, indent=2))
+```
+
 ---
 
 ## 1. 격리 전략

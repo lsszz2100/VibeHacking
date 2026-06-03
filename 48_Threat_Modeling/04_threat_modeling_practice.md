@@ -6,6 +6,204 @@
 
 # 위협 모델링 실전 연습
 
+## 0. 초보자를 위한 개념 이해
+
+### 위협 모델링 실전 연습이란?
+
+이론으로 배운 STRIDE, DREAD, Attack Trees를 실제 시스템에 적용하는 실습이다. 전자상거래 사이트, 모바일 뱅킹 앱, Kubernetes 클러스터 등 현실적인 시스템을 대상으로 완전한 위협 모델을 작성하고, 보안 요구사항과 테스트 케이스까지 도출하는 전 과정을 다룬다.
+
+**왜 배우는가:**
+```
+실전 위협 모델링의 가치:
+
+  개발팀 관점:
+    - 코드 작성 전에 보안 이슈 발견
+    - 보안 기능을 처음부터 설계에 포함
+    - 나중에 수정하는 비용의 1/30로 해결
+
+  보안팀 관점:
+    - 어디에 집중해야 하는지 우선순위 명확화
+    - 침투 테스트 범위 결정에 활용
+    - 규정 준수(PCI-DSS, ISO27001) 근거 문서화
+
+  관리자 관점:
+    - 보안 투자 ROI 계산 가능
+    - 경영진에게 리스크 보고 용이
+    - 인시던트 발생 시 "우리는 알고 있었다" 증명
+
+위협 모델링 → 보안 요구사항 → 테스트 케이스:
+
+  [위협] SQL Injection 가능
+      ↓
+  [요구사항] 모든 DB 쿼리는 파라미터화된 쿼리 사용
+      ↓
+  [테스트] 로그인 폼에 ' OR '1'='1 입력 시 거부되는지 확인
+```
+
+### 핵심 개념 정리
+
+```
+실전 위협 모델링 프로세스 4단계:
+
+1. 시스템 이해 (What are we building?)
+   - 아키텍처 다이어그램 작성
+   - DFD 레벨 0, 1, 2 순서로 상세화
+   - 데이터 분류: 민감 데이터 식별
+
+2. 위협 식별 (What can go wrong?)
+   - STRIDE per Element 적용
+   - MITRE ATT&CK 프레임워크 참조
+   - 이전 사고 사례 참조
+
+3. 위협 완화 (What are we going to do about it?)
+   - DREAD 점수로 우선순위 결정
+   - 각 위협에 대한 완화 통제 수립
+   - 잔여 위험 수용/전가/회피 결정
+
+4. 검증 (Did we do a good job?)
+   - 완화 통제 → 보안 요구사항 변환
+   - 보안 요구사항 → 테스트 케이스 작성
+   - 침투 테스트 범위 확정
+```
+
+### 필요한 도구 및 환경
+- **OWASP Threat Dragon**: DFD + 위협 목록 작성
+- **Miro / draw.io**: 아키텍처 다이어그램 협업
+- **Confluence / Notion**: 위협 모델 문서 관리
+- **JIRA / GitHub Issues**: 위협 → 보안 작업 티켓 전환
+- **OWASP ASVS**: 보안 요구사항 체크리스트 참조
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+위협 모델링 실전: 위협 → 보안 요구사항 → 테스트 케이스 자동 생성
+간단한 웹앱 예시
+"""
+import json
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class ThreatCategory(Enum):
+    SQLI = "SQL Injection"
+    XSS = "크로스 사이트 스크립팅"
+    AUTH_BYPASS = "인증 우회"
+    IDOR = "권한 없는 직접 객체 참조"
+    CSRF = "크로스 사이트 요청 위조"
+
+
+@dataclass
+class SecurityRequirement:
+    """보안 요구사항 — 위협에서 도출"""
+    threat: str
+    requirement: str
+    test_cases: list[str] = field(default_factory=list)
+    priority: str = "중간"
+
+
+# 위협 → 보안 요구사항 → 테스트 케이스 매핑 데이터베이스
+THREAT_TO_REQUIREMENTS: dict[ThreatCategory, SecurityRequirement] = {
+    ThreatCategory.SQLI: SecurityRequirement(
+        threat="SQL Injection",
+        requirement="모든 데이터베이스 쿼리는 파라미터화된 쿼리(Prepared Statement) 또는 ORM 사용",
+        test_cases=[
+            "로그인 username 필드에 ' OR '1'='1 입력 → 거부되어야 함",
+            "검색 파라미터에 '; DROP TABLE users;-- 입력 → 에러 없이 거부",
+            "모든 GET/POST 파라미터에 SQLMap 자동 스캔 실행",
+        ],
+        priority="높음",
+    ),
+    ThreatCategory.XSS: SecurityRequirement(
+        threat="크로스 사이트 스크립팅(XSS)",
+        requirement="모든 사용자 입력은 출력 시 HTML 인코딩, Content-Security-Policy 헤더 설정",
+        test_cases=[
+            "댓글 입력에 <script>alert(1)</script> → 실행되지 않아야 함",
+            "URL 파라미터에 <img src=x onerror=alert(1)> → 필터링 확인",
+            "CSP 헤더 존재 여부 확인: curl -I http://target | grep Content-Security",
+        ],
+        priority="높음",
+    ),
+    ThreatCategory.AUTH_BYPASS: SecurityRequirement(
+        threat="인증 우회",
+        requirement="모든 인증 필요 엔드포인트에 세션 검증, JWT 만료 시간 24시간 이내",
+        test_cases=[
+            "로그아웃 후 이전 세션 토큰으로 API 접근 → 401 응답",
+            "JWT 알고리즘을 none으로 변조 → 거부되어야 함",
+            "/admin 경로를 인증 없이 직접 접근 → 리다이렉트 또는 403",
+        ],
+        priority="높음",
+    ),
+    ThreatCategory.IDOR: SecurityRequirement(
+        threat="권한 없는 직접 객체 참조(IDOR)",
+        requirement="사용자 A의 세션으로 사용자 B의 데이터에 접근 불가",
+        test_cases=[
+            "/api/users/123/orders → 다른 사용자 ID로 변경 시 403",
+            "/download?file=../../../etc/passwd → Path Traversal 방지",
+            "자신의 주문 ID 외에 순차적 ID 변경 시도 → 모두 403",
+        ],
+        priority="높음",
+    ),
+    ThreatCategory.CSRF: SecurityRequirement(
+        threat="크로스 사이트 요청 위조(CSRF)",
+        requirement="모든 상태 변경 요청에 CSRF 토큰 검증, SameSite 쿠키 설정",
+        test_cases=[
+            "CSRF 토큰 없는 POST 요청 → 403 응답",
+            "SameSite 쿠키 속성 확인: Set-Cookie에 SameSite=Strict 또는 Lax",
+            "외부 도메인에서 폼 제출 시 거부 확인",
+        ],
+        priority="중간",
+    ),
+}
+
+
+def generate_security_plan(
+    threats: list[ThreatCategory],
+    system_name: str,
+) -> dict:
+    """위협 목록으로부터 보안 요구사항과 테스트 케이스를 생성한다."""
+    plan = {
+        "시스템": system_name,
+        "분석위협수": len(threats),
+        "보안요구사항": [],
+        "테스트케이스_총수": 0,
+    }
+
+    for threat_cat in threats:
+        req = THREAT_TO_REQUIREMENTS.get(threat_cat)
+        if req:
+            plan["보안요구사항"].append({
+                "위협": req.threat,
+                "요구사항": req.requirement,
+                "우선순위": req.priority,
+                "테스트케이스": req.test_cases,
+                "테스트수": len(req.test_cases),
+            })
+            plan["테스트케이스_총수"] += len(req.test_cases)
+
+    # 우선순위 정렬
+    plan["보안요구사항"].sort(
+        key=lambda x: ["높음", "중간", "낮음"].index(x["우선순위"])
+    )
+    return plan
+
+
+if __name__ == "__main__":
+    # 전자상거래 웹앱 위협 분석
+    ecommerce_threats = [
+        ThreatCategory.SQLI,
+        ThreatCategory.XSS,
+        ThreatCategory.AUTH_BYPASS,
+        ThreatCategory.IDOR,
+        ThreatCategory.CSRF,
+    ]
+
+    plan = generate_security_plan(ecommerce_threats, "전자상거래 웹앱 v2.0")
+    print(json.dumps(plan, ensure_ascii=False, indent=2))
+```
+
+---
+
 ## 목차
 1. [전자상거래 웹앱 위협 모델링](#전자상거래-웹앱-위협-모델링)
 2. [모바일 뱅킹 앱 위협 모델링](#모바일-뱅킹-앱-위협-모델링)

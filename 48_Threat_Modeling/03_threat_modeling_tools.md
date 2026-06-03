@@ -6,6 +6,166 @@
 
 # 위협 모델링 도구 및 자동화
 
+## 0. 초보자를 위한 개념 이해
+
+### 위협 모델링 도구란?
+
+위협 모델링 도구는 DFD(데이터 흐름 다이어그램) 작성과 STRIDE 위협 분석을 자동화하는 소프트웨어다. 수작업으로 하던 위협 분류와 완화 방법 도출을 자동화해 시간을 단축하고, 일관성 있는 분석 결과를 생성한다. CI/CD 파이프라인에 통합하면 코드 변경 시마다 자동으로 위협을 재분석할 수 있다.
+
+**왜 배우는가:**
+```
+수동 위협 모델링 vs 도구 활용:
+
+  수동 방식
+    - Excel 스프레드시트로 위협 목록 작성
+    - 소요 시간: 복잡한 시스템 = 수일~수주
+    - 문제: 담당자 역량에 따라 결과 편차 큼
+
+  도구 활용
+    - DFD 그리면 위협 자동 생성
+    - 소요 시간: 수 시간
+    - 이점: 표준화된 위협 카탈로그 자동 적용
+
+  CI/CD 통합 (최신 트렌드)
+    코드 PR 생성
+        ↓
+    위협 모델링 도구 자동 실행
+        ↓
+    새로운 위협 발견 시 PR 차단
+        ↓
+    개발자가 위협 완화 후 재제출
+```
+
+### 핵심 개념 정리
+
+```
+주요 도구 비교:
+
+Microsoft Threat Modeling Tool (무료)
+  - STRIDE 자동 적용
+  - Windows 전용 (GUI)
+  - Microsoft SDL 프로세스와 통합
+  - 결과물: .tm7 파일 + HTML 보고서
+
+OWASP Threat Dragon (무료, 오픈소스)
+  - 웹 기반 + 데스크톱 앱
+  - GitHub과 연동 (PR에 위협 모델 포함)
+  - STRIDE 지원
+  - 결과물: JSON 파일 + 다이어그램
+
+IriusRisk (상용)
+  - 자동화 위협 라이브러리 2,000개+
+  - JIRA, Azure DevOps 통합
+  - 규정 준수(GDPR, PCI-DSS) 매핑
+
+draw.io (무료) — 수동이지만 유연
+  - 클라우드 저장, 팀 협업
+  - STRIDE 위협을 수동으로 주석 추가
+  - 다양한 내보내기 형식
+```
+
+### 필요한 도구 및 환경
+- **Microsoft TMT**: https://aka.ms/threatmodelingtool (Windows)
+- **OWASP Threat Dragon**: `npm install -g threat-dragon` 또는 https://owasp.org/www-project-threat-dragon/
+- **draw.io**: https://app.diagrams.net (브라우저, 설치 불필요)
+- **Python + pytm**: `pip install pytm` — 코드로 위협 모델 정의
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+pytm 스타일의 간단한 위협 모델 정의 및 보고서 생성
+(pytm 설치 없이 동작하는 자체 구현 버전)
+"""
+import json
+from dataclasses import dataclass, field
+
+
+@dataclass
+class ThreatModel:
+    """시스템 위협 모델"""
+    name: str
+    description: str
+    components: list[dict] = field(default_factory=list)
+    threats: list[dict] = field(default_factory=list)
+    trust_boundaries: list[str] = field(default_factory=list)
+
+    def add_process(self, name: str, description: str = "") -> "ThreatModel":
+        self.components.append({"type": "Process", "name": name, "desc": description})
+        return self
+
+    def add_datastore(self, name: str, description: str = "") -> "ThreatModel":
+        self.components.append({"type": "DataStore", "name": name, "desc": description})
+        return self
+
+    def add_external_entity(self, name: str, description: str = "") -> "ThreatModel":
+        self.components.append({"type": "ExternalEntity", "name": name, "desc": description})
+        return self
+
+    def add_trust_boundary(self, name: str) -> "ThreatModel":
+        self.trust_boundaries.append(name)
+        return self
+
+    def auto_generate_threats(self) -> list[dict]:
+        """컴포넌트를 기반으로 기본 STRIDE 위협을 자동 생성한다."""
+        generated = []
+        for comp in self.components:
+            if comp["type"] == "Process":
+                generated.extend([
+                    {"component": comp["name"], "stride": "Spoofing", "priority": "높음",
+                     "mitigation": "강력한 인증 적용 (MFA, 인증서)"},
+                    {"component": comp["name"], "stride": "Tampering", "priority": "높음",
+                     "mitigation": "입력 검증, 무결성 서명"},
+                    {"component": comp["name"], "stride": "EoP", "priority": "중간",
+                     "mitigation": "최소 권한 원칙, 권한 검증"},
+                ])
+            elif comp["type"] == "DataStore":
+                generated.extend([
+                    {"component": comp["name"], "stride": "Info Disclosure", "priority": "높음",
+                     "mitigation": "저장 데이터 암호화(AES-256)"},
+                    {"component": comp["name"], "stride": "Tampering", "priority": "중간",
+                     "mitigation": "접근 제어, 감사 로그"},
+                ])
+            elif comp["type"] == "ExternalEntity":
+                generated.append(
+                    {"component": comp["name"], "stride": "Spoofing", "priority": "높음",
+                     "mitigation": "신원 검증, 인증서 기반 인증"}
+                )
+        self.threats = generated
+        return generated
+
+    def to_report(self) -> dict:
+        """위협 모델 보고서를 생성한다."""
+        if not self.threats:
+            self.auto_generate_threats()
+        return {
+            "모델명": self.name,
+            "설명": self.description,
+            "컴포넌트수": len(self.components),
+            "신뢰경계": self.trust_boundaries,
+            "위협목록": self.threats,
+            "총_위협수": len(self.threats),
+            "높음_우선순위": sum(1 for t in self.threats if t["priority"] == "높음"),
+        }
+
+
+if __name__ == "__main__":
+    # 간단한 로그인 시스템 위협 모델
+    model = (
+        ThreatModel("로그인 시스템", "사용자 인증 서비스 위협 모델")
+        .add_external_entity("웹 브라우저", "사용자 접속")
+        .add_process("인증 서버", "로그인 처리 및 세션 생성")
+        .add_datastore("사용자 DB", "계정 정보 저장")
+        .add_trust_boundary("인터넷 경계")
+        .add_trust_boundary("DMZ 경계")
+    )
+
+    report = model.to_report()
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+```
+
+---
+
 ## 목차
 1. [Microsoft Threat Modeling Tool](#microsoft-threat-modeling-tool)
 2. [OWASP Threat Dragon](#owasp-threat-dragon)

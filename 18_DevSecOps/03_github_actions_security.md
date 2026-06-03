@@ -6,6 +6,142 @@
 
 # GitHub Actions & CI/CD 파이프라인 보안
 
+## 0. 초보자를 위한 개념 이해
+
+### CI/CD 파이프라인 보안이란?
+
+CI/CD(지속적 통합/배포) 파이프라인은 코드 커밋부터 프로덕션 배포까지 자동화된 빌드·테스트·배포 체계입니다. GitHub Actions 같은 파이프라인은 소스코드, API 키, 클라우드 자격증명에 모두 접근하므로, 침해 시 전체 소프트웨어 공급망을 오염시킬 수 있습니다. SolarWinds, Codecov 같은 실제 공급망 공격이 CI/CD 침해로 시작되었습니다.
+
+**왜 배우는가:**
+```
+CI/CD 파이프라인이 공격 표면인 이유:
+
+  파이프라인이 접근하는 것들:
+    소스코드 전체         → 시크릿 포함 가능
+    AWS/Azure/GCP 자격증명 → 클라우드 전체 제어
+    Docker Registry        → 악성 이미지 배포
+    프로덕션 서버 SSH 키   → 직접 서버 접근
+    NPM/PyPI 배포 권한     → 공급망 오염
+
+  공격 시나리오:
+    악성 GitHub Action → 시크릿 탈취
+    PR 기반 인젝션     → 코드 실행 권한 획득
+    의존성 오염        → 빌드 중 악성코드 실행
+```
+
+### 핵심 개념 정리
+
+```
+GitHub Actions 보안 모범 사례:
+
+  시크릿 관리
+    □ ${{ secrets.NAME }} 사용 (하드코딩 금지)
+    □ 환경별 시크릿 분리 (staging/production)
+    □ 시크릿 출력(echo) 금지
+
+  권한 최소화
+    □ permissions: 필요한 권한만 명시
+    □ GITHUB_TOKEN 기본 권한 제한
+    □ 서드파티 Action에 write 권한 금지
+
+  Actions 버전 고정
+    □ uses: actions/checkout@v4 (태그 OK)
+    □ uses: org/action@SHA해시 (가장 안전)
+    □ 신뢰된 게시자의 Action만 사용
+
+  PR 트리거 보안
+    □ pull_request vs pull_request_target 구분
+    □ 외부 PR에 시크릿 접근 금지
+    □ 승인 후 실행 (required approvals)
+```
+
+### 필요한 도구 및 환경
+- **actionlint**: GitHub Actions 워크플로우 정적 분석
+- **zizmor**: GitHub Actions 보안 취약점 스캐너
+- **StepSecurity Harden-Runner**: 런타임 파이프라인 보안
+- **github/codeql-action**: 자동 코드 취약점 분석
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""GitHub Actions 워크플로우 보안 감사 — 취약한 패턴 탐지."""
+
+from pathlib import Path
+import re
+from dataclasses import dataclass
+
+
+@dataclass
+class WorkflowFinding:
+    file_path: str
+    line_number: int
+    issue: str
+    severity: str
+    suggestion: str
+
+
+def audit_github_workflow(workflow_file: Path) -> list[WorkflowFinding]:
+    """GitHub Actions 워크플로우 파일에서 보안 취약점을 탐지합니다."""
+    findings: list[WorkflowFinding] = []
+    lines = workflow_file.read_text().splitlines()
+
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+
+        # 1. 하드코딩된 시크릿
+        if re.search(r'(password|token|secret|key)\s*:\s*["\'][^$]', stripped, re.I):
+            findings.append(WorkflowFinding(
+                str(workflow_file), i,
+                "하드코딩된 시크릿 의심",
+                "Critical",
+                "${{ secrets.NAME }} 형식으로 변경하세요",
+            ))
+
+        # 2. pull_request_target with checkout (위험 조합)
+        if "pull_request_target" in stripped:
+            findings.append(WorkflowFinding(
+                str(workflow_file), i,
+                "pull_request_target 사용",
+                "High",
+                "PR 코드를 checkout하면 시크릿이 유출될 수 있습니다",
+            ))
+
+        # 3. 태그 대신 SHA 미사용 (서드파티 Action)
+        match = re.search(r"uses:\s+([\w-]+/[\w-]+)@(v\d+|main|master)", stripped)
+        if match and match.group(1) not in ("actions/checkout", "actions/setup-python"):
+            findings.append(WorkflowFinding(
+                str(workflow_file), i,
+                f"서드파티 Action 태그 사용: {match.group(0)}",
+                "Medium",
+                "SHA 해시로 고정: uses: org/action@abc123def",
+            ))
+
+    return findings
+
+
+if __name__ == "__main__":
+    import tempfile
+    sample_workflow = """
+on:
+  pull_request_target:
+jobs:
+  build:
+    steps:
+      - uses: some-org/dangerous-action@v1
+        env:
+          TOKEN: "hardcoded-secret-here"
+"""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
+        f.write(sample_workflow)
+        tmp = Path(f.name)
+    for finding in audit_github_workflow(tmp):
+        print(f"[{finding.severity}] 라인 {finding.line_number}: {finding.issue}")
+        print(f"  권고: {finding.suggestion}\n")
+    tmp.unlink()
+```
+
+---
+
 ## CI/CD 파이프라인 공격 벡터
 
 ```

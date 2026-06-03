@@ -6,6 +6,129 @@
 
 # 헌팅 쿼리 — KQL 및 SPL 실전 가이드
 
+## 0. 초보자를 위한 개념 이해
+
+### KQL과 SPL이란?
+
+KQL(Kusto Query Language)은 Microsoft Azure Sentinel/Log Analytics에서 사용하는 쿼리 언어이고, SPL(Search Processing Language)은 Splunk SIEM에서 사용하는 쿼리 언어다. 두 언어 모두 대용량 보안 로그를 빠르게 검색·분석·시각화하기 위해 설계됐으며, 위협 헌팅 분석가가 "PowerShell Base64 명령 실행 흔적"이나 "비정상 로그온 시도" 같은 보안 이벤트를 수백만 건의 로그에서 찾아내는 핵심 도구다.
+
+**왜 배우는가:**
+```
+[SIEM 쿼리 없이 위협 헌팅이 불가능한 이유]
+
+  일반적인 기업의 하루 로그 규모:
+  Windows 이벤트: 수백만 건
+  네트워크 플로우: 수억 건
+  클라우드 API 호출: 수천만 건
+
+  사람이 직접 분석: 불가능
+  SIEM 쿼리로:
+    "5분 안에 같은 계정으로 10개 국가에서 로그온"
+    → 쿼리 실행 시간 수초~수십 초
+    → 결과: 0건(정상) 또는 의심 이벤트 목록
+
+  [쿼리 작성 능력의 실무 가치]
+  SIEM 알림 규칙 작성 → 자동 탐지
+  위협 헌팅 가설 검증 → 수동 탐색
+  사고 대응 조사 → 공격 타임라인 재구성
+```
+
+### 핵심 개념 정리
+
+```
+[KQL vs SPL 비교]
+
+KQL (Azure Sentinel/Log Analytics)
+  파이프라인: | 연산자 체인
+  예시: SecurityEvent | where EventID == 4625
+        | summarize count() by Account
+  특징: SQL과 유사, 시계열 분석 강력
+
+SPL (Splunk)
+  파이프라인: | 명령어 체인
+  예시: index=wineventlog EventCode=4625
+        | stats count by Account
+  특징: 더 유연한 검색, 대규모 배포 강세
+
+[주요 보안 이벤트 ID (Windows)]
+  4624: 로그온 성공
+  4625: 로그온 실패
+  4648: 명시적 자격증명 로그온 (Pass-the-Hash 의심)
+  4688: 새 프로세스 생성 (커맨드라인 포함)
+  4698: 예약 작업 생성 (지속성)
+  4732: 그룹에 사용자 추가
+  7045: 새 서비스 설치
+
+[Sysmon 이벤트 ID]
+  1:  프로세스 생성 (상세 커맨드라인)
+  3:  네트워크 연결
+  11: 파일 생성
+  13: 레지스트리 값 수정
+  22: DNS 쿼리
+```
+
+### 필요한 도구 및 환경
+- **Microsoft Sentinel 무료 체험**: Azure 계정으로 30일 무료
+- **Splunk Free**: 단일 서버 500MB/일 무료 버전
+- **Elastic SIEM + EQL**: 오픈소스 대안 (KQL 유사 문법)
+- **Sigma**: SIEM 중립적 규칙 포맷 (KQL/SPL로 변환 가능)
+
+### 기초 실습 예제
+```python
+def generate_hunting_query(
+    technique_id: str,
+    siem_type: str = "kql"
+) -> str:
+    """
+    MITRE ATT&CK 기법 ID에 맞는 SIEM 헌팅 쿼리를 생성한다.
+    siem_type: "kql" (Azure Sentinel) 또는 "spl" (Splunk)
+    """
+    queries = {
+        "T1059.001": {  # PowerShell
+            "kql": """// PowerShell 인코딩 명령 실행 탐지 (T1059.001)
+SecurityEvent
+| where EventID == 4688
+| where CommandLine has_any (
+    "-EncodedCommand", "-enc ", "-ec ",
+    "DownloadString", "IEX", "Invoke-Expression"
+  )
+| project TimeGenerated, Account, CommandLine, Computer
+| order by TimeGenerated desc""",
+            "spl": """index=wineventlog EventCode=4688
+(-EncodedCommand OR -enc OR DownloadString OR "IEX" OR "Invoke-Expression")
+| table _time, Account, CommandLine, Computer
+| sort -_time"""
+        },
+        "T1110": {  # Brute Force
+            "kql": """// 무차별 대입 공격 탐지 (T1110) - 5분 내 10회 이상 실패
+SecurityEvent
+| where EventID == 4625
+| summarize FailCount = count() by Account, IpAddress,
+    bin(TimeGenerated, 5m)
+| where FailCount >= 10
+| order by FailCount desc""",
+            "spl": """index=wineventlog EventCode=4625
+| bin span=5m _time
+| stats count as FailCount by Account, src_ip, _time
+| where FailCount >= 10
+| sort -FailCount"""
+        }
+    }
+
+    query_set = queries.get(technique_id, {})
+    query = query_set.get(siem_type, f"// {technique_id} 쿼리 없음")
+
+    print(f"[*] {technique_id} 헌팅 쿼리 ({siem_type.upper()}):")
+    print(query)
+    return query
+
+# 사용 예시
+generate_hunting_query("T1059.001", "kql")
+generate_hunting_query("T1110", "spl")
+```
+
+---
+
 ## 1. KQL (Kusto Query Language) 기초
 
 ### 1.1 개요

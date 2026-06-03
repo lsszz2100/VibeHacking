@@ -1,5 +1,82 @@
 # 패스워드 정책 감사 — 약한 정책 탐지·해시 강도 분석·권고사항
 
+## 0. 초보자를 위한 개념 이해
+
+### 패스워드 정책 감사란?
+
+패스워드 정책 감사(Password Policy Audit)는 조직의 비밀번호 요구사항이 실제로 충분히 강한지 평가하는 과정이다. 단순히 "최소 8자 이상" 같은 규칙이 있다고 안전한 것이 아니라, 실제 해시 알고리즘의 강도, 솔트 사용 여부, 사용자들의 실제 비밀번호 패턴까지 종합적으로 분석한다.
+
+**왜 배우는가:**
+```
+패스워드 정책 감사의 필요성
+
+현실:
+  규정: "최소 8자, 대소문자+숫자 포함"
+  실제: 사용자 비밀번호 → "Password1", "Welcome1"...
+  → 규정은 지키지만 여전히 취약!
+
+감사로 발견할 수 있는 문제:
+  - MD5/SHA-1 같은 약한 해시 알고리즘 사용 중
+  - 솔트 미적용으로 레인보우 테이블 취약
+  - 전체 계정의 30%가 공통 비밀번호 패턴
+  - 비밀번호 만료 정책 미적용
+```
+
+### 핵심 개념 정리
+
+```
+패스워드 정책 감사 항목
+
+항목                    취약 기준              권장 기준
+────────────────────────────────────────────────────────
+최소 길이               8자 미만              12자 이상
+복잡도                  대소문자만             대소문자+숫자+특수문자
+해시 알고리즘           MD5, SHA-1, NTLM      bcrypt, Argon2, PBKDF2
+솔트                    없음                  고유 랜덤 솔트 사용
+반복 횟수               1회                   bcrypt cost≥12
+만료 주기               없음/매월              침해 감지 시 즉시 변경
+계정 잠금               없음                  5회 실패 후 잠금
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: 감사 스크립트 작성
+- **hashcat**: 실제 크래킹 성공률 측정
+- **NIST SP 800-63B**: 현대 비밀번호 정책 표준 참고
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""비밀번호 강도 평가 — 엔트로피 기반 분석 예제"""
+import math
+import re
+
+def password_entropy(password: str) -> float:
+    """비밀번호 엔트로피 계산 (비트 단위)
+    
+    엔트로피 = log2(문자 집합 크기) × 길이
+    낮을수록 취약, 높을수록 안전
+    """
+    charset = 0
+    if re.search(r'[a-z]', password): charset += 26    # 소문자
+    if re.search(r'[A-Z]', password): charset += 26    # 대문자
+    if re.search(r'[0-9]', password): charset += 10    # 숫자
+    if re.search(r'[^a-zA-Z0-9]', password): charset += 32  # 특수문자
+    if charset == 0:
+        return 0.0
+    return math.log2(charset) * len(password)
+
+# 테스트
+passwords = ["abc", "password", "P@ssw0rd", "xK9#mP2$vL8@nQ5"]
+for pw in passwords:
+    entropy = password_entropy(pw)
+    rating = "매우 약함" if entropy < 28 else \
+             "약함" if entropy < 40 else \
+             "보통" if entropy < 60 else "강함"
+    print(f"  {pw!r:20s} 엔트로피: {entropy:5.1f} bits → {rating}")
+```
+
+---
+
 ## 1. 패스워드 보안 감사 개요
 
 ```

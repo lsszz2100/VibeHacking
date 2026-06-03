@@ -6,6 +6,102 @@
 
 # MITM 심화 — ARP 스푸핑·SSL 스트리핑·bettercap·mitmproxy
 
+## 0. 초보자를 위한 개념 이해
+
+### MITM 공격이란?
+
+MITM(Man-In-The-Middle, 중간자 공격)은 공격자가 두 당사자 사이에 몰래 끼어들어 통신을 가로채거나 변조하는 공격입니다. 피해자는 정상적으로 통신하고 있다고 느끼지만, 모든 데이터가 공격자를 경유하고 있습니다.
+
+**왜 배우는가:**
+```
+MITM 공격의 위험성:
+
+  정상 통신:  피해자 ←────────────→ 서버
+  MITM 공격:  피해자 ←──→ 공격자 ←──→ 서버
+
+  공격자가 할 수 있는 것:
+  - 평문 패스워드 도청 (HTTP, FTP, Telnet)
+  - 쿠키/세션 토큰 탈취
+  - 웹 페이지 내용 변조 (악성코드 삽입)
+  - SSL 인증서 위조 (HTTPS 무력화)
+  
+  실제 공격 장소:
+  공공 Wi-Fi (카페, 공항), 같은 LAN 내부, 기업 내부망
+```
+
+### 핵심 개념 정리
+
+```
+ARP 스푸핑 원리:
+
+  ARP(Address Resolution Protocol): IP → MAC 주소 변환 프로토콜
+
+  정상 동작:
+    피해자가 묻는다: "192.168.1.1(게이트웨이)의 MAC 주소는?"
+    게이트웨이가 답한다: "내 MAC은 AA:BB:CC:DD:EE:FF야"
+
+  ARP 스푸핑 (ARP 테이블 오염):
+    공격자가 거짓말한다:
+    → 피해자에게: "게이트웨이 MAC은 공격자MAC이야" (거짓)
+    → 게이트웨이에게: "피해자 MAC은 공격자MAC이야" (거짓)
+    결과: 모든 트래픽이 공격자를 경유
+
+SSL 스트리핑:
+  HTTPS(암호화) → HTTP(평문)으로 다운그레이드
+  피해자는 브라우저 자물쇠 사라진 것을 모르고 패스워드 입력
+```
+
+### 필요한 도구 및 환경
+- **같은 네트워크**: ARP 스푸핑은 동일 LAN 내에서만 가능
+- **IP 포워딩 활성화**: 공격자 PC가 트래픽을 중계하려면 커널에서 활성화 필요
+- **실습 환경**: 가상 네트워크에서 피해자 VM과 공격자 VM 구성 — 실제 네트워크에서 무단 사용은 불법
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""ARP 스푸핑 원리 시뮬레이션 (패킷 전송 없음 — 교육용)."""
+import ipaddress
+from dataclasses import dataclass
+
+@dataclass
+class ARPTableEntry:
+    ip: str
+    mac: str
+    is_poisoned: bool = False
+
+def simulate_arp_poisoning(
+    victim_ip: str,
+    gateway_ip: str,
+    attacker_mac: str,
+) -> dict[str, ARPTableEntry]:
+    """
+    ARP 스푸핑 후 피해자 ARP 테이블 시뮬레이션.
+    실제 패킷을 전송하지 않음 — 원리 이해 목적.
+    """
+    # 피해자의 정상 ARP 테이블
+    normal_table: dict[str, ARPTableEntry] = {
+        gateway_ip: ARPTableEntry(gateway_ip, "AA:BB:CC:DD:EE:FF"),
+    }
+    # 공격 후 오염된 ARP 테이블
+    poisoned_table: dict[str, ARPTableEntry] = {
+        gateway_ip: ARPTableEntry(
+            gateway_ip,
+            attacker_mac,  # 게이트웨이 MAC이 공격자 MAC으로 교체됨
+            is_poisoned=True,
+        ),
+    }
+    print(f"[정상] 게이트웨이 MAC: {normal_table[gateway_ip].mac}")
+    print(f"[공격 후] 게이트웨이 MAC: {poisoned_table[gateway_ip].mac} (공격자!)")
+    return poisoned_table
+
+if __name__ == "__main__":
+    simulate_arp_poisoning("192.168.1.100", "192.168.1.1", "FF:EE:DD:CC:BB:AA")
+    # 실제 ARP 스푸핑: 가상 실습 환경에서만 수행
+    # sudo arpspoof -i eth0 -t <victim_ip> <gateway_ip>
+```
+
+---
+
 ## 1. ARP 스푸핑 원리
 
 ```

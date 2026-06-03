@@ -6,6 +6,76 @@
 
 # 브라우저 확장 아키텍처와 보안 모델
 
+## 0. 초보자를 위한 개념 이해
+
+### 브라우저 확장이란?
+
+**브라우저 확장(Browser Extension)**은 Chrome, Firefox 같은 브라우저에 기능을 추가하는 소형 프로그램입니다. 광고 차단기, 번역기, 비밀번호 관리자 등이 대표적입니다. 보안상 매우 강력한 권한을 가져 공격자의 표적이 됩니다.
+
+**왜 보안에서 중요한가:**
+```
+브라우저 확장의 위험성:
+
+확장이 접근할 수 있는 것:
+  - 모든 웹사이트의 내용 (비밀번호, 카드번호)
+  - 브라우저 히스토리, 쿠키, 북마크
+  - 사용자 입력 (keylogger 가능)
+  - 파일 시스템 (특정 권한 있으면)
+
+실제 사례:
+  2023년: 악성 ChatGPT 확장 → 수십만 설치
+  → Facebook 쿠키 탈취 → 계정 탈취
+```
+
+### 핵심 구조 개념
+
+```
+브라우저 확장 구성 요소:
+
+manifest.json     → 확장 설정 파일 (권한, 파일 목록)
+background.js     → 백그라운드 상시 실행 스크립트
+content.js        → 웹페이지에 직접 주입되는 스크립트
+popup.html/js     → 아이콘 클릭 시 팝업 UI
+
+Manifest V2 vs V3:
+  V2: background page (영구 실행) → 보안 취약
+  V3: service worker (이벤트 기반) → 더 안전
+  → 2024년부터 Chrome은 V3만 허용
+
+권한(Permissions) 예시:
+  "tabs"            → 탭 정보 접근
+  "storage"         → 로컬 데이터 저장
+  "cookies"         → 쿠키 읽기/쓰기
+  "<all_urls>"      → 모든 사이트 접근 ← 위험!
+```
+
+### 필요한 도구
+- **Chrome DevTools**: 확장 디버깅 (`chrome://extensions → 검사`)
+- **CRXcavator**: 확장 보안 자동 분석
+- **Detonation Labs Extension Scanner**: 악성 확장 탐지
+
+### 기초 실습 예제
+```javascript
+// content.js: 페이지의 모든 폼 데이터 수집 (악성 확장 원리 이해)
+// 이 코드는 악성 확장이 어떻게 동작하는지 교육 목적으로 보여줌
+
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {};
+
+    for (const [key, value] of formData.entries()) {
+        data[key] = value;  // 입력 데이터 수집
+    }
+
+    // 악성 확장: 이 데이터를 외부 서버로 전송
+    // chrome.runtime.sendMessage({type: 'formData', data});
+    console.log("폼 제출 감지:", Object.keys(data));
+});
+```
+
+---
+
 ## 1. 브라우저 확장 개요
 
 브라우저 확장(Browser Extension)은 브라우저에 추가 기능을 부여하는 소프트웨어 컴포넌트다. 웹 페이지 컨텍스트와 브라우저 API에 동시에 접근할 수 있어 강력하면서도 잠재적으로 위험한 공격 표면을 형성한다.

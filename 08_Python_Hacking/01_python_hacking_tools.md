@@ -6,6 +6,122 @@
 
 # 파이썬 해킹 도구 개발 — 실전 30가지 예제
 
+## 0. 초보자를 위한 개념 이해
+
+### Python 해킹 도구란?
+
+Python은 보안 분야에서 가장 많이 사용되는 프로그래밍 언어입니다. 간결한 문법, 풍부한 보안 라이브러리, 빠른 프로토타입 개발이 가능하여 취약점 스캐너, 익스플로잇 스크립트, 포렌식 도구 등 다양한 보안 도구를 직접 만들 수 있습니다.
+
+**왜 배우는가:**
+```
+기존 도구의 한계:
+  공개 도구:  기능이 정해져 있음, 탐지 시그니처 존재
+  커스텀 도구: 필요한 기능만, 탐지 회피 가능
+
+Python 해킹 도구 활용:
+  네트워크 스캔   → 포트 스캐너, 서비스 핑거프린터
+  웹 공격 자동화  → SQL Injection 자동 탐지, 브루트포스
+  익스플로잇 작성 → 취약점 PoC 코드, CTF 문제 풀이
+  악성코드 분석   → PE 분석기, PCAP 파서, 메모리 분석
+  포렌식 자동화   → 해시 계산, 아티팩트 수집 스크립트
+
+보안 업계 현실:
+  침투 테스터, 보안 연구자, CTF 참가자 모두 Python 필수
+  Metasploit도 내부적으로 Ruby, 보조 스크립트는 Python
+```
+
+### 핵심 개념 정리
+
+```
+Python 해킹 핵심 라이브러리:
+
+  네트워크:
+    socket   → 저수준 TCP/UDP 소켓 프로그래밍
+    scapy    → 패킷 생성/캡처/분석 (해킹 스위스 아미 나이프)
+    requests → HTTP 요청 자동화
+
+  시스템:
+    subprocess → 운영체제 명령어 실행
+    os, pathlib → 파일시스템 조작
+    ctypes     → Windows API 호출
+
+  암호화/포렌식:
+    hashlib  → MD5, SHA-256 등 해시 계산
+    struct   → 바이너리 데이터 파싱 (PE, 패킷 헤더)
+    zipfile  → ZIP/APK 파일 분석
+
+  익스플로잇:
+    pwntools → CTF/익스플로잇 전용 라이브러리
+    paramiko → SSH 클라이언트 (원격 접속 자동화)
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: 타입 힌트와 최신 문법 사용 — `python3 --version`으로 확인
+- **가상 환경**: `python3 -m venv venv` → 프로젝트별 라이브러리 격리
+- **보안 라이브러리**: `pip install scapy requests pwntools paramiko` — 핵심 4종
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""Python 해킹 도구 개발 기초 — 멀티스레드 TCP 배너 그래버."""
+import socket
+import concurrent.futures
+from dataclasses import dataclass
+
+@dataclass
+class ServiceInfo:
+    host: str
+    port: int
+    banner: str
+    service: str = "unknown"
+
+def grab_banner(host: str, port: int, timeout: float = 2.0) -> ServiceInfo:
+    """TCP 배너 그래빙 — 서비스 버전 정보 수집."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(timeout)
+            sock.connect((host, port))
+            # HTTP 요청 전송 (웹 서버 배너 수집)
+            if port in (80, 8080, 8000):
+                sock.send(b"HEAD / HTTP/1.0\r\nHost: " + host.encode() + b"\r\n\r\n")
+            banner = sock.recv(1024).decode("utf-8", errors="ignore").strip()
+            service = detect_service(port, banner)
+            return ServiceInfo(host, port, banner[:100], service)
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return ServiceInfo(host, port, "", "closed/filtered")
+
+def detect_service(port: int, banner: str) -> str:
+    """포트 번호와 배너로 서비스 타입 추정."""
+    port_map: dict[int, str] = {
+        22: "SSH", 23: "Telnet", 25: "SMTP", 80: "HTTP",
+        110: "POP3", 143: "IMAP", 443: "HTTPS", 445: "SMB",
+        3306: "MySQL", 5432: "PostgreSQL", 6379: "Redis",
+        27017: "MongoDB", 3389: "RDP",
+    }
+    return port_map.get(port, "unknown")
+
+def scan_services(host: str, ports: list[int]) -> list[ServiceInfo]:
+    """멀티스레드 배너 그래빙."""
+    results: list[ServiceInfo] = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+        futures = [executor.submit(grab_banner, host, p) for p in ports]
+        for future in concurrent.futures.as_completed(futures):
+            info = future.result()
+            if info.banner:
+                results.append(info)
+                print(f"  [+] {info.port}/{info.service}: {info.banner[:50]}")
+    return sorted(results, key=lambda x: x.port)
+
+if __name__ == "__main__":
+    target = "127.0.0.1"
+    common_ports = [21, 22, 23, 25, 80, 110, 143, 443, 3306, 3389, 8080]
+    print(f"[*] {target} 배너 그래빙")
+    services = scan_services(target, common_ports)
+    print(f"[*] 응답 서비스 {len(services)}개 발견")
+```
+
+---
+
 ## 1. 파이썬 기초 (해킹 관점)
 
 ### 모듈 구조

@@ -6,6 +6,118 @@
 
 # 암호화 구현 취약점 공격 — 패딩 오라클·타이밍 공격·약한 난수
 
+## 0. 초보자를 위한 개념 이해
+
+### 암호화 구현 취약점이란?
+
+암호화 알고리즘 자체는 안전해도, 잘못된 구현 방식이 공격 경로를 만들어냅니다. 패딩 오라클 공격은 서버의 패딩 에러 응답을 이용해 암호문을 바이트 단위로 복호화합니다. 타이밍 공격은 비밀값 비교 시 조기 종료로 인한 실행 시간 차이를 이용해 비밀을 추측합니다. 약한 난수 생성기는 예측 가능한 키를 만들어 전체 암호 체계를 무력화합니다.
+
+**왜 배우는가:**
+```
+구현 취약점이 실제로 발생하는 이유:
+
+  패딩 오라클
+    → "복호화 성공/패딩 오류" 에러를 다르게 반환
+    → ASP.NET ViewState 취약점 (CVE-2010-3332)
+    → POODLE, ROBOT 공격의 핵심 원리
+
+  타이밍 공격
+    → "abcd" vs "abce" 비교 시 3번째 문자에서 차이 발생
+    → 원격으로도 μs 단위 측정 가능 (통계적 방법)
+    → JWT, HMAC, OAuth 토큰 검증에서 발견
+
+  약한 난수 (Mersenne Twister)
+    → Python random, Java Random의 기본 PRNG
+    → 624개 출력 관찰 → 전체 상태 복원 가능
+    → 세션 토큰, OTP, 암호키 생성에 사용 시 위험
+```
+
+### 핵심 개념 정리
+
+```
+공격 유형별 요약:
+
+  패딩 오라클 공격
+    대상: AES-CBC 복호화 시 패딩 에러 노출
+    원리: 마지막 바이트 변조 → 패딩 OK/Fail 오라클
+    결과: 암호문을 평문으로 바이트 단위 복원
+    방어: 암호화-후-인증(Encrypt-then-MAC), AES-GCM 사용
+
+  타이밍 공격
+    대상: 문자열 직접 비교 (== 연산자)
+    원리: 첫 불일치에서 조기 종료 → 시간 차이
+    결과: 비밀 토큰/키의 각 바이트 추측 가능
+    방어: hmac.compare_digest() 사용 (상수 시간 비교)
+
+  약한 난수
+    대상: 암호화 비적합 PRNG (random 모듈)
+    원리: 내부 상태(624개 32bit) 관찰로 복원
+    결과: 미래 난수 예측 → 세션/토큰 위조
+    방어: secrets 모듈 또는 os.urandom() 사용
+```
+
+### 필요한 도구 및 환경
+- **pycryptodome**: AES-CBC 암호화 구현 및 공격 실습
+- **requests**: 패딩 오라클 공격 HTTP 오라클 요청
+- **padbuster**: 패딩 오라클 자동화 도구
+- **python-mersenne**: Mersenne Twister 상태 복원 도구
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""타이밍 공격 취약점과 방어 — 상수 시간 비교 실습."""
+
+import hmac
+import time
+import secrets
+import statistics
+
+
+def vulnerable_compare(secret: str, user_input: str) -> bool:
+    """취약한 비교: 첫 불일치에서 즉시 반환 (타이밍 공격에 취약)."""
+    if len(secret) != len(user_input):
+        return False
+    for a, b in zip(secret, user_input):
+        if a != b:
+            return False  # 조기 종료 → 시간 차이 발생
+    return True
+
+
+def secure_compare(secret: str, user_input: str) -> bool:
+    """안전한 비교: 상수 시간 비교 (타이밍 공격 방어)."""
+    return hmac.compare_digest(secret.encode(), user_input.encode())
+
+
+def measure_timing(compare_fn, secret: str, test_input: str, trials: int = 1000) -> float:
+    """비교 함수의 평균 실행 시간을 측정합니다."""
+    times: list[float] = []
+    for _ in range(trials):
+        start = time.perf_counter_ns()
+        compare_fn(secret, test_input)
+        times.append(time.perf_counter_ns() - start)
+    return statistics.mean(times)
+
+
+if __name__ == "__main__":
+    secret_token = secrets.token_hex(16)  # 32자 16진수 토큰
+    wrong_first_char = "0" + secret_token[1:]  # 첫 글자만 다름
+    wrong_all = "0" * len(secret_token)          # 전부 다름
+
+    print("[취약한 비교 - 타이밍 차이 측정]")
+    t1 = measure_timing(vulnerable_compare, secret_token, wrong_all)
+    t2 = measure_timing(vulnerable_compare, secret_token, wrong_first_char)
+    print(f"  전부 틀림:   {t1:.0f} ns")
+    print(f"  첫자만 틀림: {t2:.0f} ns  (차이: {abs(t2-t1):.0f} ns)")
+
+    print("\n[안전한 비교 - 상수 시간]")
+    t3 = measure_timing(secure_compare, secret_token, wrong_all)
+    t4 = measure_timing(secure_compare, secret_token, wrong_first_char)
+    print(f"  전부 틀림:   {t3:.0f} ns")
+    print(f"  첫자만 틀림: {t4:.0f} ns  (차이: {abs(t4-t3):.0f} ns)")
+```
+
+---
+
 ## 1. 암호화 구현 취약점 분류
 
 ```

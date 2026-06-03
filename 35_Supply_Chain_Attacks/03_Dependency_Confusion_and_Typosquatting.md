@@ -6,6 +6,126 @@
 
 # 의존성 혼동 공격 및 타이포스쿼팅
 
+## 0. 초보자를 위한 개념 이해
+
+### 의존성 혼동 및 타이포스쿼팅이란?
+
+의존성 혼동(Dependency Confusion)은 패키지 관리자(npm, pip, Maven 등)가 같은 이름의 패키지가 공개 저장소에 존재하면 내부 사설 레지스트리보다 공개 버전을 우선 설치하는 버그를 악용한 공격이다. 타이포스쿼팅(Typosquatting)은 인기 패키지의 이름과 유사한 이름(오타 포함)으로 악성 패키지를 등록해 개발자의 실수를 유도하는 공격이다. 2021년 Alex Birsan의 연구로 의존성 혼동이 공개되며 35개 이상의 대기업이 영향을 받았다.
+
+**왜 배우는가:**
+```
+[의존성 혼동 공격 원리]
+
+  기업 내부:
+    사설 레지스트리 → internal-utils v1.0.0
+
+  공격자:
+    PyPI/npm에 internal-utils v9999.0.0 등록
+
+  패키지 설치 시:
+    pip install internal-utils
+         ↓
+    공개 레지스트리 v9999 > 사설 v1.0
+         ↓
+    ★ 공격자 코드가 빌드 서버에서 실행!
+
+  [영향 받은 기업]
+  Apple, Microsoft, PayPal, Shopify, Netflix 등
+```
+
+### 핵심 개념 정리
+
+```
+[타이포스쿼팅 vs 의존성 혼동 비교]
+
+타이포스쿼팅
+  대상: 일반 개발자의 오타
+  방법: requests → requets, numpy → nummpy
+  규모: 한 번에 한 명씩 감염
+  탐지: 패키지 이름 검사로 일부 탐지 가능
+
+의존성 혼동
+  대상: 기업 내부 패키지 사용 조직
+  방법: 내부 패키지 이름 + 높은 버전 번호
+  규모: CI/CD 통해 전체 조직 동시 감염
+  탐지: 네트워크 모니터링 없이는 탐지 매우 어려움
+
+[방어 방법]
+  npm: --registry 플래그로 사설 레지스트리 고정
+  pip: --index-url로 사설 PyPI 서버 지정
+  공통: 패키지 버전 해시(SHA) 고정
+  공통: 사설 패키지 이름 공개 레지스트리에 선점 등록
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: 의존성 혼동 탐지 스크립트 작성
+- **pip-audit**: Python 패키지 취약점 검사
+- **Socket.dev**: npm 패키지 공급망 보안 분석 서비스
+- **Artifactory/Nexus**: 사설 패키지 레지스트리 (방어 측)
+
+### 기초 실습 예제
+```python
+import urllib.request
+import json
+
+def check_dependency_confusion(
+    package_names: list[str],
+    ecosystem: str = "pypi"
+) -> list[dict]:
+    """
+    내부 패키지 이름이 공개 레지스트리에 등록되었는지 검사한다.
+    의존성 혼동 공격 가능성을 사전에 확인하는 방어 도구.
+    """
+    results = []
+
+    for pkg in package_names:
+        if ecosystem == "pypi":
+            url = f"https://pypi.org/pypi/{pkg}/json"
+        elif ecosystem == "npm":
+            url = f"https://registry.npmjs.org/{pkg}"
+        else:
+            continue
+
+        try:
+            with urllib.request.urlopen(url, timeout=5) as resp:
+                data = json.loads(resp.read())
+
+                if ecosystem == "pypi":
+                    version = data['info']['version']
+                    author = data['info']['author']
+                else:
+                    version = data.get('dist-tags', {}).get('latest', '?')
+                    author = data.get('author', {}).get('name', '?')
+
+                results.append({
+                    "패키지": pkg,
+                    "상태": "공개 등록됨 (위험!)",
+                    "최신 버전": version,
+                    "등록자": author,
+                    "권고": "내부 패키지라면 즉시 레지스트리 격리 확인"
+                })
+                print(f"[!] {pkg}: 공개 레지스트리에 존재! (v{version})")
+
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                results.append({
+                    "패키지": pkg,
+                    "상태": "미등록 (안전)",
+                    "권고": "예방 차원에서 공개 레지스트리에 선점 등록 고려"
+                })
+                print(f"[OK] {pkg}: 공개 레지스트리에 없음")
+        except Exception as e:
+            print(f"[-] {pkg} 조회 실패: {e}")
+
+    return results
+
+# 사용 예시 (자신의 내부 패키지 이름 목록으로 검사)
+# internal_packages = ["mycompany-utils", "internal-auth", "corp-logger"]
+# check_dependency_confusion(internal_packages, "pypi")
+```
+
+---
+
 ## 개요
 
 2021년 Alex Birsan이 공개한 의존성 혼동(Dependency Confusion) 연구는 Apple, Microsoft, PayPal 등 35개 이상의 기업에서 RCE를 달성했다. 이 공격은 패키지 관리자가 내부 패키지보다 공개 레지스트리를 우선하는 버그를 악용한다.

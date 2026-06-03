@@ -6,6 +6,70 @@
 
 # AD 횡이동 — NTLM 릴레이·DCSync·PsExec·원격 실행
 
+## 0. 초보자를 위한 개념 이해
+
+### AD 횡이동이란?
+
+**횡이동(Lateral Movement)**은 네트워크 내부에서 처음 침투한 시스템에서 다른 시스템으로 이동하며 권한을 확장하는 기술입니다. Active Directory 환경에서는 도메인 컨트롤러 장악이 최종 목표입니다.
+
+**왜 배우는가:**
+```
+공격 흐름:
+  외부 → 직원 PC 장악 (초기 접근)
+          ↓
+          내부 네트워크에서 횡이동
+          ↓
+  도메인 컨트롤러 → AD 전체 장악
+
+방어자 관점:
+  - 어떤 경로로 이동하는지 파악 → EDR 탐지 규칙
+  - 네트워크 분리로 이동 차단
+  - 특권 계정 모니터링
+```
+
+### 핵심 횡이동 기법
+
+```
+NTLM 릴레이 (NTLM Relay):
+  인증 요청을 가로채 → 다른 서버에 전달
+  → 피해자의 자격증명으로 다른 시스템 접근
+  도구: ntlmrelayx.py (Impacket)
+
+Pass-the-Hash (PtH):
+  NTLM 해시만으로 인증 (비밀번호 불필요)
+  → mimikatz로 메모리에서 해시 추출
+  → 다른 시스템에 재사용
+
+PsExec 스타일 원격 실행:
+  SMB를 통해 원격 명령 실행
+  도구: psexec.py, smbexec.py (Impacket)
+
+WMI 원격 실행:
+  Windows Management Instrumentation
+  → 원격 코드 실행, 백그라운드에서 조용히
+```
+
+### 필요한 도구
+- **Impacket**: Python AD 공격 라이브러리 모음
+- **CrackMapExec (CME)**: 자동화 네트워크 침투
+- **mimikatz**: 자격증명 덤프 도구
+
+### 기초 실습 예제
+```bash
+# 허가된 AD 침투 테스트 환경에서만!
+
+# 네트워크 내 활성 세션 확인
+crackmapexec smb 192.168.1.0/24 --sessions
+
+# Pass-the-Hash로 원격 접근
+crackmapexec smb 192.168.1.10 -u Administrator -H "NT해시" -x "whoami"
+
+# NTLM 릴레이 준비 (Impacket)
+python3 ntlmrelayx.py -tf targets.txt -smb2support
+```
+
+---
+
 ## 학습 목표
 
 이 문서를 마치면 다음을 이해하고 실습할 수 있습니다.

@@ -6,6 +6,120 @@
 
 # Python 네트워크 스캐닝 도구 개발
 
+## 0. 초보자를 위한 개념 이해
+
+### 네트워크 스캐닝이란?
+
+네트워크 스캐닝은 대상 시스템에서 열린 포트, 실행 중인 서비스, 운영체제 정보 등을 수집하는 정찰 기술입니다. 침투 테스트의 첫 단계인 정보 수집에서 핵심 도구이며, Python으로 직접 구현하면 기존 도구의 탐지 시그니처를 피할 수 있습니다.
+
+**왜 배우는가:**
+```
+직접 구현 vs 기존 도구 사용:
+
+  기존 도구(nmap):
+    빠르고 기능 풍부
+    단점: IDS/WAF에 시그니처 등록됨 → 탐지 가능
+
+  Python 직접 구현:
+    커스텀 스캔 패턴 → 탐지 우회 가능
+    결과 자동 처리 → DB 저장, 자동 보고서 생성
+    다른 도구와 통합 → 스캔 → 취약점 검사 자동화
+
+  스캐닝 활용:
+  내부 망 정찰     → 침투 후 추가 타겟 발견
+  대규모 자산 관리  → 기업 내 모든 서버 포트 현황 파악
+  취약한 서비스 탐지 → 오래된 버전, 잘못된 설정 발견
+```
+
+### 핵심 개념 정리
+
+```
+포트 스캔 방식 비교:
+
+  TCP Connect 스캔:
+    → 완전한 3-Way Handshake 수행
+    → 탐지 가능성 높음 (로그에 기록)
+    → Python socket으로 구현 쉬움
+
+  SYN 스캔 (Half-Open):
+    → SYN만 보내고 RST로 종료 (Handshake 미완성)
+    → 빠르고 탐지 어려움 (일부 로그에 기록 안 됨)
+    → Raw socket 필요 (root 권한)
+
+  UDP 스캔:
+    → UDP 패킷 전송 → ICMP 포트 닫힘 없으면 열림 추정
+    → 느림 (타임아웃 필요)
+
+  서비스 버전 탐지:
+    배너 그래빙 → HTTP, FTP, SSH 응답에서 버전 추출
+    → "OpenSSH 7.4p1" → 알려진 취약점 확인
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: socket, concurrent.futures 표준 라이브러리 사용
+- **scapy**: SYN 스캔 등 저수준 패킷 조작 (root/관리자 권한 필요)
+- **실습 환경**: 가상 네트워크의 타겟 VM — 실제 외부 네트워크 스캔은 불법
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""멀티스레드 포트 스캐너 + 서비스 탐지."""
+import socket
+import concurrent.futures
+from datetime import datetime
+from dataclasses import dataclass, field
+
+@dataclass
+class ScanResult:
+    host: str
+    open_ports: list[int] = field(default_factory=list)
+    services: dict[int, str] = field(default_factory=dict)
+    scan_time: str = field(default_factory=lambda: datetime.now().isoformat())
+
+COMMON_SERVICES: dict[int, str] = {
+    21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP",
+    53: "DNS", 80: "HTTP", 110: "POP3", 135: "RPC",
+    139: "NetBIOS", 143: "IMAP", 443: "HTTPS", 445: "SMB",
+    3306: "MySQL", 3389: "RDP", 5432: "PostgreSQL", 8080: "HTTP-Alt",
+}
+
+def tcp_connect_scan(host: str, port: int, timeout: float = 1.0) -> bool:
+    """TCP Connect 스캔 — 포트 열림 여부 확인."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(timeout)
+            return sock.connect_ex((host, port)) == 0
+    except OSError:
+        return False
+
+def full_scan(host: str, port_range: tuple[int, int] = (1, 1024)) -> ScanResult:
+    """전체 포트 범위 스캔 — 멀티스레드."""
+    result = ScanResult(host=host)
+    start, end = port_range
+    print(f"[*] {host} 스캔 중 (포트 {start}-{end})...")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=200) as executor:
+        future_to_port = {
+            executor.submit(tcp_connect_scan, host, port): port
+            for port in range(start, end + 1)
+        }
+        for future in concurrent.futures.as_completed(future_to_port):
+            port = future_to_port[future]
+            if future.result():
+                result.open_ports.append(port)
+                result.services[port] = COMMON_SERVICES.get(port, "unknown")
+                print(f"  [+] {port}/tcp OPEN  ({result.services[port]})")
+
+    result.open_ports.sort()
+    return result
+
+if __name__ == "__main__":
+    scan = full_scan("127.0.0.1", (1, 1024))
+    print(f"\n[결과] {scan.host}: 열린 포트 {len(scan.open_ports)}개")
+```
+
+---
+
 ## 1. 소켓 프로그래밍 기초
 
 Python socket 모듈로 TCP/UDP 네트워크 통신을 구현합니다. 클라이언트/서버 소켓 생성, 연결, 데이터 송수신의 기본 구조입니다.

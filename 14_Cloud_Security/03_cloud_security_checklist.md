@@ -6,6 +6,104 @@
 
 # 클라우드 보안 체크리스트 & 아키텍처
 
+## 0. 초보자를 위한 개념 이해
+
+### 클라우드 보안 체크리스트란?
+
+클라우드 보안 체크리스트는 AWS/Azure/GCP 환경에서 흔히 발생하는 보안 설정 오류를 체계적으로 점검하는 목록입니다. "공동 책임 모델(Shared Responsibility Model)"에서 클라우드 제공자는 인프라를 보호하지만, 데이터·IAM·네트워크 설정은 사용자가 책임집니다. 체크리스트 기반의 정기적 감사는 설정 오류로 인한 침해를 사전에 예방하는 핵심 보안 활동입니다.
+
+**왜 배우는가:**
+```
+클라우드 보안 사고의 80%는 예방 가능한 설정 오류:
+
+  공개된 S3 버킷         → 수백만 고객 데이터 유출 사례 다수
+  MFA 미설정 루트 계정   → 전체 AWS 계정 탈취
+  과도한 IAM 권한        → 권한 상승으로 전체 인프라 장악
+  기본 VPC 보안 그룹     → 내부 서비스 인터넷 노출
+  API 키 코드에 하드코딩 → GitHub 공개 즉시 악용
+
+  체크리스트 정기 감사 → 위 사고 대부분 예방 가능
+```
+
+### 핵심 개념 정리
+
+```
+AWS 보안 핵심 체크 항목:
+
+  계정 보안
+    □ 루트 계정 MFA (하드웨어 토큰 권장)
+    □ 루트 접근 키 삭제 (절대 사용하지 않음)
+    □ IAM 최소 권한 원칙 적용
+
+  네트워크 보안
+    □ 기본 VPC 사용 금지 (별도 VPC 구성)
+    □ 보안 그룹: 0.0.0.0/0 인바운드 규칙 없음
+    □ CloudTrail 전체 리전 활성화
+
+  스토리지 보안
+    □ S3 버킷 퍼블릭 액세스 차단
+    □ S3 버킷 정책 검토 (와일드카드 금지)
+    □ S3 서버 측 암호화 활성화
+
+  탐지 및 대응
+    □ GuardDuty 활성화 (AI 기반 위협 탐지)
+    □ AWS Config 규칙 설정
+    □ CloudWatch 알람 구성
+```
+
+### 필요한 도구 및 환경
+- **AWS Trusted Advisor**: AWS 공식 보안 권고 도구
+- **ScoutSuite**: 오픈소스 멀티 클라우드 감사 도구
+- **Prowler**: AWS CIS 벤치마크 자동 점검 도구
+- **AWS Security Hub**: 통합 보안 상태 관리
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""AWS 기본 보안 설정 감사 — S3 퍼블릭 접근 및 MFA 확인."""
+
+import boto3
+from botocore.exceptions import ClientError
+
+
+def audit_s3_public_access(session: boto3.Session) -> list[dict]:
+    """모든 S3 버킷의 퍼블릭 접근 차단 설정을 확인합니다."""
+    s3_client = session.client("s3")
+    results: list[dict] = []
+
+    try:
+        buckets = s3_client.list_buckets()["Buckets"]
+    except ClientError as e:
+        return [{"error": str(e)}]
+
+    for bucket in buckets:
+        name = bucket["Name"]
+        try:
+            pab = s3_client.get_public_access_block(Bucket=name)
+            config = pab["PublicAccessBlockConfiguration"]
+            is_safe = all([
+                config.get("BlockPublicAcls", False),
+                config.get("BlockPublicPolicy", False),
+                config.get("IgnorePublicAcls", False),
+                config.get("RestrictPublicBuckets", False),
+            ])
+            results.append({"bucket": name, "public_access_blocked": is_safe})
+        except ClientError:
+            results.append({"bucket": name, "public_access_blocked": False, "note": "설정 없음"})
+
+    return results
+
+
+if __name__ == "__main__":
+    session = boto3.Session()
+    print("[S3 퍼블릭 접근 감사]")
+    for item in audit_s3_public_access(session):
+        status = "안전" if item.get("public_access_blocked") else "위험!"
+        print(f"  [{status}] {item['bucket']}")
+```
+
+---
+
 ## 클라우드 보안 책임 모델
 
 

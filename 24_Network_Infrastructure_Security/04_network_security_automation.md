@@ -6,6 +6,86 @@
 
 # 네트워크 보안 자동화
 
+## 0. 초보자를 위한 개념 이해
+
+### 네트워크 보안 자동화란?
+
+네트워크 보안 자동화는 포트 스캔, 취약점 검색, 방화벽 규칙 감사, 패킷 분석 등 반복적인 보안 작업을 코드로 자동화하는 것이다. 수백 대의 서버를 수작업으로 점검하는 것은 불가능하며, 자동화를 통해 대규모 인프라를 일관되게 점검하고 결과를 표준화된 리포트로 출력할 수 있다.
+
+**왜 배우는가:**
+```
+네트워크 보안 자동화의 필요성
+
+수작업 한계:
+  서버 100대 → 각각 nmap 실행 → 결과 수동 정리
+  → 수십 시간 소요, 실수 발생, 일관성 없음
+
+자동화 효과:
+  Python 스크립트 → 병렬 스캔 → 통합 리포트 자동 생성
+  → 수분 이내 완료, 100% 일관성, CI/CD 파이프라인 통합 가능
+
+활용 분야:
+  - 정기 취약점 스캔 (주간/월간 자동 실행)
+  - 신규 자산 발견 즉시 알림
+  - 방화벽 규칙 준수 여부 자동 검증
+```
+
+### 핵심 개념 정리
+
+```
+네트워크 보안 자동화 핵심 도구
+
+도구             역할                       Python 인터페이스
+──────────────────────────────────────────────────────────
+Nmap             포트/서비스/OS 스캔        python-nmap
+Scapy            패킷 조작/분석             직접 import
+Shodan           인터넷 연결 기기 검색      shodan (API)
+Masscan          초고속 포트 스캔           subprocess
+Zeek/Suricata    트래픽 분석/IDS            로그 파싱
+```
+
+### 필요한 도구 및 환경
+- **python-nmap**: `pip install python-nmap`
+- **scapy**: `pip install scapy`
+- **nmap**: `apt install nmap` (python-nmap의 백엔드)
+- **테스트 환경**: 자신이 소유한 네트워크 또는 격리된 VM
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""간단한 포트 스캐너 — 소켓 기반 초보자 예제"""
+import socket
+import concurrent.futures
+
+def check_port(host: str, port: int, timeout: float = 1.0) -> bool:
+    """단일 포트 연결 가능 여부 확인"""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except (ConnectionRefusedError, TimeoutError, OSError):
+        return False
+
+def scan_ports(host: str, ports: list[int]) -> dict[int, bool]:
+    """여러 포트 병렬 스캔"""
+    results = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as ex:
+        futures = {ex.submit(check_port, host, p): p for p in ports}
+        for future in concurrent.futures.as_completed(futures):
+            port = futures[future]
+            results[port] = future.result()
+    return results
+
+# 사용 예 — 로컬호스트 스캔 (안전)
+host = "127.0.0.1"
+common_ports = [22, 80, 443, 3306, 5432, 6379, 8080, 8443]
+print(f"[*] {host} 스캔 중...")
+for port, open_ in sorted(scan_ports(host, common_ports).items()):
+    if open_:
+        print(f"  [OPEN] {host}:{port}")
+```
+
+---
+
 대규모 인프라의 보안 점검은 수작업으로 한계가 있다. Nmap 스크립트 엔진, Scapy 패킷 조작, 방화벽 규칙 자동 감사 등 Python 기반 네트워크 보안 자동화 기법을 정리한다.
 
 ---

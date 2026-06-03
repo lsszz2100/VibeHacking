@@ -6,6 +6,98 @@
 
 # 01 — Hardware Recon & Interfaces
 
+## 0. 초보자를 위한 개념 이해
+
+### 하드웨어 정찰 및 인터페이스란?
+
+하드웨어 정찰(Hardware Recon)은 분석 대상 기기의 PCB(회로기판), 칩, 디버그 포트 등 물리적 구성 요소를 파악하는 과정이다. 인터페이스(Interface)는 해당 하드웨어와 통신하기 위한 프로토콜(UART, JTAG, SPI, I2C 등)을 의미한다. 이 두 가지를 이해해야 펌웨어 추출, 취약점 분석, 디버그 접근 등 하드웨어 해킹의 모든 후속 작업이 가능하다.
+
+**왜 배우는가:**
+```
+[하드웨어 해킹 전체 흐름]
+
+ 물리 정찰                 인터페이스 식별
+(PCB 촬영·칩 마킹)  →  (UART/JTAG/SPI/I2C 포트 위치)
+        ↓                        ↓
+ 칩 데이터시트 조회          논리 분석기 연결
+        ↓                        ↓
+ 핀아웃 확인              통신 시작 (쉘 접근 or 펌웨어 덤프)
+        ↓                        ↓
+  취약점 분석              익스플로잇 or 보안 평가 보고서
+```
+
+### 핵심 개념 정리
+
+```
+[주요 하드웨어 인터페이스 비교]
+
+UART (범용 비동기 송수신)
+  - 용도: 시리얼 콘솔, 부트 로그, 루트 쉘 접근
+  - 핀: TX, RX, GND (3선)
+  - 속도: 9600 ~ 115200 baud
+  - 특징: 암호화 없음, 부트로더 인터럽트 가능
+
+JTAG (Joint Test Action Group)
+  - 용도: CPU 디버깅, 플래시 읽기/쓰기, 브레이크포인트
+  - 핀: TDI, TDO, TCK, TMS, TRST (4~5선)
+  - 특징: 깊은 수준의 접근, 메모리 직접 접근 가능
+
+SPI (Serial Peripheral Interface)
+  - 용도: 플래시 메모리 직접 읽기 (펌웨어 추출)
+  - 핀: MOSI, MISO, SCK, CS (4선)
+  - 특징: 빠른 속도, NOR/NAND 플래시에 주로 사용
+
+I2C (Inter-Integrated Circuit)
+  - 용도: EEPROM, 센서, 소형 설정값 저장 칩
+  - 핀: SDA, SCL (2선 + GND)
+  - 특징: 저속, 주소 기반 다중 장치 연결
+```
+
+### 필요한 도구 및 환경
+- **논리 분석기(Logic Analyzer)**: Saleae Logic, 저가형 8채널 USB 분석기
+- **USB-UART 어댑터**: CH340, CP2102, FT232 기반 (3.3V/5V 주의)
+- **멀티미터**: 핀 아웃 확인, 전압 측정
+- **PuTTY / minicom / screen**: UART 터미널 접속
+- **flashrom**: SPI 플래시 읽기/쓰기 CLI 도구
+
+### 기초 실습 예제
+```python
+import serial  # pip install pyserial
+
+def uart_connect(port: str = '/dev/ttyUSB0', baudrate: int = 115200):
+    """UART 포트에 연결해 부트 로그를 수집한다."""
+    # 일반적인 보드레이트: 9600, 19200, 38400, 57600, 115200
+    common_baudrates = [9600, 19200, 38400, 57600, 115200]
+
+    for baud in common_baudrates:
+        try:
+            ser = serial.Serial(
+                port=port,
+                baudrate=baud,
+                bytesize=8,       # 8비트 데이터
+                parity='N',       # 패리티 없음
+                stopbits=1,       # 스톱비트 1
+                timeout=2         # 2초 대기
+            )
+            # 데이터 수신 시도
+            data = ser.read(100)
+            if data and any(32 <= b < 127 for b in data):
+                print(f"[+] 보드레이트 {baud}에서 가독성 있는 데이터 수신!")
+                print(f"    수신 데이터: {data[:50]}")
+                return ser
+            ser.close()
+        except serial.SerialException as e:
+            print(f"[-] {baud} baud 연결 실패: {e}")
+
+    print("[-] 유효한 보드레이트를 찾지 못함")
+    return None
+
+# 사용 예시 (실제 하드웨어 연결 후)
+# conn = uart_connect('/dev/ttyUSB0')
+```
+
+---
+
 ## 1. 물리적 정찰 (Physical Recon)
 
 ### 1.1 PCB 분석 절차

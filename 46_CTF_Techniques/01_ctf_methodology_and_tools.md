@@ -8,6 +8,131 @@
 
 CTF(Capture The Flag)는 실제 보안 기술을 경쟁 형식으로 연습하는 최고의 방법이다. Jeopardy 스타일 CTF에서 다양한 보안 분야의 문제를 풀며 실전 기술을 쌓는다.
 
+## 0. 초보자를 위한 개념 이해
+
+### CTF란?
+
+CTF(Capture The Flag)는 보안 기술을 겨루는 해킹 대회다. 참가자들은 의도적으로 취약하게 설계된 시스템이나 암호화된 파일에서 "플래그(flag)"라는 특정 문자열을 찾아 제출해 점수를 얻는다. 실제 해킹 기술을 안전하고 합법적인 환경에서 연습하는 최고의 방법으로 보안 업계 취업에 직결된다.
+
+**왜 배우는가:**
+```
+CTF → 실무 보안 스킬 매핑:
+
+  CTF 분야            실무 연결
+  ─────────────────────────────────────
+  Pwn (바이너리)    → 취약점 분석, 익스플로잇 개발
+  Rev (리버싱)      → 악성코드 분석, 소프트웨어 감사
+  Web               → 웹 침투 테스트, 버그 바운티
+  Crypto            → 암호화 구현 취약점 연구
+  Forensics         → 사고 대응, 디지털 포렌식
+  Misc              → 종합 보안 사고력
+
+  플래그 형식 예시: CTF{s0m3_s3cr3t_fl4g}
+  → 제출하면 점수 획득!
+```
+
+### 핵심 개념 정리
+
+```
+CTF 참가 전 알아야 할 기초:
+
+플래그(Flag)
+  - 정답 문자열: flag{...} 또는 CTF{...} 형식
+  - 각 문제 서버/파일 안에 숨겨져 있음
+  - 찾아서 점수판에 제출하면 점수 획득
+
+Jeopardy 방식 (가장 흔한 형식)
+  - 분야별 문제가 나열됨 (100점~500점)
+  - 어려울수록 고점수 / 많이 풀수록 점수 감소하는 대회도 있음
+  - 혼자 또는 팀(보통 최대 4명)으로 참가
+
+워게임(Wargame) — CTF 연습용
+  - picoCTF: 입문자용 상시 운영 플랫폼
+  - pwnable.kr: Pwn 전문 연습 사이트
+  - Hack The Box (HTB): 실전 침투 연습 머신
+  - TryHackMe (THM): 튜토리얼형 학습 플랫폼
+
+대회 참가
+  - CTFtime.org: 전 세계 CTF 일정 모음
+  - 보통 48~72시간 진행
+  - 종료 후 writeup(풀이)을 공개하는 문화
+```
+
+### 필요한 도구 및 환경
+- **Kali Linux / Ubuntu**: CTF 풀이 기본 환경
+- **pwntools**: Python 바이너리 익스플로잇 프레임워크 (`pip install pwntools`)
+- **Ghidra / IDA Free**: 바이너리 리버싱 도구
+- **Burp Suite Community**: 웹 취약점 분석
+- **CyberChef**: 온라인 인코딩/디코딩 만능 도구 (gchq.github.io/CyberChef)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+CTF 입문자용 — 인코딩된 플래그 복호화 연습
+일반적인 CTF Misc/Crypto 문제 유형
+"""
+import base64
+import binascii
+
+
+def try_common_decodings(encoded: str) -> dict:
+    """
+    CTF에서 자주 보이는 인코딩 방식을 모두 시도한다.
+    """
+    results = {}
+
+    # Base64 디코딩
+    try:
+        decoded = base64.b64decode(encoded + "==").decode("utf-8", errors="ignore")
+        results["base64"] = decoded
+    except Exception:
+        results["base64"] = "디코딩 실패"
+
+    # Base32 디코딩
+    try:
+        decoded = base64.b32decode(encoded + "=" * (8 - len(encoded) % 8)).decode("utf-8", errors="ignore")
+        results["base32"] = decoded
+    except Exception:
+        results["base32"] = "디코딩 실패"
+
+    # 16진수(Hex) 디코딩
+    try:
+        decoded = binascii.unhexlify(encoded.replace(" ", "").replace("0x", "")).decode("utf-8", errors="ignore")
+        results["hex"] = decoded
+    except Exception:
+        results["hex"] = "디코딩 실패"
+
+    # ROT13 (시저 암호)
+    rot13 = encoded.translate(str.maketrans(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+        "NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm"
+    ))
+    results["rot13"] = rot13
+
+    # 플래그 패턴 확인
+    for method, text in results.items():
+        if "flag{" in text.lower() or "ctf{" in text.lower():
+            results["FLAG_FOUND"] = f"{method}: {text}"
+
+    return results
+
+
+if __name__ == "__main__":
+    # 예제: Base64로 인코딩된 플래그
+    test_cases = [
+        "ZmxhZ3t3ZWxjb21lX3RvX2N0Zn0=",   # Base64
+        "666c61677b6865785f6465636f64657d",   # Hex
+        "synt{ebg13_rknzcyr}",                # ROT13
+    ]
+
+    for encoded in test_cases:
+        print(f"\n[입력]: {encoded}")
+        result = try_common_decodings(encoded)
+        for method, text in result.items():
+            print(f"  {method}: {text}")
+```
+
 ---
 
 ## 1. CTF 대회 유형

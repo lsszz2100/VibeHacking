@@ -6,6 +6,117 @@
 
 # SOC 핵심 개념 및 Blue Team 기초
 
+## 0. 초보자를 위한 개념 이해
+
+### SOC란?
+
+SOC(Security Operations Center)는 조직의 IT 시스템을 24시간 모니터링하고 사이버 위협에 대응하는 전담 보안 팀입니다. 공격자(Red Team)와 반대로, SOC는 방어자(Blue Team) 역할을 수행하며 로그 분석, 침해 탐지, 사고 대응을 담당합니다. 현대 보안 직군 중 가장 안정적이고 수요가 높은 분야로, SIEM 운영과 인시던트 대응 능력이 핵심입니다.
+
+**왜 배우는가:**
+```
+사이버 보안 직군에서 SOC의 위치:
+
+  공격팀 (Red Team)
+    침투 테스트 / 버그바운티
+           ↕  (Purple Team — 협력)
+  방어팀 (Blue Team = SOC)
+    탐지 / 대응 / 위협 헌팅
+
+  SOC 취업 경로:
+    IT 운영 경험 → Tier 1 분석가 →
+    Tier 2 조사관 → Tier 3 위협 헌터 →
+    탐지 엔지니어 / CISO
+```
+
+### 핵심 개념 정리
+
+```
+SOC 핵심 용어:
+
+  SIEM      — 보안 정보·이벤트 관리 (Splunk, QRadar)
+  Alert     — SIEM이 이상 탐지 시 발생하는 알림
+  Triage    — 알림의 우선순위 분류 및 초기 조사
+  IOC       — Indicator of Compromise (침해 지표)
+              IP, 도메인, 파일 해시, 레지스트리 키
+  TTPs      — Tactics/Techniques/Procedures (공격 패턴)
+  MITRE ATT&CK — 공격 기법 분류 체계 (표준 참조)
+  Playbook  — 특정 알림 유형에 대한 대응 절차서
+
+Tier별 역할:
+  Tier 1 — 알림 모니터링, 초기 분류, 에스컬레이션
+  Tier 2 — 심층 분석, 포렌식, 인시던트 대응
+  Tier 3 — 위협 헌팅, 제로데이, 악성코드 리버싱
+```
+
+### 필요한 도구 및 환경
+- **Splunk Free**: SIEM 기본 학습 환경 (무료 500MB/일)
+- **MITRE ATT&CK Navigator**: 공격 기법 시각화 및 학습
+- **Elastic SIEM (ELK Stack)**: 오픈소스 SIEM 환경
+- **Any.run / VirusTotal**: 악성코드 분석 온라인 샌드박스
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""SOC 알림 트리아지 — 우선순위 자동 분류기."""
+
+from dataclasses import dataclass
+from datetime import datetime
+from enum import IntEnum
+
+
+class Severity(IntEnum):
+    CRITICAL = 4
+    HIGH = 3
+    MEDIUM = 2
+    LOW = 1
+    INFO = 0
+
+
+@dataclass
+class Alert:
+    alert_id: str
+    title: str
+    severity: Severity
+    source_ip: str
+    event_count: int
+    first_seen: datetime
+    mitre_technique: str | None = None
+
+
+def triage_alert(alert: Alert) -> dict[str, str]:
+    """알림 심각도와 컨텍스트를 기반으로 대응 권고안 생성."""
+    action_map: dict[Severity, str] = {
+        Severity.CRITICAL: "즉시 에스컬레이션 — Tier 2 호출",
+        Severity.HIGH:     "30분 내 조사 시작 — IOC 확인",
+        Severity.MEDIUM:   "4시간 내 검토 — FP 여부 확인",
+        Severity.LOW:      "일일 배치 검토",
+        Severity.INFO:     "로그 보관만",
+    }
+    return {
+        "alert_id":      alert.alert_id,
+        "recommended":   action_map[alert.severity],
+        "ioc_to_check":  alert.source_ip,
+        "mitre":         alert.mitre_technique or "미분류",
+    }
+
+
+if __name__ == "__main__":
+    sample = Alert(
+        alert_id="ALT-2026-001",
+        title="Brute Force Login Attempt",
+        severity=Severity.HIGH,
+        source_ip="203.0.113.45",
+        event_count=250,
+        first_seen=datetime.now(),
+        mitre_technique="T1110 — Brute Force",
+    )
+    result = triage_alert(sample)
+    for k, v in result.items():
+        print(f"{k:15s}: {v}")
+```
+
+---
+
 ## SOC (Security Operations Center) 개요
 
 ```

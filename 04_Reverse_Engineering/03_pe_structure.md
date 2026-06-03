@@ -6,6 +6,112 @@
 
 # PE 구조 & Windows 내부 구조
 
+## 0. 초보자를 위한 개념 이해
+
+### PE 구조란?
+
+PE(Portable Executable)는 Windows 실행 파일(.exe, .dll, .sys)의 파일 포맷입니다. PE 구조를 이해하면 실행 파일이 메모리에 어떻게 로드되는지, 어떤 함수를 사용하는지, 어디서 코드가 시작되는지 파악할 수 있어 악성코드 분석과 리버싱의 기초가 됩니다.
+
+**왜 배우는가:**
+```
+PE 구조 이해의 필요성:
+
+  악성코드 분석:
+  PE 헤더의 Import Table → 어떤 Windows API 호출하는지 확인
+  예: CreateRemoteThread + WriteProcessMemory → 코드 인젝션 의심
+      RegSetValueEx + HKEY_RUN → 시작프로그램 등록 (지속성)
+
+  패킹/언패킹:
+  정상 PE: 섹션 이름 .text, .data, .rdata
+  패킹된 PE: 섹션 이름 UPX0, UPX1 또는 이상한 이름
+  → 언패커로 원본 PE 추출 후 분석
+
+  PE 인젝션:
+  DLL 인젝션: 정상 프로세스에 악성 DLL 로드
+  → Process Hollowing, Reflective DLL Injection
+```
+
+### 핵심 개념 정리
+
+```
+PE 파일 구조 개요:
+
+  파일 오프셋 0x00: DOS Header
+    - MZ 시그니처 (4D 5A) → "MZ"
+    - e_lfanew: PE Header 오프셋 저장
+
+  PE Header (NT Headers):
+    - 시그니처: "PE\0\0" (50 45 00 00)
+    - File Header: CPU 타입, 섹션 수, 타임스탬프
+    - Optional Header:
+        AddressOfEntryPoint → 코드 시작 주소 (EP)
+        ImageBase           → 메모리 로드 기준 주소
+        DataDirectory[16]   → Import, Export, TLS 등
+
+  섹션(Section):
+    .text   → 실행 코드 (W 권한 없음)
+    .data   → 초기화된 전역 변수
+    .rdata  → 문자열 상수, Import 정보
+    .bss    → 초기화되지 않은 변수
+
+  핵심: Import Table
+    프로그램이 사용하는 DLL과 함수 목록
+    → 악성코드 기능 파악의 첫 번째 단계
+```
+
+### 필요한 도구 및 환경
+- **PE 뷰어**: PEview, PE-bear, CFF Explorer — PE 헤더를 구조화해서 보여줌
+- **의존성 분석**: Dependency Walker — Import DLL과 함수 목록 확인
+- **헥스 에디터**: HxD, 010 Editor — 파일을 바이트 단위로 직접 분석
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""PE 파일 기본 정보 추출 — 악성코드 초기 분류."""
+import struct
+from pathlib import Path
+from typing import Optional
+
+def parse_pe_basic(filepath: str) -> dict[str, str | int]:
+    """PE 파일에서 기본 정보 추출 (pefile 없이 직접 파싱)."""
+    data = Path(filepath).read_bytes()
+    info: dict[str, str | int] = {}
+
+    # MZ 시그니처 확인
+    if data[:2] != b"MZ":
+        raise ValueError("유효한 PE 파일이 아닙니다")
+
+    # PE 헤더 오프셋 (e_lfanew: 오프셋 0x3C)
+    pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
+
+    # PE 시그니처 확인
+    if data[pe_offset:pe_offset + 4] != b"PE\x00\x00":
+        raise ValueError("PE 시그니처 없음")
+
+    # File Header (PE 시그니처 다음 4바이트)
+    fh_offset = pe_offset + 4
+    machine = struct.unpack_from("<H", data, fh_offset)[0]
+    num_sections = struct.unpack_from("<H", data, fh_offset + 2)[0]
+    timestamp = struct.unpack_from("<I", data, fh_offset + 4)[0]
+
+    info["machine"] = "x64" if machine == 0x8664 else "x86" if machine == 0x014C else hex(machine)
+    info["sections"] = num_sections
+    info["compile_timestamp"] = timestamp
+
+    return info
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) < 2:
+        print("사용법: python3 script.py <PE파일경로>")
+    else:
+        result = parse_pe_basic(sys.argv[1])
+        for k, v in result.items():
+            print(f"  {k}: {v}")
+```
+
+---
+
 ## 1. PE (Portable Executable) 파일 구조
 
 ### PE 파일이란?

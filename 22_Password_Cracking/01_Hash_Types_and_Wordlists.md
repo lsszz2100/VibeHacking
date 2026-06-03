@@ -6,6 +6,78 @@
 
 # 01 Hash Types and Wordlists
 
+## 0. 초보자를 위한 개념 이해
+
+### 해시와 패스워드 크래킹이란?
+
+해시(Hash)는 임의의 데이터를 고정 길이의 문자열로 변환하는 단방향 함수의 결과물이다. 비밀번호를 데이터베이스에 저장할 때 평문 대신 해시값을 저장하여 유출 시 피해를 줄인다. 패스워드 크래킹은 이 해시값으로부터 원래 비밀번호를 알아내는 과정이다.
+
+**왜 배우는가:**
+```
+패스워드 해시 보안의 중요성
+
+[취약한 저장 방식]
+  데이터베이스: user | MD5(password)
+  → 유출 시 즉시 크래킹 가능 (수초 이내)
+
+[안전한 저장 방식]
+  데이터베이스: user | bcrypt(password, salt, cost=12)
+  → 유출되어도 크래킹에 수년 이상 소요
+
+보안 담당자 필수 지식:
+  - 현재 사용 중인 해시 알고리즘의 취약성 평가
+  - 크래킹 저항성에 따른 알고리즘 선택 기준
+```
+
+### 핵심 개념 정리
+
+```
+해시 알고리즘 강도 비교
+
+약함 ◄─────────────────────────── 강함
+MD5  SHA-1  SHA-256  NTLM  |  bcrypt  scrypt  Argon2
+
+구분 기준:
+  약한 해시 — 솔트 없음, GPU 병렬 연산 최적화 (초당 수십억 회)
+  강한 해시 — 솔트 내장, 의도적으로 느림 (초당 수천 회)
+
+솔트(Salt): 비밀번호에 추가하는 무작위 값
+  → 같은 비밀번호도 매번 다른 해시 → 레인보우 테이블 무력화
+```
+
+### 필요한 도구 및 환경
+- **hashcat**: GPU 기반 고속 패스워드 크래킹 (`apt install hashcat`)
+- **john (John the Ripper)**: CPU 기반 크래킹 (`apt install john`)
+- **hash-identifier / hashid**: 해시 유형 자동 판별
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""해시 기초 이해 — 직접 생성하고 비교하는 예제"""
+import hashlib
+
+password = "password123"
+
+# 다양한 해시 알고리즘 비교
+print(f"원문: {password}")
+print(f"MD5   ({32}자리): {hashlib.md5(password.encode()).hexdigest()}")
+print(f"SHA-1 ({40}자리): {hashlib.sha1(password.encode()).hexdigest()}")
+print(f"SHA-256({64}자리): {hashlib.sha256(password.encode()).hexdigest()}")
+
+# 솔트의 효과 — 같은 비밀번호도 솔트에 따라 완전히 다른 해시
+import os
+salt1 = os.urandom(16).hex()
+salt2 = os.urandom(16).hex()
+h1 = hashlib.sha256((salt1 + password).encode()).hexdigest()
+h2 = hashlib.sha256((salt2 + password).encode()).hexdigest()
+print(f"\n[솔트 효과] 같은 비밀번호, 다른 솔트")
+print(f"  해시1: {h1[:32]}...")
+print(f"  해시2: {h2[:32]}...")
+print("  → 완전히 다른 해시 = 레인보우 테이블 무력화")
+```
+
+---
+
 ## 주요 해시 알고리즘 비교
 
 | 알고리즘 | 길이(hex) | 속도 | 솔트 | 주요 사용처 | hashcat 모드 |

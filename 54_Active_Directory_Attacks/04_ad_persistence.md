@@ -6,6 +6,68 @@
 
 # AD 지속성 — Golden Ticket·ACL 조작·탐지 CLI
 
+## 0. 초보자를 위한 개념 이해
+
+### AD 지속성이란?
+
+**AD 지속성(Persistence)**은 Active Directory 환경에서 권한을 잃었을 때를 대비해 언제든 다시 접근할 수 있는 백도어를 만들어 두는 기술입니다. 레드팀에서 장기 작전을 수행하기 위해 필수입니다.
+
+**왜 배우는가:**
+```
+레드팀 작전에서 지속성:
+
+상황: DC 관리자 권한 획득 → 블루팀이 비밀번호 변경
+  → 지속성 없음: 모든 접근 상실
+  → 지속성 있음: 다른 경로로 재진입 가능
+
+블루팀 관점:
+  지속성 메커니즘 이해 → 완전한 침해 복구 가능
+  (하나라도 놓치면 → 공격자가 남아있음)
+```
+
+### 핵심 지속성 기법
+
+```
+Golden Ticket:
+  KRBTGT 계정 해시 획득 → 임의 TGT 생성
+  → 도메인의 어떤 계정으로든 인증 가능
+  → 10년짜리 유효 티켓 생성 가능
+  탐지: KRBTGT 비밀번호 2회 변경으로 무효화
+
+Silver Ticket:
+  특정 서비스 계정 해시 획득
+  → 해당 서비스에 위조 티켓으로 접근
+  → KDC(DC) 통신 없이 조용히 접근
+
+DCSync:
+  DC 복제 권한으로 AD 전체 해시 덤프
+  → mimikatz: lsadump::dcsync
+
+ACL 조작:
+  AD 객체 권한(ACL)에 공격자 계정 추가
+  → 비밀번호 변경 권한 → 언제든 재접근
+```
+
+### 필요한 도구
+- **mimikatz**: Golden/Silver Ticket 생성
+- **Impacket secretsdump**: 원격 DCSync
+- **BloodHound**: ACL 공격 경로 파악
+
+### 기초 실습 예제
+```bash
+# 허가된 AD 침투 테스트 환경에서만!
+
+# DCSync로 도메인 해시 덤프
+python3 secretsdump.py domain.local/admin:pass@dc.domain.local
+
+# Golden Ticket 생성 (mimikatz)
+# kerberos::golden /user:fake /domain:domain.local
+#   /sid:S-1-5-21-... /krbtgt:KRBTGT해시
+#   /id:500 /ptt  (ptt = Pass The Ticket)
+```
+
+---
+
 ## 0. 레드팀에서 지속성이 필요한 이유
 
 ### 0.1 지속성이란 무엇인가?

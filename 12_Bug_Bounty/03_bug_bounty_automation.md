@@ -6,6 +6,100 @@
 
 # 버그바운티 자동화 도구 완전 정복
 
+## 0. 초보자를 위한 개념 이해
+
+### 버그바운티 자동화란?
+
+버그바운티 자동화는 반복적인 정찰(Recon)과 취약점 스캔 작업을 스크립트로 처리하여 더 많은 시간을 창의적인 취약점 발굴에 집중할 수 있게 해주는 접근 방식입니다. 서브도메인 수천 개를 자동으로 탐색하고, 활성 호스트를 확인하며, 알려진 취약점 패턴을 자동 스캔하는 파이프라인을 구축합니다. 효율적인 자동화는 경쟁이 치열한 버그바운티에서 중요한 차별점이 됩니다.
+
+**왜 배우는가:**
+```
+수동 작업 vs 자동화 파이프라인:
+
+  수동                        자동화
+  ─────────────────────────────────────────────────
+  서브도메인 탐색: 수 시간      subfinder + amass: 수 분
+  호스트 확인: 수작업           httpx: 병렬 처리
+  스크린샷: 불가능              gowitness: 전체 자동
+  취약점 스캔: 부분적           nuclei: 수천 개 동시
+  새 자산 모니터링: 불가능       cron + 알림: 실시간
+```
+
+### 핵심 개념 정리
+
+```
+자동화 파이프라인 단계:
+
+  1. 정찰 (Reconnaissance)
+     서브도메인 탐색: subfinder, amass, assetfinder
+     DNS 브루트포스: dnsx, puredns
+
+  2. 생존 확인 (Live Host Detection)
+     활성 웹서버 확인: httpx, httprobe
+
+  3. 시각화 (Screenshot)
+     전체 서비스 스크린샷: gowitness
+
+  4. 취약점 스캔 (Vulnerability Scanning)
+     자동 스캔: nuclei (YAML 기반 탐지 템플릿)
+
+  5. 알림 (Notification)
+     새 자산/취약점 발견 시 슬랙/텔레그램 알림
+```
+
+### 필요한 도구 및 환경
+- **Go 언어 환경**: subfinder, httpx, nuclei 등 Go 기반 도구 실행
+- **subfinder**: 서브도메인 열거 도구 (패시브 수집)
+- **nuclei**: 템플릿 기반 자동 취약점 스캐너
+- **Python 3.10+**: 파이프라인 자동화 및 알림 스크립트
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""서브도메인 탐색 결과를 파싱해 대상 목록 생성."""
+
+import subprocess
+from pathlib import Path
+
+
+def run_subfinder(domain: str, output_file: Path) -> list[str]:
+    """subfinder로 서브도메인 탐색 후 결과 반환."""
+    result = subprocess.run(
+        ["subfinder", "-d", domain, "-silent", "-o", str(output_file)],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    if result.returncode != 0:
+        print(f"오류: {result.stderr}")
+        return []
+
+    subdomains = output_file.read_text().strip().splitlines()
+    print(f"발견된 서브도메인: {len(subdomains)}개")
+    return subdomains
+
+
+def filter_interesting(subdomains: list[str]) -> list[str]:
+    """관심 키워드가 포함된 서브도메인 우선 필터링."""
+    interesting_keywords = ["admin", "api", "dev", "test", "staging", "internal"]
+    return [
+        sub for sub in subdomains
+        if any(kw in sub.lower() for kw in interesting_keywords)
+    ]
+
+
+if __name__ == "__main__":
+    target = "example.com"
+    output = Path(f"/tmp/{target}_subs.txt")
+    subs = run_subfinder(target, output)
+    priority = filter_interesting(subs)
+    print(f"\n우선순위 대상 ({len(priority)}개):")
+    for s in priority[:10]:
+        print(f"  {s}")
+```
+
+---
+
 ## 자동화 파이프라인 개요
 
 

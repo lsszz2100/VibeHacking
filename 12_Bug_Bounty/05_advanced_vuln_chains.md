@@ -6,6 +6,115 @@
 
 # 버그바운티 고급 — 취약점 체인·서브도메인 테이크오버·계정 탈취
 
+## 0. 초보자를 위한 개념 이해
+
+### 취약점 체이닝이란?
+
+취약점 체이닝(Vulnerability Chaining)은 개별적으로는 낮은 심각도의 취약점 여러 개를 연결하여 실제 피해가 큰 공격 시나리오를 만드는 기법입니다. Self XSS(낮음)와 CSRF(중간)를 결합하면 Stored XSS(높음)가 될 수 있듯이, 창의적인 체이닝은 보상금을 크게 높이고 보안 연구의 핵심 역량이 됩니다. 서브도메인 테이크오버는 방치된 DNS 레코드를 악용해 타사 서비스를 자신의 것처럼 제어하는 기법입니다.
+
+**왜 배우는가:**
+```
+취약점 심각도 vs 체이닝 효과:
+
+  단일 취약점                체인 결합
+  ──────────────────────────────────────────────────
+  Self XSS (Low)    ──┐
+                      ├──→  Stored XSS (High) $$$
+  CSRF (Medium)     ──┘
+
+  SSRF (Medium)     ──┐
+                      ├──→  RCE / 계정 탈취 (Critical) $$$$$
+  IMDS 접근 (Medium) ──┘
+
+  IDOR (Medium)     ──┐
+  비밀번호 재설정 우회 ──┴──→  계정 완전 탈취 (High) $$$$
+```
+
+### 핵심 개념 정리
+
+```
+주요 체인 공격 유형:
+
+  SSRF → IMDS 체인
+    SSRF(서버 측 요청 위조) 취약점으로
+    클라우드 메타데이터 서비스에 접근 →
+    IAM 임시 자격증명 탈취 → 권한 상승
+
+  서브도메인 테이크오버
+    방치된 CNAME: sub.company.com → deleted.service.com
+    deleted.service.com을 공격자가 등록 →
+    sub.company.com 완전 제어
+
+  계정 탈취 체인
+    IDOR로 이메일/전화 노출 →
+    비밀번호 재설정 SMS 인터셉트 우회 →
+    완전한 계정 접근
+```
+
+### 필요한 도구 및 환경
+- **httpx**: 비동기 HTTP 클라이언트 (서브도메인 확인)
+- **dnspython**: DNS 레코드 조회 라이브러리
+- **Burp Suite Collaborator**: 외부 연결 탐지 (SSRF 확인)
+- **dig / host**: DNS 조회 명령어
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""서브도메인 테이크오버 취약점 — DNS CNAME 확인 기초."""
+
+import asyncio
+from dataclasses import dataclass
+
+import dns.asyncresolver
+import dns.exception
+
+
+@dataclass
+class CnameResult:
+    subdomain: str
+    cname_target: str | None
+    is_dangling: bool  # CNAME은 있지만 대상이 응답 없음
+
+
+# 알려진 테이크오버 취약 서비스 시그니처
+VULNERABLE_SIGNATURES: list[str] = [
+    "github.io",
+    "herokuapp.com",
+    "azurewebsites.net",
+    "s3.amazonaws.com",
+    "netlify.app",
+]
+
+
+async def check_cname(subdomain: str) -> CnameResult:
+    """서브도메인의 CNAME 대상이 실제 존재하는지 확인."""
+    resolver = dns.asyncresolver.Resolver()
+    try:
+        cname_answer = await resolver.resolve(subdomain, "CNAME")
+        cname_target = str(cname_answer[0].target).rstrip(".")
+        # CNAME 대상의 A 레코드 확인
+        try:
+            await resolver.resolve(cname_target, "A")
+            return CnameResult(subdomain, cname_target, False)
+        except dns.exception.DNSException:
+            # CNAME은 있지만 대상에 A 레코드 없음 → 댕글링 CNAME
+            return CnameResult(subdomain, cname_target, True)
+    except dns.exception.DNSException:
+        return CnameResult(subdomain, None, False)
+
+
+if __name__ == "__main__":
+    targets = ["old-app.example.com", "staging.example.com"]
+    results = asyncio.run(asyncio.gather(*[check_cname(t) for t in targets]))
+    for r in results:
+        if r.is_dangling:
+            vuln = any(sig in (r.cname_target or "") for sig in VULNERABLE_SIGNATURES)
+            tag = "[테이크오버 가능!]" if vuln else "[댕글링 CNAME]"
+            print(f"{tag} {r.subdomain} → {r.cname_target}")
+```
+
+---
+
 ## 1. 취약점 체이닝 전략
 
 단일 취약점보다 체인으로 연결할수록 심각도(CVSS)와 포상금이 높아진다.

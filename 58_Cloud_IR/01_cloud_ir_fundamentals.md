@@ -6,6 +6,132 @@
 
 # 클라우드 사고 대응(IR) 기초
 
+## 0. 초보자를 위한 개념 이해
+
+### 클라우드 사고 대응이란?
+
+클라우드 사고 대응(Cloud Incident Response, Cloud IR)은 AWS·Azure·GCP 같은 클라우드 환경에서 발생한 보안 침해 사고를 탐지하고, 원인을 분석하며, 피해를 복구하는 일련의 과정이다. 물리적 서버에 직접 접근하던 기존 방식과 달리, 클라우드에서는 API 호출 로그, 감사 이벤트, 네트워크 흐름 등 모든 증거가 디지털 로그로만 존재한다는 점이 결정적 차이다.
+
+**왜 배우는가:**
+```
+[온프레미스 IR vs 클라우드 IR]
+
+온프레미스:                    클라우드:
+물리 서버실 → 직접 접근        API/콘솔 → 원격만 가능
+하드디스크 이미징 가능          스냅샷 API로만 접근
+네트워크 탭/SPAN 가능           VPC Flow Logs 활용
+시스템 종료하면 메모리 손실      서비스는 계속 동작 가능
+
+클라우드 IR의 장점:
+├─ 로그가 중앙화되어 있음 (CloudTrail, Audit Log 등)
+├─ 스냅샷으로 증거 보존 용이
+├─ 격리(Isolate)가 버튼 클릭으로 가능
+└─ 자동화된 대응 플레이북 구현 가능
+
+클라우드 IR의 도전:
+├─ 물리적 증거 수집 불가
+├─ 멀티 계정·멀티 리전 추적 복잡
+└─ 책임 공유 모델 이해 필요
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 책임 공유 모델: 클라우드 사업자와 고객의 보안 책임 구분
+- CloudTrail/Activity Log/Audit Log: 클라우드의 모든 API 호출 기록
+- EBS 스냅샷/디스크 이미지: 클라우드 VM 디스크의 포렌식 복사본
+- VPC Flow Logs: 클라우드 네트워크 트래픽 기록 (IP, 포트, 바이트)
+- CSPM(Cloud Security Posture Management): 클라우드 설정 오류 탐지 도구
+- 격리(Isolation): 침해 인스턴스를 네트워크에서 분리하는 초기 대응
+- DFIR(Digital Forensics & Incident Response): 디지털 포렌식과 사고 대응의 결합
+```
+
+### 필요한 도구 및 환경
+- **AWS CLI / Azure CLI / gcloud**: 각 클라우드 사업자 명령줄 도구
+- **Python 3.10+**: boto3 (AWS), azure-mgmt, google-cloud 라이브러리
+- **Velociraptor / GRR**: 클라우드 인스턴스 원격 포렌식 도구
+- **SIEM**: Splunk, Microsoft Sentinel, Chronicle (로그 분석)
+
+### 기초 실습 예제
+```python
+import json
+from datetime import datetime, timezone, timedelta
+
+def simulate_cloud_ir_timeline():
+    """
+    클라우드 사고 대응 타임라인 생성 시뮬레이션
+    실제 환경: boto3/azure-sdk로 CloudTrail/ActivityLog를 조회
+    """
+
+    # 가상의 CloudTrail 이벤트 (실제는 boto3로 조회)
+    sample_events = [
+        {
+            "time": "2025-01-15T02:13:45Z",
+            "event": "ConsoleLogin",
+            "user": "admin@example.com",
+            "source_ip": "203.0.113.42",  # 의심스러운 외부 IP
+            "result": "Success",
+            "mfa": False,  # MFA 없이 로그인 - 위험 신호
+        },
+        {
+            "time": "2025-01-15T02:15:12Z",
+            "event": "CreateAccessKey",
+            "user": "admin@example.com",
+            "source_ip": "203.0.113.42",
+            "result": "Success",
+            "detail": "새 API 키 생성 - 백도어 가능성",
+        },
+        {
+            "time": "2025-01-15T02:18:33Z",
+            "event": "AttachUserPolicy",
+            "user": "admin@example.com",
+            "source_ip": "203.0.113.42",
+            "result": "Success",
+            "detail": "AdministratorAccess 정책 연결",
+        },
+        {
+            "time": "2025-01-15T02:22:05Z",
+            "event": "GetSecretValue",
+            "user": "admin@example.com",
+            "source_ip": "203.0.113.42",
+            "result": "Success",
+            "detail": "prod/database/password 시크릿 조회",
+        },
+    ]
+
+    print("=== 클라우드 IR 타임라인 분석 ===\n")
+    risk_score = 0
+
+    for event in sample_events:
+        risk = []
+        if not event.get("mfa", True):
+            risk.append("MFA 없는 로그인")
+            risk_score += 30
+        if event["event"] in ["CreateAccessKey", "AttachUserPolicy"]:
+            risk.append("권한 상승 의심")
+            risk_score += 25
+        if event["event"] == "GetSecretValue":
+            risk.append("민감 데이터 접근")
+            risk_score += 20
+
+        risk_str = f"[위험: {', '.join(risk)}]" if risk else "[정상]"
+        print(f"{event['time']} | {event['event']:<25} | {risk_str}")
+
+    print(f"\n총 위험 점수: {risk_score}/100")
+    if risk_score >= 50:
+        print("판정: 침해 사고 가능성 높음 → 즉시 격리 및 조사 필요")
+        print("권고 조치:")
+        print("  1. 의심 사용자 계정 비활성화")
+        print("  2. 새로 생성된 API 키 즉시 삭제")
+        print("  3. CloudTrail 로그 S3로 보존 (증거 보전)")
+        print("  4. 영향받은 시크릿 교체")
+
+simulate_cloud_ir_timeline()
+```
+
+---
+
 ## 1. 온프레미스 vs 클라우드 IR 비교
 
 클라우드 환경에서의 사고 대응은 전통적인 온프레미스 환경과 근본적으로 다른 접근 방식을 요구한다. 물리적 장비에 직접 접근할 수 없고, 인프라 제어권이 클라우드 사업자와 분리되며, 증거가 API 호출과 로그 스트림 형태로 존재한다는 점이 핵심 차이다.

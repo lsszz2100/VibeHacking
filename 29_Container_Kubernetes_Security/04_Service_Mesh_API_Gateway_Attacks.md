@@ -6,6 +6,78 @@
 
 # 서비스 메시 및 API 게이트웨이 공격
 
+## 0. 초보자를 위한 개념 이해
+
+### 서비스 메시와 API 게이트웨이란?
+
+마이크로서비스 환경에서 수십~수백 개의 서비스가 서로 통신할 때, 각 서비스마다 인증·암호화·재시도 로직을 구현하기는 어렵다. 서비스 메시(Istio, Linkerd)는 이를 인프라 레이어에서 자동 처리한다. API 게이트웨이(Kong, AWS API GW)는 외부 트래픽이 내부 서비스로 들어오는 입구를 단일화한다. 이 레이어의 보안 설정 오류는 전체 마이크로서비스 인프라를 위험에 노출시킨다.
+
+**왜 배우는가:**
+```
+서비스 메시 보안의 중요성
+
+설정 오류 시나리오:
+
+PeerAuthentication 미설정 (mTLS 없음):
+  서비스A → 서비스B (평문 HTTP)
+  → 클러스터 내 다른 Pod가 트래픽 도청 가능
+
+AuthorizationPolicy 없음:
+  모든 서비스 → 모든 서비스 통신 허용
+  → 침해된 Pod 하나가 모든 서비스에 접근 가능
+
+API 게이트웨이 인증 미적용:
+  /api/admin/* → 인증 없이 접근 가능
+  → SSRF, 권한 없는 관리 기능 호출
+```
+
+### 핵심 개념 정리
+
+```
+서비스 메시 핵심 보안 컴포넌트 (Istio 기준)
+
+컴포넌트                역할
+──────────────────────────────────────────────────
+PeerAuthentication      서비스 간 mTLS 강제 여부
+AuthorizationPolicy     서비스 간 접근 제어 규칙
+DestinationRule         mTLS 모드, 로드밸런싱 설정
+VirtualService          트래픽 라우팅 규칙
+Envoy 사이드카          실제 트래픽 처리 프록시
+```
+
+### 필요한 도구 및 환경
+- **Minikube + Istio**: 로컬 테스트 클러스터
+- **istioctl**: Istio CLI 도구
+- **kubectl**: K8s 설정 관리
+- **ksniff**: Pod 트래픽 캡처 도구
+
+### 기초 실습 예제
+```bash
+# 1. Istio 설치 (Minikube 기준)
+istioctl install --set profile=demo -y
+kubectl label namespace default istio-injection=enabled
+
+# 2. mTLS 정책 확인
+kubectl get peerauthentication -A    # 네임스페이스별 mTLS 정책
+kubectl get destinationrule -A       # 목적지별 TLS 설정
+
+# 3. 취약한 설정 탐지 — PERMISSIVE 모드 (mTLS 선택적)
+kubectl get peerauthentication -A -o json | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for item in data.get('items', []):
+    mtls = item.get('spec', {}).get('mtls', {}).get('mode', 'STRICT')
+    ns = item['metadata']['namespace']
+    if mtls == 'PERMISSIVE':
+        print(f'[경고] {ns}: PERMISSIVE 모드 — 평문 통신 허용')
+"
+
+# 4. AuthorizationPolicy 확인 (없으면 모든 통신 허용)
+kubectl get authorizationpolicy -A
+```
+
+---
+
 ## 개요
 
 마이크로서비스 환경에서 서비스 메시(Istio, Linkerd)와 API 게이트웨이(Kong, AWS API Gateway, Nginx Ingress)는 트래픽 제어의 핵심이다. 이 레이어의 보안 설정 오류는 서비스 간 인증 우회, 인가 바이패스, SSRF 등으로 이어질 수 있다.

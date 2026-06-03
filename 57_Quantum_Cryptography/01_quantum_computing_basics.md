@@ -6,6 +6,96 @@
 
 # 57-1. 양자 컴퓨팅 기초와 암호학에 대한 영향
 
+## 0. 초보자를 위한 개념 이해
+
+### 양자 컴퓨팅이란?
+
+양자 컴퓨팅은 양자역학의 원리(중첩·얽힘·간섭)를 이용해 기존 컴퓨터로는 수천 년이 걸릴 계산을 단시간에 처리할 수 있는 차세대 컴퓨팅 패러다임이다. 보안 관점에서 가장 중요한 이유는, 현재 인터넷 보안의 근간인 RSA·ECC 등 공개키 암호가 양자 컴퓨터 앞에서 무력화되기 때문이다. 이 위협에 대비하는 것을 양자 내성 암호 또는 포스트 양자 암호(PQC)라 부른다.
+
+**왜 배우는가:**
+```
+[기존 컴퓨터 vs 양자 컴퓨터]
+
+고전 컴퓨터 비트:   0 또는 1 (확정)
+양자 컴퓨터 큐비트: 0 + 1 동시 (중첩) → 측정 시 하나로 결정
+
+[보안에 미치는 영향]
+RSA-2048 해독:
+  - 고전 컴퓨터: 우주 나이보다 오래 걸림 (사실상 불가능)
+  - 양자 컴퓨터: 쇼어 알고리즘으로 몇 시간~며칠 내 가능
+
+AES-256 해독:
+  - 양자 컴퓨터: 그로버 알고리즘으로 128비트 수준으로 약화
+  → 키 길이 2배 확장으로 대응 가능
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 큐비트(Qubit): 양자 컴퓨터의 기본 정보 단위, 0과 1의 중첩 상태 가능
+- 중첩(Superposition): 측정 전까지 0과 1을 동시에 존재하는 양자 상태
+- 얽힘(Entanglement): 두 큐비트가 멀리 떨어져도 서로 연동되는 현상
+- 쇼어 알고리즘(Shor's Algorithm): RSA/ECC를 다항 시간에 해독하는 양자 알고리즘
+- 그로버 알고리즘(Grover's Algorithm): 대칭키 암호 탐색을 제곱근으로 가속
+- 포스트 양자 암호(PQC): 양자 컴퓨터도 해독하기 어려운 차세대 암호 알고리즘
+- Q-Day: 양자 컴퓨터가 현재 암호 체계를 실질적으로 위협하는 시점
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: qiskit, numpy 라이브러리
+- **IBM Qiskit**: 양자 회로 시뮬레이터 (무료, 실제 양자 컴퓨터도 접속 가능)
+- **IBM Quantum 계정**: https://quantum.ibm.com (무료 가입)
+- **Jupyter Notebook**: 양자 회로 시각화
+
+### 기초 실습 예제
+```python
+# pip install qiskit qiskit-aer matplotlib
+from qiskit import QuantumCircuit
+from qiskit_aer import AerSimulator
+from qiskit.visualization import plot_histogram
+import matplotlib.pyplot as plt
+
+# ── 1단계: 중첩(Superposition) 체험 ──
+# 1큐비트 회로 생성
+qc_superposition = QuantumCircuit(1, 1)  # 1큐비트, 1고전비트
+
+# 하다마드 게이트(H): 큐비트를 0|1 중첩 상태로 만들기
+qc_superposition.h(0)
+
+# 측정: 중첩 상태 붕괴 → 0 또는 1 (각 50% 확률)
+qc_superposition.measure(0, 0)
+
+print("=== 중첩 상태 회로 ===")
+print(qc_superposition.draw('text'))
+
+# 시뮬레이터로 1024번 실행
+simulator = AerSimulator()
+job = simulator.run(qc_superposition, shots=1024)
+result = job.result()
+counts = result.get_counts()
+print(f"\n측정 결과 (1024회): {counts}")
+print("→ 0과 1이 각 약 50%로 무작위 출력됨 (중첩 증명)\n")
+
+# ── 2단계: 얽힘(Entanglement) 체험 ──
+# 2큐비트 벨 상태(Bell State) 생성
+qc_entanglement = QuantumCircuit(2, 2)
+qc_entanglement.h(0)           # 첫 번째 큐비트 중첩
+qc_entanglement.cx(0, 1)       # CNOT: 두 큐비트 얽힘 생성
+qc_entanglement.measure([0, 1], [0, 1])
+
+print("=== 얽힘 상태 회로 (벨 상태) ===")
+print(qc_entanglement.draw('text'))
+
+job2 = simulator.run(qc_entanglement, shots=1024)
+counts2 = job2.result().get_counts()
+print(f"\n측정 결과 (1024회): {counts2}")
+print("→ '00'과 '11'만 나옴 (두 큐비트가 항상 같은 값 = 얽힘 증명)")
+print("→ QKD에서 이 성질을 이용해 도청을 탐지함")
+```
+
+---
+
 ## 개요
 
 양자 컴퓨팅은 양자역학의 원리(중첩, 얽힘, 간섭)를 활용하여 특정 유형의 계산을 고전 컴퓨터보다 지수적으로 빠르게 수행하는 패러다임이다. 특히 인수분해와 이산 로그 문제에 대한 양자 알고리즘의 존재는 현재 공개키 암호 체계 전반을 위협한다.

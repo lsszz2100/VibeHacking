@@ -6,6 +6,134 @@
 
 # 브라우저 샌드박스 탈출
 
+## 0. 초보자를 위한 개념 이해
+
+### 브라우저 샌드박스 탈출이란?
+
+브라우저 샌드박스는 악성 웹 페이지가 렌더러 프로세스를 장악하더라도 OS나 다른 프로세스에 접근하지 못하도록 격리하는 보안 경계이다. 샌드박스 탈출(Sandbox Escape)은 이 격리를 뚫고 렌더러 밖의 시스템 자원에 접근하는 공격이다. 완전한 브라우저 공격(풀체인 익스플로잇)은 JS 엔진 버그(렌더러 RCE) + 샌드박스 탈출 + 권한 상승의 3단계로 구성된다.
+
+**왜 배우는가:**
+```
+[풀체인 브라우저 익스플로잇의 구조]
+
+1단계: 렌더러 침해
+  악성 웹사이트 방문 → JS 엔진 버그 → 렌더러 RCE
+  (권한: 매우 낮음, 격리됨)
+       ↓
+2단계: 샌드박스 탈출 ← 이 파일의 주제
+  브라우저 프로세스와 IPC 통신 버그 / OS 커널 버그
+  → 샌드박스 밖의 브라우저 프로세스 코드 실행
+  (권한: 낮음, 브라우저 권한)
+       ↓
+3단계: 권한 상승
+  OS 취약점 → 시스템/루트 권한 획득
+  (권한: 최고)
+
+샌드박스 격리 기법 (OS별):
+- Linux:  seccomp-BPF (시스템 콜 필터링) + 네임스페이스
+- Windows: Job Object + AppContainer + 무결성 수준
+- macOS:  Sandbox 프로파일 + XPC 서비스
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 샌드박스(Sandbox): 렌더러 프로세스를 OS로부터 격리하는 보안 경계
+- IPC(Inter-Process Communication): 렌더러-브라우저 프로세스 간 통신 채널
+- Mojo: Chromium의 IPC 프레임워크 - 샌드박스 탈출의 주요 공격 표면
+- seccomp-BPF: Linux 시스템 콜 화이트리스트 필터 (Linux 샌드박스 핵심)
+- AppContainer: Windows의 낮은 권한 격리 컨테이너
+- 브로커 프로세스: 렌더러 대신 파일/레지스트리 접근을 중개하는 신뢰된 프로세스
+- CVE-2021-38003: 실제 샌드박스 탈출 취약점 예시 (V8 OOB + 샌드박스 탈출)
+```
+
+### 필요한 도구 및 환경
+- **Linux VM**: seccomp 실습 환경 (KVM 또는 VMware)
+- **Python 3.10+**: ctypes, subprocess (seccomp 개념 실습)
+- **strace**: 시스템 콜 추적으로 샌드박스 동작 분석
+- **Chrome 디버그 빌드**: --no-sandbox 플래그로 샌드박스 해제 후 비교
+
+### 기초 실습 예제
+```python
+"""
+브라우저 샌드박스 개념 실습
+seccomp-BPF 방식의 시스템 콜 필터링을 Python으로 시연
+"""
+import os
+import subprocess
+import sys
+
+def demonstrate_sandbox_concept():
+    """
+    샌드박스의 핵심 개념인 시스템 콜 필터링 원리 설명
+    실제 Chromium은 C++로 작성된 복잡한 샌드박스를 사용
+    """
+    print("=== 브라우저 샌드박스 개념 시연 ===\n")
+
+    print("[샌드박스 = 허용된 시스템 콜만 실행 가능]")
+    print()
+
+    # Chromium 렌더러 프로세스의 샌드박스 허용/차단 시스템 콜
+    sandbox_rules = {
+        "허용됨 (렌더러가 필요)": [
+            "read / write",       # 파일 읽기/쓰기 (파이프, 소켓)
+            "mmap / munmap",      # 메모리 매핑
+            "brk",               # 힙 확장
+            "futex",             # 뮤텍스 (멀티스레딩)
+            "clock_gettime",     # 시간 조회
+            "sendmsg / recvmsg", # IPC (Mojo 통신)
+        ],
+        "차단됨 (샌드박스 탈출 방지)": [
+            "execve",            # 새 프로세스 실행 (핵심 차단!)
+            "open / openat",     # 직접 파일 열기
+            "socket",            # 네트워크 소켓 생성
+            "fork / clone",      # 새 프로세스/스레드 생성
+            "ptrace",            # 다른 프로세스 디버깅
+            "kill",              # 프로세스에 시그널 전송
+            "ioctl (대부분)",    # 디바이스 제어
+        ],
+    }
+
+    for category, syscalls in sandbox_rules.items():
+        print(f"[{category}]")
+        for syscall in syscalls:
+            icon = "O" if "허용" in category else "X"
+            print(f"  [{icon}] {syscall}")
+        print()
+
+    print("[샌드박스 탈출 시도 시나리오]")
+    print("1. 렌더러 RCE 달성 후 /etc/passwd 읽기 시도")
+    print("   open('/etc/passwd') → EPERM (차단!)")
+    print()
+    print("2. IPC 버그를 이용한 탈출 시도")
+    print("   Mojo 메시지 조작 → 브라우저 프로세스의 파일 접근 요청")
+    print("   → 브라우저 프로세스에서 임의 파일 접근 가능 (탈출 성공)")
+    print()
+    print("3. 커널 익스플로잇으로 직접 탈출")
+    print("   seccomp 우회 가능한 커널 취약점 → 커널 RCE → 샌드박스 무력화")
+
+    # Linux seccomp 간단 시연 (prctl 사용)
+    print("\n[Linux seccomp 활성화 확인]")
+    try:
+        result = subprocess.run(
+            ["cat", "/proc/self/status"],
+            capture_output=True, text=True
+        )
+        for line in result.stdout.splitlines():
+            if "Seccomp" in line:
+                val = line.split(":")[1].strip()
+                mode = {"0": "비활성", "1": "strict", "2": "filter (BPF)"}.get(val, val)
+                print(f"  현재 프로세스 Seccomp 모드: {mode}")
+                break
+    except Exception:
+        print("  /proc/self/status 읽기 실패")
+
+demonstrate_sandbox_concept()
+```
+
+---
+
 ## 1. Chromium 샌드박스 아키텍처
 
 ### 1.1 개요

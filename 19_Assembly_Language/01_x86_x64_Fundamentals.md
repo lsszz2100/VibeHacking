@@ -6,6 +6,75 @@
 
 # x86/x64 어셈블리 기초
 
+## 0. 초보자를 위한 개념 이해
+
+### 어셈블리 언어란?
+
+**어셈블리 언어(Assembly Language)**는 CPU가 직접 이해하는 기계어와 1:1 대응되는 저수준 언어입니다. C언어 `a = b + 1`을 어셈블리로 쓰면 `mov eax, [rbp-8] / add eax, 1 / mov [rbp-4], eax`처럼 됩니다.
+
+**왜 보안에서 필수인가:**
+```
+역공학(리버싱):
+  .exe 파일 → 어셈블리 코드로 변환 → 동작 분석
+  (소스코드가 없어도 무엇을 하는지 파악 가능)
+
+취약점 분석:
+  스택 오버플로, 버퍼 오버플로 이해 → 어셈블리 필수
+
+셸코드 작성:
+  직접 기계어 작성 → 어셈블리로만 가능
+```
+
+### 핵심 레지스터 정리
+
+```
+x86-64 범용 레지스터:
+
+64bit   32bit  16bit  8bit   역할
+------  -----  -----  ----   ----
+RAX     EAX    AX     AL     함수 반환값
+RBX     EBX    BX     BL     베이스 포인터
+RCX     ECX    CX     CL     카운터 (루프)
+RDX     EDX    DX     DL     데이터
+RSI     ESI    SI     SIL    소스 인덱스
+RDI     EDI    DI     DIL    목적 인덱스 (Linux 1번째 인자)
+RSP     ESP    SP     SPL    스택 포인터 (현재 스택 위치)
+RBP     EBP    BP     BPL    프레임 포인터 (현재 함수 기준)
+RIP     EIP    IP     --     명령어 포인터 (다음 실행 주소)
+```
+
+### 필요한 도구
+- **GDB + pwndbg**: Linux 어셈블리 디버거
+- **x64dbg**: Windows 어셈블리 디버거
+- **nasm**: 어셈블리 코드 컴파일러
+- **objdump**: 바이너리 → 어셈블리 변환
+
+### 기초 실습 예제
+```nasm
+; Hello World 어셈블리 (Linux x64)
+; nasm -f elf64 hello.asm && ld hello.o -o hello
+
+section .data
+    msg db "Hello, World!", 0x0a  ; 문자열 + 줄바꿈
+    len equ $ - msg               ; 문자열 길이
+
+section .text
+    global _start
+
+_start:
+    mov rax, 1       ; sys_write 시스템 콜 번호
+    mov rdi, 1       ; stdout (파일 디스크립터 1)
+    mov rsi, msg     ; 출력할 문자열 주소
+    mov rdx, len     ; 출력할 길이
+    syscall          ; 커널 호출
+
+    mov rax, 60      ; sys_exit 시스템 콜
+    xor rdi, rdi     ; 종료 코드 0
+    syscall
+```
+
+---
+
 ## 1. 레지스터 체계
 
 ### 1.1 범용 레지스터 (General Purpose Registers)

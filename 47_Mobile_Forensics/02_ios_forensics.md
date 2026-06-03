@@ -6,6 +6,155 @@
 
 # iOS 포렌식
 
+## 0. 초보자를 위한 개념 이해
+
+### iOS 포렌식이란?
+
+iOS 포렌식은 iPhone, iPad에서 디지털 증거를 추출하고 분석하는 전문 기법이다. Apple의 강력한 암호화와 보안 체계 때문에 Android보다 훨씬 어렵지만, iTunes/iCloud 백업, 탈옥(Jailbreak) 또는 전용 장비를 통해 증거를 확보할 수 있다.
+
+**왜 배우는가:**
+```
+iOS vs Android 포렌식 난이도 비교:
+
+  Android
+    - USB 디버깅(ADB)으로 상대적 쉬운 접근
+    - 다양한 제조사 = 다양한 보안 수준
+
+  iOS (훨씬 어려움)
+    - Apple의 통일된 강력 암호화 (AES-256)
+    - 화면 잠금 = 데이터 완전 암호화
+    - GrayKey/Cellebrite만이 일부 우회 가능
+
+  법집행기관이 iOS를 어려워하는 이유:
+    - 잠금 화면 = 모든 데이터 암호화
+    - Apple은 수사 협조 거부 사례 다수
+    - USB Restricted Mode: 연결 1시간 후 데이터 전송 차단
+
+  그래도 확보 가능한 것:
+    - iTunes 로컬 백업 (암호 없으면 완전 복호화)
+    - iCloud 백업 (Apple ID 비밀번호 필요)
+    - 탈옥 기기 (ssh로 직접 접근)
+```
+
+### 핵심 개념 정리
+
+```
+iOS 백업 구조:
+
+iTunes 로컬 백업 (암호화 안 된 경우)
+  위치: ~/Library/Application Support/MobileSync/Backup/
+  구조: [UDID]/ 폴더 안에 해시 파일명으로 저장
+  → 파일명이 SHA1 해시라 직접 읽기 어려움
+  → iMazing, libimobiledevice로 파싱 가능
+
+iTunes 백업 파일 구성:
+  Manifest.db  - 파일 목록 (SQLite DB)
+  Manifest.plist - 기기 정보
+  Info.plist   - 백업 메타데이터
+  Status.plist - 백업 상태
+  [해시파일들] - 실제 데이터 (250개 폴더에 분산)
+
+주요 아티팩트 위치 (탈옥 기기 or 백업):
+  /var/mobile/Library/SMS/sms.db          SMS
+  /var/mobile/Library/CallHistory/       통화기록
+  /var/mobile/Library/Safari/            브라우저
+  /var/mobile/Library/Mail/              이메일
+  /var/mobile/Media/DCIM/                사진/영상
+```
+
+### 필요한 도구 및 환경
+- **libimobiledevice**: Linux/macOS에서 iOS 기기 접근 (`apt install libimobiledevice-utils`)
+- **iMazing (상용)**: iTunes 백업 파싱 GUI 도구
+- **mvt-ios**: Pegasus 스파이웨어 탐지 도구
+- **SQLite Browser**: iOS DB 파일 (.db) 분석
+- **Belkasoft / Cellebrite**: 전문 포렌식 솔루션
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+iTunes 백업에서 SMS 메시지를 추출하는 기초 스크립트
+백업 암호화 해제 후 사용 (암호화 설정 시 복호화 필요)
+"""
+import json
+import sqlite3
+from pathlib import Path
+
+
+def find_sms_db_in_backup(backup_path: str) -> Path | None:
+    """
+    iTunes 백업에서 SMS DB 파일을 찾는다.
+    sms.db의 SHA1 해시: 3d0d7e5fb2ce288813306e4d4636395e047a3d28
+    """
+    sms_hash = "3d0d7e5fb2ce288813306e4d4636395e047a3d28"
+    backup_dir = Path(backup_path)
+
+    # 백업 파일은 첫 2글자로 된 폴더 안에 저장됨
+    sms_path = backup_dir / sms_hash[:2] / sms_hash
+    if sms_path.exists():
+        return sms_path
+
+    return None
+
+
+def extract_sms_messages(db_path: Path, limit: int = 20) -> list[dict]:
+    """
+    SMS DB에서 메시지를 추출한다.
+    실제 sms.db 스키마 기반 (iOS 버전마다 다를 수 있음).
+    """
+    messages = []
+    try:
+        conn = sqlite3.connect(str(db_path))
+        cursor = conn.cursor()
+
+        # iOS sms.db 기본 쿼리
+        cursor.execute("""
+            SELECT
+                m.rowid,
+                CASE m.is_from_me WHEN 1 THEN '발신' ELSE '수신' END as 방향,
+                m.text as 내용,
+                datetime(m.date/1000000000 + 978307200, 'unixepoch', 'localtime') as 시간,
+                h.id as 상대방
+            FROM message m
+            LEFT JOIN handle h ON m.handle_id = h.rowid
+            ORDER BY m.date DESC
+            LIMIT ?
+        """, (limit,))
+
+        for row in cursor.fetchall():
+            messages.append({
+                "id": row[0],
+                "방향": row[1],
+                "내용": row[2] or "[미디어]",
+                "시간": row[3],
+                "상대방": row[4],
+            })
+        conn.close()
+    except sqlite3.Error as e:
+        messages.append({"오류": str(e), "원인": "암호화된 백업이거나 스키마 불일치"})
+
+    return messages
+
+
+if __name__ == "__main__":
+    # 실제 사용 시 iTunes 백업 경로 입력
+    # macOS: ~/Library/Application Support/MobileSync/Backup/[UDID]/
+    backup_path = "./sample_backup"
+
+    print("[iOS iTunes 백업 SMS 추출 도구]")
+    print("주의: 법적 권한이 있는 기기의 백업만 분석할 것")
+
+    db_path = find_sms_db_in_backup(backup_path)
+    if db_path:
+        messages = extract_sms_messages(db_path, limit=10)
+        print(json.dumps(messages, ensure_ascii=False, indent=2))
+    else:
+        print(f"SMS DB를 찾을 수 없습니다. 백업 경로 확인: {backup_path}")
+        print("예상 위치: [backup]/{3d0d7e.../3d0d7e...}")
+```
+
+---
+
 ## 목차
 1. iOS 파일시스템 구조
 2. iTunes 백업 구조 분석

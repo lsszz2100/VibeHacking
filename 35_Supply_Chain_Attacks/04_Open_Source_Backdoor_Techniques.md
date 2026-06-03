@@ -6,6 +6,126 @@
 
 # 오픈소스 백도어 삽입 기법
 
+## 0. 초보자를 위한 개념 이해
+
+### 오픈소스 백도어 삽입이란?
+
+오픈소스 백도어 삽입은 공격자가 오픈소스 프로젝트에 기여자로 위장해 장기간 신뢰를 쌓은 뒤, 악성 코드를 코드베이스에 몰래 삽입하는 공격이다. 소스 코드가 공개되어 있음에도 코드 리뷰의 사각지대를 이용해 수개월~수년에 걸쳐 준비된다. 2024년 XZ Utils 사건(CVE-2024-3094)은 2년 이상 잠복한 공격자가 리눅스 시스템 전체를 노렸던 대표적 사례다.
+
+**왜 배우는가:**
+```
+[오픈소스 백도어의 파급력]
+
+  인기 오픈소스 라이브러리 (예: xz-utils)
+           ↓ 악성 코드 삽입
+  Linux 배포판 패키지 저장소에 포함
+           ↓
+  전 세계 서버에 자동 업데이트로 배포
+           ↓
+  ★ 단 하나의 백도어로 수백만 서버 침해 가능
+
+  [XZ Utils 사례]
+  - 공격자 'JiaT75'가 2022년부터 기여 시작
+  - 2년간 메인테이너 신뢰 획득
+  - 2024년 systemd 연동 SSH 데몬에 백도어 삽입
+  - Andres Freund의 우연한 발견으로 노출
+```
+
+### 핵심 개념 정리
+
+```
+[오픈소스 백도어 삽입 기법 유형]
+
+1. 점진적 신뢰 구축 (Long Game)
+   - 수개월간 무해한 기여로 신뢰 획득
+   - 메인테이너 지위 획득 후 악성 PR
+
+2. 소셜 엔지니어링
+   - 기존 메인테이너에게 접근, 번아웃 유도
+   - "내가 유지보수를 도와드릴게요" 전략
+
+3. 난독화 기법
+   - 바이너리 테스트 파일 속에 악성 스크립트 숨김
+   - CMakeLists.txt, configure.ac 등 빌드 파일 악용
+   - 컴파일 단계에서만 악성 코드 활성화
+
+4. 조건부 활성화
+   - 특정 환경에서만 동작 (Debian/Ubuntu, systemd 등)
+   - 개발자 로컬 테스트에서는 무해, 프로덕션에서만 작동
+
+5. 숨겨진 기능 (Hidden Functionality)
+   - 언뜻 보면 성능 최적화처럼 보이는 코드
+   - 특정 조건(공격자 키)에서만 백도어 활성화
+```
+
+### 필요한 도구 및 환경
+- **git log / git blame**: 의심스러운 커밋 추적
+- **semgrep**: 악성 패턴 정적 분석
+- **OSSF Scorecard**: 오픈소스 프로젝트 보안 점수 측정
+- **Sigstore / cosign**: 소프트웨어 아티팩트 서명 검증
+
+### 기초 실습 예제
+```python
+import subprocess
+from pathlib import Path
+
+def audit_git_history(repo_path: str, suspicious_authors: list[str] = None):
+    """
+    Git 저장소에서 의심스러운 커밋 패턴을 탐지한다.
+    오픈소스 백도어 삽입 초기 단계 탐지에 활용.
+    """
+    repo = Path(repo_path)
+    if not (repo / ".git").exists():
+        print(f"[-] Git 레포 아님: {repo_path}")
+        return
+
+    # 최근 커밋에서 바이너리 파일 추가 탐지
+    result = subprocess.run(
+        ['git', '-C', repo_path, 'log',
+         '--oneline', '--diff-filter=A',
+         '--name-only', '--format=%H %ae %s'],
+        capture_output=True, text=True
+    )
+
+    print("[*] 바이너리/비소스 파일 추가 커밋 탐지:")
+    suspicious_extensions = {'.bin', '.xz', '.gz', '.zip', '.so', '.dylib'}
+    for line in result.stdout.split('\n'):
+        for ext in suspicious_extensions:
+            if line.endswith(ext):
+                print(f"  [!] 의심 파일 추가: {line}")
+
+    # 빌드 스크립트 수정 탐지
+    result2 = subprocess.run(
+        ['git', '-C', repo_path, 'log',
+         '--oneline', '--',
+         'CMakeLists.txt', 'configure.ac', 'Makefile.am',
+         'setup.py', 'package.json'],
+        capture_output=True, text=True
+    )
+
+    if result2.stdout.strip():
+        print("\n[*] 빌드 스크립트 수정 커밋:")
+        for line in result2.stdout.strip().split('\n')[:10]:
+            print(f"  → {line}")
+
+    # 특정 저자의 커밋 통계
+    if suspicious_authors:
+        for author in suspicious_authors:
+            result3 = subprocess.run(
+                ['git', '-C', repo_path, 'log',
+                 '--author', author, '--oneline'],
+                capture_output=True, text=True
+            )
+            count = len(result3.stdout.strip().split('\n'))
+            if result3.stdout.strip():
+                print(f"\n[*] 저자 '{author}' 커밋 수: {count}")
+
+# 사용 예시
+# audit_git_history("/path/to/open-source-project")
+```
+
+---
+
 > **학습 목표**
 >
 > 이 문서를 완료하면 다음을 할 수 있습니다:

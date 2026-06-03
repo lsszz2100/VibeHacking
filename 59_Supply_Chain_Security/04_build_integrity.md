@@ -1,5 +1,146 @@
 # 빌드 무결성 검증 (Build Integrity Verification)
 
+## 0. 초보자를 위한 개념 이해
+
+### 빌드 무결성이란?
+
+빌드 무결성은 소프트웨어가 선언된 소스코드에서 변조 없이 정확하게 만들어졌다는 것을 암호학적으로 증명하는 속성이다. 공격자가 빌드 서버나 배포 서버에 침투해 바이너리를 변조하더라도, 무결성 검증이 있다면 사용자가 이를 탐지할 수 있다. SolarWinds 사고처럼 빌드 과정 침해가 심각한 위협이 됨에 따라 빌드 무결성 보장이 필수가 되었다.
+
+**왜 배우는가:**
+```
+[빌드 무결성이 없을 때의 위험]
+
+소스코드 (GitHub)      →      빌드 서버      →     배포
+   [정상 코드]             [공격자 침투!]        [악성 바이너리]
+                          악성코드 삽입
+                               ↑
+                       탐지 불가 (서명 없음)
+
+[빌드 무결성이 있을 때]
+
+소스코드 (GitHub)      →      빌드 서버      →     서명·공개
+   [정상 코드]             [빌드 + 서명]        [서명 + Rekor 투명성 로그]
+                               ↑                      ↑
+                        변조 불가                 누구나 검증 가능
+
+핵심 도구: Sigstore (코드 서명) + SLSA (프레임워크) + SBOM (목록)
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 코드 서명(Code Signing): 소프트웨어에 디지털 서명을 붙여 출처와 무결성 증명
+- SLSA(Supply chain Levels for Software Artifacts): 빌드 보안 성숙도 4단계 프레임워크
+- Sigstore: 오픈소스 코드 서명 도구 모음 (Cosign, Fulcio, Rekor)
+- Cosign: 컨테이너 이미지·아티팩트 서명 및 검증 CLI 도구
+- Rekor: 서명 이벤트를 기록하는 불변(tamper-evident) 투명성 로그
+- SBOM(Software Bill of Materials): 소프트웨어의 모든 구성요소 목록 파일
+- 재현 가능 빌드: 동일한 입력으로 항상 비트 단위 동일한 출력 생성
+```
+
+### 필요한 도구 및 환경
+- **Cosign**: 컨테이너 이미지 서명 및 검증 (`brew install cosign`)
+- **syft**: SBOM 생성 도구
+- **grype**: SBOM 취약점 스캐너
+- **GitHub Actions**: SLSA 프로비넌스 자동 생성
+
+### 기초 실습 예제
+```python
+import hashlib
+import json
+import os
+import subprocess
+from pathlib import Path
+from datetime import datetime, timezone
+
+def create_artifact_manifest(artifact_path: str,
+                              source_repo: str,
+                              build_id: str) -> dict:
+    """
+    소프트웨어 아티팩트의 빌드 출처(Provenance) 정보 생성
+    SLSA 프로비넌스 형식 참고 (slsa.dev)
+    """
+    artifact = Path(artifact_path)
+
+    if not artifact.exists():
+        # 테스트용 가상 파일 생성
+        artifact.write_text("fake binary content for demo")
+
+    # SHA-256 해시 계산 (무결성 기준값)
+    sha256 = hashlib.sha256(artifact.read_bytes()).hexdigest()
+
+    # SLSA 프로비넌스 초안
+    provenance = {
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "predicateType": "https://slsa.dev/provenance/v0.2",
+        "subject": [
+            {
+                "name": artifact.name,
+                "digest": {"sha256": sha256}
+            }
+        ],
+        "predicate": {
+            "buildType": "https://github.com/actions/runner",
+            "builder": {"id": "https://github.com/actions/runner"},
+            "invocation": {
+                "configSource": {
+                    "uri": source_repo,
+                    "digest": {"sha1": build_id},
+                    "entryPoint": ".github/workflows/build.yml"
+                }
+            },
+            "metadata": {
+                "buildStartedOn": datetime.now(timezone.utc).isoformat(),
+                "completeness": {
+                    "parameters": True,
+                    "environment": False,
+                    "materials": True,
+                },
+                "reproducible": False,  # 재현 가능 빌드 여부
+            },
+            "materials": [
+                {"uri": source_repo, "digest": {"sha1": build_id}}
+            ]
+        }
+    }
+    return provenance
+
+def verify_artifact_hash(artifact_path: str, expected_sha256: str) -> bool:
+    """다운로드된 아티팩트의 해시를 공개된 값과 비교"""
+    artifact = Path(artifact_path)
+    if not artifact.exists():
+        print(f"파일 없음: {artifact_path}")
+        return False
+    actual = hashlib.sha256(artifact.read_bytes()).hexdigest()
+    match = (actual == expected_sha256)
+    print(f"예상 해시: {expected_sha256[:16]}...")
+    print(f"실제 해시: {actual[:16]}...")
+    print(f"무결성 검증: {'통과' if match else '실패 - 파일이 변조되었습니다!'}")
+    return match
+
+# 시연
+print("=== 빌드 아티팩트 프로비넌스 생성 ===\n")
+manifest = create_artifact_manifest(
+    "/tmp/myapp-v1.0.tar.gz",
+    "https://github.com/myorg/myapp",
+    "abc123def456"
+)
+print(json.dumps(manifest, indent=2, ensure_ascii=False)[:800])
+print("\n=== 아티팩트 해시 검증 ===")
+# 서명된 해시값과 비교하는 검증
+test_file = Path("/tmp/myapp-v1.0.tar.gz")
+correct_hash = hashlib.sha256(test_file.read_bytes()).hexdigest()
+verify_artifact_hash("/tmp/myapp-v1.0.tar.gz", correct_hash)
+print("\n=== Cosign 서명 명령 (컨테이너 이미지) ===")
+print("# 이미지 서명:")
+print("cosign sign --key cosign.key ghcr.io/myorg/myapp:v1.0")
+print("\n# 서명 검증:")
+print("cosign verify --key cosign.pub ghcr.io/myorg/myapp:v1.0")
+```
+
+---
+
 ## 1. 빌드 무결성이란
 
 빌드 무결성(Build Integrity)은 소프트웨어 아티팩트가 선언된 소스 코드에서 검증된 빌드 프로세스를 통해

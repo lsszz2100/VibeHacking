@@ -6,6 +6,135 @@
 
 # AWS 포렌식
 
+## 0. 초보자를 위한 개념 이해
+
+### AWS 포렌식이란?
+
+AWS 포렌식은 Amazon Web Services 환경에서 발생한 보안 사고의 증거를 수집하고 분석하는 기술이다. 물리적 서버 대신 CloudTrail(API 감사 로그), VPC Flow Logs(네트워크 트래픽), GuardDuty(위협 탐지) 등 AWS 고유의 로그와 서비스가 주요 증거 소스가 된다. AWS의 공유 책임 모델을 이해하고, 증거가 삭제되기 전에 신속하게 보존하는 것이 핵심이다.
+
+**왜 배우는가:**
+```
+[AWS 포렌식 증거 수집 경로]
+
+공격자
+  │
+  ├─ IAM 자격증명 탈취 → Console/API 로그인
+  │         ↓
+  │    CloudTrail에 기록 (90일 보존)
+  │
+  ├─ EC2 인스턴스 침해 → 악성코드 실행
+  │         ↓
+  │    EBS 스냅샷으로 디스크 이미지 확보 가능
+  │
+  ├─ 데이터 유출 → S3 버킷 대량 다운로드
+  │         ↓
+  │    S3 Access Log / CloudTrail Data Events
+  │
+  └─ 측면 이동 → 다른 리소스 접근
+            ↓
+       VPC Flow Logs (IP 흐름 추적)
+
+핵심: 모든 AWS 활동은 로그로 기록됨 → 올바르게 설정해야 함
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- CloudTrail: AWS 계정의 모든 API 호출을 기록하는 감사 로그 서비스
+- GuardDuty: 머신러닝으로 위협을 자동 탐지하는 AWS 보안 서비스
+- VPC Flow Logs: 가상 네트워크의 IP 트래픽 흐름을 기록
+- AWS Config: AWS 리소스 설정 변경 이력 추적
+- EBS 스냅샷: EC2 인스턴스 디스크의 시점 복사본 (포렌식 이미징용)
+- IMDSv2: EC2 메타데이터 서비스 v2 (SSRF 방어를 위해 필수 활성화)
+- Memory Forensics: EC2 메모리 덤프 분석 (Volatility 도구 사용)
+```
+
+### 필요한 도구 및 환경
+- **AWS CLI**: 로그 조회 및 스냅샷 생성
+- **boto3 (Python)**: AWS SDK로 자동화된 포렌식 스크립트 작성
+- **Volatility**: EC2 메모리 덤프 분석
+- **Athena**: S3에 저장된 대용량 CloudTrail 로그 SQL 쿼리
+
+### 기초 실습 예제
+```python
+# pip install boto3
+import boto3
+import json
+from datetime import datetime, timezone, timedelta
+
+def aws_forensics_quick_triage(region: str = "us-east-1"):
+    """
+    AWS 포렌식 초기 트리아지 스크립트
+    의심스러운 IAM 활동을 CloudTrail에서 검색
+    실행 전: AWS CLI 설정 필요 (aws configure)
+    """
+    # CloudTrail 클라이언트 초기화
+    cloudtrail = boto3.client('cloudtrail', region_name=region)
+
+    # 최근 24시간 이벤트 조회
+    end_time = datetime.now(timezone.utc)
+    start_time = end_time - timedelta(hours=24)
+
+    # 위험 이벤트 목록 (IAM 권한 상승 관련)
+    suspicious_events = [
+        "CreateAccessKey",        # 새 API 키 생성
+        "AttachUserPolicy",       # 사용자에 정책 연결
+        "AttachRolePolicy",       # 역할에 정책 연결
+        "CreateLoginProfile",     # 콘솔 로그인 활성화
+        "UpdateLoginProfile",     # 비밀번호 변경
+        "ConsoleLogin",           # 콘솔 로그인
+        "AssumeRoleWithWebIdentity",  # 웹 자격증명으로 역할 전환
+    ]
+
+    print(f"AWS 포렌식 트리아지 - 최근 24시간 ({region})\n")
+    findings = []
+
+    try:
+        for event_name in suspicious_events:
+            response = cloudtrail.lookup_events(
+                LookupAttributes=[
+                    {"AttributeKey": "EventName", "AttributeValue": event_name}
+                ],
+                StartTime=start_time,
+                EndTime=end_time,
+                MaxResults=10
+            )
+
+            for event in response.get("Events", []):
+                cloud_trail_event = json.loads(event.get("CloudTrailEvent", "{}"))
+                source_ip = cloud_trail_event.get("sourceIPAddress", "Unknown")
+                user = event.get("Username", "Unknown")
+                event_time = event.get("EventTime", "")
+
+                findings.append({
+                    "time": str(event_time),
+                    "event": event_name,
+                    "user": user,
+                    "source_ip": source_ip,
+                })
+                print(f"[{event_time}] {event_name:<30} | 사용자: {user:<20} | IP: {source_ip}")
+
+    except Exception as e:
+        # 로컬 테스트용 샘플 데이터 (실제 AWS 없을 때)
+        print(f"AWS 연결 불가 ({e}), 샘플 데이터로 시연:")
+        print("[2025-01-15 02:13] ConsoleLogin          | 사용자: admin | IP: 203.0.113.42")
+        print("[2025-01-15 02:15] CreateAccessKey       | 사용자: admin | IP: 203.0.113.42")
+        print("[2025-01-15 02:18] AttachUserPolicy      | 사용자: admin | IP: 203.0.113.42")
+        return
+
+    if not findings:
+        print("24시간 내 의심 이벤트 없음")
+    else:
+        print(f"\n총 {len(findings)}건의 의심 이벤트 발견")
+        print("다음 단계: EBS 스냅샷 생성 → 격리 → 상세 분석")
+
+# aws_forensics_quick_triage()  # AWS 자격증명 설정 후 실행
+print("AWS 포렌식 스크립트 준비 완료 - AWS CLI 설정 후 실행하세요")
+```
+
+---
+
 ## 1. AWS 주요 로그 소스
 
 AWS 환경에서 포렌식 조사를 수행할 때 가장 중요한 로그 소스는 다음과 같다. 각 서비스는 다른 레이어의 활동을 기록하므로, 사고 유형에 따라 적절한 로그를 조합해야 완전한 타임라인을 구성할 수 있다.

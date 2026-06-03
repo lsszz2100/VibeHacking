@@ -6,6 +6,97 @@
 
 # AI 통합 — Claude + GPT-5.4-Cyber 보안 분석 도구 활용법
 
+## 0. 초보자를 위한 개념 이해
+
+### AI 보안 분석 통합이란?
+
+AI 언어 모델을 보안 업무에 통합하는 것은 보안 분석가가 코드 취약점 분석, 악성코드 해석, 보안 룰 작성 등의 작업을 대폭 가속화하는 방법입니다. 각 AI 모델은 강점이 다르기 때문에 작업 유형에 따라 최적의 모델을 선택하는 것이 중요합니다. 적절한 프롬프트 엔지니어링과 API 연동으로 반복 작업을 자동화할 수 있습니다.
+
+**왜 배우는가:**
+```
+전통적 보안 분석             AI 통합 보안 분석
+─────────────────────────────────────────────
+취약점 1개 분석: 수 시간      취약점 1개 분석: 수 분
+룰 작성: 전문가 필요          룰 작성: 프롬프트로 초안 생성
+보고서: 수 일 소요            보고서: AI 초안 → 검토만 필요
+지식 의존: 개인 경험          지식 의존: 수백만 사례 학습
+```
+
+### 핵심 개념 정리
+
+```
+AI 모델 역할 분담:
+
+  소스코드 취약점 분석
+    → 논리적 추론, 컨텍스트 이해 강점 모델 권장
+
+  바이너리 / 악성코드 분석
+    → 보안 특화 파인튜닝 모델 권장
+
+  CTF 웹/포렌식
+    → 창의적 문제 해결 강점 모델 권장
+
+  SIEM 룰 생성 (Splunk/Sigma)
+    → 보안 도메인 특화 모델 권장
+
+API 접근 방식:
+  공개 API    — 누구나 사용 가능, 일반 보안 작업
+  보안 특화   — 인증 필요, 공격적 도구 사용 가능
+  기업 파트너 — 제한적 접근, 민감한 분석
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: API 클라이언트 작성
+- **anthropic SDK**: Claude API 공식 클라이언트
+- **httpx**: 비동기 HTTP 요청 라이브러리
+- **python-dotenv**: API 키 환경변수 관리
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""AI 보안 분석 기초 — 소스코드 취약점 스캔 프롬프트."""
+
+import os
+import anthropic
+
+
+def analyze_code_for_vulns(source_code: str, language: str = "python") -> str:
+    """AI를 이용한 소스코드 취약점 분석."""
+    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+    prompt = f"""다음 {language} 코드에서 보안 취약점을 분석하세요.
+발견된 취약점마다:
+1. 취약점 유형 (예: SQL Injection, XSS)
+2. 위험도 (Critical/High/Medium/Low)
+3. 취약한 코드 라인
+4. 수정 방안
+
+코드:
+```{language}
+{source_code}
+```"""
+
+    message = client.messages.create(
+        model="claude-opus-4-5",
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return message.content[0].text
+
+
+if __name__ == "__main__":
+    # 취약한 예제 코드 (SQL Injection 포함)
+    vulnerable_code = '''
+def get_user(username):
+    query = f"SELECT * FROM users WHERE name = '{username}'"
+    return db.execute(query)
+'''
+    result = analyze_code_for_vulns(vulnerable_code)
+    print(result)
+```
+
+---
+
 ## 1. 모델 선택 가이드
 
 ```

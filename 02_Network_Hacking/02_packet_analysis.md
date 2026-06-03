@@ -6,6 +6,92 @@
 
 # 패킷 분석 — Wireshark & tcpdump 실전 가이드
 
+## 0. 초보자를 위한 개념 이해
+
+### 패킷 분석이란?
+
+패킷(Packet)은 네트워크를 통해 전송되는 데이터의 단위입니다. 패킷 분석은 이 데이터 조각들을 캡처하고 해석하여 무슨 정보가 오가는지 파악하는 기술입니다. 공격자는 평문 트래픽에서 패스워드를 훔치고, 방어자는 이상 트래픽을 탐지하는 데 활용합니다.
+
+**왜 배우는가:**
+```
+패킷 분석 활용 시나리오:
+
+  [공격 관점]
+  HTTP 로그인 → 패스워드 평문 전송 탐지
+  DNS 쿼리    → 악성 도메인 접속 탐지
+  FTP 세션    → 자격증명 탈취
+
+  [방어 관점]
+  이상 트래픽  → C&C 통신 탐지
+  대용량 전송  → 데이터 유출 의심
+  포트 스캔    → 공격자 정찰 활동 탐지
+  
+  실제 업무:
+    침해 사고 분석 → PCAP 파일로 공격자 행동 재구성
+    네트워크 포렌식 → 법적 증거 수집
+```
+
+### 핵심 개념 정리
+
+```
+패킷 구조 (캡슐화):
+
+  ┌──────────────────────────────────────────┐
+  │  이더넷 헤더  (14바이트)                   │
+  │  → 출발지/목적지 MAC 주소                  │
+  ├──────────────────────────────────────────┤
+  │  IP 헤더  (20바이트)                       │
+  │  → 출발지/목적지 IP 주소                   │
+  ├──────────────────────────────────────────┤
+  │  TCP/UDP 헤더  (20/8바이트)                │
+  │  → 출발지/목적지 포트, 시퀀스 번호          │
+  ├──────────────────────────────────────────┤
+  │  페이로드 (실제 데이터)                     │
+  │  → HTTP 요청, 패스워드, 파일 데이터 등      │
+  └──────────────────────────────────────────┘
+
+Wireshark 필터 핵심:
+  ip.addr == 192.168.1.1    → 특정 IP 필터
+  tcp.port == 80            → HTTP 트래픽
+  http.request.method == "POST" → 로그인 폼 제출
+  tcp.flags.syn == 1        → SYN 패킷 (포트 스캔 탐지)
+```
+
+### 필요한 도구 및 환경
+- **Wireshark**: GUI 기반 패킷 분석 — 프로토콜 자동 파싱, 컬러 코딩
+- **tcpdump**: CLI 기반 — 서버에서 원격 캡처, 스크립트 연동
+- **실습 PCAP 파일**: 인터넷에서 샘플 PCAP 파일 다운로드하여 분석 연습
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""PCAP 파일에서 HTTP 평문 자격증명 추출 (교육용)."""
+import re
+from pathlib import Path
+
+def extract_http_credentials(pcap_text: str) -> list[dict[str, str]]:
+    """HTTP POST 요청에서 username/password 패턴 추출."""
+    credentials: list[dict[str, str]] = []
+    # 간단한 패턴 매칭 (실제는 scapy/dpkt 사용 권장)
+    pattern = re.compile(
+        r"(?:username|user|login|email)=([^&\s]+).*?"
+        r"(?:password|pass|pwd)=([^&\s]+)",
+        re.IGNORECASE,
+    )
+    for match in pattern.finditer(pcap_text):
+        credentials.append({
+            "username": match.group(1),
+            "password": match.group(2),
+        })
+    return credentials
+
+# tcpdump로 PCAP 캡처하는 명령어 (bash에서 실행):
+# sudo tcpdump -i eth0 -w capture.pcap 'port 80'
+# → Wireshark로 capture.pcap 열어 분석
+```
+
+---
+
 ## 1. 패킷 분석 기초
 
 ### 패킷 캡처 도구 비교

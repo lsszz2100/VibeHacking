@@ -6,7 +6,71 @@
 
 # 블록체인 기초와 위협 모델
 
-블록체인은 분산 원장(distributed ledger) 기술로, 불변성·탈중앙화·투명성을 핵심 특성으로 한다. 보안 관점에서 이 특성들은 새로운 공격 표면을 만들어낸다. 이 문서는 EVM 아키텍처부터 네트워크 레벨 공격까지 블록체인 보안의 기초를 다룬다.
+## 0. 초보자를 위한 개념 이해
+
+### 블록체인이란?
+
+**블록체인(Blockchain)**은 여러 컴퓨터에 동시에 기록되는 분산 데이터베이스입니다. 한 곳에서 데이터를 바꾸려면 전체 네트워크의 51% 이상을 동시에 바꿔야 하므로 변조가 매우 어렵습니다.
+
+**보안 관점 왜 중요한가:**
+```
+블록체인의 특성과 보안 영향:
+
+불변성 (Immutable):
+  → 버그 있는 스마트 컨트랙트도 수정 불가
+  → 공격 성공 시 피해 영구화
+
+탈중앙화 (Decentralized):
+  → 중앙 관리자 없음 → 침해 신고·대응 어려움
+  → 피해자 구제 매우 어려움
+
+투명성 (Transparent):
+  → 모든 트랜잭션 공개 → 공격 추적 가능
+  → 동시에 공격자 익명성 보장 (주소만 표시)
+
+실제 피해:
+  2022년 Ronin 브릿지: $625M 탈취
+  2021년 Poly Network: $611M 탈취
+  → 전통 금융보다 빠른 자금 이동, 추적 어려움
+```
+
+### 핵심 개념 정리
+
+```
+스마트 컨트랙트:
+  블록체인 위에서 자동 실행되는 코드
+  조건 충족 시 자동으로 자산 이동
+  Ethereum: Solidity 언어로 작성
+
+EVM (Ethereum Virtual Machine):
+  Ethereum의 코드 실행 환경
+  모든 노드에서 동일하게 실행 보장
+
+DeFi (탈중앙화 금융):
+  스마트 컨트랙트로 구현된 금융 서비스
+  대출, 거래소, 이자 농사 등
+  → 대규모 자금 = 공격자 주요 표적
+```
+
+### 필요한 도구
+- **Remix IDE**: Solidity 코드 작성·테스트 (브라우저 기반)
+- **Hardhat/Foundry**: 스마트 컨트랙트 개발·테스트 프레임워크
+- **Web3.py / Ethers.js**: 블록체인 상호작용 라이브러리
+
+### 기초 실습 예제
+```python
+# Web3.py로 블록체인 기본 정보 조회
+from web3 import Web3
+
+# Ethereum 메인넷 연결 (Infura 등 노드 제공자 사용)
+w3 = Web3(Web3.HTTPProvider("https://mainnet.infura.io/v3/YOUR_KEY"))
+
+if w3.is_connected():
+    block = w3.eth.get_block('latest')
+    print(f"최신 블록 번호: {block.number}")
+    print(f"타임스탬프: {block.timestamp}")
+    print(f"트랜잭션 수: {len(block.transactions)}")
+```
 
 ---
 

@@ -6,6 +6,164 @@
 
 # PASTA, DREAD, Attack Trees, Kill Chain
 
+## 0. 초보자를 위한 개념 이해
+
+### PASTA, DREAD, Attack Trees란?
+
+이 세 가지는 보안 위협을 분석하고 우선순위를 결정하는 보완적인 방법론이다. PASTA는 비즈니스 영향을 중심으로 한 7단계 위협 분석 프로세스, DREAD는 위협의 심각도를 수치화하는 점수 체계, Attack Trees는 공격자 관점에서 목표 달성 경로를 트리 구조로 시각화하는 기법이다.
+
+**왜 배우는가:**
+```
+위협 분석 도구 선택 가이드:
+
+  PASTA (Process for Attack Simulation and Threat Analysis)
+    언제: 비즈니스 위험 중심의 전사적 위협 모델링
+    강점: 비즈니스 임팩트와 기술적 위협을 연결
+    결과물: 리스크 기반 우선순위 완화 로드맵
+
+  DREAD (점수화)
+    언제: 여러 위협 중 어느 것을 먼저 해결할지 결정
+    강점: 객관적 수치로 경영진에게 보고 용이
+    결과물: 위협별 우선순위 점수 (0~10)
+
+  Attack Trees (공격 트리)
+    언제: 특정 공격 목표에 대한 모든 경로 파악
+    강점: "공격자는 어떻게 이 목표에 도달하는가" 시각화
+    결과물: 공격 경로 트리 다이어그램 + 각 노드 대응책
+
+  Kill Chain (사이버 킬체인)
+    언제: APT 공격의 단계별 방어 포인트 식별
+    강점: 어느 단계에서 공격을 차단할지 결정
+    결과물: 단계별 탐지·차단 전략
+```
+
+### 핵심 개념 정리
+
+```
+DREAD 점수 계산 (각 항목 0~10점):
+
+  D - Damage Potential   손해 잠재성: 악용 시 피해 규모
+  R - Reproducibility    재현 가능성: 공격 재현 얼마나 쉬운가
+  E - Exploitability     악용 가능성: 공격 기술 수준 요구
+  A - Affected Users     영향 사용자: 몇 명이 영향받는가
+  D - Discoverability    발견 가능성: 취약점 발견 얼마나 쉬운가
+
+  DREAD 점수 = (D+R+E+A+D) / 5
+  0-3: 낮음, 4-6: 중간, 7-10: 높음
+
+Attack Tree 구조:
+  루트 노드 (공격 목표)
+    ├── AND 노드: 모든 자식 조건 만족 필요
+    │   ├── 조건 1
+    │   └── 조건 2
+    └── OR 노드: 하나라도 만족하면 성공
+        ├── 경로 A (쉬움)
+        └── 경로 B (어려움)
+```
+
+### 필요한 도구 및 환경
+- **Excel/Notion**: DREAD 점수 계산 스프레드시트
+- **draw.io**: Attack Tree 다이어그램 작성
+- **AttackTree+** (상용): 전문 Attack Tree 분석 도구
+- **MITRE ATT&CK**: Kill Chain 단계별 TTP 참조
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+DREAD 점수 자동 계산기 및 위협 우선순위 결정 도구
+"""
+import json
+from dataclasses import dataclass
+
+
+@dataclass
+class DREADThreat:
+    """DREAD 위협 평가 항목"""
+    name: str
+    description: str
+    damage: int        # 손해 잠재성 (0-10)
+    reproducibility: int  # 재현 가능성 (0-10)
+    exploitability: int   # 악용 가능성 (0-10)
+    affected_users: int   # 영향 사용자 (0-10)
+    discoverability: int  # 발견 가능성 (0-10)
+
+    def __post_init__(self) -> None:
+        """점수 범위 검증"""
+        for field_name in ["damage", "reproducibility", "exploitability",
+                           "affected_users", "discoverability"]:
+            value = getattr(self, field_name)
+            if not 0 <= value <= 10:
+                raise ValueError(f"{field_name} 점수는 0-10 범위여야 합니다: {value}")
+
+    @property
+    def score(self) -> float:
+        """DREAD 종합 점수를 계산한다."""
+        total = (self.damage + self.reproducibility + self.exploitability +
+                 self.affected_users + self.discoverability)
+        return round(total / 5, 1)
+
+    @property
+    def severity(self) -> str:
+        """점수에 따른 위협 등급을 반환한다."""
+        s = self.score
+        if s >= 7:
+            return "높음 (즉각 조치)"
+        elif s >= 4:
+            return "중간 (단기 계획)"
+        else:
+            return "낮음 (장기 계획)"
+
+
+def analyze_threats(threats: list[DREADThreat]) -> dict:
+    """여러 위협의 DREAD 점수를 계산하고 우선순위를 정렬한다."""
+    results = []
+    for threat in sorted(threats, key=lambda t: t.score, reverse=True):
+        results.append({
+            "위협명": threat.name,
+            "설명": threat.description,
+            "DREAD_점수": threat.score,
+            "등급": threat.severity,
+            "세부점수": {
+                "손해잠재성(D)": threat.damage,
+                "재현가능성(R)": threat.reproducibility,
+                "악용가능성(E)": threat.exploitability,
+                "영향사용자(A)": threat.affected_users,
+                "발견가능성(D)": threat.discoverability,
+            },
+        })
+    return {"위협_우선순위": results, "분석_위협수": len(threats)}
+
+
+if __name__ == "__main__":
+    # 웹 애플리케이션 위협 분석 예시
+    threats = [
+        DREADThreat(
+            name="SQL Injection",
+            description="로그인 폼을 통한 DB 전체 접근",
+            damage=9, reproducibility=8, exploitability=7,
+            affected_users=10, discoverability=8,
+        ),
+        DREADThreat(
+            name="XSS (저장형)",
+            description="댓글란을 통한 세션 쿠키 탈취",
+            damage=7, reproducibility=7, exploitability=6,
+            affected_users=8, discoverability=7,
+        ),
+        DREADThreat(
+            name="정보 과다 노출",
+            description="에러 페이지에 스택 트레이스 노출",
+            damage=3, reproducibility=10, exploitability=9,
+            affected_users=2, discoverability=10,
+        ),
+    ]
+
+    result = analyze_threats(threats)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+```
+
+---
+
 ## 목차
 1. [PASTA 7단계 방법론](#pasta-7단계-방법론)
 2. [DREAD 점수 계산](#dread-점수-계산)

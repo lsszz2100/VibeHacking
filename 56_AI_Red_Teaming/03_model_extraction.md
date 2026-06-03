@@ -6,6 +6,88 @@
 
 # 모델 탈취 및 멤버십 추론 (Model Extraction & Membership Inference)
 
+## 0. 초보자를 위한 개념 이해
+
+### 모델 추출이란?
+
+모델 추출은 유료 AI 서비스의 API를 반복 호출하여 그 응답 패턴을 학습함으로써, 원래 모델과 비슷하게 동작하는 복제 모델을 만드는 공격이다. 마치 식당의 레시피를 모르는 상태에서 음식을 여러 번 주문해 맛을 분석하여 유사 레시피를 역추적하는 것과 같다. 멤버십 추론은 특정 데이터가 모델 학습에 사용되었는지 알아내는 공격으로, 개인정보 침해 위험이 크다.
+
+**왜 배우는가:**
+```
+[모델 추출 공격 흐름]
+공격자
+  │
+  ├─ 수천 개의 질문을 API로 전송 (비용 지불)
+  │       ↓
+  │   타겟 모델 응답 수집 (레이블/확률 포함)
+  │       ↓
+  └─ 수집된 (질문, 응답) 쌍으로 복제 모델 학습
+          ↓
+      무료 복제 모델 완성 → 지식재산권 침해
+
+[멤버십 추론 공격 흐름]
+"이 개인 데이터가 학습에 사용되었나?"
+  → 모델 신뢰도 점수 분석 → 학습 데이터 유무 판별
+  → 개인정보 노출 위험
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 모델 추출(Model Extraction): API 응답으로 기능적으로 동등한 복제 모델 생성
+- 서로게이트 모델(Surrogate Model): 추출로 만든 대체 복제 모델
+- 멤버십 추론(Membership Inference): 데이터가 학습셋에 포함됐는지 판별하는 공격
+- 화이트박스 공격: 모델 내부 구조/가중치를 알고 수행하는 공격
+- 블랙박스 공격: API 응답만으로 수행하는 공격 (실전에서 더 흔함)
+- 신뢰도 점수(Confidence Score): 모델이 각 예측에 부여하는 확률값 - 공격에 활용됨
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: scikit-learn, numpy, requests 라이브러리
+- **ML 프레임워크**: PyTorch 또는 TensorFlow (복제 모델 학습용)
+- **API 접근**: 테스트할 모델의 API 키 (자신의 계정으로만 실습)
+- **Jupyter Notebook**: 실험 결과 시각화
+
+### 기초 실습 예제
+```python
+import numpy as np
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# ── 1단계: 타겟 모델 시뮬레이션 (실제 실습에서는 API 호출로 대체) ──
+X, y = make_classification(n_samples=1000, n_features=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+# 타겟 모델 (공격 대상 - 우리는 내부 구조를 모른다고 가정)
+target_model = DecisionTreeClassifier(max_depth=10, random_state=42)
+target_model.fit(X_train, y_train)
+
+# ── 2단계: 모델 추출 공격 시뮬레이션 ──
+# 공격자는 쿼리를 보내고 레이블(응답)만 수집
+# 실제 환경: requests.post(api_url, json={"input": query}) 형태
+query_budget = 200  # 쿼리 예산 제한
+X_query = np.random.uniform(-3, 3, (query_budget, 10))  # 탐색 쿼리 생성
+y_stolen = target_model.predict(X_query)               # "API 응답" 수집
+
+# ── 3단계: 복제 모델 학습 ──
+stolen_model = DecisionTreeClassifier(max_depth=5, random_state=0)
+stolen_model.fit(X_query, y_stolen)
+
+# ── 4단계: 복제 충실도(Fidelity) 평가 ──
+target_preds = target_model.predict(X_test)
+stolen_preds = stolen_model.predict(X_test)
+fidelity = accuracy_score(target_preds, stolen_preds)
+print(f"복제 충실도: {fidelity:.2%}")  # 타겟과 얼마나 유사한지
+print(f"타겟 정확도: {accuracy_score(y_test, target_preds):.2%}")
+print(f"복제 정확도: {accuracy_score(y_test, stolen_preds):.2%}")
+# 쿼리 수를 늘릴수록 충실도가 높아지는 것을 확인할 수 있음
+```
+
+---
+
 ## 개요
 
 모델 추출(Model Extraction) 공격은 공개 API를 통해 타겟 모델과 기능적으로 동등한 대체 모델을 구성하는 공격이다. 멤버십 추론(Membership Inference) 공격은 특정 데이터 포인트가 모델의 학습 데이터에 포함되었는지를 판별한다. 두 공격 모두 모델의 출력(신뢰도 점수, 분류 결과)만으로 수행 가능하다는 점에서 심각한 지식재산권 침해 및 프라이버시 위협이 된다.

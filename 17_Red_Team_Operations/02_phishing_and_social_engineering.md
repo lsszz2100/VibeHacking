@@ -6,6 +6,135 @@
 
 # 피싱 및 사회공학 공격
 
+## 0. 초보자를 위한 개념 이해
+
+### 피싱 및 사회공학이란?
+
+사회공학(Social Engineering)은 기술적 취약점이 아닌 사람의 심리를 이용해 비밀 정보나 시스템 접근을 얻는 공격 기법입니다. 이메일 피싱, 전화 비싱(Vishing), 가짜 로그인 페이지 등이 대표적입니다. 통계적으로 기업 침해 사고의 70~90%가 피싱으로 시작되며, 기술적 방어만큼 직원 보안 인식 교육이 중요한 이유입니다.
+
+**왜 배우는가:**
+```
+피싱 공격의 현실:
+
+  기업 보안 통계:
+    침해 사고 80%+ → 피싱으로 시작
+    랜섬웨어 70%    → 이메일 첨부파일/링크
+    BEC 사기        → 연간 $27억+ 피해 (2022)
+
+  심리적 취약점 활용:
+    긴박감  → "지금 즉시 비밀번호 변경 필요!"
+    권위    → "CEO입니다. 지금 바로 계좌 이체하세요"
+    호기심  → "당신의 급여 정보.xlsx"
+    두려움  → "계정 해킹됨. 지금 복구하세요"
+
+  방어:
+    직원 훈련 + 피싱 시뮬레이션 (이 파일의 핵심)
+    기술: DMARC/SPF/DKIM + MFA
+```
+
+### 핵심 개념 정리
+
+```
+피싱 공격 유형:
+
+  스피어 피싱 (Spear Phishing)
+    → 특정 개인/조직 맞춤형 (LinkedIn 정보 활용)
+    → 일반 피싱보다 성공률 3배 이상
+
+  웨일링 (Whaling)
+    → 임원(고래) 대상 맞춤형 스피어 피싱
+    → CFO, CEO 타겟 → 대규모 금융 사기
+
+  BEC (Business Email Compromise)
+    → CEO 이메일 계정 탈취 또는 유사 도메인
+    → 긴급 계좌 이체 요청
+
+  Vishing (Voice Phishing)
+    → IT 지원팀 사칭 전화 → 패스워드/OTP 요청
+
+보안 인식 훈련 (허가된 시뮬레이션):
+  GoPhish → 피싱 캠페인 시뮬레이션
+  직원 클릭률 측정 → 취약 그룹 추가 교육
+```
+
+### 필요한 도구 및 환경
+- **GoPhish**: 오픈소스 피싱 시뮬레이션 플랫폼 (허가된 환경)
+- **SET (Social Engineer Toolkit)**: 사회공학 공격 프레임워크
+- **Python smtplib**: 이메일 발송 자동화
+- **허가 필수**: 본인 조직 또는 명시적 동의 받은 환경에서만 사용
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""피싱 이메일 탐지 — 의심스러운 이메일 특징 분석."""
+
+from dataclasses import dataclass, field
+import re
+
+
+@dataclass
+class EmailAnalysis:
+    sender: str
+    subject: str
+    body: str
+    links: list[str] = field(default_factory=list)
+    risk_score: float = 0.0
+    risk_factors: list[str] = field(default_factory=list)
+
+
+def analyze_email_for_phishing(
+    sender: str,
+    subject: str,
+    body: str,
+) -> EmailAnalysis:
+    """이메일의 피싱 위험 지표를 분석합니다."""
+    analysis = EmailAnalysis(sender=sender, subject=subject, body=body)
+
+    # URL 추출
+    url_pattern = r'https?://[^\s<>"\']+|www\.[^\s<>"\']+'
+    analysis.links = re.findall(url_pattern, body)
+
+    # 위험 지표 확인
+    urgency_keywords = ["즉시", "긴급", "지금", "만료", "24시간", "urgent", "immediately"]
+    for kw in urgency_keywords:
+        if kw.lower() in (subject + body).lower():
+            analysis.risk_score += 15
+            analysis.risk_factors.append(f"긴박감 키워드: '{kw}'")
+            break
+
+    # 의심 도메인 확인 (typosquatting)
+    trusted_domains = ["google.com", "microsoft.com", "kakao.com", "naver.com"]
+    for link in analysis.links:
+        for trusted in trusted_domains:
+            domain_part = trusted.split(".")[0]
+            if domain_part in link and trusted not in link:
+                analysis.risk_score += 30
+                analysis.risk_factors.append(f"타이포스쿼팅 의심: {link}")
+
+    # URL 단축 서비스
+    shorteners = ["bit.ly", "tinyurl", "t.co", "ow.ly"]
+    for link in analysis.links:
+        if any(s in link for s in shorteners):
+            analysis.risk_score += 20
+            analysis.risk_factors.append("URL 단축 서비스 사용")
+
+    return analysis
+
+
+if __name__ == "__main__":
+    result = analyze_email_for_phishing(
+        sender="security@micros0ft.com",
+        subject="[긴급] 귀하의 계정이 해킹되었습니다!",
+        body="즉시 링크를 클릭하여 확인하세요: http://micros0ft-verify.com/login",
+    )
+    print(f"위험 점수: {result.risk_score}")
+    print(f"위험 요인:")
+    for factor in result.risk_factors:
+        print(f"  - {factor}")
+```
+
+---
+
 ## 사회공학 공격 분류
 
 ```

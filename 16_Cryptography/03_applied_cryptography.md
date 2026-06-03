@@ -6,6 +6,127 @@
 
 # 응용 암호학 — 실전 취약점과 방어
 
+## 0. 초보자를 위한 개념 이해
+
+### 응용 암호학이란?
+
+응용 암호학은 이론적 암호 알고리즘이 실제 시스템에서 어떻게 구현되고, 그 구현에서 어떤 취약점이 발생하는지를 다루는 분야입니다. 완벽한 알고리즘도 잘못된 모드(ECB), 재사용 IV/Nonce, 약한 시크릿 등으로 무력화될 수 있습니다. JWT 공격, 패딩 오라클, TLS 다운그레이드 등이 대표적인 응용 암호학 취약점입니다.
+
+**왜 배우는가:**
+```
+이론 vs 구현의 차이가 만드는 취약점:
+
+  이론       완벽한 AES-256 암호화
+  구현 오류  AES-ECB 모드 사용
+  결과       동일 블록 = 동일 암호문 → 패턴 노출
+
+  이론       안전한 JWT RS256 서명
+  구현 오류  서버가 alg 헤더를 신뢰
+  결과       alg:"none" 전송 → 서명 검증 우회
+
+  이론       SHA-256 패스워드 해시
+  구현 오류  Hash Length Extension 취약한 구조
+  결과       시크릿 없이도 유효한 서명 생성
+
+  → 암호화를 "쓴다"는 것만으로 안전하지 않음
+  → 올바른 구현이 핵심
+```
+
+### 핵심 개념 정리
+
+```
+응용 암호학 주요 취약점:
+
+  JWT 취약점:
+    alg:none    → 서명 검증 건너뜀
+    HS256/RS256  → 알고리즘 혼동 공격
+    약한 시크릿  → 딕셔너리 브루트포스
+
+  CBC 모드 취약점:
+    패딩 오라클  → 복호화 오라클로 평문 복원
+    IV 예측 가능 → BEAST 공격 (TLS 1.0)
+
+  GCM/CTR 모드 취약점:
+    Nonce 재사용 → 두 암호문 XOR = 평문 XOR 평문
+
+  PKI 취약점:
+    인증서 미검증 → MITM 공격
+    CT 로그 활용 → 서브도메인 열거
+```
+
+### 필요한 도구 및 환경
+- **jwt_tool**: JWT 분석 및 공격 Python 도구
+- **pycryptodome**: AES/RSA 등 암호화 라이브러리
+- **mitmproxy**: TLS 인터셉트 프록시
+- **openssl**: 인증서 생성 및 분석 명령줄 도구
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""JWT 토큰 분석 — 헤더/페이로드 디코딩 및 취약점 탐지."""
+
+import base64
+import json
+import hmac
+import hashlib
+from dataclasses import dataclass
+
+
+@dataclass
+class JwtAnalysis:
+    header: dict
+    payload: dict
+    algorithm: str
+    is_none_alg: bool
+    has_weak_alg: bool
+
+
+def base64url_decode(data: str) -> bytes:
+    """Base64url 패딩 없는 디코딩."""
+    padding = 4 - len(data) % 4
+    if padding != 4:
+        data += "=" * padding
+    return base64.urlsafe_b64decode(data)
+
+
+def analyze_jwt(token: str) -> JwtAnalysis:
+    """JWT 토큰을 분석하여 취약점 여부를 확인합니다."""
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise ValueError("올바른 JWT 형식이 아닙니다 (header.payload.signature)")
+
+    header = json.loads(base64url_decode(parts[0]))
+    payload = json.loads(base64url_decode(parts[1]))
+    alg = header.get("alg", "").upper()
+
+    return JwtAnalysis(
+        header=header,
+        payload=payload,
+        algorithm=alg,
+        is_none_alg=alg == "NONE" or alg == "",
+        has_weak_alg=alg in {"HS256", "HS384", "HS512"},  # 시크릿 브루트포스 가능
+    )
+
+
+if __name__ == "__main__":
+    # 예제 JWT (alg:none 취약점 데모)
+    sample_token = (
+        "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0"  # {"alg":"none","typ":"JWT"}
+        ".eyJzdWIiOiIxMjM0IiwicGxlIjoiYWRtaW4ifQ"  # payload
+        "."  # 빈 서명
+    )
+    analysis = analyze_jwt(sample_token)
+    print(f"알고리즘: {analysis.algorithm}")
+    print(f"헤더: {analysis.header}")
+    print(f"페이로드: {analysis.payload}")
+    if analysis.is_none_alg:
+        print("[취약!] alg:none — 서명 검증이 건너뛰어집니다!")
+    if analysis.has_weak_alg:
+        print("[주의] HMAC 알고리즘 — 약한 시크릿은 브루트포스 가능")
+```
+
+---
+
 ## 1. 공개키 인프라 (PKI) 공격
 
 ### 인증서 위조 및 중간자 공격

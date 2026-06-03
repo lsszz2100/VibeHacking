@@ -6,6 +6,68 @@
 
 # 02 Hashcat and John the Ripper
 
+## 0. 초보자를 위한 개념 이해
+
+### Hashcat과 John the Ripper란?
+
+Hashcat과 John the Ripper(이하 JtR)는 세계에서 가장 널리 사용되는 패스워드 크래킹 도구다. 해시값을 입력받아 다양한 방법으로 원래 비밀번호를 역추적한다. 보안 담당자는 이 도구로 자사 시스템에서 사용 중인 비밀번호의 강도를 테스트하고, 취약한 비밀번호를 사용하는 계정을 찾아낸다.
+
+**왜 배우는가:**
+```
+크래킹 도구 활용 목적
+
+[공격적 활용 — 모의침투]      [방어적 활용]
+획득한 해시 덤프 크래킹  →   자사 해시 강도 감사
+침투 테스트 중 자격증명  →   취약 비밀번호 계정 강제 변경
+CTF 문제 풀이            →   비밀번호 정책 효과 검증
+
+Hashcat vs JtR 선택 기준:
+  Hashcat — GPU 사용, 빠름, 지원 해시 종류 많음
+  JtR     — CPU/클라우드 환경, 자동 해시 탐지, 규칙 기능 강력
+```
+
+### 핵심 개념 정리
+
+```
+패스워드 크래킹 공격 방법 비교
+
+방법              속도   성공률  메모리  특징
+─────────────────────────────────────────────────
+사전 공격         빠름   중간    낮음   wordlist 직접 대입
+브루트포스        느림   높음    낮음   모든 조합 시도
+마스크 공격       빠름   높음    낮음   패턴 지정 (예: ?l?l?d?d)
+규칙 기반         빠름   높음    낮음   단어 변형 (p@ssw0rd 등)
+레인보우 테이블   매우빠름 중간  매우높음 사전 계산 (솔트 있으면 무효)
+```
+
+### 필요한 도구 및 환경
+- **hashcat**: `apt install hashcat` 또는 공식 사이트 다운로드
+- **john**: `apt install john`
+- **rockyou.txt**: 대표 워드리스트 (`/usr/share/wordlists/rockyou.txt`)
+- **GPU**: hashcat 성능 극대화 (CPU로도 동작)
+
+### 기초 실습 예제
+```bash
+# 1. 해시 파일 생성 (테스트용)
+echo -n "password123" | md5sum | awk '{print $1}' > test.hash
+cat test.hash  # 482c811da5d5b4bc6d497ffa98491e38
+
+# 2. hashcat — 사전 공격 (모드 0, MD5)
+hashcat -m 0 -a 0 test.hash /usr/share/wordlists/rockyou.txt
+# -m 0 : MD5 해시 모드
+# -a 0 : 사전 공격 모드
+
+# 3. hashcat — 브루트포스 (4자리 숫자만)
+hashcat -m 0 -a 3 test.hash "?d?d?d?d"
+# ?d = 숫자(digit), ?l = 소문자, ?u = 대문자
+
+# 4. John the Ripper — 자동 해시 감지 후 사전 공격
+john --wordlist=/usr/share/wordlists/rockyou.txt test.hash
+john --show test.hash  # 크래킹 결과 확인
+```
+
+---
+
 ## hashcat 공격 모드 전체
 
 | 모드 번호 | 이름 | 설명 |

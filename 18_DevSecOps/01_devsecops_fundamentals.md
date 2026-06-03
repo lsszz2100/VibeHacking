@@ -6,6 +6,144 @@
 
 # DevSecOps 핵심 원칙 및 보안 자동화
 
+## 0. 초보자를 위한 개념 이해
+
+### DevSecOps란?
+
+DevSecOps는 개발(Dev)·보안(Sec)·운영(Ops)을 통합하는 문화와 방법론으로, 개발 초기부터 보안을 자동화된 파이프라인에 내재화합니다. 기존에는 개발 완료 후 보안 검토를 했지만(Shift Right), DevSecOps는 코드 작성 단계부터 보안을 검사합니다(Shift Left). 이를 통해 취약점을 운영 환경에 배포되기 전에 조기 발견하여 수정 비용을 10~100배 절감합니다.
+
+**왜 배우는가:**
+```
+보안 취약점 발견 시점과 비용:
+
+  발견 시점              평균 수정 비용
+  ────────────────────────────────────────────
+  코드 작성 중 (IDE)     $80
+  코드 리뷰              $240
+  CI/CD 파이프라인        $960
+  QA 테스트              $7,600
+  운영 환경 배포 후       $23,000+
+  침해 사고 발생 후       $4,000,000+
+
+  → DevSecOps: 가능한 왼쪽(초기)에서 발견
+  → 자동화된 파이프라인이 핵심 (사람 개입 최소화)
+```
+
+### 핵심 개념 정리
+
+```
+DevSecOps 파이프라인 보안 도구:
+
+  IDE 단계
+    SonarLint, Semgrep        — 실시간 코드 취약점
+    Snyk                      — 의존성 취약점
+
+  커밋 단계 (Pre-commit Hook)
+    gitleaks, detect-secrets  — API 키/패스워드 탐지
+    talisman                  — 민감 정보 커밋 차단
+
+  CI/CD 파이프라인
+    SAST: Semgrep, SonarQube  — 정적 코드 분석
+    SCA: Snyk, OWASP DC       — 의존성 취약점
+    DAST: OWASP ZAP           — 동적 앱 스캔
+    Container: Trivy, Grype   — 이미지 취약점
+    IaC: Checkov, Terrascan   — 인프라 코드 스캔
+
+  배포 단계
+    WAF, RASP, Runtime 보호
+```
+
+### 필요한 도구 및 환경
+- **Semgrep**: 오픈소스 SAST 정적 분석 도구 (로컬/CI 모두 사용)
+- **gitleaks**: git 히스토리에서 시크릿 탐지
+- **Trivy**: 컨테이너 이미지 및 파일시스템 취약점 스캐너
+- **GitHub Actions**: CI/CD 파이프라인 자동화
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""DevSecOps SAST 기초 — Python 코드에서 보안 취약점 패턴 탐지."""
+
+import ast
+import re
+from dataclasses import dataclass
+from pathlib import Path
+
+
+@dataclass
+class SecurityFinding:
+    file_path: str
+    line_number: int
+    issue_type: str
+    severity: str
+    description: str
+    code_snippet: str
+
+
+# 취약한 패턴 규칙
+VULN_PATTERNS: list[dict] = [
+    {
+        "pattern": r"subprocess\.(call|run|Popen)\([^)]*shell=True",
+        "type": "Command Injection",
+        "severity": "High",
+        "desc": "shell=True 사용 시 Shell Injection 취약",
+    },
+    {
+        "pattern": r"(password|secret|api_key)\s*=\s*['\"][^'\"]{4,}['\"]",
+        "type": "Hardcoded Secret",
+        "severity": "Critical",
+        "desc": "코드에 하드코딩된 시크릿 발견",
+    },
+    {
+        "pattern": r"eval\(|exec\(",
+        "type": "Code Injection",
+        "severity": "Critical",
+        "desc": "eval/exec에 외부 입력 전달 가능성",
+    },
+]
+
+
+def scan_python_file(file_path: Path) -> list[SecurityFinding]:
+    """Python 파일에서 보안 취약점 패턴을 스캔합니다."""
+    findings: list[SecurityFinding] = []
+    source = file_path.read_text(encoding="utf-8")
+    lines = source.splitlines()
+
+    for rule in VULN_PATTERNS:
+        for match in re.finditer(rule["pattern"], source, re.IGNORECASE):
+            line_no = source[:match.start()].count("\n") + 1
+            findings.append(SecurityFinding(
+                file_path=str(file_path),
+                line_number=line_no,
+                issue_type=rule["type"],
+                severity=rule["severity"],
+                description=rule["desc"],
+                code_snippet=lines[line_no - 1].strip(),
+            ))
+    return findings
+
+
+if __name__ == "__main__":
+    import tempfile
+    # 취약한 코드 예제
+    vuln_code = '''
+password = "admin1234"
+import subprocess
+subprocess.call(f"ls {user_input}", shell=True)
+'''
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+        f.write(vuln_code)
+        tmp = Path(f.name)
+    findings = scan_python_file(tmp)
+    for f in findings:
+        print(f"[{f.severity}] 라인 {f.line_number}: {f.issue_type}")
+        print(f"  {f.code_snippet}")
+        print(f"  → {f.description}\n")
+    tmp.unlink()
+```
+
+---
+
 ## DevSecOps란
 
 ```

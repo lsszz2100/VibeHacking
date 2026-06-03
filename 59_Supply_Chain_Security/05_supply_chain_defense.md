@@ -1,5 +1,139 @@
 # 공급망 방어 전략 (Supply Chain Defense Strategy)
 
+## 0. 초보자를 위한 개념 이해
+
+### 공급망 방어 전략이란?
+
+공급망 방어 전략은 소프트웨어 개발 및 배포 파이프라인 전반에 걸쳐 공격을 예방·탐지·대응하기 위한 체계적 접근 방식이다. 단순한 취약점 패치를 넘어 SBOM 관리, 의존성 검증, 빌드 무결성, 공급업체 평가 등 다층적 방어가 필요하다. NIST EO 14028과 같은 규제도 SBOM 제출을 의무화하는 방향으로 강화되고 있다.
+
+**왜 배우는가:**
+```
+[공급망 방어의 다층 구조]
+
+코드 계층:
+  └─ 의존성 스캔 (SCA) + SBOM 생성 + 코드 서명
+
+빌드 계층:
+  └─ SLSA 프레임워크 준수 + 재현 가능 빌드 + 빌드 서버 격리
+
+배포 계층:
+  └─ 서명 검증 + 컨테이너 이미지 서명 (Cosign)
+
+운영 계층:
+  └─ 취약점 모니터링 + 신속 패치 + 인시던트 대응
+
+공급업체 계층:
+  └─ 벤더 보안 평가 + SBOM 수집 + 계약 보안 요구사항
+
+[핵심 원칙]
+신뢰는 검증으로 대체한다 (Trust but Verify → Never Trust, Always Verify)
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- SBOM(Software Bill of Materials): 소프트웨어에 포함된 모든 구성요소의 목록 파일
+- SCA(Software Composition Analysis): SBOM 기반으로 알려진 취약점 자동 탐지
+- SLSA(Supply chain Levels for Software Artifacts): 빌드 보안 4단계 성숙도 프레임워크
+- VEX(Vulnerability Exploitability eXchange): 취약점의 실제 영향 여부를 명시하는 문서
+- 핀닝(Pinning): 의존성 버전을 해시값으로 고정하여 변경을 방지
+- 공급업체 보안 평가: 써드파티 소프트웨어 공급업체의 보안 수준 평가
+- CISA 알려진 악용 취약점(KEV): 실제 공격에 악용된 취약점 공식 목록
+```
+
+### 필요한 도구 및 환경
+- **Dependabot / Renovate**: 의존성 자동 업데이트 봇
+- **Trivy / Grype**: 컨테이너 및 파일시스템 취약점 스캐너
+- **OWASP Dependency-Check**: 오픈소스 의존성 CVE 스캔
+- **GitHub Advanced Security**: GHAS의 공급망 보안 기능
+
+### 기초 실습 예제
+```python
+import subprocess
+import json
+import sys
+from pathlib import Path
+
+def supply_chain_defense_audit():
+    """
+    공급망 방어 체크리스트 자동 점검
+    현재 Python 프로젝트의 공급망 보안 상태 평가
+    """
+    print("=== 공급망 방어 점검 체크리스트 ===\n")
+    results = []
+
+    # ── 점검 1: requirements.txt 버전 핀닝 확인 ──
+    print("[1] 의존성 버전 핀닝 점검")
+    req_files = list(Path(".").rglob("requirements*.txt"))
+    if req_files:
+        unpinned = []
+        for req_file in req_files:
+            for line in req_file.read_text().splitlines():
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    # == 없으면 버전 미고정
+                    if ">=" in line or "<=" in line or "~=" in line or "==" not in line:
+                        unpinned.append(f"{req_file.name}: {line}")
+        if unpinned:
+            print(f"  미고정 의존성 {len(unpinned)}개 발견:")
+            for u in unpinned[:5]:
+                print(f"    - {u}")
+            results.append(("버전 핀닝", "미흡", f"{len(unpinned)}개 미고정"))
+        else:
+            print("  모든 의존성이 버전 고정됨")
+            results.append(("버전 핀닝", "양호", ""))
+    else:
+        print("  requirements.txt 없음 - pyproject.toml 확인 필요")
+        results.append(("버전 핀닝", "확인필요", "파일 없음"))
+
+    # ── 점검 2: pip-audit으로 알려진 취약점 확인 ──
+    print("\n[2] 알려진 취약점(CVE) 점검")
+    try:
+        result = subprocess.run(
+            ["pip-audit", "--format=json"],
+            capture_output=True, text=True, timeout=60
+        )
+        if result.returncode == 0:
+            data = json.loads(result.stdout)
+            vuln_count = sum(
+                len(d.get("vulns", [])) for d in data.get("dependencies", [])
+            )
+            if vuln_count == 0:
+                print("  알려진 취약점 없음")
+                results.append(("CVE 취약점", "양호", ""))
+            else:
+                print(f"  {vuln_count}개 취약점 발견 - 즉시 업데이트 필요")
+                results.append(("CVE 취약점", "위험", f"{vuln_count}개"))
+        else:
+            print(f"  pip-audit 실패: {result.stderr[:100]}")
+    except FileNotFoundError:
+        print("  pip-audit 미설치 (pip install pip-audit)")
+        results.append(("CVE 취약점", "확인필요", "pip-audit 필요"))
+
+    # ── 점검 3: SBOM 존재 여부 ──
+    print("\n[3] SBOM 파일 존재 여부")
+    sbom_files = list(Path(".").glob("sbom*")) + list(Path(".").glob("*.spdx*"))
+    if sbom_files:
+        print(f"  SBOM 파일 발견: {[f.name for f in sbom_files]}")
+        results.append(("SBOM", "양호", ""))
+    else:
+        print("  SBOM 없음 - 생성 권고: syft packages . -o cyclonedx-json > sbom.json")
+        results.append(("SBOM", "미흡", "파일 없음"))
+
+    # ── 결과 요약 ──
+    print("\n=== 점검 결과 요약 ===")
+    print(f"{'항목':<15} {'상태':<8} {'비고'}")
+    print("-" * 40)
+    for item, status, note in results:
+        icon = "O" if status == "양호" else "!" if status == "미흡" else "?"
+        print(f"[{icon}] {item:<13} {status:<8} {note}")
+
+supply_chain_defense_audit()
+```
+
+---
+
 ## 1. 공급망 보안 성숙도 모델
 
 | 성숙도 수준 | 명칭 | 특징 | 주요 역량 | 측정 지표 |

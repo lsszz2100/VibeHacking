@@ -6,6 +6,103 @@
 
 # 57-4. NIST PQC 표준화: 라운드별 현황, 최종 선정, FIPS 표준
 
+## 0. 초보자를 위한 개념 이해
+
+### NIST PQC 표준화란?
+
+NIST(미국 국립표준기술연구소)가 양자 컴퓨터 위협에 대비하여 2016년부터 8년간 전 세계 암호학자들과 함께 진행한 차세대 암호 표준화 프로젝트이다. 2024년 8월에 최종 3개 표준(FIPS 203·204·205)이 확정되었으며, 이는 인터넷 보안 역사상 가장 중요한 전환점 중 하나이다. 기업과 정부기관은 이 표준으로 기존 암호 시스템을 교체해야 한다.
+
+**왜 배우는가:**
+```
+[NIST PQC 표준화 타임라인]
+
+2016 ── 제출 요청 공고 (69개 후보 제출)
+  │
+2019 ── 1라운드 → 26개로 압축
+  │
+2020 ── 2라운드 → 15개로 압축
+  │
+2022 ── 3라운드 종료 → 4개 최종 후보 선정
+  │         ML-KEM (키 교환)
+  │         ML-DSA, SLH-DSA (디지털 서명)
+  │         FALCON (추가 서명)
+  │
+2024 ── FIPS 203/204/205 공식 표준 발표 ★
+  │
+2030 ── 기존 RSA/ECC 완전 퇴출 목표 (CNSA 2.0)
+
+영향 범위: TLS, SSH, 코드 서명, VPN, PKI 등 모든 보안 인프라
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- FIPS(Federal Information Processing Standard): 미국 연방 정보처리 표준
+- FIPS 203 (ML-KEM): 키 캡슐화 메커니즘 표준 - HTTPS 키 교환에 사용
+- FIPS 204 (ML-DSA): 모듈 격자 기반 디지털 서명 표준
+- FIPS 205 (SLH-DSA): 해시 기반 디지털 서명 표준 (가장 보수적·안전)
+- CNSA 2.0: 미국 NSA의 양자 내성 알고리즘 사용 권고안 (2022)
+- 하이브리드 모드: 전환기에 기존 알고리즘 + PQC를 병행 사용하는 방식
+- 암호 민첩성(Crypto Agility): 알고리즘을 쉽게 교체할 수 있는 시스템 설계
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: cryptography 라이브러리
+- **OpenSSL 3.4+**: FIPS 203/204 지원 버전
+- **OQS-Provider**: OpenSSL에서 PQC 알고리즘을 사용하기 위한 플러그인
+- **참고 문서**: https://csrc.nist.gov/pubs/fips/203/final
+
+### 기초 실습 예제
+```python
+# FIPS 표준 알고리즘 파라미터 비교 및 선택 가이드
+from dataclasses import dataclass
+
+@dataclass
+class PQCAlgorithm:
+    """NIST PQC 표준 알고리즘 정보"""
+    fips_number: str    # FIPS 표준 번호
+    name: str           # 알고리즘 이름
+    purpose: str        # 용도
+    security_level: int # NIST 보안 레벨 (1~5)
+    public_key_bytes: int
+    signature_bytes: int | None
+    ciphertext_bytes: int | None
+    notes: str
+
+# NIST 확정 표준 알고리즘 목록
+nist_standards = [
+    PQCAlgorithm("FIPS 203", "ML-KEM-512",  "키 교환", 1,  800,  None, 768,  "경량 IoT 기기"),
+    PQCAlgorithm("FIPS 203", "ML-KEM-768",  "키 교환", 3, 1184,  None, 1088, "일반 권장 (TLS)"),
+    PQCAlgorithm("FIPS 203", "ML-KEM-1024", "키 교환", 5, 1568,  None, 1568, "고보안 환경"),
+    PQCAlgorithm("FIPS 204", "ML-DSA-44",   "서명",    2, 1312,  2420, None, "빠른 서명 필요"),
+    PQCAlgorithm("FIPS 204", "ML-DSA-65",   "서명",    3, 1952,  3293, None, "일반 권장"),
+    PQCAlgorithm("FIPS 204", "ML-DSA-87",   "서명",    5, 2592,  4595, None, "장기 보안"),
+    PQCAlgorithm("FIPS 205", "SLH-DSA-128s","서명",    1,   32, 7856, None, "작은 키, 느린 서명"),
+    PQCAlgorithm("FIPS 205", "SLH-DSA-256f","서명",    5,   64, 49856,None, "빠른 서명, 큰 크기"),
+]
+
+print("=== NIST PQC 표준 알고리즘 비교 ===\n")
+print(f"{'표준':<10} {'알고리즘':<16} {'용도':<8} {'보안레벨':<10} {'공개키(B)':<12} {'비고'}")
+print("-" * 75)
+for alg in nist_standards:
+    print(f"{alg.fips_number:<10} {alg.name:<16} {alg.purpose:<8} "
+          f"Level {alg.security_level:<5} {alg.public_key_bytes:<12} {alg.notes}")
+
+print("\n=== 용도별 권장 알고리즘 ===")
+recommendations = {
+    "TLS 1.3 키 교환": "ML-KEM-768 (FIPS 203, Level 3)",
+    "코드 서명":        "ML-DSA-65 (FIPS 204, Level 3)",
+    "장기 보관 문서":   "SLH-DSA-256f (FIPS 205, Level 5)",
+    "IoT/경량 기기":   "ML-KEM-512 + ML-DSA-44",
+    "전환기 하이브리드": "X25519 + ML-KEM-768 (동시 사용)",
+}
+for use_case, rec in recommendations.items():
+    print(f"  {use_case:<20}: {rec}")
+```
+
+---
+
 ## 개요
 
 미국 국립표준기술연구소(NIST)는 2016년 양자 컴퓨터에 안전한 암호 알고리즘 표준화 프로젝트를 시작했다. 2024년 8월, 8년간의 심층 평가 끝에 3개의 최종 표준(FIPS 203, 204, 205)을 공식 발표했다. 이는 인터넷 보안 인프라 전반에 영향을 미치는 역사적 전환점이다.

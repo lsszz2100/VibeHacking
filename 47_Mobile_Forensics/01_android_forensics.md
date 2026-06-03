@@ -6,6 +6,143 @@
 
 # Android 포렌식
 
+## 0. 초보자를 위한 개념 이해
+
+### Android 포렌식이란?
+
+Android 포렌식은 안드로이드 스마트폰이나 태블릿에서 디지털 증거를 추출하고 분석하는 과학적 조사 기법이다. 삭제된 메시지, 통화 기록, 위치 정보, 앱 사용 기록 등 범죄 수사나 사고 조사에 결정적인 증거를 확보할 수 있다.
+
+**왜 배우는가:**
+```
+Android 기기에서 확보 가능한 증거:
+
+  통화/메시지
+    ├── SMS/MMS 기록 (삭제된 것 포함)
+    ├── 카카오톡, WhatsApp 대화 내역
+    └── 통화 기록 (발신/수신/부재중)
+
+  위치 정보
+    ├── GPS 기록 (이동 경로)
+    ├── 와이파이 연결 기록 (방문 장소)
+    └── 구글 타임라인 데이터
+
+  앱 데이터
+    ├── 브라우저 히스토리
+    ├── SNS 활동 기록
+    └── 금융 앱 거래 내역
+
+  시스템 정보
+    ├── 마지막 부팅 시간
+    ├── 설치/삭제된 앱 목록
+    └── 파일 접근 타임스탬프
+```
+
+### 핵심 개념 정리
+
+```
+Android 포렌식 추출 방식 (쉬움 → 어려움):
+
+1. 논리적 추출 (Logical)
+   - ADB(Android Debug Bridge)로 파일 복사
+   - 루팅 불필요, 빠름
+   - 한계: 삭제된 데이터, 암호화 데이터 접근 불가
+
+2. 파일시스템 추출 (File System)
+   - 루팅 후 전체 파티션 이미징
+   - /data, /sdcard 전체 접근 가능
+   - 한계: 루팅 필요 (증거 무결성 논란)
+
+3. 물리적 추출 (Physical)
+   - JTAG, Chip-off로 낸드 플래시 직접 읽기
+   - 화면 잠금 우회 가능, 삭제 데이터 복구 가능
+   - 한계: 고급 장비 필요, 기기 손상 위험
+
+ADB 주요 명령어:
+  adb devices              # 연결된 기기 목록
+  adb shell ls /data/data  # 앱 데이터 디렉토리
+  adb pull /sdcard/ ./     # SD카드 전체 복사
+  adb backup -all          # 전체 백업
+```
+
+### 필요한 도구 및 환경
+- **ADB (Android Debug Bridge)**: Android SDK Platform Tools 포함
+- **Autopsy**: 오픈소스 디지털 포렌식 플랫폼
+- **JADX**: APK 역분석 도구 (Java 소스 복원)
+- **SQLite Browser**: 안드로이드 DB 파일 (.db) 분석
+- **Cellebrite UFED**: 상용 모바일 포렌식 솔루션
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+Android ADB 포렌식 자동화 — 기기에서 기본 증거 수집
+실행 전: adb devices로 기기 연결 확인 필요
+"""
+import json
+import subprocess
+from datetime import datetime
+from pathlib import Path
+
+
+def run_adb(cmd: str) -> str:
+    """ADB 명령어를 실행하고 결과를 반환한다."""
+    try:
+        result = subprocess.run(
+            f"adb {cmd}", shell=True, capture_output=True, text=True, timeout=30
+        )
+        return result.stdout.strip()
+    except subprocess.TimeoutExpired:
+        return "[타임아웃]"
+    except Exception as e:
+        return f"[오류] {e}"
+
+
+def collect_basic_evidence(output_dir: str = "./evidence") -> dict:
+    """
+    Android 기기에서 기본 증거를 수집한다.
+    실제 환경에서는 USB 디버깅 활성화된 기기 필요.
+    """
+    Path(output_dir).mkdir(exist_ok=True)
+    evidence = {
+        "수집시각": datetime.now().isoformat(),
+        "기기정보": {},
+        "수집항목": [],
+    }
+
+    # 기기 정보 수집
+    evidence["기기정보"]["모델"] = run_adb("shell getprop ro.product.model")
+    evidence["기기정보"]["안드로이드버전"] = run_adb("shell getprop ro.build.version.release")
+    evidence["기기정보"]["시리얼"] = run_adb("get-serialno")
+    evidence["기기정보"]["IMEI"] = run_adb("shell service call iphonesubinfo 1")
+
+    # 수집 체크리스트
+    collection_tasks = [
+        ("설치된앱목록", "shell pm list packages -f"),
+        ("실행중인프로세스", "shell ps -A"),
+        ("네트워크연결", "shell netstat -an"),
+        ("마지막부팅시간", "shell uptime"),
+        ("파일시스템마운트", "shell mount"),
+    ]
+
+    for name, cmd in collection_tasks:
+        result = run_adb(cmd)
+        evidence["수집항목"].append({"항목": name, "결과줄수": len(result.splitlines())})
+        # 실제 데이터는 파일로 저장
+        with open(f"{output_dir}/{name}.txt", "w", encoding="utf-8") as f:
+            f.write(result)
+
+    return evidence
+
+
+if __name__ == "__main__":
+    print("[Android 포렌식 기초 증거 수집 시작]")
+    print("주의: USB 디버깅이 활성화된 기기가 연결되어 있어야 합니다.")
+    result = collect_basic_evidence()
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+```
+
+---
+
 ## 목차
 1. Android 파일시스템 구조
 2. ADB 포렌식 명령어 모음

@@ -6,6 +6,73 @@
 
 # 모바일 앱 보안 테스트 — 자동화 분석·런타임 후킹·API 감사
 
+## 0. 초보자를 위한 개념 이해
+
+### 모바일 앱 보안 테스트란?
+
+모바일 앱 보안 테스트는 앱의 설계부터 구현, 배포까지 전 과정에서 보안 취약점을 찾아내는 체계적인 평가 과정이다. OWASP Mobile Security Testing Guide(MSTG)라는 국제 표준 방법론을 따르며, 정적/동적 분석, 네트워크 분석, API 테스트를 모두 포함한다. 앱 출시 전 보안 검증이나 버그 바운티 프로그램에 필수적이다.
+
+**왜 배우는가:**
+```
+모바일 앱 보안 테스트의 중요성
+
+출시 전 미발견 시 결과:
+  하드코딩 API 키     → 서버 비용 폭발, 데이터 유출
+  평문 데이터 저장    → 기기 분실 시 개인정보 유출
+  취약한 인증         → 다른 사용자 계정 접근
+  인증서 미검증       → 공공 Wi-Fi에서 자격증명 탈취
+
+체계적 테스트로 방지 가능:
+  OWASP Mobile Top 10 기준 → 99% 이상의 일반 취약점 포괄
+```
+
+### 핵심 개념 정리
+
+```
+모바일 앱 보안 테스트 체계
+
+테스트 종류    도구                   목표
+──────────────────────────────────────────────────
+정적 분석      MobSF, jadx, apktool   코드·설정 취약점
+동적 분석      Frida, objection       런타임 행위
+네트워크 분석  Burp Suite, mitmproxy  API 취약점
+데이터 분석    SQLite 브라우저, adb    저장 데이터 보안
+```
+
+### 필요한 도구 및 환경
+- **MobSF**: 통합 정적/동적 분석 플랫폼 (Docker 권장)
+- **objection**: `pip install objection` (Frida 기반 올인원)
+- **Frida**: `pip install frida-tools`
+- **Burp Suite**: HTTPS 프록시 (무료 커뮤니티 에디션)
+
+### 기초 실습 예제
+```bash
+# 1. MobSF 실행 (Docker)
+docker run -it --rm -p 8000:8000 \
+    opensecurity/mobile-security-framework-mobsf:latest
+# → http://localhost:8000 에서 APK/IPA 업로드 후 자동 분석
+
+# 2. objection으로 런타임 분석 시작
+# (에뮬레이터 또는 탈옥 기기에서 앱 실행 후)
+objection -g com.example.app explore
+
+# objection 명령어:
+# android sslpinning disable          # SSL 핀닝 우회
+# android hooking list activities     # 액티비티 목록
+# android hooking list services       # 서비스 목록
+# android intent launch_activity com.example.app.AdminActivity
+
+# 3. 로컬 데이터베이스 확인 (adb)
+adb shell
+run-as com.example.app
+ls databases/
+sqlite3 databases/user_data.db
+.tables
+SELECT * FROM credentials;  # 평문 저장 여부 확인
+```
+
+---
+
 ## 1. 모바일 앱 테스트 방법론
 
 ```

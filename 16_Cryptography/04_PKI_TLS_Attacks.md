@@ -6,6 +6,130 @@
 
 # PKI 인프라 및 TLS/SSL 공격
 
+## 0. 초보자를 위한 개념 이해
+
+### PKI와 TLS 공격이란?
+
+PKI(Public Key Infrastructure)는 인터넷 보안의 신뢰 기반으로, 인증서를 통해 서버의 신원을 보증하는 체계입니다. TLS(Transport Layer Security)는 이 PKI를 활용해 브라우저와 서버 간 암호화 통신을 제공합니다. 구현 결함(BEAST, POODLE, Heartbleed)이나 인증서 검증 미설정으로 중간자 공격(MITM)이 가능하며, 이를 이해해야 안전한 HTTPS 환경을 구축할 수 있습니다.
+
+**왜 배우는가:**
+```
+TLS/PKI 취약점의 역사적 영향:
+
+  Heartbleed (CVE-2014-0160)
+    → 서버 메모리 64KB 유출 (비밀키, 세션키, 패스워드)
+    → 전 세계 66만+ 서버 영향
+
+  POODLE (CVE-2014-3566)
+    → SSL 3.0 CBC 모드 패딩 오라클
+    → HTTPS 다운그레이드 강제 가능
+
+  인증서 미검증 클라이언트
+    → MITM으로 모든 HTTPS 트래픽 복호화
+    → 모바일 앱의 SSL Pinning 미설정이 주요 사례
+
+  현재도:
+    → 만료된 인증서, 자체 서명 인증서 경고 무시
+    → 취약한 암호화 스위트 (RC4, DES) 사용
+```
+
+### 핵심 개념 정리
+
+```
+TLS 핸드셰이크 단계:
+
+  1. ClientHello  → 클라이언트가 지원하는 암호화 스위트 목록 전송
+  2. ServerHello  → 서버가 선택한 암호화 스위트 응답
+  3. Certificate  → 서버 인증서 전달 (CA 서명 포함)
+  4. Key Exchange → 세션 키 안전하게 공유 (ECDHE 등)
+  5. Finished     → 핸드셰이크 완료, 암호화 통신 시작
+
+PKI 신뢰 체계:
+  루트 CA (브라우저 내장)
+    ↓ 서명
+  중간 CA
+    ↓ 서명
+  서버 인증서 (도메인)
+
+취약한 TLS 설정:
+  SSLv2/3, TLS 1.0/1.1 → 다운그레이드 공격
+  RC4, DES, 3DES       → 약한 암호화
+  NULL 암호화 스위트    → 평문 통신
+```
+
+### 필요한 도구 및 환경
+- **testssl.sh**: TLS 설정 종합 점검 스크립트
+- **sslscan**: TLS 버전/암호화 스위트 열거 도구
+- **mitmproxy**: HTTPS 인터셉트 프록시
+- **openssl s_client**: TLS 연결 수동 테스트 CLI
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""TLS 인증서 정보 조회 및 보안 설정 기초 점검."""
+
+import ssl
+import socket
+from dataclasses import dataclass
+from datetime import datetime
+
+
+@dataclass
+class TlsCertInfo:
+    hostname: str
+    subject: dict
+    issuer: dict
+    not_before: datetime
+    not_after: datetime
+    is_expired: bool
+    days_until_expiry: int
+    tls_version: str
+
+
+def check_tls_cert(hostname: str, port: int = 443) -> TlsCertInfo:
+    """HTTPS 서버의 TLS 인증서 기본 정보를 조회합니다."""
+    context = ssl.create_default_context()
+    with socket.create_connection((hostname, port), timeout=5) as sock:
+        with context.wrap_socket(sock, server_hostname=hostname) as ssock:
+            cert = ssock.getpeercert()
+            tls_ver = ssock.version()
+
+    def parse_date(date_str: str) -> datetime:
+        return datetime.strptime(date_str, "%b %d %H:%M:%S %Y %Z")
+
+    not_before = parse_date(cert["notBefore"])
+    not_after = parse_date(cert["notAfter"])
+    now = datetime.utcnow()
+    delta = not_after - now
+
+    return TlsCertInfo(
+        hostname=hostname,
+        subject=dict(x[0] for x in cert["subject"]),
+        issuer=dict(x[0] for x in cert["issuer"]),
+        not_before=not_before,
+        not_after=not_after,
+        is_expired=delta.days < 0,
+        days_until_expiry=delta.days,
+        tls_version=tls_ver or "Unknown",
+    )
+
+
+if __name__ == "__main__":
+    info = check_tls_cert("example.com")
+    print(f"호스트:     {info.hostname}")
+    print(f"TLS 버전:   {info.tls_version}")
+    print(f"발급 기관:   {info.issuer.get('organizationName', 'N/A')}")
+    print(f"만료일:     {info.not_after.strftime('%Y-%m-%d')}")
+    if info.is_expired:
+        print("[경고] 인증서가 만료되었습니다!")
+    elif info.days_until_expiry < 30:
+        print(f"[주의] {info.days_until_expiry}일 후 만료됩니다.")
+    else:
+        print(f"[정상] {info.days_until_expiry}일 남았습니다.")
+```
+
+---
+
 ## 개요
 
 TLS/SSL은 인터넷 보안의 근간이지만, 구현 결함과 설정 오류로 인해 다양한 공격이 가능하다. PKI(Public Key Infrastructure)의 신뢰 체계를 이해하고 공격자 관점에서 분석한다.

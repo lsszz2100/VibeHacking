@@ -6,6 +6,107 @@
 
 # 클라우드 공격 벡터 완전 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### 클라우드 공격 벡터란?
+
+클라우드 공격 벡터는 AWS, Azure, GCP 같은 클라우드 환경에서 공격자가 시스템에 침투하거나 데이터를 탈취하는 경로를 의미합니다. 전통적인 온프레미스 환경과 달리 클라우드는 IAM(권한 관리), 스토리지 설정 오류, 메타데이터 서비스 등 고유한 공격 표면이 있습니다. 기업의 중요 데이터 대부분이 클라우드에 있으므로 클라우드 보안은 현대 해킹·방어의 핵심 분야입니다.
+
+**왜 배우는가:**
+```
+클라우드 침해 사고 주요 원인:
+
+  1위 — IAM 설정 오류 (과도한 권한)
+  2위 — 공개된 S3/Storage 버킷
+  3위 — 노출된 API 키/자격증명
+  4위 — 취약한 웹 앱을 통한 SSRF
+  5위 — 공급망 공격 (CI/CD 파이프라인)
+
+  영향 범위:
+    온프레미스 침해 → 단일 서버
+    클라우드 침해   → 전체 조직 데이터 + 인프라
+```
+
+### 핵심 개념 정리
+
+```
+클라우드 보안 핵심 용어:
+
+  IAM       — Identity and Access Management (권한 관리)
+  IMDS      — Instance Metadata Service (EC2 내부 메타데이터)
+              http://169.254.169.254/ → 자격증명 포함
+  SSRF      — Server-Side Request Forgery (서버 측 요청 위조)
+              SSRF + IMDS = 클라우드 자격증명 탈취
+  SCP       — Service Control Policy (조직 단위 권한 제한)
+  CSPM      — Cloud Security Posture Management (설정 감사)
+
+공격 체인 예시:
+  취약한 웹 앱 (SSRF)
+    → IMDS 접근 (IAM 임시 자격증명 획득)
+    → AWS CLI로 S3/RDS 접근
+    → 전체 계정 탈취 (권한 상승)
+```
+
+### 필요한 도구 및 환경
+- **AWS CLI**: AWS 리소스 열거 및 테스트
+- **ScoutSuite**: 멀티 클라우드 보안 감사 도구 (오픈소스)
+- **Pacu**: AWS 침투 테스트 프레임워크
+- **boto3**: Python AWS SDK (자동화 스크립트 작성)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""AWS IAM 권한 열거 — 현재 자격증명으로 접근 가능한 서비스 확인."""
+
+import boto3
+from botocore.exceptions import ClientError
+
+
+def enumerate_current_permissions() -> dict[str, list[str]]:
+    """현재 AWS 자격증명의 기본 권한을 열거합니다."""
+    results: dict[str, list[str]] = {
+        "identity": [],
+        "accessible_services": [],
+        "s3_buckets": [],
+    }
+
+    # 현재 자격증명 확인
+    sts = boto3.client("sts")
+    try:
+        identity = sts.get_caller_identity()
+        results["identity"] = [
+            f"Account: {identity['Account']}",
+            f"UserID: {identity['UserId']}",
+            f"ARN: {identity['Arn']}",
+        ]
+    except ClientError as e:
+        results["identity"] = [f"오류: {e}"]
+        return results
+
+    # S3 버킷 목록 확인 (권한 있을 경우)
+    s3 = boto3.client("s3")
+    try:
+        buckets = s3.list_buckets()
+        results["s3_buckets"] = [b["Name"] for b in buckets["Buckets"]]
+        results["accessible_services"].append("S3 ListBuckets: 허용")
+    except ClientError:
+        results["accessible_services"].append("S3 ListBuckets: 거부")
+
+    return results
+
+
+if __name__ == "__main__":
+    # AWS 자격증명이 설정된 환경에서 실행
+    # aws configure 또는 환경변수 AWS_ACCESS_KEY_ID 필요
+    perms = enumerate_current_permissions()
+    for category, items in perms.items():
+        print(f"\n[{category}]")
+        for item in items:
+            print(f"  {item}")
+```
+
+---
+
 ## 클라우드 위협 모델
 
 ```

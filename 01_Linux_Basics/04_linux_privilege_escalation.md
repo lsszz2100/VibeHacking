@@ -6,6 +6,105 @@
 
 # Linux 권한 상승 — sudo·SUID·Capabilities·커널 익스플로잇
 
+## 0. 초보자를 위한 개념 이해
+
+### 권한 상승(Privilege Escalation)이란?
+
+권한 상승은 낮은 권한의 계정(일반 사용자)에서 높은 권한(root 또는 관리자)을 획득하는 기법입니다. 침투 테스트에서 초기 접근 후 시스템을 완전히 장악하기 위한 필수 단계입니다.
+
+**왜 배우는가:**
+```
+침투 테스트 시나리오:
+
+  [초기 접근]               [권한 상승]              [완전 장악]
+  일반 계정 획득     →→→    root 권한 획득    →→→    시스템 전체 제어
+  (www-data, user)          (SUID, sudo 오설정)       (passwd 수정, 백도어)
+
+권한 상승이 필요한 이유:
+  일반 사용자: /etc/shadow 읽기 불가, 시스템 설정 변경 불가
+  root 사용자: 모든 파일 접근, 모든 프로세스 제어, 백도어 설치
+```
+
+### 핵심 개념 정리
+
+```
+Linux 권한 구조:
+
+  UID 0    = root (슈퍼유저 — 모든 것 가능)
+  UID 1-999 = 시스템 계정 (서비스 실행용)
+  UID 1000+ = 일반 사용자
+
+권한 상승 주요 경로:
+  ┌────────────────────────────────────────┐
+  │  sudo 오설정  → sudo 허용 명령어로 쉘 획득   │
+  │  SUID 파일    → root 권한으로 실행되는 파일  │
+  │  Cron 작업    → root가 실행하는 스크립트 변조 │
+  │  커널 익스플로잇 → 구버전 커널 취약점 사용    │
+  │  쓰기 가능 파일  → /etc/passwd 직접 수정     │
+  └────────────────────────────────────────┘
+
+SUID 비트란?
+  -rwsr-xr-x  ← 's'가 실행 권한 자리에 = SUID 설정됨
+  이 파일을 실행하면 파일 소유자(보통 root)의 권한으로 실행됨
+```
+
+### 필요한 도구 및 환경
+- **리눅스 시스템**: 낮은 권한 계정으로 SSH 접속된 상태
+- **열거 스크립트**: 시스템 취약점을 자동으로 찾아주는 자동화 도구
+- **GTFOBins**: SUID/sudo 악용 가능한 바이너리 데이터베이스 (gtfobins.github.io)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""리눅스 권한 상승 가능 경로 자동 탐색 스크립트."""
+import subprocess
+import os
+from typing import list
+
+def find_suid_files() -> list[str]:
+    """SUID 비트 설정된 파일 목록 반환."""
+    result = subprocess.run(
+        ["find", "/", "-perm", "-4000", "-type", "f"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+def check_sudo_permissions() -> str:
+    """현재 사용자의 sudo 허용 명령어 확인."""
+    result = subprocess.run(
+        ["sudo", "-l"],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    return result.stdout
+
+def check_writable_cron() -> list[str]:
+    """쓰기 가능한 cron 관련 파일 탐색."""
+    cron_paths = ["/etc/crontab", "/etc/cron.d", "/var/spool/cron"]
+    writable = []
+    for path in cron_paths:
+        if os.access(path, os.W_OK):
+            writable.append(path)
+    return writable
+
+if __name__ == "__main__":
+    print("[*] SUID 파일 검색 중...")
+    for f in find_suid_files():
+        print(f"  [SUID] {f}")
+
+    print("\n[*] sudo 권한 확인...")
+    print(check_sudo_permissions())
+
+    print("\n[*] 쓰기 가능 cron 파일...")
+    for path in check_writable_cron():
+        print(f"  [WRITE] {path}")
+```
+
+---
+
 ## 1. 권한 상승 체크리스트
 
 ```bash

@@ -6,6 +6,71 @@
 
 # DNS 공격과 방어
 
+## 0. 초보자를 위한 개념 이해
+
+### DNS란 무엇인가?
+
+DNS(Domain Name System)는 인터넷의 "전화번호부"다. 우리가 브라우저에 `google.com`을 입력하면, DNS가 이를 실제 IP 주소(예: 142.250.206.46)로 변환해준다. 컴퓨터는 IP 주소로 통신하지만 사람은 숫자보다 이름이 기억하기 쉽기 때문에 DNS가 필요하다. DNS 공격은 이 변환 과정을 조작하여 사용자를 가짜 사이트로 유도하거나, 내부 네트워크 정보를 유출하는 데 사용된다.
+
+**왜 배우는가:**
+```
+DNS 공격이 위험한 이유
+
+정상 흐름:
+  사용자 → DNS 조회 → 올바른 IP → 진짜 서버
+
+DNS 캐시 포이즈닝 공격:
+  사용자 → DNS 조회 → 조작된 IP → 공격자 서버
+              (캐시에 가짜 응답 주입)
+
+Zone Transfer 공격:
+  외부 공격자 → DNS 서버에 전체 레코드 요청 → 내부 인프라 맵 노출
+  (방화벽 안의 호스트 이름, IP, 서브도메인 전부 유출)
+```
+
+### 핵심 개념 정리
+
+```
+DNS 주요 레코드와 공격 표면
+
+레코드  의미                 관련 공격
+──────────────────────────────────────────────────
+A      도메인 → IPv4         캐시 포이즈닝
+MX     메일 서버             스푸핑, 메일 인터셉트
+NS     네임서버              서브도메인 탈취
+TXT    SPF/DKIM/기타         정보 수집
+AXFR   전체 영역 전송        Zone Transfer → 내부 맵 유출
+CNAME  별칭                  서브도메인 탈취 (위임 레코드 방치)
+```
+
+### 필요한 도구 및 환경
+- **dig**: DNS 조회 (`apt install dnsutils`)
+- **nslookup**: 기본 DNS 조회 도구
+- **dnsx / subfinder**: 서브도메인 열거
+- **dnsmasq**: 로컬 DNS 서버 실습용
+
+### 기초 실습 예제
+```bash
+# 1. 기본 DNS 조회
+dig A example.com           # A 레코드 (IPv4)
+dig MX example.com          # 메일 서버
+dig NS example.com          # 네임서버
+dig TXT example.com         # TXT 레코드 (SPF 등)
+
+# 2. Zone Transfer 시도 (취약한 서버에서만 성공)
+dig axfr example.com @ns1.example.com
+# 성공하면: 전체 DNS 레코드 목록이 반환됨 (취약!)
+# 실패하면: "Transfer failed." (올바른 보안 설정)
+
+# 3. 역방향 DNS 조회 (IP → 도메인)
+dig -x 8.8.8.8
+
+# 4. 특정 DNS 서버에 직접 조회
+dig @8.8.8.8 example.com A  # Google DNS에 직접 물어보기
+```
+
+---
+
 ## 1. DNS 기초 및 공격 표면
 
 ```

@@ -6,6 +6,136 @@
 
 # 마이크로세그멘테이션과 네트워크 보안
 
+## 0. 초보자를 위한 개념 이해
+
+### 마이크로세그멘테이션이란?
+
+마이크로세그멘테이션(Microsegmentation)은 네트워크를 매우 작은 보안 구역으로 분리하고, 각 구역 간 통신을 세밀하게 제어하는 기술이다. 전통적인 VLAN 기반 세그멘테이션이 네트워크 레이어에서만 동작하는 것과 달리, 마이크로세그멘테이션은 워크로드·프로세스 수준까지 격리한다. 공격자가 한 시스템을 침해해도 다음 시스템으로 이동하지 못하도록 "횡적 이동(Lateral Movement)"을 근본적으로 차단한다.
+
+**왜 배우는가:**
+```
+[마이크로세그멘테이션의 효과]
+
+  [전통적 평평한 네트워크]
+  공격자 → 웹서버 침해 → 내부망 자유 이동
+                              ↓
+                    DB서버, HR시스템, 금융시스템 모두 접근
+
+  [마이크로세그멘테이션 적용 후]
+  공격자 → 웹서버 침해 → 웹→앱 포트만 허용
+                              ↓
+                    앱서버만 접근 가능
+                              ↓
+                    DB: 앱서버에서만 5432 허용
+                    HR/금융시스템: 접근 불가
+
+  핵심: 침해 범위를 하나의 "셀"로 제한!
+```
+
+### 핵심 개념 정리
+
+```
+[세그멘테이션 방식 비교]
+
+VLAN (전통적)
+  - 네트워크 레이어(L2/L3) 분리
+  - 서브넷 단위로만 제어
+  - 동일 서브넷 내 통신 통제 불가
+  - 관리 복잡도 높음
+
+마이크로세그멘테이션
+  - 워크로드/프로세스 레이어 분리
+  - 포트·프로토콜·방향까지 세밀 제어
+  - 동일 서브넷 내에서도 통제 가능
+  - 소프트웨어 정의 → 자동화 용이
+
+Zero Trust Network Access (ZTNA)
+  - VPN을 대체하는 현대적 원격 접근
+  - 애플리케이션별 접근 (전체 네트워크 아님)
+  - 신원 검증 후 최소 경로만 허용
+  - Cloudflare Access, Zscaler ZPA 등
+
+[서비스 메시 (Service Mesh)]
+  Istio, Linkerd: 마이크로서비스 간 통신 제어
+  mTLS: 서비스 간 상호 인증
+  모든 동서 트래픽 암호화 및 인증
+```
+
+### 필요한 도구 및 환경
+- **Cilium**: eBPF 기반 Kubernetes 네트워크 정책 (CNI)
+- **Calico**: Kubernetes NetworkPolicy 구현체
+- **Istio**: 서비스 메시 (mTLS, 트래픽 제어)
+- **Cloudflare Access / Tailscale**: ZTNA 솔루션
+
+### 기초 실습 예제
+```python
+def generate_microsegmentation_policy(
+    app_name: str,
+    tier: str,  # "web", "app", "db"
+    allowed_sources: list[dict]
+) -> str:
+    """
+    마이크로세그멘테이션 정책 설명서를 생성한다.
+    실제 구현은 환경(Kubernetes/VMware NSX/etc)에 따라 다름.
+    """
+    tier_defaults = {
+        "web": {
+            "인바운드": "인터넷(80/443)",
+            "아웃바운드": "앱서버(8080), DNS(53)"
+        },
+        "app": {
+            "인바운드": "웹서버(8080)",
+            "아웃바운드": "DB서버(5432), 캐시서버(6379), DNS(53)"
+        },
+        "db": {
+            "인바운드": "앱서버(5432)만",
+            "아웃바운드": "없음 (아웃바운드 차단)"
+        }
+    }
+
+    policy = tier_defaults.get(tier, {})
+
+    print(f"[*] {app_name} ({tier} 계층) 마이크로세그멘테이션 정책:")
+    print(f"  허용 인바운드: {policy.get('인바운드', '없음')}")
+    print(f"  허용 아웃바운드: {policy.get('아웃바운드', '없음')}")
+    print(f"  기본 정책: 나머지 모든 트래픽 거부 (Default Deny)")
+
+    # Kubernetes NetworkPolicy 예시 생성
+    if tier == "db":
+        k8s_policy = f"""
+# {app_name} DB 계층 Kubernetes NetworkPolicy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {app_name}-db-policy
+spec:
+  podSelector:
+    matchLabels:
+      tier: db
+      app: {app_name}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: app
+          app: {app_name}
+    ports:
+    - port: 5432
+  egress: []  # 아웃바운드 완전 차단
+"""
+        print(k8s_policy)
+        return k8s_policy
+    return ""
+
+# 사용 예시
+generate_microsegmentation_policy("myapp", "db", [])
+```
+
+---
+
 ## 1. 마이크로세그멘테이션 개념
 
 ### 1.1 정의

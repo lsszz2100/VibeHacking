@@ -6,6 +6,146 @@
 
 # 자동화 위협 헌팅
 
+## 0. 초보자를 위한 개념 이해
+
+### 자동화 위협 헌팅이란?
+
+자동화 위협 헌팅은 수동 분석가 중심의 헌팅을 자동화 파이프라인, 머신러닝, 위협 인텔리전스 플랫폼과 결합해 확장하는 접근 방식이다. OpenCTI(위협 인텔리전스 관리), MISP(IoC 공유), TheHive(사고 대응), Cortex(자동 분석) 등을 연동해 IOC 탐지→알림→초기 대응을 자동화한다. 사람이 모든 헌팅을 수동으로 수행하는 것은 현실적으로 불가능하므로, 반복 가능한 헌팅은 자동화하고 분석가는 복잡한 판단에 집중하도록 한다.
+
+**왜 배우는가:**
+```
+[자동화 위협 헌팅의 효과]
+
+  수동 헌팅의 한계:
+  분석가 1명 → 하루 처리 가능한 IOC: 수십 개
+  최신 CTI 피드 → 하루 새 IOC: 수천~수만 개
+
+  자동화 헌팅:
+  MISP → 새 IOC 자동 수집
+       ↓
+  SIEM에 자동 탐지 규칙 생성
+       ↓
+  매칭 시 TheHive에 자동 케이스 생성
+       ↓
+  Cortex로 IOC 자동 분석 (VirusTotal, Shodan 등)
+       ↓
+  분석가는 고위험 케이스만 집중
+
+  [처리량 비교]
+  수동: 하루 50 IOC
+  자동화: 하루 10,000+ IOC, 24/7 무중단
+```
+
+### 핵심 개념 정리
+
+```
+[자동화 위협 헌팅 플랫폼 스택]
+
+1. 위협 인텔리전스 수집
+   OpenCTI: STIX 2.1 기반 CTI 지식 그래프
+   MISP: IOC 공유 및 협업 플랫폼
+   피드: AlienVault OTX, VirusTotal, Shodan
+
+2. 탐지 자동화
+   Sigma: SIEM 중립적 규칙 포맷
+   Sigma → sigmac 변환 → KQL/SPL/ES/QRadar
+   규칙 저장소 → 자동 SIEM 배포
+
+3. 사고 대응 자동화 (SOAR)
+   TheHive: 사고 대응 케이스 관리
+   Cortex: 자동 분석기 (100+ 서비스 연동)
+   Shuffle: SOAR 워크플로우 자동화
+
+4. 머신러닝 기반 이상 탐지
+   UEBA: 사용자 행동 기준선 → 이탈 탐지
+   그래프 분석: 공격 경로 시각화
+   클러스터링: 유사 공격 그룹화
+```
+
+### 필요한 도구 및 환경
+- **OpenCTI**: Docker Compose로 로컬 설치 가능 (위협 인텔리전스 플랫폼)
+- **MISP**: 오픈소스 IOC 공유 플랫폼
+- **TheHive + Cortex**: 사고 대응 자동화 스택
+- **Shuffle**: 오픈소스 SOAR (그래픽 워크플로우 자동화)
+
+### 기초 실습 예제
+```python
+import urllib.request
+import json
+import hashlib
+
+def check_ioc_virustotal(
+    ioc: str,
+    ioc_type: str = "auto",
+    api_key: str = ""
+) -> dict:
+    """
+    IOC(파일 해시/IP/도메인/URL)를 VirusTotal로 자동 조회한다.
+    무료 API: https://www.virustotal.com/gui/join-us 에서 키 발급
+    """
+    if not api_key:
+        print("[-] VT API 키 필요. https://www.virustotal.com 에서 무료 발급")
+        # 시뮬레이션 응답 반환
+        return {
+            "ioc": ioc,
+            "type": ioc_type,
+            "status": "API 키 없음 (시뮬레이션)",
+            "malicious": 0,
+            "total": 0
+        }
+
+    # IOC 타입 자동 감지
+    if ioc_type == "auto":
+        import re
+        if re.match(r'^[0-9a-fA-F]{32,64}$', ioc):
+            ioc_type = "file"
+        elif re.match(r'^\d+\.\d+\.\d+\.\d+$', ioc):
+            ioc_type = "ip"
+        elif re.match(r'^https?://', ioc):
+            ioc_type = "url"
+        else:
+            ioc_type = "domain"
+
+    endpoints = {
+        "file": f"https://www.virustotal.com/api/v3/files/{ioc}",
+        "ip": f"https://www.virustotal.com/api/v3/ip_addresses/{ioc}",
+        "domain": f"https://www.virustotal.com/api/v3/domains/{ioc}",
+        "url": f"https://www.virustotal.com/api/v3/urls/{ioc}",
+    }
+
+    url = endpoints.get(ioc_type)
+    req = urllib.request.Request(
+        url,
+        headers={"x-apikey": api_key}
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+            stats = data['data']['attributes']['last_analysis_stats']
+
+            result = {
+                "ioc": ioc,
+                "type": ioc_type,
+                "malicious": stats.get('malicious', 0),
+                "suspicious": stats.get('suspicious', 0),
+                "total": sum(stats.values()),
+            }
+            print(f"[{'!!' if result['malicious'] > 3 else 'OK'}] {ioc}")
+            print(f"    악성 탐지: {result['malicious']}/{result['total']}")
+            return result
+
+    except Exception as e:
+        print(f"[-] 조회 실패: {e}")
+        return {}
+
+# 사용 예시 (API 키 필요)
+# check_ioc_virustotal("8.8.8.8", "ip", api_key="YOUR_VT_API_KEY")
+# check_ioc_virustotal("evil.example.com", "domain", api_key="YOUR_VT_API_KEY")
+```
+
+---
+
 ## 1. 헌팅 자동화 플랫폼
 
 ### 1.1 OpenCTI

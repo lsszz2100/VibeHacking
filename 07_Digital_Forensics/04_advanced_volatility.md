@@ -6,6 +6,126 @@
 
 # Volatility3 심화 — 프로세스 분석·네트워크·악성코드 탐지
 
+## 0. 초보자를 위한 개념 이해
+
+### 메모리 포렌식과 Volatility란?
+
+메모리 포렌식은 컴퓨터의 RAM(메모리)에서 실행 중인 프로세스, 네트워크 연결, 암호화 키 등 휘발성 데이터를 추출하고 분석하는 기술입니다. Volatility는 메모리 덤프 파일을 분석하는 가장 널리 사용되는 오픈소스 프레임워크입니다.
+
+**왜 배우는가:**
+```
+메모리 포렌식이 필요한 이유:
+
+  "파일리스 악성코드(Fileless Malware)" 탐지:
+    디스크에 파일을 남기지 않고 메모리에서만 실행
+    → 안티바이러스 우회 → 메모리 분석만이 탐지 방법
+
+  메모리에만 있는 증거:
+    ├── 실행 중인 악성 프로세스
+    ├── 복호화된 페이로드 (암호화된 악성코드의 실제 코드)
+    ├── 네트워크 연결 목록 (C&C 서버 주소)
+    ├── 패스워드/암호화 키 (메모리에 평문으로 존재)
+    └── 숨겨진 DKOM 프로세스 (루트킷 탐지)
+
+  실제 활용:
+  랜섬웨어 감염 서버 → 메모리 덤프 → 복호화 키 추출
+  APT 공격 분석    → 스피어피싱 후 메모리만 사용하는 백도어
+```
+
+### 핵심 개념 정리
+
+```
+메모리 분석 핵심 개념:
+
+  메모리 덤프 획득 방법:
+    Windows: winpmem, RAMMap, Task Manager (hibernation)
+    Linux:   /proc/kcore, LiME 커널 모듈
+    VMware:  .vmem 파일 (가상머신 메모리 스냅샷)
+
+  Volatility3 기본 명령 구조:
+    python3 vol.py -f <메모리덤프> <OS>.<플러그인>
+    예: python3 vol.py -f memory.dmp windows.pslist
+
+  핵심 분석 플러그인:
+    windows.pslist   → 실행 중 프로세스 목록
+    windows.pstree   → 프로세스 부모-자식 관계 (이상 관계 탐지)
+    windows.psscan   → 숨겨진 프로세스 탐지 (DKOM 우회)
+    windows.netscan  → 네트워크 연결 목록 (C&C 주소)
+    windows.dlllist  → 프로세스별 로드된 DLL
+    windows.cmdline  → 프로세스 실행 명령어 (악성 인자 확인)
+    windows.malfind  → 악성코드 인젝션 탐지 (rwx 메모리 영역)
+```
+
+### 필요한 도구 및 환경
+- **메모리 덤프**: 실습용 메모리 덤프 파일 (MemLabs, BlueTeamLabs Online 등에서 제공)
+- **Volatility3**: Python 3.8+ 필요, `pip install volatility3`
+- **심볼 테이블**: Windows 버전별 심볼 파일 자동 다운로드 또는 수동 설치
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+Volatility3 플러그인 결과 파서 — 의심 프로세스 자동 탐지.
+실제 Volatility3 실행 후 출력된 텍스트를 분석.
+"""
+import re
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class ProcessEntry:
+    pid: int
+    ppid: int
+    name: str
+    create_time: str
+    is_suspicious: bool = False
+    reason: str = ""
+
+# 의심스러운 프로세스 이름 패턴
+SUSPICIOUS_PROCESSES = {
+    "cmd.exe": "명령 프롬프트 — 비정상 부모 프로세스 확인 필요",
+    "powershell.exe": "PowerShell — 인코딩된 명령어 여부 확인",
+    "wscript.exe": "VBScript 실행기 — 악성 스크립트 실행 경로",
+    "cscript.exe": "명령줄 스크립트 — 악성 스크립트 실행 경로",
+    "regsvr32.exe": "DLL 등록 — AppLocker 우회에 자주 악용",
+    "rundll32.exe": "DLL 실행 — 악성 DLL 로드에 자주 악용",
+    "mshta.exe": "HTA 실행기 — 피싱/악성 HTA 파일 실행",
+}
+
+def analyze_process_list(processes: list[ProcessEntry]) -> list[ProcessEntry]:
+    """프로세스 목록에서 의심스러운 패턴 탐지."""
+    suspicious = []
+    for proc in processes:
+        name_lower = proc.name.lower()
+        if name_lower in SUSPICIOUS_PROCESSES:
+            proc.is_suspicious = True
+            proc.reason = SUSPICIOUS_PROCESSES[name_lower]
+            suspicious.append(proc)
+        # 부모 프로세스 이상 탐지 (예: Word가 cmd.exe 실행)
+        parent = next((p for p in processes if p.pid == proc.ppid), None)
+        if parent and "winword" in parent.name.lower() and "cmd" in name_lower:
+            proc.is_suspicious = True
+            proc.reason = f"Office 앱({parent.name})이 cmd 실행 — 매크로 악성코드 의심!"
+            if proc not in suspicious:
+                suspicious.append(proc)
+    return suspicious
+
+if __name__ == "__main__":
+    # 예시 프로세스 목록 (실제 volatility pslist 출력 파싱 후 사용)
+    sample_procs = [
+        ProcessEntry(4, 0, "System", "2026-01-01", False),
+        ProcessEntry(1234, 456, "winword.exe", "2026-01-01T10:00:00"),
+        ProcessEntry(1235, 1234, "cmd.exe", "2026-01-01T10:00:05"),  # 의심!
+        ProcessEntry(1236, 1235, "powershell.exe", "2026-01-01T10:00:06"),  # 의심!
+    ]
+    suspicious = analyze_process_list(sample_procs)
+    for proc in suspicious:
+        print(f"[의심] PID {proc.pid} {proc.name} (부모: PID {proc.ppid})")
+        print(f"  이유: {proc.reason}")
+```
+
+---
+
 ## 1. Volatility3 설치 및 기본 사용
 
 ```bash

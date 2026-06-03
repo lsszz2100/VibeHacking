@@ -6,6 +6,69 @@
 
 # Kerberos 공격 — Kerberoasting·AS-REP Roasting·티켓 공격
 
+## 0. 초보자를 위한 개념 이해
+
+### Kerberos란?
+
+**Kerberos**는 Windows Active Directory에서 사용하는 네트워크 인증 프로토콜입니다. 비밀번호 없이 "티켓"으로 서비스에 인증합니다. 복잡한 구조 때문에 여러 공격 기법이 존재합니다.
+
+**왜 중요한가:**
+```
+Windows 기업 환경 표준:
+  - 모든 Windows 도메인 환경에서 사용
+  - 수십만 기업의 인증 기반
+  - AD 공격의 핵심 → 침투 테스터 필수 지식
+
+Kerberos 티켓 = AD 왕국의 열쇠:
+  TGT (Ticket Granting Ticket) = 마스터 키
+    → KDC(도메인 컨트롤러)에서 발급
+    → 다른 서비스 티켓 요청에 사용
+  TGS (Service Ticket) = 특정 서비스 입장권
+    → SQL Server, File Server 등 접근에 사용
+```
+
+### 핵심 공격 기법
+
+```
+Kerberoasting:
+  1. 서비스 계정(SPN 설정된 계정) 목록 조회
+  2. 해당 계정의 TGS 티켓 요청 (인증 필요 없음!)
+  3. 티켓은 서비스 계정 해시로 암호화됨
+  4. 오프라인으로 Hashcat으로 크래킹
+  → 서비스 계정 비밀번호 획득
+
+AS-REP Roasting:
+  사전 인증(Pre-Auth) 비활성화된 계정 대상
+  → TGT를 인증 없이 요청 가능
+  → 응답이 해시로 암호화 → 오프라인 크래킹
+
+Pass-the-Ticket:
+  훔친 티켓(TGT/TGS)을 그대로 재사용
+  → 비밀번호 없이 인증 통과
+```
+
+### 필요한 도구
+- **Rubeus**: Windows Kerberos 공격 도구
+- **Impacket**: Python AD 공격 라이브러리
+- **BloodHound**: AD 공격 경로 시각화
+
+### 기초 실습 예제
+```bash
+# Kerberoasting (허가된 AD 환경에서만!)
+
+# 방법 1: Impacket으로 SPN 계정 티켓 요청
+python3 GetUserSPNs.py domain.local/user:password -request
+
+# 방법 2: Rubeus (Windows에서)
+Rubeus.exe kerberoast /nowrap
+
+# 얻은 해시 크래킹 (Hashcat)
+hashcat -m 13100 hash.txt rockyou.txt
+# -m 13100: Kerberos 5 TGS-REP 해시 유형
+```
+
+---
+
 ## 학습 목표
 
 이 문서를 완료하면 다음을 할 수 있다:

@@ -6,6 +6,138 @@
 
 # 컨테이너 이미지 강화 및 공급망 보안
 
+## 0. 초보자를 위한 개념 이해
+
+### 컨테이너 이미지 강화란?
+
+컨테이너 이미지 강화(Image Hardening)는 Docker 이미지에 포함된 불필요한 패키지, 취약한 라이브러리, 과도한 권한 등을 제거해 공격 표면을 최소화하는 과정이다. 공급망 보안(Supply Chain Security)은 이미지가 빌드되고 배포되는 전체 과정에서 변조되지 않았음을 암호학적으로 보장하는 것이다. 컨테이너 이미지 하나에 수백 개의 패키지가 포함되어 있어, 단 하나의 취약한 라이브러리로 전체 시스템이 위험에 노출될 수 있다.
+
+**왜 배우는가:**
+```
+[컨테이너 이미지의 보안 위험]
+
+  ubuntu:latest 이미지 취약점 예시:
+    → 200개 이상의 설치된 패키지
+    → 평균 20~50개의 알려진 CVE
+    → root로 실행되는 기본 설정
+
+  distroless 이미지:
+    → 쉘 없음, 패키지 관리자 없음
+    → 애플리케이션 실행에만 필요한 최소 구성
+    → CVE 90% 이상 감소
+
+  [공급망 공격 시나리오]
+  1. 인기 이미지의 Docker Hub 계정 탈취
+  2. 악성 레이어 추가 후 재업로드
+  3. 기업들이 자동으로 이미지 풀
+  4. 수천 개의 서버에 악성 코드 배포
+```
+
+### 핵심 개념 정리
+
+```
+[이미지 강화 5대 원칙]
+
+1. 최소 베이스 이미지 사용
+   ubuntu → alpine (5MB) → distroless → scratch
+   불필요한 쉘, 패키지 관리자 제거
+
+2. non-root 사용자로 실행
+   USER 1000:1000 (컨테이너 내부)
+   컨테이너 탈출 시 호스트 권한 제한
+
+3. Read-Only 파일시스템
+   --read-only 플래그
+   쓰기 필요한 디렉토리만 tmpfs 마운트
+
+4. 취약점 스캔 CI/CD 통합
+   Trivy, Snyk, Grype 자동 스캔
+   CRITICAL CVE 있으면 빌드 실패
+
+5. 이미지 서명 (Cosign/Sigstore)
+   빌드 → 서명 (개인키) → 레지스트리 업로드
+   배포 시 서명 검증 → 변조 탐지
+
+[SBOM (Software Bill of Materials)]
+  소프트웨어 구성 요소 명세서
+  모든 패키지 이름·버전·라이선스 목록
+  새 CVE 발표 시 영향 받는 이미지 즉시 파악
+```
+
+### 필요한 도구 및 환경
+- **Trivy**: 컨테이너 이미지 취약점 스캐너 (`trivy image nginx:latest`)
+- **Cosign**: 컨테이너 이미지 서명 및 검증 (Sigstore 프로젝트)
+- **Syft**: SBOM 생성 도구 (`syft nginx:latest -o cyclonedx-json`)
+- **Dockle**: Dockerfile 보안 모범 사례 검사
+
+### 기초 실습 예제
+```python
+import subprocess
+import json
+
+def scan_container_image(image: str) -> dict:
+    """
+    컨테이너 이미지의 취약점을 Trivy로 스캔한다.
+    trivy 설치: https://github.com/aquasecurity/trivy
+    """
+    print(f"[*] {image} 스캔 중...")
+
+    try:
+        result = subprocess.run(
+            ['trivy', 'image', '--format', 'json',
+             '--severity', 'HIGH,CRITICAL',
+             '--quiet', image],
+            capture_output=True, text=True, timeout=120
+        )
+
+        data = json.loads(result.stdout)
+        summary = {
+            "이미지": image,
+            "CRITICAL": 0,
+            "HIGH": 0,
+            "상위_취약점": []
+        }
+
+        for target in data.get('Results', []):
+            for vuln in target.get('Vulnerabilities', []) or []:
+                sev = vuln.get('Severity', '')
+                if sev == 'CRITICAL':
+                    summary['CRITICAL'] += 1
+                elif sev == 'HIGH':
+                    summary['HIGH'] += 1
+
+                # 상위 3개 취약점 기록
+                if len(summary['상위_취약점']) < 3:
+                    summary['상위_취약점'].append({
+                        "CVE": vuln.get('VulnerabilityID'),
+                        "패키지": vuln.get('PkgName'),
+                        "현재버전": vuln.get('InstalledVersion'),
+                        "수정버전": vuln.get('FixedVersion', '없음'),
+                        "심각도": sev
+                    })
+
+        print(f"  CRITICAL: {summary['CRITICAL']}개")
+        print(f"  HIGH: {summary['HIGH']}개")
+        for v in summary['상위_취약점']:
+            print(f"  [{v['심각도']}] {v['CVE']}: {v['패키지']} "
+                  f"{v['현재버전']} → {v['수정버전']}")
+
+        return summary
+
+    except FileNotFoundError:
+        print("[-] trivy 없음: https://github.com/aquasecurity/trivy")
+        return {}
+    except Exception as e:
+        print(f"[-] 오류: {e}")
+        return {}
+
+# 사용 예시
+# scan_container_image("nginx:latest")
+# scan_container_image("python:3.11-slim")
+```
+
+---
+
 ## 목차
 1. 컨테이너 이미지 취약점 스캔 도구
 2. Distroless / Scratch 베이스 이미지

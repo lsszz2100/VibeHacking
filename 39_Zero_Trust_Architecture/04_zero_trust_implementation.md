@@ -6,6 +6,182 @@
 
 # Zero Trust 구현 전략
 
+## 0. 초보자를 위한 개념 이해
+
+### Zero Trust 구현 전략이란?
+
+Zero Trust 구현은 하나의 제품을 설치하는 것이 아니라 보안 철학과 아키텍처의 전환이다. CISA(미국 사이버보안 인프라 보안국)는 5단계 성숙도 모델을 제시하며, 조직의 현재 상태를 평가하고 단계적으로 Zero Trust 원칙을 도입하도록 안내한다. 핵심은 신원, 기기, 네트워크, 애플리케이션, 데이터 5개 기둥(Pillar)에 각각 보안을 내재화하는 것이다.
+
+**왜 배우는가:**
+```
+[Zero Trust 구현 없이 발생한 실제 사고]
+
+  SolarWinds (2020):
+    내부 네트워크 신뢰 → 공급망으로 진입 후
+    18,000개 조직에서 수개월간 잠복
+
+  Colonial Pipeline (2021):
+    레거시 VPN 자격증명 탈취 →
+    인증 한 번으로 OT 네트워크까지 접근
+
+  [Zero Trust 도입 시 차단 가능했던 것]
+  ✓ 자격증명 탈취되어도 MFA로 차단
+  ✓ 내부 진입해도 마이크로세그멘테이션으로 이동 차단
+  ✓ 이상 행동 탐지로 조기 발견
+  ✓ 최소 권한으로 피해 범위 제한
+```
+
+### 핵심 개념 정리
+
+```
+[Zero Trust 5개 기둥(Pillar)]
+
+1. 신원 (Identity)
+   MFA 전면 도입
+   Just-In-Time 권한 부여
+   특권 계정 관리(PAM)
+
+2. 기기 (Device)
+   MDM 등록 의무화
+   EDR 에이전트 필수
+   기기 상태 지속 검증
+
+3. 네트워크 (Network)
+   VPN → ZTNA 전환
+   마이크로세그멘테이션
+   East-West 트래픽 암호화
+
+4. 애플리케이션 (Application)
+   API 게이트웨이 인증
+   세션 단위 접근 결정
+   애플리케이션 레벨 암호화
+
+5. 데이터 (Data)
+   데이터 분류 및 레이블링
+   DLP(데이터 유출 방지)
+   저장 데이터 암호화
+
+[구현 우선순위]
+  1단계: MFA + 특권 계정 관리
+  2단계: 기기 신뢰 + 조건부 접근
+  3단계: 마이크로세그멘테이션
+  4단계: 앱/데이터 레이어 보안
+  5단계: 자동화 + 지속적 검증
+```
+
+### 필요한 도구 및 환경
+- **Azure AD Conditional Access / Okta**: 조건부 접근 정책
+- **Microsoft Defender for Endpoint**: 기기 신뢰 검증
+- **Cloudflare One / Zscaler ZPA**: ZTNA 구현
+- **SIEM 도구**: Splunk, Microsoft Sentinel (행동 분석)
+
+### 기초 실습 예제
+```python
+def zero_trust_maturity_assessment(org_config: dict) -> dict:
+    """
+    조직의 Zero Trust 성숙도를 평가하고 다음 단계를 제안한다.
+    """
+    score = 0
+    max_score = 100
+    findings = []
+    recommendations = []
+
+    # 1. 신원 보안 (30점)
+    if org_config.get("mfa_enabled_all_users"):
+        score += 15
+        findings.append("[+15] 전 사용자 MFA 활성화")
+    else:
+        recommendations.append("우선순위 HIGH: 전 사용자 MFA 도입")
+
+    if org_config.get("privileged_access_management"):
+        score += 15
+        findings.append("[+15] PAM 솔루션 도입")
+    else:
+        recommendations.append("우선순위 HIGH: PAM 도입 (CyberArk/Vault)")
+
+    # 2. 기기 신뢰 (20점)
+    if org_config.get("mdm_enrollment_required"):
+        score += 10
+        findings.append("[+10] MDM 기기 등록 의무화")
+    else:
+        recommendations.append("우선순위 MEDIUM: MDM 등록 정책 강제화")
+
+    if org_config.get("edr_deployed"):
+        score += 10
+        findings.append("[+10] EDR 전체 배포")
+    else:
+        recommendations.append("우선순위 HIGH: EDR 배포 (Defender/CrowdStrike)")
+
+    # 3. 네트워크 보안 (25점)
+    if org_config.get("ztna_deployed"):
+        score += 15
+        findings.append("[+15] ZTNA 배포 (VPN 대체)")
+    else:
+        recommendations.append("우선순위 MEDIUM: ZTNA 전환 계획 수립")
+
+    if org_config.get("microsegmentation"):
+        score += 10
+        findings.append("[+10] 마이크로세그멘테이션 구현")
+    else:
+        recommendations.append("우선순위 MEDIUM: 네트워크 세그멘테이션 강화")
+
+    # 4. 데이터 보안 (25점)
+    if org_config.get("data_classification"):
+        score += 15
+        findings.append("[+15] 데이터 분류 체계 운영")
+    else:
+        recommendations.append("우선순위 LOW: 데이터 분류·레이블링 도입")
+
+    if org_config.get("dlp_enabled"):
+        score += 10
+        findings.append("[+10] DLP 활성화")
+    else:
+        recommendations.append("우선순위 LOW: DLP 솔루션 도입")
+
+    # 성숙도 레벨 결정
+    if score >= 80:
+        level = "최적화 (Optimal)"
+    elif score >= 60:
+        level = "발전 (Advanced)"
+    elif score >= 40:
+        level = "초기 (Initial)"
+    else:
+        level = "전통적 (Traditional)"
+
+    result = {
+        "점수": f"{score}/{max_score}",
+        "성숙도 레벨": level,
+        "충족 항목": findings,
+        "개선 권고사항": recommendations
+    }
+
+    print(f"\n[*] Zero Trust 성숙도 평가 결과")
+    print(f"    점수: {score}/{max_score} ({level})")
+    print(f"\n  충족 항목:")
+    for f in findings:
+        print(f"    {f}")
+    print(f"\n  개선 권고사항:")
+    for r in recommendations:
+        print(f"    - {r}")
+
+    return result
+
+# 사용 예시
+sample_org = {
+    "mfa_enabled_all_users": True,
+    "privileged_access_management": False,
+    "mdm_enrollment_required": True,
+    "edr_deployed": True,
+    "ztna_deployed": False,
+    "microsegmentation": False,
+    "data_classification": False,
+    "dlp_enabled": False,
+}
+zero_trust_maturity_assessment(sample_org)
+```
+
+---
+
 ## 1. Zero Trust 구현 로드맵
 
 ### 1.1 CISA 5단계 Zero Trust 성숙도 모델

@@ -6,6 +6,172 @@
 
 # 모바일 증거 추출
 
+## 0. 초보자를 위한 개념 이해
+
+### 모바일 증거 추출이란?
+
+모바일 증거 추출은 스마트폰, 태블릿, 피처폰에서 법적 증거 능력을 갖춘 디지털 증거를 수집하는 과정이다. 단순히 파일을 복사하는 것이 아니라, 증거가 변경되지 않았다는 것(무결성)을 수학적으로 증명할 수 있어야 법정에서 채택된다.
+
+**왜 배우는가:**
+```
+모바일 증거 추출의 4가지 원칙 (ACPO 지침):
+
+  1. 원본 변경 금지
+     - 기기를 직접 조작하면 타임스탬프 변경
+     - 가능하면 읽기 전용 복사 사용
+
+  2. 증거 무결성 검증
+     - MD5/SHA256 해시로 복사 전후 동일 확인
+     - 체인 오브 커스터디(Chain of Custody) 문서화
+
+  3. 포렌식 사운드 방법론
+     - 법정에서 설명 가능한 도구와 방법만 사용
+     - 오픈소스 > 블랙박스 상용 도구 (재현 가능성)
+
+  4. 전문가 책임
+     - 추출 담당자가 방법론에 대한 전문 지식 보유
+     - 증언 시 도구의 동작 원리 설명 가능해야 함
+```
+
+### 핵심 개념 정리
+
+```
+추출 방식 4단계 (비침습 → 침습):
+
+1. 클라우드 추출
+   - 구글/애플 계정으로 클라우드 백업 접근
+   - 법원 영장 또는 계정 비밀번호 필요
+   - 기기를 건드리지 않음 (가장 비침습적)
+
+2. 논리적 추출 (Logical)
+   - ADB(Android) / libimobiledevice(iOS)
+   - 파일시스템 레벨 접근 (삭제 파일 복구 어려움)
+
+3. 파일시스템 추출 (File System)
+   - 루팅/탈옥 후 전체 파티션 복사
+   - 삭제된 파일, 앱 데이터 모두 접근 가능
+
+4. 물리적 추출 (Physical)
+   - JTAG: 메인보드 핀에 직접 연결
+   - Chip-off: 낸드 플래시 칩 분리 후 직접 읽기
+   - 가장 강력하지만 기기 손상 위험
+
+증거 해시 검증:
+  dd if=/dev/block/mmcblk0 of=image.dd bs=4096
+  sha256sum image.dd > image.sha256  # 추출 직후
+  sha256sum -c image.sha256          # 검증 시
+```
+
+### 필요한 도구 및 환경
+- **dd / nanddump**: 로우 이미지 추출 명령어
+- **dcfldd**: 법적 포렌식용 dd (해시 자동 계산)
+- **Autopsy**: 이미지 파일 분석 플랫폼
+- **Belkasoft Evidence Center**: 모바일 증거 분석 상용 도구
+- **MSAB XRY**: 물리적 추출 전문 장비
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+모바일 증거 무결성 검증 도구
+추출한 이미지 파일의 해시를 계산하고 Chain of Custody 문서를 생성한다.
+"""
+import hashlib
+import json
+from datetime import datetime
+from pathlib import Path
+
+
+def calculate_file_hash(filepath: str, algorithm: str = "sha256") -> str:
+    """파일의 암호화 해시를 계산한다 (증거 무결성 검증용)."""
+    hash_func = hashlib.new(algorithm)
+    file_path = Path(filepath)
+
+    if not file_path.exists():
+        return f"[오류] 파일 없음: {filepath}"
+
+    # 대용량 파일을 위해 청크 단위로 읽기
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            hash_func.update(chunk)
+
+    return hash_func.hexdigest()
+
+
+def create_chain_of_custody(
+    evidence_file: str,
+    examiner_name: str,
+    case_number: str,
+    device_info: dict,
+) -> dict:
+    """
+    Chain of Custody (증거 관리 연속성) 문서를 생성한다.
+    법적 증거 채택을 위한 필수 문서.
+    """
+    file_path = Path(evidence_file)
+
+    custody_record = {
+        "사건번호": case_number,
+        "검사관": examiner_name,
+        "추출일시": datetime.now().isoformat(),
+        "기기정보": device_info,
+        "증거파일": {
+            "파일명": file_path.name,
+            "파일크기_바이트": file_path.stat().st_size if file_path.exists() else 0,
+            "MD5": calculate_file_hash(evidence_file, "md5"),
+            "SHA256": calculate_file_hash(evidence_file, "sha256"),
+            "SHA1": calculate_file_hash(evidence_file, "sha1"),
+        },
+        "추출방법": "",  # 검사관이 직접 기입
+        "사용도구": "",  # 검사관이 직접 기입
+        "봉인여부": True,
+        "서명": f"{examiner_name} (디지털 서명 필요)",
+    }
+
+    return custody_record
+
+
+def verify_evidence_integrity(
+    evidence_file: str,
+    original_hash: str,
+    algorithm: str = "sha256",
+) -> dict:
+    """증거 파일이 변조되지 않았는지 검증한다."""
+    current_hash = calculate_file_hash(evidence_file, algorithm)
+    is_intact = current_hash.lower() == original_hash.lower()
+
+    return {
+        "파일": evidence_file,
+        "알고리즘": algorithm,
+        "원본_해시": original_hash,
+        "현재_해시": current_hash,
+        "무결성": "검증됨 (변조 없음)" if is_intact else "경고: 해시 불일치 (변조 의심)",
+        "검증시각": datetime.now().isoformat(),
+    }
+
+
+if __name__ == "__main__":
+    # 데모: 현재 스크립트 파일 자체로 테스트
+    import sys
+    test_file = __file__
+
+    print("[1] Chain of Custody 생성")
+    custody = create_chain_of_custody(
+        evidence_file=test_file,
+        examiner_name="홍길동 포렌식 검사관",
+        case_number="2024-DFIR-001",
+        device_info={"제조사": "Samsung", "모델": "Galaxy S23", "IMEI": "123456789012345"},
+    )
+    print(json.dumps(custody, ensure_ascii=False, indent=2))
+
+    print("\n[2] 무결성 검증")
+    original_hash = custody["증거파일"]["SHA256"]
+    verify_result = verify_evidence_integrity(test_file, original_hash)
+    print(json.dumps(verify_result, ensure_ascii=False, indent=2))
+```
+
+---
+
 ## 목차
 1. 추출 방식 비교
 2. JTAG/Chip-off 방식 개요

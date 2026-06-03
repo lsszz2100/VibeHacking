@@ -6,6 +6,127 @@
 
 # Cloud Native 보안 위협 모델
 
+## 0. 초보자를 위한 개념 이해
+
+### Cloud Native 보안 위협 모델이란?
+
+Cloud Native 환경은 컨테이너(Docker), 오케스트레이션(Kubernetes), 마이크로서비스, CI/CD 파이프라인이 결합된 현대적 소프트웨어 배포 방식이다. 위협 모델(Threat Model)은 이 환경에서 어떤 공격이 어디서 발생할 수 있는지 체계적으로 파악하는 과정이다. 전통적인 네트워크 경계 보안(방화벽)이 컨테이너 환경에서는 동작하지 않으므로, 각 레이어별로 세분화된 보안 전략이 필요하다.
+
+**왜 배우는가:**
+```
+[Cloud Native 공격 표면]
+
+  인터넷
+    ↓
+  클라우드 인프라 (AWS/GCP/Azure)
+    ↓
+  Kubernetes 클러스터
+    ├── API 서버 (인증/인가 취약점)
+    ├── etcd (시크릿 저장소 - 암호화 필수)
+    ├── 노드 (컨테이너 탈출 위험)
+    └── Pod/컨테이너
+          ├── 이미지 취약점
+          ├── 잘못된 RBAC 권한
+          └── 민감 환경변수 노출
+
+  하나만 뚫려도 전체 클러스터 장악 가능!
+```
+
+### 핵심 개념 정리
+
+```
+[Cloud Native 보안 4C 레이어]
+
+Cloud (클라우드 인프라)
+  - AWS IAM 과도한 권한
+  - 퍼블릭 S3 버킷 노출
+  - 보안 그룹 0.0.0.0/0
+
+Cluster (Kubernetes 클러스터)
+  - 인증되지 않은 API 서버
+  - etcd 암호화 미사용
+  - RBAC 미설정
+
+Container (컨테이너)
+  - root로 실행되는 컨테이너
+  - 취약한 베이스 이미지
+  - read-only 파일시스템 미사용
+
+Code (애플리케이션 코드)
+  - 하드코딩된 시크릿
+  - 취약한 의존성 라이브러리
+  - SSRF, SQL 인젝션
+
+[STRIDE 위협 모델]
+  S(Spoofing): 서비스 어카운트 토큰 위조
+  T(Tampering): etcd 데이터 변조
+  R(Repudiation): 감사 로그 삭제
+  I(Info Disclosure): 시크릿 환경변수 노출
+  D(Denial of Service): 컨테이너 자원 고갈
+  E(Elevation of Privilege): RBAC 에스컬레이션
+```
+
+### 필요한 도구 및 환경
+- **Minikube / Kind**: 로컬 Kubernetes 클러스터 (학습용)
+- **kubectl**: Kubernetes CLI 도구
+- **kube-bench**: CIS Kubernetes Benchmark 자동 점검
+- **Trivy**: 컨테이너 이미지 및 K8s 설정 취약점 스캐너
+
+### 기초 실습 예제
+```python
+import subprocess
+import json
+
+def audit_kubernetes_rbac(namespace: str = "default") -> list[dict]:
+    """
+    Kubernetes RBAC 설정에서 과도한 권한을 탐지한다.
+    kubectl이 설치되고 클러스터에 연결된 환경에서 실행.
+    """
+    findings = []
+
+    # ClusterRoleBinding에서 cluster-admin 권한 확인
+    try:
+        result = subprocess.run(
+            ['kubectl', 'get', 'clusterrolebindings',
+             '-o', 'json'],
+            capture_output=True, text=True, timeout=10
+        )
+        bindings = json.loads(result.stdout)
+
+        for binding in bindings.get('items', []):
+            role_ref = binding.get('roleRef', {})
+            if role_ref.get('name') == 'cluster-admin':
+                subjects = binding.get('subjects', [])
+                for subject in subjects:
+                    findings.append({
+                        "위험": "cluster-admin 권한",
+                        "대상": f"{subject.get('kind')}/{subject.get('name')}",
+                        "바인딩": binding['metadata']['name'],
+                        "심각도": "CRITICAL"
+                    })
+
+    except FileNotFoundError:
+        print("[-] kubectl 없음. minikube 또는 k8s 환경 필요.")
+        return findings
+    except Exception as e:
+        print(f"[-] 오류: {e}")
+        return findings
+
+    if findings:
+        print(f"[!] cluster-admin 권한 발견 ({len(findings)}개):")
+        for f in findings:
+            print(f"    {f['대상']}: {f['바인딩']}")
+    else:
+        print("[OK] 과도한 cluster-admin 바인딩 없음")
+
+    return findings
+
+# 사용 예시 (로컬 minikube 또는 테스트 클러스터)
+# audit_kubernetes_rbac()
+```
+
+---
+
 ## 목차
 1. Cloud Native 보안 개요
 2. STRIDE 위협 모델 적용

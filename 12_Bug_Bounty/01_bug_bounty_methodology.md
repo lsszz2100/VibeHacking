@@ -6,6 +6,102 @@
 
 # 버그바운티 방법론 — 입문부터 High Severity까지
 
+## 0. 초보자를 위한 개념 이해
+
+### 버그바운티란?
+
+버그바운티(Bug Bounty)는 기업이 외부 보안 연구자에게 자사 서비스의 취약점을 발견·보고하면 보상금을 지급하는 프로그램입니다. 합법적인 해킹 기술 연습과 실전 경험, 수익을 동시에 얻을 수 있는 보안 입문자의 최고 등용문입니다. 단순한 아르바이트가 아니라 세계적인 보안 전문가들도 참여하는 수준 높은 경쟁 무대입니다.
+
+**왜 배우는가:**
+```
+버그바운티 참여 이점:
+
+  보안 연구자                  기업
+  ──────────────────────────────────────────────
+  합법적 실전 해킹 연습         내부 팀이 놓친 취약점 발굴
+  $50 ~ $50,000+ 보상금        보안 강화 비용 절감
+  포트폴리오 & 명성 구축        글로벌 전문가 네트워크 활용
+  OSCP/CISA 등 자격증 기반      책임 공개(Responsible Disclosure)
+```
+
+### 핵심 개념 정리
+
+```
+버그바운티 핵심 용어:
+
+  Scope         — 테스트 허용 대상 (도메인, IP 범위)
+  Out of Scope  — 절대 테스트 금지 대상
+  CVSS          — 취약점 심각도 점수 (0.0~10.0)
+  PoC           — Proof of Concept (취약점 증명 코드)
+  Duplicate     — 이미 보고된 중복 취약점 (보상 없음)
+  Triage        — 접수된 보고서 검토/분류 과정
+  Hall of Fame  — 발견자 명예 등재 (보상 없는 감사 표시)
+
+심각도별 보상 범위 (일반):
+  Critical  (CVSS 9.0~10) → $5,000 ~ $50,000+
+  High      (CVSS 7.0~8.9) → $1,000 ~ $10,000
+  Medium    (CVSS 4.0~6.9) → $200 ~ $2,000
+  Low       (CVSS 0.1~3.9) → $50 ~ $500
+```
+
+### 필요한 도구 및 환경
+- **Burp Suite Community**: HTTP 프록시 및 인터셉터
+- **subfinder / amass**: 서브도메인 탐색 도구
+- **httpx**: 활성 호스트 확인 도구
+- **nuclei**: 자동 취약점 스캐너 (YAML 기반 템플릿)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""버그바운티 정찰 — 서브도메인 목록에서 활성 호스트 확인."""
+
+import asyncio
+from dataclasses import dataclass
+
+import httpx
+
+
+@dataclass
+class HostResult:
+    domain: str
+    status_code: int
+    title: str
+    is_alive: bool
+
+
+async def check_host(client: httpx.AsyncClient, domain: str) -> HostResult:
+    """단일 도메인 생존 여부 및 기본 정보 확인."""
+    url = f"https://{domain}"
+    try:
+        resp = await client.get(url, follow_redirects=True, timeout=5.0)
+        # HTML 제목 추출
+        title = ""
+        if b"<title>" in resp.content:
+            start = resp.content.find(b"<title>") + 7
+            end = resp.content.find(b"</title>", start)
+            title = resp.content[start:end].decode(errors="ignore").strip()
+        return HostResult(domain, resp.status_code, title, True)
+    except (httpx.TimeoutException, httpx.ConnectError):
+        return HostResult(domain, 0, "", False)
+
+
+async def scan_subdomains(domains: list[str]) -> list[HostResult]:
+    """여러 서브도메인 병렬 스캔."""
+    async with httpx.AsyncClient(verify=False) as client:
+        tasks = [check_host(client, d) for d in domains]
+        return await asyncio.gather(*tasks)
+
+
+if __name__ == "__main__":
+    targets = ["www.example.com", "api.example.com", "admin.example.com"]
+    results = asyncio.run(scan_subdomains(targets))
+    for r in results:
+        if r.is_alive:
+            print(f"[{r.status_code}] {r.domain} — {r.title}")
+```
+
+---
+
 ## 1. 버그바운티란
 
 ```

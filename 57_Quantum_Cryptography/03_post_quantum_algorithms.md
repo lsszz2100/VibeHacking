@@ -6,6 +6,92 @@
 
 # 57-3. 포스트 양자 알고리즘(PQC): 분류, 원리, 성능 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### 포스트 양자 암호(PQC)란?
+
+포스트 양자 암호는 양자 컴퓨터가 와도 해독하기 어려운 새로운 수학 문제에 기반한 암호 알고리즘이다. 기존 RSA·ECC 암호가 소인수분해·이산로그 문제의 어려움에 의존하는 반면, PQC는 격자(Lattice) 기반 문제처럼 양자 컴퓨터도 효율적으로 풀지 못하는 문제를 사용한다. 중요한 점은 PQC가 기존 컴퓨터에서 실행 가능한 소프트웨어라는 것이다.
+
+**왜 배우는가:**
+```
+[현재 암호 체계의 위협]
+
+RSA-2048  ──→  쇼어 알고리즘  ──→  양자 컴퓨터로 해독 가능
+ECC P-256 ──→  쇼어 알고리즘  ──→  양자 컴퓨터로 해독 가능
+AES-256   ──→  그로버 알고리즘 ──→  128비트 수준으로 약화
+
+[PQC 알고리즘의 보안 근거]
+격자 기반 (ML-KEM): 고차원 격자에서 최단 벡터 찾기 → 양자 알고리즘으로도 어려움
+해시 기반 (SLH-DSA): 단방향 해시 함수 → 양자 컴퓨터도 별다른 이점 없음
+코드 기반: 오류 수정 코드에서 무작위 코드 구별 → 50년 이상 해독 실패
+
+전환 시급성: 지금 암호화된 데이터를 수집해 양자 컴퓨터로 나중에 해독 가능
+→ "HNDL(Harvest Now, Decrypt Later)" 공격 대비를 위해 지금 준비 필요
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- PQC(Post-Quantum Cryptography): 양자 컴퓨터 공격에 안전한 암호 알고리즘
+- 격자(Lattice): 다차원 공간의 규칙적인 점의 집합 - PQC의 핵심 수학 구조
+- LWE(Learning With Errors): 격자 기반 어려운 문제, ML-KEM의 수학적 기반
+- ML-KEM(CRYSTALS-Kyber): NIST 표준 키 캡슐화 메커니즘 (FIPS 203)
+- ML-DSA(CRYSTALS-Dilithium): NIST 표준 디지털 서명 (FIPS 204)
+- SLH-DSA(SPHINCS+): 해시 기반 디지털 서명 (FIPS 205)
+- 하이브리드 암호: 기존 암호 + PQC를 동시에 사용하는 전환기 전략
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: pqcrypto, liboqs-python 라이브러리
+- **Open Quantum Safe (liboqs)**: PQC 알고리즘 구현 라이브러리
+- **OpenSSL 3.x**: PQC 지원 버전 (OQS-Provider 플러그인 사용)
+- **선수 지식**: 기초 공개키 암호학 (RSA, ECDH 개념)
+
+### 기초 실습 예제
+```python
+# pip install oqs  (Open Quantum Safe Python 바인딩)
+# 설치 전 liboqs 라이브러리 필요: https://github.com/open-quantum-safe/liboqs
+try:
+    import oqs
+
+    # ── ML-KEM (CRYSTALS-Kyber) 키 캡슐화 시뮬레이션 ──
+    # Kyber는 키 교환에 사용 (ECDH의 PQC 대체)
+    kem_alg = "ML-KEM-768"  # NIST 레벨 3 보안
+
+    with oqs.KeyEncapsulation(kem_alg) as kem:
+        # 1단계: Bob이 공개키/비공개키 쌍 생성
+        public_key = kem.generate_keypair()
+        print(f"[ML-KEM-768] 공개키 크기: {len(public_key)} 바이트")
+
+        # 2단계: Alice가 공개키로 공유 비밀 캡슐화
+        with oqs.KeyEncapsulation(kem_alg) as kem_alice:
+            ciphertext, shared_secret_alice = kem_alice.encap_secret(public_key)
+            print(f"캡슐화된 암호문 크기: {len(ciphertext)} 바이트")
+
+        # 3단계: Bob이 비공개키로 공유 비밀 복원
+        shared_secret_bob = kem.decap_secret(ciphertext)
+
+        # 두 공유 비밀이 일치하는지 확인
+        assert shared_secret_alice == shared_secret_bob
+        print(f"공유 비밀 합의 성공! 키 크기: {len(shared_secret_alice)} 바이트")
+        print(f"공유 비밀 (앞 16바이트): {shared_secret_alice[:16].hex()}")
+
+except ImportError:
+    # oqs 없을 때 개념 시연용 코드
+    print("liboqs 미설치 - 개념 시연 모드")
+    print("ML-KEM 키 교환 과정:")
+    print("1. Bob: 공개키(1184B) + 비공개키(2400B) 생성")
+    print("2. Alice: Bob 공개키로 공유 비밀 캡슐화 → 암호문(1088B) 전송")
+    print("3. Bob: 비공개키로 암호문 복호화 → 동일한 공유 비밀(32B) 획득")
+    print("4. 두 공유 비밀로 AES-256 키 도출 → 안전한 통신 시작")
+    print("\n기존 ECDH 대비 크기 비교:")
+    print("  ECDH P-256 공개키: 64B  vs  ML-KEM-768 공개키: 1184B")
+    print("  (크기는 커지지만 양자 컴퓨터에 안전)")
+```
+
+---
+
 ## 개요
 
 포스트 양자 암호(Post-Quantum Cryptography, PQC)는 양자 컴퓨터의 공격에도 안전할 것으로 예상되는 암호 알고리즘의 집합이다. 기존의 RSA, ECDH, ECDSA와 달리, PQC 알고리즘은 쇼어 알고리즘으로 공략 불가능한 수학적 문제에 기반한다. 중요한 점은 PQC가 고전 컴퓨터에서 실행 가능한 소프트웨어라는 것이다.

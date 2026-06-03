@@ -6,6 +6,106 @@
 
 # 리버스 엔지니어링 — 어셈블리어와 레지스터 완전 정복
 
+## 0. 초보자를 위한 개념 이해
+
+### 어셈블리어와 레지스터란?
+
+어셈블리어(Assembly Language)는 CPU가 직접 이해하는 기계어(0과 1)를 사람이 읽을 수 있는 니모닉(MOV, PUSH, CALL 등)으로 표현한 저수준 언어입니다. 리버스 엔지니어링에서 어셈블리 코드를 읽는 능력은 가장 핵심적인 기술입니다.
+
+**왜 배우는가:**
+```
+리버싱에서 어셈블리가 필요한 이유:
+
+  소스코드 있음:  C코드 → 컴파일 → 실행파일
+  소스코드 없음:  실행파일 → 역어셈블 → 어셈블리 코드 → 분석
+
+  활용 분야:
+  악성코드 분석  → 바이러스가 무슨 일을 하는지 파악
+  취약점 발굴    → 패치 없는 바이너리에서 버그 발견
+  크랙 분석      → 라이선스 검증 로직 우회
+  CTF 문제 풀기  → 리버싱 카테고리 필수 역량
+```
+
+### 핵심 개념 정리
+
+```
+x86 레지스터 역할:
+
+  EAX  → 산술 연산 결과, 함수 반환값 저장
+  EBX  → 베이스 레지스터 (메모리 주소)
+  ECX  → 반복문 카운터 (LOOP 명령어)
+  EDX  → 나눗셈 보조, 확장 저장
+  ESI  → 소스 인덱스 (문자열 복사 출발)
+  EDI  → 목적 인덱스 (문자열 복사 도착)
+  ESP  → 스택 포인터 (현재 스택 최상단)
+  EBP  → 베이스 포인터 (현재 스택 프레임 기준)
+  EIP  → 명령어 포인터 (다음 실행할 명령어 주소)
+
+핵심 어셈블리 명령어:
+  MOV EAX, 5     → EAX = 5
+  PUSH EAX       → 스택에 EAX 값 저장
+  POP EBX        → 스택에서 값 꺼내 EBX에 저장
+  CALL function  → 함수 호출 (리턴 주소 스택에 저장)
+  RET            → 함수 종료 (스택의 리턴 주소로 점프)
+  JMP 주소       → 무조건 점프
+  JZ 주소        → 0이면 점프 (if 조건문)
+```
+
+### 필요한 도구 및 환경
+- **역어셈블러**: Ghidra(무료) — 어셈블리 코드를 C 유사 코드로 디컴파일
+- **디버거**: x64dbg(Windows), gdb + pwndbg(Linux) — 실행 중 레지스터/메모리 관찰
+- **실습 바이너리**: CTF 문제, crackme 문제 — reversing.kr, ctftime.org에서 다운로드
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""어셈블리 명령어 시뮬레이터 — x86 레지스터 동작 원리 학습."""
+from dataclasses import dataclass, field
+
+@dataclass
+class X86Registers:
+    """x86 레지스터 상태 시뮬레이션 (교육 목적)."""
+    eax: int = 0
+    ebx: int = 0
+    ecx: int = 0
+    edx: int = 0
+    esp: int = 0xFFFF0000  # 스택 포인터 초기값
+    ebp: int = 0xFFFF0000
+    eip: int = 0x00401000  # 코드 시작 주소
+
+    def mov(self, dest: str, value: int) -> None:
+        """MOV 명령어: 레지스터에 값 저장."""
+        setattr(self, dest.lower(), value & 0xFFFFFFFF)
+
+    def push(self, value: int, stack: list[int]) -> None:
+        """PUSH 명령어: 스택에 값 저장, ESP 감소."""
+        self.esp -= 4
+        stack.append(value)
+
+    def pop(self, dest: str, stack: list[int]) -> None:
+        """POP 명령어: 스택에서 값 꺼내 레지스터에 저장."""
+        value = stack.pop()
+        self.esp += 4
+        self.mov(dest, value)
+
+    def dump(self) -> None:
+        """현재 레지스터 상태 출력."""
+        print(f"EAX={self.eax:#010x} EBX={self.ebx:#010x}")
+        print(f"ECX={self.ecx:#010x} EDX={self.edx:#010x}")
+        print(f"ESP={self.esp:#010x} EBP={self.ebp:#010x}")
+
+if __name__ == "__main__":
+    regs = X86Registers()
+    stack: list[int] = []
+    regs.mov("eax", 0x41414141)   # MOV EAX, 0x41414141
+    regs.mov("ecx", 10)            # MOV ECX, 10
+    regs.push(regs.eax, stack)    # PUSH EAX
+    regs.dump()
+    print(f"스택: {[hex(v) for v in stack]}")
+```
+
+---
+
 ## 1. 리버싱(Reversing)이란?
 
 리버스 엔지니어링(Reverse Engineering)은 이미 완성된 제품을 분해하여 내부 구조와 동작 원리를 파악하는 기법이다.

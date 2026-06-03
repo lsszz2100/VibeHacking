@@ -6,6 +6,118 @@
 
 # 텔레매틱스 & OTA 업데이트 공격
 
+## 0. 초보자를 위한 개념 이해
+
+### 텔레매틱스와 OTA 공격이란?
+
+텔레매틱스(Telematics)는 자동차와 외부 네트워크(인터넷, 셀룰러망)를 연결하는 통신 시스템이다. GPS 추적, 원격 진단, 긴급 구조 신호(eCall) 등을 제공한다. OTA(Over-the-Air) 업데이트는 이 통신 채널을 통해 ECU 펌웨어를 원격으로 업데이트하는 기능이다. 이 두 기능이 결합되면 차량을 원격에서 해킹하거나, OTA 서버를 침해해 수백만 대에 악성 펌웨어를 배포하는 공격이 가능해진다.
+
+**왜 배우는가:**
+```
+[텔레매틱스 공격의 파급력]
+
+  인터넷 ──── 셀룰러망(4G/5G) ──── TCU(텔레매틱스 유닛)
+                                        ↓
+                                   차량 내부 CAN 버스
+                                        ↓
+                                   엔진/브레이크/조향 ECU
+
+  [2015년 Jeep Cherokee 원격 해킹]
+  연구자들이 셀룰러 망을 통해 Jeep Uconnect 취약점 악용
+  → 고속도로 주행 중 에어컨, 오디오, 브레이크 원격 제어
+  → FCA 140만 대 리콜, 차량 소환 역사상 최대 규모 중 하나
+
+  [OTA 공격 시나리오]
+  OTA 서버 침해 → 악성 펌웨어 서명 → 수백만 대 동시 배포
+```
+
+### 핵심 개념 정리
+
+```
+[TCU 공격 표면]
+
+외부 인터페이스:
+  4G/5G 셀룰러: 인터넷 연결, SMS 수신
+  GPS: 위치 정보 (읽기, 스푸핑 가능)
+  Bluetooth 5.0: 스마트폰 연동 (페어링 취약점)
+  Wi-Fi 802.11ac: 핫스팟 기능
+
+내부 인터페이스:
+  CAN 버스 게이트웨이: 외부↔내부 브리지
+  이더넷: ADAS 카메라 연결
+
+OTA 업데이트 보안 요소:
+  ★ 취약: 서명 미검증, HTTPS 미사용, 롤백 가능
+  ★ 안전: 코드 서명(RSA/ECDSA), TLS 핀닝, 버전 검증
+
+[V2X (Vehicle-to-Everything) 통신]
+  V2V: 차량 간 충돌 경고
+  V2I: 신호등, 도로 인프라
+  취약점: GPS 스푸핑, DSRC 재전송 공격
+```
+
+### 필요한 도구 및 환경
+- **HackRF One / USRP**: 소프트웨어 정의 라디오 (셀룰러 분석)
+- **Wireshark + 자동차 플러그인**: 차량 네트워크 패킷 분석
+- **mitmproxy / Burp Suite**: OTA 업데이트 트래픽 가로채기
+- **gqrx**: SDR 수신기 소프트웨어 (GPS/셀룰러 신호 모니터링)
+
+### 기초 실습 예제
+```python
+import hashlib
+import hmac
+import struct
+
+def verify_ota_package(
+    firmware_data: bytes,
+    signature: bytes,
+    public_key_hint: str = "RSA-2048"
+) -> dict:
+    """
+    OTA 펌웨어 패키지의 보안 속성을 검사한다.
+    실제 서명 검증은 제조사 공개키가 필요하므로 여기서는 구조 분석만 수행.
+    """
+    result = {
+        "크기": len(firmware_data),
+        "SHA256": hashlib.sha256(firmware_data).hexdigest(),
+        "서명 있음": len(signature) > 0,
+        "서명 크기": len(signature),
+        "예상 키 유형": public_key_hint,
+    }
+
+    # 헤더 분석 (가상의 OTA 패키지 형식)
+    if len(firmware_data) >= 16:
+        magic = firmware_data[:4]
+        version = struct.unpack('>I', firmware_data[4:8])[0]
+        fw_size = struct.unpack('>I', firmware_data[8:12])[0]
+
+        result["매직 바이트"] = magic.hex()
+        result["버전"] = version
+        result["선언된 크기"] = fw_size
+        result["크기 일치"] = (fw_size == len(firmware_data))
+
+    # 보안 권고
+    warnings = []
+    if not result["서명 있음"]:
+        warnings.append("[!] 서명 없음 → 변조 탐지 불가!")
+    if result.get("크기 일치") is False:
+        warnings.append("[!] 선언 크기와 실제 크기 불일치 → 손상 또는 변조!")
+
+    result["경고"] = warnings
+
+    for k, v in result.items():
+        print(f"  {k}: {v}")
+
+    return result
+
+# 사용 예시
+# with open("firmware_update.bin", "rb") as f:
+#     fw_data = f.read()
+# verify_ota_package(fw_data, b"")
+```
+
+---
+
 ## 1. 텔레매틱스 유닛(TCU) 구조
 
 ### 1.1 TCU 하드웨어 구성

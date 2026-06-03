@@ -6,6 +6,104 @@
 
 # WiFi 해킹 기초 이론
 
+## 0. 초보자를 위한 개념 이해
+
+### WiFi 해킹 기초란?
+
+WiFi 해킹은 무선 네트워크의 취약점을 이용해 네트워크에 무단 접속하거나 통신을 감청하는 기술입니다. WEP/WPA/WPA2/WPA3 등 다양한 보안 프로토콜의 원리를 이해해야 공격과 방어가 가능합니다. 합법적인 무선 침투 테스트(WiFi Pentesting)는 기업의 무선 보안 수준을 평가하는 중요한 보안 서비스입니다.
+
+**왜 배우는가:**
+```
+WiFi 보안 취약점의 현실:
+
+  WEP        → 5분 이내 크랙 (완전 파훼, 2004년 폐기)
+  WPA2-PSK   → 약한 패스워드: 딕셔너리 공격으로 크랙 가능
+  WPA2-Ent   → 인증서 검증 미설정: MITM으로 자격증명 탈취
+  기업 WiFi  → 적절한 설정 없으면 내부 네트워크 노출
+  공개 WiFi  → 암호화 없음: 평문 트래픽 감청 가능
+```
+
+### 핵심 개념 정리
+
+```
+WiFi 보안 프로토콜 역사:
+
+  WEP (1997)  → RC4 + 24bit IV → 완전 파훼 (사용 금지)
+  WPA  (2003) → TKIP → WEP 개선, 여전히 취약
+  WPA2 (2004) → AES-CCMP → 현재 표준, PSK는 딕셔너리 취약
+  WPA3 (2018) → SAE (드래곤플라이) → 패스워드 크래킹 방어
+
+WiFi 해킹 주요 기법:
+  핸드셰이크 캡처     → WPA2 4-way handshake 오프라인 크랙
+  PMKID 공격          → 핸드셰이크 없이 직접 크랙 (2018)
+  Deauth 공격         → 클라이언트 강제 재연결 유도
+  Evil Twin          → 동일 SSID 가짜 AP로 트래픽 탈취
+  KRACK              → WPA2 키 재설치 취약점 (패치됨)
+```
+
+### 필요한 도구 및 환경
+- **무선 랜카드 (모니터 모드 지원)**: Alfa AWUS036ACH 등 권장
+- **Kali Linux**: 무선 보안 도구 내장 배포판
+- **aircrack-ng 패키지**: WiFi 해킹 도구 모음
+- **합법적 테스트 환경**: 본인 소유 공유기 또는 허가된 환경 필수
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""WiFi 네트워크 스캔 결과 파싱 — 보안 수준 자동 평가."""
+
+from dataclasses import dataclass
+from enum import StrEnum
+
+
+class SecurityLevel(StrEnum):
+    CRITICAL = "위험 (즉시 교체)"
+    HIGH     = "높음 (취약점 존재)"
+    MEDIUM   = "보통 (개선 권고)"
+    SAFE     = "안전"
+
+
+@dataclass
+class WifiNetwork:
+    ssid: str
+    bssid: str
+    channel: int
+    signal_dbm: int
+    encryption: str  # OPN, WEP, WPA, WPA2, WPA3
+
+
+def assess_wifi_security(net: WifiNetwork) -> SecurityLevel:
+    """WiFi 네트워크 암호화 방식을 기반으로 보안 수준을 평가합니다."""
+    enc = net.encryption.upper()
+    if enc == "OPN" or enc == "OPEN":
+        return SecurityLevel.CRITICAL   # 암호화 없음
+    elif "WEP" in enc:
+        return SecurityLevel.CRITICAL   # 완전 파훼된 프로토콜
+    elif "WPA3" in enc:
+        return SecurityLevel.SAFE       # 현재 가장 안전
+    elif "WPA2" in enc:
+        return SecurityLevel.MEDIUM     # PSK 딕셔너리 취약
+    elif "WPA" in enc:
+        return SecurityLevel.HIGH       # TKIP 취약점
+    return SecurityLevel.HIGH
+
+
+if __name__ == "__main__":
+    networks = [
+        WifiNetwork("FreeWiFi", "AA:BB:CC:DD:EE:01", 6, -60, "OPN"),
+        WifiNetwork("HomeRouter", "AA:BB:CC:DD:EE:02", 11, -70, "WPA2"),
+        WifiNetwork("OfficNet", "AA:BB:CC:DD:EE:03", 1, -55, "WPA3"),
+        WifiNetwork("OldCafe", "AA:BB:CC:DD:EE:04", 6, -80, "WEP"),
+    ]
+    print("SSID               암호화   보안 수준")
+    print("-" * 50)
+    for nw in networks:
+        level = assess_wifi_security(nw)
+        print(f"{nw.ssid:<20} {nw.encryption:<8} {level}")
+```
+
+---
+
 ## 무선 네트워크 구조
 
 ```

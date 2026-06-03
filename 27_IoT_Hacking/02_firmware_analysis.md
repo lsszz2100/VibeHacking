@@ -6,6 +6,80 @@
 
 # 02. 펌웨어 분석 심화 (Firmware Analysis)
 
+## 0. 초보자를 위한 개념 이해
+
+### 펌웨어 분석이란?
+
+펌웨어(Firmware)는 IoT 기기의 하드웨어를 제어하는 소프트웨어로, 기기의 ROM/플래시 메모리에 저장된다. 스마트폰의 OS처럼 기기 동작의 근본이 된다. 펌웨어 분석은 이 바이너리 파일을 추출·분해하여 하드코딩된 자격증명, 백도어, 취약한 라이브러리, 개인키 등 보안 취약점을 찾는 과정이다.
+
+**왜 배우는가:**
+```
+펌웨어 분석으로 발견 가능한 취약점
+
+[하드코딩된 자격증명]
+  admin / supersecret123
+  SSH 개인키 /etc/dropbear/dropbear_rsa_host_key
+  → 모든 동일 모델 기기에 동일한 키 사용!
+
+[취약한 라이브러리]
+  OpenSSL 1.0.1e (CVE-2014-0160 Heartbleed 포함)
+  BusyBox 1.22.1 (구버전, 알려진 취약점)
+
+[디버그 인터페이스]
+  루트 셸을 자동 실행하는 init 스크립트
+  텔넷 데몬 기본 활성화
+```
+
+### 핵심 개념 정리
+
+```
+펌웨어 분석 흐름
+
+[수집] → [구조 분석] → [파일시스템 추출] → [정적 분석] → [동적 분석]
+
+도구별 역할:
+  binwalk     - 펌웨어 구조 파악, 파일시스템 추출
+  strings     - 바이너리에서 텍스트 문자열 추출
+  Ghidra/IDA  - 바이너리 역어셈블/디컴파일
+  QEMU        - 다른 아키텍처(MIPS, ARM) 에뮬레이션
+  firmwalker  - 추출된 파일시스템에서 자격증명·키 자동 탐색
+```
+
+### 필요한 도구 및 환경
+- **binwalk**: `pip install binwalk` 또는 `apt install binwalk`
+- **strings**: GNU binutils 기본 포함
+- **QEMU**: ARM/MIPS 에뮬레이션 (`apt install qemu-user-static`)
+- **Ghidra**: NSA 오픈소스 역공학 도구 (ghidra.sre.org)
+
+### 기초 실습 예제
+```bash
+# 1. binwalk로 펌웨어 구조 파악
+binwalk firmware.bin
+
+# 출력 예시:
+# DECIMAL  HEXADECIMAL  DESCRIPTION
+# 0        0x0          TRX firmware header
+# 28       0x1C         LZMA compressed data
+# 1048576  0x100000     Squashfs filesystem
+
+# 2. 파일시스템 자동 추출
+binwalk -e firmware.bin
+# 추출 결과: _firmware.bin.extracted/ 디렉토리 생성
+
+# 3. 하드코딩된 자격증명 탐색
+cd _firmware.bin.extracted/squashfs-root/
+grep -r "password" etc/ --include="*.conf" 2>/dev/null
+grep -r "passwd" etc/ 2>/dev/null | grep -v "^Binary"
+cat etc/passwd    # 계정 목록
+cat etc/shadow    # 해시 (존재 시)
+
+# 4. 개인키/인증서 탐색
+find . -name "*.pem" -o -name "*.key" -o -name "*.crt" 2>/dev/null
+strings $(find . -type f -name "*.bin") | grep "BEGIN RSA"
+```
+
+---
+
 ## 개요
 
 펌웨어 분석은 IoT 보안 평가의 핵심이다. binwalk로 구조를 파악하고, 파일시스템을 추출한 뒤,

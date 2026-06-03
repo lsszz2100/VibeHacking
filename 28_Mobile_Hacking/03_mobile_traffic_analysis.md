@@ -6,6 +6,87 @@
 
 # 모바일 트래픽 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### 모바일 트래픽 분석이란?
+
+모바일 트래픽 분석은 스마트폰 앱이 서버와 주고받는 네트워크 데이터를 캡처하고 분석하는 과정이다. 앱이 어떤 API를 호출하는지, 어떤 데이터를 전송하는지, 인증 토큰을 어떻게 처리하는지 파악할 수 있다. 버그 바운티, 악성 앱 분석, API 취약점 발견에 핵심 기법이다.
+
+**왜 배우는가:**
+```
+모바일 트래픽 분석으로 발견할 수 있는 것
+
+[서버 통신 분석]
+  /api/v1/user/profile → 타 사용자 ID로 변경 시도 → IDOR 취약점
+  HTTP(평문)로 비밀번호 전송 → 즉각적인 보안 위협
+
+[숨겨진 API 발견]
+  앱 UI에는 없지만 트래픽에서 발견되는 관리자 API
+  디버그 엔드포인트: /api/v1/debug/users/all
+
+[인증 취약점]
+  JWT 토큰 만료 없음 → 무기한 세션 유지
+  토큰을 URL 파라미터에 포함 → 서버 로그에 노출
+```
+
+### 핵심 개념 정리
+
+```
+트래픽 인터셉트 방법
+
+방법            도구            SSL 처리
+──────────────────────────────────────────────────
+프록시 설정     Burp Suite      CA 인증서 설치 필요
+투명 프록시     mitmproxy       Android 7+ 루팅 필요
+VPN 기반        VPN 앱          인증서 스토어에 CA 추가
+USB 미러링      Wireshark       암호화 트래픽은 해독 불가
+
+SSL Pinning 우회 (추가 필요):
+  Frida 스크립트: TrustManager 후킹
+  objection: ios/android sslpinning disable
+```
+
+### 필요한 도구 및 환경
+- **Burp Suite Community**: HTTP/HTTPS 인터셉트 프록시 (무료)
+- **mitmproxy**: 파이썬 기반 프록시 (`pip install mitmproxy`)
+- **Android 에뮬레이터**: API 29 이하 권장 (사용자 CA 신뢰 쉬움)
+- **Frida**: SSL Pinning 우회용
+
+### 기초 실습 예제
+```bash
+# 1. mitmproxy 시작 (PC에서)
+mitmproxy -p 8080
+# 또는 웹 UI: mitmweb -p 8080
+
+# 2. Android 기기에서 프록시 설정
+# 설정 → Wi-Fi → 네트워크 → 프록시 → 수동
+# 호스트: [PC IP], 포트: 8080
+
+# 3. mitmproxy CA 인증서 설치 (Android)
+# http://mitm.it 에 접속 → Android CA 다운로드
+adb push ~/.mitmproxy/mitmproxy-ca-cert.cer /sdcard/
+# 기기에서: 설정 → 보안 → 인증서 설치
+
+# 4. 트래픽 필터링 (mitmproxy에서)
+# f 키 → 필터 입력:
+# ~d api.example.com         # 도메인 필터
+# ~m POST                    # POST 요청만
+# ~s password                # 응답에 password 포함
+
+# 5. Python으로 mitmproxy 자동 분석
+cat > analyze.py << 'EOF'
+from mitmproxy import http
+
+def request(flow: http.HTTPFlow):
+    # API 키가 URL에 포함되는지 탐지
+    if "api_key=" in flow.request.url or "token=" in flow.request.url:
+        print(f"[경고] URL에 토큰 포함: {flow.request.url[:80]}")
+EOF
+mitmproxy -s analyze.py -p 8080
+```
+
+---
+
 ## 목차
 1. Burp Suite 모바일 프록시 설정
 2. mitmproxy 자동화

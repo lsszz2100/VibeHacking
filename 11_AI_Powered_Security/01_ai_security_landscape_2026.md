@@ -6,6 +6,76 @@
 
 # AI 보안 생태계 2026 — 완전 지형도
 
+## 0. 초보자를 위한 개념 이해
+
+### AI 보안이란?
+
+**AI 보안(AI Security)**은 두 가지 의미를 가집니다: ① AI를 사용해 보안 작업을 강화하는 것, ② AI 시스템 자체를 공격·방어하는 것. 2026년에는 두 영역 모두 폭발적으로 성장했습니다.
+
+**왜 배우는가:**
+```
+AI가 보안에 미치는 영향:
+
+공격자 관점:
+  - AI로 피싱 메일 자동 생성 (맞춤형, 다국어)
+  - 취약점 자동 발견 및 익스플로잇 생성
+  - 딥페이크로 소셜 엔지니어링
+
+방어자 관점:
+  - 이상 행동 자동 탐지 (SIEM + ML)
+  - 취약점 자동 패치 추천
+  - 위협 인텔리전스 자동 분석
+```
+
+### 핵심 개념 정리
+
+```
+AI 보안 생태계:
+
+LLM(대형언어모델) → GPT-4, Claude, Gemini
+  - 코드 취약점 분석 자동화
+  - 사고 대응 보조
+  - 보안 교육 자료 생성
+
+AI 공격 도구:
+  - FraudGPT, WormGPT → 악성 콘텐츠 생성 특화
+  - AI 기반 자동화 스캐너
+
+AI 방어 도구:
+  - Microsoft Security Copilot
+  - Google SecOps AI
+  - Darktrace (이상 탐지)
+```
+
+### 필요한 도구 및 환경
+- **Python + OpenAI/Anthropic API**: AI 보안 도구 개발
+- **LangChain**: AI 에이전트 보안 테스트
+- **OWASP LLM Top 10**: AI 취약점 분류 기준
+
+### 기초 실습 예제
+```python
+# AI API를 사용한 간단한 취약점 분석 보조
+import anthropic
+
+def analyze_code_security(code: str) -> str:
+    client = anthropic.Anthropic()
+    response = client.messages.create(
+        model="claude-opus-4-8",
+        max_tokens=1024,
+        messages=[{
+            "role": "user",
+            "content": f"다음 코드의 보안 취약점을 분석하세요:\n```\n{code}\n```"
+        }]
+    )
+    return response.content[0].text
+
+# 예시 취약한 코드 분석
+sample_code = "query = f'SELECT * FROM users WHERE id = {user_input}'"
+print(analyze_code_security(sample_code))
+```
+
+---
+
 ## 1. 변곡점: 무엇이 달라졌나
 
 2026년 초, 사이버보안 역사에서 가장 중요한 전환점이 시작됐다.

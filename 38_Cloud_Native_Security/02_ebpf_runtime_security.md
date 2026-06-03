@@ -6,6 +6,141 @@
 
 # eBPF 런타임 보안
 
+## 0. 초보자를 위한 개념 이해
+
+### eBPF 런타임 보안이란?
+
+eBPF(Extended Berkeley Packet Filter)는 Linux 커널 내에서 안전한 샌드박스 프로그램을 실행할 수 있는 기술이다. 원래 네트워크 패킷 필터링을 위해 만들어졌으나, 현재는 성능 모니터링, 네트워크 제어, 보안 탐지까지 폭넓게 활용된다. 런타임 보안에서는 컨테이너가 실행되는 동안 커널 레벨에서 모든 시스콜, 네트워크 연결, 파일 접근을 실시간 모니터링해 악의적 행동을 탐지·차단한다.
+
+**왜 배우는가:**
+```
+[eBPF 보안의 장점]
+
+  기존 방식 (에이전트 기반):
+    컨테이너 내부에 에이전트 설치
+    → 공격자가 에이전트 비활성화 가능
+    → 이미지 크기 증가, 성능 저하
+
+  eBPF 방식:
+    커널 레벨에서 관찰 (컨테이너 외부)
+    → 컨테이너 내부에서 숨길 수 없음
+    → 컨테이너 이미지 수정 불필요
+    → 나노초 수준의 오버헤드
+
+  [탐지 가능한 위협]
+  컨테이너 탈출 시도 (namespace 이탈)
+  권한 상승 (setuid, capabilities)
+  의심스러운 네트워크 연결
+  민감 파일 접근 (/etc/shadow 등)
+  역방향 쉘 실행 (bash → 외부 IP)
+```
+
+### 핵심 개념 정리
+
+```
+[eBPF 기반 보안 도구 비교]
+
+Falco (CNCF 졸업 프로젝트)
+  - 규칙 기반 이상 탐지
+  - YAML 형식 규칙 파일
+  - Slack/Webhook 알림 연동
+  - 사용 난이도: 낮음 (규칙 작성만)
+
+Tetragon (Cilium 프로젝트)
+  - eBPF 기반 런타임 보안 + 네트워크 정책
+  - 프로세스 실행 추적, 네트워크 흐름 제어
+  - 실시간 차단(Block) 가능
+  - 사용 난이도: 중간
+
+Tracee (Aqua Security)
+  - 이벤트 기반 실시간 보안 분석
+  - OPA(Rego) 정책 통합
+  - 포렌식 데이터 수집
+  - 사용 난이도: 중간
+
+[주요 탐지 시스콜]
+  execve:   새 프로세스 실행 (역방향 쉘)
+  open:     파일 접근 (민감 파일)
+  connect:  네트워크 연결 (C2 통신)
+  setuid:   권한 변경 (권한 상승)
+  ptrace:   프로세스 디버깅 (에이전트 우회)
+```
+
+### 필요한 도구 및 환경
+- **Falco**: `helm install falco` 로 Kubernetes 클러스터에 배포
+- **bpftool**: eBPF 프로그램 검사 및 관리
+- **bcc (BPF Compiler Collection)**: Python에서 eBPF 프로그램 작성
+- **Python + falco-client**: Falco 알림 처리 자동화
+
+### 기초 실습 예제
+```python
+import json
+import sys
+from datetime import datetime
+
+def parse_falco_alert(alert_json: str) -> dict | None:
+    """
+    Falco JSON 알림을 파싱해 위험도별로 분류한다.
+    Falco 로그: /var/log/falco.json 또는 stdout
+    """
+    try:
+        alert = json.loads(alert_json)
+    except json.JSONDecodeError:
+        return None
+
+    # 위험도 레벨 매핑
+    severity_map = {
+        "EMERGENCY": 7, "ALERT": 6, "CRITICAL": 5,
+        "ERROR": 4, "WARNING": 3, "NOTICE": 2,
+        "INFORMATIONAL": 1, "DEBUG": 0
+    }
+
+    priority = alert.get("priority", "NOTICE")
+    severity = severity_map.get(priority.upper(), 0)
+
+    parsed = {
+        "시각": alert.get("time", datetime.now().isoformat()),
+        "우선순위": priority,
+        "심각도": severity,
+        "규칙": alert.get("rule", "Unknown"),
+        "메시지": alert.get("output", ""),
+        "컨테이너": alert.get("output_fields", {}).get("container.name", "host"),
+        "프로세스": alert.get("output_fields", {}).get("proc.name", ""),
+        "사용자": alert.get("output_fields", {}).get("user.name", ""),
+    }
+
+    # 심각도에 따른 자동 대응 제안
+    if severity >= 5:  # CRITICAL 이상
+        parsed["권고"] = "즉시 컨테이너 격리 및 포렌식 조사 필요"
+    elif severity >= 3:  # WARNING 이상
+        parsed["권고"] = "보안 팀 알림 및 로그 보존"
+    else:
+        parsed["권고"] = "모니터링 계속"
+
+    return parsed
+
+# 사용 예시 (Falco 알림 스트림 처리)
+sample_alert = '''
+{
+  "priority": "WARNING",
+  "rule": "Terminal shell in container",
+  "time": "2025-01-01T12:00:00Z",
+  "output": "A shell was spawned in a container (user=root container=nginx)",
+  "output_fields": {
+    "container.name": "nginx-pod",
+    "proc.name": "bash",
+    "user.name": "root"
+  }
+}
+'''
+result = parse_falco_alert(sample_alert)
+if result:
+    for k, v in result.items():
+        print(f"  {k}: {v}")
+```
+
+---
+
 ## 목차
 1. eBPF 개요
 2. 런타임 보안 도구 비교 (Falco, Tetragon, Tracee)

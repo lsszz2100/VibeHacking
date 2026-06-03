@@ -6,6 +6,132 @@
 
 # 자동차 보안 기초
 
+## 0. 초보자를 위한 개념 이해
+
+### 자동차 보안이란?
+
+자동차 보안(Automotive Security)은 현대 차량에 내장된 수십~수백 개의 컴퓨터(ECU)와 차량 내부 네트워크, 무선 통신 인터페이스를 사이버 공격으로부터 보호하는 분야이다. 2015년 Charlie Miller와 Chris Valasek이 주행 중인 지프 체로키를 원격으로 해킹하여 브레이크와 조향을 제어한 사건은 자동차 보안의 중요성을 전 세계에 알렸다.
+
+**왜 배우는가:**
+```
+[현대 자동차 = 바퀴 달린 컴퓨터 네트워크]
+
+외부 공격 진입점:
+  인터넷 ── OTA 업데이트 서버
+  Bluetooth ── 인포테인먼트 시스템
+  Wi-Fi ── 테슬라 스타일 커넥티드카
+  셀룰러 ── 원격 진단, 텔레매틱스
+  USB ── 충전 포트, 오디오
+  OBD-II ── 정비소 진단 포트
+
+내부 네트워크 (CAN 버스):
+  인포테인먼트 ─┐
+  ADAS ECU    ─┤─ CAN 버스 ─── 엔진 ECU
+  브레이크 ECU ─┤            ── 조향 ECU
+  도어 ECU    ─┘
+
+위험: 인포테인먼트 침해 → CAN 버스 접근 → 브레이크/엔진 제어
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- ECU(Electronic Control Unit): 차량 내 특정 기능을 제어하는 소형 컴퓨터
+- CAN 버스: 차량 내 ECU들이 통신하는 기본 내부 네트워크 프로토콜
+- OBD-II: 표준 차량 진단 포트 (대부분 운전석 아래에 있음)
+- V2X(Vehicle-to-Everything): 차량과 다른 차량/인프라/보행자 간 무선 통신
+- TARA(Threat Analysis and Risk Assessment): 자동차 보안 위협 분석 방법론
+- ISO/SAE 21434: 자동차 사이버보안 국제 표준 (2021년 발효)
+- UN Regulation 155: 커넥티드카 사이버보안 강제 규정 (유럽, 2022년 적용)
+```
+
+### 필요한 도구 및 환경
+- **Linux VM + can-utils**: 가상 CAN 인터페이스(vcan0)로 실습
+- **Python 3.10+**: python-can 라이브러리
+- **ICSim (ICSim Car Simulator)**: CAN 버스 시뮬레이터 (실제 차량 불필요)
+- **Wireshark**: CAN 패킷 캡처 및 분석
+
+### 기초 실습 예제
+```python
+# pip install python-can
+# Linux에서 가상 CAN 인터페이스 설정:
+# sudo modprobe vcan
+# sudo ip link add dev vcan0 type vcan
+# sudo ip link set up vcan0
+
+import struct
+from dataclasses import dataclass
+
+@dataclass
+class CANFrame:
+    """CAN 버스 프레임 구조"""
+    arbitration_id: int   # 메시지 ID (11비트 또는 29비트)
+    data: bytes           # 데이터 페이로드 (최대 8바이트)
+    is_extended: bool = False
+
+    def __str__(self):
+        return (f"CAN Frame: ID=0x{self.arbitration_id:03X} "
+                f"Data={self.data.hex().upper()} "
+                f"({'확장' if self.is_extended else '표준'})")
+
+def simulate_can_traffic():
+    """
+    자동차 CAN 버스 트래픽 시뮬레이션
+    실제 차량의 CAN 메시지 패턴을 Python으로 재현
+    """
+    print("=== CAN 버스 트래픽 시뮬레이션 ===\n")
+
+    # 일반적인 자동차 CAN 메시지 예시
+    sample_messages = [
+        # 엔진 RPM (ID: 0x0C9, 2바이트)
+        # 값 = (바이트1 * 256 + 바이트2) / 4
+        CANFrame(0x0C9, bytes([0x0F, 0xA0])),  # 1000 RPM
+
+        # 차속 (ID: 0x0D0, 1바이트)
+        # 값 = 바이트1 km/h
+        CANFrame(0x0D0, bytes([0x3C])),         # 60 km/h
+
+        # 가속 페달 위치 (ID: 0x147, 1바이트)
+        # 값 = 바이트1 / 255 * 100 %
+        CANFrame(0x147, bytes([0x4D])),         # 약 30%
+
+        # 조향각 (ID: 0x002, 2바이트)
+        # 값 = (바이트1 * 256 + 바이트2 - 4096) / 10 도
+        CANFrame(0x002, bytes([0x10, 0x00])),   # 0도 (직진)
+
+        # 브레이크 압력 (ID: 0x0F0, 1바이트)
+        CANFrame(0x0F0, bytes([0x00])),         # 브레이크 안 밟음
+    ]
+
+    print("수신된 CAN 메시지:")
+    for frame in sample_messages:
+        print(f"  {frame}")
+
+    # CAN 메시지 디코딩 시연
+    print("\n=== CAN 메시지 디코딩 ===")
+    rpm_frame = sample_messages[0]
+    rpm = (rpm_frame.data[0] * 256 + rpm_frame.data[1]) / 4
+    speed = sample_messages[1].data[0]
+    accel = sample_messages[2].data[0] / 255 * 100
+
+    print(f"  엔진 RPM: {rpm:.0f}")
+    print(f"  차속: {speed} km/h")
+    print(f"  가속 페달: {accel:.1f}%")
+
+    # python-can으로 실제 vcan0 전송 (선택)
+    print("\n=== 실제 vcan0 전송 예시 (python-can) ===")
+    print("import can")
+    print("bus = can.Bus(channel='vcan0', bustype='socketcan')")
+    print("msg = can.Message(arbitration_id=0x0C9, data=[0x0F, 0xA0])")
+    print("bus.send(msg)  # CAN 메시지 전송")
+    print("# candump vcan0 으로 수신 확인 가능")
+
+simulate_can_traffic()
+```
+
+---
+
 ## 자동차 사이버보안 개요
 
 현대 자동차는 100개 이상의 ECU(Electronic Control Unit)와 수천만 줄의 코드를 포함하는 복잡한 사이버물리 시스템이다. 자동차 해킹은 안전과 직결되므로 윤리적·법적 책임이 특히 중요하다.

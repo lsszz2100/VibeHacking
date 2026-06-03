@@ -6,6 +6,120 @@
 
 # 브라우저 공격 표면 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### 브라우저 공격 표면이란?
+
+브라우저 공격 표면은 악의적인 웹 페이지나 파일이 브라우저를 통해 사용자의 시스템을 공격할 수 있는 모든 진입점의 집합이다. JavaScript 엔진, 렌더링 엔진, PDF 파서, 오디오/비디오 코덱, 확장프로그램 API 등 수백만 줄의 복잡한 코드가 신뢰할 수 없는 웹 콘텐츠를 처리하기 때문에 지속적으로 새로운 취약점이 발견된다.
+
+**왜 배우는가:**
+```
+[브라우저 공격 경로]
+
+악성 웹사이트
+     │
+     ▼
+브라우저 렌더러 프로세스 (낮은 권한)
+  ├─ JavaScript 엔진 (V8/SpiderMonkey) → JIT 버그, UAF
+  ├─ HTML/CSS 파서 → 파싱 버그
+  ├─ 미디어 코덱 → 버퍼 오버플로우
+  └─ WebGL/WebAssembly → GPU 공격
+
+     │ 렌더러 익스플로잇 성공
+     ▼
+샌드박스 탈출 시도 → 브라우저 프로세스 침해
+     │ 샌드박스 탈출 성공
+     ▼
+OS 권한 획득 → 전체 시스템 장악
+
+이것이 "브라우저 풀체인 익스플로잇"이며
+최고 수준의 제로데이 취약점으로 거래됨 (수십억 원 가치)
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 렌더러 프로세스: 웹 콘텐츠를 처리하는 격리된 프로세스 (낮은 권한)
+- 샌드박스: 렌더러가 OS에 직접 접근하지 못하게 격리하는 보안 경계
+- UAF(Use-After-Free): 해제된 메모리를 재사용하는 메모리 오염 취약점
+- UXSS(Universal Cross-Site Scripting): 브라우저 자체의 버그로 SOP를 우회하는 공격
+- 사이트 격리(Site Isolation): 각 사이트를 별도 프로세스에서 실행하는 보안 기능
+- JIT(Just-In-Time) 컴파일러: JS를 기계어로 실시간 변환 - 복잡성으로 취약점 다수
+- Spectre/Meltdown: 투기적 실행 기반 브라우저 정보 유출 공격
+```
+
+### 필요한 도구 및 환경
+- **Chromium 소스코드**: https://chromium.googlesource.com/chromium/src
+- **WinDBG / GDB**: 브라우저 프로세스 디버깅
+- **JavaScript 디버거**: Chrome DevTools의 JS 디버거
+- **AddressSanitizer**: 메모리 오류 탐지 (빌드 시 -fsanitize=address)
+
+### 기초 실습 예제
+```python
+"""
+브라우저 공격 표면 분석 - 교육용 개념 시연
+실제 브라우저 취약점 연구는 Chromium Bug Tracker(crbug.com)의
+공개된 취약점 리포트를 참조하세요
+"""
+
+def analyze_browser_attack_surface():
+    """
+    브라우저의 주요 공격 표면 카테고리와 관련 CVE 유형 정리
+    """
+    attack_surfaces = {
+        "JavaScript 엔진 (V8)": {
+            "컴포넌트": ["JIT 컴파일러", "가비지 컬렉터", "파서", "런타임"],
+            "취약점 유형": ["UAF", "타입 컨퓨전", "OOB 읽기/쓰기", "정수 오버플로우"],
+            "최근 CVE 예시": "CVE-2021-21220 (V8 타입 컨퓨전)",
+            "CVE 빈도": "매우 높음",
+        },
+        "HTML/CSS 렌더링 (Blink)": {
+            "컴포넌트": ["DOM 파서", "레이아웃 엔진", "CSS 처리기"],
+            "취약점 유형": ["UAF", "힙 오버플로우", "로직 버그"],
+            "최근 CVE 예시": "CVE-2022-0609 (Animation UAF)",
+            "CVE 빈도": "높음",
+        },
+        "미디어 코덱": {
+            "컴포넌트": ["MP4/WebM 파서", "오디오 디코더", "이미지 파서"],
+            "취약점 유형": ["버퍼 오버플로우", "OOB 읽기"],
+            "최근 CVE 예시": "libpng/libwebp 취약점",
+            "CVE 빈도": "중간",
+        },
+        "브라우저 확장프로그램 API": {
+            "컴포넌트": ["Chrome Extension API", "WebExtension API"],
+            "취약점 유형": ["권한 상승", "데이터 유출", "악성 확장"],
+            "최근 CVE 예시": "악성 확장으로 인한 정보 탈취",
+            "CVE 빈도": "중간",
+        },
+        "WebAssembly": {
+            "컴포넌트": ["WASM 컴파일러", "런타임", "JIT"],
+            "취약점 유형": ["OOB 접근", "타입 컨퓨전"],
+            "최근 CVE 예시": "WASM JIT 메모리 오염",
+            "CVE 빈도": "낮음 (증가 추세)",
+        },
+    }
+
+    print("=== 브라우저 공격 표면 분석 ===\n")
+    for surface, info in attack_surfaces.items():
+        print(f"[{surface}]")
+        print(f"  컴포넌트: {', '.join(info['컴포넌트'])}")
+        print(f"  주요 취약점: {', '.join(info['취약점 유형'])}")
+        print(f"  CVE 예시: {info['최근 CVE 예시']}")
+        print(f"  발생 빈도: {info['CVE 빈도']}")
+        print()
+
+    print("=== 보안 연구 학습 경로 ===")
+    print("1. Chrome Bug Tracker(crbug.com) 공개된 보안 버그 분석")
+    print("2. Project Zero 블로그 취약점 분석 보고서 연구")
+    print("3. CTF의 Browser 카테고리 문제 풀기")
+    print("4. Chromium 디버그 빌드로 PoC 재현 실습")
+
+analyze_browser_attack_surface()
+```
+
+---
+
 ## 1. 브라우저 아키텍처 개요
 
 현대 브라우저는 보안을 위해 다중 프로세스 아키텍처를 채택한다. Chromium 기반 브라우저는 브라우저 프로세스, 렌더러 프로세스, GPU 프로세스, 유틸리티 프로세스 등을 분리하여 한 컴포넌트의 침해가 전체 시스템으로 확산되지 않도록 설계한다.

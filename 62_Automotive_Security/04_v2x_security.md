@@ -6,6 +6,90 @@
 
 # V2X 보안 (Vehicle-to-Everything)
 
+## 0. 초보자를 위한 개념 이해
+
+### V2X란?
+
+**V2X(Vehicle-to-Everything)**는 차량이 주변 모든 것과 통신하는 기술입니다. V2V(차량↔차량), V2I(차량↔인프라), V2P(차량↔보행자) 등을 포함합니다. 자율주행의 핵심 기술이지만 새로운 보안 위협을 만듭니다.
+
+**왜 보안이 중요한가:**
+```
+V2X 공격 시나리오:
+
+V2V (차량간 통신):
+  가짜 충돌 경고 → 모든 차량 급정거 → 추돌 사고
+  교통 방해 메시지 → 특정 차량 경로 조작
+
+V2I (차량-인프라):
+  신호등 해킹 → 초록불 신호 위조
+  → 사고 유발 또는 교통 마비
+
+V2N (차량-네트워크):
+  OTA 업데이트 서버 해킹 → 악성 펌웨어 배포
+  → 수백만 대 차량 동시 감염
+```
+
+### 핵심 V2X 개념
+
+```
+V2X 통신 표준:
+  DSRC (5.9GHz): IEEE 802.11p, WAVE
+  C-V2X: 4G/5G 셀룰러 기반
+
+보안 메커니즘:
+  PKI 기반 인증:
+    - 각 차량에 인증서 (Certificate) 발급
+    - V2X 메시지에 디지털 서명
+    - 의사 익명 인증서 (프라이버시 보호)
+
+  위치 증명 (Location Verification):
+    - GPS 위치 검증 (Sybil 공격 방어)
+    - 메시지 내 위치가 실제 위치인지 확인
+
+취약점:
+  Sybil 공격: 가짜 다중 차량 신호로 교통 조작
+  GPS 스푸핑: 위치 정보 위조
+  서비스 거부: 채널 플러딩
+```
+
+### 필요한 도구
+- **V2X 시뮬레이터 (ns-3, SUMO)**: V2X 네트워크 시뮬레이션
+- **GNU Radio**: DSRC 신호 분석
+- **Wireshark + V2X 플러그인**: V2X 패킷 분석
+
+### 기초 실습 예제
+```python
+# DSRC/V2X 기본 메시지 구조 파싱
+from dataclasses import dataclass
+
+@dataclass
+class BSM:  # Basic Safety Message (V2V 핵심 메시지)
+    msg_count: int
+    vehicle_id: int
+    lat: float   # 위도
+    lon: float   # 경도
+    speed: float # m/s
+    heading: float  # 방향 (도)
+
+def parse_bsm(raw_bytes: bytes) -> BSM:
+    # 간략화된 파싱 예시
+    return BSM(
+        msg_count=raw_bytes[0],
+        vehicle_id=int.from_bytes(raw_bytes[1:5], 'big'),
+        lat=int.from_bytes(raw_bytes[5:9], 'big') / 1e7,
+        lon=int.from_bytes(raw_bytes[9:13], 'big') / 1e7,
+        speed=int.from_bytes(raw_bytes[13:15], 'big') * 0.02,
+        heading=int.from_bytes(raw_bytes[15:17], 'big') * 0.0125,
+    )
+
+# 보안 검증
+def validate_bsm(bsm: BSM, known_position: tuple[float, float]) -> bool:
+    dist = ((bsm.lat - known_position[0])**2 + (bsm.lon - known_position[1])**2)**0.5
+    return dist < 0.01  # 1km 이내인지 확인 (GPS 스푸핑 감지)
+```
+
+---
+
 ## V2X 개요
 
 ```

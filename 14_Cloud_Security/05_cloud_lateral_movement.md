@@ -6,6 +6,110 @@
 
 # 클라우드 횡이동 — 계정 피버팅·서비스 간 이동·탐지
 
+## 0. 초보자를 위한 개념 이해
+
+### 클라우드 횡이동이란?
+
+클라우드 횡이동(Cloud Lateral Movement)은 초기 침투 후 공격자가 하나의 클라우드 서비스에서 다른 서비스로 권한을 확장하며 이동하는 기법입니다. 온프레미스에서 서버에서 서버로 이동하듯, 클라우드에서는 EC2 → Lambda → S3 → RDS 등 서비스 간 IAM 권한 체인을 따라 이동합니다. STS AssumeRole을 활용한 계정 간 이동까지 포함하면, 하나의 작은 취약점이 전체 AWS 조직 침해로 이어질 수 있습니다.
+
+**왜 배우는가:**
+```
+클라우드 횡이동 경로 예시:
+
+  Lambda 함수 RCE (초기 접근)
+       ↓
+  Lambda 실행 역할의 IAM 권한 확인
+       ↓
+  S3 버킷 접근 → 자격증명 파일 발견
+       ↓
+  STS AssumeRole → 다른 계정/역할로 전환
+       ↓
+  RDS 데이터베이스 접근 → 전체 데이터 탈취
+
+  방어 관점: 각 서비스의 최소 권한이 핵심
+```
+
+### 핵심 개념 정리
+
+```
+클라우드 횡이동 핵심 개념:
+
+  IMDS (Instance Metadata Service)
+    EC2 내부에서 http://169.254.169.254/ 접근
+    → 임시 IAM 자격증명 획득
+
+  STS AssumeRole
+    현재 자격증명으로 다른 IAM 역할 임시 획득
+    → 더 높은 권한 역할로 전환
+
+  리소스 기반 정책
+    S3 버킷·Lambda 등에 직접 붙은 정책
+    → 교차 계정 역할 없이도 다른 계정 접근 가능
+
+  횡이동 경로 탐색:
+    현재 역할 권한 확인 → PassRole/AssumeRole 탐색
+    → 접근 가능한 서비스 열거 → 자격증명/데이터 탐색
+```
+
+### 필요한 도구 및 환경
+- **boto3**: Python AWS SDK (서비스 간 접근 자동화)
+- **aws_consoler**: 자격증명 → 콘솔 접근 URL 생성
+- **CloudMapper**: AWS 네트워크 시각화 및 권한 분석
+- **PMapper (Principal Mapper)**: IAM 권한 상승 경로 시각화
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""AWS IAM 역할 AssumeRole 체인 탐색 — 횡이동 경로 파악."""
+
+import boto3
+from botocore.exceptions import ClientError
+
+
+def get_assumable_roles(
+    iam_client: "boto3.client",
+    current_arn: str,
+) -> list[dict]:
+    """현재 자격증명으로 AssumeRole 가능한 역할 목록을 탐색합니다."""
+    assumable: list[dict] = []
+    try:
+        roles = iam_client.list_roles()["Roles"]
+    except ClientError:
+        return assumable
+
+    for role in roles:
+        trust_policy = role.get("AssumeRolePolicyDocument", {})
+        statements = trust_policy.get("Statement", [])
+        for stmt in statements:
+            principal = stmt.get("Principal", {})
+            aws_principal = principal.get("AWS", "")
+            # 현재 ARN 또는 전체 계정이 principal인 경우
+            if current_arn in str(aws_principal) or ":root" in str(aws_principal):
+                if stmt.get("Effect") == "Allow":
+                    assumable.append({
+                        "role_arn": role["Arn"],
+                        "role_name": role["RoleName"],
+                    })
+    return assumable
+
+
+if __name__ == "__main__":
+    session = boto3.Session()
+    sts = session.client("sts")
+    iam = session.client("iam")
+    try:
+        identity = sts.get_caller_identity()
+        print(f"현재 ARN: {identity['Arn']}")
+        roles = get_assumable_roles(iam, identity["Arn"])
+        print(f"\nAssumeRole 가능한 역할 ({len(roles)}개):")
+        for r in roles:
+            print(f"  {r['role_arn']}")
+    except ClientError as e:
+        print(f"오류: {e}")
+```
+
+---
+
 ## 1. 클라우드 횡이동 경로
 
 ```

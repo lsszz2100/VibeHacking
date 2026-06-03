@@ -6,6 +6,127 @@
 
 # WPA2 크래킹 완전 가이드
 
+## 0. 초보자를 위한 개념 이해
+
+### WPA2 크래킹이란?
+
+WPA2 크래킹은 WPA2-PSK(Personal) 방식으로 보호된 WiFi 네트워크의 패스워드를 오프라인 사전 대입 또는 마스크 공격으로 복구하는 기법입니다. WPA2 자체 암호화(AES-CCMP)는 강력하지만, 약한 패스워드는 4-way 핸드셰이크 캡처 후 딕셔너리 공격에 취약합니다. 2018년 등장한 PMKID 공격은 핸드셰이크 없이도 패스워드를 오프라인에서 테스트할 수 있습니다.
+
+**왜 배우는가:**
+```
+WPA2 크래킹 핵심 원리:
+
+  WiFi 연결 시 4-way Handshake 발생
+       ↓
+  Handshake = 패스워드로 생성된 암호화 데이터 포함
+       ↓
+  Handshake 파일 캡처 (공중에서 수집 가능)
+       ↓
+  오프라인 딕셔너리 대입 (GPU 가속으로 수십억 시도/초)
+       ↓
+  패스워드 일치 확인 (네트워크 연결 불필요)
+
+  강한 패스워드 (12자+ 무작위) → 크래킹 수십 년 소요
+  약한 패스워드 (단어+숫자)    → 수 시간 내 크랙 가능
+```
+
+### 핵심 개념 정리
+
+```
+WPA2 크래킹 방법론:
+
+  방법 1: 4-way Handshake 캡처
+    airmon-ng → 모니터 모드 활성화
+    airodump-ng → 핸드셰이크 캡처 대기
+    aireplay-ng -0 → Deauth로 재연결 강제
+    → .cap 파일 저장
+
+  방법 2: PMKID 공격 (2018, Jens Steube)
+    hcxdumptool → AP에서 직접 PMKID 수집
+    핸드셰이크 불필요 → 더 빠른 수집
+    → .pcapng 파일 저장
+
+  크래킹 도구:
+    hashcat → GPU 가속 (NVIDIA RTX: 수억 해시/초)
+    모드: 딕셔너리(-a 0), 마스크(-a 3), 규칙 기반(-a 0 -r)
+```
+
+### 필요한 도구 및 환경
+- **aircrack-ng 패키지**: airodump-ng, aireplay-ng, airmon-ng 포함
+- **hcxdumptool / hcxtools**: PMKID 공격 및 파일 변환
+- **hashcat**: GPU 기반 고속 패스워드 크래킹
+- **대형 워드리스트**: rockyou.txt 등 공개 패스워드 목록
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""WPA2 패스워드 강도 평가 — 크래킹 예상 시간 계산."""
+
+import math
+import string
+from dataclasses import dataclass
+
+
+@dataclass
+class PasswordStrengthResult:
+    password: str
+    charset_size: int
+    entropy_bits: float
+    estimated_crack_time_gpu: str  # RTX 3090 기준 (약 5억 해시/초)
+
+
+def estimate_crack_time(charset: int, length: int) -> str:
+    """GPU 크래킹 예상 시간을 계산합니다 (RTX 3090 기준)."""
+    combinations = charset ** length
+    hashes_per_second = 500_000_000  # 5억 H/s (WPA2 PBKDF2)
+    seconds = combinations / hashes_per_second
+
+    if seconds < 60:
+        return f"{seconds:.1f}초"
+    elif seconds < 3600:
+        return f"{seconds / 60:.1f}분"
+    elif seconds < 86400:
+        return f"{seconds / 3600:.1f}시간"
+    elif seconds < 31536000:
+        return f"{seconds / 86400:.0f}일"
+    else:
+        return f"{seconds / 31536000:.0f}년"
+
+
+def assess_password_strength(password: str) -> PasswordStrengthResult:
+    """WiFi 패스워드 강도 및 크래킹 예상 시간 평가."""
+    charset = 0
+    if any(c.islower() for c in password):
+        charset += 26
+    if any(c.isupper() for c in password):
+        charset += 26
+    if any(c.isdigit() for c in password):
+        charset += 10
+    if any(c in string.punctuation for c in password):
+        charset += 32
+
+    entropy = math.log2(charset ** len(password)) if charset > 0 else 0
+    crack_time = estimate_crack_time(charset, len(password))
+
+    return PasswordStrengthResult(
+        password=password[:3] + "*" * (len(password) - 3),
+        charset_size=charset,
+        entropy_bits=round(entropy, 1),
+        estimated_crack_time_gpu=crack_time,
+    )
+
+
+if __name__ == "__main__":
+    test_passwords = ["12345678", "password1", "P@ssw0rd!", "xK9#mL2$qR7&vN4!"]
+    print(f"{'패스워드':<20} {'문자셋':>6} {'엔트로피':>10} {'크래킹 예상 시간'}")
+    print("-" * 70)
+    for pw in test_passwords:
+        r = assess_password_strength(pw)
+        print(f"{r.password:<20} {r.charset_size:>6} {r.entropy_bits:>9.1f}bit  {r.estimated_crack_time_gpu}")
+```
+
+---
+
 ## WPA2 크랙 전략 개요
 
 ```

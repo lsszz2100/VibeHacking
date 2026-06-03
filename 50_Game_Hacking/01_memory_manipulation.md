@@ -6,7 +6,82 @@
 
 # 01. 게임 메모리 조작 (Game Memory Manipulation)
 
-게임 해킹의 가장 기본적인 기법은 프로세스 메모리를 직접 읽고 쓰는 것이다. 이 문서는 Windows 환경에서 게임 메모리 구조를 이해하고 조작하는 방법을 다룬다. 모든 내용은 CTF, 보안 연구, 취약점 분석 목적으로 작성되었다.
+## 0. 초보자를 위한 개념 이해
+
+### 게임 메모리 조작이란?
+
+**게임 메모리 조작(Game Memory Manipulation)**은 실행 중인 게임 프로세스의 메모리를 직접 읽고 써서 체력, 돈, 아이템 수량 같은 게임 데이터를 변경하는 기술입니다.
+
+> 📌 이 문서의 내용은 CTF, 보안 연구, 개인 오프라인 게임에만 적용합니다.
+
+**왜 배우는가:**
+```
+보안 학습 관점:
+  - 메모리 구조 이해 → 버퍼 오버플로 취약점 이해 기초
+  - 프로세스 간 메모리 접근 → OS 보안 모델 이해
+  - 안티치트 분석 → 보안 제품 개발 능력
+
+CTF 관점:
+  - 게임 해킹 CTF 챌린지 해결
+  - 리버싱 + 메모리 분석 종합 문제
+```
+
+### 핵심 개념 정리
+
+```
+게임 메모리 구조:
+
+게임 체력 = 메모리 주소 0x12345678에 저장된 int 값
+
+플레이어 체력: [0x12345678] = 100
+                           ↓ 메모리 패치
+                [0x12345678] = 99999
+
+메모리 스캔 흐름:
+  1. 체력 = 100 → 메모리에서 값 100 스캔
+  2. 데미지 받음, 체력 = 90
+  3. 방금 100이었다가 90이 된 주소 필터링
+  4. 반복 → 체력 주소 특정
+  5. 원하는 값으로 패치
+
+메모리 보호 기법:
+  - 동적 주소 (ASLR): 실행마다 주소 변경
+  - 포인터 체인: 베이스 주소 + 오프셋으로 추적
+  - 메모리 암호화: 실제값 ≠ 저장값
+```
+
+### 필요한 도구
+- **Cheat Engine**: 윈도우 메모리 스캐너/패쳐 (무료)
+- **Process Hacker**: 프로세스 메모리 뷰어
+- **ReClass.NET**: 메모리 구조 시각화
+
+### 기초 실습 예제
+```python
+# Windows 프로세스 메모리 읽기/쓰기
+import ctypes
+import ctypes.wintypes as wintypes
+
+PROCESS_ALL_ACCESS = 0x1F0FFF
+
+def read_int(process_handle: int, address: int) -> int:
+    buffer = ctypes.c_int()
+    bytes_read = ctypes.c_size_t()
+    ctypes.windll.kernel32.ReadProcessMemory(
+        process_handle, address,
+        ctypes.byref(buffer), ctypes.sizeof(buffer),
+        ctypes.byref(bytes_read)
+    )
+    return buffer.value
+
+def write_int(process_handle: int, address: int, value: int) -> bool:
+    buffer = ctypes.c_int(value)
+    bytes_written = ctypes.c_size_t()
+    return bool(ctypes.windll.kernel32.WriteProcessMemory(
+        process_handle, address,
+        ctypes.byref(buffer), ctypes.sizeof(buffer),
+        ctypes.byref(bytes_written)
+    ))
+```
 
 ---
 

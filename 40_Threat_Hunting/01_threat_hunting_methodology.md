@@ -6,6 +6,125 @@
 
 # 위협 헌팅 방법론 (Threat Hunting Methodology)
 
+## 0. 초보자를 위한 개념 이해
+
+### 위협 헌팅이란?
+
+위협 헌팅(Threat Hunting)은 기존 SIEM 알림이나 AV 탐지를 기다리지 않고, 보안 분석가가 직접 가설을 세우고 데이터를 분석해 숨겨진 위협을 능동적으로 찾아내는 활동이다. 공격자가 평균 200일 이상 탐지되지 않고 잠복할 수 있다는 통계가 위협 헌팅의 필요성을 만들었다. 인텔리전스 기반 가설, 데이터 탐색, 패턴 분석을 통해 기존 보안 도구의 탐지 사각지대를 커버한다.
+
+**왜 배우는가:**
+```
+[위협 헌팅이 필요한 이유]
+
+  기존 보안 도구의 한계:
+  SIEM: 알려진 규칙에만 반응
+  AV/EDR: 알려진 악성코드 시그니처 기반
+  방화벽: 규칙 기반 트래픽 차단
+
+  공격자의 전략 변화:
+  ┌─ 탐지 회피 기법 사용 (Living off the Land)
+  │   정상 도구(PowerShell, WMI, certutil) 악용
+  ├─ 느린 이동 (Low & Slow)
+  │   수개월에 걸쳐 조용히 이동
+  └─ 파일리스 공격 (Fileless)
+      디스크에 파일 없음 → AV 탐지 불가
+
+  위협 헌팅으로:
+  Dwell time 207일 → 조기 발견
+  알려지지 않은 TTP 패턴 발굴
+  탐지 규칙 개선 피드백 제공
+```
+
+### 핵심 개념 정리
+
+```
+[위협 헌팅 3단계 사이클]
+
+1. 가설 수립 (Hypothesis)
+   인텔리전스 기반: 새 CVE, APT 보고서, IOC
+   경험 기반: "PowerShell이 Base64를 자주 실행하면?"
+   데이터 기반: 통계적 이상값 탐색
+   → 구체적 질문으로 변환
+
+2. 데이터 탐색 (Investigation)
+   SIEM 쿼리(KQL/SPL)로 관련 이벤트 검색
+   EDR 텔레메트리 분석
+   네트워크 트래픽 패턴 분석
+   → 가설 검증/기각
+
+3. 패턴 발견 → 탐지 규칙화 (Detection Engineering)
+   새로운 악성 패턴 발견 → SIEM 규칙 추가
+   정상 행동과 이상 행동 기준선 확립
+   Playbook 작성 → 다음 헌팅 사이클
+
+[헌팅 성숙도 (SQRRL 모델)]
+  레벨 0: 수동적 (알림 대응만)
+  레벨 1: 최소적 (IoC 검색)
+  레벨 2: 절차적 (정해진 프로세스)
+  레벨 3: 혁신적 (가설 기반 헌팅)
+  레벨 4: 선도적 (자동화 + ML)
+```
+
+### 필요한 도구 및 환경
+- **Microsoft Sentinel**: 클라우드 SIEM (KQL 쿼리)
+- **Splunk**: 엔터프라이즈 SIEM (SPL 쿼리)
+- **Elastic SIEM**: 오픈소스 보안 분석 플랫폼
+- **MITRE ATT&CK Navigator**: TTP 매핑 및 헌팅 계획 시각화
+
+### 기초 실습 예제
+```python
+from dataclasses import dataclass, field
+from datetime import datetime
+
+@dataclass
+class HuntHypothesis:
+    """위협 헌팅 가설 구조체."""
+    title: str
+    mitre_technique: str  # 예: T1059.001
+    hypothesis: str
+    data_sources: list[str]
+    hunting_query: str
+    created_at: str = field(default_factory=lambda: datetime.now().isoformat())
+    status: str = "draft"  # draft, active, completed, false_positive
+
+def create_hunt_hypothesis(
+    title: str,
+    technique_id: str,
+    hypothesis: str,
+    data_sources: list[str],
+    query: str
+) -> HuntHypothesis:
+    """위협 헌팅 가설을 생성하고 출력한다."""
+    hunt = HuntHypothesis(
+        title=title,
+        mitre_technique=technique_id,
+        hypothesis=hypothesis,
+        data_sources=data_sources,
+        hunting_query=query,
+    )
+
+    print(f"\n[*] 위협 헌팅 가설 생성:")
+    print(f"    제목: {hunt.title}")
+    print(f"    MITRE: {hunt.mitre_technique}")
+    print(f"    가설: {hunt.hypothesis}")
+    print(f"    데이터 소스: {', '.join(hunt.data_sources)}")
+    print(f"    쿼리 미리보기:")
+    print(f"    {hunt.hunting_query[:100]}...")
+
+    return hunt
+
+# 사용 예시
+hunt = create_hunt_hypothesis(
+    title="PowerShell 인코딩 명령 실행 탐지",
+    technique_id="T1059.001",
+    hypothesis="공격자가 PowerShell의 Base64 인코딩 기능으로 악성 코드를 숨겨 실행하고 있을 것이다",
+    data_sources=["Windows Security Event Log (4688)", "Sysmon Event ID 1"],
+    query="SecurityEvent | where EventID == 4688 | where CommandLine has '-EncodedCommand'"
+)
+```
+
+---
+
 ## 1. 위협 헌팅이란 무엇인가
 
 ### 1.1 정의

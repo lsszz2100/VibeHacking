@@ -6,6 +6,109 @@
 
 # Buffer Overflow — 스택 기반 오버플로우 완전 정복
 
+## 0. 초보자를 위한 개념 이해
+
+### 버퍼 오버플로우란?
+
+버퍼 오버플로우(Buffer Overflow)는 프로그램에서 정해진 크기의 메모리 영역(버퍼)에 그 크기를 초과하는 데이터를 입력했을 때 발생하는 취약점입니다. 초과된 데이터가 인접한 메모리를 덮어쓰면서 프로그램의 실행 흐름을 바꿀 수 있어 매우 위험합니다.
+
+**왜 배우는가:**
+```
+버퍼 오버플로우의 위험성:
+
+  C언어 코드 예시:
+    char buffer[10];        // 10바이트 버퍼 선언
+    gets(buffer);           // 입력 길이 확인 없이 받음!
+    → "AAAAAAAAAAAAAAAAAA..." 20바이트 입력
+    → 버퍼를 넘어 리턴 주소(Return Address)를 덮어씀
+    → 프로그램이 공격자가 원하는 코드를 실행!
+
+  역사적 사례:
+  Morris Worm (1988) → 인터넷 최초 웜, BOF 이용
+  MS-IIS (2001)     → Code Red 웜
+  MS08-067          → Conficker 웜, 전 세계 수백만 대 감염
+```
+
+### 핵심 개념 정리
+
+```
+스택 메모리 구조 (함수 호출 시):
+
+  높은 주소
+  ┌─────────────────────┐
+  │   함수 인자 (args)   │
+  ├─────────────────────┤
+  │   리턴 주소 (RET)    │ ← 이것을 덮어쓰는 것이 목표!
+  ├─────────────────────┤
+  │   저장된 EBP         │
+  ├─────────────────────┤
+  │   지역 변수/버퍼     │ ← 여기에 데이터 입력
+  └─────────────────────┘
+  낮은 주소
+
+오버플로우 과정:
+  1. 버퍼(낮은 주소)에 과도한 데이터 입력
+  2. 버퍼 → EBP → 리턴 주소 순서로 덮어씀
+  3. 리턴 주소를 공격자 코드 위치로 변경
+  4. 함수 종료 시 공격자 코드로 점프
+
+보호 기법 (현대 시스템):
+  Stack Canary  → 버퍼와 리턴 주소 사이 감시값 삽입
+  ASLR          → 주소 랜덤화 (리턴 주소 예측 어렵게)
+  NX/DEP        → 스택 영역 코드 실행 금지
+```
+
+### 필요한 도구 및 환경
+- **취약한 바이너리**: 보호 기법 없이 컴파일된 연습용 프로그램 (`gcc -fno-stack-protector -z execstack`)
+- **디버거**: gdb + pwndbg/peda 플러그인 — 레지스터/스택 실시간 확인
+- **익스플로잇 프레임워크**: pwntools 라이브러리 — 패턴 생성, 오프셋 계산, 익스플로잇 자동화
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""BOF 오프셋 계산 및 익스플로잇 페이로드 생성 (교육용)."""
+import struct
+from typing import Optional
+
+def create_cyclic_pattern(length: int) -> bytes:
+    """
+    De Bruijn 시퀀스 기반 오프셋 탐지 패턴 생성.
+    이 패턴을 입력 후 크래시 시점의 EIP 값으로 오프셋을 특정.
+    """
+    charset = b"abcdefghijklmnopqrstuvwxyz"
+    pattern = bytearray()
+    for i in range(length):
+        idx = i % len(charset)
+        pattern.append(charset[idx])
+    return bytes(pattern)
+
+def build_bof_payload(
+    offset: int,           # 버퍼 시작 ~ 리턴 주소까지 거리
+    ret_address: int,      # 덮어쓸 리턴 주소 (shellcode 위치 등)
+    shellcode: bytes = b"",
+) -> bytes:
+    """
+    스택 기반 BOF 익스플로잇 페이로드 조합.
+    실습 환경(보호 기법 없는 바이너리)에서만 사용.
+    """
+    padding = b"A" * offset                         # 버퍼 채우기
+    ret = struct.pack("<I", ret_address)             # 리틀 엔디안 주소
+    payload = padding + ret + shellcode
+    return payload
+
+if __name__ == "__main__":
+    # 오프셋 탐지용 패턴 (gdb에서 크래시 후 EIP 값으로 오프셋 계산)
+    pattern = create_cyclic_pattern(200)
+    print(f"패턴 (처음 20바이트): {pattern[:20]}")
+
+    # 예시: 오프셋 112바이트, 리턴 주소 0xbffff6d0
+    payload = build_bof_payload(112, 0xBFFFF6D0)
+    print(f"페이로드 크기: {len(payload)}바이트")
+    print(f"처음 20바이트: {payload[:20]}")
+```
+
+---
+
 ## 1. 메모리 구조 기초
 
 ### 프로세스 메모리 레이아웃

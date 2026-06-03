@@ -6,7 +6,73 @@
 
 # Web3 사고 대응
 
-DeFi 익스플로잇, NFT 러그풀, 스마트 컨트랙트 해킹 발생 시 온체인 포렌식과 피해 최소화를 위한 신속 대응 절차를 다룬다. 블록체인 특성상 트랜잭션 불변성으로 인해 사전 방어와 신속한 피해 확산 차단이 핵심이다.
+## 0. 초보자를 위한 개념 이해
+
+### Web3 사고 대응이란?
+
+**Web3 사고 대응(Incident Response)**은 스마트 컨트랙트 해킹, DeFi 프로토콜 공격 발생 시 피해를 최소화하고 원인을 분석하는 절차입니다. 블록체인의 불변성 때문에 전통 사고 대응과 큰 차이가 있습니다.
+
+**블록체인 특수성:**
+```
+전통 IT 사고 대응:
+  침해 발견 → 시스템 격리 → 패치 → 복구
+  (데이터 복구 가능)
+
+Web3 사고 대응:
+  침해 발견 → (스마트 컨트랙트 정지 가능한 경우)
+  → 자금 이동 추적 → 법적 조치
+  (이미 전송된 자금은 복구 불가)
+
+골든 아워:
+  공격 발생 → 수 분~수 시간 내 추가 피해 차단이 핵심
+  공격 진행 중: Pause 함수 실행으로 추가 출금 차단
+```
+
+### 사고 대응 절차
+
+```
+1. 탐지 (Detection)
+   - 온체인 모니터링 알림 (Forta, OpenZeppelin Defender)
+   - 비정상 대규모 트랜잭션 감지
+
+2. 분석 (Analysis)
+   - Etherscan으로 공격 트랜잭션 확인
+   - Tenderly로 트랜잭션 재현·디버깅
+   - 공격 경로 파악
+
+3. 격리 (Containment)
+   - Emergency Pause 기능 실행
+   - 추가 자금 이동 차단
+   - 영향받은 풀 잠금
+
+4. 추적 (Tracking)
+   - 공격자 지갑 모니터링
+   - 믹서(Tornado Cash 등) 사용 여부 확인
+   - 거래소에 지갑 차단 요청
+```
+
+### 필요한 도구
+- **Forta**: 온체인 위협 탐지 모니터링
+- **Etherscan**: 트랜잭션 내역 분석
+- **OpenZeppelin Defender**: 긴급 대응 자동화
+
+### 기초 실습 예제
+```python
+# 공격자 지갑 자금 이동 추적
+from web3 import Web3
+
+w3 = Web3(Web3.HTTPProvider("https://mainnet.infura.io/v3/YOUR_KEY"))
+
+attacker_address = "0xAttackerAddress..."
+
+# 특정 주소의 최근 트랜잭션 조회
+block = w3.eth.get_block('latest')
+for tx_hash in block['transactions'][:10]:
+    tx = w3.eth.get_transaction(tx_hash)
+    if tx['from'].lower() == attacker_address.lower():
+        print(f"공격자 트랜잭션: {tx_hash.hex()}")
+        print(f"  → {tx['to']}: {w3.from_wei(tx['value'], 'ether')} ETH")
+```
 
 ---
 

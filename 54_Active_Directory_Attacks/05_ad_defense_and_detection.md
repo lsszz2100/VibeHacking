@@ -6,7 +6,85 @@
 
 # Active Directory 방어 및 탐지
 
-AD 공격(Pass-the-Hash, Kerberoasting, DCSync, BloodHound 경로 악용)을 탐지하는 방법과 계층적 방어 전략을 다룬다. SIEM 쿼리, 허니팟 계정, 탐지 룰을 중심으로 정리한다.
+## 0. 초보자를 위한 개념 이해
+
+### AD 방어와 탐지란?
+
+**Active Directory 방어·탐지**는 Kerberoasting, Pass-the-Hash, DCSync 같은 AD 공격을 사전에 차단하고 실시간으로 탐지하는 보안 강화 전략입니다.
+
+**왜 배우는가:**
+```
+AD = 기업 IT 인프라의 핵심:
+  AD 장악 = 회사 전체 시스템 장악
+
+방어자 입장:
+  - AD 보안 설정 강화 → 공격 표면 축소
+  - SIEM 탐지 룰 → 공격 조기 발견
+  - 침해 시 빠른 격리 → 피해 최소화
+
+사고 대응 통계:
+  AD 관련 침해: 기업 침해 사고의 60%+
+  → AD 방어 = 가장 중요한 보안 투자
+```
+
+### 핵심 방어 전략
+
+```
+계층적 AD 방어:
+
+1. Tiered Administration (계층적 관리)
+   Tier 0: DC, PKI (최고 권한, 인터넷 차단)
+   Tier 1: 서버 관리자
+   Tier 2: 워크스테이션 관리자
+   → 계층 간 자격증명 공유 금지
+
+2. Protected Users 그룹
+   NTLM 인증 차단, 위임 불가
+   → Pass-the-Hash, Kerberoasting 방어
+
+3. LAPS (Local Administrator Password Solution)
+   각 PC마다 다른 로컬 관리자 비밀번호
+   → 자격증명 재사용 공격 차단
+
+주요 탐지 이벤트 ID:
+  4769: Kerberos TGS 요청 → Kerberoasting
+  4625: 로그인 실패 → 무차별 대입
+  4624 + 로그온유형3: PtH
+  4662 + DS-Replication-Get-Changes: DCSync
+```
+
+### 필요한 도구
+- **BloodHound**: AD 공격 경로 시각화 → 취약 경로 제거
+- **PingCastle**: AD 보안 상태 스코어링
+- **Microsoft Defender for Identity**: AD 공격 실시간 탐지
+
+### 기초 실습 예제
+```python
+# AD 탐지 이벤트 분석 스크립트 (Windows 이벤트 로그)
+import re
+from datetime import datetime
+
+# 탐지할 이벤트 ID 및 설명
+AD_ATTACK_EVENTS = {
+    "4769": "Kerberos TGS 요청 — Kerberoasting 가능성",
+    "4625": "로그인 실패 — 무차별 대입 가능성",
+    "4662": "AD 객체 접근 — DCSync 가능성",
+    "4624": "로그인 성공 — 로그온 유형 확인 필요",
+    "4648": "명시적 자격증명 사용 — Pass-the-Hash 가능성",
+}
+
+def analyze_event(event_id: str, details: str) -> str | None:
+    if event_id in AD_ATTACK_EVENTS:
+        return f"[경고] EventID {event_id}: {AD_ATTACK_EVENTS[event_id]}"
+    return None
+
+# 이벤트 분석 예시
+events = [("4769", "SPN: MSSQLSvc/server"), ("4625", "사용자: admin")]
+for eid, detail in events:
+    result = analyze_event(eid, detail)
+    if result:
+        print(result)
+```
 
 ---
 

@@ -6,6 +6,175 @@
 
 # 05 — 위협 헌팅 프로그램 운영
 
+## 0. 초보자를 위한 개념 이해
+
+### 위협 헌팅 프로그램이란?
+
+위협 헌팅 프로그램은 일회성 헌팅 활동을 조직적·반복적·측정 가능한 보안 운영 체계로 발전시킨 것이다. 헌팅 팀 구성, 인텔리전스 수집 체계, 가설 관리 프로세스, 결과 피드백 루프, KPI 측정까지 모든 요소를 포함한다. 소규모 조직부터 엔터프라이즈까지 규모에 맞는 3가지 모델(위임형/내장형/집중형)이 있으며, 목표는 탐지되지 않고 잠복하는 공격자를 조직적으로 찾아내는 지속적인 역량을 구축하는 것이다.
+
+**왜 배우는가:**
+```
+[프로그램 없이 헌팅만 할 때의 문제]
+
+  개인 헌팅 활동:
+  A 분석가가 흥미로운 헌팅 → 뭔가 발견
+  → 문서화 없음 → A 퇴직 → 지식 사라짐
+  → 같은 공격 다시 탐지 안 됨
+
+  헌팅 프로그램:
+  가설 라이브러리 관리
+       ↓
+  정기 헌팅 캠페인 스케줄
+       ↓
+  발견 → 탐지 규칙 자동 추가
+       ↓
+  성과 KPI 측정 (Dwell time, 헌팅 수)
+       ↓
+  경영진 보고 → 예산·인력 확보
+
+  [프로그램 성숙도 지표]
+  초기: "필요할 때 헌팅"
+  발전: "주 1회 정기 헌팅 캠페인"
+  최적화: "인텔리전스 기반 자동화 헌팅"
+```
+
+### 핵심 개념 정리
+
+```
+[위협 헌팅 프로그램 3가지 모델]
+
+1. 위임형 (Delegated Model)
+   - 기존 SOC 분석가 + 헌팅 업무 추가
+   - 소규모 조직에 적합
+   - 장점: 비용 낮음
+   - 단점: 헌팅에 집중하기 어려움
+
+2. 내장형 (Embedded Model)
+   - 전담 헌팅 분석가를 SOC 팀 내 배치
+   - 중규모 조직에 적합
+   - 장점: SOC와 긴밀한 협력
+   - 단점: SOC 업무에 끌려다닐 수 있음
+
+3. 집중형 (Concentrated Model)
+   - 독립적인 전담 헌팅 팀
+   - 대기업/보안 기업에 적합
+   - 장점: 헌팅에 100% 집중
+   - 단점: 비용 높음, 고급 인력 필요
+
+[헌팅 프로그램 KPI]
+  정량적: 헌팅 캠페인 수, 발견된 위협 수
+  효율성: 캠페인당 소요 시간, 자동화 비율
+  영향도: Dwell time 감소, 탐지 규칙 추가 수
+  성숙도: SQRRL 성숙도 레벨 (0~4)
+```
+
+### 필요한 도구 및 환경
+- **JIRA / ServiceNow**: 헌팅 캠페인 티켓 관리
+- **Confluence / Wiki**: 헌팅 가설 라이브러리 문서화
+- **Git 저장소**: Sigma 규칙, 헌팅 쿼리 버전 관리
+- **Jupyter Notebook**: 데이터 분석 및 가설 검증 문서화
+
+### 기초 실습 예제
+```python
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+
+class HuntStatus(Enum):
+    PLANNED = "계획됨"
+    IN_PROGRESS = "진행 중"
+    COMPLETED = "완료"
+    FALSE_POSITIVE = "오탐"
+
+@dataclass
+class HuntingCampaign:
+    """위협 헌팅 캠페인 레코드."""
+    id: str
+    title: str
+    mitre_techniques: list[str]
+    analyst: str
+    status: HuntStatus = HuntStatus.PLANNED
+    findings: list[str] = field(default_factory=list)
+    new_rules: int = 0
+    started_at: str = ""
+    completed_at: str = ""
+
+class HuntingProgramManager:
+    """위협 헌팅 프로그램 관리 시스템."""
+
+    def __init__(self):
+        self.campaigns: list[HuntingCampaign] = []
+
+    def create_campaign(
+        self,
+        title: str,
+        techniques: list[str],
+        analyst: str
+    ) -> HuntingCampaign:
+        campaign_id = f"HUNT-{len(self.campaigns) + 1:03d}"
+        campaign = HuntingCampaign(
+            id=campaign_id,
+            title=title,
+            mitre_techniques=techniques,
+            analyst=analyst
+        )
+        self.campaigns.append(campaign)
+        print(f"[+] 캠페인 생성: {campaign_id} - {title}")
+        return campaign
+
+    def start_campaign(self, campaign_id: str) -> None:
+        campaign = self._get_campaign(campaign_id)
+        if campaign:
+            campaign.status = HuntStatus.IN_PROGRESS
+            campaign.started_at = datetime.now().isoformat()
+            print(f"[*] {campaign_id} 시작: {campaign.started_at}")
+
+    def complete_campaign(
+        self,
+        campaign_id: str,
+        findings: list[str],
+        new_rules: int = 0
+    ) -> None:
+        campaign = self._get_campaign(campaign_id)
+        if campaign:
+            campaign.status = HuntStatus.COMPLETED
+            campaign.findings = findings
+            campaign.new_rules = new_rules
+            campaign.completed_at = datetime.now().isoformat()
+            print(f"[✓] {campaign_id} 완료: 발견 {len(findings)}건, 신규 규칙 {new_rules}개")
+
+    def generate_report(self) -> None:
+        total = len(self.campaigns)
+        completed = sum(1 for c in self.campaigns if c.status == HuntStatus.COMPLETED)
+        total_findings = sum(len(c.findings) for c in self.campaigns)
+        total_rules = sum(c.new_rules for c in self.campaigns)
+
+        print(f"\n[*] 위협 헌팅 프로그램 현황 보고")
+        print(f"    총 캠페인: {total}개 (완료: {completed}개)")
+        print(f"    총 발견: {total_findings}건")
+        print(f"    신규 탐지 규칙: {total_rules}개")
+
+    def _get_campaign(self, campaign_id: str):
+        for c in self.campaigns:
+            if c.id == campaign_id:
+                return c
+        print(f"[-] {campaign_id} 없음")
+        return None
+
+# 사용 예시
+manager = HuntingProgramManager()
+c1 = manager.create_campaign(
+    "PowerShell 인코딩 명령 헌팅",
+    ["T1059.001"],
+    "analyst@company.com"
+)
+manager.start_campaign(c1.id)
+manager.complete_campaign(c1.id, ["의심 PowerShell 실행 3건 발견"], new_rules=2)
+manager.generate_report()
+```
+
+---
+
 ## 목차
 1. 위협 헌팅 프로그램 수립 및 거버넌스
 2. 헌팅 인텔리전스 수집 체계

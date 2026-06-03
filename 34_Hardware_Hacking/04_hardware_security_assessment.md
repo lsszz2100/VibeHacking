@@ -6,6 +6,104 @@
 
 # 하드웨어 보안 평가 — 디바이스 감사·물리 보안·탬퍼 방지
 
+## 0. 초보자를 위한 개념 이해
+
+### 하드웨어 보안 평가란?
+
+하드웨어 보안 평가(Hardware Security Assessment)는 IoT 기기, 임베디드 시스템, 산업용 장치 등의 물리적 하드웨어를 체계적으로 분석해 보안 취약점을 찾고 개선 방안을 제시하는 전문 보안 활동이다. 단순히 기기를 분해하는 것이 아니라 위협 모델링, 인터페이스 분석, 펌웨어 추출, 암호화 검증, 탬퍼 저항성 평가 등을 종합적으로 수행한다. 소프트웨어 패치로 고칠 수 없는 하드웨어 수준의 취약점을 찾아내는 것이 핵심 가치다.
+
+**왜 배우는가:**
+```
+[하드웨어 보안 평가가 필요한 이유]
+
+  네트워크 방화벽  →  우회 가능 (물리 접근 시)
+  소프트웨어 패치  →  하드웨어 결함은 패치 불가
+  원격 모니터링   →  물리 공격은 로그 없음
+
+  [실제 취약 사례]
+  공유기 → UART 포트 개방 → 부트로더 인터럽트 → root 쉘
+  스마트 잠금장치 → JTAG → 펌웨어 추출 → 마스터 PIN 발견
+  의료기기 → 디버그 포트 → 환자 데이터 접근
+  ATM → 물리 포트 → 악성 코드 설치
+```
+
+### 핵심 개념 정리
+
+```
+[하드웨어 보안 평가 5단계 프레임워크]
+
+1. 정보 수집 (Reconnaissance)
+   - FCC ID 조회 → 내부 사진 공개 확인
+   - 제조사 데이터시트, 특허 문서 검색
+   - 기존 CVE 및 보안 연구 논문 조사
+
+2. 비파괴 분석 (Non-destructive Analysis)
+   - PCB 시각 검사 및 칩 식별
+   - 디버그 포트(UART/JTAG) 위치 탐색
+   - 전자기 방사 측정 (EM 분석)
+
+3. 인터페이스 공략 (Interface Exploitation)
+   - UART: 부트 로그 수집, 인터럽트 시도
+   - JTAG: 메모리 덤프, 실행 중단
+   - SPI/I2C: 플래시 직접 읽기
+
+4. 펌웨어 분석 (Firmware Analysis)
+   - binwalk로 파일시스템 추출
+   - 하드코딩 자격증명, 취약 라이브러리 검색
+
+5. 보고 및 개선 (Reporting)
+   - CVSS 점수 부여, 영향도 평가
+   - 탬퍼 저항, 보안 부팅 등 대응책 제안
+```
+
+### 필요한 도구 및 환경
+- **하드웨어**: USB-UART 어댑터, JTAG 디버거(J-Link, Bus Pirate), SPI 클립
+- **소프트웨어**: binwalk, OpenOCD, flashrom, Ghidra
+- **측정 장비**: 멀티미터, 논리 분석기, 오실로스코프
+
+### 기초 실습 예제
+```python
+import subprocess
+import json
+from pathlib import Path
+
+def hardware_recon_checklist(device_name: str, fcc_id: str = None):
+    """하드웨어 보안 평가 초기 정보 수집 체크리스트를 생성한다."""
+
+    checklist = {
+        "대상 기기": device_name,
+        "FCC ID": fcc_id or "미확인",
+        "수집 항목": {
+            "데이터시트": False,
+            "FCC 내부 사진": False,
+            "기존 CVE 조회": False,
+            "보안 연구 논문": False,
+            "펌웨어 다운로드": False,
+        },
+        "인터페이스 탐색": {
+            "UART 포트": "미확인",
+            "JTAG/SWD 포트": "미확인",
+            "SPI 플래시": "미확인",
+            "USB 포트": "미확인",
+            "네트워크 인터페이스": "미확인",
+        },
+        "예상 공격 표면": []
+    }
+
+    if fcc_id:
+        print(f"[*] FCC ID 조회: https://fccid.io/{fcc_id}")
+        print("    → 내부 사진, 테스트 보고서 공개 여부 확인")
+
+    print(f"\n[*] {device_name} 평가 체크리스트:")
+    print(json.dumps(checklist, ensure_ascii=False, indent=2))
+    return checklist
+
+# 사용 예시
+# checklist = hardware_recon_checklist("ASUS RT-AX88U 공유기", "MSQRTAX88U")
+```
+
+---
+
 ## 이것이 무엇인가?
 
 하드웨어 보안 평가(Hardware Security Assessment)란 임베디드 기기, IoT 디바이스, 산업용 컨트롤러 등의 **물리적 하드웨어를 직접 분석하여 취약점을 찾는** 작업이다.

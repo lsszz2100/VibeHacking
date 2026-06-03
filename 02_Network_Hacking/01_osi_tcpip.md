@@ -6,6 +6,98 @@
 
 # OSI 7계층 & TCP/IP — 네트워크 해킹의 기초
 
+## 0. 초보자를 위한 개념 이해
+
+### OSI 7계층과 TCP/IP란?
+
+OSI 7계층은 네트워크 통신이 어떻게 이루어지는지를 7단계로 나눠 설명하는 표준 모델입니다. 각 계층이 무엇을 담당하는지 이해하면, 해킹 공격이 어느 단계에서 발생하는지 정확히 파악할 수 있습니다.
+
+**왜 배우는가:**
+```
+네트워크 공격은 특정 계층을 노린다:
+
+  7계층 (응용)  → SQL Injection, XSS, HTTP 공격
+  4계층 (전송)  → SYN Flood, 포트 스캔
+  3계층 (네트워크) → IP 스푸핑, ICMP Flood
+  2계층 (데이터링크) → ARP 스푸핑, MAC Flood
+
+방어 측 입장에서:
+  어느 계층의 공격인지 파악 → 적절한 방어 도구 선택
+  (2계층 → 스위치 설정 / 7계층 → WAF 설치)
+```
+
+### 핵심 개념 정리
+
+```
+OSI 7계층 vs TCP/IP 4계층 대응:
+
+OSI 7계층            TCP/IP 4계층       주요 프로토콜
+─────────────────────────────────────────────────────
+7. 응용 계층          ┐
+6. 표현 계층          ├─ 응용 계층       HTTP, FTP, DNS, SSH
+5. 세션 계층          ┘
+4. 전송 계층          ── 전송 계층       TCP, UDP
+3. 네트워크 계층      ── 인터넷 계층     IP, ICMP, ARP
+2. 데이터링크 계층    ┐
+1. 물리 계층          ┘─ 네트워크 접근   Ethernet, Wi-Fi
+
+TCP 3-Way Handshake (연결 수립):
+  클라이언트 → SYN      → 서버
+  클라이언트 ← SYN+ACK  ← 서버
+  클라이언트 → ACK      → 서버
+  → 연결 완료 후 데이터 전송
+
+포트 번호 중요 사례:
+  80  = HTTP    443 = HTTPS   22 = SSH
+  21  = FTP     23  = Telnet  3389 = RDP (원격 데스크톱)
+  445 = SMB (랜섬웨어가 주로 공격)
+```
+
+### 필요한 도구 및 환경
+- **패킷 캡처 도구**: Wireshark(GUI), tcpdump(CLI) — 네트워크 트래픽 직접 확인
+- **포트 스캐너**: nmap — 대상 시스템의 열린 포트와 서비스 탐지
+- **실습 환경**: 가상 네트워크(NAT 또는 Host-Only) 구성으로 안전하게 실습
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""TCP 포트 스캐너 — OSI 4계층(전송 계층) 동작 원리 이해."""
+import socket
+import concurrent.futures
+from typing import list
+
+def scan_port(host: str, port: int, timeout: float = 1.0) -> tuple[int, bool]:
+    """단일 포트 스캔 — TCP 3-Way Handshake 시도."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(timeout)
+            # connect_ex: 연결 시도 → 0이면 성공(포트 열림)
+            result = sock.connect_ex((host, port))
+            return port, result == 0
+    except (socket.timeout, OSError):
+        return port, False
+
+def scan_range(host: str, start: int = 1, end: int = 1024) -> list[int]:
+    """멀티스레드로 포트 범위 스캔."""
+    open_ports: list[int] = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        futures = {executor.submit(scan_port, host, p): p for p in range(start, end + 1)}
+        for future in concurrent.futures.as_completed(futures):
+            port, is_open = future.result()
+            if is_open:
+                open_ports.append(port)
+                print(f"  [+] {host}:{port} OPEN")
+    return sorted(open_ports)
+
+if __name__ == "__main__":
+    target = "127.0.0.1"
+    print(f"[*] {target} 스캔 시작 (1-1024)")
+    open_ports = scan_range(target)
+    print(f"[*] 열린 포트 {len(open_ports)}개: {open_ports}")
+```
+
+---
+
 ## 1. OSI 7계층 모델
 
 

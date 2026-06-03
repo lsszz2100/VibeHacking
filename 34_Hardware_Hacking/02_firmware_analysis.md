@@ -6,6 +6,120 @@
 
 # 02 — Firmware Analysis
 
+## 0. 초보자를 위한 개념 이해
+
+### 펌웨어 분석이란?
+
+펌웨어(Firmware)는 하드웨어 장치에 내장된 소프트웨어로, 공유기·IP 카메라·스마트 가전 등 임베디드 기기의 운영체제와 애플리케이션이 담겨 있다. 펌웨어 분석(Firmware Analysis)은 이 바이너리 파일을 추출해 구조를 파악하고, 취약한 설정·하드코딩된 비밀번호·취약한 라이브러리 버전 등을 찾아내는 과정이다. 소프트웨어 분석과 달리 소스 코드가 없는 상태에서 바이너리만으로 분석해야 한다.
+
+**왜 배우는가:**
+```
+[펌웨어 분석으로 발견 가능한 취약점]
+
+ 펌웨어 바이너리 (.bin/.img)
+        ↓
+  binwalk로 파일시스템 추출
+        ↓
+ ┌──────────────────────────┐
+ │ 발견 가능한 취약점 목록  │
+ │  - 하드코딩된 비밀번호   │
+ │  - 비활성화된 텔넷 서비스│
+ │  - 오래된 OpenSSL 버전   │
+ │  - 디버그 계정 (admin/  │
+ │    admin, root/없음 등)  │
+ │  - 개인키·인증서         │
+ │  - 취약한 웹 인터페이스  │
+ └──────────────────────────┘
+```
+
+### 핵심 개념 정리
+
+```
+[펌웨어 분석 주요 단계]
+
+1. 획득 (Acquisition)
+   - UART/JTAG로 실행 중인 기기에서 덤프
+   - SPI 클립으로 플래시 칩 직접 읽기
+   - 제조사 업데이트 서버에서 다운로드
+   - MITM으로 OTA 업데이트 가로채기
+
+2. 식별 (Identification)
+   - file, binwalk -B 로 포맷 확인
+   - 엔트로피 분석: 높음=암호화/압축, 낮음=평문
+
+3. 추출 (Extraction)
+   - binwalk -e : 자동 추출
+   - unsquashfs : SquashFS 파일시스템 추출
+   - jefferson : JFFS2 파일시스템 추출
+
+4. 분석 (Analysis)
+   - grep -r "password" : 하드코딩 자격증명 검색
+   - strings : 바이너리 내 문자열 추출
+   - readelf / objdump : ELF 바이너리 구조 분석
+
+5. 에뮬레이션 (Emulation)
+   - QEMU : ARM/MIPS 바이너리 실행
+   - firmadyne/EMBA : 자동화 분석 프레임워크
+```
+
+### 필요한 도구 및 환경
+- **binwalk**: 펌웨어 서명 스캔 및 추출 (`pip install binwalk`)
+- **squashfs-tools**: `unsquashfs` 명령어로 파일시스템 추출
+- **QEMU**: ARM/MIPS/MIPS64 아키텍처 에뮬레이션
+- **firmwalker**: 펌웨어 내 민감 파일 자동 검색 스크립트
+- **Ghidra / radare2**: 역어셈블/역컴파일 분석
+
+### 기초 실습 예제
+```python
+import subprocess
+import os
+from pathlib import Path
+
+def analyze_firmware(firmware_path: str, output_dir: str = "./extracted"):
+    """펌웨어 파일의 기본 정보를 분석하고 추출을 시도한다."""
+
+    fw = Path(firmware_path)
+    if not fw.exists():
+        print(f"[-] 파일 없음: {firmware_path}")
+        return
+
+    # 1단계: 파일 기본 정보
+    print(f"[*] 파일 크기: {fw.stat().st_size:,} bytes")
+
+    # 2단계: binwalk 서명 스캔
+    print("\n[*] binwalk 서명 스캔 중...")
+    result = subprocess.run(
+        ['binwalk', str(fw)],
+        capture_output=True, text=True
+    )
+    print(result.stdout)
+
+    # 3단계: 엔트로피 분석
+    print("[*] 엔트로피 분석 중 (암호화/압축 구간 탐지)...")
+    subprocess.run(['binwalk', '-E', str(fw)])
+
+    # 4단계: 자동 추출 (주의: 용량 클 수 있음)
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"\n[*] {output_dir} 에 추출 시도...")
+    subprocess.run(['binwalk', '-e', '-C', output_dir, str(fw)])
+
+    # 5단계: 하드코딩 자격증명 검색
+    print("\n[*] 민감 키워드 검색...")
+    keywords = ['password', 'passwd', 'secret', 'admin', 'root', 'token']
+    for kw in keywords:
+        result = subprocess.run(
+            ['grep', '-r', '-i', '--include=*', kw, output_dir],
+            capture_output=True, text=True
+        )
+        if result.stdout:
+            print(f"[!] '{kw}' 발견:\n{result.stdout[:200]}")
+
+# 사용 예시 (합법적으로 취득한 펌웨어만 사용)
+# analyze_firmware("router_firmware.bin")
+```
+
+---
+
 ## 1. binwalk 심화 분석
 
 ### 1.1 서명 스캔 및 엔트로피 분석

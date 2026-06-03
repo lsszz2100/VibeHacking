@@ -6,6 +6,87 @@
 
 # 크리덴셜 스터핑 및 패스워드 분석 자동화
 
+## 0. 초보자를 위한 개념 이해
+
+### 크리덴셜 스터핑이란?
+
+크리덴셜 스터핑(Credential Stuffing)은 다른 서비스에서 유출된 아이디/비밀번호 쌍을 자동으로 다른 사이트에 대입하는 공격이다. 사용자들이 여러 사이트에서 같은 비밀번호를 재사용하는 습관을 악용한다. 예를 들어 게임 사이트에서 유출된 계정 정보로 은행 사이트에 로그인을 시도하는 것이다.
+
+**왜 배우는가:**
+```
+크리덴셜 스터핑 공격 흐름
+
+[유출 데이터베이스] → [id:pw 쌍 수백만 개]
+         ↓
+[자동화 도구]       → 초당 수십~수백 개 시도
+         ↓
+[다른 서비스들]     → Netflix, 이메일, 쇼핑몰, 은행...
+         ↓
+[성공한 계정]       → 사기, 정보 탈취, 계정 판매
+
+방어 담당자가 배워야 할 이유:
+  - 어떻게 탐지할 것인가 (속도 제한, 비정상 로그인 패턴)
+  - 어떻게 차단할 것인가 (MFA, CAPTCHA, IP 차단)
+  - 유출된 비밀번호를 즉시 확인하는 방법
+```
+
+### 핵심 개념 정리
+
+```
+크리덴셜 스터핑 vs 브루트포스
+
+크리덴셜 스터핑:
+  - 유출된 실제 id:pw 쌍 사용
+  - 서비스마다 다른 사이트에 적용
+  - 성공률: 0.1~2% (그래도 수백만 개면 수천~수만 계정)
+  - 탐지: 다양한 IP에서 정상적인 속도로 시도 → 탐지 어려움
+
+브루트포스:
+  - 모든 조합을 시도
+  - 같은 계정 반복 시도
+  - 성공률: 비밀번호 복잡도에 의존
+  - 탐지: 같은 계정 반복 실패 → 상대적으로 탐지 쉬움
+```
+
+### 필요한 도구 및 환경
+- **HaveIBeenPwned API**: 유출 여부 확인 (합법적, 안전)
+- **Python 3.10+**: 자동화 스크립트 작성
+- **테스트 환경**: 반드시 자신이 소유한 시스템에서만 실습
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""HaveIBeenPwned — 비밀번호 유출 여부 안전하게 확인 (k-익명성 방식)"""
+import hashlib
+import urllib.request
+
+def check_pwned(password: str) -> int:
+    """비밀번호 유출 횟수 반환 (0이면 안전, 양수면 유출됨)
+    
+    k-익명성: 해시 앞 5자리만 API에 전송 → 실제 비밀번호 노출 안 됨
+    """
+    sha1 = hashlib.sha1(password.encode()).hexdigest().upper()
+    prefix, suffix = sha1[:5], sha1[5:]
+
+    url = f"https://api.pwnedpasswords.com/range/{prefix}"
+    with urllib.request.urlopen(url) as resp:
+        lines = resp.read().decode().splitlines()
+
+    for line in lines:
+        h, count = line.split(":")
+        if h == suffix:
+            return int(count)
+    return 0
+
+# 테스트
+for pw in ["password", "password123", "xK9#mP2$vL8@"]:
+    count = check_pwned(pw)
+    status = f"유출 {count:,}회" if count else "안전"
+    print(f"  {pw!r:25s} → {status}")
+```
+
+---
+
 ## 개요
 
 크리덴셜 스터핑(Credential Stuffing)은 유출된 아이디/패스워드 조합을 다른 서비스에 대입하는 공격으로, 사용자가 여러 사이트에서 동일한 패스워드를 재사용하는 습관을 악용한다.

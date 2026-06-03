@@ -6,6 +6,109 @@
 
 # 57-2. 양자 키 분배(QKD): 원리, 프로토콜, 실제 구현
 
+## 0. 초보자를 위한 개념 이해
+
+### 양자 키 분배(QKD)란?
+
+양자 키 분배는 양자역학의 법칙을 이용해 두 사람이 비밀 키를 안전하게 공유하는 방법이다. 핵심은 누군가 중간에서 도청하면 양자 상태가 물리적으로 변해 반드시 탐지된다는 점이다. 기존 암호 방식이 "해독이 어렵다"는 수학적 복잡도에 의존한다면, QKD는 물리 법칙 자체가 보안을 보장하는 이론적으로 완벽한 방식이다.
+
+**왜 배우는가:**
+```
+[기존 키 교환 vs QKD 비교]
+
+기존 방식 (Diffie-Hellman):
+Alice → [수학 문제로 보호된 공개값] → Bob
+         ↑
+     Eve도 볼 수 있음 (양자 컴퓨터로 해독 가능)
+
+QKD (BB84):
+Alice → [광자 편광 상태로 큐비트 전송] → Bob
+               ↑
+   Eve가 측정하면 양자 상태 변경 → Alice·Bob이 오류율로 탐지
+   → 도청 시도 자체가 물리적으로 드러남
+
+보안 근거: 수학적 어려움(X) → 물리 법칙(O)
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- QKD(Quantum Key Distribution): 양자 채널로 암호 키를 분배하는 프로토콜
+- BB84: 최초의 QKD 프로토콜 (Bennett·Brassard, 1984)
+- 큐비트 기저(Basis): 양자 상태를 측정하는 방향 (직선 기저 +, 대각 기저 ×)
+- 노-클로닝 정리: 미지의 양자 상태는 완벽하게 복사 불가 → 도청 탐지 근거
+- 오류율(QBER): 키 비교 시 불일치 비율 - 도청 시 오류율이 증가
+- 프라이버시 증폭(Privacy Amplification): 도청자가 얻은 부분 정보를 제거하는 후처리
+- 정보-이론적 보안: 계산 능력과 무관하게 수학적으로 증명된 완벽한 보안
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: random, numpy 라이브러리
+- **Qiskit**: 양자 회로로 BB84 시뮬레이션
+- **수학 배경**: 기초 확률론 (이해에 도움)
+- **선수 지식**: 01_quantum_computing_basics.md 학습 권장
+
+### 기초 실습 예제
+```python
+import random
+
+def bb84_simulation(num_bits: int = 20):
+    """
+    BB84 QKD 프로토콜 시뮬레이션
+    Alice와 Bob이 양자 채널로 비밀 키를 공유하는 과정
+    """
+    # ── 1단계: Alice가 무작위 비트와 기저 선택 ──
+    alice_bits   = [random.randint(0, 1) for _ in range(num_bits)]
+    alice_bases  = [random.choice(['+', 'x']) for _ in range(num_bits)]
+    # '+' = 직선 기저 (0°/90°), 'x' = 대각 기저 (45°/135°)
+
+    # ── 2단계: Bob도 무작위로 측정 기저 선택 ──
+    bob_bases = [random.choice(['+', 'x']) for _ in range(num_bits)]
+
+    # ── 3단계: Bob의 측정 결과 ──
+    # 기저가 일치하면 Alice와 같은 값, 불일치하면 무작위
+    bob_results = []
+    for i in range(num_bits):
+        if alice_bases[i] == bob_bases[i]:
+            bob_results.append(alice_bits[i])   # 기저 일치: 올바른 측정
+        else:
+            bob_results.append(random.randint(0, 1))  # 기저 불일치: 랜덤
+
+    # ── 4단계: 공개 채널로 기저 비교 (비트값은 공개 안 함) ──
+    matching_indices = [i for i in range(num_bits)
+                        if alice_bases[i] == bob_bases[i]]
+
+    # ── 5단계: 기저가 일치한 비트만 키로 사용 ──
+    alice_key = [alice_bits[i] for i in matching_indices]
+    bob_key   = [bob_results[i] for i in matching_indices]
+
+    # ── 6단계: 도청 탐지 (일부 비트를 공개 비교) ──
+    check_size = max(1, len(alice_key) // 3)
+    check_indices = random.sample(range(len(alice_key)), check_size)
+    errors = sum(alice_key[i] != bob_key[i] for i in check_indices)
+    qber = errors / check_size  # 양자 비트 오류율
+
+    print(f"전송된 큐비트 수: {num_bits}")
+    print(f"기저 일치 비트 수: {len(matching_indices)}")
+    print(f"최종 키 길이: {len(alice_key) - check_size}비트")
+    print(f"QBER (오류율): {qber:.1%}")
+
+    if qber > 0.11:  # 11% 초과 시 도청 의심
+        print("경고: 도청 의심! 키 폐기 필요.")
+    else:
+        final_key = [alice_key[i] for i in range(len(alice_key))
+                     if i not in check_indices]
+        print(f"안전한 키 합의 성공: {''.join(map(str, final_key))}")
+    return qber
+
+# 도청 없는 정상 시나리오
+print("=== 정상 QKD ===")
+bb84_simulation(40)
+```
+
+---
+
 ## 개요
 
 양자 키 분배(Quantum Key Distribution, QKD)는 양자역학의 법칙을 이용하여 도청이 물리적으로 탐지되는 비밀 키 공유 방식이다. 고전 암호에서 비밀 채널 없이 키를 안전하게 교환하는 것과 달리, QKD는 **정보-이론적 보안(information-theoretic security)** 을 제공한다.

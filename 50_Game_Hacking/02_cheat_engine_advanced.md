@@ -6,7 +6,87 @@
 
 # 02. Cheat Engine 고급 활용 (Advanced Cheat Engine)
 
-Cheat Engine의 Lua 스크립팅, 자동 어셈블러, 구조체 분석 기능을 활용한 고급 치트 제작 방법을 다룬다. CTF 게임 해킹 챌린지 및 보안 연구 목적으로 활용한다.
+## 0. 초보자를 위한 개념 이해
+
+### Cheat Engine이란?
+
+**Cheat Engine**은 윈도우 프로세스 메모리를 스캔·수정하는 오픈소스 도구입니다. 게임 메모리 조작에 주로 사용되지만 보안 연구, CTF, 소프트웨어 분석에도 활용됩니다.
+
+> 📌 개인 오프라인 게임 실습, CTF, 보안 연구 목적으로만 사용합니다.
+
+**주요 기능:**
+```
+Cheat Engine 핵심 기능:
+
+메모리 스캔:
+  특정 값 검색 → 변화 추적 → 주소 특정
+
+어셈블리 인젝션:
+  특정 코드 주소에 사용자 어셈블리 삽입
+  예: 데미지 함수 수정 → 데미지 * 999
+
+Lua 스크립팅:
+  반복 작업 자동화 (자동 아이템 수거 등)
+  UI 커스텀 치트 메뉴 생성
+
+포인터 스캔:
+  ASLR로 주소 변경돼도 포인터 체인으로 추적
+  베이스 주소 + 고정 오프셋 = 항상 유효
+```
+
+### 핵심 개념 정리
+
+```
+포인터 체인 (Pointer Chain):
+
+[BaseModule + 0x5A3C10]
+        ↓ 역참조
+[주소] + 0x58
+        ↓ 역참조
+[주소] + 0x10
+        ↓
+[체력 값]
+
+→ 게임 재시작해도 BaseModule 주소만 다시 찾으면
+  동일한 오프셋으로 체력 주소 추적 가능
+
+자동 어셈블러 (Auto Assembler):
+  alloc(myCode, 256)    ; 새 메모리 공간 할당
+  label(returnHere)     ; 레이블 정의
+  [원래 주소]:
+    jmp myCode          ; 내 코드로 점프
+  myCode:
+    mov [rdi+0x58], 9999 ; 체력 변경
+    jmp returnHere       ; 원래 코드로 복귀
+```
+
+### 필요한 도구
+- **Cheat Engine 7.5+**: 메인 도구 (cheatengine.org)
+- **x64dbg**: 함께 사용하는 디버거
+- **ReClass.NET**: 메모리 구조 분석
+
+### 기초 실습 예제
+```lua
+-- Cheat Engine Lua 스크립트 예시
+-- 체력 자동 보충
+
+local healthAddress = 0x12345678  -- 실제 주소로 변경
+
+-- 타이머로 주기적 실행
+local timer = createTimer(nil, false)
+timer.Interval = 1000  -- 1초마다
+
+timer.OnTimer = function()
+    local currentHP = readInteger(healthAddress)
+    if currentHP < 50 then
+        writeInteger(healthAddress, 100)
+        print("체력 보충: " .. currentHP .. " → 100")
+    end
+end
+
+timer.Enabled = true
+print("체력 자동 보충 시작됨")
+```
 
 ---
 

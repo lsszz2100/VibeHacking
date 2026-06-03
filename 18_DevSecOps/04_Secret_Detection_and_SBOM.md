@@ -6,6 +6,144 @@
 
 # 시크릿 탐지 및 SBOM(소프트웨어 자재 명세)
 
+## 0. 초보자를 위한 개념 이해
+
+### 시크릿 탐지와 SBOM이란?
+
+시크릿 탐지는 소스코드, git 히스토리, 컨테이너 이미지에 숨겨진 API 키, 패스워드, 인증서 등을 자동으로 찾는 활동입니다. SBOM(Software Bill of Materials)은 소프트웨어를 구성하는 모든 의존성 컴포넌트 목록으로, 신규 CVE 발표 시 영향 받는 시스템을 즉시 파악할 수 있게 합니다. 두 기술 모두 현대 DevSecOps의 필수 자동화 요소입니다.
+
+**왜 배우는가:**
+```
+시크릿 노출이 발생하는 경로:
+
+  1. API 키를 코드에 직접 작성 → git push → GitHub 공개
+     (GitHub Secret Scanning이 자동 탐지)
+  2. .env 파일을 .gitignore에 추가 안 함 → 커밋
+  3. Docker 빌드 시 ARG/ENV로 시크릿 전달 → 이미지 레이어 노출
+  4. CI/CD 로그에 echo $SECRET 출력
+
+  SBOM의 가치:
+    Log4Shell 발표(2021년 12월) → 사흘 내 영향 시스템 파악?
+    SBOM 없으면 → 수 주 동안 모든 의존성 수동 확인
+    SBOM 있으면 → log4j 사용 서비스 5분 내 목록화
+```
+
+### 핵심 개념 정리
+
+```
+시크릿 탐지 도구 비교:
+
+  TruffleHog  — git 히스토리 전체 스캔 (verified 모드)
+  Gitleaks    — pre-commit hook 통합 용이
+  detect-secrets — 팀 기준 시크릿 화이트리스트 관리
+
+시크릿 안전한 관리:
+  ❌ 코드: AWS_KEY = "AKIAXXX..."
+  ❌ .env 파일 커밋
+  ✅ 환경변수 + .gitignore에 .env 추가
+  ✅ AWS Secrets Manager / HashiCorp Vault
+  ✅ GitHub Secrets / CI/CD 비밀 저장소
+
+SBOM 형식:
+  SPDX    — Linux Foundation 표준
+  CycloneDX — OWASP 추진 표준
+  Syft    — Anchore 오픈소스 SBOM 생성기
+  Trivy   — 취약점 스캔 + SBOM 동시 생성
+```
+
+### 필요한 도구 및 환경
+- **gitleaks**: git 저장소 시크릿 자동 탐지 도구
+- **TruffleHog v3**: 시크릿 탐지 + 실제 유효성 검증
+- **Syft**: 컨테이너/파일시스템 SBOM 생성 도구
+- **Grype**: SBOM 기반 CVE 취약점 스캐너
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""시크릿 탐지 — 코드에서 하드코딩된 자격증명 패턴 스캔."""
+
+import re
+from dataclasses import dataclass
+from pathlib import Path
+
+
+@dataclass
+class SecretFinding:
+    file_path: str
+    line_number: int
+    secret_type: str
+    masked_value: str
+    is_likely_real: bool
+
+
+# 시크릿 탐지 패턴 (엔트로피 기반은 생략, 패턴 기반만)
+SECRET_PATTERNS: list[dict] = [
+    {
+        "type": "AWS Access Key",
+        "pattern": r"AKIA[0-9A-Z]{16}",
+    },
+    {
+        "type": "GitHub Token",
+        "pattern": r"gh[ps]_[A-Za-z0-9]{36}",
+    },
+    {
+        "type": "Generic API Key",
+        "pattern": r'(?i)(api[_-]?key|apikey)\s*[=:]\s*["\']([A-Za-z0-9_\-]{16,})["\']',
+    },
+    {
+        "type": "Generic Password",
+        "pattern": r'(?i)(password|passwd|pwd)\s*=\s*["\']([^"\']{6,})["\']',
+    },
+]
+
+
+def scan_file_for_secrets(file_path: Path) -> list[SecretFinding]:
+    """파일에서 하드코딩된 시크릿 패턴을 탐지합니다."""
+    findings: list[SecretFinding] = []
+    try:
+        content = file_path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return findings
+
+    lines = content.splitlines()
+    for rule in SECRET_PATTERNS:
+        for match in re.finditer(rule["pattern"], content):
+            line_no = content[:match.start()].count("\n") + 1
+            value = match.group(0)
+            masked = value[:6] + "*" * max(0, len(value) - 6)
+            # 테스트/예제 시크릿 제외
+            is_real = not any(kw in value.lower() for kw in
+                              ["example", "test", "fake", "dummy", "xxxx", "your_"])
+            findings.append(SecretFinding(
+                file_path=str(file_path),
+                line_number=line_no,
+                secret_type=rule["type"],
+                masked_value=masked,
+                is_likely_real=is_real,
+            ))
+    return findings
+
+
+if __name__ == "__main__":
+    import tempfile
+    sample_code = '''
+AWS_ACCESS_KEY = "AKIAXXXXXXXXXXXXXXXXXXX"
+api_key = "sk-prod-abcdefgh12345678abcdefgh12345678"
+password = "MyP@ssw0rd123"
+fake_key = "your_api_key_here"  # 이건 탐지 안 됨
+'''
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+        f.write(sample_code)
+        tmp = Path(f.name)
+    for finding in scan_file_for_secrets(tmp):
+        tag = "[실제 위험]" if finding.is_likely_real else "[낮은 위험]"
+        print(f"{tag} 라인 {finding.line_number}: {finding.secret_type}")
+        print(f"  {finding.masked_value}")
+    tmp.unlink()
+```
+
+---
+
 ## 개요
 
 소스코드와 git 히스토리에 숨겨진 API 키, 패스워드, 인증서는 가장 흔한 보안 사고 원인 중 하나다. SBOM은 소프트웨어에 포함된 모든 컴포넌트를 추적하여 의존성 취약점을 관리한다.

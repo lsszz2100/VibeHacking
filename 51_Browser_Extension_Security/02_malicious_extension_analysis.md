@@ -6,6 +6,83 @@
 
 # 악성 브라우저 확장 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### 악성 브라우저 확장이란?
+
+**악성 브라우저 확장**은 정상적인 도구로 위장하지만 사용자 데이터를 탈취하거나 광고 사기를 수행하는 확장 프로그램입니다. 구글 크롬 스토어에서도 주기적으로 발견·제거됩니다.
+
+**왜 분석해야 하는가:**
+```
+악성 확장의 영향:
+  - 수십만~수백만 명에게 설치됨
+  - 자동으로 업데이트 → 기능 추가 가능
+  - 탐지 어려움: AV가 웹 트래픽 분석 못함
+
+탐지 방법:
+  악성 확장 분석 → 악성 패턴 발견 →
+  기업 보안팀에 차단 정책 배포
+```
+
+### 악성 확장 주요 유형
+
+```
+데이터 탈취:
+  - 세션 쿠키 수집 → 계정 하이재킹
+  - 폼 입력값 수집 → 비밀번호, 카드번호
+  - 자격증명 스틸러
+
+광고 사기:
+  - 사용자 모르게 광고 클릭 → 수익
+  - 검색 결과 조작
+
+C2 통신:
+  - 명령 수신 → 추가 악성 코드 실행
+  - 봇넷 일부로 동작
+
+탐지 회피:
+  - 설치 후 일정 기간 정상 동작
+  - Base64 인코딩으로 코드 숨김
+  - 원격 서버에서 코드 로드
+```
+
+### 필요한 도구
+- **CRX Extractor**: .crx 파일 압축 해제·분석
+- **Chrome 확장 소스 뷰어**: 설치된 확장 소스 확인
+- **Burp Suite**: 확장의 네트워크 통신 분석
+
+### 기초 실습 예제
+```python
+# 확장 manifest.json 분석 스크립트
+import json
+from pathlib import Path
+
+def analyze_extension(manifest_path: str) -> None:
+    manifest = json.loads(Path(manifest_path).read_text())
+
+    # 위험한 권한 체크
+    dangerous_perms = {
+        "<all_urls>": "모든 사이트 접근 (매우 위험)",
+        "cookies": "쿠키 접근",
+        "webRequest": "네트워크 요청 가로채기",
+        "tabs": "탭 정보 접근",
+        "history": "브라우저 히스토리",
+    }
+
+    permissions = manifest.get("permissions", []) + manifest.get("host_permissions", [])
+
+    print(f"확장명: {manifest.get('name', '알 수 없음')}")
+    print(f"버전: {manifest.get('version', '?')}")
+    print(f"\n위험 권한 분석:")
+    for perm in permissions:
+        if perm in dangerous_perms:
+            print(f"  ⚠ {perm}: {dangerous_perms[perm]}")
+
+# analyze_extension("./suspicious_extension/manifest.json")
+```
+
+---
+
 ## 1. 악성 확장 유형
 
 ### 1.1 분류 체계

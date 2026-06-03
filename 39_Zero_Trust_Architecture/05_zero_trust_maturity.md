@@ -6,6 +6,134 @@
 
 # 05 — Zero Trust 성숙도 평가 및 운영
 
+## 0. 초보자를 위한 개념 이해
+
+### Zero Trust 성숙도 평가란?
+
+Zero Trust 성숙도 평가는 조직이 Zero Trust 원칙을 얼마나 잘 구현하고 있는지 측정하는 체계적인 프레임워크다. CISA(미국 사이버보안 인프라 보안국)의 Zero Trust Maturity Model v2.0은 신원·기기·네트워크·애플리케이션·데이터 5개 기둥에 대해 전통→초기→발전→최적화 4단계로 현재 상태를 진단하고 목표 상태로의 로드맵을 제시한다. 성숙도 평가는 보안 투자 우선순위를 결정하고 경영진에게 보안 수준을 설명하는 데 활용된다.
+
+**왜 배우는가:**
+```
+[성숙도 모델의 필요성]
+
+  "Zero Trust를 구현했나요?"
+  → 예/아니오로 답할 수 없음 (연속적 여정)
+
+  성숙도 모델로 답변 가능:
+  "신원 기둥은 발전 단계(3/4)
+   네트워크 기둥은 초기 단계(2/4)
+   데이터 기둥은 전통 단계(1/4)
+   → 올해 목표: 네트워크 발전 단계 달성"
+
+  [CISA 5개 기둥 × 4단계 매트릭스]
+              전통  초기  발전  최적화
+  신원        ●     ○     ○     ○
+  기기        ●     ●     ○     ○
+  네트워크    ●     ○     ○     ○
+  애플리케이션●     ●     ○     ○
+  데이터      ●     ○     ○     ○
+```
+
+### 핵심 개념 정리
+
+```
+[CISA Zero Trust Maturity Model v2.0]
+
+기둥 1: 신원 (Identity)
+  전통: 사용자명/비밀번호, 정적 역할
+  초기: MFA 부분 적용, 기본 SSO
+  발전: 모든 사용자 MFA, JIT 권한, 행동 분석
+  최적화: 자동화된 위험 기반 접근 결정
+
+기둥 2: 기기 (Device)
+  전통: 기기 목록 없음
+  초기: MDM 일부 등록
+  발전: 전체 기기 MDM+EDR, 컴플라이언스 정책
+  최적화: 실시간 기기 위험 신호 → 접근 동적 차단
+
+기둥 3: 네트워크/환경 (Network)
+  전통: 평평한 내부망, 신뢰 경계
+  초기: VLAN 세그멘테이션
+  발전: ZTNA, 마이크로세그멘테이션
+  최적화: 소프트웨어 정의 경계, 자동 정책
+
+기둥 4: 애플리케이션 (Application)
+  전통: IP/포트 기반 접근
+  초기: 앱별 인증
+  발전: API 게이트웨이, mTLS
+  최적화: 앱 수준 세밀 정책, SSPM
+
+기둥 5: 데이터 (Data)
+  전통: 저장 암호화만
+  초기: 데이터 분류 시작
+  발전: DLP, 암호화 전반 적용
+  최적화: 데이터 중심 보안, 자동 분류
+```
+
+### 필요한 도구 및 환경
+- **CISA ZT Maturity Model v2.0 문서**: 공식 평가 기준 (무료 공개)
+- **Microsoft Secure Score**: Microsoft 365 환경 보안 점수
+- **Tenable.io / Qualys**: 취약점 관리 및 자산 가시성
+- **SIEM + UEBA**: 사용자·엔티티 행동 분석
+
+### 기초 실습 예제
+```python
+from dataclasses import dataclass, field
+
+@dataclass
+class ZTMaturityPillar:
+    """Zero Trust 성숙도 기둥 평가 데이터."""
+    name: str
+    current_level: int  # 1=전통, 2=초기, 3=발전, 4=최적화
+    target_level: int
+    gaps: list[str] = field(default_factory=list)
+
+def assess_zt_maturity(pillars: list[ZTMaturityPillar]) -> dict:
+    """Zero Trust 성숙도를 종합 평가하고 개선 로드맵을 생성한다."""
+
+    level_names = {1: "전통", 2: "초기", 3: "발전", 4: "최적화"}
+    total_current = sum(p.current_level for p in pillars)
+    total_possible = len(pillars) * 4
+    overall_score = (total_current / total_possible) * 100
+
+    print(f"\n[*] Zero Trust 성숙도 종합 평가")
+    print(f"    전체 점수: {overall_score:.0f}/100\n")
+
+    priority_gaps = []
+    for pillar in pillars:
+        current_name = level_names[pillar.current_level]
+        target_name = level_names[pillar.target_level]
+        gap = pillar.target_level - pillar.current_level
+
+        status = "✓" if gap == 0 else f"↑{gap}단계 필요"
+        print(f"  {pillar.name:15s}: {current_name:4s} → {target_name:4s} [{status}]")
+
+        if gap > 0 and pillar.gaps:
+            for g in pillar.gaps:
+                priority_gaps.append((gap, pillar.name, g))
+
+    # 우선순위 정렬 (갭이 클수록 먼저)
+    priority_gaps.sort(reverse=True)
+
+    print(f"\n  [개선 우선순위 Top 5]:")
+    for _, pillar_name, gap_desc in priority_gaps[:5]:
+        print(f"    - [{pillar_name}] {gap_desc}")
+
+    return {"score": overall_score, "pillars": pillars}
+
+# 사용 예시
+pillars = [
+    ZTMaturityPillar("신원", 2, 3, ["JIT 권한 부여 미도입", "PAM 없음"]),
+    ZTMaturityPillar("기기", 3, 4, ["실시간 위험 신호 연동 없음"]),
+    ZTMaturityPillar("네트워크", 2, 3, ["ZTNA 미전환", "마이크로세그멘테이션 없음"]),
+    ZTMaturityPillar("애플리케이션", 2, 3, ["API 게이트웨이 없음"]),
+    ZTMaturityPillar("데이터", 1, 2, ["데이터 분류 미실시", "DLP 없음"]),
+]
+assess_zt_maturity(pillars)
+```
+
+---
+
 ## 목차
 1. Zero Trust 성숙도 모델 심화
 2. ID 중심 Zero Trust 운영

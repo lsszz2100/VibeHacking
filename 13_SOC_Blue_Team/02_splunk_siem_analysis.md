@@ -6,6 +6,113 @@
 
 # Splunk & SIEM 실전 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### Splunk & SIEM이란?
+
+SIEM(Security Information and Event Management)은 조직 전체의 로그를 수집·분석하여 보안 위협을 실시간으로 탐지하는 플랫폼입니다. Splunk는 가장 널리 사용되는 상용 SIEM으로, SPL(Search Processing Language)을 사용해 수억 건의 이벤트에서 공격 패턴을 찾아냅니다. 방화벽, Windows/Linux 이벤트 로그, 네트워크 트래픽 등 모든 로그를 하나의 플랫폼에서 연계 분석합니다.
+
+**왜 배우는가:**
+```
+SIEM 없는 환경 vs SIEM 환경:
+
+  SIEM 없음                     Splunk SIEM
+  ──────────────────────────────────────────────────
+  로그 분산 저장                 중앙 수집·인덱싱
+  공격 탐지: 수 주 후 발견       실시간 알림 (초~분)
+  조사: 수동 로그 검색           SPL 쿼리로 수 초 내 분석
+  상관 분석: 불가능              다중 소스 이벤트 연계
+  평균 침해 탐지: 200일          목표: 수 분~수 시간
+```
+
+### 핵심 개념 정리
+
+```
+Splunk SPL 기본 구조:
+
+  index=이름 [필드=값 ...] | 명령어1 | 명령어2 ...
+
+  주요 명령어:
+    stats count by field   — 필드별 이벤트 수 집계
+    table field1 field2    — 특정 필드만 표 형식으로 출력
+    where field > 값       — 조건 필터
+    sort -count            — 내림차순 정렬
+    rex field=_raw         — 정규식으로 필드 추출
+    timechart count        — 시간별 이벤트 추이 시각화
+
+  주요 인덱스/소스타입:
+    index=windows  sourcetype=WinEventLog  EventCode=4625 (로그인 실패)
+    index=security sourcetype=cisco:asa    (방화벽 로그)
+    index=linux    sourcetype=syslog       (Linux 시스템 로그)
+```
+
+### 필요한 도구 및 환경
+- **Splunk Free (단일 서버)**: 무료 버전, 500MB/일 인덱싱 제한
+- **Boss of the SOC (BOTS)**: Splunk 공식 CTF 데이터셋 (학습용)
+- **Splunk Security Essentials**: 무료 보안 탐지 앱
+- **Python splunk-sdk**: Splunk API를 Python으로 제어
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""Splunk REST API로 SPL 쿼리 실행 — 기초 연동."""
+
+import time
+import httpx
+
+
+def run_splunk_search(
+    host: str,
+    username: str,
+    password: str,
+    spl_query: str,
+    max_results: int = 100,
+) -> list[dict]:
+    """Splunk REST API를 통해 SPL 쿼리를 실행하고 결과를 반환합니다."""
+    base_url = f"https://{host}:8089"
+    auth = (username, password)
+
+    # 검색 작업 생성
+    with httpx.Client(verify=False) as client:
+        resp = client.post(
+            f"{base_url}/services/search/jobs",
+            auth=auth,
+            data={"search": f"search {spl_query}", "output_mode": "json"},
+        )
+        resp.raise_for_status()
+        job_id = resp.json()["sid"]
+
+        # 완료 대기
+        for _ in range(30):
+            status = client.get(
+                f"{base_url}/services/search/jobs/{job_id}",
+                auth=auth,
+                params={"output_mode": "json"},
+            ).json()
+            if status["entry"][0]["content"]["isDone"]:
+                break
+            time.sleep(2)
+
+        # 결과 조회
+        results = client.get(
+            f"{base_url}/services/search/jobs/{job_id}/results",
+            auth=auth,
+            params={"output_mode": "json", "count": max_results},
+        ).json()
+
+    return results.get("results", [])
+
+
+if __name__ == "__main__":
+    # 실습: 로그인 실패 상위 IP 조회
+    query = 'index=security EventCode=4625 | stats count by src_ip | sort -count | head 10'
+    # results = run_splunk_search("localhost", "admin", "password", query)
+    print(f"실행할 SPL: {query}")
+    print("Splunk 환경이 준비되면 위 함수를 호출하세요.")
+```
+
+---
+
 ## Splunk 아키텍처
 
 ```

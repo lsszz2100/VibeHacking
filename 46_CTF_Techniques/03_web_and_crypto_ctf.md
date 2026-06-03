@@ -8,6 +8,162 @@
 
 Web CTF는 SQLi 자동화, SSTI, JWT 공격, 역직렬화 취약점을 다루고, Crypto CTF는 RSA 취약 키 분석과 블록 암호 모드 공격을 다룬다.
 
+## 0. 초보자를 위한 개념 이해
+
+### Web과 Crypto CTF란?
+
+Web CTF는 웹사이트나 API 서버의 취약점을 찾아 플래그를 획득하는 분야다. SQL 인젝션, XSS, 인증 우회 등 실제 웹 해킹 기술을 사용한다. Crypto CTF는 잘못 구현된 암호화 알고리즘의 수학적 약점을 찾아 원문이나 키를 복원하는 분야로, RSA, AES, 해시 함수 등을 다룬다.
+
+**왜 배우는가:**
+```
+Web CTF → 버그 바운티 직결:
+
+  CTF Web 기술           실제 버그 바운티 적용
+  ──────────────────────────────────────────
+  SQL Injection     →  DB 데이터 탈취 취약점
+  SSTI              →  서버 코드 실행 (RCE)
+  JWT 위조          →  인증 우회, 권한 상승
+  SSRF              →  내부 서비스 접근
+
+Crypto CTF → 암호화 구현 감사:
+
+  취약한 RSA (작은 e)   →  수학으로 원문 복원 가능
+  ECB 모드 AES         →  패턴 분석으로 평문 추론
+  Padding Oracle       →  암호문 변조로 평문 복호화
+```
+
+### 핵심 개념 정리
+
+```
+Web CTF 필수 지식:
+
+SQL Injection
+  - 입력값에 SQL 코드를 삽입해 DB 쿼리 조작
+  - 예: username=' OR '1'='1 → 로그인 우회
+  - Blind SQLi: 참/거짓 응답으로 데이터 한 비트씩 추출
+
+SSTI (Server-Side Template Injection)
+  - 템플릿 엔진(Jinja2, Twig 등)에 코드 삽입
+  - 예: {{7*7}} → 49 출력 시 취약
+  - 심각도: 서버 명령 실행(RCE) 가능
+
+JWT (JSON Web Token) 공격
+  - alg=none: 서명 검증 비활성화 트릭
+  - HS256 → RS256 혼동 공격
+  - 약한 시크릿으로 서명 위조
+
+Crypto CTF 필수 지식:
+
+RSA 취약점
+  - 작은 공개 지수(e=3): 암호문³ = 평문³ (모듈러 없이)
+  - 동일 n, 다른 e: 중국인의 나머지 정리(CRT)로 복원
+  - n 인수분해: p, q가 너무 가까우면 Fermat 인수분해 가능
+```
+
+### 필요한 도구 및 환경
+- **Burp Suite Community**: 웹 요청 인터셉트·수정
+- **sqlmap**: `sqlmap -u "http://..." --dbs` — SQLi 자동 탐지
+- **jwt.io**: JWT 디코딩·조작 온라인 도구
+- **pycryptodome**: `pip install pycryptodome` — Python 암호화 라이브러리
+- **SageMath**: 수론 기반 Crypto CTF 풀이 (sagecell.sagemath.org 온라인 사용 가능)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+Web & Crypto CTF 기초 실습:
+1. SQL Injection 페이로드 생성기
+2. RSA 취약 구현 감지기
+"""
+import math
+
+
+# ── 1. SQL Injection 페이로드 모음 ──────────────────────────────
+def get_sqli_payloads() -> dict[str, list[str]]:
+    """CTF/웹 페네트레이션에서 자주 쓰는 SQLi 페이로드 모음"""
+    return {
+        "로그인_우회": [
+            "' OR '1'='1' --",
+            "' OR 1=1 --",
+            "admin'--",
+            "' OR 'x'='x",
+        ],
+        "UNION_기반_추출": [
+            "' UNION SELECT NULL--",
+            "' UNION SELECT NULL,NULL--",
+            "' UNION SELECT table_name,NULL FROM information_schema.tables--",
+        ],
+        "블라인드_불린_기반": [
+            "' AND 1=1--",    # 참 → 정상 응답
+            "' AND 1=2--",    # 거짓 → 오류/빈 응답
+            "' AND (SELECT COUNT(*) FROM users)>0--",
+        ],
+        "시간_기반": [
+            "'; WAITFOR DELAY '0:0:5'--",   # MSSQL
+            "'; SELECT SLEEP(5)--",          # MySQL
+        ],
+    }
+
+
+# ── 2. RSA 취약점 감지기 ──────────────────────────────────────
+def check_rsa_vulnerability(n: int, e: int, c: int | None = None) -> dict:
+    """
+    RSA 공개키 파라미터에서 알려진 취약점을 감지한다.
+
+    Args:
+        n: 공개 모듈러스
+        e: 공개 지수
+        c: 암호문 (선택)
+    """
+    findings = []
+
+    # 작은 공개 지수 확인
+    if e == 3:
+        findings.append("e=3: 암호문의 세제곱근이 평문일 수 있음 (small e attack)")
+        if c is not None:
+            # e=3이고 평문^3 < n이면 모듈러 없이 세제곱근 계산 가능
+            root = round(c ** (1/3))
+            if root ** 3 == c:
+                findings.append(f"  [취약!] 평문 = {root}")
+
+    # Fermat 인수분해 (p, q가 가까울 때)
+    a = math.isqrt(n) + 1
+    b_squared = a * a - n
+    b = math.isqrt(b_squared)
+    if b * b == b_squared:
+        p, q = a - b, a + b
+        findings.append(f"Fermat 인수분해 성공: p={p}, q={q}")
+
+    # 작은 n (학습용 문제에서 자주 등장)
+    if n.bit_length() < 512:
+        findings.append(f"n 크기 불충분: {n.bit_length()}비트 (최소 2048비트 권장)")
+
+    return {
+        "n_bits": n.bit_length(),
+        "e": e,
+        "취약점": findings if findings else ["명백한 취약점 없음"],
+    }
+
+
+if __name__ == "__main__":
+    print("=== SQL Injection 페이로드 ===")
+    payloads = get_sqli_payloads()
+    for category, items in payloads.items():
+        print(f"\n[{category}]")
+        for p in items[:2]:
+            print(f"  {p}")
+
+    print("\n=== RSA 취약점 분석 ===")
+    # 교육용 작은 RSA 예제
+    result = check_rsa_vulnerability(
+        n=3233,    # 61 * 53 (실제는 2048비트 이상 사용)
+        e=3,
+        c=27,      # 3^3 = 27 → 평문=3
+    )
+    import json
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+```
+
 ---
 
 ## 1. Web CTF 기법

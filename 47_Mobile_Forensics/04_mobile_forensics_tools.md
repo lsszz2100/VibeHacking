@@ -6,6 +6,171 @@
 
 # 모바일 포렌식 도구
 
+## 0. 초보자를 위한 개념 이해
+
+### 모바일 포렌식 도구란?
+
+모바일 포렌식 도구는 스마트폰에서 디지털 증거를 추출하고 분석하는 전문 소프트웨어다. 무료 오픈소스 도구부터 수천만 원짜리 전문 장비까지 다양하다. 올바른 도구 선택이 증거 수집 성공 여부를 좌우한다.
+
+**왜 배우는가:**
+```
+도구 카테고리별 사용 시나리오:
+
+  무료 도구
+    ADB         → 루팅 안 된 Android 기본 데이터
+    Autopsy     → 이미지 파일 분석 (플랫폼)
+    MVT         → Pegasus 스파이웨어 탐지 (NGO/언론인)
+    JADX        → APK 역분석 (악성 앱 분석)
+
+  상용 도구 (법집행기관)
+    Cellebrite UFED  → 물리적 추출 + 분석 (가장 널리 사용)
+    MSAB XRY         → 물리적 추출 전문
+    Oxygen Forensics → 클라우드 데이터 + 앱 분석
+
+  선택 기준:
+    - 예산: 무료 vs 상용
+    - 목적: 조사 vs 연구 vs 사고대응
+    - 법적 요건: 법정 제출 목적이면 검증된 상용 도구
+    - 기기 종류: Android만 vs iOS 포함 vs 모두
+```
+
+### 핵심 개념 정리
+
+```
+핵심 도구 개요:
+
+Autopsy (무료, 오픈소스)
+  - 그래픽 포렌식 플랫폼 (Sleuth Kit 기반)
+  - 모바일 이미지, 디스크 이미지 모두 분석
+  - 타임라인, 키워드 검색, 파일 복구 기능
+
+Cellebrite UFED (상용, 업계 표준)
+  - 물리/논리 추출 모두 지원
+  - 1만 5천 개 이상 기기 지원
+  - 법정 증거 채택 검증 완료
+
+MVT - Mobile Verification Toolkit (무료)
+  - Pegasus 등 정부 스파이웨어 탐지
+  - NGO, 언론인, 인권 활동가 대상
+  - iOS/Android 모두 지원
+
+Frida (무료, 동적 분석)
+  - 런타임에 앱 함수 후킹
+  - 암호화 키, 네트워크 통신 실시간 캡처
+  - CTF 모바일 문제에 특히 유용
+
+JADX (무료, 정적 분석)
+  - APK → Java 소스 코드 역컴파일
+  - Kotlin, Smali 코드도 지원
+  - 악성 앱, CTF 앱 분석에 필수
+```
+
+### 필요한 도구 및 환경
+- **Autopsy**: https://www.autopsy.com/download/
+- **JADX**: `apt install jadx` 또는 https://github.com/skylot/jadx
+- **MVT**: `pip install mvt`
+- **Frida**: `pip install frida-tools`
+- **apktool**: `apt install apktool` (Smali 레벨 분석)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+APK 기초 분석 도구 — JADX 없이 APK에서 메타데이터와 권한을 추출한다
+실제 환경에서는 JADX/apktool 사용 권장
+"""
+import json
+import struct
+import zipfile
+from pathlib import Path
+
+
+def extract_apk_manifest_info(apk_path: str) -> dict:
+    """
+    APK 파일(실제로는 ZIP)에서 기본 정보를 추출한다.
+    AndroidManifest.xml은 바이너리 XML 형식이라 완전한 파싱은 axmldec 필요.
+    """
+    info = {
+        "파일명": Path(apk_path).name,
+        "파일크기_MB": round(Path(apk_path).stat().st_size / 1024 / 1024, 2),
+        "APK_내용물": [],
+        "DEX_파일": [],
+        "네이티브_라이브러리": [],
+        "포함된_에셋": [],
+    }
+
+    try:
+        with zipfile.ZipFile(apk_path, "r") as apk:
+            for item in apk.namelist():
+                if item.endswith(".dex"):
+                    info["DEX_파일"].append(item)
+                elif item.endswith(".so"):
+                    info["네이티브_라이브러리"].append(item)
+                elif item.startswith("assets/"):
+                    info["포함된_에셋"].append(item)
+
+            # 파일 수 요약
+            info["전체_파일수"] = len(apk.namelist())
+            info["APK_내용물"] = apk.namelist()[:10]  # 처음 10개만
+
+    except zipfile.BadZipFile:
+        info["오류"] = "올바른 APK 파일이 아님"
+    except FileNotFoundError:
+        info["오류"] = f"파일 없음: {apk_path}"
+
+    return info
+
+
+def check_suspicious_permissions(permissions: list[str]) -> list[dict]:
+    """
+    위험한 권한 목록을 확인한다.
+    실제 권한은 apktool로 AndroidManifest.xml 디코딩 후 추출.
+    """
+    dangerous_permissions = {
+        "READ_SMS": ("높음", "SMS 메시지 읽기 — 개인정보 탈취 위험"),
+        "SEND_SMS": ("높음", "SMS 발송 — 요금 부과, 스미싱"),
+        "READ_CONTACTS": ("중간", "연락처 전체 읽기"),
+        "ACCESS_FINE_LOCATION": ("중간", "정밀 GPS 위치 추적"),
+        "RECORD_AUDIO": ("높음", "마이크 녹음"),
+        "CAMERA": ("중간", "카메라 접근"),
+        "READ_CALL_LOG": ("높음", "통화 기록 읽기"),
+        "PROCESS_OUTGOING_CALLS": ("높음", "발신 전화 가로채기"),
+        "RECEIVE_BOOT_COMPLETED": ("낮음", "부팅 시 자동 실행 — 지속성"),
+        "BIND_ACCESSIBILITY_SERVICE": ("치명", "화면 전체 읽기 — 뱅킹 앱 정보 탈취"),
+    }
+
+    findings = []
+    for perm in permissions:
+        perm_key = perm.split(".")[-1]  # android.permission.READ_SMS → READ_SMS
+        if perm_key in dangerous_permissions:
+            level, desc = dangerous_permissions[perm_key]
+            findings.append({"권한": perm_key, "위험도": level, "설명": desc})
+
+    return sorted(findings, key=lambda x: ["치명", "높음", "중간", "낮음"].index(x["위험도"]))
+
+
+if __name__ == "__main__":
+    import sys
+
+    # 데모: 존재하지 않는 APK 경로로 오류 처리 확인
+    apk = sys.argv[1] if len(sys.argv) > 1 else "sample.apk"
+    result = extract_apk_manifest_info(apk)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+    # 권한 분석 데모
+    sample_perms = [
+        "android.permission.READ_SMS",
+        "android.permission.INTERNET",
+        "android.permission.BIND_ACCESSIBILITY_SERVICE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+    ]
+    print("\n[권한 위험도 분석]")
+    risks = check_suspicious_permissions(sample_perms)
+    print(json.dumps(risks, ensure_ascii=False, indent=2))
+```
+
+---
+
 ## 목차
 1. Autopsy 모바일 분석 설정
 2. Cellebrite UFED / MSAB XRY 개요

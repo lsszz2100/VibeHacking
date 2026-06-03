@@ -7,6 +7,94 @@
 # 33-04. 피싱 인프라와 탐지 회피 — MFA 우회, 메일 정상값, 로깅 격차
 > 한 줄 요약: 현대 피싱은 "가짜처럼 안 보이는 것"이 아니라 "정상값을 빠짐없이 갖춘 것"이 핵심이며, 레드팀은 인프라의 합법성과 운영의 윤리적 통제를 동시에 설계해야 한다.
 
+## 0. 초보자를 위한 개념 이해
+
+### 피싱 인프라란?
+
+피싱 인프라(Phishing Infrastructure)란 공격자가 사람을 속여 자격증명(아이디·비밀번호)이나 세션 정보를 탈취하기 위해 구축하는 전체 기술 환경을 말한다. 단순한 가짜 페이지 하나가 아니라 도메인, 메일 서버, 리버스 프록시, C2 서버 등이 유기적으로 연결된 시스템이다. 현대의 피싱은 보안 필터를 통과하기 위해 "진짜처럼 보이는" 인프라를 정교하게 설계한다.
+
+**왜 배우는가:**
+```
+[공격자 관점]                     [방어자 관점]
+  도메인 등록 & 에이징              탐지 우회 방법 이해
+       ↓                               ↓
+  SPF/DKIM/DMARC 설정           메일 필터 한계 파악
+       ↓                               ↓
+  리버스 프록시 구성             세션 탈취 시나리오 대비
+       ↓                               ↓
+  MFA 우회 (세션 쿠키)          FIDO2/Passkey 전환 필요성
+       ↓                               ↓
+  표적 발송 & 회피               위협 인텔리전스 수집
+```
+
+### 핵심 개념 정리
+
+```
+[피싱 인프라 3대 구성요소]
+
+1. 도메인 인프라
+   - 에이징(Aging): 6~12개월 전에 등록해 신뢰도 축적
+   - 타이포스쿼팅: paypa1.com, micosoft.com 등 유사 도메인
+   - 카테고리화: 정상 콘텐츠로 먼저 분류되어야 필터 통과
+
+2. 메일 인프라
+   - SPF(Sender Policy Framework): 발신 IP 인증
+   - DKIM(DomainKeys Identified Mail): 메일 서명
+   - DMARC: 위 두 가지 실패 시 처리 정책
+   ※ 셋 다 통과해야 현대 메일 필터를 우회 가능
+
+3. 자격증명 수집 인프라
+   - 정적 클론: HTML 복사 방식 (구식, 쉽게 탐지됨)
+   - 리버스 프록시: 실제 사이트를 중계하며 세션 탈취
+   - AiTM(Adversary-in-the-Middle): MFA까지 우회 가능
+```
+
+### 필요한 도구 및 환경
+- **Evilginx2**: 리버스 프록시 기반 AiTM 피싱 프레임워크 (자체 랩 전용)
+- **GoPhish**: 피싱 캠페인 관리 오픈소스 도구
+- **Python + smtplib**: 메일 발송 테스트 자동화
+- **DNS 분석 도구**: dig, nslookup으로 SPF/DKIM 레코드 검증
+
+### 기초 실습 예제
+```python
+import dns.resolver  # pip install dnspython
+
+def check_email_security(domain: str) -> dict:
+    """도메인의 이메일 보안 설정(SPF/DKIM/DMARC)을 확인한다."""
+    results = {}
+
+    # SPF 레코드 확인
+    try:
+        answers = dns.resolver.resolve(domain, 'TXT')
+        for rdata in answers:
+            txt = str(rdata)
+            if 'v=spf1' in txt:
+                results['SPF'] = txt
+                break
+        else:
+            results['SPF'] = '없음 (스푸핑 가능!)'
+    except Exception:
+        results['SPF'] = '조회 실패'
+
+    # DMARC 레코드 확인
+    try:
+        answers = dns.resolver.resolve(f'_dmarc.{domain}', 'TXT')
+        for rdata in answers:
+            txt = str(rdata)
+            if 'v=DMARC1' in txt:
+                results['DMARC'] = txt
+                break
+    except Exception:
+        results['DMARC'] = '없음 (정책 미적용!)'
+
+    return results
+
+# 사용 예시 (자신이 소유한 도메인만 테스트)
+# result = check_email_security("example.com")
+# for k, v in result.items():
+#     print(f"{k}: {v}")
+```
+
 ---
 
 ## 0. 윤리·법률 전제

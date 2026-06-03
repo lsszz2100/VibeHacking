@@ -6,6 +6,80 @@
 
 # 컨테이너 탈출 심화: 커널 취약점 및 네임스페이스 탈출
 
+## 0. 초보자를 위한 개념 이해
+
+### 컨테이너 탈출이란?
+
+컨테이너 탈출(Container Escape)은 컨테이너 내부에서 격리 경계를 돌파하여 호스트 시스템에 접근하는 기법이다. 컨테이너는 완전한 격리를 제공하지 않으며, 잘못된 설정이나 커널 취약점이 있으면 컨테이너 내부의 공격자가 호스트 루트 권한을 획득할 수 있다. 이는 동일 서버에서 실행 중인 다른 모든 컨테이너에 영향을 준다.
+
+**왜 배우는가:**
+```
+컨테이너 탈출 경로
+
+[컨테이너 내부]
+        │
+        ├── --privileged 플래그   →  호스트 디바이스 마운트 → 탈출
+        │
+        ├── docker.sock 마운트   →  Docker 데몬 제어 → 탈출
+        │
+        ├── 호스트 경로 마운트   →  /etc, /proc 등 접근 → 탈출
+        │
+        ├── CAP_SYS_ADMIN       →  cgroup 조작 → 탈출
+        │
+        └── 커널 취약점          →  CVE로 커널 공격 → 탈출
+        
+[호스트 루트]   ← 탈출 성공 시 도달
+```
+
+### 핵심 개념 정리
+
+```
+탈출 기법별 난이도와 조건
+
+기법                        조건                    난이도
+──────────────────────────────────────────────────────────
+Privileged 컨테이너 탈출    --privileged 플래그     낮음
+docker.sock 탈출            소켓 볼륨 마운트         낮음
+hostPID/hostNetwork 탈출    hostPID=true            중간
+CAP_SYS_ADMIN 탈출          해당 캐퍼빌리티 보유     중간
+커널 취약점 (CVE)           취약한 커널 버전         높음
+```
+
+### 필요한 도구 및 환경
+- **Docker**: 컨테이너 실행 환경
+- **amicontained**: 현재 컨테이너 권한 확인 도구
+- **deepce**: 자동 탈출 가능성 탐지 스크립트
+- **격리된 VM**: 탈출 기법 실습 (호스트 환경 절대 사용 금지)
+
+### 기초 실습 예제
+```bash
+# 1. 컨테이너 내부에서 권한 확인
+# (컨테이너 내부에서 실행)
+cat /proc/1/status | grep -i cap  # 캐퍼빌리티 확인
+ls /.dockerenv                     # Docker 컨테이너 여부
+cat /proc/self/cgroup | head -5   # cgroup 정보
+
+# 2. amicontained로 종합 권한 확인
+# https://github.com/genuinetools/amicontained
+curl -sSL https://github.com/genuinetools/amicontained/releases/latest/\
+download/amicontained-linux-amd64 -o amicontained
+chmod +x amicontained
+./amicontained
+
+# 3. Privileged 컨테이너 탈출 원리 이해 (연습용)
+# 실제 --privileged 컨테이너에서:
+# ls /dev/sd*         → 호스트 디스크 보임
+# mount /dev/sda1 /mnt  → 호스트 파일시스템 마운트
+# chroot /mnt           → 호스트 루트로 전환
+
+# 4. docker.sock 탈출 원리 이해
+# docker.sock이 마운트된 컨테이너에서:
+# docker run -v /:/host --rm -it alpine chroot /host sh
+# → 호스트 파일시스템 접근
+```
+
+---
+
 ## 1. 컨테이너 격리 메커니즘 심층 분석
 
 Docker/Kubernetes 컨테이너는 다음 Linux 커널 기능을 조합해 격리를 구현한다.

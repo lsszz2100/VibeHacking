@@ -6,6 +6,78 @@
 
 # 셸코드 분석 및 탐지 — 정적·동적 분석·시그니처 생성
 
+## 0. 초보자를 위한 개념 이해
+
+### 셸코드 분석 및 탐지란?
+
+**셸코드 분석**은 발견된 기계어 페이로드가 무엇을 하는지 역분석하는 작업입니다. **탐지**는 IDS/EDR 시스템이 악성 셸코드를 식별하는 방법입니다. 공격자와 방어자 모두 이 기술이 필요합니다.
+
+**왜 배우는가:**
+```
+침해 사고 대응:
+  메모리에서 의심스러운 바이트 발견
+    → 셸코드인가? 무엇을 하는가?
+    → 어떤 공격 그룹이 사용하는 기법인가?
+
+보안 제품 개발:
+  EDR/AV → 셸코드 패턴 등록 → 탐지
+    → 셸코드 분석 없이는 시그니처 작성 불가
+```
+
+### 핵심 개념 정리
+
+```
+셸코드 분석 방법:
+
+1. 정적 분석
+   - sctest: libemu 기반 에뮬레이션
+   - ndisasm: 헥스 → 어셈블리 변환
+   - 주요 패턴 식별:
+     syscall (0x0f 0x05) → 시스템 콜
+     int 0x80             → 32bit 시스템 콜
+     /bin/sh 문자열       → 쉘 실행
+
+2. 동적 분석
+   - GDB로 단계별 실행
+   - strace로 시스템 콜 추적
+   - 샌드박스에서 실행 + API 모니터
+
+탐지 기법:
+  시그니처 기반: 알려진 셸코드 패턴 비교
+  행동 기반: 비정상 메모리 실행 감지
+  YARA 룰: 바이트 패턴 + 조건으로 탐지
+```
+
+### 필요한 도구
+- **GDB + pwndbg**: 셸코드 동적 실행 분석
+- **YARA**: 바이너리 패턴 매칭 룰 작성
+- **scdbg**: 셸코드 에뮬레이터
+- **CyberChef**: 인코딩된 셸코드 디코딩
+
+### 기초 실습 예제
+```python
+# 셸코드 기본 분석 - 의심 바이트 확인
+shellcode_hex = "31c050682f2f7368682f62696e89e3505389e1b00bcd80"
+shellcode = bytes.fromhex(shellcode_hex)
+
+# NULL 바이트 확인
+null_positions = [i for i, b in enumerate(shellcode) if b == 0]
+print(f"셸코드 크기: {len(shellcode)} bytes")
+print(f"NULL 바이트 위치: {null_positions}")
+
+# 시스템 콜 패턴 탐색
+syscall_patterns = [b'\x0f\x05', b'\xcd\x80', b'\x0f\x34']
+for pat in syscall_patterns:
+    if pat in shellcode:
+        print(f"시스템 콜 패턴 발견: {pat.hex()}")
+
+# /bin/sh 문자열 탐색
+if b'/bin/sh' in shellcode or b'/bin//sh' in shellcode:
+    print("⚠ /bin/sh 실행 시도 감지")
+```
+
+---
+
 ## 1. 셸코드 분석 접근법
 
 ```

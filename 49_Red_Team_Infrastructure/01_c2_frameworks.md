@@ -8,6 +8,152 @@
 
 > **목적**: 교육, 연구, CTF, 공인된 레드팀 작전 환경에서의 학습용 자료
 
+## 0. 초보자를 위한 개념 이해
+
+### C2 프레임워크란?
+
+C2(Command & Control) 프레임워크는 레드팀이 침투한 시스템들을 원격으로 제어하고 관리하는 인프라다. 공격자 관점에서는 감염된 피해 시스템(에이전트)이 C2 서버에 주기적으로 연결해 명령을 받고 결과를 전송한다. 레드팀은 이를 허가된 환경에서 시뮬레이션해 방어팀이 이런 공격을 탐지할 수 있는지 검증한다.
+
+**왜 배우는가:**
+```
+C2가 실제 공격에서 어떻게 동작하는가:
+
+  [공격자 서버(Team Server)]
+          |
+          | 암호화 HTTPS 통신 (포트 443)
+          |
+  [피해자 PC (에이전트/임플란트)]
+    - 5분마다 C2 서버 체크인
+    - 명령 수신: 파일 탈취, 정찰, 이동
+    - 결과 전송: 암호화된 채널
+
+  레드팀이 C2를 배우는 이유:
+    → 블루팀이 C2 트래픽을 어떻게 탐지하는지 이해
+    → C2 탐지 룰(Sigma, Snort) 작성 능력 향상
+    → 실제 APT 공격 패턴 시뮬레이션
+
+  주요 C2 프레임워크 (공개):
+    Cobalt Strike  - 업계 표준 (상용, $3,500/년)
+    Metasploit     - 무료 오픈소스
+    Sliver         - 오픈소스 (Go 기반)
+    Havoc          - 최신 오픈소스
+    Covenant       - .NET 기반 오픈소스
+```
+
+### 핵심 개념 정리
+
+```
+C2 핵심 구성요소:
+
+Team Server (팀 서버)
+  - 레드팀 운영자가 접속하는 중앙 제어 서버
+  - 에이전트 상태 모니터링, 명령 분배
+
+Listener (리스너)
+  - Team Server에서 에이전트 연결을 기다리는 서비스
+  - HTTP/HTTPS/DNS/SMB 등 다양한 프로토콜
+
+Agent / Beacon / Implant (에이전트)
+  - 피해 시스템에서 실행되는 악성 코드
+  - C2 서버에 주기적으로 체크인 (Sleep 간격)
+  - 명령 수행: 파일 탐색, 자격증명 수집, 횡이동
+
+Redirector (리다이렉터)
+  - 실제 C2 서버 위치를 숨기는 중간 서버
+  - 방어자가 C2를 차단해도 작전 지속 가능
+
+비콘 간격 (Beacon Sleep):
+  짧은 간격 (1분)  → 반응성 좋음, 탐지 위험 높음
+  긴 간격 (60분)   → 탐지 어려움, 반응 느림
+  지터(Jitter)     → 불규칙한 간격으로 패턴 분석 회피
+```
+
+### 필요한 도구 및 환경
+- **Kali Linux / Ubuntu**: 레드팀 운영 OS
+- **Metasploit Framework**: `msfconsole` — 무료 C2
+- **Sliver**: `apt install sliver` — 오픈소스 C2
+- **Wireguard / OpenVPN**: 팀 서버 보호용 VPN
+- **Cloudflare Workers**: 리다이렉터 구축 (Domain Fronting)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+C2 통신 패턴 시뮬레이터 — 비콘 통신 구조 이해용 교육 도구
+실제 C2 서버 없이 비콘 패턴을 로컬에서 시뮬레이션한다.
+※ 교육 목적 전용
+"""
+import hashlib
+import json
+import random
+import time
+from dataclasses import dataclass, field
+from datetime import datetime
+
+
+@dataclass
+class BeaconConfig:
+    """비콘(에이전트) 설정"""
+    agent_id: str = field(default_factory=lambda: hashlib.md5(
+        str(time.time()).encode()).hexdigest()[:8])
+    sleep_seconds: int = 60      # 기본 체크인 간격
+    jitter_percent: int = 20     # 간격 무작위화 비율 (±20%)
+    max_retries: int = 3         # 연결 실패 시 재시도 횟수
+
+
+def calculate_next_checkin(config: BeaconConfig) -> float:
+    """
+    다음 C2 체크인 시간을 계산한다.
+    지터(jitter)를 적용해 규칙적인 패턴을 회피한다.
+    """
+    jitter_range = config.sleep_seconds * (config.jitter_percent / 100)
+    jitter = random.uniform(-jitter_range, jitter_range)
+    return config.sleep_seconds + jitter
+
+
+def simulate_beacon_traffic(config: BeaconConfig, cycles: int = 5) -> list[dict]:
+    """
+    C2 비콘 통신 패턴을 시뮬레이션한다.
+    블루팀 탐지 훈련용 패턴 생성.
+    """
+    events = []
+    base_time = datetime.now()
+    accumulated_seconds = 0.0
+
+    for i in range(cycles):
+        next_delay = calculate_next_checkin(config)
+        accumulated_seconds += next_delay
+
+        event_time = base_time.timestamp() + accumulated_seconds
+        events.append({
+            "체크인_번호": i + 1,
+            "에이전트_ID": config.agent_id,
+            "예상_시간": datetime.fromtimestamp(event_time).strftime("%H:%M:%S"),
+            "간격_초": round(next_delay, 1),
+            "지터_적용": f"±{config.jitter_percent}%",
+            "전송_데이터": {
+                "타입": "CHECKIN",
+                "OS": "Windows 10",
+                "IP": "192.168.1.100",
+                "PID": random.randint(1000, 9999),
+            },
+        })
+
+    print("[블루팀 관점] 이 패턴으로 C2 탐지하는 방법:")
+    print("  1. 동일 IP의 규칙적인 아웃바운드 연결 모니터링")
+    print("  2. 평균 간격 계산 + 표준편차 분석")
+    print("  3. Zeek/Suricata로 비콘 탐지 룰 적용")
+    print("  4. 연결 기간 대비 데이터 크기 분석 (작은 패킷 반복)\n")
+
+    return events
+
+
+if __name__ == "__main__":
+    config = BeaconConfig(sleep_seconds=60, jitter_percent=20)
+    events = simulate_beacon_traffic(config, cycles=5)
+    print(json.dumps(events, ensure_ascii=False, indent=2))
+```
+
 ---
 
 ## 1. C2 아키텍처 개요

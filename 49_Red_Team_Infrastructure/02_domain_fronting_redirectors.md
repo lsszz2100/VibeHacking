@@ -8,6 +8,168 @@
 
 > **목적**: 교육, 연구, CTF, 공인된 레드팀 작전 환경에서의 학습용 자료
 
+## 0. 초보자를 위한 개념 이해
+
+### 도메인 프론팅과 리다이렉터란?
+
+도메인 프론팅(Domain Fronting)은 CDN(콘텐츠 전송 네트워크)의 구조적 특성을 이용해 실제 C2 서버 위치를 숨기는 기법이다. 리다이렉터(Redirector)는 에이전트와 실제 팀 서버 사이의 중계 서버다. 두 기법 모두 방어자가 C2 인프라를 차단하기 어렵게 만드는 OPSEC 기술이다.
+
+**왜 배우는가:**
+```
+왜 리다이렉터가 필요한가:
+
+  단순 C2 구조 (취약):
+    피해자 PC → [팀서버 IP: 1.2.3.4]
+    방어자가 1.2.3.4 차단 → 작전 종료
+
+  리다이렉터 사용 (강인):
+    피해자 PC → [리다이렉터 A] → [팀서버] (숨겨짐)
+                 피해자 PC → [리다이렉터 B] ↗
+    방어자가 A 차단 → B로 계속 통신
+    팀서버 IP는 절대 노출되지 않음
+
+  도메인 프론팅:
+    피해자 PC → [CDN: google.com] → [실제 C2]
+               ↑ SNI: google.com (정상 트래픽처럼 보임)
+               ↑ Host: c2.evil.com (실제 목적지)
+
+  블루팀 탐지 방법:
+    - SNI와 Host 헤더 불일치 탐지
+    - CDN 제공사에 신고 (도메인 프론팅 차단 정책)
+    - JA3/JA3S TLS 핑거프린트 분석
+```
+
+### 핵심 개념 정리
+
+```
+리다이렉터 유형:
+
+1. 단순 포트 포워딩
+   socat TCP-LISTEN:443 TCP:team-server:443
+   → 가장 단순, 팀 서버 앞에 한 홉 추가
+
+2. nginx 역방향 프록시
+   → URL 기반 필터링: 에이전트 요청만 통과
+   → 일반 웹 트래픽처럼 보이게 위장
+
+3. CDN 리다이렉터 (Cloudflare Workers)
+   → 실제 CDN 인프라 사용 → 차단 어려움
+   → Cloudflare의 도메인 프론팅 정책 변경으로 일부 제한
+
+도메인 프론팅 원리:
+  HTTPS TLS 핸드셰이크:
+    SNI(Server Name Indication): 라우팅에 사용 → 정상 도메인
+    Host 헤더: 실제 요청 목적지 → C2 도메인
+
+  CDN이 SNI만 보고 라우팅 →
+  Host 헤더는 CDN 내부에서만 처리 →
+  외부에서는 정상 CDN 트래픽으로 보임
+```
+
+### 필요한 도구 및 환경
+- **nginx**: 역방향 프록시 리다이렉터 구성
+- **socat**: 빠른 포트 포워딩 테스트
+- **Cloudflare Workers**: CDN 기반 리다이렉터
+- **Caddy**: 자동 HTTPS 인증서 관리 웹 서버
+- **Terraform**: 인프라 자동화 배포
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+리다이렉터 설정 파일 자동 생성기
+nginx 및 socat 설정을 자동으로 생성한다.
+※ 허가된 레드팀 환경에서만 사용
+"""
+import json
+
+
+def generate_nginx_redirector_config(
+    listen_port: int,
+    team_server_ip: str,
+    team_server_port: int,
+    allowed_user_agents: list[str],
+    decoy_site: str = "https://example.com",
+) -> str:
+    """
+    nginx 리다이렉터 설정을 생성한다.
+    에이전트 User-Agent만 팀 서버로 전달하고
+    나머지는 정상 사이트로 리다이렉트한다.
+    """
+    ua_conditions = "\n        ".join(
+        f'if ($http_user_agent = "{ua}") {{ set $valid_agent 1; }}'
+        for ua in allowed_user_agents
+    )
+
+    config = f"""
+# nginx 리다이렉터 설정
+# 에이전트: 팀 서버로 프록시, 기타: 정상 사이트로 리다이렉트
+
+server {{
+    listen {listen_port} ssl;
+    server_name redirector.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/redirector.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/redirector.example.com/privkey.pem;
+
+    # 기본: 정상 사이트로 리다이렉트 (허위 트래픽 위장)
+    set $valid_agent 0;
+
+    # 허용된 에이전트 User-Agent 체크
+    {ua_conditions}
+
+    location / {{
+        # 에이전트가 아니면 정상 사이트로
+        if ($valid_agent = 0) {{
+            return 302 {decoy_site};
+        }}
+
+        # 에이전트는 팀 서버로 프록시
+        proxy_pass https://{team_server_ip}:{team_server_port};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_ssl_verify off;
+    }}
+}}
+"""
+    return config
+
+
+def generate_socat_command(
+    listen_port: int,
+    target_ip: str,
+    target_port: int,
+) -> str:
+    """빠른 포트 포워딩을 위한 socat 명령어를 생성한다."""
+    return (
+        f"socat TCP4-LISTEN:{listen_port},fork,reuseaddr "
+        f"TCP4:{target_ip}:{target_port}"
+    )
+
+
+if __name__ == "__main__":
+    # 예시 설정 생성
+    config = generate_nginx_redirector_config(
+        listen_port=443,
+        team_server_ip="10.0.0.1",
+        team_server_port=8443,
+        allowed_user_agents=[
+            "Mozilla/5.0 (Compatible; MSIE 10.0; Windows NT 6.1)",
+        ],
+        decoy_site="https://microsoft.com",
+    )
+    print("[nginx 리다이렉터 설정]")
+    print(config)
+
+    socat_cmd = generate_socat_command(443, "10.0.0.1", 8443)
+    print("[socat 포트 포워딩 명령어]")
+    print(f"  {socat_cmd}")
+    print("\n[보안 고려사항]")
+    print("  - 팀 서버 IP는 절대 공개망에 노출 금지")
+    print("  - 작전 종료 후 모든 리다이렉터 즉시 폐기")
+    print("  - 로그는 암호화 저장 후 작전 종료 시 삭제")
+```
+
 ---
 
 ## 1. 도메인 프론팅 (Domain Fronting)

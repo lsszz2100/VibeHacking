@@ -6,6 +6,172 @@
 
 # Zero Trust 아키텍처 원칙
 
+## 0. 초보자를 위한 개념 이해
+
+### Zero Trust란?
+
+Zero Trust(제로 트러스트)는 "절대 신뢰 없음, 항상 검증(Never Trust, Always Verify)"을 핵심 철학으로 하는 현대 보안 패러다임이다. 전통적 보안은 내부 네트워크를 신뢰하는 "성벽 모델"이었지만, 클라우드·재택근무·모바일 환경에서는 내부/외부 경계가 사라졌다. Zero Trust는 위치에 관계없이 모든 접근 요청을 매번 검증하고, 최소한의 권한만 부여한다.
+
+**왜 배우는가:**
+```
+[전통적 경계 보안의 한계]
+
+  [외부]               [방화벽]             [내부]
+  공격자 ────막음──── 경계선 ────신뢰──── 직원·서버
+                                              ↑
+                                    한 번만 통과하면
+                                    내부는 자유롭게 이동!
+
+  [침해 시나리오]
+  VPN 자격증명 탈취 → 내부망 완전 접근
+  내부 직원 계정 해킹 → 모든 시스템 접근
+  공급망 침해 → 신뢰받는 소프트웨어로 내부 진입
+
+  [Zero Trust 적용 후]
+  VPN 진입해도 → 리소스마다 재인증 필요
+  내부망이어도 → 접근 권한 명시적 부여 필요
+  매 요청마다 → 사용자+기기+컨텍스트 검증
+```
+
+### 핵심 개념 정리
+
+```
+[Zero Trust 5대 원칙]
+
+1. 절대 신뢰 없음 (Never Trust)
+   내부 IP라도, 회사 장비라도 자동 신뢰 없음
+   모든 접근은 기본적으로 거부(Default Deny)
+
+2. 항상 검증 (Always Verify)
+   사용자 신원 + 기기 건강 상태 + 위치 + 시간
+   MFA, 인증서, 행동 분석 종합 활용
+
+3. 최소 권한 (Least Privilege)
+   필요한 최소한의 리소스에만 접근 허용
+   Just-In-Time(JIT) 접근: 필요할 때만 권한 부여
+
+4. 침해 가정 (Assume Breach)
+   이미 침해된 것으로 가정하고 설계
+   마이크로세그멘테이션으로 횡적 이동 차단
+
+5. 명시적 검증 (Explicit Verification)
+   가용한 모든 데이터 포인트로 결정
+   UEBA(사용자·엔티티 행동 분석) 활용
+
+[NIST SP 800-207 Zero Trust 7대 교리]
+  모든 데이터·서비스를 리소스로 간주
+  통신은 위치 무관 항상 보안 채널
+  세션 단위 리소스 접근 부여
+  동적 정책으로 접근 결정
+  모든 자산의 무결성·보안 태세 모니터링
+  인증·권한 부여는 동적·엄격 집행
+  자산·네트워크·통신에 대한 데이터 수집
+```
+
+### 필요한 도구 및 환경
+- **Okta / Azure AD (Entra ID)**: Identity Provider (IdP)
+- **ZTNA 솔루션**: Cloudflare Access, Zscaler ZPA, BeyondCorp
+- **MFA 앱**: Google Authenticator, Microsoft Authenticator
+- **PAM 도구**: CyberArk, HashiCorp Vault (특권 접근 관리)
+
+### 기초 실습 예제
+```python
+from datetime import datetime, timezone
+import ipaddress
+
+def evaluate_zero_trust_access(
+    user_id: str,
+    resource: str,
+    ip_address: str,
+    mfa_verified: bool,
+    device_compliant: bool,
+    hour_of_day: int | None = None,
+) -> dict:
+    """
+    Zero Trust 접근 정책을 평가하는 시뮬레이터.
+    실제 환경에서는 IdP/Policy Engine이 이 역할을 수행한다.
+    """
+    if hour_of_day is None:
+        hour_of_day = datetime.now(timezone.utc).hour
+
+    score = 0
+    reasons = []
+
+    # MFA 검증 (가장 중요)
+    if mfa_verified:
+        score += 40
+        reasons.append("[+40] MFA 인증 완료")
+    else:
+        reasons.append("[+0] MFA 미인증 (접근 거부 조건)")
+
+    # 기기 컴플라이언스
+    if device_compliant:
+        score += 30
+        reasons.append("[+30] 기기 보안 정책 준수")
+    else:
+        reasons.append("[+0] 기기 미등록/비준수")
+
+    # IP 위치 기반 위험도
+    try:
+        ip = ipaddress.ip_address(ip_address)
+        if ip.is_private:
+            score += 20
+            reasons.append("[+20] 내부 IP (낮은 위험)")
+        else:
+            score += 5
+            reasons.append("[+5] 외부 IP (추가 검증 필요)")
+    except ValueError:
+        reasons.append("[+0] 유효하지 않은 IP")
+
+    # 업무 시간 (09:00~18:00 KST = 00:00~09:00 UTC)
+    if 0 <= hour_of_day <= 9:
+        score += 10
+        reasons.append("[+10] 업무 시간 접근")
+    else:
+        reasons.append("[+0] 비업무 시간 (추가 검증 권장)")
+
+    # 결정
+    if not mfa_verified:
+        decision = "거부 (MFA 필수)"
+    elif not device_compliant:
+        decision = "조건부 허용 (기기 등록 필요)"
+    elif score >= 70:
+        decision = "허용"
+    elif score >= 50:
+        decision = "조건부 허용 (추가 인증 권장)"
+    else:
+        decision = "거부 (위험도 높음)"
+
+    result = {
+        "사용자": user_id,
+        "리소스": resource,
+        "신뢰 점수": f"{score}/100",
+        "결정": decision,
+        "판단 근거": reasons
+    }
+
+    for k, v in result.items():
+        if isinstance(v, list):
+            print(f"  {k}:")
+            for item in v:
+                print(f"    {item}")
+        else:
+            print(f"  {k}: {v}")
+
+    return result
+
+# 사용 예시
+# evaluate_zero_trust_access(
+#     user_id="alice@company.com",
+#     resource="internal-crm",
+#     ip_address="192.168.1.100",
+#     mfa_verified=True,
+#     device_compliant=True
+# )
+```
+
+---
+
 ## 1. Zero Trust란 무엇인가
 
 Zero Trust는 "절대 신뢰 없음, 항상 검증(Never Trust, Always Verify)"을 핵심 철학으로 삼는 보안 패러다임이다.

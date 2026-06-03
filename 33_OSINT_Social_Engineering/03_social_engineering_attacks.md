@@ -5,7 +5,76 @@
 <a name="한국어"></a>
 
 # 33-03. 사회공학 공격 기법 — 피싱·비싱·프리텍스팅의 설계와 측정
-> 한 줄 요약: 사람을 표적으로 삼는 공격은 기술이 아니라 시나리오이며, 시나리오는 정찰 데이터와 심리 트리거의 곱으로 만들어지고, 결과는 반드시 측정·교육으로 환류되어야 한다.
+
+## 0. 초보자를 위한 개념 이해
+
+### 사회공학이란?
+
+**사회공학(Social Engineering)**은 기술적 취약점이 아닌 **사람의 심리**를 이용해 정보를 빼내거나 시스템 접근을 얻는 공격입니다. 최고의 방화벽도 직원이 비밀번호를 알려주면 소용없습니다.
+
+**왜 배우는가:**
+```
+보안 통계:
+  침해 사고의 약 90%는 피싱/사회공학이 최초 진입점
+
+기술 보안만으로 부족한 이유:
+  아무리 강한 시스템도 ──사람을 속이면──▶ 무력화
+
+  사례:
+  - 직원에게 "IT팀인데 비밀번호 알려주세요" → 통함
+  - 가짜 로그인 페이지로 유도 → 자격증명 수집
+  - USB 드롭 → 궁금한 직원이 꽂음
+```
+
+### 핵심 공격 유형
+
+```
+피싱(Phishing):
+  이메일로 가짜 링크 전송 → 자격증명 수집
+  스피어피싱: 특정 대상 맞춤형
+  웨일링: C레벨 임원 대상
+
+비싱(Vishing):
+  전화로 속임 ("은행 보안팀입니다...")
+
+스미싱(Smishing):
+  SMS 문자 + 가짜 링크
+
+프리텍스팅(Pretexting):
+  가짜 시나리오 구성 ("배달 기사입니다, 서명해 주세요")
+  건물 진입, 정보 수집에 활용
+
+심리 트리거:
+  긴급성: "지금 즉시 확인 안 하면 계정 삭제!"
+  권위: "CEO 지시입니다"
+  희소성: "오늘만 가능"
+  호혜성: 무언가 제공 후 요청
+```
+
+### 필요한 도구
+- **GoPhish**: 피싱 캠페인 시뮬레이션 프레임워크
+- **Social Engineering Toolkit (SET)**: 사회공학 자동화
+- **Evilginx2**: 피싱 + MFA 우회
+
+### 기초 실습 예제
+```python
+# 피싱 캠페인 효과 분석 (GoPhish 결과 분석)
+phish_results = {
+    "emails_sent": 100,
+    "emails_opened": 45,
+    "links_clicked": 23,
+    "creds_submitted": 8,
+}
+
+open_rate = phish_results["emails_opened"] / phish_results["emails_sent"] * 100
+click_rate = phish_results["links_clicked"] / phish_results["emails_sent"] * 100
+cred_rate = phish_results["creds_submitted"] / phish_results["emails_sent"] * 100
+
+print(f"이메일 열람률: {open_rate:.1f}%")
+print(f"링크 클릭률:  {click_rate:.1f}%")
+print(f"자격증명 제출: {cred_rate:.1f}%")
+print(f"보안 인식 교육 필요 직원: {phish_results['creds_submitted']}명")
+```
 
 ---
 

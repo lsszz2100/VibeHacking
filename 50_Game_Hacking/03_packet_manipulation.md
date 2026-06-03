@@ -6,7 +6,72 @@
 
 # 03. 게임 패킷 조작 (Game Packet Manipulation)
 
-게임 네트워크 트래픽을 분석하고 조작하는 방법을 다룬다. TCP/UDP 프로토콜 분석, 패킷 스니핑, 중간자 공격, 커스텀 프로토콜 역분석까지 포함한다. 모든 내용은 CTF, 보안 연구 목적으로 작성되었다.
+## 0. 초보자를 위한 개념 이해
+
+### 게임 패킷 조작이란?
+
+**게임 패킷 조작(Game Packet Manipulation)**은 게임 클라이언트와 서버 사이의 네트워크 트래픽을 분석하고 변조해 게임 데이터를 조작하는 기술입니다.
+
+> 📌 CTF, 보안 연구, 개인 서버 환경에서만 합법적으로 사용합니다.
+
+**왜 배우는가:**
+```
+네트워크 보안 학습:
+  - 게임 프로토콜 → 커스텀 바이너리 프로토콜 분석 능력
+  - 중간자 공격 원리 이해
+  - 프록시 도구 사용법 숙련
+
+게임 서버 보안 개발자:
+  - 서버 사이드 검증의 중요성 이해
+  - "클라이언트는 절대 신뢰하지 말라"
+```
+
+### 핵심 개념 정리
+
+```
+게임 네트워크 통신 구조:
+
+클라이언트 → [패킷 인코딩] → 인터넷 → 서버
+클라이언트 ← [패킷 디코딩] ← 인터넷 ← 서버
+
+패킷 조작 포인트:
+  1. 클라이언트 내부: 전송 전 패킷 수정
+  2. 네트워크 레벨: 프록시로 가로채기
+  3. 서버 통신: 커스텀 클라이언트로 직접 통신
+
+프로토콜 유형:
+  TCP: 순서 보장, 신뢰성 높음 (MMORPG)
+  UDP: 빠름, 손실 허용 (FPS, 실시간 게임)
+  WebSocket: 웹 기반 게임
+  커스텀 바이너리: 분석 필요
+```
+
+### 필요한 도구
+- **Wireshark**: 패킷 캡처·분석
+- **Fiddler / Charles**: HTTP/S 게임 프록시
+- **Scapy**: Python 패킷 조작 라이브러리
+
+### 기초 실습 예제
+```python
+# Scapy로 네트워크 패킷 분석 (로컬 환경)
+from scapy.all import sniff, IP, TCP, Raw
+
+def analyze_game_packet(packet) -> None:
+    if packet.haslayer(TCP) and packet.haslayer(Raw):
+        src = packet[IP].src
+        dst = packet[IP].dst
+        dport = packet[TCP].dport
+        payload = packet[Raw].load
+
+        # 게임 서버 포트 (예: 8080) 필터링
+        if dport == 8080:
+            print(f"{src} → {dst}:{dport}")
+            print(f"  페이로드 ({len(payload)} bytes): {payload[:32].hex()}")
+
+# 로컬 네트워크 인터페이스에서 캡처
+# sniff(iface="eth0", prn=analyze_game_packet, count=100)
+print("주석 해제 후 실행 (관리자 권한 필요)")
+```
 
 ---
 

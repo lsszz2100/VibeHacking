@@ -6,7 +6,67 @@
 
 # 스마트 컨트랙트 감사
 
-스마트 컨트랙트는 한번 배포하면 수정이 불가능하다. 취약점이 있으면 수억 달러의 자산이 탈취될 수 있고, 이는 실제로 반복적으로 발생해왔다. 이 문서는 스마트 컨트랙트의 주요 취약점 분류, 자동화 감사 도구, Python 기반 감사 파이프라인을 다룬다.
+## 0. 초보자를 위한 개념 이해
+
+### 스마트 컨트랙트 감사란?
+
+**스마트 컨트랙트 감사(Smart Contract Audit)**는 블록체인에 배포하기 전에 코드의 취약점을 찾아내는 보안 리뷰입니다. 한번 배포하면 수정이 불가능하므로 배포 전 감사가 필수입니다.
+
+**왜 중요한가:**
+```
+스마트 컨트랙트 특수성:
+
+일반 소프트웨어:     버그 발견 → 패치 배포 → 해결
+스마트 컨트랙트:     버그 발견 → (수정 불가!) → 자금 영구 손실
+
+2023년 DeFi 해킹:
+  총 피해액 ~$1.7B
+  주요 원인:
+    - 재진입 공격(Reentrancy): 40%
+    - 로직 오류: 25%
+    - 오라클 조작: 20%
+```
+
+### 주요 취약점 유형
+
+```
+1. 재진입 공격 (Reentrancy)
+   withdraw()가 잔액 차감 전 외부 호출 허용
+   → 반복 출금 가능
+   → The DAO 해킹 원인 (2016, $60M)
+
+2. 정수 오버플로 (Integer Overflow)
+   uint8 max=255, +1 = 0 (오버플로)
+   → Solidity 0.8+ 기본 방어, 이전 버전 취약
+
+3. 접근 제어 오류
+   owner()만 실행 가능한 함수에 modifier 누락
+   → 누구나 관리자 권한 실행 가능
+
+4. 타임스탬프 조작
+   block.timestamp를 난수 생성에 사용
+   → 채굴자가 조작 가능
+```
+
+### 필요한 도구
+- **Slither**: Python 기반 정적 분석 (Trail of Bits)
+- **Mythril**: 심볼릭 실행 분석 도구
+- **Foundry/Forge**: 단위 테스트 + 퍼징
+
+### 기초 실습 예제
+```bash
+# Slither로 스마트 컨트랙트 자동 분석
+pip install slither-analyzer
+
+# 분석 실행
+slither vulnerable_contract.sol
+
+# 출력 예시:
+# VulnerableContract.withdraw() (line 15)
+# Reentrancy in VulnerableContract.withdraw()
+# State variables written after the call(s):
+#   - balances[msg.sender] = 0
+```
 
 ---
 

@@ -6,6 +6,71 @@
 
 # Kubernetes 공격: 클러스터 침투 및 권한 탈취
 
+## 0. 초보자를 위한 개념 이해
+
+### Kubernetes 보안이란?
+
+Kubernetes(K8s)는 컨테이너를 대규모로 관리하는 오케스트레이션 플랫폼이다. 수십에서 수천 개의 컨테이너를 자동으로 배포·확장·관리한다. Kubernetes 보안은 클러스터 내 각 컴포넌트의 인증/인가 설정, 네트워크 정책, 시크릿 관리 등이 핵심이며, 단 하나의 취약한 Pod가 클러스터 전체를 위험에 빠뜨릴 수 있다.
+
+**왜 배우는가:**
+```
+Kubernetes 클러스터 침투 경로
+
+외부 →  노출된 API 서버(6443)  →  인증 없음 → 클러스터 완전 제어
+외부 →  노출된 kubelet(10250)  →  명령 실행 → 노드 접근
+Pod  →  ServiceAccount 토큰    →  API 호출  → 권한에 따라 다양
+Pod  →  환경변수/마운트         →  시크릿 탈취 → 다른 서비스 접근
+
+핵심 위험:
+  kubectl이 클러스터 전체를 제어하는 만큼
+  API 서버 접근 = 클러스터 완전 장악 가능
+```
+
+### 핵심 개념 정리
+
+```
+Kubernetes 핵심 컴포넌트와 보안 관련성
+
+컴포넌트            역할                      보안 관련 포트
+────────────────────────────────────────────────────────────
+kube-apiserver     모든 요청의 관문            6443(TLS), 8080(비인증)
+etcd               클러스터 상태 저장           2379(클라이언트)
+kubelet            노드의 Pod 관리 에이전트    10250(인증), 10255(비인증)
+kube-proxy         네트워크 규칙 적용           없음(직접 노출 X)
+ServiceAccount     Pod의 신원                  토큰 파일로 마운트
+```
+
+### 필요한 도구 및 환경
+- **kubectl**: Kubernetes CLI (`apt install kubectl`)
+- **kubectx / kubens**: 컨텍스트·네임스페이스 전환
+- **Trivy**: K8s 클러스터 취약점 스캔
+- **연습 환경**: Minikube 또는 kind (로컬 클러스터)
+
+### 기초 실습 예제
+```bash
+# 1. Minikube로 로컬 클러스터 생성 (연습용)
+minikube start
+kubectl get nodes
+
+# 2. ServiceAccount 토큰 확인 (Pod 내부)
+# 실행 중인 Pod에서:
+ls /var/run/secrets/kubernetes.io/serviceaccount/
+cat /var/run/secrets/kubernetes.io/serviceaccount/token
+
+# 3. 토큰으로 API 서버 접근 테스트
+TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+APISERVER=https://kubernetes.default.svc
+curl -s "$APISERVER/api/v1/namespaces" \
+    -H "Authorization: Bearer $TOKEN" \
+    --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+# 4. RBAC 권한 확인 (현재 서비스 계정의 권한)
+kubectl auth can-i --list  # 모든 가능한 작업 나열
+kubectl auth can-i get secrets -n kube-system
+```
+
+---
+
 ## 1. Kubernetes 보안 아키텍처 이해
 
 ```

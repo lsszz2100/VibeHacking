@@ -6,6 +6,159 @@
 
 # 57-5. PQC 마이그레이션 전략: 암호화 자산 인벤토리부터 전환까지
 
+## 0. 초보자를 위한 개념 이해
+
+### PQC 마이그레이션이란?
+
+PQC 마이그레이션은 기업이나 조직의 기존 암호 시스템(RSA, ECC 등)을 양자 컴퓨터에 안전한 새 표준(ML-KEM, ML-DSA 등)으로 전환하는 프로세스이다. 단순히 알고리즘 하나를 교체하는 것이 아니라, 시스템 전반에 퍼져 있는 모든 암호화 사용처를 찾아내고 우선순위를 정해 체계적으로 교체해야 하는 대규모 프로젝트이다.
+
+**왜 배우는가:**
+```
+[HNDL 공격: 지금 당장 위험한 이유]
+
+지금(2025):
+  공격자 → 암호화된 데이터 수집 저장 → "나중에 해독하겠다"
+
+미래(2030~?):
+  충분한 큐비트의 양자 컴퓨터 완성
+  → 저장해둔 2025년 암호문 해독
+  → 의료기록, 금융 거래, 국가 기밀 노출
+
+결론: 지금 전송되는 민감한 데이터는 이미 위험에 처해 있음
+      → PQC 마이그레이션은 "미래의 문제"가 아닌 "지금의 문제"
+
+[마이그레이션 4단계]
+1. 인벤토리 → 2. 우선순위 지정 → 3. 하이브리드 전환 → 4. 완전 PQC
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- CBOM(Cryptography Bill of Materials): 소프트웨어 내 모든 암호화 컴포넌트 목록
+- HNDL(Harvest Now, Decrypt Later): 현재 데이터를 수집해 양자 컴퓨터로 나중에 해독
+- 암호 민첩성(Crypto Agility): 알고리즘을 코드 변경 없이 쉽게 교체할 수 있는 설계
+- 하이브리드 암호: 기존 알고리즘 + PQC를 동시에 사용 (전환기 안전장치)
+- TLS 1.3 PQC: ML-KEM을 X25519와 함께 사용하는 하이브리드 키 교환
+- PKI 갱신: CA 인증서 체계 전반을 ML-DSA 기반으로 교체하는 작업
+- 레거시 호환: 구형 시스템이 PQC를 지원할 때까지 공존하는 전환 기간
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: subprocess, json, pathlib
+- **Syft / cdxgen**: SBOM(소프트웨어 구성 요소 목록) 생성 도구
+- **cbomkit**: 암호화 사용처 스캐닝 도구 (IBM 제공)
+- **OpenSSL 3.4+**: PQC 알고리즘 지원 버전
+
+### 기초 실습 예제
+```python
+import subprocess
+import json
+import re
+from pathlib import Path
+
+def scan_crypto_usage(directory: str) -> dict:
+    """
+    소스코드에서 암호화 라이브러리 사용처를 스캔하는 기본 도구
+    실제 환경에서는 cbomkit, semgrep 등 전문 도구 사용 권장
+    """
+    findings = {
+        "rsa_usage": [],
+        "ecdh_usage": [],
+        "aes_usage": [],
+        "tls_config": [],
+        "hardcoded_keys": [],
+    }
+
+    # 스캔할 패턴 (실제 코드에서 취약한 암호화 사용 탐지)
+    patterns = {
+        "rsa_usage": [
+            r"RSA\.generate\(",           # Python cryptography
+            r"new RSA\.",                  # Node.js
+            r"openssl_pkey_new.*rsa",      # PHP
+            r"KeyPairGenerator.*RSA",      # Java
+        ],
+        "ecdh_usage": [
+            r"ECDH\(",
+            r"ec\.generate_private_key",
+            r"secp256r1|secp384r1|P-256",
+        ],
+        "tls_config": [
+            r"ssl\.SSLContext|ssl\.wrap_socket",
+            r"TLSv1\.|SSLv",              # 구버전 TLS
+            r"PROTOCOL_TLS",
+        ],
+    }
+
+    scan_dir = Path(directory)
+    file_count = 0
+
+    for filepath in scan_dir.rglob("*.py"):  # Python 파일 스캔 (확장 가능)
+        try:
+            content = filepath.read_text(encoding='utf-8', errors='ignore')
+            file_count += 1
+            for category, pattern_list in patterns.items():
+                for pattern in pattern_list:
+                    matches = re.findall(pattern, content, re.IGNORECASE)
+                    if matches:
+                        findings[category].append({
+                            "file": str(filepath),
+                            "pattern": pattern,
+                            "count": len(matches)
+                        })
+        except Exception:
+            pass
+
+    return {"scanned_files": file_count, "findings": findings}
+
+def generate_migration_priority(scan_results: dict) -> list:
+    """
+    스캔 결과를 바탕으로 마이그레이션 우선순위 생성
+    """
+    priorities = []
+
+    findings = scan_results.get("findings", {})
+
+    if findings.get("rsa_usage"):
+        priorities.append({
+            "priority": "높음",
+            "category": "RSA 키 교환/서명",
+            "action": "ML-KEM-768 (키 교환) + ML-DSA-65 (서명)으로 교체",
+            "files": [f["file"] for f in findings["rsa_usage"]][:3],
+        })
+    if findings.get("ecdh_usage"):
+        priorities.append({
+            "priority": "높음",
+            "category": "ECDH 키 교환",
+            "action": "하이브리드: X25519 + ML-KEM-768으로 전환",
+            "files": [f["file"] for f in findings["ecdh_usage"]][:3],
+        })
+    if findings.get("tls_config"):
+        priorities.append({
+            "priority": "중간",
+            "category": "TLS 설정",
+            "action": "TLS 1.3 + PQC 키 교환 활성화",
+            "files": [f["file"] for f in findings["tls_config"]][:3],
+        })
+
+    return priorities
+
+# 현재 디렉토리 스캔 예시
+import tempfile, os
+print("=== PQC 마이그레이션 스캐너 ===")
+results = scan_crypto_usage(".")
+print(f"스캔된 파일 수: {results['scanned_files']}")
+priorities = generate_migration_priority(results)
+if priorities:
+    print("\n[마이그레이션 우선순위]")
+    for p in priorities:
+        print(f"  [{p['priority']}] {p['category']}: {p['action']}")
+else:
+    print("RSA/ECC 사용처 미발견 (이미 PQC 준비되었거나 암호화 미사용)")
+```
+
+---
+
 ## 개요
 
 포스트 양자 암호(PQC) 마이그레이션은 단순한 알고리즘 교체가 아니라 조직 전반의 암호화 거버넌스 재구축이다. NIST가 2024년 8월 FIPS 203/204/205를 확정한 이후, 기업과 정부기관은 체계적 전환 계획 수립이 요구된다. 특히 "지금 수집해서 나중에 복호화(Harvest Now, Decrypt Later, HNDL)" 공격에 대비하려면 즉시 암호화 인벤토리 작업을 시작해야 한다.

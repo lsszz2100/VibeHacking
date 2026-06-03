@@ -6,6 +6,131 @@
 
 # 소프트웨어 공급망 공격 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### 소프트웨어 공급망 공격이란?
+
+소프트웨어 공급망 공격은 최종 타겟을 직접 공격하는 대신, 타겟이 신뢰하는 소프트웨어 공급업체나 오픈소스 라이브러리를 먼저 침해하여 악성 코드를 심는 간접 공격 방식이다. 타겟 회사의 보안이 아무리 뛰어나도, 신뢰하는 외부 소프트웨어가 이미 감염된 경우 막을 방법이 없다는 점에서 매우 위험하다.
+
+**왜 배우는가:**
+```
+[공급망 공격의 전형적인 흐름]
+
+공격자 목표: 대기업 A의 내부망 침투
+
+직접 공격 (어려움):
+공격자 → [대기업 A 방화벽/EDR/SOC] → 차단됨
+
+공급망 공격 (우회):
+공격자 → [소규모 소프트웨어 업체 B 침해]
+           │ (보안이 약함, 공격 성공)
+           ↓
+       B의 업데이트 서버에 악성코드 삽입
+           │
+           ↓ (자동 업데이트)
+대기업 A → "신뢰된 소프트웨어 업데이트" 설치
+           │
+           ↓
+       내부망 침투 성공 (방화벽 우회)
+
+결과: 신뢰 관계가 곧 공격 경로
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 업스트림 공격: 소프트웨어 개발 상류(소스코드·빌드서버)를 침해하는 공격
+- 업데이트 메커니즘 공격: 소프트웨어 업데이트 과정에 악성코드를 삽입
+- 오픈소스 타이포스쿼팅: 유명 패키지 이름의 오타를 노린 악성 패키지 배포
+- 악성 기여자(Malicious Maintainer): 오픈소스 관리자가 직접 악성코드 삽입
+- 소셜 엔지니어링: 오픈소스 관리자를 속여 악성 PR을 병합하게 유도
+- XZ Utils 사건(2024): 2년에 걸쳐 신뢰를 쌓은 후 백도어를 삽입한 사례
+- 이벤트 스트림 사건(2018): npm 패키지 관리권 양도 후 악성코드 삽입 사례
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: 패키지 메타데이터 분석
+- **pip-audit / safety**: Python 패키지 취약점 검사
+- **OSS Index**: 오픈소스 컴포넌트 취약점 데이터베이스
+- **Snyk**: 오픈소스 보안 취약점 자동 탐지
+
+### 기초 실습 예제
+```python
+import re
+import hashlib
+import json
+from pathlib import Path
+
+def analyze_package_risk(package_name: str, package_info: dict) -> dict:
+    """
+    패키지 위험 지표 분석 (공급망 공격 탐지 관점)
+    실제 환경: PyPI API (https://pypi.org/pypi/{name}/json)로 조회
+    """
+    risk_indicators = []
+    risk_score = 0
+
+    # 1. 타이포스쿼팅 탐지 (유명 패키지와 유사한 이름)
+    popular_packages = ["requests", "numpy", "pandas", "flask", "django",
+                        "boto3", "cryptography", "pillow", "pyyaml"]
+    for popular in popular_packages:
+        # 레벤슈타인 거리 1~2인 경우 타이포스쿼팅 의심
+        if (package_name != popular and
+            abs(len(package_name) - len(popular)) <= 2 and
+            sum(a != b for a, b in zip(package_name, popular)) <= 2):
+            risk_indicators.append(f"타이포스쿼팅 의심: '{popular}'과 유사")
+            risk_score += 40
+
+    # 2. 신생 패키지 (출시 30일 미만)
+    age_days = package_info.get("age_days", 100)
+    if age_days < 30:
+        risk_indicators.append(f"신생 패키지 ({age_days}일)")
+        risk_score += 20
+
+    # 3. 높은 권한 요청 (setup.py에 subprocess/os 사용)
+    if package_info.get("uses_subprocess"):
+        risk_indicators.append("설치 시 시스템 명령 실행")
+        risk_score += 30
+
+    # 4. 관리자 단독 (유지자 1명)
+    maintainers = package_info.get("maintainers", 1)
+    if maintainers == 1:
+        risk_indicators.append("단일 관리자 (관리권 탈취 위험)")
+        risk_score += 10
+
+    # 5. 최근 갑작스러운 버전 업로드
+    if package_info.get("sudden_update"):
+        risk_indicators.append("갑작스러운 버전 업데이트")
+        risk_score += 25
+
+    return {
+        "package": package_name,
+        "risk_score": min(risk_score, 100),
+        "risk_level": "높음" if risk_score >= 50 else "중간" if risk_score >= 20 else "낮음",
+        "indicators": risk_indicators,
+    }
+
+# 테스트 샘플
+test_packages = [
+    ("requests",    {"age_days": 4000, "maintainers": 5,  "uses_subprocess": False}),
+    ("requsets",    {"age_days": 5,    "maintainers": 1,  "uses_subprocess": True}),   # 타이포
+    ("numpy",       {"age_days": 5000, "maintainers": 20, "uses_subprocess": False}),
+    ("numpay",      {"age_days": 10,   "maintainers": 1,  "uses_subprocess": True}),   # 타이포
+    ("mylib-utils", {"age_days": 15,   "maintainers": 1,  "sudden_update": True}),
+]
+
+print("=== 패키지 공급망 위험 분석 ===\n")
+for pkg_name, pkg_info in test_packages:
+    result = analyze_package_risk(pkg_name, pkg_info)
+    print(f"패키지: {result['package']:<20} | 위험도: {result['risk_level']:<4} ({result['risk_score']}점)")
+    for indicator in result["indicators"]:
+        print(f"  ⚠ {indicator}")
+    if result["indicators"]:
+        print()
+```
+
+---
+
 ## 1. 실제 공급망 공격 사례 분석
 
 ### 1.1 주요 사건 연표

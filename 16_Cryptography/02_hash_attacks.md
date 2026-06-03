@@ -1,5 +1,119 @@
 # 해시 공격 기법 완전 정복
 
+## 0. 초보자를 위한 개념 이해
+
+### 해시 공격이란?
+
+해시 함수는 임의 길이의 데이터를 고정 길이의 값(다이제스트)으로 변환하는 단방향 함수입니다. 패스워드 저장, 파일 무결성 검증, 디지털 서명에 필수적이지만, MD5·SHA-1처럼 취약한 알고리즘은 충돌(다른 입력이 같은 해시) 또는 무지개 테이블로 원문 복원이 가능합니다. 해시 공격 기술은 크래킹된 패스워드 DB 분석, 포렌식, CTF 암호학 문제에서 핵심 역량입니다.
+
+**왜 배우는가:**
+```
+해시 취약점의 실제 영향:
+
+  MD5 충돌 공격
+    → 동일 MD5 해시를 가진 두 파일 생성 가능
+    → AV 서명 우회, 파일 위변조 탐지 실패
+
+  SHA-1 충돌 (SHAttered, 2017)
+    → Google이 실제 SHA-1 충돌 증명
+    → 인증서·서명 시스템 신뢰도 위협
+
+  무염 MD5/SHA-1 패스워드 DB 유출
+    → 레인보우 테이블로 수 초 내 대부분 크랙
+    → 2012년 LinkedIn 해킹 (630만 SHA-1 해시 유출)
+
+  bcrypt/Argon2 도입 이유:
+    → 의도적으로 느린 키 파생 함수
+    → GPU 크래킹 수십만 배 어렵게 만듦
+```
+
+### 핵심 개념 정리
+
+```
+해시 알고리즘 보안 현황:
+
+  알고리즘   출력 크기   상태        특이사항
+  ──────────────────────────────────────────────────
+  MD5       128bit      파훼 (2004)  충돌 저항성 없음
+  SHA-1     160bit      파훼 (2017)  SHAttered 공격
+  SHA-256   256bit      안전         현재 표준
+  SHA-3     256/512bit  안전         Keccak 기반
+  bcrypt    60char      안전         패스워드 전용 (의도적 느림)
+  Argon2    가변        안전         메모리 어렵 함수 (권장)
+
+공격 유형:
+  레인보우 테이블  — 해시→평문 사전 (salt 없으면 취약)
+  딕셔너리 공격    — 자주 쓰는 패스워드 목록
+  규칙 기반        — l33tspeak, 숫자 추가 등 변형 규칙
+  마스크 공격      — 패턴 기반 (8자, 영문+숫자 등)
+```
+
+### 필요한 도구 및 환경
+- **hashcat**: GPU 기반 고속 해시 크래킹 도구
+- **john (John the Ripper)**: CPU 기반 패스워드 크래커
+- **hashid**: 해시 유형 자동 식별 도구
+- **CrackStation**: 온라인 해시 조회 서비스 (학습용)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""해시 알고리즘 비교 및 패스워드 해싱 올바른 방법 실습."""
+
+import hashlib
+import time
+import bcrypt
+import os
+
+
+def compare_hash_speed(password: str) -> dict[str, float]:
+    """다양한 해시 알고리즘의 연산 속도를 비교합니다."""
+    pw_bytes = password.encode()
+    timings: dict[str, float] = {}
+
+    # MD5 속도 (빠름 = 위험)
+    start = time.perf_counter()
+    for _ in range(100_000):
+        hashlib.md5(pw_bytes).hexdigest()
+    timings["MD5 × 100,000"] = time.perf_counter() - start
+
+    # SHA-256 속도
+    start = time.perf_counter()
+    for _ in range(100_000):
+        hashlib.sha256(pw_bytes).hexdigest()
+    timings["SHA-256 × 100,000"] = time.perf_counter() - start
+
+    # bcrypt 속도 (의도적으로 느림 = 안전)
+    start = time.perf_counter()
+    salt = bcrypt.gensalt(rounds=12)
+    bcrypt.hashpw(pw_bytes, salt)
+    timings["bcrypt (rounds=12) × 1"] = time.perf_counter() - start
+
+    return timings
+
+
+def secure_password_hash(password: str) -> tuple[bytes, bytes]:
+    """패스워드를 안전하게 해싱합니다 (salt + SHA-256 키 파생)."""
+    salt = os.urandom(32)
+    key = hashlib.pbkdf2_hmac(
+        hash_name="sha256",
+        password=password.encode(),
+        salt=salt,
+        iterations=600_000,  # NIST 2023 권고
+    )
+    return salt, key
+
+
+if __name__ == "__main__":
+    print("[해시 알고리즘 속도 비교]")
+    timings = compare_hash_speed("password123")
+    for algo, elapsed in timings.items():
+        print(f"  {algo}: {elapsed:.3f}초")
+    print("\n→ MD5/SHA-256은 너무 빨라 GPU 크래킹에 취약합니다.")
+    print("→ 패스워드 저장에는 bcrypt/Argon2/PBKDF2를 사용하세요.")
+```
+
+---
+
 ## 해시 함수 보안 속성
 
 ```

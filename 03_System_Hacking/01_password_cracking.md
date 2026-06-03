@@ -6,6 +6,105 @@
 
 # 패스워드 크랙 — 이론과 실전
 
+## 0. 초보자를 위한 개념 이해
+
+### 패스워드 크랙이란?
+
+패스워드 크랙은 해시(hash)로 저장된 패스워드를 원래 평문으로 복원하는 기술입니다. 시스템은 보안을 위해 패스워드를 직접 저장하지 않고 단방향 해시 함수로 변환해 저장하는데, 이 해시값에서 원문을 찾아내는 것이 패스워드 크랙입니다.
+
+**왜 배우는가:**
+```
+패스워드가 저장되는 방식:
+
+  사용자가 입력: "password123"
+                    ↓ 해시 함수 (MD5, SHA-1, bcrypt...)
+  DB에 저장:    "482c811da5d5b4bc6d497ffa98491e38"
+
+  크랙 방법:
+  딕셔너리 공격  → 단어 목록의 해시를 하나씩 비교
+  브루트포스    → 모든 조합 시도 (짧은 패스워드에 효과적)
+  레인보우 테이블 → 사전 계산된 해시 데이터베이스 조회
+
+  실제 활용:
+  침투 테스트 → 탈취한 /etc/shadow 또는 DB 해시 크랙
+  포렌식 조사  → 암호화된 파일/계정 접근
+  보안 감사   → 취약한 패스워드 정책 점검
+```
+
+### 핵심 개념 정리
+
+```
+해시 알고리즘 강도 비교:
+
+알고리즘    | 강도    | 크랙 속도       | 현재 권장
+─────────────────────────────────────────────
+MD5        | 매우 취약 | 초당 수십억 번  | 사용 금지
+SHA-1      | 취약     | 초당 수십억 번  | 사용 금지
+SHA-256    | 보통     | 초당 수억 번    | 패스워드엔 부적합
+bcrypt     | 강함     | 초당 수천 번    | 권장
+Argon2     | 매우 강함 | 초당 수백 번   | 최신 권장
+
+Salt(솔트)란?
+  동일 패스워드도 다른 해시가 되도록 추가하는 랜덤 값
+  password + "abc123" → 다른 해시
+  → 레인보우 테이블 공격 무력화
+
+/etc/shadow 해시 형식:
+  $1$  = MD5     $5$  = SHA-256
+  $2y$ = bcrypt  $6$  = SHA-512
+```
+
+### 필요한 도구 및 환경
+- **크래킹 도구**: hashcat(GPU 가속), john(CPU 기반) — 두 도구 모두 중요
+- **워드리스트**: rockyou.txt(1400만 개 단어), SecLists 등 공개 목록
+- **GPU**: hashcat은 GPU를 사용하면 CPU 대비 수백 배 빠름
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""해시 타입 식별 및 딕셔너리 공격 시뮬레이션 (교육용)."""
+import hashlib
+import re
+from typing import Optional
+
+def identify_hash(hash_str: str) -> str:
+    """해시 문자열의 알고리즘 타입 추정."""
+    hash_str = hash_str.strip()
+    patterns: list[tuple[str, str]] = [
+        (r"^\$2[ayb]\$", "bcrypt"),
+        (r"^\$6\$", "SHA-512 crypt"),
+        (r"^\$5\$", "SHA-256 crypt"),
+        (r"^\$1\$", "MD5 crypt"),
+        (r"^[a-f0-9]{32}$", "MD5"),
+        (r"^[a-f0-9]{40}$", "SHA-1"),
+        (r"^[a-f0-9]{64}$", "SHA-256"),
+    ]
+    for pattern, name in patterns:
+        if re.match(pattern, hash_str, re.IGNORECASE):
+            return name
+    return "알 수 없음"
+
+def dictionary_attack_md5(target_hash: str, wordlist: list[str]) -> Optional[str]:
+    """MD5 해시에 대한 딕셔너리 공격 시뮬레이션."""
+    target_hash = target_hash.lower()
+    for word in wordlist:
+        candidate = hashlib.md5(word.encode()).hexdigest()
+        if candidate == target_hash:
+            return word
+    return None
+
+if __name__ == "__main__":
+    # 테스트: "password"의 MD5 해시
+    test_hash = hashlib.md5(b"password").hexdigest()
+    print(f"해시 타입: {identify_hash(test_hash)}")
+
+    common_passwords = ["admin", "123456", "password", "qwerty"]
+    result = dictionary_attack_md5(test_hash, common_passwords)
+    print(f"크랙 결과: {result}")  # "password" 출력
+```
+
+---
+
 ## 1. 패스워드 해시 기초
 
 ### 해시 함수 특성

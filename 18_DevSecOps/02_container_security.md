@@ -6,6 +6,141 @@
 
 # 컨테이너 보안 완전 가이드
 
+## 0. 초보자를 위한 개념 이해
+
+### 컨테이너 보안이란?
+
+컨테이너(Docker, Kubernetes)는 현대 인프라의 표준이지만, 잘못된 설정은 컨테이너 탈출(Host 권한 획득), 비밀 키 노출, 이미지 취약점 등 심각한 보안 위협을 만들어냅니다. 컨테이너 보안은 이미지 빌드 단계부터 런타임, 오케스트레이션(K8s)까지 전 레이어를 포함합니다. DevSecOps 파이프라인에서 컨테이너 이미지 스캔은 필수 단계입니다.
+
+**왜 배우는가:**
+```
+컨테이너 보안 취약점의 실제 사례:
+
+  Docker --privileged 실행
+    → 컨테이너가 호스트 파일시스템 전체 접근
+    → cgroup 탈출로 호스트 셸 획득
+
+  Docker 소켓 마운트 (-v /var/run/docker.sock)
+    → 컨테이너 내에서 호스트의 모든 컨테이너 제어
+    → 새 --privileged 컨테이너 생성으로 호스트 장악
+
+  Kubernetes RBAC 오설정
+    → ServiceAccount에 cluster-admin 부여
+    → 파드에서 K8s API로 전체 클러스터 제어
+
+  공개 Docker Hub 이미지
+    → CVE 수백 개 포함 가능
+    → 악성 코드 삽입된 이미지 게시 사례
+```
+
+### 핵심 개념 정리
+
+```
+컨테이너 보안 핵심 원칙:
+
+  이미지 보안
+    □ 최소 기반 이미지 (alpine, distroless)
+    □ 비루트 사용자 실행 (USER appuser)
+    □ 읽기 전용 파일시스템 (--read-only)
+    □ 정기적 취약점 스캔 (Trivy, Grype)
+
+  런타임 보안
+    □ --privileged 절대 금지
+    □ 도커 소켓 마운트 금지
+    □ capabilities 최소화 (--cap-drop ALL)
+    □ seccomp 프로파일 적용
+
+  Kubernetes 보안
+    □ RBAC 최소 권한 (ServiceAccount별 분리)
+    □ NetworkPolicy로 파드 간 통신 제한
+    □ PodSecurityContext runAsNonRoot: true
+    □ Secret 암호화 (etcd at-rest encryption)
+```
+
+### 필요한 도구 및 환경
+- **Trivy**: 컨테이너 이미지 및 파일시스템 취약점 스캐너
+- **Falco**: 런타임 컨테이너 이상 행위 탐지
+- **kube-bench**: Kubernetes CIS 벤치마크 자동 점검
+- **Docker Desktop**: 로컬 컨테이너 개발 환경
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""Docker 컨테이너 보안 설정 감사 — 위험 설정 자동 탐지."""
+
+import subprocess
+import json
+from dataclasses import dataclass, field
+
+
+@dataclass
+class ContainerAuditResult:
+    container_id: str
+    container_name: str
+    risks: list[str] = field(default_factory=list)
+    risk_level: str = "low"
+
+
+def audit_container(container_id: str) -> ContainerAuditResult:
+    """실행 중인 컨테이너의 보안 설정을 감사합니다."""
+    result_raw = subprocess.run(
+        ["docker", "inspect", container_id],
+        capture_output=True, text=True,
+    )
+    if result_raw.returncode != 0:
+        return ContainerAuditResult(container_id, "unknown", ["inspect 실패"])
+
+    info = json.loads(result_raw.stdout)[0]
+    name = info.get("Name", "").lstrip("/")
+    audit = ContainerAuditResult(container_id=container_id, container_name=name)
+
+    host_config = info.get("HostConfig", {})
+
+    # 1. Privileged 모드 확인
+    if host_config.get("Privileged", False):
+        audit.risks.append("[Critical] Privileged 모드 실행!")
+        audit.risk_level = "critical"
+
+    # 2. Docker 소켓 마운트 확인
+    binds = host_config.get("Binds") or []
+    for bind in binds:
+        if "docker.sock" in bind:
+            audit.risks.append("[Critical] Docker 소켓 마운트!")
+            audit.risk_level = "critical"
+
+    # 3. root 사용자 실행 확인
+    user = info.get("Config", {}).get("User", "")
+    if not user or user == "root" or user == "0":
+        audit.risks.append("[High] root 사용자로 실행 중")
+        if audit.risk_level not in ("critical",):
+            audit.risk_level = "high"
+
+    # 4. 읽기-쓰기 파일시스템 확인
+    if not host_config.get("ReadonlyRootfs", False):
+        audit.risks.append("[Medium] 쓰기 가능한 루트 파일시스템")
+
+    return audit
+
+
+if __name__ == "__main__":
+    # 실행 중인 컨테이너 목록 가져오기
+    ps = subprocess.run(
+        ["docker", "ps", "-q"],
+        capture_output=True, text=True,
+    )
+    container_ids = ps.stdout.strip().splitlines()
+    if not container_ids:
+        print("실행 중인 컨테이너 없음. Docker 환경에서 실행하세요.")
+    else:
+        for cid in container_ids:
+            result = audit_container(cid)
+            print(f"\n[{result.risk_level.upper()}] {result.container_name}")
+            for risk in result.risks:
+                print(f"  {risk}")
+```
+
+---
+
 ## 컨테이너 보안 위협 모델
 
 ```

@@ -9,6 +9,95 @@
 
 ---
 
+## 0. 초보자를 위한 개념 이해
+
+### Kerberos 위임이란?
+
+Kerberos는 네트워크에서 신원을 증명하는 티켓 기반 인증 시스템입니다. '위임(Delegation)'은 서비스가 사용자를 대신해 다른 서비스에 접근할 수 있게 허용하는 기능인데, 이 설정이 잘못 구성되면 공격자가 권한을 남용할 수 있습니다.
+
+**왜 배우는가:**
+```
+위임 공격이 위험한 이유:
+
+  일반적 시나리오:
+    사용자 → 웹 서버 로그인 → 웹 서버가 DB에 사용자 대신 접근
+
+  비제약 위임 오남용:
+    공격자 → 위임 허용된 서버 장악 →
+    해당 서버에 인증한 모든 사용자의 TGT 획득 →
+    Domain Admin 포함 모든 계정 위장 가능!
+
+  실제 공격 예시:
+  Unconstrained Delegation + Printer Bug:
+  1. DC에 웹 서버로 인증 강제 유도 (MS-RPRN 취약점)
+  2. 웹 서버 메모리에 DC의 TGT 저장됨
+  3. DC의 TGT로 Golden Ticket 생성
+  → 도메인 완전 장악
+```
+
+### 핵심 개념 정리
+
+```
+Kerberos 인증 흐름:
+
+  1. 사용자가 KDC(Key Distribution Center)에 TGT 요청
+  2. KDC가 TGT(Ticket Granting Ticket) 발급
+  3. 서비스 접근 시 TGT로 Service Ticket 요청
+  4. Service Ticket으로 서비스 접근
+
+위임 유형별 위험도:
+  비제약 위임(Unconstrained):
+    - 모든 서비스에 위임 가능
+    - 위험도: 최대 (★★★★★)
+    - AD 속성: TrustedForDelegation=True
+
+  제약 위임(Constrained):
+    - 특정 서비스만 위임 허용
+    - 위험도: 높음 (★★★★☆)
+
+  리소스 기반 제약 위임(RBCD):
+    - 리소스가 허용 목록 직접 관리
+    - 위험도: 높음 (쓰기 권한 있으면 공격 가능)
+```
+
+### 필요한 도구 및 환경
+- **AD 실습 환경**: HackTheBox 또는 직접 구성한 AD 랩 (Windows Server + Windows 클라이언트)
+- **BloodHound**: AD 관계 시각화 — 위임 설정 서버를 그래프로 탐지
+- **Impacket**: Python 기반 Kerberos 공격 도구 모음 (getST.py, ticketer.py 등)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""Kerberos 위임 설정 서버 탐지 (LDAP 쿼리 기반, 교육용)."""
+
+def get_unconstrained_delegation_query() -> str:
+    """비제약 위임 설정된 컴퓨터 계정 탐색 LDAP 필터."""
+    # TrustedForDelegation=True 인 계정
+    return "(&(objectClass=computer)(userAccountControl:1.2.840.113556.1.4.803:=524288))"
+
+def get_constrained_delegation_query() -> str:
+    """제약 위임 설정된 계정 탐색 LDAP 필터."""
+    # msDS-AllowedToDelegateTo 속성이 설정된 계정
+    return "(msDS-AllowedToDelegateTo=*)"
+
+def analyze_delegation_risk(account_name: str, delegation_type: str) -> str:
+    """위임 설정 계정의 위험도 평가."""
+    if delegation_type == "unconstrained":
+        return f"[위험] {account_name}: 비제약 위임 → TGT 탈취 가능"
+    elif delegation_type == "constrained":
+        return f"[주의] {account_name}: 제약 위임 → S4U2Proxy 공격 가능"
+    return f"[정상] {account_name}: 위임 없음"
+
+if __name__ == "__main__":
+    print("위임 탐지 LDAP 쿼리:")
+    print(f"  비제약: {get_unconstrained_delegation_query()}")
+    print(f"  제약:   {get_constrained_delegation_query()}")
+    # 실제 사용: ldap3로 AD 연결 후 위 필터로 검색
+    # BloodHound: "Find Computers with Unconstrained Delegation" 내장 쿼리 사용
+```
+
+---
+
 ## 1. Kerberos 위임 개요
 
 ### Kerberos 인증 흐름 복습

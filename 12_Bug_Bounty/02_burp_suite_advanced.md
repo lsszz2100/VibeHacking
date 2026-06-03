@@ -6,6 +6,86 @@
 
 # Burp Suite 실전 완전 정복
 
+## 0. 초보자를 위한 개념 이해
+
+### Burp Suite란?
+
+Burp Suite는 웹 애플리케이션 보안 테스트에 사용되는 통합 플랫폼으로, 브라우저와 서버 사이에서 HTTP/HTTPS 트래픽을 가로채고 분석·수정할 수 있습니다. 버그바운티와 침투 테스트에서 가장 널리 사용되는 도구로, 수동 취약점 탐지부터 자동화 공격까지 모든 단계를 지원합니다. 무료 Community Edition과 유료 Professional Edition이 있습니다.
+
+**왜 배우는가:**
+```
+웹 해킹의 흐름에서 Burp Suite 역할:
+
+  브라우저 → [Burp Proxy] → 서버
+              ↓
+        HTTP 요청 가로채기
+        파라미터 조작
+        반복 전송 (Repeater)
+        자동 공격 (Intruder)
+        취약점 스캔 (Scanner, Pro)
+```
+
+### 핵심 개념 정리
+
+```
+Burp Suite 주요 모듈:
+
+  Proxy     — 브라우저 트래픽 인터셉트/수정 (핵심)
+  Repeater  — HTTP 요청을 수동으로 반복 전송 및 응답 비교
+  Intruder  — 파라미터에 페이로드 자동 삽입 (퍼징)
+  Scanner   — 자동 취약점 탐지 (Pro 전용)
+  Decoder   — 각종 인코딩/디코딩 변환 도구
+  Comparer  — 두 요청/응답의 차이점 비교
+
+설정 순서:
+  1. Burp 실행 → Proxy 리스너 8080 확인
+  2. 브라우저 프록시 설정 (127.0.0.1:8080)
+  3. Burp CA 인증서 설치 (HTTPS 인터셉트용)
+  4. Target Scope 설정 (테스트 대상만 필터)
+```
+
+### 필요한 도구 및 환경
+- **Burp Suite Community Edition**: 무료 기본 버전 (공식 사이트 다운로드)
+- **FoxyProxy**: 브라우저 프록시 전환 확장 프로그램
+- **Jython**: Burp 확장 기능(Python 플러그인) 실행 환경
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""Burp Suite Proxy를 통한 HTTP 요청 전송 — 기초 실습."""
+
+import httpx
+
+
+def send_via_burp(
+    url: str,
+    params: dict[str, str] | None = None,
+    burp_proxy: str = "http://127.0.0.1:8080",
+) -> httpx.Response:
+    """Burp Suite 프록시를 거쳐 요청을 전송합니다.
+    
+    Burp를 실행한 상태에서 이 코드를 실행하면
+    Proxy → HTTP history에서 요청을 확인할 수 있습니다.
+    """
+    proxies = {"http://": burp_proxy, "https://": burp_proxy}
+    with httpx.Client(proxies=proxies, verify=False) as client:
+        response = client.get(url, params=params)
+    return response
+
+
+if __name__ == "__main__":
+    # 1. Burp Suite 실행 및 Intercept OFF 상태 확인
+    # 2. 아래 코드 실행 → Burp HTTP history에서 확인
+    resp = send_via_burp(
+        "https://httpbin.org/get",
+        params={"test": "hello", "id": "1"},
+    )
+    print(f"상태 코드: {resp.status_code}")
+    print(f"응답 일부: {resp.text[:200]}")
+```
+
+---
+
 ## Burp Suite 아키텍처 이해
 
 ```

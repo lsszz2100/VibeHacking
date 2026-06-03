@@ -6,6 +6,127 @@
 
 # API 해킹 완전 가이드
 
+## 0. 초보자를 위한 개념 이해
+
+### API 해킹이란?
+
+API 해킹은 REST API, GraphQL, gRPC 등 서비스 간 인터페이스에서 인증 우회, 권한 오용, 데이터 노출, 인젝션 등의 취약점을 찾는 기법입니다. 모든 현대 웹/모바일 앱이 API 기반으로 작동하므로, API 보안은 버그바운티와 레드팀 작전에서 가장 중요한 공격 표면이 되었습니다. OWASP API Security Top 10은 API 해킹의 표준 참조 가이드입니다.
+
+**왜 배우는가:**
+```
+API 취약점이 중요한 이유:
+
+  전통 웹 취약점          API 취약점
+  ──────────────────────────────────────────────
+  HTML 폼 조작             JSON 파라미터 조작
+  쿠키 세션 탈취           JWT/API 키 탈취
+  직접 URL 접근            BOLA — 객체 ID 조작
+  CSRF                     Mass Assignment
+
+  실제 사례:
+    Peloton API  → 인증 없이 모든 사용자 데이터 접근
+    T-Mobile     → API BOLA로 3700만 계정 정보 유출
+    Instagram    → 전화번호 열거 API 무제한 호출
+```
+
+### 핵심 개념 정리
+
+```
+OWASP API Top 10 핵심:
+
+  API1 BOLA (IDOR)
+    GET /api/users/123 → GET /api/users/124
+    내 데이터 외 타인 데이터 접근
+
+  API2 인증 취약점
+    JWT alg:none, 만료 토큰 허용, OTP 브루트포스
+
+  API3 과도한 데이터 노출
+    응답에 password_hash, ssn 등 불필요 필드 포함
+
+  API6 Mass Assignment
+    {"role":"admin"} 전송 시 권한 상승
+    {"balance":999999} 전송 시 잔액 변경
+
+  GraphQL 특수 취약점:
+    Introspection → 전체 스키마 노출
+    Batch 쿼리    → 브루트포스 우회 (1회 요청 = 다수 쿼리)
+    IDOR          → 중첩 쿼리로 타인 데이터 접근
+```
+
+### 필요한 도구 및 환경
+- **Burp Suite**: HTTP API 인터셉트 및 수정
+- **Postman**: API 테스트 및 컬렉션 관리
+- **ffuf**: API 엔드포인트 퍼징
+- **jwt_tool**: JWT 분석 및 공격 Python 도구
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""API BOLA/IDOR 취약점 자동 탐지 — 연속 ID 열거."""
+
+import asyncio
+from dataclasses import dataclass
+
+import httpx
+
+
+@dataclass
+class ApiEndpointResult:
+    url: str
+    status_code: int
+    response_size: int
+    is_vulnerable: bool
+    note: str
+
+
+async def test_idor(
+    base_url: str,
+    endpoint_template: str,   # 예: "/api/users/{id}"
+    my_id: int,
+    test_ids: list[int],
+    headers: dict[str, str],
+) -> list[ApiEndpointResult]:
+    """BOLA/IDOR 취약점 테스트: 다른 사용자 ID로 접근 시도."""
+    results: list[ApiEndpointResult] = []
+
+    # 내 데이터 크기 먼저 확인 (기준)
+    async with httpx.AsyncClient(verify=False) as client:
+        my_url = base_url + endpoint_template.format(id=my_id)
+        my_resp = await client.get(my_url, headers=headers)
+        my_size = len(my_resp.content)
+
+        for test_id in test_ids:
+            if test_id == my_id:
+                continue
+            url = base_url + endpoint_template.format(id=test_id)
+            try:
+                resp = await client.get(url, headers=headers, timeout=5.0)
+                # 200 응답 + 내 데이터 크기와 유사 → 접근 성공 의심
+                is_vuln = (
+                    resp.status_code == 200
+                    and len(resp.content) > 50
+                )
+                results.append(ApiEndpointResult(
+                    url=url,
+                    status_code=resp.status_code,
+                    response_size=len(resp.content),
+                    is_vulnerable=is_vuln,
+                    note="타인 데이터 접근 가능!" if is_vuln else "",
+                ))
+            except (httpx.TimeoutException, httpx.ConnectError):
+                pass
+    return results
+
+
+if __name__ == "__main__":
+    print("API BOLA 테스트 예제 (실제 실행: 허가된 대상에서만)")
+    print("endpoint: /api/v1/users/{id}")
+    print("테스트 방법: 자신의 ID 외 다른 ID 접근 시도 → 200 응답이면 취약")
+```
+
+---
+
 ## API 보안 위협 지형도
 
 ```

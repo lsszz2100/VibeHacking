@@ -6,6 +6,76 @@
 
 # 메일 서버 보안 — SPF/DKIM/DMARC 및 공격 기법
 
+## 0. 초보자를 위한 개념 이해
+
+### 메일 서버 보안이란?
+
+이메일은 인터넷 초창기에 "발신자가 누구인지 확인하지 않아도 된다"는 가정으로 설계되었다. 때문에 누구나 `from: ceo@company.com`처럼 아무 주소나 적어 이메일을 보낼 수 있다. SPF, DKIM, DMARC는 이 근본적인 문제를 해결하기 위해 수십 년에 걸쳐 추가된 보안 계층이다. 이 세 가지를 이해하면 피싱 이메일이 어떻게 작동하고 어떻게 막는지 알 수 있다.
+
+**왜 배우는가:**
+```
+이메일 스푸핑 공격 흐름
+
+공격자:
+  발신 주소를 ceo@company.com 으로 위조
+  → "내일 긴급 계좌이체 해주세요" 발송
+  → 직원이 속아 이체 실행 (BEC 사기)
+
+방어 메커니즘:
+  SPF  → 이 IP가 해당 도메인 발송 허용 IP인가?
+  DKIM → 메일 내용이 발송 후 변조되지 않았는가?
+  DMARC → SPF/DKIM 실패 시 어떻게 처리할 것인가?
+```
+
+### 핵심 개념 정리
+
+```
+SPF / DKIM / DMARC 역할 비교
+
+SPF (Sender Policy Framework):
+  DNS TXT 레코드에 "이 도메인을 보낼 수 있는 IP 목록" 게시
+  예: v=spf1 ip4:203.0.113.10 include:_spf.google.com ~all
+  → 수신 서버가 발신 IP를 DNS에서 조회해 허용 여부 확인
+
+DKIM (DomainKeys Identified Mail):
+  발신 서버가 메일에 디지털 서명 추가
+  공개키는 DNS에 게시, 수신 서버가 서명 검증
+  → 전송 중 변조 탐지 가능
+
+DMARC (Domain-based Message Auth):
+  SPF/DKIM 실패 시 정책: none(감시만) → quarantine(스팸) → reject(거부)
+  리포트 수신 주소 설정 → 누가 내 도메인을 사칭하는지 파악
+```
+
+### 필요한 도구 및 환경
+- **dig**: SPF/DKIM/DMARC 레코드 조회
+- **mxtoolbox.com**: 이메일 보안 설정 온라인 확인 (실습 용이)
+- **swaks**: SMTP 테스트 도구 (`apt install swaks`)
+
+### 기초 실습 예제
+```bash
+# 1. SPF 레코드 확인
+dig TXT example.com | grep spf
+# 결과 예시: "v=spf1 include:_spf.google.com ~all"
+
+# 2. DMARC 레코드 확인
+dig TXT _dmarc.example.com
+# 결과 예시: "v=DMARC1; p=reject; rua=mailto:dmarc@example.com"
+
+# 3. DKIM 공개키 확인 (셀렉터 이름은 도메인마다 다름)
+dig TXT google._domainkey.example.com
+# 결과 예시: "v=DKIM1; k=rsa; p=MIGfMA0GCS..."
+
+# 4. 이메일 헤더에서 인증 결과 확인
+# 받은 이메일의 원본 헤더에서 이 줄을 찾아보기:
+# Authentication-Results: mx.example.com;
+#   spf=pass (sender IP matches)
+#   dkim=pass header.d=example.com
+#   dmarc=pass
+```
+
+---
+
 ## 1. 메일 인증 체계 개요
 
 이메일은 인터넷 초기에 "누가 보냈는가"를 검증하는 메커니즘 없이 설계되었습니다. 발신자 주소는 편지 봉투에 손으로 쓴 이름과 같아서 누구나 마음대로 적을 수 있었습니다. SPF, DKIM, DMARC는 이 문제를 해결하기 위해 수십 년에 걸쳐 점진적으로 도입된 표준입니다.

@@ -6,6 +6,126 @@
 
 # 탐지 엔지니어링 — Sigma·MITRE ATT&CK 기반 룰 개발
 
+## 0. 초보자를 위한 개념 이해
+
+### 탐지 엔지니어링이란?
+
+탐지 엔지니어링(Detection Engineering)은 공격 기법을 분석하고 이를 탐지하는 규칙과 로직을 체계적으로 개발하는 전문 분야입니다. 단순히 알림 모니터링을 넘어, 새로운 공격 기법에 대응하는 탐지 규칙을 직접 만들고 검증합니다. Sigma는 특정 SIEM에 종속되지 않는 표준 탐지 규칙 형식으로, 한 번 작성하면 Splunk/Elastic/QRadar 등에 자동 변환됩니다.
+
+**왜 배우는가:**
+```
+탐지 엔지니어링의 가치:
+
+  기존 SOC 분석가             탐지 엔지니어
+  ──────────────────────────────────────────────────
+  기존 알림 처리               새 탐지 규칙 개발
+  vendor 제공 규칙 사용        맞춤형 탐지 로직 구축
+  FP에 고통받음                FP 튜닝 및 최적화
+  알려진 공격만 탐지           새 TTP 프로액티브 탐지
+
+  Sigma 규칙의 강점:
+    작성 1회 → 모든 SIEM 변환
+    GitHub 공유 → 커뮤니티 협업
+    ATT&CK 매핑 → 커버리지 시각화
+```
+
+### 핵심 개념 정리
+
+```
+Sigma 규칙 구조:
+
+  title: 규칙 이름
+  id: UUID
+  status: experimental / test / stable / production
+  description: 설명
+  references: 참조 링크
+  tags:
+    - attack.technique_id      # ATT&CK 매핑
+  logsource:
+    category: process_creation  # 로그 유형
+    product: windows
+  detection:
+    selection:
+      Image|endswith: '\certutil.exe'
+      CommandLine|contains: '-urlcache'
+    condition: selection        # 탐지 조건
+  falsepositives:
+    - 정상 certutil 사용
+  level: high                   # low/medium/high/critical
+
+변환 도구:
+  sigma-cli → Splunk/Elastic/QRadar SPL/EQL/AQL로 변환
+```
+
+### 필요한 도구 및 환경
+- **sigma-cli**: Sigma 규칙을 SIEM 쿼리로 변환하는 공식 도구
+- **SigmaHQ/sigma**: 공식 Sigma 규칙 저장소 (GitHub)
+- **MITRE ATT&CK Navigator**: 탐지 커버리지 시각화
+- **Atomic Red Team**: 공격 기법 시뮬레이션 (탐지 검증용)
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""Sigma 규칙 파서 — YAML 파일에서 탐지 조건 추출 및 검증."""
+
+from pathlib import Path
+
+import yaml
+
+
+def parse_sigma_rule(rule_path: Path) -> dict:
+    """Sigma YAML 규칙 파일을 파싱하여 핵심 정보를 추출합니다."""
+    content = yaml.safe_load(rule_path.read_text(encoding="utf-8"))
+    return {
+        "title":       content.get("title", ""),
+        "level":       content.get("level", ""),
+        "status":      content.get("status", ""),
+        "techniques":  [
+            t for t in content.get("tags", [])
+            if t.startswith("attack.t")
+        ],
+        "logsource":   content.get("logsource", {}),
+        "detection":   content.get("detection", {}),
+    }
+
+
+def generate_splunk_spl(rule: dict) -> str:
+    """간단한 Sigma 규칙을 Splunk SPL로 변환 (단순 선택 조건만)."""
+    detection = rule["detection"]
+    selection = detection.get("selection", {})
+    conditions: list[str] = []
+    for field, value in selection.items():
+        if "|endswith" in field:
+            real_field = field.replace("|endswith", "")
+            conditions.append(f'{real_field}="*{value}"')
+        elif "|contains" in field:
+            real_field = field.replace("|contains", "")
+            conditions.append(f'{real_field}="*{value}*"')
+        else:
+            conditions.append(f'{field}="{value}"')
+    spl = "index=windows " + " ".join(conditions)
+    return spl
+
+
+if __name__ == "__main__":
+    # 예제: certutil 악용 탐지 규칙
+    sample_rule = {
+        "title": "Certutil URL Download",
+        "level": "high",
+        "status": "stable",
+        "detection": {
+            "selection": {
+                "Image|endswith": "\\certutil.exe",
+                "CommandLine|contains": "-urlcache",
+            },
+        },
+    }
+    spl = generate_splunk_spl(sample_rule)
+    print(f"Splunk SPL:\n{spl}")
+```
+
+---
+
 ## 1. 탐지 엔지니어링 개요
 
 탐지 엔지니어링은 공격 기법을 분석하고 이를 탐지하는 규칙·로직을 체계적으로 개발하는 분야다.

@@ -6,6 +6,90 @@
 
 # 브라우저 확장 보안 강화
 
+## 0. 초보자를 위한 개념 이해
+
+### 브라우저 확장 보안 강화란?
+
+**브라우저 확장 보안 강화(Extension Security Hardening)**는 개발 중인 확장의 공격 표면을 최소화하고, 알려진 취약점 패턴을 방어하는 코딩 관행과 설정 방법입니다.
+
+**개발자가 왜 배워야 하는가:**
+```
+보안 강화 없이 개발된 확장의 위험:
+  - XSS 하나 → 모든 사이트의 데이터 접근 가능
+  - 무분별한 권한 → 사용자 신뢰 손상
+  - 원격 코드 실행 → 사용자 브라우저 완전 장악
+
+크롬 스토어 요구사항:
+  - MV3 의무 전환 (2024년~)
+  - CSP 필수 설정
+  - 최소 권한 원칙
+```
+
+### 핵심 보안 원칙
+
+```
+1. 최소 권한 원칙
+   필요한 권한만 요청 (Optional Permissions 사용)
+   activeTab > <all_urls>
+
+2. CSP 설정
+   manifest.json:
+   "content_security_policy": {
+       "extension_pages": "script-src 'self'; object-src 'none'"
+   }
+   → eval(), innerHTML 등 차단
+
+3. 입력 검증
+   DOM 조작 시:
+   elem.textContent = userInput  // 안전
+   elem.innerHTML = userInput    // 위험!
+
+4. 메시지 검증
+   발신자 origin 확인
+   허가된 도메인만 통신 허용
+
+5. 원격 코드 로드 금지
+   모든 스크립트는 확장 패키지에 포함
+   CDN 직접 로드 금지
+```
+
+### 필요한 도구
+- **eslint-plugin-no-unsanitized**: XSS 방지 린터
+- **web-ext**: 확장 개발·테스트 CLI
+- **CRXcavator**: 보안 점수 확인
+
+### 기초 실습 예제
+```javascript
+// 보안 강화된 content.js 패턴
+// 1. 안전한 DOM 조작
+function safeSetText(element, text) {
+    element.textContent = text;  // innerHTML 대신 textContent
+}
+
+// 2. 메시지 발신자 검증
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    const ALLOWED_ORIGINS = ['https://myapp.com'];
+
+    if (!ALLOWED_ORIGINS.includes(sender.url?.split('/').slice(0, 3).join('/'))) {
+        console.warn('허가되지 않은 발신자:', sender.url);
+        return;
+    }
+
+    // 허가된 작업만 처리
+    if (message.type === 'getData') {
+        sendResponse({ data: 'safe_data' });
+    }
+});
+
+// 3. 권한 요청 최소화
+chrome.permissions.request(
+    { permissions: ['tabs'], origins: ['https://specific-site.com/*'] },
+    (granted) => { if (granted) console.log('권한 획득'); }
+);
+```
+
+---
+
 ## 1. Manifest V3 보안 개선사항
 
 ### 1.1 Service Worker vs Background Page

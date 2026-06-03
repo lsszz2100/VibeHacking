@@ -6,6 +6,102 @@
 
 # XSS / CSRF / 파일 업로드 취약점
 
+## 0. 초보자를 위한 개념 이해
+
+### XSS/CSRF/파일 업로드 취약점이란?
+
+이 세 가지는 웹 해킹에서 가장 빈번하게 발생하는 클라이언트 측 공격입니다. XSS는 악성 스크립트 삽입, CSRF는 사용자 모르게 요청 위조, 파일 업로드는 서버에 악성 코드를 올리는 방식으로 동작합니다.
+
+**왜 배우는가:**
+```
+실제 공격 시나리오:
+
+  XSS (세션 탈취):
+    공격자가 게시판에 악성 스크립트 게시
+    → 피해자가 글 읽으면 쿠키가 공격자 서버로 전송
+    → 공격자가 피해자 세션으로 로그인
+
+  CSRF (계정 탈취):
+    공격자가 이메일로 링크 전송
+    → 피해자 클릭 → 피해자 브라우저가 모르게 패스워드 변경 요청
+    → 피해자 계정을 공격자가 장악
+
+  파일 업로드 (웹쉘):
+    프로필 사진 업로드 → shell.php 업로드
+    → /uploads/shell.php 접속
+    → 서버에서 시스템 명령어 실행!
+```
+
+### 핵심 개념 정리
+
+```
+각 취약점 핵심 원리:
+
+  XSS 발생 조건:
+    사용자 입력 → 검증 없이 HTML에 반영
+    <script>alert('XSS')</script> → 그대로 출력 → 실행됨
+    대응: HTML 특수문자 이스케이프 (&lt; &gt; &quot;)
+
+  CSRF 발생 조건:
+    서버가 요청의 출처(Origin)를 검증하지 않음
+    피해자가 이미 로그인된 상태에서 공격자 링크 클릭
+    → 쿠키가 자동으로 포함되어 요청 전송
+    대응: CSRF 토큰, SameSite 쿠키, Referer 검증
+
+  파일 업로드 발생 조건:
+    파일 확장자만 검사 (shell.php → shell.php.jpg 우회)
+    MIME 타입만 검사 (Content-Type 변조 우회)
+    대응: 화이트리스트 확장자, 파일 내용 검사, 업로드 폴더 실행 금지
+```
+
+### 필요한 도구 및 환경
+- **취약한 웹 앱**: DVWA, WebGoat, bWAPP — 세 취약점 모두 포함
+- **Burp Suite**: HTTP 요청 가로채기 → Content-Type 변조, CSRF 토큰 분석
+- **웹쉘**: 교육용 PHP/JSP/ASPX 웹쉘 코드 — 파일 업로드 취약점 실증
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""파일 업로드 취약점 탐지 — 확장자 우회 시도 (교육용)."""
+from pathlib import Path
+from dataclasses import dataclass
+
+@dataclass
+class UploadTest:
+    filename: str
+    content_type: str
+    description: str
+
+def generate_upload_bypass_cases() -> list[UploadTest]:
+    """파일 업로드 우회 테스트 케이스 목록."""
+    return [
+        UploadTest("shell.php", "image/jpeg", "확장자 PHP, MIME image — 서버가 MIME만 검사 시 우회"),
+        UploadTest("shell.php.jpg", "image/jpeg", "이중 확장자 — 일부 서버가 마지막 확장자만 확인"),
+        UploadTest("shell.pHp", "image/jpeg", "대소문자 혼용 — 대소문자 구분 없는 서버"),
+        UploadTest("shell.php%00.jpg", "image/jpeg", "NULL 바이트 삽입 — PHP 구버전 취약점"),
+        UploadTest("shell.phtml", "image/jpeg", "PHP 대체 확장자 — 블랙리스트 우회"),
+        UploadTest(".htaccess", "text/plain", "htaccess 업로드 → 디렉토리 설정 변경"),
+    ]
+
+def analyze_upload_security(allowed_extensions: list[str]) -> None:
+    """업로드 허용 확장자 목록의 보안 분석."""
+    dangerous = [".php", ".php3", ".phtml", ".asp", ".aspx", ".jsp", ".cgi"]
+    for ext in allowed_extensions:
+        if ext.lower() in dangerous:
+            print(f"[위험] '{ext}' 허용 → 웹쉘 업로드 가능!")
+        else:
+            print(f"[안전] '{ext}'")
+
+if __name__ == "__main__":
+    print("=== 파일 업로드 우회 테스트 케이스 ===")
+    for case in generate_upload_bypass_cases():
+        print(f"  파일명: {case.filename:<25} | {case.description}")
+    print("\n=== 확장자 보안 분석 ===")
+    analyze_upload_security([".jpg", ".png", ".php", ".gif"])
+```
+
+---
+
 ## 1. XSS (Cross-Site Scripting)
 
 ### XSS 유형

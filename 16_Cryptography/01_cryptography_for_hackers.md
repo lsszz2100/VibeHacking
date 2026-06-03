@@ -6,6 +6,126 @@
 
 # 해커를 위한 암호학
 
+## 0. 초보자를 위한 개념 이해
+
+### 해커를 위한 암호학이란?
+
+암호학(Cryptography)은 데이터를 안전하게 변환하여 허가된 사람만 읽을 수 있게 하는 학문입니다. 해커 관점에서는 잘못 구현된 암호화, 취약한 알고리즘, 키 관리 실수를 찾아 데이터를 복원하거나 시스템을 공격합니다. CTF 암호학 문제와 버그바운티 JWT 공격에서 암호학 기초는 필수입니다.
+
+**왜 배우는가:**
+```
+암호학 취약점의 현실적 영향:
+
+  고전 암호 (Caesar, Vigenère)
+    → CTF 입문, 암호 사고방식 이해
+
+  약한 해시 (MD5, SHA-1)
+    → 패스워드 크래킹, 파일 위변조
+
+  RSA 구현 오류 (작은 e, 공개 모듈러스 재사용)
+    → 비밀 메시지 복원, 서명 위조
+
+  AES 모드 오류 (ECB 모드, IV 재사용)
+    → 패턴 노출, 평문 복원
+
+  JWT alg:none / 약한 시크릿
+    → 인증 우회, 권한 상승
+```
+
+### 핵심 개념 정리
+
+```
+암호 유형 비교:
+
+  대칭 암호 (Symmetric)
+    암호화 키 = 복호화 키
+    빠름, 키 공유 문제
+    AES, DES, ChaCha20
+
+  비대칭 암호 (Asymmetric)
+    공개키로 암호화 → 개인키로 복호화
+    느림, 키 공유 불필요
+    RSA, ECC, DSA
+
+  해시 함수 (Hash)
+    단방향 변환 (복호화 불가)
+    MD5(파훼), SHA-1(파훼), SHA-256(안전)
+
+  주요 공격 유형:
+    전수 공격 (Brute Force)  — 모든 키 시도
+    통계 분석 (Frequency)    — 문자 빈도 분석
+    관련 메시지 공격           — 여러 암호문 비교
+    타이밍 공격               — 실행 시간 측정
+```
+
+### 필요한 도구 및 환경
+- **pycryptodome**: Python 암호화 라이브러리 (AES, RSA 등)
+- **gmpy2**: 고정밀 정수 연산 (RSA 공격에 필수)
+- **SageMath**: 수학 연산 환경 (고급 암호 공격)
+- **CyberChef**: 브라우저 기반 암호화/인코딩 분석 도구
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""고전 암호 분석 — 시저 암호 전수 공격 및 빈도 분석."""
+
+from collections import Counter
+import string
+
+
+def caesar_decrypt(ciphertext: str, shift: int) -> str:
+    """시저 암호를 주어진 shift로 복호화합니다."""
+    result: list[str] = []
+    for char in ciphertext:
+        if char.isalpha():
+            base = ord("A") if char.isupper() else ord("a")
+            result.append(chr((ord(char) - base - shift) % 26 + base))
+        else:
+            result.append(char)
+    return "".join(result)
+
+
+def frequency_score(text: str) -> float:
+    """영어 문자 빈도 기반으로 평문 유사도를 점수화합니다."""
+    english_freq = "etaoinshrdlcumwfgypbvkjxqz"
+    text_lower = text.lower()
+    letter_counts = Counter(c for c in text_lower if c.isalpha())
+    if not letter_counts:
+        return 0.0
+    sorted_letters = [k for k, _ in letter_counts.most_common()]
+    score = sum(
+        1 for i, letter in enumerate(sorted_letters[:8])
+        if letter in english_freq[:8]
+    )
+    return score / 8.0
+
+
+def crack_caesar(ciphertext: str) -> tuple[int, str]:
+    """시저 암호를 빈도 분석으로 자동 크랙합니다."""
+    best_shift = 0
+    best_score = -1.0
+    best_plaintext = ""
+    for shift in range(26):
+        candidate = caesar_decrypt(ciphertext, shift)
+        score = frequency_score(candidate)
+        if score > best_score:
+            best_score = score
+            best_shift = shift
+            best_plaintext = candidate
+    return best_shift, best_plaintext
+
+
+if __name__ == "__main__":
+    # "Hello, Security World!" → shift 13으로 암호화
+    ciphertext = "Uryyb, Frphevgl Jbeyq!"
+    shift, plaintext = crack_caesar(ciphertext)
+    print(f"암호문: {ciphertext}")
+    print(f"추정 shift: {shift}")
+    print(f"복호화 결과: {plaintext}")
+```
+
+---
+
 ## 암호학 기초 개념
 
 ```

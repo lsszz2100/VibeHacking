@@ -6,6 +6,127 @@
 
 # MITRE ATT&CK 기반 위협 헌팅
 
+## 0. 초보자를 위한 개념 이해
+
+### MITRE ATT&CK 기반 위협 헌팅이란?
+
+MITRE ATT&CK는 실제 관찰된 공격자의 전술(Tactics)·기법(Techniques)·세부 기법(Sub-techniques)을 정리한 공개 지식 베이스다. 위협 헌팅에서는 이 프레임워크를 "헌팅 가설 생성기"로 활용한다. "공격자가 T1059.001(PowerShell)을 사용한다면 어떤 흔적을 남길까?"라는 질문에서 시작해 구체적인 SIEM 쿼리로 전환하는 방식이다. 공통 언어로 팀 간 소통, 탐지 커버리지 측정, 우선순위 결정에 활용된다.
+
+**왜 배우는가:**
+```
+[MITRE ATT&CK의 실용적 가치]
+
+  보안 팀이 "PowerShell 공격 탐지됐어요"라고 말할 때:
+  → 막연한 설명, 대응 방향 불명확
+
+  ATT&CK 언어 사용 시:
+  → "T1059.001 탐지, TA0002 실행 전술 단계
+     → 다음 단계 T1105(도구 전송) 예상
+     → T1083(파일 탐색) 이후 T1041(데이터 유출) 가능성"
+  → 구체적 대응, 다음 단계 예측 가능
+
+  [커버리지 측정]
+  우리 탐지 규칙이 ATT&CK 14개 전술 중
+  몇 개를 커버하는가? → 헌팅 우선순위 결정
+```
+
+### 핵심 개념 정리
+
+```
+[MITRE ATT&CK 구조]
+
+전술 (Tactics) - 공격의 목적(Why)
+  TA0043: 정찰 (Reconnaissance)
+  TA0042: 리소스 개발 (Resource Development)
+  TA0001: 초기 접근 (Initial Access)
+  TA0002: 실행 (Execution)
+  TA0003: 지속성 (Persistence)
+  TA0004: 권한 상승 (Privilege Escalation)
+  TA0005: 방어 회피 (Defense Evasion)
+  TA0006: 자격증명 접근 (Credential Access)
+  TA0007: 탐색 (Discovery)
+  TA0008: 횡적 이동 (Lateral Movement)
+  TA0009: 수집 (Collection)
+  TA0011: C2 명령 제어 (Command and Control)
+  TA0010: 유출 (Exfiltration)
+  TA0040: 영향 (Impact)
+
+기법 (Techniques) - 공격 방법(How)
+  T1059: 명령어 및 스크립트 인터프리터
+    T1059.001: PowerShell
+    T1059.003: Windows Command Shell
+  T1078: 유효한 계정 사용
+  T1486: 데이터 암호화 (랜섬웨어)
+
+[헌팅을 위한 데이터 소스 매핑]
+  T1059.001 (PowerShell) →
+    Windows Security 4688, Sysmon 1, PowerShell 4104
+  T1110 (Brute Force) →
+    Windows Security 4625 (로그온 실패)
+  T1078 (유효 계정) →
+    Windows Security 4624 (로그온 성공)
+```
+
+### 필요한 도구 및 환경
+- **ATT&CK Navigator**: 커버리지 매핑 시각화 도구 (웹 기반 무료)
+- **Atomic Red Team**: ATT&CK 기법별 테스트 케이스 오픈소스
+- **Sigma**: SIEM 중립적 탐지 규칙 형식 (YAML)
+- **MISP**: 위협 인텔리전스 공유 플랫폼
+
+### 기초 실습 예제
+```python
+import json
+import urllib.request
+
+# ATT&CK STIX 데이터에서 기법 정보를 조회하는 예제
+# (오프라인 JSON 파일 사용 버전)
+
+COMMON_TECHNIQUES = {
+    "T1059.001": {
+        "name": "PowerShell",
+        "tactic": "실행 (Execution)",
+        "data_sources": ["Windows Security 4688", "Sysmon EventID 1", "PS Script Block 4104"],
+        "hunting_idea": "Base64 인코딩된 명령(-EncodedCommand), 다운로드 스트링(DownloadString)"
+    },
+    "T1078": {
+        "name": "유효한 계정 사용",
+        "tactic": "초기 접근/지속성/권한 상승",
+        "data_sources": ["Windows Security 4624/4625", "AAD Sign-in Logs"],
+        "hunting_idea": "비정상 시간대 로그온, 새 지역 IP, 비활성 계정 로그온"
+    },
+    "T1110": {
+        "name": "무차별 대입 공격",
+        "tactic": "자격증명 접근 (Credential Access)",
+        "data_sources": ["Windows Security 4625", "AAD Sign-in Logs"],
+        "hunting_idea": "단시간 다수 로그온 실패 (임계값: 10회/분)"
+    },
+    "T1486": {
+        "name": "데이터 암호화 (Impact)",
+        "tactic": "영향 (Impact)",
+        "data_sources": ["Sysmon 11/23", "EDR 파일 이벤트"],
+        "hunting_idea": "대량 파일 확장자 변경, 볼륨 쉐도우 복사본 삭제"
+    },
+}
+
+def get_technique_hunting_guide(technique_id: str) -> None:
+    """ATT&CK 기법에 대한 헌팅 가이드를 출력한다."""
+    technique = COMMON_TECHNIQUES.get(technique_id)
+    if not technique:
+        print(f"[-] {technique_id} 정보 없음 (https://attack.mitre.org/ 참조)")
+        return
+
+    print(f"\n[*] {technique_id}: {technique['name']}")
+    print(f"    전술: {technique['tactic']}")
+    print(f"    데이터 소스: {', '.join(technique['data_sources'])}")
+    print(f"    헌팅 아이디어: {technique['hunting_idea']}")
+
+# 사용 예시
+for tid in ["T1059.001", "T1078", "T1110"]:
+    get_technique_hunting_guide(tid)
+```
+
+---
+
 ## 1. MITRE ATT&CK 프레임워크 심화
 
 ### 1.1 프레임워크 개요

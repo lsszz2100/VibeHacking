@@ -6,6 +6,112 @@
 
 # 사이드채널 공격과 결함 주입
 
+## 0. 초보자를 위한 개념 이해
+
+### 사이드채널 공격과 결함 주입이란?
+
+사이드채널 공격(Side-Channel Attack)은 암호 알고리즘 자체의 수학적 취약점이 아니라, 그 알고리즘이 실행될 때 발생하는 물리적 부산물(전력 소비, 전자기 방사, 처리 시간, 음향 등)을 분석해 비밀 정보를 추출하는 기법이다. 결함 주입(Fault Injection)은 전압 급변이나 클럭 글리치를 통해 CPU의 정상 동작을 의도적으로 방해해 보안 검사를 우회하는 공격이다. 두 기법 모두 완벽한 소프트웨어도 하드웨어 구현 수준에서 뚫릴 수 있음을 보여준다.
+
+**왜 배우는가:**
+```
+[사이드채널이 위험한 이유]
+
+  완벽히 구현된 AES-256 암호화
+           ↓
+  칩이 암호화를 수행하는 동안...
+  ┌─────────────────────────────┐
+  │  전력 파형이 키에 따라 달라짐│  ← SPA/DPA 공격
+  │  처리 시간이 데이터에 따라   │  ← 타이밍 공격
+  │  달라짐                     │
+  │  전자기파 방출 패턴 분석    │  ← EMPA 공격
+  └─────────────────────────────┘
+           ↓
+  수학을 풀지 않고도 비밀키 복구!
+```
+
+### 핵심 개념 정리
+
+```
+[사이드채널 공격 유형]
+
+1. 전력 분석 (Power Analysis)
+   SPA (단순 전력 분석): 전력 파형 직접 시각화
+   DPA (차분 전력 분석): 통계적 방법으로 키 비트 추출
+   → 측정 도구: 오실로스코프 + 션트 저항
+
+2. 타이밍 공격 (Timing Attack)
+   입력값에 따른 처리 시간 차이 측정
+   → 비밀번호 비교 함수의 조기 반환 버그 악용
+   → 방어: 상수 시간(constant-time) 비교 함수 사용
+
+3. 전자기 분석 (Electromagnetic Analysis, EMA)
+   칩 근접에서 EM 프로브로 방사 측정
+   → 전력 측정 없이도 키 복구 가능
+
+4. 결함 주입 (Fault Injection)
+   전압 글리치: 전원 전압을 순간적으로 낮춰 오류 유발
+   클럭 글리치: 클럭 신호를 순간 변조
+   레이저: 특정 트랜지스터에 레이저 조사
+   → 부트로더 보안 검사 우회, 비밀번호 잠금 해제
+```
+
+### 필요한 도구 및 환경
+- **ChipWhisperer**: 오픈소스 사이드채널/결함 주입 플랫폼 (교육용)
+- **오실로스코프**: Rigol DS1054Z 등 100MHz 이상 권장
+- **Python + numpy/scipy**: 파형 데이터 통계 분석
+- **PicoScope**: 고해상도 USB 오실로스코프 및 Python API
+
+### 기초 실습 예제
+```python
+import hmac
+import time
+
+def insecure_compare(secret: bytes, user_input: bytes) -> bool:
+    """취약한 비교 함수: 불일치 즉시 반환 → 타이밍 공격 가능."""
+    if len(secret) != len(user_input):
+        return False
+    for a, b in zip(secret, user_input):
+        if a != b:
+            return False  # 여기서 일찍 반환 → 시간 차이 발생!
+    return True
+
+def secure_compare(secret: bytes, user_input: bytes) -> bool:
+    """안전한 비교 함수: 상수 시간 비교 → 타이밍 공격 불가."""
+    return hmac.compare_digest(secret, user_input)
+
+def demonstrate_timing_attack():
+    """타이밍 차이를 측정해 타이밍 공격 원리를 시연한다."""
+    secret = b"supersecretkey!"
+    # 첫 바이트부터 틀린 경우 (즉시 반환)
+    wrong_start = b"aaaaaaaaaaaaaaaa"[:len(secret)]
+    # 거의 맞는 경우 (마지막만 틀림)
+    almost_right = secret[:-1] + b"X"
+
+    trials = 10000
+    # 즉시 실패하는 경우 측정
+    t1 = time.perf_counter()
+    for _ in range(trials):
+        insecure_compare(secret, wrong_start)
+    t2 = time.perf_counter()
+    time_wrong = (t2 - t1) / trials * 1e6  # 마이크로초
+
+    # 거의 맞는 경우 측정
+    t3 = time.perf_counter()
+    for _ in range(trials):
+        insecure_compare(secret, almost_right)
+    t4 = time.perf_counter()
+    time_almost = (t4 - t3) / trials * 1e6
+
+    print(f"첫 바이트 불일치 평균 시간: {time_wrong:.3f} μs")
+    print(f"마지막 바이트 불일치 평균 시간: {time_almost:.3f} μs")
+    print(f"시간 차이: {time_almost - time_wrong:.3f} μs")
+    print("→ 이 차이를 이용해 비밀값을 한 바이트씩 추론 가능!")
+
+demonstrate_timing_attack()
+```
+
+---
+
 ## 1. 사이드채널 공격 개요
 
 암호 알고리즘이 수학적으로 안전하더라도 **구현(implementation)** 단계에서 전력 소비, 전자기파, 처리 시간, 음향 등의 물리적 부산물을 통해 비밀 키를 복구할 수 있다. 사이드채널 공격은 알고리즘 자체를 공격하는 것이 아니라 실행 환경의 물리적 특성을 측정하는 방식이다.

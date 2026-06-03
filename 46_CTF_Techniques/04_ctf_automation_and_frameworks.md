@@ -8,6 +8,172 @@
 
 pwntools 고급 기능, angr 심볼릭 실행, Frida 동적 계측, 포렌식 자동화 파이프라인, CTFd API 자동화까지 CTF를 체계적으로 공략하는 자동화 기법을 다룬다.
 
+## 0. 초보자를 위한 개념 이해
+
+### CTF 자동화란?
+
+CTF 문제는 같은 단계를 수천 번 반복해야 하는 경우가 많다(Blind SQLi, 브루트포스, 심볼릭 실행 등). 자동화 도구와 프레임워크를 활용하면 수작업으로 수일이 걸릴 작업을 수 분 안에 처리할 수 있다. pwntools, angr, Frida는 CTF 자동화의 3대 핵심 도구다.
+
+**왜 배우는가:**
+```
+자동화 없이 vs 자동화 있을 때:
+
+  Blind SQLi (1비트씩 추출, 플래그 32자):
+    수동: 32자 × 7비트 = 224번 수동 요청 → 1~2시간
+    자동: sqlmap 또는 커스텀 스크립트 → 수 분
+
+  바이너리 크랙미 (1000가지 조건 검증):
+    수동: 역분석 → 알고리즘 이해 → 역연산 → 수 시간~수일
+    angr: 심볼릭 실행으로 자동 해 탐색 → 수 분
+
+  CTF 대회 팀 효율:
+    자동화 없음: 한 문제에 팀 전원 집중
+    자동화 있음: 스크립트 실행 중 다른 문제 병행 공략
+```
+
+### 핵심 개념 정리
+
+```
+핵심 자동화 도구:
+
+pwntools
+  - Python 바이너리 익스플로잇 프레임워크
+  - process(), remote(), cyclic(), p64(), u64() 등 제공
+  - 소켓 통신, 패턴 생성, 패킹/언패킹 자동화
+
+angr
+  - 파이썬 기반 바이너리 분석 프레임워크
+  - 심볼릭 실행(Symbolic Execution): 모든 가능한 입력 경로 탐색
+  - 크랙미(Crackme) 자동 풀이에 최적
+
+Frida
+  - 런타임 동적 계측 프레임워크 (JavaScript API)
+  - 실행 중인 프로세스의 함수 후킹, 메모리 수정
+  - 안드로이드 앱 CTF 문제에 특히 유용
+
+CTFd API
+  - CTF 대회 플랫폼(CTFd)의 REST API
+  - 자동 플래그 제출, 점수 현황 추적
+```
+
+### 필요한 도구 및 환경
+- **pwntools**: `pip install pwntools`
+- **angr**: `pip install angr` (전용 가상환경 권장)
+- **Frida**: `pip install frida-tools`
+- **Docker**: 문제별 격리 환경 구성
+- **tmux**: 여러 익스플로잇 스크립트 동시 실행 관리
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+CTF 자동화 기초: angr 심볼릭 실행으로 바이너리 크랙미 자동 풀이
+angr 없이도 개념 이해 가능한 예제
+"""
+import subprocess
+import sys
+
+
+def demo_pwntools_template() -> None:
+    """pwntools 기본 사용 패턴 — 로컬/원격 바이너리 연결"""
+    template = '''
+from pwn import *
+
+# 로컬 바이너리 실행
+p = process("./challenge")
+
+# 또는 원격 CTF 서버 연결
+# p = remote("pwnable.kr", 9000)
+
+# 데이터 수신 (프롬프트까지)
+data = p.recvuntil(b"Input: ")
+print(f"[수신] {data}")
+
+# 페이로드 전송
+offset = 40                          # 버퍼 오버플로우 오프셋
+win_addr = 0x401234                  # 플래그 출력 함수 주소
+payload = b"A" * offset + p64(win_addr)
+p.sendline(payload)
+
+# 결과 수신
+print(p.recvall().decode())
+p.close()
+'''
+    print("[pwntools 기본 템플릿]")
+    print(template)
+
+
+def demo_angr_crackme_template() -> None:
+    """angr로 크랙미 바이너리 자동 풀이하는 패턴"""
+    template = '''
+import angr
+
+# 바이너리 로드
+project = angr.Project("./crackme", auto_load_libs=False)
+
+# 심볼릭 실행 진입점 설정
+initial_state = project.factory.entry_state()
+
+# 탐색 설정
+# find: 플래그 출력 주소 (성공 경로)
+# avoid: 실패 메시지 주소 (피할 경로)
+# GDB나 Ghidra로 해당 주소 사전 확인 필요
+find_addr = 0x401234   # "Correct!" 출력 주소
+avoid_addr = 0x401500  # "Wrong!" 출력 주소
+
+simgr = project.factory.simulation_manager(initial_state)
+simgr.explore(find=find_addr, avoid=avoid_addr)
+
+if simgr.found:
+    solution = simgr.found[0]
+    # stdin에서 입력한 값 추출
+    flag = solution.posix.dumps(0)
+    print(f"[플래그 발견]: {flag.decode()}")
+else:
+    print("플래그를 찾지 못했습니다.")
+'''
+    print("\n[angr 크랙미 자동 풀이 템플릿]")
+    print(template)
+
+
+def demo_frida_hook_template() -> None:
+    """Frida로 런타임 함수 후킹하는 패턴"""
+    template = '''
+import frida
+import sys
+
+# Frida JavaScript 후킹 스크립트
+js_code = """
+// strcmp 함수를 후킹해 비교되는 문자열(플래그) 탈취
+Interceptor.attach(Module.findExportByName(null, "strcmp"), {
+    onEnter: function(args) {
+        var s1 = Memory.readUtf8String(args[0]);
+        var s2 = Memory.readUtf8String(args[1]);
+        console.log("[strcmp 호출]");
+        console.log("  인자1: " + s1);
+        console.log("  인자2: " + s2);  // 여기에 플래그가 나타날 수 있음!
+    }
+});
+"""
+
+# 프로세스 연결 및 스크립트 주입
+process = frida.spawn(["./crackme"], stdio="pipe")
+session = frida.attach(process)
+script = session.create_script(js_code)
+script.load()
+frida.resume(process)
+sys.stdin.read()  # 프로그램 실행 동안 대기
+'''
+    print("\n[Frida 함수 후킹 템플릿]")
+    print(template)
+
+
+if __name__ == "__main__":
+    demo_pwntools_template()
+    demo_angr_crackme_template()
+    demo_frida_hook_template()
+```
+
 ---
 
 ## 1. pwntools 고급 기능

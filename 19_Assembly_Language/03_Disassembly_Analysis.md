@@ -6,6 +6,67 @@
 
 # 디스어셈블리 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### 디스어셈블리 분석이란?
+
+**디스어셈블리 분석(Disassembly Analysis)**은 컴파일된 바이너리(.exe, ELF)를 어셈블리 코드로 변환해 프로그램의 동작을 분석하는 기법입니다. 소스코드 없이 악성코드·CTF 바이너리를 분석할 때 필수입니다.
+
+**왜 배우는가:**
+```
+소스코드 없는 바이너리를 분석해야 할 때:
+
+  악성코드 분석: .exe 파일 → 어떤 API를 호출하나?
+  CTF 리버싱: 바이너리 → 플래그 알고리즘 역추적
+  취약점 분석: 패치된 바이너리 비교 → 어떤 버그가 수정됐나?
+```
+
+### 핵심 분석 흐름
+
+```
+바이너리 정적 분석 흐름:
+
+.exe/.elf 파일
+    ↓
+file 명령어           → 파일 형식 확인
+strings 명령어        → 내장 문자열 추출
+objdump -d / IDA Pro  → 어셈블리 코드 확인
+    ↓
+주요 함수 식별:
+  main()    → 프로그램 진입점
+  strcmp()  → 비교 로직 (CTF 패스워드 체크)
+  malloc()  → 힙 관련 취약점 가능성
+    ↓
+동적 분석 (GDB):
+  break main     → 브레이크포인트 설정
+  run            → 실행
+  step / next    → 한 줄씩 실행
+  x/s 주소       → 메모리 문자열 확인
+```
+
+### 필요한 도구
+- **GDB + pwndbg/peda**: Linux 동적 분석 디버거
+- **Ghidra**: 무료 오픈소스 디컴파일러 (NSA 개발)
+- **IDA Pro**: 업계 표준 디스어셈블러
+- **Radare2**: CLI 기반 역공학 프레임워크
+
+### 기초 실습 예제
+```bash
+# 바이너리 기본 분석
+file challenge        # 파일 형식 확인
+strings challenge     # 내장 문자열 (플래그 힌트?)
+objdump -d challenge | grep -A 20 "<main>"  # main 함수 어셈블리
+
+# GDB로 동적 분석
+gdb ./challenge
+(gdb) break main      # main에 브레이크포인트
+(gdb) run             # 실행
+(gdb) disassemble     # 현재 함수 어셈블리 표시
+(gdb) info registers  # 레지스터 값 확인
+```
+
+---
+
 ## 1. GDB / pwndbg 실전 명령어
 
 ### 1.1 pwndbg 설치 및 기본 설정

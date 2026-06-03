@@ -6,6 +6,88 @@
 
 # Kubernetes RBAC 감사 — 권한 분석·과도한 권한 탐지·정책 강화
 
+## 0. 초보자를 위한 개념 이해
+
+### Kubernetes RBAC이란?
+
+RBAC(Role-Based Access Control)은 Kubernetes에서 "누가 어떤 리소스에 어떤 작업을 할 수 있는가"를 제어하는 권한 관리 시스템이다. RBAC이 잘못 설정되면 일반 사용자나 침해된 Pod가 시크릿을 읽거나, 다른 Pod를 삭제하거나, 심지어 클러스터 관리자 권한을 얻을 수 있다.
+
+**왜 배우는가:**
+```
+RBAC 잘못된 설정의 결과
+
+과도한 ClusterRole:
+  verb: ["*"], resource: ["*"]  → 클러스터 전체 관리자 수준
+  → 침해된 Pod가 시크릿 전부 읽고 다른 Pod 삭제 가능
+
+ServiceAccount 토큰 탈취:
+  Pod 내 토큰 → API 서버 요청 → 권한에 따라 무제한 접근
+
+권한 상승 체인:
+  create pod 권한 → hostPID Pod 생성 → 노드 프로세스 접근
+  bind ClusterRole 권한 → 자신에게 cluster-admin 부여
+```
+
+### 핵심 개념 정리
+
+```
+RBAC 구성 요소
+
+Role          — 특정 네임스페이스 내 권한 묶음
+ClusterRole   — 클러스터 전체 범위 권한 묶음
+RoleBinding   — Role을 사용자/그룹/SA에 연결
+ClusterRoleBinding — ClusterRole을 전체 범위로 연결
+
+ServiceAccount — Pod의 신원 (토큰이 자동 마운트)
+
+위험 패턴:
+  wildcards(*): verb/resource 전부 허용
+  get secrets: 모든 시크릿 읽기
+  bind: 다른 권한 부여 가능 → 권한 상승
+  impersonate: 다른 사용자로 위장
+```
+
+### 필요한 도구 및 환경
+- **kubectl**: RBAC 조회 및 관리
+- **rbac-lookup**: RBAC 관계 시각화 (`krew install rbac-lookup`)
+- **audit2rbac**: 감사 로그로 최소 권한 RBAC 자동 생성
+- **rakkess**: 권한 행렬 시각화
+
+### 기초 실습 예제
+```bash
+# 1. 현재 서비스 계정 권한 확인
+kubectl auth can-i --list -n default
+kubectl auth can-i --list -n kube-system
+
+# 2. ClusterRoleBinding 목록 — 강력한 권한 확인
+kubectl get clusterrolebinding -o wide | grep -E "cluster-admin|system:masters"
+
+# 3. 와일드카드 권한이 있는 Role 찾기
+kubectl get clusterrole -o json | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for item in data['items']:
+    name = item['metadata']['name']
+    for rule in item.get('rules', []):
+        if '*' in rule.get('verbs', []) or '*' in rule.get('resources', []):
+            print(f'[위험] ClusterRole {name}: 와일드카드 권한')
+            break
+"
+
+# 4. 모든 ServiceAccount의 시크릿 읽기 권한 확인
+kubectl get rolebinding,clusterrolebinding -A -o json | \
+    python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for item in data.get('items', []):
+    kind = item['kind']
+    name = item['metadata']['name']
+    print(f'{kind}: {name}')
+"
+```
+
+---
+
 ## 1. Kubernetes RBAC 취약점 구조
 
 ```

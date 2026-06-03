@@ -6,6 +6,148 @@
 
 # GCP 포렌식
 
+## 0. 초보자를 위한 개념 이해
+
+### GCP 포렌식이란?
+
+GCP 포렌식은 Google Cloud Platform 환경에서 발생한 보안 사고를 조사하는 기술이다. Cloud Audit Logs, Cloud Logging, Security Command Center 등 Google Cloud 고유의 서비스가 주요 증거 소스이다. GCP는 BigQuery와의 강력한 통합 덕분에 수억 건의 로그를 SQL 쿼리로 빠르게 분석할 수 있다는 특징이 있다.
+
+**왜 배우는가:**
+```
+[GCP 포렌식 증거 계층]
+
+공격자 활동
+     │
+     ▼
+Cloud Audit Logs (핵심 증거)
+  ├─ Admin Activity: IAM 변경, VM 생성/삭제 (항상 기록, 400일)
+  ├─ Data Access: 데이터 읽기/쓰기 (선택적 활성화)
+  └─ System Events: 자동화된 시스템 작업
+     │
+     ▼
+Cloud Logging
+  └─ 애플리케이션 로그, VPC Flow Logs 통합
+     │
+     ▼
+Security Command Center (SCC)
+  └─ 취약점 발견, 위협 탐지, 컴플라이언스 분석
+     │
+     ▼
+BigQuery
+  └─ 로그 장기 보관 + 대용량 SQL 분석
+
+GCP의 강점: BigQuery로 페타바이트 규모 로그도 수초 내 분석 가능
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- Cloud Audit Logs: GCP의 모든 관리 작업과 데이터 접근을 기록하는 감사 로그
+- Cloud Logging: GCP 통합 로그 관리 서비스 (구 Stackdriver Logging)
+- Security Command Center (SCC): GCP 보안 위험 통합 관리 플랫폼
+- Workload Identity: GCP 서비스 간 인증에 사용하는 자격증명 (탈취 대상)
+- IAP (Identity-Aware Proxy): 앱 접근 제어 서비스
+- VPC Service Controls: GCP 리소스 주변 보안 경계(perimeter) 설정
+- Chronicle SIEM: Google의 보안 정보 이벤트 관리 플랫폼
+```
+
+### 필요한 도구 및 환경
+- **gcloud CLI**: GCP 명령줄 도구 (로그 조회, 스냅샷 생성)
+- **Python 3.10+**: google-cloud-logging, google-cloud-bigquery 라이브러리
+- **BigQuery**: 대용량 로그 SQL 분석
+- **Chronicle SIEM**: GCP 통합 위협 탐지
+
+### 기초 실습 예제
+```python
+# pip install google-cloud-logging google-cloud-bigquery
+from datetime import datetime, timezone, timedelta
+
+def gcp_forensics_queries():
+    """
+    GCP 포렌식에서 자주 사용하는 Cloud Logging / BigQuery 쿼리 모음
+    BigQuery에서 직접 실행 가능 (Cloud Logging을 BigQuery로 내보낸 경우)
+    """
+
+    queries = {
+        "IAM 권한 변경 탐지": """
+-- Cloud Audit Log에서 IAM 변경 이벤트 조회
+SELECT
+    timestamp,
+    protopayload_auditlog.authenticationInfo.principalEmail AS actor,
+    protopayload_auditlog.methodName AS action,
+    protopayload_auditlog.resourceName AS resource,
+    protopayload_auditlog.requestMetadata.callerIp AS source_ip
+FROM `project_id.dataset.cloudaudit_googleapis_com_activity_*`
+WHERE
+    _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY))
+                      AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())
+    AND protopayload_auditlog.serviceName = 'iam.googleapis.com'
+    AND (
+        protopayload_auditlog.methodName LIKE '%setIamPolicy%'
+        OR protopayload_auditlog.methodName LIKE '%roles.create%'
+        OR protopayload_auditlog.methodName LIKE '%serviceAccounts.create%'
+    )
+ORDER BY timestamp DESC
+LIMIT 100;
+""",
+        "서비스 계정 키 생성 탐지": """
+-- 새 서비스 계정 키 생성 이벤트 (백도어 생성 탐지)
+SELECT
+    timestamp,
+    protopayload_auditlog.authenticationInfo.principalEmail AS actor,
+    JSON_EXTRACT_SCALAR(protopayload_auditlog.resourceName, '$') AS service_account,
+    protopayload_auditlog.requestMetadata.callerIp AS source_ip
+FROM `project_id.dataset.cloudaudit_googleapis_com_activity_*`
+WHERE
+    _TABLE_SUFFIX >= FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
+    AND protopayload_auditlog.methodName = 'google.iam.admin.v1.CreateServiceAccountKey'
+ORDER BY timestamp DESC;
+""",
+        "GCS 버킷 대용량 다운로드 탐지": """
+-- Cloud Storage 데이터 유출 탐지 (Data Access 로그 활성화 필요)
+SELECT
+    timestamp,
+    protopayload_auditlog.authenticationInfo.principalEmail AS actor,
+    protopayload_auditlog.resourceName AS resource,
+    protopayload_auditlog.requestMetadata.callerIp AS source_ip,
+    COUNT(*) OVER (PARTITION BY protopayload_auditlog.authenticationInfo.principalEmail
+                  ORDER BY timestamp
+                  RANGE BETWEEN INTERVAL 1 HOUR PRECEDING AND CURRENT ROW) AS hourly_access_count
+FROM `project_id.dataset.cloudaudit_googleapis_com_data_access_*`
+WHERE
+    _TABLE_SUFFIX >= FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
+    AND protopayload_auditlog.methodName = 'storage.objects.get'
+QUALIFY hourly_access_count > 100  -- 1시간에 100회 이상 접근
+ORDER BY timestamp DESC;
+""",
+    }
+
+    print("=== GCP 포렌식 핵심 BigQuery 쿼리 ===\n")
+    for name, query in queries.items():
+        print(f"[{name}]")
+        print(query.strip())
+        print("\n" + "=" * 50 + "\n")
+
+    # gcloud CLI 명령 예시
+    print("=== gcloud CLI 포렌식 명령 ===")
+    commands = [
+        ("최근 24시간 감사 로그 조회",
+         'gcloud logging read \'protoPayload.serviceName="iam.googleapis.com"\' --freshness=24h --format=json'),
+        ("VM 디스크 스냅샷 생성 (증거 보존)",
+         "gcloud compute disks snapshot DISK_NAME --zone=ZONE --snapshot-names=forensic-$(date +%Y%m%d)"),
+        ("VPC Flow Logs 활성화",
+         "gcloud compute networks subnets update SUBNET --enable-flow-logs --region=REGION"),
+    ]
+    for desc, cmd in commands:
+        print(f"\n# {desc}")
+        print(f"$ {cmd}")
+
+gcp_forensics_queries()
+```
+
+---
+
 ## 1. GCP 로그 소스
 
 Google Cloud Platform(GCP) 환경에서 포렌식 조사에 활용할 수 있는 주요 로그 소스를 정리한다. GCP는 Cloud Logging을 중심으로 모든 로그를 통합 관리하며, BigQuery와 연동하여 대용량 로그 분석이 가능하다.

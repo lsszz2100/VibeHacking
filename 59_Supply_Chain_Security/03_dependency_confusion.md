@@ -6,6 +6,121 @@
 
 # 의존성 혼란 공격 (Dependency Confusion)
 
+## 0. 초보자를 위한 개념 이해
+
+### 의존성 혼란 공격이란?
+
+의존성 혼란은 기업이 내부적으로만 사용하는 비공개 패키지 이름을 공개 패키지 레지스트리(PyPI, npm 등)에 더 높은 버전 번호로 업로드하는 공격이다. 빌드 도구가 내부 레지스트리보다 공개 레지스트리를 우선하면, 개발자가 모르는 사이에 공격자의 악성 패키지가 자동으로 설치된다. Alex Birsan이 2021년 이 기법으로 Apple, Microsoft, PayPal 등 35개 이상의 대기업 침투에 성공했다.
+
+**왜 배우는가:**
+```
+[의존성 혼란 공격 원리]
+
+기업 내부:
+  requirements.txt → internal-utils==1.0 (내부 레지스트리에만 존재)
+
+공격자:
+  1. 기업 코드에서 내부 패키지명 발견 (에러 메시지, 공개 코드 등)
+  2. PyPI에 "internal-utils==9.9.9" 악성 패키지 업로드
+
+빌드 시스템:
+  pip install internal-utils
+  → 내부 레지스트리: 1.0 발견
+  → PyPI: 9.9.9 발견 (버전이 높음!)
+  → 공격자 패키지 설치 ← 자동으로 침해 발생
+
+피해: 빌드 서버 RCE, 내부망 접근, 자격증명 탈취
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 의존성 혼란(Dependency Confusion): 내부 패키지와 동일명의 공개 악성 패키지 충돌 공격
+- 버전 우선순위 혼동: pip/npm이 더 높은 버전을 자동 선택하는 동작 악용
+- 네임스페이스(Namespace): npm의 @company/package처럼 패키지 소속을 구분하는 접두사
+- 패키지 레지스트리: PyPI(Python), npm(Node.js), NuGet(.NET), RubyGems(Ruby)
+- 타이포스쿼팅과의 차이: 오타가 아닌 정확히 같은 이름으로 공개 등록
+- 내부 레지스트리: 기업 내부에서만 접근 가능한 프라이빗 패키지 저장소
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: pip, requests 라이브러리
+- **pip-audit**: 설치된 패키지 중 의심스러운 패키지 탐지
+- **Artifactory / Nexus**: 프라이빗 레지스트리 (방어 도구)
+- **pip 설정**: --index-url, --extra-index-url 옵션 이해
+
+### 기초 실습 예제
+```python
+import requests
+import json
+import subprocess
+import sys
+
+def check_dependency_confusion_risk(package_names: list[str],
+                                     internal_registry: str = None) -> None:
+    """
+    내부 패키지 이름들이 공개 레지스트리에 존재하는지 확인
+    존재한다면 의존성 혼란 공격 위험 가능성 탐지
+    """
+    print("=== 의존성 혼란 위험 점검 ===\n")
+    print(f"점검 대상 패키지: {len(package_names)}개\n")
+
+    for pkg_name in package_names:
+        # PyPI에 동일 이름 패키지가 존재하는지 확인
+        pypi_url = f"https://pypi.org/pypi/{pkg_name}/json"
+
+        try:
+            response = requests.get(pypi_url, timeout=5)
+
+            if response.status_code == 200:
+                data = response.json()
+                info = data["info"]
+                latest_version = info["version"]
+                author = info.get("author", "Unknown")
+                upload_date = data["releases"].get(latest_version, [{}])[0].get(
+                    "upload_time", "Unknown"
+                ) if data["releases"].get(latest_version) else "Unknown"
+
+                print(f"[위험] {pkg_name}")
+                print(f"       PyPI에 동일명 패키지 존재!")
+                print(f"       버전: {latest_version} | 작성자: {author}")
+                print(f"       업로드: {upload_date[:10] if upload_date != 'Unknown' else 'Unknown'}")
+                print(f"       대응: pip install --index-url <내부레지스트리> {pkg_name}")
+                print()
+            elif response.status_code == 404:
+                print(f"[안전] {pkg_name} - PyPI에 없음 (의존성 혼란 위험 낮음)")
+
+        except requests.RequestException:
+            print(f"[확인불가] {pkg_name} - 네트워크 오류")
+
+    print("\n=== 의존성 혼란 방어 방법 ===")
+    print("1. pip.conf에 내부 레지스트리만 사용하도록 설정:")
+    print("   [global]")
+    print("   index-url = https://내부레지스트리/simple/")
+    print("   # extra-index-url 제거!")
+    print()
+    print("2. npm .npmrc 설정:")
+    print("   registry=https://내부레지스트리")
+    print("   @회사스코프:registry=https://내부레지스트리")
+    print()
+    print("3. 내부 패키지에 네임스페이스 사용:")
+    print("   Python: mycompany-internal-utils (하이픈으로 명확한 구분)")
+    print("   npm: @mycompany/internal-utils (공식 스코프 사용)")
+
+# 가상의 내부 패키지명 목록으로 테스트
+# (실제 존재하는 내부 패키지명을 외부에 노출하지 말 것)
+test_internal_packages = [
+    "internal-utils",    # 일반적인 내부 패키지 예시
+    "company-auth",      # 가상 내부 패키지
+    "requests",          # 실제 공개 패키지 (위험 확인용)
+]
+
+check_dependency_confusion_risk(test_internal_packages)
+```
+
+---
+
 ## 1. 의존성 혼란이란
 
 의존성 혼란(Dependency Confusion) 공격은 Alex Birsan이 2021년에 공개한 공급망 공격 기법입니다.

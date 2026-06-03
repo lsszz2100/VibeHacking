@@ -6,6 +6,67 @@
 
 # 01 Bash Scripting Basics
 
+## 0. 초보자를 위한 개념 이해
+
+### Bash 스크립팅이란?
+
+Bash(Bourne Again Shell)는 리눅스/유닉스 시스템에서 가장 널리 쓰이는 명령어 해석기(셸)이자 스크립팅 언어다. 터미널에서 직접 명령어를 입력하는 대신, 여러 명령어를 파일에 저장하여 자동으로 실행할 수 있게 해준다. 보안 분야에서는 스캔 자동화, 로그 분석, 익스플로잇 실행 등 거의 모든 작업의 기반이 된다.
+
+**왜 배우는가:**
+```
+Bash 스크립팅의 보안 활용도
+
+[수동 작업]                   [Bash 자동화]
+nmap 한 호스트씩 입력  →  수백 개 호스트 일괄 스캔
+로그 파일 눈으로 검토  →  패턴 자동 탐지·경보
+취약점 도구 하나씩 실행 →  정찰~보고까지 파이프라인화
+```
+
+### 핵심 개념 정리
+
+```
+Bash 스크립트 핵심 구성 요소
+
+[변수]        저장소   — NAME="value"
+[조건문]      분기      — if [ ... ]; then ... fi
+[반복문]      자동화   — for host in ...; do ... done
+[함수]        재사용   — myfunc() { ... }
+[파이프 |]   연결      — cmd1 | cmd2 | cmd3
+[리다이렉션]  입출력   — > 파일저장,  >> 추가,  2>&1 오류포함
+[특수변수]    환경정보 — $0 스크립트명, $1 첫번째 인자, $? 종료코드
+```
+
+### 필요한 도구 및 환경
+- **bash**: 리눅스/macOS 기본 내장 (버전 확인: `bash --version`)
+- **shellcheck**: 스크립트 문법·버그 검사 도구 (`apt install shellcheck`)
+- **텍스트 편집기**: vim, nano, VS Code 중 선택
+
+### 기초 실습 예제
+```bash
+#!/usr/bin/env bash
+# 초보자를 위한 Bash 스크립트 기본 구조 예제
+set -euo pipefail     # 오류 즉시 종료 (안전 설정)
+
+# 변수 선언
+TARGET="192.168.1.1"
+PORT=80
+
+# 조건문: 호스트가 응답하는지 확인
+if ping -c1 -W1 "$TARGET" &>/dev/null; then
+    echo "[+] $TARGET 응답 있음"
+else
+    echo "[-] $TARGET 응답 없음"
+fi
+
+# 반복문: 여러 포트 순서대로 확인
+for p in 22 80 443 8080; do
+    # /dev/tcp 로 포트 연결 시도 (nc 없어도 동작)
+    if (echo >/dev/tcp/"$TARGET"/"$p") 2>/dev/null; then
+        echo "[OPEN] $TARGET:$p"
+    fi
+done
+```
+
 ---
 
 ## 1. 변수와 배열

@@ -6,6 +6,82 @@
 
 # 서버리스 IAM 권한 남용 — 역할 체인·권한 상승·분석 CLI
 
+## 0. 초보자를 위한 개념 이해
+
+### 서버리스 IAM 권한 남용이란?
+
+**IAM(Identity and Access Management) 권한 남용**은 AWS Lambda 같은 서버리스 함수에 부여된 과도한 IAM 권한을 이용해 다른 AWS 서비스를 공격하거나 권한을 상승시키는 기법입니다.
+
+**왜 서버리스가 특히 취약한가:**
+```
+서버리스 IAM 문제:
+  Lambda 함수 → IAM 역할(Role) 부여
+  → "편하게 S3 접근하려고 AdministratorAccess 부여"
+  → 함수 취약점 → 공격자가 관리자 권한 획득
+
+실제 시나리오:
+  1. Lambda에 주입 공격 (코드 인젝션)
+  2. Lambda 내부에서 IAM API 호출
+  3. iam:CreateUser → 새 관리자 계정 생성
+  4. 공격자가 새 계정으로 AWS 전체 장악
+
+최소 권한 원칙 위반:
+  "필요한 권한만" → 실제로는 과도 부여 흔함
+```
+
+### 핵심 권한 남용 기법
+
+```
+주요 취약 패턴:
+
+1. 역할 체인 (Role Chaining)
+   LambdaRole → AssumeRole → AdminRole
+   → 간접적으로 관리자 권한 획득
+
+2. 권한 상승 경로
+   iam:CreatePolicyVersion → 기존 정책에 관리자 권한 추가
+   iam:AttachUserPolicy → 자신에게 관리자 정책 첨부
+   iam:PassRole → 고권한 역할을 새 리소스에 부여
+
+3. 자격증명 탈취
+   Lambda 환경변수에서 AWS 키 추출
+   /proc/1/environ, /tmp 에서 키 탐색
+```
+
+### 필요한 도구
+- **IAM Vulnerable**: IAM 권한 상승 실습 환경
+- **Pacu**: AWS 공격 프레임워크
+- **CloudMapper**: AWS 권한 시각화 분석
+
+### 기초 실습 예제
+```python
+# AWS IAM 권한 열거 (허가된 환경에서만)
+import boto3
+
+def enumerate_iam_permissions() -> None:
+    iam = boto3.client('iam')
+    sts = boto3.client('sts')
+
+    # 현재 자격증명 확인
+    identity = sts.get_caller_identity()
+    print(f"계정 ID: {identity['Account']}")
+    print(f"사용자/역할: {identity['Arn']}")
+
+    # 현재 역할의 정책 나열
+    try:
+        role_name = identity['Arn'].split('/')[-1]
+        policies = iam.list_attached_role_policies(RoleName=role_name)
+        print(f"\n첨부된 정책:")
+        for policy in policies['AttachedPolicies']:
+            print(f"  - {policy['PolicyName']}")
+    except Exception as e:
+        print(f"정책 열거 실패: {e}")
+
+# enumerate_iam_permissions()
+```
+
+---
+
 ## 1. IAM 기초 — 초보자를 위한 설명
 
 ### IAM이란?

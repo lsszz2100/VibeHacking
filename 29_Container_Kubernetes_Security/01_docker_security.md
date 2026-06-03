@@ -6,6 +6,84 @@
 
 # Docker 보안: 컨테이너 탈출 및 취약점 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### Docker 보안이란?
+
+Docker는 애플리케이션을 "컨테이너"라는 격리된 환경에서 실행하는 기술이다. 가상 머신(VM)과 달리 OS 커널을 호스트와 공유하기 때문에 훨씬 가볍지만, 이 공유 구조가 보안상 위험을 만든다. Docker 보안은 컨테이너가 호스트 시스템에 미치는 영향을 최소화하고, 잘못된 설정으로 인한 탈출(Container Escape)을 방지하는 것이다.
+
+**왜 배우는가:**
+```
+Docker 보안이 중요한 이유
+
+VM vs 컨테이너 격리 차이:
+
+  VM:
+    [앱] → [게스트 OS] → [하이퍼바이저] → [호스트 OS]
+    완전한 커널 격리 → 탈출 매우 어려움
+
+  Docker:
+    [앱] → [컨테이너] → [공유 커널] → [호스트 OS]
+    커널 공유 → 잘못된 설정 시 호스트 노출
+
+주요 위험:
+  --privileged 플래그    → 호스트 전체 접근 가능
+  도커 소켓 마운트       → 컨테이너에서 Docker 데몬 제어
+  민감 디렉토리 마운트   → 호스트 파일시스템 접근
+```
+
+### 핵심 개념 정리
+
+```
+Docker 보안 메커니즘
+
+메커니즘          역할                        기본값
+──────────────────────────────────────────────────────
+Namespaces       프로세스/네트워크/파일시스템 격리  활성
+cgroups          CPU/메모리 리소스 제한            활성
+Capabilities     루트 권한 세분화                  일부 허용
+Seccomp          시스템 콜 필터링                  기본 프로파일
+AppArmor/SELinux 강제 접근 제어                   배포판 의존
+```
+
+### 필요한 도구 및 환경
+- **Docker Desktop / Docker Engine**: `apt install docker.io`
+- **Trivy**: 컨테이너 이미지 취약점 스캔 (`apt install trivy`)
+- **docker bench**: Docker 보안 설정 감사 도구
+
+### 기초 실습 예제
+```bash
+# 1. 컨테이너 보안 설정 확인
+docker inspect <container_id> | python3 -c "
+import json, sys
+data = json.load(sys.stdin)[0]
+hc = data.get('HostConfig', {})
+print('Privileged:', hc.get('Privileged', False))
+print('PidMode:', hc.get('PidMode', ''))
+print('NetworkMode:', hc.get('NetworkMode', ''))
+print('Binds:', hc.get('Binds', []))
+"
+
+# 2. 도커 소켓 마운트 여부 확인 (위험!)
+docker ps --format "{{.Names}}" | xargs -I {} \
+    docker inspect {} --format '{{.Name}}: {{.Mounts}}' | \
+    grep "docker.sock"
+
+# 3. Trivy로 이미지 취약점 스캔
+trivy image nginx:latest          # 공식 이미지도 취약점 있음
+trivy image --severity HIGH,CRITICAL ubuntu:20.04
+
+# 4. 최소 권한 컨테이너 실행
+docker run --rm \
+    --cap-drop=ALL \              # 모든 capability 제거
+    --security-opt=no-new-privileges \  # 권한 상승 방지
+    --read-only \                 # 루트 파일시스템 읽기 전용
+    --tmpfs /tmp \                # 임시 쓰기 공간만 허용
+    nginx:alpine
+```
+
+---
+
 ## 1. Docker 보안 개요
 
 Docker 컨테이너는 완전한 격리를 제공하지 않는다. 커널을 호스트와 공유하기 때문에

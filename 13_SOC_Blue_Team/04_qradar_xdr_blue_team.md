@@ -9,6 +9,111 @@
 
 ---
 
+## 0. 초보자를 위한 개념 이해
+
+### QRadar & Azure Sentinel이란?
+
+IBM QRadar는 기업 환경에서 가장 많이 사용되는 엔터프라이즈 SIEM 중 하나로, 수십만 개의 이벤트를 실시간으로 수집·상관 분석합니다. Microsoft Azure Sentinel(현 Microsoft Sentinel)은 클라우드 네이티브 SIEM으로, KQL(Kusto Query Language)을 사용해 Azure·Microsoft 365·서드파티 로그를 분석합니다. XDR(Extended Detection and Response)은 엔드포인트·네트워크·클라우드를 통합 방어하는 차세대 플랫폼입니다.
+
+**왜 배우는가:**
+```
+SIEM 플랫폼 비교:
+
+  IBM QRadar           Azure Sentinel         Splunk
+  ──────────────────────────────────────────────────────
+  기업 내부 설치       클라우드 네이티브       온프레미스/클라우드
+  AQL 쿼리 언어        KQL 쿼리 언어           SPL 쿼리 언어
+  오펜스(Offense) 중심  인시던트/경보 중심      유연한 검색 중심
+  금융/공공기관 많음    Azure 환경 최적         데이터 분석 강점
+
+  취업 시장 수요:
+    QRadar   → 국내 대기업·금융권 SOC
+    Sentinel → Azure 도입 기업, 클라우드 SOC
+    Splunk   → 글로벌 기업, 다양한 업종
+```
+
+### 핵심 개념 정리
+
+```
+QRadar 핵심 개념:
+  Offense      — 규칙에 따라 생성된 보안 사건 (인시던트)
+  Event        — 단일 로그 항목
+  Flow         — 네트워크 연결 요약 (NetFlow)
+  AQL          — Ariel Query Language (QRadar 쿼리)
+  DSM          — Device Support Module (로그 파서)
+
+Azure Sentinel KQL 기초:
+  SecurityEvent
+  | where EventID == 4625              // 로그인 실패
+  | summarize count() by Account       // 계정별 집계
+  | order by count_ desc               // 내림차순 정렬
+  | take 10                            // 상위 10개
+
+XDR 구성요소:
+  EDR → 엔드포인트 탐지·대응
+  NDR → 네트워크 탐지·대응
+  CDR → 클라우드 탐지·대응
+  XDR → 위 세 가지 통합 플랫폼
+```
+
+### 필요한 도구 및 환경
+- **QRadar Community Edition**: IBM 무료 가상화 SIEM 환경
+- **Microsoft Sentinel (30일 무료)**: Azure 계정으로 체험 가능
+- **KQL 플레이그라운드**: Microsoft 공식 학습 환경
+- **Python qradar4py**: QRadar REST API Python 클라이언트
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""KQL 쿼리 빌더 — Azure Sentinel 보안 이벤트 분석 기초."""
+
+from dataclasses import dataclass
+from enum import StrEnum
+
+
+class LogTable(StrEnum):
+    SECURITY_EVENT = "SecurityEvent"
+    SIGNIN_LOGS    = "SigninLogs"
+    AZURE_ACTIVITY = "AzureActivity"
+    SYSLOG         = "Syslog"
+
+
+@dataclass
+class KqlQuery:
+    table: LogTable
+    filters: list[str]
+    summarize: str | None = None
+    order_by: str | None = None
+    limit: int = 100
+
+    def build(self) -> str:
+        """KQL 쿼리 문자열 생성."""
+        parts = [str(self.table)]
+        for f in self.filters:
+            parts.append(f"| where {f}")
+        if self.summarize:
+            parts.append(f"| summarize {self.summarize}")
+        if self.order_by:
+            parts.append(f"| order by {self.order_by} desc")
+        parts.append(f"| take {self.limit}")
+        return "\n".join(parts)
+
+
+if __name__ == "__main__":
+    # 로그인 실패 상위 계정 조회
+    query = KqlQuery(
+        table=LogTable.SECURITY_EVENT,
+        filters=["EventID == 4625", "TimeGenerated > ago(1h)"],
+        summarize="FailCount=count() by Account, IpAddress",
+        order_by="FailCount",
+        limit=20,
+    )
+    print("생성된 KQL 쿼리:")
+    print(query.build())
+```
+
+---
+
 ## 1. IBM QRadar 아키텍처 심화
 
 ### 컴포넌트 구성

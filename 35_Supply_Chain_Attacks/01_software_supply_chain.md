@@ -6,6 +6,109 @@
 
 # 01 — 소프트웨어 공급망 공격
 
+## 0. 초보자를 위한 개념 이해
+
+### 소프트웨어 공급망 공격이란?
+
+소프트웨어 공급망 공격(Software Supply Chain Attack)은 최종 제품이 아닌 그 제품을 만드는 과정(빌드 도구, 라이브러리, 패키지 저장소 등)을 침해해 배포 시점에 이미 악성 코드가 포함되도록 하는 공격이다. 사용자나 기업이 신뢰하는 패키지를 설치하는 순간 악성 코드가 실행되므로 탐지가 매우 어렵다. 2020년 SolarWinds, 2021년 Kaseya, 2024년 XZ Utils 등 대형 사건이 이 방식으로 발생했다.
+
+**왜 배우는가:**
+```
+[공급망 공격의 파급력]
+
+  개발자 → pip install malicious-package
+               ↓
+          악성 코드가 개발 환경 침해
+               ↓
+          빌드 서버에서 프로덕션 배포
+               ↓
+          최종 사용자 수만~수십만 명 피해
+
+  [실제 사례 규모]
+  SolarWinds: 18,000개 조직 동시 침해
+  NPM 타이포스쿼팅: 매월 수천 건 발견
+  PyPI 악성 패키지: 2023년 수백 개 발견
+```
+
+### 핵심 개념 정리
+
+```
+[공급망 공격 5가지 유형]
+
+1. 타이포스쿼팅 (Typosquatting)
+   - 오타 유도: requests → requets, numpy → nummpy
+   - pip/npm 설치 시 오타로 악성 패키지 설치
+
+2. 의존성 혼동 (Dependency Confusion)
+   - 내부 패키지 이름을 공개 저장소에 높은 버전으로 등록
+   - 패키지 관리자가 공개 저장소 버전 자동 선택
+
+3. 계정 탈취 (Account Takeover)
+   - 인기 패키지 관리자 계정 해킹 → 악성 버전 배포
+   - 예: event-stream (npm, 2018)
+
+4. 빌드 환경 침해 (Build Poisoning)
+   - CI/CD 파이프라인 또는 빌드 서버 해킹
+   - 컴파일 단계에서 악성 코드 삽입
+
+5. 오픈소스 백도어 (Source Backdoor)
+   - 장기간 기여자로 신뢰 획득 후 악성 코드 PR
+   - 예: XZ Utils (CVE-2024-3094)
+```
+
+### 필요한 도구 및 환경
+- **pip-audit**: Python 패키지 취약점 스캔
+- **npm audit**: Node.js 의존성 보안 검사
+- **SBOM 도구**: syft, cyclonedx로 소프트웨어 명세서 생성
+- **OSV Scanner**: Google의 오픈소스 취약점 데이터베이스 스캐너
+
+### 기초 실습 예제
+```python
+import subprocess
+import json
+
+def check_package_safety(package_name: str, ecosystem: str = "pypi") -> dict:
+    """패키지 이름의 타이포스쿼팅 위험도와 알려진 취약점을 검사한다."""
+
+    # 타이포스쿼팅 패턴 생성 (간단한 예시)
+    def generate_typos(name: str) -> list[str]:
+        typos = []
+        for i in range(len(name)):
+            # 문자 삭제
+            typos.append(name[:i] + name[i+1:])
+            # 인접 문자 교환
+            if i < len(name) - 1:
+                swapped = list(name)
+                swapped[i], swapped[i+1] = swapped[i+1], swapped[i]
+                typos.append(''.join(swapped))
+        return list(set(t for t in typos if t != name and len(t) > 2))
+
+    result = {
+        "package": package_name,
+        "ecosystem": ecosystem,
+        "potential_typos": generate_typos(package_name)[:5],  # 상위 5개만
+        "check_commands": [
+            f"pip-audit -r requirements.txt",
+            f"pip show {package_name}",
+        ]
+    }
+
+    print(f"[*] {package_name} 유사 이름 (타이포스쿼팅 주의):")
+    for typo in result["potential_typos"]:
+        print(f"    - {typo}")
+
+    print(f"\n[*] 취약점 검사 명령어:")
+    print(f"    pip-audit --desc {package_name}")
+
+    return result
+
+# 사용 예시
+# check_package_safety("requests")
+# check_package_safety("numpy")
+```
+
+---
+
 ## 1. 패키지 저장소 공격
 
 ### 1-1. 타이포스쿼팅 (Typosquatting)

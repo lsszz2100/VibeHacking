@@ -6,6 +6,66 @@
 
 # 03 Advanced Cracking Techniques
 
+## 0. 초보자를 위한 개념 이해
+
+### 고급 크래킹 기법이란?
+
+기본적인 사전 공격이나 브루트포스만으로는 복잡한 비밀번호를 크래킹하기 어렵다. 고급 크래킹 기법은 인간이 비밀번호를 만드는 패턴(P@ssw0rd, 이름+연도 등)을 활용한 규칙 기반 공격, 공간-시간 트레이드오프를 이용한 레인보우 테이블, 그리고 여러 기법을 조합하는 하이브리드 공격 등을 포함한다.
+
+**왜 배우는가:**
+```
+고급 기법이 필요한 이유
+
+단순 사전 공격의 한계:
+  "password" → 발견 가능
+  "P@ssw0rd!" → 사전에 없으면 실패
+
+고급 기법으로 극복:
+  규칙 기반: "password" → 변형 → "P@ssw0rd!", "p4ssword", ...
+  마스크:    패턴 지정  → 4자리 대문자+숫자+특수문자 조합
+  레인보우:  사전 계산  → 즉시 역산 (솔트 없는 해시에 효과적)
+  Combinator: 두 단어 조합 → "hello"+"world" = "helloworld"
+```
+
+### 핵심 개념 정리
+
+```
+고급 크래킹 기법 비교
+
+기법            대상                   강점
+─────────────────────────────────────────────────
+레인보우 테이블  솔트 없는 MD5/NTLM     사전 계산으로 즉시 역산
+규칙 기반(Rules) 인간 패턴 비밀번호    알려진 단어의 변형 포착
+하이브리드       중간 복잡도 비밀번호   단어+숫자/특수문자 조합
+Prince Attack    긴 복잡한 비밀번호     단어 체인으로 긴 패스워드 생성
+OMEN            통계적 패턴            마르코프 모델 기반 확률 순서
+```
+
+### 필요한 도구 및 환경
+- **hashcat + rules**: `/usr/share/hashcat/rules/` 폴더의 규칙 파일
+- **rainbowcrack**: 레인보우 테이블 생성/조회 (`apt install rainbowcrack`)
+- **크래킹 전용 리스트**: SecLists, CrackStation 사전
+
+### 기초 실습 예제
+```bash
+# 규칙 기반 공격 — hashcat 내장 규칙 적용
+# best64.rule: 64가지 일반적인 비밀번호 변형 규칙
+echo -n "P@ssw0rd" | md5sum | awk '{print $1}' > rule_test.hash
+
+hashcat -m 0 -a 0 rule_test.hash \
+    /usr/share/wordlists/rockyou.txt \
+    -r /usr/share/hashcat/rules/best64.rule
+
+# 마스크 공격 — 8자리 (대문자1+소문자5+숫자1+특수1) 패턴
+# ?u=대문자 ?l=소문자 ?d=숫자 ?s=특수문자
+hashcat -m 0 -a 3 rule_test.hash "?u?l?l?l?l?l?d?s"
+
+# John 규칙 기반 — 내장 규칙 "KoreLogic" 활용
+john --wordlist=rockyou.txt --rules=KoreLogic rule_test.hash
+```
+
+---
+
 ## 레인보우 테이블
 
 ### 원리

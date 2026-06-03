@@ -9,6 +9,117 @@
 
 ---
 
+## 0. 초보자를 위한 개념 이해
+
+### Ghidra와 동적 분석이란?
+
+Ghidra는 어셈블리 코드를 C 유사 코드로 자동 변환(디컴파일)해주는 무료 역공학 도구입니다. 정적 분석(실행 없이 코드 읽기)의 핵심 도구이며, 동적 분석(실행하면서 관찰)과 함께 사용하면 강력한 리버싱이 가능합니다.
+
+**왜 배우는가:**
+```
+정적 분석 vs 동적 분석:
+
+  정적 분석 (Ghidra):
+  ✔ 실행 없이 분석 가능 → 안전 (악성코드 실행 불필요)
+  ✔ 전체 코드 구조 파악
+  ✗ 난독화/패킹 시 제한적
+  ✗ 런타임 값 알 수 없음
+
+  동적 분석 (디버거):
+  ✔ 실제 실행 중 값 확인 → 난독화 우회
+  ✔ 네트워크 통신, 파일 생성 관찰
+  ✗ 실행 환경 필요 → 격리된 VM 필수
+  ✗ 안티디버깅 우회 필요
+
+  Ghidra 활용 장점:
+  무료 + 오픈소스 (IDA Pro 대비 비용 0)
+  디컴파일러 내장 → 어셈블리 → C 코드 자동 변환
+  Python/Java 스크립트로 자동화
+```
+
+### 핵심 개념 정리
+
+```
+Ghidra 분석 워크플로우:
+
+  1. 새 프로젝트 생성
+       → File > New Project > Non-Shared Project
+
+  2. 바이너리 임포트
+       → File > Import File → 분석할 exe/dll 선택
+       → 자동 분석 실행 (Yes → Analyze)
+
+  3. Symbol Tree에서 함수 탐색
+       → Functions 폴더 → main, WinMain 등 찾기
+       → 의심 함수 이름 검색 (CreateFile, RegSetValue 등)
+
+  4. 디컴파일 창 활용
+       → 함수 선택 → 우측 Decompiler 창
+       → C 유사 코드로 로직 파악
+
+  5. 교차 참조 (XRef) 활용
+       → 특정 변수/함수 우클릭 → References
+       → 어디서 호출하는지 추적
+
+  단축키:
+  G     → 주소로 이동
+  L     → 심볼 이름 변경
+  ;     → 주석 추가
+  F5    → 함수 디컴파일
+```
+
+### 필요한 도구 및 환경
+- **Java 17**: Ghidra 실행에 필수 — `java -version`으로 확인
+- **격리된 VM**: 악성코드 분석 시 인터넷 차단 + 스냅샷 필수
+- **샘플 바이너리**: crackme 사이트, CTF 아카이브에서 연습용 바이너리 수집
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+Ghidra 자동화 스크립트 (GhidraScript Python API 기반).
+Ghidra Script Manager에서 실행 — 독립 실행 불가.
+"""
+# 아래 코드는 Ghidra의 내장 Python(Jython) 환경에서 실행됩니다.
+# Script Manager > New Script > Python으로 파일 생성 후 붙여넣기
+
+GHIDRA_SCRIPT_EXAMPLE = '''
+# Ghidra Script: 의심 API 호출 함수 목록 추출
+from ghidra.program.model.listing import Function
+from ghidra.program.model.symbol import RefType
+
+SUSPICIOUS_APIS = [
+    "CreateRemoteThread",
+    "WriteProcessMemory",
+    "VirtualAllocEx",
+    "RegSetValueExA",
+    "WinExec",
+    "ShellExecuteA",
+]
+
+func_manager = currentProgram.getFunctionManager()
+for func in func_manager.getFunctions(True):
+    for ref in getReferencesTo(func.getEntryPoint()):
+        if func.getName() in SUSPICIOUS_APIS:
+            calling_func = getFunctionContaining(ref.getFromAddress())
+            if calling_func:
+                print(f"[의심] {func.getName()} 호출: {calling_func.getName()}")
+'''
+
+def show_usage() -> None:
+    print("Ghidra Script 사용법:")
+    print("1. Ghidra에서 바이너리 열기")
+    print("2. Window > Script Manager")
+    print("3. New Script > Python")
+    print("4. 위 GHIDRA_SCRIPT_EXAMPLE 내용 붙여넣기")
+    print("5. Run (▶) 버튼 클릭")
+
+if __name__ == "__main__":
+    show_usage()
+```
+
+---
+
 ## 1. Ghidra 개요 및 설치
 
 NSA가 개발해 2019년 오픈소스로 공개한 무료 Software Reverse Engineering(SRE) 플랫폼이다. IDA Pro의 대안으로 디스어셈블리, 디컴파일, 스크립트 자동화를 모두 지원한다.

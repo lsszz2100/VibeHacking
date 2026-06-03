@@ -6,6 +6,80 @@
 
 # CAN 버스 해킹
 
+## 0. 초보자를 위한 개념 이해
+
+### CAN 버스란?
+
+**CAN(Controller Area Network) 버스**는 자동차 내부의 여러 전자 제어 장치(ECU)가 서로 통신하는 차량 내부 네트워크입니다. 엔진, 브레이크, 에어백, 계기판 모두 CAN으로 연결됩니다.
+
+**왜 보안에서 중요한가:**
+```
+자동차 = 바퀴 달린 컴퓨터:
+  현대 차량: ECU 수십 개 + CAN 통신
+
+CAN의 보안 취약점:
+  - 인증 없음: 누구나 메시지 전송 가능
+  - 암호화 없음: 메시지 평문 전송
+  - 브로드캐스트: 모든 ECU가 모든 메시지 수신
+
+공격 시나리오:
+  OBD-II 포트 (물리 접근) →
+  CAN 메시지 주입 →
+  브레이크 ECU에 명령 →
+  물리적 위험 발생
+
+원격 공격:
+  텔레매틱스 유닛 해킹 → CAN 접근
+  → 원격 차량 제어 (2015 Jeep Cherokee 실증)
+```
+
+### 핵심 CAN 개념
+
+```
+CAN 메시지 구조:
+  [ 중재 ID (11bit) ][ DLC ][ 데이터 (0-8bytes) ]
+
+  예: ID=0x7E0, DLC=3, Data=02 01 0D
+    → OBD-II 진단 요청 (차속 데이터)
+
+CAN 공격 유형:
+  1. 메시지 재생 (Replay): 캡처한 메시지 재전송
+  2. 메시지 주입 (Injection): 가짜 메시지 삽입
+  3. 버스 플러딩: 대량 메시지로 DoS
+  4. 프리텐딩: 특정 ECU ID 사칭
+
+OBD-II 포트:
+  차량 하단 계기판 아래 표준 진단 포트
+  물리 접근 시 CAN 버스 직접 연결 가능
+```
+
+### 필요한 도구
+- **can-utils**: Linux CAN 인터페이스 도구
+- **Wireshark + SocketCAN**: CAN 트래픽 캡처
+- **Python-can**: Python CAN 라이브러리
+
+### 기초 실습 예제
+```bash
+# can-utils 기본 사용 (허가된 차량 또는 시뮬레이터에서만)
+
+# CAN 인터페이스 설정 (SocketCAN)
+sudo modprobe can
+sudo modprobe can_raw
+sudo ip link set can0 up type can bitrate 500000
+
+# CAN 메시지 수신
+candump can0 | head -20
+# 출력: can0  0CF00400   [8]  11 00 00 00 00 00 00 F8
+
+# 특정 ID 필터링 (OBD-II 응답)
+candump can0,7E8:7FF
+
+# CAN 메시지 전송 (시뮬레이터에서만!)
+cansend can0 0x7E0#02010D0000000000
+```
+
+---
+
 ## can-utils 기초
 
 ```bash

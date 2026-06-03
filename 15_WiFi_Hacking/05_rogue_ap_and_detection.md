@@ -6,6 +6,125 @@
 
 # 로그 AP·캡티브 포털·WiFi 모니터링 및 탐지
 
+## 0. 초보자를 위한 개념 이해
+
+### 로그 AP와 캡티브 포털이란?
+
+로그 AP(Rogue AP)는 합법적인 AP처럼 위장한 악성 무선 접속 포인트입니다. 공격자가 카페·공항·회사 근처에서 동일한 SSID를 가진 가짜 AP를 운영하면, 피해자의 기기가 자동으로 연결될 수 있습니다. 캡티브 포털은 연결 직후 브라우저로 열리는 로그인 페이지로, 정상 서비스에서도 사용되지만 공격자는 이를 모방한 가짜 페이지로 자격증명을 수집합니다.
+
+**왜 배우는가:**
+```
+로그 AP 공격의 실제 위협:
+
+  호텔 WiFi 시뮬레이션:
+    공격자 → "Hotel_Guest" SSID AP 개설 (실제 호텔 WiFi와 동일)
+    피해자 → 자동 연결 (이전에 접속한 적 있는 SSID)
+    공격자 → 모든 HTTP 트래픽 감청
+            캡티브 포털 → 호텔 로그인 페이지 사칭
+            → 이메일/패스워드 수집
+
+  방어 관점:
+    WiFi 자동 연결 비활성화
+    HTTPS Only 사이트 사용
+    VPN 상시 사용
+    AP 인증서 검증 (WPA2-Enterprise)
+```
+
+### 핵심 개념 정리
+
+```
+로그 AP 구성 요소:
+
+  hostapd   — 소프트웨어 AP 데몬 (SSID, 채널, 보안 설정)
+  dnsmasq   — DHCP 서버 (클라이언트에 IP 할당)
+              DNS 스푸핑 (모든 도메인을 공격자 IP로 응답)
+  iptables  — 트래픽 라우팅 (인터넷 포워딩 또는 차단)
+  
+캡티브 포털 동작:
+  1. 클라이언트 연결 → DHCP IP 할당
+  2. DNS 쿼리 → 공격자 IP로 응답
+  3. HTTP 요청 → captive portal 페이지로 리다이렉트
+  4. 가짜 로그인 페이지 → 자격증명 제출
+  5. 자격증명 수집 → 실제 연결 허용 (의심 회피)
+
+탐지 방법:
+  무선 IDS (Wireless IDS)
+  AP 지문 분석 (Beacon 프레임 특성)
+  BSSID vs SSID 매핑 검증
+```
+
+### 필요한 도구 및 환경
+- **hostapd**: 소프트웨어 AP 구성 (Linux 패키지)
+- **dnsmasq**: 경량 DHCP/DNS 서버
+- **Flask/FastAPI**: 캡티브 포털 웹 서버 구현
+- **무선 랜카드 AP 모드 지원**: 내장 카드보다 외장 USB 권장
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""로그 AP 탐지 — 주변 AP의 SSID/BSSID 불일치 감지."""
+
+from dataclasses import dataclass
+from collections import defaultdict
+
+
+@dataclass
+class AccessPoint:
+    ssid: str
+    bssid: str
+    channel: int
+    signal_dbm: int
+    vendor: str = ""  # OUI 기반 벤더 정보
+
+
+def detect_rogue_ap(
+    known_aps: list[AccessPoint],
+    scanned_aps: list[AccessPoint],
+) -> list[str]:
+    """알려진 AP 목록과 비교하여 의심스러운 AP를 탐지합니다."""
+    warnings: list[str] = []
+
+    # 알려진 SSID → BSSID(들) 매핑 구성
+    known_ssid_to_bssids: dict[str, set[str]] = defaultdict(set)
+    for ap in known_aps:
+        known_ssid_to_bssids[ap.ssid].add(ap.bssid.upper())
+
+    for ap in scanned_aps:
+        ssid = ap.ssid
+        bssid = ap.bssid.upper()
+
+        if ssid in known_ssid_to_bssids:
+            if bssid not in known_ssid_to_bssids[ssid]:
+                # 알려진 SSID인데 BSSID가 다름 → 가짜 AP 의심
+                warnings.append(
+                    f"[로그 AP 의심] SSID='{ssid}' BSSID={bssid} "
+                    f"(인가된 BSSID: {known_ssid_to_bssids[ssid]})"
+                )
+    return warnings
+
+
+if __name__ == "__main__":
+    # 인가된 AP 목록 (사전에 등록)
+    authorized = [
+        AccessPoint("OfficeWiFi", "AA:BB:CC:11:22:33", 6, -50),
+        AccessPoint("OfficeWiFi_5G", "AA:BB:CC:11:22:34", 36, -55),
+    ]
+    # 현재 스캔된 AP 목록
+    current_scan = [
+        AccessPoint("OfficeWiFi", "AA:BB:CC:11:22:33", 6, -55),   # 정상
+        AccessPoint("OfficeWiFi", "DD:EE:FF:99:88:77", 11, -40),  # 의심!
+        AccessPoint("FreeWiFi", "11:22:33:44:55:66", 1, -60),     # 알 수 없음
+    ]
+    alerts = detect_rogue_ap(authorized, current_scan)
+    if alerts:
+        for alert in alerts:
+            print(alert)
+    else:
+        print("로그 AP 탐지되지 않음")
+```
+
+---
+
 ## 1. 로그 AP 공격 개요
 
 ```

@@ -6,6 +6,121 @@
 
 # 02 — 빌드 환경 및 CI/CD 파이프라인 침해
 
+## 0. 초보자를 위한 개념 이해
+
+### 빌드 환경 및 CI/CD 파이프라인 침해란?
+
+CI/CD(Continuous Integration/Continuous Deployment) 파이프라인은 개발자가 코드를 작성하면 자동으로 테스트·빌드·배포를 수행하는 자동화 시스템이다. 빌드 파이프라인 침해(Build Poisoning)는 이 자동화 과정의 어딘가에 악성 코드를 주입해, 최종 배포 산출물에 백도어가 포함되도록 하는 공격이다. 공격이 성공하면 소스 코드는 깨끗해도 컴파일된 바이너리에 악성 코드가 들어가게 된다.
+
+**왜 배우는가:**
+```
+[CI/CD 파이프라인의 권한 범위]
+
+  소스 코드 저장소 (GitHub/GitLab)
+           ↓
+  CI/CD 실행 환경 (Actions Runner)
+    - 소스 코드 전체 접근
+    - 빌드 비밀키 (Secrets) 접근
+    - 클라우드 자격증명 접근
+    - 프로덕션 배포 권한
+           ↓
+  아티팩트 저장소 → 사용자에게 배포
+
+  ★ CI/CD 단 하나를 장악하면
+     전체 배포 파이프라인 제어 가능!
+```
+
+### 핵심 개념 정리
+
+```
+[빌드 파이프라인 공격 벡터]
+
+1. 악성 GitHub Actions 워크플로우
+   - PR에 포함된 .github/workflows/ 파일 실행
+   - pull_request_target 이벤트의 권한 오용
+
+2. 악성 의존성 (Dependency)
+   - 빌드 시 설치되는 npm/pip 패키지에 악성 코드
+   - 빌드 스크립트 (Makefile, package.json scripts)
+
+3. Runner 환경 탈출
+   - 컨테이너 Runner에서 호스트 환경 접근
+   - 공유 Runner의 캐시/아티팩트 오염
+
+4. 비밀값 탈취 (Secrets Exfiltration)
+   - AWS_SECRET_KEY, GITHUB_TOKEN 등 환경 변수
+   - curl로 공격자 서버에 전송
+
+5. 아티팩트 오염 (Artifact Poisoning)
+   - 업로드된 빌드 산출물 변조
+   - 서명 없는 아티팩트 교체
+```
+
+### 필요한 도구 및 환경
+- **GitHub Actions**: 무료 CI/CD (학습 테스트용 레포 생성)
+- **act**: 로컬에서 GitHub Actions 워크플로우 실행 도구
+- **semgrep**: CI/CD 설정 파일 보안 취약점 정적 분석
+- **Trivy**: 컨테이너 이미지 및 의존성 취약점 스캐너
+
+### 기초 실습 예제
+```python
+import yaml
+import os
+from pathlib import Path
+
+def audit_github_actions(repo_path: str) -> list[dict]:
+    """GitHub Actions 워크플로우 파일에서 보안 위험을 검사한다."""
+
+    findings = []
+    workflow_dir = Path(repo_path) / ".github" / "workflows"
+
+    if not workflow_dir.exists():
+        print("[-] .github/workflows 디렉토리 없음")
+        return findings
+
+    for wf_file in workflow_dir.glob("*.yml"):
+        with open(wf_file) as f:
+            try:
+                wf = yaml.safe_load(f)
+            except yaml.YAMLError:
+                continue
+
+        # 위험 패턴 1: pull_request_target + 외부 코드 체크아웃
+        triggers = wf.get('on', {})
+        if 'pull_request_target' in triggers:
+            findings.append({
+                "파일": str(wf_file.name),
+                "위험": "pull_request_target 사용",
+                "설명": "외부 PR의 코드가 높은 권한으로 실행될 수 있음",
+                "심각도": "HIGH"
+            })
+
+        # 위험 패턴 2: 외부 Actions 버전 고정 미사용
+        for job_name, job in (wf.get('jobs') or {}).items():
+            for step in (job.get('steps') or []):
+                uses = step.get('uses', '')
+                if uses and '@' in uses:
+                    ref = uses.split('@')[1]
+                    if not ref.startswith('v') and len(ref) != 40:
+                        findings.append({
+                            "파일": str(wf_file.name),
+                            "위험": f"Actions 버전 미고정: {uses}",
+                            "설명": "SHA 해시 대신 태그 사용 → 변조 위험",
+                            "심각도": "MEDIUM"
+                        })
+
+    for f in findings:
+        print(f"[{f['심각도']}] {f['파일']}: {f['위험']}")
+        print(f"       → {f['설명']}")
+
+    return findings
+
+# 사용 예시 (자신의 레포 경로)
+# audit_github_actions("/path/to/your/repo")
+```
+
+---
+
 ## 1. CI/CD 파이프라인 공격 개요
 
 현대 소프트웨어 개발의 핵심 인프라인 CI/CD 파이프라인은 코드를 자동으로 빌드·테스트·배포한다. 이 파이프라인은 소스 코드·프로덕션 환경·서명 키·클라우드 자격증명을 모두 접근할 수 있어 공급망 공격의 최고 가치 목표다.

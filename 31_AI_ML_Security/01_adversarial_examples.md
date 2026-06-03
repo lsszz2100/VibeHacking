@@ -11,6 +11,87 @@
 
 ---
 
+## 0. 초보자를 위한 개념 이해
+
+### 적대적 예제란?
+
+적대적 예제(Adversarial Example)는 인간이 보기에는 정상적이지만, AI/ML 모델이 잘못 분류하도록 정밀하게 조작된 입력 데이터다. 고양이 사진에 사람 눈에는 보이지 않는 아주 미세한 노이즈를 더하면 AI가 "타조"라고 분류하는 현상이다. 자율주행 자동차, 얼굴인식 보안 시스템, AI 의료 진단 등에서 실제 위협이 된다.
+
+**왜 배우는가:**
+```
+적대적 공격이 위험한 실제 시나리오
+
+[자율주행]
+  정지 표지판 + 특수 스티커 → AI가 속도 제한 표지판으로 인식
+  → 자동차가 정지하지 않음
+
+[얼굴인식 보안]
+  특수 패턴 안경 착용 → AI가 다른 사람으로 인식
+  → 잠금 해제 또는 제3자 사칭
+
+[AI 악성코드 탐지]
+  악성코드 바이너리를 미세하게 변형 → AI 백신이 정상으로 분류
+  → 탐지 우회
+
+방어자가 배워야 할 이유:
+  AI 시스템의 취약점을 이해 → 견고한 모델 설계
+  적대적 학습(Adversarial Training)으로 방어
+```
+
+### 핵심 개념 정리
+
+```
+주요 적대적 공격 방법
+
+FGSM (Fast Gradient Sign Method):
+  손실 함수의 기울기 방향으로 픽셀 값을 epsilon만큼 이동
+  빠름, 1회 계산, 전이성 높음
+
+PGD (Projected Gradient Descent):
+  FGSM을 여러 번 반복, 매번 epsilon 구 내로 투영
+  더 강력, FGSM보다 성공률 높음
+
+C&W (Carlini & Wagner):
+  최소한의 섭동으로 최대 오분류 달성
+  현재까지 가장 강력한 공격 중 하나
+```
+
+### 필요한 도구 및 환경
+- **PyTorch / TensorFlow**: 딥러닝 프레임워크 (`pip install torch`)
+- **ART (Adversarial Robustness Toolbox)**: IBM의 적대적 공격/방어 라이브러리
+- **CleverHans**: Google의 적대적 예제 라이브러리
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""FGSM 공격 개념 이해 — NumPy만 사용한 단순화 예제"""
+import numpy as np
+
+def fgsm_concept(image: np.ndarray, gradient: np.ndarray,
+                 epsilon: float = 0.01) -> np.ndarray:
+    """FGSM 핵심 원리: 손실을 최대화하는 방향으로 미세 조정
+    
+    adversarial = image + epsilon * sign(gradient)
+    """
+    perturbation = epsilon * np.sign(gradient)
+    adversarial = image + perturbation
+    # 픽셀 값 범위 유지 [0, 1]
+    return np.clip(adversarial, 0.0, 1.0)
+
+# 개념 시연
+image = np.array([0.5, 0.3, 0.8])       # 원본 픽셀 (정규화)
+gradient = np.array([0.2, -0.5, 0.1])   # 가상 기울기
+
+adv = fgsm_concept(image, gradient, epsilon=0.05)
+perturbation = adv - image
+print(f"원본:    {image}")
+print(f"섭동:    {perturbation}")       # 매우 작은 값
+print(f"적대적: {adv}")
+print(f"최대 변화량: {np.max(np.abs(perturbation)):.4f} (사람 눈에 안 보임)")
+```
+
+---
+
 ## 직관적 설명 — "AI 눈을 속이는 마법의 먼지"
 
 **비유**: 사람이 고양이 사진을 볼 때, 우리 뇌는 "귀, 수염, 털"을 종합적으로 판단한다. 그런데 AI는 수백만 개의 픽셀 값을 수학적으로 처리한다. 각 픽셀을 아주 조금씩 (사람 눈엔 보이지 않는 수준으로) 바꾸면, AI의 수학적 계산 결과가 완전히 다른 답을 내게 할 수 있다.

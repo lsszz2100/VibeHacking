@@ -6,6 +6,108 @@
 
 # 기업 WiFi 공격 (WPA2-Enterprise / RADIUS)
 
+## 0. 초보자를 위한 개념 이해
+
+### WPA2-Enterprise란?
+
+WPA2-Enterprise는 가정용 PSK(사전 공유 키) 대신 RADIUS 서버를 통해 사용자별로 인증하는 기업용 WiFi 보안 방식입니다. 각 직원이 개별 계정(아이디/패스워드 또는 인증서)으로 로그인하므로, 한 사람이 퇴사해도 전체 WiFi 패스워드를 바꿀 필요가 없습니다. 하지만 EAP(확장 인증 프로토콜) 구현 방식에 따라 인증서 검증 미설정 시 Evil Twin 공격으로 도메인 자격증명이 탈취될 수 있습니다.
+
+**왜 배우는가:**
+```
+WPA2-Enterprise 공격의 가치:
+
+  일반 WiFi 크래킹           WPA2-Enterprise 공격
+  ─────────────────────────────────────────────────
+  WiFi 패스워드 획득          도메인 사용자 자격증명 획득
+  인터넷 접속 가능            Active Directory 침투 가능
+  로컬 네트워크 접속          전체 기업 내부 시스템 접근
+
+  PEAP/EAP-TTLS + 인증서 미검증 설정 → 
+  Evil Twin AP에 연결 →
+  MSCHAPv2 챌린지-응답 캡처 →
+  오프라인 패스워드 크래킹 →
+  도메인 자격증명 탈취
+```
+
+### 핵심 개념 정리
+
+```
+WPA2-Enterprise 주요 EAP 타입:
+
+  EAP 타입       인증 방식         주요 취약점
+  ─────────────────────────────────────────────
+  EAP-MD5       MD5 챌린지-응답   오프라인 크래킹
+  PEAP          TLS + MSCHAPv2    인증서 미검증 → MITM
+  EAP-TTLS      TLS + 내부 인증   인증서 미검증 → MITM
+  EAP-TLS       상호 인증서       클라이언트 인증서 필요
+  EAP-FAST      PAC 기반          PAC 탈취 공격
+
+공격 도구:
+  hostapd-wpe   — Evil Twin AP + EAP 자격증명 수집
+  eaphammer     — WPA2-Enterprise 공격 자동화
+  asleap        — MSCHAPv2 → 패스워드 오프라인 크랙
+```
+
+### 필요한 도구 및 환경
+- **hostapd-wpe**: WPA2-Enterprise Evil Twin AP 구성 도구
+- **freeradius-wpe**: 가짜 RADIUS 서버 (자격증명 수집)
+- **asleap**: MSCHAPv2 챌린지-응답 크래킹 도구
+- **무선 랜카드 AP 모드 지원**: Intel 칩셋 또는 Alfa 외장형
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""MSCHAPv2 패스워드 약점 분석 — 챌린지-응답 구조 이해."""
+
+import hashlib
+import hmac
+import os
+import struct
+
+
+def des_encrypt(key_56bit: bytes, data: bytes) -> bytes:
+    """56비트 DES 키로 8바이트 데이터를 암호화 (MSCHAPv2 핵심)."""
+    from Crypto.Cipher import DES
+    # 56비트 키를 64비트 DES 키로 변환 (패리티 비트 삽입)
+    key_64bit = bytearray(8)
+    for i in range(7):
+        key_64bit[i] = key_56bit[i] >> i | ((key_56bit[i + 1] if i + 1 < 7 else 0) << (7 - i)) & 0xFF
+    key_64bit[7] = key_56bit[6] << 1 & 0xFF
+    cipher = DES.new(bytes(key_64bit), DES.MODE_ECB)
+    return cipher.encrypt(data)
+
+
+def nt_hash(password: str) -> bytes:
+    """NT Hash = MD4(UTF-16LE 인코딩된 패스워드)."""
+    from Crypto.Hash import MD4
+    pw_bytes = password.encode("utf-16-le")
+    return MD4.new(pw_bytes).digest()
+
+
+def explain_mschapv2_weakness(password: str, challenge: bytes) -> dict:
+    """MSCHAPv2의 취약점 — 3개의 독립 DES 사용으로 각각 브루트포스 가능."""
+    nt = nt_hash(password)
+    # NT Hash (16바이트)를 3개 DES 키로 분할 (21바이트 = 패딩 5바이트 추가)
+    padded = nt + b"\x00" * 5
+    return {
+        "nt_hash":        nt.hex(),
+        "des_key1_bytes": 7,  # 각 DES 키는 7바이트 = 56비트
+        "des_key2_bytes": 7,
+        "des_key3_bytes": 7,
+        "vulnerability":  "각 DES 키를 독립적으로 브루트포스 가능 (2^56 × 3회)",
+        "practical_attack": "GPU로 수 시간 내 크래킹 가능",
+    }
+
+
+if __name__ == "__main__":
+    info = explain_mschapv2_weakness("Password1", os.urandom(8))
+    print("[MSCHAPv2 취약점 분석]")
+    for k, v in info.items():
+        print(f"  {k}: {v}")
+```
+
+---
+
 ## 개요
 
 WPA2-Enterprise는 개인 PSK 대신 RADIUS 서버를 통한 개별 사용자 인증을 사용한다. EAP(Extensible Authentication Protocol)를 기반으로 하며, EAP 타입에 따라 다양한 공격 벡터가 존재한다.

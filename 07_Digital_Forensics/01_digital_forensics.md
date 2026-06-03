@@ -6,6 +6,111 @@
 
 # 디지털 포렌식 — 이론과 실전 완전 가이드
 
+## 0. 초보자를 위한 개념 이해
+
+### 디지털 포렌식이란?
+
+디지털 포렌식은 컴퓨터, 스마트폰, 네트워크 기기에서 법적으로 유효한 디지털 증거를 수집, 보존, 분석하는 과학적 과정입니다. 사이버 범죄 수사, 침해 사고 분석, 내부 감사에서 핵심적인 역할을 합니다.
+
+**왜 배우는가:**
+```
+디지털 포렌식이 필요한 상황:
+
+  해킹 침해 사고:
+  → "언제, 어떻게 침입했나?" → 포렌식으로 공격자 행동 재구성
+
+  랜섬웨어 감염:
+  → "무엇이 암호화됐나?" "어디서 시작됐나?" → 피해 범위 파악
+
+  내부 직원 범죄:
+  → 이메일 삭제, 파일 유출 흔적 → 복구 및 증거 수집
+
+  사이버 수사:
+  → 삭제된 파일 복구, 통신 기록 추출 → 법정 제출
+
+  중요 원칙: 원본 보존
+  → 원본 디스크에 절대 쓰기 금지 (증거 훼손)
+  → 이미징(복제) 후 복제본에서만 분석
+  → 해시값으로 무결성 증명 (MD5, SHA-256)
+```
+
+### 핵심 개념 정리
+
+```
+포렌식 분석 핵심 원칙:
+
+  1. 무결성 보존:
+     원본 디스크 → dd/FTK Imager로 비트 단위 복제
+     복제 전후 해시값 동일 확인 → 증거 변조 없음 증명
+
+  2. 연계 보관성 (Chain of Custody):
+     증거 수집 → 이송 → 분석 → 보관 전 과정 기록
+     "누가, 언제, 어디서, 무슨 작업을 했나" 문서화
+
+  3. 휘발성 데이터 우선 수집:
+     전원이 꺼지면 사라지는 데이터 먼저 확보!
+     순서: 메모리(RAM) → 네트워크 연결 → 실행 중 프로세스
+           → 디스크 이미지 (가장 나중)
+
+  증거 유형:
+  휘발성: RAM 메모리, 네트워크 연결, 실행 중 프로세스
+  비휘발성: 하드디스크, USB, 로그 파일, 레지스트리
+```
+
+### 필요한 도구 및 환경
+- **디스크 이미징**: FTK Imager(Windows, 무료) — 비트 복제 + 해시 검증 동시 수행
+- **메모리 분석**: Volatility3 — RAM 덤프에서 프로세스, 네트워크 연결, 악성코드 탐지
+- **포렌식 OS**: SIFT Workstation(Ubuntu 기반) — 포렌식 도구 사전 설치
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""디지털 포렌식 기초 — 파일 해시 계산 및 무결성 검증."""
+import hashlib
+from pathlib import Path
+from datetime import datetime
+
+def calculate_file_hash(filepath: str) -> dict[str, str]:
+    """증거 파일의 MD5, SHA-1, SHA-256 해시 계산."""
+    algorithms: dict[str, hashlib._Hash] = {
+        "MD5": hashlib.md5(),
+        "SHA-1": hashlib.sha1(),
+        "SHA-256": hashlib.sha256(),
+    }
+    path = Path(filepath)
+    # 대용량 파일 처리를 위해 청크 단위로 읽기
+    with open(filepath, "rb") as f:
+        while chunk := f.read(65536):  # 64KB 청크
+            for hasher in algorithms.values():
+                hasher.update(chunk)
+    return {
+        "파일": filepath,
+        "크기": f"{path.stat().st_size:,} bytes",
+        "수집시각": datetime.now().isoformat(),
+        **{algo: h.hexdigest() for algo, h in algorithms.items()},
+    }
+
+def verify_integrity(original_hash: str, current_hash: str) -> bool:
+    """원본 해시값과 현재 해시값 비교 — 무결성 검증."""
+    return original_hash.lower() == current_hash.lower()
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) < 2:
+        print("사용법: python3 script.py <파일경로>")
+        print("\n[실습] 이 스크립트 자체의 해시 계산:")
+        result = calculate_file_hash(__file__)
+        for k, v in result.items():
+            print(f"  {k}: {v}")
+    else:
+        result = calculate_file_hash(sys.argv[1])
+        for k, v in result.items():
+            print(f"  {k}: {v}")
+        print("\n[중요] 이 해시값을 Chain of Custody 문서에 기록하세요!")
+```
+
+---
+
 ## 1. 디지털 포렌식 개요
 
 ### 포렌식의 정의

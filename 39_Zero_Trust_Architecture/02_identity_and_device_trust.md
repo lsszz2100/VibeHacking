@@ -6,6 +6,130 @@
 
 # 신원 및 기기 신뢰 (Identity & Device Trust)
 
+## 0. 초보자를 위한 개념 이해
+
+### 신원 및 기기 신뢰란?
+
+Zero Trust에서 "신원(Identity)"은 새로운 경계선이다. 전통적 방화벽 대신, 누가(사용자 신원) 어떤 기기로(기기 신뢰) 접근하는지를 모든 접근의 기준으로 삼는다. Identity Provider(IdP)는 이 신원을 중앙에서 관리하고 인증하는 시스템이며, MDM/EDR은 기기의 보안 상태가 정책을 준수하는지 지속적으로 확인한다. 사용자 신원 + 기기 신뢰 + 컨텍스트(위치, 시간, 행동)를 종합해 동적으로 접근을 결정한다.
+
+**왜 배우는가:**
+```
+[신원 기반 보안의 중요성]
+
+  [전통적 접근]           [Zero Trust 접근]
+  VPN 연결 = 신뢰         신원 + 기기 + 컨텍스트 = 신뢰
+       ↓                           ↓
+  내부망 자유 이동         리소스마다 개별 검증
+       ↓                           ↓
+  자격증명 1개 탈취 →      탈취해도 MFA로 차단
+  모든 시스템 접근          기기 비준수 시 차단
+
+  [신원 기반 주요 기능]
+  SSO (Single Sign-On): 한 번 로그인으로 모든 서비스
+  MFA: 비밀번호 + 추가 인증
+  Conditional Access: 조건 미충족 시 자동 차단
+  JIT(Just-In-Time): 필요할 때만 권한 부여
+```
+
+### 핵심 개념 정리
+
+```
+[Identity Provider 핵심 프로토콜]
+
+SAML 2.0 (Security Assertion Markup Language)
+  - XML 기반 인증·인가 표준
+  - 엔터프라이즈 SSO에 주로 사용
+  - SP(서비스) ↔ IdP 간 XML 서명된 토큰 교환
+
+OAuth 2.0 + OIDC (OpenID Connect)
+  - OAuth: 권한 위임 프레임워크
+  - OIDC: OAuth 위에서 신원 인증 추가
+  - JWT(JSON Web Token) 기반 ID Token 발급
+  - 현대 웹/모바일 앱 표준
+
+SCIM (System for Cross-domain Identity Management)
+  - 사용자 프로비저닝/디프로비저닝 자동화
+  - 입사 시 자동 계정 생성, 퇴사 시 즉시 비활성화
+
+[기기 신뢰 요소]
+  기기 등록 (MDM 등록 여부)
+  OS 버전 및 패치 수준
+  EDR 에이전트 동작 여부
+  디스크 암호화 활성화
+  화면 잠금 설정
+  루팅/탈옥 여부
+```
+
+### 필요한 도구 및 환경
+- **Okta / Azure AD Entra ID**: 엔터프라이즈 IdP (클라우드)
+- **Microsoft Intune / Jamf**: MDM(모바일 기기 관리)
+- **python-jose / PyJWT**: JWT 토큰 생성 및 검증
+- **LDAP 도구**: ldap3 Python 라이브러리
+
+### 기초 실습 예제
+```python
+# pip install PyJWT
+import jwt
+import time
+from datetime import datetime, timezone, timedelta
+
+def create_access_token(
+    user_id: str,
+    email: str,
+    roles: list[str],
+    secret_key: str = "your-secret-key",
+    expires_in: int = 3600
+) -> str:
+    """Zero Trust 접근 토큰(JWT)을 생성한다."""
+    now = datetime.now(timezone.utc)
+
+    payload = {
+        "sub": user_id,           # 사용자 식별자
+        "email": email,
+        "roles": roles,
+        "iat": now,               # 발급 시각
+        "exp": now + timedelta(seconds=expires_in),  # 만료 시각
+        "jti": f"{user_id}-{int(now.timestamp())}",  # 고유 ID
+    }
+
+    token = jwt.encode(payload, secret_key, algorithm="HS256")
+    return token
+
+def verify_access_token(token: str, secret_key: str = "your-secret-key") -> dict | None:
+    """JWT 토큰을 검증하고 페이로드를 반환한다."""
+    try:
+        payload = jwt.decode(
+            token,
+            secret_key,
+            algorithms=["HS256"],
+            options={"require": ["exp", "sub", "iat"]}
+        )
+        print(f"[OK] 유효한 토큰: {payload['email']}")
+        print(f"     만료: {datetime.fromtimestamp(payload['exp']).isoformat()}")
+        print(f"     역할: {payload['roles']}")
+        return payload
+
+    except jwt.ExpiredSignatureError:
+        print("[!] 만료된 토큰")
+    except jwt.InvalidTokenError as e:
+        print(f"[!] 유효하지 않은 토큰: {e}")
+
+    return None
+
+# 사용 예시
+secret = "super-secret-signing-key-change-in-production"
+token = create_access_token(
+    user_id="user-123",
+    email="alice@company.com",
+    roles=["developer", "read-only-db"],
+    secret_key=secret
+)
+print(f"발급된 토큰: {token[:50]}...")
+verify_access_token(token, secret)
+```
+
+---
+
 ## 1. 신원 제공자 (Identity Provider, IdP) 연동
 
 ### 1.1 IdP의 역할

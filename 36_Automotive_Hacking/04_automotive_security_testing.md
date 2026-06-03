@@ -6,6 +6,124 @@
 
 # 자동차 보안 테스트 — 침투 테스트·퍼징·인증 검증
 
+## 0. 초보자를 위한 개념 이해
+
+### 자동차 보안 테스트란?
+
+자동차 보안 테스트(Automotive Security Testing)는 차량의 전자 시스템(ECU, CAN 버스, 텔레매틱스, 무선 인터페이스 등)에 대한 체계적인 침투 테스트 및 취약점 평가 활동이다. 단순한 소프트웨어 테스트와 달리 물리적 안전에 직결되는 시스템을 다루므로 테스트 환경 격리와 법적 허가가 필수다. ISO/SAE 21434, UNECE WP.29 등 자동차 사이버보안 표준을 기반으로 수행한다.
+
+**왜 배우는가:**
+```
+[자동차 보안이 중요한 이유]
+
+  소프트웨어 취약점 → 원격 브레이크 비활성화
+  OTA 보안 미흡 → 수백만 대 동시 악성 펌웨어
+  CAN 버스 무인증 → 차량 내부 누구나 메시지 전송 가능
+  Bluetooth 취약점 → 근거리에서 차량 잠금 해제
+
+  [자동차 공격 표면 확장 추이]
+  2000년: 단순 OBD 포트
+  2010년: Bluetooth, USB 인포테인먼트
+  2015년: WiFi, 셀룰러(4G), V2X
+  2020년: 5G, OTA, 클라우드 연동, 자율주행 센서
+  2025년: SDV(소프트웨어 정의 차량), 통합 플랫폼
+```
+
+### 핵심 개념 정리
+
+```
+[자동차 보안 테스트 방법론]
+
+1. 위협 모델링 (TARA - Threat Analysis and Risk Assessment)
+   ISO/SAE 21434 요구사항
+   공격 경로 식별 → 자산 분류 → 위험도 산정
+
+2. 하드웨어 보안 테스트
+   - ECU 물리적 접근 (JTAG, UART)
+   - CAN 버스 스니핑 및 퍼징
+   - 탬퍼 저항성 평가
+
+3. 통신 보안 테스트
+   - Bluetooth 페어링 취약점
+   - 셀룰러 인터페이스 공격
+   - V2X 프로토콜 취약점
+
+4. 소프트웨어 보안 테스트
+   - 펌웨어 추출 및 분석
+   - 인포테인먼트 시스템 웹 취약점
+   - OTA 업데이트 메커니즘 검증
+
+5. 퍼징 (Fuzzing)
+   - CAN ID·데이터 무작위 전송
+   - UDS 서비스 퍼징
+   - DoS 조건 탐지
+```
+
+### 필요한 도구 및 환경
+- **python-can + SocketCAN**: CAN 버스 통신 및 퍼징
+- **can-utils**: `candump`(스니핑), `cansend`(전송), `cangen`(퍼징)
+- **PASTA**: Python Automotive Security Testing Automation
+- **Wireshark + 자동차 플러그인**: 다중 프로토콜 패킷 분석
+
+### 기초 실습 예제
+```python
+# pip install python-can
+import can
+import random
+import time
+
+def can_fuzzer(
+    interface: str = 'vcan0',
+    target_id: int | None = None,
+    duration: int = 5
+):
+    """
+    CAN 버스 퍼저: 무작위 CAN 메시지를 전송해 ECU 응답을 탐지한다.
+    반드시 가상 CAN(vcan0) 또는 격리된 테스트 환경에서만 사용!
+    """
+    print(f"[!] 경고: 실제 차량에서 실행 금지!")
+    print(f"[*] {interface}에서 CAN 퍼징 시작 ({duration}초)...")
+
+    try:
+        bus = can.interface.Bus(interface, bustype='socketcan')
+        start_time = time.time()
+        sent_count = 0
+
+        while time.time() - start_time < duration:
+            # 랜덤 CAN ID (실제 차량 ID 범위 0x000~0x7FF)
+            arb_id = target_id if target_id else random.randint(0, 0x7FF)
+            # 랜덤 데이터 (0~8 바이트)
+            dlc = random.randint(1, 8)
+            data = bytes([random.randint(0, 255) for _ in range(dlc)])
+
+            msg = can.Message(
+                arbitration_id=arb_id,
+                data=data,
+                is_extended_id=False
+            )
+            bus.send(msg)
+            sent_count += 1
+
+            # 짧은 응답 대기
+            response = bus.recv(timeout=0.01)
+            if response:
+                print(f"  [!] 응답: ID=0x{response.arbitration_id:03X} "
+                      f"데이터={bytes(response.data).hex()}")
+
+            time.sleep(0.001)  # 버스 과부하 방지
+
+        bus.shutdown()
+        print(f"[*] 완료: {sent_count}개 메시지 전송")
+
+    except Exception as e:
+        print(f"[-] 오류: {e}")
+
+# 사용 예시 (가상 CAN만!)
+# can_fuzzer('vcan0', duration=5)
+```
+
+---
+
 ## 학습 목표
 
 이 문서를 완료하면 다음을 이해하고 실습할 수 있습니다:

@@ -6,6 +6,167 @@
 
 # STRIDE 위협 모델링 방법론
 
+## 0. 초보자를 위한 개념 이해
+
+### STRIDE 위협 모델링이란?
+
+STRIDE는 소프트웨어 시스템을 설계할 때 발생할 수 있는 보안 위협을 6가지 범주로 체계적으로 찾아내는 프레임워크다. Microsoft가 개발했으며 현재 업계 표준으로 사용된다. "어떤 기능을 만들 것인가"가 아닌 "어떻게 공격받을 수 있는가"를 먼저 생각하게 만드는 방법론이다.
+
+**왜 배우는가:**
+```
+위협 모델링 없이 개발했을 때:
+
+  설계 → 개발 → 출시 → [보안 취약점 발견] → 패치
+                                             ↑
+                              수정 비용 = 설계 단계의 30배
+
+위협 모델링 적용 시:
+
+  설계 → [STRIDE 적용] → 취약점 발견 → 안전한 설계 → 개발 → 출시
+           ↑
+    수정 비용 최소화 (설계 변경은 무료)
+
+STRIDE 각 글자 의미:
+  S - Spoofing       (스푸핑): "나는 관리자다" 위장
+  T - Tampering      (변조):   데이터/코드 무단 수정
+  R - Repudiation    (부인):   "나는 그런 행동 안 했다" 부인
+  I - Info Disclosure(정보노출): 비밀 데이터 유출
+  D - Denial of Service(서비스 거부): 서비스 마비
+  E - Elevation of Privilege(권한상승): 관리자 권한 탈취
+```
+
+### 핵심 개념 정리
+
+```
+STRIDE + DFD 프로세스:
+
+DFD (Data Flow Diagram) 작성
+  - 시스템의 데이터 흐름을 시각적으로 표현
+  - 구성요소: 프로세스(원), 데이터저장소(평행선), 외부엔티티(사각형), 데이터흐름(화살표)
+  - 신뢰 경계(Trust Boundary): 권한이 다른 영역 구분선
+
+신뢰 경계 예시:
+  [인터넷 사용자] → | 신뢰경계 | → [웹서버] → [DB서버]
+  낮은 신뢰                          높은 신뢰  최고 신뢰
+
+STRIDE per Element:
+  - 각 DFD 구성요소마다 해당 STRIDE 위협 체계적 적용
+  - 프로세스: S, T, R, I, D, E 모두 적용
+  - 데이터저장소: T, I, D만 적용
+  - 데이터흐름: T, I, D만 적용
+  - 외부엔티티: S, R만 적용
+```
+
+### 필요한 도구 및 환경
+- **Microsoft Threat Modeling Tool**: 무료, STRIDE 자동 적용 (Windows 전용)
+- **OWASP Threat Dragon**: 오픈소스 웹/데스크톱 DFD 작성 도구
+- **draw.io**: DFD 작성용 무료 다이어그램 도구
+- **Python**: 자동화 스크립트 작성
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""
+STRIDE 위협 분석 자동화 — 시스템 컴포넌트에 STRIDE 위협을 매핑한다
+"""
+import json
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class ComponentType(Enum):
+    """DFD 구성요소 유형"""
+    PROCESS = "프로세스"           # 원
+    DATA_STORE = "데이터저장소"    # 평행선
+    DATA_FLOW = "데이터흐름"       # 화살표
+    EXTERNAL_ENTITY = "외부엔티티" # 사각형
+
+
+# 컴포넌트 유형별 적용 가능한 STRIDE 위협
+STRIDE_PER_ELEMENT: dict[ComponentType, list[str]] = {
+    ComponentType.PROCESS: ["Spoofing", "Tampering", "Repudiation", "Info Disclosure", "DoS", "EoP"],
+    ComponentType.DATA_STORE: ["Tampering", "Info Disclosure", "DoS"],
+    ComponentType.DATA_FLOW: ["Tampering", "Info Disclosure", "DoS"],
+    ComponentType.EXTERNAL_ENTITY: ["Spoofing", "Repudiation"],
+}
+
+STRIDE_DESCRIPTIONS = {
+    "Spoofing": ("인증 위반", "공격자가 합법적인 사용자나 시스템으로 위장"),
+    "Tampering": ("무결성 위반", "데이터나 코드의 무단 수정"),
+    "Repudiation": ("부인 방지 위반", "행위 후 수행 사실 부인"),
+    "Info Disclosure": ("기밀성 위반", "허가되지 않은 정보 노출"),
+    "DoS": ("가용성 위반", "서비스 거부 공격으로 가용성 저하"),
+    "EoP": ("권한 위반", "낮은 권한으로 높은 권한 작업 수행"),
+}
+
+
+@dataclass
+class SystemComponent:
+    """DFD 구성요소"""
+    name: str
+    component_type: ComponentType
+    description: str = ""
+    crosses_trust_boundary: bool = False
+
+
+def analyze_stride_threats(components: list[SystemComponent]) -> dict:
+    """시스템 컴포넌트 목록에 STRIDE 위협을 자동으로 매핑한다."""
+    results = []
+
+    for comp in components:
+        applicable_threats = STRIDE_PER_ELEMENT[comp.component_type]
+        threats = []
+
+        for threat in applicable_threats:
+            desc, detail = STRIDE_DESCRIPTIONS[threat]
+            mitigation = get_mitigation(threat)
+            threats.append({
+                "위협": threat,
+                "보안속성": desc,
+                "설명": detail,
+                "완화방법": mitigation,
+                "신뢰경계_위험증가": comp.crosses_trust_boundary,
+            })
+
+        results.append({
+            "컴포넌트": comp.name,
+            "유형": comp.component_type.value,
+            "설명": comp.description,
+            "위협목록": threats,
+            "위협수": len(threats),
+        })
+
+    return {"분석결과": results, "총_위협수": sum(r["위협수"] for r in results)}
+
+
+def get_mitigation(threat: str) -> str:
+    """각 STRIDE 위협에 대한 일반적인 완화 방법을 반환한다."""
+    mitigations = {
+        "Spoofing": "강력한 인증(MFA), 디지털 서명, 인증서 검증",
+        "Tampering": "디지털 서명, HMAC, 입력값 검증, 접근 제어",
+        "Repudiation": "감사 로그(Audit Log), 타임스탬프, 디지털 서명",
+        "Info Disclosure": "암호화(전송·저장), 최소 권한 원칙, 마스킹",
+        "DoS": "속도 제한(Rate Limiting), 자원 할당 제한, 로드밸런싱",
+        "EoP": "최소 권한 원칙, 권한 검증, 안전한 기본값",
+    }
+    return mitigations.get(threat, "보안 정책 적용")
+
+
+if __name__ == "__main__":
+    # 간단한 웹앱 예시: 로그인 시스템
+    components = [
+        SystemComponent("사용자 브라우저", ComponentType.EXTERNAL_ENTITY, "웹 사용자"),
+        SystemComponent("인증 API", ComponentType.PROCESS, "로그인 처리", crosses_trust_boundary=True),
+        SystemComponent("사용자 DB", ComponentType.DATA_STORE, "계정 정보 저장"),
+        SystemComponent("HTTP 요청", ComponentType.DATA_FLOW, "브라우저 → API", crosses_trust_boundary=True),
+    ]
+
+    result = analyze_stride_threats(components)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+```
+
+---
+
 ## 목차
 1. [STRIDE 개요](#stride-개요)
 2. [위협 유형별 상세 분석](#위협-유형별-상세-분석)

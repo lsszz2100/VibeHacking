@@ -6,6 +6,125 @@
 
 # Cloud Native 공격 기법
 
+## 0. 초보자를 위한 개념 이해
+
+### Cloud Native 공격 기법이란?
+
+Cloud Native 공격 기법은 Kubernetes 클러스터, 컨테이너 환경, 클라우드 인프라를 목표로 하는 특화된 공격 방법론이다. 전통적인 서버 해킹과 달리 API 서버, RBAC 권한 오용, 서비스 어카운트 토큰, etcd 직접 접근 등 컨테이너 오케스트레이션 고유의 공격 경로가 존재한다. 이를 이해해야 클러스터를 안전하게 설계하고 침투 테스트를 수행할 수 있다.
+
+**왜 배우는가:**
+```
+[Kubernetes 클러스터 침해 시나리오]
+
+  공격자가 취약한 웹앱 컨테이너 침해
+           ↓
+  서비스 어카운트 토큰 획득
+  (/var/run/secrets/kubernetes.io/serviceaccount/token)
+           ↓
+  kubectl API 호출로 클러스터 정보 수집
+           ↓
+  RBAC 과도한 권한 발견
+  (예: default SA에 cluster-admin 부여)
+           ↓
+  etcd 직접 접근 → 모든 시크릿 평문 탈취
+           ↓
+  ★ 전체 클러스터 장악, 클라우드 자격증명 획득
+```
+
+### 핵심 개념 정리
+
+```
+[주요 Cloud Native 공격 기법]
+
+1. etcd 직접 접근
+   etcd 포트(2379) 직접 접근 시 모든 시크릿 평문 열람
+   대응: TLS 상호 인증, 네트워크 격리
+
+2. RBAC 에스컬레이션
+   wildcard 권한(*), pods/exec 권한 오용
+   대응: 최소 권한 원칙, 주기적 권한 감사
+
+3. 컨테이너 탈출
+   특권 컨테이너(privileged: true) → 호스트 파일시스템 마운트
+   hostPID/hostNetwork → 호스트 프로세스/네트워크 접근
+   대응: PodSecurityAdmission, seccomp, AppArmor
+
+4. 서비스 어카운트 토큰 악용
+   모든 Pod에 자동 마운트되는 JWT 토큰
+   대응: automountServiceAccountToken: false 기본 설정
+
+5. 이미지 풀 공격
+   악성 이미지를 신뢰하는 레지스트리에 업로드
+   대응: 이미지 서명(Cosign), admission webhook
+```
+
+### 필요한 도구 및 환경
+- **kubectl**: Kubernetes CLI (`kubectl auth can-i --list`)
+- **kube-hunter**: Kubernetes 침투 테스트 자동화 도구
+- **etcdctl**: etcd 직접 접근 CLI 도구
+- **Minikube**: 로컬 테스트 클러스터 (실습 환경)
+
+### 기초 실습 예제
+```python
+import subprocess
+import json
+import base64
+
+def check_service_account_permissions(namespace: str = "default") -> list[dict]:
+    """
+    현재 서비스 어카운트의 RBAC 권한을 확인한다.
+    컨테이너 내부에서 실행 시 마운트된 토큰으로 자동 인증.
+    """
+    findings = []
+
+    # 위험한 권한 조합 목록
+    dangerous_verbs = {
+        ("*", "*"): "CRITICAL - 모든 리소스 모든 작업 가능",
+        ("create", "pods"): "HIGH - Pod 생성 (특권 컨테이너 배포 가능)",
+        ("exec", "pods"): "HIGH - Pod 내 명령 실행",
+        ("get", "secrets"): "HIGH - 시크릿 열람",
+        ("create", "clusterrolebindings"): "CRITICAL - 권한 에스컬레이션",
+        ("update", "clusterroles"): "CRITICAL - 역할 변조",
+    }
+
+    try:
+        # 현재 SA의 권한 목록 조회
+        result = subprocess.run(
+            ['kubectl', 'auth', 'can-i', '--list',
+             '-n', namespace],
+            capture_output=True, text=True, timeout=10
+        )
+
+        print(f"[*] 네임스페이스 '{namespace}'의 현재 권한:")
+        for line in result.stdout.split('\n')[1:]:  # 헤더 제외
+            if not line.strip():
+                continue
+            parts = line.split()
+            if parts:
+                resources = parts[0] if len(parts) > 0 else ""
+                verbs = parts[2] if len(parts) > 2 else ""
+
+                if verbs == '[*]' or 'create' in verbs or 'delete' in verbs:
+                    print(f"  [!] {resources}: {verbs}")
+                    findings.append({
+                        "리소스": resources,
+                        "동사": verbs,
+                        "네임스페이스": namespace
+                    })
+
+    except FileNotFoundError:
+        print("[-] kubectl 없음")
+    except Exception as e:
+        print(f"[-] 오류: {e}")
+
+    return findings
+
+# 사용 예시 (테스트 클러스터에서)
+# check_service_account_permissions("default")
+```
+
+---
+
 ## 목차
 1. etcd 직접 접근 공격 (Kubernetes 시크릿 탈취)
 2. RBAC 남용 (ClusterAdmin 에스컬레이션)

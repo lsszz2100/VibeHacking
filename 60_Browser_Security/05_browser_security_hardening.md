@@ -6,6 +6,133 @@
 
 # 브라우저 보안 강화
 
+## 0. 초보자를 위한 개념 이해
+
+### 브라우저 보안 강화란?
+
+브라우저 보안 강화는 기본 설정 상태의 브라우저에 추가적인 보안 설정과 정책을 적용하여 공격 표면을 최소화하는 활동이다. 개인 사용자부터 대기업 엔터프라이즈 환경까지, CSP(콘텐츠 보안 정책) 헤더 설정, 브라우저 정책 배포, 불필요한 기능 비활성화 등 다양한 수준의 강화가 가능하다.
+
+**왜 배우는가:**
+```
+[브라우저 보안 강화의 효과]
+
+강화 전 (기본 설정):
+  악성 광고 → XSS → 쿠키 탈취 가능
+  악성 PDF → JS 실행 가능
+  리소스 → 외부 C2 서버 연결 가능
+
+강화 후:
+  CSP 헤더 → 인라인 스크립트 차단 → XSS 완화
+  SameSite 쿠키 → CSRF 방어
+  HSTS → HTTPS 강제
+  Mixed Content 차단 → HTTP 리소스 로드 거부
+  Site Isolation → Spectre 공격 완화
+
+[CSP 효과 시각화]
+공격자: <script>document.cookie</script> 삽입
+  CSP 없음: 실행됨 → 쿠키 탈취
+  CSP 있음: Content-Security-Policy: script-src 'self'
+            → 차단됨 (인라인 스크립트 거부)
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- CSP(Content Security Policy): 허용된 리소스 출처를 제한하는 HTTP 보안 헤더
+- HSTS(HTTP Strict Transport Security): HTTPS 연결만 허용하도록 강제하는 헤더
+- SameSite 쿠키: 교차 사이트 요청에 쿠키가 전송되지 않도록 제한하는 속성
+- COEP/COOP: 교차 출처 격리 정책 - Spectre 공격 방어에 필요
+- Subresource Integrity (SRI): CDN 리소스의 무결성을 해시로 검증
+- 브라우저 정책(Group Policy/MDM): 기업 환경에서 브라우저 설정을 중앙 관리
+- Secure/HttpOnly 쿠키: JS 접근 불가, HTTPS 전용 쿠키 플래그
+```
+
+### 필요한 도구 및 환경
+- **securityheaders.com**: 웹사이트 보안 헤더 분석 도구
+- **Mozilla Observatory**: 웹 보안 설정 종합 평가
+- **CSP Evaluator (csp-evaluator.withgoogle.com)**: CSP 정책 분석
+- **Python 3.10+**: Flask (보안 헤더 구현 실습)
+
+### 기초 실습 예제
+```python
+# pip install flask
+from flask import Flask, Response, request
+
+app = Flask(__name__)
+
+def add_security_headers(response: Response) -> Response:
+    """
+    웹 애플리케이션에 핵심 보안 헤더 추가
+    실무에서는 nginx/Apache 수준에서 설정하는 것을 권장
+    """
+
+    # 1. Content Security Policy - XSS 방어의 핵심
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'nonce-{nonce}'; "  # 인라인 스크립트는 nonce 필요
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'; "            # 클릭재킹 방어
+        "base-uri 'self'; "
+        "form-action 'self'"
+    )
+
+    # 2. HTTPS 강제 (HSTS)
+    response.headers["Strict-Transport-Security"] = (
+        "max-age=31536000; includeSubDomains; preload"
+    )
+
+    # 3. 클릭재킹 방어
+    response.headers["X-Frame-Options"] = "DENY"
+
+    # 4. MIME 스니핑 방어
+    response.headers["X-Content-Type-Options"] = "nosniff"
+
+    # 5. Referrer 정보 최소화
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+    # 6. 브라우저 기능 접근 제한
+    response.headers["Permissions-Policy"] = (
+        "geolocation=(), camera=(), microphone=(), "
+        "payment=(), usb=(), interest-cohort=()"
+    )
+
+    # 7. 교차 출처 격리 (Spectre 방어)
+    response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+
+    return response
+
+@app.after_request
+def after_request(response):
+    return add_security_headers(response)
+
+@app.route("/")
+def index():
+    return "<h1>보안 헤더가 적용된 페이지</h1>"
+
+# 보안 헤더 값 출력 (Flask 서버 없이 확인)
+print("=== 웹 보안 헤더 설정 가이드 ===\n")
+headers = {
+    "Content-Security-Policy": "default-src 'self'; script-src 'self'",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "geolocation=(), camera=()",
+}
+for header, value in headers.items():
+    print(f"{header}:")
+    print(f"  {value}\n")
+
+print("보안 헤더 평가: https://securityheaders.com 에서 확인 가능")
+# app.run(debug=False, port=5000)  # 실제 서버 실행 시 주석 해제
+```
+
+---
+
 ## 1. 엔터프라이즈 브라우저 보안 정책
 
 ### 1.1 주요 관리 채널 비교

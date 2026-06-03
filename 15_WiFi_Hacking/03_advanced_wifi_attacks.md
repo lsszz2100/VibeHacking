@@ -6,6 +6,123 @@
 
 # 고급 WiFi 공격 기법
 
+## 0. 초보자를 위한 개념 이해
+
+### 고급 WiFi 공격이란?
+
+고급 WiFi 공격은 단순한 패스워드 크래킹을 넘어, 네트워크에 연결된 후 트래픽을 감청하거나 클라이언트를 조작하는 기법입니다. ARP 스푸핑을 통한 MITM(중간자 공격)은 같은 네트워크의 모든 트래픽을 가로채고, Deauthentication 공격은 특정 클라이언트를 강제 연결 해제할 수 있습니다. Evil Twin(가짜 AP) 공격은 피해자를 악성 AP에 연결시켜 자격증명을 탈취합니다.
+
+**왜 배우는가:**
+```
+고급 WiFi 공격 유형:
+
+  ARP 스푸핑 + MITM
+    같은 네트워크 → 게이트웨이 ARP 응답 위조
+    → 피해자 트래픽을 공격자 통해 라우팅
+    → HTTP 평문 데이터, 쿠키 탈취
+
+  Deauthentication 공격
+    WiFi 관리 프레임 미인증 (802.11 취약점)
+    → 위조된 Deauth 패킷 전송
+    → 클라이언트 강제 연결 해제
+
+  Evil Twin (가짜 AP)
+    동일 SSID의 강한 신호 AP 생성
+    + Deauth로 정상 AP 연결 방해
+    → 피해자 자동 연결 → MITM / 캡티브 포털
+```
+
+### 핵심 개념 정리
+
+```
+주요 도구 역할:
+
+  bettercap    — ARP 스푸핑·DNS 스푸핑·MITM 자동화
+                  모든 기능을 대화형 명령으로 실행
+  mitmproxy    — HTTPS 트래픽 인터셉트 프록시
+  hostapd      — 소프트웨어 AP 생성 (Evil Twin)
+  dnsmasq      — DHCP/DNS 서버 (가짜 AP 필수)
+  airgeddon    — WiFi 공격 올인원 메뉴 기반 프레임워크
+
+ARP 스푸핑 원리:
+  정상: 피해자 → (ARP) → 게이트웨이의 MAC 획득
+  공격: 피해자 → (위조 ARP) → 공격자 MAC = 게이트웨이로 착각
+  결과: 피해자 트래픽이 공격자를 경유
+```
+
+### 필요한 도구 및 환경
+- **bettercap**: 네트워크 MITM 자동화 프레임워크
+- **hostapd**: 소프트웨어 AP 구성 데몬
+- **dnsmasq**: 경량 DHCP/DNS 서버
+- **무선 랜카드 2개**: AP 모드 + 모니터 모드 동시 운용
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""ARP 스푸핑 탐지 — 로컬 네트워크의 ARP 테이블 이상 감지."""
+
+import subprocess
+import re
+from dataclasses import dataclass
+from collections import defaultdict
+
+
+@dataclass
+class ArpEntry:
+    ip: str
+    mac: str
+    interface: str
+
+
+def get_arp_table() -> list[ArpEntry]:
+    """현재 시스템의 ARP 테이블을 조회합니다."""
+    result = subprocess.run(["arp", "-n"], capture_output=True, text=True)
+    entries: list[ArpEntry] = []
+    for line in result.stdout.splitlines()[1:]:  # 헤더 스킵
+        parts = line.split()
+        if len(parts) >= 3 and ":" in parts[2]:
+            entries.append(ArpEntry(
+                ip=parts[0],
+                mac=parts[2].lower(),
+                interface=parts[-1] if len(parts) > 4 else "unknown",
+            ))
+    return entries
+
+
+def detect_arp_spoofing(entries: list[ArpEntry]) -> list[str]:
+    """하나의 MAC이 여러 IP를 갖거나, 동일 IP에 여러 MAC이 있으면 경고."""
+    warnings: list[str] = []
+    ip_to_macs: dict[str, set[str]] = defaultdict(set)
+    mac_to_ips: dict[str, set[str]] = defaultdict(set)
+
+    for e in entries:
+        ip_to_macs[e.ip].add(e.mac)
+        mac_to_ips[e.mac].add(e.ip)
+
+    for ip, macs in ip_to_macs.items():
+        if len(macs) > 1:
+            warnings.append(f"[경고] IP {ip}에 여러 MAC: {macs} → ARP 스푸핑 의심!")
+
+    for mac, ips in mac_to_ips.items():
+        if len(ips) > 3:  # 임계값: 3개 이상 IP
+            warnings.append(f"[경고] MAC {mac}이 {len(ips)}개 IP 응답 → MITM 의심!")
+
+    return warnings
+
+
+if __name__ == "__main__":
+    arp_table = get_arp_table()
+    print(f"ARP 테이블 항목: {len(arp_table)}개")
+    warnings = detect_arp_spoofing(arp_table)
+    if warnings:
+        for w in warnings:
+            print(w)
+    else:
+        print("ARP 스푸핑 의심 패턴 없음")
+```
+
+---
+
 ## 1. Bettercap - MITM 자동화
 
 ```bash

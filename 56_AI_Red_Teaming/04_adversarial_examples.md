@@ -6,6 +6,110 @@
 
 # 적대적 예제 (Adversarial Examples)
 
+## 0. 초보자를 위한 개념 이해
+
+### 적대적 예제란?
+
+적대적 예제는 사람의 눈에는 원본과 거의 동일하게 보이지만, AI 모델은 완전히 다르게 분류하도록 정교하게 조작된 입력 데이터이다. 예를 들어 고양이 사진에 사람이 알아볼 수 없는 미세한 노이즈를 추가하면 AI가 그것을 비행기로 인식할 수 있다. 자율주행차, 안면인식 시스템, 악성코드 탐지기 등 AI 기반 보안 시스템 전반에 위협이 된다.
+
+**왜 배우는가:**
+```
+[적대적 예제의 위험성]
+
+원본 이미지       미세한 노이즈 추가        적대적 예제
+   🐱         +    ε × sign(∇Loss)    =       🐱 (사람 눈)
+"고양이" (99%)                              "비행기" (97%) ← AI 판단
+
+실제 위협 시나리오:
+├─ 자율주행: 정지 신호판에 스티커 → AI가 속도 제한으로 오인
+├─ 안면인식: 안경에 특수 패턴 → 다른 사람으로 인식
+├─ 악성코드 탐지: 악성코드에 노이즈 추가 → 정상으로 분류
+└─ 의료 AI: X-ray 조작 → 암 진단 누락
+```
+
+### 핵심 개념 정리
+
+```
+주요 용어:
+- 교란(Perturbation): 원본 데이터에 가하는 미세한 변형량 (보통 ε로 표기)
+- FGSM(Fast Gradient Sign Method): 손실 함수 기울기 방향으로 한 번에 적대적 예제 생성
+- PGD(Projected Gradient Descent): FGSM을 반복 적용, 더 강력한 공격
+- 화이트박스 공격: 모델 구조와 가중치를 알고 수행 (그라디언트 계산 가능)
+- 블랙박스 공격: 모델 출력만 보고 수행 (전이성 활용)
+- 전이성(Transferability): 한 모델에서 만든 적대적 예제가 다른 모델에도 통하는 성질
+- 적대적 훈련(Adversarial Training): 적대적 예제를 학습 데이터에 포함해 방어하는 기법
+```
+
+### 필요한 도구 및 환경
+- **Python 3.10+**: numpy, matplotlib
+- **PyTorch 또는 TensorFlow**: 딥러닝 프레임워크 (그라디언트 계산 필수)
+- **Foolbox / ART (Adversarial Robustness Toolbox)**: 적대적 공격 라이브러리
+- **사전 훈련 모델**: torchvision.models의 ResNet, VGG 등
+
+### 기초 실습 예제
+```python
+import torch
+import torch.nn.functional as F
+import torchvision.transforms as transforms
+from torchvision import models
+from PIL import Image
+import numpy as np
+
+def fgsm_attack(image_tensor, epsilon, gradient):
+    """
+    FGSM 공격 구현
+    - image_tensor: 원본 이미지 텐서
+    - epsilon: 교란 강도 (작을수록 눈에 안 보임, 보통 0.01~0.1)
+    - gradient: 손실에 대한 입력 그라디언트
+    """
+    # 그라디언트의 부호(sign)만 사용 - 손실을 최대화하는 방향
+    sign_grad = gradient.sign()
+    # 원본 이미지에 epsilon 크기의 교란을 더함
+    adversarial = image_tensor + epsilon * sign_grad
+    # 유효 픽셀 범위 [0, 1]로 클리핑
+    adversarial = torch.clamp(adversarial, 0, 1)
+    return adversarial
+
+# 모델 로드 (사전 훈련된 ResNet18 사용)
+model = models.resnet18(pretrained=True)
+model.eval()  # 평가 모드 (드롭아웃 비활성화)
+
+# 이미지 전처리 파이프라인
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225])
+])
+
+# 테스트용 더미 이미지 생성 (실제로는 PIL.Image.open으로 로드)
+dummy_image = torch.rand(1, 3, 224, 224, requires_grad=True)
+target_label = torch.tensor([207])  # 예: 황금 리트리버 클래스
+
+# 순전파 및 손실 계산
+output = model(dummy_image)
+loss = F.cross_entropy(output, target_label)
+
+# 역전파로 입력에 대한 그라디언트 계산
+model.zero_grad()
+loss.backward()
+data_grad = dummy_image.grad.data
+
+# FGSM 적대적 예제 생성
+epsilon = 0.03  # 미세한 교란 (3% 수준)
+adv_example = fgsm_attack(dummy_image.detach(), epsilon, data_grad)
+
+# 원본 vs 적대적 예제 예측 비교
+with torch.no_grad():
+    orig_pred = model(dummy_image).argmax(1).item()
+    adv_pred = model(adv_example).argmax(1).item()
+print(f"원본 예측: 클래스 {orig_pred}")
+print(f"적대적 예측: 클래스 {adv_pred}")
+print(f"공격 성공: {orig_pred != adv_pred}")
+```
+
+---
+
 ## 개요
 
 적대적 예제(Adversarial Examples)는 사람이 인지하기 어려운 미세한 변형이 가해진 입력으로, 머신러닝 모델을 오분류하도록 유도한다. 픽셀 단위의 작은 노이즈가 "고양이"를 "비행기"로, "정지 신호"를 "속도 제한" 표지판으로 잘못 인식하게 만들 수 있다. 이 취약점은 이미지, 텍스트, 음성 등 모든 모달리티에 존재한다.

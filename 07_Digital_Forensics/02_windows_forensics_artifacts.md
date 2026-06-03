@@ -6,6 +6,119 @@
 
 # Windows 포렌식 아티팩트 완전 분석
 
+## 0. 초보자를 위한 개념 이해
+
+### Windows 포렌식 아티팩트란?
+
+아티팩트(Artifact)는 사용자나 시스템의 활동이 남긴 디지털 흔적입니다. Windows는 사용자가 어떤 파일을 열었는지, 어떤 프로그램을 실행했는지, USB를 언제 꽂았는지 등을 자동으로 기록합니다. 이 흔적을 분석하면 공격자의 행동을 재구성할 수 있습니다.
+
+**왜 배우는가:**
+```
+Windows 아티팩트로 알 수 있는 것:
+
+  레지스트리:
+  → 어떤 프로그램이 시작프로그램에 등록됐나? (백도어 탐지)
+  → USB가 언제 연결됐나? (데이터 유출 경로)
+  → 최근 실행한 명령어 목록 (MRU)
+
+  이벤트 로그:
+  → 로그인 성공/실패 기록 (ID 4624/4625)
+  → 새 서비스 설치 (악성 서비스 탐지, ID 7045)
+  → 계정 생성 (백도어 계정, ID 4720)
+
+  Prefetch 파일:
+  → 프로그램 최초 실행 시각, 실행 횟수
+  → 삭제된 악성코드도 실행 흔적 남아있을 수 있음
+
+  LNK 파일 (바로가기):
+  → 파일을 열었던 시각과 원본 경로
+  → 이미 삭제된 파일의 존재 증명
+```
+
+### 핵심 개념 정리
+
+```
+주요 아티팩트 위치:
+
+  레지스트리 자동 실행 경로 (악성코드 지속성):
+    HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+    HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+
+  이벤트 로그:
+    C:\Windows\System32\winevt\Logs\
+    Security.evtx    → 로그인, 계정 관련
+    System.evtx      → 서비스, 시스템 이벤트
+    Application.evtx → 응용프로그램 오류
+
+  Prefetch:
+    C:\Windows\Prefetch\*.pf
+    → 파일명에 실행파일명 포함 (MALWARE.EXE-XXXXXXXX.pf)
+
+  사용자 활동:
+    C:\Users\*\AppData\Roaming\Microsoft\Windows\Recent\
+    → LNK 파일 (최근 열어본 파일)
+    C:\Users\*\AppData\Local\Microsoft\Windows\UsrClass.dat
+    → ShellBag (폴더 탐색 기록)
+```
+
+### 필요한 도구 및 환경
+- **레지스트리 분석**: Registry Explorer (Eric Zimmerman 도구) — 삭제된 키까지 복구
+- **이벤트 로그 분석**: EvtxECmd + Timeline Explorer — CSV 변환 후 정렬/필터
+- **타임라인 분석**: Plaso/log2timeline — 여러 소스 아티팩트를 시간순 통합
+
+### 기초 실습 예제
+```python
+#!/usr/bin/env python3
+"""Windows 이벤트 로그에서 로그인 기록 추출 (교육용)."""
+import xml.etree.ElementTree as ET
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+# 중요 이벤트 ID 정의
+IMPORTANT_EVENTS: dict[int, str] = {
+    4624: "로그인 성공",
+    4625: "로그인 실패 (브루트포스 의심)",
+    4648: "명시적 자격증명 로그온 (Pass-the-Hash 의심)",
+    4720: "사용자 계정 생성 (백도어 계정 의심)",
+    4728: "보안 그룹에 멤버 추가",
+    7045: "새 서비스 설치 (악성 서비스 의심)",
+}
+
+def parse_evtx_xml(xml_content: str) -> Optional[dict[str, str]]:
+    """이벤트 XML에서 핵심 정보 추출."""
+    try:
+        root = ET.fromstring(xml_content)
+        ns = {"e": "http://schemas.microsoft.com/win/2004/08/events/event"}
+        event_id = int(root.find(".//e:EventID", ns).text)
+        time_created = root.find(".//e:TimeCreated", ns).get("SystemTime", "")
+        computer = root.find(".//e:Computer", ns).text or ""
+        return {
+            "event_id": str(event_id),
+            "description": IMPORTANT_EVENTS.get(event_id, "기타"),
+            "time": time_created[:19],
+            "computer": computer,
+        }
+    except (ET.ParseError, AttributeError):
+        return None
+
+def analyze_security_log(log_path: str) -> None:
+    """Security.evtx 파일 분석 (python-evtx 라이브러리 필요)."""
+    print(f"[*] 이벤트 로그 분석: {log_path}")
+    print("[*] 실제 분석은 EvtxECmd 또는 python-evtx 라이브러리 사용")
+    print("\n[중요 이벤트 ID 참조표]")
+    for event_id, desc in IMPORTANT_EVENTS.items():
+        print(f"  {event_id}: {desc}")
+
+if __name__ == "__main__":
+    analyze_security_log("C:\\Windows\\System32\\winevt\\Logs\\Security.evtx")
+    # 실제 분석: python-evtx 설치 후 evtx_dump.py 사용
+    # pip install python-evtx
+    # python3 -m evtx.evtx_dump <evtx_file>
+```
+
+---
+
 ## 1. Windows 포렌식 핵심 아티팩트
 
 ```
