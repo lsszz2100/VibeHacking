@@ -206,6 +206,61 @@ Ekert가 제안한 E91은 EPR 쌍의 양자 얽힘을 활용한다.
 - **주요 실험**: 베이징-빈 화상회의 양자 암호화 통신 (2017)
 - **한계**: 낮과 대기 산란으로 야간에만 운용 가능
 
+### 3.3 ANASIS-II 군사위성 BB84+ML-KEM 하이브리드 설계 (연구 사례)
+
+> **출처**: 명지대 박사과정 연구 — ANASIS-II 위성 PQC 프레임워크 (2026), ProVerif 형식 검증 포함
+
+대한민국 군 정지궤도 위성(ANASIS-II, NORAD 44714)에 BB84 QKD와 ML-KEM-1024를 결합한 하이브리드 보안 프레임워크 연구.
+
+**QBER < 5% 임계값 설정 근거**
+
+| 기준 | 수치 | 설명 |
+|------|------|------|
+| BB84 이론적 보안 한계 | 11% | 이 이상이면 도청자 정보량 > 정당 통신자 |
+| 가로채기-재전송 공격 시 QBER | 25% | 공격 탐지 기준 |
+| 묵자호 실측 QBER | < 2% | 정밀 지향 제어 + 시간 게이팅으로 달성 |
+| **연구 목표 QBER** | **< 5%** | 이론 한계(11%)보다 낮고 GEO 손실 환경(35,786km) 감안한 실용적 경계값 |
+
+GEO 위성은 LEO(500km)보다 광 경로 손실이 훨씬 크므로, 이론 한계(11%)에 안전 마진을 두어 5%로 설정.
+
+**하이브리드 세션 키 수립 구조**
+
+```
+[지상국] ──── BB84 양자 채널 (QBER 모니터링) ──── [ANASIS-II]
+   │                                                      │
+   │  QBER < 5%: K_QKD 생성                              │
+   │  QBER ≥ 5%: QKD 폴백 → K_mlkem (PQC-only)         │
+   │                                                      │
+   └── K_session = HKDF(K_QKD ‖ K_mlkem) ───────────────┘
+                  ↑ 양측 모두 안전해야 강함
+```
+
+**위협 모델 및 대응 알고리즘**
+
+| 위협 | 대응 | 핵심 수치 |
+|------|------|-----------|
+| HNDL 수동 도청 | X25519 + ML-KEM-768 Hybrid KEM | KeyGen 0.018ms, Encap 0.021ms |
+| 명령 위조 | ML-DSA-65 서명 인증 | Sign 0.116ms, Verify 0.064ms (SR-02: 5ms 이내, 100배 마진) |
+| OTA 펌웨어 위조 | SLH-DSA-SHA2-192s (Stateless) | 지상 서명 776ms, OBC 검증 1.32ms |
+| 방사선 SEU | TMR 키 스토어 | `result[i] = (A&B) ‖ (B&C) ‖ (A&C)` 비트별 다수결 자동 복구 |
+
+**ProVerif 형식 검증 결과 (8개 속성)**
+
+```
+P1-a: K_QKD 기밀성              → PROVED
+P1-b: K_session 기밀성          → PROVED
+P1-c: sat_command_secret (phase 1) → FALSE ← 반례 존재
+P3:   전방 비밀성 (K_QKD@phase1) → PROVED
+P2-a: 위성 명령 인증             → PROVED
+P2-b: 지상 원격측정 인증         → PROVED
+P4:   도청 탐지                  → PROVED
+P5:   재전송 방지 (injective nonce) → PROVED
+```
+
+> **P1-c 반례 해석**: QBER 초과로 PQC-only 폴백 시, 공격자가 phase 1에서 `sk_satellite`를 획득하면
+> `K_fb = hkdf_combine(K_mlkem_g, K_mlkem_g)` 역산 가능 (전방 비밀성 결핍).
+> QKD 정상 세션은 영향 없음 — 폴백 모드 설계상 알려진 취약점.
+
 ---
 
 ## 4. QKD의 한계와 도전
@@ -751,6 +806,46 @@ if __name__ == "__main__":
 3. **대칭 계층**: AES-256으로 실제 데이터 암호화
 
 이 구조는 QKD 장애 시에도 PQC로 폴백할 수 있어 실용성이 높다.
+
+---
+
+## 8. 군사위성 하이브리드 QKD 설계 교훈 (ANASIS-II 연구)
+
+> **출처**: ProVerif 형식 검증 + 위성 PQC 프레임워크 구현 연구 (2026)
+
+실제 GEO 군사위성에 BB84+PQC 하이브리드를 구현하면서 얻은 핵심 설계 교훈:
+
+**1. 폴백 모드의 전방 비밀성 결핍은 설계 트레이드오프다**
+
+QKD 실패(QBER ≥ 5%) 시 PQC-only 폴백은 장기 키 노출에 대한 전방 비밀성이 없다.
+군사 운용에서는 폴백 세션의 민감도를 낮춰 허용 가능한 위험으로 관리하거나,
+임시 KEM 키쌍(ephemeral KEM)을 추가해 PFS를 확보해야 한다.
+
+**2. 서명 크기가 위성 링크 단편화를 유발한다**
+
+ML-DSA-65 서명(3,309B)은 CCSDS TC 프레임(1,024B)을 3~4개로 분할한다.
+KEMTLS 방식(KEM 기반 암묵 인증)으로 전환하면 서명 제거로 64.5% 대역폭 절감 가능하지만,
+ProVerif 검증 결과 인증 속성(P3/P4) FALSE — UKS 취약점 발생.
+**결론: 군사 위성에서는 대역폭 손실을 감수하고 ML-DSA 명시적 서명을 유지해야 한다.**
+
+**3. macOS 환경 TVLA에서 ML-KEM-768 타이밍 누설 확인**
+
+```
+ML-KEM-768 TVLA: t = 10.91  (임계값 4.5) → FAIL  ⚠️
+ML-DSA-44 TVLA:  t = 1.07   (임계값 4.5) → PASS  ✓
+ML-KEM-1024 Decap 오라클: PASS (상수 시간) ✓
+```
+
+macOS liboqs 0.14.1 환경에서 측정. 실제 LEON4FT OBC 하드웨어에서 재검증 필요.
+
+**4. TMR 키 스토어는 우주 방사선 대응 필수 요소**
+
+GEO 궤도(35,786km)에서는 SEU(Single Event Upset) 발생 시 암호 키 비트가 변경될 수 있다.
+TMR(Triple Modular Redundancy) 비트별 다수결 로직으로 단일 비트 플립을 자동 복구한다:
+```python
+result[i] = (A[i] & B[i]) | (B[i] & C[i]) | (A[i] & C[i])
+```
+LEON4FT 기준 7.2KB RAM에서 동작하도록 최적화되었다.
 
 ---
 

@@ -790,6 +790,77 @@ if __name__ == "__main__":
 
 ---
 
+## 8. 실측 벤치마크: ANASIS-II 군사위성 적용 결과
+
+> **출처**: 명지대 박사과정 연구 — satellite_pqc 8일 집중 구현 (2026-05)
+> 환경: macOS Apple M-series (ARM64), liboqs 0.14.1, S-band 업링크 2.0 Mbps
+
+### 8.1 ML-KEM (FIPS 203) 알고리즘별 실측값
+
+| 알고리즘 | 공개키 | 암호문 | KeyGen (ms) | Encap (ms) | Decap (ms) | S-band 오버헤드 (ms) |
+|----------|--------|--------|-------------|------------|------------|---------------------|
+| ML-KEM-512 | 800 B | 768 B | 0.018 | 0.019 | 0.019 | 6.27 |
+| **ML-KEM-768** | **1,184 B** | **1,088 B** | **0.018** | **0.021** | **0.022** | **9.09** |
+| ML-KEM-1024 | 1,568 B | 1,568 B | 0.021 | 0.024 | 0.025 | 12.77 |
+
+> 선택 근거 (ANASIS-II): ML-KEM-768 — NIST Category 3, S-band 오버헤드 9.09ms로 허용 범위 내.
+
+### 8.2 ML-DSA / SLH-DSA (FIPS 204/205) 실측값
+
+| 알고리즘 | 공개키 | 서명 크기 | Sign (ms) | Verify (ms) | S-band 오버헤드 (ms) |
+|----------|--------|----------|-----------|-------------|---------------------|
+| ML-DSA-44 | 1,312 B | 2,420 B | 0.073 | 0.033 | 14.93 |
+| **ML-DSA-65** | **1,952 B** | **3,309 B** | **0.118** | **0.052** | **20.64** |
+| ML-DSA-87 | 2,592 B | 4,627 B | 0.183 | 0.076 | 30.48 |
+| **SLH-DSA-SHA2-192s** | 48 B | 16,224 B | 776.3 | **1.32** | OTA 전용 |
+
+> **ML-DSA-65 선택 이유**: 검증 0.052ms — SR-02(OBC 5ms 이내) 대비 **96배 마진**.
+> **SLH-DSA 적용 범위**: OTA 펌웨어만. 지상국에서 서명(776ms), OBC는 검증만(1.32ms).
+
+### 8.3 TVLA (Test Vector Leakage Assessment) 결과 ⚠️
+
+타이밍 사이드채널 취약점 평가 (NIST SP 800-92 기준, t-임계값 4.5):
+
+| 알고리즘 | t-통계량 | 결과 | 의미 |
+|----------|----------|------|------|
+| **ML-KEM-768** | **10.91** | **❌ FAIL** | fixed/random 입력 간 타이밍 누설 심각 |
+| ML-DSA-44 | 1.07 | ✅ PASS | 상수 시간 동작 확인 |
+| ML-KEM-1024 Decap 오라클 | < 4.5 | ✅ PASS | FO-transform 상수 시간 동작 확인 |
+
+> **주의**: ML-KEM-768 FAIL은 macOS liboqs 0.14.1 소프트웨어 측정값이다.
+> 실제 FPGA/ASIC 구현이나 LEON4FT OBC 하드웨어에서는 별도 재측정이 필요하다.
+> ANASIS-II 최종 설계(V2b)는 ML-KEM-1024를 사용하므로 직접 영향은 없으나,
+> Day2 프로토타입(ML-KEM-768)을 참조할 때는 이 결과를 반드시 고려해야 한다.
+
+### 8.4 ProVerif 형식 검증 — V2b (최종 채택 설계) 결과
+
+```
+검증 환경: ProVerif 2.x, ANASIS-II BB84+ML-KEM-1024 하이브리드 프로토콜
+
+P1-a: K_QKD 기밀성                → PROVED  ✓
+P1-b: K_session 기밀성            → PROVED  ✓
+P1-c: 폴백 세션키 기밀성(phase 1) → FALSE   ✗  ← 설계상 알려진 취약점
+P3:   전방 비밀성(K_QKD@phase1)   → PROVED  ✓
+P2-a: 위성 명령 인증              → PROVED  ✓
+P2-b: 지상 원격측정 인증          → PROVED  ✓
+P4:   도청 탐지                   → PROVED  ✓
+P5:   재전송 방지(injective nonce) → PROVED  ✓
+
+결론: 7/8 PROVED — P1-c(폴백 전방 비밀성)는 설계 트레이드오프로 허용
+```
+
+### 8.5 보안 요구사항 충족 여부
+
+| 요구사항 | 기준 | 실측 | 충족 |
+|---------|------|------|------|
+| SR-01: Category 3 이상 보안 강도 | NIST Level 3 | ML-KEM-768 (L3) + ML-DSA-65 (L3) | ✓ |
+| SR-02: OBC 검증 5ms 이내 | < 5ms | ML-DSA-65 verify = **0.052ms** | ✓ (96× 마진) |
+| SR-03: OTA Stateless 서명 | 재부팅 후 상태 손실 없음 | SLH-DSA-SHA2-192s | ✓ |
+| SR-04: Nonce 재사용 방지 | 30초 타임스탬프 슬라이딩 윈도우 | Nonce 캐시(LRU 10,000) | ✓ |
+| SR-06: SEU 자동 복구 | 단일 비트 플립 복구 | TMR 비트별 다수결 | ✓ |
+
+---
+
 <a name="english"></a>
 
 # 57-3. Post-Quantum Algorithms (PQC): Classification, Principles, and Performance Analysis

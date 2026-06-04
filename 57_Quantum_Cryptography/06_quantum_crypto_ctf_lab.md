@@ -388,9 +388,67 @@ if __name__ == "__main__":
 
 고급 (400~500점)
 ☐ 격자 기반 공격 (LLL 알고리즘)
-☐ 측채널 공격 시뮬레이션
-☐ CRYSTALS-Kyber 파라미터 취약점 분석
+☐ TVLA 측채널 타이밍 분석 (ML-KEM-768 vs ML-KEM-1024)
+☐ BB84+ML-KEM 하이브리드 폴백 경로 전방 비밀성 공격 (P1-c 반례 재현)
 ```
+
+---
+
+## 심화 챌린지: 실제 연구 기반 시나리오 (ANASIS-II)
+
+> **출처**: 명지대 박사과정 연구 (2026) — 실제 ProVerif 반례와 측채널 분석 결과 기반
+
+### 챌린지 4: ML-KEM-768 TVLA 타이밍 분석
+
+**배경**: macOS liboqs 환경에서 ML-KEM-768의 TVLA(Test Vector Leakage Assessment) 결과
+fixed 입력과 random 입력 간 t-stat = **10.91** (임계값 4.5). 심각한 타이밍 누설.
+
+```python
+# 타이밍 오라클 탐지 실습
+import time, statistics
+
+# 두 그룹의 decap 타이밍을 비교해 t-검정으로 누설 판정
+def welch_t_test(group_a, group_b):
+    n_a, n_b = len(group_a), len(group_b)
+    mean_a, mean_b = statistics.mean(group_a), statistics.mean(group_b)
+    var_a = statistics.variance(group_a)
+    var_b = statistics.variance(group_b)
+    t = (mean_a - mean_b) / ((var_a/n_a + var_b/n_b) ** 0.5)
+    return abs(t)
+
+# |t| > 4.5 이면 FAIL (타이밍 누설 의심)
+# ML-KEM-768 실측: t = 10.91 → FAIL ⚠️
+# ML-KEM-1024 실측: t < 4.5  → PASS ✓
+```
+
+**플래그 조건**: `|t| < 4.5`이면 "CONSTANT_TIME", 아니면 "TIMING_LEAK_{t:.2f}"
+
+### 챌린지 5: BB84+ML-KEM 폴백 전방 비밀성 공격 (P1-c 반례)
+
+**배경**: QBER ≥ 5%로 QKD 폴백 발생 시, 공격자가 phase 1에서 `sk_satellite`를 획득하면:
+
+```python
+# 공격자 시뮬레이션: sk_satellite 노출 후 폴백 세션키 역산
+import hmac, hashlib
+
+def attacker_recover_fallback_key(sk_satellite, mlkem_ciphertext):
+    """
+    P1-c 반례: QKD 폴백 모드에서 sk_satellite 노출 시 세션키 역산
+    K_fb = hkdf_combine(K_mlkem_g, K_mlkem_g)
+    """
+    # 1. sk_satellite로 mlkem decap → K_mlkem_g
+    # (실제로는 ML-KEM decap 연산)
+    K_mlkem_g = b"[decap(sk_satellite, ct)]"  # 시뮬레이션
+
+    # 2. 폴백 키 복원: hkdf(K_mlkem_g || K_mlkem_g)
+    K_fb = hmac.new(K_mlkem_g, K_mlkem_g, hashlib.sha256).digest()
+    return K_fb
+
+# 대응: QKD 폴백 시 임시 KEM 키쌍(ephemeral) 추가 → PFS 확보
+```
+
+**설계 교훈**: QKD 정상 세션(K_QKD 사용)은 안전. 폴백 세션만 취약.
+대응: 폴백 시 `K_fb = HKDF(K_mlkem_eph, K_mlkem_lt)` — 임시 키로 PFS 추가.
 
 양자 컴퓨팅 시대의 암호학은 **기존 RSA/ECC 기반 시스템의 전면 교체**를 요구한다. 후양자 암호로의 전환은 지금 시작해야 한다.
 
