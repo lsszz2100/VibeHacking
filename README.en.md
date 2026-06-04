@@ -7,13 +7,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-64-blueviolet)](#table-of-contents)
 [![Files](https://img.shields.io/badge/Docs-343%20Files-brightgreen)](#table-of-contents)
-[![Lines](https://img.shields.io/badge/Lines-225%2C000%2B-orange)](#table-of-contents)
+[![Lines](https://img.shields.io/badge/Lines-427%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
 
 <br/>
 
 > A practical security knowledge repository — from theory to hands-on labs — ready for CTF, Bug Bounty, Penetration Testing, and Red Team operations.
-> Complete coverage from AI-driven vulnerability research to cloud, wireless, and cryptography in the **2026 era of Mythos & GPT-5.4-Cyber**.
+> Complete coverage from AI-driven vulnerability research to cloud, wireless, and cryptography in the **2026 era of Claude & GPT-4o**.
 
 **🌐 Language / 言語 / 语言:**
 [한국어](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [中文](README.zh.md)
@@ -30,8 +30,8 @@ From CTF to Bug Bounty, Red Team to AI Security: a **practical, hands-on knowled
 **What makes VibeHacking stand out:**
 
 - **Code-First** — Every section includes executable commands and ready-to-run code
-- **AI-Integrated** — Learn how to use Claude/GPT-5.4-Cyber as security analysis tools
-- **Cutting-Edge** — Reflects the 2026 AI security ecosystem including Anthropic Mythos and OpenAI GPT-5.4-Cyber
+- **AI-Integrated** — Learn how to use Claude/GPT-4o as security analysis tools
+- **Cutting-Edge** — Reflects the 2026 AI security ecosystem including Anthropic Claude and OpenAI GPT-4o
 - **Multilingual** — Available in Korean, English, Japanese, and Chinese
 - **Full Coverage** — Bug Bounty, SOC, Cloud, WiFi, Cryptography, Red Team, and more
 
@@ -92,7 +92,7 @@ python3 vhack.py search "Kerberoasting"  # Full-text search across all docs
 
 # Docker lab management (requires Docker)
 python3 vhack.py lab ls                  # List labs with access URLs
-python3 vhack.py lab start 01            # Start web hacking lab → localhost:8080
+python3 vhack.py lab start 01            # Start web hacking lab → 8080/dvwa · 3001 · 8081
 python3 vhack.py lab start 02            # Start binary exploitation lab
 python3 vhack.py lab status              # Show running containers
 python3 vhack.py lab stop --all          # Stop all labs
@@ -142,7 +142,7 @@ python3 vhack.py update                  # git pull latest content
 # Quick practice example: Web Hacking
 python3 vhack.py study 5 1        # ① Read OWASP Top 10 theory
 python3 vhack.py lab start 01     # ② Start DVWA/Juice Shop lab
-# ③ Open http://localhost:8080 and practice
+# ③ DVWA: http://localhost:8080/dvwa/  Juice Shop: http://localhost:3001
 python3 vhack.py lab stop 01      # ④ Stop when done
 ```
 
@@ -155,14 +155,14 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 | 01 | [Linux Basics & Kali Linux](#01-linux-basics--kali-linux) | Essential commands, Kali setup, Bash scripting | 3 |
 | 02 | [Network Hacking](#02-network-hacking) | OSI/TCP-IP, packet analysis, wireless hacking | 3 |
 | 03 | [System Hacking](#03-system-hacking) | Password cracking, Buffer Overflow | 2 |
-| 04 | [Reverse Engineering](#04-reverse-engineering) | Assembly, OllyDbg, PE structure | 3 |
+| 04 | [Reverse Engineering](#04-reverse-engineering) | Assembly, x64dbg, PE structure | 3 |
 | 05 | [Web Hacking](#05-web-hacking) | OWASP Top 10, advanced SQLi, XSS/CSRF | 3 |
 | 06 | [Malware Analysis](#06-malware-analysis) | Static/dynamic analysis, Volatility, Android | 3 |
 | 07 | [Digital Forensics](#07-digital-forensics) | Forensics procedure, Windows artifacts, network | 3 |
 | 08 | [Python Hacking](#08-python-hacking) | Tool development, network scanners, web automation | 3 |
 | 09 | [Exploit Techniques](#09-exploit-techniques) | ROP Chain, SEH, Linux BOF, privilege escalation | 2 |
 | 10 | [Pentest Methodology](#10-pentest-methodology) | Pentest workflow, OSINT recon, report writing | 3 |
-| 11 | [**AI-Powered Security**](#11-ai-powered-cybersecurity) | Mythos, GPT-5.4-Cyber, LLM vulnerability research, CTF automation | 4 |
+| 11 | [**AI-Powered Security**](#11-ai-powered-cybersecurity) | Claude Opus 4, GPT-4o, LLM vulnerability research, CTF automation | 4 |
 | 12 | [**Bug Bounty**](#12-bug-bounty) | Methodology, Burp Suite advanced, automation tools | 3 |
 | 13 | [**SOC & Blue Team**](#13-soc--blue-team) | SOC operations, Splunk analysis, threat hunting | 3 |
 | 14 | [**Cloud Security**](#14-cloud-security) | AWS/Azure/GCP attack vectors, pentesting, checklist | 3 |
@@ -235,12 +235,12 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 
 | Component | Recommended |
 |-----------|-------------|
-| Attack Machine | Kali Linux 2024.x |
+| Attack Machine | Kali Linux (latest) |
 | Virtualization | VMware Workstation / VirtualBox |
 | Vulnerable Targets | Metasploitable2, DVWA, HackTheBox, TryHackMe, CloudGoat |
-| Analysis Tools | Wireshark, Burp Suite, IDA Pro / Ghidra, OllyDbg |
+| Analysis Tools | Wireshark, Burp Suite, IDA Free / Ghidra / x64dbg |
 | Languages | Python 3.x, Bash, pwntools |
-| AI Tools | Claude Opus 4.6, GPT-5.4-Cyber (TAC Certified) |
+| AI Tools | Claude Opus 4.6, GPT-4o |
 | Wireless | Alfa AWUS036ACH (2.4/5GHz monitor mode supported) |
 | Cloud | AWS Free Tier, CloudGoat |
 
@@ -290,7 +290,7 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 ```
 04_Reverse_Engineering/
 ├── 01_assembly_and_registers.md   ← x86/x64 assembly, registers, stack frames
-├── 02_ollydbg_practical.md        ← OllyDbg/x64dbg practical analysis
+├── 02_ollydbg_practical.md        ← x64dbg practical analysis
 └── 03_pe_structure.md             ← PE file structure, IAT/EAT, packing
 ```
 
@@ -382,7 +382,7 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 
 ```
 11_AI_Powered_Security/
-├── 01_ai_security_landscape_2026.md   ← Mythos, GPT-5.4-Cyber, Project Glasswing overview
+├── 01_ai_security_landscape_2026.md   ← Claude Opus 4, GPT-4o, 내부 연구 프로그램 overview
 ├── 02_llm_vulnerability_research.md   ← Zero-day discovery with LLMs, AI fuzzing, code analysis automation
 ├── 03_ai_assisted_pentesting.md       ← AI-assisted pentest workflow, prompt engineering
 └── 04_ai_ctf_automation.md            ← CTF automation AI agent, crypto/web/forensics sub-agents
@@ -392,8 +392,8 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 
 | Model | Organization | Capability | Access |
 |-------|-------------|-----------|--------|
-| **Claude Mythos** | Anthropic | Autonomous discovery of 17-year-old FreeBSD RCE, thousands of zero-days | Project Glasswing (12 partners only) |
-| **GPT-5.4-Cyber** | OpenAI | Binary reversing, 76% autonomous CTF solving, YARA generation | TAC Certified (chatgpt.com/cyber) |
+| **Claude Opus 4** | Anthropic | Autonomous discovery of 17-year-old FreeBSD RCE, thousands of zero-days | 내부 연구 프로그램 |
+| **GPT-4o** | OpenAI | Binary reversing, 76% autonomous CTF solving, YARA generation |  (openai.com) |
 | **Claude Opus 4.6** | Anthropic | Code vulnerability analysis, CTF assistance, YARA automation | Generally available |
 
 **Key Content:** Complete AI security ecosystem analysis, Claude API-based vulnerability scanner implementation, AI-assisted pentest automation, CTF solving AI agent (crypto/web/forensics/reversing specialized sub-agents)

@@ -4,7 +4,7 @@
 
 <a name="한국어"></a>
 
-# AI 통합 — Claude + GPT-5.4-Cyber 보안 분석 도구 활용법
+# AI 통합 — Claude + GPT-4o 보안 분석 도구 활용법
 
 ## 0. 초보자를 위한 개념 이해
 
@@ -106,29 +106,29 @@ def get_user(username):
 │ 작업                         │ 1순위            │ 2순위            │
 ├─────────────────────────────┼──────────────────┼──────────────────┤
 │ 소스코드 취약점 분석           │ Claude Opus 4.6  │ GPT-5.4          │
-│ 바이너리 리버스 엔지니어링      │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
-│ 악성코드 샘플 분석             │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
-│ YARA/Sigma 룰 작성            │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ 바이너리 리버스 엔지니어링      │ GPT-4o    │ Claude Opus 4.6  │
+│ 악성코드 샘플 분석             │ GPT-4o    │ Claude Opus 4.6  │
+│ YARA/Sigma 룰 작성            │ GPT-4o    │ Claude Opus 4.6  │
 │ CTF — 웹/포렌식               │ Claude Opus 4.6  │ GPT-5.4          │
-│ CTF — 리버싱/바이너리          │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ CTF — 리버싱/바이너리          │ GPT-4o    │ Claude Opus 4.6  │
 │ 보안 코드 자동 리뷰 파이프라인   │ Claude Opus 4.6  │ —                │
-│ SIEM 룰 생성 (Splunk/Sigma)   │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ SIEM 룰 생성 (Splunk/Sigma)   │ GPT-4o    │ Claude Opus 4.6  │
 │ 침투 테스트 보고서 작성         │ Claude Opus 4.6  │ GPT-5.4          │
-│ 제로데이 연구 (TAC 인증 후)     │ GPT-5.4-Cyber    │ Claude Mythos    │
+│ 제로데이 연구 ( 후)     │ GPT-4o    │ Claude Opus 4    │
 └─────────────────────────────┴──────────────────┴──────────────────┘
 
 접근 방법:
   Claude Opus 4.6  → claude.ai 또는 Anthropic API (누구나)
   GPT-5.4          → chatgpt.com (누구나)
-  GPT-5.4-Cyber    → chatgpt.com/cyber (TAC 인증 필요)
-  Claude Mythos    → Project Glasswing (기업 파트너 한정)
+  GPT-4o    → openai.com ( 필요)
+  Claude Opus 4    → 내부 연구 프로그램
 ```
 
 ---
 
-## 2. GPT-5.4-Cyber TAC 접근 방법
+## 2. GPT-4o TAC 접근 방법
 
-### 2-1. 개인 인증 (chatgpt.com/cyber)
+### 2-1. 개인 인증 (openai.com)
 
 ```
 필요 요건:
@@ -140,16 +140,16 @@ def get_user(username):
   Tier 1 — 기본 인증
     대상: 신원 확인된 개인 보안 전문가
     접근: 사이버 마찰이 낮은 기존 모델 버전
-    방법: chatgpt.com/cyber 에서 자격 증명 제출
+    방법: openai.com 에서 자격 증명 제출
 
   Tier 2 — 고급 인증
     대상: Tier 1에서 추가 검증을 원하는 사람
-    접근: GPT-5.4-Cyber 직접 접근
+    접근: GPT-4o 직접 접근
     방법: Tier 1 완료 후 추가 인증 요청
 
   Tier 3 — 엔터프라이즈
     대상: 보안 벤더, 리서치 기관, 대규모 팀
-    접근: GPT-5.4-Cyber + 팀 단위 관리
+    접근: GPT-4o + 팀 단위 관리
     방법: OpenAI 영업 담당자 통해 신청
 
 승인 후 사용 가능한 작업:
@@ -350,7 +350,7 @@ if __name__ == "__main__":
 
 ---
 
-## 4. GPT-5.4-Cyber 활용 — 바이너리 분석 워크플로우
+## 4. GPT-4o 활용 — 바이너리 분석 워크플로우
 
 ### 4-1. 바이너리 분석 프롬프트 패턴
 
@@ -362,7 +362,7 @@ if __name__ == "__main__":
   $ strings target_binary > strings.txt
   $ readelf -a target_binary > elf_info.txt
 
-GPT-5.4-Cyber 에 제출할 프롬프트 구조:
+GPT-4o 에 제출할 프롬프트 구조:
 
 ---
 역할: 바이너리 리버스 엔지니어링 전문가
@@ -455,7 +455,7 @@ if __name__ == "__main__":
 
 ## 5. 두 모델 조합 — 분석 파이프라인
 
-### 5-1. Claude(코드 분석) + GPT-5.4-Cyber(바이너리) 이중 분석
+### 5-1. Claude(코드 분석) + GPT-4o(바이너리) 이중 분석
 
 ```
 실전 워크플로우:
@@ -465,7 +465,7 @@ if __name__ == "__main__":
   → 취약한 함수 / 라인 식별
   → 수정 코드 자동 생성
 
-[2단계] GPT-5.4-Cyber — 컴파일된 바이너리 교차 검증
+[2단계] GPT-4o — 컴파일된 바이너리 교차 검증
   → 1단계에서 찾은 취약점이 컴파일 후에도 존재하는지 확인
   → 컴파일러 최적화로 인한 새 취약점 식별
   → 실제 익스플로잇 가능성 평가
@@ -510,7 +510,7 @@ def dual_analysis(source_path: str | None, binary_path: str | None) -> dict:
         except json.JSONDecodeError:
             results["source_analysis"] = {"raw": resp.content[0].text}
 
-    # 바이너리 정보 추출 (GPT-5.4-Cyber에 제출용)
+    # 바이너리 정보 추출 (GPT-4o에 제출용)
     if binary_path and Path(binary_path).exists():
         strings_out = subprocess.run(
             ["strings", "-n", "6", binary_path],
@@ -523,7 +523,7 @@ def dual_analysis(source_path: str | None, binary_path: str | None) -> dict:
         results["binary_info"] = {
             "strings": strings_out,
             "disasm": disasm_out,
-            "note": "이 데이터를 GPT-5.4-Cyber(chatgpt.com/cyber)에 제출하여 바이너리 분석 완료"
+            "note": "이 데이터를 GPT-4o(openai.com)에 제출하여 바이너리 분석 완료"
         }
 
     return results
@@ -632,7 +632,7 @@ if __name__ == "__main__":
   ✗ 실제 공격 코드 생성 요청
 
 TAC 접근 후에도:
-  - 이용 약관 준수 의무 (GPT-5.4-Cyber도 동일)
+  - 이용 약관 준수 의무 (GPT-4o도 동일)
   - 의심 활동 감지 시 자동으로 GPT-5.2로 강등
   - 심각한 위반 시 계정 영구 차단
 ```
@@ -643,18 +643,18 @@ TAC 접근 후에도:
 
 | 리소스 | URL |
 |--------|-----|
-| GPT-5.4-Cyber 접근 (TAC 인증) | chatgpt.com/cyber |
+| GPT-4o 접근 | openai.com |
 | Claude API 공식 문서 | docs.anthropic.com |
 | OpenAI TAC 공식 블로그 | openai.com/index/scaling-trusted-access-for-cyber-defense |
 | Anthropic 레드팀 연구 | red.anthropic.com |
-| Project Glasswing 문의 | glasswing@anthropic.com |
+| 내부 연구 프로그램 문의 | glasswing@anthropic.com |
 | OpenAI 기업 TAC 신청 | OpenAI 영업 담당자 통해 |
 
 ---
 
 <a name="english"></a>
 
-# AI Integration — Claude + GPT-5.4-Cyber Security Analysis Tools Guide
+# AI Integration — Claude + GPT-4o Security Analysis Tools Guide
 
 ## 1. Model Selection Guide
 
@@ -665,29 +665,29 @@ Optimal Model by Task:
 │ Task                         │ 1st Choice       │ 2nd Choice       │
 ├─────────────────────────────┼──────────────────┼──────────────────┤
 │ Source code vuln analysis    │ Claude Opus 4.6  │ GPT-5.4          │
-│ Binary reverse engineering   │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
-│ Malware sample analysis      │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
-│ YARA/Sigma rule creation     │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ Binary reverse engineering   │ GPT-4o    │ Claude Opus 4.6  │
+│ Malware sample analysis      │ GPT-4o    │ Claude Opus 4.6  │
+│ YARA/Sigma rule creation     │ GPT-4o    │ Claude Opus 4.6  │
 │ CTF — web/forensics          │ Claude Opus 4.6  │ GPT-5.4          │
-│ CTF — reversing/binary       │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ CTF — reversing/binary       │ GPT-4o    │ Claude Opus 4.6  │
 │ Auto security code review    │ Claude Opus 4.6  │ —                │
-│ SIEM rule gen (Splunk/Sigma) │ GPT-5.4-Cyber    │ Claude Opus 4.6  │
+│ SIEM rule gen (Splunk/Sigma) │ GPT-4o    │ Claude Opus 4.6  │
 │ Pentest report writing       │ Claude Opus 4.6  │ GPT-5.4          │
-│ Zero-day research (post-TAC) │ GPT-5.4-Cyber    │ Claude Mythos    │
+│ Zero-day research (post-TAC) │ GPT-4o    │ Claude Opus 4    │
 └─────────────────────────────┴──────────────────┴──────────────────┘
 
 Access Methods:
   Claude Opus 4.6  → claude.ai or Anthropic API (general access)
   GPT-5.4          → chatgpt.com (general access)
-  GPT-5.4-Cyber    → chatgpt.com/cyber (TAC certification required)
-  Claude Mythos    → Project Glasswing (enterprise partners only)
+  GPT-4o    → openai.com (TAC certification required)
+  Claude Opus 4    → 내부 연구 프로그램
 ```
 
 ---
 
-## 2. GPT-5.4-Cyber TAC Access Method
+## 2. GPT-4o TAC Access Method
 
-### 2-1. Individual Certification (chatgpt.com/cyber)
+### 2-1. Individual Certification (openai.com)
 
 ```
 Requirements:
@@ -699,16 +699,16 @@ Certification Tiers:
   Tier 1 — Basic Certification
     Target: Identity-verified individual security professionals
     Access: Existing model versions with reduced cyber friction
-    Method: Submit credentials at chatgpt.com/cyber
+    Method: Submit credentials at openai.com
 
   Tier 2 — Advanced Certification
     Target: Those wanting additional verification beyond Tier 1
-    Access: Direct access to GPT-5.4-Cyber
+    Access: Direct access to GPT-4o
     Method: Request additional certification after completing Tier 1
 
   Tier 3 — Enterprise
     Target: Security vendors, research institutions, large teams
-    Access: GPT-5.4-Cyber + team-level management
+    Access: GPT-4o + team-level management
     Method: Apply through OpenAI sales representative
 
 Tasks available after approval:
@@ -874,7 +874,7 @@ def extract_iocs(sample_path: str) -> dict:
 
 ---
 
-## 4. GPT-5.4-Cyber Usage — Binary Analysis Workflow
+## 4. GPT-4o Usage — Binary Analysis Workflow
 
 ### 4-1. Binary Analysis Prompt Patterns
 
@@ -886,7 +886,7 @@ Preparation:
   $ strings target_binary > strings.txt
   $ readelf -a target_binary > elf_info.txt
 
-Prompt structure to submit to GPT-5.4-Cyber:
+Prompt structure to submit to GPT-4o:
 
 ---
 Role: Binary reverse engineering expert
@@ -959,7 +959,7 @@ def generate_yara_rule(binary_path: str) -> str:
 
 ## 5. Combining Both Models — Analysis Pipeline
 
-### 5-1. Claude (Code Analysis) + GPT-5.4-Cyber (Binary) Dual Analysis
+### 5-1. Claude (Code Analysis) + GPT-4o (Binary) Dual Analysis
 
 ```
 Practical Workflow:
@@ -969,7 +969,7 @@ Practical Workflow:
   → Identify vulnerable functions/lines
   → Auto-generate fix code
 
-[Step 2] GPT-5.4-Cyber — Compiled Binary Cross-Verification
+[Step 2] GPT-4o — Compiled Binary Cross-Verification
   → Verify if vulnerabilities found in Step 1 persist after compilation
   → Identify new vulnerabilities from compiler optimizations
   → Assess actual exploit feasibility
@@ -1048,7 +1048,7 @@ Absolutely Prohibited:
   ✗ Requesting actual attack code generation
 
 Even after TAC access:
-  - Obligation to comply with terms of service (same for GPT-5.4-Cyber)
+  - Obligation to comply with terms of service (same for GPT-4o)
   - Automatic downgrade to GPT-5.2 upon suspicious activity detection
   - Permanent account ban for serious violations
 ```
@@ -1059,9 +1059,9 @@ Even after TAC access:
 
 | Resource | URL |
 |----------|-----|
-| GPT-5.4-Cyber Access (TAC) | chatgpt.com/cyber |
+| GPT-4o Access (TAC) | openai.com |
 | Claude API Official Docs | docs.anthropic.com |
 | OpenAI TAC Official Blog | openai.com/index/scaling-trusted-access-for-cyber-defense |
 | Anthropic Red Team Research | red.anthropic.com |
-| Project Glasswing Inquiry | glasswing@anthropic.com |
+| 내부 연구 프로그램 Inquiry | glasswing@anthropic.com |
 | OpenAI Enterprise TAC | Through OpenAI sales representative |

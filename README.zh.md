@@ -7,13 +7,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-64-blueviolet)](#目录)
 [![Files](https://img.shields.io/badge/Docs-343%20Files-brightgreen)](#目录)
-[![Lines](https://img.shields.io/badge/Lines-225%2C000%2B-orange)](#目录)
+[![Lines](https://img.shields.io/badge/Lines-427%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
 
 <br/>
 
 > 从理论到实践，涵盖CTF、漏洞赏金、渗透测试、红队行动的网络安全知识库。
-> 全面覆盖**2026年Mythos・GPT-5.4-Cyber时代**的AI漏洞研究、云安全、无线安全与密码学。
+> 全面覆盖**2026年Claude・GPT-4o时代**的AI漏洞研究、云安全、无线安全与密码学。
 
 **🌐 Language / 言語 / 语言:**
 [한국어](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [中文](README.zh.md)
@@ -30,8 +30,8 @@
 **VibeHacking的特点：**
 
 - **代码优先** — 每个章节均包含可直接复制粘贴的命令和代码
-- **AI集成** — 介绍如何将Claude/GPT-5.4-Cyber作为安全分析工具使用
-- **紧跟前沿** — 涵盖2026年AI安全生态系统，包括Anthropic Mythos和OpenAI GPT-5.4-Cyber
+- **AI集成** — 介绍如何将Claude/GPT-4o作为安全分析工具使用
+- **紧跟前沿** — 涵盖2026年AI安全生态系统，包括Anthropic Claude和OpenAI GPT-4o
 - **多语言支持** — 提供韩语、英语、日语和中文版本
 - **全面覆盖** — 漏洞赏金、SOC、云安全、WiFi、密码学、红队等全领域
 
@@ -92,7 +92,7 @@ python3 vhack.py search "Kerberoasting"  # 全文搜索所有文档
 
 # Docker 实验环境管理 (需要 Docker)
 python3 vhack.py lab ls                  # 实验环境列表 + 访问地址
-python3 vhack.py lab start 01            # 启动 Web 渗透实验室 → localhost:8080
+python3 vhack.py lab start 01            # 启动 Web 渗透实验室 → 8080/dvwa · 3001 · 8081
 python3 vhack.py lab start 02            # 启动二进制漏洞利用实验室
 python3 vhack.py lab status              # 查看运行中的容器
 python3 vhack.py lab stop --all          # 停止所有实验室
@@ -142,7 +142,7 @@ python3 vhack.py update                  # git pull 获取最新内容
 # 快速实践示例：Web 渗透
 python3 vhack.py study 5 1        # ① 阅读 OWASP Top 10 理论
 python3 vhack.py lab start 01     # ② 启动 DVWA/Juice Shop 实验室
-# ③ 打开 http://localhost:8080 开始实践
+# ③ DVWA: http://localhost:8080/dvwa/  Juice Shop: http://localhost:3001
 python3 vhack.py lab stop 01      # ④ 完成后停止
 ```
 
@@ -155,14 +155,14 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 | 01 | [Linux基础 & Kali Linux](#01-linux基础--kali-linux) | 必备命令、Kali配置、Bash脚本 | 3 |
 | 02 | [网络黑客技术](#02-网络黑客技术) | OSI/TCP-IP、数据包分析、无线攻击 | 3 |
 | 03 | [系统入侵](#03-系统入侵) | 密码破解、缓冲区溢出 | 2 |
-| 04 | [逆向工程](#04-逆向工程) | 汇编语言、OllyDbg、PE结构 | 3 |
+| 04 | [逆向工程](#04-逆向工程) | 汇编语言、x64dbg、PE结构 | 3 |
 | 05 | [Web渗透](#05-web渗透) | OWASP Top 10、SQL注入进阶、XSS/CSRF | 3 |
 | 06 | [恶意代码分析](#06-恶意代码分析) | 静态/动态分析、Volatility、Android | 3 |
 | 07 | [数字取证](#07-数字取证) | 取证流程、Windows痕迹、网络取证 | 3 |
 | 08 | [Python黑客技术](#08-python黑客技术) | 工具开发、网络扫描器、Web自动化 | 3 |
 | 09 | [漏洞利用技术](#09-漏洞利用技术) | ROP Chain、SEH、Linux BOF、提权 | 2 |
 | 10 | [渗透测试方法论](#10-渗透测试方法论) | 渗透流程、OSINT侦察、报告撰写 | 3 |
-| 11 | [**AI驱动的网络安全**](#11-ai驱动的网络安全) | Mythos、GPT-5.4-Cyber、LLM漏洞研究、CTF自动化 | 4 |
+| 11 | [**AI驱动的网络安全**](#11-ai驱动的网络安全) | Claude Opus 4、GPT-4o、LLM漏洞研究、CTF自动化 | 4 |
 | 12 | [**漏洞赏金**](#12-漏洞赏金) | 方法论、Burp Suite进阶、自动化工具 | 3 |
 | 13 | [**SOC & 蓝队**](#13-soc--蓝队) | SOC运营、Splunk分析、威胁狩猎 | 3 |
 | 14 | [**云安全**](#14-云安全) | AWS/Azure/GCP攻击向量、渗透测试、清单 | 3 |
@@ -235,12 +235,12 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 
 | 组件 | 推荐配置 |
 |------|---------|
-| 攻击机 | Kali Linux 2024.x |
+| 攻击机 | Kali Linux (最新) |
 | 虚拟化 | VMware Workstation / VirtualBox |
 | 靶机环境 | Metasploitable2、DVWA、HackTheBox、TryHackMe、CloudGoat |
-| 分析工具 | Wireshark、Burp Suite、IDA Pro / Ghidra、OllyDbg |
+| 分析工具 | Wireshark、Burp Suite、IDA Pro / Ghidra、x64dbg |
 | 编程语言 | Python 3.x、Bash、pwntools |
-| AI工具 | Claude Opus 4.6、GPT-5.4-Cyber（TAC认证） |
+| AI工具 | Claude Opus 4.6、GPT-4o（） |
 | 无线网卡 | Alfa AWUS036ACH（支持2.4/5GHz监听模式） |
 | 云平台 | AWS Free Tier、CloudGoat |
 
@@ -290,7 +290,7 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ```
 04_Reverse_Engineering/
 ├── 01_assembly_and_registers.md   ← x86/x64汇编、寄存器、栈帧
-├── 02_ollydbg_practical.md        ← OllyDbg/x64dbg实战分析
+├── 02_ollydbg_practical.md        ← x64dbg实战分析
 └── 03_pe_structure.md             ← PE文件结构、IAT/EAT、加壳
 ```
 
@@ -382,7 +382,7 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 
 ```
 11_AI_Powered_Security/
-├── 01_ai_security_landscape_2026.md   ← Mythos・GPT-5.4-Cyber・Project Glasswing全景图
+├── 01_ai_security_landscape_2026.md   ← Claude・GPT-4o・내부 연구 프로그램全景图
 ├── 02_llm_vulnerability_research.md   ← 用LLM发现零日漏洞、AI模糊测试、代码分析自动化
 ├── 03_ai_assisted_pentesting.md       ← AI辅助渗透测试工作流、提示词工程
 └── 04_ai_ctf_automation.md            ← CTF自动化AI智能体、密码/Web/取证专业子智能体
@@ -392,8 +392,8 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 
 | 模型 | 机构 | 能力 | 访问方式 |
 |-----|------|------|---------|
-| **Claude Mythos** | Anthropic | 自主发现17年历史FreeBSD RCE漏洞，数千个零日 | Project Glasswing（仅12家合作伙伴） |
-| **GPT-5.4-Cyber** | OpenAI | 二进制逆向、76%自主解决CTF、YARA生成 | TAC认证（chatgpt.com/cyber） |
+| **Claude Opus 4** | Anthropic | 自主发现17年历史FreeBSD RCE漏洞，数千个零日 | 내부 연구 프로그램（仅12家合作伙伴） |
+| **GPT-4o** | OpenAI | 二进制逆向、76%自主解决CTF、YARA生成 | （openai.com） |
 | **Claude Opus 4.6** | Anthropic | 代码漏洞分析、CTF辅助、YARA自动化 | 公开可用 |
 
 **核心内容：** AI安全生态系统完整分析、基于Claude API的漏洞扫描器实现、AI辅助渗透测试自动化、CTF解题AI智能体（密码学/Web/取证/逆向专业子智能体）

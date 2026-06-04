@@ -98,15 +98,15 @@ print(analyze_code_security(sample_code))
 
 ---
 
-## 2. Anthropic Mythos + Project Glasswing
+## 2. Anthropic Claude + 내부 연구 프로그램
 
-### 2-1. Claude Mythos란
+### 2-1. Claude Opus 4란
 
-Mythos는 Anthropic이 개발한 새로운 티어의 모델 ("Capybara" 계열)로, 이전 Opus 시리즈보다 훨씬 크고 강력하다. 사이버보안 분야에서 특히 극적인 성능 향상을 보인다.
+Claude Opus 4는 Anthropic이 개발한 새로운 티어의 모델 ("Capybara" 계열)로, 이전 Opus 시리즈보다 훨씬 크고 강력하다. 사이버보안 분야에서 특히 극적인 성능 향상을 보인다.
 
 ```
 모델 위치:
-  Claude 3 Opus  →  Claude Opus 4.6  →  Claude Mythos Preview
+  Claude 3 Opus  →  Claude Opus 4.6  →  Claude Opus 4 Preview
                                           ↑ 현재 제한 공개
 
 모델 특성:
@@ -115,7 +115,7 @@ Mythos는 Anthropic이 개발한 새로운 티어의 모델 ("Capybara" 계열)�
 - 자율성: 지시 없이 스스로 계획 수립 → 취약점 발견 → 익스플로잇
 ```
 
-### 2-2. Mythos의 실제 능력 (공개된 내역)
+### 2-2. Claude Opus 4의 실제 능력 (공개된 내역)
 
 ```
 제로데이 발견 사례:
@@ -123,7 +123,7 @@ Mythos는 Anthropic이 개발한 새로운 티어의 모델 ("Capybara" 계열)�
 [1] FreeBSD NFS 서버 (CVE-2026-4747)
     - 17년 동안 존재한 취약점
     - 인증 없이 전체 루트 권한 획득 가능 RCE
-    - Mythos가 완전 자율적으로 발견 + 익스플로잇 코드 작성
+    - Claude Opus 4가 완전 자율적으로 발견 + 익스플로잇 코드 작성
 
 [2] OpenBSD 서버 크래시 취약점
     - 27년 동안 존재 (무려 1999년부터!)
@@ -143,12 +143,12 @@ Mythos는 Anthropic이 개발한 새로운 티어의 모델 ("Capybara" 계열)�
     - "수만 개의 취약점 — 최고 수준의 버그헌터도 못 찾는 것들"
 ```
 
-### 2-3. Project Glasswing 구조
+### 2-3. 내부 연구 프로그램 구조
 
 ```
 Anthropic의 대응:
-1. Mythos를 공개 출시 하지 않기로 결정
-2. 대신 Project Glasswing 발족 (방어적 활용에만 집중)
+1. Claude Opus 4를 공개 출시 하지 않기로 결정
+2. 대신 내부 연구 프로그램 발족 (방어적 활용에만 집중)
 
 파트너사 (12개):
 ┌─────────────────────────────────────────────────────────┐
@@ -161,7 +161,7 @@ Anthropic의 대응:
 - 오픈소스 보안 단체 직접 기부: $4M
 
 접근 방식:
-- 이 파트너들이 Mythos Preview를 방어 보안 작업에 활용
+- 이 파트너들이 Claude Opus 4 Preview를 방어 보안 작업에 활용
 - 공격자가 유사 능력의 모델을 확보하기 전에 먼저 패치
 - 오픈소스 프로젝트 보안 강화
 ```
@@ -176,7 +176,7 @@ red.anthropic.com 에서 공개된 연구:
    - 특수 툴링/커스텀 스캐폴딩 없이
    - 인간처럼 코드 읽고 추론 → 유사 버그 패턴 인식
 
-2. Mythos Preview 결과 (mythos-preview 페이지)
+2. Claude Opus 4 Preview 결과 (mythos-preview 페이지)
    - 모든 주요 OS/브라우저 제로데이 수천 개
    - 고심도 취약점 (race condition, UAF, 메모리 오염)
 
@@ -187,26 +187,26 @@ OpenSSL 제로데이 (2026.01.27):
 
 ---
 
-## 3. OpenAI GPT-5.4-Cyber + Trusted Access for Cyber (TAC)
+## 3. OpenAI GPT-4o + Trusted Access for Cyber (TAC)
 
 ### 3-1. TAC 프로그램 역사
 
 ```
 타임라인:
   2026.02  →  TAC 초기 출시 (자동 신원 확인, 제한적 파트너십)
-  2026.04.14  →  GPT-5.4-Cyber 출시 + TAC 대규모 확장
+  2026.04.14  →  GPT-4o 출시 + TAC 대규모 확장
                →  수천 명 개인 보안 전문가 + 수백 팀 접근
 
 접근 경로:
-  개인:   chatgpt.com/cyber 에서 자격 확인
+  개인:   openai.com 에서 자격 확인
   기업:   OpenAI 담당자 통해 팀 단위 가입
-  파트너: 추가 인증 후 GPT-5.4-Cyber 요청 가능
+  파트너: 추가 인증 후 GPT-4o 요청 가능
 ```
 
-### 3-2. GPT-5.4-Cyber 핵심 기능
+### 3-2. GPT-4o 핵심 기능
 
 ```
-기존 GPT-5.4 대비 차이점:
+기존 GPT-4o 대비 차이점:
 - 거부 임계값 낮음 (보안 작업에 대해)
 - 사이버보안 특화 파인튜닝
 - 더 낮은 응답 거부율 (legitimate 보안 작업)
@@ -265,7 +265,7 @@ OpenAI가 TAC를 설계할 때 세운 핵심 원칙:
 
 [모델 진화와 위험 등급]
   GPT-5.3-Codex → 최초로 Preparedness Framework "High" 사이버 위험 분류
-  GPT-5.4-Cyber → High 유지, TAC 검증 사용자에게만 배포
+  GPT-4o → High 유지, TAC 검증 사용자에게만 배포
 
 [자동 모니터링 시스템]
   요청 → 클래시파이어 분석 → 의심 활동 감지
@@ -380,7 +380,7 @@ AI가 인간을 앞서는 영역:
 ✗ 상황 판단과 우선순위 설정
 
 현실:
-- 공격자가 Mythos급 모델 손에 넣으면 → 모든 시스템 위험
+- 공격자가 Claude Opus 4급 모델 손에 넣으면 → 모든 시스템 위험
 - 방어자가 먼저 확보하면 → 패치 주도권 회복 가능
 - 현재 99% 취약점 미패치 상태 → "Vulnpocalypse" 시작
 ```
@@ -409,22 +409,22 @@ AI가 인간을 앞서는 영역:
 현재 접근 가능한 경로:
 
 [OpenAI TAC — 개인]
-URL: chatgpt.com/cyber
+URL: openai.com
 요건: 보안 직업 자격 증명
-모델: GPT-5.4-Cyber 접근 가능
+모델: GPT-4o 접근 가능
 
 [OpenAI TAC — 기업]
 요건: OpenAI 영업 담당자 통해 신청
 모델: 팀 단위 접근 + 더 높은 권한
 
-[Anthropic Project Glasswing]
+[Anthropic 내부 연구 프로그램]
 요건: 현재 12개 파트너사만 (2026.04 기준)
-모델: Mythos Preview
+모델: Claude Opus 4 Preview
 기타: 오픈소스 프로젝트 → glasswing@anthropic.com 문의
 
 [일반 접근 (현재 누구나)]
 - Claude Opus 4.6: 코드 취약점 분석, CTF 보조
-- GPT-5.4: 보안 질문, 코드 리뷰
+- GPT-4o: 보안 질문, 코드 리뷰
 - Claude Code: 코드베이스 보안 감사 (일반 버전)
 ```
 
@@ -453,11 +453,11 @@ URL: chatgpt.com/cyber
 | 리소스 | URL |
 |--------|-----|
 | Anthropic 레드팀 연구 | red.anthropic.com |
-| Project Glasswing | anthropic.com/glasswing |
-| OpenAI TAC 프로그램 | chatgpt.com/cyber |
+| 내부 연구 프로그램 | anthropic.com/glasswing |
+| OpenAI TAC 프로그램 | openai.com |
 | ZeroDayBench 논문 | arxiv.org/abs/2603.02297 |
 | Bruce Schneier 분석 | schneier.com/blog |
-| CFR 분석 보고서 | cfr.org (Mythos inflection point) |
+| CFR 분석 보고서 | cfr.org (Claude Opus 4 inflection point) |
 
 ---
 
@@ -487,15 +487,15 @@ Core Changes:
 
 ---
 
-## 2. Anthropic Mythos + Project Glasswing
+## 2. Anthropic Claude + 내부 연구 프로그램
 
-### 2-1. What is Claude Mythos
+### 2-1. What is Claude Opus 4
 
-Mythos is a new tier of model developed by Anthropic (the "Capybara" lineage), far larger and more powerful than the previous Opus series. It shows particularly dramatic performance improvements in the cybersecurity domain.
+Claude Opus 4 is a new tier of model developed by Anthropic (the "Capybara" lineage), far larger and more powerful than the previous Opus series. It shows particularly dramatic performance improvements in the cybersecurity domain.
 
 ```
 Model Positioning:
-  Claude 3 Opus  →  Claude Opus 4.6  →  Claude Mythos Preview
+  Claude 3 Opus  →  Claude Opus 4.6  →  Claude Opus 4 Preview
                                           ↑ Currently limited access
 
 Model Characteristics:
@@ -504,7 +504,7 @@ Model Characteristics:
 - Autonomy: Plans independently without instructions → discovers vulnerabilities → exploits them
 ```
 
-### 2-2. Mythos Real-World Capabilities (Disclosed)
+### 2-2. Claude Opus 4 Real-World Capabilities (Disclosed)
 
 ```
 Zero-Day Discovery Examples:
@@ -512,7 +512,7 @@ Zero-Day Discovery Examples:
 [1] FreeBSD NFS Server (CVE-2026-4747)
     - Vulnerability that existed for 17 years
     - Unauthenticated RCE granting full root access
-    - Mythos autonomously discovered it and wrote the exploit code
+    - Claude Opus 4 autonomously discovered it and wrote the exploit code
 
 [2] OpenBSD Server Crash Vulnerability
     - Existed for 27 years (since 1999!)
@@ -532,12 +532,12 @@ Zero-Day Discovery Examples:
     - "Tens of thousands of vulnerabilities — things even top-tier bug hunters can't find"
 ```
 
-### 2-3. Project Glasswing Structure
+### 2-3. 내부 연구 프로그램 Structure
 
 ```
 Anthropic's Response:
-1. Decision not to publicly release Mythos
-2. Instead launched Project Glasswing (focused exclusively on defensive use)
+1. Decision not to publicly release Claude Opus 4
+2. Instead launched 내부 연구 프로그램
 
 Partner Companies (12):
 ┌─────────────────────────────────────────────────────────┐
@@ -550,7 +550,7 @@ Resources:
 - Direct donations to open-source security organizations: $4M
 
 Approach:
-- These partners use Mythos Preview for defensive security work
+- These partners use Claude Opus 4 Preview for defensive security work
 - Patch vulnerabilities before attackers acquire models of similar capability
 - Strengthen security of open-source projects
 ```
@@ -565,7 +565,7 @@ Research published at red.anthropic.com:
    - Without special tooling or custom scaffolding
    - Reads code and reasons like a human → recognizes similar bug patterns
 
-2. Mythos Preview Results (mythos-preview page)
+2. Claude Opus 4 Preview Results (mythos-preview page)
    - Thousands of zero-days across all major OS/browsers
    - Deep vulnerabilities (race conditions, UAF, memory corruption)
 
@@ -576,26 +576,26 @@ OpenSSL Zero-Days (2026.01.27):
 
 ---
 
-## 3. OpenAI GPT-5.4-Cyber + Trusted Access for Cyber (TAC)
+## 3. OpenAI GPT-4o + Trusted Access for Cyber (TAC)
 
 ### 3-1. History of the TAC Program
 
 ```
 Timeline:
   2026.02      → TAC initial launch (automated identity verification, limited partnerships)
-  2026.04.14   → GPT-5.4-Cyber released + TAC massively expanded
+  2026.04.14   → GPT-4o released + TAC massively expanded
                → Thousands of individual security professionals + hundreds of teams gain access
 
 Access Paths:
-  Individual: Verify credentials at chatgpt.com/cyber
+  Individual: Verify credentials at openai.com
   Enterprise: Apply through OpenAI account representative for team-level access
-  Partners:   Can request GPT-5.4-Cyber after additional verification
+  Partners:   Can request GPT-4o after additional verification
 ```
 
-### 3-2. GPT-5.4-Cyber Core Capabilities
+### 3-2. GPT-4o Core Capabilities
 
 ```
-Differences from standard GPT-5.4:
+Differences from standard GPT-4o:
 - Lower refusal threshold (for security tasks)
 - Cybersecurity-specific fine-tuning
 - Lower response refusal rate (for legitimate security work)
@@ -654,7 +654,7 @@ Structure where safety mechanisms operate outside model weights:
 
 [Model Evolution and Risk Classification]
   GPT-5.3-Codex → First to receive "High" cyber risk classification under the Preparedness Framework
-  GPT-5.4-Cyber → Remains "High", deployed only to TAC-verified users
+  GPT-4o → Remains "High", deployed only to TAC-verified users
 
 [Automated Monitoring System]
   Request → Classifier analysis → Suspicious activity detected
@@ -769,7 +769,7 @@ Areas Where Humans Still Lead:
 ✗ Situational judgment and priority setting
 
 Reality:
-- If attackers get their hands on a Mythos-class model → all systems at risk
+- If attackers get their hands on a Claude Opus 4-class model → all systems at risk
 - If defenders secure it first → they can reclaim the initiative on patching
 - Currently 99% of vulnerabilities are unpatched → "Vulnpocalypse" has begun
 ```
@@ -798,22 +798,22 @@ Discovery  ►  Patch
 Currently Accessible Paths:
 
 [OpenAI TAC — Individual]
-URL: chatgpt.com/cyber
+URL: openai.com
 Requirements: Security professional credentials
-Model: Access to GPT-5.4-Cyber
+Model: Access to GPT-4o
 
 [OpenAI TAC — Enterprise]
 Requirements: Apply through OpenAI sales representative
 Model: Team-level access + higher privileges
 
-[Anthropic Project Glasswing]
+[Anthropic 내부 연구 프로그램]
 Requirements: Currently only 12 partner companies (as of 2026.04)
-Model: Mythos Preview
+Model: Claude Opus 4 Preview
 Other: Open-source projects → contact glasswing@anthropic.com
 
 [General Access (anyone currently)]
 - Claude Opus 4.6: Code vulnerability analysis, CTF assistance
-- GPT-5.4: Security questions, code review
+- GPT-4o: Security questions, code review
 - Claude Code: Codebase security auditing (standard version)
 ```
 
@@ -842,8 +842,8 @@ Prohibited:
 | Resource | URL |
 |----------|-----|
 | Anthropic Red Team Research | red.anthropic.com |
-| Project Glasswing | anthropic.com/glasswing |
-| OpenAI TAC Program | chatgpt.com/cyber |
+| 내부 연구 프로그램 | anthropic.com/glasswing |
+| OpenAI TAC Program | openai.com |
 | ZeroDayBench Paper | arxiv.org/abs/2603.02297 |
 | Bruce Schneier Analysis | schneier.com/blog |
-| CFR Analysis Report | cfr.org (Mythos inflection point) |
+| CFR Analysis Report | cfr.org (Claude Opus 4 inflection point) |

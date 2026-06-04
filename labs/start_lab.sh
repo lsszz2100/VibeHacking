@@ -91,7 +91,7 @@ start_lab() {
 
     local lab_ports=(
         ""
-        "http://localhost:8080 (Nginx 프록시)"
+        "DVWA: http://localhost:8080/dvwa/  |  Juice Shop: http://localhost:3001  |  WebGoat: http://localhost:8081/WebGoat"
         "nc localhost 10001~10005"
         "docker exec -it net_lab_attacker bash"
         "http://localhost:8080 (SSRF), http://localhost:8443 (K8s API)"

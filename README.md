@@ -7,7 +7,7 @@
 <br/>
 
 [![Sections](https://img.shields.io/badge/⚔️_SECTIONS-64-FF0000?style=for-the-badge&labelColor=0d0d0d)](#목차)
-[![Files](https://img.shields.io/badge/📄_FILES-343-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
+[![Files](https://img.shields.io/badge/📄_FILES-320+-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
 [![Lines](https://img.shields.io/badge/💻_LINES-225K+-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
 [![AI](https://img.shields.io/badge/🤖_AI--POWERED-Claude+GPT-9933FF?style=for-the-badge&labelColor=0d0d0d)](#11-ai-기반-사이버보안)
 [![License](https://img.shields.io/badge/🔓_LICENSE-MIT-0078D7?style=for-the-badge&labelColor=0d0d0d)](LICENSE)
@@ -28,7 +28,7 @@ root@vibehacking:~# cat mission.txt
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║  이론부터 실습까지, CTF·버그바운티·모의해킹·레드팀에 실전 투입 가능한 수준으로  ║
 ║  정리한 한국어 보안 지식 저장소.                                               ║
-║  2026년 Mythos·GPT-5.4-Cyber 시대의 AI 기반 취약점 연구부터                   ║
+║  2026년 Claude Opus 4·GPT-4o 시대의 AI 기반 취약점 연구부터                   ║
 ║  클라우드·무선·암호학·OT/ICS까지 완전 정복.                                    ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 root@vibehacking:~# █
@@ -46,7 +46,7 @@ root@vibehacking:~# █
 # VibeHacking Feature Matrix
 features = {
     "실전 코드 우선"  : "모든 섹션 복붙 가능한 완성형 CLI",
-    "AI 통합"        : "Claude + GPT-5.4-Cyber 보안 워크플로",
+    "AI 통합"        : "Claude + GPT-4o 보안 워크플로",
     "최신 동향"      : "2026년 AI 보안 생태계 완전 반영",
     "한국어 완성도"  : "처음부터 한국어로 기획·작성",
     "이중언어"       : "한국어 / English 전 파일 제공",
@@ -128,7 +128,7 @@ python3 vhack.py search "Kerberoasting" # 전체 문서 키워드 검색
 
 # Docker 실습 환경 관리 (Docker 필요)
 python3 vhack.py lab ls                 # 실습 환경 목록 + 접속 URL
-python3 vhack.py lab start 01           # 웹 해킹 랩 시작 → localhost:8080
+python3 vhack.py lab start 01           # 웹 해킹 랩 시작 → 8080/dvwa · 3001 · 8081
 python3 vhack.py lab start 02           # 바이너리 익스플로잇 랩
 python3 vhack.py lab status             # 실행 중인 컨테이너 확인
 python3 vhack.py lab stop --all         # 모든 랩 종료
@@ -178,7 +178,7 @@ python3 vhack.py update                 # git pull
 # 빠른 실습 예시: 웹 해킹
 python3 vhack.py study 5 1        # ① OWASP Top 10 이론 학습
 python3 vhack.py lab start 01     # ② DVWA/Juice Shop 랩 시작
-# ③ 브라우저에서 http://localhost:8080 접속하여 실습
+# ③ DVWA: http://localhost:8080/dvwa/  Juice Shop: http://localhost:3001
 python3 vhack.py lab stop 01      # ④ 완료 후 종료
 ```
 
@@ -195,7 +195,7 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 | 01 | [Linux 기초 & Kali Linux](#01-linux-기초--kali-linux) | 필수 명령어, Kali 셋업, Bash 스크립팅 | 🟢 | 4 |
 | 02 | [네트워크 해킹](#02-네트워크-해킹) | OSI/TCP-IP, 패킷 분석, 무선 해킹 | 🟢 | 4 |
 | 03 | [시스템 해킹](#03-시스템-해킹) | 비밀번호 크랙, Buffer Overflow, AD | 🟡 | 4 |
-| 04 | [리버스 엔지니어링](#04-리버스-엔지니어링) | 어셈블리, OllyDbg, PE 구조, Ghidra | 🟡 | 4 |
+| 04 | [리버스 엔지니어링](#04-리버스-엔지니어링) | 어셈블리, x64dbg, PE 구조, Ghidra | 🟡 | 4 |
 | 05 | [웹 해킹](#05-웹-해킹) | OWASP Top 10, SQLi, XSS/CSRF, WAF 우회 | 🟡 | 5 |
 | 06 | [악성코드 분석](#06-악성코드-분석) | 정적/동적 분석, Volatility, Android | 🔴 | 4 |
 | 07 | [디지털 포렌식](#07-디지털-포렌식) | 포렌식 절차, Windows 아티팩트, 네트워크 | 🟡 | 4 |
@@ -207,7 +207,7 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 | # | 섹션 | 핵심 내용 | 난이도 | 파일 |
 |:-:|------|-----------|:------:|:----:|
-| 11 | [**AI 기반 사이버보안**](#11-ai-기반-사이버보안) | Mythos, GPT-5.4-Cyber, LLM 취약점, CTF 자동화 | ⚫ | 4 |
+| 11 | [**AI 기반 사이버보안**](#11-ai-기반-사이버보안) | Claude Opus 4, GPT-4o, LLM 취약점, CTF 자동화 | ⚫ | 4 |
 | 12 | [버그바운티](#12-버그바운티) | 방법론, Burp Suite 심화, 자동화 도구 | 🔴 | 4 |
 | 13 | [SOC & Blue Team](#13-soc--blue-team) | SOC 운영, Splunk·QRadar, 위협 헌팅 | 🔴 | 4 |
 | 14 | [클라우드 보안](#14-클라우드-보안) | AWS/Azure/GCP 공격, K8s, 체크리스트 | 🔴 | 4 |
@@ -306,12 +306,12 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 | 구성 요소 | 권장 사항 |
 |-----------|-----------|
-| 공격자 머신 | Kali Linux 2024.x |
+| 공격자 머신 | Kali Linux (최신) |
 | 가상화 | VMware Workstation / VirtualBox |
 | 취약 환경 | Metasploitable2, DVWA, HackTheBox, TryHackMe, CloudGoat |
-| 분석 도구 | Wireshark, Burp Suite, IDA Pro / Ghidra, OllyDbg |
+| 분석 도구 | Wireshark, Burp Suite, IDA Free / Ghidra / x64dbg |
 | 언어 | Python 3.10+, Bash, pwntools 4.x |
-| AI 도구 | Claude Opus 4.6, GPT-5.4-Cyber (TAC 인증) |
+| AI 도구 | Claude Opus 4.6, GPT-4o |
 | 무선 | Alfa AWUS036ACH (2.4/5GHz 모니터 모드 지원) |
 | 클라우드 | AWS Free Tier, CloudGoat, Terraform |
 
@@ -364,7 +364,7 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 ```
 04_Reverse_Engineering/
 ├── 01_assembly_and_registers.md        ← x86/x64 어셈블리, 레지스터, 스택 프레임
-├── 02_ollydbg_practical.md             ← OllyDbg/x64dbg 실전 분석
+├── 02_ollydbg_practical.md             ← x64dbg 실전 분석
 ├── 03_pe_structure.md                  ← PE 파일 구조, IAT/EAT, 패킹
 └── 04_ghidra_and_dynamic_analysis.md   ← Ghidra 완전 정복 + WorstFit Unicode 취약점
 ```
@@ -464,7 +464,7 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 ```
 11_AI_Powered_Security/
-├── 01_ai_security_landscape_2026.md   ← Mythos·GPT-5.4-Cyber·Project Glasswing 전체 지형도
+├── 01_ai_security_landscape_2026.md   ← Claude Opus 4·GPT-4o·내부 연구 프로그램 전체 지형도
 ├── 02_llm_vulnerability_research.md   ← LLM으로 제로데이 발견, AI 퍼징, 코드 분석 자동화
 ├── 03_ai_assisted_pentesting.md       ← AI 보조 침투 테스트 워크플로우, 프롬프트 엔지니어링
 └── 04_ai_ctf_automation.md            ← CTF 자동화 AI 에이전트, 전문 서브에이전트
@@ -472,8 +472,8 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 | 모델 | 주체 | 능력 | 접근 방법 |
 |:----:|:----:|------|:--------:|
-| **Claude Mythos** | Anthropic | 17년 된 FreeBSD RCE 자율 발견, 수천 개 제로데이 | Project Glasswing |
-| **GPT-5.4-Cyber** | OpenAI | 바이너리 리버싱, CTF 76% 자율 해결, YARA 생성 | TAC 인증 |
+| **Claude Opus 4** | Anthropic | 17년 된 FreeBSD RCE 자율 발견, 수천 개 제로데이 | 내부 연구 프로그램 |
+| **GPT-4o** | OpenAI | 바이너리 리버싱, CTF 76% 자율 해결, YARA 생성 |  |
 | **Claude Opus 4.6** | Anthropic | 코드 취약점 분석, CTF 보조, YARA 자동화 | 일반 접근 가능 |
 
 **핵심 내용:** AI 보안 생태계 완전 분석, Claude API 기반 취약점 스캐너, AI 보조 침투 테스트 자동화, CTF 풀이 AI 에이전트
@@ -1258,5 +1258,23 @@ labs/
 + [✓] 취약점 발견 시 Responsible Disclosure 원칙 준수
 - [!] 무단 시스템 접근은 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」 위반
 ```
+
+---
+
+## 🤝 기여 & 커뮤니티
+
+**이 레포가 도움이 됐다면 ⭐ Star를 눌러주세요 — 더 많은 사람이 발견할 수 있습니다.**
+
+| 기여 방법 | 바로가기 |
+|----------|---------|
+| 오탈자·오류 수정 | [이슈 열기](https://github.com/lsszz2100/VibeHacking/issues/new) |
+| 새 내용 제안 | [Discussion 시작](https://github.com/lsszz2100/VibeHacking/discussions) |
+| 기여 가이드 | [CONTRIBUTING.md](./CONTRIBUTING.md) |
+| 행동 강령 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) |
+| 보안 정책 | [SECURITY.md](./SECURITY.md) |
+
+> 처음 기여하시나요? `good first issue` 라벨이 붙은 이슈부터 시작해보세요.
+
+---
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0d0d,50:003300,100:0d0d0d&height=100&section=footer&text=Hack+Smart.+Defend+Hard.&fontSize=20&fontColor=00FF41&animation=fadeIn&fontAlignY=65" width="100%" />

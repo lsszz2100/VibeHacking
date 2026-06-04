@@ -48,7 +48,7 @@ source ~/.bashrc          # 현재 세션 즉시 적용 (zsh: source ~/.zshrc)
 
 # 3. (선택) 웹 해킹 실습 환경 시작 — Docker 필요
 vhack lab start 01
-# → 브라우저: http://localhost:8080
+# → DVWA: http://localhost:8080/dvwa/  Juice Shop: http://localhost:3001  WebGoat: http://localhost:8081/WebGoat
 ```
 
 ---
@@ -209,7 +209,7 @@ vhack alias status
 
 | 번호 | 이름 | 내용 | 포트 |
 |------|------|------|------|
-| 01 | 웹 해킹 랩 | DVWA, Juice Shop, WebGoat | localhost:8080 |
+| 01 | 웹 해킹 랩 | DVWA, Juice Shop, WebGoat | 8080(DVWA·SQLi) / 3001(Juice Shop) / 8081(WebGoat) |
 | 02 | 바이너리 익스플로잇 랩 | BOF, ROP, heap 취약 서버 | localhost:10001~5 |
 | 03 | 네트워크 해킹 랩 | SSH, FTP, DNS, SMTP 취약 서비스 | Docker 내부 네트워크 |
 | 04 | 클라우드/컨테이너 보안 랩 | AWS IMDS, K8s, 컨테이너 탈출 | localhost:8080/8443 |
@@ -432,7 +432,7 @@ source ~/.bashrc          # apply to current session (zsh: source ~/.zshrc)
 
 # 3. (Optional) Start web hacking lab — requires Docker
 vhack lab start 01
-# → Open browser: http://localhost:8080
+# → DVWA: http://localhost:8080/dvwa/  Juice Shop: http://localhost:3001  WebGoat: http://localhost:8081/WebGoat
 ```
 
 ---
