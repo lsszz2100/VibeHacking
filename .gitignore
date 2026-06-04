@@ -31,11 +31,12 @@ hashes_cracked.*
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE / Editor
 .vscode/
 .idea/
 *.swp
 *~
+.claude/
 
 # Python
 __pycache__/
