@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-64-blueviolet)](#table-of-contents)
-[![Files](https://img.shields.io/badge/Docs-343%20Files-brightgreen)](#table-of-contents)
+[![Files](https://img.shields.io/badge/Docs-320%2B%20Files-brightgreen)](#table-of-contents)
 [![Lines](https://img.shields.io/badge/Lines-427%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
 

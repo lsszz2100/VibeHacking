@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-64-blueviolet)](#目次)
-[![Files](https://img.shields.io/badge/Docs-343%20Files-brightgreen)](#目次)
+[![Files](https://img.shields.io/badge/Docs-320%2B%20Files-brightgreen)](#目次)
 [![Lines](https://img.shields.io/badge/Lines-427%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
 
