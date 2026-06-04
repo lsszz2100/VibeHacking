@@ -117,7 +117,7 @@ LABS: dict[str, dict] = {
         "name": "웹 해킹 랩",
         "dir":  "01_web_hacking_lab",
         "desc": "DVWA · Juice Shop · WebGoat — SQLi, XSS, IDOR, 인증 우회",
-        "url":  "http://localhost:8080",
+        "url":  "http://localhost:8080/dvwa/  |  Juice Shop: http://localhost:3001  |  WebGoat: http://localhost:8081/WebGoat",
         "difficulty": "★★☆",
         "related": [5, 12, 23],
     },
@@ -424,7 +424,18 @@ def _lab_start(lab_id: str | None) -> None:
         print(green(f"\n✓ {meta['name']} 시작 완료!"))
         print(f"  접근: {cyan(meta['url'])}")
         print(f"  로그: {cyan(f'vhack lab logs {lab_id}')}")
-        print(f"  종료: {cyan(f'vhack lab stop {lab_id}')}\n")
+        print(f"  종료: {cyan(f'vhack lab stop {lab_id}')}")
+        if lab_id == "01":
+            print(yellow("\n  ⚠ DVWA 초기 설정 필요:"))
+            print(f"    1. {cyan('http://localhost:8080/dvwa/setup.php')} 접속")
+            print(f"    2. 페이지 하단 {bold('Create / Reset Database')} 버튼 클릭")
+            print(f"    3. 이후 {cyan('http://localhost:8080/dvwa/')} 로그인 (admin / password)")
+            print(yellow("\n  ⚠ 각 서비스 URL:"))
+            print(f"    DVWA       → {cyan('http://localhost:8080/dvwa/')}")
+            print(f"    Juice Shop → {cyan('http://localhost:3001')}")
+            print(f"    WebGoat    → {cyan('http://localhost:8081/WebGoat')}")
+            print(f"    SQLi 타겟  → {cyan('http://localhost:8080/sqli/')}")
+        print()
     else:
         print(red(f"\n✗ 시작 실패 (exit code {rc})"))
         print(yellow("  docker compose logs 로 오류를 확인하세요."))

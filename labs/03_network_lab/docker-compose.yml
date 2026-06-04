@@ -172,8 +172,10 @@ services:
           whois
           tcpdump
           net-tools
-          iputils-ping &&
-        pip3 install -q impacket &&
+          iputils-ping
+          swaks
+          dnsenum &&
+        pip3 install -q impacket dnsrecon &&
         echo 'alias ll=\"ls -la\"' >> /root/.bashrc &&
         echo 'alias scan=\"nmap -sV -sC\"' >> /root/.bashrc &&
         tail -f /dev/null

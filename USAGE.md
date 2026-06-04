@@ -232,10 +232,11 @@ vhack lab start 01
 
 | 랩 | 접속 방법 | 기본 계정 |
 |----|----------|----------|
-| **Lab 01 — 웹** | http://localhost:8080 | admin / password |
-| **DVWA** | http://localhost:8080/dvwa/ | admin / password |
-| **Juice Shop** | http://localhost:8080/juice/ | (회원가입) |
-| **WebGoat** | http://localhost:8080/webgoat/ | (회원가입) |
+| **Lab 01 — 웹** | http://localhost:8080 (허브 페이지) | — |
+| **DVWA** | http://localhost:8080/dvwa/ ⚠ DB 초기화 필요 | admin / password |
+| **Juice Shop** | http://localhost:3001 | (회원가입) |
+| **WebGoat** | http://localhost:8081/WebGoat | (회원가입) |
+| **SQLi 타겟** | http://localhost:8080/sqli/ | — |
 | **Lab 02 — pwn** | `nc localhost 10001` (BOF) · `10002` (ret2libc) · `10003` (ROP) · `10004` (fmtstr) · `10005` (heap) | — |
 | **Lab 03 — 네트워크** | `docker exec -it net_lab_attacker bash` | — |
 | **Lab 04 — 클라우드** | http://localhost:8080 (SSRF) · http://localhost:8443 (K8s) · http://localhost:5000 (Registry) | — |

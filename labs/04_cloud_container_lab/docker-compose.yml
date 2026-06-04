@@ -125,6 +125,25 @@ services:
       - "service=ssrf-target"
 
   # -------------------------------------------------------
+  # registry-seed: 취약한 이미지를 레지스트리에 사전 로드
+  # -------------------------------------------------------
+  registry-seed:
+    build:
+      context: ./registry-seed
+      dockerfile: Dockerfile
+    container_name: cloud_lab_registry_seed
+    restart: on-failure
+    depends_on:
+      - vulnerable-registry
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    labels:
+      - "lab=cloud"
+      - "service=registry-seed"
+
+  # -------------------------------------------------------
   # attacker: 공격 도구 설치 컨테이너
   # -------------------------------------------------------
   attacker:

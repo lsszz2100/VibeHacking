@@ -11,7 +11,7 @@ pwntools와 GDB가 설치된 클라이언트 컨테이너에서 공격합니다.
 | 포트 | 챌린지 | 취약점 | 보호 기법 | 난이도 |
 |------|--------|--------|-----------|--------|
 | 10001 | chal01 | 스택 오버플로우 (BOF 기초) | 없음 (NX off) | ★☆☆ |
-| 10002 | chal02 | ret2libc | NX on, ASLR off | ★★☆ |
+| 10002 | chal02 | ret2libc | NX on, ASLR off (setarch -R) | ★★☆ |
 | 10003 | chal03 | ROP 체인 | NX on, Full RELRO, PIE off | ★★★ |
 | 10004 | chal04 | 포맷 스트링 | NX on, PIE off | ★★☆ |
 | 10005 | chal05 | 힙 익스플로잇 (tcache poisoning) | NX on, PIE off | ★★★★ |
@@ -61,7 +61,7 @@ payload = cyclic(200)
 ---
 
 ### chal02 — ret2libc
-**포트**: 10002 | **바이너리**: 64비트 ELF | **보호**: NX on, ASLR off
+**포트**: 10002 | **바이너리**: 64비트 ELF | **보호**: NX on, ASLR off (`setarch -R` 적용)
 
 **설명**:
 NX(No-eXecute)로 인해 스택에서 셸코드 직접 실행이 불가능합니다.

@@ -132,7 +132,7 @@ python3 vhack.py update                  # git pull 获取最新内容
 
 | # | 实验室名称 | 内容 | 访问地址 | 难度 |
 |:-:|-----------|------|----------|:----:|
-| **01** | Web 渗透实验室 | DVWA · Juice Shop · WebGoat | http://localhost:8080 | ★★☆ |
+| **01** | Web 渗透实验室 | DVWA · Juice Shop · WebGoat | 8080(DVWA·SQLi) / 3001(Juice Shop) / 8081(WebGoat) | ★★☆ |
 | **02** | 二进制漏洞利用实验室 | BOF · ret2libc · ROP · fmtstr · heap | nc localhost 10001~10005 | ★★★ |
 | **03** | 网络渗透实验室 | SSH · FTP · DNS · SMTP 漏洞服务 | docker exec shell | ★★☆ |
 | **04** | 云/容器安全实验室 | SSRF · AWS IMDS · K8s 逃逸 | http://localhost:8080 | ★★★ |

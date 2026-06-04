@@ -5,7 +5,8 @@ service chal02
     protocol        = tcp
     wait            = no
     user            = ctf
-    server          = /challenges/bin/chal02
+    server          = /usr/bin/setarch
+    server_args     = x86_64 -R /challenges/bin/chal02
     port            = 10002
     bind            = 0.0.0.0
     flags           = REUSE

@@ -60,8 +60,8 @@ services:
     networks:
       web_lab_net:
         ipv4_address: 172.16.0.20
-    expose:
-      - "3000"
+    ports:
+      - "3001:3000"
     volumes:
       - juiceshop_data:/juice-shop/ftp
     labels:
@@ -82,9 +82,9 @@ services:
     networks:
       web_lab_net:
         ipv4_address: 172.16.0.30
-    expose:
-      - "8080"
-      - "9090"
+    ports:
+      - "8081:8080"
+      - "9090:9090"
     labels:
       - "lab=web-hacking"
       - "service=webgoat"

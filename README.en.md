@@ -132,7 +132,7 @@ python3 vhack.py update                  # git pull latest content
 
 | # | Lab Name | Content | Access | Difficulty |
 |:-:|----------|---------|--------|:----------:|
-| **01** | Web Hacking Lab | DVWA · Juice Shop · WebGoat | http://localhost:8080 | ★★☆ |
+| **01** | Web Hacking Lab | DVWA · Juice Shop · WebGoat | 8080(DVWA·SQLi) / 3001(Juice Shop) / 8081(WebGoat) | ★★☆ |
 | **02** | Binary Exploitation Lab | BOF · ret2libc · ROP · fmtstr · heap | nc localhost 10001~10005 | ★★★ |
 | **03** | Network Hacking Lab | SSH · FTP · DNS · SMTP vulnerable services | docker exec shell | ★★☆ |
 | **04** | Cloud/Container Security Lab | SSRF · AWS IMDS · K8s escape | http://localhost:8080 | ★★★ |

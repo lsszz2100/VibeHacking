@@ -158,7 +158,7 @@ print_summary() {
     echo ""
     echo -e "${BOLD}=== 접근 URL ===${RESET}"
     echo "  01 웹 해킹:          http://localhost:8080"
-    echo "  02 바이너리 익스플로잇: nc localhost 10001"
+    echo "  02 바이너리 익스플로잇: nc localhost 10001~10005"
     echo "  03 네트워크:         docker exec -it net_lab_attacker bash"
     echo "  04 클라우드:         http://localhost:8080 (SSRF)"
     echo "  05 전체 시나리오:    http://localhost:8888"

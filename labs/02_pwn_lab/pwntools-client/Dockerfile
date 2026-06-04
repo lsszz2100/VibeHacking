@@ -26,7 +26,6 @@ RUN apt-get update && apt-get install -y \
     file \
     xxd \
     hexdump \
-    ROPgadget \
     && rm -rf /var/lib/apt/lists/*
 
 # pwntools 설치

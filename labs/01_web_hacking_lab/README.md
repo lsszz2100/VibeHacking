@@ -7,15 +7,18 @@ DVWA, OWASP Juice Shop, WebGoat, 커스텀 SQLi 타겟 앱을 Nginx 리버스 �
 
 ## 서비스 구성
 
-| 서비스 | 이미지 | 내부 포트 | 프록시 경로 | 설명 |
-|--------|--------|-----------|------------|------|
-| dvwa | vulnerables/web-dvwa | 80 | `/dvwa/` | Damn Vulnerable Web Application |
-| juice-shop | bkimminich/juice-shop | 3000 | `/juice/` | OWASP Juice Shop |
-| webgoat | webgoat/webgoat | 8080 | `/webgoat/` | WebGoat |
-| sqlmap-target | 커스텀 Flask | 5000 | `/sqli/` | 취약한 SQLi 실습 앱 |
-| proxy | nginx:1.25-alpine | 80 | — | 리버스 프록시 |
+| 서비스 | 이미지 | 외부 포트 | 설명 |
+|--------|--------|-----------|------|
+| dvwa | vulnerables/web-dvwa | 8080/dvwa/ | Damn Vulnerable Web Application |
+| juice-shop | bkimminich/juice-shop | **3001** | OWASP Juice Shop (직접 노출) |
+| webgoat | webgoat/webgoat | **8081**/WebGoat | WebGoat (직접 노출) |
+| sqlmap-target | 커스텀 Flask | 8080/sqli/ | 취약한 SQLi 실습 앱 |
+| proxy | nginx:1.25-alpine | 8080 | DVWA·SQLi 리버스 프록시 |
 
-**외부 접근 포트: `http://localhost:8080`**
+**외부 접근 포트:**
+- DVWA + SQLi 타겟: `http://localhost:8080`
+- Juice Shop: `http://localhost:3001`
+- WebGoat: `http://localhost:8081/WebGoat`
 
 ---
 
@@ -51,14 +54,14 @@ docker compose down -v
 - 난이도 설정: `DVWA Security` → Low / Medium / High / Impossible
 
 ### OWASP Juice Shop
-- URL: `http://localhost:8080/juice/`
+- URL: `http://localhost:3001`
 - 계정 생성 필요 없음 (게스트로 탐색 가능)
 - Admin 계정: `admin@juice-sh.op` / `admin123`
 - 총 100개 이상의 챌린지 내장
 
 ### WebGoat
-- URL: `http://localhost:8080/webgoat/`
-- 회원가입 후 사용: `/WebGoat/registration`
+- URL: `http://localhost:8081/WebGoat`
+- 회원가입 후 사용: `http://localhost:8081/WebGoat/registration`
 - 가이드형 학습 — 각 취약점 설명 후 실습 문제 제공
 
 ### SQLi 타겟 (커스텀 Flask)
