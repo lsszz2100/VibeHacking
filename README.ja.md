@@ -133,7 +133,7 @@ python3 vhack.py update                  # git pull で最新コンテンツ取�
 | # | ラボ名 | 内容 | アクセス | 難易度 |
 |:-:|--------|------|----------|:------:|
 | **01** | Webハッキングラボ | DVWA · Juice Shop · WebGoat | http://localhost:8080 | ★★☆ |
-| **02** | バイナリエクスプロイトラボ | BOF · ROP · heap · fmtstr | nc localhost 10001 | ★★★ |
+| **02** | バイナリエクスプロイトラボ | BOF · ret2libc · ROP · fmtstr · heap | nc localhost 10001~10005 | ★★★ |
 | **03** | ネットワークハッキングラボ | SSH · FTP · DNS · SMTP脆弱サービス | docker exec シェル | ★★☆ |
 | **04** | クラウド/コンテナセキュリティラボ | SSRF · AWS IMDS · K8s脱出 | http://localhost:8080 | ★★★ |
 | **05** | 総合シナリオラボ | APT攻撃チェーンシミュレーション | http://localhost:8888 | ★★★★ |

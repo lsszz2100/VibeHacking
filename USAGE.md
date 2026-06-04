@@ -233,12 +233,12 @@ vhack lab start 01
 | 랩 | 접속 방법 | 기본 계정 |
 |----|----------|----------|
 | **Lab 01 — 웹** | http://localhost:8080 | admin / password |
-| **DVWA** | http://localhost:8080/dvwa | admin / password |
-| **Juice Shop** | http://localhost:3000 | (회원가입) |
-| **WebGoat** | http://localhost:8081/WebGoat | (회원가입) |
-| **Lab 02 — pwn** | `nc localhost 10001` (BOF), `10002` (ROP) | — |
+| **DVWA** | http://localhost:8080/dvwa/ | admin / password |
+| **Juice Shop** | http://localhost:8080/juice/ | (회원가입) |
+| **WebGoat** | http://localhost:8080/webgoat/ | (회원가입) |
+| **Lab 02 — pwn** | `nc localhost 10001` (BOF) · `10002` (ret2libc) · `10003` (ROP) · `10004` (fmtstr) · `10005` (heap) | — |
 | **Lab 03 — 네트워크** | `docker exec -it net_lab_attacker bash` | — |
-| **Lab 04 — 클라우드** | http://localhost:8080/ssrf | — |
+| **Lab 04 — 클라우드** | http://localhost:8080 (SSRF) · http://localhost:8443 (K8s) · http://localhost:5000 (Registry) | — |
 | **Lab 05 — 통합** | http://localhost:8888 | admin / admin123 |
 
 ### 4-4. 실습 환경 종료
@@ -654,7 +654,7 @@ vhack list                        # no more "python3 vhack.py" needed
 | Lab | Start | Access | Topics |
 |-----|-------|--------|--------|
 | 01 Web | `vhack lab start 01` | http://localhost:8080 | SQLi, XSS, CSRF |
-| 02 Pwn | `vhack lab start 02` | `nc localhost 10001` | BOF, ROP, heap |
+| 02 Pwn | `vhack lab start 02` | `nc localhost 10001~10005` | BOF, ret2libc, ROP, fmtstr, heap |
 | 03 Network | `vhack lab start 03` | `docker exec -it net_lab_attacker bash` | SSH, FTP, DNS |
 | 04 Cloud | `vhack lab start 04` | http://localhost:8080 | SSRF, K8s, containers |
 | 05 Full | `vhack lab start 05` | http://localhost:8888 | APT chain simulation |

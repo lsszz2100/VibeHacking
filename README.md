@@ -169,7 +169,7 @@ python3 vhack.py update                 # git pull
 | 번호 | 랩 이름 | 내용 | 접속 | 난이도 |
 |:----:|---------|------|------|:------:|
 | **01** | 웹 해킹 랩 | DVWA · Juice Shop · WebGoat | http://localhost:8080 | ★★☆ |
-| **02** | 바이너리 익스플로잇 랩 | BOF · ROP · heap · fmtstr | nc localhost 10001 | ★★★ |
+| **02** | 바이너리 익스플로잇 랩 | BOF · ret2libc · ROP · fmtstr · heap | nc localhost 10001~10005 | ★★★ |
 | **03** | 네트워크 해킹 랩 | SSH · FTP · DNS · SMTP 취약 서비스 | docker exec 진입 | ★★☆ |
 | **04** | 클라우드/컨테이너 보안 랩 | SSRF · AWS IMDS · K8s 탈출 | http://localhost:8080 | ★★★ |
 | **05** | 전체 시나리오 통합 랩 | APT 공격 체인 시뮬레이션 | http://localhost:8888 | ★★★★ |
