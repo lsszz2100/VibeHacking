@@ -1,0 +1,16 @@
+{
+  "ignorePatterns": [
+    { "pattern": "^http://localhost" },
+    { "pattern": "^http://172\\." },
+    { "pattern": "^http://192\\.168\\." },
+    { "pattern": "^http://10\\." },
+    { "pattern": "^https?://example\\.com" },
+    { "pattern": "^https?://target\\.com" },
+    { "pattern": "^https?://corp\\.local" },
+    { "pattern": "^https?://internal\\." }
+  ],
+  "timeout": "20s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "30s"
+}
