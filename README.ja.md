@@ -37,6 +37,35 @@ CTF・バグバウンティ・レッドチーム・AIセキュリティまで、
 
 ---
 
+## 🤖 AI CLIで自然言語学習
+
+`claude` / `codex` / `gemini` を **レポジトリのディレクトリ内で** 実行すると、AIが64セクション全てをコンテキストとして読み込み、自然言語のチューターになります。ファイルを手動で探さなくても、一言で学習・実習が可能です。
+
+```bash
+cd VibeHacking
+claude   # または: codex / gemini
+```
+
+| AI CLI | インストール | 強み |
+|--------|------------|------|
+| **Claude Code** | `npm i -g @anthropic-ai/claude-code` | ファイル読み取り + コマンド実行、自然な日本語対応 |
+| **Codex CLI** | `npm i -g @openai/codex` | コード生成・解析に特化 |
+| **Gemini CLI** | `npm i -g @google/gemini-cli` | 最大コンテキスト (100万トークン+) |
+
+**すぐに使えるプロンプト:**
+
+```
+「セキュリティ完全初心者です。このリポジトリで何から学べばいいですか？」
+「05_Web_Hacking/02_sql_injection_advanced.md を読んでSQL攻撃の核心技法を説明して」
+「Webハッキング Lab 01 を起動して、DVWAでSQL インジェクション実習をステップごとに案内して」
+「このCTF問題のヒントだけ教えて。解答は自分でやる」
+「Kerberoastingの概念を説明して、実習環境の構成方法も教えて」
+```
+
+> 🤖 完全ガイド + 学習シナリオ4つ + プロンプトテンプレート → **[AI_LEARNING.md](./AI_LEARNING.md)**
+
+---
+
 ## 🛠️ CLI + 実習環境 — すぐに始める
 
 ### 1分セットアップ
@@ -116,35 +145,6 @@ python3 vhack.py lab start 01     # ② DVWA/Juice Shop ラボ起動
 # ③ ブラウザで http://localhost:8080 を開いて実習
 python3 vhack.py lab stop 01      # ④ 完了後に停止
 ```
-
----
-
-## 🤖 AI CLIで自然言語学習
-
-`claude` / `codex` / `gemini` を **レポジトリのディレクトリ内で** 実行すると、AIが64セクション全てをコンテキストとして読み込み、自然言語のチューターになります。ファイルを手動で探さなくても、一言で学習・実習が可能です。
-
-```bash
-cd VibeHacking
-claude   # または: codex / gemini
-```
-
-| AI CLI | インストール | 強み |
-|--------|------------|------|
-| **Claude Code** | `npm i -g @anthropic-ai/claude-code` | ファイル読み取り + コマンド実行、自然な日本語対応 |
-| **Codex CLI** | `npm i -g @openai/codex` | コード生成・解析に特化 |
-| **Gemini CLI** | `npm i -g @google/gemini-cli` | 最大コンテキスト (100万トークン+) |
-
-**すぐに使えるプロンプト:**
-
-```
-「セキュリティ完全初心者です。このリポジトリで何から学べばいいですか？」
-「05_Web_Hacking/02_sql_injection_advanced.md を読んでSQL攻撃の核心技法を説明して」
-「Webハッキング Lab 01 を起動して、DVWAでSQL インジェクション実習をステップごとに案内して」
-「このCTF問題のヒントだけ教えて。解答は自分でやる」
-「Kerberoastingの概念を説明して、実習環境の構成方法も教えて」
-```
-
-> 🤖 完全ガイド + 学習シナリオ4つ + プロンプトテンプレート → **[AI_LEARNING.md](./AI_LEARNING.md)**
 
 ---
 

@@ -37,6 +37,35 @@
 
 ---
 
+## 🤖 用 AI CLI 自然语言学习
+
+在 **仓库目录内** 运行 `claude` / `codex` / `gemini`，AI 会将全部 64 个章节作为上下文读取，成为你的自然语言辅导员。无需手动搜索文件，一句话即可完成学习与实践。
+
+```bash
+cd VibeHacking
+claude   # 或: codex / gemini
+```
+
+| AI CLI | 安装 | 优势 |
+|--------|------|------|
+| **Claude Code** | `npm i -g @anthropic-ai/claude-code` | 文件读取 + 命令执行，中文流畅 |
+| **Codex CLI** | `npm i -g @openai/codex` | 代码生成与分析专精 |
+| **Gemini CLI** | `npm i -g @google/gemini-cli` | 最大上下文窗口 (100万+ token) |
+
+**即用提示词：**
+
+```
+「我是完全的安全初学者，这个仓库应该按什么顺序学习？」
+「读取 05_Web_Hacking/02_sql_injection_advanced.md 并解释核心攻击技术」
+「启动 Web 渗透 Lab 01，一步步引导我在 DVWA 上完成 SQL 注入练习」
+「这道 CTF 题只给我提示，不要直接给解答」
+「解释 Kerberoasting 概念，并告诉我如何搭建练习环境」
+```
+
+> 🤖 完整指南 + 4个学习场景 + 提示词模板 → **[AI_LEARNING.md](./AI_LEARNING.md)**
+
+---
+
 ## 🛠️ CLI + 实验环境 — 立即开始
 
 ### 1分钟安装
@@ -116,35 +145,6 @@ python3 vhack.py lab start 01     # ② 启动 DVWA/Juice Shop 实验室
 # ③ 打开 http://localhost:8080 开始实践
 python3 vhack.py lab stop 01      # ④ 完成后停止
 ```
-
----
-
-## 🤖 用 AI CLI 自然语言学习
-
-在 **仓库目录内** 运行 `claude` / `codex` / `gemini`，AI 会将全部 64 个章节作为上下文读取，成为你的自然语言辅导员。无需手动搜索文件，一句话即可完成学习与实践。
-
-```bash
-cd VibeHacking
-claude   # 或: codex / gemini
-```
-
-| AI CLI | 安装 | 优势 |
-|--------|------|------|
-| **Claude Code** | `npm i -g @anthropic-ai/claude-code` | 文件读取 + 命令执行，中文流畅 |
-| **Codex CLI** | `npm i -g @openai/codex` | 代码生成与分析专精 |
-| **Gemini CLI** | `npm i -g @google/gemini-cli` | 最大上下文窗口 (100万+ token) |
-
-**即用提示词：**
-
-```
-「我是完全的安全初学者，这个仓库应该按什么顺序学习？」
-「读取 05_Web_Hacking/02_sql_injection_advanced.md 并解释核心攻击技术」
-「启动 Web 渗透 Lab 01，一步步引导我在 DVWA 上完成 SQL 注入练习」
-「这道 CTF 题只给我提示，不要直接给解答」
-「解释 Kerberoasting 概念，并告诉我如何搭建练习环境」
-```
-
-> 🤖 完整指南 + 4个学习场景 + 提示词模板 → **[AI_LEARNING.md](./AI_LEARNING.md)**
 
 ---
 

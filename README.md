@@ -73,6 +73,35 @@ assert all(features.values()), "All checks passed ✓"
 
 ---
 
+## 🤖 AI CLI로 자연어 학습
+
+`claude` / `codex` / `gemini` 를 **레포 디렉토리 안에서** 실행하면 AI가 64개 섹션 전체를 읽고 자연어 튜터가 됩니다. `vhack` CLI 없이도 대화 한 줄로 학습·실습이 가능합니다.
+
+```bash
+cd VibeHacking
+claude   # 또는 codex / gemini
+```
+
+| AI CLI | 설치 | 강점 |
+|--------|------|------|
+| **Claude Code** | `npm i -g @anthropic-ai/claude-code` | 파일 읽기 + 명령어 실행, 한국어 자연스러움 |
+| **Codex CLI** | `npm i -g @openai/codex` | 코드 생성·분석 특화 |
+| **Gemini CLI** | `npm i -g @google/gemini-cli` | 최대 컨텍스트 창 (100만 토큰+) |
+
+**바로 쓸 수 있는 프롬프트:**
+
+```
+"보안 완전 초보인데 이 레포에서 어떤 순서로 공부해야 해?"
+"05_Web_Hacking/02_sql_injection_advanced.md 읽고 핵심 기법 설명해줘"
+"웹 해킹 Lab 01 시작하고 DVWA SQL 인젝션 실습을 단계별로 안내해줘"
+"이 CTF 문제 풀이 말고 힌트만 줘"
+"Kerberoasting 개념 설명하고 실습 환경 어떻게 구성해?"
+```
+
+> 🤖 전체 가이드 + 시나리오 4개 + 프롬프트 템플릿 → **[AI_LEARNING.md](./AI_LEARNING.md)**
+
+---
+
 ## 🛠️ CLI + 실습 환경 — 바로 시작하기
 
 ### 1분 설치
@@ -152,35 +181,6 @@ python3 vhack.py lab start 01     # ② DVWA/Juice Shop 랩 시작
 # ③ 브라우저에서 http://localhost:8080 접속하여 실습
 python3 vhack.py lab stop 01      # ④ 완료 후 종료
 ```
-
----
-
-## 🤖 AI CLI로 자연어 학습
-
-`claude` / `codex` / `gemini` 를 **레포 디렉토리 안에서** 실행하면 AI가 64개 섹션 전체를 읽고 자연어 튜터가 됩니다. `vhack` CLI 없이도 대화 한 줄로 학습·실습이 가능합니다.
-
-```bash
-cd VibeHacking
-claude   # 또는 codex / gemini
-```
-
-| AI CLI | 설치 | 강점 |
-|--------|------|------|
-| **Claude Code** | `npm i -g @anthropic-ai/claude-code` | 파일 읽기 + 명령어 실행, 한국어 자연스러움 |
-| **Codex CLI** | `npm i -g @openai/codex` | 코드 생성·분석 특화 |
-| **Gemini CLI** | `npm i -g @google/gemini-cli` | 최대 컨텍스트 창 (100만 토큰+) |
-
-**바로 쓸 수 있는 프롬프트:**
-
-```
-"보안 완전 초보인데 이 레포에서 어떤 순서로 공부해야 해?"
-"05_Web_Hacking/02_sql_injection_advanced.md 읽고 핵심 기법 설명해줘"
-"웹 해킹 Lab 01 시작하고 DVWA SQL 인젝션 실습을 단계별로 안내해줘"
-"이 CTF 문제 풀이 말고 힌트만 줘"
-"Kerberoasting 개념 설명하고 실습 환경 어떻게 구성해?"
-```
-
-> 🤖 전체 가이드 + 시나리오 4개 + 프롬프트 템플릿 → **[AI_LEARNING.md](./AI_LEARNING.md)**
 
 ---
 
