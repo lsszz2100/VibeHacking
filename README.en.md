@@ -5,9 +5,9 @@
 ### Master Practical Cybersecurity — The Hacking Bible for the AI Era
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-68-blueviolet)](#table-of-contents)
-[![Files](https://img.shields.io/badge/Docs-370%2B%20Files-brightgreen)](#table-of-contents)
-[![Lines](https://img.shields.io/badge/Lines-440%2C000%2B-orange)](#table-of-contents)
+[![Sections](https://img.shields.io/badge/Sections-69-blueviolet)](#table-of-contents)
+[![Files](https://img.shields.io/badge/Docs-380%2B%20Files-brightgreen)](#table-of-contents)
+[![Lines](https://img.shields.io/badge/Lines-443%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
 
 <br/>
@@ -39,7 +39,7 @@ From CTF to Bug Bounty, Red Team to AI Security: a **practical, hands-on knowled
 
 ## 🤖 Learn with AI CLI (Natural Language)
 
-Run `claude` / `codex` / `gemini` **inside the repo directory** and the AI reads all 68 sections as context — becoming your interactive tutor. No need to search files manually; just ask in plain English.
+Run `claude` / `codex` / `gemini` **inside the repo directory** and the AI reads all 69 sections as context — becoming your interactive tutor. No need to search files manually; just ask in plain English.
 
 ```bash
 cd VibeHacking
@@ -73,7 +73,7 @@ claude   # or: codex / gemini
 ```bash
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
-python3 vhack.py list        # Browse all 68 sections
+python3 vhack.py list        # Browse all 69 sections
 ```
 
 > 📖 Full installation guide → **[INSTALL.md](./INSTALL.md)**
@@ -110,7 +110,7 @@ python3 vhack.py update                  # git pull latest content
 
 | Command | Description |
 |---------|-------------|
-| `vhack list` | List all 68 sections |
+| `vhack list` | List all 69 sections |
 | `vhack list --search <kw>` | Filter by keyword |
 | `vhack study <n>` | Section file list |
 | `vhack study <n> <f>` | Read file in terminal |

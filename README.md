@@ -2,13 +2,13 @@
 
 <div align="center">
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=18&duration=2600&pause=600&color=00FF41&center=true&vCenter=true&width=700&lines=68+Sections+%C2%B7+370%2B+Files+%C2%B7+440%2C000%2B+Lines;CTF+%C2%B7+Bug+Bounty+%C2%B7+Red+Team+%C2%B7+AI+Security;Hack+Smart.+Defend+Hard.;%EC%8B%A4%EC%A0%84+%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88+%EC%99%84%EC%A0%84+%EC%A0%95%EB%B3%B5)](https://github.com/lsszz2100/VibeHacking)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=18&duration=2600&pause=600&color=00FF41&center=true&vCenter=true&width=700&lines=69+Sections+%C2%B7+380%2B+Files+%C2%B7+443%2C000%2B+Lines;CTF+%C2%B7+Bug+Bounty+%C2%B7+Red+Team+%C2%B7+AI+Security;Hack+Smart.+Defend+Hard.;%EC%8B%A4%EC%A0%84+%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88+%EC%99%84%EC%A0%84+%EC%A0%95%EB%B3%B5)](https://github.com/lsszz2100/VibeHacking)
 
 <br/>
 
-[![Sections](https://img.shields.io/badge/⚔️_SECTIONS-68-FF0000?style=for-the-badge&labelColor=0d0d0d)](#목차)
-[![Files](https://img.shields.io/badge/📄_FILES-370+-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
-[![Lines](https://img.shields.io/badge/💻_LINES-440K%2B-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
+[![Sections](https://img.shields.io/badge/⚔️_SECTIONS-69-FF0000?style=for-the-badge&labelColor=0d0d0d)](#목차)
+[![Files](https://img.shields.io/badge/📄_FILES-380+-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
+[![Lines](https://img.shields.io/badge/💻_LINES-443K%2B-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
 [![AI](https://img.shields.io/badge/🤖_AI--POWERED-Claude+GPT-9933FF?style=for-the-badge&labelColor=0d0d0d)](#11-ai-기반-사이버보안)
 [![License](https://img.shields.io/badge/🔓_LICENSE-MIT-0078D7?style=for-the-badge&labelColor=0d0d0d)](LICENSE)
 
@@ -50,7 +50,7 @@ features = {
     "최신 동향"      : "2026년 AI 보안 생태계 완전 반영",
     "한국어 완성도"  : "처음부터 한국어로 기획·작성",
     "이중언어"       : "한국어 / English 전 파일 제공",
-    "완전한 커버리지": "68섹션 전 보안 영역",
+    "완전한 커버리지": "69섹션 전 보안 영역",
     "CTF 실습 환경"  : "도커 기반 5개 랩 즉시 구동",
 }
 assert all(features.values()), "All checks passed ✓"
@@ -64,7 +64,7 @@ assert all(features.values()), "All checks passed ✓"
 | 🔴 기초·시스템 | 01–10 | Foundation |
 | 🟠 공격·레드팀 | 11–25 | Offensive |
 | 🟡 고급 기법 | 26–40 | Advanced |
-| 🟢 전문 영역 | 41–68 | Specialist |
+| 🟢 전문 영역 | 41–69 | Specialist |
 | 🧪 실습 랩 | labs/ | CTF Ready |
 
 </td>
@@ -75,7 +75,7 @@ assert all(features.values()), "All checks passed ✓"
 
 ## 🤖 AI CLI로 자연어 학습
 
-`claude` / `codex` / `gemini` 를 **레포 디렉토리 안에서** 실행하면 AI가 68개 섹션 전체를 읽고 자연어 튜터가 됩니다. `vhack` CLI 없이도 대화 한 줄로 학습·실습이 가능합니다.
+`claude` / `codex` / `gemini` 를 **레포 디렉토리 안에서** 실행하면 AI가 69개 섹션 전체를 읽고 자연어 튜터가 됩니다. `vhack` CLI 없이도 대화 한 줄로 학습·실습이 가능합니다.
 
 ```bash
 cd VibeHacking
@@ -120,7 +120,7 @@ python3 vhack.py list        # 68개 섹션 목록 확인
 
 ```bash
 # 학습 탐색
-python3 vhack.py list                   # 전체 68개 섹션 목록
+python3 vhack.py list                   # 전체 69개 섹션 목록
 python3 vhack.py list --search web      # "web" 관련 섹션 필터
 python3 vhack.py study 5                # 웹 해킹 섹션 파일 목록
 python3 vhack.py study 5 1              # OWASP Top 10 문서 읽기
@@ -146,7 +146,7 @@ python3 vhack.py update                 # git pull
 
 | 명령어 | 설명 |
 |--------|------|
-| `vhack list` | 전체 68개 섹션 목록 |
+| `vhack list` | 전체 69개 섹션 목록 |
 | `vhack list --search <키워드>` | 섹션명 필터링 |
 | `vhack study <번호>` | 섹션 파일 목록 |
 | `vhack study <번호> <파일>` | 터미널에서 파일 읽기 |
@@ -275,7 +275,8 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 | 66 | [익스플로잇 개발](#66-익스플로잇-개발) | ROP 체인, Heap 익스플로잇, 커널·브라우저 취약점 | ⚫ | 5 |
 | 67 | [악성코드 개발 이해](#67-악성코드-개발-이해) | C2 구조, 셸코드, 지속성, 탐지 우회 | ⚫ | 5 |
 | 68 | [퍼플팀 운영](#68-퍼플팀-운영) | 공격 시뮬레이션, 탐지 엔지니어링, APT 에뮬레이션 | ⚫ | 5 |
-| 🧪 | [**CTF 실습 환경 (labs/)**](#ctf-실습-환경-labs) | 웹·바이너리·네트워크·클라우드·통합 도커 랩 | 🔴 | 50 |
+| 69 | [LLM 보안](#69-llm-보안) | 프롬프트 인젝션, 모델 추출, 적대적 공격, LLM 방어 | ⚫ | 6 |
+| 🧪 | [**CTF 실습 환경 (labs/)**](#ctf-실습-환경-labs) | 웹·바이너리·네트워크·클라우드·펌웨어·모바일 도커 랩 | 🔴 | 50 |
 
 ---
 
