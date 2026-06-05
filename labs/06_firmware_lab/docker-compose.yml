@@ -1,0 +1,70 @@
+version: "3.8"
+
+networks:
+  firmware_lab_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.19.0.0/24
+
+volumes:
+  analyzer_workspace:
+
+services:
+
+  # binwalk + 분석 도구가 설치된 분석 서버
+  firmware_analyzer:
+    image: ubuntu:22.04
+    container_name: firmware_analyzer
+    command: >
+      bash -c "apt-get update -qq &&
+               apt-get install -y -qq binwalk squashfs-tools file
+               qemu-user-static python3 python3-pip &&
+               pip3 install -q pycryptodome &&
+               tail -f /dev/null"
+    volumes:
+      - ./firmware_images:/firmware:ro
+      - analyzer_workspace:/workspace
+    networks:
+      firmware_lab_net:
+        ipv4_address: 172.19.0.10
+    ports:
+      - "8061:8080"
+    restart: unless-stopped
+
+  # 취약한 웹 관리 패널 (펌웨어 업데이트 기능 시뮬레이션)
+  firmware_web_panel:
+    image: python:3.11-slim
+    container_name: firmware_web_panel
+    command: >
+      bash -c "pip install -q flask &&
+               python3 -c \"
+import hashlib, os
+from flask import Flask, request, jsonify
+app = Flask(__name__)
+SECRET = 'admin:firmware_admin_2024'
+FLAG = 'CTF{firmware_hardcoded_cred_found}'
+
+@app.route('/')
+def index():
+    return '<h1>Firmware Update Panel v1.0</h1><p>POST /upload to update firmware</p>'
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json() or {}
+    if data.get('user') == 'admin' and data.get('pass') == 'firmware_admin_2024':
+        return jsonify({'status': 'ok', 'flag': FLAG})
+    return jsonify({'status': 'fail'}), 401
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    return jsonify({'status': 'uploaded', 'hint': 'Try to find credentials in firmware binary'})
+
+app.run(host='0.0.0.0', port=8080)
+\""
+    networks:
+      firmware_lab_net:
+        ipv4_address: 172.19.0.20
+    ports:
+      - "8062:8080"
+    restart: unless-stopped

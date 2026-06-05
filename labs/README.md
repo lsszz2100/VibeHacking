@@ -35,6 +35,8 @@ docker-compose --version
 | 03 | [네트워크 해킹 랩](./03_network_lab/) | 포트 스캔, 크리덴셜 공격, 피벗 | ★★☆ |
 | 04 | [클라우드/컨테이너 보안 랩](./04_cloud_container_lab/) | K8s, IMDS, 컨테이너 탈출 | ★★★ |
 | 05 | [전체 시나리오 통합 랩](./05_full_scenario_lab/) | APT 체인, 내부망 침투, 데이터 탈취 | ★★★★ |
+| 06 | [펌웨어 해킹 랩](./06_firmware_lab/) | binwalk, QEMU 에뮬레이션, 하드코딩 자격증명 | ★★★ |
+| 07 | [모바일 보안 랩](./07_mobile_lab/) | APK 분석, JWT alg:none, 하드코딩 API 키 | ★★★ |
 
 ---
 
@@ -71,6 +73,18 @@ docker-compose --version
 - 외부 웹 → SSRF → 내부망 이동 → 데이터베이스 침투
 - LDAP 열거 및 SMB/FTP 파일 서버 접근
 - 전체 침투 테스트 보고서 작성 실습
+
+### 06. 펌웨어 해킹 랩
+- binwalk를 이용한 펌웨어 구조 분석 및 파일시스템 자동 추출
+- QEMU user-mode로 ARM/MIPS 임베디드 바이너리 에뮬레이션
+- squashfs, LZMA 등 다양한 압축 포맷 해제 실습
+- 펌웨어 바이너리 내 하드코딩 자격증명 탐색 및 CTF 플래그 획득
+
+### 07. 모바일 보안 랩
+- jadx·apktool을 활용한 Android APK 정적 역컴파일 및 소스 탐색
+- 하드코딩된 API 키 추출 및 취약한 백엔드 API 인증 우회
+- JWT alg:none 취약점을 이용한 권한 상승 공격
+- Frida·objection을 통한 런타임 동적 분석 기초
 
 ---
 
