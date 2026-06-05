@@ -5,9 +5,9 @@
 ### 実践サイバーセキュリティ完全攻略 — AI時代のハッキングバイブル
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-64-blueviolet)](#目次)
-[![Files](https://img.shields.io/badge/Docs-320%2B%20Files-brightgreen)](#目次)
-[![Lines](https://img.shields.io/badge/Lines-427%2C000%2B-orange)](#目次)
+[![Sections](https://img.shields.io/badge/Sections-68-blueviolet)](#目次)
+[![Files](https://img.shields.io/badge/Docs-370%2B%20Files-brightgreen)](#目次)
+[![Lines](https://img.shields.io/badge/Lines-440%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
 
 <br/>
@@ -39,7 +39,7 @@ CTF・バグバウンティ・レッドチーム・AIセキュリティまで、
 
 ## 🤖 AI CLIで自然言語学習
 
-`claude` / `codex` / `gemini` を **レポジトリのディレクトリ内で** 実行すると、AIが64セクション全てをコンテキストとして読み込み、自然言語のチューターになります。ファイルを手動で探さなくても、一言で学習・実習が可能です。
+`claude` / `codex` / `gemini` を **レポジトリのディレクトリ内で** 実行すると、AIが68セクション全てをコンテキストとして読み込み、自然言語のチューターになります。ファイルを手動で探さなくても、一言で学習・実習が可能です。
 
 ```bash
 cd VibeHacking
@@ -73,7 +73,7 @@ claude   # または: codex / gemini
 ```bash
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
-python3 vhack.py list        # 64セクション一覧を表示
+python3 vhack.py list        # 68セクション一覧を表示
 ```
 
 > 📖 詳細インストールガイド → **[INSTALL.md](./INSTALL.md)**
@@ -84,7 +84,7 @@ python3 vhack.py list        # 64セクション一覧を表示
 
 ```bash
 # 学習コンテンツを探索
-python3 vhack.py list                    # 64セクション全一覧
+python3 vhack.py list                    # 68セクション全一覧
 python3 vhack.py list --search web       # キーワードでフィルタ
 python3 vhack.py study 5                 # Webハッキング セクション ファイル一覧
 python3 vhack.py study 5 1               # OWASP Top 10 をターミナルで読む
@@ -110,7 +110,7 @@ python3 vhack.py update                  # git pull で最新コンテンツ取�
 
 | コマンド | 説明 |
 |----------|------|
-| `vhack list` | 64セクション全一覧 |
+| `vhack list` | 68セクション全一覧 |
 | `vhack list --search <キーワード>` | セクション名でフィルタ |
 | `vhack study <番号>` | セクションのファイル一覧 |
 | `vhack study <番号> <ファイル>` | ターミナルでファイルを読む |
