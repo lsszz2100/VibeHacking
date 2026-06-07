@@ -2,13 +2,13 @@
 
 <div align="center">
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=18&duration=2600&pause=600&color=00FF41&center=true&vCenter=true&width=700&lines=69+Sections+%C2%B7+380%2B+Files+%C2%B7+443%2C000%2B+Lines;CTF+%C2%B7+Bug+Bounty+%C2%B7+Red+Team+%C2%B7+AI+Security;Hack+Smart.+Defend+Hard.;%EC%8B%A4%EC%A0%84+%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88+%EC%99%84%EC%A0%84+%EC%A0%95%EB%B3%B5)](https://github.com/lsszz2100/VibeHacking)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=18&duration=2600&pause=600&color=00FF41&center=true&vCenter=true&width=700&lines=72+Sections+%C2%B7+400%2B+Files+%C2%B7+460%2C000%2B+Lines;CTF+%C2%B7+Bug+Bounty+%C2%B7+Red+Team+%C2%B7+AI+Security;Hack+Smart.+Defend+Hard.;%EC%8B%A4%EC%A0%84+%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88+%EC%99%84%EC%A0%84+%EC%A0%95%EB%B3%B5)](https://github.com/lsszz2100/VibeHacking)
 
 <br/>
 
-[![Sections](https://img.shields.io/badge/⚔️_SECTIONS-69-FF0000?style=for-the-badge&labelColor=0d0d0d)](#목차)
-[![Files](https://img.shields.io/badge/📄_FILES-380+-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
-[![Lines](https://img.shields.io/badge/💻_LINES-443K%2B-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
+[![Sections](https://img.shields.io/badge/⚔️_SECTIONS-72-FF0000?style=for-the-badge&labelColor=0d0d0d)](#목차)
+[![Files](https://img.shields.io/badge/📄_FILES-400+-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
+[![Lines](https://img.shields.io/badge/💻_LINES-460K%2B-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
 [![AI](https://img.shields.io/badge/🤖_AI--POWERED-Claude+GPT-9933FF?style=for-the-badge&labelColor=0d0d0d)](#11-ai-기반-사이버보안)
 [![License](https://img.shields.io/badge/🔓_LICENSE-MIT-0078D7?style=for-the-badge&labelColor=0d0d0d)](LICENSE)
 
@@ -50,7 +50,7 @@ features = {
     "최신 동향"      : "2026년 AI 보안 생태계 완전 반영",
     "한국어 완성도"  : "처음부터 한국어로 기획·작성",
     "이중언어"       : "한국어 / English 전 파일 제공",
-    "완전한 커버리지": "69섹션 전 보안 영역",
+    "완전한 커버리지": "72섹션 전 보안 영역",
     "CTF 실습 환경"  : "도커 기반 5개 랩 즉시 구동",
 }
 assert all(features.values()), "All checks passed ✓"
@@ -64,7 +64,7 @@ assert all(features.values()), "All checks passed ✓"
 | 🔴 기초·시스템 | 01–10 | Foundation |
 | 🟠 공격·레드팀 | 11–25 | Offensive |
 | 🟡 고급 기법 | 26–40 | Advanced |
-| 🟢 전문 영역 | 41–69 | Specialist |
+| 🟢 전문 영역 | 41–72 | Specialist |
 | 🧪 실습 랩 | labs/ | CTF Ready |
 
 </td>
@@ -75,7 +75,7 @@ assert all(features.values()), "All checks passed ✓"
 
 ## 🤖 AI CLI로 자연어 학습
 
-`claude` / `codex` / `gemini` 를 **레포 디렉토리 안에서** 실행하면 AI가 69개 섹션 전체를 읽고 자연어 튜터가 됩니다. `vhack` CLI 없이도 대화 한 줄로 학습·실습이 가능합니다.
+`claude` / `codex` / `gemini` 를 **레포 디렉토리 안에서** 실행하면 AI가 72개 섹션 전체를 읽고 자연어 튜터가 됩니다. `vhack` CLI 없이도 대화 한 줄로 학습·실습이 가능합니다.
 
 ```bash
 cd VibeHacking
@@ -109,7 +109,7 @@ claude   # 또는 codex / gemini
 ```bash
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
-python3 vhack.py list        # 68개 섹션 목록 확인
+python3 vhack.py list        # 72개 섹션 목록 확인
 ```
 
 > 📖 자세한 설치 가이드 → **[INSTALL.md](./INSTALL.md)**
@@ -120,7 +120,7 @@ python3 vhack.py list        # 68개 섹션 목록 확인
 
 ```bash
 # 학습 탐색
-python3 vhack.py list                   # 전체 69개 섹션 목록
+python3 vhack.py list                   # 전체 72개 섹션 목록
 python3 vhack.py list --search web      # "web" 관련 섹션 필터
 python3 vhack.py study 5                # 웹 해킹 섹션 파일 목록
 python3 vhack.py study 5 1              # OWASP Top 10 문서 읽기
@@ -146,7 +146,7 @@ python3 vhack.py update                 # git pull
 
 | 명령어 | 설명 |
 |--------|------|
-| `vhack list` | 전체 69개 섹션 목록 |
+| `vhack list` | 전체 72개 섹션 목록 |
 | `vhack list --search <키워드>` | 섹션명 필터링 |
 | `vhack study <번호>` | 섹션 파일 목록 |
 | `vhack study <번호> <파일>` | 터미널에서 파일 읽기 |
@@ -271,11 +271,14 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 | 62 | [자동차 보안](#62-자동차-보안) | CAN 버스, ECU, V2X, OTA 공격 | ⚫ | 5 |
 | 63 | [OT/ICS 심화](#63-otICS-심화) | SCADA, PLC 익스플로잇, OT 방어 | ⚫ | 5 |
 | 64 | [위협 인텔리전스 플랫폼](#64-위협-인텔리전스-플랫폼) | TIP, MISP, IoC 자동화 파이프라인 | ⚫ | 6 |
-| 65 | [리버스 엔지니어링 심화](#65-리버스-엔지니어링-심화) | 안티디버깅, 언패킹, 심볼릭 실행, CFG | ⚫ | 5 |
-| 66 | [익스플로잇 개발](#66-익스플로잇-개발) | ROP 체인, Heap 익스플로잇, 커널·브라우저 취약점 | ⚫ | 5 |
-| 67 | [악성코드 개발 이해](#67-악성코드-개발-이해) | C2 구조, 셸코드, 지속성, 탐지 우회 | ⚫ | 5 |
-| 68 | [퍼플팀 운영](#68-퍼플팀-운영) | 공격 시뮬레이션, 탐지 엔지니어링, APT 에뮬레이션 | ⚫ | 5 |
+| 65 | [리버스 엔지니어링 심화](#65-리버스-엔지니어링-심화) | 안티디버깅, 언패킹, 심볼릭 실행, CFG | ⚫ | 6 |
+| 66 | [익스플로잇 개발](#66-익스플로잇-개발) | ROP 체인, Heap 익스플로잇, 커널·브라우저 취약점 | ⚫ | 6 |
+| 67 | [악성코드 개발 이해](#67-악성코드-개발-이해) | C2 구조, 셸코드, 지속성, 탐지 우회 | ⚫ | 6 |
+| 68 | [퍼플팀 운영](#68-퍼플팀-운영) | 공격 시뮬레이션, 탐지 엔지니어링, APT 에뮬레이션 | ⚫ | 6 |
 | 69 | [LLM 보안](#69-llm-보안) | 프롬프트 인젝션, 모델 추출, 적대적 공격, LLM 방어 | ⚫ | 6 |
+| 70 | [쿠버네티스 보안](#70-쿠버네티스-보안) | K8s 공격 표면, RBAC 오설정, 파드 탈출, etcd 접근 | ⚫ | 6 |
+| 71 | [블루투스/RF 해킹](#71-블루투스rf-해킹) | BLE 공격, SDR 분석, Zigbee IoT 보안, RF 리플레이 | 🟣 | 6 |
+| 72 | [악성코드 샌드박스 분석](#72-악성코드-샌드박스-분석) | ANY.RUN·VirusTotal, PE 분석, IOC 추출, YARA | 🟣 | 6 |
 | 🧪 | [**CTF 실습 환경 (labs/)**](#ctf-실습-환경-labs) | 웹·바이너리·네트워크·클라우드·펌웨어·모바일 도커 랩 | 🔴 | 50 |
 
 ---
@@ -1235,6 +1238,134 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 ```
 
 **핵심 내용:** TIP 플랫폼(MISP/OpenCTI) 구축·운영, 위협 피드 자동화, IOC 관리, SOAR 연동 자동 대응.
+
+---
+
+## 65. 리버스 엔지니어링 심화
+
+```
+65_Reverse_Engineering_Advanced/
+├── 01_anti_debugging_techniques.md  ← IsDebuggerPresent·타이밍·예외 기반 탐지, GDB/x64dbg 우회
+├── 02_obfuscation_and_unpacking.md  ← UPX/Themida 언패킹, 코드 난독화, 바이너리 정규화
+├── 03_symbolic_execution.md         ← angr 심볼릭 실행, 경로 탐색, 조건문 우회 자동화
+├── 04_advanced_binary_analysis.md   ← CFG 재구성, 취약 함수 탐지, Ghidra 스크립팅
+├── 05_firmware_reverse_engineering.md ← 펌웨어 역분석, binwalk, QEMU 에뮬레이션
+└── 06_re_ctf_lab.md                 ← CTF: 안티디버깅 우회·언패킹·심볼릭 실행·난독화 복원
+```
+
+**핵심 내용:** 안티디버깅 탐지·우회, UPX/Themida 언패킹, angr 심볼릭 실행, CFG 분석. pwntools·angr 실전 CTF 4챌린지 포함.
+
+---
+
+## 66. 익스플로잇 개발
+
+```
+66_Exploit_Development/
+├── 01_rop_chain_techniques.md       ← ROP 가젯 수집·체인 구성, NX 우회, ASLR 브루트포스
+├── 02_heap_exploitation.md          ← glibc ptmalloc2, 힙 오버플로, UAF, House-of-Force
+├── 03_kernel_exploitation.md        ← 커널 BOF, ret2usr, SMEP/KPTI 우회, LPE
+├── 04_browser_exploitation.md       ← V8 JIT 버그, OOB R/W, 렌더러→브라우저 탈출
+├── 05_exploit_mitigation_bypass.md  ← 카나리·ASLR·NX·PIE 동시 우회, FSOP
+└── 06_exploit_ctf_lab.md            ← CTF: 스택BOF·ROP 체인·힙 UAF·ASLR+카나리 동시 우회
+```
+
+**핵심 내용:** ROP 체인 구성, 힙 익스플로잇(ptmalloc2), 커널 LPE, 브라우저 V8 버그. pwntools 실전 CTF 4챌린지 포함.
+
+---
+
+## 67. 악성코드 개발 이해
+
+```
+67_Malware_Development/
+├── 01_malware_architecture.md       ← 악성코드 구조, 드로퍼·페이로드·C2 아키텍처
+├── 02_shellcode_development.md      ← 포지션 독립 셸코드, 인코딩, 스테이징
+├── 03_c2_framework_design.md        ← C2 통신 채널, 비콘 간격, HTTPS/DNS 터널링
+├── 04_persistence_mechanisms.md     ← 레지스트리·서비스·스케줄러·WMI 지속성
+├── 05_evasion_and_detection.md      ← AMSI 우회, ETW 패치, 메모리 인젝션, 행위 탐지
+└── 06_maldev_ctf_lab.md             ← CTF: XOR 복호화·레지스트리 탐지·C2 분석·메모리 포렌식
+```
+
+**핵심 내용:** C2 아키텍처·비콘, 셸코드 개발, 지속성 4기법, AMSI/ETW 우회. Volatility 메모리 포렌식 CTF 4챌린지 포함.
+
+---
+
+## 68. 퍼플팀 운영
+
+```
+68_Purple_Team/
+├── 01_purple_team_fundamentals.md   ← 퍼플팀 방법론, 레드·블루 협업 프레임워크
+├── 02_attack_simulation.md          ← Atomic Red Team, CALDERA, 공격 시뮬레이션 자동화
+├── 03_detection_engineering.md      ← Sigma 룰 작성, SIEM 연동, 탐지 커버리지 측정
+├── 04_threat_emulation.md           ← APT 에뮬레이션, TTP 재현, MITRE ATT&CK 매핑
+├── 05_purple_team_reporting.md      ← 갭 분석, 탐지율 리포트, 개선 로드맵
+└── 06_purple_ctf_lab.md             ← CTF: ATT&CK 매핑·Sigma 룰·탐지율 측정·TTP 역추출
+```
+
+**핵심 내용:** 레드·블루팀 협업, Atomic Red Team·CALDERA 시뮬레이션, Sigma 룰 작성, 탐지 커버리지 측정. ATT&CK 기반 CTF 4챌린지 포함.
+
+---
+
+## 69. LLM 보안
+
+```
+69_LLM_Security/
+├── 01_llm_security_fundamentals.md  ← LLM 공격 표면, OWASP LLM Top 10, 위협 모델
+├── 02_prompt_injection.md           ← 직접·간접 인젝션, 탈옥, 멀티모달 공격
+├── 03_model_extraction_and_inversion.md ← 모델 추출, 훈련 데이터 역추론, 멤버십 추론
+├── 04_adversarial_attacks_on_llm.md ← 적대적 접미사, 전이 공격, 입력 조작
+├── 05_llm_security_defense.md       ← 가드레일, 출력 검증, 안전한 LLM 아키텍처
+└── 06_llm_security_ctf_lab.md       ← CTF: 기본 인젝션·Base64 우회·간접 인젝션·토큰 스머글링
+```
+
+**핵심 내용:** OWASP LLM Top 10, 프롬프트 인젝션·탈옥, 모델 추출, 적대적 공격, LLM 보안 아키텍처. 4챌린지 CTF 포함.
+
+---
+
+## 70. 쿠버네티스 보안
+
+```
+70_Kubernetes_Security/
+├── 01_k8s_attack_surface.md         ← K8s 아키텍처·공격 표면, minikube 실습 환경, kube-bench
+├── 02_rbac_exploitation.md          ← RBAC 오설정 악용, 와일드카드 권한, ClusterRole 감사
+├── 03_pod_escape.md                 ← privileged 파드 탈출, hostPath 악용, 서비스 계정 탈취
+├── 04_network_attacks.md            ← 네트워크 정책 미적용, Pod 간 스니핑, DNS 스푸핑
+├── 05_k8s_hardening.md              ← CIS Benchmark, PSS, OPA Gatekeeper, Vault 시크릿
+└── 06_k8s_ctf_lab.md                ← CTF: RBAC 탈취·파드 탈출·서비스 계정·etcd 접근
+```
+
+**핵심 내용:** K8s 공격 표면부터 RBAC 오설정 악용, privileged 파드 탈출, etcd 시크릿 덤프. kube-bench CIS 감사 실전. 초보자용 minikube 환경 구성 포함.
+
+---
+
+## 71. 블루투스/RF 해킹
+
+```
+71_Bluetooth_RF_Hacking/
+├── 01_bluetooth_fundamentals.md     ← 블루투스 vs BLE, 페어링·스택 구조, BlueSnarfing·Bluebugging
+├── 02_ble_attacks.md                ← GATT/GAP, 취약 특성 쓰기, bleak으로 BLE 장치 열거
+├── 03_rf_signal_analysis.md         ← SDR 개념, RTL-SDR 설치, GNU Radio, 주파수 분석
+├── 04_zigbee_attacks.md             ← Zigbee 아키텍처, 채널 스캔, Zigbee2MQTT 모니터링
+├── 05_wireless_defense.md           ← BLE 암호화 강화, Zigbee 키 관리, RF 차폐 방법
+└── 06_wireless_ctf_lab.md           ← CTF: BLE GATT 플래그·PIN 브루트포스·RF 리플레이·Zigbee 키
+```
+
+**핵심 내용:** 블루투스/BLE 취약점 분석, RTL-SDR 주파수 분석, Zigbee IoT 공격. bleak·paho-mqtt·GNU Radio 실전. 저가 RTL-SDR 하드웨어로 입문 가능.
+
+---
+
+## 72. 악성코드 샌드박스 분석
+
+```
+72_Malware_Sandbox_Analysis/
+├── 01_sandbox_fundamentals.md       ← 샌드박스 개념, 정적 vs 동적 분석, VM 환경 구성
+├── 02_online_sandbox_tools.md       ← ANY.RUN·VirusTotal·Joe Sandbox 비교, vt-py API
+├── 03_static_analysis.md            ← PE 헤더 분석, 엔트로피, YARA 룰, pefile 실전
+├── 04_dynamic_analysis.md           ← 프로세스 모니터링, FakeNet, Wireshark, psutil 스크립트
+├── 05_ioc_extraction.md             ← IOC 추출 자동화, MITRE ATT&CK 매핑, STIX/TAXII
+└── 06_malware_ctf_lab.md            ← CTF: C2 추출·XOR 복호화·레지스트리 분석·UPX 언패킹 시뮬
+```
+
+**핵심 내용:** 온라인 샌드박스(ANY.RUN/VirusTotal) 활용, PE 정적 분석, psutil 동적 모니터링, IOC 자동 추출. 완전 무료 도구로 초보자 입문 가능.
 
 ---
 
