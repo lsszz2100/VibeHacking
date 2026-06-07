@@ -19,6 +19,10 @@
 [![日本語](https://img.shields.io/badge/🇯🇵_日本語-README.ja.md-555555?style=flat-square&labelColor=111111)](README.ja.md)
 [![中文](https://img.shields.io/badge/🇨🇳_中文-README.zh.md-555555?style=flat-square&labelColor=111111)](README.zh.md)
 
+<br/>
+
+문의 · 자료 공유 &nbsp;→&nbsp; [![Email](https://img.shields.io/badge/이메일-leemanrank%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:leemanrank@gmail.com) &nbsp; [![KakaoTalk](https://img.shields.io/badge/카카오톡_오픈채팅-인공지능_자료_공유-FAE100?style=flat-square&logo=kakao&logoColor=000000)](https://open.kakao.com/o/sv3aJD4h)
+
 </div>
 
 <br/>
