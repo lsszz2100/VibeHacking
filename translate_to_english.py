@@ -6,11 +6,19 @@ Usage: ANTHROPIC_API_KEY=sk-... python3 translate_to_english.py [--start N] [--f
 Skips files already containing <a name="english">.
 Adds language-toggle header and English section to each file.
 """
+from __future__ import annotations
+
 import argparse
 import os
 import sys
 import time
 from pathlib import Path
+
+_RATE_LIMIT_BASE_WAIT: int = 30   # seconds, multiplied by attempt number
+_API_ERROR_WAIT: int = 10         # seconds between API error retries
+_INTER_FILE_DELAY: float = 0.5    # seconds between files to stay under rate limit
+_MAX_RETRIES: int = 3
+_MAX_CHUNK_CHARS: int = 120_000
 
 try:
     import anthropic
@@ -44,7 +52,7 @@ Rules:
 Document to translate:
 """
 
-def get_files_needing_translation(base_dir: Path) -> list[Path]:
+def get_files_needing_translation(base_dir: Path) -> list[Path]:  # noqa: D103
     files = []
     for md in sorted(base_dir.rglob("*.md")):
         name = md.name
@@ -60,7 +68,7 @@ def translate_content(client: anthropic.Anthropic, korean_content: str, file_pat
     print(f"  Translating: {file_path.name} ({len(korean_content)} chars)...")
 
     # Split long content if needed (max ~150K chars per API call)
-    max_chunk = 120_000
+    max_chunk = _MAX_CHUNK_CHARS
     if len(korean_content) <= max_chunk:
         chunks = [korean_content]
     else:
@@ -84,7 +92,7 @@ def translate_content(client: anthropic.Anthropic, korean_content: str, file_pat
         if len(chunks) > 1:
             print(f"    Part {i+1}/{len(chunks)}...")
 
-        for attempt in range(3):
+        for attempt in range(_MAX_RETRIES):
             try:
                 response = client.messages.create(
                     model="claude-haiku-4-5-20251001",
@@ -97,12 +105,12 @@ def translate_content(client: anthropic.Anthropic, korean_content: str, file_pat
                 translated_parts.append(response.content[0].text)
                 break
             except anthropic.RateLimitError:
-                wait = (attempt + 1) * 30
+                wait = (attempt + 1) * _RATE_LIMIT_BASE_WAIT
                 print(f"    Rate limit hit, waiting {wait}s...")
                 time.sleep(wait)
             except anthropic.APIError as e:
-                print(f"    API error: {e}, attempt {attempt+1}/3")
-                time.sleep(10)
+                print(f"    API error: {e}, attempt {attempt+1}/{_MAX_RETRIES}")
+                time.sleep(_API_ERROR_WAIT)
         else:
             print(f"    [!] Failed to translate chunk {i+1}, using placeholder")
             translated_parts.append(f"[Translation failed for this section]\n\n{chunk}")
@@ -200,8 +208,7 @@ def main():
             print(f"  [ERROR] {e}")
             failed.append(file_path)
 
-        # Small delay to avoid rate limits
-        time.sleep(0.5)
+        time.sleep(_INTER_FILE_DELAY)
 
     print(f"\n=== Done: {success} translated, {len(failed)} failed ===")
     if failed:

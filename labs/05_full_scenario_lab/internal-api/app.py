@@ -2,7 +2,10 @@
 내부 API 서버 — 인증 없는 민감한 엔드포인트
 SSRF를 통해 DMZ 웹에서 이 서버에 접근합니다.
 """
+from __future__ import annotations
+
 import os
+import requests
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
@@ -61,7 +64,6 @@ def config():
 # 취약: 내부 서비스 프록시
 @app.route("/proxy")
 def proxy():
-    import requests
     target = request.args.get("url", "")
     if not target:
         return jsonify({"error": "url 파라미터 필요"}), 400

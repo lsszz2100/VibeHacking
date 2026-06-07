@@ -3,6 +3,8 @@ AWS IMDS (Instance Metadata Service) 시뮬레이터
 실제 AWS IMDSv1 API를 모방합니다.
 SSRF 취약점을 통해 이 서버에 접근하여 자격증명을 탈취하는 실습용입니다.
 """
+from __future__ import annotations
+
 import os
 from flask import Flask, request, jsonify, Response
 

@@ -2,6 +2,8 @@
 SSRF 취약한 웹 앱
 URL 파라미터를 검증 없이 fetch하여 내부 서버에 접근 가능합니다.
 """
+from __future__ import annotations
+
 import os
 import requests
 from flask import Flask, request, jsonify, render_template_string

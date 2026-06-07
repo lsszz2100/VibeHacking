@@ -2,8 +2,10 @@
 취약한 Flask 앱 — SQLi 실습용
 의도적으로 취약하게 작성된 코드입니다. 프로덕션에 절대 사용하지 마세요.
 """
-import sqlite3
+from __future__ import annotations
+
 import os
+import sqlite3
 from flask import Flask, request, jsonify, render_template_string
 
 app = Flask(__name__)
@@ -53,7 +55,7 @@ GET  /api/user?name= — JSON API (블라인드 SQLi 실습)
 """
 
 
-def init_db():
+def init_db() -> None:
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""

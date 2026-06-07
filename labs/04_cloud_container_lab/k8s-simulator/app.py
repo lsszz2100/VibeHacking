@@ -2,6 +2,8 @@
 취약한 Kubernetes API 서버 시뮬레이터
 실제 K8s API 형식을 모방하며, 의도적으로 인증이 취약합니다.
 """
+from __future__ import annotations
+
 import os
 from flask import Flask, jsonify, request
 
@@ -26,7 +28,7 @@ SECRETS = {
 }
 
 
-def check_auth():
+def check_auth() -> bool:
     """취약한 인증: 토큰이 없거나 잘못된 형식도 통과"""
     auth = request.headers.get("Authorization", "")
     # 취약 포인트: 인증 헤더가 있으면 무조건 통과

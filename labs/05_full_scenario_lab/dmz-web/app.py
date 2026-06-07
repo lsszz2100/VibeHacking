@@ -2,6 +2,8 @@
 DMZ 웹 앱 — SSRF + XXE 취약점
 전체 시나리오 랩의 진입점
 """
+from __future__ import annotations
+
 import os
 import requests
 from lxml import etree
