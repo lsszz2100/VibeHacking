@@ -38,6 +38,15 @@
 
 이 자료를 악용하여 발생하는 모든 법적/윤리적 책임은 사용자 본인에게 있습니다.
 
+## 문의 및 제보
+
+콘텐츠 오류, 윤리적 우려사항, 또는 학습 관련 문의는 아래로 연락해 주세요.
+
+| 채널 | 링크 |
+|------|------|
+| 📧 이메일 | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
+| 💬 카카오톡 오픈채팅 | [오픈채팅 참여하기](https://open.kakao.com/o/sv3aJD4h) |
+
 ---
 
 <a name="english"></a>
@@ -75,3 +84,12 @@ Under US law:
 ## Disclaimer
 
 All legal and ethical responsibility arising from misuse of this material rests solely with the user.
+
+## Contact & Reporting
+
+For content errors, ethical concerns, or learning inquiries:
+
+| Channel | Link |
+|---------|------|
+| 📧 Email | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
+| 💬 KakaoTalk Open Chat | [Join the chat](https://open.kakao.com/o/sv3aJD4h) |

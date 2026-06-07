@@ -1413,4 +1413,30 @@ labs/
 
 ---
 
+## 📬 저자 & 문의
+
+학습 질문, 오류 제보, 스터디 참여 등 모든 문의는 아래 채널로 연락해 주세요.
+
+<div align="center">
+
+<br/>
+
+[![Email](https://img.shields.io/badge/📧_이메일_문의-leemanrank%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:leemanrank@gmail.com)
+&nbsp;&nbsp;&nbsp;
+[![KakaoTalk](https://img.shields.io/badge/💬_카카오톡_오픈채팅-참여하기-FAE100?style=for-the-badge&logo=kakao&logoColor=000000)](https://open.kakao.com/o/sv3aJD4h)
+
+<br/>
+
+</div>
+
+| 채널 | 용도 | 링크 |
+|------|------|------|
+| 📧 이메일 | 개인 질문·협업·심층 문의 | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
+| 💬 카카오톡 오픈채팅 | 실시간 Q&A·스터디·CTF 풀이 공유 | [오픈채팅 참여하기](https://open.kakao.com/o/sv3aJD4h) |
+| 🐛 GitHub Issues | 오탈자·오류 제보 | [이슈 열기](https://github.com/lsszz2100/VibeHacking/issues/new) |
+
+> 오픈채팅방은 보안 학습자 누구에게나 열려 있습니다. 입문자 환영 — 부담 없이 참여하세요.
+
+---
+
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0d0d,50:003300,100:0d0d0d&height=100&section=footer&text=Hack+Smart.+Defend+Hard.&fontSize=20&fontColor=00FF41&animation=fadeIn&fontAlignY=65" width="100%" />

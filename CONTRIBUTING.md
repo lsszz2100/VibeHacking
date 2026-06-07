@@ -32,6 +32,15 @@
 ### 행동 강령
 [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) 를 준수해 주세요.
 
+### 문의 채널
+
+PR·이슈 외에 직접 연락을 원하시면:
+
+| 채널 | 링크 |
+|------|------|
+| 📧 이메일 | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
+| 💬 카카오톡 오픈채팅 | [오픈채팅 참여하기](https://open.kakao.com/o/sv3aJD4h) |
+
 ---
 
 ## English
@@ -61,3 +70,12 @@ Thank you for contributing to VibeHacking.
 
 ### Code of Conduct
 Please follow [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
+
+### Contact
+
+For direct inquiries beyond GitHub:
+
+| Channel | Link |
+|---------|------|
+| 📧 Email | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
+| 💬 KakaoTalk Open Chat | [Join the chat](https://open.kakao.com/o/sv3aJD4h) |
