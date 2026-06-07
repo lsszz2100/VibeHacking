@@ -1432,10 +1432,10 @@ labs/
 | 채널 | 용도 | 링크 |
 |------|------|------|
 | 📧 이메일 | 개인 질문·협업·심층 문의 | [leemanrank@gmail.com](mailto:leemanrank@gmail.com) |
-| 💬 카카오톡 오픈채팅 | 실시간 Q&A·스터디·CTF 풀이 공유 | [오픈채팅 참여하기](https://open.kakao.com/o/sv3aJD4h) |
+| 💬 카카오톡 오픈채팅 | 인공지능 자료 공유 | [오픈채팅 참여하기](https://open.kakao.com/o/sv3aJD4h) |
 | 🐛 GitHub Issues | 오탈자·오류 제보 | [이슈 열기](https://github.com/lsszz2100/VibeHacking/issues/new) |
 
-> 오픈채팅방은 보안 학습자 누구에게나 열려 있습니다. 입문자 환영 — 부담 없이 참여하세요.
+> 오픈채팅방에서 인공지능 관련 자료를 공유합니다. 누구에게나 열려 있습니다.
 
 ---
 
