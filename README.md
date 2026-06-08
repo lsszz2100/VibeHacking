@@ -1373,6 +1373,54 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 ---
 
+## 73. 버그바운티 자동화
+
+```
+73_Bug_Bounty_Automation/
+├── 01_bug_bounty_fundamentals.md    ← HackerOne·Bugcrowd 생태계, 책임감 있는 공개, 스코프 이해
+├── 02_recon_automation.md           ← subfinder·amass·httpx·naabu 파이프라인, Python 자동화
+├── 03_vulnerability_scanning.md     ← Nuclei 템플릿, 커스텀 룰, FP 필터링, Burp 연동
+├── 04_report_writing.md             ← CVSS v3 계산, PoC 작성, Markdown 리포트 자동 생성
+├── 05_advanced_techniques.md        ← 취약점 체이닝, 로직 버그, API 퍼징, OAuth 취약점
+└── 06_bug_bounty_ctf_lab.md         ← CTF: 서브도메인 테이크오버·IDOR 탐지·Nuclei 실습
+```
+
+**핵심 내용:** HackerOne/Bugcrowd 플랫폼 활용, ProjectDiscovery 툴체인(subfinder/nuclei) 자동화, CVSS 기반 리포트 작성. 실제 버그바운티 프로세스 엔드투엔드 실습.
+
+---
+
+## 74. 코드 감사
+
+```
+74_Code_Auditing/
+├── 01_code_audit_fundamentals.md    ← STRIDE 위협 모델링, 코드 감사 vs 펜테스트, 공격 표면 분석
+├── 02_vulnerability_patterns.md     ← OWASP Top 10 코드 패턴, 취약/안전 코드 비교, 언어별 위험 함수
+├── 03_static_analysis_tools.md      ← Semgrep 커스텀 룰, Bandit, CodeQL + GitHub Actions 연동
+├── 04_manual_review_techniques.md   ← Source/Sink 추적, AST 기반 데이터 흐름 분석, 수동 리뷰 체크리스트
+├── 05_sast_cicd_integration.md      ← Pre-commit Hook, CI 보안 게이트, SARIF 파서, TP/FP 트리아지
+└── 06_code_audit_ctf_lab.md         ← CTF: SQL Injection 감사·시크릿 탐지·인증 우회 패턴 탐지
+```
+
+**핵심 내용:** Semgrep/Bandit/CodeQL 정적 분석, Source→Sink 데이터 흐름 추적, CI/CD 보안 게이트 구축. 취약 Flask 앱 실습 환경 포함.
+
+---
+
+## 75. 레드팀 보고서 작성
+
+```
+75_Red_Team_Reporting/
+├── 01_red_team_fundamentals.md      ← 레드팀·블루팀·퍼플팀 차이, RoE, MITRE ATT&CK 개요
+├── 02_operation_planning.md         ← 킬 체인 기반 작전 계획, 타임라인 자동 생성, 팀 역할 분담
+├── 03_ttps_documentation.md         ← TTP 문서화, ATT&CK 매핑 자동화, IOC 목록 작성
+├── 04_report_writing.md             ← 이중 독자 보고서(경영진/기술팀), CVSS 위험도 평가, 자동 생성기
+├── 05_debrief_lessons.md            ← 디브리핑 프로세스, 레슨런 도출, 퍼플팀 전환, 탐지율 분석
+└── 06_red_team_ctf_lab.md           ← CTF: ATT&CK 매핑·CloudStore 보고서·MediCloud 킬 체인 계획
+```
+
+**핵심 내용:** MITRE ATT&CK 기반 TTP 문서화, 경영진/기술팀 이중 보고서 작성, 디브리핑 → 퍼플팀 전환 프로세스. Python 보고서 자동화 도구 포함.
+
+---
+
 ## 🧪 CTF 실습 환경 (labs/)
 
 ```
