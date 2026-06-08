@@ -38,10 +38,10 @@ INSERT INTO users (username, password, email, role) VALUES
 ('sysadmin', 'Sup3rS3cr3t!',   'sysadmin@corp.local', 'admin'),
 ('charlie',  'charlie2024',    'charlie@corp.local',  'manager');
 
--- 민감한 크리덴셜
+-- 민감한 크리덴셜 (아래는 모두 CTF 실습용 가짜 데이터입니다 — 실제 유효한 자격증명이 아님)
 INSERT INTO credentials (service, username, password, notes) VALUES
-('AWS Production', 'iam-prod', 'AKIAIOSFODNN7EXAMPLE', 'AWS Access Key'),
-('GitHub',         'corp-bot', 'ghp_EXAMPLE_TOKEN_123', 'CI/CD 토큰'),
+('AWS Production', 'iam-prod', 'FAKEKEYEXAMPLE000000', 'AWS Access Key (CTF용 가짜)'),
+('GitHub',         'corp-bot', 'FAKE_CI_TOKEN_LAB_ONLY', 'CI/CD 토큰 (CTF용 가짜)'),
 ('Internal VPN',   'vpn-user', 'VpnP4ss!', '내부망 VPN'),
 ('Backup Server',  'backup',   'backup123', '야간 백업 서버'),
 ('LDAP',           'admin',    'admin123',  'LDAP 관리자');
