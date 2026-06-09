@@ -5,9 +5,9 @@
 ### 实战网络安全完全攻略 — AI时代的黑客圣经
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Sections](https://img.shields.io/badge/Sections-69-blueviolet)](#目录)
-[![Files](https://img.shields.io/badge/Docs-380%2B%20Files-brightgreen)](#目录)
-[![Lines](https://img.shields.io/badge/Lines-443%2C000%2B-orange)](#目录)
+[![Sections](https://img.shields.io/badge/Sections-75-blueviolet)](#目录)
+[![Files](https://img.shields.io/badge/Docs-430%2B%20Files-brightgreen)](#目录)
+[![Lines](https://img.shields.io/badge/Lines-475%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
 
 <br/>
@@ -39,7 +39,7 @@
 
 ## 🤖 用 AI CLI 自然语言学习
 
-在 **仓库目录内** 运行 `claude` / `codex` / `gemini`，AI 会将全部 69 个章节作为上下文读取，成为你的自然语言辅导员。无需手动搜索文件，一句话即可完成学习与实践。
+在 **仓库目录内** 运行 `claude` / `codex` / `gemini`，AI 会将全部 75 个章节作为上下文读取，成为你的自然语言辅导员。无需手动搜索文件，一句话即可完成学习与实践。
 
 ```bash
 cd VibeHacking
@@ -73,7 +73,7 @@ claude   # 或: codex / gemini
 ```bash
 git clone https://github.com/lsszz2100/VibeHacking.git
 cd VibeHacking
-python3 vhack.py list        # 浏览全部 69 个章节
+python3 vhack.py list        # 浏览全部 75 个章节
 ```
 
 > 📖 详细安装指南 → **[INSTALL.md](./INSTALL.md)**
@@ -84,7 +84,7 @@ python3 vhack.py list        # 浏览全部 69 个章节
 
 ```bash
 # 浏览与学习
-python3 vhack.py list                    # 全部 69 个章节列表
+python3 vhack.py list                    # 全部 75 个章节列表
 python3 vhack.py list --search web       # 按关键词过滤章节
 python3 vhack.py study 5                 # Web 渗透章节文件列表
 python3 vhack.py study 5 1               # 在终端阅读 OWASP Top 10
@@ -110,7 +110,7 @@ python3 vhack.py update                  # git pull 获取最新内容
 
 | 命令 | 说明 |
 |------|------|
-| `vhack list` | 列出全部 69 个章节 |
+| `vhack list` | 列出全部 75 个章节 |
 | `vhack list --search <关键词>` | 按关键词过滤章节 |
 | `vhack study <编号>` | 章节文件列表 |
 | `vhack study <编号> <文件>` | 在终端中阅读文件 |
