@@ -128,7 +128,7 @@ if __name__ == "__main__":
     import tempfile
     sample_code = '''
 AWS_ACCESS_KEY = "AKIAXXXXXXXXXXXXXXXXXXX"
-api_key = "sk-prod-abcdefgh12345678abcdefgh12345678"
+api_key = "FAKE_API_KEY_FOR_SECRET_SCAN_DEMO_ONLY_1234"
 password = "MyP@ssw0rd123"
 fake_key = "your_api_key_here"  # 이건 탐지 안 됨
 '''

@@ -130,7 +130,7 @@ M10 불충분한 암호화          약한 알고리즘, 하드코딩 IV/키
 
 ```java
 // 취약한 코드 예시 (실제로 이런 코드가 APK에 남음)
-private static final String API_KEY = "sk-prod-1234567890abcdef";
+private static final String API_KEY = "FAKE_API_KEY_HARDCODED_DEMO_ONLY";
 private static final String DB_PASSWORD = "mySecretPass123";
 private static final String FIREBASE_KEY = "AIzaSy...";
 ```
@@ -1100,7 +1100,7 @@ Developers hardcode API keys and passwords directly into strings.xml, BuildConfi
 
 ```java
 // Vulnerable code example (actually found in production APKs)
-private static final String API_KEY = "sk-prod-1234567890abcdef";
+private static final String API_KEY = "FAKE_API_KEY_HARDCODED_DEMO_ONLY";
 private static final String DB_PASSWORD = "mySecretPass123";
 ```
 

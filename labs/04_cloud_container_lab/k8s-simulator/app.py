@@ -20,7 +20,7 @@ SECRETS = {
             "host": "db.internal.corp.local",
         },
         "aws-credentials": {
-            "access_key": "AKIAIOSFODNN7EXAMPLE",
+            "access_key": "FAKEKEYEXAMPLE000000",
             "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
         },
         "admin-token": {"token": ADMIN_TOKEN, "flag": SECRET_FLAG},

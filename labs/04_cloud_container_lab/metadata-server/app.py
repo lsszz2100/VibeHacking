@@ -10,7 +10,7 @@ from flask import Flask, request, jsonify, Response
 
 app = Flask(__name__)
 
-ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY_ID", "AKIAIOSFODNN7EXAMPLE")
+ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY_ID", "FAKEKEYEXAMPLE000000")
 SECRET_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY")
 SESSION_TOKEN = os.environ.get("AWS_SESSION_TOKEN", "AQoDYXdzEJr...EXAMPLETOKEN")
 INSTANCE_ID = os.environ.get("INSTANCE_ID", "i-1234567890abcdef0")

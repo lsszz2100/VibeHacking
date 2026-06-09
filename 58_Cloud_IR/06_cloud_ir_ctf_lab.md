@@ -274,7 +274,7 @@ IAM 사용자:
   "requestParameters": {"userName": "svc-backup-2024"},
   "responseElements": {
     "accessKey": {
-      "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
+      "accessKeyId": "FAKEKEYEXAMPLE000000",
       "status": "Active"
     }
   }
@@ -490,7 +490,7 @@ def generate_aws_cloudtrail_scenario() -> list[dict]:
             "requestParameters": {"userName": "svc-backup-2024"},
             "responseElements": {
                 "accessKey": {
-                    "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
+                    "accessKeyId": "FAKEKEYEXAMPLE000000",
                     "status": "Active",
                 }
             },
@@ -1150,7 +1150,7 @@ Attack end:     T+20 min (completed in only 20 minutes)
   "requestParameters": {"userName": "svc-backup-2024"},
   "responseElements": {
     "accessKey": {
-      "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
+      "accessKeyId": "FAKEKEYEXAMPLE000000",
       "status": "Active"
     }
   }
@@ -1363,7 +1363,7 @@ def generate_aws_cloudtrail_scenario() -> list[dict]:
             "requestParameters": {"userName": "svc-backup-2024"},
             "responseElements": {
                 "accessKey": {
-                    "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
+                    "accessKeyId": "FAKEKEYEXAMPLE000000",
                     "status": "Active",
                 }
             },

@@ -70,7 +70,7 @@ curl "http://localhost:8080/fetch?url=http://172.18.0.20/latest/meta-data/iam/se
 
 ```bash
 # 환경변수 설정
-export AWS_ACCESS_KEY_ID="AKIAIOSFODNN7EXAMPLE"
+export AWS_ACCESS_KEY_ID="FAKEKEYEXAMPLE000000"
 export AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 export AWS_SESSION_TOKEN="AQoDYXdzEJr...EXAMPLETOKEN"
 
