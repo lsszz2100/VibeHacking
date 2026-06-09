@@ -2,13 +2,13 @@
 
 <div align="center">
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=18&duration=2600&pause=600&color=00FF41&center=true&vCenter=true&width=700&lines=75+Sections+%C2%B7+430%2B+Files+%C2%B7+475%2C000%2B+Lines;CTF+%C2%B7+Bug+Bounty+%C2%B7+Red+Team+%C2%B7+AI+Security;Hack+Smart.+Defend+Hard.;%EC%8B%A4%EC%A0%84+%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88+%EC%99%84%EC%A0%84+%EC%A0%95%EB%B3%B5)](https://github.com/lsszz2100/VibeHacking)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=18&duration=2600&pause=600&color=00FF41&center=true&vCenter=true&width=700&lines=75+Sections+%C2%B7+472%2B+Files+%C2%B7+513%2C000%2B+Lines;CTF+%C2%B7+Bug+Bounty+%C2%B7+Red+Team+%C2%B7+AI+Security;Hack+Smart.+Defend+Hard.;%EC%8B%A4%EC%A0%84+%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88+%EC%99%84%EC%A0%84+%EC%A0%95%EB%B3%B5)](https://github.com/lsszz2100/VibeHacking)
 
 <br/>
 
 [![Sections](https://img.shields.io/badge/⚔️_SECTIONS-75-FF0000?style=for-the-badge&labelColor=0d0d0d)](#목차)
-[![Files](https://img.shields.io/badge/📄_FILES-430+-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
-[![Lines](https://img.shields.io/badge/💻_LINES-475K%2B-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
+[![Files](https://img.shields.io/badge/📄_FILES-472+-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
+[![Lines](https://img.shields.io/badge/💻_LINES-513K%2B-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
 [![AI](https://img.shields.io/badge/🤖_AI--POWERED-Claude+GPT-9933FF?style=for-the-badge&labelColor=0d0d0d)](#11-ai-기반-사이버보안)
 [![License](https://img.shields.io/badge/🔓_LICENSE-MIT-0078D7?style=for-the-badge&labelColor=0d0d0d)](LICENSE)
 
