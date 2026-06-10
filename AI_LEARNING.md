@@ -6,7 +6,7 @@
 
 # AI CLI로 VibeHacking 학습하기
 
-> 클론 한 번, 질문 한 번 — AI가 64개 섹션의 튜터가 됩니다.
+> 클론 한 번, 질문 한 번 — AI가 75개 섹션의 튜터가 됩니다.
 
 ## 핵심 아이디어
 
@@ -374,7 +374,7 @@ vhack update
 
 # Learning VibeHacking with AI CLIs
 
-> Clone once, ask anything — AI becomes your tutor for all 64 sections.
+> Clone once, ask anything — AI becomes your tutor for all 75 sections.
 
 ## The Core Idea
 
@@ -525,7 +525,7 @@ git pull origin main
 
 # AI CLIでVibeHackingを学ぶ
 
-> 1回クローン、1回質問 — AIが64セクション全てのチューターになります。
+> 1回クローン、1回質問 — AIが75セクション全てのチューターになります。
 
 ## 核心アイデア
 
@@ -878,7 +878,7 @@ vhack update
 
 # 用 AI CLI 学习 VibeHacking
 
-> 克隆一次，提问一次 — AI 成为 64 个章节的专属导师。
+> 克隆一次，提问一次 — AI 成为 75 个章节的专属导师。
 
 ## 核心理念
 

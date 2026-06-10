@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-75-blueviolet)](#目录)
-[![Files](https://img.shields.io/badge/Docs-430%2B%20Files-brightgreen)](#目录)
-[![Lines](https://img.shields.io/badge/Lines-475%2C000%2B-orange)](#目录)
+[![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#目录)
+[![Lines](https://img.shields.io/badge/Lines-525%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
 
 <br/>
@@ -152,61 +152,81 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 
 | # | 章节 | 核心内容 | 文件数 |
 |---|------|---------|-------|
-| 01 | [Linux基础 & Kali Linux](#01-linux基础--kali-linux) | 必备命令、Kali配置、Bash脚本 | 3 |
-| 02 | [网络黑客技术](#02-网络黑客技术) | OSI/TCP-IP、数据包分析、无线攻击 | 3 |
-| 03 | [系统入侵](#03-系统入侵) | 密码破解、缓冲区溢出 | 2 |
-| 04 | [逆向工程](#04-逆向工程) | 汇编语言、x64dbg、PE结构 | 3 |
-| 05 | [Web渗透](#05-web渗透) | OWASP Top 10、SQL注入进阶、XSS/CSRF | 3 |
-| 06 | [恶意代码分析](#06-恶意代码分析) | 静态/动态分析、Volatility、Android | 3 |
-| 07 | [数字取证](#07-数字取证) | 取证流程、Windows痕迹、网络取证 | 3 |
-| 08 | [Python黑客技术](#08-python黑客技术) | 工具开发、网络扫描器、Web自动化 | 3 |
-| 09 | [漏洞利用技术](#09-漏洞利用技术) | ROP Chain、SEH、Linux BOF、提权 | 2 |
-| 10 | [渗透测试方法论](#10-渗透测试方法论) | 渗透流程、OSINT侦察、报告撰写 | 3 |
-| 11 | [**AI驱动的网络安全**](#11-ai驱动的网络安全) | Claude Opus 4、GPT-4o、LLM漏洞研究、CTF自动化 | 4 |
-| 12 | [**漏洞赏金**](#12-漏洞赏金) | 方法论、Burp Suite进阶、自动化工具 | 3 |
-| 13 | [**SOC & 蓝队**](#13-soc--蓝队) | SOC运营、Splunk分析、威胁狩猎 | 3 |
-| 14 | [**云安全**](#14-云安全) | AWS/Azure/GCP攻击向量、渗透测试、清单 | 3 |
-| 15 | [**WiFi黑客技术**](#15-wifi黑客技术) | WPA2破解、PMKID、Evil Twin、自动化 | 3 |
-| 16 | [**密码学**](#16-密码学) | 黑客密码学、哈希攻击、应用密码学 | 3 |
-| 17 | [**红队行动**](#17-红队行动) | 作战手册、钓鱼/社会工程学、API渗透 | 3 |
-| 18 | [**DevSecOps**](#18-devsecops) | SAST/SCA/DAST、容器安全、CI/CD流水线 | 3 |
-| 19 | [**汇编语言**](#19-汇编语言) | x86/x64基础、shellcode开发、反汇编分析 | 3 |
-| 20 | [**Shell脚本**](#20-shell脚本) | Bash基础、渗透自动化、后渗透脚本 | 3 |
-| 21 | [**Windows漏洞利用**](#21-windows漏洞利用) | Windows内部结构、提权、防御规避 | 3 |
-| 22 | [**密码破解**](#22-密码破解) | 哈希类型/字典、Hashcat/John、高级技术 | 3 |
-| 23 | [**数据库攻击**](#23-数据库攻击) | Oracle/MySQL攻击、DB提权、取证与审计 | 4 |
-| 24 | [**网络基础设施安全**](#24-网络基础设施安全) | DNS攻击、邮件服务器(SPF/DKIM/DMARC)、SSH隧道 | 4 |
-| 25 | [**威胁情报**](#25-威胁情报) | CTI基础、OSINT/Shodan、事件响应、蜜罐 | 4 |
-| 26 | [**Linux加固**](#26-linux加固) | iptables/nftables、PAM认证、KISA漏洞评估 | 4 |
-| 27 | [**IoT黑客技术**](#27-iot黑客技术) | 攻击面分析、固件分析、IoT漏洞利用 | 3 |
-| 28 | [**移动端攻击**](#28-移动端攻击) | Android渗透测试、iOS渗透测试、移动流量分析 | 3 |
-| 29 | [**容器/Kubernetes安全**](#29-容器kubernetes安全) | Docker安全、Kubernetes攻击、容器逃逸 | 3 |
-| 30 | [**漏洞研究**](#30-漏洞研究) | 模糊测试技术、漏洞分析、高级利用开发 | 3 |
-| 31 | [**AI/ML系统安全**](#31-aiml系统安全) | 对抗样本、提示注入、模型提取、智能体安全 | 5 |
-| 32 | [**网络设备攻击**](#32-网络设备攻击) | IOS侦察、L2攻击、路由协议操控、管理平面利用 | 5 |
-| 33 | [**OSINT与社会工程学**](#33-osint与社会工程学) | 信息收集方法论、目标画像、钓鱼基础设施构建与规避 | 5 |
-| 34 | [**硬件攻击**](#34-硬件攻击) | 接口分析(UART/JTAG/SPI)、固件提取、侧信道与故障注入 | 4 |
-| 35 | [**供应链攻击**](#35-供应链攻击) | 软件供应链入侵、CI/CD投毒、SolarWinds·XZ模式分析 | 3 |
-| 36 | [**汽车黑客技术**](#36-汽车黑客技术) | CAN总线分析、ECU利用、车联网与OTA攻击 | 4 |
-| 37 | [**ICS/SCADA安全**](#37-icsscada安全) | ICS协议侦察、SCADA利用、OT网络攻防 | 4 |
-| 38 | [**云原生安全**](#38-云原生安全) | CNAPP、eBPF运行时安全、镜像加固、容器逃逸 | 4 |
-| 39 | [**零信任架构**](#39-零信任架构) | ZTA原则、身份/设备信任、微分段、SASE | 4 |
-| 40 | [**威胁狩猎**](#40-威胁狩猎) | 狩猎方法论、MITRE ATT&CK场景、100+ KQL/SPL查询、SOAR自动化 | 4 |
-| 41 | [**韩国安全认证**](#41-韩国安全认证) | 信息安全工程师、ISMS-P、CISSP/OSCP路线图、安全法规 | 5 |
-| 42 | [**区块链/Web3安全**](#42-区块链web3安全) | EVM结构、智能合约审计、DeFi攻击、Web3渗透工具 | 4 |
-| 43 | [**物理安全渗透**](#43-物理安全渗透) | 物理渗透测试方法论、门锁破解、RFID克隆、社会工程学 | 4 |
-| 44 | [**事件响应/DFIR**](#44-事件响应dfir) | IR手册、内存/磁盘取证、网络取证、封控与清除 | 4 |
-| 45 | [**恶意代码开发**](#45-恶意代码开发) | PE结构、shellcode/注入、C2框架、AV/EDR规避 | 4 |
-| 46 | [**CTF技巧**](#46-ctf技巧) | CTF方法论/工具、PWN/REV、Web/密码学、自动化框架 | 4 |
-| 47 | [**移动取证**](#47-移动取证) | Android/iOS取证、证据提取、移动取证工具 | 4 |
-| 48 | [**威胁建模**](#48-威胁建模) | STRIDE/PASTA/DREAD、攻击树、威胁建模工具 | 4 |
-| 49 | [**红队基础设施**](#49-红队基础设施) | C2框架、域前置、OPSEC、基础设施自动化 | 4 |
-| 50 | [**游戏黑客**](#50-游戏黑客) | 内存操控、Cheat Engine、数据包操控、反作弊分析 | 4 |
-| 51 | [**浏览器扩展安全**](#51-浏览器扩展安全) | MV2/V3、恶意扩展分析、Content Script XSS | 4 |
-| 52 | [**API安全**](#52-api安全) | OWASP API Top 10、BOLA、GraphQL、模糊测试、OAuth2 | 4 |
-| 53 | [**无服务器安全**](#53-无服务器安全) | Lambda攻击、事件注入、IAM滥用、IaC扫描 | 4 |
-| 54 | [**Active Directory攻击**](#54-active-directory攻击) | AD枚举、Kerberoasting、DCSync、黄金票据 | 4 |
-| 55 | [**检测规避技术**](#55-检测规避技术) | AV/EDR绕过、IDS/IPS规避、直接syscall、痕迹清除 | 4 |
+| 01 | [Linux基础 & Kali Linux](#01-linux基础--kali-linux) | 必备命令、Kali配置、Bash脚本 | 6 |
+| 02 | [网络黑客技术](#02-网络黑客技术) | OSI/TCP-IP、数据包分析、无线攻击 | 6 |
+| 03 | [系统入侵](#03-系统入侵) | 密码破解、缓冲区溢出 | 6 |
+| 04 | [逆向工程](#04-逆向工程) | 汇编语言、x64dbg、PE结构 | 6 |
+| 05 | [Web渗透](#05-web渗透) | OWASP Top 10、SQL注入进阶、XSS/CSRF | 6 |
+| 06 | [恶意代码分析](#06-恶意代码分析) | 静态/动态分析、Volatility、Android | 6 |
+| 07 | [数字取证](#07-数字取证) | 取证流程、Windows痕迹、网络取证 | 6 |
+| 08 | [Python黑客技术](#08-python黑客技术) | 工具开发、网络扫描器、Web自动化 | 6 |
+| 09 | [漏洞利用技术](#09-漏洞利用技术) | ROP Chain、SEH、Linux BOF、提权 | 6 |
+| 10 | [渗透测试方法论](#10-渗透测试方法论) | 渗透流程、OSINT侦察、报告撰写 | 6 |
+| 11 | [**AI驱动的网络安全**](#11-ai驱动的网络安全) | Claude Opus 4、GPT-4o、LLM漏洞研究、CTF自动化 | 6 |
+| 12 | [**漏洞赏金**](#12-漏洞赏金) | 方法论、Burp Suite进阶、自动化工具 | 6 |
+| 13 | [**SOC & 蓝队**](#13-soc--蓝队) | SOC运营、Splunk分析、威胁狩猎 | 6 |
+| 14 | [**云安全**](#14-云安全) | AWS/Azure/GCP攻击向量、渗透测试、清单 | 6 |
+| 15 | [**WiFi黑客技术**](#15-wifi黑客技术) | WPA2破解、PMKID、Evil Twin、自动化 | 6 |
+| 16 | [**密码学**](#16-密码学) | 黑客密码学、哈希攻击、应用密码学 | 6 |
+| 17 | [**红队行动**](#17-红队行动) | 作战手册、钓鱼/社会工程学、API渗透 | 6 |
+| 18 | [**DevSecOps**](#18-devsecops) | SAST/SCA/DAST、容器安全、CI/CD流水线 | 6 |
+| 19 | [**汇编语言**](#19-汇编语言) | x86/x64基础、shellcode开发、反汇编分析 | 6 |
+| 20 | [**Shell脚本**](#20-shell脚本) | Bash基础、渗透自动化、后渗透脚本 | 6 |
+| 21 | [**Windows漏洞利用**](#21-windows漏洞利用) | Windows内部结构、提权、防御规避 | 6 |
+| 22 | [**密码破解**](#22-密码破解) | 哈希类型/字典、Hashcat/John、高级技术 | 6 |
+| 23 | [**数据库攻击**](#23-数据库攻击) | Oracle/MySQL攻击、DB提权、取证与审计 | 6 |
+| 24 | [**网络基础设施安全**](#24-网络基础设施安全) | DNS攻击、邮件服务器(SPF/DKIM/DMARC)、SSH隧道 | 6 |
+| 25 | [**威胁情报**](#25-威胁情报) | CTI基础、OSINT/Shodan、事件响应、蜜罐 | 6 |
+| 26 | [**Linux加固**](#26-linux加固) | iptables/nftables、PAM认证、KISA漏洞评估 | 6 |
+| 27 | [**IoT黑客技术**](#27-iot黑客技术) | 攻击面分析、固件分析、IoT漏洞利用 | 6 |
+| 28 | [**移动端攻击**](#28-移动端攻击) | Android渗透测试、iOS渗透测试、移动流量分析 | 6 |
+| 29 | [**容器/Kubernetes安全**](#29-容器kubernetes安全) | Docker安全、Kubernetes攻击、容器逃逸 | 6 |
+| 30 | [**漏洞研究**](#30-漏洞研究) | 模糊测试技术、漏洞分析、高级利用开发 | 6 |
+| 31 | [**AI/ML系统安全**](#31-aiml系统安全) | 对抗样本、提示注入、模型提取、智能体安全 | 6 |
+| 32 | [**网络设备攻击**](#32-网络设备攻击) | IOS侦察、L2攻击、路由协议操控、管理平面利用 | 6 |
+| 33 | [**OSINT与社会工程学**](#33-osint与社会工程学) | 信息收集方法论、目标画像、钓鱼基础设施构建与规避 | 6 |
+| 34 | [**硬件攻击**](#34-硬件攻击) | 接口分析(UART/JTAG/SPI)、固件提取、侧信道与故障注入 | 6 |
+| 35 | [**供应链攻击**](#35-供应链攻击) | 软件供应链入侵、CI/CD投毒、SolarWinds·XZ模式分析 | 6 |
+| 36 | [**汽车黑客技术**](#36-汽车黑客技术) | CAN总线分析、ECU利用、车联网与OTA攻击 | 6 |
+| 37 | [**ICS/SCADA安全**](#37-icsscada安全) | ICS协议侦察、SCADA利用、OT网络攻防 | 6 |
+| 38 | [**云原生安全**](#38-云原生安全) | CNAPP、eBPF运行时安全、镜像加固、容器逃逸 | 6 |
+| 39 | [**零信任架构**](#39-零信任架构) | ZTA原则、身份/设备信任、微分段、SASE | 6 |
+| 40 | [**威胁狩猎**](#40-威胁狩猎) | 狩猎方法论、MITRE ATT&CK场景、100+ KQL/SPL查询、SOAR自动化 | 6 |
+| 41 | [**韩国安全认证**](#41-韩国安全认证) | 信息安全工程师、ISMS-P、CISSP/OSCP路线图、安全法规 | 6 |
+| 42 | [**区块链/Web3安全**](#42-区块链web3安全) | EVM结构、智能合约审计、DeFi攻击、Web3渗透工具 | 6 |
+| 43 | [**物理安全渗透**](#43-物理安全渗透) | 物理渗透测试方法论、门锁破解、RFID克隆、社会工程学 | 6 |
+| 44 | [**事件响应/DFIR**](#44-事件响应dfir) | IR手册、内存/磁盘取证、网络取证、封控与清除 | 6 |
+| 45 | [**恶意代码开发**](#45-恶意代码开发) | PE结构、shellcode/注入、C2框架、AV/EDR规避 | 6 |
+| 46 | [**CTF技巧**](#46-ctf技巧) | CTF方法论/工具、PWN/REV、Web/密码学、自动化框架 | 6 |
+| 47 | [**移动取证**](#47-移动取证) | Android/iOS取证、证据提取、移动取证工具 | 6 |
+| 48 | [**威胁建模**](#48-威胁建模) | STRIDE/PASTA/DREAD、攻击树、威胁建模工具 | 6 |
+| 49 | [**红队基础设施**](#49-红队基础设施) | C2框架、域前置、OPSEC、基础设施自动化 | 6 |
+| 50 | [**游戏黑客**](#50-游戏黑客) | 内存操控、Cheat Engine、数据包操控、反作弊分析 | 6 |
+| 51 | [**浏览器扩展安全**](#51-浏览器扩展安全) | MV2/V3、恶意扩展分析、Content Script XSS | 6 |
+| 52 | [**API安全**](#52-api安全) | OWASP API Top 10、BOLA、GraphQL、模糊测试、OAuth2 | 6 |
+| 53 | [**无服务器安全**](#53-无服务器安全) | Lambda攻击、事件注入、IAM滥用、IaC扫描 | 6 |
+| 54 | [**Active Directory攻击**](#54-active-directory攻击) | AD枚举、Kerberoasting、DCSync、黄金票据 | 6 |
+| 55 | [**检测规避技术**](#55-检测规避技术) | AV/EDR绕过、IDS/IPS规避、直接syscall、痕迹清除 | 6 |
+| 56 | [**AI红队**](#56-ai红队) | 提示注入、模型提取、对抗样本 | 6 |
+| 57 | [**量子密码学**](#57-量子密码学) | QKD、后量子算法、NIST PQC | 6 |
+| 58 | [**云事件响应**](#58-云事件响应) | CloudTrail取证、Azure/GCP IR、威胁狩猎 | 6 |
+| 59 | [**供应链安全**](#59-供应链安全) | SBOM、依赖混淆、SLSA构建完整性 | 6 |
+| 60 | [**浏览器安全进阶**](#60-浏览器安全进阶) | JS引擎利用、沙箱逃逸、MV3 | 6 |
+| 61 | [**固件黑客**](#61-固件黑客) | 固件提取、Ghidra分析、QEMU模拟 | 6 |
+| 62 | [**汽车安全**](#62-汽车安全) | CAN总线、ECU/UDS、V2X攻击 | 6 |
+| 63 | [**OT/ICS进阶**](#63-otics进阶) | SCADA、PLC利用、工业协议 | 6 |
+| 64 | [**威胁情报平台**](#64-威胁情报平台) | MISP、威胁情报源、IOC自动化 | 6 |
+| 65 | [**逆向工程进阶**](#65-逆向工程进阶) | 反调试、脱壳、符号执行 | 6 |
+| 66 | [**漏洞利用开发**](#66-漏洞利用开发) | ROP链、堆/内核/浏览器利用 | 6 |
+| 67 | [**恶意软件开发解析**](#67-恶意软件开发解析) | C2架构、Shellcode、持久化、规避 | 6 |
+| 68 | [**紫队运营**](#68-紫队运营) | 攻击模拟、检测工程、ATT&CK | 6 |
+| 69 | [**LLM安全**](#69-llm安全) | OWASP LLM Top 10、提示注入、护栏 | 6 |
+| 70 | [**Kubernetes安全**](#70-kubernetes安全) | RBAC滥用、Pod逃逸、etcd、加固 | 6 |
+| 71 | [**蓝牙/RF黑客**](#71-蓝牙rf黑客) | BLE攻击、RTL-SDR、Zigbee IoT安全 | 6 |
+| 72 | [**恶意软件沙箱分析**](#72-恶意软件沙箱分析) | ANY.RUN/VirusTotal、PE分析、IOC提取 | 6 |
+| 73 | [**漏洞赏金自动化**](#73-漏洞赏金自动化) | HackerOne、subfinder/nuclei流水线、CVSS报告 | 6 |
+| 74 | [**代码审计**](#74-代码审计) | Semgrep/CodeQL、Source-Sink追踪、CI/CD安全门 | 6 |
+| 75 | [**红队报告撰写**](#75-红队报告撰写) | ATT&CK映射、双受众报告、复盘 | 6 |
 | 🧪 | [**CTF实验环境（labs/）**](#ctf实验环境labs) | Web/二进制/网络/云原生/综合场景Docker CTF实验 | 50 |
 
 ---
@@ -252,7 +272,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 01_Linux_Basics/
 ├── 01_linux_essential_commands.md   ← 文件/进程/网络必备命令
 ├── 02_kali_linux_setup.md           ← Kali初始配置、工具安装
-└── 03_bash_scripting.md             ← 自动化脚本、实战示例
+├── 03_bash_scripting.md             ← 自动化脚本、实战示例
+├── 04_linux_privilege_escalation.md ← Linux Privilege Escalation — sudo · SUID · Capabilities · Kernel Expl...
+├── 05_linux_security_tools.md       ← Linux Security Tools Reference
+└── 06_linux_ctf_practical_lab.md    ← Linux CTF Practical Lab — Privilege Escalation · SUID · Cron · Enviro...
 ```
 
 **核心内容：** 文件系统、进程管理、网络命令、权限管理、30+个Bash自动化脚本
@@ -265,7 +288,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 02_Network_Hacking/
 ├── 01_osi_tcpip.md          ← OSI七层、TCP/IP协议栈、协议分析
 ├── 02_packet_analysis.md    ← Wireshark实战、tcpdump、数据包操控
-└── 03_wireless_hacking.md   ← WEP/WPA2破解、Evil Twin、无线攻击
+├── 03_wireless_hacking.md   ← WEP/WPA2破解、Evil Twin、无线攻击
+├── 04_mitm_advanced.md      ← MITM Advanced — ARP Spoofing · SSL Stripping · bettercap · mitmproxy
+├── 05_network_exploitation_techniques.md ← Advanced Network Exploitation Techniques
+└── 06_network_ctf_lab.md    ← CTF-Style Network Hacking Lab
 ```
 
 **核心内容：** 数据包捕获与分析、ARP欺骗、MITM中间人攻击、无线网络攻击、防火墙绕过
@@ -278,7 +304,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 03_System_Hacking/
 ├── 01_password_cracking.md       ← Hashcat、John、彩虹表、在线破解
 ├── 02_buffer_overflow.md         ← 栈溢出原理、shellcode、实战示例
-└── 03_active_directory_attack.md ← AD攻击完全指南、Kerberoasting、DCSync
+├── 03_active_directory_attack.md ← AD攻击完全指南、Kerberoasting、DCSync
+├── 04_kerberos_delegation_attacks.md ← Kerberos Delegation Attacks — Complete Guide
+├── 05_system_defense_and_detection.md ← System Attack Detection and Defense
+└── 06_system_ctf_lab.md          ← CTF-Style System Hacking Lab
 ```
 
 **核心内容：** 哈希破解策略、从原理到漏洞利用的BOF完整链路、Active Directory攻击链完全攻略
@@ -291,7 +320,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 04_Reverse_Engineering/
 ├── 01_assembly_and_registers.md   ← x86/x64汇编、寄存器、栈帧
 ├── 02_ollydbg_practical.md        ← x64dbg实战分析
-└── 03_pe_structure.md             ← PE文件结构、IAT/EAT、加壳
+├── 03_pe_structure.md             ← PE文件结构、IAT/EAT、加壳
+├── 04_ghidra_and_dynamic_analysis.md ← Ghidra Practical Analysis & WorstFit Unicode Vulnerability
+├── 05_advanced_unpacking_and_deobfuscation.md ← Advanced Unpacking and Deobfuscation
+└── 06_reversing_ctf_lab.md        ← CTF-Style Reversing Lab
 ```
 
 **核心内容：** 汇编语言、调试器使用、PE结构深度分析、IDA Pro/Ghidra
@@ -304,7 +336,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 05_Web_Hacking/
 ├── 01_owasp_top10.md              ← OWASP Top 10（2021）、Burp Suite、Nikto
 ├── 02_sql_injection_advanced.md   ← Blind/时间盲注、NoSQL、SQLMap实战
-└── 03_xss_csrf_file_upload.md     ← Stored/Reflected/DOM XSS、CSRF、Webshell
+├── 03_xss_csrf_file_upload.md     ← Stored/Reflected/DOM XSS、CSRF、Webshell
+├── 04_waf_bypass_advanced_web.md  ← WAF Bypass & Advanced Web Attack Techniques
+├── 05_web_security_tools_and_automation.md ← Web Security Tools and Automation
+└── 06_web_ctf_practical_lab.md    ← Web Hacking CTF Practical Lab — SQL Injection, XSS, SSRF, SSTI Compre...
 ```
 
 **核心内容：** OWASP Top 10实战、SQL注入完全攻略、XSS/CSRF/文件上传/XXE/SSRF
@@ -317,7 +352,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 06_Malware_Analysis/
 ├── 01_malware_analysis.md            ← 分类、分析环境、静态/动态分析、YARA
 ├── 02_memory_forensics_malware.md    ← Volatility完全攻略、代码注入检测
-└── 03_android_malware_analysis.md    ← APK分析、Frida Hook、MobSF
+├── 03_android_malware_analysis.md    ← APK分析、Frida Hook、MobSF
+├── 04_yara_and_detection.md          ← YARA Rule Development and Automated Malware Detection
+├── 05_malware_defense_and_hunting.md ← Malware Defense and Hunting
+└── 06_malware_ctf_practical_lab.md   ← Malware Analysis CTF Practical Lab — Static/Dynamic Analysis, Unpacki...
 ```
 
 **核心内容：** 静态・动态・内存分析全流程、Volatility插件、Android恶意代码
@@ -330,7 +368,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 07_Digital_Forensics/
 ├── 01_digital_forensics.md               ← 取证原则、证据收集、镜像分析
 ├── 02_windows_forensics_artifacts.md     ← 注册表、事件日志、Prefetch、浏览器痕迹
-└── 03_network_forensics.md               ← Wireshark、Zeek、Suricata、事件响应
+├── 03_network_forensics.md               ← Wireshark、Zeek、Suricata、事件响应
+├── 04_advanced_volatility.md             ← Volatility3 Advanced — Process Analysis, Network, and Malware Detection
+├── 05_forensics_automation_and_tools.md  ← Forensics Automation and Tools
+└── 06_forensics_ctf_lab.md               ← Forensics CTF Lab
 ```
 
 **核心内容：** 证据收集规程、Windows痕迹完整分析、网络取证、时间线分析
@@ -343,7 +384,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 08_Python_Hacking/
 ├── 01_python_hacking_tools.md       ← 端口扫描器、嗅探器、后门等30+个示例
 ├── 02_python_network_scanner.md     ← 多线程扫描器、ARP、DNS枚举、SSH爆破
-└── 03_python_web_exploitation.md    ← Web爬虫、SQLi自动化、XSS扫描器、报告生成
+├── 03_python_web_exploitation.md    ← Web爬虫、SQLi自动化、XSS扫描器、报告生成
+├── 04_python_exploit_automation.md  ← Python Exploit Automation — pwntools, ROPgadget, and CTF Tools
+├── 05_python_security_automation.md ← Python Security Automation — Scapy, requests, paramiko, Automation Tools
+└── 06_python_hacking_ctf_lab.md     ← Python Hacking CTF Practice Lab
 ```
 
 **核心内容：** 基于Scapy、paramiko、requests的安全工具开发，50+个完整可运行代码
@@ -356,7 +400,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 09_Exploit_Techniques/
 ├── 01_advanced_exploitation.md   ← ROP Chain、Heap Spray、SEH、Win32 shellcoding
 ├── 02_linux_exploitation.md      ← Linux BOF、Ret2Libc、格式化字符串、提权
-└── 03_heap_exploitation.md       ← tcache投毒、UAF、House of系列、pwndbg
+├── 03_heap_exploitation.md       ← tcache投毒、UAF、House of系列、pwndbg
+├── 04_format_string_exploits.md  ← Format String Exploits — Arbitrary Read, Write, and GOT Overwrite
+├── 05_exploit_defense_and_mitigation.md ← Exploit Defense and Mitigation — ASLR, DEP/NX, Stack Canaries, CFG
+└── 06_exploit_ctf_lab.md         ← Exploit Techniques CTF Practice Lab
 ```
 
 **核心内容：** DEP/ASLR/NX绕过、ROP链构造、格式化字符串漏洞利用、堆漏洞完全攻略
@@ -369,7 +416,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 10_Pentest_Methodology/
 ├── 01_pentest_methodology.md   ← 完整渗透测试流程、MITRE ATT&CK、报告撰写
 ├── 02_osint_recon.md           ← Google Dorks、Shodan、子域名枚举、GitHub敏感信息挖掘
-└── 03_report_writing.md        ← 专业报告撰写、CVSS评分、PoC编写、管理层/技术报告模板
+├── 03_report_writing.md        ← 专业报告撰写、CVSS评分、PoC编写、管理层/技术报告模板
+├── 04_post_exploitation.md     ← Post-Exploitation Methodology — Persistence, Information Gathering, P...
+├── 05_pentest_reporting_and_remediation.md ← Pentest Reporting and Remediation — CVSS Scoring, Report Writing, Exe...
+└── 06_pentest_ctf_lab.md       ← Pentest Methodology CTF Practice Lab
 ```
 
 **核心内容：** 系统化渗透测试方法论、OSINT工具完整运用、专业报告撰写（CVSS・PoC・合规要求）
@@ -385,7 +435,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_ai_security_landscape_2026.md   ← Claude・GPT-4o・내부 연구 프로그램全景图
 ├── 02_llm_vulnerability_research.md   ← 用LLM发现零日漏洞、AI模糊测试、代码分析自动化
 ├── 03_ai_assisted_pentesting.md       ← AI辅助渗透测试工作流、提示词工程
-└── 04_ai_ctf_automation.md            ← CTF自动化AI智能体、密码/Web/取证专业子智能体
+├── 04_ai_ctf_automation.md            ← CTF自动化AI智能体、密码/Web/取证专业子智能体
+├── 05_claude_gpt_cyber_integration.md ← AI Integration — Claude + GPT-4o Security Analysis Tools Guide
+└── 06_ai_security_ctf_lab.md          ← CTF-Style AI Security Labs
 ```
 
 ### 2026年AI安全格局
@@ -406,7 +458,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 12_Bug_Bounty/
 ├── 01_bug_bounty_methodology.md   ← HackerOne/Bugcrowd方法论、IDOR、XSS绕过、自动化
 ├── 02_burp_suite_advanced.md      ← Burp Suite完全攻略、JWT攻击、请求走私
-└── 03_bug_bounty_automation.md    ← Nuclei、ffuf、dalfox、自动化流水线
+├── 03_bug_bounty_automation.md    ← Nuclei、ffuf、dalfox、自动化流水线
+├── 04_api_security_testing.md     ← API Security Testing & Bug Bounty Practical Guide
+├── 05_advanced_vuln_chains.md     ← Bug Bounty Advanced — Vulnerability Chains, Subdomain Takeover, Accou...
+└── 06_bug_bounty_ctf_lab.md       ← Bug Bounty CTF Practice Lab
 ```
 
 **核心内容：** 漏洞赏金完整工作流、Burp Suite高级功能、侦察→漏洞→报告自动化
@@ -419,7 +474,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 13_SOC_Blue_Team/
 ├── 01_soc_fundamentals.md       ← SOC架构、事件响应、关键事件ID、EDR
 ├── 02_splunk_siem_analysis.md   ← Splunk SPL完全攻略、100+检测查询
-└── 03_threat_hunting.md         ← 威胁狩猎、勒索软件入侵调查、APT追踪
+├── 03_threat_hunting.md         ← 威胁狩猎、勒索软件入侵调查、APT追踪
+├── 04_qradar_xdr_blue_team.md   ← IBM QRadar & Azure Sentinel KQL & XDR Blue Team Practical Guide
+├── 05_detection_engineering.md  ← Detection Engineering — Sigma & MITRE ATT&CK Based Rule Development
+└── 06_soc_ctf_lab.md            ← SOC/Blue Team CTF Lab
 ```
 
 **核心内容：** SOC各层级职责、100+攻击检测模式、Splunk/QRadar/ELK查询、威胁狩猎方法论
@@ -432,7 +490,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 14_Cloud_Security/
 ├── 01_cloud_attack_vectors.md        ← AWS/Azure/GCP/K8s攻击向量完整分析
 ├── 02_aws_pentest.md                 ← AWS渗透测试方法论、提权、自动化
-└── 03_cloud_security_checklist.md    ← CIS检查清单、Terraform、SCP策略
+├── 03_cloud_security_checklist.md    ← CIS检查清单、Terraform、SCP策略
+├── 04_GCP_Azure_Pentest.md           ← GCP and Azure Penetration Testing
+├── 05_cloud_lateral_movement.md      ← Cloud Lateral Movement — Account Pivoting, Cross-Service Movement, an...
+└── 06_cloud_security_ctf_lab.md      ← Cloud Security CTF Practice Lab
 ```
 
 **核心内容：** IAM权限滥用、S3配置错误、容器逃逸、Kubernetes攻击、云安全检查清单
@@ -445,7 +506,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 15_WiFi_Hacking/
 ├── 01_wifi_hacking_fundamentals.md   ← WEP/WPA/WPA2/WPA3理论、aircrack-ng基础
 ├── 02_wpa2_cracking.md               ← Hashcat/Aircrack、PMKID攻击、字典优化
-└── 03_advanced_wifi_attacks.md       ← Evil Twin、KARMA、Bettercap、Scapy操控
+├── 03_advanced_wifi_attacks.md       ← Evil Twin、KARMA、Bettercap、Scapy操控
+├── 04_Enterprise_WiFi_Attacks.md     ← Enterprise WiFi Attacks (WPA2-Enterprise / RADIUS)
+├── 05_rogue_ap_and_detection.md      ← Rogue AP, Captive Portal, WiFi Monitoring, and Detection
+└── 06_wifi_ctf_lab.md                ← WiFi Hacking CTF Practice Lab
 ```
 
 **核心内容：** 四次握手、PMKID捕获、GPU破解、Evil Twin搭建、无线自动化
@@ -458,7 +522,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 16_Cryptography/
 ├── 01_cryptography_for_hackers.md   ← AES模式攻击、RSA漏洞、XOR破解
 ├── 02_hash_attacks.md               ← MD5碰撞、彩虹表、Kerberoasting
-└── 03_applied_cryptography.md       ← Padding Oracle、ECDSA随机数重用、JWT攻击
+├── 03_applied_cryptography.md       ← Padding Oracle、ECDSA随机数重用、JWT攻击
+├── 04_PKI_TLS_Attacks.md            ← PKI Infrastructure and TLS/SSL Attacks
+├── 05_crypto_implementation_attacks.md ← Crypto Implementation Attacks — Padding Oracle, Timing Attacks, Weak RNG
+└── 06_crypto_ctf_practical_lab.md   ← Cryptography CTF Practical Lab — Classical Ciphers, RSA, ECC, and Has...
 ```
 
 **核心内容：** 密码实现漏洞、CTF密码学题型、安全密码实现指南
@@ -471,7 +538,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 17_Red_Team_Operations/
 ├── 01_red_team_playbook.md               ← 行动架构、Cobalt Strike/Havoc、AV/EDR绕过
 ├── 02_phishing_and_social_engineering.md ← GoPhish、Evilginx2、鱼叉式钓鱼、BEC
-└── 03_api_hacking.md                     ← OWASP API Top 10、GraphQL、Fuzzer开发
+├── 03_api_hacking.md                     ← OWASP API Top 10、GraphQL、Fuzzer开发
+├── 04_C2_Infrastructure.md               ← C2 (Command and Control) Infrastructure Setup and Operations
+├── 05_red_team_reporting.md              ← Red Team Reporting — Results Analysis, Exploit Chain Documentation, E...
+└── 06_red_team_ctf_lab.md                ← Red Team Operations CTF Practice Lab
 ```
 
 **核心内容：** 红队vs渗透测试区别、C2框架运营、钓鱼基础设施、API漏洞完全攻略
@@ -484,7 +554,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 18_DevSecOps/
 ├── 01_devsecops_fundamentals.md    ← Shift Left、Semgrep、SonarQube、Snyk、ZAP
 ├── 02_container_security.md        ← Dockerfile安全、Trivy、Falco、K8s RBAC、cosign
-└── 03_github_actions_security.md   ← CI/CD安全、OIDC、SHA固定、完整安全流水线
+├── 03_github_actions_security.md   ← CI/CD安全、OIDC、SHA固定、完整安全流水线
+├── 04_Secret_Detection_and_SBOM.md ← Secret Detection and SBOM (Software Bill of Materials)
+├── 05_supply_chain_security.md     ← Supply Chain Security — Dependency Attacks, SLSA, Signature Verification
+└── 06_devsecops_ctf_lab.md         ← DevSecOps CTF Practice Lab
 ```
 
 **核心内容：** 安全左移（Shift Left）、SAST/SCA/DAST/IaC扫描自动化、容器运行时检测、GitLab/Jenkins/GitHub Actions安全流水线完整实现
@@ -497,7 +570,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 19_Assembly_Language/
 ├── 01_x86_x64_Fundamentals.md   ← 寄存器、指令、栈帧、调用约定
 ├── 02_Shellcode_Development.md  ← shellcode编写、坏字节去除、ctypes执行测试
-└── 03_Disassembly_Analysis.md   ← GDB/pwndbg、IDA/Ghidra、Capstone自动化
+├── 03_Disassembly_Analysis.md   ← GDB/pwndbg、IDA/Ghidra、Capstone自动化
+├── 04_ROP_Chain_Programming.md  ← ROP (Return-Oriented Programming) Chain Construction
+├── 05_shellcode_analysis_and_detection.md ← Shellcode Analysis and Detection — Static/Dynamic Analysis and Signat...
+└── 06_assembly_ctf_lab.md       ← Assembly Language CTF Practice Lab
 ```
 
 **核心内容：** x86/x64寄存器完全攻略、NASM编码、64位execve shellcode实现、基于Capstone的自动反汇编器
@@ -510,7 +586,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 20_Shell_Scripting/
 ├── 01_Bash_Scripting_Basics.md       ← 变量/数组/条件/循环/函数、awk/sed、端口扫描器
 ├── 02_Pentest_Automation.md          ← 侦察自动化、子域名枚举、漏洞扫描封装
-└── 03_Post_Exploitation_Scripts.md   ← 反弹Shell、持久化、Python C2套接字实现
+├── 03_Post_Exploitation_Scripts.md   ← 反弹Shell、持久化、Python C2套接字实现
+├── 04_Advanced_Obfuscation_Evasion.md ← Shell Script Obfuscation and Detection Evasion
+├── 05_bash_forensics_and_monitoring.md ← Bash Forensics & Monitoring Automation — Log Analysis, Anomaly Detect...
+└── 06_shell_ctf_lab.md               ← Shell Scripting CTF Practice Lab
 ```
 
 **核心内容：** Bash实战脚本、从侦察到后渗透全流程自动化、7种反弹Shell一行命令、Python C2实现
@@ -523,7 +602,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 21_Windows_Exploitation/
 ├── 01_Windows_Internals.md              ← PE格式、PEB/TEB、WinAPI核心函数、PE解析器代码
 ├── 02_Windows_Privilege_Escalation.md   ← 服务/注册表/DLL劫持、UAC绕过、令牌模拟
-└── 03_Defense_Evasion.md                ← AMSI/ETW绕过、6种进程注入、LOLBAS、AES载荷加密
+├── 03_Defense_Evasion.md                ← AMSI/ETW绕过、6种进程注入、LOLBAS、AES载荷加密
+├── 04_COM_Object_Hijacking.md           ← COM Object Hijacking and WMI Abuse
+├── 05_windows_persistence_detection.md  ← Windows Persistence Detection — Registry, Service, and WMI Backdoor A...
+└── 06_windows_ctf_lab.md                ← Windows Exploitation CTF Practice Lab
 ```
 
 **核心内容：** Windows内部结构深度解析、提权完全攻略、AMSI/AV/EDR绕过技术
@@ -536,7 +618,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 22_Password_Cracking/
 ├── 01_Hash_Types_and_Wordlists.md      ← 哈希算法对比、hashid、CeWL/Crunch/CUPP、Python破解器
 ├── 02_Hashcat_and_John.md              ← 所有攻击模式、哈希类型模式号、规则编写、实战工作流
-└── 03_Advanced_Cracking_Techniques.md  ← 彩虹表、PRINCE、高级掩码、密码喷洒工具
+├── 03_Advanced_Cracking_Techniques.md  ← 彩虹表、PRINCE、高级掩码、密码喷洒工具
+├── 04_Credential_Stuffing_Automation.md ← Credential Stuffing and Password Analysis Automation
+├── 05_password_policy_audit.md         ← Password Policy Audit — Weak Policy Detection, Hash Strength Analysis...
+└── 06_password_ctf_lab.md              ← Password Cracking CTF Practice Lab
 ```
 
 **核心内容：** NTLM/WPA/ZIP/PDF破解策略、GPU优化、限速绕过密码喷洒自动化
@@ -549,7 +634,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 23_Database_Hacking/
 ├── 01_oracle_mysql_attack.md       ← Oracle/MySQL/MSSQL攻击向量、盲注、带外数据提取
 ├── 02_db_privilege_escalation.md   ← 数据库用户提权、存储过程滥用、UDF注入、链接服务器
-└── 03_db_forensics_defense.md      ← 数据库取证、审计日志、查询监控、加固清单
+├── 03_db_forensics_defense.md      ← 数据库取证、审计日志、查询监控、加固清单
+├── 04_nosql_and_cloud_db_attacks.md ← NoSQL and Cloud DB Attacks
+├── 05_database_defense_and_hardening.md ← Database Defense and Hardening
+└── 06_database_ctf_lab.md          ← Database Hacking CTF Lab
 ```
 
 **核心内容：** 跨多DB的攻击链、通过数据库引擎提权、取证分析与防御加固
@@ -562,7 +650,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 24_Network_Infrastructure_Security/
 ├── 01_dns_attack_defense.md                ← DNS劫持、区域传送、缓存投毒、DNSSEC绕过
 ├── 02_mail_server_security.md              ← SPF/DKIM/DMARC绕过、邮件服务器入侵、邮件伪造
-└── 03_ssh_tunneling_port_forwarding.md     ← SSH隧道、动态端口转发、SOCKS代理、内网穿透
+├── 03_ssh_tunneling_port_forwarding.md     ← SSH隧道、动态端口转发、SOCKS代理、内网穿透
+├── 04_network_security_automation.md       ← Network Security Automation
+├── 05_network_defense_automation.md        ← Network Defense Automation — IDS/IPS Tuning, Firewall Automation, Net...
+└── 06_network_infra_ctf_lab.md             ← Network Infrastructure CTF Lab
 ```
 
 **核心内容：** DNS/邮件/SSH基础设施层面攻击、服务利用、通过内网穿透横向移动
@@ -575,7 +666,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 25_Threat_Intelligence/
 ├── 01_cti_fundamentals.md          ← CTI框架(MITRE ATT&CK/STIX/TAXII)、威胁行为者画像
 ├── 02_osint_for_threat_intel.md    ← Shodan/Censys自动化、暗网OSINT、IOC收集流水线
-└── 03_incident_response.md         ← IR手册、证据收集、恶意代码分类、蜜罐
+├── 03_incident_response.md         ← IR手册、证据收集、恶意代码分类、蜜罐
+├── 04_cti_platform_operations.md   ← CTI Platform Operations
+├── 05_threat_intel_automation.md   ← Threat Intelligence Automation — MISP, OpenCTI, IOC Enrichment, STIX/...
+└── 06_threat_intel_ctf_lab.md      ← Threat Intelligence CTF Practice Lab
 ```
 
 **核心内容：** CTI生命周期、威胁行为者归因分析、IOC管理、自动化事件响应流程
@@ -588,7 +682,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 26_Linux_Hardening/
 ├── 01_firewall_and_iptables.md          ← iptables/nftables/ufw规则、防火墙审计、状态过滤
 ├── 02_pam_and_auth_hardening.md         ← PAM配置、SSH加固、MFA设置、sudo策略
-└── 03_kisa_vulnerability_assessment.md  ← KISA安全检查清单、CIS基准、自动化评估脚本
+├── 03_kisa_vulnerability_assessment.md  ← KISA安全检查清单、CIS基准、自动化评估脚本
+├── 04_linux_security_auditing.md        ← Linux Security Auditing
+├── 05_linux_hardening_automation.md     ← Linux Hardening Automation — CIS Benchmarks, Ansible Playbooks, Audit...
+└── 06_linux_hardening_ctf_lab.md        ← Linux Hardening CTF Practice Lab
 ```
 
 **核心内容：** 防火墙规则设计、认证加固、符合KISA/CIS标准的自动化安全评估
@@ -601,7 +698,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 27_IoT_Hacking/
 ├── 01_iot_attack_surface.md    ← 攻击面分析、OWASP IoT Top 10、Shodan/Censys扫描
 ├── 02_firmware_analysis.md     ← 固件提取分析、binwalk/Ghidra、硬编码凭据检测
-└── 03_iot_exploitation.md      ← UART/JTAG接入、嵌入式漏洞利用、实战攻击场景
+├── 03_iot_exploitation.md      ← UART/JTAG接入、嵌入式漏洞利用、实战攻击场景
+├── 04_RF_Zigbee_Attacks.md     ← RF/Zigbee/Z-Wave IoT Wireless Protocol Attacks
+├── 05_iot_security_hardening.md ← IoT Security Hardening — Firmware Signing, Network Isolation, Device...
+└── 06_iot_ctf_lab.md           ← IoT Hacking CTF Practice Lab
 ```
 
 **核心内容：** 基于OWASP IoT Top 10的攻击面分析、固件逆向(binwalk/Ghidra)、UART/JTAG硬件攻击、IoT设备实战渗透
@@ -614,7 +714,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 28_Mobile_Hacking/
 ├── 01_android_pentesting.md        ← APK分析、ADB Root、Frida动态插桩、SSL Pinning绕过
 ├── 02_ios_pentesting.md            ← IPA提取、Objective-C/Swift逆向、越狱检测绕过
-└── 03_mobile_traffic_analysis.md   ← Burp Suite移动代理、证书固定绕过、API模糊测试
+├── 03_mobile_traffic_analysis.md   ← Burp Suite移动代理、证书固定绕过、API模糊测试
+├── 04_Mobile_Malware_Analysis.md   ← Mobile Malware Analysis (Android/iOS)
+├── 05_mobile_app_security_testing.md ← Mobile App Security Testing — Automated Analysis, Runtime Hooking, AP...
+└── 06_mobile_ctf_lab.md            ← Mobile Hacking CTF Practice Lab
 ```
 
 **核心内容：** Android/iOS完整分析流水线、基于Frida的运行时插桩、移动端中间人攻击、SSL Pinning绕过技术
@@ -627,7 +730,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 29_Container_Kubernetes_Security/
 ├── 01_docker_security.md      ← Docker安全配置、容器逃逸技术、镜像漏洞扫描
 ├── 02_kubernetes_attack.md    ← RBAC提权、etcd夺取、Kubernetes攻击向量完整分析
-└── 03_container_escape.md     ← cgroup/namespace逃逸、runc漏洞、实战容器逃逸PoC
+├── 03_container_escape.md     ← cgroup/namespace逃逸、runc漏洞、实战容器逃逸PoC
+├── 04_Service_Mesh_API_Gateway_Attacks.md ← Service Mesh and API Gateway Attacks
+├── 05_kubernetes_rbac_audit.md ← Kubernetes RBAC Audit — Permission Analysis, Excessive Privilege Dete...
+└── 06_container_ctf_lab.md    ← Container & Kubernetes Security CTF Practice Lab
 ```
 
 **核心内容：** Docker/Kubernetes攻防策略、RBAC提权、容器逃逸技术、基于Trivy/Falco的运行时安全
@@ -640,7 +746,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 30_Vulnerability_Research/
 ├── 01_fuzzing_techniques.md            ← AFL++/libFuzzer/Boofuzz、覆盖率引导模糊测试、网络模糊测试
 ├── 02_vulnerability_analysis.md        ← CVSS分析、CWE分类、静态/动态分析、源码审计
-└── 03_exploit_development_advanced.md  ← 高级堆漏洞利用、浏览器漏洞利用、内核漏洞开发
+├── 03_exploit_development_advanced.md  ← 高级堆漏洞利用、浏览器漏洞利用、内核漏洞开发
+├── 04_CVE_Writeup_Methodology.md       ← CVE Vulnerability Analysis and PoC Writing Methodology
+├── 05_responsible_disclosure.md        ← Responsible Vulnerability Disclosure — CVE Application, Coordination,...
+└── 06_vuln_research_ctf_lab.md         ← Vulnerability Research CTF Practice Lab
 ```
 
 **核心内容：** 基于AFL++/libFuzzer的自动化漏洞发现、系统化CVSS/CWE分析、高级堆/浏览器/内核漏洞利用开发
@@ -654,7 +763,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_adversarial_examples.md         ← FGSM/PGD/C&W、迁移攻击、对抗训练与随机平滑防御
 ├── 02_prompt_injection_jailbreak.md   ← 直接/间接提示注入、越狱、garak/PyRIT自动红队测试
 ├── 03_model_extraction_inversion.md   ← 模型提取、成员推断(LiRA)、训练数据重构、DP-SGD防御
-└── 04_llm_agent_security.md           ← 工具调用SSRF/RCE、RAG索引投毒、MCP安全、双LLM架构
+├── 04_llm_agent_security.md           ← 工具调用SSRF/RCE、RAG索引投毒、MCP安全、双LLM架构
+├── 05_ai_security_defense.md          ← AI/ML Security Defense — Adversarial Robustness, Model Monitoring, OW...
+└── 06_ai_ml_ctf_lab.md                ← AI/ML Security CTF Practice Lab
 ```
 
 如果第11章是"将AI用作攻击工具"，那么第31章聚焦于**AI/ML系统本身作为攻击目标**的攻防。基于OWASP LLM Top 10 / NIST AI 100-2 / MITRE ATLAS，包含可复现的PyTorch/Anthropic SDK PoC。
@@ -668,7 +779,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_ios_fundamentals_and_recon.md      ← Cisco IOS/IOS XE结构、设备指纹识别、管理协议侦察
 ├── 02_layer2_attacks.md                  ← VLAN跳跃、STP/DHCP攻击、CAM溢出、DAI绕过
 ├── 03_routing_protocol_attacks.md        ← OSPF/EIGRP/BGP路由注入、HSRP/VRRP劫持
-└── 04_management_plane_exploitation.md   ← SNMP/TACACS+/NETCONF利用、配置文件提取、后门识别
+├── 04_management_plane_exploitation.md   ← SNMP/TACACS+/NETCONF利用、配置文件提取、后门识别
+├── 05_network_device_hardening.md        ← Network Device Hardening — Cisco/Juniper Security Configs, Network De...
+└── 06_network_device_ctf_lab.md          ← Network Device Hacking CTF Practice Lab
 ```
 
 第02章聚焦流量嗅探/MITM，第24章聚焦DNS/邮件/SSH服务层面，第32章则直接攻击**路由器/交换机的管理/控制/数据平面**。收录2025–2026年Cisco CVE复现PoC（CVE-2025-20188等）和GNS3/EVE-NG实验拓扑。
@@ -682,7 +795,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_osint_methodology_and_search.md  ← 信息收集方法论、Shodan/Censys/FOFA、高级Dork技巧
 ├── 02_target_profiling.md              ← 人员/组织画像、社交媒体分析、邮件验证、域名侦察
 ├── 03_social_engineering_attacks.md    ← 钓鱼/鱼叉钓鱼/语音钓鱼/短信钓鱼、BEC、托词攻击
-└── 04_phishing_infra_and_evasion.md    ← GoPhish/Evilginx2基础设施、URL绕过、反钓鱼检测规避
+├── 04_phishing_infra_and_evasion.md    ← GoPhish/Evilginx2基础设施、URL绕过、反钓鱼检测规避
+├── 05_osint_defense_and_counter_intelligence.md ← OSINT Defense and Counter-Intelligence — Digital Footprint Reduction,...
+└── 06_osint_ctf_lab.md                 ← OSINT & Social Engineering CTF Practice Lab
 ```
 
 将OSINT作为**攻击链侦察阶段**而非简单信息检索。涵盖Shodan/FOFA/Censys查询自动化、基于LinkedIn/GitHub/社交媒体的目标画像，以及GoPhish/Evilginx2钓鱼基础设施构建，以红队实战视角呈现。
@@ -695,7 +810,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 34_Hardware_Hacking/
 ├── 01_hardware_recon_and_interfaces.md    ← UART/JTAG/SPI/I²C接口识别与数据提取、引脚分析
 ├── 02_firmware_analysis.md                ← binwalk提取、文件系统分析、硬编码密钥、危险函数检测
-└── 03_side_channel_and_fault_injection.md ← 功耗分析(SPA/DPA)、时序攻击、毛刺注入、ChipWhisperer
+├── 03_side_channel_and_fault_injection.md ← 功耗分析(SPA/DPA)、时序攻击、毛刺注入、ChipWhisperer
+├── 04_hardware_security_assessment.md     ← Hardware Security Assessment — Device Auditing, Physical Security, an...
+├── 05_hardware_security_defense.md        ← Hardware Security Defense — Secure Boot, TPM, Physical Security, Tamp...
+└── 06_hardware_ctf_lab.md                 ← Hardware Hacking CTF Practice Lab
 ```
 
 涵盖电子设备的物理攻击面——通过UART串口获取root Shell、通过JTAG完整转储固件，以及通过侧信道分析提取加密密钥。使用minicom、OpenOCD、binwalk、ChipWhisperer等工具，覆盖硬件安全研究的核心技术。
@@ -707,7 +825,11 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ```
 35_Supply_Chain_Attacks/
 ├── 01_software_supply_chain.md   ← 开源包投毒、域名抢注、依赖混淆攻击
-└── 02_build_and_ci_poisoning.md  ← CI/CD流水线入侵、GitHub Actions滥用、SolarWinds·XZ Utils模式分析
+├── 02_build_and_ci_poisoning.md  ← CI/CD流水线入侵、GitHub Actions滥用、SolarWinds·XZ Utils模式分析
+├── 03_Dependency_Confusion_and_Typosquatting.md ← Dependency Confusion Attacks and Typosquatting
+├── 04_Open_Source_Backdoor_Techniques.md ← Open Source Backdoor Insertion Techniques
+├── 05_supply_chain_defense.md    ← Supply Chain Security Defense — SBOM, Dependency Scanning, Vendor Ris...
+└── 06_supply_chain_ctf_lab.md    ← Supply Chain Attacks CTF Practice Lab
 ```
 
 解剖SolarWinds、XZ Utils、3CX等真实供应链入侵案例。涵盖PyPI/npm/Maven包投毒、GitHub Actions工作流权限劫持、构建系统后门植入——证明整个软件开发流水线都是攻击面。
@@ -720,7 +842,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 36_Automotive_Hacking/
 ├── 01_can_bus_analysis.md           ← CAN总线结构、OBD-II诊断、报文嗅探与重放
 ├── 02_ecu_exploitation.md           ← ECU固件分析、UDS诊断协议滥用、刷写调参
-└── 03_telematics_and_ota_attacks.md ← V2X通信、车联网单元渗透、OTA更新拦截
+├── 03_telematics_and_ota_attacks.md ← V2X通信、车联网单元渗透、OTA更新拦截
+├── 04_automotive_security_testing.md ← Automotive Security Testing — Penetration Testing, Fuzzing & Authenti...
+├── 05_automotive_security_defense.md ← Automotive Cybersecurity Defense — ISO/SAE 21434, UNECE WP.29, Secure...
+└── 06_automotive_ctf_lab.md         ← Automotive Hacking CTF Lab
 ```
 
 现代汽车是拥有100+个ECU和数十种通信协议的移动计算机。从CAN总线嗅探到UDS诊断协议滥用、车联网远程攻击，以及Jeep Cherokee/Tesla真实入侵复现——以python-can、Scapy、CANalyzer为工具，全栈覆盖汽车安全研究。
@@ -733,7 +858,10 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 37_ICS_SCADA/
 ├── 01_ics_protocols_and_recon.md  ← Modbus/DNP3/IEC 61850/EtherNet/IP深度解析、Shodan侦察、多协议扫描器
 ├── 02_scada_exploitation.md       ← HMI/Historian/PLC漏洞、TRITON·INDUSTROYER分析、SCADA扫描器
-└── 03_ot_network_attacks.md       ← Purdue模型分层攻击、IT→OT横向移动、无线OT、OT拓扑映射器
+├── 03_ot_network_attacks.md       ← Purdue模型分层攻击、IT→OT横向移动、无线OT、OT拓扑映射器
+├── 04_ics_security_architecture.md ← 04 — ICS Security Architecture and Defense Strategy
+├── 05_ics_security_defense.md     ← ICS/SCADA Security Defense — IEC 62443, Network Segmentation, OT Moni...
+└── 06_ics_ctf_lab.md              ← ICS/SCADA CTF Lab
 ```
 
 分析控制发电站、炼油厂、水处理、铁路等关键基础设施的ICS/OT环境。解剖Stuxnet、TRITON、INDUSTROYER、PIPEDREAM等真实网络武器——从Modbus线圈强制写入到PLC DB块补丁、Historian数据逆注入、OT拓扑自动映射，全面呈现可用性优先环境的攻防实战。
@@ -747,7 +875,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_cloud_native_threat_model.md      ← STRIDE威胁建模、CNAPP、容器/无服务器/服务网格威胁
 ├── 02_ebpf_runtime_security.md          ← Falco/Tetragon/Cilium、eBPF运行时检测与网络策略
 ├── 03_image_hardening_supply_chain.md   ← Trivy/Grype镜像扫描、Cosign签名、SBOM、OPA Gatekeeper
-└── 04_cloud_native_attack_techniques.md ← 容器逃逸、服务网格MITM、无服务器事件注入、KSPM
+├── 04_cloud_native_attack_techniques.md ← 容器逃逸、服务网格MITM、无服务器事件注入、KSPM
+├── 05_cloud_native_defense.md           ← 05 — Cloud Native Security Defense Framework
+└── 06_cloud_native_ctf_lab.md           ← Cloud Native Security CTF Lab
 ```
 
 涵盖云原生环境（Kubernetes、无服务器、服务网格）的攻防技术。从eBPF运行时安全（Falco/Tetragon）、容器镜像签名与SBOM、OPA策略网关，到实际容器逃逸技术、服务网格MITM、AWS Lambda事件注入——以CNAPP视角系统整理。
@@ -761,7 +891,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_zero_trust_principles.md         ← BeyondCorp模型、NIST SP 800-207、ZTA成熟度模型
 ├── 02_identity_and_device_trust.md     ← IdP/MFA/通行密钥、设备信任（MDM/EDR）、SCIM预置
 ├── 03_microsegmentation_and_network.md ← 微分段、mTLS、SASE/SD-WAN、eBPF网络策略
-└── 04_zero_trust_implementation.md     ← Cloudflare/Zscaler/BeyondCorp实施、ZTA审计自动化
+├── 04_zero_trust_implementation.md     ← Cloudflare/Zscaler/BeyondCorp实施、ZTA审计自动化
+├── 05_zero_trust_maturity.md           ← 05 — Zero Trust Maturity Assessment and Operations
+└── 06_zero_trust_ctf_lab.md            ← Zero Trust Architecture CTF Lab
 ```
 
 "永不信任，始终验证" — 基于NIST SP 800-207的零信任架构实务解析。涵盖BeyondCorp案例、身份/设备信任体系、微分段、SASE引入，以及ZTA成熟度自评工具。
@@ -775,7 +907,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_threat_hunting_methodology.md  ← 狩猎周期、假设驱动狩猎、PEAK框架、TTP漂移
 ├── 02_mitre_attack_hunting.md        ← ATT&CK战术狩猎场景、组织画像、Atomic Red Team
 ├── 03_hunting_queries_kql_spl.md     ← 100+ Sentinel KQL/Splunk SPL狩猎查询、异常检测模式
-└── 04_automated_threat_hunting.md    ← SOAR自动化、ML异常检测、狩猎剧本自动化
+├── 04_automated_threat_hunting.md    ← SOAR自动化、ML异常检测、狩猎剧本自动化
+├── 05_threat_hunting_program.md      ← 05 — Threat Hunting Program Operations
+└── 06_threat_hunting_ctf_lab.md      ← Threat Hunting CTF Lab
 ```
 
 主动威胁狩猎——发现日志未告诉你的内容。涵盖PEAK框架假设构建、MITRE ATT&CK战术狩猎场景、100+ Sentinel KQL/Splunk SPL查询示例，以及SOAR自动化剧本，可在SOC中即时部署。
@@ -790,7 +924,8 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 02_information_security_engineer_practical.md ← 实操题型、密码学/网络/系统实验
 ├── 03_ISMS_P_certification.md                    ← ISMS-P认证体系、80项控制措施、审核准备
 ├── 04_international_certifications.md            ← CISSP/CEH/OSCP/CISA路线图、域比较
-└── 05_security_laws_and_compliance.md            ← 韩国个人信息保护法·IT安全法规、GDPR对比
+├── 05_security_laws_and_compliance.md            ← 韩国个人信息保护法·IT安全法规、GDPR对比
+└── 06_korean_cert_ctf_lab.md                     ← Korean Information Security Certification CTF Practice Lab
 ```
 
 将韩国安全认证（信息安全工程师、ISMS-P）与国际认证（CISSP/CEH/OSCP/CISA）汇聚一处。包含法律法规与合规（个人信息保护法、GDPR），涵盖韩国安全从业者必须掌握的制度基础。
@@ -804,7 +939,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_blockchain_fundamentals_and_threats.md ← EVM架构、UTXO vs 账户模型、51%攻击、eclipse攻击
 ├── 02_smart_contract_auditing.md             ← 重入/整数溢出/tx.origin/delegatecall、Slither/Mythril/Echidna
 ├── 03_defi_protocol_attacks.md               ← 闪电贷、预言机操控、MEV三明治攻击、Rug Pull检测
-└── 04_web3_pentest_tools.md                  ← Foundry（forge/cast/anvil/chisel）、静态分析工具、RPC安全评估
+├── 04_web3_pentest_tools.md                  ← Foundry（forge/cast/anvil/chisel）、静态分析工具、RPC安全评估
+├── 05_web3_incident_response.md              ← Web3 Incident Response
+└── 06_blockchain_ctf_lab.md                  ← Blockchain / Web3 Security CTF Practice Lab
 ```
 
 从区块链基础到DeFi攻击分析与智能合约审计，一站式学习。使用web3.py 6.x和Foundry进行实操PoC演示。涵盖真实事件（Euler Finance $197M闪电贷）、MEV机器人原理、Slither/Mythril漏洞扫描、RPC端点安全评估。
@@ -815,10 +952,12 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 
 ```
 43_Physical_Security_Pentesting/
-├── 01_physical_pentest_methodology.md    ← PTES物理领域5阶段、授权书模板、漏洞检查清单
-├── 02_lock_bypass_and_access_control.md  ← 弹子锁拨片（SPP/梳妆/碰撞）、电子门禁缺陷分析
-├── 03_rfid_nfc_cloning.md                ← Proxmark3 LF/HF、MIFARE Classic嵌套攻击、nfcpy NFC分析
-└── 04_physical_recon_and_social_engineering.md ← 被动侦察、尾随、借口攻击、西奥迪尼6原则
+├── 01_physical_pentest_methodology.md          ← PTES物理领域5阶段、授权书模板、漏洞检查清单
+├── 02_lock_bypass_and_access_control.md        ← 弹子锁拨片（SPP/梳妆/碰撞）、电子门禁缺陷分析
+├── 03_rfid_nfc_cloning.md                      ← Proxmark3 LF/HF、MIFARE Classic嵌套攻击、nfcpy NFC分析
+├── 04_physical_recon_and_social_engineering.md ← 被动侦察、尾随、借口攻击、西奥迪尼6原则
+├── 05_physical_security_assessment.md          ← Physical Security Assessment
+└── 06_physical_ctf_lab.md                      ← Physical Security Penetration Testing CTF Practice Lab
 ```
 
 从方法论到实施，全面覆盖物理渗透测试。涵盖锁具破解、RFID/NFC克隆（Proxmark3）、基于西奥迪尼影响原则的社会工程学。包含门禁日志异常检测与物理渗透报告生成的Python CLI工具。
@@ -829,10 +968,12 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 
 ```
 44_Incident_Response_DFIR/
-├── 01_ir_methodology_and_playbooks.md     ← NIST SP 800-61r2、PICERL、勒索软件/钓鱼手册、日志时间线
-├── 02_memory_and_disk_forensics.md        ← Volatility3、MFT分析、MACB时间戳、Plaso时间线
+├── 01_ir_methodology_and_playbooks.md       ← NIST SP 800-61r2、PICERL、勒索软件/钓鱼手册、日志时间线
+├── 02_memory_and_disk_forensics.md          ← Volatility3、MFT分析、MACB时间戳、Plaso时间线
 ├── 03_network_forensics_and_log_analysis.md ← 100+ tshark过滤器、Zeek日志、Windows Event ID、Sysmon、PCAP C2 IOC
-└── 04_threat_containment_and_eradication.md ← 网络隔离、持久化痕迹收集、5-Why分析
+├── 04_threat_containment_and_eradication.md ← 网络隔离、持久化痕迹收集、5-Why分析
+├── 05_malware_triage_and_containment.md     ← Malware Triage and Containment
+└── 06_ir_dfir_ctf_lab.md                    ← Incident Response / DFIR CTF Practice Lab
 ```
 
 完整的DFIR工作流：检测→分析→封控→清除→恢复。Python CLI工具涵盖可疑进程检测（白名单比对、名称伪装）、基于PCAP的C2 IOC提取（信标检测/DNS隧道）、Windows持久化痕迹收集与风险评分。
@@ -846,7 +987,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_malware_fundamentals_and_pe_structure.md ← PE文件结构、IAT、香农熵、可疑API分类
 ├── 02_shellcode_and_injection_techniques.md    ← PIC shellcode、XOR编码、CreateRemoteThread/APC/进程镂空
 ├── 03_c2_framework_development.md              ← C2架构、HTTP C2服务端+代理、DNS隧道、商用C2对比
-└── 04_av_edr_evasion.md                        ← 直接系统调用、NTDLL解钩、ETW/AMSI补丁、沙箱检测
+├── 04_av_edr_evasion.md                        ← 直接系统调用、NTDLL解钩、ETW/AMSI补丁、沙箱检测
+├── 05_detection_resistant_techniques.md        ← Detection-Resistant Technique Analysis (Defender's Perspective)
+└── 06_malware_dev_ctf_lab.md                   ← Malware Development / Analysis CTF Practice Lab
 ```
 
 面向红队和恶意代码分析师的开发与规避技术。Python CLI涵盖PE文件分析（熵/API分类）、shellcode XOR编码/反汇编、字符串混淆、沙箱检测。深入讲解直接syscall（NASM存根）、NTDLL解钩、ETW补丁、AMSI绕过等概念。
@@ -860,7 +1003,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_ctf_methodology_and_tools.md        ← CTF类型、工具生态、Docker Pwnbox Dockerfile、平台指南
 ├── 02_pwn_and_rev_ctf.md                  ← 完整pwntools模板（ret2win/ret2libc/格式字符串/堆）、angr解题
 ├── 03_web_and_crypto_ctf.md               ← 盲注自动化、SSTI利用、JWT攻击、RSA/AES/哈希长度扩展攻击
-└── 04_ctf_automation_and_frameworks.md    ← DynELF、GDB tmux分屏、angr自动化、Frida Android、取证流水线
+├── 04_ctf_automation_and_frameworks.md    ← DynELF、GDB tmux分屏、angr自动化、Frida Android、取证流水线
+├── 05_ctf_writeup_methodology.md          ← CTF Writeup Methodology
+└── 06_advanced_ctf_practical_lab.md       ← Advanced CTF Practical Lab — Pwn · Crypto · Forensics · Misc Comprehe...
 ```
 
 从方法论到自动化，全方位覆盖CTF技巧。包含所有常见二进制题型的pwntools模板、angr符号执行、Frida动态插桩（Android CTF）、取证自动化流水线，以及CTFd API客户端用于题目管理和Flag提交。
@@ -874,7 +1019,9 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 ├── 01_android_forensics.md          ← Android文件系统/ADB取证/SQLite制品/备份解析CLI
 ├── 02_ios_forensics.md              ← iOS APFS结构/iTunes备份解析/iMessage/Health数据提取CLI
 ├── 03_mobile_evidence_extraction.md ← 逻辑/文件系统/物理提取/哈希完整性/自动取证CLI
-└── 04_mobile_forensics_tools.md     ← Autopsy/MVT/Frida/jadx/APK自动分析CLI
+├── 04_mobile_forensics_tools.md     ← Autopsy/MVT/Frida/jadx/APK自动分析CLI
+├── 05_mobile_malware_analysis.md    ← Mobile Malware Analysis
+└── 06_mobile_forensics_ctf_lab.md   ← Mobile Forensics CTF Practice Lab
 ```
 
 Android/iOS移动取证全流程。ADB制品提取、iTunes备份解密/解析、MVT检测Pegasus间谍软件、APK逆向工程，含法律证据完整性维护方法。
@@ -888,7 +1035,9 @@ Android/iOS移动取证全流程。ADB制品提取、iTunes备份解密/解析�
 ├── 01_stride_methodology.md         ← STRIDE六类/DFD绘制/信任边界/自动分析CLI
 ├── 02_pasta_dread_attack_trees.md   ← PASTA七步/DREAD评分/攻击树/Kill Chain/ATT&CK
 ├── 03_threat_modeling_tools.md      ← MS TMT/Threat Dragon/IriusRisk/CI/CD集成/XML→HTML CLI
-└── 04_threat_modeling_practice.md   ← 电商/移动银行/K8s实战场景/完整工作流CLI
+├── 04_threat_modeling_practice.md   ← 电商/移动银行/K8s实战场景/完整工作流CLI
+├── 05_ai_system_threat_modeling.md  ← AI System Threat Modeling
+└── 06_threat_modeling_ctf_lab.md    ← Threat Modeling CTF Practice Lab
 ```
 
 实战应用STRIDE、PASTA、DREAD方法论。从DFD绘制到威胁识别、缓解措施推导、CI/CD流水线集成，一个Python CLI自动化全流程。
@@ -902,7 +1051,9 @@ Android/iOS移动取证全流程。ADB制品提取、iTunes备份解密/解析�
 ├── 01_c2_frameworks.md               ← Cobalt Strike/Sliver/Havoc结构/HTTP C2实现/检测规则
 ├── 02_domain_fronting_redirectors.md ← CDN前置/Apache/Nginx重定向器/DNS隧道/流量过滤CLI
 ├── 03_opsec_infrastructure.md        ← OPSEC五步/Long-Short Haul C2/CT日志/OPSEC审计CLI
-└── 04_red_team_automation.md         ← Ansible/Terraform基础设施/载荷流水线/行动管理CLI
+├── 04_red_team_automation.md         ← Ansible/Terraform基础设施/载荷流水线/行动管理CLI
+├── 05_red_team_detection_evasion.md  ← Red Team Infrastructure Detection Evasion (Defender's Perspective)
+└── 06_red_team_infra_ctf_lab.md      ← Red Team Infrastructure CTF Practice Lab
 ```
 
 红队C2基础设施与OPSEC。Sliver/Havoc框架、Apache重定向器、DNS隧道、Terraform AWS自动化，适用于授权红队演练、CTF和安全研究。
@@ -916,7 +1067,9 @@ Android/iOS移动取证全流程。ADB制品提取、iTunes备份解密/解析�
 ├── 01_memory_manipulation.md        ← 游戏内存/ReadProcessMemory/AOB扫描/指针链CLI
 ├── 02_cheat_engine_advanced.md      ← CE Lua脚本/自动汇编/结构体分析/CT文件解析CLI
 ├── 03_packet_manipulation.md        ← 游戏包捕获/mitmproxy/protobuf逆向/重放CLI
-└── 04_anti_cheat_analysis.md        ← VAC/EAC/BattlEye原理/检测技术/进程分析CLI/CTF题型
+├── 04_anti_cheat_analysis.md        ← VAC/EAC/BattlEye原理/检测技术/进程分析CLI/CTF题型
+├── 05_game_server_exploitation.md   ← Game Server Vulnerability Research
+└── 06_game_ctf_lab.md               ← Game Hacking CTF Practice Lab
 ```
 
 游戏安全研究与CTF游戏题目。Cheat Engine内存操作、数据包中间人分析、反作弊内部机制，适用于教育、CTF和安全研究目的。
@@ -930,10 +1083,396 @@ Android/iOS移动取证全流程。ADB制品提取、iTunes备份解密/解析�
 ├── 01_extension_architecture.md       ← MV2/V3对比/Background/Content Script/CSP/攻击面分析
 ├── 02_malicious_extension_analysis.md ← 恶意扩展类型/IOC/混淆分析/CRX自动分析CLI
 ├── 03_extension_pentesting.md         ← Content Script XSS/跨扩展攻击/Selenium自动扫描CLI
-└── 04_extension_security_hardening.md ← MV3安全加固/最小权限/企业GPO/风险评估CLI
+├── 04_extension_security_hardening.md ← MV3安全加固/最小权限/企业GPO/风险评估CLI
+├── 05_extension_malware_campaigns.md  ← Browser Extension Malware Campaign Analysis
+└── 06_browser_extension_ctf_lab.md    ← Browser Extension Security CTF Practice Lab
 ```
 
 浏览器扩展安全全面覆盖。恶意扩展IOC检测、CRX自动分析、Content Script XSS和postMessage攻击、Selenium动态漏洞扫描器、企业策略管理。
+
+---
+
+## 52. API安全
+
+```
+52_API_Security/
+├── 01_rest_api_security.md               ← OWASP API Top 10/BOLA扫描器/JWT漏洞分析
+├── 02_graphql_security.md                ← 内省查询/批量查询/深度攻击/Schema自动分析
+├── 03_api_fuzzing.md                     ← ffuf/基于OpenAPI的自动模糊器/参数污染/响应分析
+├── 04_api_security_hardening.md          ← OAuth2 PKCE/速率限制/Kong/NGINX网关
+├── 05_api_security_testing_automation.md ← API安全测试自动化流水线
+└── 06_api_ctf_lab.md                     ← CTF: API漏洞实验
+```
+
+REST/GraphQL API漏洞全面覆盖。BOLA自动扫描器、JWT伪造与破解、OAuth2 PKCE实现、API网关安全。
+
+---
+
+## 53. 无服务器安全
+
+```
+53_Serverless_Security/
+├── 01_lambda_function_attacks.md      ← 环境变量窃取/IMDSv1 SSRF/事件注入
+├── 02_serverless_injection.md         ← SQS/S3事件注入/拼写抢注/命令注入静态分析
+├── 03_serverless_iam_abuse.md         ← 角色权限过大/AssumeRole链/最小权限策略自动生成
+├── 04_serverless_hardening.md         ← IaC安全扫描/Terraform安全配置/Lambda Extension
+├── 05_serverless_incident_response.md ← 无服务器事件响应/CloudTrail分析/自动隔离
+└── 06_serverless_ctf_lab.md           ← CTF: Lambda环境变量/事件注入/IAM滥用实验
+```
+
+AWS Lambda无服务器环境攻防。IMDSv1 SSRF、事件源注入、IAM角色滥用、IaC（Checkov/cfn-guard）扫描。
+
+---
+
+## 54. Active Directory攻击
+
+```
+54_Active_Directory_Attacks/
+├── 01_ad_enumeration.md            ← BloodHound/LDAP枚举/SPN/AS-REP账户自动枚举
+├── 02_kerberos_attacks.md          ← Kerberoasting/AS-REP Roasting/Pass-the-Ticket
+├── 03_lateral_movement_ad.md       ← PtH/NTLM中继/DCSync/多主机横向移动
+├── 04_ad_persistence.md            ← 黄金票据/Shadow Credentials/ACL滥用/持久化检测
+├── 05_ad_defense_and_detection.md  ← AD事件监控/蜜罐账户/加固清单
+└── 06_ad_ctf_lab.md                ← CTF: Kerberoasting/攻击路径分析/DCSync实验
+```
+
+Active Directory攻击链全面覆盖。BloodHound收集与Cypher查询、Kerberoasting/AS-REP Roasting自动化、NTLM中继/DCSync、黄金/白银票据、AdminSDHolder/Shadow Credentials持久化。
+
+---
+
+## 55. 检测规避技术
+
+```
+55_Evasion_Techniques/
+├── 01_av_evasion.md                    ← XOR编码器/沙箱检测/进程注入/AMSI绕过
+├── 02_ids_ips_evasion.md               ← 数据包分片/DNS隧道/流量伪装/Snort规则分析
+├── 03_edr_bypass.md                    ← 直接syscall/NTDLL钩子检测/内存注入检测
+├── 04_log_evasion.md                   ← 事件日志篡改/时间戳伪造/痕迹清除自动化
+├── 05_evasion_detection_and_hunting.md ← 规避技术威胁狩猎/检测规则/行为分析
+└── 06_evasion_ctf_lab.md               ← CTF: 编码绕过/日志篡改检测实验
+```
+
+AV/EDR/IDS规避技术全面覆盖。XOR/AES载荷编码器、直接/间接syscall、NTDLL钩子检测、DNS/ICMP隧道、C2流量伪装、痕迹清除清单。
+
+---
+
+## 56. AI红队
+
+```
+56_AI_Red_Teaming/
+├── 01_ai_attack_fundamentals.md    ← AI攻击基础、攻击面、威胁建模
+├── 02_prompt_injection.md          ← 直接/间接/多模态注入、越狱技术
+├── 03_model_extraction.md          ← 模型提取/成员推理、基于查询的攻击
+├── 04_adversarial_examples.md      ← FGSM/PGD、迁移攻击、防御技术
+├── 05_ai_red_team_defense.md       ← 模型加固、输入验证、AI安全架构
+└── 06_ai_red_team_ctf_lab.md       ← CTF: 提示注入/模型提取实验
+```
+
+AI系统红队方法论、提示注入自动化、模型提取攻击、防御技术。
+
+---
+
+## 57. 量子密码学
+
+```
+57_Quantum_Cryptography/
+├── 01_quantum_computing_basics.md  ← 量子计算、Grover/Shor算法、对密码学的影响
+├── 02_quantum_key_distribution.md  ← QKD协议（BB84/E91）、量子信道攻击
+├── 03_post_quantum_algorithms.md   ← CRYSTALS-Kyber/Dilithium、SPHINCS+、实现指南
+├── 04_nist_pqc_standards.md        ← NIST PQC标准化进程、FIPS 203/204/205
+├── 05_pqc_migration_strategy.md    ← 混合加密、密码资产清单、迁移策略
+└── 06_quantum_crypto_ctf_lab.md    ← CTF: 量子密码原理/PQC实验
+```
+
+量子计算对RSA/ECC的影响、NIST PQC标准算法、向后量子密码的迁移策略。
+
+---
+
+## 58. 云事件响应
+
+```
+58_Cloud_IR/
+├── 01_cloud_ir_fundamentals.md     ← Cloud IR框架、AWS/Azure/GCP入侵指标
+├── 02_aws_forensics.md             ← CloudTrail分析、S3/EC2取证、GuardDuty联动
+├── 03_azure_forensics.md           ← Azure Sentinel调查、Activity Log分析
+├── 04_gcp_forensics.md             ← GCP Chronicle、Audit Log取证
+├── 05_cloud_threat_hunting.md      ← 云威胁狩猎、异常检测、KQL查询
+└── 06_cloud_ir_ctf_lab.md          ← CTF: CloudTrail分析/入侵场景实验
+```
+
+Cloud IR全流程。CloudTrail/Activity Log分析、云环境取证、威胁狩猎自动化。
+
+---
+
+## 59. 供应链安全
+
+```
+59_Supply_Chain_Security/
+├── 01_supply_chain_fundamentals.md     ← 供应链攻击类型、入侵指标、威胁模型
+├── 02_software_supply_chain_attacks.md ← SolarWinds/Codecov等真实案例分析、检测策略
+├── 03_dependency_confusion.md          ← 依赖混淆攻击、拼写抢注、防御
+├── 04_build_integrity.md               ← 构建完整性验证、签名、SLSA框架
+├── 05_supply_chain_defense.md          ← SBOM管理、供应商风险管理、防御策略
+└── 06_supply_chain_ctf_lab.md          ← CTF: 依赖混淆/SBOM分析实验
+```
+
+软件供应链全流程安全。SBOM、依赖混淆、SLSA框架、供应商风险管理。
+
+---
+
+## 60. 浏览器安全进阶
+
+```
+60_Browser_Security/
+├── 01_browser_attack_surface.md         ← 浏览器攻击面、漏洞类型、防御模型
+├── 02_javascript_engine_exploitation.md ← V8/SpiderMonkey漏洞、JIT编译器Bug
+├── 03_sandbox_escape.md                 ← 沙箱逃逸技术、进程隔离绕过
+├── 04_browser_extension_advanced.md     ← 恶意扩展分析、MV3安全模型
+├── 05_browser_security_hardening.md     ← 浏览器安全配置、企业策略
+└── 06_browser_security_ctf_lab.md       ← 浏览器安全CTF实验
+```
+
+JS引擎漏洞（V8/SpiderMonkey）、沙箱逃逸、浏览器进程模型、Chrome/Firefox Bug模式。
+
+---
+
+## 61. 固件黑客
+
+```
+61_Firmware_Hacking/
+├── 01_firmware_fundamentals.md     ← 固件类型、提取方法、分析环境搭建
+├── 02_firmware_extraction.md       ← JTAG/UART/SPI转储、binwalk提取、文件系统挂载
+├── 03_firmware_analysis.md         ← Ghidra逆向分析、脆弱函数检测、硬编码密钥
+├── 04_firmware_emulation.md        ← QEMU模拟、firmwalker、动态分析
+├── 05_firmware_exploitation.md     ← 缓冲区溢出、命令注入、Web接口攻击
+└── 06_firmware_ctf_lab.md          ← CTF: 固件提取/分析/利用实验
+```
+
+固件分析全流程。从硬件转储到Ghidra逆向分析、QEMU模拟、漏洞利用。
+
+---
+
+## 62. 汽车安全
+
+```
+62_Automotive_Security/
+├── 01_automotive_security_fundamentals.md ← 汽车网络架构、CAN/LIN/FlexRay
+├── 02_can_bus_hacking.md                  ← CAN总线嗅探、消息重放、模糊测试自动化
+├── 03_ecu_analysis.md                     ← ECU固件提取、UDS诊断、参数篡改
+├── 04_v2x_security.md                     ← V2X通信安全、DSRC/C-V2X漏洞
+├── 05_automotive_penetration_testing.md   ← 汽车渗透测试方法论、报告撰写
+└── 06_automotive_ctf_lab.md               ← CTF: CAN总线/UDS/ECU实验
+```
+
+CAN总线嗅探与篡改、ECU固件分析、UDS诊断协议滥用、V2X/OTA攻击。python-can/Scapy/CANalyzer实战。
+
+---
+
+## 63. OT/ICS进阶
+
+```
+63_OT_ICS_Advanced/
+├── 01_ot_ics_fundamentals.md       ← OT/ICS架构、Purdue模型、主要协议
+├── 02_scada_attacks.md             ← HMI攻击、SCADA服务器漏洞、真实案例分析
+├── 03_plc_exploitation.md          ← PLC编程漏洞、梯形逻辑篡改、漏洞利用
+├── 04_industrial_protocols.md      ← Modbus/DNP3/IEC 104协议攻击、流量分析
+├── 05_ot_defense_and_monitoring.md ← OT安全架构、网络隔离、异常检测
+└── 06_ot_ics_ctf_lab.md            ← CTF: Modbus/PLC/SCADA实验
+```
+
+解剖Stuxnet、TRITON、INDUSTROYER、PIPEDREAM等真实网络武器。Modbus强制写入、PLC篡改、OT专用防御架构。
+
+---
+
+## 64. 威胁情报平台
+
+```
+64_Threat_Intel_Platform/
+├── 01_tip_fundamentals.md            ← TIP架构、数据模型（STIX 2.1）、平台对比
+├── 02_misp_platform.md               ← MISP部署运维、事件管理、API自动化
+├── 03_threat_feeds_and_enrichment.md ← 威胁情报源收集/质量评估/IoC富化
+├── 04_ioc_management.md              ← IOC生命周期、降噪、TAXII集成
+├── 05_tip_automation.md              ← SOAR集成、自动响应、情报源编排
+└── 06_tip_ctf_lab.md                 ← CTF: MISP事件/IOC分析实验
+```
+
+TIP平台（MISP/OpenCTI）构建运维、威胁情报源自动化、IOC管理、SOAR集成自动响应。
+
+---
+
+## 65. 逆向工程进阶
+
+```
+65_Reverse_Engineering_Advanced/
+├── 01_anti_debugging_techniques.md    ← IsDebuggerPresent/时间差/异常检测、GDB/x64dbg绕过
+├── 02_obfuscation_and_unpacking.md    ← UPX/Themida脱壳、代码混淆、二进制规范化
+├── 03_symbolic_execution.md           ← angr符号执行、路径探索、条件分支绕过自动化
+├── 04_advanced_binary_analysis.md     ← CFG重建、脆弱函数检测、Ghidra脚本
+├── 05_firmware_reverse_engineering.md ← 固件逆向分析、binwalk、QEMU模拟
+└── 06_re_ctf_lab.md                   ← CTF: 反调试绕过/脱壳/符号执行/反混淆
+```
+
+反调试检测与绕过、UPX/Themida脱壳、angr符号执行、CFG分析。含pwntools/angr实战CTF 4个挑战。
+
+---
+
+## 66. 漏洞利用开发
+
+```
+66_Exploit_Development/
+├── 01_rop_chain_techniques.md       ← ROP gadget收集/链构建、NX绕过、ASLR暴力破解
+├── 02_heap_exploitation.md          ← glibc ptmalloc2、堆溢出、UAF、House-of-Force
+├── 03_kernel_exploitation.md        ← 内核BOF、ret2usr、SMEP/KPTI绕过、LPE
+├── 04_browser_exploitation.md       ← V8 JIT Bug、OOB读写、渲染器→浏览器逃逸
+├── 05_exploit_mitigation_bypass.md  ← Canary/ASLR/NX/PIE组合绕过、FSOP
+└── 06_exploit_ctf_lab.md            ← CTF: 栈BOF/ROP链/堆UAF/组合绕过
+```
+
+ROP链构建、堆利用（ptmalloc2）、内核LPE、浏览器V8 Bug。含pwntools实战CTF 4个挑战。
+
+---
+
+## 67. 恶意软件开发解析
+
+```
+67_Malware_Development/
+├── 01_malware_architecture.md       ← 恶意软件结构、Dropper/载荷/C2架构
+├── 02_shellcode_development.md      ← 位置无关Shellcode、编码、分阶段加载
+├── 03_c2_framework_design.md        ← C2通信信道、信标间隔、HTTPS/DNS隧道
+├── 04_persistence_mechanisms.md     ← 注册表/服务/计划任务/WMI持久化
+├── 05_evasion_and_detection.md      ← AMSI绕过、ETW补丁、内存注入、行为检测
+└── 06_maldev_ctf_lab.md             ← CTF: XOR解密/注册表检测/C2分析/内存取证
+```
+
+C2架构与信标、Shellcode开发、四种持久化技术、AMSI/ETW绕过。含Volatility内存取证CTF 4个挑战。
+
+---
+
+## 68. 紫队运营
+
+```
+68_Purple_Team/
+├── 01_purple_team_fundamentals.md   ← 紫队方法论、红蓝协作框架
+├── 02_attack_simulation.md          ← Atomic Red Team、CALDERA、攻击模拟自动化
+├── 03_detection_engineering.md      ← Sigma规则编写、SIEM集成、检测覆盖率测量
+├── 04_threat_emulation.md           ← APT仿真、TTP复现、MITRE ATT&CK映射
+├── 05_purple_team_reporting.md      ← 差距分析、检测率报告、改进路线图
+└── 06_purple_ctf_lab.md             ← CTF: ATT&CK映射/Sigma规则/检测率测量
+```
+
+红蓝队协作、Atomic Red Team/CALDERA模拟、Sigma规则编写、检测覆盖率测量。含基于ATT&CK的CTF 4个挑战。
+
+---
+
+## 69. LLM安全
+
+```
+69_LLM_Security/
+├── 01_llm_security_fundamentals.md      ← LLM攻击面、OWASP LLM Top 10、威胁模型
+├── 02_prompt_injection.md               ← 直接/间接注入、越狱、多模态攻击
+├── 03_model_extraction_and_inversion.md ← 模型提取、训练数据反演、成员推理
+├── 04_adversarial_attacks_on_llm.md     ← 对抗性后缀、迁移攻击、输入操纵
+├── 05_llm_security_defense.md           ← 护栏、输出验证、安全LLM架构
+└── 06_llm_security_ctf_lab.md           ← CTF: 基础注入/Base64绕过/Token走私
+```
+
+OWASP LLM Top 10、提示注入与越狱、模型提取、对抗攻击、LLM安全架构。含4个挑战的CTF。
+
+---
+
+## 70. Kubernetes安全
+
+```
+70_Kubernetes_Security/
+├── 01_k8s_attack_surface.md         ← K8s架构/攻击面、minikube实验环境、kube-bench
+├── 02_rbac_exploitation.md          ← RBAC错误配置利用、通配符权限、ClusterRole审计
+├── 03_pod_escape.md                 ← privileged Pod逃逸、hostPath滥用、服务账户窃取
+├── 04_network_attacks.md            ← 网络策略缺失、Pod间嗅探、DNS欺骗
+├── 05_k8s_hardening.md              ← CIS Benchmark、PSS、OPA Gatekeeper、Vault密钥
+└── 06_k8s_ctf_lab.md                ← CTF: RBAC窃取/Pod逃逸/服务账户/etcd访问
+```
+
+从K8s攻击面到RBAC错误配置利用、privileged Pod逃逸、etcd密钥转储。kube-bench CIS审计实战。含新手友好的minikube环境搭建。
+
+---
+
+## 71. 蓝牙/RF黑客
+
+```
+71_Bluetooth_RF_Hacking/
+├── 01_bluetooth_fundamentals.md     ← 蓝牙 vs BLE、配对/协议栈结构、BlueSnarfing
+├── 02_ble_attacks.md                ← GATT/GAP、脆弱特征值写入、bleak枚举BLE设备
+├── 03_rf_signal_analysis.md         ← SDR概念、RTL-SDR安装、GNU Radio、频率分析
+├── 04_zigbee_attacks.md             ← Zigbee架构、信道扫描、Zigbee2MQTT监控
+├── 05_wireless_defense.md           ← BLE加密加固、Zigbee密钥管理、RF屏蔽方法
+└── 06_wireless_ctf_lab.md           ← CTF: BLE GATT旗标/PIN暴力破解/RF重放
+```
+
+蓝牙/BLE漏洞分析、RTL-SDR频率分析、Zigbee IoT攻击。bleak/paho-mqtt/GNU Radio实战。低成本RTL-SDR硬件即可入门。
+
+---
+
+## 72. 恶意软件沙箱分析
+
+```
+72_Malware_Sandbox_Analysis/
+├── 01_sandbox_fundamentals.md       ← 沙箱概念、静态vs动态分析、VM环境搭建
+├── 02_online_sandbox_tools.md       ← ANY.RUN/VirusTotal/Joe Sandbox对比、vt-py API
+├── 03_static_analysis.md            ← PE头分析、熵值、YARA规则、pefile实战
+├── 04_dynamic_analysis.md           ← 进程监控、FakeNet、Wireshark、psutil脚本
+├── 05_ioc_extraction.md             ← IOC提取自动化、MITRE ATT&CK映射、STIX/TAXII
+└── 06_malware_ctf_lab.md            ← CTF: C2提取/XOR解密/注册表分析/UPX脱壳模拟
+```
+
+在线沙箱（ANY.RUN/VirusTotal）应用、PE静态分析、psutil动态监控、IOC自动提取。完全免费工具即可新手入门。
+
+---
+
+## 73. 漏洞赏金自动化
+
+```
+73_Bug_Bounty_Automation/
+├── 01_bug_bounty_fundamentals.md    ← HackerOne/Bugcrowd生态、负责任披露、范围理解
+├── 02_recon_automation.md           ← subfinder/amass/httpx/naabu流水线、Python自动化
+├── 03_vulnerability_scanning.md     ← Nuclei模板、自定义规则、误报过滤、Burp集成
+├── 04_report_writing.md             ← CVSS v3计算、PoC编写、Markdown报告自动生成
+├── 05_advanced_techniques.md        ← 漏洞链、逻辑漏洞、API模糊测试、OAuth漏洞
+└── 06_bug_bounty_ctf_lab.md         ← CTF: 子域名接管/IDOR检测/Nuclei实验
+```
+
+HackerOne/Bugcrowd平台应用、ProjectDiscovery工具链（subfinder/nuclei）自动化、基于CVSS的报告撰写。端到端实践真实漏洞赏金流程。
+
+---
+
+## 74. 代码审计
+
+```
+74_Code_Auditing/
+├── 01_code_audit_fundamentals.md    ← STRIDE威胁建模、代码审计vs渗透测试、攻击面分析
+├── 02_vulnerability_patterns.md     ← OWASP Top 10代码模式、脆弱/安全代码对比、各语言危险函数
+├── 03_static_analysis_tools.md      ← Semgrep自定义规则、Bandit、CodeQL + GitHub Actions集成
+├── 04_manual_review_techniques.md   ← Source/Sink追踪、基于AST的数据流分析、人工审查清单
+├── 05_sast_cicd_integration.md      ← Pre-commit Hook、CI安全门、SARIF解析器、TP/FP分诊
+└── 06_code_audit_ctf_lab.md         ← CTF: SQL注入审计/密钥检测/认证绕过模式检测
+```
+
+Semgrep/Bandit/CodeQL静态分析、Source→Sink数据流追踪、CI/CD安全门构建。含脆弱Flask应用实验环境。
+
+---
+
+## 75. 红队报告撰写
+
+```
+75_Red_Team_Reporting/
+├── 01_red_team_fundamentals.md      ← 红队/蓝队/紫队区别、RoE、MITRE ATT&CK概述
+├── 02_operation_planning.md         ← 基于杀伤链的行动计划、时间线自动生成、团队分工
+├── 03_ttps_documentation.md         ← TTP文档化、ATT&CK映射自动化、IOC清单编制
+├── 04_report_writing.md             ← 双受众报告（管理层/技术团队）、CVSS风险评估、自动生成器
+├── 05_debrief_lessons.md            ← 复盘流程、经验教训提炼、紫队转型、检测率分析
+└── 06_red_team_ctf_lab.md           ← CTF: ATT&CK映射/CloudStore报告/杀伤链计划
+```
+
+基于MITRE ATT&CK的TTP文档化、管理层/技术团队双受众报告撰写、复盘→紫队转型流程。含Python报告自动化工具。
 
 ---
 

@@ -521,7 +521,7 @@ python3 vhack.py lab stop --all
 
 ```bash
 python3 vhack.py --help        # Show help
-python3 vhack.py list          # List all 64 sections
+python3 vhack.py list          # List all 75 sections
 python3 vhack.py alias status  # Check alias registration
 python3 vhack.py lab status    # Show running containers
 

@@ -31,7 +31,7 @@ vhack — VibeHacking CLI
   python3 vhack.py <명령어> [옵션]
 
 명령어:
-  list      전체 64개 섹션 목록 표시
+  list      전체 75개 섹션 목록 표시
   study     섹션 파일 열람
   lab       Docker 실습 환경 관리
   search    전체 마크다운 문서 검색
@@ -66,7 +66,7 @@ vhack list
 ### 예시
 
 ```bash
-# 전체 64개 섹션 목록 표시
+# 전체 75개 섹션 목록 표시
 vhack list
 
 # "web" 포함 섹션만 표시
@@ -92,7 +92,7 @@ vhack list --search 포렌식
    ...
    64  📊 64_Threat_Intel_Platform               위협 인텔 플랫폼 [5파일]
 
-  총 64개 섹션
+  총 75개 섹션
 ```
 
 ---
@@ -604,7 +604,7 @@ vhack lab start 01
 ## Quick Reference
 
 ```bash
-# View all 64 sections
+# View all 75 sections
 python3 vhack.py list
 python3 vhack.py list --search web      # Filter sections
 
