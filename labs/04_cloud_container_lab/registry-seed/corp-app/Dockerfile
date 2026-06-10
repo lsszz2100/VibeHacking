@@ -4,7 +4,7 @@ LABEL maintainer="devops@corp.local"
 
 # 취약 패턴 1: 크리덴셜을 이미지 레이어에 하드코딩
 RUN echo "DB_PASSWORD=Pr0d_DB_P4ss!" > /etc/app.conf && \
-    echo "AWS_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE" >> /etc/app.conf && \
+    echo "AWS_ACCESS_KEY=FAKEKEYEXAMPLE000000" >> /etc/app.conf && \
     echo "INTERNAL_API_TOKEN=secret-token-abc123xyz" >> /etc/app.conf && \
     echo "REDIS_URL=redis://:r3d1s_s3cr3t@cache.internal:6379" >> /etc/app.conf
 

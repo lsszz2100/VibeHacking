@@ -51,7 +51,7 @@ services:
         echo 'CTF{s3_publ1c_buck3t_3num3r4t10n_flag}' | mc pipe local/public-assets/flag.txt &&
         echo 'CTF{pr1v4t3_back3t_s3cr3t_k3y_l34k}' | mc pipe local/private-backup/secrets.txt &&
         echo 'AWS_ACCESS_KEY=FAKEKEYEXAMPLE000000' | mc pipe local/dev-logs/env.txt &&
-        echo 'AWS_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY' | mc pipe local/dev-logs/env.txt &&
+        echo 'AWS_SECRET_KEY=FAKE_SECRET_KEY_FOR_CTF_LAB_DEMO_ONLY_000' | mc pipe local/dev-logs/env.txt &&
         mc anonymous set public local/public-assets &&
         echo 'S3 setup complete'
       "

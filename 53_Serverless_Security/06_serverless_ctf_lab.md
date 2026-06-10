@@ -75,7 +75,7 @@ class VulnerableLambda:
     # 시뮬레이션된 환경 변수 (Lambda 실행 환경)
     ENV_VARS: dict[str, str] = {
         "AWS_ACCESS_KEY_ID":     "FAKEKEYEXAMPLE000000",
-        "AWS_SECRET_ACCESS_KEY": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+        "AWS_SECRET_ACCESS_KEY": "FAKE_SECRET_KEY_FOR_CTF_LAB_DEMO_ONLY_000",
         "AWS_SESSION_TOKEN":     "AQoXnyc4lcK4w...",
         "AWS_REGION":            "us-east-1",
         "FUNCTION_NAME":         "image-processor",

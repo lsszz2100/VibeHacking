@@ -21,7 +21,7 @@ SECRETS = {
         },
         "aws-credentials": {
             "access_key": "FAKEKEYEXAMPLE000000",
-            "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+            "secret_key": "FAKE_SECRET_KEY_FOR_CTF_LAB_DEMO_ONLY_000",
         },
         "admin-token": {"token": ADMIN_TOKEN, "flag": SECRET_FLAG},
     }

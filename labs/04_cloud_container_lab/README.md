@@ -71,7 +71,7 @@ curl "http://localhost:8080/fetch?url=http://172.18.0.20/latest/meta-data/iam/se
 ```bash
 # 환경변수 설정
 export AWS_ACCESS_KEY_ID="FAKEKEYEXAMPLE000000"
-export AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+export AWS_SECRET_ACCESS_KEY="FAKE_SECRET_KEY_FOR_CTF_LAB_DEMO_ONLY_000"
 export AWS_SESSION_TOKEN="AQoDYXdzEJr...EXAMPLETOKEN"
 
 # (실제 환경에서는 S3, EC2 등에 접근 가능)
