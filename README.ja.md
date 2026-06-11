@@ -273,9 +273,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_linux_essential_commands.md   ← ファイル/プロセス/ネットワーク必須コマンド
 ├── 02_kali_linux_setup.md           ← Kali初期設定、ツールインストール
 ├── 03_bash_scripting.md             ← 自動化スクリプト、実践例
-├── 04_linux_privilege_escalation.md ← Linux Privilege Escalation — sudo · SUID · Capabilities · Kernel Expl...
-├── 05_linux_security_tools.md       ← Linux Security Tools Reference
-└── 06_linux_ctf_practical_lab.md    ← Linux CTF Practical Lab — Privilege Escalation · SUID · Cron · Enviro...
+├── 04_linux_privilege_escalation.md ← Linux権限昇格 — sudo · SUID · Capabilities · カーネルエクスプロイト
+├── 05_linux_security_tools.md       ← Linuxセキュリティツールリファレンス
+└── 06_linux_ctf_practical_lab.md    ← Linux CTF実践ラボ — 権限昇格 · SUID · Cron · 環境変数
 ```
 
 **主要内容:** ファイルシステム、プロセス管理、ネットワークコマンド、権限管理、30以上のBash自動化スクリプト
@@ -289,9 +289,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_osi_tcpip.md          ← OSI 7層、TCP/IPスタック、プロトコル分析
 ├── 02_packet_analysis.md    ← Wireshark実践、tcpdump、パケット操作
 ├── 03_wireless_hacking.md   ← WEP/WPA2クラック、Evil Twin、無線ハッキング
-├── 04_mitm_advanced.md      ← MITM Advanced — ARP Spoofing · SSL Stripping · bettercap · mitmproxy
-├── 05_network_exploitation_techniques.md ← Advanced Network Exploitation Techniques
-└── 06_network_ctf_lab.md    ← CTF-Style Network Hacking Lab
+├── 04_mitm_advanced.md      ← MITM上級 — ARPスプーフィング · SSLストリッピング · bettercap · mitmproxy
+├── 05_network_exploitation_techniques.md ← 高度なネットワーク攻撃技法
+└── 06_network_ctf_lab.md    ← CTF形式ネットワークハッキングラボ
 ```
 
 **主要内容:** パケットキャプチャ・分析、ARPスプーフィング、MITM、無線ネットワーク攻撃、ファイアウォール回避
@@ -305,9 +305,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_password_cracking.md       ← Hashcat、John、Rainbow Table、オンラインクラック
 ├── 02_buffer_overflow.md         ← スタックBOF原理、シェルコード、実践例
 ├── 03_active_directory_attack.md ← AD攻撃完全ガイド、Kerberoasting、DCSync
-├── 04_kerberos_delegation_attacks.md ← Kerberos Delegation Attacks — Complete Guide
-├── 05_system_defense_and_detection.md ← System Attack Detection and Defense
-└── 06_system_ctf_lab.md          ← CTF-Style System Hacking Lab
+├── 04_kerberos_delegation_attacks.md ← Kerberos委任攻撃 — 完全ガイド
+├── 05_system_defense_and_detection.md ← システム攻撃の検知と防御
+└── 06_system_ctf_lab.md          ← CTF形式システムハッキングラボ
 ```
 
 **主要内容:** ハッシュクラック戦略、BOF原理からエクスプロイトまで、Active Directory攻撃チェーン完全攻略
@@ -321,9 +321,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_assembly_and_registers.md   ← x86/x64アセンブリ、レジスタ、スタックフレーム
 ├── 02_ollydbg_practical.md        ← x64dbg実践分析
 ├── 03_pe_structure.md             ← PEファイル構造、IAT/EAT、パッキング
-├── 04_ghidra_and_dynamic_analysis.md ← Ghidra Practical Analysis & WorstFit Unicode Vulnerability
-├── 05_advanced_unpacking_and_deobfuscation.md ← Advanced Unpacking and Deobfuscation
-└── 06_reversing_ctf_lab.md        ← CTF-Style Reversing Lab
+├── 04_ghidra_and_dynamic_analysis.md ← Ghidra実践分析＆WorstFit Unicode脆弱性
+├── 05_advanced_unpacking_and_deobfuscation.md ← 高度なアンパッキングと難読化解除
+└── 06_reversing_ctf_lab.md        ← CTF形式リバーシングラボ
 ```
 
 **主要内容:** アセンブリ言語、デバッガ使用法、PE構造の深掘り分析、IDA Pro/Ghidra
@@ -337,9 +337,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_owasp_top10.md              ← OWASP Top 10（2021）、Burp Suite、Nikto
 ├── 02_sql_injection_advanced.md   ← Blind/Time-based SQLi、NoSQL、SQLMap実践
 ├── 03_xss_csrf_file_upload.md     ← Stored/Reflected/DOM XSS、CSRF、Webシェル
-├── 04_waf_bypass_advanced_web.md  ← WAF Bypass & Advanced Web Attack Techniques
-├── 05_web_security_tools_and_automation.md ← Web Security Tools and Automation
-└── 06_web_ctf_practical_lab.md    ← Web Hacking CTF Practical Lab — SQL Injection, XSS, SSRF, SSTI Compre...
+├── 04_waf_bypass_advanced_web.md  ← WAFバイパス＆高度なWeb攻撃技法
+├── 05_web_security_tools_and_automation.md ← Webセキュリティツールと自動化
+└── 06_web_ctf_practical_lab.md    ← WebハッキングCTF実践ラボ — SQLインジェクション、XSS、SSRF、SSTI総合
 ```
 
 **主要内容:** OWASP Top 10実践、SQL Injection完全攻略、XSS/CSRF/ファイルアップロード/XXE/SSRF
@@ -353,9 +353,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_malware_analysis.md            ← 分類、分析環境、静的/動的分析、YARA
 ├── 02_memory_forensics_malware.md    ← Volatility完全攻略、コードインジェクション検出
 ├── 03_android_malware_analysis.md    ← APK分析、Fridaフッキング、MobSF
-├── 04_yara_and_detection.md          ← YARA Rule Development and Automated Malware Detection
-├── 05_malware_defense_and_hunting.md ← Malware Defense and Hunting
-└── 06_malware_ctf_practical_lab.md   ← Malware Analysis CTF Practical Lab — Static/Dynamic Analysis, Unpacki...
+├── 04_yara_and_detection.md          ← YARAルール開発とマルウェア自動検知
+├── 05_malware_defense_and_hunting.md ← マルウェア防御とハンティング
+└── 06_malware_ctf_practical_lab.md   ← マルウェア分析CTF実践ラボ — 静的/動的分析、アンパッキング
 ```
 
 **主要内容:** 静的・動的・メモリ分析の全工程、Volatilityプラグイン、Androidマルウェア
@@ -369,9 +369,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_digital_forensics.md               ← フォレンジクス原則、証拠収集、イメージ分析
 ├── 02_windows_forensics_artifacts.md     ← レジストリ、イベントログ、Prefetch、ブラウザ
 ├── 03_network_forensics.md               ← Wireshark、Zeek、Suricata、インシデント対応
-├── 04_advanced_volatility.md             ← Volatility3 Advanced — Process Analysis, Network, and Malware Detection
-├── 05_forensics_automation_and_tools.md  ← Forensics Automation and Tools
-└── 06_forensics_ctf_lab.md               ← Forensics CTF Lab
+├── 04_advanced_volatility.md             ← Volatility3上級 — プロセス分析、ネットワーク、マルウェア検知
+├── 05_forensics_automation_and_tools.md  ← フォレンジック自動化とツール
+└── 06_forensics_ctf_lab.md               ← フォレンジック CTFラボ
 ```
 
 **主要内容:** 証拠収集手順、Windowsアーティファクト完全分析、ネットワークフォレンジクス、タイムライン分析
@@ -385,9 +385,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_python_hacking_tools.md       ← ポートスキャナ・スニッファ・バックドアなど30以上のサンプル
 ├── 02_python_network_scanner.md     ← マルチスレッドスキャナ、ARP、DNS列挙、SSHブルートフォーサ
 ├── 03_python_web_exploitation.md    ← Webクローラ、SQLi自動化、XSSスキャナ、レポート生成
-├── 04_python_exploit_automation.md  ← Python Exploit Automation — pwntools, ROPgadget, and CTF Tools
-├── 05_python_security_automation.md ← Python Security Automation — Scapy, requests, paramiko, Automation Tools
-└── 06_python_hacking_ctf_lab.md     ← Python Hacking CTF Practice Lab
+├── 04_python_exploit_automation.md  ← Pythonエクスプロイト自動化 — pwntools、ROPgadget、CTFツール
+├── 05_python_security_automation.md ← Pythonセキュリティ自動化 — Scapy、requests、paramiko、自動化ツール
+└── 06_python_hacking_ctf_lab.md     ← Pythonハッキング CTF実践ラボ
 ```
 
 **主要内容:** Scapy、paramiko、requestsを活用したセキュリティツール開発、50以上の完全動作コード
@@ -401,9 +401,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_advanced_exploitation.md   ← ROP Chain、Heap Spray、SEH、Win32シェルコーディング
 ├── 02_linux_exploitation.md      ← Linux BOF、Ret2Libc、フォーマット文字列、権限昇格
 ├── 03_heap_exploitation.md       ← tcacheポイズニング、UAF、House ofシリーズ、pwndbg
-├── 04_format_string_exploits.md  ← Format String Exploits — Arbitrary Read, Write, and GOT Overwrite
-├── 05_exploit_defense_and_mitigation.md ← Exploit Defense and Mitigation — ASLR, DEP/NX, Stack Canaries, CFG
-└── 06_exploit_ctf_lab.md         ← Exploit Techniques CTF Practice Lab
+├── 04_format_string_exploits.md  ← 書式文字列エクスプロイト — 任意読み書き、GOT上書き
+├── 05_exploit_defense_and_mitigation.md ← エクスプロイト防御と緩和 — ASLR、DEP/NX、スタックカナリア、CFG
+└── 06_exploit_ctf_lab.md         ← エクスプロイト技法 CTF実践ラボ
 ```
 
 **主要内容:** DEP/ASLR/NXバイパス、ROPチェーン構成、フォーマット文字列エクスプロイト、ヒープエクスプロイト完全攻略
@@ -417,9 +417,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_pentest_methodology.md   ← ペンテスト全手順、MITRE ATT&CK、報告書作成
 ├── 02_osint_recon.md           ← Google Dorks、Shodan、サブドメイン列挙、GitHub秘密情報検出
 ├── 03_report_writing.md        ← プロ報告書作成、CVSS算定、PoC作成、経営者/技術報告書テンプレート
-├── 04_post_exploitation.md     ← Post-Exploitation Methodology — Persistence, Information Gathering, P...
-├── 05_pentest_reporting_and_remediation.md ← Pentest Reporting and Remediation — CVSS Scoring, Report Writing, Exe...
-└── 06_pentest_ctf_lab.md       ← Pentest Methodology CTF Practice Lab
+├── 04_post_exploitation.md     ← ポストエクスプロイト方法論 — 永続化、情報収集、権限昇格
+├── 05_pentest_reporting_and_remediation.md ← 侵入テスト報告と是正 — CVSSスコアリング、レポート作成
+└── 06_pentest_ctf_lab.md       ← 侵入テスト方法論 CTF実践ラボ
 ```
 
 **主要内容:** 体系的なペンテスト方法論、OSINTツール完全活用、プロ報告書作成（CVSS・PoC・コンプライアンス対応）
@@ -436,8 +436,8 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 02_llm_vulnerability_research.md   ← LLMによるゼロデイ発見、AIファジング、コード分析自動化
 ├── 03_ai_assisted_pentesting.md       ← AI支援ペンテストワークフロー、プロンプトエンジニアリング
 ├── 04_ai_ctf_automation.md            ← CTF自動化AIエージェント、暗号/Web/フォレンジクス専門サブエージェント
-├── 05_claude_gpt_cyber_integration.md ← AI Integration — Claude + GPT-4o Security Analysis Tools Guide
-└── 06_ai_security_ctf_lab.md          ← CTF-Style AI Security Labs
+├── 05_claude_gpt_cyber_integration.md ← AI統合 — Claude + GPT-4oセキュリティ分析ツールガイド
+└── 06_ai_security_ctf_lab.md          ← CTF形式AIセキュリティラボ
 ```
 
 ### 2026年 AIセキュリティ勢力図
@@ -459,9 +459,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_bug_bounty_methodology.md   ← HackerOne/Bugcrowd方法論、IDOR、XSSバイパス、自動化
 ├── 02_burp_suite_advanced.md      ← Burp Suite完全攻略、JWT攻撃、Request Smuggling
 ├── 03_bug_bounty_automation.md    ← Nuclei、ffuf、dalfox、自動化パイプライン
-├── 04_api_security_testing.md     ← API Security Testing & Bug Bounty Practical Guide
-├── 05_advanced_vuln_chains.md     ← Bug Bounty Advanced — Vulnerability Chains, Subdomain Takeover, Accou...
-└── 06_bug_bounty_ctf_lab.md       ← Bug Bounty CTF Practice Lab
+├── 04_api_security_testing.md     ← APIセキュリティテスト＆バグバウンティ実践ガイド
+├── 05_advanced_vuln_chains.md     ← バグバウンティ上級 — 脆弱性チェーン、サブドメイン乗っ取り、アカウント乗っ取り
+└── 06_bug_bounty_ctf_lab.md       ← バグバウンティ CTF実践ラボ
 ```
 
 **主要内容:** バグバウンティ全ワークフロー、Burp Suite高度な機能、偵察→脆弱性→報告書の自動化
@@ -475,9 +475,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_soc_fundamentals.md       ← SOC構造、インシデント対応、主要イベントID、EDR
 ├── 02_splunk_siem_analysis.md   ← Splunk SPL完全攻略、100以上の検出クエリ
 ├── 03_threat_hunting.md         ← 脅威ハンティング、ランサムウェア侵害調査、APT追跡
-├── 04_qradar_xdr_blue_team.md   ← IBM QRadar & Azure Sentinel KQL & XDR Blue Team Practical Guide
-├── 05_detection_engineering.md  ← Detection Engineering — Sigma & MITRE ATT&CK Based Rule Development
-└── 06_soc_ctf_lab.md            ← SOC/Blue Team CTF Lab
+├── 04_qradar_xdr_blue_team.md   ← IBM QRadar＆Azure Sentinel KQL＆XDRブルーチーム実践ガイド
+├── 05_detection_engineering.md  ← 検知エンジニアリング — Sigma＆MITRE ATT&CKベースのルール開発
+└── 06_soc_ctf_lab.md            ← SOC/ブルーチーム CTFラボ
 ```
 
 **主要内容:** SOCティア別役割、攻撃検出パターン100以上、Splunk/QRadar/ELKクエリ、脅威ハンティング方法論
@@ -491,9 +491,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_cloud_attack_vectors.md        ← AWS/Azure/GCP/K8s攻撃ベクター完全分析
 ├── 02_aws_pentest.md                 ← AWSペンテスト方法論、権限昇格、自動化
 ├── 03_cloud_security_checklist.md    ← CISチェックリスト、Terraform、SCPポリシー
-├── 04_GCP_Azure_Pentest.md           ← GCP and Azure Penetration Testing
-├── 05_cloud_lateral_movement.md      ← Cloud Lateral Movement — Account Pivoting, Cross-Service Movement, an...
-└── 06_cloud_security_ctf_lab.md      ← Cloud Security CTF Practice Lab
+├── 04_GCP_Azure_Pentest.md           ← GCP・Azure侵入テスト
+├── 05_cloud_lateral_movement.md      ← クラウド水平移動 — アカウントピボット、サービス間移動、権限昇格
+└── 06_cloud_security_ctf_lab.md      ← クラウドセキュリティ CTF実践ラボ
 ```
 
 **主要内容:** IAM権限悪用、S3誤設定、コンテナエスケープ、Kubernetes攻撃、クラウドセキュリティチェックリスト
@@ -507,9 +507,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_wifi_hacking_fundamentals.md   ← WEP/WPA/WPA2/WPA3理論、aircrack-ng基礎
 ├── 02_wpa2_cracking.md               ← Hashcat/Aircrack、PMKID攻撃、ワードリスト最適化
 ├── 03_advanced_wifi_attacks.md       ← Evil Twin、KARMA、Bettercap、Scapy操作
-├── 04_Enterprise_WiFi_Attacks.md     ← Enterprise WiFi Attacks (WPA2-Enterprise / RADIUS)
-├── 05_rogue_ap_and_detection.md      ← Rogue AP, Captive Portal, WiFi Monitoring, and Detection
-└── 06_wifi_ctf_lab.md                ← WiFi Hacking CTF Practice Lab
+├── 04_Enterprise_WiFi_Attacks.md     ← エンタープライズWiFi攻撃（WPA2-Enterprise / RADIUS）
+├── 05_rogue_ap_and_detection.md      ← 不正AP、キャプティブポータル、WiFi監視と検知
+└── 06_wifi_ctf_lab.md                ← WiFiハッキング CTF実践ラボ
 ```
 
 **主要内容:** 4-Way Handshake、PMKIDキャプチャ、GPUクラッキング、Evil Twin構築、無線自動化
@@ -523,9 +523,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_cryptography_for_hackers.md   ← AESモード攻撃、RSA脆弱性、XORクラッキング
 ├── 02_hash_attacks.md               ← MD5衝突、レインボーテーブル、Kerberoasting
 ├── 03_applied_cryptography.md       ← Padding Oracle、ECDSAノンス再利用、JWT攻撃
-├── 04_PKI_TLS_Attacks.md            ← PKI Infrastructure and TLS/SSL Attacks
-├── 05_crypto_implementation_attacks.md ← Crypto Implementation Attacks — Padding Oracle, Timing Attacks, Weak RNG
-└── 06_crypto_ctf_practical_lab.md   ← Cryptography CTF Practical Lab — Classical Ciphers, RSA, ECC, and Has...
+├── 04_PKI_TLS_Attacks.md            ← PKIインフラとTLS/SSL攻撃
+├── 05_crypto_implementation_attacks.md ← 暗号実装攻撃 — パディングオラクル、タイミング攻撃、脆弱なRNG
+└── 06_crypto_ctf_practical_lab.md   ← 暗号CTF実践ラボ — 古典暗号、RSA、ECC、ハッシュ
 ```
 
 **主要内容:** 暗号実装の脆弱性、CTF暗号問題パターン、安全な暗号化実装ガイド
@@ -539,9 +539,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_red_team_playbook.md               ← 運営構造、Cobalt Strike/Havoc、AV/EDRバイパス
 ├── 02_phishing_and_social_engineering.md ← GoPhish、Evilginx2、スピアフィッシング、BEC
 ├── 03_api_hacking.md                     ← OWASP API Top 10、GraphQL、ファザー開発
-├── 04_C2_Infrastructure.md               ← C2 (Command and Control) Infrastructure Setup and Operations
-├── 05_red_team_reporting.md              ← Red Team Reporting — Results Analysis, Exploit Chain Documentation, E...
-└── 06_red_team_ctf_lab.md                ← Red Team Operations CTF Practice Lab
+├── 04_C2_Infrastructure.md               ← C2（コマンド＆コントロール）インフラ構築と運用
+├── 05_red_team_reporting.md              ← レッドチーム報告 — 結果分析、エクスプロイトチェーン文書化
+└── 06_red_team_ctf_lab.md                ← レッドチーム作戦 CTF実践ラボ
 ```
 
 **主要内容:** レッドチームvsペンテストの違い、C2フレームワーク運営、フィッシングインフラ、API脆弱性完全攻略
@@ -555,9 +555,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_devsecops_fundamentals.md    ← Shift Left、Semgrep、SonarQube、Snyk、ZAP
 ├── 02_container_security.md        ← Dockerfileセキュリティ、Trivy、Falco、K8s RBAC、cosign
 ├── 03_github_actions_security.md   ← CI/CDセキュリティ、OIDC、SHAピン留め、完全セキュリティパイプライン
-├── 04_Secret_Detection_and_SBOM.md ← Secret Detection and SBOM (Software Bill of Materials)
-├── 05_supply_chain_security.md     ← Supply Chain Security — Dependency Attacks, SLSA, Signature Verification
-└── 06_devsecops_ctf_lab.md         ← DevSecOps CTF Practice Lab
+├── 04_Secret_Detection_and_SBOM.md ← シークレット検出とSBOM（ソフトウェア部品表）
+├── 05_supply_chain_security.md     ← サプライチェーンセキュリティ — 依存関係攻撃、SLSA、署名検証
+└── 06_devsecops_ctf_lab.md         ← DevSecOps CTF実践ラボ
 ```
 
 **主要内容:** セキュリティ内在化（Shift Left）、SAST/SCA/DAST/IaCスキャン自動化、コンテナランタイム検出、GitLab/Jenkins/GitHub Actionsセキュアパイプライン完全実装
@@ -571,9 +571,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_x86_x64_Fundamentals.md   ← レジスタ、命令、スタックフレーム、呼び出し規約
 ├── 02_Shellcode_Development.md  ← シェルコード作成、バッドバイト除去、ctypes実行テスト
 ├── 03_Disassembly_Analysis.md   ← GDB/pwndbg、IDA/Ghidra、Capstone自動化
-├── 04_ROP_Chain_Programming.md  ← ROP (Return-Oriented Programming) Chain Construction
-├── 05_shellcode_analysis_and_detection.md ← Shellcode Analysis and Detection — Static/Dynamic Analysis and Signat...
-└── 06_assembly_ctf_lab.md       ← Assembly Language CTF Practice Lab
+├── 04_ROP_Chain_Programming.md  ← ROP（Return-Oriented Programming）チェーン構築
+├── 05_shellcode_analysis_and_detection.md ← シェルコード分析と検知 — 静的/動的分析とシグネチャ作成
+└── 06_assembly_ctf_lab.md       ← アセンブリ言語 CTF実践ラボ
 ```
 
 **主要内容:** x86/x64レジスタ完全攻略、NASMコーディング、64ビットexecveシェルコード実装、Capstoneベース自動逆アセンブラ
@@ -587,9 +587,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_Bash_Scripting_Basics.md       ← 変数/配列/条件/ループ/関数、awk/sed、ポートスキャナ
 ├── 02_Pentest_Automation.md          ← 偵察自動化、サブドメイン列挙、脆弱性スキャンラッパー
 ├── 03_Post_Exploitation_Scripts.md   ← リバースシェル、永続化、Python C2ソケット実装
-├── 04_Advanced_Obfuscation_Evasion.md ← Shell Script Obfuscation and Detection Evasion
-├── 05_bash_forensics_and_monitoring.md ← Bash Forensics & Monitoring Automation — Log Analysis, Anomaly Detect...
-└── 06_shell_ctf_lab.md               ← Shell Scripting CTF Practice Lab
+├── 04_Advanced_Obfuscation_Evasion.md ← シェルスクリプト難読化と検知回避
+├── 05_bash_forensics_and_monitoring.md ← Bashフォレンジック＆監視自動化 — ログ分析、異常検知
+└── 06_shell_ctf_lab.md               ← シェルスクリプト CTF実践ラボ
 ```
 
 **主要内容:** Bash実践スクリプト、偵察から事後エクスプロイトまで全工程自動化、リバースシェルワンライナー7種、Python C2実装
@@ -603,9 +603,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_Windows_Internals.md              ← PEフォーマット、PEB/TEB、WinAPIコア関数、PEパーサコード
 ├── 02_Windows_Privilege_Escalation.md   ← サービス/レジストリ/DLLハイジャッキング、UACバイパス、トークンインパーソネーション
 ├── 03_Defense_Evasion.md                ← AMSI/ETWバイパス、プロセスインジェクション6種、LOLBAS、AESペイロード暗号化
-├── 04_COM_Object_Hijacking.md           ← COM Object Hijacking and WMI Abuse
-├── 05_windows_persistence_detection.md  ← Windows Persistence Detection — Registry, Service, and WMI Backdoor A...
-└── 06_windows_ctf_lab.md                ← Windows Exploitation CTF Practice Lab
+├── 04_COM_Object_Hijacking.md           ← COMオブジェクトハイジャックとWMI悪用
+├── 05_windows_persistence_detection.md  ← Windows永続化検知 — レジストリ、サービス、WMIバックドア分析
+└── 06_windows_ctf_lab.md                ← Windowsエクスプロイト CTF実践ラボ
 ```
 
 **主要内容:** Windows内部構造の深掘り、権限昇格完全攻略、AMSI/AV/EDRバイパス技法
@@ -619,9 +619,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_Hash_Types_and_Wordlists.md      ← ハッシュアルゴリズム比較、hashid、CeWL/Crunch/CUPP、Pythonクラッカー
 ├── 02_Hashcat_and_John.md              ← 全攻撃モード、ハッシュタイプ別モード番号、ルール作成、実戦ワークフロー
 ├── 03_Advanced_Cracking_Techniques.md  ← レインボーテーブル、PRINCE、マスク上級、パスワードスプレーツール
-├── 04_Credential_Stuffing_Automation.md ← Credential Stuffing and Password Analysis Automation
-├── 05_password_policy_audit.md         ← Password Policy Audit — Weak Policy Detection, Hash Strength Analysis...
-└── 06_password_ctf_lab.md              ← Password Cracking CTF Practice Lab
+├── 04_Credential_Stuffing_Automation.md ← クレデンシャルスタッフィングとパスワード分析自動化
+├── 05_password_policy_audit.md         ← パスワードポリシー監査 — 脆弱ポリシー検出、ハッシュ強度分析
+└── 06_password_ctf_lab.md              ← パスワードクラッキング CTF実践ラボ
 ```
 
 **主要内容:** NTLM/WPA/ZIP/PDFクラッキング戦略、GPU最適化、レートリミット回避パスワードスプレー自動化
@@ -635,9 +635,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_oracle_mysql_attack.md       ← Oracle/MySQL/MSSQL攻撃ベクター、ブラインドSQLi、帯域外抽出
 ├── 02_db_privilege_escalation.md   ← DBユーザ権限昇格、ストアドプロシージャ悪用、UDFインジェクション
 ├── 03_db_forensics_defense.md      ← データベースフォレンジクス、監査ログ、クエリ監視、ハードニング
-├── 04_nosql_and_cloud_db_attacks.md ← NoSQL and Cloud DB Attacks
-├── 05_database_defense_and_hardening.md ← Database Defense and Hardening
-└── 06_database_ctf_lab.md          ← Database Hacking CTF Lab
+├── 04_nosql_and_cloud_db_attacks.md ← NoSQL・クラウドDB攻撃
+├── 05_database_defense_and_hardening.md ← データベース防御とハードニング
+└── 06_database_ctf_lab.md          ← データベースハッキング CTFラボ
 ```
 
 **主要内容:** 複数DBにわたる攻撃チェーン、DBエンジン経由の権限昇格、フォレンジクス分析と防御強化
@@ -651,9 +651,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_dns_attack_defense.md                ← DNSハイジャック、ゾーン転送、キャッシュポイズニング、DNSSECバイパス
 ├── 02_mail_server_security.md              ← SPF/DKIM/DMARCバイパス、メールサーバ侵害、メールスプーフィング
 ├── 03_ssh_tunneling_port_forwarding.md     ← SSHトンネリング、動的ポートフォワーディング、SOCKSプロキシ、ピボッティング
-├── 04_network_security_automation.md       ← Network Security Automation
-├── 05_network_defense_automation.md        ← Network Defense Automation — IDS/IPS Tuning, Firewall Automation, Net...
-└── 06_network_infra_ctf_lab.md             ← Network Infrastructure CTF Lab
+├── 04_network_security_automation.md       ← ネットワークセキュリティ自動化
+├── 05_network_defense_automation.md        ← ネットワーク防御自動化 — IDS/IPSチューニング、ファイアウォール自動化
+└── 06_network_infra_ctf_lab.md             ← ネットワークインフラ CTFラボ
 ```
 
 **主要内容:** DNS/メール/SSHインフラレベルの攻撃、サービス侵害、ピボッティングによる横断的移動
@@ -667,9 +667,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_cti_fundamentals.md          ← CTIフレームワーク(MITRE ATT&CK/STIX/TAXII)、脅威アクタープロファイリング
 ├── 02_osint_for_threat_intel.md    ← Shodan/Censys自動化、ダークウェブOSINT、IOC収集パイプライン
 ├── 03_incident_response.md         ← IRプレイブック、証拠収集、マルウェアトリアージ、ハニーポット
-├── 04_cti_platform_operations.md   ← CTI Platform Operations
-├── 05_threat_intel_automation.md   ← Threat Intelligence Automation — MISP, OpenCTI, IOC Enrichment, STIX/...
-└── 06_threat_intel_ctf_lab.md      ← Threat Intelligence CTF Practice Lab
+├── 04_cti_platform_operations.md   ← CTIプラットフォーム運用
+├── 05_threat_intel_automation.md   ← 脅威インテリジェンス自動化 — MISP、OpenCTI、IOCエンリッチメント、STIX/TAXII
+└── 06_threat_intel_ctf_lab.md      ← 脅威インテリジェンス CTF実践ラボ
 ```
 
 **主要内容:** CTIライフサイクル、脅威アクター帰属分析、IOC管理、自動化インシデント対応手順
@@ -683,9 +683,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_firewall_and_iptables.md          ← iptables/nftables/ufwルール、ファイアウォール監査、ステートフルフィルタリング
 ├── 02_pam_and_auth_hardening.md         ← PAM設定、SSHハードニング、MFA設定、sudoポリシー
 ├── 03_kisa_vulnerability_assessment.md  ← KISAセキュリティチェックリスト、CISベンチマーク、自動評価スクリプト
-├── 04_linux_security_auditing.md        ← Linux Security Auditing
-├── 05_linux_hardening_automation.md     ← Linux Hardening Automation — CIS Benchmarks, Ansible Playbooks, Audit...
-└── 06_linux_hardening_ctf_lab.md        ← Linux Hardening CTF Practice Lab
+├── 04_linux_security_auditing.md        ← Linuxセキュリティ監査
+├── 05_linux_hardening_automation.md     ← Linuxハードニング自動化 — CISベンチマーク、Ansible Playbook、監査
+└── 06_linux_hardening_ctf_lab.md        ← Linuxハードニング CTF実践ラボ
 ```
 
 **主要内容:** ファイアウォールルール設計、認証強化、KISA/CIS準拠の自動セキュリティ評価
@@ -699,9 +699,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_iot_attack_surface.md    ← 攻撃面分析、OWASP IoT Top 10、Shodan/Censysスキャニング
 ├── 02_firmware_analysis.md     ← ファームウェア抽出・分析、binwalk/Ghidra、ハードコード脆弱性検出
 ├── 03_iot_exploitation.md      ← UART/JTAGアクセス、組み込みエクスプロイト、実戦攻撃シナリオ
-├── 04_RF_Zigbee_Attacks.md     ← RF/Zigbee/Z-Wave IoT Wireless Protocol Attacks
-├── 05_iot_security_hardening.md ← IoT Security Hardening — Firmware Signing, Network Isolation, Device...
-└── 06_iot_ctf_lab.md           ← IoT Hacking CTF Practice Lab
+├── 04_RF_Zigbee_Attacks.md     ← RF/Zigbee/Z-Wave IoT無線プロトコル攻撃
+├── 05_iot_security_hardening.md ← IoTセキュリティハードニング — ファームウェア署名、ネットワーク分離、デバイス管理
+└── 06_iot_ctf_lab.md           ← IoTハッキング CTF実践ラボ
 ```
 
 **主要内容:** OWASP IoT Top 10ベース攻撃面分析、ファームウェアリバースエンジニアリング(binwalk/Ghidra)、UART/JTAGハードウェアハッキング、IoTデバイス実戦侵入
@@ -715,9 +715,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_android_pentesting.md        ← APK分析、ADBルーティング、Frida動的計装、SSLピニングバイパス
 ├── 02_ios_pentesting.md            ← IPA抽出、Objective-C/Swiftリバーシング、脱獄検出バイパス
 ├── 03_mobile_traffic_analysis.md   ← Burp Suiteモバイルプロキシ、証明書固定バイパス、APIファジング
-├── 04_Mobile_Malware_Analysis.md   ← Mobile Malware Analysis (Android/iOS)
-├── 05_mobile_app_security_testing.md ← Mobile App Security Testing — Automated Analysis, Runtime Hooking, AP...
-└── 06_mobile_ctf_lab.md            ← Mobile Hacking CTF Practice Lab
+├── 04_Mobile_Malware_Analysis.md   ← モバイルマルウェア分析（Android/iOS）
+├── 05_mobile_app_security_testing.md ← モバイルアプリセキュリティテスト — 自動分析、ランタイムフック、APIテスト
+└── 06_mobile_ctf_lab.md            ← モバイルハッキング CTF実践ラボ
 ```
 
 **主要内容:** Android/iOS完全分析パイプライン、Fridaベースランタイム計装、モバイルMITM攻撃、SSLピニングバイパス技法
@@ -731,9 +731,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_docker_security.md      ← Dockerセキュリティ設定、コンテナ脱出技法、イメージ脆弱性スキャン
 ├── 02_kubernetes_attack.md    ← RBAC権限昇格、etcd奪取、Kubernetes攻撃ベクター完全分析
 ├── 03_container_escape.md     ← cgroup/namespace脱出、runc脆弱性、実戦コンテナ脱出PoC
-├── 04_Service_Mesh_API_Gateway_Attacks.md ← Service Mesh and API Gateway Attacks
-├── 05_kubernetes_rbac_audit.md ← Kubernetes RBAC Audit — Permission Analysis, Excessive Privilege Dete...
-└── 06_container_ctf_lab.md    ← Container & Kubernetes Security CTF Practice Lab
+├── 04_Service_Mesh_API_Gateway_Attacks.md ← サービスメッシュとAPIゲートウェイ攻撃
+├── 05_kubernetes_rbac_audit.md ← Kubernetes RBAC監査 — 権限分析、過剰権限検出
+└── 06_container_ctf_lab.md    ← コンテナ＆Kubernetesセキュリティ CTF実践ラボ
 ```
 
 **主要内容:** Docker/Kubernetes攻撃・防御戦略、RBAC権限昇格、コンテナ脱出技法、Trivy/Falcoベースランタイムセキュリティ
@@ -747,9 +747,9 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 01_fuzzing_techniques.md            ← AFL++/libFuzzer/Boofuzz、カバレッジガイドファジング、ネットワークファジング
 ├── 02_vulnerability_analysis.md        ← CVSS分析、CWE分類、静的/動的分析、ソースコード監査
 ├── 03_exploit_development_advanced.md  ← 高度なヒープエクスプロイト、ブラウザエクスプロイト、カーネル脆弱性開発
-├── 04_CVE_Writeup_Methodology.md       ← CVE Vulnerability Analysis and PoC Writing Methodology
-├── 05_responsible_disclosure.md        ← Responsible Vulnerability Disclosure — CVE Application, Coordination,...
-└── 06_vuln_research_ctf_lab.md         ← Vulnerability Research CTF Practice Lab
+├── 04_CVE_Writeup_Methodology.md       ← CVE脆弱性分析とPoC作成方法論
+├── 05_responsible_disclosure.md        ← 責任ある脆弱性開示 — CVE申請、調整
+└── 06_vuln_research_ctf_lab.md         ← 脆弱性研究 CTF実践ラボ
 ```
 
 **主要内容:** AFL++/libFuzzerベース自動脆弱性発見、体系的CVSS/CWE分析、高度なヒープ/ブラウザ/カーネルエクスプロイト開発
@@ -764,8 +764,8 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 02_prompt_injection_jailbreak.md   ← 直接・間接プロンプトインジェクション、脱獄、garak/PyRIT自動レッドチーム
 ├── 03_model_extraction_inversion.md   ← モデル抽出、メンバーシップ推論(LiRA)、学習データ再構成、DP-SGD防御
 ├── 04_llm_agent_security.md           ← ツール呼び出しSSRF/RCE、RAGインデックス汚染、MCPセキュリティ、ダブルLLMアーキテクチャ
-├── 05_ai_security_defense.md          ← AI/ML Security Defense — Adversarial Robustness, Model Monitoring, OW...
-└── 06_ai_ml_ctf_lab.md                ← AI/ML Security CTF Practice Lab
+├── 05_ai_security_defense.md          ← AI/MLセキュリティ防御 — 敵対的ロバスト性、モデル監視、OWASP ML Top 10
+└── 06_ai_ml_ctf_lab.md                ← AI/MLセキュリティ CTF実践ラボ
 ```
 
 セクション11が「AIを攻撃ツールとして使用する」視点であるのに対し、セクション31は**AI/MLシステム自体が標的**となる攻撃と防御を扱います。OWASP LLM Top 10・NIST AI 100-2・MITRE ATLASに基づき、再現可能なPyTorch/Anthropic SDK PoCを収録。
@@ -780,8 +780,8 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 02_layer2_attacks.md                  ← VLANホッピング、STP/DHCP攻撃、CAMオーバーフロー、DAIバイパス
 ├── 03_routing_protocol_attacks.md        ← OSPF/EIGRP/BGP経路注入、HSRP/VRRPハイジャッキング
 ├── 04_management_plane_exploitation.md   ← SNMP/TACACS+/NETCONF侵害、設定ファイル抽出、バックドア識別
-├── 05_network_device_hardening.md        ← Network Device Hardening — Cisco/Juniper Security Configs, Network De...
-└── 06_network_device_ctf_lab.md          ← Network Device Hacking CTF Practice Lab
+├── 05_network_device_hardening.md        ← ネットワーク機器ハードニング — Cisco/Juniperセキュリティ設定
+└── 06_network_device_ctf_lab.md          ← ネットワーク機器ハッキング CTF実践ラボ
 ```
 
 セクション02がトラフィックスニッフィング・MITM視点、セクション24がDNS・メール・SSHサービス視点であるのに対し、セクション32は**ルータ・スイッチの管理/制御/データプレーン自体**を攻撃します。2025–2026年 Cisco CVE PoC（CVE-2025-20188等）とGNS3/EVE-NGラボトポロジを収録。
@@ -796,8 +796,8 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 ├── 02_target_profiling.md              ← 人物・組織プロファイリング、SNS分析、メール検証、ドメイン偵察
 ├── 03_social_engineering_attacks.md    ← フィッシング・スピアフィッシング・ビッシング・スミッシング、BEC、プリテキスティング
 ├── 04_phishing_infra_and_evasion.md    ← GoPhish/Evilginx2インフラ、URLバイパス、アンチフィッシング検出回避
-├── 05_osint_defense_and_counter_intelligence.md ← OSINT Defense and Counter-Intelligence — Digital Footprint Reduction,...
-└── 06_osint_ctf_lab.md                 ← OSINT & Social Engineering CTF Practice Lab
+├── 05_osint_defense_and_counter_intelligence.md ← OSINT防御とカウンターインテリジェンス — デジタルフットプリント削減
+└── 06_osint_ctf_lab.md                 ← OSINT＆ソーシャルエンジニアリング CTF実践ラボ
 ```
 
 OSINTを単純な情報検索ではなく、**攻撃チェーンの偵察フェーズ**として活用する方法論に焦点を当てます。Shodan/FOFA/Censysクエリ自動化、LinkedIn/GitHub/SNSベースのターゲットプロファイリング、GoPhish/Evilginx2フィッシングインフラ構築まで、レッドチーム実戦視点で解説します。
@@ -811,9 +811,9 @@ OSINTを単純な情報検索ではなく、**攻撃チェーンの偵察フェ�
 ├── 01_hardware_recon_and_interfaces.md    ← UART/JTAG/SPI/I²Cインターフェース識別・ダンプ、ピンアウト分析
 ├── 02_firmware_analysis.md                ← binwalk抽出、ファイルシステム分析、ハードコード秘密、脆弱関数検出
 ├── 03_side_channel_and_fault_injection.md ← 電力分析(SPA/DPA)、タイミング攻撃、グリッチング、ChipWhisperer
-├── 04_hardware_security_assessment.md     ← Hardware Security Assessment — Device Auditing, Physical Security, an...
-├── 05_hardware_security_defense.md        ← Hardware Security Defense — Secure Boot, TPM, Physical Security, Tamp...
-└── 06_hardware_ctf_lab.md                 ← Hardware Hacking CTF Practice Lab
+├── 04_hardware_security_assessment.md     ← ハードウェアセキュリティ評価 — デバイス監査、物理セキュリティ
+├── 05_hardware_security_defense.md        ← ハードウェアセキュリティ防御 — セキュアブート、TPM、物理セキュリティ、耐タンパー
+└── 06_hardware_ctf_lab.md                 ← ハードウェアハッキング CTF実践ラボ
 ```
 
 電子機器の物理的攻撃面を扱います。UARTシリアルコンソールでrootシェル取得、JTAGでファームウェア全体ダンプ、サイドチャネル分析で暗号鍵抽出まで — IoT・組み込み・ハードウェアセキュリティ研究のコア技術を実践ツール（minicom、OpenOCD、binwalk、ChipWhisperer）とともに解説。
@@ -826,10 +826,10 @@ OSINTを単純な情報検索ではなく、**攻撃チェーンの偵察フェ�
 35_Supply_Chain_Attacks/
 ├── 01_software_supply_chain.md   ← オープンソースパッケージ汚染、タイポスクワッティング、依存関係混乱攻撃
 ├── 02_build_and_ci_poisoning.md  ← CI/CDパイプライン侵害、GitHub Actions悪用、SolarWinds・XZ Utilsパターン分析
-├── 03_Dependency_Confusion_and_Typosquatting.md ← Dependency Confusion Attacks and Typosquatting
-├── 04_Open_Source_Backdoor_Techniques.md ← Open Source Backdoor Insertion Techniques
-├── 05_supply_chain_defense.md    ← Supply Chain Security Defense — SBOM, Dependency Scanning, Vendor Ris...
-└── 06_supply_chain_ctf_lab.md    ← Supply Chain Attacks CTF Practice Lab
+├── 03_Dependency_Confusion_and_Typosquatting.md ← 依存関係混乱攻撃とタイポスクワッティング
+├── 04_Open_Source_Backdoor_Techniques.md ← オープンソースバックドア挿入技法
+├── 05_supply_chain_defense.md    ← サプライチェーンセキュリティ防御 — SBOM、依存関係スキャン、ベンダーリスク
+└── 06_supply_chain_ctf_lab.md    ← サプライチェーン攻撃 CTF実践ラボ
 ```
 
 SolarWinds・XZ Utils・3CXなどの実際のサプライチェーン侵害事例を解剖します。PyPI/npm/Mavenパッケージ汚染、GitHub Actionsワークフロー権限奪取、ビルドシステムへのバックドア挿入まで — ソフトウェア開発パイプライン全体が攻撃面であることを実証します。
@@ -843,9 +843,9 @@ SolarWinds・XZ Utils・3CXなどの実際のサプライチェーン侵害事�
 ├── 01_can_bus_analysis.md           ← CANバス構造、OBD-II診断、メッセージスニッフィング・リプレイ
 ├── 02_ecu_exploitation.md           ← ECUファームウェア分析、UDS診断プロトコル悪用、リマッピング
 ├── 03_telematics_and_ota_attacks.md ← V2X通信、テレマティクスユニット侵入、OTAアップデート傍受
-├── 04_automotive_security_testing.md ← Automotive Security Testing — Penetration Testing, Fuzzing & Authenti...
-├── 05_automotive_security_defense.md ← Automotive Cybersecurity Defense — ISO/SAE 21434, UNECE WP.29, Secure...
-└── 06_automotive_ctf_lab.md         ← Automotive Hacking CTF Lab
+├── 04_automotive_security_testing.md ← 自動車セキュリティテスト — 侵入テスト、ファジング、認証テスト
+├── 05_automotive_security_defense.md ← 自動車サイバーセキュリティ防御 — ISO/SAE 21434、UNECE WP.29、セキュアOTA
+└── 06_automotive_ctf_lab.md         ← 自動車ハッキング CTFラボ
 ```
 
 現代の自動車は100以上のECUと数十の通信プロトコルが絡み合う走る計算機です。CANバススニッフィングからUDS診断プロトコル悪用、テレマティクスリモート攻撃、Jeep Cherokee・Tesla実際のハッキング再現まで — python-can・Scapy・CANalyzer視点で自動車セキュリティ研究の全スタックを解説。
@@ -859,9 +859,9 @@ SolarWinds・XZ Utils・3CXなどの実際のサプライチェーン侵害事�
 ├── 01_ics_protocols_and_recon.md  ← Modbus/DNP3/IEC 61850/EtherNet/IP詳解、Shodan偵察、マルチプロトコルスキャナ
 ├── 02_scada_exploitation.md       ← HMI/Historian/PLC脆弱性、TRITON・INDUSTROYER分析、SCADAスキャナ
 ├── 03_ot_network_attacks.md       ← Purdueモデル層別攻撃、IT→OT横断移動、無線OT、OTトポロジマッパー
-├── 04_ics_security_architecture.md ← 04 — ICS Security Architecture and Defense Strategy
-├── 05_ics_security_defense.md     ← ICS/SCADA Security Defense — IEC 62443, Network Segmentation, OT Moni...
-└── 06_ics_ctf_lab.md              ← ICS/SCADA CTF Lab
+├── 04_ics_security_architecture.md ← 04 — ICSセキュリティアーキテクチャと防御戦略
+├── 05_ics_security_defense.md     ← ICS/SCADAセキュリティ防御 — IEC 62443、ネットワーク分離、OT監視
+└── 06_ics_ctf_lab.md              ← ICS/SCADA CTFラボ
 ```
 
 発電所・製油所・水処理・鉄道などの重要インフラを制御するICS/OT環境を分析します。Stuxnet・TRITON・INDUSTROYER・PIPEDREAMなどの実際のサイバー兵器を解剖し、Modbusコイル強制書き込みからPLC DBブロックパッチ、Historianデータ逆注入、OT専用トポロジ自動マッピングまで — 可用性最優先環境の攻撃と防御を実戦コードとともに解説。
@@ -876,8 +876,8 @@ SolarWinds・XZ Utils・3CXなどの実際のサプライチェーン侵害事�
 ├── 02_ebpf_runtime_security.md          ← Falco/Tetragon/Cilium、eBPFベースランタイム検知・ネットワークポリシー
 ├── 03_image_hardening_supply_chain.md   ← Trivy/Grypeイメージスキャン、Cosign署名、SBOM、OPA Gatekeeper
 ├── 04_cloud_native_attack_techniques.md ← コンテナ脱出、サービスメッシュMITM、サーバレスイベント注入、KSPM
-├── 05_cloud_native_defense.md           ← 05 — Cloud Native Security Defense Framework
-└── 06_cloud_native_ctf_lab.md           ← Cloud Native Security CTF Lab
+├── 05_cloud_native_defense.md           ← 05 — クラウドネイティブセキュリティ防御フレームワーク
+└── 06_cloud_native_ctf_lab.md           ← クラウドネイティブセキュリティ CTFラボ
 ```
 
 Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）の攻防を解説。eBPFベースのランタイムセキュリティ（Falco/Tetragon）、コンテナイメージ署名・SBOM、OPAポリシーゲートウェイから、実際のコンテナ脱出手法、サービスメッシュMITM、AWS Lambdaイベント注入まで — CNAPPの観点でまとめました。
@@ -892,8 +892,8 @@ Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）�
 ├── 02_identity_and_device_trust.md     ← IdP/MFA/パスキー、デバイス信頼（MDM/EDR）、SCIMプロビジョニング
 ├── 03_microsegmentation_and_network.md ← マイクロセグメンテーション、mTLS、SASE/SD-WAN、eBPFネットワークポリシー
 ├── 04_zero_trust_implementation.md     ← Cloudflare/Zscaler/BeyondCorp実装、ZTA監査自動化
-├── 05_zero_trust_maturity.md           ← 05 — Zero Trust Maturity Assessment and Operations
-└── 06_zero_trust_ctf_lab.md            ← Zero Trust Architecture CTF Lab
+├── 05_zero_trust_maturity.md           ← 05 — ゼロトラスト成熟度評価と運用
+└── 06_zero_trust_ctf_lab.md            ← ゼロトラストアーキテクチャ CTFラボ
 ```
 
 「決して信頼せず、常に検証せよ」 — NIST SP 800-207ベースのZero Trustアーキテクチャを実務視点で解説。BeyondCorpの事例、アイデンティティ/デバイス信頼フレームワーク、マイクロセグメンテーション、SASE導入まで、実践的な実装ガイドとZTA成熟度自己評価ツールを含みます。
@@ -908,8 +908,8 @@ Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）�
 ├── 02_mitre_attack_hunting.md        ← ATT&CK戦術別ハンティングシナリオ、グループプロファイル
 ├── 03_hunting_queries_kql_spl.md     ← Sentinel KQL/Splunk SPLハンティングクエリ100+、異常検知パターン
 ├── 04_automated_threat_hunting.md    ← SOAR自動化、ML異常検知、ハンティングプレイブック自動化
-├── 05_threat_hunting_program.md      ← 05 — Threat Hunting Program Operations
-└── 06_threat_hunting_ctf_lab.md      ← Threat Hunting CTF Lab
+├── 05_threat_hunting_program.md      ← 05 — 脅威ハンティングプログラム運用
+└── 06_threat_hunting_ctf_lab.md      ← 脅威ハンティング CTFラボ
 ```
 
 ログが語らないものを探し出す能動的脅威ハンティング。PEAKフレームワークによる仮説設定、MITRE ATT&CK戦術別ハンティングシナリオ、Sentinel KQL/Splunk SPLクエリ100+例、SOARベースの自動化プレイブックまで — SOCで即座に適用できる実戦的なハンティング技術を解説。
@@ -925,7 +925,7 @@ Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）�
 ├── 03_ISMS_P_certification.md                    ← ISMS-P認証体系、80の管理項目、審査準備
 ├── 04_international_certifications.md            ← CISSP/CEH/OSCP/CISAロードマップ、ドメイン比較
 ├── 05_security_laws_and_compliance.md            ← 韓国個人情報保護法・IT安全法令、GDPR比較
-└── 06_korean_cert_ctf_lab.md                     ← Korean Information Security Certification CTF Practice Lab
+└── 06_korean_cert_ctf_lab.md                     ← 韓国情報セキュリティ資格 CTF実践ラボ
 ```
 
 韓国のセキュリティ資格（情報セキュリティ技術士・ISMS-P）と国際資格（CISSP/CEH/OSCP/CISA）を一か所にまとめました。法令・コンプライアンス（個人情報保護法・GDPR）も含め、韓国のセキュリティ実務者が知るべき制度的基盤を解説します。
@@ -940,8 +940,8 @@ Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）�
 ├── 02_smart_contract_auditing.md             ← Reentrancy/overflow/tx.origin/delegatecall、Slither/Mythril/Echidna
 ├── 03_defi_protocol_attacks.md               ← Flash Loan、オラクル操作、MEVサンドイッチ、Rug Pull検出
 ├── 04_web3_pentest_tools.md                  ← Foundry（forge/cast/anvil/chisel）、静的解析ツール、RPCセキュリティ
-├── 05_web3_incident_response.md              ← Web3 Incident Response
-└── 06_blockchain_ctf_lab.md                  ← Blockchain / Web3 Security CTF Practice Lab
+├── 05_web3_incident_response.md              ← Web3インシデント対応
+└── 06_blockchain_ctf_lab.md                  ← ブロックチェーン/Web3セキュリティ CTF実践ラボ
 ```
 
 ブロックチェーン基礎からDeFi攻撃分析・スマートコントラクト監査まで一か所にまとめました。web3.py 6.xとFoundryを使ったハンズオンPoC付き。実際のインシデント（Euler Finance $197Mフラッシュローン）、MEVボットの仕組み、Slither/Mythril脆弱性スキャン、RPCエンドポイントセキュリティ評価を解説。
@@ -956,8 +956,8 @@ Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）�
 ├── 02_lock_bypass_and_access_control.md        ← ピンタンブラー錠前解除（SPP/レーキング/バンピング）、電子アクセス制御の欠陥
 ├── 03_rfid_nfc_cloning.md                      ← Proxmark3 LF/HF、MIFARE Classicネスト攻撃、nfcpy NFC分析
 ├── 04_physical_recon_and_social_engineering.md ← パッシブ偵察、テールゲーティング、プリテキスティング、チャルディーニの6原則
-├── 05_physical_security_assessment.md          ← Physical Security Assessment
-└── 06_physical_ctf_lab.md                      ← Physical Security Penetration Testing CTF Practice Lab
+├── 05_physical_security_assessment.md          ← 物理セキュリティ評価
+└── 06_physical_ctf_lab.md                      ← 物理セキュリティ侵入テスト CTF実践ラボ
 ```
 
 方法論から実行まで、物理ペネトレーションテストを完全解説。錠前解除、RFID/NFCクローン（Proxmark3）、チャルディーニの影響原則を用いたソーシャルエンジニアリングをカバー。アクセス制御ログ異常検出と物理ペンテストレポート生成のPython CLIを収録。
@@ -972,8 +972,8 @@ Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）�
 ├── 02_memory_and_disk_forensics.md          ← Volatility3、MFT分析、MACBタイムスタンプ、Plasoタイムライン
 ├── 03_network_forensics_and_log_analysis.md ← 100+ tsharkフィルタ、Zeekログ、Windows Event ID、Sysmon、PCAP C2 IOC
 ├── 04_threat_containment_and_eradication.md ← ネットワーク隔離、永続化アーティファクト収集、5-Why分析
-├── 05_malware_triage_and_containment.md     ← Malware Triage and Containment
-└── 06_ir_dfir_ctf_lab.md                    ← Incident Response / DFIR CTF Practice Lab
+├── 05_malware_triage_and_containment.md     ← マルウェアトリアージと封じ込め
+└── 06_ir_dfir_ctf_lab.md                    ← インシデント対応/DFIR CTF実践ラボ
 ```
 
 検出→分析→封じ込め→根絶→復旧の完全DFIRワークフロー。不審プロセス検出（ホワイトリスト比較・名前なりすまし）、PCAPベースC2 IOC抽出（ビーコニング/DNSトンネリング）、Windowsパーシスタンスアーティファクト収集のPython CLIを収録。
@@ -988,8 +988,8 @@ Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）�
 ├── 02_shellcode_and_injection_techniques.md    ← PICシェルコード、XORエンコード、CreateRemoteThread/APC/プロセスホローイング
 ├── 03_c2_framework_development.md              ← C2アーキテクチャ、HTTP C2サーバ+エージェント、DNSトンネリング、商用C2比較
 ├── 04_av_edr_evasion.md                        ← 直接システムコール、NTDLLアンフッキング、ETW/AMSIパッチ、サンドボックス検出
-├── 05_detection_resistant_techniques.md        ← Detection-Resistant Technique Analysis (Defender's Perspective)
-└── 06_malware_dev_ctf_lab.md                   ← Malware Development / Analysis CTF Practice Lab
+├── 05_detection_resistant_techniques.md        ← 検知回避技法分析（防御者視点）
+└── 06_malware_dev_ctf_lab.md                   ← マルウェア開発/分析 CTF実践ラボ
 ```
 
 レッドチームとマルウェアアナリスト向けのマルウェア開発と防御回避。PEファイル解析（エントロピー/API分類）、シェルコードXORエンコード/逆アセンブリ、文字列難読化、サンドボックス検出のPython CLIを収録。直接syscall（NASMスタブ）、NTDLLアンフッキング、ETWパッチ、AMSIバイパスの概念を解説。
@@ -1004,8 +1004,8 @@ Cloud Native環境（Kubernetes・サーバレス・サービスメッシュ）�
 ├── 02_pwn_and_rev_ctf.md                  ← 完全pwntoolsテンプレート（ret2win/ret2libc/フォーマット文字列/ヒープ）、angrクラックミー
 ├── 03_web_and_crypto_ctf.md               ← ブラインドSQLi自動化、SSTI攻撃、JWT攻撃、RSA/AES/ハッシュ拡張攻撃
 ├── 04_ctf_automation_and_frameworks.md    ← DynELF、GDB tmux分割、angr自動化、Frida Android、フォレンジクスパイプライン
-├── 05_ctf_writeup_methodology.md          ← CTF Writeup Methodology
-└── 06_advanced_ctf_practical_lab.md       ← Advanced CTF Practical Lab — Pwn · Crypto · Forensics · Misc Comprehe...
+├── 05_ctf_writeup_methodology.md          ← CTF Writeup方法論
+└── 06_advanced_ctf_practical_lab.md       ← 上級CTF実践ラボ — Pwn · Crypto · Forensics · Misc総合
 ```
 
 CTF方法論から自動化まで完全網羅。全バイナリチャレンジタイプのpwntoolsテンプレート、angrシンボリック実行、Fridaダイナミックインストゥルメンテーション、フォレンジクス自動化パイプラインを収録。CTFdクライアントによるチャレンジ管理とフラグ提出機能付き。
@@ -1020,8 +1020,8 @@ CTF方法論から自動化まで完全網羅。全バイナリチャレンジ�
 ├── 02_ios_forensics.md              ← iOS APFS構造・iTunesバックアップ解析・iMessage/Health抽出CLI
 ├── 03_mobile_evidence_extraction.md ← 論理/ファイルシステム/物理抽出・ハッシュ検証・証拠収集CLI
 ├── 04_mobile_forensics_tools.md     ← Autopsy・MVT・Frida・jadx・APK自動解析CLI
-├── 05_mobile_malware_analysis.md    ← Mobile Malware Analysis
-└── 06_mobile_forensics_ctf_lab.md   ← Mobile Forensics CTF Practice Lab
+├── 05_mobile_malware_analysis.md    ← モバイルマルウェア分析
+└── 06_mobile_forensics_ctf_lab.md   ← モバイルフォレンジック CTF実践ラボ
 ```
 
 Android/iOSモバイルフォレンジクスの全工程。ADBアーティファクト抽出、iTunesバックアップ復号/解析、MVTによるPegasusスパイウェア検出、APKリバースエンジニアリングまで。
@@ -1036,8 +1036,8 @@ Android/iOSモバイルフォレンジクスの全工程。ADBアーティファ
 ├── 02_pasta_dread_attack_trees.md   ← PASTA 7段階・DREADスコア・Attack Tree・Kill Chain・ATT&CK
 ├── 03_threat_modeling_tools.md      ← MS TMT・Threat Dragon・IriusRisk・CI/CD統合・XML→HTML CLI
 ├── 04_threat_modeling_practice.md   ← EC/モバイルバンキング/K8s実践シナリオ・完全ワークフローCLI
-├── 05_ai_system_threat_modeling.md  ← AI System Threat Modeling
-└── 06_threat_modeling_ctf_lab.md    ← Threat Modeling CTF Practice Lab
+├── 05_ai_system_threat_modeling.md  ← AIシステム脅威モデリング
+└── 06_threat_modeling_ctf_lab.md    ← 脅威モデリング CTF実践ラボ
 ```
 
 STRIDE・PASTA・DREADを実践に適用。DFD作成から脅威識別、緩和策導出、CI/CDパイプライン統合まで。
@@ -1052,8 +1052,8 @@ STRIDE・PASTA・DREADを実践に適用。DFD作成から脅威識別、緩和�
 ├── 02_domain_fronting_redirectors.md ← CDNフロンティング・Apache/Nginxリダイレクター・DNSトンネリングCLI
 ├── 03_opsec_infrastructure.md        ← OPSEC 5段階・Long/Short Haul C2・CT ログ・OPSEC監査CLI
 ├── 04_red_team_automation.md         ← Ansible/Terraform・ペイロードパイプライン・キャンペーン管理CLI
-├── 05_red_team_detection_evasion.md  ← Red Team Infrastructure Detection Evasion (Defender's Perspective)
-└── 06_red_team_infra_ctf_lab.md      ← Red Team Infrastructure CTF Practice Lab
+├── 05_red_team_detection_evasion.md  ← レッドチームインフラ検知回避（防御者視点）
+└── 06_red_team_infra_ctf_lab.md      ← レッドチームインフラ CTF実践ラボ
 ```
 
 レッドチームC2インフラとOPSEC。Sliver/Havocフレームワーク、Apacheリダイレクター、DNSTunneling、Terraform AWS自動化まで — 許可されたレッドチーム・CTF・セキュリティ研究目的。
@@ -1068,8 +1068,8 @@ STRIDE・PASTA・DREADを実践に適用。DFD作成から脅威識別、緩和�
 ├── 02_cheat_engine_advanced.md      ← CE Luaスクリプト・自動アセンブラ・構造体解析・CTファイルパーサCLI
 ├── 03_packet_manipulation.md        ← ゲームパケットキャプチャ・mitmproxy・protobuf逆解析・リプレイCLI
 ├── 04_anti_cheat_analysis.md        ← VAC/EAC/BattlEye内部構造・検出技法・プロセス解析CLI・CTF対策
-├── 05_game_server_exploitation.md   ← Game Server Vulnerability Research
-└── 06_game_ctf_lab.md               ← Game Hacking CTF Practice Lab
+├── 05_game_server_exploitation.md   ← ゲームサーバー脆弱性研究
+└── 06_game_ctf_lab.md               ← ゲームハッキング CTF実践ラボ
 ```
 
 ゲームセキュリティ研究とCTFゲームハッキング。Cheat Engineメモリ操作、パケットMITM分析、アンチチート内部構造理解まで — 教育・CTF・セキュリティ研究目的。
@@ -1084,8 +1084,8 @@ STRIDE・PASTA・DREADを実践に適用。DFD作成から脅威識別、緩和�
 ├── 02_malicious_extension_analysis.md ← 悪意ある拡張機能・IOC・難読化解析・CRX自動解析CLI
 ├── 03_extension_pentesting.md         ← Content Script XSS・クロス拡張攻撃・Selenium自動スキャンCLI
 ├── 04_extension_security_hardening.md ← MV3セキュリティ強化・最小権限・企業GPO・リスク評価CLI
-├── 05_extension_malware_campaigns.md  ← Browser Extension Malware Campaign Analysis
-└── 06_browser_extension_ctf_lab.md    ← Browser Extension Security CTF Practice Lab
+├── 05_extension_malware_campaigns.md  ← ブラウザ拡張マルウェアキャンペーン分析
+└── 06_browser_extension_ctf_lab.md    ← ブラウザ拡張セキュリティ CTF実践ラボ
 ```
 
 ブラウザ拡張機能セキュリティの全範囲。悪意ある拡張機能IOC検出、CRX自動解析、Content Script XSS攻撃、Seleniumダイナミック脆弱性スキャナ、企業ポリシー管理まで。
