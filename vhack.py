@@ -109,6 +109,17 @@ SECTIONS: dict[int, dict] = {
     62: {"name": "Automotive_Security",         "ko": "자동차 보안",              "emoji": "🚙"},
     63: {"name": "OT_ICS_Advanced",             "ko": "OT/ICS 고급",             "emoji": "⚙️"},
     64: {"name": "Threat_Intel_Platform",       "ko": "위협 인텔 플랫폼",        "emoji": "📊"},
+    65: {"name": "Reverse_Engineering_Advanced","ko": "리버스 엔지니어링 고급",  "emoji": "🧬"},
+    66: {"name": "Exploit_Development",         "ko": "익스플로잇 개발",          "emoji": "🧨"},
+    67: {"name": "Malware_Development",         "ko": "악성코드 개발 심화(방어학습)","emoji": "🧪"},
+    68: {"name": "Purple_Team",                 "ko": "퍼플팀",                  "emoji": "🟣"},
+    69: {"name": "LLM_Security",                "ko": "LLM 보안",                "emoji": "🗣️"},
+    70: {"name": "Kubernetes_Security",         "ko": "쿠버네티스 보안",          "emoji": "☸️"},
+    71: {"name": "Bluetooth_RF_Hacking",        "ko": "블루투스/RF 해킹",        "emoji": "📶"},
+    72: {"name": "Malware_Sandbox_Analysis",    "ko": "악성코드 샌드박스 분석",  "emoji": "🏖️"},
+    73: {"name": "Bug_Bounty_Automation",       "ko": "버그 바운티 자동화",      "emoji": "🤑"},
+    74: {"name": "Code_Auditing",               "ko": "코드 감사",               "emoji": "📖"},
+    75: {"name": "Red_Team_Reporting",          "ko": "레드팀 보고서 작성",      "emoji": "📝"},
 }
 
 # ── 실습 환경 메타데이터 ─────────────────────────────────────────────────────
@@ -156,7 +167,7 @@ LABS: dict[str, dict] = {
 }
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────
-BANNER = r"""
+BANNER = rf"""
  __   ___  _                 _    _            _    _
  \ \ / / || |               | |  | |          | |  (_)
   \ V /| || |__   __ _  ___| | _| |__   __ _| |  _ _ __   __ _
@@ -164,7 +175,7 @@ BANNER = r"""
   / . \   | |_) | (_| | (__|   <| | | | (_| | |_| | | | | (_| |
  /_/ \_\  |_.__/ \__,_|\___|_|\_\_| |_|\__,_|_(_)_|_| |_|\__, |
                                                              __/ |
-  사이버보안 학습 플랫폼 · 64개 섹션 · 5개 실습 환경       |___/
+  사이버보안 학습 플랫폼 · {len(SECTIONS)}개 섹션 · {len(LABS)}개 실습 환경       |___/
 """
 
 # ── 유틸 ─────────────────────────────────────────────────────────────────────
@@ -858,7 +869,7 @@ def cmd_quick(args: argparse.Namespace) -> None:
 
     steps = [
         ("1단계: 학습 섹션 둘러보기",
-         f"  {cyan('python3 vhack.py list')}  — 64개 섹션 목록 표시\n"
+         f"  {cyan('python3 vhack.py list')}  — {len(SECTIONS)}개 섹션 목록 표시\n"
          f"  {cyan('python3 vhack.py study 5')}  — 웹 해킹 섹션 파일 목록\n"
          f"  {cyan('python3 vhack.py study 5 1')}  — OWASP Top 10 문서 읽기"),
         ("2단계: 실습 환경 시작 (Docker 필요)",
@@ -910,7 +921,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # study
     p_study = sub.add_parser("study", help="섹션 학습 (파일 목록 또는 내용 표시)")
-    p_study.add_argument("section", type=int, metavar="섹션번호", help="1~64")
+    p_study.add_argument("section", type=int, metavar="섹션번호", help=f"1~{max(SECTIONS)}")
     p_study.add_argument("file", nargs="?", type=int, metavar="파일번호",
                          help="1~ (생략 시 파일 목록 표시)")
 
@@ -933,7 +944,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # info
     p_info = sub.add_parser("info", help="섹션 상세 정보")
-    p_info.add_argument("section", type=int, metavar="섹션번호", help="1~64")
+    p_info.add_argument("section", type=int, metavar="섹션번호", help=f"1~{max(SECTIONS)}")
 
     # alias
     p_alias = sub.add_parser("alias", help="쉘 alias 자동 등록/제거/확인")
