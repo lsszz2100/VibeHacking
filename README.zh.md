@@ -1335,7 +1335,7 @@ ROP链构建、堆利用（ptmalloc2）、内核LPE、浏览器V8 Bug。含pwnto
 ## 67. 恶意软件开发解析
 
 ```
-67_Malware_Development/
+67_Malware_Development_Advanced/
 ├── 01_malware_architecture.md       ← 恶意软件结构、Dropper/载荷/C2架构
 ├── 02_shellcode_development.md      ← 位置无关Shellcode、编码、分阶段加载
 ├── 03_c2_framework_design.md        ← C2通信信道、信标间隔、HTTPS/DNS隧道

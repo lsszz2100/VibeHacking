@@ -1399,7 +1399,7 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 ## 67. 악성코드 개발 이해
 
 ```
-67_Malware_Development/
+67_Malware_Development_Advanced/
 ├── 01_malware_architecture.md       ← 악성코드 구조, 드로퍼·페이로드·C2 아키텍처
 ├── 02_shellcode_development.md      ← 포지션 독립 셸코드, 인코딩, 스테이징
 ├── 03_c2_framework_design.md        ← C2 통신 채널, 비콘 간격, HTTPS/DNS 터널링

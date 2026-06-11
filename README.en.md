@@ -1335,7 +1335,7 @@ ROP chain construction, heap exploitation (ptmalloc2), kernel LPE, browser V8 bu
 ## 67. Malware Development
 
 ```
-67_Malware_Development/
+67_Malware_Development_Advanced/
 ├── 01_malware_architecture.md       ← Malware structure, dropper/payload/C2 architecture
 ├── 02_shellcode_development.md      ← Position-independent shellcode, encoding, staging
 ├── 03_c2_framework_design.md        ← C2 communication channels, beacon intervals, HTTPS/DNS tunneling

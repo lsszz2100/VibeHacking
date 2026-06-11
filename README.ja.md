@@ -1335,7 +1335,7 @@ ROPチェーン構成、ヒープエクスプロイト（ptmalloc2）、カー�
 ## 67. マルウェア開発の理解
 
 ```
-67_Malware_Development/
+67_Malware_Development_Advanced/
 ├── 01_malware_architecture.md       ← マルウェア構造、ドロッパー・ペイロード・C2アーキテクチャ
 ├── 02_shellcode_development.md      ← 位置独立シェルコード、エンコーディング、ステージング
 ├── 03_c2_framework_design.md        ← C2通信チャネル、ビーコン間隔、HTTPS/DNSトンネリング

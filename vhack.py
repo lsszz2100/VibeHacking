@@ -111,7 +111,7 @@ SECTIONS: dict[int, dict] = {
     64: {"name": "Threat_Intel_Platform",       "ko": "위협 인텔 플랫폼",        "emoji": "📊"},
     65: {"name": "Reverse_Engineering_Advanced","ko": "리버스 엔지니어링 고급",  "emoji": "🧬"},
     66: {"name": "Exploit_Development",         "ko": "익스플로잇 개발",          "emoji": "🧨"},
-    67: {"name": "Malware_Development",         "ko": "악성코드 개발 심화(방어학습)","emoji": "🧪"},
+    67: {"name": "Malware_Development_Advanced","ko": "악성코드 개발 심화(방어학습)","emoji": "🧪"},
     68: {"name": "Purple_Team",                 "ko": "퍼플팀",                  "emoji": "🟣"},
     69: {"name": "LLM_Security",                "ko": "LLM 보안",                "emoji": "🗣️"},
     70: {"name": "Kubernetes_Security",         "ko": "쿠버네티스 보안",          "emoji": "☸️"},
