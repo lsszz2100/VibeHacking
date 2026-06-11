@@ -1155,7 +1155,7 @@ python image_security_analyzer.py nginx:latest --format json | \
 
 - [Trivy 문서](https://aquasecurity.github.io/trivy/)
 - [Grype GitHub](https://github.com/anchore/grype)
-- [Cosign 문서](https://docs.sigstore.dev/cosign/overview/)
+- [Cosign 문서](https://docs.sigstore.dev/cosign/signing/overview/)
 - [Google Distroless 이미지](https://github.com/GoogleContainerTools/distroless)
 - [OPA/Gatekeeper 문서](https://open-policy-agent.github.io/gatekeeper/)
 - [CISA SBOM 가이드라인](https://www.cisa.gov/sbom)
@@ -2185,7 +2185,7 @@ python image_security_analyzer.py nginx:latest --format json | \
 
 - [Trivy Documentation](https://aquasecurity.github.io/trivy/)
 - [Grype GitHub](https://github.com/anchore/grype)
-- [Cosign Documentation](https://docs.sigstore.dev/cosign/overview/)
+- [Cosign Documentation](https://docs.sigstore.dev/cosign/signing/overview/)
 - [Google Distroless Images](https://github.com/GoogleContainerTools/distroless)
 - [OPA/Gatekeeper Documentation](https://open-policy-agent.github.io/gatekeeper/)
 - [CISA SBOM Guidelines](https://www.cisa.gov/sbom)

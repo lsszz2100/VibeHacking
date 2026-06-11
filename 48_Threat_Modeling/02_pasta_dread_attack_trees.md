@@ -1382,7 +1382,7 @@ python3 dread_calculator.py --interactive --format html --output my_report.html
 ## 참고 자료
 
 - [PASTA Threat Modeling](https://www.wiley.com/en-us/Risk+Centric+Threat+Modeling-p-9780470500965)
-- [DREAD Risk Rating Model](https://docs.microsoft.com/en-us/archive/blogs/david_leblanc/dread)
+- [DREAD Risk Rating Model](https://en.wikipedia.org/wiki/DREAD_%28risk_assessment_model%29)
 - [Attack Trees (Bruce Schneier)](https://www.schneier.com/academic/archives/1999/12/attack_trees.html)
 - [Lockheed Martin Cyber Kill Chain](https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html)
 - [MITRE ATT&CK Framework](https://attack.mitre.org/)
@@ -2526,7 +2526,7 @@ python3 dread_calculator.py --interactive --format html --output my_report.html
 ## References
 
 - [PASTA Threat Modeling](https://www.wiley.com/en-us/Risk+Centric+Threat+Modeling-p-9780470500965)
-- [DREAD Risk Rating Model](https://docs.microsoft.com/en-us/archive/blogs/david_leblanc/dread)
+- [DREAD Risk Rating Model](https://en.wikipedia.org/wiki/DREAD_%28risk_assessment_model%29)
 - [Attack Trees (Bruce Schneier)](https://www.schneier.com/academic/archives/1999/12/attack_trees.html)
 - [Lockheed Martin Cyber Kill Chain](https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html)
 - [MITRE ATT&CK Framework](https://attack.mitre.org/)

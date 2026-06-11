@@ -7,10 +7,16 @@
     { "pattern": "^https?://example\\.com" },
     { "pattern": "^https?://target\\.com" },
     { "pattern": "^https?://corp\\.local" },
-    { "pattern": "^https?://internal\\." }
+    { "pattern": "^https?://internal\\." },
+    { "pattern": "^https?://(www\\.)?cisa\\.gov" },
+    { "pattern": "^https?://media\\.defense\\.gov" },
+    { "pattern": "^https?://(www\\.)?tryhackme\\.com" },
+    { "pattern": "^https?://(www\\.)?schneier\\.com" },
+    { "pattern": "^https?://(www\\.)?cisecurity\\.org" }
   ],
   "timeout": "20s",
   "retryOn429": true,
   "retryCount": 3,
-  "fallbackRetryDelay": "30s"
+  "fallbackRetryDelay": "30s",
+  "aliveStatusCodes": [200, 301, 302, 403, 429]
 }

@@ -435,7 +435,7 @@ python3 04_report_writing.py --name "Operation Storm" --client "XYZ Ltd" --add-f
 4. **독자를 고려하라**: 경영진 요약은 비즈니스 언어로, 기술 세부사항은 기술 언어로.
 5. **우선순위를 명확히**: Critical부터 수정해야 한다는 것을 명확히 전달합니다.
 
-**참고 자료**: [Red Team Guides](https://redteamguides.com/)
+**참고 자료**: [Red Team Guide](https://redteam.guide/)
 
 ---
 
@@ -798,4 +798,4 @@ python3 04_report_writing.py --name "Operation Storm" --client "XYZ Ltd" --add-f
 4. **Consider your audience**: Executive summary in business language; technical details in technical language.
 5. **Clear prioritization**: Clearly communicate that Critical findings must be fixed first.
 
-**Reference**: [Red Team Guides](https://redteamguides.com/)
+**Reference**: [Red Team Guide](https://redteam.guide/)
