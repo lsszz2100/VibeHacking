@@ -122,6 +122,29 @@ SECTIONS: dict[int, dict] = {
     75: {"name": "Red_Team_Reporting",          "ko": "레드팀 보고서 작성",      "emoji": "📝"},
 }
 
+
+def _sync_sections_with_disk() -> None:
+    """SECTIONS를 실제 디렉토리 목록과 동기화.
+
+    위 dict는 한국어명·이모지의 큐레이션 소스일 뿐이며, 섹션의 존재 여부와
+    영문명은 디스크가 기준이다. 새 디렉토리가 추가되면 자동으로 목록에
+    나타나고(기본 이모지 📁), 삭제·이름변경도 그대로 반영된다.
+    """
+    found: dict[int, str] = {}
+    for d in REPO_ROOT.iterdir():
+        if d.is_dir() and re.match(r"^\d{2}_", d.name):
+            found[int(d.name[:2])] = d.name[3:]
+    for num, name in sorted(found.items()):
+        if num in SECTIONS:
+            SECTIONS[num]["name"] = name
+        else:
+            SECTIONS[num] = {"name": name, "ko": name.replace("_", " "), "emoji": "📁"}
+    for num in [n for n in SECTIONS if n not in found]:
+        del SECTIONS[num]
+
+
+_sync_sections_with_disk()
+
 # ── 실습 환경 메타데이터 ─────────────────────────────────────────────────────
 LABS: dict[str, dict] = {
     "01": {
