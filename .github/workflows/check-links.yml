@@ -6,15 +6,47 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: '0 0 * * 1'   # 매주 월요일 자동 실행
+    - cron: '0 0 * * 1'   # 매주 월요일 전체 검사
 
 jobs:
   link-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-      - name: Check Markdown links
+      # push/PR: 해당 변경에 포함된 md 파일만 검사 (491개 전수 검사로 인한 rate limit 방지)
+      - name: Check links in changed markdown files
+        if: github.event_name != 'schedule'
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            range="origin/${{ github.base_ref }}...HEAD"
+          else
+            before="${{ github.event.before }}"
+            if [ -z "$before" ] || ! git cat-file -e "$before" 2>/dev/null; then
+              range="HEAD^..HEAD"
+            else
+              range="$before..HEAD"
+            fi
+          fi
+          mapfile -t files < <(git diff --name-only --diff-filter=d "$range" -- '*.md')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "변경된 마크다운 파일 없음 — 검사 생략"
+            exit 0
+          fi
+          npm install -g markdown-link-check@3.12.2
+          status=0
+          for f in "${files[@]}"; do
+            echo "::group::$f"
+            markdown-link-check -q -c .github/mlc_config.json "$f" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+      # 주간 스케줄: 전체 파일 검사
+      - name: Check Markdown links (full scan)
+        if: github.event_name == 'schedule'
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           use-quiet-mode: 'yes'
