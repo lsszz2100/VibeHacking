@@ -38,6 +38,9 @@ Thumbs.db
 *~
 .claude/
 
+# Headroom MCP (머신 종속 venv 절대경로 포함 — 커밋 금지)
+.mcp.json
+
 # Python
 __pycache__/
 *.pyc
