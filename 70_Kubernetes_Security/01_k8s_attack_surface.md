@@ -328,6 +328,23 @@ python3 k8s_surface_scan.py --target $MINIKUBE_IP
 
 ---
 
+## 4.5 탐지 신호 매핑: 공격 경로 → 감사 로그
+
+예방(RBAC·TLS·PSA)이 1차 방어선이라면, 탐지는 우회를 가정한 2차 방어선입니다. K8s 감사 로그(API Server `--audit-policy-file`)와 런타임 보안 도구(Falco)는 각 공격 경로에 대해 관측 가능한 신호를 남깁니다.
+
+| 공격 경로 | 1차 신호원 | 탐지 단서 |
+|---|---|---|
+| API Server 익명 접근 | 감사 로그 | `user: system:anonymous`의 비-discovery 요청 |
+| kubelet API 남용 (10250) | kubelet 로그, NetFlow | 노드→파드 `exec`/`run` 직접 호출 |
+| etcd 직접 접근 | etcd 감사, 네트워크 | 2379 포트로의 비-apiserver 출발지 |
+| 서비스 계정 토큰 오용 | 감사 로그 | 동일 SA 토큰의 비정상 동사(`create pods`, `secrets get`) |
+| 권한 상승 (RBAC) | 감사 로그 | `rolebindings`/`clusterrolebindings` create·escalate 동사 |
+| 파드 탈출 시도 | Falco 런타임 | `setns`, 호스트 마운트 접근, 권한 컨테이너 spawn |
+
+> 탐지 설계 원칙: 감사 로그는 켜져 있어야 신호가 된다. 많은 클러스터가 감사 정책을 비활성화한 채 운영되어, 침해 후에도 "무슨 일이 있었는지" 재구성하지 못한다. 최소한 `RequestResponse` 레벨로 `pods/exec`, `secrets`, RBAC 리소스를 기록하고, 로그를 클러스터 외부로 전송(탬퍼링 방지)해야 한다. 퍼플팀 관점에서는 위 각 경로를 실행한 뒤 해당 신호가 실제로 수집·탐지되는지 검증한다([[68_Purple_Team]] 참조).
+
+---
+
 ## 5. 핵심 정리
 
 | 항목 | 내용 |
@@ -480,6 +497,23 @@ python3 k8s_surface_scan.py --target $MINIKUBE_IP
 
 - **kube-bench** (automated CIS K8s Benchmark checks): https://github.com/aquasecurity/kube-bench
 - **Kubernetes Official Security Docs**: https://kubernetes.io/docs/concepts/security/
+
+---
+
+## 4.5 Detection Signal Mapping: Attack Path → Audit Log
+
+If prevention (RBAC/TLS/PSA) is the first line, detection is the second line that assumes bypass. K8s audit logs (API Server `--audit-policy-file`) and runtime tools (Falco) leave observable signals for each attack path.
+
+| Attack path | Primary signal source | Detection clue |
+|---|---|---|
+| API Server anonymous access | Audit log | Non-discovery requests from `user: system:anonymous` |
+| kubelet API abuse (10250) | kubelet log, NetFlow | Direct node→pod `exec`/`run` calls |
+| Direct etcd access | etcd audit, network | Non-apiserver source to port 2379 |
+| Service account token abuse | Audit log | Unusual verbs from one SA token (`create pods`, `secrets get`) |
+| Privilege escalation (RBAC) | Audit log | `rolebindings`/`clusterrolebindings` create/escalate verbs |
+| Pod escape attempt | Falco runtime | `setns`, host mount access, privileged container spawn |
+
+> Design principle: audit logs are only a signal if they're turned on. Many clusters run with the audit policy disabled and cannot reconstruct "what happened" even after a breach. At minimum, log `pods/exec`, `secrets`, and RBAC resources at `RequestResponse` level and ship logs off-cluster (anti-tampering). From a purple-team view, execute each path above and verify the signal is actually collected and detected (see [[68_Purple_Team]]).
 
 ---
 

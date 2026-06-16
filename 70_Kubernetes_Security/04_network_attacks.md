@@ -377,6 +377,30 @@ kubectl delete networkpolicy db-allow-only-backend 2>/dev/null || true
 | 횡적 이동 | 네임스페이스별 격리, 최소 권한 SA |
 | 서비스 노출 | NodePort/LoadBalancer 최소화, Ingress 사용 |
 
+### 횡적 이동 탐지: 기본 차단(default-deny)이 먼저
+
+가장 강력한 네트워크 방어는 탐지가 아니라 **기본 차단**입니다. 모든 네임스페이스에 `default-deny` Network Policy를 깔면, 횡적 이동에 필요한 연결 자체가 정책 위반 신호가 됩니다.
+
+```yaml
+# 네임스페이스 전체 인그레스 기본 차단
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  podSelector: {}        # 모든 파드에 적용
+  policyTypes: [Ingress] # 명시적으로 허용하지 않은 인그레스는 차단
+```
+
+| 탐지 신호 | 의미하는 공격 | 신호원 |
+|---|---|---|
+| 정책에 없는 파드 간 연결 시도 | 횡적 이동 정찰 | CNI 흐름 로그(Cilium Hubble, Calico) |
+| 단일 파드의 다수 대상 스캔 | 내부 포트 스캔 | 흐름 로그의 fan-out 패턴 |
+| 비정상적으로 긴 DNS 쿼리 | DNS 터널링 유출 | CoreDNS 쿼리 로그 |
+| 평문 파드 간 트래픽 | mTLS 미적용 구간 | 서비스 메시 텔레메트리 |
+
+> 원칙: Network Policy를 적용했다고 끝이 아니다. CNI 흐름 로그(Hubble 등)로 "거부된 연결"을 모니터링해야, 공격자의 횡적 이동 정찰 시도를 실시간으로 관측할 수 있다. 거부 로그가 갑자기 늘면 침해 신호일 수 있다.
+
 ---
 
 <a name="english"></a>
@@ -452,3 +476,27 @@ Use the `k8s_net_scan.py` script to enumerate open services from inside a compro
 | Traffic sniffing | mTLS between pods (Istio, Linkerd) |
 | Lateral movement | Namespace isolation + least-privilege service accounts |
 | Exposed services | Minimize NodePort, use Ingress |
+
+### Lateral Movement Detection: Default-Deny First
+
+The strongest network defense is not detection but **default-deny**. Apply a `default-deny` Network Policy to every namespace so the connections needed for lateral movement become policy-violation signals.
+
+```yaml
+# Default-deny all ingress in a namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  podSelector: {}        # applies to all pods
+  policyTypes: [Ingress] # ingress not explicitly allowed is blocked
+```
+
+| Detection signal | Attack it implies | Source |
+|---|---|---|
+| Pod-to-pod connection not in policy | Lateral movement recon | CNI flow logs (Cilium Hubble, Calico) |
+| One pod scanning many targets | Internal port scan | Fan-out pattern in flow logs |
+| Unusually long DNS queries | DNS tunneling exfil | CoreDNS query logs |
+| Plaintext pod-to-pod traffic | Segment without mTLS | Service mesh telemetry |
+
+> Principle: applying Network Policy isn't the end. Monitor "denied connections" via CNI flow logs (e.g., Hubble) to observe an attacker's lateral-movement recon in real time. A sudden spike in deny logs can itself be a breach signal.

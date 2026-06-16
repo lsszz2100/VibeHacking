@@ -409,6 +409,20 @@ spec:
 | root로 실행 | `runAsNonRoot: true` 강제 |
 | SA 토큰 자동 마운트 | `automountServiceAccountToken: false` |
 
+### 런타임 탈출 탐지: 예방을 우회한 경우
+
+securityContext와 PSA(Pod Security Admission)는 위험한 파드의 *생성*을 막습니다. 하지만 이미 배포된 파드나 어드미션을 우회한 워크로드에서의 탈출 *행위*는 런타임 센서(Falco, Tetragon)로만 잡힙니다.
+
+| 런타임 신호 | 대응 탈출 벡터 | Falco 룰 개념 |
+|---|---|---|
+| 컨테이너 내 `mount` syscall | hostPath/디바이스 마운트 시도 | `Mount Launched in Privileged Container` |
+| `/host` 또는 노드 파일시스템 접근 | hostPath `/` 마운트 악용 | 컨테이너에서 호스트 경로 쓰기 |
+| `nsenter`/`setns` 호출 | 네임스페이스 탈출 | 비정상 네임스페이스 전환 |
+| 컨테이너 내 셸에서 SA 토큰 읽기 | 토큰 오용 선행 행위 | `/var/run/secrets/.../token` 읽기 |
+| 신규 권한 컨테이너 spawn | 탈출 후 거점 확장 | `privileged: true` 파드 생성 이벤트 |
+
+> 다층 방어 원칙: **어드미션(예방) → 런타임(탐지) → 감사(사후 추적)** 세 계층이 모두 있어야 한다. 한 계층만으로는 0-day나 설정 누락 시 무방비가 된다. 예방 정책을 배포한 뒤에는 반드시 위 행위들을 격리 랩에서 재현해 런타임 룰이 실제로 발동하는지 검증한다.
+
 ---
 
 <a name="english"></a>
@@ -515,3 +529,17 @@ spec:
 ```
 
 Use the `pod_escape_audit.py` script to automatically detect risky pod configurations across your cluster.
+
+### Runtime Escape Detection: When Prevention Is Bypassed
+
+securityContext and PSA (Pod Security Admission) block the *creation* of dangerous pods. But escape *behavior* in already-deployed pods or admission-bypassing workloads is caught only by runtime sensors (Falco, Tetragon).
+
+| Runtime signal | Escape vector | Falco rule concept |
+|---|---|---|
+| `mount` syscall inside container | hostPath/device mount attempt | `Mount Launched in Privileged Container` |
+| Access to `/host` or node filesystem | Abusing hostPath `/` mount | Container writing to host path |
+| `nsenter`/`setns` call | Namespace escape | Unusual namespace switch |
+| Reading SA token from a shell | Precursor to token abuse | Read of `/var/run/secrets/.../token` |
+| Spawning a new privileged container | Post-escape foothold expansion | `privileged: true` pod creation event |
+
+> Defense-in-depth principle: all three layers — **admission (prevent) → runtime (detect) → audit (post-hoc trace)** — must exist. Any single layer leaves you defenseless against a 0-day or a config gap. After deploying prevention policies, reproduce the behaviors above in an isolated lab to verify the runtime rules actually fire.

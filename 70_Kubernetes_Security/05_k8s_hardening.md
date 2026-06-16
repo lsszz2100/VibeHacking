@@ -496,6 +496,22 @@ kubectl get namespaces --show-labels | grep pod-security
 
 ---
 
+## 7. 하드닝 검증: 설정했다고 동작하는 것은 아니다
+
+CIS 점검 통과·PSS 라벨 부착·정책 배포는 "구성(configuration)"을 증명할 뿐, "효과(efficacy)"를 증명하지 않습니다. 하드닝의 실제 동작을 검증하는 가장 확실한 방법은 **차단되어야 할 행위를 실제로 시도해 보는 것**입니다.
+
+| 하드닝 항목 | 구성 확인(불충분) | 효과 검증(권장) |
+|---|---|---|
+| PSS Restricted | 네임스페이스 라벨 존재 | 권한 파드 생성 시도 → 거부 확인 |
+| Network Policy | 정책 객체 존재 | 차단 대상 파드 간 연결 시도 → 실패 확인 |
+| RBAC 최소권한 | `can-i --list` 출력 | 위험 동사(`escalate`/`bind`) 시도 → 거부 |
+| Secret 암호화 | encryption-config 존재 | etcd 직접 덤프 → 평문 미노출 확인 |
+| OPA Gatekeeper | Constraint 적용됨 | 위반 매니페스트 적용 → admission 거부 |
+
+> 측정 원칙([[68_Purple_Team]]과 연결): 하드닝은 "적용했다"가 아니라 "우회 시도가 실제로 막혔다"로 검증해야 한다. 정책이 `audit` 모드로만 걸려 경고만 남기고 실제로는 통과시키는 경우가 흔하다. 분기마다 위 검증 행위를 격리 환경에서 재실행해, 설정 드리프트(drift)로 하드닝이 무력화되지 않았는지 추세로 추적한다.
+
+---
+
 <a name="english"></a>
 
 # Kubernetes Security Hardening
@@ -580,3 +596,17 @@ kubectl delete job kube-bench
 | Default SA perms | `kubectl auth can-i --list --as=system:serviceaccount:default:default` |
 | Network Policies | `kubectl get networkpolicies --all-namespaces` |
 | PSS labels | `kubectl get namespaces --show-labels \| grep pod-security` |
+
+## 7. Validating Hardening: Configured ≠ Working
+
+Passing CIS checks, applying PSS labels, and deploying policies prove *configuration*, not *efficacy*. The surest way to validate hardening is to **actually attempt the behavior that should be blocked**.
+
+| Hardening item | Config check (insufficient) | Efficacy validation (recommended) |
+|---|---|---|
+| PSS Restricted | Namespace label exists | Try creating a privileged pod → confirm denied |
+| Network Policy | Policy object exists | Try a should-be-blocked pod connection → confirm fails |
+| RBAC least-priv | `can-i --list` output | Try risky verbs (`escalate`/`bind`) → denied |
+| Secret encryption | encryption-config exists | Dump etcd directly → confirm no plaintext |
+| OPA Gatekeeper | Constraint applied | Apply a violating manifest → admission denied |
+
+> Measurement principle (ties to [[68_Purple_Team]]): validate hardening by "the bypass attempt was actually blocked," not "we applied it." Policies are often left in `audit` mode — warning only while still allowing the action. Re-run these validations quarterly in an isolated environment and trend them to catch config drift that silently neutralizes hardening.
