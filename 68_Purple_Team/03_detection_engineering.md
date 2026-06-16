@@ -400,6 +400,38 @@ if __name__ == "__main__":
 
 ---
 
+## 탐지 룰 견고성: 회피 저항성 (Pyramid of Pain)
+
+David Bianco의 "Pyramid of Pain"은 어떤 지표로 탐지하느냐에 따라 공격자가 우회하기 위해 치러야 할 비용이 달라진다는 통찰을 줍니다. 견고한 탐지는 바꾸기 어려운 상위 계층을 노립니다.
+
+| 계층 | 탐지 대상 | 공격자 우회 비용 | 예시 |
+|---|---|---|---|
+| 해시값 | 파일 MD5/SHA256 | 사소함 (1바이트 변경) | YARA 해시 룰 |
+| IP/도메인 | C2 인프라 | 낮음 (재배포) | IOC 차단 |
+| 아티팩트 | 레지스트리·파일명 | 중간 | Sigma 셀렉션 |
+| 도구 | 사용 툴 시그니처 | 높음 (재작성) | 행위 룰 |
+| **TTP** | **공격 행위 패턴** | **매우 높음** | **상위 수준 행위 탐지** |
+
+> 함정: `CommandLine|contains: -EncodedCommand` 같은 룰은 `-enc`, `-e`, 대소문자 혼합, 공백 삽입으로 쉽게 우회됩니다. 견고한 룰은 인코딩된 base64의 디코딩 결과·부모-자식 프로세스 관계·드물게 발생하는 행위 자체를 노립니다. 퍼플팀은 동일 기법의 여러 변종을 실행해 룰이 "문자열"이 아니라 "행위"를 잡는지 검증해야 합니다.
+
+---
+
+## 탐지 룰 수명주기와 품질 측정
+
+탐지 룰은 배포로 끝나지 않습니다. 데이터 소스 변경·정상 행위 변화로 룰은 노후화(rule decay)합니다.
+
+| 단계 | 활동 | 측정 지표 |
+|---|---|---|
+| 작성 | 가설 → 룰 → 테스트 케이스 | 테스트 통과 여부 |
+| 검증 | 퍼플팀 시뮬로 정탐 확인 | 정탐율(TP rate) |
+| 튜닝 | 오탐 원인 분석 → 필터 추가 | 오탐율(FP rate), 정밀도 |
+| 운영 | 알람 분류 추적 | 알람당 처리 시간 |
+| 폐기/갱신 | 노후 룰 식별·교체 | 무발동 기간, 커버리지 변화 |
+
+핵심 트레이드오프: 룰을 넓게 잡으면 미탐(false negative)은 줄지만 오탐(false positive)이 늘어 분석가 피로를 유발합니다. 좁게 잡으면 그 반대입니다. 퍼플팀 데이터(실행 vs 탐지)는 이 균형점을 추측이 아닌 측정으로 잡게 해줍니다.
+
+---
+
 ## 요약
 
 | 룰 유형 | 대상 | 언어 |
@@ -438,6 +470,34 @@ Vendor-independent SIEM rule format in YAML.
 | Alert thresholds | N events/hour to reduce false positives |
 
 ---
+
+### Detection Robustness: The Pyramid of Pain
+
+David Bianco's "Pyramid of Pain" shows that the indicator you detect on dictates the cost an attacker pays to evade. Robust detection targets the hard-to-change upper layers.
+
+| Layer | Detects on | Evasion cost | Example |
+|---|---|---|---|
+| Hash | File MD5/SHA256 | Trivial (1-byte change) | YARA hash rule |
+| IP/domain | C2 infra | Low (redeploy) | IOC block |
+| Artifact | Registry/filename | Medium | Sigma selection |
+| Tool | Tool signature | High (rewrite) | Behavior rule |
+| **TTP** | **Behavioral pattern** | **Very high** | **High-level behavior detection** |
+
+> Pitfall: a rule like `CommandLine|contains: -EncodedCommand` is trivially bypassed by `-enc`, `-e`, mixed case, or inserted whitespace. Robust rules target the decoded base64 result, parent-child process relationships, or the rarity of the behavior itself. Purple teams run multiple variants of the same technique to verify a rule catches *behavior*, not a *string*.
+
+### Detection Rule Lifecycle and Quality Metrics
+
+Rules don't end at deployment — they decay as data sources and normal behavior change.
+
+| Stage | Activity | Metric |
+|---|---|---|
+| Author | Hypothesis → rule → test case | Test pass/fail |
+| Validate | Confirm true positive via purple sim | TP rate |
+| Tune | Analyze FP cause → add filter | FP rate, precision |
+| Operate | Track alert triage | Time per alert |
+| Retire/refresh | Identify and replace stale rules | Dormant period, coverage change |
+
+Core trade-off: broad rules reduce false negatives but raise false positives (analyst fatigue); narrow rules do the opposite. Purple team data (executed vs detected) lets you find that balance by measurement, not guesswork.
 
 ## Summary Table
 

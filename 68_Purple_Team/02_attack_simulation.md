@@ -369,6 +369,38 @@ if __name__ == "__main__":
 
 ---
 
+## 시뮬레이션 안전 통제 (Rules of Engagement)
+
+공격 시뮬레이션은 "통제된 환경"이 전제입니다. 이 전제가 무너지면 훈련이 실제 사고로 번집니다. 실행 전 다음을 문서화하고 승인받아야 합니다.
+
+| 통제 항목 | 내용 | 위반 시 위험 |
+|---|---|---|
+| 범위 (Scope) | 대상 시스템/계정/네트워크 세그먼트 명시 | 운영계 침범, 서비스 중단 |
+| 파괴적 기법 금지 | T1486(암호화)·T1485(데이터 삭제)는 시뮬만 | 실제 데이터 손실 |
+| 롤백 절차 | 생성한 작업/계정/지속성 아티팩트 제거 계획 | 잔존 백도어 방치 |
+| 통지 채널 | SOC 사전 통보 vs 블라인드 테스트 구분 | 실제 IR 자원 낭비 |
+| 중단 기준 | 의도치 않은 영향 발생 시 즉시 abort 신호 | 사고 확대 |
+
+> 원칙: 시뮬레이터(본 문서의 Python 예제처럼)나 Atomic Red Team의 비파괴 테스트를 우선 사용하고, 파괴적 영향이 있는 기법은 격리된 랩에서만 수행한다. 프로덕션 검증이 필요하면 영향이 가역적인 프록시 기법으로 대체한다.
+
+---
+
+## 탐지 신호 매핑: 기법 → 데이터 소스
+
+각 시뮬레이션 단계는 어떤 텔레메트리가 그 기법을 포착할 수 있는지 사전에 매핑해야 합니다. 매핑이 비어 있으면 그 기법은 "탐지 실패"가 아니라 "관측 불가(visibility gap)"입니다.
+
+| 기법 | 1차 데이터 소스 | 핵심 신호 |
+|---|---|---|
+| T1059.001 PowerShell | ScriptBlock 로그(4104), Sysmon 1 | 인코딩 명령, 다운로드 cradle |
+| T1003.001 LSASS Dump | Sysmon 10, EDR | lsass 핸들 요청 프로세스 |
+| T1053.005 Scheduled Task | Security 4698, Sysmon 1 | schtasks/at 생성 이벤트 |
+| T1021.001 RDP | Security 4624(type 10) | 신규 출발지·비정상 시간 |
+| T1041 C2 Exfil | NetFlow, 프록시 로그 | 대용량 아웃바운드·비컨 주기 |
+
+이 매핑 결과를 ATT&CK Navigator 레이어로 내보내면, 색상으로 "관측 가능/탐지 있음/완전 미커버" 3단계 커버리지 히트맵을 그릴 수 있습니다.
+
+---
+
 ## 요약
 
 | 항목 | 내용 |
@@ -413,6 +445,34 @@ Step 6: Exfiltration (T1041 - C2 channel)
 ```
 
 ---
+
+### Simulation Safety Controls (Rules of Engagement)
+
+Attack simulation assumes a *controlled* environment; break that assumption and a drill becomes a real incident. Document and get approval before execution.
+
+| Control | Detail | Risk if violated |
+|---|---|---|
+| Scope | Target systems/accounts/segments specified | Hitting production, outage |
+| No destructive techniques | T1486 (encrypt)/T1485 (wipe) simulated only | Real data loss |
+| Rollback procedure | Plan to remove created tasks/accounts/persistence | Lingering backdoor |
+| Notification channel | SOC pre-notified vs blind test | Wasted real IR resources |
+| Abort criteria | Immediate abort signal on unintended impact | Incident escalation |
+
+> Principle: prefer simulators (like the Python example above) or Atomic Red Team's non-destructive tests; run destructive-impact techniques only in an isolated lab. If production validation is needed, substitute a reversible proxy technique.
+
+### Detection Signal Mapping: Technique → Data Source
+
+Map which telemetry can catch each technique *before* running it. An empty mapping means the technique is not a "detection failure" but a **visibility gap**.
+
+| Technique | Primary data source | Key signal |
+|---|---|---|
+| T1059.001 PowerShell | ScriptBlock log (4104), Sysmon 1 | Encoded cmd, download cradle |
+| T1003.001 LSASS Dump | Sysmon 10, EDR | Process requesting lsass handle |
+| T1053.005 Scheduled Task | Security 4698, Sysmon 1 | schtasks/at creation event |
+| T1021.001 RDP | Security 4624 (type 10) | New source, off-hours |
+| T1041 C2 Exfil | NetFlow, proxy logs | Large outbound, beacon interval |
+
+Export this mapping as an ATT&CK Navigator layer to color a three-tier coverage heatmap: observable / detected / fully uncovered.
 
 ## Summary Table
 

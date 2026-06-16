@@ -369,6 +369,36 @@ if __name__ == "__main__":
 
 ---
 
+## 정보 기반 위협 우선순위 (Threat-Informed Prioritization)
+
+모든 APT를 에뮬레이션할 수는 없습니다. "우리 조직을 실제로 노릴 가능성"을 기준으로 좁혀야 자원이 낭비되지 않습니다.
+
+| 선정 기준 | 질문 | 출처 |
+|---|---|---|
+| 산업 표적성 | 우리 산업을 노린 이력이 있는가 | CTI 보고서, ISAC 공유 |
+| 지역/지정학 | 우리 지역·정치적 맥락과 연관되는가 | 정부 권고(CISA, KISA) |
+| 능력 수준 | 우리 방어 수준 대비 현실적 위협인가 | ATT&CK Groups 매핑 |
+| 최근 활동성 | 최근 12개월 내 활동 보고가 있는가 | 위협 인텔 피드 |
+
+선정 후에는 ATT&CK Navigator에 해당 그룹의 기법을 레이어로 올리고, 우리 탐지 커버리지와 겹쳐 "이 그룹 기준 우리의 사각지대"를 시각화합니다.
+
+---
+
+## 에뮬레이션 충실도 vs 안전성
+
+위협 에뮬레이션의 가치는 "충실도(fidelity)"에 있지만, 실제 악성 도구·페이로드를 그대로 쓰는 것은 위험하고 불필요합니다. 목표는 **방어가 보는 신호를 동일하게 만드는 것**이지 실제 피해를 재현하는 것이 아닙니다.
+
+| 차원 | 고충실도 방식 | 안전한 대체 |
+|---|---|---|
+| 페이로드 | 실제 멀웨어 실행 | 무해한 EICAR/시뮬레이터로 동일 행위 신호 발생 |
+| C2 | 실제 공격자 인프라 | 통제된 랩 C2(Caldera) + 동일 비컨 패턴 |
+| 파괴 기법 | 실제 암호화/삭제 | 더미 파일·격리 볼륨에서만 |
+| 자격증명 | 운영 계정 탈취 | 사전 생성한 테스트 계정 |
+
+> 핵심: "공격자가 남기는 텔레메트리"를 재현하면 탐지 검증 목적은 충분히 달성됩니다. 실제 파괴 효과는 검증 대상이 아니라 회피해야 할 부작용입니다. 본 섹션의 시나리오 생성기처럼 계획·매핑 단계는 자동화하되, 파괴적 영향이 있는 단계는 항상 격리 환경과 명시적 승인 하에서만 수행합니다.
+
+---
+
 ## 요약
 
 | 항목 | 내용 |
@@ -410,6 +440,32 @@ Threat emulation faithfully reproduces the actual Tactics, Techniques, and Proce
 ```
 
 ---
+
+### Threat-Informed Prioritization
+
+You can't emulate every APT. Narrow by "realistic likelihood of targeting us" so resources aren't wasted.
+
+| Criterion | Question | Source |
+|---|---|---|
+| Sector targeting | History of hitting our industry? | CTI reports, ISAC sharing |
+| Geo/geopolitics | Tied to our region/political context? | Government advisories (CISA, KISA) |
+| Capability level | Realistic threat vs our defenses? | ATT&CK Groups mapping |
+| Recency | Reported activity in the last 12 months? | Threat intel feeds |
+
+After selection, load the group's techniques as an ATT&CK Navigator layer and overlay your detection coverage to visualize your blind spots relative to that group.
+
+### Emulation Fidelity vs Safety
+
+The value of emulation is *fidelity*, but using real malware/payloads is dangerous and unnecessary. The goal is to **reproduce the signals defenders see**, not to recreate real damage.
+
+| Dimension | High-fidelity way | Safe substitute |
+|---|---|---|
+| Payload | Run real malware | Harmless EICAR/simulator producing the same behavior signal |
+| C2 | Real attacker infra | Controlled lab C2 (Caldera) + same beacon pattern |
+| Destructive technique | Real encryption/wipe | Dummy files / isolated volume only |
+| Credentials | Steal production accounts | Pre-created test accounts |
+
+> Key: reproducing "the telemetry an attacker leaves" fully satisfies detection-validation goals. Real destructive effect is not the thing under test — it's a side effect to avoid. Automate the planning/mapping stages (like the scenario generator here), but run destructive-impact steps only in isolation under explicit approval.
 
 ## Summary Table
 

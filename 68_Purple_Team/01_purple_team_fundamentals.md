@@ -346,6 +346,37 @@ if __name__ == "__main__":
 
 ---
 
+## 위협 모델: 무엇을 검증하는가
+
+퍼플팀 활동은 "우리 탐지가 동작한다"는 가정을 깨는 데서 시작합니다. 검증 대상을 명시적으로 정의해야 결과가 의미를 가집니다.
+
+| 검증 질문 | 측정 가능한 신호 | 흔한 함정 |
+|---|---|---|
+| 텔레메트리가 수집되는가? | 해당 EDR/로그 소스에 이벤트가 존재하는가 | 로그 소스가 꺼져 있거나 보존기간 초과 |
+| 탐지 룰이 발동하는가? | 알람/시그니처 트리거 여부 | 룰은 있으나 임계값/스코프 오설정 |
+| 알람이 분류되는가? | SOC 큐에 도달 + 우선순위 부여 | 알람 폭주에 묻혀 무시됨(alert fatigue) |
+| 대응이 수행되는가? | 격리/차단까지 평균 시간 | 플레이북 부재, 권한 부족 |
+
+각 단계는 독립적으로 실패할 수 있으므로, "탐지 실패"를 단일 원인으로 뭉뚱그리지 말고 **수집 → 탐지 → 분류 → 대응** 4단계 중 어디서 끊겼는지 분리해 기록합니다.
+
+---
+
+## 퍼플팀 성과 측정: 가정하지 말고 측정하라
+
+탐지 커버리지를 "룰 개수"로 세는 것은 흔한 착각입니다. 실제로 중요한 것은 **실행된 기법 대비 관측된 비율**입니다.
+
+| 지표 | 정의 | 활용 |
+|---|---|---|
+| Detection Coverage | (탐지된 기법 수 / 실행된 기법 수) | ATT&CK 히트맵 갱신 |
+| MTTD | 기법 실행 → 알람 생성까지 시간 | SOC 효율 추적 |
+| MTTR | 알람 → 봉쇄까지 시간 | 대응 절차 병목 식별 |
+| Visibility Gap | 텔레메트리조차 없는 기법 비율 | 로깅 투자 우선순위 |
+| True/False Positive 비율 | 정탐 대비 오탐 | 룰 정밀도 튜닝 |
+
+> 핵심 원칙: 탐지 룰이 "존재한다"는 것과 "동작한다"는 것은 다른 명제다. 퍼플팀의 가치는 이 둘 사이의 간극을 측정 가능한 데이터로 만드는 데 있다. 각 테스트 케이스는 재현 가능한 절차와 기대 신호를 함께 문서화해, 동일 조건에서 재실행했을 때 개선 여부를 비교할 수 있어야 한다.
+
+---
+
 ## 요약
 
 | 항목 | 내용 |
@@ -391,6 +422,31 @@ MITRE ATT&CK systematizes the Tactics, Techniques, and Procedures (TTPs) used by
 ```
 
 ---
+
+### Threat Model: What Are We Validating?
+
+Purple team work starts by breaking the assumption that "our detection works." Each detection attempt can fail independently across four stages — **collect → detect → triage → respond** — so record exactly which stage broke instead of labeling everything a generic "detection failure."
+
+| Validation question | Measurable signal | Common pitfall |
+|---|---|---|
+| Is telemetry collected? | Event exists in EDR/log source | Source disabled or retention expired |
+| Does the rule fire? | Alert/signature triggers | Rule exists but threshold/scope misconfigured |
+| Is the alert triaged? | Reaches SOC queue + prioritized | Buried in alert fatigue |
+| Is a response taken? | Time to isolate/block | No playbook, insufficient privilege |
+
+### Measuring Purple Team Outcomes: Measure, Don't Assume
+
+Counting "number of rules" is a classic illusion. What matters is the **observed rate relative to executed techniques**.
+
+| Metric | Definition | Use |
+|---|---|---|
+| Detection Coverage | (techniques detected / techniques executed) | Update ATT&CK heatmap |
+| MTTD | Execution → alert creation time | Track SOC efficiency |
+| MTTR | Alert → containment time | Find response bottlenecks |
+| Visibility Gap | Techniques with no telemetry at all | Prioritize logging investment |
+| True/False Positive ratio | Real vs noise | Tune rule precision |
+
+> Core principle: a rule *existing* and a rule *working* are different claims. The value of purple teaming is turning the gap between them into measurable data. Each test case should document a reproducible procedure and expected signal so re-runs under identical conditions reveal whether things improved.
 
 ## Summary Table
 

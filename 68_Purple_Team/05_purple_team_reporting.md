@@ -384,6 +384,36 @@ if __name__ == "__main__":
 
 ---
 
+## 실행을 이끄는 지표 vs 허영 지표
+
+보고서가 숫자를 나열하는 데 그치면 행동을 만들지 못합니다. 측정값이 "그래서 무엇을 바꿀 것인가"로 연결돼야 합니다.
+
+| 허영 지표 (피하라) | 실행 지표 (선호) | 차이 |
+|---|---|---|
+| "탐지 룰 1,200개 보유" | "실행된 기법의 62% 탐지" | 존재 ≠ 효과 |
+| "알람 4만 건 처리" | "정탐률 38% → 오탐 튜닝 필요" | 처리량 ≠ 가치 |
+| "EDR 100% 배포" | "배포 자산 중 텔레메트리 도달 91%" | 설치 ≠ 가시성 |
+| "취약점 500개 발견" | "P1 갭 3개, 2주 내 폐쇄 목표" | 발견 ≠ 위험 감소 |
+
+> 좋은 지표의 기준: ① 행동을 유발하는가, ② 시간에 따라 비교 가능한가, ③ 조작에 강한가. "탐지율"도 측정 모수(실행 기법 집합)를 명시하지 않으면 조작 가능한 허영 지표가 됩니다.
+
+---
+
+## 추세 기반 보고: 한 번의 스냅샷이 아니라 곡선
+
+단일 평가의 탐지율은 맥락이 없습니다. 가치는 **반복 평가 간 변화**에서 나옵니다.
+
+| 추세 지표 | 의미 | 경영진 메시지 |
+|---|---|---|
+| 분기별 커버리지 변화 | 투자 효과 입증 | "Q1 48% → Q2 62%, +14%p" |
+| 갭 폐쇄 리드타임 | 조직 대응 속도 | "P1 평균 폐쇄 11일" |
+| 회귀(regression) 건수 | 한 번 막은 게 다시 뚫림 | "이전 탐지 2건 노후화로 재발" |
+| MTTD 추이 | 탐지 신속성 | "평균 탐지 14분 → 6분" |
+
+재테스트는 단순 반복이 아니라 **회귀 탐지**의 핵심입니다. 데이터 소스 변경·룰 비활성화로 과거에 막았던 기법이 다시 뚫리는지를 추적해야, "개선했다"는 주장이 측정으로 뒷받침됩니다.
+
+---
+
 ## 요약
 
 | 보고서 섹션 | 대상 독자 | 핵심 내용 |
@@ -432,6 +462,32 @@ Coverage Rate = Detected / Total Executed × 100%
 | P3 (Medium-term) | T1021.001 | RDP location-based filter | Infra | 3 months |
 
 ---
+
+### Action-Driving Metrics vs Vanity Metrics
+
+A report that just lists numbers drives no action. Each measurement must connect to "so what do we change?"
+
+| Vanity metric (avoid) | Action metric (prefer) | Difference |
+|---|---|---|
+| "1,200 detection rules" | "62% of executed techniques detected" | Existence ≠ effectiveness |
+| "40k alerts handled" | "38% TP rate → tune false positives" | Throughput ≠ value |
+| "EDR 100% deployed" | "91% of assets actually report telemetry" | Install ≠ visibility |
+| "500 vulns found" | "3 P1 gaps, close within 2 weeks" | Finding ≠ risk reduction |
+
+> Good-metric test: (1) does it drive action, (2) is it comparable over time, (3) is it manipulation-resistant? Even "detection rate" becomes a manipulable vanity metric if the denominator (the executed technique set) isn't stated.
+
+### Trend-Based Reporting: A Curve, Not a Snapshot
+
+A single assessment's detection rate lacks context. Value comes from the **change across repeated assessments**.
+
+| Trend metric | Meaning | Executive message |
+|---|---|---|
+| Quarterly coverage change | Proves investment impact | "Q1 48% → Q2 62%, +14pp" |
+| Gap-closure lead time | Org response speed | "P1 closed in 11 days avg" |
+| Regression count | Previously-blocked re-opens | "2 prior detections decayed" |
+| MTTD trend | Detection speed | "Mean detection 14min → 6min" |
+
+Retesting isn't mere repetition — it's the core of **regression detection**. Tracking whether previously-blocked techniques re-open (due to data source changes or disabled rules) is what backs the claim "we improved" with measurement.
 
 ## Summary Table
 
