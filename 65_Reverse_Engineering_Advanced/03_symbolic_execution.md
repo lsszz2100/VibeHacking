@@ -261,6 +261,77 @@ if __name__ == "__main__":
 
 ---
 
+## 심화: angr 실전 — 크랙미 자동 풀이
+
+위 시뮬레이터는 개념용이고, 실제 바이너리는 angr로 푼다. 다음은 "정답 출력 vs 실패 출력"을 기준으로 입력을 역산하는 전형적 패턴이다.
+
+```python
+import angr, claripy
+
+proj = angr.Project("./crackme", auto_load_libs=False)
+
+# 16바이트 심볼릭 입력 (stdin)
+flag_len = 16
+flag = claripy.BVS("flag", flag_len * 8)
+
+state = proj.factory.entry_state(
+    stdin=flag,
+    add_options={angr.options.SYMBOL_FILL_UNCONSTRAINED_MEMORY,
+                 angr.options.SYMBOL_FILL_UNCONSTRAINED_REGISTERS},
+)
+# 출력 가능한 ASCII로 제약 → 탐색 공간 축소
+for byte in flag.chop(8):
+    state.solver.add(byte >= 0x20, byte <= 0x7e)
+
+simgr = proj.factory.simulation_manager(state)
+simgr.explore(
+    find=lambda s: b"Correct" in s.posix.dumps(1),   # 성공 분기
+    avoid=lambda s: b"Wrong" in s.posix.dumps(1),     # 실패 분기 가지치기
+)
+
+if simgr.found:
+    print("FLAG:", simgr.found[0].posix.dumps(0))
+```
+
+> 핵심: `avoid`로 실패 경로를 즉시 버려 경로 폭발을 억제하고, 입력 바이트 제약으로 솔버 부담을 줄인다.
+
+---
+
+## 경로 폭발 완화 기법 비교
+
+| 기법 | 원리 | 장점 | 한계 |
+|---|---|---|---|
+| `find`/`avoid` 가지치기 | 목표·실패 분기로 탐색 제한 | 구현 단순 | 목표를 미리 알아야 함 |
+| 함수 요약 (hook) | 복잡 함수를 모델로 대체 | 라이브러리 호출 회피 | 요약 작성 비용 |
+| 상태 합병 (veritesting) | 동일 지점 상태 통합 | 경로 수 급감 | 제약식 복잡도 증가 |
+| 동시 실행 (concolic) | 구체값+심볼릭 병행 | 깊은 경로 도달 | 커버리지 누락 가능 |
+| 루프 바운드 | 반복 횟수 상한 | 무한 루프 방지 | 깊은 버그 누락 |
+
+---
+
+## 언제 심볼릭 실행을 쓸까 (적용 판단)
+
+```
+입력 → 출력 관계가 명확한 검증 로직인가?
+   ├─ 예: 짧은 입력, 분기 명확 ──► 심볼릭 실행 적합 (크랙미·키 검증)
+   └─ 아니오
+        ├─ 암호 연산·해시 포함 ──► 부적합 (제약식 폭발) → 퍼징 권장
+        ├─ 거대한 상태공간     ──► concolic + 커버리지 가이드 퍼징 병행
+        └─ 네트워크/시간 의존  ──► 동적 분석·후킹 우선
+```
+
+---
+
+## 빠른 자가진단 체크리스트
+
+- [ ] 목표 분기(성공/취약)와 회피 분기를 명확히 정의했는가?
+- [ ] 입력 길이·문자 범위 제약으로 탐색 공간을 줄였는가?
+- [ ] 해시·암호 루틴은 hook으로 우회하거나 심볼릭 대상에서 제외했는가?
+- [ ] 경로 폭발 시 veritesting/concolic 전환을 고려했는가?
+- [ ] 솔버 결과를 실제 바이너리에 입력해 검증했는가?
+
+---
+
 ## 요약
 
 | 개념 | 설명 |
@@ -270,6 +341,7 @@ if __name__ == "__main__":
 | SMT 풀기 | Z3 등으로 제약 만족 입력 계산 |
 | 경로 폭발 | 지수적 경로 증가 문제 |
 | angr/KLEE | 실용 심볼릭 실행 프레임워크 |
+| `find`/`avoid` | 목표·실패 분기 기반 가지치기 |
 
 ---
 
@@ -323,3 +395,74 @@ Conditions and loops cause exponential growth in the number of paths.
 | SMT solving | Compute satisfying inputs via Z3 etc. |
 | Path explosion | Exponential growth of paths |
 | angr/KLEE | Practical symbolic execution frameworks |
+| `find`/`avoid` | Pruning by target/failure branches |
+
+---
+
+## Deep Dive: angr in Practice — Solving a Crackme
+
+The simulator above is conceptual; real binaries are solved with angr. The typical pattern reverse-computes input using "success output vs failure output."
+
+```python
+import angr, claripy
+
+proj = angr.Project("./crackme", auto_load_libs=False)
+
+flag_len = 16
+flag = claripy.BVS("flag", flag_len * 8)
+
+state = proj.factory.entry_state(
+    stdin=flag,
+    add_options={angr.options.SYMBOL_FILL_UNCONSTRAINED_MEMORY,
+                 angr.options.SYMBOL_FILL_UNCONSTRAINED_REGISTERS},
+)
+# Constrain to printable ASCII → shrink search space
+for byte in flag.chop(8):
+    state.solver.add(byte >= 0x20, byte <= 0x7e)
+
+simgr = proj.factory.simulation_manager(state)
+simgr.explore(
+    find=lambda s: b"Correct" in s.posix.dumps(1),   # success branch
+    avoid=lambda s: b"Wrong" in s.posix.dumps(1),     # prune failure branch
+)
+
+if simgr.found:
+    print("FLAG:", simgr.found[0].posix.dumps(0))
+```
+
+> Key: `avoid` drops failure paths immediately to curb path explosion, and byte constraints reduce solver load.
+
+---
+
+## Path Explosion Mitigation Comparison
+
+| Technique | Principle | Pro | Limit |
+|---|---|---|---|
+| `find`/`avoid` pruning | Limit search by target/failure | Simple | Must know the goal |
+| Function summary (hook) | Replace complex func with model | Avoids library calls | Cost to write summary |
+| State merging (veritesting) | Merge states at same point | Sharp drop in path count | Higher constraint complexity |
+| Concolic execution | Concrete + symbolic together | Reaches deep paths | May miss coverage |
+| Loop bounding | Cap iteration count | Prevents infinite loops | May miss deep bugs |
+
+---
+
+## When to Use Symbolic Execution
+
+```
+Is input→output a clear verification logic?
+   ├─ Yes: short input, clear branches ──► Good fit (crackme / key check)
+   └─ No
+        ├─ Crypto/hash involved ──► Poor fit (constraint blowup) → prefer fuzzing
+        ├─ Huge state space     ──► Concolic + coverage-guided fuzzing
+        └─ Network/time-dependent ──► Prefer dynamic analysis / hooking
+```
+
+---
+
+## Quick Self-Assessment Checklist
+
+- [ ] Did you clearly define target (success/vuln) and avoid branches?
+- [ ] Did you shrink the search space with input length/charset constraints?
+- [ ] Did you hook around or exclude hash/crypto routines from symbolic targets?
+- [ ] On path explosion, did you consider veritesting/concolic?
+- [ ] Did you verify solver output against the real binary?

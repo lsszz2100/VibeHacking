@@ -266,6 +266,60 @@ if __name__ == "__main__":
 
 ---
 
+## 심화: 수동 언패킹 단계별 절차 (UPX 변종)
+
+`upx -d`가 거부되는 변종(섹션명 변경·헤더 손상)은 디버거로 수동 덤프해야 합니다.
+
+```
+1. 진입점에서 PUSHAD 확인 (UPX 스텁 시작) → ESP 값 기록
+2. ESP에 하드웨어 BP (4바이트, 쓰기→읽기) 설정
+3. 실행(F9) → POPAD가 레지스터 복원하면서 BP 히트
+4. 근처 첫 'JMP far' 또는 'JMP <낮은 주소>' → OEP로 점프
+5. F7로 OEP 도착 → Scylla "Dump" → "IAT Autosearch" → "Fix Dump"
+6. 재구성된 IAT로 정적 분석 가능
+```
+
+> **자동 덤프 한계**: VM 패커(Themida/VMProtect)는 OEP가 명확하지 않음. 이 경우 OEP 덤프 대신 행위 기반(API 호출 로그) 분석으로 전환한다.
+
+---
+
+## 엔트로피 판정 가이드
+
+| 전체 엔트로피 | 해석 | 권장 조치 |
+|---|---|---|
+| < 6.0 | 평문 코드/데이터 | 일반 정적 분석 |
+| 6.0 ~ 7.0 | 부분 압축·리소스 | 섹션별 엔트로피 재확인 |
+| 7.0 ~ 7.2 | 패킹 의심 | 패커 시그니처 스캔 |
+| > 7.2 | 압축/암호화 강력 의심 | 동적 언패킹 필요 |
+
+> 주의: 엔트로피만으로 단정 금지. 정상 설치파일(이미 압축된 리소스)도 7.0을 넘는다. 반드시 섹션명·임포트 테이블과 교차 검증.
+
+---
+
+## 공격-방어 공방 매트릭스
+
+| 보호 기법 (방어자) | 분석 방해 효과 | 분석가 대응 | 잔여 리스크 |
+|---|---|---|---|
+| UPX 단순 패킹 | 정적 문자열 은닉 | `upx -d` 또는 ESP law 덤프 | 낮음 |
+| 섹션명 변조 UPX | 자동 언패커 무력화 | 수동 PUSHAD/POPAD 추적 | 중간 |
+| XOR/ROL 스트링 암호화 | 문자열 정적 추출 차단 | 키 브루트포스 + 런타임 덤프 | 낮음 |
+| 정크/스파게티 코드 | 그래프 가독성 저하 | 디컴파일러 + 데드코드 제거 | 중간 |
+| VM 기반 (VMProtect) | 명령 의미 은폐 | 핸들러 추적·바이트코드 리프팅 | 높음 |
+| 안티덤프(메모리 페이지 보호) | 메모리 덤프 차단 | 페이지 권한 패치 후 덤프 | 높음 |
+
+---
+
+## 빠른 자가진단 체크리스트
+
+- [ ] 전체·섹션별 엔트로피를 측정하고 임계값과 비교했는가?
+- [ ] 알려진 패커 시그니처(UPX0/1·MPRESS·ASPack)를 스캔했는가?
+- [ ] 자동 언패킹(`upx -d`) 실패 시 ESP law 수동 덤프를 시도했는가?
+- [ ] OEP 도달 후 IAT를 재구성(Scylla)했는가?
+- [ ] VM 패커로 판단되면 행위 기반 분석으로 전환했는가?
+- [ ] 언패킹 결과 바이너리에서 원본 문자열·임포트가 복원됐는지 확인했는가?
+
+---
+
 ## 요약
 
 | 기법 | 탐지 단서 | 분석 도구 |
@@ -274,6 +328,7 @@ if __name__ == "__main__":
 | XOR 인코딩 | 엔트로피 편차 | 수동 키 탐색 |
 | VM 난독화 | 복잡한 디스패처 루프 | Themida 분석 플러그인 |
 | 정크 코드 | 비율적으로 많은 JMP | IDA 그래프 분석 |
+| 안티덤프 | 메모리 페이지 보호 | 페이지 권한 패치 |
 
 ---
 
@@ -324,3 +379,58 @@ Obfuscation transforms code to make it "hard to read," like a coded letter — t
 | XOR encoding | Entropy variance | Manual key search |
 | VM obfuscation | Complex dispatcher loop | Themida plugins |
 | Junk code | Excessive JMP ratio | IDA graph view |
+| Anti-dump | Protected memory pages | Patch page permissions |
+
+---
+
+## Deep Dive: Manual Unpacking Steps (UPX Variant)
+
+For variants where `upx -d` fails (renamed sections, corrupted header), dump manually in a debugger.
+
+```
+1. Confirm PUSHAD at entry (UPX stub start) → record ESP value
+2. Set a hardware BP (4 bytes, write→read) on ESP
+3. Run (F9) → BP hits when POPAD restores registers
+4. The nearby first 'JMP far' or 'JMP <lower address>' → jumps to OEP
+5. Step (F7) to OEP → Scylla "Dump" → "IAT Autosearch" → "Fix Dump"
+6. Static analysis now possible with reconstructed IAT
+```
+
+> **Auto-dump limit**: VM packers (Themida/VMProtect) have no clear OEP. Switch to behavior-based (API call log) analysis instead of OEP dumping.
+
+---
+
+## Entropy Decision Guide
+
+| Overall Entropy | Interpretation | Recommended Action |
+|---|---|---|
+| < 6.0 | Plaintext code/data | Normal static analysis |
+| 6.0 ~ 7.0 | Partial compression / resources | Re-check per-section entropy |
+| 7.0 ~ 7.2 | Packing suspected | Scan packer signatures |
+| > 7.2 | Strong compression/encryption | Dynamic unpacking required |
+
+> Caution: never conclude from entropy alone. Legitimate installers (already-compressed resources) also exceed 7.0. Always cross-check with section names and the import table.
+
+---
+
+## Attack–Defense Matrix
+
+| Protection (Defender) | Analysis Impact | Analyst Response | Residual Risk |
+|---|---|---|---|
+| UPX simple packing | Hides static strings | `upx -d` or ESP-law dump | Low |
+| Section-renamed UPX | Defeats auto-unpackers | Manual PUSHAD/POPAD trace | Medium |
+| XOR/ROL string crypto | Blocks static extraction | Key brute force + runtime dump | Low |
+| Junk/spaghetti code | Reduces graph readability | Decompiler + dead-code removal | Medium |
+| VM-based (VMProtect) | Hides instruction meaning | Handler tracing / bytecode lifting | High |
+| Anti-dump (page protection) | Blocks memory dump | Patch page permissions, then dump | High |
+
+---
+
+## Quick Self-Assessment Checklist
+
+- [ ] Did you measure overall and per-section entropy against thresholds?
+- [ ] Did you scan known packer signatures (UPX0/1, MPRESS, ASPack)?
+- [ ] On `upx -d` failure, did you try a manual ESP-law dump?
+- [ ] After reaching OEP, did you reconstruct the IAT (Scylla)?
+- [ ] If identified as a VM packer, did you switch to behavior-based analysis?
+- [ ] Did you verify original strings/imports were restored in the unpacked binary?

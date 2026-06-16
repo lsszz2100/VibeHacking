@@ -293,6 +293,74 @@ if __name__ == "__main__":
 
 ---
 
+## 심화: 테인트 분석 — source/sink 모델
+
+테인트 분석은 "오염원(source)"에서 들어온 데이터가 "위험 지점(sink)"에 검증 없이 도달하는지를 추적한다.
+
+| 구분 | 예시 | 의미 |
+|---|---|---|
+| Source (오염원) | `recv`, `read`, `argv`, `getenv` | 외부에서 통제 가능한 입력 |
+| Propagation (전파) | `strcpy`, `memcpy`, 산술 연산 | 오염이 다른 변수로 번짐 |
+| Sanitizer (정화) | 길이 검사, 화이트리스트 | 오염 제거 — 안전해짐 |
+| Sink (위험 지점) | `system`, `strcpy(dst,..)`, `printf(fmt)` | 오염 도달 시 취약 |
+
+```
+recv(buf) ──오염──► strcpy(local, buf) ──전파──► system(local)
+  source                  propagation                sink
+   ▲ 중간에 길이검사/화이트리스트(sanitizer) 없으면 → 명령 인젝션/오버플로
+```
+
+> 정적 테인트는 거짓양성이 많으므로, DynamoRIO/Pin 기반 **동적 테인트**로 실제 실행 경로에서 오염 흐름을 확인하면 정밀도가 높아진다.
+
+---
+
+## CFG 복잡도 기반 트리아지
+
+대형 바이너리는 모든 함수를 볼 수 없으므로, **순환 복잡도(Cyclomatic Complexity)**로 우선순위를 정한다.
+
+```
+복잡도 M = E - N + 2P
+  E = 엣지 수, N = 노드(블록) 수, P = 연결 컴포넌트 수
+```
+
+| 복잡도 M | 해석 | 분석 우선순위 |
+|---|---|---|
+| 1 ~ 10 | 단순 함수 | 낮음 |
+| 11 ~ 20 | 중간 복잡 | 중간 |
+| 21 ~ 50 | 복잡 — 버그 잠복 가능 | 높음 |
+| > 50 | 파서/상태머신 — 핫스팟 | 최우선 |
+
+> 위 Python CFG 추출기의 `blocks`/엣지 수로 M을 근사 계산해 분석 순서를 자동화할 수 있다.
+
+---
+
+## 패치 디핑(BinDiff) 워크플로우
+
+```
+취약 버전 vs 패치 버전 바이너리 확보
+   │
+   ▼
+함수 단위 CFG 해시 매칭 (BinDiff/Diaphora)
+   │
+   ▼
+변경된 함수만 추출 → 추가된 검사(길이·NULL·바운드) 식별
+   │
+   ▼
+"무엇이 부족했는가" = 원본 취약점 → PoC/익스플로잇 역설계
+```
+
+---
+
+## 빠른 자가진단 체크리스트
+
+- [ ] source(외부 입력)와 sink(위험 함수)를 명확히 식별했는가?
+- [ ] sanitizer(길이·바운드 검사)가 경로 중간에 있는지 확인했는가?
+- [ ] 순환 복잡도로 분석 우선순위를 정했는가?
+- [ ] 정적 테인트 거짓양성을 동적 테인트로 교차 검증했는가?
+- [ ] 패치 디핑으로 추가된 검사를 원본 취약점과 매핑했는가?
+
+---
+
 ## 요약
 
 | 분석 기법 | 목적 | 도구 |
@@ -301,6 +369,8 @@ if __name__ == "__main__":
 | Def-Use Chain | 변수 수명 추적 | Binary Ninja |
 | Taint Analysis | 입력 오염 추적 | DynamoRIO, Pin |
 | Pattern Matching | 취약점 패턴 인식 | CodeQL, Semgrep |
+| 순환 복잡도 | 분석 트리아지 | IDA metrics |
+| 패치 디핑 | 취약점 역설계 | BinDiff, Diaphora |
 
 ---
 
@@ -338,3 +408,73 @@ A sequence of instructions with no internal branches — one entry, one exit.
 | Def-Use Chain | Variable lifetime tracking | Binary Ninja |
 | Taint Analysis | Input contamination tracing | DynamoRIO, Pin |
 | Pattern Matching | Vulnerability pattern recognition | CodeQL, Semgrep |
+| Cyclomatic complexity | Analysis triage | IDA metrics |
+| Patch diffing | Vulnerability reversing | BinDiff, Diaphora |
+
+---
+
+## Deep Dive: Taint Analysis — Source/Sink Model
+
+Taint analysis tracks whether data from a "source" reaches a dangerous "sink" without validation.
+
+| Category | Examples | Meaning |
+|---|---|---|
+| Source | `recv`, `read`, `argv`, `getenv` | Externally controllable input |
+| Propagation | `strcpy`, `memcpy`, arithmetic | Taint spreads to other variables |
+| Sanitizer | Length check, allowlist | Removes taint — becomes safe |
+| Sink | `system`, `strcpy(dst,..)`, `printf(fmt)` | Vulnerable if taint reaches |
+
+```
+recv(buf) ──tainted──► strcpy(local, buf) ──propagate──► system(local)
+  source                   propagation                      sink
+   ▲ no length check / allowlist (sanitizer) in between → cmd injection / overflow
+```
+
+> Static taint has many false positives; confirming taint flow on the real execution path with **dynamic taint** (DynamoRIO/Pin) improves precision.
+
+---
+
+## CFG Complexity–Based Triage
+
+Large binaries can't be fully reviewed; prioritize by **cyclomatic complexity**.
+
+```
+Complexity M = E - N + 2P
+  E = edges, N = nodes (blocks), P = connected components
+```
+
+| Complexity M | Interpretation | Priority |
+|---|---|---|
+| 1 ~ 10 | Simple function | Low |
+| 11 ~ 20 | Moderate | Medium |
+| 21 ~ 50 | Complex — bugs likely | High |
+| > 50 | Parser/state machine — hotspot | Highest |
+
+> You can approximate M from the `blocks`/edge counts of the Python CFG extractor above to automate review ordering.
+
+---
+
+## Patch Diffing (BinDiff) Workflow
+
+```
+Obtain vulnerable vs patched binaries
+   │
+   ▼
+Match per-function CFG hashes (BinDiff/Diaphora)
+   │
+   ▼
+Extract changed functions → identify added checks (length/NULL/bounds)
+   │
+   ▼
+"What was missing" = original vuln → reverse-engineer PoC/exploit
+```
+
+---
+
+## Quick Self-Assessment Checklist
+
+- [ ] Did you clearly identify sources (external input) and sinks (dangerous functions)?
+- [ ] Did you check for sanitizers (length/bounds checks) along the path?
+- [ ] Did you prioritize review by cyclomatic complexity?
+- [ ] Did you cross-check static taint false positives with dynamic taint?
+- [ ] Did you map patch-diff added checks back to the original vulnerability?

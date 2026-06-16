@@ -288,6 +288,75 @@ if __name__ == "__main__":
 
 ---
 
+## 심화: PEB 구조와 안티디버깅 오프셋
+
+안티디버깅의 상당수는 PEB(Process Environment Block)의 특정 필드를 직접 읽습니다. API 호출을 후킹해도 PEB를 직접 참조하면 우회되므로, 분석가는 오프셋을 알아야 합니다.
+
+| PEB 오프셋 (x64) | 필드 | 안티디버깅 용도 |
+|---|---|---|
+| `+0x002` | `BeingDebugged` | `IsDebuggerPresent`가 읽는 1바이트 플래그 |
+| `+0x018` | `Ldr` | 모듈 리스트 — 인젝션된 DLL 탐지 |
+| `+0x0BC` | `NtGlobalFlag` | 디버거 하 실행 시 `0x70` 비트 설정 |
+| `+0x0F0` | `ProcessHeap → Flags` | 힙 플래그 `0x40000060` 패턴 |
+
+```c
+// PEB 직접 접근 — API 후킹 우회 (x64 인라인)
+int peb_being_debugged(void) {
+    char flag;
+    __asm__ volatile (
+        "mov %%gs:0x60, %%rax\n\t"   // GS:[0x60] → PEB 포인터
+        "mov 0x2(%%rax), %0\n\t"      // PEB+0x02 → BeingDebugged
+        : "=r"(flag) :: "rax");
+    return flag;
+}
+```
+
+> Linux 대응: `ptrace(PTRACE_TRACEME, 0, 0, 0)`가 `-1`을 반환하면 이미 트레이서가 붙은 것. `/proc/self/status`의 `TracerPid`가 0이 아니면 디버깅 중.
+
+---
+
+## 공격-방어 공방 매트릭스
+
+| 보호 기법 (방어자) | 탐지 신호 | 분석가 대응 (공격자) | 잔여 리스크 |
+|---|---|---|---|
+| `IsDebuggerPresent` | PEB+0x02 읽기 | 반환값 0 패치 / PEB 바이트 0 클리어 | 낮음 |
+| `NtGlobalFlag` | PEB+0xBC `0x70` | 플래그 클리어 후 실행 | 낮음 |
+| RDTSC 타이밍 | `0F 31` 명령 쌍 | 명령 NOP 처리 또는 RDTSC 후킹 | 중간 |
+| 하드웨어 BP 탐지 | `GetThreadContext` DR0~3 | 컨텍스트 조작 / 메모리 BP 사용 | 높음 |
+| `INT 2D` / `INT 3` | 예외 발생 차이 | SEH 핸들러 설치 후 흐름 제어 | 중간 |
+| 자가 디버깅(self-debug) | 자식이 부모를 ptrace | 이중 디버거 또는 분리 후 재부착 | 높음 |
+
+---
+
+## 분석가 의사결정 워크플로우
+
+```
+바이너리 수신
+   │
+   ▼
+정적 스캔 (위 Python 도구) ── 패턴 0개 ──► 일반 동적 분석 진행
+   │ 패턴 발견
+   ▼
+어떤 계층인가?
+   ├─ API/PEB 기반 ──► ScyllaHide 로드 후 디버깅
+   ├─ 타이밍 기반   ──► 하드웨어 BP만 사용 + RDTSC 패치
+   ├─ 예외 기반     ──► 예외 무시 옵션 끄고 SEH 추적
+   └─ 환경/VM 탐지  ──► 격리 베어메탈 또는 안티-VM 패치
+```
+
+---
+
+## 빠른 자가진단 체크리스트
+
+- [ ] 정적 패턴 스캐너로 안티디버깅 시그니처를 먼저 분류했는가?
+- [ ] PEB `BeingDebugged`/`NtGlobalFlag`를 직접 읽는 코드를 확인했는가?
+- [ ] RDTSC/`QueryPerformanceCounter` 타이밍 체크를 격리했는가?
+- [ ] ScyllaHide 등 은닉 플러그인을 디버깅 전에 로드했는가?
+- [ ] 환경 탐지(프로세스명·윈도우 타이틀)를 우회할 클린 환경을 준비했는가?
+- [ ] 우회 패치 후 원래 악성 로직이 정상 실행되는지 검증했는가?
+
+---
+
 ## 요약
 
 | 기법 | 탐지 방법 | 우회 난이도 |
@@ -297,6 +366,7 @@ if __name__ == "__main__":
 | 예외 기반 | SEH/INT3 | 중간 |
 | 환경 탐지 | 프로세스명 | 낮음 (이름 변경) |
 | 하드웨어 BP 탐지 | DR 레지스터 | 높음 |
+| PEB `NtGlobalFlag` | 힙/글로벌 플래그 | 낮음 (플래그 클리어) |
 
 ---
 
@@ -359,3 +429,61 @@ Debuggers pause execution at breakpoints, causing abnormally long elapsed time b
 | Exception-based | SEH/INT3 | Medium |
 | Environment check | Process name | Low (rename) |
 | Hardware BP detection | DR registers | High |
+| PEB `NtGlobalFlag` | Heap/global flag | Low (clear flag) |
+
+---
+
+## Deep Dive: PEB Structure and Anti-Debug Offsets
+
+Many anti-debug checks read PEB (Process Environment Block) fields directly. Hooking the API is not enough when code reads the PEB directly, so analysts must know the offsets.
+
+| PEB Offset (x64) | Field | Anti-Debug Use |
+|---|---|---|
+| `+0x002` | `BeingDebugged` | 1-byte flag read by `IsDebuggerPresent` |
+| `+0x018` | `Ldr` | Module list — detect injected DLLs |
+| `+0x0BC` | `NtGlobalFlag` | Bits `0x70` set when run under a debugger |
+| `+0x0F0` | `ProcessHeap → Flags` | Heap flag pattern `0x40000060` |
+
+> Linux equivalent: if `ptrace(PTRACE_TRACEME, 0, 0, 0)` returns `-1`, a tracer is already attached. A non-zero `TracerPid` in `/proc/self/status` means a debugger is present.
+
+---
+
+## Attack–Defense Matrix
+
+| Protection (Defender) | Detection Signal | Analyst Response (Attacker) | Residual Risk |
+|---|---|---|---|
+| `IsDebuggerPresent` | Reads PEB+0x02 | Patch return to 0 / zero PEB byte | Low |
+| `NtGlobalFlag` | PEB+0xBC `0x70` | Clear flag before run | Low |
+| RDTSC timing | `0F 31` instruction pairs | NOP the instruction or hook RDTSC | Medium |
+| Hardware BP detection | `GetThreadContext` DR0~3 | Spoof context / use memory BPs | High |
+| `INT 2D` / `INT 3` | Exception delta | Install SEH handler, control flow | Medium |
+| Self-debugging | Child ptraces parent | Double-debugger or detach/reattach | High |
+
+---
+
+## Analyst Decision Workflow
+
+```
+Receive binary
+   │
+   ▼
+Static scan (Python tool above) ── 0 patterns ──► Proceed with normal dynamic analysis
+   │ pattern found
+   ▼
+Which layer?
+   ├─ API/PEB-based ──► Load ScyllaHide, then debug
+   ├─ Timing-based   ──► Use hardware BPs only + patch RDTSC
+   ├─ Exception-based ──► Disable "ignore exceptions", trace SEH
+   └─ Env/VM detection ──► Isolated bare-metal or anti-VM patch
+```
+
+---
+
+## Quick Self-Assessment Checklist
+
+- [ ] Did you first classify anti-debug signatures with a static pattern scanner?
+- [ ] Did you confirm code that reads PEB `BeingDebugged`/`NtGlobalFlag` directly?
+- [ ] Did you isolate RDTSC/`QueryPerformanceCounter` timing checks?
+- [ ] Did you load a hiding plugin (e.g., ScyllaHide) before debugging?
+- [ ] Did you prepare a clean environment to bypass env detection (process name / window title)?
+- [ ] After patching, did you verify the original malicious logic still runs?

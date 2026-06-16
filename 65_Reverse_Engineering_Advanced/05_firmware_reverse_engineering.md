@@ -299,6 +299,71 @@ if __name__ == "__main__":
 
 ---
 
+## 심화: binwalk 추출 → 루트파일시스템 분석 워크플로우
+
+```bash
+# 1. 파일시스템·아카이브 식별 및 재귀 추출
+binwalk -Me firmware.bin
+#   → _firmware.bin.extracted/ 에 squashfs-root 등 생성
+
+# 2. 추출 실패 시 수동: 오프셋 잘라내기 후 unsquashfs
+binwalk firmware.bin                       # SquashFS 오프셋 확인
+dd if=firmware.bin bs=1 skip=<offset> of=fs.sqsh
+unsquashfs fs.sqsh
+
+# 3. 루트파일시스템에서 시크릿·백도어 스캔
+grep -rIn "password" squashfs-root/etc/
+firmwalker.sh squashfs-root/               # 하드코딩 시크릿 자동 스캔
+ls -l squashfs-root/etc/{passwd,shadow}    # 기본 계정 확인
+```
+
+> 추출 후 우선 확인 대상: `/etc/passwd`·`/etc/shadow`(약한 해시), `/etc/init.d`(부팅 시 실행), `/www`·`/cgi-bin`(웹 취약점), 하드코딩 키·인증서.
+
+---
+
+## 펌웨어 에뮬레이션 (QEMU)
+
+실기기 없이 펌웨어 바이너리를 실행해 동적 분석한다.
+
+```bash
+# MIPS 바이너리 단일 실행 (user-mode)
+qemu-mipsel -L squashfs-root ./squashfs-root/usr/sbin/httpd
+
+# 전체 시스템 에뮬레이션 (network 포함) — firmadyne/FirmAE 활용
+./run.sh firmadyne firmware.bin            # NVRAM·네트워크 자동 구성
+```
+
+| 에뮬레이션 수준 | 도구 | 용도 |
+|---|---|---|
+| user-mode | `qemu-mipsel`/`qemu-arm` | 단일 바이너리 동작 확인 |
+| system-mode | QEMU + 커널 | 부팅·서비스 기동 |
+| 자동화 | firmadyne / FirmAE | NVRAM·네트워크 자동 구성 |
+
+---
+
+## 공격-방어 공방 매트릭스
+
+| 보호 기법 (벤더) | 분석 방해 | 분석가 대응 | 잔여 리스크 |
+|---|---|---|---|
+| 펌웨어 암호화 | binwalk 추출 차단(엔트로피 7.5+) | 부트로더 키 추출·UART 덤프 | 높음 |
+| 시리얼 콘솔 비활성 | UART 접근 차단 | JTAG·플래시 직접 덤프 | 높음 |
+| 시큐어 부트 | 변조 펌웨어 거부 | 서명 우회·다운그레이드 공격 | 높음 |
+| 문자열 난독화 | grep 시크릿 탐지 회피 | 런타임 메모리 덤프·복호 루틴 분석 | 중간 |
+| 압축 파일시스템 | 단순 grep 무력화 | unsquashfs/jefferson 추출 후 스캔 | 낮음 |
+
+---
+
+## 빠른 자가진단 체크리스트
+
+- [ ] `binwalk -Me`로 파일시스템을 재귀 추출했는가?
+- [ ] 추출 실패 시 오프셋 기반 수동 추출을 시도했는가?
+- [ ] `/etc/passwd`·`shadow`·init 스크립트의 하드코딩 계정을 점검했는가?
+- [ ] firmwalker로 키·인증서·API 시크릿을 스캔했는가?
+- [ ] QEMU로 핵심 서비스(httpd 등)를 에뮬레이션해 동적 검증했는가?
+- [ ] 암호화 펌웨어는 부트로더/UART 경로로 평문 확보를 시도했는가?
+
+---
+
 ## 요약
 
 | 항목 | 내용 |
@@ -307,6 +372,7 @@ if __name__ == "__main__":
 | 핵심 도구 | binwalk, firmwalker, Ghidra |
 | 탐지 대상 | 기본 자격증명, 백도어, API 키 |
 | 엔트로피 기준 | 7.5+ 암호화, 6.8+ 압축 |
+| 에뮬레이션 | QEMU, firmadyne, FirmAE |
 
 ---
 
@@ -349,3 +415,69 @@ Firmware reverse engineering analyzes firmware images from routers, IP cameras, 
 | Core tools | binwalk, firmwalker, Ghidra |
 | Detection targets | Default credentials, backdoors, API keys |
 | Entropy thresholds | 7.5+ encrypted, 6.8+ compressed |
+| Emulation | QEMU, firmadyne, FirmAE |
+
+---
+
+## Deep Dive: binwalk Extraction → Root Filesystem Analysis
+
+```bash
+# 1. Identify filesystems/archives and recursively extract
+binwalk -Me firmware.bin
+#   → creates squashfs-root etc. under _firmware.bin.extracted/
+
+# 2. If extraction fails, carve manually then unsquashfs
+binwalk firmware.bin                       # find SquashFS offset
+dd if=firmware.bin bs=1 skip=<offset> of=fs.sqsh
+unsquashfs fs.sqsh
+
+# 3. Scan the root filesystem for secrets/backdoors
+grep -rIn "password" squashfs-root/etc/
+firmwalker.sh squashfs-root/               # auto-scan hardcoded secrets
+ls -l squashfs-root/etc/{passwd,shadow}    # check default accounts
+```
+
+> Priority targets after extraction: `/etc/passwd`/`/etc/shadow` (weak hashes), `/etc/init.d` (boot-time execution), `/www`/`/cgi-bin` (web vulns), hardcoded keys/certs.
+
+---
+
+## Firmware Emulation (QEMU)
+
+Run firmware binaries without real hardware for dynamic analysis.
+
+```bash
+# Single MIPS binary (user-mode)
+qemu-mipsel -L squashfs-root ./squashfs-root/usr/sbin/httpd
+
+# Full-system emulation (with network) — via firmadyne/FirmAE
+./run.sh firmadyne firmware.bin            # auto NVRAM/network setup
+```
+
+| Emulation Level | Tool | Purpose |
+|---|---|---|
+| user-mode | `qemu-mipsel`/`qemu-arm` | Verify single binary behavior |
+| system-mode | QEMU + kernel | Boot/service startup |
+| automated | firmadyne / FirmAE | Auto NVRAM/network config |
+
+---
+
+## Attack–Defense Matrix
+
+| Protection (Vendor) | Analysis Impact | Analyst Response | Residual Risk |
+|---|---|---|---|
+| Firmware encryption | Blocks binwalk (entropy 7.5+) | Extract bootloader key / UART dump | High |
+| Disabled serial console | Blocks UART access | JTAG / direct flash dump | High |
+| Secure boot | Rejects modified firmware | Signature bypass / downgrade attack | High |
+| String obfuscation | Evades grep secret scan | Runtime memory dump / decrypt routine | Medium |
+| Compressed filesystem | Defeats plain grep | unsquashfs/jefferson then scan | Low |
+
+---
+
+## Quick Self-Assessment Checklist
+
+- [ ] Did you recursively extract the filesystem with `binwalk -Me`?
+- [ ] On extraction failure, did you try offset-based manual carving?
+- [ ] Did you check `/etc/passwd`/`shadow` and init scripts for hardcoded accounts?
+- [ ] Did you scan keys/certs/API secrets with firmwalker?
+- [ ] Did you emulate core services (e.g., httpd) with QEMU for dynamic checks?
+- [ ] For encrypted firmware, did you try the bootloader/UART path to obtain plaintext?
