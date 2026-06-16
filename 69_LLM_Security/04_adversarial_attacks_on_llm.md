@@ -390,6 +390,21 @@ if __name__ == "__main__":
 
 ---
 
+## 자동화된 적대적 접미사와 전이성
+
+수작업 탈옥과 달리, 최적화 기반 공격은 알고리즘으로 **적대적 접미사(adversarial suffix)**를 탐색한다. 모델의 거절 확률이 낮아지는 방향으로 토큰을 탐욕적으로 조정해, 사람 눈엔 무의미한 문자열을 프롬프트 뒤에 붙여 안전장치를 무력화한다.
+
+핵심 특성:
+- **전이성(transferability):** 한 오픈소스 모델에서 찾은 접미사가 본 적 없는 다른(상용 포함) 모델에도 종종 통한다 — 가중치 접근 없이 블랙박스 공격이 가능하다.
+- **자동 대량 생성:** 사람이 매번 새 탈옥을 만들 필요 없이 스크립트로 후보를 양산한다.
+- **탐지 난이도:** 무의미해 보이는 토큰열이라 키워드 필터로는 잡기 어렵다.
+
+방어 함의: 입력 패턴 매칭만으로는 부족하며, **퍼플렉서티(perplexity) 기반 이상 탐지**(비정상적으로 무작위한 토큰열 탐지), 출력 측 거절 일관성 검사, 그리고 앞서 강조한 권한 분리·HITL이 함께 필요하다.
+
+> ⚠️ **검증 메모:** 최적화 기반 공격(그래디언트 좌표 탐색 계열)과 모델 간 전이성은 공개된 LLM 안전성 연구에서 재현·문서화된 현상이다. 구체적 접미사 문자열은 모델·버전에 따라 빠르게 무력화되므로 본 자료는 개념과 방어에 초점을 둔다.
+
+---
+
 <a name="english"></a>
 
 # Adversarial Attacks on LLMs
@@ -437,3 +452,18 @@ python3 04_adversarial_attacks_on_llm.py --mode full --file suspicious_input.txt
 ```
 
 The tool covers 60+ homoglyph mappings (Cyrillic, Greek, Mathematical, Full-width), 15 invisible/direction-control characters, mixed-script word detection, and repetition pattern analysis.
+
+---
+
+## Automated Adversarial Suffixes and Transferability
+
+Unlike hand-crafted jailbreaks, optimization-based attacks *algorithmically* search for an **adversarial suffix** — greedily adjusting tokens to lower the model's refusal probability, then appending a human-meaningless string to the prompt to defeat safety guardrails.
+
+Key properties:
+- **Transferability:** a suffix found on one open-source model often works on other, unseen models (including commercial ones) — enabling black-box attacks without weight access.
+- **Automated mass generation:** scripts churn out candidates instead of a human authoring each new jailbreak.
+- **Hard to detect:** the seemingly random token string evades keyword filters.
+
+Defensive implication: input pattern-matching alone is insufficient. You also need **perplexity-based anomaly detection** (flagging abnormally random token sequences), output-side refusal-consistency checks, and the privilege separation + HITL emphasized earlier.
+
+> ⚠️ **Verification note:** optimization-based attacks (gradient/coordinate-search family) and cross-model transferability are reproduced and documented in public LLM-safety research. Specific suffix strings are quickly neutralized across model versions, so this material focuses on the concept and defenses.

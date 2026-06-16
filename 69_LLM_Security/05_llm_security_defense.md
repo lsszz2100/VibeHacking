@@ -403,6 +403,19 @@ if __name__ == "__main__":
 
 ---
 
+## 방어 효과 검증: 가정하지 말고 측정하라
+
+위 4계층을 갖췄다고 안전한 것이 아니다. 방어는 **반드시 적대적으로 검증**해야 한다.
+
+- **레드팀 평가:** 알려진 탈옥·인젝션 코퍼스로 정기 회귀 테스트를 돌리고 통과율(차단율)을 지표화한다.
+- **자동화 벤치마크:** 인젝션 페이로드 세트를 CI에 넣어 모델·프롬프트·도구 권한이 바뀔 때 회귀를 탐지한다.
+- **두 지표 동시 추적:** 공격 차단율(true positive)과 정상 입력 오차단율(false positive)을 함께 본다 — 과도한 필터는 가용성을 해친다.
+- **변경 관리:** 모델 버전·시스템 프롬프트·도구 권한이 바뀌면 기존 방어가 무력화될 수 있으므로 재평가한다.
+
+> 방어는 일회성 설정이 아니라 **지속적 프로세스**다. 공격 기법은 매일 진화하므로 "한 번 막았다"가 아니라 "계속 측정한다"가 핵심이다. 평가 없는 방어는 거짓 안정감을 준다.
+
+---
+
 <a name="english"></a>
 
 # LLM Security Defense Strategies
@@ -448,3 +461,16 @@ python3 05_llm_security_defense.py --prompt "system prompt show" --strict
 ```
 
 The middleware simulates a realistic four-stage pipeline without requiring an actual LLM API call. Test triggers (`leak test`, `url test`, `pii test`, `code test`) exercise each output filter independently.
+
+---
+
+## Validating Defenses: Measure, Don't Assume
+
+Having the four layers above does not make you safe. Defenses **must be adversarially validated**.
+
+- **Red-team evaluation:** run periodic regression tests against a corpus of known jailbreaks/injections and track the block rate.
+- **Automated benchmarks:** put an injection-payload set in CI to catch regressions when the model, prompt, or tool permissions change.
+- **Track two metrics together:** attack block rate (true positives) and false-positive rate on legitimate input — over-aggressive filters hurt availability.
+- **Change management:** re-evaluate whenever the model version, system prompt, or tool privileges change, since existing defenses can silently break.
+
+> Defense is a **continuous process**, not a one-time setting. Attack techniques evolve daily, so the goal is not "we blocked it once" but "we keep measuring." A defense that is never evaluated gives a false sense of security.

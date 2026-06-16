@@ -55,6 +55,24 @@ LLM은 훈련 데이터를 일부 "암기"한다. 특정 프리픽스를 제공�
 
 ---
 
+## 방어자 관점: 추출 캠페인 탐지 신호
+
+추출 공격은 단발 쿼리가 아니라 **장기·대량 패턴**으로 나타난다. 방어자는 다음 이상 징후를 모니터링한다.
+
+| 신호 | 정상 사용과의 차이 |
+|------|--------------------|
+| 쿼리량 급증 | 단일 키/IP에서 비정상적으로 높은 일일 쿼리 수 |
+| 체계적 입력 공간 탐색 | 무작위·격자형으로 입력을 휩쓰는 패턴(실사용자는 군집적) |
+| 낮은 출력 재사용률 | 캐시 적중이 거의 없음 = 의도적 다양화 시도 |
+| 경계 탐침(boundary probing) | 분류 경계 근처를 반복 질의(결정 경계 추출용) |
+| 짧은 간격의 균일 요청 | 사람이 아닌 스크립트 특유의 일정한 타이밍 |
+
+**대응:** 키별 쿼리 예산(quota) + 적응형 속도 제한, 비정상 패턴 시 CAPTCHA·재인증 요구, 응답에 보이지 않는 워터마크를 삽입해 클론 모델을 사후 식별. 위 도구의 `extraction_risk_score`(쿼리량 60% + 다양성 40%)는 이 탐지를 자동화하는 출발점이다.
+
+> ⚖️ **법적 참고:** 모델 추출·훈련 데이터 복원은 영업비밀·저작권·개인정보보호법(국내 개인정보보호법, EU GDPR 등) 위반이 될 수 있다. 본 자료의 도구는 **자신이 소유하거나 명시적 허가를 받은 시스템의 방어 테스트** 용도로만 사용한다.
+
+---
+
 ## 실습 코드: 모델 응답 유사도 분석기 + 멤버십 추론 시뮬레이터
 
 ```python
@@ -354,6 +372,24 @@ Recent research shows that embedding vectors can be partially inverted to recove
 | Model extraction | Rate limiting, query caps, output randomization, model watermarking |
 | Data memorization | Pre-training PII scrubbing, differential privacy (DP-SGD) |
 | Embedding inversion | Dimensionality reduction before exposure, add Gaussian noise, strict access control |
+
+---
+
+## Defender's View: Detecting an Extraction Campaign
+
+Extraction is rarely a single query — it shows up as a **sustained, high-volume pattern**. Defenders monitor these anomalies:
+
+| Signal | How it differs from normal use |
+|--------|-------------------------------|
+| Query-volume spike | Abnormally high daily query count from one key/IP |
+| Systematic input-space sweep | Random/grid coverage of the input space (real users cluster) |
+| Low output-reuse rate | Almost no cache hits = deliberate diversification |
+| Boundary probing | Repeated queries near decision boundaries (to extract them) |
+| Uniform, short-interval requests | Script-like steady timing, unlike human cadence |
+
+**Response:** per-key query budgets + adaptive rate limiting, CAPTCHA/re-auth on anomalous patterns, and invisible response watermarking to later identify cloned models. The tool's `extraction_risk_score` (query volume 60% + diversity 40%) is a starting point for automating this detection.
+
+> ⚖️ **Legal note:** Model extraction and training-data recovery can violate trade-secret, copyright, and privacy law (e.g., GDPR, national data-protection acts). The tools here are for **defensive testing of systems you own or are explicitly authorized to assess** only.
 
 ---
 
