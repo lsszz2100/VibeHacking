@@ -253,6 +253,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- safety-validate-73 -->
+## 스코프·권한 검증 (테스트 시작 전)
+
+버그바운티에서 가장 먼저 검증할 것은 취약점이 아니라 **"내가 지금 테스트해도 되는 대상·행위인가"**입니다. 스코프를 벗어난 테스트는 보상은커녕 법적 문제로 이어집니다.
+
+| 확인 항목 | 왜 중요한가 | 검증 |
+|---|---|---|
+| In-scope 자산 | 범위 밖 도메인/IP 테스트는 무단 접근 | 프로그램 정책의 자산 목록과 대조 |
+| 금지 행위 | DoS·소셜엔지니어링·자동 대량요청 흔히 금지 | 정책의 "Out of scope / Prohibited" 정독 |
+| 세이프하버 | 선의의 연구 보호 조항 유무 | safe harbor 문구 확인, 없으면 보수적으로 |
+| 데이터 취급 | 실제 사용자 데이터 접근·보관 금지 | PoC는 자기 계정/더미 데이터로만 |
+
+### 테스트 전 확인 (직접)
+
+```python
+IN_SCOPE = {"app.example.com", "api.example.com"}
+
+def is_testable(host: str) -> bool:
+    """대상이 명시적 in-scope일 때만 테스트 허용. 모호하면 False."""
+    return host in IN_SCOPE  # 와일드카드는 정책 문구를 직접 확인 후에만 확장
+
+# 운영 원칙: 모호하면 테스트하지 말고 프로그램에 먼저 문의한다.
+```
+
+> 핵심: 스코프와 권한 검증은 한 줄짜리 형식 절차가 아니라 **모든 테스트의 전제 조건**입니다. 범위 밖이거나 금지 행위면, 취약점을 찾았더라도 보고가 아니라 사고가 됩니다([[68_Purple_Team]]).
+
+---
+
 ## 참고 링크
 
 - HackerOne 공개 프로그램 목록: https://www.hackerone.com/bug-bounty-programs
@@ -516,3 +544,28 @@ if __name__ == "__main__":
 - HackerOne public programs: https://www.hackerone.com/bug-bounty-programs
 - Bugcrowd program search: https://bugcrowd.com/programs
 - PortSwigger Web Security Academy (free training): https://portswigger.net/web-security
+
+## Scope and Authorization Validation (before testing)
+
+The first thing to validate in bug bounty is not a vulnerability but **"am I allowed to test this asset/action right now?"** Out-of-scope testing leads to legal trouble, not rewards.
+
+| Check | Why it matters | Validation |
+|---|---|---|
+| In-scope assets | Testing OOS domains/IPs is unauthorized access | Compare against the program's asset list |
+| Prohibited actions | DoS, social engineering, mass automation often banned | Read the "Out of scope / Prohibited" policy |
+| Safe harbor | Protection for good-faith research | Confirm safe-harbor language; if absent, be conservative |
+| Data handling | Accessing/storing real user data is forbidden | PoC only with your own/dummy data |
+
+### Pre-test check (do it yourself)
+
+```python
+IN_SCOPE = {"app.example.com", "api.example.com"}
+
+def is_testable(host: str) -> bool:
+    """Allow testing only for explicit in-scope hosts; if unsure, False."""
+    return host in IN_SCOPE  # expand wildcards only after checking the policy text
+
+# Operating rule: if unsure, do not test — ask the program first.
+```
+
+> Core: scope and authorization validation is not a one-line formality but **a precondition for every test**. Out of scope or prohibited means that even a real vulnerability becomes an incident, not a report (see [[68_Purple_Team]]).

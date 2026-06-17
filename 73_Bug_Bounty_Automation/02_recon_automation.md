@@ -598,6 +598,36 @@ curl -s "https://crt.sh/?q=%25.example.com&output=json" | \
 
 ---
 
+<!-- safety-validate-73 -->
+## 대상을 해치지 않는 정찰 (Rate·스코프 안전)
+
+정찰 자동화는 강력하지만, **과도한 요청은 그 자체로 대상에 피해(사실상 DoS)를 주고 프로그램 위반**이 됩니다. 자동화는 속도를 위해서가 아니라 안전하게 범위를 좁히기 위해 씁니다.
+
+| 위험 | 문제 | 완화 |
+|---|---|---|
+| 무제한 요청 | 대상 서버 과부하, 정책 위반 | rate limit·동시성 제한, 야간 회피 |
+| OOS 자산 수집 | 범위 밖 호스트 스캔 | in-scope 필터를 정찰 파이프라인 앞단에 |
+| 능동 스캔 우선 | 불필요한 흔적·부하 | 패시브(인증서/CT로그/DNS) 먼저 |
+
+### 안전한 정찰 (직접)
+
+```python
+import time
+
+def throttled(hosts: list[str], in_scope, rps: float = 2.0):
+    """in-scope만, 초당 rps개로 제한해 대상을 과부하시키지 않는다."""
+    interval = 1.0 / rps
+    for h in hosts:
+        if not in_scope(h):
+            continue  # 범위 밖은 건너뜀
+        yield h
+        time.sleep(interval)  # 요청 간격 강제 → 대상 보호
+```
+
+> 핵심: "더 빠르게 더 많이"가 아니라 **대상을 해치지 않으면서 범위를 좁히는 것**이 좋은 정찰입니다. 패시브 우선, 능동은 rate 제한 하에서. 정찰 단계의 과부하는 보상 대상이 아니라 위반 사유입니다([[68_Purple_Team]]).
+
+---
+
 ## 참고 링크
 
 - subfinder GitHub: https://github.com/projectdiscovery/subfinder
@@ -778,3 +808,30 @@ Once you have a list of alive hosts with technology fingerprints from httpx, you
 
 - subfinder GitHub: https://github.com/projectdiscovery/subfinder
 - ProjectDiscovery tool collection: https://github.com/projectdiscovery
+
+## Recon That Does Not Harm the Target (rate/scope safety)
+
+Recon automation is powerful, but **excessive requests harm the target (effectively a DoS) and violate the program**. Use automation not for raw speed but to narrow scope safely.
+
+| Risk | Problem | Mitigation |
+|---|---|---|
+| Unbounded requests | Overloads target server, policy violation | Rate/concurrency limits, avoid peak hours |
+| Collecting OOS assets | Scanning out-of-scope hosts | Put an in-scope filter at the front of the pipeline |
+| Active-first | Unnecessary noise and load | Passive first (certs/CT logs/DNS) |
+
+### Safe recon (do it yourself)
+
+```python
+import time
+
+def throttled(hosts: list[str], in_scope, rps: float = 2.0):
+    """In-scope only, capped at rps/sec so the target isn't overloaded."""
+    interval = 1.0 / rps
+    for h in hosts:
+        if not in_scope(h):
+            continue  # skip out of scope
+        yield h
+        time.sleep(interval)  # enforce spacing -> protect the target
+```
+
+> Core: good recon is **narrowing scope without harming the target**, not "faster and more". Passive first; active only under a rate limit. Overloading during recon is grounds for violation, not reward (see [[68_Purple_Team]]).

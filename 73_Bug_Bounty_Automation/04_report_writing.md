@@ -487,6 +487,32 @@ if __name__ == "__main__":
 
 ---
 
+<!-- safety-validate-73 -->
+## 재현성·최소영향 PoC 검증
+
+좋은 보고서의 핵심은 화려한 설명이 아니라 **재현 가능성**과 **최소 영향 증명**입니다. 실제 피해를 내지 않고도 영향을 입증할 수 있어야 합니다.
+
+| 항목 | 나쁜 예 | 좋은 예(검증된) |
+|---|---|---|
+| 재현 단계 | "취약함" 한 줄 | 누구나 따라 하면 재현되는 정확한 단계 |
+| PoC 영향 | 실제 사용자 데이터 덤프 | 자기 계정/더미로 개념 증명 후 중단 |
+| 민감정보 | 실제 토큰·PII 그대로 첨부 | 마스킹/디팽, 최소 증거만 |
+| 범위 | 권한 넘어 추가 침투 | 증명 시점에서 멈추고 보고 |
+
+### 보고 전 검증 (직접)
+
+```text
+제출 전 셀프체크:
+  □ 깨끗한 환경에서 단계를 그대로 따라 재현되는가?
+  □ PoC가 '증명'에서 멈췄는가? (실데이터 탈취/파괴 없음)
+  □ 스크린샷/로그에 실제 PII·토큰이 노출되지 않았는가?
+  □ 영향(impact)을 과장 없이 사실대로 기술했는가?
+```
+
+> 핵심: PoC는 **"할 수 있음을 증명"하는 것이지 "실제로 피해를 입히는 것"이 아닙니다.** 자기 계정·더미 데이터로 멈추고, 증거에서 민감정보를 제거하세요. 재현 가능하고 최소 영향인 보고가 가장 빨리 인정받습니다([[68_Purple_Team]]).
+
+---
+
 ## 참고 링크
 
 - HackerOne 리포트 작성 가이드: https://docs.hackerone.com/hackers/submitting-reports.html
@@ -647,3 +673,26 @@ The script supports:
 
 - HackerOne report submission guide: https://docs.hackerone.com/hackers/submitting-reports.html
 - CVSS v3.1 calculator: https://www.first.org/cvss/calculator/3.1
+
+## Reproducibility and Minimal-Impact PoC Validation
+
+The heart of a good report is not flashy prose but **reproducibility** and **minimal-impact proof**. You should be able to demonstrate impact without causing real harm.
+
+| Item | Bad | Good (validated) |
+|---|---|---|
+| Repro steps | "It's vulnerable" one-liner | Exact steps anyone can follow to reproduce |
+| PoC impact | Dumping real user data | Prove the concept with your own/dummy data, then stop |
+| Sensitive info | Attaching real tokens/PII as-is | Mask/defang, minimal evidence only |
+| Scope | Pivoting beyond authorization | Stop at proof and report |
+
+### Pre-report validation (do it yourself)
+
+```text
+Pre-submission self-check:
+  [ ] Do the steps reproduce as written in a clean environment?
+  [ ] Did the PoC stop at 'proof'? (no real-data theft/destruction)
+  [ ] Do screenshots/logs avoid exposing real PII/tokens?
+  [ ] Is impact stated truthfully without exaggeration?
+```
+
+> Core: a PoC **proves you can, it does not actually cause harm.** Stop at your own account/dummy data and strip sensitive info from evidence. Reproducible, minimal-impact reports get accepted fastest (see [[68_Purple_Team]]).

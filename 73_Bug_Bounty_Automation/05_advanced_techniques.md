@@ -521,6 +521,32 @@ if __name__ == "__main__":
 
 ---
 
+<!-- safety-validate-73 -->
+## 체이닝의 영향 시연 한계와 안전
+
+취약점 체이닝은 영향을 키워 보상을 높이지만, **"증명"과 "실제 피해" 사이 선을 넘으면 위반**이 됩니다. 강력할수록 더 신중한 안전 기준이 필요합니다.
+
+| 상황 | 위험 | 안전 기준 |
+|---|---|---|
+| RCE 도달 | 실제 명령 실행으로 시스템 손상 | `id`/무해한 마커까지만, 그 이상은 사전 허가 |
+| 데이터 접근 체인 | 타 사용자 실데이터 노출 | 자기 계정 2개로 cross-account 증명 |
+| 측면이동 | OOS 자산으로 확산 | 범위 경계에서 멈춤 |
+| 지속성 | 백도어·실서비스 변경 | 설치 금지, 흔적 남기지 않음 |
+
+### 체이닝 안전 검증 (직접)
+
+```text
+딥 다이브 전 확인:
+  □ 다음 단계가 여전히 in-scope인가?
+  □ '증명'에 필요한 최소 행위인가? (그 이상은 정책 허가 후)
+  □ 실제 사용자/데이터에 피해가 없는가?
+  □ 종료 후 만든 아티팩트를 정리(또는 보고)했는가?
+```
+
+> 핵심: 체이닝의 목표는 **"영향을 안전하게 시연"**하는 것이지 침해를 완성하는 것이 아닙니다. RCE면 무해한 명령으로, 데이터 접근이면 자기 계정 간 증명으로 멈춥니다. 더 깊이 가야 한다면 진행 전에 프로그램의 명시적 허가를 받으세요([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Advanced Bug Bounty Techniques: Chaining Vulnerabilities and API Fuzzing
@@ -717,3 +743,26 @@ python api_fuzzer.py \
 
 - OWASP API Security Top 10: https://owasp.org/www-project-api-security/
 - PortSwigger OAuth labs: https://portswigger.net/web-security/oauth
+
+## Limits and Safety of Demonstrating Impact via Chaining
+
+Vulnerability chaining raises impact (and reward), but **crossing the line from "proof" to "real harm" becomes a violation**. The more powerful the chain, the more careful the safety bar must be.
+
+| Situation | Risk | Safety bar |
+|---|---|---|
+| Reaching RCE | Real command execution damages the system | Stop at `id`/a harmless marker; beyond that needs prior approval |
+| Data-access chain | Exposing other users' real data | Prove cross-account with two of your own accounts |
+| Lateral movement | Spreading to OOS assets | Stop at the scope boundary |
+| Persistence | Backdoors/changes to live service | Do not install; leave no traces |
+
+### Chaining safety validation (do it yourself)
+
+```text
+Before going deeper, confirm:
+  [ ] Is the next step still in scope?
+  [ ] Is it the minimum action needed for 'proof'? (more needs policy approval)
+  [ ] No harm to real users/data?
+  [ ] Cleaned up (or reported) any artifacts you created?
+```
+
+> Core: the goal of chaining is to **demonstrate impact safely**, not to complete a breach. For RCE, stop at a harmless command; for data access, prove between your own accounts. If you must go deeper, get the program's explicit approval first (see [[68_Purple_Team]]).
