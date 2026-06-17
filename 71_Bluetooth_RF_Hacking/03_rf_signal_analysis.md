@@ -415,6 +415,34 @@ inspectrum  → IQ 파일 시각화
 
 ---
 
+<!-- detect-validate-71 -->
+## 6. 리플레이 방어 검증과 탐지
+
+4장의 자동차 키 리플레이는 **고정 코드(fixed code)** 기기에서만 통합니다. 현대 기기 대부분은 **롤링 코드(rolling code)**를 쓰며, 방어가 실제로 작동하는지는 직접 검증할 수 있습니다.
+
+| 구분 | 고정 코드 | 롤링 코드 |
+|---|---|---|
+| 매 전송 | 동일 신호 | 카운터 기반 매번 변경 |
+| 단순 리플레이 | 성공 | 실패(이미 쓴 카운터 거부) |
+| 잔여 위협 | — | RollJam(차단+보류 후 재생), 카운터 데시크 |
+
+### 탐지·검증 관점
+
+```text
+탐지 신호:
+  - 동일한 IQ 캡처가 짧은 간격으로 반복 수신됨  → 리플레이 시도 가능성
+  - 수신기 카운터가 예상 범위를 크게 벗어남      → RollJam 의심
+
+검증(소유 기기/통제 환경):
+  1) 롤링 코드 리모컨 신호를 1회 캡처
+  2) 동일 신호를 재전송 → 정상 기기라면 '거부'되어야 함
+  3) 거부되면 롤링 코드 방어가 유효, 동작하면 고정 코드(취약)
+```
+
+> RollJam류는 롤링 코드도 우회할 수 있으므로(정상 신호를 재밍·보류 후 재생) "롤링 코드면 안전"으로 단정하지 않습니다. 고가치 자산은 양방향 인증·시간 동기 챌린지를 함께 씁니다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # RF Signal Analysis and SDR Hacking
@@ -557,3 +585,28 @@ Safe lab options:
   3. Use signal simulators (software-only practice)
   4. Obtain amateur radio license for designated frequencies
 ```
+
+## 6. Replay Defense Validation and Detection
+
+The car-key replay in section 4 only works against **fixed-code** devices. Most modern devices use **rolling codes**, and you can verify directly whether the defense holds.
+
+| Aspect | Fixed code | Rolling code |
+|---|---|---|
+| Each transmission | Same signal | Changes every time (counter-based) |
+| Naive replay | Succeeds | Fails (already-used counter rejected) |
+| Residual threat | - | RollJam (jam+hold then replay), counter desync |
+
+### Detection / validation view
+
+```text
+Detection signals:
+  - Identical IQ capture received repeatedly at short intervals  -> possible replay
+  - Receiver counter far outside expected range                  -> RollJam suspected
+
+Validation (owned device / controlled environment):
+  1) Capture a rolling-code remote signal once
+  2) Re-transmit the same signal -> a sound device should REJECT it
+  3) Rejected => rolling-code defense is valid; if it triggers => fixed code (weak)
+```
+
+> RollJam-class attacks can bypass rolling codes too (jam and hold a valid signal, then replay), so never conclude "rolling code = safe". High-value assets add mutual authentication and time-synced challenges (see [[68_Purple_Team]]).

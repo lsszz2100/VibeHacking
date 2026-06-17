@@ -527,6 +527,32 @@ Z-Wave 공격 도구:
 
 ---
 
+<!-- detect-validate-71 -->
+## 6. 탐지와 방어 검증
+
+2장의 취약점(키 노출·미인증 조인)은 **조인 과정에 집중**됩니다. 방어의 핵심은 "언제 조인을 허용하는가"이며, 이를 탐지·검증할 수 있습니다.
+
+| 위협 | 탐지 신호 | 통제 |
+|---|---|---|
+| 로그 코디네이터 | 비인가 PAN ID 광고 | PAN ID 화이트리스트, 채널 모니터 |
+| 미인증 조인 | 커미셔닝 창 밖의 조인 요청 | join-permit 창 최소화 |
+| 네트워크 키 평문 전송 | 조인 시 평문 키 전송 관측 | install code/S2 사용 |
+| Touchlink 남용 | 근거리 비인가 리셋/조인 | Touchlink 비활성화 |
+
+### 방어 검증 (직접 확인)
+
+```text
+검증 절차(소유 네트워크):
+  1) Zigbee2MQTT permit_join: false 로 설정
+  2) 새 기기 조인 시도 → 거부되어야 함(창이 닫혀 있으므로)
+  3) 커미셔닝 때만 permit_join 을 짧게 열고, 끝나면 즉시 닫힘 확인
+  4) 스니퍼(CC2531)로 조인 시 키가 평문으로 전송되지 않는지 확인
+```
+
+> 핵심: Zigbee 키 노출 대부분은 "조인 창을 항상 열어둔" 운영 실수에서 비롯됩니다. 조인 창을 닫고 install code를 쓰면 미인증 조인·키 탈취가 차단되는지 통제된 환경에서 재현해 확인하세요([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Zigbee/Z-Wave IoT Wireless Attacks
@@ -710,3 +736,26 @@ Scenario: Smart door lock on Z-Wave S0 (legacy)
 
   Defense: Upgrade to Z-Wave S2; shield RF during installation
 ```
+
+## 6. Detection and Defense Validation
+
+The vulnerabilities in section 2 (key exposure, unauthenticated join) **center on the join process**. The crux of defense is *when* you allow joins - and that is both detectable and verifiable.
+
+| Threat | Detection signal | Control |
+|---|---|---|
+| Rogue coordinator | Unauthorized PAN ID beacons | PAN ID allowlist, channel monitor |
+| Unauthenticated join | Join request outside the commissioning window | Minimize join-permit window |
+| Cleartext network key | Plaintext key transport observed at join | Use install code / S2 |
+| Touchlink abuse | Unauthorized nearby reset/join | Disable Touchlink |
+
+### Defense validation (verify yourself)
+
+```text
+Validation procedure (network you own):
+  1) Set Zigbee2MQTT permit_join: false
+  2) Attempt to join a new device -> it should be rejected (window closed)
+  3) Open permit_join briefly only during commissioning, confirm it closes after
+  4) With a sniffer (CC2531), confirm the key is not sent in plaintext at join
+```
+
+> Key point: most Zigbee key exposure stems from the operational mistake of "leaving the join window always open". Reproduce, in a controlled environment, that closing the window and using an install code blocks unauthenticated joins and key theft (see [[68_Purple_Team]]).

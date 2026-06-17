@@ -392,6 +392,34 @@ BLE 페어링 보안 수준:
 
 ---
 
+<!-- detect-validate-71 -->
+## 7. 공격 탐지와 방어 검증
+
+6장의 체크리스트는 예방에 초점이 있습니다. 여기서는 **공격이 발생했을 때 주변기기(서버) 쪽에서 무엇이 보이는지**와 **방어가 실제로 막는지 검증하는 법**을 다룹니다.
+
+| 공격 | 서버 측 관측 신호 | 탐지 방법 |
+|---|---|---|
+| GATT 열거 | 짧은 시간에 전 핸들 순차 read | 특성 접근 로깅 + read 빈도 임계 |
+| 미인증 쓰기 | 본딩 없는 연결의 write 요청 | write 콜백에서 페어링 상태 확인 |
+| 릴레이/중계 | RSSI·왕복지연 불일치 | 거리 바운딩, 응답 타임아웃 |
+| 알림 도청 | 비정상 다중 구독(CCCD) | 구독 수·출처 모니터링 |
+
+### 방어 검증 (직접 확인)
+
+```python
+# 주변기기 write 핸들러의 '본딩 없으면 거부'가 실제 동작하는지 검증하는 개념
+def on_write(conn, handle: int, value: bytes) -> bool:
+    """민감 핸들은 본딩(암호화된 연결)에서만 허용. 아니면 거부."""
+    if handle in SENSITIVE_HANDLES and not conn.is_bonded:
+        log.warning("unauthorized write to 0x%04x from %s", handle, conn.addr)
+        return False  # 거부 → 시나리오 A(자물쇠)가 막힌다
+    return True
+```
+
+> 검증 절차: 자신이 소유한 BLE 기기에 **본딩 없이** 민감 특성 write를 시도해 거부되는지 확인합니다. 거부 로그가 남고 상태가 바뀌지 않아야 방어가 유효합니다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # BLE (Bluetooth Low Energy) Attack Techniques
@@ -554,3 +582,28 @@ Security Level 4 = Encryption + auth + LE Secure Connections (ECDH)
 ✓ Sensitive commands only on encrypted channels
 ✓ Rate-limit excessive connection attempts
 ```
+
+## 7. Attack Detection and Defense Validation
+
+Section 6's checklist focuses on prevention. Here we cover **what the peripheral (server) side sees when an attack occurs** and **how to verify the defense actually blocks it**.
+
+| Attack | Server-side signal | Detection method |
+|---|---|---|
+| GATT enumeration | Sequential read of all handles in a short window | Characteristic access logging + read-rate threshold |
+| Unauthenticated write | Write request on a non-bonded connection | Check pairing state in the write callback |
+| Relay | RSSI / round-trip latency mismatch | Distance bounding, response timeout |
+| Notification sniffing | Abnormal multiple subscriptions (CCCD) | Monitor subscription count and source |
+
+### Defense validation (verify yourself)
+
+```python
+# Verify that the peripheral's 'reject if not bonded' rule actually fires
+def on_write(conn, handle: int, value: bytes) -> bool:
+    """Sensitive handles allowed only over a bonded (encrypted) link; else reject."""
+    if handle in SENSITIVE_HANDLES and not conn.is_bonded:
+        log.warning("unauthorized write to 0x%04x from %s", handle, conn.addr)
+        return False  # rejected -> scenario A (smart lock) is blocked
+    return True
+```
+
+> Validation: attempt a sensitive-characteristic write **without bonding** against a BLE device you own and confirm it is rejected. A reject log should appear and state must not change for the defense to be valid (see [[68_Purple_Team]]).

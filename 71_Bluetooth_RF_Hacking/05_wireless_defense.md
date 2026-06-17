@@ -525,6 +525,32 @@ sudo kismet
 
 ---
 
+## 7. 무선 위협 탐지 (Wireless IDS)와 한계
+
+유선 네트워크와 달리 RF 공격은 **흔적이 공중에만 남고 호스트 로그에 남지 않는** 경우가 많습니다. 패시브 모니터링 센서가 없으면 재밍·스푸핑·로그 기기는 사실상 무탐지로 지나갑니다.
+
+| 위협 | 관측 가능한 신호 | 센서/도구 |
+|---|---|---|
+| RF 재밍(Jamming) | 특정 대역 노이즈 플로어 급상승, 패킷 손실률 | SDR 스펙트럼 모니터, RSSI 베이스라인 |
+| BLE 광고 스푸핑 | 동일 MAC/이름의 중복 광고, RSSI 불일치 | Kismet, bettercap `ble.recon` |
+| 로그 Zigbee 코디네이터 | 비인가 PAN ID, 비정상 조인 요청 | Zigbee 스니퍼(CC2531), Zigbee2MQTT 로그 |
+| 디오센티케이션/연결 끊김 폭주 | 짧은 시간 다수 disconnect 이벤트 | BlueZ 이벤트 로그, WIDS |
+
+```python
+# RSSI 베이스라인 이상탐지 개념 (의사코드 수준 핵심 로직)
+def detect_anomaly(readings: list[float], baseline_mean: float, baseline_std: float) -> bool:
+    """관측 RSSI가 베이스라인에서 통계적으로 벗어나면 이상으로 판정."""
+    if not readings:
+        return False
+    current = sum(readings) / len(readings)
+    # 3-시그마 규칙: 평균에서 3 표준편차 이상 벗어나면 이상
+    return abs(current - baseline_mean) > 3 * baseline_std
+```
+
+> 탐지의 현실적 한계: 무선 탐지는 센서가 물리적으로 그 공간에 있어야만 작동합니다(전파 도달 범위 한계). 그래서 무선 보안은 탐지보다 **예방(강한 페어링·암호화·세그먼트 격리)이 우선**이며, 탐지는 고가치 자산 주변에 한정 배치하는 것이 비용 대비 효과적입니다. WIDS를 도입했다면 알려진 공격(재밍·스푸핑)을 통제된 환경에서 재현해 실제로 탐지되는지 검증합니다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Short-Range Wireless Security Defense
@@ -680,3 +706,27 @@ sudo kismet
 □ Isolated to IoT VLAN / guest network?
 □ Alerts configured for unexpected connections?
 ```
+
+## 7. Wireless IDS and Its Limits
+
+Unlike wired networks, RF attacks often leave **traces only in the air, not in host logs**. Without a passive monitoring sensor, jamming, spoofing, and rogue devices pass essentially undetected.
+
+| Threat | Observable signal | Sensor/tool |
+|---|---|---|
+| RF jamming | Sudden noise-floor spike in a band, high packet loss | SDR spectrum monitor, RSSI baseline |
+| BLE advertisement spoofing | Duplicate adverts with same MAC/name, RSSI mismatch | Kismet, bettercap `ble.recon` |
+| Rogue Zigbee coordinator | Unauthorized PAN ID, abnormal join requests | Zigbee sniffer (CC2531), Zigbee2MQTT logs |
+| Deauth/disconnect floods | Many disconnect events in a short window | BlueZ event log, WIDS |
+
+```python
+# RSSI baseline anomaly detection (core logic, pseudocode level)
+def detect_anomaly(readings: list[float], baseline_mean: float, baseline_std: float) -> bool:
+    """Flag as anomalous if observed RSSI deviates statistically from baseline."""
+    if not readings:
+        return False
+    current = sum(readings) / len(readings)
+    # 3-sigma rule: anomalous if more than 3 std devs from the mean
+    return abs(current - baseline_mean) > 3 * baseline_std
+```
+
+> Practical limit: wireless detection only works where a sensor physically sits (radio range). So wireless security prioritizes **prevention (strong pairing, encryption, segmentation) over detection**, deploying detection only around high-value assets for cost-effectiveness. If you run a WIDS, reproduce known attacks (jamming, spoofing) in a controlled environment to verify they are actually detected (see [[68_Purple_Team]]).

@@ -467,6 +467,34 @@ sudo python3 bluetooth_scanner.py --timeout 15
 
 ---
 
+<!-- detect-validate-71 -->
+## 8. 공격 탐지와 방어 검증
+
+앞의 공격 분류(4장)는 "무엇을 막아야 하는가"를 알려주지만, 실무에서는 **그 공격이 실제로 일어났는지 탐지**하고 **내 방어가 정말 작동하는지 검증**하는 단계가 빠지기 쉽습니다.
+
+### 공격 → 계층 → 통제 → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| BlueSnarfing | OBEX/프로파일 | 미인증 OBEX 거부, 페어링 강제 | hcidump에 미인증 OBEX GET/PUT |
+| Bluebugging | RFCOMM/AT 명령 | AT 명령 채널 인증·비활성화 | 비정상 AT 명령 시퀀스 |
+| KNOB | 키 협상(엔트로피) | 최소 엔트로피 강제 | 1~3바이트 키 길이 협상 시도 |
+| BlueJacking | 디바이스 검색/푸시 | 비검색 모드, 미요청 푸시 차단 | 다수 미요청 OBEX 푸시 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# KNOB 내성 확인: 내 기기가 낮은 엔트로피 키 협상을 거부하는지
+# 페어링 중 LMP 'encryption key size' 협상을 관찰
+sudo hcidump -X | grep -i "key size"
+# 정상: 협상된 key size가 정책 최소값(예: 16바이트) 이상
+# 취약: 1~3바이트로 합의되면 KNOB에 노출됨
+```
+
+> 검증은 반드시 **소유한 기기·통제된 환경**에서만 수행합니다. 방어를 켜 두는 것과 방어가 실제로 동작하는지는 다릅니다 — 알려진 다운그레이드(KNOB)·미인증 접근을 재현해 거부되는지 확인해야 신뢰할 수 있습니다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Bluetooth Security Fundamentals
@@ -715,3 +743,28 @@ Illegal actions:
   ✗ Collecting data without consent
   ✗ Bluetooth jamming / interference
 ```
+
+## 8. Attack Detection and Defense Validation
+
+The attack taxonomy (section 4) tells you *what* to block, but in practice two steps get skipped: **detecting that an attack actually happened** and **verifying your defense really works**.
+
+### Attack -> layer -> control -> detection signal
+
+| Attack | Target layer | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| BlueSnarfing | OBEX/profile | Reject unauthenticated OBEX, force pairing | Unauthenticated OBEX GET/PUT in hcidump |
+| Bluebugging | RFCOMM/AT commands | Authenticate/disable AT command channel | Abnormal AT command sequences |
+| KNOB | Key negotiation (entropy) | Enforce minimum entropy | Negotiation attempts of 1-3 byte keys |
+| BlueJacking | Discovery/push | Non-discoverable mode, block unsolicited push | Many unsolicited OBEX pushes |
+
+### Defense validation (verify yourself)
+
+```bash
+# KNOB resistance: does your device reject low-entropy key negotiation?
+# Observe the LMP 'encryption key size' negotiation during pairing
+sudo hcidump -X | grep -i "key size"
+# OK:    negotiated key size >= policy minimum (e.g., 16 bytes)
+# Weak:  if it settles at 1-3 bytes, you are exposed to KNOB
+```
+
+> Run validation only on **devices you own, in a controlled environment**. Having a defense enabled is not the same as it working - reproduce a known downgrade (KNOB) and unauthenticated access to confirm they are rejected (see [[68_Purple_Team]]).
