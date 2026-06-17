@@ -380,6 +380,38 @@ python3 03_ttps_documentation.py --input actions.txt --format json
 
 ---
 
+<!-- safety-validate-75 -->
+## 증거 무결성과 추적성 검증
+
+TTP 문서가 신뢰받으려면 내용뿐 아니라 **증거가 변조되지 않았고 재현·추적 가능**해야 합니다. 무결성이 없으면 발견사항이 분쟁 시 방어되지 않습니다.
+
+| 요소 | 왜 | 방법 |
+|---|---|---|
+| 타임스탬프 | 사건 순서 입증 | UTC 기준 일관 기록 |
+| 증거 해시 | 변조 없음 입증 | 캡처/로그 파일 SHA-256 |
+| 행위-결과 연결 | 인과 추적 | 명령→산출물→영향 매핑 |
+| 보관 일관성 | 사후 검증 | 원본 보존, 사본으로 작업 |
+
+### 무결성 검증 (직접)
+
+```python
+import hashlib
+
+def evidence_hash(path: str) -> str:
+    """증거 파일의 SHA-256. 보고서에 기재해 사후 변조 여부를 입증."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+# 각 핵심 증거(패킷캡처/스크린샷/로그)의 해시를 보고서 부록에 기록
+```
+
+> 핵심: TTP 문서의 가치는 "무엇을 했다"의 설명이 아니라 **검증 가능한 증거**에 있습니다. 타임스탬프·해시·인과 매핑으로 추적성을 확보해야, 발견사항이 재현되고 이의 제기에도 견딥니다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # TTP Documentation — Tactics, Techniques, and Procedures
@@ -654,3 +686,32 @@ python3 03_ttps_documentation.py --input actions.txt --format json
 ```
 
 **Reference**: [ATT&CK Navigator GitHub](https://github.com/mitre-attack/attack-navigator)
+
+## Evidence Integrity and Traceability Validation
+
+For TTP documentation to be trusted, not just the content but **the evidence must be untampered and reproducible/traceable**. Without integrity, findings are indefensible in a dispute.
+
+| Element | Why | Method |
+|---|---|---|
+| Timestamps | Prove event order | Consistent UTC recording |
+| Evidence hashes | Prove no tampering | SHA-256 of captures/log files |
+| Action-to-result link | Trace causation | Map command -> artifact -> impact |
+| Storage consistency | Post-hoc verification | Preserve originals, work on copies |
+
+### Integrity validation (do it yourself)
+
+```python
+import hashlib
+
+def evidence_hash(path: str) -> str:
+    """SHA-256 of an evidence file; record it in the report to prove non-tampering."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+# Record the hash of each key evidence item (pcap/screenshot/log) in the report appendix
+```
+
+> Core: the value of TTP documentation is not the narrative of "what was done" but **verifiable evidence**. Timestamps, hashes, and causal mapping secure traceability so findings reproduce and withstand challenge (see [[68_Purple_Team]]).

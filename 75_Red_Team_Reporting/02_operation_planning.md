@@ -302,6 +302,32 @@ python3 02_operation_planning.py --name "Operation Silent Storm" --start 2024-01
 
 ---
 
+<!-- safety-validate-75 -->
+## 디컨플릭션과 중단 기준 (안전 계획)
+
+좋은 작전 계획은 공격 경로뿐 아니라 **"언제 멈추고 누구와 조율하는가"**를 함께 정의합니다. 디컨플릭션과 중단 기준이 없으면 훈련이 실제 운영을 망가뜨릴 수 있습니다.
+
+| 항목 | 위험 | 안전 장치 |
+|---|---|---|
+| 블루팀 혼동 | 훈련을 실침해로 오인해 대응 비용 발생 | 디컨플릭션 연락선·코드워드 |
+| 운영 영향 | 프로덕션 장애·데이터 손상 | 파괴적 행위 금지, 변경은 가역적으로 |
+| 실사고 중첩 | 훈련 중 실제 침해 발견 | 즉시 중단·신고 절차 |
+| 제3자 피해 | 공유 인프라·외부 업체 영향 | 범위 경계 명시 |
+
+### 안전 계획 검증 (직접)
+
+```text
+계획 검토:
+  □ 각 단계에 '중단 트리거'가 정의돼 있는가? (예: 가용성 영향 감지)
+  □ 블루팀과 디컨플릭션 채널·코드워드가 준비됐는가?
+  □ 훈련 중 실제 침해 발견 시 절차(중단·보고)가 문서화됐는가?
+  □ 모든 변경이 가역적이며 종료 후 정리 계획이 있는가?
+```
+
+> 핵심: 작전 계획의 절반은 공격이고 절반은 **안전**입니다. 디컨플릭션 연락선과 명확한 중단 기준이 있어야, 훈련이 실제 운영과 블루팀을 해치지 않고 가치를 냅니다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Red Team Operation Planning
@@ -599,3 +625,26 @@ Items that must be verified before starting an operation.
 ```
 
 **Reference**: [Lockheed Martin Cyber Kill Chain](https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html)
+
+## Deconfliction and Abort Criteria (safety planning)
+
+A good operation plan defines not just attack paths but **when to stop and whom to coordinate with**. Without deconfliction and abort criteria, an exercise can damage live operations.
+
+| Item | Risk | Safeguard |
+|---|---|---|
+| Blue-team confusion | Real-incident response costs from mistaken exercise | Deconfliction line, code word |
+| Operational impact | Production outage/data damage | No destructive actions; keep changes reversible |
+| Real-incident overlap | Discovering a real breach mid-exercise | Immediate stop and report procedure |
+| Third-party harm | Impact on shared infra/external vendors | Explicit scope boundary |
+
+### Safety-plan validation (do it yourself)
+
+```text
+Plan review:
+  [ ] Does each phase have an 'abort trigger' defined? (e.g., availability impact detected)
+  [ ] Are a deconfliction channel and code word ready with the blue team?
+  [ ] Is the procedure for finding a real breach (stop/report) documented?
+  [ ] Are all changes reversible with a post-op cleanup plan?
+```
+
+> Core: half of an operation plan is attack, half is **safety**. Only with a deconfliction line and clear abort criteria does an exercise deliver value without harming live operations and the blue team (see [[68_Purple_Team]]).

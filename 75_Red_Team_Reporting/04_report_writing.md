@@ -439,6 +439,32 @@ python3 04_report_writing.py --name "Operation Storm" --client "XYZ Ltd" --add-f
 
 ---
 
+<!-- safety-validate-75 -->
+## 민감정보 취급과 보고서 보안
+
+레드팀 보고서는 그 자체가 **조직의 가장 위험한 문서**입니다 — 탈취한 자격증명, 동작하는 공격 경로, 미패치 취약점이 한곳에 모입니다. 유출되면 보고서가 곧 공격 매뉴얼이 됩니다.
+
+| 위험 | 문제 | 대응 |
+|---|---|---|
+| 실자격증명 포함 | 보고서 유출 시 즉시 악용 | 마스킹, 평문 비밀번호·키 제거 |
+| 완전한 익스플로잇 | 그대로 재공격 가능 | 재현에 필요한 최소만, 무기화 코드 자제 |
+| 광범위 배포 | 노출면 확대 | need-to-know, 암호화 전달 |
+| 미패치 상세 | 수정 전 노출 위험 | 배포 통제, 보존기간 설정 |
+
+### 배포 전 검증 (직접)
+
+```text
+보고서 제출 전:
+  □ 캡처한 실자격증명·토큰·키를 마스킹/제거했는가?
+  □ PoC가 재현에 필요한 최소 수준인가? (완전 무기화 코드 제외)
+  □ 배포 대상이 need-to-know로 제한되고 암호화 전달인가?
+  □ 보고서 보관·파기(보존기간) 정책이 정해졌는가?
+```
+
+> 핵심: 보고서는 결함을 고치게 하는 문서이지 **공격 재료를 배포하는 문서가 아닙니다.** 실자격증명을 지우고, 무기화 코드를 자제하고, need-to-know로 암호화 배포하세요. 안전한 취급이 안 되면 보고 자체가 새 위험이 됩니다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Red Team Report Writing
@@ -799,3 +825,26 @@ python3 04_report_writing.py --name "Operation Storm" --client "XYZ Ltd" --add-f
 5. **Clear prioritization**: Clearly communicate that Critical findings must be fixed first.
 
 **Reference**: [Red Team Guide](https://redteam.guide/)
+
+## Sensitive-Data Handling and Report Security
+
+A red team report is itself **the organization's most dangerous document** — captured credentials, working attack paths, and unpatched vulnerabilities in one place. If leaked, the report becomes an attack manual.
+
+| Risk | Problem | Response |
+|---|---|---|
+| Real credentials | Immediate abuse if the report leaks | Mask; remove plaintext passwords/keys |
+| Full exploit | Enables direct re-attack | Minimum needed to reproduce; avoid weaponized code |
+| Broad distribution | Expands exposure | Need-to-know, encrypted delivery |
+| Unpatched detail | Exposure risk before fixes | Control distribution, set retention |
+
+### Pre-distribution validation (do it yourself)
+
+```text
+Before submitting the report:
+  [ ] Masked/removed captured real credentials/tokens/keys?
+  [ ] Is the PoC the minimum needed to reproduce? (exclude fully weaponized code)
+  [ ] Is distribution restricted to need-to-know and delivered encrypted?
+  [ ] Is a report storage/destruction (retention) policy set?
+```
+
+> Core: a report is a document that gets defects fixed, **not one that distributes attack material**. Strip real credentials, avoid weaponized code, and deliver encrypted on a need-to-know basis. Without safe handling, the report itself becomes a new risk (see [[68_Purple_Team]]).

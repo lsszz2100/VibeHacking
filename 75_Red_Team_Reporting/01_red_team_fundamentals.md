@@ -248,6 +248,32 @@ ATT&CK Navigator는 레드팀이 사용한 기법을 시각화하는 도구입�
 
 ---
 
+<!-- safety-validate-75 -->
+## 권한·안전 통제 검증
+
+레드팀의 모든 활동은 **사전 서면 권한** 위에서만 성립합니다. RoE를 문서로 두는 것과, 작전 중 그 경계가 실제로 지켜지는지는 다릅니다 — 시작 전에 안전 통제를 검증해야 합니다.
+
+| 통제 | 왜 필요한가 | 검증 |
+|---|---|---|
+| 서면 권한(authorization letter) | 무단 접근 누명 방지(get-out-of-jail) | 서명·기간·범위 명시 사본 보유 |
+| 디컨플릭션 연락선 | 실사고와 훈련 혼동 방지 | 블루팀/SOC 비상 연락 사전 합의 |
+| 중단(abort) 기준 | 운영 피해·실침해 발견 시 정지 | 트리거 정의(가용성 영향 등) |
+| 범위 경계 | OOS 자산·제3자 피해 방지 | in-scope 목록과 제외 항목 확인 |
+
+### 작전 전 검증 (직접)
+
+```text
+킥오프 전 확인:
+  □ 서명된 권한서가 있고 유효기간·범위가 현 작전과 일치하는가?
+  □ 디컨플릭션 연락처(블루팀)가 합의·기록됐는가?
+  □ 중단 기준과 비상 정지 절차가 합의됐는가?
+  □ 제외 자산·금지 행위가 팀 전원에게 공유됐는가?
+```
+
+> 핵심: 레드팀과 범죄를 가르는 것은 기법이 아니라 **권한과 통제**입니다. 권한서·디컨플릭션·중단 기준이 검증되지 않은 상태로 시작하면 훈련이 실사고가 됩니다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Red Team Fundamentals
@@ -491,3 +517,26 @@ Core Concept Framework:
 ```
 
 **Reference**: [MITRE ATT&CK Official Site](https://attack.mitre.org/)
+
+## Authorization and Safety-Control Validation
+
+Every red team activity stands only on **prior written authorization**. Having an RoE document is not the same as the boundary actually being honored during the operation — validate safety controls before you start.
+
+| Control | Why needed | Validation |
+|---|---|---|
+| Authorization letter | Avoids unauthorized-access liability (get-out-of-jail) | Hold a copy with signature, dates, scope |
+| Deconfliction line | Avoids confusing a real incident with the exercise | Pre-agree blue team/SOC emergency contact |
+| Abort criteria | Stop on operational harm/real compromise | Define triggers (e.g., availability impact) |
+| Scope boundary | Prevent OOS asset/third-party harm | Confirm in-scope list and exclusions |
+
+### Pre-op validation (do it yourself)
+
+```text
+Before kickoff, confirm:
+  [ ] Is there a signed authorization whose validity/scope matches this op?
+  [ ] Is a deconfliction contact (blue team) agreed and recorded?
+  [ ] Are abort criteria and an emergency-stop procedure agreed?
+  [ ] Are excluded assets/prohibited actions shared with the whole team?
+```
+
+> Core: what separates a red team from a crime is not technique but **authorization and control**. Starting without validated authorization, deconfliction, and abort criteria turns an exercise into a real incident (see [[68_Purple_Team]]).

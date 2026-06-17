@@ -459,6 +459,32 @@ python3 05_debrief_lessons.py --demo
 
 ---
 
+<!-- safety-validate-75 -->
+## 정리(클린업)와 개선 검증 (재테스트)
+
+작전은 보고서로 끝나지 않습니다. **남긴 흔적을 정리**하고, 권고한 개선이 **실제로 작동하는지 재테스트**해야 가치가 완성됩니다. 이 단계가 레드팀을 퍼플팀 사이클로 연결합니다.
+
+| 단계 | 왜 | 확인 |
+|---|---|---|
+| 아티팩트 정리 | 임플란트·계정·파일 잔존은 새 위험 | 생성물 목록화 후 제거/인계 |
+| 변경 원복 | 가역 변경 복구 | 변경 로그 기준 원상복구 |
+| 권고 추적 | 보고만으로는 안 고쳐짐 | 소유자·기한 지정 |
+| 재테스트 | 수정이 진짜 막는지 | 동일 TTP 재현해 차단 확인 |
+
+### 개선 검증 (직접)
+
+```text
+작전 종료 후:
+  □ 만든 계정·임플란트·파일·룰을 모두 목록화하고 제거/인계했는가?
+  □ 가역 변경을 원상복구했는가? (변경 로그 대조)
+  □ 각 권고에 담당자·기한이 지정됐는가?
+  □ 핵심 발견을 재테스트해 이제는 탐지·차단되는지 확인했는가?
+```
+
+> 핵심: 레드팀의 진짜 산출물은 보고서가 아니라 **방어 개선**입니다. 흔적을 정리해 새 위험을 남기지 말고, 권고한 수정이 동일 공격을 실제로 막는지 재테스트로 확인하세요 — 그것이 퍼플팀으로 가는 다리입니다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Debriefing and Lessons Learned
@@ -796,3 +822,26 @@ Executive Debrief:
 [ ] Budget investment recommendations presented
 [ ] Next operation timeline discussed
 ```
+
+## Cleanup and Improvement Validation (retest)
+
+An operation does not end with the report. You must **clean up the traces left** and **retest whether recommended fixes actually work** to complete the value. This step connects red teaming to the purple team cycle.
+
+| Step | Why | Check |
+|---|---|---|
+| Artifact cleanup | Lingering implants/accounts/files are new risk | Inventory then remove/hand off creations |
+| Change rollback | Recover reversible changes | Restore per the change log |
+| Recommendation tracking | Reporting alone doesn't fix it | Assign owners and deadlines |
+| Retest | Confirm fixes truly block | Reproduce the same TTP, confirm blocked |
+
+### Improvement validation (do it yourself)
+
+```text
+After the operation:
+  [ ] Inventoried and removed/handed off all accounts/implants/files/rules created?
+  [ ] Restored reversible changes? (against the change log)
+  [ ] Assigned an owner and deadline to each recommendation?
+  [ ] Retested key findings to confirm they are now detected/blocked?
+```
+
+> Core: a red team's real deliverable is not the report but **improved defense**. Clean up traces so you leave no new risk, and use a retest to confirm the recommended fixes actually block the same attack — that is the bridge to purple teaming (see [[68_Purple_Team]]).
