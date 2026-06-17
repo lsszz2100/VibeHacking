@@ -602,6 +602,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- validate-74 -->
+## CI 게이팅 안전과 비밀정보 취급
+
+SAST를 CI에 넣을 때 두 가지를 자주 놓칩니다. **빌드를 깨지 않으면서 의미 있게 게이팅**하는 정책과, **CI 로그·아티팩트에 비밀정보·취약점 상세를 흘리지 않는** 것입니다.
+
+| 위험 | 문제 | 대응 |
+|---|---|---|
+| 과도한 게이팅 | 기존 이슈로 모든 빌드 실패 → 무력화 | 베이스라인 후 '신규 High'만 차단 |
+| 게이팅 부재 | 경고가 무시되어 누적 | 신규 심각 이슈는 PR 차단 |
+| 로그 노출 | SARIF·로그에 토큰/경로/취약상세 | 아티팩트 접근 제한, 비밀 마스킹 |
+| 파이프라인 자체 | CI 권한·시크릿 탈취 표적 | 최소권한 토큰, 포크 PR 시크릿 차단 |
+
+### 게이팅 정책 검증 (직접)
+
+```yaml
+# 개념: 기존 부채로 빌드를 깨지 않고 '신규 High'만 차단
+sast_gate:
+  baseline: known_issues.sarif      # 기존 이슈는 통과(부채로 추적)
+  fail_on:
+    severity: high                  # 신규 high 이상만 실패
+    new_only: true                  # 베이스라인 대비 신규만
+  redact_secrets_in_logs: true      # 로그/아티팩트에 비밀 노출 금지
+```
+
+> 핵심: 좋은 SAST 게이트는 "모두 빨강"이 아니라 **신규 심각 이슈만 막고 기존 부채는 추적**하는 것입니다. 동시에 CI 로그·아티팩트는 공격자에게 취약점 지도와 시크릿을 줄 수 있으니, 노출 면을 함께 잠그세요([[68_Purple_Team]]).
+
+---
+
 ## 참고 자료
 
 - CodeQL Action GitHub: https://github.com/github/codeql-action
@@ -870,3 +898,28 @@ if __name__ == "__main__":
 ## References
 
 - CodeQL Action GitHub: https://github.com/github/codeql-action
+
+## CI Gating Safety and Secret Handling
+
+Two things are often missed when putting SAST in CI: a policy that **gates meaningfully without breaking builds**, and **not leaking secrets or vulnerability detail into CI logs/artifacts**.
+
+| Risk | Problem | Response |
+|---|---|---|
+| Over-gating | Every build fails on existing issues -> gate gets disabled | After a baseline, block only 'new High' |
+| No gating | Warnings ignored and accumulate | Block PRs on new critical issues |
+| Log exposure | Tokens/paths/vuln detail in SARIF/logs | Restrict artifact access, mask secrets |
+| Pipeline itself | CI permissions/secrets are a target | Least-privilege tokens, block fork-PR secrets |
+
+### Gating-policy validation (do it yourself)
+
+```yaml
+# Concept: don't break builds on existing debt; block only 'new High'
+sast_gate:
+  baseline: known_issues.sarif      # existing issues pass (tracked as debt)
+  fail_on:
+    severity: high                  # fail only on new high+
+    new_only: true                  # only new vs the baseline
+  redact_secrets_in_logs: true      # no secret exposure in logs/artifacts
+```
+
+> Core: a good SAST gate is not "all red" but **blocking only new critical issues while tracking existing debt**. At the same time, CI logs/artifacts can hand an attacker a vulnerability map and secrets — lock that exposure down too (see [[68_Purple_Team]]).

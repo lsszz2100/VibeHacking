@@ -302,6 +302,32 @@ if __name__ == "__main__":
 
 ---
 
+<!-- validate-74 -->
+## 발견의 익스플로잇 가능성 확인
+
+수동 리뷰로 의심 지점을 찾았다면, **"이론적으로 위험"과 "실제로 악용 가능"을 구분**해야 합니다. full data-flow를 추적해 방어가 없는지 확인하는 단계입니다.
+
+| 확인 | 방법 | 판정 |
+|---|---|---|
+| 전체 경로 | source→...→sink 변수 추적 | 경로가 이어지는가 |
+| 가드 | 중간 검증/권한 체크 유무 | 막는 게 없으면 위험 |
+| 전제 조건 | 인증·역할·특정 입력 필요? | 현실적 도달성 |
+| 영향 | 성공 시 무엇이 가능? | 심각도 산정 |
+
+### 익스플로잇 가능성 검증 (직접)
+
+```text
+수동 발견 확정 절차:
+  □ 미신뢰 입력에서 sink까지 변수 흐름을 끝까지 그렸는가?
+  □ 경로상 검증/이스케이프/권한체크가 정말 없는가?
+  □ 악용에 필요한 전제(로그인 등)가 현실적인가?
+  □ 가능하면 통제된 환경에서 무해한 PoC로 재현했는가?
+```
+
+> 핵심: 수동 리뷰의 강점은 도구가 못 보는 맥락이지만, **그 발견도 데이터 흐름으로 검증**해야 합니다. "위험해 보임"에서 멈추지 말고 도달성과 방어 부재를 확인해 이론과 실증을 가르세요([[68_Purple_Team]]).
+
+---
+
 ## 참고 자료
 
 - Security Code Review Checklist: https://github.com/nicowillis/security-code-review-checklist
@@ -565,3 +591,26 @@ Session Management
 ## References
 
 - Security Code Review Checklist: https://github.com/nicowillis/security-code-review-checklist
+
+## Confirming the Exploitability of a Finding
+
+Once manual review flags a suspect spot, you must **separate "theoretically risky" from "actually exploitable"** by tracing the full data flow and confirming no defense exists.
+
+| Check | Method | Verdict |
+|---|---|---|
+| Full path | Trace variables source->...->sink | Does the path connect? |
+| Guards | Any intermediate validation/authz | If nothing blocks, risky |
+| Preconditions | Auth/role/specific input needed? | Realistic reachability |
+| Impact | What's possible on success? | Severity rating |
+
+### Exploitability validation (do it yourself)
+
+```text
+Confirming a manual finding:
+  [ ] Did you draw the variable flow from untrusted input all the way to the sink?
+  [ ] Is there really no validation/escaping/authz on the path?
+  [ ] Are the preconditions for exploitation (login, etc.) realistic?
+  [ ] If possible, reproduced with a harmless PoC in a controlled environment?
+```
+
+> Core: manual review's strength is context the tools miss, but **that finding must also be validated by data flow**. Don't stop at "looks risky" — confirm reachability and the absence of defenses to separate theory from proof (see [[68_Purple_Team]]).

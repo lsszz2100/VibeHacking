@@ -241,6 +241,32 @@ if __name__ == "__main__":
 
 ---
 
+<!-- validate-74 -->
+## 위협 모델 우선의 감사 범위 설정
+
+한 줄씩 다 읽는 감사는 큰 코드베이스에서 비현실적이고 효율도 낮습니다. **무엇을, 왜 보는지(위협 모델)**를 먼저 정하고 신뢰 경계·공격 표면에 노력을 집중해야 합니다.
+
+| 우선순위 기준 | 이유 | 어디부터 |
+|---|---|---|
+| 신뢰 경계 | 외부 입력이 처음 들어오는 지점 | 인증/입력 파싱/역직렬화 |
+| 공격 표면 | 노출도가 높을수록 영향 큼 | 외부 API·파일 업로드·관리자 기능 |
+| 민감 sink | 피해가 큰 연산 | SQL/명령 실행/파일경로/암호 |
+| 변경 빈도 | 최근 변경에 결함 가능성 | 최근 커밋·핫스팟 |
+
+### 범위 설정 검증 (직접)
+
+```text
+감사 착수 전 정의:
+  □ 이 감사가 찾으려는 위협은 무엇인가? (예: 인증우회, RCE, 데이터노출)
+  □ 신뢰 경계(외부 입력 진입점)를 모두 식별했는가?
+  □ 각 입력이 어떤 sink로 흘러가는지 추적 가능한가?
+  □ 시간 배분이 공격 표면 크기에 비례하는가?
+```
+
+> 핵심: 감사는 "모든 줄을 읽는 것"이 아니라 **"위협이 실현될 경로를 추적하는 것"**입니다. 위협 모델 없이 시작하면 시간은 쓰고 정작 중요한 경로를 놓칩니다([[68_Purple_Team]]).
+
+---
+
 ## 참고 자료
 
 - OWASP Code Review Guide: https://owasp.org/www-project-code-review-guide/
@@ -488,3 +514,26 @@ You won't have time to audit every line equally. Prioritize using these criteria
 ## References
 
 - OWASP Code Review Guide: https://owasp.org/www-project-code-review-guide/
+
+## Threat-Model-First Audit Scoping
+
+Reading every line is unrealistic and inefficient on a large codebase. Decide **what you are auditing for and why (the threat model)** first, then concentrate effort on trust boundaries and attack surface.
+
+| Priority criterion | Why | Where to start |
+|---|---|---|
+| Trust boundary | Where external input first enters | Auth / input parsing / deserialization |
+| Attack surface | More exposure, more impact | External APIs, file upload, admin features |
+| Sensitive sinks | High-damage operations | SQL / command exec / file paths / crypto |
+| Change frequency | Recent changes harbor defects | Recent commits, hotspots |
+
+### Scoping validation (do it yourself)
+
+```text
+Define before starting:
+  [ ] What threats is this audit looking for? (e.g., auth bypass, RCE, data exposure)
+  [ ] Have you identified all trust boundaries (external input entry points)?
+  [ ] Can you trace which sink each input flows to?
+  [ ] Is time allocation proportional to attack-surface size?
+```
+
+> Core: an audit is not "read every line" but **"trace the paths where threats materialize."** Without a threat model you spend time yet miss the paths that matter (see [[68_Purple_Team]]).

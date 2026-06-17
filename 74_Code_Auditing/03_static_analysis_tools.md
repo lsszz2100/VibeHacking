@@ -464,6 +464,32 @@ python3 sast_reporter.py \
 
 ---
 
+<!-- validate-74 -->
+## 도구 노이즈 튜닝과 결과 검증
+
+SAST 도구는 **대량의 경고를 쏟아내고 상당수가 오탐**입니다. 튜닝 없이 전부 처리하려 하면 진짜 결함이 노이즈에 묻힙니다. 노이즈를 줄이고 검증하는 절차가 필요합니다.
+
+| 문제 | 증상 | 대응 |
+|---|---|---|
+| 오탐 폭주 | 수천 경고, 대부분 무의미 | 베이스라인 설정, 알려진 FP 억제 규칙 |
+| 우선순위 부재 | 중요/사소 구분 안 됨 | 심각도×신뢰도×도달성으로 정렬 |
+| 중복 도구 | 같은 이슈 여러 번 | 결과 정규화·중복 제거(03장 통합) |
+| 검증 생략 | 도구 결과 그대로 보고 | 상위 항목은 수동 재현 |
+
+### 결과 검증 (직접)
+
+```text
+SAST 결과 트리아지:
+  □ 베이스라인 대비 '신규' 경고만 우선 검토하는가?
+  □ 심각도×신뢰도 상위부터 보는가?
+  □ 상위 후보는 코드를 직접 열어 도달성을 확인했는가?
+  □ 억제(suppress)한 항목에 근거를 남겼는가?
+```
+
+> 핵심: SAST의 가치는 경고 수가 아니라 **신호 대 잡음비**입니다. 베이스라인으로 노이즈를 걷어내고, 상위 후보를 사람이 검증해야 도구가 실제로 결함을 잡습니다([[68_Purple_Team]]).
+
+---
+
 ## 참고 자료
 
 - Semgrep GitHub: https://github.com/semgrep/semgrep
@@ -719,3 +745,26 @@ if __name__ == "__main__":
 ## References
 
 - Semgrep GitHub: https://github.com/semgrep/semgrep
+
+## Tuning Tool Noise and Validating Results
+
+SAST tools **emit a flood of warnings, many of them false positives**. Trying to process them all without tuning buries real defects in noise. You need a process to reduce noise and validate.
+
+| Problem | Symptom | Response |
+|---|---|---|
+| FP flood | Thousands of warnings, mostly meaningless | Set a baseline, suppress known-FP rules |
+| No prioritization | Critical/trivial not separated | Sort by severity x confidence x reachability |
+| Duplicate tools | Same issue multiple times | Normalize/deduplicate results (section 3 integration) |
+| Skipped validation | Reporting tool output as-is | Manually reproduce top items |
+
+### Result validation (do it yourself)
+
+```text
+SAST result triage:
+  [ ] Review only 'new' warnings vs the baseline first?
+  [ ] Look at top severity x confidence first?
+  [ ] Open the code to confirm reachability for top candidates?
+  [ ] Leave a rationale for suppressed items?
+```
+
+> Core: SAST's value is not warning count but **signal-to-noise**. Strip noise with a baseline and have a human validate top candidates so the tool actually catches defects (see [[68_Purple_Team]]).
