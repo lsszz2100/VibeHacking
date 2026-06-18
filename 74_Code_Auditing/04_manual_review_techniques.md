@@ -330,7 +330,7 @@ if __name__ == "__main__":
 
 ## 참고 자료
 
-- Security Code Review Checklist: https://github.com/nicowillis/security-code-review-checklist
+- OWASP Code Review Guide: https://owasp.org/www-project-code-review-guide/
 
 ---
 
@@ -590,7 +590,7 @@ Session Management
 
 ## References
 
-- Security Code Review Checklist: https://github.com/nicowillis/security-code-review-checklist
+- OWASP Code Review Guide: https://owasp.org/www-project-code-review-guide/
 
 ## Confirming the Exploitability of a Finding
 

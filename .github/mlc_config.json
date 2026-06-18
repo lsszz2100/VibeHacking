@@ -1,5 +1,6 @@
 {
   "ignorePatterns": [
+    { "pattern": "^#" },
     { "pattern": "^http://localhost" },
     { "pattern": "^http://172\\." },
     { "pattern": "^http://192\\.168\\." },
