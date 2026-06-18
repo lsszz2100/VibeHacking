@@ -137,6 +137,8 @@ python3 vhack.py update                  # git pull latest content
 | **03** | Network Hacking Lab | SSH · FTP · DNS · SMTP vulnerable services | docker exec shell | ★★☆ |
 | **04** | Cloud/Container Security Lab | SSRF · AWS IMDS · K8s escape | http://localhost:8080 | ★★★ |
 | **05** | Full Scenario Lab | APT attack chain simulation | http://localhost:8888 | ★★★★ |
+| **06** | Firmware Hacking Lab | binwalk · QEMU emulation · hardcoded credentials | http://localhost:8062 | ★★★ |
+| **07** | Mobile Security Lab | APK static analysis · Frida · JWT alg:none bypass | http://localhost:8072 | ★★★ |
 
 ```bash
 # Quick practice example: Web Hacking
@@ -227,7 +229,7 @@ python3 vhack.py lab stop 01      # ④ Stop when done
 | 73 | [**Bug Bounty Automation**](#73-bug-bounty-automation) | HackerOne, subfinder/nuclei pipeline, CVSS reports | 6 |
 | 74 | [**Code Auditing**](#74-code-auditing) | Semgrep/CodeQL, source-sink tracing, CI/CD gates | 6 |
 | 75 | [**Red Team Reporting**](#75-red-team-reporting) | ATT&CK mapping, dual-audience reports, debriefs | 6 |
-| 🧪 | [**CTF Practice Labs (labs/)**](#ctf-practice-labs-labs) | Web/binary/network/cloud/full-scenario Docker CTF labs | 50 |
+| 🧪 | [**CTF Practice Labs (labs/)**](#ctf-practice-labs-labs) | Web/binary/network/cloud/full-scenario/firmware/mobile Docker CTF labs | 50 |
 
 ---
 
@@ -1485,11 +1487,13 @@ labs/
 ├── 03_network_lab/          ← Packet analysis/MITM/ARP spoofing pcap + practice environment
 ├── 04_cloud_container_lab/  ← Vulnerable Docker/K8s environment, container escape scenarios
 ├── 05_full_scenario_lab/    ← Recon→Intrusion→Lateral movement→Privilege escalation→Exfiltration
+├── 06_firmware_lab/         ← binwalk extraction · QEMU ARM emulation · hardcoded-credential CTF
+├── 07_mobile_lab/           ← Android APK static analysis · Frida · JWT alg:none bypass CTF
 ├── start_lab.sh             ← Full lab docker-compose up automation
 └── stop_all.sh              ← Stop all labs
 ```
 
-5 Docker-based CTF vulnerable environments — web, binary, network, cloud, and full scenario, ready for local practice. 12 flags total, one `start_lab.sh` command to spin up the entire environment.
+7 Docker-based CTF vulnerable environments — web, binary, network, cloud, full scenario, firmware, and mobile, ready for local practice. 13 flags total, one `start_lab.sh` command to spin up the entire environment.
 
 ---
 

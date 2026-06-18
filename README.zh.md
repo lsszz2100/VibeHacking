@@ -137,6 +137,8 @@ python3 vhack.py update                  # git pull 获取最新内容
 | **03** | 网络渗透实验室 | SSH · FTP · DNS · SMTP 漏洞服务 | docker exec shell | ★★☆ |
 | **04** | 云/容器安全实验室 | SSRF · AWS IMDS · K8s 逃逸 | http://localhost:8080 | ★★★ |
 | **05** | 综合场景实验室 | APT 攻击链模拟 | http://localhost:8888 | ★★★★ |
+| **06** | 固件渗透实验室 | binwalk · QEMU 仿真 · 硬编码凭证 | http://localhost:8062 | ★★★ |
+| **07** | 移动安全实验室 | APK 静态分析 · Frida · JWT alg:none 绕过 | http://localhost:8072 | ★★★ |
 
 ```bash
 # 快速实践示例：Web 渗透
@@ -227,7 +229,7 @@ python3 vhack.py lab stop 01      # ④ 完成后停止
 | 73 | [**漏洞赏金自动化**](#73-漏洞赏金自动化) | HackerOne、subfinder/nuclei流水线、CVSS报告 | 6 |
 | 74 | [**代码审计**](#74-代码审计) | Semgrep/CodeQL、Source-Sink追踪、CI/CD安全门 | 6 |
 | 75 | [**红队报告撰写**](#75-红队报告撰写) | ATT&CK映射、双受众报告、复盘 | 6 |
-| 🧪 | [**CTF实验环境（labs/）**](#ctf实验环境labs) | Web/二进制/网络/云原生/综合场景Docker CTF实验 | 50 |
+| 🧪 | [**CTF实验环境（labs/）**](#ctf实验环境labs) | Web/二进制/网络/云原生/综合场景/固件/移动Docker CTF实验 | 50 |
 
 ---
 
@@ -1485,11 +1487,13 @@ labs/
 ├── 03_network_lab/          ← 数据包分析/MITM/ARP欺骗pcap+实验环境
 ├── 04_cloud_container_lab/  ← 漏洞Docker/K8s环境、容器逃逸场景
 ├── 05_full_scenario_lab/    ← 侦察→入侵→横向移动→权限提升→数据外泄综合场景
+├── 06_firmware_lab/         ← binwalk 提取 · QEMU ARM 仿真 · 硬编码凭证 CTF
+├── 07_mobile_lab/           ← Android APK 静态分析 · Frida · JWT alg:none 绕过 CTF
 ├── start_lab.sh             ← 一键docker-compose up启动全部实验
 └── stop_all.sh              ← 停止全部实验
 ```
 
-5个Docker化CTF漏洞环境——Web、二进制、网络、云原生、综合场景，可在本地即时实验。共12个Flag，`start_lab.sh`一键启动全部环境。
+7个Docker化CTF漏洞环境——Web、二进制、网络、云原生、综合场景、固件、移动，可在本地即时实验。共13个Flag，`start_lab.sh`一键启动全部环境。
 
 ---
 

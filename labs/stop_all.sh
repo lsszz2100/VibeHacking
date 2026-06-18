@@ -64,6 +64,8 @@ LAB_DIRS=(
     "03_network_lab"
     "04_cloud_container_lab"
     "05_full_scenario_lab"
+    "06_firmware_lab"
+    "07_mobile_lab"
 )
 
 LAB_NAMES=(
@@ -72,6 +74,8 @@ LAB_NAMES=(
     "네트워크 해킹 랩"
     "클라우드/컨테이너 보안 랩"
     "전체 시나리오 통합 랩"
+    "펌웨어 해킹 랩"
+    "모바일 보안 랩"
 )
 
 stopped_count=0

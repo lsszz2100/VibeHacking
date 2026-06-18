@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # start_lab.sh — CTF 스타일 취약 환경 시작 스크립트
-# 사용법: ./start_lab.sh [01|02|03|04|05|all]
+# 사용법: ./start_lab.sh [01|02|03|04|05|06|07|all]
 
 set -e
 
@@ -78,6 +78,8 @@ start_lab() {
         "03_network_lab"
         "04_cloud_container_lab"
         "05_full_scenario_lab"
+        "06_firmware_lab"
+        "07_mobile_lab"
     )
 
     local lab_names=(
@@ -87,6 +89,8 @@ start_lab() {
         "네트워크 해킹 랩"
         "클라우드/컨테이너 보안 랩"
         "전체 시나리오 통합 랩"
+        "펌웨어 해킹 랩"
+        "모바일 보안 랩"
     )
 
     local lab_ports=(
@@ -96,10 +100,12 @@ start_lab() {
         "docker exec -it net_lab_attacker bash"
         "http://localhost:8080 (SSRF), http://localhost:8443 (K8s API)"
         "http://localhost:8888 (DMZ 웹)"
+        "취약 펌웨어 웹 패널: http://localhost:8062  |  분석: docker exec -it firmware_analyzer bash"
+        "취약 모바일 API: http://localhost:8072  |  분석: docker exec -it apk_analyzer bash"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 5 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~5 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 7 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~7 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -136,7 +142,7 @@ start_all() {
         exit 0
     fi
 
-    for i in 1 2 3 4 5; do
+    for i in 1 2 3 4 5 6 7; do
         start_lab "$i"
         echo ""
     done
@@ -162,6 +168,8 @@ print_summary() {
     echo "  03 네트워크:         docker exec -it net_lab_attacker bash"
     echo "  04 클라우드:         http://localhost:8080 (SSRF)"
     echo "  05 전체 시나리오:    http://localhost:8888"
+    echo "  06 펌웨어:           http://localhost:8062 (취약 펌웨어 웹 패널)"
+    echo "  07 모바일:           http://localhost:8072 (취약 모바일 API)"
 }
 
 # -------------------------------------------------------
@@ -177,6 +185,8 @@ usage() {
     echo "  03    네트워크 해킹 랩 (SSH, FTP, DNS, SMTP)"
     echo "  04    클라우드/컨테이너 보안 랩 (SSRF, IMDS, K8s, 컨테이너 탈출)"
     echo "  05    전체 시나리오 통합 랩 (기업환경 APT 시뮬레이션)"
+    echo "  06    펌웨어 해킹 랩 (binwalk, QEMU 에뮬레이션, 하드코딩 자격증명)"
+    echo "  07    모바일 보안 랩 (APK 정적분석, Frida, JWT alg:none 우회)"
     echo "  all   모든 랩 시작"
     echo "  ps    실행 중인 랩 목록"
     echo ""
@@ -202,6 +212,8 @@ case "$ARG" in
     03|3) start_lab 3 ;;
     04|4) start_lab 4 ;;
     05|5) start_lab 5 ;;
+    06|6) start_lab 6 ;;
+    07|7) start_lab 7 ;;
     all|ALL) start_all ;;
     ps|status) print_summary ;;
     ""|--help|-h) usage ;;

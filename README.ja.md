@@ -137,6 +137,8 @@ python3 vhack.py update                  # git pull で最新コンテンツ取�
 | **03** | ネットワークハッキングラボ | SSH · FTP · DNS · SMTP脆弱サービス | docker exec シェル | ★★☆ |
 | **04** | クラウド/コンテナセキュリティラボ | SSRF · AWS IMDS · K8s脱出 | http://localhost:8080 | ★★★ |
 | **05** | 総合シナリオラボ | APT攻撃チェーンシミュレーション | http://localhost:8888 | ★★★★ |
+| **06** | ファームウェアハッキングラボ | binwalk · QEMUエミュレーション · ハードコード資格情報 | http://localhost:8062 | ★★★ |
+| **07** | モバイルセキュリティラボ | APK静的解析 · Frida · JWT alg:none バイパス | http://localhost:8072 | ★★★ |
 
 ```bash
 # 実習例: Webハッキング
@@ -227,7 +229,7 @@ python3 vhack.py lab stop 01      # ④ 完了後に停止
 | 73 | [**バグバウンティ自動化**](#73-バグバウンティ自動化) | HackerOne、subfinder/nucleiパイプライン、CVSSレポート | 6 |
 | 74 | [**コード監査**](#74-コード監査) | Semgrep/CodeQL、Source-Sink追跡、CI/CDゲート | 6 |
 | 75 | [**レッドチームレポート作成**](#75-レッドチームレポート作成) | ATT&CKマッピング、二重読者レポート、デブリーフィング | 6 |
-| 🧪 | [**CTF実習環境（labs/）**](#ctf実習環境labs) | Web・バイナリ・ネットワーク・クラウド・統合DockerラボCTF | 50 |
+| 🧪 | [**CTF実習環境（labs/）**](#ctf実習環境labs) | Web・バイナリ・ネットワーク・クラウド・統合・ファームウェア・モバイルDockerラボCTF | 50 |
 
 ---
 
@@ -1485,11 +1487,13 @@ labs/
 ├── 03_network_lab/          ← パケット分析・MITM・ARPスプーフィングpcap+実習環境
 ├── 04_cloud_container_lab/  ← 脆弱Docker/K8s環境、コンテナ脱出シナリオ
 ├── 05_full_scenario_lab/    ← 偵察→侵入→横断移動→権限昇格→流出 統合シナリオ
+├── 06_firmware_lab/         ← binwalk抽出・QEMU ARMエミュレーション・ハードコード資格情報CTF
+├── 07_mobile_lab/           ← Android APK静的解析・Frida・JWT alg:none バイパスCTF
 ├── start_lab.sh             ← 全ラボdocker-compose up自動化
 └── stop_all.sh              ← 全ラボ停止
 ```
 
-5つのDockerベースCTF脆弱環境 — Web・バイナリ・ネットワーク・クラウド・統合シナリオをローカルで即座に実習。フラグ12個、`start_lab.sh` 一発で全環境起動。
+7つのDockerベースCTF脆弱環境 — Web・バイナリ・ネットワーク・クラウド・統合シナリオ・ファームウェア・モバイルをローカルで即座に実習。フラグ13個、`start_lab.sh` 一発で全環境起動。
 
 ---
 

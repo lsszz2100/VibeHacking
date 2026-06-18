@@ -55,7 +55,7 @@ features = {
     "한국어 완성도"  : "처음부터 한국어로 기획·작성",
     "이중언어"       : "한국어 / English 전 파일 제공",
     "완전한 커버리지": "75섹션 전 보안 영역",
-    "CTF 실습 환경"  : "도커 기반 5개 랩 즉시 구동",
+    "CTF 실습 환경"  : "도커 기반 7개 랩 즉시 구동",
 }
 assert all(features.values()), "All checks passed ✓"
 ```
@@ -177,6 +177,8 @@ python3 vhack.py update                 # git pull
 | **03** | 네트워크 해킹 랩 | SSH · FTP · DNS · SMTP 취약 서비스 | docker exec 진입 | ★★☆ |
 | **04** | 클라우드/컨테이너 보안 랩 | SSRF · AWS IMDS · K8s 탈출 | http://localhost:8080 | ★★★ |
 | **05** | 전체 시나리오 통합 랩 | APT 공격 체인 시뮬레이션 | http://localhost:8888 | ★★★★ |
+| **06** | 펌웨어 해킹 랩 | binwalk · QEMU 에뮬레이션 · 하드코딩 자격증명 | http://localhost:8062 | ★★★ |
+| **07** | 모바일 보안 랩 | APK 정적분석 · Frida · JWT alg:none 우회 | http://localhost:8072 | ★★★ |
 
 ```bash
 # 빠른 실습 예시: 웹 해킹
@@ -1549,11 +1551,13 @@ labs/
 ├── 03_network_lab/          ← 패킷 분석·MITM·ARP 스푸핑 pcap + 실습 환경
 ├── 04_cloud_container_lab/  ← 취약 Docker/K8s 환경, 컨테이너 탈출 시나리오
 ├── 05_full_scenario_lab/    ← 정찰→침투→횡이동→권한상승→유출 통합 시나리오
+├── 06_firmware_lab/         ← binwalk 추출·QEMU ARM 에뮬레이션·하드코딩 자격증명 CTF
+├── 07_mobile_lab/           ← Android APK 정적분석·Frida·JWT alg:none 우회 CTF
 ├── start_lab.sh             ← 전체 랩 docker-compose up 자동화
 └── stop_all.sh              ← 전체 랩 종료
 ```
 
-5개 도커 기반 CTF 취약 환경 — 웹·바이너리·네트워크·클라우드·통합 시나리오를 로컬에서 즉시 실습. 플래그 12개, `start_lab.sh` 한 번으로 전체 환경 기동.
+7개 도커 기반 CTF 취약 환경 — 웹·바이너리·네트워크·클라우드·통합 시나리오·펌웨어·모바일을 로컬에서 즉시 실습. 플래그 13개, `start_lab.sh` 한 번으로 전체 환경 기동.
 
 ---
 

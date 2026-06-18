@@ -187,6 +187,22 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [10, 17, 44],
     },
+    "06": {
+        "name": "펌웨어 해킹 랩",
+        "dir":  "06_firmware_lab",
+        "desc": "binwalk 추출 · QEMU ARM 에뮬레이션 · 하드코딩 자격증명 발견 CTF",
+        "url":  "취약 펌웨어 웹 패널: http://localhost:8062  |  분석 환경: docker exec -it firmware_analyzer bash",
+        "difficulty": "★★★",
+        "related": [61, 27, 65],
+    },
+    "07": {
+        "name": "모바일 보안 랩",
+        "dir":  "07_mobile_lab",
+        "desc": "Android APK 정적 분석(jadx·apktool) · Frida 동적 분석 · 하드코딩 API 키 · JWT alg:none 우회",
+        "url":  "취약 모바일 API: http://localhost:8072  |  분석 환경: docker exec -it apk_analyzer bash",
+        "difficulty": "★★★",
+        "related": [28, 52, 47],
+    },
 }
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────
