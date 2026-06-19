@@ -410,6 +410,38 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-68 -->
+## 공격 탐지와 방어 검증
+
+위협 에뮬레이션은 단일 기법이 아니라 **APT의 킬체인 전체**를 재현한다. 따라서 각 단계가 어디서 끊기는지(예방·탐지·미탐)를 체인으로 검증해, 한 단계만 막혀도 전체가 차단되는지 확인한다.
+
+### 공격(킬체인 단계) → 계층 → 통제 → 탐지 신호
+
+| 단계 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 초기 침투 | 엔드포인트 | 매크로 차단·EDR | 문서→스크립트 실행 체인 |
+| 발판 확보/지속성 | OS | 자동실행 잠금 | Run키·예약작업 생성 |
+| 자격증명 수집 | 메모리 | Credential Guard | LSASS 접근(Sysmon 10) |
+| 측면 이동·반출 | 네트워크 | 분할·이그레스 필터 | 비정상 SMB/RDP, 대용량 아웃바운드 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# APT 시나리오를 단계별로 실행하고 '어느 단계에서 끊겼는지' 체인으로 기록
+# (무해한 대체 페이로드 사용 — 실제 멀웨어 금지)
+caldera-cli run --adversary apt29_profile --abort-on-detect
+# 각 단계 결과를 표로:
+#   stage1 initial-access : detected (메일 매크로 알람)
+#   stage2 persistence    : missed   (Run키 생성 무탐지) ← 갭
+#   stage3 cred-access     : prevented (Credential Guard)
+# 통과: 어느 한 단계라도 prevented/detected로 체인이 끊기면 방어 성립
+# 취약: 전 단계 missed면 킬체인 완주 가능 → 단계별 갭 우선순위화
+```
+
+> 검증은 반드시 **격리 환경·명시적 승인 하에서만** 수행한다. 목표는 실제 피해 재현이 아니라 "공격자가 남기는 텔레메트리"를 동일하게 만들어 탐지를 검증하는 것이다([[75_Red_Team_Reporting]]).
+
+---
+
 <a name="english"></a>
 
 # Threat Emulation
@@ -475,3 +507,34 @@ The value of emulation is *fidelity*, but using real malware/payloads is dangero
 | CTI utilization | Reports → ATT&CK mapping → Emulation |
 | Key platforms | SCYTHE, CTID, Cobalt Strike |
 | Deliverables | TTP emulation plan, gap report |
+
+---
+
+## Attack Detection and Defense Validation
+
+Threat emulation reproduces a whole **APT kill chain**, not a single technique. So validate the chain stage by stage — where it breaks (prevented/detected/missed) — and confirm that blocking even one stage stops the whole thing.
+
+### Attack (kill-chain stage) -> layer -> control -> detection signal
+
+| Stage | Target layer | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Initial access | Endpoint | Macro blocking, EDR | Document->script execution chain |
+| Foothold/persistence | OS | Lock autoruns | Run key / scheduled task creation |
+| Credential harvesting | Memory | Credential Guard | LSASS access (Sysmon 10) |
+| Lateral movement/exfil | Network | Segmentation, egress filtering | Abnormal SMB/RDP, large outbound |
+
+### Defense validation (verify yourself)
+
+```bash
+# Run the APT scenario stage by stage and record 'where the chain broke'
+# (use harmless surrogate payloads — never real malware)
+caldera-cli run --adversary apt29_profile --abort-on-detect
+# Tabulate each stage's result:
+#   stage1 initial-access : detected (mail macro alert)
+#   stage2 persistence    : missed   (Run key creation undetected) <- gap
+#   stage3 cred-access     : prevented (Credential Guard)
+# Pass: if any stage is prevented/detected and breaks the chain, defense holds
+# Weak: if every stage is missed, the kill chain completes -> prioritize per-stage gaps
+```
+
+> Run validation only in an **isolated environment under explicit authorization**. The goal is not to reproduce real damage but to recreate "the telemetry an attacker leaves" so detection can be validated (see [[75_Red_Team_Reporting]]).

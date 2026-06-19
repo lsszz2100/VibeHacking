@@ -412,6 +412,38 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-68 -->
+## 공격 탐지와 방어 검증
+
+시뮬레이션은 "실행했다"로 끝나면 안 된다. 각 단계가 **예방 통제에 막히는지**, 막히지 않으면 **탐지가 발화하는지** 두 가지를 모두 확인해야 커버리지 데이터가 신뢰성을 갖는다.
+
+### 공격 → 계층 → 통제 → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| T1059.001 PowerShell | 스크립트 실행 | CLM·AppLocker | ScriptBlock 4104, 인코딩 명령 |
+| T1003.001 LSASS Dump | 자격증명 메모리 | Credential Guard·PPL | Sysmon 10 lsass 핸들 |
+| T1053.005 예약작업 | 지속성 | 작업 생성 제한 | Security 4698, schtasks 생성 |
+| T1041 C2 Exfil | 네트워크 | 이그레스 필터·DLP | NetFlow 대용량 아웃바운드·비컨 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# CALDERA/Atomic 한 단계를 실행하고, '예방' 또는 '탐지' 중 무엇이 작동했는지 분류
+Invoke-AtomicTest T1003.001 -TestNumbers 1     # LSASS dump 시도(통제된 호스트)
+# 결과를 3분류로 기록:
+#   prevented : Credential Guard/PPL로 덤프 실패 (예방 성공)
+#   detected  : 덤프는 됐지만 Sysmon 10 알람 발생 (탐지 성공)
+#   missed    : 덤프 성공 + 알람 0 (갭 → 개선 대상)
+grep -i "lsass" /var/log/sysmon* 2>/dev/null | tail
+# 통과: prevented 또는 detected → 커버리지에 기록
+# 취약: missed → Visibility/Detection Gap으로 분류 후 룰·로깅 보강
+```
+
+> 검증은 반드시 **승인된 범위·통제된 환경에서만** 수행한다. ROE를 사전 합의하고, 각 단계 결과를 prevented/detected/missed로 분류해 ATT&CK 히트맵을 데이터로 갱신해야 한다([[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # Attack Simulation
@@ -482,3 +514,34 @@ Export this mapping as an ATT&CK Navigator layer to color a three-tier coverage 
 | CALDERA | Automated emulation platform |
 | Gap analysis | Undetected techniques → rule improvement |
 | Success criteria | Detected within N minutes, correct severity alert |
+
+---
+
+## Attack Detection and Defense Validation
+
+A simulation can't end at "I ran it." Confirm both whether each step is **blocked by a preventive control** and, if not, whether **a detection fires** — only then is the coverage data trustworthy.
+
+### Attack -> layer -> control -> detection signal
+
+| Technique | Target layer | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| T1059.001 PowerShell | Script execution | CLM, AppLocker | ScriptBlock 4104, encoded command |
+| T1003.001 LSASS dump | Credential memory | Credential Guard, PPL | Sysmon 10 lsass handle |
+| T1053.005 scheduled task | Persistence | Restrict task creation | Security 4698, schtasks creation |
+| T1041 C2 exfil | Network | Egress filtering, DLP | NetFlow large outbound, beaconing |
+
+### Defense validation (verify yourself)
+
+```bash
+# Run one CALDERA/Atomic step and classify whether 'prevention' or 'detection' worked
+Invoke-AtomicTest T1003.001 -TestNumbers 1     # attempt LSASS dump (controlled host)
+# Record the result in three buckets:
+#   prevented : dump failed via Credential Guard/PPL (prevention worked)
+#   detected  : dump succeeded but Sysmon 10 alert fired (detection worked)
+#   missed    : dump succeeded + 0 alerts (gap -> to be improved)
+grep -i "lsass" /var/log/sysmon* 2>/dev/null | tail
+# Pass: prevented or detected -> record in coverage
+# Weak: missed -> classify as Visibility/Detection Gap, then harden rules/logging
+```
+
+> Run validation only within an **authorized scope, in a controlled environment**. Agree the RoE up front, and classify each step as prevented/detected/missed to update the ATT&CK heatmap with real data (see [[40_Threat_Hunting]]).

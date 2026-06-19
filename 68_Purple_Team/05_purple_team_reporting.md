@@ -425,6 +425,36 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-68 -->
+## 공격 탐지와 방어 검증
+
+보고의 신뢰성은 모든 "탐지함/막음" 주장이 **재현 가능한 증거**에 묶여 있을 때 생긴다. 보고서에 들어가는 각 결과는 실행→신호→증거의 연결을 검증한 뒤 기록해야 한다.
+
+### 보고 항목 → 근거 계층 → 검증 통제 → 증거 신호
+
+| 보고 주장 | 근거 계층 | 검증 방법 | 증거 |
+|---|---|---|---|
+| "T1059 탐지됨" | SIEM 알람 | 재실행 시 동일 알람 재현 | 알람 ID + 타임스탬프(UTC) |
+| "LSASS 덤프 차단" | 예방 통제 | 덤프 재시도 → 실패 확인 | 실패 로그 + 통제 설정 |
+| "MTTD 6분" | 시간 측정 | 실행시각 vs 알람시각 차이 | 두 이벤트 원본 로그 |
+| "갭 폐쇄됨" | 회귀 테스트 | 폐쇄 전후 재실행 비교 | before=missed, after=detected |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 보고 직전, 모든 'detected/closed' 주장을 재실행으로 회귀검증
+for t in T1059.001 T1003.001 T1053.005; do
+  Invoke-AtomicTest $t -TestNumbers 1
+  # 각 기법의 알람을 SIEM에서 조회해 결과를 detected/missed로 기록
+done
+# 통과: 보고된 모든 'detected'가 재현되고, 'closed' 갭이 다시 missed로 회귀하지 않음
+# 취약: 재현 안 되는 'detected'는 보고서에서 제외/하향 — 측정 없는 주장 금지
+```
+
+> 보고는 **재현 가능한 증거**에 근거해야 한다. "개선했다"는 주장은 폐쇄 전후 동일 조건 재실행으로 뒷받침하고, 모든 타임스탬프는 UTC로 통일해 추세 비교의 무결성을 지킨다([[75_Red_Team_Reporting]]).
+
+---
+
 <a name="english"></a>
 
 # Purple Team Reporting
@@ -497,3 +527,32 @@ Retesting isn't mere repetition — it's the core of **regression detection**. T
 | Technical Findings | SOC, Analysts | ATT&CK mapping, log evidence |
 | Gap Analysis | Blue team | Undetected techniques, improvement priorities |
 | Improvement Roadmap | IT/Security | Owners, deadlines, metrics |
+
+---
+
+## Attack Detection and Defense Validation
+
+A report earns trust when every "detected/blocked" claim is tied to **reproducible evidence**. Record each result only after validating the execution -> signal -> evidence chain.
+
+### Report claim -> evidence layer -> validation control -> evidence signal
+
+| Report claim | Evidence layer | Validation method | Evidence |
+|---|---|---|---|
+| "T1059 detected" | SIEM alert | Reproduce the same alert on re-run | Alert ID + timestamp (UTC) |
+| "LSASS dump blocked" | Preventive control | Retry the dump -> confirm failure | Failure log + control config |
+| "MTTD 6 min" | Timing measurement | Diff execution time vs alert time | Raw logs of both events |
+| "Gap closed" | Regression test | Compare re-runs before/after closure | before=missed, after=detected |
+
+### Defense validation (verify yourself)
+
+```bash
+# Right before reporting, regression-validate every 'detected/closed' claim by re-running
+for t in T1059.001 T1003.001 T1053.005; do
+  Invoke-AtomicTest $t -TestNumbers 1
+  # Query each technique's alert in the SIEM and record detected/missed
+done
+# Pass: every reported 'detected' reproduces and no 'closed' gap regresses to missed
+# Weak: a 'detected' that won't reproduce is removed/downgraded - no claim without measurement
+```
+
+> Reporting must rest on **reproducible evidence**. Back every "we improved" claim with same-conditions re-runs before/after closure, and normalize all timestamps to UTC to keep trend comparisons sound (see [[75_Red_Team_Reporting]]).

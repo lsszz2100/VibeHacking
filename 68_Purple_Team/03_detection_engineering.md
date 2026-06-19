@@ -444,6 +444,38 @@ David Bianco의 "Pyramid of Pain"은 어떤 지표로 탐지하느냐에 따라 
 
 ---
 
+<!-- detect-validate-68 -->
+## 공격 탐지와 방어 검증
+
+탐지 엔지니어링의 종착점은 "룰을 배포했다"가 아니라 "공격을 실행했을 때 그 룰이 발화하고, 정상 트래픽엔 안 뜬다"를 증명하는 것이다(정탐·오탐 동시 측정).
+
+### 공격 → 계층 → 통제(탐지 룰) → 탐지 신호
+
+| 공격 | 노리는 계층 | 탐지 룰(예) | 탐지 신호 |
+|---|---|---|---|
+| 인코딩 PowerShell | 스크립트 실행 | Sigma: `EncodedCommand` | 4104 ScriptBlock + `-enc` |
+| LSASS 덤프 | 자격증명 | Sigma: lsass 핸들 접근 | Sysmon 10 GrantedAccess 0x1010 |
+| 의심 예약작업 | 지속성 | Sigma: schtasks 생성 | 4698 + 비표준 바이너리 경로 |
+| C2 비커닝 | 네트워크 | Suricata: 주기적 비컨 | 균일 간격 아웃바운드 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 룰이 공격에 '발화'하는지: 해당 기법을 실행하고 룰 매칭 확인
+Invoke-AtomicTest T1059.001 -TestNumbers 1
+# 2) 정탐/오탐을 함께 측정 (히스토리 로그로 회귀)
+#    공격 윈도우 vs 정상 윈도우에 같은 룰을 돌려 TP/FP 집계
+sigma convert -t splunk rule.yml > rule.spl     # 룰을 SIEM 쿼리로 변환
+#   TP = 공격 시간창 매칭 수 / 실행 횟수
+#   FP = 정상 시간창 매칭 수 / 정상 이벤트 수
+# 통과: TP가 기준 이상이면서 FP가 분석가 허용 한도 이하
+# 취약: TP 낮으면 미탐(룰 약함), FP 높으면 경보 피로 → 튜닝 필요
+```
+
+> 검증은 반드시 **승인된 범위·통제된 환경에서만** 수행한다. 룰은 배포로 끝나지 않으며, 데이터 소스가 바뀔 때마다 정탐·오탐을 재측정해 노후(rule decay)를 잡아야 한다([[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Detection Engineering
@@ -508,3 +540,34 @@ Core trade-off: broad rules reduce false negatives but raise false positives (an
 | YARA | Files/memory | YARA |
 | KQL | Azure Sentinel | Kusto QL |
 | SPL | Splunk | SPL |
+
+---
+
+## Attack Detection and Defense Validation
+
+The endpoint of detection engineering is not "the rule is deployed" but "it fires when the attack runs and stays quiet on benign traffic" (measure true and false positives together).
+
+### Attack -> layer -> control (detection rule) -> detection signal
+
+| Attack | Target layer | Detection rule (example) | Detection signal |
+|---|---|---|---|
+| Encoded PowerShell | Script execution | Sigma: `EncodedCommand` | 4104 ScriptBlock + `-enc` |
+| LSASS dump | Credentials | Sigma: lsass handle access | Sysmon 10 GrantedAccess 0x1010 |
+| Suspicious scheduled task | Persistence | Sigma: schtasks creation | 4698 + nonstandard binary path |
+| C2 beaconing | Network | Suricata: periodic beacon | Uniform-interval outbound |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Does the rule 'fire' on the attack: run the technique and check the rule match
+Invoke-AtomicTest T1059.001 -TestNumbers 1
+# 2) Measure TP/FP together (regress over historical logs)
+#    Run the same rule over the attack window vs a benign window and tally TP/FP
+sigma convert -t splunk rule.yml > rule.spl     # convert the rule to a SIEM query
+#   TP = matches in the attack window / executions
+#   FP = matches in the benign window / benign events
+# Pass: TP above threshold while FP stays under the analyst's tolerance
+# Weak: low TP means false negatives (weak rule); high FP means alert fatigue -> tune
+```
+
+> Run validation only within an **authorized scope, in a controlled environment**. A rule isn't finished at deployment — re-measure TP/FP whenever data sources change to catch rule decay (see [[13_SOC_Blue_Team]]).

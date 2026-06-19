@@ -388,6 +388,36 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-68 -->
+## 공격 탐지와 방어 검증
+
+퍼플팀의 본질은 "탐지가 있다"가 아니라 "실행하면 실제로 발화한다"를 증명하는 것이다. ATT&CK 전술별로 기법을 실행하고, 통제·탐지 신호가 끝까지 이어지는지 검증한다.
+
+### 공격 → 계층 → 통제 → 탐지 신호
+
+| 공격(ATT&CK 전술) | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 초기 접근(Phishing) | 이메일/엔드포인트 | 메일 필터·매크로 차단 | 매크로 자식 프로세스 생성(`winword.exe`→`cmd`) |
+| 실행(T1059) | OS 명령/스크립트 | AppLocker·스크립트 로깅 | PowerShell ScriptBlock 4104 이벤트 |
+| 자격증명 접근(T1003) | LSASS/메모리 | Credential Guard | LSASS 핸들 열기(Sysmon 10) |
+| 측면 이동(T1021) | 인증/SMB | 분할·LAPS | 비정상 원격 로그온(4624 type 3) |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 단일 기법(Atomic Red Team)을 실행하고 SIEM에서 알람이 '실제로' 떴는지 확인
+# 1) 통제된 호스트에서 한 가지 테크닉만 실행 (예: T1059.001 PowerShell)
+Invoke-AtomicTest T1059.001 -TestNumbers 1     # PowerShell 측
+# 2) SIEM에서 해당 테크닉 알람을 조회 (시간창을 좁혀)
+#    index=edr technique=T1059.001 earliest=-10m → 결과 1건 이상이어야 정상
+# 통과: 실행 후 N분 내 알람 1건+ → 탐지 동작(커버리지에 'detected' 기록)
+# 취약: 알람 0건이면 텔레메트리/룰 갭 → Visibility Gap에 기록 후 개선
+```
+
+> 검증은 반드시 **승인된 범위·통제된 환경에서만** 수행한다. 각 테스트는 재현 가능한 절차와 기대 신호를 함께 기록해, 룰을 고친 뒤 같은 조건에서 재실행해 개선을 수치로 비교해야 한다([[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Purple Team Fundamentals
@@ -456,3 +486,32 @@ Counting "number of rules" is a classic illusion. What matters is the **observed
 | ATT&CK | TTP-based systematic threat classification |
 | Gap analysis | Identify detection failures, improve rules |
 | Key output | Detection coverage map, improvement roadmap |
+
+---
+
+## Attack Detection and Defense Validation
+
+The essence of purple teaming is proving not "a detection exists" but "it actually fires when you run the technique." Execute techniques per ATT&CK tactic and verify the control and detection signal connect end to end.
+
+### Attack (ATT&CK tactic) -> layer -> control -> detection signal
+
+| Attack (ATT&CK tactic) | Target layer | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Initial access (phishing) | Email/endpoint | Mail filter, macro blocking | Macro child process (`winword.exe`->`cmd`) |
+| Execution (T1059) | OS command/script | AppLocker, script logging | PowerShell ScriptBlock event 4104 |
+| Credential access (T1003) | LSASS/memory | Credential Guard | LSASS handle open (Sysmon 10) |
+| Lateral movement (T1021) | Auth/SMB | Segmentation, LAPS | Abnormal remote logon (4624 type 3) |
+
+### Defense validation (verify yourself)
+
+```bash
+# Run a single technique (Atomic Red Team) and confirm the SIEM alert *actually* fired
+# 1) On a controlled host, run just one technique (e.g., T1059.001 PowerShell)
+Invoke-AtomicTest T1059.001 -TestNumbers 1     # on the PowerShell side
+# 2) Query the SIEM for that technique's alert (narrow the time window)
+#    index=edr technique=T1059.001 earliest=-10m -> should return >= 1 result
+# Pass: >= 1 alert within N minutes of execution -> detection works (mark 'detected' in coverage)
+# Weak: 0 alerts means a telemetry/rule gap -> log it under Visibility Gap and fix
+```
+
+> Run validation only within an **authorized scope, in a controlled environment**. Document each test with a repeatable procedure and expected signal, so after fixing a rule you re-run under the same conditions and compare the improvement numerically (see [[13_SOC_Blue_Team]]).
