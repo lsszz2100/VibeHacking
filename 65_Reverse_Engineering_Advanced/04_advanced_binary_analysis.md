@@ -374,6 +374,33 @@ recv(buf) ──오염──► strcpy(local, buf) ──전파──► system(
 
 ---
 
+<!-- detect-validate-65 -->
+## 안티분석 탐지와 분석 검증
+
+정적 분석은 **가설**을 만든다 — "이 source가 저 sink에 닿는다", "이 패치가 막은 게 원본 버그다". 가설을 동적으로 확인하지 않으면 거짓양성에 시간을 쏟거나 잘못된 취약점을 보고하게 된다.
+
+### 분석 가설 → 통제 → 검증 → 통과 기준
+
+| 가설/방해 | 적용 통제 | 검증 방법(직접 확인) | 통과 기준 |
+|---|---|---|---|
+| 정적 테인트 거짓양성 | 동적 테인트(Pin/DynamoRIO) | source 입력이 sink에 실제 도달하는지 추적 | 런타임에서 오염 전파 관찰 |
+| 난독 CFG·간접 분기 | 동적 트레이스로 엣지 복원 | 정적 CFG와 실측 엣지 비교 | 누락 엣지 보강·일치 |
+| 패치 디핑 오판 | PoC로 취약 경로 재현 | 패치 전 충돌·패치 후 차단 확인 | 패치 전 트리거, 패치 후 무효 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 정적으로 의심한 source→sink를 동적 테인트로 교차검증
+# (정적 도구가 표시한 입력을 실제로 흘려보내 sink 도달을 관측)
+drrun -t drcachesim -- ./target < tainted_input   # 또는 Pin 테인트 도구
+# 통과: 오염된 입력이 의심 sink(memcpy/strcpy 등)까지 전파됨 → 가설 유효
+# 실패: 도달 안 하면 정적 거짓양성 — 보고 전 제외
+```
+
+> 검증은 **분석용 격리 환경에서만** 수행한다. 정적 분석 결과는 가설일 뿐이며, 동적 테인트·PoC 재현으로 확인한 뒤에만 취약점으로 보고해야 한다([[30_Vulnerability_Research]]).
+
+---
+
 <a name="english"></a>
 
 # Advanced Binary Analysis
@@ -478,3 +505,29 @@ Extract changed functions → identify added checks (length/NULL/bounds)
 - [ ] Did you prioritize review by cyclomatic complexity?
 - [ ] Did you cross-check static taint false positives with dynamic taint?
 - [ ] Did you map patch-diff added checks back to the original vulnerability?
+
+---
+
+## Anti-Analysis Detection and Analysis Validation
+
+Static analysis produces **hypotheses** — "this source reaches that sink", "this patch fixed the original bug." Without confirming them dynamically, you waste time on false positives or report the wrong vulnerability.
+
+### Hypothesis/obstacle -> control -> validation -> pass criterion
+
+| Hypothesis/obstacle | Applied control | Validation (verify yourself) | Pass criterion |
+|---|---|---|---|
+| Static-taint false positive | Dynamic taint (Pin/DynamoRIO) | Trace whether source input actually reaches the sink | Taint propagation observed at runtime |
+| Obfuscated CFG / indirect branches | Recover edges via dynamic trace | Compare static CFG to measured edges | Missing edges filled in / match |
+| Patch-diff misread | Reproduce the vuln path with a PoC | Confirm crash before patch, blocked after | Triggers pre-patch, neutralized post-patch |
+
+### Analysis validation (verify yourself)
+
+```bash
+# Cross-check a suspected source->sink with dynamic taint
+# (flow the input flagged by the static tool and observe whether it reaches the sink)
+drrun -t drcachesim -- ./target < tainted_input   # or a Pin taint tool
+# Pass: tainted input propagates to the suspected sink (memcpy/strcpy etc.) -> hypothesis holds
+# Fail: if it never reaches, it's a static false positive - exclude before reporting
+```
+
+> Run validation only in an **isolated analysis environment**. Static results are only hypotheses; report a vulnerability only after confirming it with dynamic taint or PoC reproduction (see [[30_Vulnerability_Research]]).

@@ -345,6 +345,33 @@ if simgr.found:
 
 ---
 
+<!-- detect-validate-65 -->
+## 안티분석 탐지와 분석 검증
+
+심볼릭 실행은 **모델**이지 실제 실행이 아니다. 솔버가 해를 내놓아도 실제 바이너리에서 목표 분기에 도달하는지 확인하지 않으면, 모델 불일치(아키텍처·환경·hook 가정)로 거짓 해를 신뢰하게 된다.
+
+### 안티심볼릭 → 통제 → 검증 → 통과 기준
+
+| 방해 요소 | 적용 통제 | 검증 방법(직접 확인) | 통과 기준 |
+|---|---|---|---|
+| 경로 폭발(상태 폭증) | veritesting/concolic·루프 바운드 | 상태 수·경과 시간 모니터링 | 제한 시간 내 목표 도달 |
+| 불투명 술어/정크 코드 | 데드코드 제거·함수 요약 | 목표 분기가 reachable로 남는지 | 목표 분기 도달 가능 |
+| 해시·암호 게이트 | hook으로 우회·심볼릭 제외 | 우회 후 제약식이 풀리는지 | 솔버가 구체 해 산출 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 솔버가 만든 입력을 실제 바이너리에 그대로 넣어 목표 도달을 '재현'한다
+python3 solve.py > solution.bin        # angr 해를 파일/stdout으로
+./target < solution.bin; echo "exit=$?"
+# 통과: 목표 출력("Correct!"·취약 경로)이 재현됨 → 해가 유효
+# 실패: 재현 안 되면 모델 불일치(엔디안/호출규약/환경) — 제약·hook 재점검
+```
+
+> 검증은 **분석용 격리 환경에서만** 수행한다. "솔버가 풀었다"가 아니라 "실제 바이너리에서 재현된다"를 확인해야 결과를 신뢰할 수 있다([[30_Vulnerability_Research]]).
+
+---
+
 <a name="english"></a>
 
 # Symbolic Execution
@@ -466,3 +493,29 @@ Is input→output a clear verification logic?
 - [ ] Did you hook around or exclude hash/crypto routines from symbolic targets?
 - [ ] On path explosion, did you consider veritesting/concolic?
 - [ ] Did you verify solver output against the real binary?
+
+---
+
+## Anti-Analysis Detection and Analysis Validation
+
+Symbolic execution is a **model**, not real execution. Even when the solver returns a solution, if you don't confirm it reaches the target branch on the real binary, a model mismatch (architecture, environment, hook assumptions) makes you trust a false answer.
+
+### Anti-symbolic -> control -> validation -> pass criterion
+
+| Obstacle | Applied control | Validation (verify yourself) | Pass criterion |
+|---|---|---|---|
+| Path explosion (state blow-up) | veritesting/concolic, loop bounds | Monitor state count / elapsed time | Target reached within the time budget |
+| Opaque predicates / junk code | Dead-code removal, function summaries | Is the target branch still reachable? | Target branch is reachable |
+| Hash/crypto gate | Hook to bypass / exclude from symbolic | Do constraints solve after the bypass? | Solver yields a concrete solution |
+
+### Analysis validation (verify yourself)
+
+```bash
+# Feed the solver's input into the real binary as-is to *reproduce* reaching the target
+python3 solve.py > solution.bin        # angr solution to file/stdout
+./target < solution.bin; echo "exit=$?"
+# Pass: the target output ("Correct!"/vuln path) reproduces -> the solution is valid
+# Fail: if it doesn't reproduce, there's a model mismatch (endianness/calling convention/env) - recheck constraints & hooks
+```
+
+> Run validation only in an **isolated analysis environment**. Confirm "it reproduces on the real binary", not merely "the solver solved it" (see [[30_Vulnerability_Research]]).

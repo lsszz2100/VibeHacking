@@ -370,6 +370,34 @@ int peb_being_debugged(void) {
 
 ---
 
+<!-- detect-validate-65 -->
+## 안티분석 탐지와 분석 검증
+
+위 매트릭스는 "어떻게 우회하는가"를 알려주지만, 실무에서는 **우회가 실제로 통했는지** 런타임에서 확인하는 단계가 빠지기 쉽다. 확인 없이 "우회했다"고 가정하면 분석 결과 전체가 거짓 위에 선다.
+
+### 안티분석 → 통제 → 검증 → 통과 기준
+
+| 우회 대상 | 적용 통제 | 검증 방법(직접 확인) | 통과 기준 |
+|---|---|---|---|
+| `IsDebuggerPresent`/PEB | ScyllaHide·PEB 바이트 패치 | 부착 상태에서 API/PEB 바이트 재확인 | `BeingDebugged == 0` |
+| RDTSC 타이밍 | RDTSC 후킹·NOP | 보호 구간 전후 사이클 측정 | 임계치 미만으로 일관 |
+| 환경/VM 탐지 | 클린 환경·안티-VM 패치 | 분기 트레이스로 탐지 경로 도달 여부 | 정상 분기로 진입 |
+
+### 분석 검증 (직접 확인)
+
+```python
+# ScyllaHide/PEB 패치 후, 디버거 부착 상태에서 BeingDebugged가 실제 0인지 재확인
+peb = read_peb(pid)               # 디버기 PEB 베이스 주소
+being_debugged = read_u8(peb + 0x02)
+print("BeingDebugged =", being_debugged)
+# 통과: 0 → 은닉 성공, 동적 분석 결과 신뢰 가능
+# 실패: 1 → 여전히 탐지됨, 분석 결과 신뢰 불가(우회 재적용 필요)
+```
+
+> 검증은 반드시 **분석용 격리 환경(VM/베어메탈)에서만** 수행한다. "우회했다"가 아니라 "탐지 경로가 실제로 죽었다"를 확인한 뒤에야 동적 분석 결과를 신뢰할 수 있다([[06_Malware_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # Anti-Debugging Techniques
@@ -487,3 +515,30 @@ Which layer?
 - [ ] Did you load a hiding plugin (e.g., ScyllaHide) before debugging?
 - [ ] Did you prepare a clean environment to bypass env detection (process name / window title)?
 - [ ] After patching, did you verify the original malicious logic still runs?
+
+---
+
+## Anti-Analysis Detection and Analysis Validation
+
+The matrix above tells you *how* to bypass, but in practice one step gets skipped: confirming at runtime that **the bypass actually worked**. Assuming "I bypassed it" without checking puts your whole analysis on a false footing.
+
+### Anti-analysis -> control -> validation -> pass criterion
+
+| Bypass target | Applied control | Validation (verify yourself) | Pass criterion |
+|---|---|---|---|
+| `IsDebuggerPresent`/PEB | ScyllaHide / PEB byte patch | Re-read the API/PEB byte while attached | `BeingDebugged == 0` |
+| RDTSC timing | RDTSC hook / NOP | Measure cycles before/after the guarded region | Consistently below threshold |
+| Environment/VM detection | Clean env / anti-VM patch | Trace the branch to see if the detection path is reached | Falls into the normal branch |
+
+### Analysis validation (verify yourself)
+
+```python
+# After ScyllaHide/PEB patch, re-confirm BeingDebugged is really 0 while attached
+peb = read_peb(pid)               # debuggee PEB base address
+being_debugged = read_u8(peb + 0x02)
+print("BeingDebugged =", being_debugged)
+# Pass: 0 -> hiding worked, dynamic analysis results are trustworthy
+# Fail: 1 -> still detected, results untrustworthy (re-apply the bypass)
+```
+
+> Run validation only in an **isolated analysis environment (VM/bare metal)**. Trust your dynamic-analysis results only after confirming the detection path is actually dead — not merely that you "bypassed it" (see [[06_Malware_Analysis]]).

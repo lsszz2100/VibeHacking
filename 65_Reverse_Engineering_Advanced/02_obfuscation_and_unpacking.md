@@ -332,6 +332,35 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-65 -->
+## 안티분석 탐지와 분석 검증
+
+언패킹의 가장 흔한 실수는 "덤프를 떴다 = 끝났다"는 착각이다. **덤프가 실제로 원본인지**(OEP·IAT·문자열 복원)를 검증하지 않으면 깨진 바이너리를 분석하게 된다.
+
+### 안티분석 → 통제 → 검증 → 통과 기준
+
+| 우회 대상 | 적용 통제 | 검증 방법(직접 확인) | 통과 기준 |
+|---|---|---|---|
+| 패킹(UPX/ASPack) | `upx -d`·ESP law 덤프 | 덤프 엔트로피 재측정·문자열 추출 | 엔트로피 하락 + 평문 문자열 노출 |
+| IAT 파괴 | Scylla로 IAT 재구성 | 임포트 테이블이 정상 모듈로 해석되는지 | API 이름이 정상 resolve |
+| 안티덤프(페이지 보호) | 페이지 권한 패치 후 덤프 | 덤프본이 디스어셈블/실행되는지 | OEP에서 정상 디스어셈블 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 언패킹 전후 엔트로피·문자열로 '진짜 풀렸는지' 측정
+python3 -c "import math,collections,sys; d=open(sys.argv[1],'rb').read(); \
+c=collections.Counter(d); e=-sum(n/len(d)*math.log2(n/len(d)) for n in c.values()); \
+print(f'{sys.argv[1]}: entropy={e:.2f}')" packed.bin unpacked.bin
+strings -n 6 unpacked.bin | grep -iE 'http|reg|cmd|\.dll' | head
+# 통과: unpacked의 엔트로피가 packed보다 뚜렷이 낮고 평문 API/문자열이 보임
+# 실패: 엔트로피가 그대로면 덤프가 여전히 압축/암호화 상태 — 재언패킹 필요
+```
+
+> 검증은 **분석용 격리 환경에서만** 수행한다. "덤프했다"가 아니라 "원본 코드·임포트가 복원됐다"를 엔트로피·문자열·IAT로 확인해야 분석이 의미를 가진다([[06_Malware_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # Code Obfuscation and Unpacking
@@ -434,3 +463,31 @@ For variants where `upx -d` fails (renamed sections, corrupted header), dump man
 - [ ] After reaching OEP, did you reconstruct the IAT (Scylla)?
 - [ ] If identified as a VM packer, did you switch to behavior-based analysis?
 - [ ] Did you verify original strings/imports were restored in the unpacked binary?
+
+---
+
+## Anti-Analysis Detection and Analysis Validation
+
+The most common unpacking mistake is "I dumped it = done." Without verifying the dump is **actually the original** (OEP, IAT, restored strings), you end up analyzing a broken binary.
+
+### Anti-analysis -> control -> validation -> pass criterion
+
+| Bypass target | Applied control | Validation (verify yourself) | Pass criterion |
+|---|---|---|---|
+| Packing (UPX/ASPack) | `upx -d` / ESP-law dump | Re-measure dump entropy, extract strings | Entropy drops + plaintext strings appear |
+| Broken IAT | Rebuild IAT with Scylla | Do imports resolve to real modules? | API names resolve cleanly |
+| Anti-dump (page protection) | Patch page perms, then dump | Does the dump disassemble/run? | Clean disassembly at OEP |
+
+### Analysis validation (verify yourself)
+
+```bash
+# Measure whether it "really unpacked" via entropy/strings before vs after
+python3 -c "import math,collections,sys; d=open(sys.argv[1],'rb').read(); \
+c=collections.Counter(d); e=-sum(n/len(d)*math.log2(n/len(d)) for n in c.values()); \
+print(f'{sys.argv[1]}: entropy={e:.2f}')" packed.bin unpacked.bin
+strings -n 6 unpacked.bin | grep -iE 'http|reg|cmd|\.dll' | head
+# Pass: unpacked entropy is clearly lower than packed and plaintext API/strings appear
+# Fail: if entropy is unchanged, the dump is still compressed/encrypted - re-unpack
+```
+
+> Run validation only in an **isolated analysis environment**. Confirm "the original code/imports are restored" via entropy/strings/IAT, not merely "I dumped it" (see [[06_Malware_Analysis]]).

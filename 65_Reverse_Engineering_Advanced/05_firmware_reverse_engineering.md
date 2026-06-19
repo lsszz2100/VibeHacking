@@ -376,6 +376,34 @@ qemu-mipsel -L squashfs-root ./squashfs-root/usr/sbin/httpd
 
 ---
 
+<!-- detect-validate-65 -->
+## 안티분석 탐지와 분석 검증
+
+펌웨어 분석에서 "추출했다 / 시크릿을 찾았다"는 출발점일 뿐이다. **추출 파일시스템이 온전한지**, **발견한 시크릿이 실제 작동하는지**를 검증하지 않으면 잘못된 결론(가짜 키·죽은 백도어)으로 이어진다.
+
+### 안티분석 → 통제 → 검증 → 통과 기준
+
+| 방해 요소 | 적용 통제 | 검증 방법(직접 확인) | 통과 기준 |
+|---|---|---|---|
+| 펌웨어 암호화 | 부트로더/UART로 평문 확보 | 추출본 엔트로피 재측정 | 엔트로피가 압축/평문 수준으로 하락 |
+| 압축 파일시스템 | unsquashfs/jefferson 추출 | 루트FS가 마운트·탐색 가능한지 | `/etc`·바이너리 정상 노출 |
+| 시크릿 진위 불명 | 동적 에뮬레이션(QEMU/FirmAE) | 추출 키·계정으로 서비스 인증 시도 | 실제 인증 성공/실패 확인 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 추출 루트파일시스템이 진짜 온전한지 마운트·구조로 확인
+binwalk -Me firmware.bin
+ls -l _firmware.bin.extracted/squashfs-root/{etc,bin,sbin} 2>/dev/null
+file _firmware.bin.extracted/squashfs-root/bin/busybox    # 아키텍처/정상 ELF 확인
+# 통과: /etc·init 스크립트·정상 ELF가 보이면 추출 성공
+# 실패: 깨진 디렉터리/엔트로피 그대로면 암호화 상태 — 부트로더/UART 경로 재시도
+```
+
+> 검증은 **소유·허가된 기기와 격리 환경에서만** 수행한다. "찾았다"가 아니라 "마운트되고 인증된다"를 확인해야 펌웨어 분석 결론을 신뢰할 수 있다([[06_Malware_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # Firmware Reverse Engineering
@@ -481,3 +509,30 @@ qemu-mipsel -L squashfs-root ./squashfs-root/usr/sbin/httpd
 - [ ] Did you scan keys/certs/API secrets with firmwalker?
 - [ ] Did you emulate core services (e.g., httpd) with QEMU for dynamic checks?
 - [ ] For encrypted firmware, did you try the bootloader/UART path to obtain plaintext?
+
+---
+
+## Anti-Analysis Detection and Analysis Validation
+
+In firmware analysis, "I extracted it / I found secrets" is only a starting point. Without verifying the **extracted filesystem is intact** and the **found secrets actually work**, you reach wrong conclusions (fake keys, dead backdoors).
+
+### Anti-analysis -> control -> validation -> pass criterion
+
+| Obstacle | Applied control | Validation (verify yourself) | Pass criterion |
+|---|---|---|---|
+| Firmware encryption | Obtain plaintext via bootloader/UART | Re-measure extracted entropy | Entropy drops to compressed/plaintext level |
+| Compressed filesystem | unsquashfs/jefferson extraction | Can the rootfs mount and be browsed? | `/etc` and binaries appear normally |
+| Secret authenticity unknown | Dynamic emulation (QEMU/FirmAE) | Try the extracted key/account against the service | Real auth success/failure confirmed |
+
+### Analysis validation (verify yourself)
+
+```bash
+# Confirm the extracted rootfs is genuinely intact via mount/structure
+binwalk -Me firmware.bin
+ls -l _firmware.bin.extracted/squashfs-root/{etc,bin,sbin} 2>/dev/null
+file _firmware.bin.extracted/squashfs-root/bin/busybox    # check arch / valid ELF
+# Pass: /etc, init scripts, and valid ELFs appear -> extraction succeeded
+# Fail: broken dirs / unchanged entropy means it's still encrypted - retry the bootloader/UART path
+```
+
+> Run validation only on **devices you own/are authorized for, in an isolated environment**. Trust your firmware conclusions only after confirming "it mounts and authenticates", not merely "I found it" (see [[06_Malware_Analysis]]).
