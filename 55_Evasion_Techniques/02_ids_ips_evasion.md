@@ -530,6 +530,35 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-55 -->
+## 공격 탐지와 방어 검증
+
+회피 기법은 *어떻게 탐지를 피하는가*를 다루지만, 방어자 관점에서는 **그 회피가 다른 계층의 텔레메트리에 남는가**와 **헌팅이 실제로 잡는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 회피가 실효적인지 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 단편화/중첩 | 시그니처 IDS | 타깃 기반 재조합, 트래픽 정규화 | 비정상 IP 단편/중첩 오프셋 |
+| 프로토콜 터널링 | DPI | DPI, 프로토콜 검증 | 비표준 포트의 프로토콜, 캡슐화 불일치 |
+| 인코딩/난독(URL) | 시그니처 | 정규화 후 검사, 행위 탐지 | 과도한 인코딩/이중 인코딩 패턴 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) IDS 가 단편화 우회에도 페이로드를 재조합·탐지하는지 검증
+suricata -r normal.pcap -l ./out1; suricata -r fragmented.pcap -l ./out2
+diff <(grep alert out1/fast.log) <(grep alert out2/fast.log)
+# 둘 다 알림이면 재조합 정상; 단편화에서 누락이면 정규화 미흡
+# 2) 비표준 포트 프로토콜(터널링) 탐지: Zeek 프로토콜 식별 확인
+zeek -r capture.pcap && awk '$6 !~ /^(http|dns|ssl)$/' conn.log | head
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # IDS/IPS Evasion — Packet Manipulation, Protocol Mixing, Traffic Analysis
@@ -995,3 +1024,30 @@ if __name__ == "__main__":
 | Encrypted traffic       | Payload-based         | TLS content is not visible             |
 | Slow scan               | Anomaly detection     | Stays within baseline thresholds       |
 | Source IP distribution  | Count-based           | Stays below per-IP threshold           |
+
+---
+
+## Attack Detection and Defense Validation
+
+Evasion covers *how* you avoid detection, but from the defender's side you must verify **whether the evasion surfaces in another layer's telemetry** and **whether hunting actually catches it**. Attackers can use this lens too, to judge which evasions are real.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Fragmentation/overlap | Signature IDS | Target-based reassembly, normalization | Abnormal IP fragments/overlap offsets |
+| Protocol tunneling | DPI | DPI, protocol validation | Protocol on a non-standard port, encapsulation mismatch |
+| Encoding/obfuscation (URL) | Signatures | Inspect after normalization, behavior detection | Excessive/double-encoding patterns |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Verify the IDS reassembles and detects even under fragmentation evasion
+suricata -r normal.pcap -l ./out1; suricata -r fragmented.pcap -l ./out2
+diff <(grep alert out1/fast.log) <(grep alert out2/fast.log)
+# Alerts in both => reassembly works; missing under fragmentation => weak normalization
+# 2) Detect non-standard-port protocols (tunneling) via Zeek protocol identification
+zeek -r capture.pcap && awk '$6 !~ /^(http|dns|ssl)$/' conn.log | head
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

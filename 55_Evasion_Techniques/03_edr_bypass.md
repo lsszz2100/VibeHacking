@@ -442,6 +442,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-55 -->
+## 공격 탐지와 방어 검증
+
+회피 기법은 *어떻게 탐지를 피하는가*를 다루지만, 방어자 관점에서는 **그 회피가 다른 계층의 텔레메트리에 남는가**와 **헌팅이 실제로 잡는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 회피가 실효적인지 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 유저랜드 언후킹 | EDR 후킹 | 커널 콜백, ETW-Ti, ELAM | ntdll .text 변경, 직접 syscall |
+| 직접/간접 syscall | 유저모드 후킹 | 커널 텔레메트리, 콜스택 검사 | syscall 이 ntdll 외부에서 발생 |
+| 프로세스 인젝션 | - | EDR 인젝션 탐지, Sysmon | EID 8 CreateRemoteThread, RWX 할당 |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 1) ntdll .text 가 디스크 이미지와 일치하는지 비교 — 불일치 = 언후킹/패치 흔적
+# 2) Sysmon 이 원격 스레드 생성(인젝션)을 EID 8 로 남기는지 확인
+Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' |
+  Where-Object { $_.Id -eq 8 } | Select-Object -First 10
+# 3) 커널 ETW-Ti 텔레메트리가 유저모드 후킹 우회를 보완하는지 확인
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # EDR Bypass — API Hook Bypass, Memory Injection, Detection Analysis
@@ -817,3 +845,29 @@ if __name__ == "__main__":
 | ETW patching          | Monitor ETW provider status                | Kernel Patch Protection                      |
 | RWX memory            | Monitor memory permission changes          | VirtualProtect callback                      |
 | Indirect syscall      | Inspect return address                     | Stack Walk Analysis                          |
+
+---
+
+## Attack Detection and Defense Validation
+
+Evasion covers *how* you avoid detection, but from the defender's side you must verify **whether the evasion surfaces in another layer's telemetry** and **whether hunting actually catches it**. Attackers can use this lens too, to judge which evasions are real.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Userland unhooking | EDR hooks | Kernel callbacks, ETW-Ti, ELAM | ntdll .text modified, direct syscalls |
+| Direct/indirect syscalls | User-mode hooks | Kernel telemetry, call-stack inspection | syscall originating outside ntdll |
+| Process injection | - | EDR injection detection, Sysmon | EID 8 CreateRemoteThread, RWX allocation |
+
+### Defense validation (verify yourself)
+
+```powershell
+# 1) Compare ntdll .text against the on-disk image -- a mismatch = unhook/patch trace
+# 2) Confirm Sysmon logs remote-thread creation (injection) as EID 8
+Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' |
+  Where-Object { $_.Id -eq 8 } | Select-Object -First 10
+# 3) Confirm kernel ETW-Ti telemetry complements user-mode hook evasion
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

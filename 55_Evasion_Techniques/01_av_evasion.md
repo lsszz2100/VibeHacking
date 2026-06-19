@@ -438,6 +438,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-55 -->
+## 공격 탐지와 방어 검증
+
+회피 기법은 *어떻게 탐지를 피하는가*를 다루지만, 방어자 관점에서는 **그 회피가 다른 계층의 텔레메트리에 남는가**와 **헌팅이 실제로 잡는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 회피가 실효적인지 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 시그니처 회피(인코딩/패킹) | 정적 AV | 행위 기반 탐지, AMSI, ML 분류 | 고엔트로피 섹션, 언패킹 후 행위 |
+| 다형성/메타모픽 | 정적 시그니처 | 행위·평판, 에뮬레이션 | 동일 행위 다수 변종, 신생 해시 |
+| 인메모리 실행(파일리스) | 디스크 스캔 | AMSI, 메모리 스캔, ETW | 비정상 RWX 할당, 셸코드 패턴 |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 1) 정적 시그니처를 회피해도 AMSI/행위로 잡히는지 검증(공식 테스트 표본)
+'AMSI Test Sample: 7e72c3ce-861b-4339-8740-0ac1484c1386'  # 차단되면 AMSI 동작
+# 2) Defender 행위 기반 보호가 활성인지 사실 확인
+Get-MpPreference | Select-Object DisableBehaviorMonitoring, DisableIOAVProtection
+# 둘 다 False 여야 정상(행위 모니터링 활성)
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # AV/EDR Evasion Techniques — Encoding, Polymorphism, Detection Evasion
@@ -826,3 +854,29 @@ if __name__ == "__main__":
 | Sandbox bypass     | Detect environment then branch                     | Bypass dynamic analysis       |
 | Memory bypass      | Direct syscalls, fileless execution                | Bypass EDR                    |
 | AMSI bypass        | Runtime patching, reflective loading               | Bypass script scanning        |
+
+---
+
+## Attack Detection and Defense Validation
+
+Evasion covers *how* you avoid detection, but from the defender's side you must verify **whether the evasion surfaces in another layer's telemetry** and **whether hunting actually catches it**. Attackers can use this lens too, to judge which evasions are real.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Signature evasion (encoding/packing) | Static AV | Behavior-based detection, AMSI, ML | High-entropy sections, post-unpack behavior |
+| Polymorphic/metamorphic | Static signatures | Behavior/reputation, emulation | Many variants with identical behavior, new hashes |
+| In-memory exec (fileless) | Disk scan | AMSI, memory scan, ETW | Abnormal RWX allocation, shellcode pattern |
+
+### Defense validation (verify yourself)
+
+```powershell
+# 1) Confirm AMSI/behavior catches it even when static signatures are evaded
+'AMSI Test Sample: 7e72c3ce-861b-4339-8740-0ac1484c1386'  # blocked => AMSI works
+# 2) Confirm Defender behavior-based protection is active
+Get-MpPreference | Select-Object DisableBehaviorMonitoring, DisableIOAVProtection
+# Both should be False (behavior monitoring on)
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

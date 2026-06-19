@@ -451,6 +451,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-55 -->
+## 공격 탐지와 방어 검증
+
+회피 기법은 *어떻게 탐지를 피하는가*를 다루지만, 방어자 관점에서는 **그 회피가 다른 계층의 텔레메트리에 남는가**와 **헌팅이 실제로 잡는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 회피가 실효적인지 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 이벤트 로그 삭제 | - | 로그 전달(WEF/SIEM), 불변 저장 | EID 1102 보안 로그 삭제, 로그 공백 |
+| ETW 무력화 | ETW | 보호된 ETW, 커널 텔레메트리 | ETW 공급자 비활성, 텔레메트리 단절 |
+| 타임스톰핑 | - | MFT/USN 저널 분석 | $SI vs $FN 타임스탬프 불일치 |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 1) 로그가 SIEM 으로 실시간 전달돼 로컬 삭제(EID 1102)가 무력화되는지 확인
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=1102} -MaxEvents 5
+# 원격 수집본이 남아 있으면 로컬 삭제로 흔적 제거 불가 → 로그 전달 동작
+# 2) WEF/전달 구독이 설정돼 있는지 사실 확인
+wecutil es
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # Log Evasion — Event Log Manipulation, Trace Removal, and Forensic Countermeasures
@@ -843,3 +871,29 @@ if __name__ == "__main__":
 | Timestamps | Timestomping (MFT modification) | `touch -t` |
 | Login records | Modify lastlog/wtmp | `utmpdump` |
 | Slack space | SDelete (Microsoft) | `wipe`/`shred` |
+
+---
+
+## Attack Detection and Defense Validation
+
+Evasion covers *how* you avoid detection, but from the defender's side you must verify **whether the evasion surfaces in another layer's telemetry** and **whether hunting actually catches it**. Attackers can use this lens too, to judge which evasions are real.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Event log clearing | - | Log forwarding (WEF/SIEM), immutable store | EID 1102 security log cleared, log gap |
+| ETW disabling | ETW | Protected ETW, kernel telemetry | ETW provider disabled, telemetry break |
+| Timestomping | - | MFT/USN journal analysis | $SI vs $FN timestamp mismatch |
+
+### Defense validation (verify yourself)
+
+```powershell
+# 1) Confirm logs forward to SIEM in real time so local clears (EID 1102) are neutralized
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=1102} -MaxEvents 5
+# If a remote copy remains, a local clear cannot erase traces -> forwarding works
+# 2) Confirm WEF/forwarding subscriptions exist
+wecutil es
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

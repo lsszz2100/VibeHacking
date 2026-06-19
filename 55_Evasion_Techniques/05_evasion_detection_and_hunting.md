@@ -637,6 +637,36 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-55 -->
+## 공격 탐지와 방어 검증
+
+이 단원은 회피를 *방어자 관점*에서 다룬다. 핵심은 회피가 *가능한가*가 아니라 **헌팅 가설이 그 회피를 실제로 포착하는가**를 통제된 랩에서 검증하는 것이다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 언후킹/인젝션 헌팅 | - | ntdll 무결성, Sysmon 7/8 | .text 변조/원격 스레드 탐지 |
+| 로그 삭제 헌팅 | - | WEF, 1102 알림 | 로그 공백/1102 발생 |
+| 파일리스 헌팅 | - | AMSI, 메모리 스캔, ETW | RWX/셸코드 패턴 탐지 |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 헌팅 가설 검증 — 통제된 랩에서 회피를 재현하고 탐지가 발화하는지 확인
+# 1) 보안 로그 삭제(1102)가 SIEM 에 즉시 경보되는지
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=1102} -MaxEvents 5
+# 2) Sysmon 이미지 로드/원격 스레드(7/8)로 인젝션·언후킹이 잡히는지
+Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' |
+  Where-Object { $_.Id -in 7,8 } | Select-Object -First 10
+# 통과: 회피를 시도해도 위 신호 중 하나로 헌팅에 포착됨
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # Evasion Technique Detection and Threat Hunting
@@ -740,3 +770,31 @@ The `MemoryHunter` class uses Volatility3 to detect:
 5 * * * * python3 /opt/hunting/send_to_siem.py \
     /var/log/hunting/$(date +\%Y\%m\%d_\%H).json
 ```
+
+---
+
+## Attack Detection and Defense Validation
+
+This unit covers evasion from the *defender's* perspective. The point is not *whether* evasion is possible, but verifying in a controlled lab **whether a hunting hypothesis actually catches it**.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Unhook/injection hunting | - | ntdll integrity, Sysmon 7/8 | .text tamper/remote-thread detection |
+| Log-clear hunting | - | WEF, 1102 alert | Log gap / 1102 occurrence |
+| Fileless hunting | - | AMSI, memory scan, ETW | RWX/shellcode pattern detection |
+
+### Defense validation (verify yourself)
+
+```powershell
+# Validate hunting hypotheses -- replay evasion in a controlled lab and confirm detection fires
+# 1) Confirm a security-log clear (1102) alerts in SIEM immediately
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=1102} -MaxEvents 5
+# 2) Confirm Sysmon image-load/remote-thread (7/8) catches injection/unhooking
+Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' |
+  Where-Object { $_.Id -in 7,8 } | Select-Object -First 10
+# Pass: even with evasion, one of these signals catches it in hunting
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).
