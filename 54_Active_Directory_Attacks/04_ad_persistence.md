@@ -915,6 +915,35 @@ SecurityEvent
 
 ---
 
+<!-- detect-validate-54 -->
+## 공격 탐지와 방어 검증
+
+AD 공격은 *어떻게 도메인을 장악하는가*를 다루지만, 방어자 관점에서는 **그 기법이 Windows 보안 이벤트에 남는가**와 **통제가 실제로 막는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 통제가 실효적인지 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| Golden Ticket(krbtgt 해시) | - | krbtgt 2회 리셋, 모니터링 | 비정상 TGT 수명, 미존재 계정 인증 |
+| ACL 백도어(AdminSDHolder/DCSync 부여) | - | ACL 감사, AdminSDHolder 모니터링 | EID 5136 위험 ACE 추가(GenericAll, WriteDacl) |
+| DCShadow | - | 비인가 DC 등록 탐지 | 비정상 nTDSDSA 객체 등록 |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 1) krbtgt 비밀번호 최종 변경 시점 확인(Golden Ticket 노출 척도)
+Get-ADUser krbtgt -Properties PasswordLastSet | Select-Object PasswordLastSet
+# 오래됐으면 krbtgt 2회 리셋 필요 → 기존 Golden Ticket 무효화
+# 2) AdminSDHolder 에 위험 ACE(GenericAll, WriteDacl)가 추가됐는지
+(Get-Acl "AD:CN=AdminSDHolder,CN=System,$((Get-ADDomain).DistinguishedName)").Access |
+  Where-Object { $_.ActiveDirectoryRights -match 'GenericAll|WriteDacl' }
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # AD Persistence — Golden Ticket, ACL Manipulation, and Detection CLI
@@ -1222,3 +1251,30 @@ SecurityEvent
 | New admin account | Events 4728, 4732 — group member addition | Alert on protected group changes |
 | DSRM activation | Registry change | Force DsrmAdminLogonBehavior=0 |
 | SID History injection | Events 4765, 4766 — SID History addition | Enable SID filtering |
+
+---
+
+## Attack Detection and Defense Validation
+
+AD attacks cover *how* you take over a domain, but from the defender's side you must verify **whether the technique surfaces in Windows security events** and **whether the control actually blocks it**. Attackers can use this lens too, to judge which controls are real obstacles.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Golden Ticket (krbtgt hash) | - | Reset krbtgt twice, monitor | Abnormal TGT lifetime, auth for non-existent account |
+| ACL backdoor (AdminSDHolder/grant DCSync) | - | Audit ACLs, monitor AdminSDHolder | EID 5136 risky ACE added (GenericAll, WriteDacl) |
+| DCShadow | - | Detect unauthorized DC registration | Abnormal nTDSDSA object registration |
+
+### Defense validation (verify yourself)
+
+```powershell
+# 1) Check krbtgt's last password change (a Golden Ticket exposure metric)
+Get-ADUser krbtgt -Properties PasswordLastSet | Select-Object PasswordLastSet
+# If stale, reset krbtgt twice -> invalidates existing Golden Tickets
+# 2) Check whether risky ACEs (GenericAll, WriteDacl) were added to AdminSDHolder
+(Get-Acl "AD:CN=AdminSDHolder,CN=System,$((Get-ADDomain).DistinguishedName)").Access |
+  Where-Object { $_.ActiveDirectoryRights -match 'GenericAll|WriteDacl' }
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

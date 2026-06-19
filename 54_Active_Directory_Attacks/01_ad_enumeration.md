@@ -906,6 +906,34 @@ hashcat -m 18200 asrep_hashes.txt /usr/share/wordlists/rockyou.txt
 
 ---
 
+<!-- detect-validate-54 -->
+## 공격 탐지와 방어 검증
+
+AD 공격은 *어떻게 도메인을 장악하는가*를 다루지만, 방어자 관점에서는 **그 기법이 Windows 보안 이벤트에 남는가**와 **통제가 실제로 막는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 통제가 실효적인지 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| BloodHound 수집(SharpHound) | - | 허니 객체, LDAP 감사 | EID 4662 광범위 객체 접근, 대량 세션 열거 |
+| LDAP 정찰 | - | LDAP 속도 제한, 디렉터리 감사 | 짧은 시간 대량 디렉터리 질의 |
+| SPN 열거 | - | SPN 모니터링 | `GetUserSPNs` 류 질의 패턴 |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 1) 디렉터리 서비스 접근 감사가 켜져 EID 4662 를 남기는지 확인
+auditpol /get /subcategory:"Directory Service Access"
+# 2) BloodHound 수집 시의 광범위 객체 접근이 로그에 잡히는지
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4662} -MaxEvents 20
+# 비정상적으로 광범위한 객체 접근 패턴이면 SharpHound 정찰 의심
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # Active Directory Enumeration — BloodHound, LDAP, and Automation
@@ -1268,3 +1296,29 @@ Analogy: Imagine calling a reception desk and asking for "Alice's extension"
 | `ADRecon` | Forensic-friendly AD information collection |
 | `Impacket GetUserSPNs.py` | Kerberoasting |
 | `Impacket GetNPUsers.py` | AS-REP Roasting |
+
+---
+
+## Attack Detection and Defense Validation
+
+AD attacks cover *how* you take over a domain, but from the defender's side you must verify **whether the technique surfaces in Windows security events** and **whether the control actually blocks it**. Attackers can use this lens too, to judge which controls are real obstacles.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| BloodHound collection (SharpHound) | - | Honey objects, LDAP audit | EID 4662 broad object access, mass session enumeration |
+| LDAP recon | - | LDAP rate limiting, directory audit | High-volume directory queries in a short window |
+| SPN enumeration | - | SPN monitoring | `GetUserSPNs`-style query pattern |
+
+### Defense validation (verify yourself)
+
+```powershell
+# 1) Confirm Directory Service Access auditing is on and emits EID 4662
+auditpol /get /subcategory:"Directory Service Access"
+# 2) Confirm the broad object access from BloodHound collection appears in logs
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4662} -MaxEvents 20
+# An abnormally broad object-access pattern suggests SharpHound recon
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

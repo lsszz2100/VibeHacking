@@ -636,6 +636,35 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-54 -->
+## 공격 탐지와 방어 검증
+
+이 단원은 AD 공격을 *방어자 관점*에서 다룬다. 핵심은 통제를 *설정했는가*가 아니라 **공격 발생 시 탐지 규칙이 실제로 발화하는가**를 통제된 랩에서 검증하는 것이다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| Kerberoasting 탐지 | - | 4769 RC4 모니터링, 허니 SPN | 탐지 규칙이 RC4 급증에 발화 |
+| DCSync 탐지 | - | 4662 복제 권한 모니터링 | 비-DC 복제 시 경보 |
+| Golden Ticket 탐지 | - | krbtgt 리셋, 이상 TGT 모니터링 | 비정상 티켓 수명/미존재 계정 |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 탐지가 실제 발화하는지 검증 — 통제된 랩에서만
+# 1) 감사 정책이 Kerberos/디렉터리 접근을 기록하는지
+auditpol /get /category:"Account Logon","DS Access"
+# 2) 허니 SPN 에 Kerberoast 시도 → 4769 RC4 가 잡히는지 확인
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4769} -MaxEvents 20
+# 3) 비-DC 복제 권한 부여 → 4662 경보 발화 확인 후 원복(랩 한정)
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # Active Directory Defense and Detection
@@ -1189,3 +1218,30 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+## Attack Detection and Defense Validation
+
+This unit covers AD attacks from the *defender's* perspective. The point is not *whether* controls were configured, but verifying in a controlled lab **whether detection rules actually fire when an attack occurs**.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Kerberoasting detection | - | Monitor 4769 RC4, honey SPN | Rule fires on the RC4 spike |
+| DCSync detection | - | Monitor 4662 replication rights | Alert on replication from a non-DC |
+| Golden Ticket detection | - | Reset krbtgt, monitor anomalous TGTs | Abnormal ticket lifetime/non-existent account |
+
+### Defense validation (verify yourself)
+
+```powershell
+# Verify detection actually fires -- in a controlled lab only
+# 1) Confirm audit policy records Kerberos/directory access
+auditpol /get /category:"Account Logon","DS Access"
+# 2) Kerberoast a honey SPN -> confirm 4769 RC4 is caught
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4769} -MaxEvents 20
+# 3) Grant non-DC replication rights -> confirm the 4662 alert, then revert (lab only)
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

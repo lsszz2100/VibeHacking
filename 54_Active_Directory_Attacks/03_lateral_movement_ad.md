@@ -1159,6 +1159,35 @@ index=windows EventCode=4624 LogonType=3
 
 ---
 
+<!-- detect-validate-54 -->
+## 공격 탐지와 방어 검증
+
+AD 공격은 *어떻게 도메인을 장악하는가*를 다루지만, 방어자 관점에서는 **그 기법이 Windows 보안 이벤트에 남는가**와 **통제가 실제로 막는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 통제가 실효적인지 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| DCSync(복제 권한 악용) | 권한 분리 | DS-Replication 권한 최소화 | EID 4662 비-DC 의 복제 권한 사용 |
+| NTLM 릴레이 | SMB 서명 | SMB 서명 강제, LDAP 채널 바인딩/EPA | 비정상 NTLM 인증 중계 흔적 |
+| PsExec/원격 실행 | - | 서비스 생성 감사, 제한된 관리자 | EID 7045 새 서비스, 4624 Type3 |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 1) 비-DC 주체가 복제 권한(DS-Replication-Get-Changes)을 가졌는지 사실 확인
+(Get-Acl "AD:$((Get-ADDomain).DistinguishedName)").Access |
+  Where-Object { $_.ObjectType -eq '1131f6aa-9c07-11d1-f79f-00c04fc2dcd2' }
+# 2) SMB 서명이 강제돼 릴레이가 막히는지 확인
+Get-SmbServerConfiguration | Select-Object RequireSecuritySignature
+# True 여야 정상 → NTLM 릴레이 차단
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # AD Lateral Movement — NTLM Relay, DCSync, PsExec, and Remote Execution
@@ -1755,3 +1784,30 @@ index=windows EventCode=4624 LogonType=3
 □ Deploy Privileged Access Workstations (PAW)
 □ Implement Tiered Administration model
 ```
+
+---
+
+## Attack Detection and Defense Validation
+
+AD attacks cover *how* you take over a domain, but from the defender's side you must verify **whether the technique surfaces in Windows security events** and **whether the control actually blocks it**. Attackers can use this lens too, to judge which controls are real obstacles.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| DCSync (replication abuse) | Privilege separation | Minimize DS-Replication rights | EID 4662 replication right used by a non-DC |
+| NTLM relay | SMB signing | Enforce SMB signing, LDAP channel binding/EPA | Abnormal NTLM auth-relay traces |
+| PsExec/remote exec | - | Audit service creation, restricted admin | EID 7045 new service, 4624 Type 3 |
+
+### Defense validation (verify yourself)
+
+```powershell
+# 1) Confirm whether a non-DC principal holds replication rights (DS-Replication-Get-Changes)
+(Get-Acl "AD:$((Get-ADDomain).DistinguishedName)").Access |
+  Where-Object { $_.ObjectType -eq '1131f6aa-9c07-11d1-f79f-00c04fc2dcd2' }
+# 2) Confirm SMB signing is enforced so relay is blocked
+Get-SmbServerConfiguration | Select-Object RequireSecuritySignature
+# Should be True -> NTLM relay blocked
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

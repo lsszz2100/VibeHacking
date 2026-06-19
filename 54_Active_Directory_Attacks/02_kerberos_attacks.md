@@ -979,6 +979,35 @@ Install-ADServiceAccount -Identity "sql-svc"
 
 ---
 
+<!-- detect-validate-54 -->
+## 공격 탐지와 방어 검증
+
+AD 공격은 *어떻게 도메인을 장악하는가*를 다루지만, 방어자 관점에서는 **그 기법이 Windows 보안 이벤트에 남는가**와 **통제가 실제로 막는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 통제가 실효적인지 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| Kerberoasting | - | AES 강제, 강한 SPN 계정 PW, gMSA | EID 4769 RC4(0x17) 티켓 요청 급증 |
+| AS-REP Roasting | - | 프리인증 강제(`DONT_REQ_PREAUTH` 제거) | EID 4768 프리인증 미요구 계정 |
+| Golden/Silver Ticket | - | krbtgt 2회 리셋, 모니터링 | EID 4769 비정상 티켓, 미존재 계정 TGT |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 1) RC4 티켓 요청(Kerberoasting 신호)이 로깅되는지 — 4769 + 암호화 0x17
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4769} -MaxEvents 50 |
+  Where-Object { $_.Message -match '0x17' }
+# 2) 프리인증 미요구 계정(AS-REP 대상) 존재 확인
+Get-ADUser -Filter 'DoesNotRequirePreAuth -eq $true' -Properties DoesNotRequirePreAuth
+# 비어야 정상; 있으면 AS-REP Roasting 노출 → 해당 계정 프리인증 강제
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # Kerberos Attacks — Kerberoasting, AS-REP Roasting, and Ticket Attacks
@@ -1886,3 +1915,30 @@ Get-ADUser -Filter {ServicePrincipalName -ne "$null"} `
 # Check krbtgt password age (should be reset regularly)
 Get-ADUser krbtgt -Properties PasswordLastSet | Select-Object PasswordLastSet
 ```
+
+---
+
+## Attack Detection and Defense Validation
+
+AD attacks cover *how* you take over a domain, but from the defender's side you must verify **whether the technique surfaces in Windows security events** and **whether the control actually blocks it**. Attackers can use this lens too, to judge which controls are real obstacles.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Kerberoasting | - | Enforce AES, strong SPN-account PW, gMSA | EID 4769 RC4 (0x17) ticket-request spike |
+| AS-REP Roasting | - | Enforce pre-auth (remove `DONT_REQ_PREAUTH`) | EID 4768 accounts without pre-auth |
+| Golden/Silver Ticket | - | Reset krbtgt twice, monitor | EID 4769 abnormal tickets, TGT for non-existent account |
+
+### Defense validation (verify yourself)
+
+```powershell
+# 1) Confirm RC4 ticket requests (a Kerberoasting signal) are logged -- 4769 + encryption 0x17
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4769} -MaxEvents 50 |
+  Where-Object { $_.Message -match '0x17' }
+# 2) Check for accounts not requiring pre-auth (AS-REP targets)
+Get-ADUser -Filter 'DoesNotRequirePreAuth -eq $true' -Properties DoesNotRequirePreAuth
+# Should be empty; any result exposes AS-REP Roasting -> enforce pre-auth on it
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).
