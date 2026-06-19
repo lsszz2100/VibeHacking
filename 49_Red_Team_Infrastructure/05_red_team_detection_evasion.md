@@ -589,6 +589,35 @@ tags:
 
 ---
 
+<!-- detect-validate-49 -->
+## 공격 탐지와 방어 검증
+
+이 단원은 회피 기법을 *방어자 관점*에서 다룬다. 핵심은 회피가 *가능한가*가 아니라 **성숙한 블루팀이 그 회피를 실제로 잡는가**를 퍼플팀 방식으로 검증하는 것이다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 비콘 탐지 회피 | 네트워크 분석 | NDR, JA3, RITA 비콘 분석 | 비콘 규칙성/장기 연결 탐지 |
+| 인프라 상관 회피 | 위협 인텔 | 인증서·IP 핑거프린팅 | 인프라 재사용 상관(crt.sh/Censys) |
+| 로그/텔레메트리 회피 | EDR/SIEM | 중앙 로깅, 텔레메트리 무결성 | 로그 공백/텔레메트리 변조 알림 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 퍼플팀 검증: 회피 기법을 통제 환경에서 재현하고 블루팀이 잡는지 확인
+# 1) C2 비콘을 RITA 로 돌려 규칙성이 탐지되는지
+rita import conn.log dataset && rita show-beacons dataset | head
+# 2) 인프라 인증서 핑거프린트가 위협인텔과 상관되는지 대조
+# 3) 로그 공백/텔레메트리 변조가 SIEM 무결성 모니터링에 걸리는지
+#    통과: 회피를 시도해도 위 신호 중 하나로 탐지됨 → 통제가 실효적
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # Red Team Infrastructure Detection Evasion (Defender's Perspective)
@@ -1111,3 +1140,30 @@ tags:
 | Process Injection | API call sequences | Medium | EDR, Sysmon |
 | Pass-the-Hash | NTLM authentication source IP mismatch | Low | Windows Event Logs |
 | Kerberoasting | Mass service ticket requests | Low | DC Event 4769 |
+
+---
+
+## Attack Detection and Defense Validation
+
+This unit covers evasion from the *defender's* perspective. The point is not *whether* evasion is possible, but verifying purple-team style **whether a mature blue team actually catches it**.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Beacon detection evasion | Network analysis | NDR, JA3, RITA beacon analysis | Beacon regularity/long-lived connection detection |
+| Infra correlation evasion | Threat intel | Cert/IP fingerprinting | Infra-reuse correlation (crt.sh/Censys) |
+| Log/telemetry evasion | EDR/SIEM | Central logging, telemetry integrity | Log-gap/telemetry-tamper alerts |
+
+### Defense validation (verify yourself)
+
+```bash
+# Purple-team validation: replay the evasion in a controlled env and confirm the blue team catches it
+# 1) Run the C2 beacon through RITA and confirm regularity is detected
+rita import conn.log dataset && rita show-beacons dataset | head
+# 2) Cross-check infra cert fingerprints against threat intel for correlation
+# 3) Confirm log-gap/telemetry-tamper trips SIEM integrity monitoring
+#    Pass: even with evasion, one of the above signals fires -> the control is effective
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

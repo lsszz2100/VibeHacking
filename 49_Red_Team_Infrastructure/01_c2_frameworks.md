@@ -1227,6 +1227,35 @@ tags:
 
 ---
 
+<!-- detect-validate-49 -->
+## 공격 탐지와 방어 검증
+
+레드팀 인프라는 *어떻게 들키지 않고 운영하는가*를 다루지만, 방어자 관점에서는 **그 인프라가 네트워크 텔레메트리에 남는가**와 **탐지가 실제로 잡는가**를 검증해야 한다. 레드팀도 이 관점으로 자기 OPSEC 의 실효성을 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| C2 비콘 통신 | 네트워크 모니터링 | TLS 검사, JA3/JA3S, NDR | 규칙적 비콘 인터벌(낮은 jitter), 알려진 C2 JA3 |
+| 멀레이블 C2 프로파일 | IDS 시그니처 | 행위 기반 탐지, 도메인 평판 | 비정상 User-Agent/URI 패턴 |
+| DNS/DoH C2 | DNS 모니터링 | DoH 검사, 엔트로피 분석 | 고엔트로피 서브도메인, 비정상 TXT 질의량 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 비콘의 규칙성이 탐지되는지 — 연결 간격 분포를 Zeek/RITA 로 분석
+zeek -r capture.pcap
+rita import conn.log dataset && rita show-beacons dataset | head
+# 낮은 jitter 의 비콘은 beacon score 상위로 노출됨 → 탐지 재현
+# 2) JA3 핑거프린트가 알려진 C2 목록과 매칭되는지 확인
+tshark -r capture.pcap -Y 'tls.handshake.type==1' -T fields -e tls.handshake.ja3
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # C2 Frameworks (Command & Control Frameworks)
@@ -1859,3 +1888,30 @@ tags:
 - Sliver GitHub: https://github.com/BishopFox/sliver
 - Havoc Framework GitHub
 - "The C2 Matrix" project (c2matrix.com)
+
+---
+
+## Attack Detection and Defense Validation
+
+Red team infrastructure is about *operating without being caught*, but from the defender's side you must verify **whether the infra surfaces in network telemetry** and **whether detection actually catches it**. Red teamers can use this lens too, to gauge how effective their OPSEC really is.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| C2 beacon traffic | Network monitoring | TLS inspection, JA3/JA3S, NDR | Regular beacon interval (low jitter), known C2 JA3 |
+| Malleable C2 profile | IDS signatures | Behavior-based detection, domain reputation | Abnormal User-Agent/URI patterns |
+| DNS/DoH C2 | DNS monitoring | DoH inspection, entropy analysis | High-entropy subdomains, abnormal TXT query volume |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Confirm beacon regularity is detectable -- analyze interval distribution with Zeek/RITA
+zeek -r capture.pcap
+rita import conn.log dataset && rita show-beacons dataset | head
+# Low-jitter beacons surface at the top of the beacon score -> reproduce the detection
+# 2) Check whether the JA3 fingerprint matches known C2 lists
+tshark -r capture.pcap -Y 'tls.handshake.type==1' -T fields -e tls.handshake.ja3
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

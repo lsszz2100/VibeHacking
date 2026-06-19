@@ -1399,6 +1399,34 @@ echo "  SSH: ssh -i ${CAMPAIGN_NAME}_key operator@$REDIRECTOR_IP"
 
 ---
 
+<!-- detect-validate-49 -->
+## 공격 탐지와 방어 검증
+
+레드팀 인프라는 *어떻게 들키지 않고 운영하는가*를 다루지만, 방어자 관점에서는 **그 인프라가 네트워크 텔레메트리에 남는가**와 **탐지가 실제로 잡는가**를 검증해야 한다. 레드팀도 이 관점으로 자기 OPSEC 의 실효성을 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 자동 배포/IaC | - | IaC 검토, 시크릿 관리(Vault) | 하드코딩 키/토큰 노출 |
+| 대량 페이로드 생성 | AV/EDR | 빌드 검증, 변종 다양화 | 동일 정적 시그니처 다수 변종 |
+| 자동화 인프라 접근 | - | 감사 로깅, 접근통제·MFA | 자동화 콘솔 무인증 접근 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자동화 코드/IaC 에 시크릿이 하드코딩됐는지 사실 확인(레드팀도 OPSEC 위반)
+grep -rnE 'AKIA[0-9A-Z]{16}|api[_-]?key|token=' ./automation || echo "하드코딩 시크릿 0건"
+# 2) 생성된 페이로드들이 동일 정적 해시/시그니처를 공유하지 않는지(클러스터링 위험)
+for p in payloads/*.bin; do sha256sum "$p"; done | awk '{print $1}' | sort | uniq -c
+# 3) 자동화 인프라가 인증·접근통제로 보호되는지 검토
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # Red Team Automation
@@ -2720,3 +2748,29 @@ echo "  SSH: ssh -i ${CAMPAIGN_NAME}_key operator@$REDIRECTOR_IP"
 - MITRE CALDERA: https://github.com/mitre/caldera
 - "Infrastructure as Code" - Kief Morris
 - MITRE ATT&CK Framework: https://attack.mitre.org/
+
+---
+
+## Attack Detection and Defense Validation
+
+Red team infrastructure is about *operating without being caught*, but from the defender's side you must verify **whether the infra surfaces in network telemetry** and **whether detection actually catches it**. Red teamers can use this lens too, to gauge how effective their OPSEC really is.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Auto deploy/IaC | - | IaC review, secret management (Vault) | Hardcoded key/token exposure |
+| Bulk payload generation | AV/EDR | Build verification, variant diversification | Many variants sharing one static signature |
+| Automation infra access | - | Audit logging, access control + MFA | Unauthenticated access to the automation console |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Confirm no secrets are hardcoded in automation/IaC (red teams break OPSEC too)
+grep -rnE 'AKIA[0-9A-Z]{16}|api[_-]?key|token=' ./automation || echo "no hardcoded secrets"
+# 2) Confirm generated payloads don't share one static hash/signature (clustering risk)
+for p in payloads/*.bin; do sha256sum "$p"; done | awk '{print $1}' | sort | uniq -c
+# 3) Review that the automation infra is protected by auth/access control
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

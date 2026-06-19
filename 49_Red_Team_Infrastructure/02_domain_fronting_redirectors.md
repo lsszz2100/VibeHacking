@@ -1021,6 +1021,35 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-49 -->
+## 공격 탐지와 방어 검증
+
+레드팀 인프라는 *어떻게 들키지 않고 운영하는가*를 다루지만, 방어자 관점에서는 **그 인프라가 네트워크 텔레메트리에 남는가**와 **탐지가 실제로 잡는가**를 검증해야 한다. 레드팀도 이 관점으로 자기 OPSEC 의 실효성을 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 도메인 프론팅(SNI≠Host) | TLS 검사 | SNI/Host 불일치 탐지, CDN 정책 | TLS SNI 와 HTTP Host 헤더 불일치 |
+| HTTPS 리다이렉터 | 도메인 평판 | 신생 도메인 차단, 평판 필터 | 신규 등록 도메인, 짧은 TTL |
+| 카테고리 분류 우회 | 웹 프록시 | 카테고리 강제, SSL 인터셉트 | 미분류 도메인으로의 비콘 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) SNI 와 Host 헤더 불일치(도메인 프론팅 신호) 탐지 재현
+tshark -r capture.pcap -Y 'tls.handshake.extensions_server_name && http.host' \
+  -T fields -e tls.handshake.extensions_server_name -e http.host
+# 두 값이 다르면 프론팅 의심 → 인라인 프록시/NDR 이 이를 잡는지 확인
+# 2) 리다이렉터 도메인의 등록일/TTL 확인(신생=위험)
+whois example-redirector.tld | grep -i creation; dig +short example-redirector.tld
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # Domain Fronting and Redirector Setup
@@ -1569,3 +1598,30 @@ Redirector replacement strategy:
 - "Red Team Development and Operations" - Joe Vest
 - Apache mod_rewrite official documentation
 - dnscat2 project: https://github.com/iagox86/dnscat2
+
+---
+
+## Attack Detection and Defense Validation
+
+Red team infrastructure is about *operating without being caught*, but from the defender's side you must verify **whether the infra surfaces in network telemetry** and **whether detection actually catches it**. Red teamers can use this lens too, to gauge how effective their OPSEC really is.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Domain fronting (SNI != Host) | TLS inspection | Detect SNI/Host mismatch, CDN policy | TLS SNI vs HTTP Host header mismatch |
+| HTTPS redirector | Domain reputation | Block new domains, reputation filter | Newly registered domain, short TTL |
+| Category-bypass | Web proxy | Enforce categories, SSL intercept | Beacon to an uncategorized domain |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Reproduce detection of SNI/Host mismatch (a domain-fronting signal)
+tshark -r capture.pcap -Y 'tls.handshake.extensions_server_name && http.host' \
+  -T fields -e tls.handshake.extensions_server_name -e http.host
+# Differing values suggest fronting -> confirm an inline proxy/NDR catches it
+# 2) Check the redirector domain's registration date/TTL (new = risky)
+whois example-redirector.tld | grep -i creation; dig +short example-redirector.tld
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).

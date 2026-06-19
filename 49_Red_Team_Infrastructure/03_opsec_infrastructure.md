@@ -1207,6 +1207,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-49 -->
+## 공격 탐지와 방어 검증
+
+레드팀 인프라는 *어떻게 들키지 않고 운영하는가*를 다루지만, 방어자 관점에서는 **그 인프라가 네트워크 텔레메트리에 남는가**와 **탐지가 실제로 잡는가**를 검증해야 한다. 레드팀도 이 관점으로 자기 OPSEC 의 실효성을 가늠할 수 있다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 인프라 재사용(IP/인증서) | 위협 인텔 | 일회용 인프라, 인증서 회전 | 동일 TLS 인증서/IP 가 과거 캠페인과 겹침 |
+| 빌드 메타데이터 누출 | - | 메타 제거, 분리 빌드 환경 | 페이로드 PDB 경로/사용자명 노출 |
+| 모니터링 공백 | - | 중앙 로깅, 알림 | 인프라 측 탐지 사각지대 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 발행 인증서가 과거 인프라와 겹치는지(OPSEC 누출) 사실 확인
+echo | openssl s_client -connect host:443 2>/dev/null | openssl x509 -noout -fingerprint -sha256
+# 핑거프린트를 위협인텔(crt.sh, Censys)과 대조 — 재사용 시 상관 추적 가능
+# 2) 페이로드에 빌드 메타데이터(PDB 경로/사용자명)가 남았는지
+strings -a payload.exe | grep -iE '\.pdb|C:.Users'  || echo "메타데이터 누출 없음" 
+```
+
+> 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
+
 <a name="english"></a>
 
 # OPSEC Infrastructure Management
@@ -2245,3 +2273,29 @@ if __name__ == "__main__":
 - "Red Team Development and Operations" - Joe Vest & James Tubberville
 - Certificate Transparency: crt.sh
 - OPSEC 5-Step Process - U.S. Navy Manual (OPNAVINST 3070.1)
+
+---
+
+## Attack Detection and Defense Validation
+
+Red team infrastructure is about *operating without being caught*, but from the defender's side you must verify **whether the infra surfaces in network telemetry** and **whether detection actually catches it**. Red teamers can use this lens too, to gauge how effective their OPSEC really is.
+
+### Attack -> mitigation layer -> control (defender) -> detection signal
+
+| Technique | Targeted mitigation | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Infra reuse (IP/cert) | Threat intel | Disposable infra, cert rotation | Same TLS cert/IP overlaps a past campaign |
+| Build metadata leak | - | Strip metadata, isolated build env | Payload PDB path/username exposed |
+| Monitoring gap | - | Central logging, alerting | Blind spots in infra-side detection |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Confirm the served cert does not overlap past infra (OPSEC leak)
+echo | openssl s_client -connect host:443 2>/dev/null | openssl x509 -noout -fingerprint -sha256
+# Compare the fingerprint against threat intel (crt.sh, Censys) -- reuse enables correlation
+# 2) Check whether build metadata (PDB path/username) leaked into the payload
+strings -a payload.exe | grep -iE '\.pdb|C:.Users'  || echo "no metadata leak" 
+```
+
+> Run validation only on **systems you own, in a controlled environment**. "Configured" is not the same as "blocked at runtime" -- reproduce the PoC and confirm the mitigation stops it (see [[68_Purple_Team]]).
