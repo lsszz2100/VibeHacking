@@ -425,6 +425,38 @@ securityContext와 PSA(Pod Security Admission)는 위험한 파드의 *생성*�
 
 ---
 
+<!-- detect-validate-70 -->
+## 공격 탐지와 방어 검증
+
+위에서 예방(어드미션)·탐지(런타임) 계층을 설명했다. 검증은 두 계층이 실제로 작동하는지 — 위험 파드 생성이 *거부*되고, 우회 시 탈출 행위가 *탐지*되는지 — 직접 확인하는 단계다.
+
+### 공격 → 계층 → 통제(예방) → 탐지 신호
+
+| 탈출 벡터 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| privileged 컨테이너 | securityContext | PSA `restricted`·OPA 거부 | Falco 권한 컨테이너 spawn |
+| hostPath `/` 마운트 | 볼륨 | hostPath 차단 정책 | 컨테이너의 호스트 경로 접근 |
+| hostPID/hostNetwork | 파드 스펙 | PSA `baseline` 이상 | 호스트 네임스페이스 사용 파드 |
+| nsenter/setns 탈출 | 런타임 | seccomp·드롭 캡 | 비정상 네임스페이스 전환 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 예방: 위험 파드 '생성'이 어드미션에서 거부되는지 확인
+kubectl run pwn --image=busybox --privileged --restart=Never -- sleep 1d
+# 통과: PSA/OPA가 'forbidden'으로 거부 / 취약: 생성되면 어드미션 미적용
+
+# 2) 탐지: (우회 가정) 권한 파드에서 탈출 행위 시 런타임 룰이 발동하는지
+kubectl exec pwn -- nsenter --target 1 --mount --uts --ipc --net --pid -- id 2>/dev/null
+kubectl logs -n falco -l app=falco --since=2m | grep -i "namespace\|privileged\|escape"
+# 통과: Falco에 탈출 시도 알람 1건+ → 런타임 탐지 동작
+# 취약: 알람 0건이면 런타임 센서 미배포/룰 갭
+```
+
+> 검증은 반드시 **소유한 클러스터·격리 랩에서만** 수행한다. 정책을 "배포했다"가 아니라, 위험 파드 생성이 거부되고 탈출 행위가 탐지되는지 재현으로 확인해야 다층 방어가 성립한다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Pod Escape and Privilege Escalation
@@ -543,3 +575,34 @@ securityContext and PSA (Pod Security Admission) block the *creation* of dangero
 | Spawning a new privileged container | Post-escape foothold expansion | `privileged: true` pod creation event |
 
 > Defense-in-depth principle: all three layers — **admission (prevent) → runtime (detect) → audit (post-hoc trace)** — must exist. Any single layer leaves you defenseless against a 0-day or a config gap. After deploying prevention policies, reproduce the behaviors above in an isolated lab to verify the runtime rules actually fire.
+
+---
+
+## Attack Detection and Defense Validation
+
+The sections above describe the prevention (admission) and detection (runtime) layers. Validation is where you directly confirm both work — that a risky pod is *denied* and, if bypassed, the escape behavior is *detected*.
+
+### Attack -> layer -> control (prevention) -> detection signal
+
+| Escape vector | Target layer | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Privileged container | securityContext | PSA `restricted`, OPA deny | Falco privileged-container spawn |
+| hostPath `/` mount | Volume | hostPath-blocking policy | Container accessing host paths |
+| hostPID/hostNetwork | Pod spec | PSA `baseline`+ | Pod using host namespaces |
+| nsenter/setns escape | Runtime | seccomp, dropped caps | Abnormal namespace switch |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Prevention: confirm a risky pod is denied at admission
+kubectl run pwn --image=busybox --privileged --restart=Never -- sleep 1d
+# Pass: PSA/OPA rejects it as 'forbidden' / Weak: if it's created, admission isn't enforced
+
+# 2) Detection: (assume bypass) does a runtime rule fire on escape behavior?
+kubectl exec pwn -- nsenter --target 1 --mount --uts --ipc --net --pid -- id 2>/dev/null
+kubectl logs -n falco -l app=falco --since=2m | grep -i "namespace\|privileged\|escape"
+# Pass: >= 1 escape-attempt alert in Falco -> runtime detection works
+# Weak: 0 alerts means the runtime sensor isn't deployed / a rule gap
+```
+
+> Run validation only on **clusters you own, in an isolated lab**. Confirm via reproduction that risky-pod creation is denied and escape behavior is detected — not merely that you "deployed" the policy — for defense-in-depth to hold (see [[68_Purple_Team]]).

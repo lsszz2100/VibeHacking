@@ -356,6 +356,37 @@ python3 k8s_surface_scan.py --target $MINIKUBE_IP
 
 ---
 
+<!-- detect-validate-70 -->
+## 공격 탐지와 방어 검증
+
+§4.5는 "어떤 신호가 남는가"를 매핑했다. 여기서는 한 걸음 더 나아가 각 공격 경로에 **예방 통제**를 묶고, 그 탐지·예방이 실제로 동작하는지 직접 검증한다.
+
+### 공격 → 계층 → 통제(예방) → 탐지 신호
+
+| 공격 경로 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| API Server 익명 접근 | 컨트롤 플레인 | `--anonymous-auth=false` | 감사 로그 `system:anonymous` 요청 |
+| etcd 직접 접근 | 데이터 저장소 | mTLS·네트워크 분리 | 2379로의 비-apiserver 출발지 |
+| kubelet API(10250) 남용 | 노드 | `--authorization-mode=Webhook` | 노드→파드 직접 `exec`/`run` |
+| 서비스 계정 토큰 오용 | 워크로드 ID | `automountServiceAccountToken: false` | 동일 SA의 비정상 동사 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 익명 접근이 실제 차단되는지 확인 (인증 없이 API 호출)
+curl -sk https://<API_SERVER>:6443/api/v1/namespaces/default/pods -o /dev/null -w "%{http_code}\n"
+# 통과: 401/403 → 익명 접근 차단됨 / 취약: 200 → anonymous-auth 노출
+# 2) 감사 로깅이 켜져 그 시도가 실제 기록되는지 검증
+kubectl get --raw /api/v1/namespaces/kube-system/pods >/dev/null  # 표본 요청
+grep -m1 'system:anonymous\|"verb":"list"' /var/log/kubernetes/audit.log
+# 통과: 해당 요청이 audit.log에 남음 → 사후 추적 가능
+# 취약: 로그가 비면 감사 정책 미적용 — 침해 후 재구성 불가
+```
+
+> 검증은 반드시 **소유한 클러스터·통제된 환경에서만** 수행한다. 감사 로그는 "켜져 있어야" 신호가 된다 — 위 경로를 실행한 뒤 신호가 실제로 수집·탐지되는지 확인하고, 로그는 클러스터 외부로 전송해 탬퍼링을 막는다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Kubernetes Attack Surface Analysis
@@ -525,3 +556,33 @@ If prevention (RBAC/TLS/PSA) is the first line, detection is the second line tha
 | Ports to check first | 6443, 2379, 10250, 10255, 8001 |
 | Practice environments | minikube (local), kind, k3s |
 | First line of defense | Enable RBAC + enforce TLS everywhere |
+
+---
+
+## Attack Detection and Defense Validation
+
+Section 4.5 mapped *which signals* are left behind. Here we go one step further: tie each attack path to a **preventive control** and verify the detection/prevention actually works.
+
+### Attack -> layer -> control (prevention) -> detection signal
+
+| Attack path | Target layer | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| API Server anonymous access | Control plane | `--anonymous-auth=false` | Audit log `system:anonymous` request |
+| Direct etcd access | Data store | mTLS, network isolation | Non-apiserver source to 2379 |
+| kubelet API (10250) abuse | Node | `--authorization-mode=Webhook` | Node->pod direct `exec`/`run` |
+| Service-account token abuse | Workload identity | `automountServiceAccountToken: false` | Abnormal verbs from the same SA |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Confirm anonymous access is actually blocked (call the API with no auth)
+curl -sk https://<API_SERVER>:6443/api/v1/namespaces/default/pods -o /dev/null -w "%{http_code}\n"
+# Pass: 401/403 -> anonymous access blocked / Weak: 200 -> anonymous-auth exposed
+# 2) Verify audit logging is on and actually records the attempt
+kubectl get --raw /api/v1/namespaces/kube-system/pods >/dev/null  # sample request
+grep -m1 'system:anonymous\|"verb":"list"' /var/log/kubernetes/audit.log
+# Pass: the request appears in audit.log -> post-hoc tracing possible
+# Weak: an empty log means no audit policy - you can't reconstruct a breach
+```
+
+> Run validation only on **clusters you own, in a controlled environment**. Audit logs only become signals if they're "on" — after running these paths, confirm the signals are actually collected/detected, and ship logs off-cluster to prevent tampering (see [[68_Purple_Team]]).

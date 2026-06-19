@@ -403,6 +403,40 @@ spec:
 
 ---
 
+<!-- detect-validate-70 -->
+## 공격 탐지와 방어 검증
+
+위 신호 표가 "무엇이 보이는가"라면, 검증은 default-deny가 실제로 트래픽을 차단하는지와 그 거부가 흐름 로그에 잡히는지를 직접 확인하는 단계다.
+
+### 공격 → 계층 → 통제(예방) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 횡적 이동(파드 간 접근) | L3/L4 | default-deny NetworkPolicy | 흐름 로그의 정책 외 연결 시도 |
+| 내부 포트 스캔 | L4 | 네임스페이스 분리 정책 | 단일 출발지 fan-out |
+| DNS 스푸핑/터널링 | DNS | egress 제한·DNS 정책 | 비정상 긴 쿼리·외부 리졸버 |
+| 평문 스니핑 | 전송 | 서비스 메시 mTLS | 메시 텔레메트리상 평문 구간 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) default-deny가 실제로 파드 간 통신을 막는지 재현
+kubectl run a --image=nicolaka/netshoot --restart=Never -- sleep 1d
+kubectl run b --image=nginx --restart=Never
+kubectl exec a -- curl -s --max-time 3 http://<b-pod-ip> -o /dev/null -w "%{http_code}\n"
+# 통과: 타임아웃/연결거부 → 정책이 횡적 통신 차단
+# 취약: 200이면 NetworkPolicy 미적용 또는 CNI가 정책 미지원
+
+# 2) 그 거부가 흐름 로그에 잡히는지 확인 (Cilium Hubble 예)
+hubble observe --verdict DROPPED --since 2m | grep "<b-pod-ip>"
+# 통과: DROPPED 이벤트가 관측됨 → 탐지 가시성 확보
+# 취약: 로그 없으면 흐름 로깅 미적용(정찰 관측 불가)
+```
+
+> 검증은 반드시 **소유한 클러스터·통제된 환경에서만** 수행한다. "정책을 적용했다"가 아니라 차단이 재현되고 거부가 로그에 남는지 확인해야 한다 — CNI가 NetworkPolicy를 지원하는지도 함께 검증한다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Kubernetes Network Attacks
@@ -500,3 +534,36 @@ spec:
 | Plaintext pod-to-pod traffic | Segment without mTLS | Service mesh telemetry |
 
 > Principle: applying Network Policy isn't the end. Monitor "denied connections" via CNI flow logs (e.g., Hubble) to observe an attacker's lateral-movement recon in real time. A sudden spike in deny logs can itself be a breach signal.
+
+---
+
+## Attack Detection and Defense Validation
+
+If the signal table above is "what is visible," validation is where you directly confirm that default-deny actually blocks traffic and that the denial shows up in flow logs.
+
+### Attack -> layer -> control (prevention) -> detection signal
+
+| Attack | Target layer | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Lateral movement (pod-to-pod) | L3/L4 | default-deny NetworkPolicy | Out-of-policy connection in flow logs |
+| Internal port scan | L4 | Namespace isolation policy | Fan-out from a single source |
+| DNS spoofing/tunneling | DNS | Egress restriction, DNS policy | Abnormally long queries, external resolver |
+| Plaintext sniffing | Transport | Service-mesh mTLS | Plaintext segment in mesh telemetry |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Reproduce whether default-deny actually blocks pod-to-pod traffic
+kubectl run a --image=nicolaka/netshoot --restart=Never -- sleep 1d
+kubectl run b --image=nginx --restart=Never
+kubectl exec a -- curl -s --max-time 3 http://<b-pod-ip> -o /dev/null -w "%{http_code}\n"
+# Pass: timeout/connection refused -> policy blocks lateral traffic
+# Weak: 200 means NetworkPolicy isn't applied or the CNI doesn't enforce it
+
+# 2) Confirm the denial appears in flow logs (Cilium Hubble example)
+hubble observe --verdict DROPPED --since 2m | grep "<b-pod-ip>"
+# Pass: a DROPPED event is observed -> detection visibility exists
+# Weak: no log means flow logging isn't enabled (no recon visibility)
+```
+
+> Run validation only on **clusters you own, in a controlled environment**. Confirm the block reproduces and the denial is logged — not just that you "applied the policy" — and verify your CNI actually supports NetworkPolicy (see [[68_Purple_Team]]).

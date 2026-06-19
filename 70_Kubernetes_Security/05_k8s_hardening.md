@@ -512,6 +512,35 @@ CIS 점검 통과·PSS 라벨 부착·정책 배포는 "구성(configuration)"�
 
 ---
 
+<!-- detect-validate-70 -->
+## 공격 탐지와 방어 검증
+
+§7이 "무엇을 검증할지"를 정했다면, 여기서는 그 효과 검증을 **한 번에 돌리는 실행 절차**다. 각 항목은 "차단되어야 할 행위"를 실제로 시도해 거부/탐지를 확인한다.
+
+### 공격 → 계층 → 통제(예방) → 검증 신호
+
+| 우회 시도 | 노리는 계층 | 1차 통제(예방) | 검증 신호 |
+|---|---|---|---|
+| 권한 파드 생성 | 어드미션 | PSS Restricted·Gatekeeper | `forbidden` 거부 응답 |
+| 위반 매니페스트 적용 | 정책 엔진 | OPA Constraint(enforce) | admission webhook 거부 |
+| etcd 평문 시크릿 | 저장 암호화 | EncryptionConfiguration | etcd 덤프에 평문 미노출 |
+| 위험 RBAC 동사 | 권한 | 최소권한 RBAC | `can-i escalate` → no |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 하드닝 효과를 한 번에 회귀검증 (격리 클러스터)
+echo "[1] PSS/Gatekeeper:"; kubectl run pwn --image=busybox --privileged --restart=Never 2>&1 | grep -qi forbidden && echo OK || echo FAIL
+echo "[2] RBAC 최소권한:"; kubectl auth can-i create clusterrolebindings --as=system:serviceaccount:default:myapp | grep -qx no && echo OK || echo FAIL
+echo "[3] Secret 암호화:"; sudo ETCDCTL_API=3 etcdctl get /registry/secrets/default/mysecret 2>/dev/null | grep -q 'k8s:enc:' && echo OK || echo FAIL
+# 모든 항목 OK여야 하드닝이 '효과'까지 증명됨
+# 하나라도 FAIL이면 audit-only 모드/미적용/드리프트 의심 → 즉시 교정
+```
+
+> 검증은 반드시 **소유한 클러스터·격리 환경에서만** 수행한다. 정책이 `enforce`가 아닌 `audit` 모드면 경고만 남기고 통과시키므로, 위 회귀 검증을 분기마다 재실행해 드리프트를 추세로 잡아야 한다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Kubernetes Security Hardening
@@ -610,3 +639,31 @@ Passing CIS checks, applying PSS labels, and deploying policies prove *configura
 | OPA Gatekeeper | Constraint applied | Apply a violating manifest → admission denied |
 
 > Measurement principle (ties to [[68_Purple_Team]]): validate hardening by "the bypass attempt was actually blocked," not "we applied it." Policies are often left in `audit` mode — warning only while still allowing the action. Re-run these validations quarterly in an isolated environment and trend them to catch config drift that silently neutralizes hardening.
+
+---
+
+## Attack Detection and Defense Validation
+
+If section 7 defined "what to validate," this is the **runnable procedure that does it in one shot**. Each item actually attempts a "should-be-blocked" action to confirm the denial/detection.
+
+### Bypass attempt -> layer -> control (prevention) -> validation signal
+
+| Bypass attempt | Target layer | Primary control (prevention) | Validation signal |
+|---|---|---|---|
+| Create privileged pod | Admission | PSS Restricted, Gatekeeper | `forbidden` denial response |
+| Apply violating manifest | Policy engine | OPA Constraint (enforce) | Admission webhook rejection |
+| etcd plaintext secret | Storage encryption | EncryptionConfiguration | No plaintext in an etcd dump |
+| Risky RBAC verb | Authorization | Least-privilege RBAC | `can-i escalate` -> no |
+
+### Defense validation (verify yourself)
+
+```bash
+# Regression-validate hardening efficacy in one shot (isolated cluster)
+echo "[1] PSS/Gatekeeper:"; kubectl run pwn --image=busybox --privileged --restart=Never 2>&1 | grep -qi forbidden && echo OK || echo FAIL
+echo "[2] RBAC least-priv:"; kubectl auth can-i create clusterrolebindings --as=system:serviceaccount:default:myapp | grep -qx no && echo OK || echo FAIL
+echo "[3] Secret encryption:"; sudo ETCDCTL_API=3 etcdctl get /registry/secrets/default/mysecret 2>/dev/null | grep -q 'k8s:enc:' && echo OK || echo FAIL
+# All items must be OK for hardening to be proven 'effective', not just configured
+# Any FAIL suggests audit-only mode / not applied / drift -> fix immediately
+```
+
+> Run validation only on **clusters you own, in an isolated environment**. If a policy is in `audit` mode rather than `enforce`, it only warns while still allowing the action — re-run this regression quarterly and trend it to catch drift (see [[68_Purple_Team]]).
