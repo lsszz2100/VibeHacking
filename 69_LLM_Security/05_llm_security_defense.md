@@ -416,6 +416,38 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-69 -->
+## 공격 탐지와 방어 검증
+
+방어 아키텍처(입력·출력·도구·운영)는 각 계층이 **무엇을 탐지하고 무엇을 막는지** 명확해야 검증할 수 있다. 위협을 계층·통제·탐지 신호로 정리한다.
+
+### 공격 → 계층 → 통제 → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 인젝션·탈옥 | 입력 가드레일 | 입력 검증·정책 분류기 | 알려진 인젝션/탈옥 코퍼스 매칭 |
+| 시크릿·PII 유출 | 출력 가드레일 | 출력 PII/시크릿 스캐너 | 응답 내 키·토큰·PII 패턴 |
+| 도구 남용(과잉 권한) | 도구 게이트웨이 | 화이트리스트·HITL·인자 검증 | 비정상 도구 호출·예상 밖 인자 |
+| 비용폭증·남용 | 운영/게이트웨이 | 쿼터·속도 제한·이상 탐지 | 단일 키 토큰 급증·오류율 급등 |
+
+### 방어 검증 (직접 확인)
+
+```python
+# CI 회귀로 방어 효과 측정: 차단율(TP)과 오차단율(FP)을 함께 본다
+gw = AIGateway(config="prod.yaml")            # 본 절 미들웨어/게이트웨이
+attacks = load_corpus("known_attacks.txt")    # 인젝션·탈옥·유출 페이로드
+benign  = load_corpus("benign_traffic.txt")
+tp = sum(1 for a in attacks if gw.blocks(a)) / len(attacks)
+fp = sum(1 for b in benign  if gw.blocks(b)) / len(benign)
+print(f"차단율(TP)={tp:.1%}  오차단율(FP)={fp:.1%}")
+# 정상: TP가 정책 기준 이상이면서 FP는 허용 한도 이하
+# 취약: TP가 낮으면 방어 미동작, FP가 높으면 가용성 훼손
+```
+
+> 검증은 **소유한 시스템·통제된 환경**에서만 수행한다. 모델 버전·프롬프트·도구 권한이 바뀔 때마다 이 회귀를 다시 돌려, 방어가 조용히 무너지지 않았는지 두 지표로 측정한다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # LLM Security Defense Strategies
@@ -474,3 +506,34 @@ Having the four layers above does not make you safe. Defenses **must be adversar
 - **Change management:** re-evaluate whenever the model version, system prompt, or tool privileges change, since existing defenses can silently break.
 
 > Defense is a **continuous process**, not a one-time setting. Attack techniques evolve daily, so the goal is not "we blocked it once" but "we keep measuring." A defense that is never evaluated gives a false sense of security.
+
+---
+
+## Attack Detection and Defense Validation
+
+A defense architecture (input, output, tools, operations) can only be validated when each layer's job — **what it detects and what it blocks** — is explicit. Map threats to layers, controls, and detection signals.
+
+### Attack -> layer -> control -> detection signal
+
+| Attack | Target layer | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Injection / jailbreak | Input guardrail | Input validation, policy classifier | Match against known injection/jailbreak corpus |
+| Secret / PII leakage | Output guardrail | Output PII/secret scanner | Keys, tokens, PII patterns in responses |
+| Tool abuse (excessive agency) | Tool gateway | Allowlist, HITL, argument validation | Abnormal tool calls, unexpected arguments |
+| Cost spike / abuse | Operations/gateway | Quotas, rate limits, anomaly detection | Token surge or error-rate spike on one key |
+
+### Defense validation (verify yourself)
+
+```python
+# CI regression to measure defense effectiveness: track block rate (TP) and false positives (FP) together
+gw = AIGateway(config="prod.yaml")            # the middleware/gateway from this section
+attacks = load_corpus("known_attacks.txt")    # injection/jailbreak/leakage payloads
+benign  = load_corpus("benign_traffic.txt")
+tp = sum(1 for a in attacks if gw.blocks(a)) / len(attacks)
+fp = sum(1 for b in benign  if gw.blocks(b)) / len(benign)
+print(f"block rate(TP)={tp:.1%}  false-positive(FP)={fp:.1%}")
+# OK:   TP meets policy while FP stays under the allowed limit
+# Weak: low TP means the defense does nothing; high FP harms availability
+```
+
+> Run validation only on **systems you own, in a controlled environment**. Re-run this regression whenever the model version, prompt, or tool privileges change, and use both metrics to confirm the defense has not silently broken (see [[68_Purple_Team]]).

@@ -340,6 +340,35 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-69 -->
+## 공격 탐지와 방어 검증
+
+추출·역전 공격은 단발이 아니라 **장기·대량 쿼리 패턴**으로 나타난다. 위의 탐지 신호를 통제와 묶고, 방어가 실제로 동작하는지 검증한다.
+
+### 공격 → 계층 → 통제 → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 모델 추출(증류) | 쿼리 API | 키별 쿼리 쿼터·적응형 속도 제한 | 단일 키의 쿼리량 급증, 격자형 입력 휩쓸기 |
+| 멤버십 추론 | 신뢰도/로그잇 출력 | 확률 출력 제한·반올림, 온도 노출 차단 | 동일 샘플 반복 질의로 신뢰도 측정 |
+| 모델 역전(훈련데이터 복원) | 출력 | 출력 필터·DP 노이즈, 암기 억제 | 특정 PII 재현을 유도하는 탐침 질의 |
+| 결정경계 추출 | 분류 경계 | 경계 근처 응답 평활화 | 분류 경계 근처 반복 질의 |
+
+### 방어 검증 (직접 확인)
+
+```python
+# 추출 캠페인 탐지 검증: 휩쓸기 패턴이 속도 제한/경보를 실제로 유발하는지 재현
+sim = ExtractionSimulator(target=my_model)          # 본 절 실습 코드
+score = sim.run(queries=5000, strategy="grid_sweep")  # 격자형 대량 쿼리
+print(f"extraction_risk_score={score:.2f}, rate_limited={sim.was_throttled}")
+# 정상: 위험 점수가 임계치를 넘으면 throttle/경보가 작동 (was_throttled=True)
+# 취약: 5000건 휩쓸기에도 차단이 없으면 추출에 무방비
+```
+
+> 검증은 **소유한 모델·통제된 환경**에서만 수행한다. 워터마킹·쿼터·DP 노이즈를 "설정했다"가 아니라, 시뮬레이션 추출이 실제로 탐지·차단되는지 측정해야 신뢰할 수 있다([[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Model Extraction and Inversion
@@ -413,3 +442,31 @@ python3 03_model_extraction_and_inversion.py extraction \
 ```
 
 The extraction risk score formula weighs query volume (60%) and response diversity (40%), giving defenders a metric to trigger rate-limiting or alerting.
+
+---
+
+## Attack Detection and Defense Validation
+
+Extraction and inversion attacks show up as **long-running, high-volume query patterns**, not single requests. Tie the detection signals to controls and verify the defenses actually fire.
+
+### Attack -> layer -> control -> detection signal
+
+| Attack | Target layer | Primary control (prevention) | Detection signal |
+|---|---|---|---|
+| Model extraction (distillation) | Query API | Per-key quotas, adaptive rate limits | Query-volume surge on one key, grid-sweep inputs |
+| Membership inference | Confidence/logit output | Limit/round probability output, hide temperature | Repeated queries on the same sample to read confidence |
+| Model inversion (training-data recovery) | Output | Output filter, DP noise, memorization suppression | Probe queries coaxing specific PII reproduction |
+| Decision-boundary extraction | Classification boundary | Smooth responses near the boundary | Repeated queries near the decision boundary |
+
+### Defense validation (verify yourself)
+
+```python
+# Extraction-campaign detection test: reproduce whether a sweep actually triggers throttling/alerts
+sim = ExtractionSimulator(target=my_model)            # this section's lab code
+score = sim.run(queries=5000, strategy="grid_sweep")  # high-volume grid queries
+print(f"extraction_risk_score={score:.2f}, rate_limited={sim.was_throttled}")
+# OK:   when the risk score crosses the threshold, throttling/alerting fires (was_throttled=True)
+# Weak: if a 5000-query sweep is never blocked, you are defenseless against extraction
+```
+
+> Run validation only on **models you own, in a controlled environment**. Verify not that watermarking/quotas/DP noise are "configured" but that a simulated extraction is actually detected and blocked (see [[68_Purple_Team]]).
