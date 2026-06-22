@@ -1250,6 +1250,34 @@ Capture → Options → Add new interfaces → Remote interfaces
 
 ---
 
+<!-- detect-validate-02 -->
+## 패킷 분석으로 공격 탐지 검증
+
+이 문서는 패킷 분석을 다루므로, 여기서는 *어떻게 캡처/필터하는가*를 넘어 **분석이 실제 공격을 잡아내는가**와 **탐지 룰이 캡처에서 발화하는가**를 검증하는 데 집중한다. "캡처했다 ≠ 탐지했다"이다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 분석 대상 | 검증 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 스캔/리컨 | 캡처에서 식별되는가? | SYN 분포, 포트 스윕 패턴 | 분산/저속 스캔 누락 |
+| 평문 자격증명 | 노출이 보이는가? | HTTP/FTP basic, 쿠키 | TLS 구간 가시성 부재 |
+| C2/비콘 | 주기성이 드러나는가? | 균일 간격 플로우, JA3 | 도메인 프론팅 회피 |
+| 데이터 유출 | 비정상 업로드 보이는가? | 아웃바운드 바이트 급증 | 암호화 터널 내 은닉 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 캡처에서 룰이 실제 발화하는지 검증 — pcap 을 Suricata 로 오프라인 재생(소유 캡처)
+suricata -r suspect.pcap -l ./out --runmode single
+grep -c '"event_type":"alert"' ./out/eve.json   # 0 이면 룰 미발화 → 룰셋/시그니처 점검
+# tshark 로 비콘 의심 주기성(균일 간격 플로우) 빠른 확인
+tshark -r suspect.pcap -q -z io,stat,30 | head
+```
+
+> 검증은 **소유/위임받은 캡처·통제 환경**에서만. 캡처가 곧 탐지를 의미하지 않는다 — 알려진 공격 pcap 을 룰셋에 재생해 경보가 나오는지, 운영 캡처에 가시성 사각이 없는지 확인한다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # Packet Analysis — Wireshark & tcpdump Practical Guide
@@ -2409,3 +2437,29 @@ Capture → Options → Add new interfaces → Remote interfaces
   Port: 2002 (default)
   → Analyze remote server traffic in local Wireshark
 ```
+
+<!-- detect-validate-02 -->
+## Validating Attack Detection via Packet Analysis
+
+Since this document covers packet analysis, here we go beyond *how to capture/filter* to verify **whether analysis actually catches the attack** and **whether detection rules fire on the capture**. "Captured != detected."
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Analysis target | Validation question | Measured signal | Pitfall |
+|---|---|---|---|
+| Scan/recon | Identifiable in capture? | SYN distribution, port-sweep pattern | Misses distributed/slow scans |
+| Cleartext credentials | Is exposure visible? | HTTP/FTP basic, cookies | No visibility inside TLS |
+| C2/beacon | Does periodicity show? | Uniform-interval flows, JA3 | Domain-fronting evasion |
+| Data exfiltration | Abnormal upload visible? | Outbound byte spikes | Hidden inside encrypted tunnel |
+
+### Defense validation (verify directly)
+
+```bash
+# Verify rules actually fire on the capture — replay pcap through Suricata offline (own capture)
+suricata -r suspect.pcap -l ./out --runmode single
+grep -c '"event_type":"alert"' ./out/eve.json   # 0 means no rule fired -> check ruleset/signatures
+# Quick beacon-periodicity check (uniform-interval flows) with tshark
+tshark -r suspect.pcap -q -z io,stat,30 | head
+```
+
+> Validate only on **owned/authorized captures / controlled environments**. A capture does not imply detection — replay known-attack pcaps through your ruleset to confirm alerts, and check for visibility blind spots ([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).

@@ -934,6 +934,34 @@ tshark -r capture.pcap -Y "wlan.fc.type_subtype == 0x08" \
 
 ---
 
+<!-- detect-validate-02 -->
+## 무선 공격 탐지와 방어 검증
+
+Wi-Fi 공격은 *어떻게 인증을 깨거나 가로채는가*를 다루지만, 방어자는 **각 공격이 WIDS·관리프레임·RF 어디에 흔적을 남기는가**와 **802.11w/PMF·WPA3 가 실제로 막는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 디오스(deauth) 플러드 | L2 관리프레임 | 802.11w(PMF) | 다량 deauth/disassoc 프레임 |
+| 로그/이블 트윈 AP | 연결 신뢰 | WIDS, 802.1X | 동일 SSID 다중 BSSID, 신호 이상 |
+| WPA2 핸드셰이크 크랙 | 인증 PSK | 강한 PSK, WPA3-SAE | EAPOL 캡처 시도, 반복 재인증 |
+| KARMA/프로브 응답 | 클라이언트 선호 | 자동연결 차단 | 임의 SSID에 응답하는 AP |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) deauth 공격이 WIDS/캡처에 보이는지 검증 — 소유 AP/통제 RF 환경에서만
+sudo airodump-ng wlan0mon --band a -w cap   # 관리프레임 모니터링
+tshark -r cap-01.cap -Y 'wlan.fc.type_subtype==0x0c' | wc -l  # deauth 프레임 수
+# 2) PMF(802.11w)가 적용됐는지 사실 확인(hostapd 설정)
+grep -E '^ieee80211w' /etc/hostapd/hostapd.conf || echo 'PMF NOT SET — deauth 취약'
+```
+
+> 검증은 반드시 **소유한 무선·통제 RF 환경**에서만(전파 규제 준수). "PMF/WPA3 켰다"와 "deauth/이블트윈을 실제 막는다"는 다르다 — PoC 를 재현해 WIDS 경보와 차단을 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Wireless Network Hacking — Complete Wi-Fi Security Guide
@@ -1769,3 +1797,29 @@ airodump-ng wlan0mon --band abg 2>/dev/null | grep -v "BSSID" | \
 tshark -r capture.pcap -Y "wlan.fc.type_subtype == 0x08" \
     -T fields -e wlan_radio.channel -e wlan.ssid | sort | uniq -c
 ```
+
+<!-- detect-validate-02 -->
+## Wireless Attack Detection and Defense Validation
+
+Wi-Fi attacks describe *how to break or intercept auth*, but defenders must verify **where each leaves traces (WIDS, management frames, RF)** and **whether 802.11w/PMF and WPA3 actually block**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Deauth flood | L2 management frames | 802.11w (PMF) | Many deauth/disassoc frames |
+| Rogue/evil-twin AP | Connection trust | WIDS, 802.1X | Same SSID multiple BSSIDs, signal anomaly |
+| WPA2 handshake crack | Auth PSK | Strong PSK, WPA3-SAE | EAPOL capture attempts, repeated reauth |
+| KARMA/probe response | Client preference | Block auto-connect | AP responding to arbitrary SSIDs |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify a deauth attack is visible to WIDS/capture — owned AP / controlled RF only
+sudo airodump-ng wlan0mon --band a -w cap   # monitor management frames
+tshark -r cap-01.cap -Y 'wlan.fc.type_subtype==0x0c' | wc -l  # deauth frame count
+# 2) Confirm PMF (802.11w) is enabled (hostapd config)
+grep -E '^ieee80211w' /etc/hostapd/hostapd.conf || echo 'PMF NOT SET — deauth vulnerable'
+```
+
+> Validate only on **owned wireless / controlled RF environments** (obey spectrum regulations). "Enabled PMF/WPA3" differs from "actually blocks deauth/evil-twin" — reproduce PoCs to confirm WIDS alerts and blocking ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).

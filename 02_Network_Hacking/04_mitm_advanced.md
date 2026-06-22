@@ -386,6 +386,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-02 -->
+## MITM 탐지와 방어 검증
+
+MITM 기법은 *어떻게 트래픽을 가로채는가*를 다루지만, 방어자는 **가로채기가 ARP 테이블·인증서·게이트웨이 어디에 흔적을 남기는가**와 **DAI·HSTS·인증서 고정이 실제로 막는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| ARP 스푸핑 | L2 주소해석 | 동적 ARP 검사(DAI) | 동일 IP 다중 MAC, ARP 급증 |
+| SSL 스트리핑 | HTTPS 다운그레이드 | HSTS, preload | http 강제 리디렉트, 평문 폼 전송 |
+| DNS 스푸핑 | 이름해석 | DNSSEC, DoH | 비정상 응답 IP, TTL 이상 |
+| 악성 인증서 | 신뢰 체인 | 인증서 고정, CT 로그 | 미신뢰 발급자, 갑작스런 핀 변경 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) ARP 스푸핑이 탐지되는지 검증 — 통제 LAN 에서 게이트웨이 IP의 MAC 변화 모니터
+sudo arpwatch -i eth0   # 동일 IP 의 MAC 변경 시 'flip flop' 로깅
+ip neigh | awk '{print $1, $5}' | sort | uniq -c | awk '$1>1'  # 1 IP 다중 MAC 의심
+# 2) DAI(동적 ARP 검사)가 스위치에 켜졌는지/HSTS 헤더 전송되는지 사실 확인
+curl -sI https://localhost/ | grep -i 'strict-transport-security' || echo 'NO HSTS'
+```
+
+> 검증은 **소유한 네트워크·통제 환경**에서만. "DAI/HSTS 설정"과 "가로채기를 실제 차단·탐지"는 다르다 — ARP 스푸핑/SSL 스트립 PoC 를 재현해 경보와 차단을 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # MITM Advanced — ARP Spoofing · SSL Stripping · bettercap · mitmproxy
@@ -671,3 +699,29 @@ if __name__ == "__main__":
 | SSL Stripping | HTTP connection warning | HSTS Preload · CSP |
 | DNS Spoofing | DNSSEC validation | DNSSEC · DoH (DNS over HTTPS) |
 | Fake CA | Certificate pinning | Certificate Pinning · CT logs |
+
+<!-- detect-validate-02 -->
+## MITM Detection and Defense Validation
+
+MITM techniques describe *how to intercept traffic*, but defenders must verify **where interception leaves traces (ARP table, certificates, gateway)** and **whether DAI, HSTS, and cert pinning actually block**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| ARP spoofing | L2 address resolution | Dynamic ARP Inspection (DAI) | Same IP multiple MACs, ARP spikes |
+| SSL stripping | HTTPS downgrade | HSTS, preload | Forced http redirect, cleartext form posts |
+| DNS spoofing | Resolution | DNSSEC, DoH | Abnormal response IPs, TTL anomalies |
+| Rogue certificate | Trust chain | Cert pinning, CT logs | Untrusted issuer, sudden pin change |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify ARP spoofing is detectable — monitor MAC changes for the gateway IP on a controlled LAN
+sudo arpwatch -i eth0   # logs 'flip flop' when an IP's MAC changes
+ip neigh | awk '{print $1, $5}' | sort | uniq -c | awk '$1>1'  # one IP, multiple MACs = suspect
+# 2) Confirm DAI on the switch / HSTS header is sent
+curl -sI https://localhost/ | grep -i 'strict-transport-security' || echo 'NO HSTS'
+```
+
+> Validate only on **owned networks / controlled environments**. "Configured DAI/HSTS" differs from "actually blocks/detects interception" — reproduce ARP-spoof/SSL-strip PoCs to confirm alerts and blocking ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).

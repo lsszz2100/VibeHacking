@@ -1399,6 +1399,34 @@ Step 5: 호스트 범위
 
 ---
 
+<!-- detect-validate-02 -->
+## 네트워크 공격 탐지와 방어 검증
+
+계층별 공격은 *어떻게 동작하는가*를 다루지만, 방어자는 **각 공격이 IDS·플로우·스위치 텔레메트리 어디에 흔적을 남기는가**와 **통제가 런타임에 실제로 막는가**를 검증해야 한다. 공격자도 어떤 공격이 탐지되는지 이 관점으로 가늠한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 포트 스캔 | L4 전송 | 레이트 리밋, 포트 노크 | 짧은 시간 다수 SYN, RST 급증 |
+| IP/MAC 스푸핑 | L2/L3 | uRPF, DHCP 스누핑 | 소스 IP-인터페이스 불일치 |
+| SYN 플러드 | L4 핸드셰이크 | SYN 쿠키, 레이트 리밋 | 반개방 연결 급증, SYN:ACK 불균형 |
+| DNS 스푸핑/터널 | L7 이름해석 | DNSSEC, 응답 검증 | 비정상 TXT 양, 고엔트로피 서브도메인 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 포트 스캔이 IDS 에 탐지되는지 검증 — Suricata 실행 중 소유 호스트를 스캔(통제 환경)
+sudo nmap -sS -T4 192.0.2.10   # 자신이 소유한 대상 IP
+sudo tail -n 20 /var/log/suricata/fast.log | grep -i 'scan' || echo 'NO SCAN ALERT — 룰 점검'
+# 2) uRPF/스푸핑 방지가 켜졌는지 사실 확인(리눅스 라우터)
+sysctl net.ipv4.conf.all.rp_filter   # 1 또는 2 여야 역경로 필터 활성
+```
+
+> 검증은 반드시 **소유한 네트워크·통제 환경**에서만. 통제를 "설정했다"와 "공격을 실제 탐지·차단한다"는 다르다 — 스캔/스푸핑 PoC 를 재현해 IDS 가 경보하는지 확인해야 신뢰할 수 있다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # OSI 7 Layers & TCP/IP — Fundamentals of Network Hacking
@@ -2678,3 +2706,29 @@ Example: Aggregate 192.168.4.0/24 ~ 192.168.7.0/24 into /22
     192.168.00000110.0     → Supernet: 192.168.4.0/22
     192.168.00000111.0  ←
 ```
+
+<!-- detect-validate-02 -->
+## Network Attack Detection and Defense Validation
+
+Per-layer attacks describe *how they work*, but defenders must verify **where each leaves traces (IDS, flow, switch telemetry)** and **whether controls actually block at runtime**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Port scan | L4 transport | Rate limit, port knocking | Many SYNs in short window, RST spikes |
+| IP/MAC spoofing | L2/L3 | uRPF, DHCP snooping | Source IP-interface mismatch |
+| SYN flood | L4 handshake | SYN cookies, rate limit | Half-open spikes, SYN:ACK imbalance |
+| DNS spoof/tunnel | L7 resolution | DNSSEC, response validation | Abnormal TXT volume, high-entropy subdomains |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify a port scan is detected by IDS — scan an owned host while Suricata runs (controlled env)
+sudo nmap -sS -T4 192.0.2.10   # an IP you own
+sudo tail -n 20 /var/log/suricata/fast.log | grep -i 'scan' || echo 'NO SCAN ALERT — check rules'
+# 2) Confirm uRPF/anti-spoofing is enabled (Linux router)
+sysctl net.ipv4.conf.all.rp_filter   # must be 1 or 2 for reverse-path filtering
+```
+
+> Validate only on **owned networks / controlled environments**. "Configured" a control differs from "actually detects/blocks the attack" — reproduce scan/spoof PoCs to confirm IDS alerts ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
