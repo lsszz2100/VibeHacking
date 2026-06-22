@@ -590,6 +590,33 @@ print(metrics.generate_report())
 
 ---
 
+<!-- detect-validate-17 -->
+## 피싱 탐지와 방어 검증
+
+피싱·사회공학은 *어떻게 사람을 속이는가*를 다루지만, 방어자는 **각 기법이 이메일 인증·게이트웨이·사용자 신고 어디에 흔적을 남기는가**와 **SPF/DKIM/DMARC 가 실제로 스푸핑을 막는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 도메인 스푸핑 | 발신자 신뢰 | SPF/DKIM/DMARC | DMARC 실패, 정렬 불일치 |
+| 유사 도메인(타이포스쿼팅) | 시각적 신뢰 | 도메인 모니터링 | 신규 유사 도메인, 동형문자 |
+| 악성 첨부/링크 | 콘텐츠 실행 | 샌드박스, URL 재작성 | 매크로 문서, 리디렉션 체인 |
+| 자격증명 수집 | 인증 입력 | MFA, 피싱저항 인증 | 위장 로그인 폼, 신규 호스팅 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 도메인 스푸핑 방어(SPF/DKIM/DMARC)가 실제 게시됐는지 검증(소유 도메인)
+dig +short TXT example.com | grep -i 'v=spf1' || echo 'NO SPF'
+dig +short TXT _dmarc.example.com | grep -i 'v=DMARC1' || echo 'NO DMARC'
+# DMARC 정책이 p=none 이면 모니터만 — p=quarantine/reject 여야 스푸핑 실제 차단
+```
+
+> 검증은 **승인된 교전·소유 도메인·통제 환경**에서만(RoE·동의 준수). "DMARC 게시"와 "스푸핑 메일을 실제 거부한다"는 다르다 — 정책이 p=reject 인지, 모의 피싱이 게이트웨이에 잡히는지 확인한다([[33_OSINT_Social_Engineering]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Phishing and Social Engineering Attacks
@@ -818,3 +845,28 @@ Procedural Defenses:
   □ Phone verification for urgent requests
   □ Out-of-band authentication channels
 ```
+
+<!-- detect-validate-17 -->
+## Phishing Detection and Defense Validation
+
+Phishing/social engineering describe *how people are deceived*, but defenders must verify **where each leaves traces (email auth, gateway, user reports)** and **whether SPF/DKIM/DMARC actually block spoofing**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Domain spoofing | Sender trust | SPF/DKIM/DMARC | DMARC failures, alignment mismatch |
+| Lookalike (typosquatting) | Visual trust | Domain monitoring | New similar domains, homoglyphs |
+| Malicious attachment/link | Content execution | Sandbox, URL rewriting | Macro docs, redirect chains |
+| Credential harvesting | Auth input | MFA, phishing-resistant auth | Fake login forms, newly hosted sites |
+
+### Defense validation (verify directly)
+
+```bash
+# Verify domain-spoofing defenses (SPF/DKIM/DMARC) are actually published (own domain)
+dig +short TXT example.com | grep -i 'v=spf1' || echo 'NO SPF'
+dig +short TXT _dmarc.example.com | grep -i 'v=DMARC1' || echo 'NO DMARC'
+# p=none means monitor only — p=quarantine/reject is required to actually block spoofing
+```
+
+> Validate only on **authorized engagements / owned domains / controlled environments** (follow RoE and consent). "Published DMARC" differs from "actually rejects spoofed mail" — confirm p=reject and that simulated phishing is caught at the gateway ([[33_OSINT_Social_Engineering]], [[13_SOC_Blue_Team]]).

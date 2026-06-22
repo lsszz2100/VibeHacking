@@ -514,6 +514,34 @@ iptables -A INPUT -p tcp --dport 8443 \
 
 ---
 
+<!-- detect-validate-17 -->
+## C2 탐지와 방어 검증
+
+C2 인프라는 *어떻게 은밀히 명령·제어하는가*를 다루지만, 방어자는 **비콘이 네트워크 플로우·TLS 핑거프린트·DNS 어디에 흔적을 남기는가**와 **이그레스 통제·탐지가 실제로 잡는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| HTTP(S) 비콘 | 아웃바운드 웹 | 이그레스 프록시, TLS 검사 | 균일 간격 연결, 비정상 UA/JA3 |
+| DNS 터널/비콘 | 이름해석 | DNS 모니터링, RPZ | 고엔트로피 서브도메인, TXT 급증 |
+| 도메인 프론팅 | CDN 신뢰 | SNI 검사, 정책 | SNI-Host 불일치 |
+| 말리블 프로파일 | 시그니처 회피 | 행위/주기성 분석 | 지터에도 남는 주기성 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# C2 비콘(균일 간격 아웃바운드)이 탐지되는지 검증 — 소유/통제 캡처를 Zeek 으로 분석
+zeek -r traffic.pcap 2>/dev/null && ls conn.log ssl.log 2>/dev/null
+# 동일 목적지로의 연결 간격이 거의 일정하면 비콘 의심(지터 포함)
+awk '{print $3, $5}' conn.log 2>/dev/null | sort | uniq -c | sort -rn | head
+# ssl.log 의 JA3 해시를 알려진 C2 프로파일과 대조
+```
+
+> 검증은 **승인된 교전·소유/통제 네트워크**에서만(RoE 준수). "이그레스 필터 설정"과 "비콘을 실제 차단·탐지한다"는 다르다 — 통제 환경에서 비콘을 재생해 주기성·JA3 가 탐지되는지 확인한다([[49_Red_Team_Infrastructure]], [[72_Malware_Sandbox_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # C2 (Command and Control) Infrastructure Setup and Operations
@@ -665,3 +693,29 @@ error_log /dev/null crit;
 iptables -A INPUT -p tcp --dport 8443 \
   ! -s REDIRECTOR_IP -j DROP
 ```
+
+<!-- detect-validate-17 -->
+## C2 Detection and Defense Validation
+
+C2 infrastructure describes *how to covertly command and control*, but defenders must verify **where beacons leave traces (network flow, TLS fingerprint, DNS)** and **whether egress controls and detection actually catch them**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| HTTP(S) beacon | Outbound web | Egress proxy, TLS inspection | Uniform-interval connects, abnormal UA/JA3 |
+| DNS tunnel/beacon | Resolution | DNS monitoring, RPZ | High-entropy subdomains, TXT spikes |
+| Domain fronting | CDN trust | SNI inspection, policy | SNI-Host mismatch |
+| Malleable profile | Signature evasion | Behavior/periodicity analysis | Periodicity surviving jitter |
+
+### Defense validation (verify directly)
+
+```bash
+# Verify C2 beacons (uniform-interval outbound) are detectable — analyze an owned/controlled capture with Zeek
+zeek -r traffic.pcap 2>/dev/null && ls conn.log ssl.log 2>/dev/null
+# Near-constant connect intervals to the same destination suggest a beacon (even with jitter)
+awk '{print $3, $5}' conn.log 2>/dev/null | sort | uniq -c | sort -rn | head
+# Compare JA3 hashes in ssl.log against known C2 profiles
+```
+
+> Validate only on **authorized engagements / owned/controlled networks** (follow RoE). "Configured egress filter" differs from "actually blocks/detects beacons" — replay a beacon in a controlled environment to confirm periodicity/JA3 detection ([[49_Red_Team_Infrastructure]], [[72_Malware_Sandbox_Analysis]]).

@@ -965,6 +965,33 @@ wevtutil cl Security
 
 ---
 
+<!-- detect-validate-17 -->
+## 레드팀 공격 탐지와 방어 검증
+
+레드팀 플레이북은 *킬체인 각 단계를 어떻게 수행하는가*를 다루지만, 가치는 **각 단계가 방어 텔레메트리에 탐지되는가**를 측정하는 데 있다. 퍼플팀 관점에서 단계별 탐지 커버리지를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 단계(ATT&CK) | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 초기 접근 | 노출 표면 | MFA, 첨부/링크 필터 | 비정상 로그인, 피싱 클릭 |
+| 실행/지속 | 엔드포인트 | EDR, 앱 화이트리스트 | 의심 프로세스, 자동시작 변경 |
+| 권한상승 | 인증/토큰 | 최소권한, LAPS | 토큰 조작, SUID/UAC 우회 |
+| 횡적이동 | 세그먼트 | 세그멘테이션, 모니터링 | 비정상 동서 트래픽, 원격실행 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 단계별 탐지가 실제 발화하는지 검증 — Atomic Red Team 류 테스트를 소유 랩에서 실행 후 경보 확인
+# (예: 실행 단계 T1059 수행 후 Sysmon/auditd 로그에 프로세스 생성이 잡히는지)
+sudo ausearch -m EXECVE --start recent 2>/dev/null | tail   # 실행 이벤트 수집 확인
+# SIEM/Sigma 매칭이 0이면 탐지 커버리지 공백 → 룰 보강(퍼플팀 루프)
+```
+
+> 검증은 반드시 **승인된 교전·통제 랩**에서만(RoE 준수). 레드팀의 목적은 침투 자체가 아니라 **방어의 탐지·대응 공백을 측정**하는 것이다 — 각 단계 PoC 를 재현해 탐지가 발화하는지 확인한다([[68_Purple_Team]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Red Team Operations Playbook
@@ -1804,3 +1831,28 @@ wevtutil cl Security
 # Linux
 > /var/log/auth.log    # Clear file contents (less conspicuous than deletion)
 ```
+
+<!-- detect-validate-17 -->
+## Red Team Attack Detection and Defense Validation
+
+A red team playbook describes *how to execute each kill-chain stage*, but its value is measuring **whether each stage is detected in defensive telemetry**. From a purple-team view, validate per-stage detection coverage.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Stage (ATT&CK) | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Initial access | Exposed surface | MFA, attachment/link filter | Abnormal login, phishing click |
+| Execution/persistence | Endpoint | EDR, app allowlist | Suspicious process, autostart changes |
+| Privilege escalation | Auth/token | Least privilege, LAPS | Token manipulation, SUID/UAC bypass |
+| Lateral movement | Segment | Segmentation, monitoring | Abnormal east-west traffic, remote exec |
+
+### Defense validation (verify directly)
+
+```bash
+# Verify per-stage detection actually fires — run Atomic Red Team-style tests in an owned lab, then check alerts
+# (e.g. after execution stage T1059, confirm process creation is captured in Sysmon/auditd)
+sudo ausearch -m EXECVE --start recent 2>/dev/null | tail   # confirm execution events collected
+# If SIEM/Sigma matches are 0, there is a detection-coverage gap -> tune rules (purple-team loop)
+```
+
+> Validate only on **authorized engagements / controlled labs** (follow RoE). The red team's goal is not intrusion itself but **measuring detection/response gaps** — reproduce each stage's PoC to confirm detection fires ([[68_Purple_Team]], [[13_SOC_Blue_Team]]).

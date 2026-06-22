@@ -470,6 +470,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-17 -->
+## 레드팀 리포트의 검증과 증거 무결성
+
+이 문서는 리포팅을 다루므로, 여기서는 *무엇을 보고하는가*를 넘어 **각 발견이 재현 가능한가**와 **증거가 변조 없이 보존됐는가**를 검증하는 데 집중한다(섹션 75 와 상호보완). 검증 불가한 주장은 보고서 신뢰를 무너뜨린다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 보고 요소 | 검증 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 발견(취약점) | 재현 가능한가? | PoC 재현 단계·성공률 | 일회성/환경의존 주장 |
+| 익스플로잇 체인 | 각 단계가 입증되나? | 단계별 증거·타임스탬프 | 비약된 인과 |
+| 영향도 | 과대/과소 아닌가? | 도달성·자산가치 근거 | CVSS 단독 과신 |
+| 증거 | 변조 없는가? | 해시 매니페스트 검증 | 출처/체인 누락 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 증거 무결성: 산출물 해시를 고정해 보고서 PoC 의 재현성·무결성 보장(소유 데이터)
+sha256sum evidence/*.pcap evidence/*.log evidence/*.png > evidence/MANIFEST.sha256 2>/dev/null
+sha256sum -c evidence/MANIFEST.sha256        # 변조 없으면 전부 OK
+# 각 발견은 독립 환경에서 PoC 재현 단계를 다시 실행해 성공해야 '검증됨'으로 보고
+```
+
+> 보고와 증거 취급은 **승인된 교전 범위·RoE** 안에서만. 보고서의 가치는 화려한 발견이 아니라 **재현 가능성과 증거 무결성**이다 — 발견을 독립 재현하고 증거 해시를 검증해 신뢰를 확보한다([[75_Red_Team_Reporting]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Red Team Reporting — Results Analysis, Exploit Chain Documentation, Executive Reports
@@ -684,3 +711,28 @@ Write 2-3 pages max. Non-technical audience. Focus on business risk.
 | Attack timeline included | |
 | Detectability assessment | |
 | Business impact analysis | |
+
+<!-- detect-validate-17 -->
+## Validation and Evidence Integrity of Red Team Reports
+
+Since this document covers reporting, here we go beyond *what to report* to verify **whether each finding is reproducible** and **whether evidence is preserved without tampering** (complements section 75). Unverifiable claims destroy report credibility.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Report element | Validation question | Measured signal | Pitfall |
+|---|---|---|---|
+| Finding (vuln) | Is it reproducible? | PoC repro steps, success rate | One-off/environment-dependent claims |
+| Exploit chain | Is each step proven? | Per-step evidence, timestamps | Hand-waved causality |
+| Impact | Not over/under-stated? | Reachability, asset-value basis | Over-trusting CVSS alone |
+| Evidence | Untampered? | Hash manifest verification | Missing provenance/chain |
+
+### Defense validation (verify directly)
+
+```bash
+# Evidence integrity: pin artifact hashes to guarantee PoC reproducibility/integrity (own data)
+sha256sum evidence/*.pcap evidence/*.log evidence/*.png > evidence/MANIFEST.sha256 2>/dev/null
+sha256sum -c evidence/MANIFEST.sha256        # all OK if untampered
+# Each finding should be re-run via its PoC steps in an independent environment to be reported as 'validated'
+```
+
+> Handle reporting and evidence only within **the authorized engagement scope / RoE**. A report's value is not flashy findings but **reproducibility and evidence integrity** — independently reproduce findings and verify evidence hashes to earn trust ([[75_Red_Team_Reporting]], [[68_Purple_Team]]).

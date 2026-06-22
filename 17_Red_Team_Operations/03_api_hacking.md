@@ -963,6 +963,33 @@ Rate Limiting:
 
 ---
 
+<!-- detect-validate-17 -->
+## API 공격 탐지와 방어 검증
+
+API 공격은 *어떻게 인가·로직을 우회하는가*를 다루지만, 방어자는 **각 공격이 게이트웨이·앱 로그 어디에 흔적을 남기는가**와 **인증·레이트리밋·스키마 검증이 실제로 막는가**를 검증해야 한다(섹션 52 와 상호보완).
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격(OWASP API) | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| BOLA/IDOR(API1) | 객체 인가 | 객체 소유 검증 | 타 사용자 ID 접근, 403 급증 |
+| 인증 취약(API2) | 토큰 검증 | 강한 JWT 검증, MFA | alg:none, 만료 무시 토큰 |
+| 과다 데이터 노출(API3) | 응답 스키마 | 필드 화이트리스트 | 민감필드 응답, 과대 페이로드 |
+| 리소스 남용(API4) | 레이트/쿼터 | 레이트리밋, 페이지네이션 | 대량 요청, 429 패턴 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 인증·레이트리밋이 실제 적용되는지 검증(소유 API) — 401 과 429 가 나와야 정상
+curl -s -o /dev/null -w 'no-auth: %{http_code}\n' https://api.localhost/v1/users   # 401 기대
+for i in $(seq 1 120); do curl -s -o /dev/null -w '%{http_code} ' https://api.localhost/v1/ping; done; echo
+# 끝부분에 429 가 나타나야 레이트리밋 동작 — 전부 200 이면 미적용
+```
+
+> 검증은 **승인된 교전·소유 API·통제 환경**에서만. "인증/레이트리밋 설정"과 "실제 우회를 막고 경보한다"는 다르다 — BOLA/토큰 PoC 를 자신 API 에 재현해 차단·로깅을 확인한다([[52_API_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Complete Guide to API Hacking
@@ -1184,3 +1211,28 @@ Monitoring:
   □ Maintain API inventory
   □ Remove end-of-life versions
 ```
+
+<!-- detect-validate-17 -->
+## API Attack Detection and Defense Validation
+
+API attacks describe *how to bypass authorization/logic*, but defenders must verify **where each leaves traces (gateway, app logs)** and **whether auth, rate limiting, and schema validation actually block** (complements section 52).
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack (OWASP API) | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| BOLA/IDOR (API1) | Object authorization | Object-ownership check | Other users' IDs accessed, 403 spikes |
+| Broken auth (API2) | Token validation | Strong JWT validation, MFA | alg:none, expired-ignored tokens |
+| Excessive data exposure (API3) | Response schema | Field allowlist | Sensitive fields in response, oversized payloads |
+| Resource abuse (API4) | Rate/quota | Rate limit, pagination | Bulk requests, 429 patterns |
+
+### Defense validation (verify directly)
+
+```bash
+# Verify auth and rate limiting are actually applied (own API) — 401 and 429 should appear
+curl -s -o /dev/null -w 'no-auth: %{http_code}\n' https://api.localhost/v1/users   # expect 401
+for i in $(seq 1 120); do curl -s -o /dev/null -w '%{http_code} ' https://api.localhost/v1/ping; done; echo
+# A 429 near the end means rate limiting works — all 200 means it is not applied
+```
+
+> Validate only on **authorized engagements / owned APIs / controlled environments**. "Configured auth/rate limit" differs from "actually blocks the bypass and alerts" — reproduce BOLA/token PoCs against your own API to confirm blocking/logging ([[52_API_Security]], [[13_SOC_Blue_Team]]).
