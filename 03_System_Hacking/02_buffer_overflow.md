@@ -1429,6 +1429,35 @@ xxd 파일명
 
 ---
 
+<!-- detect-validate-03 -->
+## 버퍼 오버플로우 탐지와 방어 검증
+
+BOF 는 *어떻게 제어흐름을 탈취하는가*를 다루지만, 방어자는 **익스플로잇이 크래시 로그·완화 트립 어디에 흔적을 남기는가**와 **ASLR·NX·스택카나리·RELRO 가 실제로 활성인가**를 검증해야 한다. 공격자도 어떤 완화가 켜져 있는지 이 관점으로 가늠한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 완화 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 스택 스매싱 | 리턴주소 | 스택 카나리, FORTIFY | `*** stack smashing detected ***`, SIGSEGV |
+| ret2libc/ROP | NX(DEP) | ASLR, CFI | 비정상 RIP, 라이브러리 게이트 호출 시퀀스 |
+| GOT 덮어쓰기 | 동적 링크 | Full RELRO | GOT 쓰기 시도, 비정상 메모리 보호 변경 |
+| 정보 누출(ASLR 우회) | 주소 랜덤화 | 누출 최소화, 로깅 | 반복 크래시 후 정밀 오프셋 시도 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 바이너리에 완화가 실제 켜졌는지 검증(소유 빌드) — checksec
+checksec --file=./vuln    # NX enabled, Stack canary found, PIE, Full RELRO 확인
+# 2) 호스트 ASLR 가 완전 활성인지 사실 확인
+cat /proc/sys/kernel/randomize_va_space   # 2 여야 완전 랜덤화(0이면 비활성)
+# 3) 스택 스매싱 탐지 — 크래시 로그(coredump/journald)에서 카나리 메시지 확인
+journalctl -k | grep -i 'stack smashing' | tail
+```
+
+> 검증은 반드시 **소유한 바이너리·통제 환경**에서만. "카나리/NX/ASLR 켰다"와 "익스플로잇을 실제 차단한다"는 다르다 — PoC 를 재현해 완화가 크래시로 막는지 확인해야 신뢰할 수 있다([[09_Exploit_Techniques]], [[66_Exploit_Development]]).
+
+---
+
 <a name="english"></a>
 
 # Buffer Overflow — Complete Guide to Stack-Based Overflow
@@ -2746,3 +2775,30 @@ xxd filename
 # View library function list
 /usr/bin/nm /lib/libc.so.6 | more
 ```
+
+<!-- detect-validate-03 -->
+## Buffer Overflow Detection and Defense Validation
+
+BOF describes *how control flow is hijacked*, but defenders must verify **where exploits leave traces (crash logs, mitigation trips)** and **whether ASLR, NX, stack canary, and RELRO are actually enabled**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted mitigation | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Stack smashing | Return address | Stack canary, FORTIFY | `*** stack smashing detected ***`, SIGSEGV |
+| ret2libc/ROP | NX (DEP) | ASLR, CFI | Abnormal RIP, library-gadget call sequences |
+| GOT overwrite | Dynamic linking | Full RELRO | GOT write attempts, abnormal memory-protect changes |
+| Info leak (ASLR bypass) | Address randomization | Minimize leaks, logging | Repeated crashes then precise offset attempts |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify mitigations are actually on (own build) — checksec
+checksec --file=./vuln    # confirm NX enabled, Stack canary found, PIE, Full RELRO
+# 2) Confirm host ASLR is fully enabled
+cat /proc/sys/kernel/randomize_va_space   # 2 = full randomization (0 = disabled)
+# 3) Detect stack smashing — check crash logs (coredump/journald) for canary message
+journalctl -k | grep -i 'stack smashing' | tail
+```
+
+> Validate only on **owned binaries / controlled environments**. "Enabled canary/NX/ASLR" differs from "actually blocks the exploit" — reproduce the PoC to confirm the mitigation stops it with a crash ([[09_Exploit_Techniques]], [[66_Exploit_Development]]).

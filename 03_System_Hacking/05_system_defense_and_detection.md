@@ -623,6 +623,35 @@ python3 event_analyzer.py Security.evtx --summary-only
 
 ---
 
+<!-- detect-validate-03 -->
+## 시스템 방어 통제의 운영 검증
+
+이 문서는 탐지·방어를 다루므로, 여기서는 *통제가 있는가*를 넘어 **각 통제가 런타임에 실제 작동하고 회귀하지 않는가**를 검증하는 데 집중한다. "설정됨 ≠ 작동함"이며, 방어는 공격 PoC 로 지속 재검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 방어 통제 | 검증 질문 | 측정 신호 | 회귀 위험 |
+|---|---|---|---|
+| 감사 로깅(auditd) | 핵심 행위가 기록되는가? | 룰 매칭 이벤트 수 | 룰 미적용/볼륨 폭주로 누락 |
+| EDR/AV | 알려진 공격을 잡는가? | 탐지율, 우회 통과 수 | 업데이트 후 룰 무력화 |
+| 무결성(AIDE/FIM) | 변조를 감지하는가? | 변경 알림 수 | 베이스라인 미갱신 |
+| 권한최소화 | 권한상승을 막는가? | sudo/SUID 이상 | 새 SUID 바이너리 유입 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) auditd 핵심 룰이 실제 적용·발화하는지 검증(소유 호스트) — 예: /etc/shadow 접근 감사
+sudo auditctl -l | grep -E 'shadow|execve' || echo 'NO AUDIT RULES — 룰 미적용'
+sudo ausearch -k identity --start recent 2>/dev/null | tail   # 발화 이벤트 확인
+# 2) 의도치 않은 SUID 바이너리 유입(권한상승 표면) 점검
+find / -perm -4000 -type f 2>/dev/null | sort > /tmp/suid.now
+# 베이스라인과 diff 해 신규 SUID 가 0 이어야 정상: diff suid.base /tmp/suid.now
+```
+
+> 검증은 반드시 **소유한 시스템·통제 환경**에서만. 방어는 한 번 통과로 끝나지 않는다 — 패치/설정 변경마다 공격 PoC 를 재실행해 탐지·차단이 유지되는지(회귀 없는지) 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # System Attack Detection and Defense
@@ -808,3 +837,30 @@ python3 event_analyzer.py Security.evtx --severity HIGH CRITICAL
 
 - SwiftOnSecurity Sysmon Config: https://github.com/SwiftOnSecurity/sysmon-config
 - Microsoft Sysmon Documentation: https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon
+
+<!-- detect-validate-03 -->
+## Operational Validation of System Defense Controls
+
+Since this document covers detection/defense, here we go beyond *does the control exist* to verify **whether each works at runtime and does not regress**. "Configured != working" — defenses must be continuously re-validated with attack PoCs.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Defense control | Validation question | Measured signal | Regression risk |
+|---|---|---|---|
+| Audit logging (auditd) | Are key actions recorded? | Rule-matched event count | Missed via unapplied rules/volume flood |
+| EDR/AV | Catches known attacks? | Detection rate, bypass passes | Neutralized after updates |
+| Integrity (AIDE/FIM) | Detects tampering? | Change-alert count | Stale baseline |
+| Least privilege | Stops escalation? | sudo/SUID anomalies | New SUID binaries introduced |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify key auditd rules are applied and firing (own host) — e.g. /etc/shadow access audit
+sudo auditctl -l | grep -E 'shadow|execve' || echo 'NO AUDIT RULES — not applied'
+sudo ausearch -k identity --start recent 2>/dev/null | tail   # confirm fired events
+# 2) Check for unintended SUID binaries (privilege-escalation surface)
+find / -perm -4000 -type f 2>/dev/null | sort > /tmp/suid.now
+# diff against baseline; new SUID count should be 0: diff suid.base /tmp/suid.now
+```
+
+> Validate only on **owned systems / controlled environments**. Defense is not one-and-done — re-run attack PoCs on every patch/config change to confirm detection/blocking holds (no regression) ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).

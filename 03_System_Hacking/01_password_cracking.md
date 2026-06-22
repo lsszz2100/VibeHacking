@@ -971,6 +971,33 @@ auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900
 
 ---
 
+<!-- detect-validate-03 -->
+## 패스워드 공격 탐지와 방어 검증
+
+패스워드 크랙은 *어떻게 해시를 복원/추측하는가*를 다루지만, 방어자는 **공격이 인증 로그·해시 저장소 어디에 흔적을 남기는가**와 **강한 해시·MFA·계정잠금이 실제로 막는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 온라인 브루트포스 | 인증 엔드포인트 | 계정잠금, 레이트 리밋, MFA | 다중 실패 로그인, 분산 시도 |
+| 오프라인 해시 크랙 | 해시 저장소 | 강한 KDF(yescrypt/argon2), 솔트 | 비정상 SAM/shadow 접근 |
+| 크리덴셜 스터핑 | 재사용 자격증명 | MFA, 유출목록 차단 | 단일 IP 다계정 성공/실패 |
+| 패스 더 해시 | 인증 프로토콜 | LAPS, 권한분리 | 비대화형 로그온, NTLM 이상 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 약한 해시 알고리즘이 쓰이는지 사실 확인(소유 호스트) — yescrypt($y$)/sha512($6$) 권장
+sudo awk -F: '($2 ~ /^\$1\$|^\$5\$/){print $1": weak hash"}' /etc/shadow
+# 2) 온라인 브루트포스가 로그에 잡히는지 검증 — 동일 계정 실패 급증 집계
+grep 'Failed password' /var/log/auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -rn | head
+```
+
+> 검증은 반드시 **소유한 시스템·통제 환경**에서만. "MFA/잠금 설정"과 "무차별 시도를 실제 막고 경보한다"는 다르다 — 브루트포스 PoC 를 재현해 잠금·경보가 발동하는지 확인해야 신뢰할 수 있다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Password Cracking — Theory and Practice
@@ -1828,3 +1855,28 @@ Account Lockout Policy:
 - Lockout duration: 30 minutes
 - Reset lockout counter after: 15 minutes
 ```
+
+<!-- detect-validate-03 -->
+## Password Attack Detection and Defense Validation
+
+Password cracking describes *how hashes are recovered/guessed*, but defenders must verify **where attacks leave traces (auth logs, hash store)** and **whether strong hashing, MFA, and lockout actually block**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Online brute force | Auth endpoint | Lockout, rate limit, MFA | Many failed logins, distributed attempts |
+| Offline hash crack | Hash store | Strong KDF (yescrypt/argon2), salt | Abnormal SAM/shadow access |
+| Credential stuffing | Reused credentials | MFA, breach-list blocking | One IP across many accounts |
+| Pass-the-hash | Auth protocol | LAPS, privilege separation | Non-interactive logon, NTLM anomalies |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm no weak hashing is in use (own host) — prefer yescrypt ($y$) / sha512 ($6$)
+sudo awk -F: '($2 ~ /^\$1\$|^\$5\$/){print $1": weak hash"}' /etc/shadow
+# 2) Verify online brute force shows in logs — aggregate failed logins per account
+grep 'Failed password' /var/log/auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -rn | head
+```
+
+> Validate only on **owned systems / controlled environments**. "Configured MFA/lockout" differs from "actually blocks and alerts on brute force" — reproduce a brute-force PoC to confirm lockout/alerts fire ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).

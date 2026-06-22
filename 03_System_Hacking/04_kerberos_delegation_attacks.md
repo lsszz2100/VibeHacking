@@ -844,6 +844,35 @@ secretsdump.py corp.local/Administrator:'DAPassword'@DC01.corp.local
 
 ---
 
+<!-- detect-validate-03 -->
+## Kerberos 위임 공격 탐지와 방어 검증
+
+위임 공격은 *어떻게 위임을 악용해 권한상승하는가*를 다루지만, 방어자는 **각 공격이 Kerberos 이벤트(4768/4769/4770)에 어떻게 드러나는가**와 **민감계정 보호·위임 제한이 실제로 막는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호(이벤트) |
+|---|---|---|---|
+| Kerberoasting | SPN 계정 해시 | gMSA, 강한 SPN 암호 | 4769 RC4(0x17) 대량 요청 |
+| 무제약 위임 | TGT 캐시 | 무제약 위임 제거 | DC 인증 후 TGT 포워딩 흔적 |
+| 제약 위임(S4U) | S4U2Self/Proxy | 민감계정 위임금지 | 비정상 S4U, 4769 프로토콜 전이 |
+| RBCD | 컴퓨터 객체 쓰기 | ms-DS-... 쓰기 제한 | 5136(위임 속성 수정) |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 1) Kerberoasting 흔적 헌팅 — RC4(0x17) TGS 요청 급증 탐지(소유 도메인)
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4769} -MaxEvents 500 |
+  Where-Object { $_.Message -match 'Ticket Encryption Type:\s+0x17' } |
+  Group-Object { ($_.Message -split 'Account Name:')[1].Trim().Split()[0] } | Sort-Object Count -Descending
+# 2) 무제약 위임 계정이 남아있는지 사실 확인(공격면 점검)
+Get-ADComputer -Filter {TrustedForDelegation -eq $true} -Properties TrustedForDelegation
+```
+
+> 검증은 반드시 **소유한 도메인·통제 랩**에서만. "위임 제한/gMSA 설정"과 "Kerberoast/위임악용을 실제 탐지·차단한다"는 다르다 — PoC 를 랩에 재현해 4769 경보와 위임 제한을 확인한다([[54_Active_Directory_Attacks]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Kerberos Delegation Attacks — Complete Guide
@@ -1594,3 +1623,30 @@ Step 5: Domain takeover
 # DCSync with DA credentials
 secretsdump.py corp.local/Administrator:'DAPassword'@DC01.corp.local
 ```
+
+<!-- detect-validate-03 -->
+## Kerberos Delegation Attack Detection and Defense Validation
+
+Delegation attacks describe *how delegation is abused for escalation*, but defenders must verify **how each surfaces in Kerberos events (4768/4769/4770)** and **whether sensitive-account protection and delegation limits actually block**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack | Targeted layer | Primary control (defender) | Detection signal (event) |
+|---|---|---|---|
+| Kerberoasting | SPN account hash | gMSA, strong SPN password | 4769 RC4 (0x17) bulk requests |
+| Unconstrained delegation | TGT cache | Remove unconstrained delegation | TGT forwarding traces after DC auth |
+| Constrained delegation (S4U) | S4U2Self/Proxy | Block sensitive-account delegation | Abnormal S4U, 4769 protocol transition |
+| RBCD | Computer object write | Restrict ms-DS-... writes | 5136 (delegation attribute modified) |
+
+### Defense validation (verify directly)
+
+```powershell
+# 1) Hunt Kerberoasting traces — detect RC4 (0x17) TGS request spikes (own domain)
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4769} -MaxEvents 500 |
+  Where-Object { $_.Message -match 'Ticket Encryption Type:\s+0x17' } |
+  Group-Object { ($_.Message -split 'Account Name:')[1].Trim().Split()[0] } | Sort-Object Count -Descending
+# 2) Confirm whether unconstrained-delegation accounts remain (attack-surface check)
+Get-ADComputer -Filter {TrustedForDelegation -eq $true} -Properties TrustedForDelegation
+```
+
+> Validate only on **owned domains / controlled labs**. "Configured delegation limits/gMSA" differs from "actually detects/blocks Kerberoast/delegation abuse" — reproduce PoCs in a lab to confirm 4769 alerts and delegation limits ([[54_Active_Directory_Attacks]], [[68_Purple_Team]]).

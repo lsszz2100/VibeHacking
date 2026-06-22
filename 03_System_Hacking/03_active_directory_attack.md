@@ -1164,6 +1164,34 @@ Kerberos 설정:
 
 ---
 
+<!-- detect-validate-03 -->
+## AD 공격 탐지와 방어 검증
+
+AD 공격은 *어떻게 도메인을 장악하는가*를 다루지만, 방어자는 **각 공격이 Windows 이벤트·디렉터리 변경 어디에 흔적을 남기는가**와 **티어링·LAPS·감사정책이 실제로 작동하는가**를 검증해야 한다(섹션 54 와 상호보완: 여기선 검증·이벤트 매핑 중심).
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호(이벤트) |
+|---|---|---|---|
+| DCSync | 복제 권한 | 권한 최소화, 티어링 | 4662(복제 GUID), 비DC의 복제 요청 |
+| 골든/실버 티켓 | krbtgt/서비스 키 | krbtgt 주기 교체 | 비정상 TGT 수명, 4769 이상 |
+| 위임 악용 | Kerberos 위임 | 민감계정 위임금지 | 4768/4769 패턴, S4U 흔적 |
+| ACL 백도어 | 디렉터리 ACL | 정기 ACL 감사 | 5136(디렉터리 객체 수정) |
+
+### 방어 검증 (직접 확인)
+
+```powershell
+# 1) 감사 정책이 실제 켜졌는지 검증(소유 도메인) — 디렉터리/Kerberos 감사 확인
+auditpol /get /category:* | Select-String 'Directory Service|Kerberos'
+# 2) DCSync 흔적(4662) 헌팅 — 비DC 계정의 복제 권한 사용 탐지
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4662} -MaxEvents 200 |
+  Where-Object { $_.Message -match '1131f6aa-9c07-11d1-f79f-00c04fc2dcd2' }
+```
+
+> 검증은 반드시 **소유한 도메인·통제 랩**에서만. "감사 켰다"와 "공격 이벤트를 실제 수집·경보한다"는 다르다 — DCSync/티켓 PoC 를 랩에 재현해 이벤트가 SIEM 에 도달하는지 확인한다([[54_Active_Directory_Attacks]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Active Directory Attack — Complete Guide
@@ -2221,3 +2249,29 @@ Monitoring:
   □ Monitor direct LDAP queries to DCs
   □ Detect Mimikatz / LSASS access (EDR)
 ```
+
+<!-- detect-validate-03 -->
+## AD Attack Detection and Defense Validation
+
+AD attacks describe *how to take over a domain*, but defenders must verify **where each leaves traces (Windows events, directory changes)** and **whether tiering, LAPS, and audit policy actually work** (complements section 54; here we focus on validation and event mapping).
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack | Targeted layer | Primary control (defender) | Detection signal (event) |
+|---|---|---|---|
+| DCSync | Replication rights | Least privilege, tiering | 4662 (replication GUID), non-DC replication request |
+| Golden/Silver ticket | krbtgt/service key | Rotate krbtgt periodically | Abnormal TGT lifetime, 4769 anomalies |
+| Delegation abuse | Kerberos delegation | Block sensitive-account delegation | 4768/4769 patterns, S4U traces |
+| ACL backdoor | Directory ACL | Periodic ACL audit | 5136 (directory object modified) |
+
+### Defense validation (verify directly)
+
+```powershell
+# 1) Verify audit policy is actually on (own domain) — check Directory/Kerberos auditing
+auditpol /get /category:* | Select-String 'Directory Service|Kerberos'
+# 2) Hunt DCSync traces (4662) — detect replication rights used by non-DC accounts
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4662} -MaxEvents 200 |
+  Where-Object { $_.Message -match '1131f6aa-9c07-11d1-f79f-00c04fc2dcd2' }
+```
+
+> Validate only on **owned domains / controlled labs**. "Enabled auditing" differs from "actually collects and alerts on attack events" — reproduce DCSync/ticket PoCs in a lab to confirm events reach the SIEM ([[54_Active_Directory_Attacks]], [[68_Purple_Team]]).
