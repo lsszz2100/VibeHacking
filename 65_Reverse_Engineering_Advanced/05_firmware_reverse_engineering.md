@@ -6,6 +6,25 @@
 
 # 펌웨어 역공학 (Firmware Reverse Engineering)
 
+## 실습 환경 준비
+
+> 이 문서의 Python 예제는 대부분 **Python 3.10+ 표준 라이브러리**(매직바이트 스캔 등)로 실행됩니다. 아래 도구는 실제 펌웨어 추출·에뮬레이션 실습에 필요합니다.
+
+```bash
+# 펌웨어 추출 + 파일시스템 해제 + 크로스아키텍처 에뮬레이션
+sudo apt install binwalk squashfs-tools qemu-user-static
+
+# 단일 바이너리 user-mode 실행 예: qemu-mipsel-static ./busybox
+# 전체 시스템 에뮬레이션(네트워크 포함): FirmAE  https://github.com/pr0v3rbs/FirmAE
+# Ghidra(펌웨어 디컴파일): https://ghidra-sre.org
+```
+
+> 검증 팁: 추출 루트파일시스템에 `/etc`·init 스크립트·정상 ELF가 보이면 성공. 깨진 디렉터리/높은 엔트로피가 그대로면 **암호화 상태** → 부트로더/UART 경로 재시도.
+> ⚠️ **격리 필수**: 펌웨어 에뮬레이션은 격리 네트워크에서.
+> 🧪 연계 랩: `vhack lab start 06` (펌웨어 해킹 랩 — binwalk 추출 + 하드코딩 자격증명 CTF)
+
+---
+
 ## 개념 소개
 
 임베디드 펌웨어 역공학은 라우터, IP 카메라, IoT 기기 등의 펌웨어 이미지를 분석하여 숨겨진 취약점, 하드코딩된 비밀번호, 백도어를 찾는 기술입니다. 마치 가전제품을 분해해서 내부 회로를 들여다보는 것과 같습니다.
@@ -407,6 +426,23 @@ file _firmware.bin.extracted/squashfs-root/bin/busybox    # 아키텍처/정상 
 <a name="english"></a>
 
 # Firmware Reverse Engineering
+
+## Lab Environment Setup
+
+> Most Python examples here run on the **Python 3.10+ standard library** (magic-byte scanning, etc.). The tools below are for real firmware extraction/emulation.
+
+```bash
+sudo apt install binwalk squashfs-tools qemu-user-static
+# user-mode single binary, e.g.: qemu-mipsel-static ./busybox
+# full-system emulation (with network): FirmAE  https://github.com/pr0v3rbs/FirmAE
+# Ghidra (firmware decompile): https://ghidra-sre.org
+```
+
+> Validation tip: an extracted rootfs is real if you see `/etc`, init scripts and valid ELFs. Broken dirs / high entropy = still **encrypted** → retry via bootloader/UART.
+> ⚠️ **Isolation required**: emulate firmware on an isolated network.
+> 🧪 Related lab: `vhack lab start 06` (firmware lab — binwalk extraction + hardcoded-credential CTF)
+
+---
 
 ## Concept Overview
 

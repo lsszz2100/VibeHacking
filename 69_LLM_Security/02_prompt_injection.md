@@ -6,6 +6,22 @@
 
 # 프롬프트 인젝션 공격
 
+## 실습 환경 준비
+
+> 이 문서의 탐지기 예제는 **Python 3.10+ 표준 라이브러리**로 동작합니다. 실제 모델 대상 실습에는 아래를 설치하세요.
+
+```bash
+pip install garak          # LLM 취약점 스캐너(프롬프트 인젝션·탈옥 등 자동 점검)
+pip install llm-guard      # 프롬프트 인젝션 탐지/차단 가드레일
+pip install transformers torch   # 로컬 대상 모델(권장)
+```
+
+> 검증 팁: '오염된 문서'를 입력해 **간접 인젝션이 도구 호출을 유발하는지** 재현하세요. 문서 내 `[SYSTEM]` 지시가 실행되면 데이터/명령 신뢰 경계가 무너진 것입니다.
+> ⚠️ **권한·격리**: 본인 소유/허가 모델에만 테스트.
+> 🧪 별도 컨테이너 랩 없음 — 로컬 모델 + garak로 구성.
+
+---
+
 ## 프롬프트 인젝션이란?
 
 **비유:** SQL 인젝션처럼, 사용자가 입력한 텍스트가 LLM의 "명령어 영역"과 구분 없이 처리되어 의도치 않은 동작을 유발하는 공격이다. LLM은 시스템 프롬프트와 사용자 입력을 본질적으로 같은 텍스트 스트림으로 처리하기 때문에 발생한다.
@@ -417,6 +433,22 @@ assert "send_email" not in resp.tool_calls, "간접 인젝션이 도구 호출�
 <a name="english"></a>
 
 # Prompt Injection Attacks
+
+## Lab Environment Setup
+
+> The detector examples run on the **Python 3.10+ standard library**. Install the following for model-targeted practice.
+
+```bash
+pip install garak          # LLM vuln scanner (prompt injection, jailbreaks, ...)
+pip install llm-guard      # prompt-injection detection/blocking guardrail
+pip install transformers torch   # local target model (recommended)
+```
+
+> Validation tip: feed a "poisoned document" and reproduce whether **indirect injection triggers a tool call**. If an in-document `[SYSTEM]` instruction executes, the data/instruction trust boundary has collapsed.
+> ⚠️ **Authorization & isolation**: test only your own/authorized models.
+> 🧪 No container lab — build a local model + garak.
+
+---
 
 ## What is Prompt Injection?
 

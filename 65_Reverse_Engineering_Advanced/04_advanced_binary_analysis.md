@@ -6,6 +6,27 @@
 
 # 고급 바이너리 분석 (Advanced Binary Analysis)
 
+## 실습 환경 준비
+
+> 이 문서의 Python 예제는 대부분 **Python 3.10+ 표준 라이브러리**로 실행됩니다. 아래 도구는 실제 CFG/테인트 분석 실습에 필요합니다.
+
+```bash
+# 디스어셈블·CFG 탐색
+sudo apt install radare2        # 또는 rizin: https://rizin.re
+
+# 자동 분석(CFG·테인트):
+python3 -m venv ~/.venv/angr && source ~/.venv/angr/bin/activate && pip install angr
+
+# Ghidra(헤드리스 분석 지원): https://ghidra-sre.org  (JDK 17+)
+# 소스 대상 정적분석(교차검증용): pip install semgrep
+```
+
+> 검증 팁: 정적으로 의심한 source→sink는 **동적 테인트로 교차검증**해 거짓양성을 보고 전에 제거하세요.
+> ⚠️ **격리 필수**: 미상 바이너리 실행/디버깅은 격리 환경에서만.
+> 🧪 연계 랩: `vhack lab start 02`
+
+---
+
 ## 개념 소개
 
 CFG(Control Flow Graph)는 프로그램의 실행 흐름을 그래프로 표현한 것입니다. 마치 지하철 노선도처럼, 각 역(기본 블록)을 어떤 조건에서 어느 방향으로 이동할 수 있는지 보여줍니다. 이를 바탕으로 데이터 흐름을 추적하면 취약점 패턴을 자동으로 인식할 수 있습니다.
@@ -404,6 +425,23 @@ drrun -t drcachesim -- ./target < tainted_input   # 또는 Pin 테인트 도구
 <a name="english"></a>
 
 # Advanced Binary Analysis
+
+## Lab Environment Setup
+
+> Most Python examples here run on the **Python 3.10+ standard library**. The tools below are for hands-on CFG/taint analysis.
+
+```bash
+sudo apt install radare2        # or rizin: https://rizin.re
+python3 -m venv ~/.venv/angr && source ~/.venv/angr/bin/activate && pip install angr
+# Ghidra (headless analysis): https://ghidra-sre.org  (JDK 17+)
+# Source-level cross-check: pip install semgrep
+```
+
+> Validation tip: cross-check statically suspected source→sink paths with **dynamic taint** to drop false positives before reporting.
+> ⚠️ **Isolation required**: run/debug unknown binaries only in isolation.
+> 🧪 Related lab: `vhack lab start 02`
+
+---
 
 ## Concept Overview
 

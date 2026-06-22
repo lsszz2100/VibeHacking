@@ -6,6 +6,25 @@
 
 # 탐지 공학 (Detection Engineering)
 
+## 실습 환경 준비
+
+> 탐지 룰 작성·변환·검증 도구가 필요합니다.
+
+```bash
+pip install sigma-cli            # Sigma 룰 변환:  sigma convert ...
+sudo apt install yara suricata   # 파일/네트워크 탐지
+pip install yara-python
+
+# 백엔드(택1): Elastic Stack 또는 Splunk(무료 평가판)
+# Sigma 공개 룰셋: https://github.com/SigmaHQ/sigma
+```
+
+> 검증 팁: 같은 룰을 공격 시간창과 정상 시간창에 각각 돌려 TP/FP를 함께 측정하세요. TP가 낮으면 미탐(룰 약함), FP가 높으면 경보 피로 → 튜닝 대상입니다.
+> ⚠️ **격리 필수**: 테스트 로그/대상은 격리 환경에서.
+> 🧪 별도 컨테이너 랩 없음 — SIEM + Sigma/YARA로 직접 구성.
+
+---
+
 ## 개념 소개
 
 탐지 공학은 위협을 자동으로 발견하는 룰과 로직을 체계적으로 설계·개발·검증하는 학문입니다. 마치 건물의 화재 감지기를 설계하는 것처럼, 어떤 조건에서 알람이 울려야 하는지(임계값), 어떻게 오탐을 줄일지를 공학적으로 접근합니다.
@@ -479,6 +498,24 @@ sigma convert -t splunk rule.yml > rule.spl     # 룰을 SIEM 쿼리로 변환
 <a name="english"></a>
 
 # Detection Engineering
+
+## Lab Environment Setup
+
+> You need tooling to author, convert and validate detection rules.
+
+```bash
+pip install sigma-cli            # convert rules:  sigma convert ...
+sudo apt install yara suricata   # file / network detection
+pip install yara-python
+# Backend (pick one): Elastic Stack or Splunk (free trial)
+# Public Sigma ruleset: https://github.com/SigmaHQ/sigma
+```
+
+> Validation tip: run the same rule over an attack window and a normal window to measure TP/FP together. Low TP = misses (weak rule); high FP = alert fatigue → tune.
+> ⚠️ **Isolation required**: keep test logs/targets in an isolated env.
+> 🧪 No container lab — build SIEM + Sigma/YARA yourself.
+
+---
 
 ## Concept Overview
 

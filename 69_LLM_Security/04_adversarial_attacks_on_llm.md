@@ -6,6 +6,21 @@
 
 # LLM 적대적 공격
 
+## 실습 환경 준비
+
+> 동형이의자·유니코드 실험은 **Python 3.10+ 표준 라이브러리**만으로 가능합니다. 실제 모델 대상 적대적 예제 생성에는 아래를 설치하세요.
+
+```bash
+pip install transformers torch   # 대상 모델 + perplexity 측정
+pip install textattack           # 텍스트 적대적 예제 생성(선택)
+```
+
+> 검증 팁: perplexity 기반 탐지가 유효하려면 **적대적 입력의 perplexity가 정상 입력보다 확실히 높아야** 합니다. 두 값이 비슷하면 이 탐지로는 해당 공격을 못 잡습니다.
+> ⚠️ **권한·격리**: 본인 소유/허가 모델에만 테스트.
+> 🧪 별도 컨테이너 랩 없음 — 로컬 모델로 구성.
+
+---
+
 ## 적대적 공격이란?
 
 **비유:** 정지 표지판에 작은 스티커를 붙이면 사람 눈에는 정지 표지판이지만, AI 카메라는 "속도 제한 45" 표지판으로 인식한다. LLM에서도 사람이 인식하기 어려운 방식으로 모델의 판단을 혼란시키는 입력을 만들 수 있다.
@@ -438,6 +453,21 @@ print("adversarial  :", perplexity(adversarial))
 <a name="english"></a>
 
 # Adversarial Attacks on LLMs
+
+## Lab Environment Setup
+
+> Homoglyph/Unicode experiments work with the **Python 3.10+ standard library** alone. Install the following to generate adversarial examples against real models.
+
+```bash
+pip install transformers torch   # target model + perplexity measurement
+pip install textattack           # text adversarial-example generation (optional)
+```
+
+> Validation tip: for perplexity-based detection to work, **adversarial input must have clearly higher perplexity** than benign input. If the two are similar, this detector misses the attack.
+> ⚠️ **Authorization & isolation**: test only your own/authorized models.
+> 🧪 No container lab — build a local model.
+
+---
 
 ## What are Adversarial Attacks?
 

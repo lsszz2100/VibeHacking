@@ -6,6 +6,26 @@
 
 # 정적 분석 도구 활용
 
+## 실습 환경 준비
+
+> 이 문서에서 다루는 SAST 도구를 설치합니다. Python 3.10+ 환경:
+
+```bash
+pip install semgrep          # 다중 언어 룰 기반 SAST — semgrep --config=auto .
+pip install bandit           # Python 전용 — bandit -r ./src
+
+# CodeQL CLI (GitHub) — 데이터플로우 질의
+#   https://github.com/github/codeql-cli-binaries  (압축 해제 후 PATH 등록)
+# SonarQube (대시보드형) — Docker로 기동:
+#   docker run -d -p 9000:9000 sonarqube:lts-community
+```
+
+> 검증 팁: 도구별 결과를 합치되 **중복·거짓양성을 수동 트리아지**하세요. 같은 코드에 여러 도구를 돌려 교차 확인하면 신뢰도가 올라갑니다.
+> ⚠️ SonarQube는 로컬/격리 환경에서만 노출(기본 admin 계정 즉시 변경).
+> 🧪 별도 컨테이너 랩 없음 — 위 도구 + 취약 코드베이스로 실습.
+
+---
+
 ## 개요
 
 **정적 분석(Static Analysis)**은 프로그램을 실행하지 않고 소스코드를 분석하여 취약점을 찾는 기법입니다. 코드를 직접 읽는 수동 리뷰보다 빠르게 넓은 범위를 커버할 수 있지만, 오탐(False Positive)이 발생하므로 수동 리뷰와 병행해야 합니다.
@@ -499,6 +519,25 @@ SAST 결과 트리아지:
 <a name="english"></a>
 
 # Static Analysis Tools
+
+## Lab Environment Setup
+
+> Install the SAST tools covered here. On Python 3.10+:
+
+```bash
+pip install semgrep          # multi-language rule-based SAST — semgrep --config=auto .
+pip install bandit           # Python-specific — bandit -r ./src
+# CodeQL CLI (GitHub) — dataflow queries:
+#   https://github.com/github/codeql-cli-binaries  (unpack + add to PATH)
+# SonarQube (dashboard) via Docker:
+#   docker run -d -p 9000:9000 sonarqube:lts-community
+```
+
+> Validation tip: combine results across tools but **manually triage duplicates/false positives**. Running multiple tools on the same code cross-checks confidence.
+> ⚠️ Expose SonarQube only on local/isolated networks (change the default admin password immediately).
+> 🧪 No container lab — practice with these tools + a vulnerable codebase.
+
+---
 
 ## Overview
 

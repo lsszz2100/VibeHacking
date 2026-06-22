@@ -6,6 +6,25 @@
 
 # 안티디버깅 기법 (Anti-Debugging Techniques)
 
+## 실습 환경 준비
+
+> 이 문서의 Python 예제는 대부분 **Python 3.10+ 표준 라이브러리**만으로 실행됩니다(`python3 --version`). 아래 도구는 실제 바이너리를 다루는 동적 분석 실습에 필요합니다.
+
+```bash
+# 리눅스 동적 분석 (ptrace/IsDebuggerPresent 류 관찰)
+sudo apt install gdb ltrace strace
+
+# (선택) pwndbg — 디버거 강화
+git clone https://github.com/pwndbg/pwndbg && cd pwndbg && ./setup.sh
+
+# Windows 대상: x64dbg(https://x64dbg.com) + ScyllaHide 안티-안티디버깅 플러그인
+```
+
+> ⚠️ **격리 필수**: 미상 바이너리 분석은 스냅샷 가능한 VM/컨테이너 등 격리 환경에서만 수행하세요.
+> 🧪 연계 랩: `vhack lab start 02` (취약 바이너리로 디버깅 흐름 연습)
+
+---
+
 ## 개념 소개
 
 안티디버깅은 악성코드나 상용 소프트웨어가 자신이 분석당하고 있다는 사실을 탐지하여 실행을 방해하거나 종료하는 기법입니다. 마치 "내가 감시받고 있으면 아무것도 안 한다"는 스파이처럼, 디버거가 붙어 있으면 다르게 동작합니다.
@@ -401,6 +420,22 @@ print("BeingDebugged =", being_debugged)
 <a name="english"></a>
 
 # Anti-Debugging Techniques
+
+## Lab Environment Setup
+
+> Most Python examples here run on the **Python 3.10+ standard library** alone (`python3 --version`). The tools below are for hands-on dynamic analysis of real binaries.
+
+```bash
+# Linux dynamic analysis (observe ptrace / IsDebuggerPresent-style checks)
+sudo apt install gdb ltrace strace
+# (optional) pwndbg: git clone https://github.com/pwndbg/pwndbg && cd pwndbg && ./setup.sh
+# Windows targets: x64dbg (https://x64dbg.com) + ScyllaHide anti-anti-debug plugin
+```
+
+> ⚠️ **Isolation required**: analyze unknown binaries only in a snapshot-capable, isolated VM/container.
+> 🧪 Related lab: `vhack lab start 02` (practice debugging flow on intentionally vulnerable binaries)
+
+---
 
 ## Concept Overview
 

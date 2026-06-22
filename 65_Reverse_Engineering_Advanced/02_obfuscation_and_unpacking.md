@@ -6,6 +6,24 @@
 
 # 코드 난독화와 언패킹 (Obfuscation and Unpacking)
 
+## 실습 환경 준비
+
+> 이 문서의 Python 예제는 대부분 **Python 3.10+ 표준 라이브러리**(엔트로피 계산 등)만으로 실행됩니다. 아래 도구는 실제 패킹 바이너리 언패킹 실습에 필요합니다.
+
+```bash
+# UPX 패킹/언패킹
+sudo apt install upx-ucl
+
+# Ghidra(역공학·디컴파일): https://ghidra-sre.org  (JDK 17+ 필요)
+# Detect It Easy(패커/컴파일러 식별): https://github.com/horsicq/Detect-It-Easy
+# Windows 동적 언패킹: x64dbg + Scylla(메모리 덤프/IAT 복원)
+```
+
+> ⚠️ **격리 필수**: 패킹된 샘플(특히 악성 의심)은 네트워크 차단된 VM/컨테이너에서만 다루세요.
+> 🧪 연계 랩: `vhack lab start 02` (취약 바이너리로 정적/동적 분석 연습)
+
+---
+
 ## 개념 소개
 
 난독화는 코드를 "읽기 어렵게" 변환하는 기술입니다. 마치 암호 편지처럼, 원본 내용은 그대로지만 외부에서는 무슨 말인지 알 수 없게 만듭니다. 패커(Packer)는 실행 파일을 압축/암호화하여 분석을 어렵게 하고, 실행 시 메모리에서 복원합니다.
@@ -364,6 +382,22 @@ strings -n 6 unpacked.bin | grep -iE 'http|reg|cmd|\.dll' | head
 <a name="english"></a>
 
 # Code Obfuscation and Unpacking
+
+## Lab Environment Setup
+
+> Most Python examples here run on the **Python 3.10+ standard library** (entropy math, etc.). The tools below are for unpacking real packed binaries.
+
+```bash
+sudo apt install upx-ucl        # UPX pack/unpack
+# Ghidra (decompiler): https://ghidra-sre.org  (JDK 17+)
+# Detect It Easy (packer/compiler ID): https://github.com/horsicq/Detect-It-Easy
+# Windows manual unpacking: x64dbg + Scylla (memory dump / IAT rebuild)
+```
+
+> ⚠️ **Isolation required**: handle packed (possibly malicious) samples only in a network-isolated VM/container.
+> 🧪 Related lab: `vhack lab start 02`
+
+---
 
 ## Concept Overview
 

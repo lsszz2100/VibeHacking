@@ -6,6 +6,27 @@
 
 # LLM 보안 기초
 
+## 실습 환경 준비
+
+> 이 문서의 Python 예제는 대부분 **Python 3.10+ 표준 라이브러리**로 동작합니다. 실제 LLM을 대상으로 실습할 때 아래를 설치하세요.
+
+```bash
+# (선택) 외부 API — 키와 비용이 발생합니다
+pip install openai anthropic
+
+# (권장) 로컬 모델 — 무료, 데이터 외부 유출 없음
+pip install transformers torch
+
+# 입출력 가드레일
+pip install llm-guard
+```
+
+> 검증 팁: 알려진 인젝션/탈옥 코퍼스로 가드레일 **차단율을 측정**하세요. 차단율이 정책 기준(예: 100%)에 못 미치면 가드레일이 사실상 동작하지 않는 것입니다.
+> ⚠️ **권한·격리**: 본인 소유/허가된 모델·엔드포인트에만 테스트하고, 외부 API보다 로컬 모델을 우선하세요(비용·데이터 유출 방지).
+> 🧪 별도 컨테이너 랩 없음 — 로컬 모델 또는 허가된 테스트 엔드포인트로 구성.
+
+---
+
 ## LLM이란 무엇인가?
 
 **비유:** LLM(Large Language Model)은 인터넷에 있는 수조 개의 문장을 읽고, 다음에 올 단어가 무엇인지 확률로 예측하는 통계 기계다. 사람처럼 "이해"하는 게 아니라, "이 맥락 다음엔 저 단어가 통계적으로 많이 나왔다"를 학습한 것이다.
@@ -379,6 +400,25 @@ PY
 <a name="english"></a>
 
 # LLM Security Fundamentals
+
+## Lab Environment Setup
+
+> Most Python examples here run on the **Python 3.10+ standard library**. Install the following to practice against real LLMs.
+
+```bash
+# (optional) external APIs — key + cost required
+pip install openai anthropic
+# (recommended) local models — free, no data exfiltration
+pip install transformers torch
+# input/output guardrails
+pip install llm-guard
+```
+
+> Validation tip: **measure the guardrail block rate** against a known injection/jailbreak corpus. If it falls short of policy (e.g., 100%), the guardrail effectively isn't working.
+> ⚠️ **Authorization & isolation**: test only your own/authorized models/endpoints; prefer local models over external APIs (cost & data-leak prevention).
+> 🧪 No container lab — use a local model or an authorized test endpoint.
+
+---
 
 ## What is an LLM?
 

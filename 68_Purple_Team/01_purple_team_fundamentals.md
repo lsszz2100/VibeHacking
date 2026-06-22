@@ -6,6 +6,25 @@
 
 # 퍼플팀 기초 (Purple Team Fundamentals)
 
+## 실습 환경 준비
+
+> 이 문서의 Python 예제는 **Python 3.10+ 표준 라이브러리**로 동작합니다. 실제 퍼플팀 실습에는 "공격 실행 → 텔레메트리 수집 → 탐지 확인" 루프를 위한 통제된 호스트와 SIEM이 필요합니다.
+
+```bash
+# 공격 측: 단일 ATT&CK 기법 실행
+#   Atomic Red Team — https://github.com/redcanaryco/atomic-red-team
+# 가시성: 로그 수집
+#   Windows: Sysmon (Sysinternals) + 권장 구성(SwiftOnSecurity sysmon-config)
+#   Linux:   Sysmon for Linux (MS 공식 .deb)  또는 auditd
+# 분석/매핑: ATT&CK Navigator(웹) — https://mitre-attack.github.io/attack-navigator/
+```
+
+> 검증 팁: 한 가지 기법만 실행한 뒤 SIEM에서 N분 내 알람 1건+ 가 뜨면 'detected'로 커버리지에 기록, 0건이면 가시성 갭(Visibility Gap)으로 기록 후 로깅/룰을 보강하세요.
+> ⚠️ **격리·통제 필수**: 공격 실행은 운영망과 분리된 통제 호스트에서만.
+> 🧪 별도 컨테이너 랩 없음 — 통제 호스트 + SIEM(아래 Elastic/Splunk)로 구성하세요.
+
+---
+
 ## 개념 소개
 
 퍼플팀은 레드팀(공격자 관점)과 블루팀(방어자 관점)이 협력하는 통합 보안 테스트 방법론입니다. 마치 농구팀의 공격 코치와 수비 코치가 함께 연습해서 팀 전체 실력을 높이듯, 퍼플팀은 공격자와 방어자가 실시간으로 지식을 공유하여 보안 역량을 함께 향상시킵니다.
@@ -421,6 +440,25 @@ Invoke-AtomicTest T1059.001 -TestNumbers 1     # PowerShell 측
 <a name="english"></a>
 
 # Purple Team Fundamentals
+
+## Lab Environment Setup
+
+> The Python examples run on the **Python 3.10+ standard library**. Real purple-team practice needs a controlled host and a SIEM for the "execute → collect telemetry → confirm detection" loop.
+
+```bash
+# Attack side: run a single ATT&CK technique
+#   Atomic Red Team — https://github.com/redcanaryco/atomic-red-team
+# Visibility: log collection
+#   Windows: Sysmon (Sysinternals) + a good config (SwiftOnSecurity sysmon-config)
+#   Linux:   Sysmon for Linux (official MS .deb) or auditd
+# Analysis/mapping: ATT&CK Navigator — https://mitre-attack.github.io/attack-navigator/
+```
+
+> Validation tip: run one technique, then if a SIEM alert appears within N minutes record it as 'detected'; zero alerts = a Visibility Gap to fix via logging/rules.
+> ⚠️ **Controlled isolation required**: run attacks only on a controlled host separated from production.
+> 🧪 No container lab — build a controlled host + SIEM (Elastic/Splunk below).
+
+---
 
 ## Concept Overview
 

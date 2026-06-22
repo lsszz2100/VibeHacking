@@ -6,6 +6,24 @@
 
 # 공격 시뮬레이션 (Attack Simulation)
 
+## 실습 환경 준비
+
+> 자동화된 공격 시뮬레이션 도구와 텔레메트리 수집이 필요합니다.
+
+```bash
+# 자동 적대 에뮬레이션
+git clone https://github.com/mitre/caldera.git --recursive   # MITRE CALDERA
+# 기법 단위 실행
+#   Atomic Red Team — https://github.com/redcanaryco/atomic-red-team
+# 텔레메트리: Sysmon + Windows 이벤트 로그 / EDR
+```
+
+> 검증 팁: 각 단계를 실행하고 결과를 3분류(prevented/detected/missed)로 기록하세요. `missed`(성공 + 알람 0)는 Detection Gap으로 우선순위화합니다.
+> ⚠️ **격리·통제 필수**: 운영망과 분리된 랩에서만 실행.
+> 🧪 별도 컨테이너 랩 없음 — CALDERA + 통제 호스트로 구성.
+
+---
+
 ## 개념 소개
 
 공격 시뮬레이션은 실제 위협 행위자의 전술을 통제된 환경에서 재현하는 활동입니다. 마치 소방 훈련처럼, 실제 화재 없이도 대응 절차를 연습할 수 있습니다. 이를 통해 탐지 체계의 빈틈을 안전하게 발견할 수 있습니다.
@@ -447,6 +465,22 @@ grep -i "lsass" /var/log/sysmon* 2>/dev/null | tail
 <a name="english"></a>
 
 # Attack Simulation
+
+## Lab Environment Setup
+
+> You need an automated adversary-emulation tool plus telemetry collection.
+
+```bash
+git clone https://github.com/mitre/caldera.git --recursive   # MITRE CALDERA
+# Per-technique: Atomic Red Team — https://github.com/redcanaryco/atomic-red-team
+# Telemetry: Sysmon + Windows Event Logs / EDR
+```
+
+> Validation tip: run each step and classify the outcome (prevented/detected/missed). `missed` (success + zero alerts) is a Detection Gap to prioritize.
+> ⚠️ **Controlled isolation required**: run only in a lab separated from production.
+> 🧪 No container lab — build CALDERA + a controlled host.
+
+---
 
 ## Concept Overview
 

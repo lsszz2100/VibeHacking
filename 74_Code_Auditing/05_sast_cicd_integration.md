@@ -6,6 +6,24 @@
 
 # CI/CD 파이프라인에 SAST 통합
 
+## 실습 환경 준비
+
+> SAST 도구 + CI 러너가 필요합니다. Python 3.10+ 환경:
+
+```bash
+pip install semgrep bandit       # 파이프라인에 넣을 스캐너
+pip install pre-commit           # 커밋 단계 게이트(선택)
+
+# CI: GitHub Actions(.github/workflows) 또는 GitLab CI(.gitlab-ci.yml)
+# 로컬 재현: act(https://github.com/nektos/act) 로 워크플로 로컬 실행
+```
+
+> 검증 팁: 파이프라인 게이트가 **실제로 빌드를 실패시키는지** 일부러 취약 코드를 커밋해 확인하세요. 통과해버리면 게이트 임계값/심각도 설정이 잘못된 것입니다.
+> ⚠️ SARIF/스캔 리포트에 비밀이 포함될 수 있으니 아티팩트 접근 권한을 제한하세요.
+> 🧪 별도 컨테이너 랩 없음 — 본인 레포 + CI로 구성.
+
+---
+
 ## 개요
 
 **SAST(Static Application Security Testing)**를 CI/CD 파이프라인에 통합하면 코드가 배포되기 전에 자동으로 보안 검사를 수행할 수 있습니다. "보안 좌편향(Shift Left Security)"의 핵심 실천법으로, 배포 후 취약점을 수정하는 것보다 훨씬 저렴하고 빠릅니다.
@@ -639,6 +657,23 @@ sast_gate:
 <a name="english"></a>
 
 # Integrating SAST into CI/CD Pipelines
+
+## Lab Environment Setup
+
+> You need SAST tools + a CI runner. On Python 3.10+:
+
+```bash
+pip install semgrep bandit       # scanners to wire into the pipeline
+pip install pre-commit           # commit-stage gate (optional)
+# CI: GitHub Actions (.github/workflows) or GitLab CI (.gitlab-ci.yml)
+# Local repro: act (https://github.com/nektos/act) runs workflows locally
+```
+
+> Validation tip: confirm the pipeline gate **actually fails the build** by committing deliberately vulnerable code. If it passes, your threshold/severity config is wrong.
+> ⚠️ SARIF/scan reports may contain secrets — restrict artifact access.
+> 🧪 No container lab — build it with your own repo + CI.
+
+---
 
 ## Overview
 

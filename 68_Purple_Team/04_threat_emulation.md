@@ -6,6 +6,24 @@
 
 # 위협 에뮬레이션 (Threat Emulation)
 
+## 실습 환경 준비
+
+> 실제 APT 그룹의 TTP를 단계별로 재현합니다. 자동화 프레임워크 + 무해한 대체 페이로드가 필요합니다.
+
+```bash
+git clone https://github.com/mitre/caldera.git --recursive   # MITRE CALDERA
+# 오픈소스 C2(상용 Cobalt Strike 대체):
+#   Sliver — https://github.com/BishopFox/sliver
+#   Mythic — https://github.com/its-a-feature/Mythic
+# 기법 단위: Atomic Red Team
+```
+
+> 검증 팁: 시나리오를 단계별로 실행하고 '어느 단계에서 끊겼는지'를 킬체인으로 기록하세요. 한 단계라도 prevented/detected면 방어 성립, 전 단계 missed면 완주 가능 → 단계별 갭 우선순위화.
+> ⚠️ **격리·통제 필수**: 실제 멀웨어 금지 — 무해한 대체 페이로드만 사용, 운영망과 분리.
+> 🧪 별도 컨테이너 랩 없음 — CALDERA/Sliver + 격리 랩망으로 구성.
+
+---
+
 ## 개념 소개
 
 위협 에뮬레이션은 특정 APT(Advanced Persistent Threat) 그룹의 실제 전술, 기법, 절차(TTP)를 최대한 충실하게 재현하는 고급 보안 테스트 기법입니다. 일반적인 취약점 스캐닝과 달리, 실제 공격자가 어떻게 움직이는지를 그대로 따라합니다. 마치 배우가 특정 인물의 말투와 행동 방식까지 연구해서 연기하는 것과 같습니다.
@@ -445,6 +463,24 @@ caldera-cli run --adversary apt29_profile --abort-on-detect
 <a name="english"></a>
 
 # Threat Emulation
+
+## Lab Environment Setup
+
+> Reproduce a real APT group's TTPs step by step. You need an automation framework + harmless surrogate payloads.
+
+```bash
+git clone https://github.com/mitre/caldera.git --recursive   # MITRE CALDERA
+# Open-source C2 (in place of commercial Cobalt Strike):
+#   Sliver — https://github.com/BishopFox/sliver
+#   Mythic — https://github.com/its-a-feature/Mythic
+# Per-technique: Atomic Red Team
+```
+
+> Validation tip: run the scenario stage by stage and record where the kill chain breaks. Any prevented/detected stage = defense holds; all-missed = full chain completes → prioritize per-stage gaps.
+> ⚠️ **Controlled isolation required**: no real malware — surrogate payloads only, separated from production.
+> 🧪 No container lab — build CALDERA/Sliver + an isolated lab network.
+
+---
 
 ## Concept Overview
 

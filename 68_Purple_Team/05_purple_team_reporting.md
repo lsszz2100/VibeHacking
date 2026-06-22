@@ -6,6 +6,22 @@
 
 # 퍼플팀 결과 보고서 (Purple Team Reporting)
 
+## 실습 환경 준비
+
+> 이 문서의 예제는 **Python 3.10+ 표준 라이브러리**만으로 실행됩니다(별도 설치 불필요). 보고용 시각화에 아래를 활용합니다.
+
+```bash
+# ATT&CK 히트맵/커버리지 시각화
+#   ATT&CK Navigator(웹) — https://mitre-attack.github.io/attack-navigator/
+#   레이어 JSON을 내보내 detected/missed 커버리지를 색으로 표현
+```
+
+> 검증 팁: 보고 직전 모든 'detected/closed' 주장을 **재실행으로 회귀검증**하세요. 재현 안 되는 'detected'는 보고서에서 제외/하향 — 측정 없는 주장은 금지입니다.
+> ⚠️ 보고서에 실제 자격증명·민감 IOC를 평문으로 남기지 마세요(마스킹).
+> 🧪 별도 랩 불필요 — 01~04 실습 결과를 입력으로 사용.
+
+---
+
 ## 개념 소개
 
 퍼플팀 활동의 최종 산출물은 보고서입니다. 마치 의사가 진단 결과를 환자에게 설명할 때 전문 용어를 쉽게 풀어주듯, 퍼플팀 보고서는 기술적 발견사항을 경영진과 실무진 모두가 이해할 수 있는 형식으로 전달해야 합니다.
@@ -458,6 +474,22 @@ done
 <a name="english"></a>
 
 # Purple Team Reporting
+
+## Lab Environment Setup
+
+> The examples run on the **Python 3.10+ standard library** alone (no install needed). Use the following for reporting visuals.
+
+```bash
+# ATT&CK heatmap / coverage visualization
+#   ATT&CK Navigator — https://mitre-attack.github.io/attack-navigator/
+#   Export a layer JSON to color detected/missed coverage
+```
+
+> Validation tip: before reporting, **regression-verify every 'detected/closed' claim by re-running it**. Drop/downgrade any 'detected' you cannot reproduce — no claims without measurement.
+> ⚠️ Never leave real credentials/sensitive IOCs in plaintext in the report (mask them).
+> 🧪 No lab needed — use the results from 01–04 as input.
+
+---
 
 ## Concept Overview
 

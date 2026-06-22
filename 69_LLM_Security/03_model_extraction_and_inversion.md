@@ -6,6 +6,21 @@
 
 # 모델 추출 및 역공학
 
+## 실습 환경 준비
+
+> 이 문서의 시뮬레이터 예제는 **Python 3.10+ 표준 라이브러리**로 동작합니다. 실제 대리 모델 학습/멤버십 추론 실습에는 아래를 설치하세요.
+
+```bash
+pip install numpy scikit-learn   # 대리 모델 학습·유사도 측정
+pip install transformers torch   # 대상/대리 모델
+```
+
+> 검증 팁: 대량 쿼리 휩쓸기에 **속도 제한/경보가 실제 작동하는지**(was_throttled=True) 재현하세요. 5000건 휩쓸기에도 차단이 없으면 추출에 무방비입니다.
+> ⚠️ **권한 필수**: 추출/역공학은 본인 소유·명시적 허가 모델에만. 타 서비스 모델 추출은 ToS·법 위반일 수 있습니다.
+> 🧪 별도 컨테이너 랩 없음 — 로컬 모델을 대상으로 구성.
+
+---
+
 ## 모델 추출 공격이란?
 
 **비유:** 레스토랑에서 음식을 계속 주문하며 조리법을 역추적하는 것과 같다. 모델에 수천 번의 쿼리를 날려 입력-출력 쌍을 수집하고, 이를 바탕으로 "대리 모델(surrogate model)"을 훈련시켜 원본 모델의 동작을 복제한다.
@@ -372,6 +387,21 @@ print(f"extraction_risk_score={score:.2f}, rate_limited={sim.was_throttled}")
 <a name="english"></a>
 
 # Model Extraction and Inversion
+
+## Lab Environment Setup
+
+> The simulator examples run on the **Python 3.10+ standard library**. Install the following for real surrogate-training / membership-inference practice.
+
+```bash
+pip install numpy scikit-learn   # surrogate training & similarity metrics
+pip install transformers torch   # target / surrogate models
+```
+
+> Validation tip: reproduce whether a high-volume query sweep **actually triggers rate-limiting/alerts** (was_throttled=True). No blocking after a 5000-query sweep = defenseless against extraction.
+> ⚠️ **Authorization required**: extraction/inversion only on your own or explicitly authorized models. Extracting third-party models may violate ToS/law.
+> 🧪 No container lab — target a local model.
+
+---
 
 ## What is Model Extraction?
 

@@ -6,6 +6,28 @@
 
 # 코드 감사(Code Auditing) 기초
 
+## 실습 환경 준비
+
+> 코드 감사는 분석 대상 소스코드와 기본 검색·SAST 도구만 있으면 시작할 수 있습니다. Python 3.10+ 환경에서:
+
+```bash
+# 빠른 패턴 검색 (수동 감사의 기본)
+sudo apt install ripgrep        # rg — 대규모 코드베이스 고속 grep
+
+# 다중 언어 SAST (3장에서 본격 사용)
+pip install semgrep
+
+# 연습용 취약 코드베이스
+git clone https://github.com/OWASP/NodeGoat      # Node.js
+git clone https://github.com/snoopysecurity/dvws-node
+```
+
+> 검증 팁: 자동 도구의 결과는 **반드시 수동으로 트리아지**하세요(거짓양성 제거). source→sink 데이터 흐름을 직접 따라가 실제 도달 가능성을 확인합니다.
+> ⚠️ 분석 중 발견한 실제 자격증명/비밀키는 보고서에 평문으로 남기지 말고 마스킹하세요.
+> 🧪 별도 컨테이너 랩 없음 — 위 취약 코드베이스를 대상으로 실습.
+
+---
+
 ## 코드 감사란 무엇인가?
 
 **코드 감사(Code Auditing)**란 소프트웨어의 소스코드를 체계적으로 검토하여 보안 취약점, 논리적 오류, 설계 결함을 찾아내는 과정입니다. 병원에서 환자의 X-ray를 촬영하듯, 코드 감사는 소프트웨어의 내부를 들여다보고 숨겨진 병변을 찾아내는 작업입니다.
@@ -276,6 +298,24 @@ if __name__ == "__main__":
 <a name="english"></a>
 
 # Code Auditing Fundamentals
+
+## Lab Environment Setup
+
+> Code auditing only needs the target source plus basic search/SAST tools. On Python 3.10+:
+
+```bash
+sudo apt install ripgrep        # rg — fast grep over large codebases
+pip install semgrep             # multi-language SAST (used heavily in ch.3)
+# Practice targets:
+git clone https://github.com/OWASP/NodeGoat
+git clone https://github.com/snoopysecurity/dvws-node
+```
+
+> Validation tip: **always manually triage** tool output (drop false positives). Follow the source→sink data flow to confirm real reachability.
+> ⚠️ Mask any real credentials/secrets you find — never leave them in plaintext in the report.
+> 🧪 No container lab — practice on the vulnerable codebases above.
+
+---
 
 ## What is Code Auditing?
 

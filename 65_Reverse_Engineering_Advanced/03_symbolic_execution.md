@@ -6,6 +6,24 @@
 
 # 심볼릭 실행 (Symbolic Execution)
 
+## 실습 환경 준비
+
+> 심볼릭 실행 엔진(angr)은 의존성이 많아 **가상환경(venv) 설치를 권장**합니다.
+
+```bash
+python3 -m venv ~/.venv/angr && source ~/.venv/angr/bin/activate
+pip install angr            # claripy·z3-solver 의존성 자동 설치
+
+# 독립 SMT 솔버가 따로 필요하면:
+pip install z3-solver
+```
+
+> 검증 팁: 솔버가 만든 입력을 **실제 바이너리에 그대로 넣어 목표 도달이 재현되는지** 확인하세요(모델-실측 일치 검증).
+> ⚠️ **격리 필수**: 분석 대상 바이너리는 격리 VM/컨테이너에서 실행하세요.
+> 🧪 연계 랩: `vhack lab start 02` (crackme류 바이너리로 경로 탐색 연습)
+
+---
+
 ## 개념 소개
 
 심볼릭 실행은 프로그램의 입력값을 "구체적인 숫자" 대신 "기호(Symbol)"로 처리하는 분석 기법입니다. 마치 수학 방정식을 풀 듯, 특정 경로에 도달하기 위해 어떤 입력이 필요한지를 자동으로 계산합니다.
@@ -375,6 +393,22 @@ python3 solve.py > solution.bin        # angr 해를 파일/stdout으로
 <a name="english"></a>
 
 # Symbolic Execution
+
+## Lab Environment Setup
+
+> The symbolic execution engine (angr) has many dependencies — a **virtualenv is recommended**.
+
+```bash
+python3 -m venv ~/.venv/angr && source ~/.venv/angr/bin/activate
+pip install angr            # pulls in claripy / z3-solver
+pip install z3-solver       # only if you need the solver standalone
+```
+
+> Validation tip: feed the **solver-produced input back into the real binary** and confirm the target state reproduces (model-vs-reality check).
+> ⚠️ **Isolation required**: run target binaries in an isolated VM/container.
+> 🧪 Related lab: `vhack lab start 02`
+
+---
 
 ## Concept Overview
 

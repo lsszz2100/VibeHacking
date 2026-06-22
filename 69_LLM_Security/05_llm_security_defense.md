@@ -6,6 +6,22 @@
 
 # LLM 보안 방어 전략
 
+## 실습 환경 준비
+
+> 이 문서의 다계층 방어 파이프라인 예제는 **Python 3.10+ 표준 라이브러리**로 동작합니다. 실제 방어 구성에는 아래를 설치하세요.
+
+```bash
+pip install llm-guard            # 입력 검증·출력 필터 등 다계층 가드레일
+pip install presidio-analyzer    # PII 탐지/마스킹(선택)
+pip install garak                # 방어 효과 회귀 테스트
+```
+
+> 검증 팁: CI 회귀로 **차단율(TP)과 오차단율(FP)을 함께** 측정하세요. TP가 낮으면 방어 미동작, FP가 높으면 정상 요청까지 막아 가용성을 해칩니다.
+> ⚠️ **격리**: 방어 테스트도 격리된 스테이징에서 수행.
+> 🧪 별도 컨테이너 랩 없음 — 로컬 모델 + 위 가드레일로 구성.
+
+---
+
 ## LLM 보안 아키텍처 개요
 
 **비유:** LLM을 은행 금고에 비유하면, 방어 레이어는 금고 앞의 보안 검색대(입력 필터), 은행 직원의 신분 확인(출력 검증), CCTV 로깅(감사 로그)과 같다. 하나만으로는 부족하고 여러 레이어가 함께 동작해야 한다.
@@ -451,6 +467,22 @@ print(f"차단율(TP)={tp:.1%}  오차단율(FP)={fp:.1%}")
 <a name="english"></a>
 
 # LLM Security Defense Strategies
+
+## Lab Environment Setup
+
+> The multi-layer defense pipeline examples run on the **Python 3.10+ standard library**. Install the following for a real deployment.
+
+```bash
+pip install llm-guard            # multi-layer guardrails (input validation, output filter, ...)
+pip install presidio-analyzer    # PII detection/masking (optional)
+pip install garak                # regression-test defense effectiveness
+```
+
+> Validation tip: in CI regression, **measure block rate (TP) and over-block rate (FP) together**. Low TP = defense not working; high FP = blocking legitimate requests and hurting availability.
+> ⚠️ **Isolation**: run defense tests in an isolated staging environment too.
+> 🧪 No container lab — build a local model + the guardrails above.
+
+---
 
 ## Defense Architecture
 
