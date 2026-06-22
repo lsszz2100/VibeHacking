@@ -560,6 +560,34 @@ def check_dynamodb_encryption(region: str = "ap-northeast-2") -> None:
 
 ---
 
+<!-- detect-validate-23 -->
+## NoSQL/클라우드 DB 공격 탐지와 방어 검증
+
+NoSQL·클라우드 DB 공격은 *어떻게 인증 없는 노출·연산자 주입을 악용하는가*를 다루지만, 방어자는 **각 공격이 클라우드 감사·DB 로그·IAM 어디에 흔적을 남기는가**와 **인증·네트워크 정책이 실제로 노출을 막는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 인증 없는 노출 | 네트워크 경계 | 인증 강제, 방화벽 | 공개 IP 의 DB 포트, 익명 접근 |
+| 연산자 주입($ne/$gt) | 쿼리 객체 | 스키마 검증, 타입강제 | `$` 연산자 포함 입력 |
+| 과도 IAM 권한 | 클라우드 권한 | 최소권한, 조건부 | 비정상 대량 스캔/내보내기 |
+| 스냅샷/백업 탈취 | 저장 데이터 | 암호화, 접근 제한 | 비정상 스냅샷 공유/복사 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) NoSQL 이 인증 없이 노출됐는지 검증(소유 자원) — MongoDB 인증 설정 확인
+mongosh --host localhost --quiet --eval "db.adminCommand({getCmdLineOpts:1}).parsed.security" \
+  2>/dev/null || echo 'CHECK AUTH — 인증 미설정 의심'
+# 2) 클라우드 DB 가 공개 노출됐는지 보안그룹/방화벽 점검(예: 0.0.0.0/0 의 DB 포트)
+# (소유 계정의 감사 로그에서 비정상 대량 export/scan 도 함께 확인)
+```
+
+> 검증은 반드시 **소유한 DB·클라우드 자원**에서만. "인증/네트워크 정책 설정"과 "실제 노출을 막고 비정상 접근을 경보한다"는 다르다 — 통제 환경에서 노출/주입 PoC 를 재현해 차단·감사를 확인한다([[14_Cloud_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # NoSQL and Cloud DB Attacks
@@ -752,3 +780,29 @@ curl "https://firestore.googleapis.com/v1/projects/YOUR-PROJECT/databases/(defau
 | DynamoDB | Public tables | Review IAM policy (`dynamodb:Scan` public?) |
 | Firestore | Public rules | Review Firebase Console security rules |
 | Cosmos DB | Connection string exposed | Search env vars, source code, logs |
+
+<!-- detect-validate-23 -->
+## NoSQL/Cloud DB Attack Detection and Defense Validation
+
+NoSQL/cloud DB attacks describe *how to abuse unauthenticated exposure and operator injection*, but defenders must verify **where each leaves traces (cloud audit, DB logs, IAM)** and **whether auth and network policy actually stop exposure**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Unauthenticated exposure | Network boundary | Enforce auth, firewall | DB port on public IP, anonymous access |
+| Operator injection ($ne/$gt) | Query object | Schema validation, type enforce | Input containing `$` operators |
+| Excessive IAM permission | Cloud permission | Least privilege, conditions | Abnormal bulk scans/exports |
+| Snapshot/backup theft | Data at rest | Encryption, access limits | Abnormal snapshot share/copy |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify NoSQL is not exposed without auth (own resource) — check MongoDB auth setting
+mongosh --host localhost --quiet --eval "db.adminCommand({getCmdLineOpts:1}).parsed.security" \
+  2>/dev/null || echo 'CHECK AUTH — auth may be unset'
+# 2) Check whether the cloud DB is publicly exposed via security group/firewall (e.g. DB port open to 0.0.0.0/0)
+# (also review audit logs in your account for abnormal bulk export/scan)
+```
+
+> Validate only on **owned DBs / cloud resources**. "Configured auth/network policy" differs from "actually stops exposure and alerts on abnormal access" — reproduce exposure/injection PoCs in a controlled environment to confirm blocking/auditing ([[14_Cloud_Security]], [[13_SOC_Blue_Team]]).

@@ -422,6 +422,34 @@ MSSQL 전용:
 
 ---
 
+<!-- detect-validate-23 -->
+## DB 권한상승 탐지와 방어 검증
+
+DB 권한상승은 *어떻게 저권한에서 DBA/OS 로 올라가는가*를 다루지만, 방어자는 **각 경로가 권한 부여·실행 로그 어디에 흔적을 남기는가**와 **권한 분리가 실제로 경계를 유지하는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 과도 권한(FILE/SUPER) | 권한 모델 | 최소권한, 권한 감사 | 앱계정의 DBA 권한 보유 |
+| 저장 프로시저/UDF | 코드 실행 | 정의자 권한 제한 | 비정상 프로시저 생성 |
+| DBA→OS(xp_cmdshell 등) | DB→OS 경계 | 기능 비활성화 | OS 명령 실행 쿼리 |
+| 자격증명 재사용 | 인증 | 계정 분리, 회전 | 동일 자격증명 다계정 |
+
+### 방어 검증 (직접 확인)
+
+```sql
+-- 과도 권한 계정을 점검해 권한상승 표면을 검증(소유 DB)
+SELECT user, host FROM mysql.user
+WHERE File_priv='Y' OR Super_priv='Y' OR Grant_priv='Y';
+-- 애플리케이션 계정이 위 권한을 가지면 최소권한 위반 → 권한상승 가능
+-- 정상: 앱 계정은 특정 스키마의 SELECT/INSERT/UPDATE/DELETE 로 한정
+```
+
+> 검증은 반드시 **소유한 DB·통제 환경**에서만. "권한 분리 설정"과 "실제로 경계가 유지된다"는 다르다 — 저권한 계정으로 권한상승 PoC 를 재현해 차단·로깅되는지 확인한다([[03_System_Hacking]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # DB Privilege Escalation — From Low-Privilege Account to DBA/OS
@@ -740,3 +768,29 @@ MSSQL-specific:
   □ Minimize Linked Servers and strengthen security configuration
   □ Audit Impersonation privileges
 ```
+
+<!-- detect-validate-23 -->
+## DB Privilege Escalation Detection and Defense Validation
+
+DB privilege escalation describes *how to go from low-priv to DBA/OS*, but defenders must verify **where each path leaves traces (grants, execution logs)** and **whether privilege separation actually holds the boundary**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Excess privilege (FILE/SUPER) | Privilege model | Least privilege, grant audit | App account holding DBA rights |
+| Stored procedure/UDF | Code execution | Restrict definer rights | Abnormal procedure creation |
+| DBA->OS (xp_cmdshell, etc.) | DB->OS boundary | Disable the feature | OS-command execution queries |
+| Credential reuse | Authentication | Account separation, rotation | Same credential across accounts |
+
+### Defense validation (verify directly)
+
+```sql
+-- Audit over-privileged accounts to validate the escalation surface (own DB)
+SELECT user, host FROM mysql.user
+WHERE File_priv='Y' OR Super_priv='Y' OR Grant_priv='Y';
+-- If an application account holds these, it violates least privilege -> escalation possible
+-- Normal: app accounts limited to SELECT/INSERT/UPDATE/DELETE on specific schemas
+```
+
+> Validate only on **owned DBs / controlled environments**. "Configured privilege separation" differs from "the boundary actually holds" — reproduce an escalation PoC from a low-priv account to confirm blocking/logging ([[03_System_Hacking]], [[13_SOC_Blue_Team]]).

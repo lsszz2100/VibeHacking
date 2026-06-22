@@ -597,6 +597,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-23 -->
+## DB 감사·포렌식 역량 검증
+
+이 문서는 포렌식·방어를 다루므로, 여기서는 *무엇을 감사하는가*를 넘어 **감사가 실제 공격을 포착하는가**와 **침해 시 추적 가능한 증거가 남는가**를 검증하는 데 집중한다. "감사 켰다 ≠ 공격이 보인다".
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 감사 커버리지 | 핵심 행위가 기록되나? | 감사 정책 범위 | 읽기/메타 미감사 |
+| 로그 무결성 | 변조 방지되나? | append-only/원격 전송 | DBA 가 로그 삭제 가능 |
+| 추적성 | 행위자 식별되나? | 사용자/세션 귀속 | 공유 계정으로 익명화 |
+| 보존 | 충분히 보관되나? | 보존 기간 | 순환 삭제로 증거 소실 |
+
+### 검증 (직접 확인)
+
+```bash
+# 감사가 실제 적용·발화하는지 검증(소유 DB) — 감사 플러그인/정책 확인
+mysql -e "SELECT @@global.audit_log_policy;" 2>/dev/null || echo 'audit plugin NOT installed'
+mysql -e "SHOW VARIABLES LIKE 'log_output';"   # TABLE/FILE 로 감사 출력 경로 확인
+# 검증: 알려진 공격성 쿼리(information_schema 대량조회)를 소유 DB 에 실행 후
+#       감사 로그에 해당 쿼리가 사용자 귀속으로 남는지 직접 확인
+```
+
+> 검증은 **소유한 DB·통제 환경**에서만. 감사 설정 존재가 포착을 보장하지 않는다 — 공격 쿼리를 재생해 감사 로그에 행위자와 함께 남고, 로그가 변조 방지되는지 확인한다([[13_SOC_Blue_Team]], [[44_Incident_Response_DFIR]]).
+
+---
+
 <a name="english"></a>
 
 # DB Forensics and Defense — Breach Detection and Auditing
@@ -825,3 +853,30 @@ def send_alert(smtp_server: str, to: str, message: str) -> None:
     
     with smtplib.SMTP(smtp_server) as s:
         s.send_message(msg)
+```
+
+<!-- detect-validate-23 -->
+## Validating DB Audit and Forensic Capability
+
+Since this document covers forensics/defense, here we go beyond *what to audit* to verify **whether auditing actually captures attacks** and **whether breaches leave traceable evidence**. "Enabled audit != attacks are visible."
+
+### Element -> Question -> Measured signal -> Pitfall
+
+| Element | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Audit coverage | Are key actions recorded? | Audit policy scope | Reads/metadata not audited |
+| Log integrity | Tamper-protected? | Append-only/remote shipping | DBA can delete logs |
+| Traceability | Is the actor identifiable? | User/session attribution | Anonymized via shared accounts |
+| Retention | Kept long enough? | Retention period | Evidence lost to rotation |
+
+### Validation (verify directly)
+
+```bash
+# Verify auditing is applied and firing (own DB) — check audit plugin/policy
+mysql -e "SELECT @@global.audit_log_policy;" 2>/dev/null || echo 'audit plugin NOT installed'
+mysql -e "SHOW VARIABLES LIKE 'log_output';"   # confirm audit output path (TABLE/FILE)
+# Validate: run a known attack query (bulk information_schema read) on your own DB,
+#           then confirm it lands in the audit log attributed to the user
+```
+
+> Validate only on **owned DBs / controlled environments**. Audit configuration does not guarantee capture — replay an attack query to confirm it lands in the audit log with actor attribution and that logs are tamper-protected ([[13_SOC_Blue_Team]], [[44_Incident_Response_DFIR]]).

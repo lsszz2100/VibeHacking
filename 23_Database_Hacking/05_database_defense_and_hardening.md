@@ -761,6 +761,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-23 -->
+## DB 하드닝의 적용 검증
+
+이 문서는 하드닝을 다루므로, 여기서는 *무엇을 설정하는가*를 넘어 **하드닝이 실제 런타임에 적용됐는가**와 **회귀하지 않는가**를 검증하는 데 집중한다. "가이드 적용 ≠ 실제 적용"이다.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 익명/기본 계정 | 제거됐나? | 빈 user 0행 | 기본계정 잔존 |
+| 전송 암호화 | TLS 강제되나? | require_secure_transport=ON | 평문 연결 허용 |
+| 최소권한 | 과도권한 없나? | FILE/SUPER 보유 0 | 앱계정 과권한 |
+| 감사/백업 | 작동·복구되나? | 감사 발화·복원 테스트 | 미검증 백업 |
+
+### 검증 (직접 확인)
+
+```bash
+# 하드닝이 실제 적용됐는지 검증(소유 DB) — 익명계정 제거·TLS 강제·과도권한 점검
+mysql -e "SELECT user,host FROM mysql.user WHERE user='';"          # 익명계정 0행이어야
+mysql -e "SHOW VARIABLES LIKE 'require_secure_transport';"          # ON 이어야 TLS 강제
+mysql -e "SELECT user,host FROM mysql.user WHERE Super_priv='Y';"   # SUPER 보유 최소여야
+# 각 항목이 기준을 벗어나면 하드닝 미적용/회귀 → CI/정기 점검으로 재발 방지
+```
+
+> 검증은 **소유한 DB·통제 환경**에서만. 하드닝 가이드 적용이 곧 런타임 적용을 의미하지 않는다 — 익명계정·TLS·권한을 직접 조회해 기준 충족을 확인하고, 정기 점검으로 회귀를 막는다([[26_Linux_Hardening]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Database Defense and Hardening
@@ -971,3 +999,29 @@ if __name__ == "__main__":
 
 **Reference:**
 - sqlmap (SQL injection testing tool): https://github.com/sqlmapproject/sqlmap
+
+<!-- detect-validate-23 -->
+## Validating DB Hardening Application
+
+Since this document covers hardening, here we go beyond *what to configure* to verify **whether hardening is actually applied at runtime** and **does not regress**. "Applied the guide != actually applied."
+
+### Element -> Question -> Measured signal -> Pitfall
+
+| Element | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Anonymous/default accounts | Removed? | Empty user = 0 rows | Default accounts remain |
+| Transport encryption | TLS enforced? | require_secure_transport=ON | Cleartext connections allowed |
+| Least privilege | No excess rights? | 0 with FILE/SUPER | Over-privileged app accounts |
+| Audit/backup | Works & restores? | Audit fires, restore test | Unverified backups |
+
+### Validation (verify directly)
+
+```bash
+# Verify hardening is actually applied (own DB) — remove anon accounts, enforce TLS, check excess privilege
+mysql -e "SELECT user,host FROM mysql.user WHERE user='';"          # must be 0 rows (no anon accounts)
+mysql -e "SHOW VARIABLES LIKE 'require_secure_transport';"          # must be ON to enforce TLS
+mysql -e "SELECT user,host FROM mysql.user WHERE Super_priv='Y';"   # SUPER holders should be minimal
+# Any item off-baseline means hardening unapplied/regressed -> prevent recurrence via CI/periodic checks
+```
+
+> Validate only on **owned DBs / controlled environments**. Applying a hardening guide does not mean it is applied at runtime — directly query anonymous accounts, TLS, and privileges to confirm baselines, and prevent regression via periodic checks ([[26_Linux_Hardening]], [[68_Purple_Team]]).

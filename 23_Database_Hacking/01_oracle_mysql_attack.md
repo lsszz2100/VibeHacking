@@ -438,6 +438,35 @@ MySQL:
 
 ---
 
+<!-- detect-validate-23 -->
+## DB 공격 탐지와 방어 검증
+
+Oracle/MySQL 공격은 *어떻게 권한·데이터를 탈취하는가*를 다루지만, 방어자는 **각 공격이 DB 감사 로그·에러·플로우 어디에 흔적을 남기는가**와 **최소권한·감사가 실제로 작동하는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 인증 우회/약한 자격증명 | 인증 | 강한 인증, 계정잠금 | 다중 실패 로그인, 기본계정 사용 |
+| 파일 읽기/쓰기(OUTFILE/LOAD_FILE) | DB→OS | FILE 권한 제거, secure_file_priv | 파일 접근 쿼리, 비정상 경로 |
+| 메타데이터 열람 | 스키마 노출 | 최소권한 | information_schema 대량 조회 |
+| UDF/확장 악용 | 코드 실행 | plugin 제한 | 비정상 UDF 생성/호출 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 쿼리 감사가 켜졌는지/공격성 쿼리가 로그에 남는지 검증(소유 DB)
+mysql -e "SHOW VARIABLES LIKE 'general_log';"   # OFF 면 쿼리 감사 부재
+mysql -e "SELECT event_time,user_host,argument FROM mysql.general_log \
+          WHERE argument LIKE '%INTO OUTFILE%' OR argument LIKE '%LOAD_FILE%' LIMIT 5;"
+# 2) FILE 권한 남용 표면 점검 — secure_file_priv 가 제한 경로여야
+mysql -e "SHOW VARIABLES LIKE 'secure_file_priv';"
+```
+
+> 검증은 반드시 **소유한 DB·통제 환경**에서만. "감사/최소권한 설정"과 "공격 쿼리를 실제 기록·차단한다"는 다르다 — PoC 를 재현해 감사 로그에 남고 권한이 막는지 확인한다([[05_Web_Hacking]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Oracle / MySQL Attack Techniques
@@ -765,3 +794,30 @@ Common:
   □ Enable query logging and anomaly detection
   □ Enforce password complexity policies
 ```
+
+<!-- detect-validate-23 -->
+## Database Attack Detection and Defense Validation
+
+Oracle/MySQL attacks describe *how to steal privileges/data*, but defenders must verify **where each leaves traces (DB audit logs, errors, flow)** and **whether least privilege and auditing actually work**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Auth bypass/weak credentials | Authentication | Strong auth, lockout | Repeated failed logins, default accounts |
+| File read/write (OUTFILE/LOAD_FILE) | DB->OS | Remove FILE priv, secure_file_priv | File-access queries, abnormal paths |
+| Metadata enumeration | Schema exposure | Least privilege | Bulk information_schema reads |
+| UDF/extension abuse | Code execution | Restrict plugins | Abnormal UDF creation/calls |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify query auditing is on / attack queries land in logs (own DB)
+mysql -e "SHOW VARIABLES LIKE 'general_log';"   # OFF means no query auditing
+mysql -e "SELECT event_time,user_host,argument FROM mysql.general_log \
+          WHERE argument LIKE '%INTO OUTFILE%' OR argument LIKE '%LOAD_FILE%' LIMIT 5;"
+# 2) Check FILE-privilege abuse surface — secure_file_priv should be a restricted path
+mysql -e "SHOW VARIABLES LIKE 'secure_file_priv';"
+```
+
+> Validate only on **owned DBs / controlled environments**. "Configured audit/least privilege" differs from "actually logs/blocks attack queries" — reproduce the PoC to confirm it lands in audit logs and privileges block ([[05_Web_Hacking]], [[13_SOC_Blue_Team]]).
