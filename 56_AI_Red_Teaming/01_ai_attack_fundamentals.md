@@ -923,6 +923,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-56 -->
+## AI 공격 탐지와 방어 검증
+
+AI 공격은 *무엇이 가능한가*를 다루지만, 방어자 관점에서는 **각 공격이 어떤 텔레메트리에 흔적을 남기는가**와 **가드레일이 런타임에 실제로 막는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 공격면이 실효적인지 가늠할 수 있다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 프롬프트 인젝션 | 입력 신뢰 경계 | 입출력 필터, 스포트라이팅 | 지시 무시 패턴, 시스템 프롬프트 유출 시도 |
+| 모델 탈취(쿼리) | API 노출면 | 레이트 리밋, 인증 | 비정상 쿼리 급증, 경계 근접 샘플링 |
+| 적대적 예제 | 입력 전처리 | 입력 정규화, 탐지기 | 미세 섭동, 신뢰도-라벨 불일치 |
+| 데이터 추출/멤버십 | 학습 데이터 경계 | DP, 출력 제한 | 반복 프로빙, 암기 텍스트 회수 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) garak 로 LLM 취약점(프롬프트 인젝션 등)을 실제 스캔해 가드레일이 막는지 검증
+#    (자신이 소유/통제하는 모델·엔드포인트에만 실행)
+python -m garak --model_type openai --model_name gpt-4o-mini --probes promptinject
+# 2) API 게이트웨이에 레이트 리밋이 실제 적용됐는지 사실 확인(예: nginx)
+grep -RnE 'limit_req|limit_conn' /etc/nginx/ 2>/dev/null || echo 'NO RATE LIMIT CONFIGURED'
+```
+
+> 검증은 반드시 **소유한 모델·통제된 환경**에서만 수행한다. 가드레일을 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — 공격 PoC 를 재현해 통제가 차단하는지 확인해야 신뢰할 수 있다([[69_LLM_Security]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # AI Attack Fundamentals
@@ -1761,3 +1789,28 @@ if __name__ == "__main__":
 - OWASP Machine Learning Security Top 10
 - NIST AI Risk Management Framework (AI RMF)
 - "Adversarial Machine Learning: A Taxonomy and Terminology" (NIST IR 8269)
+
+<!-- detect-validate-56 -->
+## AI Attack Detection and Defense Validation
+
+AI attacks describe *what is possible*, but defenders must verify **what telemetry each attack leaves** and **whether guardrails actually block at runtime**. Attackers can use the same lens to judge which attack surface is effective.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack | Targeted layer | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| Prompt injection | Input trust boundary | I/O filter, spotlighting | Instruction-override patterns, system-prompt leak attempts |
+| Model extraction (query) | API surface | Rate limit, auth | Abnormal query spikes, boundary-near sampling |
+| Adversarial examples | Input preprocessing | Input normalization, detector | Tiny perturbations, confidence-label mismatch |
+| Data/membership extraction | Training-data boundary | DP, output limits | Repeated probing, memorized-text recall |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Scan your own LLM/endpoint with garak to verify guardrails block known probes
+python -m garak --model_type openai --model_name gpt-4o-mini --probes promptinject
+# 2) Confirm rate limiting is actually applied at the API gateway (e.g. nginx)
+grep -RnE 'limit_req|limit_conn' /etc/nginx/ 2>/dev/null || echo 'NO RATE LIMIT CONFIGURED'
+```
+
+> Run validation only on **models you own / controlled environments**. "Configured" a guardrail differs from "blocks at runtime" — reproduce the attack PoC to confirm the control blocks ([[69_LLM_Security]], [[68_Purple_Team]]).

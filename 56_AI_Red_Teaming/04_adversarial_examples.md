@@ -783,6 +783,40 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-56 -->
+## 적대적 예제 탐지와 방어 검증
+
+적대적 예제는 *어떻게 미세 섭동으로 오분류를 유도하는가*를 다루지만, 방어자는 **섭동이 입력 통계/탐지기에 잡히는가**와 **전처리·적대적 훈련이 실제로 강건성을 주는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| FGSM/PGD(화이트박스) | 입력 그래디언트 | 적대적 훈련, 그래디언트 마스킹 | 미세 고주파 섭동, L∞ 노름 이상 |
+| 전이 공격(블랙박스) | 모델 일반화 | 앙상블, 입력 변환 | 대체모델 패턴, 신뢰도-라벨 불일치 |
+| 패치/물리 공격 | 카메라 입력 | 입력 정규화, 탐지기 | 국소 고대비 패치, 비자연 텍스처 |
+| 쿼리 기반(점수) | 출력 점수 | 점수 라운딩, 레이트 리밋 | 좌표상승 쿼리, 경계 탐색 |
+
+### 방어 검증 (직접 확인)
+
+```python
+# 입력 변환(JPEG 재압축)으로 적대적 섭동이 약화되는지 강건성 실측
+# (소유 모델·데이터셋에만 실행). foolbox/torchvision 으로 정확도 비교
+import io
+from PIL import Image
+def jpeg_squeeze(img: Image.Image, quality: int = 75) -> Image.Image:
+    buf = io.BytesIO()
+    img.save(buf, format='JPEG', quality=quality)
+    buf.seek(0)
+    return Image.open(buf)
+# clean_acc vs adv_acc vs squeezed_adv_acc 를 비교해 방어 효과 검증
+# squeezed_adv_acc 가 adv_acc 보다 유의하게 높아야 전처리 방어가 유효
+```
+
+> 검증은 **소유한 모델·데이터셋·통제 환경**에서만. 방어를 "적용했다"와 "공격 정확도를 실제 떨어뜨린다"는 다르다 — PGD 등 PoC 를 재현해 강건 정확도 변화를 측정해야 신뢰할 수 있다([[69_LLM_Security]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Adversarial Examples
@@ -1457,3 +1491,35 @@ if __name__ == "__main__":
 - "Hidden Voice Commands" (Carlini et al., 2016) — Audio adversarial examples
 - CleverHans library: https://github.com/cleverhans-lab/cleverhans
 - ART (Adversarial Robustness Toolbox): https://github.com/Trusted-AI/adversarial-robustness-toolbox
+
+<!-- detect-validate-56 -->
+## Adversarial Example Detection and Defense Validation
+
+Adversarial examples describe *how tiny perturbations induce misclassification*, but defenders must verify **whether perturbations are caught by input statistics/detectors** and **whether preprocessing / adversarial training actually grant robustness**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted layer | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| FGSM/PGD (white-box) | Input gradient | Adversarial training, gradient masking | Tiny high-freq perturbations, L-inf norm anomaly |
+| Transfer attack (black-box) | Model generalization | Ensemble, input transform | Surrogate-model patterns, confidence-label mismatch |
+| Patch/physical attack | Camera input | Input normalization, detector | Local high-contrast patch, unnatural texture |
+| Query-based (score) | Output score | Score rounding, rate limit | Coordinate-ascent queries, boundary search |
+
+### Defense validation (verify directly)
+
+```python
+# Measure robustness empirically: does input transform (JPEG re-compress) weaken perturbation?
+# (own model/dataset only). Compare accuracy with foolbox/torchvision
+import io
+from PIL import Image
+def jpeg_squeeze(img: Image.Image, quality: int = 75) -> Image.Image:
+    buf = io.BytesIO()
+    img.save(buf, format='JPEG', quality=quality)
+    buf.seek(0)
+    return Image.open(buf)
+# Compare clean_acc vs adv_acc vs squeezed_adv_acc to validate defense
+# squeezed_adv_acc should be meaningfully higher than adv_acc for the defense to hold
+```
+
+> Validate only on **owned models/datasets / controlled environments**. "Applied" a defense differs from "actually lowers attack accuracy" — reproduce PoCs like PGD and measure robust-accuracy change to trust it ([[69_LLM_Security]], [[68_Purple_Team]]).

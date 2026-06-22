@@ -1000,6 +1000,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-56 -->
+## AI 방어 통제의 운영 검증
+
+이 문서는 방어 통제를 다루므로, 여기서는 *통제가 존재하는가*를 넘어 **각 통제가 런타임에 실제로 작동하고 회귀하지 않는가**를 검증하는 데 집중한다. "설정됨 ≠ 작동함"이며, 방어는 공격 PoC 로 지속 재검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 방어 통제 | 검증 질문 | 측정 신호 | 회귀 위험 |
+|---|---|---|---|
+| 입력 가드(인젝션 필터) | 알려진 페이로드를 막는가? | 차단율, 우회 페이로드 통과 수 | 모델/프롬프트 업데이트 후 무력화 |
+| 출력 가드(PII/유출) | 카나리·민감출력을 잡는가? | 카나리 회수율, 누출 건수 | 새 출력 형식 미커버 |
+| 레이트/쿼터 | 대량 추출을 막는가? | 임계 초과 경보 수 | 키 다중화로 우회 |
+| 적대적 강건성 | 강건 정확도 유지하는가? | clean vs adv 정확도 | 데이터/모델 드리프트 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 방어 회귀 테스트: garak 를 정기 실행해 가드레일 차단율을 추적(소유 엔드포인트)
+python -m garak --model_type openai --model_name gpt-4o-mini \
+  --probes promptinject,leakreplay --report_prefix nightly_guardrail
+# 리포트의 pass rate 가 기준선 아래로 떨어지면 방어 회귀 → CI 게이트로 차단
+# (예: pass_rate < 0.95 이면 빌드 실패 처리)
+```
+
+> 검증은 **소유한 모델·엔드포인트·통제 환경**에서만. 방어는 한 번 통과로 끝나지 않는다 — 모델/프롬프트 변경마다 공격 PoC 를 재실행해 차단이 유지되는지(회귀 없는지) CI 로 지속 확인한다([[69_LLM_Security]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # AI Red Team Defense
@@ -1280,3 +1308,29 @@ class RedTeamReport:
 - Anthropic Responsible Scaling Policy
 - MITRE ATLAS: https://atlas.mitre.org/
 - "Red-Teaming Large Language Models" (Ganguli et al., 2022, Anthropic)
+
+<!-- detect-validate-56 -->
+## Operational Validation of AI Defense Controls
+
+Since this document covers defensive controls, here we go beyond *does the control exist* to verify **whether each control actually works at runtime and does not regress**. "Configured != working" — defenses must be continuously re-validated with attack PoCs.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Defense control | Validation question | Measured signal | Regression risk |
+|---|---|---|---|
+| Input guard (injection filter) | Blocks known payloads? | Block rate, bypass-payload passes | Neutralized after model/prompt update |
+| Output guard (PII/leak) | Catches canary/sensitive output? | Canary recall, leak count | New output format uncovered |
+| Rate/quota | Stops bulk extraction? | Threshold-breach alerts | Bypassed via key rotation |
+| Adversarial robustness | Maintains robust accuracy? | clean vs adv accuracy | Data/model drift |
+
+### Defense validation (verify directly)
+
+```bash
+# Defense regression test: run garak on a schedule to track guardrail block rate (own endpoint)
+python -m garak --model_type openai --model_name gpt-4o-mini \
+  --probes promptinject,leakreplay --report_prefix nightly_guardrail
+# If the report pass rate drops below baseline -> defense regression -> gate in CI
+# (e.g. fail the build when pass_rate < 0.95)
+```
+
+> Validate only on **owned models/endpoints / controlled environments**. Defense is not one-and-done — re-run attack PoCs on every model/prompt change and confirm blocking holds (no regression) continuously in CI ([[69_LLM_Security]], [[68_Purple_Team]]).

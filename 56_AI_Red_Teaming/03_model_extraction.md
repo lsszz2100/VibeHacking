@@ -957,6 +957,39 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-56 -->
+## 모델 탈취 탐지와 방어 검증
+
+모델 탈취·멤버십 추론은 *어떻게 쿼리로 모델/데이터를 회수하는가*를 다루지만, 방어자는 **추출 시도가 API 텔레메트리에 남는가**와 **레이트 리밋·워터마킹이 실제로 작동하는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 모델 추출(쿼리 합성) | API 노출면 | 레이트 리밋, 쿼터 | 단시간 대량 쿼리, 경계 근접 입력 분포 |
+| 멤버십 추론 | 신뢰도 출력 | 출력 라운딩, 캘리브레이션 | 동일 샘플 반복, 신뢰도 정밀 프로빙 |
+| 모델 역전(데이터 복원) | 출력 채널 | DP, 출력 제한 | 그래디언트/로짓 회수 시도 |
+| 워터마크 회피 | 소유권 증명 | 워터마킹, 핑거프린팅 | 워터마크 트리거 무응답 |
+
+### 방어 검증 (직접 확인)
+
+```python
+# 쿼리 레이트 이상으로 추출 시도를 탐지 (소유 API 로그에만 적용)
+from collections import defaultdict
+WINDOW, THRESHOLD = 60, 500  # 60초당 500쿼리 초과 시 의심
+def flag_extraction(events: list[tuple[str, float]]) -> set[str]:
+    counts: dict[str, int] = defaultdict(int)
+    now = max(t for _, t in events)
+    for api_key, ts in events:
+        if now - ts <= WINDOW:
+            counts[api_key] += 1
+    return {k for k, c in counts.items() if c > THRESHOLD}
+```
+
+> 검증은 **소유한 모델/API·통제 환경**에서만. 레이트 리밋을 "설정했다"와 "대량 추출을 실제 차단·경보한다"는 다르다 — 추출 PoC 를 재현해 임계·워터마크가 작동하는지 확인한다([[69_LLM_Security]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Model Extraction & Membership Inference
@@ -1097,3 +1130,34 @@ The membership inference tester (`03_model_extraction.py` section 5) simulates a
 - "Membership Inference Attacks Against Machine Learning Models" (Shokri et al., 2017)
 - "Model Inversion Attacks that Exploit Confidence Information and Basic Countermeasures" (Fredrikson et al., 2015)
 - MLSecurity.org — Model Security Research Trends
+
+<!-- detect-validate-56 -->
+## Model Extraction Detection and Defense Validation
+
+Model extraction / membership inference describe *how queries recover a model or data*, but defenders must verify **whether extraction leaves API telemetry** and **whether rate limits / watermarking actually work**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted layer | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| Model extraction (query synthesis) | API surface | Rate limit, quota | Bursty queries, boundary-near input distribution |
+| Membership inference | Confidence output | Output rounding, calibration | Repeated same-sample, fine confidence probing |
+| Model inversion (data recovery) | Output channel | DP, output limits | Gradient/logit recovery attempts |
+| Watermark evasion | Ownership proof | Watermarking, fingerprinting | No response to watermark triggers |
+
+### Defense validation (verify directly)
+
+```python
+# Detect extraction attempts via query-rate anomaly (own API logs only)
+from collections import defaultdict
+WINDOW, THRESHOLD = 60, 500  # >500 queries / 60s is suspicious
+def flag_extraction(events: list[tuple[str, float]]) -> set[str]:
+    counts: dict[str, int] = defaultdict(int)
+    now = max(t for _, t in events)
+    for api_key, ts in events:
+        if now - ts <= WINDOW:
+            counts[api_key] += 1
+    return {k for k, c in counts.items() if c > THRESHOLD}
+```
+
+> Validate only on **owned models/APIs / controlled environments**. "Configured" a rate limit differs from "actually blocks/alerts on bulk extraction" — reproduce the extraction PoC to confirm thresholds/watermarks work ([[69_LLM_Security]], [[68_Purple_Team]]).
