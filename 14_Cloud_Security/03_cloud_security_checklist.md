@@ -913,6 +913,34 @@ aws cloudtrail lookup-events \
 
 ---
 
+<!-- detect-validate-14 -->
+## 클라우드 통제의 적용 검증
+
+이 문서는 체크리스트·아키텍처를 다루므로, 여기서는 *무엇을 설정해야 하는가*를 넘어 **각 통제가 실제 계정에 적용됐는가**와 **드리프트하지 않는가**를 검증하는 데 집중한다. "체크리스트 통과 ≠ 런타임 적용"이다.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 루트 계정 보호 | MFA 켜졌나? | AccountMFAEnabled=1 | 루트 키 잔존 |
+| 퍼블릭 노출 | 공개 버킷 없나? | 퍼블릭 ACL/정책 0 | 신규 버킷 드리프트 |
+| 감사 로깅 | 전 지역 켜졌나? | CloudTrail multi-region | 일부 지역 누락 |
+| 키 수명 | 장기 키 없나? | 90일+ 키 0 | 미회전 서비스 키 |
+
+### 검증 (직접 확인)
+
+```bash
+# 체크리스트가 실제 적용됐는지 검증(소유 계정) — 루트 MFA·퍼블릭 버킷·멀티리전 감사
+aws iam get-account-summary --query 'SummaryMap.AccountMFAEnabled'   # 1 이어야(루트 MFA)
+aws cloudtrail describe-trails --query 'trailList[].IsMultiRegionTrail'  # true 포함이어야
+aws s3api get-bucket-policy-status --bucket my-bucket \
+  --query 'PolicyStatus.IsPublic' 2>/dev/null   # false 여야(퍼블릭 아님)
+```
+
+> 검증은 **소유한 클라우드 계정·통제 환경**에서만. 체크리스트 항목 존재가 적용을 의미하지 않는다 — API 로 직접 조회해 기준 충족을 확인하고, CSPM/정기 점검으로 드리프트를 막는다([[58_Cloud_IR]], [[39_Zero_Trust_Architecture]]).
+
+---
+
 <a name="english"></a>
 
 # Cloud Security Checklist & Architecture
@@ -1721,3 +1749,29 @@ aws cloudtrail lookup-events \
     --end-time "2024-01-16T00:00:00Z" \
     --output json
 ```
+
+<!-- detect-validate-14 -->
+## Validating Cloud Control Application
+
+Since this document covers checklists/architecture, here we go beyond *what should be configured* to verify **whether each control is actually applied to the account** and **does not drift**. "Checklist passed != applied at runtime."
+
+### Element -> Question -> Measured signal -> Pitfall
+
+| Element | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Root account protection | MFA on? | AccountMFAEnabled=1 | Root keys remain |
+| Public exposure | No public buckets? | 0 public ACL/policy | New-bucket drift |
+| Audit logging | All regions on? | CloudTrail multi-region | Some regions missing |
+| Key lifetime | No long-lived keys? | 0 keys 90+ days | Unrotated service keys |
+
+### Validation (verify directly)
+
+```bash
+# Verify checklist items are actually applied (own account) — root MFA, public buckets, multi-region audit
+aws iam get-account-summary --query 'SummaryMap.AccountMFAEnabled'   # must be 1 (root MFA)
+aws cloudtrail describe-trails --query 'trailList[].IsMultiRegionTrail'  # must include true
+aws s3api get-bucket-policy-status --bucket my-bucket \
+  --query 'PolicyStatus.IsPublic' 2>/dev/null   # must be false (not public)
+```
+
+> Validate only on **owned cloud accounts / controlled environments**. A checklist item's existence does not mean it is applied — query via API to confirm baselines and prevent drift with CSPM/periodic checks ([[58_Cloud_IR]], [[39_Zero_Trust_Architecture]]).

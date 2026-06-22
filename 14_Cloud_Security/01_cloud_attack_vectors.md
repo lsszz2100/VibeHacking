@@ -1015,6 +1015,36 @@ python3 pacu.py
 
 ---
 
+<!-- detect-validate-14 -->
+## 클라우드 공격 탐지와 방어 검증
+
+클라우드 공격 벡터는 *어떻게 자격증명·노출을 악용하는가*를 다루지만, 방어자는 **각 공격이 컨트롤 플레인 감사로그(CloudTrail 등)에 어떻게 남는가**와 **IMDSv2·최소권한이 실제로 막는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| SSRF→IMDS 자격증명 탈취 | 메타데이터 서비스 | IMDSv2 강제, 아웃바운드 제한 | 인스턴스 역할 자격증명 외부 사용 |
+| 과도 IAM 권한 악용 | 권한 모델 | 최소권한, 권한경계 | 비정상 권한 사용, 권한 열거 |
+| 퍼블릭 노출(S3/스토리지) | 데이터 노출면 | 퍼블릭 차단, 암호화 | 익명 접근, 공개 ACL |
+| 키 유출/장기 키 | 자격증명 수명 | 단기 토큰, 키 회전 | 신규 지역/IP 의 키 사용 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) IMDSv2 가 강제됐는지 검증(소유 계정) — SSRF 토큰탈취 완화의 핵심
+aws ec2 describe-instances \
+  --query 'Reservations[].Instances[].MetadataOptions.HttpTokens' --output text
+#   'required' 여야 IMDSv2 강제. 'optional' 이면 IMDSv1 허용 → SSRF 취약
+# 2) 자격증명 사용 이벤트가 CloudTrail 에 남는지 확인
+aws cloudtrail lookup-events --max-results 5 \
+  --lookup-attributes AttributeKey=EventName,AttributeValue=GetCallerIdentity
+```
+
+> 검증은 반드시 **소유한 클라우드 계정·통제 환경**에서만. "IMDSv2/최소권한 설정"과 "실제 탈취를 막고 감사에 남긴다"는 다르다 — 통제 환경에서 SSRF/권한 PoC 를 재현해 차단·로깅을 확인한다([[58_Cloud_IR]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Complete Analysis of Cloud Attack Vectors
@@ -1919,3 +1949,31 @@ Phase 4: Continuous Verification and Monitoring
   - UEBA (User and Entity Behavior Analytics)
   - Automated response
 ```
+
+<!-- detect-validate-14 -->
+## Cloud Attack Detection and Defense Validation
+
+Cloud attack vectors describe *how to abuse credentials/exposure*, but defenders must verify **how each surfaces in control-plane audit logs (CloudTrail, etc.)** and **whether IMDSv2 and least privilege actually block**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| SSRF->IMDS credential theft | Metadata service | Enforce IMDSv2, limit egress | Instance-role creds used externally |
+| Excess IAM abuse | Privilege model | Least privilege, permission boundary | Abnormal permission use, enumeration |
+| Public exposure (S3/storage) | Data surface | Block public, encrypt | Anonymous access, public ACL |
+| Key leak/long-lived keys | Credential lifetime | Short-lived tokens, rotation | Key used from new region/IP |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify IMDSv2 is enforced (own account) — key mitigation for SSRF token theft
+aws ec2 describe-instances \
+  --query 'Reservations[].Instances[].MetadataOptions.HttpTokens' --output text
+#   'required' = IMDSv2 enforced; 'optional' allows IMDSv1 -> SSRF vulnerable
+# 2) Confirm credential-use events land in CloudTrail
+aws cloudtrail lookup-events --max-results 5 \
+  --lookup-attributes AttributeKey=EventName,AttributeValue=GetCallerIdentity
+```
+
+> Validate only on **owned cloud accounts / controlled environments**. "Configured IMDSv2/least privilege" differs from "actually blocks theft and records it in audit" — reproduce SSRF/permission PoCs in a controlled environment to confirm blocking/logging ([[58_Cloud_IR]], [[13_SOC_Blue_Team]]).

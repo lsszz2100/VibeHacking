@@ -401,6 +401,34 @@ az keyvault secret show --name SECRET --vault-name VAULT_NAME
 
 ---
 
+<!-- detect-validate-14 -->
+## 클라우드 횡이동 탐지와 방어 검증
+
+클라우드 횡이동은 *어떻게 계정·서비스 간 피버팅하는가*를 다루지만, 방어자는 **역할 가정·교차계정 접근이 감사로그에 어떻게 남는가**와 **신뢰 경계·세션 정책이 실제로 막는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 역할 가정(AssumeRole) | 신뢰 정책 | 최소 신뢰, 조건 | 비정상 AssumeRole, role chaining |
+| 교차 계정 피버팅 | 계정 경계 | 외부ID, SCP | 신규 교차계정 접근 |
+| 서비스 간 이동 | 서비스 권한 | 최소권한, 경계 | 비정상 서비스→서비스 호출 |
+| 인스턴스→클라우드 | 메타데이터/역할 | IMDSv2, 권한 분리 | 인스턴스 역할의 광범위 API 사용 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 역할 가정(AssumeRole) 횡이동이 CloudTrail 에 탐지되는지 검증(소유 계정)
+aws cloudtrail lookup-events --max-results 15 \
+  --lookup-attributes AttributeKey=EventName,AttributeValue=AssumeRole \
+  --query 'Events[].{t:EventTime,u:Username}' --output table
+# 비정상 교차계정 AssumeRole / 짧은 시간 다중 role chaining 패턴을 점검
+```
+
+> 검증은 반드시 **소유한 계정·통제 환경**에서만(RoE 준수). "신뢰 정책/SCP 설정"과 "횡이동을 실제 막고 탐지한다"는 다르다 — 통제 환경에서 AssumeRole 체인 PoC 를 재현해 경보·차단을 확인한다([[58_Cloud_IR]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Cloud Lateral Movement — Account Pivoting, Cross-Service Movement, and Detection
@@ -693,3 +721,29 @@ az keyvault secret show --name SECRET --vault-name VAULT_NAME
 | Anomalous region | CloudTrail ConsoleLogin region check | Restrict allowed regions via SCP |
 | New IAM key | CloudTrail CreateAccessKey | GuardDuty alert |
 | Public bucket creation | S3 bucket ACL change | S3 Block Public Access |
+
+<!-- detect-validate-14 -->
+## Cloud Lateral Movement Detection and Defense Validation
+
+Cloud lateral movement describes *how to pivot across accounts/services*, but defenders must verify **how role assumption and cross-account access surface in audit logs** and **whether trust boundaries and session policies actually block**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted layer | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Role assumption (AssumeRole) | Trust policy | Minimal trust, conditions | Abnormal AssumeRole, role chaining |
+| Cross-account pivot | Account boundary | External ID, SCP | New cross-account access |
+| Service-to-service move | Service permission | Least privilege, boundary | Abnormal service->service calls |
+| Instance->cloud | Metadata/role | IMDSv2, privilege separation | Instance role making broad API calls |
+
+### Defense validation (verify directly)
+
+```bash
+# Verify AssumeRole lateral movement is detected by CloudTrail (own account)
+aws cloudtrail lookup-events --max-results 15 \
+  --lookup-attributes AttributeKey=EventName,AttributeValue=AssumeRole \
+  --query 'Events[].{t:EventTime,u:Username}' --output table
+# Check for abnormal cross-account AssumeRole / multiple role-chaining in a short window
+```
+
+> Validate only on **owned accounts / controlled environments** (follow RoE). "Configured trust policy/SCP" differs from "actually blocks and detects lateral movement" — reproduce an AssumeRole-chain PoC in a controlled environment to confirm alerts/blocking ([[58_Cloud_IR]], [[13_SOC_Blue_Team]]).
