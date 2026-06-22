@@ -204,6 +204,12 @@ vhack lab ls
 
    05   🧪 전체 시나리오 통합 랩      ★★★★  APT 체인 · 외부 웹 → 내부망 이동 → DB 침투 → 데이터 탈취
          URL: http://localhost:8888  관련 섹션: 10, 17, 44
+
+   06   🧪 펌웨어 해킹 랩            ★★★   binwalk 추출 · QEMU ARM 에뮬레이션 · 하드코딩 자격증명 발견 CTF
+         URL: http://localhost:8062 (웹 패널) · docker exec -it firmware_analyzer bash  관련 섹션: 61, 27, 65
+
+   07   🧪 모바일 보안 랩            ★★★   APK 정적 분석(jadx·apktool) · Frida 동적 분석 · JWT alg:none 우회
+         URL: http://localhost:8072 (취약 API) · docker exec -it apk_analyzer bash  관련 섹션: 28, 52, 47
 ```
 
 ### 4-2. 실습 환경 시작 (`lab start`)
@@ -227,6 +233,8 @@ vhack lab start 01
 - Lab 03 (네트워크): 약 3~5분
 - Lab 04 (클라우드): 약 5~8분
 - Lab 05 (통합): 약 8~15분
+- Lab 06 (펌웨어): 약 2~4분 (ubuntu + python slim)
+- Lab 07 (모바일): 약 3~6분 (default-jdk 포함)
 
 ### 4-3. 실습 환경 접속
 
@@ -241,6 +249,8 @@ vhack lab start 01
 | **Lab 03 — 네트워크** | `docker exec -it net_lab_attacker bash` | — |
 | **Lab 04 — 클라우드** | http://localhost:8080 (SSRF) · http://localhost:8443 (K8s) · http://localhost:5000 (Registry) | — |
 | **Lab 05 — 통합** | http://localhost:8888 | admin / admin123 |
+| **Lab 06 — 펌웨어** | http://localhost:8062 (웹 패널) · `docker exec -it firmware_analyzer bash` (binwalk 분석) | admin / firmware_admin_2024 |
+| **Lab 07 — 모바일** | http://localhost:8072 (취약 API) · `docker exec -it apk_analyzer bash` (jadx·frida) | API 키: sk-mobile-dev-key-2024-insecure |
 
 ### 4-4. 실습 환경 종료
 

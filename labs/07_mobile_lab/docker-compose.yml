@@ -37,49 +37,9 @@ services:
     container_name: mobile_api
     command: >
       bash -c "pip install -q flask pyjwt &&
-               python3 -c \"
-import jwt, base64, json, hashlib
-from flask import Flask, request, jsonify
-app = Flask(__name__)
-
-HARDCODED_API_KEY = 'sk-mobile-dev-key-2024-insecure'
-FLAG_1 = 'CTF{hardcoded_api_key_in_apk}'
-FLAG_2 = 'CTF{jwt_alg_none_bypass}'
-
-@app.route('/')
-def index():
-    return jsonify({'api': 'MobileApp Backend v2.1', 'endpoints': ['/login', '/data', '/admin']})
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json() or {}
-    if data.get('api_key') == HARDCODED_API_KEY:
-        token = jwt.encode({'user': 'guest', 'role': 'user'}, 'secret', algorithm='HS256')
-        return jsonify({'token': token, 'flag': FLAG_1})
-    return jsonify({'error': 'invalid key'}), 401
-
-@app.route('/data', methods=['GET'])
-def data():
-    return jsonify({'hint': 'API key is hardcoded in the APK. Check BuildConfig or network layer.'})
-
-@app.route('/admin', methods=['GET'])
-def admin():
-    auth = request.headers.get('Authorization', '')
-    if not auth.startswith('Bearer '):
-        return jsonify({'error': 'no token'}), 401
-    token = auth[7:]
-    try:
-        header = json.loads(base64.b64decode(token.split('.')[0] + '==').decode())
-        if header.get('alg', '').lower() == 'none':
-            payload = json.loads(base64.b64decode(token.split('.')[1] + '==').decode())
-            if payload.get('role') == 'admin':
-                return jsonify({'flag': FLAG_2, 'secret': 'admin_panel_data'})
-    except:
-        pass
-    return jsonify({'error': 'forbidden'}), 403
-
-app.run(host='0.0.0.0', port=8080)
-\""
+               python3 /app/app.py"
+    volumes:
+      - ./mobile_api.py:/app/app.py:ro
     networks:
       mobile_lab_net:
         ipv4_address: 172.20.0.20

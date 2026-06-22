@@ -214,6 +214,8 @@ vhack alias status
 | 03 | 네트워크 해킹 랩 | SSH, FTP, DNS, SMTP 취약 서비스 | Docker 내부 네트워크 |
 | 04 | 클라우드/컨테이너 보안 랩 | AWS IMDS, K8s, 컨테이너 탈출 | localhost:8080/8443 |
 | 05 | 전체 시나리오 통합 랩 | APT 공격 체인 시뮬레이션 | localhost:8888 |
+| 06 | 펌웨어 해킹 랩 | binwalk, QEMU 에뮬레이션, 하드코딩 자격증명 | localhost:8062 (웹 패널) |
+| 07 | 모바일 보안 랩 | APK 정적분석, Frida, JWT alg:none 우회 | localhost:8072 (취약 API) |
 
 ### 6-2. 개별 랩 시작
 
@@ -505,6 +507,8 @@ python3 vhack.py lab start 02   # Binary exploitation (BOF, ROP)
 python3 vhack.py lab start 03   # Network hacking
 python3 vhack.py lab start 04   # Cloud/container security
 python3 vhack.py lab start 05   # Full APT scenario
+python3 vhack.py lab start 06   # Firmware hacking (binwalk, QEMU)
+python3 vhack.py lab start 07   # Mobile security (APK, Frida, JWT alg:none)
 
 # Check running labs
 python3 vhack.py lab status

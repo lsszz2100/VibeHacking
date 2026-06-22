@@ -456,7 +456,8 @@ def _lab_start(lab_id: str | None) -> None:
         sys.exit(1)
     meta = LABS.get(lab_id)
     if not meta:
-        print(red(f"✗ 랩 '{lab_id}'이 존재하지 않습니다. (01~05)"))
+        valid = ", ".join(LABS.keys())
+        print(red(f"✗ 랩 '{lab_id}'이 존재하지 않습니다. (사용 가능: {valid})"))
         sys.exit(1)
 
     if not _check_docker():
@@ -969,13 +970,13 @@ def build_parser() -> argparse.ArgumentParser:
     lab_sub = p_lab.add_subparsers(dest="lab_cmd", metavar="<서브명령>")
     lab_sub.add_parser("ls", help="실습 환경 목록")
     p_start = lab_sub.add_parser("start", help="실습 환경 시작")
-    p_start.add_argument("lab_id", metavar="랩번호", help="01~05")
+    p_start.add_argument("lab_id", metavar="랩번호", help="01~07")
     p_stop = lab_sub.add_parser("stop", help="실습 환경 종료")
-    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~05")
+    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~07")
     p_stop.add_argument("--all", action="store_true", help="모든 랩 종료")
     lab_sub.add_parser("status", help="실행 중인 컨테이너 확인")
     p_logs = lab_sub.add_parser("logs", help="랩 로그 보기")
-    p_logs.add_argument("lab_id", metavar="랩번호", help="01~05")
+    p_logs.add_argument("lab_id", metavar="랩번호", help="01~07")
 
     # search
     p_search = sub.add_parser("search", help="전체 문서에서 키워드 검색")
