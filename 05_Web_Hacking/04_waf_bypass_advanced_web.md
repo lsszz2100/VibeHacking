@@ -1070,6 +1070,36 @@ index=web_logs status=200
 
 ---
 
+<!-- detect-validate-05 -->
+## WAF 우회 탐지와 방어 검증
+
+WAF 우회는 *어떻게 룰을 피하는가*를 다루지만, 방어자는 **우회 페이로드가 정규화 후·앱 로그에서 잡히는가**와 **WAF 가 인코딩 변형을 실제로 막는가**를 검증해야 한다. 공격자도 어떤 우회가 실효적인지 이 관점으로 가늠한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 우회 기법 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 인코딩 변형(URL/유니코드) | 시그니처 매칭 | 입력 정규화 후 검사 | 다중 인코딩 레이어, 비정상 %xx 비율 |
+| 케이스/주석 삽입 | 패턴 룰 | 토큰화 기반 룰, CRS | `/**/`·혼합대소문자 키워드 |
+| HTTP 파라미터 오염(HPP) | 파싱 불일치 | 일관 파서, 중복키 거부 | 동일 파라미터 다중 출현 |
+| 청크/요청 스머글링 | 프록시-서버 차이 | 단일 파서, TE/CL 정규화 | TE+CL 동시, 비정상 청크 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 우회 페이로드를 WAF 에 재생해 정규화 후 차단되는지 실측(소유 WAF 만)
+# 평문과 인코딩 변형 모두 403 이어야 정규화가 유효
+for p in "1' OR '1'='1" "1%27%20OR%20%271%27%3D%271" "1'/**/OR/**/'1'='1"; do
+  code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost/?q=$p")
+  echo "$code  <- $p"
+done
+# 200 이 섞여 나오면 해당 인코딩 변형을 WAF 가 정규화 못 함 → CRS 튜닝 필요
+```
+
+> 검증은 **소유한 WAF·통제 환경**에서만. "룰을 켰다"와 "인코딩 변형까지 막는다"는 다르다 — 우회 변형을 재생해 정규화 후 차단·로깅되는지 확인해야 신뢰할 수 있다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # WAF Bypass & Advanced Web Attack Techniques
@@ -1486,3 +1516,31 @@ index=web_logs status=200
 | stats count by src_ip, attack_type, uri_path
 | where count > 5
 ```
+
+<!-- detect-validate-05 -->
+## WAF Bypass Detection and Defense Validation
+
+WAF bypass describes *how to evade rules*, but defenders must verify **whether bypass payloads are caught after normalization / in app logs** and **whether the WAF actually blocks encoding variants**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Bypass technique | Targeted layer | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| Encoding variants (URL/Unicode) | Signature matching | Inspect after normalization | Multi-layer encoding, abnormal %xx ratio |
+| Case/comment insertion | Pattern rules | Tokenized rules, CRS | `/**/`, mixed-case keywords |
+| HTTP parameter pollution | Parsing mismatch | Consistent parser, reject dup keys | Same parameter appearing multiple times |
+| Chunked/request smuggling | Proxy-server diff | Single parser, TE/CL normalization | Simultaneous TE+CL, malformed chunks |
+
+### Defense validation (verify directly)
+
+```bash
+# Replay bypass payloads against the WAF to verify post-normalization blocking (own WAF only)
+# Both plaintext and encoded variants should return 403 if normalization holds
+for p in "1' OR '1'='1" "1%27%20OR%20%271%27%3D%271" "1'/**/OR/**/'1'='1"; do
+  code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost/?q=$p")
+  echo "$code  <- $p"
+done
+# A mixed-in 200 means the WAF failed to normalize that encoding variant -> tune CRS
+```
+
+> Validate only on **owned WAFs / controlled environments**. "Enabled a rule" differs from "blocks encoding variants too" — replay bypass variants to confirm post-normalization blocking/logging ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).

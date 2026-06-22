@@ -1133,6 +1133,38 @@ docker run -d -p 3000:3000 bkimminich/juice-shop
 
 ---
 
+<!-- detect-validate-05 -->
+## SQL 인젝션 탐지와 방어 검증
+
+SQLi 심화 기법은 *어떻게 추출·우회하는가*를 다루지만, 방어자는 **주입이 DB 에러·쿼리 로그·WAF 어디서 잡히는가**와 **파라미터화 쿼리가 실제로 주입을 무력화하는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| Error-based | DB 에러 채널 | 에러 억제, 파라미터화 | 상세 DB 에러 노출, 구문 오류 급증 |
+| Blind/Boolean | 응답 분기 | 파라미터화, 입력 정규화 | 동일 엔드포인트 미세 응답차 반복 |
+| Time-based | 지연 신호 | 쿼리 타임아웃, WAF | SLEEP/BENCHMARK 류, 응답시간 이상 |
+| NoSQL/연산자 주입 | 쿼리 객체 | 스키마 검증, 타입 강제 | `$ne`/`$gt` 류 연산자, 비정상 JSON |
+
+### 방어 검증 (직접 확인)
+
+```python
+# 파라미터화 쿼리가 주입을 무력화하는지 실측(소유 DB). 입력을 데이터로만 처리
+import sqlite3
+def safe_lookup(con: sqlite3.Connection, user_input: str):
+    cur = con.cursor()
+    # 플레이스홀더(?) 사용 — 입력이 SQL 구문으로 해석되지 않음
+    cur.execute("SELECT id FROM users WHERE name = ?", (user_input,))
+    return cur.fetchall()
+# 검증: safe_lookup(con, "x' OR '1'='1") 가 전체행이 아니라 0행을 반환해야 정상
+# (반대로 f-string 으로 만든 쿼리는 전체행 반환 → 취약)
+```
+
+> 검증은 **소유한 DB·통제 환경**에서만. "파라미터화 했다"와 "우회 입력을 실제 데이터로만 처리한다"는 다르다 — sqlmap 등 PoC 를 자신 환경에 재현해 주입이 0행/차단되는지 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # SQL Injection Advanced — Blind, Time-based, NoSQL
@@ -2126,3 +2158,33 @@ docker run -d -p 3000:3000 bkimminich/juice-shop
 
 3. HackTheBox / TryHackMe SQL Injection challenges
 ```
+
+<!-- detect-validate-05 -->
+## SQL Injection Detection and Defense Validation
+
+Advanced SQLi describes *how to extract/bypass*, but defenders must verify **where injection is caught (DB errors, query logs, WAF)** and **whether parameterized queries actually neutralize injection**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted layer | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| Error-based | DB error channel | Error suppression, parameterization | Verbose DB errors, syntax-error spikes |
+| Blind/Boolean | Response branching | Parameterization, input normalization | Repeated tiny response diffs on one endpoint |
+| Time-based | Delay signal | Query timeout, WAF | SLEEP/BENCHMARK, response-time anomaly |
+| NoSQL/operator injection | Query object | Schema validation, type enforce | `$ne`/`$gt` operators, malformed JSON |
+
+### Defense validation (verify directly)
+
+```python
+# Verify parameterized queries neutralize injection (own DB). Input treated as data only
+import sqlite3
+def safe_lookup(con: sqlite3.Connection, user_input: str):
+    cur = con.cursor()
+    # Placeholder (?) — input is not interpreted as SQL syntax
+    cur.execute("SELECT id FROM users WHERE name = ?", (user_input,))
+    return cur.fetchall()
+# Validate: safe_lookup(con, "x' OR '1'='1") must return 0 rows, not all rows
+# (an f-string-built query would return all rows -> vulnerable)
+```
+
+> Validate only on **owned DBs / controlled environments**. "Parameterized" differs from "actually treats bypass input as data" — reproduce PoCs like sqlmap in your own environment to confirm injection yields 0 rows/blocked ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).

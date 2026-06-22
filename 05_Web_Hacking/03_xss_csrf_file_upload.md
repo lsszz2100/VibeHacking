@@ -1284,6 +1284,35 @@ XML 데이터 예시입니다. XXE(XML External Entity) 인젝션은 XML 파서�
 
 ---
 
+<!-- detect-validate-05 -->
+## XSS/CSRF/업로드 탐지와 방어 검증
+
+XSS·CSRF·파일 업로드 공격은 *어떻게 실행/위조/투입하는가*를 다루지만, 방어자는 **공격이 CSP 위반·토큰 부재·파일 시그니처 어디서 잡히는가**와 **출력 인코딩·CSRF 토큰·매직바이트 검증이 실제로 막는가**를 검증해야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격 | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 저장형/반사형 XSS | 출력 렌더링 | 출력 인코딩, CSP | CSP 위반 리포트, `<script>` 류 입력 |
+| DOM XSS | 클라이언트 싱크 | 안전 DOM API, Trusted Types | `innerHTML`/`eval` 싱크 사용 |
+| CSRF | 상태변경 요청 | CSRF 토큰, SameSite | 토큰 부재 POST, 외부 Referer |
+| 악성 파일 업로드 | 콘텐츠 처리 | 매직바이트·확장자 검증 | content-type 불일치, 웹셸 시그니처 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) CSP 헤더가 실제 전송되는지 사실 확인(소유 서버) — 없으면 XSS 완화 부재
+curl -sI https://localhost/ | grep -i 'content-security-policy' || echo 'NO CSP HEADER'
+# 2) 업로드 파일을 확장자가 아닌 매직바이트로 검증하는지 실측
+file --mime-type uploaded.bin   # image/png 이라 주장해도 실제 타입 확인
+# 3) 상태변경 폼에 CSRF 토큰이 포함되는지 점검
+curl -s https://localhost/transfer | grep -iq 'csrf' && echo 'CSRF token present' || echo 'NO CSRF TOKEN'
+```
+
+> 검증은 **소유한 서버·통제 환경**에서만. "인코딩/토큰을 넣었다"와 "실제 페이로드를 막는다"는 다르다 — XSS/CSRF/웹셸 PoC 를 재현해 통제가 차단하는지 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # XSS / CSRF / File Upload Vulnerabilities
@@ -2455,3 +2484,30 @@ XXE (XML External Entity) injection exploits the external entity processing feat
   ...
 </samlp:Response>
 ```
+
+<!-- detect-validate-05 -->
+## XSS/CSRF/Upload Detection and Defense Validation
+
+XSS, CSRF, and file-upload attacks describe *how to execute/forge/plant*, but defenders must verify **where they are caught (CSP violation, missing token, file signature)** and **whether output encoding, CSRF tokens, and magic-byte checks actually block**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack | Targeted layer | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| Stored/reflected XSS | Output rendering | Output encoding, CSP | CSP violation reports, `<script>`-like input |
+| DOM XSS | Client sink | Safe DOM API, Trusted Types | `innerHTML`/`eval` sink usage |
+| CSRF | State-changing request | CSRF token, SameSite | Token-less POST, external Referer |
+| Malicious upload | Content handling | Magic-byte/extension check | content-type mismatch, webshell signature |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm CSP header is actually sent (own server) — absence means no XSS mitigation
+curl -sI https://localhost/ | grep -i 'content-security-policy' || echo 'NO CSP HEADER'
+# 2) Verify uploads are validated by magic bytes, not extension
+file --mime-type uploaded.bin   # confirm real type even if it claims image/png
+# 3) Check state-changing forms include a CSRF token
+curl -s https://localhost/transfer | grep -iq 'csrf' && echo 'CSRF token present' || echo 'NO CSRF TOKEN'
+```
+
+> Validate only on **owned servers / controlled environments**. "Added encoding/tokens" differs from "actually blocks the payload" — reproduce XSS/CSRF/webshell PoCs to confirm controls block ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).

@@ -718,6 +718,34 @@ docker run --rm zaproxy/zap-stable zap-baseline.py \
 
 ---
 
+<!-- detect-validate-05 -->
+## 웹 보안 자동화의 검증과 운영
+
+이 문서는 스캐너·자동화를 다루므로, 여기서는 *도구가 무엇을 찾는가*를 넘어 **발견이 오탐이 아닌지·수정이 실제로 취약점을 닫는지**를 검증하는 데 집중한다. "스캔 통과 ≠ 안전"이며, 자동화는 CI 게이트로 회귀를 막아야 한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 도구/자동화 | 검증 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| DAST(ZAP/Nuclei) | 발견이 재현되는가? | PoC 재현율, 오탐 비율 | 동적 커버리지 누락(인증 후 영역) |
+| SAST(Semgrep) | 도달 가능한 경로인가? | 트리아지 후 잔존 수 | 데드코드 오탐, 컨텍스트 무시 |
+| 의존성 스캔 | 실제 취약 버전인가? | 악용 가능 CVE 수 | 미사용 의존성 노이즈 |
+| CI 게이트 | 회귀를 막는가? | 차단된 PR 수 | 임계 과도→무시 문화 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# Nuclei/ZAP 결과를 CI 게이트로 강제 — 심각도 임계 초과 시 빌드 실패(소유 대상만)
+nuclei -u https://staging.example-owned.test -severity high,critical -silent -json -o scan.json
+count=$(grep -c '"severity"' scan.json 2>/dev/null || echo 0)
+if [ "$count" -gt 0 ]; then echo "FAIL: $count high/critical findings"; exit 1; fi
+# 핵심: 각 발견을 트리아지해 PoC 재현(오탐 제거) 후, 수정 뒤 재스캔이 0건이어야 닫힌 것
+```
+
+> 검증은 **소유/위임받은 대상·통제 환경**에서만. 스캐너 "통과"가 안전을 보장하지 않는다 — 발견은 PoC 로 재현해 오탐을 거르고, 수정 후 재스캔으로 실제 닫혔는지 CI 에서 지속 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 # Web Security Tools and Automation
 
@@ -874,3 +902,29 @@ python3 web_report_gen.py \
 ## References
 
 - [ffuf GitHub](https://github.com/ffuf/ffuf) — High-speed web fuzzer with extensive usage examples and documentation
+
+<!-- detect-validate-05 -->
+## Validation and Operation of Web Security Automation
+
+Since this document covers scanners/automation, here we go beyond *what tools find* to verify **whether findings are not false positives and whether fixes actually close the vulnerability**. "Scan passed != safe" — automation must gate regressions in CI.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Tool/automation | Validation question | Measured signal | Pitfall |
+|---|---|---|---|
+| DAST (ZAP/Nuclei) | Does the finding reproduce? | PoC reproduction rate, FP ratio | Missing dynamic coverage (authenticated areas) |
+| SAST (Semgrep) | Is the path reachable? | Post-triage residual count | Dead-code FPs, context blindness |
+| Dependency scan | Is the version truly vulnerable? | Exploitable-CVE count | Unused-dependency noise |
+| CI gate | Does it stop regressions? | Blocked-PR count | Over-strict threshold -> ignore culture |
+
+### Defense validation (verify directly)
+
+```bash
+# Enforce Nuclei/ZAP output as a CI gate — fail the build above a severity threshold (owned targets only)
+nuclei -u https://staging.example-owned.test -severity high,critical -silent -json -o scan.json
+count=$(grep -c '"severity"' scan.json 2>/dev/null || echo 0)
+if [ "$count" -gt 0 ]; then echo "FAIL: $count high/critical findings"; exit 1; fi
+# Key: triage each finding by reproducing the PoC (drop FPs), then a post-fix rescan must be 0 to be closed
+```
+
+> Validate only on **owned/authorized targets / controlled environments**. A scanner "pass" does not guarantee safety — reproduce findings via PoC to filter false positives, and confirm closure with a post-fix rescan continuously in CI ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).

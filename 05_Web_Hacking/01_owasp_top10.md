@@ -1444,6 +1444,34 @@ redis_client.setex(f"blacklist:{jti}", 3600, "revoked")
 
 ---
 
+<!-- detect-validate-05 -->
+## 웹 공격 탐지와 방어 검증
+
+OWASP Top 10 은 *어떤 취약점이 있는가*를 다루지만, 방어자는 **각 공격이 WAF·앱 로그·DB 텔레메트리 어디에 흔적을 남기는가**와 **통제가 런타임에 실제로 막는가**를 검증해야 한다. 공격자도 이 관점으로 어떤 취약점이 실효적인지 가늠한다.
+
+### 공격 → 계층 → 통제(방어자) → 탐지 신호
+
+| 공격(OWASP) | 노리는 계층 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 인젝션(A03) | 데이터 접근 | 파라미터화 쿼리, 입력 검증 | DB 에러 급증, 비정상 쿼리 구조 |
+| 접근통제 손상(A01) | 인가 경계 | RBAC, 객체 소유 검증 | 수평/수직 권한상승 시도, IDOR 패턴 |
+| 인증 실패(A07) | 세션/자격증명 | MFA, 레이트 리밋 | 크리덴셜 스터핑, 다중 실패 로그인 |
+| SSRF(A10) | 서버 송신 | 아웃바운드 허용목록 | 내부 IP/메타데이터 엔드포인트 접근 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 인젝션/공격 탐지가 실제 동작하는지 ModSecurity + OWASP CRS 로 검증(소유 서버)
+curl -s 'http://localhost/?q=1%27%20OR%20%271%27=%271' -o /dev/null -w '%{http_code}\n'
+#   403 이면 WAF 가 SQLi 패턴을 차단 중. 200 이면 룰 미작동 → 점검 필요
+# 2) 접근 로그에서 IDOR/권한상승 의심 패턴 집계
+awk '$9==403 || $9==401 {print $1}' /var/log/nginx/access.log | sort | uniq -c | sort -rn | head
+```
+
+> 검증은 반드시 **소유한 서버·통제 환경**에서만. 통제를 "설정했다"와 "공격을 실제 막는다"는 다르다 — 페이로드를 재현해 WAF/인가가 차단하는지 확인해야 신뢰할 수 있다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # OWASP Top 10 — Complete Guide to Web Vulnerabilities
@@ -2773,3 +2801,29 @@ decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])  # pin algorithm
 # Blacklist token on logout
 redis_client.setex(f"blacklist:{jti}", 3600, "revoked")
 ```
+
+<!-- detect-validate-05 -->
+## Web Attack Detection and Defense Validation
+
+OWASP Top 10 describes *which vulnerabilities exist*, but defenders must verify **where each attack leaves traces (WAF, app logs, DB telemetry)** and **whether controls actually block at runtime**.
+
+### Attack -> Layer -> Control (defender) -> Detection signal
+
+| Attack (OWASP) | Targeted layer | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| Injection (A03) | Data access | Parameterized queries, input validation | DB error spikes, abnormal query structure |
+| Broken access control (A01) | Authz boundary | RBAC, object-ownership check | Horizontal/vertical escalation, IDOR patterns |
+| Auth failures (A07) | Session/credential | MFA, rate limit | Credential stuffing, repeated failed logins |
+| SSRF (A10) | Server egress | Outbound allowlist | Internal IP / metadata endpoint access |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify injection detection works with ModSecurity + OWASP CRS (own server)
+curl -s 'http://localhost/?q=1%27%20OR%20%271%27=%271' -o /dev/null -w '%{http_code}\n'
+#   403 = WAF blocking the SQLi pattern; 200 = rules not firing -> investigate
+# 2) Aggregate suspected IDOR/escalation patterns from access logs
+awk '$9==403 || $9==401 {print $1}' /var/log/nginx/access.log | sort | uniq -c | sort -rn | head
+```
+
+> Validate only on **owned servers / controlled environments**. "Configured" a control differs from "actually blocks the attack" — reproduce the payload to confirm the WAF/authz blocks ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
