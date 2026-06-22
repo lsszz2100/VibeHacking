@@ -877,6 +877,42 @@ Inode:
 
 ---
 
+<!-- detect-validate-04 -->
+## PE 이상 탐지와 분석 검증
+
+PE 구조 분석은 *파일이 어떻게 구성됐는가*를 읽지만, 패킹·변조는 구조에 이상을 남긴다. 분석자는 **패킹/주입이 어느 헤더·섹션에 흔적을 남기는가**와 **섹션 엔트로피·임포트가 정상 범위인가**를 검증해야 한다.
+
+### 기만 기법 → 노리는 분석 단계 → 분석자 대응 → 관찰 신호
+
+| 기만 기법 | 노리는 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 패킹/암호화 | 정적 코드 분석 | 엔트로피 측정, 동적 언팩 | 고엔트로피 섹션(>7.0) |
+| 임포트 은닉 | IAT 분석 | 동적 임포트 복원 | 빈약한 IAT, GetProcAddress 의존 |
+| 섹션 변조/오버레이 | 섹션 매핑 | 오버레이 추출, 해시 | RawSize≠VirtualSize, 끝단 오버레이 |
+| 타임스탬프/체크섬 위조 | 메타데이터 신뢰 | 교차 출처 검증 | 미래/0 타임스탬프, 체크섬 불일치 |
+
+### 분석 검증 (직접 확인)
+
+```python
+# 섹션 엔트로피로 패킹 여부 검증(소유/샌드박스 샘플) — >7.0 이면 패킹 강한 의심
+import pefile, math
+from collections import Counter
+def entropy(data: bytes) -> float:
+    if not data:
+        return 0.0
+    counts = Counter(data)
+    return -sum((n/len(data)) * math.log2(n/len(data)) for n in counts.values())
+pe = pefile.PE("sample.exe")
+for s in pe.sections:
+    name = s.Name.decode(errors='ignore').rstrip('\x00')
+    e = entropy(s.get_data())
+    print(name, round(e, 2), "PACKED?" if e > 7.0 else "")
+```
+
+> 분석은 반드시 **소유/통제된 샌드박스**에서만. 헤더 메타데이터(타임스탬프·체크섬)는 위조될 수 있다 — 엔트로피·임포트·오버레이를 직접 측정해 정적 결론을 교차검증한다([[65_Reverse_Engineering_Advanced]], [[06_Malware_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # PE Structure & Windows Internals
@@ -1643,3 +1679,37 @@ Forensic perspective:
   - 'debugfs' tool can view deleted inodes
   - No journaling means higher chance of data recovery after deletion than NTFS
 ```
+
+<!-- detect-validate-04 -->
+## PE Anomaly Detection and Analysis Validation
+
+PE-structure analysis reads *how a file is laid out*, but packing/tampering leaves structural anomalies. The analyst must verify **which headers/sections packing or injection marks** and **whether section entropy and imports fall in normal ranges**.
+
+### Deception -> Targeted analysis stage -> Analyst response -> Observable signal
+
+| Deception | Targeted stage | Analyst response | Observable signal |
+|---|---|---|---|
+| Packing/encryption | Static code analysis | Entropy measurement, dynamic unpack | High-entropy section (>7.0) |
+| Import hiding | IAT analysis | Dynamic import recovery | Sparse IAT, GetProcAddress reliance |
+| Section tamper/overlay | Section mapping | Overlay extraction, hashing | RawSize != VirtualSize, trailing overlay |
+| Timestamp/checksum forgery | Metadata trust | Cross-source validation | Future/zero timestamp, checksum mismatch |
+
+### Analysis validation (verify directly)
+
+```python
+# Validate packing via section entropy (owned/sandbox sample) — >7.0 strongly suggests packing
+import pefile, math
+from collections import Counter
+def entropy(data: bytes) -> float:
+    if not data:
+        return 0.0
+    counts = Counter(data)
+    return -sum((n/len(data)) * math.log2(n/len(data)) for n in counts.values())
+pe = pefile.PE("sample.exe")
+for s in pe.sections:
+    name = s.Name.decode(errors='ignore').rstrip('\x00')
+    e = entropy(s.get_data())
+    print(name, round(e, 2), "PACKED?" if e > 7.0 else "")
+```
+
+> Analyze only in **owned/controlled sandboxes**. Header metadata (timestamp/checksum) can be forged — measure entropy, imports, and overlay directly to cross-validate static conclusions ([[65_Reverse_Engineering_Advanced]], [[06_Malware_Analysis]]).

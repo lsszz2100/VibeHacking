@@ -936,6 +936,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-04 -->
+## 안티디스어셈블 탐지와 분석 검증
+
+어셈블리 분석은 *코드가 무엇을 하는가*를 읽지만, 악성코드는 디스어셈블러를 오도하려 한다. 분석자는 **기만 기법이 어느 분석 단계를 노리는가**와 **여러 분석 경로가 같은 결론에 수렴하는가**를 교차검증해야 한다.
+
+### 기만 기법 → 노리는 분석 단계 → 분석자 대응 → 관찰 신호
+
+| 기만 기법 | 노리는 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 정크 바이트 삽입 | 선형 디스어셈블 | 재귀 디스어셈블 교차 | 선형/재귀 결과 불일치 |
+| 명령어 오버랩 | 명령 경계 해석 | 분기 추적, 동적 트레이스 | 동일 바이트 다중 해석 |
+| 불투명 술어 | 분기 분석 | 동적 실행으로 실제 경로 확인 | 항상 한쪽만 도달하는 조건 |
+| 자가수정 코드 | 정적 디스어셈블 | 런타임 메모리 덤프 | 쓰기-실행 메모리, 디코드 루틴 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 선형(objdump) vs 재귀(r2) 디스어셈블을 교차검증 — 불일치는 안티디스어셈블 의심(소유/샌드박스 샘플)
+objdump -d ./sample | grep -c '\t'                 # 선형 명령 수
+r2 -q -c 'aaa; pdf @ main' ./sample 2>/dev/null | head
+# 두 경로의 함수 경계/명령 수가 크게 다르면 정크/오버랩 가능성 → 동적 트레이스로 확정
+```
+
+> 분석은 반드시 **소유/통제된 샌드박스**에서만 수행한다. 디스어셈블러 출력 하나를 "정답"으로 믿지 말고, 선형·재귀·동적 트레이스가 같은 결론으로 수렴하는지 교차검증해야 신뢰할 수 있다([[65_Reverse_Engineering_Advanced]], [[06_Malware_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # Reverse Engineering — Complete Guide to Assembly and Registers
@@ -1765,3 +1792,28 @@ if __name__ == "__main__":
         sys.exit(1)
     find_main_entry(sys.argv[1])
 ```
+
+<!-- detect-validate-04 -->
+## Anti-Disassembly Detection and Analysis Validation
+
+Assembly analysis reads *what the code does*, but malware tries to mislead the disassembler. The analyst must verify **which analysis stage each deception targets** and **whether multiple analysis paths converge on the same conclusion**.
+
+### Deception -> Targeted analysis stage -> Analyst response -> Observable signal
+
+| Deception | Targeted stage | Analyst response | Observable signal |
+|---|---|---|---|
+| Junk byte insertion | Linear disassembly | Cross-check with recursive disasm | Linear/recursive mismatch |
+| Instruction overlap | Boundary interpretation | Branch tracing, dynamic trace | Same bytes parsed multiple ways |
+| Opaque predicates | Branch analysis | Confirm real path dynamically | Conditions only ever reaching one side |
+| Self-modifying code | Static disassembly | Runtime memory dump | Write-then-execute memory, decode routine |
+
+### Analysis validation (verify directly)
+
+```bash
+# Cross-check linear (objdump) vs recursive (r2) disasm — mismatch suggests anti-disasm (owned/sandbox sample)
+objdump -d ./sample | grep -c '\t'                 # linear instruction count
+r2 -q -c 'aaa; pdf @ main' ./sample 2>/dev/null | head
+# If function boundaries/instruction counts diverge greatly, suspect junk/overlap -> confirm via dynamic trace
+```
+
+> Analyze only in **owned/controlled sandboxes**. Do not trust a single disassembler output as ground truth — cross-validate that linear, recursive, and dynamic traces converge on the same conclusion ([[65_Reverse_Engineering_Advanced]], [[06_Malware_Analysis]]).

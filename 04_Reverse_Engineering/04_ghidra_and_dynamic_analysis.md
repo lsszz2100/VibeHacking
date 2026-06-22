@@ -885,6 +885,33 @@ PyGhidra:           https://github.com/NationalSecurityAgency/ghidra/tree/master
 
 ---
 
+<!-- detect-validate-04 -->
+## 디컴파일 오도 탐지와 분석 검증
+
+Ghidra 디컴파일은 *고수준 의미를 복원*하지만, 난독화·간접 호출은 디컴파일러를 오도한다. 분석자는 **정적 디컴파일과 동적 행위가 일치하는가**를 교차검증해 잘못된 결론을 걸러야 한다.
+
+### 기만 기법 → 노리는 분석 단계 → 분석자 대응 → 관찰 신호
+
+| 기만 기법 | 노리는 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 간접 호출/동적 해석 | 콜그래프 복원 | 동적 트레이스로 실제 타겟 | 빈 콜그래프, 레지스터 간접호출 |
+| 제어흐름 평탄화 | 흐름 재구성 | 디옵션 스크립트, 심볼릭 | 거대 스위치 디스패처 |
+| 문자열 암호화 | 문자열 식별 | 런타임 복호 후 덤프 | 평문 부재, 디코드 스텁 |
+| API 동적 해석 | 임포트 식별 | 후킹/동적 IAT | GetProcAddress 루프 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 정적 능력(capa)과 동적 행위를 교차검증 — 불일치는 조건부/안티분석 분기 신호(소유/샌드박스)
+capa ./sample 2>/dev/null | head -30          # 정적으로 추출된 능력(예: create process)
+# 동적(샌드박스) 행위 로그와 비교: 정적엔 있는데 동적엔 없으면 트리거 조건/회피 의심
+ltrace -f ./sample 2>&1 | grep -iE 'GetProcAddress|LoadLibrary' | head
+```
+
+> 분석은 반드시 **소유/통제된 샌드박스**에서만. 디컴파일러 출력은 가독성을 위한 재구성일 뿐 정답이 아니다 — 정적 능력과 동적 트레이스를 대조해 결론을 검증한다([[65_Reverse_Engineering_Advanced]], [[72_Malware_Sandbox_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # Ghidra Practical Analysis & WorstFit Unicode Vulnerability
@@ -1655,3 +1682,28 @@ Useful Ghidra extensions:
   - Kaiju              → CERT/CC malware analysis plugin
   - BinDiff (free)     → Binary comparison
 ```
+
+<!-- detect-validate-04 -->
+## Decompiler-Misleading Detection and Analysis Validation
+
+Ghidra decompilation *recovers high-level meaning*, but obfuscation and indirect calls mislead the decompiler. The analyst must cross-validate **whether static decompilation matches dynamic behavior** to filter wrong conclusions.
+
+### Deception -> Targeted analysis stage -> Analyst response -> Observable signal
+
+| Deception | Targeted stage | Analyst response | Observable signal |
+|---|---|---|---|
+| Indirect call/dynamic resolve | Call-graph recovery | Find real target via dynamic trace | Empty call graph, register indirect calls |
+| Control-flow flattening | Flow reconstruction | Deob scripts, symbolic | Giant switch dispatcher |
+| String encryption | String identification | Dump after runtime decrypt | No plaintext, decode stub |
+| Dynamic API resolution | Import identification | Hooking/dynamic IAT | GetProcAddress loop |
+
+### Analysis validation (verify directly)
+
+```bash
+# Cross-validate static capability (capa) vs dynamic behavior — mismatch signals conditional/anti-analysis branch (owned/sandbox)
+capa ./sample 2>/dev/null | head -30          # statically extracted capabilities (e.g. create process)
+# Compare with dynamic (sandbox) behavior: present statically but absent dynamically -> suspect trigger/evasion
+ltrace -f ./sample 2>&1 | grep -iE 'GetProcAddress|LoadLibrary' | head
+```
+
+> Analyze only in **owned/controlled sandboxes**. Decompiler output is a readability reconstruction, not ground truth — compare static capabilities against dynamic traces to validate conclusions ([[65_Reverse_Engineering_Advanced]], [[72_Malware_Sandbox_Analysis]]).

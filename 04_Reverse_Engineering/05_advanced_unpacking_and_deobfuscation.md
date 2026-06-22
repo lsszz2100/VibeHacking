@@ -590,6 +590,35 @@ python3 deobfuscate.py malware.bin --method xor-multi --key-len 8
 
 ---
 
+<!-- detect-validate-04 -->
+## 언패킹 결과 검증
+
+언패킹·난독화 해제는 *원본 코드를 복원*하지만, 잘못 덤프하면 OEP·임포트가 깨진 채 분석을 이어가게 된다. 분석자는 **덤프가 실제로 완전 복원됐는가**를 검증해야 한다 — "덤프했다 ≠ 복원됐다".
+
+### 기만 기법 → 노리는 분석 단계 → 분석자 대응 → 관찰 신호
+
+| 단계 | 검증 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| OEP 도달 | 진짜 진입점인가? | 텐션 점프 후 정상 prologue | 너무 이른 덤프(미해제 구간) |
+| 임포트 복원 | IAT 가 재구성됐나? | 정상 임포트 테이블 | 빈/깨진 IAT |
+| 섹션 정규화 | 엔트로피 정상화? | 코드섹션 <6.5 | 여전한 고엔트로피 |
+| 재실행 가능 | 덤프가 동작하나? | 샌드박스 정상 구동 | 깨진 재배치/리소스 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 언패킹 덤프가 실제로 복원됐는지 검증(소유/샌드박스) — 패커 시그니처 소멸 + IAT 재구성 확인
+die ./unpacked.bin 2>/dev/null || rabin2 -I ./unpacked.bin   # 패커 시그니처가 사라졌는지
+rabin2 -i ./unpacked.bin 2>/dev/null | head                 # 임포트(IAT) 비었으면 미복원
+python3 -c "import pefile,math;from collections import Counter as C;\
+p=pefile.PE('unpacked.bin');\
+print([(s.Name.decode(errors='ignore').rstrip(chr(0)), round(-sum((n/len(s.get_data()))*math.log2(n/len(s.get_data())) for n in C(s.get_data()).values()),2)) for s in p.sections if s.get_data()])"
+```
+
+> 분석은 반드시 **소유/통제된 샌드박스**에서만. 덤프를 떴다고 복원이 끝난 게 아니다 — 패커 시그니처 소멸, IAT 재구성, 엔트로피 정규화, 재실행 가능성을 확인해야 신뢰할 수 있다([[65_Reverse_Engineering_Advanced]], [[72_Malware_Sandbox_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # Advanced Unpacking and Deobfuscation
@@ -770,3 +799,30 @@ python3 deobfuscate.py malware.bin --method xor-brute --offset 4096 --size 2048
 
 - Ghidra Official Repository: https://github.com/NationalSecurityAgency/ghidra
 - UPX Official Repository: https://github.com/upx/upx
+
+<!-- detect-validate-04 -->
+## Unpacking Result Validation
+
+Unpacking/deobfuscation *recovers original code*, but a bad dump leaves OEP/imports broken while analysis continues on it. The analyst must verify **whether the dump is actually fully reconstructed** — "dumped != reconstructed".
+
+### Deception -> Targeted analysis stage -> Analyst response -> Observable signal
+
+| Stage | Validation question | Measured signal | Pitfall |
+|---|---|---|---|
+| OEP reached | Is it the real entry? | Tail jump then normal prologue | Too-early dump (still-packed region) |
+| Import recovery | Is the IAT rebuilt? | Normal import table | Empty/broken IAT |
+| Section normalization | Entropy normalized? | Code section <6.5 | Still high entropy |
+| Re-executable | Does the dump run? | Runs in sandbox | Broken relocations/resources |
+
+### Analysis validation (verify directly)
+
+```bash
+# Verify the unpacked dump is actually reconstructed (owned/sandbox) — packer signature gone + IAT rebuilt
+die ./unpacked.bin 2>/dev/null || rabin2 -I ./unpacked.bin   # has the packer signature disappeared?
+rabin2 -i ./unpacked.bin 2>/dev/null | head                 # empty imports (IAT) = not reconstructed
+python3 -c "import pefile,math;from collections import Counter as C;\
+p=pefile.PE('unpacked.bin');\
+print([(s.Name.decode(errors='ignore').rstrip(chr(0)), round(-sum((n/len(s.get_data()))*math.log2(n/len(s.get_data())) for n in C(s.get_data()).values()),2)) for s in p.sections if s.get_data()])"
+```
+
+> Analyze only in **owned/controlled sandboxes**. A dump does not mean reconstruction is done — confirm packer signature is gone, IAT rebuilt, entropy normalized, and the dump re-executes ([[65_Reverse_Engineering_Advanced]], [[72_Malware_Sandbox_Analysis]]).

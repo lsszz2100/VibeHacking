@@ -866,6 +866,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-04 -->
+## 안티디버깅 탐지와 분석 검증
+
+동적 디버깅은 *런타임 동작을 관찰*하지만, 악성코드는 디버거 존재를 감지해 행위를 숨긴다. 분석자는 **안티디버깅이 어느 관찰을 차단하는가**와 **디버깅 유무에 따른 행위 차이**를 교차검증해야 한다.
+
+### 기만 기법 → 노리는 분석 단계 → 분석자 대응 → 관찰 신호
+
+| 기만 기법 | 노리는 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| IsDebuggerPresent/PEB | 디버거 탐지 | API 후킹, PEB 패치 | 해당 API 직후 분기 |
+| 타이밍 체크(RDTSC) | 단계 실행 | 시간 가속/패치 | 비정상 지연 후 종료 |
+| 예외 기반(INT3/SEH) | 브레이크포인트 | SEH 추적, 예외 핸들러 분석 | 의도적 예외 발생 |
+| 하드웨어 BP 탐지 | DR 레지스터 | 컨텍스트 우회 | DR0-7 읽기 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 정적으로 안티디버깅/안티VM 참조를 탐지해 동적 분석 전 대비(소유/샌드박스 샘플)
+rabin2 -i ./sample 2>/dev/null | grep -iE 'IsDebuggerPresent|CheckRemoteDebugger|NtQueryInformation|RDTSC'
+strings -a ./sample | grep -iE 'vmware|virtualbox|qemu|vbox|sandbox'
+# 발견되면 디버깅 유무 두 환경의 행위를 비교 — 차이나면 안티분석 분기 확정
+```
+
+> 분석은 반드시 **소유/통제된 샌드박스**에서만. 디버거 안에서 본 행위가 실제 행위와 다를 수 있다 — 안티디버깅 참조를 먼저 식별하고, 디버깅/비디버깅 행위를 비교해 결론을 검증한다([[65_Reverse_Engineering_Advanced]], [[72_Malware_Sandbox_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # OllyDbg & x64dbg Practical Usage Guide
@@ -1632,3 +1659,28 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+<!-- detect-validate-04 -->
+## Anti-Debugging Detection and Analysis Validation
+
+Dynamic debugging *observes runtime behavior*, but malware detects a debugger and hides. The analyst must verify **which observation each anti-debug blocks** and **how behavior differs with/without a debugger**.
+
+### Deception -> Targeted analysis stage -> Analyst response -> Observable signal
+
+| Deception | Targeted stage | Analyst response | Observable signal |
+|---|---|---|---|
+| IsDebuggerPresent/PEB | Debugger detection | API hooking, PEB patch | Branch right after the API |
+| Timing check (RDTSC) | Single-stepping | Time acceleration/patch | Exit after abnormal delay |
+| Exception-based (INT3/SEH) | Breakpoints | SEH tracing, handler analysis | Deliberate exceptions raised |
+| Hardware BP detection | DR registers | Context bypass | DR0-7 reads |
+
+### Analysis validation (verify directly)
+
+```bash
+# Statically detect anti-debug/anti-VM references before dynamic analysis (owned/sandbox sample)
+rabin2 -i ./sample 2>/dev/null | grep -iE 'IsDebuggerPresent|CheckRemoteDebugger|NtQueryInformation|RDTSC'
+strings -a ./sample | grep -iE 'vmware|virtualbox|qemu|vbox|sandbox'
+# If found, compare behavior with/without a debugger — a difference confirms an anti-analysis branch
+```
+
+> Analyze only in **owned/controlled sandboxes**. Behavior seen under a debugger may differ from real behavior — identify anti-debug references first, then compare debugged vs non-debugged behavior to validate conclusions ([[65_Reverse_Engineering_Advanced]], [[72_Malware_Sandbox_Analysis]]).
