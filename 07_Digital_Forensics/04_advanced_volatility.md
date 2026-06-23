@@ -483,6 +483,36 @@ python3 vol.py -f memory.dmp windows.prefetch.PrefetchScan
 
 ---
 
+<!-- detect-validate-07 -->
+## 메모리 안티포렌식 탐지와 분석 검증
+
+고급 멀웨어는 메모리에서도 객체를 은닉(DKOM)하고 후크를 우회한다. Volatility3 분석자는 **은닉 기법이 어느 분석 단계를 노리는가**와 **여러 플러그인이 같은 결론으로 수렴하는가**를 교차검증해야 한다(획득 무결성부터).
+
+### 은닉 기법 → 노리는 분석 단계 → 분석자 대응 → 관찰 신호
+
+| 은닉 기법 | 노리는 분석 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 페이지 스미어/불일치 | 일관된 덤프 | 획득 무결성·다중 덤프 비교 | 페이지 불일치, 스미어 영역 |
+| DKOM 객체 은닉 | 커널 객체 열거 | psscan 풀스캔·thrdscan 교차 | pslist/psscan 차집합 |
+| API 언후킹/직접 syscall | 후킹 탐지 | malfind·VAD·콜백 교차 | RWX VAD, 비정상 콜백 |
+| 캐시/타임스탬프 변조 | 타임라인 | shimcache·레지스트리·메모리 교차 | 메모리-디스크 시각 불일치 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 단일 플러그인을 단정하지 말고 pslist↔psscan 차집합으로 은닉 프로세스 교차검증(소유 시스템 덤프만)
+vol -f mem.raw windows.pslist > /tmp/pl.txt
+vol -f mem.raw windows.psscan > /tmp/ps.txt
+comm -13 <(awk '{print $3}' /tmp/pl.txt | sort -u) <(awk '{print $3}' /tmp/ps.txt | sort -u)  # psscan에만 있으면 DKOM 은닉 의심
+# 주입/언후킹은 malfind와 RWX VAD로 교차 확인
+vol -f mem.raw windows.malfind | head
+vol -f mem.raw windows.vadinfo | awk '/PAGE_EXECUTE_READWRITE/' | head   # RWX는 주입 코드 신호
+```
+
+> 분석은 반드시 **소유/통제된 시스템의 메모리 이미지**에서만 수행하고, **획득 무결성(스미어)** 부터 검증한다. 한 플러그인 출력을 단정하지 말고, pslist·psscan·malfind·vadinfo가 같은 결론으로 수렴하는지 교차검증해야 신뢰할 수 있다([[06_Malware_Analysis]], [[44_Incident_Response_DFIR]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # Volatility3 Advanced — Process Analysis, Network, and Malware Detection
@@ -841,3 +871,31 @@ python3 vol.py -f memory.dmp windows.prefetch.PrefetchScan
 | `windows.mftscan.MFTScan` | MFT file timeline |
 | `windows.shimcache` | ShimCache application history |
 | `windows.userassist` | UserAssist program execution history |
+
+<!-- detect-validate-07 -->
+## Memory Anti-Forensics Detection and Analysis Validation
+
+Advanced malware hides objects in memory (DKOM) and bypasses hooks. The Volatility3 analyst must cross-check **which analysis stage each concealment targets** and **whether multiple plugins converge** — starting from acquisition integrity.
+
+### Concealment -> Targeted analysis stage -> Analyst response -> Observable signal
+
+| Concealment | Targeted stage | Analyst response | Observable signal |
+|---|---|---|---|
+| Page smear/inconsistency | Consistent dump | Acquisition integrity, multi-dump compare | Page mismatch, smear regions |
+| DKOM object hiding | Kernel object enumeration | psscan pool scan, thrdscan cross-check | pslist/psscan set difference |
+| API unhooking/direct syscall | Hook detection | Cross malfind, VAD, callbacks | RWX VAD, abnormal callbacks |
+| Cache/timestamp tampering | Timeline | Cross shimcache, registry, memory | Memory-disk time mismatch |
+
+### Analysis validation (verify directly)
+
+```bash
+# Do not trust one plugin — cross-check hidden processes via pslist/psscan diff (owned-system dump only)
+vol -f mem.raw windows.pslist > /tmp/pl.txt
+vol -f mem.raw windows.psscan > /tmp/ps.txt
+comm -13 <(awk '{print $3}' /tmp/pl.txt | sort -u) <(awk '{print $3}' /tmp/ps.txt | sort -u)  # psscan-only suggests DKOM hiding
+# Confirm injection/unhooking with malfind and RWX VADs
+vol -f mem.raw windows.malfind | head
+vol -f mem.raw windows.vadinfo | awk '/PAGE_EXECUTE_READWRITE/' | head   # RWX signals injected code
+```
+
+> Analyze only on **memory images from owned/controlled systems**, and validate **acquisition integrity (smear)** first. Do not trust a single plugin output — cross-validate that pslist, psscan, malfind, and vadinfo converge on the same conclusion ([[06_Malware_Analysis]], [[44_Incident_Response_DFIR]], [[40_Threat_Hunting]]).

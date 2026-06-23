@@ -474,6 +474,36 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-07 -->
+## 포렌식 자동화 검증과 재현성
+
+자동화 파이프라인은 *결과를 생성함*과 *법정에서 재현·신뢰 가능함*이 다르다. 분석자는 **각 함정이 어떤 결과를 낳는가**와 **입출력 무결성·도구 교차·재현 결정성을 실제로 검증했는가**를 확인해야 한다.
+
+### 자동화 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 자동화 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 단일 도구 출력 맹신 | 파서 오류 전파 | 2개 도구 교차(plaso↔tsk) | 출력 불일치 행 |
+| 무결성 미검증 파이프라인 | 증거 변조 미탐 | 입출력 sha256 매니페스트 | 해시 불일치 |
+| 타임존/시계 오정렬 | 타임라인 왜곡 | UTC 정규화 검증 | 이벤트 시각 편차 |
+| 재현 불가 스크립트 | 법정 신뢰성 결여 | 동일 입력 재실행 결정성 | 재실행 산출물 diff |
+
+### 자동화 검증 (직접 확인)
+
+```bash
+# "생성됨"을 신뢰하지 말 것 — 입출력 무결성·도구 교차·재현 결정성을 측정(소유/허가 증거만)
+sha256sum evidence/* > manifest.sha256 && sha256sum -c manifest.sha256   # 파이프라인 전후 무결성
+# 단일 파서를 단정하지 말고 두 도구의 타임라인을 교차검증
+log2timeline.py --status_view none plaso.dump disk.img >/dev/null 2>&1
+fls -m / -r disk.img > body.txt
+# 동일 입력 재실행 결정성: 두 번 돌린 산출물 해시가 같아야 재현 가능
+diff <(sha256sum run1/timeline.csv | cut -d' ' -f1) <(sha256sum run2/timeline.csv | cut -d' ' -f1) && echo "reproducible"
+```
+
+> 자동화 결과가 "생성됨"과 "법정에서 재현·신뢰 가능함"은 다르다. 입출력 해시 매니페스트·도구 교차·재현 결정성을 검증하고, 단일 도구 출력을 단정하지 말아야 증거로 신뢰할 수 있다([[44_Incident_Response_DFIR]], [[10_Pentest_Methodology]], [[75_Red_Team_Reporting]]).
+
+---
+
 <a name="english"></a>
 # Forensics Automation and Tools
 
@@ -650,3 +680,31 @@ python forensics_extractor.py --image disk.dd --output ./out --partition 2 --str
 ## 6. References
 
 - libewf (Expert Witness Format library): https://github.com/libyal/libewf
+
+<!-- detect-validate-07 -->
+## Forensic Automation Validation and Reproducibility
+
+An automation pipeline *producing results* differs from those results being *reproducible and trustworthy in court*. The analyst must confirm **what outcome each pitfall produces** and **whether I/O integrity, tool cross-check, and re-run determinism were actually validated**.
+
+### Automation pitfall -> Impact -> Validation method -> Measured signal
+
+| Automation pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Trusting a single tool output | Parser errors propagate | Cross two tools (plaso vs tsk) | Mismatched output rows |
+| Integrity-unchecked pipeline | Tampering goes undetected | I/O sha256 manifest | Hash mismatch |
+| Timezone/clock misalignment | Timeline distortion | Verify UTC normalization | Event-time skew |
+| Non-reproducible script | Lacks legal trust | Re-run determinism on same input | Re-run output diff |
+
+### Automation validation (verify directly)
+
+```bash
+# Do not trust "produced" — measure I/O integrity, tool cross-check, and re-run determinism (owned/authorized evidence only)
+sha256sum evidence/* > manifest.sha256 && sha256sum -c manifest.sha256   # pre/post-pipeline integrity
+# Do not trust a single parser — cross-validate timelines from two tools
+log2timeline.py --status_view none plaso.dump disk.img >/dev/null 2>&1
+fls -m / -r disk.img > body.txt
+# Re-run determinism on identical input: output hashes from two runs must match to be reproducible
+diff <(sha256sum run1/timeline.csv | cut -d' ' -f1) <(sha256sum run2/timeline.csv | cut -d' ' -f1) && echo "reproducible"
+```
+
+> Automation *producing* results differs from those results being *reproducible and trustworthy in court*. Validate I/O hash manifests, tool cross-checks, and re-run determinism, and never trust a single tool output, before relying on it as evidence ([[44_Incident_Response_DFIR]], [[10_Pentest_Methodology]], [[75_Red_Team_Reporting]]).

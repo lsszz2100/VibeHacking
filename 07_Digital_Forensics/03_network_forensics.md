@@ -849,6 +849,34 @@ netstat -an | grep LISTEN
 
 ---
 
+<!-- detect-validate-07 -->
+## 네트워크 안티포렌식 탐지와 캡처 검증
+
+네트워크 포렌식은 *무엇이 오갔는가*를 재구성하지만, 공격자는 트래픽을 암호화·위장하고 로그를 지운다. 분석자는 **위장 기법이 어느 분석 단계를 노리는가**와 **다중 센서가 같은 플로우를 증언하는가**를 교차검증해야 한다.
+
+### 위장 기법 → 노리는 분석 단계 → 분석자 대응 → 관찰 신호
+
+| 위장 기법 | 노리는 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 암호화 C2/터널링 | 페이로드 분석 | 메타데이터·JA3·비콘 분석 | TLS SNI 부재, 주기성·jitter |
+| 정상 트래픽 위장 | 트래픽 분류 | 포트-프로토콜 불일치 검사 | 443 위 비-TLS, DNS 터널 |
+| 로그/플로우 삭제 | 사후 재구성 | pcap·netflow·방화벽 다중 센서 교차 | 센서 간 플로우 갭 |
+| 타임스탬프 조작 | 타임라인 | NTP 동기·캡처 무결성 검증 | 캡처-로그 시계 편차 |
+
+### 캡처 검증 (직접 확인)
+
+```bash
+# 캡처 무결성 먼저 보존하고, 페이로드가 아닌 메타데이터로 은닉 트래픽 교차검증(소유/허가 캡처만)
+sha256sum capture.pcap | tee pcap.sha256          # 보존용 해시
+tshark -r capture.pcap -Y 'tcp.port==443 && !tls' -T fields -e ip.dst | sort | uniq -c | sort -rn | head  # 443 위 비-TLS=위장 의심
+# 비콘은 연결 간 시간 간격의 규칙성으로 탐지 — 단일 센서 단정 말고 netflow/방화벽 로그와 교차
+tshark -r capture.pcap -T fields -e frame.time_epoch -e ip.dst | sort -k2 | head
+```
+
+> 패킷캡처는 **무결성 해시로 보존**하고, **소유/허가된 캡처**만 분석한다. 단일 센서를 "정답"으로 믿지 말고, pcap·netflow·방화벽 로그가 같은 플로우로 수렴하는지 교차검증해야 신뢰할 수 있다([[02_Network_Hacking]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Network Forensics — Packet Analysis and Incident Response
@@ -1280,3 +1308,29 @@ netstat -an | grep LISTEN
    - Establish log retention policy (minimum 1 year recommended)
    - Tools: Splunk, ELK Stack, Graylog
 ```
+
+<!-- detect-validate-07 -->
+## Network Anti-Forensics Detection and Capture Validation
+
+Network forensics reconstructs *what was exchanged*, but attackers encrypt/disguise traffic and delete logs. The analyst must cross-check **which analysis stage each disguise targets** and **whether multiple sensors testify to the same flow**.
+
+### Disguise technique -> Targeted analysis stage -> Analyst response -> Observable signal
+
+| Disguise technique | Targeted stage | Analyst response | Observable signal |
+|---|---|---|---|
+| Encrypted C2/tunneling | Payload analysis | Metadata, JA3, beacon analysis | Missing TLS SNI, periodicity/jitter |
+| Disguised as normal traffic | Traffic classification | Check port-protocol mismatch | Non-TLS over 443, DNS tunnel |
+| Log/flow deletion | Post-incident reconstruction | Cross pcap, netflow, firewall sensors | Flow gaps across sensors |
+| Timestamp manipulation | Timeline | Verify NTP sync, capture integrity | Capture-log clock skew |
+
+### Capture validation (verify directly)
+
+```bash
+# Preserve capture integrity first, then cross-validate hidden traffic by metadata not payload (owned/authorized capture only)
+sha256sum capture.pcap | tee pcap.sha256          # preservation hash
+tshark -r capture.pcap -Y 'tcp.port==443 && !tls' -T fields -e ip.dst | sort | uniq -c | sort -rn | head  # non-TLS over 443 = disguise suspect
+# Detect beacons by regularity of inter-connection intervals — do not trust one sensor; cross with netflow/firewall logs
+tshark -r capture.pcap -T fields -e frame.time_epoch -e ip.dst | sort -k2 | head
+```
+
+> Preserve packet captures with an **integrity hash**, and analyze only **owned/authorized captures**. Do not trust a single sensor as ground truth — cross-validate that pcap, netflow, and firewall logs converge on the same flow ([[02_Network_Hacking]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).

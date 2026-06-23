@@ -1135,6 +1135,35 @@ CDN/클라우드 DDoS 보호:
 
 ---
 
+<!-- detect-validate-07 -->
+## 안티포렌식 탐지와 증거 검증
+
+디지털 포렌식은 *무슨 일이 있었는가*를 재구성하지만, 공격자는 흔적을 지우고 타임라인을 왜곡한다. 분석자는 **안티포렌식 기법이 어느 포렌식 단계를 노리는가**와 **다중 소스 타임라인이 같은 결론으로 수렴하는가**를 교차검증해야 한다.
+
+### 안티포렌식 기법 → 노리는 포렌식 단계 → 분석자 대응 → 관찰 신호
+
+| 안티포렌식 기법 | 노리는 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 와이핑/안티복구 | 데이터 수집 | 슬랙·저널·메모리 교차 | 0으로 덮인 영역, 복구 불가 패턴 |
+| 타임스톰핑 | 타임라인 분석 | $MFT $STD vs $FN 비교 | 표준정보/파일명 타임스탬프 불일치 |
+| 로그 삭제/우회 | 사건 재구성 | USN·Prefetch·EVTX 다중 소스 교차 | 이벤트 1102, 시퀀스 갭 |
+| 무파일/메모리 상주 | 디스크 분석 | 메모리 덤프 병행 | 디스크 흔적 없는 네트워크/프로세스 |
+
+### 증거 검증 (직접 확인)
+
+```bash
+# 수집 무결성 먼저 — 쓰기방지 이미지의 획득 전후 해시가 일치해야 법적 신뢰 확보(소유/허가 매체만)
+sha256sum disk.img | tee acquire.sha256          # 획득 직후
+sha256sum disk.img | diff - acquire.sha256 && echo "image integrity OK"
+# 타임스톰핑은 $STANDARD_INFO와 $FILE_NAME 타임스탬프를 교차비교해 탐지
+fls -m / -r disk.img > body.txt && mactime -b body.txt -d | head   # SI<FN 역전은 조작 신호
+# 단일 아티팩트를 단정하지 말고 USN/Prefetch/EVTX 타임라인이 수렴하는지 확인(plaso 등)
+```
+
+> 증거는 반드시 **쓰기방지 + 해시검증된 이미지**로 수집하고, **소유/허가된 시스템**에서만 분석한다. 단일 아티팩트를 "정답"으로 믿지 말고, 다중 소스 타임라인이 같은 결론으로 수렴하는지 교차검증해야 신뢰할 수 있다([[44_Incident_Response_DFIR]], [[40_Threat_Hunting]], [[06_Malware_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # Digital Forensics — Complete Theory and Practical Guide
@@ -2160,3 +2189,30 @@ CDN/Cloud DDoS Protection:
   - Cloudflare, AWS Shield, Azure DDoS Protection
   - Absorb attack traffic with distributed infrastructure
 ```
+
+<!-- detect-validate-07 -->
+## Anti-Forensics Detection and Evidence Validation
+
+Digital forensics reconstructs *what happened*, but attackers wipe traces and distort timelines. The analyst must cross-check **which forensic stage each anti-forensics technique targets** and **whether multi-source timelines converge on the same conclusion**.
+
+### Anti-forensics technique -> Targeted forensic stage -> Analyst response -> Observable signal
+
+| Anti-forensics technique | Targeted stage | Analyst response | Observable signal |
+|---|---|---|---|
+| Wiping/anti-recovery | Data acquisition | Cross slack, journal, memory | Zeroed regions, unrecoverable patterns |
+| Timestomping | Timeline analysis | Compare $MFT $STD vs $FN | Standard-info/filename timestamp mismatch |
+| Log deletion/bypass | Event reconstruction | Cross USN, Prefetch, EVTX sources | Event 1102, sequence gaps |
+| Fileless/memory-resident | Disk analysis | Acquire memory in parallel | Network/process with no disk trace |
+
+### Evidence validation (verify directly)
+
+```bash
+# Acquisition integrity first — pre/post hashes of a write-blocked image must match for legal trust (owned/authorized media only)
+sha256sum disk.img | tee acquire.sha256          # immediately after acquisition
+sha256sum disk.img | diff - acquire.sha256 && echo "image integrity OK"
+# Detect timestomping by cross-comparing $STANDARD_INFO and $FILE_NAME timestamps
+fls -m / -r disk.img > body.txt && mactime -b body.txt -d | head   # SI<FN inversion signals tampering
+# Do not trust a single artifact — confirm USN/Prefetch/EVTX timelines converge (e.g. plaso)
+```
+
+> Acquire evidence only as a **write-blocked, hash-verified image**, and analyze only on **owned/authorized systems**. Do not trust a single artifact as ground truth — cross-validate that multi-source timelines converge on the same conclusion ([[44_Incident_Response_DFIR]], [[40_Threat_Hunting]], [[06_Malware_Analysis]]).

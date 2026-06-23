@@ -1261,6 +1261,40 @@ VSS 마운트 (관리자 권한):
 
 ---
 
+<!-- detect-validate-07 -->
+## Windows 안티포렌식 탐지와 아티팩트 검증
+
+Windows는 같은 사실을 여러 아티팩트에 중복 기록한다. 따라서 하나가 지워져도 사건은 사라지지 않는다. 분석자는 **안티포렌식이 어느 아티팩트를 노리는가**와 **중복 아티팩트가 같은 사실을 증언하는가**를 교차검증해야 한다.
+
+### 안티포렌식 기법 → 노리는 아티팩트 → 분석자 대응 → 관찰 신호
+
+| 안티포렌식 기법 | 노리는 아티팩트 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 이벤트로그 삭제 | EVTX | USN·SRUM·Prefetch 교차 | Event 1102, 로그 시간 갭 |
+| 타임스톰핑 | $MFT 타임라인 | $STANDARD_INFO vs $FILE_NAME | SI<FN, 나노초 0 |
+| Prefetch 삭제/비활성 | 실행 증거 | Amcache·ShimCache·SRUM 교차 | Prefetch 부재 vs 타 실행증거 |
+| USN 저널 변조 | 파일 활동 | $LogFile·볼륨섀도 교차 | 저널 시퀀스 불연속 |
+
+### 아티팩트 검증 (직접 확인)
+
+```bash
+# 단일 아티팩트가 지워져도 같은 사실의 중복 기록을 교차검증(소유/허가 이미지만)
+python3 - <<'PY'
+# $STANDARD_INFO vs $FILE_NAME 타임스탬프 역전(타임스톰핑) 탐지 개념: analyzeMFT/MFTECmd 출력 파싱
+import csv, sys
+# rows: filename, si_mtime, fn_mtime (도구로 추출한 CSV를 가정)
+for r in csv.DictReader(sys.stdin):
+    if r.get('si_mtime') and r.get('fn_mtime') and r['si_mtime'] < r['fn_mtime']:
+        print("TIMESTOMP suspect:", r['filename'])
+PY
+# 이벤트로그 삭제는 Security 1102 + 실행증거(Amcache/SRUM/Prefetch) 갭으로 탐지
+# 한 아티팩트가 비었으면 다른 아티팩트가 같은 실행을 증언하는지 확인
+```
+
+> 단일 아티팩트가 지워졌다고 사건이 사라지지 않는다 — Windows는 실행·접근·지속성을 **여러 아티팩트에 중복 기록**한다. 한 소스를 단정하지 말고 EVTX·MFT·USN·Prefetch·SRUM이 같은 사실로 수렴하는지 교차검증해야 신뢰할 수 있다([[44_Incident_Response_DFIR]], [[54_Active_Directory_Attacks]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # Complete Analysis of Windows Forensics Artifacts
@@ -2403,3 +2437,35 @@ Ransomware perspective:
   wmic shadowcopy delete        → WMI-based VSS deletion (same purpose)
   → Executing these commands is a strong indicator of ransomware or malicious activity
 ```
+
+<!-- detect-validate-07 -->
+## Windows Anti-Forensics Detection and Artifact Validation
+
+Windows records the same fact redundantly across multiple artifacts, so erasing one does not erase the event. The analyst must cross-check **which artifact each anti-forensics technique targets** and **whether redundant artifacts testify to the same fact**.
+
+### Anti-forensics technique -> Targeted artifact -> Analyst response -> Observable signal
+
+| Anti-forensics technique | Targeted artifact | Analyst response | Observable signal |
+|---|---|---|---|
+| Event-log clearing | EVTX | Cross USN, SRUM, Prefetch | Event 1102, time gap in logs |
+| Timestomping | $MFT timeline | $STANDARD_INFO vs $FILE_NAME | SI<FN, zero nanoseconds |
+| Prefetch deletion/disable | Execution evidence | Cross Amcache, ShimCache, SRUM | Prefetch absent vs other exec evidence |
+| USN journal tampering | File activity | Cross $LogFile, volume shadow | Journal sequence discontinuity |
+
+### Artifact validation (verify directly)
+
+```bash
+# Even if one artifact is wiped, cross-validate the redundant record of the same fact (owned/authorized image only)
+python3 - <<'PY'
+# Concept: detect $STANDARD_INFO vs $FILE_NAME timestamp inversion (timestomp) from analyzeMFT/MFTECmd output
+import csv, sys
+# rows: filename, si_mtime, fn_mtime (assume CSV extracted by a tool)
+for r in csv.DictReader(sys.stdin):
+    if r.get('si_mtime') and r.get('fn_mtime') and r['si_mtime'] < r['fn_mtime']:
+        print("TIMESTOMP suspect:", r['filename'])
+PY
+# Detect log clearing via Security 1102 plus gaps against execution evidence (Amcache/SRUM/Prefetch)
+# If one artifact is empty, confirm another testifies to the same execution
+```
+
+> Erasing one artifact does not erase the event — Windows redundantly records execution, access, and persistence **across multiple artifacts**. Do not trust a single source — cross-validate that EVTX, MFT, USN, Prefetch, and SRUM converge on the same fact ([[44_Incident_Response_DFIR]], [[54_Active_Directory_Attacks]], [[40_Threat_Hunting]]).
