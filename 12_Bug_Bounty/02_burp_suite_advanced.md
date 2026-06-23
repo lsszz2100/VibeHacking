@@ -1198,6 +1198,33 @@ java \
 
 ---
 
+<!-- detect-validate-12 -->
+## 수동 검증과 스코프 제어
+
+Burp는 강력하지만 자동 스캔은 범위를 벗어나고 거짓 양성을 낳기 쉽다. 사용자는 **각 함정이 어떤 결과를 낳는가**와 **target scope 설정과 Repeater 수동 재현으로 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 스코프 미설정 자동 스캔 | 범위 밖 트래픽 | Burp target scope 설정 | 스코프 외 호스트 요청 |
+| Intruder 과도 페이로드 | 대상 부하·차단 | 스로틀·리소스풀 제한 | 429/차단 |
+| 스캐너 이슈 맹신 | 거짓 양성 | Repeater 수동 재현 | 재현 불가 이슈 |
+| 세션/CSRF 처리 오류 | 잘못된 결과 | 매크로·세션 규칙 검증 | 401/로그아웃 응답 |
+
+### 검증 (직접 확인)
+
+```bash
+# Burp 프록시 로그가 스코프 안에만 머무는지, 스캐너 이슈가 수동으로 재현되는지 확인
+awk -F/ '/^https?:/{print $3}' burp_proxy_history.txt | sort -u | comm -23 - <(sort in_scope.txt)  # 출력=범위 밖 호스트
+# Repeater로 보낸 단일 요청의 응답을 직접 확인 — 스캐너 단정이 아니라 재현으로 판정
+curl -sk -H 'Cookie: session=<owned>' -o /dev/null -w '%{http_code}\n' "https://target.example/issue"
+```
+
+> Burp 스캐너 이슈는 **Repeater 수동 재현**을 거쳐야 보고 가치가 있고, target scope를 명시 설정해 범위 밖 트래픽을 방지해야 한다. 스로틀로 대상 부하도 통제한다([[05_Web_Hacking]], [[73_Bug_Bounty_Automation]], [[52_API_Security]]).
+
+---
+
 <a name="english"></a>
 
 # Burp Suite Advanced Mastery
@@ -1537,3 +1564,28 @@ java \
   --unpause-spider-and-scanner \
   2>/dev/null &
 ```
+
+<!-- detect-validate-12 -->
+## Manual Validation and Scope Control
+
+Burp is powerful, but automated scans easily leave scope and produce false positives. The user must confirm **what outcome each pitfall produces** and **whether target-scope configuration and Repeater manual reproduction validated it**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Unscoped automated scan | Out-of-scope traffic | Configure Burp target scope | Out-of-scope host requests |
+| Excessive Intruder payloads | Target load, ban | Throttle, resource-pool limit | 429/blocking |
+| Trusting scanner issues | False positive | Manual Repeater reproduction | Non-reproducible issue |
+| Session/CSRF handling error | Wrong results | Validate macro/session rules | 401/logout responses |
+
+### Validation (verify directly)
+
+```bash
+# Confirm Burp proxy traffic stays in scope and scanner issues reproduce manually
+awk -F/ '/^https?:/{print $3}' burp_proxy_history.txt | sort -u | comm -23 - <(sort in_scope.txt)  # output = out-of-scope hosts
+# Inspect the response of a single Repeater-sent request — adjudicate by reproduction, not scanner assertion
+curl -sk -H 'Cookie: session=<owned>' -o /dev/null -w '%{http_code}\n' "https://target.example/issue"
+```
+
+> Burp scanner issues require **manual Repeater reproduction** to be report-worthy, and target scope must be explicitly configured to prevent out-of-scope traffic. Throttle to control target load too ([[05_Web_Hacking]], [[73_Bug_Bounty_Automation]], [[52_API_Security]]).

@@ -1809,6 +1809,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-12 -->
+## 자동화 오탐 관리와 대상 보호
+
+자동화는 대량 발견을 내지만, 대부분 거짓 양성이고 무제한 동시성은 대상에 위험하다. 작성자는 **각 함정이 어떤 결과를 낳는가**와 **rate-limit·스코프 게이트·수동 재현으로 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| Nuclei 템플릿 오탐 | 거짓 양성 대량 | severity 필터·수동 확인 | 재현 불가 매치 |
+| 무제한 동시성 | 대상 DoS 위험 | rate-limit(-rl) 설정 | 429, 응답 지연 |
+| 스코프 외 자동 확장 | 규칙 위반 | allowlist 게이트 | 범위 밖 타깃 |
+| 파이프라인 결과 누적 오류 | 신뢰 저하 | 도구 교차·재실행 | 도구 간 불일치 |
+
+### 검증 (직접 확인)
+
+```bash
+# 대상 보호와 스코프 게이트를 먼저 — rate-limit을 두고 스코프 안에서만 스캔(소유/허가 프로그램)
+nuclei -l in_scope.txt -severity high,critical -rl 20 -o nuclei.out 2>/dev/null   # -rl로 초당 요청 제한
+# 스캐너 매치는 수동 재현으로 오탐 제거 후 보고
+awk '{print $NF}' nuclei.out | sort -u | while read u; do curl -sk -o /dev/null -w "%{http_code} $u\n" "$u"; done | head
+```
+
+> 자동화는 **대상 보호(rate-limit)와 스코프 게이트**가 필수다. 스캐너 매치는 수동 재현으로 오탐을 제거한 뒤 보고하고, 도구 교차로 결과 신뢰성을 확인해야 한다([[73_Bug_Bounty_Automation]], [[08_Python_Hacking]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Complete Mastery of Bug Bounty Automation Tools
@@ -2166,3 +2193,28 @@ An attacker could use this to {impact}
 """
     return template
 ```
+
+<!-- detect-validate-12 -->
+## Automation False-Positive Management and Target Protection
+
+Automation surfaces findings en masse, but most are false positives and unlimited concurrency endangers the target. The author must confirm **what outcome each pitfall produces** and **whether rate-limit, scope gates, and manual reproduction validated it**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Nuclei template false positives | Mass false positives | severity filter, manual check | Non-reproducible match |
+| Unlimited concurrency | Target DoS risk | rate-limit (-rl) | 429, response delay |
+| Auto-expansion out of scope | Rule violation | allowlist gate | Out-of-range target |
+| Pipeline error accumulation | Reduced trust | Cross tools, re-run | Inter-tool mismatch |
+
+### Validation (verify directly)
+
+```bash
+# Target protection and scope gate first — set a rate limit and scan only in scope (owned/authorized program)
+nuclei -l in_scope.txt -severity high,critical -rl 20 -o nuclei.out 2>/dev/null   # -rl caps requests per second
+# Remove false positives by manual reproduction before reporting scanner matches
+awk '{print $NF}' nuclei.out | sort -u | while read u; do curl -sk -o /dev/null -w "%{http_code} $u\n" "$u"; done | head
+```
+
+> Automation requires **target protection (rate-limit) and scope gates**. Report scanner matches only after removing false positives by manual reproduction, and confirm result reliability by cross-checking tools ([[73_Bug_Bounty_Automation]], [[08_Python_Hacking]], [[13_SOC_Blue_Team]]).

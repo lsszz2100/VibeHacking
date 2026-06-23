@@ -1430,6 +1430,33 @@ NTLM  → aad3b435b51404eeaad3b435b51404ee:hash (Windows)
 
 ---
 
+<!-- detect-validate-12 -->
+## 스코프 검증과 발견 재현
+
+버그바운티는 허가됐지만 대상은 *제3자 운영 자산*이다. 따라서 스캐너가 *취약하다고 함*과 *취약함*은 다르고, 범위 이탈은 곧 규칙 위반이다. 헌터는 **각 함정이 어떤 결과를 낳는가**와 **스코프·권한과 수동 재현으로 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 스코프 외 자산 테스트 | 규칙 위반·법적 | 프로그램 스코프와 대조 | 범위 밖 도메인/IP |
+| 정찰 과부하 | 대상 영향·차단 | rate-limit·동시성 제한 | 요청 급증, 429 |
+| 스캐너 결과 맹신 | 거짓 양성 보고 | 수동 재현 필수 | 재현 불가 |
+| 와일드카드 서브도메인 오인 | 오탐 | DNS·소유 검증 | 미해석/외부 호스팅 |
+
+### 검증 (직접 확인)
+
+```bash
+# 매 요청 전 스코프 확인 — 발견 대상이 프로그램 허가 범위 안인지 대조(범위 밖이면 즉시 중단)
+comm -23 <(sort discovered_hosts.txt) <(sort in_scope.txt) && echo "OUT-OF-SCOPE above -> stop"  # 출력=범위 밖
+# 스캐너가 "취약"이라 한 발견을 수동 재현 — 재현 불가면 거짓 양성으로 폐기
+curl -sk -o /dev/null -w '%{http_code}\n' "https://target.example/vuln-path"   # 응답을 직접 확인
+```
+
+> 버그바운티는 허가됐어도 **제3자 자산**이다. 스코프·권한을 매 요청 전 확인하고, 스캐너가 "취약하다고 함"과 "취약함"이 다르므로 수동 재현으로 검증해야 보고 가치가 있다([[73_Bug_Bounty_Automation]], [[10_Pentest_Methodology]], [[30_Vulnerability_Research]]).
+
+---
+
 <a name="english"></a>
 
 # Bug Bounty Methodology — From Beginner to High Severity
@@ -2758,3 +2785,28 @@ $6$   → SHA-512 (Linux)
 $y$   → yescrypt
 NTLM  → aad3b435b51404eeaad3b435b51404ee:hash (Windows)
 ```
+
+<!-- detect-validate-12 -->
+## Scope Validation and Finding Reproduction
+
+Bug bounty is authorized, but the target is a *third-party production asset*. So a scanner *claiming vulnerable* differs from *being vulnerable*, and going out of scope is a rule violation. The hunter must confirm **what outcome each pitfall produces** and **whether scope, authorization, and manual reproduction validated it**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Testing out-of-scope assets | Rule/legal violation | Compare against program scope | Out-of-range domain/IP |
+| Recon overload | Target impact, ban | rate-limit, concurrency caps | Request spike, 429 |
+| Trusting scanner output | False-positive reports | Require manual reproduction | Non-reproducible |
+| Wildcard subdomain confusion | False positive | DNS/ownership verification | Unresolved/externally hosted |
+
+### Validation (verify directly)
+
+```bash
+# Confirm scope before every request — check the target is within the program's authorized range (stop immediately if not)
+comm -23 <(sort discovered_hosts.txt) <(sort in_scope.txt) && echo "OUT-OF-SCOPE above -> stop"  # output = out of scope
+# Manually reproduce findings a scanner called "vulnerable" — discard as false positive if not reproducible
+curl -sk -o /dev/null -w '%{http_code}\n' "https://target.example/vuln-path"   # inspect the response directly
+```
+
+> Bug bounty, though authorized, targets **third-party assets**. Confirm scope and authorization before every request, and since a scanner "claiming vulnerable" differs from "being vulnerable," validate by manual reproduction to make a report worthwhile ([[73_Bug_Bounty_Automation]], [[10_Pentest_Methodology]], [[30_Vulnerability_Research]]).

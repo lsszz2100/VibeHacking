@@ -1206,6 +1206,33 @@ if order.user_id != current_user.id:
 
 ---
 
+<!-- detect-validate-12 -->
+## API 발견 검증과 안전한 테스트
+
+API 테스트는 IDOR·인증 우회를 빠르게 의심하지만, *접근됨*과 *실데이터 노출*은 다르고 쓰기 요청은 대상을 변형할 수 있다. 작성자는 **각 함정이 어떤 결과를 낳는가**와 **소유 계정 재현·읽기 전용 우선으로 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| IDOR 오판 | 거짓 양성/실데이터 | 소유 계정 2개로 재현 | 타 사용자 데이터 노출 |
+| 인증 우회 추정 | 미검증 보고 | 토큰 무효화 후 재현 | 401 기대 vs 200 |
+| rate-limit 테스트 과부하 | 대상 영향 | 점진 증가·중단 기준 | 429, 장애 신호 |
+| 대량 자동 요청 | 데이터 변형 | GET/읽기 전용 우선 | 쓰기 부작용 |
+
+### 검증 (직접 확인)
+
+```bash
+# IDOR는 소유한 계정 2개로 재현 — 계정 A 토큰으로 계정 B 리소스가 보이면 확정(읽기 전용 우선)
+curl -sk -H "Authorization: Bearer $TOKEN_A" -o /dev/null -w '%{http_code}\n' "https://api.example/users/$ID_B"  # 200이면 IDOR
+# 인증 우회는 토큰을 무효화/제거 후 401이 와야 정상 — 200이면 우회 확정
+curl -sk -o /dev/null -w '%{http_code}\n' "https://api.example/users/$ID_B"   # 무토큰 요청
+```
+
+> API 테스트는 **소유 계정으로 재현**하고 **읽기 전용을 우선**한다. "접근됨"이 실데이터 노출이면 최소영향으로 증명하고, rate-limit 테스트는 점진 증가·중단 기준을 두어 대상 영향을 통제해야 한다([[52_API_Security]], [[73_Bug_Bounty_Automation]], [[05_Web_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # API Security Testing & Bug Bounty Practical Guide
@@ -1502,3 +1529,28 @@ class APISecurityTester:
 | SSRF (AWS Metadata) | Network | Low | Low | None | **9.8** Critical |
 | JWT alg:none | Network | Low | None | None | **9.1** Critical |
 | Rate Limit OTP | Network | Low | None | None | **7.3** High |
+
+<!-- detect-validate-12 -->
+## API Finding Validation and Safe Testing
+
+API testing quickly suspects IDOR and auth bypass, but *being accessible* differs from *real data exposure*, and write requests can mutate the target. The author must confirm **what outcome each pitfall produces** and **whether owned-account reproduction and read-only-first validated it**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| IDOR misjudgment | False positive/real data | Reproduce with two owned accounts | Other user's data exposed |
+| Assumed auth bypass | Unverified report | Reproduce after revoking token | Expected 401 vs 200 |
+| Rate-limit test overload | Target impact | Gradual increase, stop criteria | 429, failure signals |
+| Mass automated requests | Data mutation | GET/read-only first | Write side effects |
+
+### Validation (verify directly)
+
+```bash
+# Reproduce IDOR with two owned accounts — if account A's token sees account B's resource, it is confirmed (read-only first)
+curl -sk -H "Authorization: Bearer $TOKEN_A" -o /dev/null -w '%{http_code}\n' "https://api.example/users/$ID_B"  # 200 = IDOR
+# For auth bypass, a revoked/absent token must yield 401 — a 200 confirms the bypass
+curl -sk -o /dev/null -w '%{http_code}\n' "https://api.example/users/$ID_B"   # token-less request
+```
+
+> Reproduce API findings with **owned accounts** and prefer **read-only**. If "accessible" means real data exposure, prove it with minimal impact, and bound rate-limit tests with gradual increase and stop criteria to control target impact ([[52_API_Security]], [[73_Bug_Bounty_Automation]], [[05_Web_Hacking]]).

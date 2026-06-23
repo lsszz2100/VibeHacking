@@ -621,6 +621,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-12 -->
+## 체인 안전성과 테이크오버 검증
+
+취약점 체인은 영향이 크지만, 단계마다 부작용이 누적되고 추정 체인은 거짓 양성이 되기 쉽다. 작성자는 **각 함정이 어떤 결과를 낳는가**와 **각 단계를 소유 자산에서 재현했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 서브도메인 테이크오버 오판 | 거짓 양성 | CNAME·서비스 응답 검증 | dangling CNAME, NXDOMAIN |
+| 체인 부작용 누적 | 대상 손상 | 단계별 격리 검증 | 비가역 변경 |
+| 계정 탈취 PoC 과도 | 실사용자 피해 | 소유 테스트 계정만 | 타 계정 영향 |
+| 환각/추정 체인 | 미검증 보고 | 각 단계 재현 | 재현 불가 단계 |
+
+### 검증 (직접 확인)
+
+```bash
+# 서브도메인 테이크오버는 dangling CNAME과 서비스 응답으로 확정(추정 금지)
+dig +short CNAME sub.target.example   # 외부 서비스로 향하는 CNAME 확인
+curl -sk -o /dev/null -w '%{http_code}\n' "https://sub.target.example"   # 404/미클레임 응답이면 테이크오버 후보
+# 체인의 각 단계를 소유 테스트 계정에서 재현 — 한 단계라도 재현 불가면 체인 미성립
+```
+
+> 취약점 체인은 **각 단계를 소유 자산·테스트 계정에서 재현**하고, 테이크오버는 dangling CNAME과 서비스 응답으로 확정해야 한다. 계정 탈취 PoC는 실사용자 피해 없이 **최소영향**으로 증명한다([[35_Supply_Chain_Attacks]], [[73_Bug_Bounty_Automation]], [[30_Vulnerability_Research]]).
+
+---
+
 <a name="english"></a>
 
 # Bug Bounty Advanced — Vulnerability Chains, Subdomain Takeover, Account Takeover
@@ -805,3 +832,28 @@ curl -H "Origin: https://attacker.com" \
 | 2FA Bypass | Code reuse, no rate limit, backup codes |
 | OAuth | Missing state parameter validation, CSRF |
 | SSRF | DNS Rebinding, IPv6, protocol wrappers |
+
+<!-- detect-validate-12 -->
+## Chain Safety and Takeover Validation
+
+Vulnerability chains have large impact, but side effects accumulate per step and assumed chains easily become false positives. The author must confirm **what outcome each pitfall produces** and **whether each step was reproduced on owned assets**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Subdomain takeover misjudgment | False positive | Verify CNAME/service response | Dangling CNAME, NXDOMAIN |
+| Chain side-effect accumulation | Target damage | Validate each step in isolation | Irreversible change |
+| Excessive account-takeover PoC | Real-user harm | Owned test accounts only | Impact on other accounts |
+| Hallucinated/assumed chain | Unverified report | Reproduce each step | Non-reproducible step |
+
+### Validation (verify directly)
+
+```bash
+# Confirm subdomain takeover by dangling CNAME and service response (no assumptions)
+dig +short CNAME sub.target.example   # check the CNAME pointing to an external service
+curl -sk -o /dev/null -w '%{http_code}\n' "https://sub.target.example"   # a 404/unclaimed response = takeover candidate
+# Reproduce each chain step on owned test accounts — if any step is non-reproducible, the chain does not hold
+```
+
+> Reproduce **each chain step on owned assets/test accounts**, and confirm takeover by dangling CNAME and service response. Prove account-takeover PoCs with **minimal impact** and no harm to real users ([[35_Supply_Chain_Attacks]], [[73_Bug_Bounty_Automation]], [[30_Vulnerability_Research]]).
