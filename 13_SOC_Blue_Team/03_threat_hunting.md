@@ -1619,6 +1619,33 @@ Purple Team = Red Team + Blue Team 협력
 
 ---
 
+<!-- detect-validate-13 -->
+## 탐지 신뢰성과 검증
+
+위협 헌팅은 *가설을 데이터로 검증*하는 작업이다. 가설을 뒷받침할 데이터가 없거나 확증 편향에 빠지면, 헌팅은 "아무것도 못 찾음"을 "위협 없음"으로 잘못 결론낸다. **각 함정이 어떤 결과를 낳는가**와 **베이스라인·데이터로 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 데이터 없는 가설 | 검증 불가 헌팅 | 가설 전 데이터 가용성 확인 | 관련 로그 부재 |
+| 확증 편향 | 반례 무시 | 부정 가설도 검증 | 한쪽 증거만 수집 |
+| 베이스라인 부재 | 정상/비정상 구분 불가 | 정상 행동 베이스라인 수립 | 비교 기준 없음 |
+| "못 찾음=안전" 결론 | 거짓 안심 | 커버리지·가시성 명시 | 사각지대 미기록 |
+
+### 검증 (직접 확인)
+
+```bash
+# 베이스라인 대비 이상 — 평소 없던 부모-자식 프로세스 관계를 헌팅(예: word→powershell)
+# index=edr | stats count by parent_process, process | where parent_process="winword.exe"
+# 가설 검증 전 데이터 가용성부터 확인(데이터 없으면 "못 찾음"은 무의미)
+echo "헌팅 전: 관련 로그 소스 수집 여부 + 보존 기간(retention) 확인"
+```
+
+> 헌팅에서 "못 찾았다"는 *위협이 없다*가 아니라 *그 데이터로는 안 보인다*일 수 있다. 가설 전에 데이터 가용성과 베이스라인을 확보하고, 커버리지·사각지대를 명시해야 결론이 신뢰를 얻는다([[40_Threat_Hunting]], [[25_Threat_Intelligence]]).
+
+---
+
 <a name="english"></a>
 
 # Threat Hunting & Ransomware Incident Response
@@ -1875,3 +1902,28 @@ Key tools:
   - Atomic Red Team: Test cases per technique
   - AttackIQ: Enterprise-grade BAS (Breach and Attack Simulation)
 ```
+
+<!-- detect-validate-13 -->
+## Detection Reliability and Validation
+
+Threat hunting is the work of *validating a hypothesis with data*. With no data to support the hypothesis, or under confirmation bias, hunting wrongly concludes "found nothing" means "no threat." Check **what outcome each pitfall produces** and **whether you validated against a baseline and data**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Hypothesis with no data | Unverifiable hunt | Confirm data availability first | Relevant logs absent |
+| Confirmation bias | Ignored counter-evidence | Test the negative hypothesis too | Only one-sided evidence |
+| No baseline | Cannot tell normal from abnormal | Establish a normal-behavior baseline | No comparison basis |
+| "Found nothing = safe" conclusion | False reassurance | State coverage/visibility | Blind spots unrecorded |
+
+### Validation (verify directly)
+
+```bash
+# Anomaly vs baseline -- hunt for an unusual parent-child process relationship (e.g., word->powershell)
+# index=edr | stats count by parent_process, process | where parent_process="winword.exe"
+# Confirm data availability before testing a hypothesis ("found nothing" is meaningless without data)
+echo "Before hunting: confirm relevant log sources are ingesting + check retention period"
+```
+
+> In hunting, "found nothing" may mean *not visible with this data*, not *no threat*. Secure data availability and a baseline before the hypothesis, and state coverage and blind spots so the conclusion earns trust ([[40_Threat_Hunting]], [[25_Threat_Intelligence]]).

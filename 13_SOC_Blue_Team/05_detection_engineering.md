@@ -580,6 +580,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-13 -->
+## 탐지 신뢰성과 검증
+
+탐지 엔지니어링의 핵심은 *룰을 작성하는 것*이 아니라 **그 룰이 실제 공격에 발화하고, 정상에는 침묵하는가**를 검증하는 것이다. 테스트하지 않은 룰은 거짓 안심이고, 깨지기 쉬운 룰은 사소한 변형에 무력화된다. **각 함정이 어떤 결과를 낳는가**와 **실제 TTP로 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 미테스트 탐지 룰 | 거짓 안심 | Atomic/단위 테스트로 발화 확인 | 공격 시 무발화 |
+| 문자열 기반 취약 룰 | 사소한 변형에 우회 | 행위 기반·다중 신호 | 인코딩만 바꿔도 우회 |
+| 높은 오탐 | 알림 피로·룰 비활성 | 정상 데이터로 FP 측정 | 운영 중 룰 끔 |
+| 로그 필드 가정 오류 | 룰 영구 침묵 | 실제 이벤트로 필드 검증 | 필드명 불일치 |
+
+### 검증 (직접 확인)
+
+```bash
+# 탐지 룰 단위 검증 — 알려진 공격을 재현하고 룰이 발화하는지 확인
+# Sigma 룰을 SIEM 쿼리로 변환해 테스트
+pip install sigma-cli 2>/dev/null; sigma convert -t splunk rule.yml   # 변환 결과로 룰 검증
+# 정상 데이터셋에 룰을 돌려 오탐률 측정(높으면 운영에서 꺼진다)
+echo "정상 트래픽 7일치에 룰 적용 → FP 건수로 룰 품질 판정"
+```
+
+> 작성된 탐지 룰은 *가설*일 뿐이다 — 실제 공격에 발화하는지 테스트 전엔 알 수 없다. Atomic Red Team으로 발화를 검증하고 정상 데이터로 오탐을 측정해야, 룰이 거짓 안심이 아닌 실효적 탐지가 된다([[55_Evasion_Techniques]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Detection Engineering — Sigma & MITRE ATT&CK Based Rule Development
@@ -796,3 +824,29 @@ Rule Maintenance:
 | `Atomic Red Team` | Test cases per technique |
 | `Caldera` | Automated adversary emulation |
 | `Purple Teamer` | Detection validation automation |
+
+<!-- detect-validate-13 -->
+## Detection Reliability and Validation
+
+The heart of detection engineering is not *writing a rule* but verifying **whether that rule fires on the real attack and stays silent on the normal**. An untested rule is false reassurance, and a brittle rule is neutralized by a trivial variant. Check **what outcome each pitfall produces** and **whether you validated against real TTPs**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Untested detection rule | False reassurance | Confirm firing with atomic/unit tests | No fire on attack |
+| Fragile string-based rule | Bypassed by trivial variant | Behavior-based / multi-signal | Re-encoding alone bypasses |
+| High false positives | Alert fatigue / rule disabled | Measure FP on normal data | Rule turned off in prod |
+| Wrong log-field assumption | Rule silent forever | Validate fields against real events | Field-name mismatch |
+
+### Validation (verify directly)
+
+```bash
+# Unit-validate the detection rule -- reproduce a known attack and confirm the rule fires
+# Convert a Sigma rule to a SIEM query and test it
+pip install sigma-cli 2>/dev/null; sigma convert -t splunk rule.yml   # validate the rule via the converted output
+# Run the rule over a normal dataset to measure FP rate (high -> it gets disabled in prod)
+echo "Apply the rule to 7 days of normal traffic -> judge rule quality by FP count"
+```
+
+> A written detection rule is only a *hypothesis* -- you cannot know it fires on the real attack until you test it. Verify firing with Atomic Red Team and measure false positives on normal data, so the rule becomes effective detection rather than false reassurance ([[55_Evasion_Techniques]], [[68_Purple_Team]]).

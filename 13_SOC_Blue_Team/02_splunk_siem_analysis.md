@@ -934,6 +934,33 @@ index=network
 
 ---
 
+<!-- detect-validate-13 -->
+## 탐지 신뢰성과 검증
+
+SIEM 쿼리는 *결과를 반환하지만 완전성을 보장하지 않는다*. 파싱이 깨졌거나 인덱스가 비면 쿼리는 "0건"을 반환하고, 분석가는 이를 "안전"으로 오독한다. **각 함정이 어떤 결과를 낳는가**와 **데이터가 실제 존재하는지 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 필드 파싱 오류 | 쿼리 누락 | 원시 이벤트와 추출 필드 대조 | 필드 null/미추출 |
+| 인덱스 데이터 공백 | 거짓 음성 | 시간대별 이벤트 카운트 | 특정 구간 0건 |
+| 과도하게 좁은 쿼리 | 변종 미탐지 | 정상 트래픽으로 튜닝 | 알려진 변종 누락 |
+| 타임존/타임스탬프 혼동 | 타임라인 오류 | UTC 정규화 확인 | 사건 순서 뒤바뀜 |
+
+### 검증 (직접 확인)
+
+```spl
+# 데이터 공백 탐지 — 시간 구간별 이벤트 수가 0인 곳이 수집 중단 구간
+index=main earliest=-7d | timechart span=1h count
+# 파싱 검증 — 핵심 필드가 실제로 추출되는지(null이면 룰이 발화 못 함)
+index=main | stats count by sourcetype, src_ip | where isnull(src_ip)
+```
+
+> SIEM의 "0건"은 *안전*이 아니라 *데이터가 없을 수도 있음*을 뜻한다. 쿼리 전에 데이터 공백·파싱 상태를 검증하고, 정상 트래픽으로 룰을 튜닝해야 거짓 음성을 줄일 수 있다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # Splunk & SIEM Practical Analysis
@@ -1150,3 +1177,28 @@ index=network
 | where abs(count - AvgCount) < StdDev * 0.5  # Very consistent traffic = beacon
 | table src_ip, dest_ip, dest_port, AvgCount, StdDev
 ```
+
+<!-- detect-validate-13 -->
+## Detection Reliability and Validation
+
+SIEM queries *return results but do not guarantee completeness*. When parsing breaks or an index is empty, the query returns "0 results" and the analyst misreads it as "safe." Check **what outcome each pitfall produces** and **whether you verified the data actually exists**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Field parsing error | Query misses events | Compare raw event vs extracted fields | Field null/not extracted |
+| Gap in indexed data | False negative | Count events per time bucket | 0 events in a window |
+| Overly narrow query | Misses variants | Tune against normal traffic | Known variant missed |
+| Timezone/timestamp confusion | Wrong timeline | Confirm UTC normalization | Event order reversed |
+
+### Validation (verify directly)
+
+```spl
+# Detect data gaps -- a time bucket with 0 events is an ingestion-down window
+index=main earliest=-7d | timechart span=1h count
+# Verify parsing -- whether key fields actually extract (null means the rule cannot fire)
+index=main | stats count by sourcetype, src_ip | where isnull(src_ip)
+```
+
+> "0 results" in a SIEM means *maybe there is no data*, not *safe*. Validate data gaps and parsing state before querying, and tune rules against normal traffic to reduce false negatives ([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).

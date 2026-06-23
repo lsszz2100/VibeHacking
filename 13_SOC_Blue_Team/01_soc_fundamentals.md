@@ -1575,6 +1575,34 @@ SIEM에서의 UBA 통합:
 
 ---
 
+<!-- detect-validate-13 -->
+## 탐지 신뢰성과 검증
+
+SOC의 가치는 *알림을 많이 만드는 것*이 아니라 **실제 공격이 발생했을 때 그것이 탐지되고, 분석가가 대응할 수 있는가**에 있다. 운영되는 듯 보이는 SOC도 로그 소스가 빠져 있거나 알림 피로로 진짜 신호를 놓친다. **각 함정이 어떤 결과를 낳는가**와 **탐지가 실제 발화하는지 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 로그 소스 누락 | 사각지대, 무탐지 | 자산↔로그 소스 매핑 점검 | 수집 중단된 소스 |
+| 알림 피로(과다 알림) | 진짜 신호 묻힘 | 알림 튜닝·우선순위화 | 미처리 알림 적체 |
+| 트리아지 절차 부재 | MTTR 폭증 | 플레이북·SLA 정의 | 일관성 없는 대응 |
+| 탐지 미검증 | 거짓 안심 | 공격 재현(atomic) | 공격해도 알림 없음 |
+
+### 검증 (직접 확인)
+
+```bash
+# 핵심 로그 소스가 실제로 수집되는지 직접 확인(중단된 소스 = 사각지대)
+# 예: 최근 24시간 동안 EDR/방화벽 로그가 들어왔는지 SIEM에서 카운트
+# index=main earliest=-24h | stats count by source  → 0이면 수집 중단
+# 알려진 공격을 재현하고 알림이 뜨는지 검증(Atomic Red Team)
+sudo apt-get install -y atomic-red-team 2>/dev/null; echo "T1059 실행 후 SIEM에서 탐지 알림 확인"
+```
+
+> SOC의 "정상 가동"은 *알림이 뜬다*는 뜻이지 *공격이 탐지된다*는 뜻이 아니다. 자산↔로그 소스를 주기적으로 대조하고, Atomic Red Team 같은 도구로 알려진 TTP를 재현해 탐지가 실제 발화하는지 검증해야 한다([[40_Threat_Hunting]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # SOC Core Concepts and Blue Team Fundamentals
@@ -3031,3 +3059,29 @@ UBA Integration in SIEM:
   - Splunk UBA, Elastic ML, Microsoft Sentinel, etc.
   - Immediately deliver alerts to admin email/SMS
 ```
+
+<!-- detect-validate-13 -->
+## Detection Reliability and Validation
+
+A SOC's value is not in *generating many alerts* but in **whether a real attack is detected and the analyst can respond when it happens**. A SOC that looks operational still has missing log sources or misses real signals under alert fatigue. Check **what outcome each pitfall produces** and **whether you verified the detection actually fires**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Missing log source | Blind spot, no detection | Audit asset<->log-source mapping | Source that stopped ingesting |
+| Alert fatigue (over-alerting) | Real signal buried | Tune/prioritize alerts | Backlog of untriaged alerts |
+| No triage process | MTTR explodes | Define playbooks/SLAs | Inconsistent response |
+| Unvalidated detection | False reassurance | Reproduce the attack (atomic) | Attack runs, no alert |
+
+### Validation (verify directly)
+
+```bash
+# Confirm directly that core log sources are actually ingesting (a stopped source = blind spot)
+# e.g., count whether EDR/firewall logs arrived in the last 24h in the SIEM
+# index=main earliest=-24h | stats count by source  -> 0 means ingestion stopped
+# Reproduce a known attack and verify the alert fires (Atomic Red Team)
+sudo apt-get install -y atomic-red-team 2>/dev/null; echo "Run T1059, then confirm a detection alert in the SIEM"
+```
+
+> A SOC being "up" means *alerts fire*, not *attacks are detected*. Periodically reconcile assets against log sources, and reproduce known TTPs with tools like Atomic Red Team to verify detections actually fire ([[40_Threat_Hunting]], [[68_Purple_Team]]).

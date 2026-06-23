@@ -1099,6 +1099,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-13 -->
+## 탐지 신뢰성과 검증
+
+XDR/QRadar 같은 통합 플랫폼은 *상관 규칙으로 신호를 묶지만*, 규칙이 과도하면 알림 폭주, 좁으면 사각지대가 생긴다. 또한 여러 소스를 합치는 만큼 한 소스가 빠지면 상관이 조용히 깨진다. **각 함정이 어떤 결과를 낳는가**와 **상관·커버리지를 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 미튜닝 상관 규칙 | 알림 폭주·피로 | 정상 환경에서 오탐률 측정 | 높은 false positive |
+| 소스 누락으로 상관 단절 | 상관 무력화 | 규칙별 입력 소스 점검 | 기여 소스 카운트 0 |
+| MITRE ATT&CK 커버리지 공백 | 특정 TTP 무탐지 | 커버리지 매트릭스 매핑 | 미커버 전술 |
+| 빌트인 규칙 맹신 | 환경 부적합 탐지 | 자산 맞춤 튜닝 | 자산과 무관한 알림 |
+
+### 검증 (직접 확인)
+
+```bash
+# ATT&CK 커버리지 매핑 — 어떤 전술/기술이 룰로 커버되는지 매트릭스로 가시화
+# (DeTT&CT / ATT&CK Navigator로 룰셋을 매핑 → 빈 칸이 사각지대)
+echo "각 상관 규칙을 ATT&CK 기술 ID에 매핑 → Navigator에서 미커버 영역 확인"
+# 상관 규칙 입력 소스 점검 — 기여 소스가 0이면 그 규칙은 절대 발화 안 함
+echo "규칙별 last_triggered + contributing source count 확인(0 = dead rule)"
+```
+
+> 통합 플랫폼의 강점(상관)은 곧 약점이다 — *입력 소스 하나가 빠지면 상관이 조용히 죽는다*. 규칙을 ATT&CK에 매핑해 커버리지 공백을 가시화하고, 기여 소스가 살아있는지 정기 점검해야 한다([[40_Threat_Hunting]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # IBM QRadar & Azure Sentinel KQL & XDR Blue Team Practical Guide
@@ -1279,3 +1307,29 @@ Automated Phishing Analysis Process:
    → Jira ticket auto-creation
    → Log event to SIEM
 ```
+
+<!-- detect-validate-13 -->
+## Detection Reliability and Validation
+
+Unified platforms like XDR/QRadar *bind signals with correlation rules*, but over-broad rules cause alert floods and narrow ones create blind spots. And because they merge many sources, when one source drops the correlation breaks silently. Check **what outcome each pitfall produces** and **whether you validated correlation and coverage**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Untuned correlation rule | Alert flood / fatigue | Measure FP rate in a normal environment | High false positives |
+| Correlation broken by missing source | Correlation neutralized | Audit input sources per rule | Contributing source count 0 |
+| MITRE ATT&CK coverage gap | Certain TTP undetected | Map a coverage matrix | Uncovered tactic |
+| Trusting built-in rules | Detection unfit for environment | Tune to your assets | Alerts irrelevant to assets |
+
+### Validation (verify directly)
+
+```bash
+# Map ATT&CK coverage -- visualize which tactics/techniques the rules cover as a matrix
+# (map the ruleset with DeTT&CT / ATT&CK Navigator -> empty cells are blind spots)
+echo "Map each correlation rule to an ATT&CK technique ID -> check uncovered areas in Navigator"
+# Audit correlation-rule input sources -- if contributing sources are 0, the rule never fires
+echo "Check per-rule last_triggered + contributing source count (0 = dead rule)"
+```
+
+> A unified platform's strength (correlation) is also its weakness -- *if one input source drops, the correlation dies silently*. Map rules to ATT&CK to visualize coverage gaps, and routinely check that contributing sources are alive ([[40_Threat_Hunting]], [[68_Purple_Team]]).
