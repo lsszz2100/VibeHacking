@@ -525,6 +525,7 @@ sudo kismet
 
 ---
 
+<!-- detect-validate-71 -->
 ## 7. 무선 위협 탐지 (Wireless IDS)와 한계
 
 유선 네트워크와 달리 RF 공격은 **흔적이 공중에만 남고 호스트 로그에 남지 않는** 경우가 많습니다. 패시브 모니터링 센서가 없으면 재밍·스푸핑·로그 기기는 사실상 무탐지로 지나갑니다.
@@ -707,6 +708,7 @@ sudo kismet
 □ Alerts configured for unexpected connections?
 ```
 
+<!-- detect-validate-71 -->
 ## 7. Wireless IDS and Its Limits
 
 Unlike wired networks, RF attacks often leave **traces only in the air, not in host logs**. Without a passive monitoring sensor, jamming, spoofing, and rogue devices pass essentially undetected.
