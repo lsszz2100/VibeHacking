@@ -1086,6 +1086,33 @@ session.use_strict_mode = 1
 
 ---
 
+<!-- detect-validate-01 -->
+## 운용 안전과 검증
+
+리눅스 명령은 강력해서 *한 줄로 시스템을 복구 불가능하게* 만들 수 있다. 초심자가 가장 먼저 익혀야 할 것은 "동작하는 명령"이 아니라 **이 명령이 어떤 결과를 낳는가**와 **실행 전에 대상·범위를 직접 확인했는가**이다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| `rm -rf` 경로/변수 오타 | 데이터 영구 삭제 | 먼저 `ls`로 대상 확인, `--preserve-root` | 빈 변수 → `/` 대상 |
+| 잘못된 호스트에서 실행 | 운영 자산 손상 | 프롬프트·`hostname` 확인 | 예상과 다른 호스트명 |
+| 와일드카드 의도치 않은 매칭 | 광범위 영향 | `echo`로 글롭 확장 미리보기 | 예상 밖 파일 목록 |
+| 무분별한 `sudo` | 권한 오남용 | `sudo -l`로 허용 범위 확인 | 불필요한 NOPASSWD |
+
+### 검증 (직접 확인)
+
+```bash
+# 파괴적 명령 전 대상 미리보기 — 글롭이 무엇으로 확장되는지 먼저 출력해 확인
+echo rm -rf "$TARGET"/*      # 실제 rm 전에 echo로 확장 결과를 눈으로 검증
+# 지금 어느 호스트·디렉터리인지 직접 확인(원격 세션 혼동 방지)
+hostname; pwd; id            # 출력을 보고 의도한 환경인지 대조
+```
+
+> 리눅스에는 휴지통이 없다 — `rm`은 즉시 영구적이다. 파괴적 명령은 항상 `echo`/`ls`로 대상을 먼저 검증하고, 원격 세션에서는 `hostname`으로 위치를 확인해야 사고를 막는다([[20_Shell_Scripting]], [[26_Linux_Hardening]]).
+
+---
+
 <a name="english"></a>
 
 # Linux Essential Commands — Complete Reference
@@ -2100,3 +2127,28 @@ session.cookie_httponly = 1
 session.cookie_secure = 1
 session.use_strict_mode = 1
 ```
+
+<!-- detect-validate-01 -->
+## Operational Safety and Validation
+
+Linux commands are powerful enough to make a system *unrecoverable in a single line*. The first thing a beginner must master is not "a command that runs" but **what outcome the command produces** and **whether you verified the target and scope before running it**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Typo in `rm -rf` path/variable | Permanent data loss | `ls` the target first, `--preserve-root` | Empty variable -> targets `/` |
+| Running on the wrong host | Production asset damage | Confirm prompt / `hostname` | Unexpected hostname |
+| Unintended wildcard match | Broad blast radius | Preview glob with `echo` | Unexpected file list |
+| Reckless `sudo` | Privilege misuse | Check allowed scope with `sudo -l` | Needless NOPASSWD |
+
+### Validation (verify directly)
+
+```bash
+# Preview the target before a destructive command -- print what the glob expands to first
+echo rm -rf "$TARGET"/*      # eyeball the expansion via echo before the real rm
+# Confirm which host/directory you are on (avoid remote-session confusion)
+hostname; pwd; id            # read the output and confirm it is the intended environment
+```
+
+> Linux has no recycle bin -- `rm` is immediate and permanent. Always validate the target with `echo`/`ls` before destructive commands, and confirm your location with `hostname` in remote sessions to prevent accidents ([[20_Shell_Scripting]], [[26_Linux_Hardening]]).

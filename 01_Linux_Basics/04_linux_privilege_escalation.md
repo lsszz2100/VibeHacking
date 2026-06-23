@@ -408,6 +408,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-01 -->
+## 공격 탐지와 방어 검증
+
+권한 상승은 *낮은 권한에서 root로 가는 경로*를 다룬다. 방어자 관점에서는 **그 경로가 탐지되는가**와 **완화가 실제로 막는가**를 검증해야 한다. 실습은 반드시 **소유·허가된 시스템**에서만 수행한다.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| SUID 바이너리 악용 | 위험 SUID 비트 | `nosuid` 마운트, SUID 최소화 | auditd `execve` + euid=0 전환 |
+| `sudo` 오설정 (`NOPASSWD`, GTFOBins) | 과도한 sudoers | 최소 권한 sudoers, `sudo -l` 감사 | `/var/log/auth.log` 비정상 sudo |
+| 커널 익스플로잇 | 미패치 커널 | 패치, `kptr_restrict` | dmesg oops, 비정상 모듈 로드 |
+| 쓰기 가능 cron/PATH | 약한 권한 | 권한 강화, 절대경로 | cron이 비정상 스크립트 실행 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 위험한 SUID 바이너리 열거 — 공격자가 가장 먼저 찾는 경로를 방어자도 확인
+find / -perm -4000 -type f 2>/dev/null    # GTFOBins 대조 후 불필요한 것 제거
+# sudo 권한이 의도대로 제한됐는지 검증(NOPASSWD/ALL 남용 탐지)
+sudo -l 2>/dev/null            # 출력에서 과도한 권한이 있는지 직접 확인
+```
+
+> 권한 상승은 대부분 *오설정*을 노린다 — 익스플로잇보다 흔하다. SUID·sudoers·cron 권한을 주기적으로 열거해 줄이고, auditd로 euid 전환을 기록해야 탐지가 선다. 검증은 통제된 환경에서만([[03_System_Hacking]], [[26_Linux_Hardening]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Linux Privilege Escalation — sudo · SUID · Capabilities · Kernel Exploits
@@ -712,3 +739,28 @@ if __name__ == "__main__":
 | `GTFOBins` | SUID/sudo binary abuse database |
 | `pspy` | Process monitoring (cron detection) |
 | `linenum.sh` | Privilege escalation checklist |
+
+<!-- detect-validate-01 -->
+## Attack Detection and Defense Validation
+
+Privilege escalation covers *the path from low privilege to root*. From the defender's side you must verify **whether that path is detected** and **whether the mitigation actually blocks it**. Practice only on **systems you own or are authorized for**.
+
+### Attack -> Mitigation layer -> Control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| SUID binary abuse | Dangerous SUID bits | `nosuid` mounts, minimize SUID | auditd `execve` + transition to euid=0 |
+| `sudo` misconfig (`NOPASSWD`, GTFOBins) | Over-broad sudoers | Least-privilege sudoers, audit `sudo -l` | Abnormal sudo in `/var/log/auth.log` |
+| Kernel exploit | Unpatched kernel | Patch, `kptr_restrict` | dmesg oops, abnormal module load |
+| Writable cron/PATH | Weak permissions | Harden permissions, absolute paths | cron running an abnormal script |
+
+### Defense validation (verify directly)
+
+```bash
+# Enumerate dangerous SUID binaries -- defenders check the path attackers look for first
+find / -perm -4000 -type f 2>/dev/null    # cross-check against GTFOBins, remove the unnecessary
+# Verify sudo rights are restricted as intended (detect NOPASSWD/ALL abuse)
+sudo -l 2>/dev/null            # read the output and confirm there are no over-broad grants
+```
+
+> Privilege escalation mostly targets *misconfiguration* -- more common than exploits. Periodically enumerate and shrink SUID/sudoers/cron permissions, and log euid transitions with auditd so detection holds. Validate only in a controlled environment ([[03_System_Hacking]], [[26_Linux_Hardening]], [[68_Purple_Team]]).

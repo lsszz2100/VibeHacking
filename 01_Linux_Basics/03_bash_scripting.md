@@ -845,6 +845,33 @@ log INFO "경고 수: ${SEVERITY_COUNTS[WARN]}  오류 수: ${SEVERITY_COUNTS[ER
 
 ---
 
+<!-- detect-validate-01 -->
+## 운용 안전과 검증
+
+Bash 스크립트는 *입력을 그대로 명령으로 실행*하기 쉽다. 따옴표 하나, 빈 변수 하나가 의도치 않은 글롭 확장·명령 주입·전역 삭제로 이어진다. **각 함정이 어떤 결과를 낳는가**와 **방어 옵션·검증을 적용했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 따옴표 없는 변수 `$x` | 단어 분리·글롭 폭발 | 항상 `"$x"` 인용 | 공백/`*` 포함 시 오동작 |
+| `eval`/명령 치환에 입력 주입 | 명령 주입 | 입력을 명령으로 안 씀, 화이트리스트 | 입력에 `;`,`$()` |
+| 빈 변수 + `rm -rf "$D"/` | 전역 삭제 | `set -u`, `${D:?}` 가드 | `D` 미설정 시 `/` 삭제 |
+| 오류 무시하고 계속 진행 | 손상된 상태 누적 | `set -euo pipefail` | 실패 후에도 다음 줄 실행 |
+
+### 검증 (직접 확인)
+
+```bash
+# 스크립트 정적 분석 — 인용 누락·주입 위험을 자동 검출
+shellcheck script.sh          # SC2086(인용 누락) 등 경고를 직접 확인
+# 안전 가드가 동작하는지 검증: 변수 미설정 시 즉시 중단되어야 함
+bash -c 'set -euo pipefail; rm -rf "${D:?D unset}"/tmp' ; echo "exit=$?"  # D 미설정→비0 종료
+```
+
+> Bash의 위험은 대부분 *조용히* 일어난다 — 빈 변수는 에러 없이 `/`를 가리킨다. `set -euo pipefail`과 `${VAR:?}` 가드를 기본으로 깔고, 커밋 전 `shellcheck`로 인용·주입을 검증해야 한다([[01_Linux_Basics]], [[20_Shell_Scripting]]).
+
+---
+
 <a name="english"></a>
 
 # Bash Scripting — Practical Guide to Security Automation
@@ -1606,3 +1633,28 @@ log INFO "Results directory: $OUTPUT_DIR"
 log INFO "Log file: $LOG_FILE"
 log INFO "Warnings: ${SEVERITY_COUNTS[WARN]}  Errors: ${SEVERITY_COUNTS[ERROR]}"
 ```
+
+<!-- detect-validate-01 -->
+## Operational Safety and Validation
+
+Bash scripts easily *execute input directly as commands*. A single missing quote or empty variable leads to unintended glob expansion, command injection, or a global delete. Check **what outcome each pitfall produces** and **whether you applied the defensive options and validation**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Unquoted variable `$x` | Word splitting / glob blowup | Always quote `"$x"` | Misbehaves with spaces/`*` |
+| Injecting input into `eval`/command substitution | Command injection | Never run input as a command; whitelist | Input contains `;`, `$()` |
+| Empty variable + `rm -rf "$D"/` | Global delete | `set -u`, `${D:?}` guard | `D` unset -> deletes `/` |
+| Continuing past errors | Accumulated corrupt state | `set -euo pipefail` | Next line runs after a failure |
+
+### Validation (verify directly)
+
+```bash
+# Static-analyze the script -- automatically detect missing quotes and injection risk
+shellcheck script.sh          # read warnings directly such as SC2086 (missing quotes)
+# Verify the safety guard works: it must abort immediately when the variable is unset
+bash -c 'set -euo pipefail; rm -rf "${D:?D unset}"/tmp' ; echo "exit=$?"  # D unset -> nonzero exit
+```
+
+> Most Bash hazards happen *silently* -- an empty variable points at `/` with no error. Lay down `set -euo pipefail` and `${VAR:?}` guards by default, and validate quoting and injection with `shellcheck` before committing ([[01_Linux_Basics]], [[20_Shell_Scripting]]).

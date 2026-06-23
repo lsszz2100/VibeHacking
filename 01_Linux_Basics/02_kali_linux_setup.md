@@ -942,6 +942,33 @@ ip route show
 
 ---
 
+<!-- detect-validate-01 -->
+## 운용 안전과 검증
+
+Kali는 *공격 도구가 기본 탑재된* 배포판이다. 설정을 잘못하면 허가받지 않은 네트워크로 스캔을 흘리거나, 기본 자격증명·취약한 격리로 분석 머신 자체가 침해된다. **각 함정이 어떤 결과를 낳는가**와 **격리·범위를 직접 확인했는가**를 점검해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 운영/공용망에 NAT 없이 연결 | 비인가 스캔·법적 문제 | VM 네트워크를 host-only로 격리 | 외부로 나가는 스캔 트래픽 |
+| 기본 `kali:kali` 자격증명 | 분석 머신 장악 | 첫 부팅 시 비밀번호 변경 | 기본 자격증명 로그인 성공 |
+| 스냅샷 없이 멀웨어 분석 | 복구 불가 감염 | 분석 전 스냅샷 생성 | 롤백 불가 상태 |
+| `apt` 미검증 서드파티 소스 | 공급망 변조 | GPG 키·공식 저장소 확인 | 서명 검증 실패 경고 |
+
+### 검증 (직접 확인)
+
+```bash
+# VM이 격리됐는지 — 대상 외부로 트래픽이 새는지 직접 확인(host-only면 응답 없어야 정상)
+ip route; ping -c1 8.8.8.8 || echo "isolated (expected for host-only)"
+# 기본 자격증명이 남아있는지 점검(공격 대상이 될 첫 번째 약점)
+sudo passwd -S kali           # 출력으로 비밀번호 변경 여부 확인
+```
+
+> Kali는 공격 도구가 켜진 채로 온다 — *기본 설정이 곧 노출*이다. 실습 전 네트워크를 host-only로 격리하고 기본 자격증명을 바꿔야 하며, 멀웨어를 다룰 땐 스냅샷으로 복구점을 확보해야 한다([[06_Malware_Analysis]], [[26_Linux_Hardening]]).
+
+---
+
 <a name="english"></a>
 
 # Kali Linux Installation and Initial Setup: Complete Guide
@@ -1797,3 +1824,28 @@ ip link set eth1 up
 # Check routing
 ip route show
 ```
+
+<!-- detect-validate-01 -->
+## Operational Safety and Validation
+
+Kali is a distribution that ships *with offensive tooling enabled by default*. Misconfigure it and you leak scans onto an unauthorized network, or the analysis machine itself gets compromised through default credentials or weak isolation. Check **what outcome each pitfall produces** and **whether you verified isolation and scope directly**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Connecting to a production/shared net without NAT | Unauthorized scans, legal exposure | Isolate the VM network to host-only | Scan traffic leaving outbound |
+| Default `kali:kali` credentials | Takeover of the analysis box | Change password on first boot | Login succeeds with defaults |
+| Analyzing malware without a snapshot | Unrecoverable infection | Take a snapshot before analysis | No rollback point exists |
+| Unverified third-party `apt` sources | Supply-chain tampering | Verify GPG keys / official repos | Signature verification warning |
+
+### Validation (verify directly)
+
+```bash
+# Confirm the VM is isolated -- check directly whether traffic leaks outbound (host-only should get no reply)
+ip route; ping -c1 8.8.8.8 || echo "isolated (expected for host-only)"
+# Check whether default credentials remain (the first weakness an attacker targets)
+sudo passwd -S kali           # read the output to confirm the password was changed
+```
+
+> Kali arrives with offensive tools switched on -- *the default configuration is the exposure*. Isolate the network to host-only before labs, change the default credentials, and when handling malware, secure a restore point with snapshots ([[06_Malware_Analysis]], [[26_Linux_Hardening]]).

@@ -700,6 +700,33 @@ python3 linux_monitor.py --watch net --interval 5
 
 ---
 
+<!-- detect-validate-01 -->
+## 운용 안전과 검증
+
+보안 도구는 *결과를 보고하지만 진실을 보장하지 않는다*. 스캐너가 "취약"이라 해도 거짓 양성일 수 있고, 잘못 설정한 방어 도구는 보호하는 듯 보이지만 비어 있다. **각 함정이 어떤 결과를 낳는가**와 **결과를 수동으로 검증했는가**를 확인해야 한다.
+
+### 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 스캐너 결과 맹신 | 거짓 양성 대응 | 수동 재현·확인 | 재현 불가 |
+| 방화벽 규칙 미적용 | 무방비 노출 | 실제 포트 스캔으로 확인 | 차단해야 할 포트 열림 |
+| 로그 미수집/미회전 | 사고 시 증거 부재 | 로그 생성·수집 검증 | 빈 로그, 디스크 가득 |
+| 서명/무결성 미검증 도구 | 변조 도구 실행 | 해시·서명 검증 | 해시 불일치 |
+
+### 검증 (직접 확인)
+
+```bash
+# 방화벽이 실제로 막는지 외부에서 직접 검증(설정과 런타임은 다르다)
+sudo ufw status verbose; nmap -p- 127.0.0.1    # 열린 포트가 의도와 일치하는지 대조
+# 도구 무결성 검증 — 배포 해시와 일치하는지 직접 확인
+sha256sum tool.bin; echo "<공식 해시와 대조>"   # 불일치면 변조 의심
+```
+
+> 보안 도구의 "녹색 체크"는 *설정했다*는 뜻이지 *막힌다*는 뜻이 아니다. 방화벽은 실제 포트 스캔으로, 도구는 해시로, 탐지는 알려진 공격 재현으로 검증해야 신뢰할 수 있다([[13_SOC_Blue_Team]], [[26_Linux_Hardening]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 # Linux Security Tools Reference
 
@@ -944,3 +971,28 @@ python3 linux_monitor.py --watch proc --cpu-threshold 50
 ## References
 
 - [The Book of Secret Knowledge](https://github.com/trimstray/the-book-of-secret-knowledge) — A curated list of hacking tools, cheat sheets, and resources for security professionals
+
+<!-- detect-validate-01 -->
+## Operational Safety and Validation
+
+Security tools *report results but do not guarantee truth*. A scanner that says "vulnerable" may be a false positive, and a misconfigured defensive tool looks protective while being empty. Check **what outcome each pitfall produces** and **whether you manually validated the result**.
+
+### Pitfall -> Impact -> Validation method -> Measured signal
+
+| Pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Trusting scanner output | Acting on false positives | Manual reproduction/confirmation | Non-reproducible |
+| Firewall rules not applied | Unprotected exposure | Confirm with a real port scan | Port that should be blocked is open |
+| Logs not collected/rotated | No evidence during incident | Verify log generation/collection | Empty logs, disk full |
+| Unverified tool signature/integrity | Running a tampered tool | Verify hash/signature | Hash mismatch |
+
+### Validation (verify directly)
+
+```bash
+# Verify the firewall actually blocks, from outside (config differs from runtime)
+sudo ufw status verbose; nmap -p- 127.0.0.1    # cross-check that open ports match intent
+# Verify tool integrity -- confirm directly it matches the published hash
+sha256sum tool.bin; echo "<compare against official hash>"   # mismatch -> suspect tampering
+```
+
+> A "green check" from a security tool means *configured*, not *blocked*. Validate firewalls with a real port scan, tools with a hash, and detection by reproducing known attacks -- only then is it trustworthy ([[13_SOC_Blue_Team]], [[26_Linux_Hardening]], [[68_Purple_Team]]).
