@@ -698,6 +698,33 @@ hashcat -m 5600 netntlmv2.txt wordlist.txt  # NTLMv2
 
 ---
 
+<!-- detect-validate-15 -->
+## 공격 탐지와 방어 검증
+
+WPA2-PSK 크랙은 *오프라인 공격*이다 — 공격자는 4-way 핸드셰이크(또는 PMKID)만 캡처하면 망을 떠나 사전·GPU로 푼다. 따라서 방어자는 **크랙 자체**가 아니라 **핸드셰이크 캡처 시도(특히 deauth 유발)와 약한 PSK**를 탐지·차단해야 한다. 실습은 **소유·허가된 망**에서만.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 4-way 핸드셰이크 캡처 | 약한 PSK | 길고 무작위한 PSK, WPA3-SAE | EAPOL 재전송 급증 |
+| deauth로 재인증 강제 | 비보호 관리프레임 | 802.11w(PMF) | 다량 deauth/disassoc |
+| PMKID 클라이언트리스 | RSN PMKID 노출 | PMKID 비활성, WPA3 | 연결 없는 PMKID 요청 |
+| 사전·GPU 크랙 | 사전에 있는 PSK | 패스프레이즈 정책 | (오프라인—예방이 유일) |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) deauth가 PMF로 막히는지 검증 — 소유 AP/통제 RF에서만
+grep -E '^ieee80211w' /etc/hostapd/hostapd.conf || echo 'PMF 미설정 — 핸드셰이크 강제캡처 취약'
+# 2) EAPOL 재전송·deauth 폭주 모니터(캡처에서 핸드셰이크 캡처 시도 탐지)
+tshark -r cap.pcap -Y 'eapol || wlan.fc.type_subtype==0x0c' | wc -l
+```
+
+> WPA2 크랙은 캡처 후 오프라인이므로 *예방(강한 PSK·WPA3-SAE)*이 본질이고, 탐지는 *캡처 시도(deauth/EAPOL 폭주, PMKID 요청)*에 집중된다 — "WPA2 켰다"와 "핸드셰이크 강제캡처를 못 한다(PMF)"는 다르다([[13_SOC_Blue_Team]], [[16_Cryptography]]).
+
+---
+
 <a name="english"></a>
 
 # Complete WPA2 Cracking Guide

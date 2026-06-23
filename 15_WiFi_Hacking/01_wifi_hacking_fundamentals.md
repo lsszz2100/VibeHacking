@@ -830,6 +830,33 @@ WPA2 / WPA3 보안 강화:
 
 ---
 
+<!-- detect-validate-15 -->
+## 공격 탐지와 방어 검증
+
+WiFi 보안은 *프로토콜 세대(WEP→WPA→WPA2→WPA3)*에 따라 약점이 다르다. 공격은 모니터 모드로 정찰한 뒤 가장 약한 링크를 노린다. 방어자는 **어떤 프로토콜·암호가 실제로 가동 중인지**와 **모니터 모드 정찰·약한 암호가 탐지되는지** 검증해야 한다. 실습은 **소유·허가된 망**에서만.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| WEP/TKIP 잔존 악용 | 구식 암호 | WPA2-AES/WPA3 강제 | 비콘의 약한 cipher suite |
+| 모니터 모드 정찰 | 개방 관리프레임 | 802.11w(PMF) | 비정상 probe/airodump 트래픽 |
+| 비콘·SSID 수집 | 브로드캐스트 노출 | 불필요 SSID 정리 | 단시간 대량 probe 응답 |
+| 채널 도청 | 무선 평문 | WPA2-Enterprise/VPN | 동일 SSID 다중 BSSID |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 실제 운용 암호 세대 확인 — WEP/TKIP 잔존 시 즉시 교체 대상
+sudo iwlist wlan0 scan | grep -E "ESSID|IE: .*WPA|Encryption"
+# 2) PMF(관리프레임 보호) 적용 여부 사실 확인(소유 AP)
+grep -E '^ieee80211w' /etc/hostapd/hostapd.conf || echo 'PMF 미설정 — deauth/정찰 취약'
+```
+
+> WiFi 방어의 출발점은 *어떤 프로토콜·암호가 실제 가동 중인가*를 사실로 확인하는 것이다 — "WPA2 쓴다"와 "TKIP 잔존이 없다"는 다르다. 소유 AP에서 cipher suite와 PMF를 직접 점검한다([[13_SOC_Blue_Team]], [[02_Network_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # WiFi Hacking Fundamentals

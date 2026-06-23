@@ -666,6 +666,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-15 -->
+## 공격 탐지와 방어 검증
+
+이 섹션은 *탐지 자체*를 다루므로, 방어자는 한 발 더 나아가 **탐지 룰이 실제로 발화하는지**와 **로그 AP·캡티브 포털이 통제로 차단되는지**를 검증해야 한다. "WIDS를 켰다"와 "이 PoC를 잡는다"는 다르다. 실습은 **소유·허가된 망**에서만.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 로그/이블트윈 AP | 연결 신뢰 | 802.1X, 인증서 고정 | 동일 SSID 다중 BSSID·RSSI 이상 |
+| 캡티브 포털 피싱 | HTTPS 미강제 | HSTS preload | DNS 리디렉션·인증서 경고 |
+| KARMA/프로브 응답 | 클라 자동연결 | 선호목록 최소화, MAC 랜덤화 | 임의 SSID에 응답하는 AP |
+| deauth 유도 | 비보호 관리프레임 | 802.11w(PMF) | 다량 deauth/disassoc |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 이블트윈 탐지 룰이 실제 발화하는지 — 소유 AP/통제 RF에서만 PoC 재현
+sudo airodump-ng wlan0mon -w cap   # 동일 SSID 다중 BSSID를 탐지기가 잡는지 확인
+# 2) 캡티브 포털의 DNS 리디렉션·인증서 경고 탐지(클라 관점 검증)
+nslookup example.com | grep -q "$(ip route get 1.1.1.1 | awk '{print $7;exit}')" && echo 'DNS 가로채기 의심'
+```
+
+> 탐지 섹션의 검증은 *탐지가 실제로 발화하고, 통제가 실제로 차단하는가*를 PoC로 확인하는 것이다 — 로그 AP를 통제 환경에 세워 WIDS 경보와 클라이언트 차단을 직접 재현한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Rogue AP, Captive Portal, WiFi Monitoring, and Detection

@@ -433,6 +433,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-15 -->
+## 공격 탐지와 방어 검증
+
+고급 WiFi 공격(Bettercap·Airgeddon·자동화 Evil Twin)은 *연결을 가로채 MITM*하는 데 목적이 있다. 방어자는 **가짜 AP·MITM이 L2/네트워크 계층에 남기는 흔적**과 **HSTS·VPN·PMF가 실제로 가로채기를 막는지** 검증해야 한다. 실습은 **소유·허가된 망**에서만.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 자동화 Evil Twin | 연결 신뢰 | WIDS/WIPS, 802.1X | 동일 SSID 다중 BSSID |
+| Bettercap MITM | ARP/DNS 신뢰 | 동적 ARP 검사, DoH | 게이트웨이 MAC 변경 |
+| deauth 자동화 | 비보호 관리프레임 | 802.11w(PMF) | 다량 deauth 버스트 |
+| SSL 스트립/평문 유도 | HTTPS 미강제 | HSTS preload, VPN | 평문 HTTP로 다운그레이드 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) Evil Twin/MITM이 WIDS·캡처에 보이는지 — 소유 RF/통제 환경에서만
+sudo airodump-ng wlan0mon -w cap   # 동일 SSID 다중 BSSID 확인
+# 2) 게이트웨이 MAC 변조(ARP 스푸핑) 탐지
+ip neigh show | awk '$1==ENVIRON["GW"]{print "GW MAC:",$5}'  # GW=게이트웨이 IP
+arpwatch -i wlan0 2>/dev/null &  # MAC 변경 이벤트 알림
+```
+
+> 고급 WiFi 공격의 핵심은 *가로채기(MITM)*이므로, 방어 검증은 "가짜 AP가 WIDS에 잡히는가 + HSTS/VPN이 평문 유도를 막는가"를 PoC로 재현하는 것이다 — 설정값만 보지 말고 실제 차단을 확인한다([[02_Network_Hacking]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Advanced WiFi Attack Techniques
