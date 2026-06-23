@@ -1291,6 +1291,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-08 -->
+## 도구 행위 탐지와 방어 검증
+
+파이썬 공격 도구는 빠르게 만들 수 있지만, 그 행위는 네트워크·인증·앱 계층에 탐지 가능한 흔적을 남긴다. 작성자는 **각 기법이 어느 계층의 어떤 통제에 걸리는가**와 **도구가 실제로 올바른 결과를 내는가**를 함께 검증해야 한다.
+
+### 공격 기법 → 계층 → 통제 → 탐지 신호
+
+| 공격 기법 | 계층 | 통제 | 탐지 신호 |
+|---|---|---|---|
+| 대량 소켓 연결(스캔/브루트) | 네트워크 | rate-limit, IDS | 짧은 시간 다수 SYN/연결 |
+| 동시 스레드 인증 시도 | 인증 | 계정 잠금, MFA | 실패 로그인 버스트 |
+| paramiko SSH 자동화 | 접근 | 키 기반 인증, 로그인 알림 | 비대화형 SSH, 비정상 클라이언트 |
+| 커스텀 User-Agent/요청 | 앱 | WAF, UA 분석 | 비표준 UA, 라이브러리 시그니처 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 도구의 탐지 footprint를 소유/허가 환경에서 확인하고, 결과를 알려진 정답과 대조(거짓 성공 방지)
+sudo grep -E 'Failed password|Invalid user' /var/log/auth.log | awk '{print $11}' | sort | uniq -c | sort -rn | head  # 브루트 버스트
+# 스캔/연결 도구는 소유 서브넷에서 Suricata로 탐지되는지 확인
+sudo suricata -r owned_capture.pcap -S scan.rules 2>/dev/null | tail
+# 도구 결과 검증: 알려진 열린 포트/응답과 도구 출력을 diff — "동작함"과 "정확함"은 다르다
+```
+
+> 공격 도구는 **소유/허가된 환경**에서만 실행한다. 도구가 "동작함"과 "올바른 결과를 냄"은 다르므로 알려진 정답으로 출력을 검증하고, 도구가 남기는 탐지 footprint도 함께 확인해야 한다([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # Python Hacking Tool Development — 30 Practical Examples
@@ -1867,3 +1895,29 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+<!-- detect-validate-08 -->
+## Tool Behavior Detection and Defense Validation
+
+Python offensive tools are quick to build, but their behavior leaves detectable traces at the network, auth, and app layers. The author must validate **which control at which layer each technique trips** and **whether the tool actually produces correct results**.
+
+### Attack technique -> Layer -> Control -> Detection signal
+
+| Attack technique | Layer | Control | Detection signal |
+|---|---|---|---|
+| Mass socket connects (scan/brute) | Network | rate-limit, IDS | Many SYN/connects in short time |
+| Concurrent threaded auth attempts | Auth | Account lockout, MFA | Failed-login burst |
+| paramiko SSH automation | Access | Key-based auth, login alerts | Non-interactive SSH, unusual client |
+| Custom User-Agent/requests | App | WAF, UA analysis | Non-standard UA, library signature |
+
+### Defense validation (verify directly)
+
+```bash
+# Confirm the tool's detection footprint in an owned/authorized environment, and check results against known truth (avoid false success)
+sudo grep -E 'Failed password|Invalid user' /var/log/auth.log | awk '{print $11}' | sort | uniq -c | sort -rn | head  # brute burst
+# Confirm scan/connect tools are detected by Suricata on an owned subnet
+sudo suricata -r owned_capture.pcap -S scan.rules 2>/dev/null | tail
+# Validate tool results: diff output against known open ports/responses — "runs" differs from "correct"
+```
+
+> Run offensive tools only in **owned/authorized environments**. A tool "running" differs from it "producing correct results" — validate output against known truth and also confirm the detection footprint it leaves ([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).

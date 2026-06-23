@@ -1003,6 +1003,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-08 -->
+## 자동화 공격 탐지와 방어 검증
+
+scapy·paramiko·nmap 오케스트레이션은 작업을 대량 자동화하지만, 자동화가 *실행됨*과 *안전·정확하게 동작함*은 다르다. 작성자는 **자동화가 어떤 통제에 걸리는가**와 **드라이런·결과검증 게이트가 있는가**를 확인해야 한다.
+
+### 공격 기법 → 계층 → 통제 → 탐지 신호
+
+| 공격 기법 | 계층 | 통제 | 탐지 신호 |
+|---|---|---|---|
+| scapy 패킷 주입/스푸핑 | 네트워크 | 무결성·이상탐지, RPF | spoofed src, 비정상 패킷 |
+| paramiko 대량 SSH | 접근 | 키 기반, fail2ban | 비대화형 SSH 버스트 |
+| nmap 자동 스캔 | 네트워크 | IDS | 스캔 시그니처 |
+| 스케줄/오케스트레이션 | 호스트 | 실행 모니터 | 비정상 cron/프로세스 트리 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 소유/허가 자산만 대상으로, 드라이런과 결과검증 게이트를 거쳐 실행(부작용·오작동 방지)
+arp -a > before.txt   # scapy 스푸핑 전후 ARP 테이블 비교(소유 랩)
+sudo fail2ban-client status sshd 2>/dev/null | grep -i banned   # paramiko 버스트가 차단되는지
+# 자동화 멱등성/안전성: 두 번 실행해 부작용이 누적되지 않는지(같은 결과) 확인
+diff <(sort run1.out) <(sort run2.out) && echo "idempotent"
+```
+
+> 자동화는 **소유/허가된 자산**만 대상으로 한다. 자동화가 "실행됨"과 "안전·정확하게 동작함"은 다르므로 드라이런·멱등성·결과검증 게이트를 두고, 스푸핑·SSH 버스트·스캔의 탐지 footprint도 확인해야 한다([[02_Network_Hacking]], [[20_Shell_Scripting]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Python Security Automation — Scapy, requests, paramiko, Automation Tools
@@ -1065,3 +1093,29 @@ python3 pipeline.py 192.168.1.0/24 -o report.json
 - Scapy documentation: https://scapy.readthedocs.io/en/latest/
 - paramiko documentation: https://www.paramiko.org/
 - YARA documentation: https://yara.readthedocs.io/en/stable/
+
+<!-- detect-validate-08 -->
+## Automation Attack Detection and Defense Validation
+
+scapy/paramiko/nmap orchestration automates tasks en masse, but automation *running* differs from it *behaving safely and correctly*. The author must confirm **which control the automation trips** and **whether dry-run and result-validation gates exist**.
+
+### Attack technique -> Layer -> Control -> Detection signal
+
+| Attack technique | Layer | Control | Detection signal |
+|---|---|---|---|
+| scapy packet injection/spoofing | Network | Integrity/anomaly detection, RPF | Spoofed src, abnormal packets |
+| paramiko mass SSH | Access | Key-based auth, fail2ban | Non-interactive SSH burst |
+| nmap automated scan | Network | IDS | Scan signature |
+| Schedule/orchestration | Host | Execution monitoring | Abnormal cron/process tree |
+
+### Defense validation (verify directly)
+
+```bash
+# Target only owned/authorized assets, running through dry-run and result-validation gates (avoid side effects/malfunction)
+arp -a > before.txt   # compare ARP table before/after scapy spoofing (owned lab)
+sudo fail2ban-client status sshd 2>/dev/null | grep -i banned   # confirm paramiko bursts get banned
+# Automation idempotency/safety: run twice and confirm side effects do not accumulate (same result)
+diff <(sort run1.out) <(sort run2.out) && echo "idempotent"
+```
+
+> Target only **owned/authorized assets**. Automation "running" differs from it "behaving safely and correctly" — add dry-run, idempotency, and result-validation gates, and confirm the detection footprint of spoofing, SSH bursts, and scans ([[02_Network_Hacking]], [[20_Shell_Scripting]], [[68_Purple_Team]]).

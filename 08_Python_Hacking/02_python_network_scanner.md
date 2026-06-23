@@ -1380,6 +1380,33 @@ sudo python3 scanner.py 192.168.1.0/24
 
 ---
 
+<!-- detect-validate-08 -->
+## 스캐닝 탐지와 방어 검증
+
+스캐너는 호스트·포트·서비스를 열거하지만, 그 패턴은 네트워크 계층에서 가장 탐지되기 쉽다. 작성자는 **스캔 기법이 어떤 통제에 걸리는가**와 **스캔 결과가 실제 상태와 일치하는가**를 검증해야 한다.
+
+### 공격 기법 → 계층 → 통제 → 탐지 신호
+
+| 공격 기법 | 계층 | 통제 | 탐지 신호 |
+|---|---|---|---|
+| TCP connect/SYN 스캔 | 네트워크 | IDS, rate-limit | 짧은시간 다수 포트, RST 폭증 |
+| 동시 스레드 스캔 | 네트워크 | 연결 추적 | 단일 src→다수 dst:port |
+| scapy 커스텀 패킷 | 네트워크 | 무상태 검사, 이상탐지 | 비정상 플래그/TTL 조합 |
+| 서비스 배너 수집 | 앱 | 배너 최소화, 모니터링 | 다수 connect-then-close |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 소유 서브넷에서만 스캔하고, IDS가 패턴을 잡는지·결과가 실제 상태와 일치하는지 확인
+sudo suricata -r owned_scan.pcap -S /etc/suricata/rules/scan.rules 2>/dev/null | grep -i scan | tail
+# 스캐너 결과를 알려진 열린 포트와 대조(거짓 양성/음성 측정)
+comm -3 <(sort tool_open_ports.txt) <(sort ground_truth_ports.txt)   # 불일치=스캐너 오류
+```
+
+> 스캔은 **소유/허가된 네트워크**에서만 수행한다. 스캐너가 "포트를 보고함"과 "정확히 보고함"은 다르므로 알려진 정답과 대조해 오탐/미탐을 측정하고, IDS 탐지 footprint도 확인해야 한다([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # Python Network Scanning Tool Development
@@ -2639,3 +2666,28 @@ pip install scapy paramiko requests dnspython python-whois
 Scapy requires root/administrator privileges:
 sudo python3 scanner.py 192.168.1.0/24
 ```
+
+<!-- detect-validate-08 -->
+## Scanning Detection and Defense Validation
+
+Scanners enumerate hosts, ports, and services, but their pattern is most detectable at the network layer. The author must validate **which control each scan technique trips** and **whether scan results match actual state**.
+
+### Attack technique -> Layer -> Control -> Detection signal
+
+| Attack technique | Layer | Control | Detection signal |
+|---|---|---|---|
+| TCP connect/SYN scan | Network | IDS, rate-limit | Many ports in short time, RST spike |
+| Concurrent threaded scan | Network | Connection tracking | Single src -> many dst:port |
+| scapy custom packets | Network | Stateless inspection, anomaly detection | Abnormal flag/TTL combos |
+| Service banner grabbing | App | Banner minimization, monitoring | Many connect-then-close |
+
+### Defense validation (verify directly)
+
+```bash
+# Scan only owned subnets, and confirm the IDS catches the pattern and results match actual state
+sudo suricata -r owned_scan.pcap -S /etc/suricata/rules/scan.rules 2>/dev/null | grep -i scan | tail
+# Compare scanner results against known open ports (measure false positives/negatives)
+comm -3 <(sort tool_open_ports.txt) <(sort ground_truth_ports.txt)   # mismatch = scanner error
+```
+
+> Scan only **owned/authorized networks**. A scanner "reporting ports" differs from "reporting accurately" — compare against known truth to measure false positives/negatives, and confirm the IDS detection footprint ([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
