@@ -1259,6 +1259,35 @@ scapy>=2.5.0
 
 ---
 
+<!-- detect-validate-11 -->
+## AI 에이전트 자동화 검증과 안전성
+
+CTF 에이전트는 자율적으로 챌린지를 풀지만, *풀었다고 함*과 *정답*은 다르다. 작성자는 **각 함정이 어떤 결과를 낳는가**와 **플래그·스코프·예산 게이트로 검증했는가**를 확인해야 한다.
+
+### 에이전트 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 에이전트 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 환각 솔루션 | 거짓 성공 | 플래그 형식·제출 검증 | 형식 불일치 |
+| 무한 루프/자원 폭주 | 비용·DoS | 스텝/예산 한도 | 토큰·요청 급증 |
+| 스코프 외 행동 | 규칙 위반 | 대상 화이트리스트 게이트 | 범위 밖 요청 |
+| 프롬프트 인젝션(챌린지→에이전트) | 에이전트 탈취 | 입력 격리·검증 | 주입된 지시 흔적 |
+
+### 검증 (직접 확인)
+
+```bash
+# 에이전트 출력을 플래그 형식·스코프·예산으로 검증(허가된 대회/랩 환경만)
+grep -oE '(CTF|FLAG|flag)\{[^}]+\}' agent_output.txt | head   # 플래그 형식 일치 여부 — 불일치면 환각 의심
+# 스코프 게이트: 에이전트가 화이트리스트 밖 호스트에 접근하지 않았는지 로그 확인
+grep -vFf allowlist_hosts.txt agent_targets.log && echo "OUT-OF-SCOPE access detected"
+# 예산 한도: 요청/토큰이 상한을 넘지 않았는지(폭주·DoS 방지)
+awk 'END{print "requests:", NR}' agent_requests.log
+```
+
+> 에이전트가 "풀었다고 함"과 "정답"은 다르다. 플래그 형식·스코프 화이트리스트·예산 한도 게이트로 검증하고, **허가된 대회/랩 환경**에서만 실행해야 한다([[56_AI_Red_Teaming]], [[46_CTF_Techniques]], [[69_LLM_Security]]).
+
+---
+
 <a name="english"></a>
 
 # AI Agent CTF Automation
@@ -1772,3 +1801,30 @@ export ANTHROPIC_API_KEY="your-key-here"
 
 echo "CTF automation environment ready"
 ```
+
+<!-- detect-validate-11 -->
+## AI Agent Automation Validation and Safety
+
+CTF agents solve challenges autonomously, but *claiming solved* differs from *being correct*. The author must confirm **what outcome each pitfall produces** and **whether flag, scope, and budget gates validated it**.
+
+### Agent pitfall -> Impact -> Validation method -> Measured signal
+
+| Agent pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Hallucinated solution | False success | Validate flag format/submission | Format mismatch |
+| Infinite loop/resource runaway | Cost/DoS | Step/budget caps | Token/request spike |
+| Out-of-scope behavior | Rule violation | Target allowlist gate | Out-of-range requests |
+| Prompt injection (challenge -> agent) | Agent hijack | Isolate/validate input | Traces of injected instructions |
+
+### Validation (verify directly)
+
+```bash
+# Validate agent output by flag format, scope, and budget (authorized competition/lab only)
+grep -oE '(CTF|FLAG|flag)\{[^}]+\}' agent_output.txt | head   # flag-format match — mismatch suggests hallucination
+# Scope gate: confirm the agent did not touch hosts outside the allowlist
+grep -vFf allowlist_hosts.txt agent_targets.log && echo "OUT-OF-SCOPE access detected"
+# Budget cap: confirm requests/tokens stayed under the limit (prevent runaway/DoS)
+awk 'END{print "requests:", NR}' agent_requests.log
+```
+
+> An agent "claiming solved" differs from "being correct." Validate with flag-format, scope allowlist, and budget-cap gates, and run only in **authorized competition/lab environments** ([[56_AI_Red_Teaming]], [[46_CTF_Techniques]], [[69_LLM_Security]]).

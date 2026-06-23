@@ -652,6 +652,33 @@ TAC 접근 후에도:
 
 ---
 
+<!-- detect-validate-11 -->
+## AI 통합 출력 검증과 운영 안전
+
+다중 모델 통합은 분석을 가속하지만, 모델 출력은 환각·민감정보 유출 위험을 동반한다. 작성자는 **각 함정이 어떤 결과를 낳는가**와 **1차 출처 교차·휴먼 게이트로 검증했는가**를 확인해야 한다.
+
+### 통합 함정 → 영향 → 검증 방법 → 측정 신호
+
+| 통합 함정 | 영향 | 검증 방법 | 측정 신호 |
+|---|---|---|---|
+| 모델 출력 맹신 | 환각 전파 | 1차 출처 교차검증 | 출처 없는 단정 |
+| 민감정보 프롬프트 유출 | 데이터 노출 | PII 마스킹·로컬 처리 | 로그에 비밀/PII |
+| 자동 조치 실행 | 오작동 | 휴먼인더루프 게이트 | 미승인 자동 변경 |
+| 모델 간 불일치 | 신뢰 저하 | 다중 모델 교차·근거 요구 | 모델 간 결론 상충 |
+
+### 검증 (직접 확인)
+
+```bash
+# 프롬프트/로그에 비밀·PII가 들어가지 않는지, 자동 조치가 휴먼 게이트를 거치는지 확인
+grep -REn '(AKIA|ghp_|sk-|BEGIN [A-Z ]*PRIVATE KEY|[0-9]{3}-[0-9]{2}-[0-9]{4})' prompts/ logs/ && echo "WARN: secret/PII in prompts/logs"
+# 다중 모델 출력이 1차 출처와 일치하고 서로 수렴하는지 — 상충 시 수동 검증
+diff <(sort model_a_findings.txt) <(sort model_b_findings.txt) | head   # 모델 간 차이는 근거 요구 후 판정
+```
+
+> AI 분석 출력은 **1차 출처·재현**으로 검증하고, 민감정보를 프롬프트에 넣지 않으며, 자동 조치는 **휴먼인더루프**로 게이트해야 한다. 모델이 "분석함"과 "정확함"은 다르다([[69_LLM_Security]], [[18_DevSecOps]], [[44_Incident_Response_DFIR]]).
+
+---
+
 <a name="english"></a>
 
 # AI Integration — Claude + GPT-4o Security Analysis Tools Guide
@@ -1065,3 +1092,28 @@ Even after TAC access:
 | Anthropic Red Team Research | red.anthropic.com |
 | 내부 연구 프로그램 Inquiry | glasswing@anthropic.com |
 | OpenAI Enterprise TAC | Through OpenAI sales representative |
+
+<!-- detect-validate-11 -->
+## AI Integration Output Validation and Operational Safety
+
+Multi-model integration accelerates analysis, but model output carries hallucination and sensitive-data-leak risk. The author must confirm **what outcome each pitfall produces** and **whether primary-source cross-check and human gates validated it**.
+
+### Integration pitfall -> Impact -> Validation method -> Measured signal
+
+| Integration pitfall | Impact | Validation method | Measured signal |
+|---|---|---|---|
+| Trusting model output | Hallucination propagation | Cross-check primary sources | Unsourced assertions |
+| Sensitive data in prompts | Data exposure | PII masking, local processing | Secrets/PII in logs |
+| Automated action execution | Malfunction | Human-in-the-loop gate | Unapproved automatic changes |
+| Inter-model disagreement | Reduced trust | Cross models, require evidence | Conflicting conclusions |
+
+### Validation (verify directly)
+
+```bash
+# Confirm prompts/logs carry no secrets/PII, and that automated actions pass a human gate
+grep -REn '(AKIA|ghp_|sk-|BEGIN [A-Z ]*PRIVATE KEY|[0-9]{3}-[0-9]{2}-[0-9]{4})' prompts/ logs/ && echo "WARN: secret/PII in prompts/logs"
+# Confirm multi-model output matches primary sources and converges — verify manually on conflict
+diff <(sort model_a_findings.txt) <(sort model_b_findings.txt) | head   # differences require evidence before adjudication
+```
+
+> Validate AI analysis output against **primary sources and reproduction**, keep sensitive data out of prompts, and gate automated actions with **human-in-the-loop**. A model "analyzing" differs from "being accurate" ([[69_LLM_Security]], [[18_DevSecOps]], [[44_Incident_Response_DFIR]]).

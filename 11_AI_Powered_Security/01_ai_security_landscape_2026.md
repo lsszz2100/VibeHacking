@@ -461,6 +461,33 @@ URL: openai.com
 
 ---
 
+<!-- detect-validate-11 -->
+## AI 보조 공격 탐지와 출력 검증
+
+AI는 공격과 방어 양쪽을 가속하지만, AI 출력은 *그럴듯함*과 *사실임*이 다르다. 분석자는 **AI 활용 위협이 어느 단계를 노리는가**와 **모든 보안 판정을 1차 출처·재현으로 검증했는가**를 확인해야 한다.
+
+### AI 활용 위협 → 노리는 단계 → 방어/검증 → 관찰 신호
+
+| AI 활용 위협 | 노리는 단계 | 방어/검증 | 관찰 신호 |
+|---|---|---|---|
+| AI 생성 피싱/소셜 | 초기 접근 | 콘텐츠 이상·도메인 탐지 | 대량 고품질 변형 |
+| AI 보조 정찰 자동화 | 정찰 | rate-limit, 비정상 쿼리 | 광범위 자동 OSINT |
+| LLM 환각 오탐 | 분석 신뢰 | 출력을 근거로 검증 | 출처 없는 단정 |
+| 자동 익스플로잇 생성 | 무기화 | 완화 환경 재현 검증 | 미검증 PoC |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# AI가 보고한 보안 판정을 1차 출처/재현으로 검증하고, AI 보조 공격의 footprint를 탐지(소유/허가 환경)
+grep -RnoE 'CVE-[0-9]{4}-[0-9]{4,}' ai_report.txt | sort -u   # AI가 언급한 CVE를 NVD 등 1차 출처와 대조
+# 출처 없는 단정은 신뢰하지 말 것 — 보고에 근거/링크가 있는지 확인
+grep -cE 'https?://|source:|ref:' ai_report.txt || echo "WARN: no citations -> verify manually"
+```
+
+> AI 출력은 "그럴듯함"과 "사실임"이 다르다. 모든 보안 판정을 **1차 출처·재현**으로 검증하고, AI 보조 공격이 남기는 탐지 footprint도 함께 확인해야 신뢰할 수 있다([[69_LLM_Security]], [[56_AI_Red_Teaming]], [[31_AI_ML_Security]]).
+
+---
+
 <a name="english"></a>
 
 # AI Security Landscape 2026 — Complete Terrain Map
@@ -847,3 +874,28 @@ Prohibited:
 | ZeroDayBench Paper | arxiv.org/abs/2603.02297 |
 | Bruce Schneier Analysis | schneier.com/blog |
 | CFR Analysis Report | cfr.org (Claude Opus 4 inflection point) |
+
+<!-- detect-validate-11 -->
+## AI-Assisted Attack Detection and Output Validation
+
+AI accelerates both attack and defense, but AI output being *plausible* differs from it being *true*. The analyst must confirm **which stage each AI-enabled threat targets** and **whether every security verdict was validated against primary sources and reproduction**.
+
+### AI-enabled threat -> Targeted stage -> Defense/validation -> Observable signal
+
+| AI-enabled threat | Targeted stage | Defense/validation | Observable signal |
+|---|---|---|---|
+| AI-generated phishing/social | Initial access | Content anomaly, domain detection | Mass high-quality variants |
+| AI-assisted recon automation | Reconnaissance | rate-limit, abnormal queries | Broad automated OSINT |
+| LLM hallucinated false positive | Analysis trust | Validate output against evidence | Unsourced assertions |
+| Automated exploit generation | Weaponization | Reproduce under mitigations | Unverified PoC |
+
+### Defense validation (verify directly)
+
+```bash
+# Validate AI-reported verdicts against primary sources/reproduction, and detect AI-assisted attack footprints (owned/authorized)
+grep -RnoE 'CVE-[0-9]{4}-[0-9]{4,}' ai_report.txt | sort -u   # cross-check AI-cited CVEs against NVD etc.
+# Do not trust unsourced assertions — confirm the report carries evidence/links
+grep -cE 'https?://|source:|ref:' ai_report.txt || echo "WARN: no citations -> verify manually"
+```
+
+> AI output being "plausible" differs from being "true." Validate every security verdict against **primary sources and reproduction**, and also confirm the detection footprint AI-assisted attacks leave ([[69_LLM_Security]], [[56_AI_Red_Teaming]], [[31_AI_ML_Security]]).
