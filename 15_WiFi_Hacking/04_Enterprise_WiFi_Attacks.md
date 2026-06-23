@@ -480,6 +480,34 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\RasMan\PPP\EAP\2
 
 ---
 
+<!-- detect-validate-15 -->
+## 공격 탐지와 방어 검증
+
+엔터프라이즈 WiFi(WPA-Enterprise/802.1X)는 *RADIUS 인증*에 의존한다. 공격은 가짜 AP+가짜 RADIUS로 자격증명(특히 MSCHAPv2)을 가로채는 데 집중한다. 방어자는 **서버 인증서 검증**이 강제되는지, **공격이 탐지되는지** 검증해야 한다. 실습은 **소유·허가된 망**에서만.
+
+### 공격 → 완화 계층 → 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(예방) | 탐지 신호 |
+|---|---|---|---|
+| 이블트윈 + 가짜 RADIUS | 서버 인증서 미검증 | CA 고정, 인증서 검증 강제 | 동일 SSID 다른 RADIUS |
+| MSCHAPv2 챌린지 탈취 | 약한 EAP 방식 | EAP-TLS(상호 인증) | 비정상 인증 실패 후 성공 |
+| 자격증명 릴레이 | PEAP 내부 신뢰 | 클라 프로파일 강제 | 새 RADIUS로 인증 시도 |
+| 다운그레이드 유도 | 약한 EAP 허용 | 강한 EAP만 허용 | 비표준 EAP 협상 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 클라이언트가 서버 인증서를 실제 검증하는지 확인(미검증이면 이블트윈에 자격증명 누설)
+# 가짜 RADIUS(hostapd-wpe)를 통제 환경에 세우고, 클라가 경고 없이 붙으면 설정 취약
+echo "클라 프로파일: 'CA 인증서 검증' + '서버 이름 일치' 강제 여부 확인"
+# RADIUS 로그에서 비정상 인증 실패→타 서버 성공 패턴 모니터
+grep -i "Access-Reject\|Access-Accept" /var/log/freeradius/radius.log | tail
+```
+
+> 엔터프라이즈 WiFi의 보안은 *클라이언트의 서버 인증서 검증*에 달려 있다 — 이게 꺼져 있으면 EAP-TLS가 아닌 한 가짜 RADIUS에 자격증명을 그대로 넘긴다. hostapd-wpe로 통제 환경에서 클라 설정이 견디는지 검증해야 한다([[54_Active_Directory_Attacks]], [[16_Cryptography]]).
+
+---
+
 <a name="english"></a>
 
 # Enterprise WiFi Attacks (WPA2-Enterprise / RADIUS)
