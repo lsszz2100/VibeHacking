@@ -1284,6 +1284,33 @@ docker run \
 
 ---
 
+<!-- detect-validate-29 -->
+## 컨테이너 탈출 탐지와 방어 검증
+
+컨테이너 탈출은 *커널 취약점·과도 capability·호스트 마운트·프로파일 부재*로 호스트를 장악한다. 방어자는 **자체 컨테이너가 탈출 표면을 닫고 시도가 탐지되는가**를 검증해야 한다. 검증은 **소유 호스트**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 커널 익스플로잇 | 미패치 커널 | 호스트 패치·seccomp | 비정상 syscall |
+| capability 남용(SYS_ADMIN) | 과도 cap | cap-drop·최소권한 | 위험 cap 보유 |
+| 호스트 경로 마운트 | hostPath/볼륨 | 마운트 제한·read-only | / 또는 /proc 마운트 |
+| seccomp/AppArmor 미적용 | 프로파일 부재 | 프로파일 강제 | unconfined 프로파일 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 컨테이너 capability·seccomp 프로파일 점검(소유 호스트) — 탈출 표면
+docker ps -q | xargs -r docker inspect --format '{{.Name}} caps={{.HostConfig.CapAdd}} seccomp={{.HostConfig.SecurityOpt}}' 2>/dev/null | head
+# 2) 위험 호스트 마운트 점검 — /·/proc·docker.sock 마운트
+docker ps -q | xargs -r docker inspect --format '{{range .Mounts}}{{.Source}}->{{.Destination}} {{end}}' 2>/dev/null | grep -E ":/host|/proc|docker.sock" | head
+```
+
+> 탈출 방어는 *표면이 닫히고 시도가 보이는가*다 — "컨테이너 격리됐다"와 "위험 cap이 drop되고 호스트 경로가 안 마운트되며 seccomp가 강제된다"는 다르다. 소유 호스트에서 capability·마운트를 직접 확인한다([[70_Kubernetes_Security]], [[26_Linux_Hardening]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Container Escape In Depth: Kernel Vulnerabilities and Namespace Escapes
@@ -2488,3 +2515,28 @@ docker run \
   --tmpfs /run:rw,noexec,nosuid \
   nginx
 ```
+
+<!-- detect-validate-29 -->
+## Container Escape Detection and Defense Validation
+
+Container escape takes over the host via *kernel vulns, excessive capabilities, host mounts, and missing profiles*. Defenders must verify **whether their containers close the escape surface and detect attempts**. Validate only on **owned hosts**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Kernel exploit | Unpatched kernel | Host patching, seccomp | Abnormal syscall |
+| Capability abuse (SYS_ADMIN) | Excess caps | cap-drop, least privilege | Holding dangerous caps |
+| Host-path mount | hostPath/volumes | Mount restriction, read-only | / or /proc mounted |
+| No seccomp/AppArmor | Missing profile | Enforce profiles | unconfined profile |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check container capabilities/seccomp profile (owned host) — escape surface
+docker ps -q | xargs -r docker inspect --format '{{.Name}} caps={{.HostConfig.CapAdd}} seccomp={{.HostConfig.SecurityOpt}}' 2>/dev/null | head
+# 2) Check dangerous host mounts — /, /proc, docker.sock mounts
+docker ps -q | xargs -r docker inspect --format '{{range .Mounts}}{{.Source}}->{{.Destination}} {{end}}' 2>/dev/null | grep -E ":/host|/proc|docker.sock" | head
+```
+
+> Escape defense is *whether the surface is closed and attempts are visible* -- "the container is isolated" differs from "dangerous caps are dropped, host paths aren't mounted, and seccomp is enforced". Confirm capabilities and mounts on owned hosts directly ([[70_Kubernetes_Security]], [[26_Linux_Hardening]], [[13_SOC_Blue_Team]]).

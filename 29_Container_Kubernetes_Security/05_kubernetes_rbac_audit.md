@@ -467,6 +467,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-29 -->
+## Kubernetes RBAC 감사 작동 검증과 회귀
+
+RBAC 감사는 *돌렸다*가 아니라 *과도한 권한을 실제로 잡고 정책이 강제되는가*로 가치가 갈린다. 방어자는 **감사가 와일드카드·escalation 경로를 빠짐없이 잡는가**를 검증해야 한다. 검증은 **소유 클러스터**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| cluster-admin 남발 | 과권한 바인딩을 잡나? | admin 주체 수 | 그룹 경유 누락 |
+| 와일드카드 권한 | verbs/resources `*`를 잡나? | 와일드카드 룰 수 | 네임스페이스 한정 착시 |
+| escalation 경로 | bind/escalate/impersonate를 잡나? | 위험 verb 보유 | 간접 경로 무시 |
+| 서비스어카운트 | 기본 SA 과권한인가? | SA 토큰 권한 | 자동 마운트 방치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 위험 권한(와일드카드·escalation) 보유 롤 점검(소유 클러스터)
+kubectl get clusterroles -o json 2>/dev/null | jq -r '.items[] | select(.rules[]? | (.verbs[]?=="*") or (.verbs[]?=="impersonate") or (.verbs[]?=="escalate")) | .metadata.name' | sort -u | head
+# 2) 특정 주체가 실제로 무엇을 할 수 있는지 재현 — 과권한 검증
+kubectl auth can-i --list --as=system:serviceaccount:default:default 2>/dev/null | head
+```
+
+> RBAC 감사 검증은 *돌렸는가*가 아니라 *과권한·escalation을 잡는가*다 — "RBAC 정의했다"와 "와일드카드·impersonate 권한이 빠짐없이 잡히고 SA 과권한이 재현된다"는 다르다. 소유 클러스터에서 위험 verb·실효 권한을 직접 확인한다([[70_Kubernetes_Security]], [[18_DevSecOps]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Kubernetes RBAC Audit — Permission Analysis, Excessive Privilege Detection, Policy Hardening
@@ -847,3 +874,28 @@ if __name__ == "__main__":
 | Unencrypted etcd | etcd TLS + data encryption | K8s encryption at rest |
 | No namespace isolation | Enforce NetworkPolicy | Calico, Cilium |
 | Anonymous API access | --anonymous-auth=false | kube-apiserver configuration |
+
+<!-- detect-validate-29 -->
+## Kubernetes RBAC Audit Effectiveness Validation and Regression
+
+RBAC auditing's value comes not from *whether it ran* but from *whether it actually catches excessive privilege and policy is enforced*. Defenders must verify **whether the audit catches every wildcard/escalation path**. Validate only on **owned clusters**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| cluster-admin sprawl | Does it catch over-privileged bindings? | admin subject count | Missing group-mediated grants |
+| Wildcard permissions | Does it catch verbs/resources `*`? | Wildcard rule count | Namespace-scope illusion |
+| Escalation paths | Does it catch bind/escalate/impersonate? | Dangerous verb holders | Ignoring indirect paths |
+| Service accounts | Are default SAs over-privileged? | SA token permissions | Leaving auto-mount on |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check roles holding dangerous verbs (wildcard/escalation) (owned cluster)
+kubectl get clusterroles -o json 2>/dev/null | jq -r '.items[] | select(.rules[]? | (.verbs[]?=="*") or (.verbs[]?=="impersonate") or (.verbs[]?=="escalate")) | .metadata.name' | sort -u | head
+# 2) Reproduce what a subject can actually do — verify over-privilege
+kubectl auth can-i --list --as=system:serviceaccount:default:default 2>/dev/null | head
+```
+
+> RBAC-audit validation is *whether it catches over-privilege and escalation*, not *whether it ran* -- "we defined RBAC" differs from "every wildcard/impersonate grant is caught and SA over-privilege reproduces". Confirm dangerous verbs and effective permissions on owned clusters directly ([[70_Kubernetes_Security]], [[18_DevSecOps]], [[13_SOC_Blue_Team]]).

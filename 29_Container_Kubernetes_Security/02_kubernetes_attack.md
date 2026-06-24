@@ -1159,6 +1159,33 @@ kubectl --kubeconfig /tmp/stolen-kubeconfig get all --all-namespaces
 
 ---
 
+<!-- detect-validate-29 -->
+## Kubernetes 클러스터 공격 탐지와 방어 검증
+
+K8s 공격은 *과도한 RBAC·노출 API 서버·시크릿 접근·횡적 이동*으로 클러스터를 장악한다. 방어자는 **자체 클러스터가 권한 남용·비정상 API 호출을 탐지하는가**를 검증해야 한다. 검증은 **소유 클러스터**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 과도한 RBAC | cluster-admin 남발 | 최소권한·롤 분리 | 광범위 권한 바인딩 |
+| 노출 API/kubelet | 약한 인증 | 인증·네트워크 정책 | 익명 API 접근 |
+| 시크릿 탈취 | etcd/Secret 평문 | 암호화·RBAC 제한 | 비정상 Secret get |
+| 횡적 이동 | 평면 파드 네트워크 | NetworkPolicy | 파드 간 비정상 통신 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 과도한 권한 바인딩 점검(소유 클러스터) — cluster-admin 주체
+kubectl get clusterrolebindings -o json 2>/dev/null | jq -r '.items[] | select(.roleRef.name=="cluster-admin") | .subjects[]?.name' | head
+# 2) 익명/비인가 API 접근 가능 여부 — 거부돼야 함
+kubectl auth can-i --list --as=system:anonymous 2>/dev/null | head
+```
+
+> K8s 방어는 *권한이 최소이고 비정상 접근이 보이는가*다 — "클러스터 돈다"와 "cluster-admin이 한정되고 익명 API가 막히며 비정상 Secret get이 탐지된다"는 다르다. 소유 클러스터에서 권한 바인딩·익명 접근을 직접 확인한다([[70_Kubernetes_Security]], [[14_Cloud_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Kubernetes Attacks: Cluster Penetration and Privilege Escalation
@@ -1448,3 +1475,28 @@ kubectl --kubeconfig /tmp/stolen-kubeconfig get all --all-namespaces
 | Kubelet Auth Hardening | `--anonymous-auth=false`, `--authorization-mode=Webhook` |
 | API Server Audit Logging | Configure `--audit-log-path`, `--audit-policy-file` |
 | Image Signature Verification | Sigstore/cosign + OPA Gatekeeper |
+
+<!-- detect-validate-29 -->
+## Kubernetes Cluster Attack Detection and Defense Validation
+
+K8s attacks take over clusters via *excessive RBAC, exposed API server, secret access, and lateral movement*. Defenders must verify **whether their cluster detects privilege abuse and abnormal API calls**. Validate only on **owned clusters**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Excessive RBAC | cluster-admin sprawl | Least privilege, role separation | Broad role bindings |
+| Exposed API/kubelet | Weak auth | Auth, network policy | Anonymous API access |
+| Secret theft | Plaintext etcd/Secret | Encryption, RBAC limits | Abnormal Secret get |
+| Lateral movement | Flat pod network | NetworkPolicy | Abnormal pod-to-pod comms |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check for excessive role bindings (owned cluster) — cluster-admin subjects
+kubectl get clusterrolebindings -o json 2>/dev/null | jq -r '.items[] | select(.roleRef.name=="cluster-admin") | .subjects[]?.name' | head
+# 2) Whether anonymous/unauthenticated API access is possible — must be denied
+kubectl auth can-i --list --as=system:anonymous 2>/dev/null | head
+```
+
+> K8s defense is *whether privilege is minimal and abnormal access is visible* -- "the cluster runs" differs from "cluster-admin is scoped, anonymous API is blocked, and abnormal Secret gets are detected". Confirm role bindings and anonymous access on owned clusters directly ([[70_Kubernetes_Security]], [[14_Cloud_Security]], [[13_SOC_Blue_Team]]).

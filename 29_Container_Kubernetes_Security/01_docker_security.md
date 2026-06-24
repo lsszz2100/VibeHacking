@@ -1076,6 +1076,33 @@ docker run --rm \
 
 ---
 
+<!-- detect-validate-29 -->
+## Docker 컨테이너 공격 탐지와 방어 검증
+
+Docker 공격은 *privileged 컨테이너·docker.sock 노출·취약 이미지·시크릿 누출*을 노린다. 방어자는 **자체 컨테이너가 권한 최소화되고 탈출 표면이 닫혔는가**를 검증해야 한다. 검증은 **소유 호스트**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| privileged 컨테이너 | --privileged·과도 cap | 비권한·cap-drop | privileged 플래그 |
+| docker.sock 마운트 | 소켓 노출 | 소켓 미마운트·소켓 프록시 | 컨테이너 내 docker.sock |
+| 취약/미서명 이미지 | 알려진 CVE | 이미지 스캔·서명 | 구버전 베이스 |
+| 시크릿 누출 | ENV/레이어 평문 | 시크릿 마운트·BuildKit | 이미지 history 평문 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 실행 중 컨테이너의 권한/소켓 노출 점검(소유 호스트) — privileged·docker.sock
+docker ps -q | xargs -r docker inspect --format '{{.Name}} priv={{.HostConfig.Privileged}} mounts={{range .Mounts}}{{.Source}} {{end}}' 2>/dev/null | grep -iE "priv=true|docker.sock"
+# 2) 이미지 레이어 평문 시크릿 점검 — history에 ENV/ARG 노출
+docker history --no-trunc myimage:latest 2>/dev/null | grep -iE "password|secret|api[_-]?key|token" | head
+```
+
+> Docker 방어는 *권한이 최소이고 탈출 표면이 닫혔는가*다 — "컨테이너 돈다"와 "privileged가 없고 docker.sock이 안 마운트되며 이미지에 평문 시크릿이 없다"는 다르다. 소유 호스트에서 권한·소켓·시크릿을 직접 확인한다([[70_Kubernetes_Security]], [[18_DevSecOps]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Docker Security: Container Escape and Vulnerability Analysis
@@ -1124,3 +1151,28 @@ chroot /hostroot
 mount -t tmpfs tmpfs /tmp
 nsenter -t 1 -m -u -i -n -p -- bash
 ```
+
+<!-- detect-validate-29 -->
+## Docker Container Attack Detection and Defense Validation
+
+Docker attacks target *privileged containers, exposed docker.sock, vulnerable images, and secret leakage*. Defenders must verify **whether their containers are least-privileged and the escape surface is closed**. Validate only on **owned hosts**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Privileged container | --privileged, excess caps | Non-privileged, cap-drop | privileged flag |
+| docker.sock mount | Socket exposure | No socket mount, socket proxy | docker.sock inside container |
+| Vulnerable/unsigned image | Known CVEs | Image scan, signing | Old base image |
+| Secret leakage | Plaintext ENV/layers | Secret mounts, BuildKit | Plaintext in image history |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check running containers for privilege/socket exposure (owned host) — privileged, docker.sock
+docker ps -q | xargs -r docker inspect --format '{{.Name}} priv={{.HostConfig.Privileged}} mounts={{range .Mounts}}{{.Source}} {{end}}' 2>/dev/null | grep -iE "priv=true|docker.sock"
+# 2) Check image layers for plaintext secrets — ENV/ARG exposed in history
+docker history --no-trunc myimage:latest 2>/dev/null | grep -iE "password|secret|api[_-]?key|token" | head
+```
+
+> Docker defense is *whether privilege is minimal and the escape surface is closed* -- "the container runs" differs from "there's no privileged, docker.sock isn't mounted, and the image has no plaintext secrets". Confirm privilege, socket, and secrets on owned hosts directly ([[70_Kubernetes_Security]], [[18_DevSecOps]], [[13_SOC_Blue_Team]]).

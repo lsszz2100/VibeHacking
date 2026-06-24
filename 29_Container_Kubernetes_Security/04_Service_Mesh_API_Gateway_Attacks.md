@@ -557,6 +557,33 @@ spec:
 
 ---
 
+<!-- detect-validate-29 -->
+## 서비스 메시·API 게이트웨이 공격 탐지와 방어 검증
+
+서비스 메시/게이트웨이 공격은 *mTLS 미강제·허용적 인가 정책·헤더 스푸핑·사이드카 우회*를 노린다. 방어자는 **자체 메시가 mTLS·인가를 강제하고 우회가 탐지되는가**를 검증해야 한다. 검증은 **소유 메시**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| mTLS 미강제 | 평문 내부통신 | PeerAuthentication STRICT | 평문 사이드카 트래픽 |
+| 허용적 인가 정책 | 기본 허용 | AuthorizationPolicy deny | 비인가 호출 성공 |
+| 헤더 스푸핑(JWT/identity) | 헤더 신뢰 | 게이트웨이 검증·재작성 | 위조 신원 헤더 |
+| 사이드카 우회 | 직접 파드 접근 | NetworkPolicy·메시 강제 | 메시 외 직접 통신 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) mTLS 강제 여부 점검(소유 메시, istio) — STRICT 아니면 평문 허용
+kubectl get peerauthentication -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.spec.mtls.mode}{"\n"}{end}' 2>/dev/null | head
+# 2) 인가 정책 존재 여부 점검 — 정책 없으면 허용적(기본 allow)
+kubectl get authorizationpolicy -A 2>/dev/null | head
+```
+
+> 메시 방어는 *mTLS·인가가 강제되는가*다 — "메시 깔았다"와 "PeerAuthentication이 STRICT이고 인가 정책이 비인가 호출을 막는다"는 다르다. 소유 메시에서 mTLS 모드·인가 정책을 직접 확인한다([[52_API_Security]], [[70_Kubernetes_Security]], [[39_Zero_Trust_Architecture]]).
+
+---
+
 <a name="english"></a>
 
 # Service Mesh and API Gateway Attacks
@@ -1037,3 +1064,28 @@ spec:
 | Envoy management port exposed | Block port 15000 with NetworkPolicy |
 | Weak JWT secret | 256-bit+ random secret |
 | Kong Admin API exposed | Block external access to Admin API |
+
+<!-- detect-validate-29 -->
+## Service Mesh and API Gateway Attack Detection and Defense Validation
+
+Service-mesh/gateway attacks target *unenforced mTLS, permissive authz policies, header spoofing, and sidecar bypass*. Defenders must verify **whether their mesh enforces mTLS/authz and detects bypass**. Validate only on **owned meshes**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Unenforced mTLS | Plaintext internal comms | PeerAuthentication STRICT | Plaintext sidecar traffic |
+| Permissive authz | Default allow | AuthorizationPolicy deny | Unauthorized call succeeds |
+| Header spoofing (JWT/identity) | Header trust | Gateway validation/rewrite | Forged identity header |
+| Sidecar bypass | Direct pod access | NetworkPolicy, mesh enforcement | Direct comms outside mesh |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check whether mTLS is enforced (owned mesh, istio) — non-STRICT allows plaintext
+kubectl get peerauthentication -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.spec.mtls.mode}{"\n"}{end}' 2>/dev/null | head
+# 2) Check whether authz policies exist — no policy means permissive (default allow)
+kubectl get authorizationpolicy -A 2>/dev/null | head
+```
+
+> Mesh defense is *whether mTLS/authz are enforced* -- "we deployed a mesh" differs from "PeerAuthentication is STRICT and authz policies block unauthorized calls". Confirm mTLS mode and authz policies on owned meshes directly ([[52_API_Security]], [[70_Kubernetes_Security]], [[39_Zero_Trust_Architecture]]).
