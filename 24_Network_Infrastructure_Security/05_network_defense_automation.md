@@ -634,6 +634,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-24 -->
+## 네트워크 방어 자동화 작동 검증과 회귀
+
+방어 자동화는 *돌렸다*가 아니라 *룰이 발화하고 차단이 실제로 막는가*로 가치가 갈린다. 방어자는 **IDS/방화벽 자동화가 주입 이벤트에 발화·차단하는가**를 검증해야 한다. 검증은 **소유 망**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| Suricata 룰 | 주입 트래픽에 발화하나? | fast.log 알림 건수 | 룰 로드 실패 무시 |
+| 방화벽 자동화 | 차단이 실제 적용되나? | DROP 카운터 증가 | 규칙 순서로 무력화 |
+| 이상 탐지 | 베이스라인 이탈을 잡나? | 알림 TP/FP 비율 | 베이스라인 노후화 |
+| IPS 인라인 | 패킷을 실제 떨구나? | 차단 후 무응답 | IDS-only 오인 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) Suricata 룰이 주입 트래픽에 발화하는지 검증(소유 망) — 무발화면 룰/로드 문제
+sudo suricata -T -c /etc/suricata/suricata.yaml 2>&1 | grep -iE "error|loaded"; sudo tail -3 /var/log/suricata/fast.log 2>/dev/null
+# 2) 방화벽 자동 차단이 실제 적용되는지 — DROP 규칙 히트 카운터 확인
+sudo iptables -L -v -n 2>/dev/null | grep -E "DROP|REJECT" | head
+```
+
+> 방어 자동화 검증은 *돌렸는가*가 아니라 *발화·차단하는가*다 — "Suricata 깔려 있다"와 "주입 이벤트에 발화하고 방화벽이 실제로 떨군다"는 다르다. 소유 망에서 룰 발화·DROP 카운터를 직접 확인한다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Network Defense Automation — IDS/IPS Tuning, Firewall Automation, Network Monitoring
@@ -698,3 +725,28 @@ python3 dashboard.py --watch
 - Suricata documentation: https://suricata.readthedocs.io/en/latest/
 - Emerging Threats rules: https://rules.emergingthreats.net/
 - nfdump: https://github.com/phaag/nfdump
+
+<!-- detect-validate-24 -->
+## Network Defense Automation Effectiveness Validation and Regression
+
+Defense automation's value comes not from *whether it ran* but from *whether rules fire and blocks actually block*. Defenders must verify **whether IDS/firewall automation fires and blocks on injected events**. Validate only on **owned networks**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Suricata rules | Does it fire on injected traffic? | fast.log alert count | Ignoring rule-load failures |
+| Firewall automation | Is the block actually applied? | Rising DROP counter | Neutralized by rule order |
+| Anomaly detection | Does it catch baseline deviation? | Alert TP/FP ratio | Stale baseline |
+| Inline IPS | Does it actually drop packets? | No response after block | Mistaken for IDS-only |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify Suricata rules fire on injected traffic (owned network) — no fire means rule/load problem
+sudo suricata -T -c /etc/suricata/suricata.yaml 2>&1 | grep -iE "error|loaded"; sudo tail -3 /var/log/suricata/fast.log 2>/dev/null
+# 2) Verify firewall auto-block is actually applied — check DROP rule hit counters
+sudo iptables -L -v -n 2>/dev/null | grep -E "DROP|REJECT" | head
+```
+
+> Defense-automation validation is *whether it fires and blocks*, not *whether it ran* -- "Suricata is installed" differs from "it fires on injected events and the firewall actually drops". Confirm rule firing and DROP counters on owned networks directly ([[13_SOC_Blue_Team]], [[40_Threat_Hunting]], [[68_Purple_Team]]).

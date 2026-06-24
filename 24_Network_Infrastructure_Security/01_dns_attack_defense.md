@@ -424,6 +424,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-24 -->
+## DNS 공격 탐지와 방어 검증
+
+DNS는 *미검증 응답·평문 질의·방치된 레코드*를 통해 변조·터널링·탈취의 표면이 된다. 방어자는 **자체 리졸버가 변조를 막고 터널링을 탐지하는가**를 검증해야 한다. 검증은 **소유 도메인/리졸버**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 캐시 포이즈닝 | 응답 미검증 | DNSSEC 검증·소스포트 랜덤 | 비정상 응답·TTL 이상 |
+| DNS 터널링(exfil) | 평문 질의 | 질의 길이/유형 모니터 | 과다 TXT/NULL·긴 서브도메인 |
+| 서브도메인 탈취 | 방치된 CNAME | 레코드 정리·소유 검증 | dangling CNAME |
+| DNS 증폭 DDoS | 개방 리졸버 | 재귀 제한·RRL | 비정상 ANY 질의 폭주 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) DNSSEC 검증 동작 확인(소유 도메인) — ad 플래그 없으면 변조 탐지 불가
+dig +dnssec +multi example.com SOA @1.1.1.1 | grep -E "flags:|RRSIG" | head
+# 2) DNS 터널링 신호 점검 — 비정상적으로 긴 질의(소유 리졸버 로그)
+awk '{print length($0), $0}' /var/log/named/query.log 2>/dev/null | sort -rn | head
+```
+
+> DNS 방어는 *응답을 검증하고 이상 질의가 보이는가*다 — "DNS 잘 된다"와 "DNSSEC가 변조를 거르고 터널링이 로그에 드러난다"는 다르다. 소유 리졸버에서 ad 플래그·질의 길이를 직접 확인한다([[02_Network_Hacking]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # DNS Attack and Defense
@@ -776,3 +803,28 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+<!-- detect-validate-24 -->
+## DNS Attack Detection and Defense Validation
+
+DNS becomes a surface for tampering, tunneling, and takeover via *unvalidated responses, plaintext queries, and stale records*. Defenders must verify **whether their resolver blocks tampering and detects tunneling**. Validate only on **owned domains/resolvers**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Cache poisoning | Unvalidated response | DNSSEC validation, source-port randomization | Abnormal response, TTL anomaly |
+| DNS tunneling (exfil) | Plaintext query | Query length/type monitoring | Excessive TXT/NULL, long subdomains |
+| Subdomain takeover | Stale CNAME | Record cleanup, ownership check | Dangling CNAME |
+| DNS amplification DDoS | Open resolver | Recursion limit, RRL | Abnormal ANY-query flood |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm DNSSEC validation works (owned domain) — no ad flag means tampering is undetectable
+dig +dnssec +multi example.com SOA @1.1.1.1 | grep -E "flags:|RRSIG" | head
+# 2) Check DNS-tunneling signals — abnormally long queries (owned resolver log)
+awk '{print length($0), $0}' /var/log/named/query.log 2>/dev/null | sort -rn | head
+```
+
+> DNS defense is *whether responses are validated and anomalous queries are visible* -- "DNS works fine" differs from "DNSSEC filters tampering and tunneling shows up in logs". Confirm the ad flag and query length on your own resolver directly ([[02_Network_Hacking]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).

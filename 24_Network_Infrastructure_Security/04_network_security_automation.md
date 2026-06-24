@@ -652,6 +652,33 @@ python3 dns_tunnel_detect.py -i eth0 &
 
 ---
 
+<!-- detect-validate-24 -->
+## 자동 스캔 탐지와 결과 검증
+
+네트워크 자동화는 *대량 스캔·패킷 조작·설정 감사*를 빠르게 하지만, 방어자에겐 **그 소음이 탐지되는가**, 결과에는 **자동 finding이 오탐이 아닌가**가 관건이다. 검증은 **소유 망**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 대량 포트스캔 | 노출 서비스 | IDS 룰·rate limit | 단시간 다포트 SYN |
+| Scapy 패킷 조작 | 스푸핑 허용 | rp_filter·ingress 필터 | 위조 출발지/비정상 플래그 |
+| 방화벽 규칙 감사 | 설정 드리프트 | 베이스라인 diff | 예상외 허용 규칙 |
+| 자동 취약점 탐지 | 스캐너 오탐 | 수동 재현 | 미검증 finding 비율 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 스캔 자동화 소음이 IDS에 잡히는지 확인(소유 망) — fast.log 발화
+sudo tail -5 /var/log/suricata/fast.log 2>/dev/null | grep -iE "scan|portscan|sweep"
+# 2) 자동 스캔 결과 오탐 검증 — open 포트를 수동 배너로 재확인
+nc -nv -w3 127.0.0.1 80 2>&1 | head
+```
+
+> 자동화 검증은 *소음이 잡히고 결과가 참인가*다 — "스캔 돌렸다"와 "IDS가 발화하고 finding이 수동 재현된다"는 다르다. 소유 망에서 fast.log 발화와 배너 재확인을 직접 한다([[10_Pentest_Methodology]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Network Security Automation
@@ -950,3 +977,29 @@ python3 firewall_audit.py --table filter > audit_report.txt
 # 4. Real-time anomaly detection (background)
 python3 arp_monitor.py -i eth0 &
 python3 dns_tunnel_detect.py -i eth0 &
+```
+
+<!-- detect-validate-24 -->
+## Automated Scan Detection and Result Validation
+
+Network automation speeds up *mass scanning, packet manipulation, and config auditing*, but for defenders the question is **whether that noise is detected**, and for results **whether automated findings are false positives**. Validate only on **owned networks**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Mass port scan | Exposed services | IDS rules, rate limit | Many-port SYN in short window |
+| Scapy packet manipulation | Spoofing allowed | rp_filter, ingress filter | Forged source / abnormal flags |
+| Firewall rule audit | Config drift | Baseline diff | Unexpected allow rule |
+| Automated vuln detection | Scanner false positives | Manual reproduction | Rate of unverified findings |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm scan-automation noise is caught by the IDS (owned network) — fast.log fires
+sudo tail -5 /var/log/suricata/fast.log 2>/dev/null | grep -iE "scan|portscan|sweep"
+# 2) Validate automated scan results for false positives — re-check an open port via manual banner
+nc -nv -w3 127.0.0.1 80 2>&1 | head
+```
+
+> Automation validation is *whether the noise is caught and the result is true* -- "we ran the scan" differs from "the IDS fired and the finding reproduces manually". Confirm fast.log firing and banner re-check on owned networks directly ([[10_Pentest_Methodology]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).

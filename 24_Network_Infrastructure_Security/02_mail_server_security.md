@@ -1112,6 +1112,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-24 -->
+## 메일 스푸핑·릴레이 탐지와 방어 검증
+
+메일 위장은 *SPF/DKIM/DMARC 부재·개방 릴레이·표시이름 위장*을 노린다. 방어자는 **자체 도메인이 위장 메일을 거부·격리하는가**를 검증해야 한다. 검증은 **소유 도메인/메일서버**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 발신자 위장 | SPF/DMARC 미적용 | DMARC p=reject | DMARC 실패 리포트 |
+| 개방 릴레이 | 인증 없는 중계 | 인증 강제·릴레이 차단 | 외부→외부 중계 시도 |
+| 헤더 인젝션 | 미검증 입력 | 헤더 검증·인코딩 | 비정상 헤더 필드 |
+| 표시이름/동형문자 위장 | 시각 신뢰 | 외부 배너·동형 탐지 | 유사 도메인 발신 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 도메인 SPF/DMARC 정책 강도 점검(소유 도메인) — none/누락이면 위장 차단 불가
+dig +short TXT example.com | grep -i spf; dig +short TXT _dmarc.example.com | grep -iE "p=reject|p=quarantine"
+# 2) 개방 릴레이 여부 점검(소유 메일서버) — 외부→외부 중계가 거부돼야 함
+swaks --to ext@elsewhere.com --from spoof@notyours.com --server your.mail.server 2>&1 | grep -E "550|554|Relay" | head
+```
+
+> 메일 방어는 *위장이 실제로 거부되는가*다 — "메일 서버 있다"와 "SPF/DKIM/DMARC가 p=reject로 위장을 격리한다"는 다르다. 소유 도메인의 DMARC 정책과 릴레이 거부를 직접 확인한다([[17_Red_Team_Operations]], [[33_OSINT_Social_Engineering]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Mail Server Security — SPF/DKIM/DMARC and Attack Techniques
@@ -1796,3 +1823,28 @@ if __name__ == "__main__":
 | SMTP | VRFY/EXPN disabled | Recommended | Prevents user enumeration |
 | General | SPF set on subdomains | Recommended | Prevents subdomain spoofing |
 | General | MTA-STS configured | Recommended | Prevents downgrade attacks |
+
+<!-- detect-validate-24 -->
+## Mail Spoofing and Relay Detection and Defense Validation
+
+Mail impersonation targets *missing SPF/DKIM/DMARC, open relays, and display-name spoofing*. Defenders must verify **whether their domain rejects or quarantines spoofed mail**. Validate only on **owned domains/mail servers**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Sender spoofing | No SPF/DMARC | DMARC p=reject | DMARC failure reports |
+| Open relay | Unauthenticated relay | Enforce auth, block relay | External->external relay attempt |
+| Header injection | Unvalidated input | Header validation, encoding | Abnormal header fields |
+| Display-name/homoglyph spoofing | Visual trust | External banner, homoglyph detection | Look-alike sender domains |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check your domain's SPF/DMARC policy strength (owned domain) — none/missing means spoofing isn't blocked
+dig +short TXT example.com | grep -i spf; dig +short TXT _dmarc.example.com | grep -iE "p=reject|p=quarantine"
+# 2) Check for open relay (owned mail server) — external->external relay must be rejected
+swaks --to ext@elsewhere.com --from spoof@notyours.com --server your.mail.server 2>&1 | grep -E "550|554|Relay" | head
+```
+
+> Mail defense is *whether spoofing is actually rejected* -- "we have a mail server" differs from "SPF/DKIM/DMARC quarantine spoofing with p=reject". Confirm your domain's DMARC policy and relay rejection directly ([[17_Red_Team_Operations]], [[33_OSINT_Social_Engineering]], [[13_SOC_Blue_Team]]).

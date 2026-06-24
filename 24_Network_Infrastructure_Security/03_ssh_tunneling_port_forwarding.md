@@ -1270,6 +1270,33 @@ iptables-save > /etc/iptables/rules.v4
 
 ---
 
+<!-- detect-validate-24 -->
+## SSH 터널링·피벗 탐지와 방어 검증
+
+SSH 터널링은 *포워딩 허용·이그레스 미통제·지속 터널*로 피벗·우회·탈취 통로가 된다. 방어자는 **자체 호스트에서 비인가 터널·피벗이 탐지되는가**를 검증해야 한다. 검증은 **소유 호스트**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 로컬/원격 포워딩 | 포워딩 허용 | AllowTcpForwarding no | 비정상 포워딩 세션 |
+| 동적(SOCKS) 프록시 | 이그레스 미통제 | 이그레스 필터·프록시 강제 | 단일 SSH 다중 목적지 |
+| 리버스 터널 | 아웃바운드 신뢰 | 아웃바운드 SSH 제한 | 내부→외부 22 연결 |
+| ProxyJump 피벗 | 평면 네트워크 | 세그먼트·점프호스트 | 연쇄 SSH 홉 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 호스트 포워딩 허용 설정 점검(소유 호스트) — yes면 터널 통로 열림
+sshd -T 2>/dev/null | grep -E "allowtcpforwarding|permittunnel|gatewayports"
+# 2) 활성 SSH 세션의 목적지 분포 탐지 — 피벗/다중 목적지 신호
+ss -tnp 2>/dev/null | grep -E ':22 ' | awk '{print $5}' | sort | uniq -c | sort -rn | head
+```
+
+> SSH 터널 방어는 *비인가 통로가 보이는가*다 — "SSH 쓴다"와 "포워딩이 꺼져 있고 리버스 터널이 이그레스에서 잡힌다"는 다르다. 소유 호스트에서 sshd_config와 활성 세션을 직접 확인한다([[17_Red_Team_Operations]], [[55_Evasion_Techniques]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # SSH Tunneling & Port Forwarding — Attack and Defense
@@ -2048,3 +2075,28 @@ iptables-save > /etc/iptables/rules.v4
 | Long-duration SSH connection | Log analysis | Medium |
 | SSH from unauthorized IP | Firewall logs | Low–High |
 | Abnormal SSH traffic volume | NetFlow analysis | Medium |
+
+<!-- detect-validate-24 -->
+## SSH Tunneling and Pivot Detection and Defense Validation
+
+SSH tunneling becomes a path for pivoting, bypass, and exfiltration via *forwarding allowance, uncontrolled egress, and persistent tunnels*. Defenders must verify **whether unauthorized tunnels/pivots are detected on their own hosts**. Validate only on **owned hosts**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Local/remote forwarding | Forwarding allowed | AllowTcpForwarding no | Abnormal forwarding session |
+| Dynamic (SOCKS) proxy | Uncontrolled egress | Egress filter, force proxy | Single SSH, many destinations |
+| Reverse tunnel | Outbound trust | Restrict outbound SSH | Internal->external port 22 |
+| ProxyJump pivot | Flat network | Segmentation, jump host | Chained SSH hops |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check forwarding allowance on your own host (owned host) — "yes" opens a tunnel path
+sshd -T 2>/dev/null | grep -E "allowtcpforwarding|permittunnel|gatewayports"
+# 2) Detect destination spread of active SSH sessions — pivot/multi-destination signal
+ss -tnp 2>/dev/null | grep -E ':22 ' | awk '{print $5}' | sort | uniq -c | sort -rn | head
+```
+
+> SSH-tunnel defense is *whether unauthorized paths are visible* -- "we use SSH" differs from "forwarding is off and reverse tunnels are caught at egress". Confirm sshd_config and active sessions on owned hosts directly ([[17_Red_Team_Operations]], [[55_Evasion_Techniques]], [[13_SOC_Blue_Team]]).
