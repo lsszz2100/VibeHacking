@@ -582,6 +582,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-18 -->
+## 공급망 공격 탐지와 방어 검증
+
+공급망 공격은 *의존성 혼동·타이포스쿼팅·악성 설치 스크립트·빌드 변조*를 노린다. 방어자는 **내부 패키지명 선점·스크립트 격리·프로비넌스 검증이 실제로 작동하는가**를 검증해야 한다. 검증은 **소유 빌드**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 의존성 혼동 | 공개 등록소 우선 해석 | 스코프·내부 레지스트리 우선 | 공개 등록소의 내부 패키지명 |
+| 타이포스쿼팅 | 유사 패키지명 | 락파일·허용목록 | 신규·저평판 의존성 추가 |
+| 악성 설치 스크립트 | postinstall 임의실행 | --ignore-scripts·격리 빌드 | 설치 중 네트워크/파일 접근 |
+| 빌드 변조 | 산출물 무결성 미검증 | SLSA 프로비넌스·서명 | 산출물 해시 불일치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 내부 패키지명이 공개 레지스트리에 선점됐는지 확인 — 의존성 혼동 표면
+npm view "@yourscope/internal-pkg" version 2>/dev/null && echo "공개 등록소에 존재 — 혼동 위험 점검"
+# 2) 설치 스크립트가 임의 코드를 돌리지 못하게 격리되는지(소유 빌드)
+npm ci --ignore-scripts && echo "스크립트 차단 설치 OK — postinstall 악용 표면 축소"
+#   재현 빌드의 산출물 해시를 비교해 변조 여부를 사실로 확인한다
+```
+
+> 공급망 방어는 *대책이 있는가*가 아니라 *작동하는가*다 — "검증한다"와 "내부명 선점·악성 스크립트·변조를 실제로 막고 드러낸다"는 다르다. 소유 빌드에서 격리 설치·프로비넌스·해시 대조를 직접 확인한다([[35_Supply_Chain_Attacks]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).
+
+---
+
 <a name="english"></a>
 
 # Supply Chain Security — Dependency Attacks, SLSA, Signature Verification
@@ -835,3 +863,29 @@ if __name__ == "__main__":
 | Vulnerable dependencies | Regular CVE scanning | Dependabot, Snyk |
 | CI/CD compromise | Secret scanning, least privilege | gitleaks, trufflehog |
 | Missing SBOM | Automated dependency tree generation | syft, cyclonedx |
+
+<!-- detect-validate-18 -->
+## Supply Chain Attack Detection and Defense Validation
+
+Supply-chain attacks target *dependency confusion, typosquatting, malicious install scripts, and build tampering*. Defenders must verify **whether internal-name squatting, script isolation, and provenance verification actually work**. Validate only on **owned builds**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Dependency confusion | Public registry resolved first | Scope, internal registry priority | Internal package name on public registry |
+| Typosquatting | Look-alike package names | Lockfile, allowlist | New/low-reputation dependency added |
+| Malicious install script | postinstall arbitrary exec | --ignore-scripts, isolated build | Network/file access during install |
+| Build tampering | Unverified artifact integrity | SLSA provenance, signing | Artifact hash mismatch |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check whether an internal package name is squatted on a public registry — confusion surface
+npm view "@yourscope/internal-pkg" version 2>/dev/null && echo "exists publicly -- review confusion risk"
+# 2) Confirm install scripts cannot run arbitrary code (own build)
+npm ci --ignore-scripts && echo "scriptless install OK -- shrinks postinstall abuse surface"
+#   Compare reproducible-build artifact hashes to confirm tampering as fact
+```
+
+> Supply-chain defense is about *whether it works*, not *whether a control exists* -- "we verify" differs from "we actually block and surface name-squatting, malicious scripts, and tampering". Confirm isolated install, provenance, and hash comparison directly on owned builds ([[35_Supply_Chain_Attacks]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).

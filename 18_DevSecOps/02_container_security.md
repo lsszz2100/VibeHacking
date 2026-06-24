@@ -1028,6 +1028,34 @@ secrets:
 
 ---
 
+<!-- detect-validate-18 -->
+## 컨테이너 통제 작동 검증
+
+컨테이너 보안은 *정책이 적힌 것*이 아니라 **취약 이미지·루트 실행·미서명 산출물이 실제로 거부되는가**로 판가름한다. 이미지 스캔·비루트·런타임 정책·서명 검증을 각각 회귀 테스트해야 한다. 검증은 **소유 레지스트리·클러스터**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 이미지 취약점 스캔 | 취약 베이스가 차단되는가 | 알려진 CVE 이미지에서 실패 | 스캔만, 게이트 미연결 |
+| 루트리스/권한 | 컨테이너가 비루트로 뜨는가 | runAsNonRoot 강제 거부 | Dockerfile USER 누락 |
+| 런타임 정책 | 비정상 syscall 이 탐지되는가 | falco 규칙 발화 | 정책 audit-only |
+| 이미지 서명 | 미서명 이미지가 거부되는가 | cosign 검증 실패 시 배포 차단 | 정책 미적용 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 이미지 취약점 게이트가 동작하는지 — 취약 이미지에서 non-zero 종료 확인
+trivy image --exit-code 1 --severity HIGH,CRITICAL myimage:latest || echo "취약점 탐지 — 게이트 동작"
+# 2) 서명 검증이 강제되는지(소유 레지스트리) — 미서명/위조 시 실패해야 정상
+cosign verify --key cosign.pub myimage:latest >/dev/null 2>&1 || echo "검증 실패 — 미서명 거부 동작"
+#   정책에서 cosign verify 실패 시 배포가 차단돼야 의미가 있다
+```
+
+> 컨테이너 방어는 *정책 존재*가 아니라 *거부가 일어나는가*다 — "스캔한다·서명한다"와 "취약/미서명 이미지가 실제로 막힌다"는 다르다. 소유 레지스트리에서 취약·미서명 이미지로 게이트의 차단을 직접 확인한다([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Complete Guide to Container Security
@@ -1912,3 +1940,29 @@ secrets:
   db_user:
     file: ./secrets/db_user.txt
 ```
+
+<!-- detect-validate-18 -->
+## Container Control Effectiveness Validation
+
+Container security is decided not by *whether a policy is written* but by **whether vulnerable images, root execution, and unsigned artifacts are actually rejected**. Regression-test image scanning, non-root, runtime policy, and signature verification. Validate only on **owned registries/clusters**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Image vuln scan | Are vulnerable bases blocked | failure on known-CVE image | scan only, gate not wired |
+| Rootless/privilege | Does the container run as non-root | runAsNonRoot enforced rejection | missing USER in Dockerfile |
+| Runtime policy | Are abnormal syscalls detected | falco rule fires | policy is audit-only |
+| Image signing | Are unsigned images rejected | deploy blocked on cosign failure | policy not applied |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm the image-vuln gate works — non-zero exit on a vulnerable image
+trivy image --exit-code 1 --severity HIGH,CRITICAL myimage:latest || echo "vuln detected -- gate works"
+# 2) Confirm signature verification is enforced (own registry) — must fail when unsigned/forged
+cosign verify --key cosign.pub myimage:latest >/dev/null 2>&1 || echo "verify failed -- unsigned rejected"
+#   The policy must block deploy when cosign verify fails for this to matter
+```
+
+> Container defense is about *whether rejection happens*, not policy existence -- "we scan/sign" differs from "vulnerable/unsigned images are actually blocked". Confirm the gate's blocking on owned registries with vulnerable/unsigned images ([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[68_Purple_Team]]).

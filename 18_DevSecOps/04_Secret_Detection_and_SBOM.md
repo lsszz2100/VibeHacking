@@ -617,6 +617,33 @@ pre-commit run --all-files
 
 ---
 
+<!-- detect-validate-18 -->
+## 시크릿 탐지·SBOM 작동 검증
+
+시크릿 탐지와 SBOM 은 *돌리는 것*이 아니라 **테스트 키를 잡고 전이 의존성의 CVE 까지 연결되는가**로 가치를 갖는다. 스캐너 커버리지·히스토리 검사·SBOM-취약점 매칭을 회귀 테스트해야 한다. 검증은 **소유 레포**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 시크릿 스캐너 | 알려진 패턴을 잡는가 | 테스트 키에서 탐지 | 정규식 커버리지 부족 |
+| 히스토리 스캔 | 과거 커밋도 검사하는가 | git 전체 이력 스캔 | HEAD 만 검사 |
+| SBOM 생성 | 전이 의존성까지 포함하는가 | CycloneDX 컴포넌트 수 | 직접 의존성만 |
+| SBOM 취약점 매칭 | CVE 가 연결되는가 | grype SBOM 입력 결과 | 생성만, 미평가 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 시크릿 스캐너가 히스토리까지 검사하는지(소유 레포) — 테스트 키로 회귀
+gitleaks detect --source . --log-opts="--all" --redact --exit-code 1 || echo "히스토리 시크릿 탐지 동작"
+# 2) SBOM 이 취약점과 연결되는지 — 생성만으로는 부족
+syft dir:. -o cyclonedx-json=sbom.json && grype sbom:sbom.json --fail-on high
+```
+
+> 시크릿/SBOM 방어는 *돌렸는가*가 아니라 *잡고 연결되는가*다 — "스캔한다"와 "테스트 키를 탐지하고 전이 CVE 까지 매칭한다"는 다르다. 소유 레포에 테스트 키를 심어 탐지를, SBOM 을 grype 에 물려 취약점 연결을 직접 확인한다([[35_Supply_Chain_Attacks]], [[74_Code_Auditing]], [[59_Supply_Chain_Security]]).
+
+---
+
 <a name="english"></a>
 
 # Secret Detection and SBOM (Software Bill of Materials)
@@ -808,3 +835,28 @@ pip install pre-commit
 pre-commit install
 pre-commit run --all-files
 ```
+
+<!-- detect-validate-18 -->
+## Secret Detection and SBOM Effectiveness Validation
+
+Secret detection and SBOM gain value not from *running* but from **catching a test key and linking transitive-dependency CVEs**. Regression-test scanner coverage, history scanning, and SBOM-to-vuln matching. Validate only on **owned repos**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Secret scanner | Does it catch known patterns | detection on test key | weak regex coverage |
+| History scan | Does it inspect past commits | full git-history scan | only HEAD scanned |
+| SBOM generation | Does it include transitive deps | CycloneDX component count | direct deps only |
+| SBOM vuln matching | Are CVEs linked | grype SBOM-input result | generation only, unassessed |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm the secret scanner inspects history (own repo) — regress with a test key
+gitleaks detect --source . --log-opts="--all" --redact --exit-code 1 || echo "history secret detected -- works"
+# 2) Confirm the SBOM is linked to vulnerabilities — generation alone is not enough
+syft dir:. -o cyclonedx-json=sbom.json && grype sbom:sbom.json --fail-on high
+```
+
+> Secret/SBOM defense is about *catching and linking*, not *running* -- "we scan" differs from "we detect a test key and match transitive CVEs". Plant a test key in an owned repo to confirm detection, and feed the SBOM to grype to confirm vuln linkage ([[35_Supply_Chain_Attacks]], [[74_Code_Auditing]], [[59_Supply_Chain_Security]]).

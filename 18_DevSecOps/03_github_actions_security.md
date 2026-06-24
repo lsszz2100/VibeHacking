@@ -214,6 +214,7 @@ steps:
 # ── GitHub Actions 시크릿 탐지 스크립트 ────────────────────
 # 아래 Python 스크립트로 로컬/CI에서 워크플로우 파일의
 # 시크릿 오용 패턴을 사전에 탐지
+```
 
 ```python
 #!/usr/bin/env python3
@@ -990,6 +991,34 @@ spec:
 
 ---
 
+<!-- detect-validate-18 -->
+## CI/CD 파이프라인 공격 탐지와 방어 검증
+
+CI/CD 공격은 *신뢰 경계 혼동·입력 인젝션·서드파티 변조·과도 권한*을 노린다. 방어자는 **부동 태그·과도 토큰 권한·미검증 입력이 실제로 존재하는가**를 검증해야 한다. 검증은 **소유 레포**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| pull_request_target 오용 | 신뢰경계 혼동 | 최소권한·라벨 게이트 | 포크 PR 의 시크릿 접근 |
+| 액션 스크립트 인젝션(${{ }}) | 미검증 입력 | 환경변수 경유·입력 검증 | 로그의 셸 메타문자 주입 |
+| 서드파티 액션 변조 | 부동 태그(@v1) | SHA 핀·허용목록 | 액션 참조 SHA 변경 |
+| 시크릿 유출 | 과도 권한 토큰 | GITHUB_TOKEN 최소권한 | 시크릿이 빌드 출력에 등장 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 액션이 SHA 핀이 아닌 부동 태그를 쓰는지 점검(소유 레포) — 변조 표면
+grep -rEn 'uses:[[:space:]]+[^@]+@v[0-9]+[[:space:]]*$' .github/workflows/ && echo "부동 태그 — SHA 핀 권장"
+# 2) 워크플로가 토큰 권한을 최소화했는지 확인 — 미선언 시 기본 광범위 권한
+grep -rL 'permissions:' .github/workflows/*.yml && echo "permissions 미선언 — 최소권한 명시 필요"
+#   trigger 가 pull_request_target 인 워크플로는 별도 정밀 검토
+```
+
+> CI/CD 방어는 *워크플로가 실제로 무엇을 신뢰하는가*다 — "보안 신경 쓴다"와 "부동 태그·과도 권한이 없다"는 다르다. 소유 레포의 워크플로를 직접 grep 해 SHA 핀·최소권한·입력 검증을 사실로 확인한다([[35_Supply_Chain_Attacks]], [[74_Code_Auditing]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # GitHub Actions & CI/CD Pipeline Security
@@ -1221,3 +1250,29 @@ Monitoring:
   □ Regular dependency updates
   □ Secret rotation schedule
 ```
+
+<!-- detect-validate-18 -->
+## CI/CD Pipeline Attack Detection and Defense Validation
+
+CI/CD attacks target *trust-boundary confusion, input injection, third-party tampering, and excess privilege*. Defenders must verify **whether floating tags, over-broad token permissions, and unvalidated inputs actually exist**. Validate only on **owned repos**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| pull_request_target abuse | Trust-boundary confusion | Least privilege, label gate | Fork PR accessing secrets |
+| Action script injection (${{ }}) | Unvalidated input | Via env var, input validation | Shell metachars injected in logs |
+| Third-party action tampering | Floating tag (@v1) | SHA pin, allowlist | Action reference SHA changed |
+| Secret exfiltration | Over-privileged token | GITHUB_TOKEN least privilege | Secret appears in build output |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check for floating (non-SHA-pinned) action tags (own repo) — tampering surface
+grep -rEn 'uses:[[:space:]]+[^@]+@v[0-9]+[[:space:]]*$' .github/workflows/ && echo "floating tag -- pin to SHA"
+# 2) Confirm workflows minimize token permissions — undeclared means default broad scope
+grep -rL 'permissions:' .github/workflows/*.yml && echo "permissions undeclared -- specify least privilege"
+#   Workflows triggered by pull_request_target need separate close review
+```
+
+> CI/CD defense is about *what the workflow actually trusts* -- "we care about security" differs from "there are no floating tags or excess permissions". grep owned-repo workflows directly to confirm SHA pinning, least privilege, and input validation as fact ([[35_Supply_Chain_Attacks]], [[74_Code_Auditing]], [[68_Purple_Team]]).

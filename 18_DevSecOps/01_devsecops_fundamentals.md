@@ -1559,6 +1559,34 @@ spec:
 
 ---
 
+<!-- detect-validate-18 -->
+## 보안 게이트 작동 검증
+
+DevSecOps 의 핵심은 *게이트가 설정되어 있는가*가 아니라 **실제로 위험을 막고 빌드를 실패시키는가**다. SAST·SCA·시크릿 스캔·DAST 각각에 **의도된 취약 샘플**을 흘려 회귀 테스트해야 한다. 검증은 **소유 파이프라인**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| SAST 게이트 | 심각 취약점에 빌드가 실패하는가 | 삽입 취약점에서 non-zero exit | 경고만 출력·soft-fail 통과 |
+| SCA/의존성 | 알려진 CVE 의존성이 차단되는가 | 취약 버전 핀에서 실패 | 리포트만, 게이트 미연결 |
+| 시크릿 스캔 | 커밋된 키가 막히는가 | 테스트 키에서 차단 | 히스토리·PR diff 미검사 |
+| DAST | 실행 표면 취약점이 잡히는가 | 의도 취약 라우트 탐지 | 인증 뒤 영역 미스캔 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) SAST 게이트가 실제로 빌드를 실패시키는지 — 의도된 취약 샘플로 회귀
+semgrep --config=auto --error testdata/vuln_sample.py; echo "exit=$?  # 0 이면 게이트 미작동"
+# 2) 커밋 히스토리에 시크릿이 남지 않는지 사실 확인(소유 레포)
+gitleaks detect --source . --redact --exit-code 1 || echo "시크릿 탐지됨 — 게이트 동작"
+#   --exit-code 1 로 CI 가 실패해야 게이트가 의미를 가진다
+```
+
+> DevSecOps 방어의 출발점은 *게이트가 실패를 만들어 내는가*다 — "스캐너 붙였다"와 "심각 발견에서 빌드가 실제로 멈춘다"는 다르다. 소유 파이프라인에 취약 샘플·테스트 키를 흘려 게이트의 non-zero 종료를 직접 확인한다([[74_Code_Auditing]], [[35_Supply_Chain_Attacks]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # DevSecOps Core Principles and Security Automation
@@ -2971,3 +2999,29 @@ Security Analysis Program Metrics:
   □ Automation test coverage and frequency
   □ Number and types of attacks against the app
 ```
+
+<!-- detect-validate-18 -->
+## Security Gate Effectiveness Validation
+
+The point of DevSecOps is not *whether a gate is configured* but **whether it actually blocks risk and fails the build**. Feed each of SAST, SCA, secret scanning, and DAST a **deliberate vulnerable sample** as a regression test. Validate only on **owned pipelines**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| SAST gate | Does the build fail on critical findings | non-zero exit on injected vuln | warn-only / soft-fail pass |
+| SCA/dependencies | Are known-CVE deps blocked | failure on vulnerable pinned version | report only, gate not wired |
+| Secret scan | Are committed keys blocked | block on test key | history/PR diff not scanned |
+| DAST | Are runtime-surface vulns caught | detection on intentional vuln route | authenticated areas unscanned |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm the SAST gate actually fails the build — regress with a deliberate vulnerable sample
+semgrep --config=auto --error testdata/vuln_sample.py; echo "exit=$?  # 0 means the gate is inert"
+# 2) Confirm no secrets persist in commit history (own repo)
+gitleaks detect --source . --redact --exit-code 1 || echo "secret detected -- gate works"
+#   CI must fail via --exit-code 1 for the gate to mean anything
+```
+
+> DevSecOps defense starts with *whether the gate produces a failure* -- "we added a scanner" differs from "the build actually stops on critical findings". Feed vulnerable samples/test keys to owned pipelines and confirm the gate's non-zero exit directly ([[74_Code_Auditing]], [[35_Supply_Chain_Attacks]], [[68_Purple_Team]]).
