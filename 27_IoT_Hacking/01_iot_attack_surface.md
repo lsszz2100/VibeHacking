@@ -939,6 +939,33 @@ gatttool -b AA:BB:CC:DD:EE:FF --interactive
 
 ---
 
+<!-- detect-validate-27 -->
+## IoT 공격면 탐지와 방어 검증
+
+IoT는 *기본 자격증명·노출 서비스·평문 통신·미갱신 펌웨어*로 공격면이 넓다. 방어자는 **자체 디바이스의 노출 표면과 통신이 안전한가**를 검증해야 한다. 검증은 **소유 디바이스/망**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 기본 자격증명 | 미변경 비번 | 강제 변경·고유 키 | 기본계정 로그인 시도 |
+| 노출 서비스(telnet/UPnP) | 불필요 포트 | 포트 최소화·격리 | 외부서 23/1900 응답 |
+| 평문 통신 | 암호화 부재 | TLS·VPN | 평문 자격증명 캡처 |
+| 미갱신 펌웨어 | 알려진 CVE | OTA 갱신·SBOM | 구버전 배너 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 IoT 노출 표면 점검(소유 망) — telnet/UPnP 등 불필요 서비스
+nmap -sV -p 23,80,1900,5000,8080 --open 192.168.1.0/24 2>/dev/null | grep -iE "open|telnet|upnp"
+# 2) 평문 자격증명 노출 점검 — 디바이스 트래픽에 평문 인증이 흐르는지(소유 망)
+sudo tshark -i eth0 -Y "http.authorization || telnet" -a duration:20 2>/dev/null | head
+```
+
+> IoT 방어는 *노출 표면이 좁고 통신이 암호화됐는가*다 — "디바이스 동작한다"와 "telnet이 닫혀 있고 평문 자격증명이 안 흐른다"는 다르다. 소유 망에서 노출 포트·평문 인증을 직접 확인한다([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 01. IoT Attack Surface Analysis
@@ -1272,3 +1299,28 @@ wash -i wlan0mon
 hcitool lescan
 gatttool -b AA:BB:CC:DD:EE:FF --interactive
 ```
+
+<!-- detect-validate-27 -->
+## IoT Attack Surface Detection and Defense Validation
+
+IoT has a wide attack surface via *default credentials, exposed services, plaintext comms, and unpatched firmware*. Defenders must verify **whether their devices' exposure and comms are safe**. Validate only on **owned devices/networks**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Default credentials | Unchanged password | Forced change, unique keys | Default-account login attempts |
+| Exposed services (telnet/UPnP) | Unneeded ports | Minimize ports, segment | 23/1900 responding externally |
+| Plaintext comms | No encryption | TLS, VPN | Plaintext credential capture |
+| Unpatched firmware | Known CVEs | OTA updates, SBOM | Old-version banner |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check your IoT exposure surface (owned network) — telnet/UPnP and other unneeded services
+nmap -sV -p 23,80,1900,5000,8080 --open 192.168.1.0/24 2>/dev/null | grep -iE "open|telnet|upnp"
+# 2) Check plaintext-credential exposure — whether device traffic carries plaintext auth (owned network)
+sudo tshark -i eth0 -Y "http.authorization || telnet" -a duration:20 2>/dev/null | head
+```
+
+> IoT defense is *whether the exposure is narrow and comms encrypted* -- "the device works" differs from "telnet is closed and no plaintext credentials flow". Confirm exposed ports and plaintext auth on owned networks directly ([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).

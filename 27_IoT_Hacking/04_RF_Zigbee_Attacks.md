@@ -1063,6 +1063,33 @@ sudo modprobe -r dvb_usb_rtl28xxu 2>/dev/null || true
 
 ---
 
+<!-- detect-validate-27 -->
+## 무선 IoT 프로토콜 공격 탐지와 방어 검증
+
+Zigbee/Z-Wave/RF는 *조인 시 평문 키·리플레이·롤링코드 결함·재밍*을 노린다. 방어자는 **자체 무선 메시가 캡처/리플레이에 견디는가**를 검증해야 한다. 검증은 **소유 장비/주파수**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 키 캡처(조인 시) | 평문 TC 링크키 | 사전설치 키·짧은 조인창 | 조인 중 키 교환 캡처 |
+| 리플레이 공격 | 프레임 카운터 부재 | 카운터 검증 | 동일 프레임 재전송 |
+| 롤링코드 결함 | 예측 가능 시드 | 강한 PRNG·동기 | 코드 예측 성공 |
+| 재밍/디어소 | 가용성 | 채널 호핑·탐지 | 비정상 RSSI/노이즈 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 메시 캡처로 평문 키 교환/리플레이 표면 점검(소유 장비, killerbee)
+zbdump -f 11 -w mesh.pcap 2>/dev/null & sleep 10; kill %1 2>/dev/null; ls -la mesh.pcap
+# 2) 동일 프레임 재전송(리플레이) 신호 — 시퀀스 번호 중복
+tshark -r mesh.pcap -Y "zbee_nwk" -T fields -e zbee_nwk.seqno 2>/dev/null | sort | uniq -d | head
+```
+
+> 무선 IoT 방어는 *캡처/리플레이에 견디는가*다 — "Zigbee 메시 동작한다"와 "조인 시 키가 안 새고 재전송 프레임이 거부된다"는 다르다. 소유 장비에서 키 교환·카운터 중복을 직접 확인한다([[15_WiFi_Hacking]], [[71_Bluetooth_RF_Hacking]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # RF/Zigbee/Z-Wave IoT Wireless Protocol Attacks
@@ -2061,3 +2088,28 @@ Things you must never do:
 | **Signal jamming** | Smart home features rendered inoperable (DoS) | Jamming detection and alerting; redundant communication paths |
 | **Zigbee open join** | Unauthorized devices join the network | Minimize join window; whitelist-based authentication |
 | **Unsigned OTA updates** | Firmware tampering attack | Only apply signed firmware; encrypt update channel |
+
+<!-- detect-validate-27 -->
+## Wireless IoT Protocol Attack Detection and Defense Validation
+
+Zigbee/Z-Wave/RF are targeted via *plaintext keys at join, replay, rolling-code flaws, and jamming*. Defenders must verify **whether their wireless mesh resists capture/replay**. Validate only on **owned equipment/frequencies**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Key capture (at join) | Plaintext TC link key | Pre-installed keys, short join window | Key exchange captured at join |
+| Replay attack | No frame counter | Counter validation | Same frame retransmitted |
+| Rolling-code flaw | Predictable seed | Strong PRNG, sync | Successful code prediction |
+| Jamming/deauth | Availability | Channel hopping, detection | Abnormal RSSI/noise |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Capture your own mesh to check plaintext key-exchange/replay surface (owned gear, killerbee)
+zbdump -f 11 -w mesh.pcap 2>/dev/null & sleep 10; kill %1 2>/dev/null; ls -la mesh.pcap
+# 2) Replay signal (same-frame retransmission) — duplicate sequence numbers
+tshark -r mesh.pcap -Y "zbee_nwk" -T fields -e zbee_nwk.seqno 2>/dev/null | sort | uniq -d | head
+```
+
+> Wireless-IoT defense is *whether it resists capture/replay* -- "the Zigbee mesh works" differs from "keys don't leak at join and replayed frames are rejected". Confirm key exchange and counter duplication on owned gear directly ([[15_WiFi_Hacking]], [[71_Bluetooth_RF_Hacking]], [[13_SOC_Blue_Team]]).

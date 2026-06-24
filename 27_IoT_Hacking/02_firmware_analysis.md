@@ -1125,6 +1125,33 @@ strings -n 8 squashfs_root/usr/bin/cli | \
 
 ---
 
+<!-- detect-validate-27 -->
+## 펌웨어 약점 탐지와 분석 검증
+
+펌웨어는 *하드코딩 시크릿·디버그 인터페이스·미서명 이미지·약한 암호*를 품는다. 방어자는 **자체 펌웨어에 시크릿이 없고 이미지가 서명되는가**를 검증해야 한다. 검증은 **소유 펌웨어**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 하드코딩 시크릿 추출 | 평문 키/비번 | 시크릿 분리·암호화 | binwalk/strings 검출 |
+| 디버그 UART/JTAG | 노출 인터페이스 | 인터페이스 비활성 | 콘솔 부팅 프롬프트 |
+| 미서명 이미지 변조 | 서명 부재 | 서명·secure boot | 변조 후 부팅 성공 |
+| 약한 암호/구 라이브러리 | 알려진 CVE | 최신 암호·SBOM | 구버전 컴포넌트 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 펌웨어 하드코딩 시크릿 점검(소유 이미지) — 평문 키/비번 표면
+binwalk -e firmware.bin >/dev/null 2>&1; grep -rIaE "password=|api[_-]?key|BEGIN .* PRIVATE KEY" _firmware.bin.extracted/ 2>/dev/null | head
+# 2) 이미지 엔트로피 점검 — 암호화/패킹·서명 여부 추정
+binwalk -E firmware.bin 2>/dev/null | head
+```
+
+> 펌웨어 방어는 *시크릿이 없고 이미지가 서명되는가*다 — "펌웨어 만든다"와 "binwalk로 키가 안 나오고 미서명 이미지는 부팅을 거부한다"는 다르다. 소유 이미지에서 시크릿·엔트로피를 직접 확인한다([[06_Malware_Analysis]], [[61_Firmware_Hacking]], [[65_Reverse_Engineering_Advanced]]).
+
+---
+
 <a name="english"></a>
 
 # 02. Advanced Firmware Analysis
@@ -1446,3 +1473,28 @@ strings -n 8 squashfs_root/usr/bin/cli | \
     grep -iE "(password|secret|admin|root|key)" | \
     sort -u > /tmp/cli_strings.txt
 ```
+
+<!-- detect-validate-27 -->
+## Firmware Weakness Detection and Analysis Validation
+
+Firmware harbors *hardcoded secrets, debug interfaces, unsigned images, and weak crypto*. Defenders must verify **whether their firmware is secret-free and images are signed**. Validate only on **owned firmware**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Hardcoded secret extraction | Plaintext keys/passwords | Separate/encrypt secrets | binwalk/strings detection |
+| Debug UART/JTAG | Exposed interface | Disable interface | Console boot prompt |
+| Unsigned image tampering | No signature | Signing, secure boot | Boots after tampering |
+| Weak crypto/old libraries | Known CVEs | Modern crypto, SBOM | Old-version components |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check your firmware for hardcoded secrets (owned image) — plaintext keys/passwords surface
+binwalk -e firmware.bin >/dev/null 2>&1; grep -rIaE "password=|api[_-]?key|BEGIN .* PRIVATE KEY" _firmware.bin.extracted/ 2>/dev/null | head
+# 2) Check image entropy — infer encryption/packing/signing
+binwalk -E firmware.bin 2>/dev/null | head
+```
+
+> Firmware defense is *whether it's secret-free and images are signed* -- "we build firmware" differs from "binwalk finds no keys and unsigned images refuse to boot". Confirm secrets and entropy on owned images directly ([[06_Malware_Analysis]], [[61_Firmware_Hacking]], [[65_Reverse_Engineering_Advanced]]).

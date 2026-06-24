@@ -1216,6 +1216,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-27 -->
+## IoT 보안 강화 작동 검증과 회귀
+
+강화는 *설정했다*가 아니라 *서명·격리·감사가 실제 막고 드러내는가*로 가치가 갈린다. 방어자는 **펌웨어 서명·네트워크 격리·디바이스 감사가 동작하는가**를 검증해야 한다. 검증은 **소유 디바이스/망**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 펌웨어 서명 | 미서명 이미지를 거부하나? | 변조 이미지 부팅 실패 | 서명 검증 비활성 |
+| 네트워크 격리 | VLAN 분리가 실제 막나? | 세그먼트 간 통신 차단 | 평면 네트워크 잔존 |
+| 디바이스 감사 | 변경을 잡나? | 설정 drift 탐지 | 베이스라인 부재 |
+| OTA 갱신 | 패치가 적용되나? | 펌웨어 버전 분포 | 미갱신 디바이스 방치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 네트워크 격리 검증(소유 망) — IoT 세그먼트에서 내부망 도달이 막혀야 함
+ping -c2 -W1 10.0.0.10 2>&1 | grep -E "0 received|100% packet loss" && echo "isolated OK"
+# 2) 디바이스 펌웨어 버전 drift 점검 — 미갱신 디바이스 표면
+nmap -sV -p 80,443 192.168.1.0/24 2>/dev/null | grep -iE "version|server:" | sort | uniq -c | sort -rn | head
+```
+
+> 강화 검증은 *설정했는가*가 아니라 *막고 드러내는가*다 — "VLAN 나눴다"와 "IoT에서 내부망이 실제로 안 닿고 미서명 이미지가 부팅을 거부한다"는 다르다. 소유 망에서 격리·버전 drift를 직접 확인한다([[24_Network_Infrastructure_Security]], [[39_Zero_Trust_Architecture]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # IoT Security Hardening — Firmware Signing, Network Isolation, Device Auditing
@@ -1554,3 +1581,28 @@ Phase 4 (Ongoing): Monitoring and Auditing
   ├── Regular firmware audits
   └── Develop incident response plan
 ```
+
+<!-- detect-validate-27 -->
+## IoT Security Hardening Effectiveness Validation and Regression
+
+Hardening's value comes not from *whether it's configured* but from *whether signing, isolation, and auditing actually block and surface*. Defenders must verify **whether firmware signing, network isolation, and device auditing work**. Validate only on **owned devices/networks**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Firmware signing | Does it reject unsigned images? | Tampered image fails to boot | Signature check disabled |
+| Network isolation | Does VLAN separation actually block? | Inter-segment comms blocked | Residual flat network |
+| Device auditing | Does it catch changes? | Config-drift detection | No baseline |
+| OTA updates | Are patches applied? | Firmware-version distribution | Unpatched devices left |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify network isolation (owned network) — the IoT segment must not reach the internal network
+ping -c2 -W1 10.0.0.10 2>&1 | grep -E "0 received|100% packet loss" && echo "isolated OK"
+# 2) Check device firmware-version drift — surface unpatched devices
+nmap -sV -p 80,443 192.168.1.0/24 2>/dev/null | grep -iE "version|server:" | sort | uniq -c | sort -rn | head
+```
+
+> Hardening validation is *whether it blocks and surfaces*, not *whether it's configured* -- "we split VLANs" differs from "IoT actually can't reach the internal network and unsigned images refuse to boot". Confirm isolation and version drift on owned networks directly ([[24_Network_Infrastructure_Security]], [[39_Zero_Trust_Architecture]], [[13_SOC_Blue_Team]]).
