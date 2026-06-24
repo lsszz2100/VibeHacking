@@ -428,6 +428,33 @@ save_image(x)  # target class의 평균적 '얼굴'
 
 ---
 
+<!-- detect-validate-31 -->
+## 모델 추출·추론 공격 탐지와 방어 검증
+
+모델에서는 *대량 쿼리 추출·멤버십 추론·데이터 재구성*으로 파라미터·학습데이터가 샌다. 방어자는 **자체 모델이 과다 쿼리·신뢰도 누출을 막는가**를 검증해야 한다. 검증은 **소유 모델**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 모델 추출 | 무제한 쿼리·로짓 노출 | 레이트 제한·출력 라운딩 | 체계적 경계 탐색 쿼리 |
+| 멤버십 추론 | 신뢰도 누출 | 신뢰도 캡·정규화 | 멤버 vs 비멤버 신뢰도 격차 |
+| 모델 인버전 | 그래디언트/출력 누출 | DP·출력 제한 | 재구성형 입력 쿼리 |
+| 워터마크 회피 | 추출 모델 배포 | 워터마킹·핑거프린트 | 워터마크 불일치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 추출 신호 — 단일 클라이언트의 비정상 쿼리량/경계 탐색(소유 추론 로그)
+awk '{print $1}' inference.log 2>/dev/null | sort | uniq -c | sort -rn | head
+# 2) 신뢰도 노출 점검 — 응답이 raw 확률/로짓을 그대로 노출하는지(소유 API)
+curl -s https://api.example.com/predict -d '{"x":[0]}' 2>/dev/null | grep -oE "0\.[0-9]{4,}" | head
+```
+
+> 추출/추론 방어는 *모델이 새지 않는가*다 — "API 있다"와 "과다 쿼리가 제한되고 raw 신뢰도가 노출되지 않는다"는 다르다. 소유 추론 로그·API 응답에서 쿼리량·신뢰도 노출을 직접 확인한다([[56_AI_Red_Teaming]], [[69_LLM_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 31-03. Model Extraction, Membership Inference, and Data Reconstruction — What Leaks from Models
@@ -806,3 +833,28 @@ As of 2026, **gradient uploads in distributed learning / Federated Learning** ar
 - Carlini et al., *Membership Inference Attacks From First Principles* (S&P 2022) — LiRA
 - Yeom et al., *Privacy Risk in Machine Learning* (CSF 2018)
 - Zhu et al., *Deep Leakage from Gradients* (NeurIPS 2019)
+
+<!-- detect-validate-31 -->
+## Model Extraction and Inference Attack Detection and Defense Validation
+
+Models leak parameters and training data via *high-volume query extraction, membership inference, and data reconstruction*. Defenders must verify **whether their model blocks excessive queries and confidence leakage**. Validate only on **owned models**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Model extraction | Unlimited queries, logit exposure | Rate limit, output rounding | Systematic boundary-probing queries |
+| Membership inference | Confidence leakage | Confidence cap, calibration | Member vs non-member confidence gap |
+| Model inversion | Gradient/output leakage | DP, output limiting | Reconstruction-style input queries |
+| Watermark evasion | Deploying extracted model | Watermarking, fingerprinting | Watermark mismatch |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Extraction signal — abnormal query volume / boundary probing by a single client (owned inference log)
+awk '{print $1}' inference.log 2>/dev/null | sort | uniq -c | sort -rn | head
+# 2) Confidence-exposure check — whether responses expose raw probabilities/logits (owned API)
+curl -s https://api.example.com/predict -d '{"x":[0]}' 2>/dev/null | grep -oE "0\.[0-9]{4,}" | head
+```
+
+> Extraction/inference defense is *whether the model doesn't leak* -- "we have an API" differs from "excessive queries are rate-limited and raw confidence isn't exposed". Confirm query volume and confidence exposure on owned logs/API directly ([[56_AI_Red_Teaming]], [[69_LLM_Security]], [[13_SOC_Blue_Team]]).

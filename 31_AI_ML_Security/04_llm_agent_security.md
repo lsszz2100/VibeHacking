@@ -442,6 +442,33 @@ LLM 에이전트 보안은 **새로운 이슈 + 재탕된 고전** 이다.
 
 ---
 
+<!-- detect-validate-31 -->
+## LLM 에이전트 보안 탐지와 방어 검증
+
+에이전트는 *도구 권한·RAG 신뢰·MCP 경계·무한 루프/비용*에서 새 표면을 만든다. 방어자는 **자체 에이전트가 도구를 최소권한으로 쓰고 비인가 행동이 탐지되는가**를 검증해야 한다. 검증은 **소유 에이전트**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 도구 오남용 | 과도 도구 권한 | 최소권한·승인 게이트 | 비인가 도구/인자 호출 |
+| RAG 오염 | 외부 문서 신뢰 | 출처 검증·격리 | 오염 문서 후 행동 변화 |
+| MCP 경계 침범 | 서버 신뢰 | 서버 allowlist·범위 | 예상외 MCP 호출 |
+| 비용/루프 폭주 | 무한 반복 | 예산 캡·스텝 제한 | 비정상 토큰/스텝 급증 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 에이전트 도구 호출 감사(소유 에이전트 로그) — 비인가 도구/인자
+grep -hoE '"tool":"[^"]+"' agent.log 2>/dev/null | sort | uniq -c | sort -rn | head
+# 2) 비용/스텝 폭주 점검 — 세션당 스텝 수 이상치
+awk -F'steps=' '/steps=/{print $2+0}' agent.log 2>/dev/null | sort -rn | head
+```
+
+> 에이전트 방어는 *도구가 최소권한이고 폭주가 보이는가*다 — "에이전트 동작한다"와 "비인가 도구 호출이 막히고 스텝/비용 폭주가 캡으로 잡힌다"는 다르다. 소유 에이전트 로그에서 도구 호출·스텝 이상치를 직접 확인한다([[11_AI_Powered_Security]], [[69_LLM_Security]], [[52_API_Security]]).
+
+---
+
 <a name="english"></a>
 
 # 31-04. LLM Agent Security — The New Attack Surface Created by Tools, RAG, and MCP
@@ -815,3 +842,28 @@ A model is a probabilistic inference engine, not a security boundary. Boundaries
 | Sandboxing | `firejail`, `gVisor`, `firecracker` |
 | MCP client security | MCP Inspector, mitmproxy |
 | Agent evaluation | `ragas`, `deepeval`, `phoenix` |
+
+<!-- detect-validate-31 -->
+## LLM Agent Security Detection and Defense Validation
+
+Agents create new surface via *tool privilege, RAG trust, MCP boundaries, and infinite loops/cost*. Defenders must verify **whether their agent uses tools at least privilege and unauthorized actions are detected**. Validate only on **owned agents**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Tool abuse | Excess tool privilege | Least privilege, approval gate | Unauthorized tool/arg calls |
+| RAG poisoning | External-doc trust | Source validation, isolation | Behavior change after poisoned doc |
+| MCP boundary breach | Server trust | Server allowlist, scope | Unexpected MCP call |
+| Cost/loop blowup | Infinite repetition | Budget cap, step limit | Abnormal token/step spike |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Audit agent tool calls (owned agent log) — unauthorized tools/args
+grep -hoE '"tool":"[^"]+"' agent.log 2>/dev/null | sort | uniq -c | sort -rn | head
+# 2) Cost/step-blowup check — per-session step-count outliers
+awk -F'steps=' '/steps=/{print $2+0}' agent.log 2>/dev/null | sort -rn | head
+```
+
+> Agent defense is *whether tools are least-privilege and blowups are visible* -- "the agent works" differs from "unauthorized tool calls are blocked and step/cost blowups are caught by caps". Confirm tool calls and step outliers on owned agent logs directly ([[11_AI_Powered_Security]], [[69_LLM_Security]], [[52_API_Security]]).

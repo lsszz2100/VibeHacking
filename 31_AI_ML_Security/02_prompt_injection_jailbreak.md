@@ -1148,6 +1148,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-31 -->
+## 프롬프트 인젝션·탈옥 탐지와 방어 검증
+
+프롬프트 인젝션은 *직접/간접(데이터 경유) 주입·역할 탈취·도구 오남용*으로 LLM 앱을 장악한다. 방어자는 **자체 앱의 가드레일이 주입에 실제로 버티는가**를 검증해야 한다. 검증은 **소유 앱**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 직접 주입 | 입력 신뢰 | 입력/출력 필터·스포트라이팅 | 시스템 지시 노출 |
+| 간접 주입(RAG/웹) | 외부 콘텐츠 신뢰 | 콘텐츠 격리·출처 표시 | 외부 텍스트 후 행동 변화 |
+| 역할 탈취/탈옥 | 약한 경계 | 지시 계층·거부 정책 | 정책 우회 출력 |
+| 도구 오남용 | 과도 권한 | 도구 최소권한·승인 | 비인가 도구 호출 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 앱 가드레일 회귀 테스트(소유 앱) — 알려진 주입 프롬프트셋으로 거부율 측정
+python3 -c "print('run garak/llm-guard against owned endpoint; track refusal/leak rate per probe set')" 2>&1 | head
+# 2) 시스템 프롬프트 누출 점검 — 응답에 시스템 지시 마커가 새는지(소유 로그)
+grep -rIaE "system prompt|you are a|do not reveal" responses.log 2>/dev/null | head
+```
+
+> 인젝션 방어는 *가드레일이 실제로 버티는가*다 — "프롬프트 막는다"와 "알려진 주입셋에 거부율이 유지되고 시스템 지시가 안 샌다"는 다르다. 소유 앱에서 거부율·시스템 프롬프트 누출을 직접 확인한다([[69_LLM_Security]], [[56_AI_Red_Teaming]], [[11_AI_Powered_Security]]).
+
+---
+
 <a name="english"></a>
 
 # 31-02. Prompt Injection and Jailbreaking — SQLi-Class Vulnerabilities in LLM Applications
@@ -1518,3 +1545,28 @@ Therefore, the design strategy should be "making serious damage impossible even 
 - [ ] Rate limiting and anomaly detection for injection patterns
 
 These three are the practical consensus as of 2026.
+
+<!-- detect-validate-31 -->
+## Prompt Injection and Jailbreak Detection and Defense Validation
+
+Prompt injection takes over LLM apps via *direct/indirect (data-borne) injection, role hijack, and tool abuse*. Defenders must verify **whether their app's guardrails actually hold against injection**. Validate only on **owned apps**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Direct injection | Input trust | Input/output filter, spotlighting | System-instruction exposure |
+| Indirect injection (RAG/web) | External-content trust | Content isolation, provenance | Behavior change after external text |
+| Role hijack/jailbreak | Weak boundary | Instruction hierarchy, refusal policy | Policy-bypassing output |
+| Tool abuse | Excess privilege | Tool least-privilege, approval | Unauthorized tool call |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Guardrail regression test for your app (owned app) — measure refusal rate against a known injection set
+python3 -c "print('run garak/llm-guard against owned endpoint; track refusal/leak rate per probe set')" 2>&1 | head
+# 2) System-prompt leakage check — whether responses leak system-instruction markers (owned log)
+grep -rIaE "system prompt|you are a|do not reveal" responses.log 2>/dev/null | head
+```
+
+> Injection defense is *whether guardrails actually hold* -- "we block prompts" differs from "refusal rate holds on a known injection set and the system prompt doesn't leak". Confirm refusal rate and system-prompt leakage on owned apps directly ([[69_LLM_Security]], [[56_AI_Red_Teaming]], [[11_AI_Powered_Security]]).

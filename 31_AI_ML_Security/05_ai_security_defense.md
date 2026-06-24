@@ -521,6 +521,33 @@ class ModelSecurityMonitor:
 
 ---
 
+<!-- detect-validate-31 -->
+## AI/ML 보안 방어 작동 검증과 회귀
+
+AI 방어는 *적용했다*가 아니라 *적대적 입력·주입·누출을 실제로 막고 드러내는가*로 가치가 갈린다. 방어자는 **견고성·모니터링·완화가 회귀 없이 동작하는가**를 검증해야 한다. 검증은 **소유 모델/앱**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 적대적 견고성 | 섭동을 견디나? | clean-adv 정확도 격차 | 그래디언트 마스킹 착시 |
+| 입출력 필터 | 주입을 거르나? | 프로브셋 차단율 | 우회 변형 누락 |
+| 모델 모니터링 | 드리프트/이상을 잡나? | 분포 이탈 알림 | 베이스라인 노후화 |
+| 누출 방지 | PII/시크릿이 새나? | 출력 PII 검출 | 학습데이터 암기 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 가드레일 회귀 — 프로브셋 차단율이 이전 대비 떨어졌는지(소유 앱, CI 게이트)
+python3 -c "print('compare block_rate vs baseline; fail CI if regressed (garak/llm-guard report)')" 2>&1 | head
+# 2) 출력 누출 점검 — 응답에 PII/시크릿이 새는지(소유 로그)
+grep -rIaE "[0-9]{3}-[0-9]{2}-[0-9]{4}|BEGIN .* PRIVATE KEY|api[_-]?key" responses.log 2>/dev/null | head
+```
+
+> AI 방어 검증은 *적용했는가*가 아니라 *막고 드러내는가*다 — "필터 붙였다"와 "프로브셋 차단율이 유지되고 출력에 PII가 안 샌다"는 다르다. 소유 앱에서 차단율 회귀·출력 누출을 직접 확인한다([[69_LLM_Security]], [[56_AI_Red_Teaming]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # AI/ML Security Defense — Adversarial Robustness, Model Monitoring, OWASP LLM Top 10 Mitigations
@@ -561,3 +588,28 @@ python3 model_monitor.py --rate-limit 100
 - OWASP LLM Top 10: https://owasp.org/www-project-top-10-for-large-language-model-applications/
 - Adversarial Robustness Toolbox: https://github.com/Trusted-AI/adversarial-robustness-toolbox
 - MITRE ATLAS: https://atlas.mitre.org/
+
+<!-- detect-validate-31 -->
+## AI/ML Security Defense Effectiveness Validation and Regression
+
+AI defense's value comes not from *whether it's applied* but from *whether it actually blocks and surfaces adversarial input, injection, and leakage*. Defenders must verify **whether robustness, monitoring, and mitigation work without regression**. Validate only on **owned models/apps**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Adversarial robustness | Does it resist perturbation? | clean-adv accuracy gap | Gradient-masking illusion |
+| Input/output filter | Does it filter injection? | Probe-set block rate | Missing bypass variants |
+| Model monitoring | Does it catch drift/anomaly? | Distribution-shift alerts | Stale baseline |
+| Leakage prevention | Do PII/secrets leak? | Output PII detection | Training-data memorization |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Guardrail regression — whether probe-set block rate dropped vs baseline (owned app, CI gate)
+python3 -c "print('compare block_rate vs baseline; fail CI if regressed (garak/llm-guard report)')" 2>&1 | head
+# 2) Output-leakage check — whether responses leak PII/secrets (owned log)
+grep -rIaE "[0-9]{3}-[0-9]{2}-[0-9]{4}|BEGIN .* PRIVATE KEY|api[_-]?key" responses.log 2>/dev/null | head
+```
+
+> AI-defense validation is *whether it blocks and surfaces*, not *whether it's applied* -- "we added a filter" differs from "probe-set block rate holds and no PII leaks in output". Confirm block-rate regression and output leakage on owned apps directly ([[69_LLM_Security]], [[56_AI_Red_Teaming]], [[68_Purple_Team]]).

@@ -931,6 +931,33 @@ x_adv = aa.run_standard_evaluation(x, y, bs=64)
 
 ---
 
+<!-- detect-validate-31 -->
+## 적대적 예제 탐지와 방어 검증
+
+적대적 예제는 *입력 섭동·전이성·물리적 패치·쿼리 기반 탐색*으로 모델 판단을 뒤집는다. 방어자는 **자체 모델이 섭동에 견디고 이상 입력이 탐지되는가**를 검증해야 한다. 검증은 **소유 모델/데이터**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 화이트박스 섭동(FGSM/PGD) | 그래디언트 접근 | 적대적 훈련 | 섭동셋 정확도 급락 |
+| 전이 공격 | 대체 모델 | 앙상블·입력 변환 | 높은 전이율 |
+| 물리적 패치 | 강건성 부족 | 무작위화·탐지기 | 비정상 패턴 영역 |
+| 쿼리 기반(블랙박스) | 무제한 쿼리 | 레이트 제한·쿼리 모니터 | 유사 입력 반복 쿼리 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 모델 강건성 평가(소유 모델) — 깨끗한 입력 vs PGD 정확도 격차로 측정
+python3 -c "import art; print('use art.attacks.evasion.ProjectedGradientDescent on owned model; robustness = clean_acc - adv_acc')" 2>&1 | head
+# 2) 쿼리 기반 공격 신호 — 유사 입력의 고빈도 반복 쿼리(소유 추론 로그)
+awk '{print $NF}' inference.log 2>/dev/null | sort | uniq -c | sort -rn | head
+```
+
+> 적대적 견고성은 *섭동을 견디는가*다 — "정확도 높다"와 "섭동 입력에서도 정확도가 안 무너지고 쿼리 공격이 탐지된다"는 다르다. 소유 모델에서 clean-adv 격차·반복 쿼리를 직접 확인한다([[56_AI_Red_Teaming]], [[11_AI_Powered_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 31-01. Adversarial Examples — Techniques for Deceiving Models at the Input Stage
@@ -1353,3 +1380,28 @@ For teams serving production classifiers:
 6. **Monitoring**: Log adversarial sample candidates and put them in a manual review queue.
 
 Adversarial examples are not a problem of "completely eliminating" but of **raising the attacker's cost**. Design so the cost exceeds ROI.
+
+<!-- detect-validate-31 -->
+## Adversarial Examples Detection and Defense Validation
+
+Adversarial examples flip model decisions via *input perturbation, transferability, physical patches, and query-based search*. Defenders must verify **whether their model resists perturbation and abnormal inputs are detected**. Validate only on **owned models/data**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| White-box perturbation (FGSM/PGD) | Gradient access | Adversarial training | Accuracy collapse on perturbed set |
+| Transfer attack | Substitute model | Ensemble, input transform | High transfer rate |
+| Physical patch | Lack of robustness | Randomization, detector | Abnormal pattern region |
+| Query-based (black-box) | Unlimited queries | Rate limit, query monitoring | Repeated near-duplicate queries |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Evaluate your model's robustness (owned model) — measure via clean vs PGD accuracy gap
+python3 -c "import art; print('use art.attacks.evasion.ProjectedGradientDescent on owned model; robustness = clean_acc - adv_acc')" 2>&1 | head
+# 2) Query-based attack signal — high-frequency repeated near-duplicate queries (owned inference log)
+awk '{print $NF}' inference.log 2>/dev/null | sort | uniq -c | sort -rn | head
+```
+
+> Adversarial robustness is *whether it resists perturbation* -- "accuracy is high" differs from "accuracy holds even on perturbed inputs and query attacks are detected". Confirm the clean-adv gap and repeated queries on owned models directly ([[56_AI_Red_Teaming]], [[11_AI_Powered_Security]], [[13_SOC_Blue_Team]]).
