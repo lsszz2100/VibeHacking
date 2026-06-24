@@ -713,6 +713,34 @@ nop DWORD PTR [rax] ; 다중 바이트 NOP
 
 ---
 
+<!-- detect-validate-19 -->
+## 익스플로잇 완화 검증 (바이너리 수준)
+
+어셈블리 수준 이해는 *익스플로잇 완화가 바이너리에 실제 적용됐는가*를 확인하는 능력이다. 공격은 스택·레지스터·반환 흐름을 노린다. 방어자는 **NX·카나리·PIE·RELRO 가 컴파일 결과에 실제로 들어갔는가**를 검증해야 한다. 검증은 **소유 바이너리**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 검증 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 검증 신호 |
+|---|---|---|---|
+| 리턴 주소 덮기 | 스택 보호 부재 | 스택 카나리 | checksec 에 "Canary found" 없음 |
+| 직접 셸코드 실행 | 실행 가능 스택 | NX/DEP | "NX disabled"·GNU_STACK RWE |
+| 고정 주소 가젯 | 비-PIE 로딩 | PIE/ASLR | checksec "No PIE" |
+| GOT 덮어쓰기 | 쓰기 가능 GOT | Full RELRO | "Partial/No RELRO" |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 바이너리에 익스플로잇 완화가 실제 적용됐는지 확인 — 빌드 옵션 ≠ 컴파일 결과
+checksec --file=./target 2>/dev/null || readelf -lW ./target | grep -E "GNU_STACK|GNU_RELRO"
+#   GNU_STACK 가 RWE 면 NX 미적용 → 스택 셸코드 표면
+# 2) 시스템 ASLR 이 켜져 있는지(완화 재현성 검증)
+cat /proc/sys/kernel/randomize_va_space   # 2 여야 완전 ASLR
+```
+
+> 익스플로잇 방어의 출발점은 *완화가 바이너리에 실제로 박혀 있는가*다 — "하드닝 플래그 줬다"와 "NX·카나리·PIE 가 산출물에 있다"는 다르다. 소유 바이너리에 checksec/readelf 로 직접 확인한다([[09_Exploit_Techniques]], [[03_System_Hacking]], [[65_Reverse_Engineering_Advanced]]).
+
+---
+
 <a name="english"></a>
 
 # x86/x64 Assembly Fundamentals
@@ -1311,3 +1339,29 @@ nop DWORD PTR [rax] ; multi-byte NOP
 | execve  | 59          | rdi=path, rsi=argv, rdx=envp |
 | exit    | 60          | rdi=code |
 | mmap    | 9           | rdi=addr, rsi=len, rdx=prot, r10=flags, r8=fd, r9=off |
+
+<!-- detect-validate-19 -->
+## Exploit Mitigation Validation (Binary Level)
+
+Assembly-level understanding is the ability to confirm *whether exploit mitigations are actually present in the binary*. Attacks target the stack, registers, and return flow. Defenders must verify **whether NX, canary, PIE, and RELRO actually made it into the compiled artifact**. Validate only on **owned binaries**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Validation signal
+
+| Technique | Targeted weakness | Primary control (defender) | Validation signal |
+|---|---|---|---|
+| Return-address overwrite | No stack protection | Stack canary | No "Canary found" in checksec |
+| Direct shellcode execution | Executable stack | NX/DEP | "NX disabled" / GNU_STACK RWE |
+| Fixed-address gadgets | Non-PIE loading | PIE/ASLR | checksec "No PIE" |
+| GOT overwrite | Writable GOT | Full RELRO | "Partial/No RELRO" |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm exploit mitigations are actually present in the binary — build flags != artifact
+checksec --file=./target 2>/dev/null || readelf -lW ./target | grep -E "GNU_STACK|GNU_RELRO"
+#   RWE GNU_STACK means NX is absent -> stack-shellcode surface
+# 2) Confirm system ASLR is enabled (mitigation reproducibility)
+cat /proc/sys/kernel/randomize_va_space   # 2 = full ASLR
+```
+
+> Exploit defense starts with *whether the mitigation is truly baked into the binary* -- "we passed hardening flags" differs from "NX, canary, and PIE are in the artifact". Confirm directly with checksec/readelf on owned binaries ([[09_Exploit_Techniques]], [[03_System_Hacking]], [[65_Reverse_Engineering_Advanced]]).

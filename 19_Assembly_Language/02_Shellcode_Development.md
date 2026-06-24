@@ -865,6 +865,34 @@ shellcode = (
 
 ---
 
+<!-- detect-validate-19 -->
+## 셸코드 탐지와 방어 검증
+
+셸코드 공격은 *실행 가능 메모리·시그니처 회피·아웃바운드 연결*을 노린다. 방어자는 **W^X·이그레스 필터가 실제로 막는가**와 **RWX 매핑·execve/mprotect 행위가 탐지되는가**를 검증해야 한다. 실습은 **소유 호스트**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| execve("/bin/sh") 셸코드 | 실행 가능 메모리 | W^X·NX | RWX 매핑·execve syscall 패턴 |
+| Bad-byte 인코더/디코더 | 시그니처 회피 | 행위 기반 탐지 | 자기수정·디코더 스텁 |
+| 스테이저/소켓 셸코드 | 아웃바운드 미차단 | 이그레스 필터 | 비정상 connect→execve 시퀀스 |
+| C 삽입 RWX 테스트 | mprotect RWX | 페이지 권한 감시 | mprotect(...,PROT_EXEC) 호출 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 프로세스에 RWX 메모리 매핑이 있는지 — 셸코드/JIT 스프레이 신호(소유 호스트)
+grep -E 'rwxp' /proc/<PID>/maps && echo "RWX 매핑 — W^X 위반, 셸코드 표면"
+# 2) execve/mprotect 호출을 추적해 셸코드 실행 행위 관찰
+strace -f -e trace=execve,mprotect ./target 2>&1 | grep -E "execve|PROT_EXEC"
+#   PROT_EXEC 로 권한 변경 후 점프하면 전형적 셸코드 실행 패턴
+```
+
+> 셸코드 방어는 *실행 가능 메모리가 통제되는가*에 달려 있다 — "NX 쓴다"와 "RWX 매핑·execve 행위가 탐지·차단된다"는 다르다. 소유 호스트에서 /proc maps 와 strace 로 직접 관찰한다([[06_Malware_Analysis]], [[09_Exploit_Techniques]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Shellcode Development
@@ -1031,3 +1059,30 @@ shellcode = (
     b"\x0f\x05"                # syscall (setuid(0))
     # ... append execve shellcode after this
 )
+```
+
+<!-- detect-validate-19 -->
+## Shellcode Detection and Defense Validation
+
+Shellcode attacks target *executable memory, signature evasion, and outbound connections*. Defenders must verify **whether W^X and egress filters actually block** and **whether RWX mappings and execve/mprotect behavior are detected**. Practice only on **owned hosts**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| execve("/bin/sh") shellcode | Executable memory | W^X / NX | RWX mapping / execve syscall pattern |
+| Bad-byte encoder/decoder | Signature evasion | Behavior-based detection | Self-modifying / decoder stub |
+| Stager/socket shellcode | Unblocked outbound | Egress filter | Abnormal connect->execve sequence |
+| C-embedded RWX test | mprotect RWX | Page-permission monitoring | mprotect(...,PROT_EXEC) call |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check for RWX memory mappings in a process — shellcode/JIT-spray signal (own host)
+grep -E 'rwxp' /proc/<PID>/maps && echo "RWX mapping -- W^X violation, shellcode surface"
+# 2) Trace execve/mprotect calls to observe shellcode-execution behavior
+strace -f -e trace=execve,mprotect ./target 2>&1 | grep -E "execve|PROT_EXEC"
+#   Changing perms to PROT_EXEC then jumping is the classic shellcode pattern
+```
+
+> Shellcode defense depends on *whether executable memory is controlled* -- "we use NX" differs from "RWX mappings and execve behavior are detected and blocked". Observe directly with /proc maps and strace on owned hosts ([[06_Malware_Analysis]], [[09_Exploit_Techniques]], [[13_SOC_Blue_Team]]).

@@ -1182,6 +1182,34 @@ one_gadget /lib/x86_64-linux-gnu/libc.so.6
 
 ---
 
+<!-- detect-validate-19 -->
+## ROP 공격 탐지와 방어 검증
+
+ROP 공격은 *스택 보호 부재·알려진 주소·정적 가젯·주소 누출*을 노린다. 방어자는 **카나리·NX·PIE 가 가젯 표면을 줄이는가**와 **익스플로잇이 완화 토글에 따라 재현 가능한가**를 검증해야 한다. 검증은 **통제 환경**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 반환 주소 덮기→ROP | 스택 보호 부재 | 카나리·NX·CFI | 비정상 ret 제어 흐름 |
+| ret2libc | 알려진 libc 주소 | ASLR·PIE | libc 함수로의 직접 ret |
+| 가젯 체인 | 정적 가젯 | PIE·가젯 축소 | 짧은 시퀀스 ret 폭주 |
+| ASLR 우회(누설) | 주소 누출 | 누출 차단·재랜덤화 | 정보 누출 직후 익스플로잇 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 완화가 실제 적용됐는지 + 가젯 표면 측정(소유 바이너리)
+checksec --file=./target 2>/dev/null; ROPgadget --binary ./target | tail -1
+#   "Unique gadgets" 가 많을수록 ROP 표면 큼; NX 없으면 셸코드가 더 쉽다
+# 2) ASLR 토글로 익스플로잇 재현성 검증(통제 환경 전용)
+echo 0 | sudo tee /proc/sys/kernel/randomize_va_space   # 재현용; 검증 후 2 로 복구
+```
+
+> ROP 방어 검증의 핵심은 *완화가 표면을 실제로 줄이는가*다 — "NX/ASLR 켰다"와 "가젯 표면이 작고 익스플로잇이 재현되지 않는다"는 다르다. 통제 환경에서 checksec·ROPgadget·ASLR 토글로 직접 측정한다([[09_Exploit_Techniques]], [[21_Windows_Exploitation]], [[03_System_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # ROP (Return-Oriented Programming) Chain Construction
@@ -2221,3 +2249,29 @@ checksec --file=./safe_binary
 | libc version mismatch | Symbol offsets differ | Use libc-database or libc.rip to identify version |
 | `recvline()` blocks | No newline in output | Switch to `recv(timeout=N)` |
 | Gadget not found in binary | Gadget absent | Search libc or other loaded libraries |
+
+<!-- detect-validate-19 -->
+## ROP Attack Detection and Defense Validation
+
+ROP attacks target *missing stack protection, known addresses, static gadgets, and address leaks*. Defenders must verify **whether canary/NX/PIE shrink the gadget surface** and **whether the exploit reproduces under mitigation toggles**. Validate only in **controlled environments**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Return-address overwrite -> ROP | No stack protection | Canary/NX/CFI | Abnormal ret control flow |
+| ret2libc | Known libc address | ASLR/PIE | Direct ret into libc function |
+| Gadget chain | Static gadgets | PIE, gadget reduction | Burst of short-sequence rets |
+| ASLR bypass (leak) | Address leak | Leak blocking, re-randomization | Exploit right after info leak |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm mitigations are present + measure gadget surface (own binary)
+checksec --file=./target 2>/dev/null; ROPgadget --binary ./target | tail -1
+#   More "Unique gadgets" = larger ROP surface; without NX, shellcode is even easier
+# 2) Toggle ASLR to validate exploit reproducibility (controlled environment only)
+echo 0 | sudo tee /proc/sys/kernel/randomize_va_space   # for repro; restore to 2 after
+```
+
+> The core of ROP defense validation is *whether mitigations actually shrink the surface* -- "we enabled NX/ASLR" differs from "the gadget surface is small and the exploit does not reproduce". Measure directly with checksec, ROPgadget, and ASLR toggling in controlled environments ([[09_Exploit_Techniques]], [[21_Windows_Exploitation]], [[03_System_Hacking]]).

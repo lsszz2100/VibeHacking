@@ -1069,6 +1069,35 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-19 -->
+## 안티분석 탐지와 분석 검증
+
+디스어셈블 분석은 *코드가 분석가를 어떻게 속이는가*를 다룬다(안티디스어셈블·동적 해석·자기수정·패킹). 분석가는 **도구 간 결과가 일치하는가**와 **정적 결론이 동적으로 재현되는가**를 교차 검증해야 한다. 검증은 **소유·격리 환경**에서만.
+
+### 기만 기법 → 노리는 분석 단계 → 분석자 대응 → 관찰 신호
+
+| 기만 기법 | 노리는 분석 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 안티디스어셈블(junk byte) | 선형 디스어셈블 | 재귀 디스어셈블·교차검증 | objdump↔r2 명령 수 불일치 |
+| 동적 API 해석 | 정적 IAT 분석 | 동적 추적·후킹 | 런타임에 해석된 호출 |
+| 자기수정 코드 | 정적 디스어셈블 | 에뮬레이션(Unicorn) | 쓰기 후 실행 구간 |
+| 패킹/압축 | 정적 분석 | 언패킹·엔트로피 측정 | 섹션 고엔트로피 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 두 디스어셈블러 결과를 교차 검증 — 안티디스어셈블 시 명령 수가 어긋난다
+objdump -d ./bin | grep -cE '^[[:space:]]+[0-9a-f]+:'
+r2 -q -c 'aa; pdf @ main' ./bin 2>/dev/null | grep -c '0x'
+#   두 수가 크게 다르면 선형/재귀 해석 차이 → 난독화 의심
+# 2) 섹션 엔트로피로 패킹 의심 식별(고엔트로피 = 압축/암호화 가능성)
+python3 -c "import math;d=open('bin','rb').read();print('entropy',round(-sum((d.count(b)/len(d))*math.log2(d.count(b)/len(d)) for b in set(d)),2))"
+```
+
+> 디스어셈블 검증의 핵심은 *하나의 도구를 믿지 않는 것*이다 — "IDA 가 이렇게 본다"와 "objdump·r2·동적 추적이 같은 결론을 준다"는 다르다. 소유·격리 환경에서 도구 간·정적/동적 교차로 확인한다([[04_Reverse_Engineering]], [[65_Reverse_Engineering_Advanced]], [[06_Malware_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # Disassembly Analysis
@@ -1252,3 +1281,30 @@ if __name__ == "__main__":
     result = analyze_binary(sys.argv[1])
     print(json.dumps(result, indent=2))
 ```
+
+<!-- detect-validate-19 -->
+## Anti-Analysis Detection and Analysis Validation
+
+Disassembly analysis deals with *how code deceives the analyst* (anti-disassembly, dynamic resolution, self-modification, packing). The analyst must cross-validate **whether tools agree** and **whether static conclusions reproduce dynamically**. Validate only in **owned/isolated environments**.
+
+### Deception -> Targeted analysis stage -> Analyst response -> Observable signal
+
+| Deception | Targeted analysis stage | Analyst response | Observable signal |
+|---|---|---|---|
+| Anti-disassembly (junk byte) | Linear disassembly | Recursive disasm, cross-check | objdump vs r2 instruction-count mismatch |
+| Dynamic API resolution | Static IAT analysis | Dynamic trace, hooking | Calls resolved at runtime |
+| Self-modifying code | Static disassembly | Emulation (Unicorn) | Write-then-execute region |
+| Packing/compression | Static analysis | Unpacking, entropy measure | High section entropy |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Cross-validate two disassemblers — anti-disassembly skews the instruction counts
+objdump -d ./bin | grep -cE '^[[:space:]]+[0-9a-f]+:'
+r2 -q -c 'aa; pdf @ main' ./bin 2>/dev/null | grep -c '0x'
+#   A large gap means linear vs recursive interpretation differs -> suspect obfuscation
+# 2) Flag suspected packing via section entropy (high entropy = compression/encryption)
+python3 -c "import math;d=open('bin','rb').read();print('entropy',round(-sum((d.count(b)/len(d))*math.log2(d.count(b)/len(d)) for b in set(d)),2))"
+```
+
+> The core of disassembly validation is *not trusting a single tool* -- "IDA shows this" differs from "objdump, r2, and a dynamic trace give the same conclusion". Confirm via tool-to-tool and static/dynamic cross-checks in owned/isolated environments ([[04_Reverse_Engineering]], [[65_Reverse_Engineering_Advanced]], [[06_Malware_Analysis]]).

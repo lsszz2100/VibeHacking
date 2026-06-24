@@ -460,6 +460,37 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-19 -->
+## 셸코드 탐지 검증과 회귀
+
+이 섹션은 이미 셸코드 *탐지*를 다루므로, 검증의 초점은 **탐지기가 변종을 잡으면서 굿웨어 오탐을 내지 않는가**다. 정적 시그니처·에뮬레이션·syscall 추출을 라벨된 코퍼스로 회귀 테스트해야 한다. 검증은 **소유·격리 환경**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 정적 시그니처 | 인코딩 변종도 잡는가 | 변형 셸코드 탐지율 | 굿웨어 오탐(FP) |
+| 에뮬레이션(Unicorn) | 디코더 스텁을 풀어내는가 | 에뮬 후 syscall 식별 | 자기수정 미처리 |
+| NOP-sled 탐지 | sled 변형도 잡는가 | 다양 sled 바이트 탐지 | 단일 0x90 가정 |
+| syscall 추출 | 실제 행위를 식별하는가 | 추출된 execve/connect | 정적만, 동적 행위 누락 |
+
+### 방어 검증 (직접 확인)
+
+```python
+# 셸코드 탐지기를 알려진 셸코드 + 굿웨어로 회귀 검증 — 탐지율과 오탐을 동시 측정
+import pathlib
+
+samples = {"known_shellcode.bin": True, "goodware_blob.bin": False}  # 라벨된 코퍼스
+for name, is_mal in samples.items():
+    flagged = detect(pathlib.Path(name).read_bytes())  # 사용자 정의 탐지 함수
+    tag = "TP" if (flagged and is_mal) else "FP" if flagged else "FN" if is_mal else "TN"
+    print(f"{name}: flagged={flagged} -> {tag}")  # FP/FN 0 을 목표로 시그니처 조정
+```
+
+> 탐지 검증은 *잡는가*만이 아니라 *오탐 없이 잡는가*다 — "룰 추가했다"와 "변종을 잡고 굿웨어를 통과시킨다"는 다르다. 소유·격리 환경에서 라벨된 코퍼스로 TP/FP/FN 을 측정하고 회귀를 막는다([[06_Malware_Analysis]], [[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Shellcode Analysis and Detection — Static/Dynamic Analysis and Signature Generation
@@ -843,3 +874,32 @@ if __name__ == "__main__":
 | `\xff\xe4` | jmp rsp | Stack pivot |
 | Entropy > 7.5 | Encryption/encoding | High entropy |
 | No nulls | Null-free shellcode | Network payload |
+
+<!-- detect-validate-19 -->
+## Shellcode Detection Validation and Regression
+
+This section already covers shellcode *detection*, so the validation focus is **whether the detector catches variants without false positives on goodware**. Regression-test static signatures, emulation, and syscall extraction against a labeled corpus. Validate only in **owned/isolated environments**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Static signature | Catches encoded variants too | mutated-shellcode detection rate | goodware false positive (FP) |
+| Emulation (Unicorn) | Unrolls the decoder stub | syscalls identified after emulation | self-modification unhandled |
+| NOP-sled detection | Catches sled variants | varied sled-byte detection | assumes single 0x90 |
+| syscall extraction | Identifies real behavior | extracted execve/connect | static only, misses dynamic behavior |
+
+### Defense validation (verify directly)
+
+```python
+# Regress the shellcode detector on known shellcode + goodware -- measure rate and FP together
+import pathlib
+
+samples = {"known_shellcode.bin": True, "goodware_blob.bin": False}  # labeled corpus
+for name, is_mal in samples.items():
+    flagged = detect(pathlib.Path(name).read_bytes())  # user-defined detection function
+    tag = "TP" if (flagged and is_mal) else "FP" if flagged else "FN" if is_mal else "TN"
+    print(f"{name}: flagged={flagged} -> {tag}")  # tune signatures toward zero FP/FN
+```
+
+> Detection validation is not only *does it catch* but *does it catch without false positives* -- "we added a rule" differs from "it catches variants and lets goodware through". Measure TP/FP/FN on a labeled corpus in owned/isolated environments and prevent regressions ([[06_Malware_Analysis]], [[13_SOC_Blue_Team]], [[68_Purple_Team]]).
