@@ -1033,6 +1033,33 @@ MSTG 체크리스트 (Android)
 
 ---
 
+<!-- detect-validate-28 -->
+## 모바일 앱 보안 테스트 작동 검증과 회귀
+
+보안 테스트는 *돌렸다*가 아니라 *취약을 실제로 잡고 오탐을 거르는가*로 가치가 갈린다. 방어자는 **자동 분석·런타임 후킹·API 감사가 발화·재현되는가**를 검증해야 한다. 검증은 **소유 앱**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 정적 분석(MobSF) | 취약에 발화하나? | 검출 vs 알려진 결함 | 룰 미갱신 |
+| 런타임 후킹 | 핀/루팅탐지 우회되나? | 후킹 성공률 | 후킹 미동작 무시 |
+| API 감사 | IDOR/인증결함 잡나? | 401/403 일관성 | 토큰 무효화 미확인 |
+| 회귀 | 재빌드 후 재발 안 하나? | 재테스트 통과율 | 이전 결과 신뢰 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 앱 정적 분석 발화 확인(MobSF, 소유 앱) — 알려진 결함을 잡는지
+curl -s -F "file=@app.apk" -H "Authorization: $MOBSF_KEY" http://localhost:8000/api/v1/upload 2>/dev/null | head
+# 2) API IDOR 검증 — 소유 계정 토큰으로 타 계정 객체 접근 시 403이어야 함
+curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer TOKEN_A" https://api.example.com/users/USER_B/data
+```
+
+> 보안 테스트 검증은 *돌렸는가*가 아니라 *잡고 재현되는가*다 — "MobSF 돌렸다"와 "알려진 결함에 발화하고 IDOR이 403으로 막히며 재빌드 후에도 재현된다"는 다르다. 소유 앱에서 발화·IDOR 응답코드를 직접 확인한다([[52_API_Security]], [[12_Bug_Bounty]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Mobile App Security Testing — Automated Analysis, Runtime Hooking, API Auditing
@@ -1799,3 +1826,28 @@ if __name__ == "__main__":
 - **Improper session handling**: Token reuse, inadequate logout
 - **Hardcoded secrets**: API keys, private keys embedded in APK code
 - **Exported components**: Activities/Services accessible without authentication
+
+<!-- detect-validate-28 -->
+## Mobile App Security Testing Effectiveness Validation and Regression
+
+Security testing's value comes not from *whether it ran* but from *whether it actually catches vulnerabilities and filters false positives*. Defenders must verify **whether automated analysis, runtime hooking, and API auditing fire and reproduce**. Validate only on **owned apps**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Static analysis (MobSF) | Does it fire on vulns? | Detections vs known flaws | Stale rules |
+| Runtime hooking | Are pinning/root checks bypassable? | Hook success rate | Ignoring non-working hooks |
+| API auditing | Does it catch IDOR/auth flaws? | 401/403 consistency | Unverified token revocation |
+| Regression | No recurrence after rebuild? | Retest pass rate | Trusting prior results |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm your app's static analysis fires (MobSF, owned app) — does it catch known flaws
+curl -s -F "file=@app.apk" -H "Authorization: $MOBSF_KEY" http://localhost:8000/api/v1/upload 2>/dev/null | head
+# 2) API IDOR check — accessing another account's object with your token must return 403
+curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer TOKEN_A" https://api.example.com/users/USER_B/data
+```
+
+> Security-testing validation is *whether it catches and reproduces*, not *whether it ran* -- "we ran MobSF" differs from "it fires on known flaws, IDOR is blocked with 403, and it reproduces after rebuild". Confirm firing and IDOR response codes on owned apps directly ([[52_API_Security]], [[12_Bug_Bounty]], [[13_SOC_Blue_Team]]).

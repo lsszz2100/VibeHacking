@@ -1191,6 +1191,33 @@ adb shell chmod 644 /system/etc/security/cacerts/${HASH}.0
 
 ---
 
+<!-- detect-validate-28 -->
+## 모바일 트래픽 검증 (암호화·핀·노출)
+
+모바일 트래픽은 *비-TLS 엔드포인트·핀 우회·URL 파라미터 누출·서드파티 SDK 유출*에서 샌다. 방어자는 **자체 앱 트래픽이 암호화·핀되고 민감정보가 안 새는가**를 검증해야 한다. 검증은 **소유 디바이스/앱**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| TLS 적용 | 평문이 흐르나? | 비-TLS 연결 수 | 일부 엔드포인트 예외 |
+| 인증서 핀 | MITM이 차단되나? | 프록시 가로채기 실패 | Frida로 핀 우회 |
+| 민감정보 노출 | 토큰/PII 평문인가? | 페이로드 grep 일치 | URL 파라미터 누출 |
+| 서드파티 SDK | 외부로 새나? | 예상외 목적지 | 트래커 도메인 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 앱 트래픽 평문/민감정보 노출 점검(소유 디바이스 프록시) — 비-TLS 표면
+sudo tshark -i any -Y "http.request || http.authorization" -a duration:20 2>/dev/null | head
+# 2) 연결 목적지 분포 — 예상외 서드파티/트래커 도메인
+ss -tnp 2>/dev/null | grep ESTAB | awk '{print $5}' | sort | uniq -c | sort -rn | head
+```
+
+> 트래픽 검증은 *돌았는가*가 아니라 *암호화·핀되고 안 새는가*다 — "HTTPS 쓴다"와 "모든 엔드포인트가 TLS이고 핀 우회·평문 토큰이 없다"는 다르다. 소유 디바이스에서 비-TLS·목적지를 직접 확인한다([[02_Network_Hacking]], [[52_API_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Mobile Traffic Analysis
@@ -1220,3 +1247,28 @@ adb shell chmod 644 /system/etc/security/cacerts/${HASH}.0
 - **mitmproxy**: Scriptable Python-based proxy for automated analysis
 - **Certificate transparency**: Monitor CT logs for certificate issuance
 - **API fuzzing**: Test REST/GraphQL endpoints for authorization issues
+
+<!-- detect-validate-28 -->
+## Mobile Traffic Validation (Encryption, Pinning, Exposure)
+
+Mobile traffic leaks via *non-TLS endpoints, pin bypass, URL-parameter leakage, and third-party SDK exfiltration*. Defenders must verify **whether their app traffic is encrypted/pinned and sensitive data doesn't leak**. Validate only on **owned devices/apps**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| TLS coverage | Does plaintext flow? | Non-TLS connection count | Some endpoints excepted |
+| Cert pinning | Is MITM blocked? | Proxy interception fails | Pin bypass via Frida |
+| Sensitive exposure | Tokens/PII in plaintext? | Payload grep matches | URL-parameter leakage |
+| Third-party SDK | Does it exfiltrate? | Unexpected destinations | Tracker domains |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check app traffic for plaintext/sensitive exposure (owned device proxy) — non-TLS surface
+sudo tshark -i any -Y "http.request || http.authorization" -a duration:20 2>/dev/null | head
+# 2) Connection-destination distribution — unexpected third-party/tracker domains
+ss -tnp 2>/dev/null | grep ESTAB | awk '{print $5}' | sort | uniq -c | sort -rn | head
+```
+
+> Traffic validation is *whether it's encrypted/pinned and leak-free*, not *whether it ran* -- "we use HTTPS" differs from "every endpoint is TLS with no pin bypass or plaintext tokens". Confirm non-TLS flows and destinations on owned devices directly ([[02_Network_Hacking]], [[52_API_Security]], [[13_SOC_Blue_Team]]).
