@@ -523,6 +523,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-33 -->
+## OSINT 방어·대항 인텔 작동 검증과 회귀
+
+OSINT 방어는 *조치했다*가 아니라 *발자국이 실제로 줄고 정찰이 탐지되는가*로 가치가 갈린다. 방어자는 **노출 최소화·인식·탐지가 회귀 없이 동작하는가**를 검증해야 한다. 검증은 **소유 자산**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 발자국 최소화 | 노출이 실제 줄었나? | 공개 노출 항목 추세 | 캐시/아카이브 잔존 |
+| 메타데이터 제거 | 문서가 깨끗한가? | 메타 검출 0 | 일부 문서 누락 |
+| 인식 훈련 | 보고율이 오르나? | 보고/클릭 추세 | 일회성 측정 |
+| 정찰 탐지 | 도킹/스캔을 잡나? | 도킹 알림 | 외부 정찰 불가시성 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 발자국 회귀 — 이전 대비 공개 노출 항목이 줄었는지(소유 도메인, crt.sh 추세)
+curl -s "https://crt.sh/?q=%25.example.com&output=json" 2>/dev/null | jq -r '.[].name_value' | sort -u | wc -l
+# 2) 문서 메타데이터 잔존 점검(소유 배포본) — 메타가 남아 있으면 회귀
+exiftool -Author -Creator -GPSPosition published/*.pdf 2>/dev/null | grep -iE "author|creator|gps" | head
+```
+
+> OSINT 방어 검증은 *조치했는가*가 아니라 *발자국이 줄고 정찰이 보이는가*다 — "노출 줄였다"와 "공개 항목 수가 추세로 감소하고 배포 문서에 메타가 안 남는다"는 다르다. 소유 도메인·문서에서 노출 추세·메타 잔존을 직접 확인한다([[25_Threat_Intelligence]], [[10_Pentest_Methodology]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # OSINT Defense and Counter-Intelligence — Digital Footprint Reduction, Social Engineering Awareness, Phishing Defense
@@ -570,3 +597,28 @@ python3 phishing_score.py --click-rate 0.15 --report-rate 0.05 --submit-rate 0.0
 - Have I Been Pwned: https://haveibeenpwned.com/
 - Google DMARC guide: https://support.google.com/a/answer/2466580
 - SANS security awareness: https://www.sans.org/security-awareness-training/
+
+<!-- detect-validate-33 -->
+## OSINT Defense and Counter-Intelligence Effectiveness Validation and Regression
+
+OSINT defense's value comes not from *whether you acted* but from *whether the footprint actually shrinks and recon is detected*. Defenders must verify **whether exposure minimization, awareness, and detection work without regression**. Validate only on **owned assets**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Footprint minimization | Did exposure actually shrink? | Public-exposure item trend | Cache/archive remnants |
+| Metadata stripping | Are documents clean? | Zero metadata detections | Some documents missed |
+| Awareness training | Does report rate rise? | Report/click trend | One-off measurement |
+| Recon detection | Does it catch dorking/scans? | Dorking alerts | External-recon invisibility |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Footprint regression — whether public-exposure items shrank vs before (owned domain, crt.sh trend)
+curl -s "https://crt.sh/?q=%25.example.com&output=json" 2>/dev/null | jq -r '.[].name_value' | sort -u | wc -l
+# 2) Document-metadata remnant check (owned published set) — remaining metadata is a regression
+exiftool -Author -Creator -GPSPosition published/*.pdf 2>/dev/null | grep -iE "author|creator|gps" | head
+```
+
+> OSINT-defense validation is *whether the footprint shrinks and recon is visible*, not *whether you acted* -- "we reduced exposure" differs from "public-item count trends down and published documents carry no metadata". Confirm exposure trend and metadata remnants on owned domains/documents directly ([[25_Threat_Intelligence]], [[10_Pentest_Methodology]], [[13_SOC_Blue_Team]]).

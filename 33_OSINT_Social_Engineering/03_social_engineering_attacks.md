@@ -1124,6 +1124,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-33 -->
+## 사회공학 공격 탐지와 방어 검증
+
+사회공학은 *피싱·비싱·프리텍스팅·긴급성/권위 악용*으로 사람이 통제를 우회하게 만든다. 방어자는 **자체 조직이 사회공학 시도를 거부·보고·탐지하는가**를 검증해야 한다. 검증은 **승인된 인식 훈련**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 피싱(자격증명/첨부) | 시각 신뢰·긴급성 | 메일 필터·인식 훈련 | 보고율·클릭률 |
+| 비싱(전화) | 권위 가장 | 콜백 검증·정책 | 비정상 음성 요청 |
+| 프리텍스팅 | 맥락 신뢰 | 신원 검증 절차 | 우회 시도 보고 |
+| 권위/긴급성 악용 | 인지 편향 | 절차·이중확인 | 정책 외 요청 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 인식 훈련 효과 측정(승인된 피싱 시뮬레이션) — 클릭 vs 보고 집계
+awk -F, 'NR>1{c+=$2; r+=$3} END{print "click:", c, " report:", r}' phishing_sim_results.csv 2>/dev/null
+# 2) 사용자 보고 메일의 사회공학 지표 점검 — 긴급/권위/링크 불일치
+grep -rIaE "urgent|verify your account|password expires|click here" reported_mail/ 2>/dev/null | head
+```
+
+> 사회공학 방어는 *사람이 시도를 거부·보고하는가*다 — "교육했다"와 "시뮬레이션 보고율이 오르고 클릭률이 떨어진다"는 다르다. 승인된 훈련에서 클릭/보고 추세를 직접 확인한다([[17_Red_Team_Operations]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 33-03. Social Engineering Attack Techniques — Design and Measurement of Phishing, Vishing, and Pretexting
@@ -1602,3 +1629,28 @@ Posting just these three lines can block a significant portion of BEC, helpdesk 
 ---
 
 Finally, a social engineering assessment is **borrowing people's trust to assess trust**. When the assessment ends, targets should feel "the company was trying to educate me, and I can respond better next time" — not "I was stupid." An assessment that fails to achieve this is a failure no matter how impressive the report numbers are.
+
+<!-- detect-validate-33 -->
+## Social Engineering Attack Detection and Defense Validation
+
+Social engineering makes people bypass controls via *phishing, vishing, pretexting, and urgency/authority abuse*. Defenders must verify **whether their org rejects, reports, and detects social-engineering attempts**. Validate only in **authorized awareness training**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Phishing (creds/attachment) | Visual trust, urgency | Mail filter, awareness training | Report rate, click rate |
+| Vishing (phone) | Authority impersonation | Callback verification, policy | Abnormal voice requests |
+| Pretexting | Contextual trust | Identity-verification procedure | Bypass-attempt reports |
+| Authority/urgency abuse | Cognitive bias | Procedure, double-check | Off-policy requests |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Measure awareness-training effect (authorized phishing simulation) — tally click vs report
+awk -F, 'NR>1{c+=$2; r+=$3} END{print "click:", c, " report:", r}' phishing_sim_results.csv 2>/dev/null
+# 2) Check social-engineering indicators in user-reported mail — urgency/authority/link mismatch
+grep -rIaE "urgent|verify your account|password expires|click here" reported_mail/ 2>/dev/null | head
+```
+
+> Social-engineering defense is *whether people reject and report attempts* -- "we trained them" differs from "simulation report rate rises and click rate falls". Confirm click/report trends in authorized training directly ([[17_Red_Team_Operations]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).

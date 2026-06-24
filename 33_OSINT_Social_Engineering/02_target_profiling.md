@@ -726,6 +726,33 @@ jobs:
 
 ---
 
+<!-- detect-validate-33 -->
+## 타깃 프로파일링 탐지와 노출 방어 검증
+
+프로파일링은 *직원 명단·이메일 패턴·기술 스택·소셜 노출*로 도메인 하나에서 사람·인프라로 확장한다. 방어자는 **자체 조직의 프로파일 가능 표면이 통제되는가**를 검증해야 한다. 검증은 **소유 자산/공개 출처**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 이메일 패턴 수집 | 예측 가능 형식 | 별칭·노출 최소 | 패턴 추정 성공 |
+| 직원/소셜 노출 | 과다 공개 | 프라이버시 정책·인식 | 역할/연락처 노출 |
+| 기술 스택 핑거프린팅 | 노출 헤더/배너 | 배너 최소화 | 버전 노출 |
+| 유출 자격증명 연계 | 재사용 | HIBP·강제 변경 | 유출셋 일치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 도메인 이메일/직원 노출 점검(소유 도메인, theHarvester) — 공개 표면
+theHarvester -d example.com -b bing -l 100 2>/dev/null | grep -iE "@example.com" | head
+# 2) 노출 기술 스택 핑거프린트 — 헤더/배너 버전 노출
+curl -sI https://example.com 2>/dev/null | grep -iE "server|x-powered-by|x-aspnet"
+```
+
+> 프로파일링 방어는 *프로파일 표면이 좁은가*다 — "웹 있다"와 "이메일 패턴이 노출 안 되고 기술 스택 버전이 안 새며 유출 자격증명이 없다"는 다르다. 소유 도메인에서 공개 이메일·배너 노출을 직접 확인한다([[10_Pentest_Methodology]], [[22_Password_Cracking]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 33-02. Target Profiling — Expanding from a Single Domain to People and Full Infrastructure
@@ -758,3 +785,28 @@ In the previous document (33-01), we covered the big picture of OSINT and its le
 The end of reconnaissance is not the beginning of penetration but the beginning of **"hypotheses"**. The more accurate the hypothesis, the less noise in the next stage, the less noise the fewer traces left on the target system, and the fewer the traces the higher the realism of the penetration test.
 
 — End of 33-02.
+
+<!-- detect-validate-33 -->
+## Target Profiling Detection and Exposure Defense Validation
+
+Profiling expands from one domain to people and infrastructure via *employee rosters, email patterns, tech-stack, and social exposure*. Defenders must verify **whether their org's profilable surface is controlled**. Validate only on **owned assets/public sources**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Email-pattern harvesting | Predictable format | Aliases, minimize exposure | Pattern inference succeeds |
+| Employee/social exposure | Over-sharing | Privacy policy, awareness | Role/contact exposed |
+| Tech-stack fingerprinting | Exposed headers/banners | Minimize banners | Version exposed |
+| Leaked-credential linkage | Reuse | HIBP, forced reset | Match against breach sets |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check your domain's email/employee exposure (owned domain, theHarvester) — public surface
+theHarvester -d example.com -b bing -l 100 2>/dev/null | grep -iE "@example.com" | head
+# 2) Fingerprint exposed tech stack — header/banner version exposure
+curl -sI https://example.com 2>/dev/null | grep -iE "server|x-powered-by|x-aspnet"
+```
+
+> Profiling defense is *whether the profilable surface is narrow* -- "we have a website" differs from "email patterns aren't exposed, stack versions don't leak, and there are no leaked credentials". Confirm public email and banner exposure on owned domains directly ([[10_Pentest_Methodology]], [[22_Password_Cracking]], [[13_SOC_Blue_Team]]).

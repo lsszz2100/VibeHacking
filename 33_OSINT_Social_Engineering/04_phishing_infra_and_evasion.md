@@ -843,6 +843,33 @@ tags:
 
 ---
 
+<!-- detect-validate-33 -->
+## 피싱 인프라·우회 탐지와 방어 검증
+
+피싱 인프라는 *MFA 우회(AiTM)·정상값 메일 헤더·신규 도메인·로깅 격차*로 탐지를 피한다. 방어자는 **자체 방어가 AiTM·룩어라이크 도메인을 탐지하는가**를 검증해야 한다. 검증은 **소유 도메인/메일**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| AiTM/리버스 프록시 | OTP 가로채기 | FIDO2·디바이스 바인딩 | 비정상 토큰 재사용 |
+| 룩어라이크/동형 도메인 | 시각 신뢰 | 등록 모니터·차단 | 유사 도메인 등록 |
+| 메일 정상값(SPF 통과) | 신뢰 도메인 악용 | DMARC·발신 평판 | 신규 도메인 대량 발송 |
+| 로깅 격차 | 가시성 부재 | 메일/프록시 로깅 | 클릭 후 인증 흐름 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 룩어라이크 도메인 등록 점검(소유 브랜드, dnstwist) — 동형/유사 도메인 표면
+dnstwist --registered example.com 2>/dev/null | head
+# 2) 신규/저평판 발신 도메인 탐지(소유 메일 로그) — 한 도메인서 대량 발송
+grep -oE "@[a-z0-9.-]+" /var/log/mail.log 2>/dev/null | sort | uniq -c | sort -rn | head
+```
+
+> 피싱 인프라 방어는 *AiTM·룩어라이크가 탐지되는가*다 — "MFA 있다"와 "AiTM 토큰 재사용이 잡히고 룩어라이크 도메인 등록이 모니터된다"는 다르다. 소유 브랜드·메일 로그에서 유사 도메인·발송 패턴을 직접 확인한다([[17_Red_Team_Operations]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 33-04. Phishing Infrastructure and Detection Evasion — MFA Bypass, Mail Legitimacy, Logging Gaps
@@ -881,3 +908,28 @@ All techniques in this document apply only under the following conditions:
 ---
 
 *This document is synthetic material for educational use. Real-world application is only performed in isolated environments with explicit authorization.*
+
+<!-- detect-validate-33 -->
+## Phishing Infrastructure and Evasion Detection and Defense Validation
+
+Phishing infra evades detection via *MFA bypass (AiTM), legitimate-looking mail headers, fresh domains, and logging gaps*. Defenders must verify **whether their defenses detect AiTM and look-alike domains**. Validate only on **owned domains/mail**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| AiTM/reverse proxy | OTP interception | FIDO2, device binding | Abnormal token reuse |
+| Look-alike/homoglyph domain | Visual trust | Registration monitor, block | Similar-domain registration |
+| Mail legitimacy (SPF pass) | Abuse of trusted domains | DMARC, sender reputation | Fresh-domain bulk sending |
+| Logging gap | Lack of visibility | Mail/proxy logging | Post-click auth flow |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check look-alike domain registration (owned brand, dnstwist) — homoglyph/similar surface
+dnstwist --registered example.com 2>/dev/null | head
+# 2) Detect fresh/low-reputation sender domains (owned mail log) — bulk sending from one domain
+grep -oE "@[a-z0-9.-]+" /var/log/mail.log 2>/dev/null | sort | uniq -c | sort -rn | head
+```
+
+> Phishing-infra defense is *whether AiTM and look-alikes are detected* -- "we have MFA" differs from "AiTM token reuse is caught and look-alike domain registrations are monitored". Confirm similar domains and sending patterns on owned brand/mail logs directly ([[17_Red_Team_Operations]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).

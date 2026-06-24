@@ -890,6 +890,33 @@ export HUNTER_API_KEY="..."
 
 ---
 
+<!-- detect-validate-33 -->
+## OSINT 정찰 탐지와 노출 방어 검증
+
+OSINT 정찰은 *공개 검색·구글 도킹·메타데이터·공개 저장소 누출*로 표적 정보를 모은다. 방어자는 **자체 조직의 공개 노출이 최소이고 정찰이 탐지되는가**를 검증해야 한다. 검증은 **소유 자산/공개 출처**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 구글 도킹 | 인덱싱된 민감 파일 | robots·노출 제거 | site: 도킹 히트 |
+| 메타데이터 누출 | 문서 EXIF/작성자 | 메타 제거 | 문서 메타 노출 |
+| 공개 저장소 누출 | 커밋된 시크릿 | 시크릿 스캔·회수 | 공개 repo 시크릿 |
+| 인증서/서브도메인 | CT 로그 노출 | 자산 인벤토리 | 의도외 서브도메인 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 조직의 공개 노출 점검(소유 도메인) — CT 로그로 서브도메인 표면
+curl -s "https://crt.sh/?q=%25.example.com&output=json" 2>/dev/null | jq -r '.[].name_value' | sort -u | head
+# 2) 문서 메타데이터 누출 점검(소유 문서) — 작성자/소프트웨어/경로
+exiftool -Author -Creator -Software public_doc.pdf 2>/dev/null | head
+```
+
+> OSINT 방어는 *노출이 최소이고 정찰이 보이는가*다 — "공개 사이트 있다"와 "CT에 의도외 서브도메인이 없고 문서 메타가 제거됐다"는 다르다. 소유 도메인·문서에서 노출 표면을 직접 확인한다([[10_Pentest_Methodology]], [[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 33-01. OSINT Methodology and Advanced Search — Turning Public Information into Targeted Reconnaissance
@@ -1365,3 +1392,28 @@ export HUNTER_API_KEY="..."
 ---
 
 When this document is complete, 90% of the target's external appearance is in hand. In 33-02, we fill that appearance with people.
+
+<!-- detect-validate-33 -->
+## OSINT Recon Detection and Exposure Defense Validation
+
+OSINT recon gathers target info via *public search, Google dorking, metadata, and public-repo leakage*. Defenders must verify **whether their org's public exposure is minimal and recon is detected**. Validate only on **owned assets/public sources**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Google dorking | Indexed sensitive files | robots, remove exposure | site: dork hits |
+| Metadata leakage | Document EXIF/author | Strip metadata | Document metadata exposed |
+| Public-repo leakage | Committed secrets | Secret scan, revoke | Secret in public repo |
+| Cert/subdomain | CT-log exposure | Asset inventory | Unintended subdomains |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check your org's public exposure (owned domain) — CT logs surface subdomains
+curl -s "https://crt.sh/?q=%25.example.com&output=json" 2>/dev/null | jq -r '.[].name_value' | sort -u | head
+# 2) Check document metadata leakage (owned document) — author/software/path
+exiftool -Author -Creator -Software public_doc.pdf 2>/dev/null | head
+```
+
+> OSINT defense is *whether exposure is minimal and recon is visible* -- "we have a public site" differs from "there are no unintended subdomains in CT and document metadata is stripped". Confirm the exposure surface on owned domains/documents directly ([[10_Pentest_Methodology]], [[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).
