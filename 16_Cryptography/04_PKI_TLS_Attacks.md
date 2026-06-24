@@ -503,6 +503,33 @@ server {
 
 ---
 
+<!-- detect-validate-16 -->
+## TLS 구성 약점 탐지와 방어 검증
+
+TLS 공격은 *다운그레이드·약한 cipher·인증서 검증 우회*를 노린다. 방어자는 **구버전·약한 스위트가 협상 가능한가**와 **미인가 인증서 발급이 CT 로그에 드러나는가**를 검증해야 한다. 실습은 **소유 대상**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 프로토콜 다운그레이드(SSLv3/TLS1.0) | 구버전 협상 허용 | TLS1.2+ 강제·FALLBACK_SCSV | 구버전 핸드셰이크 |
+| 약한 cipher(RC4/3DES/EXPORT) | 약한 스위트 허용 | 강한 스위트만 허용 | 약한 cipher 협상 |
+| 인증서 검증 우회·MITM | 신뢰체인 미검증 | 핀닝·HSTS·엄격 검증 | 예상외 발급자·CT 미등재 |
+| 구현 결함(Heartbleed 류) | 패치 누락 | 최신 라이브러리 | 비정상 하트비트·메모리 노출
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 약한 프로토콜/cipher 협상 가능 여부 사실 확인(소유 대상)
+nmap --script ssl-enum-ciphers -p 443 example.com | grep -Ei "TLSv1\.0|SSLv3|RC4|EXPORT|3DES"
+# 2) 인증서 투명성(CT) 로그로 미인가 발급 모니터(소유 도메인)
+curl -s "https://crt.sh/?q=%25.example.com&output=json" | jq -r '.[].issuer_name' | sort -u
+```
+
+> TLS 방어의 출발점은 *서버가 무엇을 받아들이는가*를 사실로 확인하는 것이다 — "강한 설정 했다"와 "약한 스위트·구버전 협상이 실제 거부된다"는 다르다. 소유 대상을 직접 스캔하고 CT 로그로 미인가 발급을 감시한다([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # PKI Infrastructure and TLS/SSL Attacks
@@ -878,3 +905,28 @@ server {
     ssl_session_tickets off;
 }
 ```
+
+<!-- detect-validate-16 -->
+## TLS Configuration Weakness Detection and Defense Validation
+
+TLS attacks target *downgrade, weak ciphers, and certificate-validation bypass*. Defenders must verify **whether old versions/weak suites can be negotiated** and **whether unauthorized certificate issuance shows up in CT logs**. Practice only on **owned targets**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Protocol downgrade (SSLv3/TLS1.0) | Old versions negotiable | Enforce TLS1.2+, FALLBACK_SCSV | Old-version handshake |
+| Weak cipher (RC4/3DES/EXPORT) | Weak suites allowed | Allow strong suites only | Weak cipher negotiated |
+| Cert-validation bypass/MITM | Unverified trust chain | Pinning, HSTS, strict validation | Unexpected issuer / not in CT |
+| Implementation flaw (Heartbleed-class) | Missing patch | Up-to-date libraries | Abnormal heartbeat / memory leak
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm whether weak protocols/ciphers can be negotiated (own target)
+nmap --script ssl-enum-ciphers -p 443 example.com | grep -Ei "TLSv1\.0|SSLv3|RC4|EXPORT|3DES"
+# 2) Monitor unauthorized issuance via Certificate Transparency logs (own domain)
+curl -s "https://crt.sh/?q=%25.example.com&output=json" | jq -r '.[].issuer_name' | sort -u
+```
+
+> TLS defense starts by confirming *what the server accepts* as fact -- "we hardened it" differs from "weak suites and old versions are actually rejected". Scan owned targets directly and watch CT logs for unauthorized issuance ([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[68_Purple_Team]]).

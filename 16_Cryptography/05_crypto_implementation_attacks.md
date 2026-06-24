@@ -423,6 +423,37 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-16 -->
+## 암호 구현 취약점 탐지와 방어 검증
+
+구현 공격은 *오류 오라클·타이밍 차·예측 가능 PRNG·IV 재사용*을 노린다. 방어자는 **AEAD·상수시간 비교·CSPRNG·랜덤 IV 가 실제 코드에 적용됐는가**를 검증해야 한다. 실습은 **소유 코드·시스템**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 패딩 오라클 | 오류 구분 가능 | AEAD(GCM)·일정 응답 | 동일 길이 대량 변조 요청 |
+| 타이밍 사이드채널 | 비교 시간 차 | 상수시간 비교(compare_digest) | 응답시간이 입력과 상관 |
+| 약한 PRNG(MT19937) 상태복구 | 예측 가능 출력 | CSPRNG(secrets) | 예측 가능·연속 토큰 |
+| 논스/IV 재사용 | 고정 IV | 랜덤 IV·카운터 모드 | 동일 IV 반복 |
+
+### 방어 검증 (직접 확인)
+
+```python
+# 토큰 비교에 상수시간 함수를 쓰는지 + 예측 가능 PRNG 미사용 확인(소유 코드)
+import re, pathlib
+
+src = pathlib.Path("app.py").read_text()
+if re.search(r"\brandom\.(random|randint|getrandbits|choice)\b", src):
+    print("경고: 보안 토큰에 예측 가능 PRNG(random) 사용 의심 → secrets 모듈로 교체")
+if "==" in src and "compare_digest" not in src:
+    print("경고: 상수시간 비교(hmac.compare_digest) 미사용 의심 → 타이밍 공격 표면")
+```
+
+> 구현 방어는 *코드가 실제로 무엇을 호출하는가*에 달려 있다 — "안전하게 짰다"와 "AEAD·상수시간 비교·CSPRNG 를 실제로 쓴다"는 다르다. 소유 코드를 정적으로 점검하고 통제 환경에서 패딩/타이밍 PoC 로 회귀를 막는다([[08_Python_Hacking]], [[04_Reverse_Engineering]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Crypto Implementation Attacks — Padding Oracle, Timing Attacks, Weak RNG
@@ -728,3 +759,32 @@ if __name__ == "__main__":
 | MT prediction | State recovery from 624 outputs | Collect outputs | Use secrets module |
 | Seed prediction | Timestamp-based seed | Brute force | os.urandom() |
 | Nonce reuse | CTR/GCM IV duplication | XOR of ciphertexts | Random 12-byte nonce |
+
+<!-- detect-validate-16 -->
+## Cryptographic Implementation Vulnerability Detection and Defense Validation
+
+Implementation attacks target *error oracles, timing differences, predictable PRNGs, and IV reuse*. Defenders must verify **whether AEAD, constant-time comparison, CSPRNG, and random IVs are actually in the code**. Practice only on **owned code/systems**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Padding oracle | Distinguishable errors | AEAD (GCM), constant response | Mass equal-length mutated requests |
+| Timing side channel | Comparison time difference | Constant-time compare (compare_digest) | Response time correlates with input |
+| Weak PRNG (MT19937) state recovery | Predictable output | CSPRNG (secrets) | Predictable/sequential tokens |
+| Nonce/IV reuse | Fixed IV | Random IV, counter mode | Same IV repeated |
+
+### Defense validation (verify directly)
+
+```python
+# Check that token comparison uses a constant-time function + no predictable PRNG (own code)
+import re, pathlib
+
+src = pathlib.Path("app.py").read_text()
+if re.search(r"\brandom\.(random|randint|getrandbits|choice)\b", src):
+    print("Warning: predictable PRNG (random) suspected for security tokens -> switch to secrets")
+if "==" in src and "compare_digest" not in src:
+    print("Warning: constant-time compare (hmac.compare_digest) not used -> timing-attack surface")
+```
+
+> Implementation defense depends on *what the code actually calls* -- "we wrote it safely" differs from "we actually use AEAD, constant-time compare, and CSPRNG". Statically inspect owned code and use padding/timing PoCs in a controlled environment to prevent regressions ([[08_Python_Hacking]], [[04_Reverse_Engineering]], [[68_Purple_Team]]).

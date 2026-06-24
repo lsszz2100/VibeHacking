@@ -805,6 +805,34 @@ MAC/서명:
 
 ---
 
+<!-- detect-validate-16 -->
+## 해시 공격 탐지와 방어 검증
+
+해시 공격은 *충돌 가능·빠른·무솔트 해시*를 노린다. 방어자는 **저장된 해시가 느린 KDF 인가**와 **오프라인 크랙·Pass-the-Hash·Kerberoasting 이 탐지되는가**를 검증해야 한다. 실습은 **소유 시스템·도메인**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| MD5/SHA1 충돌 | 충돌 저항 부재 | SHA-256+, 충돌 저항 해시 | 동일 해시·다른 입력 |
+| 오프라인 패스워드 크랙 | 빠른·무솔트 해시 | bcrypt/argon2 + 솔트 | 유출 해시의 대량 크랙 |
+| Pass-the-Hash(NTLM) | 약한 LM/NTLM | Kerberos, LM 비활성·LAPS | 비정상 NTLM 인증 흐름 |
+| Kerberoasting | 약한 SPN 계정 암호 | 강한 암호·AES, gMSA | RC4(etype 23) TGS 요청 급증  |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 저장 해시가 느린 KDF 인지 확인(소유 시스템) — $2y$=bcrypt, $argon2$, $6$=sha512crypt
+sudo awk -F: '$2!="*"&&$2!="!"{if($2 !~ /^\$(2[aby]|argon2|6)/) print $1": 취약/구식 해시 의심"}' /etc/shadow
+# 2) Kerberoasting 신호 — RC4(0x17) TGS 요청 모니터(소유 도메인, Windows)
+#    Get-WinEvent -FilterHashtable @{LogName='Security';Id=4769} |
+#      Where-Object { $_.Message -match 'Ticket Encryption Type:\s+0x17' }
+```
+
+> 해시 방어의 핵심은 *저장 방식이 오프라인 크랙을 얼마나 늦추는가*다 — "해시한다"와 "느린 KDF + 솔트로 대량 크랙을 무력화한다"는 다르다. 소유 시스템에서 알고리즘을, 소유 도메인에서 4769 RC4 신호를 직접 확인한다([[03_System_Hacking]], [[54_Active_Directory_Attacks]], [[22_Password_Cracking]]).
+
+---
+
 <a name="english"></a>
 
 # Hash Attack Techniques — Complete Guide
@@ -1496,3 +1524,29 @@ Certificates/Signatures:
   □ Use SHA-256 signing algorithm
   □ Reject certificates signed with SHA-1
 ```
+
+<!-- detect-validate-16 -->
+## Hash Attack Detection and Defense Validation
+
+Hash attacks target *collidable, fast, unsalted hashes*. Defenders must verify **whether stored hashes use a slow KDF** and **whether offline cracking, Pass-the-Hash, and Kerberoasting are detected**. Practice only on **owned systems/domains**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| MD5/SHA1 collision | No collision resistance | SHA-256+, collision-resistant hash | Same hash, different input |
+| Offline password crack | Fast/unsalted hash | bcrypt/argon2 + salt | Mass crack of leaked hashes |
+| Pass-the-Hash (NTLM) | Weak LM/NTLM | Kerberos, disable LM, LAPS | Abnormal NTLM auth flow |
+| Kerberoasting | Weak SPN account password | Strong password/AES, gMSA | Surge of RC4 (etype 23) TGS requests  |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm stored hashes use a slow KDF (own system) — $2y$=bcrypt, $argon2$, $6$=sha512crypt
+sudo awk -F: '$2!="*"&&$2!="!"{if($2 !~ /^\$(2[aby]|argon2|6)/) print $1": weak/legacy hash suspected"}' /etc/shadow
+# 2) Kerberoasting signal — monitor RC4 (0x17) TGS requests (own domain, Windows)
+#    Get-WinEvent -FilterHashtable @{LogName='Security';Id=4769} |
+#      Where-Object { $_.Message -match 'Ticket Encryption Type:\s+0x17' }
+```
+
+> Hash defense hinges on *how much the storage scheme slows offline cracking* -- "we hash" differs from "slow KDF + salt defeats mass cracking". Verify the algorithm on owned systems and the 4769 RC4 signal on owned domains ([[03_System_Hacking]], [[54_Active_Directory_Attacks]], [[22_Password_Cracking]]).

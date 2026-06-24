@@ -657,6 +657,37 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-16 -->
+## 응용 암호 공격 탐지와 방어 검증
+
+응용 암호 공격은 *서명 검증 미흡·오류 오라클·논스 결함*을 노린다(JWT alg:none, CBC 패딩 오라클, ECDSA 논스 재사용). 방어자는 **alg 화이트리스트·AEAD·결정적 논스(RFC6979)가 실제 적용됐는가**를 검증해야 한다. 실습은 **소유 서비스**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| JWT alg:none·약한 키 | 서명 검증 미흡 | alg 화이트리스트·강한 비밀 | alg=none·HS256 위조 토큰 |
+| CBC 패딩 오라클 | 오류 메시지 차이 | AEAD(GCM)·일정 응답 | 대량 변형 요청 + 오류 패턴 |
+| ECDSA 논스 재사용 | 결정적/중복 논스 | RFC6979·검증 라이브러리 | 동일 r 값의 두 서명 |
+| 약한 PKI 체인 검증 | 신뢰체인 미검증 | 핀닝·엄격 검증 | 비정상 발급자·자가서명
+
+### 방어 검증 (직접 확인)
+
+```python
+# JWT 헤더 alg 를 점검 — none/약한 대칭키 수용 여부 검증(소유 서비스)
+import base64, json
+
+def check_jwt_alg(token: str) -> None:
+    hdr = json.loads(base64.urlsafe_b64decode(token.split(".")[0] + "=="))
+    if hdr.get("alg") in ("none", "None", ""):
+        raise SystemExit("위험: alg=none 수용 → 서명 우회 가능")
+    print(f"alg={hdr.get('alg')} — 화이트리스트와 대조하고 키 강도 점검")
+```
+
+> 응용 암호 방어는 *검증 로직이 실제로 거부하는가*에 달려 있다 — "검증한다"와 "alg=none·재사용 논스·패딩 오라클을 실제로 막는다"는 다르다. 소유 서비스에 위조 토큰·변형 요청을 보내 거부·로깅을 확인한다([[05_Web_Hacking]], [[52_API_Security]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Applied Cryptography — Real-World Vulnerabilities and Defense
@@ -1188,3 +1219,32 @@ if __name__ == "__main__":
 | XOR repeating key | Hamming distance for key length guess | xortool |
 | JWT alg:none | Modify header + remove signature | jwt_tool |
 | Hash length extension | Recover SHA-256 internal state | hashpump |
+
+<!-- detect-validate-16 -->
+## Applied Cryptography Attack Detection and Defense Validation
+
+Applied-crypto attacks target *weak signature verification, error oracles, and nonce flaws* (JWT alg:none, CBC padding oracle, ECDSA nonce reuse). Defenders must verify **whether alg whitelisting, AEAD, and deterministic nonces (RFC6979) are actually applied**. Practice only on **owned services**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| JWT alg:none/weak key | Weak signature verification | alg whitelist, strong secret | alg=none/HS256 forged token |
+| CBC padding oracle | Error message difference | AEAD (GCM), constant response | Mass mutated requests + error pattern |
+| ECDSA nonce reuse | Deterministic/duplicate nonce | RFC6979, vetted library | Two signatures sharing r |
+| Weak PKI chain validation | Unverified trust chain | Pinning, strict validation | Unexpected issuer/self-signed
+
+### Defense validation (verify directly)
+
+```python
+# Inspect the JWT alg header — check whether none/weak symmetric keys are accepted (own service)
+import base64, json
+
+def check_jwt_alg(token: str) -> None:
+    hdr = json.loads(base64.urlsafe_b64decode(token.split(".")[0] + "=="))
+    if hdr.get("alg") in ("none", "None", ""):
+        raise SystemExit("Danger: alg=none accepted -> signature bypass possible")
+    print(f"alg={hdr.get('alg')} -- compare against whitelist and check key strength")
+```
+
+> Applied-crypto defense depends on *whether the verification logic actually rejects* -- "we verify" differs from "we actually block alg=none, reused nonces, and padding oracles". Send forged tokens/mutated requests to owned services and confirm rejection/logging ([[05_Web_Hacking]], [[52_API_Security]], [[68_Purple_Team]]).

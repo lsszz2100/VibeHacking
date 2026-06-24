@@ -999,6 +999,34 @@ openssl dgst -sha256 file.txt
 
 ---
 
+<!-- detect-validate-16 -->
+## 암호 약점 탐지와 방어 검증
+
+암호 공격은 *약한 알고리즘·잘못된 파라미터·빈약한 난수*를 노린다. 방어자는 **어떤 암호·키 크기·TLS 버전이 실제 가동 중인가**와 **약한 스위트·구식 서명·예측 가능한 토큰이 탐지되는가**를 검증해야 한다. 실습은 **소유·허가된 대상**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 구식 암호 악용(DES/RC4/MD5) | 레거시 알고리즘 | 강한 스위트 강제, 레거시 비활성 | 핸드셰이크/설정의 약한 알고리즘 |
+| RSA 약한 파라미터(작은 e·공통 모듈러스) | 잘못된 키 생성 | 검증 라이브러리·2048+ 키 | 비표준 키 크기·지수 |
+| 약한 난수(예측 가능 시드) | 엔트로피 부족 | CSPRNG(secrets, /dev/urandom) | 반복·예측 가능 토큰 |
+| 평문·약한 TLS 전송 | 전송 보호 미비 | TLS1.2+ 강제·HSTS | 다운그레이드·평문 전송  |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 인증서/키의 알고리즘·키 크기 점검 — 약한 RSA(<2048)·구식 서명 식별
+openssl x509 -in cert.pem -noout -text | grep -E "Public-Key|Signature Algorithm"
+# 2) 서버가 구버전 TLS/약한 cipher 를 받는지 사실 확인(소유 대상)
+openssl s_client -connect example.com:443 -tls1_1 </dev/null 2>&1 | grep -E "Protocol|Cipher"
+#   핸드셰이크가 성립하면 TLS1.1 잔존 → 다운그레이드 표면
+```
+
+> 암호 방어의 출발점은 *무엇이 실제 가동 중인가*를 사실로 확인하는 것이다 — "강한 암호 쓴다"와 "약한 스위트·구버전 TLS 가 비활성"은 다르다. 소유 대상에서 알고리즘·키 크기·프로토콜을 직접 점검한다([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Cryptography for Hackers
@@ -1872,3 +1900,29 @@ openssl rsa -text -noout -in private.pem
 openssl x509 -text -noout -in cert.pem
 openssl dgst -sha256 file.txt
 ```
+
+<!-- detect-validate-16 -->
+## Cryptography Weakness Detection and Defense Validation
+
+Crypto attacks target *weak algorithms, bad parameters, and poor randomness*. Defenders must verify **which ciphers, key sizes, and TLS versions are actually in use** and **whether weak suites, legacy signatures, and predictable tokens are detected**. Practice only on **owned/authorized targets**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Legacy cipher abuse (DES/RC4/MD5) | Legacy algorithms | Enforce strong suites, disable legacy | Weak algorithm in handshake/config |
+| RSA weak params (small e/common modulus) | Bad key generation | Vetted libraries, 2048+ keys | Non-standard key size/exponent |
+| Weak randomness (predictable seed) | Low entropy | CSPRNG (secrets, /dev/urandom) | Repeated/predictable tokens |
+| Plaintext/weak TLS transport | Missing transport protection | Enforce TLS1.2+, HSTS | Downgrade/plaintext transport  |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Inspect cert/key algorithm and size — flag weak RSA (<2048) and legacy signatures
+openssl x509 -in cert.pem -noout -text | grep -E "Public-Key|Signature Algorithm"
+# 2) Confirm whether the server accepts old TLS/weak ciphers (own target)
+openssl s_client -connect example.com:443 -tls1_1 </dev/null 2>&1 | grep -E "Protocol|Cipher"
+#   A completed handshake means TLS1.1 lingers -> downgrade surface
+```
+
+> Crypto defense starts by confirming *what is actually running* as fact -- "we use strong crypto" differs from "weak suites and old TLS are disabled". Inspect algorithms, key sizes, and protocols directly on owned targets ([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[68_Purple_Team]]).
