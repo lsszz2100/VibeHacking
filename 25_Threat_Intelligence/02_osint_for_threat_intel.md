@@ -519,6 +519,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-25 -->
+## OSINT 출처 검증과 수집 OPSEC
+
+OSINT는 *재인용 체인·노후 데이터·근거 부족 귀속·정찰 흔적*에서 무너진다. 방어자는 **수집 정보가 1차 출처로 검증되고 수집 자체가 흔적을 안 남기는가**를 확인해야 한다. 검증은 **소유 자산/공개 출처**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 출처 검증 | 1차 출처인가? | 원본 도달 가능률 | 재인용 체인 맹신 |
+| 시점 신선도 | 최신 데이터인가? | 캡처/수정 시각 | 캐시·아카이브 혼동 |
+| 귀속(attribution) | 근거가 충분한가? | 다중 지표 일치 | 단일 TTP로 단정 |
+| 수집 OPSEC | 흔적을 남기나? | 직접 접속 로그 | 대상에 정찰 노출 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) OSINT 출처 신선도 — 아카이브/캐시 시각 확인(원본 vs 재인용)
+curl -sI "https://example.com" 2>/dev/null | grep -iE "last-modified|date"
+# 2) 자체 노출 점검(소유 도메인) — CT 로그로 의도치 않은 서브도메인 표면
+curl -s "https://crt.sh/?q=%25.example.com&output=json" 2>/dev/null | jq -r '.[].name_value' | sort -u | head
+```
+
+> OSINT 검증은 *찾았는가*가 아니라 *출처가 참이고 흔적이 없는가*다 — "정보 모았다"와 "1차 출처로 검증되고 수집이 대상에 노출되지 않는다"는 다르다. 원본 도달성과 자체 노출을 직접 확인한다([[10_Pentest_Methodology]], [[33_OSINT_Social_Engineering]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # OSINT — Open Source Intelligence for Threat Intelligence
@@ -937,3 +964,28 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+<!-- detect-validate-25 -->
+## OSINT Source Validation and Collection OPSEC
+
+OSINT collapses on *re-citation chains, stale data, under-evidenced attribution, and recon traces*. Defenders must verify **whether collected info is validated against primary sources and whether collection itself leaves no trace**. Validate only on **owned assets/public sources**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Source validation | Is it a primary source? | Reachability of the original | Trusting re-citation chains |
+| Recency | Is the data current? | Capture/modify timestamp | Confusing cache/archive |
+| Attribution | Is the evidence sufficient? | Multi-indicator agreement | Concluding from a single TTP |
+| Collection OPSEC | Does it leave traces? | Direct-access logs | Exposing recon to the target |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check OSINT source recency — archive/cache timestamps (original vs re-cite)
+curl -sI "https://example.com" 2>/dev/null | grep -iE "last-modified|date"
+# 2) Check your own exposure (owned domain) — CT logs surface unintended subdomains
+curl -s "https://crt.sh/?q=%25.example.com&output=json" 2>/dev/null | jq -r '.[].name_value' | sort -u | head
+```
+
+> OSINT validation is *whether the source is true and traceless*, not *whether you found it* -- "we gathered info" differs from "it's validated against primary sources and collection isn't exposed to the target". Confirm original reachability and your own exposure directly ([[10_Pentest_Methodology]], [[33_OSINT_Social_Engineering]], [[40_Threat_Hunting]]).

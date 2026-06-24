@@ -509,6 +509,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-25 -->
+## 인시던트 대응 효과 검증과 회귀
+
+인시던트 대응은 *대응했다*가 아니라 *봉쇄가 실제로 격리하고 근절이 재감염을 막는가*로 가치가 갈린다. 방어자는 **대응 절차가 측정 가능하고 증거가 무결한가**를 검증해야 한다. 검증은 **소유 호스트**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 탐지→대응 시간 | MTTD/MTTR이 측정되나? | 타임라인 간격 | 수동 추정 |
+| 봉쇄 효과 | 실제로 격리됐나? | 격리 후 통신 0 | 부분 격리 |
+| 증거 무결성 | 해시가 보존되나? | sha256 체인 | 수집 중 변조 |
+| 근절 검증 | 재감염이 없나? | 재발 IOC 탐지 | 잔존 지속성 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 증거 무결성 — 수집 아티팩트 해시 매니페스트 생성·대조(소유 호스트)
+sha256sum ./evidence/* 2>/dev/null | tee manifest.sha256 | head
+# 2) 봉쇄 검증 — 격리 호스트가 외부와 통신 안 하는지
+ss -tnp 2>/dev/null | grep ESTAB | grep -vE '127\.0\.0|::1' | head
+```
+
+> IR 검증은 *대응했는가*가 아니라 *격리·근절이 실증되는가*다 — "대응 끝났다"와 "격리 후 외부통신 0이고 재감염 IOC가 안 잡힌다"는 다르다. 소유 호스트에서 증거 해시·봉쇄 통신을 직접 확인한다([[44_Incident_Response_DFIR]], [[07_Digital_Forensics]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Incident Response (IR)
@@ -940,3 +967,28 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+<!-- detect-validate-25 -->
+## Incident Response Effectiveness Validation and Regression
+
+Incident response's value comes not from *whether you responded* but from *whether containment actually isolates and eradication prevents reinfection*. Defenders must verify **whether the response process is measurable and evidence is intact**. Validate only on **owned hosts**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Detect->respond time | Are MTTD/MTTR measured? | Timeline gaps | Manual estimation |
+| Containment effect | Is it actually isolated? | Zero comms after isolation | Partial isolation |
+| Evidence integrity | Are hashes preserved? | sha256 chain | Tampering during collection |
+| Eradication check | Is there no reinfection? | Recurring-IOC detection | Residual persistence |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Evidence integrity — build/compare a hash manifest of collected artifacts (owned host)
+sha256sum ./evidence/* 2>/dev/null | tee manifest.sha256 | head
+# 2) Containment check — verify the isolated host has no external comms
+ss -tnp 2>/dev/null | grep ESTAB | grep -vE '127\.0\.0|::1' | head
+```
+
+> IR validation is *whether containment and eradication are demonstrated*, not *whether you responded* -- "we finished responding" differs from "external comms are zero after isolation and reinfection IOCs don't fire". Confirm evidence hashes and containment comms on owned hosts directly ([[44_Incident_Response_DFIR]], [[07_Digital_Forensics]], [[13_SOC_Blue_Team]]).

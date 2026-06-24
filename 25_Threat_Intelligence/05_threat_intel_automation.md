@@ -617,6 +617,33 @@ def fetch_indicators(
 
 ---
 
+<!-- detect-validate-25 -->
+## 위협 인텔 자동화 작동 검증과 회귀
+
+인텔 자동화는 *돌렸다*가 아니라 *보강·검증·배포가 멱등하게 동작하는가*로 가치가 갈린다. 운영자는 **STIX 유효성·IOC 보강·자동 배포가 사일런트 실패 없이 동작하는가**를 검증해야 한다. 검증은 **소유 데이터/파이프라인**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| IOC 보강 | enrichment이 실제 붙나? | 보강 필드 채움률 | API 한도 무시 |
+| STIX 유효성 | 스키마를 통과하나? | validator 오류 0 | 깨진 객체 전파 |
+| 자동 배포 | 룰이 배포되나? | 배포 성공률 | 사일런트 실패 |
+| 멱등성 | 중복 실행이 안전한가? | 재실행 후 중복 0 | 중복 알림 폭증 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) STIX 번들 유효성 — 깨진/빈 객체는 다운스트림 전파(소유 데이터)
+python3 -c "import json; d=json.load(open('bundle.json')); print('objects:', len(d.get('objects', [])))" 2>&1 | head
+# 2) IOC 보강 멱등성 — 중복 객체 ID는 멱등성 결함 신호
+jq -r '.objects[].id' bundle.json 2>/dev/null | sort | uniq -d | head
+```
+
+> 인텔 자동화 검증은 *돌렸는가*가 아니라 *멱등하게 보강·배포되는가*다 — "파이프라인 있다"와 "STIX가 유효하고 재실행해도 중복이 안 생긴다"는 다르다. 소유 데이터에서 스키마 유효성·중복 ID를 직접 확인한다([[64_Threat_Intel_Platform]], [[40_Threat_Hunting]], [[68_Purple_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Threat Intelligence Automation — MISP, OpenCTI, IOC Enrichment, STIX/TAXII
@@ -673,3 +700,28 @@ python3 misp_automation.py --url https://misp.example.com --export-iocs
 - MISP documentation: https://www.misp-project.org/documentation/
 - STIX 2.1 specification: https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html
 - MITRE ATT&CK: https://attack.mitre.org/
+
+<!-- detect-validate-25 -->
+## Threat-Intel Automation Effectiveness Validation and Regression
+
+Intel automation's value comes not from *whether it ran* but from *whether enrichment, validation, and deployment work idempotently*. Operators must verify **whether STIX validity, IOC enrichment, and auto-deployment work without silent failure**. Validate only on **owned data/pipelines**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| IOC enrichment | Is enrichment actually attached? | Enriched-field fill rate | Ignoring API limits |
+| STIX validity | Does it pass schema? | Zero validator errors | Propagating broken objects |
+| Auto-deployment | Do rules deploy? | Deployment success rate | Silent failure |
+| Idempotency | Is re-running safe? | Zero duplicates after re-run | Duplicate-alert explosion |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) STIX bundle validity — broken/empty objects propagate downstream (owned data)
+python3 -c "import json; d=json.load(open('bundle.json')); print('objects:', len(d.get('objects', [])))" 2>&1 | head
+# 2) IOC-enrichment idempotency — duplicate object IDs signal an idempotency flaw
+jq -r '.objects[].id' bundle.json 2>/dev/null | sort | uniq -d | head
+```
+
+> Intel-automation validation is *whether it enriches/deploys idempotently*, not *whether it ran* -- "we have a pipeline" differs from "STIX is valid and re-running produces no duplicates". Confirm schema validity and duplicate IDs on owned data directly ([[64_Threat_Intel_Platform]], [[40_Threat_Hunting]], [[68_Purple_Team]]).

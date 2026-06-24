@@ -667,6 +667,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-25 -->
+## CTI 플랫폼 운영 검증 (피드 통합·탐지 전환)
+
+CTI 플랫폼은 *설치했다*가 아니라 *피드가 살아 있고 탐지로 흐르는가*로 가치가 갈린다. 운영자는 **피드 수집·중복제거·SIEM 연동·TAXII 동기가 실제 동작하는가**를 검증해야 한다. 검증은 **소유 플랫폼**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 피드 수집 | 피드가 실제 들어오나? | 신규 indicator/일 | 죽은 피드 방치 |
+| 중복제거 | 중복 IOC를 거르나? | 중복률 | 노이즈 폭증 |
+| 탐지 연동 | SIEM 룰로 가나? | IOC→룰 매핑률 | 보관만 됨 |
+| TAXII 동기화 | 양방향 동작하나? | 마지막 동기 시각 | 토큰 만료 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) TAXII/피드 동기 신선도 — 마지막 수집 시각이 오래됐으면 죽은 피드
+curl -s -H "Accept: application/taxii+json;version=2.1" "https://taxii.example/collections" 2>/dev/null | jq '.collections[].title' | head
+# 2) 수집 IOC가 탐지로 전환됐는지 — 미매핑 indicator는 보관용일 뿐
+jq -r '.objects[] | select(.type=="indicator") | .pattern' feed.json 2>/dev/null | wc -l
+```
+
+> 플랫폼 운영 검증은 *깔았는가*가 아니라 *피드가 살아 탐지로 흐르는가*다 — "MISP 있다"와 "피드가 갱신되고 IOC가 SIEM 룰로 매핑된다"는 다르다. 소유 플랫폼에서 동기 신선도·룰 전환을 직접 확인한다([[64_Threat_Intel_Platform]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # CTI Platform Operations
@@ -1258,3 +1285,28 @@ External Feeds (TAXII / HTTP)
    SIEM          SOAR
 (Splunk/ELK)  (Shuffle/XSOAR)
 ```
+
+<!-- detect-validate-25 -->
+## CTI Platform Operations Validation (Feed Integration, Detection Conversion)
+
+A CTI platform's value comes not from *whether it's installed* but from *whether feeds are alive and flow into detection*. Operators must verify **whether feed ingest, deduplication, SIEM integration, and TAXII sync actually work**. Validate only on **owned platforms**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Feed ingest | Are feeds actually arriving? | New indicators/day | Leaving dead feeds |
+| Deduplication | Does it filter duplicate IOCs? | Duplicate rate | Noise explosion |
+| Detection integration | Does it reach SIEM rules? | IOC->rule mapping rate | Stored only |
+| TAXII sync | Does bidirectional work? | Last sync timestamp | Token expiry |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) TAXII/feed sync freshness — a stale last-collection time means a dead feed
+curl -s -H "Accept: application/taxii+json;version=2.1" "https://taxii.example/collections" 2>/dev/null | jq '.collections[].title' | head
+# 2) Check whether ingested IOCs converted to detection — unmapped indicators are just storage
+jq -r '.objects[] | select(.type=="indicator") | .pattern' feed.json 2>/dev/null | wc -l
+```
+
+> Platform-ops validation is *whether feeds are alive and flow to detection*, not *whether it's installed* -- "we have MISP" differs from "feeds update and IOCs map into SIEM rules". Confirm sync freshness and rule conversion on owned platforms directly ([[64_Threat_Intel_Platform]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).

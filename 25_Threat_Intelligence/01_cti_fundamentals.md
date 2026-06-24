@@ -442,6 +442,33 @@ Mitigation & Recommendations:
 
 ---
 
+<!-- detect-validate-25 -->
+## 위협 인텔 품질 검증 (정확·적시·실행가능)
+
+위협 인텔은 *수집됐다*가 아니라 *정확하고 신선하며 탐지로 전환되는가*로 가치가 갈린다. 방어자는 **인텔이 오탐 없이 실행 가능한 탐지가 되는가**를 검증해야 한다. 검증은 **소유 피드/자산**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| IOC 신선도 | 만료된 IOC를 거르나? | 만료/age 분포 | TTL 무시 |
+| 출처 신뢰도 | 1차 출처와 대조하나? | 다중출처 교차율 | 단일 출처 맹신 |
+| 오탐(FP) | 정상 자산을 오인하나? | 화이트리스트 충돌 수 | 내부 인프라 차단 |
+| 실행가능성 | 탐지로 전환되나? | IOC→룰 전환율 | 보고서로만 남음 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) IOC 신선도/만료 점검 — 오래된 IOC는 FP·소음 유발(소유 피드)
+jq -r '.objects[] | select(.type=="indicator") | .valid_until' feed.json 2>/dev/null | sort | head
+# 2) IOC가 정상 자산과 충돌하는지 화이트리스트 대조 — 충돌 = FP 위험
+comm -12 <(sort iocs.txt 2>/dev/null) <(sort known_good_assets.txt 2>/dev/null) | head
+```
+
+> CTI 검증은 *수집됐는가*가 아니라 *정확·신선·실행가능한가*다 — "피드 받는다"와 "만료 IOC를 거르고 정상 자산과 충돌 없이 탐지로 전환된다"는 다르다. 소유 피드에서 신선도·FP를 직접 확인한다([[40_Threat_Hunting]], [[64_Threat_Intel_Platform]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Cyber Threat Intelligence (CTI) Fundamentals
@@ -757,3 +784,28 @@ Mitigation & Recommendations:
   Short-term actions (1 week)
   Long-term actions (1 month+)
 ```
+
+<!-- detect-validate-25 -->
+## Threat-Intel Quality Validation (Accurate, Timely, Actionable)
+
+Threat intel's value comes not from *whether it was collected* but from *whether it is accurate, fresh, and converts into detection*. Defenders must verify **whether intel becomes actionable detection without false positives**. Validate only on **owned feeds/assets**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| IOC freshness | Does it filter expired IOCs? | Expiry/age distribution | Ignoring TTL |
+| Source reliability | Cross-checked with primary source? | Multi-source cross rate | Trusting a single source |
+| False positives | Does it misflag good assets? | Whitelist conflict count | Blocking internal infra |
+| Actionability | Does it convert to detection? | IOC->rule conversion rate | Stays as a report only |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check IOC freshness/expiry — stale IOCs cause FPs/noise (owned feed)
+jq -r '.objects[] | select(.type=="indicator") | .valid_until' feed.json 2>/dev/null | sort | head
+# 2) Cross-check IOCs against a whitelist for conflicts — conflict = FP risk
+comm -12 <(sort iocs.txt 2>/dev/null) <(sort known_good_assets.txt 2>/dev/null) | head
+```
+
+> CTI validation is *whether it's accurate, fresh, and actionable*, not *whether it was collected* -- "we get a feed" differs from "it filters expired IOCs and converts to detection without conflicting with good assets". Confirm freshness and FPs on owned feeds directly ([[40_Threat_Hunting]], [[64_Threat_Intel_Platform]], [[13_SOC_Blue_Team]]).
