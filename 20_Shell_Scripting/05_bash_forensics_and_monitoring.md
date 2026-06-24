@@ -485,6 +485,35 @@ echo "  4. 포렌식 이미징 후 시스템 종료"
 
 ---
 
+<!-- detect-validate-20 -->
+## 탐지 스크립트 작동 검증과 회귀
+
+이 섹션은 이미 포렌식·모니터링을 다루므로, 검증의 초점은 **수집이 무결성을 보장하고 탐지 스크립트가 실제 이벤트에 발화하는가**다. 주입 이벤트·매니페스트 해시로 회귀 테스트해야 한다. 검증은 **소유 호스트**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 포렌식 수집 | 재현·무결성을 보장하는가 | sha256 매니페스트 일치 | 수집 중 변조 |
+| 로그 이상 탐지 | 실제 이벤트에 발화하는가 | 주입 이벤트 탐지 | 임계값 오설정·놓침 |
+| 파일 변경 모니터 | 변조를 잡는가 | inotify/aide 알림 | 경로 누락·심볼릭 회피 |
+| IR 자동화 | 멱등·안전한가 | 재실행 동일 결과 | 부작용·증거 훼손 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 로그 이상 탐지가 실제로 발화하는지 — 테스트 이벤트 주입 후 알림 확인(소유 호스트)
+logger -p auth.warning "TEST failed password for invalid user canary from 203.0.113.9"
+sleep 1; grep -c "canary" /var/log/your_detector.out   # 0 이면 탐지 미작동
+# 2) 수집물 무결성 — 매니페스트 해시 재계산 대조
+sha256sum -c evidence.sha256 && echo "무결성 OK — 수집 후 변조 없음"
+#    탐지·수집은 '돌렸다'가 아니라 '발화·일치한다'로 검증한다
+```
+
+> 모니터링 검증은 *돌렸는가*가 아니라 *발화·일치하는가*다 — "스크립트 있다"와 "주입 이벤트에 발화하고 해시가 일치한다"는 다르다. 소유 호스트에서 테스트 이벤트 주입·해시 대조로 회귀를 막는다([[07_Digital_Forensics]], [[44_Incident_Response_DFIR]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # Bash Forensics & Monitoring Automation — Log Analysis, Anomaly Detection, Incident Response
@@ -715,3 +744,30 @@ esac
 | File integrity | inotifywait | real-time change detection + hash comparison |
 | Incident response | bash | hidden processes, persistence, malicious files |
 | Memory acquisition | avml/LiME | memory dump without kernel module |
+
+<!-- detect-validate-20 -->
+## Detection Script Effectiveness Validation and Regression
+
+This section already covers forensics and monitoring, so the validation focus is **whether collection preserves integrity and detection scripts actually fire on real events**. Regression-test with injected events and manifest hashes. Validate only on **owned hosts**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Forensic collection | Does it ensure reproducibility/integrity | sha256 manifest match | tampering during collection |
+| Log anomaly detection | Does it fire on real events | injected-event detection | misconfigured threshold / miss |
+| File-change monitor | Does it catch tampering | inotify/aide alert | missing path / symlink evasion |
+| IR automation | Idempotent and safe | same result on re-run | side effects / evidence damage |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Confirm the log-anomaly detector actually fires — inject a test event, check the alert (own host)
+logger -p auth.warning "TEST failed password for invalid user canary from 203.0.113.9"
+sleep 1; grep -c "canary" /var/log/your_detector.out   # 0 means detection is inert
+# 2) Collection integrity — recompute and compare manifest hashes
+sha256sum -c evidence.sha256 && echo "integrity OK -- no tampering after collection"
+#    Validate detection/collection by 'it fires/matches', not 'it ran'
+```
+
+> Monitoring validation is *whether it fires/matches*, not *whether it ran* -- "we have a script" differs from "it fires on an injected event and the hash matches". Prevent regressions with injected test events and hash comparison on owned hosts ([[07_Digital_Forensics]], [[44_Incident_Response_DFIR]], [[40_Threat_Hunting]]).

@@ -477,6 +477,35 @@ rule Bash_Base64_Execution {
 
 ---
 
+<!-- detect-validate-20 -->
+## 난독화·우회 탐지와 방어 검증
+
+난독화·우회는 *시그니처 회피·스캔 인터페이스 무력화·분석 회피*를 노린다(인코딩·AMSI 우회·VM 감지·패킹). 방어자는 **로깅이 난독화를 평문으로 드러내는가**와 **인코딩 페이로드 흔적이 잡히는가**를 검증해야 한다. 실습은 **소유·격리 환경**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| bash/PS 난독화 | 시그니처 회피 | 디오브퍼스케이션·행위탐지 | base64·eval·`-enc` 패턴 |
+| AMSI 우회 | 스캔 인터페이스 무력화 | AMSI 로깅·EDR | AmsiScanBuffer 패치·리플렉션 |
+| VM/샌드박스 감지 | 분석 회피 | 위장 환경·아티팩트 제거 | 환경 핑거프린트 쿼리 |
+| 스크립트 패킹 | 정적 분석 회피 | 동적 추적·메모리 | 런타임 디코드·고엔트로피 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 인코딩·난독화 셸/PS 페이로드 흔적 점검(소유 로그/스크립트)
+grep -rEi 'base64 -d|FromBase64String|-enc |IEX\(|eval[[:space:]]*\$\(' /var/log /home 2>/dev/null
+# 2) PowerShell 스크립트블록 로깅(4104)이 켜져 있는지 — 우회 가시성(소유 호스트)
+#    Get-WinEvent -LogName 'Microsoft-Windows-PowerShell/Operational' -MaxEvents 20 | ? Id -eq 4104
+echo "ScriptBlock(4104)/Module 로깅 활성 시 -enc·IEX 난독화도 평문으로 기록된다"
+#    로깅이 꺼져 있으면 난독화 우회는 사실상 보이지 않는다
+```
+
+> 난독화 방어는 *우회가 보이는가*다 — "EDR 있다"와 "인코딩·AMSI 우회가 로그에 평문으로 남는다"는 다르다. 소유 호스트에서 스크립트블록 로깅·인코딩 흔적을 직접 확인한다([[55_Evasion_Techniques]], [[06_Malware_Analysis]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Shell Script Obfuscation and Detection Evasion
@@ -610,3 +639,30 @@ def is_real_system() -> bool:
 
 # Detect xxd usage
 -a always,exit -F arch=b64 -S execve -F exe=/usr/bin/xxd -k xxd_exec
+
+<!-- detect-validate-20 -->
+## Obfuscation/Evasion Detection and Defense Validation
+
+Obfuscation/evasion targets *signature evasion, neutralizing the scan interface, and analysis avoidance* (encoding, AMSI bypass, VM detection, packing). Defenders must verify **whether logging surfaces obfuscation in cleartext** and **whether encoded-payload traces are caught**. Validate only in **owned/isolated environments**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| bash/PS obfuscation | Signature evasion | Deobfuscation, behavior detection | base64 / eval / `-enc` pattern |
+| AMSI bypass | Neutralized scan interface | AMSI logging, EDR | AmsiScanBuffer patch / reflection |
+| VM/sandbox detection | Analysis avoidance | Camouflaged env, artifact removal | Environment fingerprint queries |
+| Script packing | Static-analysis evasion | Dynamic trace, memory | Runtime decode / high entropy |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check for encoded/obfuscated shell/PS payload traces (own logs/scripts)
+grep -rEi 'base64 -d|FromBase64String|-enc |IEX\(|eval[[:space:]]*\$\(' /var/log /home 2>/dev/null
+# 2) Confirm PowerShell ScriptBlock logging (4104) is enabled — evasion visibility (own host)
+#    Get-WinEvent -LogName 'Microsoft-Windows-PowerShell/Operational' -MaxEvents 20 | ? Id -eq 4104
+echo "With ScriptBlock(4104)/Module logging on, -enc/IEX obfuscation is recorded in cleartext"
+#    If logging is off, obfuscation-based evasion is effectively invisible
+```
+
+> Obfuscation defense is *whether evasion is visible* -- "we have EDR" differs from "encoding/AMSI bypass leaves cleartext in logs". Confirm ScriptBlock logging and encoding traces directly on owned hosts ([[55_Evasion_Techniques]], [[06_Malware_Analysis]], [[13_SOC_Blue_Team]]).

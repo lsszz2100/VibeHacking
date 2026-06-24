@@ -827,6 +827,33 @@ require_tools nmap curl jq python3 || exit 1
 
 ---
 
+<!-- detect-validate-20 -->
+## 쉘 스크립트 공격 탐지와 방어 검증
+
+쉘 스크립트는 *미검증 입력·미인용 변수·eval·환경 신뢰*를 통해 인젝션 표면이 된다. 방어자는 **자체 스크립트가 untrusted 입력을 안전하게 다루는가**와 **악성 쉘 실행이 감사에 남는가**를 검증해야 한다. 검증은 **소유 호스트**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 명령어 인젝션(eval/미인용) | 미검증 입력 | 인용·배열·printf %q | 비정상 셸 자식 프로세스 |
+| 와일드카드 인젝션(--옵션) | glob 확장 | `--` 종결자·경로 명시 | 예상외 옵션 주입 |
+| IFS/PATH 조작 | 환경 신뢰 | 절대경로·PATH 고정 | 비정상 PATH/IFS 값 |
+| 히스토리·로그 회피 | 감사 부재 | auditd·셸 감사 | 비정상 명령 빈도 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 스크립트의 인젝션/미인용 결함을 정적 점검 — eval·미인용 변수 표면
+shellcheck -S warning ./your_script.sh   # SC2086(미인용)·SC2046 등 경고 확인
+# 2) 셸 명령 실행 감사(소유 호스트) — 비정상 자식 프로세스/명령 빈도
+sudo ausearch -m EXECVE -ts recent 2>/dev/null | grep -E "sh|bash|nc|curl|wget" | tail
+```
+
+> 쉘 스크립트 방어는 *입력을 신뢰하지 않는가*에 달려 있다 — "동작한다"와 "미인용 변수·eval 인젝션이 없다"는 다르다. 소유 스크립트를 shellcheck 로, 실행을 auditd 로 직접 확인한다([[08_Python_Hacking]], [[13_SOC_Blue_Team]], [[26_Linux_Hardening]]).
+
+---
+
 <a name="english"></a>
 
 # 01 Bash Scripting Basics
@@ -1581,3 +1608,28 @@ require_tools() {
 }
 require_tools nmap curl jq python3 || exit 1
 ```
+
+<!-- detect-validate-20 -->
+## Shell Script Attack Detection and Defense Validation
+
+Shell scripts become an injection surface via *unvalidated input, unquoted variables, eval, and environment trust*. Defenders must verify **whether their own scripts handle untrusted input safely** and **whether malicious shell execution is audited**. Validate only on **owned hosts**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Command injection (eval/unquoted) | Unvalidated input | Quoting, arrays, printf %q | Abnormal shell child process |
+| Wildcard injection (--option) | Glob expansion | `--` terminator, explicit path | Unexpected option injection |
+| IFS/PATH manipulation | Environment trust | Absolute paths, fixed PATH | Abnormal PATH/IFS values |
+| History/log evasion | No auditing | auditd, shell auditing | Abnormal command frequency |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Statically check your own script for injection/unquoting flaws — eval/unquoted-var surface
+shellcheck -S warning ./your_script.sh   # check SC2086 (unquoted), SC2046, etc.
+# 2) Audit shell command execution (own host) — abnormal child process / command frequency
+sudo ausearch -m EXECVE -ts recent 2>/dev/null | grep -E "sh|bash|nc|curl|wget" | tail
+```
+
+> Shell-script defense depends on *whether you distrust input* -- "it works" differs from "there are no unquoted variables or eval injections". Confirm own scripts with shellcheck and execution with auditd directly ([[08_Python_Hacking]], [[13_SOC_Blue_Team]], [[26_Linux_Hardening]]).
