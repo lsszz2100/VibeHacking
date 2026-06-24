@@ -604,6 +604,33 @@ watch -n 5 'hashcat -m 1000 --status --status-timer=1 2>/dev/null | tail -20'
 
 ---
 
+<!-- detect-validate-22 -->
+## 오프라인 크래킹 내성 측정과 탈취 탐지 검증
+
+오프라인 크래킹은 *탈취한 해시 덤프·GPU 가속·마스크/룰 변형*으로 패스워드를 복원한다. 방어자는 **자체 해시가 몇 시간 만에 깨지는가**와 **해시 덤프 행위가 탐지되는가**를 검증해야 한다. 검증은 **소유 해시**로만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| GPU 사전/브루트포스 | 약한 해시·짧은 길이 | 느린 해시·길이 강제 | 크래킹 소요시간 측정 |
+| 마스크 공격 | 예측 가능 패턴 | 패턴 차단 정책 | 정책 위반 패스워드 비율 |
+| 룰 기반 변형 | 흔한 변형(P@ss1!) | 차단 목록 확장 | 룰셋 일치율 |
+| 해시 덤프(LSASS/shadow) | 자격증명 접근 | 접근 제한·Credential Guard | shadow/LSASS 비정상 읽기 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 해시 덤프 크래킹 내성 측정(소유 해시) — 짧은 시간에 깨지면 정책 실패
+hashcat -m 1800 ./owned_hashes.txt /usr/share/wordlists/rockyou.txt --runtime=600 --status 2>/dev/null | grep -E "Recovered|Status"
+# 2) 자격증명 덤프 접근 탐지(소유 호스트) — shadow 비정상 읽기
+sudo ausearch -f /etc/shadow -ts recent 2>/dev/null | grep -E "uid=" | tail
+```
+
+> 오프라인 크래킹 방어는 *해시가 시간을 버는가*다 — "해시 덤프 못 가져간다"와 "가져가도 argon2라 며칠로도 못 깬다"는 다르다. 소유 해시로 크래킹 시간을, 감사로 덤프 접근을 직접 확인한다([[03_System_Hacking]], [[44_Incident_Response_DFIR]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 02 Hashcat and John the Ripper
@@ -1139,3 +1166,28 @@ hashcat -m 1000 --left ntlm_hashes.txt > uncracked.txt
 # Real-time progress monitoring
 watch -n 5 'hashcat -m 1000 --status --status-timer=1 2>/dev/null | tail -20'
 ```
+
+<!-- detect-validate-22 -->
+## Offline Cracking Resistance Measurement and Dump Detection Validation
+
+Offline cracking recovers passwords via *stolen hash dumps, GPU acceleration, and mask/rule mutation*. Defenders must verify **whether their own hashes crack within hours** and **whether hash-dumping is detected**. Validate only with **owned hashes**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| GPU dictionary/brute-force | Weak hash, short length | Slow hash, enforce length | Measured crack time |
+| Mask attack | Predictable pattern | Pattern-block policy | Rate of policy-violating passwords |
+| Rule-based mutation | Common mutations (P@ss1!) | Expand block-list | Ruleset match rate |
+| Hash dump (LSASS/shadow) | Credential access | Access restriction, Credential Guard | Abnormal shadow/LSASS read |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Measure crack resistance of your own hash dump (owned hashes) — failing if cracked quickly
+hashcat -m 1800 ./owned_hashes.txt /usr/share/wordlists/rockyou.txt --runtime=600 --status 2>/dev/null | grep -E "Recovered|Status"
+# 2) Detect credential-dump access (own host) — abnormal shadow read
+sudo ausearch -f /etc/shadow -ts recent 2>/dev/null | grep -E "uid=" | tail
+```
+
+> Offline-cracking defense is *whether the hash buys time* -- "they can't grab the hash dump" differs from "even if grabbed, argon2 means it can't be cracked in days". Confirm crack time with owned hashes and dump access with auditd directly ([[03_System_Hacking]], [[44_Incident_Response_DFIR]], [[13_SOC_Blue_Team]]).

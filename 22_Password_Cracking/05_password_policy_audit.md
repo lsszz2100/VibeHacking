@@ -456,6 +456,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-22 -->
+## 패스워드 정책 감사 작동 검증과 회귀
+
+정책 감사는 *돌렸다*가 아니라 *약한 정책을 실제로 잡아내는가*로 가치가 갈린다. 방어자는 **감사가 취약 항목에 발화하고 결과가 재현되는가**를 검증해야 한다. 검증은 **소유 시스템**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 최소 길이/복잡도 | 약한 정책에 발화하나? | 정책 위반 계정 수 | 정의만 있고 실제 미적용 |
+| 해시 알고리즘 | 약한 해시를 식별하나? | MD5/SHA1 검출 건수 | salt 유무 무시 |
+| 잠금/MFA | 미적용을 잡나? | MFA 미등록 비율 | 예외 계정 누락 |
+| 유출 대조 | HIBP 일치를 잡나? | 유출 일치 건수 | 캐시 만료 미반영 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 약한 정책에 감사가 발화하는지 테스트 계정으로 검증(소유 시스템)
+chage -l testuser 2>/dev/null; grep -E "PASS_MIN_LEN|PASS_MAX_DAYS" /etc/login.defs
+# 2) 약한 해시 검출 회귀 — 알려진 MD5 형식 해시 주입 후 탐지 여부
+echo 'testuser:$1$abc$xyz:19000:0:99999:7:::' | grep -E '\$1\$' && echo "weak-hash detected by audit"
+```
+
+> 정책 감사 검증은 *돌렸는가*가 아니라 *약점에 발화하는가*다 — "감사 스크립트 있다"와 "약한 정책·MD5 해시·MFA 미등록을 빠짐없이 잡는다"는 다르다. 소유 시스템에서 의도적 취약 주입으로 회귀를 막는다([[26_Linux_Hardening]], [[39_Zero_Trust_Architecture]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Password Policy Audit — Weak Policy Detection, Hash Strength Analysis, and Recommendations
@@ -835,3 +862,28 @@ if __name__ == "__main__":
 | MFA | Recommended | Mandatory | Credential stuffing defense |
 | Account Lockout | 10 attempts | 5 attempts | Brute-force defense |
 | Have I Been Pwned | Recommended | Mandatory | Block leaked passwords |
+
+<!-- detect-validate-22 -->
+## Password Policy Audit Effectiveness Validation and Regression
+
+A policy audit's value comes not from *whether it ran* but from *whether it actually catches weak policies*. Defenders must verify **whether the audit fires on vulnerable items and the results reproduce**. Validate only on **owned systems**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| Min length/complexity | Does it fire on weak policy? | Count of violating accounts | Defined but not enforced |
+| Hash algorithm | Does it identify weak hashes? | MD5/SHA1 detections | Ignores salt presence |
+| Lockout/MFA | Does it catch non-enrollment? | MFA non-enrollment rate | Missed exception accounts |
+| Breach check | Does it catch HIBP matches? | Breach match count | Stale cache not refreshed |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify the audit fires on weak policy using a test account (owned system)
+chage -l testuser 2>/dev/null; grep -E "PASS_MIN_LEN|PASS_MAX_DAYS" /etc/login.defs
+# 2) Weak-hash detection regression — inject a known MD5-format hash and check detection
+echo 'testuser:$1$abc$xyz:19000:0:99999:7:::' | grep -E '\$1\$' && echo "weak-hash detected by audit"
+```
+
+> Policy-audit validation is *whether it fires on weaknesses*, not *whether it ran* -- "we have an audit script" differs from "it catches every weak policy, MD5 hash, and missing MFA". Prevent regressions with intentional vulnerable injection on owned systems ([[26_Linux_Hardening]], [[39_Zero_Trust_Architecture]], [[13_SOC_Blue_Team]]).

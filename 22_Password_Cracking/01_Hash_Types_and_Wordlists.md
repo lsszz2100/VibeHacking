@@ -616,6 +616,33 @@ print(hashed.decode())
 
 ---
 
+<!-- detect-validate-22 -->
+## 패스워드 해시 저장 약점 탐지와 방어 검증
+
+패스워드 크래킹은 *약한 해시 알고리즘·솔트 부재·유출 워드리스트 재사용*을 노린다. 방어자는 **자신이 저장한 해시가 실제로 크래킹에 견디는가**와 **유출 패스워드가 재사용되는가**를 검증해야 한다. 검증은 **소유 시스템**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| MD5/SHA1 무솔트 해시 | 빠른 해시 | bcrypt/argon2id 전환 | 평문 수준 크래킹 속도 |
+| 레인보우 테이블 | 솔트 부재 | per-user 솔트 | 동일 해시 중복 |
+| 워드리스트 추측 | 흔한 패스워드 | 차단 목록·길이 정책 | 사전 단어 일치율 |
+| 유출 크레덴셜 재사용 | 재사용 패스워드 | HIBP 대조·강제 변경 | 유출셋 해시 일치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 해시 저장소 알고리즘 점검(소유 DB/shadow) — bcrypt/argon2 아닌 약한 해시 표면
+grep -rE '\$1\$|\$apr1\$|^[a-f0-9]{32}$' /etc/shadow ./dump.sql 2>/dev/null | head   # MD5 등 약한 해시
+# 2) 유출 패스워드 재사용 점검 — HIBP k-anonymity(평문 미전송, 앞 5자만 전송)
+printf '%s' "candidate" | sha1sum | tr 'a-f' 'A-F' | cut -c1-5 | xargs -I{} curl -s "https://api.pwnedpasswords.com/range/{}" | head
+```
+
+> 해시 저장 방어는 *해시가 느리고 유니크한가*다 — "암호화했다"와 "argon2id+솔트라 GPU로도 못 깬다"는 다르다. 소유 저장소의 알고리즘과 유출 재사용을 직접 확인한다([[16_Cryptography]], [[26_Linux_Hardening]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 01 Hash Types and Wordlists
@@ -1152,3 +1179,28 @@ hashed = bcrypt.hashpw(pw, bcrypt.gensalt(rounds=10))
 print(hashed.decode())
 "
 ```
+
+<!-- detect-validate-22 -->
+## Password Hash Storage Weakness Detection and Defense Validation
+
+Password cracking targets *weak hash algorithms, missing salts, and reused leaked wordlists*. Defenders must verify **whether their stored hashes actually resist cracking** and **whether leaked passwords are being reused**. Validate only on **owned systems**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| MD5/SHA1 unsalted hash | Fast hash | Move to bcrypt/argon2id | Near-plaintext crack speed |
+| Rainbow tables | No salt | Per-user salt | Duplicate identical hashes |
+| Wordlist guessing | Common passwords | Block-list, length policy | Dictionary-word match rate |
+| Leaked credential reuse | Reused passwords | HIBP check, forced reset | Match against breach sets |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check your own hash store algorithm (owned DB/shadow) — surface weak non-bcrypt/argon2 hashes
+grep -rE '\$1\$|\$apr1\$|^[a-f0-9]{32}$' /etc/shadow ./dump.sql 2>/dev/null | head   # MD5 etc.
+# 2) Check leaked-password reuse — HIBP k-anonymity (no plaintext sent, only first 5 chars)
+printf '%s' "candidate" | sha1sum | tr 'a-f' 'A-F' | cut -c1-5 | xargs -I{} curl -s "https://api.pwnedpasswords.com/range/{}" | head
+```
+
+> Hash-storage defense is *whether the hash is slow and unique* -- "we encrypted it" differs from "it's argon2id+salt so even a GPU can't crack it". Confirm your store's algorithm and leak-reuse directly ([[16_Cryptography]], [[26_Linux_Hardening]], [[13_SOC_Blue_Team]]).

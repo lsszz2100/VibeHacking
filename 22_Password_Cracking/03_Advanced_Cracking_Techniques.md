@@ -952,6 +952,33 @@ impacket-smbclient domain/administrator:Password123@192.168.1.10
 
 ---
 
+<!-- detect-validate-22 -->
+## 고급 크래킹·크레덴셜 재사용 횡적이동 탐지 검증
+
+고급 크래킹은 *하이브리드/PCFG·분산 크래킹·복원한 자격증명의 횡적 재사용*으로 범위를 넓힌다. 방어자는 **크래킹된 자격증명으로의 비정상 인증이 탐지되는가**를 검증해야 한다. 검증은 **소유 도메인**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 하이브리드/PCFG | 구조적 패스워드 | 엔트로피 정책 | 구조 패턴 일치율 |
+| 분산 크래킹 | 고속 연산 | 느린 해시 | (오프라인 — 직접 탐지 불가) |
+| 크레덴셜 재사용 횡적이동 | 패스워드 공유 | 계정별 고유·LAPS | 동일 cred 다중 호스트 로그온 |
+| Pass-the-hash 연계 | NTLM 재사용 | Kerberos 강제·NTLM 제한 | 비정상 NTLM 인증 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 동일 자격증명의 다중 출처 인증 탐지(소유 도메인) — 횡적이동 신호
+grep -hE "Accepted .* for" /var/log/auth.log 2>/dev/null | awk '{print $9}' | sort | uniq -c | sort -rn | head
+# 2) 크래킹 도구의 원격 실행 흔적 점검(소유 호스트)
+grep -hE "evil-winrm|impacket|wmiexec|psexec|crackmapexec" /var/log/syslog /var/log/auth.log 2>/dev/null | tail
+```
+
+> 고급 크래킹 방어는 *깬 자격증명이 어디까지 통하는가*다 — "강한 패스워드 쓴다"와 "한 호스트가 털려도 그 cred가 다른 호스트엔 안 통한다"는 다르다. 소유 도메인에서 자격증명 재사용 로그온을 직접 확인한다([[54_Active_Directory_Attacks]], [[17_Red_Team_Operations]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 03 Advanced Cracking Techniques
@@ -1836,3 +1863,28 @@ impacket-psexec -hashes :8846f7eaee8fb117ad06bdd830b7586c \
 evil-winrm -i 192.168.1.10 -u administrator -p 'Password123'
 impacket-smbclient domain/administrator:Password123@192.168.1.10
 ```
+
+<!-- detect-validate-22 -->
+## Advanced Cracking and Credential-Reuse Lateral Movement Detection Validation
+
+Advanced cracking widens reach via *hybrid/PCFG, distributed cracking, and lateral reuse of recovered credentials*. Defenders must verify **whether abnormal authentication with cracked credentials is detected**. Validate only on **owned domains**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Hybrid/PCFG | Structured passwords | Entropy policy | Structure-pattern match rate |
+| Distributed cracking | High-speed compute | Slow hash | (offline — not directly detectable) |
+| Credential-reuse lateral move | Shared passwords | Per-account unique, LAPS | Same cred on multiple hosts |
+| Pass-the-hash chaining | NTLM reuse | Enforce Kerberos, restrict NTLM | Abnormal NTLM auth |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Detect same-credential auth from multiple sources (owned domain) — lateral-movement signal
+grep -hE "Accepted .* for" /var/log/auth.log 2>/dev/null | awk '{print $9}' | sort | uniq -c | sort -rn | head
+# 2) Check for remote-exec traces of cracking tools (own host)
+grep -hE "evil-winrm|impacket|wmiexec|psexec|crackmapexec" /var/log/syslog /var/log/auth.log 2>/dev/null | tail
+```
+
+> Advanced-cracking defense is *how far a cracked credential reaches* -- "we use strong passwords" differs from "even if one host falls, that cred doesn't work on others". Confirm credential-reuse logons on owned domains directly ([[54_Active_Directory_Attacks]], [[17_Red_Team_Operations]], [[13_SOC_Blue_Team]]).

@@ -533,6 +533,33 @@ def detect_stuffing(
 
 ---
 
+<!-- detect-validate-22 -->
+## 크레덴셜 스터핑·계정탈취 탐지와 방어 검증
+
+크레덴셜 스터핑은 *유출셋 재생·프록시 로테이션·저속 분산 시도*로 계정을 탈취한다. 방어자는 **자체 로그인이 대량 시도를 차단·탐지하는가**를 검증해야 한다. 검증은 **소유 애플리케이션**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 유출셋 재생 | 재사용 패스워드 | HIBP 대조·MFA | 신규 IP 대량 로그인 시도 |
+| 프록시 로테이션 | IP 기반 차단 한계 | 디바이스 핑거프린팅 | 분산 IP 동일 UA 패턴 |
+| 저속 분산(low-and-slow) | 임계 기반 탐지 | 행위 기반 탐지 | 장기 저빈도 401/403 |
+| 봇 자동화 | 인간 검증 부재 | CAPTCHA·리스크 점수 | 비정상 로그인 성공률 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 로그인 로그에서 스터핑 신호 — 4xx 폭주/분산 IP(소유 앱)
+awk '$9~/40[13]/ && $7~/login/ {print $1}' /var/log/nginx/access.log 2>/dev/null | sort | uniq -c | sort -rn | head
+# 2) 불가능 이동·동일 UA 분산 점검
+awk '$7~/login/ {print $1, $12}' /var/log/nginx/access.log 2>/dev/null | sort | uniq -c | sort -rn | head
+```
+
+> 스터핑 방어는 *대량 시도가 실제로 걸리는가*다 — "MFA 있다"와 "유출셋 재생이 차단되고 분산 시도가 탐지된다"는 다르다. 소유 앱 로그에서 4xx 폭주·불가능 이동을 직접 확인한다([[52_API_Security]], [[05_Web_Hacking]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Credential Stuffing and Password Analysis Automation
@@ -980,3 +1007,28 @@ def detect_stuffing(
 - [ ] Device fingerprinting: require additional verification for new devices
 - [ ] Geo-anomaly detection: alert on logins from unusual countries
 - [ ] Password policy: minimum 12 characters, complexity requirements, block common passwords
+
+<!-- detect-validate-22 -->
+## Credential Stuffing and Account-Takeover Detection and Defense Validation
+
+Credential stuffing takes over accounts via *breach-set replay, proxy rotation, and low-and-slow distributed attempts*. Defenders must verify **whether their own login blocks and detects mass attempts**. Validate only on **owned applications**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Breach-set replay | Reused passwords | HIBP check, MFA | Mass login attempts from new IPs |
+| Proxy rotation | IP-block limits | Device fingerprinting | Distributed IPs, same UA pattern |
+| Low-and-slow | Threshold-based detection | Behavior-based detection | Long-term low-rate 401/403 |
+| Bot automation | No human verification | CAPTCHA, risk score | Abnormal login success rate |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Look for stuffing signals in your own login logs — 4xx bursts / distributed IPs (owned app)
+awk '$9~/40[13]/ && $7~/login/ {print $1}' /var/log/nginx/access.log 2>/dev/null | sort | uniq -c | sort -rn | head
+# 2) Check impossible travel / same-UA distribution
+awk '$7~/login/ {print $1, $12}' /var/log/nginx/access.log 2>/dev/null | sort | uniq -c | sort -rn | head
+```
+
+> Stuffing defense is *whether mass attempts are actually caught* -- "we have MFA" differs from "breach-set replay is blocked and distributed attempts are detected". Confirm 4xx bursts and impossible travel in owned-app logs directly ([[52_API_Security]], [[05_Web_Hacking]], [[13_SOC_Blue_Team]]).
