@@ -463,6 +463,33 @@ OS 계보·파일시스템·관리 포트·지문 감식까지 한 번 정리해
 
 ---
 
+<!-- detect-validate-32 -->
+## 네트워크 장비 정찰 탐지와 방어 검증
+
+장비 정찰은 *기본 SNMP community·노출 관리 서비스·배너 누출·구 IOS CVE*를 노린다. 방어자는 **자체 장비의 노출 표면과 관리 접근이 통제되는가**를 검증해야 한다. 검증은 **소유 장비/망**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| SNMP 정찰(public/private) | 기본 community | community 변경·SNMPv3 | public/private 응답 |
+| 노출 관리 서비스(telnet/http) | 평문 관리 | SSH/HTTPS·ACL | 23/80 외부 응답 |
+| 배너/버전 누출 | 정보 노출 | 배너 제거 | 버전 배너 노출 |
+| 구 IOS 알려진 CVE | 미패치 | 펌웨어 갱신 | 취약 버전 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 장비 노출 관리 서비스 점검(소유 망) — telnet/http/SNMP
+nmap -sU -sT -p T:23,80,443,22,U:161 192.168.1.1 2>/dev/null | grep -iE "open|snmp|telnet"
+# 2) SNMP 기본 community 응답 점검 — public/private면 정찰 노출
+snmpwalk -v2c -c public 192.168.1.1 system 2>/dev/null | head
+```
+
+> 장비 정찰 방어는 *노출 표면이 좁고 관리가 통제되는가*다 — "장비 동작한다"와 "telnet이 닫혀 있고 SNMP가 기본 community로 안 응답한다"는 다르다. 소유 망에서 노출 서비스·SNMP 응답을 직접 확인한다([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 32-01. Understanding Cisco IOS Architecture and Device Reconnaissance
@@ -856,3 +883,28 @@ Both attackers and defenders check the following first.
 Once you have a solid understanding of the OS lineage, filesystem, management ports, and fingerprinting, subsequent sections (02–04) become much clearer — **"which scenario runs on which device and which management plane"**. Network device attacks are classic, but as the 2025 CVE lists confirm, they remain among the most rapidly profitable targets.
 
 The next document (02) builds on this information to cover **Layer 2 attacks** — how to cross VLAN boundaries and deceive switches within the same broadcast domain.
+
+<!-- detect-validate-32 -->
+## Network Device Recon Detection and Defense Validation
+
+Device recon targets *default SNMP communities, exposed management services, banner leakage, and old IOS CVEs*. Defenders must verify **whether their device's exposure and management access are controlled**. Validate only on **owned devices/networks**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| SNMP recon (public/private) | Default community | Change community, SNMPv3 | public/private responds |
+| Exposed mgmt (telnet/http) | Plaintext management | SSH/HTTPS, ACL | 23/80 responds externally |
+| Banner/version leakage | Info disclosure | Remove banners | Version banner exposed |
+| Old IOS known CVE | Unpatched | Firmware update | Vulnerable version |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check your device's exposed management services (owned network) — telnet/http/SNMP
+nmap -sU -sT -p T:23,80,443,22,U:161 192.168.1.1 2>/dev/null | grep -iE "open|snmp|telnet"
+# 2) Check SNMP default-community response — public/private means recon exposure
+snmpwalk -v2c -c public 192.168.1.1 system 2>/dev/null | head
+```
+
+> Device-recon defense is *whether the exposure is narrow and management is controlled* -- "the device works" differs from "telnet is closed and SNMP doesn't answer to default communities". Confirm exposed services and SNMP response on owned networks directly ([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).

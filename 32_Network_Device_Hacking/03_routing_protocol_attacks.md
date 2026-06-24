@@ -640,6 +640,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-32 -->
+## 라우팅 프로토콜 공격 탐지와 방어 검증
+
+라우팅 공격은 *인증 없는 OSPF/EIGRP 이웃·BGP 하이재킹·FHRP(HSRP/VRRP) 탈취·경로 주입*으로 제어 평면을 조작한다. 방어자는 **자체 라우팅이 인증되고 비정상 인접/경로가 탐지되는가**를 검증해야 한다. 검증은 **소유 망**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| OSPF/EIGRP 위장 이웃 | 인증 부재 | 인접 인증(키체인) | 비인가 인접 형성 |
+| BGP 하이재킹/경로 주입 | 필터·RPKI 부재 | prefix 필터·RPKI | 예상외 prefix 광고 |
+| FHRP 탈취(HSRP/VRRP) | 약한 인증·우선순위 | 인증·우선순위 고정 | 비정상 마스터 변경 |
+| 경로 누출 | 재배포 미통제 | 재배포 필터 | 경로 수 급증 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 라우팅 제어 평면 패킷 점검(소유 망) — 비인가 OSPF/HSRP 발신자
+sudo tshark -i eth0 -Y "ospf || hsrp || vrrp || bgp" -a duration:20 2>/dev/null | awk '{print $3}' | sort | uniq -c | sort -rn | head
+# 2) 라우팅 테이블 경로 수 급증/예상외 경로 베이스라인 대조
+ip route show 2>/dev/null | wc -l; ip route show 2>/dev/null | head
+```
+
+> 라우팅 방어는 *인접이 인증되고 경로가 검증되는가*다 — "라우팅 된다"와 "인증 없는 이웃이 거부되고 예상외 prefix가 탐지된다"는 다르다. 소유 망에서 제어 평면 발신자·경로 수를 직접 확인한다([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 32-03. Routing Protocol Attacks — Control Plane Manipulation of OSPF, EIGRP, BGP, and FHRP
@@ -673,3 +700,28 @@ If Layer 2 attacks target broadcast domains, routing attacks change **traffic fl
 - [ ] Establish **security patch schedule within 72 hours** after major CVE announcements
 
 The next document (04) covers **management plane** attacks — SNMP community string abuse, TACACS+ key sniffing, NETCONF vulnerabilities, hash extraction from configuration files, etc.
+
+<!-- detect-validate-32 -->
+## Routing Protocol Attack Detection and Defense Validation
+
+Routing attacks manipulate the control plane via *unauthenticated OSPF/EIGRP neighbors, BGP hijacking, FHRP (HSRP/VRRP) takeover, and route injection*. Defenders must verify **whether their routing is authenticated and abnormal adjacencies/routes are detected**. Validate only on **owned networks**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Spoofed OSPF/EIGRP neighbor | No authentication | Neighbor auth (keychain) | Unauthorized adjacency |
+| BGP hijack/route injection | No filter/RPKI | Prefix filter, RPKI | Unexpected prefix advertisement |
+| FHRP takeover (HSRP/VRRP) | Weak auth/priority | Auth, fixed priority | Abnormal master change |
+| Route leak | Uncontrolled redistribution | Redistribution filter | Route-count surge |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check your control-plane packets (owned network) — unauthorized OSPF/HSRP senders
+sudo tshark -i eth0 -Y "ospf || hsrp || vrrp || bgp" -a duration:20 2>/dev/null | awk '{print $3}' | sort | uniq -c | sort -rn | head
+# 2) Compare routing-table route count / unexpected routes against a baseline
+ip route show 2>/dev/null | wc -l; ip route show 2>/dev/null | head
+```
+
+> Routing defense is *whether adjacencies are authenticated and routes validated* -- "routing works" differs from "unauthenticated neighbors are rejected and unexpected prefixes are detected". Confirm control-plane senders and route counts on owned networks directly ([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).

@@ -620,6 +620,33 @@ Layer 2 공격은 "고전"이라는 말을 많이 듣지만, 2026년 현장 감�
 
 ---
 
+<!-- detect-validate-32 -->
+## Layer 2 공격 탐지와 방어 검증
+
+L2 공격은 *MAC 플러딩·ARP 스푸핑·VLAN 호핑·STP 조작·DHCP 스타베이션*으로 스위치 도메인 경계를 무너뜨린다. 방어자는 **자체 스위치가 L2 통제로 막고 탐지하는가**를 검증해야 한다. 검증은 **소유 망**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| MAC 플러딩 | CAM 테이블 한계 | port-security | MAC 테이블 급증 |
+| ARP 스푸핑 | ARP 미검증 | DAI(동적 ARP 검사) | ARP 다중 매핑 |
+| VLAN 호핑 | DTP/트렁크 자동 | DTP 비활성·트렁크 명시 | 비정상 트렁크 협상 |
+| STP 조작(루트 탈취) | BPDU 신뢰 | BPDU Guard·Root Guard | 비정상 루트 변경 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 자체 망 ARP 스푸핑 신호 점검(소유 망) — 한 MAC이 여러 IP를 위장
+ip neigh show 2>/dev/null | awk '{print $5}' | sort | uniq -c | sort -rn | head
+# 2) ARP 테이블 플립 모니터 — 동일 IP의 MAC 변경 = 스푸핑 의심(arpwatch 권장)
+arp -an 2>/dev/null | sort | head
+```
+
+> L2 방어는 *통제가 스푸핑을 실제로 막는가*다 — "스위치 동작한다"와 "port-security·DAI가 적용돼 ARP 다중 매핑이 차단·탐지된다"는 다르다. 소유 망에서 ARP 매핑·플립을 직접 확인한다([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # 32-02. Layer 2 Attacks — Collapsing Every Boundary Within the Same Switch Domain
@@ -1097,3 +1124,28 @@ CVE-2026-20084 disclosed in March 2026 involves **BOOTP packets leaking between 
 ## 10. Conclusion
 
 Layer 2 attacks are often called "classics," but in 2026 field audits, networks with all the above defenses properly configured are a minority. The next document (03) moves to a higher layer to cover **routing protocol attacks** — OSPF LSA injection, BGP route hijacking, HSRP hijacking.
+
+<!-- detect-validate-32 -->
+## Layer 2 Attack Detection and Defense Validation
+
+L2 attacks break switch-domain boundaries via *MAC flooding, ARP spoofing, VLAN hopping, STP manipulation, and DHCP starvation*. Defenders must verify **whether their switch blocks and detects these with L2 controls**. Validate only on **owned networks**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| MAC flooding | CAM table limit | port-security | MAC table surge |
+| ARP spoofing | Unvalidated ARP | DAI (Dynamic ARP Inspection) | Multiple ARP mappings |
+| VLAN hopping | DTP/trunk auto | Disable DTP, explicit trunk | Abnormal trunk negotiation |
+| STP manipulation (root hijack) | BPDU trust | BPDU Guard, Root Guard | Abnormal root change |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check your network for ARP-spoofing signals (owned network) — one MAC spoofing many IPs
+ip neigh show 2>/dev/null | awk '{print $5}' | sort | uniq -c | sort -rn | head
+# 2) Monitor ARP-table flips — a MAC change for the same IP suggests spoofing (arpwatch recommended)
+arp -an 2>/dev/null | sort | head
+```
+
+> L2 defense is *whether controls actually block spoofing* -- "the switch works" differs from "port-security/DAI are applied so multiple ARP mappings are blocked and detected". Confirm ARP mappings and flips on owned networks directly ([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).

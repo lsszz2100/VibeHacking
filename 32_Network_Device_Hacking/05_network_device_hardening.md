@@ -420,6 +420,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-32 -->
+## 네트워크 장비 보안 강화 작동 검증과 회귀
+
+강화는 *설정했다*가 아니라 *L2/제어/관리 통제가 실제로 막고 드러내는가*로 가치가 갈린다. 방어자는 **port-security·DAI·SNMPv3·AAA가 동작하고 설정 drift가 탐지되는가**를 검증해야 한다. 검증은 **소유 장비/망**에서만.
+
+### 검증 항목 → 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| L2 통제(port-security/DAI) | 스푸핑을 막나? | 위반 포트 차단 | 통제 미적용 인터페이스 |
+| 관리 암호화 | 평문 관리를 막나? | 평문 관리 0 | SSH 외 잔존 |
+| SNMP/AAA | 약한 인증을 막나? | v3·강한 키 적용 | v2c/기본 community 잔존 |
+| 설정 drift | 변경을 잡나? | config diff 탐지 | 베이스라인 부재 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 설정 drift 점검(소유 장비) — 백업 config와 현재 config 차이
+diff <(sort baseline_config.txt 2>/dev/null) <(sort running_config.txt 2>/dev/null) | head
+# 2) 평문 관리 잔존 점검(소유 망) — telnet/http/snmp v2c가 아직 응답하는지
+nmap -sU -sT -p T:23,80,U:161 192.168.1.1 2>/dev/null | grep -iE "open"
+```
+
+> 강화 검증은 *설정했는가*가 아니라 *막고 드러내는가*다 — "보안 설정 넣었다"와 "평문 관리가 0이고 설정 drift가 diff로 잡힌다"는 다르다. 소유 장비에서 config diff·평문 잔존을 직접 확인한다([[24_Network_Infrastructure_Security]], [[26_Linux_Hardening]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # Network Device Hardening — Cisco/Juniper Security Configs, Network Device Monitoring
@@ -459,3 +486,28 @@ python3 batch_audit.py --inventory devices.json -k ~/.ssh/id_rsa
 - Cisco security hardening: https://www.cisco.com/c/en/us/support/docs/ip/access-lists/13608-21.html
 - CIS Cisco IOS Benchmark: https://www.cisecurity.org/benchmark/cisco
 - Netmiko documentation: https://github.com/ktbyers/netmiko
+
+<!-- detect-validate-32 -->
+## Network Device Hardening Effectiveness Validation and Regression
+
+Hardening's value comes not from *whether it's configured* but from *whether L2/control/management controls actually block and surface*. Defenders must verify **whether port-security/DAI/SNMPv3/AAA work and config drift is detected**. Validate only on **owned devices/networks**.
+
+### Check -> Question -> Signal -> Pitfall
+
+| Check | Question | Signal | Pitfall |
+|---|---|---|---|
+| L2 control (port-security/DAI) | Does it block spoofing? | Violating port blocked | Interfaces without control |
+| Mgmt encryption | Does it block plaintext mgmt? | Zero plaintext mgmt | Non-SSH leftovers |
+| SNMP/AAA | Does it block weak auth? | v3, strong key applied | v2c/default community leftover |
+| Config drift | Does it catch changes? | Config-diff detection | No baseline |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Check config drift (owned device) — difference between backup and running config
+diff <(sort baseline_config.txt 2>/dev/null) <(sort running_config.txt 2>/dev/null) | head
+# 2) Check plaintext-management leftovers (owned network) — whether telnet/http/snmp v2c still respond
+nmap -sU -sT -p T:23,80,U:161 192.168.1.1 2>/dev/null | grep -iE "open"
+```
+
+> Hardening validation is *whether it blocks and surfaces*, not *whether it's configured* -- "we added security config" differs from "plaintext management is zero and config drift is caught by diff". Confirm config diff and plaintext leftovers on owned devices directly ([[24_Network_Infrastructure_Security]], [[26_Linux_Hardening]], [[13_SOC_Blue_Team]]).
