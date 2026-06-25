@@ -926,6 +926,33 @@ python ct_parser.py chall.ct export records.json
 
 ---
 
+<!-- detect-validate-50 -->
+## Cheat Engine 트레이너 탐지와 무결성 검증
+
+Cheat Engine 고급(Lua·Auto Assembler·구조체 역분석·트레이너·스피드핵)은 *코드 인젝션·동적 패치*로 게임을 조작한다. 방어자는 **프로세스 무결성과 비정상 모듈이 탐지되는가**를 검증해야 한다. 검증은 **소유 게임/테스트 환경**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| Auto Assembler | 코드 케이브 주입 | 코드 무결성 | .text 변조/후킹 |
+| 트레이너 DLL | 외부 모듈 로드 | 모듈 화이트리스트 | 비서명 DLL 로드 |
+| 스피드핵 | 타이머 후킹 | 서버 시간 권위 | timeGetTime 후킹 |
+| 구조체 역분석 | 메모리 가시성 | 난독화·암호화 | 포인터 스캔 패턴 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 테스트 게임 프로세스에 비정상/비서명 모듈 로드 여부(트레이너 신호) — 로드 모듈 목록 점검
+ls -la /proc/$(pgrep -n testgame)/map_files/ 2>/dev/null | grep -iE '\.so|inject|cheat' | head || echo "Windows: tasklist /m로 비서명 DLL 점검"
+# 2) 코드 세그먼트 무결성 — 기준 해시와 비교해 .text 변조(후킹) 탐지
+sha256sum /proc/$(pgrep -n testgame)/exe 2>/dev/null; cat baseline_text.sha256 2>/dev/null
+```
+
+> CE 방어는 *무결성·모듈이 검증되는가*다 — "게임이 실행된다"와 "코드 무결성이 유지되고 비서명 트레이너 DLL이 탐지된다"는 다르다. 소유 게임/테스트 환경에서 직접 확인한다([[04_Reverse_Engineering]], [[03_System_Hacking]], [[55_Evasion_Techniques]]).
+
+---
+
 <a name="english"></a>
 
 # 02. Advanced Cheat Engine Usage
@@ -1473,3 +1500,28 @@ python ct_parser.py chall.ct export records.json
 | F7        | Step Into (debugger)              |
 | F8        | Step Over (debugger)              |
 | Ctrl+F2   | Restart process                   |
+
+<!-- detect-validate-50 -->
+## Cheat Engine Trainer Detection and Integrity Validation
+
+Advanced Cheat Engine (Lua, Auto Assembler, structure dissect, trainers, speedhack) manipulates games via *code injection and dynamic patching*. Defenders must verify **whether process integrity and abnormal modules are detected**. Validate only on **owned games/test environments**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Auto Assembler | Code-cave injection | Code integrity | .text tampered/hooked |
+| Trainer DLL | External module load | Module allowlist | Unsigned DLL loaded |
+| Speedhack | Timer hooking | Server time authority | timeGetTime hooked |
+| Structure dissect | Memory visibility | Obfuscation, encryption | Pointer-scan pattern |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether abnormal/unsigned modules are loaded into the owned test-game process (trainer signal) — inspect loaded modules
+ls -la /proc/$(pgrep -n testgame)/map_files/ 2>/dev/null | grep -iE '\.so|inject|cheat' | head || echo "Windows: check unsigned DLLs via tasklist /m"
+# 2) Code-segment integrity — compare against a baseline hash to detect .text tampering (hooking)
+sha256sum /proc/$(pgrep -n testgame)/exe 2>/dev/null; cat baseline_text.sha256 2>/dev/null
+```
+
+> CE defense is *whether integrity and modules are validated* -- "the game runs" differs from "code integrity holds and unsigned trainer DLLs are detected". Confirm on owned games/test environments directly ([[04_Reverse_Engineering]], [[03_System_Hacking]], [[55_Evasion_Techniques]]).

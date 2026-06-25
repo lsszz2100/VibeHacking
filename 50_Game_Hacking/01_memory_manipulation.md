@@ -1033,6 +1033,33 @@ python mem_tool.py game.exe aob "89 45 ?? 8B 4D ??"
 
 ---
 
+<!-- detect-validate-50 -->
+## 게임 메모리 조작 탐지와 서버측 검증
+
+게임 메모리 조작은 *값 스캐닝·메모리 패치·구조체 조작*으로 체력·재화·좌표를 변조한다. 핵심 방어 원칙은 **클라이언트를 신뢰하지 않고 서버가 권위 있게 검증하는가**다. 검증은 **소유 게임/테스트 서버**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 값 스캐닝/패치 | 클라 권위 신뢰 | 서버 권위 검증 | 불가능한 스탯 값 |
+| 무결성 우회 | 메모리 무검사 | 무결성 체크섬 | 코드/데이터 변조 |
+| 스피드핵 | 클라 시간 신뢰 | 서버 시간 검증 | 비정상 행동 속도 |
+| 재화 조작 | 클라 보유량 신뢰 | 서버 원장 | 클라↔서버 불일치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 테스트 서버 로그에서 불가능한 값(서버측 검증 부재 신호) — 스탯/재화 상한 초과
+awk -F, '$2=="hp" && $3>1000 {print "impossible hp:",$1,$3} $2=="gold" && $3>1e9 {print "impossible gold:",$1,$3}' server_state.csv 2>/dev/null | head
+# 2) 클라이언트 보고값↔서버 원장 불일치 — 동기화 시 차이가 조작 신호
+awk -F, 'NR==FNR{s[$1]=$3;next} ($1 in s) && $3!=s[$1]{print "mismatch:",$1,"client="$3" server="s[$1]}' server_ledger.csv client_report.csv 2>/dev/null | head
+```
+
+> 게임 방어는 *서버가 권위 있게 검증하는가*다 — "게임이 동작한다"와 "클라 값이 신뢰되지 않고 불가능한 스탯·재화가 서버에서 거부된다"는 다르다. 소유 게임/테스트 서버에서 직접 확인한다([[03_System_Hacking]], [[04_Reverse_Engineering]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # 01. Game Memory Manipulation
@@ -1986,3 +2013,28 @@ python mem_tool.py game.exe nop 0x1A2B40 5
 # 4. AOB pattern scan
 python mem_tool.py game.exe aob "89 45 ?? 8B 4D ??"
 ```
+
+<!-- detect-validate-50 -->
+## Game Memory-Manipulation Detection and Server-Side Validation
+
+Game memory manipulation alters HP, currency, and coordinates via *value scanning, memory patching, and struct tampering*. The core defense principle is **whether the server validates authoritatively without trusting the client**. Validate only on **owned games/test servers**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Value scan/patch | Trust client authority | Server-authoritative validation | Impossible stat values |
+| Integrity bypass | Unchecked memory | Integrity checksum | Code/data tampered |
+| Speedhack | Trust client time | Server-side time check | Abnormal action rate |
+| Currency tampering | Trust client balance | Server ledger | Client != server |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Impossible values in owned test-server logs (signal of missing server-side validation) — stat/currency cap exceeded
+awk -F, '$2=="hp" && $3>1000 {print "impossible hp:",$1,$3} $2=="gold" && $3>1e9 {print "impossible gold:",$1,$3}' server_state.csv 2>/dev/null | head
+# 2) Client-reported value vs server ledger mismatch — a difference on sync is the tampering signal
+awk -F, 'NR==FNR{s[$1]=$3;next} ($1 in s) && $3!=s[$1]{print "mismatch:",$1,"client="$3" server="s[$1]}' server_ledger.csv client_report.csv 2>/dev/null | head
+```
+
+> Game defense is *whether the server validates authoritatively* -- "the game works" differs from "client values are not trusted and impossible stats/currency are rejected server-side". Confirm on owned games/test servers directly ([[03_System_Hacking]], [[04_Reverse_Engineering]], [[40_Threat_Hunting]]).

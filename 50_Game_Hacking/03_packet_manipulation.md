@@ -913,6 +913,33 @@ python packet_tool.py send target.server.com 7777 \
 
 ---
 
+<!-- detect-validate-50 -->
+## 게임 패킷 조작 탐지와 서버측 권위 검증
+
+게임 패킷 조작은 *MITM·커스텀 패킷·프로토콜 역분석·서버 검증 우회*로 행동을 위조한다. 핵심 방어는 **서버가 패킷을 신뢰하지 않고 상태 전이를 검증하는가**다. 검증은 **소유 게임/테스트 서버**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 패킷 위조 | 클라 입력 신뢰 | 서버측 상태 검증 | 불가능 상태 전이 |
+| 리플레이 | 논스/시퀀스 부재 | 시퀀스·논스 | 중복 시퀀스 |
+| 평문 프로토콜 | 미암호화 | TLS·암호화 | 평문 게임 패킷 |
+| 속도/위치 위조 | 클라 권위 | 서버 물리 검증 | 순간이동/속도 초과 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 캡처에서 불가능한 이동(순간이동) — 연속 좌표 간 거리/시간이 물리 한계 초과 신호
+awk -F, '{d=sqrt(($2-px)^2+($3-py)^2); if(NR>1 && d/($1-pt)>MAXSPD) print "teleport:",$1,d; px=$2;py=$3;pt=$1}' MAXSPD=50 movement_log.csv 2>/dev/null | head
+# 2) 리플레이/중복 시퀀스 탐지(서버 권위 신호) — 동일 seq 다중 출현
+awk -F, '{c[$4]++} END{for(s in c) if(c[s]>1) print "dup seq:",s,c[s]}' packet_log.csv 2>/dev/null | head
+```
+
+> 패킷 방어는 *서버가 상태를 검증하는가*다 — "패킷이 오간다"와 "불가능한 이동·중복 시퀀스가 서버에서 거부된다"는 다르다. 소유 게임/테스트 서버에서 직접 확인한다([[02_Network_Hacking]], [[40_Threat_Hunting]], [[52_API_Security]]).
+
+---
+
 <a name="english"></a>
 
 # 03. Game Packet Manipulation
@@ -1181,3 +1208,28 @@ python packet_tool.py send target.server.com 7777 \
 6. Use Python protobuf reverse engineering tool to understand structure
 7. Generate a manipulated payload and send it using the replay tool
 ```
+
+<!-- detect-validate-50 -->
+## Game Packet-Manipulation Detection and Server-Authoritative Validation
+
+Game packet manipulation forges actions via *MITM, custom packets, protocol reversing, and server-validation bypass*. The core defense is **whether the server validates state transitions without trusting packets**. Validate only on **owned games/test servers**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Packet forgery | Trust client input | Server-side state validation | Impossible state transition |
+| Replay | No nonce/sequence | Sequence, nonce | Duplicate sequence |
+| Plaintext protocol | Unencrypted | TLS, encryption | Plaintext game packets |
+| Speed/position forgery | Client authority | Server physics check | Teleport/speed exceed |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Impossible movement (teleport) in owned capture — distance/time between consecutive coords exceeding physical limits
+awk -F, '{d=sqrt(($2-px)^2+($3-py)^2); if(NR>1 && d/($1-pt)>MAXSPD) print "teleport:",$1,d; px=$2;py=$3;pt=$1}' MAXSPD=50 movement_log.csv 2>/dev/null | head
+# 2) Replay/duplicate-sequence detection (server-authority signal) — same seq appearing multiple times
+awk -F, '{c[$4]++} END{for(s in c) if(c[s]>1) print "dup seq:",s,c[s]}' packet_log.csv 2>/dev/null | head
+```
+
+> Packet defense is *whether the server validates state* -- "packets flow" differs from "impossible movement and duplicate sequences are rejected server-side". Confirm on owned games/test servers directly ([[02_Network_Hacking]], [[40_Threat_Hunting]], [[52_API_Security]]).

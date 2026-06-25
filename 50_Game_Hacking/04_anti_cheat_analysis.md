@@ -1093,6 +1093,33 @@ python anticheat_sim.py proccheck
 
 ---
 
+<!-- detect-validate-50 -->
+## 안티치트 효과 검증 (배포됨 ≠ 탐지함)
+
+안티치트(커널 레벨·DLL 인젝션 탐지·무결성 검사)는 *조작 탐지·차단*을 목표로 한다. "안티치트를 배포했다"는 설정과 "실제 조작을 탐지·차단한다"는 다르다 — 각 탐지를 소유 테스트 환경에서 검증한다(CTF/보안 연구 관점).
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 인젝션 탐지 | DLL 주입 잡나? | 테스트 주입 시 플래그 | 우회 모듈 미탐 |
+| 무결성 검사 | 코드 변조 탐지? | .text 패치 시 알람 | 주기적 미검사 |
+| 메모리 스캔 | 시그니처 탐지? | 알려진 치트 패턴 발견 | 난독화 회피 |
+| 서버 연계 | 탐지→조치? | 플래그→서버 제재 | 로컬만, 미보고 |
+
+### 효과 검증 (직접 확인)
+
+```bash
+# 1) 소유 테스트 환경에서 안티치트가 모듈 주입을 탐지·기록하는지 — 미탐이면 탐지 갭 신호
+grep -icE 'injection detected|unauthorized module|integrity violation' anticheat.log 2>/dev/null  # >0 이어야
+# 2) 코드 무결성 검사 발화 — 테스트 패치 후 변조 탐지 로그 확인(소유 환경)
+sha256sum /proc/$(pgrep -n testgame)/exe 2>/dev/null; grep -c 'tamper' anticheat.log 2>/dev/null
+```
+
+> 안티치트는 *조작을 탐지하는가*다 — "커널 안티치트가 있다"와 "테스트 주입이 플래그되고 코드 변조가 알람을 내며 서버로 보고된다"는 다르다. 각 탐지를 소유 테스트 환경에서 직접 검증한다([[55_Evasion_Techniques]], [[04_Reverse_Engineering]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # 04. Anti-Cheat Analysis
@@ -2122,3 +2149,28 @@ python anticheat_sim.py fim game.exe game_data.dat
 # 7. Blacklist process check (detection evasion research)
 python anticheat_sim.py proccheck
 ```
+
+<!-- detect-validate-50 -->
+## Anti-Cheat Effectiveness Validation (Deployed != Detecting)
+
+Anti-cheat (kernel-level, DLL-injection detection, integrity checks) aims to *detect and block tampering*. "We deployed anti-cheat" differs from "it actually detects/blocks real tampering" -- validate each detection on owned test environments (from a CTF/security-research perspective).
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Injection detection | Catch DLL injection? | Flag on test injection | Misses bypass module |
+| Integrity check | Detect code tampering? | Alarm on .text patch | No periodic check |
+| Memory scan | Detect signatures? | Known cheat pattern found | Obfuscation evades |
+| Server linkage | Detect->act? | Flag -> server sanction | Local only, not reported |
+
+### Effectiveness validation (verify directly)
+
+```bash
+# 1) Whether anti-cheat detects/logs a module injection on an owned test env — a miss signals a detection gap
+grep -icE 'injection detected|unauthorized module|integrity violation' anticheat.log 2>/dev/null  # should be >0
+# 2) Code-integrity check firing — confirm a tamper-detection log after a test patch (owned env)
+sha256sum /proc/$(pgrep -n testgame)/exe 2>/dev/null; grep -c 'tamper' anticheat.log 2>/dev/null
+```
+
+> Anti-cheat is *whether it detects tampering* -- "we have kernel anti-cheat" differs from "a test injection is flagged, code tampering alarms, and it is reported to the server". Validate each detection on owned test environments directly ([[55_Evasion_Techniques]], [[04_Reverse_Engineering]], [[40_Threat_Hunting]]).
