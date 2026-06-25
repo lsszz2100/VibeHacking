@@ -1260,6 +1260,33 @@ EOF
 
 ---
 
+<!-- detect-validate-34 -->
+## 펌웨어 시크릿 노출 탐지와 빌드 검증
+
+펌웨어 분석은 *추출·정적분석·하드코딩 크리덴셜·디버그 심볼*로 키·계정·취약점을 찾는다. 방어자는 **출하 이미지에 시크릿이 없고 빌드가 강화됐는지**를 검증해야 한다. 검증은 **소유 펌웨어 빌드**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| binwalk 추출 | 비암호화 파일시스템 | 이미지 서명·암호화 | 평문 squashfs 추출 |
+| 하드코딩 크리덴셜 | 임베디드 비번/키 | 빌드 시 시크릿 스캔 | passwd/private key 문자열 |
+| 디버그 심볼 | 빌드 메타 누출 | 릴리스 스트립 | 심볼/경로 잔존 |
+| 알려진 CVE 컴포넌트 | 구버전 라이브러리 | SBOM·버전 게이트 | 취약 버전 문자열 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 펌웨어 이미지의 하드코딩 시크릿 — 키/계정/토큰 잔존
+binwalk -e owned_firmware.bin 2>/dev/null && grep -rIiE 'BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|password=|api[_-]?key' _owned_firmware.bin.extracted/ | head
+# 2) 알려진 취약 컴포넌트 버전 표면 — 임베디드 바이너리 버전 문자열
+strings -n 6 _owned_firmware.bin.extracted/usr/sbin/dropbear 2>/dev/null | grep -iE 'dropbear|openssl|busybox' | head
+```
+
+> 펌웨어 강화는 *이미지에 비밀이 없는가*다 — "부팅된다"와 "private key·하드코딩 비번이 없고 디버그 심볼이 스트립되며 취약 버전이 없다"는 다르다. 소유 빌드에서 시크릿·버전 표면을 직접 확인한다([[61_Firmware_Hacking]], [[18_DevSecOps]], [[06_Malware_Analysis]]).
+
+---
+
 <a name="english"></a>
 
 # 02 — Firmware Analysis
@@ -1309,3 +1336,29 @@ for f in sorted(changed): print(f"  ~ {f}")
 
 compare_firmwares("squashfs-root-v1", "squashfs-root-v2")
 ```
+
+
+<!-- detect-validate-34 -->
+## Firmware Secret Exposure Detection and Build Validation
+
+Firmware analysis finds keys, accounts, and bugs via *extraction, static analysis, hardcoded credentials, and debug symbols*. Defenders must verify **whether shipped images are free of secrets and the build is hardened**. Validate only on **owned firmware builds**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| binwalk extraction | Unencrypted filesystem | Sign/encrypt image | Plaintext squashfs extracted |
+| Hardcoded credentials | Embedded password/key | Secret-scan at build | passwd/private key strings |
+| Debug symbols | Build metadata leak | Strip release | Symbols/paths remain |
+| Known-CVE component | Outdated library | SBOM, version gate | Vulnerable version string |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Hardcoded secrets in owned firmware image — keys/accounts/tokens remaining
+binwalk -e owned_firmware.bin 2>/dev/null && grep -rIiE 'BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|password=|api[_-]?key' _owned_firmware.bin.extracted/ | head
+# 2) Known-vulnerable component version surface — embedded binary version strings
+strings -n 6 _owned_firmware.bin.extracted/usr/sbin/dropbear 2>/dev/null | grep -iE 'dropbear|openssl|busybox' | head
+```
+
+> Firmware hardening is *whether the image is free of secrets* -- "it boots" differs from "no private key or hardcoded password, debug symbols stripped, no vulnerable versions". Confirm the secret/version surface on owned builds directly ([[61_Firmware_Hacking]], [[18_DevSecOps]], [[06_Malware_Analysis]]).

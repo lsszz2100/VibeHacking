@@ -479,6 +479,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-34 -->
+## 하드웨어 방어 검증 (설정됨 ≠ 작동함)
+
+하드웨어 방어는 *UEFI 시큐어 부트·TPM 키 관리·물리 보안·변조 감지*로 구성된다. "활성화했다"는 설정과 "위협 모델대로 작동한다"는 다르다 — 각 방어를 소유 기기에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 시큐어 부트 | 강제 모드인가? | SecureBoot=1·Setup=0 | Setup 모드 방치 |
+| TPM 봉인 | 키가 PCR에 봉인됐나? | 변경 시 unseal 실패 | PCR 미바인딩 |
+| 펌웨어 롤백 | 구버전 거부? | 다운그레이드 차단 | 롤백 카운터 없음 |
+| 변조 감지 | 트리거 시 소거? | 탬퍼 이벤트→키 소거 | 로그만, 무대응 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 호스트의 시큐어 부트 강제 여부 — SecureBoot=1 이고 Setup 모드 아님이어야 함
+mokutil --sb-state 2>/dev/null; bootctl status 2>/dev/null | grep -i 'secure boot'
+# 2) TPM PCR 봉인 검증 — 부트 상태 변경 시 unseal 실패가 정상(소유 기기)
+tpm2_pcrread sha256:0,7 2>/dev/null | head
+```
+
+> 하드웨어 방어는 *통제가 강제되는가*다 — "시큐어 부트 켰다"와 "SecureBoot=1·Setup 모드 아님이고 키가 PCR에 봉인돼 변경 시 unseal이 실패한다"는 다르다. 각 방어를 소유 기기에서 직접 검증한다([[34_Hardware_Hacking]], [[39_Zero_Trust_Architecture]], [[26_Linux_Hardening]]).
+
+---
+
 <a name="english"></a>
 
 # Hardware Security Defense — Secure Boot, TPM, Physical Security, Tamper Detection
@@ -530,3 +557,29 @@ python3 tpm_monitor.py --baseline /etc/security/pcr_baseline.json
 
 - TCG TPM 2.0 Spec: https://trustedcomputinggroup.org/resource/tpm-library-specification/
 - Linux IMA: https://www.kernel.org/doc/html/latest/security/IMA-templates.html
+
+
+<!-- detect-validate-34 -->
+## Hardware Defense Validation (Configured != Working)
+
+Hardware defense comprises *UEFI Secure Boot, TPM key management, physical security, and tamper detection*. "We enabled it" differs from "it works per the threat model" -- validate each defense on owned devices.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Secure Boot | Enforcing mode? | SecureBoot=1, Setup=0 | Left in Setup mode |
+| TPM sealing | Keys sealed to PCR? | unseal fails on change | No PCR binding |
+| Firmware rollback | Old versions rejected? | Downgrade blocked | No rollback counter |
+| Tamper detect | Erase on trigger? | Tamper event -> key wipe | Log only, no action |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether Secure Boot is enforcing on the owned host — should be SecureBoot=1 and not in Setup mode
+mokutil --sb-state 2>/dev/null; bootctl status 2>/dev/null | grep -i 'secure boot'
+# 2) TPM PCR sealing check — on a boot-state change, an unseal failure is correct (owned device)
+tpm2_pcrread sha256:0,7 2>/dev/null | head
+```
+
+> Hardware defense is *whether controls are enforced* -- "Secure Boot is on" differs from "SecureBoot=1, not in Setup mode, and keys are PCR-sealed so unseal fails on change". Validate each defense on owned devices directly ([[34_Hardware_Hacking]], [[39_Zero_Trust_Architecture]], [[26_Linux_Hardening]]).

@@ -1032,6 +1032,33 @@ uint8_t masked_sbox(uint8_t x, uint8_t mask_in, uint8_t mask_out) {
 
 ---
 
+<!-- detect-validate-34 -->
+## 사이드채널·폴트 주입 내성 검증
+
+사이드채널·폴트 주입은 *전력/타이밍/EM 누출과 전압·클락·레이저 글리칭*으로 키 복구나 보안 검사 우회를 노린다. 이런 공격은 로그에 거의 안 남으므로 방어자는 **대응책이 실제로 적용됐는지**를 검증해야 한다. 검증은 **소유 기기**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 검증 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 검증 신호 |
+|---|---|---|---|
+| 전력 분석(DPA/CPA) | 데이터 의존 소비 | 마스킹·노이즈 | 키↔전력 상관 무 |
+| 타이밍 공격 | 비상수 시간 비교 | 상수시간 연산 | 입력별 시간 일정 |
+| 전압/클락 글리칭 | 검사 우회 가능 | 글리치 탐지·중복검사 | 글리치 시 리셋/락 |
+| 레이저 폴트 | 비트 플립 | 센서·차폐·이중화 | 폴트 시 안전정지 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 코드의 비밀 비교가 상수시간인지 정적 점검 — 조기반환(==/memcmp)이 신호
+grep -rnE '(memcmp|strcmp)\s*\(.*(key|hmac|tag|secret)|if\s*\(.*==.*(token|mac)' src/ | head
+# 2) 글리칭 내성 회귀 — 소유 보드에 전압 글리치 스윕 후 '검사 우회 0건' 확인(테스트 하네스 로그)
+grep -cE 'bypass|skipped_check' glitch_campaign.log 2>/dev/null   # 0 이어야 함
+```
+
+> 사이드채널 방어는 *누출·우회가 없는가*다 — "기능이 동작한다"와 "키↔전력 상관이 없고 비교가 상수시간이며 글리치 시 안전정지한다"는 다르다. 소유 기기에서 대응책 적용을 직접 확인한다([[16_Cryptography]], [[61_Firmware_Hacking]], [[34_Hardware_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # Side-Channel Attacks and Fault Injection
@@ -1098,3 +1125,29 @@ Goals:
 ## Legal Notice
 
 The techniques in this material must only be performed on **devices you own or have explicit written permission** for. Voltage and clock glitching can permanently damage devices. Laser fault injection requires prior safety training for high-power laser handling.
+
+
+<!-- detect-validate-34 -->
+## Side-Channel / Fault-Injection Resistance Validation
+
+Side-channel and fault injection aim to recover keys or bypass security checks via *power/timing/EM leakage and voltage/clock/laser glitching*. These attacks leave almost no logs, so defenders must verify **whether countermeasures are actually in place**. Validate only on **owned devices**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Validation signal
+
+| Technique | Targeted weakness | Primary control (defender) | Validation signal |
+|---|---|---|---|
+| Power analysis (DPA/CPA) | Data-dependent draw | Masking, noise | No key<->power correlation |
+| Timing attack | Non-constant compare | Constant-time ops | Time uniform across inputs |
+| Voltage/clock glitch | Check is bypassable | Glitch detect, recheck | Reset/lock on glitch |
+| Laser fault | Bit flip | Sensors, shield, redundancy | Safe-halt on fault |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Static check that owned code compares secrets in constant time — early return (==/memcmp) is the signal
+grep -rnE '(memcmp|strcmp)\s*\(.*(key|hmac|tag|secret)|if\s*\(.*==.*(token|mac)' src/ | head
+# 2) Glitch-resistance regression — after a voltage-glitch sweep on the owned board, confirm '0 bypasses' (test-harness log)
+grep -cE 'bypass|skipped_check' glitch_campaign.log 2>/dev/null   # should be 0
+```
+
+> Side-channel defense is *whether leakage/bypass is absent* -- "the feature works" differs from "no key<->power correlation, comparisons are constant-time, and a glitch triggers a safe-halt". Confirm countermeasures on owned devices directly ([[16_Cryptography]], [[61_Firmware_Hacking]], [[34_Hardware_Hacking]]).

@@ -930,6 +930,33 @@ lsblk -f | grep -E "crypto_LUKS|BitLocker"
 
 ---
 
+<!-- detect-validate-34 -->
+## 하드웨어 보안 평가 검증 (설정됨 ≠ 작동함)
+
+하드웨어 평가는 *PCB 검사·디버그 인터페이스 식별·위협 모델링·TPM/HSM 점검*으로 노출을 찾는다. "보안 기능이 있다"는 주장과 "그 통제가 실제로 작동한다"는 다르다 — 각 통제를 소유 기기에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 디버그 비활성 | JTAG/UART 잠겼나? | IDCODE 무응답·콘솔 무셸 | "안 쓴다"≠비활성 |
+| 시큐어 부트 | 미서명 펌웨어 거부? | 변조 이미지 부팅 거부 | 검증만 하고 미강제 |
+| 보안 요소 | 키가 SE/TPM에 있나? | EEPROM/플래시에 평문 키 무 | 키를 일반 플래시에 |
+| 탬퍼 감지 | 개봉 시 감지/소거? | 탬퍼 트리거 시 키 소거 | 스티커만 부착 |
+
+### 평가 검증 (직접 확인)
+
+```bash
+# 1) 소유 기기 펌웨어에 평문 키/인증서가 없는지 — 보안 요소 이전 여부 신호
+strings -n 16 owned_firmware.bin 2>/dev/null | grep -iE 'BEGIN .*PRIVATE KEY|-----BEGIN CERT' | head
+# 2) 시큐어 부트 강제 검증 — 변조 이미지로 부팅 시도 후 거부 로그 확인(소유 보드)
+grep -iE 'signature (invalid|verify failed)|boot (denied|halted)' bootlog.txt 2>/dev/null | head
+```
+
+> 하드웨어 평가는 *통제가 작동하는가*다 — "TPM이 있다"와 "키가 TPM 밖 평문으로 없고 변조 펌웨어가 거부되며 탬퍼 시 키가 소거된다"는 다르다. 각 통제를 소유 기기에서 직접 검증한다([[34_Hardware_Hacking]], [[61_Firmware_Hacking]], [[48_Threat_Modeling]]).
+
+---
+
 <a name="english"></a>
 
 # Hardware Security Assessment — Device Auditing, Physical Security, and Tamper Protection
@@ -1485,3 +1512,29 @@ Recommendation: Encrypt firmware with AES-128 or stronger
 | Short-term | Firmware signing | Medium |
 | Mid-term | Firmware encryption | High |
 ```
+
+
+<!-- detect-validate-34 -->
+## Hardware Security Assessment Validation (Configured != Working)
+
+Hardware assessment finds exposure via *PCB inspection, debug-interface identification, threat modeling, and TPM/HSM checks*. "A security feature exists" differs from "that control actually works" -- validate each control on owned devices.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Debug disabled | JTAG/UART locked? | IDCODE silent, no shell | "unused" != disabled |
+| Secure boot | Unsigned firmware rejected? | Tampered image refused | Verify but not enforce |
+| Secure element | Keys in SE/TPM? | No plaintext key in EEPROM/flash | Keys in general flash |
+| Tamper detect | Detect/erase on open? | Keys zeroized on trigger | Just a sticker |
+
+### Assessment validation (verify directly)
+
+```bash
+# 1) Whether owned firmware has no plaintext keys/certs — signals migration to a secure element
+strings -n 16 owned_firmware.bin 2>/dev/null | grep -iE 'BEGIN .*PRIVATE KEY|-----BEGIN CERT' | head
+# 2) Secure-boot enforcement check — attempt boot with a tampered image, confirm rejection log (owned board)
+grep -iE 'signature (invalid|verify failed)|boot (denied|halted)' bootlog.txt 2>/dev/null | head
+```
+
+> Hardware assessment is *whether controls work* -- "we have a TPM" differs from "no plaintext key exists outside the TPM, tampered firmware is rejected, and keys are zeroized on tamper". Validate each control on owned devices directly ([[34_Hardware_Hacking]], [[61_Firmware_Hacking]], [[48_Threat_Modeling]]).

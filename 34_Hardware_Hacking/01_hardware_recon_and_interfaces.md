@@ -1140,6 +1140,33 @@ openocd -f /tmp/mips_jtag.cfg
 
 ---
 
+<!-- detect-validate-34 -->
+## 디버그 인터페이스 노출 탐지와 하드닝 검증
+
+하드웨어 정찰은 *UART 콘솔·JTAG·SPI 플래시·I2C EEPROM* 같은 노출된 디버그 인터페이스로 셸·펌웨어·키를 얻는다. 방어자는 **출하 기기에서 디버그 포트가 비활성/잠금됐는지**를 검증해야 한다. 검증은 **소유 기기/개발 보드**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| UART 콘솔 | 활성 시리얼 셸 | 콘솔 비활성·인증 | 부팅 시 셸 프롬프트 |
+| JTAG/SWD | 잠금 안 된 디버그 | 퓨즈로 영구 비활성 | IDCODE 응답 |
+| SPI 플래시 덤프 | 외부 플래시 평문 | 플래시 암호화 | 덤프 엔트로피 낮음 |
+| I2C EEPROM | 평문 설정/키 | 보안 요소로 이전 | EEPROM에 평문 키 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 기기 펌웨어 덤프의 디버그 인터페이스 흔적 — 활성 콘솔/getty 참조
+strings -n 8 owned_firmware.bin 2>/dev/null | grep -iE 'ttyS|getty|/bin/sh|console=' | head
+# 2) 추출한 SPI 플래시 이미지 암호화 여부 — 엔트로피 < 7.0 이면 평문(미암호화) 신호
+python3 -c "import sys,math,collections;d=open('flash.bin','rb').read();c=collections.Counter(d);e=-sum(n/len(d)*math.log2(n/len(d)) for n in c.values());print(f'entropy={e:.2f}')" 2>/dev/null
+```
+
+> 하드웨어 하드닝은 *디버그 표면이 닫혀 있는가*다 — "기능은 동작한다"와 "JTAG가 퓨즈로 잠기고 콘솔에 셸이 안 뜨며 플래시가 암호화됐다"는 다르다. 소유 기기/개발 보드에서 노출 인터페이스를 직접 확인한다([[61_Firmware_Hacking]], [[27_IoT_Hacking]], [[04_Reverse_Engineering]]).
+
+---
+
 <a name="english"></a>
 
 # 01 — Hardware Recon & Interfaces
@@ -1177,3 +1204,29 @@ Interface Identification Priority:
 2. JTAG (4~5 pins)            → Full debug/dump
 3. SPI Flash (8-pin SOIC)     → Direct firmware dump
 4. I2C EEPROM                 → Configuration/key extraction
+
+
+<!-- detect-validate-34 -->
+## Debug Interface Exposure Detection and Hardening Validation
+
+Hardware recon obtains shell, firmware, or keys via exposed debug interfaces like *UART console, JTAG, SPI flash, and I2C EEPROM*. Defenders must verify **whether debug ports are disabled/locked on shipped devices**. Validate only on **owned devices/dev boards**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| UART console | Active serial shell | Disable console, auth | Shell prompt at boot |
+| JTAG/SWD | Unlocked debug | Permanently fuse off | IDCODE responds |
+| SPI flash dump | Plaintext external flash | Encrypt flash | Low dump entropy |
+| I2C EEPROM | Plaintext config/keys | Move to secure element | Plaintext key in EEPROM |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Debug-interface traces in owned firmware dump — active console/getty references
+strings -n 8 owned_firmware.bin 2>/dev/null | grep -iE 'ttyS|getty|/bin/sh|console=' | head
+# 2) Whether extracted SPI flash image is encrypted — entropy < 7.0 signals plaintext (unencrypted)
+python3 -c "import sys,math,collections;d=open('flash.bin','rb').read();c=collections.Counter(d);e=-sum(n/len(d)*math.log2(n/len(d)) for n in c.values());print(f'entropy={e:.2f}')" 2>/dev/null
+```
+
+> Hardware hardening is *whether the debug surface is closed* -- "the feature works" differs from "JTAG is fuse-locked, no shell appears on the console, and flash is encrypted". Confirm the exposed interfaces on owned devices/dev boards directly ([[61_Firmware_Hacking]], [[27_IoT_Hacking]], [[04_Reverse_Engineering]]).
