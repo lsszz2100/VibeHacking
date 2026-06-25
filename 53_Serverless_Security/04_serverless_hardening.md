@@ -878,6 +878,33 @@ def handler(event, context):
 
 ---
 
+<!-- detect-validate-53 -->
+## 서버리스 보안 강화 검증 (설정됨 ≠ 작동함)
+
+서버리스 강화는 *IaC 보안 스캔·SAST CI 통합·런타임 보호(Lambda Extension)·자동 감사*로 구성된다. "스캐너를 붙였다"는 설정과 "취약 구성이 실제로 차단되는가"는 다르다 — 각 통제를 소유 계정/리포에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| IaC 스캔 | 위험 구성 막나? | 취약 IaC 빌드 실패 | 리포트만 |
+| SAST 게이트 | 코드 취약 차단? | 임계 시 비0 종료 | 비차단 경고 |
+| 런타임 보호 | 이상 탐지? | 비정상 호출 알람 | 미배포 |
+| 최소권한 | 와일드카드 0? | "*" 액션 0 | 광역 역할 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 IaC가 게이트로 취약 구성을 막는지 — checkov/tfsec 취약 시 비0 종료여야
+checkov -d . --compact 2>/dev/null | grep -E 'FAILED|Passed'; echo "exit=$?"
+# 2) 실행 역할 와일드카드 점검(최소권한) — 정책에 "*" 액션이 있으면 과대권한 신호
+grep -rIn '"Action"\s*:\s*"\*"\|"\*"' *.tf template.yaml 2>/dev/null | head
+```
+
+> 서버리스 강화는 *통제가 강제되는가*다 — "스캐너가 있다"와 "취약 IaC가 빌드를 막고 와일드카드 권한이 0이며 런타임 보호가 발화한다"는 다르다. 각 통제를 소유 계정/리포에서 직접 검증한다([[18_DevSecOps]], [[14_Cloud_Security]], [[38_Cloud_Native_Security]]).
+
+---
+
 <a name="english"></a>
 
 # Serverless Security Hardening — SAST, Runtime Protection, and Automated Auditing
@@ -1081,3 +1108,28 @@ except Exception as e:
     logger.exception("Processing error")
     return {"statusCode": 500, "body": '{"error": "Internal server error"}'}
 ```
+
+<!-- detect-validate-53 -->
+## Serverless Hardening Validation (Configured != Working)
+
+Serverless hardening comprises *IaC security scanning, SAST CI integration, runtime protection (Lambda Extension), and automated audit*. "We attached a scanner" differs from "vulnerable configs are actually blocked" -- validate each control on owned accounts/repos.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| IaC scan | Block risky config? | Vulnerable IaC build fails | Report only |
+| SAST gate | Block code vulns? | Non-zero exit on threshold | Non-blocking warning |
+| Runtime protection | Detect anomaly? | Alarm on abnormal call | Not deployed |
+| Least privilege | 0 wildcards? | 0 "*" actions | Broad role |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether owned IaC gates vulnerable configs — checkov/tfsec should exit non-zero on a vuln
+checkov -d . --compact 2>/dev/null | grep -E 'FAILED|Passed'; echo "exit=$?"
+# 2) Execution-role wildcard check (least privilege) — a "*" action in policy signals over-privilege
+grep -rIn '"Action"\s*:\s*"\*"\|"\*"' *.tf template.yaml 2>/dev/null | head
+```
+
+> Serverless hardening is *whether controls are enforced* -- "we have a scanner" differs from "vulnerable IaC blocks the build, there are 0 wildcard permissions, and runtime protection fires". Validate each control on owned accounts/repos directly ([[18_DevSecOps]], [[14_Cloud_Security]], [[38_Cloud_Native_Security]]).

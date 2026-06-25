@@ -606,6 +606,33 @@ def lambda_handler(event, context):
 
 ---
 
+<!-- detect-validate-53 -->
+## Lambda 공격 탐지와 함수 신뢰경계 검증
+
+Lambda 공격은 *환경변수 탈취·SSRF→IMDS 자격증명·이벤트 인젝션*으로 함수 자격과 데이터를 노린다. 방어자는 **함수가 평문 비밀을 안 쥐고 IMDSv2가 강제되며 이벤트가 검증되는가**를 검증해야 한다. 검증은 **소유 AWS 계정**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 환경변수 탈취 | 평문 시크릿 | Secrets Manager | env에 평문 키 |
+| SSRF→IMDS | IMDSv1 | IMDSv2 강제 | 169.254.169.254 호출 |
+| 이벤트 인젝션 | 미검증 페이로드 | 스키마 검증 | 비정상 이벤트 필드 |
+| 과대 권한 | 광역 실행 역할 | 최소권한 역할 | 와일드카드 액션 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 Lambda 환경변수에 평문 시크릿이 있는지 — Secrets Manager 미사용 신호
+aws lambda get-function-configuration --function-name owned-fn --query 'Environment.Variables' 2>/dev/null | grep -iE 'key|secret|password|token' | head
+# 2) IMDSv2 강제 여부(SSRF 영향 축소) — HttpTokens=required 아니면 IMDSv1 노출 신호
+aws ec2 describe-instances --query 'Reservations[].Instances[].MetadataOptions.HttpTokens' --output text 2>/dev/null | grep -v required | head
+```
+
+> Lambda 방어는 *함수 신뢰경계가 강제되는가*다 — "함수가 동작한다"와 "env에 평문 비밀이 없고 IMDSv2가 강제되며 이벤트가 검증된다"는 다르다. 소유 AWS 계정에서 직접 확인한다([[14_Cloud_Security]], [[38_Cloud_Native_Security]], [[58_Cloud_IR]]).
+
+---
+
 <a name="english"></a>
 
 # AWS Lambda Function Attack Techniques
@@ -919,3 +946,28 @@ def lambda_handler(event, context):
 | Layers | Minimize layer permissions |
 | Code Signing | Apply Code Signing Config |
 | Audit Logs | Enable CloudTrail + CloudWatch Logs |
+
+<!-- detect-validate-53 -->
+## Lambda Attack Detection and Function Trust-Boundary Validation
+
+Lambda attacks target function credentials and data via *environment-variable theft, SSRF->IMDS credentials, and event injection*. Defenders must verify **whether the function holds no plaintext secrets, IMDSv2 is enforced, and events are validated**. Validate only on **owned AWS accounts**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Env-var theft | Plaintext secrets | Secrets Manager | Plaintext key in env |
+| SSRF->IMDS | IMDSv1 | Enforce IMDSv2 | 169.254.169.254 call |
+| Event injection | Unvalidated payload | Schema validation | Anomalous event field |
+| Over-privilege | Broad execution role | Least-privilege role | Wildcard action |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the owned Lambda has plaintext secrets in env vars — signals no Secrets Manager
+aws lambda get-function-configuration --function-name owned-fn --query 'Environment.Variables' 2>/dev/null | grep -iE 'key|secret|password|token' | head
+# 2) IMDSv2 enforcement (shrinks SSRF impact) — anything but HttpTokens=required signals IMDSv1 exposure
+aws ec2 describe-instances --query 'Reservations[].Instances[].MetadataOptions.HttpTokens' --output text 2>/dev/null | grep -v required | head
+```
+
+> Lambda defense is *whether the function trust boundary is enforced* -- "the function works" differs from "env has no plaintext secrets, IMDSv2 is enforced, and events are validated". Confirm on owned AWS accounts directly ([[14_Cloud_Security]], [[38_Cloud_Native_Security]], [[58_Cloud_IR]]).

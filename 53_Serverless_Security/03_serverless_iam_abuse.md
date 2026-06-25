@@ -1060,6 +1060,34 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-53 -->
+## 서버리스 IAM 남용 탐지와 권한 경계 검증
+
+서버리스 IAM 남용은 *역할 체인·권한 상승(iam:PassRole·정책 부착)·STS AssumeRole 체인*으로 권한을 확장한다. 방어자는 **실행 역할이 최소권한이고 상승 경로가 없는가**를 검증해야 한다. 검증은 **소유 AWS 계정**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 권한 상승 | iam:PassRole·PutPolicy | 액션 제한 | 상승 가능 동사 |
+| AssumeRole 체인 | 느슨한 신뢰정책 | 신뢰 주체 제한 | 비정상 AssumeRole |
+| 와일드카드 권한 | Action/Resource * | 최소권한 | "*" 정책 |
+| 권한 경계 부재 | 경계 미설정 | Permission Boundary | 경계 없는 역할 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 역할 정책에 권한상승 동사가 있는지 — PassRole/Attach*/Put*Policy 가 상승 경로 신호
+aws iam list-attached-role-policies --role-name owned-fn-role --query 'AttachedPolicies[].PolicyArn' --output text 2>/dev/null
+aws iam get-role-policy --role-name owned-fn-role --policy-name inline 2>/dev/null | grep -iE 'PassRole|AttachRolePolicy|PutRolePolicy|\"\*\"' | head
+# 2) AssumeRole 체인 — CloudTrail에서 비정상 주체의 AssumeRole 호출 추적
+aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=AssumeRole --max-results 10 2>/dev/null | grep -iE 'userIdentity|arn' | head
+```
+
+> 서버리스 IAM 방어는 *권한 경계가 강제되는가*다 — "함수가 실행된다"와 "역할에 상승 동사·와일드카드가 없고 AssumeRole 신뢰가 제한된다"는 다르다. 소유 계정에서 직접 확인한다([[14_Cloud_Security]], [[38_Cloud_Native_Security]], [[58_Cloud_IR]]).
+
+---
+
 <a name="english"></a>
 
 # Serverless IAM Privilege Abuse — Role Chaining, Privilege Escalation, and Analysis CLI
@@ -1350,3 +1378,29 @@ Key privilege escalation paths detected:
 - AssumeRole + AttachRolePolicy chain
 - CreateLoginProfile (account takeover)
 - SetDefaultPolicyVersion (enable dormant high-privilege version)
+
+<!-- detect-validate-53 -->
+## Serverless IAM-Abuse Detection and Privilege-Boundary Validation
+
+Serverless IAM abuse expands privileges via *role chaining, privilege escalation (iam:PassRole, policy attach), and STS AssumeRole chains*. Defenders must verify **whether the execution role is least-privilege and has no escalation path**. Validate only on **owned AWS accounts**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Privilege escalation | iam:PassRole, PutPolicy | Restrict actions | Escalation-capable verbs |
+| AssumeRole chain | Loose trust policy | Restrict trust principals | Anomalous AssumeRole |
+| Wildcard permission | Action/Resource * | Least privilege | "*" policy |
+| No permission boundary | Boundary unset | Permission Boundary | Role without boundary |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether owned-role policies contain escalation verbs — PassRole/Attach*/Put*Policy signal an escalation path
+aws iam list-attached-role-policies --role-name owned-fn-role --query 'AttachedPolicies[].PolicyArn' --output text 2>/dev/null
+aws iam get-role-policy --role-name owned-fn-role --policy-name inline 2>/dev/null | grep -iE 'PassRole|AttachRolePolicy|PutRolePolicy|\"\*\"' | head
+# 2) AssumeRole chain — trace AssumeRole calls by anomalous principals in CloudTrail
+aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=AssumeRole --max-results 10 2>/dev/null | grep -iE 'userIdentity|arn' | head
+```
+
+> Serverless IAM defense is *whether privilege boundaries are enforced* -- "the function runs" differs from "the role has no escalation verbs/wildcards and AssumeRole trust is restricted". Confirm on owned accounts directly ([[14_Cloud_Security]], [[38_Cloud_Native_Security]], [[58_Cloud_IR]]).

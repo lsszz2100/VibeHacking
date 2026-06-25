@@ -914,6 +914,33 @@ def lambda_handler(event: dict, context) -> dict:
 
 ---
 
+<!-- detect-validate-53 -->
+## 서버리스 사고 대응 검증 (설정됨 ≠ 작동함)
+
+서버리스 IR은 *Lambda 사고 대응·IMDSv1 자격증명 탈취 탐지·모니터링·자동 대응(Config+Lambda)*으로 구성된다. "플레이북이 있다"는 문서와 "탐지·격리가 실제로 작동하는가"는 다르다 — 각 단계를 소유 계정에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 자격증명 탈취 탐지 | IMDS 호출 잡나? | GuardDuty/CloudTrail 알람 | 미수집 |
+| 함수 격리 | 빠른 비활성? | 동시성 0/권한 회수 | 수동 지연 |
+| 자격증명 회전 | 키 무효화? | STS 세션 폐기 | 미회전 |
+| 로그 무결성 | 추적 가능? | CloudTrail 불변 | 로깅 미설정 |
+
+### 대응 검증 (직접 확인)
+
+```bash
+# 1) IMDSv1 자격증명 탈취 흔적(소유 계정) — 함수 역할 자격이 외부 IP에서 사용된 신호
+aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=GetCallerIdentity --max-results 10 2>/dev/null | grep -iE 'sourceIPAddress' | head
+# 2) 함수 긴급 격리 능력 검증 — 예약 동시성 0으로 즉시 차단 가능한지(소유 함수)
+aws lambda put-function-concurrency --function-name owned-fn --reserved-concurrent-executions 0 2>/dev/null && echo "isolation OK" || echo "no isolation path"
+```
+
+> 서버리스 IR은 *탐지·격리가 작동하는가*다 — "플레이북이 있다"와 "탈취된 자격이 탐지되고 함수가 동시성 0으로 격리되며 세션이 폐기된다"는 다르다. 각 단계를 소유 계정에서 직접 검증한다([[58_Cloud_IR]], [[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).
+
+---
+
 <a name="english"></a>
 
 # Serverless Incident Response
@@ -1136,3 +1163,28 @@ Step 3: Blast Radius Assessment
 | Excessive IAM | IAM Access Analyzer | Add Deny policy | Apply least privilege |
 | Function code tampering | CloudTrail alert | Roll back version | Apply code signing |
 | Dependency vulnerabilities | AWS Inspector | Remove vulnerable packages | CI/CD SAST integration |
+
+<!-- detect-validate-53 -->
+## Serverless Incident-Response Validation (Configured != Working)
+
+Serverless IR comprises *Lambda incident response, IMDSv1 credential-theft detection, monitoring, and automated response (Config+Lambda)*. "We have a playbook" differs from "detection/containment actually works" -- validate each step on owned accounts.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Credential-theft detection | Catch IMDS calls? | GuardDuty/CloudTrail alarm | Not collected |
+| Function isolation | Quick disable? | Concurrency 0 / revoke perms | Manual delay |
+| Credential rotation | Keys invalidated? | STS sessions revoked | Not rotated |
+| Log integrity | Traceable? | Immutable CloudTrail | Logging unset |
+
+### Response validation (verify directly)
+
+```bash
+# 1) IMDSv1 credential-theft traces (owned account) — function-role credentials used from an external IP is the signal
+aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=GetCallerIdentity --max-results 10 2>/dev/null | grep -iE 'sourceIPAddress' | head
+# 2) Validate emergency function isolation — whether reserved concurrency 0 can immediately block it (owned function)
+aws lambda put-function-concurrency --function-name owned-fn --reserved-concurrent-executions 0 2>/dev/null && echo "isolation OK" || echo "no isolation path"
+```
+
+> Serverless IR is *whether detection/containment works* -- "we have a playbook" differs from "stolen credentials are detected, the function is isolated to concurrency 0, and sessions are revoked". Validate each step on owned accounts directly ([[58_Cloud_IR]], [[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).

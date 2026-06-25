@@ -811,6 +811,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-53 -->
+## 서버리스 인젝션 탐지와 입력 신뢰경계 검증
+
+서버리스 인젝션은 *이벤트 기반 인젝션·의존성 공격·OS 커맨드 인젝션*으로 함수 실행을 탈취한다. 이벤트는 다중 소스(API/큐/스토리지)라 방어자는 **모든 이벤트 소스가 신뢰 불가로 검증되는가**를 확인해야 한다. 검증은 **소유 함수**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 이벤트 인젝션 | 이벤트 신뢰 | 스키마·소스 검증 | 비정상 이벤트 구조 |
+| OS 커맨드 | 셸 호출 입력 | 셸 회피·인자배열 | os.system/exec 입력 |
+| 의존성 공격 | 미고정 패키지 | 락·해시 핀 | 신규 빌드 후크 |
+| NoSQL/SQL | 동적 쿼리 | 파라미터화 | 입력 직삽 쿼리 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 함수 코드의 커맨드 인젝션 표면 — 이벤트 입력이 셸로 흐르면 신호
+grep -rInE 'os\.(system|popen)|subprocess\.(call|run|Popen)\(.*shell=True|exec\(' . 2>/dev/null | head
+# 2) 의존성 무결성 핀 여부 — 락파일에 해시 핀 없으면 공급망 인젝션 표면 신호
+grep -cE '--hash=sha256:' requirements.txt 2>/dev/null; jq -r '.packages|to_entries[]|select(.value.integrity==null)|.key' package-lock.json 2>/dev/null | head
+```
+
+> 서버리스 인젝션 방어는 *모든 이벤트가 검증되는가*다 — "함수가 트리거된다"와 "이벤트가 스키마 검증되고 입력이 셸로 안 흐르며 의존성이 핀된다"는 다르다. 소유 함수에서 직접 확인한다([[05_Web_Hacking]], [[35_Supply_Chain_Attacks]], [[14_Cloud_Security]]).
+
+---
+
 <a name="english"></a>
 
 # Serverless Injection — Event Injection, Dependency Attacks, and Detection
@@ -1023,3 +1050,28 @@ Detailed error messages (e.g., "user_id must match pattern X") give attackers hi
 
 **Most important principle:** "Never Trust, Always Verify"
 Regardless of the event source, treat all input as potentially malicious and validate it before use.
+
+<!-- detect-validate-53 -->
+## Serverless Injection Detection and Input Trust-Boundary Validation
+
+Serverless injection hijacks function execution via *event-based injection, dependency attacks, and OS command injection*. Since events come from many sources (API/queue/storage), defenders must confirm **whether all event sources are validated as untrusted**. Validate only on **owned functions**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Event injection | Event trust | Schema/source validation | Anomalous event structure |
+| OS command | Shell-call input | Avoid shell, arg arrays | os.system/exec on input |
+| Dependency attack | Unpinned packages | Lock, hash-pin | New build hook |
+| NoSQL/SQL | Dynamic query | Parameterization | Input concatenated into query |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Command-injection surface in owned function code — event input flowing into a shell is the signal
+grep -rInE 'os\.(system|popen)|subprocess\.(call|run|Popen)\(.*shell=True|exec\(' . 2>/dev/null | head
+# 2) Dependency-integrity pinning — no hash pins in the lockfile signals a supply-chain injection surface
+grep -cE '--hash=sha256:' requirements.txt 2>/dev/null; jq -r '.packages|to_entries[]|select(.value.integrity==null)|.key' package-lock.json 2>/dev/null | head
+```
+
+> Serverless-injection defense is *whether all events are validated* -- "the function triggers" differs from "events are schema-validated, input does not flow into a shell, and dependencies are pinned". Confirm on owned functions directly ([[05_Web_Hacking]], [[35_Supply_Chain_Attacks]], [[14_Cloud_Security]]).
