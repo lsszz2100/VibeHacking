@@ -1686,6 +1686,33 @@ python aleapp.py -t fs -i /path/to/android_filesystem -o /path/to/output
 
 ---
 
+<!-- detect-validate-47 -->
+## 모바일 포렌식 도구 발견 검증과 오탐 관리
+
+모바일 포렌식 도구(Autopsy·MVT/Pegasus·Frida·jadx)는 *아티팩트 파싱·IOC 매칭·동적 계측·역분석*으로 결과를 낸다. 도구 출력은 오탐·버전 의존이 섞이므로 분석자는 **발견을 1차 아티팩트로 교차·재현**해야 한다. 검증은 **소유 기기/이미지**에서만.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| IOC 매칭(MVT) | 1차 근거 있나? | DB/로그서 IOC 재확인 | STIX 단정 |
+| 도구 교차 | 다른 도구 일치? | jadx↔apktool 동일 | 단일 도구 |
+| 동적 후킹 | 의도 함수? | Frida 후킹 카운트 | 잘못된 시그니처 |
+| 재현성 | 동일 입력 동일? | 재실행 동일 출력 | 비결정 |
+
+### 발견 검증 (직접 확인)
+
+```bash
+# 1) MVT가 표시한 Pegasus IOC를 1차 아티팩트로 교차(소유 백업) — DB/로그서 재확인돼야 신뢰
+mvt-ios check-backup --output out backup_dir 2>/dev/null; grep -rIiE 'detected|malicious' out/ 2>/dev/null | head
+# 2) APK 역분석 도구 교차 — jadx↔apktool가 같은 권한/엔드포인트 보고하면 신뢰 상승
+apktool d -f app.apk -o ad >/dev/null 2>&1; grep -iE 'INTERNET|SMS|http' ad/AndroidManifest.xml 2>/dev/null | head
+```
+
+> 모바일 도구 사용은 *발견이 교차·재현되는가*다 — "MVT가 탐지했다"와 "그 IOC가 1차 아티팩트에서 재확인되고 도구 간 일치한다"는 다르다. 소유 기기/이미지에서 교차 검증한다([[06_Malware_Analysis]], [[28_Mobile_Hacking]], [[25_Threat_Intelligence]]).
+
+---
+
 <a name="english"></a>
 
 # Mobile Forensics Tools
@@ -2095,3 +2122,28 @@ Network indicators:
 - encrypted C2 communication
 - short-interval pings
 ```
+
+<!-- detect-validate-47 -->
+## Mobile Forensics Tool Finding Validation and False-Positive Management
+
+Mobile forensics tools (Autopsy, MVT/Pegasus, Frida, jadx) produce results via *artifact parsing, IOC matching, dynamic instrumentation, and decompilation*. Tool output mixes false positives and version dependence, so the analyst must **cross-check and reproduce findings against primary artifacts**. Validate only on **owned devices/images**.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| IOC match (MVT) | Primary basis? | IOC re-confirmed in DB/log | STIX assertion |
+| Tool cross-check | Other tool agrees? | jadx == apktool | Single tool |
+| Dynamic hook | Intended function? | Frida hook count | Wrong signature |
+| Reproducibility | Same input, same? | Re-run same output | Non-deterministic |
+
+### Finding validation (verify directly)
+
+```bash
+# 1) Cross-check an MVT-flagged Pegasus IOC against primary artifacts (owned backup) — trust it only if re-confirmed in DB/log
+mvt-ios check-backup --output out backup_dir 2>/dev/null; grep -rIiE 'detected|malicious' out/ 2>/dev/null | head
+# 2) APK decompilation tool cross-check — jadx and apktool reporting the same permissions/endpoints raises confidence
+apktool d -f app.apk -o ad >/dev/null 2>&1; grep -iE 'INTERNET|SMS|http' ad/AndroidManifest.xml 2>/dev/null | head
+```
+
+> Using mobile tools is *whether findings cross-check and reproduce* -- "MVT detected it" differs from "the IOC is re-confirmed in primary artifacts and tools agree". Cross-validate on owned devices/images directly ([[06_Malware_Analysis]], [[28_Mobile_Hacking]], [[25_Threat_Intelligence]]).

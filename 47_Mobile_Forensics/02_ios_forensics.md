@@ -1354,6 +1354,33 @@ wget https://raw.githubusercontent.com/AmnestyTech/investigations/master/2021-07
 
 ---
 
+<!-- detect-validate-47 -->
+## 안티포렌식 탐지와 iOS 증거 검증
+
+iOS 포렌식은 *파일시스템·iTunes/iCloud 백업·아티팩트·키체인*에서 증거를 복원한다. 분석자는 *탈옥 은폐·백업 암호화·아티팩트 정리* 같은 안티포렌식을 의식하고 **백업이 복호·무결하고 교차 일치하는가**를 검증해야 한다. 검증은 **소유 기기/백업**에서만.
+
+### 안티포렌식 기법 → 노리는 포렌식 단계 → 분석자 대응 → 관찰 신호
+
+| 기법 | 노리는 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 탈옥 은폐 | 무결성 가정 | Cydia/탈옥 흔적 교차 | /Applications 비표준 |
+| 백업 암호화 | 접근 차단 | 패스워드/키 복원 | Manifest.plist 암호 플래그 |
+| 아티팩트 정리 | 단일 소스 의존 | WAL·KnowledgeC 교차 | 삭제 행 잔존 |
+| 시각 조작 | 타임라인 신뢰 | 다중 DB 교차 | ts↔Mft 불일치 |
+
+### 증거 검증 (직접 확인)
+
+```bash
+# 1) 소유 백업 무결성/암호화 상태 — Manifest로 암호화 여부·파일수 교차(증거 일관성)
+plutil -p Manifest.plist 2>/dev/null | grep -iE 'IsEncrypted|Date'; ls Manifest.db && echo "manifest present"
+# 2) iOS DB 삭제 행이 WAL에 잔존하는지(안티포렌식 우회) — 본 DB엔 없는데 -wal에 존재
+sqlite3 sms.db 'PRAGMA journal_mode;' 2>/dev/null; strings sms.db-wal 2>/dev/null | grep -iE 'http|message' | head
+```
+
+> iOS 증거 검증은 *백업이 복호·무결·교차일치하는가*다 — "백업을 열었다"와 "탈옥 흔적이 교차되고 삭제 행이 WAL과 일치한다"는 다르다. 소유 기기/백업에서 직접 확인한다([[07_Digital_Forensics]], [[28_Mobile_Hacking]], [[44_Incident_Response_DFIR]]).
+
+---
+
 <a name="english"></a>
 
 # iOS Forensics
@@ -2554,3 +2581,28 @@ Analysis:
 □ Attempt deleted file recovery
 □ Check cloud sync status
 ```
+
+<!-- detect-validate-47 -->
+## Anti-Forensics Detection and iOS Evidence Validation
+
+iOS forensics recovers evidence from *the filesystem, iTunes/iCloud backups, artifacts, and keychain*. The analyst must be aware of anti-forensics like *jailbreak concealment, backup encryption, and artifact cleanup* and verify **whether the backup is decrypted, intact, and cross-consistent**. Validate only on **owned devices/backups**.
+
+### Anti-forensic technique -> Targeted forensic step -> Analyst response -> Observable signal
+
+| Technique | Targeted step | Analyst response | Observable signal |
+|---|---|---|---|
+| Jailbreak concealment | Integrity assumption | Cross-check Cydia/JB traces | Non-standard /Applications |
+| Backup encryption | Block access | Recover password/key | Manifest.plist encrypted flag |
+| Artifact cleanup | Single-source reliance | Cross WAL, KnowledgeC | Deleted rows remain |
+| Time tampering | Timeline trust | Cross multiple DBs | ts != Mft |
+
+### Evidence validation (verify directly)
+
+```bash
+# 1) Owned-backup integrity/encryption state — cross-check encryption and file count via Manifest (evidence consistency)
+plutil -p Manifest.plist 2>/dev/null | grep -iE 'IsEncrypted|Date'; ls Manifest.db && echo "manifest present"
+# 2) Whether deleted iOS DB rows remain in WAL (anti-forensics bypass) — absent in main DB but present in -wal
+sqlite3 sms.db 'PRAGMA journal_mode;' 2>/dev/null; strings sms.db-wal 2>/dev/null | grep -iE 'http|message' | head
+```
+
+> iOS evidence validation is *whether the backup is decrypted, intact, and cross-consistent* -- "I opened the backup" differs from "jailbreak traces cross-check and deleted rows agree with the WAL". Confirm on owned devices/backups directly ([[07_Digital_Forensics]], [[28_Mobile_Hacking]], [[44_Incident_Response_DFIR]]).

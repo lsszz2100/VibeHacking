@@ -1389,6 +1389,33 @@ vol.py -f memory.lime --profile=LinuxAndroid linux_pslist
 
 ---
 
+<!-- detect-validate-47 -->
+## 모바일 증거 추출 검증 (추출됨 ≠ 증거능력 있음)
+
+모바일 증거 추출은 *논리/물리/파일시스템 추출·JTAG/Chip-off·raw 이미징·해시 체인*으로 데이터를 확보한다. "추출했다"는 행위와 "증거가 무결하고 재현 가능한가"는 다르다 — 각 단계를 소유 기기/이미지에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 해시 무결성 | 추출↔검증 일치? | sha256 동일 | 추출 후 미해시 |
+| 획득 무결성 | 쓰기 차단? | write-blocker 사용 | 기기에 쓰기 발생 |
+| 재현성 | 재추출 동일? | 두 이미지 해시 일치 | 일회성 추출 |
+| 체인 오브 커스터디 | 이력 기록? | 타임스탬프·서명 로그 | 기록 누락 |
+
+### 추출 검증 (직접 확인)
+
+```bash
+# 1) 소유 이미지의 추출↔검증 해시 일치(증거 무결성) — 불일치면 변조/손상 신호
+sha256sum extraction.img > acquired.sha256; sha256sum -c acquired.sha256 2>/dev/null
+# 2) 재추출 재현성 — 두 번 추출한 이미지 해시가 동일해야 증거능력 신호(소유 기기)
+sha256sum extraction_1.img extraction_2.img 2>/dev/null | awk '{print $1}' | sort -u | wc -l   # 1 이어야
+```
+
+> 증거 추출은 *증거가 무결·재현되는가*다 — "이미지를 떴다"와 "추출↔검증 해시가 일치하고 재추출이 동일하다"는 다르다. 각 단계를 소유 기기/이미지에서 직접 검증한다([[07_Digital_Forensics]], [[44_Incident_Response_DFIR]], [[28_Mobile_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # Mobile Evidence Extraction
@@ -1984,3 +2011,28 @@ autopsy &
 vol.py -f memory.lime --profile=LinuxAndroid imageinfo
 vol.py -f memory.lime --profile=LinuxAndroid linux_pslist
 ```
+
+<!-- detect-validate-47 -->
+## Mobile Evidence Extraction Validation (Extracted != Admissible)
+
+Mobile evidence extraction acquires data via *logical/physical/filesystem extraction, JTAG/Chip-off, raw imaging, and hash chains*. "I extracted it" differs from "the evidence is intact and reproducible" -- validate each step on owned devices/images.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Hash integrity | Extract<->verify match? | Same sha256 | No hash after extraction |
+| Acquisition integrity | Write-blocked? | Write-blocker used | Writes to device |
+| Reproducibility | Re-extract identical? | Two images hash-match | One-shot extraction |
+| Chain of custody | History recorded? | Timestamp/signature log | Missing records |
+
+### Extraction validation (verify directly)
+
+```bash
+# 1) Extract<->verify hash match for an owned image (evidence integrity) — mismatch signals tampering/corruption
+sha256sum extraction.img > acquired.sha256; sha256sum -c acquired.sha256 2>/dev/null
+# 2) Re-extraction reproducibility — two extracted images must hash-match to signal admissibility (owned device)
+sha256sum extraction_1.img extraction_2.img 2>/dev/null | awk '{print $1}' | sort -u | wc -l   # should be 1
+```
+
+> Evidence extraction is *whether evidence is intact and reproducible* -- "I imaged it" differs from "extract<->verify hashes match and re-extraction is identical". Validate each step on owned devices/images directly ([[07_Digital_Forensics]], [[44_Incident_Response_DFIR]], [[28_Mobile_Hacking]]).

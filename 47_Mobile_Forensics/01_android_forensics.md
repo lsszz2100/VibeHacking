@@ -1358,6 +1358,33 @@ python aleapp.py -t fs -i /path/to/extraction -o /path/to/report
 
 ---
 
+<!-- detect-validate-47 -->
+## 안티포렌식 탐지와 Android 증거 검증
+
+Android 포렌식은 *파일시스템·아티팩트·SQLite DB·루팅 흔적*에서 증거를 복원한다. 분석자는 *루팅 은폐·타임스탬프 조작·아티팩트 삭제* 같은 안티포렌식을 의식하고 **증거가 무결하고 교차 일치하는가**를 검증해야 한다. 검증은 **소유 기기/이미지**에서만.
+
+### 안티포렌식 기법 → 노리는 포렌식 단계 → 분석자 대응 → 관찰 신호
+
+| 기법 | 노리는 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 루팅 은폐 | 무결성 가정 | Magisk/su 흔적 교차 | su·busybox·deny 목록 |
+| 타임스탬프 조작 | 타임라인 신뢰 | 다중 아티팩트 교차 | DB ts↔파일 mtime 불일치 |
+| 아티팩트 삭제 | 단일 소스 의존 | WAL/journal 잔존 | 삭제 행 -wal 잔존 |
+| 백업 변조 | 백업 신뢰 | 해시·서명 검증 | 백업 해시 불일치 |
+
+### 증거 검증 (직접 확인)
+
+```bash
+# 1) 소유 이미지의 루팅/은폐 흔적 — su/Magisk/busybox 잔존이 무결성 훼손 신호
+adb shell 'ls -la /system/xbin/su /sbin/.magisk 2>/dev/null; pm list packages | grep -iE "magisk|supersu"' 2>/dev/null | head
+# 2) SQLite 삭제 행이 WAL/journal에 잔존하는지(안티포렌식 우회) — 본 DB엔 없는데 -wal에 존재
+sqlite3 mmssms.db 'PRAGMA journal_mode;' 2>/dev/null; strings mmssms.db-wal 2>/dev/null | grep -iE 'deleted|http' | head
+```
+
+> Android 증거 검증은 *증거가 무결·교차일치하는가*다 — "DB를 추출했다"와 "루팅 흔적이 교차되고 타임스탬프가 다중 아티팩트와 일치한다"는 다르다. 소유 기기/이미지에서 직접 확인한다([[07_Digital_Forensics]], [[28_Mobile_Hacking]], [[44_Incident_Response_DFIR]]).
+
+---
+
 <a name="english"></a>
 
 # Android Forensics
@@ -2574,3 +2601,28 @@ python aleappGUI.py
 # Run CLI
 python aleapp.py -t fs -i /path/to/extraction -o /path/to/report
 ```
+
+<!-- detect-validate-47 -->
+## Anti-Forensics Detection and Android Evidence Validation
+
+Android forensics recovers evidence from *the filesystem, artifacts, SQLite DBs, and rooting traces*. The analyst must be aware of anti-forensics like *root concealment, timestamp tampering, and artifact deletion* and verify **whether evidence is intact and cross-consistent**. Validate only on **owned devices/images**.
+
+### Anti-forensic technique -> Targeted forensic step -> Analyst response -> Observable signal
+
+| Technique | Targeted step | Analyst response | Observable signal |
+|---|---|---|---|
+| Root concealment | Integrity assumption | Cross-check Magisk/su traces | su, busybox, denylist |
+| Timestamp tampering | Timeline trust | Cross multiple artifacts | DB ts != file mtime |
+| Artifact deletion | Single-source reliance | WAL/journal remnants | Deleted rows in -wal |
+| Backup tampering | Backup trust | Hash/signature verify | Backup hash mismatch |
+
+### Evidence validation (verify directly)
+
+```bash
+# 1) Root/concealment traces in an owned image — su/Magisk/busybox remnants signal integrity compromise
+adb shell 'ls -la /system/xbin/su /sbin/.magisk 2>/dev/null; pm list packages | grep -iE "magisk|supersu"' 2>/dev/null | head
+# 2) Whether deleted SQLite rows remain in WAL/journal (anti-forensics bypass) — absent in main DB but present in -wal
+sqlite3 mmssms.db 'PRAGMA journal_mode;' 2>/dev/null; strings mmssms.db-wal 2>/dev/null | grep -iE 'deleted|http' | head
+```
+
+> Android evidence validation is *whether evidence is intact and cross-consistent* -- "I extracted the DB" differs from "rooting traces cross-check and timestamps agree across multiple artifacts". Confirm on owned devices/images directly ([[07_Digital_Forensics]], [[28_Mobile_Hacking]], [[44_Incident_Response_DFIR]]).
