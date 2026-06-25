@@ -1164,6 +1164,33 @@ python image_security_analyzer.py nginx:latest --format json | \
 
 ---
 
+<!-- detect-validate-38 -->
+## 이미지 강화·공급망 검증 (설정됨 ≠ 작동함)
+
+이미지 강화·공급망 보안은 *취약점 스캔·distroless 베이스·이미지 서명(Cosign)·OPA/Gatekeeper·SBOM*으로 구성된다. "스캔/서명한다"는 설정과 "미서명·취약 이미지가 실제로 거부된다"는 다르다 — 각 통제를 소유 클러스터에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 이미지 서명 | 미서명 거부? | 서명 없으면 배포 실패 | 서명만, 미강제 |
+| 어드미션 정책 | OPA 막나? | 위반 파드 거부 | dryrun 모드 방치 |
+| 취약점 게이트 | 임계 차단? | 취약 시 빌드 실패 | 리포트만, 비차단 |
+| 최소 베이스 | 셸/패키지 없나? | distroless에 sh 부재 | full OS 베이스 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 클러스터에서 미서명 이미지 배포 시 거부되는지 — 성공하면 강제 미작동 신호
+cosign verify --key cosign.pub registry.internal/app:latest >/dev/null 2>&1; echo "verify exit=$?  (미서명/위조 시 비0)"
+# 2) 어드미션 정책이 enforce 모드인지(소유 클러스터) — dryrun/warn 이면 미강제 신호
+kubectl get constraints -o json 2>/dev/null | jq -r '.items[]? | "\(.kind) enforcementAction=\(.spec.enforcementAction // "deny")"' | head
+```
+
+> 이미지 방어는 *미서명·취약이 거부되는가*다 — "스캔/서명한다"와 "미서명 이미지가 어드미션에서 거부되고 취약 시 빌드가 실패한다"는 다르다. 각 통제를 소유 클러스터에서 직접 검증한다([[35_Supply_Chain_Attacks]], [[29_Container_Kubernetes_Security]], [[18_DevSecOps]]).
+
+---
+
 <a name="english"></a>
 
 # Container Image Hardening and Supply Chain Security
@@ -2191,3 +2218,28 @@ python image_security_analyzer.py nginx:latest --format json | \
 - [CISA SBOM Guidelines](https://www.cisa.gov/sbom)
 - [SLSA Framework](https://slsa.dev/)
 - [Docker Security Best Practices](https://docs.docker.com/develop/security-best-practices/)
+
+<!-- detect-validate-38 -->
+## Image-Hardening / Supply-Chain Validation (Configured != Working)
+
+Image hardening and supply-chain security comprise *vulnerability scanning, distroless bases, image signing (Cosign), OPA/Gatekeeper, and SBOM*. "We scan/sign" differs from "unsigned/vulnerable images are actually rejected" -- validate each control on owned clusters.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Image signing | Unsigned rejected? | Deploy fails without sig | Sign but not enforce |
+| Admission policy | Does OPA block? | Violating pod refused | Left in dryrun mode |
+| Vuln gate | Critical blocked? | Build fails on vuln | Report only, non-blocking |
+| Minimal base | No shell/packages? | No sh in distroless | Full-OS base |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether deploying an unsigned image is rejected on an owned cluster — success signals enforcement does not work
+cosign verify --key cosign.pub registry.internal/app:latest >/dev/null 2>&1; echo "verify exit=$?  (non-zero when unsigned/tampered)"
+# 2) Whether admission policy is in enforce mode (owned cluster) — dryrun/warn signals non-enforcement
+kubectl get constraints -o json 2>/dev/null | jq -r '.items[]? | "\(.kind) enforcementAction=\(.spec.enforcementAction // "deny")"' | head
+```
+
+> Image defense is *whether unsigned/vulnerable is rejected* -- "we scan/sign" differs from "unsigned images are refused at admission and the build fails on a vuln". Validate each control on owned clusters directly ([[35_Supply_Chain_Attacks]], [[29_Container_Kubernetes_Security]], [[18_DevSecOps]]).

@@ -919,6 +919,33 @@ python k8s_security_auditor.py ./manifests/ --fail-on CRITICAL --format json -o 
 
 ---
 
+<!-- detect-validate-38 -->
+## Cloud Native 방어 검증 (설정됨 ≠ 작동함)
+
+Cloud Native 방어는 *런타임 보안(Falco/eBPF)·시크릿 암호화·공급망(SLSA/Sigstore)·CSPM·감사*로 구성된다. "프레임워크를 도입했다"는 설정과 "통제가 실제 위협을 막는다"는 다르다 — 각 방어를 소유 클러스터에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 런타임 탐지 | 비정상 발화? | 테스트 exec 시 알람 | 룰만, 미발화 |
+| 시크릿 암호화 | etcd 암호화? | 평문 시크릿 0 | 기본 base64만 |
+| 공급망 검증 | 출처 검증? | 미서명 거부 | 검증만, 미강제 |
+| 감사 로깅 | API 기록·검토? | 권한상승 추적 | 로그만, 무분석 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 감사 로깅이 켜져 권한상승을 기록하는지(소유 클러스터) — 미설정이면 사각 신호
+kubectl get --raw /api/v1/namespaces/kube-system/configmaps/audit-policy 2>/dev/null | head -c 200; echo
+# 2) 시크릿이 etcd에서 암호화되는지 — providers에 identity만 있으면 미암호화 신호
+kubectl get apiserver -o yaml 2>/dev/null | grep -A3 'providers' | grep -iE 'aescbc|secretbox|identity' | head
+```
+
+> Cloud Native 방어는 *통제가 강제되는가*다 — "CSPM/Falco가 있다"와 "런타임 룰이 발화하고 etcd 시크릿이 암호화되며 미서명 이미지가 거부된다"는 다르다. 각 방어를 소유 클러스터에서 직접 검증한다([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[35_Supply_Chain_Attacks]]).
+
+---
+
 <a name="english"></a>
 
 # 05 — Cloud Native Security Defense Framework
@@ -1077,3 +1104,28 @@ Secret Image Sign   GitOps          Incident Response
 - **NSA/CISA K8s Hardening Guide** — Official K8s security guidelines
 - **Falco Rules Library** — https://github.com/falcosecurity/rules
 - **SLSA Framework** — https://slsa.dev
+
+<!-- detect-validate-38 -->
+## Cloud-Native Defense Validation (Configured != Working)
+
+Cloud-Native defense comprises *runtime security (Falco/eBPF), secret encryption, supply chain (SLSA/Sigstore), CSPM, and audit*. "We adopted a framework" differs from "controls block real threats" -- validate each defense on owned clusters.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Runtime detection | Fire on abnormal? | Alarm on test exec | Rules but no firing |
+| Secret encryption | etcd encrypted? | 0 plaintext secrets | Default base64 only |
+| Supply-chain verify | Provenance checked? | Unsigned rejected | Verify but not enforce |
+| Audit logging | API logged/reviewed? | Escalation traced | Log only, no analysis |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether audit logging is on and records escalation (owned cluster) — absence signals a blind spot
+kubectl get --raw /api/v1/namespaces/kube-system/configmaps/audit-policy 2>/dev/null | head -c 200; echo
+# 2) Whether secrets are encrypted at rest in etcd — only identity in providers signals no encryption
+kubectl get apiserver -o yaml 2>/dev/null | grep -A3 'providers' | grep -iE 'aescbc|secretbox|identity' | head
+```
+
+> Cloud-Native defense is *whether controls are enforced* -- "we have CSPM/Falco" differs from "runtime rules fire, etcd secrets are encrypted, and unsigned images are rejected". Validate each defense on owned clusters directly ([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[35_Supply_Chain_Attacks]]).

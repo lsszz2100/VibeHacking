@@ -1229,6 +1229,33 @@ etcd:
 
 ---
 
+<!-- detect-validate-38 -->
+## Cloud Native 공격 탐지와 권한 경계 검증
+
+Cloud Native 공격은 *etcd 직접 접근·RBAC 남용(ClusterAdmin 상승)·컨테이너 탈출·서비스 어카운트 토큰 악용*으로 클러스터를 장악한다. 방어자는 **권한 경계가 강제되고 비정상 API 접근이 탐지되는가**를 검증해야 한다. 검증은 **소유 클러스터**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| etcd 직접 접근 | 비암호화 시크릿 | etcd 암호화·mTLS | etcd에 평문 시크릿 |
+| RBAC 남용 | 과대 바인딩 | 최소권한 | cluster-admin 신규 바인딩 |
+| 컨테이너 탈출 | 특권 컨테이너 | 비특권·정책 | privileged=true |
+| SA 토큰 악용 | 자동 마운트 | 토큰 비활성·범위 | 비정상 SA의 API 호출 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 클러스터 etcd 시크릿 암호화 여부 — 평문이면 직접접근 시 노출 신호
+kubectl get apiserver -o yaml 2>/dev/null | grep -iE 'encryption|aescbc|secretbox' | head || echo "암호화 설정 미발견(점검 필요)"
+# 2) 감사 로그에서 비정상 SA의 권한상승 API — clusterrolebinding 생성/escalate 호출 신호
+grep -E 'clusterrolebindings.*create|"verb":"escalate"' /var/log/kubernetes/audit.log 2>/dev/null | head
+```
+
+> Cloud Native 방어는 *권한 경계가 강제되는가*다 — "클러스터가 동작한다"와 "etcd 시크릿이 암호화되고 cluster-admin 신규 바인딩·비정상 SA 호출이 감사에 잡힌다"는 다르다. 소유 클러스터에서 직접 확인한다([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[14_Cloud_Security]]).
+
+---
+
 <a name="english"></a>
 
 # Cloud Native Attack Techniques
@@ -2334,3 +2361,28 @@ Monitoring:
 - [CVE-2018-1002105](https://nvd.nist.gov/vuln/detail/CVE-2018-1002105)
 - [Kubernetes Security Best Practices](https://kubernetes.io/docs/concepts/security/)
 - [NSA Kubernetes Hardening Guide](https://media.defense.gov/2022/Aug/29/2003066362/-1/-1/0/CTR_KUBERNETES_HARDENING_GUIDANCE_1.2_20220829.PDF)
+
+<!-- detect-validate-38 -->
+## Cloud-Native Attack Detection and Privilege-Boundary Validation
+
+Cloud-Native attacks take over the cluster via *direct etcd access, RBAC abuse (ClusterAdmin escalation), container escape, and service-account token abuse*. Defenders must verify **whether privilege boundaries are enforced and anomalous API access is detected**. Validate only on **owned clusters**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Direct etcd access | Unencrypted secrets | etcd encryption, mTLS | Plaintext secret in etcd |
+| RBAC abuse | Over-broad binding | Least privilege | New cluster-admin binding |
+| Container escape | Privileged container | Unprivileged, policy | privileged=true |
+| SA token abuse | Auto-mount | Disable/scope token | API call from anomalous SA |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether owned-cluster etcd secrets are encrypted — plaintext signals exposure on direct access
+kubectl get apiserver -o yaml 2>/dev/null | grep -iE 'encryption|aescbc|secretbox' | head || echo "no encryption config found (inspect)"
+# 2) Privilege-escalation APIs from anomalous SAs in audit log — clusterrolebinding create/escalate calls
+grep -E 'clusterrolebindings.*create|"verb":"escalate"' /var/log/kubernetes/audit.log 2>/dev/null | head
+```
+
+> Cloud-Native defense is *whether privilege boundaries are enforced* -- "the cluster works" differs from "etcd secrets are encrypted and new cluster-admin bindings / anomalous SA calls are caught in the audit log". Confirm on owned clusters directly ([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[14_Cloud_Security]]).

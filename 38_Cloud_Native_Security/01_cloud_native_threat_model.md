@@ -938,6 +938,33 @@ python k8s_audit.py --format json | jq '.findings[] | select(.severity == "HIGH"
 
 ---
 
+<!-- detect-validate-38 -->
+## Cloud Native 위협 탐지와 통제 매핑 검증
+
+Cloud Native 위협 모델(STRIDE·ATT&CK for Containers)은 *워크로드 신원 위조·권한 상승·런타임 변조·시크릿 노출*을 다룬다. 방어자는 **각 위협에 대응 통제가 매핑되고 그 통제가 작동하는가**를 검증해야 한다. 검증은 **소유 클러스터/CNAPP**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 신원 위조 | 약한 워크로드 신원 | SPIFFE·mTLS | 미인증 워크로드 호출 |
+| 권한 상승 | 과대 RBAC | 최소권한·CIEM | escalate/bind 권한 |
+| 런타임 변조 | 미관측 실행 | eBPF/Falco | 컨테이너 내 신규 exec |
+| 시크릿 노출 | 평문 환경변수 | 시크릿 매니저·암호화 | env에 평문 토큰 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 클러스터에서 평문 시크릿이 워크로드 env로 노출되는지 — 시크릿 매니저 미사용 신호
+kubectl get pods -A -o json 2>/dev/null | jq -r '.items[].spec.containers[].env[]? | select(.value|test("(?i)token|password|key")) | .name' | head
+# 2) 과대 권한 매핑 표면 — escalate/bind/* 동사를 가진 ClusterRole(통제 갭 신호)
+kubectl get clusterroles -o json 2>/dev/null | jq -r '.items[] | select(.rules[]?.verbs[]? | test("escalate|bind|\\*")) | .metadata.name' | sort -u | head
+```
+
+> Cloud Native 위협 모델은 *위협↔통제가 닫혀 있는가*다 — "위협을 나열했다"와 "각 위협에 통제가 매핑되고 평문 시크릿·과대 RBAC가 없다"는 다르다. 소유 클러스터에서 통제 갭을 직접 확인한다([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[48_Threat_Modeling]]).
+
+---
+
 <a name="english"></a>
 
 # Cloud Native Security Threat Model
@@ -1747,3 +1774,28 @@ python k8s_audit.py --format json | jq '.findings[] | select(.severity == "HIGH"
 - [CNCF Cloud Native Security Whitepaper](https://github.com/cncf/tag-security/blob/main/community/resources/security-whitepaper/v2/CNCF_cloud-native-security-whitepaper-May2022-v2.pdf)
 - [NSA/CISA Kubernetes Hardening Guide](https://media.defense.gov/2022/Aug/29/2003066362/-1/-1/0/CTR_KUBERNETES_HARDENING_GUIDANCE_1.2_20220829.PDF)
 - [Kubernetes Security Checklist](https://kubernetes.io/docs/concepts/security/security-checklist/)
+
+<!-- detect-validate-38 -->
+## Cloud-Native Threat Detection and Control-Mapping Validation
+
+The Cloud-Native threat model (STRIDE, ATT&CK for Containers) covers *workload-identity spoofing, privilege escalation, runtime tampering, and secret exposure*. Defenders must verify **whether each threat is mapped to a control and that control works**. Validate only on **owned clusters/CNAPP**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Identity spoofing | Weak workload identity | SPIFFE, mTLS | Unauthenticated workload call |
+| Privilege escalation | Over-broad RBAC | Least privilege, CIEM | escalate/bind verbs |
+| Runtime tampering | Unobserved execution | eBPF/Falco | New exec in container |
+| Secret exposure | Plaintext env vars | Secret manager, encryption | Plaintext token in env |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether plaintext secrets are exposed to workload env on an owned cluster — signals no secret manager
+kubectl get pods -A -o json 2>/dev/null | jq -r '.items[].spec.containers[].env[]? | select(.value|test("(?i)token|password|key")) | .name' | head
+# 2) Over-privileged mapping surface — ClusterRoles with escalate/bind/* verbs (control-gap signal)
+kubectl get clusterroles -o json 2>/dev/null | jq -r '.items[] | select(.rules[]?.verbs[]? | test("escalate|bind|\\*")) | .metadata.name' | sort -u | head
+```
+
+> The Cloud-Native threat model is *whether threat<->control is closed* -- "we listed threats" differs from "each threat maps to a control and there are no plaintext secrets or over-broad RBAC". Confirm control gaps on owned clusters directly ([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[48_Threat_Modeling]]).

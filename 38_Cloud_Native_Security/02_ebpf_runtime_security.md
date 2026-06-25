@@ -1143,6 +1143,33 @@ python falco_responder.py --mode file --log-file /var/log/falco/falco.json
 
 ---
 
+<!-- detect-validate-38 -->
+## eBPF 런타임 탐지 검증 (설정됨 ≠ 작동함)
+
+eBPF 런타임 보안(Falco·시스콜 이상 탐지)은 *컨테이너 내 셸 실행·권한 상승·비정상 네트워크·파일 변조*를 관측한다. "Falco를 배포했다"는 설정과 "규칙이 실제로 발화한다"는 다르다 — 각 탐지를 소유 클러스터에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 셸 탐지 | 컨테이너 exec 잡나? | 테스트 셸 시 알람 | 규칙 비활성/드롭 |
+| 권한 상승 | setuid/cap 탐지? | 권한변경 시 발화 | 룰만, 미발화 |
+| 이벤트 누락 | 드롭 없이 수신? | drops=0 | 버퍼 오버플로 누락 |
+| 알림 전달 | 싱크로 전송? | 알림 SIEM 도달 | 로컬 로그만 |
+
+### 탐지 검증 (직접 확인)
+
+```bash
+# 1) 소유 테스트 파드에서 셸 실행 후 Falco 발화 확인 — 알람 미발생이면 규칙 미작동 신호
+kubectl exec -it test-pod -- /bin/sh -c 'id' 2>/dev/null; sleep 2; grep -c 'Terminal shell in container' /var/log/falco.log 2>/dev/null  # >0 이어야
+# 2) Falco 이벤트 드롭 점검 — drops>0 이면 부하로 탐지 누락 신호
+grep -iE 'falco.*drops|n_drops' /var/log/falco.log 2>/dev/null | tail -3
+```
+
+> eBPF 런타임 방어는 *규칙이 발화하는가*다 — "Falco가 돈다"와 "테스트 셸에서 알람이 나고 이벤트 드롭이 0이며 SIEM에 도달한다"는 다르다. 각 탐지를 소유 클러스터에서 직접 검증한다([[29_Container_Kubernetes_Security]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
+
+---
+
 <a name="english"></a>
 
 # eBPF Runtime Security
@@ -1286,3 +1313,28 @@ python falco_responder.py --mode file --log-file /var/log/falco/falco.json
 - [Tracee GitHub](https://github.com/aquasecurity/tracee)
 - [Cilium eBPF Library](https://github.com/cilium/ebpf)
 - [Linux man pages - syscalls](https://man7.org/linux/man-pages/man2/syscalls.2.html)
+
+<!-- detect-validate-38 -->
+## eBPF Runtime Detection Validation (Configured != Working)
+
+eBPF runtime security (Falco, syscall anomaly detection) observes *in-container shell execution, privilege escalation, abnormal networking, and file tampering*. "We deployed Falco" differs from "the rules actually fire" -- validate each detection on owned clusters.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Shell detection | Catch container exec? | Alarm on test shell | Rule disabled/dropped |
+| Privilege escalation | setuid/cap detected? | Fire on privilege change | Rules but no firing |
+| Event loss | Receive without drops? | drops=0 | Buffer-overflow misses |
+| Alert delivery | Sent to sink? | Alert reaches SIEM | Local log only |
+
+### Detection validation (verify directly)
+
+```bash
+# 1) Confirm Falco fires after a shell in an owned test pod — no alarm signals the rule does not work
+kubectl exec -it test-pod -- /bin/sh -c 'id' 2>/dev/null; sleep 2; grep -c 'Terminal shell in container' /var/log/falco.log 2>/dev/null  # should be >0
+# 2) Check Falco event drops — drops>0 signals detection loss under load
+grep -iE 'falco.*drops|n_drops' /var/log/falco.log 2>/dev/null | tail -3
+```
+
+> eBPF runtime defense is *whether rules fire* -- "Falco runs" differs from "a test shell alarms, event drops are 0, and it reaches the SIEM". Validate each detection on owned clusters directly ([[29_Container_Kubernetes_Security]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
