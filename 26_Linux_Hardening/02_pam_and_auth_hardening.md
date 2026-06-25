@@ -479,6 +479,31 @@ if __name__ == "__main__":
     run_audit()
 ```
 
+<!-- detect-validate-26 -->
+## 인증 강화 검증 — 정책이 실제로 강제되는가
+
+PAM·패스워드 정책은 *설정 파일에 적었는가*가 아니라 **로그인 경로에서 실제 강제되는가**로 판정한다. 패스워드 복잡도, 계정 잠금, 로그인 실패 로깅이 런타임에 작동하는지 직접 확인한다. 검증은 **소유·테스트 계정**에서만.
+
+### 통제 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 통제 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 패스워드 복잡도 | 약한 암호 통과 | pwquality 규칙 적용 확인 | minlen/minclass 강제 |
+| 계정 잠금 | 무제한 브루트포스 | faillock 카운트 | N회 실패 후 잠금 |
+| 로그인 실패 로깅 | 무로그 침해 | auth.log/journald | 실패 시 로그 라인 |
+| root 직접 로그인 | 책임추적 불가 | PermitRootLogin no | 콘솔 외 root 차단 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) pwquality 정책이 실제 적용됐는지 — 약한 암호 거부를 테스트 계정에서 확인
+grep -E '^(minlen|minclass|dcredit|ucredit)' /etc/security/pwquality.conf
+# 2) 계정 잠금이 강제되는지 — faillock 설정/현재 실패 카운트 확인
+command -v faillock >/dev/null && sudo faillock --user testuser 2>/dev/null | tail -3
+```
+
+> 검증은 반드시 **소유·테스트 계정**에서만 한다. "정책을 적었다"와 "약한 암호가 실제 거부된다"는 다르다 — 실패 시도로 잠금·로그를 직접 확인한다([[01_Linux_Basics]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -894,3 +919,28 @@ def run_audit() -> None:
 if __name__ == "__main__":
     run_audit()
 ```
+
+<!-- detect-validate-26 -->
+## Auth-Hardening Validation — Is the Policy Actually Enforced?
+
+PAM and password policy are judged not by *whether they are written in a config file* but by **whether they are actually enforced on the login path**. Verify that password complexity, account lockout, and failed-login logging work at runtime. Validate only on **owned / test accounts**.
+
+### Control -> Failure mode -> Validation method -> Healthy signal
+
+| Control | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Password complexity | Weak password passes | Confirm pwquality rules | minlen/minclass enforced |
+| Account lockout | Unlimited brute force | faillock counter | Lock after N failures |
+| Failed-login logging | Silent compromise | auth.log/journald | Log line on failure |
+| Direct root login | No accountability | PermitRootLogin no | root blocked except console |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether pwquality is actually applied — confirm weak-password rejection on a test account
+grep -E '^(minlen|minclass|dcredit|ucredit)' /etc/security/pwquality.conf
+# 2) Whether lockout is enforced — check faillock config / current failure count
+command -v faillock >/dev/null && sudo faillock --user testuser 2>/dev/null | tail -3
+```
+
+> Validate only on **owned / test accounts**. "The policy is written" differs from "a weak password is actually rejected" — confirm lockout and logs via failed attempts directly ([[01_Linux_Basics]], [[13_SOC_Blue_Team]]).

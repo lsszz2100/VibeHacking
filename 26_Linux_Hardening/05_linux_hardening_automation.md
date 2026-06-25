@@ -498,6 +498,31 @@ if __name__ == "__main__":
 - **OpenSCAP / SCAP Security Guide**: https://www.open-scap.org/
 - **Ansible 보안 강화 역할**: https://galaxy.ansible.com/devsec/hardening
 
+<!-- detect-validate-26 -->
+## 자동화 강화 검증 — 플레이북이 실제로 수렴하는가
+
+CIS·Ansible 자동화는 *플레이북을 실행했는가*가 아니라 **목표 상태로 실제 수렴하고 드리프트가 없는가**로 판정한다. 멱등성, 적용 후 상태, 재실행 변경 0을 직접 확인한다. 검증은 **소유 시스템**에서만.
+
+### 통제 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 통제 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 멱등성 | 매 실행 변경 발생 | --check / 재실행 | 2회차 changed=0 |
+| CIS 항목 적용 | 부분 적용 | 적용 후 CIS 스캔 | 목표 항목 pass |
+| 설정 드리프트 | 수동 변경 잔존 | 정기 check 모드 | drift 0 보고 |
+| 적용 범위 | 일부 호스트 누락 | 인벤토리 대조 | 전 호스트 적용 |
+
+### 자동화 검증 (직접 확인)
+
+```bash
+# 1) 플레이북 멱등성 — check 모드로 미수렴(변경 예정) 항목 확인. 소유 인벤토리에서만
+ansible-playbook -i inventory.ini linux_hardening.yml --check --diff | tail -20
+# 2) 두 번째 실행에서 changed=0 인지(수렴 증거)
+ansible-playbook -i inventory.ini linux_hardening.yml | grep -E 'changed=|failed='
+```
+
+> 검증은 반드시 **소유 시스템**에서만 한다. "플레이북을 돌렸다"와 "목표 상태로 수렴했다"는 다르다 — 재실행 changed=0·CIS 재스캔으로 직접 확인한다([[18_DevSecOps]], [[29_Container_Kubernetes_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -548,3 +573,28 @@ sudo oscap xccdf eval \
 - CIS Benchmarks: https://www.cisecurity.org/cis-benchmarks/
 - OpenSCAP: https://www.open-scap.org/
 - Ansible hardening role: https://galaxy.ansible.com/devsec/hardening
+
+<!-- detect-validate-26 -->
+## Automation-Hardening Validation — Does the Playbook Actually Converge?
+
+CIS/Ansible automation is judged not by *whether the playbook ran* but by **whether the system actually converges to the target state with no drift**. Verify idempotence, post-apply state, and zero changes on re-run directly. Validate only on **owned systems**.
+
+### Control -> Failure mode -> Validation method -> Healthy signal
+
+| Control | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Idempotence | Changes every run | --check / re-run | 2nd run changed=0 |
+| CIS item applied | Partial application | Post-apply CIS scan | Target items pass |
+| Config drift | Manual changes linger | Periodic check mode | drift 0 reported |
+| Coverage | Some hosts missed | Reconcile inventory | All hosts applied |
+
+### Automation validation (verify directly)
+
+```bash
+# 1) Playbook idempotence — check mode shows unconverged (would-change) items. Owned inventory only
+ansible-playbook -i inventory.ini linux_hardening.yml --check --diff | tail -20
+# 2) Whether the second run shows changed=0 (evidence of convergence)
+ansible-playbook -i inventory.ini linux_hardening.yml | grep -E 'changed=|failed='
+```
+
+> Validate only on **owned systems**. "The playbook ran" differs from "it converged to the target state" — confirm via changed=0 on re-run and a CIS re-scan ([[18_DevSecOps]], [[29_Container_Kubernetes_Security]]).

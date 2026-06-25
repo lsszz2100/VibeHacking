@@ -585,6 +585,31 @@ aide --check 2>&1 | grep -E "^(Changed|Added|Removed)"
 | AIDE | 파일 무결성 감사 | 일별 검사 + 알림 |
 | CIS 스크립트 | 특정 항목 세부 점검 | 이벤트 기반 실행 |
 
+<!-- detect-validate-26 -->
+## 감사 결과 검증 — 점수가 실제 보안을 반영하는가
+
+Lynis 같은 자동 감사는 *하드닝 인덱스 점수*를 주지만 점수가 곧 안전은 아니다. **경고가 실제 위험인지, 제안이 적용 후 재검증됐는지**를 직접 확인해야 한다. 감사는 **소유 시스템**에서만.
+
+### 감사 산출물 → 위험 → 검증 방법 → 신뢰 신호
+
+| 감사 산출물 | 위험 | 검증 방법 | 신뢰 신호 |
+|---|---|---|---|
+| 하드닝 인덱스 | 점수만 보고 안심 | 경고 항목 개별 검토 | 경고 0 또는 보상통제 |
+| Lynis 경고 | 무시·미적용 | 수정 후 재감사 | 재감사 시 경고 해소 |
+| 미적용 제안 | 잔존 취약 | 변경관리로 추적 | 제안→티켓→적용 추적 |
+| 감사 주기 | 일회성 점검 | 정기 자동 감사 | 정기 리포트 존재 |
+
+### 감사 검증 (직접 확인)
+
+```bash
+# 1) 최근 Lynis 경고를 추출해 실제 위험인지 개별 확인 — 소유 시스템에서
+sudo lynis audit system --quick 2>/dev/null; grep -E 'Warning|Suggestion' /var/log/lynis.log | head
+# 2) 수정 후 재감사로 하드닝 인덱스가 개선됐는지 비교
+grep -i 'hardening index' /var/log/lynis.log | tail -2
+```
+
+> 감사는 반드시 **소유 시스템**에서만 한다. "점수가 올랐다"와 "경고가 실제 해소됐다"는 다르다 — 수정 후 재감사로 직접 확인한다([[18_DevSecOps]], [[40_Threat_Hunting]]).
+
 ---
 
 <a name="english"></a>
@@ -1098,3 +1123,28 @@ aide --check 2>&1 | grep -E "^(Changed|Added|Removed)"
 | OpenSCAP | CIS/STIG compliance | Weekly scan + HTML report |
 | AIDE | File integrity audit | Daily check + alerts |
 | CIS script | Detailed check of specific items | Event-driven execution |
+
+<!-- detect-validate-26 -->
+## Audit-Result Validation — Does the Score Reflect Real Security?
+
+Automated audits like Lynis give a *hardening index score*, but the score is not safety. You must verify directly **whether a warning is a real risk and whether a suggestion was re-validated after applying it**. Audit only on **owned systems**.
+
+### Audit output -> Risk -> Validation method -> Trust signal
+
+| Audit output | Risk | Validation method | Trust signal |
+|---|---|---|---|
+| Hardening index | Reassured by score alone | Review each warning | 0 warnings or compensating control |
+| Lynis warning | Ignored / unapplied | Re-audit after fix | Warning cleared on re-audit |
+| Unapplied suggestion | Residual exposure | Track via change mgmt | suggestion->ticket->applied |
+| Audit cadence | One-off check | Scheduled auto audit | Recurring report exists |
+
+### Audit validation (verify directly)
+
+```bash
+# 1) Extract recent Lynis warnings and check each for real risk — owned systems
+sudo lynis audit system --quick 2>/dev/null; grep -E 'Warning|Suggestion' /var/log/lynis.log | head
+# 2) Compare hardening index before/after fixes via re-audit
+grep -i 'hardening index' /var/log/lynis.log | tail -2
+```
+
+> Audit only on **owned systems**. "The score went up" differs from "the warning is actually resolved" — confirm via re-audit after the fix ([[18_DevSecOps]], [[40_Threat_Hunting]]).

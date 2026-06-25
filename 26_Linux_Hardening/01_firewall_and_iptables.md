@@ -422,6 +422,31 @@ EOF
 sysctl -p
 ```
 
+<!-- detect-validate-26 -->
+## 방화벽 통제 검증 — 규칙이 실제로 막는가
+
+방화벽은 *설정 파일에 규칙이 있는가*가 아니라 **런타임에 실제로 차단·로깅되는가**로 판정한다. 기본정책 DROP, 상태추적, 거부 로깅, 재부팅 후 영속성을 직접 확인한다. 검증은 **소유 호스트**에서만.
+
+### 통제 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 통제 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 기본정책 DROP | ACCEPT로 광범위 허용 | 체인 정책 확인 | INPUT/FORWARD 정책=DROP |
+| 상태추적 | 비정상 패킷 통과 | conntrack 규칙 점검 | ESTABLISHED,RELATED만 허용 |
+| 거부 로깅 | 무로그 우회 | LOG 규칙·journald | 차단 시 로그 라인 생성 |
+| 영속성 | 재부팅 후 초기화 | netfilter-persistent | 재부팅 후 규칙 유지 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 기본 정책이 DROP인지(허용목록 외 차단) — 소유 호스트에서만
+sudo iptables -L INPUT -n | head -1 | grep -q 'policy DROP' && echo "INPUT default-deny OK" || echo "WARN: not default-deny"
+# 2) DROP 규칙이 실제 패킷을 떨구는지 카운터로 확인(0이면 미적용/미검증)
+sudo iptables -nvL INPUT | awk '/DROP/ && $1>0 {print "drops:",$1,"pkts",$2,"bytes"}'
+```
+
+> 검증은 반드시 **소유 호스트**에서만 한다. "규칙을 넣었다"와 "패킷이 실제 차단된다"는 다르다 — 정책·카운터·로그로 직접 확인한다([[24_Network_Infrastructure_Security]], [[40_Threat_Hunting]]).
+
 ---
 
 <a name="english"></a>
@@ -766,3 +791,28 @@ EOF
 
 sysctl -p
 ```
+
+<!-- detect-validate-26 -->
+## Firewall Control Validation — Do the Rules Actually Block?
+
+A firewall is judged not by *whether rules exist in a config file* but by **whether traffic is actually dropped and logged at runtime**. Verify default-deny policy, stateful tracking, reject logging, and persistence across reboot. Validate only on **owned hosts**.
+
+### Control -> Failure mode -> Validation method -> Healthy signal
+
+| Control | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Default DROP policy | Broad ACCEPT exposure | Check chain policy | INPUT/FORWARD policy=DROP |
+| Stateful tracking | Anomalous packets pass | Inspect conntrack rules | Only ESTABLISHED,RELATED allowed |
+| Reject logging | Silent bypass | LOG rule / journald | Log line on block |
+| Persistence | Reset after reboot | netfilter-persistent | Rules survive reboot |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the default policy is DROP (deny outside the allowlist) — owned hosts only
+sudo iptables -L INPUT -n | head -1 | grep -q 'policy DROP' && echo "INPUT default-deny OK" || echo "WARN: not default-deny"
+# 2) Whether DROP rules actually drop packets, by counter (0 means unapplied/unverified)
+sudo iptables -nvL INPUT | awk '/DROP/ && $1>0 {print "drops:",$1,"pkts",$2,"bytes"}'
+```
+
+> Validate only on **owned hosts**. "Rules are added" differs from "packets are actually blocked" — confirm via policy, counters, and logs directly ([[24_Network_Infrastructure_Security]], [[40_Threat_Hunting]]).
