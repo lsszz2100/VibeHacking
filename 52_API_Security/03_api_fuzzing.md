@@ -401,6 +401,33 @@ def analyze_response(
 
 ---
 
+<!-- detect-validate-52 -->
+## API 퍼징 발견 검증과 오탐 관리
+
+API 퍼징(ffuf·OpenAPI 퍼저·HPP·콘텐츠 타입 혼동)은 *대량 요청으로 엔드포인트·파라미터 취약을 탐지*한다. 퍼저 결과는 상태코드 기반 오탐이 많으므로 분석자는 **발견을 수동 재현하고 영향을 검증**해야 한다. 검증은 **소유 API**에서만.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 엔드포인트 발견 | 실제 존재? | 수동 200 재현 | 와일드카드 200 |
+| 파라미터 취약 | 영향 있나? | 데이터/권한 변화 | 에러코드만 |
+| HPP | 파싱 차이? | 중복 파라미터 우회 | 무영향 차이 |
+| 응답 분석 | 의미 있는 차? | 길이/내용 유의 | 시간 노이즈 |
+
+### 발견 검증 (직접 확인)
+
+```bash
+# 1) 퍼저가 찾은 엔드포인트를 수동 재현(오탐 제거) — 와일드카드 200 함정 회피 위해 무작위 경로와 비교
+curl -s -o /dev/null -w "found: %{http_code}\n" https://api.internal/v1/admin/config; curl -s -o /dev/null -w "random: %{http_code}\n" https://api.internal/v1/zzz$RANDOM
+# 2) HPP 파라미터 오염 영향 검증 — 중복 파라미터로 인가 우회되면 실제 취약 신호
+curl -s -o /dev/null -w "hpp -> %{http_code}\n" "https://api.internal/v1/orders?user=$USER_A&user=$USER_B" -H "Authorization: Bearer $TOKEN_A"
+```
+
+> API 퍼징은 *발견이 재현·영향 있는가*다 — "퍼저가 200을 냈다"와 "그 엔드포인트가 수동 재현되고 데이터/권한에 영향을 준다"는 다르다. 소유 API에서 직접 검증한다([[12_Bug_Bounty]], [[73_Bug_Bounty_Automation]], [[05_Web_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # API Fuzzing — Automated Vulnerability Detection with ffuf and OpenAPI
@@ -743,3 +770,28 @@ def analyze_response(
 | `nuclei` | API vulnerability template scanning |
 | `Burp Intruder` | GUI-based precision fuzzing |
 | `RESTler` | AI-based REST API fuzzer (Microsoft) |
+
+<!-- detect-validate-52 -->
+## API-Fuzzing Finding Validation and False-Positive Management
+
+API fuzzing (ffuf, OpenAPI fuzzer, HPP, content-type confusion) *detects endpoint/parameter flaws via bulk requests*. Fuzzer results are status-code-noisy, so the analyst must **manually reproduce findings and validate impact**. Validate only on **owned APIs**.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Endpoint discovery | Really exists? | Manual 200 reproduced | Wildcard 200 |
+| Parameter flaw | Any impact? | Data/authority change | Error code only |
+| HPP | Parsing difference? | Duplicate-param bypass | No-impact difference |
+| Response analysis | Meaningful diff? | Length/content significant | Timing noise |
+
+### Finding validation (verify directly)
+
+```bash
+# 1) Manually reproduce a fuzzer-found endpoint (remove FPs) — compare against a random path to avoid the wildcard-200 trap
+curl -s -o /dev/null -w "found: %{http_code}\n" https://api.internal/v1/admin/config; curl -s -o /dev/null -w "random: %{http_code}\n" https://api.internal/v1/zzz$RANDOM
+# 2) Validate HPP impact — if duplicate parameters bypass authorization, it is a real vuln signal
+curl -s -o /dev/null -w "hpp -> %{http_code}\n" "https://api.internal/v1/orders?user=$USER_A&user=$USER_B" -H "Authorization: Bearer $TOKEN_A"
+```
+
+> API fuzzing is *whether findings reproduce and have impact* -- "the fuzzer returned 200" differs from "that endpoint reproduces manually and affects data/authority". Validate on owned APIs directly ([[12_Bug_Bounty]], [[73_Bug_Bounty_Automation]], [[05_Web_Hacking]]).

@@ -444,6 +444,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-52 -->
+## GraphQL 공격 탐지와 쿼리 통제 검증
+
+GraphQL 공격은 *인트로스펙션 노출·배치 쿼리·깊은 중첩(DoS)·인젝션*으로 스키마와 자원을 남용한다. 방어자는 **인트로스펙션이 제한되고 쿼리 복잡도/깊이가 통제되는가**를 검증해야 한다. 검증은 **소유 GraphQL 엔드포인트**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 인트로스펙션 | 스키마 노출 | 운영서 비활성 | __schema 응답 |
+| 배치 쿼리 | 다중 작업 1요청 | 배치 제한 | 단일 요청 다중 변이 |
+| 깊은 중첩 DoS | 복잡도 무제한 | 깊이/복잡도 제한 | 중첩>임계 수용 |
+| 인젝션 | 리졸버 무검증 | 파라미터화 | 리졸버 오류 누출 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 엔드포인트 인트로스펙션 노출 여부 — 운영서 __schema 응답 시 노출 신호
+curl -s -X POST -H 'Content-Type: application/json' --data '{"query":"{__schema{types{name}}}"}' https://api.internal/graphql 2>/dev/null | head -c 200; echo
+# 2) 깊은 중첩 쿼리 제한 검증 — 과도 중첩이 거부(에러/제한)돼야(수용이면 DoS 표면)
+curl -s -o /dev/null -w "deep-nest -> %{http_code}\n" -X POST -H 'Content-Type: application/json' --data '{"query":"{a{b{c{d{e{f{g{h{id}}}}}}}}}"}' https://api.internal/graphql
+```
+
+> GraphQL 방어는 *쿼리가 통제되는가*다 — "쿼리가 응답한다"와 "인트로스펙션이 막히고 깊은 중첩/배치가 제한된다"는 다르다. 소유 엔드포인트에서 직접 확인한다([[05_Web_Hacking]], [[12_Bug_Bounty]], [[02_Network_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # GraphQL Security — Introspection, Batch Attacks, and Authorization Bypass
@@ -812,3 +839,28 @@ if __name__ == "__main__":
 | Field-Level Authorization | `graphql-shield` / Resolver-level permission checks |
 | Rate Limiting | Complexity-based Rate Limit |
 | Persisted Queries | Only execute allowed query hashes |
+
+<!-- detect-validate-52 -->
+## GraphQL Attack Detection and Query-Control Validation
+
+GraphQL attacks abuse schema and resources via *introspection exposure, batch queries, deep nesting (DoS), and injection*. Defenders must verify **whether introspection is restricted and query complexity/depth is controlled**. Validate only on **owned GraphQL endpoints**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Introspection | Schema exposure | Disable in prod | __schema responds |
+| Batch query | Many ops per request | Batch limit | Multi-mutation single request |
+| Deep-nesting DoS | Unlimited complexity | Depth/complexity limit | Nesting > threshold accepted |
+| Injection | Unvalidated resolver | Parameterization | Resolver error leak |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether introspection is exposed on the owned endpoint — a __schema response in prod signals exposure
+curl -s -X POST -H 'Content-Type: application/json' --data '{"query":"{__schema{types{name}}}"}' https://api.internal/graphql 2>/dev/null | head -c 200; echo
+# 2) Deep-nesting limit check — excessive nesting should be rejected (error/limit); acceptance = DoS surface
+curl -s -o /dev/null -w "deep-nest -> %{http_code}\n" -X POST -H 'Content-Type: application/json' --data '{"query":"{a{b{c{d{e{f{g{h{id}}}}}}}}}"}' https://api.internal/graphql
+```
+
+> GraphQL defense is *whether queries are controlled* -- "the query responds" differs from "introspection is blocked and deep nesting/batching is limited". Confirm on owned endpoints directly ([[05_Web_Hacking]], [[12_Bug_Bounty]], [[02_Network_Hacking]]).

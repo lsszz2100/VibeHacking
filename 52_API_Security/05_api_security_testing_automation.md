@@ -667,6 +667,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-52 -->
+## API 보안 테스트 자동화 검증과 회귀 관리
+
+API 테스트 자동화(OpenAPI 퍼징·JWT 테스트·GraphQL 테스트·BOLA/IDOR 자동 탐지)는 *반복 검사로 회귀를 막는다*. 자동 테스트는 오탐·불안정이 섞이므로 **발견을 재현하고 CI 게이트로 회귀를 보장**해야 한다. 검증은 **소유 API**에서만.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| BOLA 자동탐지 | 실제 우회? | 2계정 교차 403 검증 | 200=우회 미검증 |
+| JWT 테스트 | 변조 거부? | alg/서명 변조 401 | 검증만, 미강제 |
+| 회귀 게이트 | CI가 막나? | 취약 시 빌드 실패 | 리포트만 |
+| 안정성 | 재현 일관? | 반복 동일 결과 | 플래키 |
+
+### 자동화 검증 (직접 확인)
+
+```bash
+# 1) BOLA 자동탐지 결과를 2계정으로 재확인(오탐 제거) — A로 B객체가 403이어야 안전
+curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer $TOKEN_A" https://api.internal/v1/users/$USER_B | grep -qE '403|404' && echo "authz ok" || echo "BOLA confirmed"
+# 2) 테스트가 CI 게이트로 작동하는지 — 취약 발견 시 비0 종료여야 회귀 방지
+python3 api_security_tests.py 2>/dev/null; echo "exit=$?  (취약 시 비0이어야)"
+```
+
+> API 테스트 자동화는 *발견이 재현·회귀 차단되는가*다 — "스캔이 돌았다"와 "BOLA가 2계정으로 확증되고 취약 시 CI가 실패한다"는 다르다. 소유 API에서 직접 검증한다([[73_Bug_Bounty_Automation]], [[18_DevSecOps]], [[12_Bug_Bounty]]).
+
+---
+
 <a name="english"></a>
 
 # API Security Testing Automation
@@ -761,3 +788,28 @@ python3 bola_tester.py https://api.example.com /api/users/{id}/profile \
   "attacker_response_len": 312
 }
 ```
+
+<!-- detect-validate-52 -->
+## API Security-Test Automation Validation and Regression Management
+
+API test automation (OpenAPI fuzzing, JWT testing, GraphQL testing, BOLA/IDOR auto-detection) *prevents regression via repeated checks*. Automated tests mix false positives and instability, so you must **reproduce findings and guarantee regression via a CI gate**. Validate only on **owned APIs**.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| BOLA auto-detection | Real bypass? | Two-account cross 403 verified | 200 = bypass unverified |
+| JWT testing | Tamper rejected? | alg/sig tamper 401 | Verify but not enforce |
+| Regression gate | Does CI block? | Build fails on vuln | Report only |
+| Stability | Consistent repro? | Same result on repeat | Flaky |
+
+### Automation validation (verify directly)
+
+```bash
+# 1) Re-confirm a BOLA auto-detection with two accounts (remove FPs) — B's object via A should be 403 to be safe
+curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer $TOKEN_A" https://api.internal/v1/users/$USER_B | grep -qE '403|404' && echo "authz ok" || echo "BOLA confirmed"
+# 2) Whether the test acts as a CI gate — it should exit non-zero on a finding to prevent regression
+python3 api_security_tests.py 2>/dev/null; echo "exit=$?  (should be non-zero when vulnerable)"
+```
+
+> API test automation is *whether findings reproduce and regression is blocked* -- "a scan ran" differs from "BOLA is confirmed with two accounts and CI fails on a vuln". Validate on owned APIs directly ([[73_Bug_Bounty_Automation]], [[18_DevSecOps]], [[12_Bug_Bounty]]).

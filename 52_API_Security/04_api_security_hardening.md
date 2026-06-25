@@ -529,6 +529,33 @@ server {
 
 ---
 
+<!-- detect-validate-52 -->
+## API 보안 강화 검증 (설정됨 ≠ 작동함)
+
+API 보안 강화는 *게이트웨이·OAuth2/OIDC·Rate Limiting·감사*로 구성된다. "게이트웨이를 뒀다"는 설정과 "인증/레이트가 실제로 강제되는가"는 다르다 — 각 통제를 소유 API에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 인증 강제 | 미인증 거부? | 토큰 없으면 401 | 일부 경로 무인증 |
+| Rate Limiting | 초과 차단? | 임계 후 429 | 설정만, 미적용 |
+| OAuth 스코프 | 최소 스코프? | 범위 밖 403 | 광역 스코프 |
+| TLS/전송 | 평문 차단? | http→리다이렉트/거부 | 평문 허용 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 API 인증 강제 — 토큰 없이 보호 엔드포인트가 401/403이어야(200이면 갭)
+curl -s -o /dev/null -w "no-token: %{http_code}\n" https://api.internal/v1/me
+# 2) Rate limiting 발화 — 빠른 연속 요청에서 429가 나와야(안 나오면 미강제)
+for i in $(seq 1 30); do curl -s -o /dev/null -w "%{http_code}\n" https://api.internal/v1/search?q=x; done | sort | uniq -c
+```
+
+> API 강화는 *통제가 강제되는가*다 — "게이트웨이가 있다"와 "미인증이 401이고 임계 초과가 429이며 스코프 밖이 403이다"는 다르다. 각 통제를 소유 API에서 직접 검증한다([[39_Zero_Trust_Architecture]], [[14_Cloud_Security]], [[18_DevSecOps]]).
+
+---
+
 <a name="english"></a>
 
 # API Security Hardening — Gateway, OAuth2, and Automated Auditing
@@ -979,3 +1006,28 @@ server {
 | Logging | Request/response audit logs (sensitive data masking) |
 | Version management | Explicit deprecation schedule for legacy versions |
 | Dependency management | `pip audit` / `safety check` automation |
+
+<!-- detect-validate-52 -->
+## API Security-Hardening Validation (Configured != Working)
+
+API hardening comprises *gateway, OAuth2/OIDC, rate limiting, and audit*. "We added a gateway" differs from "auth/rate are actually enforced" -- validate each control on owned APIs.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Auth enforcement | Unauth rejected? | 401 without token | Some paths unauthenticated |
+| Rate limiting | Excess blocked? | 429 after threshold | Config only, not applied |
+| OAuth scope | Least scope? | 403 out of scope | Broad scope |
+| TLS/transport | Plaintext blocked? | http -> redirect/deny | Plaintext allowed |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Owned-API auth enforcement — a protected endpoint without a token should be 401/403 (200 = gap)
+curl -s -o /dev/null -w "no-token: %{http_code}\n" https://api.internal/v1/me
+# 2) Rate-limiting firing — rapid consecutive requests should yield 429 (none = not enforced)
+for i in $(seq 1 30); do curl -s -o /dev/null -w "%{http_code}\n" https://api.internal/v1/search?q=x; done | sort | uniq -c
+```
+
+> API hardening is *whether controls are enforced* -- "we have a gateway" differs from "unauth is 401, over-threshold is 429, and out-of-scope is 403". Validate each control on owned APIs directly ([[39_Zero_Trust_Architecture]], [[14_Cloud_Security]], [[18_DevSecOps]]).

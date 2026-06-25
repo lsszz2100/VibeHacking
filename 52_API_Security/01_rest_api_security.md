@@ -490,6 +490,33 @@ done
 
 ---
 
+<!-- detect-validate-52 -->
+## REST API 공격 탐지와 인가 검증
+
+REST API 공격(OWASP API Top 10)은 *BOLA/IDOR·JWT 취약·Mass Assignment·구버전*으로 데이터·권한을 탈취한다. 방어자는 **객체 레벨 인가가 서버에서 강제되는가**를 검증해야 한다. 검증은 **소유 API/2개 테스트 계정**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| BOLA/IDOR | 객체 인가 누락 | 소유권 검사 | 타 계정 객체 200 |
+| JWT 취약 | alg none·약한 키 | 알고 고정·검증 | alg:none 수용 |
+| Mass Assignment | 무차별 바인딩 | 허용목록 바인딩 | 권한 필드 주입 성공 |
+| 구버전 API | 미패치 v1 | 버전 폐기 | 구버전 200 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 2계정으로 BOLA 검증 — A 토큰으로 B 객체 요청 시 403/404여야(200이면 인가 갭)
+curl -s -o /dev/null -w "B-object via A-token: %{http_code}\n" -H "Authorization: Bearer $TOKEN_A" https://api.internal/v1/users/$USER_B/orders
+# 2) JWT alg:none 수용 여부 — 서명 제거 토큰이 거부돼야(수용이면 취약)
+h=$(printf '{"alg":"none","typ":"JWT"}' | base64 | tr -d '=' | tr '/+' '_-'); p=$(printf '{"sub":"admin"}' | base64 | tr -d '=' | tr '/+' '_-'); curl -s -o /dev/null -w "alg:none -> %{http_code}\n" -H "Authorization: Bearer $h.$p." https://api.internal/v1/me
+```
+
+> API 방어는 *인가가 서버에서 강제되는가*다 — "응답이 온다"와 "타 계정 객체가 403이고 alg:none이 거부되며 권한 필드가 바인딩되지 않는다"는 다르다. 소유 API/테스트 계정에서 직접 확인한다([[05_Web_Hacking]], [[12_Bug_Bounty]], [[16_Cryptography]]).
+
+---
+
 <a name="english"></a>
 
 # REST API Security and OWASP API Top 10
@@ -918,3 +945,28 @@ done
 | `Burp Suite` | API traffic interception |
 | `mitmproxy` | API proxy analysis |
 | `postman` | API test automation |
+
+<!-- detect-validate-52 -->
+## REST API Attack Detection and Authorization Validation
+
+REST API attacks (OWASP API Top 10) steal data/authority via *BOLA/IDOR, JWT flaws, Mass Assignment, and old versions*. Defenders must verify **whether object-level authorization is enforced server-side**. Validate only on **owned APIs/two test accounts**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| BOLA/IDOR | Missing object authz | Ownership check | 200 on another account's object |
+| JWT flaw | alg none, weak key | Pin algo, verify | alg:none accepted |
+| Mass Assignment | Indiscriminate binding | Allowlist binding | Privilege-field injection works |
+| Old API version | Unpatched v1 | Deprecate versions | Old version 200 |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) BOLA check with two owned accounts — requesting B's object with A's token should be 403/404 (200 = authz gap)
+curl -s -o /dev/null -w "B-object via A-token: %{http_code}\n" -H "Authorization: Bearer $TOKEN_A" https://api.internal/v1/users/$USER_B/orders
+# 2) Whether JWT alg:none is accepted — a signature-stripped token should be rejected (acceptance = vulnerable)
+h=$(printf '{"alg":"none","typ":"JWT"}' | base64 | tr -d '=' | tr '/+' '_-'); p=$(printf '{"sub":"admin"}' | base64 | tr -d '=' | tr '/+' '_-'); curl -s -o /dev/null -w "alg:none -> %{http_code}\n" -H "Authorization: Bearer $h.$p." https://api.internal/v1/me
+```
+
+> API defense is *whether authorization is enforced server-side* -- "a response comes back" differs from "another account's object is 403, alg:none is rejected, and privilege fields are not bound". Confirm on owned APIs/test accounts directly ([[05_Web_Hacking]], [[12_Bug_Bounty]], [[16_Cryptography]]).
