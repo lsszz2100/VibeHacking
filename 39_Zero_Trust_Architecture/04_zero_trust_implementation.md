@@ -1385,6 +1385,31 @@ if __name__ == "__main__":
 
 *최종 업데이트: 2024년*
 
+<!-- detect-validate-39 -->
+## 구현 검증 — ZTNA가 VPN 암묵신뢰를 실제로 대체했는가
+
+ZT 구현은 *솔루션을 샀는가*가 아니라 **모든 접근이 정책 게이트웨이를 강제로 경유하고 평면 VPN 폴백이 없는가**로 판정한다. 게이트웨이 우회 경로와 미보호 레거시를 직접 찾는다. 검증은 **소유 환경**에서만.
+
+### 통제 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 통제 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| ZTNA 적용 | VPN 폴백 잔존 | 폴백 경로 점검 | 평면 VPN 비활성 |
+| 정책 게이트웨이 | 우회 경로 | 직접 접근 시도 | 게이트웨이 강제 |
+| 레거시 통합 | 미보호 레거시 | 자산 인벤토리 | 레거시도 프록시 경유 |
+| 성숙도 측정 | 자가평가 과대 | 증거 기반 평가 | 통제별 증거 존재 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) ZTNA 게이트웨이를 우회한 오리진 직접 접근이 가능한지(우회 시 ZT 무력화) — 소유 환경
+curl -s -o /dev/null -w '%{http_code}\n' --resolve app.owned:443:ORIGIN_IP https://app.owned/   # 차단 기대
+# 2) 평면 VPN 폴백(스플릿터널/전체허용)이 비활성인지 설정 확인
+grep -riE 'split-tunnel|full-access|allow-all' vpn_config* 2>/dev/null | head
+```
+
+> 검증은 반드시 **소유 환경**에서만 한다. "ZTNA를 도입했다"와 "게이트웨이 우회 경로가 0이다"는 다르다 — 오리진 직접접근·VPN 폴백을 직접 점검한다([[14_Cloud_Security]], [[68_Purple_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -1715,3 +1740,28 @@ Forrester's Zero Trust eXtended (ZTX) framework:
 ---
 
 *Last updated: 2024*
+
+<!-- detect-validate-39 -->
+## Implementation Validation — Did ZTNA Actually Replace VPN Implicit Trust?
+
+ZT implementation is judged not by *whether a solution was bought* but by **whether every access is forced through the policy gateway with no flat-VPN fallback**. Hunt gateway-bypass paths and unprotected legacy directly. Validate only on **owned environments**.
+
+### Control -> Failure mode -> Validation method -> Healthy signal
+
+| Control | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| ZTNA applied | VPN fallback remains | Inspect fallback path | Flat VPN disabled |
+| Policy gateway | Bypass path | Try direct access | Gateway enforced |
+| Legacy integration | Unprotected legacy | Asset inventory | Legacy also via proxy |
+| Maturity measurement | Inflated self-assessment | Evidence-based eval | Per-control evidence exists |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether direct-to-origin access bypassing the ZTNA gateway works (bypass nullifies ZT) — owned env
+curl -s -o /dev/null -w '%{http_code}\n' --resolve app.owned:443:ORIGIN_IP https://app.owned/   # expect blocked
+# 2) Whether flat-VPN fallback (split-tunnel/allow-all) is disabled, via config
+grep -riE 'split-tunnel|full-access|allow-all' vpn_config* 2>/dev/null | head
+```
+
+> Validate only on **owned environments**. "We deployed ZTNA" differs from "zero gateway-bypass paths remain" — check direct-to-origin and VPN fallback directly ([[14_Cloud_Security]], [[68_Purple_Team]]).

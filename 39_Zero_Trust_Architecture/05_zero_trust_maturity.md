@@ -805,6 +805,31 @@ Phase 4 (12개월+): 최적화
 - **Google BeyondCorp** — 기업 네트워크 없는 Zero Trust 사례
 - **Microsoft Zero Trust Guidance** — [https://aka.ms/zerotrust](https://aka.ms/zerotrust)
 
+<!-- detect-validate-39 -->
+## 지속 검증(CAE) 운영 검증 — 권한이 실시간으로 회수되는가
+
+성숙한 ZT 운영은 *1회 인증 후 신뢰*가 아니라 **위험 변화 시 세션·권한이 실시간 재평가·회수되는가**로 판정한다. 계정 비활성·위험 상승 후에도 기존 세션이 살아있는지 직접 확인한다. 검증은 **소유 테스트 계정**에서만.
+
+### 통제 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 통제 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 지속 권한평가 | 무한 세션 | 토큰 수명·재평가 | 위험 변화 시 재인증 |
+| CAE 즉시 회수 | 회수 지연 | 비활성 후 접근 | 세션 즉시 종료 |
+| 위험 기반 정책 | 정적 정책 | 위험 신호 연동 | 고위험 시 차단 |
+| 운영 지표 | 측정 없음 | 대시보드/로그 | 거부·재인증 추세 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 토큰 수명이 과도하지 않은지(짧은 수명+재평가가 ZT 신호) — 소유 테넌트 정책 확인
+grep -riE 'accessTokenLifetime|sessionLifetime|maxAge' token_policy* 2>/dev/null | head
+# 2) 고위험 로그인/회수에 대한 차단·재인증 로그가 남는지
+journalctl -u 'auth*' --since '-1d' 2>/dev/null | grep -iE 'risk|revoke|reauth' | head
+```
+
+> 검증은 반드시 **소유 테스트 계정**에서만 한다. "지속 검증을 켰다"와 "비활성 후 세션이 실제로 끊긴다"는 다르다 — 회수 지연·세션 종료를 직접 확인한다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
+
 ---
 
 <a name="english"></a>
@@ -1148,3 +1173,28 @@ Phase 4 (12+ months): Optimization
 - **DoD Zero Trust Reference Architecture v2.0** — US DoD ZTA guide
 - **Google BeyondCorp** — Zero Trust case study without corporate network
 - **Microsoft Zero Trust Guidance** — [https://aka.ms/zerotrust](https://aka.ms/zerotrust)
+
+<!-- detect-validate-39 -->
+## Continuous-Verification (CAE) Validation — Is Access Revoked in Real Time?
+
+Mature ZT operation is judged not by *trust after one-time auth* but by **whether sessions and permissions are re-evaluated and revoked in real time on risk change**. Verify directly whether existing sessions survive after account disable / risk elevation. Validate only on **owned test accounts**.
+
+### Control -> Failure mode -> Validation method -> Healthy signal
+
+| Control | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Continuous authz eval | Infinite session | Token lifetime/re-eval | Re-auth on risk change |
+| CAE instant revoke | Revoke delay | Access after disable | Session ends immediately |
+| Risk-based policy | Static policy | Wire risk signals | Block on high risk |
+| Operational metrics | No measurement | Dashboard/logs | Deny/re-auth trend |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether token lifetime is not excessive (short lifetime + re-eval is the ZT signal) — owned tenant policy
+grep -riE 'accessTokenLifetime|sessionLifetime|maxAge' token_policy* 2>/dev/null | head
+# 2) Whether block/re-auth logs exist for high-risk logins/revocations
+journalctl -u 'auth*' --since '-1d' 2>/dev/null | grep -iE 'risk|revoke|reauth' | head
+```
+
+> Validate only on **owned test accounts**. "Continuous verification is on" differs from "the session is actually killed after disable" — confirm revoke delay and session termination directly ([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).

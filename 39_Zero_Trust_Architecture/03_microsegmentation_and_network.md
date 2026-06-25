@@ -1240,6 +1240,31 @@ if __name__ == "__main__":
 
 *최종 업데이트: 2024년*
 
+<!-- detect-validate-39 -->
+## 마이크로세그멘테이션 검증 — East-West가 실제로 차단되는가
+
+세그멘테이션은 *정책을 그렸는가*가 아니라 **세그먼트 간 비인가 통신이 런타임에 실제 차단되는가**로 판정한다. 의도한 정책과 실제 트래픽의 차이(그림자 규칙)를 직접 확인한다. 검증은 **소유 호스트 간**에서만.
+
+### 통제 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 통제 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 기본 거부 | 평면 네트워크 | 세그먼트간 연결 시도 | 비인가 East-West 차단 |
+| 정책 적용 | 그림자 규칙 | 정책 vs 실트래픽 | 의도=실제 일치 |
+| SDP/ZTNA | 노출된 앱 포트 | 외부 스캔 | 앱 포트 비공개 |
+| 거부 로깅 | 횡적이동 미탐 | 차단 로그 확인 | 차단 이벤트 기록 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 세그먼트 간 비인가 통신이 실제 차단되는지 — 소유 호스트 간에서만
+nc -z -w2 db-segment-host 3306 && echo "WARN: cross-segment reachable" || echo "blocked OK"
+# 2) 외부에서 내부 앱 포트가 노출됐는지(SDP/ZTNA면 비공개여야)
+nmap -Pn -p 22,3389,3306 app.owned.example | grep -E 'open|filtered'
+```
+
+> 검증은 반드시 **소유 호스트 간**에서만 한다. "세그먼트를 나눴다"와 "East-West가 실제 차단된다"는 다르다 — 연결 시도·노출 스캔으로 직접 확인한다([[24_Network_Infrastructure_Security]], [[40_Threat_Hunting]]).
+
 ---
 
 <a name="english"></a>
@@ -1534,3 +1559,28 @@ Step 4: Process-level separation (highest level)
 ---
 
 *Last updated: 2024*
+
+<!-- detect-validate-39 -->
+## Microsegmentation Validation — Is East-West Actually Blocked?
+
+Segmentation is judged not by *whether a policy was drawn* but by **whether unauthorized cross-segment traffic is actually blocked at runtime**. Verify the gap between intended policy and real traffic (shadow rules) directly. Validate only **between owned hosts**.
+
+### Control -> Failure mode -> Validation method -> Healthy signal
+
+| Control | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Default deny | Flat network | Try cross-segment conn | Unauthorized East-West blocked |
+| Policy applied | Shadow rules | Policy vs real traffic | Intent == actual |
+| SDP/ZTNA | Exposed app port | External scan | App ports non-public |
+| Reject logging | Lateral movement unseen | Check block logs | Block events recorded |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether unauthorized cross-segment comms are actually blocked — between owned hosts only
+nc -z -w2 db-segment-host 3306 && echo "WARN: cross-segment reachable" || echo "blocked OK"
+# 2) Whether internal app ports are externally exposed (should be non-public under SDP/ZTNA)
+nmap -Pn -p 22,3389,3306 app.owned.example | grep -E 'open|filtered'
+```
+
+> Validate only **between owned hosts**. "We segmented" differs from "East-West is actually blocked" — confirm via connection attempts and exposure scans directly ([[24_Network_Infrastructure_Security]], [[40_Threat_Hunting]]).

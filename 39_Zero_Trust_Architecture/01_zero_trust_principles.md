@@ -1097,6 +1097,31 @@ Zero Trust 성숙 조직:   평균 침해 비용 $3.28M
 
 *최종 업데이트: 2024년*
 
+<!-- detect-validate-39 -->
+## Zero Trust 검증 — 원칙이 실제로 강제되는가
+
+ZT는 *아키텍처 문서에 "신뢰하지 않고 검증"이라 적었는가*가 아니라 **모든 접근이 실제로 명시적 검증·최소권한을 거치는가**로 판정한다. 암묵적 신뢰가 남은 경로를 직접 찾는다. 검증은 **소유 환경**에서만.
+
+### 원칙 → 위반(암묵 신뢰) → 검증 방법 → 양호 신호
+
+| 원칙 | 위반 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 명시적 검증 | 인증 없는 내부 경로 | 무인증 접근 시도 | 모든 경로 인증 요구 |
+| 최소권한 | 광역 역할 | 권한 인벤토리 | 와일드카드 권한 0 |
+| 침해 가정 | 평면 네트워크 | 세그먼트 점검 | East-West 기본 차단 |
+| 지속 검증 | 1회 인증 후 무한세션 | 세션 재평가 | 정책변경 시 재인증 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 내부 서비스가 인증 없이 접근되는지(암묵 신뢰 잔존) — 소유 환경에서만
+curl -s -o /dev/null -w '%{http_code}\n' http://internal.svc.owned/health   # 401/403 기대
+# 2) IAM/역할에 와일드카드 권한이 남았는지(최소권한 위반)
+grep -rEn '"Action": *"\*"|Resource: *"\*"' policies/ | head
+```
+
+> 검증은 반드시 **소유 환경**에서만 한다. "ZT를 도입했다"와 "암묵 신뢰 경로가 0이다"는 다르다 — 무인증 접근·와일드카드 권한을 직접 탐색한다([[14_Cloud_Security]], [[54_Active_Directory_Attacks]]).
+
 ---
 
 <a name="english"></a>
@@ -1236,3 +1261,28 @@ IBM 2023 Cost of Data Breach: Zero Trust immature organizations average $5.04M v
 - CISA Zero Trust Maturity Model (2023)
 - Cloud Security Alliance: Software Defined Perimeter Specification
 - Gartner: Zero Trust Network Access Market Guide
+
+<!-- detect-validate-39 -->
+## Zero Trust Validation — Are the Principles Actually Enforced?
+
+ZT is judged not by *whether the architecture doc says "never trust, always verify"* but by **whether every access actually passes explicit verification and least privilege**. Hunt directly for paths where implicit trust remains. Validate only on **owned environments**.
+
+### Principle -> Violation (implicit trust) -> Validation method -> Healthy signal
+
+| Principle | Violation | Validation method | Healthy signal |
+|---|---|---|---|
+| Explicit verification | Unauthenticated internal path | Try unauth access | All paths require auth |
+| Least privilege | Broad role | Permission inventory | Zero wildcard grants |
+| Assume breach | Flat network | Segment check | East-West default-deny |
+| Continuous verification | One-time auth, infinite session | Session re-eval | Re-auth on policy change |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether an internal service is reachable without auth (residual implicit trust) — owned env only
+curl -s -o /dev/null -w '%{http_code}\n' http://internal.svc.owned/health   # expect 401/403
+# 2) Whether IAM/roles still carry wildcard permissions (least-privilege violation)
+grep -rEn '"Action": *"\*"|Resource: *"\*"' policies/ | head
+```
+
+> Validate only on **owned environments**. "We adopted ZT" differs from "zero implicit-trust paths remain" — hunt unauth access and wildcard grants directly ([[14_Cloud_Security]], [[54_Active_Directory_Attacks]]).

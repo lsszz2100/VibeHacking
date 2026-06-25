@@ -1270,6 +1270,31 @@ if __name__ == "__main__":
 
 *최종 업데이트: 2024년*
 
+<!-- detect-validate-39 -->
+## 신원·기기 신뢰 검증 — 조건부 접근이 실제로 막는가
+
+신원·기기 통제는 *정책을 만들었는가*가 아니라 **MFA·기기 규정준수가 모든 로그인 경로에서 강제되는가**로 판정한다. MFA를 우회하는 레거시 인증, 미등록 기기 허용을 직접 찾는다. 검증은 **소유 테넌트**에서만.
+
+### 통제 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 통제 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| MFA 강제 | 레거시 프로토콜 우회 | MFA 미적용 경로 탐색 | 모든 로그인 MFA |
+| 기기 신뢰 | 미등록 기기 허용 | 조건부 정책 점검 | 비준수 기기 차단 |
+| 조건부 접근 | 정책 미적용 | 위험 로그인 시뮬 | 비정상 위치 차단 |
+| 패스키/FIDO2 | 피싱 가능 OTP | 인증 방식 확인 | 피싱저항 인증 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) MFA를 우회하는 레거시 인증(기본 인증/IMAP 등)이 차단됐는지 — 소유 테넌트에서
+az ad signed-in-user show >/dev/null 2>&1 && echo "조건부 접근에서 Legacy auth = Block 확인"
+# 2) 기기 규정준수가 접근 조건인지 정책 export로 확인
+grep -riE 'requireCompliantDevice|deviceState|grantControls' ca_policies*.json | head
+```
+
+> 검증은 반드시 **소유 테넌트**에서만 한다. "MFA를 켰다"와 "MFA 우회 경로가 0이다"는 다르다 — 레거시 인증·미준수 기기를 직접 탐색한다([[54_Active_Directory_Attacks]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -1644,3 +1669,28 @@ Expiry: Automatic revocation, session log saved
 ---
 
 *Last updated: 2024*
+
+<!-- detect-validate-39 -->
+## Identity/Device-Trust Validation — Does Conditional Access Actually Block?
+
+Identity/device controls are judged not by *whether a policy exists* but by **whether MFA and device compliance are enforced on every login path**. Hunt directly for MFA-bypassing legacy auth and unmanaged-device allowance. Validate only on **owned tenants**.
+
+### Control -> Failure mode -> Validation method -> Healthy signal
+
+| Control | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| MFA enforcement | Legacy-protocol bypass | Hunt non-MFA paths | All logins MFA |
+| Device trust | Unmanaged device allowed | Inspect CA policy | Non-compliant device blocked |
+| Conditional access | Policy not applied | Simulate risky login | Anomalous location blocked |
+| Passkey/FIDO2 | Phishable OTP | Confirm auth method | Phishing-resistant auth |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether MFA-bypassing legacy auth (basic auth/IMAP) is blocked — owned tenant
+az ad signed-in-user show >/dev/null 2>&1 && echo "confirm Conditional Access: Legacy auth = Block"
+# 2) Whether device compliance is an access condition, via policy export
+grep -riE 'requireCompliantDevice|deviceState|grantControls' ca_policies*.json | head
+```
+
+> Validate only on **owned tenants**. "MFA is on" differs from "zero MFA-bypass paths remain" — hunt legacy auth and non-compliant devices directly ([[54_Active_Directory_Attacks]], [[13_SOC_Blue_Team]]).
