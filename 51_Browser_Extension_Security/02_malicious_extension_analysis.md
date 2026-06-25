@@ -1032,6 +1032,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-51 -->
+## 악성 확장 안티분석 탐지와 행위 검증
+
+악성 확장 분석은 *유형 분류·IOC·웹스토어 배포·난독화 코드*를 다룬다. 악성 확장은 *난독화·조건부 활성화·원격 페이로드*로 분석을 회피하므로 분석자는 **회피를 탐지하고 실제 악성 행위를 검증**해야 한다. 검증은 **격리된 소유 환경**에서만.
+
+### 안티분석 기법 → 노리는 분석 단계 → 분석자 대응 → 관찰 신호
+
+| 기법 | 노리는 단계 | 분석자 대응 | 관찰 신호 |
+|---|---|---|---|
+| 난독화 | 정적 분석 | beautify·동적 추적 | 긴 base64/hex 문자열 |
+| 원격 페이로드 | 정적 미관측 | 네트워크 캡처 | fetch/원격 스크립트 |
+| 조건부 활성화 | 샌드박스 회피 | 트리거 조건 분석 | 시간/도메인 게이트 |
+| 자격증명 탈취 | 은밀 수집 | 데이터 흐름 추적 | cookie/storage 읽기+전송 |
+
+### 분석 검증 (직접 확인)
+
+```bash
+# 1) 소유 CRX의 난독화/원격 페이로드 표면 정적 탐지 — 런타임 검증 필요 지점 식별
+grep -rInE 'atob\(|fromCharCode|fetch\(|XMLHttpRequest' *.js 2>/dev/null | head; grep -roE '[A-Za-z0-9+/]{200,}={0,2}' *.js 2>/dev/null | head -3
+# 2) 자격증명 탈취 데이터 흐름 — cookie/storage 읽기와 외부 전송이 같이 있으면 악성 신호
+grep -rInE 'chrome\.cookies|chrome\.storage|document\.cookie' *.js 2>/dev/null | head; grep -rInE 'fetch\(.*http|navigator\.sendBeacon' *.js 2>/dev/null | head
+```
+
+> 악성 확장 분석은 *회피를 뚫고 행위가 검증되는가*다 — "권한을 봤다"와 "난독화를 풀고 cookie 탈취+외부 전송을 동적으로 확인했다"는 다르다. 격리된 소유 환경에서 직접 검증한다([[06_Malware_Analysis]], [[60_Browser_Security]], [[25_Threat_Intelligence]]).
+
+---
+
 <a name="english"></a>
 
 # Malicious Browser Extension Analysis
@@ -1982,3 +2009,28 @@ if __name__ == "__main__":
 - DataSpii Analysis Report: https://github.com/nicowillis/dataspii
 - Chrome Malicious Extension Case Collection: https://github.com/nicowillis/chrome-extension-iocs
 - CRX File Format: https://developer.chrome.com/docs/extensions/mv3/crx/
+
+<!-- detect-validate-51 -->
+## Malicious-Extension Anti-Analysis Detection and Behavior Validation
+
+Malicious-extension analysis covers *type classification, IOCs, web-store distribution, and obfuscated code*. Malicious extensions evade analysis via *obfuscation, conditional activation, and remote payloads*, so the analyst must **detect evasion and validate actual malicious behavior**. Validate only on **isolated owned environments**.
+
+### Anti-analysis technique -> Targeted analysis step -> Analyst response -> Observable signal
+
+| Technique | Targeted step | Analyst response | Observable signal |
+|---|---|---|---|
+| Obfuscation | Static analysis | Beautify, dynamic trace | Long base64/hex strings |
+| Remote payload | Unobserved statically | Network capture | fetch/remote script |
+| Conditional activation | Sandbox evasion | Analyze trigger conditions | Time/domain gate |
+| Credential theft | Stealthy collection | Trace data flow | cookie/storage read + send |
+
+### Analysis validation (verify directly)
+
+```bash
+# 1) Statically detect obfuscation/remote-payload surface in an owned CRX — identify points needing runtime validation
+grep -rInE 'atob\(|fromCharCode|fetch\(|XMLHttpRequest' *.js 2>/dev/null | head; grep -roE '[A-Za-z0-9+/]{200,}={0,2}' *.js 2>/dev/null | head -3
+# 2) Credential-theft data flow — cookie/storage reads together with external sends signal malice
+grep -rInE 'chrome\.cookies|chrome\.storage|document\.cookie' *.js 2>/dev/null | head; grep -rInE 'fetch\(.*http|navigator\.sendBeacon' *.js 2>/dev/null | head
+```
+
+> Malicious-extension analysis is *whether behavior is validated through evasion* -- "I saw the permissions" differs from "I deobfuscated and dynamically confirmed cookie theft + external send". Validate on isolated owned environments directly ([[06_Malware_Analysis]], [[60_Browser_Security]], [[25_Threat_Intelligence]]).

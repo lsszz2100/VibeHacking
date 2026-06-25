@@ -1378,6 +1378,33 @@ class SecureMessenger {
 
 ---
 
+<!-- detect-validate-51 -->
+## 확장 보안 강화 검증 (설정됨 ≠ 작동함)
+
+확장 보안 강화는 *MV3 전환·안전 개발 가이드(OWASP)·권한 최소화·기업 정책·업데이트 무결성*으로 구성된다. "MV3로 바꿨다"는 설정과 "원격 코드가 실제로 막히고 권한이 최소인가"는 다르다 — 각 통제를 소유 확장에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| MV3 코드 금지 | 원격/eval 없나? | eval/원격 src 0 | MV2 잔재 |
+| 권한 최소화 | 필요분만? | host 최소·optional | <all_urls> 잔존 |
+| 업데이트 무결성 | 서명 검증? | 변조 업데이트 거부 | 미서명 수용 |
+| 기업 정책 | 허용목록 강제? | force_install만 | 자유 설치 허용 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 확장이 MV3 코드 금지를 지키는지 — eval/원격 스크립트 잔존이 강화 미흡 신호
+jq -r '.manifest_version' manifest.json 2>/dev/null; grep -rInE '\beval\(|\.src\s*=\s*["'"'"']https?://|unsafe-eval' *.js manifest.json 2>/dev/null | head
+# 2) 권한 최소화 검증 — host_permissions에 광역 패턴 잔존이 과대권한 신호
+jq -r '.host_permissions[]?, .permissions[]?' manifest.json 2>/dev/null | grep -iE '<all_urls>|\*://\*' | head
+```
+
+> 확장 강화는 *통제가 강제되는가*다 — "MV3다"와 "eval/원격 코드가 없고 host 권한이 최소이며 업데이트가 서명 검증된다"는 다르다. 각 통제를 소유 확장에서 직접 검증한다([[60_Browser_Security]], [[35_Supply_Chain_Attacks]], [[18_DevSecOps]]).
+
+---
+
 <a name="english"></a>
 
 # Browser Extension Security Hardening
@@ -1997,3 +2024,28 @@ Deployment and Operations:
 - Chrome Enterprise Policy: https://chromeenterprise.google/policies/
 - Web Crypto API: https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API
 - Cure53 Extension Security Audits: https://cure53.de/
+
+<!-- detect-validate-51 -->
+## Extension Security-Hardening Validation (Configured != Working)
+
+Extension hardening comprises *MV3 migration, secure-dev guidance (OWASP), least permission, enterprise policy, and update integrity*. "We migrated to MV3" differs from "remote code is actually blocked and permissions are minimal" -- validate each control on owned extensions.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| MV3 code ban | No remote/eval? | 0 eval/remote src | MV2 leftovers |
+| Least permission | Only what's needed? | Minimal host, optional | <all_urls> remains |
+| Update integrity | Signature verified? | Tampered update rejected | Unsigned accepted |
+| Enterprise policy | Allowlist enforced? | force_install only | Free install allowed |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the owned extension respects the MV3 code ban — leftover eval/remote scripts signal weak hardening
+jq -r '.manifest_version' manifest.json 2>/dev/null; grep -rInE '\beval\(|\.src\s*=\s*["'"'"']https?://|unsafe-eval' *.js manifest.json 2>/dev/null | head
+# 2) Least-permission check — broad patterns remaining in host_permissions signal over-privilege
+jq -r '.host_permissions[]?, .permissions[]?' manifest.json 2>/dev/null | grep -iE '<all_urls>|\*://\*' | head
+```
+
+> Extension hardening is *whether controls are enforced* -- "it is MV3" differs from "there is no eval/remote code, host permissions are minimal, and updates are signature-verified". Validate each control on owned extensions directly ([[60_Browser_Security]], [[35_Supply_Chain_Attacks]], [[18_DevSecOps]]).

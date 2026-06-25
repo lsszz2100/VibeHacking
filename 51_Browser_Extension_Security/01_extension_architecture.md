@@ -930,6 +930,34 @@ grep -r "https\?://" ~/.config/google-chrome/Default/Extensions/<EXTENSION_ID>/ 
 
 ---
 
+<!-- detect-validate-51 -->
+## 확장 권한 노출 탐지와 최소권한 검증
+
+브라우저 확장 아키텍처(MV2/MV3·컴포넌트·권한·메시지 패싱·CSP)는 *과대 권한·약한 CSP·열린 메시지 핸들러*가 공격면이 된다. 방어자는 **확장이 최소 권한이고 신뢰경계가 강제되는가**를 검증해야 한다. 검증은 **소유/테스트 확장**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 과대 권한 | <all_urls>·broad host | 최소 host_permissions | 광역 권한 선언 |
+| 약한 CSP | 인라인/원격 스크립트 | 엄격 CSP(MV3) | unsafe-eval/원격 src |
+| 열린 메시지 | externally_connectable | 발신자 검증 | * 매칭 메시지 |
+| 원격 코드 | eval/원격 로드 | MV3 코드 금지 | eval/Function 사용 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 확장 manifest의 과대 권한/약한 CSP — 광역 host·unsafe 지시어가 노출면 신호
+jq -r '{perms:.permissions, host:.host_permissions, csp:.content_security_policy}' manifest.json 2>/dev/null
+grep -rIiE '<all_urls>|unsafe-eval|unsafe-inline' manifest.json 2>/dev/null | head
+# 2) 원격 코드 실행 경로(MV3 위반/위험) — eval/Function/원격 스크립트 로드 신호
+grep -rInE '\beval\(|new Function\(|\.src\s*=\s*["'"'"']https?://' *.js 2>/dev/null | head
+```
+
+> 확장 방어는 *최소권한·신뢰경계가 강제되는가*다 — "확장이 동작한다"와 "host 권한이 최소이고 CSP가 원격/eval을 막으며 메시지 발신자가 검증된다"는 다르다. 소유/테스트 확장에서 직접 확인한다([[05_Web_Hacking]], [[60_Browser_Security]], [[35_Supply_Chain_Attacks]]).
+
+---
+
 <a name="english"></a>
 
 # Browser Extension Architecture and Security Model
@@ -1785,3 +1813,29 @@ grep -r "https\?://" ~/.config/google-chrome/Default/Extensions/<EXTENSION_ID>/ 
 - Manifest V3 Migration Guide: https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/
 - Chrome Extension Security FAQ: https://developer.chrome.com/docs/extensions/mv3/security/
 - OWASP Browser Extension Security: https://owasp.org/www-community/attacks/
+
+<!-- detect-validate-51 -->
+## Extension Permission-Exposure Detection and Least-Privilege Validation
+
+Browser-extension architecture (MV2/MV3, components, permissions, message passing, CSP) turns *over-broad permissions, weak CSP, and open message handlers* into attack surface. Defenders must verify **whether the extension is least-privilege and trust boundaries are enforced**. Validate only on **owned/test extensions**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Over-broad permission | <all_urls>, broad host | Minimal host_permissions | Broad permission declared |
+| Weak CSP | Inline/remote script | Strict CSP (MV3) | unsafe-eval/remote src |
+| Open messaging | externally_connectable | Sender validation | * -matching message |
+| Remote code | eval/remote load | MV3 code ban | eval/Function used |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Over-broad permissions/weak CSP in owned-extension manifest — broad host/unsafe directives signal exposure
+jq -r '{perms:.permissions, host:.host_permissions, csp:.content_security_policy}' manifest.json 2>/dev/null
+grep -rIiE '<all_urls>|unsafe-eval|unsafe-inline' manifest.json 2>/dev/null | head
+# 2) Remote-code-execution paths (MV3 violation/risk) — eval/Function/remote-script-load signals
+grep -rInE '\beval\(|new Function\(|\.src\s*=\s*["'"'"']https?://' *.js 2>/dev/null | head
+```
+
+> Extension defense is *whether least-privilege and trust boundaries are enforced* -- "the extension works" differs from "host permissions are minimal, CSP blocks remote/eval, and message senders are validated". Confirm on owned/test extensions directly ([[05_Web_Hacking]], [[60_Browser_Security]], [[35_Supply_Chain_Attacks]]).
