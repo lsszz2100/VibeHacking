@@ -503,6 +503,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-46 -->
+## CTF 기법의 실전 통제 매핑과 재현 검증
+
+CTF 방법론은 *분야별 도구·환경 구성·체계적 접근*으로 챌린지를 푼다. 학습 가치를 키우려면 **각 기법이 실 환경에서 어떤 통제로 막히는지** 매핑하고 재현성을 검증해야 한다. 모든 실습은 **CTF/소유 환경**에서만.
+
+### CTF 기법 → 노리는 약점 → 실전 1차 통제 → 탐지 신호
+
+| 기법 | 노리는 약점 | 실전 1차 통제 | 탐지 신호 |
+|---|---|---|---|
+| 메모리 손상(pwn) | 미완화 바이너리 | NX·ASLR·카나리 | 크래시/비정상 종료 |
+| 웹 인젝션 | 미검증 입력 | 파라미터화·WAF | 비정상 페이로드 |
+| 크립토 오용 | 약한 파라미터 | 표준 라이브러리 | 약한 알고/논스 |
+| 정보 노출 | 과다 출력 | 최소 노출·검토 | 디버그/스택 누출 |
+
+### 재현 검증 (직접 확인)
+
+```bash
+# 1) CTF 바이너리의 완화 상태 점검 — 실전 매핑 시 어떤 통제가 부재한지(학습 포인트)
+checksec --file=./challenge 2>/dev/null || (readelf -lW ./challenge 2>/dev/null | grep -E 'GNU_STACK|GNU_RELRO')
+# 2) 익스플로잇 재현성 — ASLR을 켠 상태에서도 안정적인지(반복 성공률이 실 환경 적용성 신호)
+for i in $(seq 1 5); do python3 exploit.py 2>/dev/null | grep -q FLAG && echo "run $i: ok"; done
+```
+
+> CTF 학습은 *기법이 실전으로 매핑·재현되는가*다 — "플래그를 땄다"와 "그 기법이 어떤 통제로 막히고 완화 환경에서도 재현되는지 안다"는 다르다. CTF/소유 환경에서 직접 확인한다([[09_Exploit_Techniques]], [[05_Web_Hacking]], [[16_Cryptography]]).
+
+---
+
 <a name="english"></a>
 
 # CTF Methodology and Tool System
@@ -722,3 +749,28 @@ The Python CLI above tracks CTF progress, records flags, and shows status by cat
 | OverTheWire | overthewire.org | Linux wargames |
 | CryptoHack | cryptohack.org | Cryptography-focused |
 | pwn.college | pwn.college | Structured PWN learning |
+
+<!-- detect-validate-46 -->
+## Mapping CTF Techniques to Real Controls and Reproduction Validation
+
+CTF methodology solves challenges via *category tools, environment setup, and a systematic approach*. To maximize learning value, map **which real-world control stops each technique** and verify reproducibility. All practice is on **CTF/owned environments** only.
+
+### CTF technique -> Targeted weakness -> Real-world primary control -> Detection signal
+
+| Technique | Targeted weakness | Real-world primary control | Detection signal |
+|---|---|---|---|
+| Memory corruption (pwn) | Unmitigated binary | NX, ASLR, canary | Crash/abnormal exit |
+| Web injection | Unvalidated input | Parameterization, WAF | Anomalous payload |
+| Crypto misuse | Weak parameters | Standard libraries | Weak algo/nonce |
+| Information disclosure | Excessive output | Minimal exposure, review | Debug/stack leak |
+
+### Reproduction validation (verify directly)
+
+```bash
+# 1) Check the CTF binary's mitigation state — which control is absent when mapped to the real world (learning point)
+checksec --file=./challenge 2>/dev/null || (readelf -lW ./challenge 2>/dev/null | grep -E 'GNU_STACK|GNU_RELRO')
+# 2) Exploit reproducibility — whether it is stable even with ASLR on (repeat success rate signals real-world applicability)
+for i in $(seq 1 5); do python3 exploit.py 2>/dev/null | grep -q FLAG && echo "run $i: ok"; done
+```
+
+> CTF learning is *whether a technique maps and reproduces in the real world* -- "I got the flag" differs from "I know which control stops it and whether it reproduces under mitigations". Confirm on CTF/owned environments directly ([[09_Exploit_Techniques]], [[05_Web_Hacking]], [[16_Cryptography]]).

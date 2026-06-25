@@ -796,6 +796,33 @@ curl -X POST $DISCORD_WEBHOOK \
 
 ---
 
+<!-- detect-validate-46 -->
+## CTF 자동화 결과 검증과 재현성 관리
+
+CTF 자동화(pwntools·angr·Frida·포렌식 파이프라인)는 *심볼릭 실행·동적 계측·일괄 처리*로 풀이를 가속한다. 자동화 출력은 거짓 경로·불안정 익스플로잇이 섞이므로 **결과를 재현하고 안정성을 검증**해야 한다. 실습은 **CTF/소유 환경**에서만.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| angr 경로 | 도달 가능한가? | 구체 입력 재실행 통과 | 경로 폭발/거짓경로 |
+| 익스플로잇 안정성 | 반복 성공? | n회 성공률 | 1회 운빨 |
+| Frida 후킹 | 의도 함수 잡나? | 후킹 카운트 일치 | 잘못된 오프셋 |
+| 파이프라인 | 멱등·재현? | 동일 입력 동일 출력 | 비결정성 |
+
+### 검증 (직접 확인)
+
+```bash
+# 1) angr가 찾은 입력을 실제 바이너리로 재실행 — 플래그 미산출이면 거짓 경로 신호
+python3 solve_angr.py 2>/dev/null | tee /tmp/sol.txt; ./challenge < /tmp/sol.txt 2>/dev/null | grep -c FLAG
+# 2) 익스플로잇 안정성(재현성) — 10회 반복 성공률 측정(낮으면 실전 부적합 신호)
+ok=0; for i in $(seq 1 10); do python3 exploit.py 2>/dev/null | grep -q FLAG && ok=$((ok+1)); done; echo "success=$ok/10"
+```
+
+> CTF 자동화는 *결과가 재현되는가*다 — "angr가 경로를 찾았다"와 "그 입력이 실제로 플래그를 내고 반복 성공한다"는 다르다. CTF/소유 환경에서 재현을 직접 검증한다([[04_Reverse_Engineering]], [[09_Exploit_Techniques]], [[08_Python_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # CTF Automation and Frameworks
@@ -915,3 +942,28 @@ Recommended team CTF workflow:
 2. **Category directories** — Separate workspaces per challenge
 3. **tmux sessions** — Share shell sessions for real-time collaboration
 4. **Discord webhooks** — Automatically broadcast flag submissions to the team channel
+
+<!-- detect-validate-46 -->
+## CTF Automation Output Validation and Reproducibility Management
+
+CTF automation (pwntools, angr, Frida, forensics pipelines) accelerates solving via *symbolic execution, dynamic instrumentation, and batch processing*. Automation output mixes false paths and unstable exploits, so you must **reproduce results and validate stability**. Practice only on **CTF/owned environments**.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| angr path | Reachable? | Concrete input re-runs and passes | Path explosion/false path |
+| Exploit stability | Repeatedly succeeds? | n-run success rate | One lucky run |
+| Frida hook | Catches intended function? | Hook count matches | Wrong offset |
+| Pipeline | Idempotent/reproducible? | Same input, same output | Non-determinism |
+
+### Validation (verify directly)
+
+```bash
+# 1) Re-run angr's found input against the real binary — no flag output signals a false path
+python3 solve_angr.py 2>/dev/null | tee /tmp/sol.txt; ./challenge < /tmp/sol.txt 2>/dev/null | grep -c FLAG
+# 2) Exploit stability (reproducibility) — measure success rate over 10 runs (low = unfit for real use)
+ok=0; for i in $(seq 1 10); do python3 exploit.py 2>/dev/null | grep -q FLAG && ok=$((ok+1)); done; echo "success=$ok/10"
+```
+
+> CTF automation is *whether results reproduce* -- "angr found a path" differs from "that input actually yields the flag and succeeds repeatedly". Validate reproduction on CTF/owned environments directly ([[04_Reverse_Engineering]], [[09_Exploit_Techniques]], [[08_Python_Hacking]]).

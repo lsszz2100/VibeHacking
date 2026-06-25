@@ -799,6 +799,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-46 -->
+## Web/Crypto 기법의 실전 통제 매핑과 검증
+
+Web/Crypto CTF는 *SQLi·SSTI·디시리얼라이즈·약한 암호·오라클*로 챌린지를 푼다. 실전 가치는 **각 기법이 어떤 통제로 막히고 그 통제가 실제로 작동하는가**에 있다. 실습은 **CTF/소유 앱**에서만.
+
+### 기법 → 노리는 약점 → 실전 1차 통제 → 탐지/검증 신호
+
+| 기법 | 노리는 약점 | 실전 1차 통제 | 탐지/검증 신호 |
+|---|---|---|---|
+| SQLi | 문자열 쿼리 | 파라미터화 | 쿼리에 입력 직삽 |
+| SSTI | 템플릿 입력 | 샌드박스·이스케이프 | {{ }} 평가 |
+| 디시리얼라이즈 | 신뢰 역직렬화 | 허용목록·서명 | 가젯 체인 호출 |
+| 약한 암호/오라클 | 잘못된 모드/패딩 | AEAD·상수시간 | 패딩 오라클 응답차 |
+
+### 검증 (직접 확인)
+
+```bash
+# 1) 소유 앱이 파라미터화 쿼리를 쓰는지(실전 통제) — 문자열 연결 쿼리가 SQLi 표면 신호
+grep -rnE '(execute|query)\(.*(\+|%|f").*(SELECT|INSERT|WHERE)' app/ 2>/dev/null | head
+# 2) 패딩 오라클 검증 — 변조 암호문에 응답/타이밍 차이가 있으면 취약 신호(소유 엔드포인트)
+for pad in 00 01 ff; do curl -s -o /dev/null -w "%{http_code} %{time_total}\n" "https://app.internal/dec?ct=DEADBEEF$pad"; done
+```
+
+> Web/Crypto 학습은 *통제가 기법을 막는가*다 — "플래그를 땄다"와 "파라미터화/AEAD가 그 인젝션·오라클을 막는다"는 다르다. CTF/소유 앱에서 직접 검증한다([[05_Web_Hacking]], [[16_Cryptography]], [[12_Bug_Bounty]]).
+
+---
+
 <a name="english"></a>
 
 # Web and Crypto CTF Techniques
@@ -924,3 +951,28 @@ The attack exploits the Merkle-Damgard construction of SHA-256/SHA-512:
 python3 hash_ext.py --mac <known_mac_hex> --data "original_data" \
     --append "&admin=true" --key-len 16 --algo sha256
 ```
+
+<!-- detect-validate-46 -->
+## Mapping Web/Crypto Techniques to Real Controls and Validation
+
+Web/Crypto CTF solves challenges via *SQLi, SSTI, deserialization, weak crypto, and oracles*. The real-world value lies in **which control stops each technique and whether it actually works**. Practice only on **CTF/owned apps**.
+
+### Technique -> Targeted weakness -> Real-world primary control -> Detection/validation signal
+
+| Technique | Targeted weakness | Real-world primary control | Detection/validation signal |
+|---|---|---|---|
+| SQLi | String query | Parameterization | Input concatenated into query |
+| SSTI | Template input | Sandbox, escape | {{ }} evaluated |
+| Deserialization | Trusted deserialize | Allowlist, signing | Gadget chain invoked |
+| Weak crypto/oracle | Wrong mode/padding | AEAD, constant-time | Padding-oracle response diff |
+
+### Validation (verify directly)
+
+```bash
+# 1) Whether the owned app uses parameterized queries (real-world control) — string-concatenated queries signal a SQLi surface
+grep -rnE '(execute|query)\(.*(\+|%|f").*(SELECT|INSERT|WHERE)' app/ 2>/dev/null | head
+# 2) Padding-oracle check — a response/timing difference on tampered ciphertext signals a vuln (owned endpoint)
+for pad in 00 01 ff; do curl -s -o /dev/null -w "%{http_code} %{time_total}\n" "https://app.internal/dec?ct=DEADBEEF$pad"; done
+```
+
+> Web/Crypto learning is *whether the control stops the technique* -- "I got the flag" differs from "parameterization/AEAD stops that injection/oracle". Validate on CTF/owned apps directly ([[05_Web_Hacking]], [[16_Cryptography]], [[12_Bug_Bounty]]).

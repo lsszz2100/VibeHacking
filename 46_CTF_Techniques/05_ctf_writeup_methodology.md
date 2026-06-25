@@ -768,6 +768,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-46 -->
+## CTF 라이트업 재현성·증거 무결성 검증 (작성됨 ≠ 재현됨)
+
+CTF 라이트업은 *풀이 과정·도구·환경*을 기록한다. "라이트업을 썼다"는 서술과 "독자가 그대로 재현할 수 있다"는 다르다 — 각 단계를 깨끗한 환경에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 환경 재현 | 동일 환경 명시? | Docker/버전 고정 | "내 PC에선 됨" |
+| 단계 완전성 | 누락 단계 없나? | 처음부터 끝까지 실행 | 핵심 점프 생략 |
+| 익스플로잇 재현 | 코드가 동작? | 깨끗한 환경 통과 | 하드코딩 오프셋 |
+| 증거 무결성 | 산출물 일치? | 플래그 해시 대조 | 스크린샷만 |
+
+### 검증 (직접 확인)
+
+```bash
+# 1) 라이트업의 익스플로잇을 깨끗한 컨테이너에서 재현 — 플래그 미산출이면 재현성 결함 신호
+docker run --rm -v "$PWD:/w" -w /w ctf-base:latest bash -c 'pip install -q pwntools && python3 exploit.py' 2>/dev/null | grep -c FLAG
+# 2) 환경 고정 여부 — Dockerfile/requirements에 버전 핀이 없으면 재현 불가 신호
+grep -rnE 'FROM .*:latest|^[a-zA-Z0-9_-]+$' Dockerfile requirements.txt 2>/dev/null | head
+```
+
+> CTF 라이트업은 *재현되는가*다 — "풀이를 적었다"와 "깨끗한 환경에서 익스플로잇이 동작하고 플래그 해시가 일치한다"는 다르다. 각 단계를 깨끗한 환경에서 직접 검증한다([[75_Red_Team_Reporting]], [[09_Exploit_Techniques]], [[08_Python_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # CTF Writeup Methodology
@@ -1364,3 +1391,28 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+<!-- detect-validate-46 -->
+## CTF Writeup Reproducibility / Evidence-Integrity Validation (Written != Reproduced)
+
+A CTF writeup records *the solve process, tools, and environment*. "I wrote a writeup" differs from "a reader can reproduce it as-is" -- validate each step in a clean environment.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Environment reproduction | Same env specified? | Docker/version pinned | "works on my machine" |
+| Step completeness | No missing steps? | Runs end to end | Key jump omitted |
+| Exploit reproduction | Does the code work? | Passes in clean env | Hardcoded offset |
+| Evidence integrity | Artifacts match? | Flag hash compared | Screenshots only |
+
+### Validation (verify directly)
+
+```bash
+# 1) Reproduce the writeup's exploit in a clean container — no flag output signals a reproducibility defect
+docker run --rm -v "$PWD:/w" -w /w ctf-base:latest bash -c 'pip install -q pwntools && python3 exploit.py' 2>/dev/null | grep -c FLAG
+# 2) Whether the environment is pinned — missing version pins in Dockerfile/requirements signal non-reproducibility
+grep -rnE 'FROM .*:latest|^[a-zA-Z0-9_-]+$' Dockerfile requirements.txt 2>/dev/null | head
+```
+
+> A CTF writeup is *whether it reproduces* -- "I wrote the solve" differs from "the exploit runs in a clean environment and the flag hash matches". Validate each step in a clean environment directly ([[75_Red_Team_Reporting]], [[09_Exploit_Techniques]], [[08_Python_Hacking]]).

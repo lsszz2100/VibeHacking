@@ -547,6 +547,34 @@ payload = flat(b'A' * offset, one_gadget)
 
 ---
 
+<!-- detect-validate-46 -->
+## PWN/REV 기법의 완화 매핑과 익스플로잇 재현 검증
+
+PWN/REV CTF는 *버퍼 오버플로·ROP·힙 익스플로잇·바이너리 분석*으로 제어 흐름을 탈취한다. 실전 가치는 **각 기법이 어떤 완화로 막히고 완화 토글 시 재현성이 어떻게 변하는가**에 있다. 실습은 **CTF/소유 바이너리**에서만.
+
+### 기법 → 노리는 약점 → 실전 1차 통제 → 탐지/검증 신호
+
+| 기법 | 노리는 약점 | 실전 1차 통제 | 탐지/검증 신호 |
+|---|---|---|---|
+| 스택 BOF | 카나리 없음 | 스택 카나리 | __stack_chk_fail 호출 |
+| ret2libc/ROP | NX 우회 | ASLR·CFI | 비정상 ret 타깃 |
+| 힙 익스플로잇 | 청크 메타 조작 | 강화 allocator | tcache/unlink 중단 |
+| 안티분석 회피 | 정적 난독화 | 동적 교차 분석 | 패킹/엔트로피 |
+
+### 재현 검증 (직접 확인)
+
+```bash
+# 1) 완화 상태별 재현성 — randomize_va_space 토글로 ASLR이 익스플로잇을 막는지(실전 매핑)
+echo 0 | sudo tee /proc/sys/kernel/randomize_va_space >/dev/null; python3 exploit.py 2>/dev/null | grep -c FLAG
+echo 2 | sudo tee /proc/sys/kernel/randomize_va_space >/dev/null; python3 exploit.py 2>/dev/null | grep -c FLAG
+# 2) 정적↔동적 교차로 안티분석 회피 검증 — 두 뷰 불일치가 난독화/패킹 신호
+objdump -d ./challenge 2>/dev/null | grep -c ret; r2 -q -c 'aaa; afl~main' ./challenge 2>/dev/null | head
+```
+
+> PWN/REV 학습은 *완화가 기법을 막는가*다 — "셸을 땄다"와 "ASLR/카나리 토글 시 재현성이 어떻게 변하는지 안다"는 다르다. CTF/소유 바이너리에서 직접 검증한다([[09_Exploit_Techniques]], [[04_Reverse_Engineering]], [[03_System_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # PWN and REV CTF Techniques
@@ -958,3 +986,29 @@ one_gadget ./libc.so.6
 one_gadget = libc.address + 0x50a37
 payload = flat(b'A' * offset, one_gadget)
 ```
+
+<!-- detect-validate-46 -->
+## Mapping PWN/REV Techniques to Mitigations and Exploit-Reproduction Validation
+
+PWN/REV CTF hijacks control flow via *buffer overflow, ROP, heap exploitation, and binary analysis*. The real-world value lies in **which mitigation stops each technique and how reproducibility changes when mitigations are toggled**. Practice only on **CTF/owned binaries**.
+
+### Technique -> Targeted weakness -> Real-world primary control -> Detection/validation signal
+
+| Technique | Targeted weakness | Real-world primary control | Detection/validation signal |
+|---|---|---|---|
+| Stack BOF | No canary | Stack canary | __stack_chk_fail called |
+| ret2libc/ROP | NX bypass | ASLR, CFI | Abnormal ret target |
+| Heap exploitation | Chunk-meta tampering | Hardened allocator | tcache/unlink abort |
+| Anti-analysis evasion | Static obfuscation | Dynamic cross-analysis | Packing/entropy |
+
+### Reproduction validation (verify directly)
+
+```bash
+# 1) Reproducibility per mitigation state — toggle randomize_va_space to see whether ASLR stops the exploit (real-world mapping)
+echo 0 | sudo tee /proc/sys/kernel/randomize_va_space >/dev/null; python3 exploit.py 2>/dev/null | grep -c FLAG
+echo 2 | sudo tee /proc/sys/kernel/randomize_va_space >/dev/null; python3 exploit.py 2>/dev/null | grep -c FLAG
+# 2) Validate anti-analysis evasion via static<->dynamic cross-check — a mismatch between views signals obfuscation/packing
+objdump -d ./challenge 2>/dev/null | grep -c ret; r2 -q -c 'aaa; afl~main' ./challenge 2>/dev/null | head
+```
+
+> PWN/REV learning is *whether the mitigation stops the technique* -- "I popped a shell" differs from "I know how reproducibility changes when ASLR/canary is toggled". Validate on CTF/owned binaries directly ([[09_Exploit_Techniques]], [[04_Reverse_Engineering]], [[03_System_Hacking]]).
