@@ -1693,6 +1693,33 @@ k8s_threats/
 
 ---
 
+<!-- detect-validate-48 -->
+## 위협 모델링 실전 검증 (모델링됨 ≠ 검증됨)
+
+위협 모델링 실전은 *DFD 작성·위협 도출·완화 설계·재평가*를 반복한다. "모델을 그렸다"는 산출물과 "도출한 위협이 실제이고 완화가 작동하는가"는 다르다 — 핵심 위협·완화를 소유 시스템에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 위협 현실성 | 실제 공격면? | 표면 PoC 재현 | 가상 위협 나열 |
+| 완화 구현 | 코드에 반영? | 통제 코드/테스트 | 설계만 |
+| 잔여 위험 | 추적되나? | 잔여 위험 등록 | 미수용 위험 방치 |
+| 재평가 | 변경 시 갱신? | DFD↔현재 일치 | 1회성 모델 |
+
+### 실전 검증 (직접 확인)
+
+```bash
+# 1) 모델의 핵심 위협 표면이 실제로 존재하는지(소유 시스템) — 노출 엔드포인트/포트 재확인
+nmap -Pn -p- --open app.internal 2>/dev/null | grep open | head; grep -rIiE 'route|endpoint|@app' src/ 2>/dev/null | wc -l
+# 2) 완화가 테스트로 검증되는지 — 완화에 대응하는 보안 테스트 존재가 구현 신호
+grep -rIiE 'def test_.*(auth|authz|csrf|injection|ratelimit)' tests/ 2>/dev/null | head
+```
+
+> 위협 모델링 실전은 *위협·완화가 검증되는가*다 — "DFD를 그렸다"와 "위협 표면이 실재하고 완화가 테스트로 검증된다"는 다르다. 핵심 위협을 소유 시스템에서 직접 검증한다([[68_Purple_Team]], [[10_Pentest_Methodology]], [[18_DevSecOps]]).
+
+---
+
 <a name="english"></a>
 
 # Threat Modeling Practice Exercises
@@ -2412,3 +2439,28 @@ k8s_threats/
 - [Shostack, A. - Threat Modeling: Designing for Security (2014)]
 - [NIST SP 800-154 - Data-Centric System Threat Modeling]
 - [MITRE ATT&CK for Mobile](https://attack.mitre.org/matrices/mobile/)
+
+<!-- detect-validate-48 -->
+## Threat-Modeling Practice Validation (Modeled != Validated)
+
+Threat-modeling practice iterates *DFD drawing, threat elicitation, mitigation design, and re-assessment*. "We drew a model" differs from "the elicited threats are real and the mitigations work" -- validate key threats/mitigations on the owned system.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Threat realism | Real attack surface? | Reproduce surface PoC | Listing imaginary threats |
+| Mitigation impl | Reflected in code? | Control code/test | Design only |
+| Residual risk | Tracked? | Residual risk registered | Unaccepted risk ignored |
+| Re-assessment | Updated on change? | DFD == current | One-shot model |
+
+### Practice validation (verify directly)
+
+```bash
+# 1) Whether the model's key threat surface actually exists (owned system) — re-confirm exposed endpoints/ports
+nmap -Pn -p- --open app.internal 2>/dev/null | grep open | head; grep -rIiE 'route|endpoint|@app' src/ 2>/dev/null | wc -l
+# 2) Whether mitigations are test-validated — a security test corresponding to a mitigation signals implementation
+grep -rIiE 'def test_.*(auth|authz|csrf|injection|ratelimit)' tests/ 2>/dev/null | head
+```
+
+> Threat-modeling practice is *whether threats/mitigations are validated* -- "we drew a DFD" differs from "the threat surface exists and mitigations are test-validated". Validate key threats on the owned system directly ([[68_Purple_Team]], [[10_Pentest_Methodology]], [[18_DevSecOps]]).

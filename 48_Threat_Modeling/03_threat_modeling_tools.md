@@ -1390,6 +1390,33 @@ DevSecOps 통합 단계:
 
 ---
 
+<!-- detect-validate-48 -->
+## 위협 모델링 도구 출력 검증과 커버리지 관리
+
+위협 모델링 도구(Threat Dragon·pytm·Microsoft TMT)는 *DFD 기반 위협 자동 생성·리포트*를 만든다. 자동 생성 위협은 일반 템플릿이라 누락·오탐이 섞이므로 **DFD 완전성과 위협 커버리지를 검증**해야 한다. 검증은 **소유 모델**에서만.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| DFD 완전성 | 모든 흐름 표현? | 신뢰경계 누락 0 | 컴포넌트 누락 |
+| 위협 커버리지 | STRIDE 전부? | 요소별 카테고리 충족 | 일부 카테고리 공백 |
+| 완화 매핑 | 위협↔완화? | mitigation 없는 위협 0 | 자동위협 방치 |
+| 코드 일치 | 모델↔구현? | 통제 코드 실재 | 모델만 갱신 |
+
+### 도구 검증 (직접 확인)
+
+```bash
+# 1) pytm/모델에서 신뢰경계 누락 점검 — 경계 없는 데이터 흐름이 DFD 갭 신호
+python3 tm.py --json 2>/dev/null | jq -r '.dataflows[] | select(.crossesTrustBoundary==null) | .name' 2>/dev/null | head
+# 2) 자동 생성 위협 중 완화 미매핑 — mitigation 빈 항목이 커버리지 갭 신호
+python3 tm.py --json 2>/dev/null | jq -r '.findings[] | select((.mitigations//[])|length==0) | .threat' 2>/dev/null | head
+```
+
+> 위협 모델링 도구는 *모델이 완전·일치하는가*다 — "도구가 위협을 생성했다"와 "DFD에 신뢰경계가 빠짐없고 모든 위협에 완화가 매핑된다"는 다르다. 소유 모델에서 직접 검증한다([[18_DevSecOps]], [[68_Purple_Team]], [[74_Code_Auditing]]).
+
+---
+
 <a name="english"></a>
 
 # Threat Modeling Tools and Automation
@@ -2101,3 +2128,28 @@ DevSecOps integration phases:
 - [draw.io / diagrams.net](https://app.diagrams.net)
 - [Threat Modeling Manifesto](https://www.threatmodelingmanifesto.org)
 - [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html)
+
+<!-- detect-validate-48 -->
+## Threat-Modeling Tool Output Validation and Coverage Management
+
+Threat-modeling tools (Threat Dragon, pytm, Microsoft TMT) *auto-generate DFD-based threats and reports*. Auto-generated threats are generic templates that mix omissions and false positives, so you must **validate DFD completeness and threat coverage**. Validate only on **owned models**.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| DFD completeness | All flows represented? | 0 missing trust boundaries | Missing components |
+| Threat coverage | All of STRIDE? | Each element covers categories | Some category empty |
+| Mitigation mapping | Threat<->mitigation? | 0 threats without mitigation | Auto-threats ignored |
+| Code consistency | Model<->implementation? | Control code exists | Only model updated |
+
+### Tool validation (verify directly)
+
+```bash
+# 1) Check missing trust boundaries in pytm/model — a dataflow with no boundary signals a DFD gap
+python3 tm.py --json 2>/dev/null | jq -r '.dataflows[] | select(.crossesTrustBoundary==null) | .name' 2>/dev/null | head
+# 2) Auto-generated threats without mapped mitigation — empty mitigations signal a coverage gap
+python3 tm.py --json 2>/dev/null | jq -r '.findings[] | select((.mitigations//[])|length==0) | .threat' 2>/dev/null | head
+```
+
+> Threat-modeling tools are *whether the model is complete and consistent* -- "the tool generated threats" differs from "the DFD has no missing trust boundaries and every threat maps to a mitigation". Validate on owned models directly ([[18_DevSecOps]], [[68_Purple_Team]], [[74_Code_Auditing]]).

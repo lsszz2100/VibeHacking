@@ -1390,6 +1390,33 @@ python3 dread_calculator.py --interactive --format html --output my_report.html
 
 ---
 
+<!-- detect-validate-48 -->
+## 위험 평가·공격 트리 검증 (점수화됨 ≠ 검증됨)
+
+PASTA·DREAD·공격 트리·킬체인은 *위협을 점수화하고 공격 경로를 구조화*한다. "위험 점수를 매겼다"는 평가와 "그 경로가 실제로 도달·악용 가능한가"는 다르다 — 고위험 경로를 소유 환경에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 경로 도달성 | 리프→루트 가능? | PoC로 경로 재현 | 이론적 트리 |
+| 위험 점수 근거 | 데이터 기반? | 실측 악용성 반영 | 주관적 DREAD |
+| 통제 차단점 | 경로 끊기나? | 통제 후 경로 불가 | 통제 미검증 |
+| 우선순위 | 실제 위험순? | 검증된 경로 우선 | 점수만 신뢰 |
+
+### 평가 검증 (직접 확인)
+
+```bash
+# 1) 공격 트리의 고위험 리프가 실제 도달 가능한지(소유 환경) — PoC 재현으로 이론↔실제 구분
+jq -r '.attack_tree.leaves[] | select(.risk=="high") | .path' attack_tree.json 2>/dev/null | head
+# 2) 통제 적용 후 경로 차단 검증 — 차단점 통제가 실제 경로를 끊으면 위험 하락 신호
+grep -rIiE 'rate.?limit|mfa|allowlist|waf' controls/ 2>/dev/null | head
+```
+
+> 위험 평가는 *경로가 도달·차단되는가*다 — "DREAD 점수가 높다"와 "그 경로가 PoC로 도달되고 통제 적용 시 끊긴다"는 다르다. 고위험 경로를 소유 환경에서 직접 검증한다([[68_Purple_Team]], [[30_Vulnerability_Research]], [[17_Red_Team_Operations]]).
+
+---
+
 <a name="english"></a>
 
 # PASTA, DREAD, Attack Trees, Kill Chain
@@ -2531,3 +2558,28 @@ python3 dread_calculator.py --interactive --format html --output my_report.html
 - [Lockheed Martin Cyber Kill Chain](https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html)
 - [MITRE ATT&CK Framework](https://attack.mitre.org/)
 - [MITRE ATT&CK Navigator](https://mitre-attack.github.io/attack-navigator/)
+
+<!-- detect-validate-48 -->
+## Risk-Assessment / Attack-Tree Validation (Scored != Validated)
+
+PASTA, DREAD, attack trees, and kill chains *score threats and structure attack paths*. "We scored the risk" differs from "that path is actually reachable and exploitable" -- validate high-risk paths on owned environments.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Path reachability | Leaf->root possible? | Reproduce path via PoC | Theoretical tree |
+| Risk-score basis | Data-driven? | Reflects measured exploitability | Subjective DREAD |
+| Control choke point | Does it cut the path? | Path impossible after control | Control unvalidated |
+| Prioritization | Real risk order? | Validated paths first | Trust scores only |
+
+### Assessment validation (verify directly)
+
+```bash
+# 1) Whether a high-risk attack-tree leaf is actually reachable (owned env) — PoC reproduction separates theory from reality
+jq -r '.attack_tree.leaves[] | select(.risk=="high") | .path' attack_tree.json 2>/dev/null | head
+# 2) Validate path cut after applying a control — a choke-point control that breaks the real path signals risk reduction
+grep -rIiE 'rate.?limit|mfa|allowlist|waf' controls/ 2>/dev/null | head
+```
+
+> Risk assessment is *whether paths are reachable and cut* -- "the DREAD score is high" differs from "that path is reached via PoC and is cut when a control is applied". Validate high-risk paths on owned environments directly ([[68_Purple_Team]], [[30_Vulnerability_Research]], [[17_Red_Team_Operations]]).

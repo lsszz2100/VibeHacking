@@ -1474,6 +1474,34 @@ python3 stride_analyzer.py --interactive --format json --output custom.json
 
 ---
 
+<!-- detect-validate-48 -->
+## STRIDE 위협 모델 검증 (식별됨 ≠ 통제됨)
+
+STRIDE는 *위장·변조·부인·정보노출·DoS·권한상승*으로 위협을 분류한다. "위협을 식별했다"는 모델과 "각 위협에 통제가 매핑되고 그 통제가 작동한다"는 다르다 — 각 위협의 통제를 소유 시스템에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목(STRIDE) | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| Spoofing | 신원 인증되나? | 미인증 요청 거부 | 위협만 적고 미통제 |
+| Tampering | 무결성 보장? | 서명/해시 검증 | 검증만, 미강제 |
+| Repudiation | 감사 로깅? | 행위 추적 가능 | 로그 미수집 |
+| Info Disclosure | 암호화·최소노출? | 평문 시크릿 0 | 모델만, 코드 미반영 |
+| EoP | 최소권한? | 과대 권한 0 | 통제 미테스트 |
+
+### 모델 검증 (직접 확인)
+
+```bash
+# 1) 소유 위협모델의 모든 위협에 완화가 매핑됐는지 — mitigation 없는 위협이 커버리지 갭 신호
+jq -r '.threats[] | select((.mitigations|length)==0) | "uncovered: \(.id) \(.category)"' threat_model.json 2>/dev/null | head
+# 2) 식별한 통제가 코드/구성에 실재하는지(설계↔구현 일치) — 매핑된 통제 키워드 검색
+grep -rIiE 'authenticate|verifySignature|authorize|encrypt' src/ 2>/dev/null | wc -l
+```
+
+> STRIDE는 *위협↔통제가 닫혀 있는가*다 — "위협을 나열했다"와 "각 위협에 완화가 매핑되고 그 통제가 코드에 실재한다"는 다르다. 각 위협의 통제를 소유 시스템에서 직접 검증한다([[68_Purple_Team]], [[18_DevSecOps]], [[05_Web_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # STRIDE Threat Modeling Methodology
@@ -2784,3 +2812,29 @@ python3 stride_analyzer.py --interactive --format json --output custom.json
 - [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html)
 - [Shostack, A. (2014). Threat Modeling: Designing for Security]
 - [NIST SP 800-154: Guide to Data-Centric System Threat Modeling]
+
+<!-- detect-validate-48 -->
+## STRIDE Threat-Model Validation (Identified != Controlled)
+
+STRIDE classifies threats as *Spoofing, Tampering, Repudiation, Information disclosure, DoS, and Elevation of Privilege*. "We identified threats" differs from "each threat maps to a control and that control works" -- validate each threat's control on the owned system.
+
+### Validation item (STRIDE) -> Question -> Measured signal -> Pitfall
+
+| Validation item (STRIDE) | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Spoofing | Identity authenticated? | Unauthenticated request refused | Threat noted, not controlled |
+| Tampering | Integrity ensured? | Signature/hash verified | Verify but not enforce |
+| Repudiation | Audit logging? | Actions traceable | Logs not collected |
+| Info disclosure | Encrypted/minimal exposure? | 0 plaintext secrets | Model only, not in code |
+| EoP | Least privilege? | 0 over-broad grants | Control untested |
+
+### Model validation (verify directly)
+
+```bash
+# 1) Whether every threat in the owned model maps to a mitigation — a threat with no mitigation signals a coverage gap
+jq -r '.threats[] | select((.mitigations|length)==0) | "uncovered: \(.id) \(.category)"' threat_model.json 2>/dev/null | head
+# 2) Whether the identified controls actually exist in code/config (design<->implementation match) — search mapped control keywords
+grep -rIiE 'authenticate|verifySignature|authorize|encrypt' src/ 2>/dev/null | wc -l
+```
+
+> STRIDE is *whether threat<->control is closed* -- "we listed threats" differs from "each threat maps to a mitigation and that control actually exists in code". Validate each threat's control on the owned system directly ([[68_Purple_Team]], [[18_DevSecOps]], [[05_Web_Hacking]]).
