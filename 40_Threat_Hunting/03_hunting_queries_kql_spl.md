@@ -1090,6 +1090,31 @@ if __name__ == "__main__":
 | 결과 검증 | 탐지 결과의 True Positive 여부 수동 확인 |
 | 문서화 | 쿼리, 결과, 조치사항 모두 기록 |
 
+<!-- detect-validate-40 -->
+## 헌팅 쿼리 검증 — 베이스라인·시간창이 실제로 이상을 잡는가
+
+KQL/SPL 쿼리는 *돌아가는가*가 아니라 **알려진 악성 이벤트를 실제로 잡고(미탐 0) 정상에 과탐하지 않는가**로 판정한다. 잘못된 베이스라인과 좁은 시간창은 저속 공격을 놓친다. 검증은 **소유 테스트 인덱스**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 베이스라인 정확도 | 잘못된 정상기준 | 정상/이상 대조 | 이상만 표시 |
+| 쿼리 무결성 | 필드 누락 오탐 | 필드 존재 검증 | 결과 일관 |
+| 시간창 | 짧은 창 미탐 | 창 길이 튜닝 | 저속 공격 포착 |
+| 성능 | 타임아웃 | 인덱스/요약 | 쿼리 완주 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 쿼리가 알려진 악성 시드 이벤트를 실제로 잡는지 — 소유 테스트 인덱스에 시드 주입 후 확인
+grep -c 'expected_malicious_marker' query_results.json   # 0이면 미탐(false negative)
+# 2) 쿼리가 시간창/기법 메타를 포함해 재현 가능한지
+grep -rEn 'TimeGenerated|earliest=|latest=' hunts/ | head
+```
+
+> 검증은 반드시 **소유 테스트 인덱스**에서만 한다. "쿼리가 돈다"와 "악성 이벤트를 실제 잡는다"는 다르다 — 시드 이벤트로 미탐/과탐을 직접 확인한다([[13_SOC_Blue_Team]], [[25_Threat_Intelligence]]).
+
 ---
 
 <a name="english"></a>
@@ -1707,3 +1732,28 @@ def detect_zscore_anomalies(
 | Noise management | Incrementally add whitelists and exceptions |
 | Result validation | Manually verify True Positive status of detections |
 | Documentation | Record all queries, results, and actions taken |
+
+<!-- detect-validate-40 -->
+## Hunting-Query Validation — Do Baseline and Time Window Actually Catch Anomalies?
+
+KQL/SPL queries are judged not by *whether they run* but by **whether they actually catch known-malicious events (zero false negatives) without over-alerting on normal**. A wrong baseline and a narrow time window miss low-and-slow attacks. Validate only on an **owned test index**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Baseline accuracy | Wrong normal | Compare normal/anomalous | Only anomalies surface |
+| Query integrity | Missing-field false positive | Verify field presence | Consistent results |
+| Time window | Short window miss | Tune window length | Catches slow attack |
+| Performance | Timeout | Index/summarize | Query completes |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the query actually catches a known-malicious seed event — inject seed into owned test index, then check
+grep -c 'expected_malicious_marker' query_results.json   # 0 => false negative
+# 2) Whether the query carries time-window/technique metadata for reproducibility
+grep -rEn 'TimeGenerated|earliest=|latest=' hunts/ | head
+```
+
+> Validate only on an **owned test index**. "The query runs" differs from "it actually catches the malicious event" — confirm false negatives/positives with seed events directly ([[13_SOC_Blue_Team]], [[25_Threat_Intelligence]]).

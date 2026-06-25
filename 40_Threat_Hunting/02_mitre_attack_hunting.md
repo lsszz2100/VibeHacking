@@ -1025,6 +1025,32 @@ if __name__ == "__main__":
 | T1021.001 | 높음 | 중간 | 높음 | Medium |
 | T1083 | 높음 | 낮음 | 낮음 | Low |
 
+<!-- detect-validate-40 -->
+## ATT&CK 헌팅 검증 — 탐지가 실제로 기법을 잡는가
+
+ATT&CK 기반 헌팅은 *쿼리를 짰는가*가 아니라 **기법을 실제 실행했을 때 탐지가 발생하는가(미탐 0)**로 판정한다. Atomic Red Team으로 기법을 격리 실행하고 경보가 뜨는지 직접 확인한다. 실행은 **소유 격리 랩**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 탐지 커버리지 | 미탐(false negative) | Atomic 실행 후 경보 확인 | 실행→경보 발생 |
+| 쿼리 정확도 | 과탐 노이즈 | 양성/음성 샘플 검증 | 낮은 오탐률 |
+| TTP 매핑 | 임의 헌트 | 기법 ID 매핑 | 헌트=기법ID 연결 |
+| 갱신성 | 구식 시그니처 | 신규 변종 테스트 | 변종도 탐지 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) Atomic Red Team으로 기법 실행 후 탐지가 실제 발생하는지 — 소유 격리 랩에서만
+# (격리 호스트에서 atomic 실행 후) 해당 기법 경보가 SIEM/로그에 떴는지 확인
+grep -RIl 'T1059.001' /var/log/siem/alerts/ 2>/dev/null | head   # 비면 미탐(false negative)
+# 2) 탐지 규칙이 ATT&CK 기법 ID에 매핑돼 있는지
+grep -rEl 'T1[0-9]{3}' detections/ | wc -l
+```
+
+> 실행은 반드시 **소유 격리 랩**에서만 한다. "쿼리를 만들었다"와 "기법 실행 시 실제 탐지된다"는 다르다 — Atomic 실행→경보 발생을 직접 확인한다([[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -1516,3 +1542,29 @@ def fetch_attack_data(force_refresh: bool = False) -> dict:
 | T1055 | Medium | High | Low | High |
 | T1021.001 | High | Medium | High | Medium |
 | T1083 | High | Low | Low | Low |
+
+<!-- detect-validate-40 -->
+## ATT&CK-Hunting Validation — Does Detection Actually Catch the Technique?
+
+ATT&CK-based hunting is judged not by *whether a query was written* but by **whether detection fires when the technique is actually executed (zero false negatives)**. Run the technique in isolation via Atomic Red Team and confirm the alert directly. Execute only in an **owned isolated lab**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Detection coverage | False negative | Confirm alert after Atomic run | Execution -> alert fires |
+| Query precision | Over-alert noise | Validate positive/negative samples | Low false-positive rate |
+| TTP mapping | Arbitrary hunt | Map technique ID | Hunt == technique ID |
+| Freshness | Stale signature | Test new variant | Variant also detected |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether detection actually fires after executing the technique via Atomic Red Team — owned isolated lab only
+# (after running atomic on an isolated host) check whether the technique alerted in SIEM/logs
+grep -RIl 'T1059.001' /var/log/siem/alerts/ 2>/dev/null | head   # empty => false negative
+# 2) Whether detection rules are mapped to ATT&CK technique IDs
+grep -rEl 'T1[0-9]{3}' detections/ | wc -l
+```
+
+> Execute only in an **owned isolated lab**. "A query was written" differs from "it actually detects on execution" — confirm Atomic-run -> alert directly ([[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).

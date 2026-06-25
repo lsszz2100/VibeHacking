@@ -794,6 +794,31 @@ if __name__ == "__main__":
 | Automation Conversion Rate | 헌팅 → 탐지 규칙 전환 비율 |
 | Dwell Time Reduction | 헌팅 도입 후 평균 잠복 기간 감소 |
 
+<!-- detect-validate-40 -->
+## 헌팅 방법론 검증 — 가설이 실제로 검증 가능한가
+
+위협 헌팅은 *직감으로 뒤졌는가*가 아니라 **가설이 데이터로 채택/기각되고, 헌트가 재현 가능하며, 필요한 로그가 실제 존재하는가**로 판정한다. 데이터 공백 위에서의 헌팅은 거짓 안심이다. 헌팅은 **소유 환경**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 가설 검증성 | 반증 불가 가설 | 데이터로 반증 시도 | 채택/기각 명확 |
+| 데이터 가용성 | 로그 부재 | 소스 커버리지 점검 | 필요 로그 보존 |
+| 헌트 재현성 | 1회성 발견 | 쿼리 저장·재실행 | 동일 결과 재현 |
+| 커버리지 측정 | 무측정 | ATT&CK 매핑 | 기법별 헌트 추적 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 헌팅에 필요한 로그가 실제 수집/보존되는지 — 소유 환경에서만
+sudo ausearch -m EXECVE --start recent 2>/dev/null | head -3   # 비어있으면 데이터 공백→헌팅 불가
+# 2) 헌트 쿼리가 버전관리되어 재실행 가능한지(재현성)
+ls -1 hunts/*.kql hunts/*.spl 2>/dev/null | head
+```
+
+> 헌팅은 반드시 **소유 환경**에서만 한다. "헌팅을 했다"와 "가설이 데이터로 검증됐다"는 다르다 — 로그 가용성·쿼리 재현성을 직접 확인한다([[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -1046,3 +1071,28 @@ Priority 3 (Monthly Hunting):
 | Mean Hunt Duration | Average hunting time |
 | Automation Conversion Rate | Hunting → detection rule conversion rate |
 | Dwell Time Reduction | Reduction in average dwell time after introducing hunting |
+
+<!-- detect-validate-40 -->
+## Hunting-Methodology Validation — Is the Hypothesis Actually Testable?
+
+Threat hunting is judged not by *whether you poked around on a hunch* but by **whether the hypothesis is accepted/rejected by data, the hunt is reproducible, and the required logs actually exist**. Hunting over a data gap is false comfort. Hunt only on **owned environments**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Hypothesis testability | Unfalsifiable hypothesis | Try to disprove with data | Clear accept/reject |
+| Data availability | Missing logs | Source coverage check | Required logs retained |
+| Hunt reproducibility | One-off finding | Save/re-run query | Same result reproduced |
+| Coverage measurement | No measurement | ATT&CK mapping | Per-technique hunt tracked |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the logs needed for the hunt are actually collected/retained — owned env only
+sudo ausearch -m EXECVE --start recent 2>/dev/null | head -3   # empty => data gap, hunt impossible
+# 2) Whether hunt queries are version-controlled and re-runnable (reproducibility)
+ls -1 hunts/*.kql hunts/*.spl 2>/dev/null | head
+```
+
+> Hunt only on **owned environments**. "We hunted" differs from "the hypothesis was validated by data" — confirm log availability and query reproducibility directly ([[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).

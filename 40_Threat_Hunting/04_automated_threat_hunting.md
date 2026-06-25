@@ -1322,6 +1322,31 @@ if __name__ == "__main__":
 | 파일 서버 | 정기 스캔 | YARA CLI + 스케줄러 |
 | 메모리 포렌식 | 침해 조사 | Volatility3 |
 
+<!-- detect-validate-40 -->
+## 자동화 헌팅 검증 — 규칙이 손실 없이 변환·작동하는가
+
+Sigma·YARA·EDR 자동화는 *규칙을 작성했는가*가 아니라 **백엔드로 손실 없이 변환되고, 정상에 오탐하지 않으며, 전 엔드포인트를 덮는가**로 판정한다. 사일런트 변환 실패와 광범위 오탐을 직접 찾는다. 검증은 **소유 코퍼스/엔드포인트**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| Sigma 변환 | 백엔드 손실 | 변환 후 쿼리 검증 | 의미 보존 |
+| YARA 규칙 | 광범위 오탐 | 정상셋 스캔 | clean셋 0매치 |
+| EDR 커버리지 | 일부 호스트 누락 | 자산 대조 | 전 엔드포인트 |
+| 자동화 신뢰 | 사일런트 실패 | 파이프라인 알림 | 실패 시 경보 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) YARA 규칙이 정상 파일에 오탐하지 않는지 — 소유 clean 코퍼스로 검증
+yara -r rules/ /known_good_corpus/ 2>/dev/null | head   # 매치 출력되면 오탐 점검 필요
+# 2) Sigma 규칙이 대상 백엔드로 손실 없이 변환되는지
+sigma convert -t splunk rules/*.yml 2>&1 | grep -iE 'error|unsupported' | head
+```
+
+> 검증은 반드시 **소유 코퍼스/엔드포인트**에서만 한다. "규칙을 만들었다"와 "손실 없이 변환되고 오탐이 없다"는 다르다 — 정상셋 스캔·변환 오류를 직접 확인한다([[06_Malware_Analysis]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -1644,3 +1669,28 @@ hourly_counts = df.groupby(["hour", "process_name"]).size().unstack(fill_value=0
 | Sandbox | Submitted file analysis | Cuckoo, ANY.RUN |
 | File server | Periodic scanning | YARA CLI + scheduler |
 | Memory forensics | Breach investigation | Volatility3 |
+
+<!-- detect-validate-40 -->
+## Automated-Hunting Validation — Do Rules Convert and Work Without Loss?
+
+Sigma/YARA/EDR automation is judged not by *whether a rule was authored* but by **whether it converts to the backend without loss, does not over-match on normal, and covers all endpoints**. Hunt directly for silent conversion failures and broad false positives. Validate only on **owned corpus/endpoints**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Sigma conversion | Backend loss | Validate converted query | Semantics preserved |
+| YARA rule | Broad false positive | Scan clean set | Zero match on clean set |
+| EDR coverage | Some hosts missed | Reconcile assets | All endpoints |
+| Automation trust | Silent failure | Pipeline alerting | Alert on failure |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the YARA rule false-positives on normal files — validate against an owned clean corpus
+yara -r rules/ /known_good_corpus/ 2>/dev/null | head   # any match => investigate false positive
+# 2) Whether the Sigma rule converts to the target backend without loss
+sigma convert -t splunk rules/*.yml 2>&1 | grep -iE 'error|unsupported' | head
+```
+
+> Validate only on **owned corpus/endpoints**. "A rule was made" differs from "it converts losslessly and has no false positives" — confirm clean-set scan and conversion errors directly ([[06_Malware_Analysis]], [[13_SOC_Blue_Team]]).

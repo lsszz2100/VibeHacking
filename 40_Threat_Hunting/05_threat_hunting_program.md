@@ -955,6 +955,31 @@ C2           |   16    |    6     |    4    | HIGH
 - **SANS FOR508** — Advanced Incident Response & Threat Hunting
 - **Cyb3rWard0g 블로그** — 실전 헌팅 사례 연구
 
+<!-- detect-validate-40 -->
+## 헌팅 프로그램 검증 — 발견이 영구 탐지로 전환되는가
+
+헌팅 프로그램은 *팀을 꾸렸는가*가 아니라 **헌트 발견이 영구 탐지 규칙으로 전환되고(피드백 루프), 데이터 수집 공백이 없는가**로 판정한다. 발견이 일회성으로 사라지면 프로그램이 아니다. 검증은 **소유 저장소/플랫폼**에서.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 거버넌스 | 임의 헌트 | 헌트 백로그 기록 | 가설→결과 추적 |
+| 피드백 루프 | 발견 미반영 | 신규 탐지규칙화 | 헌트→영구 탐지 전환 |
+| 데이터 파이프라인 | 수집 공백 | 소스 상태 점검 | 누락 0 |
+| 성과 측정 | 무지표 | 메트릭 추적 | MTTD/커버리지 추세 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 헌트 발견이 영구 탐지 규칙으로 전환됐는지(피드백 루프) — 소유 탐지 저장소에서
+git -C detections log --since='-30d' --oneline | grep -iE 'hunt|finding' | head
+# 2) 데이터 소스 수집 공백이 없는지(파이프라인 건강)
+grep -L '"status": *"ok"' ingest_status/*.json 2>/dev/null
+```
+
+> 검증은 반드시 **소유 저장소/플랫폼**에서만 한다. "프로그램을 만들었다"와 "발견이 영구 탐지로 전환된다"는 다르다 — 탐지 커밋·수집 상태를 직접 확인한다([[25_Threat_Intelligence]], [[44_Incident_Response_DFIR]]).
+
 ---
 
 <a name="english"></a>
@@ -1336,3 +1361,28 @@ Impact              |    14      |       3       |        2        | MEDIUM
 - **Sqrrl Threat Hunting Reference Guide** — Hunting fundamentals guide
 - **SANS FOR508** — Advanced Incident Response & Threat Hunting
 - **Cyb3rWard0g Blog** — Real-world hunting case studies
+
+<!-- detect-validate-40 -->
+## Hunting-Program Validation — Do Findings Become Permanent Detections?
+
+A hunting program is judged not by *whether a team was formed* but by **whether hunt findings convert into permanent detection rules (feedback loop) with no data-collection gaps**. If findings vanish as one-offs, it is not a program. Validate on **owned repos/platforms**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Governance | Arbitrary hunt | Hunt backlog record | Hypothesis -> result tracked |
+| Feedback loop | Finding not applied | Turn into detection rule | Hunt -> permanent detection |
+| Data pipeline | Collection gap | Source status check | Zero gaps |
+| Performance measurement | No metrics | Track metrics | MTTD/coverage trend |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether hunt findings became permanent detection rules (feedback loop) — owned detection repo
+git -C detections log --since='-30d' --oneline | grep -iE 'hunt|finding' | head
+# 2) Whether there are no data-source collection gaps (pipeline health)
+grep -L '"status": *"ok"' ingest_status/*.json 2>/dev/null
+```
+
+> Validate only on **owned repos/platforms**. "A program was built" differs from "findings convert into permanent detections" — confirm detection commits and ingest status directly ([[25_Threat_Intelligence]], [[44_Incident_Response_DFIR]]).
