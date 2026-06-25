@@ -672,6 +672,31 @@ if __name__ == "__main__":
 - [ ] ALE 계산 문제 5문제 이상 직접 풀기
 - [ ] 최신 기출문제 분석 및 출제 경향 파악
 
+<!-- detect-validate-41 -->
+## 이론 검증 — 암기가 실제 통제로 이어지는가
+
+정보보안기사 필기는 *정의를 외웠는가*가 아니라 **그 개념이 실제 시스템에서 검증 가능한 통제로 이어지는가**를 이해할 때 실무로 전환된다. 핵심 도메인을 실제 명령으로 확인해 본다. 확인은 **소유 시스템**에서만.
+
+### 도메인 → 암기만의 한계 → 실무 검증 → 검증 신호
+
+| 도메인 | 암기만의 한계 | 실무 검증 | 검증 신호 |
+|---|---|---|---|
+| 접근통제 | 모델 정의만 | 실제 권한 점검 | 최소권한 적용 |
+| 암호 | 알고리즘 나열 | 적용된 암호스위트 | 약한 알고리즘 0 |
+| 네트워크보안 | 계층 암기 | 방화벽 규칙 확인 | 기본 거부 |
+| 보안운영 | 절차 서술 | 로그/감사 존재 | 감사 추적 가능 |
+
+### 검증 (직접 확인)
+
+```bash
+# 1) "암호" 도메인 — 실제 TLS가 강한 스위트만 쓰는지(약한 알고리즘 배제) 소유 호스트에서
+nmap --script ssl-enum-ciphers -p 443 host.owned 2>/dev/null | grep -iE 'TLSv1.0|RC4|MD5|EXPORT' && echo "약한 스위트 발견" || echo "강한 스위트 OK"
+# 2) "접근통제" 도메인 — 권한 그룹 구성원을 확인해 과다권한이 없는지
+getent group sudo wheel 2>/dev/null
+```
+
+> 확인은 반드시 **소유 시스템**에서만 한다. "정의를 외웠다"와 "실제 통제로 검증된다"는 다르다 — 핵심 도메인을 실제 명령으로 직접 확인한다([[16_Cryptography]], [[01_Linux_Basics]]).
+
 ---
 
 <a name="english"></a>
@@ -999,3 +1024,28 @@ It validates professional knowledge and skills in the information security field
 - [ ] Memorize attack types paired with their principles and countermeasures
 - [ ] Solve at least 5 ALE calculation problems directly
 - [ ] Analyze recent past exam questions and identify current trends
+
+<!-- detect-validate-41 -->
+## Theory Validation — Does Memorization Lead to a Real Control?
+
+The written exam converts to practice not by *whether you memorized a definition* but by understanding **whether the concept leads to a control you can actually verify on a system**. Check core domains with real commands. Verify only on **owned systems**.
+
+### Domain -> Limit of memorization -> Practical validation -> Validation signal
+
+| Domain | Limit of memorization | Practical validation | Validation signal |
+|---|---|---|---|
+| Access control | Model definition only | Inspect real permissions | Least privilege applied |
+| Cryptography | List algorithms | Applied cipher suite | Zero weak algorithms |
+| Network security | Memorize layers | Check firewall rules | Default deny |
+| Security operations | Describe procedures | Logs/audit exist | Audit trail available |
+
+### Validation (verify directly)
+
+```bash
+# 1) "Cryptography" domain — whether real TLS uses only strong suites (excludes weak algos) on owned host
+nmap --script ssl-enum-ciphers -p 443 host.owned 2>/dev/null | grep -iE 'TLSv1.0|RC4|MD5|EXPORT' && echo "weak suite found" || echo "strong suites OK"
+# 2) "Access control" domain — check privileged group membership for over-privilege
+getent group sudo wheel 2>/dev/null
+```
+
+> Verify only on **owned systems**. "Memorized the definition" differs from "validated as a real control" — check core domains with real commands directly ([[16_Cryptography]], [[01_Linux_Basics]]).

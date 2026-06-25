@@ -693,6 +693,31 @@ if __name__ == "__main__":
 - [ ] 심사팀 안내 자료 준비 (조직도, 시스템 구성도)
 - [ ] 심사 당일 인터뷰 담당자 역할 배정
 
+<!-- detect-validate-41 -->
+## 통제 이행 검증 — 문서가 아니라 실제로 작동하는가
+
+ISMS-P 인증은 *통제를 문서화했는가*가 아니라 **각 통제가 실제 운영되고 증적으로 입증되는가**로 심사된다. 표본 통제를 실제 시스템에서 증적과 함께 확인한다. 확인은 **소유 자산**에서만.
+
+### 통제 영역 → 형식적 이행 → 증적 검증 → 양호 신호
+
+| 통제 영역 | 형식적 이행 | 증적 검증 | 양호 신호 |
+|---|---|---|---|
+| 접근권한 관리 | 정책만 존재 | 실제 계정 검토 | 미사용 계정 0 |
+| 암호화 | 적용 주장 | 실제 암호화 확인 | 저장/전송 암호화 |
+| 로그 관리 | 수집 주장 | 보존기간 확인 | 정책기간 보존 |
+| 접근통제 | 규정만 | 권한 최소화 확인 | 과다권한 0 |
+
+### 검증 (직접 확인)
+
+```bash
+# 1) "접근권한 관리" 통제 — 장기 미사용/미로그인 계정을 증적으로 확인. 소유 시스템에서
+lastlog 2>/dev/null | awk 'NR>1 && /Never logged in/ {print $1}' | head
+# 2) "로그 관리" 통제 — 로그가 정책 보존기간(예: 90일) 이상 실제 존재하는지
+find /var/log -name '*.log*' -mtime +90 2>/dev/null | head
+```
+
+> 확인은 반드시 **소유 자산**에서만 한다. "통제를 문서화했다"와 "실제 운영되고 증적이 있다"는 다르다 — 표본 통제를 증적과 함께 직접 확인한다([[18_DevSecOps]], [[26_Linux_Hardening]]).
+
 ---
 
 <a name="english"></a>
@@ -887,3 +912,28 @@ Key control categories include:
 - [ ] Complete corrective actions for identified findings or prepare implementation plans
 - [ ] Prepare guidance materials for audit team (org chart, system diagram)
 - [ ] Assign interview roles for audit day
+
+<!-- detect-validate-41 -->
+## Control-Implementation Validation — Working in Reality, Not Just on Paper?
+
+ISMS-P certification is assessed not by *whether a control is documented* but by **whether each control actually operates and is proven by evidence**. Check sample controls on real systems with evidence. Verify only on **owned assets**.
+
+### Control area -> Formal implementation -> Evidence validation -> Healthy signal
+
+| Control area | Formal implementation | Evidence validation | Healthy signal |
+|---|---|---|---|
+| Access-rights mgmt | Policy only | Review real accounts | Zero unused accounts |
+| Encryption | Claimed applied | Confirm real encryption | At-rest/in-transit encrypted |
+| Log management | Claimed collected | Check retention | Retained per policy |
+| Access control | Regulation only | Verify least privilege | Zero over-privilege |
+
+### Validation (verify directly)
+
+```bash
+# 1) "Access-rights mgmt" control — confirm long-unused/never-logged-in accounts with evidence. Owned systems
+lastlog 2>/dev/null | awk 'NR>1 && /Never logged in/ {print $1}' | head
+# 2) "Log management" control — whether logs actually exist for the policy retention period (e.g., 90 days)
+find /var/log -name '*.log*' -mtime +90 2>/dev/null | head
+```
+
+> Verify only on **owned assets**. "The control is documented" differs from "it actually operates with evidence" — check sample controls with evidence directly ([[18_DevSecOps]], [[26_Linux_Hardening]]).

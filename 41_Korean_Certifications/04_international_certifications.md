@@ -650,6 +650,31 @@ if __name__ == "__main__":
 | OSCP | 3~6개월 | ~$1,500~2,500 | 매우 높음 (기술직) |
 | CISSP | 6~12개월 | ~$1,000 | 높음 (관리직) |
 
+<!-- detect-validate-41 -->
+## 자격 준비도 검증 — 점수가 실제 역량을 반영하는가
+
+국제 보안 자격은 *시험을 신청했는가*가 아니라 **도메인별 약점이 모의로 측정되고 실습으로 보강됐는가**로 합격에 가까워진다. 약점 영역을 증거 기반으로 추적한다. 실습은 **소유 랩**에서만.
+
+### 항목 → 위험 → 검증 방법 → 양호 신호
+
+| 항목 | 위험 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 도메인 커버리지 | 편중 학습 | 영역별 모의점수 | 약점 도메인 식별 |
+| 실습 역량(OSCP) | 이론만 | 실제 익스플로잇 랩 | 랩 머신 루팅 |
+| 시간관리 | 미실전 | 타임드 모의 | 제한시간 내 완수 |
+| 최신성 | 구버전 교재 | 최신 시험요강 대조 | 현행 도메인 일치 |
+
+### 검증 (직접 확인)
+
+```bash
+# 1) 도메인별 모의시험 약점을 증거로 추적(자가 기록) — 70점 미만 영역 추출
+awk -F, 'NR>1 && $2<70 {print $1, $2"%"}' mock_scores.csv 2>/dev/null
+# 2) (OSCP류) 소유 실습 랩에서 실제 루팅/증명 기록이 있는지
+grep -ric 'proof.txt\|root@' lab_notes/ 2>/dev/null
+```
+
+> 실습은 반드시 **소유 랩**에서만 한다. "시험을 신청했다"와 "약점이 측정·보강됐다"는 다르다 — 영역별 점수와 랩 증명을 증거로 추적한다([[12_Bug_Bounty]], [[10_Pentest_Methodology]]).
+
 ---
 
 <a name="english"></a>
@@ -879,3 +904,28 @@ Key Formulas:
 | CEH | 2-4 months | ~$1,500 | Medium |
 | OSCP | 3-6 months | ~$1,500~2,500 | Very high (technical) |
 | CISSP | 6-12 months | ~$1,000 | High (management) |
+
+<!-- detect-validate-41 -->
+## Exam-Readiness Validation — Does the Score Reflect Real Skill?
+
+International security certs move toward a pass not by *whether you registered* but by **whether per-domain weaknesses are measured by mocks and reinforced with hands-on practice**. Track weak areas with evidence. Practice only in an **owned lab**.
+
+### Item -> Risk -> Validation method -> Healthy signal
+
+| Item | Risk | Validation method | Healthy signal |
+|---|---|---|---|
+| Domain coverage | Lopsided study | Per-domain mock scores | Weak domain identified |
+| Hands-on skill (OSCP) | Theory only | Real exploit lab | Lab machine rooted |
+| Time management | No timed practice | Timed mock | Finish within limit |
+| Freshness | Outdated material | Compare current exam blueprint | Matches current domains |
+
+### Validation (verify directly)
+
+```bash
+# 1) Track per-domain mock weaknesses with evidence (self-record) — extract domains under 70%
+awk -F, 'NR>1 && $2<70 {print $1, $2"%"}' mock_scores.csv 2>/dev/null
+# 2) (OSCP-style) whether owned-lab rooting/proof records exist
+grep -ric 'proof.txt\|root@' lab_notes/ 2>/dev/null
+```
+
+> Practice only in an **owned lab**. "Registered for the exam" differs from "weaknesses measured and reinforced" — track per-domain scores and lab proofs with evidence ([[12_Bug_Bounty]], [[10_Pentest_Methodology]]).

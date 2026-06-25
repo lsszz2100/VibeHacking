@@ -832,6 +832,31 @@ if __name__ == "__main__":
 9. **과징금 상한**: 전체 매출액의 "3%" (2023년 개정)
 10. **아동 개인정보**: 만 "14세" 미만, 법정대리인 동의
 
+<!-- detect-validate-41 -->
+## 컴플라이언스 검증 — 법적 의무가 실제로 이행되는가
+
+법령 준수는 *조항을 읽었는가*가 아니라 **개인정보보호법·정보통신망법 등의 의무가 실제 시스템·절차로 이행되고 증적이 있는가**로 판정된다. 표본 의무를 증적으로 확인한다. 확인은 **소유·승인 시스템**에서만.
+
+### 의무 → 형식적 준수 → 증적 검증 → 양호 신호
+
+| 의무 | 형식적 준수 | 증적 검증 | 양호 신호 |
+|---|---|---|---|
+| 개인정보 암호화 | 정책만 | 저장 암호화 확인 | 민감정보 평문 0 |
+| 접근기록 보존 | 수집 주장 | 보존기간 확인 | 법정기간 보존 |
+| 안전조치 | 규정만 | 실제 통제 확인 | 통제 작동 |
+| 파기 | 절차 서술 | 파기 로그 확인 | 만료 데이터 파기 |
+
+### 검증 (직접 확인)
+
+```bash
+# 1) "개인정보 암호화" 의무 — 저장소에 평문 주민번호 패턴이 없는지 표본 확인. 소유 시스템에서
+grep -rEn '[0-9]{6}-[1-4][0-9]{6}' /data/sample 2>/dev/null | head   # 매치=평문 노출 점검 필요
+# 2) "접근기록 보존" 의무 — 접근 로그가 법정 기간(예: 180일) 이상 보존되는지
+find /var/log -name 'access*.log*' -mtime +180 2>/dev/null | head
+```
+
+> 확인은 반드시 **소유·승인 시스템**에서만 한다. "조항을 읽었다"와 "의무가 실제 이행되고 증적이 있다"는 다르다 — 표본 의무를 증적으로 직접 확인한다([[07_Digital_Forensics]], [[26_Linux_Hardening]]).
+
 ---
 
 <a name="english"></a>
@@ -1198,3 +1223,28 @@ Usage: python3 law_tool.py [--search KEYWORD] [--quiz] [--law LAW_NAME]
 8. **Cloud service interruption**: notify users "30 days" in advance
 9. **Administrative fine cap**: "3%" of total revenue (2023 amendment)
 10. **Children's personal information**: under "14 years" of age, legal guardian consent required
+
+<!-- detect-validate-41 -->
+## Compliance Validation — Are Legal Obligations Actually Met?
+
+Legal compliance is judged not by *whether you read the clause* but by **whether obligations under the Personal Information Protection Act, Network Act, etc. are actually implemented in systems/procedures with evidence**. Check sample obligations with evidence. Verify only on **owned / authorized systems**.
+
+### Obligation -> Formal compliance -> Evidence validation -> Healthy signal
+
+| Obligation | Formal compliance | Evidence validation | Healthy signal |
+|---|---|---|---|
+| PII encryption | Policy only | Confirm at-rest encryption | Zero plaintext sensitive data |
+| Access-log retention | Claimed collected | Check retention | Retained for legal period |
+| Safeguards | Regulation only | Verify real control | Control operates |
+| Disposal | Describe procedure | Check disposal log | Expired data destroyed |
+
+### Validation (verify directly)
+
+```bash
+# 1) "PII encryption" obligation — sample-check no plaintext resident-number pattern in storage. Owned systems
+grep -rEn '[0-9]{6}-[1-4][0-9]{6}' /data/sample 2>/dev/null | head   # match => investigate plaintext exposure
+# 2) "Access-log retention" obligation — whether access logs are retained for the legal period (e.g., 180 days)
+find /var/log -name 'access*.log*' -mtime +180 2>/dev/null | head
+```
+
+> Verify only on **owned / authorized systems**. "Read the clause" differs from "the obligation is actually met with evidence" — check sample obligations with evidence directly ([[07_Digital_Forensics]], [[26_Linux_Hardening]]).

@@ -789,6 +789,31 @@ if __name__ == "__main__":
 | 해시 | SHA-256 | 256비트 출력 | 현재 표준 |
 | 해시 | MD5 | 128비트 출력 | 취약, 사용 지양 |
 
+<!-- detect-validate-41 -->
+## 실기 역량 검증 — 답안이 실제로 동작하는가
+
+정보보안기사 실기는 *답안을 외웠는가*가 아니라 **실제 환경에서 명령·분석이 의도대로 동작하는가**로 판정된다. 자주 출제되는 점검을 직접 실행해 본다. 검증은 **소유 실습 환경**에서만.
+
+### 출제 영역 → 함정 → 실습 검증 → 양호 신호
+
+| 출제 영역 | 함정 | 실습 검증 | 양호 신호 |
+|---|---|---|---|
+| 로그 분석 | 필드 오독 | 실제 로그 파싱 | 공격 흔적 식별 |
+| 취약점 점검 | 설정 오판 | 유효설정 질의 | 기대값 일치 |
+| 패킷 분석 | 도구 미숙 | tcpdump/tshark | 흐름 재구성 |
+| 보안설정 | 미적용 | 적용 후 재확인 | 런타임 반영 |
+
+### 검증 (직접 확인)
+
+```bash
+# 1) 로그 분석 실기 — 인증 실패 폭주(브루트포스 흔적)를 직접 집계. 소유 호스트에서
+grep -aiE 'failed password|authentication failure' /var/log/auth.log 2>/dev/null | awk '{print $(NF-3)}' | sort | uniq -c | sort -rn | head
+# 2) 패킷 분석 실기 — SYN 폭주 등 이상 흐름 재구성(소유 캡처 파일)
+tcpdump -nr owned_capture.pcap 'tcp[tcpflags] & tcp-syn != 0' 2>/dev/null | head
+```
+
+> 검증은 반드시 **소유 실습 환경**에서만 한다. "답안을 외웠다"와 "실제로 동작·재현된다"는 다르다 — 점검 명령을 직접 실행해 확인한다([[07_Digital_Forensics]], [[02_Network_Hacking]]).
+
 ---
 
 <a name="english"></a>
@@ -1060,3 +1085,28 @@ Defense methods:
 | Asymmetric | ECC | 256 bits | Elliptic curve-based |
 | Hash | SHA-256 | 256-bit output | Current standard |
 | Hash | MD5 | 128-bit output | Vulnerable, avoid use |
+
+<!-- detect-validate-41 -->
+## Practical-Skill Validation — Does the Answer Actually Work?
+
+The practical exam is judged not by *whether you memorized an answer* but by **whether the command/analysis actually works as intended in a real environment**. Run the frequently-tested checks yourself. Validate only in an **owned lab**.
+
+### Exam area -> Pitfall -> Hands-on validation -> Healthy signal
+
+| Exam area | Pitfall | Hands-on validation | Healthy signal |
+|---|---|---|---|
+| Log analysis | Misreading fields | Parse real logs | Attack trace identified |
+| Vulnerability check | Config misjudgment | Query effective config | Matches expected |
+| Packet analysis | Tool inexperience | tcpdump/tshark | Flow reconstructed |
+| Security config | Not applied | Re-check after apply | Reflected at runtime |
+
+### Validation (verify directly)
+
+```bash
+# 1) Log-analysis task — directly tally auth-failure floods (brute-force trace). On owned host
+grep -aiE 'failed password|authentication failure' /var/log/auth.log 2>/dev/null | awk '{print $(NF-3)}' | sort | uniq -c | sort -rn | head
+# 2) Packet-analysis task — reconstruct anomalous flow such as a SYN flood (owned capture file)
+tcpdump -nr owned_capture.pcap 'tcp[tcpflags] & tcp-syn != 0' 2>/dev/null | head
+```
+
+> Validate only in an **owned lab**. "Memorized the answer" differs from "it actually works and reproduces" — run the check commands directly ([[07_Digital_Forensics]], [[02_Network_Hacking]]).
