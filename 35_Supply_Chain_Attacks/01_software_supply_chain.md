@@ -1258,6 +1258,33 @@ npm config get registry
 
 ---
 
+<!-- detect-validate-35 -->
+## 공급망 침해 탐지와 패키지 무결성 검증
+
+소프트웨어 공급망 공격은 *패키지 저장소 오염·빌드 시스템 침해(SolarWinds)·악성 의존성(XZ)·의존성 혼동*으로 신뢰된 배포 경로에 코드를 심는다. 방어자는 **설치되는 아티팩트가 출처 검증되고 변조가 탐지되는가**를 검증해야 한다. 검증은 **소유 빌드/레지스트리**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 저장소 오염 | 미서명 패키지 | 서명·해시 핀 | 해시 불일치 |
+| 빌드 침해 | 변조된 빌드산출물 | 재현가능 빌드·프로비넌스 | 빌드 산출물 diff |
+| 악성 의존성 | 신뢰된 메인테이너 | 동작·소스 감사 | 신규 네트워크/빌드 후크 |
+| 의존성 혼동 | 내부명 공개 노출 | 스코프·내부 미러 | 외부서 내부명 설치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 락파일의 무결성 해시가 고정됐는지 — 핀 없으면 변조 패키지 수용 위험
+jq -r '.packages | to_entries[] | select(.value.integrity==null) | .key' package-lock.json 2>/dev/null | head
+# 2) 설치 의존성이 의도외 네트워크/빌드 후크를 갖는지(소유 트리) — postinstall/exfil 신호
+grep -rnE '"(post|pre)install"|curl |wget |nc ' node_modules/*/package.json 2>/dev/null | head
+```
+
+> 공급망 방어는 *아티팩트 출처가 검증되는가*다 — "빌드된다"와 "모든 의존성 해시가 핀되고 프로비넌스가 검증되며 의도외 빌드 후크가 없다"는 다르다. 소유 빌드/레지스트리에서 무결성을 직접 확인한다([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).
+
+---
+
 <a name="english"></a>
 
 # 01 — Software Supply Chain Attacks
@@ -1756,3 +1783,28 @@ Continuous monitoring:
   □ Enable GitHub Dependabot
   □ Track dependency security scores with OpenSSF Scorecard
 ```
+
+<!-- detect-validate-35 -->
+## Supply-Chain Compromise Detection and Package-Integrity Validation
+
+Software supply-chain attacks implant code into trusted distribution paths via *repository poisoning, build-system compromise (SolarWinds), malicious dependencies (XZ), and dependency confusion*. Defenders must verify **whether installed artifacts are provenance-checked and tampering is detected**. Validate only on **owned builds/registries**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Repo poisoning | Unsigned packages | Sign, pin hashes | Hash mismatch |
+| Build compromise | Tampered build output | Reproducible build, provenance | Build-output diff |
+| Malicious dependency | Trusted maintainer | Behavior/source audit | New network/build hook |
+| Dependency confusion | Internal names exposed | Scope, internal mirror | Internal name from public |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether lockfile integrity hashes are pinned — without pins, tampered packages are accepted
+jq -r '.packages | to_entries[] | select(.value.integrity==null) | .key' package-lock.json 2>/dev/null | head
+# 2) Whether installed deps have unintended network/build hooks (owned tree) — postinstall/exfil signal
+grep -rnE '"(post|pre)install"|curl |wget |nc ' node_modules/*/package.json 2>/dev/null | head
+```
+
+> Supply-chain defense is *whether artifact provenance is verified* -- "it builds" differs from "every dependency hash is pinned, provenance is verified, and there are no unintended build hooks". Confirm integrity on owned builds/registries directly ([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).

@@ -1135,6 +1135,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-35 -->
+## 오픈소스 백도어 탐지와 변경 출처 검증
+
+오픈소스 백도어는 *신뢰 확보 후 악성 커밋·GHA 워크플로 오염·빌드 단계 난독화·컴파일러 백도어("Trusting Trust")*로 소스에 안 보이는 악성코드를 넣는다. 방어자는 **배포 산출물이 검토된 소스에서 재현가능하게 생성됐는가**를 검증해야 한다. 검증은 **소유 리포/빌드**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 신뢰 후 백도어 | 메인테이너 신뢰 | 다중 리뷰·서명 커밋 | 단독 머지·미서명 커밋 |
+| 빌드 단계 난독화 | 산출물≠소스 | 재현가능 빌드 | 빌드 산출물 diff |
+| GHA 워크플로 오염 | CI가 소스 변형 | 워크플로 리뷰·핀 | 빌드 중 소스 패치 |
+| 컴파일러 백도어 | 신뢰된 툴체인 | 부트스트랩·diverse 컴파일 | 동일소스 다른 바이너리 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 배포 tarball이 git 소스와 일치하는지(소스↔산출물 diff) — 추가/변형 파일이 백도어 신호
+diff -r <(git archive HEAD | tar -t | sort) <(tar -tzf dist-release.tgz | sed 's#^[^/]*/##' | sort) 2>/dev/null | head
+# 2) 미서명/단독 머지 커밋 표면(소유 리포) — 리뷰 우회 백도어 경로
+git log --no-merges --pretty='%h %G? %an %s' -20 | grep -vE ' [GU] ' | head
+```
+
+> 오픈소스 방어는 *산출물이 검토된 소스에서 나왔는가*다 — "빌드된다"와 "tarball이 git 소스와 일치하고 커밋이 서명·리뷰됐으며 빌드가 재현가능하다"는 다르다. 소유 리포/빌드에서 변경 출처를 직접 확인한다([[74_Code_Auditing]], [[18_DevSecOps]], [[59_Supply_Chain_Security]]).
+
+---
+
 <a name="english"></a>
 
 # Open Source Backdoor Insertion Techniques
@@ -2001,3 +2028,28 @@ if __name__ == "__main__":
 | CI/CD poisoning | SHA-pin all Actions; avoid pull_request_target with code checkout |
 | XZ-style | Check liblzma IFUNC resolvers; reproducible builds; alert on binary test files |
 | SolarWinds-style | Isolate build environments; sign and verify build artifacts; SLSA compliance |
+
+<!-- detect-validate-35 -->
+## Open-Source Backdoor Detection and Change-Provenance Validation
+
+Open-source backdoors hide malicious code from the source via *trust-then-malicious-commit, GHA workflow poisoning, build-stage obfuscation, and compiler backdoors ("Trusting Trust")*. Defenders must verify **whether release artifacts are reproducibly built from reviewed source**. Validate only on **owned repos/builds**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Trust then backdoor | Maintainer trust | Multi-review, signed commits | Solo merge, unsigned commit |
+| Build-stage obfuscation | Artifact != source | Reproducible build | Build-output diff |
+| GHA workflow poisoning | CI mutates source | Review/pin workflows | Source patched during build |
+| Compiler backdoor | Trusted toolchain | Bootstrap, diverse compile | Same source, different binary |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the release tarball matches git source (source<->artifact diff) — added/altered files signal a backdoor
+diff -r <(git archive HEAD | tar -t | sort) <(tar -tzf dist-release.tgz | sed 's#^[^/]*/##' | sort) 2>/dev/null | head
+# 2) Unsigned/solo-merge commit surface (owned repo) — review-bypass backdoor path
+git log --no-merges --pretty='%h %G? %an %s' -20 | grep -vE ' [GU] ' | head
+```
+
+> Open-source defense is *whether artifacts came from reviewed source* -- "it builds" differs from "the tarball matches git source, commits are signed/reviewed, and the build is reproducible". Confirm change provenance on owned repos/builds directly ([[74_Code_Auditing]], [[18_DevSecOps]], [[59_Supply_Chain_Security]]).

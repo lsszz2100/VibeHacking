@@ -1251,6 +1251,33 @@ Jenkins:
 
 ---
 
+<!-- detect-validate-35 -->
+## 빌드·CI 침해 탐지와 파이프라인 무결성 검증
+
+빌드/CI 침해는 *워크플로 오염·시크릿 탈취·빌드 캐시 포이즈닝·미고정 액션*으로 파이프라인에서 악성 산출물을 생성한다. 방어자는 **파이프라인이 최소권한이고 액션이 고정되며 산출물 프로비넌스가 있는가**를 검증해야 한다. 검증은 **소유 리포/파이프라인**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 워크플로 인젝션 | pull_request_target | 트리거·권한 최소화 | 신뢰외 PR이 시크릿 접근 |
+| 액션 미고정 | 가변 태그(@v1) | SHA 핀 | 태그가 SHA 아님 |
+| 시크릿 탈취 | 광역 토큰 | OIDC·범위 토큰 | 토큰이 외부로 송출 |
+| 캐시 포이즈닝 | 신뢰된 캐시 키 | 캐시 검증·격리 | 캐시 산출물 해시 변경 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 워크플로 액션이 SHA로 고정됐는지(소유 리포) — @v1/@main 가변 태그가 신호
+grep -rnE 'uses:\s+\S+@(v[0-9]+|main|master)\b' .github/workflows/ | head
+# 2) 토큰 권한이 광역인지 — permissions 미선언/write-all 이 과대권한 신호
+grep -rnE 'permissions:\s*(write-all)|pull_request_target' .github/workflows/ 2>/dev/null | head
+```
+
+> CI 방어는 *파이프라인이 최소권한·고정인가*다 — "워크플로가 돈다"와 "액션이 SHA로 고정되고 토큰이 범위 제한되며 신뢰외 PR이 시크릿에 못 닿는다"는 다르다. 소유 파이프라인에서 직접 확인한다([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[14_Cloud_Security]]).
+
+---
+
 <a name="english"></a>
 
 # 02 — Build Environment and CI/CD Pipeline Compromise
@@ -1446,3 +1473,28 @@ General:
   □ Retain build logs for audit (90+ days)
   □ Configure alerts for abnormal build times
 ```
+
+<!-- detect-validate-35 -->
+## Build/CI Compromise Detection and Pipeline-Integrity Validation
+
+Build/CI compromise produces malicious artifacts in the pipeline via *workflow poisoning, secret theft, build-cache poisoning, and unpinned actions*. Defenders must verify **whether the pipeline is least-privilege, actions are pinned, and artifacts have provenance**. Validate only on **owned repos/pipelines**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Workflow injection | pull_request_target | Minimize triggers/perms | Untrusted PR touches secrets |
+| Unpinned action | Mutable tag (@v1) | Pin to SHA | Tag is not a SHA |
+| Secret theft | Broad token | OIDC, scoped token | Token exfiltrated |
+| Cache poisoning | Trusted cache key | Validate/isolate cache | Cache artifact hash changed |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether workflow actions are pinned to SHA (owned repo) — @v1/@main mutable tags are the signal
+grep -rnE 'uses:\s+\S+@(v[0-9]+|main|master)\b' .github/workflows/ | head
+# 2) Whether token permissions are broad — missing permissions/write-all signals over-privilege
+grep -rnE 'permissions:\s*(write-all)|pull_request_target' .github/workflows/ 2>/dev/null | head
+```
+
+> CI defense is *whether the pipeline is least-privilege and pinned* -- "the workflow runs" differs from "actions are SHA-pinned, tokens are scoped, and untrusted PRs cannot reach secrets". Confirm on owned pipelines directly ([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[14_Cloud_Security]]).

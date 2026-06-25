@@ -580,6 +580,33 @@ jobs:
 
 ---
 
+<!-- detect-validate-35 -->
+## 공급망 방어 검증 (설정됨 ≠ 작동함)
+
+공급망 방어는 *SBOM·의존성 스캔·벤더 위험 관리·CI 보안*으로 구성된다. "도구를 도입했다"는 설정과 "취약/악성 컴포넌트를 실제로 차단한다"는 다르다 — 각 통제를 소유 빌드에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| SBOM | 모든 컴포넌트 망라? | SBOM↔락파일 일치 | 일부 의존성 누락 |
+| 의존성 스캔 | 게이트가 막나? | 취약 시 빌드 실패 | 리포트만, 비차단 |
+| 서명 검증 | 미서명 거부? | 서명 없으면 배포 거부 | 검증만, 미강제 |
+| 벤더 위험 | 신규 의존성 검토? | 신규 메인테이너 알림 | 자동 업데이트 무검토 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 의존성 스캔이 게이트로 작동하는지(소유 트리) — 취약 발견 시 비0 종료여야 함
+trivy fs --exit-code 1 --severity HIGH,CRITICAL . >/dev/null 2>&1; echo "exit=$?  (취약 시 1)"
+# 2) SBOM이 락파일을 망라하는지 — SBOM 미포함 의존성이 사각 신호
+comm -23 <(jq -r '.packages|keys[]' package-lock.json 2>/dev/null|sort -u) <(jq -r '.components[].name' sbom.json 2>/dev/null|sort -u) | head
+```
+
+> 공급망 방어는 *통제가 강제되는가*다 — "SBOM이 있다"와 "SBOM이 모든 의존성을 망라하고 취약 시 빌드가 실패하며 미서명 산출물이 거부된다"는 다르다. 각 통제를 소유 빌드에서 직접 검증한다([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).
+
+---
+
 <a name="english"></a>
 
 # Supply Chain Security Defense — SBOM, Dependency Scanning, Vendor Risk Management
@@ -635,3 +662,28 @@ python3 dep_confusion_check.py --internal-packages internal_package_list.txt
 - CycloneDX: https://cyclonedx.org/specification/overview/
 - SLSA: https://slsa.dev/
 - CISA Supply Chain: https://www.cisa.gov/supply-chain
+
+<!-- detect-validate-35 -->
+## Supply-Chain Defense Validation (Configured != Working)
+
+Supply-chain defense comprises *SBOM, dependency scanning, vendor risk management, and CI security*. "We adopted a tool" differs from "it actually blocks vulnerable/malicious components" -- validate each control on owned builds.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| SBOM | All components covered? | SBOM matches lockfile | Some deps missing |
+| Dependency scan | Does the gate block? | Build fails on vuln | Report only, non-blocking |
+| Signature verify | Unsigned rejected? | Deploy refused without sig | Verify but not enforce |
+| Vendor risk | New deps reviewed? | Alert on new maintainer | Auto-update unreviewed |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the dependency scan acts as a gate (owned tree) — should exit non-zero when vulns are found
+trivy fs --exit-code 1 --severity HIGH,CRITICAL . >/dev/null 2>&1; echo "exit=$?  (1 when vulnerable)"
+# 2) Whether the SBOM covers the lockfile — deps absent from SBOM are a blind spot signal
+comm -23 <(jq -r '.packages|keys[]' package-lock.json 2>/dev/null|sort -u) <(jq -r '.components[].name' sbom.json 2>/dev/null|sort -u) | head
+```
+
+> Supply-chain defense is *whether controls are enforced* -- "we have an SBOM" differs from "the SBOM covers every dependency, the build fails on a vuln, and unsigned artifacts are rejected". Validate each control on owned builds directly ([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).

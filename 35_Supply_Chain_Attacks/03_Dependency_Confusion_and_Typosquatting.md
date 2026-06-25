@@ -567,6 +567,33 @@ npm config set @company:registry https://artifactory.company.com/api/npm/npm/
 
 ---
 
+<!-- detect-validate-35 -->
+## 의존성 혼동·타이포스쿼팅 탐지와 네임스페이스 검증
+
+의존성 혼동·타이포스쿼팅은 *내부 패키지명 공개 노출·오타 패키지·버전 우선순위*를 악용해 빌드가 공격자 패키지를 끌어오게 한다. 방어자는 **내부명이 공개 레지스트리에서 해석되지 않고 스코프가 강제되는가**를 검증해야 한다. 검증은 **소유 빌드/레지스트리**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 의존성 혼동 | 공개>내부 우선 | 스코프·내부 미러 핀 | 공개서 내부명 해석 |
+| 타이포스쿼팅 | 오타 패키지 설치 | 락파일·허용목록 | 유사명 신규 의존성 |
+| 버전 선점 | 높은 버전 우선 | 정확 버전 핀 | 예상외 상위 버전 |
+| 네임스페이스 탈취 | 만료 스코프 | 스코프 소유 유지 | 미소유 스코프 설치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 내부 패키지명이 공개 레지스트리에 존재하는지(혼동 표면) — 200 이면 선점/혼동 위험
+for p in @myco/internal-utils myco-internal-config; do echo -n "$p: "; curl -s -o /dev/null -w '%{http_code}\n' "https://registry.npmjs.org/$p"; done
+# 2) 락파일 의존성 출처가 내부 미러로 고정됐는지 — 공개 registry.npmjs.org 잔존이 신호
+grep -nE 'resolved.*registry\.npmjs\.org' package-lock.json 2>/dev/null | head
+```
+
+> 혼동 방어는 *내부명이 공개로 새지 않는가*다 — "설치된다"와 "내부 스코프가 공개에서 해석 안 되고 버전이 핀되며 오타 의존성이 없다"는 다르다. 소유 빌드에서 네임스페이스 해석을 직접 확인한다([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).
+
+---
+
 <a name="english"></a>
 
 # Dependency Confusion Attacks and Typosquatting
@@ -686,3 +713,28 @@ Pre-register internal package names on PyPI/npm as empty/dummy packages to preve
 | Hash pinning | Specify hashes in `requirements.txt` |
 | Dependency auditing | Run `pip-audit`, `npm audit` regularly |
 | CI/CD verification | Generate SBOM and compare against allowlist |
+
+<!-- detect-validate-35 -->
+## Dependency-Confusion / Typosquatting Detection and Namespace Validation
+
+Dependency confusion and typosquatting abuse *exposed internal package names, typo packages, and version precedence* so the build pulls the attacker's package. Defenders must verify **whether internal names do not resolve on public registries and scoping is enforced**. Validate only on **owned builds/registries**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Dependency confusion | Public > internal | Scope, pin internal mirror | Internal name resolves public |
+| Typosquatting | Typo package installed | Lockfile, allowlist | New near-name dependency |
+| Version pre-emption | Higher version wins | Pin exact version | Unexpected higher version |
+| Namespace takeover | Expired scope | Keep scope ownership | Install from unowned scope |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether internal package names exist on the public registry (confusion surface) — 200 means pre-emption/confusion risk
+for p in @myco/internal-utils myco-internal-config; do echo -n "$p: "; curl -s -o /dev/null -w '%{http_code}\n' "https://registry.npmjs.org/$p"; done
+# 2) Whether lockfile dependency sources are pinned to the internal mirror — public registry.npmjs.org remaining is the signal
+grep -nE 'resolved.*registry\.npmjs\.org' package-lock.json 2>/dev/null | head
+```
+
+> Confusion defense is *whether internal names do not leak to public* -- "it installs" differs from "internal scopes do not resolve publicly, versions are pinned, and there are no typo deps". Confirm namespace resolution on owned builds directly ([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).
