@@ -1317,6 +1317,33 @@ for host_data in data:
 
 ---
 
+<!-- detect-validate-37 -->
+## ICS 정찰 탐지와 프로토콜 노출 검증
+
+ICS 정찰은 *Modbus/DNP3/IEC 61850/EtherNet-IP 스캐닝·Shodan 노출·S7 열거*로 제어 시스템을 식별한다. OT 프로토콜은 인증이 약하므로 방어자는 **제어망이 인터넷에 노출되지 않고 정찰 트래픽이 탐지되는가**를 검증해야 한다. 검증은 **소유 OT 랩/세그먼트**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| Modbus 스캔 | 인증 없는 질의 | 세그먼트·ACL | 외부발 502/tcp |
+| Shodan 노출 | 인터넷 직결 | OT 인터넷 차단 | 공개 OT 배너 |
+| 디바이스 열거 | 식별 정보 응답 | 패시브 모니터 | 비정상 식별 질의 |
+| 프로토콜 스캐닝 | 평문 프로토콜 | 수동 자산 인벤토리 | 신규 스캔 소스 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 OT 세그먼트가 외부에서 도달 가능한지 — Modbus/502 응답 시 노출 신호(소유 IP만)
+nmap -Pn -p 502,20000,44818,102 --open ot-lab.example.internal 2>/dev/null | grep -E 'open|502'
+# 2) OT 캡처에서 비인가 정찰/식별 질의 — 외부 소스의 디바이스 ID 읽기 신호
+tshark -r ot_capture.pcap -Y 'modbus.func_code==43 || mbtcp' -T fields -e ip.src 2>/dev/null | sort | uniq -c | head
+```
+
+> ICS 정찰 방어는 *제어망이 안 보이는가*다 — "PLC가 동작한다"와 "OT가 인터넷에 노출 안 되고 외부 정찰 질의가 패시브 모니터에 잡힌다"는 다르다. 소유 OT 랩에서 노출 표면을 직접 확인한다([[63_OT_ICS_Advanced]], [[02_Network_Hacking]], [[27_IoT_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # 01 — ICS Protocols Deep Dive and Reconnaissance
@@ -1450,3 +1477,28 @@ python3 modbus_scanner.py \
 - IEC 61850 Edition 2.0 (IEC TC57)
 - NIST SP 800-82 Rev.3: Guide to OT Security
 - Project Redpoint — Digital Bond (github.com/digitalbond/Redpoint)
+
+<!-- detect-validate-37 -->
+## ICS Recon Detection and Protocol-Exposure Validation
+
+ICS recon identifies control systems via *Modbus/DNP3/IEC 61850/EtherNet-IP scanning, Shodan exposure, and S7 enumeration*. OT protocols are weakly authenticated, so defenders must verify **whether the control network is not internet-exposed and recon traffic is detected**. Validate only on **owned OT labs/segments**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Modbus scan | Unauthenticated query | Segment, ACL | External 502/tcp |
+| Shodan exposure | Direct internet | Block OT internet | Public OT banner |
+| Device enumeration | Identity responses | Passive monitor | Anomalous identity query |
+| Protocol scanning | Plaintext protocol | Passive asset inventory | New scan source |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the owned OT segment is externally reachable — a Modbus/502 response signals exposure (owned IPs only)
+nmap -Pn -p 502,20000,44818,102 --open ot-lab.example.internal 2>/dev/null | grep -E 'open|502'
+# 2) Unauthorized recon/identity queries in OT capture — external-source device-ID reads are the signal
+tshark -r ot_capture.pcap -Y 'modbus.func_code==43 || mbtcp' -T fields -e ip.src 2>/dev/null | sort | uniq -c | head
+```
+
+> ICS recon defense is *whether the control network is invisible* -- "the PLC works" differs from "OT is not internet-exposed and external recon queries are caught by passive monitoring". Confirm the exposure surface on owned OT labs directly ([[63_OT_ICS_Advanced]], [[02_Network_Hacking]], [[27_IoT_Hacking]]).

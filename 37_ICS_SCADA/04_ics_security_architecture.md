@@ -724,6 +724,33 @@ IEC 62443 시리즈 구조:
 
 ---
 
+<!-- detect-validate-37 -->
+## ICS 보안 아키텍처 검증 (설정됨 ≠ 작동함)
+
+ICS 보안 아키텍처는 *네트워크 세분화·DMZ·OT 보안 솔루션·패치 전략·모니터링*으로 구성된다. "설계했다"는 다이어그램과 "세분화가 실제로 트래픽을 막는다"는 다르다 — 각 통제를 소유 OT 랩에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 네트워크 세분화 | 레벨 간 차단? | L3→L1 연결 거부 | 다이어그램만, 평면 실재 |
+| DMZ | 직접 통과 막나? | IT가 OT 직접 못 닿음 | DMZ 우회 경로 존재 |
+| OT 모니터링 | 이상 탐지·로깅? | 비정상 write 알람 | 패시브 탭 없음 |
+| 패치 전략 | 위험기반 적용? | 임계 취약 추적 | 무패치 방치 |
+
+### 아키텍처 검증 (직접 확인)
+
+```bash
+# 1) 소유 랩에서 L3 호스트가 L1 PLC에 직접 도달 가능한지 — 도달되면 세분화 미작동 신호
+nc -z -w2 plc-l1.ot.internal 502 2>&1 | grep -E 'succeeded|open' && echo "L3->L1 reachable (세분화 실패)"
+# 2) OT 모니터가 비정상 write를 잡는지(소유 캡처) — 알람 미발생이면 탭 미작동 신호
+tshark -r ot_capture.pcap -Y 'modbus.func_code==6' -T fields -e ip.src 2>/dev/null | sort -u | head
+```
+
+> ICS 아키텍처는 *세분화가 작동하는가*다 — "DMZ가 설계됐다"와 "L3가 L1에 직접 못 닿고 비정상 write가 모니터에 잡힌다"는 다르다. 각 통제를 소유 OT 랩에서 직접 검증한다([[63_OT_ICS_Advanced]], [[37_ICS_SCADA]], [[39_Zero_Trust_Architecture]]).
+
+---
+
 <a name="english"></a>
 
 # 04 — ICS Security Architecture and Defense Strategy
@@ -840,3 +867,28 @@ Security Levels (SL) 0–4: SL 0 (no requirements) through SL 4 (nation-state at
 - **ICS-CERT Advisory** — https://www.cisa.gov/ics-advisories
 - **Dragos Year In Review** — OT Threat Annual Report
 - **ENISA ICS/SCADA** — European OT Security Framework
+
+<!-- detect-validate-37 -->
+## ICS Security Architecture Validation (Configured != Working)
+
+ICS security architecture comprises *network segmentation, DMZ, OT security solutions, patch strategy, and monitoring*. "We designed it" differs from "segmentation actually blocks traffic" -- validate each control on owned OT labs.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Network segmentation | Levels blocked? | L3->L1 connection refused | Diagram only, flat in reality |
+| DMZ | Block direct pass? | IT cannot reach OT directly | DMZ-bypass path exists |
+| OT monitoring | Detect/log anomalies? | Alarm on abnormal write | No passive tap |
+| Patch strategy | Risk-based applied? | Critical vulns tracked | Left unpatched |
+
+### Architecture validation (verify directly)
+
+```bash
+# 1) Whether an L3 host can directly reach an L1 PLC on an owned lab — reachable signals segmentation does not work
+nc -z -w2 plc-l1.ot.internal 502 2>&1 | grep -E 'succeeded|open' && echo "L3->L1 reachable (segmentation failed)"
+# 2) Whether OT monitoring catches abnormal writes (owned capture) — no alarm signals the tap is not working
+tshark -r ot_capture.pcap -Y 'modbus.func_code==6' -T fields -e ip.src 2>/dev/null | sort -u | head
+```
+
+> ICS architecture is *whether segmentation works* -- "the DMZ is designed" differs from "L3 cannot reach L1 directly and abnormal writes are caught by monitoring". Validate each control on owned OT labs directly ([[63_OT_ICS_Advanced]], [[37_ICS_SCADA]], [[39_Zero_Trust_Architecture]]).

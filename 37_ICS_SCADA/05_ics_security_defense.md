@@ -544,6 +544,33 @@ def prioritize_ics_patches(assets: list[ICSTVAsset]) -> list[dict]:
 
 ---
 
+<!-- detect-validate-37 -->
+## ICS/SCADA 방어 검증 (설정됨 ≠ 작동함)
+
+ICS 방어는 *IEC 62443 아키텍처·OT 이상 탐지·데이터 다이오드(단방향 게이트웨이)·패치 관리*로 구성된다. "구축했다"는 설정과 "단방향이 실제로 역류를 막는다"는 다르다 — 각 방어를 소유 OT 랩에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 데이터 다이오드 | 역방향 막나? | OT→IT만, 역류 0 | 양방향 우회 존재 |
+| OT 이상 탐지 | 비정상 발화? | 테스트 주입 시 알람 | 룰만, 미발화 |
+| 존/컨듀잇(62443) | 경계 강제? | 비인가 컨듀잇 차단 | 문서상 존만 |
+| 패치 관리 | 위험기반 추적? | 임계 취약 SLA | 무기한 보류 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 데이터 다이오드 단방향성 검증(소유 랩) — IT→OT 역방향 연결은 실패해야 함
+nc -z -w2 ot-side.diode.internal 502 2>&1 | grep -qE 'succeeded|open' && echo "역류 가능 (다이오드 실패)" || echo "역방향 차단 OK"
+# 2) OT 이상 탐지 발화 검증 — 테스트 write 주입 후 알람 로그 확인(소유 모니터)
+grep -icE 'modbus write anomaly|unauthorized command' ot_monitor.log 2>/dev/null  # >0 이어야
+```
+
+> ICS 방어는 *통제가 강제되는가*다 — "데이터 다이오드가 있다"와 "IT→OT 역류가 0이고 비정상 write 주입 시 모니터가 알람을 낸다"는 다르다. 각 방어를 소유 OT 랩에서 직접 검증한다([[63_OT_ICS_Advanced]], [[39_Zero_Trust_Architecture]], [[40_Threat_Hunting]]).
+
+---
+
 <a name="english"></a>
 
 # ICS/SCADA Security Defense — IEC 62443, Network Segmentation, OT Monitoring
@@ -589,3 +616,28 @@ Zone 0: Physical Process (Sensors, Actuators)
 - IEC 62443 overview: https://www.isa.org/standards-and-publications/isa-standards/isa-iec-62443-series-of-standards
 - CISA ICS security: https://www.cisa.gov/ics
 - SANS ICS curriculum: https://www.sans.org/industrial-control-systems-security/
+
+<!-- detect-validate-37 -->
+## ICS/SCADA Defense Validation (Configured != Working)
+
+ICS defense comprises *IEC 62443 architecture, OT anomaly detection, data diodes (unidirectional gateways), and patch management*. "We built it" differs from "the unidirectional gateway actually blocks reverse flow" -- validate each defense on owned OT labs.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Data diode | Block reverse? | OT->IT only, 0 reverse | Bidirectional bypass exists |
+| OT anomaly detection | Fire on abnormal? | Alarm on test injection | Rules but no firing |
+| Zones/conduits (62443) | Enforce boundaries? | Unauthorized conduit blocked | Zones on paper only |
+| Patch management | Risk-based tracking? | Critical-vuln SLA | Indefinitely deferred |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify data-diode unidirectionality (owned lab) — an IT->OT reverse connection should fail
+nc -z -w2 ot-side.diode.internal 502 2>&1 | grep -qE 'succeeded|open' && echo "reverse possible (diode failed)" || echo "reverse blocked OK"
+# 2) Verify OT anomaly-detection firing — inject a test write, confirm an alarm log (owned monitor)
+grep -icE 'modbus write anomaly|unauthorized command' ot_monitor.log 2>/dev/null  # should be >0
+```
+
+> ICS defense is *whether controls are enforced* -- "we have a data diode" differs from "there is 0 IT->OT reverse flow and the monitor alarms on an injected abnormal write". Validate each defense on owned OT labs directly ([[63_OT_ICS_Advanced]], [[39_Zero_Trust_Architecture]], [[40_Threat_Hunting]]).

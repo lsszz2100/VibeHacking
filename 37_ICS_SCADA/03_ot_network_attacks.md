@@ -826,6 +826,33 @@ zeek -C -r ot_capture.pcap detect_modbus_writes.zeek
 
 ---
 
+<!-- detect-validate-37 -->
+## OT 네트워크 공격 탐지와 IT/OT 경계 검증
+
+OT 네트워크 공격은 *Purdue 계층 횡이동·IT/OT 경계 돌파·OT 악성코드·무선(WirelessHART)·GPS 스푸핑*으로 제어망에 침투한다. 방어자는 **계층 간 경계가 강제되고 횡이동이 탐지되는가**를 검증해야 한다. 검증은 **소유 OT 랩**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| IT/OT 횡이동 | 평면 경계 | DMZ·단방향 게이트 | IT→OT 직접 연결 |
+| Purdue 계층 건너뜀 | 세분화 부재 | 레벨별 ACL | L3→L1 직접 트래픽 |
+| OT 악성코드 | 신뢰된 프로토콜 | 앱 허용목록·모니터 | 비정상 OT 프로토콜 |
+| GPS/시계 스푸핑 | 시각 동기 신뢰 | 다중 시각원·홀드오버 | 시각 점프/이상 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 랩에서 IT→OT 경계 강제 검증 — DMZ 우회 직접 연결이 신호
+ss -tnp 2>/dev/null | awk '$5 ~ /10\.OT\./ && $4 ~ /10\.IT\./{print "IT->OT direct:",$0}' | head
+# 2) Purdue 레벨 위반 트래픽(소유 캡처) — L3 자산이 L1 PLC와 직접 통신하는 신호
+tshark -r ot_capture.pcap -Y 'modbus || s7comm' -T fields -e ip.src -e ip.dst 2>/dev/null | sort -u | head
+```
+
+> OT 네트워크 방어는 *계층 경계가 강제되는가*다 — "공정이 동작한다"와 "IT→OT 직접연결이 없고 Purdue 레벨 위반이 모니터에 잡힌다"는 다르다. 소유 OT 랩에서 경계를 직접 확인한다([[63_OT_ICS_Advanced]], [[39_Zero_Trust_Architecture]], [[02_Network_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # 03 — OT Network Attacks and Defense
@@ -910,3 +937,28 @@ An async OT network asset identification tool combining passive sniffing and act
 5. Incident response: dedicated OT IR team, "ensure process safety before isolation" principle
 
 *This document is for authorized penetration testing and educational purposes only.*
+
+<!-- detect-validate-37 -->
+## OT Network Attack Detection and IT/OT Boundary Validation
+
+OT network attacks penetrate the control network via *Purdue-layer lateral movement, IT/OT boundary breach, OT malware, wireless (WirelessHART), and GPS spoofing*. Defenders must verify **whether inter-layer boundaries are enforced and lateral movement is detected**. Validate only on **owned OT labs**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| IT/OT lateral | Flat boundary | DMZ, unidirectional gateway | Direct IT->OT connection |
+| Purdue level skip | No segmentation | Per-level ACL | L3->L1 direct traffic |
+| OT malware | Trusted protocol | App allowlist, monitor | Anomalous OT protocol |
+| GPS/clock spoofing | Time-sync trust | Multiple time sources, holdover | Time jump/anomaly |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify IT->OT boundary enforcement on an owned lab — a DMZ-bypassing direct connection is the signal
+ss -tnp 2>/dev/null | awk '$5 ~ /10\.OT\./ && $4 ~ /10\.IT\./{print "IT->OT direct:",$0}' | head
+# 2) Purdue-level-violating traffic (owned capture) — an L3 asset talking directly to an L1 PLC is the signal
+tshark -r ot_capture.pcap -Y 'modbus || s7comm' -T fields -e ip.src -e ip.dst 2>/dev/null | sort -u | head
+```
+
+> OT network defense is *whether layer boundaries are enforced* -- "the process runs" differs from "there is no direct IT->OT connection and Purdue-level violations are caught by monitoring". Confirm boundaries on owned OT labs directly ([[63_OT_ICS_Advanced]], [[39_Zero_Trust_Architecture]], [[02_Network_Hacking]]).
