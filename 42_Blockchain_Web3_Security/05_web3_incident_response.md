@@ -527,6 +527,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-42 -->
+## Web3 사고 대응 검증 (설정됨 ≠ 작동함)
+
+Web3 사고 대응은 *온체인 포렌식·피해 확산 차단·복구·거래소 협조*로 구성된다. "대응 절차가 있다"는 문서와 "추적·차단이 실제로 작동한다"는 다르다 — 각 절차를 소유 자산/테스트넷에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 온체인 추적 | 자금 흐름 따라가나? | 공격자 주소→믹서 경로 | 단일 hop만 |
+| 긴급 정지 | pause 작동하나? | 컨트랙트 정지 즉시 반영 | pause 권한 부재 |
+| 자금 동결 | 차단 가능? | 토큰 freeze/blacklist | 불변 토큰 미차단 |
+| 증거 보존 | tx 무결성? | 블록 해시 고정 보존 | 스크린샷만 |
+
+### 대응 검증 (직접 확인)
+
+```bash
+# 1) 소유 컨트랙트에 긴급 정지 경로가 있는지 — pause/circuit breaker 부재면 차단 불가 신호
+grep -rnE 'function pause|whenNotPaused|circuitBreaker|emergencyStop' contracts/ | head || echo "긴급정지 경로 미발견(대응 갭)"
+# 2) 온체인 자금 흐름 추적(소유/테스트 주소) — 공격자→믹서 다중 hop 경로 보존
+cast logs --from-block latest --address 0xVICTIM 'Transfer(address,address,uint256)' 2>/dev/null | head
+```
+
+> Web3 사고 대응은 *추적·차단이 작동하는가*다 — "IR 절차가 있다"와 "자금 흐름이 추적되고 긴급 정지가 즉시 반영되며 tx 증거가 보존된다"는 다르다. 각 절차를 소유 자산/테스트넷에서 직접 검증한다([[44_Incident_Response_DFIR]], [[07_Digital_Forensics]], [[12_Bug_Bounty]]).
+
+---
+
 <a name="english"></a>
 
 # Web3 Incident Response
@@ -696,3 +723,28 @@ Calculate total losses in ETH and tokens, generate incident report including att
 5. Legal basis (police report number, etc.)
 6. Contact information and affiliated legal entity
 ```
+
+<!-- detect-validate-42 -->
+## Web3 Incident Response Validation (Configured != Working)
+
+Web3 incident response comprises *on-chain forensics, blast-radius containment, recovery, and exchange cooperation*. "We have a procedure" differs from "tracing/containment actually works" -- validate each step on owned assets/testnets.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| On-chain tracing | Follow fund flow? | Attacker addr -> mixer path | Single hop only |
+| Emergency stop | Does pause work? | Contract halts immediately | No pause authority |
+| Fund freezing | Can block? | Token freeze/blacklist | Immutable token uncontainable |
+| Evidence preservation | Tx integrity? | Block hash fixed/preserved | Screenshots only |
+
+### Response validation (verify directly)
+
+```bash
+# 1) Whether the owned contract has an emergency-stop path — absent pause/circuit breaker signals no containment
+grep -rnE 'function pause|whenNotPaused|circuitBreaker|emergencyStop' contracts/ | head || echo "no emergency-stop path found (response gap)"
+# 2) On-chain fund-flow tracing (owned/test address) — preserve the attacker->mixer multi-hop path
+cast logs --from-block latest --address 0xVICTIM 'Transfer(address,address,uint256)' 2>/dev/null | head
+```
+
+> Web3 incident response is *whether tracing/containment works* -- "we have an IR procedure" differs from "fund flow is traced, emergency stop takes effect immediately, and tx evidence is preserved". Validate each step on owned assets/testnets directly ([[44_Incident_Response_DFIR]], [[07_Digital_Forensics]], [[12_Bug_Bounty]]).

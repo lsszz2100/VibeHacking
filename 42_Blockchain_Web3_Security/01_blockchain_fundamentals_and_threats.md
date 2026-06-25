@@ -463,6 +463,33 @@ python analyzer.py detect 0xabc123... --json
 
 ---
 
+<!-- detect-validate-42 -->
+## 블록체인 위협 탐지와 노드/트랜잭션 무결성 검증
+
+블록체인 위협 모델은 *네트워크 레벨 공격(이클립스·시빌·라우팅)·트랜잭션 변조·노드 노출*을 다룬다. 방어자는 **노드가 안전 구성되고 비정상 피어/트랜잭션이 탐지되는가**를 검증해야 한다. 검증은 **소유 노드/테스트넷**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 이클립스 공격 | 피어 다양성 부족 | 고정 피어·다양화 | 단일 ASN 피어 집중 |
+| 시빌 공격 | 신원 비용 낮음 | 평판·스테이크 | 신규 노드 폭증 |
+| RPC 노출 | 인증 없는 RPC | 인증·바인드 제한 | 외부서 eth_* 호출 |
+| 트랜잭션 변조 | 서명 검증 부재 | 서명·논스 검증 | 비정상 nonce/from |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 노드 RPC가 외부에 노출됐는지 — 인증 없이 eth_accounts 응답 시 노출 신호
+curl -s -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":1}' http://node.internal:8545 2>/dev/null | head -c 200; echo
+# 2) 피어 다양성 점검(소유 노드) — 단일 ASN/IP 대역 집중이 이클립스 표면 신호
+curl -s -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"admin_peers","params":[],"id":1}' http://node.internal:8545 2>/dev/null | jq -r '.result[]?.network.remoteAddress' 2>/dev/null | cut -d: -f1 | sort | uniq -c | sort -rn | head
+```
+
+> 블록체인 방어는 *노드/트랜잭션이 안전한가*다 — "체인이 동기화된다"와 "RPC가 인증되고 피어가 다양하며 비정상 nonce가 탐지된다"는 다르다. 소유 노드/테스트넷에서 직접 확인한다([[02_Network_Hacking]], [[16_Cryptography]], [[12_Bug_Bounty]]).
+
+---
+
 <a name="english"></a>
 
 # Blockchain Fundamentals and Threat Models
@@ -658,3 +685,28 @@ python analyzer.py detect 0xabc123... --json
 | Transaction malleability | None | TxID forgery | Low since SegWit |
 | MEV/front-running | Operating MEV bots | User losses | Currently high |
 | Smart contract vulnerabilities | Code analysis skills | Fund theft | High |
+
+<!-- detect-validate-42 -->
+## Blockchain Threat Detection and Node/Transaction Integrity Validation
+
+The blockchain threat model covers *network-level attacks (eclipse, Sybil, routing), transaction tampering, and node exposure*. Defenders must verify **whether nodes are securely configured and anomalous peers/transactions are detected**. Validate only on **owned nodes/testnets**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Eclipse attack | Low peer diversity | Static/diverse peers | Single-ASN peer concentration |
+| Sybil attack | Cheap identity | Reputation, stake | New-node surge |
+| RPC exposure | Unauthenticated RPC | Auth, bind restriction | External eth_* calls |
+| Transaction tampering | No signature check | Signature/nonce verify | Anomalous nonce/from |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the owned node RPC is externally exposed — an eth_accounts response without auth signals exposure
+curl -s -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":1}' http://node.internal:8545 2>/dev/null | head -c 200; echo
+# 2) Peer-diversity check (owned node) — single-ASN/IP-range concentration signals an eclipse surface
+curl -s -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"admin_peers","params":[],"id":1}' http://node.internal:8545 2>/dev/null | jq -r '.result[]?.network.remoteAddress' 2>/dev/null | cut -d: -f1 | sort | uniq -c | sort -rn | head
+```
+
+> Blockchain defense is *whether nodes/transactions are safe* -- "the chain syncs" differs from "RPC is authenticated, peers are diverse, and anomalous nonces are detected". Confirm on owned nodes/testnets directly ([[02_Network_Hacking]], [[16_Cryptography]], [[12_Bug_Bounty]]).

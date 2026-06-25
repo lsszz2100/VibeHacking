@@ -1125,6 +1125,33 @@ cast call TOKEN_ADDRESS "owner()(address)" --rpc-url https://mainnet.infura.io/v
 
 ---
 
+<!-- detect-validate-42 -->
+## DeFi 공격 탐지와 경제적 불변식 검증
+
+DeFi 공격은 *플래시론·오라클 가격 조작·MEV(샌드위치/프런트런)*로 프로토콜의 경제 가정을 깬다. 방어자는 **가격 출처가 견고하고 불변식이 보장되는가**를 검증해야 한다. 검증은 **소유 프로토콜/포크 테스트넷**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 플래시론 공격 | 원자적 대량 자금 | 불변식·시간가중 | 단일 tx 대량 차입+상환 |
+| 오라클 조작 | 스팟 가격 의존 | TWAP·다중 오라클 | 가격 급변 후 청산 |
+| 샌드위치(MEV) | 멤풀 노출 | 슬리피지·프라이빗 풀 | 전후 끼임 거래 |
+| 가격 불변식 위반 | k 불변식 깨짐 | 사후 불변식 검사 | 풀 잔고 비정상 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 프로토콜이 스팟 가격에 직접 의존하는지(조작 표면) — getReserves/spot 사용이 신호
+slither contracts/ 2>/dev/null | grep -iE 'getReserves|spot price|block.timestamp' | head; grep -rn 'getReserves' contracts/ | head
+# 2) 포크 테스트넷에서 플래시론 불변식 위반 재현 — 공격 후 풀 불변식 깨지면 취약 신호
+forge test --match-test testFlashLoanInvariant -vv 2>/dev/null | grep -iE 'PASS|FAIL|invariant' | head
+```
+
+> DeFi 방어는 *경제 불변식이 보장되는가*다 — "스왑이 동작한다"와 "가격이 TWAP/다중 오라클이고 플래시론 후 불변식이 유지된다"는 다르다. 소유 프로토콜/포크에서 불변식을 직접 검증한다([[12_Bug_Bounty]], [[16_Cryptography]], [[30_Vulnerability_Research]]).
+
+---
+
 <a name="english"></a>
 
 # DeFi Protocol Attack Techniques
@@ -2137,3 +2164,28 @@ Safe pattern (Checks-Effects-Interactions):
     - Delegated signing authority has revocation mechanism
     - Monitoring alerts for large unexpected withdrawals
 ```
+
+<!-- detect-validate-42 -->
+## DeFi Attack Detection and Economic-Invariant Validation
+
+DeFi attacks break a protocol's economic assumptions via *flash loans, oracle price manipulation, and MEV (sandwich/front-run)*. Defenders must verify **whether the price source is robust and invariants hold**. Validate only on **owned protocols/forked testnets**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Flash-loan attack | Atomic bulk capital | Invariants, time-weighting | Single-tx bulk borrow+repay |
+| Oracle manipulation | Spot-price dependence | TWAP, multiple oracles | Liquidation after price swing |
+| Sandwich (MEV) | Mempool exposure | Slippage, private pool | Front/back-run trades |
+| Price-invariant break | k-invariant broken | Post-state invariant check | Abnormal pool balance |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the owned protocol depends directly on spot price (manipulation surface) — getReserves/spot usage is the signal
+slither contracts/ 2>/dev/null | grep -iE 'getReserves|spot price|block.timestamp' | head; grep -rn 'getReserves' contracts/ | head
+# 2) Reproduce a flash-loan invariant break on a forked testnet — a broken pool invariant after attack signals a vuln
+forge test --match-test testFlashLoanInvariant -vv 2>/dev/null | grep -iE 'PASS|FAIL|invariant' | head
+```
+
+> DeFi defense is *whether economic invariants hold* -- "swaps work" differs from "price uses TWAP/multiple oracles and invariants survive a flash loan". Validate invariants on owned protocols/forks directly ([[12_Bug_Bounty]], [[16_Cryptography]], [[30_Vulnerability_Research]]).

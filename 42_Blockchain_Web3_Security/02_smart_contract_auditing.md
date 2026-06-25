@@ -550,6 +550,33 @@ forge test -vvv --match-test test_reentrancy
 
 ---
 
+<!-- detect-validate-42 -->
+## 스마트 컨트랙트 취약점 탐지와 악용가능성 검증
+
+스마트 컨트랙트 감사는 *재진입·정수 오버플로·접근제어·언체크 외부호출(SWC)*을 Slither/Foundry로 찾는다. 정적 도구 결과는 오탐이 많으므로 분석자는 **발견이 실제 도달·악용 가능한지**를 검증해야 한다. 검증은 **소유 컨트랙트/포크 테스트넷**에서만.
+
+### 취약점 → 노리는 약점 → 1차 통제 → 검증(악용가능성)
+
+| 취약점 | 노리는 약점 | 1차 통제 | 검증(악용가능성) |
+|---|---|---|---|
+| 재진입 | 상태변경 전 외부호출 | CEI·nonReentrant | PoC로 자금 인출 재현 |
+| 접근제어 누락 | 권한 검사 부재 | onlyOwner·역할 | 비권한 계정 호출 성공 |
+| 언체크 외부호출 | 반환값 무시 | require 검사 | 실패호출 무시 재현 |
+| 정수 문제 | 오버/언더플로 | SafeMath·^0.8 | 경계값 PoC |
+
+### 감사 검증 (직접 확인)
+
+```bash
+# 1) 소유 컨트랙트 정적 분석 — 재진입/접근제어 발견 후 도달성 판단(오탐 제거)
+slither contracts/Vault.sol --detect reentrancy-eth,arbitrary-send-eth 2>/dev/null | grep -iE 'reentrancy|arbitrary' | head
+# 2) 발견을 PoC로 악용 재현 — 포크 테스트넷에서 익스플로잇 테스트가 통과하면 실제 취약 신호
+forge test --match-test testReentrancyExploit -vv 2>/dev/null | grep -iE 'PASS|FAIL|\[' | head
+```
+
+> 컨트랙트 감사는 *발견이 악용 가능한가*다 — "Slither가 경고했다"와 "그 경로가 도달 가능하고 PoC로 자금이 빠진다"는 다르다. 소유 컨트랙트/포크에서 악용가능성을 직접 검증한다([[12_Bug_Bounty]], [[74_Code_Auditing]], [[30_Vulnerability_Research]]).
+
+---
+
 <a name="english"></a>
 
 # Smart Contract Auditing
@@ -709,3 +736,28 @@ forge test -vvv --match-test test_reentrancy
 | Randomness | block.timestamp/blockhash dependency | Slither (weak-prng) |
 | Events | Key state change events emitted | Manual review |
 | Input validation | Zero address check, range validation | Manual review |
+
+<!-- detect-validate-42 -->
+## Smart-Contract Vulnerability Detection and Exploitability Validation
+
+Smart-contract auditing finds *reentrancy, integer overflow, access control, and unchecked external calls (SWC)* with Slither/Foundry. Static-tool results are noisy, so the analyst must verify **whether a finding is actually reachable and exploitable**. Validate only on **owned contracts/forked testnets**.
+
+### Vulnerability -> Targeted weakness -> Primary control -> Validation (exploitability)
+
+| Vulnerability | Targeted weakness | Primary control | Validation (exploitability) |
+|---|---|---|---|
+| Reentrancy | External call before state change | CEI, nonReentrant | Reproduce fund drain via PoC |
+| Missing access control | No authorization check | onlyOwner, roles | Unauthorized account call succeeds |
+| Unchecked external call | Ignored return value | require check | Reproduce ignored failed call |
+| Integer issue | Over/underflow | SafeMath, ^0.8 | Boundary-value PoC |
+
+### Audit validation (verify directly)
+
+```bash
+# 1) Static analysis on an owned contract — judge reachability after a reentrancy/access finding (remove FPs)
+slither contracts/Vault.sol --detect reentrancy-eth,arbitrary-send-eth 2>/dev/null | grep -iE 'reentrancy|arbitrary' | head
+# 2) Reproduce the finding as a PoC — a passing exploit test on a forked testnet signals a real vulnerability
+forge test --match-test testReentrancyExploit -vv 2>/dev/null | grep -iE 'PASS|FAIL|\[' | head
+```
+
+> Contract auditing is *whether a finding is exploitable* -- "Slither warned" differs from "that path is reachable and a PoC drains funds". Validate exploitability on owned contracts/forks directly ([[12_Bug_Bounty]], [[74_Code_Auditing]], [[30_Vulnerability_Research]]).
