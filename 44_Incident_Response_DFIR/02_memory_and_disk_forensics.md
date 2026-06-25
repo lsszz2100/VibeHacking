@@ -423,6 +423,31 @@ psort.py timeline.plaso "date > '2026-01-01' AND date < '2026-01-31'"
 | MFT | `C:\$MFT` | 파일 시스템 메타데이터 |
 | VSS | `\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy*` | 볼륨 섀도 복사본 |
 
+<!-- detect-validate-44 -->
+## 포렌식 증거 검증 — 무결성과 반-포렌식 탐지
+
+메모리/디스크 포렌식은 *덤프를 떴는가*가 아니라 **증거 무결성(해시·쓰기방지)이 유지되고 반-포렌식 흔적을 탐지하는가**로 신뢰된다. 검증은 **소유·승인 증거**에서만.
+
+### 항목 → 위험 → 검증 방법 → 신뢰 신호
+
+| 항목 | 위험 | 검증 방법 | 신뢰 신호 |
+|---|---|---|---|
+| 무결성 | 수집 후 변조 | 수집 전후 해시 | 해시 일치 |
+| 쓰기 방지 | 원본 오염 | ro 마운트/write-blocker | 원본 불변 |
+| 반-포렌식 | 타임스톰핑 | $MFT vs $STDINFO 비교 | 시간 불일치 탐지 |
+| 휘발성 순서 | 메모리 증발 | 수집 순서 기록 | 휘발성 우선 수집 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 수집 이미지의 무결성 해시가 수집 시점 기록과 일치하는지 — 소유 증거에서
+sha256sum evidence.dd; cat evidence.dd.sha256   # 두 값이 일치해야 무결
+# 2) 디스크 이미지를 읽기전용으로 마운트해 원본 오염을 방지하는지
+mount | grep -E 'loop.*\bro\b' || echo "WARN: 읽기전용 마운트 아님"
+```
+
+> 검증은 반드시 **소유·승인 증거**에서만 한다. "덤프를 떴다"와 "무결성이 유지되고 반-포렌식이 탐지된다"는 다르다 — 해시·ro 마운트·타임스톰핑을 직접 확인한다([[07_Digital_Forensics]], [[47_Mobile_Forensics]]).
+
 ---
 
 <a name="english"></a>
@@ -773,3 +798,28 @@ psort.py timeline.plaso "date > '2026-01-01' AND date < '2026-01-31'"
 | Event Logs | `C:\Windows\System32\winevt\Logs\` | Windows events |
 | MFT | `C:\$MFT` | File system metadata |
 | VSS | `\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy*` | Volume Shadow Copies |
+
+<!-- detect-validate-44 -->
+## Forensic-Evidence Validation — Integrity and Anti-Forensics Detection
+
+Memory/disk forensics is trusted not by *whether you took a dump* but by **whether evidence integrity (hash, write-block) is preserved and anti-forensic traces are detected**. Validate only on **owned / authorized evidence**.
+
+### Item -> Risk -> Validation method -> Trust signal
+
+| Item | Risk | Validation method | Trust signal |
+|---|---|---|---|
+| Integrity | Tamper after capture | Pre/post-capture hash | Hashes match |
+| Write protection | Original contamination | ro mount/write-blocker | Original immutable |
+| Anti-forensics | Timestomping | Compare $MFT vs $STDINFO | Time mismatch detected |
+| Volatility order | Memory evaporates | Record capture order | Volatile captured first |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the captured image's integrity hash matches the recorded capture-time hash — owned evidence
+sha256sum evidence.dd; cat evidence.dd.sha256   # the two must match for integrity
+# 2) Whether the disk image is mounted read-only to prevent original contamination
+mount | grep -E 'loop.*\bro\b' || echo "WARN: not mounted read-only"
+```
+
+> Validate only on **owned / authorized evidence**. "Took a dump" differs from "integrity preserved and anti-forensics detected" — confirm hash, ro-mount, and timestomping directly ([[07_Digital_Forensics]], [[47_Mobile_Forensics]]).

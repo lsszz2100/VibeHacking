@@ -491,6 +491,31 @@ P4 알림 접수
                                    └→ CEO + 법무팀 + (필요 시) 당국
 ```
 
+<!-- detect-validate-44 -->
+## IR 실행 검증 — 플레이북이 실제로 작동하는가
+
+IR 플레이북은 *문서로 존재하는가*가 아니라 **인시던트 시 실제 실행되고, 타임라인·의사결정이 증적으로 남는가**로 판정한다. 테이블탑/실주입으로 검증한다. 검증은 **소유 환경**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 플레이북 실행성 | 책상 위 문서 | 테이블탑 훈련 | 단계별 담당·시간 충족 |
+| 분류 정확도 | 오분류 | 샘플 인시던트 분류 | 심각도 일관 |
+| 타임라인 무결성 | 시간 왜곡 | UTC·소스시간 정렬 | 단일 타임라인 일관 |
+| 에스컬레이션 | 통지 지연 | 연락망 검증 | SLA 내 통지 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 인시던트 타임라인이 단일 기준(UTC)으로 정렬되는지 — 소유 로그에서 시간왜곡 점검
+journalctl --since '-1d' -o short-iso-precise 2>/dev/null | head -3   # 타임존/단조성 확인
+# 2) 플레이북에 단계별 담당·SLA가 명시돼 실행 가능한지
+grep -rEni 'owner|sla|escalat' playbooks/ | head
+```
+
+> 검증은 반드시 **소유 환경**에서만 한다. "플레이북이 있다"와 "인시던트 시 실제 실행된다"는 다르다 — 테이블탑과 타임라인 무결성으로 직접 확인한다([[58_Cloud_IR]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -911,3 +936,28 @@ P4 Alert Received
                              └── Confirmed P1
                                    └→ CEO + Legal Team + Authorities (if needed)
 ```
+
+<!-- detect-validate-44 -->
+## IR-Execution Validation — Does the Playbook Actually Work?
+
+An IR playbook is judged not by *whether it exists as a document* but by **whether it actually executes during an incident with timeline and decisions captured as evidence**. Validate via tabletop / live injection. Validate only on **owned environments**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Playbook executability | Shelf document | Tabletop exercise | Per-step owner/time met |
+| Classification accuracy | Misclassification | Classify sample incident | Consistent severity |
+| Timeline integrity | Time skew | UTC/source-time align | One consistent timeline |
+| Escalation | Notification delay | Verify contact tree | Notify within SLA |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the incident timeline aligns to a single basis (UTC) — check time skew in owned logs
+journalctl --since '-1d' -o short-iso-precise 2>/dev/null | head -3   # check timezone/monotonicity
+# 2) Whether the playbook names per-step owner/SLA so it is executable
+grep -rEni 'owner|sla|escalat' playbooks/ | head
+```
+
+> Validate only on **owned environments**. "A playbook exists" differs from "it actually executes during an incident" — confirm via tabletop and timeline integrity directly ([[58_Cloud_IR]], [[13_SOC_Blue_Team]]).

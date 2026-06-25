@@ -624,6 +624,31 @@ Why 5: 왜 인력이 부족한가?
 | P3 | 오프라인 백업 구성 | 중간 | 스토리지 | 1개월 |
 | P3 | 직원 피싱 인식 교육 | 낮음 | 낮음 | 분기별 |
 
+<!-- detect-validate-44 -->
+## 격리·박멸 검증 — 위협이 실제로 제거됐는가
+
+격리·박멸은 *조치를 했는가*가 아니라 **지속성이 실제 제거되고 재감염이 없는가**로 판정한다. 알려진 지속성 위치를 재확인한다. 검증은 **소유 시스템**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 네트워크 격리 | 부분 격리 | 연결성 재확인 | 외부 통신 0 |
+| 지속성 박멸 | 잔존 백도어 | 지속성 위치 점검 | autostart/cron 정상 |
+| 재감염 | 근본원인 잔존 | IOC 재출현 모니터 | 동일 IOC 재출현 0 |
+| 복구 검증 | 오염 백업 | 백업 무결성 | 클린 시점 복원 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 박멸 후 지속성(크론/서비스/autostart)에 잔존 백도어가 없는지 — 소유 시스템에서
+{ crontab -l 2>/dev/null; ls -la /etc/cron.* 2>/dev/null; systemctl list-unit-files --state=enabled 2>/dev/null; } | grep -iE '/tmp/|/dev/shm|base64|curl|wget' | head
+# 2) 격리 후 의심 호스트가 외부와 통신하지 못하는지(컨테인먼트 확인)
+ss -tnp 2>/dev/null | awk '$5 !~ /^(10\.|192\.168\.|127\.)/{print}' | head
+```
+
+> 검증은 반드시 **소유 시스템**에서만 한다. "조치를 했다"와 "지속성이 실제 제거됐다"는 다르다 — 지속성 위치·외부통신을 직접 재확인한다([[06_Malware_Analysis]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -972,3 +997,28 @@ Improvement Direction: Establish CISO role, increase security budget, GPO harden
 | P2 | Enterprise-wide EDR deployment | High | Medium | 3 months |
 | P3 | Offline backup configuration | Medium | Storage | 1 month |
 | P3 | Employee phishing awareness training | Low | Low | Quarterly |
+
+<!-- detect-validate-44 -->
+## Containment/Eradication Validation — Is the Threat Actually Removed?
+
+Containment/eradication is judged not by *whether an action was taken* but by **whether persistence is actually removed with no reinfection**. Re-check known persistence locations. Validate only on **owned systems**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Network isolation | Partial isolation | Re-check connectivity | Zero external comms |
+| Persistence eradication | Residual backdoor | Inspect persistence spots | autostart/cron clean |
+| Reinfection | Root cause remains | Monitor IOC reappearance | Zero same-IOC reappearance |
+| Recovery validation | Tainted backup | Backup integrity | Restore to clean point |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether persistence (cron/service/autostart) has no residual backdoor after eradication — owned systems
+{ crontab -l 2>/dev/null; ls -la /etc/cron.* 2>/dev/null; systemctl list-unit-files --state=enabled 2>/dev/null; } | grep -iE '/tmp/|/dev/shm|base64|curl|wget' | head
+# 2) Whether the isolated suspect host cannot talk to the outside (containment check)
+ss -tnp 2>/dev/null | awk '$5 !~ /^(10\.|192\.168\.|127\.)/{print}' | head
+```
+
+> Validate only on **owned systems**. "An action was taken" differs from "persistence is actually removed" — re-check persistence spots and external comms directly ([[06_Malware_Analysis]], [[13_SOC_Blue_Team]]).

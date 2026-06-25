@@ -603,6 +603,31 @@ event.code: "4624" AND winlog.event_data.LogonType: "3" AND NOT source.ip: "10.0
 event.code: "4698" AND winlog.event_data.TaskContent: *powershell*
 ```
 
+<!-- detect-validate-44 -->
+## 네트워크 증거 검증 — IOC가 실제 C2를 가리키는가
+
+네트워크 포렌식은 *패킷을 봤는가*가 아니라 **추출한 IOC가 실제 악성 통신을 가리키고 재현 가능한가**로 신뢰된다. 정상 베이스라인과 대조한다. 검증은 **소유 캡처**에서만.
+
+### 항목 → 위험 → 검증 방법 → 신뢰 신호
+
+| 항목 | 위험 | 검증 방법 | 신뢰 신호 |
+|---|---|---|---|
+| IOC 정확도 | 정상 오탐 | 베이스라인 대조 | 정상엔 미존재 |
+| C2 식별 | 우연 일치 | 비콘 주기 분석 | 규칙적 비콘 |
+| 로그 완전성 | 누락 구간 | 시퀀스/갭 확인 | 연속 캡처 |
+| 시간 동기 | NTP 미동기 | 소스 시간 정렬 | 단일 타임라인 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 추출한 C2 IP/도메인이 정상 트래픽엔 없는지(오탐 배제) — 소유 캡처에서
+tshark -r owned.pcap -Y 'ip.addr==SUSPECT_IP' -T fields -e frame.time -e ip.dst 2>/dev/null | head
+# 2) 비콘 주기성(C2 신호) — 동일 목적지로의 간격이 규칙적인지
+tshark -r owned.pcap -Y 'ip.dst==SUSPECT_IP' -T fields -e frame.time_epoch 2>/dev/null | awk 'NR>1{print $1-p} {p=$1}' | head
+```
+
+> 검증은 반드시 **소유 캡처**에서만 한다. "패킷을 봤다"와 "IOC가 실제 C2를 가리킨다"는 다르다 — 베이스라인 대조·비콘 주기로 직접 확인한다([[40_Threat_Hunting]], [[06_Malware_Analysis]]).
+
 ---
 
 <a name="english"></a>
@@ -1079,3 +1104,28 @@ event.code: "4624" AND winlog.event_data.LogonType: "3" AND NOT source.ip: "10.0
 # Suspicious scheduled tasks
 event.code: "4698" AND winlog.event_data.TaskContent: *powershell*
 ```
+
+<!-- detect-validate-44 -->
+## Network-Evidence Validation — Does the IOC Actually Point to C2?
+
+Network forensics is trusted not by *whether you looked at packets* but by **whether the extracted IOC actually points to malicious comms and is reproducible**. Compare against a normal baseline. Validate only on **owned captures**.
+
+### Item -> Risk -> Validation method -> Trust signal
+
+| Item | Risk | Validation method | Trust signal |
+|---|---|---|---|
+| IOC accuracy | Normal false positive | Compare baseline | Absent in normal |
+| C2 identification | Coincidental match | Beacon-interval analysis | Regular beacon |
+| Log completeness | Missing window | Sequence/gap check | Continuous capture |
+| Time sync | NTP unsynced | Align source time | One timeline |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the extracted C2 IP/domain is absent in normal traffic (excludes false positive) — owned capture
+tshark -r owned.pcap -Y 'ip.addr==SUSPECT_IP' -T fields -e frame.time -e ip.dst 2>/dev/null | head
+# 2) Beacon periodicity (C2 signal) — whether intervals to the same destination are regular
+tshark -r owned.pcap -Y 'ip.dst==SUSPECT_IP' -T fields -e frame.time_epoch 2>/dev/null | awk 'NR>1{print $1-p} {p=$1}' | head
+```
+
+> Validate only on **owned captures**. "Looked at packets" differs from "the IOC actually points to C2" — confirm via baseline comparison and beacon periodicity directly ([[40_Threat_Hunting]], [[06_Malware_Analysis]]).
