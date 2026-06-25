@@ -1164,6 +1164,33 @@ python can_analyzer.py replay --interface vcan0 --input capture.csv --rate 0.5
 
 ---
 
+<!-- detect-validate-36 -->
+## CAN 버스 공격 탐지와 메시지 무결성 검증
+
+CAN 버스 공격은 *메시지 인젝션·스푸핑·재생·버스 플러딩(DoS)*으로 차량 기능을 조작한다. CAN은 인증·암호화가 없으므로 방어자는 **이상 메시지가 탐지되고 정당 ECU만 송신하는가**를 검증해야 한다. 검증은 **소유 차량/벤치/시뮬레이터**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| 메시지 인젝션 | 송신자 인증 부재 | CAN IDS·MAC | 비정상 ID 출현 |
+| 스푸핑 | ID 위조 가능 | 송신측 동기·물리지문 | 동일 ID 이중 송신 |
+| 재생 공격 | 카운터/논스 부재 | 롤링 카운터·MAC | 카운터 정체/역행 |
+| 버스 플러딩 | 우선순위 중재 | 레이트 모니터 | 특정 ID 폭주 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 벤치/시뮬 캡처에서 ID별 주기 이상 탐지 — 폭주/이중송신이 인젝션 신호
+candump -ta vcan0 2>/dev/null | awk '{print $3}' | sort | uniq -c | sort -rn | head
+# 2) 특정 제어 ID가 정상 베이스라인 주기를 벗어나는지(재생/플러딩 신호)
+candump vcan0 2>/dev/null | grep -c '  123   ' & sleep 1; kill %1 2>/dev/null   # 기준 대비 급증 확인
+```
+
+> CAN 방어는 *이상 메시지가 보이는가*다 — "버스가 동작한다"와 "비정상 ID·이중 송신·카운터 역행이 IDS에 잡힌다"는 다르다. 소유 벤치/시뮬레이터에서 메시지 무결성을 직접 확인한다([[62_Automotive_Security]], [[34_Hardware_Hacking]], [[27_IoT_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # 01 CAN Bus Analysis
@@ -1213,3 +1240,28 @@ python can_analyzer.py inject --interface vcan0 --id 0x7DF \
 # Replay at 0.5x speed
 python can_analyzer.py replay --interface vcan0 --input capture.csv --rate 0.5
 ```
+
+<!-- detect-validate-36 -->
+## CAN Bus Attack Detection and Message-Integrity Validation
+
+CAN bus attacks manipulate vehicle functions via *message injection, spoofing, replay, and bus flooding (DoS)*. CAN lacks authentication/encryption, so defenders must verify **whether anomalous messages are detected and only legitimate ECUs transmit**. Validate only on **owned vehicles/benches/simulators**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| Message injection | No sender auth | CAN IDS, MAC | Unexpected ID appears |
+| Spoofing | ID is forgeable | Sender sync, physical fingerprint | Same ID dual-transmit |
+| Replay | No counter/nonce | Rolling counter, MAC | Counter stalls/reverses |
+| Bus flooding | Priority arbitration | Rate monitor | One ID floods |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Per-ID period anomaly on an owned bench/sim capture — flooding/dual-transmit signals injection
+candump -ta vcan0 2>/dev/null | awk '{print $3}' | sort | uniq -c | sort -rn | head
+# 2) Whether a control ID deviates from its normal baseline period (replay/flood signal)
+candump vcan0 2>/dev/null | grep -c '  123   ' & sleep 1; kill %1 2>/dev/null   # confirm spike vs baseline
+```
+
+> CAN defense is *whether anomalous messages are visible* -- "the bus works" differs from "anomalous IDs, dual-transmit, and counter reversal are caught by the IDS". Confirm message integrity on owned benches/simulators directly ([[62_Automotive_Security]], [[34_Hardware_Hacking]], [[27_IoT_Hacking]]).

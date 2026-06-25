@@ -1105,6 +1105,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-36 -->
+## 자동차 보안 테스트 검증 (설정됨 ≠ 작동함)
+
+자동차 보안 테스트는 *침투 테스트·CAN 퍼징·UDS 진단 테스트*로 취약을 찾는다. "테스트했다"는 활동과 "발견 통제가 실제로 작동한다"는 다르다 — 각 통제를 소유 차량/벤치에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| 메시지 인증 | 인젝션이 거부되나? | 위조 ID 미반영 | 퍼징만, 무대응검증 |
+| 진단 보호 | 시드-키 강한가? | 브루트 시도 차단 | 알고리즘 추측 가능 |
+| 도메인 격리 | IVI→제어 막히나? | 게이트웨이 필터링 | 평면 네트워크 |
+| OTA 무결성 | 미서명 거부? | 변조 패키지 실패 | 검증만, 미강제 |
+
+### 평가 검증 (직접 확인)
+
+```bash
+# 1) 소유 벤치에서 인젝션 후 ECU 무반응 확인 — 위조 ID가 거부되면 인증 동작 신호
+cansend vcan0 123#DEADBEEF 2>/dev/null; candump -n 5 vcan0 2>/dev/null | grep -c ' 1A4 '  # 반응 ID 미출현이어야
+# 2) UDS 시드-키 추측 가능성 점검(소유 펌웨어) — 고정/약한 키 상수가 신호
+strings -n 6 owned_ecu.bin 2>/dev/null | grep -iE 'masterkey|fixedseed|0x12345678' | head
+```
+
+> 자동차 테스트는 *통제가 작동하는가*다 — "퍼징했다"와 "위조 ID가 거부되고 시드-키가 강하며 IVI가 제어에 못 닿는다"는 다르다. 각 통제를 소유 차량/벤치에서 직접 검증한다([[62_Automotive_Security]], [[34_Hardware_Hacking]], [[48_Threat_Modeling]]).
+
+---
+
 <a name="english"></a>
 
 # Automotive Security Testing — Penetration Testing, Fuzzing & Authentication Validation
@@ -1988,3 +2015,28 @@ If you discover an automotive security vulnerability:
 2. Allow 30–90 days for patch development
 3. Coordinate a public disclosure date after the patch ships
 4. Consider also notifying ICS-CERT and AUTO-ISAC (the automotive information sharing body)
+
+<!-- detect-validate-36 -->
+## Automotive Security Testing Validation (Configured != Working)
+
+Automotive security testing finds flaws via *penetration testing, CAN fuzzing, and UDS diagnostic testing*. "We tested" differs from "the discovered controls actually work" -- validate each control on owned vehicles/benches.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| Message auth | Injection rejected? | Forged ID has no effect | Fuzz only, no response check |
+| Diagnostic protection | Seed-key strong? | Brute attempts blocked | Algorithm guessable |
+| Domain isolation | IVI->control blocked? | Gateway filters | Flat network |
+| OTA integrity | Unsigned rejected? | Tampered package fails | Verify but not enforce |
+
+### Assessment validation (verify directly)
+
+```bash
+# 1) On an owned bench, confirm no ECU reaction after injection — a forged ID being rejected signals auth works
+cansend vcan0 123#DEADBEEF 2>/dev/null; candump -n 5 vcan0 2>/dev/null | grep -c ' 1A4 '  # reaction ID should not appear
+# 2) Check UDS seed-key guessability (owned firmware) — fixed/weak key constants are the signal
+strings -n 6 owned_ecu.bin 2>/dev/null | grep -iE 'masterkey|fixedseed|0x12345678' | head
+```
+
+> Automotive testing is *whether controls work* -- "we fuzzed" differs from "forged IDs are rejected, seed-keys are strong, and IVI cannot reach control". Validate each control on owned vehicles/benches directly ([[62_Automotive_Security]], [[34_Hardware_Hacking]], [[48_Threat_Modeling]]).

@@ -568,6 +568,33 @@ if __name__ == "__main__":
 
 ---
 
+<!-- detect-validate-36 -->
+## 자동차 사이버보안 방어 검증 (설정됨 ≠ 작동함)
+
+자동차 방어는 *ISO/SAE 21434 준수·CAN 보안 강화·안전한 OTA·UNECE WP.29 R155/R156*으로 구성된다. "준수했다"는 문서와 "통제가 차량에서 작동한다"는 다르다 — 각 방어를 소유 차량/벤치에서 검증한다.
+
+### 검증 항목 → 확인 질문 → 측정 신호 → 함정
+
+| 검증 항목 | 확인 질문 | 측정 신호 | 함정 |
+|---|---|---|---|
+| CAN 메시지 인증 | MAC 검증하나? | 위조 메시지 거부 | 문서상 인증만 |
+| 침입 탐지(IDS) | 이상 탐지·로깅? | 인젝션 시 알람 | 룰만, 미발화 |
+| 안전한 OTA | 서명·롤백 방지? | 미서명/구버전 거부 | 검증만, 미강제 |
+| WP.29 CSMS | 사이버보안 관리체계? | 위협 모니터링 동작 | 인증서류만 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 벤치 IDS가 인젝션을 탐지·기록하는지 — 알람 미발생이면 룰 미발화 신호
+cansend vcan0 7DF#0201050000000000 2>/dev/null; grep -c 'anomaly\|injection' can_ids.log 2>/dev/null  # >0 이어야
+# 2) OTA 롤백 방지 검증 — 구버전 패키지 적용 시 거부 로그 확인(소유 백엔드)
+grep -iE 'rollback (blocked|denied)|version downgrade rejected' ota_apply.log 2>/dev/null | head
+```
+
+> 자동차 방어는 *통제가 강제되는가*다 — "21434 준수 문서가 있다"와 "위조 CAN이 거부되고 IDS가 알람을 내며 구버전 OTA가 거부된다"는 다르다. 각 방어를 소유 차량/벤치에서 직접 검증한다([[62_Automotive_Security]], [[39_Zero_Trust_Architecture]], [[35_Supply_Chain_Attacks]]).
+
+---
+
 <a name="english"></a>
 
 # Automotive Cybersecurity Defense — ISO/SAE 21434, UNECE WP.29, Secure OTA Updates
@@ -631,3 +658,28 @@ python3 wp29_checklist.py
 - ISO/SAE 21434: https://www.iso.org/standard/70918.html
 - UNECE WP.29: https://unece.org/transport/vehicle-regulations-wp29
 - python-can: https://python-can.readthedocs.io/
+
+<!-- detect-validate-36 -->
+## Automotive Cybersecurity Defense Validation (Configured != Working)
+
+Automotive defense comprises *ISO/SAE 21434 compliance, CAN hardening, secure OTA, and UNECE WP.29 R155/R156*. "We complied" differs from "controls work in the vehicle" -- validate each defense on owned vehicles/benches.
+
+### Validation item -> Question -> Measured signal -> Pitfall
+
+| Validation item | Question | Measured signal | Pitfall |
+|---|---|---|---|
+| CAN message auth | MAC verified? | Forged message rejected | Auth on paper only |
+| Intrusion detection (IDS) | Detect/log anomalies? | Alarm on injection | Rules but no firing |
+| Secure OTA | Sign, anti-rollback? | Unsigned/old rejected | Verify but not enforce |
+| WP.29 CSMS | Cybersecurity mgmt system? | Threat monitoring works | Certificate paperwork only |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the owned-bench IDS detects/logs an injection — no alarm signals the rule did not fire
+cansend vcan0 7DF#0201050000000000 2>/dev/null; grep -c 'anomaly\|injection' can_ids.log 2>/dev/null  # should be >0
+# 2) Verify OTA anti-rollback — confirm a rejection log when applying an old package (owned backend)
+grep -iE 'rollback (blocked|denied)|version downgrade rejected' ota_apply.log 2>/dev/null | head
+```
+
+> Automotive defense is *whether controls are enforced* -- "we have 21434 paperwork" differs from "forged CAN is rejected, the IDS alarms, and old OTA is rejected". Validate each defense on owned vehicles/benches directly ([[62_Automotive_Security]], [[39_Zero_Trust_Architecture]], [[35_Supply_Chain_Attacks]]).

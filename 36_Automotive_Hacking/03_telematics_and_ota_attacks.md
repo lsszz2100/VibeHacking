@@ -1262,6 +1262,33 @@ git clone https://github.com/alexmwu/v2x-security-scanner
 
 ---
 
+<!-- detect-validate-36 -->
+## 텔레매틱스·OTA 공격 탐지와 원격 신뢰 경계 검증
+
+텔레매틱스·OTA 공격은 *원격 인터페이스(TCU/V2X)·OTA 업데이트 변조·인포테인먼트*로 차량에 원격 진입한다. 방어자는 **OTA 산출물이 서명 검증되고 원격 인터페이스가 인증·격리되는가**를 검증해야 한다. 검증은 **소유 차량/테스트 백엔드**에서만.
+
+### 공격 → 노리는 약점 → 1차 통제(방어자) → 탐지 신호
+
+| 기법 | 노리는 약점 | 1차 통제(방어자) | 탐지 신호 |
+|---|---|---|---|
+| OTA 변조 | 미서명 업데이트 | 서명·롤백 방지 | 서명 검증 실패 |
+| 원격 인터페이스 | 약한 인증 | 강인증·세그먼트 | 비인가 원격 명령 |
+| V2X 스푸핑 | 메시지 인증 부재 | PKI·인증서 | 인증서 검증 실패 |
+| 인포테인먼트→CAN | 도메인 격리 부재 | 게이트웨이 필터 | IVI서 제어 CAN 송신 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 소유 테스트 OTA 패키지 서명 검증 — 변조/미서명 시 실패해야 함
+openssl dgst -sha256 -verify ota_pub.pem -signature ota.sig ota_package.bin 2>&1 | head
+# 2) 인포테인먼트→제어 도메인 게이트웨이 필터 검증(소유 벤치) — IVI 출발 제어 ID 차단 확인
+candump vcan_gw 2>/dev/null | awk '$2 ~ /^0[0-7]/{print "control ID leaked from IVI:",$2}' | head
+```
+
+> 텔레매틱스 방어는 *원격 신뢰 경계가 강제되는가*다 — "OTA가 적용된다"와 "미서명 OTA가 거부되고 원격 인터페이스가 인증되며 IVI가 제어 CAN에 못 닿는다"는 다르다. 소유 차량/백엔드에서 직접 확인한다([[62_Automotive_Security]], [[35_Supply_Chain_Attacks]], [[27_IoT_Hacking]]).
+
+---
+
 <a name="english"></a>
 
 # Telematics & OTA Update Attacks
@@ -1316,3 +1343,28 @@ Vehicle telematics APIs often expose:
 ---
 
 > All techniques in this document must only be applied in **test environments** or **vehicles with written authorization**. V2X spoofing on public roads violates traffic laws and can cause injuries or fatalities.
+
+<!-- detect-validate-36 -->
+## Telematics/OTA Attack Detection and Remote Trust-Boundary Validation
+
+Telematics/OTA attacks gain remote entry via *remote interfaces (TCU/V2X), OTA-update tampering, and infotainment*. Defenders must verify **whether OTA artifacts are signature-verified and remote interfaces are authenticated/isolated**. Validate only on **owned vehicles/test backends**.
+
+### Attack -> Targeted weakness -> Primary control (defender) -> Detection signal
+
+| Technique | Targeted weakness | Primary control (defender) | Detection signal |
+|---|---|---|---|
+| OTA tampering | Unsigned update | Sign, anti-rollback | Signature verify fails |
+| Remote interface | Weak auth | Strong auth, segment | Unauthorized remote command |
+| V2X spoofing | No message auth | PKI, certificates | Certificate verify fails |
+| Infotainment->CAN | No domain isolation | Gateway filter | IVI sends control CAN |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Verify owned test OTA package signature — should fail on tampered/unsigned
+openssl dgst -sha256 -verify ota_pub.pem -signature ota.sig ota_package.bin 2>&1 | head
+# 2) Verify infotainment->control gateway filter (owned bench) — confirm control IDs from IVI are blocked
+candump vcan_gw 2>/dev/null | awk '$2 ~ /^0[0-7]/{print "control ID leaked from IVI:",$2}' | head
+```
+
+> Telematics defense is *whether the remote trust boundary is enforced* -- "OTA applies" differs from "unsigned OTA is rejected, remote interfaces are authenticated, and IVI cannot reach control CAN". Confirm on owned vehicles/backends directly ([[62_Automotive_Security]], [[35_Supply_Chain_Attacks]], [[27_IoT_Hacking]]).
