@@ -992,6 +992,32 @@ response = session.get('https://example.com')
 - `pip install liboqs-python`
 - OpenSSL 포크(OQS-OpenSSL) 필요
 
+
+<!-- detect-validate-57 -->
+## PQC 마이그레이션 검증 — 크립토-어질리티가 실제로 동작하는가
+
+마이그레이션은 *로드맵을 그렸다*가 아니라 **알고리즘을 코드 수정 없이 교체할 수 있고(크립토-어질리티), 하이브리드 모드가 실제 운영 트래픽에 적용되며, 롤백 경로가 검증됐는가**로 판정한다. 검증은 **소유 환경**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 크립토-어질리티 | 알고리즘 하드코딩 | 설정 교체 테스트 | 무중단 알고리즘 변경 |
+| 하이브리드 배포 | 일부만 적용 | 운영 트래픽 표본 | 대상 트래픽 PQC |
+| 롤백 | 폴백 불가 | 롤백 리허설 | 안전 복귀 확인 |
+| 인벤토리 추적 | 진행률 미측정 | 자산별 상태 집계 | 마이그레이션율 가시 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 운영 트래픽 표본에서 실제 PQC/하이브리드 협상 비율 — 소유 환경에서만
+ss -tnp 2>/dev/null | wc -l; echo "sample handshakes via your TLS telemetry for negotiated group share"
+# 2) 알고리즘이 설정으로 교체 가능한지(하드코딩 아닌지) 점검
+grep -rEni 'kem|group|x25519|mlkem|cipher' /etc/*/tls*.conf 2>/dev/null | head
+```
+
+> 검증은 반드시 **소유 환경**에서만 한다. "로드맵이 있다"와 "어질리티·하이브리드가 실제 동작한다"는 다르다 — 설정 교체·트래픽 표본으로 직접 확인한다([[18_DevSecOps]], [[14_Cloud_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -1197,3 +1223,28 @@ response = session.get('https://example.com')
 PQC-TLS in actual Python is currently experimentally possible via the `liboqs` library:
 - `pip install liboqs-python`
 - Requires OpenSSL fork (OQS-OpenSSL)
+
+<!-- detect-validate-57 -->
+## PQC Migration Validation — Does Crypto-Agility Actually Work?
+
+Migration is judged not by *having drawn a roadmap* but by **whether algorithms can be swapped without code changes (crypto-agility), hybrid mode is actually applied to production traffic, and the rollback path is verified**. Validate only on **owned environments**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Crypto-agility | Hardcoded algorithm | Swap via config | Zero-downtime algo change |
+| Hybrid rollout | Partial only | Sample prod traffic | Target traffic on PQC |
+| Rollback | No fallback | Rehearse rollback | Safe revert confirmed |
+| Inventory tracking | Progress unmeasured | Aggregate per-asset state | Migration rate visible |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Negotiated PQC/hybrid share across a production traffic sample — owned environment only
+ss -tnp 2>/dev/null | wc -l; echo "sample handshakes via your TLS telemetry for negotiated group share"
+# 2) Whether the algorithm is swappable by config (not hardcoded)
+grep -rEni 'kem|group|x25519|mlkem|cipher' /etc/*/tls*.conf 2>/dev/null | head
+```
+
+> Validate only on **owned environments**. "Having a roadmap" differs from "agility and hybrid actually work" — confirm directly via config swap and traffic sampling ([[18_DevSecOps]], [[14_Cloud_Security]]).

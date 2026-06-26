@@ -752,6 +752,32 @@ if __name__ == "__main__":
 
 이 구조는 QKD 장애 시에도 PQC로 폴백할 수 있어 실용성이 높다.
 
+
+<!-- detect-validate-57 -->
+## QKD 검증 — 도청이 실제로 탐지·키 폐기로 이어지는가
+
+QKD는 *물리법칙으로 안전하다*가 아니라 **도청 시 오류율(QBER) 상승이 임계로 탐지되고, 인증된 고전 채널로 키가 실제 폐기·재협상되는가**로 판정한다. 검증은 **소유 테스트베드**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| QBER 임계 | 임계 미설정 | 오류율 모니터 | 임계 초과 시 폐기 |
+| 채널 인증 | 미인증 고전채널 | MITM 가정 점검 | 인증된 후처리 |
+| 키 폐기 | 오류키 계속 사용 | 폐기 로그 확인 | 의심키 즉시 폐기 |
+| 측정장치 | 사이드채널(블라인딩) | 장치독립성 점검 | 검출기 공격 완화 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) QKD 시스템 로그에서 QBER 임계·키폐기 이벤트가 실제 기록되는지 — 소유 테스트베드에서만
+grep -Ei 'qber|abort|key.?discard|sift' /var/log/qkd/*.log 2>/dev/null | tail
+# 2) 후처리(오류정정·privacy amplification)를 나르는 고전 채널이 인증되는지
+grep -Ei 'auth|hmac|wegman.?carter' /etc/qkd/*.conf 2>/dev/null | head
+```
+
+> 검증은 반드시 **소유 테스트베드**에서만 한다. "물리적으로 안전하다"와 "도청이 실제 탐지·폐기된다"는 다르다 — QBER·인증·폐기 로그로 직접 확인한다([[16_Cryptography]], [[34_Hardware_Hacking]]).
+
 ---
 
 <a name="english"></a>
@@ -1400,3 +1426,28 @@ In practical deployments, **hybrid architectures** combining QKD with classical 
 3. **Symmetric layer**: Encrypts actual data with AES-256
 
 This structure allows fallback to PQC if QKD fails, making it highly practical.
+
+<!-- detect-validate-57 -->
+## QKD Validation — Does Eavesdropping Actually Trigger Detection and Key Discard?
+
+QKD is judged not by *being secure by physics* but by **whether eavesdropping-induced error-rate (QBER) rises above threshold and is detected, and the key is actually discarded and renegotiated over an authenticated classical channel**. Validate only on an **owned testbed**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| QBER threshold | No threshold set | Monitor error rate | Discard above threshold |
+| Channel auth | Unauthenticated classical | Assume MITM | Authenticated post-proc |
+| Key discard | Keeps using bad key | Check discard log | Suspect key dropped |
+| Measurement device | Side channel (blinding) | Device-indep check | Detector attack mitigated |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether QKD logs actually record QBER threshold / key-discard events — owned testbed only
+grep -Ei 'qber|abort|key.?discard|sift' /var/log/qkd/*.log 2>/dev/null | tail
+# 2) Whether the classical channel carrying post-processing (error correction / privacy amplification) is authenticated
+grep -Ei 'auth|hmac|wegman.?carter' /etc/qkd/*.conf 2>/dev/null | head
+```
+
+> Validate only on an **owned testbed**. "Secure by physics" differs from "eavesdropping is actually detected and the key discarded" — confirm directly via QBER / auth / discard logs ([[16_Cryptography]], [[34_Hardware_Hacking]]).

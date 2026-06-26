@@ -788,6 +788,32 @@ if __name__ == "__main__":
   → 둘 다 유효해야 전체 유효
 ```
 
+
+<!-- detect-validate-57 -->
+## PQC 검증 — 포스트 양자 암호가 실제로 협상·사용되는가
+
+PQC 적용은 *라이브러리를 깔았다*가 아니라 **연결에서 실제로 PQC(또는 하이브리드) 키교환이 협상되고, 폴백이 조용히 RSA/ECC로 떨어지지 않는가**로 판정한다. 검증은 **소유 엔드포인트**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| PQC 협상 | 협상 실패 후 폴백 | 핸드셰이크 그룹 확인 | ML-KEM/하이브리드 선택 |
+| 하이브리드 | 고전만 사용 | named group 점검 | x25519+ML-KEM |
+| 라이브러리 | 빌드 미반영 | 링크 심볼 확인 | PQC provider 로드 |
+| 상호운용 | 한쪽만 지원 | 양단 협상 테스트 | 양단 PQC 합의 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) TLS 핸드셰이크에서 실제 협상된 key share 그룹이 PQC/하이브리드인지 — 소유 엔드포인트에서만
+echo | openssl s_client -connect localhost:443 -groups X25519MLKEM768 2>&1 | grep -Ei 'Negotiated|group|Server Temp Key'
+# 2) PQC provider/알고리즘이 라이브러리에 실제 로드되는지
+openssl list -kem-algorithms 2>/dev/null | grep -Ei 'mlkem|kyber' || echo "no PQC KEM available"
+```
+
+> 검증은 반드시 **소유 엔드포인트**에서만 한다. "PQC 라이브러리를 깔았다"와 "실제 협상된다"는 다르다 — 핸드셰이크 협상 그룹으로 직접 확인한다([[16_Cryptography]], [[18_DevSecOps]]).
+
 ---
 
 <a name="english"></a>
@@ -1001,3 +1027,28 @@ Hybrid Signature:
   Signature = ECDSA_sig || Dilithium_sig
   → Both must be valid for the combined signature to be valid
 ```
+
+<!-- detect-validate-57 -->
+## PQC Validation — Is Post-Quantum Crypto Actually Negotiated and Used?
+
+PQC deployment is judged not by *having installed the library* but by **whether the connection actually negotiates a PQC (or hybrid) key exchange and does not silently fall back to RSA/ECC**. Validate only on **owned endpoints**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| PQC negotiation | Falls back after fail | Inspect handshake group | ML-KEM/hybrid chosen |
+| Hybrid mode | Classical only | Check named group | x25519+ML-KEM |
+| Library wiring | Build not applied | Check linked symbols | PQC provider loaded |
+| Interop | One side only | Negotiate both ends | Both agree on PQC |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the negotiated TLS key-share group is actually PQC/hybrid — owned endpoint only
+echo | openssl s_client -connect localhost:443 -groups X25519MLKEM768 2>&1 | grep -Ei 'Negotiated|group|Server Temp Key'
+# 2) Whether a PQC provider/algorithm is actually loaded in the library
+openssl list -kem-algorithms 2>/dev/null | grep -Ei 'mlkem|kyber' || echo "no PQC KEM available"
+```
+
+> Validate only on **owned endpoints**. "Installed the PQC library" differs from "it is actually negotiated" — confirm directly via the handshake's negotiated group ([[16_Cryptography]], [[18_DevSecOps]]).

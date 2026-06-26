@@ -596,6 +596,32 @@ if __name__ == "__main__":
 - IBM 양자 로드맵: ibm.com/quantum/roadmap
 - 중국 과기대 Jiuzhang 논문 (2020, Science): 276큐비트 광자 샘플링
 
+
+<!-- detect-validate-57 -->
+## 양자 위협 대비 검증 — 취약 암호 인벤토리가 실제로 존재하는가
+
+양자 대비는 *위협을 안다*가 아니라 **내 시스템의 양자 취약 공개키 암호(RSA·ECC·DH)가 실제로 식별·목록화되고, "지금 수집→나중에 해독(HNDL)" 노출면이 파악되는가**로 판정한다. 검증은 **소유 시스템**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 암호 인벤토리 | 미파악 자산 | TLS/인증서 스캔 | 모든 키교환 목록화 |
+| 취약 알고리즘 | RSA/ECC 잔존 | 인증서 공개키 확인 | 양자취약분 분류됨 |
+| HNDL 노출 | 장기비밀 평문전송 | 장기데이터 채널 점검 | 보호대상 식별됨 |
+| 우선순위 | 일괄 미룸 | 수명·민감도 평가 | 고위험 우선 표시 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 내 서비스가 사용하는 키교환·공개키 알고리즘이 양자취약인지 — 소유 호스트에서만
+echo | openssl s_client -connect localhost:443 2>/dev/null | openssl x509 -noout -text | grep -E 'Public Key Algorithm|Public-Key'
+# 2) 인증서 공개키 유형 일괄 점검(RSA/EC = 양자취약 분류 대상)
+for c in /etc/ssl/certs/*.pem; do openssl x509 -in "$c" -noout -text 2>/dev/null | grep -m1 'Public Key Algorithm'; done | sort | uniq -c
+```
+
+> 검증은 반드시 **소유 시스템**에서만 한다. "양자 위협을 안다"와 "내 취약 암호가 목록화돼 있다"는 다르다 — 인증서·키교환 스캔으로 직접 확인한다([[16_Cryptography]], [[35_Supply_Chain_Attacks]]).
+
 ---
 
 <a name="english"></a>
@@ -1101,3 +1127,28 @@ Security lifetime of currently encrypted data (x years)
 - Google AI Quantum team paper (2019, Nature): "Quantum supremacy using a programmable superconducting processor"
 - IBM Quantum Roadmap: ibm.com/quantum/roadmap
 - China USTC Jiuzhang paper (2020, Science): 276-qubit photon sampling
+
+<!-- detect-validate-57 -->
+## Quantum-Threat Readiness Validation — Does a Vulnerable-Crypto Inventory Actually Exist?
+
+Quantum readiness is judged not by *knowing the threat* but by **whether quantum-vulnerable public-key crypto (RSA/ECC/DH) in your systems is actually identified and inventoried, with the "harvest-now-decrypt-later (HNDL)" exposure surface mapped**. Validate only on **owned systems**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Crypto inventory | Unknown assets | Scan TLS/certs | All key-exchange listed |
+| Vulnerable algos | RSA/ECC remain | Inspect cert pubkey | Quantum-vuln classified |
+| HNDL exposure | Long secrets in clear | Audit long-life channels | Protected data identified |
+| Prioritization | Blanket deferral | Lifetime/sensitivity rank | High-risk flagged first |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether your service's key exchange / public-key algo is quantum-vulnerable — owned host only
+echo | openssl s_client -connect localhost:443 2>/dev/null | openssl x509 -noout -text | grep -E 'Public Key Algorithm|Public-Key'
+# 2) Bulk-check certificate public-key types (RSA/EC = quantum-vulnerable to classify)
+for c in /etc/ssl/certs/*.pem; do openssl x509 -in "$c" -noout -text 2>/dev/null | grep -m1 'Public Key Algorithm'; done | sort | uniq -c
+```
+
+> Validate only on **owned systems**. "Knowing the quantum threat" differs from "having your vulnerable crypto inventoried" — confirm directly via certificate/key-exchange scans ([[16_Cryptography]], [[35_Supply_Chain_Attacks]]).

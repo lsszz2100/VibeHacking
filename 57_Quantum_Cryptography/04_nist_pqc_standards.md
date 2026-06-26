@@ -779,6 +779,32 @@ if __name__ == "__main__":
 | **중국** | 독자 PQC 표준 개발 (SM-시리즈 확장) | 별도 국가 표준 |
 | **일본 CRYPTREC** | PQC 평가 연구 진행 | 2030년 목표 |
 
+
+<!-- detect-validate-57 -->
+## NIST PQC 표준 검증 — 구현이 실제 FIPS 파라미터를 따르는가
+
+표준 준수는 *FIPS 203/204/205를 인용했다*가 아니라 **구현이 표준 파라미터 셋을 쓰고, KAT(Known Answer Test)와 알려진 테스트 벡터를 실제로 통과하는가**로 판정한다. 검증은 **소유 빌드**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 파라미터 셋 | 비표준/초안값 | 알고리즘 ID 확인 | ML-KEM-768 등 표준 |
+| KAT 통과 | 미검증 구현 | 테스트 벡터 대입 | KAT 전부 통과 |
+| 결정성 | 잘못된 시드 처리 | 동일입력 재현 | 벡터와 바이트일치 |
+| 버전 고정 | drift된 초안 | 라이브러리 버전 확인 | 최종표준 버전 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 구현이 노출하는 PQC 알고리즘 ID가 NIST 최종 표준명인지 — 소유 빌드에서만
+openssl list -signature-algorithms 2>/dev/null | grep -Ei 'mldsa|ml-dsa|slh-dsa|sphincs'
+# 2) KAT/테스트 벡터 회귀가 실제 실행·통과되는지(예: liboqs 테스트)
+ctest --test-dir build -R 'kat|kem|sig' 2>/dev/null | tail -5 || echo "wire KAT vectors into CI"
+```
+
+> 검증은 반드시 **소유 빌드**에서만 한다. "표준을 인용했다"와 "KAT를 통과한다"는 다르다 — 테스트 벡터로 직접 확인한다([[16_Cryptography]], [[74_Code_Auditing]]).
+
 ---
 
 <a name="english"></a>
@@ -981,3 +1007,28 @@ See the Korean section above for the full Python code listing.
 | **Korea KISA** | Quantum-resistant cryptography transition roadmap being developed | 2030 target |
 | **China** | Developing independent PQC standards (SM-series extension) | Separate national standards |
 | **Japan CRYPTREC** | PQC evaluation research underway | 2030 target |
+
+<!-- detect-validate-57 -->
+## NIST PQC Standard Validation — Does the Implementation Actually Follow FIPS Parameters?
+
+Standard conformance is judged not by *citing FIPS 203/204/205* but by **whether the implementation uses the standard parameter sets and actually passes the Known-Answer Tests (KAT) and published test vectors**. Validate only on **owned builds**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Parameter set | Non-std/draft values | Check algorithm ID | ML-KEM-768 etc. standard |
+| KAT pass | Unverified impl | Run test vectors | All KAT pass |
+| Determinism | Bad seed handling | Reproduce same input | Byte-match vectors |
+| Version pin | Drifted draft | Check library version | Final-standard version |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the implementation's PQC algorithm IDs are NIST final-standard names — owned build only
+openssl list -signature-algorithms 2>/dev/null | grep -Ei 'mldsa|ml-dsa|slh-dsa|sphincs'
+# 2) Whether KAT/test-vector regression actually runs and passes (e.g., liboqs tests)
+ctest --test-dir build -R 'kat|kem|sig' 2>/dev/null | tail -5 || echo "wire KAT vectors into CI"
+```
+
+> Validate only on **owned builds**. "Citing the standard" differs from "passing the KAT" — confirm directly with test vectors ([[16_Cryptography]], [[74_Code_Auditing]]).
