@@ -384,6 +384,32 @@ find squashfs-root/ -name "shadow" -o -name "passwd" 2>/dev/null
 
 펌웨어 분석의 핵심은 **추출 → 파일시스템 탐색 → 취약점 식별** 3단계다. 다음 파일에서 실제 추출 기법을 심화한다.
 
+
+<!-- detect-validate-61 -->
+## 펌웨어 무결성 검증 — 시큐어 부트가 실제로 미서명을 거부하는가
+
+펌웨어 보안은 *부트체인을 안다*가 아니라 **시큐어 부트/서명 검증이 실제로 미서명·변조 펌웨어를 거부하고, 부트 ROM이 신뢰 사슬을 강제하는가**로 판정한다. 검증은 **소유 장비**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 서명 검증 | 미서명 허용 | 변조본 부팅 시도 | 미서명 거부 |
+| 신뢰 사슬 | 루트 미고정 | 부트 ROM 키 확인 | 불변 루트 신뢰 |
+| 롤백 방지 | 구버전 다운그레이드 | 버전 카운터 점검 | 안티롤백 강제 |
+| 디버그 잠금 | JTAG/UART 개방 | 디버그 포트 점검 | 양산 디버그 차단 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 펌웨어 이미지에 서명/인증서 구조가 실제 존재하는지 — 소유 이미지에서만
+binwalk -Y fw.bin 2>/dev/null | head; strings fw.bin | grep -Ei 'signature|rsa|x509|-----BEGIN' | head
+# 2) 부트로더 설정에서 시큐어 부트·안티롤백 강제 여부(가능한 경우)
+strings fw.bin | grep -Ei 'secure.?boot|anti.?rollback|verified.?boot' | head || echo "no secure-boot strings found"
+```
+
+> 검증은 반드시 **소유 장비**에서만 한다. "부트체인을 안다"와 "미서명이 실제 거부된다"는 다르다 — 변조본 부팅·서명 구조로 직접 확인한다([[34_Hardware_Hacking]], [[16_Cryptography]]).
+
 ---
 
 <a name="english"></a>
@@ -710,3 +736,28 @@ find squashfs-root/ -name "shadow" -o -name "passwd" 2>/dev/null
 ```
 
 The core of firmware analysis is the three-step process: **extraction → filesystem exploration → vulnerability identification**. The next file covers actual extraction techniques in depth.
+
+<!-- detect-validate-61 -->
+## Firmware-Integrity Validation — Does Secure Boot Actually Reject Unsigned Images?
+
+Firmware security is judged not by *knowing the boot chain* but by **whether secure boot / signature verification actually rejects unsigned or tampered firmware and the boot ROM enforces the chain of trust**. Validate only on **owned devices**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Signature verify | Unsigned allowed | Try booting tampered | Unsigned rejected |
+| Chain of trust | Root not anchored | Check boot-ROM keys | Immutable root of trust |
+| Rollback protection | Downgrade to old | Check version counter | Anti-rollback enforced |
+| Debug lock | Open JTAG/UART | Check debug ports | Production debug disabled |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the firmware image actually contains a signature/cert structure — owned image only
+binwalk -Y fw.bin 2>/dev/null | head; strings fw.bin | grep -Ei 'signature|rsa|x509|-----BEGIN' | head
+# 2) Whether the bootloader config enforces secure boot / anti-rollback (where visible)
+strings fw.bin | grep -Ei 'secure.?boot|anti.?rollback|verified.?boot' | head || echo "no secure-boot strings found"
+```
+
+> Validate only on **owned devices**. "Knowing the boot chain" differs from "unsigned firmware is actually rejected" — confirm directly via tamper-boot attempts and signature structure ([[34_Hardware_Hacking]], [[16_Cryptography]]).

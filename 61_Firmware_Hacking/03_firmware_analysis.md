@@ -367,6 +367,32 @@ grep -r "BACKDOOR\|DEBUG_MODE\|FACTORY_MODE" squashfs-root/ 2>/dev/null
 
 다음 파일에서 QEMU를 활용한 펌웨어 에뮬레이션 기법을 다룬다.
 
+
+<!-- detect-validate-61 -->
+## 분석 검증 — 하드코딩 비밀·취약 컴포넌트가 실제로 검출되는가
+
+펌웨어 분석은 *도구를 돌렸다*가 아니라 **하드코딩된 자격증명·키, 알려진 취약 컴포넌트(버전)가 실제로 검출·확인되고, 오탐이 걸러지는가**로 판정한다. 검증은 **소유 이미지**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 하드코딩 비밀 | 비밀 누락 | 비밀 스캔·엔트로피 | 키/패스워드 검출 |
+| 취약 컴포넌트 | 버전 미식별 | 컴포넌트·CVE 대조 | 취약버전 매핑 |
+| 백도어 계정 | 숨은 계정 | passwd/shadow 추출 | 비표준 계정 노출 |
+| 설정 약점 | 디폴트 노출 | 설정파일 점검 | 위험 디폴트 식별 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 추출 루트파일시스템에서 하드코딩 자격증명·키가 실제 검출되는지 — 소유 이미지에서만
+grep -REi 'password|passwd|api[_-]?key|BEGIN .*PRIVATE KEY' squashfs-root/ 2>/dev/null | head
+# 2) 백도어/비표준 계정 여부(추출된 passwd/shadow)
+cat squashfs-root/etc/passwd 2>/dev/null | awk -F: '$3<1000 && $7!~"nologin|false"{print}' | head || echo "extract rootfs first"
+```
+
+> 검증은 반드시 **소유 이미지**에서만 한다. "도구를 돌렸다"와 "비밀·취약점이 실제 검출된다"는 다르다 — 비밀 스캔·계정 추출로 직접 확인한다([[06_Malware_Analysis]], [[30_Vulnerability_Research]]).
+
 ---
 
 <a name="english"></a>
@@ -669,3 +695,28 @@ grep -r "BACKDOOR\|DEBUG_MODE\|FACTORY_MODE" squashfs-root/ 2>/dev/null
 ```
 
 The next file covers firmware emulation techniques using QEMU.
+
+<!-- detect-validate-61 -->
+## Analysis Validation — Are Hardcoded Secrets and Vulnerable Components Actually Detected?
+
+Firmware analysis is judged not by *having run tools* but by **whether hardcoded credentials/keys and known-vulnerable components (versions) are actually detected and confirmed, with false positives filtered**. Validate only on **owned images**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Hardcoded secrets | Secrets missed | Secret scan / entropy | Keys/passwords found |
+| Vuln components | Version unidentified | Component/CVE match | Vulnerable versions mapped |
+| Backdoor accounts | Hidden account | Extract passwd/shadow | Non-standard accounts found |
+| Config weakness | Defaults exposed | Inspect config files | Risky defaults identified |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether hardcoded creds/keys are actually detected in the extracted rootfs — owned image only
+grep -REi 'password|passwd|api[_-]?key|BEGIN .*PRIVATE KEY' squashfs-root/ 2>/dev/null | head
+# 2) Backdoor/non-standard accounts (from extracted passwd/shadow)
+cat squashfs-root/etc/passwd 2>/dev/null | awk -F: '$3<1000 && $7!~"nologin|false"{print}' | head || echo "extract rootfs first"
+```
+
+> Validate only on **owned images**. "Ran the tools" differs from "secrets/vulns are actually detected" — confirm directly via secret scanning and account extraction ([[06_Malware_Analysis]], [[30_Vulnerability_Research]]).

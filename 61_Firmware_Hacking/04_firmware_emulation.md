@@ -421,6 +421,32 @@ nmap -sV 192.168.100.0/24
 
 다음 파일에서 발견된 취약점을 실제로 익스플로잇하는 방법을 다룬다.
 
+
+<!-- detect-validate-61 -->
+## 에뮬레이션 검증 — 에뮬레이션이 실제 하드웨어와 일치하는가
+
+펌웨어 에뮬레이션은 *부팅에 성공했다*가 아니라 **에뮬레이션이 실제 하드웨어 동작(주변장치·NVRAM·네트워크)을 충실히 재현하고, 분석 결과가 실기와 어긋나지 않는가**로 판정한다. 검증은 **소유 펌웨어**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 부팅 충실도 | 가짜 부팅 | 서비스 기동 확인 | 실서비스 동작 |
+| 주변장치 | NVRAM/하드웨어 미흡 | 누락 주변장치 점검 | 핵심 페리페럴 재현 |
+| 네트워크 | 인터페이스 부재 | 서비스 포트 확인 | 웹/관리 서비스 응답 |
+| 동작 일치 | 실기와 괴리 | 실기 vs 에뮬 비교 | 동작 일치 확인 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 에뮬레이션된 펌웨어가 실제 서비스를 띄우는지(웹/관리 포트) — 소유 펌웨어에서만
+sudo firmadyne/... 2>/dev/null; nmap -Pn -p 80,443,23,22 127.0.0.1 2>/dev/null | grep -E 'open|closed' || echo "use FirmAE/firmadyne and probe emulated services"
+# 2) 에뮬 환경 프로세스가 펌웨어 바이너리를 실제 실행 중인지
+ps aux 2>/dev/null | grep -Ei 'qemu|httpd|lighttpd|busybox' | grep -v grep | head
+```
+
+> 검증은 반드시 **소유 펌웨어**에서만 한다. "부팅에 성공했다"와 "실기와 일치한다"는 다르다 — 서비스 기동·실기 비교로 직접 확인한다([[03_System_Hacking]], [[27_IoT_Hacking]]).
+
 ---
 
 <a name="english"></a>
@@ -764,3 +790,28 @@ nmap -sV 192.168.100.0/24
 ```
 
 The next file covers methods for actually exploiting discovered vulnerabilities.
+
+<!-- detect-validate-61 -->
+## Emulation Validation — Does the Emulation Actually Match Real Hardware?
+
+Firmware emulation is judged not by *having booted* but by **whether it faithfully reproduces real hardware behavior (peripherals, NVRAM, network) so analysis results do not diverge from the physical device**. Validate only on **owned firmware**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Boot fidelity | Fake boot | Confirm services start | Real services run |
+| Peripherals | NVRAM/HW missing | Check missing peripherals | Key peripherals reproduced |
+| Network | No interface | Check service ports | Web/mgmt service responds |
+| Behavior match | Diverges from device | Compare device vs emu | Behavior matches |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the emulated firmware actually brings up services (web/mgmt ports) — owned firmware only
+sudo firmadyne/... 2>/dev/null; nmap -Pn -p 80,443,23,22 127.0.0.1 2>/dev/null | grep -E 'open|closed' || echo "use FirmAE/firmadyne and probe emulated services"
+# 2) Whether emulation processes are actually running the firmware binaries
+ps aux 2>/dev/null | grep -Ei 'qemu|httpd|lighttpd|busybox' | grep -v grep | head
+```
+
+> Validate only on **owned firmware**. "Booted successfully" differs from "matches the real device" — confirm directly via service bring-up and device comparison ([[03_System_Hacking]], [[27_IoT_Hacking]]).

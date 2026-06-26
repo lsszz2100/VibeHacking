@@ -403,6 +403,32 @@ done
 
 다음 파일에서 추출된 펌웨어의 정적 분석 기법을 다룬다.
 
+
+<!-- detect-validate-61 -->
+## 추출 검증 — 추출본이 실제 대상과 일치하는가
+
+펌웨어 추출은 *덤프를 떴다*가 아니라 **추출 이미지가 비트단위로 대상과 일치(해시 확인)하고, 암호화/압축 영역이 정확히 식별·복원되는가**로 판정한다. 검증은 **소유 장비**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 덤프 무결성 | 비트 깨짐 | 재덤프 해시 비교 | 2회 덤프 해시 일치 |
+| 영역 식별 | 엔트로피 오판 | 엔트로피·시그니처 분석 | 영역 경계 정확 |
+| 암호화 식별 | 평문 오인 | 고엔트로피 구간 확인 | 암호영역 구분 |
+| 파일시스템 | 추출 실패 | 마운트/언팩 검증 | FS 정상 추출 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 2회 덤프의 해시가 일치해 추출 무결성이 보장되는지 — 소유 장비에서만
+sha256sum dump1.bin dump2.bin 2>/dev/null
+# 2) 이미지 엔트로피로 암호화/압축 영역이 실제 식별되는지(고엔트로피=암호/압축)
+binwalk -E fw.bin 2>/dev/null | head -20 || python3 -c "import sys"
+```
+
+> 검증은 반드시 **소유 장비**에서만 한다. "덤프를 떴다"와 "대상과 일치한다"는 다르다 — 재덤프 해시·엔트로피로 직접 확인한다([[07_Digital_Forensics]], [[34_Hardware_Hacking]]).
+
 ---
 
 <a name="english"></a>
@@ -732,3 +758,28 @@ done
 ```
 
 The next file covers static analysis techniques for extracted firmware.
+
+<!-- detect-validate-61 -->
+## Extraction Validation — Does the Dump Actually Match the Target?
+
+Firmware extraction is judged not by *having taken a dump* but by **whether the extracted image matches the target bit-for-bit (hash check) and encrypted/compressed regions are correctly identified and recovered**. Validate only on **owned devices**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Dump integrity | Bit corruption | Compare re-dump hash | Two dumps hash-match |
+| Region identity | Entropy misread | Entropy/signature analysis | Region boundaries correct |
+| Encryption ID | Plaintext mistaken | Check high-entropy spans | Encrypted region marked |
+| Filesystem | Extraction fails | Verify mount/unpack | FS extracts cleanly |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether two dumps hash-match to guarantee extraction integrity — owned device only
+sha256sum dump1.bin dump2.bin 2>/dev/null
+# 2) Whether image entropy actually identifies encrypted/compressed regions (high entropy = enc/compressed)
+binwalk -E fw.bin 2>/dev/null | head -20 || python3 -c "import sys"
+```
+
+> Validate only on **owned devices**. "Took a dump" differs from "it matches the target" — confirm directly via re-dump hashing and entropy ([[07_Digital_Forensics]], [[34_Hardware_Hacking]]).
