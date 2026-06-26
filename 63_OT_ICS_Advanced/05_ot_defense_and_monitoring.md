@@ -551,6 +551,32 @@ if __name__ == "__main__":
 
 OT 보안은 기술적 대책 외에 **운영 절차, 직원 교육, 공급망 관리**가 동등하게 중요하다. 모든 변경사항은 MOC(Management of Change) 프로세스를 거쳐야 한다.
 
+
+<!-- detect-validate-63 -->
+## OT 모니터링 검증 — 비정상 명령이 실제로 탐지되는가
+
+OT 방어는 *모니터링을 깔았다*가 아니라 **패시브 OT IDS가 정상 베이스라인을 학습하고, 비정상 명령·신규 자산·프로토콜 위반을 실제 탐지·경보하며, 가용성을 해치지 않는가**로 판정한다. 검증은 **소유 OT 랩**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 베이스라인 | 미학습 | 정상 트래픽 학습 확인 | 자산·통신 베이스라인 |
+| 이상 탐지 | 무탐지 | 비정상 명령 주입(랩) | 경보 발생 |
+| 패시브성 | 능동 간섭 | TAP/SPAN 확인 | 비간섭 수집 |
+| 신규 자산 | 미상 장비 방치 | 자산 변동 모니터 | 신규자산 알림 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) OT 센서가 SPAN/TAP로 비간섭 수집하는지(능동 스캔은 OT에서 위험) — 소유 랩에서만
+ip -s link show 2>/dev/null | grep -A1 -iE 'mirror|span|monitor' || echo "confirm passive TAP/SPAN, not active polling, for OT collection"
+# 2) 비정상 기능코드/신규 자산 주입 시 IDS 경보가 실제 발생하는지(랩 재현)
+grep -REi 'modbus|dnp3|anomaly|new.?asset|unauthorized' /var/log/ot-ids/ 2>/dev/null | tail || echo "inject a benign anomaly on owned lab and confirm alert"
+```
+
+> 검증은 반드시 **소유 OT 랩**에서만 한다. 가동망에서 능동 스캔 금지. "모니터링을 깔았다"와 "비정상이 실제 탐지된다"는 다르다 — 이상 주입·경보로 직접 확인한다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
+
 ---
 
 <a name="english"></a>
@@ -1027,3 +1053,28 @@ if __name__ == "__main__":
 ```
 
 In OT security, **operational procedures, employee training, and supply chain management** are equally important alongside technical controls. All changes must go through a MOC (Management of Change) process.
+
+<!-- detect-validate-63 -->
+## OT-Monitoring Validation — Are Abnormal Commands Actually Detected?
+
+OT defense is judged not by *having deployed monitoring* but by **whether a passive OT IDS learns a normal baseline and actually detects/alerts on abnormal commands, new assets, and protocol violations without harming availability**. Validate only on **owned OT labs**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Baseline | Not learned | Confirm normal-traffic learning | Asset/comm baseline |
+| Anomaly detection | No detection | Inject abnormal command (lab) | Alert raised |
+| Passivity | Active interference | Check TAP/SPAN | Non-intrusive collection |
+| New asset | Unknown device ignored | Monitor asset changes | New-asset alert |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the OT sensor collects non-intrusively via SPAN/TAP (active scanning is risky in OT) — owned lab only
+ip -s link show 2>/dev/null | grep -A1 -iE 'mirror|span|monitor' || echo "confirm passive TAP/SPAN, not active polling, for OT collection"
+# 2) Whether the IDS actually alerts on an injected abnormal function code / new asset (lab reproduction)
+grep -REi 'modbus|dnp3|anomaly|new.?asset|unauthorized' /var/log/ot-ids/ 2>/dev/null | tail || echo "inject a benign anomaly on owned lab and confirm alert"
+```
+
+> Validate only on **owned OT labs** — never active-scan a production network. "Deployed monitoring" differs from "anomalies are actually detected" — confirm directly via anomaly injection and alerting ([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).

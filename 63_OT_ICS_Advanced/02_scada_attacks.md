@@ -419,6 +419,32 @@ shodan search "port:4840"
 
 다음 파일에서 PLC 익스플로잇을 다룬다.
 
+
+<!-- detect-validate-63 -->
+## SCADA 접근통제 검증 — HMI/서버 인증이 실제로 강제되는가
+
+SCADA 공격 대응은 *공격 벡터를 안다*가 아니라 **HMI·SCADA 서버 접근에 인증이 실제 강제되고, 디폴트 자격·익명 접근이 제거되며, 명령 발행이 권한·이중확인으로 통제되는가**로 판정한다. 검증은 **소유 OT 랩**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| HMI 인증 | 익명/디폴트 | 접근 인증 점검 | 인증 강제 |
+| 명령 권한 | 무제한 제어 | 명령 권한 확인 | RBAC·이중확인 |
+| 노출 면 | 인터넷 노출 SCADA | 외부 노출 점검 | 외부 비노출 |
+| 세션 보호 | 평문 프로토콜 | 암호화 여부 확인 | 전송 암호화 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) HMI/SCADA 웹·서비스가 인증 없이 접근되는지 — 소유 랩에서만
+curl -sI http://hmi.lab.local/ 2>/dev/null | grep -iE 'www-authenticate|401|location' || echo "no auth challenge → check anonymous access"
+# 2) 제어 서비스가 외부에 노출됐는지(노출 SCADA는 critical)
+nmap -Pn -p 80,443,502,102 --open hmi.lab.local 2>/dev/null | grep open
+```
+
+> 검증은 반드시 **소유 OT 랩**에서만 한다. 가동 플랜트의 HMI 조작 금지. "공격 벡터를 안다"와 "인증이 실제 강제된다"는 다르다 — 접근 인증·노출로 직접 확인한다([[05_Web_Hacking]], [[37_ICS_SCADA]]).
+
 ---
 
 <a name="english"></a>
@@ -772,3 +798,28 @@ Monitoring
 ```
 
 The next file covers PLC exploitation.
+
+<!-- detect-validate-63 -->
+## SCADA Access-Control Validation — Is HMI/Server Auth Actually Enforced?
+
+Defending against SCADA attacks is judged not by *knowing the attack vectors* but by **whether authentication is actually enforced for HMI/SCADA server access, default/anonymous access is removed, and command issuance is controlled by privilege and confirmation**. Validate only on **owned OT labs**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| HMI auth | Anonymous/default | Check access auth | Auth enforced |
+| Command privilege | Unrestricted control | Check command rights | RBAC / double-confirm |
+| Exposure | Internet-exposed SCADA | Check external exposure | Not externally exposed |
+| Session protection | Plaintext protocol | Check encryption | Transport encrypted |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether HMI/SCADA web/services are accessible without auth — owned lab only
+curl -sI http://hmi.lab.local/ 2>/dev/null | grep -iE 'www-authenticate|401|location' || echo "no auth challenge → check anonymous access"
+# 2) Whether control services are externally exposed (exposed SCADA is critical)
+nmap -Pn -p 80,443,502,102 --open hmi.lab.local 2>/dev/null | grep open
+```
+
+> Validate only on **owned OT labs** — never operate a running plant's HMI. "Knowing the vectors" differs from "auth is actually enforced" — confirm directly via access auth and exposure ([[05_Web_Hacking]], [[37_ICS_SCADA]]).

@@ -412,6 +412,32 @@ OT DMZ의 프로토콜 변환기 취약점
 
 다음 파일에서 OT 방어 및 모니터링을 다룬다.
 
+
+<!-- detect-validate-63 -->
+## 산업 프로토콜 검증 — 무인증 프로토콜에 통제가 실제로 덧대졌는가
+
+산업 프로토콜 보안은 *Modbus/DNP3가 무인증임을 안다*가 아니라 **본질적으로 무인증인 프로토콜에 세그멘테이션·허용목록·보안 게이트웨이(또는 Secure 변형)가 실제 적용돼 비인가 쓰기 명령이 차단되는가**로 판정한다. 검증은 **소유 OT 랩**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 쓰기 통제 | 누구나 write | 쓰기 기능코드 점검 | 쓰기 출처 제한 |
+| 세그멘테이션 | 평면 접근 | 마스터 화이트리스트 | 인가 마스터만 |
+| 보안 변형 | 평문만 | DNP3-SA/암호화 확인 | 인증·무결성 적용 |
+| 명령 모니터 | 무탐지 | 비정상 기능코드 모니터 | 이상명령 탐지 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) Modbus 등에서 쓰기 기능코드(05/06/0F/10)가 인가 마스터 외에서도 먹는지 — 소유 랩에서만
+nmap -Pn -p 502 --script modbus-discover lab-plc 2>/dev/null | head || echo "probe Modbus only on owned lab device"
+# 2) 인가된 마스터 IP만 502/20000으로 접근 가능한지(세그멘테이션 확인)
+iptables -S 2>/dev/null | grep -E '502|20000' | head || echo "verify allowlist for industrial protocol ports"
+```
+
+> 검증은 반드시 **소유 OT 랩**에서만 한다. 가동 플랜트에 쓰기 명령 금지. "무인증임을 안다"와 "통제가 실제 덧대졌다"는 다르다 — 쓰기 통제·세그멘테이션으로 직접 확인한다([[02_Network_Hacking]], [[37_ICS_SCADA]]).
+
 ---
 
 <a name="english"></a>
@@ -748,3 +774,28 @@ Attack scenarios
 ```
 
 The next file covers OT defense and monitoring.
+
+<!-- detect-validate-63 -->
+## Industrial-Protocol Validation — Are Controls Actually Wrapped Around Unauthenticated Protocols?
+
+Industrial-protocol security is judged not by *knowing Modbus/DNP3 are unauthenticated* but by **whether segmentation, allowlists, and security gateways (or Secure variants) are actually applied around inherently unauthenticated protocols so unauthorized write commands are blocked**. Validate only on **owned OT labs**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Write control | Anyone can write | Check write function codes | Write source restricted |
+| Segmentation | Flat access | Master allowlist | Authorized master only |
+| Secure variant | Plaintext only | Check DNP3-SA/encryption | Auth/integrity applied |
+| Command monitor | Undetected | Monitor abnormal func codes | Anomalous command detected |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether Modbus write function codes (05/06/0F/10) work from non-authorized masters — owned lab only
+nmap -Pn -p 502 --script modbus-discover lab-plc 2>/dev/null | head || echo "probe Modbus only on owned lab device"
+# 2) Whether only authorized master IPs can reach 502/20000 (segmentation check)
+iptables -S 2>/dev/null | grep -E '502|20000' | head || echo "verify allowlist for industrial protocol ports"
+```
+
+> Validate only on **owned OT labs** — never issue write commands to a running plant. "Knowing it's unauthenticated" differs from "controls are actually wrapped around it" — confirm directly via write control and segmentation ([[02_Network_Hacking]], [[37_ICS_SCADA]]).

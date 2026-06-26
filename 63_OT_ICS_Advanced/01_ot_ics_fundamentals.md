@@ -415,6 +415,32 @@ if __name__ == "__main__":
 
 다음 파일에서 SCADA 공격 기법을 다룬다.
 
+
+<!-- detect-validate-63 -->
+## OT/IT 경계 검증 — Purdue 분리가 실제로 격리되는가
+
+OT 보안의 출발은 *Purdue 모델을 안다*가 아니라 **IT/OT 경계(Level 3.5 DMZ)가 실제로 트래픽을 격리하고, IT망에서 제어망(Level 1/2)으로 직접 도달하는 경로가 차단되는가**로 판정한다. 검증은 **소유 OT 랩**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| IT/OT 분리 | 평면 라우팅 | IT→OT 도달성 점검 | 제어망 직접 접근 불가 |
+| DMZ 중계 | 직접 연결 | 데이터흐름 확인 | DMZ 경유 강제 |
+| 원격 접근 | 상시 VPN 노출 | 원격경로 점검 | 통제된 점프호스트 |
+| 자산 가시성 | 미상 자산 | 패시브 인벤토리 | 전 자산 식별 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) IT 세그먼트에서 제어망 PLC 포트(502/102 등)에 직접 도달되는지(되면 분리 실패) — 소유 랩에서만
+nmap -Pn -p 502,102,44818,20000 10.0.OT.0/24 2>/dev/null | grep -E 'open|filtered' | head
+# 2) 제어망 트래픽이 DMZ를 경유하는지 라우팅 경로 확인
+ip route get 10.0.OT.10 2>/dev/null; traceroute -n -m 5 10.0.OT.10 2>/dev/null | head
+```
+
+> 검증은 반드시 **소유 OT 랩**에서만 한다. 가동 중 플랜트 금지(가용성·안전 위험). "Purdue를 안다"와 "경계가 실제 격리된다"는 다르다 — 도달성·경로로 직접 확인한다([[37_ICS_SCADA]], [[24_Network_Infrastructure_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -766,3 +792,28 @@ Supply Chain Threats
 ```
 
 The next file covers SCADA attack techniques.
+
+<!-- detect-validate-63 -->
+## OT/IT Boundary Validation — Does Purdue Separation Actually Isolate?
+
+OT security starts not from *knowing the Purdue model* but from **whether the IT/OT boundary (Level 3.5 DMZ) actually isolates traffic and blocks any direct path from IT into the control network (Levels 1/2)**. Validate only on **owned OT labs**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| IT/OT separation | Flat routing | Check IT->OT reach | No direct control-net access |
+| DMZ relay | Direct connection | Inspect data flow | DMZ traversal enforced |
+| Remote access | Always-on VPN exposure | Audit remote paths | Controlled jump host |
+| Asset visibility | Unknown assets | Passive inventory | All assets identified |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether IT can directly reach control PLC ports (502/102 etc.) — if so, separation failed — owned lab only
+nmap -Pn -p 502,102,44818,20000 10.0.OT.0/24 2>/dev/null | grep -E 'open|filtered' | head
+# 2) Whether control-net traffic actually traverses the DMZ (check routing path)
+ip route get 10.0.OT.10 2>/dev/null; traceroute -n -m 5 10.0.OT.10 2>/dev/null | head
+```
+
+> Validate only on **owned OT labs** — never on a running plant (availability/safety risk). "Knowing Purdue" differs from "the boundary actually isolates" — confirm directly via reachability and path ([[37_ICS_SCADA]], [[24_Network_Infrastructure_Security]]).
