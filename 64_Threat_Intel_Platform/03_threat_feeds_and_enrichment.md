@@ -547,6 +547,32 @@ if __name__ == "__main__":
 
 다음 파일에서 IoC 관리 자동화를 다룬다.
 
+
+<!-- detect-validate-64 -->
+## 피드·강화 검증 — 강화가 실제로 노이즈를 줄이는가
+
+피드 강화는 *피드를 붙였다*가 아니라 **인디케이터가 실제 컨텍스트(평판·지오·관련 캠페인)로 강화되고, 오탐·노이즈(예: 공용 인프라 IP)가 걸러져 신뢰도가 올라가는가**로 판정한다. 검증은 **소유 TIP**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 강화 적용 | 맨 IOC | 강화 필드 확인 | 평판·지오·관계 부가 |
+| 노이즈 제거 | 화이트IP 차단 | 오탐 비율 측정 | 공용/허용 IP 제외 |
+| 중복 상관 | 분산 중복 | 상관·병합 확인 | 동일 위협 묶임 |
+| 신뢰 가중 | 단일 출처 맹신 | 다출처 교차검증 | 교차확인 시 가중 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 인디케이터가 실제 강화 컨텍스트(평판/지오/관계)를 갖는지 — 소유 TIP에서만
+curl -s -H "Authorization: $TIP_KEY" https://tip.local/api/indicators?limit=5 2>/dev/null | jq '.[] | {value, enrichment, confidence}' || echo "verify enrichment fields populated"
+# 2) 알려진 양성(공용 DNS 등)이 차단 목록에 잘못 들어갔는지 점검(오탐)
+printf '8.8.8.8\n1.1.1.1\n' | while read ip; do grep -q "$ip" blocklist.txt 2>/dev/null && echo "FALSE POSITIVE: $ip in blocklist"; done
+```
+
+> 검증은 반드시 **소유 TIP**에서만 한다. "피드를 붙였다"와 "강화가 노이즈를 줄인다"는 다르다 — 강화 필드·오탐으로 직접 확인한다([[25_Threat_Intelligence]], [[40_Threat_Hunting]]).
+
 ---
 
 <a name="english"></a>
@@ -1048,3 +1074,28 @@ if __name__ == "__main__":
 ```
 
 The next file covers IoC management automation.
+
+<!-- detect-validate-64 -->
+## Feeds & Enrichment Validation — Does Enrichment Actually Reduce Noise?
+
+Feed enrichment is judged not by *having connected feeds* but by **whether indicators are actually enriched with context (reputation/geo/related campaigns) and false positives/noise (e.g., shared-infra IPs) are filtered so confidence rises**. Validate only on **owned TIPs**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Enrichment applied | Bare IOC | Check enrichment fields | Reputation/geo/relations added |
+| Noise removal | Blocks whitelisted IP | Measure FP rate | Public/allowed IPs excluded |
+| Dedup correlation | Scattered duplicates | Check correlation/merge | Same threat grouped |
+| Confidence weighting | Trusts single source | Cross-source validation | Weighted on corroboration |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether indicators actually carry enrichment context (reputation/geo/relations) — owned TIP only
+curl -s -H "Authorization: $TIP_KEY" https://tip.local/api/indicators?limit=5 2>/dev/null | jq '.[] | {value, enrichment, confidence}' || echo "verify enrichment fields populated"
+# 2) Check whether known-benign (public DNS, etc.) wrongly entered the blocklist (false positive)
+printf '8.8.8.8\n1.1.1.1\n' | while read ip; do grep -q "$ip" blocklist.txt 2>/dev/null && echo "FALSE POSITIVE: $ip in blocklist"; done
+```
+
+> Validate only on **owned TIPs**. "Connected feeds" differs from "enrichment reduces noise" — confirm directly via enrichment fields and false positives ([[25_Threat_Intelligence]], [[40_Threat_Hunting]]).

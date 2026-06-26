@@ -424,6 +424,32 @@ if __name__ == "__main__":
 
 다음 파일에서 위협 피드 관리 및 강화를 다룬다.
 
+
+<!-- detect-validate-64 -->
+## MISP 운영 검증 — 동기화·공유·접근통제가 실제로 동작하는가
+
+MISP 운영은 *인스턴스를 세웠다*가 아니라 **피드 동기화가 실제 갱신되고, 공유 그룹(distribution)이 의도대로 데이터를 격리/공유하며, API·계정 접근이 통제되는가**로 판정한다. 검증은 **소유 MISP**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 피드 동기화 | 정지된 피드 | 최근 동기 시각 확인 | 주기적 갱신 |
+| 공유 범위 | 과공유 유출 | distribution 점검 | 의도대로 격리/공유 |
+| 접근 통제 | 약한 API키 | 키·역할 점검 | 최소권한 키 |
+| 데이터 품질 | 중복·미검증 | 상관·검증 확인 | 중복제거·신뢰표기 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) MISP 피드가 실제로 최근 동기화됐는지 — 소유 MISP에서만
+curl -s -H "Authorization: $MISP_KEY" -H "Accept: application/json" https://misp.local/feeds/index 2>/dev/null | jq '.[].Feed | {name, enabled, "default":.default}' | head || echo "verify feed sync status"
+# 2) 이벤트 distribution이 과공유(예: All communities)로 잘못 설정되지 않았는지
+curl -s -H "Authorization: $MISP_KEY" -H "Accept: application/json" https://misp.local/events/index 2>/dev/null | jq '.[].Event.distribution' | sort | uniq -c || echo "audit distribution levels"
+```
+
+> 검증은 반드시 **소유 MISP**에서만 한다. "인스턴스를 세웠다"와 "동기화·공유통제가 동작한다"는 다르다 — 동기 시각·distribution으로 직접 확인한다([[25_Threat_Intelligence]], [[33_OSINT_Social_Engineering]]).
+
 ---
 
 <a name="english"></a>
@@ -798,3 +824,28 @@ if __name__ == "__main__":
 ```
 
 The next file covers threat feed management and enrichment.
+
+<!-- detect-validate-64 -->
+## MISP-Operations Validation — Do Sync, Sharing, and Access Control Actually Work?
+
+Running MISP is judged not by *having stood up an instance* but by **whether feed sync actually refreshes, distribution groups isolate/share data as intended, and API/account access is controlled**. Validate only on **owned MISP**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Feed sync | Stalled feed | Check last sync time | Periodic refresh |
+| Sharing scope | Over-sharing leak | Inspect distribution | Isolated/shared as intended |
+| Access control | Weak API key | Check keys/roles | Least-privilege keys |
+| Data quality | Duplicate/unverified | Check correlation/validation | Dedup + confidence labels |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether MISP feeds have actually synced recently — owned MISP only
+curl -s -H "Authorization: $MISP_KEY" -H "Accept: application/json" https://misp.local/feeds/index 2>/dev/null | jq '.[].Feed | {name, enabled, "default":.default}' | head || echo "verify feed sync status"
+# 2) Whether event distribution is mis-set to over-sharing (e.g., All communities)
+curl -s -H "Authorization: $MISP_KEY" -H "Accept: application/json" https://misp.local/events/index 2>/dev/null | jq '.[].Event.distribution' | sort | uniq -c || echo "audit distribution levels"
+```
+
+> Validate only on **owned MISP**. "Stood up an instance" differs from "sync and sharing controls work" — confirm directly via sync time and distribution ([[25_Threat_Intelligence]], [[33_OSINT_Social_Engineering]]).

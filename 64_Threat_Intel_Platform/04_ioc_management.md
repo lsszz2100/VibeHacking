@@ -476,6 +476,32 @@ python3 ioc_manager.py --db ioc.db export \
 
 다음 파일에서 TIP 자동화 워크플로우를 다룬다.
 
+
+<!-- detect-validate-64 -->
+## IOC 관리 검증 — 인디케이터가 실제로 탐지에 전달·만료되는가
+
+IOC 관리는 *목록을 쌓았다*가 아니라 **IOC가 실제 탐지 도구(SIEM/EDR/방화벽)로 전달돼 매칭되고, 만료(decay)·오탐 처리로 목록이 신선하게 유지되는가**로 판정한다. 검증은 **소유 환경**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 탐지 전달 | 미연동 목록 | 매칭 룰 존재 확인 | IOC→룰 배포 |
+| 만료 관리 | 무한 누적 | 나이·decay 점검 | 오래된 IOC 만료 |
+| 오탐 처리 | 오탐 방치 | 오탐 피드백 루프 | 제외목록 반영 |
+| 형식 정합 | 깨진 포맷 | IOC 형식 검증 | 유효 IOC만 배포 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 배포 IOC가 실제 탐지 룰/피드로 전달되는지 — 소유 환경에서만
+test -s /etc/suricata/rules/threat-intel.rules && wc -l /etc/suricata/rules/threat-intel.rules || echo "no IOC-derived detection rules deployed"
+# 2) IOC가 형식 유효하고 만료필드를 갖는지(깨진 포맷·무만료=운영 위험)
+jq -e '.[] | select(.valid_until == null)' iocs.json 2>/dev/null | head && echo "WARN: IOCs without expiry" || echo "iocs carry expiry or file absent"
+```
+
+> 검증은 반드시 **소유 환경**에서만 한다. "목록을 쌓았다"와 "탐지에 전달·만료된다"는 다르다 — 룰 배포·만료필드로 직접 확인한다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
+
 ---
 
 <a name="english"></a>
@@ -891,3 +917,28 @@ python3 ioc_manager.py --db ioc.db export \
 ```
 
 The next file covers TIP automation workflows.
+
+<!-- detect-validate-64 -->
+## IOC-Management Validation — Do Indicators Actually Reach Detection and Expire?
+
+IOC management is judged not by *having amassed a list* but by **whether IOCs are actually delivered to detection tools (SIEM/EDR/firewall) to match, and the list stays fresh via decay/expiry and false-positive handling**. Validate only on **owned environments**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Detection delivery | Disconnected list | Check matching rules exist | IOC->rule deployed |
+| Expiry management | Infinite accumulation | Check age/decay | Old IOCs expire |
+| FP handling | FPs left in place | False-positive feedback loop | Exclusions applied |
+| Format integrity | Broken format | Validate IOC format | Only valid IOCs deployed |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether deployed IOCs actually reach detection rules/feeds — owned environment only
+test -s /etc/suricata/rules/threat-intel.rules && wc -l /etc/suricata/rules/threat-intel.rules || echo "no IOC-derived detection rules deployed"
+# 2) Whether IOCs are format-valid and carry an expiry (broken format / no expiry = operational risk)
+jq -e '.[] | select(.valid_until == null)' iocs.json 2>/dev/null | head && echo "WARN: IOCs without expiry" || echo "iocs carry expiry or file absent"
+```
+
+> Validate only on **owned environments**. "Amassed a list" differs from "IOCs reach detection and expire" — confirm directly via rule deployment and expiry fields ([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).

@@ -586,6 +586,32 @@ def trigger_soar_workflow(
 
 위협 인텔리전스 플랫폼은 단순한 IoC 수집기가 아니라, **조직의 위협 인식 능력을 높이는 전략적 자산**이다. 자동화는 반복 작업을 줄이되, 분석가의 맥락적 판단은 여전히 핵심이다.
 
+
+<!-- detect-validate-64 -->
+## TIP 자동화 검증 — 자동화가 실제로 동작하고 폭주를 막는가
+
+TIP 자동화는 *STIX/TAXII·SOAR를 붙였다*가 아니라 **자동 수집→강화→배포 파이프라인이 실제 종단까지 동작하고, 잘못된 IOC의 자동 차단 폭주(가용성 사고)를 막는 안전장치가 있는가**로 판정한다. 검증은 **소유 환경**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 파이프라인 종단 | 중간 단절 | 종단 흐름 추적 | 수집→배포 완주 |
+| TAXII 연동 | 폴링 실패 | 엔드포인트 응답 확인 | 정상 collection |
+| 폭주 방지 | 무검증 자동차단 | 차단 임계·승인 점검 | 가드레일·승인 게이트 |
+| 롤백 | 오차단 회복불가 | 롤백 경로 확인 | 신속 차단 해제 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) TAXII 콜렉션 엔드포인트가 실제 응답하는지 — 소유 환경에서만
+curl -s -H "Accept: application/taxii+json;version=2.1" https://taxii.local/taxii2/ 2>/dev/null | jq '.api_roots' || echo "verify TAXII server reachable"
+# 2) 자동 차단에 임계/승인 가드레일이 있는지(없으면 오탐 1건이 대량 차단 유발)
+grep -REi 'threshold|approval|max.?block|require.?review|dry.?run' soar/playbooks/ 2>/dev/null | head || echo "add guardrails before auto-blocking"
+```
+
+> 검증은 반드시 **소유 환경**에서만 한다. "자동화를 붙였다"와 "종단 동작하고 폭주를 막는다"는 다르다 — 종단 흐름·가드레일로 직접 확인한다([[18_DevSecOps]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -1109,3 +1135,28 @@ Monthly tasks
 ```
 
 A threat intelligence platform is not merely an IoC collector — it is a **strategic asset that enhances an organization's threat awareness capabilities**. Automation reduces repetitive tasks, but the analyst's contextual judgment remains central.
+
+<!-- detect-validate-64 -->
+## TIP-Automation Validation — Does Automation Actually Work and Prevent Runaway?
+
+TIP automation is judged not by *having attached STIX/TAXII and SOAR* but by **whether the collect->enrich->distribute pipeline actually works end-to-end and has safeguards against runaway auto-blocking from bad IOCs (an availability incident)**. Validate only on **owned environments**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Pipeline end-to-end | Mid-break | Trace end-to-end flow | Collect->distribute completes |
+| TAXII integration | Polling fails | Check endpoint response | Healthy collections |
+| Runaway prevention | Unchecked auto-block | Check thresholds/approval | Guardrails + approval gate |
+| Rollback | Mis-block unrecoverable | Check rollback path | Fast unblock |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the TAXII collection endpoint actually responds — owned environment only
+curl -s -H "Accept: application/taxii+json;version=2.1" https://taxii.local/taxii2/ 2>/dev/null | jq '.api_roots' || echo "verify TAXII server reachable"
+# 2) Whether auto-blocking has threshold/approval guardrails (without them, one FP causes mass blocking)
+grep -REi 'threshold|approval|max.?block|require.?review|dry.?run' soar/playbooks/ 2>/dev/null | head || echo "add guardrails before auto-blocking"
+```
+
+> Validate only on **owned environments**. "Attached automation" differs from "it works end-to-end and prevents runaway" — confirm directly via end-to-end flow and guardrails ([[18_DevSecOps]], [[13_SOC_Blue_Team]]).

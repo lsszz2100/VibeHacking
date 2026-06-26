@@ -353,6 +353,32 @@ if __name__ == "__main__":
 
 다음 파일에서 MISP 플랫폼 활용을 다룬다.
 
+
+<!-- detect-validate-64 -->
+## TIP 가치 검증 — 인텔이 실제로 운영에 전달되는가
+
+위협 인텔 플랫폼은 *피드를 모았다*가 아니라 **수집한 인텔이 정보 요구사항(PIR)에 매핑되고, 실제 탐지·차단·대응 의사결정으로 전달되어 행동가능(actionable)한가**로 판정한다. 검증은 **소유 TIP**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 요구사항 매핑 | 무목적 수집 | PIR 대비 커버리지 | 인텔→요구 매핑 |
+| 행동가능성 | 보고서로만 | 탐지 전달 추적 | 룰/차단으로 전환 |
+| 적시성 | 지연 인텔 | 수집→배포 지연 측정 | SLA 내 배포 |
+| 신뢰도 | 출처 미평가 | 신뢰도 스코어링 | 출처·신뢰 라벨 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) TIP의 인텔이 실제로 탐지 시스템(SIEM/EDR)으로 내보내지는지 — 소유 TIP에서만
+curl -s -H "Authorization: $TIP_KEY" https://tip.local/api/exports 2>/dev/null | jq '.[].destination' | sort -u || echo "verify intel export integrations exist"
+# 2) 수집된 인텔이 PIR/우선순위 태그를 실제 가지는지(무태그=비행동가능)
+curl -s -H "Authorization: $TIP_KEY" https://tip.local/api/indicators?limit=20 2>/dev/null | jq '.[].tags' | head || echo "check that indicators carry priority/PIR tags"
+```
+
+> 검증은 반드시 **소유 TIP**에서만 한다. "피드를 모았다"와 "인텔이 운영에 전달된다"는 다르다 — 익스포트·태그로 직접 확인한다([[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -635,3 +661,28 @@ if __name__ == "__main__":
 ```
 
 The next file covers MISP platform usage.
+
+<!-- detect-validate-64 -->
+## TIP-Value Validation — Does Intel Actually Reach Operations?
+
+A threat-intel platform is judged not by *having aggregated feeds* but by **whether collected intel maps to intelligence requirements (PIRs) and actually reaches detection/blocking/response decisions to be actionable**. Validate only on **owned TIPs**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Requirement mapping | Aimless collection | Coverage vs PIRs | Intel->requirement mapped |
+| Actionability | Reports only | Trace detection handoff | Converted to rules/blocks |
+| Timeliness | Stale intel | Measure collect->distribute lag | Distributed within SLA |
+| Confidence | Unrated source | Confidence scoring | Source/confidence labeled |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether TIP intel is actually exported to detection systems (SIEM/EDR) — owned TIP only
+curl -s -H "Authorization: $TIP_KEY" https://tip.local/api/exports 2>/dev/null | jq '.[].destination' | sort -u || echo "verify intel export integrations exist"
+# 2) Whether collected intel actually carries PIR/priority tags (no tags = not actionable)
+curl -s -H "Authorization: $TIP_KEY" https://tip.local/api/indicators?limit=20 2>/dev/null | jq '.[].tags' | head || echo "check that indicators carry priority/PIR tags"
+```
+
+> Validate only on **owned TIPs**. "Aggregated feeds" differs from "intel reaches operations" — confirm directly via exports and tagging ([[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).
