@@ -1008,6 +1008,32 @@ if __name__ == "__main__":
 | **grype** | 아티팩트 취약점 스캔 | Apache 2.0 | Go |
 | **trivy** | 컨테이너/코드 취약점 스캔 | Apache 2.0 | Go |
 
+
+<!-- detect-validate-59 -->
+## 빌드 무결성 검증 — 출처(provenance)가 실제로 서명·검증되는가
+
+빌드 무결성은 *SLSA를 인용했다*가 아니라 **빌드 산출물에 검증 가능한 provenance(누가·무엇으로·어떤 소스에서 빌드)가 실제 서명·첨부되고, 배포 시 검증되는가**로 판정한다. 검증은 **소유 파이프라인**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| Provenance 생성 | 출처 미첨부 | attestation 확인 | SLSA provenance 존재 |
+| 서명 | 미서명 산출물 | cosign/attest 검증 | 서명·검증 통과 |
+| 빌드 격리 | 오염 가능 빌더 | 빌더 권한 점검 | 격리·임시 빌더 |
+| 소스 고정 | 가변 참조 | 커밋 SHA 고정 확인 | 불변 소스 참조 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 산출물에 서명된 provenance/attestation이 실제 첨부됐는지 — 소유 파이프라인에서만
+cosign verify-attestation --type slsaprovenance --key cosign.pub registry.local/app:tag 2>&1 | grep -Ei 'verified|error' || echo "attach + verify SLSA provenance"
+# 2) 빌드가 불변 소스(커밋 SHA)에 고정되는지(가변 태그면 변조면 확대)
+grep -REn 'actions/checkout|ref:|@[0-9a-f]{40}' .github/workflows/ 2>/dev/null | head
+```
+
+> 검증은 반드시 **소유 파이프라인**에서만 한다. "SLSA를 인용했다"와 "provenance가 검증된다"는 다르다 — attestation 검증으로 직접 확인한다([[18_DevSecOps]], [[74_Code_Auditing]]).
+
 ---
 
 <a name="english"></a>
@@ -1105,3 +1131,28 @@ in-toto is a framework that cryptographically chains each step (link) in the sof
 | **syft** | SBOM generation | Apache 2.0 | Go |
 | **grype** | Artifact vulnerability scanning | Apache 2.0 | Go |
 | **trivy** | Container/code vulnerability scanning | Apache 2.0 | Go |
+
+<!-- detect-validate-59 -->
+## Build-Integrity Validation — Is Provenance Actually Signed and Verified?
+
+Build integrity is judged not by *citing SLSA* but by **whether build artifacts carry verifiable provenance (who/with-what/from-which-source) that is actually signed, attached, and verified at deploy**. Validate only on **owned pipelines**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Provenance gen | No provenance attached | Check attestation | SLSA provenance present |
+| Signing | Unsigned artifact | cosign/attest verify | Sign + verify passes |
+| Build isolation | Tamperable builder | Audit builder perms | Isolated ephemeral builder |
+| Source pinning | Mutable reference | Check commit SHA pin | Immutable source ref |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether signed provenance/attestation is actually attached — owned pipeline only
+cosign verify-attestation --type slsaprovenance --key cosign.pub registry.local/app:tag 2>&1 | grep -Ei 'verified|error' || echo "attach + verify SLSA provenance"
+# 2) Whether the build pins immutable source (commit SHA); mutable tags widen tamper surface
+grep -REn 'actions/checkout|ref:|@[0-9a-f]{40}' .github/workflows/ 2>/dev/null | head
+```
+
+> Validate only on **owned pipelines**. "Citing SLSA" differs from "provenance is verified" — confirm directly via attestation verification ([[18_DevSecOps]], [[74_Code_Auditing]]).

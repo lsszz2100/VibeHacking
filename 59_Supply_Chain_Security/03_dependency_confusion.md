@@ -797,6 +797,32 @@ if __name__ == "__main__":
 | **CI/CD 검증** | 빌드 시 의존성 혼란 자동 검사 실행 | 이 스크립트를 CI에 통합 |
 | **모니터링** | 새 내부 패키지 추가 시 공개 등록 여부 자동 알림 | 웹훅 + 스크립트 |
 
+
+<!-- detect-validate-59 -->
+## 의존성 혼동 검증 — 내부 패키지가 공개 레지스트리로 새지 않는가
+
+의존성 혼동 방어는 *공격을 안다*가 아니라 **내부 패키지 이름이 공개 레지스트리에서 우선 해석되지 않도록 스코프·우선순위가 실제 설정됐고, 빌드가 사설 레지스트리만 신뢰하는가**로 판정한다. 검증은 **소유 빌드**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 레지스트리 우선순위 | 공개 우선 폴백 | resolver 설정 확인 | 내부=사설만 |
+| 스코프 강제 | 미스코프 패키지 | 스코프 정책 점검 | @org 스코프 고정 |
+| 이름 선점 | 공개 동명 패키지 | 동명 존재 조사 | 방어적 선점/차단 |
+| 빌드 출처 | 출처 불명 설치 | 설치 로그 추적 | 사설 레지스트리에서만 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 내부 스코프가 사설 레지스트리로만 해석되는지 — 소유 빌드에서만
+grep -E '@[a-z0-9-]+:registry|registry=' .npmrc 2>/dev/null || echo "no scoped registry pinning (confusion risk)"
+# 2) 설치가 실제로 어느 레지스트리에서 받았는지 추적
+grep -Eo 'https?://[^/]*/' package-lock.json 2>/dev/null | sort | uniq -c | sort -rn | head
+```
+
+> 검증은 반드시 **소유 빌드**에서만 한다. "혼동 공격을 안다"와 "내부 패키지가 공개로 안 샌다"는 다르다 — 레지스트리 우선순위로 직접 확인한다([[35_Supply_Chain_Attacks]], [[12_Bug_Bounty]]).
+
 ---
 
 <a name="english"></a>
@@ -870,3 +896,28 @@ See the Korean section for detailed pip/npm/NuGet configuration examples and the
 | **Proxy Registry** | Serve public packages through internal proxy (Nexus, Artifactory) | Infrastructure configuration |
 | **CI/CD Validation** | Run automated dependency confusion checks at build time | Integrate this script into CI |
 | **Monitoring** | Automatic alert when a new internal package is added to public registry | Webhook + script |
+
+<!-- detect-validate-59 -->
+## Dependency-Confusion Validation — Do Internal Packages Leak to Public Registries?
+
+Dependency-confusion defense is judged not by *knowing the attack* but by **whether scoping/priority is actually configured so internal package names never resolve from a public registry first, and the build trusts only the private registry**. Validate only on **owned builds**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Registry priority | Falls back to public | Check resolver config | Internal = private only |
+| Scope enforcement | Unscoped package | Audit scope policy | @org scope pinned |
+| Name squatting | Public same-name | Search for collisions | Defensive claim/block |
+| Install provenance | Unknown-source install | Trace install log | From private registry only |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether internal scope resolves only to the private registry — owned build only
+grep -E '@[a-z0-9-]+:registry|registry=' .npmrc 2>/dev/null || echo "no scoped registry pinning (confusion risk)"
+# 2) Trace which registries installs actually pulled from
+grep -Eo 'https?://[^/]*/' package-lock.json 2>/dev/null | sort | uniq -c | sort -rn | head
+```
+
+> Validate only on **owned builds**. "Knowing the attack" differs from "internal packages don't leak to public" — confirm directly via registry priority ([[35_Supply_Chain_Attacks]], [[12_Bug_Bounty]]).

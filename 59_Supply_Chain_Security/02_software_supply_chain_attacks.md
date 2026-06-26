@@ -766,6 +766,32 @@ if __name__ == "__main__":
 | **모니터링** | 빌드 로그 이상 행위 탐지 | 중간 |
 | **거버넌스** | 외부 Action/플러그인 승인 프로세스 | 낮음 |
 
+
+<!-- detect-validate-59 -->
+## 변조 탐지 검증 — 산출물 무결성이 실제로 검증되는가
+
+공급망 공격 대응은 *사례를 안다*가 아니라 **배포 패키지·이미지의 해시/서명이 설치 시점에 실제 검증되고, 변조본이 거부되는가**로 판정한다. 검증은 **소유 파이프라인**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 해시 고정 | 미고정 다운로드 | 설치 매니페스트 확인 | 무결성 다이제스트 강제 |
+| 서명 검증 | 서명 미확인 | cosign verify | 신뢰서명만 통과 |
+| 빌드 재현성 | 비결정 빌드 | 2회 빌드 비교 | 동일 다이제스트 |
+| 변조 거부 | 경고만 출력 | 변조본 주입(테스트) | 설치 실패 처리 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 컨테이너 이미지 서명이 실제 검증되는지 — 소유 레지스트리에서만
+cosign verify --key cosign.pub registry.local/app:tag 2>&1 | grep -Ei 'verified|error' || echo "wire cosign verify into deploy"
+# 2) 의존성이 무결성 다이제스트로 고정됐는지(미고정이면 변조 무방비)
+grep -E 'integrity|sha512-|sha256:' package-lock.json 2>/dev/null | head || echo "no integrity hashes pinned"
+```
+
+> 검증은 반드시 **소유 파이프라인**에서만 한다. "공급망 공격을 안다"와 "변조본이 거부된다"는 다르다 — 서명·해시 검증으로 직접 확인한다([[35_Supply_Chain_Attacks]], [[06_Malware_Analysis]]).
+
 ---
 
 <a name="english"></a>
@@ -851,3 +877,28 @@ See the Korean section for detailed tool-specific vulnerabilities and Python cod
 | **Artifacts** | Generate SLSA Provenance | Medium |
 | **Monitoring** | Detect anomalous behavior in build logs | Medium |
 | **Governance** | Approval process for external Actions/plugins | Low |
+
+<!-- detect-validate-59 -->
+## Tamper-Detection Validation — Is Artifact Integrity Actually Verified?
+
+Defending against supply-chain attacks is judged not by *knowing the case studies* but by **whether package/image hashes and signatures are actually verified at install time and tampered artifacts are rejected**. Validate only on **owned pipelines**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Hash pinning | Unpinned download | Check install manifest | Integrity digest enforced |
+| Signature verify | Signature unchecked | cosign verify | Only trusted sig passes |
+| Reproducibility | Non-deterministic build | Build twice, compare | Identical digest |
+| Tamper reject | Warns only | Inject tampered (test) | Install fails closed |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the container image signature is actually verified — owned registry only
+cosign verify --key cosign.pub registry.local/app:tag 2>&1 | grep -Ei 'verified|error' || echo "wire cosign verify into deploy"
+# 2) Whether deps are pinned by integrity digest (unpinned = open to tampering)
+grep -E 'integrity|sha512-|sha256:' package-lock.json 2>/dev/null | head || echo "no integrity hashes pinned"
+```
+
+> Validate only on **owned pipelines**. "Knowing the attack" differs from "tampered artifacts get rejected" — confirm directly via signature/hash verification ([[35_Supply_Chain_Attacks]], [[06_Malware_Analysis]]).

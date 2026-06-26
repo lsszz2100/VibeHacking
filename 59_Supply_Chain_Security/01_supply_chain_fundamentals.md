@@ -671,6 +671,32 @@ if __name__ == "__main__":
 | SSDF (SP 800-218) | NIST | https://csrc.nist.gov/Projects/ssdf |
 | OSV 취약점 DB | Google | https://osv.dev |
 
+
+<!-- detect-validate-59 -->
+## 공급망 가시성 검증 — 의존성이 실제로 전부 목록화되는가
+
+공급망 보안의 출발은 *프레임워크를 안다*가 아니라 **빌드에 들어가는 모든 직·간접 의존성이 SBOM으로 실제 산출되고, 미상(unknown) 컴포넌트가 0에 수렴하는가**로 판정한다. 검증은 **소유 빌드**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| SBOM 완전성 | 전이의존성 누락 | SBOM vs lockfile 비교 | 전 의존성 포함 |
+| 컴포넌트 식별 | 미상 바이너리 | 산출물 스캔 | PURL/버전 확정 |
+| 출처 표기 | 출처 불명 | 레지스트리 추적 | 소스 레지스트리 명시 |
+| 갱신 주기 | 정적 1회 | 빌드마다 재생성 | 빌드별 최신 SBOM |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) SBOM이 실제로 전이의존성까지 포함하는지 — 소유 빌드에서만(예: syft)
+syft dir:. -o cyclonedx-json 2>/dev/null | jq '.components | length' || echo "generate SBOM in CI"
+# 2) lockfile 의존성 수 대비 SBOM 누락 점검(개략)
+{ grep -c 'resolved' package-lock.json 2>/dev/null; } || echo "no lockfile here"
+```
+
+> 검증은 반드시 **소유 빌드**에서만 한다. "공급망 위협을 안다"와 "의존성이 전부 목록화된다"는 다르다 — SBOM 완전성으로 직접 확인한다([[35_Supply_Chain_Attacks]], [[18_DevSecOps]]).
+
 ---
 
 <a name="english"></a>
@@ -1225,3 +1251,28 @@ if __name__ == "__main__":
 | in-toto Framework | NYU/Cloud Native | https://in-toto.io |
 | SSDF (SP 800-218) | NIST | https://csrc.nist.gov/Projects/ssdf |
 | OSV Vulnerability DB | Google | https://osv.dev |
+
+<!-- detect-validate-59 -->
+## Supply-Chain Visibility Validation — Are All Dependencies Actually Inventoried?
+
+Supply-chain security starts not from *knowing a framework* but from **whether every direct and transitive dependency in the build is actually emitted as an SBOM, with unknown components converging to zero**. Validate only on **owned builds**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| SBOM completeness | Transitive deps missing | SBOM vs lockfile | All deps present |
+| Component identity | Unknown binaries | Scan artifacts | PURL/version resolved |
+| Provenance label | Unknown origin | Trace registry | Source registry named |
+| Refresh cadence | Static one-off | Regenerate per build | Fresh SBOM per build |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the SBOM actually includes transitive deps — owned build only (e.g., syft)
+syft dir:. -o cyclonedx-json 2>/dev/null | jq '.components | length' || echo "generate SBOM in CI"
+# 2) Rough check of lockfile dependency count vs SBOM gaps
+{ grep -c 'resolved' package-lock.json 2>/dev/null; } || echo "no lockfile here"
+```
+
+> Validate only on **owned builds**. "Knowing the threat" differs from "all dependencies inventoried" — confirm directly via SBOM completeness ([[35_Supply_Chain_Attacks]], [[18_DevSecOps]]).

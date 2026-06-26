@@ -1031,6 +1031,32 @@ if __name__ == "__main__":
 | **벤더 평가** | 신규 벤더 도입 시 공급망 보안 평가 | 평가 완료 전 PoC 허용 |
 | **사고 대응** | 공급망 침해 의심 시 즉시 격리 | 자동화된 격리 트리거 구성 |
 
+
+<!-- detect-validate-59 -->
+## 공급망 방어 검증 — 정책이 실제 CI 게이트로 강제되는가
+
+공급망 방어는 *정책 문서가 있다*가 아니라 **서명검증·취약점·라이선스 게이트가 실제 CI에서 머지/배포를 차단하고, 우회 경로가 없는가**로 판정한다. 검증은 **소유 파이프라인**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| CI 게이트 | 경고만(non-blocking) | 위반 PR 주입 테스트 | 빌드 실패로 차단 |
+| 취약점 임계 | 임계 미설정 | 스캐너 정책 확인 | 임계 초과 차단 |
+| 우회 차단 | 강제 머지 허용 | 브랜치 보호 확인 | 게이트 우회 불가 |
+| 서명 강제 | 미서명 허용 | 어드미션 정책 점검 | 미서명 배포 거부 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 의존성/이미지 취약점 게이트가 실제 실패로 차단하는지 — 소유 파이프라인에서만
+grep -REn 'fail|exit-code|severity|--exit-code 1' .github/workflows/ 2>/dev/null | grep -Ei 'trivy|grype|audit|scan' | head || echo "scanner runs but may be non-blocking"
+# 2) 브랜치 보호로 게이트 우회(강제 머지)가 막혀 있는지
+gh api repos/:owner/:repo/branches/main/protection 2>/dev/null | jq '.required_status_checks.contexts' || echo "verify branch protection requires checks"
+```
+
+> 검증은 반드시 **소유 파이프라인**에서만 한다. "정책이 있다"와 "게이트가 실제 차단한다"는 다르다 — 위반 주입·브랜치 보호로 직접 확인한다([[18_DevSecOps]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -1169,3 +1195,28 @@ if __name__ == "__main__":
 | **Code signing** | Signing required for all production releases | Except internal development builds |
 | **Vendor evaluation** | Supply chain security evaluation when introducing new vendors | PoC allowed before evaluation completion |
 | **Incident response** | Immediately isolate if supply chain compromise is suspected | Configure automated isolation triggers |
+
+<!-- detect-validate-59 -->
+## Supply-Chain Defense Validation — Are Policies Actually Enforced as CI Gates?
+
+Supply-chain defense is judged not by *having a policy document* but by **whether signature/vuln/license gates actually block merge/deploy in CI with no bypass path**. Validate only on **owned pipelines**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| CI gate | Warns only (non-blocking) | Inject violating PR | Build fails closed |
+| Vuln threshold | No threshold set | Check scanner policy | Above-threshold blocked |
+| Bypass control | Force-merge allowed | Check branch protection | Gate cannot be bypassed |
+| Signature enforce | Unsigned allowed | Audit admission policy | Unsigned deploy rejected |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether dependency/image vuln gates actually fail-closed — owned pipeline only
+grep -REn 'fail|exit-code|severity|--exit-code 1' .github/workflows/ 2>/dev/null | grep -Ei 'trivy|grype|audit|scan' | head || echo "scanner runs but may be non-blocking"
+# 2) Whether branch protection blocks gate bypass (force-merge)
+gh api repos/:owner/:repo/branches/main/protection 2>/dev/null | jq '.required_status_checks.contexts' || echo "verify branch protection requires checks"
+```
+
+> Validate only on **owned pipelines**. "Having a policy" differs from "the gate actually blocks" — confirm directly via violation injection and branch protection ([[18_DevSecOps]], [[13_SOC_Blue_Team]]).
