@@ -689,6 +689,32 @@ if __name__ == "__main__":
 - CVE Details Browser Statistics (https://www.cvedetails.com/)
 - Google Project Zero Blog (https://googleprojectzero.blogspot.com/)
 
+
+<!-- detect-validate-60 -->
+## 공격면 검증 — 줄였다고 한 기능이 실제로 꺼져 있는가
+
+브라우저 공격면 관리는 *위협을 안다*가 아니라 **레거시 API·플러그인·위험 기능이 실제로 비활성이고, 서버 측 보호 헤더(CSP·격리)가 실제 응답에 존재하는가**로 판정한다. 검증은 **소유 사이트·테스트 프로파일**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| CSP 적용 | 헤더 부재/우회 | 응답 헤더 확인 | 엄격 CSP 존재 |
+| 교차출처 격리 | COOP/COEP 부재 | 격리 헤더 점검 | crossOriginIsolated |
+| 레거시 기능 | 위험 API 활성 | 기능 정책 확인 | 불필요 기능 차단 |
+| 프레이밍 | clickjacking 가능 | frame-ancestors 확인 | 임베드 제한 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 내 사이트 응답에 CSP·교차출처 격리 헤더가 실제 존재하는지 — 소유 사이트에서만
+curl -sI https://localhost/ | grep -iE 'content-security-policy|cross-origin-(opener|embedder)-policy|x-frame-options'
+# 2) Permissions-Policy로 위험 기능(카메라·지오 등)이 제한되는지
+curl -sI https://localhost/ | grep -i 'permissions-policy' || echo "no Permissions-Policy (features unrestricted)"
+```
+
+> 검증은 반드시 **소유 사이트·테스트 프로파일**에서만 한다. "공격면을 줄였다"와 "위험 기능이 실제 꺼졌다"는 다르다 — 응답 헤더로 직접 확인한다([[05_Web_Hacking]], [[51_Browser_Extension_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -1108,3 +1134,28 @@ def format_report_text(report: AuditReport) -> str:
 - WebKit Security (https://webkit.org/security/)
 - CVE Details Browser Statistics (https://www.cvedetails.com/)
 - Google Project Zero Blog (https://googleprojectzero.blogspot.com/)
+
+<!-- detect-validate-60 -->
+## Attack-Surface Validation — Are the Features You "Reduced" Actually Off?
+
+Browser attack-surface management is judged not by *knowing threats* but by **whether legacy APIs/plugins/risky features are actually disabled and server-side protection headers (CSP, isolation) actually exist in responses**. Validate only on **owned sites / test profiles**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| CSP applied | Header absent/bypassable | Inspect response header | Strict CSP present |
+| Cross-origin isolation | No COOP/COEP | Check isolation headers | crossOriginIsolated |
+| Legacy features | Risky API enabled | Check feature policy | Unneeded features blocked |
+| Framing | Clickjacking possible | Check frame-ancestors | Embedding restricted |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether your site's responses actually carry CSP / cross-origin isolation headers — owned site only
+curl -sI https://localhost/ | grep -iE 'content-security-policy|cross-origin-(opener|embedder)-policy|x-frame-options'
+# 2) Whether Permissions-Policy restricts risky features (camera/geo/etc.)
+curl -sI https://localhost/ | grep -i 'permissions-policy' || echo "no Permissions-Policy (features unrestricted)"
+```
+
+> Validate only on **owned sites / test profiles**. "Reduced the attack surface" differs from "risky features are actually off" — confirm directly via response headers ([[05_Web_Hacking]], [[51_Browser_Extension_Security]]).

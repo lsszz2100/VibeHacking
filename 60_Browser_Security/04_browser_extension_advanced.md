@@ -836,6 +836,32 @@ if __name__ == "__main__":
 - Chrome Web Store Policy (https://developer.chrome.com/docs/webstore/program_policies/)
 - Firefox Extension Workshop Security (https://extensionworkshop.com/documentation/develop/build-a-secure-extension/)
 
+
+<!-- detect-validate-60 -->
+## 확장 권한 검증 — 최소권한·격리가 실제로 강제되는가
+
+확장 보안은 *권한 모델을 안다*가 아니라 **설치된 확장이 실제로 최소 권한만 요청하고, MV3 격리·CSP가 적용되며, 과도한 host_permissions가 없는가**로 판정한다. 검증은 **소유 프로파일**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 최소 권한 | <all_urls> 남용 | manifest 권한 확인 | 도메인 한정 권한 |
+| MV3 격리 | 원격코드 실행 | manifest 버전 점검 | service worker·격리 |
+| 확장 CSP | 인라인/eval 허용 | CSP 필드 확인 | 엄격 CSP |
+| 출처 신뢰 | 사이드로드 무검증 | 설치 출처 확인 | 검증 스토어만 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 설치 확장 manifest의 과도 권한 여부 — 소유 프로파일에서만(경로는 환경에 맞게)
+find ~/.config -name manifest.json -path '*Extensions*' 2>/dev/null | while read m; do grep -lE '"<all_urls>"|"\*://\*/\*"' "$m"; done | head
+# 2) MV3 여부·확장 CSP 점검(인라인/eval 허용은 위험)
+find ~/.config -name manifest.json -path '*Extensions*' 2>/dev/null -exec grep -l '"manifest_version": *2' {} \; | head || echo "MV2 extensions are higher risk"
+```
+
+> 검증은 반드시 **소유 프로파일**에서만 한다. "권한 모델을 안다"와 "최소권한이 강제된다"는 다르다 — manifest 권한으로 직접 확인한다([[51_Browser_Extension_Security]], [[33_OSINT_Social_Engineering]]).
+
 ---
 
 <a name="english"></a>
@@ -1413,3 +1439,28 @@ if __name__ == "__main__":
 - "Malicious Browser Extensions" — USENIX Security 2012
 - Chrome Web Store Policy (https://developer.chrome.com/docs/webstore/program_policies/)
 - Firefox Extension Workshop Security (https://extensionworkshop.com/documentation/develop/build-a-secure-extension/)
+
+<!-- detect-validate-60 -->
+## Extension-Privilege Validation — Are Least-Privilege and Isolation Actually Enforced?
+
+Extension security is judged not by *knowing the permission model* but by **whether installed extensions actually request only minimal permissions, apply MV3 isolation/CSP, and avoid excessive host_permissions**. Validate only on **owned profiles**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Least privilege | <all_urls> abuse | Inspect manifest perms | Domain-scoped perms |
+| MV3 isolation | Remote code exec | Check manifest version | service worker / isolated |
+| Extension CSP | Inline/eval allowed | Check CSP field | Strict CSP |
+| Source trust | Unverified sideload | Check install source | Verified store only |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether installed extension manifests request excessive permissions — owned profile only (adjust path)
+find ~/.config -name manifest.json -path '*Extensions*' 2>/dev/null | while read m; do grep -lE '"<all_urls>"|"\*://\*/\*"' "$m"; done | head
+# 2) Check MV3 vs MV2 and extension CSP (inline/eval allowance is risky)
+find ~/.config -name manifest.json -path '*Extensions*' 2>/dev/null -exec grep -l '"manifest_version": *2' {} \; | head || echo "MV2 extensions are higher risk"
+```
+
+> Validate only on **owned profiles**. "Knowing the permission model" differs from "least privilege is enforced" — confirm directly via manifest permissions ([[51_Browser_Extension_Security]], [[33_OSINT_Social_Engineering]]).

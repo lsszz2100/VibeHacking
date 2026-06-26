@@ -834,6 +834,32 @@ if __name__ == "__main__":
 - Project Zero: Browser Sandbox Escapes (https://googleprojectzero.blogspot.com/)
 - Mojo IPC 보안 모델 (https://chromium.googlesource.com/chromium/src/+/HEAD/mojo/docs/security.md)
 
+
+<!-- detect-validate-60 -->
+## 샌드박스 검증 — 사이트 격리·seccomp가 실제로 적용되는가
+
+샌드박스 탈출 대응은 *탈출 기법을 안다*가 아니라 **사이트 격리(프로세스 분리)와 OS 샌드박스(seccomp/네임스페이스)가 실제 런타임에 적용되고, 렌더러가 제한된 권한으로 도는가**로 판정한다. 검증은 **소유 환경**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 사이트 격리 | 단일 프로세스 공유 | 프로세스 모델 확인 | 출처별 렌더러 분리 |
+| OS 샌드박스 | seccomp 미적용 | 프로세스 권한 점검 | seccomp 필터 적용 |
+| 권한 최소화 | 렌더러 과권한 | capability 확인 | 최소권한 렌더러 |
+| 탈출 탐지 | 무로깅 | 비정상 syscall 모니터 | 이상행위 탐지 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 렌더러 프로세스에 seccomp 샌드박스가 실제 적용됐는지 — 소유 환경에서만
+pid=$(pgrep -f 'type=renderer' | head -1); [ -n "$pid" ] && grep -i seccomp /proc/$pid/status || echo "no renderer running / check Seccomp: 2"
+# 2) 사이트 격리로 출처별 렌더러가 분리되는지(프로세스 수로 개략 확인)
+pgrep -af 'type=renderer' 2>/dev/null | wc -l
+```
+
+> 검증은 반드시 **소유 환경**에서만 한다. "샌드박스 탈출을 안다"와 "격리·seccomp가 실제 적용된다"는 다르다 — 프로세스 권한으로 직접 확인한다([[01_Linux_Basics]], [[29_Container_Kubernetes_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -1210,3 +1236,28 @@ if __name__ == "__main__":
 - seccomp-bpf official docs (https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html)
 - Project Zero: Browser Sandbox Escapes (https://googleprojectzero.blogspot.com/)
 - Mojo IPC Security Model (https://chromium.googlesource.com/chromium/src/+/HEAD/mojo/docs/security.md)
+
+<!-- detect-validate-60 -->
+## Sandbox Validation — Are Site Isolation and seccomp Actually Applied?
+
+Defending against sandbox escape is judged not by *knowing escape techniques* but by **whether site isolation (process separation) and the OS sandbox (seccomp/namespaces) are actually applied at runtime, with renderers running at reduced privilege**. Validate only on **owned environments**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Site isolation | Shared single process | Check process model | Per-origin renderer split |
+| OS sandbox | seccomp not applied | Inspect process privs | seccomp filter applied |
+| Least privilege | Over-privileged renderer | Check capabilities | Minimal-priv renderer |
+| Escape detection | No logging | Monitor abnormal syscalls | Anomalies detected |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether the renderer process actually has a seccomp sandbox applied — owned environment only
+pid=$(pgrep -f 'type=renderer' | head -1); [ -n "$pid" ] && grep -i seccomp /proc/$pid/status || echo "no renderer running / check Seccomp: 2"
+# 2) Whether site isolation splits renderers per origin (rough process-count check)
+pgrep -af 'type=renderer' 2>/dev/null | wc -l
+```
+
+> Validate only on **owned environments**. "Knowing sandbox escape" differs from "isolation and seccomp are actually applied" — confirm directly via process privileges ([[01_Linux_Basics]], [[29_Container_Kubernetes_Security]]).

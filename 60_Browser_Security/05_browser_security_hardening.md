@@ -908,6 +908,32 @@ if __name__ == "__main__":
 - Google Web Fundamentals — Security Headers
 - NIST SP 800-44 (웹 서버 보안 가이드)
 
+
+<!-- detect-validate-60 -->
+## 하드닝 검증 — 정책이 실제로 적용·잠겨 있는가
+
+브라우저 하드닝은 *정책을 작성했다*가 아니라 **엔터프라이즈 정책(GPO/관리형 정책)이 실제 클라이언트에 적용·잠금되고, 사용자가 위험 설정을 되돌릴 수 없는가**로 판정한다. 검증은 **소유 단말**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 정책 적용 | 미배포 정책 | 관리형 정책 확인 | 정책 활성 표시 |
+| 설정 잠금 | 사용자 우회 | 잠금 필드 점검 | 위험 설정 잠김 |
+| 업데이트 강제 | 수동 갱신 | 자동업데이트 확인 | 강제 자동패치 |
+| 안전기능 | 보호 비활성 | safebrowsing 등 점검 | 보호 강제 on |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 관리형(엔터프라이즈) 정책이 실제 배포됐는지 — 소유 단말에서만
+ls /etc/opt/chrome/policies/managed/*.json /etc/chromium/policies/managed/*.json 2>/dev/null && cat /etc/chromium/policies/managed/*.json 2>/dev/null | head -20 || echo "no managed policy deployed"
+# 2) 자동 업데이트·안전 브라우징 등 보호기능 강제 여부 점검(정책 키)
+grep -REi 'AutoUpdate|SafeBrowsing|PasswordManagerEnabled|RemoteAccess' /etc/*/policies 2>/dev/null | head || echo "verify hardening keys via chrome://policy"
+```
+
+> 검증은 반드시 **소유 단말**에서만 한다. "정책을 썼다"와 "정책이 적용·잠긴다"는 다르다 — 관리형 정책으로 직접 확인한다([[21_Windows_Exploitation]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -1127,3 +1153,28 @@ configuration, scores it, and outputs improvement recommendations.
 - Mozilla Observatory (https://observatory.mozilla.org/)
 - Google Web Fundamentals — Security Headers
 - NIST SP 800-44 (Web Server Security Guide)
+
+<!-- detect-validate-60 -->
+## Hardening Validation — Are Policies Actually Applied and Locked?
+
+Browser hardening is judged not by *having written a policy* but by **whether enterprise policy (GPO/managed policy) is actually applied and locked on the client so users cannot revert risky settings**. Validate only on **owned endpoints**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Policy applied | Undeployed policy | Check managed policy | Policy shown active |
+| Setting lock | User can revert | Inspect lock fields | Risky settings locked |
+| Forced updates | Manual updating | Check auto-update | Forced auto-patch |
+| Safety features | Protection off | Check safebrowsing etc. | Protection forced on |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether managed (enterprise) policy is actually deployed — owned endpoint only
+ls /etc/opt/chrome/policies/managed/*.json /etc/chromium/policies/managed/*.json 2>/dev/null && cat /etc/chromium/policies/managed/*.json 2>/dev/null | head -20 || echo "no managed policy deployed"
+# 2) Whether protective features (auto-update, safe browsing) are forced via policy keys
+grep -REi 'AutoUpdate|SafeBrowsing|PasswordManagerEnabled|RemoteAccess' /etc/*/policies 2>/dev/null | head || echo "verify hardening keys via chrome://policy"
+```
+
+> Validate only on **owned endpoints**. "Writing a policy" differs from "the policy is applied and locked" — confirm directly via managed policy ([[21_Windows_Exploitation]], [[13_SOC_Blue_Team]]).
