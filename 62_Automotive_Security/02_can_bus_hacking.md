@@ -435,6 +435,32 @@ cansend can0 7DF#023E000000000000
 
 다음 파일에서 ECU 분석 기법을 다룬다.
 
+
+<!-- detect-validate-62 -->
+## CAN 인증 검증 — 미인증 프레임이 실제로 거부되는가
+
+CAN 보안은 *주입이 가능하다*가 아니라 **메시지 인증(CAN-FD 보안·AUTOSAR SecOC 등)이 실제 적용돼 미인증/재전송 프레임이 거부되고, IDS가 비정상 주입을 탐지하는가**로 판정한다. 검증은 **소유 차량·벤치**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 메시지 인증 | 평문 무인증 | SecOC/MAC 유무 | MAC 검증 강제 |
+| 재전송 방지 | 리플레이 수용 | 동일 프레임 재주입 | freshness 거부 |
+| 주입 탐지 | 무탐지 IDS | 비정상 주기·ID 모니터 | 이상 주입 알림 |
+| 버스 부하 | DoS 무방비 | 부하·오류프레임 모니터 | 비정상 부하 탐지 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 동일 ID가 비정상 고빈도로 보이면 주입/플러딩 신호 — 소유 벤치에서만
+candump -n 500 can0 2>/dev/null | awk '{print $2}' | sort | uniq -c | sort -rn | head
+# 2) 메시지에 MAC/카운터 바이트(SecOC)가 실제 붙는지 페이로드 길이·패턴 확인
+candump can0,0:0 2>/dev/null | head -10   # DLC와 트레일러 바이트로 인증 부가정보 추정
+```
+
+> 검증은 반드시 **소유 차량·벤치**에서만 한다. 공도/타인 차량 주입은 위험·불법. "주입이 된다"와 "미인증이 거부된다"는 다르다 — 인증·재주입으로 직접 확인한다([[02_Network_Hacking]], [[34_Hardware_Hacking]]).
+
 ---
 
 <a name="english"></a>
@@ -720,3 +746,28 @@ Defense:
 ```
 
 The next file covers ECU analysis techniques.
+
+<!-- detect-validate-62 -->
+## CAN-Authentication Validation — Are Unauthenticated Frames Actually Rejected?
+
+CAN security is judged not by *being able to inject* but by **whether message authentication (CAN-FD security, AUTOSAR SecOC) is actually applied so unauthenticated/replayed frames are rejected and an IDS detects abnormal injection**. Validate only on **owned vehicles / benches**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Message auth | Plaintext, no auth | SecOC/MAC presence | MAC verification enforced |
+| Replay protection | Replay accepted | Re-inject same frame | Freshness rejection |
+| Injection detect | No IDS | Monitor abnormal rate/ID | Anomalous injection alerted |
+| Bus load | DoS-defenseless | Monitor load/error frames | Abnormal load detected |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) An abnormally high-frequency single ID signals injection/flooding — owned bench only
+candump -n 500 can0 2>/dev/null | awk '{print $2}' | sort | uniq -c | sort -rn | head
+# 2) Whether messages actually carry MAC/counter bytes (SecOC) — infer from payload length/pattern
+candump can0,0:0 2>/dev/null | head -10   # use DLC and trailer bytes to infer auth metadata
+```
+
+> Validate only on **owned vehicles / benches** — injection on public roads or others' vehicles is dangerous and illegal. "Can inject" differs from "unauthenticated is rejected" — confirm directly via auth and re-injection ([[02_Network_Hacking]], [[34_Hardware_Hacking]]).

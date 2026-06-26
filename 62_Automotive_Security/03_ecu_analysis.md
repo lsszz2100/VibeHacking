@@ -1144,6 +1144,33 @@ print(f"키:   {key_bytes.hex()}")
 
 **대응책**: AES-based CMAC, AUTOSAR SecOC, HSM(Hardware Security Module) 내에서 키 연산 수행.
 
+
+<!-- detect-validate-62 -->
+## ECU 보호 검증 — 펌웨어 서명·진단 인증이 실제로 강제되는가
+
+ECU 분석은 *펌웨어를 뜯었다*가 아니라 **ECU가 미서명 펌웨어 플래시를 거부하고, 진단 보안 접근(Security Access, seed-key)이 실제 강제되며, 부트로더가 다운그레이드를 막는가**로 판정한다. 검증은 **소유 ECU·벤치**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 플래시 서명 | 미서명 플래시 | 변조 펌웨어 기록 시도 | 미서명 거부 |
+| 진단 인증 | seed-key 우회 | Security Access 점검 | 인증 후만 접근 |
+| 안티롤백 | 구버전 플래시 | 버전 다운그레이드 | 다운그레이드 거부 |
+| 디버그 잠금 | JTAG 개방 | 디버그 포트 점검 | 양산 잠김 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) UDS 진단에서 Security Access(0x27)가 실제 요구되는지 — 소유 ECU에서만
+# (예: isotp 도구로 진단 세션 후 보호 서비스 접근 시 NRC 0x33 'securityAccessDenied' 기대)
+echo "Send UDS 0x10 0x03 then a protected SID; expect NRC 0x33 without valid key (owned ECU only)"
+# 2) 펌웨어 이미지에 서명/체크섬 구조가 존재하는지(미서명이면 변조 무방비)
+strings ecu_fw.bin 2>/dev/null | grep -Ei 'sign|rsa|crc|checksum|cert' | head || echo "inspect ECU image for signature structure"
+```
+
+> 검증은 반드시 **소유 ECU·벤치**에서만 한다. "펌웨어를 뜯었다"와 "서명·진단 인증이 강제된다"는 다르다 — 변조 플래시·Security Access로 직접 확인한다([[61_Firmware_Hacking]], [[16_Cryptography]]).
+
 ---
 
 <a name="english"></a>
@@ -2215,3 +2242,29 @@ print(f"Key:  {key_bytes.hex()}")
 **Root cause**: Algorithm is too simple and can be easily reimplemented after firmware reversing.
 
 **Mitigations**: AES-based CMAC, AUTOSAR SecOC, perform key operations inside an HSM (Hardware Security Module).
+
+<!-- detect-validate-62 -->
+## ECU-Protection Validation — Are Firmware Signing and Diagnostic Auth Actually Enforced?
+
+ECU analysis is judged not by *having dumped firmware* but by **whether the ECU rejects unsigned firmware flashes, actually enforces diagnostic Security Access (seed-key), and the bootloader blocks downgrades**. Validate only on **owned ECUs / benches**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Flash signing | Unsigned flash | Try writing tampered fw | Unsigned rejected |
+| Diagnostic auth | seed-key bypass | Check Security Access | Access only after auth |
+| Anti-rollback | Flash old version | Downgrade attempt | Downgrade rejected |
+| Debug lock | Open JTAG | Check debug ports | Production locked |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether UDS diagnostics actually require Security Access (0x27) — owned ECU only
+# (e.g., via isotp tools, after a diag session, accessing a protected service should return NRC 0x33 'securityAccessDenied')
+echo "Send UDS 0x10 0x03 then a protected SID; expect NRC 0x33 without valid key (owned ECU only)"
+# 2) Whether the firmware image contains a signature/checksum structure (unsigned = open to tampering)
+strings ecu_fw.bin 2>/dev/null | grep -Ei 'sign|rsa|crc|checksum|cert' | head || echo "inspect ECU image for signature structure"
+```
+
+> Validate only on **owned ECUs / benches**. "Dumped the firmware" differs from "signing and diagnostic auth are enforced" — confirm directly via tampered flash and Security Access ([[61_Firmware_Hacking]], [[16_Cryptography]]).

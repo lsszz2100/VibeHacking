@@ -423,6 +423,32 @@ SFOP (Safety, Financial, Operational, Privacy)
 
 자동차 보안은 가장 높은 윤리적 책임이 요구되는 분야다. 모든 테스트는 통제된 환경에서, 명시적 승인하에 수행해야 한다.
 
+
+<!-- detect-validate-62 -->
+## 차량 펜테스트 검증 — 위협 시나리오가 실제로 재현·완화 입증되는가
+
+차량 펜테스트는 *TARA를 작성했다*가 아니라 **식별된 위협 시나리오가 벤치에서 실제 재현되고, 적용한 완화가 동일 시나리오를 차단함을 재시험으로 입증하는가**로 판정한다. 검증은 **소유 차량·벤치**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 시나리오 재현 | 추정 위협 | 벤치 재현 시험 | 실제 재현 확인 |
+| 완화 실증 | 완화 미검증 | 완화 후 재시험 | 시나리오 차단 확인 |
+| 공격면 범위 | 누락 인터페이스 | 인터페이스 인벤토리 | 전 인터페이스 평가 |
+| 안전 통제 | 위험한 실차 시험 | 격리·세이프가드 | 안전조치 준수 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 노출된 차량 인터페이스(텔레매틱스/Wi-Fi/BT)가 실제 떠 있는지 — 소유 차량에서만
+nmap -Pn -sV 192.168.x.x 2>/dev/null | grep -E 'open' | head || echo "scan the head-unit/telematics interface on owned vehicle"
+# 2) 완화 적용 전후로 동일 PoC가 차단되는지 재시험 기록(증적)
+echo "Record PoC result pre-mitigation vs post-mitigation; healthy = same attack blocked after fix (owned bench)"
+```
+
+> 검증은 반드시 **소유 차량·벤치**에서만 한다. 안전계 시험은 격리·세이프가드 하에서만. "TARA를 작성했다"와 "시나리오가 재현·차단된다"는 다르다 — 재현·재시험으로 직접 확인한다([[10_Pentest_Methodology]], [[17_Red_Team_Operations]]).
+
 ---
 
 <a name="english"></a>
@@ -762,3 +788,28 @@ Impact rated 1~3 for each dimension → overall risk score calculated
 ```
 
 Automotive security is the field that demands the highest level of ethical responsibility. All tests must be performed in a controlled environment with explicit authorization.
+
+<!-- detect-validate-62 -->
+## Automotive Pentest Validation — Are Threat Scenarios Actually Reproduced and Mitigations Proven?
+
+Automotive pentesting is judged not by *having written a TARA* but by **whether identified threat scenarios are actually reproduced on a bench and applied mitigations are proven to block the same scenario on retest**. Validate only on **owned vehicles / benches**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Scenario reproduction | Assumed threat | Reproduce on bench | Real reproduction confirmed |
+| Mitigation proof | Mitigation unverified | Retest after fix | Scenario blocked |
+| Attack-surface scope | Missed interfaces | Interface inventory | All interfaces assessed |
+| Safety controls | Unsafe live test | Isolation/safeguards | Safety measures honored |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether exposed vehicle interfaces (telematics/Wi-Fi/BT) are actually up — owned vehicle only
+nmap -Pn -sV 192.168.x.x 2>/dev/null | grep -E 'open' | head || echo "scan the head-unit/telematics interface on owned vehicle"
+# 2) Retest record showing the same PoC is blocked after mitigation (evidence)
+echo "Record PoC result pre-mitigation vs post-mitigation; healthy = same attack blocked after fix (owned bench)"
+```
+
+> Validate only on **owned vehicles / benches** — test safety domains only under isolation and safeguards. "Wrote a TARA" differs from "scenarios are reproduced and blocked" — confirm directly via reproduction and retest ([[10_Pentest_Methodology]], [[17_Red_Team_Operations]]).

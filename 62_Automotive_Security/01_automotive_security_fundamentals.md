@@ -980,6 +980,32 @@ if __name__ == "__main__":
 
 다음 파일에서 CAN 버스 해킹 실전 기법을 다룬다.
 
+
+<!-- detect-validate-62 -->
+## 차량 격리 검증 — 도메인 분리가 실제로 트래픽을 막는가
+
+차량 보안 아키텍처는 *도메인을 나눴다*가 아니라 **중앙 게이트웨이가 안전계(파워트레인·섀시)와 인포테인먼트 간 트래픽을 실제로 격리하고, 외부 인터페이스(텔레매틱스)에서 안전계로 가는 경로가 차단되는가**로 판정한다. 검증은 **소유 차량·벤치**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 도메인 분리 | 평면 버스 | 버스 간 도달성 점검 | 안전계 격리 |
+| 게이트웨이 필터 | 무필터 포워딩 | 메시지 라우팅 확인 | 화이트리스트 라우팅 |
+| 외부 인터페이스 | 직접 안전계 접근 | 텔레매틱스→CAN 경로 | 경로 차단됨 |
+| 디버그 포트 | OBD 무제한 | 진단 접근 점검 | 인증된 진단만 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 인포테인먼트 버스에서 안전계 ID가 실제로 보이는지(보이면 격리 실패) — 소유 벤치에서만
+candump can0 2>/dev/null | awk '{print $2}' | sort -u | head -20   # 도메인 경계 밖 ID 노출 확인
+# 2) 게이트웨이가 특정 ID만 포워딩하는지(라우팅 화이트리스트 추정)
+candump -n 200 can0 2>/dev/null | awk '{print $2}' | sort | uniq -c | sort -rn | head
+```
+
+> 검증은 반드시 **소유 차량·벤치**에서만 한다. 공도/타인 차량 금지. "도메인을 나눴다"와 "트래픽이 실제 격리된다"는 다르다 — 버스 간 도달성으로 직접 확인한다([[37_ICS_SCADA]], [[24_Network_Infrastructure_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -1523,3 +1549,28 @@ if __name__ == "__main__":
 ```
 
 The next file covers practical CAN bus hacking techniques.
+
+<!-- detect-validate-62 -->
+## Vehicle-Isolation Validation — Does Domain Separation Actually Block Traffic?
+
+Vehicle security architecture is judged not by *having split domains* but by **whether the central gateway actually isolates traffic between safety domains (powertrain/chassis) and infotainment, and blocks any path from external interfaces (telematics) into safety domains**. Validate only on **owned vehicles / benches**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Domain separation | Flat bus | Check cross-bus reach | Safety domain isolated |
+| Gateway filter | Unfiltered forward | Inspect message routing | Whitelist routing |
+| External interface | Direct safety access | Telematics->CAN path | Path blocked |
+| Debug port | Unrestricted OBD | Check diagnostic access | Authenticated diag only |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether safety-domain IDs appear on the infotainment bus (if so, isolation failed) — owned bench only
+candump can0 2>/dev/null | awk '{print $2}' | sort -u | head -20   # check for IDs leaking past the domain boundary
+# 2) Whether the gateway forwards only specific IDs (inferring routing whitelist)
+candump -n 200 can0 2>/dev/null | awk '{print $2}' | sort | uniq -c | sort -rn | head
+```
+
+> Validate only on **owned vehicles / benches** — never on public roads or others' vehicles. "Split the domains" differs from "traffic is actually isolated" — confirm directly via cross-bus reachability ([[37_ICS_SCADA]], [[24_Network_Infrastructure_Security]]).

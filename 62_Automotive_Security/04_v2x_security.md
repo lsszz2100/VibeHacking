@@ -447,6 +447,32 @@ if __name__ == "__main__":
 
 다음 파일에서 자동차 침투 테스트 방법론을 다룬다.
 
+
+<!-- detect-validate-62 -->
+## V2X 검증 — 메시지 서명이 실제로 검증·폐기되는가
+
+V2X 보안은 *PKI를 설계했다*가 아니라 **수신 V2X 메시지(BSM/CAM)의 IEEE 1609.2 서명이 실제 검증되고, 폐기된 인증서·오서명 메시지가 거부되며, 프라이버시용 가명증서가 회전되는가**로 판정한다. 검증은 **소유 테스트베드**에서만.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 서명 검증 | 무검증 수용 | 오서명 메시지 주입 | 오서명 거부 |
+| 인증서 폐기 | CRL 미반영 | 폐기증서 테스트 | 폐기분 거부 |
+| 가명 회전 | 고정 ID 추적 | 인증서 회전 확인 | 주기적 가명 교체 |
+| 신선도 | 리플레이 수용 | 타임스탬프 점검 | 만료/리플레이 거부 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 수신 V2X 메시지에 1609.2 서명 헤더가 실제 존재·검증되는지 — 소유 테스트베드에서만
+echo "Decode BSM/CAM and verify 1609.2 signature; an unsigned or bad-sig frame must be dropped (owned testbed)"
+# 2) 스택 설정에 인증서 폐기(CRL/CTL) 검증이 켜져 있는지
+grep -REi 'crl|revocation|1609\.2|cert.?validate' /etc/v2x* 2>/dev/null | head || echo "verify revocation checking is enabled in the V2X stack"
+```
+
+> 검증은 반드시 **소유 테스트베드**에서만 한다. 실도로 송출 금지. "PKI를 설계했다"와 "서명이 실제 검증·폐기된다"는 다르다 — 오서명 주입·폐기 테스트로 직접 확인한다([[16_Cryptography]], [[24_Network_Infrastructure_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -809,3 +835,28 @@ Operational Countermeasures
 ```
 
 The next file covers automotive penetration testing methodology.
+
+<!-- detect-validate-62 -->
+## V2X Validation — Are Message Signatures Actually Verified and Revoked?
+
+V2X security is judged not by *having designed a PKI* but by **whether received V2X messages (BSM/CAM) have their IEEE 1609.2 signatures actually verified, revoked certs and bad-signature messages rejected, and pseudonym certificates rotated for privacy**. Validate only on **owned testbeds**.
+
+### Item -> Failure mode -> Validation method -> Healthy signal
+
+| Item | Failure mode | Validation method | Healthy signal |
+|---|---|---|---|
+| Signature verify | Accepts unverified | Inject bad-sig message | Bad signature rejected |
+| Cert revocation | CRL not applied | Test revoked cert | Revoked rejected |
+| Pseudonym rotation | Trackable fixed ID | Check cert rotation | Periodic pseudonym swap |
+| Freshness | Replay accepted | Check timestamp | Expired/replay rejected |
+
+### Defense validation (verify directly)
+
+```bash
+# 1) Whether received V2X messages actually carry and verify a 1609.2 signature header — owned testbed only
+echo "Decode BSM/CAM and verify 1609.2 signature; an unsigned or bad-sig frame must be dropped (owned testbed)"
+# 2) Whether the stack config enables certificate revocation (CRL/CTL) checking
+grep -REi 'crl|revocation|1609\.2|cert.?validate' /etc/v2x* 2>/dev/null | head || echo "verify revocation checking is enabled in the V2X stack"
+```
+
+> Validate only on **owned testbeds** — never transmit on live roads. "Designed a PKI" differs from "signatures are actually verified and revoked" — confirm directly via bad-signature injection and revocation tests ([[16_Cryptography]], [[24_Network_Infrastructure_Security]]).
