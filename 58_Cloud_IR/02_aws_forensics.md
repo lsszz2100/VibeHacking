@@ -835,6 +835,35 @@ python aws_cloudtrail_analyzer.py --log-file trail.json.gz --stats-only
 }
 ```
 
+
+<!-- evidence-validate-58 -->
+## 포렌식 검증 — 수집한 AWS 증거가 무결하고 분리 보존되는가
+
+AWS 포렌식은 *스냅샷을 떴다*가 아니라 **수집한 증거가 해시로 무결성이 입증되고 원본과 분리되어 법정 제출 가능한가**로 판정한다. 모든 수집·분석은 소유 계정에서만 한다.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| EBS 스냅샷 | 라이브 변조/원본 손상 | 스냅샷 태그·암호화·격리 확인 | 원본 격리, 사본에서만 분석 |
+| 메모리 캡처 | 캡처 도중 오염 | 별도 포렌식 역할로 수집 | 최소권한 역할, 캡처 로그 존재 |
+| CloudTrail 범위 | 일부 지역/서비스 누락 | 이벤트 셀렉터·데이터이벤트 점검 | 관리+데이터 이벤트 전지역 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 침해 인스턴스 볼륨 스냅샷을 만들고 케이스 태그를 기록 (소유 계정만)
+aws ec2 create-snapshot --volume-id vol-xxxx --description "IR-$(date -u +%FT%TZ)" \
+  --tag-specifications 'ResourceType=snapshot,Tags=[{Key=case,Value=ir-001}]'
+# 2) CloudTrail 데이터 이벤트(S3/Lambda)까지 기록 중인지 확인
+aws cloudtrail get-event-selectors --trail-name org-trail --query 'EventSelectors[].DataResources'
+# 3) 포렌식 분석은 원본이 아닌 사본에서만 — 원본 스냅샷 상태·암호화 확인
+aws ec2 describe-snapshots --snapshot-ids snap-xxxx --query 'Snapshots[].{State:State,Encrypted:Encrypted}'
+#    통과: 태그된 격리 스냅샷, 데이터이벤트 기록, 원본은 read-only
+```
+
+> 분석은 **원본이 아닌 사본**에서만, 모든 작업은 소유 계정에서. "스냅샷을 떴다"와 "법정 제출 가능한 증거다"는 다르다 — 해시·격리·CloudTrail 범위를 직접 확인해야 한다([[44_Incident_Response_DFIR]], [[07_Digital_Forensics]]).
+
 ---
 
 <a name="english"></a>
@@ -1540,3 +1569,30 @@ python aws_cloudtrail_analyzer.py --log-file trail.json.gz --stats-only
     ]
 }
 ```
+
+## Forensic Validation — Is the Collected AWS Evidence Intact and Preserved in Isolation?
+
+AWS forensics is judged by **whether the collected evidence has provable integrity via hashing, is isolated from the original, and is admissible**, not by *whether you took a snapshot*. Perform all collection and analysis only on accounts you own.
+
+### Item -> failure mode -> validation method -> good signal
+
+| Item | Failure mode | Validation method | Good signal |
+|---|---|---|---|
+| EBS snapshot | Live tampering / original damaged | Check snapshot tag, encryption, isolation | Original isolated, analysis on copy only |
+| Memory capture | Contamination during capture | Collect via a separate forensic role | Least-privilege role, capture log exists |
+| CloudTrail scope | Some regions/services missing | Check event selectors and data events | Management + data events across all regions |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Snapshot the compromised instance volume and record a case tag (owned account only)
+aws ec2 create-snapshot --volume-id vol-xxxx --description "IR-$(date -u +%FT%TZ)" \
+  --tag-specifications 'ResourceType=snapshot,Tags=[{Key=case,Value=ir-001}]'
+# 2) Confirm CloudTrail records data events (S3/Lambda) too
+aws cloudtrail get-event-selectors --trail-name org-trail --query 'EventSelectors[].DataResources'
+# 3) Analyze only a copy, never the original -- check original snapshot state and encryption
+aws ec2 describe-snapshots --snapshot-ids snap-xxxx --query 'Snapshots[].{State:State,Encrypted:Encrypted}'
+#    Pass: tagged isolated snapshot, data events recorded, original kept read-only
+```
+
+> Analyze only a **copy, never the original**, and do everything on accounts you own. "You took a snapshot" is not the same as "admissible evidence" -- verify hashing, isolation, and CloudTrail scope yourself (see [[44_Incident_Response_DFIR]], [[07_Digital_Forensics]]).

@@ -923,6 +923,34 @@ ORDER BY timestamp DESC
 LIMIT 1000;
 ```
 
+
+<!-- evidence-validate-58 -->
+## 포렌식 검증 — 수집한 GCP 증거가 무결하고 키 침해를 포착하는가
+
+GCP 포렌식은 *키 목록을 봤다*가 아니라 **수집한 디스크 이미지가 격리되고 감사로그가 침해 키 사용을 입증하는가**로 판정한다. 모든 작업은 소유 프로젝트에서만 한다.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 디스크 이미지 | 원본 인스턴스 변조 | 이미지 생성·읽기전용 보존 | 사본 디스크에서만 분석 |
+| Cloud Audit 로그 | 데이터 액세스 로그 비활성 | IAM auditConfigs 확인 | Admin+Data Access 로그 활성 |
+| 서비스 계정 키 | 오래된/유출 키 미탐지 | 키 생성일·사용 로그 대조 | 90일+ 키 없음, 비정상 사용 0 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 침해 인스턴스 디스크의 이미지를 만들어 격리 (소유 프로젝트만)
+gcloud compute images create ir-img-$(date -u +%Y%m%d) --source-disk <disk> --source-disk-zone <zone>
+# 2) Data Access 감사 로그가 활성인지 IAM 정책 확인
+gcloud projects get-iam-policy <proj> --format=json | jq '.auditConfigs'
+# 3) 서비스 계정의 오래된 키 탐지 (생성일 확인)
+gcloud iam service-accounts keys list --iam-account <sa-email> --format='table(name,validAfterTime)'
+#    통과: 격리 이미지, Data Access 로그 활성, 90일+ 키 0건
+```
+
+> 모든 작업은 **소유 프로젝트**에서만. "키 목록을 봤다"와 "침해 키를 입증했다"는 다르다 — 이미지 격리·감사로그·키 수명을 직접 확인해야 한다([[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -1114,3 +1142,29 @@ WHERE
 ORDER BY timestamp DESC
 LIMIT 1000;
 ```
+
+## Forensic Validation — Is the Collected GCP Evidence Intact and Does It Catch Key Compromise?
+
+GCP forensics is judged by **whether the collected disk image is isolated and audit logs prove use of a compromised key**, not by *whether you listed keys*. Do everything only on projects you own.
+
+### Item -> failure mode -> validation method -> good signal
+
+| Item | Failure mode | Validation method | Good signal |
+|---|---|---|---|
+| Disk image | Original instance tampered | Create image, preserve read-only | Analysis on copied disk only |
+| Cloud Audit logs | Data Access logs disabled | Check IAM auditConfigs | Admin + Data Access logs enabled |
+| Service account key | Old/leaked key undetected | Cross-check key creation date and use | No 90-day+ keys, zero abnormal use |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Create an image of the compromised instance disk and isolate it (owned project only)
+gcloud compute images create ir-img-$(date -u +%Y%m%d) --source-disk <disk> --source-disk-zone <zone>
+# 2) Check IAM policy that Data Access audit logs are enabled
+gcloud projects get-iam-policy <proj> --format=json | jq '.auditConfigs'
+# 3) Detect old service-account keys (check creation date)
+gcloud iam service-accounts keys list --iam-account <sa-email> --format='table(name,validAfterTime)'
+#    Pass: isolated image, Data Access logs enabled, zero 90-day+ keys
+```
+
+> Do everything only on **projects you own**. "You listed keys" is not the same as "you proved key compromise" -- verify image isolation, audit logs, and key age yourself (see [[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).

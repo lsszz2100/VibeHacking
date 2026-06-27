@@ -1060,6 +1060,34 @@ LIMIT 20;
 | 결과 문서화 | 헌팅 노트북(Jupyter) 또는 위키에 기록 |
 | 팀 역량 강화 | 시뮬레이션(Atomic Red Team) 정기 실행 |
 
+
+<!-- hunt-validate-58 -->
+## 헌팅 검증 — 가설이 실제 위협을 포착하고 오탐을 거르는가
+
+클라우드 위협 헌팅은 *쿼리를 돌렸다*가 아니라 **가설이 ATT&CK 기법에 매핑되고, 로그 커버리지가 사각지대 없이 알려진 양성을 재현하는가**로 판정한다. 검증은 소유·승인된 환경에서만 한다.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 헌팅 가설 | 막연한 탐색 | TTP→쿼리 매핑 확인 | MITRE ATT&CK 기법에 정렬 |
+| 로그 커버리지 | 사각지대 미인지 | 제공자별 수집 여부 점검 | 관리+데이터 이벤트 전 제공자 |
+| 탐지 정확도 | 오탐 폭주 | 베이스라인 대비 검증 | 알려진 양성 재현, 오탐률 측정 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 멀티클라우드 로그가 헌팅 파이프라인에 모두 수집되는지 커버리지 확인 (소유 테넌트만)
+aws cloudtrail get-trail-status --name org-trail --query IsLogging
+az monitor log-analytics workspace list -o table
+gcloud logging sinks list
+# 2) 헌팅 가설(예: impossible travel)을 통제 환경에서 재현해 신호를 잡는지 확인
+# 3) 알려진 양성 샘플(Atomic Red Team 등)으로 룰이 발화하는지 검증
+#    통과: 가설이 ATT&CK 에 매핑, 전 제공자 로그 수집, 양성 재현 시 발화
+```
+
+> 헌팅 검증은 **소유·승인된 환경**에서만. "쿼리를 돌렸다"와 "위협을 포착한다"는 다르다 — 가설의 ATT&CK 매핑·로그 커버리지·양성 재현을 직접 확인해야 한다([[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
+
 ---
 
 <a name="english"></a>
@@ -1260,3 +1288,29 @@ LIMIT 20;
 | Hunting frequency | High-risk environments weekly, general monthly |
 | Result documentation | Record in hunting notebooks (Jupyter) or wiki |
 | Team capability building | Run simulations (Atomic Red Team) regularly |
+
+## Hunting Validation — Does the Hypothesis Catch a Real Threat and Filter False Positives?
+
+Cloud threat hunting is judged by **whether the hypothesis maps to ATT&CK techniques and log coverage has no blind spots while reproducing known positives**, not by *whether you ran a query*. Validate only in environments you own or are authorized for.
+
+### Item -> failure mode -> validation method -> good signal
+
+| Item | Failure mode | Validation method | Good signal |
+|---|---|---|---|
+| Hunting hypothesis | Aimless searching | Check TTP -> query mapping | Aligned to a MITRE ATT&CK technique |
+| Log coverage | Unaware of blind spots | Check collection per provider | Management + data events across all providers |
+| Detection accuracy | Flood of false positives | Validate against a baseline | Reproduce known positives, measure FP rate |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Verify multi-cloud logs all flow into the hunting pipeline (owned tenants only)
+aws cloudtrail get-trail-status --name org-trail --query IsLogging
+az monitor log-analytics workspace list -o table
+gcloud logging sinks list
+# 2) Reproduce the hunting hypothesis (e.g., impossible travel) in a controlled env and confirm it catches the signal
+# 3) Validate the rule fires against known-positive samples (e.g., Atomic Red Team)
+#    Pass: hypothesis maps to ATT&CK, logs collected across all providers, fires on positive replay
+```
+
+> Validate hunting only in **environments you own or are authorized for**. "You ran a query" is not the same as "you catch the threat" -- verify the hypothesis's ATT&CK mapping, log coverage, and positive replay yourself (see [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).

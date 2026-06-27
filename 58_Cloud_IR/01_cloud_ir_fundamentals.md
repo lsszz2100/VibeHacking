@@ -754,6 +754,34 @@ python cloud_ir_checklist.py --provider aws --incident-type custom --template-fi
 
 > **핵심 원칙**: 사고 대응 계정은 평소에 비활성화 상태로 유지하고, 실제 사고 발생 시 Break Glass 절차에 따라 활성화한다. 모든 접근은 별도 로그로 기록한다.
 
+
+<!-- evidence-validate-58 -->
+## 사고 대응 검증 — 절차가 실제 사고에서 작동하고 증거가 보존되는가
+
+클라우드 IR은 *플레이북을 문서화했다*가 아니라 **실제 사고에서 Break Glass·로그 불변성·역할 최소권한이 작동하고 증거 연속성이 입증되는가**로 판정한다. 검증은 반드시 소유·승인된 계정에서만 한다.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| Break Glass 계정 | 평시 활성/과권한 | 계정 상태·MFA·로깅 점검 | 평시 비활성, 사용 시 별도 감사로그 |
+| 로그 불변성 | 공격자가 감사로그 삭제 | 로그 보관·객체 잠금 확인 | CloudTrail 다지역+S3 Object Lock |
+| 증거 연속성 | 수집 후 해시 미보존 | 스냅샷 해시·타임스탬프 대조 | 수집 시각·SHA256 기록 일치 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) Break Glass 계정이 평시 콘솔 로그인 비활성인지 사실 확인 (소유 계정만)
+aws iam get-login-profile --user-name break-glass 2>&1 | grep -q "NoSuchEntity" && echo "콘솔 로그인 비활성=양호"
+# 2) CloudTrail 이 다지역+로그파일 검증 활성인지
+aws cloudtrail describe-trails --query 'trailList[].{Name:Name,Multi:IsMultiRegionTrail,Validate:LogFileValidationEnabled}'
+# 3) 증거 S3 버킷에 Object Lock 이 걸려 변조 불가인지
+aws s3api get-object-lock-configuration --bucket ir-evidence-bucket
+#    통과: 평시 비활성 계정, 다지역+검증 로그, Object Lock=COMPLIANCE
+```
+
+> 검증은 반드시 **소유·승인된 계정**에서만 한다. "플레이북이 있다"와 "사고 때 작동한다"는 다르다 — Break Glass·로그 불변성·증거 해시를 직접 재현해 확인해야 신뢰할 수 있다([[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -898,3 +926,29 @@ python cloud_ir_checklist.py --provider aws --incident-type custom --template-fi
 | CSP Support | Platform layer support | CSP internal systems |
 
 > **Key Principle**: Keep incident response accounts disabled at all times, and activate them via Break Glass procedures only during actual incidents. All access must be logged separately.
+
+## Incident Response Validation — Does the Process Work in a Real Incident and Is Evidence Preserved?
+
+Cloud IR is judged by **whether Break Glass, log immutability, and least-privilege roles actually work during a real incident and whether evidence continuity is provable**, not by *whether a playbook is documented*. Validate only on accounts you own or are authorized for.
+
+### Item -> failure mode -> validation method -> good signal
+
+| Item | Failure mode | Validation method | Good signal |
+|---|---|---|---|
+| Break Glass account | Active/over-privileged at rest | Check account state, MFA, logging | Disabled at rest, separate audit log on use |
+| Log immutability | Attacker deletes audit logs | Verify retention and object lock | CloudTrail multi-region + S3 Object Lock |
+| Evidence continuity | No hash preserved after capture | Compare snapshot hash and timestamp | Capture time and SHA256 record match |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Confirm the Break Glass account has console login disabled at rest (owned account only)
+aws iam get-login-profile --user-name break-glass 2>&1 | grep -q "NoSuchEntity" && echo "console login disabled = good"
+# 2) Check CloudTrail is multi-region with log-file validation enabled
+aws cloudtrail describe-trails --query 'trailList[].{Name:Name,Multi:IsMultiRegionTrail,Validate:LogFileValidationEnabled}'
+# 3) Check the evidence S3 bucket has Object Lock so it cannot be tampered with
+aws s3api get-object-lock-configuration --bucket ir-evidence-bucket
+#    Pass: account disabled at rest, multi-region validated logs, Object Lock = COMPLIANCE
+```
+
+> Run validation only on **accounts you own or are authorized for**. "A playbook exists" is not the same as "it works during an incident" -- reproduce Break Glass, log immutability, and evidence hashing yourself to trust them (see [[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).

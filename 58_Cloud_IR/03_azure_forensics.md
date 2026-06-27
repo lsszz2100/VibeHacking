@@ -833,6 +833,35 @@ SigninLogs
 | where datetime_diff("minute", TimeGenerated, PrevTime) < 30
 ```
 
+
+<!-- evidence-validate-58 -->
+## 포렌식 검증 — 수집한 Azure 증거가 무결하고 위협을 포착하는가
+
+Azure 포렌식은 *로그를 봤다*가 아니라 **수집한 증거가 불변 저장소에 보존되고 침해 계정을 실제로 식별하는가**로 판정한다. 모든 수집·조회는 소유 구독에서만 한다.
+
+### 항목 → 실패 모드 → 검증 방법 → 양호 신호
+
+| 항목 | 실패 모드 | 검증 방법 | 양호 신호 |
+|---|---|---|---|
+| 디스크 스냅샷 | 원본 VM 계속 가동 | 스냅샷→복사 후 격리 확인 | 사본에서만 분석, 원본 잠금 |
+| Activity/Sign-in 로그 | 보존기간 초과 소실 | 진단설정→불변 저장소 확인 | Log Analytics+불변 보관 |
+| Entra ID 위험 사용자 | 침해 계정 미식별 | 위험 탐지·역할 변경 대조 | 위험 사용자·최근 역할할당 검토 |
+
+### 방어 검증 (직접 확인)
+
+```bash
+# 1) 침해 VM 디스크 스냅샷 생성 (소유 구독만)
+az snapshot create -g ir-rg -n ir-snap-$(date -u +%Y%m%d) --source <diskId>
+# 2) Activity 로그가 불변 저장소로 내보내지는지 진단설정 확인
+az monitor diagnostic-settings list --resource <resourceId> -o table
+# 3) Entra ID 고위험 사용자 조회로 침해 계정 식별
+az rest --method get \
+  --url "https://graph.microsoft.com/v1.0/identityProtection/riskyUsers?\$filter=riskLevel eq 'high'"
+#    통과: 격리 스냅샷, 진단설정→불변 보관, 고위험 사용자 식별
+```
+
+> 모든 수집·조회는 **소유 구독**에서만. "로그를 봤다"와 "불변 보존된 증거다"는 다르다 — 스냅샷 격리·진단설정·위험 사용자 식별을 직접 확인해야 한다([[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).
+
 ---
 
 <a name="english"></a>
@@ -1546,3 +1575,30 @@ SigninLogs
 | where IPAddress != PrevIP
 | where datetime_diff("minute", TimeGenerated, PrevTime) < 30
 ```
+
+## Forensic Validation — Is the Collected Azure Evidence Intact and Does It Catch the Threat?
+
+Azure forensics is judged by **whether the collected evidence is preserved in immutable storage and actually identifies the compromised account**, not by *whether you looked at logs*. Perform all collection and queries only on subscriptions you own.
+
+### Item -> failure mode -> validation method -> good signal
+
+| Item | Failure mode | Validation method | Good signal |
+|---|---|---|---|
+| Disk snapshot | Original VM keeps running | Verify snapshot -> copy -> isolation | Analysis on copy only, original locked |
+| Activity/Sign-in logs | Lost past retention window | Check diagnostic settings -> immutable store | Log Analytics + immutable retention |
+| Entra ID risky users | Compromised account unidentified | Cross-check risk detections and role changes | Risky users and recent role assignments reviewed |
+
+### Defense validation (verify yourself)
+
+```bash
+# 1) Create a snapshot of the compromised VM disk (owned subscription only)
+az snapshot create -g ir-rg -n ir-snap-$(date -u +%Y%m%d) --source <diskId>
+# 2) Check diagnostic settings export Activity logs to immutable storage
+az monitor diagnostic-settings list --resource <resourceId> -o table
+# 3) Query Entra ID high-risk users to identify the compromised account
+az rest --method get \
+  --url "https://graph.microsoft.com/v1.0/identityProtection/riskyUsers?\$filter=riskLevel eq 'high'"
+#    Pass: isolated snapshot, diagnostic settings -> immutable store, high-risk user identified
+```
+
+> Do all collection and queries only on **subscriptions you own**. "You looked at logs" is not the same as "immutably preserved evidence" -- verify snapshot isolation, diagnostic settings, and risky-user identification yourself (see [[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).
