@@ -639,6 +639,7 @@ def is_real_system() -> bool:
 
 # Detect xxd usage
 -a always,exit -F arch=b64 -S execve -F exe=/usr/bin/xxd -k xxd_exec
+```
 
 <!-- detect-validate-20 -->
 ## Obfuscation/Evasion Detection and Defense Validation
