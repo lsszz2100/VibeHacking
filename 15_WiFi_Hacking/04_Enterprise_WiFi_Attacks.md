@@ -871,3 +871,29 @@ netsh wlan set profileparameter name="CorpWiFi" `
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\RasMan\PPP\EAP\25" `
   -Name "ServerCertificate" -Value 1
 ```
+
+<!-- detect-validate-15 -->
+## Attack Detection and Defense Validation
+
+Enterprise WiFi (WPA-Enterprise/802.1X) relies on *RADIUS authentication*. Attacks focus on intercepting credentials (especially MSCHAPv2) with a rogue AP + rogue RADIUS. Defenders must validate whether **server-certificate validation** is enforced and whether **the attack is detected**. Practice only on **owned/authorized networks**.
+
+### Attack -> Mitigation layer -> Control (defender) -> Detection signal
+
+| Technique | Weakness targeted | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| Evil Twin + rogue RADIUS | Server cert not validated | Pin CA, enforce cert validation | Same SSID, different RADIUS |
+| MSCHAPv2 challenge theft | Weak EAP method | EAP-TLS (mutual auth) | Abnormal auth fail then success |
+| Credential relay | PEAP inner trust | Enforce client profile | Auth attempts to a new RADIUS |
+| Downgrade lure | Weak EAP allowed | Allow strong EAP only | Non-standard EAP negotiation |
+
+### Defense validation (do it yourself)
+
+```bash
+# Verify the client actually validates the server certificate (if not, credentials leak to an Evil Twin)
+# Stand up a rogue RADIUS (hostapd-wpe) in a controlled env; if the client connects without warning, the config is weak
+echo "Client profile: confirm 'validate CA certificate' + 'match server name' are enforced"
+# Monitor RADIUS logs for abnormal auth-fail -> success-on-other-server patterns
+grep -i "Access-Reject\|Access-Accept" /var/log/freeradius/radius.log | tail
+```
+
+> Enterprise WiFi security hinges on *the client validating the server certificate* — if this is off, anything short of EAP-TLS hands credentials straight to a rogue RADIUS. Use hostapd-wpe in a controlled env to validate that the client configuration holds up ([[54_Active_Directory_Attacks]], [[16_Cryptography]]).

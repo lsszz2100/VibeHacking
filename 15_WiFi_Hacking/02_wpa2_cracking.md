@@ -1295,3 +1295,28 @@ sudo hostapd-wpe /etc/hostapd-wpe/hostapd-wpe.conf
 hashcat -m 5500 netntlm.txt wordlist.txt  # NTLMv1
 hashcat -m 5600 netntlmv2.txt wordlist.txt  # NTLMv2
 ```
+
+<!-- detect-validate-15 -->
+## Attack Detection and Defense Validation
+
+WPA2-PSK cracking is an *offline attack* — the attacker only needs to capture the 4-way handshake (or PMKID), then leaves and cracks it with a wordlist/GPU. So defenders must detect and block not the **crack itself** but the **handshake-capture attempts (especially deauth-induced) and weak PSKs**. Practice only on **owned/authorized networks**.
+
+### Attack -> Mitigation layer -> Control (defender) -> Detection signal
+
+| Technique | Weakness targeted | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| 4-way handshake capture | Weak PSK | Long random PSK, WPA3-SAE | Spike in EAPOL retransmissions |
+| Forced reauth via deauth | Unprotected mgmt frames | 802.11w (PMF) | Bursts of deauth/disassoc |
+| Clientless PMKID | RSN PMKID exposure | Disable PMKID, WPA3 | PMKID requests with no association |
+| Wordlist/GPU crack | PSK present in wordlist | Passphrase policy | (offline — prevention is the only control) |
+
+### Defense validation (do it yourself)
+
+```bash
+# 1) Verify deauth is blocked by PMF — owned AP / controlled RF only
+grep -E '^ieee80211w' /etc/hostapd/hostapd.conf || echo 'PMF not set — vulnerable to forced handshake capture'
+# 2) Monitor EAPOL retransmissions / deauth floods (detect capture attempts in a capture)
+tshark -r cap.pcap -Y 'eapol || wlan.fc.type_subtype==0x0c' | wc -l
+```
+
+> Because WPA2 cracking is offline after capture, *prevention (strong PSK, WPA3-SAE)* is the essence, while detection focuses on *capture attempts (deauth/EAPOL floods, PMKID requests)* — "we enabled WPA2" is not the same as "a handshake cannot be force-captured (PMF)" ([[13_SOC_Blue_Team]], [[16_Cryptography]]).

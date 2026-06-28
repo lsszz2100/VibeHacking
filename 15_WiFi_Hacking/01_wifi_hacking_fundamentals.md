@@ -1580,3 +1580,28 @@ WPA2 / WPA3 Security Hardening:
 
 > **Perform only in lab/test environments.**
 > Deauth attacks and Evil Twin attacks on third-party networks violate radio communications laws.
+
+<!-- detect-validate-15 -->
+## Attack Detection and Defense Validation
+
+WiFi security weaknesses differ by *protocol generation (WEP→WPA→WPA2→WPA3)*. Attackers recon in monitor mode, then target the weakest link. Defenders must validate **which protocols/ciphers are actually in use** and **whether monitor-mode recon and weak ciphers are detected**. Practice only on **owned/authorized networks**.
+
+### Attack -> Mitigation layer -> Control (defender) -> Detection signal
+
+| Technique | Weakness targeted | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| WEP/TKIP legacy abuse | Outdated cipher | Enforce WPA2-AES/WPA3 | Weak cipher suite in beacons |
+| Monitor-mode recon | Open management frames | 802.11w (PMF) | Abnormal probe/airodump traffic |
+| Beacon/SSID harvesting | Broadcast exposure | Prune unneeded SSIDs | Burst of probe responses |
+| Channel sniffing | Plaintext over the air | WPA2-Enterprise/VPN | Same SSID, multiple BSSIDs |
+
+### Defense validation (do it yourself)
+
+```bash
+# 1) Confirm the cipher generation actually in use — replace immediately if WEP/TKIP remains
+sudo iwlist wlan0 scan | grep -E "ESSID|IE: .*WPA|Encryption"
+# 2) Fact-check whether PMF (management-frame protection) is applied (owned AP)
+grep -E '^ieee80211w' /etc/hostapd/hostapd.conf || echo 'PMF not set — vulnerable to deauth/recon'
+```
+
+> The starting point of WiFi defense is to confirm as fact *which protocols/ciphers are actually running* — "we use WPA2" is not the same as "no TKIP remains." Inspect the cipher suite and PMF directly on an owned AP ([[13_SOC_Blue_Team]], [[02_Network_Hacking]]).

@@ -1235,3 +1235,28 @@ if __name__ == "__main__":
 | Captive portal | Detect DNS redirection | HSTS + certificate validation |
 | KARMA attack | Monitor probe responses | Minimize preferred network list |
 | PMKID attack | Handshake collection without association | Upgrade to WPA3-SAE |
+
+<!-- detect-validate-15 -->
+## Attack Detection and Defense Validation
+
+This section covers *detection itself*, so defenders must go one step further and validate **whether the detection rules actually fire** and **whether rogue APs / captive portals are blocked by controls**. "We enabled WIDS" is not the same as "it catches this PoC." Practice only on **owned/authorized networks**.
+
+### Attack -> Mitigation layer -> Control (defender) -> Detection signal
+
+| Technique | Weakness targeted | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| Rogue/Evil Twin AP | Connection trust | 802.1X, certificate pinning | Same SSID, multiple BSSIDs / RSSI anomaly |
+| Captive-portal phishing | HTTPS not enforced | HSTS preload | DNS redirection / cert warnings |
+| KARMA / probe response | Client auto-connect | Minimize preferred list, MAC randomization | AP responding to arbitrary SSIDs |
+| Deauth lure | Unprotected mgmt frames | 802.11w (PMF) | Bursts of deauth/disassoc |
+
+### Defense validation (do it yourself)
+
+```bash
+# 1) Whether Evil Twin detection rules actually fire — reproduce PoC on owned AP / controlled RF only
+sudo airodump-ng wlan0mon -w cap   # check the detector catches same SSID with multiple BSSIDs
+# 2) Detect captive-portal DNS redirection / cert warnings (validate from the client's view)
+nslookup example.com | grep -q "$(ip route get 1.1.1.1 | awk '{print $7;exit}')" && echo 'possible DNS interception'
+```
+
+> Validation for a detection section means confirming via PoC that *detection actually fires and controls actually block* — stand up a rogue AP in a controlled env and reproduce both the WIDS alert and the client-side blocking yourself ([[13_SOC_Blue_Team]], [[68_Purple_Team]]).

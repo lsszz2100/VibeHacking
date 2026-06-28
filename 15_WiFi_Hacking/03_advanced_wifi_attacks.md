@@ -772,3 +772,29 @@ if __name__ == "__main__":
 | Handshake capture | Migrate to WPA3-SAE (Dragonfly) |
 | Rogue AP | WIDS/WIPS (Wireless IDS/IPS) |
 | MITM | HTTPS Everywhere, use VPN |
+
+<!-- detect-validate-15 -->
+## Attack Detection and Defense Validation
+
+Advanced WiFi attacks (Bettercap, Airgeddon, automated Evil Twin) aim to *hijack the connection and MITM* it. Defenders must validate **the traces a rogue AP / MITM leaves at L2 and the network layer** and **whether HSTS, VPN, and PMF actually block the interception**. Practice only on **owned/authorized networks**.
+
+### Attack -> Mitigation layer -> Control (defender) -> Detection signal
+
+| Technique | Weakness targeted | Primary control (prevent) | Detection signal |
+|---|---|---|---|
+| Automated Evil Twin | Connection trust | WIDS/WIPS, 802.1X | Same SSID, multiple BSSIDs |
+| Bettercap MITM | ARP/DNS trust | Dynamic ARP inspection, DoH | Gateway MAC change |
+| Automated deauth | Unprotected mgmt frames | 802.11w (PMF) | Bursts of deauth |
+| SSL strip / plaintext lure | HTTPS not enforced | HSTS preload, VPN | Downgrade to plaintext HTTP |
+
+### Defense validation (do it yourself)
+
+```bash
+# 1) Whether Evil Twin/MITM shows up in WIDS/capture — owned RF / controlled env only
+sudo airodump-ng wlan0mon -w cap   # check same SSID with multiple BSSIDs
+# 2) Detect gateway-MAC tampering (ARP spoofing)
+ip neigh show | awk '$1==ENVIRON["GW"]{print "GW MAC:",$5}'  # GW=gateway IP
+arpwatch -i wlan0 2>/dev/null &  # alert on MAC-change events
+```
+
+> The core of advanced WiFi attacks is *interception (MITM)*, so defense validation means reproducing as a PoC "does the rogue AP get caught by WIDS + do HSTS/VPN block the plaintext lure" — don't just read config values, confirm the actual blocking ([[02_Network_Hacking]], [[68_Purple_Team]]).
