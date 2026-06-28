@@ -707,7 +707,7 @@ Access Methods:
   Claude Opus 4.6  → claude.ai or Anthropic API (general access)
   GPT-5.4          → chatgpt.com (general access)
   GPT-4o    → openai.com (TAC certification required)
-  Claude Opus 4    → 내부 연구 프로그램
+  Claude Opus 4    → Internal Research Program
 ```
 
 ---
@@ -1090,7 +1090,7 @@ Even after TAC access:
 | Claude API Official Docs | docs.anthropic.com |
 | OpenAI TAC Official Blog | openai.com/index/scaling-trusted-access-for-cyber-defense |
 | Anthropic Red Team Research | red.anthropic.com |
-| 내부 연구 프로그램 Inquiry | glasswing@anthropic.com |
+| Internal Research Program Inquiry | glasswing@anthropic.com |
 | OpenAI Enterprise TAC | Through OpenAI sales representative |
 
 <!-- detect-validate-11 -->

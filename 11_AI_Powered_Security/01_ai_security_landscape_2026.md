@@ -514,7 +514,7 @@ Core Changes:
 
 ---
 
-## 2. Anthropic Claude + 내부 연구 프로그램
+## 2. Anthropic Claude + Internal Research Program
 
 ### 2-1. What is Claude Opus 4
 
@@ -559,12 +559,12 @@ Zero-Day Discovery Examples:
     - "Tens of thousands of vulnerabilities — things even top-tier bug hunters can't find"
 ```
 
-### 2-3. 내부 연구 프로그램 Structure
+### 2-3. Internal Research Program Structure
 
 ```
 Anthropic's Response:
 1. Decision not to publicly release Claude Opus 4
-2. Instead launched 내부 연구 프로그램
+2. Instead launched an Internal Research Program
 
 Partner Companies (12):
 ┌─────────────────────────────────────────────────────────┐
@@ -833,7 +833,7 @@ Model: Access to GPT-4o
 Requirements: Apply through OpenAI sales representative
 Model: Team-level access + higher privileges
 
-[Anthropic 내부 연구 프로그램]
+[Anthropic Internal Research Program]
 Requirements: Currently only 12 partner companies (as of 2026.04)
 Model: Claude Opus 4 Preview
 Other: Open-source projects → contact glasswing@anthropic.com
@@ -869,7 +869,7 @@ Prohibited:
 | Resource | URL |
 |----------|-----|
 | Anthropic Red Team Research | red.anthropic.com |
-| 내부 연구 프로그램 | anthropic.com/glasswing |
+| Internal Research Program | anthropic.com/glasswing |
 | OpenAI TAC Program | openai.com |
 | ZeroDayBench Paper | arxiv.org/abs/2603.02297 |
 | Bruce Schneier Analysis | schneier.com/blog |
