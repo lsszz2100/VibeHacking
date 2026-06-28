@@ -9,9 +9,9 @@
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#table-of-contents)
 [![Lines](https://img.shields.io/badge/Lines-530%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
-[![Play Wargame](https://img.shields.io/badge/Play_Wargame-39_challenges-9933ff)](https://lsszz2100.github.io/VibeHacking/)
+[![Play Wargame](https://img.shields.io/badge/Play_Wargame-50_challenges·5_tracks-9933ff)](https://lsszz2100.github.io/VibeHacking/)
 
-> 🎮 **Browser-based, staged CTF wargame** — 5 tiers from novice to expert, with hints and exam-style progression. 39 challenges drawn from this repo's 75 sections. ([about](wargame/README.md) · available once GitHub Pages is enabled)
+> 🎮 **Browser-based CTF wargame** — 50 challenges. Browse **by tier** (5 levels novice→expert, hints, exam-style progression) or **by track** (Web · Crypto · System/Pwn · Forensics · Cloud/AI). Drawn from this repo's 75 sections. ([about](wargame/README.md) · available once GitHub Pages is enabled)
 
 <br/>
 

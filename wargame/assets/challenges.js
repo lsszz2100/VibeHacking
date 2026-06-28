@@ -12,7 +12,7 @@ const TIERS = [
     "id": 1,
     "ko": "기초",
     "en": "Beginner",
-    "need": 5,
+    "need": 6,
     "desc_ko": "고전 암호·웹 기초·HTTP 지식.",
     "desc_en": "Classic ciphers, web basics, HTTP knowledge."
   },
@@ -20,7 +20,7 @@ const TIERS = [
     "id": 2,
     "ko": "중급",
     "en": "Intermediate",
-    "need": 6,
+    "need": 9,
     "desc_ko": "인젝션·해시·JWT·인코딩·간단한 리버싱.",
     "desc_en": "Injection, hashing, JWT, encoding, light reversing."
   },
@@ -28,7 +28,7 @@ const TIERS = [
     "id": 3,
     "ko": "고급",
     "en": "Advanced",
-    "need": 5,
+    "need": 7,
     "desc_ko": "XOR/ROT47 암호·익스플로잇·포렌식·탐지.",
     "desc_en": "XOR/ROT47 crypto, exploitation, forensics, detection."
   },
@@ -42,11 +42,55 @@ const TIERS = [
   }
 ];
 
+const TRACKS = [
+  {
+    "id": "web",
+    "icon": "🌐",
+    "ko": "웹 해킹",
+    "en": "Web & App",
+    "desc_ko": "소스 분석·세션·인젝션·SSTI 등 웹 공격면.",
+    "desc_en": "Source review, sessions, injection, SSTI."
+  },
+  {
+    "id": "crypto",
+    "icon": "🔐",
+    "ko": "암호·인코딩",
+    "en": "Crypto & Encoding",
+    "desc_ko": "고전 암호·인코딩·해시·현대 암호 운영모드.",
+    "desc_en": "Classic ciphers, encoding, hashing, modern modes."
+  },
+  {
+    "id": "system",
+    "icon": "💻",
+    "ko": "시스템·리버싱·Pwn",
+    "en": "System, Reversing & Pwn",
+    "desc_ko": "리눅스·윈도우/AD·리버싱·바이너리 익스플로잇.",
+    "desc_en": "Linux, Windows/AD, reversing, binary exploitation."
+  },
+  {
+    "id": "forensics",
+    "icon": "🔍",
+    "ko": "포렌식·멀웨어·네트워크",
+    "en": "Forensics, Malware & Network",
+    "desc_ko": "파일 시그니처·메타데이터·탐지·패킷 분석.",
+    "desc_en": "File signatures, metadata, detection, packets."
+  },
+  {
+    "id": "cloud",
+    "icon": "☁️",
+    "ko": "클라우드·AI",
+    "en": "Cloud, Container & AI",
+    "desc_ko": "컨테이너/쿠버네티스·클라우드 메타데이터·LLM 보안.",
+    "desc_en": "Containers/K8s, cloud metadata, LLM security."
+  }
+];
+
 const CHALLENGES = [
   {
     "id": "t0_source",
     "tier": 0,
     "cat": "web",
+    "track": "web",
     "points": 50,
     "ci": false,
     "hash": "c5c8705bc1be2d75c0e25081c9a52ab81f90b50ad8ee73e38467740f9a844fc9",
@@ -74,6 +118,7 @@ const CHALLENGES = [
     "id": "t0_base64",
     "tier": 0,
     "cat": "crypto",
+    "track": "crypto",
     "points": 50,
     "ci": false,
     "hash": "e522e8e38fdb6db3a667432087916a6abe7deb7400e3d58e92e1470cb3b1e054",
@@ -101,6 +146,7 @@ const CHALLENGES = [
     "id": "t0_devtools",
     "tier": 0,
     "cat": "web",
+    "track": "web",
     "points": 60,
     "ci": false,
     "hash": "66ecc396caa1aca3a50d4dabc2703a01bc89e2acf9e3725bb11b16d8e8ddaf81",
@@ -128,6 +174,7 @@ const CHALLENGES = [
     "id": "t0_ls",
     "tier": 0,
     "cat": "linux",
+    "track": "system",
     "points": 40,
     "ci": true,
     "hash": "1de700c29687cae34561545f50d3c8b3d9afe88e04cc11069f8a6dc6e4ce9464",
@@ -155,6 +202,7 @@ const CHALLENGES = [
     "id": "t0_binary",
     "tier": 0,
     "cat": "crypto",
+    "track": "crypto",
     "points": 50,
     "ci": true,
     "hash": "e7d3685715939842749cc27b38d0ccb9706d4d14a5304ef9eee093780eab5df9",
@@ -182,6 +230,7 @@ const CHALLENGES = [
     "id": "t0_title",
     "tier": 0,
     "cat": "web",
+    "track": "web",
     "points": 40,
     "ci": true,
     "hash": "41619bedb010a070affe3cba11e586db3c73043f09b6a616f77fcb03f84d8e43",
@@ -209,6 +258,7 @@ const CHALLENGES = [
     "id": "t1_rot13",
     "tier": 1,
     "cat": "crypto",
+    "track": "crypto",
     "points": 70,
     "ci": false,
     "hash": "26b345b8a42722db6e8d75a2aba4ad401924477eb7934287b4efc47cfd07ea8b",
@@ -236,6 +286,7 @@ const CHALLENGES = [
     "id": "t1_hex",
     "tier": 1,
     "cat": "crypto",
+    "track": "crypto",
     "points": 70,
     "ci": false,
     "hash": "047ca2f904ff08b38c24c5a77da663b2c7f52e3457a47e97a4337b32e75c48db",
@@ -263,6 +314,7 @@ const CHALLENGES = [
     "id": "t1_cookie",
     "tier": 1,
     "cat": "web",
+    "track": "web",
     "points": 70,
     "ci": false,
     "hash": "e0b7c03a863b596a51608cc06f09a60618cfc61d2e9372ff03a4fc5133cb60ea",
@@ -290,6 +342,7 @@ const CHALLENGES = [
     "id": "t1_teapot",
     "tier": 1,
     "cat": "web",
+    "track": "web",
     "points": 60,
     "ci": true,
     "hash": "4c8d5b6c695d265fb63dd73f275a21043a5887b37cb4fea0552ecc7b417c8f88",
@@ -317,6 +370,7 @@ const CHALLENGES = [
     "id": "t1_css",
     "tier": 1,
     "cat": "web",
+    "track": "web",
     "points": 70,
     "ci": false,
     "hash": "c79ba81d3c97cd4663bdca70adfc48d9814ba5e9d7aa381907aaf6e6a32bc8ff",
@@ -344,6 +398,7 @@ const CHALLENGES = [
     "id": "t1_caesar",
     "tier": 1,
     "cat": "crypto",
+    "track": "crypto",
     "points": 70,
     "ci": false,
     "hash": "c3514a33998970b1f29cb055f594b73ea43624abe7143bc3eaee49366d94250c",
@@ -371,6 +426,7 @@ const CHALLENGES = [
     "id": "t1_morse",
     "tier": 1,
     "cat": "crypto",
+    "track": "crypto",
     "points": 60,
     "ci": true,
     "hash": "c0946106b732f9f6ae889101ab987ed1bbcfe3eda2ad0a971be31575ad676851",
@@ -398,6 +454,7 @@ const CHALLENGES = [
     "id": "t1_robots",
     "tier": 1,
     "cat": "web",
+    "track": "web",
     "points": 60,
     "ci": true,
     "hash": "870b1fc137c2af20441f74a26febf99739d79cee1246063e279ca05f288e943c",
@@ -425,6 +482,7 @@ const CHALLENGES = [
     "id": "t2_union",
     "tier": 2,
     "cat": "web",
+    "track": "web",
     "points": 90,
     "ci": true,
     "hash": "e1023fc6a5fa259e278448b65d01cad04eebb01fc0b420c5def2a7d7900c15fd",
@@ -452,6 +510,7 @@ const CHALLENGES = [
     "id": "t2_md5",
     "tier": 2,
     "cat": "crypto",
+    "track": "crypto",
     "points": 90,
     "ci": true,
     "hash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
@@ -479,6 +538,7 @@ const CHALLENGES = [
     "id": "t2_jwt",
     "tier": 2,
     "cat": "web",
+    "track": "web",
     "points": 90,
     "ci": true,
     "hash": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe",
@@ -506,6 +566,7 @@ const CHALLENGES = [
     "id": "t2_reverse",
     "tier": 2,
     "cat": "reversing",
+    "track": "system",
     "points": 100,
     "ci": false,
     "hash": "a5fc290ac7280cc55af945e695d8d2aedfbf2bc649f0eec9b5ba857b30f83e74",
@@ -533,6 +594,7 @@ const CHALLENGES = [
     "id": "t2_url",
     "tier": 2,
     "cat": "web",
+    "track": "web",
     "points": 80,
     "ci": true,
     "hash": "f1d8d5da9b6d11e01b22c1aa927e6e5cc7f23339adda6b39764d7d6fe9fca84e",
@@ -560,6 +622,7 @@ const CHALLENGES = [
     "id": "t2_xss",
     "tier": 2,
     "cat": "web",
+    "track": "web",
     "points": 80,
     "ci": true,
     "hash": "33d8ce420e65b03cd89a4de87decd82e0c0358e10e96a31738ee16f0c41059b6",
@@ -587,6 +650,7 @@ const CHALLENGES = [
     "id": "t2_lfi",
     "tier": 2,
     "cat": "web",
+    "track": "web",
     "points": 90,
     "ci": false,
     "hash": "fa08499e14d0113ba6794623f1badedcc8e9ae51cb5bafc7e14a5af1454bcfe7",
@@ -614,6 +678,7 @@ const CHALLENGES = [
     "id": "t2_b32",
     "tier": 2,
     "cat": "crypto",
+    "track": "crypto",
     "points": 100,
     "ci": false,
     "hash": "e56dd9eb62ba3233649372c53139b1564e508f2c8189a9e62e3d223fff2f40d0",
@@ -641,6 +706,7 @@ const CHALLENGES = [
     "id": "t2_sha1",
     "tier": 2,
     "cat": "crypto",
+    "track": "crypto",
     "points": 90,
     "ci": true,
     "hash": "b1565820a5cdac40e0520d23f9d0b1497f240ddc51d72eac6423d97d952d444f",
@@ -668,6 +734,7 @@ const CHALLENGES = [
     "id": "t3_xor",
     "tier": 3,
     "cat": "crypto",
+    "track": "crypto",
     "points": 130,
     "ci": false,
     "hash": "1923dcadd8af7b2f13a42f6c77e17d6d7d537f402457a78423006f2316637ae8",
@@ -695,6 +762,7 @@ const CHALLENGES = [
     "id": "t3_kerb",
     "tier": 3,
     "cat": "windows",
+    "track": "system",
     "points": 110,
     "ci": true,
     "hash": "f596dc40b19f77eede697e09e6b240defb8a9fa20976531511fc3df92030b772",
@@ -722,6 +790,7 @@ const CHALLENGES = [
     "id": "t3_fmt",
     "tier": 3,
     "cat": "pwn",
+    "track": "system",
     "points": 120,
     "ci": true,
     "hash": "7892df0e4b5a59123524a5c4c4de70dee9a9cd65e29fa21deb8a50e812c1f4a4",
@@ -749,6 +818,7 @@ const CHALLENGES = [
     "id": "t3_sig",
     "tier": 3,
     "cat": "forensics",
+    "track": "forensics",
     "points": 110,
     "ci": true,
     "hash": "8f8cbb7dcf46e0bc7d53265749a6c17d116093a6ba95e442764060c76fd4a86c",
@@ -776,6 +846,7 @@ const CHALLENGES = [
     "id": "t3_suid",
     "tier": 3,
     "cat": "linux",
+    "track": "system",
     "points": 120,
     "ci": true,
     "hash": "b090147020e033534635010c4f7eb6fc270d44e5df67ea9e744a8087df9ca106",
@@ -803,6 +874,7 @@ const CHALLENGES = [
     "id": "t3_rot47",
     "tier": 3,
     "cat": "crypto",
+    "track": "crypto",
     "points": 130,
     "ci": false,
     "hash": "679d8874e27f74e5aa45c8bfaf20e805bca35f975e0581ddb78749fe5e6b40ab",
@@ -830,6 +902,7 @@ const CHALLENGES = [
     "id": "t3_ssti",
     "tier": 3,
     "cat": "web",
+    "track": "web",
     "points": 130,
     "ci": false,
     "hash": "a02c3fa3bddb079181b9360380870fb5799c5fc8cdbe3ebb0ea223b5a6f4d5ca",
@@ -857,6 +930,7 @@ const CHALLENGES = [
     "id": "t3_yara",
     "tier": 3,
     "cat": "malware",
+    "track": "forensics",
     "points": 110,
     "ci": true,
     "hash": "a38933a27dad50fd2ed7cf588ca553d2b4d1fc704e103dc99b22cb13a32bba56",
@@ -884,6 +958,7 @@ const CHALLENGES = [
     "id": "t3_syn",
     "tier": 3,
     "cat": "network",
+    "track": "forensics",
     "points": 110,
     "ci": true,
     "hash": "ed415da6d67dcb38258965b9a3abec2cbc2ec61710b7b66dedd3e27168e7d2c8",
@@ -911,6 +986,7 @@ const CHALLENGES = [
     "id": "t4_chain",
     "tier": 4,
     "cat": "crypto",
+    "track": "crypto",
     "points": 170,
     "ci": false,
     "hash": "400b7f9dd47dd8aafbdf1c0650ac6f4b9871167364133b93fbee2958daefef17",
@@ -938,6 +1014,7 @@ const CHALLENGES = [
     "id": "t4_container",
     "tier": 4,
     "cat": "cloud",
+    "track": "cloud",
     "points": 140,
     "ci": true,
     "hash": "5b56570fc818acea65eb7a740b4c95bbf7ebc5fb83f2f016924d10cacfae5dff",
@@ -965,6 +1042,7 @@ const CHALLENGES = [
     "id": "t4_llm",
     "tier": 4,
     "cat": "ai",
+    "track": "cloud",
     "points": 140,
     "ci": true,
     "hash": "3173623593e219d749ba0b87944e71f791b273b17498cba70d48be2af367b7c1",
@@ -992,6 +1070,7 @@ const CHALLENGES = [
     "id": "t4_jwtsig",
     "tier": 4,
     "cat": "web",
+    "track": "web",
     "points": 130,
     "ci": true,
     "hash": "1a2fc26dc7ea5a2a4748b7cb2b1ef193d96ab2c99f93092f69e63075b28d1278",
@@ -1019,6 +1098,7 @@ const CHALLENGES = [
     "id": "t4_gcm",
     "tier": 4,
     "cat": "crypto",
+    "track": "crypto",
     "points": 160,
     "ci": true,
     "hash": "68c6bc126c7cf29755cb01bd3f683526cc1ec205f8aea51f9c6129cbde83cc91",
@@ -1046,6 +1126,7 @@ const CHALLENGES = [
     "id": "t4_megachain",
     "tier": 4,
     "cat": "crypto",
+    "track": "crypto",
     "points": 190,
     "ci": false,
     "hash": "edc75474191ebe0ecdead94c2ac3c32c1a706009292d047cbc1a27ff51ae28a5",
@@ -1073,6 +1154,7 @@ const CHALLENGES = [
     "id": "t4_capstone",
     "tier": 4,
     "cat": "crypto",
+    "track": "crypto",
     "points": 200,
     "ci": false,
     "hash": "0eab38f585377e7f6bc16e86f306132116868bc5879a182287cc16859a30cc05",
@@ -1093,6 +1175,314 @@ const CHALLENGES = [
       "en": [
         "Same single-byte XOR as t3, key is 0x37.",
         "One line of Python is enough."
+      ]
+    }
+  },
+  {
+    "id": "t1_chmod",
+    "tier": 1,
+    "cat": "linux",
+    "track": "system",
+    "points": 70,
+    "ci": true,
+    "hash": "86ab8cbe5869bd1f9c70924e9c04fef3bbe3bbaaf4e816efeeaf7eb6a31937d2",
+    "fmt": "8진수 / octal",
+    "title": {
+      "ko": "권한의 숫자",
+      "en": "Permission Numbers"
+    },
+    "prompt": {
+      "ko": "리눅스 파일 권한 `rwxr-xr-x` 를 8진수 표기로 바꾸면? (3자리 숫자)",
+      "en": "Convert the Linux permission `rwxr-xr-x` to octal notation. (3-digit number)"
+    },
+    "hints": {
+      "ko": [
+        "r=4, w=2, x=1 을 그룹별로 더합니다.",
+        "rwx=7, r-x=5."
+      ],
+      "en": [
+        "Sum r=4, w=2, x=1 per group.",
+        "rwx=7, r-x=5."
+      ]
+    }
+  },
+  {
+    "id": "t2_strings",
+    "tier": 2,
+    "cat": "reversing",
+    "track": "system",
+    "points": 90,
+    "ci": true,
+    "hash": "e967d16dae74a49b5e0e051225c5dac0d76e5e38f13dd1628028cbce108c25b6",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "숨은 문자열",
+      "en": "Hidden Strings"
+    },
+    "prompt": {
+      "ko": "바이너리에서 사람이 읽을 수 있는 ASCII 문자열만 뽑아내는 고전 유닉스 명령은? (명령어 이름)",
+      "en": "Which classic Unix command extracts human-readable ASCII strings from a binary? (command name)"
+    },
+    "hints": {
+      "ko": [
+        "이름 그대로 '문자열들'.",
+        "`____ ./malware.bin | grep FLAG`"
+      ],
+      "en": [
+        "The name literally means 'strings'.",
+        "`____ ./malware.bin | grep FLAG`"
+      ]
+    }
+  },
+  {
+    "id": "t3_nop",
+    "tier": 3,
+    "cat": "pwn",
+    "track": "system",
+    "points": 120,
+    "ci": true,
+    "hash": "69f59c273b6e669ac32a6dd5e1b2cb63333d8b004f9696447aee2d422ce63763",
+    "fmt": "16진수 2자리 / 2 hex digits",
+    "title": {
+      "ko": "아무것도 하지 않는 명령",
+      "en": "The Do-Nothing Instruction"
+    },
+    "prompt": {
+      "ko": "x86에서 아무 동작도 하지 않으며 'NOP 슬레드'에 쓰이는 1바이트 명령의 16진수 값은? (0x__ 의 두 자리)",
+      "en": "What is the 1-byte hex opcode of the x86 instruction that does nothing and is used in a 'NOP sled'? (two hex digits)"
+    },
+    "hints": {
+      "ko": [
+        "NOP = No OPeration.",
+        "쉘코드 앞에 0x__ 을 잔뜩 깝니다."
+      ],
+      "en": [
+        "NOP = No OPeration.",
+        "Padded before shellcode."
+      ]
+    }
+  },
+  {
+    "id": "t1_nmap",
+    "tier": 1,
+    "cat": "network",
+    "track": "forensics",
+    "points": 60,
+    "ci": true,
+    "hash": "5286b91aa11e48184da2c742f7f08492b8be0e02c01188b55b47d4be0e23fb18",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "포트 스캐너의 왕",
+      "en": "King of Port Scanners"
+    },
+    "prompt": {
+      "ko": "네트워크 정찰에서 열린 포트와 서비스를 찾는 사실상 표준 스캔 도구는? (명령어 이름)",
+      "en": "What is the de-facto standard tool for scanning open ports/services in recon? (command name)"
+    },
+    "hints": {
+      "ko": [
+        "`____ -sV -p- target` 형태로 씁니다.",
+        "Network Mapper."
+      ],
+      "en": [
+        "Used like `____ -sV -p- target`.",
+        "Network Mapper."
+      ]
+    }
+  },
+  {
+    "id": "t2_wireshark",
+    "tier": 2,
+    "cat": "network",
+    "track": "forensics",
+    "points": 80,
+    "ci": true,
+    "hash": "28662759fcf7454b4388d4ff2798bf5c3c7dbe92090612b4214a411ea5d17cc8",
+    "fmt": "도구명 / tool name",
+    "title": {
+      "ko": "패킷을 들여다보다",
+      "en": "Look Inside Packets"
+    },
+    "prompt": {
+      "ko": "네트워크 패킷을 캡처하고 분석하는 가장 대표적인 GUI 도구의 이름은?",
+      "en": "Name the most iconic GUI tool for capturing and analyzing network packets."
+    },
+    "hints": {
+      "ko": [
+        "상어 지느러미 로고.",
+        "CLI 버전은 tshark."
+      ],
+      "en": [
+        "Shark-fin logo.",
+        "Its CLI cousin is tshark."
+      ]
+    }
+  },
+  {
+    "id": "t2_exif",
+    "tier": 2,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 90,
+    "ci": true,
+    "hash": "0747314e16d27a5ae07a3326e52544a2f5871891995fecb4492929c32ed2166d",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "사진 속 단서",
+      "en": "Clues in the Photo"
+    },
+    "prompt": {
+      "ko": "이미지의 촬영 시각·카메라·GPS 같은 메타데이터(EXIF)를 추출/편집하는 대표 도구는? (명령어 이름)",
+      "en": "Which tool extracts/edits image metadata (EXIF) like timestamp, camera, GPS? (command name)"
+    },
+    "hints": {
+      "ko": [
+        "이름에 'exif'가 들어갑니다.",
+        "`____ photo.jpg | grep GPS`"
+      ],
+      "en": [
+        "Its name contains 'exif'.",
+        "`____ photo.jpg | grep GPS`"
+      ]
+    }
+  },
+  {
+    "id": "t3_virustotal",
+    "tier": 3,
+    "cat": "malware",
+    "track": "forensics",
+    "points": 110,
+    "ci": true,
+    "hash": "1051e9777bf787abf20a473ebff51e7416354624cf6071ad45127b069feb474f",
+    "fmt": "서비스명 / service",
+    "title": {
+      "ko": "해시로 평판 조회",
+      "en": "Reputation by Hash"
+    },
+    "prompt": {
+      "ko": "파일 해시(또는 파일)를 업로드해 수십 개 백신 엔진의 탐지 결과를 한 번에 보여주는 구글 소유의 대표 웹 서비스는? (한 단어)",
+      "en": "Which Google-owned web service shows detection results from dozens of AV engines for an uploaded hash/file? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "주소: ____.com.",
+        "'바이러스'와 '전체'의 합성어."
+      ],
+      "en": [
+        "URL: ____.com.",
+        "'virus' + 'total'."
+      ]
+    }
+  },
+  {
+    "id": "t2_s3",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 90,
+    "ci": true,
+    "hash": "41242b9fae56fad4e6e77dfe33cb18d1c3fc583f988cf25ef9f2d9be0d440bbb",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "공개된 버킷",
+      "en": "The Public Bucket"
+    },
+    "prompt": {
+      "ko": "잘못된 설정으로 데이터가 공개 노출되는 사고가 잦은, AWS의 객체 스토리지 서비스 이름은? (약자)",
+      "en": "Which AWS object storage service is frequently exposed publicly via misconfiguration? (abbreviation)"
+    },
+    "hints": {
+      "ko": [
+        "Simple Storage Service.",
+        "버킷(bucket) 단위로 저장."
+      ],
+      "en": [
+        "Simple Storage Service.",
+        "Stored in 'buckets'."
+      ]
+    }
+  },
+  {
+    "id": "t2_pod",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 90,
+    "ci": true,
+    "hash": "425c89ed5bb78a7623fae60fd8a6f648488168740fe82cf6ad34caa4d07aa972",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "쿠버네티스의 최소 단위",
+      "en": "K8s Smallest Unit"
+    },
+    "prompt": {
+      "ko": "쿠버네티스에서 하나 이상의 컨테이너를 묶어 배포하는 최소 실행 단위의 이름은?",
+      "en": "In Kubernetes, what is the smallest deployable unit that groups one or more containers?"
+    },
+    "hints": {
+      "ko": [
+        "고래 떼(pod)에서 따온 이름.",
+        "`kubectl get ____`"
+      ],
+      "en": [
+        "Named after a pod of whales.",
+        "`kubectl get ____`"
+      ]
+    }
+  },
+  {
+    "id": "t2_jailbreak",
+    "tier": 2,
+    "cat": "ai",
+    "track": "cloud",
+    "points": 90,
+    "ci": true,
+    "hash": "bd168d2f02fe220eb62f5bf0e285b846f9f568af9abb99d578776cb7e9488c70",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "가드레일 우회",
+      "en": "Bypassing Guardrails"
+    },
+    "prompt": {
+      "ko": "LLM의 안전 정책을 우회해 거부되어야 할 출력을 끌어내는 기법을 통칭하는 영어 단어는? (한 단어)",
+      "en": "What single English word collectively names techniques that bypass an LLM's safety policy to elicit forbidden output?"
+    },
+    "hints": {
+      "ko": [
+        "탈옥(脫獄)을 뜻하는 영어.",
+        "DAN 프롬프트가 대표적."
+      ],
+      "en": [
+        "English for 'escaping jail'.",
+        "The DAN prompt is a classic example."
+      ]
+    }
+  },
+  {
+    "id": "t3_imds",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 130,
+    "ci": false,
+    "hash": "34146ce1ba492ed7acf9a9925a04541645c203d9652183c6e238f55786c8b66f",
+    "fmt": "IP 주소 / IP",
+    "title": {
+      "ko": "메타데이터의 IP",
+      "en": "The Metadata IP"
+    },
+    "prompt": {
+      "ko": "SSRF로 클라우드 인스턴스의 임시 자격증명을 탈취할 때 노리는, 모든 주요 클라우드의 메타데이터 서비스 링크-로컬 IP 주소는?",
+      "en": "Which link-local IP address (the metadata service across major clouds) do attackers target via SSRF to steal instance credentials?"
+    },
+    "hints": {
+      "ko": [
+        "169.254.x.x 대역(링크-로컬).",
+        "끝이 .169.254 로 끝납니다."
+      ],
+      "en": [
+        "169.254.x.x (link-local) range.",
+        "Ends with .169.254."
       ]
     }
   }

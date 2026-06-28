@@ -75,6 +75,8 @@
       need:"통과 조건", solvedOf:"해결", hintPenalty:"힌트 -",
       resetConfirm:"모든 진행도를 초기화할까요?", format:"형식",
       complete:"🏆 모든 티어 클리어!", completeSub:"당신은 진정한 바이브 해커입니다. 최종 플래그를 친구에게도 도전시켜 보세요!",
+      viewTrack:"🗂️ 분야별", viewTier:"🎚️ 난이도별", clearedOf:"클리어",
+      lockedShort:"🔒 잠김 — 난이도별 보기에서 이전 티어를 먼저 클리어하세요",
       langBtn:"🌐 EN" },
     en: { tagline:"From novice to expert · staged, with hints", reset:"Reset", score:"Score",
       solved:"Solved", rank:"Rank",
@@ -85,16 +87,18 @@
       need:"To pass", solvedOf:"solved", hintPenalty:"hint -",
       resetConfirm:"Reset all progress?", format:"Format",
       complete:"🏆 All tiers cleared!", completeSub:"You are a true vibe hacker. Challenge your friends with the final flag!",
+      viewTrack:"🗂️ By Track", viewTier:"🎚️ By Tier", clearedOf:"cleared",
+      lockedShort:"🔒 Locked — clear earlier tiers first in Tier view",
       langBtn:"🌐 한국어" }
   };
 
   const RANKS = [
     { min:0,  icon:"🥚", ko:"알",       en:"Egg" },
     { min:1,  icon:"🐣", ko:"뉴비",     en:"Newbie" },
-    { min:6,  icon:"🦊", ko:"수습",     en:"Apprentice" },
-    { min:12, icon:"🐺", ko:"해커",     en:"Hacker" },
-    { min:18, icon:"🦅", ko:"엘리트",   en:"Elite" },
-    { min:24, icon:"👑", ko:"레전드",   en:"Legend" }
+    { min:10, icon:"🦊", ko:"수습",     en:"Apprentice" },
+    { min:22, icon:"🐺", ko:"해커",     en:"Hacker" },
+    { min:35, icon:"🦅", ko:"엘리트",   en:"Elite" },
+    { min:48, icon:"👑", ko:"레전드",   en:"Legend" }
   ];
 
   const HINT_PENALTY = 0.2;   // each hint costs 20% of the challenge points
@@ -102,7 +106,7 @@
 
   /* ---------- state ---------- */
   const LS = "vibe_wargame_v1";
-  let state = { solved:{}, hints:{}, lang:"ko" };
+  let state = { solved:{}, hints:{}, lang:"ko", view:"tier" };
   try { const s = JSON.parse(localStorage.getItem(LS)); if (s) state = Object.assign(state, s); } catch (e) {}
   function save() { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {} }
   function t(k) { return I18N[state.lang][k]; }
@@ -125,6 +129,12 @@
     const factor = Math.max(MIN_AWARD, 1 - used * HINT_PENALTY);
     return Math.round(ch.points * factor);
   }
+  function challengeLocked(ch) {
+    return !isTierUnlocked(TIERS.find(x => x.id === ch.tier));
+  }
+  function trackSolvedCount(trackId) {
+    return CHALLENGES.filter(c => c.track === trackId && state.solved[c.id]).length;
+  }
 
   /* ---------- rendering ---------- */
   const tiersEl = document.getElementById("tiers");
@@ -142,6 +152,9 @@
     document.getElementById("rank").title = rank[state.lang];
     document.getElementById("progressBar").style.width = (solvedN / totalChals * 100) + "%";
 
+    document.getElementById("viewBtn").textContent =
+      state.view === "tier" ? t("viewTrack") : t("viewTier");
+
     tiersEl.innerHTML = "";
 
     if (solvedN === totalChals) {
@@ -151,6 +164,11 @@
       tiersEl.appendChild(b);
     }
 
+    if (state.view === "track") renderTrackView();
+    else renderTierView();
+  }
+
+  function renderTierView() {
     TIERS.forEach(tier => {
       const unlocked = isTierUnlocked(tier);
       const chals = CHALLENGES.filter(c => c.tier === tier.id);
@@ -186,27 +204,74 @@
         note.textContent = `🔒 ${t("lockedMsg")}${remain}${t("lockedMsg2")}`;
         body.appendChild(note);
       } else {
-        chals.forEach(ch => body.appendChild(renderChal(ch)));
+        chals.forEach(ch => body.appendChild(renderChal(ch, false)));
       }
       sec.appendChild(body);
       tiersEl.appendChild(sec);
     });
   }
 
-  function renderChal(ch) {
+  function renderTrackView() {
+    TRACKS.forEach(tr => {
+      const chals = CHALLENGES.filter(c => c.track === tr.id).sort((a, b) => a.tier - b.tier);
+      const sc = trackSolvedCount(tr.id);
+      const pct = chals.length ? Math.round(sc / chals.length * 100) : 0;
+
+      const sec = document.createElement("section");
+      sec.className = "tier track";
+
+      const head = document.createElement("div");
+      head.className = "tier-head";
+      head.innerHTML =
+        `<span class="tier-badge">${tr.icon}</span>
+         <h2>${tr[state.lang]}</h2>
+         <span class="tier-meta">${sc}/${chals.length} ${t("clearedOf")} · ${pct}%</span>
+         <span class="tier-lock">▾</span>`;
+      head.addEventListener("click", () => { sec.classList.toggle("collapsed"); });
+      sec.appendChild(head);
+
+      const body = document.createElement("div");
+      body.className = "tier-body";
+
+      const desc = document.createElement("p");
+      desc.className = "tier-desc";
+      desc.textContent = tr["desc_" + state.lang];
+      body.appendChild(desc);
+
+      const pw = document.createElement("div");
+      pw.className = "progress-wrap track-progress";
+      pw.innerHTML = `<div class="progress-bar" style="width:${pct}%"></div>`;
+      body.appendChild(pw);
+
+      chals.forEach(ch => body.appendChild(renderChal(ch, challengeLocked(ch))));
+      sec.appendChild(body);
+      tiersEl.appendChild(sec);
+    });
+  }
+
+  function renderChal(ch, locked) {
     const solved = !!state.solved[ch.id];
     const used = state.hints[ch.id] || 0;
     const card = document.createElement("div");
-    card.className = "chal" + (solved ? " solved" : "");
+    card.className = "chal" + (solved ? " solved" : "") + (locked && !solved ? " locked-chal" : "");
 
     const top = document.createElement("div");
     top.className = "chal-top";
     top.innerHTML =
-      `<span class="cat">${ch.cat}</span>
+      `<span class="tchip">T${ch.tier}</span>
+       <span class="cat">${ch.cat}</span>
        <h3 class="chal-title">${ch.title[state.lang]}</h3>
        <span class="pts">${ch.points}pt</span>` +
       (solved ? `<span class="solved-tag">✓ +${state.solved[ch.id].earned}</span>` : "");
     card.appendChild(top);
+
+    if (locked && !solved) {
+      const ln = document.createElement("div");
+      ln.className = "locked-note";
+      ln.textContent = t("lockedShort");
+      card.appendChild(ln);
+      return card;
+    }
 
     const prompt = document.createElement("div");
     prompt.className = "prompt";
@@ -297,11 +362,14 @@
   }
 
   /* ---------- controls ---------- */
+  document.getElementById("viewBtn").addEventListener("click", () => {
+    state.view = state.view === "tier" ? "track" : "tier"; save(); render();
+  });
   document.getElementById("langBtn").addEventListener("click", () => {
     state.lang = state.lang === "ko" ? "en" : "ko"; save(); render();
   });
   document.getElementById("resetBtn").addEventListener("click", () => {
-    if (confirm(t("resetConfirm"))) { state = { solved:{}, hints:{}, lang: state.lang }; save(); render(); }
+    if (confirm(t("resetConfirm"))) { state = { solved:{}, hints:{}, lang: state.lang, view: state.view }; save(); render(); }
   });
 
   render();
