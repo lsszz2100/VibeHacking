@@ -9,6 +9,9 @@
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#目次)
 [![Lines](https://img.shields.io/badge/Lines-530%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
+[![Play Wargame](https://img.shields.io/badge/Play_Wargame-24_challenges-9933ff)](https://lsszz2100.github.io/VibeHacking/)
+
+> 🎮 **ブラウザで遊べる段階的CTFワーゲーム** — 入門から専門家まで5ティア、ヒント付きで試験のように段階進行。本リポジトリの75セクションから24チャレンジ。([紹介](wargame/README.md) · GitHub Pages有効化後にアクセス可能)
 
 <br/>
 

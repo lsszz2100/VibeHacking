@@ -13,7 +13,8 @@
     { "pattern": "^https?://media\\.defense\\.gov" },
     { "pattern": "^https?://(www\\.)?tryhackme\\.com" },
     { "pattern": "^https?://(www\\.)?schneier\\.com" },
-    { "pattern": "^https?://(www\\.)?cisecurity\\.org" }
+    { "pattern": "^https?://(www\\.)?cisecurity\\.org" },
+    { "pattern": "^https?://lsszz2100\\.github\\.io" }
   ],
   "timeout": "20s",
   "retryOn429": true,

@@ -9,6 +9,9 @@
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#目录)
 [![Lines](https://img.shields.io/badge/Lines-530%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
+[![Play Wargame](https://img.shields.io/badge/Play_Wargame-24_challenges-9933ff)](https://lsszz2100.github.io/VibeHacking/)
+
+> 🎮 **浏览器即玩的分级 CTF 战争游戏** — 从入门到专家共 5 个等级，配有提示并像考试一样逐级解锁。24 道挑战取材自本仓库的 75 个章节。([介绍](wargame/README.md) · 启用 GitHub Pages 后可访问)
 
 <br/>
 

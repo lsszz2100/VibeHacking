@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Hacking Wargame</title>
+<meta name="description" content="브라우저에서 바로 플레이하는 단계별 사이버보안 워게임 (입문→전문가). A browser-based, tiered cybersecurity wargame.">
+<link rel="stylesheet" href="assets/style.css">
+<!--
+  ┌───────────────────────────────────────────────────────────┐
+  │  잘 찾으셨습니다! 첫 번째 플래그입니다 / Nice, your first flag:  │
+  │  FLAG{view_source_is_power}                                 │
+  └───────────────────────────────────────────────────────────┘
+  소스 코드를 읽는 습관은 모든 해커의 출발점입니다.
+  Reading source is where every hacker begins.
+-->
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    <span class="logo">⚔️</span>
+    <div>
+      <h1>Vibe Hacking <span class="accent">Wargame</span></h1>
+      <p class="tagline" data-i18n="tagline">입문부터 전문가까지 · 힌트와 함께 단계별로</p>
+    </div>
+  </div>
+  <div class="controls">
+    <button id="langBtn" class="btn ghost" title="Language">🌐 EN</button>
+    <button id="resetBtn" class="btn ghost danger" data-i18n="reset">초기화</button>
+  </div>
+</header>
+
+<section class="scoreboard">
+  <div class="stat"><span class="stat-num" id="score">0</span><span class="stat-lbl" data-i18n="score">점수</span></div>
+  <div class="stat"><span class="stat-num" id="solvedCount">0/24</span><span class="stat-lbl" data-i18n="solved">해결</span></div>
+  <div class="stat"><span class="stat-num" id="rank">🥚</span><span class="stat-lbl" data-i18n="rank">등급</span></div>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+</section>
+
+<main id="tiers"></main>
+
+<div id="ghost" style="display:none" aria-hidden="true">FLAG{css_display_none_lies}</div>
+
+<footer class="site-footer">
+  <p data-i18n="footer">교육용 워게임입니다. 모든 도전은 브라우저 안에서 해결됩니다. 외부 시스템을 공격하지 마세요.</p>
+  <p><a href="https://github.com/lsszz2100/VibeHacking">← Vibe Hacking 레포로 돌아가기 / Back to repo</a></p>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script src="assets/challenges.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

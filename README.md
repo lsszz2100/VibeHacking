@@ -21,6 +21,12 @@
 
 <br/>
 
+[![Play the Wargame](https://img.shields.io/badge/🎮_워게임_플레이-입문→전문가_24문제-9933FF?style=for-the-badge&labelColor=0d0d0d)](https://lsszz2100.github.io/VibeHacking/) &nbsp; [![Wargame source](https://img.shields.io/badge/🧩_워게임_소개-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
+
+> 🎮 **브라우저에서 바로 플레이하는 단계별 CTF 워게임** — 입문부터 전문가까지 5티어, 힌트와 함께 시험처럼 단계 진행. 본 레포의 75개 섹션 주제가 24개 도전으로. ([소개](wargame/README.md) · GitHub Pages 활성화 후 접속 가능)
+
+<br/>
+
 문의 · 자료 공유 &nbsp;→&nbsp; [![Email](https://img.shields.io/badge/이메일-leemanrank%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:leemanrank@gmail.com) &nbsp; [![KakaoTalk](https://img.shields.io/badge/카카오톡_오픈채팅-인공지능_자료_공유-FAE100?style=flat-square&logo=kakao&logoColor=000000)](https://open.kakao.com/o/sv3aJD4h)
 
 </div>
