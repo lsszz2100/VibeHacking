@@ -4,7 +4,7 @@ const TIERS = [
     "id": 0,
     "ko": "입문",
     "en": "Onboarding",
-    "need": 3,
+    "need": 4,
     "desc_ko": "브라우저 개발자 도구와 기본 인코딩에 익숙해지기.",
     "desc_en": "Get comfortable with browser devtools and basic encoding."
   },
@@ -12,7 +12,7 @@ const TIERS = [
     "id": 1,
     "ko": "기초",
     "en": "Beginner",
-    "need": 4,
+    "need": 5,
     "desc_ko": "고전 암호·웹 기초·HTTP 지식.",
     "desc_en": "Classic ciphers, web basics, HTTP knowledge."
   },
@@ -20,25 +20,25 @@ const TIERS = [
     "id": 2,
     "ko": "중급",
     "en": "Intermediate",
-    "need": 4,
-    "desc_ko": "인젝션·해시·JWT·간단한 리버싱.",
-    "desc_en": "Injection, hashing, JWT, light reversing."
+    "need": 6,
+    "desc_ko": "인젝션·해시·JWT·인코딩·간단한 리버싱.",
+    "desc_en": "Injection, hashing, JWT, encoding, light reversing."
   },
   {
     "id": 3,
     "ko": "고급",
     "en": "Advanced",
-    "need": 3,
-    "desc_ko": "XOR 암호·익스플로잇·포렌식·AD/시스템.",
-    "desc_en": "XOR crypto, exploitation, forensics, AD/system."
+    "need": 5,
+    "desc_ko": "XOR/ROT47 암호·익스플로잇·포렌식·탐지.",
+    "desc_en": "XOR/ROT47 crypto, exploitation, forensics, detection."
   },
   {
     "id": 4,
     "ko": "전문가",
     "en": "Expert",
-    "need": 4,
-    "desc_ko": "체인 디코딩·클라우드·AI 보안 종합.",
-    "desc_en": "Chained decoding, cloud, AI security capstone."
+    "need": 5,
+    "desc_ko": "체인 디코딩·클라우드·암호 운영모드·AI 보안 종합.",
+    "desc_en": "Chained decoding, cloud, crypto modes, AI security capstone."
   }
 ];
 
@@ -148,6 +148,60 @@ const CHALLENGES = [
       "en": [
         "Combine two options of `ls`.",
         "`-l` (long) and `-a` (all/hidden)."
+      ]
+    }
+  },
+  {
+    "id": "t0_binary",
+    "tier": 0,
+    "cat": "crypto",
+    "points": 50,
+    "ci": true,
+    "hash": "e7d3685715939842749cc27b38d0ccb9706d4d14a5304ef9eee093780eab5df9",
+    "fmt": "단어 / word",
+    "title": {
+      "ko": "0과 1의 언어",
+      "en": "Language of 0s and 1s"
+    },
+    "prompt": {
+      "ko": "다음 이진수(8비트씩)를 ASCII 텍스트로 디코딩하세요:\n\n`01101000 01100001 01100011 01101011 01100101 01110010`",
+      "en": "Decode this binary (8 bits each) into ASCII text:\n\n`01101000 01100001 01100011 01101011 01100101 01110010`"
+    },
+    "hints": {
+      "ko": [
+        "8자리마다 한 글자입니다.",
+        "01001000 = 0x48 = 'H'."
+      ],
+      "en": [
+        "Each 8 digits is one character.",
+        "01001000 = 0x48 = 'H'."
+      ]
+    }
+  },
+  {
+    "id": "t0_title",
+    "tier": 0,
+    "cat": "web",
+    "points": 40,
+    "ci": true,
+    "hash": "41619bedb010a070affe3cba11e586db3c73043f09b6a616f77fcb03f84d8e43",
+    "fmt": "제목 / title",
+    "title": {
+      "ko": "탭의 제목",
+      "en": "The Tab Title"
+    },
+    "prompt": {
+      "ko": "브라우저 탭(또는 HTML `<title>` 태그)에 표시되는 이 페이지의 제목은 무엇인가요? (정확히 입력)",
+      "en": "What is this page's title shown in the browser tab (the HTML `<title>` tag)? (exact)"
+    },
+    "hints": {
+      "ko": [
+        "브라우저 탭 위쪽을 보세요.",
+        "소스의 `<title>...</title>` 안."
+      ],
+      "en": [
+        "Look at the top of the browser tab.",
+        "Inside `<title>...</title>` in the source."
       ]
     }
   },
@@ -283,6 +337,87 @@ const CHALLENGES = [
       "en": [
         "In DevTools Elements, find the element with id=`ghost`.",
         "Ctrl+F for 'FLAG'."
+      ]
+    }
+  },
+  {
+    "id": "t1_caesar",
+    "tier": 1,
+    "cat": "crypto",
+    "points": 70,
+    "ci": false,
+    "hash": "c3514a33998970b1f29cb055f594b73ea43624abe7143bc3eaee49366d94250c",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "카이사르의 암호",
+      "en": "Caesar's Cipher"
+    },
+    "prompt": {
+      "ko": "율리우스 카이사르가 쓰던 방식으로 각 글자를 3칸 밀었습니다. 원문을 복원하세요:\n\n`IODJ{fdhvdu_vkliw_wkuhh}`",
+      "en": "Each letter was shifted by 3, as Julius Caesar did. Recover the original:\n\n`IODJ{fdhvdu_vkliw_wkuhh}`"
+    },
+    "hints": {
+      "ko": [
+        "반대로 3칸 당기면 됩니다.",
+        "ROT13과 같은 원리, 이동량만 3."
+      ],
+      "en": [
+        "Shift back by 3.",
+        "Same idea as ROT13, but a shift of 3."
+      ]
+    }
+  },
+  {
+    "id": "t1_morse",
+    "tier": 1,
+    "cat": "crypto",
+    "points": 60,
+    "ci": true,
+    "hash": "c0946106b732f9f6ae889101ab987ed1bbcfe3eda2ad0a971be31575ad676851",
+    "fmt": "단어 / word",
+    "title": {
+      "ko": "점과 선",
+      "en": "Dots and Dashes"
+    },
+    "prompt": {
+      "ko": "다음 모스 부호를 해독하세요 (공백은 글자 구분):\n\n`... --- ...`",
+      "en": "Decode this Morse code (spaces separate letters):\n\n`... --- ...`"
+    },
+    "hints": {
+      "ko": [
+        "... 는 S, --- 는 O 입니다.",
+        "가장 유명한 구조 신호."
+      ],
+      "en": [
+        "... is S, --- is O.",
+        "The most famous distress signal."
+      ]
+    }
+  },
+  {
+    "id": "t1_robots",
+    "tier": 1,
+    "cat": "web",
+    "points": 60,
+    "ci": true,
+    "hash": "870b1fc137c2af20441f74a26febf99739d79cee1246063e279ca05f288e943c",
+    "fmt": "파일명 / filename",
+    "title": {
+      "ko": "크롤러에게 보내는 쪽지",
+      "en": "Note to Crawlers"
+    },
+    "prompt": {
+      "ko": "웹사이트가 검색엔진 크롤러에게 접근 규칙을 알려줄 때 루트에 두는 표준 파일의 이름은? (확장자 포함)",
+      "en": "What standard file does a website place at its root to tell search crawlers the access rules? (with extension)"
+    },
+    "hints": {
+      "ko": [
+        "펜테스트 정찰 때도 가장 먼저 확인합니다.",
+        "`/______.txt`"
+      ],
+      "en": [
+        "Recon's first stop in a pentest, too.",
+        "`/______.txt`"
       ]
     }
   },
@@ -449,6 +584,87 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t2_lfi",
+    "tier": 2,
+    "cat": "web",
+    "points": 90,
+    "ci": false,
+    "hash": "fa08499e14d0113ba6794623f1badedcc8e9ae51cb5bafc7e14a5af1454bcfe7",
+    "fmt": "3글자 / 3 chars",
+    "title": {
+      "ko": "상위로 올라가기",
+      "en": "Climb Up"
+    },
+    "prompt": {
+      "ko": "경로 순회(Path Traversal/LFI)에서 상위 디렉터리로 한 단계 올라갈 때 쓰는 세 글자 시퀀스는?",
+      "en": "In path traversal (LFI), what three-character sequence moves up one directory level?"
+    },
+    "hints": {
+      "ko": [
+        "`/etc/passwd` 를 읽으려면 여러 번 반복합니다.",
+        "점 두 개와 슬래시."
+      ],
+      "en": [
+        "Repeated many times to reach `/etc/passwd`.",
+        "Two dots and a slash."
+      ]
+    }
+  },
+  {
+    "id": "t2_b32",
+    "tier": 2,
+    "cat": "crypto",
+    "points": 100,
+    "ci": false,
+    "hash": "e56dd9eb62ba3233649372c53139b1564e508f2c8189a9e62e3d223fff2f40d0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "32진법 인코딩",
+      "en": "Base32 Encoding"
+    },
+    "prompt": {
+      "ko": "대문자와 숫자 2-7만 쓰는 인코딩입니다. 디코딩하세요:\n\n`IZGECR33MJQXGZJTGJPXK43FONPXEZTDGQ3DIOD5`",
+      "en": "An encoding that uses only uppercase letters and digits 2-7. Decode it:\n\n`IZGECR33MJQXGZJTGJPXK43FONPXEZTDGQ3DIOD5`"
+    },
+    "hints": {
+      "ko": [
+        "= 패딩이 있지만 Base64는 아닙니다 — Base32.",
+        "`echo '...' | base32 -d`"
+      ],
+      "en": [
+        "Has = padding but isn't Base64 — it's Base32.",
+        "`echo '...' | base32 -d`"
+      ]
+    }
+  },
+  {
+    "id": "t2_sha1",
+    "tier": 2,
+    "cat": "crypto",
+    "points": 90,
+    "ci": true,
+    "hash": "b1565820a5cdac40e0520d23f9d0b1497f240ddc51d72eac6423d97d952d444f",
+    "fmt": "알고리즘명 / name",
+    "title": {
+      "ko": "해시의 정체",
+      "en": "Identify the Hash"
+    },
+    "prompt": {
+      "ko": "40자리 16진수(160비트)로 출력되며, 충돌 공격이 발견되어 사용이 권장되지 않는 해시 알고리즘은? (이름)",
+      "en": "Which hash algorithm outputs 40 hex chars (160-bit) and is deprecated due to collision attacks? (name)"
+    },
+    "hints": {
+      "ko": [
+        "MD5(32자리)보다 길고 SHA-256(64자리)보다 짧습니다.",
+        "Git이 오래 쓰던 그 해시."
+      ],
+      "en": [
+        "Longer than MD5 (32) and shorter than SHA-256 (64).",
+        "The hash Git used for years."
+      ]
+    }
+  },
+  {
     "id": "t3_xor",
     "tier": 3,
     "cat": "crypto",
@@ -584,6 +800,114 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t3_rot47",
+    "tier": 3,
+    "cat": "crypto",
+    "points": 130,
+    "ci": false,
+    "hash": "679d8874e27f74e5aa45c8bfaf20e805bca35f975e0581ddb78749fe5e6b40ab",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ROT47의 영역",
+      "en": "The ROT47 Zone"
+    },
+    "prompt": {
+      "ko": "ROT13의 확장판으로, 출력 가능한 ASCII(33~126) 94문자를 47칸 회전시킵니다. 복호화하세요:\n\n`u{pvLC@Ecf0AC:?E23=602D4::N`",
+      "en": "An extension of ROT13 that rotates the 94 printable ASCII chars (33-126) by 47. Decode it:\n\n`u{pvLC@Ecf0AC:?E23=602D4::N`"
+    },
+    "hints": {
+      "ko": [
+        "ROT47도 자기역원입니다 — 한 번 더 ROT47.",
+        "CyberChef 'ROT47' 또는 직접 구현."
+      ],
+      "en": [
+        "ROT47 is its own inverse — apply ROT47 again.",
+        "CyberChef 'ROT47' or implement it."
+      ]
+    }
+  },
+  {
+    "id": "t3_ssti",
+    "tier": 3,
+    "cat": "web",
+    "points": 130,
+    "ci": false,
+    "hash": "a02c3fa3bddb079181b9360380870fb5799c5fc8cdbe3ebb0ea223b5a6f4d5ca",
+    "fmt": "식 / expression",
+    "title": {
+      "ko": "템플릿 인젝션",
+      "en": "Template Injection"
+    },
+    "prompt": {
+      "ko": "Jinja2 SSTI 취약점을 1차 확인할 때, 49가 출력되는지 보려고 `{{ ____ }}` 안에 넣는 가장 흔한 식은? (공백 없이)",
+      "en": "To first confirm a Jinja2 SSTI, what is the most common expression placed inside `{{ ____ }}` to see if 49 is rendered? (no spaces)"
+    },
+    "hints": {
+      "ko": [
+        "곱셈으로 49를 만듭니다.",
+        "`{{7__7}}` 의 빈칸은 곱셈 연산자."
+      ],
+      "en": [
+        "Multiply to make 49.",
+        "The blank in `{{7__7}}` is the multiply operator."
+      ]
+    }
+  },
+  {
+    "id": "t3_yara",
+    "tier": 3,
+    "cat": "malware",
+    "points": 110,
+    "ci": true,
+    "hash": "a38933a27dad50fd2ed7cf588ca553d2b4d1fc704e103dc99b22cb13a32bba56",
+    "fmt": "도구명 / tool name",
+    "title": {
+      "ko": "악성코드 패턴 매칭",
+      "en": "Malware Pattern Matching"
+    },
+    "prompt": {
+      "ko": "문자열·바이트 패턴 규칙으로 악성코드를 분류·탐지하는, '패턴 매칭계의 맥가이버 칼'로 불리는 도구는? (이름)",
+      "en": "Which tool, called 'the pattern matching swiss knife', classifies/detects malware with string/byte rules? (name)"
+    },
+    "hints": {
+      "ko": [
+        "규칙 파일 확장자는 .yar / .yara.",
+        "`rule { strings: ... condition: ... }`"
+      ],
+      "en": [
+        "Rule files end in .yar / .yara.",
+        "`rule { strings: ... condition: ... }`"
+      ]
+    }
+  },
+  {
+    "id": "t3_syn",
+    "tier": 3,
+    "cat": "network",
+    "points": 110,
+    "ci": true,
+    "hash": "ed415da6d67dcb38258965b9a3abec2cbc2ec61710b7b66dedd3e27168e7d2c8",
+    "fmt": "플래그 / flag",
+    "title": {
+      "ko": "3-way 핸드셰이크",
+      "en": "3-Way Handshake"
+    },
+    "prompt": {
+      "ko": "TCP 3-way 핸드셰이크에서 클라이언트가 가장 먼저 보내는 패킷에 설정되는 플래그는? (한 단어)",
+      "en": "In the TCP 3-way handshake, which flag is set on the very first packet the client sends? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "순서: ___ → SYN-ACK → ACK.",
+        "'동기화(synchronize)'의 약자."
+      ],
+      "en": [
+        "Order: ___ -> SYN-ACK -> ACK.",
+        "Short for 'synchronize'."
+      ]
+    }
+  },
+  {
     "id": "t4_chain",
     "tier": 4,
     "cat": "crypto",
@@ -661,6 +985,87 @@ const CHALLENGES = [
       "en": [
         "The #1 item in the OWASP LLM Top 10.",
         "`prompt ________`"
+      ]
+    }
+  },
+  {
+    "id": "t4_jwtsig",
+    "tier": 4,
+    "cat": "web",
+    "points": 130,
+    "ci": true,
+    "hash": "1a2fc26dc7ea5a2a4748b7cb2b1ef193d96ab2c99f93092f69e63075b28d1278",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "JWT의 세 조각",
+      "en": "Three Parts of a JWT"
+    },
+    "prompt": {
+      "ko": "JWT는 점(.)으로 구분된 세 부분으로 구성됩니다: header . payload . ________ ? (세 번째 부분의 이름, 영문)",
+      "en": "A JWT has three dot-separated parts: header . payload . ________ ? (name of the third part, English)"
+    },
+    "hints": {
+      "ko": [
+        "변조를 검증하는 부분입니다.",
+        "alg=none 공격은 이 부분을 비웁니다."
+      ],
+      "en": [
+        "The part that verifies integrity.",
+        "The alg=none attack empties this part."
+      ]
+    }
+  },
+  {
+    "id": "t4_gcm",
+    "tier": 4,
+    "cat": "crypto",
+    "points": 160,
+    "ci": true,
+    "hash": "68c6bc126c7cf29755cb01bd3f683526cc1ec205f8aea51f9c6129cbde83cc91",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "논스를 재사용하지 마라",
+      "en": "Never Reuse the Nonce"
+    },
+    "prompt": {
+      "ko": "인증(무결성)까지 제공하는 AES AEAD 운영 모드로, 동일 nonce를 두 번 쓰면 인증 키까지 복구될 수 있는 모드는? (약자 3글자)",
+      "en": "Which AES AEAD mode (provides authentication) can leak its auth key if the same nonce is reused twice? (3-letter abbreviation)"
+    },
+    "hints": {
+      "ko": [
+        "Galois/Counter Mode.",
+        "TLS 1.3에서 널리 쓰입니다."
+      ],
+      "en": [
+        "Galois/Counter Mode.",
+        "Widely used in TLS 1.3."
+      ]
+    }
+  },
+  {
+    "id": "t4_megachain",
+    "tier": 4,
+    "cat": "crypto",
+    "points": 190,
+    "ci": false,
+    "hash": "edc75474191ebe0ecdead94c2ac3c32c1a706009292d047cbc1a27ff51ae28a5",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이중 인코딩 보스",
+      "en": "Double-Encoded Boss"
+    },
+    "prompt": {
+      "ko": "플래그를 16진수로 바꾼 뒤 그 결과를 Base64로 인코딩했습니다. 두 단계를 역순으로 풀어 플래그를 복원하세요:\n\n`NDY0YzQxNDc3YjY0NmY3NTYyNmM2NTVmNjU2ZTYzNmY2NDY1NjQ1ZjY2Njk2ZTYxNmM1ZjYyNmY3MzczN2Q=`",
+      "en": "The flag was hex-encoded, then that result was Base64-encoded. Reverse both steps to recover the flag:\n\n`NDY0YzQxNDc3YjY0NmY3NTYyNmM2NTVmNjU2ZTYzNmY2NDY1NjQ1ZjY2Njk2ZTYxNmM1ZjYyNmY3MzczN2Q=`"
+    },
+    "hints": {
+      "ko": [
+        "1단계: Base64 디코드 → 16진 문자열이 나옵니다.",
+        "2단계: 그 16진 문자열을 바이트로 디코드."
+      ],
+      "en": [
+        "Step 1: Base64-decode -> you get a hex string.",
+        "Step 2: hex-decode that string into bytes."
       ]
     }
   },
