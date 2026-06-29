@@ -122,4 +122,50 @@ main{max-width:980px;margin:0 auto;padding:28px 18px 60px}
 
 .site-footer{border-top:1px solid var(--border);padding:22px 24px;text-align:center;
   color:var(--muted);font-size:13px;background:var(--panel)}
-@media(max-width:560px){.site-header h1{font-size:20px}.scoreboard{gap:14px}}
+/* ---- responsive / mobile ---- */
+/* tablets & large phones */
+@media(max-width:768px){
+  .site-header{padding:16px 18px}
+  .scoreboard{padding:14px 18px;gap:18px}
+  main{padding:22px 14px 50px}
+  .tier{margin-bottom:28px}
+  .tier-head{padding:16px 18px}
+  .tier-head h2{font-size:17px}
+  .tier-body{padding:14px 14px}
+  .chal{padding:14px 15px}
+}
+/* phones */
+@media(max-width:560px){
+  .site-header{padding:14px 14px;gap:12px}
+  .logo{font-size:30px}
+  .site-header h1{font-size:19px}
+  .tagline{display:none}
+  .scoreboard{padding:12px 14px;gap:12px 16px}
+  .stat{min-width:56px}
+  .stat-num{font-size:18px}
+  .progress-wrap{order:5;flex-basis:100%;min-width:100%}
+  main{padding:18px 12px 48px}
+  .tier{margin-bottom:24px}
+  .tier-head{padding:14px;gap:10px;flex-wrap:wrap}
+  .tier-head h2{font-size:16px;flex:1 1 auto}
+  .tier-meta{flex-basis:100%;order:5}
+  .tier-body{padding:12px}
+  .chal{padding:13px}
+  .chal-title{font-size:15px}
+  .prompt{font-size:13px;padding:10px 12px}
+  .answer-row input{min-width:0;flex-basis:100%}
+  .submit-btn{flex:1}
+}
+/* small phones */
+@media(max-width:380px){
+  .controls{gap:6px}
+  .controls .btn{padding:7px 10px;font-size:12px}
+  .site-header h1{font-size:17px}
+  .logo{font-size:26px}
+  .stat{min-width:50px}
+  .stat-num{font-size:16px}
+  .stat-lbl{font-size:10px}
+  .tier-badge{font-size:12px;padding:3px 8px}
+  .complete-banner{padding:20px}
+  .complete-banner h2{font-size:22px}
+}
