@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vibe Hacking Wargame</title>
-<meta name="description" content="브라우저에서 바로 플레이하는 단계별 사이버보안 워게임 (입문→전문가). A browser-based, tiered cybersecurity wargame.">
+<meta name="description" content="브라우저에서 가짜 셸로 즐기는 단계별 사이버보안 침투 워게임. A browser-based, terminal-style cybersecurity infiltration wargame.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2302060a'/%3E%3Ctext x='4' y='23' font-family='monospace' font-size='18' fill='%2327ff8b'%3E%26gt;_%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/style.css">
 <!--
   ┌───────────────────────────────────────────────────────────┐
@@ -13,41 +14,52 @@
   └───────────────────────────────────────────────────────────┘
   소스 코드를 읽는 습관은 모든 해커의 출발점입니다.
   Reading source is where every hacker begins.
+  힌트: 터미널에 `connect perimeter` 를 입력해 첫 계층에 침투하세요.
 -->
 </head>
 <body>
-<header class="site-header">
-  <div class="brand">
-    <span class="logo">⚔️</span>
-    <div>
-      <h1>Vibe Hacking <span class="accent">Wargame</span></h1>
-      <p class="tagline" data-i18n="tagline">입문부터 전문가까지 · 힌트와 함께 단계별로</p>
-    </div>
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<div id="screen" class="crt">
+  <!-- thin status HUD -->
+  <header id="hud">
+    <span class="hud-brand">VIBE//INFIL</span>
+    <span class="hud-sep">│</span>
+    <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
+    <span class="hud-item">SCORE <b id="hudScore">0</b></span>
+    <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/50</b></span>
+    <span class="hud-bar"><span id="hudBar"></span></span>
+    <span class="hud-tools">
+      <button id="soundBtn" class="hud-btn" title="sound">🔊</button>
+      <button id="langBtn" class="hud-btn" title="language">EN</button>
+    </span>
+  </header>
+
+  <!-- terminal output -->
+  <main id="out" tabindex="0" aria-live="polite"></main>
+
+  <!-- quick command chips (discoverability / mobile) -->
+  <div id="chips">
+    <button class="chip" data-cmd="help">help</button>
+    <button class="chip" data-cmd="ls">ls</button>
+    <button class="chip" data-cmd="map">map</button>
+    <button class="chip" data-cmd="status">status</button>
+    <button class="chip" data-cmd="hint">hint</button>
+    <button class="chip" data-cmd="clear">clear</button>
   </div>
-  <div class="controls">
-    <button id="viewBtn" class="btn ghost">🗂️ 분야별</button>
-    <button id="langBtn" class="btn ghost" title="Language">🌐 EN</button>
-    <button id="resetBtn" class="btn ghost danger" data-i18n="reset">초기화</button>
-  </div>
-</header>
 
-<section class="scoreboard">
-  <div class="stat"><span class="stat-num" id="score">0</span><span class="stat-lbl" data-i18n="score">점수</span></div>
-  <div class="stat"><span class="stat-num" id="solvedCount">0/50</span><span class="stat-lbl" data-i18n="solved">해결</span></div>
-  <div class="stat"><span class="stat-num" id="rank">🥚</span><span class="stat-lbl" data-i18n="rank">등급</span></div>
-  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-</section>
+  <!-- command line -->
+  <form id="cmdline" autocomplete="off">
+    <span id="ps1" class="ps1">root@vibe:~$</span>
+    <input id="cmd" type="text" spellcheck="false" autocomplete="off"
+           autocapitalize="off" aria-label="command input">
+    <span class="caret" aria-hidden="true"></span>
+  </form>
+</div>
 
-<main id="tiers"></main>
-
+<!-- planted: CSS-hidden flag (t1_css) -->
 <div id="ghost" style="display:none" aria-hidden="true">FLAG{css_display_none_lies}</div>
-
-<footer class="site-footer">
-  <p data-i18n="footer">교육용 워게임입니다. 모든 도전은 브라우저 안에서 해결됩니다. 외부 시스템을 공격하지 마세요.</p>
-  <p><a href="https://github.com/lsszz2100/VibeHacking">← Vibe Hacking 레포로 돌아가기 / Back to repo</a></p>
-</footer>
-
-<div id="toast" class="toast"></div>
 
 <script src="assets/challenges.js"></script>
 <script src="assets/app.js"></script>

@@ -1,8 +1,8 @@
-# ⚔️ Vibe Hacking Wargame
+# ⚔️ Vibe Hacking Wargame — Infiltration Terminal
 
-브라우저에서 바로 플레이하는 **단계별 사이버보안 워게임**입니다. 백엔드 없이 100% 클라이언트 측에서 동작하며, 입문부터 전문가까지 5개 티어를 힌트와 함께 단계적으로 클리어합니다.
+브라우저 안의 **가짜 셸로 표적 네트워크에 침투하는** 단계별 사이버보안 워게임입니다. 백엔드 없이 100% 클라이언트 측에서 동작하며, `vibe.corp`의 보안 계층 5개(외곽→웹서버→내부망→금고→코어)를 한 계층씩 뚫어 코어에 도달합니다.
 
-A browser-based, **staged cybersecurity wargame**. 100% client-side (no backend), with 5 tiers from novice to expert, hints, and exam-style progression.
+A browser-based, **terminal-style infiltration wargame**. You drive a fake shell to breach 5 security layers of `vibe.corp` — perimeter → web server → internal → vault → core. 100% client-side, no backend.
 
 🔗 **플레이 / Play:** `https://lsszz2100.github.io/VibeHacking/`
 *(GitHub Pages 활성화 후 접속 가능 / available once GitHub Pages is enabled — see below)*
@@ -11,37 +11,40 @@ A browser-based, **staged cybersecurity wargame**. 100% client-side (no backend)
 
 ## 🎮 어떻게 플레이하나요 / How to play
 
-1. 사이트를 열면 **TIER 0 (입문)** 만 열려 있습니다.
-2. 각 문제의 설명을 읽고 정답(플래그 `FLAG{...}` 또는 단답)을 입력합니다.
-3. 막히면 **힌트**를 단계별로 열 수 있습니다 — 단, 힌트 1개당 점수 20% 차감.
-4. 한 티어에서 요구 개수(예: 4문제)를 풀면 **다음 티어가 잠금 해제**됩니다.
-5. 진행도·점수는 브라우저 `localStorage`에 자동 저장됩니다. 우상단 🌐로 한/영 전환, **초기화** 버튼으로 리셋.
+사이트를 열면 부팅 시퀀스 후 **침투 콘솔**이 뜹니다. 마우스가 아니라 **명령**으로 플레이합니다 — `help` 를 입력해 시작하세요.
 
-문제는 **두 가지 방식으로 탐색**할 수 있습니다 (우상단 `🗂️ 분야별` / `🎚️ 난이도별` 토글):
+| 명령 / command | 설명 |
+|----------------|------|
+| `help` | 명령 목록 / list commands |
+| `ls` | 현재 위치 목록 (계층 또는 잠금장치) |
+| `map` | 침투 경로 지도 — 어떤 계층이 뚫렸는지 |
+| `connect <노드>` | 계층에 접속 (예: `connect perimeter`) |
+| `cat <번호>` | 잠금장치(문제)를 열어 표적으로 설정 (예: `cat 1`) |
+| `hint` | 현재 표적 힌트 공개 — 1개당 점수 20% 차감 |
+| `submit <flag>` | 플래그 제출 (또는 표적이 열린 상태에서 그냥 입력) |
+| `status` | 점수·등급·계층별 진행도 |
+| `lang` / `sound` | 한·영 전환 / 사운드 토글 |
+| `clear` / `reset` | 화면 지우기 / 진행도 초기화 |
 
-### 난이도별 (티어) — 시험식 단계 진행
+1. **`connect perimeter`** 로 첫 계층에 침투 → **`cat 1`** 로 첫 잠금장치(문제)를 엽니다.
+2. 정답(플래그 `FLAG{...}` 또는 단답)을 입력하면 **`ACCESS GRANTED`**, 틀리면 **`ACCESS DENIED`**.
+3. 한 계층에서 요구 개수(아래 표)를 풀면 **`LAYER BREACHED`** — 다음 계층이 열립니다.
+4. 진행도·점수·언어·사운드는 브라우저 `localStorage`에 자동 저장됩니다.
+5. 상단 상태바에 점수·등급(🥚→👑)·침투 진행률이 실시간 표시됩니다.
 
-| 티어 | 주제 | 문제 수 | 통과 조건 |
-|------|------|:------:|:--------:|
-| **0 입문** | 소스 보기, 개발자도구, Base64, 바이너리 | 6 | 4 |
-| **1 기초** | 고전 암호(ROT13/Hex/Caesar/Morse), 쿠키, HTTP, nmap | 10 | 6 |
-| **2 중급** | SQLi·XSS·JWT·해시·Base32·LFI·리버싱·S3·K8s | 15 | 9 |
-| **3 고급** | XOR/ROT47, 포맷스트링, SSTI, YARA, AD, NOP, IMDS | 12 | 7 |
-| **4 전문가** | 체인/이중 디코딩, 컨테이너 탈출, AES-GCM, JWT, AI 보안 | 7 | 5 |
+> 💡 첫 플래그는 **이 페이지의 소스**에 숨어 있습니다. `Ctrl+U` 를 눌러 보세요. 콘솔(F12)·쿠키·숨겨진 DOM에도 심어진 플래그가 있습니다.
 
-### 분야별 (트랙) — 관심 분야 집중
+### 보안 계층(티어) — 한 계층씩 침투
 
-| 트랙 | 분야 | 문제 수 |
-|------|------|:------:|
-| 🌐 **웹 해킹** | 소스·세션·인젝션·SSTI | 14 |
-| 🔐 **암호·인코딩** | 고전/현대 암호, 인코딩, 해시 | 15 |
-| 💻 **시스템·리버싱·Pwn** | 리눅스, 윈도우/AD, 리버싱, 바이너리 | 8 |
-| 🔍 **포렌식·멀웨어·네트워크** | 시그니처, 메타데이터, 탐지, 패킷 | 7 |
-| ☁️ **클라우드·AI** | 컨테이너/K8s, 클라우드 메타데이터, LLM | 6 |
+| 계층 / node | 티어 | 주제 | 문제 수 | 통과(breach) |
+|------|:---:|------|:------:|:--------:|
+| `perimeter` 외곽 | **0** | 소스 보기, 개발자도구, Base64, 바이너리 | 6 | 4 |
+| `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse), 쿠키, HTTP, nmap | 10 | 6 |
+| `internal` 내부망 | **2** | SQLi·XSS·JWT·해시·Base32·LFI·리버싱·S3·K8s | 15 | 9 |
+| `vault` 금고 | **3** | XOR/ROT47, 포맷스트링, SSTI, YARA, AD, NOP, IMDS | 12 | 7 |
+| `core` 코어 | **4** | 체인/이중 디코딩, 컨테이너 탈출, AES-GCM, JWT, AI 보안 | 7 | 5 |
 
-> 트랙 보기에서는 각 문제에 난이도 칩(T0~T4)이 표시되고, 아직 잠긴 티어의 문제는 잠금으로 보입니다(난이도별 보기에서 해당 티어를 먼저 클리어).
-
-총 **50문제**. 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **50문제**(분야: 웹 14 · 암호 15 · 시스템 8 · 포렌식 7 · 클라우드/AI 6). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
 ---
 

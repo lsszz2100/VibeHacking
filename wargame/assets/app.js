@@ -1,19 +1,19 @@
-/* Vibe Hacking Wargame engine — client-side only. */
+/* Vibe Hacking // Infiltration Terminal — client-side only.
+   Reuses CHALLENGES / TIERS / TRACKS from challenges.js (untouched).
+   Flags are verified by SHA-256 only; no plaintext answers live here. */
 (function () {
   "use strict";
 
-  /* ---------- planted in-page flags (challenges find these) ---------- */
-  // cookie challenge (t1_cookie)
-  document.cookie = "wg_flag=FLAG{cookie_monster_2026}; path=/; SameSite=Lax";
-  // devtools console challenge (t0_devtools)
-  window.__hint = "FLAG{devtools_console_hero}";
+  /* ===== planted in-page flags (some challenges hunt for these) ===== */
+  document.cookie = "wg_flag=FLAG{cookie_monster_2026}; path=/; SameSite=Lax"; // t1_cookie
+  window.__hint = "FLAG{devtools_console_hero}"; // t0_devtools
   try {
-    console.log("%c[wargame] 콘솔까지 열어보다니, 될성부른 떡잎! / You opened the console — promising!",
-      "color:#00ff41;font-weight:700");
-    console.log("%cwindow.__hint = " + window.__hint, "color:#ffd35b");
+    console.log("%c[vibe] 콘솔까지 열다니, 될성부른 떡잎. / You opened the console — promising.",
+      "color:#27ff8b;font-weight:700");
+    console.log("%cwindow.__hint = " + window.__hint, "color:#ffcf4d");
   } catch (e) {}
 
-  /* ---------- compact SHA-256 (fallback for non-secure contexts) ---------- */
+  /* ===== compact SHA-256 (fallback for non-secure / file:// contexts) ===== */
   async function sha256(msg) {
     if (window.crypto && window.crypto.subtle) {
       try {
@@ -64,313 +64,635 @@
     return H.map(x => (x >>> 0).toString(16).padStart(8, "0")).join("");
   }
 
-  /* ---------- i18n ---------- */
-  const I18N = {
-    ko: { tagline:"입문부터 전문가까지 · 힌트와 함께 단계별로", reset:"초기화", score:"점수",
-      solved:"해결", rank:"등급",
-      footer:"교육용 워게임입니다. 모든 도전은 브라우저 안에서 해결됩니다. 외부 시스템을 공격하지 마세요.",
-      hint:"힌트 보기", submit:"제출", placeholder:"정답 입력…", correct:"정답입니다! 🎉",
-      wrong:"틀렸습니다. 다시 시도하세요.", already:"이미 해결했습니다.",
-      lockedMsg:"잠김 — 이전 티어에서 ", lockedMsg2:"문제를 더 풀면 열립니다.",
-      need:"통과 조건", solvedOf:"해결", hintPenalty:"힌트 -",
-      resetConfirm:"모든 진행도를 초기화할까요?", format:"형식",
-      complete:"🏆 모든 티어 클리어!", completeSub:"당신은 진정한 바이브 해커입니다. 최종 플래그를 친구에게도 도전시켜 보세요!",
-      viewTrack:"🗂️ 분야별", viewTier:"🎚️ 난이도별", clearedOf:"클리어",
-      lockedShort:"🔒 잠김 — 난이도별 보기에서 이전 티어를 먼저 클리어하세요",
-      langBtn:"🌐 EN" },
-    en: { tagline:"From novice to expert · staged, with hints", reset:"Reset", score:"Score",
-      solved:"Solved", rank:"Rank",
-      footer:"Educational wargame. Every challenge is solved inside your browser. Do not attack external systems.",
-      hint:"Reveal hint", submit:"Submit", placeholder:"Enter answer…", correct:"Correct! 🎉",
-      wrong:"Incorrect. Try again.", already:"Already solved.",
-      lockedMsg:"Locked — solve ", lockedMsg2:" more from the previous tier to unlock.",
-      need:"To pass", solvedOf:"solved", hintPenalty:"hint -",
-      resetConfirm:"Reset all progress?", format:"Format",
-      complete:"🏆 All tiers cleared!", completeSub:"You are a true vibe hacker. Challenge your friends with the final flag!",
-      viewTrack:"🗂️ By Track", viewTier:"🎚️ By Tier", clearedOf:"cleared",
-      lockedShort:"🔒 Locked — clear earlier tiers first in Tier view",
-      langBtn:"🌐 한국어" }
+  /* ===== layer theming (maps each tier -> an infiltration node) ===== */
+  const LAYERS = [
+    { tier:0, id:"perimeter", ko:"외곽 경계",   en:"Perimeter" },
+    { tier:1, id:"webserver", ko:"웹 서버",     en:"Web Server" },
+    { tier:2, id:"internal",  ko:"내부망",       en:"Internal Net" },
+    { tier:3, id:"vault",     ko:"금고",         en:"The Vault" },
+    { tier:4, id:"core",      ko:"코어 / 크라운주얼", en:"Core / Crown Jewels" }
+  ];
+  const layerByTier = t => LAYERS.find(l => l.tier === t);
+  const layerById   = id => LAYERS.find(l => l.id === id);
+
+  /* ===== ranks / scoring ===== */
+  const RANKS = [
+    { min:0,  icon:"🥚", ko:"알",     en:"Egg" },
+    { min:1,  icon:"🐣", ko:"뉴비",   en:"Newbie" },
+    { min:10, icon:"🦊", ko:"수습",   en:"Apprentice" },
+    { min:22, icon:"🐺", ko:"해커",   en:"Hacker" },
+    { min:35, icon:"🦅", ko:"엘리트", en:"Elite" },
+    { min:48, icon:"👑", ko:"레전드", en:"Legend" }
+  ];
+  const HINT_PENALTY = 0.2, MIN_AWARD = 0.2;
+
+  /* ===== i18n ===== */
+  const STR = {
+    ko: {
+      bootDone:"부팅 완료. 침투 콘솔에 오신 것을 환영합니다.",
+      welcome:"명령을 모르면 `help`, 첫 계층 침투는 `connect perimeter`.",
+      langName:"EN", unknown:"알 수 없는 명령:",
+      tryHelp:"`help` 로 사용 가능한 명령을 확인하세요.",
+      nodesHdr:"=== 네트워크 계층 (침투 노드) ===",
+      breached:"침투됨", locked:"잠김", open:"열림",
+      needMore:"개 더 풀면 다음 계층이 열립니다.",
+      connFirst:"먼저 `connect <노드>` 로 계층에 접속하세요.",
+      noNode:"그런 노드가 없습니다:",
+      nodeLocked:"접근 거부 — 이 계층은 아직 잠겨 있습니다.",
+      connected:"접속됨:", locksHdr:"잠금장치(문제) 목록 — `cat <번호>` 로 열기:",
+      pickLock:"`cat <번호>` 로 잠금장치를 여세요. (예: `cat 1`)",
+      noLock:"그런 잠금장치가 없습니다:",
+      targetSet:"표적 설정:", targetHow:"플래그를 입력하거나 `submit <플래그>` · 막히면 `hint`.",
+      noTarget:"표적이 없습니다. `cat <번호>` 로 먼저 잠금장치를 여세요.",
+      already:"이미 침투한 잠금장치입니다.",
+      granted:"ACCESS GRANTED", denied:"ACCESS DENIED",
+      grantedSub:"잠금 해제 +", deniedSub:"플래그 불일치. 다시 시도하세요.",
+      breachNode:"계층 침투 성공 →", nextOpen:"다음 계층 개방:",
+      hintNone:"남은 힌트가 없습니다.", hintCost:"힌트 공개 (점수 -",
+      statusHdr:"=== 작전 상태 ===",
+      score:"점수", rank:"등급", solved:"침투", clearAsk:"화면을 지웁니다.",
+      resetAsk:"모든 진행도를 초기화할까요? 되돌릴 수 없습니다. (yes 입력)",
+      resetDone:"진행도 초기화 완료. 다시 시작합니다.",
+      finale:"전 계층 침투 완료 — 당신은 코어를 손에 넣었습니다.",
+      finaleSub:"진정한 바이브 해커. 친구에게 이 터미널을 던져 보세요.",
+      mapHdr:"=== 침투 경로 ===",
+      soundOn:"사운드 ON", soundOff:"사운드 OFF",
+      hintLabel:"힌트", lockLabel:"잠금장치", format:"형식"
+    },
+    en: {
+      bootDone:"Boot complete. Welcome to the infiltration console.",
+      welcome:"Type `help` for commands, `connect perimeter` to breach the first layer.",
+      langName:"한국어", unknown:"unknown command:",
+      tryHelp:"Type `help` to list available commands.",
+      nodesHdr:"=== NETWORK LAYERS (infiltration nodes) ===",
+      breached:"BREACHED", locked:"LOCKED", open:"OPEN",
+      needMore:" more to open the next layer.",
+      connFirst:"Connect to a layer first: `connect <node>`.",
+      noNode:"no such node:",
+      nodeLocked:"ACCESS DENIED — this layer is still locked.",
+      connected:"connected:", locksHdr:"locks (challenges) — open with `cat <n>`:",
+      pickLock:"Open a lock with `cat <n>`. (e.g. `cat 1`)",
+      noLock:"no such lock:",
+      targetSet:"target set:", targetHow:"Type the flag, or `submit <flag>` · stuck? `hint`.",
+      noTarget:"No target. Open a lock first: `cat <n>`.",
+      already:"This lock is already breached.",
+      granted:"ACCESS GRANTED", denied:"ACCESS DENIED",
+      grantedSub:"lock opened +", deniedSub:"flag mismatch. Try again.",
+      breachNode:"LAYER BREACHED →", nextOpen:"next layer unlocked:",
+      hintNone:"No more hints.", hintCost:"hint revealed (score -",
+      statusHdr:"=== OPERATION STATUS ===",
+      score:"score", rank:"rank", solved:"breached", clearAsk:"screen cleared.",
+      resetAsk:"Reset all progress? This cannot be undone. (type yes)",
+      resetDone:"Progress reset. Starting over.",
+      finale:"All layers breached — the core is yours.",
+      finaleSub:"A true vibe hacker. Throw this terminal at a friend.",
+      mapHdr:"=== INFILTRATION PATH ===",
+      soundOn:"sound ON", soundOff:"sound OFF",
+      hintLabel:"hint", lockLabel:"lock", format:"format"
+    }
   };
 
-  const RANKS = [
-    { min:0,  icon:"🥚", ko:"알",       en:"Egg" },
-    { min:1,  icon:"🐣", ko:"뉴비",     en:"Newbie" },
-    { min:10, icon:"🦊", ko:"수습",     en:"Apprentice" },
-    { min:22, icon:"🐺", ko:"해커",     en:"Hacker" },
-    { min:35, icon:"🦅", ko:"엘리트",   en:"Elite" },
-    { min:48, icon:"👑", ko:"레전드",   en:"Legend" }
-  ];
-
-  const HINT_PENALTY = 0.2;   // each hint costs 20% of the challenge points
-  const MIN_AWARD = 0.2;      // never award less than 20%
-
-  /* ---------- state ---------- */
-  const LS = "vibe_wargame_v1";
-  let state = { solved:{}, hints:{}, lang:"ko", view:"tier" };
+  /* ===== state ===== */
+  const LS = "vibe_wargame_v1";  // keep key so prior solvers retain progress
+  let state = { solved:{}, hints:{}, lang:"ko", sound:true };
   try { const s = JSON.parse(localStorage.getItem(LS)); if (s) state = Object.assign(state, s); } catch (e) {}
+  if (typeof state.sound !== "boolean") state.sound = true;
   function save() { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {} }
-  function t(k) { return I18N[state.lang][k]; }
+  function S(k){ return STR[state.lang][k]; }
+  const L = () => state.lang;
 
-  const totalChals = CHALLENGES.length;
+  // session-only context (not persisted)
+  let cwd = null;          // current node id, or null at root
+  let target = null;       // current challenge id
+  let pendingReset = false; // awaiting "yes" confirmation
 
-  function tierSolvedCount(tid) {
-    return CHALLENGES.filter(c => c.tier === tid && state.solved[c.id]).length;
-  }
-  function isTierUnlocked(tier) {
-    if (tier.id === 0) return true;
-    const prev = TIERS.find(x => x.id === tier.id - 1);
-    return tierSolvedCount(prev.id) >= prev.need;
-  }
-  function totalScore() {
-    return Object.values(state.solved).reduce((a, b) => a + (b.earned || 0), 0);
-  }
-  function awardFor(ch) {
+  /* ===== challenge helpers ===== */
+  const tierChals = tid => CHALLENGES.filter(c => c.tier === tid);
+  const tierSolved = tid => tierChals(tid).filter(c => state.solved[c.id]).length;
+  const isTierUnlocked = tid => {
+    if (tid === 0) return true;
+    const prev = TIERS.find(x => x.id === tid - 1);
+    return tierSolved(prev.id) >= prev.need;
+  };
+  const solvedCount = () => Object.keys(state.solved).length;
+  const totalScore = () => Object.values(state.solved).reduce((a, b) => a + (b.earned || 0), 0);
+  function awardFor(ch){
     const used = state.hints[ch.id] || 0;
-    const factor = Math.max(MIN_AWARD, 1 - used * HINT_PENALTY);
-    return Math.round(ch.points * factor);
+    return Math.round(ch.points * Math.max(MIN_AWARD, 1 - used * HINT_PENALTY));
   }
-  function challengeLocked(ch) {
-    return !isTierUnlocked(TIERS.find(x => x.id === ch.tier));
+  // locks in a node, numbered 1..n in array order
+  function locksOf(nodeId){
+    const layer = layerById(nodeId);
+    if (!layer) return [];
+    return tierChals(layer.tier);
   }
-  function trackSolvedCount(trackId) {
-    return CHALLENGES.filter(c => c.track === trackId && state.solved[c.id]).length;
+
+  /* ===== sound (WebAudio, generated) ===== */
+  let actx = null;
+  function audio(){
+    if (!state.sound) return null;
+    try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ return null; }
+    if (actx && actx.state === "suspended") actx.resume();
+    return actx;
+  }
+  function tone(freq, dur, type, gain, when){
+    const c = audio(); if (!c) return;
+    const t0 = c.currentTime + (when||0);
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type || "square"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain||0.06, t0+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }
+  const sKey     = () => tone(420+Math.random()*120, 0.03, "square", 0.025);
+  const sEnter   = () => tone(280, 0.05, "square", 0.04);
+  function sGrant(){ [523,659,784,1046].forEach((f,i)=>tone(f,0.16,"triangle",0.07,i*0.07)); }
+  function sDeny(){ tone(150,0.16,"sawtooth",0.07); tone(120,0.22,"sawtooth",0.06,0.06); }
+  function sBreach(){ [392,523,659,784,1046,1318].forEach((f,i)=>tone(f,0.22,"triangle",0.08,i*0.06)); }
+
+  /* ===== output ===== */
+  const out = document.getElementById("out");
+  function scrollEnd(){ out.scrollTop = out.scrollHeight; }
+  function esc(s){ return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" }[c])); }
+  function fmtInline(s){ // escape, then `code` spans
+    return esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+  }
+  function print(html, cls){
+    const d = document.createElement("div");
+    d.className = "line" + (cls ? " " + cls : "");
+    d.innerHTML = html;
+    out.appendChild(d); scrollEnd();
+    return d;
+  }
+  function printText(s, cls){ return print(fmtInline(s), cls); }
+  function blank(){ print("&nbsp;"); }
+
+  function echoCmd(raw){
+    print('<span class="echo"><span class="p">' + esc(ps1text()) + '</span> ' + esc(raw) + '</span>');
   }
 
-  /* ---------- rendering ---------- */
-  const tiersEl = document.getElementById("tiers");
+  /* boot + banner sequences print line-by-line with small delays */
+  function printSeq(lines, done){
+    let i = 0;
+    (function step(){
+      if (i >= lines.length){ if (done) done(); return; }
+      const ln = lines[i++];
+      print(ln.html, ln.cls);
+      setTimeout(step, ln.d != null ? ln.d : 90);
+    })();
+  }
 
-  function render() {
-    document.documentElement.lang = state.lang;
-    document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
-    document.getElementById("langBtn").textContent = t("langBtn");
-
-    const solvedN = Object.keys(state.solved).length;
-    document.getElementById("score").textContent = totalScore();
-    document.getElementById("solvedCount").textContent = solvedN + "/" + totalChals;
-    const rank = RANKS.slice().reverse().find(r => solvedN >= r.min);
-    document.getElementById("rank").textContent = rank.icon;
-    document.getElementById("rank").title = rank[state.lang];
-    document.getElementById("progressBar").style.width = (solvedN / totalChals * 100) + "%";
-
-    document.getElementById("viewBtn").textContent =
-      state.view === "tier" ? t("viewTrack") : t("viewTier");
-
-    tiersEl.innerHTML = "";
-
-    if (solvedN === totalChals) {
-      const b = document.createElement("div");
-      b.className = "complete-banner show";
-      b.innerHTML = `<h2>${t("complete")}</h2><p>${t("completeSub")}</p>`;
-      tiersEl.appendChild(b);
+  /* ===== prompt / HUD ===== */
+  function ps1text(){
+    if (cwd){
+      const lay = layerById(cwd);
+      const here = "/" + cwd + (target ? "/" + target : "");
+      return "root@" + (lay ? "vibe" : "vibe") + ":" + here + "$";
     }
-
-    if (state.view === "track") renderTrackView();
-    else renderTierView();
+    return "root@vibe:~$";
+  }
+  function refreshHud(){
+    const n = solvedCount(), tot = CHALLENGES.length;
+    document.getElementById("hudScore").textContent = totalScore();
+    document.getElementById("hudSolved").textContent = n + "/" + tot;
+    const rank = RANKS.slice().reverse().find(r => n >= r.min);
+    const rk = document.getElementById("hudRank");
+    rk.textContent = rank.icon; rk.title = rank[L()];
+    document.getElementById("hudBar").style.width = (n / tot * 100) + "%";
+    document.getElementById("ps1").textContent = ps1text();
+    document.getElementById("soundBtn").textContent = state.sound ? "🔊" : "🔇";
+    document.getElementById("langBtn").textContent = S("langName");
   }
 
-  function renderTierView() {
-    TIERS.forEach(tier => {
-      const unlocked = isTierUnlocked(tier);
-      const chals = CHALLENGES.filter(c => c.tier === tier.id);
-      const sc = tierSolvedCount(tier.id);
+  /* ===== command renderers ===== */
+  function showHelp(){
+    const rows = [
+      ["help","명령 목록 / list commands"],
+      ["ls","현재 위치 목록 (계층 또는 잠금장치) / list here"],
+      ["map","침투 경로 지도 / infiltration map"],
+      ["connect <노드>","계층에 접속 / connect to a layer  (cd <node>)"],
+      ["back","상위로 / go up  (cd ..)"],
+      ["cat <번호>","잠금장치(문제) 열기 / open a lock  (open <n>)"],
+      ["hint","현재 표적 힌트 공개 / reveal a hint"],
+      ["submit <flag>","플래그 제출 / submit a flag  (또는 그냥 입력)"],
+      ["status","점수·등급·진행 / score & progress  (whoami)"],
+      ["lang","한/영 전환 / toggle language"],
+      ["sound","사운드 토글 / toggle sound"],
+      ["clear","화면 지우기 / clear screen"],
+      ["reset","진행도 초기화 / reset progress"]
+    ];
+    blank();
+    print('<span class="bold">' + (L()==="ko"?"사용 가능한 명령":"AVAILABLE COMMANDS") + '</span>');
+    rows.forEach(r => print('<span class="tbl"><span class="cmd-h">' + r[0].padEnd(16," ").replace(/ /g,"&nbsp;") +
+      '</span> <span class="dim">' + esc(r[1]) + '</span></span>'));
+    blank();
+    print('<span class="dim">' + esc(S("welcome")) + '</span>');
+  }
 
-      const sec = document.createElement("section");
-      sec.className = "tier t" + tier.id + (unlocked ? "" : " locked") +
-        (unlocked ? "" : " collapsed");
-
-      const head = document.createElement("div");
-      head.className = "tier-head";
-      head.innerHTML =
-        `<span class="tier-badge">TIER ${tier.id}</span>
-         <h2>${tier[state.lang]}</h2>
-         <span class="tier-meta">${sc}/${chals.length} ${t("solvedOf")} · ${t("need")} ${tier.need}</span>
-         <span class="tier-lock">${unlocked ? "▾" : "🔒"}</span>`;
-      head.addEventListener("click", () => { sec.classList.toggle("collapsed"); });
-      sec.appendChild(head);
-
-      const body = document.createElement("div");
-      body.className = "tier-body";
-
-      const desc = document.createElement("p");
-      desc.className = "tier-desc";
-      desc.textContent = tier["desc_" + state.lang];
-      body.appendChild(desc);
-
-      if (!unlocked) {
-        const prev = TIERS.find(x => x.id === tier.id - 1);
-        const remain = Math.max(0, prev.need - tierSolvedCount(prev.id));
-        const note = document.createElement("div");
-        note.className = "locked-note";
-        note.textContent = `🔒 ${t("lockedMsg")}${remain}${t("lockedMsg2")}`;
-        body.appendChild(note);
-      } else {
-        chals.forEach(ch => body.appendChild(renderChal(ch, false)));
-      }
-      sec.appendChild(body);
-      tiersEl.appendChild(sec);
+  function showNodes(){
+    blank();
+    print('<span class="bold">' + esc(S("nodesHdr")) + '</span>');
+    LAYERS.forEach(lay => {
+      const tier = TIERS.find(t => t.id === lay.tier);
+      const unlocked = isTierUnlocked(lay.tier);
+      const sc = tierSolved(lay.tier), tc = tierChals(lay.tier).length;
+      const fullBreach = sc >= tier.need;
+      let statusHtml, cls;
+      if (!unlocked){ statusHtml = '🔒 ' + esc(S("locked")); cls = "locked-row"; }
+      else if (fullBreach){ statusHtml = '<span class="ok">✓ ' + esc(S("breached")) + '</span>'; cls = "solved-row"; }
+      else { statusHtml = '<span class="warn">▸ ' + esc(S("open")) + '</span>'; cls = ""; }
+      const name = lay[L()];
+      print('<span class="tbl"><span class="row ' + cls + '">' +
+        '<span class="id">[' + esc(lay.id) + ']</span>' +
+        '<span class="kw">TIER ' + lay.tier + '</span>' +
+        '<span>' + esc(name) + '</span>' +
+        '<span class="dim">' + sc + '/' + tc + ' · ' + (L()==="ko"?"통과":"need") + ' ' + tier.need + '</span>' +
+        statusHtml + '</span></span>');
     });
+    blank();
+    print('<span class="dim">' + esc(S("pickLock")==null?"":"") + (L()==="ko"
+      ? "`connect &lt;노드&gt;` 로 계층에 침투하세요." : "Breach a layer with `connect &lt;node&gt;`.") + '</span>');
   }
 
-  function renderTrackView() {
-    TRACKS.forEach(tr => {
-      const chals = CHALLENGES.filter(c => c.track === tr.id).sort((a, b) => a.tier - b.tier);
-      const sc = trackSolvedCount(tr.id);
-      const pct = chals.length ? Math.round(sc / chals.length * 100) : 0;
-
-      const sec = document.createElement("section");
-      sec.className = "tier track";
-
-      const head = document.createElement("div");
-      head.className = "tier-head";
-      head.innerHTML =
-        `<span class="tier-badge">${tr.icon}</span>
-         <h2>${tr[state.lang]}</h2>
-         <span class="tier-meta">${sc}/${chals.length} ${t("clearedOf")} · ${pct}%</span>
-         <span class="tier-lock">▾</span>`;
-      head.addEventListener("click", () => { sec.classList.toggle("collapsed"); });
-      sec.appendChild(head);
-
-      const body = document.createElement("div");
-      body.className = "tier-body";
-
-      const desc = document.createElement("p");
-      desc.className = "tier-desc";
-      desc.textContent = tr["desc_" + state.lang];
-      body.appendChild(desc);
-
-      const pw = document.createElement("div");
-      pw.className = "progress-wrap track-progress";
-      pw.innerHTML = `<div class="progress-bar" style="width:${pct}%"></div>`;
-      body.appendChild(pw);
-
-      chals.forEach(ch => body.appendChild(renderChal(ch, challengeLocked(ch))));
-      sec.appendChild(body);
-      tiersEl.appendChild(sec);
+  function showLocks(nodeId){
+    const lay = layerById(nodeId);
+    const tier = TIERS.find(t => t.id === lay.tier);
+    const chals = locksOf(nodeId);
+    blank();
+    print('<span class="bold">' + esc(S("connected")) + ' [' + esc(nodeId) + '] ' + esc(lay[L()]) + '</span>');
+    print('<span class="dim">' + esc(tier["desc_" + L()]) + '</span>');
+    print('<span class="dim">' + esc(S("locksHdr")) + '</span>');
+    chals.forEach((c, i) => {
+      const solved = !!state.solved[c.id];
+      const num = String(i + 1).padStart(2, "0");
+      const mark = solved ? '<span class="ok">[✓]</span>' : '<span class="warn">[ ]</span>';
+      const cls = solved ? "solved-row" : "";
+      print('<span class="tbl"><span class="row ' + cls + '">' +
+        mark + ' <span class="id">' + num + '</span>' +
+        '<span class="ct">' + esc(c.cat) + '</span>' +
+        '<span>' + esc(c.title[L()]) + '</span>' +
+        '<span class="dim">' + c.points + 'pt</span>' +
+        (solved ? '<span class="ok">+' + state.solved[c.id].earned + '</span>' : '') +
+        '</span></span>');
     });
+    blank();
+    const need = tier.need, have = tierSolved(lay.tier);
+    if (have < need){
+      print('<span class="warn">' + (L()==="ko"
+        ? ("이 계층 침투까지 " + (need - have) + "개 남음.")
+        : ((need - have) + " more lock(s) to breach this layer.")) + '</span>');
+    }
+    print('<span class="dim">' + esc(S("pickLock")) + '</span>');
   }
 
-  function renderChal(ch, locked) {
+  function catLock(arg){
+    if (!cwd){ printText(S("connFirst"), "warn"); return; }
+    const chals = locksOf(cwd);
+    let ch = null;
+    if (/^\d+$/.test(arg)){ ch = chals[parseInt(arg,10) - 1]; }
+    if (!ch) ch = chals.find(c => c.id === arg);
+    if (!ch){ printText(S("noLock") + " " + arg, "err"); sDeny(); return; }
+    target = ch.id;
     const solved = !!state.solved[ch.id];
+    const box = document.createElement("div");
+    box.className = "cbox" + (solved ? " solved" : "");
+    const idx = chals.indexOf(ch) + 1;
+    box.innerHTML =
+      '<div class="cbh">' +
+        '<span class="tag">' + esc(S("lockLabel")) + ' ' + String(idx).padStart(2,"0") + '</span>' +
+        '<span class="ct">' + esc(ch.cat) + (ch.track ? ' · ' + esc(ch.track) : '') + '</span>' +
+        (solved ? '<span class="ok">✓ ' + esc(S("breached")) + '</span>' : '') +
+        '<span class="pt">' + ch.points + 'pt</span>' +
+      '</div>' +
+      '<div class="cbody">' + fmtInline(ch.prompt[L()]) + '</div>' +
+      (ch.fmt ? '<div class="cfmt">' + esc(S("format")) + ': <b>' + esc(ch.fmt) + '</b></div>' : '');
+    out.appendChild(box); scrollEnd();
+    // hints already revealed
     const used = state.hints[ch.id] || 0;
-    const card = document.createElement("div");
-    card.className = "chal" + (solved ? " solved" : "") + (locked && !solved ? " locked-chal" : "");
-
-    const top = document.createElement("div");
-    top.className = "chal-top";
-    top.innerHTML =
-      `<span class="tchip">T${ch.tier}</span>
-       <span class="cat">${ch.cat}</span>
-       <h3 class="chal-title">${ch.title[state.lang]}</h3>
-       <span class="pts">${ch.points}pt</span>` +
-      (solved ? `<span class="solved-tag">✓ +${state.solved[ch.id].earned}</span>` : "");
-    card.appendChild(top);
-
-    if (locked && !solved) {
-      const ln = document.createElement("div");
-      ln.className = "locked-note";
-      ln.textContent = t("lockedShort");
-      card.appendChild(ln);
-      return card;
+    for (let i = 0; i < used && i < ch.hints[L()].length; i++){
+      print('<span class="warn">💡 ' + esc(ch.hints[L()][i]) + '</span>');
     }
-
-    const prompt = document.createElement("div");
-    prompt.className = "prompt";
-    prompt.innerHTML = renderPrompt(ch.prompt[state.lang]);
-    card.appendChild(prompt);
-
-    if (ch.fmt) {
-      const fmt = document.createElement("div");
-      fmt.className = "fmt";
-      fmt.innerHTML = `${t("format")}: <b>${escapeHtml(ch.fmt)}</b>`;
-      card.appendChild(fmt);
+    if (!solved){
+      print('<span class="targetline">▶ ' + esc(S("targetSet")) + ' ' + esc(ch.title[L()]) + '</span>');
+      print('<span class="dim">' + esc(S("targetHow")) + '</span>');
     }
-
-    // hints
-    const hintsBox = document.createElement("div");
-    hintsBox.className = "hints";
-    ch.hints[state.lang].forEach((h, idx) => {
-      if (idx < used) {
-        const ht = document.createElement("div");
-        ht.className = "hint-txt";
-        ht.textContent = "💡 " + h;
-        hintsBox.appendChild(ht);
-      } else if (idx === used && !solved) {
-        const hb = document.createElement("button");
-        hb.className = "hint-btn";
-        hb.textContent = `${t("hint")} ${idx + 1}/${ch.hints[state.lang].length} (${t("hintPenalty")}${Math.round(HINT_PENALTY*100)}%)`;
-        hb.addEventListener("click", () => {
-          state.hints[ch.id] = (state.hints[ch.id] || 0) + 1; save(); render();
-        });
-        hintsBox.appendChild(hb);
-      }
-    });
-    card.appendChild(hintsBox);
-
-    // answer
-    const row = document.createElement("div");
-    row.className = "answer-row";
-    const input = document.createElement("input");
-    input.type = "text";
-    input.placeholder = t("placeholder");
-    input.spellcheck = false;
-    input.autocomplete = "off";
-    const btn = document.createElement("button");
-    btn.className = "submit-btn";
-    btn.textContent = t("submit");
-    const submit = () => checkAnswer(ch, input.value);
-    btn.addEventListener("click", submit);
-    input.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
-    row.appendChild(input);
-    row.appendChild(btn);
-    card.appendChild(row);
-    return card;
+    refreshHud();
   }
 
-  function renderPrompt(s) {
-    // escape, then turn `code` spans and keep newlines
-    let h = escapeHtml(s);
-    h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
-    return h;
-  }
-  function escapeHtml(s) {
-    return s.replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" }[c]));
+  function doHint(arg){
+    let id = target;
+    if (arg && /^\d+$/.test(arg) && cwd){ const c = locksOf(cwd)[parseInt(arg,10)-1]; if (c) id = c.id; }
+    if (!id){ printText(S("noTarget"), "warn"); return; }
+    const ch = CHALLENGES.find(c => c.id === id);
+    const used = state.hints[ch.id] || 0;
+    if (used >= ch.hints[L()].length){ printText(S("hintNone"), "dim"); return; }
+    state.hints[ch.id] = used + 1; save();
+    print('<span class="warn">💡 ' + esc(ch.hints[L()][used]) + '</span>');
+    print('<span class="dim">(' + esc(S("hintCost")) + Math.round(HINT_PENALTY*100) + '%)</span>');
+    refreshHud();
   }
 
-  async function checkAnswer(ch, raw) {
-    if (state.solved[ch.id]) { toast(t("already"), "ok"); return; }
-    const norm = ch.ci ? raw.trim().toLowerCase() : raw.trim();
+  async function trySubmit(flag){
+    if (!target){ printText(S("noTarget"), "warn"); return; }
+    const ch = CHALLENGES.find(c => c.id === target);
+    if (state.solved[ch.id]){ printText(S("already"), "dim"); return; }
+    const norm = ch.ci ? flag.trim().toLowerCase() : flag.trim();
     if (!norm) return;
     const h = await sha256(norm);
-    if (h === ch.hash) {
-      const earned = awardFor(ch);
-      state.solved[ch.id] = { earned: earned, ts: Date.now() };
-      save(); render();
-      toast(t("correct") + "  +" + earned, "ok");
-    } else {
-      toast(t("wrong"), "err");
+    if (h !== ch.hash){
+      sDeny();
+      printSeq([
+        { html:'<span class="banner deny">  ╳  ' + esc(S("denied")) + '  ╳  </span>', cls:"", d:60 },
+        { html:'<span class="err">' + esc(S("deniedSub")) + '</span>', d:0 }
+      ]);
+      return;
+    }
+    // correct
+    const earned = awardFor(ch);
+    state.solved[ch.id] = { earned: earned, ts: Date.now() };
+    save();
+    const lay = layerById(cwd), tier = TIERS.find(t => t.id === lay.tier);
+    const beforeUnlockedNext = isTierUnlocked(tier.id + 1);
+    sGrant();
+    refreshHud();
+    printSeq([
+      { html:'<span class="banner grant"> ▓▓ ' + esc(S("granted")) + ' ▓▓ </span>', d:120 },
+      { html:'<span class="ok">' + esc(S("grantedSub")) + earned + '  (' + esc(ch.title[L()]) + ')</span>', d:60 }
+    ], () => {
+      // node breach?
+      const nowUnlockedNext = isTierUnlocked(tier.id + 1);
+      const justBreached = !beforeUnlockedNext && nowUnlockedNext;
+      const nextLayer = layerByTier(tier.id + 1);
+      if (justBreached && nextLayer){
+        sBreach();
+        printSeq([
+          { html:'&nbsp;', d:120 },
+          { html:'<span class="banner breach">┏━━ ' + esc(S("breachNode")) + ' ' + esc(lay[L()]) + ' ━━┓</span>', d:160 },
+          { html:'<span class="warn">' + esc(S("nextOpen")) + ' [' + esc(nextLayer.id) + '] ' + esc(nextLayer[L()]) +
+                 ' — `connect ' + esc(nextLayer.id) + '`</span>', d:0 }
+        ]);
+      }
+      // full completion?
+      if (solvedCount() === CHALLENGES.length) finale();
+    });
+    target = null; // require reopening for next lock
+  }
+
+  function finale(){
+    sBreach();
+    const art = [
+      "  ██████  ██████  ██████  ███████ ",
+      " ██      ██    ██ ██   ██ ██      ",
+      " ██      ██    ██ ██████  █████   ",
+      " ██      ██    ██ ██   ██ ██      ",
+      "  ██████  ██████  ██   ██ ███████ "
+    ];
+    blank();
+    art.forEach(a => print('<span class="banner breach">' + a.replace(/ /g,"&nbsp;") + '</span>'));
+    print('<span class="ok bold">★ ' + esc(S("finale")) + '</span>');
+    print('<span class="dim">' + esc(S("finaleSub")) + '</span>');
+  }
+
+  function showStatus(){
+    const n = solvedCount(), tot = CHALLENGES.length;
+    const rank = RANKS.slice().reverse().find(r => n >= r.min);
+    blank();
+    print('<span class="bold">' + esc(S("statusHdr")) + '</span>');
+    print('<span class="tbl"><span class="dim">' + esc(S("score")) + ':</span> <span class="ok">' + totalScore() + '</span></span>');
+    print('<span class="tbl"><span class="dim">' + esc(S("rank")) + ':</span> ' + rank.icon + ' <span class="kw">' + esc(rank[L()]) + '</span></span>');
+    print('<span class="tbl"><span class="dim">' + esc(S("solved")) + ':</span> ' + n + '/' + tot + '</span>');
+    blank();
+    LAYERS.forEach(lay => {
+      const tier = TIERS.find(t => t.id === lay.tier);
+      const sc = tierSolved(lay.tier), tc = tierChals(lay.tier).length;
+      const unlocked = isTierUnlocked(lay.tier);
+      const bar = barStr(sc, tc);
+      const tag = !unlocked ? '🔒' : (sc >= tier.need ? '<span class="ok">✓</span>' : '<span class="warn">▸</span>');
+      print('<span class="tbl"><span class="row"><span class="id">[' + esc(lay.id) + ']</span>' +
+        tag + ' <span class="dim">' + bar + ' ' + sc + '/' + tc + '</span></span></span>');
+    });
+  }
+  function barStr(a, b){
+    const w = 14, f = b ? Math.round(a / b * w) : 0;
+    return '<span class="ok">' + "█".repeat(f) + '</span><span class="dim">' + "░".repeat(w - f) + '</span>';
+  }
+
+  function showMap(){
+    blank();
+    print('<span class="bold">' + esc(S("mapHdr")) + '</span>');
+    let lineTop = "", lineMid = "", lineBot = "";
+    LAYERS.forEach((lay, i) => {
+      const tier = TIERS.find(t => t.id === lay.tier);
+      const unlocked = isTierUnlocked(lay.tier);
+      const breached = tierSolved(lay.tier) >= tier.need;
+      const icon = !unlocked ? "🔒" : (breached ? "✓" : "▸");
+      const cls = !unlocked ? "dim" : (breached ? "ok" : "warn");
+      const label = lay.id;
+      print('<span class="tbl"><span class="row"><span class="' + cls + '">' +
+        (i === 0 ? "" : "&nbsp;&nbsp;│&nbsp;&nbsp;<br>") +
+        "[" + icon + "] " + esc(label.toUpperCase()) +
+        '</span> <span class="dim">' + esc(lay[L()]) + " · TIER " + lay.tier + '</span></span></span>');
+    });
+    blank();
+    print('<span class="dim">' + (L()==="ko"
+      ? "✓ 침투완료 · ▸ 진행중 · 🔒 잠김 — 앞 계층을 뚫어야 다음이 열립니다."
+      : "✓ breached · ▸ in progress · 🔒 locked — breach a layer to open the next.") + '</span>');
+  }
+
+  /* ===== command dispatch ===== */
+  function run(raw){
+    const line = raw.trim();
+    echoCmd(raw);
+    if (!line){ return; }
+
+    // reset confirmation flow
+    if (pendingReset){
+      pendingReset = false;
+      if (line.toLowerCase() === "yes" || line.toLowerCase() === "y"){
+        state = { solved:{}, hints:{}, lang: state.lang, sound: state.sound };
+        save(); cwd = null; target = null;
+        printText(S("resetDone"), "warn"); refreshHud();
+      } else {
+        printText(L()==="ko" ? "취소됨." : "cancelled.", "dim");
+      }
+      return;
+    }
+
+    const parts = line.split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const arg = parts.slice(1).join(" ");
+
+    switch (cmd){
+      case "help": case "?": case "도움말": showHelp(); break;
+      case "ls": case "dir": case "list":
+        if (cwd) showLocks(cwd); else showNodes(); break;
+      case "nodes": showNodes(); break;
+      case "map": case "지도": showMap(); break;
+      case "connect": case "cd": case "ssh": case "nc": {
+        if (cmd === "cd" && (arg === ".." || arg === "")){ // cd .. / cd -> root
+          cwd = null; target = null; printText(L()==="ko"?"루트로 이동.":"back to root.", "dim"); refreshHud(); break;
+        }
+        connect(arg); break;
+      }
+      case "back": case "disconnect": case "exit":
+        cwd = null; target = null; printText(L()==="ko"?"접속 종료.":"disconnected.", "dim"); refreshHud(); break;
+      case "cat": case "open": case "less": case "vi": catLock(arg); break;
+      case "hint": case "힌트": doHint(arg); break;
+      case "submit": case "flag": case "answer": trySubmit(arg); break;
+      case "status": case "whoami": case "stat": case "id": showStatus(); break;
+      case "lang": case "언어": toggleLang(); break;
+      case "sound": case "mute": toggleSound(); break;
+      case "clear": case "cls": out.innerHTML = ""; break;
+      case "reset":
+        pendingReset = true; printText(S("resetAsk"), "warn"); break;
+      case "banner": case "intro": intro(); break;
+      default:
+        // bare flag attempt when a target is open
+        if (target && (/^flag\{/i.test(line) || target)){ trySubmit(line); break; }
+        printText(S("unknown") + " " + cmd, "err");
+        printText(S("tryHelp"), "dim");
+        sDeny();
     }
   }
 
-  /* ---------- toast ---------- */
-  let toastTimer = null;
-  function toast(msg, kind) {
-    const el = document.getElementById("toast");
-    el.textContent = msg;
-    el.className = "toast show " + (kind || "");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { el.className = "toast"; }, 2200);
+  function connect(arg){
+    if (!arg){ printText(S("connFirst"), "warn"); return; }
+    let lay = layerById(arg.toLowerCase());
+    if (!lay && /^\d+$/.test(arg)) lay = layerByTier(parseInt(arg,10));
+    if (!lay){ printText(S("noNode") + " " + arg, "err"); sDeny(); return; }
+    if (!isTierUnlocked(lay.tier)){
+      sDeny();
+      printSeq([{ html:'<span class="banner deny">  ╳  ' + esc(S("nodeLocked")) + '  ╳  </span>', d:0 }]);
+      return;
+    }
+    cwd = lay.id; target = null;
+    refreshHud();
+    showLocks(lay.id);
   }
 
-  /* ---------- controls ---------- */
-  document.getElementById("viewBtn").addEventListener("click", () => {
-    state.view = state.view === "tier" ? "track" : "tier"; save(); render();
+  function toggleLang(){
+    state.lang = state.lang === "ko" ? "en" : "ko"; save();
+    refreshHud();
+    printText(state.lang === "ko" ? "언어: 한국어" : "language: English", "dim");
+  }
+  function toggleSound(){
+    state.sound = !state.sound; save(); refreshHud();
+    if (state.sound){ audio(); sGrant(); }
+    printText(state.sound ? S("soundOn") : S("soundOff"), "dim");
+  }
+
+  /* ===== boot + intro ===== */
+  function intro(){
+    const banner = [
+      " ██╗   ██╗██╗██████╗ ███████╗",
+      " ██║   ██║██║██╔══██╗██╔════╝",
+      " ██║   ██║██║██████╔╝█████╗  ",
+      " ╚██╗ ██╔╝██║██╔══██╗██╔══╝  ",
+      "  ╚████╔╝ ██║██████╔╝███████╗",
+      "   ╚═══╝  ╚═╝╚═════╝ ╚══════╝  INFILTRATION TERMINAL"
+    ];
+    banner.forEach(b => print('<span class="ok">' + esc(b).replace(/ /g,"&nbsp;") + '</span>'));
+    print('<span class="dim">' + (L()==="ko"
+      ? "표적: vibe.corp · 보안 계층 5개 · 한 계층씩 뚫어 코어에 도달하세요."
+      : "target: vibe.corp · 5 security layers · breach them one by one to reach the core.") + '</span>');
+    blank();
+    print('<span class="warn">' + esc(S("welcome")) + '</span>');
+    blank();
+  }
+
+  function boot(){
+    const seq = [
+      { html:'<span class="sys">[ booting vibe-os 4.8 ... ]</span>', d:120 },
+      { html:'<span class="sys">[ <span class="ok">OK</span> ] mount /dev/secrets</span>', d:90 },
+      { html:'<span class="sys">[ <span class="ok">OK</span> ] load exploit toolkit (pwntools, john, hashcat)</span>', d:90 },
+      { html:'<span class="sys">[ <span class="ok">OK</span> ] crypto.subtle ' + (window.crypto && window.crypto.subtle ? 'available' : 'fallback') + '</span>', d:90 },
+      { html:'<span class="sys">[ <span class="ok">OK</span> ] resolve vibe.corp ... 10.13.37.0/24</span>', d:120 },
+      { html:'<span class="sys">[ <span class="warn">!!</span> ] 5 security layers detected — authorization required</span>', d:160 },
+      { html:'&nbsp;', d:80 }
+    ];
+    printSeq(seq, () => {
+      intro();
+      // restore last context hint
+      const n = solvedCount();
+      if (n > 0){
+        print('<span class="dim">' + (L()==="ko"
+          ? ("이전 진행 복원: " + n + "/" + CHALLENGES.length + " 침투됨. `status` 로 확인, `map` 으로 경로 보기.")
+          : ("restored progress: " + n + "/" + CHALLENGES.length + " breached. `status` to review, `map` for the path.")) + '</span>');
+      }
+      refreshHud();
+    });
+  }
+
+  /* ===== input wiring ===== */
+  const input = document.getElementById("cmd");
+  const form = document.getElementById("cmdline");
+  const history = []; let hi = -1;
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const v = input.value;
+    if (v.trim()){ history.push(v); if (history.length > 100) history.shift(); }
+    hi = history.length;
+    input.value = "";
+    sEnter();
+    run(v);
   });
-  document.getElementById("langBtn").addEventListener("click", () => {
-    state.lang = state.lang === "ko" ? "en" : "ko"; save(); render();
+  input.addEventListener("keydown", e => {
+    if (e.key === "ArrowUp"){ if (hi > 0){ hi--; input.value = history[hi] || ""; } e.preventDefault(); }
+    else if (e.key === "ArrowDown"){ if (hi < history.length - 1){ hi++; input.value = history[hi] || ""; } else { hi = history.length; input.value = ""; } e.preventDefault(); }
+    else if (e.key.length === 1){ sKey(); }
   });
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    if (confirm(t("resetConfirm"))) { state = { solved:{}, hints:{}, lang: state.lang, view: state.view }; save(); render(); }
+  // keep focus on terminal
+  document.getElementById("out").addEventListener("click", () => input.focus());
+  document.getElementById("screen").addEventListener("click", e => {
+    if (e.target.closest("button")) return;
+    if (window.getSelection && String(window.getSelection())) return;
+    input.focus();
   });
 
-  render();
+  // quick chips
+  document.querySelectorAll(".chip").forEach(ch => {
+    ch.addEventListener("click", () => { input.focus(); audio(); run(ch.dataset.cmd); });
+  });
+  // hud buttons
+  document.getElementById("soundBtn").addEventListener("click", () => { audio(); toggleSound(); input.focus(); });
+  document.getElementById("langBtn").addEventListener("click", () => { toggleLang(); input.focus(); });
+
+  /* ===== matrix rain ===== */
+  (function rain(){
+    const c = document.getElementById("rain");
+    if (!c || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const ctx = c.getContext("2d");
+    let cols, drops, fontSize = 14;
+    const glyphs = "01░▒▓<>/\\{}[]#$%&日二三四五六七八九十円ハミヒ".split("");
+    function resize(){
+      c.width = window.innerWidth; c.height = window.innerHeight;
+      cols = Math.floor(c.width / fontSize);
+      drops = new Array(cols).fill(0).map(() => Math.random() * -50);
+    }
+    resize(); window.addEventListener("resize", resize);
+    let last = 0;
+    function frame(t){
+      requestAnimationFrame(frame);
+      if (t - last < 60) return; last = t; // ~16fps, light
+      ctx.fillStyle = "rgba(2,6,10,0.18)";
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.fillStyle = "#27ff8b";
+      ctx.font = fontSize + "px monospace";
+      for (let i = 0; i < cols; i++){
+        const ch = glyphs[Math.floor(Math.random() * glyphs.length)];
+        ctx.fillText(ch, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > c.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }
+    requestAnimationFrame(frame);
+  })();
+
+  /* ===== go ===== */
+  refreshHud();
+  boot();
+  input.focus();
 })();
