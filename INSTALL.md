@@ -51,6 +51,8 @@ vhack lab start 01
 # → DVWA: http://localhost:8080/dvwa/  Juice Shop: http://localhost:3001  WebGoat: http://localhost:8081/WebGoat
 ```
 
+> 🎮 **설치 없이 바로**: 브라우저 워게임은 설치·Docker가 전혀 필요 없습니다. `https://lsszz2100.github.io/VibeHacking/` 를 열거나, 로컬에서 `cd wargame && python3 -m http.server 8000` 후 `http://localhost:8000` 접속. 자세한 내용은 [`wargame/README.md`](wargame/README.md).
+
 ---
 
 ## 3. 상세 설치 — Linux/macOS
@@ -436,6 +438,8 @@ source ~/.bashrc          # apply to current session (zsh: source ~/.zshrc)
 vhack lab start 01
 # → DVWA: http://localhost:8080/dvwa/  Juice Shop: http://localhost:3001  WebGoat: http://localhost:8081/WebGoat
 ```
+
+> 🎮 **Zero install**: the browser wargame needs no setup or Docker. Open `https://lsszz2100.github.io/VibeHacking/`, or run it locally with `cd wargame && python3 -m http.server 8000` → `http://localhost:8000`. See [`wargame/README.md`](wargame/README.md).
 
 ---
 

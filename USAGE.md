@@ -18,6 +18,7 @@
 8. [vhack update — 업데이트](#8-vhack-update--업데이트)
 9. [학습 로드맵 예시](#9-학습-로드맵-예시)
 10. [실습 시나리오 예시](#10-실습-시나리오-예시)
+11. [브라우저 워게임 — 침투 콘솔](#11-브라우저-워게임--침투-콘솔)
 
 ---
 
@@ -598,6 +599,35 @@ vhack lab start 01
 
 ---
 
+## 11. 브라우저 워게임 — 침투 콘솔
+
+이론·실습과 별개로, **설치 없이 브라우저에서 바로** 실력을 점검하는 터미널형 CTF 워게임이 함께 제공됩니다. 가짜 셸로 표적 `vibe.corp`의 보안 계층 5개를 한 겹씩 침투합니다.
+
+🔗 **바로 플레이:** `https://lsszz2100.github.io/VibeHacking/`
+🔗 **로컬 실행:** `cd wargame && python3 -m http.server 8000` → `http://localhost:8000`
+
+```text
+root@vibe:~$ connect perimeter       # 첫 계층 침투
+root@vibe:/perimeter$ cat 1          # 1번 잠금장치(문제) 열기
+root@vibe:/perimeter$ submit FLAG{...}   # 정답 제출 → ACCESS GRANTED
+```
+
+| 명령 | 설명 |
+|------|------|
+| `help` / `ls` / `map` | 명령 목록 / 현재 위치 / 침투 경로 지도 |
+| `connect <노드>` | 계층 접속 (perimeter→webserver→internal→vault→core) |
+| `cat <번호>` | 잠금장치(문제) 열기 |
+| `submit <flag>` | 플래그 제출 (또는 그냥 입력) |
+| `hint` | 힌트 공개 (점수 −20%/개) |
+| `status` / `lang` / `sound` | 진행도 / 한·영 전환 / 사운드 토글 |
+
+- **5계층 50문제**, 한 계층의 요구 개수를 풀면 `LAYER BREACHED` 로 다음 계층이 열립니다.
+- 정답은 **SHA-256 해시로만** 저장되어(평문 없음) 브라우저 안에서 검증됩니다 — 교육용, 외부 시스템 공격 금지.
+- 각 문제는 본 레포의 75개 섹션 주제와 연결됩니다. 자세한 안내는 [`wargame/README.md`](wargame/README.md) 참고.
+- 💡 첫 플래그는 페이지 소스(`Ctrl+U`)에 숨어 있습니다. AI CLI에게 "워게임 N번 힌트만 줘"처럼 물어볼 수도 있습니다.
+
+---
+
 > ⚠️ **법적 주의사항**
 >
 > 이 저장소의 모든 내용은 **합법적인 보안 학습 및 연구** 목적으로만 사용하세요.
@@ -677,5 +707,32 @@ vhack list                        # no more "python3 vhack.py" needed
 3. **Learn → Practice** — Read the theory (`vhack study`), then start the related lab (`vhack lab start`)
 4. **Search first** — Use `vhack search` to find relevant content before diving into a section
 5. **Stop labs when done** — `vhack lab stop --all` frees up resources
+
+## Browser Wargame — Infiltration Console
+
+Beyond the CLI and labs, a **zero-install, browser-based** terminal CTF ships with the repo. Drive a fake shell to breach the five security layers of `vibe.corp`, one at a time.
+
+🔗 **Play now:** `https://lsszz2100.github.io/VibeHacking/`
+🔗 **Run locally:** `cd wargame && python3 -m http.server 8000` → `http://localhost:8000`
+
+```text
+root@vibe:~$ connect perimeter        # breach the first layer
+root@vibe:/perimeter$ cat 1           # open lock #1 (a challenge)
+root@vibe:/perimeter$ submit FLAG{...} # submit → ACCESS GRANTED
+```
+
+| Command | Description |
+|---------|-------------|
+| `help` / `ls` / `map` | commands / list here / infiltration map |
+| `connect <node>` | connect to a layer (perimeter→webserver→internal→vault→core) |
+| `cat <n>` | open a lock (challenge) |
+| `submit <flag>` | submit a flag (or just type it) |
+| `hint` | reveal a hint (−20% each) |
+| `status` / `lang` / `sound` | progress / toggle language / toggle sound |
+
+- **5 layers, 50 challenges.** Clearing a layer's quota fires `LAYER BREACHED` and unlocks the next.
+- Answers are stored as **SHA-256 hashes only** (no plaintext) and verified in the browser — educational, never attack external systems.
+- Each challenge maps to a topic from the repo's 75 sections. See [`wargame/README.md`](wargame/README.md) for details.
+- 💡 The first flag hides in the page source (`Ctrl+U`). You can even ask an AI CLI for "just a hint on wargame #N".
 
 > ⚠️ **Legal Notice**: Use all content for authorized security research, CTF competitions, and learning only. Unauthorized use against real systems is illegal.

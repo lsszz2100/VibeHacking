@@ -13,18 +13,22 @@ A browser-based, **terminal-style infiltration wargame**. You drive a fake shell
 
 사이트를 열면 부팅 시퀀스 후 **침투 콘솔**이 뜹니다. 마우스가 아니라 **명령**으로 플레이합니다 — `help` 를 입력해 시작하세요.
 
-| 명령 / command | 설명 |
+Opening the site runs a boot sequence and drops you into an **infiltration console**. You play with **commands**, not the mouse — type `help` to begin.
+
+| 명령 / command | 설명 / description |
 |----------------|------|
-| `help` | 명령 목록 / list commands |
-| `ls` | 현재 위치 목록 (계층 또는 잠금장치) |
-| `map` | 침투 경로 지도 — 어떤 계층이 뚫렸는지 |
-| `connect <노드>` | 계층에 접속 (예: `connect perimeter`) |
-| `cat <번호>` | 잠금장치(문제)를 열어 표적으로 설정 (예: `cat 1`) |
-| `hint` | 현재 표적 힌트 공개 — 1개당 점수 20% 차감 |
-| `submit <flag>` | 플래그 제출 (또는 표적이 열린 상태에서 그냥 입력) |
-| `status` | 점수·등급·계층별 진행도 |
-| `lang` / `sound` | 한·영 전환 / 사운드 토글 |
-| `clear` / `reset` | 화면 지우기 / 진행도 초기화 |
+| `help` | 명령 목록 / list all commands |
+| `ls` | 현재 위치 목록 (계층 또는 잠금장치) / list here (layers or locks) |
+| `map` | 침투 경로 지도 — 어떤 계층이 뚫렸는지 / infiltration map |
+| `connect <노드>` | 계층에 접속 / connect to a layer (e.g. `connect perimeter`) |
+| `cat <번호>` | 잠금장치(문제)를 열어 표적 설정 / open a lock as target (e.g. `cat 1`) |
+| `hint` | 현재 표적 힌트 공개 (점수 −20%/개) / reveal a hint (−20% each) |
+| `submit <flag>` | 플래그 제출 / submit a flag (or just type it when a target is open) |
+| `status` | 점수·등급·계층별 진행도 / score, rank, per-layer progress |
+| `lang` / `sound` | 한·영 전환 / 사운드 토글 · toggle language / sound |
+| `clear` / `reset` | 화면 지우기 / 진행도 초기화 · clear screen / reset progress |
+
+**플레이 순서 (KO)**
 
 1. **`connect perimeter`** 로 첫 계층에 침투 → **`cat 1`** 로 첫 잠금장치(문제)를 엽니다.
 2. 정답(플래그 `FLAG{...}` 또는 단답)을 입력하면 **`ACCESS GRANTED`**, 틀리면 **`ACCESS DENIED`**.
@@ -32,19 +36,30 @@ A browser-based, **terminal-style infiltration wargame**. You drive a fake shell
 4. 진행도·점수·언어·사운드는 브라우저 `localStorage`에 자동 저장됩니다.
 5. 상단 상태바에 점수·등급(🥚→👑)·침투 진행률이 실시간 표시됩니다.
 
+**How to play (EN)**
+
+1. `connect perimeter` to breach the first layer → `cat 1` to open the first lock (challenge).
+2. Enter the answer (flag `FLAG{...}` or a short answer) → `ACCESS GRANTED`, or `ACCESS DENIED` if wrong.
+3. Clear a layer's quota (see table) to trigger `LAYER BREACHED` and unlock the next layer.
+4. Progress, score, language and sound auto-save to `localStorage`.
+5. The top status bar shows score, rank (🥚→👑) and breach progress live.
+
 > 💡 첫 플래그는 **이 페이지의 소스**에 숨어 있습니다. `Ctrl+U` 를 눌러 보세요. 콘솔(F12)·쿠키·숨겨진 DOM에도 심어진 플래그가 있습니다.
+> The first flag hides in **this page's source** — press `Ctrl+U`. More flags are planted in the console (F12), a cookie, and a hidden DOM node.
 
-### 보안 계층(티어) — 한 계층씩 침투
+### 보안 계층(티어) — 한 계층씩 침투 / Security layers (tiers) — breach one at a time
 
-| 계층 / node | 티어 | 주제 | 문제 수 | 통과(breach) |
+| 계층 / node | 티어 / tier | 주제 / topics | 문제 / count | 통과 / breach |
 |------|:---:|------|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 소스 보기, 개발자도구, Base64, 바이너리 | 6 | 4 |
+| `perimeter` 외곽 | **0** | 소스 보기, 개발자도구, Base64, 바이너리 / source, devtools, Base64, binary | 6 | 4 |
 | `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse), 쿠키, HTTP, nmap | 10 | 6 |
 | `internal` 내부망 | **2** | SQLi·XSS·JWT·해시·Base32·LFI·리버싱·S3·K8s | 15 | 9 |
 | `vault` 금고 | **3** | XOR/ROT47, 포맷스트링, SSTI, YARA, AD, NOP, IMDS | 12 | 7 |
-| `core` 코어 | **4** | 체인/이중 디코딩, 컨테이너 탈출, AES-GCM, JWT, AI 보안 | 7 | 5 |
+| `core` 코어 | **4** | 체인/이중 디코딩, 컨테이너 탈출, AES-GCM, JWT, AI 보안 / chained decoding, container escape, AES-GCM, JWT, AI security | 7 | 5 |
 
 총 **50문제**(분야: 웹 14 · 암호 15 · 시스템 8 · 포렌식 7 · 클라우드/AI 6). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+
+Total **50 challenges** (web 14 · crypto 15 · system 8 · forensics 7 · cloud/AI 6); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 
