@@ -51,15 +51,15 @@ Opening the site runs a boot sequence and drops you into an **infiltration conso
 
 | 계층 / node | 티어 / tier | 주제 / topics | 문제 / count | 통과 / breach |
 |------|:---:|------|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 소스 보기, 개발자도구, Base64, 바이너리 / source, devtools, Base64, binary | 6 | 4 |
-| `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse), 쿠키, HTTP, nmap | 10 | 6 |
-| `internal` 내부망 | **2** | SQLi·XSS·JWT·해시·Base32·LFI·리버싱·S3·K8s | 15 | 9 |
-| `vault` 금고 | **3** | XOR/ROT47, 포맷스트링, SSTI, YARA, AD, NOP, IMDS | 12 | 7 |
-| `core` 코어 | **4** | 체인/이중 디코딩, 컨테이너 탈출, AES-GCM, JWT, AI 보안 / chained decoding, container escape, AES-GCM, JWT, AI security | 7 | 5 |
+| `perimeter` 외곽 | **0** | 소스 보기, 개발자도구, Base64, 바이너리, 역순/URL/NATO, 메타태그 / source, devtools, Base64, binary, reverse/URL/NATO, meta | 11 | 4 |
+| `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse/Atbash/A1Z26), 쿠키, HTTP, Basic 인증, nmap | 15 | 6 |
+| `internal` 내부망 | **2** | SQLi·XSS·JWT·해시·Base32/58·Unicode·Vigenère·LFI·IDOR·리버싱·S3·K8s | 20 | 9 |
+| `vault` 금고 | **3** | XOR(단일/반복키)·ROT47·Base85·포맷스트링·SSTI·YARA·AD·ELF매직·HMAC·IMDS | 17 | 7 |
+| `core` 코어 | **4** | 체인/이중·3중 디코딩, Vigenère, 컨테이너 탈출, K8s Secret, AES-GCM, JWT, AI 보안 / chained decoding, Vigenère, container escape, AES-GCM, AI security | 12 | 5 |
 
-총 **50문제**(분야: 웹 14 · 암호 15 · 시스템 8 · 포렌식 7 · 클라우드/AI 6). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **75문제**(분야: 웹 23 · 암호 29 · 시스템 8 · 포렌식 8 · 클라우드/AI 7). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **50 challenges** (web 14 · crypto 15 · system 8 · forensics 7 · cloud/AI 6); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **75 challenges** (web 23 · crypto 29 · system 8 · forensics 8 · cloud/AI 7); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 

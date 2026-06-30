@@ -1485,5 +1485,705 @@ const CHALLENGES = [
         "Ends with .169.254."
       ]
     }
+  },
+  {
+    "id": "t0_reverse",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 50,
+    "ci": false,
+    "hash": "61c05ea1dabd40b8b5429da703790e3deedc8252d8e88471d9dd014b3d04c21d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "거꾸로 읽기",
+      "en": "Read it backwards"
+    },
+    "prompt": {
+      "ko": "문자열을 통째로 뒤집으면 플래그가 됩니다:\n\n`}gnirts_eht_esrever{GALF`",
+      "en": "Reverse the whole string to get the flag:\n\n`}gnirts_eht_esrever{GALF`"
+    },
+    "hints": {
+      "ko": [
+        "끝에서부터 한 글자씩 읽어 보세요.",
+        "JS 콘솔: `\"...\".split(\"\").reverse().join(\"\")`"
+      ],
+      "en": [
+        "Read it from the end.",
+        "JS console: `\"...\".split(\"\").reverse().join(\"\")`"
+      ]
+    }
+  },
+  {
+    "id": "t0_decimal",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 50,
+    "ci": true,
+    "hash": "2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b",
+    "fmt": "단어 / word",
+    "title": {
+      "ko": "ASCII 십진수",
+      "en": "ASCII decimal"
+    },
+    "prompt": {
+      "ko": "각 숫자는 한 글자의 ASCII 코드입니다. 디코딩하세요:\n\n`115 101 99 114 101 116`",
+      "en": "Each number is one character's ASCII code. Decode it:\n\n`115 101 99 114 101 116`"
+    },
+    "hints": {
+      "ko": [
+        "115 = 0x73 = 's'.",
+        "공백으로 나뉜 십진수를 문자로."
+      ],
+      "en": [
+        "115 = 0x73 = 's'.",
+        "Space-separated decimals → chars."
+      ]
+    }
+  },
+  {
+    "id": "t0_urlenc",
+    "tier": 0,
+    "cat": "web",
+    "track": "web",
+    "points": 50,
+    "ci": false,
+    "hash": "2d8175b670d102d981337025ba9f81d95a880e2131967907715dd5d18197338f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "퍼센트 인코딩",
+      "en": "Percent-encoding"
+    },
+    "prompt": {
+      "ko": "URL 디코딩하면 플래그입니다:\n\n`%46%4C%41%47%7B%75%72%6C%5F%65%6E%63%6F%64%65%64%7D`",
+      "en": "URL-decode to reveal the flag:\n\n`%46%4C%41%47%7B%75%72%6C%5F%65%6E%63%6F%64%65%64%7D`"
+    },
+    "hints": {
+      "ko": [
+        "`%46` = 'F' 입니다.",
+        "JS 콘솔: `decodeURIComponent(\"...\")`"
+      ],
+      "en": [
+        "`%46` = 'F'.",
+        "JS console: `decodeURIComponent(\"...\")`"
+      ]
+    }
+  },
+  {
+    "id": "t0_meta",
+    "tier": 0,
+    "cat": "web",
+    "track": "web",
+    "points": 50,
+    "ci": false,
+    "hash": "b36d9b661bac670467701a72f7c0c77fb9a965dcc6cf2bad0b73c456c4fa3728",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "숨은 메타 태그",
+      "en": "The hidden meta tag"
+    },
+    "prompt": {
+      "ko": "HTML `<meta>` 태그 중 `name` 이 `ctf-flag` 인 것의 `content` 값을 찾으세요. (소스 보기 또는 개발자도구)",
+      "en": "Find the `content` of the `<meta>` tag whose `name` is `ctf-flag`. (View Source or DevTools)"
+    },
+    "hints": {
+      "ko": [
+        "`Ctrl+U` 로 소스를 열고 `meta` 를 검색.",
+        "`<meta name=\"ctf-flag\" content=\"...\">`"
+      ],
+      "en": [
+        "Open source with `Ctrl+U`, search `meta`.",
+        "`<meta name=\"ctf-flag\" content=\"...\">`"
+      ]
+    }
+  },
+  {
+    "id": "t0_nato",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 50,
+    "ci": true,
+    "hash": "807d0fbcae7c4b20518d4d85664f6820aafdf936104122c5073e7744c46c4b87",
+    "fmt": "단어 / word",
+    "title": {
+      "ko": "NATO 음성 알파벳",
+      "en": "NATO phonetic alphabet"
+    },
+    "prompt": {
+      "ko": "각 단어의 첫 글자를 모으세요:\n\n`Foxtrot Lima Alpha Golf`",
+      "en": "Take the first letter of each word:\n\n`Foxtrot Lima Alpha Golf`"
+    },
+    "hints": {
+      "ko": [
+        "Foxtrot=F, Lima=L ...",
+        "네 글자 단어입니다."
+      ],
+      "en": [
+        "Foxtrot=F, Lima=L ...",
+        "It is a four-letter word."
+      ]
+    }
+  },
+  {
+    "id": "t1_atbash",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 70,
+    "ci": false,
+    "hash": "3607df71397b068e947b788bdf856c24556e861917a3de1c065320d9e7975087",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "아트바시 암호",
+      "en": "Atbash cipher"
+    },
+    "prompt": {
+      "ko": "알파벳을 거울처럼 뒤집은(A↔Z, B↔Y) 암호입니다. 복호화하세요:\n\n`UOZT{zgyzhs_nriili}`",
+      "en": "The alphabet is mirrored (A↔Z, B↔Y). Decrypt:\n\n`UOZT{zgyzhs_nriili}`"
+    },
+    "hints": {
+      "ko": [
+        "아트바시는 자기역원 — 한 번 더 적용.",
+        "a→z, b→y, c→x ..."
+      ],
+      "en": [
+        "Atbash is its own inverse — apply again.",
+        "a→z, b→y, c→x ..."
+      ]
+    }
+  },
+  {
+    "id": "t1_a1z26",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 70,
+    "ci": true,
+    "hash": "051375546db9782e3debc25e0241edf1d5e5e2ec0f183dd8634ca5b2c8968bb8",
+    "fmt": "단어 / word",
+    "title": {
+      "ko": "A1Z26 암호",
+      "en": "A1Z26 cipher"
+    },
+    "prompt": {
+      "ko": "a=1, b=2 … z=26 입니다. 숫자를 글자로:\n\n`8-1-3-11`",
+      "en": "a=1, b=2 … z=26. Convert numbers to letters:\n\n`8-1-3-11`"
+    },
+    "hints": {
+      "ko": [
+        "8=h, 1=a ...",
+        "하이픈으로 글자가 구분됩니다."
+      ],
+      "en": [
+        "8=h, 1=a ...",
+        "Hyphens separate letters."
+      ]
+    }
+  },
+  {
+    "id": "t1_basicauth",
+    "tier": 1,
+    "cat": "web",
+    "track": "web",
+    "points": 70,
+    "ci": true,
+    "hash": "371a286d5872a3730d644327581546ec3e658bbf1a3c7f7f0de2bc19905d4402",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "Basic 인증의 인코딩",
+      "en": "Basic auth encoding"
+    },
+    "prompt": {
+      "ko": "HTTP Basic 인증은 `사용자:비밀번호` 를 어떤 인코딩으로 변환해 `Authorization` 헤더에 담나요? (암호화가 아닙니다, 한 단어)",
+      "en": "HTTP Basic auth puts `user:password` into the `Authorization` header using which encoding? (not encryption — one word)"
+    },
+    "hints": {
+      "ko": [
+        "= 로 끝나곤 합니다.",
+        "`Authorization: Basic <____>`"
+      ],
+      "en": [
+        "Often ends with =.",
+        "`Authorization: Basic <____>`"
+      ]
+    }
+  },
+  {
+    "id": "t1_redirect",
+    "tier": 1,
+    "cat": "web",
+    "track": "web",
+    "points": 70,
+    "ci": true,
+    "hash": "c3ea99f86b2f8a74ef4145bb245155ff5f91cd856f287523481c15a1959d5fd1",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "영구 리다이렉트 코드",
+      "en": "Permanent redirect code"
+    },
+    "prompt": {
+      "ko": "자원이 영구적으로 다른 URL로 옮겨졌음을 의미하는 HTTP 상태 코드는? (숫자)",
+      "en": "Which HTTP status code means a resource has permanently moved to a new URL? (number)"
+    },
+    "hints": {
+      "ko": [
+        "임시 이동은 302입니다.",
+        "3 으로 시작하는 세 자리."
+      ],
+      "en": [
+        "Temporary move is 302.",
+        "Three digits starting with 3."
+      ]
+    }
+  },
+  {
+    "id": "t1_creds",
+    "tier": 1,
+    "cat": "web",
+    "track": "web",
+    "points": 70,
+    "ci": true,
+    "hash": "854f23f151c958aefead79d83a8078f145f906f9e769dd6face8989040b162d5",
+    "fmt": "사용자:비밀번호 / user:pass",
+    "title": {
+      "ko": "가로챈 자격증명",
+      "en": "Intercepted credentials"
+    },
+    "prompt": {
+      "ko": "`Authorization: Basic YWRtaW46czNjcjN0` 헤더를 보았습니다. 디코딩하면 자격증명은?",
+      "en": "You saw `Authorization: Basic YWRtaW46czNjcjN0`. Decode it — what are the credentials?"
+    },
+    "hints": {
+      "ko": [
+        "Base64 디코드: `atob(\"...\")`.",
+        "형식은 `사용자:비밀번호`."
+      ],
+      "en": [
+        "Base64-decode: `atob(\"...\")`.",
+        "Format is `user:password`."
+      ]
+    }
+  },
+  {
+    "id": "t2_vigenere",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 90,
+    "ci": false,
+    "hash": "5f1e51f0d5c864d1933e7dbf22a4d729f015606fdfc72da81a2d718b463898d0",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비제네르 암호",
+      "en": "Vigenère cipher"
+    },
+    "prompt": {
+      "ko": "키 `KEY` 로 암호화된 비제네르 암호문입니다. 복호화하세요:\n\n`PPYQ{zgqilovc_uiwoh_astfov}`",
+      "en": "Vigenère ciphertext encrypted with key `KEY`. Decrypt:\n\n`PPYQ{zgqilovc_uiwoh_astfov}`"
+    },
+    "hints": {
+      "ko": [
+        "키를 반복해 글자별로 빼세요(비-알파벳은 건너뜀).",
+        "CyberChef 'Vigenère Decode', key=KEY."
+      ],
+      "en": [
+        "Subtract the repeating key per letter (skip non-letters).",
+        "CyberChef 'Vigenère Decode', key=KEY."
+      ]
+    }
+  },
+  {
+    "id": "t2_base58",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 90,
+    "ci": false,
+    "hash": "0bad4078aae00b415bada62c82f1b4c2e5458232ddcd30f555f08d76893f0f48",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Base58 인코딩",
+      "en": "Base58 encoding"
+    },
+    "prompt": {
+      "ko": "비트코인 주소에 쓰이는 Base58(헷갈리는 0,O,I,l 제외)입니다. 디코딩하세요:\n\n`39rKM3yGEZE4C6b8Tfo1WqhwgtVkrqSu4kex`",
+      "en": "Base58 as used by Bitcoin addresses (no 0,O,I,l). Decode:\n\n`39rKM3yGEZE4C6b8Tfo1WqhwgtVkrqSu4kex`"
+    },
+    "hints": {
+      "ko": [
+        "Base64 와 다른 문자셋입니다.",
+        "CyberChef 'From Base58'."
+      ],
+      "en": [
+        "Different alphabet from Base64.",
+        "CyberChef 'From Base58'."
+      ]
+    }
+  },
+  {
+    "id": "t2_unicode",
+    "tier": 2,
+    "cat": "web",
+    "track": "web",
+    "points": 90,
+    "ci": false,
+    "hash": "84df3ede1622103b20713a96f08f338b13d12913889438227c1cda314505bfff",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "유니코드 이스케이프",
+      "en": "Unicode escapes"
+    },
+    "prompt": {
+      "ko": "자바스크립트 유니코드 이스케이프 시퀀스입니다. 디코딩하세요:\n\n`\\u0046\\u004c\\u0041\\u0047\\u007b\\u0075\\u006e\\u0069\\u0063\\u006f\\u0064\\u0065\\u005f\\u0065\\u0073\\u0063\\u0061\\u0070\\u0065\\u005f\\u0073\\u0065\\u0071\\u007d`",
+      "en": "JavaScript Unicode escape sequences. Decode:\n\n`\\u0046\\u004c\\u0041\\u0047\\u007b\\u0075\\u006e\\u0069\\u0063\\u006f\\u0064\\u0065\\u005f\\u0065\\u0073\\u0063\\u0061\\u0070\\u0065\\u005f\\u0073\\u0065\\u0071\\u007d`"
+    },
+    "hints": {
+      "ko": [
+        "`\\u0046` = 'F' 입니다.",
+        "JS 콘솔: 따옴표로 감싸 출력해 보세요."
+      ],
+      "en": [
+        "`\\u0046` = 'F'.",
+        "JS console: wrap in quotes and print."
+      ]
+    }
+  },
+  {
+    "id": "t2_sqlcomment",
+    "tier": 2,
+    "cat": "web",
+    "track": "web",
+    "points": 90,
+    "ci": true,
+    "hash": "d8156bae0c4243d3742fc4e9774d8aceabe0410249d720c855f98afc88ff846c",
+    "fmt": "기호 / symbol",
+    "title": {
+      "ko": "SQL 한 줄 주석",
+      "en": "SQL line comment"
+    },
+    "prompt": {
+      "ko": "SQL 인젝션에서 쿼리의 나머지 부분을 주석 처리해 무력화할 때 쓰는, 한 줄 주석을 시작하는 두 글자 기호는? (MySQL/표준)",
+      "en": "In SQL injection, which two-character sequence starts a line comment to neutralize the rest of the query? (standard SQL)"
+    },
+    "hints": {
+      "ko": [
+        "하이픈 두 개.",
+        "`' OR 1=1 __`"
+      ],
+      "en": [
+        "Two hyphens.",
+        "`' OR 1=1 __`"
+      ]
+    }
+  },
+  {
+    "id": "t2_idor",
+    "tier": 2,
+    "cat": "web",
+    "track": "web",
+    "points": 90,
+    "ci": true,
+    "hash": "0b5a52cdc4f5481343077f16476c5afde78732e28c9c5eafbf7f9a9a54a0540d",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "직접 객체 참조 취약점",
+      "en": "Insecure direct object reference"
+    },
+    "prompt": {
+      "ko": "권한 검증 없이 `?id=123` 같은 식별자만 바꿔 남의 자원에 접근하는 취약점의 약자(4글자)는?",
+      "en": "What 4-letter abbreviation names the bug where changing an identifier like `?id=123` accesses another user's resource without authorization?"
+    },
+    "hints": {
+      "ko": [
+        "Insecure Direct Object Reference.",
+        "OWASP 접근통제 항목."
+      ],
+      "en": [
+        "Insecure Direct Object Reference.",
+        "An OWASP access-control issue."
+      ]
+    }
+  },
+  {
+    "id": "t3_xormulti",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 120,
+    "ci": false,
+    "hash": "4d7f3a95a516778bbf022e50f43434bc1fbb2087fa72b7f8590bb81ac4b897bf",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "반복 키 XOR",
+      "en": "Repeating-key XOR"
+    },
+    "prompt": {
+      "ko": "반복 키 `key` 로 XOR된 16진 바이트열입니다. 복호화하세요:\n\n`2d29382c1e0b0e151c0a1110050226000000341d161918`",
+      "en": "Hex bytes XORed with the repeating key `key`. Decrypt:\n\n`2d29382c1e0b0e151c0a1110050226000000341d161918`"
+    },
+    "hints": {
+      "ko": [
+        "키가 3바이트라 3바이트마다 반복됩니다.",
+        "`bytes[i] ^ \"key\"[i % 3]`"
+      ],
+      "en": [
+        "Key is 3 bytes, repeats every 3.",
+        "`bytes[i] ^ \"key\"[i % 3]`"
+      ]
+    }
+  },
+  {
+    "id": "t3_base85",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 120,
+    "ci": false,
+    "hash": "35c414948080bf4d04c3531bc1407b234e87910ee4aff2f74d21f4998f252d8a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ASCII85 (Base85)",
+      "en": "ASCII85 (Base85)"
+    },
+    "prompt": {
+      "ko": "Base85(ASCII85, Adobe 방식, 구분자 없음)로 인코딩됐습니다. 디코딩하세요:\n\n`7SH*<HXUu*Bk]Oa?X[_Y?XdGbAN2Pq`",
+      "en": "Encoded with Base85 (ASCII85, Adobe variant, no delimiters). Decode:\n\n`7SH*<HXUu*Bk]Oa?X[_Y?XdGbAN2Pq`"
+    },
+    "hints": {
+      "ko": [
+        "Base64보다 조밀합니다(4바이트→5문자).",
+        "CyberChef 'From Base85' (alphabet !-u)."
+      ],
+      "en": [
+        "Denser than Base64 (4 bytes→5 chars).",
+        "CyberChef 'From Base85' (alphabet !-u)."
+      ]
+    }
+  },
+  {
+    "id": "t3_elfmagic",
+    "tier": 3,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 120,
+    "ci": true,
+    "hash": "8f328025f36e3709031daf47458e790a90af6c3a75e7b3b9883b7192ed56d987",
+    "fmt": "16진수 / hex",
+    "title": {
+      "ko": "ELF 매직 넘버",
+      "en": "ELF magic number"
+    },
+    "prompt": {
+      "ko": "리눅스 ELF 실행 파일의 첫 4바이트(매직 넘버)를 16진수로 입력하세요. (공백 없이, 소문자)",
+      "en": "Enter the first 4 bytes (magic number) of a Linux ELF executable in hex. (no spaces, lowercase)"
+    },
+    "hints": {
+      "ko": [
+        "두 번째 바이트부터는 ASCII 'ELF'.",
+        "`7f` 다음 `45 4c 46`."
+      ],
+      "en": [
+        "Bytes 2-4 are ASCII 'ELF'.",
+        "`7f` then `45 4c 46`."
+      ]
+    }
+  },
+  {
+    "id": "t3_hmac",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 120,
+    "ci": true,
+    "hash": "f9ccd92bb6af4cb45e43113867e61dab39a4e7a2a0a88980a940250637773199",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "키 기반 메시지 인증",
+      "en": "Keyed message authentication"
+    },
+    "prompt": {
+      "ko": "JWT의 `HS256` 서명에 쓰이는, 해시 함수와 비밀 키를 결합한 메시지 인증 코드의 약자(4글자)는?",
+      "en": "What 4-letter abbreviation is the keyed-hash message authentication code used by JWT `HS256`?"
+    },
+    "hints": {
+      "ko": [
+        "Hash-based Message Authentication Code.",
+        "`____-SHA256`"
+      ],
+      "en": [
+        "Hash-based Message Authentication Code.",
+        "`____-SHA256`"
+      ]
+    }
+  },
+  {
+    "id": "t3_jwtdecode",
+    "tier": 3,
+    "cat": "web",
+    "track": "web",
+    "points": 120,
+    "ci": false,
+    "hash": "41b3f5ba65ff6e30608a08ee8b353cad57562fbe7ed41486e72b6ad74e8381bd",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "JWT는 암호화가 아니다",
+      "en": "JWT is not encryption"
+    },
+    "prompt": {
+      "ko": "JWT의 payload는 Base64URL로 인코딩될 뿐 암호화가 아닙니다. 다음 payload를 디코딩해 `flag` 값을 찾으세요:\n\n`eyJmbGFnIjoiRkxBR3tqd3RfcGF5bG9hZF9pc19ub3RfZW5jcnlwdGVkfSJ9`",
+      "en": "A JWT payload is only Base64URL-encoded, not encrypted. Decode this payload and read the `flag` value:\n\n`eyJmbGFnIjoiRkxBR3tqd3RfcGF5bG9hZF9pc19ub3RfZW5jcnlwdGVkfSJ9`"
+    },
+    "hints": {
+      "ko": [
+        "Base64URL 디코드 → JSON.",
+        "`atob` 전에 `-`→`+`, `_`→`/` 치환."
+      ],
+      "en": [
+        "Base64URL-decode → JSON.",
+        "Before `atob`, swap `-`→`+`, `_`→`/`."
+      ]
+    }
+  },
+  {
+    "id": "t4_triple",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 160,
+    "ci": false,
+    "hash": "d8f1ab639e9c7877747b5825382feaed6b51ea3c0d5f81a90d9ccb0c3b984bcd",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "3중 인코딩",
+      "en": "Triple encoding"
+    },
+    "prompt": {
+      "ko": "ROT13 → Base64 → Hex 순서로 풀면 플래그가 나옵니다:\n\n`AQL0LmDkAQp3Lwp0Awt3ZwL1AwH1MwMwAwR3BGL1AmV3ZmIzAwD2AGL1AmN3MN==`",
+      "en": "Undo in order ROT13 → Base64 → Hex to get the flag:\n\n`AQL0LmDkAQp3Lwp0Awt3ZwL1AwH1MwMwAwR3BGL1AmV3ZmIzAwD2AGL1AmN3MN==`"
+    },
+    "hints": {
+      "ko": [
+        "1) ROT13 해제 → Base64 문자열.",
+        "2) Base64 디코드 → 16진 문자열 → Hex 디코드."
+      ],
+      "en": [
+        "1) Undo ROT13 → a Base64 string.",
+        "2) Base64-decode → a hex string → hex-decode."
+      ]
+    }
+  },
+  {
+    "id": "t4_vigenere",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 160,
+    "ci": false,
+    "hash": "cf7605469817d11a1dc936926136f51e1852fe1c98b6d5ad6779215ea8af56a1",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비제네르 — 금고 열쇠",
+      "en": "Vigenère — the vault key"
+    },
+    "prompt": {
+      "ko": "키 `VAULT` 로 암호화된 비제네르 암호문입니다. 복호화하세요:\n\n`ALUR{mce_plngt_cd_hkeh}`",
+      "en": "Vigenère ciphertext encrypted with key `VAULT`. Decrypt:\n\n`ALUR{mce_plngt_cd_hkeh}`"
+    },
+    "hints": {
+      "ko": [
+        "키가 더 길어졌을 뿐, 방식은 같습니다.",
+        "key=VAULT 로 Vigenère 복호화."
+      ],
+      "en": [
+        "Longer key, same method.",
+        "Vigenère-decode with key=VAULT."
+      ]
+    }
+  },
+  {
+    "id": "t4_xorcore",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 160,
+    "ci": false,
+    "hash": "4fe235bfac29a6809e5f013f34afd71c3ae29d879ed3da3806f3b8a93064023b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "코어 키 XOR",
+      "en": "Core-key XOR"
+    },
+    "prompt": {
+      "ko": "반복 키 `core` 로 XOR된 16진 바이트열입니다. 복호화하세요:\n\n`2523332218171d173c181b110b30110a110a2d0e06160f`",
+      "en": "Hex bytes XORed with the repeating key `core`. Decrypt:\n\n`2523332218171d173c181b110b30110a110a2d0e06160f`"
+    },
+    "hints": {
+      "ko": [
+        "4바이트 키가 반복됩니다.",
+        "`bytes[i] ^ \"core\"[i % 4]`"
+      ],
+      "en": [
+        "A 4-byte key repeats.",
+        "`bytes[i] ^ \"core\"[i % 4]`"
+      ]
+    }
+  },
+  {
+    "id": "t4_k8ssecret",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 160,
+    "ci": false,
+    "hash": "05863231fff72c94d36adaa599b06f72c398e574a753c53f5ff1d79d770fe214",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "쿠버네티스 Secret",
+      "en": "Kubernetes Secret"
+    },
+    "prompt": {
+      "ko": "쿠버네티스 Secret의 `data` 값은 암호화가 아니라 Base64일 뿐입니다. 다음 값을 디코딩하세요:\n\n`RkxBR3trOHNfc2VjcmV0X29ubHlfYmFzZTY0fQ==`",
+      "en": "A Kubernetes Secret `data` value is only Base64, not encrypted. Decode this value:\n\n`RkxBR3trOHNfc2VjcmV0X29ubHlfYmFzZTY0fQ==`"
+    },
+    "hints": {
+      "ko": [
+        "`kubectl get secret -o yaml` 로 보이는 그 값.",
+        "Base64 디코드 한 번."
+      ],
+      "en": [
+        "The value you see in `kubectl get secret -o yaml`.",
+        "One Base64 decode."
+      ]
+    }
+  },
+  {
+    "id": "t4_doubleb64",
+    "tier": 4,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 160,
+    "ci": false,
+    "hash": "ef2e0a4e4f05b322720c231e530590f86bbc349b6ff5d4651ff1c32cbf7bb360",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이중 Base64",
+      "en": "Double Base64"
+    },
+    "prompt": {
+      "ko": "Base64로 두 번 감쌌습니다. 두 번 디코딩하세요:\n\n`Umt4QlIzdGtiM1ZpYkdWZlltRnpaVFkwWDNkeVlYQjk=`",
+      "en": "Wrapped in Base64 twice. Decode twice:\n\n`Umt4QlIzdGtiM1ZpYkdWZlltRnpaVFkwWDNkeVlYQjk=`"
+    },
+    "hints": {
+      "ko": [
+        "디코드 결과가 또 Base64처럼 보입니다.",
+        "`atob(atob(\"...\"))`"
+      ],
+      "en": [
+        "The first decode looks like Base64 again.",
+        "`atob(atob(\"...\"))`"
+      ]
+    }
   }
 ];

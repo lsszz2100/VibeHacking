@@ -79,10 +79,10 @@
   const RANKS = [
     { min:0,  icon:"🥚", ko:"알",     en:"Egg" },
     { min:1,  icon:"🐣", ko:"뉴비",   en:"Newbie" },
-    { min:10, icon:"🦊", ko:"수습",   en:"Apprentice" },
-    { min:22, icon:"🐺", ko:"해커",   en:"Hacker" },
-    { min:35, icon:"🦅", ko:"엘리트", en:"Elite" },
-    { min:48, icon:"👑", ko:"레전드", en:"Legend" }
+    { min:15, icon:"🦊", ko:"수습",   en:"Apprentice" },
+    { min:32, icon:"🐺", ko:"해커",   en:"Hacker" },
+    { min:52, icon:"🦅", ko:"엘리트", en:"Elite" },
+    { min:70, icon:"👑", ko:"레전드", en:"Legend" }
   ];
   const HINT_PENALTY = 0.2, MIN_AWARD = 0.2;
 
