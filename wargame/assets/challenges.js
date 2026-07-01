@@ -2185,5 +2185,285 @@ const CHALLENGES = [
         "`atob(atob(\"...\"))`"
       ]
     }
+  },
+  {
+    "id": "t0_md5",
+    "tier": 0,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 40,
+    "ci": true,
+    "hash": "3ebff31b62c0637c54d4ffa990d5c100ea359994b35f4b342ff49797542148cd",
+    "fmt": "알고리즘명 / algorithm",
+    "title": {
+      "ko": "파일의 지문",
+      "en": "The File's Fingerprint"
+    },
+    "prompt": {
+      "ko": "증거 원본과 사본이 동일함을 증명하기 위해 파일의 '지문'을 계산하는 데 쓰이는, 128비트(32자 16진수) 값을 만드는 대표적인 (오늘날 충돌 공격에 취약하다고 알려진) 해시 알고리즘은?",
+      "en": "Which classic hash algorithm (now known to be vulnerable to collision attacks), producing a 128-bit / 32-hex-digit value, is used to prove a forensic copy matches the original?"
+    },
+    "hints": {
+      "ko": [
+        "Message Digest 의 약자.",
+        "결과값이 128비트(32자 16진수)."
+      ],
+      "en": [
+        "Stands for Message Digest.",
+        "128-bit output = 32 hex chars."
+      ]
+    }
+  },
+  {
+    "id": "t0_hexdump",
+    "tier": 0,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 50,
+    "ci": true,
+    "hash": "b2d7da50ce9ad432c1ac5febf709d834a84db529b7acf0fa69d7d3f8ae6b7e81",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "바이트를 있는 그대로",
+      "en": "Bytes As They Are"
+    },
+    "prompt": {
+      "ko": "파일의 원본 바이트를 16진수와 ASCII를 나란히 보여주는 형태로 덤프하는 리눅스 명령어는? (`-C` 옵션으로 정규 형식 출력, 세 글자)",
+      "en": "Which three-letter Linux command dumps a file's raw bytes as hex next to ASCII (canonical format with `-C`)?"
+    },
+    "hints": {
+      "ko": [
+        "vim 에도 내장되어 있는 도구입니다.",
+        "`___ -C file | less`"
+      ],
+      "en": [
+        "Also bundled with vim.",
+        "`___ -C file | less`"
+      ]
+    }
+  },
+  {
+    "id": "t4_prefetch",
+    "tier": 4,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 150,
+    "ci": true,
+    "hash": "4653c580b63bba1b5cd175c99bd2f3dbc73ec41694bc304be2e41e1f05bb81cd",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "실행의 흔적",
+      "en": "Trace of Execution"
+    },
+    "prompt": {
+      "ko": "Windows에서 프로그램의 실행 횟수·마지막 실행 시각·로드된 DLL 목록을 담아 `.pf` 파일로 저장되어, 악성코드 실행 흔적 조사의 핵심 아티팩트가 되는 기능의 이름은? (한 단어)",
+      "en": "Which Windows feature stores `.pf` files recording a program's run count, last-run time, and loaded DLLs — a key artifact for proving malware execution?"
+    },
+    "hints": {
+      "ko": [
+        "`C:\\Windows\\Prefetch\\` 경로에 저장됩니다.",
+        "파일명 예: NOTEPAD.EXE-1234ABCD.pf"
+      ],
+      "en": [
+        "Stored under `C:\\Windows\\Prefetch\\`.",
+        "Filenames look like NOTEPAD.EXE-1234ABCD.pf."
+      ]
+    }
+  },
+  {
+    "id": "t4_volatility",
+    "tier": 4,
+    "cat": "malware",
+    "track": "forensics",
+    "points": 160,
+    "ci": false,
+    "hash": "b6166140437944900b8b211e213905931ce1c8ed0ace53320b40c17d4a721da1",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "메모리 속 단서",
+      "en": "Clue in Memory"
+    },
+    "prompt": {
+      "ko": "메모리 덤프를 분석하는 대표 오픈소스 프레임워크로 `strings`와 플러그인을 이용해 프로세스 목록·네트워크 연결을 복구하던 중, 수상한 Base64 문자열을 찾았습니다. 디코딩하세요:\n\n`RkxBR3ttZW1vcnlfZm9yZW5zaWNzX3dpbnN9`",
+      "en": "While recovering process lists and network connections from a memory dump with the standard open-source memory forensics framework, you find a suspicious Base64 string. Decode it:\n\n`RkxBR3ttZW1vcnlfZm9yZW5zaWNzX3dpbnN9`"
+    },
+    "hints": {
+      "ko": [
+        "그 프레임워크의 이름은 'Volatility' 입니다(힌트일 뿐, 답 아님).",
+        "`echo '...' | base64 -d` 또는 `atob('...')`"
+      ],
+      "en": [
+        "The framework is called 'Volatility' (that's just a hint, not the answer).",
+        "`echo '...' | base64 -d` or `atob('...')`"
+      ]
+    }
+  },
+  {
+    "id": "t0_iam",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 40,
+    "ci": true,
+    "hash": "d457e3a99392a03f47057f50ac1cbc5d0365131575477971bf85177a0c0fed22",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "누가 무엇을 할 수 있는가",
+      "en": "Who Can Do What"
+    },
+    "prompt": {
+      "ko": "AWS·Azure·GCP 등 클라우드에서 사용자·역할(Role)·정책(Policy)을 통해 '누가 무엇을 할 수 있는지'를 관리하는 서비스의 공통 약자는?",
+      "en": "What abbreviation names the cloud service (common across AWS/Azure/GCP) that manages users, roles, and policies to control 'who can do what'?"
+    },
+    "hints": {
+      "ko": [
+        "Identity and Access Management 의 약자.",
+        "세 글자."
+      ],
+      "en": [
+        "Abbreviation for Identity and Access Management.",
+        "Three letters."
+      ]
+    }
+  },
+  {
+    "id": "t0_vpc",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 50,
+    "ci": true,
+    "hash": "38faba71b3a6cfc9e5f93fe6a17abe770093ba938baa488aa016fca907eadcaa",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "나만의 가상 네트워크",
+      "en": "My Own Virtual Network"
+    },
+    "prompt": {
+      "ko": "클라우드에서 논리적으로 격리된, 서브넷·라우팅테이블·보안그룹을 담는 나만의 가상 네트워크를 부르는 AWS 용어의 약자는?",
+      "en": "What abbreviation names the logically isolated virtual network (containing subnets, route tables, security groups) an AWS account gets?"
+    },
+    "hints": {
+      "ko": [
+        "Virtual Private Cloud 의 약자.",
+        "세 글자."
+      ],
+      "en": [
+        "Abbreviation for Virtual Private Cloud.",
+        "Three letters."
+      ]
+    }
+  },
+  {
+    "id": "t1_arn",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 60,
+    "ci": true,
+    "hash": "42e7ab5b52beca9d20fbc05fa6b72c0a48755ada50d340472ab6f1832cbf42ac",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "리소스의 고유 이름표",
+      "en": "The Resource's Unique Tag"
+    },
+    "prompt": {
+      "ko": "AWS에서 모든 리소스(사용자·버킷·함수 등)를 `arn:aws:서비스:리전:계정ID:리소스` 형태로 고유하게 식별하는 문자열 형식의 약자는?",
+      "en": "What abbreviation names the string format (`arn:aws:service:region:account-id:resource`) that uniquely identifies every AWS resource?"
+    },
+    "hints": {
+      "ko": [
+        "Amazon Resource Name 의 약자.",
+        "세 글자."
+      ],
+      "en": [
+        "Abbreviation for Amazon Resource Name.",
+        "Three letters."
+      ]
+    }
+  },
+  {
+    "id": "t1_snapshot",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 65,
+    "ci": true,
+    "hash": "16a0eeb0791b6c92451fd284dd9f599e0a7dbe7f6ebea6e2d2d06c7f74aec112",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "그 순간을 저장하다",
+      "en": "Freeze That Moment"
+    },
+    "prompt": {
+      "ko": "클라우드 스토리지/볼륨(EBS 등)의 특정 시점 상태를 통째로 백업해두는 기능을 부르는, 명사로도 동사로도 쓰이는 한 단어는?",
+      "en": "What single word (used as both noun and verb) names a point-in-time backup of a cloud volume like EBS?"
+    },
+    "hints": {
+      "ko": [
+        "사진 찍듯 그 순간을 '찰칵' 저장합니다.",
+        "카메라 관련 단어에서 유래."
+      ],
+      "en": [
+        "Captures a moment like a photo.",
+        "Borrowed from camera terminology."
+      ]
+    }
+  },
+  {
+    "id": "t4_aslr",
+    "tier": 4,
+    "cat": "pwn",
+    "track": "system",
+    "points": 140,
+    "ci": true,
+    "hash": "738ab575cf55699b4b9eb6ef605a20282cf7363f4cf086867bd42da96ec22498",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "매번 바뀌는 주소",
+      "en": "The Address Keeps Moving"
+    },
+    "prompt": {
+      "ko": "스택·힙·라이브러리의 메모리 주소를 매 실행마다 무작위화해 익스플로잇의 주소 하드코딩을 어렵게 만드는 OS 보호 기법의 약자는?",
+      "en": "What abbreviation names the OS protection that randomizes stack/heap/library addresses on every run, defeating hardcoded exploit addresses?"
+    },
+    "hints": {
+      "ko": [
+        "Address Space Layout Randomization 의 약자.",
+        "`/proc/sys/kernel/randomize_va_space` 로 리눅스에서 제어합니다."
+      ],
+      "en": [
+        "Abbreviation for Address Space Layout Randomization.",
+        "Controlled via `/proc/sys/kernel/randomize_va_space` on Linux."
+      ]
+    }
+  },
+  {
+    "id": "t4_canary",
+    "tier": 4,
+    "cat": "pwn",
+    "track": "system",
+    "points": 150,
+    "ci": true,
+    "hash": "e100fbce008c04ec40637af0af91fb2f05aeedc23f856a2d3c0b1580625d755e",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "탄광 속의 그 새",
+      "en": "The Bird in the Mine"
+    },
+    "prompt": {
+      "ko": "함수 리턴 직전 스택에 심어둔 무작위 값이 변조되었는지 검사해 스택 버퍼 오버플로우를 탐지하는 보호 기법을, 탄광에서 유독가스를 미리 감지하던 새의 이름을 따서 부르는 한 단어는?",
+      "en": "Which stack buffer overflow protection (checking a random value planted before return for tampering) is named after the bird once used to detect toxic gas in mines?"
+    },
+    "hints": {
+      "ko": [
+        "GCC의 `-fstack-protector` 가 이 값을 심습니다.",
+        "'탄광 속 카나리아'라는 관용구에서 유래."
+      ],
+      "en": [
+        "GCC's `-fstack-protector` inserts this value.",
+        "From the idiom 'canary in a coal mine'."
+      ]
+    }
   }
 ];

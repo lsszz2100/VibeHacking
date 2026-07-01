@@ -51,15 +51,15 @@ Opening the site runs a boot sequence and drops you into an **infiltration conso
 
 | 계층 / node | 티어 / tier | 주제 / topics | 문제 / count | 통과 / breach |
 |------|:---:|------|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 소스 보기, 개발자도구, Base64, 바이너리, 역순/URL/NATO, 메타태그 / source, devtools, Base64, binary, reverse/URL/NATO, meta | 11 | 4 |
-| `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse/Atbash/A1Z26), 쿠키, HTTP, Basic 인증, nmap | 15 | 6 |
+| `perimeter` 외곽 | **0** | 소스 보기, 개발자도구, Base64, 바이너리, 역순/URL/NATO, 메타태그, MD5, xxd, IAM, VPC / source, devtools, Base64, binary, reverse/URL/NATO, meta, MD5, xxd, IAM, VPC | 15 | 4 |
+| `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse/Atbash/A1Z26), 쿠키, HTTP, Basic 인증, nmap, ARN, 스냅샷 / classic ciphers, cookies, HTTP, Basic auth, nmap, ARN, snapshot | 17 | 6 |
 | `internal` 내부망 | **2** | SQLi·XSS·JWT·해시·Base32/58·Unicode·Vigenère·LFI·IDOR·리버싱·S3·K8s | 20 | 9 |
 | `vault` 금고 | **3** | XOR(단일/반복키)·ROT47·Base85·포맷스트링·SSTI·YARA·AD·ELF매직·HMAC·IMDS | 17 | 7 |
-| `core` 코어 | **4** | 체인/이중·3중 디코딩, Vigenère, 컨테이너 탈출, K8s Secret, AES-GCM, JWT, AI 보안 / chained decoding, Vigenère, container escape, AES-GCM, AI security | 12 | 5 |
+| `core` 코어 | **4** | 체인/이중·3중 디코딩, Vigenère, 컨테이너 탈출, K8s Secret, AES-GCM, JWT, AI 보안, Prefetch, Volatility, ASLR, 스택 카나리아 / chained decoding, Vigenère, container escape, AES-GCM, AI security, Prefetch, Volatility, ASLR, stack canary | 16 | 5 |
 
-총 **75문제**(분야: 웹 23 · 암호 29 · 시스템 8 · 포렌식 8 · 클라우드/AI 7). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **85문제**(분야: 웹 23 · 암호 29 · 시스템 10 · 포렌식 12 · 클라우드/AI 11). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **75 challenges** (web 23 · crypto 29 · system 8 · forensics 8 · cloud/AI 7); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **85 challenges** (web 23 · crypto 29 · system 10 · forensics 12 · cloud/AI 11); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 
