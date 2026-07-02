@@ -86,7 +86,9 @@ python3 -m http.server 8000
 
 ## ⚙️ GitHub Pages 배포 / Deployment
 
-`.github/workflows/deploy-wargame.yml` 가 `wargame/` 변경 시 자동으로 Pages에 배포합니다.
+`.github/workflows/deploy-wargame.yml` 가 `wargame/` 변경 시 자동으로 Pages에 배포합니다. 배포 전 `validate` 잡이 `node wargame/scripts/verify.js`로 문제 데이터를 구조적으로 검증하고, 실패하면 배포가 차단됩니다(id 중복, 잘못된 해시 형식, 존재하지 않는 tier/track 참조, 프롬프트/힌트에 정답이 실수로 그대로 노출됐는지, index.html HUD와 README 문제 수 불일치 등). 평문 정답은 필요 없어 공개 CI에서도 안전합니다.
+
+`.github/workflows/deploy-wargame.yml` auto-deploys to Pages on `wargame/` changes. Before deploying, a `validate` job runs `node wargame/scripts/verify.js` to structurally check the challenge data and blocks deployment on failure (duplicate ids, malformed hashes, dangling tier/track references, an answer accidentally leaked into a prompt/hint, or the index.html HUD count drifting from the README). It needs no plaintext answers, so it's safe to run in public CI.
 
 **최초 1회 설정** (저장소 소유자):
 1. 저장소 **Settings → Pages → Build and deployment → Source** 를 **"GitHub Actions"** 로 설정.
