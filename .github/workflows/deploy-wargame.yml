@@ -57,3 +57,8 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # Pages backend has been observed sitting in `deployment_queued`
+          # past the 600s default before completing; the deploy itself
+          # succeeds, only the action's own polling times out first.
+          timeout: 1800
