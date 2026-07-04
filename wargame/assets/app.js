@@ -644,8 +644,11 @@
     else if (e.key === "ArrowDown"){ if (hi < history.length - 1){ hi++; input.value = history[hi] || ""; } else { hi = history.length; input.value = ""; } e.preventDefault(); }
     else if (e.key.length === 1){ sKey(); }
   });
-  // keep focus on terminal
-  document.getElementById("out").addEventListener("click", () => input.focus());
+  // keep focus on terminal (but don't steal it right after the user selects text to copy)
+  document.getElementById("out").addEventListener("click", () => {
+    if (window.getSelection && String(window.getSelection())) return;
+    input.focus();
+  });
   document.getElementById("screen").addEventListener("click", e => {
     if (e.target.closest("button")) return;
     if (window.getSelection && String(window.getSelection())) return;
