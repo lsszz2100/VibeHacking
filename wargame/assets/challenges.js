@@ -2465,5 +2465,425 @@ const CHALLENGES = [
         "From the idiom 'canary in a coal mine'."
       ]
     }
+  },
+  {
+    "id": "t0_sigkill",
+    "tier": 0,
+    "cat": "linux",
+    "track": "system",
+    "points": 40,
+    "ci": true,
+    "hash": "19581e27de7ced00ff1ce50b2047e7a567c76b1cbaebabe5ef03f7c3017bb5b7",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "프로세스를 강제 종료",
+      "en": "Force Kill a Process"
+    },
+    "prompt": {
+      "ko": "리눅스에서 `kill -9 <PID>` 처럼 프로세스를 즉시 강제 종료할 때 쓰이는 시그널 번호는? (숫자만)",
+      "en": "Which signal number does `kill -9 <PID>` send to immediately force-kill a process on Linux? (number only)"
+    },
+    "hints": {
+      "ko": [
+        "절대 무시하거나 처리할 수 없는 시그널입니다.",
+        "SIGKILL의 번호입니다."
+      ],
+      "en": [
+        "A signal that can never be caught or ignored.",
+        "It's the number for SIGKILL."
+      ]
+    }
+  },
+  {
+    "id": "t1_symlink",
+    "tier": 1,
+    "cat": "linux",
+    "track": "system",
+    "points": 65,
+    "ci": true,
+    "hash": "660ea4d709cf6a4f8bd150f1c89c754d23aa0b1ea2c53e537141a466b092c2a5",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "가리키기만 하는 파일",
+      "en": "A File That Just Points"
+    },
+    "prompt": {
+      "ko": "원본 파일을 가리키기만 하는 심볼릭 링크(바로가기)를 만드는 명령은? (옵션 포함, 예: `cmd -o target link`)",
+      "en": "Which command (with its flag) creates a symbolic link pointing to a target file? (e.g. `cmd -o target link`)"
+    },
+    "hints": {
+      "ko": [
+        "`ln` 명령에 옵션 하나를 더합니다.",
+        "`-s` (symbolic)."
+      ],
+      "en": [
+        "Add one flag to the `ln` command.",
+        "`-s` for symbolic."
+      ]
+    }
+  },
+  {
+    "id": "t2_procmon",
+    "tier": 2,
+    "cat": "windows",
+    "track": "system",
+    "points": 85,
+    "ci": true,
+    "hash": "d86580392e249926e944c40917377c0428bb1afc300fe31d4d321900da973495",
+    "fmt": "도구명 / tool name",
+    "title": {
+      "ko": "실시간으로 훔쳐보기",
+      "en": "Watching in Real Time"
+    },
+    "prompt": {
+      "ko": "Windows에서 프로세스·파일·레지스트리 접근을 실시간으로 감시해 악성코드 행위 분석에 널리 쓰이는 Sysinternals 도구의 이름은?",
+      "en": "Which Sysinternals tool monitors real-time process/file/registry activity on Windows and is widely used for malware behavior analysis?"
+    },
+    "hints": {
+      "ko": [
+        "Sysinternals Suite에 포함된 도구입니다.",
+        "'Process'와 'Monitor'의 합성(줄임말)."
+      ],
+      "en": [
+        "Part of the Sysinternals Suite.",
+        "A blend of 'Process' and 'Monitor'."
+      ]
+    }
+  },
+  {
+    "id": "t2_lsof",
+    "tier": 2,
+    "cat": "linux",
+    "track": "system",
+    "points": 85,
+    "ci": true,
+    "hash": "cb298bd94fae6f2f713a1108a16e0632f3a1e21820a288d7ea86c8b00a4d4fef",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "열린 파일 목록",
+      "en": "List Open Files"
+    },
+    "prompt": {
+      "ko": "리눅스에서 특정 프로세스가 열어둔 파일·소켓·라이브러리를 나열하는 명령은? (명령어만)",
+      "en": "Which Linux command lists the open files, sockets, and libraries held by a process? (command only)"
+    },
+    "hints": {
+      "ko": [
+        "이름 자체가 'list open files'의 줄임말입니다.",
+        "`____ -p <PID>`"
+      ],
+      "en": [
+        "Its name is literally short for 'list open files'.",
+        "`____ -p <PID>`"
+      ]
+    }
+  },
+  {
+    "id": "t4_rop",
+    "tier": 4,
+    "cat": "pwn",
+    "track": "system",
+    "points": 150,
+    "ci": true,
+    "hash": "d1e909483b98bf9e8b8c2ae3e1688365ecb2e7b75286c9784646d3d76c1c0dc6",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "이미 있는 조각을 이어붙이다",
+      "en": "Chaining What's Already There"
+    },
+    "prompt": {
+      "ko": "DEP/NX로 스택 실행이 막혔을 때, 바이너리에 이미 존재하는 코드 조각(가젯)들을 이어붙여 임의 코드 실행을 흉내내는 익스플로잇 기법의 약자는?",
+      "en": "When DEP/NX blocks stack execution, which exploitation technique's abbreviation names chaining existing code gadgets already in the binary to simulate arbitrary execution?"
+    },
+    "hints": {
+      "ko": [
+        "Return-Oriented Programming 의 약자.",
+        "`ret` 명령으로 끝나는 가젯들을 이어붙입니다."
+      ],
+      "en": [
+        "Abbreviation for Return-Oriented Programming.",
+        "Chains gadgets that each end in a `ret`."
+      ]
+    }
+  },
+  {
+    "id": "t4_uaf",
+    "tier": 4,
+    "cat": "pwn",
+    "track": "system",
+    "points": 160,
+    "ci": true,
+    "hash": "9e92f50f72fc1a740d5187ba781df8f89cf52b3085e6c49334945dca8a2f53db",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "이미 해제된 메모리",
+      "en": "Memory After It's Freed"
+    },
+    "prompt": {
+      "ko": "`free()`로 이미 해제된 힙 메모리에 남은 포인터로 계속 접근해 발생하는, 브라우저·커널 익스플로잇에서 흔한 취약점 유형의 약자는?",
+      "en": "Which vulnerability class's abbreviation names accessing heap memory through a dangling pointer after it's already been `free()`'d — common in browser and kernel exploits?"
+    },
+    "hints": {
+      "ko": [
+        "Use-After-Free 의 약자.",
+        "세 글자."
+      ],
+      "en": [
+        "Abbreviation for Use-After-Free.",
+        "Three letters."
+      ]
+    }
+  },
+  {
+    "id": "t0_region",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 45,
+    "ci": true,
+    "hash": "c697d2981bf416569a16cfbcdec1542b5398f3cc77d2b905819aa99c46ecf6f6",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "데이터센터의 큰 단위",
+      "en": "A Big Slice of Datacenters"
+    },
+    "prompt": {
+      "ko": "AWS/GCP/Azure 등 클라우드에서 지리적으로 분리된 데이터센터 묶음(예: `ap-northeast-2`)을 부르는 한 단어는?",
+      "en": "What single word names a geographically separate cluster of cloud datacenters (e.g. `ap-northeast-2`)?"
+    },
+    "hints": {
+      "ko": [
+        "가용영역(AZ)보다 더 큰 단위입니다.",
+        "지역/지방을 뜻하는 영단어."
+      ],
+      "en": [
+        "Bigger than an Availability Zone.",
+        "The English word for a geographic area."
+      ]
+    }
+  },
+  {
+    "id": "t1_lb",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 65,
+    "ci": true,
+    "hash": "7a34bf90b5e9eecc91c3c8418a343ae9fba263400f7ae1e6ddb67abe0f7a453a",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "트래픽을 나눠주는 것",
+      "en": "Splitting the Traffic"
+    },
+    "prompt": {
+      "ko": "여러 서버 인스턴스에 들어오는 요청을 고르게 분산시켜주는 서비스를 부르는 두 단어(약자 아님)는?",
+      "en": "What two-word term (not an abbreviation) names the service that distributes incoming requests evenly across multiple server instances?"
+    },
+    "hints": {
+      "ko": [
+        "AWS의 ELB/ALB가 이 역할을 합니다.",
+        "'짐을 나누다'는 뜻의 영단어 두 개."
+      ],
+      "en": [
+        "AWS's ELB/ALB serve this role.",
+        "Two English words meaning 'to distribute weight evenly'."
+      ]
+    }
+  },
+  {
+    "id": "t3_assumerole",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 125,
+    "ci": true,
+    "hash": "776a88039ef9efe803d63e13848afb8ea36d612d3fb5df9c364148e30ad9ca45",
+    "fmt": "API 액션 / API action",
+    "title": {
+      "ko": "역할을 빌려쓰다",
+      "en": "Borrowing a Role"
+    },
+    "prompt": {
+      "ko": "AWS에서 다른 IAM 역할의 임시 자격 증명을 발급받기 위해 호출하는 STS API 액션의 이름은? (예: `sts:________`)",
+      "en": "Which STS API action do you call in AWS to obtain temporary credentials for another IAM role? (e.g. `sts:________`)"
+    },
+    "hints": {
+      "ko": [
+        "역할을 '가정한다(assume)'는 뜻입니다.",
+        "CamelCase 두 단어가 붙어 있습니다."
+      ],
+      "en": [
+        "It means to 'assume' a role.",
+        "Two CamelCase words joined together."
+      ]
+    }
+  },
+  {
+    "id": "t3_cspm",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 130,
+    "ci": true,
+    "hash": "5d269f85e3e967c8a49655adcd5090ab75980245bcb66eba8e6f056413dc80e7",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "설정 실수를 계속 감시하다",
+      "en": "Watching for Misconfigurations"
+    },
+    "prompt": {
+      "ko": "클라우드 인프라의 오설정(퍼블릭 버킷, 과도한 IAM 권한 등)을 지속적으로 스캔·경고하는 보안 도구 카테고리의 약자는?",
+      "en": "What abbreviation names the security tool category that continuously scans and alerts on cloud misconfigurations (public buckets, over-privileged IAM, etc.)?"
+    },
+    "hints": {
+      "ko": [
+        "Cloud Security Posture Management 의 약자.",
+        "네 글자."
+      ],
+      "en": [
+        "Abbreviation for Cloud Security Posture Management.",
+        "Four letters."
+      ]
+    }
+  },
+  {
+    "id": "t4_coldstart",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 140,
+    "ci": true,
+    "hash": "2ab729086fade508b332db3792a12c723cc78cab48f5d1ec8f4a4245fd79d623",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "처음 깨어날 때는 느리다",
+      "en": "Slow to Wake Up"
+    },
+    "prompt": {
+      "ko": "서버리스 함수(AWS Lambda 등)가 한동안 호출되지 않아 새로 초기화되면서 지연이 발생하는 현상을 부르는 두 단어(예: `___ start`)는?",
+      "en": "What two-word term (e.g. `___ start`) names the latency that occurs when a serverless function (like AWS Lambda) must initialize from scratch after being idle?"
+    },
+    "hints": {
+      "ko": [
+        "반대말은 'warm start'입니다.",
+        "온도를 뜻하는 형용사 + start."
+      ],
+      "en": [
+        "The opposite is a 'warm start'.",
+        "A temperature adjective + start."
+      ]
+    }
+  },
+  {
+    "id": "t0_forensicimage",
+    "tier": 0,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 50,
+    "ci": true,
+    "hash": "b75b0489f78a9bae128f5fb590705c68e6bd9110fbdfec40721575c177d38c86",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "원본을 건드리지 않는 사본",
+      "en": "A Copy That Never Touches the Original"
+    },
+    "prompt": {
+      "ko": "디지털 포렌식에서 원본 증거를 변경하지 않기 위해 비트 단위로 통째로 복제해두는 사본을 부르는 두 단어(예: `forensic ___`)는?",
+      "en": "What two-word term (e.g. `forensic ___`) names a bit-for-bit copy made so the original evidence is never altered during digital forensics?"
+    },
+    "hints": {
+      "ko": [
+        "`dd` 나 FTK Imager로 만듭니다.",
+        "'그림/사본'을 뜻하는 영단어가 뒤에 옵니다."
+      ],
+      "en": [
+        "Made with tools like `dd` or FTK Imager.",
+        "Ends with the word meaning 'a copy/picture'."
+      ]
+    }
+  },
+  {
+    "id": "t1_pcap",
+    "tier": 1,
+    "cat": "network",
+    "track": "forensics",
+    "points": 60,
+    "ci": true,
+    "hash": "ff3ed7cbf694b9da51b7617e827def2dfaf824596500228573f4cd5857793b33",
+    "fmt": "확장자 / extension",
+    "title": {
+      "ko": "캡처한 패킷의 확장자",
+      "en": "Extension for Captured Packets"
+    },
+    "prompt": {
+      "ko": "Wireshark/tcpdump로 캡처한 네트워크 패킷 파일의 표준 확장자는? (점 없이, 소문자)",
+      "en": "What is the standard file extension for a network packet capture from Wireshark/tcpdump? (no dot, lowercase)"
+    },
+    "hints": {
+      "ko": [
+        "'packet capture'의 줄임말입니다.",
+        "네 글자."
+      ],
+      "en": [
+        "Short for 'packet capture'.",
+        "Four letters."
+      ]
+    }
+  },
+  {
+    "id": "t1_custody",
+    "tier": 1,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 70,
+    "ci": true,
+    "hash": "5a77bdc97e1a5cdb8b99a3f6163306eb890f6b0c9b660c71b62fa9a176e75297",
+    "fmt": "문구 / phrase",
+    "title": {
+      "ko": "증거가 거쳐온 손길의 기록",
+      "en": "The Record of Every Hand It Passed Through"
+    },
+    "prompt": {
+      "ko": "압수한 증거가 발견 시점부터 법정 제출까지 누구를 거쳤는지 문서로 남겨, 증거 무결성을 증명하는 절차를 부르는 세 단어(예: `chain of ___`)는?",
+      "en": "What three-word term (e.g. `chain of ___`) names the documented trail of everyone who handled a piece of evidence, from seizure to court, proving its integrity?"
+    },
+    "hints": {
+      "ko": [
+        "'사슬'을 뜻하는 단어로 시작합니다.",
+        "chain of ____."
+      ],
+      "en": [
+        "Starts with the word for 'chain'.",
+        "chain of ____."
+      ]
+    }
+  },
+  {
+    "id": "t4_usbstor",
+    "tier": 4,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 155,
+    "ci": true,
+    "hash": "dd32fb1174150592a3cf077fad0c9542021b1b7833d82ad29de64f3cabc6ebe8",
+    "fmt": "레지스트리 키 / registry key",
+    "title": {
+      "ko": "USB가 남기는 흔적",
+      "en": "The Trace a USB Leaves Behind"
+    },
+    "prompt": {
+      "ko": "Windows 레지스트리에서 과거에 연결됐던 USB 저장장치의 시리얼 번호·제조사 정보가 남는 대표 키 이름은? (한 단어)",
+      "en": "Which Windows Registry key preserves the serial number and vendor info of previously connected USB storage devices? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "`HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\` 아래에 있습니다.",
+        "'USB'와 '저장소(storage)'의 합성입니다."
+      ],
+      "en": [
+        "Found under `HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\`.",
+        "A blend of 'USB' and 'storage'."
+      ]
+    }
   }
 ];

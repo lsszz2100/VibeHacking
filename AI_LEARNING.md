@@ -23,7 +23,7 @@ VibeHacking 레포 디렉토리
 - 실습 환경 자동 시작
 - 단계별 실습 안내
 
-> 🎮 **워게임으로 점검**: 이론을 익혔다면 [브라우저 워게임](wargame/README.md)(`https://lsszz2100.github.io/VibeHacking/`)에서 실력을 확인하세요. 가짜 셸로 5개 보안 계층을 침투하는 터미널형 CTF 85문제 — AI CLI에게 "워게임 N번 힌트만 줘"처럼 물어볼 수도 있습니다.
+> 🎮 **워게임으로 점검**: 이론을 익혔다면 [브라우저 워게임](wargame/README.md)(`https://lsszz2100.github.io/VibeHacking/`)에서 실력을 확인하세요. 가짜 셸로 5개 보안 계층을 침투하는 터미널형 CTF 100문제 — AI CLI에게 "워게임 N번 힌트만 줘"처럼 물어볼 수도 있습니다.
 
 ---
 
@@ -393,7 +393,7 @@ One sentence — *"walk me through a SQL injection lab"* — and the AI will:
 - Start the lab environment
 - Guide you step-by-step
 
-> 🎮 **Test yourself in the wargame**: once you've learned the theory, check your skills in the [browser wargame](wargame/README.md) (`https://lsszz2100.github.io/VibeHacking/`) — a terminal-style CTF where you breach five security layers via a fake shell, 85 challenges. You can even ask an AI CLI for "just a hint on wargame #N".
+> 🎮 **Test yourself in the wargame**: once you've learned the theory, check your skills in the [browser wargame](wargame/README.md) (`https://lsszz2100.github.io/VibeHacking/`) — a terminal-style CTF where you breach five security layers via a fake shell, 100 challenges. You can even ask an AI CLI for "just a hint on wargame #N".
 
 ---
 
@@ -546,7 +546,7 @@ VibeHacking レポジトリ
 - 実習環境を自動起動
 - ステップごとに実習を案内
 
-> 🎮 **ワーゲームで力試し**: 理論を学んだら[ブラウザワーゲーム](wargame/README.md)（`https://lsszz2100.github.io/VibeHacking/`）で腕試しを。偽シェルで5つのセキュリティ層を突破するターミナル型CTF、全85問。AI CLIに「ワーゲームN番のヒントだけ」と聞くこともできます。
+> 🎮 **ワーゲームで力試し**: 理論を学んだら[ブラウザワーゲーム](wargame/README.md)（`https://lsszz2100.github.io/VibeHacking/`）で腕試しを。偽シェルで5つのセキュリティ層を突破するターミナル型CTF、全100問。AI CLIに「ワーゲームN番のヒントだけ」と聞くこともできます。
 
 ---
 
@@ -901,7 +901,7 @@ VibeHacking 仓库目录
 - 自动启动实验环境
 - 逐步引导实践
 
-> 🎮 **用战争游戏检验**：学完理论后，在[浏览器战争游戏](wargame/README.md)（`https://lsszz2100.github.io/VibeHacking/`）中检验自己 —— 用伪 Shell 攻破五道安全层的终端式 CTF，共 85 题。你甚至可以让 AI CLI「只给战争游戏第 N 题一个提示」。
+> 🎮 **用战争游戏检验**：学完理论后，在[浏览器战争游戏](wargame/README.md)（`https://lsszz2100.github.io/VibeHacking/`）中检验自己 —— 用伪 Shell 攻破五道安全层的终端式 CTF，共 100 题。你甚至可以让 AI CLI「只给战争游戏第 N 题一个提示」。
 
 ---
 
