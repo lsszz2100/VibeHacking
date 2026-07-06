@@ -817,6 +817,93 @@ if __name__ == "__main__":
 
 학습용 실습은 **본인 또는 회사 소유 도메인**, **HackTheBox/TryHackMe/PortSwigger Web Security Academy의 합법 랩**, **CTF 출제 서버**로 한정한다. 위에서 본 dork·Shodan 쿼리는 그대로 자기 자산 모니터링에 쓸 수 있다.
 
+### 9-4. 조사자 신원 보호와 OPSEC — Tor로 수행하는 익명 OSINT
+
+OSINT 조사 대상(위협 행위자, 사기 조직, 극단주의 커뮤니티)은 자신을 들여다보는 사람을 역으로 추적한다. 조사자의 회사 IP·실명 계정·브라우저 지문이 노출되면 표적이 증거를 은폐하거나 조사자 개인을 위협·역탐지할 수 있다. 이 절은 **조사자가 자신의 신원을 Tor·OPSEC(Operations Security)으로 보호하며 OSINT를 수행하는 법**과 **위협 행위자의 Tor 사용을 탐지·대응하는 법**만 다룬다. 다크웹 시장 이용이나 불법행위 은폐 기법은 다루지 않는다.
+
+#### 신원 분리 원칙 — 조사용 페르소나(sock puppet)
+
+- 조사 계정은 실명 계정과 **완전히 분리**한다: 별도 이메일·닉네임·비밀번호·글쓰기 스타일·활동 시간대까지.
+- 조사 페르소나로 접속한 세션에서 개인 메신저·이메일을 **동시에 열지 않는다.** 같은 브라우저·같은 IP·같은 시간대의 동시 세션은 상관관계 분석으로 실명과 연결될 수 있다.
+- 케이스마다 별도 VM 또는 별도 Tails 세션을 새로 부팅해 "이번 케이스"와 "지난 케이스"가 브라우저 히스토리·쿠키·자동완성으로 섞이지 않게 한다.
+- 비밀번호·MAC 주소·기기 지문(폰트, 화면 해상도, User-Agent)을 페르소나 간 재사용하지 않는다. 한쪽이 유출되면 다른 쪽도 연결된다.
+
+#### VM/게스트 OS 격리 — Whonix, Tails 비교
+
+| 도구 | 격리 방식 | 강점 | 약점 | 조사자 활용 시나리오 |
+|---|---|---|---|---|
+| **Tails** | 부팅 시 초기화되는 세션 단위 amnesic OS(RAM만 사용, 종료 시 흔적 소멸) | 휴대성 높음, USB 분실 시에도 데이터 없음 | 문서 메타데이터는 자동 제거되지 않음(별도 exiftool 필요), 브릿지 미사용 시 ISP에 "Tor 사용 자체"는 노출됨 | 단발성 계정 생성, 짧은 조사 세션 — 케이스마다 새 세션으로 재부팅 |
+| **Whonix** | Gateway(모든 트래픽을 강제로 Tor 경유)+Workstation(격리된 게스트) 이중 VM 구조 | 워크스테이션이 실제 IP를 알 수 없어 앱 오작동·악성코드가 있어도 IP·DNS 유출이 사실상 불가 | 성능 저하, 호스트 OS 자체가 침해되면 무력화 | 장기 잠입 조사, 페르소나별로 VM을 여러 개 병행 운용 |
+| **VM 스냅샷 격리** | 케이스별 스냅샷 분리, 조사 종료 후 폐기 | 케이스 간 교차오염 방지, 사고 시 스냅샷 롤백 | 스냅샷 관리 부담 | 장기 CTI/OSINT 조사에서 케이스 폴더처럼 VM 스냅샷 보존 |
+
+Whonix는 Gateway VM만 네트워크 인터페이스를 갖고 모든 요청을 Tor로 강제하므로, Workstation VM에서 실행되는 앱(브라우저 확장, 문서 뷰어 등)이 오작동해도 실제 IP가 노출되지 않는다. 이는 **네트워크 스택과 작업 환경을 물리적으로 나누는 것**이 애플리케이션 단위 방어(Tor Browser NoScript 설정 등)보다 근본적으로 강함을 보여주는 사례다.
+
+#### 트래픽 상관관계 공격 방어
+
+- 같은 Tor 회로(circuit)로 서로 무관한 여러 사이트에 동시 접속하면, exit 노드 하나가 두 활동의 **상관관계**를 관찰할 수 있다. 조사 대상이 바뀌면 Tor Browser의 "새 신원(New Identity)"으로 회로를 교체한다.
+- 조사용 계정과 개인 계정을 **같은 세션에서 병행 로그인**하지 않는다 — 타이핑 패턴·접속 시간대만으로도 동일인 추정이 가능하다(행동 지문).
+- 같은 물리적 위치에서 장시간(하루 이상) 반복 접속하지 않는다. 위치·시간대가 고정되면 회사·집 네트워크 로그와 대조해 신원이 좁혀질 수 있다.
+- 조사 기기의 MAC 주소는 세션마다 무작위화(Tails는 기본 적용, 수동 환경은 `macchanger` 류 도구 사용)한다.
+
+#### 브릿지·pluggable transport로 검열 우회
+
+검열이 심한 네트워크(사내 방화벽이 Tor 자체를 차단하는 경우 포함)에서는 공개 Tor 릴레이 목록 접속 시도부터 차단당한다. 이때 **브릿지(bridge)**로 진입점을 숨기고, **pluggable transport**(obfs4 등)로 Tor 트래픽 자체의 프로토콜 특징을 위장한다.
+
+```
+# /etc/tor/torrc — obfs4 브릿지로 Tor 진입점 은폐 예시
+# 실제 브릿지 값은 https://bridges.torproject.org 에서 발급받아 대체할 것
+UseBridges 1
+ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
+Bridge obfs4 203.0.113.10:443 0123456789ABCDEF0123456789ABCDEF01234567 cert=<발급받은_cert값> iat-mode=0
+```
+
+브릿지는 공개 목록에 없는 진입 릴레이라 ISP·방화벽이 "Tor 사용 여부"를 알기 어렵게 하지만, 그만큼 속도가 느리고 신뢰성이 낮다. **검열망 환경이 아니라면 굳이 쓰지 않는다** — 불필요하게 사용하면 오히려 트래픽 패턴상 눈에 띌 수 있다.
+
+#### 위협 행위자의 Tor 사용 탐지·대응 (블루팀 관점)
+
+- 공식 Tor exit relay 목록(`check.torproject.org/torbulkexitlist`, TorDNSEL)을 주기적으로 내려받아 접속 로그의 IP와 대조하면, 위협 행위자가 Tor를 경유했는지 1차 판별할 수 있다.
+- WAF·리버스 프록시에서 Tor exit IP 발 요청에 단계적 마찰(CAPTCHA, MFA 강제)을 두는 것은 흔한 통제다. 다만 인권단체·내부고발자·피해자 신고 채널도 Tor를 정당하게 쓰므로 완전 차단보다는 **단계적 마찰**을 권장한다.
+- 내부망 DNS 로그에 `.onion` 조회 시도가 있다면 사내 단말에서 Tor 클라이언트가 실행 중이라는 신호다.
+- Tor exit IP는 지리적 위치 추적이 불가능하므로, 사고대응 시에는 User-Agent·세션 타이밍·행동 패턴 등 다른 텔레메트리로 상관분석을 보완해야 한다.
+
+```python
+# file: tor_exit_check.py
+# usage: python tor_exit_check.py access.log
+"""접속 로그의 IP를 공식 Tor exit relay 목록과 대조 — 위협 행위자 Tor 경유 여부 1차 탐지(블루팀)."""
+import re
+import sys
+import urllib.request
+
+EXIT_LIST_URL = "https://check.torproject.org/torbulkexitlist"
+
+
+def fetch_tor_exit_list() -> set[str]:
+    with urllib.request.urlopen(EXIT_LIST_URL, timeout=10) as resp:
+        return {line.strip() for line in resp.read().decode().splitlines() if line.strip()}
+
+
+def scan_log(path: str, exits: set[str]) -> None:
+    ip_re = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+    with open(path, encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            for ip in ip_re.findall(line):
+                if ip in exits:
+                    print(f"[Tor exit] {ip} -> {line.strip()[:120]}")
+
+
+if __name__ == "__main__":
+    scan_log(sys.argv[1], fetch_tor_exit_list())
+```
+
+#### 실습 체크리스트 (조사자 자신 보호)
+
+- [ ] 조사 페르소나 계정은 실명 계정과 이메일·전화번호·결제수단까지 분리했는가
+- [ ] 케이스마다 새 Tails 세션 또는 새 VM 스냅샷으로 시작했는가
+- [ ] 같은 Tor 회로에서 조사 대상과 무관한 개인 계정에 동시 접속하지 않았는가
+- [ ] 조사 중 알게 된 정보를 신뢰할 수 없는 제3자에게 발설하지 않았는가(사람이 가장 약한 고리)
+- [ ] 조사용 기기의 MAC 주소·브라우저 지문이 실명 기기와 겹치지 않는지 점검했는가
+- [ ] 브릿지·pluggable transport는 검열망 환경에서만 사용했는가(불필요한 곳에서 쓰면 오히려 눈에 띔)
+
 ---
 
 ## 10. 마무리 — 다음 문서로 가는 다리
@@ -1321,6 +1408,93 @@ Before starting work, confirm you can answer "yes" to all 5 questions:
 ### 9-3. Your Own Domain is the Safest
 
 For learning practice, limit to **domains you or your company own**, **legal labs on HackTheBox/TryHackMe/PortSwigger Web Security Academy**, or **CTF servers**. The dork and Shodan queries shown above can be used as-is for monitoring your own assets.
+
+### 9-4. Protecting the Investigator's Identity and OPSEC — Anonymous OSINT with Tor
+
+OSINT targets (threat actors, fraud rings, extremist communities) can trace back the person investigating them. If an investigator's corporate IP, real-name account, or browser fingerprint leaks, the target can destroy evidence or threaten/dox the investigator. This section covers only two things: **how an investigator protects their own identity with Tor/OPSEC (Operations Security) while doing OSINT**, and **how to detect and respond to a threat actor's use of Tor**. It does not cover darknet market usage or concealing illegal activity.
+
+#### Identity Separation Principle — Investigative Personas (Sock Puppets)
+
+- Keep the investigation account **completely separate** from your real-name account: separate email, nickname, password, writing style, even active hours.
+- Never run a personal messenger or email session **at the same time** as an investigative persona session. Same browser, same IP, same time window can let correlation analysis link the two identities.
+- Boot a fresh VM or fresh Tails session per case so "this case" and "the last case" never mix through browser history, cookies, or autofill.
+- Never reuse passwords, MAC addresses, or device fingerprints (fonts, screen resolution, User-Agent) across personas — if one leaks, the other is linked.
+
+#### VM / Guest-OS Isolation — Whonix vs. Tails
+
+| Tool | Isolation model | Strength | Weakness | Investigator use case |
+|---|---|---|---|---|
+| **Tails** | Amnesic OS reset at every boot (RAM only, no trace after shutdown) | Highly portable, no data left if the USB is lost | Document metadata is not auto-stripped (needs exiftool separately); without bridges, the ISP still sees "Tor is being used" | One-off account creation, short sessions — reboot a fresh session per case |
+| **Whonix** | Dual-VM: Gateway (forces all traffic through Tor) + Workstation (isolated guest) | Workstation never learns the real IP, so app misbehavior/malware can't leak IP/DNS | Performance overhead, defeated if the host OS itself is compromised | Long-running undercover investigations, running multiple personas across parallel VMs |
+| **VM snapshot isolation** | Separate snapshot per case, destroyed after the case closes | Prevents cross-contamination between cases, rollback on incident | Snapshot management overhead | Long-running CTI/OSINT work — keep VM snapshots like case folders |
+
+Whonix's Gateway VM is the only one with a network interface and forces every request through Tor, so even if an app running in the Workstation VM (browser extension, document viewer) misbehaves, the real IP is never exposed. This illustrates why **physically separating the network stack from the work environment** is fundamentally stronger than application-level defenses (e.g., Tor Browser's NoScript settings) alone.
+
+#### Defending Against Traffic Correlation Attacks
+
+- Visiting several unrelated sites over the same Tor circuit lets a single exit node observe the **correlation** between them. Rotate circuits via Tor Browser's "New Identity" when the investigation target changes.
+- Do not log into an investigative persona and a personal account **in the same session** — typing cadence and access-time patterns alone can suggest the same person (behavioral fingerprinting).
+- Avoid repeated, long (over a day) sessions from the same physical location. A fixed location/time window can be cross-referenced against office or home network logs to narrow down identity.
+- Randomize the investigation device's MAC address per session (Tails does this by default; on manual setups use a tool like `macchanger`).
+
+#### Bridges and Pluggable Transports for Censorship Circumvention
+
+On heavily censored networks (including corporate firewalls that block Tor outright), even the attempt to reach the public relay list gets blocked. A **bridge** hides the entry point, and a **pluggable transport** (e.g., obfs4) disguises the protocol fingerprint of Tor traffic itself.
+
+```
+# /etc/tor/torrc — hiding the Tor entry point with an obfs4 bridge
+# Obtain a real bridge value from https://bridges.torproject.org and substitute it below
+UseBridges 1
+ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
+Bridge obfs4 203.0.113.10:443 0123456789ABCDEF0123456789ABCDEF01234567 cert=<your_issued_cert> iat-mode=0
+```
+
+Bridges are entry relays absent from the public list, making it harder for an ISP/firewall to tell "Tor is in use," but they are slower and less reliable. **Don't use them outside a censored network** — unnecessary use can itself stand out as an unusual traffic pattern.
+
+#### Detecting and Responding to Threat-Actor Tor Use (Blue-Team Perspective)
+
+- Periodically download the official Tor exit relay list (`check.torproject.org/torbulkexitlist`, TorDNSEL) and cross-reference it against access-log IPs for a first-pass check of whether a threat actor routed through Tor.
+- A common control is step-up friction (CAPTCHA, forced MFA) for requests from Tor exit IPs at the WAF/reverse-proxy layer. Since human-rights groups, whistleblowers, and victim-reporting channels also legitimately use Tor, prefer **graduated friction** over an outright block.
+- A `.onion` lookup attempt in internal DNS logs signals that a Tor client is running on an internal endpoint.
+- Because Tor exit IPs cannot be geolocated, incident response must supplement IP-based analysis with other telemetry — User-Agent, session timing, behavioral patterns — for correlation.
+
+```python
+# file: tor_exit_check.py
+# usage: python tor_exit_check.py access.log
+"""Cross-reference access-log IPs against the official Tor exit relay list — a first-pass check for threat-actor Tor use (blue team)."""
+import re
+import sys
+import urllib.request
+
+EXIT_LIST_URL = "https://check.torproject.org/torbulkexitlist"
+
+
+def fetch_tor_exit_list() -> set[str]:
+    with urllib.request.urlopen(EXIT_LIST_URL, timeout=10) as resp:
+        return {line.strip() for line in resp.read().decode().splitlines() if line.strip()}
+
+
+def scan_log(path: str, exits: set[str]) -> None:
+    ip_re = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+    with open(path, encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            for ip in ip_re.findall(line):
+                if ip in exits:
+                    print(f"[Tor exit] {ip} -> {line.strip()[:120]}")
+
+
+if __name__ == "__main__":
+    scan_log(sys.argv[1], fetch_tor_exit_list())
+```
+
+#### Practical Checklist (Protecting Yourself as the Investigator)
+
+- [ ] Is the investigative persona's account fully separated from the real identity — email, phone number, payment method included?
+- [ ] Did you start each case with a fresh Tails session or a fresh VM snapshot?
+- [ ] Did you avoid logging into an unrelated personal account over the same Tor circuit as the investigation?
+- [ ] Did you avoid disclosing information learned during the investigation to any untrusted third party (the human is the weakest link)?
+- [ ] Did you check that the investigation device's MAC address/browser fingerprint doesn't overlap with your real-identity device?
+- [ ] Did you use bridges/pluggable transports only on censored networks (unnecessary use elsewhere itself stands out)?
 
 ---
 

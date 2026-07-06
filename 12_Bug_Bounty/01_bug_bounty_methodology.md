@@ -1522,6 +1522,266 @@ Windows로 포팅된 다수 OSS가 기본 `main(int argc, char* argv[])`(ANSI)�
 
 ---
 
+## 15. 실무 프로세스 심화 — 프로그램 선정부터 트라이아저 소통까지
+
+지금까지는 "무엇을 어떻게 찾는가"(정찰·취약점·리포트 구조)를 다뤘다. 이번 절은 그 사이사이를 채우는 **운영 프로세스**다 — 어떤 프로그램에 시간을 쓸지 고르는 안목, GitHub에서 자격증명을 캐는 수동 워크플로, 중복 제보로 시간을 날리지 않는 전략, 트라이아저와의 커뮤니케이션, 그리고 원타임 정찰을 지속적 모니터링으로 바꾸는 자동화까지.
+
+### 15-1. GitHub 도킹(Dorking) — 하드코딩된 자격증명 사냥
+
+깃허브는 조직을 침해하는 가장 쉬운 경로 중 하나다. 개발자가 테스트 계정, API 키, 내부 URL을 소스코드에 하드코딩한 채 공개 저장소에 푸시하는 일이 흔하기 때문이다. `gitleaks`/`trufflehog` 같은 자동 스캐너(7장)는 이미 클론된 저장소 안의 시크릿을 찾지만, **도킹**은 그보다 앞서 "타겟과 관련된 공개 저장소·코드·이슈"를 검색으로 발굴하는 수동 프로세스다.
+
+```
+GitHub 도킹 워크플로:
+
+1. 민감 키워드 목록 준비
+   password, secret, api_key, token, credentials, config,
+   .env, aws_access_key_id, BEGIN PRIVATE KEY, jdbc:, mongodb://
+
+2. 타겟 도메인/조직명과 결합해 검색
+   "target.com" password
+   "target.com" api_key
+   org:target-company password
+   filename:.env
+   filename:id_rsa
+
+3. 결과를 수작업으로 스캔 (자동화 어려움 — false positive多)
+   - 진짜 크리덴셜인지, 이미 회전(rotate)된 값인지 확인
+   - 커밋 히스토리도 확인 (삭제된 파일이 이력에 남아있을 수 있음)
+     git log --all --full-history -- **/config.py
+     git show <commit>:<path/to/file>
+
+4. 발견 시 즉시 검증 없이 보고
+   - 크리덴셜을 실제로 사용해 로그인하면 "무단 접근"으로 간주될 위험
+   - 유효성은 만료일자·형식·최근 커밋일로만 판단 후 리포트에 명시
+```
+
+```bash
+# GitHub 검색 API로 도킹 자동화 (검색 자체는 자동화 가능, 판별은 수동)
+# 요구사항: GitHub Personal Access Token (public_repo 권한만)
+curl -s -H "Authorization: token $GITHUB_TOKEN" \
+  "https://api.github.com/search/code?q=%22target.com%22+password+in:file" \
+  | jq -r '.items[] | "\(.repository.full_name) \(.path) \(.html_url)"'
+
+# 여러 dork를 순회하며 결과를 파일로 축적 (rate limit: 인증 시 30req/min)
+for dork in "password" "api_key" "secret" "BEGIN PRIVATE KEY" "jdbc:mysql"; do
+  echo "[*] dork: target.com $dork"
+  curl -s -H "Authorization: token $GITHUB_TOKEN" \
+    -G --data-urlencode "q=\"target.com\" $dork in:file" \
+    "https://api.github.com/search/code" | jq -r '.items[].html_url'
+  sleep 3   # secondary rate limit 회피
+done
+```
+
+> 도킹은 결과의 90% 이상이 잡음이다. 몇 시간 걸릴 수 있지만 하나만 건져도 즉시 High/Critical로 이어지는 경우가 많아 시간 대비 효율이 매우 높다.
+
+### 15-2. 프로그램 선정 전략 — 어디에 시간을 쓸 것인가
+
+모든 프로그램이 동등하게 수익성 있지 않다. 시작 전에 다음 기준으로 프로그램을 평가하면 같은 시간을 투자해도 결과가 크게 달라진다.
+
+```
+프로그램 평가 체크리스트 (HackerOne/Bugcrowd 프로그램 페이지에서 확인 가능):
+
+□ 평균 보상액(Average Bounty)과 최근 지급 내역
+  - 프로그램 통계 탭에서 "Average bounty", "Bounties paid" 확인
+  - 지급 이력이 없거나 오래된 프로그램은 Swag-only일 가능성
+
+□ 응답 효율성(Response Efficiency) 지표
+  - "Average time to first response", "Average time to bounty"
+  - 응답이 느린 프로그램(2주+)은 리포트가 쌓여 트리아저가 지쳐있을 가능성
+
+□ 스코프 크기와 신선도
+  - 서브도메인 수가 많고 최근에 스코프가 확장된 프로그램 → 미개척지 많음
+  - "새 프로그램" 배지 — 공개 직후 며칠은 경쟁이 적어 easy win 확률 높음
+
+□ 경쟁 강도 추정
+  - Hacktivity(공개된 리포트) 개수로 얼마나 "파헤쳐졌는지" 추정
+  - 리포트가 수백 개인 오래된 대형 프로그램은 얕은 취약점은 이미 소진됨
+    → 체이닝/니치 기능 위주로 접근해야 함
+
+□ 기술 스택 적합성
+  - 본인이 특화된 기술(GraphQL, OAuth, 특정 프레임워크)과 스코프가 맞는지
+  - 안 맞으면 학습 비용 대비 수익이 낮음
+
+□ VDP(Vulnerability Disclosure Program) vs 유가 프로그램 구분
+  - VDP는 보상 없이 Hall of Fame만 제공 — 포트폴리오/신뢰 구축 목적으로만 접근
+```
+
+```
+실전 우선순위 전략:
+
+신규 헌터  → VDP + 새로 공개된 소규모 프로그램 (경쟁 적음, 학습 목적)
+중급 헌터  → 응답 빠르고 평균 보상 높은 중견 프로그램 (안정적 수익)
+숙련 헌터  → 대형/오래된 프로그램에서 체이닝으로 Critical 노림
+           또는 Private 초청 프로그램 (경쟁 자체가 적음)
+```
+
+### 15-3. 중복 제출(Duplicate) 회피 전략
+
+중복 제보는 버그바운티에서 가장 흔한 "시간 낭비"다. 이미 알려진 취약점을 재발견해 제출하면 리포트 자체는 정확해도 보상이 없다. 아래는 중복 확률을 낮추는 실무 전략이다.
+
+```
+중복 회피 프로세스:
+
+1. 제출 전 반드시 공개 리포트 검색
+   - HackerOne Hacktivity: hackerone.com/hacktivity?program=<대상>
+     "resolved" + "disclosed" 필터로 이미 알려진 유형 파악
+   - Bugcrowd Crowdstream (공개된 프로그램의 disclosed 리포트)
+   - Google dork: site:hackerone.com/reports "target.com" [취약점 유형]
+
+2. "누구나 찾을 법한" 자산은 이미 중복일 확률이 높다
+   - 메인 도메인의 로그인 페이지, 대표 API 엔드포인트 → 경쟁 치열
+   - 방문자가 적은 서브도메인, 최근 추가된 마이크로서비스 → 경쟁 낮음
+
+3. 자산 우선순위를 "새로움" 기준으로 재정렬
+   - 최근 CT 로그에 새로 나타난 서브도메인 (crt.sh 타임스탬프 확인)
+   - 최근 변경된 JS 번들 (해시 diff로 배포 시점 추정)
+   - 회사 채용 공고에 언급된 신규 기술 스택 → 아직 헌터들이 안 본 스택
+
+4. 취약점 유형 자체를 "덜 알려진" 쪽으로 이동
+   - XSS/SQLi 등 흔한 유형은 이미 여러 명이 스캔했을 가능성
+   - 비즈니스 로직 결함, 레이스 컨디션, 권한 상승 체이닝은 스캐너가 못 찾음
+     → 자동화로 덜 뒤덮이는 영역일수록 최초 발견 확률 상승
+
+5. 발견 즉시 제출 (숙성시키지 말 것)
+   - 검증에 며칠씩 걸리면 그 사이 다른 헌터가 먼저 제출할 수 있음
+   - 최소 재현 가능한 PoC만 있어도 우선 제출 후 추가 정보로 보강
+```
+
+```bash
+# 최근 등장한 서브도메인만 골라내기 (crt.sh 타임스탬프 기준 최근 7일)
+curl -s "https://crt.sh/?q=%.target.com&output=json" | \
+  jq -r '.[] | select(.entry_timestamp > (now - 7*86400 | strftime("%Y-%m-%dT%H:%M:%S"))) | .name_value' | \
+  sort -u
+```
+
+### 15-4. 트라이아저(Triager)와의 커뮤니케이션
+
+리포트 제출 후의 소통 방식이 판정 결과와 향후 초대에 영향을 준다. 트라이아저도 사람이며 하루에 수십 건의 리포트를 처리한다.
+
+```
+효과적인 소통 원칙:
+
+✓ 최초 리포트에 재현에 필요한 모든 정보를 포함
+  - "정보 필요(Needs More Info)" 상태로 돌아오면 응답까지 며칠이 더 걸림
+
+✓ 추가 정보 요청에는 24~48시간 내 응답
+  - 응답이 늦으면 리포트가 자동으로 닫히거나 우선순위가 밀림
+
+✓ "Not Applicable"/"Informative" 판정을 받으면
+  - 감정적으로 반박하지 말고, 구체적 공격 시나리오·실제 영향을 추가 데이터로 보강
+  - 예: "Missing rate limit" → 실제 계정 탈취/무차별 대입 성공 PoC 첨부로 재反박
+
+✓ 심각도(Severity)에 이견이 있으면
+  - CVSS 벡터를 직접 계산해 제시 (AV/AC/PR/UI/S/C/I/A 각 항목 근거와 함께)
+  - 유사 사례의 과거 등급(Hacktivity 참고)을 근거로 제시
+
+✓ 장기간 무응답(2주+) 시
+  - 정중한 팔로우업 코멘트 1회
+  - 그래도 무응답이면 플랫폼의 Mediation(중재) 기능 요청
+    (HackerOne: "Request Mediation", Bugcrowd: Program Ops 문의)
+
+✗ 피해야 할 행동
+  - 공개 SNS에서 프로그램/트라이아저 비난 (계정 정지·법적 리스크)
+  - 동일 리포트에 대한 반복적 상태 변경 요청 스팸
+  - 보상 협상을 위협("올리지 않으면 공개하겠다")으로 진행 — 규정 위반
+```
+
+### 15-5. 지속적 모니터링 자동화 — 정찰을 "한 번"에서 "상시"로
+
+3장의 서브도메인 파이프라인은 한 번 실행하는 스냅샷이다. 실제로 새 자산은 매일 생겨나므로, **변경분(diff)만 감지해 알림을 보내는 상시 모니터링**으로 전환하면 새로 배포된 취약한 자산을 경쟁자보다 먼저 발견할 확률이 크게 오른다.
+
+```python
+#!/usr/bin/env python3
+"""
+지속 모니터링 — 이전 스캔 결과와 비교해 신규 서브도메인/응답 변화만 알림
+cron으로 주기 실행 (예: 매 6시간)
+요구사항: pip install requests
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+import requests
+
+STATE_FILE = Path("monitor_state.json")
+WEBHOOK_URL = ""  # Slack/Discord Incoming Webhook URL
+
+
+def crtsh_enum(domain: str) -> set[str]:
+    url = f"https://crt.sh/?q=%.{domain}&output=json"
+    resp = requests.get(url, timeout=20)
+    subs: set[str] = set()
+    for entry in resp.json():
+        for name in entry.get("name_value", "").splitlines():
+            name = name.strip().lstrip("*.")
+            if name.endswith(domain) and " " not in name:
+                subs.add(name)
+    return subs
+
+
+def load_state() -> set[str]:
+    if STATE_FILE.exists():
+        return set(json.loads(STATE_FILE.read_text()))
+    return set()
+
+
+def save_state(subs: set[str]) -> None:
+    STATE_FILE.write_text(json.dumps(sorted(subs), ensure_ascii=False, indent=2))
+
+
+def notify(new_subs: set[str], domain: str) -> None:
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    lines = "\n".join(f"- {s}" for s in sorted(new_subs))
+    message = f"[{ts}] {domain} 신규 서브도메인 {len(new_subs)}건 발견:\n{lines}"
+    print(message)
+    if WEBHOOK_URL:
+        try:
+            requests.post(WEBHOOK_URL, json={"text": message}, timeout=10)
+        except Exception as exc:
+            print(f"[!] 알림 전송 실패: {exc}")
+
+
+def monitor(domain: str) -> None:
+    current = crtsh_enum(domain)
+    previous = load_state()
+
+    if previous:
+        new_subs = current - previous
+        if new_subs:
+            notify(new_subs, domain)
+        else:
+            print(f"[*] {domain}: 변경 없음 ({len(current)}개 유지)")
+    else:
+        print(f"[*] {domain}: 최초 스캔, 기준선 {len(current)}개 저장")
+
+    save_state(current)
+
+
+if __name__ == "__main__":
+    import sys
+    monitor(sys.argv[1] if len(sys.argv) > 1 else "target.com")
+```
+
+```bash
+# cron 등록 — 6시간마다 실행, 신규 서브도메인 발견 시 웹훅으로 알림
+# crontab -e
+0 */6 * * * /usr/bin/python3 /home/user/monitor.py target.com >> /home/user/monitor.log 2>&1
+
+# JS 번들 변경 감지 (신규 엔드포인트/기능 배포 신호)
+# 배포될 때마다 JS 파일 해시가 바뀌므로 해시 diff로 "새 코드 나왔다"를 탐지
+curl -s https://target.com/static/app.js | sha256sum > current.hash
+diff <(cat previous.hash) <(cat current.hash) && echo "변경 없음" || echo "!! app.js 변경 감지 -> 재정찰 필요"
+mv current.hash previous.hash
+```
+
+> 모니터링의 목적은 "경쟁자보다 먼저 신규 자산에 도달"이다. 신규 서브도메인·변경된 JS 번들·새로 열린 포트는 아직 아무도 테스트하지 않았을 가능성이 높아 중복(15-3) 확률이 가장 낮은 지점이다.
+
+---
+
 <!-- detect-validate-12 -->
 ## 스코프 검증과 발견 재현
 
@@ -2877,6 +3137,268 @@ $6$   → SHA-512 (Linux)
 $y$   → yescrypt
 NTLM  → aad3b435b51404eeaad3b435b51404ee:hash (Windows)
 ```
+
+---
+
+## 15. Operational Process Deep Dive — From Program Selection to Triager Communication
+
+So far we've covered "what to find and how" (recon, vulnerabilities, report structure). This section fills in the **operational process** between those steps — picking which programs deserve your time, the manual workflow for mining GitHub for credentials, strategies to avoid wasting time on duplicates, communicating with triagers, and turning one-off recon into continuous monitoring.
+
+### 15-1. GitHub Dorking — Hunting Hardcoded Credentials
+
+GitHub is one of the easiest paths to compromising an organization. Developers routinely hardcode test accounts, API keys, and internal URLs into source code and push it to public repositories. Automated scanners like `gitleaks`/`trufflehog` (Section 7) find secrets inside repos you've already cloned, but **dorking** is the manual process of searching for target-related public repos, code, and issues *before* that — discovering what to clone in the first place.
+
+```
+GitHub Dorking Workflow:
+
+1. Prepare a list of sensitive keywords
+   password, secret, api_key, token, credentials, config,
+   .env, aws_access_key_id, BEGIN PRIVATE KEY, jdbc:, mongodb://
+
+2. Combine with the target domain/org name in search
+   "target.com" password
+   "target.com" api_key
+   org:target-company password
+   filename:.env
+   filename:id_rsa
+
+3. Manually scan results (hard to automate — mostly false positives)
+   - Verify whether it's a real credential or already rotated
+   - Also check commit history (deleted files may still linger in history)
+     git log --all --full-history -- **/config.py
+     git show <commit>:<path/to/file>
+
+4. Report immediately without further "verification" attempts
+   - Actually using found credentials to log in risks being treated as unauthorized access
+   - Judge validity only by expiry date, format, and recency of the commit, and state that in the report
+```
+
+```bash
+# Automate the search itself with the GitHub Search API (triage still manual)
+# Requirement: GitHub Personal Access Token (public_repo scope only)
+curl -s -H "Authorization: token $GITHUB_TOKEN" \
+  "https://api.github.com/search/code?q=%22target.com%22+password+in:file" \
+  | jq -r '.items[] | "\(.repository.full_name) \(.path) \(.html_url)"'
+
+# Iterate over multiple dorks and accumulate results (rate limit: 30 req/min when authenticated)
+for dork in "password" "api_key" "secret" "BEGIN PRIVATE KEY" "jdbc:mysql"; do
+  echo "[*] dork: target.com $dork"
+  curl -s -H "Authorization: token $GITHUB_TOKEN" \
+    -G --data-urlencode "q=\"target.com\" $dork in:file" \
+    "https://api.github.com/search/code" | jq -r '.items[].html_url'
+  sleep 3   # avoid secondary rate limit
+done
+```
+
+> Over 90% of dorking results are noise. It can take hours, but a single hit often converts directly into a High/Critical finding, making the time-to-payoff ratio excellent.
+
+### 15-2. Program Selection Strategy — Where to Spend Your Time
+
+Not all programs are equally profitable. Evaluating a program before you start using the following criteria can make the same time investment yield very different results.
+
+```
+Program Evaluation Checklist (visible on HackerOne/Bugcrowd program pages):
+
+□ Average bounty and recent payout history
+  - Check "Average bounty" and "Bounties paid" in the program stats tab
+  - No payout history, or a stale one, may signal a swag-only program
+
+□ Response Efficiency metrics
+  - "Average time to first response", "Average time to bounty"
+  - Slow-responding programs (2+ weeks) may have a report backlog and a tired triage team
+
+□ Scope size and freshness
+  - Many subdomains + recently expanded scope → lots of unexplored territory
+  - "New program" badge — competition is lowest in the first few days after launch
+
+□ Estimate competition intensity
+  - Count of Hacktivity (disclosed) reports estimates how "picked over" a program is
+  - Large, old programs with hundreds of reports have likely had shallow bugs exhausted
+    → focus on chaining / niche functionality instead
+
+□ Technology stack fit
+  - Does the scope match your specialization (GraphQL, OAuth, a specific framework)?
+  - Mismatched stacks mean high learning cost relative to payoff
+
+□ Distinguish VDP (Vulnerability Disclosure Program) from paid programs
+  - VDPs offer Hall of Fame only, no bounty — approach purely for portfolio/reputation building
+```
+
+```
+Prioritization strategy by skill level:
+
+New hunter        → VDPs + newly launched small programs (low competition, learning focus)
+Intermediate hunter → mid-size programs with fast response and good average payout (stable income)
+Experienced hunter  → chain vulnerabilities in large/old programs to reach Critical
+                      or target private invite-only programs (inherently less competition)
+```
+
+### 15-3. Duplicate Avoidance Strategy
+
+Duplicate reports are the most common way to waste time in bug bounty. Rediscovering an already-known vulnerability and submitting it earns no reward even if the report itself is accurate. Below are practical strategies to lower your duplicate rate.
+
+```
+Duplicate Avoidance Process:
+
+1. Always search public reports before submitting
+   - HackerOne Hacktivity: hackerone.com/hacktivity?program=<target>
+     Filter by "resolved" + "disclosed" to see what's already known
+   - Bugcrowd Crowdstream (disclosed reports on public programs)
+   - Google dork: site:hackerone.com/reports "target.com" [vuln type]
+
+2. Assets "anyone would find" are likely already duplicated
+   - Main domain's login page, flagship API endpoint → heavy competition
+   - Low-traffic subdomains, recently added microservices → low competition
+
+3. Reprioritize assets by "newness"
+   - Subdomains that recently appeared in CT logs (check crt.sh timestamps)
+   - Recently changed JS bundles (estimate deployment time via hash diff)
+   - New tech stacks mentioned in job postings → stacks hunters haven't looked at yet
+
+4. Shift toward "less well-known" vulnerability classes
+   - Common types like XSS/SQLi have likely already been scanned by many people
+   - Business logic flaws, race conditions, and privilege-escalation chains aren't
+     caught by scanners → less automated coverage means higher odds of being first
+
+5. Submit as soon as you find it (don't let it "age")
+   - If verification takes days, another hunter may submit first
+   - Submit with a minimal reproducible PoC first, then strengthen with follow-up info
+```
+
+```bash
+# Filter to subdomains that appeared recently (crt.sh timestamp, last 7 days)
+curl -s "https://crt.sh/?q=%.target.com&output=json" | \
+  jq -r '.[] | select(.entry_timestamp > (now - 7*86400 | strftime("%Y-%m-%dT%H:%M:%S"))) | .name_value' | \
+  sort -u
+```
+
+### 15-4. Communicating with Triagers
+
+How you communicate after submitting a report affects both the verdict and future invitations. Triagers are people too, processing dozens of reports a day.
+
+```
+Effective communication principles:
+
+✓ Include everything needed to reproduce in the initial report
+  - A "Needs More Info" status adds days to the response cycle
+
+✓ Respond to follow-up requests within 24-48 hours
+  - Slow responses can get a report auto-closed or deprioritized
+
+✓ If marked "Not Applicable"/"Informative"
+  - Don't argue emotionally — add concrete attack scenarios and real impact as data
+  - Example: "Missing rate limit" → rebut with an actual account-takeover/brute-force PoC
+
+✓ If you disagree with the severity rating
+  - Present your own CVSS vector with justification for each metric (AV/AC/PR/UI/S/C/I/A)
+  - Cite past ratings of similar cases (check Hacktivity) as precedent
+
+✓ On extended silence (2+ weeks)
+  - One polite follow-up comment
+  - If still no response, request the platform's Mediation feature
+    (HackerOne: "Request Mediation", Bugcrowd: contact Program Ops)
+
+✗ Behaviors to avoid
+  - Publicly criticizing the program/triager on social media (risk of account suspension, legal exposure)
+  - Spamming repeated status-change requests on the same report
+  - Threatening disclosure to negotiate a higher payout — a policy violation
+```
+
+### 15-5. Continuous Monitoring Automation — From One-Off Recon to Always-On
+
+The subdomain pipeline in Section 3 is a one-time snapshot. New assets appear daily in reality, so switching to **diff-based monitoring that only alerts on changes** significantly raises your odds of reaching a newly deployed, vulnerable asset before competitors do.
+
+```python
+#!/usr/bin/env python3
+"""
+Continuous Monitoring — compare against the previous scan and alert only on
+new subdomains / response changes. Run periodically via cron (e.g. every 6 hours).
+Requirements: pip install requests
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+import requests
+
+STATE_FILE = Path("monitor_state.json")
+WEBHOOK_URL = ""  # Slack/Discord Incoming Webhook URL
+
+
+def crtsh_enum(domain: str) -> set[str]:
+    url = f"https://crt.sh/?q=%.{domain}&output=json"
+    resp = requests.get(url, timeout=20)
+    subs: set[str] = set()
+    for entry in resp.json():
+        for name in entry.get("name_value", "").splitlines():
+            name = name.strip().lstrip("*.")
+            if name.endswith(domain) and " " not in name:
+                subs.add(name)
+    return subs
+
+
+def load_state() -> set[str]:
+    if STATE_FILE.exists():
+        return set(json.loads(STATE_FILE.read_text()))
+    return set()
+
+
+def save_state(subs: set[str]) -> None:
+    STATE_FILE.write_text(json.dumps(sorted(subs), ensure_ascii=False, indent=2))
+
+
+def notify(new_subs: set[str], domain: str) -> None:
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    lines = "\n".join(f"- {s}" for s in sorted(new_subs))
+    message = f"[{ts}] {len(new_subs)} new subdomain(s) found for {domain}:\n{lines}"
+    print(message)
+    if WEBHOOK_URL:
+        try:
+            requests.post(WEBHOOK_URL, json={"text": message}, timeout=10)
+        except Exception as exc:
+            print(f"[!] Failed to send notification: {exc}")
+
+
+def monitor(domain: str) -> None:
+    current = crtsh_enum(domain)
+    previous = load_state()
+
+    if previous:
+        new_subs = current - previous
+        if new_subs:
+            notify(new_subs, domain)
+        else:
+            print(f"[*] {domain}: no changes ({len(current)} subdomains unchanged)")
+    else:
+        print(f"[*] {domain}: first scan, saved baseline of {len(current)} subdomains")
+
+    save_state(current)
+
+
+if __name__ == "__main__":
+    import sys
+    monitor(sys.argv[1] if len(sys.argv) > 1 else "target.com")
+```
+
+```bash
+# Register with cron — run every 6 hours, alert via webhook on new subdomains
+# crontab -e
+0 */6 * * * /usr/bin/python3 /home/user/monitor.py target.com >> /home/user/monitor.log 2>&1
+
+# Detect JS bundle changes (a signal of newly deployed endpoints/features)
+# Each deployment changes the JS file hash, so a hash diff detects "new code shipped"
+curl -s https://target.com/static/app.js | sha256sum > current.hash
+diff <(cat previous.hash) <(cat current.hash) && echo "No change" || echo "!! app.js changed -> re-recon needed"
+mv current.hash previous.hash
+```
+
+> The point of monitoring is to "reach new assets before competitors do." New subdomains, changed JS bundles, and newly opened ports are the least likely to have been tested by anyone yet — the lowest-duplicate-risk spot described in Section 15-3.
+
+---
 
 <!-- detect-validate-12 -->
 ## Scope Validation and Finding Reproduction
