@@ -583,6 +583,39 @@ python3 deobfuscate.py malware.bin --method xor-multi --key-len 8
 
 ---
 
+## 6. 상용 가상화 패커(VMProtect/Themida) 대응 개요
+
+UPX 같은 일반 패커는 "압축 해제 후 원본 코드로 점프"하는 단순 구조라 OEP(Original Entry Point)만 찾으면 덤프할 수 있다. 반면 **VMProtect**·**Themida**는 원본 x86 코드를 자체 **바이트코드**로 변환하고, 그 바이트코드를 해석하는 **커스텀 가상 머신**을 실행 파일 안에 심어둔다. 디스어셈블러에는 실제 로직 대신 VM 인터프리터의 반복적인 디스패치 루프만 보이므로, 정적 분석만으로는 원본 로직을 알 수 없다.
+
+```
+[VM 기반 패커 판별 신호]
+- 디스어셈블에 반복적인 "handler dispatch" 패턴(큰 switch/점프 테이블)이 지배적
+- 실제 API 호출이 거의 안 보이고 대신 알 수 없는 커스텀 스택 조작이 대부분
+- 엔트로피 스캔(예: `die`, `detect-it-easy`) 결과 VMProtect/Themida 시그니처 매칭
+- 문자열 섹션이 거의 비어있음 (원본 문자열도 VM 바이트코드에 숨겨짐)
+
+[일반적 대응 전략]
+1. 정적 디스어셈블 대신 동적 트레이싱(예: Intel Pin, x64dbg의 TitanEngine,
+   또는 QEMU 기반 전체 명령어 트레이스)으로 실행 흐름 자체를 로그로 남긴다.
+2. 트레이스에서 "VM 핸들러 진입/이탈" 경계를 식별해 핸들러별로 원본 연산
+   (add, mov, cmp 등)에 대응시키는 매핑을 구축한다 (devirtualization).
+3. 완전 자동 devirtualization은 매우 어렵고 버전마다 깨지므로, 실전에서는
+   "관심 있는 특정 함수(예: 라이선스 체크, 문자열 복호화 루틴)만" 타겟 트레이싱하는
+   것이 현실적이다.
+```
+
+```bash
+# 패커 판별 (Detect It Easy, CLI)
+diec malware.exe
+
+# 동적 트레이스 예시 (x64dbg 스크립팅 또는 Frida로 특정 함수 진입/이탈 후킹)
+# frida -f malware.exe -l trace_vm_calls.js --no-pause
+```
+
+**참고**: 완전한 VM devirtualization은 이 문서의 범위를 넘는 전문 영역이다(공개 도구로 `NoVmp`, `VMPvivisect` 등이 있으나 VM 버전에 따라 동작이 자주 깨진다). 실무에서는 전체 역공학보다 **동적 분석으로 최종 판단 결과(라이선스 통과/실패, 복호화된 문자열 등)만 훅으로 가로채는** 것이 훨씬 효율적인 경우가 많다.
+
+---
+
 ## 참고 자료
 
 - Ghidra 공식 저장소: https://github.com/NationalSecurityAgency/ghidra
@@ -792,6 +825,40 @@ python3 deobfuscate.py malware.bin --method xor-multi --key-len 8
 # Analyze only a specific region
 python3 deobfuscate.py malware.bin --method xor-brute --offset 4096 --size 2048
 ```
+
+---
+
+## 6. Dealing with Commercial VM-Based Packers (VMProtect/Themida) — Overview
+
+A typical packer like UPX simply "decompresses and jumps to the original code," so finding the OEP (Original Entry Point) is enough to dump it. **VMProtect** and **Themida**, on the other hand, translate the original x86 code into their own **bytecode** and embed a **custom virtual machine** in the executable to interpret it. A disassembler only shows the VM interpreter's repetitive dispatch loop instead of the real logic, so static analysis alone cannot recover the original behavior.
+
+```
+[Signals that a VM-based packer is in play]
+- Disassembly is dominated by a repeating "handler dispatch" pattern (a large switch/jump table)
+- Almost no real API calls are visible; instead, mostly unrecognizable custom stack manipulation
+- Entropy/signature scanners (e.g. `die`, Detect It Easy) match VMProtect/Themida signatures
+- The strings section is nearly empty (original strings are hidden inside the VM bytecode too)
+
+[General strategy]
+1. Instead of static disassembly, use dynamic tracing (e.g. Intel Pin, x64dbg's
+   TitanEngine, or a full instruction trace under QEMU) to log the actual execution flow.
+2. From the trace, identify the "VM handler enter/exit" boundaries and build a mapping
+   from each handler back to the original operation it implements (add, mov, cmp, etc.)
+   — this is devirtualization.
+3. Fully automated devirtualization is very hard and breaks across VM versions, so in
+   practice it's more realistic to trace only the specific function you actually care
+   about (e.g. a license check or a string-decryption routine).
+```
+
+```bash
+# Packer identification (Detect It Easy, CLI)
+diec malware.exe
+
+# Dynamic trace example (x64dbg scripting, or Frida hooking a specific function's entry/exit)
+# frida -f malware.exe -l trace_vm_calls.js --no-pause
+```
+
+**Note**: Full VM devirtualization is a specialized area beyond this document's scope (public tools like `NoVmp` and `VMPvivisect` exist, but they frequently break across VM versions). In practice, it's often far more efficient to skip full reverse engineering and **hook the final decision point via dynamic analysis** — e.g., the license pass/fail result or the decrypted string — rather than reconstruct the entire VM logic.
 
 ---
 

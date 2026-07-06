@@ -311,6 +311,64 @@ sudo nft list ruleset
 sudo nft list ruleset > /etc/nftables.conf
 ```
 
+### 4.3 fail2ban — 무차별 대입 공격 자동 차단
+
+fail2ban은 로그 파일을 실시간으로 감시하다가 일정 시간 내 인증 실패가 임계치를 넘으면 해당 IP를 방화벽 규칙(iptables/nftables)으로 자동 차단한다. SSH 브루트포스 방어에 가장 널리 쓰인다.
+
+```bash
+# 설치
+sudo apt install fail2ban
+
+# SSH 보호 설정 (/etc/fail2ban/jail.local)
+cat <<'EOF' | sudo tee /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = ssh
+maxretry = 5
+findtime = 600
+bantime = 3600
+banaction = iptables-multiport
+EOF
+
+sudo systemctl restart fail2ban
+
+# 현재 차단 상태 확인
+sudo fail2ban-client status sshd
+
+# 특정 IP 수동 차단 해제
+sudo fail2ban-client set sshd unbanip 203.0.113.10
+```
+
+**탐지/방어**: fail2ban은 사후 대응(차단)이므로, `findtime`/`maxretry`를 서비스 특성에 맞게 튜닝하고 `bantime`을 지나치게 짧게 두지 않는다. NAT나 프록시 뒤에서는 실제 클라이언트 IP가 로그에 남는지(X-Forwarded-For 등) 먼저 확인해야 오탐/무력화를 막을 수 있다.
+
+### 4.4 강제 접근 제어(MAC) — AppArmor vs SELinux
+
+전통적 DAC(파일 소유자·권한)와 달리, MAC은 프로세스별로 "이 프로그램이 정확히 무엇을 할 수 있는가"를 커널 레벨에서 강제한다. 웹서버 프로세스가 취약점으로 뚫려도 프로필에 없는 파일 접근은 커널이 자체로 차단하므로, 단일 취약점이 전체 시스템 장악으로 이어지는 것을 막는 핵심 심화 방어층이다.
+
+| 항목 | AppArmor | SELinux |
+|------|----------|---------|
+| 채택 배포판 | Ubuntu, Debian, SUSE | RHEL, CentOS, Fedora |
+| 정책 기준 | 파일 경로 기반 | 보안 컨텍스트(라벨) 기반 |
+| 학습 난이도 | 낮음 | 높음 |
+| 강제 모드 | enforce / complain | enforcing / permissive |
+
+```bash
+# --- AppArmor ---
+sudo aa-status                       # 프로필 로드 현황
+sudo aa-enforce /etc/apparmor.d/usr.sbin.nginx   # 강제 모드 전환
+sudo aa-complain /etc/apparmor.d/usr.sbin.nginx  # 로그만 남기는 모드(디버깅)
+sudo aa-logprof                      # 거부된 접근을 보고 프로필 갱신 제안
+
+# --- SELinux ---
+getenforce                           # 현재 모드 확인
+sudo setenforce 1                    # enforcing으로 전환
+sudo semanage port -a -t http_port_t -p tcp 8443   # 커스텀 포트 라벨링
+sudo ausearch -m avc -ts recent      # 최근 거부(AVC) 로그 확인
+sudo audit2allow -a                  # 거부 로그로부터 정책 제안 생성
+```
+
+**탐지/방어**: `enforce`/`enforcing` 모드로 운영하는 것이 원칙이며, `complain`/`permissive`는 프로필 튜닝 기간에만 한시적으로 사용한다. AVC(SELinux) 또는 AppArmor 거부 로그가 급증하면 실제 침해 시도이거나 애플리케이션이 프로필 밖 행동을 하려는 신호이므로 원인 파악 전까지 함부로 permissive로 낮추지 않는다.
+
 ---
 
 ## 5. Python 시스템 모니터링 CLI 도구
@@ -927,6 +985,64 @@ sudo nft add rule inet filter input ct state established,related accept
 sudo nft add rule inet filter input tcp dport { 80, 443 } accept
 sudo nft list ruleset
 ```
+
+### 4.3 fail2ban — Automated Brute-Force Blocking
+
+fail2ban watches log files in real time and, once authentication failures from an IP cross a threshold within a time window, automatically bans that IP via a firewall rule (iptables/nftables). It is most commonly used to defend SSH against brute force.
+
+```bash
+# Install
+sudo apt install fail2ban
+
+# SSH jail (/etc/fail2ban/jail.local)
+cat <<'EOF' | sudo tee /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = ssh
+maxretry = 5
+findtime = 600
+bantime = 3600
+banaction = iptables-multiport
+EOF
+
+sudo systemctl restart fail2ban
+
+# Check current ban status
+sudo fail2ban-client status sshd
+
+# Manually unban an IP
+sudo fail2ban-client set sshd unbanip 203.0.113.10
+```
+
+**Detection/Defense**: fail2ban is reactive (it bans after the fact), so tune `findtime`/`maxretry` to the service's actual traffic pattern and avoid setting `bantime` too short. Behind NAT or a reverse proxy, first confirm the real client IP is actually preserved in the logs (e.g. via X-Forwarded-For) — otherwise bans will be ineffective or misapplied.
+
+### 4.4 Mandatory Access Control (MAC) — AppArmor vs. SELinux
+
+Unlike traditional DAC (owner/permission bits), MAC enforces at the kernel level exactly what each process is allowed to do. Even if a web server process is compromised through a vulnerability, the kernel itself blocks any file access outside its profile — making MAC a critical defense-in-depth layer that keeps a single vulnerability from turning into full system compromise.
+
+| Aspect | AppArmor | SELinux |
+|--------|----------|---------|
+| Common on | Ubuntu, Debian, SUSE | RHEL, CentOS, Fedora |
+| Policy model | Path-based | Security-context (label) based |
+| Learning curve | Lower | Higher |
+| Enforcement modes | enforce / complain | enforcing / permissive |
+
+```bash
+# --- AppArmor ---
+sudo aa-status                       # show loaded profiles
+sudo aa-enforce /etc/apparmor.d/usr.sbin.nginx   # switch to enforce mode
+sudo aa-complain /etc/apparmor.d/usr.sbin.nginx  # log-only mode (for tuning)
+sudo aa-logprof                      # review denials and suggest profile updates
+
+# --- SELinux ---
+getenforce                           # check current mode
+sudo setenforce 1                    # switch to enforcing
+sudo semanage port -a -t http_port_t -p tcp 8443   # label a custom port
+sudo ausearch -m avc -ts recent      # review recent AVC denials
+sudo audit2allow -a                  # suggest a policy from denial logs
+```
+
+**Detection/Defense**: Run in `enforce`/`enforcing` mode as the default; use `complain`/`permissive` only temporarily while tuning a profile. A spike in AVC (SELinux) or AppArmor denial logs is either an active compromise attempt or an application trying to do something outside its profile — don't drop to permissive to make the noise go away before you understand the cause.
 
 ---
 

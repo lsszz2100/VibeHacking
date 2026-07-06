@@ -490,6 +490,26 @@ WPA3 모드:
 → 대부분 패치됨
 ```
 
+### FragAttacks와 Kr00k — 암호화 방식과 무관한 802.11/칩셋 취약점
+
+WPA2/WPA3의 암호화 자체가 아니라 **802.11 표준의 프레임 재조립 로직**이나 **Wi-Fi 칩셋 구현**에 있는 결함으로, 어떤 암호화를 쓰든 영향을 받는다는 점에서 별도로 다룰 가치가 있다.
+
+```
+[FragAttacks (2021, Mathy Vanhoef)]
+- 802.11 표준 자체의 프레임 조각화(fragmentation)/집계(aggregation) 처리 결함
+- 거의 모든 Wi-Fi 기기(WEP~WPA3)에 영향
+- 대표 기법: 조각 프레임에 임의 페이로드를 끼워 넣어 피해자에게 주입
+  aireplay-ng 계열 대신 전용 PoC 스크립트(vanhoefm/fragattacks)로 재현
+
+[Kr00k (CVE-2019-15126, 2019)]
+- Broadcom/Cypress Wi-Fi 칩셋의 결함
+- 연결 해제(disassociation) 시점에 남아있던 세션 키가 0으로 초기화된 채
+  버퍼에 남은 데이터가 그 키로 암호화되어 전송 → 평문이나 다름없는 데이터 유출
+- AP 자체가 아니라 "칩셋"이 원인이라 다수 벤더 기기가 동시에 영향
+```
+
+**탐지/방어**: 두 취약점 모두 벤더 펌웨어/드라이버 패치로 해결되므로, AP·클라이언트 펌웨어를 최신으로 유지하는 것이 유일하고 근본적인 대응이다. `krackattacks-scripts`/`fragattacks` 같은 취약점 스캐너로 관리 중인 AP가 영향받는지 주기적으로 점검하고, 패치 불가능한 구형 장비는 격리된 게스트 VLAN으로 분리해 피해 반경을 제한한다.
+
 ### 무선 네트워크 암호화 비교
 ```
 프로토콜 강도 비교 (약 → 강):
@@ -1355,6 +1375,29 @@ WPA3 modes:
 - DoS attacks (downgrade to insecure channel)
 → Most are patched
 ```
+
+### FragAttacks and Kr00k — 802.11/Chipset Flaws Independent of Encryption
+
+These live in the **802.11 standard's frame reassembly logic** or in **Wi-Fi chipset implementations**, not in WPA2/WPA3 encryption itself — so they affect a network regardless of which encryption it uses.
+
+```
+[FragAttacks (2021, Mathy Vanhoef)]
+- Flaws in how the 802.11 standard itself handles frame fragmentation/aggregation
+- Affects nearly all Wi-Fi devices (WEP through WPA3)
+- Key technique: inject an arbitrary payload into a fragmented frame delivered to
+  the victim, reproduced with dedicated PoC scripts (vanhoefm/fragattacks)
+  rather than the aireplay-ng family
+
+[Kr00k (CVE-2019-15126, 2019)]
+- A flaw in Broadcom/Cypress Wi-Fi chipsets
+- On disassociation, the session key still buffered gets zeroed out, but data
+  still in the buffer gets encrypted (and sent) with that all-zero key ->
+  effectively plaintext leakage
+- Caused by the "chipset," not a specific AP, so many vendors' devices were
+  affected simultaneously
+```
+
+**Detection/Defense**: Both are fixed only through vendor firmware/driver patches, so keeping AP and client firmware current is the sole real fix. Periodically check managed APs against vulnerability scanners such as `krackattacks-scripts`/`fragattacks`, and isolate unpatchable legacy devices onto a segregated guest VLAN to limit blast radius.
 
 ### Wireless Encryption Comparison
 ```

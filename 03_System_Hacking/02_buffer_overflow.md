@@ -1426,6 +1426,54 @@ xxd 파일명
 /usr/bin/nm /lib/libc.so.6 | more
 ```
 
+---
+
+## 13. 힙 익스플로잇 기초 — Use-After-Free와 tcache Poisoning
+
+지금까지 다룬 공격은 모두 **스택** 오버플로우였다. 하지만 `malloc`/`free`로 관리되는 **힙**도 별도의 취약점 계열을 갖는다. glibc는 해제된 청크(chunk)를 크기별 **tcache**(thread-local cache) 연결 리스트에 재사용을 위해 보관하는데, 이 리스트 구조 자체를 공격자가 조작할 수 있다는 것이 핵심이다.
+
+```
+[Use-After-Free (UAF) 원리]
+
+포인터 p = malloc(64)로 힙 메모리 할당
+free(p) 호출 → 메모리는 해제됐지만 p는 여전히 그 주소를 가리킴(댕글링 포인터)
+프로그램이 실수로 free(p) 이후에도 p를 계속 사용
+  → 그 사이 공격자가 같은 크기로 malloc해 그 메모리를 재할당받으면
+    공격자가 채운 데이터를 프로그램이 "정상 객체"로 오인해서 사용
+```
+
+```c
+// 취약한 코드 예시: free 후 포인터를 NULL로 만들지 않음(댕글링 포인터)
+Chunk *p = malloc(sizeof(Chunk));
+p->vtable = &safe_vtable;
+free(p);          // 메모리 해제, 그러나 p는 여전히 유효한 값을 가리킴
+p->vtable->run();  // UAF! 공격자가 그 사이 재할당해 vtable을 조작했다면 임의 코드 실행
+```
+
+```
+[tcache poisoning 원리 (glibc ≥ 2.26)]
+
+1) 같은 크기의 청크 A, B를 malloc 후 free(A); free(B)
+   → tcache 연결 리스트: B -> A (LIFO, 단일 연결 리스트, 최근엔 안전 검사 있으나 우회 가능)
+2) UAF나 힙 오버플로우로 B의 "다음 청크 포인터" 필드를 임의 주소(target)로 덮어씀
+   → tcache 리스트: target -> A
+3) 같은 크기로 두 번 malloc
+   → 첫 malloc은 B를 반환, 두 번째 malloc이 target 주소를 그대로 반환
+   → 공격자는 임의 주소를 "정상 힙 청크"인 것처럼 쓸 수 있게 됨 (예: GOT 덮어쓰기)
+```
+
+```bash
+# pwndbg/GEF로 힙 상태 시각화 (실습 필수 도구)
+gdb -q ./vuln
+pwndbg> heap            # 전체 힙 청크 레이아웃
+pwndbg> bins             # tcache/fastbin/unsorted bin 리스트 확인
+pwndbg> tcache            # tcache 구조체 상세
+
+# 힙 취약점 자동 탐지 보조 (Glibc 버전별 오프셋 차이 확인 필수)
+pwndbg> vis_heap_chunks
+```
+
+**탐지/방어**: glibc 2.29+는 `tcache` 항목에 대한 이중 해제(double-free) 검사를 도입했지만 완전한 차단은 아니므로, 애플리케이션 레벨에서는 free 직후 반드시 포인터를 `NULL`로 초기화하고 재사용 전 유효성 검증을 습관화한다. 힙 익스플로잇 방어의 근본은 취약점 자체를 없애는 것(정적 분석/퍼징으로 UAF·double-free 탐지)이며, 런타임에서는 하드닝 malloc 구현체(예: glibc `Scudo`, `hardened_malloc`)나 ASan(AddressSanitizer)으로 개발 단계에서 조기 탐지한다.
 
 ---
 
@@ -2775,6 +2823,60 @@ xxd filename
 # View library function list
 /usr/bin/nm /lib/libc.so.6 | more
 ```
+
+---
+
+## 13. Heap Exploitation Basics — Use-After-Free and tcache Poisoning
+
+Everything covered so far has been a **stack** overflow. But the **heap**, managed by `malloc`/`free`, has its own class of vulnerabilities. glibc keeps freed chunks around for reuse in a size-bucketed **tcache** (thread-local cache) linked list — and that list structure itself is something an attacker can manipulate.
+
+```
+[Use-After-Free (UAF) explained]
+
+Pointer p = malloc(64) allocates heap memory
+free(p) is called -> the memory is freed, but p still points to that address (dangling pointer)
+The program mistakenly keeps using p after free(p)
+  -> if the attacker allocates the same size in between and gets that memory reused,
+     the program treats the attacker's data as if it were still the original "valid object"
+```
+
+```c
+// Vulnerable pattern: the pointer is never nulled out after free (dangling pointer)
+Chunk *p = malloc(sizeof(Chunk));
+p->vtable = &safe_vtable;
+free(p);          // memory freed, but p still holds a "valid-looking" value
+p->vtable->run();  // UAF! If an attacker reallocated and overwrote vtable in between, this is arbitrary code execution
+```
+
+```
+[tcache poisoning explained (glibc >= 2.26)]
+
+1) malloc two same-size chunks A and B, then free(A); free(B)
+   -> tcache linked list: B -> A (LIFO, singly linked; newer glibc adds some safety
+      checks, but they can be bypassed)
+2) Via UAF or a heap overflow, overwrite B's "next chunk pointer" field with an
+   arbitrary address (target)
+   -> tcache list is now: target -> A
+3) malloc the same size twice
+   -> the first malloc returns B, and the second malloc returns the target address itself
+   -> the attacker can now write to an arbitrary address as if it were a normal heap
+      chunk (e.g. to overwrite a GOT entry)
+```
+
+```bash
+# Visualize heap state with pwndbg/GEF (essential tooling for this)
+gdb -q ./vuln
+pwndbg> heap            # full heap chunk layout
+pwndbg> bins             # inspect tcache/fastbin/unsorted bin lists
+pwndbg> tcache            # detailed tcache structure
+
+# Assisted heap-vulnerability inspection (glibc version offsets differ, verify first)
+pwndbg> vis_heap_chunks
+```
+
+**Detection/Defense**: glibc 2.29+ introduced a double-free check for `tcache` entries, but it is not a complete block, so at the application level always null out a pointer immediately after `free` and validate it before any reuse. The root fix for heap exploitation is eliminating the vulnerability itself (static analysis/fuzzing to catch UAF and double-free), and at runtime, hardened allocators (e.g. glibc `Scudo`, `hardened_malloc`) or AddressSanitizer (ASan) catch these issues early during development.
+
+---
 
 <!-- detect-validate-03 -->
 ## Buffer Overflow Detection and Defense Validation

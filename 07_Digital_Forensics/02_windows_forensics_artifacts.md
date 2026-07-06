@@ -610,6 +610,46 @@ C:\Users\[사용자]\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations
 
 ---
 
+## 5.5 ShellBags와 BAM/DAM — 폴더 접근·실행 흔적
+
+### ShellBags (탐색기로 열어본 폴더의 흔적)
+
+Windows 탐색기는 사용자가 폴더를 열 때마다 창 크기·아이콘 위치 같은 표시 설정을 레지스트리에 캐싱하는데, 이 캐시가 **그 폴더가 존재했고 사용자가 실제로 열어봤다는 증거**로 남는다. 폴더 자체가 이미 삭제되었거나 USB처럼 탈부착 매체 안에 있던 경로라도 ShellBags에는 남을 수 있다.
+
+```
+저장 위치 (사용자별 NTUSER.DAT / UsrClass.dat):
+NTUSER.DAT\Software\Microsoft\Windows\Shell\Bags
+NTUSER.DAT\Software\Microsoft\Windows\Shell\BagMRU
+UsrClass.dat\Local Settings\Software\Microsoft\Windows\Shell\Bags
+UsrClass.dat\Local Settings\Software\Microsoft\Windows\Shell\BagMRU
+```
+
+```bash
+# ShellBagsExplorer (Eric Zimmerman 툴셋) — GUI로 BagMRU 트리를 폴더 경로로 복원
+# 또는 CLI:
+SBECmd.exe -d "C:\Users\victim\AppData\Local\Microsoft\Windows\UsrClass.dat" --csv output\
+```
+
+### BAM/DAM (Background/Desktop Activity Moderator)
+
+BAM(Windows 10 1709+)은 배터리 절약을 위해 백그라운드 앱 실행을 관리하는 서비스지만, 그 부산물로 **각 프로그램이 마지막으로 실행된 정확한 타임스탬프**를 레지스트리에 남긴다. Prefetch가 비활성화된 서버 환경에서도 BAM은 활성화되어 있는 경우가 많아 실행 증거의 보조 소스로 유용하다.
+
+```
+저장 위치 (SYSTEM 하이브, 사용자 SID별):
+SYSTEM\CurrentControlSet\Services\bam\State\UserSettings\<사용자 SID>
+```
+
+```bash
+# 레지스트리 값 자체가 "실행 파일 전체 경로 : FILETIME 타임스탬프" 쌍으로 저장됨
+reg query "HKLM\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings\<SID>"
+
+# Eric Zimmerman의 RECmd로 일괄 파싱도 가능 (BAM/DAM 배치 규칙 포함)
+```
+
+**탐지/방어 관점**: ShellBags는 삭제된 폴더·탈부착 매체 접근 이력 복원에, BAM은 Prefetch·Amcache가 없거나 지워졌을 때 실행 증거 교차검증에 특히 유용하다. 두 아티팩트 모두 사용자 레벨에서 손쉽게 지울 수 없어(레지스트리 하이브 깊숙이 존재) 안티포렌식 시도에도 비교적 강하다 — 실행/접근 증거를 한 소스에만 의존하지 말고 Prefetch·Amcache·SRUM·ShellBags·BAM을 상호 대조하는 것이 핵심이다.
+
+---
+
 ## 6. 브라우저 포렌식
 
 ### Chrome/Edge 아티팩트
@@ -1786,6 +1826,46 @@ Recent files and task list (taskbar/start menu):
 C:\Users\[username]\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations\
 C:\Users\[username]\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations\
 ```
+
+---
+
+## 5.5 ShellBags and BAM/DAM — Folder Access and Execution Traces
+
+### ShellBags (traces of folders opened in Explorer)
+
+Every time a user opens a folder, Windows Explorer caches display settings (window size, icon positions) in the registry — and that cache becomes **evidence the folder existed and was actually opened by the user**. Even if the folder itself has since been deleted, or lived on removable media like a USB drive, it can still show up in ShellBags.
+
+```
+Storage locations (per-user NTUSER.DAT / UsrClass.dat):
+NTUSER.DAT\Software\Microsoft\Windows\Shell\Bags
+NTUSER.DAT\Software\Microsoft\Windows\Shell\BagMRU
+UsrClass.dat\Local Settings\Software\Microsoft\Windows\Shell\Bags
+UsrClass.dat\Local Settings\Software\Microsoft\Windows\Shell\BagMRU
+```
+
+```bash
+# ShellBagsExplorer (Eric Zimmerman's toolset) — GUI reconstruction of BagMRU into folder paths
+# Or via CLI:
+SBECmd.exe -d "C:\Users\victim\AppData\Local\Microsoft\Windows\UsrClass.dat" --csv output\
+```
+
+### BAM/DAM (Background/Desktop Activity Moderator)
+
+BAM (Windows 10 1709+) is a service that manages background app execution for battery savings, but as a side effect it records **the exact timestamp each program was last run** in the registry. BAM is often still enabled on server builds even when Prefetch is disabled, making it a useful secondary source of execution evidence.
+
+```
+Storage location (SYSTEM hive, per user SID):
+SYSTEM\CurrentControlSet\Services\bam\State\UserSettings\<user SID>
+```
+
+```bash
+# The registry value itself is stored as "full executable path : FILETIME timestamp" pairs
+reg query "HKLM\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings\<SID>"
+
+# Eric Zimmerman's RECmd can also bulk-parse these (includes BAM/DAM batch rules)
+```
+
+**Detection/Defense perspective**: ShellBags is especially useful for recovering access history to deleted folders or removable media; BAM is valuable for cross-validating execution evidence when Prefetch and Amcache are missing or wiped. Neither artifact is easy to clear at the user level (both live deep inside registry hives), making them relatively resilient to anti-forensic attempts — the key is to never rely on a single source for execution/access evidence, and instead cross-reference Prefetch, Amcache, SRUM, ShellBags, and BAM together.
 
 ---
 

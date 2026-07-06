@@ -869,6 +869,41 @@ sha256sum invoice_2024.exe
 
 ---
 
+## 8.5 angr — 심볼릭 실행으로 크랙미 자동 풀이
+
+Ghidra로 로직을 눈으로 읽어 정답 조건을 역산하는 대신, **angr**는 바이너리를 심볼릭 실행(symbolic execution)하여 "이 조건 분기를 통과하는 입력값이 무엇인가"를 제약 조건 풀이(SMT solver, 내부적으로 z3 사용)로 자동 계산해준다. 특히 "성공/실패 메시지가 명확히 갈리는" CTF 스타일 크랙미에 강력하다.
+
+```python
+import angr
+import claripy
+
+proj = angr.Project('./crackme', auto_load_libs=False)
+
+# 입력 버퍼를 심볼릭 값(아직 정해지지 않은 변수)으로 지정
+password = claripy.BVS('password', 8 * 16)  # 16바이트 길이로 가정
+
+# 표준입력을 통해 입력받는 경우 스테이트 생성
+state = proj.factory.entry_state(stdin=password)
+
+simgr = proj.factory.simulation_manager(state)
+
+# "Correct!" 문자열이 출력되는 경로를 찾고, "Wrong" 경로는 피함
+simgr.explore(
+    find=lambda s: b"Correct!" in s.posix.dumps(1),
+    avoid=lambda s: b"Wrong" in s.posix.dumps(1),
+)
+
+if simgr.found:
+    found = simgr.found[0]
+    # 해당 경로에 도달하는 실제 입력값을 제약 조건에서 역산
+    solution = found.solver.eval(password, cast_to=bytes)
+    print(f"[+] 정답: {solution}")
+```
+
+**활용 팁**: 대상 함수가 크거나 루프가 많으면 경로 폭발(path explosion)로 시간이 급격히 늘어난다. `proj.factory.blank_state(addr=target_func_addr)`로 분석 시작 지점을 관심 함수로 좁히거나, `simgr.explore(num_find=1)`로 최초 한 개만 찾도록 제한하면 실전에서 훨씬 빠르다.
+
+---
+
 ## 9. 참고 자료 및 추가 학습
 
 ```
@@ -1666,6 +1701,41 @@ sha256sum invoice_2024.exe
 - Registry: HKCU\...\Run\WindowsUpdate
 - File: %APPDATA%\svchost32.exe
 ```
+
+---
+
+## 8.5 angr — Automatically Solving Crackmes via Symbolic Execution
+
+Instead of reading the logic by eye in Ghidra to reverse-derive the correct input, **angr** symbolically executes the binary: it treats the input as an unresolved variable and uses constraint solving (an SMT solver, z3 under the hood) to automatically compute "what input value takes this branch." It is especially effective against CTF-style crackmes where a "success/failure" message clearly diverges.
+
+```python
+import angr
+import claripy
+
+proj = angr.Project('./crackme', auto_load_libs=False)
+
+# Mark the input buffer as a symbolic value (an as-yet-undetermined variable)
+password = claripy.BVS('password', 8 * 16)  # assume a 16-byte length
+
+# Build a state that feeds this symbolic value in via stdin
+state = proj.factory.entry_state(stdin=password)
+
+simgr = proj.factory.simulation_manager(state)
+
+# Find the path that prints "Correct!" while avoiding the "Wrong" path
+simgr.explore(
+    find=lambda s: b"Correct!" in s.posix.dumps(1),
+    avoid=lambda s: b"Wrong" in s.posix.dumps(1),
+)
+
+if simgr.found:
+    found = simgr.found[0]
+    # Solve the constraints on that path to recover the actual input that reaches it
+    solution = found.solver.eval(password, cast_to=bytes)
+    print(f"[+] Solution: {solution}")
+```
+
+**Practical tip**: if the target function is large or loop-heavy, path explosion makes runtime blow up quickly. Narrow the starting point to the function of interest with `proj.factory.blank_state(addr=target_func_addr)`, or cap the search to the first hit with `simgr.explore(num_find=1)` — both make this dramatically faster in practice.
 
 ---
 

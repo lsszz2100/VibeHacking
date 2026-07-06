@@ -265,6 +265,46 @@ if __name__ == "__main__":
             print(f"    Port {port} ({service}): {banner[:80]}")
 ```
 
+### 2.5 asyncio 기반 고속 포트 스캐너
+
+`ThreadPoolExecutor`는 스레드 하나당 OS 레벨 자원을 소모하므로 동시성이 수백~수천 단위로 커지면 부담이 커진다. 포트 스캔처럼 "연결 시도 후 대부분 대기"하는 I/O 바운드 작업은 `asyncio`의 코루틴으로 처리하면 훨씬 적은 자원으로 훨씬 높은 동시성을 낼 수 있다.
+
+```python
+import asyncio
+
+async def scan_port(host: str, port: int, timeout: float = 1.0) -> int | None:
+    """포트 하나를 비동기로 스캔. 열려 있으면 포트 번호, 아니면 None 반환."""
+    try:
+        conn = asyncio.open_connection(host, port)
+        reader, writer = await asyncio.wait_for(conn, timeout=timeout)
+        writer.close()
+        await writer.wait_closed()
+        return port
+    except (asyncio.TimeoutError, ConnectionRefusedError, OSError):
+        return None
+
+
+async def scan_range(host: str, start: int, end: int, concurrency: int = 500) -> list[int]:
+    """세마포어로 동시 연결 수를 제한하며 포트 범위를 스캔."""
+    sem = asyncio.Semaphore(concurrency)
+
+    async def bound_scan(port: int) -> int | None:
+        async with sem:
+            return await scan_port(host, port)
+
+    results = await asyncio.gather(*(bound_scan(p) for p in range(start, end + 1)))
+    return sorted(p for p in results if p is not None)
+
+
+if __name__ == "__main__":
+    import sys
+    target = sys.argv[1]
+    open_ports = asyncio.run(scan_range(target, 1, 1024))
+    print(f"[+] 열린 포트: {open_ports}")
+```
+
+**활용 팁**: `concurrency`(세마포어 상한)를 너무 높게 잡으면 로컬 파일 디스크립터 한도(`ulimit -n`)나 대상 네트워크 장비의 동시 연결 제한에 걸릴 수 있다. 1~2천 포트 규모라면 200~500 정도로 시작해 점진적으로 조정하는 것이 안전하다.
+
 ---
 
 ## 3. 네트워크 호스트 탐지 (ARP 스캔)
@@ -1555,6 +1595,46 @@ if __name__ == "__main__":
         if banner:
             print(f"    Port {port} ({service}): {banner[:80]}")
 ```
+
+### 2.5 A High-Speed Port Scanner with asyncio
+
+`ThreadPoolExecutor` consumes OS-level resources per thread, which gets expensive once concurrency reaches the hundreds or thousands. For I/O-bound work like port scanning — mostly "attempt a connection, then wait" — `asyncio` coroutines deliver far higher concurrency with far fewer resources.
+
+```python
+import asyncio
+
+async def scan_port(host: str, port: int, timeout: float = 1.0) -> int | None:
+    """Asynchronously scan a single port. Returns the port number if open, else None."""
+    try:
+        conn = asyncio.open_connection(host, port)
+        reader, writer = await asyncio.wait_for(conn, timeout=timeout)
+        writer.close()
+        await writer.wait_closed()
+        return port
+    except (asyncio.TimeoutError, ConnectionRefusedError, OSError):
+        return None
+
+
+async def scan_range(host: str, start: int, end: int, concurrency: int = 500) -> list[int]:
+    """Scan a port range, bounding concurrent connections with a semaphore."""
+    sem = asyncio.Semaphore(concurrency)
+
+    async def bound_scan(port: int) -> int | None:
+        async with sem:
+            return await scan_port(host, port)
+
+    results = await asyncio.gather(*(bound_scan(p) for p in range(start, end + 1)))
+    return sorted(p for p in results if p is not None)
+
+
+if __name__ == "__main__":
+    import sys
+    target = sys.argv[1]
+    open_ports = asyncio.run(scan_range(target, 1, 1024))
+    print(f"[+] Open ports: {open_ports}")
+```
+
+**Practical tip**: setting `concurrency` (the semaphore cap) too high can hit local file-descriptor limits (`ulimit -n`) or the target's own connection-rate limits. For a range of one to a few thousand ports, start around 200-500 and tune from there.
 
 ---
 
