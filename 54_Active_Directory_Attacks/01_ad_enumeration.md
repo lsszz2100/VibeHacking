@@ -226,7 +226,7 @@ sudo systemctl enable neo4j
 
 # --- BloodHound GUI 설치 ---
 # GitHub 릴리즈에서 최신 버전 다운로드
-wget https://github.com/BloodHoundAD/BloodHound/releases/download/4.3.1/BloodHound-linux-x64.zip
+wget https://github.com/SpecterOps/BloodHound-Legacy/releases/download/v4.3.1/BloodHound-linux-x64.zip
 unzip BloodHound-linux-x64.zip
 cd BloodHound-linux-x64
 ./BloodHound --no-sandbox

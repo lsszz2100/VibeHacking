@@ -709,7 +709,7 @@ IEC 62443 시리즈 구조:
 
 참조 링크:
   https://www.kisa.or.kr/ics
-  https://ics-cert.us-cert.gov
+  https://www.cisa.gov/topics/industrial-control-systems
 ```
 
 ---

@@ -1209,8 +1209,8 @@ sudo chroot squashfs-root/ /usr/bin/qemu-mipsel-static \
   -strace /usr/sbin/httpd 2>&1 | grep -E "open|read|write|connect"
 
 # Firmadyne를 이용한 전체 에뮬레이션
-git clone https://github.com/firmata/firmatas
-cd firmatas
+git clone --recursive https://github.com/firmadyne/firmadyne
+cd firmadyne
 ./run.sh firmware.bin
 ```
 

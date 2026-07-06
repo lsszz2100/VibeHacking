@@ -477,8 +477,8 @@ draw.io(diagrams.net)는 무료 다이어그램 도구로 DFD 작성에 활용�
 winget install JGraph.Draw
 
 # Linux
-wget https://github.com/jgraph/drawio-desktop/releases/latest/download/drawio-amd64-*.deb
-sudo dpkg -i drawio-amd64-*.deb
+wget https://github.com/jgraph/drawio-desktop/releases/download/v30.2.6/drawio-amd64-30.2.6.deb
+sudo dpkg -i drawio-amd64-30.2.6.deb
 
 # Docker
 docker run -p 8080:8080 \
@@ -1736,8 +1736,8 @@ draw.io (diagrams.net) is a free diagramming tool that can be used to create DFD
 winget install JGraph.Draw
 
 # Linux
-wget https://github.com/jgraph/drawio-desktop/releases/latest/download/drawio-amd64-*.deb
-sudo dpkg -i drawio-amd64-*.deb
+wget https://github.com/jgraph/drawio-desktop/releases/download/v30.2.6/drawio-amd64-30.2.6.deb
+sudo dpkg -i drawio-amd64-30.2.6.deb
 
 # Docker
 docker run -p 8080:8080 \

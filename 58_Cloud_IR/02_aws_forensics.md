@@ -181,6 +181,58 @@ AWS 환경에서 포렌식 조사를 수행할 때 가장 중요한 로그 소�
 
 ---
 
+### 1.2 자격증명 유형 식별 (Access Key ID 접두사)
+
+CloudTrail의 `userIdentity.accessKeyId` 값은 첫 4글자 접두사로 자격증명 종류를 바로 알려준다. 침해 조사 초기 트리아지에서 "이 호출이 정적 장기 키인지, 임시 STS 토큰인지"를 즉시 판별할 수 있어 매우 유용하다.
+
+| 접두사 | 자격증명 유형 | 포렌식 의미 |
+|---|---|---|
+| `AKIA` | IAM 사용자 장기 액세스 키 | 유출된 정적 키 의심 — 코드/설정에 하드코딩된 키가 탈취됐을 가능성 |
+| `ASIA` | 임시(STS) 액세스 키 | `AssumeRole`·IMDS·페더레이션으로 발급된 단기 토큰 — 출처 세션을 역추적 |
+| `AROA` | 역할(Role) 고유 ID | `sessionContext`에서 어떤 역할이 가정됐는지 식별 |
+| `AIDA` | IAM 사용자 고유 ID | 특정 사용자 주체 식별 |
+| `AIPA` | EC2 인스턴스 프로파일 | 인스턴스에 연결된 역할 자격증명 |
+
+> **핵심 신호**: `ASIA` 임시 키가 **해당 인스턴스의 IP가 아닌 곳**에서 사용되면 IMDS 자격증명 탈취(아래 1.3) 후 외부 반출을 강하게 시사한다. 반대로 `AKIA` 장기 키가 낯선 IP에서 처음 등장하면 정적 키 유출을 우선 의심한다.
+
+### 1.3 IMDS 자격증명 탈취 탐지
+
+SSRF 등으로 인스턴스 메타데이터 서비스(IMDS, `169.254.169.254`)에 도달하면 인스턴스 역할의 임시 자격증명을 그대로 뽑아낼 수 있다. IMDSv1은 토큰 없이 응답하므로 SSRF에 취약하다.
+
+```bash
+# 공격자 관점(참고): IMDSv1은 토큰 없이 역할 임시 키를 반환 → ASIA... 자격증명 획득
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/<role-name>
+# 반환 JSON에 AccessKeyId(ASIA...), SecretAccessKey, Token, Expiration 포함
+```
+
+방어자는 두 가지를 확인한다. ① IMDSv2(토큰 필수) 강제 여부, ② 인스턴스 역할의 임시 키가 인스턴스 외부에서 사용된 흔적.
+
+```bash
+# 1) 전체 실행 중 인스턴스의 IMDS 설정 감사 — HttpTokens=required 여야 IMDSv2 강제
+aws ec2 describe-instances \
+  --query 'Reservations[].Instances[].{Id:InstanceId,Tokens:MetadataOptions.HttpTokens,Hop:MetadataOptions.HttpPutResponseHopLimit}' \
+  --output table
+# HttpTokens=optional 이면 IMDSv1 허용 상태(취약). 강제 전환:
+aws ec2 modify-instance-metadata-options --instance-id <ID> \
+  --http-tokens required --http-endpoint enabled --http-put-response-hop-limit 1
+```
+
+CloudTrail/GuardDuty 상관 관계로 탈취-반출을 포착한다.
+
+```
+탐지 로직:
+- userIdentity.accessKeyId 가 ASIA(임시)이고 userIdentity.type = AssumedRole
+- sessionContext.sessionIssuer 가 EC2 인스턴스 역할
+- sourceIPAddress 가 해당 인스턴스의 사설/공인 IP와 불일치  → 인스턴스 밖에서 사용됨
+GuardDuty 대응 파인딩:
+- UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.InsideAWS
+- UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS
+```
+
+> Fargate/ECS는 IMDS 대신 `169.254.170.2`의 태스크 메타데이터(`AWS_CONTAINER_CREDENTIALS_RELATIVE_URI`)를 사용하므로, 컨테이너 환경에서는 이 경로의 자격증명 노출도 함께 점검한다.
+
+---
+
 ## 2. IAM 권한 에스컬레이션 패턴
 
 IAM 권한 에스컬레이션은 AWS 침해 사고에서 가장 자주 관찰되는 공격 기법이다. 공격자는 초기 접근 후 낮은 권한에서 시작해 관리자 권한까지 에스컬레이션을 시도한다.
@@ -913,6 +965,58 @@ The most important log sources when conducting forensic investigations in an AWS
     "errorMessage": null
 }
 ```
+
+---
+
+### 1.2 Credential Type Identification (Access Key ID Prefix)
+
+The `userIdentity.accessKeyId` in CloudTrail reveals the credential type from its 4-character prefix. During early triage this instantly answers "was this call a static long-term key or a temporary STS token?"
+
+| Prefix | Credential Type | Forensic Meaning |
+|---|---|---|
+| `AKIA` | IAM user long-term access key | Suspect a leaked static key — hardcoded key in code/config may have been stolen |
+| `ASIA` | Temporary (STS) access key | Short-lived token from `AssumeRole`/IMDS/federation — trace the issuing session |
+| `AROA` | Role unique ID | Identify which role was assumed from `sessionContext` |
+| `AIDA` | IAM user unique ID | Identify a specific user principal |
+| `AIPA` | EC2 instance profile | Role credentials attached to an instance |
+
+> **Key signal**: an `ASIA` temporary key used **from an IP that is not the instance's** strongly suggests IMDS credential theft (see 1.3) followed by off-host exfiltration. Conversely, an `AKIA` long-term key first appearing from an unfamiliar IP points to static key leakage.
+
+### 1.3 Detecting IMDS Credential Theft
+
+Reaching the Instance Metadata Service (IMDS, `169.254.169.254`) via SSRF lets an attacker pull the instance role's temporary credentials. IMDSv1 responds without a token, making it SSRF-exposed.
+
+```bash
+# Attacker view (reference): IMDSv1 returns role temp keys without a token -> ASIA... credentials
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/<role-name>
+# Returned JSON includes AccessKeyId (ASIA...), SecretAccessKey, Token, Expiration
+```
+
+Defenders check two things: (1) whether IMDSv2 (token-required) is enforced, and (2) traces of the instance role's temp keys being used off-host.
+
+```bash
+# 1) Audit IMDS settings across running instances — HttpTokens=required means IMDSv2 enforced
+aws ec2 describe-instances \
+  --query 'Reservations[].Instances[].{Id:InstanceId,Tokens:MetadataOptions.HttpTokens,Hop:MetadataOptions.HttpPutResponseHopLimit}' \
+  --output table
+# HttpTokens=optional means IMDSv1 is still allowed (vulnerable). Enforce:
+aws ec2 modify-instance-metadata-options --instance-id <ID> \
+  --http-tokens required --http-endpoint enabled --http-put-response-hop-limit 1
+```
+
+Correlate CloudTrail/GuardDuty to catch theft-and-exfiltration.
+
+```
+Detection logic:
+- userIdentity.accessKeyId is ASIA (temporary) and userIdentity.type = AssumedRole
+- sessionContext.sessionIssuer is an EC2 instance role
+- sourceIPAddress does NOT match the instance's private/public IP  -> used outside the instance
+Corresponding GuardDuty findings:
+- UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.InsideAWS
+- UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS
+```
+
+> Fargate/ECS uses the task metadata endpoint at `169.254.170.2` (`AWS_CONTAINER_CREDENTIALS_RELATIVE_URI`) instead of IMDS, so in container environments also check for credential exposure via that path.
 
 ---
 

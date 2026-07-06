@@ -129,10 +129,10 @@ rcracki_mt -h 5f4dcc3b... /path/to/tables/*.rt
 CrackStation, hashes.com 등 온라인 레인보우 테이블 서비스를 활용합니다. MD5, SHA-1 등 솔트 없는 해시는 빠르게 조회할 수 있습니다.
 
 ```bash
-# crackstation.net, hashes.com, md5decrypt.net 등
-# curl로 자동화 (예: crackstation API 예시)
-curl -s 'https://crackstation.net/crack.js' \
-  -d "hash=5f4dcc3b5aa765d61d8327deb882cf99&submit=Crack+Hashes"
+# crackstation.net는 공개 API가 없어 웹 폼으로만 조회 가능
+# 자동화가 필요하면 API를 제공하는 hashes.com을 사용
+curl -s 'https://hashes.com/en/api/search' \
+  -d "hashes[]=5f4dcc3b5aa765d61d8327deb882cf99"
 ```
 
 ---
@@ -1046,10 +1046,10 @@ rcracki_mt -h 5f4dcc3b... /path/to/tables/*.rt
 Utilize online rainbow table services such as CrackStation and hashes.com. Unsalted hashes like MD5 and SHA-1 can be looked up quickly.
 
 ```bash
-# crackstation.net, hashes.com, md5decrypt.net, etc.
-# Automation with curl (example: crackstation API)
-curl -s 'https://crackstation.net/crack.js' \
-  -d "hash=5f4dcc3b5aa765d61d8327deb882cf99&submit=Crack+Hashes"
+# crackstation.net has no public API; use its web form only
+# For automation, use hashes.com, which does provide an API
+curl -s 'https://hashes.com/en/api/search' \
+  -d "hashes[]=5f4dcc3b5aa765d61d8327deb882cf99"
 ```
 
 ---

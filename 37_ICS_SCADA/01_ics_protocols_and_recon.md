@@ -159,7 +159,7 @@ s.close()
 
 ### 프로토콜 개요
 
-DNP3(Distributed Network Protocol 3)은 전력, 수도, 가스 등 공익 설비 SCADA에서 광범위하게 사용된다. TCP 포트 20000번을 사용하며 IEC 61968/61970의 전신이다.
+DNP3(Distributed Network Protocol 3)은 전력, 수도, 가스 등 공익 설비 SCADA에서 광범위하게 사용된다. TCP 포트 20000번을 사용한다. 초기 IEC 60870-5 표준 작업에서 파생됐으며 현재 IEEE 1815로 표준화되어 있다.
 
 ```
 DNP3 패킷 구조:

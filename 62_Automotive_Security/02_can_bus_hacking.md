@@ -127,7 +127,7 @@ canplayer -I can_dump.log -l 10 vcan0  # 10회 반복
 # 0x7E8~0x7EF — ECU 응답 주소
 
 # RPM 조회 (PID 0x0C)
-cansend can0 7DF#0201 0C00000000
+cansend can0 7DF#02010C0000000000
 
 # 응답: 7E8#04 41 0C XX XX
 # RPM = (XXXX * 256 + XXXX) / 4
@@ -514,7 +514,7 @@ Service 0x27 — Security access (UDS SecurityAccess)
 # 0x7E8~0x7EF — ECU response addresses
 
 # RPM query (PID 0x0C)
-cansend can0 7DF#0201 0C00000000
+cansend can0 7DF#02010C0000000000
 
 # Response: 7E8#04 41 0C XX XX
 # RPM = (XXXX * 256 + XXXX) / 4

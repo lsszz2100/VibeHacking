@@ -828,11 +828,11 @@ if __name__ == "__main__":
 
 ## 6. 참고 자료
 
-- Chromium Sandbox Design (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/sandboxing.md)
+- Chromium Sandbox Design (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md)
 - "Breaking the Browser Sandbox" — Black Hat 2012
 - seccomp-bpf 공식 문서 (https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html)
 - Project Zero: Browser Sandbox Escapes (https://googleprojectzero.blogspot.com/)
-- Mojo IPC 보안 모델 (https://chromium.googlesource.com/chromium/src/+/HEAD/mojo/docs/security.md)
+- Mojo IPC 보안 모델 (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/security/mojo.md)
 
 
 <!-- detect-validate-60 -->
@@ -1231,11 +1231,11 @@ if __name__ == "__main__":
 
 ## 6. References
 
-- Chromium Sandbox Design (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/sandboxing.md)
+- Chromium Sandbox Design (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md)
 - "Breaking the Browser Sandbox" — Black Hat 2012
 - seccomp-bpf official docs (https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html)
 - Project Zero: Browser Sandbox Escapes (https://googleprojectzero.blogspot.com/)
-- Mojo IPC Security Model (https://chromium.googlesource.com/chromium/src/+/HEAD/mojo/docs/security.md)
+- Mojo IPC Security Model (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/security/mojo.md)
 
 <!-- detect-validate-60 -->
 ## Sandbox Validation — Are Site Isolation and seccomp Actually Applied?

@@ -576,7 +576,7 @@ Chisel은 **HTTP/HTTPS 위에서 동작하는 TCP 터널 도구**입니다. SSH 
 # 설치
 go install github.com/jpillora/chisel@latest
 # 또는 바이너리 직접 다운로드
-curl -L https://github.com/jpillora/chisel/releases/latest/download/chisel_linux_amd64.gz | gunzip > chisel
+curl -L https://github.com/jpillora/chisel/releases/download/v1.11.7/chisel_1.11.7_linux_amd64.gz | gunzip > chisel
 chmod +x chisel
 
 # ─────────────────────────────────────────────
@@ -1731,7 +1731,7 @@ When to use it:
 # Install
 go install github.com/jpillora/chisel@latest
 # Or download binary directly:
-curl -L https://github.com/jpillora/chisel/releases/latest/download/chisel_linux_amd64.gz \
+curl -L https://github.com/jpillora/chisel/releases/download/v1.11.7/chisel_1.11.7_linux_amd64.gz \
   | gunzip > chisel
 chmod +x chisel
 

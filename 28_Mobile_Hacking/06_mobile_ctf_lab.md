@@ -16,8 +16,8 @@ pip install androguard frida-tools objection
 
 # APK 디컴파일
 sudo apt install -y apktool default-jdk
-wget https://github.com/skylot/jadx/releases/latest/download/jadx-1.5.0.zip
-unzip jadx-1.5.0.zip -d jadx/
+wget https://github.com/skylot/jadx/releases/download/v1.5.5/jadx-1.5.5.zip
+unzip jadx-1.5.5.zip -d jadx/
 
 # ADB
 sudo apt install -y android-tools-adb

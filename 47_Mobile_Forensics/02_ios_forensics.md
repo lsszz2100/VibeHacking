@@ -389,7 +389,7 @@ print('백업 날짜:', data.get('Date'))
 ```
 Apple 법집행 요청 프로세스:
 1. 관할 법원 영장 발부
-2. https://www.apple.com/legal/privacy/law-enforcement/ 에 제출
+2. https://www.apple.com/legal/privacy/law-enforcement-guidelines-us.pdf 에 제출
 3. Apple이 iCloud 데이터 추출 후 제공
 
 iCloud 백업에 포함되는 데이터:
@@ -1619,7 +1619,7 @@ print('Backup date:', data.get('Date'))
 ```
 Apple Law Enforcement Request Process:
 1. Obtain a court warrant from the relevant jurisdiction
-2. Submit to https://www.apple.com/legal/privacy/law-enforcement/
+2. Submit to https://www.apple.com/legal/privacy/law-enforcement-guidelines-us.pdf
 3. Apple extracts and provides iCloud data
 
 Data included in iCloud backups:

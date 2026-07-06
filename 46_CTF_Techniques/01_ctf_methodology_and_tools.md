@@ -307,7 +307,7 @@ RUN git clone https://github.com/pwndbg/pwndbg /opt/pwndbg && \
 RUN pip3 install ROPgadget && gem install one_gadget
 
 # Ghidra
-RUN wget -q https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.0_build/ghidra_11.0_PUBLIC_20240110.zip \
+RUN wget -q https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.2_build/ghidra_12.1.2_PUBLIC_20260605.zip \
     -O /tmp/ghidra.zip && \
     unzip -q /tmp/ghidra.zip -d /opt/ && \
     rm /tmp/ghidra.zip
@@ -710,7 +710,7 @@ RUN git clone https://github.com/pwndbg/pwndbg /opt/pwndbg && \
 RUN pip3 install ROPgadget && gem install one_gadget
 
 # Ghidra
-RUN wget -q https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.0_build/ghidra_11.0_PUBLIC_20240110.zip \
+RUN wget -q https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.2_build/ghidra_12.1.2_PUBLIC_20260605.zip \
     -O /tmp/ghidra.zip && \
     unzip -q /tmp/ghidra.zip -d /opt/ && \
     rm /tmp/ghidra.zip

