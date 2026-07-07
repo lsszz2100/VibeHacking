@@ -399,6 +399,59 @@ az keyvault secret show --name SECRET --vault-name VAULT_NAME
 | 신규 IAM 키 | CloudTrail CreateAccessKey | GuardDuty 알림 |
 | 퍼블릭 버킷 생성 | S3 버킷 ACL 변경 | S3 Block Public Access |
 
+## 5.5 크로스 계정 Role Chaining 탐지
+
+공격자는 탈취한 자격증명으로 `sts:AssumeRole`을 반복 호출해 A 계정 → B 계정 → C 계정으로 역할을 갈아타며(Role Chaining) 흔적을 흐린다. 각 홉은 CloudTrail에 별도 이벤트로 남지만, 계정이 분리된 조직에서는 이를 하나의 체인으로 재구성하는 로직이 없으면 놓치기 쉽다.
+
+```python
+#!/usr/bin/env python3
+"""CloudTrail 이벤트에서 AssumeRole 체인(크로스 계정 Role Chaining) 재구성."""
+import json
+from collections import defaultdict
+from pathlib import Path
+
+
+def load_events(path: Path) -> list[dict]:
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+def build_chains(events: list[dict]) -> dict[str, list[dict]]:
+    """세션 이름(roleSessionName)을 키로 AssumeRole 호출 순서를 묶는다."""
+    chains = defaultdict(list)
+    for e in events:
+        if e.get("eventName") != "AssumeRole":
+            continue
+        params = e.get("requestParameters", {}) or {}
+        session = params.get("roleSessionName", "unknown")
+        chains[session].append({
+            "time": e.get("eventTime"),
+            "source_account": e.get("recipientAccountId"),
+            "target_role": params.get("roleArn"),
+            "source_identity": e.get("userIdentity", {}).get("arn"),
+        })
+    return chains
+
+
+def flag_suspicious(chains: dict[str, list[dict]], min_hops: int = 2) -> None:
+    for session, hops in chains.items():
+        if len(hops) < min_hops:
+            continue
+        accounts = {h["source_account"] for h in hops} | {
+            h["target_role"].split(":")[4] for h in hops if h["target_role"]
+        }
+        print(f"[!] 세션 '{session}': {len(hops)}홉, 계정 {len(accounts)}개 경유")
+        for h in sorted(hops, key=lambda x: x["time"]):
+            print(f"    {h['time']}  {h['source_identity']} -> {h['target_role']}")
+
+
+if __name__ == "__main__":
+    events = load_events(Path("cloudtrail_events.jsonl"))
+    chains = build_chains(events)
+    flag_suspicious(chains)
+```
+
+**탐지 포인트**: 동일한 `roleSessionName`(또는 `sourceIdentity`, 2023년 이후 리전에 전파됨)이 여러 계정 경계를 넘나들며 짧은 시간 안에 반복되면 정상 자동화보다 수동 탐색·횡이동일 가능성이 높다. AWS Organizations 환경에서는 조직 트레일(Org Trail)로 모든 계정의 CloudTrail을 중앙 집계해야 이 재구성이 가능하다 — 계정별 트레일만 있으면 체인의 중간 홉이 다른 계정 로그에 묻혀 보이지 않는다.
+
 ---
 
 <!-- detect-validate-14 -->
@@ -721,6 +774,63 @@ az keyvault secret show --name SECRET --vault-name VAULT_NAME
 | Anomalous region | CloudTrail ConsoleLogin region check | Restrict allowed regions via SCP |
 | New IAM key | CloudTrail CreateAccessKey | GuardDuty alert |
 | Public bucket creation | S3 bucket ACL change | S3 Block Public Access |
+
+---
+
+## 5.5 Cross-Account Role Chaining Detection
+
+Attackers repeatedly call `sts:AssumeRole` with stolen credentials to hop from account A to B to C (role chaining), blurring their trail. Each hop lands as a separate CloudTrail event, so in organizations with account separation, the pattern is easy to miss without logic that reconstructs the full chain.
+
+```python
+#!/usr/bin/env python3
+"""Reconstruct AssumeRole chains (cross-account role chaining) from CloudTrail events."""
+import json
+from collections import defaultdict
+from pathlib import Path
+
+
+def load_events(path: Path) -> list[dict]:
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+def build_chains(events: list[dict]) -> dict[str, list[dict]]:
+    """Group AssumeRole calls by session name (roleSessionName) to trace the hop order."""
+    chains = defaultdict(list)
+    for e in events:
+        if e.get("eventName") != "AssumeRole":
+            continue
+        params = e.get("requestParameters", {}) or {}
+        session = params.get("roleSessionName", "unknown")
+        chains[session].append({
+            "time": e.get("eventTime"),
+            "source_account": e.get("recipientAccountId"),
+            "target_role": params.get("roleArn"),
+            "source_identity": e.get("userIdentity", {}).get("arn"),
+        })
+    return chains
+
+
+def flag_suspicious(chains: dict[str, list[dict]], min_hops: int = 2) -> None:
+    for session, hops in chains.items():
+        if len(hops) < min_hops:
+            continue
+        accounts = {h["source_account"] for h in hops} | {
+            h["target_role"].split(":")[4] for h in hops if h["target_role"]
+        }
+        print(f"[!] Session '{session}': {len(hops)} hops across {len(accounts)} accounts")
+        for h in sorted(hops, key=lambda x: x["time"]):
+            print(f"    {h['time']}  {h['source_identity']} -> {h['target_role']}")
+
+
+if __name__ == "__main__":
+    events = load_events(Path("cloudtrail_events.jsonl"))
+    chains = build_chains(events)
+    flag_suspicious(chains)
+```
+
+**Detection point**: if the same `roleSessionName` (or `sourceIdentity`, propagated since 2023 in most regions) crosses multiple account boundaries within a short window, that pattern looks more like manual reconnaissance or lateral movement than routine automation. In AWS Organizations, this reconstruction only works with a centralized org trail aggregating CloudTrail across every account — per-account trails leave the middle hops buried in a different account's logs.
+
+---
 
 <!-- detect-validate-14 -->
 ## Cloud Lateral Movement Detection and Defense Validation

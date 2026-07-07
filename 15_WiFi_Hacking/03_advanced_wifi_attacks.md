@@ -420,6 +420,34 @@ if __name__ == "__main__":
 
 ---
 
+## 5.5 FragAttacks와 Kr00k — 암호화와 무관한 802.11/칩셋 취약점
+
+앞서 다룬 공격들은 대부분 WPA2/WPA3의 **핸드셰이크·암호화 로직**을 노린다. 반면 FragAttacks와 Kr00k는 **802.11 표준의 프레임 처리 방식**이나 **Wi-Fi 칩셋 구현 자체**에 있는 결함이라, 얼마나 강력한 패스프레이즈를 쓰든 영향을 받는다는 점에서 별도로 알아야 한다.
+
+```
+[FragAttacks (2021, Mathy Vanhoef)]
+- 802.11 표준 자체의 프레임 조각화(fragmentation)/집계(aggregation) 처리 결함
+- WEP부터 WPA3까지 거의 모든 Wi-Fi 기기에 영향
+- 조각난 프레임 중간에 임의 페이로드를 끼워 넣어 피해자에게 전달 가능
+- 전용 PoC(vanhoefm/fragattacks)로 자신의 AP/클라이언트가 취약한지 검증 가능
+
+[Kr00k (CVE-2019-15126, 2019)]
+- Broadcom/Cypress Wi-Fi 칩셋의 결함 (AP 문제가 아니라 칩셋 문제)
+- 연결 해제(disassociation) 시점에 세션 키가 0으로 초기화되지만
+  버퍼에 남아있던 데이터가 그 상태로 암호화되어 전송 → 사실상 평문 유출
+- 다수 벤더(다양한 AP·스마트폰·IoT)가 동일 칩셋을 써서 동시에 영향
+```
+
+```bash
+# 자신의 AP/클라이언트가 FragAttacks에 취약한지 점검
+git clone https://github.com/vanhoefm/fragattacks
+cd fragattacks/research && ./fragattack.py wlan0 --inject-test
+```
+
+**탐지/방어**: 둘 다 프로토콜/칩셋 레벨 결함이므로 유일하고 근본적인 대응은 **AP·클라이언트 펌웨어/드라이버 최신화**다. 패치가 불가능한 구형 IoT/임베디드 기기는 격리된 VLAN으로 분리해 취약 기기가 뚫려도 피해 반경을 제한한다.
+
+---
+
 ## 6. WiFi 방어 전략
 
 | 위협 | 대책 |
@@ -759,6 +787,36 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+## 5.5 FragAttacks and Kr00k — 802.11/Chipset Flaws Independent of Encryption
+
+Most of the attacks above target WPA2/WPA3's **handshake and encryption logic**. FragAttacks and Kr00k are different — they are flaws in **how the 802.11 standard itself processes frames** or in **the Wi-Fi chipset implementation**, so they affect a network no matter how strong its passphrase is.
+
+```
+[FragAttacks (2021, Mathy Vanhoef)]
+- Flaws in how the 802.11 standard itself handles frame fragmentation/aggregation
+- Affects nearly every Wi-Fi device, from WEP through WPA3
+- Lets an attacker inject an arbitrary payload into a fragmented frame delivered to the victim
+- A dedicated PoC (vanhoefm/fragattacks) can verify whether your own AP/client is vulnerable
+
+[Kr00k (CVE-2019-15126, 2019)]
+- A flaw in Broadcom/Cypress Wi-Fi chipsets (a chipset issue, not an AP configuration issue)
+- On disassociation, the session key is zeroed out, but data still sitting in the
+  buffer gets encrypted (and transmitted) in that zeroed state -- effectively a
+  plaintext leak
+- Because many vendors' devices (APs, phones, IoT) share the same chipset, all were
+  affected at once
+```
+
+```bash
+# Check whether your own AP/client is vulnerable to FragAttacks
+git clone https://github.com/vanhoefm/fragattacks
+cd fragattacks/research && ./fragattack.py wlan0 --inject-test
+```
+
+**Detection/Defense**: Both are protocol/chipset-level flaws, so the only real fix is keeping **AP and client firmware/drivers up to date**. For legacy IoT/embedded devices that can't be patched, isolate them on a segregated VLAN to limit the blast radius if one is compromised.
 
 ---
 

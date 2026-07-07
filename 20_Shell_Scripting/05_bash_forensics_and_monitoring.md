@@ -485,6 +485,64 @@ echo "  4. 포렌식 이미징 후 시스템 종료"
 
 ---
 
+## 4.5 auditd로 셸 실행 체인(프로세스 계보) 탐지
+
+앞선 항목들이 로그 이상·파일 변경·은닉 프로세스를 개별적으로 본다면, `auditd`의 `execve` 감사 규칙은 **어떤 부모 프로세스가 어떤 자식을 실행했는지 계보(process ancestry)**를 남긴다. `nginx`(웹서버) → `sh` → `curl` 같은 체인은 정상 운영에서 거의 나오지 않는 패턴이라, 웹셸이나 RCE 익스플로잇 직후의 후속 명령 실행을 잡는 데 효과적이다.
+
+```bash
+# auditd 규칙 등록 — 모든 execve 호출 감사
+auditctl -a always,exit -F arch=b64 -S execve -k shell_exec
+
+# 실시간으로 의심스러운 부모->자식 체인 필터링
+ausearch -k shell_exec --format text | \
+  awk '/proctitle=/{print}' 
+```
+
+```python
+#!/usr/bin/env python3
+"""ausearch 출력에서 웹서버 프로세스가 셸을 자식으로 실행한 이벤트만 필터링."""
+import re
+import subprocess
+
+SUSPICIOUS_PARENTS = {"nginx", "apache2", "httpd", "php-fpm", "java"}
+SHELL_CHILDREN = {"sh", "bash", "dash", "curl", "wget", "nc", "python3"}
+
+
+def parse_ausearch(output: str) -> list[dict]:
+    events = []
+    for block in output.split("----"):
+        exe = re.search(r'exe="([^"]+)"', block)
+        comm = re.search(r'comm="([^"]+)"', block)
+        ppid_comm = re.search(r'PPID.*?\((\w+)\)', block)
+        if exe and comm:
+            events.append({
+                "exe": exe.group(1),
+                "comm": comm.group(1),
+                "parent": ppid_comm.group(1) if ppid_comm else "unknown",
+            })
+    return events
+
+
+def flag_web_shell_pattern(events: list[dict]) -> None:
+    for e in events:
+        parent_name = e["parent"].lower()
+        child_name = e["comm"].lower()
+        if any(p in parent_name for p in SUSPICIOUS_PARENTS) and child_name in SHELL_CHILDREN:
+            print(f"[!] 의심 체인: {e['parent']} -> {e['comm']} ({e['exe']})")
+
+
+if __name__ == "__main__":
+    raw = subprocess.run(
+        ["ausearch", "-k", "shell_exec", "--format", "text"],
+        capture_output=True, text=True,
+    ).stdout
+    flag_web_shell_pattern(parse_ausearch(raw))
+```
+
+**탐지/방어**: `execve` 전수 감사는 로그량이 매우 많으므로 (1) 웹서버·DB·미들웨어 등 **평소 자식 프로세스를 스폰하지 않아야 하는 서비스 계정**만 우선 대상으로 범위를 좁히고, (2) `auditd` 로그를 로컬 디스크에만 두지 말고 즉시 원격 syslog/SIEM으로 전송해 공격자가 로그를 지워도 계보가 남도록 한다. `auditctl` 규칙 자체도 공격자가 `auditctl -D`로 삭제할 수 있으므로 규칙 변경 이벤트(`type=CONFIG_CHANGE`) 자체를 별도로 모니터링해야 한다.
+
+---
+
 <!-- detect-validate-20 -->
 ## 탐지 스크립트 작동 검증과 회귀
 
@@ -732,6 +790,64 @@ case "${1:-help}" in
     *) echo "Usage: $0 {baseline|check|monitor}" ;;
 esac
 ```
+
+---
+
+## 3.5 Detecting Shell Execution Chains (Process Ancestry) with auditd
+
+Where the earlier items look at log anomalies, file changes, and hidden processes individually, an `auditd` audit rule on `execve` leaves a **process-ancestry trail: which parent process ran which child**. A chain like `nginx` (web server) -> `sh` -> `curl` almost never shows up in normal operation, making it effective at catching a webshell or the follow-on command execution right after an RCE exploit.
+
+```bash
+# Register the auditd rule -- audit every execve call
+auditctl -a always,exit -F arch=b64 -S execve -k shell_exec
+
+# Filter for suspicious parent->child chains in real time
+ausearch -k shell_exec --format text | \
+  awk '/proctitle=/{print}'
+```
+
+```python
+#!/usr/bin/env python3
+"""Filter ausearch output for events where a web-server process spawned a shell as a child."""
+import re
+import subprocess
+
+SUSPICIOUS_PARENTS = {"nginx", "apache2", "httpd", "php-fpm", "java"}
+SHELL_CHILDREN = {"sh", "bash", "dash", "curl", "wget", "nc", "python3"}
+
+
+def parse_ausearch(output: str) -> list[dict]:
+    events = []
+    for block in output.split("----"):
+        exe = re.search(r'exe="([^"]+)"', block)
+        comm = re.search(r'comm="([^"]+)"', block)
+        ppid_comm = re.search(r'PPID.*?\((\w+)\)', block)
+        if exe and comm:
+            events.append({
+                "exe": exe.group(1),
+                "comm": comm.group(1),
+                "parent": ppid_comm.group(1) if ppid_comm else "unknown",
+            })
+    return events
+
+
+def flag_web_shell_pattern(events: list[dict]) -> None:
+    for e in events:
+        parent_name = e["parent"].lower()
+        child_name = e["comm"].lower()
+        if any(p in parent_name for p in SUSPICIOUS_PARENTS) and child_name in SHELL_CHILDREN:
+            print(f"[!] Suspicious chain: {e['parent']} -> {e['comm']} ({e['exe']})")
+
+
+if __name__ == "__main__":
+    raw = subprocess.run(
+        ["ausearch", "-k", "shell_exec", "--format", "text"],
+        capture_output=True, text=True,
+    ).stdout
+    flag_web_shell_pattern(parse_ausearch(raw))
+```
+
+**Detection/Defense**: auditing every `execve` call generates a large volume of logs, so (1) scope it first to **service accounts that should never spawn child processes under normal operation** — web servers, databases, middleware — and (2) ship `auditd` logs off the local disk immediately to a remote syslog/SIEM so the ancestry trail survives even if an attacker wipes local logs. The `auditctl` rules themselves can be removed by an attacker with `auditctl -D`, so monitor rule-change events (`type=CONFIG_CHANGE`) as a signal in their own right.
 
 ---
 

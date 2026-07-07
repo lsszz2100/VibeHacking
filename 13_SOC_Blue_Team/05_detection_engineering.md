@@ -580,6 +580,74 @@ if __name__ == "__main__":
 
 ---
 
+## 6.5 Detection as Code — CI/CD로 탐지 규칙 테스트·배포
+
+탐지 규칙을 SIEM UI에서 수동으로 클릭해 추가하면 변경 이력이 남지 않고, 규칙 하나가 잘못 배포돼도 롤백이 어렵다. Detection as Code는 Sigma 룰을 애플리케이션 코드처럼 **Git으로 버전 관리**하고, 배포 전 **자동 테스트(양성/음성 로그 샘플로 검증)**를 거치게 하는 접근이다.
+
+```yaml
+# .github/workflows/detection-ci.yml — 탐지 룰 CI 파이프라인 예시
+name: Detection Rule CI
+on: [pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install sigma-cli
+        run: pip install sigma-cli pysigma-backend-splunk
+
+      - name: Sigma 룰 문법 검증
+        run: sigma check rules/
+
+      - name: 양성 샘플(탐지되어야 함)로 실제 매칭 테스트
+        run: python3 tests/run_detection_tests.py --rules rules/ --positive tests/samples/positive/
+
+      - name: 음성 샘플(오탐되면 안 됨)로 오탐 테스트
+        run: python3 tests/run_detection_tests.py --rules rules/ --negative tests/samples/negative/ --expect-no-match
+```
+
+```python
+"""탐지 규칙 회귀 테스트 — 룰이 양성 샘플엔 매칭, 음성 샘플엔 매칭되지 않는지 검증."""
+import sys
+import yaml
+from pathlib import Path
+
+
+def load_rule(rule_path: Path) -> dict:
+    return yaml.safe_load(rule_path.read_text())
+
+
+def rule_matches_log(rule: dict, log_line: str) -> bool:
+    # 실제로는 pysigma 등으로 완전한 조건 평가를 수행해야 한다 (개념 예시)
+    keywords = rule.get("detection", {}).get("selection", {})
+    return all(str(v) in log_line for v in keywords.values() if isinstance(v, str))
+
+
+def run_tests(rules_dir: Path, sample_dir: Path, expect_match: bool) -> bool:
+    all_passed = True
+    for rule_file in rules_dir.glob("*.yml"):
+        rule = load_rule(rule_file)
+        for sample in sample_dir.glob("*.log"):
+            matched = rule_matches_log(rule, sample.read_text())
+            if matched != expect_match:
+                print(f"[FAIL] {rule_file.name} vs {sample.name}: "
+                      f"expected match={expect_match}, got={matched}")
+                all_passed = False
+    return all_passed
+
+
+if __name__ == "__main__":
+    rules = Path("rules/")
+    ok = run_tests(rules, Path("tests/samples/positive/"), expect_match=True)
+    ok &= run_tests(rules, Path("tests/samples/negative/"), expect_match=False)
+    sys.exit(0 if ok else 1)
+```
+
+**핵심 이점**: Git PR 리뷰를 거치므로 탐지 로직 변경에 대한 승인 절차가 생기고, `git blame`으로 "누가 왜 이 규칙을 바꿨는지" 추적 가능하며, 배포 전 자동 테스트가 실패하면 프로덕션에 오탐/미탐 규칙이 배포되는 것을 막는다. 새 규칙을 머지하기 전 반드시 과거 인시던트의 로그 샘플(양성)과 정상 운영 로그 샘플(음성) 양쪽으로 테스트하는 것이 핵심이다.
+
+---
+
 <!-- detect-validate-13 -->
 ## 탐지 신뢰성과 검증
 
@@ -824,6 +892,76 @@ Rule Maintenance:
 | `Atomic Red Team` | Test cases per technique |
 | `Caldera` | Automated adversary emulation |
 | `Purple Teamer` | Detection validation automation |
+
+---
+
+## 6.5 Detection as Code — Testing and Shipping Rules via CI/CD
+
+Clicking a detection rule into the SIEM UI by hand leaves no change history, and if a bad rule ships, rolling it back is hard. Detection as Code means **version-controlling Sigma rules in Git** like application code, and running **automated tests (validated against positive/negative log samples)** before they ship.
+
+```yaml
+# .github/workflows/detection-ci.yml — example detection-rule CI pipeline
+name: Detection Rule CI
+on: [pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install sigma-cli
+        run: pip install sigma-cli pysigma-backend-splunk
+
+      - name: Validate Sigma rule syntax
+        run: sigma check rules/
+
+      - name: Test actual matches against positive samples (must detect)
+        run: python3 tests/run_detection_tests.py --rules rules/ --positive tests/samples/positive/
+
+      - name: Test against negative samples (must not false-positive)
+        run: python3 tests/run_detection_tests.py --rules rules/ --negative tests/samples/negative/ --expect-no-match
+```
+
+```python
+"""Detection rule regression test -- verifies a rule matches positive samples and not negative ones."""
+import sys
+import yaml
+from pathlib import Path
+
+
+def load_rule(rule_path: Path) -> dict:
+    return yaml.safe_load(rule_path.read_text())
+
+
+def rule_matches_log(rule: dict, log_line: str) -> bool:
+    # A real implementation should do full condition evaluation via pysigma (this is a concept example)
+    keywords = rule.get("detection", {}).get("selection", {})
+    return all(str(v) in log_line for v in keywords.values() if isinstance(v, str))
+
+
+def run_tests(rules_dir: Path, sample_dir: Path, expect_match: bool) -> bool:
+    all_passed = True
+    for rule_file in rules_dir.glob("*.yml"):
+        rule = load_rule(rule_file)
+        for sample in sample_dir.glob("*.log"):
+            matched = rule_matches_log(rule, sample.read_text())
+            if matched != expect_match:
+                print(f"[FAIL] {rule_file.name} vs {sample.name}: "
+                      f"expected match={expect_match}, got={matched}")
+                all_passed = False
+    return all_passed
+
+
+if __name__ == "__main__":
+    rules = Path("rules/")
+    ok = run_tests(rules, Path("tests/samples/positive/"), expect_match=True)
+    ok &= run_tests(rules, Path("tests/samples/negative/"), expect_match=False)
+    sys.exit(0 if ok else 1)
+```
+
+**Key benefits**: Git PR review adds an approval gate for detection-logic changes, `git blame` lets you trace who changed a rule and why, and a failing automated test before deployment stops a false-positive- or false-negative-prone rule from ever reaching production. Always test a new rule against both real past-incident log samples (positive) and normal operational log samples (negative) before merging.
+
+---
 
 <!-- detect-validate-13 -->
 ## Detection Reliability and Validation

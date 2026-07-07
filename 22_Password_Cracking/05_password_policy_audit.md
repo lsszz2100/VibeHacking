@@ -456,6 +456,43 @@ if __name__ == "__main__":
 
 ---
 
+## 2.5 FIDO2/패스키 도입이 크리덴셜 스터핑 감사에 미치는 영향
+
+패스키(FIDO2/WebAuthn)는 서버에 저장되는 것이 비밀번호 해시가 아니라 **공개키**이므로, 이 인증 방식으로 완전히 전환한 계정은 크리덴셜 스터핑·비밀번호 크래킹 자체가 성립하지 않는다 — 훔칠 "비밀번호"가 애초에 없다. 하지만 실무에서는 대부분 조직이 패스키를 비밀번호의 **대안**으로 도입하지, 비밀번호를 완전히 제거하지 않는다. 감사자는 "패스키를 지원한다"와 "패스키 등록 후 비밀번호 로그인 경로가 실제로 차단됐다"를 반드시 구분해서 점검해야 한다.
+
+```python
+#!/usr/bin/env python3
+"""사용자별 인증 수단 등록 현황을 조회해 '패스키 있음 + 비밀번호 로그인 여전히 가능'인 계정 탐지."""
+import json
+from pathlib import Path
+
+
+def audit_auth_methods(users_export: Path) -> None:
+    """예: Okta/Auth0/Entra ID의 사용자별 인증 방법 내보내기(JSON)를 감사."""
+    users = json.loads(users_export.read_text())
+    weak_accounts = []
+
+    for user in users:
+        methods = {m["type"] for m in user.get("authenticators", [])}
+        has_passkey = "webauthn" in methods or "fido2" in methods
+        password_login_enabled = user.get("passwordLoginEnabled", True)
+
+        if has_passkey and password_login_enabled:
+            weak_accounts.append(user["email"])
+
+    print(f"[!] 패스키 등록됐지만 비밀번호 로그인도 열려있는 계정: {len(weak_accounts)}개")
+    for email in weak_accounts[:20]:
+        print(f"  - {email}")
+
+
+if __name__ == "__main__":
+    audit_auth_methods(Path("users_export.json"))
+```
+
+**감사 포인트**: 패스키 등록률이 높아도 비밀번호 로그인 경로(레거시 API, 모바일 앱 구버전, "비밀번호로 로그인" 폴백 링크)가 남아있으면 공격자는 그 경로만 골라 크리덴셜 스터핑을 계속할 수 있다. 감사 체크리스트에 (1) 패스키 등록 계정의 비밀번호 로그인 API 차단 여부, (2) 패스키 등록 후 기존 비밀번호 자동 만료·재사용 방지 여부, (3) 패스키 자체의 등록 과정(계정 복구 흐름)이 소셜 엔지니어링으로 우회되지 않는지를 포함해야 한다 — 패스키는 비밀번호 문제를 없애는 것이지, 계정 탈취 자체를 없애는 것은 아니다.
+
+---
+
 <!-- detect-validate-22 -->
 ## 패스워드 정책 감사 작동 검증과 회귀
 
@@ -848,6 +885,43 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+## 2.5 How FIDO2/Passkey Adoption Changes Credential Stuffing Audits
+
+Because a passkey (FIDO2/WebAuthn) stores a **public key** on the server rather than a password hash, an account that has fully migrated to this authentication method is immune to credential stuffing and password cracking in the first place — there's no "password" to steal. In practice, though, most organizations roll out passkeys as an **alternative** to passwords rather than removing passwords entirely. Auditors must distinguish clearly between "passkeys are supported" and "the password login path has actually been disabled after passkey enrollment."
+
+```python
+#!/usr/bin/env python3
+"""Detect accounts that have a passkey registered but where password login is still enabled."""
+import json
+from pathlib import Path
+
+
+def audit_auth_methods(users_export: Path) -> None:
+    """Example: audit a per-user authenticator export (JSON) from Okta/Auth0/Entra ID."""
+    users = json.loads(users_export.read_text())
+    weak_accounts = []
+
+    for user in users:
+        methods = {m["type"] for m in user.get("authenticators", [])}
+        has_passkey = "webauthn" in methods or "fido2" in methods
+        password_login_enabled = user.get("passwordLoginEnabled", True)
+
+        if has_passkey and password_login_enabled:
+            weak_accounts.append(user["email"])
+
+    print(f"[!] Accounts with a passkey registered but password login still open: {len(weak_accounts)}")
+    for email in weak_accounts[:20]:
+        print(f"  - {email}")
+
+
+if __name__ == "__main__":
+    audit_auth_methods(Path("users_export.json"))
+```
+
+**Audit point**: even with a high passkey enrollment rate, if a password login path still exists — a legacy API, an outdated mobile app version, a "sign in with password" fallback link — attackers can simply target that path and keep credential stuffing. The audit checklist should include (1) whether the password login API is actually blocked for passkey-enrolled accounts, (2) whether the old password is expired/blocked from reuse after passkey enrollment, and (3) whether the passkey enrollment process itself (the account-recovery flow) can be bypassed via social engineering — passkeys eliminate the password problem, not account takeover itself.
 
 ---
 

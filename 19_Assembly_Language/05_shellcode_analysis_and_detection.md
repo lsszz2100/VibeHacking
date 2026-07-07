@@ -460,6 +460,37 @@ if __name__ == "__main__":
 
 ---
 
+## 4.5 Intel CET Shadow Stack — 하드웨어 기반 ROP 방어
+
+ASLR·DEP는 셸코드를 실행 불가 페이지에 두거나 주소를 예측 못 하게 만들지만, ROP(Return-Oriented Programming)는 이미 실행 가능한 기존 코드 조각(가젯)만 이어붙이므로 이 둘을 그대로 우회한다. Intel CET(Control-flow Enforcement Technology, 11세대 이후 CPU)의 **Shadow Stack**은 `call`/`ret`마다 반환 주소를 별도의 하드웨어 보호 스택에 복사해두고, `ret` 실행 시 일반 스택의 반환 주소와 대조한다 — 공격자가 스택 버퍼 오버플로로 반환 주소를 덮어써도 섀도우 스택 값과 불일치하면 CPU가 `#CP` (Control Protection) 예외를 발생시켜 즉시 실행을 중단한다.
+
+```c
+// gcc -fcf-protection=full -o target target.c  (CET Shadow Stack + IBT 활성화)
+#include <stdio.h>
+#include <string.h>
+
+void vulnerable(char *input) {
+    char buf[64];
+    strcpy(buf, input);  // 취약: 반환 주소까지 덮어쓸 수 있음
+}
+
+int main(int argc, char **argv) {
+    vulnerable(argv[1]);  // ROP 체인으로 덮으려 해도
+    return 0;             // ret 시점에 섀도우 스택 불일치 -> #CP 예외로 강제 종료
+}
+```
+
+```bash
+# 바이너리가 CET를 지원하도록 컴파일됐는지 확인
+readelf -n target | grep -A2 "GNU_PROPERTY_X86_FEATURE"
+# 커널/CPU 활성화 여부 확인 (Linux 5.14+, glibc 2.35+ 필요)
+cat /proc/cpuinfo | grep -o "user_shstk"
+```
+
+**탐지/방어**: CET는 컴파일러(`-fcf-protection`)·커널·CPU 세 요소가 모두 지원해야 활성화되므로, 배포 전 `readelf`로 `GNU_PROPERTY_X86_FEATURE_1_SHSTK` 프로퍼티가 실제로 켜졌는지 CI에서 검사하는 것이 좋다. 다만 CET는 반환 주소 무결성만 보호할 뿐 Jump-Oriented Programming(JOP)이나 데이터 전용 공격(data-only attack)은 막지 못하므로, ASLR·DEP·스택 카나리와 **계층적으로 함께** 적용해야 한다.
+
+---
+
 <!-- detect-validate-19 -->
 ## 셸코드 탐지 검증과 회귀
 
@@ -874,6 +905,39 @@ if __name__ == "__main__":
 | `\xff\xe4` | jmp rsp | Stack pivot |
 | Entropy > 7.5 | Encryption/encoding | High entropy |
 | No nulls | Null-free shellcode | Network payload |
+
+---
+
+## 4.5 Intel CET Shadow Stack — Hardware-Enforced ROP Defense
+
+ASLR and DEP work by putting shellcode on non-executable pages or making addresses unpredictable, but ROP (Return-Oriented Programming) sidesteps both of them simply by chaining together already-executable code fragments (gadgets). Intel CET (Control-flow Enforcement Technology, 11th-gen CPUs and later)'s **Shadow Stack** copies every `call`/`ret`'s return address into a separate, hardware-protected stack, and cross-checks it against the return address on the regular stack whenever a `ret` executes — if an attacker overwrites the return address via a stack buffer overflow, the mismatch against the shadow-stack value raises a `#CP` (Control Protection) exception and the CPU halts execution immediately.
+
+```c
+// gcc -fcf-protection=full -o target target.c  (enables CET Shadow Stack + IBT)
+#include <stdio.h>
+#include <string.h>
+
+void vulnerable(char *input) {
+    char buf[64];
+    strcpy(buf, input);  // vulnerable: can overwrite the return address
+}
+
+int main(int argc, char **argv) {
+    vulnerable(argv[1]);  // even if a ROP chain overwrites the return address,
+    return 0;             // the shadow-stack mismatch at ret triggers a #CP exception
+}
+```
+
+```bash
+# Check whether a binary was compiled with CET support
+readelf -n target | grep -A2 "GNU_PROPERTY_X86_FEATURE"
+# Check kernel/CPU enablement (needs Linux 5.14+, glibc 2.35+)
+cat /proc/cpuinfo | grep -o "user_shstk"
+```
+
+**Detection/Defense**: CET only activates when the compiler (`-fcf-protection`), the kernel, and the CPU all support it, so it's worth checking in CI, via `readelf`, that the `GNU_PROPERTY_X86_FEATURE_1_SHSTK` property is actually set before shipping a binary. That said, CET only protects return-address integrity — it does nothing against Jump-Oriented Programming (JOP) or data-only attacks — so it needs to be layered together with ASLR, DEP, and stack canaries, not relied on alone.
+
+---
 
 <!-- detect-validate-19 -->
 ## Shellcode Detection Validation and Regression

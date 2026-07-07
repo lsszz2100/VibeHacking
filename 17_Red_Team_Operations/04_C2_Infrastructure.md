@@ -514,6 +514,56 @@ iptables -A INPUT -p tcp --dport 8443 \
 
 ---
 
+## JA3/JA4 TLS 핑거프린팅 회피와 탐지
+
+Cobalt Strike·Sliver 같은 C2 프레임워크의 기본 TLS 스택은 특유의 암호 스위트 순서·확장 목록을 갖고 있어, TLS ClientHello만으로 계산하는 **JA3(구) / JA4(신)** 해시로 정상 브라우저 트래픽과 구분된다. Malleable C2 프로파일은 이 핑거프린트를 크롬·파이어폭스와 동일하게 위장해 네트워크 탐지를 회피하는 데 쓰인다.
+
+```
+# 기본 Cobalt Strike 빈은 널리 알려진 JA3 해시를 남긴다 (예시)
+JA3: 72a589da586844d7f0818ce684948eea  →  "Cobalt Strike default beacon" 로 다수 위협 인텔 DB에 등재됨
+
+# Malleable C2 프로파일에서 TLS 스택을 브라우저와 맞추는 설정 예
+https-certificate {
+    set C2Server "0.0.0.0,";
+}
+http-config {
+    set headers "Date, Server, Content-Type";
+    header "Server" "nginx";
+}
+# 실제 JA3/JA4 값은 프로파일이 아니라 C2 프레임워크의 TLS 라이브러리/암호 스위트
+# 순서에서 결정되므로, 별도 리버스 프록시(nginx+mod_tls) 뒤에서 TLS 종단을 위장하기도 한다.
+```
+
+```python
+#!/usr/bin/env python3
+"""Zeek/Suricata JA3 로그에서 알려진 C2 프레임워크 핑거프린트 매칭."""
+import json
+from pathlib import Path
+
+KNOWN_C2_JA3 = {
+    "72a589da586844d7f0818ce684948eea": "Cobalt Strike (default)",
+    "e7d705a3286e19ea42f587b344ee6865": "Metasploit (default)",
+}
+
+
+def scan_zeek_ssl_log(path: Path) -> None:
+    for line in path.read_text().splitlines():
+        if line.startswith("#"):
+            continue
+        fields = line.split("\t")
+        ja3 = fields[-1] if fields else ""
+        if ja3 in KNOWN_C2_JA3:
+            print(f"[!] 알려진 C2 JA3 탐지: {KNOWN_C2_JA3[ja3]} ({ja3})")
+
+
+if __name__ == "__main__":
+    scan_zeek_ssl_log(Path("ssl.log"))
+```
+
+**탐지/방어**: 알려진 JA3/JA4 해시 블랙리스트는 프로파일 변조 한 번으로 우회되므로 단독 탐지 근거로 쓰지 말고, **JA3S(서버 응답 핑거프린트)와 SNI·인증서 발급자·비콘 주기성**을 함께 상관분석해야 한다. 위협 인텔 피드(예: abuse.ch JA3 목록)를 정기 갱신하고, 알려진 정상 브라우저 JA4 목록과의 화이트리스트 비교로 미확인 핑거프린트를 우선순위 검토 대상으로 표시하는 것이 실전에서 더 견고하다.
+
+---
+
 <!-- detect-validate-17 -->
 ## C2 탐지와 방어 검증
 
@@ -693,6 +743,59 @@ error_log /dev/null crit;
 iptables -A INPUT -p tcp --dport 8443 \
   ! -s REDIRECTOR_IP -j DROP
 ```
+
+---
+
+## JA3/JA4 TLS Fingerprinting Evasion and Detection
+
+C2 frameworks like Cobalt Strike and Sliver ship with a default TLS stack whose distinctive cipher-suite order and extension list stands out from real browser traffic in a **JA3 (legacy) / JA4 (current)** hash computed from nothing more than the TLS ClientHello. Malleable C2 profiles are used to make this fingerprint mimic Chrome or Firefox exactly, in order to evade network-level detection.
+
+```
+# The stock Cobalt Strike beacon leaves a well-known JA3 hash (example)
+JA3: 72a589da586844d7f0818ce684948eea  ->  listed in many threat-intel feeds as "Cobalt Strike default beacon"
+
+# Example Malleable C2 profile setting aimed at matching a browser's TLS stack
+https-certificate {
+    set C2Server "0.0.0.0,";
+}
+http-config {
+    set headers "Date, Server, Content-Type";
+    header "Server" "nginx";
+}
+# The actual JA3/JA4 value is determined by the C2 framework's TLS library and
+# cipher-suite ordering, not the profile file, so operators sometimes terminate
+# TLS behind a separate reverse proxy (nginx+mod_tls) to disguise it instead.
+```
+
+```python
+#!/usr/bin/env python3
+"""Match known C2-framework fingerprints against a Zeek/Suricata JA3 log."""
+import json
+from pathlib import Path
+
+KNOWN_C2_JA3 = {
+    "72a589da586844d7f0818ce684948eea": "Cobalt Strike (default)",
+    "e7d705a3286e19ea42f587b344ee6865": "Metasploit (default)",
+}
+
+
+def scan_zeek_ssl_log(path: Path) -> None:
+    for line in path.read_text().splitlines():
+        if line.startswith("#"):
+            continue
+        fields = line.split("\t")
+        ja3 = fields[-1] if fields else ""
+        if ja3 in KNOWN_C2_JA3:
+            print(f"[!] Known C2 JA3 detected: {KNOWN_C2_JA3[ja3]} ({ja3})")
+
+
+if __name__ == "__main__":
+    scan_zeek_ssl_log(Path("ssl.log"))
+```
+
+**Detection/Defense**: a blocklist of known JA3/JA4 hashes is defeated the moment the profile changes, so don't rely on it alone — correlate it with the **JA3S (server-response fingerprint), SNI, certificate issuer, and beacon periodicity** together. Refresh threat-intel feeds (e.g., abuse.ch's JA3 list) regularly, and treat any fingerprint absent from a whitelist of known-good browser JA4 values as a priority-review candidate; that combination holds up far better in practice than blocklisting alone.
+
+---
 
 <!-- detect-validate-17 -->
 ## C2 Detection and Defense Validation

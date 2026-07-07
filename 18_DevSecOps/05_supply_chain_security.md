@@ -582,6 +582,64 @@ if __name__ == "__main__":
 
 ---
 
+## 5.5 in-toto Attestation과 SLSA Provenance 검증
+
+SLSA 레벨 자체평가(3절)가 "빌드 파이프라인이 얼마나 안전하게 구성됐는가"를 점검한다면, in-toto attestation은 그 파이프라인이 **실제로 주장하는 단계를 거쳐 이 산출물을 만들었다는 서명된 증거**를 남긴다. 소비자(배포 서버, 다른 팀)는 이 증거를 검증해서 "이 컨테이너 이미지가 정말 우리 CI가 이 커밋에서 빌드한 게 맞는지"를 확인할 수 있다.
+
+```bash
+# GitHub Actions에서 cosign으로 산출물에 SLSA provenance attestation 첨부
+cosign attest --predicate provenance.json \
+  --type slsaprovenance \
+  --key cosign.key \
+  ghcr.io/org/app@sha256:<digest>
+
+# 검증 측(배포 전 게이트)에서 provenance 확인
+cosign verify-attestation \
+  --type slsaprovenance \
+  --certificate-identity "https://github.com/org/repo/.github/workflows/build.yml@refs/heads/main" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  ghcr.io/org/app@sha256:<digest>
+```
+
+```python
+#!/usr/bin/env python3
+"""cosign verify-attestation 출력에서 provenance의 빌더·소스 저장소 일치 여부 확인."""
+import json
+import subprocess
+import sys
+
+
+def verify_provenance(image_ref: str, expected_repo: str) -> bool:
+    result = subprocess.run(
+        ["cosign", "verify-attestation", "--type", "slsaprovenance", image_ref],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        print(f"[!] Attestation 검증 실패: {result.stderr.strip()}")
+        return False
+
+    payload = json.loads(result.stdout.splitlines()[-1])
+    predicate = payload.get("payload", {})
+    materials = predicate.get("predicate", {}).get("materials", [])
+    source_uris = [m.get("uri", "") for m in materials]
+
+    if not any(expected_repo in uri for uri in source_uris):
+        print(f"[!] provenance의 소스 저장소가 예상({expected_repo})과 불일치: {source_uris}")
+        return False
+
+    print("[+] provenance 검증 통과: 예상 저장소에서 빌드됨")
+    return True
+
+
+if __name__ == "__main__":
+    ok = verify_provenance(sys.argv[1], sys.argv[2])
+    sys.exit(0 if ok else 1)
+```
+
+**핵심**: attestation의 서명만 확인하고 끝내면 안 된다 — 서명이 유효해도 **provenance 내용(어느 저장소·어느 워크플로·어느 커밋에서 빌드됐는지)이 배포하려는 이미지와 실제로 일치하는지**까지 배포 파이프라인에서 자동으로 대조해야 "빌드는 서명됐지만 다른 저장소에서 만들어진 이미지"를 걸러낼 수 있다. Sigstore의 keyless 서명(Fulcio+Rekor)을 쓰면 키 관리 부담 없이 OIDC ID로 검증 가능하다.
+
+---
+
 <!-- detect-validate-18 -->
 ## 공급망 공격 탐지와 방어 검증
 
@@ -863,6 +921,66 @@ if __name__ == "__main__":
 | Vulnerable dependencies | Regular CVE scanning | Dependabot, Snyk |
 | CI/CD compromise | Secret scanning, least privilege | gitleaks, trufflehog |
 | Missing SBOM | Automated dependency tree generation | syft, cyclonedx |
+
+---
+
+## 6.5 in-toto Attestation and SLSA Provenance Verification
+
+If SLSA level self-assessment (section 3) checks "how securely is the build pipeline configured," in-toto attestation leaves **signed evidence that the pipeline actually went through the steps it claims to produce this artifact**. Consumers (a deployment server, another team) can verify that evidence to confirm "did our CI really build this container image from this commit."
+
+```bash
+# Attach a SLSA provenance attestation to an artifact with cosign, from GitHub Actions
+cosign attest --predicate provenance.json \
+  --type slsaprovenance \
+  --key cosign.key \
+  ghcr.io/org/app@sha256:<digest>
+
+# On the consumer side (a pre-deploy gate), verify the provenance
+cosign verify-attestation \
+  --type slsaprovenance \
+  --certificate-identity "https://github.com/org/repo/.github/workflows/build.yml@refs/heads/main" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  ghcr.io/org/app@sha256:<digest>
+```
+
+```python
+#!/usr/bin/env python3
+"""Check that a cosign verify-attestation output's provenance matches the expected builder/source repo."""
+import json
+import subprocess
+import sys
+
+
+def verify_provenance(image_ref: str, expected_repo: str) -> bool:
+    result = subprocess.run(
+        ["cosign", "verify-attestation", "--type", "slsaprovenance", image_ref],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        print(f"[!] Attestation verification failed: {result.stderr.strip()}")
+        return False
+
+    payload = json.loads(result.stdout.splitlines()[-1])
+    predicate = payload.get("payload", {})
+    materials = predicate.get("predicate", {}).get("materials", [])
+    source_uris = [m.get("uri", "") for m in materials]
+
+    if not any(expected_repo in uri for uri in source_uris):
+        print(f"[!] Provenance source repo mismatch (expected {expected_repo}): {source_uris}")
+        return False
+
+    print("[+] Provenance verified: built from the expected repository")
+    return True
+
+
+if __name__ == "__main__":
+    ok = verify_provenance(sys.argv[1], sys.argv[2])
+    sys.exit(0 if ok else 1)
+```
+
+**Key point**: don't stop at verifying the attestation's signature — even with a valid signature, the deploy pipeline must automatically cross-check that **the provenance content (which repo, which workflow, which commit it was built from) actually matches the image being deployed**, or you'll miss "a build that's validly signed but was produced from a different repository." Sigstore's keyless signing (Fulcio+Rekor) lets you verify by OIDC identity without the overhead of key management.
+
+---
 
 <!-- detect-validate-18 -->
 ## Supply Chain Attack Detection and Defense Validation

@@ -423,6 +423,43 @@ if __name__ == "__main__":
 
 ---
 
+## 5.5 포스트퀀텀 하이브리드 암호 다운그레이드 공격
+
+TLS 1.3에 도입 중인 하이브리드 키 교환(X25519 + ML-KEM/Kyber)은 양자 컴퓨터가 등장해도 안전하도록 고전 알고리즘과 포스트퀀텀 알고리즘의 결과를 함께 섞는다. 그런데 클라이언트·서버가 하이브리드와 순수 고전 알고리즘을 **둘 다 지원**하면, 중간자가 `ClientHello`의 `supported_groups` 확장에서 하이브리드 그룹을 제거해 순수 X25519로 강제 다운그레이드시킬 수 있다 — TLS 자체엔 무결성 보호가 있지만, 하이브리드를 지원하지 않는 레거시 미들박스가 많아 다운그레이드 방지가 항상 강제되진 않는다.
+
+```python
+#!/usr/bin/env python3
+"""ClientHello의 supported_groups에서 PQ 하이브리드 그룹 존재 여부 점검."""
+from scapy.all import rdpcap, TLSClientHello  # scapy-ssl_tls 또는 scapy-tls 확장 필요
+
+HYBRID_GROUP_IDS = {
+    0x11EC: "X25519MLKEM768",   # IANA 임시 코드포인트 (초안 버전에 따라 변동)
+    0x6399: "X25519Kyber768Draft00",
+}
+
+
+def check_pcap(path: str) -> None:
+    packets = rdpcap(path)
+    for pkt in packets:
+        if not pkt.haslayer(TLSClientHello):
+            continue
+        hello = pkt[TLSClientHello]
+        groups = getattr(hello, "supported_groups", []) or []
+        hybrid_present = [HYBRID_GROUP_IDS[g] for g in groups if g in HYBRID_GROUP_IDS]
+        if hybrid_present:
+            print(f"[+] 하이브리드 PQ 그룹 제안됨: {hybrid_present}")
+        else:
+            print("[!] 하이브리드 PQ 그룹 없음 — 순수 고전 알고리즘만 제안 (다운그레이드 여지)")
+
+
+if __name__ == "__main__":
+    check_pcap("client_hello_capture.pcap")
+```
+
+**탐지/방어**: 서버 측에서는 정책으로 하이브리드 그룹이 없는 `ClientHello`를 거부하거나 경고 로그를 남기도록 설정하고(Chrome/BoringSSL은 2024년부터 X25519Kyber768을 기본 제안), 조직 내부 트래픽 모니터링에서는 시간에 따라 하이브리드 그룹 사용 비율이 갑자기 떨어지는 구간을 다운그레이드 공격 또는 중간 프록시 장비 문제의 신호로 본다.
+
+---
+
 <!-- detect-validate-16 -->
 ## 암호 구현 취약점 탐지와 방어 검증
 
@@ -759,6 +796,45 @@ if __name__ == "__main__":
 | MT prediction | State recovery from 624 outputs | Collect outputs | Use secrets module |
 | Seed prediction | Timestamp-based seed | Brute force | os.urandom() |
 | Nonce reuse | CTR/GCM IV duplication | XOR of ciphertexts | Random 12-byte nonce |
+
+---
+
+## 5.5 Post-Quantum Hybrid Cryptography Downgrade Attacks
+
+The hybrid key exchange being rolled out in TLS 1.3 (X25519 + ML-KEM/Kyber) mixes a classical and a post-quantum algorithm's outputs so the connection stays safe even once quantum computers arrive. But when a client and server both support hybrid *and* pure-classical groups, a man-in-the-middle can strip the hybrid group out of the `ClientHello`'s `supported_groups` extension and force a downgrade to plain X25519 — TLS itself has integrity protection, but many legacy middleboxes don't understand hybrid groups yet, so downgrade prevention isn't always enforced end to end.
+
+```python
+#!/usr/bin/env python3
+"""Check whether a ClientHello's supported_groups actually proposes a PQ hybrid group."""
+from scapy.all import rdpcap, TLSClientHello  # requires scapy-ssl_tls / scapy-tls extension
+
+HYBRID_GROUP_IDS = {
+    0x11EC: "X25519MLKEM768",   # IANA provisional codepoint (varies by draft version)
+    0x6399: "X25519Kyber768Draft00",
+}
+
+
+def check_pcap(path: str) -> None:
+    packets = rdpcap(path)
+    for pkt in packets:
+        if not pkt.haslayer(TLSClientHello):
+            continue
+        hello = pkt[TLSClientHello]
+        groups = getattr(hello, "supported_groups", []) or []
+        hybrid_present = [HYBRID_GROUP_IDS[g] for g in groups if g in HYBRID_GROUP_IDS]
+        if hybrid_present:
+            print(f"[+] Hybrid PQ group proposed: {hybrid_present}")
+        else:
+            print("[!] No hybrid PQ group — only classical algorithms proposed (downgrade risk)")
+
+
+if __name__ == "__main__":
+    check_pcap("client_hello_capture.pcap")
+```
+
+**Detection/Defense**: on the server side, enforce a policy that rejects or at least logs a warning for any `ClientHello` missing a hybrid group (Chrome/BoringSSL has proposed X25519Kyber768 by default since 2024). In network monitoring, treat a sudden drop in the proportion of hybrid-group connections over time as a signal of either a downgrade attack or a misbehaving middlebox on the path.
+
+---
 
 <!-- detect-validate-16 -->
 ## Cryptographic Implementation Vulnerability Detection and Defense Validation
