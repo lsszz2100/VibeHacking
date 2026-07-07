@@ -505,6 +505,84 @@ if __name__ == "__main__":
 
 ---
 
+## 4.5 온체인 자금 추적 자동화 — 믹서·브릿지 경유 추적
+
+공격자는 탈취 자금을 곧바로 현금화하지 않고 (1) Tornado Cash류 믹서로 자금 출처를 흐리거나, (2) 체인 간 브릿지로 자금을 다른 블록체인으로 이동시켜 추적을 어렵게 만든다. 거래소 협조 요청(5절) 시 "자금이 지금 어디 있는가"를 최대한 구체적으로 제시할수록 거래소의 동결 조치가 빨라지므로, 자금 이동을 자동으로 추적하는 파이프라인이 초동 대응 속도를 좌우한다.
+
+```python
+#!/usr/bin/env python3
+"""공격자 지갑에서 시작해 여러 홉의 자금 이동을 재귀 추적, 믹서/브릿지 통과 여부를 표시."""
+import requests
+from dataclasses import dataclass, field
+
+KNOWN_MIXER_ADDRESSES = {
+    "0x8589427373d6d84e98730d7795d8f6f8731fda0": "Tornado Cash (0.1 ETH pool)",
+    "0x722122df12d4e14e13ac3b6895a86e84145b6967": "Tornado Cash Router",
+}
+KNOWN_BRIDGE_ADDRESSES = {
+    "0x3ee18b2214aff97000d974cf647e7c347e8fa585": "Wormhole Bridge",
+    "0x8484ef722627bf18ca5ae6bcf031c23e6e922b45": "Multichain Router",
+}
+
+
+@dataclass
+class FundHop:
+    tx_hash: str
+    from_addr: str
+    to_addr: str
+    amount: float
+    flag: str = ""
+
+
+def trace_fund_movement(start_address: str, api_key: str, max_hops: int = 5) -> list[FundHop]:
+    """Etherscan류 API로 지갑의 아웃바운드 트랜잭션을 홉 단위로 추적 (개념 코드)."""
+    hops: list[FundHop] = []
+    current = start_address
+
+    for hop_num in range(max_hops):
+        resp = requests.get(
+            "https://api.etherscan.io/api",
+            params={
+                "module": "account", "action": "txlist", "address": current,
+                "sort": "asc", "apikey": api_key,
+            },
+            timeout=10,
+        )
+        txs = resp.json().get("result", [])
+        outgoing = [tx for tx in txs if tx["from"].lower() == current.lower()]
+        if not outgoing:
+            break
+
+        latest = max(outgoing, key=lambda t: int(t["value"]))
+        to_addr = latest["to"].lower()
+        flag = ""
+        if to_addr in KNOWN_MIXER_ADDRESSES:
+            flag = f"믹서 통과: {KNOWN_MIXER_ADDRESSES[to_addr]}"
+        elif to_addr in KNOWN_BRIDGE_ADDRESSES:
+            flag = f"브릿지 통과: {KNOWN_BRIDGE_ADDRESSES[to_addr]}"
+
+        hops.append(FundHop(
+            tx_hash=latest["hash"], from_addr=current, to_addr=to_addr,
+            amount=int(latest["value"]) / 1e18, flag=flag,
+        ))
+        current = to_addr
+
+        if flag:
+            break  # 믹서 진입 시 온체인 추적은 사실상 여기서 단절
+
+    return hops
+
+
+if __name__ == "__main__":
+    hops = trace_fund_movement("0xATTACKER_WALLET", api_key="YOUR_ETHERSCAN_KEY")
+    for h in hops:
+        print(f"{h.tx_hash[:10]}... {h.from_addr[:10]} -> {h.to_addr[:10]} ({h.amount} ETH) {h.flag}")
+```
+
+**한계와 실전 대응**: 믹서 진입 이후에는 순수 온체인 데이터만으로는 자금 경로가 끊긴 것으로 보이지만, (1) 믹서 출금 시점과 금액 패턴을 입금 기록과 대조하는 타이밍 상관분석, (2) Chainalysis Reactor·TRM Labs 같은 상용 분석 도구의 클러스터링 휴리스틱, (3) 다수 거래소가 공유하는 제재 대상 주소 데이터베이스 대조를 병행해야 실질적 회수 가능성이 생긴다. 무엇보다 **자금이 거래소로 입금되는 순간이 유일하게 동결 가능한 지점**이므로, 이 추적 파이프라인의 목적은 "그 순간을 예측해 해당 거래소에 선제 통보하는 것"임을 잊지 말아야 한다.
+
+---
+
 ## 5. 거래소 협조 요청
 
 | 거래소 | 연락처 | 대응 시간 |
@@ -701,6 +779,84 @@ Move vulnerable funds to a safe wallet before the attacker can drain them. Alway
 ### 4.1 Damage Assessment and Reporting
 
 Calculate total losses in ETH and tokens, generate incident report including attack timeline, affected amounts, and countermeasures.
+
+---
+
+## 4.5 On-Chain Fund Tracing Automation — Following Funds Through Mixers and Bridges
+
+Rather than cashing out stolen funds immediately, attackers often (1) obscure their origin through a mixer like Tornado Cash, or (2) move funds to a different blockchain via a cross-chain bridge to make tracing harder. The more specific "where are the funds right now" information you can provide when requesting exchange cooperation (section 5), the faster an exchange can freeze them -- so a pipeline that automatically traces fund movement determines how fast your initial response can move.
+
+```python
+#!/usr/bin/env python3
+"""Recursively trace fund movement across multiple hops starting from an attacker's wallet, flagging mixer/bridge transit."""
+import requests
+from dataclasses import dataclass, field
+
+KNOWN_MIXER_ADDRESSES = {
+    "0x8589427373d6d84e98730d7795d8f6f8731fda0": "Tornado Cash (0.1 ETH pool)",
+    "0x722122df12d4e14e13ac3b6895a86e84145b6967": "Tornado Cash Router",
+}
+KNOWN_BRIDGE_ADDRESSES = {
+    "0x3ee18b2214aff97000d974cf647e7c347e8fa585": "Wormhole Bridge",
+    "0x8484ef722627bf18ca5ae6bcf031c23e6e922b45": "Multichain Router",
+}
+
+
+@dataclass
+class FundHop:
+    tx_hash: str
+    from_addr: str
+    to_addr: str
+    amount: float
+    flag: str = ""
+
+
+def trace_fund_movement(start_address: str, api_key: str, max_hops: int = 5) -> list[FundHop]:
+    """Trace a wallet's outbound transactions hop-by-hop via an Etherscan-style API (conceptual code)."""
+    hops: list[FundHop] = []
+    current = start_address
+
+    for hop_num in range(max_hops):
+        resp = requests.get(
+            "https://api.etherscan.io/api",
+            params={
+                "module": "account", "action": "txlist", "address": current,
+                "sort": "asc", "apikey": api_key,
+            },
+            timeout=10,
+        )
+        txs = resp.json().get("result", [])
+        outgoing = [tx for tx in txs if tx["from"].lower() == current.lower()]
+        if not outgoing:
+            break
+
+        latest = max(outgoing, key=lambda t: int(t["value"]))
+        to_addr = latest["to"].lower()
+        flag = ""
+        if to_addr in KNOWN_MIXER_ADDRESSES:
+            flag = f"Passed through mixer: {KNOWN_MIXER_ADDRESSES[to_addr]}"
+        elif to_addr in KNOWN_BRIDGE_ADDRESSES:
+            flag = f"Passed through bridge: {KNOWN_BRIDGE_ADDRESSES[to_addr]}"
+
+        hops.append(FundHop(
+            tx_hash=latest["hash"], from_addr=current, to_addr=to_addr,
+            amount=int(latest["value"]) / 1e18, flag=flag,
+        ))
+        current = to_addr
+
+        if flag:
+            break  # once funds enter a mixer, on-chain tracing effectively breaks here
+
+    return hops
+
+
+if __name__ == "__main__":
+    hops = trace_fund_movement("0xATTACKER_WALLET", api_key="YOUR_ETHERSCAN_KEY")
+    for h in hops:
+        print(f"{h.tx_hash[:10]}... {h.from_addr[:10]} -> {h.to_addr[:10]} ({h.amount} ETH) {h.flag}")
+```
+
+**Limitations and practical response**: once funds enter a mixer, pure on-chain data alone makes the trail look severed -- getting any real chance of recovery requires combining (1) timing-correlation analysis matching a mixer's withdrawal timing and amount patterns against deposit records, (2) the clustering heuristics of commercial analysis tools like Chainalysis Reactor or TRM Labs, and (3) cross-referencing the sanctioned-address databases shared among many exchanges. Above all, remember that **the moment funds land in an exchange deposit is the only point where a freeze is possible** -- the whole point of this tracing pipeline is to predict that moment and pre-notify the relevant exchange.
 
 ---
 

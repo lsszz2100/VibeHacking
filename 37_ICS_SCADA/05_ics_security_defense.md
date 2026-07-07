@@ -536,6 +536,54 @@ def prioritize_ics_patches(assets: list[ICSTVAsset]) -> list[dict]:
 
 ---
 
+## 4.5 PLC 스캔사이클 타이밍 기반 물리 프로세스 조작 탐지
+
+Stuxnet류 공격의 핵심 특징은 네트워크 계층에서는 정상 프로토콜(Modbus/S7 등, 2절 참조)을 그대로 쓰면서 **PLC 로직 자체를 조작**해 물리 프로세스(원심분리기 회전수 등)를 서서히 망가뜨리는 것이었다 — 이런 공격은 IT 관점의 네트워크 이상탐지(2절)만으로는 잡히지 않는다. PLC는 정해진 스캔사이클(입력 읽기 → 로직 실행 → 출력 쓰기)을 매우 규칙적으로 반복하므로, **스캔사이클 소요시간 자체의 미세한 변화**가 로직 조작의 물리적 증거가 될 수 있다.
+
+```python
+#!/usr/bin/env python3
+"""PLC 스캔사이클 시간(cycle time)을 지속 수집해 통계적 기준선 대비 이상치 탐지."""
+import statistics
+import time
+from collections import deque
+from pymodbus.client import ModbusTcpClient
+
+
+def measure_cycle_time(client: ModbusTcpClient, cycle_counter_register: int) -> float:
+    """PLC의 스캔사이클 카운터 레지스터를 읽어 두 읽기 사이 소요시간 산출."""
+    start = time.perf_counter()
+    result = client.read_holding_registers(cycle_counter_register, count=1)
+    elapsed = time.perf_counter() - start
+    return elapsed
+
+
+def monitor_scan_cycle_drift(host: str, window_size: int = 200, z_threshold: float = 4.0) -> None:
+    client = ModbusTcpClient(host)
+    client.connect()
+    history: deque[float] = deque(maxlen=window_size)
+
+    while True:
+        cycle_time = measure_cycle_time(client, cycle_counter_register=100)
+        history.append(cycle_time)
+
+        if len(history) >= window_size:
+            mean = statistics.mean(history)
+            stdev = statistics.pstdev(history) or 1e-6
+            z = (cycle_time - mean) / stdev
+            if abs(z) > z_threshold:
+                print(f"[!] 스캔사이클 이상 편차 감지: {cycle_time*1000:.2f}ms (z={z:.1f}, 기준={mean*1000:.2f}ms)")
+
+        time.sleep(0.1)
+
+
+if __name__ == "__main__":
+    monitor_scan_cycle_drift("192.168.1.10")
+```
+
+**탐지/방어**: 이 기법은 (1) 정상 로직 실행 중 추가 명령이 삽입되거나(스캔사이클 연장), (2) 워치독 타이머 우회를 위해 로직이 조작된 경우(비정상적으로 짧아짐) 등을 물리적 부작용으로 잡아낼 수 있다는 점에서 프로토콜 레벨 탐지의 사각지대를 보완한다. 다만 PLC 기종·펌웨어 버전·부하 조건에 따라 정상 변동폭이 크게 다르므로, 반드시 **해당 설비의 정상 운영 구간에서 별도로 기준선을 재수집**해야 하며, 다른 설비의 기준선을 그대로 가져다 쓰면 오탐이 크게 늘어난다.
+
+---
+
 ## 5. 참고 자료
 
 - **IEC 62443 표준 개요**: https://www.isa.org/standards-and-publications/isa-standards/isa-iec-62443-series-of-standards
@@ -610,6 +658,52 @@ Zone 0: Physical Process (Sensors, Actuators)
 - **Document all changes** — change control is mandatory
 - **Use jump servers** with MFA for remote OT access
 - **Monitor but don't block** — false positives in OT can cause production loss
+
+## Detecting Physical-Process Tampering via PLC Scan-Cycle Timing
+
+A hallmark of Stuxnet-class attacks was using standard protocols at the network layer unchanged (Modbus/S7, see section 2) while **tampering with the PLC logic itself** to slowly degrade a physical process (e.g., centrifuge rotation speed) -- an attack that IT-style network anomaly detection (section 2) alone won't catch. A PLC repeats its fixed scan cycle (read inputs -> execute logic -> write outputs) extremely regularly, so **subtle changes in the scan-cycle duration itself** can serve as physical evidence of logic tampering.
+
+```python
+#!/usr/bin/env python3
+"""Continuously collect PLC scan-cycle time and flag statistical outliers against a baseline."""
+import statistics
+import time
+from collections import deque
+from pymodbus.client import ModbusTcpClient
+
+
+def measure_cycle_time(client: ModbusTcpClient, cycle_counter_register: int) -> float:
+    """Read the PLC's scan-cycle counter register and derive the elapsed time between reads."""
+    start = time.perf_counter()
+    result = client.read_holding_registers(cycle_counter_register, count=1)
+    elapsed = time.perf_counter() - start
+    return elapsed
+
+
+def monitor_scan_cycle_drift(host: str, window_size: int = 200, z_threshold: float = 4.0) -> None:
+    client = ModbusTcpClient(host)
+    client.connect()
+    history: deque[float] = deque(maxlen=window_size)
+
+    while True:
+        cycle_time = measure_cycle_time(client, cycle_counter_register=100)
+        history.append(cycle_time)
+
+        if len(history) >= window_size:
+            mean = statistics.mean(history)
+            stdev = statistics.pstdev(history) or 1e-6
+            z = (cycle_time - mean) / stdev
+            if abs(z) > z_threshold:
+                print(f"[!] Scan-cycle anomaly detected: {cycle_time*1000:.2f}ms (z={z:.1f}, baseline={mean*1000:.2f}ms)")
+
+        time.sleep(0.1)
+
+
+if __name__ == "__main__":
+    monitor_scan_cycle_drift("192.168.1.10")
+```
+
+**Detection/Defense**: this technique catches physical side effects of (1) extra commands being inserted into normal logic execution (scan cycle lengthens), or (2) logic tampered with to defeat a watchdog timer (unusually short cycles) -- filling a blind spot that protocol-level detection misses. That said, normal variance differs greatly by PLC model, firmware version, and load conditions, so **the baseline must be recollected separately during that specific equipment's normal operation** -- reusing another unit's baseline sharply increases false positives.
 
 ## References
 

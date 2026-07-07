@@ -471,6 +471,39 @@ if __name__ == "__main__":
 
 ---
 
+## 3.5 JTAG/SWD 디버그 포트 잠금과 우회 탐지
+
+JTAG/SWD 디버그 포트는 개발 단계에서 필수지만, 양산 제품에 그대로 남아있으면 공격자가 이를 통해 펌웨어를 덤프하거나 부트로더를 우회해 시큐어 부트 체인 자체를 무력화할 수 있다(1절 UEFI 시큐어 부트와 별개로, 임베디드 기기는 SoC 벤더의 디버그 잠금 퓨즈로 방어한다). 잠금이 실제로 걸렸는지, 그리고 잠금 우회 시도가 있었는지를 검증하는 절차가 필요하다.
+
+```bash
+# OpenOCD로 대상 보드의 JTAG 접근 가능 여부 점검 (소유 기기에서만)
+openocd -f interface/jlink.cfg -f target/stm32f4x.cfg -c "init; scan_chain; exit"
+# "No JTAG tap found" 또는 접근 거부 응답이 나오면 디버그 포트가 잠긴 것
+
+# ARM Cortex-M 계열 — 디버그 잠금 레지스터(예: STM32 RDP - Readout Protection) 상태 확인
+st-info --probe
+st-flash --debug read_option_bytes
+```
+
+```c
+// 펌웨어 초기화 코드에서 디버그 잠금 퓨즈가 실제로 활성화됐는지 자체 점검 (STM32 예시)
+#include "stm32f4xx_hal.h"
+
+void verify_debug_lock(void) {
+    FLASH_OBProgramInitTypeDef ob_config;
+    HAL_FLASHEx_OBGetConfig(&ob_config);
+
+    if (ob_config.RDPLevel == OB_RDP_LEVEL_0) {
+        // RDP Level 0 = 디버그 포트 완전 개방 상태 — 양산 펌웨어라면 치명적
+        error_handler("CRITICAL: Debug port unlocked (RDP Level 0) in production build");
+    }
+}
+```
+
+**핵심**: 디버그 잠금 퓨즈는 한 번 태우면(Level 2 등) 되돌릴 수 없는 경우가 많아, CI/CD의 양산 빌드 단계에서 "이 빌드가 실제로 잠금 설정을 포함하는가"를 자동 검증하는 게이트를 두어야 한다. 그렇지 않으면 개발용 잠금 해제 상태의 펌웨어가 실수로 양산 라인에 흘러갈 수 있다. Level 1(읽기만 차단, JTAG 자체는 살아있음) 정도로만 설정하고 "완전 잠금"으로 착각하는 실수도 흔하므로, 벤더 문서의 보호 레벨별 실제 범위를 반드시 확인해야 한다.
+
+---
+
 ## 4. 참고 자료
 
 - **UEFI 시큐어 부트 가이드 (Microsoft)**: https://docs.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-secure-boot
@@ -552,6 +585,37 @@ python3 tpm_monitor.py --baseline /etc/security/pcr_baseline.json
 | IMA | Kernel module signatures | Kernel module tampering |
 | Full-disk encryption | LUKS2 | Physical disk theft |
 | Case tamper switch | TCG spec | Physical case opening |
+
+## JTAG/SWD Debug Port Locking and Bypass Detection
+
+JTAG/SWD debug ports are essential during development, but if left enabled on a production unit, an attacker can use them to dump firmware or bypass the bootloader, defeating the secure boot chain itself (independent of the UEFI Secure Boot in section 1 -- embedded devices rely on the SoC vendor's debug-lock fuses instead). You need a procedure to verify the lock is actually set, and whether a bypass has been attempted.
+
+```bash
+# Check whether a target board's JTAG is reachable via OpenOCD (owned devices only)
+openocd -f interface/jlink.cfg -f target/stm32f4x.cfg -c "init; scan_chain; exit"
+# A "No JTAG tap found" or access-denied response means the debug port is locked
+
+# ARM Cortex-M family -- check debug-lock register status (e.g., STM32 RDP - Readout Protection)
+st-info --probe
+st-flash --debug read_option_bytes
+```
+
+```c
+// Self-check in firmware init code that the debug-lock fuse is actually set (STM32 example)
+#include "stm32f4xx_hal.h"
+
+void verify_debug_lock(void) {
+    FLASH_OBProgramInitTypeDef ob_config;
+    HAL_FLASHEx_OBGetConfig(&ob_config);
+
+    if (ob_config.RDPLevel == OB_RDP_LEVEL_0) {
+        // RDP Level 0 = debug port fully open -- critical if this is a production build
+        error_handler("CRITICAL: Debug port unlocked (RDP Level 0) in production build");
+    }
+}
+```
+
+**Key point**: burning a debug-lock fuse (e.g., to Level 2) is often irreversible, so the production build stage of CI/CD needs an automated gate that verifies "does this build actually include the lock configuration." Without it, a firmware image left in a development-unlocked state can accidentally ship down the production line. It's also common to mistake Level 1 (blocks readout only, JTAG itself still alive) for "fully locked," so always confirm the actual scope of each protection level in the vendor's documentation.
 
 ## References
 

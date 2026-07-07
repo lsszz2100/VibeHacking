@@ -572,6 +572,62 @@ jobs:
 
 ---
 
+## 4.5 빌드 재현성(Reproducible Builds) 검증 자동화
+
+SLSA provenance·서명(18장 참조)이 "이 산출물이 주장하는 파이프라인에서 나왔다"는 것을 증명한다면, 재현 가능한 빌드는 한 걸음 더 나아가 "**같은 소스로 다시 빌드하면 바이트 단위로 동일한 결과가 나온다**"는 것을 제3자가 독립적으로 검증할 수 있게 한다. 빌드 시스템이 침해돼 소스코드는 그대로인데 산출물에만 백도어가 심긴 경우(예: SolarWinds류 공격), provenance 서명만으로는 못 잡아도 재현 빌드 대조로는 즉시 드러난다.
+
+```bash
+# 1. 공식 릴리스 아티팩트와 해시 기록
+sha256sum official-release-v1.2.3.tar.gz > official.sha256
+
+# 2. 동일 커밋·동일 툴체인 버전으로 독립 환경에서 재빌드
+git clone --branch v1.2.3 https://github.com/org/project.git
+cd project
+docker run --rm -v "$(pwd):/src" -w /src \
+  toolchain-pinned:1.2.3 ./build.sh --reproducible
+
+# 3. 재빌드 결과와 공식 릴리스 해시 대조
+sha256sum dist/output.tar.gz | diff - official.sha256 && \
+  echo "[+] 재현성 검증 통과 — 빌드 파이프라인 무결" || \
+  echo "[!] 해시 불일치 — 빌드 조작 또는 비결정적 빌드 의심"
+```
+
+```python
+#!/usr/bin/env python3
+"""여러 독립 빌더의 재현 빌드 결과를 대조해 다수결로 신뢰 여부 판단 (reproducible-builds.org 방식)."""
+import hashlib
+from collections import Counter
+from pathlib import Path
+
+
+def hash_artifact(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def verify_by_consensus(artifact_paths: list[Path], threshold: int = 2) -> bool:
+    """서로 다른 조직/개인이 독립적으로 빌드한 결과물 여러 개를 비교."""
+    hashes = [hash_artifact(p) for p in artifact_paths]
+    counts = Counter(hashes)
+    majority_hash, majority_count = counts.most_common(1)[0]
+
+    print(f"[*] {len(artifact_paths)}개 독립 빌드 중 {majority_count}개가 동일 해시")
+    if majority_count >= threshold:
+        print(f"[+] 재현성 합의 통과: {majority_hash[:16]}...")
+        return True
+
+    print("[!] 재현성 합의 실패 — 빌드 결과가 빌더마다 다름 (비결정적 빌드 또는 조작 의심)")
+    return False
+
+
+if __name__ == "__main__":
+    builds = [Path("build_org_a.tar.gz"), Path("build_org_b.tar.gz"), Path("build_official.tar.gz")]
+    verify_by_consensus(builds)
+```
+
+**한계와 실전 팁**: 완벽한 재현성은 타임스탬프·빌드 경로·파일 순회 순서 같은 비결정적 요소를 전부 고정해야 해서 구현 난이도가 높다 — Debian, Tor Browser, F-Droid 등이 이미 재현 빌드를 실전 운영 중이니 참고할 만하다. 처음부터 완벽을 목표로 하기보다, 먼저 "빌드 결과물의 어느 부분이 비결정적인가"를 `diffoscope` 같은 도구로 찾아내고 단계적으로 고정해나가는 것이 현실적이다.
+
+---
+
 ## 5. 참고 자료
 
 - **CycloneDX SBOM 명세**: https://cyclonedx.org/specification/overview/
@@ -656,6 +712,60 @@ gitleaks detect --source . --report-path gitleaks-report.json
 # Check for dependency confusion
 python3 dep_confusion_check.py --internal-packages internal_package_list.txt
 ```
+
+## Reproducible Builds Verification Automation
+
+If SLSA provenance and signing (see chapter 18) proves "this artifact came from the pipeline it claims to," reproducible builds go a step further, letting a third party independently verify that **rebuilding from the same source produces a byte-for-byte identical result**. If the build system is compromised so that a backdoor gets inserted only into the artifact while the source stays clean (a SolarWinds-style attack), provenance signing alone won't catch it — but a reproducible-build comparison exposes it immediately.
+
+```bash
+# 1. Record the hash of the official release artifact
+sha256sum official-release-v1.2.3.tar.gz > official.sha256
+
+# 2. Rebuild independently from the same commit and toolchain version
+git clone --branch v1.2.3 https://github.com/org/project.git
+cd project
+docker run --rm -v "$(pwd):/src" -w /src \
+  toolchain-pinned:1.2.3 ./build.sh --reproducible
+
+# 3. Compare the rebuild's hash against the official release hash
+sha256sum dist/output.tar.gz | diff - official.sha256 && \
+  echo "[+] Reproducibility check passed -- build pipeline intact" || \
+  echo "[!] Hash mismatch -- suspect build tampering or a non-deterministic build"
+```
+
+```python
+#!/usr/bin/env python3
+"""Compare reproduced-build results from multiple independent builders and decide trust by majority vote (the reproducible-builds.org approach)."""
+import hashlib
+from collections import Counter
+from pathlib import Path
+
+
+def hash_artifact(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def verify_by_consensus(artifact_paths: list[Path], threshold: int = 2) -> bool:
+    """Compare multiple build outputs produced independently by different organizations/individuals."""
+    hashes = [hash_artifact(p) for p in artifact_paths]
+    counts = Counter(hashes)
+    majority_hash, majority_count = counts.most_common(1)[0]
+
+    print(f"[*] {majority_count} of {len(artifact_paths)} independent builds share the same hash")
+    if majority_count >= threshold:
+        print(f"[+] Reproducibility consensus passed: {majority_hash[:16]}...")
+        return True
+
+    print("[!] Reproducibility consensus failed -- build results differ between builders (non-deterministic build or tampering suspected)")
+    return False
+
+
+if __name__ == "__main__":
+    builds = [Path("build_org_a.tar.gz"), Path("build_org_b.tar.gz"), Path("build_official.tar.gz")]
+    verify_by_consensus(builds)
+```
+
+**Limitations and practical tips**: achieving perfect reproducibility means pinning down every non-deterministic factor -- timestamps, build paths, file traversal order -- which is genuinely hard; Debian, Tor Browser, and F-Droid already run reproducible builds in production and are worth studying. Rather than aiming for perfection from day one, it's more realistic to first identify which parts of the build output are non-deterministic using a tool like `diffoscope`, then pin them down incrementally.
 
 ## References
 

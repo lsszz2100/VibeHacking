@@ -946,6 +946,70 @@ C2           |   16    |    6     |    4    | HIGH
 
 ---
 
+## 8.5 헌팅 성숙도 측정 — Threat Hunting Maturity Model(HMM) 자동 스코어링
+
+David Bianco가 제안한 HMM(Hunting Maturity Model)은 조직의 위협 헌팅 역량을 HM0(초기, 자동 경보에만 의존)부터 HM4(선도, 새 헌팅 절차를 자동 탐지 규칙으로 계속 전환)까지 5단계로 구분한다. 이 등급은 정성적 자기평가에 그치기 쉬운데, 헌팅 캠페인 관리 시스템(7절)에 기록된 데이터를 정량 지표로 환산하면 매 분기 성숙도 변화를 객관적으로 추적할 수 있다.
+
+```python
+#!/usr/bin/env python3
+"""헌팅 캠페인 이력 데이터를 HMM 5단계 기준 지표로 환산해 조직의 현재 성숙도 레벨 산출."""
+from dataclasses import dataclass
+
+
+@dataclass
+class HuntingMetrics:
+    total_hunts_per_quarter: int
+    hunts_using_external_data: int          # 위협 인텔·업계 리포트 기반 헌팅 비율 (HM1 이상 조건)
+    hunts_with_documented_hypothesis: int    # 가설 기반 절차형 헌팅 비율 (HM2 조건)
+    findings_converted_to_detection: int     # 발견 사항이 자동 탐지 규칙으로 전환된 건수 (HM3 조건)
+    avg_time_to_detection_conversion_days: float  # 전환까지 걸린 평균 일수 (HM4는 이게 지속적으로 단축)
+
+
+def score_hmm_level(m: HuntingMetrics) -> dict:
+    if m.total_hunts_per_quarter == 0:
+        return {"level": "HM0", "reason": "정기 헌팅 활동 없음 — 자동 경보에만 의존"}
+
+    external_ratio = m.hunts_using_external_data / m.total_hunts_per_quarter
+    hypothesis_ratio = m.hunts_with_documented_hypothesis / m.total_hunts_per_quarter
+    conversion_ratio = m.findings_converted_to_detection / max(m.total_hunts_per_quarter, 1)
+
+    if conversion_ratio >= 0.5 and m.avg_time_to_detection_conversion_days <= 14:
+        level = "HM4"
+    elif conversion_ratio >= 0.3:
+        level = "HM3"
+    elif hypothesis_ratio >= 0.7:
+        level = "HM2"
+    elif external_ratio >= 0.5:
+        level = "HM1"
+    else:
+        level = "HM0"
+
+    return {
+        "level": level,
+        "external_data_ratio": round(external_ratio, 2),
+        "hypothesis_driven_ratio": round(hypothesis_ratio, 2),
+        "detection_conversion_ratio": round(conversion_ratio, 2),
+        "avg_conversion_days": m.avg_time_to_detection_conversion_days,
+    }
+
+
+if __name__ == "__main__":
+    q3_metrics = HuntingMetrics(
+        total_hunts_per_quarter=24,
+        hunts_using_external_data=18,
+        hunts_with_documented_hypothesis=20,
+        findings_converted_to_detection=9,
+        avg_time_to_detection_conversion_days=11.5,
+    )
+    result = score_hmm_level(q3_metrics)
+    print(f"[*] 이번 분기 헌팅 성숙도: {result['level']}")
+    print(f"    세부 지표: {result}")
+```
+
+**활용 포인트**: HMM에서 가장 중요한 신호는 "헌팅을 많이 했는가"가 아니라 **발견 사항이 자동 탐지 규칙으로 전환되는 비율과 속도**다 — 같은 위협을 매번 수동으로 다시 찾아내고 있다면 아무리 헌팅 횟수가 많아도 HM1~2에 머무는 것이고, 발견을 지속적으로 탐지 엔지니어링(13장 참조)에 피드백해 헌팅팀이 "이미 자동화된 것"을 다시 찾지 않도록 만드는 것이 HM3~4로 가는 핵심 조건이다.
+
+---
+
 ## 참고 자료
 
 - **MITRE ATT&CK** — [https://attack.mitre.org](https://attack.mitre.org)
@@ -1350,6 +1414,70 @@ C2                  |    16      |       6       |        4        | HIGH
 Exfiltration        |     9      |       2       |        1        | HIGH
 Impact              |    14      |       3       |        2        | MEDIUM
 ```
+
+---
+
+## 7.5 Measuring Hunting Maturity — Automated Scoring for the Threat Hunting Maturity Model (HMM)
+
+David Bianco's HMM classifies an organization's threat-hunting capability into five levels, from HM0 (initial, relying only on automated alerts) to HM4 (leading, continuously converting new hunting procedures into automated detection rules). This rating tends to end up as a subjective self-assessment, but converting the data already tracked by the hunting campaign management system (section 7) into quantitative metrics lets you objectively track maturity changes each quarter.
+
+```python
+#!/usr/bin/env python3
+"""Convert hunting-campaign history data into HMM 5-level metrics to compute the organization's current maturity level."""
+from dataclasses import dataclass
+
+
+@dataclass
+class HuntingMetrics:
+    total_hunts_per_quarter: int
+    hunts_using_external_data: int          # share of hunts based on threat intel/industry reports (HM1+ condition)
+    hunts_with_documented_hypothesis: int    # share of hypothesis-driven, procedural hunts (HM2 condition)
+    findings_converted_to_detection: int     # count of findings converted into automated detection rules (HM3 condition)
+    avg_time_to_detection_conversion_days: float  # average days to conversion (HM4 keeps shrinking this)
+
+
+def score_hmm_level(m: HuntingMetrics) -> dict:
+    if m.total_hunts_per_quarter == 0:
+        return {"level": "HM0", "reason": "No regular hunting activity -- relying only on automated alerts"}
+
+    external_ratio = m.hunts_using_external_data / m.total_hunts_per_quarter
+    hypothesis_ratio = m.hunts_with_documented_hypothesis / m.total_hunts_per_quarter
+    conversion_ratio = m.findings_converted_to_detection / max(m.total_hunts_per_quarter, 1)
+
+    if conversion_ratio >= 0.5 and m.avg_time_to_detection_conversion_days <= 14:
+        level = "HM4"
+    elif conversion_ratio >= 0.3:
+        level = "HM3"
+    elif hypothesis_ratio >= 0.7:
+        level = "HM2"
+    elif external_ratio >= 0.5:
+        level = "HM1"
+    else:
+        level = "HM0"
+
+    return {
+        "level": level,
+        "external_data_ratio": round(external_ratio, 2),
+        "hypothesis_driven_ratio": round(hypothesis_ratio, 2),
+        "detection_conversion_ratio": round(conversion_ratio, 2),
+        "avg_conversion_days": m.avg_time_to_detection_conversion_days,
+    }
+
+
+if __name__ == "__main__":
+    q3_metrics = HuntingMetrics(
+        total_hunts_per_quarter=24,
+        hunts_using_external_data=18,
+        hunts_with_documented_hypothesis=20,
+        findings_converted_to_detection=9,
+        avg_time_to_detection_conversion_days=11.5,
+    )
+    result = score_hmm_level(q3_metrics)
+    print(f"[*] This quarter's hunting maturity: {result['level']}")
+    print(f"    Detailed metrics: {result}")
+```
+
+**How to use it**: the most important HMM signal isn't "how many hunts were run" but **the rate and speed at which findings get converted into automated detection rules** -- if you're manually rediscovering the same threat every time, the hunt count can be high while maturity stays stuck at HM1-2. Continuously feeding findings back into detection engineering (see chapter 13) so the hunting team stops re-finding things that are already automated is the key condition for reaching HM3-4.
 
 ---
 

@@ -909,6 +909,65 @@ python k8s_security_auditor.py ./manifests/ --fail-on CRITICAL --format json -o 
 
 ---
 
+## 8.5 Falco 룰 우회 기법과 다계층 방어
+
+2절에서 다룬 Falco는 eBPF/커널모듈로 syscall을 관찰해 룰에 매칭되는 이상행위를 탐지하지만, 공격자가 Falco 룰의 정확한 조건을 안다면 그 조건을 살짝 비켜가는 방식으로 탐지를 우회할 수 있다. 대표적으로 기본 룰 `Terminal shell in container`는 `bash`/`sh` 같은 알려진 셸 바이너리 실행을 감시하는데, 공격자가 `/bin/bash`를 다른 이름으로 복사해 실행하거나, 셸 대신 파이썬의 `os.system()`으로 명령을 실행하면 이 특정 룰만으로는 놓친다.
+
+```yaml
+# 취약한 기본 룰 예시 — 바이너리 이름에만 의존
+- rule: Terminal shell in container
+  condition: >
+    spawned_process and container and
+    shell_procs and proc.tty != 0
+  # shell_procs macro가 bash, sh, zsh 등 "알려진 이름"만 나열하는 경우가 흔함
+
+# 우회: 셸 바이너리를 다른 이름으로 복사 후 실행
+# cp /bin/bash /tmp/.systemd-helper && /tmp/.systemd-helper -c "malicious_command"
+```
+
+```yaml
+# 강화된 룰 — 이름이 아니라 "행위"(부모-자식 관계·tty 할당)로 판단
+- rule: Suspicious Interactive Shell (Name-Agnostic)
+  desc: 알려진 이름 리스트에 의존하지 않고 tty 할당 + 컨테이너 내부 실행을 함께 검사
+  condition: >
+    spawned_process and container and
+    proc.tty != 0 and
+    not proc.pname in (known_orchestrator_procs) and
+    evt.type = execve
+  output: >
+    의심스러운 대화형 프로세스 실행 (user=%user.name command=%proc.cmdline
+    container=%container.name parent=%proc.pname)
+  priority: WARNING
+```
+
+```python
+#!/usr/bin/env python3
+"""Falco 알림 로그와 syscall 원본 로그(Tetragon 등)를 교차 대조해 룰 우회로 놓친 이벤트 탐지."""
+import json
+from pathlib import Path
+
+
+def cross_check_missed_events(falco_alerts: Path, raw_syscall_log: Path) -> None:
+    """Falco가 잡지 못했지만 원본 syscall 로그상 셸 실행이 있었던 컨테이너를 찾는다."""
+    alerted_containers = set()
+    for line in falco_alerts.read_text().splitlines():
+        alert = json.loads(line)
+        alerted_containers.add(alert.get("output_fields", {}).get("container.name"))
+
+    for line in raw_syscall_log.read_text().splitlines():
+        event = json.loads(line)
+        if event.get("event_type") == "execve" and event.get("container") not in alerted_containers:
+            print(f"[!] Falco 미탐지 의심 실행: {event.get('container')} — {event.get('cmdline')}")
+
+
+if __name__ == "__main__":
+    cross_check_missed_events(Path("falco_alerts.jsonl"), Path("tetragon_raw.jsonl"))
+```
+
+**다계층 방어 원칙**: Falco 룰 하나에만 의존하지 말고 (1) 룰 자체를 이름 기반이 아닌 행위 기반(부모-자식 프로세스 관계, tty 할당, 네트워크 연결 동시 발생 등)으로 강화하고, (2) 애초에 컨테이너 이미지를 distroless·읽기전용 루트파일시스템으로 만들어 `bash`/`sh` 자체가 존재하지 않게 해 셸 실행 경로를 원천 차단하며, (3) Falco 알림과 원본 syscall 로그를 주기적으로 교차 대조해 "룰이 놓친 사례"가 없는지 회귀 검증하는 것이 실전에서 가장 견고하다.
+
+---
+
 ## 참고 자료
 
 - **CNCF Cloud Native Security Whitepaper** — 공식 보안 가이드
@@ -1094,6 +1153,65 @@ SCA    Vuln Scan    Signature Check CSPM
 IaC    SBOM         Policy Enforce  Audit Logs
 Secret Image Sign   GitOps          Incident Response
 ```
+
+---
+
+## 8.5 Falco Rule Evasion Techniques and Layered Defense
+
+Falco (section 2) watches syscalls via eBPF/a kernel module and flags anything matching its rules, but an attacker who knows a Falco rule's exact conditions can dodge detection just by stepping slightly outside them. The default `Terminal shell in container` rule, for instance, watches for known shell binaries like `bash`/`sh` being executed -- but if an attacker copies `/bin/bash` under a different name, or runs a command via Python's `os.system()` instead of a shell, that specific rule alone misses it.
+
+```yaml
+# Vulnerable default rule example -- relies only on the binary's name
+- rule: Terminal shell in container
+  condition: >
+    spawned_process and container and
+    shell_procs and proc.tty != 0
+  # The shell_procs macro often just lists "known names" like bash, sh, zsh
+
+# Evasion: copy the shell binary under a different name and run it
+# cp /bin/bash /tmp/.systemd-helper && /tmp/.systemd-helper -c "malicious_command"
+```
+
+```yaml
+# Hardened rule -- judges by "behavior" (parent-child relationship, tty allocation) rather than name
+- rule: Suspicious Interactive Shell (Name-Agnostic)
+  desc: Checks tty allocation plus in-container execution together, without relying on a known-name list
+  condition: >
+    spawned_process and container and
+    proc.tty != 0 and
+    not proc.pname in (known_orchestrator_procs) and
+    evt.type = execve
+  output: >
+    Suspicious interactive process execution (user=%user.name command=%proc.cmdline
+    container=%container.name parent=%proc.pname)
+  priority: WARNING
+```
+
+```python
+#!/usr/bin/env python3
+"""Cross-reference Falco alert logs against a raw syscall log (e.g., Tetragon) to find events missed via rule evasion."""
+import json
+from pathlib import Path
+
+
+def cross_check_missed_events(falco_alerts: Path, raw_syscall_log: Path) -> None:
+    """Find containers where the raw syscall log shows a shell execution that Falco never alerted on."""
+    alerted_containers = set()
+    for line in falco_alerts.read_text().splitlines():
+        alert = json.loads(line)
+        alerted_containers.add(alert.get("output_fields", {}).get("container.name"))
+
+    for line in raw_syscall_log.read_text().splitlines():
+        event = json.loads(line)
+        if event.get("event_type") == "execve" and event.get("container") not in alerted_containers:
+            print(f"[!] Suspected Falco miss: {event.get('container')} — {event.get('cmdline')}")
+
+
+if __name__ == "__main__":
+    cross_check_missed_events(Path("falco_alerts.jsonl"), Path("tetragon_raw.jsonl"))
+```
+
+**Layered defense principle**: don't rely on a single Falco rule -- (1) harden the rules themselves to judge behavior rather than names (parent-child process relationships, tty allocation, simultaneous network connections), (2) build container images as distroless with a read-only root filesystem in the first place, so `bash`/`sh` don't exist at all and the shell-execution path is closed off entirely, and (3) periodically cross-check Falco alerts against raw syscall logs to regression-test for cases the rules missed. In practice, this combination holds up far better than any single rule.
 
 ---
 

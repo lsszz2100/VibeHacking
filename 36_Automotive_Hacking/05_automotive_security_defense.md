@@ -560,6 +560,58 @@ if __name__ == "__main__":
 
 ---
 
+## 4.5 UDS Seed-Key 보안 액세스 무차별대입 방어
+
+UDS(Unified Diagnostic Services, ISO 14229) 프로토콜은 ECU 진단·재프로그래밍 접근을 `SecurityAccess`(서비스 0x27) 절차로 보호한다: 진단 툴이 접근을 요청하면 ECU가 무작위 Seed를 주고, 툴은 비밀 알고리즘으로 계산한 Key를 돌려줘야 잠금이 풀린다. 문제는 다수 구형 ECU가 (1) 약한 Seed-Key 알고리즘(단순 XOR·고정 오프셋)을 쓰고, (2) 실패 시 지연(delay timer)이나 시도 횟수 제한이 부실해 CAN 버스에 직접 붙어 무차별대입이 가능하다는 점이다.
+
+```python
+#!/usr/bin/env python3
+"""UDS SecurityAccess 무차별대입 시도가 정상 지연·잠금 정책을 지키는지 검증 (python-can, 벤치 환경 전용)."""
+import time
+import can
+
+REQUEST_SEED_SID = 0x27
+LEVEL = 0x01  # Seed 요청 서브함수
+
+
+def request_seed(bus: can.Bus, arb_id: int) -> bytes:
+    msg = can.Message(arbitration_id=arb_id, data=[0x02, REQUEST_SEED_SID, LEVEL], is_extended_id=False)
+    bus.send(msg)
+    response = bus.recv(timeout=1.0)
+    return response.data if response else b""
+
+
+def check_lockout_policy(bus: can.Bus, arb_id: int, attempts: int = 5) -> None:
+    """잘못된 키로 반복 시도했을 때 지연시간이 지수적으로 늘어나는지 확인."""
+    delays = []
+    for i in range(attempts):
+        start = time.time()
+        seed = request_seed(bus, arb_id)
+        # 의도적으로 틀린 Key 전송 (0xFFFFFFFF)
+        wrong_key = can.Message(
+            arbitration_id=arb_id, data=[0x06, REQUEST_SEED_SID + 1, 0xFF, 0xFF, 0xFF, 0xFF],
+            is_extended_id=False,
+        )
+        bus.send(wrong_key)
+        bus.recv(timeout=1.0)
+        delays.append(time.time() - start)
+
+    print(f"[*] {attempts}회 실패 시도 간 응답 지연: {[f'{d:.2f}s' for d in delays]}")
+    if max(delays) < 5.0:
+        print("[!] 지연시간이 5초 미만으로 유지됨 — 무차별대입 방어 정책 미흡 의심")
+    else:
+        print("[+] 지연시간이 증가하는 잠금 정책 확인됨")
+
+
+if __name__ == "__main__":
+    bus = can.interface.Bus(channel="can0", bustype="socketcan")
+    check_lockout_policy(bus, arb_id=0x7E0)
+```
+
+**방어 체크리스트**: ISO 14229는 실패 시 최소 10초 지연(`requestSeed` 반복 시 점증)을 요구하지만 규정 준수 없이 출고된 ECU가 여전히 많다. (1) Seed-Key 알고리즘은 XOR 같은 단순 연산이 아니라 표준화된 암호 알고리즘(HSM 기반 AES-CMAC 등)을 쓰고, (2) 진단 포트(OBD-II)는 물리적으로 접근 가능하므로 애초에 CAN 버스 자체를 게이트웨이 ECU로 세그먼트 분리해 진단 네트워크와 파워트레인 네트워크를 격리하는 것이 근본 대응이다.
+
+---
+
 ## 5. 참고 자료
 
 - **ISO/SAE 21434 개요**: https://www.iso.org/standard/70918.html
@@ -652,6 +704,56 @@ python3 tara.py --scenarios scenarios.json
 # Check WP.29 compliance
 python3 wp29_checklist.py
 ```
+
+## UDS Seed-Key Security Access Brute-Force Defense
+
+The UDS (Unified Diagnostic Services, ISO 14229) protocol protects ECU diagnostics/reprogramming access via the `SecurityAccess` procedure (service 0x27): a diagnostic tool requests access, the ECU sends back a random seed, and the lock only opens once the tool returns a key computed with a secret algorithm. The problem is that many older ECUs (1) use a weak seed-key algorithm (simple XOR, fixed offsets), and (2) have poor delay-timer or attempt-limiting policies on failure, making brute-force feasible for anyone connected directly to the CAN bus.
+
+```python
+#!/usr/bin/env python3
+"""Verify that repeated UDS SecurityAccess attempts trigger the expected delay/lockout policy (python-can, bench-only)."""
+import time
+import can
+
+REQUEST_SEED_SID = 0x27
+LEVEL = 0x01  # seed-request subfunction
+
+
+def request_seed(bus: can.Bus, arb_id: int) -> bytes:
+    msg = can.Message(arbitration_id=arb_id, data=[0x02, REQUEST_SEED_SID, LEVEL], is_extended_id=False)
+    bus.send(msg)
+    response = bus.recv(timeout=1.0)
+    return response.data if response else b""
+
+
+def check_lockout_policy(bus: can.Bus, arb_id: int, attempts: int = 5) -> None:
+    """Check whether the response delay increases exponentially across repeated wrong-key attempts."""
+    delays = []
+    for i in range(attempts):
+        start = time.time()
+        seed = request_seed(bus, arb_id)
+        # deliberately send a wrong key (0xFFFFFFFF)
+        wrong_key = can.Message(
+            arbitration_id=arb_id, data=[0x06, REQUEST_SEED_SID + 1, 0xFF, 0xFF, 0xFF, 0xFF],
+            is_extended_id=False,
+        )
+        bus.send(wrong_key)
+        bus.recv(timeout=1.0)
+        delays.append(time.time() - start)
+
+    print(f"[*] Response delay across {attempts} failed attempts: {[f'{d:.2f}s' for d in delays]}")
+    if max(delays) < 5.0:
+        print("[!] Delay stayed under 5s -- brute-force defense policy may be insufficient")
+    else:
+        print("[+] Confirmed a lockout policy with increasing delay")
+
+
+if __name__ == "__main__":
+    bus = can.interface.Bus(channel="can0", bustype="socketcan")
+    check_lockout_policy(bus, arb_id=0x7E0)
+```
+
+**Defense checklist**: ISO 14229 requires at least a 10-second delay on failure (escalating on repeated `requestSeed` attempts), but plenty of ECUs still ship without complying. (1) Use a standardized cryptographic algorithm (HSM-based AES-CMAC, etc.) for seed-key computation instead of a simple operation like XOR, and (2) since the diagnostic port (OBD-II) is physically accessible, the root-cause fix is segmenting the CAN bus itself through a gateway ECU so the diagnostic network is isolated from the powertrain network.
 
 ## References
 

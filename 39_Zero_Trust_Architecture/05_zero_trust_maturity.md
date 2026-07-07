@@ -797,6 +797,61 @@ Phase 4 (12개월+): 최적화
 
 ---
 
+## 8.5 SPIFFE/SPIRE를 이용한 워크로드 신원 자동화
+
+제로 트러스트에서 "사용자 신원"(2절)은 SSO·MFA로 비교적 잘 다뤄지지만, **워크로드(서비스·마이크로서비스) 간의 신원**은 여전히 API 키나 고정 인증서를 수동 배포하는 경우가 많다 — 이는 키 로테이션이 느리고 유출 시 장기간 악용 가능한 취약점이다. SPIFFE(Secure Production Identity Framework For Everyone)는 워크로드에 **자동으로 단기 수명의 암호화 신원(SVID)**을 발급하는 표준이고, SPIRE는 그 참조 구현체다.
+
+```yaml
+# SPIRE Server 등록 — "이 워크로드는 이 조건을 만족해야 이 신원(SPIFFE ID)을 받는다"
+# selector로 K8s 서비스 어카운트를 검증 조건으로 사용 (워크로드 자체가 신원을 주장할 수 없게 함)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spire-registration
+data:
+  entry.conf: |
+    spire-server entry create \
+      -spiffeID spiffe://example.org/ns/payments/sa/payment-service \
+      -parentID spiffe://example.org/spire/agent/k8s_psat/cluster1 \
+      -selector k8s:ns:payments \
+      -selector k8s:sa:payment-service
+```
+
+```python
+#!/usr/bin/env python3
+"""SPIRE Workload API에서 SVID(단기 신원 인증서)를 받아 mTLS 클라이언트에 사용."""
+import grpc
+from pyspiffe.workloadapi.default_jwt_source import DefaultJwtSource
+from pyspiffe.workloadapi.default_x509_source import DefaultX509Source
+
+
+def get_workload_identity() -> tuple[str, bytes]:
+    """워크로드 API 소켓에서 X.509 SVID(자동 갱신되는 mTLS 인증서)를 조회."""
+    with DefaultX509Source() as source:
+        svid = source.svid
+        spiffe_id = str(svid.spiffe_id)
+        cert_chain = svid.cert_chain
+        print(f"[+] 발급된 SPIFFE ID: {spiffe_id}")
+        print(f"    유효기간: 인증서는 SPIRE Agent가 백그라운드에서 자동 로테이션")
+        return spiffe_id, cert_chain
+
+
+def verify_peer_identity(peer_spiffe_id: str, allowed_ids: set[str]) -> bool:
+    """mTLS 연결 시 상대방 SPIFFE ID가 허용 목록에 있는지 확인 (인증서 CN이 아니라 SPIFFE ID로 판단)."""
+    if peer_spiffe_id not in allowed_ids:
+        print(f"[!] 허용되지 않은 워크로드 신원: {peer_spiffe_id}")
+        return False
+    return True
+
+
+if __name__ == "__main__":
+    get_workload_identity()
+```
+
+**핵심**: SPIFFE ID(`spiffe://example.org/ns/payments/sa/payment-service`)는 IP·호스트명이 아니라 **워크로드가 무엇인지(네임스페이스·서비스어카운트 등)**를 표현하므로, 인프라가 재배포·스케일링돼도 신원이 유지된다. SVID는 보통 1시간 이내로 짧게 발급되고 SPIRE Agent가 자동 로테이션하므로, 정적 API 키·장기 인증서 방식과 달리 유출돼도 피해 시간이 극히 제한적이다. 제로 트러스트의 "지속적 검증"(5절 CAE) 원칙이 사용자뿐 아니라 워크로드 간 통신에도 동일하게 적용돼야 진정한 의미의 완전한 제로 트러스트다.
+
+---
+
 ## 참고 자료
 
 - **CISA Zero Trust Maturity Model v2.0** — [https://www.cisa.gov/zero-trust-maturity-model](https://www.cisa.gov/zero-trust-maturity-model)
@@ -1163,6 +1218,61 @@ Phase 4 (12+ months): Optimization
   □ Automated orchestration
   □ Continuous compliance measurement
 ```
+
+---
+
+## Workload Identity Automation with SPIFFE/SPIRE
+
+In zero trust, "user identity" (section 2) is fairly well handled by SSO/MFA, but **identity between workloads** (services/microservices) is still often built on manually distributed API keys or static certificates -- key rotation is slow, and a leak can be abused for a long time. SPIFFE (Secure Production Identity Framework For Everyone) is a standard for **automatically issuing short-lived cryptographic identities (SVIDs)** to workloads, and SPIRE is its reference implementation.
+
+```yaml
+# SPIRE Server registration -- "this workload gets this identity (SPIFFE ID) only if it meets these conditions"
+# uses a K8s service account as the selector (so the workload itself can never just claim an identity)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spire-registration
+data:
+  entry.conf: |
+    spire-server entry create \
+      -spiffeID spiffe://example.org/ns/payments/sa/payment-service \
+      -parentID spiffe://example.org/spire/agent/k8s_psat/cluster1 \
+      -selector k8s:ns:payments \
+      -selector k8s:sa:payment-service
+```
+
+```python
+#!/usr/bin/env python3
+"""Fetch an SVID (short-lived identity certificate) from the SPIRE Workload API and use it for an mTLS client."""
+import grpc
+from pyspiffe.workloadapi.default_jwt_source import DefaultJwtSource
+from pyspiffe.workloadapi.default_x509_source import DefaultX509Source
+
+
+def get_workload_identity() -> tuple[str, bytes]:
+    """Fetch an X.509 SVID (an auto-rotating mTLS certificate) from the workload API socket."""
+    with DefaultX509Source() as source:
+        svid = source.svid
+        spiffe_id = str(svid.spiffe_id)
+        cert_chain = svid.cert_chain
+        print(f"[+] Issued SPIFFE ID: {spiffe_id}")
+        print(f"    Validity: the certificate is auto-rotated in the background by the SPIRE Agent")
+        return spiffe_id, cert_chain
+
+
+def verify_peer_identity(peer_spiffe_id: str, allowed_ids: set[str]) -> bool:
+    """On an mTLS connection, check the peer's SPIFFE ID against an allowlist (judged by SPIFFE ID, not certificate CN)."""
+    if peer_spiffe_id not in allowed_ids:
+        print(f"[!] Disallowed workload identity: {peer_spiffe_id}")
+        return False
+    return True
+
+
+if __name__ == "__main__":
+    get_workload_identity()
+```
+
+**Key point**: a SPIFFE ID (`spiffe://example.org/ns/payments/sa/payment-service`) expresses **what the workload is** (namespace, service account, etc.) rather than its IP or hostname, so identity survives redeployment and scaling. SVIDs are typically issued with a lifetime under an hour and auto-rotated by the SPIRE Agent, so unlike static API keys or long-lived certificates, the window of exposure from a leak is extremely limited. Zero trust's "continuous verification" principle (section 5, CAE) is only truly complete once it applies equally to workload-to-workload traffic, not just users.
 
 ---
 
