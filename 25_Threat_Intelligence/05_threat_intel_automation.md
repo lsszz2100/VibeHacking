@@ -617,6 +617,77 @@ def fetch_indicators(
 
 ---
 
+## 4.5 MITRE ATT&CK Navigator 자동 커버리지 갭 분석
+
+위협 인텔 팀은 IOC를 수집·공유하는 데서 그치지 않고, "우리 조직이 실제로 탐지 규칙을 갖춘 ATT&CK 기법이 무엇이고 안 갖춘 기법이 무엇인가"를 정기적으로 확인해야 한다. SIEM에 등록된 탐지 규칙(각 규칙의 `tags`에 기법 ID가 있다고 가정)과 ATT&CK 전체 기법 목록을 대조하면 Navigator에 바로 로드할 수 있는 커버리지 히트맵을 자동 생성할 수 있다.
+
+```python
+#!/usr/bin/env python3
+"""SIEM 탐지 규칙 태그와 ATT&CK Enterprise 기법 전체 목록을 대조해 갭 분석 + Navigator 레이어 생성."""
+import json
+import requests
+from pathlib import Path
+
+ATTACK_STIX_URL = (
+    "https://raw.githubusercontent.com/mitre/cti/master/"
+    "enterprise-attack/enterprise-attack.json"
+)
+
+
+def fetch_all_technique_ids() -> set[str]:
+    bundle = requests.get(ATTACK_STIX_URL, timeout=30).json()
+    ids = set()
+    for obj in bundle.get("objects", []):
+        if obj.get("type") != "attack-pattern":
+            continue
+        for ref in obj.get("external_references", []):
+            if ref.get("source_name") == "mitre-attack":
+                ids.add(ref["external_id"])
+    return ids
+
+
+def load_covered_technique_ids(rules_export: Path) -> set[str]:
+    """SIEM 규칙 내보내기(JSON)에서 각 규칙의 ATT&CK 태그(T1234 형식)를 추출."""
+    rules = json.loads(rules_export.read_text())
+    covered = set()
+    for rule in rules:
+        for tag in rule.get("tags", []):
+            if tag.startswith("attack.t"):
+                covered.add(tag.split(".")[-1].upper())
+    return covered
+
+
+def build_navigator_layer(all_ids: set[str], covered_ids: set[str]) -> dict:
+    return {
+        "name": "Detection Coverage Gap",
+        "versions": {"attack": "15", "navigator": "4.9.1", "layer": "4.5"},
+        "domain": "enterprise-attack",
+        "techniques": [
+            {
+                "techniqueID": tid,
+                "color": "#4caf50" if tid in covered_ids else "#f44336",
+                "comment": "Covered" if tid in covered_ids else "No detection rule",
+            }
+            for tid in sorted(all_ids)
+        ],
+    }
+
+
+if __name__ == "__main__":
+    all_ids = fetch_all_technique_ids()
+    covered = load_covered_technique_ids(Path("siem_rules_export.json"))
+    gap = all_ids - covered
+    print(f"[!] 전체 {len(all_ids)}개 기법 중 미탐지 {len(gap)}개")
+
+    layer = build_navigator_layer(all_ids, covered)
+    Path("coverage_layer.json").write_text(json.dumps(layer, indent=2))
+    print("[+] Navigator 레이어 저장: coverage_layer.json (mitre-attack.github.io/attack-navigator 에 업로드)")
+```
+
+**활용 포인트**: 이 갭 분석은 "탐지 규칙 개수"가 아니라 "고유 기법 커버리지"를 측정하므로, 같은 기법에 규칙 10개가 몰려 있어도 다른 30개 기법이 비어 있으면 그대로 드러난다. 위협 인텔에서 최근 활동 중인 그룹(예: 특정 APT)의 TTP를 STIX에서 뽑아 이 갭 목록과 교차하면, "지금 우리 산업을 노리는 그룹이 쓰는 기법 중 우리가 못 잡는 것"을 우선순위 1위로 추릴 수 있다.
+
+---
+
 <!-- detect-validate-25 -->
 ## 위협 인텔 자동화 작동 검증과 회귀
 
@@ -694,6 +765,75 @@ python3 stix_creator.py --malware "TestRAT" --hash "abc123..."
 # Sync with MISP
 python3 misp_automation.py --url https://misp.example.com --export-iocs
 ```
+
+## MITRE ATT&CK Navigator Automated Coverage-Gap Analysis
+
+A threat intel team's job doesn't stop at collecting and sharing IOCs — it also means regularly checking "which ATT&CK techniques does our organization actually have detection rules for, and which are we missing." Cross-referencing the detection rules registered in your SIEM (assuming each rule's `tags` field carries a technique ID) against the full ATT&CK technique list produces a coverage heatmap you can load straight into Navigator.
+
+```python
+#!/usr/bin/env python3
+"""Cross-reference SIEM detection-rule tags against the full ATT&CK Enterprise technique list; build a Navigator layer."""
+import json
+import requests
+from pathlib import Path
+
+ATTACK_STIX_URL = (
+    "https://raw.githubusercontent.com/mitre/cti/master/"
+    "enterprise-attack/enterprise-attack.json"
+)
+
+
+def fetch_all_technique_ids() -> set[str]:
+    bundle = requests.get(ATTACK_STIX_URL, timeout=30).json()
+    ids = set()
+    for obj in bundle.get("objects", []):
+        if obj.get("type") != "attack-pattern":
+            continue
+        for ref in obj.get("external_references", []):
+            if ref.get("source_name") == "mitre-attack":
+                ids.add(ref["external_id"])
+    return ids
+
+
+def load_covered_technique_ids(rules_export: Path) -> set[str]:
+    """Extract each rule's ATT&CK tag (T1234 format) from a SIEM rule export (JSON)."""
+    rules = json.loads(rules_export.read_text())
+    covered = set()
+    for rule in rules:
+        for tag in rule.get("tags", []):
+            if tag.startswith("attack.t"):
+                covered.add(tag.split(".")[-1].upper())
+    return covered
+
+
+def build_navigator_layer(all_ids: set[str], covered_ids: set[str]) -> dict:
+    return {
+        "name": "Detection Coverage Gap",
+        "versions": {"attack": "15", "navigator": "4.9.1", "layer": "4.5"},
+        "domain": "enterprise-attack",
+        "techniques": [
+            {
+                "techniqueID": tid,
+                "color": "#4caf50" if tid in covered_ids else "#f44336",
+                "comment": "Covered" if tid in covered_ids else "No detection rule",
+            }
+            for tid in sorted(all_ids)
+        ],
+    }
+
+
+if __name__ == "__main__":
+    all_ids = fetch_all_technique_ids()
+    covered = load_covered_technique_ids(Path("siem_rules_export.json"))
+    gap = all_ids - covered
+    print(f"[!] {len(gap)} of {len(all_ids)} techniques have no detection")
+
+    layer = build_navigator_layer(all_ids, covered)
+    Path("coverage_layer.json").write_text(json.dumps(layer, indent=2))
+    print("[+] Navigator layer saved: coverage_layer.json (upload at mitre-attack.github.io/attack-navigator)")
+```
+
+**How to use it**: this gap analysis measures unique technique coverage, not rule count — so if ten rules pile up on one technique while thirty others sit empty, that gap still shows up clearly. Cross-referencing the TTPs of an actively tracked threat group (e.g., a specific APT) pulled from STIX against this gap list lets you rank "techniques this group uses against our industry right now that we can't currently catch" as priority one.
 
 ## References
 

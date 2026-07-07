@@ -634,6 +634,66 @@ if __name__ == "__main__":
 
 ---
 
+## 4.5 DNS 터널링 탐지 자동화 (엔트로피·쿼리 길이 기반)
+
+DNS는 대부분의 방화벽 정책에서 아웃바운드 53번 포트가 열려 있어, 공격자는 데이터를 DNS 쿼리 서브도메인에 인코딩해 내보내는 DNS 터널링(iodine, dnscat2 등, 17장 참조)으로 이 필터를 우회한다. 정상 DNS 쿼리와 달리 터널링 트래픽은 (1) 서브도메인 라벨이 길고 무작위에 가까워 **엔트로피가 높고**, (2) 같은 도메인에 대한 쿼리 빈도가 비정상적으로 높다.
+
+```python
+#!/usr/bin/env python3
+"""NetFlow/Zeek DNS 로그에서 엔트로피·쿼리빈도 기반 DNS 터널링 후보 탐지."""
+import math
+from collections import Counter, defaultdict
+from pathlib import Path
+
+
+def shannon_entropy(s: str) -> float:
+    if not s:
+        return 0.0
+    counts = Counter(s)
+    length = len(s)
+    return -sum((c / length) * math.log2(c / length) for c in counts.values())
+
+
+def analyze_dns_log(path: Path, entropy_threshold: float = 3.8, freq_threshold: int = 100) -> None:
+    query_count = defaultdict(int)
+    high_entropy_queries = []
+
+    for line in path.read_text(errors="ignore").splitlines():
+        fields = line.split("\t")
+        if len(fields) < 2:
+            continue
+        query = fields[1].strip(".")
+        labels = query.split(".")
+        if not labels:
+            continue
+
+        subdomain = labels[0]
+        base_domain = ".".join(labels[-2:]) if len(labels) >= 2 else query
+        query_count[base_domain] += 1
+
+        if len(subdomain) > 20:
+            entropy = shannon_entropy(subdomain)
+            if entropy > entropy_threshold:
+                high_entropy_queries.append((base_domain, subdomain, entropy))
+
+    print("[*] 고엔트로피 서브도메인 (터널링 페이로드 의심):")
+    for domain, sub, ent in high_entropy_queries[:20]:
+        print(f"  {domain}  sub={sub[:40]}...  entropy={ent:.2f}")
+
+    print("\n[*] 비정상 고빈도 쿼리 도메인:")
+    for domain, count in query_count.items():
+        if count > freq_threshold:
+            print(f"  {domain}: {count}회")
+
+
+if __name__ == "__main__":
+    analyze_dns_log(Path("dns.log"))
+```
+
+**탐지/방어**: CDN·광고 도메인처럼 정상적으로도 무작위 서브도메인을 쓰는 서비스가 있어 엔트로피만으로는 오탐이 생기므로, **엔트로피 + 쿼리 빈도 + 응답 레코드 타입(TXT/NULL 응답 비중)**을 함께 봐야 정확도가 올라간다. 방어 측에서는 재귀 DNS 서버를 통해서만 외부 쿼리가 나가도록 강제(직접 53번 포트 아웃바운드 차단)하면, 최소한 모든 DNS 트래픽을 한 지점에서 로깅·분석할 수 있어 터널링 탐지 커버리지가 크게 개선된다.
+
+---
+
 <!-- detect-validate-24 -->
 ## 네트워크 방어 자동화 작동 검증과 회귀
 
@@ -719,6 +779,64 @@ python3 dashboard.py --watch
 2. **Beaconing detection**: NetFlow analysis → periodic connections to same destination → C2 flag
 3. **DNS exfiltration**: DNS flows > 1MB → DNS tunneling alert
 4. **Geo-blocking**: ipset + iptables for country-level blocking
+
+## DNS Tunneling Detection Automation (Entropy and Query-Length Based)
+
+Since outbound port 53 is left open in most firewall policies, attackers use DNS tunneling (iodine, dnscat2, etc. — see chapter 17) to exfiltrate data encoded into DNS query subdomains, bypassing that filter. Unlike normal DNS queries, tunneling traffic tends to have (1) long, near-random subdomain labels with **high entropy**, and (2) an abnormally high query frequency against the same domain.
+
+```python
+#!/usr/bin/env python3
+"""Flag DNS tunneling candidates from a NetFlow/Zeek DNS log using entropy and query-frequency."""
+import math
+from collections import Counter, defaultdict
+from pathlib import Path
+
+
+def shannon_entropy(s: str) -> float:
+    if not s:
+        return 0.0
+    counts = Counter(s)
+    length = len(s)
+    return -sum((c / length) * math.log2(c / length) for c in counts.values())
+
+
+def analyze_dns_log(path: Path, entropy_threshold: float = 3.8, freq_threshold: int = 100) -> None:
+    query_count = defaultdict(int)
+    high_entropy_queries = []
+
+    for line in path.read_text(errors="ignore").splitlines():
+        fields = line.split("\t")
+        if len(fields) < 2:
+            continue
+        query = fields[1].strip(".")
+        labels = query.split(".")
+        if not labels:
+            continue
+
+        subdomain = labels[0]
+        base_domain = ".".join(labels[-2:]) if len(labels) >= 2 else query
+        query_count[base_domain] += 1
+
+        if len(subdomain) > 20:
+            entropy = shannon_entropy(subdomain)
+            if entropy > entropy_threshold:
+                high_entropy_queries.append((base_domain, subdomain, entropy))
+
+    print("[*] High-entropy subdomains (suspected tunneling payload):")
+    for domain, sub, ent in high_entropy_queries[:20]:
+        print(f"  {domain}  sub={sub[:40]}...  entropy={ent:.2f}")
+
+    print("\n[*] Abnormally high-frequency query domains:")
+    for domain, count in query_count.items():
+        if count > freq_threshold:
+            print(f"  {domain}: {count} queries")
+
+
+if __name__ == "__main__":
+    analyze_dns_log(Path("dns.log"))
+```
+
+**Detection/Defense**: services like CDNs and ad networks legitimately use random-looking subdomains too, so entropy alone false-positives — combining **entropy + query frequency + response record type (share of TXT/NULL responses)** raises accuracy considerably. On the defensive side, forcing all external DNS queries through a recursive resolver (blocking direct outbound port 53) at least centralizes logging and analysis of all DNS traffic at one point, which substantially improves tunneling-detection coverage.
 
 ## References
 

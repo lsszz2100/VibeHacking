@@ -901,6 +901,59 @@ if __name__ == "__main__":
 
 ---
 
+## 6.5 루팅/탈옥 탐지 우회에 대한 서버측 무결성 검증 (Play Integrity / DeviceCheck)
+
+앞서 본 Frida 훅으로 클라이언트 측 루팅 탐지는 대부분 우회 가능하다 — 앱이 스스로 "나는 루팅되지 않았다"고 판단하는 로직은 결국 그 판단 자체를 조작당할 수 있기 때문이다. 근본 대응은 **판단을 기기가 아니라 서버가 하도록** 옮기는 것이다. Android의 Play Integrity API와 iOS의 DeviceCheck/App Attest는 OS·하드웨어 수준에서 서명된 증명(attestation)을 생성해, 이를 서버가 구글/애플 서버에 직접 검증하도록 한다 — Frida가 앱 프로세스를 후킹해도 이 증명 자체는 위조할 수 없다(하드웨어 키로 서명되기 때문).
+
+```kotlin
+// Android 클라이언트 — Play Integrity API로 무결성 토큰 요청
+val integrityManager = IntegrityManagerFactory.create(applicationContext)
+val request = IntegrityTokenRequest.builder()
+    .setNonce(serverProvidedNonce)  // 서버가 발급한 1회용 nonce (재전송 공격 방지)
+    .build()
+
+integrityManager.requestIntegrityToken(request)
+    .addOnSuccessListener { response ->
+        val token = response.token()
+        // 이 토큰을 그대로 서버에 전송 — 클라이언트는 토큰 내용을 해석하지 않는다
+        sendTokenToServer(token)
+    }
+```
+
+```python
+#!/usr/bin/env python3
+"""서버 측 — Play Integrity 토큰을 구글 API로 검증 (앱 신뢰 여부는 여기서 최종 판단)."""
+import requests
+
+
+def verify_integrity_token(token: str, package_name: str, access_token: str) -> dict:
+    url = (
+        f"https://playintegrity.googleapis.com/v1/{package_name}:decodeIntegrityToken"
+    )
+    resp = requests.post(
+        url,
+        json={"integrity_token": token},
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=10,
+    )
+    result = resp.json().get("tokenPayloadExternal", {})
+
+    device_verdict = result.get("deviceIntegrity", {}).get("deviceRecognitionVerdict", [])
+    app_verdict = result.get("appIntegrity", {}).get("appRecognitionVerdict")
+
+    is_trusted = "MEETS_DEVICE_INTEGRITY" in device_verdict and app_verdict == "PLAY_RECOGNIZED"
+    return {"trusted": is_trusted, "device": device_verdict, "app": app_verdict}
+
+
+if __name__ == "__main__":
+    result = verify_integrity_token("TOKEN_FROM_CLIENT", "com.example.app", "SERVER_ACCESS_TOKEN")
+    print(f"[{'+' if result['trusted'] else '!'}] 무결성 검증: {result}")
+```
+
+**핵심**: 클라이언트 측 루팅 탐지(이 절 위쪽 내용)는 사용자 경험 저하 없이 대략적인 위험 신호를 걸러내는 1차 필터 정도로만 쓰고, 결제·계정 보안 같은 진짜 민감한 로직의 신뢰 판단은 반드시 **서버가 Play Integrity/DeviceCheck 토큰을 직접 검증한 결과**에 근거해야 한다. nonce를 서버가 매 요청마다 새로 발급해야 재전송(replay) 공격도 막을 수 있다.
+
+---
+
 ## 7. ADB 커맨드 치트시트 (초보자용)
 
 ADB(Android Debug Bridge)는 컴퓨터와 안드로이드 기기 사이를 연결하는 도구다.
@@ -1334,6 +1387,59 @@ Java.perform(function() {
     console.log('[+] SSL pinning bypass complete');
 });
 ```
+
+---
+
+## 5.5 Server-Side Integrity Verification Against Root/Jailbreak Detection Bypass (Play Integrity / DeviceCheck)
+
+The Frida hooks shown above defeat most client-side root detection — because the logic an app uses to decide "I'm not rooted" for itself can, in the end, be tampered with just as easily as that decision. The real fix is to **move the decision off the device and onto the server**. Android's Play Integrity API and iOS's DeviceCheck/App Attest generate a signed attestation at the OS/hardware level, which the server verifies directly against Google's or Apple's servers — even if Frida hooks the app process, it can't forge that attestation itself, since it's signed with a hardware-backed key.
+
+```kotlin
+// Android client -- request an integrity token via the Play Integrity API
+val integrityManager = IntegrityManagerFactory.create(applicationContext)
+val request = IntegrityTokenRequest.builder()
+    .setNonce(serverProvidedNonce)  // one-time nonce issued by the server (prevents replay)
+    .build()
+
+integrityManager.requestIntegrityToken(request)
+    .addOnSuccessListener { response ->
+        val token = response.token()
+        // send this token to the server as-is -- the client never interprets its contents
+        sendTokenToServer(token)
+    }
+```
+
+```python
+#!/usr/bin/env python3
+"""Server side -- verify a Play Integrity token against Google's API (this is where app trust is finally decided)."""
+import requests
+
+
+def verify_integrity_token(token: str, package_name: str, access_token: str) -> dict:
+    url = (
+        f"https://playintegrity.googleapis.com/v1/{package_name}:decodeIntegrityToken"
+    )
+    resp = requests.post(
+        url,
+        json={"integrity_token": token},
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=10,
+    )
+    result = resp.json().get("tokenPayloadExternal", {})
+
+    device_verdict = result.get("deviceIntegrity", {}).get("deviceRecognitionVerdict", [])
+    app_verdict = result.get("appIntegrity", {}).get("appRecognitionVerdict")
+
+    is_trusted = "MEETS_DEVICE_INTEGRITY" in device_verdict and app_verdict == "PLAY_RECOGNIZED"
+    return {"trusted": is_trusted, "device": device_verdict, "app": app_verdict}
+
+
+if __name__ == "__main__":
+    result = verify_integrity_token("TOKEN_FROM_CLIENT", "com.example.app", "SERVER_ACCESS_TOKEN")
+    print(f"[{'+' if result['trusted'] else '!'}] Integrity check: {result}")
+```
+
+**Key point**: treat client-side root detection (covered earlier in this section) as no more than a first-pass filter for filtering out obvious risk signals without hurting UX — trust decisions for genuinely sensitive logic like payments or account security must instead rest on **the server directly verifying a Play Integrity/DeviceCheck token**. The server must also issue a fresh nonce on every request, or replay attacks become possible again.
 
 ---
 

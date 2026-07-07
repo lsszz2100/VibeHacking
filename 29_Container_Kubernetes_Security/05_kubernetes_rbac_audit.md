@@ -467,6 +467,76 @@ if __name__ == "__main__":
 
 ---
 
+## 3.5 OPA/Gatekeeper Admission Control 정책 검증
+
+RBAC(1~3절)가 "누가 어떤 리소스에 접근 가능한가"를 통제한다면, OPA(Open Policy Agent) Gatekeeper는 그보다 한 단계 앞서 **리소스가 클러스터에 생성되는 시점에 정책 위반을 아예 막는** Admission Controller다. "privileged 컨테이너 금지", "특정 레지스트리 이미지만 허용" 같은 조직 정책을 Rego 언어로 작성해 강제한다.
+
+```yaml
+# ConstraintTemplate — privileged 컨테이너 생성을 막는 정책 템플릿
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdenyprivileged
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDenyPrivileged
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sdenyprivileged
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.containers[_]
+          c.securityContext.privileged == true
+          msg := sprintf("privileged container %v is not allowed", [c.name])
+        }
+---
+# Constraint — 위 템플릿을 실제로 적용
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sDenyPrivileged
+metadata:
+  name: deny-privileged-containers
+spec:
+  enforcementAction: deny  # dryrun으로 먼저 검증 후 deny로 전환 권장
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+```
+
+```python
+#!/usr/bin/env python3
+"""Gatekeeper 위반(constraint violation) 이벤트를 조회해 정책이 실제로 작동 중인지 확인."""
+import json
+import subprocess
+
+
+def check_gatekeeper_violations() -> None:
+    result = subprocess.run(
+        ["kubectl", "get", "constraints", "-o", "json"],
+        capture_output=True, text=True,
+    )
+    constraints = json.loads(result.stdout).get("items", [])
+
+    for c in constraints:
+        name = c["metadata"]["name"]
+        status = c.get("status", {})
+        violations = status.get("violations", [])
+        enforcement = c["spec"].get("enforcementAction", "deny")
+        print(f"[{name}] enforcementAction={enforcement}, 위반 {len(violations)}건")
+        for v in violations[:5]:
+            print(f"    - {v.get('message')}")
+
+
+if __name__ == "__main__":
+    check_gatekeeper_violations()
+```
+
+**핵심**: 새 정책은 처음부터 `enforcementAction: deny`로 배포하지 말고, 반드시 `dryrun`으로 먼저 얼마나 많은 기존 리소스가 위반하는지 확인한 뒤(레거시 워크로드 대량 차단 방지) 단계적으로 `warn` → `deny`로 전환한다. RBAC은 "누가"를, Gatekeeper는 "무엇이 배포될 수 있는가"를 통제하므로 두 계층을 함께 감사해야 privileged 컨테이너·호스트 네트워크 사용 같은 RBAC만으로는 못 막는 위험을 커버할 수 있다.
+
+---
+
 <!-- detect-validate-29 -->
 ## Kubernetes RBAC 감사 작동 검증과 회귀
 
@@ -874,6 +944,78 @@ if __name__ == "__main__":
 | Unencrypted etcd | etcd TLS + data encryption | K8s encryption at rest |
 | No namespace isolation | Enforce NetworkPolicy | Calico, Cilium |
 | Anonymous API access | --anonymous-auth=false | kube-apiserver configuration |
+
+---
+
+## 3.5 OPA/Gatekeeper Admission Control Policy Verification
+
+If RBAC (sections 1-3) controls "who can access which resources," OPA (Open Policy Agent) Gatekeeper works a step earlier as an Admission Controller that **blocks policy violations at the moment a resource is created in the cluster**. Organizational rules like "no privileged containers" or "only images from an approved registry" get written in the Rego language and enforced there.
+
+```yaml
+# ConstraintTemplate -- a policy template that blocks creation of privileged containers
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdenyprivileged
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDenyPrivileged
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sdenyprivileged
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.containers[_]
+          c.securityContext.privileged == true
+          msg := sprintf("privileged container %v is not allowed", [c.name])
+        }
+---
+# Constraint -- actually applies the template above
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sDenyPrivileged
+metadata:
+  name: deny-privileged-containers
+spec:
+  enforcementAction: deny  # recommended to validate with dryrun first, then switch to deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+```
+
+```python
+#!/usr/bin/env python3
+"""Query Gatekeeper constraint-violation events to confirm the policy is actually working."""
+import json
+import subprocess
+
+
+def check_gatekeeper_violations() -> None:
+    result = subprocess.run(
+        ["kubectl", "get", "constraints", "-o", "json"],
+        capture_output=True, text=True,
+    )
+    constraints = json.loads(result.stdout).get("items", [])
+
+    for c in constraints:
+        name = c["metadata"]["name"]
+        status = c.get("status", {})
+        violations = status.get("violations", [])
+        enforcement = c["spec"].get("enforcementAction", "deny")
+        print(f"[{name}] enforcementAction={enforcement}, {len(violations)} violation(s)")
+        for v in violations[:5]:
+            print(f"    - {v.get('message')}")
+
+
+if __name__ == "__main__":
+    check_gatekeeper_violations()
+```
+
+**Key point**: don't ship a new policy with `enforcementAction: deny` from day one — always validate first with `dryrun` to see how many existing resources would violate it (to avoid mass-blocking legacy workloads), then roll it forward in stages from `warn` to `deny`. RBAC governs "who," Gatekeeper governs "what can be deployed," so auditing both layers together is what covers risks — like privileged containers or host-network usage — that RBAC alone can't stop.
+
+---
 
 <!-- detect-validate-29 -->
 ## Kubernetes RBAC Audit Effectiveness Validation and Regression

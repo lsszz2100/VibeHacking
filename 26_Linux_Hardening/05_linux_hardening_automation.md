@@ -492,6 +492,48 @@ if __name__ == "__main__":
 
 ---
 
+## 3.5 BPF-LSM을 이용한 세분화된 강제접근제어
+
+AppArmor·SELinux는 프로파일/정책 언어로 강제접근제어(MAC)를 구현하지만 규칙이 정적이고 재컴파일·재로드가 필요하다. Linux 5.7+에 도입된 **BPF LSM**은 커널 LSM 훅에 eBPF 프로그램을 붙여, 파일 접근·소켓 연결·프로세스 실행 같은 보안 결정을 **런타임에 동적으로 판단**할 수 있게 한다 — Cilium Tetragon 같은 도구가 이를 기반으로 정책을 실시간 적용한다.
+
+```bash
+# BPF LSM이 커널에서 활성화됐는지 확인
+cat /sys/kernel/security/lsm  # 출력에 "bpf"가 포함되어야 함
+
+# 활성화되지 않았다면 커널 부트 파라미터 추가
+# GRUB_CMDLINE_LINUX="... lsm=capability,landlock,yama,apparmor,bpf"
+```
+
+```c
+// bpf_lsm 예시 — /etc/shadow 읽기 시도를 특정 cgroup 외에는 차단 (libbpf 스켈레톤 개념 코드)
+SEC("lsm/file_open")
+int BPF_PROG(restrict_shadow_read, struct file *file, int ret) {
+    if (ret != 0)
+        return ret;
+
+    char path[] = "/etc/shadow";
+    char fpath[32] = {};
+    bpf_d_path(&file->f_path, fpath, sizeof(fpath));
+
+    if (bpf_strncmp(fpath, sizeof(path), path) == 0) {
+        __u64 cgroup_id = bpf_get_current_cgroup_id();
+        if (cgroup_id != ALLOWED_CGROUP_ID)
+            return -EPERM;  // 허용된 cgroup 외 접근 거부
+    }
+    return 0;
+}
+```
+
+```bash
+# Cilium Tetragon으로 동일한 정책을 코드 작성 없이 TracingPolicy YAML로 적용
+tetragon --config-dir=/etc/tetragon/policies/
+# TracingPolicy 예: /etc/shadow open() 이벤트를 감사·차단
+```
+
+**핵심**: BPF LSM은 AppArmor/SELinux를 대체하는 것이 아니라 **보완**한다 — 정적 정책으로 표현하기 어려운 "이 프로세스의 최근 행위 이력에 따라 접근을 판단"(예: 이미 의심스러운 syscall을 호출한 프로세스만 차단) 같은 동적 로직에 강점이 있다. 다만 커널 5.7+ 요구사항과 BPF 검증기(verifier) 제약(반복문 크기·스택 크기 등)이 있어, 프로덕션 적용 전 CI에서 정책이 정상 워크로드를 차단하지 않는지 회귀 테스트가 필수다.
+
+---
+
 ## 4. 참고 자료
 
 - **CIS 벤치마크 다운로드**: https://www.cisecurity.org/cis-benchmarks/
@@ -567,6 +609,46 @@ sudo oscap xccdf eval \
 4. Enforce strong password policy (minlen=14, complexity requirements)
 5. Set restrictive file permissions (/etc/shadow 640, /etc/crontab 600)
 6. Enable auditd with identity and privilege escalation rules
+
+## Fine-Grained Mandatory Access Control with BPF LSM
+
+AppArmor and SELinux implement mandatory access control (MAC) via a profile/policy language, but the rules are static and need a recompile/reload to change. **BPF LSM**, introduced in Linux 5.7+, attaches eBPF programs to kernel LSM hooks so security decisions on file access, socket connections, and process execution can be made **dynamically at runtime** — tools like Cilium Tetragon build real-time policy enforcement on top of it.
+
+```bash
+# Check whether BPF LSM is active in the kernel
+cat /sys/kernel/security/lsm  # output should include "bpf"
+
+# If not enabled, add it to the kernel boot parameters
+# GRUB_CMDLINE_LINUX="... lsm=capability,landlock,yama,apparmor,bpf"
+```
+
+```c
+// bpf_lsm example -- block reads of /etc/shadow outside a specific cgroup (conceptual libbpf skeleton code)
+SEC("lsm/file_open")
+int BPF_PROG(restrict_shadow_read, struct file *file, int ret) {
+    if (ret != 0)
+        return ret;
+
+    char path[] = "/etc/shadow";
+    char fpath[32] = {};
+    bpf_d_path(&file->f_path, fpath, sizeof(fpath));
+
+    if (bpf_strncmp(fpath, sizeof(path), path) == 0) {
+        __u64 cgroup_id = bpf_get_current_cgroup_id();
+        if (cgroup_id != ALLOWED_CGROUP_ID)
+            return -EPERM;  // deny access outside the allowed cgroup
+    }
+    return 0;
+}
+```
+
+```bash
+# Apply the same policy with Cilium Tetragon via a TracingPolicy YAML, with no code required
+tetragon --config-dir=/etc/tetragon/policies/
+# Example TracingPolicy: audit/block open() events on /etc/shadow
+```
+
+**Key point**: BPF LSM doesn't replace AppArmor/SELinux — it **complements** them. Its strength is dynamic logic that's hard to express as a static policy, like "decide access based on this process's recent behavior history" (e.g., block only a process that already made a suspicious syscall earlier). That said, it requires kernel 5.7+ and is constrained by the BPF verifier (loop bounds, stack size, etc.), so regression-testing that a policy doesn't block legitimate workloads in CI is essential before production rollout.
 
 ## References
 

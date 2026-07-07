@@ -412,6 +412,73 @@ if __name__ == "__main__":
 
 ---
 
+## 3.5 라우터 설정 변경(Config Drift) 실시간 탐지
+
+앞의 감사 스크립트(3절)는 특정 시점의 설정을 규칙과 대조하는 **정적 점검**이다. 하지만 공격자가 관리 평면을 장악해 백도어 계정을 추가하거나 ACL을 완화하는 것은 대부분 **감사와 감사 사이의 짧은 시간에 발생하고 원상복구**되므로, 주기적 스캔만으로는 놓치기 쉽다. Config Drift 탐지는 매 설정 변경을 실시간으로 감지해, "언제 무엇이 바뀌었는지"를 이벤트로 남긴다.
+
+```python
+#!/usr/bin/env python3
+"""Netmiko로 주기적으로 running-config를 가져와 이전 스냅샷과 diff, 변경 시 즉시 알림."""
+import difflib
+import hashlib
+import time
+from pathlib import Path
+from netmiko import ConnectHandler
+
+BASELINE_DIR = Path("config_baselines")
+BASELINE_DIR.mkdir(exist_ok=True)
+
+
+def fetch_running_config(device: dict) -> str:
+    conn = ConnectHandler(**device)
+    config = conn.send_command("show running-config")
+    conn.disconnect()
+    return config
+
+
+def check_drift(hostname: str, current_config: str) -> None:
+    baseline_path = BASELINE_DIR / f"{hostname}.cfg"
+
+    if not baseline_path.exists():
+        baseline_path.write_text(current_config)
+        print(f"[*] {hostname}: 베이스라인 최초 저장")
+        return
+
+    previous_config = baseline_path.read_text()
+    if previous_config == current_config:
+        return
+
+    diff = list(difflib.unified_diff(
+        previous_config.splitlines(), current_config.splitlines(),
+        lineterm="", fromfile="이전", tofile="현재",
+    ))
+    print(f"[!] {hostname}: 설정 변경 감지 ({time.ctime()})")
+    for line in diff[:30]:
+        print(f"    {line}")
+
+    # 변경 이력 보관 후 새 베이스라인으로 갱신 (승인된 변경인지는 별도 티켓 시스템과 대조 필요)
+    (BASELINE_DIR / f"{hostname}_{int(time.time())}.diff").write_text("\n".join(diff))
+    baseline_path.write_text(current_config)
+
+
+if __name__ == "__main__":
+    device = {
+        "device_type": "cisco_ios",
+        "host": "10.0.0.1",
+        "username": "audit",
+        "use_keys": True,
+        "key_file": "~/.ssh/audit_key",
+    }
+    while True:
+        config = fetch_running_config(device)
+        check_drift(device["host"], config)
+        time.sleep(300)  # 5분마다 확인
+```
+
+**탐지/방어**: 이 방식은 "무엇이 바뀌었는가"는 알려주지만 "누가 바꿨는가"는 알려주지 못하므로, AAA(TACACS+/RADIUS) 명령 로깅과 반드시 함께 봐야 변경자를 특정할 수 있다. 변경 감지 시점과 변경 승인 티켓(체인지 매니지먼트) 시각을 자동 대조해, 승인되지 않은 변경만 우선 경보로 격상하면 오탐(정상 유지보수)에 의한 알림 피로를 크게 줄일 수 있다. 5분 폴링 간격 대신 장비가 지원하면 syslog `%SYS-5-CONFIG_I` 이벤트를 실시간 구독하는 것이 더 빠르다.
+
+---
+
 ## 4. 참고 자료
 
 - **Cisco 보안 가이드**: https://www.cisco.com/c/en/us/support/docs/ip/access-lists/13608-21.html
@@ -480,6 +547,71 @@ python3 device_audit.py 192.168.1.1 -u admin -k ~/.ssh/id_rsa --type cisco_ios
 # Bulk audit from JSON inventory
 python3 batch_audit.py --inventory devices.json -k ~/.ssh/id_rsa
 ```
+
+## Real-Time Config Drift Detection
+
+The audit script above is a **static check** that compares a config snapshot at one point in time against a rule set. But an attacker who's gained control of the management plane to add a backdoor account or loosen an ACL usually makes that change **and reverts it in the short window between audits**, so periodic scans alone easily miss it. Config drift detection instead watches for every configuration change in real time and logs "what changed, when" as an event.
+
+```python
+#!/usr/bin/env python3
+"""Periodically pull the running-config via Netmiko, diff against the last snapshot, and alert immediately on any change."""
+import difflib
+import hashlib
+import time
+from pathlib import Path
+from netmiko import ConnectHandler
+
+BASELINE_DIR = Path("config_baselines")
+BASELINE_DIR.mkdir(exist_ok=True)
+
+
+def fetch_running_config(device: dict) -> str:
+    conn = ConnectHandler(**device)
+    config = conn.send_command("show running-config")
+    conn.disconnect()
+    return config
+
+
+def check_drift(hostname: str, current_config: str) -> None:
+    baseline_path = BASELINE_DIR / f"{hostname}.cfg"
+
+    if not baseline_path.exists():
+        baseline_path.write_text(current_config)
+        print(f"[*] {hostname}: initial baseline saved")
+        return
+
+    previous_config = baseline_path.read_text()
+    if previous_config == current_config:
+        return
+
+    diff = list(difflib.unified_diff(
+        previous_config.splitlines(), current_config.splitlines(),
+        lineterm="", fromfile="previous", tofile="current",
+    ))
+    print(f"[!] {hostname}: config change detected ({time.ctime()})")
+    for line in diff[:30]:
+        print(f"    {line}")
+
+    # Archive the diff, then update the baseline (cross-check against a change-ticket system to know if it was approved)
+    (BASELINE_DIR / f"{hostname}_{int(time.time())}.diff").write_text("\n".join(diff))
+    baseline_path.write_text(current_config)
+
+
+if __name__ == "__main__":
+    device = {
+        "device_type": "cisco_ios",
+        "host": "10.0.0.1",
+        "username": "audit",
+        "use_keys": True,
+        "key_file": "~/.ssh/audit_key",
+    }
+    while True:
+        config = fetch_running_config(device)
+        check_drift(device["host"], config)
+        time.sleep(300)  # poll every 5 minutes
+```
+
+**Detection/Defense**: this approach tells you "what changed" but not "who changed it," so pair it with AAA (TACACS+/RADIUS) command logging to identify the actor. Automatically cross-referencing the change-detection timestamp against approved change-management tickets, and escalating only unapproved changes to a priority alert, cuts down alert fatigue from routine maintenance considerably. If the device supports it, subscribing to the `%SYS-5-CONFIG_I` syslog event in real time is faster than the 5-minute polling interval shown here.
 
 ## References
 

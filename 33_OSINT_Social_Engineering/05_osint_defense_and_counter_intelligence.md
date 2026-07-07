@@ -515,6 +515,66 @@ if __name__ == "__main__":
 
 ---
 
+## 3.5 AI 딥페이크 음성 피싱(Vishing) 탐지와 대응
+
+2절의 소셜 엔지니어링 인식 훈련은 주로 텍스트 기반 피싱을 다루지만, 생성형 AI 음성 복제(단 몇 초 분량의 공개 음성 샘플로 특정인의 목소리를 합성)가 대중화되면서 "CEO 목소리로 걸려온 긴급 송금 요청 전화" 같은 **AI 딥페이크 보이스피싱**이 실전 위협이 됐다. 텍스트 피싱과 달리 피해자가 "익숙한 목소리"를 직접 듣고 즉각적인 신뢰·긴급성 압박을 느끼기 때문에 방어가 훨씬 어렵다.
+
+```
+[공격 시나리오]
+1. 공격자가 유튜브 인터뷰, 컨퍼런스 발표 영상 등에서 대상 임원의 음성 샘플 수집(OSINT)
+2. 음성 복제 서비스로 해당 임원 목소리의 TTS 모델 생성
+3. 재무 담당자에게 "지금 급하게 해외 송금이 필요하다"는 내용으로 전화(또는 음성메시지)
+4. 정상 승인 절차를 우회하도록 긴급성·권위를 이용해 압박
+```
+
+```python
+#!/usr/bin/env python3
+"""통화 녹음 파일에서 AI 생성 음성 특유의 아티팩트 기초 점검 (보조 신호일 뿐, 단독 판정 금지)."""
+import numpy as np
+import librosa
+
+
+def analyze_voice_artifacts(audio_path: str) -> dict:
+    y, sr = librosa.load(audio_path, sr=None)
+
+    # 1. 배경 잡음 스펙트럼 — 실제 통화는 환경 노이즈(에어컨, 타이핑 등)가 섞이지만
+    #    합성 음성은 배경이 부자연스럽게 깨끗하거나 반복적인 경우가 있다.
+    spectral_flatness = float(np.mean(librosa.feature.spectral_flatness(y=y)))
+
+    # 2. 피치 미세변동(jitter) — 실제 발성은 미세한 떨림이 있으나
+    #    일부 TTS 모델은 이 부분이 부자연스럽게 안정적이다.
+    pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
+    pitch_values = pitches[magnitudes > np.median(magnitudes)]
+    pitch_std = float(np.std(pitch_values)) if len(pitch_values) > 0 else 0.0
+
+    suspicion_flags = []
+    if spectral_flatness < 0.05:
+        suspicion_flags.append("배경 노이즈가 부자연스럽게 낮음")
+    if pitch_std < 5.0:
+        suspicion_flags.append("피치 변동성이 부자연스럽게 낮음(합성 음성 가능성)")
+
+    return {
+        "spectral_flatness": spectral_flatness,
+        "pitch_std": pitch_std,
+        "suspicion_flags": suspicion_flags,
+    }
+
+
+if __name__ == "__main__":
+    result = analyze_voice_artifacts("call_recording.wav")
+    print(f"결과: {result}")
+```
+
+**대응 체계 (기술보다 프로세스가 핵심)**:
+1. **음성만으로 승인 금지**: 송금·권한 변경 같은 민감 요청은 반드시 별도 채널(사내 메신저, 콜백 — 상대가 준 번호가 아닌 사전 등록된 번호로 재발신)로 재확인
+2. **코드워드 사전 합의**: 경영진·재무팀 간 긴급 상황용 구두 암호를 미리 정해, 전화상에서 확인
+3. **긴급성 자체를 경보 신호로**: "지금 당장", "비밀 유지" 같은 압박 문구는 정상 업무 요청보다 사기 시도일 확률이 훨씬 높다는 점을 훈련에 포함
+4. **임원 음성 노출 최소화**: 공개 인터뷰·컨퍼런스 영상에서 장시간 발화 노출을 최소화하는 것도 근본적으로 복제 재료 자체를 줄이는 효과가 있다
+
+딥페이크 탐지 기술(위 코드처럼)은 계속 발전하는 생성 모델과의 군비경쟁이라 신뢰도가 낮으므로, 실무에서는 기술적 탐지보다 "음성만으로는 절대 승인하지 않는다"는 절차적 통제가 훨씬 견고한 방어선이다.
+
+---
+
 ## 4. 참고 자료
 
 - **Have I Been Pwned**: https://haveibeenpwned.com/
@@ -591,6 +651,65 @@ python3 email_analyzer.py suspicious_email.eml
 # Calculate phishing susceptibility score
 python3 phishing_score.py --click-rate 0.15 --report-rate 0.05 --submit-rate 0.08
 ```
+
+## AI Deepfake Voice Phishing (Vishing) Detection and Response
+
+Social-engineering awareness training (the earlier sections in this chapter) mostly covers text-based phishing, but as generative AI voice cloning has gone mainstream — synthesizing a specific person's voice from just a few seconds of public audio — **AI deepfake vishing**, like an urgent wire-transfer call in the "CEO's voice," has become a real-world threat. Unlike text phishing, it's much harder to defend against because the victim hears a familiar voice directly and feels immediate trust and urgency pressure.
+
+```
+[Attack Scenario]
+1. Attacker collects voice samples of a target executive from YouTube interviews, conference talks, etc. (OSINT)
+2. A voice-cloning service builds a TTS model of that executive's voice
+3. Calls (or leaves a voicemail for) a finance staffer claiming an urgent overseas wire transfer is needed
+4. Uses urgency and authority to pressure the target into bypassing the normal approval process
+```
+
+```python
+#!/usr/bin/env python3
+"""Basic check for artifacts typical of AI-generated speech in a call recording (a supporting signal only -- never decide alone)."""
+import numpy as np
+import librosa
+
+
+def analyze_voice_artifacts(audio_path: str) -> dict:
+    y, sr = librosa.load(audio_path, sr=None)
+
+    # 1. Background-noise spectrum -- a real phone call usually has ambient noise mixed in
+    #    (AC hum, typing, etc.), while synthesized speech sometimes has an unnaturally
+    #    clean or repetitive background.
+    spectral_flatness = float(np.mean(librosa.feature.spectral_flatness(y=y)))
+
+    # 2. Pitch micro-variation (jitter) -- real speech has subtle natural wavering,
+    #    while some TTS models produce pitch that's unnaturally stable.
+    pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
+    pitch_values = pitches[magnitudes > np.median(magnitudes)]
+    pitch_std = float(np.std(pitch_values)) if len(pitch_values) > 0 else 0.0
+
+    suspicion_flags = []
+    if spectral_flatness < 0.05:
+        suspicion_flags.append("Background noise unnaturally low")
+    if pitch_std < 5.0:
+        suspicion_flags.append("Pitch variability unnaturally low (possible synthesized speech)")
+
+    return {
+        "spectral_flatness": spectral_flatness,
+        "pitch_std": pitch_std,
+        "suspicion_flags": suspicion_flags,
+    }
+
+
+if __name__ == "__main__":
+    result = analyze_voice_artifacts("call_recording.wav")
+    print(f"Result: {result}")
+```
+
+**Response framework (process matters more than technology here)**:
+1. **Never approve on voice alone**: sensitive requests like wire transfers or permission changes must always be re-confirmed through a separate channel (internal messenger, or a callback to a pre-registered number — never a number the caller provides)
+2. **Pre-agreed code words**: set up a verbal passphrase in advance between executives and finance for emergency situations, and confirm it on the call
+3. **Treat urgency itself as an alarm signal**: train staff that pressure phrases like "right now" or "keep this confidential" are far more indicative of fraud than a normal business request
+4. **Minimize executive voice exposure**: reducing the amount of public interview/conference footage that exposes an executive's voice for extended periods also cuts down the raw material available for cloning
+
+Deepfake detection technology (like the code above) is in an arms race against continually improving generative models, so its reliability is limited — in practice, a procedural control like "never approve based on voice alone" is a far more solid line of defense than technical detection.
 
 ## References
 

@@ -761,6 +761,63 @@ if __name__ == "__main__":
 
 ---
 
+## 5.5 대량 조회(Bulk Exfiltration) 탐지 — 쿼리 감사로그 기반
+
+SQL 인젝션 방어(2절)와 최소 권한(1절)을 다 갖춰도, **정상 인증된 애플리케이션 계정**이 평소와 다르게 테이블 전체를 긁어가는 패턴(예: 내부자 유출, 탈취된 앱 서버로 대량 SELECT)은 별도로 탐지해야 한다. 감사 로그(3절에서 설정)에서 계정별 평소 조회 행 수 기준선을 만들고, 이를 크게 벗어나는 쿼리를 실시간으로 잡아낸다.
+
+```python
+#!/usr/bin/env python3
+"""DB 감사 로그(PostgreSQL pgaudit 형식 가정)에서 계정별 대량 조회 이상치 탐지."""
+import re
+import statistics
+from collections import defaultdict
+from pathlib import Path
+
+
+def parse_audit_log(path: Path) -> list[dict]:
+    """pgaudit 로그 라인에서 사용자·행수·쿼리를 추출 (예: rows=52341)."""
+    entries = []
+    pattern = re.compile(
+        r'user=(?P<user>\S+).*?rows=(?P<rows>\d+).*?statement=(?P<query>SELECT.*)'
+    )
+    for line in path.read_text(errors="ignore").splitlines():
+        m = pattern.search(line)
+        if m:
+            entries.append({
+                "user": m.group("user"),
+                "rows": int(m.group("rows")),
+                "query": m.group("query")[:120],
+            })
+    return entries
+
+
+def detect_outliers(entries: list[dict], z_threshold: float = 3.0) -> None:
+    by_user = defaultdict(list)
+    for e in entries:
+        by_user[e["user"]].append(e["rows"])
+
+    for user, row_counts in by_user.items():
+        if len(row_counts) < 5:
+            continue
+        mean = statistics.mean(row_counts)
+        stdev = statistics.pstdev(row_counts) or 1
+        for e in entries:
+            if e["user"] != user:
+                continue
+            z = (e["rows"] - mean) / stdev
+            if z > z_threshold and e["rows"] > 10_000:
+                print(f"[!] {user}: {e['rows']}행 조회 (z={z:.1f}) — {e['query']}")
+
+
+if __name__ == "__main__":
+    entries = parse_audit_log(Path("pgaudit.log"))
+    detect_outliers(entries)
+```
+
+**탐지/방어**: 절대 임계값(예: "1만 행 이상")만 쓰면 배치 리포팅 같은 정상 대량 조회를 오탐하므로, 반드시 **계정별 과거 기준선 대비 상대적 이상치**(z-score 등)로 판단한다. 애플리케이션 계정이 페이지네이션 없이 `SELECT *`로 전체 테이블을 가져가는 패턴은 특히 우선순위 높은 신호다. 근본 대응으로는 애플리케이션 계층에 결과 행수 상한(`LIMIT` 강제)을 걸고, 이를 우회하는 직접 DB 접속 경로 자체를 차단하는 것이 병행되어야 한다.
+
+---
+
 <!-- detect-validate-23 -->
 ## DB 하드닝의 적용 검증
 
@@ -999,6 +1056,65 @@ if __name__ == "__main__":
 
 **Reference:**
 - sqlmap (SQL injection testing tool): https://github.com/sqlmapproject/sqlmap
+
+---
+
+## 5.5 Detecting Bulk Query Exfiltration via Audit Logs
+
+Even with SQL injection defenses (section 2) and least privilege (section 1) in place, a **legitimately authenticated application account** pulling an entire table in a way that departs from its usual pattern — an insider exfiltrating data, or a compromised app server running mass SELECTs — needs its own detection layer. Build a per-account baseline of typical row-count retrieval from the audit log (configured in section 3), and flag queries that deviate sharply from it in real time.
+
+```python
+#!/usr/bin/env python3
+"""Detect bulk-query outliers per account from a DB audit log (assumes PostgreSQL pgaudit format)."""
+import re
+import statistics
+from collections import defaultdict
+from pathlib import Path
+
+
+def parse_audit_log(path: Path) -> list[dict]:
+    """Extract user, row count, and query from pgaudit log lines (e.g. rows=52341)."""
+    entries = []
+    pattern = re.compile(
+        r'user=(?P<user>\S+).*?rows=(?P<rows>\d+).*?statement=(?P<query>SELECT.*)'
+    )
+    for line in path.read_text(errors="ignore").splitlines():
+        m = pattern.search(line)
+        if m:
+            entries.append({
+                "user": m.group("user"),
+                "rows": int(m.group("rows")),
+                "query": m.group("query")[:120],
+            })
+    return entries
+
+
+def detect_outliers(entries: list[dict], z_threshold: float = 3.0) -> None:
+    by_user = defaultdict(list)
+    for e in entries:
+        by_user[e["user"]].append(e["rows"])
+
+    for user, row_counts in by_user.items():
+        if len(row_counts) < 5:
+            continue
+        mean = statistics.mean(row_counts)
+        stdev = statistics.pstdev(row_counts) or 1
+        for e in entries:
+            if e["user"] != user:
+                continue
+            z = (e["rows"] - mean) / stdev
+            if z > z_threshold and e["rows"] > 10_000:
+                print(f"[!] {user}: retrieved {e['rows']} rows (z={z:.1f}) — {e['query']}")
+
+
+if __name__ == "__main__":
+    entries = parse_audit_log(Path("pgaudit.log"))
+    detect_outliers(entries)
+```
+
+**Detection/Defense**: an absolute threshold alone (e.g., "more than 10,000 rows") will false-positive on legitimate bulk operations like batch reporting, so judge outliers **relative to each account's own historical baseline** (z-score or similar) instead. An application account fetching an entire table via `SELECT *` with no pagination is a particularly high-priority signal. As a root-cause fix, enforce a result-row cap (a mandatory `LIMIT`) at the application layer, paired with blocking any direct DB access path that bypasses it.
+
+---
 
 <!-- detect-validate-23 -->
 ## Validating DB Hardening Application

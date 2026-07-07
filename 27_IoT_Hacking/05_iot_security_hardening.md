@@ -1170,6 +1170,51 @@ if __name__ == "__main__":
 
 ---
 
+## 9.5 IoT OTA 업데이트 서명 검증 우회와 방어
+
+OTA(Over-The-Air) 업데이트는 IoT 기기가 원격으로 펌웨어를 갱신하는 핵심 채널이지만, 서명 검증이 허술하면 공격자가 악성 펌웨어를 정상 업데이트로 위장해 대량의 기기에 배포하는 최악의 공급망 공격 경로가 된다. 흔한 취약점은 (1) 서명 검증 자체를 생략, (2) 서명은 확인하지만 **버전 다운그레이드 방지가 없어** 이미 알려진 취약점이 있는 구버전 펌웨어로 재설치 가능, (3) 서명 키가 기기 펌웨어 내부에 하드코딩돼 추출 가능한 경우다.
+
+```python
+#!/usr/bin/env python3
+"""OTA 업데이트 서버 응답에서 서명 검증 우회 가능성을 점검 (테스트 목적, 소유 기기만)."""
+import hashlib
+import requests
+
+
+def check_ota_manifest(manifest_url: str) -> None:
+    resp = requests.get(manifest_url, timeout=10)
+    manifest = resp.json()
+
+    issues = []
+    if "signature" not in manifest:
+        issues.append("서명 필드 자체가 없음 — 검증 미구현 가능성")
+    if "min_version" not in manifest and "anti_rollback" not in manifest:
+        issues.append("다운그레이드 방지(anti-rollback) 필드 없음")
+    if manifest.get("firmware_url", "").startswith("http://"):
+        issues.append("펌웨어 다운로드가 평문 HTTP — MITM으로 이미지 교체 가능")
+
+    if issues:
+        print("[!] 잠재적 OTA 취약점:")
+        for i in issues:
+            print(f"  - {i}")
+    else:
+        print("[+] 기본 점검 항목 통과 (서명 필드·anti-rollback·HTTPS 존재)")
+
+
+if __name__ == "__main__":
+    check_ota_manifest("https://device.example.com/ota/manifest.json")
+```
+
+**방어 체크리스트**:
+1. **서명 검증**: 부트로더 또는 초기 실행 코드에서 공개키로 펌웨어 서명을 검증하고, 실패 시 부팅을 거부(Secure Boot 체인)
+2. **Anti-rollback**: 하드웨어 퓨즈(eFuse) 또는 단조 증가 카운터로 최소 허용 버전을 기록해, 서명이 유효해도 구버전 재설치를 차단
+3. **키 보관**: 서명 검증용 공개키는 하드코딩해도 되지만, 서명용 **개인키**는 기기에 절대 포함하지 않고 HSM에서만 관리
+4. **전송 보호**: 펌웨어 자체가 서명돼 있어도 HTTPS로 배포해 URL 변조·다운그레이드 유도를 함께 막는다
+
+방어자 관점의 탐지 신호로는, 정상 배포 채널이 아닌 IP에서의 OTA 매니페스트 요청, 그리고 이미 패치된 버전보다 낮은 `version` 필드를 가진 업데이트 설치 시도(anti-rollback 카운터 불일치) 로그를 모니터링하는 것이 실전에서 유효하다.
+
+---
+
 ## 10. IoT 보안 강화 대책
 
 | 취약점 | 강화 방법 | 도구/표준 |
@@ -1535,6 +1580,51 @@ python3 iot_monitor.py check 192.168.20.10 \
     --traffic current_traffic.json \
     --baseline baseline.json
 ```
+
+---
+
+## 7.5 IoT OTA Update Signature-Verification Bypass and Defense
+
+OTA (Over-The-Air) updates are the core channel through which IoT devices get firmware updates remotely, but weak signature verification turns them into a worst-case supply-chain attack path — an attacker can disguise malicious firmware as a legitimate update and push it to a large fleet of devices at once. Common flaws are (1) signature verification being skipped entirely, (2) signatures being checked but with **no downgrade protection**, allowing reinstallation of an older, already-vulnerable firmware version, and (3) the signing key being hardcoded inside device firmware and extractable.
+
+```python
+#!/usr/bin/env python3
+"""Check an OTA update server response for signature-verification weaknesses (testing purposes, owned devices only)."""
+import hashlib
+import requests
+
+
+def check_ota_manifest(manifest_url: str) -> None:
+    resp = requests.get(manifest_url, timeout=10)
+    manifest = resp.json()
+
+    issues = []
+    if "signature" not in manifest:
+        issues.append("No signature field at all -- verification may not be implemented")
+    if "min_version" not in manifest and "anti_rollback" not in manifest:
+        issues.append("No anti-rollback (downgrade-protection) field")
+    if manifest.get("firmware_url", "").startswith("http://"):
+        issues.append("Firmware download over plain HTTP -- image swap possible via MITM")
+
+    if issues:
+        print("[!] Potential OTA vulnerabilities:")
+        for i in issues:
+            print(f"  - {i}")
+    else:
+        print("[+] Basic checks passed (signature field, anti-rollback, HTTPS present)")
+
+
+if __name__ == "__main__":
+    check_ota_manifest("https://device.example.com/ota/manifest.json")
+```
+
+**Defense checklist**:
+1. **Signature verification**: verify the firmware signature with a public key in the bootloader or early boot code, and refuse to boot on failure (a Secure Boot chain)
+2. **Anti-rollback**: record the minimum allowed version in a hardware fuse (eFuse) or a monotonically increasing counter, so an older firmware can't be reinstalled even with a valid signature
+3. **Key custody**: the public key used for verification can be hardcoded, but the **private** signing key must never ship on the device — keep it in an HSM only
+4. **Transport protection**: even with signed firmware, distribute it over HTTPS to also block URL tampering and forced-downgrade tricks
+
+From a defender's perspective, useful detection signals in practice include OTA manifest requests coming from an IP outside the legitimate distribution channel, and logging update attempts whose `version` field is lower than an already-patched version (an anti-rollback counter mismatch).
 
 ---
 
