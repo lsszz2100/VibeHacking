@@ -589,6 +589,51 @@ tags:
 
 ---
 
+## 6. DNS-over-HTTPS(DoH) 은닉 C2 채널 탐지
+
+레드팀 인프라가 평문 DNS 대신 **DoH(DNS-over-HTTPS)**로 C2 조회를 감싸는 사례가 늘고 있다 — 전통적 DNS 로그(포트 53) 기반 탐지가 통째로 무력화되기 때문이다. DoH 트래픽은 일반 HTTPS(포트 443)와 구분이 안 되는 것처럼 보이지만, 실제로는 **알려진 DoH 리졸버 목록에 없는 목적지로 향하는 TLS 연결 중 SNI가 없거나(ECH) JA3/JA4 지문이 브라우저가 아닌 curl/사설 클라이언트 라이브러리와 일치하는 경우**가 강한 신호가 된다. 블루팀 관점에서는 "DoH 자체를 차단"이 아니라 "정책에 없는 DoH 사용을 식별"이 목표다(기업 대부분은 브라우저 내장 DoH를 정당하게 쓰기 때문에 전면 차단은 오탐 폭증).
+
+```python
+#!/usr/bin/env python3
+"""넷플로우/프록시 로그에서 알려진 DoH 리졸버가 아닌 목적지로의 HTTPS 연결 중
+비-브라우저 JA3/JA4 지문 + 규칙적 비콘 간격이 겹치는 세션을 DoH 기반 C2 의심으로 표시."""
+from collections import defaultdict
+from statistics import mean, pstdev
+
+KNOWN_DOH_RESOLVERS = {
+    "1.1.1.1", "1.0.0.1", "8.8.8.8", "8.8.4.4", "9.9.9.9", "149.112.112.112",
+}
+BROWSER_JA4_PREFIXES = {"t13d1516h2", "t13d1517h2"}  # 주요 브라우저 JA4 계열(예시)
+
+
+def flag_doh_c2(flow_log: list[dict]) -> list[dict]:
+    """flow_log 항목: {dst_ip, port, ja4, ts, bytes_out}"""
+    sessions = defaultdict(list)
+    for f in flow_log:
+        if f["port"] == 443 and f["dst_ip"] not in KNOWN_DOH_RESOLVERS:
+            sessions[(f["dst_ip"], f["ja4"])].append(f)
+
+    suspects = []
+    for (dst_ip, ja4), events in sessions.items():
+        if len(events) < 5 or ja4 in BROWSER_JA4_PREFIXES:
+            continue
+        intervals = [b["ts"] - a["ts"] for a, b in zip(events, events[1:])]
+        jitter = pstdev(intervals) / (mean(intervals) or 1)
+        if jitter < 0.15:  # 낮은 지터 = 사람이 아닌 스케줄된 비콘
+            suspects.append({"dst_ip": dst_ip, "ja4": ja4, "beacons": len(events), "jitter": round(jitter, 3)})
+    return suspects
+```
+
+| 신호 | 설명 | 오탐 요인 |
+|------|------|----------|
+| 비-브라우저 JA4 지문 | curl/Python requests/사설 TLS 스택은 브라우저와 다른 JA4를 남김 | 사내 자동화 스크립트도 동일 지문 발생 가능 |
+| 낮은 비콘 지터 | 사람의 브라우징은 불규칙, C2 폴링은 규칙적 | jitter 기능이 있는 최신 C2 프레임워크는 회피 가능 |
+| 리졸버 목록 외 목적지 | 공개 DoH 리졸버가 아닌 자체 DoH 엔드포인트 운영 | 기업 자체 DoH 프록시 운영 시 화이트리스트 필요 |
+
+**탐지/방어**: 위 표의 세 신호는 개별로는 오탐이 많아 **AND 조건**(비-브라우저 지문 + 낮은 지터 + 비표준 목적지)으로 결합해야 실전에서 쓸만한 정밀도가 나온다. 성숙한 블루팀은 여기에 더해 TLS 인스펙션 프록시로 SNI/ECH 여부까지 확인해 "정책에 허용되지 않은 DoH 사용" 자체를 별도 알림으로 분리 관리한다.
+
+---
+
 <!-- detect-validate-49 -->
 ## 공격 탐지와 방어 검증
 
@@ -1140,6 +1185,52 @@ tags:
 | Process Injection | API call sequences | Medium | EDR, Sysmon |
 | Pass-the-Hash | NTLM authentication source IP mismatch | Low | Windows Event Logs |
 | Kerberoasting | Mass service ticket requests | Low | DC Event 4769 |
+
+---
+
+## 6. Detecting DNS-over-HTTPS (DoH) Covert C2 Channels
+
+Red team infrastructure increasingly wraps C2 lookups in **DoH (DNS-over-HTTPS)** instead of plaintext DNS -- because it completely defeats detection based on traditional DNS logs (port 53). DoH traffic appears indistinguishable from ordinary HTTPS (port 443), but in practice, a strong signal is a TLS connection to a destination **not on the list of known DoH resolvers, where SNI is absent (ECH) or the JA3/JA4 fingerprint matches curl/a custom TLS client library rather than a browser**. From a blue-team standpoint, the goal isn't "block DoH outright" but "identify DoH usage outside policy" -- since most enterprises legitimately use browser built-in DoH, an outright block causes a false-positive explosion.
+
+```python
+#!/usr/bin/env python3
+"""From NetFlow/proxy logs, flag HTTPS sessions to destinations that are not known DoH
+resolvers, where a non-browser JA3/JA4 fingerprint overlaps with regular beacon-like
+intervals, as suspected DoH-based C2."""
+from collections import defaultdict
+from statistics import mean, pstdev
+
+KNOWN_DOH_RESOLVERS = {
+    "1.1.1.1", "1.0.0.1", "8.8.8.8", "8.8.4.4", "9.9.9.9", "149.112.112.112",
+}
+BROWSER_JA4_PREFIXES = {"t13d1516h2", "t13d1517h2"}  # example major-browser JA4 family
+
+
+def flag_doh_c2(flow_log: list[dict]) -> list[dict]:
+    """flow_log entries: {dst_ip, port, ja4, ts, bytes_out}"""
+    sessions = defaultdict(list)
+    for f in flow_log:
+        if f["port"] == 443 and f["dst_ip"] not in KNOWN_DOH_RESOLVERS:
+            sessions[(f["dst_ip"], f["ja4"])].append(f)
+
+    suspects = []
+    for (dst_ip, ja4), events in sessions.items():
+        if len(events) < 5 or ja4 in BROWSER_JA4_PREFIXES:
+            continue
+        intervals = [b["ts"] - a["ts"] for a, b in zip(events, events[1:])]
+        jitter = pstdev(intervals) / (mean(intervals) or 1)
+        if jitter < 0.15:  # low jitter = scheduled beacon, not a human
+            suspects.append({"dst_ip": dst_ip, "ja4": ja4, "beacons": len(events), "jitter": round(jitter, 3)})
+    return suspects
+```
+
+| Signal | Description | False-Positive Factor |
+|--------|-------------|------------------------|
+| Non-browser JA4 fingerprint | curl/Python requests/custom TLS stacks leave a JA4 different from browsers | In-house automation scripts can produce the same fingerprint |
+| Low beacon jitter | Human browsing is irregular; C2 polling is regular | Modern C2 frameworks with a jitter feature can evade this |
+| Destination outside resolver list | Running a private DoH endpoint instead of a public DoH resolver | Enterprises running their own DoH proxy need a whitelist |
+
+**Detection/Defense**: each of the three signals above produces too many false positives on its own -- combining them with an **AND condition** (non-browser fingerprint + low jitter + non-standard destination) is what yields workable precision in practice. A mature blue team additionally checks SNI/ECH presence via a TLS inspection proxy, managing "DoH usage not permitted by policy" as its own separate alert.
 
 ---
 

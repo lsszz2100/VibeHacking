@@ -766,6 +766,62 @@ if __name__ == "__main__":
     main()
 ```
 
+## 5. 다이나믹 스코어링 챌린지의 풀이 시점 스냅샷 기록
+
+3절의 자동화 도구는 "풀이가 되는가"에 집중하지만, 다이나믹 스코어링(첫 solve 후 점수가 계속 하락하는 방식)을 쓰는 대회는 라이트업의 재현성을 위협하는 또 다른 변수를 만든다 — **문제 배포 환경(Docker 이미지, 배포 바이너리)이 대회 중 패치되거나, 대회 종료 후 인프라가 내려가면서 풀이 당시의 정확한 상태가 사라지는 것**이다. 라이트업에 "풀이 시점"만 기록하고 문제 상태 자체의 스냅샷을 남기지 않으면, 나중에 재현을 시도했을 때 그 사이 패치된 취약점 때문에 "이 라이트업이 틀렸다"는 오판이 나올 수 있다.
+
+```python
+#!/usr/bin/env python3
+"""풀이 시점의 문제 배포 상태(이미지 다이제스트·바이너리 해시·점수)를 라이트업 메타데이터로 고정."""
+import hashlib
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def get_docker_image_digest(image_name: str) -> str:
+    """실행 중인 문제 컨테이너의 이미지를 다이제스트(sha256)로 고정 식별."""
+    result = subprocess.run(
+        ["docker", "inspect", "--format={{.Image}}", image_name],
+        capture_output=True, text=True, check=True,
+    )
+    return result.stdout.strip()
+
+
+def hash_challenge_binary(binary_path: Path) -> str:
+    return hashlib.sha256(binary_path.read_bytes()).hexdigest()
+
+
+def snapshot_solve_state(
+    challenge_name: str,
+    container_name: str,
+    binary_path: Path | None,
+    current_score: int,
+    solve_count_at_time: int,
+) -> dict:
+    """라이트업에 첨부할 '풀이 당시 상태' 스냅샷 — 이후 재현 실패 시 환경 변화 vs 라이트업 오류를 구분하는 근거."""
+    snapshot = {
+        "challenge": challenge_name,
+        "solved_at": datetime.now(timezone.utc).isoformat(),
+        "image_digest": get_docker_image_digest(container_name),
+        "score_at_solve_time": current_score,
+        "solve_count_at_time": solve_count_at_time,
+    }
+    if binary_path and binary_path.exists():
+        snapshot["binary_sha256"] = hash_challenge_binary(binary_path)
+    return snapshot
+
+
+def append_snapshot_to_writeup(writeup_path: Path, snapshot: dict) -> None:
+    frontmatter = f"<!-- solve-snapshot: {json.dumps(snapshot, ensure_ascii=False)} -->\n"
+    existing = writeup_path.read_text() if writeup_path.exists() else ""
+    writeup_path.write_text(frontmatter + existing)
+    print(f"[+] 스냅샷 기록됨: {snapshot['image_digest'][:16]}...")
+```
+
+**탐지/방어**: 이건 "공격 탐지"가 아니라 **라이트업 신뢰성 검증**을 위한 안전장치다. 다이나믹 스코어링 대회는 운영진이 문제를 핫픽스하는 일이 흔하므로, 스냅샷이 없으면 몇 달 후 독자가 재현을 시도했을 때 "패치 전 취약점을 패치 후 이미지로 검증하려는" 무의미한 재현 실패를 겪는다. 실무에서는 이 스냅샷을 CI(4절)의 재현성 검증 스테이지가 **자동으로 첨부**하도록 파이프라인에 연결해, 사람이 깜빡하고 안 남기는 경우를 없애는 것이 핵심이다.
+
 ---
 
 <!-- detect-validate-46 -->
@@ -1391,6 +1447,64 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+## 5. Recording Solve-Time Snapshots for Dynamically-Scored Challenges
+
+Section 3's automation tooling focuses on "does the solve reproduce," but competitions using dynamic scoring (where a challenge's point value keeps dropping after each solve) introduce another variable that threatens writeup reproducibility -- **the challenge's deployed environment (Docker image, distributed binary) can get hotfixed mid-competition, or the infrastructure is torn down after the event ends, erasing the exact state that existed at solve time**. If a writeup records only the "solve timestamp" without a snapshot of the challenge state itself, a later reproduction attempt can misdiagnose an intervening patch as "this writeup is wrong."
+
+```python
+#!/usr/bin/env python3
+"""Pin the challenge's deployed state at solve time (image digest, binary hash, score) as writeup metadata."""
+import hashlib
+import json
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def get_docker_image_digest(image_name: str) -> str:
+    """Identify the running challenge container's image by a stable digest (sha256)."""
+    result = subprocess.run(
+        ["docker", "inspect", "--format={{.Image}}", image_name],
+        capture_output=True, text=True, check=True,
+    )
+    return result.stdout.strip()
+
+
+def hash_challenge_binary(binary_path: Path) -> str:
+    return hashlib.sha256(binary_path.read_bytes()).hexdigest()
+
+
+def snapshot_solve_state(
+    challenge_name: str,
+    container_name: str,
+    binary_path: Path | None,
+    current_score: int,
+    solve_count_at_time: int,
+) -> dict:
+    """A 'state at solve time' snapshot to attach to the writeup -- evidence to tell environment drift apart from a writeup error on reproduction failure."""
+    snapshot = {
+        "challenge": challenge_name,
+        "solved_at": datetime.now(timezone.utc).isoformat(),
+        "image_digest": get_docker_image_digest(container_name),
+        "score_at_solve_time": current_score,
+        "solve_count_at_time": solve_count_at_time,
+    }
+    if binary_path and binary_path.exists():
+        snapshot["binary_sha256"] = hash_challenge_binary(binary_path)
+    return snapshot
+
+
+def append_snapshot_to_writeup(writeup_path: Path, snapshot: dict) -> None:
+    frontmatter = f"<!-- solve-snapshot: {json.dumps(snapshot)} -->\n"
+    existing = writeup_path.read_text() if writeup_path.exists() else ""
+    writeup_path.write_text(frontmatter + existing)
+    print(f"[+] Snapshot recorded: {snapshot['image_digest'][:16]}...")
+```
+
+**Detection/Defense**: this isn't "attack detection" -- it's a safeguard for **writeup trustworthiness**. Dynamic-scoring competitions routinely hotfix challenges, so without a snapshot, a reader attempting reproduction months later can end up chasing a meaningless failure caused by "verifying a pre-patch vulnerability against a post-patch image." In practice, wire this snapshot step into the section-4 CI reproducibility stage so it's **attached automatically**, removing the risk of a human forgetting to record it.
+
+---
 
 <!-- detect-validate-46 -->
 ## CTF Writeup Reproducibility / Evidence-Integrity Validation (Written != Reproduced)

@@ -689,6 +689,81 @@ class ModelExtractionMonitor:
 
 ---
 
+## 5. AI 에이전트 도구 호출(Excessive Agency)과 MCP 권한경계 위협모델링
+
+단순 프롬프트 인젝션을 넘어, 2024년 이후 에이전틱 AI(도구를 스스로 호출해 파일시스템·API·셸에 접근하는 LLM 에이전트)가 보편화되며 OWASP LLM Top 10은 **"Excessive Agency"(LLM08)**를 별도 항목으로 분리했다. MCP(Model Context Protocol) 같은 표준이 에이전트-도구 연결을 규격화했지만, 서버가 매니페스트에 선언한 도구 권한(scope)과 실제 실행 시 수행되는 동작 사이에 괴리가 생기는 사례가 실무에서 반복 보고된다 — "읽기 전용"이라 표기된 도구가 내부적으로 쓰기 가능한 API를 호출하거나, 한 도구의 출력이 검증 없이 다음 도구 호출의 입력(신뢰 경계를 넘는 데이터)으로 그대로 흘러드는 **도구 체이닝 confused deputy** 패턴이다.
+
+위협모델링 관점에서 이는 STRIDE의 **권한상승(E)**과 **정보노출(I)**이 에이전트 오케스트레이션 계층에서 새로운 형태로 나타난 것이다 — 공격자가 프롬프트만 조작해도(직접 인젝션 없이) 에이전트가 스스로 고권한 도구를 선택하도록 유도할 수 있다.
+
+```python
+#!/usr/bin/env python3
+"""MCP 서버 매니페스트의 선언된 도구 scope와 핸들러 구현 코드의 실제 부작용(side-effect)을
+정적 분석으로 대조해, '읽기 전용'이라 선언됐지만 실제로는 쓰기/외부호출을 수행하는
+도구(scope-실체 불일치)를 탐지."""
+import ast
+import json
+from pathlib import Path
+
+WRITE_LIKE_CALLS = {
+    "open": {"w", "a", "x", "w+", "a+"},          # 파일 쓰기 모드
+    "remove": None, "unlink": None, "rmtree": None,  # 삭제
+    "post": None, "put": None, "patch": None, "delete": None,  # 외부 HTTP 변경 요청
+    "run": None, "Popen": None, "system": None,   # 셸/프로세스 실행
+}
+
+
+def find_side_effects(source: str) -> list[str]:
+    """핸들러 함수 AST를 순회하며 쓰기성 호출을 수집."""
+    findings = []
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func_name = getattr(node.func, "attr", None) or getattr(node.func, "id", None)
+        if func_name in WRITE_LIKE_CALLS:
+            if func_name == "open" and node.args:
+                # open(path, mode) 중 mode 인자가 쓰기 계열인지 확인
+                mode_arg = node.args[1] if len(node.args) > 1 else None
+                mode = getattr(mode_arg, "value", None) if mode_arg else None
+                if mode and any(m in str(mode) for m in WRITE_LIKE_CALLS["open"]):
+                    findings.append(f"open(mode={mode}) @ line {node.lineno}")
+            else:
+                findings.append(f"{func_name}(...) @ line {node.lineno}")
+    return findings
+
+
+def audit_manifest(manifest_path: Path, tool_source_dir: Path) -> list[dict]:
+    """scope='read_only' 도구인데 side-effect가 발견되면 불일치로 보고."""
+    manifest = json.loads(manifest_path.read_text())
+    mismatches = []
+    for tool in manifest.get("tools", []):
+        if tool.get("scope") != "read_only":
+            continue
+        handler_file = tool_source_dir / f"{tool['handler_module']}.py"
+        if not handler_file.exists():
+            continue
+        effects = find_side_effects(handler_file.read_text())
+        if effects:
+            mismatches.append({"tool": tool["name"], "declared": "read_only", "found": effects})
+    return mismatches
+
+
+if __name__ == "__main__":
+    results = audit_manifest(Path("mcp_manifest.json"), Path("./handlers"))
+    for r in results:
+        print(f"[!] scope 불일치: {r['tool']} (선언=read_only) -> {r['found']}")
+```
+
+| 위협 패턴 | STRIDE 대응 | 완화 |
+|-----------|------------|------|
+| scope 불일치 (read_only 선언, write 구현) | 권한상승 | 위 AST 정적 스캔을 CI 게이트로 강제, 배포 전 실패 처리 |
+| 도구 체이닝 confused deputy | 정보노출/권한상승 | 도구 호출 사이 데이터를 별도 신뢰 등급으로 태깅, 상위 신뢰가 필요한 호출은 사람 승인(HITL) 요구 |
+| 프롬프트만으로 고권한 도구 유도 | 권한상승 | 에이전트 오케스트레이터에 도구별 최소권한 화이트리스트 + 호출 로그 이상탐지 |
+
+**탐지/방어**: 이 스캔은 매니페스트 선언(정책)과 코드(실체)가 어긋나는 지점만 잡아낼 뿐, 런타임에 실제로 그 권한이 남용됐는지는 별도로 도구 호출 로그(누가/어떤 인자로/몇 번)를 이상탐지 파이프라인에 태워야 완성된다. **정적 스캔 통과 = 안전 보장이 아니라 "선언과 구현이 최소한 모순되지 않는다"는 필요조건**일 뿐이라는 점을 팀에 명확히 공유해야 오탐/과신을 막을 수 있다.
+
+---
+
 <!-- detect-validate-48 -->
 ## AI 시스템 위협 모델 검증 (식별됨 ≠ 통제됨)
 
@@ -1217,6 +1292,83 @@ Infrastructure Layer:
 | Membership Inference | AML.T0024 | Differential privacy | High |
 | Jailbreak | AML.T0054 | Red team, RLHF reinforcement | High |
 | Indirect Injection | AML.T0051.000 | RAG content scanning | Medium |
+
+---
+
+## 5. Threat Modeling AI Agent Tool Invocation (Excessive Agency) and MCP Permission Boundaries
+
+Beyond simple prompt injection, since 2024 agentic AI -- LLM agents that call tools on their own to reach the filesystem, APIs, or a shell -- has become commonplace, and the OWASP LLM Top 10 split out **"Excessive Agency" (LLM08)** as its own category. Standards such as MCP (Model Context Protocol) formalize the agent-to-tool connection, but in practice there are recurring reports of a gap between the tool scope a server *declares* in its manifest and what the tool actually *does* at execution time -- a tool labeled "read-only" that internally calls a write-capable API, or the **tool-chaining confused-deputy** pattern where one tool's output flows unchecked into the next tool's input (data crossing a trust boundary without validation).
+
+From a threat-modeling standpoint this is STRIDE's **Elevation of Privilege** and **Information Disclosure** reappearing in a new form at the agent-orchestration layer -- an attacker who only manipulates the prompt (no direct injection needed) can induce the agent to select a high-privilege tool on its own.
+
+```python
+#!/usr/bin/env python3
+"""Statically cross-reference an MCP server manifest's declared tool scope against the
+actual side effects in the handler implementation, to flag tools declared 'read-only'
+that in fact perform writes or outbound calls (scope-vs-reality mismatch)."""
+import ast
+import json
+from pathlib import Path
+
+WRITE_LIKE_CALLS = {
+    "open": {"w", "a", "x", "w+", "a+"},          # file write modes
+    "remove": None, "unlink": None, "rmtree": None,  # deletion
+    "post": None, "put": None, "patch": None, "delete": None,  # outbound HTTP mutations
+    "run": None, "Popen": None, "system": None,   # shell/process execution
+}
+
+
+def find_side_effects(source: str) -> list[str]:
+    """Walk the handler function's AST and collect write-like calls."""
+    findings = []
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func_name = getattr(node.func, "attr", None) or getattr(node.func, "id", None)
+        if func_name in WRITE_LIKE_CALLS:
+            if func_name == "open" and node.args:
+                # for open(path, mode), check whether mode is write-like
+                mode_arg = node.args[1] if len(node.args) > 1 else None
+                mode = getattr(mode_arg, "value", None) if mode_arg else None
+                if mode and any(m in str(mode) for m in WRITE_LIKE_CALLS["open"]):
+                    findings.append(f"open(mode={mode}) @ line {node.lineno}")
+            else:
+                findings.append(f"{func_name}(...) @ line {node.lineno}")
+    return findings
+
+
+def audit_manifest(manifest_path: Path, tool_source_dir: Path) -> list[dict]:
+    """Flag any tool with scope='read_only' whose handler has side effects."""
+    manifest = json.loads(manifest_path.read_text())
+    mismatches = []
+    for tool in manifest.get("tools", []):
+        if tool.get("scope") != "read_only":
+            continue
+        handler_file = tool_source_dir / f"{tool['handler_module']}.py"
+        if not handler_file.exists():
+            continue
+        effects = find_side_effects(handler_file.read_text())
+        if effects:
+            mismatches.append({"tool": tool["name"], "declared": "read_only", "found": effects})
+    return mismatches
+
+
+if __name__ == "__main__":
+    results = audit_manifest(Path("mcp_manifest.json"), Path("./handlers"))
+    for r in results:
+        print(f"[!] scope mismatch: {r['tool']} (declared=read_only) -> {r['found']}")
+```
+
+| Threat Pattern | STRIDE Mapping | Mitigation |
+|-----------------|-----------------|------------|
+| Scope mismatch (declared read_only, implemented write) | Elevation of Privilege | Enforce the AST static scan above as a CI gate, fail the build before deploy |
+| Tool-chaining confused deputy | Information Disclosure / Elevation of Privilege | Tag data crossing tool calls with a separate trust level; require human-in-the-loop approval for calls that need a higher trust level |
+| Prompt alone steers the agent to a high-privilege tool | Elevation of Privilege | Enforce a per-tool least-privilege whitelist at the agent orchestrator plus anomaly detection on the call log |
+
+**Detection/Defense**: this scan only catches the point where the manifest's declared policy diverges from the code's reality -- whether that privilege was actually abused at runtime still needs a separate anomaly-detection pipeline over the tool-call log (who, with what arguments, how often). **Passing the static scan is not a safety guarantee, only the necessary condition that "the declaration and the implementation are at least not contradictory"** -- make this distinction explicit to the team to avoid false confidence.
+
+---
 
 <!-- detect-validate-48 -->
 ## AI System Threat-Model Validation (Identified != Controlled)

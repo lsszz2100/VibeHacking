@@ -636,6 +636,55 @@ if __name__ == "__main__":
 
 ---
 
+## 7. AD CS(인증서 서비스) ESC 취약점 탐지
+
+Kerberoasting/Pass-the-Hash 같은 전통적 자격증명 공격 방어가 성숙해지면서, 공격자는 **AD CS(Active Directory Certificate Services)의 취약한 인증서 템플릿(ESC1~ESC8로 분류)**으로 눈을 돌리고 있다 — 인증서는 발급 후 유효기간(보통 1~2년) 동안 살아있고, 인증서 기반 인증은 암호 변경으로도 무효화되지 않아 지속성(persistence) 확보에 특히 매력적이다. 가장 흔한 ESC1(임의 SAN 지정 허용 템플릿으로 임의 사용자 사칭)은 **인증서 발급 이벤트 자체가 정상 운영 트래픽과 구분이 안 된다**는 점이 탐지를 어렵게 만든다.
+
+```python
+#!/usr/bin/env python3
+"""CA 서버의 인증서 발급 로그(이벤트 4886/4887)에서 요청자 계정과 발급된 인증서의
+SAN(주체 대체 이름)이 불일치하는 경우(ESC1 악용 패턴)를 탐지."""
+import re
+from datetime import datetime
+
+PRIVILEGED_UPN_PATTERNS = (r".*\\Administrator$", r".*\\krbtgt$", r".*-da@.*")  # 도메인관리자류 SAN 패턴
+
+
+def parse_cert_issuance_events(security_log: list[dict]) -> list[dict]:
+    """이벤트 4887(인증서 발급됨)만 추출."""
+    return [e for e in security_log if e.get("EventID") == 4887]
+
+
+def flag_san_mismatch(events: list[dict]) -> list[dict]:
+    """요청자(Requester) 계정과 인증서 SAN에 기재된 계정이 다르면서,
+    SAN이 고권한 계정 패턴과 일치하면 ESC1 악용 의심으로 표시."""
+    findings = []
+    for e in events:
+        requester = e.get("RequesterAccount", "")
+        san = e.get("SubjectAlternativeName", "")
+        if not san or requester.lower() in san.lower():
+            continue  # 요청자 본인 명의 발급은 정상
+        if any(re.match(p, san, re.IGNORECASE) for p in PRIVILEGED_UPN_PATTERNS):
+            findings.append({
+                "template": e.get("CertificateTemplate"),
+                "requester": requester,
+                "san_impersonated": san,
+                "timestamp": e.get("TimeCreated"),
+                "verdict": "ESC1_SUSPECTED_IMPERSONATION",
+            })
+    return findings
+```
+
+| ESC 유형 | 취약 조건 | 탐지 신호 |
+|---------|---------|---------|
+| ESC1 | 템플릿이 요청자 지정 SAN 허용 + 클라이언트 인증 EKU | 요청자 계정 ≠ 발급된 SAN, 특히 SAN이 고권한 계정 |
+| ESC4 | 낮은 권한 사용자가 템플릿 ACL을 수정 가능 | 템플릿 ACL 변경 이벤트(4899) 자체를 감사 대상으로 등록 |
+| ESC8 | AD CS 웹 등록(HTTP)이 NTLM 릴레이에 노출 | CA 서버향 비정상 NTLM 인증 시도, HTTP 등록 엔드포인트 접근 로그 |
+
+**탐지/방어**: ESC 계열 취약점의 근본 대응은 탐지보다 **사전 통제(템플릿 재설계, ESC8은 EPA/채널 바인딩 강제)**가 우선이지만, 레거시 템플릿을 즉시 제거할 수 없는 환경이 많아 위와 같은 발급 로그 이상탐지가 보완책으로 필요하다. `Certify`/`Certipy` 같은 공개 감사 도구로 **소유 환경에서 취약 템플릿 목록을 주기적으로 재점검**하는 것이 이 탐지의 전제조건이다 — 새 템플릿이 추가될 때마다 같은 취약점이 재도입될 수 있기 때문이다.
+
+---
+
 <!-- detect-validate-54 -->
 ## 공격 탐지와 방어 검증
 
@@ -1218,6 +1267,56 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+## 7. Detecting AD CS (Certificate Services) ESC Vulnerabilities
+
+As defenses against traditional credential attacks like Kerberoasting and Pass-the-Hash mature, attackers are turning to **vulnerable certificate templates in AD CS (Active Directory Certificate Services), classified as ESC1 through ESC8** -- a certificate stays alive for its validity period (typically 1-2 years) after issuance, and certificate-based authentication isn't invalidated by a password change, making it especially attractive for persistence. The most common, ESC1 (a template that allows an arbitrary requester-supplied SAN, enabling impersonation of any user), is hard to detect precisely because **the certificate issuance event itself is indistinguishable from normal operational traffic**.
+
+```python
+#!/usr/bin/env python3
+"""In the CA server's certificate-issuance log (events 4886/4887), detect cases where the
+requesting account and the issued certificate's SAN (Subject Alternative Name) don't
+match -- the ESC1 abuse pattern."""
+import re
+from datetime import datetime
+
+PRIVILEGED_UPN_PATTERNS = (r".*\\Administrator$", r".*\\krbtgt$", r".*-da@.*")  # domain-admin-like SAN patterns
+
+
+def parse_cert_issuance_events(security_log: list[dict]) -> list[dict]:
+    """Extract only event 4887 (certificate issued)."""
+    return [e for e in security_log if e.get("EventID") == 4887]
+
+
+def flag_san_mismatch(events: list[dict]) -> list[dict]:
+    """Flag as suspected ESC1 abuse when the requester account differs from the account
+    named in the certificate's SAN, and that SAN matches a high-privilege account pattern."""
+    findings = []
+    for e in events:
+        requester = e.get("RequesterAccount", "")
+        san = e.get("SubjectAlternativeName", "")
+        if not san or requester.lower() in san.lower():
+            continue  # issuance under the requester's own name is normal
+        if any(re.match(p, san, re.IGNORECASE) for p in PRIVILEGED_UPN_PATTERNS):
+            findings.append({
+                "template": e.get("CertificateTemplate"),
+                "requester": requester,
+                "san_impersonated": san,
+                "timestamp": e.get("TimeCreated"),
+                "verdict": "ESC1_SUSPECTED_IMPERSONATION",
+            })
+    return findings
+```
+
+| ESC Type | Vulnerable Condition | Detection Signal |
+|----------|------------------------|-------------------|
+| ESC1 | Template allows requester-supplied SAN + client authentication EKU | Requester account != issued SAN, especially when the SAN is a high-privilege account |
+| ESC4 | A low-privileged user can modify the template ACL | Register the template ACL-change event (4899) itself as an audit target |
+| ESC8 | AD CS web enrollment (HTTP) is exposed to NTLM relay | Abnormal NTLM authentication attempts toward the CA server, access logs on the HTTP enrollment endpoint |
+
+**Detection/Defense**: the fundamental fix for ESC-family vulnerabilities is **preventive control (template redesign; for ESC8, enforcing EPA/channel binding)** rather than detection, but since many environments can't remove legacy templates immediately, issuance-log anomaly detection like the above is needed as a compensating control. Periodically re-auditing the environment's vulnerable-template list with a public auditing tool such as `Certify`/`Certipy` on **owned environments** is a prerequisite for this detection -- because the same vulnerability can be reintroduced every time a new template is added.
 
 ---
 

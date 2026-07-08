@@ -914,6 +914,63 @@ def lambda_handler(event: dict, context) -> dict:
 
 ---
 
+## 7. EventBridge/Step Functions 오케스트레이션 공격 체인 탐지
+
+단일 Lambda 침해는 IAM 역할 하나의 권한으로 제한되지만, 공격자가 **EventBridge 규칙을 새로 등록**하거나 **Step Functions 상태 머신을 조작**하면 여러 서비스에 걸친 권한을 순차적으로 소비하며 탐지를 피할 수 있다 — 각 단계는 정상적인 오케스트레이션처럼 보이고, 개별 CloudTrail 이벤트만 보면 전혀 의심스럽지 않은 API 호출(예: `PutRule`, `PutTargets`, `StartExecution`)의 조합이기 때문이다. 사고대응 관점에서 핵심은 **"오케스트레이션 이벤트의 순서와 발신 신원 조합"**이 정상 CI/CD 배포 패턴과 다른지를 보는 것이다.
+
+```python
+#!/usr/bin/env python3
+"""CloudTrail에서 EventBridge 규칙 생성 직후 Step Functions 실행이 이어지는 패턴을
+스캔해, 배포 파이프라인(known CI identity) 외의 신원이 이 조합을 수행한 경우를
+오케스트레이션 공격 체인 의심으로 표시."""
+from datetime import timedelta
+from dateutil import parser as dtparser
+
+SUSPICIOUS_CHAIN = ("PutRule", "PutTargets", "StartExecution")
+KNOWN_CI_IDENTITIES = {"arn:aws:iam::123456789012:role/ci-cd-deploy-role"}
+
+
+def extract_chain_events(cloudtrail_events: list[dict]) -> list[dict]:
+    """관심 이벤트만 신원(principal)별로 시간순 정렬."""
+    by_principal: dict[str, list[dict]] = {}
+    for e in cloudtrail_events:
+        if e.get("eventName") in SUSPICIOUS_CHAIN:
+            principal = e.get("userIdentity", {}).get("arn", "unknown")
+            by_principal.setdefault(principal, []).append(e)
+    for events in by_principal.values():
+        events.sort(key=lambda e: dtparser.parse(e["eventTime"]))
+    return by_principal
+
+
+def flag_orchestration_chain(cloudtrail_events: list[dict], window_minutes: int = 10) -> list[dict]:
+    by_principal = extract_chain_events(cloudtrail_events)
+    findings = []
+    for principal, events in by_principal.items():
+        if principal in KNOWN_CI_IDENTITIES:
+            continue  # 알려진 배포 파이프라인은 제외
+        names = [e["eventName"] for e in events]
+        if all(step in names for step in SUSPICIOUS_CHAIN):
+            first_t = dtparser.parse(events[0]["eventTime"])
+            last_t = dtparser.parse(events[-1]["eventTime"])
+            if last_t - first_t <= timedelta(minutes=window_minutes):
+                findings.append({
+                    "principal": principal,
+                    "chain": names,
+                    "window_minutes": (last_t - first_t).total_seconds() / 60,
+                })
+    return findings
+```
+
+| 신호 | 설명 | 오탐 요인 |
+|------|------|----------|
+| PutRule→PutTargets→StartExecution 연쇄 | 정상 배포 자동화도 동일 순서를 씀 | 알려진 CI/CD 신원(역할 ARN) 화이트리스트로 대부분 제거 가능 |
+| 짧은 시간창(예: 10분 이내) 연쇄 | 사람이 콘솔로 수동 구성하면 훨씬 느림 | 신규 팀원의 학습 중 수동 조작과 겹칠 수 있음 |
+| 비-CI 신원의 EventBridge 규칙 생성 | 공격자가 지속성(persistence) 확보 목적으로 흔히 사용 | 레거시 자동화 스크립트가 IAM 사용자로 직접 실행되는 경우 오탐 |
+
+**탐지/방어**: 이 탐지의 진짜 가치는 개별 API 호출이 아니라 **호출 순서 + 신원 + 시간창의 조합**에 있다 — 셋 중 하나만 보면 정상 운영과 구분이 안 된다. 실무에서는 EventBridge 규칙에 태그 기반 소유자 정책을 강제하고, 미태그 규칙 생성 자체를 SCP(Service Control Policy)로 차단하는 예방 통제를 병행해야 이 탐지의 실효성이 올라간다.
+
+---
+
 <!-- detect-validate-53 -->
 ## 서버리스 사고 대응 검증 (설정됨 ≠ 작동함)
 
@@ -1163,6 +1220,65 @@ Step 3: Blast Radius Assessment
 | Excessive IAM | IAM Access Analyzer | Add Deny policy | Apply least privilege |
 | Function code tampering | CloudTrail alert | Roll back version | Apply code signing |
 | Dependency vulnerabilities | AWS Inspector | Remove vulnerable packages | CI/CD SAST integration |
+
+---
+
+## 6. Detecting EventBridge/Step Functions Orchestration Attack Chains
+
+A single compromised Lambda is limited to one IAM role's permissions, but if an attacker **registers a new EventBridge rule** or **manipulates a Step Functions state machine**, they can consume permissions across multiple services in sequence while evading detection -- each step looks like normal orchestration, and taken individually, the CloudTrail API calls involved (e.g., `PutRule`, `PutTargets`, `StartExecution`) look completely unsuspicious. From an incident-response standpoint, the key is looking at **whether the combination of orchestration-event order and calling identity** differs from a normal CI/CD deployment pattern.
+
+```python
+#!/usr/bin/env python3
+"""Scan CloudTrail for a pattern where a Step Functions execution immediately follows
+EventBridge rule creation, and flag any identity other than the known CI/CD deployment
+role performing this combination as a suspected orchestration attack chain."""
+from datetime import timedelta
+from dateutil import parser as dtparser
+
+SUSPICIOUS_CHAIN = ("PutRule", "PutTargets", "StartExecution")
+KNOWN_CI_IDENTITIES = {"arn:aws:iam::123456789012:role/ci-cd-deploy-role"}
+
+
+def extract_chain_events(cloudtrail_events: list[dict]) -> list[dict]:
+    """Sort events of interest chronologically, grouped by principal."""
+    by_principal: dict[str, list[dict]] = {}
+    for e in cloudtrail_events:
+        if e.get("eventName") in SUSPICIOUS_CHAIN:
+            principal = e.get("userIdentity", {}).get("arn", "unknown")
+            by_principal.setdefault(principal, []).append(e)
+    for events in by_principal.values():
+        events.sort(key=lambda e: dtparser.parse(e["eventTime"]))
+    return by_principal
+
+
+def flag_orchestration_chain(cloudtrail_events: list[dict], window_minutes: int = 10) -> list[dict]:
+    by_principal = extract_chain_events(cloudtrail_events)
+    findings = []
+    for principal, events in by_principal.items():
+        if principal in KNOWN_CI_IDENTITIES:
+            continue  # exclude known deployment pipelines
+        names = [e["eventName"] for e in events]
+        if all(step in names for step in SUSPICIOUS_CHAIN):
+            first_t = dtparser.parse(events[0]["eventTime"])
+            last_t = dtparser.parse(events[-1]["eventTime"])
+            if last_t - first_t <= timedelta(minutes=window_minutes):
+                findings.append({
+                    "principal": principal,
+                    "chain": names,
+                    "window_minutes": (last_t - first_t).total_seconds() / 60,
+                })
+    return findings
+```
+
+| Signal | Description | False-Positive Factor |
+|--------|-------------|-------------------------|
+| PutRule -> PutTargets -> StartExecution chain | Legitimate deployment automation uses the same order | Whitelisting known CI/CD identities (role ARNs) removes most of these |
+| Chain within a short window (e.g., under 10 min) | A human manually configuring via the console is much slower | Can overlap with a new team member's manual configuration while learning |
+| EventBridge rule creation by a non-CI identity | Commonly used by attackers seeking persistence | Legacy automation scripts run directly as an IAM user can trigger false positives |
+
+**Detection/Defense**: the real value of this detection isn't any individual API call but **the combination of call order + identity + time window** -- looking at just one of the three is indistinguishable from normal operations. In practice, enforcing a tag-based ownership policy on EventBridge rules and blocking untagged rule creation itself via an SCP (Service Control Policy) as a preventive control raises the effectiveness of this detection.
+
+---
 
 <!-- detect-validate-53 -->
 ## Serverless Incident-Response Validation (Configured != Working)
