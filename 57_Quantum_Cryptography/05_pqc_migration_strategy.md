@@ -992,6 +992,52 @@ response = session.get('https://example.com')
 - `pip install liboqs-python`
 - OpenSSL 포크(OQS-OpenSSL) 필요
 
+---
+
+## 7. 하베스트-나우-디크립트-레이터(HNDL) 노출 자산 탐지
+
+PQC 전환의 진짜 시급성은 "지금 깨진다"가 아니라 **하베스트-나우-디크립트-레이터(Harvest-Now-Decrypt-Later, HNDL)**에 있다 — 공격자는 오늘 양자에 취약한 키 교환(고전 ECDH/RSA)으로 암호화된 트래픽을 대량 수집해 두었다가, 훗날 암호적으로 유의미한 양자컴퓨터(CRQC)가 나오면 소급 복호한다. 따라서 방어의 첫걸음은 "어떤 데이터가 위험한가"를 정량화하는 것이다: **수명이 긴 비밀(의료·국가기밀·장기 계약 등, 기밀 유지 요구 연수가 CRQC 예상 도래 시점보다 긴 데이터)이 아직 하이브리드(ML-KEM)로 보호되지 않는 세션으로 흐르는지**를 인벤토리화한다. 핸드셰이크에서 협상된 키 교환 그룹만 보면 노출 자산을 기계적으로 골라낼 수 있다.
+
+```python
+#!/usr/bin/env python3
+"""TLS 텔레메트리(협상된 그룹 + 데이터 분류 태그)에서 HNDL 노출 자산을 추린다.
+'기밀 유지 요구 연수 > CRQC 예상 도래까지 남은 연수'이면서 아직 PQC 하이브리드가
+아닌 세션을 소급 복호 위험으로 표시한다."""
+from dataclasses import dataclass
+
+PQC_HYBRID_GROUPS = {"X25519MLKEM768", "SecP256r1MLKEM768", "mlkem768"}
+CRQC_ETA_YEARS = 10  # 조직 위협 모델에 맞춰 조정(보수적 추정)
+
+
+@dataclass
+class Flow:
+    endpoint: str
+    negotiated_group: str      # 예: "x25519", "X25519MLKEM768"
+    data_secrecy_years: int    # 해당 데이터가 기밀로 유지돼야 하는 연수
+
+
+def hndl_exposed(flows: list[Flow]) -> list[dict]:
+    exposed = []
+    for f in flows:
+        is_pqc = f.negotiated_group in PQC_HYBRID_GROUPS
+        # 기밀 유지 요구 기간이 CRQC 도래를 넘기는데 아직 고전 키교환 = 소급 복호 위험
+        if not is_pqc and f.data_secrecy_years > CRQC_ETA_YEARS:
+            exposed.append({
+                "endpoint": f.endpoint,
+                "group": f.negotiated_group,
+                "secrecy_years": f.data_secrecy_years,
+                "risk": "harvest_now_decrypt_later",
+            })
+    return sorted(exposed, key=lambda x: -x["secrecy_years"])
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 고전 전용 키 교환 협상 | X25519/ECDH/RSA 단독 = 양자 취약, 하이브리드 미적용 | 상대가 PQC 미지원 시 다운그레이드 불가피(우선순위 표시만) |
+| 긴 기밀 유지 요구 연수 | 요구 연수 > CRQC 예상 도래 연수면 소급 복호 대상 | 데이터 분류 태그 정확도에 의존 |
+| 장수명 세션·대용량 전송 | 대량 수집·소급 복호 가치가 큰 흐름 | 정상 백업/복제 트래픽과 구분 필요 |
+
+**탐지/방어**: HNDL은 "실시간 침해"가 아니라 **미래 시점의 소급 위험**이므로, 탐지의 목적은 차단이 아니라 **우선순위화**다 — 위 세 신호로 노출 자산을 점수화해 기밀 유지 요구 연수가 긴 것부터 하이브리드(ML-KEM) 전환 대기열에 넣는다. 상대가 PQC를 아직 지원하지 않아 다운그레이드가 불가피한 경우, 그 사실 자체를 인벤토리에 남겨 **협상 그룹 회귀 모니터링**(이미 PQC로 올라간 자산이 고전으로 되돌아갔는지)과 함께 지속 추적한다. 검증은 **소유 환경**에서만([[18_DevSecOps]], [[14_Cloud_Security]]).
 
 <!-- detect-validate-57 -->
 ## PQC 마이그레이션 검증 — 크립토-어질리티가 실제로 동작하는가
@@ -1223,6 +1269,51 @@ response = session.get('https://example.com')
 PQC-TLS in actual Python is currently experimentally possible via the `liboqs` library:
 - `pip install liboqs-python`
 - Requires OpenSSL fork (OQS-OpenSSL)
+
+## 7. Detecting Harvest-Now-Decrypt-Later (HNDL) Exposed Assets
+
+The real urgency of PQC migration isn't "it breaks today" but **Harvest-Now-Decrypt-Later (HNDL)** -- an adversary bulk-collects traffic encrypted today with quantum-vulnerable key exchange (classical ECDH/RSA) and retroactively decrypts it once a cryptographically relevant quantum computer (CRQC) arrives. So the first step of defense is to quantify "which data is at risk": inventory **whether long-lived secrets (medical, state secrets, long-term contracts -- data whose required secrecy lifetime exceeds the projected CRQC arrival) still flow over sessions not yet protected by hybrid (ML-KEM)**. Looking only at the negotiated key-exchange group in the handshake lets you mechanically single out exposed assets.
+
+```python
+#!/usr/bin/env python3
+"""From TLS telemetry (negotiated group + data-classification tag), single out HNDL-exposed
+assets. Flag sessions where 'required secrecy years > years until projected CRQC' yet the
+key exchange is not yet PQC hybrid, as retroactive-decryption risk."""
+from dataclasses import dataclass
+
+PQC_HYBRID_GROUPS = {"X25519MLKEM768", "SecP256r1MLKEM768", "mlkem768"}
+CRQC_ETA_YEARS = 10  # tune to your threat model (conservative estimate)
+
+
+@dataclass
+class Flow:
+    endpoint: str
+    negotiated_group: str      # e.g. "x25519", "X25519MLKEM768"
+    data_secrecy_years: int    # years this data must remain confidential
+
+
+def hndl_exposed(flows: list[Flow]) -> list[dict]:
+    exposed = []
+    for f in flows:
+        is_pqc = f.negotiated_group in PQC_HYBRID_GROUPS
+        # secrecy requirement outlasts CRQC arrival yet still classical KEX = retroactive risk
+        if not is_pqc and f.data_secrecy_years > CRQC_ETA_YEARS:
+            exposed.append({
+                "endpoint": f.endpoint,
+                "group": f.negotiated_group,
+                "secrecy_years": f.data_secrecy_years,
+                "risk": "harvest_now_decrypt_later",
+            })
+    return sorted(exposed, key=lambda x: -x["secrecy_years"])
+```
+
+| Signal | Description | False-Positive / Adjustment Factor |
+|--------|-------------|------------------------------------|
+| Classical-only key exchange negotiated | X25519/ECDH/RSA alone = quantum-vulnerable, no hybrid | Downgrade is unavoidable when the peer lacks PQC (mark priority only) |
+| Long required secrecy lifetime | If required years > projected CRQC arrival, it's a retroactive-decryption target | Depends on accuracy of data-classification tags |
+| Long-lived / high-volume flows | Flows with high harvest-and-decrypt value | Must be distinguished from normal backup/replication traffic |
+
+**Detection/Defense**: HNDL is not a "live breach" but a **future retroactive risk**, so the purpose of detection is not blocking but **prioritization** -- score exposed assets with the three signals above and queue the longest-secrecy ones first for hybrid (ML-KEM) migration. When downgrade is unavoidable because a peer doesn't yet support PQC, record that fact in the inventory and track it continuously alongside **negotiated-group regression monitoring** (whether an asset already on PQC has reverted to classical). Validate only on **owned environments** ([[18_DevSecOps]], [[14_Cloud_Security]]).
 
 <!-- detect-validate-57 -->
 ## PQC Migration Validation — Does Crypto-Agility Actually Work?

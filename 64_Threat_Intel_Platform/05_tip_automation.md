@@ -587,6 +587,60 @@ def trigger_soar_workflow(
 위협 인텔리전스 플랫폼은 단순한 IoC 수집기가 아니라, **조직의 위협 인식 능력을 높이는 전략적 자산**이다. 자동화는 반복 작업을 줄이되, 분석가의 맥락적 판단은 여전히 핵심이다.
 
 
+## IOC 품질 필터링 — 자동 차단 폭주를 막는 사전 검증
+
+TIP 자동화의 가장 큰 위험은 탐지 실패가 아니라 **잘못된 IOC의 자동 차단 폭주**다 — 오염된 피드나 오탐 IOC가 그대로 방화벽/EDR에 밀리면, 사설망 대역·유명 CDN·자사 인프라를 차단해 대규모 가용성 사고를 일으킨다. 따라서 강화(enrichment)와 배포 사이에 **품질 게이트**를 두어, 자동 강제(auto-enforcement) 전에 위험한 지표를 걸러내야 한다: RFC1918/예약 IP, 잘 알려진 정상 인프라, 만료된 TTL, 임계 미만 신뢰도.
+
+```python
+#!/usr/bin/env python3
+"""자동 강제(차단) 전에 IOC 품질을 검증해 폭주를 막는 게이트.
+사설/예약 IP, 잘 알려진 정상 인프라, 만료 TTL, 저신뢰도 지표를
+자동 차단 대상에서 제외하고 사람 검토 큐로 보낸다."""
+import ipaddress
+from dataclasses import dataclass
+
+ALLOWLIST_DOMAINS = {"google.com", "cloudflare.com", "akamai.net", "microsoft.com"}
+MIN_CONFIDENCE = 70          # 0~100, 이 미만은 자동 차단 금지
+
+
+@dataclass
+class IOC:
+    value: str               # IP 또는 도메인
+    kind: str                # "ip" | "domain"
+    confidence: int
+    ttl_remaining_h: int     # 남은 유효시간(시간)
+
+
+def _is_safe_ip(v: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(v)
+    except ValueError:
+        return False
+    return ip.is_private or ip.is_loopback or ip.is_reserved or ip.is_multicast
+
+
+def gate_ioc(ioc: IOC) -> dict:
+    reasons = []
+    if ioc.kind == "ip" and _is_safe_ip(ioc.value):
+        reasons.append("private_or_reserved_ip")
+    if ioc.kind == "domain" and any(ioc.value.endswith(d) for d in ALLOWLIST_DOMAINS):
+        reasons.append("known_good_infra")
+    if ioc.confidence < MIN_CONFIDENCE:
+        reasons.append("low_confidence")
+    if ioc.ttl_remaining_h <= 0:
+        reasons.append("expired_ttl")
+    # 차단 사유가 있으면 자동 강제 금지 → 사람 검토
+    return {"value": ioc.value, "auto_enforce": not reasons, "hold_reasons": reasons}
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 사설/예약 IP 지표 | RFC1918·루프백·예약 대역 차단은 자사망 마비 | 오염 피드·파싱 오류로 유입, 항상 제외 |
+| 정상 인프라(CDN/클라우드) 도메인 | 유명 서비스 차단은 대규모 장애 | 정당한 악성 서브도메인은 세밀 검토 필요 |
+| 저신뢰도·만료 IOC | 근거 약하거나 수명 지난 지표 | 임계·TTL은 피드 신뢰도별 조정 |
+
+**탐지/방어**: 품질 게이트의 목적은 IOC를 버리는 것이 아니라 **자동 강제 경로에서 사람 검토 경로로 분기**시키는 것이다 — `auto_enforce=False`인 지표는 차단하지 않고 분석가 큐로 보내고, 자동 차단은 고신뢰·비정상 인프라 지표에만 허용한다. 여기에 **롤백 자동화(차단 후 오탐 신고 시 즉시 해제)**와 **차단 건수 급증 서킷 브레이커**를 더하면 폭주를 이중으로 막는다. 검증은 **소유 환경**에서만([[40_Threat_Hunting]], [[44_Incident_Response_DFIR]]).
+
 <!-- detect-validate-64 -->
 ## TIP 자동화 검증 — 자동화가 실제로 동작하고 폭주를 막는가
 
@@ -1135,6 +1189,60 @@ Monthly tasks
 ```
 
 A threat intelligence platform is not merely an IoC collector — it is a **strategic asset that enhances an organization's threat awareness capabilities**. Automation reduces repetitive tasks, but the analyst's contextual judgment remains central.
+
+## IOC Quality Filtering — Pre-Validation to Prevent Auto-Blocking Runaway
+
+The biggest risk in TIP automation isn't detection failure but **auto-blocking runaway on bad IOCs** -- if a poisoned feed or false-positive IOC gets pushed straight to firewall/EDR, it can block private ranges, well-known CDNs, or your own infrastructure and cause a large-scale availability incident. So place a **quality gate** between enrichment and distribution to filter dangerous indicators before auto-enforcement: RFC1918/reserved IPs, well-known good infrastructure, expired TTL, sub-threshold confidence.
+
+```python
+#!/usr/bin/env python3
+"""A gate that validates IOC quality before auto-enforcement (blocking) to prevent runaway.
+Exclude private/reserved IPs, well-known good infrastructure, expired-TTL, and low-confidence
+indicators from auto-blocking and route them to a human review queue instead."""
+import ipaddress
+from dataclasses import dataclass
+
+ALLOWLIST_DOMAINS = {"google.com", "cloudflare.com", "akamai.net", "microsoft.com"}
+MIN_CONFIDENCE = 70          # 0-100; below this, no auto-blocking
+
+
+@dataclass
+class IOC:
+    value: str               # IP or domain
+    kind: str                # "ip" | "domain"
+    confidence: int
+    ttl_remaining_h: int     # remaining validity (hours)
+
+
+def _is_safe_ip(v: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(v)
+    except ValueError:
+        return False
+    return ip.is_private or ip.is_loopback or ip.is_reserved or ip.is_multicast
+
+
+def gate_ioc(ioc: IOC) -> dict:
+    reasons = []
+    if ioc.kind == "ip" and _is_safe_ip(ioc.value):
+        reasons.append("private_or_reserved_ip")
+    if ioc.kind == "domain" and any(ioc.value.endswith(d) for d in ALLOWLIST_DOMAINS):
+        reasons.append("known_good_infra")
+    if ioc.confidence < MIN_CONFIDENCE:
+        reasons.append("low_confidence")
+    if ioc.ttl_remaining_h <= 0:
+        reasons.append("expired_ttl")
+    # any hold reason => no auto-enforcement => human review
+    return {"value": ioc.value, "auto_enforce": not reasons, "hold_reasons": reasons}
+```
+
+| Signal | Description | False-Positive / Adjustment Factor |
+|--------|-------------|------------------------------------|
+| Private/reserved IP indicator | Blocking RFC1918 / loopback / reserved ranges paralyzes your own network | Enters via poisoned feeds / parse errors; always exclude |
+| Good-infra (CDN/cloud) domain | Blocking well-known services causes large outages | A legitimate malicious subdomain needs careful review |
+| Low-confidence / expired IOC | Weakly-sourced or past-lifetime indicator | Tune threshold/TTL per feed reputation |
+
+**Detection/Defense**: The quality gate's purpose isn't to discard IOCs but to **divert them from the auto-enforcement path to a human-review path** -- indicators with `auto_enforce=False` go to the analyst queue instead of being blocked, and auto-blocking is allowed only for high-confidence, non-good-infra indicators. Adding **rollback automation (auto-unblock on false-positive report)** and a **circuit breaker on block-count spikes** guards against runaway twice over. Validate only on **owned environments** ([[40_Threat_Hunting]], [[44_Incident_Response_DFIR]]).
 
 <!-- detect-validate-64 -->
 ## TIP-Automation Validation — Does Automation Actually Work and Prevent Runaway?

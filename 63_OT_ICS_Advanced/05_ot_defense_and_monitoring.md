@@ -552,6 +552,52 @@ if __name__ == "__main__":
 OT 보안은 기술적 대책 외에 **운영 절차, 직원 교육, 공급망 관리**가 동등하게 중요하다. 모든 변경사항은 MOC(Management of Change) 프로세스를 거쳐야 한다.
 
 
+## 비인가 Modbus 쓰기 명령 탐지 — 엔지니어링 명령의 출처·화이트리스트
+
+OT 프로토콜(Modbus/TCP·DNP3)은 인증이 없어, 제어 네트워크에 접근한 공격자는 코일/레지스터에 **쓰기 명령**(function code 5·6·15·16)을 보내 액추에이터를 직접 조작할 수 있다(예: 밸브 개폐, 설정값 변조). 그러나 정상 OT 환경에서 쓰기 명령은 **소수의 엔지니어링 워크스테이션(EWS)에서만, 예측 가능한 레지스터 범위로, 정해진 시간대에** 발생한다. 따라서 패시브 IDS에서 Modbus 트래픽을 파싱해 **쓰기 계열 function code를 출처 IP·시간대 화이트리스트와 대조**하면 비인가 명령을 탐지할 수 있다. 이는 소유 OT 랩에서만 검증하는 방어 로직이다.
+
+```python
+#!/usr/bin/env python3
+"""파싱된 Modbus/TCP 트랜잭션에서 비인가 쓰기 명령을 탐지한다.
+쓰기 계열 function code(5/6/15/16)를 (1) 허가된 엔지니어링 WS 출처,
+(2) 정상 운영 시간대와 대조. 패시브 IDS 방어 로직."""
+from dataclasses import dataclass
+
+WRITE_FCODES = {5, 6, 15, 16}          # 단일/다중 코일·레지스터 쓰기
+AUTHORIZED_EWS = {"10.20.0.11", "10.20.0.12"}
+BUSINESS_HOURS = range(7, 19)          # 07:00~18:59 정상 유지보수 창
+
+
+@dataclass
+class Txn:
+    src_ip: str
+    function_code: int
+    hour: int          # 관측 시각(0~23)
+
+
+def detect_unauthorized_write(txns: list[Txn]) -> list[dict]:
+    alerts = []
+    for t in txns:
+        if t.function_code not in WRITE_FCODES:
+            continue
+        reasons = []
+        if t.src_ip not in AUTHORIZED_EWS:
+            reasons.append("unauthorized_source")
+        if t.hour not in BUSINESS_HOURS:
+            reasons.append("out_of_hours")
+        if reasons:
+            alerts.append({"src": t.src_ip, "fc": t.function_code, "reasons": reasons})
+    return alerts
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 비인가 출처의 쓰기 function code | 허가된 EWS 외 노드의 코일/레지스터 쓰기 | 신규 정당 EWS·게이트웨이는 화이트리스트 갱신 필요 |
+| 운영 시간 외 쓰기 명령 | 야간·주말 설정값 변조 시도 | 승인된 야간 유지보수 창은 예외 처리 |
+| 예상 밖 레지스터 범위 쓰기 | 안전 관련 레지스터로의 비정상 접근 | 정상 제어 로직 변경도 범위 확장 가능 |
+
+**탐지/방어**: OT는 가용성이 최우선이므로 이 로직은 **패시브 IDS(경보)** 계층에 두고, 인라인 차단은 오탐이 공정 중단을 부를 수 있어 신중해야 한다 — 화이트리스트는 MOC(Management of Change) 프로세스와 연동해 정당한 변경만 반영한다. 근본 완화는 **네트워크 분리(Purdue 모델)와 EWS 접근 통제**이고, IDS는 우회·내부자 시나리오를 잡는 탐지 계층이다. 검증은 **소유 OT 랩**에서만([[62_Automotive_Security]], [[48_Threat_Modeling]]).
+
 <!-- detect-validate-63 -->
 ## OT 모니터링 검증 — 비정상 명령이 실제로 탐지되는가
 
@@ -1053,6 +1099,52 @@ if __name__ == "__main__":
 ```
 
 In OT security, **operational procedures, employee training, and supply chain management** are equally important alongside technical controls. All changes must go through a MOC (Management of Change) process.
+
+## Detecting Unauthorized Modbus Write Commands — Source and Whitelist for Engineering Commands
+
+OT protocols (Modbus/TCP, DNP3) have no authentication, so an attacker who reaches the control network can send **write commands** (function codes 5/6/15/16) to coils/registers to directly manipulate actuators (e.g., open/close valves, tamper with setpoints). In a normal OT environment, however, write commands originate **only from a few engineering workstations (EWS), to predictable register ranges, during set time windows**. So parsing Modbus traffic in a passive IDS and **checking write-family function codes against a source-IP and time-window whitelist** detects unauthorized commands. This is defensive logic validated only on owned OT labs.
+
+```python
+#!/usr/bin/env python3
+"""Detect unauthorized write commands from parsed Modbus/TCP transactions. Check write-family
+function codes (5/6/15/16) against (1) authorized engineering-WS sources and (2) normal
+operating hours. Passive IDS defensive logic."""
+from dataclasses import dataclass
+
+WRITE_FCODES = {5, 6, 15, 16}          # single/multiple coil & register writes
+AUTHORIZED_EWS = {"10.20.0.11", "10.20.0.12"}
+BUSINESS_HOURS = range(7, 19)          # 07:00-18:59 normal maintenance window
+
+
+@dataclass
+class Txn:
+    src_ip: str
+    function_code: int
+    hour: int          # observed hour (0-23)
+
+
+def detect_unauthorized_write(txns: list[Txn]) -> list[dict]:
+    alerts = []
+    for t in txns:
+        if t.function_code not in WRITE_FCODES:
+            continue
+        reasons = []
+        if t.src_ip not in AUTHORIZED_EWS:
+            reasons.append("unauthorized_source")
+        if t.hour not in BUSINESS_HOURS:
+            reasons.append("out_of_hours")
+        if reasons:
+            alerts.append({"src": t.src_ip, "fc": t.function_code, "reasons": reasons})
+    return alerts
+```
+
+| Signal | Description | False-Positive / Adjustment Factor |
+|--------|-------------|------------------------------------|
+| Write function code from unauthorized source | Coil/register write from a node other than an authorized EWS | New legitimate EWS / gateways need whitelist updates |
+| Write command outside operating hours | Setpoint tampering attempt at night/weekend | Approved off-hours maintenance windows need exceptions |
+| Write to an unexpected register range | Abnormal access to safety-related registers | Legitimate control-logic changes can also expand the range |
+
+**Detection/Defense**: Because availability is paramount in OT, keep this logic at the **passive IDS (alerting)** layer; inline blocking is risky since a false positive can halt the process. Tie the whitelist to the Management of Change (MOC) process so only legitimate changes are reflected. Root mitigation is **network segmentation (Purdue model) and EWS access control**; the IDS is a detection layer for bypass/insider scenarios. Validate only on **owned OT labs** ([[62_Automotive_Security]], [[48_Threat_Modeling]]).
 
 <!-- detect-validate-63 -->
 ## OT-Monitoring Validation — Are Abnormal Commands Actually Detected?

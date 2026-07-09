@@ -1000,6 +1000,56 @@ if __name__ == "__main__":
 
 ---
 
+## 8. 다중 턴 크레센도·다샷 재일브레이크의 세션 계층 탐지
+
+공격은 **단일 프롬프트 인젝션 필터를 통과하도록** 진화했다. **크레센도(Crescendo)**는 무해한 질문에서 시작해 여러 턴에 걸쳐 점진적으로 유해 목표로 유도하고, **다샷(many-shot) 재일브레이크**는 긴 컨텍스트 윈도우에 수십~수백 개의 가짜 "AI가 유해 답변을 한" 예시를 채워 모델의 정렬을 오염시킨다. 두 기법 모두 개별 턴·메시지는 각각 정상으로 보이므로 **stateless 입력 가드가 통째로 무력화**된다. 따라서 방어는 프롬프트 하나가 아니라 **세션 단위 상태 추적**으로 옮겨가야 한다 — 한 요청 안에 박힌 가짜 대화 턴 수와, 세션에 걸친 위험도 상승 추세를 결합하는 것이 핵심이다.
+
+```python
+#!/usr/bin/env python3
+"""세션·프롬프트 단위로 다샷(many-shot) 주입과 크레센도(점진적 유도)를 탐지.
+개별 턴은 정상이라도 (1) 한 프롬프트에 박힌 가짜 대화 예시 수, (2) 세션에 걸친
+위험도 상승 추세를 결합해 stateless 가드가 놓치는 패턴을 잡는다."""
+import re
+from statistics import mean
+
+FEWSHOT_TURN = re.compile(r"(?im)^\s*(?:user|human|assistant|ai)\s*:")
+
+
+def count_embedded_turns(prompt: str) -> int:
+    """한 프롬프트에 인위적으로 박힌 대화 턴(가짜 few-shot 예시) 수."""
+    return len(FEWSHOT_TURN.findall(prompt))
+
+
+def is_crescendo(risk_trajectory: list[float], min_turns: int = 3) -> bool:
+    """risk_trajectory: 턴별 유해성 점수(0~1, 기존 분류기가 산출)."""
+    if len(risk_trajectory) < min_turns:
+        return False
+    half = len(risk_trajectory) // 2
+    first, second = risk_trajectory[:half], risk_trajectory[half:]
+    # 후반 평균이 전반보다 뚜렷이 높고, 마지막 턴이 임계선을 넘으면 점진 유도
+    return mean(second) - mean(first) > 0.3 and risk_trajectory[-1] > 0.6
+
+
+def score_request(prompt: str, session_risk: list[float]) -> dict:
+    embedded = count_embedded_turns(prompt)
+    flags = []
+    if embedded >= 20:            # 다샷: 한 프롬프트에 수십 개 예시 = 컨텍스트 오염
+        flags.append("many_shot")
+    if is_crescendo(session_risk):
+        flags.append("crescendo")
+    return {"embedded_turns": embedded, "flags": flags, "block": bool(flags)}
+```
+
+| 신호 | 설명 | 오탐 요인 |
+|------|------|----------|
+| 프롬프트 내 임베디드 대화 턴 수 | many-shot 재일브레이크는 한 요청에 수십~수백 개의 가짜 예시를 채움 | 정당한 few-shot 프롬프팅·대화 로그 요약 요청 |
+| 세션 위험도 상승 추세 | 크레센도는 무해→유해로 서서히 이동해 임계선을 넘김 | 사용자가 정당하게 민감 주제로 심화 |
+| 롱 컨텍스트 토큰 급증 | 다샷은 컨텍스트 윈도우를 최대한 채워 정렬을 희석 | 긴 문서 요약 등 정상 롱컨텍스트 사용 |
+
+**탐지/방어**: 세 신호는 개별로는 오탐이 많아 **세션 상태와 결합한 AND 조건**으로 판단해야 한다 — 임베디드 턴 급증만으로 차단하면 정당한 few-shot 사용자를 막고, 위험도 추세만 보면 정상 심화 대화를 오탐한다. 성숙한 팀은 세션별 위험도 궤적을 저장해 **크레센도 패턴이 감지되면 세션 전체를 재평가**하고, 단일 턴 가드를 통과했더라도 누적 신호로 차단·검토 큐로 보낸다. 검증은 항상 **자체 모델/엔드포인트**에서만 수행한다([[69_LLM_Security]], [[48_Threat_Modeling]]).
+
+---
+
 <!-- detect-validate-56 -->
 ## AI 방어 통제의 운영 검증
 
@@ -1308,6 +1358,55 @@ class RedTeamReport:
 - Anthropic Responsible Scaling Policy
 - MITRE ATLAS: https://atlas.mitre.org/
 - "Red-Teaming Large Language Models" (Ganguli et al., 2022, Anthropic)
+
+## 8. Session-Layer Detection of Multi-Turn Crescendo and Many-Shot Jailbreaks
+
+Attacks have evolved to **slip past single-prompt injection filters**. **Crescendo** starts from a harmless question and gradually steers toward a harmful goal over several turns, while **many-shot jailbreaks** fill a long context window with dozens to hundreds of fake "the AI gave a harmful answer" examples to poison the model's alignment. In both techniques each individual turn/message looks benign on its own, so a **stateless input guard is completely defeated**. Defense must therefore shift from a single prompt to **session-level state tracking** -- the key is combining the number of fake dialogue turns embedded in one request with the risk-escalation trend across the session.
+
+```python
+#!/usr/bin/env python3
+"""Detect many-shot injection and crescendo (gradual steering) at the session/prompt level.
+Even when each turn looks benign, combine (1) the number of fake dialogue examples embedded
+in one prompt and (2) the risk-escalation trend across the session to catch patterns a
+stateless guard misses."""
+import re
+from statistics import mean
+
+FEWSHOT_TURN = re.compile(r"(?im)^\s*(?:user|human|assistant|ai)\s*:")
+
+
+def count_embedded_turns(prompt: str) -> int:
+    """Number of dialogue turns (fake few-shot examples) artificially embedded in one prompt."""
+    return len(FEWSHOT_TURN.findall(prompt))
+
+
+def is_crescendo(risk_trajectory: list[float], min_turns: int = 3) -> bool:
+    """risk_trajectory: per-turn harmfulness scores (0-1, produced by an existing classifier)."""
+    if len(risk_trajectory) < min_turns:
+        return False
+    half = len(risk_trajectory) // 2
+    first, second = risk_trajectory[:half], risk_trajectory[half:]
+    # Later half clearly higher than earlier half, and last turn over threshold = gradual steering
+    return mean(second) - mean(first) > 0.3 and risk_trajectory[-1] > 0.6
+
+
+def score_request(prompt: str, session_risk: list[float]) -> dict:
+    embedded = count_embedded_turns(prompt)
+    flags = []
+    if embedded >= 20:            # many-shot: dozens of examples in one prompt = context poisoning
+        flags.append("many_shot")
+    if is_crescendo(session_risk):
+        flags.append("crescendo")
+    return {"embedded_turns": embedded, "flags": flags, "block": bool(flags)}
+```
+
+| Signal | Description | False-Positive Factor |
+|--------|-------------|------------------------|
+| Embedded dialogue turns in a prompt | Many-shot jailbreaks stuff dozens to hundreds of fake examples into one request | Legitimate few-shot prompting / dialogue-log summarization requests |
+| Rising session risk trend | Crescendo drifts harmless -> harmful gradually until it crosses threshold | A user legitimately deepening into a sensitive topic |
+| Long-context token surge | Many-shot fills the context window to dilute alignment | Normal long-context use such as long-document summarization |
+
+**Detection/Defense**: the three signals produce too many false positives individually, so they must be judged with an **AND condition combined with session state** -- blocking on an embedded-turn surge alone stops legitimate few-shot users, and looking only at the risk trend flags normal deepening conversations. A mature team stores the per-session risk trajectory so that **when a crescendo pattern is detected the entire session is re-evaluated**, and even if a single turn passed the guard, the cumulative signal routes it to a block/review queue. Always validate only on **owned models/endpoints** ([[69_LLM_Security]], [[48_Threat_Modeling]]).
 
 <!-- detect-validate-56 -->
 ## Operational Validation of AI Defense Controls

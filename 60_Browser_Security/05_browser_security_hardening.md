@@ -909,6 +909,54 @@ if __name__ == "__main__":
 - NIST SP 800-44 (웹 서버 보안 가이드)
 
 
+## 7. CSP 약점 스코어링 — 헤더가 있어도 우회 가능한가
+
+CSP는 *존재한다*가 아니라 **우회 불가능한가**로 평가해야 한다. 실무에서 가장 흔한 실패는 헤더 부재가 아니라 **자기무력화 CSP**다 — `script-src`에 `'unsafe-inline'`이 있으면 XSS 차단이 사실상 무의미하고, `'unsafe-eval'`은 문자열→코드 실행을 허용하며, `https:`·`*` 같은 광범위 허용은 공격자가 아무 호스트나 지정하게 한다. 또한 `object-src 'none'`·`base-uri`가 없으면 플러그인·`<base>` 하이재킹으로 우회된다. 정책 문자열을 파싱해 이런 약점을 정적으로 점수화하면 "헤더는 있으나 실효 없는" 상태를 기계적으로 잡아낸다.
+
+```python
+#!/usr/bin/env python3
+"""CSP 문자열을 파싱해 우회 가능한 약점을 정적으로 점수화한다.
+헤더 존재가 아니라 실효성을 본다 — unsafe-inline/eval, 광범위 소스,
+object-src/base-uri 누락은 XSS 차단을 무력화한다."""
+
+DANGEROUS_SRC = {"'unsafe-inline'", "'unsafe-eval'", "*", "http:", "https:", "data:"}
+
+
+def parse_csp(header: str) -> dict[str, list[str]]:
+    directives = {}
+    for part in header.split(";"):
+        toks = part.split()
+        if toks:
+            directives[toks[0].lower()] = toks[1:]
+    return directives
+
+
+def audit_csp(header: str) -> dict:
+    d = parse_csp(header)
+    weaknesses = []
+    script = d.get("script-src", d.get("default-src", []))
+    for bad in ("'unsafe-inline'", "'unsafe-eval'"):
+        if bad in script:
+            weaknesses.append(f"script-src {bad}")
+    if any(w in script for w in ("*", "http:", "https:", "data:")):
+        weaknesses.append("script-src overly-broad source")
+    if "object-src" not in d and "default-src" not in d:
+        weaknesses.append("missing object-src (plugin injection)")
+    if "base-uri" not in d:
+        weaknesses.append("missing base-uri (<base> hijack)")
+    if not script:
+        weaknesses.append("no script-src/default-src (no XSS control)")
+    return {"weaknesses": weaknesses, "effective": not weaknesses}
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| `'unsafe-inline'`/`'unsafe-eval'` in script-src | 인라인/문자열 코드 실행 허용 = XSS 차단 무력화 | nonce/hash 병행 시 `'strict-dynamic'`로 완화되는 경우 있음 |
+| 광범위 소스(`*`·`https:`·`data:`) | 공격자가 임의 호스트/데이터 URI 로드 | CDN 다수 사용 사이트는 정당하게 도메인 나열 필요 |
+| `object-src`·`base-uri` 누락 | 플러그인·`<base>` 태그로 정책 우회 | `default-src 'none'`이 이미 커버하면 무관 |
+
+**탐지/방어**: CSP 점수화는 차단 도구가 아니라 **회귀 방지·우선순위화 도구**다 — 배포 파이프라인에서 응답 헤더의 CSP를 파싱해 `effective=False`면 릴리스를 경고/차단하고, `'strict-dynamic'`+nonce 기반 정책으로 이전하도록 유도한다. nonce는 요청마다 달라야 하므로 **정적 nonce 재사용**도 함께 점검한다. 검증은 **소유 도메인**에서만([[18_DevSecOps]], [[14_Cloud_Security]]).
+
 <!-- detect-validate-60 -->
 ## 하드닝 검증 — 정책이 실제로 적용·잠겨 있는가
 
@@ -1153,6 +1201,54 @@ configuration, scores it, and outputs improvement recommendations.
 - Mozilla Observatory (https://observatory.mozilla.org/)
 - Google Web Fundamentals — Security Headers
 - NIST SP 800-44 (Web Server Security Guide)
+
+## 7. CSP Weakness Scoring — Is It Bypassable Even When Present?
+
+CSP should be judged not by *whether it exists* but by **whether it is bypassable**. In practice the most common failure isn't a missing header but a **self-defeating CSP** -- `'unsafe-inline'` in `script-src` makes XSS blocking essentially meaningless, `'unsafe-eval'` allows string-to-code execution, and broad allowlists like `https:` or `*` let an attacker name any host. Missing `object-src 'none'` / `base-uri` also opens plugin and `<base>` hijacking bypasses. Parsing the policy string and statically scoring these weaknesses mechanically catches the "header present but ineffective" state.
+
+```python
+#!/usr/bin/env python3
+"""Parse a CSP string and statically score bypassable weaknesses. Looks at effectiveness,
+not mere presence -- unsafe-inline/eval, broad sources, and missing object-src/base-uri
+neutralize XSS blocking."""
+
+DANGEROUS_SRC = {"'unsafe-inline'", "'unsafe-eval'", "*", "http:", "https:", "data:"}
+
+
+def parse_csp(header: str) -> dict[str, list[str]]:
+    directives = {}
+    for part in header.split(";"):
+        toks = part.split()
+        if toks:
+            directives[toks[0].lower()] = toks[1:]
+    return directives
+
+
+def audit_csp(header: str) -> dict:
+    d = parse_csp(header)
+    weaknesses = []
+    script = d.get("script-src", d.get("default-src", []))
+    for bad in ("'unsafe-inline'", "'unsafe-eval'"):
+        if bad in script:
+            weaknesses.append(f"script-src {bad}")
+    if any(w in script for w in ("*", "http:", "https:", "data:")):
+        weaknesses.append("script-src overly-broad source")
+    if "object-src" not in d and "default-src" not in d:
+        weaknesses.append("missing object-src (plugin injection)")
+    if "base-uri" not in d:
+        weaknesses.append("missing base-uri (<base> hijack)")
+    if not script:
+        weaknesses.append("no script-src/default-src (no XSS control)")
+    return {"weaknesses": weaknesses, "effective": not weaknesses}
+```
+
+| Signal | Description | False-Positive / Adjustment Factor |
+|--------|-------------|------------------------------------|
+| `'unsafe-inline'`/`'unsafe-eval'` in script-src | Allows inline/string code execution = neutralizes XSS blocking | Can be mitigated by `'strict-dynamic'` when combined with nonce/hash |
+| Broad sources (`*`/`https:`/`data:`) | Attacker can load arbitrary hosts / data URIs | Sites using many CDNs legitimately need to list domains |
+| Missing `object-src` / `base-uri` | Policy bypass via plugin or `<base>` tag | Irrelevant if `default-src 'none'` already covers it |
+
+**Detection/Defense**: CSP scoring is not a blocking tool but a **regression-prevention and prioritization tool** -- parse the response header's CSP in the deploy pipeline, warn/block the release when `effective=False`, and steer migration toward a `'strict-dynamic'` + nonce-based policy. Because a nonce must differ per request, also check for **static nonce reuse**. Validate only on **owned domains** ([[18_DevSecOps]], [[14_Cloud_Security]]).
 
 <!-- detect-validate-60 -->
 ## Hardening Validation — Are Policies Actually Applied and Locked?

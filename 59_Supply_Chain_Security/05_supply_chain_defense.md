@@ -1032,6 +1032,64 @@ if __name__ == "__main__":
 | **사고 대응** | 공급망 침해 의심 시 즉시 격리 | 자동화된 격리 트리거 구성 |
 
 
+## 9. 고위험 의존성 탐지 — 타이포스쿼팅·의존성 혼동·설치 스크립트
+
+최근 공급망 공격은 취약한 라이브러리가 아니라 **애초에 악성인 패키지**를 심는 쪽으로 이동했다. **타이포스쿼팅**(`reqeusts` vs `requests`)·**의존성 혼동**(내부 전용 이름을 공개 레지스트리에 먼저 올려 우선순위를 가로챔)·**설치 시점 스크립트**(npm `postinstall`, PyPI `setup.py`)를 통한 즉시 실행이 대표적이다. 개별 패키지는 정상처럼 보이므로, 방어는 **락파일에 새로 들어온 의존성을 여러 위험 신호로 점수화**하는 것이다 — 인기 패키지와 이름이 한 글자 차이인지, 공개된 지 며칠 안 됐는지, 다운로드가 극히 적은데 설치 스크립트를 갖는지를 결합한다.
+
+```python
+#!/usr/bin/env python3
+"""락파일의 신규 의존성을 여러 위험 신호로 점수화한다.
+개별로는 정상이라도 (1) 인기 패키지와의 이름 근접도(타이포스쿼팅),
+(2) 최근 공개일, (3) 극소 다운로드 + 설치 스크립트 보유를 결합해
+사람이 검토할 상위 후보를 추린다. 자동 차단이 아닌 우선순위화가 목적."""
+from dataclasses import dataclass
+
+POPULAR = {"requests", "urllib3", "numpy", "lodash", "react", "express", "flask"}
+
+
+def _lev1(a: str, b: str) -> bool:
+    """편집거리 1 이내(한 글자 삽입/삭제/치환)면 True — 타이포스쿼팅 근접."""
+    if a == b:
+        return False
+    if abs(len(a) - len(b)) > 1:
+        return False
+    # 간단한 편집거리<=1 판정
+    if len(a) == len(b):
+        return sum(x != y for x, y in zip(a, b)) == 1
+    lo, hi = (a, b) if len(a) < len(b) else (b, a)
+    for i in range(len(hi)):
+        if lo == hi[:i] + hi[i + 1:]:
+            return True
+    return False
+
+
+@dataclass
+class Pkg:
+    name: str
+    age_days: int          # 레지스트리 공개 후 경과일
+    weekly_downloads: int
+    has_install_script: bool
+
+
+def score_dep(p: Pkg) -> dict:
+    flags = []
+    if any(_lev1(p.name, pop) for pop in POPULAR):
+        flags.append("typosquat_near_popular")
+    if p.age_days < 30:
+        flags.append("recently_published")
+    if p.weekly_downloads < 50 and p.has_install_script:
+        flags.append("low_downloads_with_install_script")
+    return {"name": p.name, "flags": flags, "review": len(flags) >= 2}
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 인기 패키지와 이름 1글자 차이 | 타이포스쿼팅·브랜드재킹 후보 | 정당한 포크·스코프 패키지(`@org/name`)와 구분 필요 |
+| 공개 30일 이내 신규 패키지 | 급조한 악성 배포 가능성 | 정상 신규 라이브러리·초기 릴리스도 신규 |
+| 극소 다운로드 + 설치 스크립트 | 설치 즉시 코드 실행하는 저평판 패키지 | 사내 전용/니치 도구는 정상적으로 다운로드 적음 |
+
+**탐지/방어**: 세 신호는 개별로는 오탐이 많아 **2개 이상 동시 충족 시에만 사람 검토 큐로** 보낸다(자동 차단은 정상 신규 의존성을 막는다). 성숙한 팀은 이를 **CI의 의존성 추가 게이트**에 연결해 신규/변경 의존성만 점수화하고, 의존성 혼동은 별도로 **내부 패키지 이름이 공개 레지스트리에 존재하는지**를 스코프·레지스트리 우선순위 설정으로 차단한다. 검증은 **소유 파이프라인**에서만([[18_DevSecOps]], [[44_Incident_Response_DFIR]]).
+
 <!-- detect-validate-59 -->
 ## 공급망 방어 검증 — 정책이 실제 CI 게이트로 강제되는가
 
@@ -1195,6 +1253,63 @@ gh api repos/:owner/:repo/branches/main/protection 2>/dev/null | jq '.required_s
 | **Code signing** | Signing required for all production releases | Except internal development builds |
 | **Vendor evaluation** | Supply chain security evaluation when introducing new vendors | PoC allowed before evaluation completion |
 | **Incident response** | Immediately isolate if supply chain compromise is suspected | Configure automated isolation triggers |
+
+## 9. Detecting High-Risk Dependencies — Typosquatting, Dependency Confusion, Install Scripts
+
+Recent supply-chain attacks have shifted from vulnerable libraries to **packages that are malicious in the first place** -- typosquatting (`reqeusts` vs `requests`), dependency confusion (publishing an internal-only name to a public registry first to hijack resolution priority), and immediate execution via install-time scripts (npm `postinstall`, PyPI `setup.py`). Each package looks fine individually, so defense means **scoring newly-introduced lockfile dependencies with multiple risk signals** -- whether a name is one character off a popular package, whether it was published only days ago, whether it has almost no downloads yet ships an install script.
+
+```python
+#!/usr/bin/env python3
+"""Score new lockfile dependencies with multiple risk signals. Even when each looks fine,
+combine (1) name proximity to popular packages (typosquatting), (2) recent publish date,
+(3) tiny downloads + presence of an install script to surface top candidates for human
+review. Goal is prioritization, not automatic blocking."""
+from dataclasses import dataclass
+
+POPULAR = {"requests", "urllib3", "numpy", "lodash", "react", "express", "flask"}
+
+
+def _lev1(a: str, b: str) -> bool:
+    """True if edit distance <= 1 (one char insert/delete/substitute) -- typosquat proximity."""
+    if a == b:
+        return False
+    if abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) == len(b):
+        return sum(x != y for x, y in zip(a, b)) == 1
+    lo, hi = (a, b) if len(a) < len(b) else (b, a)
+    for i in range(len(hi)):
+        if lo == hi[:i] + hi[i + 1:]:
+            return True
+    return False
+
+
+@dataclass
+class Pkg:
+    name: str
+    age_days: int          # days since published to the registry
+    weekly_downloads: int
+    has_install_script: bool
+
+
+def score_dep(p: Pkg) -> dict:
+    flags = []
+    if any(_lev1(p.name, pop) for pop in POPULAR):
+        flags.append("typosquat_near_popular")
+    if p.age_days < 30:
+        flags.append("recently_published")
+    if p.weekly_downloads < 50 and p.has_install_script:
+        flags.append("low_downloads_with_install_script")
+    return {"name": p.name, "flags": flags, "review": len(flags) >= 2}
+```
+
+| Signal | Description | False-Positive / Adjustment Factor |
+|--------|-------------|------------------------------------|
+| Name one char off a popular package | Typosquatting / brandjacking candidate | Must be distinguished from legit forks and scoped packages (`@org/name`) |
+| New package published within 30 days | Possible hastily-published malicious release | Legit new libraries and early releases are also new |
+| Tiny downloads + install script | Low-reputation package that runs code on install | Internal-only / niche tools legitimately have low downloads |
+
+**Detection/Defense**: The three signals produce many false positives individually, so route to a **human review queue only when two or more fire** (auto-blocking would stop legitimate new dependencies). Mature teams wire this into a **CI dependency-addition gate** that scores only new/changed dependencies, and handle dependency confusion separately by blocking **whether internal package names exist on the public registry** via scope and registry-priority configuration. Validate only on **owned pipelines** ([[18_DevSecOps]], [[44_Incident_Response_DFIR]]).
 
 <!-- detect-validate-59 -->
 ## Supply-Chain Defense Validation — Are Policies Actually Enforced as CI Gates?

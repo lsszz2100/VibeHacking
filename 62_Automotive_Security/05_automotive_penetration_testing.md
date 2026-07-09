@@ -424,6 +424,54 @@ SFOP (Safety, Financial, Operational, Privacy)
 자동차 보안은 가장 높은 윤리적 책임이 요구되는 분야다. 모든 테스트는 통제된 환경에서, 명시적 승인하에 수행해야 한다.
 
 
+## CAN 프레임 주기 이상 탐지 — 주입 프레임을 타이밍으로 잡는다
+
+CAN 버스에는 인증·암호화가 거의 없어, 공격자는 정상 ECU와 같은 arbitration ID로 위조 프레임을 주입할 수 있다(예: 조향·제동 명령 스푸핑). 그러나 대부분의 주기적 CAN 메시지는 **일정한 사이클 타임**(예: 10ms마다)으로 송신되므로, 주입 공격은 필연적으로 **비정상적으로 짧은 프레임 간격**(정상 프레임과 위조 프레임이 겹쳐 두 배 빈도로 관측)을 만든다. 각 ID의 정상 사이클 타임 기준선을 학습해 두면, 기준보다 뚜렷이 빠른 프레임을 통계적으로 잡아낼 수 있다. 이는 IDS(침입탐지)용 방어 로직이며 소유 차량·벤치에서만 검증한다.
+
+```python
+#!/usr/bin/env python3
+"""CAN 프레임 타임스탬프에서 주입 공격을 주기 이상으로 탐지한다.
+각 arbitration ID의 정상 사이클 타임을 학습 → 관측 간격이 기준보다
+뚜렷이 짧으면(위조+정상 프레임 중첩) 이상으로 표시. IDS 방어 로직."""
+from statistics import mean, pstdev
+
+Frame = tuple[float, int]   # (timestamp_sec, arbitration_id)
+
+
+def learn_baseline(frames: list[Frame]) -> dict[int, float]:
+    """ID별 정상 프레임 간격(사이클 타임)의 평균을 학습."""
+    times: dict[int, list[float]] = {}
+    for ts, cid in frames:
+        times.setdefault(cid, []).append(ts)
+    baseline = {}
+    for cid, ts_list in times.items():
+        gaps = [b - a for a, b in zip(ts_list, ts_list[1:])]
+        if len(gaps) >= 5:
+            baseline[cid] = mean(gaps)
+    return baseline
+
+
+def detect_injection(frames: list[Frame], baseline: dict[int, float]) -> list[dict]:
+    anomalies, last = [], {}
+    for ts, cid in frames:
+        if cid in baseline and cid in last:
+            gap = ts - last[cid]
+            # 정상 사이클의 절반보다 짧은 간격 = 위조 프레임 중첩 의심
+            if gap < baseline[cid] * 0.5:
+                anomalies.append({"id": hex(cid), "gap_ms": round(gap * 1000, 2),
+                                  "expected_ms": round(baseline[cid] * 1000, 2)})
+        last[cid] = ts
+    return anomalies
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 사이클 타임 절반 이하 간격 | 위조+정상 프레임 중첩 = 주입 의심 | 이벤트성(비주기) ID는 기준 학습 대상에서 제외 |
+| ID별 송신 빈도 급증 | 스푸핑이 정상보다 자주 송신 | 버스 부하 변동·정상 버스트와 구분 필요 |
+| 예상 못한 소스의 ID 등장 | 원래 특정 ECU만 쓰는 ID를 타 노드가 사용 | 게이트웨이 재전송·진단 세션은 정당 |
+
+**탐지/방어**: 타이밍 기반 탐지는 주기적 메시지에만 유효하므로 **이벤트성 ID는 기준 학습에서 제외**하고, 빈도·소스 신호와 결합해 오탐을 낮춘다. 성숙한 접근은 여기에 **CAN 메시지 인증(예: AUTOSAR SecOC)**을 더해 근본 완화를 하고, IDS는 탐지·경보 계층으로 둔다. 자동차는 안전 직결 분야이므로 모든 검증은 **소유 차량·격리 벤치**에서 명시적 승인하에만 수행한다([[63_OT_ICS_Advanced]], [[48_Threat_Modeling]]).
+
 <!-- detect-validate-62 -->
 ## 차량 펜테스트 검증 — 위협 시나리오가 실제로 재현·완화 입증되는가
 
@@ -788,6 +836,54 @@ Impact rated 1~3 for each dimension → overall risk score calculated
 ```
 
 Automotive security is the field that demands the highest level of ethical responsibility. All tests must be performed in a controlled environment with explicit authorization.
+
+## CAN Frame Cycle-Time Anomaly Detection — Catching Injected Frames by Timing
+
+The CAN bus has almost no authentication or encryption, so an attacker can inject forged frames with the same arbitration ID as a legitimate ECU (e.g., spoofing steering/braking commands). However, most periodic CAN messages are sent at a **fixed cycle time** (e.g., every 10 ms), so an injection attack inevitably produces **abnormally short inter-frame gaps** (the forged and legitimate frames overlap, observed at roughly double the frequency). If you learn each ID's normal cycle-time baseline, you can statistically catch frames arriving markedly faster than baseline. This is defensive IDS logic, validated only on owned vehicles/benches.
+
+```python
+#!/usr/bin/env python3
+"""Detect injection attacks from CAN frame timestamps as cycle-time anomalies. Learn each
+arbitration ID's normal cycle time -> flag when an observed gap is markedly shorter than
+baseline (forged + legitimate frames overlapping). Defensive IDS logic."""
+from statistics import mean, pstdev
+
+Frame = tuple[float, int]   # (timestamp_sec, arbitration_id)
+
+
+def learn_baseline(frames: list[Frame]) -> dict[int, float]:
+    """Learn the mean normal inter-frame gap (cycle time) per ID."""
+    times: dict[int, list[float]] = {}
+    for ts, cid in frames:
+        times.setdefault(cid, []).append(ts)
+    baseline = {}
+    for cid, ts_list in times.items():
+        gaps = [b - a for a, b in zip(ts_list, ts_list[1:])]
+        if len(gaps) >= 5:
+            baseline[cid] = mean(gaps)
+    return baseline
+
+
+def detect_injection(frames: list[Frame], baseline: dict[int, float]) -> list[dict]:
+    anomalies, last = [], {}
+    for ts, cid in frames:
+        if cid in baseline and cid in last:
+            gap = ts - last[cid]
+            # gap shorter than half the normal cycle = suspected forged-frame overlap
+            if gap < baseline[cid] * 0.5:
+                anomalies.append({"id": hex(cid), "gap_ms": round(gap * 1000, 2),
+                                  "expected_ms": round(baseline[cid] * 1000, 2)})
+        last[cid] = ts
+    return anomalies
+```
+
+| Signal | Description | False-Positive / Adjustment Factor |
+|--------|-------------|------------------------------------|
+| Gap under half the cycle time | Forged + legitimate frame overlap = suspected injection | Exclude event-driven (aperiodic) IDs from baseline learning |
+| Sudden spike in per-ID frequency | Spoofing sends more often than normal | Must be distinguished from bus-load variation / normal bursts |
+| ID appears from an unexpected source | An ID normally used only by one ECU used by another node | Gateway re-transmission and diagnostic sessions are legitimate |
+
+**Detection/Defense**: Timing-based detection is valid only for periodic messages, so **exclude event-driven IDs from baseline learning** and combine with frequency/source signals to reduce false positives. A mature approach adds **CAN message authentication (e.g., AUTOSAR SecOC)** for root mitigation and keeps the IDS as a detection/alerting layer. Because automotive is safety-critical, perform all validation only on **owned vehicles / isolated benches** under explicit authorization ([[63_OT_ICS_Advanced]], [[48_Threat_Modeling]]).
 
 <!-- detect-validate-62 -->
 ## Automotive Pentest Validation — Are Threat Scenarios Actually Reproduced and Mitigations Proven?
