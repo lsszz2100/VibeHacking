@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-75-blueviolet)](#目录)
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#目录)
-[![Lines](https://img.shields.io/badge/Lines-530%2C000%2B-orange)](#目录)
+[![Lines](https://img.shields.io/badge/Lines-550%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
 [![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·75-9933ff)](https://lsszz2100.github.io/VibeHacking/)
 
