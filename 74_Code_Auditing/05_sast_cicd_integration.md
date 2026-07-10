@@ -620,6 +620,46 @@ if __name__ == "__main__":
 
 ---
 
+## Diff 인지 SAST 게이팅 — 신규 유입 발견만 차단해 경보 피로 줄이기
+
+레거시 코드베이스에 SAST를 처음 켜면 수백 건의 기존 발견이 쏟아져 **모든 것을 막으면 개발이 멈추고, 아무것도 안 막으면 게이트가 무의미**해진다. 실용적 머지 게이트는 절대량이 아니라 **이번 변경으로 새로 유입된 발견**만 실패시키고 기존 발견은 리포트-전용으로 둔다 — 회귀 도입은 차단하면서 정리는 별도 백로그로 미룬다. 위치 이동에 강인한 지문으로 베이스라인과 대조하는 것이 핵심이다.
+
+```python
+#!/usr/bin/env python3
+"""SAST 결과를 베이스라인 지문 집합과 대조해 이번 변경으로 '새로 유입된' 발견만
+빌드 실패로 게이트하고, 기존 발견은 리포트-전용으로 둔다. 경보 피로를 줄이고
+회귀 도입을 차단하는 머지 게이트."""
+import hashlib
+
+
+def fingerprint(finding: dict) -> str:
+    """규칙ID+파일+정규화 코드조각으로 위치 이동에 강인한 지문 생성(라인번호 제외)."""
+    key = "|".join([
+        finding.get("rule_id", ""),
+        finding.get("file", ""),
+        (finding.get("snippet", "") or "").strip(),
+    ])
+    return hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+
+
+def gate(current: list[dict], baseline_fps: set[str]) -> dict:
+    new, preexisting = [], []
+    for f in current:
+        (new if fingerprint(f) not in baseline_fps else preexisting).append(f)
+    block = any(f.get("severity") in ("high", "critical") for f in new)
+    return {"new_findings": new, "preexisting_count": len(preexisting), "block_merge": block}
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 신규 고/치명 발견 | 이번 변경이 취약점 유입 — 머지 차단 | 규칙 업데이트로 기존 코드가 새로 매칭되면 오탐 |
+| 지문 미스매치(위치만 이동) | 코드 이동을 신규로 오인 가능 | 라인번호 제외·코드조각 정규화로 완화 |
+| 베이스라인 급증 | 대량 리팩터/규칙 변경 신호 | 베이스라인 재기준선(rebaseline) 필요 |
+
+**탐지/방어**: 게이트는 **신규 회귀 차단 + 기존 정리 백로그 분리**가 목적이다 — 규칙셋 버전을 고정해 규칙 변경발 오탐 급증을 막고, 베이스라인 갱신은 승인 흐름을 거쳐 부채가 조용히 리셋되지 않게 한다. 지문에 라인번호를 넣지 말고 규칙ID+정규화 스니펫으로 위치 이동에 강인하게 만든다([[18_DevSecOps]], [[13_SOC_Blue_Team]]). 검증은 **소유 리포지토리 CI**에서만.
+
+---
+
 <!-- validate-74 -->
 ## CI 게이팅 안전과 비밀정보 취급
 
@@ -933,6 +973,46 @@ if __name__ == "__main__":
 ## References
 
 - CodeQL Action GitHub: https://github.com/github/codeql-action
+
+## Diff-Aware SAST Gating — Blocking Only Newly-Introduced Findings to Cut Alert Fatigue
+
+Turning SAST on for a legacy codebase for the first time floods hundreds of pre-existing findings, so **blocking everything halts development while blocking nothing makes the gate meaningless**. A practical merge gate fails only on **findings newly introduced by the current change**, keeping pre-existing ones report-only — it blocks regression introduction while deferring cleanup to a separate backlog. The key is comparing against a baseline using fingerprints robust to code movement.
+
+```python
+#!/usr/bin/env python3
+"""Compare SAST results against a baseline fingerprint set to gate (fail the build on)
+only findings newly introduced by the current change, keeping pre-existing ones
+report-only. A merge gate that cuts alert fatigue while blocking regression introduction."""
+import hashlib
+
+
+def fingerprint(finding: dict) -> str:
+    """Build a move-robust fingerprint from rule ID + file + normalized snippet (no line no.)."""
+    key = "|".join([
+        finding.get("rule_id", ""),
+        finding.get("file", ""),
+        (finding.get("snippet", "") or "").strip(),
+    ])
+    return hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+
+
+def gate(current: list[dict], baseline_fps: set[str]) -> dict:
+    new, preexisting = [], []
+    for f in current:
+        (new if fingerprint(f) not in baseline_fps else preexisting).append(f)
+    block = any(f.get("severity") in ("high", "critical") for f in new)
+    return {"new_findings": new, "preexisting_count": len(preexisting), "block_merge": block}
+```
+
+| Signal | Meaning | False-positive / adjustment factor |
+|--------|---------|-------------------------------------|
+| New high/critical finding | The change introduced a vulnerability — block merge | A rule update newly matching old code is a false positive |
+| Fingerprint mismatch (moved only) | Moved code may be misread as new | Mitigated by excluding line numbers and normalizing the snippet |
+| Baseline surge | Signals a large refactor / rule change | A rebaseline is needed |
+
+**Detection/defense**: The gate's purpose is to **block new regressions while separating existing cleanup into a backlog** — pin the ruleset version to avoid a false-positive surge from rule changes, and route baseline updates through an approval flow so debt isn't silently reset. Keep line numbers out of the fingerprint and use rule ID + normalized snippet so it is robust to code movement ([[18_DevSecOps]], [[13_SOC_Blue_Team]]). Validate only in **owned-repository CI**.
+
+---
 
 ## CI Gating Safety and Secret Handling
 

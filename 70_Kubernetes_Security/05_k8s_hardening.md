@@ -512,6 +512,55 @@ CIS 점검 통과·PSS 라벨 부착·정책 배포는 "구성(configuration)"�
 
 ---
 
+## RBAC 과다권한 정적 탐지 — 매니페스트에서 최소권한 위반 점수화
+
+쿠버네티스 침해의 상당수는 익스플로잇이 아니라 **과다하게 부여된 RBAC**를 통해 확대된다 — 와일드카드 동사(`*`)·리소스(`*`), `secrets` 전역 read, `pods/exec`, cluster-admin 바인딩 하나면 파드 탈취가 클러스터 장악으로 번진다. Role/ClusterRole 매니페스트를 배포 전에 정적 분석해 최소권한 위반을 점수화하면 런타임 사고 없이 위험 표면을 릴리스 게이트에서 차단할 수 있다.
+
+```python
+#!/usr/bin/env python3
+"""Role/ClusterRole 매니페스트를 정적 분석해 과다권한(와일드카드 동사·리소스,
+secrets 전역 read, pods/exec)을 점수화한다. 익스플로잇이 아니라 최소권한 릴리스 게이트."""
+import yaml  # PyYAML
+
+RISK = {"wildcard_verb": 4, "wildcard_resource": 4, "secrets_all": 3, "pods_exec": 2}
+
+
+def score_rbac(doc: dict) -> dict:
+    findings, score = [], 0
+    for rule in doc.get("rules", []) or []:
+        verbs = rule.get("verbs", [])
+        resources = rule.get("resources", [])
+        if "*" in verbs:
+            findings.append("wildcard_verb")
+            score += RISK["wildcard_verb"]
+        if "*" in resources:
+            findings.append("wildcard_resource")
+            score += RISK["wildcard_resource"]
+        if "secrets" in resources and any(v in verbs for v in ("get", "list", "watch", "*")):
+            findings.append("secrets_all")
+            score += RISK["secrets_all"]
+        if any(r in resources for r in ("pods/exec", "pods/attach")):
+            findings.append("pods_exec")
+            score += RISK["pods_exec"]
+    return {"kind": doc.get("kind"), "name": doc.get("metadata", {}).get("name"),
+            "findings": findings, "risk": score, "over_permissioned": score >= 4}
+
+
+def scan_manifests(text: str) -> list[dict]:
+    return [score_rbac(d) for d in yaml.safe_load_all(text)
+            if isinstance(d, dict) and d.get("kind") in ("Role", "ClusterRole")]
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 와일드카드 동사/리소스 | 사실상 무제한 권한 = 최소권한 위반 | 클러스터 부트스트랩용 시스템 롤은 예외일 수 있음 |
+| secrets 전역 read | 자격증명 대량 유출 경로 | 네임스페이스 한정 Role이면 폭발반경 축소됨 |
+| pods/exec·attach | 실행 파드 침투/횡적이동 표면 | 디버깅 전용 임시 롤은 만료/승인 흐름 확인 |
+
+**탐지/방어**: 정적 점수는 확정 침해가 아니라 **폭발반경 축소 우선순위**다 — CI에서 `over_permissioned` 롤을 실패시키고, RoleBinding 주체(ServiceAccount)까지 함께 봐서 실제 부여 여부를 확인한다. 런타임에선 audit 로그로 부여된 권한이 실제 사용되는지 대조해 미사용 권한을 회수한다([[29_Container_Kubernetes_Security]], [[39_Zero_Trust_Architecture]]). 검증은 **소유 클러스터**에서만.
+
+---
+
 <!-- detect-validate-70 -->
 ## 공격 탐지와 방어 검증
 
@@ -639,6 +688,56 @@ Passing CIS checks, applying PSS labels, and deploying policies prove *configura
 | OPA Gatekeeper | Constraint applied | Apply a violating manifest → admission denied |
 
 > Measurement principle (ties to [[68_Purple_Team]]): validate hardening by "the bypass attempt was actually blocked," not "we applied it." Policies are often left in `audit` mode — warning only while still allowing the action. Re-run these validations quarterly in an isolated environment and trend them to catch config drift that silently neutralizes hardening.
+
+---
+
+## Static RBAC Over-Permission Detection — Scoring Least-Privilege Violations from Manifests
+
+Many Kubernetes compromises escalate not through an exploit but through **over-granted RBAC** — a wildcard verb (`*`) or resource (`*`), cluster-wide `secrets` read, `pods/exec`, or a single cluster-admin binding turns a pod takeover into cluster control. Statically analyzing Role/ClusterRole manifests before deployment to score least-privilege violations blocks the risk surface at a release gate without any runtime incident.
+
+```python
+#!/usr/bin/env python3
+"""Statically analyze Role/ClusterRole manifests to score over-permission (wildcard
+verbs/resources, cluster-wide secrets read, pods/exec). Not an exploit but a
+least-privilege release gate."""
+import yaml  # PyYAML
+
+RISK = {"wildcard_verb": 4, "wildcard_resource": 4, "secrets_all": 3, "pods_exec": 2}
+
+
+def score_rbac(doc: dict) -> dict:
+    findings, score = [], 0
+    for rule in doc.get("rules", []) or []:
+        verbs = rule.get("verbs", [])
+        resources = rule.get("resources", [])
+        if "*" in verbs:
+            findings.append("wildcard_verb")
+            score += RISK["wildcard_verb"]
+        if "*" in resources:
+            findings.append("wildcard_resource")
+            score += RISK["wildcard_resource"]
+        if "secrets" in resources and any(v in verbs for v in ("get", "list", "watch", "*")):
+            findings.append("secrets_all")
+            score += RISK["secrets_all"]
+        if any(r in resources for r in ("pods/exec", "pods/attach")):
+            findings.append("pods_exec")
+            score += RISK["pods_exec"]
+    return {"kind": doc.get("kind"), "name": doc.get("metadata", {}).get("name"),
+            "findings": findings, "risk": score, "over_permissioned": score >= 4}
+
+
+def scan_manifests(text: str) -> list[dict]:
+    return [score_rbac(d) for d in yaml.safe_load_all(text)
+            if isinstance(d, dict) and d.get("kind") in ("Role", "ClusterRole")]
+```
+
+| Signal | Meaning | False-positive / adjustment factor |
+|--------|---------|-------------------------------------|
+| Wildcard verb/resource | Effectively unlimited rights = least-privilege violation | Cluster bootstrap system roles may be a valid exception |
+| Cluster-wide secrets read | Path to bulk credential exfiltration | Namespace-scoped Roles shrink the blast radius |
+| pods/exec / attach | Surface for pod intrusion / lateral movement | Check expiry/approval flow for debug-only temporary roles |
+
+**Detection/defense**: The static score is a **blast-radius prioritization**, not confirmed compromise — fail `over_permissioned` roles in CI and also inspect RoleBinding subjects (ServiceAccounts) to confirm actual grants. At runtime, correlate audit logs to see whether granted rights are actually used and reclaim unused ones ([[29_Container_Kubernetes_Security]], [[39_Zero_Trust_Architecture]]). Validate only in **owned clusters**.
 
 ---
 

@@ -432,6 +432,48 @@ if __name__ == "__main__":
 
 ---
 
+## 검색 콘텐츠 인젝션 스캐닝 — 신뢰경계에서 외부 텍스트를 데이터로만 취급
+
+RAG·툴 출력·웹 스크레이프로 모델 컨텍스트에 들어오는 **외부 콘텐츠**는 종종 간접 프롬프트 인젝션의 매개가 된다 — 문서 안에 "이전 지시를 무시하고…" 같은 명령형 override, 도구 호출 유도 문자열, 눈에 안 보이는 유니코드 제어문자가 심겨 있는 것이다. 방어의 핵심은 이 콘텐츠를 **모델에 넘기기 전에** 스캔해 "지시처럼 행동하려는 데이터"를 표시하고 격리하는 것이다(외부 콘텐츠는 명령이 아니라 데이터여야 한다).
+
+```python
+#!/usr/bin/env python3
+"""검색(RAG)/툴 출력으로 모델에 주입되는 콘텐츠를 전달 전에 스캔해 간접 프롬프트
+인젝션 신호(명령형 override, 도구 호출 유도, 숨김 유니코드)를 표시한다. 공격이 아니라
+신뢰경계 방어 — 외부 콘텐츠는 데이터로만 취급되어야 한다."""
+import re
+import unicodedata
+
+OVERRIDE = re.compile(
+    r"(ignore (all |previous )?instructions|disregard .*above|"
+    r"you are now|system prompt|reveal .*(prompt|key|secret))",
+    re.IGNORECASE,
+)
+TOOL_LURE = re.compile(r"(invoke |use tool|function_call|<tool_call>|api[_ ]?key)", re.IGNORECASE)
+
+
+def scan_retrieved(text: str) -> dict:
+    hidden = [c for c in text
+              if unicodedata.category(c) in ("Cf", "Co") or c in "​‎‮"]
+    findings = {
+        "override_phrases": [m[0] for m in OVERRIDE.findall(text)],
+        "tool_lures": bool(TOOL_LURE.search(text)),
+        "hidden_chars": len(hidden),
+    }
+    findings["suspect"] = bool(findings["override_phrases"]) or findings["hidden_chars"] > 0
+    return findings
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 명령형 override 구문 | 컨텍스트 문서가 모델 지시를 덮어쓰려는 시도 | 보안 문서·정책 원문 인용에서 자연 발생 가능 |
+| 도구 호출 유도 문자열 | 데이터가 에이전트 액션을 트리거하려 함 | 코드/API 문서 검색 시 정상 등장 |
+| 숨김 유니코드(제어·RTL override) | 사람 눈엔 안 보이는 삽입 지시 | 다국어/서식 콘텐츠의 정상 제어문자와 구분 필요 |
+
+**탐지/방어**: 스캐너는 차단기가 아니라 **분류·격리 게이트**다 — 의심 콘텐츠는 시스템/도구 권한과 분리된 샌드박스 프롬프트에서 처리하고, 도구 호출은 별도 인가 경계를 통과하게 한다([[48_Threat_Modeling]], [[31_AI_ML_Security]]). 정규식만으로는 우회되므로 출력측 카나리·최소권한 도구 스코프와 함께 다층으로 둔다. 검증은 **소유/통제 환경**에서만.
+
+---
+
 <!-- detect-validate-69 -->
 ## 공격 탐지와 방어 검증
 
@@ -538,6 +580,49 @@ Having the four layers above does not make you safe. Defenses **must be adversar
 - **Change management:** re-evaluate whenever the model version, system prompt, or tool privileges change, since existing defenses can silently break.
 
 > Defense is a **continuous process**, not a one-time setting. Attack techniques evolve daily, so the goal is not "we blocked it once" but "we keep measuring." A defense that is never evaluated gives a false sense of security.
+
+---
+
+## Retrieved-Content Injection Scanning — Treat External Text as Data Only at the Trust Boundary
+
+**External content** entering the model context through RAG, tool output, or web scraping is a common vector for indirect prompt injection — documents carry imperative overrides like "ignore previous instructions…", tool-invocation lures, or invisible Unicode control characters. The core defense is to scan that content **before it reaches the model**, flagging and isolating "data that tries to act like instructions" (external content should be data, not commands).
+
+```python
+#!/usr/bin/env python3
+"""Scan content injected into the model via retrieval (RAG)/tool output before it is
+passed on, flagging indirect prompt-injection signals (imperative overrides, tool-call
+lures, hidden Unicode). Not an attack but a trust-boundary defense — external content
+must be treated as data only."""
+import re
+import unicodedata
+
+OVERRIDE = re.compile(
+    r"(ignore (all |previous )?instructions|disregard .*above|"
+    r"you are now|system prompt|reveal .*(prompt|key|secret))",
+    re.IGNORECASE,
+)
+TOOL_LURE = re.compile(r"(invoke |use tool|function_call|<tool_call>|api[_ ]?key)", re.IGNORECASE)
+
+
+def scan_retrieved(text: str) -> dict:
+    hidden = [c for c in text
+              if unicodedata.category(c) in ("Cf", "Co") or c in "​‎‮"]
+    findings = {
+        "override_phrases": [m[0] for m in OVERRIDE.findall(text)],
+        "tool_lures": bool(TOOL_LURE.search(text)),
+        "hidden_chars": len(hidden),
+    }
+    findings["suspect"] = bool(findings["override_phrases"]) or findings["hidden_chars"] > 0
+    return findings
+```
+
+| Signal | Meaning | False-positive / adjustment factor |
+|--------|---------|-------------------------------------|
+| Imperative override phrases | Context doc tries to overwrite model instructions | Can occur naturally when quoting security docs/policy text |
+| Tool-invocation lures | Data attempting to trigger an agent action | Normal when retrieving code/API documentation |
+| Hidden Unicode (control / RTL override) | Injected instructions invisible to humans | Must be distinguished from legit control chars in multilingual/formatted content |
+
+**Detection/defense**: The scanner is a **classify-and-isolate gate**, not a blocker — process suspect content in a sandboxed prompt separated from system/tool privileges, and route tool calls through a distinct authorization boundary ([[48_Threat_Modeling]], [[31_AI_ML_Security]]). Regex alone is bypassable, so layer it with output-side canaries and least-privilege tool scopes. Validate only in **owned/controlled environments**.
 
 ---
 

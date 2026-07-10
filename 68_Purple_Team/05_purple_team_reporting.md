@@ -441,6 +441,51 @@ if __name__ == "__main__":
 
 ---
 
+## 커버리지 회귀 추적 — ATT&CK 레이어 diff로 '측정된 후퇴' 잡기
+
+퍼플팀 보고서에서 "전체 ATT&CK 커버리지 62%"는 허영 지표에 가깝다. 방어 개선을 실제로 증명하는 값은 **직전 평가에서 탐지되던 기법이 이번 평가에서 다시 미탐으로 돌아간 회귀 건수**다 — 룰 변경·로그 소스 중단·EDR 정책 롤백 등으로 조용히 후퇴가 일어나기 때문이다. 두 ATT&CK Navigator 레이어 JSON(직전·현재)을 기법 단위로 대조하면 순증감이 아니라 *회귀*를 표면화할 수 있다.
+
+```python
+#!/usr/bin/env python3
+"""두 ATT&CK Navigator 레이어(직전·현재 평가)를 비교해 커버리지 회귀를 정량화한다.
+전체 커버리지 %는 허영 지표, 실제로 중요한 건 '이전에 탐지되던 기법이 다시 미탐으로
+돌아간' 회귀 건수다."""
+import json
+
+
+def load_scores(layer_path: str) -> dict[str, int]:
+    """Navigator 레이어 JSON에서 techniqueID -> score 매핑을 뽑는다."""
+    with open(layer_path, encoding="utf-8") as fh:
+        layer = json.load(fh)
+    return {t["techniqueID"]: t.get("score", 0) for t in layer.get("techniques", [])}
+
+
+def coverage_regressions(prev_path: str, curr_path: str, threshold: int = 1) -> dict:
+    prev, curr = load_scores(prev_path), load_scores(curr_path)
+    regressed, gained = [], []
+    for tid, pscore in prev.items():
+        cscore = curr.get(tid, 0)
+        if pscore >= threshold > cscore:
+            regressed.append(tid)
+        elif pscore < threshold <= cscore:
+            gained.append(tid)
+    return {
+        "regressed": sorted(regressed),
+        "gained": sorted(gained),
+        "net_delta": len(gained) - len(regressed),
+    }
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 회귀 기법 존재(prev≥1→curr=0) | 조용한 탐지 후퇴 — 최우선 조사 | 평가 범위/에뮬레이션 미실행으로 인한 착시 가능 |
+| 순증감(net_delta) 음수 | 전체 방어력이 이전보다 하락 | 스코어링 기준 변경 시 비교 무효 |
+| 전 평가 커버 0 유지 기법 | 만성 공백 — 로드맵 미반영 | 조직 위협모델상 비해당 기법일 수 있음 |
+
+**탐지/방어**: 커버리지 숫자 하나가 아니라 **평가 간 델타**를 보고서의 핵심 지표로 삼고, 회귀 기법은 롤백된 룰/끊긴 로그 소스를 역추적해 원인을 닫는다. 레이어 비교는 동일 스코어링 규칙·동일 에뮬레이션 범위에서만 유효하므로 방법론을 고정한다. 검증은 **소유/통제 환경**에서만([[40_Threat_Hunting]], [[25_Threat_Intelligence]]).
+
+---
+
 <!-- detect-validate-68 -->
 ## 공격 탐지와 방어 검증
 
@@ -559,6 +604,51 @@ Retesting isn't mere repetition — it's the core of **regression detection**. T
 | Technical Findings | SOC, Analysts | ATT&CK mapping, log evidence |
 | Gap Analysis | Blue team | Undetected techniques, improvement priorities |
 | Improvement Roadmap | IT/Security | Owners, deadlines, metrics |
+
+---
+
+## Coverage Regression Tracking — Catching Measured Backslide via ATT&CK Layer Diff
+
+In a purple-team report, "62% overall ATT&CK coverage" is close to a vanity metric. What actually proves defensive improvement is the **count of techniques that were detected in the previous assessment but regressed to missed in the current one** — silent backslide happens through rule changes, dropped log sources, or rolled-back EDR policy. Diffing two ATT&CK Navigator layer JSONs (previous vs current) per technique surfaces *regression* rather than net movement.
+
+```python
+#!/usr/bin/env python3
+"""Compare two ATT&CK Navigator layers (previous vs current assessment) to quantify
+coverage regression. Overall coverage % is a vanity metric; what matters is the count
+of techniques that were detected before and have regressed back to missed."""
+import json
+
+
+def load_scores(layer_path: str) -> dict[str, int]:
+    """Pull a techniqueID -> score map from a Navigator layer JSON."""
+    with open(layer_path, encoding="utf-8") as fh:
+        layer = json.load(fh)
+    return {t["techniqueID"]: t.get("score", 0) for t in layer.get("techniques", [])}
+
+
+def coverage_regressions(prev_path: str, curr_path: str, threshold: int = 1) -> dict:
+    prev, curr = load_scores(prev_path), load_scores(curr_path)
+    regressed, gained = [], []
+    for tid, pscore in prev.items():
+        cscore = curr.get(tid, 0)
+        if pscore >= threshold > cscore:
+            regressed.append(tid)
+        elif pscore < threshold <= cscore:
+            gained.append(tid)
+    return {
+        "regressed": sorted(regressed),
+        "gained": sorted(gained),
+        "net_delta": len(gained) - len(regressed),
+    }
+```
+
+| Signal | Meaning | False-positive / adjustment factor |
+|--------|---------|-------------------------------------|
+| Regressed techniques (prev>=1 -> curr=0) | Silent detection backslide — investigate first | May be an artifact of un-run emulation / scope change |
+| Negative net_delta | Overall posture dropped vs prior assessment | Invalid if scoring criteria changed |
+| Techniques stuck at 0 across assessments | Chronic gap not on the roadmap | May be out of scope for the org threat model |
+
+**Detection/defense**: Make the **inter-assessment delta**, not a single coverage number, the report's headline metric, and trace each regressed technique back to the rolled-back rule or broken log source to close the cause. Layer comparison is only valid under identical scoring rules and emulation scope, so fix the methodology. Validate only in **owned/controlled environments** ([[40_Threat_Hunting]], [[25_Threat_Intelligence]]).
 
 ---
 

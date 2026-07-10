@@ -459,6 +459,55 @@ python3 05_debrief_lessons.py --demo
 
 ---
 
+## MTTD/MTTR 산출 — 서사형 디브리프를 측정 가능한 탐지 지표로
+
+레드팀 디브리프가 "우리가 이러이러하게 뚫었다"는 서사에 머무르면 블루팀이 개선 우선순위를 정하기 어렵다. 훨씬 실행 가능한 산출물은 **공격 액션 타임라인과 방어 탐지·대응 타임라인을 대조해 기법별 평균 탐지지연(MTTD)·대응지연(MTTR)을 계산하고, 대응된 탐지가 아예 없는 액션(=탐지 공백)을 나열**하는 것이다. 숫자로 나온 공백이 곧 다음 분기 탐지 엔지니어링 백로그가 된다.
+
+```python
+#!/usr/bin/env python3
+"""레드팀 액션 타임라인과 블루팀 탐지·대응 타임라인을 대조해 기법별 탐지지연(MTTD)·
+대응지연(MTTR)을 계산하고, 탐지가 없는 액션(=탐지 공백)을 표시한다.
+서사형 디브리프를 측정 가능한 탐지 지표로 전환."""
+from statistics import mean
+
+
+def detection_metrics(actions: list[dict], detections: list[dict], responses: list[dict]) -> dict:
+    det_by_tech: dict[str, float] = {}
+    for d in sorted(detections, key=lambda x: x["ts"]):
+        det_by_tech.setdefault(d["technique"], d["ts"])
+    resp_by_tech: dict[str, float] = {}
+    for r in sorted(responses, key=lambda x: x["ts"]):
+        resp_by_tech.setdefault(r["technique"], r["ts"])
+    mttd, mttr, gaps = [], [], []
+    for a in actions:
+        tech, a_ts = a["technique"], a["ts"]
+        d_ts = det_by_tech.get(tech)
+        if d_ts is None:
+            gaps.append(tech)
+            continue
+        mttd.append(max(0, d_ts - a_ts))
+        r_ts = resp_by_tech.get(tech)
+        if r_ts is not None:
+            mttr.append(max(0, r_ts - d_ts))
+    covered = len(actions) - len(gaps)
+    return {
+        "mttd_s": round(mean(mttd), 1) if mttd else None,
+        "mttr_s": round(mean(mttr), 1) if mttr else None,
+        "detection_gaps": sorted(set(gaps)),
+        "coverage_pct": round(100 * covered / len(actions), 1) if actions else 0.0,
+    }
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 탐지 공백 액션(d_ts 없음) | 어떤 탐지도 발화 안 함 — 최우선 백로그 | 로그 보존기간 밖·상관룰 지연 수집 누락 가능 |
+| 높은 MTTD | 탐지는 되나 너무 늦음 = 체류시간 위험 | 타임스탬프 시계 동기 오차 보정 필요 |
+| 높은 MTTR(탐지≪대응) | 탐지 후 대응 프로세스 병목 | 수동 승인 단계 등 정당한 지연 포함 가능 |
+
+**탐지/방어**: 디브리프의 핵심 산출물을 서사가 아니라 **MTTD/MTTR + 탐지 공백 목록**으로 표준화하고, 공백 기법을 다음 탐지 엔지니어링 스프린트의 명시적 백로그로 넘긴다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]). 지표 신뢰도는 타임스탬프 시계 동기에 달렸으므로 레드/블루 로그의 시간 기준을 사전에 맞춘다. 산출·재현은 **인가된 교전 데이터**에 한한다.
+
+---
+
 <!-- safety-validate-75 -->
 ## 정리(클린업)와 개선 검증 (재테스트)
 
@@ -822,6 +871,55 @@ Executive Debrief:
 [ ] Budget investment recommendations presented
 [ ] Next operation timeline discussed
 ```
+
+## Deriving MTTD/MTTR — Turning a Narrative Debrief into Measurable Detection Metrics
+
+When a red-team debrief stays a narrative of "here is how we broke in," the blue team struggles to prioritize improvement. A far more actionable output is to **correlate the attack-action timeline with the defensive detection/response timeline, compute per-technique mean time-to-detect (MTTD) and time-to-respond (MTTR), and list actions with no associated detection at all (detection gaps)**. Those quantified gaps become the next quarter's detection-engineering backlog.
+
+```python
+#!/usr/bin/env python3
+"""Correlate the red-team action timeline with blue-team detection/response timelines to
+compute per-technique time-to-detect (MTTD) and time-to-respond (MTTR), and flag actions
+with no detection (detection gaps). Turns a narrative debrief into measurable detection metrics."""
+from statistics import mean
+
+
+def detection_metrics(actions: list[dict], detections: list[dict], responses: list[dict]) -> dict:
+    det_by_tech: dict[str, float] = {}
+    for d in sorted(detections, key=lambda x: x["ts"]):
+        det_by_tech.setdefault(d["technique"], d["ts"])
+    resp_by_tech: dict[str, float] = {}
+    for r in sorted(responses, key=lambda x: x["ts"]):
+        resp_by_tech.setdefault(r["technique"], r["ts"])
+    mttd, mttr, gaps = [], [], []
+    for a in actions:
+        tech, a_ts = a["technique"], a["ts"]
+        d_ts = det_by_tech.get(tech)
+        if d_ts is None:
+            gaps.append(tech)
+            continue
+        mttd.append(max(0, d_ts - a_ts))
+        r_ts = resp_by_tech.get(tech)
+        if r_ts is not None:
+            mttr.append(max(0, r_ts - d_ts))
+    covered = len(actions) - len(gaps)
+    return {
+        "mttd_s": round(mean(mttd), 1) if mttd else None,
+        "mttr_s": round(mean(mttr), 1) if mttr else None,
+        "detection_gaps": sorted(set(gaps)),
+        "coverage_pct": round(100 * covered / len(actions), 1) if actions else 0.0,
+    }
+```
+
+| Signal | Meaning | False-positive / adjustment factor |
+|--------|---------|-------------------------------------|
+| Gap action (no d_ts) | No detection fired — top backlog item | May be outside log retention / missed by delayed correlation |
+| High MTTD | Detected but too late = dwell-time risk | Correct for clock-sync skew across timestamps |
+| High MTTR (detect << respond) | Bottleneck in the post-detection response process | May include legit delay such as a manual approval step |
+
+**Detection/defense**: Standardize the debrief's headline output as **MTTD/MTTR + a detection-gap list** rather than a narrative, and hand gap techniques to the next detection-engineering sprint as an explicit backlog ([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]). Metric fidelity depends on timestamp clock-sync, so align the time base of red/blue logs beforehand. Derivation and reproduction are limited to **authorized engagement data**.
+
+---
 
 ## Cleanup and Improvement Validation (retest)
 

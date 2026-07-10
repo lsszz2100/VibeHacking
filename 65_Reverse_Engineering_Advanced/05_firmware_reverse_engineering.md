@@ -395,6 +395,64 @@ qemu-mipsel -L squashfs-root ./squashfs-root/usr/sbin/httpd
 
 ---
 
+## 펌웨어 바이너리 SBOM — 임베디드 컴포넌트 버전 → 알려진 CVE 상관
+
+펌웨어 취약점의 상당수는 커스텀 코드가 아니라 **오래된 서드파티 컴포넌트**(BusyBox·OpenSSL·dnsmasq·Dropbear 등)에서 나온다. 벤더가 몇 년 전 버전을 그대로 굽는 경우가 흔하기 때문이다. 따라서 추출한 루트파일시스템에서 각 바이너리의 **버전 문자열을 뽑아 바이너리 SBOM을 만들고**, 알려진 취약 버전과 대조하면 익스플로잇 없이도 위험 표면을 정량화할 수 있다. 아래는 `strings` 출력에서 컴포넌트 버전을 추출해 최소 안전 버전과 비교하는 방어자용 스캐너다.
+
+```python
+#!/usr/bin/env python3
+"""추출 펌웨어의 바이너리에서 컴포넌트 버전을 뽑아 SBOM을 만들고,
+알려진 최소 안전 버전과 대조해 취약 컴포넌트를 표시한다. 익스플로잇이 아니라
+패치 우선순위화를 위한 표면 식별."""
+import re
+from pathlib import Path
+
+# 컴포넌트별 (버전 정규식, 최소 안전 버전) — 조직 취약점 DB에 맞춰 갱신
+COMPONENTS = {
+    "busybox": (re.compile(r"BusyBox v(\d+\.\d+\.\d+)"), (1, 35, 0)),
+    "openssl": (re.compile(r"OpenSSL (\d+\.\d+\.\d+)"), (3, 0, 0)),
+    "dnsmasq": (re.compile(r"dnsmasq-(\d+\.\d+)"), (2, 90)),
+    "dropbear": (re.compile(r"dropbear[_-](\d{4}\.\d+)"), (2022, 83)),
+}
+
+
+def _ver(s: str) -> tuple:
+    return tuple(int(x) for x in s.split("."))
+
+
+def scan_sbom(rootfs: str) -> list[dict]:
+    findings, seen = [], {}
+    for p in Path(rootfs).rglob("*"):
+        if not p.is_file():
+            continue
+        try:
+            blob = p.read_bytes()
+        except OSError:
+            continue
+        text = blob.decode("latin-1", errors="ignore")
+        for name, (rx, min_safe) in COMPONENTS.items():
+            m = rx.search(text)
+            if m and name not in seen:
+                found = _ver(m.group(1))
+                seen[name] = True
+                findings.append({
+                    "component": name, "version": m.group(1),
+                    "outdated": found < min_safe,
+                    "min_safe": ".".join(map(str, min_safe)),
+                })
+    return sorted(findings, key=lambda x: not x["outdated"])
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 최소 안전 버전 미만 컴포넌트 | 알려진 CVE 보유 가능성 높음 | 벤더 백포트 패치 시 버전은 낮아도 안전할 수 있음 |
+| 다수 EOL 컴포넌트 병존 | 유지보수 방치된 펌웨어 신호 | 정적 링크·스트립으로 버전 문자열 부재 가능 |
+| 동일 컴포넌트 중복 버전 | 부분 업데이트로 취약본 잔존 | 심볼릭 링크·다중 아키텍처 빌드 오탐 |
+
+**탐지/방어**: 바이너리 SBOM은 확정 취약이 아니라 **패치 우선순위화 신호**다 — 버전 매칭만으로 판단하지 말고 벤더 백포트 여부를 확인하고, 조직 취약점 DB(EPSS/KEV)와 상관해 실제 익스플로잇 가능성이 높은 것부터 벤더에 책임 있는 공개(Responsible Disclosure)를 한다. 검증은 **소유 장비·격리 환경**에서만([[18_DevSecOps]], [[44_Incident_Response_DFIR]]).
+
+---
+
 <!-- detect-validate-65 -->
 ## 안티분석 탐지와 분석 검증
 
@@ -545,6 +603,64 @@ qemu-mipsel -L squashfs-root ./squashfs-root/usr/sbin/httpd
 - [ ] Did you scan keys/certs/API secrets with firmwalker?
 - [ ] Did you emulate core services (e.g., httpd) with QEMU for dynamic checks?
 - [ ] For encrypted firmware, did you try the bootloader/UART path to obtain plaintext?
+
+---
+
+## Firmware Binary SBOM — Embedded Component Versions → Known-CVE Correlation
+
+Many firmware vulnerabilities come not from custom code but from **outdated third-party components** (BusyBox, OpenSSL, dnsmasq, Dropbear, etc.), because vendors commonly bake in versions from years ago. So extracting each binary's **version string from the root filesystem to build a binary SBOM** and correlating against known-vulnerable versions quantifies the risk surface without any exploitation. Below is a defender-side scanner that pulls component versions from `strings` output and compares them to a minimum-safe version.
+
+```python
+#!/usr/bin/env python3
+"""Extract component versions from extracted-firmware binaries to build an SBOM and compare
+against known minimum-safe versions to flag vulnerable components. For patch prioritization,
+not exploitation."""
+import re
+from pathlib import Path
+
+# per component: (version regex, minimum-safe version) -- update from your vuln DB
+COMPONENTS = {
+    "busybox": (re.compile(r"BusyBox v(\d+\.\d+\.\d+)"), (1, 35, 0)),
+    "openssl": (re.compile(r"OpenSSL (\d+\.\d+\.\d+)"), (3, 0, 0)),
+    "dnsmasq": (re.compile(r"dnsmasq-(\d+\.\d+)"), (2, 90)),
+    "dropbear": (re.compile(r"dropbear[_-](\d{4}\.\d+)"), (2022, 83)),
+}
+
+
+def _ver(s: str) -> tuple:
+    return tuple(int(x) for x in s.split("."))
+
+
+def scan_sbom(rootfs: str) -> list[dict]:
+    findings, seen = [], {}
+    for p in Path(rootfs).rglob("*"):
+        if not p.is_file():
+            continue
+        try:
+            blob = p.read_bytes()
+        except OSError:
+            continue
+        text = blob.decode("latin-1", errors="ignore")
+        for name, (rx, min_safe) in COMPONENTS.items():
+            m = rx.search(text)
+            if m and name not in seen:
+                found = _ver(m.group(1))
+                seen[name] = True
+                findings.append({
+                    "component": name, "version": m.group(1),
+                    "outdated": found < min_safe,
+                    "min_safe": ".".join(map(str, min_safe)),
+                })
+    return sorted(findings, key=lambda x: not x["outdated"])
+```
+
+| Signal | Description | False-Positive / Adjustment Factor |
+|--------|-------------|------------------------------------|
+| Component below minimum-safe version | Likely carries known CVEs | May be safe despite low version if the vendor backported patches |
+| Many EOL components coexisting | Signals unmaintained firmware | Static linking / stripping can remove version strings |
+| Duplicate versions of one component | Partial update left a vulnerable copy | Symlinks / multi-arch builds cause false positives |
+
+**Detection/Defense**: A binary SBOM is a **patch-prioritization signal**, not a confirmed vulnerability -- don't judge on version matching alone; check for vendor backports and correlate with your vuln DB (EPSS/KEV) to responsibly disclose the most exploitable ones to the vendor first. Validate only on **owned devices in isolated environments** ([[18_DevSecOps]], [[44_Incident_Response_DFIR]]).
 
 ---
 

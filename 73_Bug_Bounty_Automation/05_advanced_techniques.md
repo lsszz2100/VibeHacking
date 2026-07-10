@@ -521,6 +521,49 @@ if __name__ == "__main__":
 
 ---
 
+## 스코프 경계 강제 — 요청을 보내기 전에 인가 범위 검증
+
+버그바운티 자동화의 가장 흔한 사고는 취약점 발견 실패가 아니라 **범위 밖 대상 타격**이다 — 와일드카드 스코프 오해, 서드파티 자산 포함, 인수합병으로 넘어온 호스트 등으로 자동화가 인가되지 않은 시스템에 요청을 보내면 프로그램 규칙 위반이자 법적 문제가 된다. 따라서 모든 대상 URL을 **요청 발사 전에** 프로그램 스코프(allow/deny 패턴)와 대조해 범위 밖을 차단하는 가드레일이 자동화의 첫 단계여야 한다.
+
+```python
+#!/usr/bin/env python3
+"""버그바운티 자동화가 요청을 보내기 전에 대상 URL을 프로그램 스코프와 대조해
+범위 밖 대상을 차단한다. 공격이 아니라 책임 있는 테스트 가드레일 — 인가 범위 강제."""
+import fnmatch
+from urllib.parse import urlparse
+
+
+def in_scope(url: str, allow: list[str], deny: list[str]) -> dict:
+    host = (urlparse(url).hostname or "").lower()
+    if not host:
+        return {"url": url, "allowed": False, "reason": "unparseable_host"}
+    denied = any(fnmatch.fnmatch(host, pat.lower()) for pat in deny)
+    allowed = any(fnmatch.fnmatch(host, pat.lower()) for pat in allow)
+    if denied:
+        reason = "explicit_deny"
+    elif not allowed:
+        reason = "not_in_allowlist"
+    else:
+        reason = "in_scope"
+    return {"url": url, "host": host, "allowed": allowed and not denied, "reason": reason}
+
+
+def filter_targets(urls: list[str], allow: list[str], deny: list[str]) -> tuple[list, list]:
+    verdicts = [in_scope(u, allow, deny) for u in urls]
+    return ([v["url"] for v in verdicts if v["allowed"]],
+            [v for v in verdicts if not v["allowed"]])
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| deny 패턴 매칭 | 명시적 범위 밖 — 즉시 차단 | 상위 도메인 deny가 인가 서브도메인을 과차단할 수 있음 |
+| allowlist 미매칭 | 스코프 근거 없음 — 기본 거부 | 신규 인가 자산 등록 지연 시 정당 대상도 걸림 |
+| 파싱 불가 호스트 | 대상 정의 오류 | 리다이렉트 후 최종 호스트로 재검증 필요 |
+
+**탐지/방어**: 스코프 검증은 자동화의 **차단형 첫 게이트**(기본 거부)로 두고, 리다이렉트·와일드카드는 최종 도착 호스트로 재평가한다. allow/deny 목록은 프로그램 정책 원문에서 파생하고 변경 이력을 남겨 인가 근거를 감사 가능하게 한다([[10_Pentest_Methodology]]). 모든 테스트는 **명시적으로 인가된 범위** 안에서만.
+
+---
+
 <!-- safety-validate-73 -->
 ## 체이닝의 영향 시연 한계와 안전
 
@@ -743,6 +786,50 @@ python api_fuzzer.py \
 
 - OWASP API Security Top 10: https://owasp.org/www-project-api-security/
 - PortSwigger OAuth labs: https://portswigger.net/web-security/oauth
+
+## Scope Boundary Enforcement — Validate Authorization Before Firing Requests
+
+The most common bug-bounty accident is not a missed vulnerability but **hitting an out-of-scope target** — misread wildcard scope, included third-party assets, or hosts inherited via acquisition can cause automation to send requests to unauthorized systems, which is both a program-rule violation and a legal problem. So a guardrail that checks every target URL against program scope (allow/deny patterns) **before firing a request** must be the first step of automation.
+
+```python
+#!/usr/bin/env python3
+"""Before bug-bounty automation sends a request, check the target URL against the
+program scope and block out-of-scope targets. Not an attack but a responsible-testing
+guardrail — enforcing the authorized scope."""
+import fnmatch
+from urllib.parse import urlparse
+
+
+def in_scope(url: str, allow: list[str], deny: list[str]) -> dict:
+    host = (urlparse(url).hostname or "").lower()
+    if not host:
+        return {"url": url, "allowed": False, "reason": "unparseable_host"}
+    denied = any(fnmatch.fnmatch(host, pat.lower()) for pat in deny)
+    allowed = any(fnmatch.fnmatch(host, pat.lower()) for pat in allow)
+    if denied:
+        reason = "explicit_deny"
+    elif not allowed:
+        reason = "not_in_allowlist"
+    else:
+        reason = "in_scope"
+    return {"url": url, "host": host, "allowed": allowed and not denied, "reason": reason}
+
+
+def filter_targets(urls: list[str], allow: list[str], deny: list[str]) -> tuple[list, list]:
+    verdicts = [in_scope(u, allow, deny) for u in urls]
+    return ([v["url"] for v in verdicts if v["allowed"]],
+            [v for v in verdicts if not v["allowed"]])
+```
+
+| Signal | Meaning | False-positive / adjustment factor |
+|--------|---------|-------------------------------------|
+| Deny-pattern match | Explicitly out of scope — block immediately | A parent-domain deny may over-block an authorized subdomain |
+| No allowlist match | No basis for scope — default deny | Delayed registration of new authorized assets can catch legit targets |
+| Unparseable host | Malformed target definition | Re-validate against the final host after redirects |
+
+**Detection/defense**: Make scope validation the automation's **blocking first gate** (default deny), and re-evaluate redirects/wildcards against the final destination host. Derive allow/deny lists from the program policy text and keep a change history so the authorization basis is auditable ([[10_Pentest_Methodology]]). All testing stays strictly within the **explicitly authorized scope**.
+
+---
 
 ## Limits and Safety of Demonstrating Impact via Chaining
 

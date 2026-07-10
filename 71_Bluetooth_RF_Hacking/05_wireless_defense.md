@@ -525,6 +525,45 @@ sudo kismet
 
 ---
 
+## 복제 BLE 비콘 탐지 — 신원 재사용이 여러 MAC에 분산되는 이상
+
+정상 BLE 기기는 프라이버시를 위해 **분해 가능한 임의 주소(RPA)**를 주기적으로 로테이션한다 — 즉 MAC이 바뀌는 것 자체는 정상이다. 그러나 공격자가 비콘을 복제/스푸핑하면 **동일한 광고 페이로드·서비스 UUID라는 '신원'**이 짧은 시간 안에 지나치게 많은 서로 다른 MAC에서, 종종 비정상적인 RSSI 편차와 함께 나타난다. 소유·통제 RF 공간에서 광고를 신원 단위로 클러스터링하면 합법 로테이션과 복제를 구분할 수 있다.
+
+```python
+#!/usr/bin/env python3
+"""BLE 광고 캡처에서 동일 신원(광고 페이로드/서비스 UUID 해시)이 서로 다른 MAC에
+짧은 시간 안에 과다하게 나타나는지 검사해 복제/스푸핑 비콘을 표시한다.
+소유·통제 RF 공간의 방어 모니터링용(합법 RPA 로테이션과 구분)."""
+from collections import defaultdict
+
+
+def detect_clones(adverts: list[dict], window_s: int = 60, mac_threshold: int = 3) -> list[dict]:
+    """adverts: [{"mac", "payload_id", "rssi", "ts"}] — payload_id는 광고 데이터 해시."""
+    by_identity: dict[str, list] = defaultdict(list)
+    for a in adverts:
+        by_identity[a["payload_id"]].append(a)
+    flagged = []
+    for pid, seen in by_identity.items():
+        seen.sort(key=lambda x: x["ts"])
+        macs = {s["mac"] for s in seen}
+        span = seen[-1]["ts"] - seen[0]["ts"]
+        rssi_spread = max(s["rssi"] for s in seen) - min(s["rssi"] for s in seen)
+        if len(macs) >= mac_threshold and span <= window_s:
+            flagged.append({"payload_id": pid, "distinct_macs": len(macs),
+                            "window_s": span, "rssi_spread": rssi_spread})
+    return sorted(flagged, key=lambda x: -x["distinct_macs"])
+```
+
+| 신호 | 설명 | 오탐/보정 요인 |
+|------|------|----------------|
+| 동일 신원 → 다수 MAC(짧은 창) | RPA 로테이션보다 빠른 복제 의심 | 혼잡 환경의 정상 로테이션이 겹칠 수 있음 |
+| 큰 RSSI 편차 | 물리적으로 여러 위치의 송신원 = 복제 신호 | 멀티패스·이동체는 정상적으로도 편차 큼 |
+| 광고 간격 불규칙 | 재생/스푸핑 타이밍 흔적 | 저전력 스케줄링으로 정상 지터 존재 |
+
+**탐지/방어**: 이 탐지는 자산이 아니라 **모니터링 신호**이므로 알려진 기기 인벤토리(허용 MAC/신원)와 대조해 오탐을 걷어내고, 페어링은 LE Secure Connections(MITM 보호)를 강제한다([[15_WiFi_Hacking]], [[27_IoT_Hacking]]). 임의 무선 환경 캡처는 법적 문제가 되므로 캡처·검증은 **소유·통제 RF 공간**에서만.
+
+---
+
 <!-- detect-validate-71 -->
 ## 7. 무선 위협 탐지 (Wireless IDS)와 한계
 
@@ -707,6 +746,46 @@ sudo kismet
 □ Isolated to IoT VLAN / guest network?
 □ Alerts configured for unexpected connections?
 ```
+
+## Cloned BLE Beacon Detection — Identity Reuse Spread Across Multiple MACs
+
+Normal BLE devices rotate **resolvable private addresses (RPAs)** periodically for privacy — so a changing MAC is itself normal. But when an attacker clones or spoofs a beacon, the same **"identity" (advertising payload / service UUID)** appears across too many distinct MACs in a short window, often with anomalous RSSI spread. Clustering advertisements by identity in owned/controlled RF space distinguishes legitimate rotation from cloning.
+
+```python
+#!/usr/bin/env python3
+"""Check a BLE advertising capture for the same identity (hash of advertising
+payload / service UUID) appearing across too many distinct MACs in a short window,
+flagging cloned/spoofed beacons. For defensive monitoring in owned/controlled RF
+space (distinguished from legitimate RPA rotation)."""
+from collections import defaultdict
+
+
+def detect_clones(adverts: list[dict], window_s: int = 60, mac_threshold: int = 3) -> list[dict]:
+    """adverts: [{"mac", "payload_id", "rssi", "ts"}] — payload_id is the advert-data hash."""
+    by_identity: dict[str, list] = defaultdict(list)
+    for a in adverts:
+        by_identity[a["payload_id"]].append(a)
+    flagged = []
+    for pid, seen in by_identity.items():
+        seen.sort(key=lambda x: x["ts"])
+        macs = {s["mac"] for s in seen}
+        span = seen[-1]["ts"] - seen[0]["ts"]
+        rssi_spread = max(s["rssi"] for s in seen) - min(s["rssi"] for s in seen)
+        if len(macs) >= mac_threshold and span <= window_s:
+            flagged.append({"payload_id": pid, "distinct_macs": len(macs),
+                            "window_s": span, "rssi_spread": rssi_spread})
+    return sorted(flagged, key=lambda x: -x["distinct_macs"])
+```
+
+| Signal | Meaning | False-positive / adjustment factor |
+|--------|---------|-------------------------------------|
+| One identity -> many MACs (short window) | Cloning suspected, faster than RPA rotation | Normal rotation in congested environments may overlap |
+| Large RSSI spread | Transmitters physically in several places = clone signal | Multipath / moving devices also spread naturally |
+| Irregular advertising interval | Replay/spoof timing artifact | Low-power scheduling produces normal jitter |
+
+**Detection/defense**: This detection is a **monitoring signal**, not an asset — correlate against a known-device inventory (allowed MAC/identity) to strip false positives, and enforce LE Secure Connections (MITM protection) for pairing ([[15_WiFi_Hacking]], [[27_IoT_Hacking]]). Capturing arbitrary RF is a legal matter, so capture and validate only in **owned/controlled RF space**.
+
+---
 
 <!-- detect-validate-71 -->
 ## 7. Wireless IDS and Its Limits
