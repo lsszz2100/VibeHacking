@@ -420,6 +420,10 @@ drrun -t drcachesim -- ./target < tainted_input   # 또는 Pin 테인트 도구
 
 > 검증은 **분석용 격리 환경에서만** 수행한다. 정적 분석 결과는 가설일 뿐이며, 동적 테인트·PoC 재현으로 확인한 뒤에만 취약점으로 보고해야 한다([[30_Vulnerability_Research]]).
 
+**최신 기법·통제 (2025–2026):**
+- Ghidra/BinaryNinja·AI 보조 디컴파일·바이너리 diff(BinDiff/Diaphora)로 대규모 분석 자동화 — 정적 가설을 동적 테인트·PoC 로 확인: 입력→싱크 도달을 실행 추적으로 재현
+- SBOM·바이너리 유사도로 알려진 취약 컴포넌트/CVE 를 상관 — 매칭이 실제 호출 경로에서 도달 가능한지까지 확인([[35_Supply_Chain_Attacks]])
+
 ---
 
 <a name="english"></a>
