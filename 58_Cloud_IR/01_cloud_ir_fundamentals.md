@@ -782,6 +782,10 @@ aws s3api get-object-lock-configuration --bucket ir-evidence-bucket
 
 > 검증은 반드시 **소유·승인된 계정**에서만 한다. "플레이북이 있다"와 "사고 때 작동한다"는 다르다 — Break Glass·로그 불변성·증거 해시를 직접 재현해 확인해야 신뢰할 수 있다([[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- 예방·탐지를 코드로(SCP/IaC·detection-as-code) 고정하고 GuardDuty/Defender for Cloud/SCC 자동 조사와 연동 — 검증: `aws guardduty list-detectors` 로 상시 활성인지 확인
+- Break Glass 사용은 EventBridge/Activity 경보 규칙으로 실시간 통지되게 구성 — 계정 존재 여부가 아니라 "사용 즉시 감사가 발화하는가"까지 재현 확인
+
 ---
 
 <a name="english"></a>

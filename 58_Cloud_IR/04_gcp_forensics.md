@@ -951,6 +951,10 @@ gcloud iam service-accounts keys list --iam-account <sa-email> --format='table(n
 
 > 모든 작업은 **소유 프로젝트**에서만. "키 목록을 봤다"와 "침해 키를 입증했다"는 다르다 — 이미지 격리·감사로그·키 수명을 직접 확인해야 한다([[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- Security Command Center·Chronicle(YARA-L)·로그 기반 지표로 키 침해를 자동 탐지 — 검증: `gcloud scc findings list <org-id> --filter="state=\"ACTIVE\""` 로 활성 탐지 확인
+- 서비스 계정 키를 워크로드 아이덴티티 제휴로 대체해 장기 키 자체를 제거했는지 확인 — 90일+ 키 0건보다 "장기 키 미발급"이 상위 통제
+
 ---
 
 <a name="english"></a>

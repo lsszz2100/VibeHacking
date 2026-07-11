@@ -916,6 +916,10 @@ aws ec2 describe-snapshots --snapshot-ids snap-xxxx --query 'Snapshots[].{State:
 
 > 분석은 **원본이 아닌 사본**에서만, 모든 작업은 소유 계정에서. "스냅샷을 떴다"와 "법정 제출 가능한 증거다"는 다르다 — 해시·격리·CloudTrail 범위를 직접 확인해야 한다([[44_Incident_Response_DFIR]], [[07_Digital_Forensics]]).
 
+**최신 기법·통제 (2025–2026):**
+- EBS Direct API·GuardDuty Malware Protection 로 인스턴스를 정지하지 않고 블록 단위로 증거를 스캔 — 검증: `aws guardduty get-detector --detector-id <id>` 의 malware-protection 상태
+- IMDSv2 강제로 SSRF 자격증명 탈취를 원천 차단: `aws ec2 describe-instances --query 'Reservations[].Instances[].MetadataOptions.HttpTokens'` 가 모두 `required` 인지 — 침해 원인 차단까지 확인
+
 ---
 
 <a name="english"></a>

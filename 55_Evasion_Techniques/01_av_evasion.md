@@ -463,6 +463,10 @@ Get-MpPreference | Select-Object DisableBehaviorMonitoring, DisableIOAVProtectio
 
 > 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- ASR 규칙·Smart App Control 로 LOLBin/미서명 실행 차단 폭이 넓어짐 — 검증: `Get-MpPreference | Select-Object AttackSurfaceReductionRules_Ids` (활성 규칙 목록 확인)
+- BYOVD(취약 드라이버 로드)로 AV 자체를 무력화하는 시도는 취약 드라이버 로드(Sysmon EID 6)·MS 취약 드라이버 차단목록(HVCI)으로 포착 — "설정"이 아니라 차단목록 최신화 여부까지 확인
+
 ---
 
 

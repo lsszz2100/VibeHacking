@@ -675,6 +675,10 @@ grep -ric 'proof.txt\|root@' lab_notes/ 2>/dev/null
 
 > 실습은 반드시 **소유 랩**에서만 한다. "시험을 신청했다"와 "약점이 측정·보강됐다"는 다르다 — 영역별 점수와 랩 증명을 증거로 추적한다([[12_Bug_Bounty]], [[10_Pentest_Methodology]]).
 
+**최신 기준 (2025–2026):**
+- OSCP 는 Active Directory 익스플로잇·클라우드가 시험 범위에 포함됨 — 단일 호스트 루팅만으로는 부족하고 랩 증명을 AD 도메인 장악 시나리오로 확장
+- CISSP/CISM 도메인은 제로트러스트·공급망·AI 위험을 반영해 개정 — 최신 시험요강과 교재 버전을 대조해 현행성 확인([[39_Zero_Trust_Architecture]], [[35_Supply_Chain_Attacks]])
+
 ---
 
 <a name="english"></a>

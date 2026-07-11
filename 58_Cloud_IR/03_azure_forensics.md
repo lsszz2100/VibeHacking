@@ -862,6 +862,10 @@ az rest --method get \
 
 > 모든 수집·조회는 **소유 구독**에서만. "로그를 봤다"와 "불변 보존된 증거다"는 다르다 — 스냅샷 격리·진단설정·위험 사용자 식별을 직접 확인해야 한다([[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- Microsoft Defender for Cloud·Sentinel(KQL)·UEBA 로 침해 계정을 상관분석 — 검증: `az security incident list` 또는 Sentinel 인시던트에서 위험 계정이 연결되는지 확인
+- 조건부 액세스·지속적 액세스 평가(CAE)로 토큰 탈취 후에도 세션을 즉시 무효화하는지 확인 — 위험 사용자 식별에 그치지 않고 세션 차단까지 재현
+
 ---
 
 <a name="english"></a>

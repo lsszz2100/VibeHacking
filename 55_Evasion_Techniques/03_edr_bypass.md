@@ -467,6 +467,10 @@ Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' |
 
 > 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 콜스택 스푸핑·하드웨어 브레이크포인트(VEH) 후킹으로 유저모드 콜스택을 위조 — 커널 ETW-Ti·스택워크 무결성 검사로 보완하며, 유저모드 후킹 단독 의존은 이미 취약
+- Sysmon EID 25(ProcessTampering)로 프로세스 할로잉/헤르파덜핑을 포착: `Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' | ? {$_.Id -eq 25}`
+
 ---
 
 

@@ -814,6 +814,10 @@ tcpdump -nr owned_capture.pcap 'tcp[tcpflags] & tcp-syn != 0' 2>/dev/null | head
 
 > 검증은 반드시 **소유 실습 환경**에서만 한다. "답안을 외웠다"와 "실제로 동작·재현된다"는 다르다 — 점검 명령을 직접 실행해 확인한다([[07_Digital_Forensics]], [[02_Network_Hacking]]).
 
+**최신 기준 (2025–2026):**
+- 실기는 클라우드 감사로그(CloudTrail/Activity)·컨테이너 침해 분석 비중이 늘어남 — auth.log 파싱뿐 아니라 클라우드 로그 분석도 손에 익혀둔다
+- 패킷 분석은 TLS 1.3 암호화로 페이로드 관찰이 제한됨을 전제로 — 메타데이터(SNI/JA4)·흐름 기반 분석을 함께 확인
+
 ---
 
 <a name="english"></a>
