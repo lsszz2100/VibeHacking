@@ -623,6 +623,10 @@ grep -REi 'modbus|dnp3|anomaly|new.?asset|unauthorized' /var/log/ot-ids/ 2>/dev/
 
 > 검증은 반드시 **소유 OT 랩**에서만 한다. 가동망에서 능동 스캔 금지. "모니터링을 깔았다"와 "비정상이 실제 탐지된다"는 다르다 — 이상 주입·경보로 직접 확인한다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 수동 자산발견·프로토콜 이상탐지·단방향 게이트웨이가 방어 — 검증: 비인가 명령/로직이 탐지되는지 재현([[40_Threat_Hunting]])
+- 변경관리·백업 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

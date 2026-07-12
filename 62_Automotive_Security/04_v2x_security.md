@@ -473,6 +473,10 @@ grep -REi 'crl|revocation|1609\.2|cert.?validate' /etc/v2x* 2>/dev/null | head |
 
 > 검증은 반드시 **소유 테스트베드**에서만 한다. 실도로 송출 금지. "PKI를 설계했다"와 "서명이 실제 검증·폐기된다"는 다르다 — 오서명 주입·폐기 테스트로 직접 확인한다([[16_Cryptography]], [[24_Network_Infrastructure_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- V2X는 PKI(인증서)·메시지 서명이 핵심 — 위조 메시지·시빌 공격 방어. 검증: 위조 V2X가 거부되는지 재현([[16_Cryptography]])
+- 프라이버시(가명 인증서) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -631,6 +631,10 @@ aws ec2 describe-instances --query 'Reservations[].Instances[].MetadataOptions.H
 
 > Lambda 방어는 *함수 신뢰경계가 강제되는가*다 — "함수가 동작한다"와 "env에 평문 비밀이 없고 IMDSv2가 강제되며 이벤트가 검증된다"는 다르다. 소유 AWS 계정에서 직접 확인한다([[14_Cloud_Security]], [[38_Cloud_Native_Security]], [[58_Cloud_IR]]).
 
+**최신 기법·통제 (2025–2026):**
+- 과권한 실행역할·이벤트인젝션·의존성 취약이 벡터 — 최소권한·입력검증으로 방어. 검증: 함수 역할 남용이 CloudTrail에 남고 차단되는지 재현(소유 계정)([[14_Cloud_Security]])
+- 콜드스타트·환경변수 시크릿 — 볼트가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

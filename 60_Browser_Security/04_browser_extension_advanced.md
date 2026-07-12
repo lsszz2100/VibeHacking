@@ -862,6 +862,10 @@ find ~/.config -name manifest.json -path '*Extensions*' 2>/dev/null -exec grep -
 
 > 검증은 반드시 **소유 프로파일**에서만 한다. "권한 모델을 안다"와 "최소권한이 강제된다"는 다르다 — manifest 권한으로 직접 확인한다([[51_Browser_Extension_Security]], [[33_OSINT_Social_Engineering]]).
 
+**최신 기법·통제 (2025–2026):**
+- MV3 권한모델·원격코드 금지로 확장 악용 축소 — 검증: 과도 권한/원격코드가 정책에서 차단되는가([[51_Browser_Extension_Security]])
+- 확장 공급망 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -502,6 +502,10 @@ jq -e '.[] | select(.valid_until == null)' iocs.json 2>/dev/null | head && echo 
 
 > 검증은 반드시 **소유 환경**에서만 한다. "목록을 쌓았다"와 "탐지에 전달·만료된다"는 다르다 — 룰 배포·만료필드로 직접 확인한다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- IOC 품질(신뢰도·수명·컨텍스트)이 자동차단 폭주를 좌우 — 검증: 저품질 IOC가 차단 전 필터·우선순위화되는가([[13_SOC_Blue_Team]])
+- 만료·회수 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -1171,6 +1171,10 @@ strings ecu_fw.bin 2>/dev/null | grep -Ei 'sign|rsa|crc|checksum|cert' | head ||
 
 > 검증은 반드시 **소유 ECU·벤치**에서만 한다. "펌웨어를 뜯었다"와 "서명·진단 인증이 강제된다"는 다르다 — 변조 플래시·Security Access로 직접 확인한다([[61_Firmware_Hacking]], [[16_Cryptography]]).
 
+**최신 기법·통제 (2025–2026):**
+- ECU 펌웨어·UDS·시드키 약점 — Secure Boot·인증 진단으로 방어. 검증: 비인가 플래싱이 차단되는지 재현(소유 벤치)([[61_Firmware_Hacking]])
+- 게이트웨이 격리 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

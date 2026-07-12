@@ -814,6 +814,10 @@ openssl list -kem-algorithms 2>/dev/null | grep -Ei 'mlkem|kyber' || echo "no PQ
 
 > 검증은 반드시 **소유 엔드포인트**에서만 한다. "PQC 라이브러리를 깔았다"와 "실제 협상된다"는 다르다 — 핸드셰이크 협상 그룹으로 직접 확인한다([[16_Cryptography]], [[18_DevSecOps]]).
 
+**최신 기법·통제 (2025–2026):**
+- NIST 표준(ML-KEM/ML-DSA/SLH-DSA)이 확정 — 하이브리드 KEX로 점진 도입. 검증: 구현이 검증된 라이브러리·파라미터를 쓰는가([[16_Cryptography]])
+- 사이드채널 대응 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

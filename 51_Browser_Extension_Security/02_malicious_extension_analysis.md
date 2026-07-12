@@ -1057,6 +1057,10 @@ grep -rInE 'chrome\.cookies|chrome\.storage|document\.cookie' *.js 2>/dev/null |
 
 > 악성 확장 분석은 *회피를 뚫고 행위가 검증되는가*다 — "권한을 봤다"와 "난독화를 풀고 cookie 탈취+외부 전송을 동적으로 확인했다"는 다르다. 격리된 소유 환경에서 직접 검증한다([[06_Malware_Analysis]], [[60_Browser_Security]], [[25_Threat_Intelligence]]).
 
+**최신 기법·통제 (2025–2026):**
+- 정적(매니페스트·권한)+동적 분석으로 악성 확장 탐지 — 검증: 데이터 유출·원격코드가 텔레메트리에 드러나는지 재현([[06_Malware_Analysis]])
+- 업데이트 후 악성화(하이재킹) — 버전 모니터링이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

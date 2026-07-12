@@ -711,6 +711,10 @@ Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4769} -MaxEvents 20
 
 > 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 티어드 관리모델·MFA·이벤트 상관(4769/4662/4624)이 방어 — 검증: 알려진 AD TTP가 커버리지 내에서 탐지되는지 재현([[13_SOC_Blue_Team]])
+- LAPS·gMSA·Protected Users — 강제되는지 확인
+
 ---
 
 

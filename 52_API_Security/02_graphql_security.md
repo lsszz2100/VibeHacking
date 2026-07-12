@@ -469,6 +469,10 @@ curl -s -o /dev/null -w "deep-nest -> %{http_code}\n" -X POST -H 'Content-Type: 
 
 > GraphQL 방어는 *쿼리가 통제되는가*다 — "쿼리가 응답한다"와 "인트로스펙션이 막히고 깊은 중첩/배치가 제한된다"는 다르다. 소유 엔드포인트에서 직접 확인한다([[05_Web_Hacking]], [[12_Bug_Bounty]], [[02_Network_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- introspection·중첩쿼리 DoS·인가우회가 주 리스크 — 깊이/복잡도 제한·필드 인가로 방어. 검증: 과도 쿼리·비인가 필드가 차단되는가([[12_Bug_Bounty]])
+- 배치/별칭 남용 — 통제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -426,6 +426,10 @@ curl -s -o /dev/null -w "hpp -> %{http_code}\n" "https://api.internal/v1/orders?
 
 > API 퍼징은 *발견이 재현·영향 있는가*다 — "퍼저가 200을 냈다"와 "그 엔드포인트가 수동 재현되고 데이터/권한에 영향을 준다"는 다르다. 소유 API에서 직접 검증한다([[12_Bug_Bounty]], [[73_Bug_Bounty_Automation]], [[05_Web_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- 스키마 기반 퍼징(OpenAPI)·자동화가 표준 — 오탐은 수동 재현. 검증: 각 파인딩이 재현 절차를 갖는가([[30_Vulnerability_Research]])
+- 안전한 대상·격리 — 통제되는지 확인
+
 ---
 
 <a name="english"></a>

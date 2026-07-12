@@ -748,6 +748,10 @@ python3 api_security_tests.py 2>/dev/null; echo "exit=$?  (취약 시 비0이어
 
 > API 테스트 자동화는 *발견이 재현·회귀 차단되는가*다 — "스캔이 돌았다"와 "BOLA가 2계정으로 확증되고 취약 시 CI가 실패한다"는 다르다. 소유 API에서 직접 검증한다([[73_Bug_Bounty_Automation]], [[18_DevSecOps]], [[12_Bug_Bounty]]).
 
+**최신 기법·통제 (2025–2026):**
+- CI 통합 API 보안테스트(DAST·계약테스트)가 표준 — 검증: 신규 취약(인가결함)이 게이트에서 차단되는가([[18_DevSecOps]])
+- 스키마 드리프트 — 탐지되는지 확인
+
 ---
 
 <a name="english"></a>

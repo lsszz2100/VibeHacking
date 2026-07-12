@@ -1006,6 +1006,10 @@ candump -n 200 can0 2>/dev/null | awk '{print $2}' | sort | uniq -c | sort -rn |
 
 > 검증은 반드시 **소유 차량·벤치**에서만 한다. 공도/타인 차량 금지. "도메인을 나눴다"와 "트래픽이 실제 격리된다"는 다르다 — 버스 간 도달성으로 직접 확인한다([[37_ICS_SCADA]], [[24_Network_Infrastructure_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- ISO 21434·UNECE R155(사이버보안 관리체계)가 규제 기반 — 검증: 위협모델(TARA) 통제가 실제 강제되는지 재현([[36_Automotive_Hacking]])
+- HSM·키관리 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

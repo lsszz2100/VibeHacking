@@ -438,6 +438,10 @@ iptables -S 2>/dev/null | grep -E '502|20000' | head || echo "verify allowlist f
 
 > 검증은 반드시 **소유 OT 랩**에서만 한다. 가동 플랜트에 쓰기 명령 금지. "무인증임을 안다"와 "통제가 실제 덧대졌다"는 다르다 — 쓰기 통제·세그멘테이션으로 직접 확인한다([[02_Network_Hacking]], [[37_ICS_SCADA]]).
 
+**최신 기법·통제 (2025–2026):**
+- Modbus/DNP3/S7/OPC-UA는 인증 편차 — OPC-UA 보안모드·게이트웨이 인증으로 방어. 검증: 비인가 명령이 거부되는지 재현(소유 랩)([[37_ICS_SCADA]])
+- 비침습 이상탐지 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

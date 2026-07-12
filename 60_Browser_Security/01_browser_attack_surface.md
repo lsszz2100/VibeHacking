@@ -715,6 +715,10 @@ curl -sI https://localhost/ | grep -i 'permissions-policy' || echo "no Permissio
 
 > 검증은 반드시 **소유 사이트·테스트 프로파일**에서만 한다. "공격면을 줄였다"와 "위험 기능이 실제 꺼졌다"는 다르다 — 응답 헤더로 직접 확인한다([[05_Web_Hacking]], [[51_Browser_Extension_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- V8 샌드박스·Site Isolation·MiraclePtr로 익스플로잇 난이도 상승 — 검증: 완화 활성시 익스플로잇이 실패하는지 재현(소유 랩)([[05_Web_Hacking]])
+- 렌더러/브로커 경계 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

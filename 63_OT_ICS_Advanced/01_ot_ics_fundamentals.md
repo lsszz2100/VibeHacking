@@ -441,6 +441,10 @@ ip route get 10.0.OT.10 2>/dev/null; traceroute -n -m 5 10.0.OT.10 2>/dev/null |
 
 > 검증은 반드시 **소유 OT 랩**에서만 한다. 가동 중 플랜트 금지(가용성·안전 위험). "Purdue를 안다"와 "경계가 실제 격리된다"는 다르다 — 도달성·경로로 직접 확인한다([[37_ICS_SCADA]], [[24_Network_Infrastructure_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- IEC 62443·Purdue 모델이 아키텍처 기반 — 검증: 구역/도관 경계가 실제 트래픽을 제한하는지 재현([[37_ICS_SCADA]])
+- 안전·가용성 우선 — 통제가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -778,6 +778,10 @@ grep -Ei 'auth|hmac|wegman.?carter' /etc/qkd/*.conf 2>/dev/null | head
 
 > 검증은 반드시 **소유 테스트베드**에서만 한다. "물리적으로 안전하다"와 "도청이 실제 탐지·폐기된다"는 다르다 — QBER·인증·폐기 로그로 직접 확인한다([[16_Cryptography]], [[34_Hardware_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- QKD는 물리계층 보안이나 배치 제약 — 대부분 PQC(수학적)로 이전. 검증: 키교환이 다운그레이드를 거부하는지 재현([[16_Cryptography]])
+- 인증 채널 필요 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

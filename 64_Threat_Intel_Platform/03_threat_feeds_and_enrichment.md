@@ -573,6 +573,10 @@ printf '8.8.8.8\n1.1.1.1\n' | while read ip; do grep -q "$ip" blocklist.txt 2>/d
 
 > 검증은 반드시 **소유 TIP**에서만 한다. "피드를 붙였다"와 "강화가 노이즈를 줄인다"는 다르다 — 강화 필드·오탐으로 직접 확인한다([[25_Threat_Intelligence]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 다중피드 상관·인리치먼트·중복제거가 표준 — 오정보/오염 대응. 검증: 인리치가 근거와 함께 재현되는가([[40_Threat_Hunting]])
+- 오탐 IOC 필터 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

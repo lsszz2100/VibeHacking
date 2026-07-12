@@ -666,6 +666,10 @@ grep -REi 'threshold|approval|max.?block|require.?review|dry.?run' soar/playbook
 
 > 검증은 반드시 **소유 환경**에서만 한다. "자동화를 붙였다"와 "종단 동작하고 폭주를 막는다"는 다르다 — 종단 흐름·가드레일로 직접 확인한다([[18_DevSecOps]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- STIX/TAXII·SOAR 연동 자동배포가 표준 — 자동차단 가드레일 필요. 검증: 오탐 IOC가 폭주를 일으키지 않는지 확인([[40_Threat_Hunting]])
+- 신뢰도 기반 게이트 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

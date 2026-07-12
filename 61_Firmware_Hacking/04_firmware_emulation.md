@@ -447,6 +447,10 @@ ps aux 2>/dev/null | grep -Ei 'qemu|httpd|lighttpd|busybox' | grep -v grep | hea
 
 > 검증은 반드시 **소유 펌웨어**에서만 한다. "부팅에 성공했다"와 "실기와 일치한다"는 다르다 — 서비스 기동·실기 비교로 직접 확인한다([[03_System_Hacking]], [[27_IoT_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- QEMU/qiling·FirmAE로 동적분석 — 검증: 에뮬레이션 결과가 실기기와 교차확인되는가([[65_Reverse_Engineering_Advanced]])
+- 안전한 격리 — 통제되는지 확인
+
 ---
 
 <a name="english"></a>

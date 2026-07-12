@@ -996,6 +996,10 @@ aws lambda put-function-concurrency --function-name owned-fn --reserved-concurre
 
 > 서버리스 IR은 *탐지·격리가 작동하는가*다 — "플레이북이 있다"와 "탈취된 자격이 탐지되고 함수가 동시성 0으로 격리되며 세션이 폐기된다"는 다르다. 각 단계를 소유 계정에서 직접 검증한다([[58_Cloud_IR]], [[44_Incident_Response_DFIR]], [[14_Cloud_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- 임시·분산 실행이 포렌식을 어렵게 — 중앙 로깅(CloudTrail/함수로그)·추적이 필수. 검증: 침해 실행이 로그로 재구성되는가([[58_Cloud_IR]])
+- 로그 무결성·보존 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

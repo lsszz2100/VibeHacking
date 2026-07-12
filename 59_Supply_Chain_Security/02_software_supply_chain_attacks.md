@@ -792,6 +792,10 @@ grep -E 'integrity|sha512-|sha256:' package-lock.json 2>/dev/null | head || echo
 
 > 검증은 반드시 **소유 파이프라인**에서만 한다. "공급망 공격을 안다"와 "변조본이 거부된다"는 다르다 — 서명·해시 검증으로 직접 확인한다([[35_Supply_Chain_Attacks]], [[06_Malware_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- 빌드 오염·유지보수자 탈취·의존성 혼동이 벡터 — 서명·리뷰·격리 빌드로 방어. 검증: 오염 아티팩트가 탐지되는가([[74_Code_Auditing]])
+- 프로버넌스 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

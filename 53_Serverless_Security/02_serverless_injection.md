@@ -836,6 +836,10 @@ grep -cE '--hash=sha256:' requirements.txt 2>/dev/null; jq -r '.packages|to_entr
 
 > 서버리스 인젝션 방어는 *모든 이벤트가 검증되는가*다 — "함수가 트리거된다"와 "이벤트가 스키마 검증되고 입력이 셸로 안 흐르며 의존성이 핀된다"는 다르다. 소유 함수에서 직접 확인한다([[05_Web_Hacking]], [[35_Supply_Chain_Attacks]], [[14_Cloud_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- 이벤트소스(큐·스토리지·API) 경유 인젝션이 특유 — 신뢰불가 이벤트를 데이터로만 처리. 검증: 오염 이벤트가 명령/쿼리로 흘러드는지 taint 추적([[05_Web_Hacking]])
+- 출력 인코딩 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

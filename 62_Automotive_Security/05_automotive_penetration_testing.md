@@ -497,6 +497,10 @@ echo "Record PoC result pre-mitigation vs post-mitigation; healthy = same attack
 
 > 검증은 반드시 **소유 차량·벤치**에서만 한다. 안전계 시험은 격리·세이프가드 하에서만. "TARA를 작성했다"와 "시나리오가 재현·차단된다"는 다르다 — 재현·재시험으로 직접 확인한다([[10_Pentest_Methodology]], [[17_Red_Team_Operations]]).
 
+**최신 기법·통제 (2025–2026):**
+- ISO 21434 기반 체계적 평가가 표준 — 검증: 통제가 실제 공격을 저지하는지 재현(소유 벤치)([[48_Threat_Modeling]])
+- SOC 연계 모니터링 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

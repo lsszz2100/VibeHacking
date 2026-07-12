@@ -379,6 +379,10 @@ curl -s -H "Authorization: $TIP_KEY" https://tip.local/api/indicators?limit=20 2
 
 > 검증은 반드시 **소유 TIP**에서만 한다. "피드를 모았다"와 "인텔이 운영에 전달된다"는 다르다 — 익스포트·태그로 직접 확인한다([[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- TIP은 IOC 정규화·품질필터·배포·피드백이 핵심 — 검증: 저품질 IOC가 자동차단 전 필터링되는가([[25_Threat_Intelligence]])
+- 신뢰도·수명 관리 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -1034,6 +1034,10 @@ grep -REn 'actions/checkout|ref:|@[0-9a-f]{40}' .github/workflows/ 2>/dev/null |
 
 > 검증은 반드시 **소유 파이프라인**에서만 한다. "SLSA를 인용했다"와 "provenance가 검증된다"는 다르다 — attestation 검증으로 직접 확인한다([[18_DevSecOps]], [[74_Code_Auditing]]).
 
+**최신 기법·통제 (2025–2026):**
+- 재현가능 빌드·격리 러너·OIDC·프로버넌스가 표준 — 검증: 빌드 산출이 프로버넌스와 일치하는가([[18_DevSecOps]])
+- 캐시 포이즈닝 방지 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

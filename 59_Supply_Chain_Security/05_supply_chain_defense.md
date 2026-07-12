@@ -225,7 +225,7 @@ supply_chain_defense_audit()
 | 항목 | 내용 |
 |------|------|
 | **운영** | Google |
-| **URL** | https://api.osv.dev/v1 |
+| **URL** | https://google.github.io/osv.dev/api/ |
 | **인증** | 불필요 (공개 API) |
 | **지원 생태계** | PyPI, npm, Maven, NuGet, Go, Rust, Debian, Alpine 등 |
 | **쿼리 방식** | 패키지명+버전 또는 commit hash |
@@ -1115,6 +1115,10 @@ gh api repos/:owner/:repo/branches/main/protection 2>/dev/null | jq '.required_s
 
 > 검증은 반드시 **소유 파이프라인**에서만 한다. "정책이 있다"와 "게이트가 실제 차단한다"는 다르다 — 위반 주입·브랜치 보호로 직접 확인한다([[18_DevSecOps]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- in-toto·SLSA·admission 정책·SBOM이 통합 방어 — 검증: 각 통제가 파이프라인에서 강제되는지 재현([[35_Supply_Chain_Attacks]])
+- 유출 시크릿 회전 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>
@@ -1212,7 +1216,7 @@ gh api repos/:owner/:repo/branches/main/protection 2>/dev/null | jq '.required_s
 | Item | Content |
 |------|---------|
 | **Operated by** | Google |
-| **URL** | https://api.osv.dev/v1 |
+| **URL** | https://google.github.io/osv.dev/api/ |
 | **Authentication** | Not required (public API) |
 | **Supported ecosystems** | PyPI, npm, Maven, NuGet, Go, Rust, Debian, Alpine, etc. |
 | **Query method** | Package name + version, or commit hash |

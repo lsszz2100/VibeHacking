@@ -982,6 +982,10 @@ grep -REi 'AutoUpdate|SafeBrowsing|PasswordManagerEnabled|RemoteAccess' /etc/*/p
 
 > 검증은 반드시 **소유 단말**에서만 한다. "정책을 썼다"와 "정책이 적용·잠긴다"는 다르다 — 관리형 정책으로 직접 확인한다([[21_Windows_Exploitation]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- CSP(strict)·Trusted Types·COOP/COEP·사이트격리가 방어 표준 — 검증: 정책이 XSS/인젝션을 실제 차단하는지 재현([[05_Web_Hacking]])
+- 업데이트·패치 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

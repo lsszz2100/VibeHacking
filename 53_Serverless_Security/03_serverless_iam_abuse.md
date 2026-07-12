@@ -1086,6 +1086,10 @@ aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,Attribut
 
 > 서버리스 IAM 방어는 *권한 경계가 강제되는가*다 — "함수가 실행된다"와 "역할에 상승 동사·와일드카드가 없고 AssumeRole 신뢰가 제한된다"는 다르다. 소유 계정에서 직접 확인한다([[14_Cloud_Security]], [[38_Cloud_Native_Security]], [[58_Cloud_IR]]).
 
+**최신 기법·통제 (2025–2026):**
+- 과권한 함수역할·권한상승 체인·크로스서비스 신뢰가 리스크 — 최소권한·경계로 방어. 검증: 상승 경로가 차단되는지 재현(소유 계정)([[39_Zero_Trust_Architecture]])
+- 역할체이닝 감사 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

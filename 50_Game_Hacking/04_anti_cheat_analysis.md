@@ -1118,6 +1118,10 @@ sha256sum /proc/$(pgrep -n testgame)/exe 2>/dev/null; grep -c 'tamper' anticheat
 
 > 안티치트는 *조작을 탐지하는가*다 — "커널 안티치트가 있다"와 "테스트 주입이 플래그되고 코드 변조가 알람을 내며 서버로 보고된다"는 다르다. 각 탐지를 소유 테스트 환경에서 직접 검증한다([[55_Evasion_Techniques]], [[04_Reverse_Engineering]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 커널모드 안티치트·행위 텔레메트리·서버측 통계탐지가 표준 — 검증: 치트 신호가 서버 이상탐지에서 드러나는지 재현([[40_Threat_Hunting]])
+- 순수 탐지 관점(우회기법 아님) — 텔레메트리에 남는 흔적 중심
+
 ---
 
 <a name="english"></a>

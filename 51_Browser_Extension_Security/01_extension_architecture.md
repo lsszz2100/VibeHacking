@@ -956,6 +956,10 @@ grep -rInE '\beval\(|new Function\(|\.src\s*=\s*["'"'"']https?://' *.js 2>/dev/n
 
 > 확장 방어는 *최소권한·신뢰경계가 강제되는가*다 — "확장이 동작한다"와 "host 권한이 최소이고 CSP가 원격/eval을 막으며 메시지 발신자가 검증된다"는 다르다. 소유/테스트 확장에서 직접 확인한다([[05_Web_Hacking]], [[60_Browser_Security]], [[35_Supply_Chain_Attacks]]).
 
+**최신 기법·통제 (2025–2026):**
+- Manifest V3(서비스워커·선언적 요청·원격코드 금지)로 권한모델 강화 — 검증: 과도한 host_permissions가 스토어 심사·정책에서 걸리는지 확인([[60_Browser_Security]])
+- 최소권한·격리 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

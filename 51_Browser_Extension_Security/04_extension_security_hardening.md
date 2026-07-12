@@ -1403,6 +1403,10 @@ jq -r '.host_permissions[]?, .permissions[]?' manifest.json 2>/dev/null | grep -
 
 > 확장 강화는 *통제가 강제되는가*다 — "MV3다"와 "eval/원격 코드가 없고 host 권한이 최소이며 업데이트가 서명 검증된다"는 다르다. 각 통제를 소유 확장에서 직접 검증한다([[60_Browser_Security]], [[35_Supply_Chain_Attacks]], [[18_DevSecOps]]).
 
+**최신 기법·통제 (2025–2026):**
+- MV3·최소권한·CSP·원격코드 금지가 표준 — 검증: 정책 위반 확장이 배포/실행에서 차단되는가([[18_DevSecOps]])
+- 공급망(서드파티 라이브러리) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

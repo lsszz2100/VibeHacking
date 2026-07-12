@@ -951,6 +951,10 @@ sha256sum /proc/$(pgrep -n testgame)/exe 2>/dev/null; cat baseline_text.sha256 2
 
 > CE 방어는 *무결성·모듈이 검증되는가*다 — "게임이 실행된다"와 "코드 무결성이 유지되고 비서명 트레이너 DLL이 탐지된다"는 다르다. 소유 게임/테스트 환경에서 직접 확인한다([[04_Reverse_Engineering]], [[03_System_Hacking]], [[55_Evasion_Techniques]]).
 
+**최신 기법·통제 (2025–2026):**
+- 포인터스캔·AOB는 코드 무결성·난독화로 대응 — 검증: 조작이 클라이언트 무결성·서버검증에서 걸리는지 재현(소유 게임)([[04_Reverse_Engineering]])
+- 실습은 오프라인/소유 대상만 — 합법성 통제
+
 ---
 
 <a name="english"></a>

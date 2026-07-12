@@ -805,6 +805,10 @@ ctest --test-dir build -R 'kat|kem|sig' 2>/dev/null | tail -5 || echo "wire KAT 
 
 > 검증은 반드시 **소유 빌드**에서만 한다. "표준을 인용했다"와 "KAT를 통과한다"는 다르다 — 테스트 벡터로 직접 확인한다([[16_Cryptography]], [[74_Code_Auditing]]).
 
+**최신 기법·통제 (2025–2026):**
+- FIPS 203/204/205 표준화 완료·마이그레이션 가이드가 성숙 — 검증: 시스템이 표준 알고리즘으로 전환·검증되는가([[16_Cryptography]])
+- 크립토 어질리티 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -860,6 +860,10 @@ pgrep -af 'type=renderer' 2>/dev/null | wc -l
 
 > 검증은 반드시 **소유 환경**에서만 한다. "샌드박스 탈출을 안다"와 "격리·seccomp가 실제 적용된다"는 다르다 — 프로세스 권한으로 직접 확인한다([[01_Linux_Basics]], [[29_Container_Kubernetes_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- 렌더러→브로커 IPC·GPU/드라이버 버그로 탈출 — Site Isolation·최소권한 브로커로 방어. 검증: 탈출이 완화에서 막히는지 재현(소유 랩)([[66_Exploit_Development]])
+- 프로세스 격리 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

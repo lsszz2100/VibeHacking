@@ -429,6 +429,10 @@ binwalk -E fw.bin 2>/dev/null | head -20 || python3 -c "import sys"
 
 > 검증은 반드시 **소유 장비**에서만 한다. "덤프를 떴다"와 "대상과 일치한다"는 다르다 — 재덤프 해시·엔트로피로 직접 확인한다([[07_Digital_Forensics]], [[34_Hardware_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- SPI 덤프·binwalk·UART/JTAG로 추출 — 암호화 펌웨어·디버그 잠금으로 방어. 검증: 추출 무결성·재현이 확보되는가(소유 기기)([[27_IoT_Hacking]])
+- 분석은 소유 기기만 — 합법성 통제
+
 ---
 
 <a name="english"></a>

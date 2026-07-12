@@ -410,6 +410,10 @@ strings fw.bin | grep -Ei 'secure.?boot|anti.?rollback|verified.?boot' | head ||
 
 > 검증은 반드시 **소유 장비**에서만 한다. "부트체인을 안다"와 "미서명이 실제 거부된다"는 다르다 — 변조본 부팅·서명 구조로 직접 확인한다([[34_Hardware_Hacking]], [[16_Cryptography]]).
 
+**최신 기법·통제 (2025–2026):**
+- Secure Boot·측정부팅·서명 펌웨어가 무결성 기반 — 검증: 변조/다운그레이드가 부팅에서 거부되는지 재현(소유 기기)([[34_Hardware_Hacking]])
+- 신뢰루트(RoT) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

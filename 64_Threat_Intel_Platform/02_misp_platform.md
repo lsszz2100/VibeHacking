@@ -450,6 +450,10 @@ curl -s -H "Authorization: $MISP_KEY" -H "Accept: application/json" https://misp
 
 > 검증은 반드시 **소유 MISP**에서만 한다. "인스턴스를 세웠다"와 "동기화·공유통제가 동작한다"는 다르다 — 동기 시각·distribution으로 직접 확인한다([[25_Threat_Intelligence]], [[33_OSINT_Social_Engineering]]).
 
+**최신 기법·통제 (2025–2026):**
+- MISP/OpenCTI로 공유·상관·STIX 구조화 — 검증: IOC가 탐지·헌팅에 실제 반영되는가([[25_Threat_Intelligence]])
+- 커뮤니티 신뢰·검증 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

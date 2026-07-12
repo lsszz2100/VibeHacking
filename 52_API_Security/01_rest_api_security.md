@@ -515,6 +515,10 @@ h=$(printf '{"alg":"none","typ":"JWT"}' | base64 | tr -d '=' | tr '/+' '_-'); p=
 
 > API 방어는 *인가가 서버에서 강제되는가*다 — "응답이 온다"와 "타 계정 객체가 403이고 alg:none이 거부되며 권한 필드가 바인딩되지 않는다"는 다르다. 소유 API/테스트 계정에서 직접 확인한다([[05_Web_Hacking]], [[12_Bug_Bounty]], [[16_Cryptography]]).
 
+**최신 기법·통제 (2025–2026):**
+- OWASP API Top 10(BOLA·BFLA·과다노출)이 핵심 — 객체·함수 인가가 서버측에서 강제되는지 재현. 검증: IDOR이 차단되는가([[05_Web_Hacking]])
+- 레이트리밋·스키마 검증 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

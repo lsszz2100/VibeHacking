@@ -622,6 +622,10 @@ for c in /etc/ssl/certs/*.pem; do openssl x509 -in "$c" -noout -text 2>/dev/null
 
 > 검증은 반드시 **소유 시스템**에서만 한다. "양자 위협을 안다"와 "내 취약 암호가 목록화돼 있다"는 다르다 — 인증서·키교환 스캔으로 직접 확인한다([[16_Cryptography]], [[35_Supply_Chain_Attacks]]).
 
+**최신 기법·통제 (2025–2026):**
+- 양자컴퓨팅 위협("harvest now, decrypt later")로 PQC 전환 시급 — 검증: 장기기밀 데이터가 PQC/하이브리드로 보호되는지 확인([[16_Cryptography]])
+- 크립토 인벤토리 — 파악되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -1185,6 +1185,10 @@ Get-SmbServerConfiguration | Select-Object RequireSecuritySignature
 
 > 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- PtH/PtT·WMI/WinRM·SMB 횡이동 — LAPS·티어링·세분화로 폭발반경 축소. 검증: 비인가 횡이동이 탐지·차단되는지 재현(소유 도메인)([[40_Threat_Hunting]])
+- 자격 캐시 보호(Credential Guard) — 강제되는지 확인
+
 ---
 
 

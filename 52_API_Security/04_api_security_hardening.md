@@ -554,6 +554,10 @@ for i in $(seq 1 30); do curl -s -o /dev/null -w "%{http_code}\n" https://api.in
 
 > API 강화는 *통제가 강제되는가*다 — "게이트웨이가 있다"와 "미인증이 401이고 임계 초과가 429이며 스코프 밖이 403이다"는 다르다. 각 통제를 소유 API에서 직접 검증한다([[39_Zero_Trust_Architecture]], [[14_Cloud_Security]], [[18_DevSecOps]]).
 
+**최신 기법·통제 (2025–2026):**
+- OAuth2/OIDC·mTLS·게이트웨이 정책이 방어 표준 — 검증: 토큰 스코프·인가가 런타임에 강제되는지 재현([[39_Zero_Trust_Architecture]])
+- 시크릿·키 회전 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

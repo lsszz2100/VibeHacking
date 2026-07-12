@@ -949,6 +949,10 @@ grep -RnE 'limit_req|limit_conn' /etc/nginx/ 2>/dev/null || echo 'NO RATE LIMIT 
 
 > 검증은 반드시 **소유한 모델·통제된 환경**에서만 수행한다. 가드레일을 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — 공격 PoC 를 재현해 통제가 차단하는지 확인해야 신뢰할 수 있다([[69_LLM_Security]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- AI 레드팀은 OWASP LLM·MITRE ATLAS 기반 체계화 — 검증: 발견이 재현 가능한 프롬프트·통제 갭으로 기록되는가([[69_LLM_Security]])
+- 자동 레드팀 스위트 — 거부율 정량측정
+
 ---
 
 <a name="english"></a>

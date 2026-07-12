@@ -393,6 +393,10 @@ cat squashfs-root/etc/passwd 2>/dev/null | awk -F: '$3<1000 && $7!~"nologin|fals
 
 > 검증은 반드시 **소유 이미지**에서만 한다. "도구를 돌렸다"와 "비밀·취약점이 실제 검출된다"는 다르다 — 비밀 스캔·계정 추출로 직접 확인한다([[06_Malware_Analysis]], [[30_Vulnerability_Research]]).
 
+**최신 기법·통제 (2025–2026):**
+- 하드코딩 시크릿·명령인젝션 싱크 정적탐지·SBOM CVE 상관이 표준 — 검증: 발견이 재현·오탐필터링되는가([[65_Reverse_Engineering_Advanced]])
+- 취약 컴포넌트 — 패치가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -697,6 +697,10 @@ syft dir:. -o cyclonedx-json 2>/dev/null | jq '.components | length' || echo "ge
 
 > 검증은 반드시 **소유 빌드**에서만 한다. "공급망 위협을 안다"와 "의존성이 전부 목록화된다"는 다르다 — SBOM 완전성으로 직접 확인한다([[35_Supply_Chain_Attacks]], [[18_DevSecOps]]).
 
+**최신 기법·통제 (2025–2026):**
+- SLSA·프로버넌스·서명·SBOM이 무결성 표준 — 검증: 미검증 아티팩트가 배포 전 차단되는가([[35_Supply_Chain_Attacks]])
+- 의존성 가시성 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

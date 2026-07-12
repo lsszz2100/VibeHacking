@@ -1093,6 +1093,10 @@ Get-ADUser -Filter 'DoesNotRequirePreAuth -eq $true' -Properties DoesNotRequireP
 
 > 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- Kerberoasting·AS-REP·위임(RBCD)·인증서(ESC) 남용이 주류 — AES 강제·gMSA·PKINIT 통제로 방어. 검증: 상승이 4769/4662로 탐지되는지 재현(소유 도메인)([[21_Windows_Exploitation]])
+- 티켓 수명·모니터링 — 강제되는지 확인
+
 ---
 
 

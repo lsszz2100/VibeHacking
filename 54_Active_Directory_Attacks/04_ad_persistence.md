@@ -941,6 +941,10 @@ Get-ADUser krbtgt -Properties PasswordLastSet | Select-Object PasswordLastSet
 
 > 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- DCSync·골든/실버티켓·AdminSDHolder·인증서가 지속성 — 검증: 지속성 등록·비정상 복제가 탐지되는지 재현(소유 도메인)([[21_Windows_Exploitation]])
+- 백업·복구 무결성 — 강제되는지 확인
+
 ---
 
 
