@@ -457,6 +457,10 @@ sudo -l 2>/dev/null            # 출력에서 과도한 권한이 있는지 직�
 
 > 권한 상승은 대부분 *오설정*을 노린다 — 익스플로잇보다 흔하다. SUID·sudoers·cron 권한을 주기적으로 열거해 줄이고, auditd로 euid 전환을 기록해야 탐지가 선다. 검증은 통제된 환경에서만([[03_System_Hacking]], [[26_Linux_Hardening]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- SUID/capabilities·sudo 오구성·커널 CVE(nf_tables·io_uring 계열)로 권한상승 — LinPEAS로 상시 진단. 검증: 상승 경로가 auditd/eBPF에 흔적을 남기고 패치로 막히는지 재현(소유 랩)([[26_Linux_Hardening]])
+- eBPF·컨테이너 탈출과 결합한 상승이 증가 — 최소권한·seccomp·커널 lockdown이 강제되는지 확인([[29_Container_Kubernetes_Security]])
+
 ---
 
 <a name="english"></a>

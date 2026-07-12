@@ -996,6 +996,10 @@ grep 'Failed password' /var/log/auth.log | awk '{print $(NF-3)}' | sort | uniq -
 
 > 검증은 반드시 **소유한 시스템·통제 환경**에서만. "MFA/잠금 설정"과 "무차별 시도를 실제 막고 경보한다"는 다르다 — 브루트포스 PoC 를 재현해 잠금·경보가 발동하는지 확인해야 신뢰할 수 있다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- GPU/클라우드 크래킹 가속으로 약한 해시가 즉시 붕괴 — Argon2id·bcrypt(고비용)·긴 패스프레이즈로 방어. 검증: 유출 해시가 정책하에서 실제 저항하는지 측정([[22_Password_Cracking]])
+- 자격증명 재사용·스터핑이 주 벡터 — MFA·유출자격 모니터링이 강제되는지 확인([[54_Active_Directory_Attacks]])
+
 ---
 
 <a name="english"></a>

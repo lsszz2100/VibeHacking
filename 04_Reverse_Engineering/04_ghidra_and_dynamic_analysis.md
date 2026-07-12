@@ -945,6 +945,10 @@ ltrace -f ./sample 2>&1 | grep -iE 'GetProcAddress|LoadLibrary' | head
 
 > 분석은 반드시 **소유/통제된 샌드박스**에서만. 디컴파일러 출력은 가독성을 위한 재구성일 뿐 정답이 아니다 — 정적 능력과 동적 트레이스를 대조해 결론을 검증한다([[65_Reverse_Engineering_Advanced]], [[72_Malware_Sandbox_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- Ghidra 11+·BSim·AI 보조 디컴파일이 분석 가속 — 결과는 동적확인으로 교차검증. 검증: 디컴파일 추정이 실행으로 확인되는가([[65_Reverse_Engineering_Advanced]])
+- 안티VM/안티디버깅 결합 — 격리 계측환경에서 실제 행위가 드러나는지 확인
+
 ---
 
 <a name="english"></a>

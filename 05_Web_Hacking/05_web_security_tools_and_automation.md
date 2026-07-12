@@ -744,6 +744,10 @@ if [ "$count" -gt 0 ]; then echo "FAIL: $count high/critical findings"; exit 1; 
 
 > 검증은 **소유/위임받은 대상·통제 환경**에서만. 스캐너 "통과"가 안전을 보장하지 않는다 — 발견은 PoC 로 재현해 오탐을 거르고, 수정 후 재스캔으로 실제 닫혔는지 CI 에서 지속 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- DAST/IAST·nuclei 자동화의 오탐 관리가 관건 — 자동결과는 수동 재현으로 검증 후 보고. 검증: 각 파인딩이 재현 절차를 갖는가([[12_Bug_Bounty]])
+- CI 통합 보안 게이트 — 신규 취약이 실제 차단되는지 확인([[18_DevSecOps]])
+
 ---
 
 <a name="english"></a>

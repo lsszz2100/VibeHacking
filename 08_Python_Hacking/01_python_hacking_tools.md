@@ -1317,6 +1317,10 @@ sudo suricata -r owned_capture.pcap -S scan.rules 2>/dev/null | tail
 
 > 공격 도구는 **소유/허가된 환경**에서만 실행한다. 도구가 "동작함"과 "올바른 결과를 냄"은 다르므로 알려진 정답으로 출력을 검증하고, 도구가 남기는 탐지 footprint도 함께 확인해야 한다([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 악성 PyPI·타이포스쿼팅으로 도구체인 오염 — 해시고정·가상환경·SBOM. 검증: 미검증 패키지가 차단되는지 확인([[35_Supply_Chain_Attacks]])
+- 도구 실행이 텔레메트리를 남김 — 랩 격리·아웃바운드 통제가 강제되는지 확인([[10_Pentest_Methodology]])
+
 ---
 
 <a name="english"></a>

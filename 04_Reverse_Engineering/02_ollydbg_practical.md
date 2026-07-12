@@ -891,6 +891,10 @@ strings -a ./sample | grep -iE 'vmware|virtualbox|qemu|vbox|sandbox'
 
 > 분석은 반드시 **소유/통제된 샌드박스**에서만. 디버거 안에서 본 행위가 실제 행위와 다를 수 있다 — 안티디버깅 참조를 먼저 식별하고, 디버깅/비디버깅 행위를 비교해 결론을 검증한다([[65_Reverse_Engineering_Advanced]], [[72_Malware_Sandbox_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- 안티디버깅(타이밍·HW BP·PEB)이 성숙 — x64dbg·에뮬레이션(qiling)으로 우회 후 탐지경로가 실제 죽었는지 확인. 검증: 우회 후 동적결과가 신뢰 가능한가([[65_Reverse_Engineering_Advanced]])
+- 32비트 전용 도구 한계로 x64dbg/Ghidra로 이동 — 분석 절차가 재현되는가
+
 ---
 
 <a name="english"></a>

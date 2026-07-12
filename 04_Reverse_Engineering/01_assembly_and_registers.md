@@ -961,6 +961,10 @@ r2 -q -c 'aaa; pdf @ main' ./sample 2>/dev/null | head
 
 > 분석은 반드시 **소유/통제된 샌드박스**에서만 수행한다. 디스어셈블러 출력 하나를 "정답"으로 믿지 말고, 선형·재귀·동적 트레이스가 같은 결론으로 수렴하는지 교차검증해야 신뢰할 수 있다([[65_Reverse_Engineering_Advanced]], [[06_Malware_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- ARM64·RISC-V 타깃 확대와 CET/PAC 등 하드웨어 완화 이해가 필수 — 분석은 소유 바이너리·격리 환경 한정. 검증: 디스어셈블 결과가 재현 가능한가([[19_Assembly_Language]])
+- 컴파일러 최적화·인라인으로 정적분석 난이도 상승 — 동적확인과 교차검증([[65_Reverse_Engineering_Advanced]])
+
 ---
 
 <a name="english"></a>

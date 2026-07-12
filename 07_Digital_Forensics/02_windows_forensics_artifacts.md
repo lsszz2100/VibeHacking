@@ -1333,6 +1333,10 @@ PY
 
 > 단일 아티팩트가 지워졌다고 사건이 사라지지 않는다 — Windows는 실행·접근·지속성을 **여러 아티팩트에 중복 기록**한다. 한 소스를 단정하지 말고 EVTX·MFT·USN·Prefetch·SRUM이 같은 사실로 수렴하는지 교차검증해야 신뢰할 수 있다([[44_Incident_Response_DFIR]], [[54_Active_Directory_Attacks]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 최신 Windows(11/2025)는 아티팩트 위치 변화·클라우드 동기화 — Prefetch·AmCache·SRUM·이벤트로그 상관. 검증: 실행 흔적이 다중 아티팩트로 교차확인되는가([[44_Incident_Response_DFIR]])
+- 로그삭제·타임스톰핑에 대응해 MFT $SI≠$FN·USN저널 검사 — 변조가 드러나는지 확인
+
 ---
 
 <a name="english"></a>

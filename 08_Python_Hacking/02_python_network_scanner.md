@@ -1445,6 +1445,10 @@ comm -3 <(sort tool_open_ports.txt) <(sort ground_truth_ports.txt)   # 불일치
 
 > 스캔은 **소유/허가된 네트워크**에서만 수행한다. 스캐너가 "포트를 보고함"과 "정확히 보고함"은 다르므로 알려진 정답과 대조해 오탐/미탐을 측정하고, IDS 탐지 footprint도 확인해야 한다([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 대규모 스캔은 레이트리밋·탐지 유발 — 스코프·강도 통제가 강제되는지 확인(허가 대상만). 검증: 스캔이 IDS에 남기는 신호를 이해하는가([[24_Network_Infrastructure_Security]])
+- 비동기(asyncio)·결과 구조화가 표준 — 산출물이 재현 가능한가
+
 ---
 
 <a name="english"></a>

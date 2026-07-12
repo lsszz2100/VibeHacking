@@ -980,6 +980,10 @@ grep -E '^ieee80211w' /etc/hostapd/hostapd.conf || echo 'PMF NOT SET — deauth 
 
 > 검증은 반드시 **소유한 무선·통제 RF 환경**에서만(전파 규제 준수). "PMF/WPA3 켰다"와 "deauth/이블트윈을 실제 막는다"는 다르다 — PoC 를 재현해 WIDS 경보와 차단을 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- WPA3·PMF(802.11w)·OWE 확산으로 고전 공격 표면 축소 — 다운그레이드/전환공격이 실제 거부되는지 재현(소유 AP만). 검증: 로그·모니터링에 흔적이 남는가([[15_WiFi_Hacking]])
+- 6GHz/Wi-Fi 6E·기업 EAP 환경의 오구성이 잔존 리스크 — 인증서 검증·강한 EAP가 강제되는지 확인([[15_WiFi_Hacking]])
+
 ---
 
 <a name="english"></a>

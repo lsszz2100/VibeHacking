@@ -1311,6 +1311,10 @@ curl -s https://localhost/transfer | grep -iq 'csrf' && echo 'CSRF token present
 
 > 검증은 **소유한 서버·통제 환경**에서만. "인코딩/토큰을 넣었다"와 "실제 페이로드를 막는다"는 다르다 — XSS/CSRF/웹셸 PoC 를 재현해 통제가 차단하는지 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- CSP(nonce/strict-dynamic)·Trusted Types·SameSite로 XSS/CSRF 완화 — 검증: 정책이 실제 인젝션을 차단하는지 재현([[60_Browser_Security]])
+- 업로드는 콘텐츠검증·격리 스토리지·실행차단 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

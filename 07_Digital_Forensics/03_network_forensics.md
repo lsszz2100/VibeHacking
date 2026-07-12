@@ -875,6 +875,10 @@ tshark -r capture.pcap -T fields -e frame.time_epoch -e ip.dst | sort -k2 | head
 
 > 패킷캡처는 **무결성 해시로 보존**하고, **소유/허가된 캡처**만 분석한다. 단일 센서를 "정답"으로 믿지 말고, pcap·netflow·방화벽 로그가 같은 플로우로 수렴하는지 교차검증해야 신뢰할 수 있다([[02_Network_Hacking]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 암호화(TLS1.3/QUIC)로 페이로드 가시성 하락 — NetFlow/Zeek 메타데이터·JA4 중심. 검증: 세션 재구성이 재현 가능한가([[40_Threat_Hunting]])
+- 대용량·장기 보존은 인덱싱 파이프라인 필요 — 보존정책·무결성이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

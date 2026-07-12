@@ -871,6 +871,10 @@ Get-ADComputer -Filter {TrustedForDelegation -eq $true} -Properties TrustedForDe
 
 > 검증은 반드시 **소유한 도메인·통제 랩**에서만. "위임 제한/gMSA 설정"과 "Kerberoast/위임악용을 실제 탐지·차단한다"는 다르다 — PoC 를 랩에 재현해 4769 경보와 위임 제한을 확인한다([[54_Active_Directory_Attacks]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 비제약/제약/RBCD 위임 오구성으로 상승·가장 — 위임 인벤토리·민감계정 보호(Protected Users)로 방어. 검증: RBCD 설정이 감사·차단되는지 재현(소유 도메인)([[54_Active_Directory_Attacks]])
+- AES·FAST(armoring)로 티켓 공격 저항 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

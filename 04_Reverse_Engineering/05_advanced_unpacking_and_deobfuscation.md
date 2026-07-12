@@ -650,6 +650,10 @@ print([(s.Name.decode(errors='ignore').rstrip(chr(0)), round(-sum((n/len(s.get_d
 
 > 분석은 반드시 **소유/통제된 샌드박스**에서만. 덤프를 떴다고 복원이 끝난 게 아니다 — 패커 시그니처 소멸, IAT 재구성, 엔트로피 정규화, 재실행 가능성을 확인해야 신뢰할 수 있다([[65_Reverse_Engineering_Advanced]], [[72_Malware_Sandbox_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- VMProtect/Themida·제어흐름 평탄화에 대응해 심볼릭 실행(angr/Triton)·AI 역난독화 — 검증: 복원 로직이 원본과 동치인지 재현([[65_Reverse_Engineering_Advanced]])
+- 언패킹 후 IAT 복원·덤프 무결성 — 추출 IOC가 재현되는지 확인([[06_Malware_Analysis]])
+
 ---
 
 <a name="english"></a>

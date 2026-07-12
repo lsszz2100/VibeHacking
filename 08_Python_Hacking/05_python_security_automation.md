@@ -1029,6 +1029,10 @@ diff <(sort run1.out) <(sort run2.out) && echo "idempotent"
 
 > 자동화는 **소유/허가된 자산**만 대상으로 한다. 자동화가 "실행됨"과 "안전·정확하게 동작함"은 다르므로 드라이런·멱등성·결과검증 게이트를 두고, 스푸핑·SSH 버스트·스캔의 탐지 footprint도 확인해야 한다([[02_Network_Hacking]], [[20_Shell_Scripting]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- SOAR·탐지 파이프라인의 파이썬 자동화 — 검증: 자동대응이 오탐에서 폭주하지 않도록 가드레일이 강제되는가([[13_SOC_Blue_Team]])
+- 시크릿·자격 관리가 자동화의 약점 — 볼트/최소권한이 강제되는지 확인([[18_DevSecOps]])
+
 ---
 
 <a name="english"></a>

@@ -1504,6 +1504,10 @@ journalctl -k | grep -i 'stack smashing' | tail
 
 > 검증은 반드시 **소유한 바이너리·통제 환경**에서만. "카나리/NX/ASLR 켰다"와 "익스플로잇을 실제 차단한다"는 다르다 — PoC 를 재현해 완화가 크래시로 막는지 확인해야 신뢰할 수 있다([[09_Exploit_Techniques]], [[66_Exploit_Development]]).
 
+**최신 기법·통제 (2025–2026):**
+- ASLR·DEP/NX·스택카나리·CET로 고전 BOF 무력화 — 완화 활성시 익스플로잇이 실패하는지 재현(소유 랩). 검증: checksec류로 완화가 실제 적용됐는가([[66_Exploit_Development]])
+- 잔존은 정보유출로 완화를 우회 — infoleak 프리미티브가 막히는지 확인([[09_Exploit_Techniques]])
+
 ---
 
 <a name="english"></a>

@@ -511,6 +511,10 @@ vol -f mem.raw windows.vadinfo | awk '/PAGE_EXECUTE_READWRITE/' | head   # RWX�
 
 > 분석은 반드시 **소유/통제된 시스템의 메모리 이미지**에서만 수행하고, **획득 무결성(스미어)** 부터 검증한다. 한 플러그인 출력을 단정하지 말고, pslist·psscan·malfind·vadinfo가 같은 결론으로 수렴하는지 교차검증해야 신뢰할 수 있다([[06_Malware_Analysis]], [[44_Incident_Response_DFIR]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- Volatility3 플러그인·심볼 자동화로 최신 커널 지원 — 인메모리 위협 분석. 검증: malfind/인젝션 탐지가 재현되는가
+- 메모리 안티포렌식에 대응해 획득 시점·방법 기록 — 결과가 재현 가능한가([[06_Malware_Analysis]])
+
 ---
 
 <a name="english"></a>

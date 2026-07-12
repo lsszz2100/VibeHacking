@@ -870,6 +870,10 @@ bash -c 'set -euo pipefail; rm -rf "${D:?D unset}"/tmp' ; echo "exit=$?"  # D �
 
 > Bash의 위험은 대부분 *조용히* 일어난다 — 빈 변수는 에러 없이 `/`를 가리킨다. `set -euo pipefail`과 `${VAR:?}` 가드를 기본으로 깔고, 커밋 전 `shellcheck`로 인용·주입을 검증해야 한다([[01_Linux_Basics]], [[20_Shell_Scripting]]).
 
+**최신 기법·통제 (2025–2026):**
+- `curl | bash` 설치 패턴이 공급망 리스크 — 서명·해시 검증 후 실행. 검증: 무결성 검증 없는 원격실행이 차단되는지 확인([[35_Supply_Chain_Attacks]])
+- `set -euo pipefail`·입력 검증·인젝션 방지가 견고성 표준 — 신뢰불가 입력이 명령으로 흘러들지 않는지 정적검토([[20_Shell_Scripting]])
+
 ---
 
 <a name="english"></a>

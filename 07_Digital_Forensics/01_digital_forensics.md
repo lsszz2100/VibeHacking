@@ -1162,6 +1162,10 @@ fls -m / -r disk.img > body.txt && mactime -b body.txt -d | head   # SI<FN 역�
 
 > 증거는 반드시 **쓰기방지 + 해시검증된 이미지**로 수집하고, **소유/허가된 시스템**에서만 분석한다. 단일 아티팩트를 "정답"으로 믿지 말고, 다중 소스 타임라인이 같은 결론으로 수렴하는지 교차검증해야 신뢰할 수 있다([[44_Incident_Response_DFIR]], [[40_Threat_Hunting]], [[06_Malware_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- 클라우드·SaaS·엔드포인트 원격 획득이 표준화 — 증거 연속성(chain of custody)·해시가 필수. 검증: 획득 이미지 해시가 재현·기록되는가([[44_Incident_Response_DFIR]])
+- 안티포렌식·전체디스크 암호화 증가로 라이브/휘발성 획득이 중요 — 절차가 재현 가능하고 무결성이 보존되는지 확인
+
 ---
 
 <a name="english"></a>

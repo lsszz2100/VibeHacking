@@ -1190,6 +1190,10 @@ Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4662} -MaxEvents 200 |
 
 > 검증은 반드시 **소유한 도메인·통제 랩**에서만. "감사 켰다"와 "공격 이벤트를 실제 수집·경보한다"는 다르다 — DCSync/티켓 PoC 를 랩에 재현해 이벤트가 SIEM 에 도달하는지 확인한다([[54_Active_Directory_Attacks]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- Kerberoasting·AS-REP·DCSync·인증서(ESC) 남용이 주류 — AES 강제·gMSA·티어링으로 방어. 검증: 상승 경로가 4769/4662 등 이벤트로 탐지되는지 재현(소유 도메인)([[54_Active_Directory_Attacks]])
+- 최소권한·관리티어 분리가 폭발반경을 좌우 — 강제되는지 확인([[39_Zero_Trust_Architecture]])
+
 ---
 
 <a name="english"></a>

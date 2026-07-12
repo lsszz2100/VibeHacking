@@ -502,6 +502,10 @@ diff <(sha256sum run1/timeline.csv | cut -d' ' -f1) <(sha256sum run2/timeline.cs
 
 > 자동화 결과가 "생성됨"과 "법정에서 재현·신뢰 가능함"은 다르다. 입출력 해시 매니페스트·도구 교차·재현 결정성을 검증하고, 단일 도구 출력을 단정하지 말아야 증거로 신뢰할 수 있다([[44_Incident_Response_DFIR]], [[10_Pentest_Methodology]], [[75_Red_Team_Reporting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 자동 트리아지(KAPE·Velociraptor·Plaso)로 대규모 대응 — 검증: 자동 산출물이 수동 재현으로 확인되는가([[44_Incident_Response_DFIR]])
+- 타임라인·아티팩트 상관 자동화 — 결론이 증거로 뒷받침되는지 확인
+
 ---
 
 <a name="english"></a>

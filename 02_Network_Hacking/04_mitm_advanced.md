@@ -435,6 +435,10 @@ curl -sI https://localhost/ | grep -i 'strict-transport-security' || echo 'NO HS
 
 > 검증은 **소유한 네트워크·통제 환경**에서만. "DAI/HSTS 설정"과 "가로채기를 실제 차단·탐지"는 다르다 — ARP 스푸핑/SSL 스트립 PoC 를 재현해 경보와 차단을 확인한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- HSTS·인증서고정·ECH로 MITM 난이도 상승 — 다운그레이드/스트립이 실제 차단되는지 재현. 검증: 클라이언트가 잘못된 인증서를 거부하는가([[16_Cryptography]])
+- 내부망 LLMNR/NBT-NS/mDNS 스푸핑은 여전히 유효 — 프로토콜 비활성·서명이 강제되는지 확인([[54_Active_Directory_Attacks]])
+
 ---
 
 <a name="english"></a>
