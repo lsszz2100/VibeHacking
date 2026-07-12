@@ -852,6 +852,10 @@ sudo ausearch -m EXECVE -ts recent 2>/dev/null | grep -E "sh|bash|nc|curl|wget" 
 
 > 쉘 스크립트 방어는 *입력을 신뢰하지 않는가*에 달려 있다 — "동작한다"와 "미인용 변수·eval 인젝션이 없다"는 다르다. 소유 스크립트를 shellcheck 로, 실행을 auditd 로 직접 확인한다([[08_Python_Hacking]], [[13_SOC_Blue_Team]], [[26_Linux_Hardening]]).
 
+**최신 기법·통제 (2025–2026):**
+- `set -euo pipefail`·입력검증·인젝션 방지가 견고성 표준 — 신뢰불가 입력이 명령으로 흘러들지 않는지 정적검토([[01_Linux_Basics]])
+- `curl|bash` 지양·서명 검증 — 무결성 없는 실행이 차단되는지 확인([[35_Supply_Chain_Attacks]])
+
 ---
 
 <a name="english"></a>

@@ -988,6 +988,10 @@ for i in $(seq 1 120); do curl -s -o /dev/null -w '%{http_code} ' https://api.lo
 
 > 검증은 **승인된 교전·소유 API·통제 환경**에서만. "인증/레이트리밋 설정"과 "실제 우회를 막고 경보한다"는 다르다 — BOLA/토큰 PoC 를 자신 API 에 재현해 차단·로깅을 확인한다([[52_API_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- OWASP API Top 10 중심(BOLA·과다노출) — 인가가 서버측에서 강제되는지 재현. 검증: IDOR이 차단되는가([[52_API_Security]])
+- 토큰·OAuth 흐름 오구성 — 스코프·검증이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

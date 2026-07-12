@@ -723,6 +723,10 @@ tshark -r cap.pcap -Y 'eapol || wlan.fc.type_subtype==0x0c' | wc -l
 
 > WPA2 크랙은 캡처 후 오프라인이므로 *예방(강한 PSK·WPA3-SAE)*이 본질이고, 탐지는 *캡처 시도(deauth/EAPOL 폭주, PMKID 요청)*에 집중된다 — "WPA2 켰다"와 "핸드셰이크 강제캡처를 못 한다(PMF)"는 다르다([[13_SOC_Blue_Team]], [[16_Cryptography]]).
 
+**최신 기법·통제 (2025–2026):**
+- PMKID·핸드셰이크 캡처 크래킹은 약한 PSK에 유효 — 긴 패스프레이즈·WPA3로 방어. 검증: 정책하 PSK가 크래킹에 저항하는지 측정(소유 AP)([[22_Password_Cracking]])
+- WPA3-Transition 다운그레이드 위험 — 순수 WPA3가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

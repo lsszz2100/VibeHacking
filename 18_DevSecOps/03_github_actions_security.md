@@ -1017,6 +1017,10 @@ grep -rL 'permissions:' .github/workflows/*.yml && echo "permissions 미선언 �
 
 > CI/CD 방어는 *워크플로가 실제로 무엇을 신뢰하는가*다 — "보안 신경 쓴다"와 "부동 태그·과도 권한이 없다"는 다르다. 소유 레포의 워크플로를 직접 grep 해 SHA 핀·최소권한·입력 검증을 사실로 확인한다([[35_Supply_Chain_Attacks]], [[74_Code_Auditing]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 액션 핀·OIDC·최소 GITHUB_TOKEN 권한이 핵심 — pwn request·시크릿 유출 방지. 검증: 포크 PR이 시크릿에 접근 못하는지 재현([[35_Supply_Chain_Attacks]])
+- 셀프호스티드 러너 격리 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

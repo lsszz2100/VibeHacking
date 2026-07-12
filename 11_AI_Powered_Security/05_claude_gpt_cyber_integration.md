@@ -677,6 +677,10 @@ diff <(sort model_a_findings.txt) <(sort model_b_findings.txt) | head   # 모델
 
 > AI 분석 출력은 **1차 출처·재현**으로 검증하고, 민감정보를 프롬프트에 넣지 않으며, 자동 조치는 **휴먼인더루프**로 게이트해야 한다. 모델이 "분석함"과 "정확함"은 다르다([[69_LLM_Security]], [[18_DevSecOps]], [[44_Incident_Response_DFIR]]).
 
+**최신 기법·통제 (2025–2026):**
+- LLM API 연동 보안 자동화(트리아지·요약·룰생성)가 표준 — 프롬프트인젝션·데이터유출 통제 필요. 검증: 신뢰불가 입력이 통제되는지 재현([[69_LLM_Security]])
+- 시크릿·PII가 프롬프트로 유출될 위험 — 마스킹·최소권한이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

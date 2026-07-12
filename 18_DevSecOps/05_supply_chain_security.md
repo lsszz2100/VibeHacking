@@ -666,6 +666,10 @@ npm ci --ignore-scripts && echo "스크립트 차단 설치 OK — postinstall �
 
 > 공급망 방어는 *대책이 있는가*가 아니라 *작동하는가*다 — "검증한다"와 "내부명 선점·악성 스크립트·변조를 실제로 막고 드러낸다"는 다르다. 소유 빌드에서 격리 설치·프로비넌스·해시 대조를 직접 확인한다([[35_Supply_Chain_Attacks]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).
 
+**최신 기법·통제 (2025–2026):**
+- SLSA 프로버넌스·in-toto·서명 검증이 무결성 표준 — 검증: 빌드 출처가 배포 전 검증되는가([[59_Supply_Chain_Security]])
+- 의존성 고정·리뷰 게이트 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

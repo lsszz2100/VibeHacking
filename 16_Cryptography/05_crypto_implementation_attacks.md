@@ -489,6 +489,10 @@ if "==" in src and "compare_digest" not in src:
 
 > 구현 방어는 *코드가 실제로 무엇을 호출하는가*에 달려 있다 — "안전하게 짰다"와 "AEAD·상수시간 비교·CSPRNG 를 실제로 쓴다"는 다르다. 소유 코드를 정적으로 점검하고 통제 환경에서 패딩/타이밍 PoC 로 회귀를 막는다([[08_Python_Hacking]], [[04_Reverse_Engineering]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 사이드채널(타이밍·전력)·패딩오라클이 실무 위협 — 상수시간 구현·AEAD로 방어. 검증: 오라클/타이밍 누출이 제거됐는지 재현([[34_Hardware_Hacking]])
+- 결함주입(fault) 대응 — 검증·리던던시가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

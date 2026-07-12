@@ -686,6 +686,10 @@ def check_jwt_alg(token: str) -> None:
 
 > 응용 암호 방어는 *검증 로직이 실제로 거부하는가*에 달려 있다 — "검증한다"와 "alg=none·재사용 논스·패딩 오라클을 실제로 막는다"는 다르다. 소유 서비스에 위조 토큰·변형 요청을 보내 거부·로깅을 확인한다([[05_Web_Hacking]], [[52_API_Security]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- AEAD(AES-GCM·ChaCha20-Poly1305)·nonce 관리가 표준 — nonce 재사용이 치명적. 검증: 구현이 nonce 유일성을 보장하는지 검토([[74_Code_Auditing]])
+- 키 수명·회전·KMS 통합 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

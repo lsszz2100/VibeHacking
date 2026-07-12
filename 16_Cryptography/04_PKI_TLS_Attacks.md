@@ -528,6 +528,10 @@ curl -s "https://crt.sh/?q=%25.example.com&output=json" | jq -r '.[].issuer_name
 
 > TLS 방어의 출발점은 *서버가 무엇을 받아들이는가*를 사실로 확인하는 것이다 — "강한 설정 했다"와 "약한 스위트·구버전 협상이 실제 거부된다"는 다르다. 소유 대상을 직접 스캔하고 CT 로그로 미인가 발급을 감시한다([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- TLS1.3·인증서 투명성(CT)·짧은 수명 인증서가 표준 — 다운그레이드/약한 스위트가 거부되는지 재현. 검증: 잘못된 체인을 클라이언트가 거부하는가([[02_Network_Hacking]])
+- mTLS·핀닝으로 MITM 저항 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

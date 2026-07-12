@@ -1231,6 +1231,10 @@ curl -sk -o /dev/null -w '%{http_code}\n' "https://api.example/users/$ID_B"   # 
 
 > API 테스트는 **소유 계정으로 재현**하고 **읽기 전용을 우선**한다. "접근됨"이 실데이터 노출이면 최소영향으로 증명하고, rate-limit 테스트는 점진 증가·중단 기준을 두어 대상 영향을 통제해야 한다([[52_API_Security]], [[73_Bug_Bounty_Automation]], [[05_Web_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- OWASP API Top 10(BOLA·BFLA·과다노출)이 핵심 — 객체·함수 수준 인가가 서버측에서 강제되는지 재현. 검증: IDOR이 실제 차단되는가([[52_API_Security]])
+- GraphQL·gRPC·웹훅 확대 — 스키마·레이트리밋이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

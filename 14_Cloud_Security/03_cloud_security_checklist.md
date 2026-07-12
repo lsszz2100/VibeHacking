@@ -939,6 +939,10 @@ aws s3api get-bucket-policy-status --bucket my-bucket \
 
 > 검증은 **소유한 클라우드 계정·통제 환경**에서만. 체크리스트 항목 존재가 적용을 의미하지 않는다 — API 로 직접 조회해 기준 충족을 확인하고, CSPM/정기 점검으로 드리프트를 막는다([[58_Cloud_IR]], [[39_Zero_Trust_Architecture]]).
 
+**최신 기법·통제 (2025–2026):**
+- CIS 벤치마크·IaC 스캔(Checkov·tfsec)의 CI 통합 — 검증: 위반 IaC가 실제 게이트에서 차단되는가([[18_DevSecOps]])
+- 드리프트 탐지로 런타임 이탈 포착 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

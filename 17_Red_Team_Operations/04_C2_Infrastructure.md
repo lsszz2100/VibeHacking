@@ -590,6 +590,10 @@ awk '{print $3, $5}' conn.log 2>/dev/null | sort | uniq -c | sort -rn | head
 
 > 검증은 **승인된 교전·소유/통제 네트워크**에서만(RoE 준수). "이그레스 필터 설정"과 "비콘을 실제 차단·탐지한다"는 다르다 — 통제 환경에서 비콘을 재생해 주기성·JA3 가 탐지되는지 확인한다([[49_Red_Team_Infrastructure]], [[72_Malware_Sandbox_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- malleable 프로파일·리다이렉터·도메인프론팅으로 위장 — JA3/JARM·비콘주기 탐지로 대응. 검증: 비콘이 통계적으로 드러나는지 재현([[49_Red_Team_Infrastructure]])
+- OPSEC·인프라 격리가 노출을 좌우 — 승인·격리가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

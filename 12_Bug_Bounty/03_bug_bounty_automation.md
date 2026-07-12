@@ -1834,6 +1834,10 @@ awk '{print $NF}' nuclei.out | sort -u | while read u; do curl -sk -o /dev/null 
 
 > 자동화는 **대상 보호(rate-limit)와 스코프 게이트**가 필수다. 스캐너 매치는 수동 재현으로 오탐을 제거한 뒤 보고하고, 도구 교차로 결과 신뢰성을 확인해야 한다([[73_Bug_Bounty_Automation]], [[08_Python_Hacking]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- recon 파이프라인(subfinder·httpx·nuclei) 오케스트레이션 — 스코프 필터가 강제돼 범위이탈이 차단되는가. 검증: 발견이 증거와 함께 기록되는가([[73_Bug_Bounty_Automation]])
+- 자동 스캔 오탐이 신호대잡음 악화 — 수동 검증 후 제출이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

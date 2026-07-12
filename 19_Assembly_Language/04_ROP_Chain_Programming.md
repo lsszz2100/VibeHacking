@@ -1208,6 +1208,10 @@ echo 0 | sudo tee /proc/sys/kernel/randomize_va_space   # 재현용; 검증 후 
 
 > ROP 방어 검증의 핵심은 *완화가 표면을 실제로 줄이는가*다 — "NX/ASLR 켰다"와 "가젯 표면이 작고 익스플로잇이 재현되지 않는다"는 다르다. 통제 환경에서 checksec·ROPgadget·ASLR 토글로 직접 측정한다([[09_Exploit_Techniques]], [[21_Windows_Exploitation]], [[03_System_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- CET Shadow Stack·PAC로 ROP 무력화 — 검증: 완화 활성시 체인이 실패하는지 재현(소유 랩)([[66_Exploit_Development]])
+- 가젯 부족·엔트로피가 신뢰성 제약 — infoleak 방어가 유효한지 확인
+
 ---
 
 <a name="english"></a>

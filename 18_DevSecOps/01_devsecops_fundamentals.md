@@ -1585,6 +1585,10 @@ gitleaks detect --source . --redact --exit-code 1 || echo "시크릿 탐지됨 �
 
 > DevSecOps 방어의 출발점은 *게이트가 실패를 만들어 내는가*다 — "스캐너 붙였다"와 "심각 발견에서 빌드가 실제로 멈춘다"는 다르다. 소유 파이프라인에 취약 샘플·테스트 키를 흘려 게이트의 non-zero 종료를 직접 확인한다([[74_Code_Auditing]], [[35_Supply_Chain_Attacks]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 시프트레프트+런타임(시프트라이트) 결합이 표준 — SAST/DAST/SCA/시크릿을 CI 게이트로. 검증: 신규 취약이 실제 차단되는가([[74_Code_Auditing]])
+- 정책의 코드화(policy-as-code) — 위반이 실제 거부되는지 확인
+
 ---
 
 <a name="english"></a>

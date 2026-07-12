@@ -1025,6 +1025,10 @@ openssl s_client -connect example.com:443 -tls1_1 </dev/null 2>&1 | grep -E "Pro
 
 > 암호 방어의 출발점은 *무엇이 실제 가동 중인가*를 사실로 확인하는 것이다 — "강한 암호 쓴다"와 "약한 스위트·구버전 TLS 가 비활성"은 다르다. 소유 대상에서 알고리즘·키 크기·프로토콜을 직접 점검한다([[02_Network_Hacking]], [[13_SOC_Blue_Team]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- PQC 표준(ML-KEM/ML-DSA) 전환과 하이브리드 KEX 도입 — 크립토 어질리티가 관건. 검증: 다운그레이드가 거부되는지 재현([[57_Quantum_Cryptography]])
+- 잘못된 원시선택·모드가 실무 취약점 — 검증된 라이브러리·구성이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -739,6 +739,10 @@ cat /proc/sys/kernel/randomize_va_space   # 2 여야 완전 ASLR
 
 > 익스플로잇 방어의 출발점은 *완화가 바이너리에 실제로 박혀 있는가*다 — "하드닝 플래그 줬다"와 "NX·카나리·PIE 가 산출물에 있다"는 다르다. 소유 바이너리에 checksec/readelf 로 직접 확인한다([[09_Exploit_Techniques]], [[03_System_Hacking]], [[65_Reverse_Engineering_Advanced]]).
 
+**최신 기법·통제 (2025–2026):**
+- ARM64·RISC-V·CET/PAC 이해가 확장됨 — 분석은 소유 바이너리 한정. 검증: 디스어셈블/추정이 재현 가능한가([[04_Reverse_Engineering]])
+- 컴파일러 최적화가 정적 이해 방해 — 동적확인과 교차검증
+
 ---
 
 <a name="english"></a>

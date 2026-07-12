@@ -1054,6 +1054,10 @@ cosign verify --key cosign.pub myimage:latest >/dev/null 2>&1 || echo "검증 �
 
 > 컨테이너 방어는 *정책 존재*가 아니라 *거부가 일어나는가*다 — "스캔한다·서명한다"와 "취약/미서명 이미지가 실제로 막힌다"는 다르다. 소유 레지스트리에서 취약·미서명 이미지로 게이트의 차단을 직접 확인한다([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 이미지 서명(cosign)·SBOM·최소 베이스·비루트가 표준 — 검증: 미서명/취약 이미지가 admission에서 차단되는가([[29_Container_Kubernetes_Security]])
+- 런타임 탐지(Falco/eBPF) — 룰이 실제 이상행위에서 발화하는지 확인
+
 ---
 
 <a name="english"></a>

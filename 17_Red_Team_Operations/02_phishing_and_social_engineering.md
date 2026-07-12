@@ -615,6 +615,10 @@ dig +short TXT _dmarc.example.com | grep -i 'v=DMARC1' || echo 'NO DMARC'
 
 > 검증은 **승인된 교전·소유 도메인·통제 환경**에서만(RoE·동의 준수). "DMARC 게시"와 "스푸핑 메일을 실제 거부한다"는 다르다 — 정책이 p=reject 인지, 모의 피싱이 게이트웨이에 잡히는지 확인한다([[33_OSINT_Social_Engineering]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- AI 생성 피싱·딥페이크 보이스로 정교화 — 탐지·아웃오브밴드 확인. 검증: 훈련 캠페인이 통제·동의하에 수행되는가([[33_OSINT_Social_Engineering]])
+- MFA 피싱(AiTM·토큰탈취) 확산 — 피싱저항 MFA(FIDO2)가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -642,6 +642,10 @@ syft dir:. -o cyclonedx-json=sbom.json && grype sbom:sbom.json --fail-on high
 
 > 시크릿/SBOM 방어는 *돌렸는가*가 아니라 *잡고 연결되는가*다 — "스캔한다"와 "테스트 키를 탐지하고 전이 CVE 까지 매칭한다"는 다르다. 소유 레포에 테스트 키를 심어 탐지를, SBOM 을 grype 에 물려 취약점 연결을 직접 확인한다([[35_Supply_Chain_Attacks]], [[74_Code_Auditing]], [[59_Supply_Chain_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- 시크릿 스캔(gitleaks)·SBOM(CycloneDX/SPDX)·서명이 표준 — 검증: 커밋된 시크릿이 게이트에서 차단되는가([[35_Supply_Chain_Attacks]])
+- 유출 시 회전 자동화 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

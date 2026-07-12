@@ -480,6 +480,10 @@ aws cloudtrail lookup-events --max-results 15 \
 
 > 검증은 반드시 **소유한 계정·통제 환경**에서만(RoE 준수). "신뢰 정책/SCP 설정"과 "횡이동을 실제 막고 탐지한다"는 다르다 — 통제 환경에서 AssumeRole 체인 PoC 를 재현해 경보·차단을 확인한다([[58_Cloud_IR]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 아이덴티티 평면 횡이동(토큰·역할체이닝·워크로드 아이덴티티)이 핵심 — 세분화·조건부접근이 강제되는지 재현. 검증: 비인가 이동이 차단되는가([[39_Zero_Trust_Architecture]])
+- 컨트롤플레인 API 남용 — 이상 API 호출이 탐지되는지 확인([[58_Cloud_IR]])
+
 ---
 
 <a name="english"></a>

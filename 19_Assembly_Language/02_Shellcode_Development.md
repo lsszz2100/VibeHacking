@@ -891,6 +891,10 @@ strace -f -e trace=execve,mprotect ./target 2>&1 | grep -E "execve|PROT_EXEC"
 
 > 셸코드 방어는 *실행 가능 메모리가 통제되는가*에 달려 있다 — "NX 쓴다"와 "RWX 매핑·execve 행위가 탐지·차단된다"는 다르다. 소유 호스트에서 /proc maps 와 strace 로 직접 관찰한다([[06_Malware_Analysis]], [[09_Exploit_Techniques]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 위치독립·인디렉트 syscall·암호화 셸코드가 정적탐지 회피 — 메모리 스캔이 관건. 검증: RWX/private exec 메모리·malfind로 상주가 포착되는지 재현(소유 랩)([[67_Malware_Development_Advanced]])
+- 슬립 난독화 — 타이머/스택 이상이 텔레메트리에 남는지 확인
+
 ---
 
 <a name="english"></a>

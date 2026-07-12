@@ -506,6 +506,10 @@ grep -i "Access-Reject\|Access-Accept" /var/log/freeradius/radius.log | tail
 
 > 엔터프라이즈 WiFi의 보안은 *클라이언트의 서버 인증서 검증*에 달려 있다 — 이게 꺼져 있으면 EAP-TLS가 아닌 한 가짜 RADIUS에 자격증명을 그대로 넘긴다. hostapd-wpe로 통제 환경에서 클라 설정이 견디는지 검증해야 한다([[54_Active_Directory_Attacks]], [[16_Cryptography]]).
 
+**최신 기법·통제 (2025–2026):**
+- WPA-Enterprise(802.1X/EAP)는 인증서 미검증이 최대 약점 — EAP-TLS·서버 인증서 검증 강제. 검증: 로그 자격 탈취가 차단되는지 재현(소유 환경)([[54_Active_Directory_Attacks]])
+- RADIUS/NPS 오구성 — 강한 EAP·검증이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

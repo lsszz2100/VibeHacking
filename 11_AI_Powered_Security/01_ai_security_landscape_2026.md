@@ -486,6 +486,10 @@ grep -cE 'https?://|source:|ref:' ai_report.txt || echo "WARN: no citations -> v
 
 > AI 출력은 "그럴듯함"과 "사실임"이 다르다. 모든 보안 판정을 **1차 출처·재현**으로 검증하고, AI 보조 공격이 남기는 탐지 footprint도 함께 확인해야 신뢰할 수 있다([[69_LLM_Security]], [[56_AI_Red_Teaming]], [[31_AI_ML_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- 에이전틱 AI·자율 공격/방어 도구가 급성장 — 위협모델(OWASP LLM·MITRE ATLAS)로 신뢰경계 매핑. 검증: AI 통제가 런타임에 실제 강제되는지 재현([[69_LLM_Security]])
+- AI 생성 멀웨어·피싱의 규모화 — 방어측 탐지·출처검증이 실제 유효한지 확인([[31_AI_ML_Security]])
+
 ---
 
 <a name="english"></a>

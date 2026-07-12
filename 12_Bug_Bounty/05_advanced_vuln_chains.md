@@ -646,6 +646,10 @@ curl -sk -o /dev/null -w '%{http_code}\n' "https://sub.target.example"   # 404/�
 
 > 취약점 체인은 **각 단계를 소유 자산·테스트 계정에서 재현**하고, 테이크오버는 dangling CNAME과 서비스 응답으로 확정해야 한다. 계정 탈취 PoC는 실사용자 피해 없이 **최소영향**으로 증명한다([[35_Supply_Chain_Attacks]], [[73_Bug_Bounty_Automation]], [[30_Vulnerability_Research]]).
 
+**최신 기법·통제 (2025–2026):**
+- 저위험 결함의 체이닝(SSRF→메타데이터→클라우드)이 고영향 — 안전한 실증·재현 필수. 검증: 체인이 통제환경에서 실증되는가([[14_Cloud_Security]])
+- 비즈니스로직·레이스컨디션은 자동화가 놓침 — 수동 심층분석이 필요
+
 ---
 
 <a name="english"></a>

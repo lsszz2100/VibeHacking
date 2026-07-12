@@ -691,6 +691,10 @@ nslookup example.com | grep -q "$(ip route get 1.1.1.1 | awk '{print $7;exit}')"
 
 > 탐지 섹션의 검증은 *탐지가 실제로 발화하고, 통제가 실제로 차단하는가*를 PoC로 확인하는 것이다 — 로그 AP를 통제 환경에 세워 WIDS 경보와 클라이언트 차단을 직접 재현한다([[13_SOC_Blue_Team]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 무선 IDS(Kismet·WIPS)로 로그/이블트윈 탐지 — 룰이 실제 신호에서 발화하는지 검증([[40_Threat_Hunting]])
+- 자산 인벤토리·PMF·모니터링 결합 — 통제가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -959,6 +959,10 @@ index=main | stats count by sourcetype, src_ip | where isnull(src_ip)
 
 > SIEM의 "0건"은 *안전*이 아니라 *데이터가 없을 수도 있음*을 뜻한다. 쿼리 전에 데이터 공백·파싱 상태를 검증하고, 정상 트래픽으로 룰을 튜닝해야 거짓 음성을 줄일 수 있다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- SPL·데이터모델·CIM 정규화가 상관분석 기반 — 룰이 데이터소스 변화 후에도 발화하는지 재검증. 검증: 탐지가 재현되는가([[40_Threat_Hunting]])
+- 비용/볼륨 관리 위해 엣지 필터링 — 중요 텔레메트리가 유실되지 않는지 확인
+
 ---
 
 <a name="english"></a>

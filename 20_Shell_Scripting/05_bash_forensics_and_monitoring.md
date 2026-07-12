@@ -570,6 +570,10 @@ sha256sum -c evidence.sha256 && echo "무결성 OK — 수집 후 변조 없음"
 
 > 모니터링 검증은 *돌렸는가*가 아니라 *발화·일치하는가*다 — "스크립트 있다"와 "주입 이벤트에 발화하고 해시가 일치한다"는 다르다. 소유 호스트에서 테스트 이벤트 주입·해시 대조로 회귀를 막는다([[07_Digital_Forensics]], [[44_Incident_Response_DFIR]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- auditd·eBPF·journald 결합 모니터링이 표준 — 룰이 실제 악성 실행에서 발화하는지 검증([[07_Digital_Forensics]])
+- 로그 전달·불변 보관 — 변조가 드러나는지 확인
+
 ---
 
 <a name="english"></a>

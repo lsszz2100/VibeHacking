@@ -1096,6 +1096,10 @@ python3 -c "import math;d=open('bin','rb').read();print('entropy',round(-sum((d.
 
 > 디스어셈블 검증의 핵심은 *하나의 도구를 믿지 않는 것*이다 — "IDA 가 이렇게 본다"와 "objdump·r2·동적 추적이 같은 결론을 준다"는 다르다. 소유·격리 환경에서 도구 간·정적/동적 교차로 확인한다([[04_Reverse_Engineering]], [[65_Reverse_Engineering_Advanced]], [[06_Malware_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- Ghidra/BinDiff·심볼릭 도구가 분석 가속 — 결과는 동적확인 교차검증. 검증: 추정이 실행으로 확인되는가([[65_Reverse_Engineering_Advanced]])
+- 난독화·안티디스어셈블 대응 — 재현 절차가 문서화되는지 확인
+
 ---
 
 <a name="english"></a>

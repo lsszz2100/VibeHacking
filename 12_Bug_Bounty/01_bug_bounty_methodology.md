@@ -1807,6 +1807,10 @@ curl -sk -o /dev/null -w '%{http_code}\n' "https://target.example/vuln-path"   #
 
 > 버그바운티는 허가됐어도 **제3자 자산**이다. 스코프·권한을 매 요청 전 확인하고, 스캐너가 "취약하다고 함"과 "취약함"이 다르므로 수동 재현으로 검증해야 보고 가치가 있다([[73_Bug_Bounty_Automation]], [[10_Pentest_Methodology]], [[30_Vulnerability_Research]]).
 
+**최신 기법·통제 (2025–2026):**
+- VDP·상시 프로그램·자산 확대로 체계적 방법론 필수 — 스코프 준수가 강제되는지 확인(허가 대상만). 검증: 리포트가 재현 가능한가([[10_Pentest_Methodology]])
+- 중복제거·협업 플랫폼 성숙 — 품질·영향서사가 보상을 좌우
+
 ---
 
 <a name="english"></a>

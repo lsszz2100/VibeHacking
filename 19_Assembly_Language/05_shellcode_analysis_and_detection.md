@@ -520,6 +520,10 @@ for name, is_mal in samples.items():
 
 > 탐지 검증은 *잡는가*만이 아니라 *오탐 없이 잡는가*다 — "룰 추가했다"와 "변종을 잡고 굿웨어를 통과시킨다"는 다르다. 소유·격리 환경에서 라벨된 코퍼스로 TP/FP/FN 을 측정하고 회귀를 막는다([[06_Malware_Analysis]], [[13_SOC_Blue_Team]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 셸코드 이뮬레이터(scdbg/speakeasy)·메모리 스캔이 탐지 기반 — 검증: 인메모리 셸코드가 포착되는지 재현([[06_Malware_Analysis]])
+- RWX·비정상 실행메모리 헌팅 — 로깅이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

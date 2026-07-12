@@ -990,6 +990,10 @@ sudo ausearch -m EXECVE --start recent 2>/dev/null | tail   # 실행 이벤트 �
 
 > 검증은 반드시 **승인된 교전·통제 랩**에서만(RoE 준수). 레드팀의 목적은 침투 자체가 아니라 **방어의 탐지·대응 공백을 측정**하는 것이다 — 각 단계 PoC 를 재현해 탐지가 발화하는지 확인한다([[68_Purple_Team]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 인텔주도·assumed breach 방식이 표준 — ROE·승인·범위가 문서로 강제. 검증: 활동이 승인범위 내이고 재현 가능한가([[75_Red_Team_Reporting]])
+- 퍼플팀 협업으로 탐지개선 루프 — 발견이 방어 델타로 이어지는지 확인([[68_Purple_Team]])
+
 ---
 
 <a name="english"></a>

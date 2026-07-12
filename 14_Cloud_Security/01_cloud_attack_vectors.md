@@ -1043,6 +1043,10 @@ aws cloudtrail lookup-events --max-results 5 \
 
 > 검증은 반드시 **소유한 클라우드 계정·통제 환경**에서만. "IMDSv2/최소권한 설정"과 "실제 탈취를 막고 감사에 남긴다"는 다르다 — 통제 환경에서 SSRF/권한 PoC 를 재현해 차단·로깅을 확인한다([[58_Cloud_IR]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 아이덴티티가 새 경계 — 과다권한 IAM·토큰탈취·OAuth 남용이 주 벡터. 검증: 최소권한·조건부접근이 실제 강제되는지 재현([[39_Zero_Trust_Architecture]])
+- 오구성(퍼블릭 버킷·노출 메타데이터)이 잔존 — CSPM 게이트가 강제되는지 확인([[38_Cloud_Native_Security]])
+
 ---
 
 <a name="english"></a>

@@ -855,6 +855,10 @@ grep -E '^ieee80211w' /etc/hostapd/hostapd.conf || echo 'PMF 미설정 — deaut
 
 > WiFi 방어의 출발점은 *어떤 프로토콜·암호가 실제 가동 중인가*를 사실로 확인하는 것이다 — "WPA2 쓴다"와 "TKIP 잔존이 없다"는 다르다. 소유 AP에서 cipher suite와 PMF를 직접 점검한다([[13_SOC_Blue_Team]], [[02_Network_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- WPA3-SAE·PMF·OWE 확산으로 고전 공격 표면 축소 — 실습은 소유 AP 한정. 검증: 다운그레이드가 실제 거부되는지 재현([[02_Network_Hacking]])
+- 6E/6GHz·WPA3 전환모드 오구성 잔존 — 강한 설정이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

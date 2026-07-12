@@ -1223,6 +1223,10 @@ curl -sk -H 'Cookie: session=<owned>' -o /dev/null -w '%{http_code}\n' "https://
 
 > Burp 스캐너 이슈는 **Repeater 수동 재현**을 거쳐야 보고 가치가 있고, target scope를 명시 설정해 범위 밖 트래픽을 방지해야 한다. 스로틀로 대상 부하도 통제한다([[05_Web_Hacking]], [[73_Bug_Bounty_Automation]], [[52_API_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- Burp 확장·Bambdas·DAST 통합이 자동화 가속 — 자동결과는 수동 재현으로 검증. 검증: 각 파인딩이 재현 절차를 갖는가([[05_Web_Hacking]])
+- 대상 확대(API/모바일 백엔드) — 인가 경계가 실제 강제되는지 확인([[52_API_Security]])
+
 ---
 
 <a name="english"></a>

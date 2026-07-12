@@ -487,6 +487,10 @@ arpwatch -i wlan0 2>/dev/null &  # MAC 변경 이벤트 알림
 
 > 고급 WiFi 공격의 핵심은 *가로채기(MITM)*이므로, 방어 검증은 "가짜 AP가 WIDS에 잡히는가 + HSTS/VPN이 평문 유도를 막는가"를 PoC로 재현하는 것이다 — 설정값만 보지 말고 실제 차단을 확인한다([[02_Network_Hacking]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- KRACK/FragAttacks/Kr00k 등 프로토콜 결함은 패치·PMF로 완화 — 검증: 패치 후 재현이 실패하는가(소유 장비)([[02_Network_Hacking]])
+- 이블트윈/카르마 — 클라이언트 검증·802.1X가 강제되는지 확인
+
 ---
 
 <a name="english"></a>
