@@ -1150,6 +1150,10 @@ forge test --match-test testFlashLoanInvariant -vv 2>/dev/null | grep -iE 'PASS|
 
 > DeFi 방어는 *경제 불변식이 보장되는가*다 — "스왑이 동작한다"와 "가격이 TWAP/다중 오라클이고 플래시론 후 불변식이 유지된다"는 다르다. 소유 프로토콜/포크에서 불변식을 직접 검증한다([[12_Bug_Bounty]], [[16_Cryptography]], [[30_Vulnerability_Research]]).
 
+**최신 기법·통제 (2025–2026):**
+- 플래시론·가격조작·MEV·브리지 취약이 고영향 — 오라클 견고성·불변식·서킷브레이커로 방어. 검증: 조작 시나리오가 불변식 검사에서 막히는지 재현(테스트넷/포크)([[30_Vulnerability_Research]])
+- 감사·버그바운티 — 재현 PoC로 뒷받침되는지 확인
+
 ---
 
 <a name="english"></a>

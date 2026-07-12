@@ -488,6 +488,10 @@ curl -s -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","me
 
 > 블록체인 방어는 *노드/트랜잭션이 안전한가*다 — "체인이 동기화된다"와 "RPC가 인증되고 피어가 다양하며 비정상 nonce가 탐지된다"는 다르다. 소유 노드/테스트넷에서 직접 확인한다([[02_Network_Hacking]], [[16_Cryptography]], [[12_Bug_Bounty]]).
 
+**최신 기법·통제 (2025–2026):**
+- 스마트컨트랙트·브리지·오라클이 주 공격면 — 감사·형식검증·타임락으로 방어. 검증: 취약 패턴이 배포 전 탐지되는가([[74_Code_Auditing]])
+- 키관리·프라이빗키 유출이 치명 — HSM/멀티시그가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

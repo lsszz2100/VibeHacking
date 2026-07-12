@@ -660,6 +660,10 @@ rita import conn.log dataset && rita show-beacons dataset | head
 
 > 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- EDR 회피(언후킹·인디렉트 syscall)는 방어 견고성 시험 목적 — .text 무결성·커널콜백으로 관찰. 검증: 회피가 텔레메트리 공백을 남기는지 재현([[67_Malware_Development_Advanced]])
+- 텔레메트리 공백 자체를 이상신호로 — 강제되는지 확인
+
 ---
 
 

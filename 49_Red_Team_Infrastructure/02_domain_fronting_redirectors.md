@@ -1047,6 +1047,10 @@ whois example-redirector.tld | grep -i creation; dig +short example-redirector.t
 
 > 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 도메인프론팅(제약 증가)·CDN 리다이렉터·DoH가 채널 위장 — 이그레스·DNS 이상탐지로 대응. 검증: 위장 채널이 탐지되는지 재현([[40_Threat_Hunting]])
+- 카테고리·평판 관리 — 통제되는지 확인
+
 ---
 
 

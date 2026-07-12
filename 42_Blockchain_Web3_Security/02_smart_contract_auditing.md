@@ -575,6 +575,10 @@ forge test --match-test testReentrancyExploit -vv 2>/dev/null | grep -iE 'PASS|F
 
 > 컨트랙트 감사는 *발견이 악용 가능한가*다 — "Slither가 경고했다"와 "그 경로가 도달 가능하고 PoC로 자금이 빠진다"는 다르다. 소유 컨트랙트/포크에서 악용가능성을 직접 검증한다([[12_Bug_Bounty]], [[74_Code_Auditing]], [[30_Vulnerability_Research]]).
 
+**최신 기법·통제 (2025–2026):**
+- 재진입·정수·접근제어·오라클 조작이 상위 결함 — Slither/Foundry·퍼징·형식검증으로 탐지. 검증: 알려진 취약 패턴에서 도구가 발화하는가([[74_Code_Auditing]])
+- 업그레이더블 프록시 위험 — 권한·초기화가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -1415,6 +1415,10 @@ grep -rIiE 'rate.?limit|mfa|allowlist|waf' controls/ 2>/dev/null | head
 
 > 위험 평가는 *경로가 도달·차단되는가*다 — "DREAD 점수가 높다"와 "그 경로가 PoC로 도달되고 통제 적용 시 끊긴다"는 다르다. 고위험 경로를 소유 환경에서 직접 검증한다([[68_Purple_Team]], [[30_Vulnerability_Research]], [[17_Red_Team_Operations]]).
 
+**최신 기법·통제 (2025–2026):**
+- 리스크중심(PASTA)·공격트리로 우선순위화 — 검증: 우선순위가 실제 익스플로잇 가능성과 일치하는가([[30_Vulnerability_Research]])
+- 정량 리스크 — 데이터로 뒷받침되는지 확인
+
 ---
 
 <a name="english"></a>

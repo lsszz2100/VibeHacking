@@ -516,6 +516,10 @@ grep -rEni 'owner|sla|escalat' playbooks/ | head
 
 > 검증은 반드시 **소유 환경**에서만 한다. "플레이북이 있다"와 "인시던트 시 실제 실행된다"는 다르다 — 테이블탑과 타임라인 무결성으로 직접 확인한다([[58_Cloud_IR]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- NIST·SANS 프레임+자동화 플레이북(SOAR)이 표준 — 검증: 플레이북이 재현 가능하게 실행·기록되는가([[25_Threat_Intelligence]])
+- 증거 연속성·타임라인 — 보존되는지 확인
+
 ---
 
 <a name="english"></a>

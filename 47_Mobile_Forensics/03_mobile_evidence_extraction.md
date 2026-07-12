@@ -1414,6 +1414,10 @@ sha256sum extraction_1.img extraction_2.img 2>/dev/null | awk '{print $1}' | sor
 
 > 증거 추출은 *증거가 무결·재현되는가*다 — "이미지를 떴다"와 "추출↔검증 해시가 일치하고 재추출이 동일하다"는 다르다. 각 단계를 소유 기기/이미지에서 직접 검증한다([[07_Digital_Forensics]], [[44_Incident_Response_DFIR]], [[28_Mobile_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- 상용 도구(논리획득)·백업 기반 추출이 현실적 경로 — 검증: 추출이 재현·무결성 보존되는가([[07_Digital_Forensics]])
+- 법적 권한·범위 — 준수되는지 확인
+
 ---
 
 <a name="english"></a>

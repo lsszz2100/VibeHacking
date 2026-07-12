@@ -1379,6 +1379,10 @@ sqlite3 sms.db 'PRAGMA journal_mode;' 2>/dev/null; strings sms.db-wal 2>/dev/nul
 
 > iOS 증거 검증은 *백업이 복호·무결·교차일치하는가*다 — "백업을 열었다"와 "탈옥 흔적이 교차되고 삭제 행이 WAL과 일치한다"는 다르다. 소유 기기/백업에서 직접 확인한다([[07_Digital_Forensics]], [[28_Mobile_Hacking]], [[44_Incident_Response_DFIR]]).
 
+**최신 기법·통제 (2025–2026):**
+- iOS 데이터보호·Secure Enclave로 물리획득 제약 — 논리/백업 기반 분석. 검증: 획득 무결성·해시가 기록되는가([[44_Incident_Response_DFIR]])
+- 클라우드 백업 상관 — 합법성 통제
+
 ---
 
 <a name="english"></a>

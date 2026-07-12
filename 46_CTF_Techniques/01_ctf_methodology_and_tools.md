@@ -528,6 +528,10 @@ for i in $(seq 1 5); do python3 exploit.py 2>/dev/null | grep -q FLAG && echo "r
 
 > CTF 학습은 *기법이 실전으로 매핑·재현되는가*다 — "플래그를 땄다"와 "그 기법이 어떤 통제로 막히고 완화 환경에서도 재현되는지 안다"는 다르다. CTF/소유 환경에서 직접 확인한다([[09_Exploit_Techniques]], [[05_Web_Hacking]], [[16_Cryptography]]).
 
+**최신 기법·통제 (2025–2026):**
+- pwntools·Ghidra·자동화 프레임이 표준 도구 — 검증: 풀이가 격리환경에서 재현 가능한가([[09_Exploit_Techniques]])
+- 협업·라이트업 문화 — 재현성이 학습을 좌우
+
 ---
 
 <a name="english"></a>

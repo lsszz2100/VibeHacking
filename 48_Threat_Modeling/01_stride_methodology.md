@@ -1500,6 +1500,10 @@ grep -rIiE 'authenticate|verifySignature|authorize|encrypt' src/ 2>/dev/null | w
 
 > STRIDE는 *위협↔통제가 닫혀 있는가*다 — "위협을 나열했다"와 "각 위협에 완화가 매핑되고 그 통제가 코드에 실재한다"는 다르다. 각 위협의 통제를 소유 시스템에서 직접 검증한다([[68_Purple_Team]], [[18_DevSecOps]], [[05_Web_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- STRIDE로 데이터흐름·신뢰경계별 위협 도출 — 검증: 도출 위협에 실제 통제가 매핑·강제되는가([[38_Cloud_Native_Security]])
+- DFD 최신화 — 설계변경이 반영되는지 확인
+
 ---
 
 <a name="english"></a>

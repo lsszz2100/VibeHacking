@@ -1253,6 +1253,10 @@ tshark -r capture.pcap -Y 'tls.handshake.type==1' -T fields -e tls.handshake.ja3
 
 > 검증은 반드시 **소유한 시스템·통제된 환경**에서만 수행한다. 완화를 "설정했다"와 "런타임에 실제 막힌다"는 다르다 — PoC 를 재현해 완화가 차단하는지 확인해야 신뢰할 수 있다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- Sliver/Mythic·Cobalt Strike·malleable 프로파일이 표준 — JA3/JARM·비콘주기 탐지로 대응. 검증: 비콘이 통계적으로 드러나는지 재현([[17_Red_Team_Operations]])
+- 인프라 격리·OPSEC — 승인·격리가 강제되는지 확인
+
 ---
 
 

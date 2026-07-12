@@ -824,6 +824,10 @@ for pad in 00 01 ff; do curl -s -o /dev/null -w "%{http_code} %{time_total}\n" "
 
 > Web/Crypto 학습은 *통제가 기법을 막는가*다 — "플래그를 땄다"와 "파라미터화/AEAD가 그 인젝션·오라클을 막는다"는 다르다. CTF/소유 앱에서 직접 검증한다([[05_Web_Hacking]], [[16_Cryptography]], [[12_Bug_Bounty]]).
 
+**최신 기법·통제 (2025–2026):**
+- 최신 웹(SSRF·요청 스머글링·프로토타입 오염)·암호(격자·사이드채널) 유형 — 검증: 풀이가 재현되는가([[05_Web_Hacking]])
+- 안전한 실습 환경 — 격리 통제
+
 ---
 
 <a name="english"></a>

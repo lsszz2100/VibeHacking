@@ -1718,6 +1718,10 @@ grep -rIiE 'def test_.*(auth|authz|csrf|injection|ratelimit)' tests/ 2>/dev/null
 
 > 위협 모델링 실전은 *위협·완화가 검증되는가*다 — "DFD를 그렸다"와 "위협 표면이 실재하고 완화가 테스트로 검증된다"는 다르다. 핵심 위협을 소유 시스템에서 직접 검증한다([[68_Purple_Team]], [[10_Pentest_Methodology]], [[18_DevSecOps]]).
 
+**최신 기법·통제 (2025–2026):**
+- 애자일·지속 위협모델링이 표준 — 검증: 도출 위협이 백로그·테스트로 이어지는가([[10_Pentest_Methodology]])
+- 통제 검증 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

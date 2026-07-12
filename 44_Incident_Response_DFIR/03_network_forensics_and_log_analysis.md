@@ -628,6 +628,10 @@ tshark -r owned.pcap -Y 'ip.dst==SUSPECT_IP' -T fields -e frame.time_epoch 2>/de
 
 > 검증은 반드시 **소유 캡처**에서만 한다. "패킷을 봤다"와 "IOC가 실제 C2를 가리킨다"는 다르다 — 베이스라인 대조·비콘 주기로 직접 확인한다([[40_Threat_Hunting]], [[06_Malware_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- 암호화 트래픽 메타데이터·중앙 로그(SIEM) 상관이 핵심 — 검증: 침해 세션이 재구성되는가([[40_Threat_Hunting]])
+- 로그 무결성·보존 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

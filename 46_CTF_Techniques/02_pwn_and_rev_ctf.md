@@ -579,6 +579,10 @@ objdump -d ./challenge 2>/dev/null | grep -c ret; r2 -q -c 'aaa; afl~main' ./cha
 
 > PWN/REV 학습은 *완화가 기법을 막는가*다 — "셸을 땄다"와 "ASLR/카나리 토글 시 재현성이 어떻게 변하는지 안다"는 다르다. CTF/소유 바이너리에서 직접 검증한다([[09_Exploit_Techniques]], [[04_Reverse_Engineering]], [[03_System_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- 현대 pwn은 완화(CET/PAC·safe-linking) 우회 학습 — 검증: 완화 활성 문제에서 익스플로잇이 재현되는가([[66_Exploit_Development]])
+- 심볼릭 실행·자동화 — 재현 절차가 문서화되는지 확인
+
 ---
 
 <a name="english"></a>

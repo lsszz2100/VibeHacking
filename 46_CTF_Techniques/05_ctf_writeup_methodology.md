@@ -849,6 +849,10 @@ grep -rnE 'FROM .*:latest|^[a-zA-Z0-9_-]+$' Dockerfile requirements.txt 2>/dev/n
 
 > CTF 라이트업은 *재현되는가*다 — "풀이를 적었다"와 "깨끗한 환경에서 익스플로잇이 동작하고 플래그 해시가 일치한다"는 다르다. 각 단계를 깨끗한 환경에서 직접 검증한다([[75_Red_Team_Reporting]], [[09_Exploit_Techniques]], [[08_Python_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- 재현 가능한 단계·환경·익스플로잇이 라이트업 표준 — 검증: 제3자가 재현 가능한가([[30_Vulnerability_Research]])
+- 학습 전이·방어 매핑 — 뒷받침되는지 확인
+
 ---
 
 <a name="english"></a>

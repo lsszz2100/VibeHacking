@@ -1383,6 +1383,10 @@ sqlite3 mmssms.db 'PRAGMA journal_mode;' 2>/dev/null; strings mmssms.db-wal 2>/d
 
 > Android 증거 검증은 *증거가 무결·교차일치하는가*다 — "DB를 추출했다"와 "루팅 흔적이 교차되고 타임스탬프가 다중 아티팩트와 일치한다"는 다르다. 소유 기기/이미지에서 직접 확인한다([[07_Digital_Forensics]], [[28_Mobile_Hacking]], [[44_Incident_Response_DFIR]]).
 
+**최신 기법·통제 (2025–2026):**
+- Android 강화(FBE 암호화·스코프드 스토리지)로 추출 난이도 상승 — 논리/파일시스템 획득·앱데이터 분석. 검증: 획득이 무결성·재현을 보장하는가([[44_Incident_Response_DFIR]])
+- 증거 연속성 — 보존되는지 확인
+
 ---
 
 <a name="english"></a>

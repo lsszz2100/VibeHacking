@@ -1415,6 +1415,10 @@ python3 tm.py --json 2>/dev/null | jq -r '.findings[] | select((.mitigations//[]
 
 > 위협 모델링 도구는 *모델이 완전·일치하는가*다 — "도구가 위협을 생성했다"와 "DFD에 신뢰경계가 빠짐없고 모든 위협에 완화가 매핑된다"는 다르다. 소유 모델에서 직접 검증한다([[18_DevSecOps]], [[68_Purple_Team]], [[74_Code_Auditing]]).
 
+**최신 기법·통제 (2025–2026):**
+- Threat Dragon·threat-modeling-as-code로 CI 통합 — 검증: 모델 변경이 설계와 동기화되는가([[18_DevSecOps]])
+- 자동 위협 도출 — 사람 검증
+
 ---
 
 <a name="english"></a>

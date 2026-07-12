@@ -1711,6 +1711,10 @@ apktool d -f app.apk -o ad >/dev/null 2>&1; grep -iE 'INTERNET|SMS|http' ad/Andr
 
 > 모바일 도구 사용은 *발견이 교차·재현되는가*다 — "MVT가 탐지했다"와 "그 IOC가 1차 아티팩트에서 재확인되고 도구 간 일치한다"는 다르다. 소유 기기/이미지에서 교차 검증한다([[06_Malware_Analysis]], [[28_Mobile_Hacking]], [[25_Threat_Intelligence]]).
 
+**최신 기법·통제 (2025–2026):**
+- ALEAPP/iLEAPP·오픈소스 파서가 아티팩트 분석 표준 — 검증: 파싱 결과가 원본과 교차확인되는가([[07_Digital_Forensics]])
+- 도구 검증·오탐 — 확인되는지
+
 ---
 
 <a name="english"></a>

@@ -821,6 +821,10 @@ ok=0; for i in $(seq 1 10); do python3 exploit.py 2>/dev/null | grep -q FLAG && 
 
 > CTF 자동화는 *결과가 재현되는가*다 — "angr가 경로를 찾았다"와 "그 입력이 실제로 플래그를 내고 반복 성공한다"는 다르다. CTF/소유 환경에서 재현을 직접 검증한다([[04_Reverse_Engineering]], [[09_Exploit_Techniques]], [[08_Python_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- LLM 보조·자동 익스플로잇 파이프라인이 발전 — 격리 샌드박스 실행. 검증: 자동 풀이가 재현·검증되는가([[11_AI_Powered_Security]])
+- 오작동 배제 — 사람 검토
+
 ---
 
 <a name="english"></a>

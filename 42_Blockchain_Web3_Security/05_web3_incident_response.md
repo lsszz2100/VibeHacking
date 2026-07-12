@@ -630,6 +630,10 @@ cast logs --from-block latest --address 0xVICTIM 'Transfer(address,address,uint2
 
 > Web3 사고 대응은 *추적·차단이 작동하는가*다 — "IR 절차가 있다"와 "자금 흐름이 추적되고 긴급 정지가 즉시 반영되며 tx 증거가 보존된다"는 다르다. 각 절차를 소유 자산/테스트넷에서 직접 검증한다([[44_Incident_Response_DFIR]], [[07_Digital_Forensics]], [[12_Bug_Bounty]]).
 
+**최신 기법·통제 (2025–2026):**
+- 온체인 추적·자금동결·화이트햇 구제가 대응 요소 — 검증: 침해 트랜잭션이 재구성·재현되는가([[44_Incident_Response_DFIR]])
+- 키회전·긴급중지(pause) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>
