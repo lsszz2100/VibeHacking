@@ -493,6 +493,10 @@ sigma convert -t splunk rule.yml > rule.spl     # 룰을 SIEM 쿼리로 변환
 
 > 검증은 반드시 **승인된 범위·통제된 환경에서만** 수행한다. 룰은 배포로 끝나지 않으며, 데이터 소스가 바뀔 때마다 정탐·오탐을 재측정해 노후(rule decay)를 잡아야 한다([[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- Detection-as-Code 파이프라인(Sigma→SIEM 백엔드, pySigma/sigma-cli)에 룰 단위테스트·회귀검사를 CI로 결합 — 정탐/오탐 표본 코퍼스를 룰 변경마다 재실행
+- ATT&CK 커버리지 정량화 도구(DeTT&CT·VECTR)로 탐지 갭을 가시화하고, 행위·ML 기반 분석은 데이터소스 드리프트 시 오탐 재기준선화가 필수([[13_SOC_Blue_Team]])
+
 ---
 
 <a name="english"></a>

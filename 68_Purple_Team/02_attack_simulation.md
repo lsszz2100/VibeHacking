@@ -460,6 +460,10 @@ grep -i "lsass" /var/log/sysmon* 2>/dev/null | tail
 
 > 검증은 반드시 **승인된 범위·통제된 환경에서만** 수행한다. ROE를 사전 합의하고, 각 단계 결과를 prevented/detected/missed로 분류해 ATT&CK 히트맵을 데이터로 갱신해야 한다([[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 인텔 주도 자동 BAS(Atomic Red Team·Caldera 에뮬레이션 플랜)로 실제 캠페인 TTP를 상시 재현 — 각 단계가 텔레메트리에 흔적을 남기는지 prevented/detected/missed 데이터로 확인
+- 아이덴티티·클라우드 평면 시뮬레이션(토큰 탈취·OAuth 남용·크로스테넌트 횡이동)이 2025 핵심 축 — CloudTrail/Entra 사인인 로그가 모의 경로를 포착하는지 검증([[40_Threat_Hunting]])
+
 ---
 
 <a name="english"></a>

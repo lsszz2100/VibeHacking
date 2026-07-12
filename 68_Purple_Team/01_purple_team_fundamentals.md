@@ -435,6 +435,10 @@ Invoke-AtomicTest T1059.001 -TestNumbers 1     # PowerShell 측
 
 > 검증은 반드시 **승인된 범위·통제된 환경에서만** 수행한다. 각 테스트는 재현 가능한 절차와 기대 신호를 함께 기록해, 룰을 고친 뒤 같은 조건에서 재실행해 개선을 수치로 비교해야 한다([[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- BAS(Breach & Attack Simulation) 플랫폼(Atomic Red Team·Caldera·Prelude)으로 퍼플팀을 상시·자동화 — 1회성 훈련이 아니라 ATT&CK 기법별 커버리지를 회차마다 델타로 측정. 검증: 각 아토믹이 prevented/detected/missed로 분류되고 재실행 시 개선이 수치화되는가
+- LLM 보조 탐지룰 생성·트리아지가 확산 — 생성된 룰이 에뮬레이션 텔레메트리에서 실제 발화하는지 사람이 검증해야 하며(고무도장 금지), 위협인텔 기반 우선순위화와 결합([[25_Threat_Intelligence]])
+
 ---
 
 <a name="english"></a>
