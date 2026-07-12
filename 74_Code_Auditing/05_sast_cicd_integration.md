@@ -692,6 +692,10 @@ sast_gate:
 
 - CodeQL Action GitHub: https://github.com/github/codeql-action
 
+**최신 기법·통제 (2025–2026):**
+- SAST/SCA를 CI 게이트로 통합하되 신규회귀만 차단(백로그 분리)해 경보피로 방지 — 검증: 신규 취약 도입 PR이 실제 실패하는가
+- SBOM·서명·프로버넌스(SLSA)로 공급망 무결성 — 파이프라인에서 강제되는지 확인([[35_Supply_Chain_Attacks]])
+
 ---
 
 <a name="english"></a>

@@ -518,6 +518,10 @@ if __name__ == "__main__":
 - HackerOne 리포트 작성 가이드: https://docs.hackerone.com/hackers/submitting-reports.html
 - CVSS v3.1 계산기: https://www.first.org/cvss/calculator/3.1
 
+**최신 기법·통제 (2025–2026):**
+- 재현 가능한 PoC·영향평가·CVSS가 보상·수용을 좌우 — 자동생성 리포트도 사람이 재현 검증. 검증: 트리아지팀이 단계재현으로 확인 가능한가
+- AI 보조 리포트 작성이 확산 — 사실오류·과장 없이 증거에 근거하는지 사람검증([[10_Pentest_Methodology]])
+
 ---
 
 <a name="english"></a>

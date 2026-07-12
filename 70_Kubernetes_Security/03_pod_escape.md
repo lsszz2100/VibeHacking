@@ -455,6 +455,10 @@ kubectl logs -n falco -l app=falco --since=2m | grep -i "namespace\|privileged\|
 
 > 검증은 반드시 **소유한 클러스터·격리 랩에서만** 수행한다. 정책을 "배포했다"가 아니라, 위험 파드 생성이 거부되고 탈출 행위가 탐지되는지 재현으로 확인해야 다층 방어가 성립한다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- privileged·hostPath·hostPID·CAP_SYS_ADMIN 컨테이너에서 노드탈출 — Pod Security Admission(restricted)·seccomp/AppArmor로 차단. 검증: 탈출 시도가 admission에서 거부되는지 재현(소유 랩)
+- 커널 익스플로잇·runc/containerd CVE 기반 탈출 — 패치수준·런타임 격리(gVisor/Kata)가 실제 유효한지 확인([[29_Container_Kubernetes_Security]])
+
 ---
 
 <a name="english"></a>

@@ -332,6 +332,10 @@ if __name__ == "__main__":
 
 - OWASP Code Review Guide: https://owasp.org/www-project-code-review-guide/
 
+**최신 기법·통제 (2025–2026):**
+- 인증/인가·암호사용·비즈니스로직 등 SAST가 약한 영역은 수동리뷰 필수 — 신뢰경계 중심 추적. 검증: 발견이 재현 PoC로 뒷받침되는가
+- diff/PR 리뷰에 보안게이트 결합 — 위험 변경이 실제 차단되는지 확인([[35_Supply_Chain_Attacks]])
+
 ---
 
 <a name="english"></a>

@@ -293,6 +293,10 @@ if __name__ == "__main__":
 
 - OWASP Code Review Guide: https://owasp.org/www-project-code-review-guide/
 
+**최신 기법·통제 (2025–2026):**
+- SAST+DAST+SCA+시크릿스캔의 결합이 표준 — 도구별 커버리지 갭을 매핑. 검증: 파인딩이 실제 익스플로잇 가능성으로 트리아지되는가
+- 위협모델 기반 감사(신뢰경계·데이터흐름)가 자동화를 보완 — 통제가 실제 강제되는지 확인([[30_Vulnerability_Research]])
+
 ---
 
 <a name="english"></a>

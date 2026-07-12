@@ -287,6 +287,10 @@ def is_testable(host: str) -> bool:
 - Bugcrowd 프로그램 검색: https://bugcrowd.com/programs
 - PortSwigger Web Security Academy (무료 교육): https://portswigger.net/web-security
 
+**최신 기법·통제 (2025–2026):**
+- 스코프 관리·자동화가 프로그램 규모 확대로 필수 — 스코프 외 타깃 차단 게이트가 실제 작동하는지 재현(허가 프로그램만)
+- 협업 플랫폼·중복제거가 성숙 — 리포트의 재현성·품질이 보상을 좌우([[10_Pentest_Methodology]])
+
 ---
 
 <a name="english"></a>

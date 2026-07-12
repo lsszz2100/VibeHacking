@@ -588,6 +588,10 @@ echo "[3] Secret 암호화:"; sudo ETCDCTL_API=3 etcdctl get /registry/secrets/d
 
 > 검증은 반드시 **소유한 클러스터·격리 환경에서만** 수행한다. 정책이 `enforce`가 아닌 `audit` 모드면 경고만 남기고 통과시키므로, 위 회귀 검증을 분기마다 재실행해 드리프트를 추세로 잡아야 한다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- Policy-as-Code(OPA/Gatekeeper·Kyverno)로 admission 통제를 코드화·CI검증 — 정책이 배포됐다가 아니라 위반 매니페스트를 실제 거부하는지 재현
+- 런타임 위협탐지(Falco·eBPF)로 탈출·이상행위 포착 — 룰이 실제 공격 텔레메트리에서 발화하는지 검증([[29_Container_Kubernetes_Security]])
+
 ---
 
 <a name="english"></a>

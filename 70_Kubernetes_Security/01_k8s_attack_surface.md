@@ -385,6 +385,10 @@ grep -m1 'system:anonymous\|"verb":"list"' /var/log/kubernetes/audit.log
 
 > 검증은 반드시 **소유한 클러스터·통제된 환경에서만** 수행한다. 감사 로그는 "켜져 있어야" 신호가 된다 — 위 경로를 실행한 뒤 신호가 실제로 수집·탐지되는지 확인하고, 로그는 클러스터 외부로 전송해 탬퍼링을 막는다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 노출된 kubelet·etcd·대시보드·API서버 오구성이 주요 진입점 — kube-bench/kube-hunter로 상시 스캔. 검증: 익명접근·과권한 서비스계정이 실제 차단되는지 재현(소유 클러스터만)
+- 공급망(악성 이미지·오염 Helm차트)이 확산 벡터 — 이미지 서명(cosign)·admission 정책이 강제되는지 확인([[29_Container_Kubernetes_Security]])
+
 ---
 
 <a name="english"></a>

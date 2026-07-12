@@ -493,6 +493,10 @@ sudo hcidump -X | grep -i "key size"
 
 > 검증은 반드시 **소유한 기기·통제된 환경**에서만 수행합니다. 방어를 켜 두는 것과 방어가 실제로 동작하는지는 다릅니다 — 알려진 다운그레이드(KNOB)·미인증 접근을 재현해 거부되는지 확인해야 신뢰할 수 있습니다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- BLE 5.x·BR/EDR 공존 환경에서 페어링/본딩 취약점이 잔존 — LE Secure Connections(LESC) 강제·MITM보호가 실제 협상되는지 확인
+- SDR(HackRF 등)로 프로토콜 관찰이 보편화 — 분석은 소유기기·허가된 RF 실험만 수행([[27_IoT_Hacking]])
+
 ---
 
 <a name="english"></a>

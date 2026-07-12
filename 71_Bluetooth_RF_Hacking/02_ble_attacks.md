@@ -418,6 +418,10 @@ def on_write(conn, handle: int, value: bytes) -> bool:
 
 > 검증 절차: 자신이 소유한 BLE 기기에 **본딩 없이** 민감 특성 write를 시도해 거부되는지 확인합니다. 거부 로그가 남고 상태가 바뀌지 않아야 방어가 유효합니다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- KNOB·BLESA·스푸핑·리플레이 등 페어링/재연결 공격 — LESC·Numeric Comparison·주소 무작위화 강제로 방어. 검증: 레거시 페어링 다운그레이드가 실제 거부되는지 재현(소유기기)
+- GATT 무인증 특성 노출로 명령주입 — 특성별 인증/암호화가 강제되는지 확인([[27_IoT_Hacking]])
+
 ---
 
 <a name="english"></a>

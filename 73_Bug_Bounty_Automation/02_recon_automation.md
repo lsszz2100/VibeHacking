@@ -633,6 +633,10 @@ def throttled(hosts: list[str], in_scope, rps: float = 2.0):
 - subfinder GitHub: https://github.com/projectdiscovery/subfinder
 - ProjectDiscovery 도구 모음: https://github.com/projectdiscovery
 
+**최신 기법·통제 (2025–2026):**
+- 자산발견 파이프라인(subfinder·amass·httpx·nuclei) 오케스트레이션이 표준 — 지속적 자산 모니터링. 검증: 스코프 필터가 강제돼 범위이탈 요청이 차단되는가
+- 클라우드/서브도메인 테이크오버·노출 시크릿 스캔 — 발견이 재현 가능한 증거와 함께 기록되는지 확인([[10_Pentest_Methodology]])
+
 ---
 
 <a name="english"></a>

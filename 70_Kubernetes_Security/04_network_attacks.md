@@ -435,6 +435,10 @@ hubble observe --verdict DROPPED --since 2m | grep "<b-pod-ip>"
 
 > 검증은 반드시 **소유한 클러스터·통제된 환경에서만** 수행한다. "정책을 적용했다"가 아니라 차단이 재현되고 거부가 로그에 남는지 확인해야 한다 — CNI가 NetworkPolicy를 지원하는지도 함께 검증한다([[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 기본 오픈 파드네트워크에서 횡이동·ARP스푸핑·서비스 스니핑 — NetworkPolicy(기본거부)·mTLS(서비스메시)로 격리. 검증: 격리 후 파드간 비인가 트래픽이 실제 차단되는지 재현
+- DNS 스푸핑·노출 서비스(LoadBalancer/NodePort)로 노출면 확대 — 이그레스 통제·정책이 강제되는지 확인([[39_Zero_Trust_Architecture]])
+
 ---
 
 <a name="english"></a>

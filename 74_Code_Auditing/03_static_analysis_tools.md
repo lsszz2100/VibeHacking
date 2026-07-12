@@ -514,6 +514,10 @@ SAST 결과 트리아지:
 
 - Semgrep GitHub: https://github.com/semgrep/semgrep
 
+**최신 기법·통제 (2025–2026):**
+- CodeQL·Semgrep 커스텀 룰로 조직특화 패턴 탐지 — 룰의 정탐/오탐을 코퍼스로 재측정. 검증: 룰이 알려진 취약커밋에서 발화하는가
+- LLM 보조 코드리뷰가 확산 — 환각·놓침 방지 위해 결정적 SAST와 교차검증([[30_Vulnerability_Research]])
+
 ---
 
 <a name="english"></a>
