@@ -1101,6 +1101,10 @@ docker history --no-trunc myimage:latest 2>/dev/null | grep -iE "password|secret
 
 > Docker 방어는 *권한이 최소이고 탈출 표면이 닫혔는가*다 — "컨테이너 돈다"와 "privileged가 없고 docker.sock이 안 마운트되며 이미지에 평문 시크릿이 없다"는 다르다. 소유 호스트에서 권한·소켓·시크릿을 직접 확인한다([[70_Kubernetes_Security]], [[18_DevSecOps]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 비루트·읽기전용 루트fs·최소 capability·seccomp가 표준 — 검증: privileged/과권한 컨테이너가 admission에서 차단되는가([[70_Kubernetes_Security]])
+- 이미지 서명·SBOM — 강제되는지 확인([[18_DevSecOps]])
+
 ---
 
 <a name="english"></a>

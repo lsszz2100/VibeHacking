@@ -629,6 +629,10 @@ sudo ausearch -f /etc/shadow -ts recent 2>/dev/null | grep -E "uid=" | tail
 
 > 오프라인 크래킹 방어는 *해시가 시간을 버는가*다 — "해시 덤프 못 가져간다"와 "가져가도 argon2라 며칠로도 못 깬다"는 다르다. 소유 해시로 크래킹 시간을, 감사로 덤프 접근을 직접 확인한다([[03_System_Hacking]], [[44_Incident_Response_DFIR]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- GPU/클라우드 가속으로 오프라인 크래킹 규모화 — 긴 패스프레이즈로만 방어. 검증: 유출 시 해시가 실질 저항하는지 측정([[16_Cryptography]])
+- 룰·마스크 최적화 — 산출이 재현 가능한가
+
 ---
 
 <a name="english"></a>

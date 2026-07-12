@@ -641,6 +641,10 @@ printf '%s' "candidate" | sha1sum | tr 'a-f' 'A-F' | cut -c1-5 | xargs -I{} curl
 
 > 해시 저장 방어는 *해시가 느리고 유니크한가*다 — "암호화했다"와 "argon2id+솔트라 GPU로도 못 깬다"는 다르다. 소유 저장소의 알고리즘과 유출 재사용을 직접 확인한다([[16_Cryptography]], [[26_Linux_Hardening]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 유출 코퍼스·룰기반 워드리스트로 크래킹 효율 상승 — 약한 해시(MD5/NTLM)는 즉시 붕괴. 검증: 정책 해시가 저항하는지 측정([[16_Cryptography]])
+- 패스워드 해시는 Argon2id/bcrypt 고비용 파라미터 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

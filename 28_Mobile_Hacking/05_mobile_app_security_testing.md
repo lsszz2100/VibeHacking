@@ -1111,6 +1111,10 @@ curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer TOKEN_A" http
 
 > 보안 테스트 검증은 *돌렸는가*가 아니라 *잡고 재현되는가*다 — "MobSF 돌렸다"와 "알려진 결함에 발화하고 IDOR이 403으로 막히며 재빌드 후에도 재현된다"는 다르다. 소유 앱에서 발화·IDOR 응답코드를 직접 확인한다([[52_API_Security]], [[12_Bug_Bounty]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- OWASP MASVS/MASTG가 표준 — 저장·통신·인증·회복력 검증. 검증: 각 통제가 실제 강제되는지 재현([[48_Threat_Modeling]])
+- CI 통합 모바일 SAST/DAST — 신규 취약이 차단되는지 확인
+
 ---
 
 <a name="english"></a>

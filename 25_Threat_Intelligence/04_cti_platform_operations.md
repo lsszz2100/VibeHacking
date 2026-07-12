@@ -692,6 +692,10 @@ jq -r '.objects[] | select(.type=="indicator") | .pattern' feed.json 2>/dev/null
 
 > 플랫폼 운영 검증은 *깔았는가*가 아니라 *피드가 살아 탐지로 흐르는가*다 — "MISP 있다"와 "피드가 갱신되고 IOC가 SIEM 룰로 매핑된다"는 다르다. 소유 플랫폼에서 동기 신선도·룰 전환을 직접 확인한다([[64_Threat_Intel_Platform]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- TIP(MISP/OpenCTI)로 IOC 정규화·품질필터·배포 — 검증: 저품질 IOC가 자동차단 전 필터링되는가([[64_Threat_Intel_Platform]])
+- 피드 상관·중복제거 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

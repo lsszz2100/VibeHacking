@@ -562,6 +562,10 @@ kubectl auth can-i --list --as=system:serviceaccount:default:default 2>/dev/null
 
 > RBAC 감사 검증은 *돌렸는가*가 아니라 *과권한·escalation을 잡는가*다 — "RBAC 정의했다"와 "와일드카드·impersonate 권한이 빠짐없이 잡히고 SA 과권한이 재현된다"는 다르다. 소유 클러스터에서 위험 verb·실효 권한을 직접 확인한다([[70_Kubernetes_Security]], [[18_DevSecOps]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- RBAC 폭발반경 감사(`can-i --list`·rbac-tool)가 표준 — 검증: 저권한 SA에서 관리자 경로가 막히는지 재현([[70_Kubernetes_Security]])
+- Policy-as-Code(OPA/Kyverno) — 위반이 거부되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -504,6 +504,10 @@ command -v faillock >/dev/null && sudo faillock --user testuser 2>/dev/null | ta
 
 > 검증은 반드시 **소유·테스트 계정**에서만 한다. "정책을 적었다"와 "약한 암호가 실제 거부된다"는 다르다 — 실패 시도로 잠금·로그를 직접 확인한다([[01_Linux_Basics]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- PAM·MFA·피싱저항 인증(FIDO2)이 표준 — 검증: 약한 인증 경로가 차단되는지 재현([[39_Zero_Trust_Architecture]])
+- 계정 잠금·감사 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

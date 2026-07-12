@@ -467,6 +467,10 @@ comm -12 <(sort iocs.txt 2>/dev/null) <(sort known_good_assets.txt 2>/dev/null) 
 
 > CTI 검증은 *수집됐는가*가 아니라 *정확·신선·실행가능한가*다 — "피드 받는다"와 "만료 IOC를 거르고 정상 자산과 충돌 없이 탐지로 전환된다"는 다르다. 소유 피드에서 신선도·FP를 직접 확인한다([[40_Threat_Hunting]], [[64_Threat_Intel_Platform]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- ATT&CK 매핑·다이아몬드·STIX/TAXII가 CTI 표준 — 검증: 인텔이 탐지·헌팅에 실제 반영되는가([[40_Threat_Hunting]])
+- 출처 신뢰도·수명 관리 — 자동차단 폭주 방지가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

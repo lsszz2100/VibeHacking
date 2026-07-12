@@ -964,6 +964,10 @@ sudo tshark -i eth0 -Y "http.authorization || telnet" -a duration:20 2>/dev/null
 
 > IoT 방어는 *노출 표면이 좁고 통신이 암호화됐는가*다 — "디바이스 동작한다"와 "telnet이 닫혀 있고 평문 자격증명이 안 흐른다"는 다르다. 소유 망에서 노출 포트·평문 인증을 직접 확인한다([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 노출 서비스·기본자격·미갱신 펌웨어가 주 진입점 — 자산 인벤토리·세그먼트·OTA 서명으로 방어. 검증: 기본자격이 차단되는지 재현(소유 기기)([[34_Hardware_Hacking]])
+- 클라우드 연동 API 오구성 — 통제가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

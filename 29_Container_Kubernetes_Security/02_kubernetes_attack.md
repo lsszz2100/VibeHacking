@@ -1184,6 +1184,10 @@ kubectl auth can-i --list --as=system:anonymous 2>/dev/null | head
 
 > K8s 방어는 *권한이 최소이고 비정상 접근이 보이는가*다 — "클러스터 돈다"와 "cluster-admin이 한정되고 익명 API가 막히며 비정상 Secret get이 탐지된다"는 다르다. 소유 클러스터에서 권한 바인딩·익명 접근을 직접 확인한다([[70_Kubernetes_Security]], [[14_Cloud_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 노출 API/kubelet·과권한 SA·오염 이미지가 진입점 — kube-bench로 진단. 검증: 익명접근·과권한이 차단되는지 재현(소유 클러스터)([[70_Kubernetes_Security]])
+- 공급망·admission 우회 — 통제가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

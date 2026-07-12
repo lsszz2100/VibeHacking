@@ -1137,6 +1137,10 @@ swaks --to ext@elsewhere.com --from spoof@notyours.com --server your.mail.server
 
 > 메일 방어는 *위장이 실제로 거부되는가*다 — "메일 서버 있다"와 "SPF/DKIM/DMARC가 p=reject로 위장을 격리한다"는 다르다. 소유 도메인의 DMARC 정책과 릴레이 거부를 직접 확인한다([[17_Red_Team_Operations]], [[33_OSINT_Social_Engineering]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- SPF/DKIM/DMARC·MTA-STS가 스푸핑/도용 방어 표준 — 검증: 위조 발신이 거부되는지 재현([[33_OSINT_Social_Engineering]])
+- 피싱·BEC 대응 — 정책이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

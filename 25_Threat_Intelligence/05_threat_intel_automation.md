@@ -713,6 +713,10 @@ jq -r '.objects[].id' bundle.json 2>/dev/null | sort | uniq -d | head
 
 > 인텔 자동화 검증은 *돌렸는가*가 아니라 *멱등하게 보강·배포되는가*다 — "파이프라인 있다"와 "STIX가 유효하고 재실행해도 중복이 안 생긴다"는 다르다. 소유 데이터에서 스키마 유효성·중복 ID를 직접 확인한다([[64_Threat_Intel_Platform]], [[40_Threat_Hunting]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- STIX/TAXII·SOAR 연동 자동배포가 표준 — 자동차단 가드레일 필요. 검증: 오탐 IOC가 폭주를 일으키지 않는지 확인([[64_Threat_Intel_Platform]])
+- 신뢰도 기반 우선순위화 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

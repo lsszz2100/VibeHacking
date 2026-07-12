@@ -610,6 +610,10 @@ grep -i 'hardening index' /var/log/lynis.log | tail -2
 
 > 감사는 반드시 **소유 시스템**에서만 한다. "점수가 올랐다"와 "경고가 실제 해소됐다"는 다르다 — 수정 후 재감사로 직접 확인한다([[18_DevSecOps]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- auditd·eBPF·SCAP(OpenSCAP)로 상시 감사 — 검증: 정책 이탈이 실제 탐지되는지 재현([[13_SOC_Blue_Team]])
+- 벤치마크(CIS) 준수 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

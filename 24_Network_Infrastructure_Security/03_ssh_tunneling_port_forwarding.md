@@ -1295,6 +1295,10 @@ ss -tnp 2>/dev/null | grep -E ':22 ' | awk '{print $5}' | sort | uniq -c | sort 
 
 > SSH 터널 방어는 *비인가 통로가 보이는가*다 — "SSH 쓴다"와 "포워딩이 꺼져 있고 리버스 터널이 이그레스에서 잡힌다"는 다르다. 소유 호스트에서 sshd_config와 활성 세션을 직접 확인한다([[17_Red_Team_Operations]], [[55_Evasion_Techniques]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- SSH 터널·포워딩이 횡이동/데이터반출 경로 — 키 관리·바스티온·세션기록으로 통제. 검증: 비인가 터널이 탐지되는지 재현(소유 환경)([[39_Zero_Trust_Architecture]])
+- 인증서 기반 SSH·만료 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

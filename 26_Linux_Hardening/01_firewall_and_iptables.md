@@ -447,6 +447,10 @@ sudo iptables -nvL INPUT | awk '/DROP/ && $1>0 {print "drops:",$1,"pkts",$2,"byt
 
 > 검증은 반드시 **소유 호스트**에서만 한다. "규칙을 넣었다"와 "패킷이 실제 차단된다"는 다르다 — 정책·카운터·로그로 직접 확인한다([[24_Network_Infrastructure_Security]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- nftables·eBPF 기반 필터링이 iptables 대체 — 기본거부·세그먼트가 강제되는지 재현. 검증: 비인가 트래픽이 차단되는가([[24_Network_Infrastructure_Security]])
+- 상태·로깅으로 이상 포착 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

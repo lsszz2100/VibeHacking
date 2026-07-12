@@ -582,6 +582,10 @@ kubectl get authorizationpolicy -A 2>/dev/null | head
 
 > 메시 방어는 *mTLS·인가가 강제되는가*다 — "메시 깔았다"와 "PeerAuthentication이 STRICT이고 인가 정책이 비인가 호출을 막는다"는 다르다. 소유 메시에서 mTLS 모드·인가 정책을 직접 확인한다([[52_API_Security]], [[70_Kubernetes_Security]], [[39_Zero_Trust_Architecture]]).
 
+**최신 기법·통제 (2025–2026):**
+- 서비스메시(mTLS·정책)·API 게이트웨이 오구성이 횡이동 경로 — 검증: 비인가 서비스간 호출이 차단되는지 재현([[52_API_Security]])
+- 제로트러스트 정책 — 강제되는지 확인([[39_Zero_Trust_Architecture]])
+
 ---
 
 <a name="english"></a>

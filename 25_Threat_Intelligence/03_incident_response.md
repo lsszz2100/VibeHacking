@@ -534,6 +534,10 @@ ss -tnp 2>/dev/null | grep ESTAB | grep -vE '127\.0\.0|::1' | head
 
 > IR 검증은 *대응했는가*가 아니라 *격리·근절이 실증되는가*다 — "대응 끝났다"와 "격리 후 외부통신 0이고 재감염 IOC가 안 잡힌다"는 다르다. 소유 호스트에서 증거 해시·봉쇄 통신을 직접 확인한다([[44_Incident_Response_DFIR]], [[07_Digital_Forensics]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- CTI 연계 IR로 대응 가속 — IOC/TTP가 탐지·격리에 반영. 검증: 인텔이 IR 액션으로 재현되는가([[44_Incident_Response_DFIR]])
+- 증거 무결성·타임라인 — 보존되는지 확인
+
 ---
 
 <a name="english"></a>

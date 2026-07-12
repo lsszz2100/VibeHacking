@@ -1150,6 +1150,10 @@ binwalk -E firmware.bin 2>/dev/null | head
 
 > 펌웨어 방어는 *시크릿이 없고 이미지가 서명되는가*다 — "펌웨어 만든다"와 "binwalk로 키가 안 나오고 미서명 이미지는 부팅을 거부한다"는 다르다. 소유 이미지에서 시크릿·엔트로피를 직접 확인한다([[06_Malware_Analysis]], [[61_Firmware_Hacking]], [[65_Reverse_Engineering_Advanced]]).
 
+**최신 기법·통제 (2025–2026):**
+- binwalk·엔트로피·에뮬레이션(qiling)으로 추출·분석 — 하드코딩 시크릿/명령인젝션 싱크 정적탐지. 검증: 추출 무결성·재현이 확보되는가([[61_Firmware_Hacking]])
+- Secure Boot·암호화 펌웨어 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

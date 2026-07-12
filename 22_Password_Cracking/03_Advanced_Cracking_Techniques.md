@@ -977,6 +977,10 @@ grep -hE "evil-winrm|impacket|wmiexec|psexec|crackmapexec" /var/log/syslog /var/
 
 > 고급 크래킹 방어는 *깬 자격증명이 어디까지 통하는가*다 — "강한 패스워드 쓴다"와 "한 호스트가 털려도 그 cred가 다른 호스트엔 안 통한다"는 다르다. 소유 도메인에서 자격증명 재사용 로그온을 직접 확인한다([[54_Active_Directory_Attacks]], [[17_Red_Team_Operations]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 프린스·마르코프·ML 후보생성이 발전 — 정책·모니터링으로 대응. 검증: 정책하 패스워드가 후보공간에서 저항하는가([[16_Cryptography]])
+- 크래킹 대상은 소유/승인 해시만 — 합법성 통제
+
 ---
 
 <a name="english"></a>

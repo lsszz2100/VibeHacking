@@ -565,6 +565,10 @@ ansible-playbook -i inventory.ini linux_hardening.yml | grep -E 'changed=|failed
 
 > 검증은 반드시 **소유 시스템**에서만 한다. "플레이북을 돌렸다"와 "목표 상태로 수렴했다"는 다르다 — 재실행 changed=0·CIS 재스캔으로 직접 확인한다([[18_DevSecOps]], [[29_Container_Kubernetes_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- Ansible·IaC로 하드닝 자동화·드리프트 탐지 — 검증: 이탈 구성이 자동 교정되는가([[18_DevSecOps]])
+- 불변 인프라·최소 이미지 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

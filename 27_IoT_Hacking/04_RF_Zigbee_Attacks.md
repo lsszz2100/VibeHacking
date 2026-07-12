@@ -1088,6 +1088,10 @@ tshark -r mesh.pcap -Y "zbee_nwk" -T fields -e zbee_nwk.seqno 2>/dev/null | sort
 
 > 무선 IoT 방어는 *캡처/리플레이에 견디는가*다 — "Zigbee 메시 동작한다"와 "조인 시 키가 안 새고 재전송 프레임이 거부된다"는 다르다. 소유 장비에서 키 교환·카운터 중복을 직접 확인한다([[15_WiFi_Hacking]], [[71_Bluetooth_RF_Hacking]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- Zigbee/BLE 키교환·터치링크·리플레이 취약 — 설치코드 조인·키회전·PMF로 방어. 검증: 스니핑 키복구가 막히는지 재현(소유 메시)([[71_Bluetooth_RF_Hacking]])
+- 허가대역/격리 RF만 — 합법성 통제
+
 ---
 
 <a name="english"></a>

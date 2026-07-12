@@ -1309,6 +1309,10 @@ docker ps -q | xargs -r docker inspect --format '{{range .Mounts}}{{.Source}}->{
 
 > 탈출 방어는 *표면이 닫히고 시도가 보이는가*다 — "컨테이너 격리됐다"와 "위험 cap이 drop되고 호스트 경로가 안 마운트되며 seccomp가 강제된다"는 다르다. 소유 호스트에서 capability·마운트를 직접 확인한다([[70_Kubernetes_Security]], [[26_Linux_Hardening]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- privileged·hostPath·커널 CVE·runc/containerd 결함으로 탈출 — PSA(restricted)·seccomp·gVisor로 차단. 검증: 탈출이 admission/런타임에서 막히는지 재현(소유 랩)([[70_Kubernetes_Security]])
+- 패치·격리 런타임 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

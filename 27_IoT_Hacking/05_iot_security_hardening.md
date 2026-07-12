@@ -1286,6 +1286,10 @@ nmap -sV -p 80,443 192.168.1.0/24 2>/dev/null | grep -iE "version|server:" | sor
 
 > 강화 검증은 *설정했는가*가 아니라 *막고 드러내는가*다 — "VLAN 나눴다"와 "IoT에서 내부망이 실제로 안 닿고 미서명 이미지가 부팅을 거부한다"는 다르다. 소유 망에서 격리·버전 drift를 직접 확인한다([[24_Network_Infrastructure_Security]], [[39_Zero_Trust_Architecture]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- Secure Boot·서명 OTA·자산 인벤토리·세그먼트가 표준 — 검증: 통제가 런타임에 강제되는지 재현([[39_Zero_Trust_Architecture]])
+- 무선 IDS·펌웨어 패치 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

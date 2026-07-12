@@ -623,6 +623,10 @@ mysql -e "SHOW VARIABLES LIKE 'log_output';"   # TABLE/FILE 로 감사 출력 �
 
 > 검증은 **소유한 DB·통제 환경**에서만. 감사 설정 존재가 포착을 보장하지 않는다 — 공격 쿼리를 재생해 감사 로그에 행위자와 함께 남고, 로그가 변조 방지되는지 확인한다([[13_SOC_Blue_Team]], [[44_Incident_Response_DFIR]]).
 
+**최신 기법·통제 (2025–2026):**
+- DB 포렌식(트랜잭션로그·감사추적)으로 침해 재구성 — 검증: 이상 접근이 로그로 재현되는가([[44_Incident_Response_DFIR]])
+- 로그 무결성·보존 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

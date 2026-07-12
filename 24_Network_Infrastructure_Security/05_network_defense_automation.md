@@ -719,6 +719,10 @@ sudo iptables -L -v -n 2>/dev/null | grep -E "DROP|REJECT" | head
 
 > 방어 자동화 검증은 *돌렸는가*가 아니라 *발화·차단하는가*다 — "Suricata 깔려 있다"와 "주입 이벤트에 발화하고 방화벽이 실제로 떨군다"는 다르다. 소유 망에서 룰 발화·DROP 카운터를 직접 확인한다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- NDR·NetFlow·Zeek 자동 탐지가 표준 — 룰이 실제 트래픽에서 발화하는지 검증([[40_Threat_Hunting]])
+- 자동 차단 가드레일(오탐 폭주 방지) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

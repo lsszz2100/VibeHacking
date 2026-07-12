@@ -544,6 +544,10 @@ curl -s "https://crt.sh/?q=%25.example.com&output=json" 2>/dev/null | jq -r '.[]
 
 > OSINT 검증은 *찾았는가*가 아니라 *출처가 참이고 흔적이 없는가*다 — "정보 모았다"와 "1차 출처로 검증되고 수집이 대상에 노출되지 않는다"는 다르다. 원본 도달성과 자체 노출을 직접 확인한다([[10_Pentest_Methodology]], [[33_OSINT_Social_Engineering]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 자동 수집·상관(피드·소셜·다크웹)이 확산 — 프라이버시/합법성 통제. 검증: 수집이 근거와 함께 기록되는가([[33_OSINT_Social_Engineering]])
+- 오정보·의도적 오염 대응 — 검증 절차가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -449,6 +449,10 @@ awk '{print length($0), $0}' /var/log/named/query.log 2>/dev/null | sort -rn | h
 
 > DNS 방어는 *응답을 검증하고 이상 질의가 보이는가*다 — "DNS 잘 된다"와 "DNSSEC가 변조를 거르고 터널링이 로그에 드러난다"는 다르다. 소유 리졸버에서 ad 플래그·질의 길이를 직접 확인한다([[02_Network_Hacking]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- DNS 터널링·DoH 은닉 C2·캐시 포이즈닝 — DNSSEC·이상탐지·이그레스 통제로 방어. 검증: 터널링이 통계적으로 탐지되는지 재현([[40_Threat_Hunting]])
+- 노출 리졸버·존 전송 — 통제가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

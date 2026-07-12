@@ -586,6 +586,10 @@ mongosh --host localhost --quiet --eval "db.adminCommand({getCmdLineOpts:1}).par
 
 > 검증은 반드시 **소유한 DB·클라우드 자원**에서만. "인증/네트워크 정책 설정"과 "실제 노출을 막고 비정상 접근을 경보한다"는 다르다 — 통제 환경에서 노출/주입 PoC 를 재현해 차단·감사를 확인한다([[14_Cloud_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- NoSQL 인젝션·노출 인스턴스(인증없는 Mongo/Redis)·클라우드 DB 오구성 — 네트워크 격리·인증 강제. 검증: 퍼블릭 노출이 차단되는지 재현(소유 인스턴스)([[14_Cloud_Security]])
+- 백업·스냅샷 노출 — 접근통제가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

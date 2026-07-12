@@ -1216,6 +1216,10 @@ ss -tnp 2>/dev/null | grep ESTAB | awk '{print $5}' | sort | uniq -c | sort -rn 
 
 > 트래픽 검증은 *돌았는가*가 아니라 *암호화·핀되고 안 새는가*다 — "HTTPS 쓴다"와 "모든 엔드포인트가 TLS이고 핀 우회·평문 토큰이 없다"는 다르다. 소유 디바이스에서 비-TLS·목적지를 직접 확인한다([[02_Network_Hacking]], [[52_API_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 인증서 핀닝·mTLS로 인터셉트 난이도 상승 — 핀닝 우회는 소유 기기 한정. 검증: 잘못된 인증서를 앱이 거부하는가([[16_Cryptography]])
+- API 백엔드 인가 — 서버측에서 강제되는지 확인([[52_API_Security]])
+
 ---
 
 <a name="english"></a>

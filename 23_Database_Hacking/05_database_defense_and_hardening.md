@@ -844,6 +844,10 @@ mysql -e "SELECT user,host FROM mysql.user WHERE Super_priv='Y';"   # SUPER 보�
 
 > 검증은 **소유한 DB·통제 환경**에서만. 하드닝 가이드 적용이 곧 런타임 적용을 의미하지 않는다 — 익명계정·TLS·권한을 직접 조회해 기준 충족을 확인하고, 정기 점검으로 회귀를 막는다([[26_Linux_Hardening]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 최소권한·암호화(TDE/전송)·감사·마스킹이 표준 — 검증: 통제가 런타임에 강제되는지 재현([[26_Linux_Hardening]])
+- 이상 쿼리·대량조회 탐지 — 발화하는지 확인([[40_Threat_Hunting]])
+
 ---
 
 <a name="english"></a>
