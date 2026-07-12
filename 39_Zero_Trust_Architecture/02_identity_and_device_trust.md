@@ -1295,6 +1295,10 @@ grep -riE 'requireCompliantDevice|deviceState|grantControls' ca_policies*.json |
 
 > 검증은 반드시 **소유 테넌트**에서만 한다. "MFA를 켰다"와 "MFA 우회 경로가 0이다"는 다르다 — 레거시 인증·미준수 기기를 직접 탐색한다([[54_Active_Directory_Attacks]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 피싱저항 MFA(FIDO2)·기기자세·조건부접근이 핵심 — 검증: 미준수 기기/약한 인증이 차단되는지 재현([[26_Linux_Hardening]])
+- 지속적 평가(CAEP) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

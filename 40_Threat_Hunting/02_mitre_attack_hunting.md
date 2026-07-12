@@ -1051,6 +1051,10 @@ grep -rEl 'T1[0-9]{3}' detections/ | wc -l
 
 > 실행은 반드시 **소유 격리 랩**에서만 한다. "쿼리를 만들었다"와 "기법 실행 시 실제 탐지된다"는 다르다 — Atomic 실행→경보 발생을 직접 확인한다([[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- ATT&CK 매핑·Navigator 커버리지 히트맵이 표준 — 검증: 알려진 TTP가 커버리지 내에서 포착되는지 재현([[25_Threat_Intelligence]])
+- 갭 우선순위화 — 데이터로 뒷받침되는지 확인
+
 ---
 
 <a name="english"></a>

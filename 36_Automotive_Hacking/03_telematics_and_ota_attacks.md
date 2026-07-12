@@ -1287,6 +1287,10 @@ candump vcan_gw 2>/dev/null | awk '$2 ~ /^0[0-7]/{print "control ID leaked from 
 
 > 텔레매틱스 방어는 *원격 신뢰 경계가 강제되는가*다 — "OTA가 적용된다"와 "미서명 OTA가 거부되고 원격 인터페이스가 인증되며 IVI가 제어 CAN에 못 닿는다"는 다르다. 소유 차량/백엔드에서 직접 확인한다([[62_Automotive_Security]], [[35_Supply_Chain_Attacks]], [[27_IoT_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- 텔레매틱스·OTA가 원격 공격면 — 서명 OTA·mTLS·롤백방지로 방어. 검증: 위조 OTA가 거부되는지 재현([[62_Automotive_Security]])
+- 백엔드 API 인가 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

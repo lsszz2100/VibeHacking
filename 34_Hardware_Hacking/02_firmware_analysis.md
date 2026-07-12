@@ -1285,6 +1285,10 @@ strings -n 6 _owned_firmware.bin.extracted/usr/sbin/dropbear 2>/dev/null | grep 
 
 > 펌웨어 강화는 *이미지에 비밀이 없는가*다 — "부팅된다"와 "private key·하드코딩 비번이 없고 디버그 심볼이 스트립되며 취약 버전이 없다"는 다르다. 소유 빌드에서 시크릿·버전 표면을 직접 확인한다([[61_Firmware_Hacking]], [[18_DevSecOps]], [[06_Malware_Analysis]]).
 
+**최신 기법·통제 (2025–2026):**
+- 플래시 덤프·binwalk·에뮬레이션으로 분석 — 하드코딩 시크릿/취약 싱크 탐지. 검증: 추출 무결성·재현이 확보되는가([[61_Firmware_Hacking]])
+- Secure Boot·암호화 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

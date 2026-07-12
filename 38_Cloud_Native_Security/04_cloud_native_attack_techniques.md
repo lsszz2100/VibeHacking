@@ -1254,6 +1254,10 @@ grep -E 'clusterrolebindings.*create|"verb":"escalate"' /var/log/kubernetes/audi
 
 > Cloud Native 방어는 *권한 경계가 강제되는가*다 — "클러스터가 동작한다"와 "etcd 시크릿이 암호화되고 cluster-admin 신규 바인딩·비정상 SA 호출이 감사에 잡힌다"는 다르다. 소유 클러스터에서 직접 확인한다([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[14_Cloud_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- 메타데이터 SSRF·과권한 워크로드 아이덴티티·컨테이너 탈출이 벡터 — IMDSv2·최소권한·PSA로 방어. 검증: 상승/탈출이 차단되는지 재현(소유 환경)([[70_Kubernetes_Security]])
+- 컨트롤플레인 이상탐지 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

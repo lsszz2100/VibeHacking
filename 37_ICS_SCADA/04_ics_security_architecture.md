@@ -749,6 +749,10 @@ tshark -r ot_capture.pcap -Y 'modbus.func_code==6' -T fields -e ip.src 2>/dev/nu
 
 > ICS 아키텍처는 *세분화가 작동하는가*다 — "DMZ가 설계됐다"와 "L3가 L1에 직접 못 닿고 비정상 write가 모니터에 잡힌다"는 다르다. 각 통제를 소유 OT 랩에서 직접 검증한다([[63_OT_ICS_Advanced]], [[37_ICS_SCADA]], [[39_Zero_Trust_Architecture]]).
 
+**최신 기법·통제 (2025–2026):**
+- IEC 62443·구역/도관(zones/conduits) 설계가 표준 — 검증: 경계 통제가 실제 트래픽을 제한하는지 재현([[63_OT_ICS_Advanced]])
+- 원격접근 통제(브로커) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

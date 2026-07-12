@@ -963,6 +963,10 @@ kubectl get clusterroles -o json 2>/dev/null | jq -r '.items[] | select(.rules[]
 
 > Cloud Native 위협 모델은 *위협↔통제가 닫혀 있는가*다 — "위협을 나열했다"와 "각 위협에 통제가 매핑되고 평문 시크릿·과대 RBAC가 없다"는 다르다. 소유 클러스터에서 통제 갭을 직접 확인한다([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[48_Threat_Modeling]]).
 
+**최신 기법·통제 (2025–2026):**
+- 마이크로서비스·서버리스·메시의 신뢰경계를 위협모델로 매핑 — 검증: 각 경계 통제가 런타임에 강제되는지 재현([[48_Threat_Modeling]])
+- 아이덴티티 중심 설계 — 강제되는지 확인([[39_Zero_Trust_Architecture]])
+
 ---
 
 <a name="english"></a>

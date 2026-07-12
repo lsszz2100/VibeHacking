@@ -488,6 +488,10 @@ snmpwalk -v2c -c public 192.168.1.1 system 2>/dev/null | head
 
 > 장비 정찰 방어는 *노출 표면이 좁고 관리가 통제되는가*다 — "장비 동작한다"와 "telnet이 닫혀 있고 SNMP가 기본 community로 안 응답한다"는 다르다. 소유 망에서 노출 서비스·SNMP 응답을 직접 확인한다([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 라우터/스위치 OS(IOS/NX-OS 등) 노출·기본자격이 진입점 — 관리평면 격리·인증 강화로 방어. 검증: 노출 관리인터페이스가 차단되는지 재현(소유 장비)([[24_Network_Infrastructure_Security]])
+- 펌웨어 무결성·이미지 검증 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

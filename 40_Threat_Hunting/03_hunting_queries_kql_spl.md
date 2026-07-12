@@ -1115,6 +1115,10 @@ grep -rEn 'TimeGenerated|earliest=|latest=' hunts/ | head
 
 > 검증은 반드시 **소유 테스트 인덱스**에서만 한다. "쿼리가 돈다"와 "악성 이벤트를 실제 잡는다"는 다르다 — 시드 이벤트로 미탐/과탐을 직접 확인한다([[13_SOC_Blue_Team]], [[25_Threat_Intelligence]]).
 
+**최신 기법·통제 (2025–2026):**
+- KQL/SPL·Sigma 이식으로 크로스플랫폼 헌팅 — 룰 노후 대응 재검증. 검증: 쿼리가 데이터 변화 후에도 발화하는가([[13_SOC_Blue_Team]])
+- 오탐 재기준선화 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

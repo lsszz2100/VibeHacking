@@ -955,6 +955,10 @@ grep -iE 'signature (invalid|verify failed)|boot (denied|halted)' bootlog.txt 2>
 
 > 하드웨어 평가는 *통제가 작동하는가*다 — "TPM이 있다"와 "키가 TPM 밖 평문으로 없고 변조 펌웨어가 거부되며 탬퍼 시 키가 소거된다"는 다르다. 각 통제를 소유 기기에서 직접 검증한다([[34_Hardware_Hacking]], [[61_Firmware_Hacking]], [[48_Threat_Modeling]]).
 
+**최신 기법·통제 (2025–2026):**
+- 위협모델 기반 평가(디버그·시크릿·부트체인)가 표준 — 검증: 통제가 실제 강제되는지 재현([[48_Threat_Modeling]])
+- 공급망 변조 탐지 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

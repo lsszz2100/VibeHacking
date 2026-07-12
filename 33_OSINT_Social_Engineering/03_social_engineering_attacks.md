@@ -1149,6 +1149,10 @@ grep -rIaE "urgent|verify your account|password expires|click here" reported_mai
 
 > 사회공학 방어는 *사람이 시도를 거부·보고하는가*다 — "교육했다"와 "시뮬레이션 보고율이 오르고 클릭률이 떨어진다"는 다르다. 승인된 훈련에서 클릭/보고 추세를 직접 확인한다([[17_Red_Team_Operations]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- AI 생성 피싱·딥페이크·비싱이 정교화 — 사용자 인식·아웃오브밴드 확인·MFA로 방어. 검증: 훈련이 동의·통제하에 수행되는가([[17_Red_Team_Operations]])
+- 피싱저항 MFA(FIDO2) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

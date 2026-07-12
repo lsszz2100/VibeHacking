@@ -1265,6 +1265,10 @@ nmap -Pn -p 22,3389,3306 app.owned.example | grep -E 'open|filtered'
 
 > 검증은 반드시 **소유 호스트 간**에서만 한다. "세그먼트를 나눴다"와 "East-West가 실제 차단된다"는 다르다 — 연결 시도·노출 스캔으로 직접 확인한다([[24_Network_Infrastructure_Security]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 마이크로세분화·mTLS·기본거부가 횡이동 차단 — 검증: 비인가 east-west가 실제 막히는지 재현([[24_Network_Infrastructure_Security]])
+- 정책 as code — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

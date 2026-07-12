@@ -1165,6 +1165,10 @@ python3 -c "import sys,math,collections;d=open('flash.bin','rb').read();c=collec
 
 > 하드웨어 하드닝은 *디버그 표면이 닫혀 있는가*다 — "기능은 동작한다"와 "JTAG가 퓨즈로 잠기고 콘솔에 셸이 안 뜨며 플래시가 암호화됐다"는 다르다. 소유 기기/개발 보드에서 노출 인터페이스를 직접 확인한다([[61_Firmware_Hacking]], [[27_IoT_Hacking]], [[04_Reverse_Engineering]]).
 
+**최신 기법·통제 (2025–2026):**
+- UART/JTAG/SWD·SPI 플래시 노출이 진입점 — 디버그 비활성·글리치 방어로 대응. 검증: 프로덕션에서 디버그 인터페이스가 잠기는지 확인(소유 기기)([[27_IoT_Hacking]])
+- 분석은 소유 하드웨어 한정 — 합법성 통제
+
 ---
 
 <a name="english"></a>

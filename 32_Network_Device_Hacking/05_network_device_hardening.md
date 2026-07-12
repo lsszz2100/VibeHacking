@@ -512,6 +512,10 @@ nmap -sU -sT -p T:23,80,U:161 192.168.1.1 2>/dev/null | grep -iE "open"
 
 > 강화 검증은 *설정했는가*가 아니라 *막고 드러내는가*다 — "보안 설정 넣었다"와 "평문 관리가 0이고 설정 drift가 diff로 잡힌다"는 다르다. 소유 장비에서 config diff·평문 잔존을 직접 확인한다([[24_Network_Infrastructure_Security]], [[26_Linux_Hardening]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 설정 벤치마크·자동 컴플라이언스(config drift 탐지)가 표준 — 검증: 이탈 구성이 탐지·교정되는가([[18_DevSecOps]])
+- 이미지 서명·로깅 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

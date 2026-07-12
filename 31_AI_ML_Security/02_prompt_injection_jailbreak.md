@@ -1173,6 +1173,10 @@ grep -rIaE "system prompt|you are a|do not reveal" responses.log 2>/dev/null | h
 
 > 인젝션 방어는 *가드레일이 실제로 버티는가*다 — "프롬프트 막는다"와 "알려진 주입셋에 거부율이 유지되고 시스템 지시가 안 샌다"는 다르다. 소유 앱에서 거부율·시스템 프롬프트 누출을 직접 확인한다([[69_LLM_Security]], [[56_AI_Red_Teaming]], [[11_AI_Powered_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- 간접 프롬프트인젝션·자동 탈옥(GCG/AutoDAN·다중턴)이 핵심 — 데이터/명령 분리·의미기반 분류로 방어. 검증: 우회 변형에서도 거부가 유지되는가([[69_LLM_Security]])
+- 최소권한 툴게이트·출력 검증 — 강제되는지 확인([[48_Threat_Modeling]])
+
 ---
 
 <a name="english"></a>

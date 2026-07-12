@@ -1168,6 +1168,10 @@ grep -iE 'falco.*drops|n_drops' /var/log/falco.log 2>/dev/null | tail -3
 
 > eBPF 런타임 방어는 *규칙이 발화하는가*다 — "Falco가 돈다"와 "테스트 셸에서 알람이 나고 이벤트 드롭이 0이며 SIEM에 도달한다"는 다르다. 각 탐지를 소유 클러스터에서 직접 검증한다([[29_Container_Kubernetes_Security]], [[40_Threat_Hunting]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- eBPF(Falco/Tetragon)로 런타임 이상탐지·정책강제 — 검증: 룰이 실제 공격 텔레메트리에서 발화하는가([[70_Kubernetes_Security]])
+- 커널 안전·비특권 eBPF 통제 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -1410,6 +1410,10 @@ grep -riE 'split-tunnel|full-access|allow-all' vpn_config* 2>/dev/null | head
 
 > 검증은 반드시 **소유 환경**에서만 한다. "ZTNA를 도입했다"와 "게이트웨이 우회 경로가 0이다"는 다르다 — 오리진 직접접근·VPN 폴백을 직접 점검한다([[14_Cloud_Security]], [[68_Purple_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- ZTNA·SSE/SASE·아이덴티티 중심 구현이 확산 — 검증: 레거시 우회(VPN 평면접근)가 제거되는지 재현([[38_Cloud_Native_Security]])
+- 단계적 마이그레이션 — 통제가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

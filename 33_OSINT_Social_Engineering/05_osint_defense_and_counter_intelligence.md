@@ -608,6 +608,10 @@ exiftool -Author -Creator -GPSPosition published/*.pdf 2>/dev/null | grep -iE "a
 
 > OSINT 방어 검증은 *조치했는가*가 아니라 *발자국이 줄고 정찰이 보이는가*다 — "노출 줄였다"와 "공개 항목 수가 추세로 감소하고 배포 문서에 메타가 안 남는다"는 다르다. 소유 도메인·문서에서 노출 추세·메타 잔존을 직접 확인한다([[25_Threat_Intelligence]], [[10_Pentest_Methodology]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 노출면 관리(자산·유출 모니터링)·디셉션이 방어 — 검증: 노출 자산이 실제 감축되는가([[40_Threat_Hunting]])
+- 임직원 인식·데이터 최소화 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

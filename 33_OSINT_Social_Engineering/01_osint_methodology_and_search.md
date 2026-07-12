@@ -1002,6 +1002,10 @@ exiftool -Author -Creator -Software public_doc.pdf 2>/dev/null | head
 
 > OSINT 방어는 *노출이 최소이고 정찰이 보이는가*다 — "공개 사이트 있다"와 "CT에 의도외 서브도메인이 없고 문서 메타가 제거됐다"는 다르다. 소유 도메인·문서에서 노출 표면을 직접 확인한다([[10_Pentest_Methodology]], [[25_Threat_Intelligence]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 자동 수집·상관 도구가 발전 — 프라이버시/합법성 통제가 핵심. 검증: 수집이 근거·범위와 함께 기록되는가([[25_Threat_Intelligence]])
+- 오정보 대응 — 검증 절차가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

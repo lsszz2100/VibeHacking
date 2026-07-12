@@ -1003,6 +1003,10 @@ kubectl get apiserver -o yaml 2>/dev/null | grep -A3 'providers' | grep -iE 'aes
 
 > Cloud Native 방어는 *통제가 강제되는가*다 — "CSPM/Falco가 있다"와 "런타임 룰이 발화하고 etcd 시크릿이 암호화되며 미서명 이미지가 거부된다"는 다르다. 각 방어를 소유 클러스터에서 직접 검증한다([[29_Container_Kubernetes_Security]], [[70_Kubernetes_Security]], [[35_Supply_Chain_Attacks]]).
 
+**최신 기법·통제 (2025–2026):**
+- 정책강제(OPA/Kyverno)·런타임탐지(eBPF)·제로트러스트 통합 — 검증: 위반이 실제 거부/탐지되는지 재현([[39_Zero_Trust_Architecture]])
+- 관측성·감사 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

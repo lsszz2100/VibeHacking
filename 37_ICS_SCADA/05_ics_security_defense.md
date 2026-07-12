@@ -617,6 +617,10 @@ grep -icE 'modbus write anomaly|unauthorized command' ot_monitor.log 2>/dev/null
 
 > ICS 방어는 *통제가 강제되는가*다 — "데이터 다이오드가 있다"와 "IT→OT 역류가 0이고 비정상 write 주입 시 모니터가 알람을 낸다"는 다르다. 각 방어를 소유 OT 랩에서 직접 검증한다([[63_OT_ICS_Advanced]], [[39_Zero_Trust_Architecture]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- 수동 자산발견·프로토콜 이상탐지·변경관리가 방어 — 검증: 비인가 명령/로직이 탐지되는지 재현([[40_Threat_Hunting]])
+- 안전·가용성 우선 — 통제가 강제되는지 확인
+
 ---
 
 <a name="english"></a>

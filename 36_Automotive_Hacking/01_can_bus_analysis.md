@@ -1189,6 +1189,10 @@ candump vcan0 2>/dev/null | grep -c '  123   ' & sleep 1; kill %1 2>/dev/null   
 
 > CAN 방어는 *이상 메시지가 보이는가*다 — "버스가 동작한다"와 "비정상 ID·이중 송신·카운터 역행이 IDS에 잡힌다"는 다르다. 소유 벤치/시뮬레이터에서 메시지 무결성을 직접 확인한다([[62_Automotive_Security]], [[34_Hardware_Hacking]], [[27_IoT_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- CAN은 인증 부재로 스푸핑/주입에 취약 — 도메인 격리·CAN 방화벽·IDS로 방어. 검증: 이상 프레임 주기가 탐지되는지 재현(소유 차량/벤치)([[62_Automotive_Security]])
+- 분석은 소유 차량/벤치만 — 합법성 통제
+
 ---
 
 <a name="english"></a>

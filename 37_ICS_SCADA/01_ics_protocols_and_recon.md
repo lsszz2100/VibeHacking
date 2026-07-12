@@ -1342,6 +1342,10 @@ tshark -r ot_capture.pcap -Y 'modbus.func_code==43 || mbtcp' -T fields -e ip.src
 
 > ICS 정찰 방어는 *제어망이 안 보이는가*다 — "PLC가 동작한다"와 "OT가 인터넷에 노출 안 되고 외부 정찰 질의가 패시브 모니터에 잡힌다"는 다르다. 소유 OT 랩에서 노출 표면을 직접 확인한다([[63_OT_ICS_Advanced]], [[02_Network_Hacking]], [[27_IoT_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- Modbus/DNP3/S7 등은 인증 부재 — 수동 정찰은 소유 OT 랩만, Purdue 분리·읽기전용 모니터로 방어. 검증: 비인가 접근이 차단되는지 재현([[63_OT_ICS_Advanced]])
+- 자산 인벤토리·수동 탐지 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

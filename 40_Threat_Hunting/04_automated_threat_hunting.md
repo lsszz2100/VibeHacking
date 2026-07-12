@@ -1347,6 +1347,10 @@ sigma convert -t splunk rules/*.yml 2>&1 | grep -iE 'error|unsupported' | head
 
 > 검증은 반드시 **소유 코퍼스/엔드포인트**에서만 한다. "규칙을 만들었다"와 "손실 없이 변환되고 오탐이 없다"는 다르다 — 정상셋 스캔·변환 오류를 직접 확인한다([[06_Malware_Analysis]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 자동화·ML 이상탐지가 규모화 — 오탐 폭주 방지 가드레일 필요. 검증: 자동 결과가 재현·트리아지되는가([[68_Purple_Team]])
+- 사람 검증 루프 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

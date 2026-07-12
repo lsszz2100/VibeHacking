@@ -645,6 +645,10 @@ arp -an 2>/dev/null | sort | head
 
 > L2 방어는 *통제가 스푸핑을 실제로 막는가*다 — "스위치 동작한다"와 "port-security·DAI가 적용돼 ARP 다중 매핑이 차단·탐지된다"는 다르다. 소유 망에서 ARP 매핑·플립을 직접 확인한다([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- ARP/STP/VLAN 홉핑·DHCP 스푸핑 — DAI·BPDU가드·포트보안으로 방어. 검증: L2 공격이 실제 차단되는지 재현(소유 랩)([[02_Network_Hacking]])
+- 802.1X 포트 인증 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

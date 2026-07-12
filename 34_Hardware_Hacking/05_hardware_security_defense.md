@@ -537,6 +537,10 @@ tpm2_pcrread sha256:0,7 2>/dev/null | head
 
 > 하드웨어 방어는 *통제가 강제되는가*다 — "시큐어 부트 켰다"와 "SecureBoot=1·Setup 모드 아님이고 키가 PCR에 봉인돼 변경 시 unseal이 실패한다"는 다르다. 각 방어를 소유 기기에서 직접 검증한다([[34_Hardware_Hacking]], [[39_Zero_Trust_Architecture]], [[26_Linux_Hardening]]).
 
+**최신 기법·통제 (2025–2026):**
+- Secure Boot·TPM/보안요소·디버그 잠금·안티탬퍼가 방어 표준 — 검증: 변조·다운그레이드가 차단되는지 재현([[27_IoT_Hacking]])
+- 키 프로비저닝·수명 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

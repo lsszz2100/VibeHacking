@@ -1189,6 +1189,10 @@ kubectl get constraints -o json 2>/dev/null | jq -r '.items[]? | "\(.kind) enfor
 
 > 이미지 방어는 *미서명·취약이 거부되는가*다 — "스캔/서명한다"와 "미서명 이미지가 어드미션에서 거부되고 취약 시 빌드가 실패한다"는 다르다. 각 통제를 소유 클러스터에서 직접 검증한다([[35_Supply_Chain_Attacks]], [[29_Container_Kubernetes_Security]], [[18_DevSecOps]]).
 
+**최신 기법·통제 (2025–2026):**
+- 최소 베이스·비루트·서명(cosign)·SBOM·취약스캔이 표준 — 검증: 미서명/취약 이미지가 admission에서 차단되는가([[35_Supply_Chain_Attacks]])
+- 프로버넌스(SLSA) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

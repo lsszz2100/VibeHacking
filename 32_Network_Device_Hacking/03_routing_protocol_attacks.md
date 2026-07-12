@@ -665,6 +665,10 @@ ip route show 2>/dev/null | wc -l; ip route show 2>/dev/null | head
 
 > 라우팅 방어는 *인접이 인증되고 경로가 검증되는가*다 — "라우팅 된다"와 "인증 없는 이웃이 거부되고 예상외 prefix가 탐지된다"는 다르다. 소유 망에서 제어 평면 발신자·경로 수를 직접 확인한다([[02_Network_Hacking]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- OSPF/BGP 인젝션·하이재킹 — 인증(키체인)·RPKI·필터로 방어. 검증: 위조 경로가 거부되는지 재현([[24_Network_Infrastructure_Security]])
+- 최대프리픽스·모니터링 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

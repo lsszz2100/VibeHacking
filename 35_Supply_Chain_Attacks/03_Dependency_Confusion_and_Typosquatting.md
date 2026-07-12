@@ -592,6 +592,10 @@ grep -nE 'resolved.*registry\.npmjs\.org' package-lock.json 2>/dev/null | head
 
 > 혼동 방어는 *내부명이 공개로 새지 않는가*다 — "설치된다"와 "내부 스코프가 공개에서 해석 안 되고 버전이 핀되며 오타 의존성이 없다"는 다르다. 소유 빌드에서 네임스페이스 해석을 직접 확인한다([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).
 
+**최신 기법·통제 (2025–2026):**
+- 내부 패키지명 혼동·타이포스쿼팅·설치스크립트 위험 — 스코프/레지스트리 고정·해시핀·스캔으로 방어. 검증: 혼동 패키지가 차단되는지 재현([[59_Supply_Chain_Security]])
+- 설치스크립트 위험 스코어링 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

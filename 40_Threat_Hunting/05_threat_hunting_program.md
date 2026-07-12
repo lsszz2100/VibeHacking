@@ -1044,6 +1044,10 @@ grep -L '"status": *"ok"' ingest_status/*.json 2>/dev/null
 
 > 검증은 반드시 **소유 저장소/플랫폼**에서만 한다. "프로그램을 만들었다"와 "발견이 영구 탐지로 전환된다"는 다르다 — 탐지 커밋·수집 상태를 직접 확인한다([[25_Threat_Intelligence]], [[44_Incident_Response_DFIR]]).
 
+**최신 기법·통제 (2025–2026):**
+- MTTD/MTTR·커버리지·탐지 델타로 프로그램 성숙도 측정 — 검증: 폐쇄 갭이 회귀하지 않는지 재시험([[75_Red_Team_Reporting]])
+- 퍼플팀 피드백 루프 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

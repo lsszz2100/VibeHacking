@@ -885,6 +885,10 @@ journalctl -u 'auth*' --since '-1d' 2>/dev/null | grep -iE 'risk|revoke|reauth' 
 
 > 검증은 반드시 **소유 테스트 계정**에서만 한다. "지속 검증을 켰다"와 "비활성 후 세션이 실제로 끊긴다"는 다르다 — 회수 지연·세션 종료를 직접 확인한다([[13_SOC_Blue_Team]], [[40_Threat_Hunting]]).
 
+**최신 기법·통제 (2025–2026):**
+- CISA ZT 성숙도 모델로 갭 평가가 표준 — 검증: 성숙도 주장(로그·정책)이 데이터로 뒷받침되는가([[68_Purple_Team]])
+- 지속 모니터링·개선 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

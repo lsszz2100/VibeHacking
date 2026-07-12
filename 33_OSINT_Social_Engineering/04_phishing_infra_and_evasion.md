@@ -868,6 +868,10 @@ grep -oE "@[a-z0-9.-]+" /var/log/mail.log 2>/dev/null | sort | uniq -c | sort -r
 
 > 피싱 인프라 방어는 *AiTM·룩어라이크가 탐지되는가*다 — "MFA 있다"와 "AiTM 토큰 재사용이 잡히고 룩어라이크 도메인 등록이 모니터된다"는 다르다. 소유 브랜드·메일 로그에서 유사 도메인·발송 패턴을 직접 확인한다([[17_Red_Team_Operations]], [[24_Network_Infrastructure_Security]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- AiTM 프록시·도메인 위장·리다이렉터가 성숙 — DMARC·URL 검사·EDR로 대응. 검증: 캠페인이 승인·격리하에 수행되는가([[49_Red_Team_Infrastructure]])
+- 토큰탈취 대응 — 조건부접근이 강제되는지 확인
+
 ---
 
 <a name="english"></a>

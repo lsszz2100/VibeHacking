@@ -1130,6 +1130,10 @@ strings -n 6 owned_ecu.bin 2>/dev/null | grep -iE 'masterkey|fixedseed|0x1234567
 
 > 자동차 테스트는 *통제가 작동하는가*다 — "퍼징했다"와 "위조 ID가 거부되고 시드-키가 강하며 IVI가 제어에 못 닿는다"는 다르다. 각 통제를 소유 차량/벤치에서 직접 검증한다([[62_Automotive_Security]], [[34_Hardware_Hacking]], [[48_Threat_Modeling]]).
 
+**최신 기법·통제 (2025–2026):**
+- ISO 21434·위협모델(TARA) 기반 테스트가 표준 — 검증: 통제가 실제 강제되는지 재현(소유 벤치)([[48_Threat_Modeling]])
+- HSM·키관리 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -751,6 +751,10 @@ curl -sI https://example.com 2>/dev/null | grep -iE "server|x-powered-by|x-aspne
 
 > 프로파일링 방어는 *프로파일 표면이 좁은가*다 — "웹 있다"와 "이메일 패턴이 노출 안 되고 기술 스택 버전이 안 새며 유출 자격증명이 없다"는 다르다. 소유 도메인에서 공개 이메일·배너 노출을 직접 확인한다([[10_Pentest_Methodology]], [[22_Password_Cracking]], [[13_SOC_Blue_Team]]).
 
+**최신 기법·통제 (2025–2026):**
+- 소셜·유출·메타데이터 상관으로 프로파일링 — 최소수집·목적제한 원칙. 검증: 활동이 승인범위 내인가([[10_Pentest_Methodology]])
+- 데이터 보존·삭제 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

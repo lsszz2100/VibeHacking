@@ -661,6 +661,10 @@ comm -23 <(jq -r '.packages|keys[]' package-lock.json 2>/dev/null|sort -u) <(jq 
 
 > 공급망 방어는 *통제가 강제되는가*다 — "SBOM이 있다"와 "SBOM이 모든 의존성을 망라하고 취약 시 빌드가 실패하며 미서명 산출물이 거부된다"는 다르다. 각 통제를 소유 빌드에서 직접 검증한다([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).
 
+**최신 기법·통제 (2025–2026):**
+- in-toto·SLSA·서명 검증·SBOM·admission 정책이 통합 방어 — 검증: 각 통제가 파이프라인에서 강제되는지 재현([[18_DevSecOps]])
+- 유출 시크릿 회전·모니터링 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

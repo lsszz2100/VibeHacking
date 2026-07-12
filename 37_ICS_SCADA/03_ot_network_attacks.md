@@ -851,6 +851,10 @@ tshark -r ot_capture.pcap -Y 'modbus || s7comm' -T fields -e ip.src -e ip.dst 2>
 
 > OT 네트워크 방어는 *계층 경계가 강제되는가*다 — "공정이 동작한다"와 "IT→OT 직접연결이 없고 Purdue 레벨 위반이 모니터에 잡힌다"는 다르다. 소유 OT 랩에서 경계를 직접 확인한다([[63_OT_ICS_Advanced]], [[39_Zero_Trust_Architecture]], [[02_Network_Hacking]]).
 
+**최신 기법·통제 (2025–2026):**
+- IT/OT 경계·평면 트래픽이 횡이동 경로 — Purdue 세분화·단방향 게이트웨이로 방어. 검증: 비인가 east-west가 차단되는지 재현([[39_Zero_Trust_Architecture]])
+- 이상 탐지(비침습) — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -1283,6 +1283,10 @@ grep -rnE '"(post|pre)install"|curl |wget |nc ' node_modules/*/package.json 2>/d
 
 > 공급망 방어는 *아티팩트 출처가 검증되는가*다 — "빌드된다"와 "모든 의존성 해시가 핀되고 프로비넌스가 검증되며 의도외 빌드 후크가 없다"는 다르다. 소유 빌드/레지스트리에서 무결성을 직접 확인한다([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[74_Code_Auditing]]).
 
+**최신 기법·통제 (2025–2026):**
+- SLSA·프로버넌스·서명(Sigstore)이 무결성 표준 — 검증: 미검증 아티팩트가 배포 전 차단되는가([[59_Supply_Chain_Security]])
+- SBOM·의존성 가시성 — 강제되는지 확인([[18_DevSecOps]])
+
 ---
 
 <a name="english"></a>

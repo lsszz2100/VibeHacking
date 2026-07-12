@@ -645,6 +645,10 @@ grep -iE 'rollback (blocked|denied)|version downgrade rejected' ota_apply.log 2>
 
 > 자동차 방어는 *통제가 강제되는가*다 — "21434 준수 문서가 있다"와 "위조 CAN이 거부되고 IDS가 알람을 내며 구버전 OTA가 거부된다"는 다르다. 각 방어를 소유 차량/벤치에서 직접 검증한다([[62_Automotive_Security]], [[39_Zero_Trust_Architecture]], [[35_Supply_Chain_Attacks]]).
 
+**최신 기법·통제 (2025–2026):**
+- 도메인 격리·CAN 인증(SecOC)·IDS/IPS·Secure Boot가 방어 — 검증: 비인가 명령이 차단·탐지되는지 재현([[62_Automotive_Security]])
+- SOC 연계 모니터링 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>

@@ -1276,6 +1276,10 @@ grep -rnE 'permissions:\s*(write-all)|pull_request_target' .github/workflows/ 2>
 
 > CI 방어는 *파이프라인이 최소권한·고정인가*다 — "워크플로가 돈다"와 "액션이 SHA로 고정되고 토큰이 범위 제한되며 신뢰외 PR이 시크릿에 못 닿는다"는 다르다. 소유 파이프라인에서 직접 확인한다([[18_DevSecOps]], [[59_Supply_Chain_Security]], [[14_Cloud_Security]]).
 
+**최신 기법·통제 (2025–2026):**
+- CI 토큰탈취·러너 오염·캐시 포이즈닝 — OIDC·격리 러너·최소권한으로 방어. 검증: 포크 PR/오염 캐시가 시크릿·산출에 접근 못하는지 재현([[18_DevSecOps]])
+- 빌드 재현성·프로버넌스 — 강제되는지 확인
+
 ---
 
 <a name="english"></a>
