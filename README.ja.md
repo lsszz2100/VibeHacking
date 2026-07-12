@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Sections](https://img.shields.io/badge/Sections-75-blueviolet)](#目次)
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#目次)
-[![Lines](https://img.shields.io/badge/Lines-550%2C000%2B-orange)](#目次)
+[![Lines](https://img.shields.io/badge/Lines-560%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
 [![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·75-9933ff)](https://lsszz2100.github.io/VibeHacking/)
 

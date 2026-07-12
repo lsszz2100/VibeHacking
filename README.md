@@ -8,7 +8,7 @@
 
 [![Sections](https://img.shields.io/badge/⚔️_SECTIONS-75-FF0000?style=for-the-badge&labelColor=0d0d0d)](#목차)
 [![Files](https://img.shields.io/badge/📄_FILES-491+-00FF41?style=for-the-badge&labelColor=0d0d0d&color=00AA2C)](#목차)
-[![Lines](https://img.shields.io/badge/💻_LINES-550K%2B-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
+[![Lines](https://img.shields.io/badge/💻_LINES-560K%2B-FF8C00?style=for-the-badge&labelColor=0d0d0d)](#목차)
 [![AI](https://img.shields.io/badge/🤖_AI--POWERED-Claude+GPT-9933FF?style=for-the-badge&labelColor=0d0d0d)](#11-ai-기반-사이버보안)
 [![License](https://img.shields.io/badge/🔓_LICENSE-MIT-0078D7?style=for-the-badge&labelColor=0d0d0d)](LICENSE)
 
