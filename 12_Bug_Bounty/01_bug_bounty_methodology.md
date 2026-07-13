@@ -1518,7 +1518,7 @@ Windows로 포팅된 다수 OSS가 기본 `main(int argc, char* argv[])`(ANSI)�
           3) MultiByteToWideChar 시 MB_ERR_INVALID_CHARS로 무효 문자 거부
 ```
 
-> 버그바운티 관점: Windows에서 구동되는 웹앱/CGI·파일 업로드·아카이브 처리 기능을 만나면 `%A5`·`%AD`·전각 문자로 인코딩 필터·경로 검증을 테스트해 볼 가치가 있다([[05_advanced_vuln_chains]], [[12_LFI/RFI]]).
+> 버그바운티 관점: Windows에서 구동되는 웹앱/CGI·파일 업로드·아카이브 처리 기능을 만나면 `%A5`·`%AD`·전각 문자로 인코딩 필터·경로 검증을 테스트해 볼 가치가 있다([[05_advanced_vuln_chains]], [[05_Web_Hacking]]).
 
 ---
 
