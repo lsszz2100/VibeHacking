@@ -57,9 +57,9 @@ Opening the site runs a boot sequence and drops you into an **infiltration conso
 | `vault` 금고 | **3** | XOR(단일/반복키)·ROT47·Base85·포맷스트링·SSTI·YARA·AD·ELF매직·HMAC·IMDS·AssumeRole·CSPM | 19 | 7 |
 | `core` 코어 | **4** | 체인/이중·3중 디코딩, Vigenère, 컨테이너 탈출, K8s Secret, AES-GCM, JWT, AI 보안, Prefetch, Volatility, ASLR, 스택 카나리아, ROP, UAF, 콜드스타트, USBSTOR / chained decoding, Vigenère, container escape, AES-GCM, AI security, Prefetch, Volatility, ASLR, stack canary, ROP, UAF, cold start, USBSTOR | 20 | 5 |
 
-총 **100문제**(분야: 웹 23 · 암호 29 · 시스템 16 · 포렌식 16 · 클라우드/AI 16). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **106문제**(분야: 웹 29 · 암호 29 · 시스템 16 · 포렌식 16 · 클라우드/AI 16). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **100 challenges** (web 23 · crypto 29 · system 16 · forensics 16 · cloud/AI 16); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **106 challenges** (web 29 · crypto 29 · system 16 · forensics 16 · cloud/AI 16); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 

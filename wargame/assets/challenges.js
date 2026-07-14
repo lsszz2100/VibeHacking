@@ -1095,6 +1095,90 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t4_ssti_mro",
+    "tier": 4,
+    "cat": "web",
+    "track": "web",
+    "points": 170,
+    "ci": true,
+    "hash": "a9c495d34b02acf3b3936b062a8a9d775c6ac075131050fb4976b691b821f50d",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "클래스 계층을 거슬러",
+      "en": "Walk the Class Hierarchy"
+    },
+    "prompt": {
+      "ko": "Jinja2 SSTI로 RCE까지 가는 표준 gadget 체인에서, `''.__class__` 다음에 이어 붙여 메서드 결정 순서(상속 계층 전체)를 튜플로 얻고 거기서 `object` 를 찾는 던더 속성은? (한 단어)",
+      "en": "In the classic Jinja2 SSTI-to-RCE gadget chain, which dunder attribute do you append after `''.__class__` to get the full method resolution order (inheritance chain) as a tuple and locate `object`? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "밑줄 두 개로 감싸인 던더 속성이며, 상속 순서 리스트를 줍니다.",
+        "`__bases__` 는 한 단계만, 이것은 전체 순서를 줍니다: `__m__`."
+      ],
+      "en": [
+        "A dunder attribute returning the ordered inheritance list.",
+        "`__bases__` gives one level; this gives the whole order: `__m__`."
+      ]
+    }
+  },
+  {
+    "id": "t4_graphql",
+    "tier": 4,
+    "cat": "web",
+    "track": "web",
+    "points": 160,
+    "ci": true,
+    "hash": "9abecc0128b99a8ff87b8fbe4cf4f683b129ae108ec4ee33c43d436b0d5c115c",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "스키마를 통째로",
+      "en": "Dump the Whole Schema"
+    },
+    "prompt": {
+      "ko": "운영 환경에서 비활성화해야 하지만 켜져 있으면 `__schema` 질의로 전체 타입·필드·뮤테이션을 덤프당하는, GraphQL의 이 내장 기능 이름은? (영문 한 단어)",
+      "en": "Which built-in GraphQL feature — one that should be disabled in production — lets an attacker dump every type, field and mutation via a `__schema` query when left enabled? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "`__schema` / `__type` 같은 메타 질의를 가능하게 하는 기능입니다.",
+        "'내성/자기관찰'을 뜻하는 영어 단어: intro________."
+      ],
+      "en": [
+        "It powers meta-queries like `__schema` / `__type`.",
+        "The English word for self-inspection: intro________."
+      ]
+    }
+  },
+  {
+    "id": "t4_webchain",
+    "tier": 4,
+    "cat": "web",
+    "track": "web",
+    "points": 180,
+    "ci": false,
+    "hash": "ec4d0e6d24434d0509745b2e6193045627440a74645e5207bd3a3a6fe7074140",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이중 인코딩 세션 토큰",
+      "en": "Double-Encoded Session Token"
+    },
+    "prompt": {
+      "ko": "탈취한 세션 토큰이 Base64로 두 번 감싸여 있습니다. 두 번 디코드해 플래그를 복구하세요:\n\n`Umt4QlIzdHNZWGxsY21Wa1gzZGxZbDkwYjJ0bGJsOWpjbUZqYTJWa2ZRPT0=`",
+      "en": "A stolen session token is wrapped in Base64 twice. Decode it twice to recover the flag:\n\n`Umt4QlIzdHNZWGxsY21Wa1gzZGxZbDkwYjJ0bGJsOWpjbUZqYTJWa2ZRPT0=`"
+    },
+    "hints": {
+      "ko": [
+        "한 번 Base64 디코드하면 또 다른 Base64 문자열이 나옵니다.",
+        "`echo '...' | base64 -d | base64 -d` 또는 `atob(atob('...'))`."
+      ],
+      "en": [
+        "One Base64 decode yields another Base64 string.",
+        "`echo '...' | base64 -d | base64 -d` or `atob(atob('...'))`."
+      ]
+    }
+  },
+  {
     "id": "t4_gcm",
     "tier": 4,
     "cat": "crypto",
@@ -2043,6 +2127,90 @@ const CHALLENGES = [
       "en": [
         "Base64URL-decode → JSON.",
         "Before `atob`, swap `-`→`+`, `_`→`/`."
+      ]
+    }
+  },
+  {
+    "id": "t3_proto",
+    "tier": 3,
+    "cat": "web",
+    "track": "web",
+    "points": 130,
+    "ci": true,
+    "hash": "30e2af384186b57fda019524ade9f9afe48e815480b993d14ec8dc68251b592a",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "프로토타입을 오염시켜라",
+      "en": "Pollute the Prototype"
+    },
+    "prompt": {
+      "ko": "JavaScript 프로토타입 오염(prototype pollution) 공격에서, 병합·복사 로직을 속여 모든 객체의 상위 프로토타입에 속성을 심을 때 페이로드의 키로 사용하는 특수 속성 이름은? (한 단어)",
+      "en": "In a JavaScript prototype pollution attack, which special property name is used as the payload key to inject onto every object's parent prototype via a vulnerable merge/copy? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "밑줄 두 개로 감싸인 던더(dunder) 속성입니다.",
+        "`obj.__?__.polluted = true` 형태로 접근합니다."
+      ],
+      "en": [
+        "It is a double-underscore (dunder) property.",
+        "Accessed as `obj.__?__.polluted = true`."
+      ]
+    }
+  },
+  {
+    "id": "t3_jinjaconfig",
+    "tier": 3,
+    "cat": "web",
+    "track": "web",
+    "points": 130,
+    "ci": true,
+    "hash": "b79606fb3afea5bd1609ed40b622142f1c98125abcfe89a76a661b0e8e343910",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "설정을 유출하라",
+      "en": "Leak the Config"
+    },
+    "prompt": {
+      "ko": "Flask/Jinja2 SSTI에서 `{{ ____ }}` 로 접근하면 앱의 SECRET_KEY 등 설정값이 통째로 노출되는, 템플릿 전역 객체의 이름은? (소문자 한 단어)",
+      "en": "In Flask/Jinja2 SSTI, which template global object, accessed as `{{ ____ }}`, dumps the app's settings including SECRET_KEY? (one lowercase word)"
+    },
+    "hints": {
+      "ko": [
+        "Flask 앱 설정을 담는 딕셔너리형 전역입니다.",
+        "`app.config` 의 마지막 단어."
+      ],
+      "en": [
+        "A dict-like global holding the Flask app settings.",
+        "The last word of `app.config`."
+      ]
+    }
+  },
+  {
+    "id": "t3_jwtnone",
+    "tier": 3,
+    "cat": "web",
+    "track": "web",
+    "points": 140,
+    "ci": false,
+    "hash": "283e5c828024eb91519475544f6bf59eae0da2a89310e5c94a460d7352802a8a",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "서명 없는 토큰",
+      "en": "The Unsigned Token"
+    },
+    "prompt": {
+      "ko": "다음 JWT는 `alg: none` 으로 서명 부분이 비어 있어 누구나 위조할 수 있습니다. payload를 Base64URL 디코드해 `flag` 값을 찾으세요:\n\n`eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiIsImZsYWciOiJGTEFHe2p3dF9ub25lX2FsZ19mb3JnZXJ5fSIsImFkbWluIjp0cnVlfQ.`",
+      "en": "This JWT uses `alg: none` — the signature part is empty, so anyone can forge it. Base64URL-decode the payload and read the `flag` value:\n\n`eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiIsImZsYWciOiJGTEFHe2p3dF9ub25lX2FsZ19mb3JnZXJ5fSIsImFkbWluIjp0cnVlfQ.`"
+    },
+    "hints": {
+      "ko": [
+        "점(.)으로 나뉜 두 번째 조각이 payload 입니다.",
+        "Base64URL 디코드 → JSON 의 `flag` 필드."
+      ],
+      "en": [
+        "The second dot-separated part is the payload.",
+        "Base64URL-decode → the `flag` field of the JSON."
       ]
     }
   },
