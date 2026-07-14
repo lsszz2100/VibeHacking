@@ -2215,6 +2215,174 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t3_ssrf",
+    "tier": 3,
+    "cat": "web",
+    "track": "web",
+    "points": 130,
+    "ci": true,
+    "hash": "9cc1ee455a3363ffc504f40006f70d0c8276648a5d3eb3f9524e94d1b7a83aef",
+    "fmt": "스킴 이름 / scheme name",
+    "title": {
+      "ko": "프로토콜을 바꿔라",
+      "en": "Switch the Protocol"
+    },
+    "prompt": {
+      "ko": "SSRF 취약점으로 내부 서비스(예: 인증 없는 Redis)에 임의의 원시 바이트를 밀어 넣으려 합니다. `http://` 로는 원하는 명령을 못 보낼 때, `curl` 도 지원하는 오래된 프로토콜을 이용해 원시 TCP 페이로드를 실어 보내는 비-HTTP URI 스킴은? (한 단어)",
+      "en": "Via an SSRF you want to push arbitrary raw bytes into an internal, auth-less service (e.g. Redis). Since `http://` can't carry the exact commands, which non-HTTP URI scheme — an old protocol that `curl` still supports — lets you smuggle a raw TCP payload? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "`____://127.0.0.1:6379/_` 형태로 Redis 에 접근합니다.",
+        "1991년경의 문서 검색 프로토콜에서 이름을 따왔습니다."
+      ],
+      "en": [
+        "Used as `____://127.0.0.1:6379/_` to reach Redis.",
+        "Named after a ~1991 document-retrieval protocol."
+      ]
+    }
+  },
+  {
+    "id": "t3_nosql",
+    "tier": 3,
+    "cat": "web",
+    "track": "web",
+    "points": 130,
+    "ci": true,
+    "hash": "5f664be5d489773c905edcf99b771251121c7c4539fe760305c424ebda69373a",
+    "fmt": "연산자 / operator ($ 포함)",
+    "title": {
+      "ko": "같지 않으면 참",
+      "en": "True When Not Equal"
+    },
+    "prompt": {
+      "ko": "MongoDB 백엔드 로그인에서 JSON 본문을 보내면 필터에 그대로 들어갑니다. `{\"user\":\"admin\",\"password\":{\"$__\":\"\"}}` 처럼 비밀번호를 '어떤 값과도 같지 않음' 으로 만들어 항상 참이 되게 하는 MongoDB 쿼리 연산자는? (`$` 포함)",
+      "en": "A MongoDB-backed login puts your JSON body straight into the query filter. Which MongoDB query operator makes the password field mean 'not equal to anything', so the check is always true — as in `{\"user\":\"admin\",\"password\":{\"$__\":\"\"}}`? (include the `$`)"
+    },
+    "hints": {
+      "ko": [
+        "영어 'not equal' 의 줄임말입니다.",
+        "`$gt`, `$ne`, `$regex` 같은 비교 연산자 계열."
+      ],
+      "en": [
+        "Short for 'not equal'.",
+        "Same family as `$gt`, `$ne`, `$regex`."
+      ]
+    }
+  },
+  {
+    "id": "t3_cors",
+    "tier": 3,
+    "cat": "web",
+    "track": "web",
+    "points": 130,
+    "ci": true,
+    "hash": "631aada47deaf488bb72eee0873a20472c8f43ff960f2188f66cc41eb3f35428",
+    "fmt": "헤더 접미사 / header suffix",
+    "title": {
+      "ko": "출처를 반사하다",
+      "en": "Reflected Origin"
+    },
+    "prompt": {
+      "ko": "취약한 서버가 요청의 `Origin` 을 그대로 `Access-Control-Allow-Origin` 에 반사합니다. 여기에 더해 피해자의 인증 세션(자격증명)까지 실린 교차-출처 요청을 브라우저가 허용하게 하려면, 서버가 반드시 `true` 로 내보내야 하는 응답 헤더는? `Access-Control-Allow-________`",
+      "en": "A vulnerable server reflects the request's `Origin` back into `Access-Control-Allow-Origin`. To also let the browser attach the victim's authenticated session (credentials) on that cross-origin request, which response header must the server set to `true`? `Access-Control-Allow-________`"
+    },
+    "hints": {
+      "ko": [
+        "자격증명(인증 세션) 전송 허용 여부를 정합니다.",
+        "이 헤더가 `true` 이면 ACAO 는 와일드카드 `*` 를 쓸 수 없습니다."
+      ],
+      "en": [
+        "It governs whether credentials (the authenticated session) may be sent.",
+        "When it is `true`, ACAO cannot use the wildcard `*`."
+      ]
+    }
+  },
+  {
+    "id": "t4_smuggling",
+    "tier": 4,
+    "cat": "web",
+    "track": "web",
+    "points": 170,
+    "ci": true,
+    "hash": "1ecb76524bc07187f9be47535fc44a9dff07e6d525396d40b2a441c9a52ab523",
+    "fmt": "약칭 / abbreviation (예: AB.CD)",
+    "title": {
+      "ko": "두 서버의 엇갈린 셈",
+      "en": "Two Servers Disagree"
+    },
+    "prompt": {
+      "ko": "HTTP 요청 스머글링에서 프런트엔드 프록시는 `Content-Length` 헤더로 요청 경계를 판단하고, 백엔드 서버는 `Transfer-Encoding: chunked` 를 신뢰합니다. 이렇게 프런트=CL, 백엔드=TE 로 엇갈리는 고전적 스머글링 유형을 부르는 점(.) 포함 표준 약칭은? (예: `AB.CD` 형태)",
+      "en": "In HTTP request smuggling the front-end proxy uses the `Content-Length` header to find the request boundary, while the back-end trusts `Transfer-Encoding: chunked`. What is the dotted standard abbreviation for this classic front-end=CL, back-end=TE mismatch? (form `AB.CD`)"
+    },
+    "hints": {
+      "ko": [
+        "프런트=Content-Length, 백엔드=Transfer-Encoding 순서 그대로 약칭이 됩니다.",
+        "정반대 조합은 `TE.CL` 입니다."
+      ],
+      "en": [
+        "The abbreviation follows the order front=Content-Length, back=Transfer-Encoding.",
+        "The mirror-image variant is `TE.CL`."
+      ]
+    }
+  },
+  {
+    "id": "t4_oauth",
+    "tier": 4,
+    "cat": "web",
+    "track": "web",
+    "points": 160,
+    "ci": true,
+    "hash": "ca74bea00c269f053d5ac8df6f09be5b1e86f973195de3fd98e4a1e9838ce8e0",
+    "fmt": "약어 / acronym (4글자)",
+    "title": {
+      "ko": "가로챈 코드를 무력화하라",
+      "en": "Neutralize the Stolen Code"
+    },
+    "prompt": {
+      "ko": "모바일·SPA 같은 공개 클라이언트에서 OAuth 2.0 인가 코드가 가로채여도 재사용을 막기 위해, 클라이언트가 임의의 `code_verifier` 와 그 해시인 `code_challenge` 를 주고받도록 한 확장 규격의 4글자 약어는?",
+      "en": "For public clients (mobile / SPA), which 4-letter OAuth 2.0 extension makes the client exchange a random `code_verifier` and its hash `code_challenge`, so a stolen authorization code cannot be replayed?"
+    },
+    "hints": {
+      "ko": [
+        "Proof Key for Code Exchange 의 약어입니다.",
+        "흔히 '픽시' 라고 읽습니다. (RFC 7636)"
+      ],
+      "en": [
+        "Acronym of 'Proof Key for Code Exchange'.",
+        "Commonly pronounced 'pixy'. (RFC 7636)"
+      ]
+    }
+  },
+  {
+    "id": "t4_cachepoison",
+    "tier": 4,
+    "cat": "web",
+    "track": "web",
+    "points": 160,
+    "ci": true,
+    "hash": "4740ae6347b0172c01254ff55bae5aff5199f4446e7f6d643d40185b3f475145",
+    "fmt": "헤더 접미사 / header suffix",
+    "title": {
+      "ko": "캐시를 오염시키는 헤더",
+      "en": "The Header That Poisons the Cache"
+    },
+    "prompt": {
+      "ko": "웹 캐시 포이즈닝과 비밀번호 재설정 오염 공격에서, 앱이 절대 URL(예: 재설정 링크)을 만들 때 요청에서 그대로 신뢰하면 위험한 대표적 '언키드(캐시 키 미포함)' 요청 헤더는? `X-Forwarded-____`",
+      "en": "In web cache poisoning and password-reset poisoning, which classic 'unkeyed' request header is dangerous when an app trusts it to build absolute URLs (e.g. a reset link)? `X-Forwarded-____`"
+    },
+    "hints": {
+      "ko": [
+        "리버스 프록시가 원래 요청의 호스트명을 뒤로 전달할 때 쓰는 헤더입니다.",
+        "`X-Forwarded-For` 의 형제이지만, 이건 IP 가 아니라 호스트명을 담습니다."
+      ],
+      "en": [
+        "The header a reverse proxy uses to pass the original hostname downstream.",
+        "A sibling of `X-Forwarded-For`, but it carries the hostname, not the IP."
+      ]
+    }
+  },
+  {
     "id": "t4_triple",
     "tier": 4,
     "cat": "crypto",
