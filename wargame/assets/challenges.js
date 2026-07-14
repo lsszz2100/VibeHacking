@@ -1347,6 +1347,174 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t0_whoami",
+    "tier": 0,
+    "cat": "linux",
+    "track": "system",
+    "points": 45,
+    "ci": true,
+    "hash": "f25297859cf0a70af5c053a5464a5fa647a35ceee1d91397331903846d79ffc1",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "나는 누구인가",
+      "en": "Who Am I"
+    },
+    "prompt": {
+      "ko": "리눅스 셸에서 현재 로그인한(유효 사용자) 계정 이름을 출력하는 한 단어짜리 명령은?",
+      "en": "Which one-word Linux command prints the name of the currently logged-in (effective) user?"
+    },
+    "hints": {
+      "ko": [
+        "영어 의문문 'who am i' 를 붙여 쓴 이름입니다.",
+        "권한 상승 후 root 로 바뀌었는지 확인할 때 자주 씁니다."
+      ],
+      "en": [
+        "It is the words 'who am i' joined together.",
+        "Often run after privesc to check if you became root."
+      ]
+    }
+  },
+  {
+    "id": "t0_shebang",
+    "tier": 0,
+    "cat": "linux",
+    "track": "system",
+    "points": 50,
+    "ci": true,
+    "hash": "c8c91095817f0cf3a7bd74e5a0104431cde285d893acbfc3b3d73396ea8844be",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "샵-뱅 두 글자",
+      "en": "The First Two Bytes"
+    },
+    "prompt": {
+      "ko": "유닉스 스크립트의 첫 줄 맨 앞에 오는 `#!` 기호(예: `#!/bin/bash`)를 부르는 영어 이름은? 이 두 바이트가 어떤 인터프리터로 스크립트를 실행할지 정합니다. (한 단어)",
+      "en": "What is the English name of the `#!` marker at the very start of a Unix script's first line (e.g. `#!/bin/bash`), whose two bytes select the interpreter used to run the script? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "`#` (sharp/hash) 와 `!` (bang) 를 합친 속어입니다.",
+        "파일의 매직 넘버 `0x23 0x21` 에 해당합니다."
+      ],
+      "en": [
+        "A slang blend of `#` (sharp/hash) and `!` (bang).",
+        "Corresponds to the file magic bytes `0x23 0x21`."
+      ]
+    }
+  },
+  {
+    "id": "t1_ldd",
+    "tier": 1,
+    "cat": "linux",
+    "track": "system",
+    "points": 65,
+    "ci": true,
+    "hash": "fc8329924ddd4805793ff18ae0d87685f6717160db36eb22ca04e8a55130287b",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "무엇에 기대는가",
+      "en": "What It Leans On"
+    },
+    "prompt": {
+      "ko": "동적 링크된 실행 파일이 어떤 공유 라이브러리(`.so`)에 의존하는지 나열해 주는 리눅스 명령은? (한 단어, 소문자)",
+      "en": "Which Linux command lists the shared libraries (`.so`) that a dynamically linked executable depends on? (one lowercase word)"
+    },
+    "hints": {
+      "ko": [
+        "'List Dynamic Dependencies' 의 머리글자입니다.",
+        "출력에 `libc.so.6 => ...` 같은 줄이 보입니다."
+      ],
+      "en": [
+        "Initials of 'List Dynamic Dependencies'.",
+        "Its output shows lines like `libc.so.6 => ...`."
+      ]
+    }
+  },
+  {
+    "id": "t1_endian",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "system",
+    "points": 65,
+    "ci": true,
+    "hash": "180ca01b95f0dfdd36fbb600e51cf6e46c8ef468de56b017847886fefaf7b6f9",
+    "fmt": "빈칸 한 단어 / one word",
+    "title": {
+      "ko": "작은 쪽이 먼저",
+      "en": "Smallest First"
+    },
+    "prompt": {
+      "ko": "x86/x86-64 는 정수를 메모리에 저장할 때 **최하위 바이트를 낮은 주소에 먼저** 둡니다. 예를 들어 `0x11223344` 는 바이트열 `44 33 22 11` 로 쌓입니다. 이 바이트 순서의 이름은 '____ 엔디언'? (빈칸에 들어갈 영어 한 단어)",
+      "en": "x86/x86-64 stores an integer with its **least-significant byte at the lowest address first** — e.g. `0x11223344` is laid out as bytes `44 33 22 11`. This byte order is called '____-endian'. (fill the blank, one English word)"
+    },
+    "hints": {
+      "ko": [
+        "네트워크 바이트 순서인 'big 엔디언' 의 반대말입니다.",
+        "익스플로잇에서 주소를 `struct.pack('<Q', addr)` 처럼 이 순서로 패킹합니다."
+      ],
+      "en": [
+        "The opposite of 'big-endian' (network byte order).",
+        "In exploits you pack addresses this way, e.g. `struct.pack('<Q', addr)`."
+      ]
+    }
+  },
+  {
+    "id": "t2_gdb",
+    "tier": 2,
+    "cat": "reversing",
+    "track": "system",
+    "points": 90,
+    "ci": true,
+    "hash": "a919007637abd504f123db0cbc8f290ab16db93adf24b1fc03c50e6131d2b98e",
+    "fmt": "gdb 명령 / gdb command",
+    "title": {
+      "ko": "달리는 프로세스에 올라타라",
+      "en": "Latch Onto a Running Process"
+    },
+    "prompt": {
+      "ko": "이미 실행 중인 프로그램을 gdb 로 디버깅하려고 그 프로세스 ID 에 디버거를 연결(붙이기)할 때 쓰는 gdb 명령은? (한 단어, `gdb -p` 가 내부적으로 수행하는 동작의 이름)",
+      "en": "To debug an already-running program, which gdb command attaches the debugger to its process ID? (one word — the action `gdb -p` performs under the hood)"
+    },
+    "hints": {
+      "ko": [
+        "반대 명령은 `detach` 입니다.",
+        "`attach <PID>` 형태로 사용합니다."
+      ],
+      "en": [
+        "The opposite command is `detach`.",
+        "Used as `attach <PID>`."
+      ]
+    }
+  },
+  {
+    "id": "t3_got",
+    "tier": 3,
+    "cat": "pwn",
+    "track": "system",
+    "points": 120,
+    "ci": true,
+    "hash": "0497db517ef058cb6d3672d5ffe8f062fddabc4bf56aa1d254b7f078e9a79e49",
+    "fmt": "약어 / acronym (3글자)",
+    "title": {
+      "ko": "덮어쓰면 흐름을 뺏는 표",
+      "en": "Overwrite It, Hijack the Flow"
+    },
+    "prompt": {
+      "ko": "동적 링크 바이너리에서 외부 함수(예: `libc` 의 `puts`)의 실제 주소가 처음 호출 시 해석되어 채워지는 테이블입니다. 이 항목을 임의 쓰기로 덮어써 제어 흐름을 탈취하는 고전 pwn 기법의 표적이 되는 이 테이블의 3글자 약어는?",
+      "en": "In a dynamically linked binary, this table is filled in — at first call — with the resolved real address of an external function (e.g. libc's `puts`). What is the 3-letter acronym of the table that a classic pwn technique overwrites to hijack control flow?"
+    },
+    "hints": {
+      "ko": [
+        "Global Offset Table 의 머리글자입니다.",
+        "짝을 이루는 것은 `PLT`(Procedure Linkage Table) 입니다."
+      ],
+      "en": [
+        "Initials of 'Global Offset Table'.",
+        "Its counterpart is the `PLT` (Procedure Linkage Table)."
+      ]
+    }
+  },
+  {
     "id": "t1_nmap",
     "tier": 1,
     "cat": "network",

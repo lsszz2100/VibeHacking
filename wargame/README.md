@@ -51,15 +51,15 @@ Opening the site runs a boot sequence and drops you into an **infiltration conso
 
 | 계층 / node | 티어 / tier | 주제 / topics | 문제 / count | 통과 / breach |
 |------|:---:|------|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 소스 보기, 개발자도구, Base64, 바이너리, 역순/URL/NATO, 메타태그, MD5, xxd, IAM, VPC, 시그널, 포렌식 이미지, 리전 / source, devtools, Base64, binary, reverse/URL/NATO, meta, MD5, xxd, IAM, VPC, signals, forensic imaging, cloud regions | 18 | 4 |
-| `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse/Atbash/A1Z26), 쿠키, HTTP, Basic 인증, nmap, ARN, 스냅샷, 심볼릭 링크, 로드밸런서, pcap, 관리연속성 / classic ciphers, cookies, HTTP, Basic auth, nmap, ARN, snapshot, symlinks, load balancers, pcap, chain of custody | 21 | 6 |
-| `internal` 내부망 | **2** | SQLi·XSS·JWT·해시·Base32/58·Unicode·Vigenère·LFI·IDOR·리버싱·S3·K8s·ProcMon·lsof | 22 | 9 |
-| `vault` 금고 | **3** | XOR(단일/반복키)·ROT47·Base85·포맷스트링·SSTI·YARA·AD·ELF매직·HMAC·IMDS·AssumeRole·CSPM | 19 | 7 |
-| `core` 코어 | **4** | 체인/이중·3중 디코딩, Vigenère, 컨테이너 탈출, K8s Secret, AES-GCM, JWT, AI 보안, Prefetch, Volatility, ASLR, 스택 카나리아, ROP, UAF, 콜드스타트, USBSTOR / chained decoding, Vigenère, container escape, AES-GCM, AI security, Prefetch, Volatility, ASLR, stack canary, ROP, UAF, cold start, USBSTOR | 20 | 5 |
+| `perimeter` 외곽 | **0** | 소스 보기, 개발자도구, Base64, 바이너리, 역순/URL/NATO, 메타태그, MD5, xxd, IAM, VPC, 시그널, 포렌식 이미지, 리전 / source, devtools, Base64, binary, reverse/URL/NATO, meta, MD5, xxd, IAM, VPC, signals, forensic imaging, cloud regions, whoami, shebang | 20 | 4 |
+| `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse/Atbash/A1Z26), 쿠키, HTTP, Basic 인증, nmap, ARN, 스냅샷, 심볼릭 링크, 로드밸런서, pcap, 관리연속성 / classic ciphers, cookies, HTTP, Basic auth, nmap, ARN, snapshot, symlinks, load balancers, pcap, chain of custody, ldd, endianness | 23 | 6 |
+| `internal` 내부망 | **2** | SQLi·XSS·JWT·해시·Base32/58·Unicode·Vigenère·LFI·IDOR·리버싱·S3·K8s·ProcMon·lsof·gdb attach | 23 | 9 |
+| `vault` 금고 | **3** | XOR(단일/반복키)·ROT47·Base85·포맷스트링·SSTI·YARA·AD·ELF매직·HMAC·IMDS·AssumeRole·CSPM·GOT overwrite | 26 | 7 |
+| `core` 코어 | **4** | 체인/이중·3중 디코딩, Vigenère, 컨테이너 탈출, K8s Secret, AES-GCM, JWT, AI 보안, Prefetch, Volatility, ASLR, 스택 카나리아, ROP, UAF, 콜드스타트, USBSTOR / chained decoding, Vigenère, container escape, AES-GCM, AI security, Prefetch, Volatility, ASLR, stack canary, ROP, UAF, cold start, USBSTOR | 26 | 5 |
 
-총 **112문제**(분야: 웹 35 · 암호 29 · 시스템 16 · 포렌식 16 · 클라우드/AI 16). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **118문제**(분야: 웹 35 · 암호 29 · 시스템 22 · 포렌식 16 · 클라우드/AI 16). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **112 challenges** (web 35 · crypto 29 · system 16 · forensics 16 · cloud/AI 16); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **118 challenges** (web 35 · crypto 29 · system 22 · forensics 16 · cloud/AI 16); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 
