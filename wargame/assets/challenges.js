@@ -3389,5 +3389,173 @@ const CHALLENGES = [
         "A blend of 'USB' and 'storage'."
       ]
     }
+  },
+  {
+    "id": "t0_dd",
+    "tier": 0,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 50,
+    "ci": true,
+    "hash": "9b7ecc6eeb83abf9ade10fe38865df4499be3568dcc507ae2ec3b44989cb0093",
+    "fmt": "명령어 / command (2글자)",
+    "title": {
+      "ko": "비트 단위 그대로 복제",
+      "en": "Bit-for-Bit Copy"
+    },
+    "prompt": {
+      "ko": "포렌식에서 원본 저장매체를 변경하지 않고 디스크나 파티션을 비트 단위로 그대로 복제(이미징)할 때 쓰는 고전적인 두 글자짜리 유닉스 명령은?",
+      "en": "In forensics, which classic two-letter Unix command makes a bit-for-bit copy (image) of a disk or partition without altering the original media?"
+    },
+    "hints": {
+      "ko": [
+        "`____ if=/dev/sda of=disk.img bs=4M` 형태로 사용합니다.",
+        "'data duplicator' 또는 'disk dump' 라고도 풀어 부릅니다."
+      ],
+      "en": [
+        "Used as `____ if=/dev/sda of=disk.img bs=4M`.",
+        "Sometimes expanded as 'data duplicator' or 'disk dump'."
+      ]
+    }
+  },
+  {
+    "id": "t1_tcpdump",
+    "tier": 1,
+    "cat": "network",
+    "track": "forensics",
+    "points": 60,
+    "ci": true,
+    "hash": "3096fd17ccf8ee00173d4d753aa67e476526b800ae6eff06b055d71fc4ce6dff",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "명령줄의 패킷 사냥꾼",
+      "en": "The Command-Line Packet Hunter"
+    },
+    "prompt": {
+      "ko": "GUI 없이 터미널에서 네트워크 패킷을 실시간 캡처하고 `.pcap` 로 저장하는 대표적인 명령줄 도구는? (Wireshark 의 텍스트판 형제, 한 단어)",
+      "en": "Which classic command-line tool captures network packets in real time from a terminal (no GUI) and can save them as `.pcap`? (the text-mode sibling of Wireshark, one word)"
+    },
+    "hints": {
+      "ko": [
+        "이름은 'TCP' + 'dump' 의 합성입니다.",
+        "`____ -i eth0 -w out.pcap` 형태로 캡처합니다."
+      ],
+      "en": [
+        "Its name blends 'TCP' + 'dump'.",
+        "Capture with `____ -i eth0 -w out.pcap`."
+      ]
+    }
+  },
+  {
+    "id": "t2_carving",
+    "tier": 2,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 85,
+    "ci": true,
+    "hash": "117b405eea833174250f59af5a817ab521ebafecc77441483223441a0ec4a890",
+    "fmt": "빈칸 한 단어 / one word",
+    "title": {
+      "ko": "메타데이터 없이 파일을 건지다",
+      "en": "Recover Files With No Metadata"
+    },
+    "prompt": {
+      "ko": "파일시스템 구조나 디렉터리 정보가 손상돼 없을 때, 원시 바이트 스트림에서 알려진 헤더·푸터 시그니처(예: JPEG 의 `FF D8 ... FF D9`)를 찾아 파일을 통째로 복원하는 포렌식 기법을 '파일 ______' 라 부릅니다. 빈칸에 들어갈 영어 한 단어는? (foremost·scalpel 같은 도구가 수행)",
+      "en": "When filesystem structures or directory entries are gone, the forensic technique of scanning a raw byte stream for known header/footer signatures (e.g. JPEG's `FF D8 ... FF D9`) to reconstruct whole files is called 'file ______'. What one English word fills the blank? (tools like foremost / scalpel do this)"
+    },
+    "hints": {
+      "ko": [
+        "고기를 '발라내다' 라는 뜻의 영어 단어와 같습니다.",
+        "`foremost`, `scalpel`, `photorec` 이 이 작업을 수행합니다."
+      ],
+      "en": [
+        "Same English word as slicing/carving meat.",
+        "`foremost`, `scalpel`, and `photorec` perform it."
+      ]
+    }
+  },
+  {
+    "id": "t2_ads",
+    "tier": 2,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 90,
+    "ci": true,
+    "hash": "788eb2efc52660fe41472319f0d2c623be6540c956921b3632fcc934bf1be10d",
+    "fmt": "약어 / acronym (3글자)",
+    "title": {
+      "ko": "파일 뒤에 숨은 흐름",
+      "en": "The Stream Behind the File"
+    },
+    "prompt": {
+      "ko": "NTFS 파일시스템에서 하나의 파일에 눈에 보이지 않는 별도의 데이터 흐름을 덧붙여 악성코드를 숨길 수 있습니다(`notepad file.txt:hidden.exe`). 이 '대체 데이터 스트림' 기능을 가리키는 3글자 영어 약어는?",
+      "en": "On NTFS, a file can carry an invisible extra data stream used to hide malware (`notepad file.txt:hidden.exe`). What is the 3-letter English acronym for this 'alternate data stream' feature?"
+    },
+    "hints": {
+      "ko": [
+        "'Alternate Data Stream' 의 머리글자입니다.",
+        "`dir /r` 또는 `Get-Item -Stream *` 로 탐지합니다."
+      ],
+      "en": [
+        "Initials of 'Alternate Data Stream'.",
+        "Detect with `dir /r` or `Get-Item -Stream *`."
+      ]
+    }
+  },
+  {
+    "id": "t4_mft",
+    "tier": 4,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 150,
+    "ci": true,
+    "hash": "29a44d58cc6374a2e166bb1738c0ca4f012d7ba929f18365ff5f7e75ba99e6b7",
+    "fmt": "약어 / acronym (3글자, $___)",
+    "title": {
+      "ko": "모든 파일의 장부",
+      "en": "The Ledger of Every File"
+    },
+    "prompt": {
+      "ko": "NTFS 볼륨에서 모든 파일·디렉터리의 이름·타임스탬프·클러스터 위치 등 레코드를 담아, 디스크 포렌식과 타임라인 분석의 핵심이 되는 메타데이터 구조가 있습니다. `$` 로 시작하는 이 구조의 3글자 약어는?",
+      "en": "On an NTFS volume there is a metadata structure holding a record for every file and directory — names, timestamps, cluster locations — central to disk forensics and timeline analysis. What is its 3-letter acronym (it starts with `$`)?"
+    },
+    "hints": {
+      "ko": [
+        "'Master File Table' 의 머리글자입니다.",
+        "`$` 접두사가 붙는 NTFS 메타파일이며, 각 레코드 크기는 보통 1024바이트."
+      ],
+      "en": [
+        "Initials of 'Master File Table'.",
+        "A `$`-prefixed NTFS metafile; each record is usually 1024 bytes."
+      ]
+    }
+  },
+  {
+    "id": "t4_timestomp",
+    "tier": 4,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 155,
+    "ci": true,
+    "hash": "bd79d5302f5ec355456457038a0bf3fd630f6c0bf6364176acb5ccf878901d1c",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "시간을 지우는 자",
+      "en": "The One Who Rewrites Time"
+    },
+    "prompt": {
+      "ko": "공격자가 조사관의 타임라인 분석을 방해하려고 파일의 MACB(수정·접근·변경·생성) 타임스탬프를 위조하는 안티-포렌식 기법이 있습니다. Metasploit/Meterpreter 의 동명 도구로도 유명한, '시간(time)'과 '짓밟다(stomp)'를 합친 이 기법의 한 단어 이름은?",
+      "en": "To disrupt an investigator's timeline analysis, attackers forge a file's MACB (Modified/Accessed/Changed/Born) timestamps. What is the one-word name of this anti-forensic technique — blending 'time' + 'stomp' and also the name of a Metasploit/Meterpreter tool?"
+    },
+    "hints": {
+      "ko": [
+        "'time' + 'stomp(짓밟다)' 의 합성어입니다.",
+        "$STANDARD_INFORMATION 타임스탬프는 바꿔도 $FILE_NAME 은 못 바꾸는 경우가 많아 탐지 단서가 됩니다."
+      ],
+      "en": [
+        "A blend of 'time' + 'stomp'.",
+        "It often alters $STANDARD_INFORMATION timestamps but not $FILE_NAME — a detection clue."
+      ]
+    }
   }
 ];
