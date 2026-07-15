@@ -3557,5 +3557,173 @@ const CHALLENGES = [
         "It often alters $STANDARD_INFORMATION timestamps but not $FILE_NAME — a detection clue."
       ]
     }
+  },
+  {
+    "id": "t0_authfactor",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 45,
+    "ci": true,
+    "hash": "cb0356a0532e824bd17b1ad6f24af01a2d9bbdda8891918ab6b91d9835f7c3ec",
+    "fmt": "약어 / acronym (3글자)",
+    "title": {
+      "ko": "비밀번호만으론 부족하다",
+      "en": "A Password Is Not Enough"
+    },
+    "prompt": {
+      "ko": "클라우드 계정 탈취를 막는 가장 기본적인 통제는, 비밀번호에 더해 서로 다른 종류의 인증 요소를 추가로 요구하는 것입니다. 이 통제를 가리키는 3글자 영어 약자는? (`2FA` 를 포함하는 상위 용어)",
+      "en": "The most basic control against cloud account takeover is requiring an additional, different kind of authentication factor on top of the password. What is the 3-letter English acronym for this control? (the umbrella term that covers `2FA`)"
+    },
+    "hints": {
+      "ko": [
+        "'Multi-Factor Authentication' 의 머리글자입니다.",
+        "루트 계정에 이것이 없으면 CSPM 도구가 가장 먼저 경고하는 항목입니다."
+      ],
+      "en": [
+        "Initials of 'Multi-Factor Authentication'.",
+        "Missing it on the root account is the first thing a CSPM tool flags."
+      ]
+    }
+  },
+  {
+    "id": "t1_dockerfile",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 60,
+    "ci": true,
+    "hash": "75857a45899985be4c4d941e90b6b396d6c92a4c7437aaf0bf102089fe21379d",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "이미지의 출발점",
+      "en": "Where the Image Starts"
+    },
+    "prompt": {
+      "ko": "Dockerfile에서 베이스 이미지를 지정하는, 보통 파일의 첫 줄에 오는 명령어(instruction)는? (예: `____ ubuntu:22.04`)",
+      "en": "Which Dockerfile instruction declares the base image and normally sits on the first line? (e.g. `____ ubuntu:22.04`)"
+    },
+    "hints": {
+      "ko": [
+        "'~에서 가져온다'는 뜻의 영어 전치사 4글자입니다.",
+        "`FR__` — 태그를 `latest`로 두면 재현성·공급망 위험이 커집니다."
+      ],
+      "en": [
+        "A 4-letter English preposition marking where something originates.",
+        "`FR__` — pinning it to `latest` hurts reproducibility and supply-chain safety."
+      ]
+    }
+  },
+  {
+    "id": "t2_k8sauthz",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 90,
+    "ci": true,
+    "hash": "2552b1c0272ab701af519fff4e4299f03720e72a3e3b57f7214b81d13c7eceff",
+    "fmt": "약어 / acronym (4글자)",
+    "title": {
+      "ko": "역할로 권한을 묶다",
+      "en": "Permissions by Role"
+    },
+    "prompt": {
+      "ko": "쿠버네티스와 대부분의 클라우드에서, 권한을 사용자에게 직접 주지 않고 역할에 묶은 뒤 사용자를 그 역할에 바인딩하는 접근 제어 모델의 4글자 영어 약자는?",
+      "en": "In Kubernetes and most clouds, permissions are attached to a role and users are bound to that role instead of being granted directly. What is the 4-letter English acronym for this access-control model?"
+    },
+    "hints": {
+      "ko": [
+        "'Role-Based Access Control' 의 머리글자입니다.",
+        "K8s에서는 `Role`/`ClusterRole` 과 `RoleBinding` 으로 구현합니다."
+      ],
+      "en": [
+        "Initials of 'Role-Based Access Control'.",
+        "K8s implements it with `Role`/`ClusterRole` plus `RoleBinding`."
+      ]
+    }
+  },
+  {
+    "id": "t2_sg",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 90,
+    "ci": true,
+    "hash": "b42e18366abaf7d25debe1765391f2a4b1f3a16708045d2e6642a14fc4c93144",
+    "fmt": "CIDR 표기 / CIDR notation",
+    "title": {
+      "ko": "전 세계에 열린 문",
+      "en": "Open to the World"
+    },
+    "prompt": {
+      "ko": "보안그룹·방화벽 규칙 감사에서 가장 흔히 지적되는 오설정은 SSH(22번) 포트를 인터넷 전체에 열어두는 것입니다. 이때 소스로 설정된, **모든 IPv4 주소**를 뜻하는 CIDR 표기를 그대로 입력하세요.",
+      "en": "The most common finding in security-group/firewall audits is leaving SSH (port 22) open to the entire internet. Enter the CIDR notation used as that source — the one meaning **any IPv4 address**."
+    },
+    "hints": {
+      "ko": [
+        "`x.x.x.x/y` 형태이며, 프리픽스 길이가 0이면 주소 전체를 포함합니다.",
+        "IPv6에서 이에 대응하는 표기는 `::/0` 입니다."
+      ],
+      "en": [
+        "Form `x.x.x.x/y`; a prefix length of 0 covers every address.",
+        "The IPv6 counterpart is `::/0`."
+      ]
+    }
+  },
+  {
+    "id": "t3_dockersock",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 130,
+    "ci": true,
+    "hash": "71329c4cc6e32171553fa81d044eb31d1a3aac52ba9376c4a99f4505c494cf5b",
+    "fmt": "절대 경로 / absolute path",
+    "title": {
+      "ko": "소켓 하나면 호스트가 열린다",
+      "en": "One Socket to Own the Host"
+    },
+    "prompt": {
+      "ko": "컨테이너 안에 호스트의 Docker 데몬 유닉스 소켓을 마운트하면 그 컨테이너는 사실상 호스트 root가 됩니다(원하는 특권 컨테이너를 새로 띄울 수 있으므로). 이 소켓의 기본 절대 경로는?",
+      "en": "Mounting the host's Docker daemon Unix socket into a container effectively hands it host root (it can spawn any privileged container it likes). What is that socket's default absolute path?"
+    },
+    "hints": {
+      "ko": [
+        "`/var/run/` 아래에 있는 소켓 파일입니다.",
+        "`docker -H unix://<경로>` 의 기본값이며, 파일명은 `docker.____` 입니다."
+      ],
+      "en": [
+        "A socket file under `/var/run/`.",
+        "The default for `docker -H unix://<path>`; the file is named `docker.____`."
+      ]
+    }
+  },
+  {
+    "id": "t3_imdsv2",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 125,
+    "ci": true,
+    "hash": "373cb2c6d4fe2778441d4f0266505b699fa518d002e5793b87f9b48836de3f62",
+    "fmt": "HTTP 메서드 / HTTP method",
+    "title": {
+      "ko": "토큰 없이는 못 준다",
+      "en": "No Token, No Metadata"
+    },
+    "prompt": {
+      "ko": "IMDSv2는 SSRF로 인스턴스 자격증명이 새어나가는 것을 막기 위해, 메타데이터를 읽기 전에 먼저 세션 토큰을 발급받도록 요구합니다(`/latest/api/token`). 이 토큰 요청에 사용하는 HTTP 메서드는? — 평범한 SSRF로는 흉내내기 어려운 메서드라는 점이 방어의 핵심입니다.",
+      "en": "IMDSv2 stops SSRF-based credential theft by requiring a session token before metadata can be read (`/latest/api/token`). Which HTTP method issues that token request? The defense works precisely because plain SSRF struggles to send it."
+    },
+    "hints": {
+      "ko": [
+        "GET도 POST도 아닙니다. REST에서 자원의 생성·교체에 쓰는 메서드입니다.",
+        "3글자이며, `X-aws-ec2-metadata-token-ttl-seconds` 헤더와 함께 보냅니다."
+      ],
+      "en": [
+        "Neither GET nor POST — the REST verb for create/replace.",
+        "Three letters, sent with the `X-aws-ec2-metadata-token-ttl-seconds` header."
+      ]
+    }
   }
 ];
