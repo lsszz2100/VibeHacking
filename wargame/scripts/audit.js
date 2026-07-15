@@ -81,3 +81,39 @@ for (const ch of shortAnswerNoFmt) console.log(`  [${ch.id}] fmt=${ch.fmt}`);
 // Points sanity
 const pts = CHALLENGES.map(c => c.points);
 console.log(`\n--- [E] Points: min ${Math.min(...pts)}, max ${Math.max(...pts)}, avg ${(pts.reduce((a,b)=>a+b,0)/pts.length).toFixed(0)} ---`);
+
+// [F] Does README's topics column spell out any answer?
+// Answers live only as SHA-256, so hash each topic term under the app's own
+// grading rule (ci ? lowercase : as-typed) and look for a hash hit. A hit means
+// the table hands a player that challenge's answer. Needs no plaintext, so it
+// stays safe to run anywhere.
+const crypto = require('crypto');
+const sha = (str) => crypto.createHash('sha256').update(str, 'utf8').digest('hex');
+const ciHash = new Map(), csHash = new Map();
+for (const c of CHALLENGES) (c.ci ? ciHash : csHash).set(c.hash, c);
+
+const readme = fs.readFileSync(path.join(WG, 'README.md'), 'utf8');
+const topicRows = readme.split('\n').filter(l => /^\| `(perimeter|webserver|internal|vault|core)`/.test(l));
+const terms = new Map();
+for (const row of topicRows) {
+  const cells = row.split('|');
+  if (cells.length < 4) continue;
+  for (const chunk of cells[3].split(/[,·/()|]|\s—\s/)) {
+    const t = chunk.trim().replace(/^\*+|\*+$/g, '').replace(/`/g, '');
+    if (t.length >= 2 && !terms.has(t)) terms.set(t, cells[1].trim());
+    for (const w of t.split(/\s+/)) {
+      const ww = w.trim();
+      if (ww.length >= 2 && !terms.has(ww)) terms.set(ww, cells[1].trim());
+    }
+  }
+}
+const spelled = [];
+for (const [term, node] of terms) {
+  const hit = ciHash.get(sha(term.toLowerCase())) || csHash.get(sha(term));
+  if (hit) spelled.push({ term, node, id: hit.id, tier: hit.tier });
+}
+console.log(`\n--- [F] README topic terms that ARE a challenge answer: ${spelled.length} ---`);
+console.log(`    (${terms.size} terms checked across ${topicRows.length} tier rows; describe the topic, don't name the answer)`);
+for (const s of spelled.sort((a, b) => a.tier - b.tier)) {
+  console.log(`  ⚠ [t${s.tier}] ${s.id} — spelled in ${s.node} as "${s.term}"`);
+}
