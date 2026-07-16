@@ -51,15 +51,15 @@ Opening the site runs a boot sequence and drops you into an **infiltration conso
 
 | 계층 / node | 티어 / tier | 주제 / topics | 문제 / count | 통과 / breach |
 |------|:---:|------|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 페이지 소스·개발자도구·기본 인코딩 디코딩·이진수·역순/URL/NATO·메타태그·해시 종류 식별·헥스 덤프·리눅스 기본 명령·스크립트 첫 줄 규약·클라우드 권한·네트워크·지리 단위 기초·계정 보호 통제·시그널·디스크 이미징 / page source, devtools, basic decoding, binary, reverse/URL/NATO, meta tags, hash identification, hex dumps, core Linux commands, script header convention, cloud identity, networking and geography basics, account protection, signals, disk imaging | 22 | 4 |
-| `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse/Atbash/A1Z26), 쿠키, HTTP, Basic 인증, 포트 스캐닝, 클라우드 리소스 식별·시점 백업, 심볼릭 링크, 트래픽 분산, 패킷 캡처·수집 도구, 증거 관리 절차, 동적 링크 확인, 바이트 순서, 컨테이너 이미지 정의 / classic ciphers, cookies, HTTP, Basic auth, port scanning, cloud resource naming & point-in-time backups, symlinks, traffic distribution, packet capture tooling, evidence handling, dynamic-link inspection, byte order, container image definition | 25 | 6 |
-| `internal` 내부망 | **2** | SQLi·XSS·JWT·해시·Base32/58·Unicode·Vigenère·LFI·접근제어 우회·리버싱·클라우드 객체 스토리지·K8s 기초·프로세스/파일 모니터링 도구·디버거 사용법·파일 카빙·NTFS 은닉 스트림·K8s 권한 모델·보안그룹 CIDR | 27 | 9 |
-| `vault` 금고 | **3** | XOR(단일/반복키)·ROT47·Base85·포맷스트링·SSTI·탐지 규칙 언어·AD·ELF매직·메시지 인증 코드·IMDS·STS 임시 자격증명·클라우드 오설정 감시·동적 링크 테이블 덮어쓰기·도커 소켓 마운트·IMDSv2 토큰 | 28 | 7 |
+| `perimeter` 외곽 | **0** | 페이지 소스·개발자도구·기본 인코딩 디코딩·이진수·역순/URL/NATO·메타태그·해시 종류 식별·헥스 덤프·리눅스 기본 명령·스크립트 첫 줄 규약·클라우드 권한·네트워크·지리 단위 기초·계정 보호 통제·시그널·디스크 이미징·증거 무결성 보존 하드웨어 / page source, devtools, basic decoding, binary, reverse/URL/NATO, meta tags, hash identification, hex dumps, core Linux commands, script header convention, cloud identity, networking and geography basics, account protection, signals, disk imaging, evidence-integrity preservation hardware | 23 | 4 |
+| `webserver` 웹서버 | **1** | 고전 암호(ROT13/Hex/Caesar/Morse/Atbash/A1Z26), 쿠키, HTTP, Basic 인증, 포트 스캐닝, 클라우드 리소스 식별·시점 백업, 심볼릭 링크, 트래픽 분산, 패킷 캡처·수집 도구, 증거 관리 절차, 동적 링크 확인, 바이트 순서, 컨테이너 이미지 정의, PE 실행파일 매직, 안드로이드 바이트코드 포맷 / classic ciphers, cookies, HTTP, Basic auth, port scanning, cloud resource naming & point-in-time backups, symlinks, traffic distribution, packet capture tooling, evidence handling, dynamic-link inspection, byte order, container image definition, PE executable magic, Android bytecode format | 27 | 6 |
+| `internal` 내부망 | **2** | SQLi·XSS·JWT·해시·Base32/58·Unicode·Vigenère·LFI·접근제어 우회·리버싱·클라우드 객체 스토리지·K8s 기초·프로세스/파일 모니터링 도구·디버거 사용법·파일 카빙·NTFS 은닉 스트림·K8s 권한 모델·보안그룹 CIDR·악성코드 패커 회피·섹션 무작위도 분석 | 29 | 9 |
+| `vault` 금고 | **3** | XOR(단일/반복키)·ROT47·Base85·포맷스트링·SSTI·탐지 규칙 언어·AD·ELF매직·메시지 인증 코드·IMDS·STS 임시 자격증명·클라우드 오설정 감시·동적 링크 테이블 덮어쓰기·도커 소켓 마운트·IMDSv2 토큰·프로세스 이미지 치환 인젝션 | 29 | 7 |
 | `core` 코어 | **4** | 체인/이중·3중 디코딩, Vigenère, 컨테이너 탈출, K8s 시크릿 저장 방식, AES-GCM, JWT, AI 보안, 윈도우 실행 흔적, 메모리 포렌식, 메모리 보호기법, 코드 재사용·해제 후 사용 익스플로잇, 서버리스 초기화 지연, USB 장치 흔적, NTFS 메타데이터, 타임스탬프 조작 / chained decoding, Vigenère, container escape, how K8s stores secrets, AES-GCM, JWT, AI security, Windows execution artifacts, memory forensics, memory protections, code-reuse & use-after-free exploitation, serverless init latency, USB device artifacts, NTFS metadata, timestamp tampering | 28 | 5 |
 
-총 **130문제**(분야: 웹 35 · 암호 29 · 시스템 22 · 포렌식 22 · 클라우드/AI 22). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **136문제**(분야: 웹 35 · 암호 29 · 시스템 22 · 포렌식 28 · 클라우드/AI 22). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **130 challenges** (web 35 · crypto 29 · system 22 · forensics 22 · cloud/AI 22); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **136 challenges** (web 35 · crypto 29 · system 22 · forensics 28 · cloud/AI 22); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 

@@ -3725,5 +3725,173 @@ const CHALLENGES = [
         "Three letters, sent with the `X-aws-ec2-metadata-token-ttl-seconds` header."
       ]
     }
+  },
+  {
+    "id": "t0_writeblocker",
+    "tier": 0,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 50,
+    "ci": true,
+    "hash": "86769308ebb37d8caa407ecbcd1b314ea73428e47970f46d1d8828b2badda879",
+    "fmt": "장비명 / device (2 단어)",
+    "title": {
+      "ko": "증거를 지키는 한 방향 장치",
+      "en": "The One-Way Guardian of Evidence"
+    },
+    "prompt": {
+      "ko": "포렌식 이미징 중 원본 저장매체에 단 한 바이트도 기록되지 않도록, 쓰기 신호를 물리적으로 차단하고 읽기만 허용하는 하드웨어 장치를 무엇이라 부르나요? (영어 두 단어)",
+      "en": "During forensic imaging, which hardware device physically blocks all write signals to the original media—allowing only reads—so not a single byte is altered? (two English words)"
+    },
+    "hints": {
+      "ko": [
+        "원본 무결성을 보장하는 '증거 보존'의 핵심 장비입니다.",
+        "첫 단어는 'read'의 반대, 둘째 단어는 '막는 것/차단기'를 뜻합니다."
+      ],
+      "en": [
+        "It is the key evidence-preservation device that guarantees original integrity.",
+        "First word is the opposite of 'read'; the second means something that obstructs or stops."
+      ]
+    }
+  },
+  {
+    "id": "t1_pemagic",
+    "tier": 1,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 60,
+    "ci": true,
+    "hash": "3ed0256da8da5eabae7aa1680886a2aa394dd7c002eb2f3b02e9f0f9ec9daa2c",
+    "fmt": "시그니처 / signature (2글자)",
+    "title": {
+      "ko": "윈도우 실행파일의 서명",
+      "en": "The Windows Executable's Signature"
+    },
+    "prompt": {
+      "ko": "모든 Windows PE 실행파일(.exe/.dll)은 파일 맨 앞 2바이트가 항상 같은 ASCII 시그니처로 시작합니다. 헥스 에디터로 `.exe`를 열면 첫 두 글자로 보이는 이 매직 시그니처는 무엇인가요? (ELF의 `7F 45 4C 46`에 대응하는 PE의 매직)",
+      "en": "Every Windows PE executable (.exe/.dll) begins with the same fixed 2-byte ASCII signature at the very start of the file. Opening a `.exe` in a hex editor, what two letters appear first? (the PE counterpart to ELF's `7F 45 4C 46`)"
+    },
+    "hints": {
+      "ko": [
+        "16진수로는 `4D 5A` 이며, 이를 ASCII로 읽으면 답이 됩니다.",
+        "DOS 시절 설계자 Mark Zbikowski의 이니셜에서 유래했습니다."
+      ],
+      "en": [
+        "In hex it is `4D 5A`; read those bytes as ASCII to get the answer.",
+        "It comes from the initials of DOS designer Mark Zbikowski."
+      ]
+    }
+  },
+  {
+    "id": "t1_dex",
+    "tier": 1,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 60,
+    "ci": true,
+    "hash": "9d0fbf9349f646f1435072f2b0212084752ef4601bd6b012fbbe61b6c5e03930",
+    "fmt": "확장자 / extension (3글자)",
+    "title": {
+      "ko": "안드로이드가 실행하는 바이트코드",
+      "en": "The Bytecode Android Runs"
+    },
+    "prompt": {
+      "ko": "안드로이드 앱을 리버싱할 때, 자바 소스가 컴파일된 뒤 Dalvik/ART 가상머신이 실행하는 바이트코드는 APK 내부의 `classes.___` 파일에 담깁니다. 이 3글자 확장자는 무엇인가요?",
+      "en": "When reversing an Android app, the bytecode executed by the Dalvik/ART VM (after Java is compiled) lives inside the APK as a `classes.___` file. What is this three-letter extension?"
+    },
+    "hints": {
+      "ko": [
+        "'Dalvik EXecutable'의 약자입니다.",
+        "`apktool`이나 `jadx`로 이 파일을 열어 스마트폰 악성코드를 분석합니다."
+      ],
+      "en": [
+        "It is short for 'Dalvik EXecutable'.",
+        "You open this file with `apktool` or `jadx` to analyze mobile malware."
+      ]
+    }
+  },
+  {
+    "id": "t2_packing",
+    "tier": 2,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 85,
+    "ci": true,
+    "hash": "7c6e059c91d86331d06879929b56905cb02d57df32d4c491744e7b3e7eb9918a",
+    "fmt": "한 단어 / one word (-ing)",
+    "title": {
+      "ko": "정적 분석을 무력화하는 압축",
+      "en": "The Compression That Blinds Static Analysis"
+    },
+    "prompt": {
+      "ko": "악성코드가 실제 코드를 압축·암호화해 껍데기(stub) 속에 숨기고, 실행 시점에만 메모리에서 원본을 복원해 정적 분석과 시그니처 탐지를 회피하는 기법을 무엇이라 하나요? (UPX가 대표 도구, 영어 한 단어의 -ing 형태)",
+      "en": "What is the technique where malware compresses/encrypts its real code inside a stub and restores the original only in memory at runtime—evading static analysis and signature detection? (UPX is the classic tool; one English word, the '-ing' form)"
+    },
+    "hints": {
+      "ko": [
+        "실행파일을 이 상태로 만드는 도구를 'packer'라고 부릅니다.",
+        "이 기법이 적용된 바이너리는 원본 코드가 숨겨져 문자열 추출이 거의 되지 않습니다."
+      ],
+      "en": [
+        "The tool that puts an executable into this state is called a 'packer'.",
+        "A binary in this state hides its real code, so string extraction yields almost nothing."
+      ]
+    }
+  },
+  {
+    "id": "t2_entropy",
+    "tier": 2,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 85,
+    "ci": true,
+    "hash": "67671a2f53dd910a8b35840edb6a0a1e751ae5532178ca7f025b823eee317992",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "무질서도로 숨긴 것을 찾다",
+      "en": "Finding the Hidden by Its Disorder"
+    },
+    "prompt": {
+      "ko": "파일이나 PE 섹션의 바이트가 얼마나 무작위·무질서한지를 0~8 사이 수치로 측정해, 값이 8에 가까우면 압축·암호화되었다고 판단하는 정보이론 지표는 무엇인가요? (섀넌이 정의, 영어 한 단어)",
+      "en": "Which information-theory metric scores how random/disordered the bytes of a file or PE section are on a 0–8 scale—so a value near 8 signals compression or encryption? (defined by Shannon; one English word)"
+    },
+    "hints": {
+      "ko": [
+        "열역학에서 '무질서도'를 뜻하는 바로 그 단어입니다.",
+        "`ent`, `binwalk -E`, PEStudio가 이 값을 계산해 줍니다."
+      ],
+      "en": [
+        "It is the very word thermodynamics uses for 'disorder'.",
+        "`ent`, `binwalk -E`, and PEStudio all compute this value for you."
+      ]
+    }
+  },
+  {
+    "id": "t3_hollowing",
+    "tier": 3,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 105,
+    "ci": true,
+    "hash": "34e36214d1921828dd0bb0ed46fdf64a14d0d33aa3757aee9e40acfe9df5711f",
+    "fmt": "빈칸 한 단어 / one word",
+    "title": {
+      "ko": "정상 프로세스의 껍데기를 빼앗다",
+      "en": "Stealing a Legit Process's Shell"
+    },
+    "prompt": {
+      "ko": "악성코드가 정상 프로세스를 일시정지 상태로 생성한 뒤, 그 프로세스의 메모리 이미지를 통째로 비워내고(unmap) 악성 PE로 덮어쓴 다음 재개시켜 정상 프로세스로 위장하는 대표적 코드 인젝션 기법을 'process ______'라 부릅니다. 빈칸에 들어갈 영어 한 단어는? (속을 파낸다는 뜻)",
+      "en": "Malware spawns a legitimate process in a suspended state, unmaps its entire memory image, overwrites it with a malicious PE, then resumes it to masquerade as the legit process. This classic code-injection technique is called 'process ______'. What one English word fills the blank? (it means to carve out the inside)"
+    },
+    "hints": {
+      "ko": [
+        "영어로 '속을 파내다/텅 비게 하다'라는 동사의 -ing 형태입니다.",
+        "MITRE ATT&CK의 Process Injection(T1055) 하위 기법으로 분류됩니다."
+      ],
+      "en": [
+        "It is the '-ing' form of an English verb meaning 'to carve out the inside / make empty'.",
+        "It is classified under MITRE ATT&CK Process Injection (T1055)."
+      ]
+    }
   }
 ];
