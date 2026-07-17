@@ -23,7 +23,7 @@ VibeHacking 레포 디렉토리
 - 실습 환경 자동 시작
 - 단계별 실습 안내
 
-> 🎮 **워게임으로 점검**: 이론을 익혔다면 [브라우저 워게임](wargame/README.md)(`https://lsszz2100.github.io/VibeHacking/`)에서 실력을 확인하세요. 가짜 셸로 5개 보안 계층을 침투하는 터미널형 CTF 136문제 — AI CLI에게 "워게임 N번 힌트만 줘"처럼 물어볼 수도 있습니다.
+> 🎮 **워게임으로 점검**: 이론을 익혔다면 [브라우저 워게임](wargame/README.md)(`https://lsszz2100.github.io/VibeHacking/`)에서 실력을 확인하세요. 가짜 셸로 5개 보안 계층을 침투하는 터미널형 CTF 142문제 — AI CLI에게 "워게임 N번 힌트만 줘"처럼 물어볼 수도 있습니다.
 
 ---
 
@@ -393,7 +393,7 @@ One sentence — *"walk me through a SQL injection lab"* — and the AI will:
 - Start the lab environment
 - Guide you step-by-step
 
-> 🎮 **Test yourself in the wargame**: once you've learned the theory, check your skills in the [browser wargame](wargame/README.md) (`https://lsszz2100.github.io/VibeHacking/`) — a terminal-style CTF where you breach five security layers via a fake shell, 136 challenges. You can even ask an AI CLI for "just a hint on wargame #N".
+> 🎮 **Test yourself in the wargame**: once you've learned the theory, check your skills in the [browser wargame](wargame/README.md) (`https://lsszz2100.github.io/VibeHacking/`) — a terminal-style CTF where you breach five security layers via a fake shell, 142 challenges. You can even ask an AI CLI for "just a hint on wargame #N".
 
 ---
 

@@ -3893,5 +3893,173 @@ const CHALLENGES = [
         "It is classified under MITRE ATT&CK Process Injection (T1055)."
       ]
     }
+  },
+  {
+    "id": "t0_uname",
+    "tier": 0,
+    "cat": "linux",
+    "track": "system",
+    "points": 45,
+    "ci": true,
+    "hash": "5c0be87ed7434d69005f8bbd84cad8ae6abfd49121b4aaeeb4c1f4a2e2987711",
+    "fmt": "명령어 한 단어 / one command word",
+    "title": {
+      "ko": "이 시스템의 정체를 물어라",
+      "en": "Ask the System Who It Is"
+    },
+    "prompt": {
+      "ko": "리눅스에서 실행 중인 커널의 이름·버전·머신 아키텍처 같은 시스템 정보를 출력하는 표준 명령은? (`-a` 옵션을 붙이면 전부 한 줄로 쏟아내는 그 명령, 한 단어)",
+      "en": "Which standard Linux command prints system information such as the running kernel name, version, and machine architecture? (the one you run with `-a` to dump it all on one line — one word)"
+    },
+    "hints": {
+      "ko": [
+        "POSIX 표준 유틸리티이며, 이름은 'unix name' 을 줄인 것입니다.",
+        "`____ -r` 은 커널 릴리스만, `____ -m` 은 머신 하드웨어 이름만 출력합니다."
+      ],
+      "en": [
+        "A POSIX standard utility; its name is short for 'unix name'.",
+        "`____ -r` prints just the kernel release; `____ -m` prints just the machine hardware name."
+      ]
+    }
+  },
+  {
+    "id": "t1_readelf",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "system",
+    "points": 65,
+    "ci": true,
+    "hash": "c06edbcb7bfdeb6bc176a30810bed1afd47feb85f65c2bbcf66853164f7515e4",
+    "fmt": "도구 이름 한 단어 / one tool name",
+    "title": {
+      "ko": "ELF 헤더를 낱낱이 펼쳐라",
+      "en": "Unfold Every ELF Header"
+    },
+    "prompt": {
+      "ko": "리눅스 ELF 실행파일의 헤더·섹션 테이블·프로그램 헤더·심볼을 상세히 출력하는 binutils 전용 도구는? (`-h` 로 ELF 헤더, `-S` 로 섹션 목록을 보는 그 명령, 한 단어)",
+      "en": "Which dedicated binutils tool prints an ELF executable's header, section table, program headers, and symbols in detail? (`-h` shows the ELF header, `-S` the section list — one word)"
+    },
+    "hints": {
+      "ko": [
+        "이름은 'read' + 실행파일 포맷 이름(ELF)의 조합입니다.",
+        "역어셈블은 하지 않고 ELF 파일의 구조(헤더·섹션·심볼)를 해석해 보여주는 도구입니다."
+      ],
+      "en": [
+        "Its name combines 'read' with the executable format's name (ELF).",
+        "It does not disassemble — it parses and displays the ELF structure (headers, sections, symbols)."
+      ]
+    }
+  },
+  {
+    "id": "t1_objdump",
+    "tier": 1,
+    "cat": "reversing",
+    "track": "system",
+    "points": 70,
+    "ci": true,
+    "hash": "306e2b4264b7dbf0107520e1823108bd5d17635be7742b6f9660a6c527cb4fd2",
+    "fmt": "도구 이름 한 단어 / one tool name",
+    "title": {
+      "ko": "바이너리를 어셈블리로 풀어헤쳐라",
+      "en": "Spill a Binary into Assembly"
+    },
+    "prompt": {
+      "ko": "실행파일의 기계어를 역어셈블(`-d`)해 어셈블리로 보여 주는 대표적인 binutils 도구는? (오브젝트 파일을 통째로 덤프한다는 뜻의 이름, 한 단어)",
+      "en": "Which classic binutils tool disassembles (`-d`) a binary's machine code into assembly? (its name means 'dump the object file' — one word)"
+    },
+    "hints": {
+      "ko": [
+        "이름은 'object' 와 'dump' 를 붙인 합성어입니다.",
+        "`____ -d ./bin` 으로 .text 섹션을 역어셈블합니다."
+      ],
+      "en": [
+        "Its name is 'object' joined with 'dump'.",
+        "`____ -d ./bin` disassembles the .text section."
+      ]
+    }
+  },
+  {
+    "id": "t2_strace",
+    "tier": 2,
+    "cat": "linux",
+    "track": "system",
+    "points": 90,
+    "ci": true,
+    "hash": "761f8a60b54fcf3965300ced84ed9a0db0eb70c89482e61f9e79a1a1ca251f18",
+    "fmt": "도구 이름 한 단어 / one tool name",
+    "title": {
+      "ko": "커널을 두드리는 소리를 엿듣다",
+      "en": "Eavesdrop on Every Kernel Call"
+    },
+    "prompt": {
+      "ko": "실행 중인 프로그램이 커널에 요청하는 시스템 콜(open·read·write 등)을 실시간으로 가로채 순서대로 출력해 주는 리눅스 진단 도구는? (라이브러리 호출을 추적하는 `ltrace` 의 시스템 콜 짝, 한 단어)",
+      "en": "Which Linux diagnostic tool intercepts and prints, in order, the system calls (open, read, write, …) a running program makes to the kernel? (the syscall counterpart of `ltrace`, which traces library calls — one word)"
+    },
+    "hints": {
+      "ko": [
+        "이름은 'system call' 을 뜻하는 한 글자 접두어 + 'trace' 입니다.",
+        "`____ -f ./prog` 는 자식 프로세스까지 따라가며 시스템 콜을 기록합니다."
+      ],
+      "en": [
+        "Its name is a one-letter prefix for 'system call' + 'trace'.",
+        "`____ -f ./prog` follows child processes while logging syscalls."
+      ]
+    }
+  },
+  {
+    "id": "t3_pie",
+    "tier": 3,
+    "cat": "pwn",
+    "track": "system",
+    "points": 120,
+    "ci": true,
+    "hash": "558211ed72b2d6967037419dff6f1e7cfd002d178c8fdeeb1239760d4e4c4059",
+    "fmt": "3글자 약어 / 3-letter abbreviation",
+    "title": {
+      "ko": "실행파일마저 매번 자리를 바꾸게 하라",
+      "en": "Even the Executable Won't Sit Still"
+    },
+    "prompt": {
+      "ko": "ASLR 이 실행파일 본체(.text 등)의 로드 주소까지 매 실행마다 무작위화할 수 있도록, 위치 독립적으로 컴파일된 실행파일을 가리키는 3글자 약어는? (`checksec` 이 이 항목을 enabled/disabled 로 보고하며, 이것이 없으면 실행파일의 코드 주소가 고정됩니다)",
+      "en": "What 3-letter abbreviation names an executable compiled position-independently, so ASLR can randomize even the main program's load address (.text, …) on every run? (`checksec` reports this field as enabled/disabled; without it the executable's code addresses stay fixed)"
+    },
+    "hints": {
+      "ko": [
+        "Position-______ Executable 세 단어의 머리글자입니다.",
+        "checksec 출력에서 'No ___' 로 표시되면 코드 주소가 고정이라 ROP 가젯 주소가 예측 가능해집니다."
+      ],
+      "en": [
+        "It is the initials of Position-______ Executable.",
+        "checksec shows 'No ___' when code addresses are fixed, making ROP gadget addresses predictable."
+      ]
+    }
+  },
+  {
+    "id": "t4_tcache",
+    "tier": 4,
+    "cat": "pwn",
+    "track": "system",
+    "points": 155,
+    "ci": true,
+    "hash": "30bf9a328005656691e93a15d16168cee5fa58f1fe4ff4c2d9d1f9d8baf42253",
+    "fmt": "빈칸 한 단어(소문자) / one lowercase word",
+    "title": {
+      "ko": "해제된 청크의 은밀한 캐시를 노려라",
+      "en": "Poison the Cache of Freed Chunks"
+    },
+    "prompt": {
+      "ko": "glibc 2.26 이후 malloc 이 성능을 위해 도입한, 스레드마다 갓 해제된(free) 힙 청크를 단일 연결 리스트로 담아 두는 캐시 계층의 이름은? (공격자가 이 리스트의 next 포인터를 덮어써 임의 주소 할당을 얻는 'poisoning' 으로 악명 높은, 한 단어 소문자)",
+      "en": "Since glibc 2.26, malloc keeps a per-thread cache layer that stores recently freed heap chunks in a singly-linked list for speed. Attackers overwrite that list's next pointer for an arbitrary allocation ('poisoning'). What is this layer's name? (one lowercase word)"
+    },
+    "hints": {
+      "ko": [
+        "이름은 'thread' 의 머리글자 + 'cache' 를 붙인 것입니다.",
+        "관련 익스플로잇 기법을 '____ poisoning' 이라 부릅니다."
+      ],
+      "en": [
+        "Its name is the initial of 'thread' + 'cache'.",
+        "The related exploit technique is called '____ poisoning'."
+      ]
+    }
   }
 ];
