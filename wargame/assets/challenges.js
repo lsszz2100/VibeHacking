@@ -1039,6 +1039,34 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t4_capsysadmin",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 140,
+    "ci": true,
+    "hash": "0e9c6d2741a7a8321561a79f94d71d4f5471f197cc2789701769cdcbf2554e39",
+    "fmt": "리눅스 capability / Linux capability",
+    "title": {
+      "ko": "만능에 가까운 그 capability",
+      "en": "The Near-Omnipotent Capability"
+    },
+    "prompt": {
+      "ko": "컨테이너에 `--cap-add=______` 로 부여하면 파일시스템 마운트 등 광범위한 호스트 작업이 가능해져 컨테이너 탈출에 악용되는, 사실상 만능에 가까운 리눅스 커널 capability의 이름은?",
+      "en": "Granting a container `--cap-add=______` unlocks broad host operations (like mounting filesystems) and is a common container-escape primitive — name this near-omnipotent Linux kernel capability."
+    },
+    "hints": {
+      "ko": [
+        "`SYS_____` — 이름 그대로 '시스템 관리자'급 권한 묶음.",
+        "`CAP_` 접두사 뒤에 오는, 'system'과 'admin'을 합친 형태입니다."
+      ],
+      "en": [
+        "`SYS_____` — literally the 'system administrator' capability.",
+        "After the `CAP_` prefix, it's 'system' joined with 'admin'."
+      ]
+    }
+  },
+  {
     "id": "t4_llm",
     "tier": 4,
     "cat": "ai",
@@ -1655,6 +1683,34 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t2_eks",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 90,
+    "ci": true,
+    "hash": "6e884711fb5f5560386641ff08349621f67827bcfe69d8bd4b546a2bd5f00de2",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "관리형 쿠버네티스",
+      "en": "Managed Kubernetes"
+    },
+    "prompt": {
+      "ko": "AWS가 쿠버네티스 컨트롤 플레인을 대신 운영·관리해 주는 관리형 서비스의 약자는? (Elastic ______ Service)",
+      "en": "What is the abbreviation for AWS's managed service that runs and maintains the Kubernetes control plane for you? (Elastic ______ Service)"
+    },
+    "hints": {
+      "ko": [
+        "`E_S` — 가운데 글자는 Kubernetes의 K.",
+        "GCP의 GKE, Azure의 AKS에 대응됩니다."
+      ],
+      "en": [
+        "`E_S` — the middle letter is the K in Kubernetes.",
+        "Analogous to GCP's GKE and Azure's AKS."
+      ]
+    }
+  },
+  {
     "id": "t2_pod",
     "tier": 2,
     "cat": "cloud",
@@ -1735,6 +1791,34 @@ const CHALLENGES = [
       "en": [
         "169.254.x.x (link-local) range.",
         "Ends with .169.254."
+      ]
+    }
+  },
+  {
+    "id": "t3_cryptojacking",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 130,
+    "ci": true,
+    "hash": "935ca8d5c7d15c4e3098a6e5fa3309e10e918d9139e3b09e0617151edbb52429",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "남의 계정으로 채굴",
+      "en": "Mining on Someone Else's Dime"
+    },
+    "prompt": {
+      "ko": "탈취한 클라우드 계정이나 컨테이너에서 공격자가 몰래 암호화폐를 채굴해 피해자에게 컴퓨팅 비용을 떠넘기는 공격을 가리키는 한 단어(영문)는?",
+      "en": "What single English word names the attack in which an intruder secretly mines cryptocurrency on a compromised cloud account or container, sticking the victim with the compute bill?"
+    },
+    "hints": {
+      "ko": [
+        "'crypto' + 'hijacking'의 합성어입니다.",
+        "`crypto______` — GPU 인스턴스가 갑자기 100% 사용률을 보이면 의심 신호."
+      ],
+      "en": [
+        "A portmanteau of 'crypto' + 'hijacking'.",
+        "`crypto______` — GPU instances suddenly at 100% usage is a red flag."
       ]
     }
   },
@@ -3167,6 +3251,34 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t0_cdn",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 45,
+    "ci": true,
+    "hash": "db9831b53a8574d33f3d7ce6820598c67224687dbe57cbbc10b6070e5aa57744",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "가까운 곳에서 전송",
+      "en": "Served from Near You"
+    },
+    "prompt": {
+      "ko": "전 세계 엣지 서버에 콘텐츠를 캐싱해 사용자와 가까운 곳에서 전송함으로써 지연을 줄이는 네트워크를 가리키는 3글자 약어는? (AWS의 CloudFront가 대표 예)",
+      "en": "What 3-letter abbreviation names the network of globally distributed edge servers that caches content close to users to cut latency? (AWS CloudFront is one example)"
+    },
+    "hints": {
+      "ko": [
+        "Content Delivery Network.",
+        "정적 파일(이미지·JS)을 엣지에서 제공합니다."
+      ],
+      "en": [
+        "Content Delivery Network.",
+        "Serves static assets (images, JS) from the edge."
+      ]
+    }
+  },
+  {
     "id": "t1_lb",
     "tier": 1,
     "cat": "cloud",
@@ -3611,6 +3723,62 @@ const CHALLENGES = [
       "en": [
         "A 4-letter English preposition marking where something originates.",
         "`FR__` — pinning it to `latest` hurts reproducibility and supply-chain safety."
+      ]
+    }
+  },
+  {
+    "id": "t1_iac",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 60,
+    "ci": true,
+    "hash": "e914d68f72dbeaa29a91a4c2f9f3108f4cc6f4630a3712982fee13cfb45169fe",
+    "fmt": "약어 / acronym",
+    "title": {
+      "ko": "인프라를 코드로",
+      "en": "Infrastructure as Code"
+    },
+    "prompt": {
+      "ko": "웹 UI에서 손으로 클릭하는 대신, 선언적 설정 파일(코드)로 인프라를 프로비저닝·관리하는 방식을 가리키는 3글자 약어는?",
+      "en": "What 3-letter acronym names the practice of provisioning and managing infrastructure through declarative config files (code) instead of clicking through a web UI by hand?"
+    },
+    "hints": {
+      "ko": [
+        "Infrastructure as Code.",
+        "`I_C` — 변경 이력을 Git으로 추적할 수 있습니다."
+      ],
+      "en": [
+        "Infrastructure as Code.",
+        "`I_C` — changes get tracked in Git."
+      ]
+    }
+  },
+  {
+    "id": "t1_terraform",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 65,
+    "ci": true,
+    "hash": "94dc3ea57721d541aae09b7bf2368c1e20d4c89996ff6df4349d86048877c0e7",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "선언적 프로비저닝 도구",
+      "en": "Declarative Provisioning Tool"
+    },
+    "prompt": {
+      "ko": "HashiCorp가 만든 오픈소스 인프라 자동화 도구로, HCL 언어와 `.tf` 파일로 클라우드 리소스를 선언적으로 프로비저닝하는 도구의 이름은? (한 단어)",
+      "en": "Which open-source HashiCorp tool provisions cloud resources declaratively using the HCL language and `.tf` files? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "`terra____` — 이름은 '지구'를 뜻합니다.",
+        "`.tf` 파일과 `plan`/`apply` 명령을 씁니다."
+      ],
+      "en": [
+        "`terra____` — its name evokes 'earth'.",
+        "Uses `.tf` files with `plan`/`apply` commands."
       ]
     }
   },
