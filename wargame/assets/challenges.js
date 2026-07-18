@@ -311,6 +311,34 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t1_railfence",
+    "tier": 1,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 70,
+    "ci": true,
+    "hash": "b6396bef6dbcaa4651dc4241ae88196d1e00dbd4a29cb8aad49c2941541fae4e",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "지그재그 울타리",
+      "en": "The Zig-Zag Fence"
+    },
+    "prompt": {
+      "ko": "메시지를 여러 행에 지그재그(위아래)로 적은 뒤 행 단위로 이어 읽는 고전 전치(transposition) 암호의 이름은? (영문 두 단어)",
+      "en": "What classic transposition cipher writes the message in a zig-zag across several rows, then reads it off row by row? (two English words)"
+    },
+    "hints": {
+      "ko": [
+        "지그재그 울타리 모양에서 이름을 딴 전치 암호입니다.",
+        "`rail ____` — 두 번째 단어는 '울타리/장벽'을 뜻합니다."
+      ],
+      "en": [
+        "A transposition cipher named for its zig-zag, fence-like shape.",
+        "`rail ____` — the second word means a barrier/enclosure."
+      ]
+    }
+  },
+  {
     "id": "t1_cookie",
     "tier": 1,
     "cat": "web",
@@ -727,6 +755,62 @@ const CHALLENGES = [
       "en": [
         "Longer than MD5 (32) and shorter than SHA-256 (64).",
         "The hash Git used for years."
+      ]
+    }
+  },
+  {
+    "id": "t2_rsa",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 100,
+    "ci": true,
+    "hash": "f5f69168bba3cfa1e2a80dff839b48db36df36fa876c1cd9d7d508f3ab308744",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "두 소수의 곱",
+      "en": "Product of Two Primes"
+    },
+    "prompt": {
+      "ko": "두 큰 소수의 곱을 인수분해하기 어렵다는 점에 안전성을 두는, 공개키/개인키 쌍을 사용하는 대표적 비대칭 암호 알고리즘의 약자는?",
+      "en": "Which asymmetric algorithm — using a public/private key pair — bases its security on the difficulty of factoring the product of two large primes? (abbreviation)"
+    },
+    "hints": {
+      "ko": [
+        "발명자 세 사람 Rivest·Shamir·Adleman의 이니셜입니다.",
+        "TLS·SSH·PGP에서 오래 쓰인 3글자 약자."
+      ],
+      "en": [
+        "The initials of its inventors Rivest, Shamir, Adleman.",
+        "A 3-letter abbreviation long used in TLS, SSH, PGP."
+      ]
+    }
+  },
+  {
+    "id": "t2_polybius",
+    "tier": 2,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 90,
+    "ci": true,
+    "hash": "7d0d4704202c5ab87ab3ac01cdc9503b9b26a0fec933808f18e64e79e9d13992",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "5×5 좌표 암호",
+      "en": "The 5×5 Grid Cipher"
+    },
+    "prompt": {
+      "ko": "각 알파벳을 5×5 격자에서의 (행, 열) 좌표 숫자쌍으로 바꾸는 고전 암호(I/J는 한 칸을 공유)의 이름은? (영문 한 단어)",
+      "en": "Which classic cipher replaces each letter with its (row, column) coordinate pair in a 5×5 grid (I and J share a cell)? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "고대 그리스 역사가의 이름에서 왔습니다.",
+        "`poly____` — '정사각형(square)'과 함께 불리기도 합니다."
+      ],
+      "en": [
+        "Named after an ancient Greek historian.",
+        "`poly____` — often paired with the word 'square'."
       ]
     }
   },
@@ -1879,6 +1963,34 @@ const CHALLENGES = [
     }
   },
   {
+    "id": "t0_octal",
+    "tier": 0,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 50,
+    "ci": false,
+    "hash": "33d7f97040980680e781fae0f62edd198094584b4935398b511aa3baa88f0bfe",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "8진법의 세계",
+      "en": "Base-8 World"
+    },
+    "prompt": {
+      "ko": "공백으로 구분된 8진법(옥탈) ASCII 코드입니다. 디코딩하면 플래그:\n\n`106 114 101 107 173 142 141 163 145 70 137 157 143 164 141 154 175`",
+      "en": "Space-separated octal (base-8) ASCII codes. Decode to reveal the flag:\n\n`106 114 101 107 173 142 141 163 145 70 137 157 143 164 141 154 175`"
+    },
+    "hints": {
+      "ko": [
+        "각 숫자를 8진법으로 읽어 문자로: `106`(8진) = 70 = 'F'.",
+        "16진(hex)·10진(decimal)이 아니라 8진입니다."
+      ],
+      "en": [
+        "Read each number as base-8 → a char: `106`(oct) = 70 = 'F'.",
+        "It's base-8, not hex or decimal."
+      ]
+    }
+  },
+  {
     "id": "t0_urlenc",
     "tier": 0,
     "cat": "web",
@@ -2351,6 +2463,62 @@ const CHALLENGES = [
       "en": [
         "Hash-based Message Authentication Code.",
         "`____-SHA256`"
+      ]
+    }
+  },
+  {
+    "id": "t3_cbc",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 120,
+    "ci": true,
+    "hash": "f1454f676ceb25587d73dec3e5f5e5bba4cb8f075d9478f87e66ae9f11068e2d",
+    "fmt": "약자 / abbreviation",
+    "title": {
+      "ko": "블록을 사슬로 엮다",
+      "en": "Chaining the Blocks"
+    },
+    "prompt": {
+      "ko": "각 평문 블록을 직전 암호문 블록과 결합(첫 블록은 IV 사용)해 사슬처럼 연쇄시키는 블록 암호 운용 모드의 3글자 약자는?",
+      "en": "What 3-letter block-cipher mode of operation chains each plaintext block with the previous ciphertext block (using an IV for the first block)? (abbreviation)"
+    },
+    "hints": {
+      "ko": [
+        "Cipher Block Chaining.",
+        "IV 재사용·패딩 오라클(padding oracle) 공격에 주의해야 하는 모드입니다."
+      ],
+      "en": [
+        "Cipher Block Chaining.",
+        "Watch out for IV reuse and padding-oracle attacks."
+      ]
+    }
+  },
+  {
+    "id": "t3_salt",
+    "tier": 3,
+    "cat": "crypto",
+    "track": "crypto",
+    "points": 110,
+    "ci": true,
+    "hash": "63479ad69a090b258277ec8fba6f99419a2ffb248981510657c944ccd1148e97",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "레인보우 테이블 방어",
+      "en": "Defeating Rainbow Tables"
+    },
+    "prompt": {
+      "ko": "레인보우 테이블 공격을 막기 위해 비밀번호를 해싱하기 전에 사용자마다 덧붙이는 무작위 값을 가리키는 한 단어(영문)는?",
+      "en": "What single English word names the random per-user value added to a password before hashing to defeat rainbow-table attacks?"
+    },
+    "hints": {
+      "ko": [
+        "요리에서 '간을 맞추는' 그 단어와 철자가 같습니다.",
+        "같은 비밀번호라도 저장된 해시가 서로 달라지게 만듭니다."
+      ],
+      "en": [
+        "Spelled like the seasoning you add to food.",
+        "Makes identical passwords hash to different stored values."
       ]
     }
   },
