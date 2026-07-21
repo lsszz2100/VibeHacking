@@ -4397,5 +4397,593 @@ const CHALLENGES = [
         "The related exploit technique is called '____ poisoning'."
       ]
     }
+  },
+  {
+    "id": "t0_pwd",
+    "tier": 0,
+    "cat": "system",
+    "track": "system",
+    "points": 40,
+    "ci": true,
+    "hash": "a1159e9df3670d549d04524532629f5477ceb7deec9b45e47e8c009506ecb2c8",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "현재 디렉터리 출력",
+      "en": "Where Am I"
+    },
+    "prompt": {
+      "ko": "리눅스에서 현재 작업 중인 디렉터리의 절대 경로를 출력하는 명령어는? (한 단어)",
+      "en": "Which Linux command prints the absolute path of your current working directory? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'print working directory'의 약자입니다.",
+        "`___` 를 치면 예: `/home/user` 가 출력됩니다."
+      ],
+      "en": [
+        "Short for 'print working directory'.",
+        "Typing `___` prints e.g. `/home/user`."
+      ]
+    }
+  },
+  {
+    "id": "t0_ps",
+    "tier": 0,
+    "cat": "system",
+    "track": "system",
+    "points": 45,
+    "ci": true,
+    "hash": "6527c9361a2f469c5275afcb5d06e53013367cd231995de13dc7218711388382",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "실행 중인 프로세스",
+      "en": "Running Processes"
+    },
+    "prompt": {
+      "ko": "현재 실행 중인 프로세스 목록을 그 시점의 상태로 한 번에 보여 주는 리눅스 명령어는? (한 단어, 흔히 `aux` 옵션과 함께 씀)",
+      "en": "Which Linux command lists the currently running processes as they are at that moment? (one word, often used with `aux`)"
+    },
+    "hints": {
+      "ko": [
+        "'process status'의 약자입니다.",
+        "`__ aux` 로 모든 사용자의 프로세스를 봅니다."
+      ],
+      "en": [
+        "Short for 'process status'.",
+        "`__ aux` lists every user's processes."
+      ]
+    }
+  },
+  {
+    "id": "t1_chown",
+    "tier": 1,
+    "cat": "system",
+    "track": "system",
+    "points": 65,
+    "ci": true,
+    "hash": "f92b5215aa322cc1e02f2d805b390d62d5ff942c8fa66e53f417a10abbb959cd",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "소유자 바꾸기",
+      "en": "Change the Owner"
+    },
+    "prompt": {
+      "ko": "파일이나 디렉터리의 소유자(owner)를 변경하는 리눅스 명령어는? (한 단어)",
+      "en": "Which Linux command changes the owner of a file or directory? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'change owner'를 줄인 이름입니다.",
+        "`____ root:root file` 처럼 그룹까지 함께 바꿀 수 있습니다."
+      ],
+      "en": [
+        "Its name shortens 'change owner'.",
+        "`____ root:root file` can set the group too."
+      ]
+    }
+  },
+  {
+    "id": "t2_nm",
+    "tier": 2,
+    "cat": "system",
+    "track": "system",
+    "points": 90,
+    "ci": true,
+    "hash": "2ca7289b5248632c8fe5386b972e8fde6585068c5cb8e2948489e10e7be6d4d8",
+    "fmt": "도구 이름 / tool (2글자)",
+    "title": {
+      "ko": "심볼 테이블 나열",
+      "en": "List the Symbols"
+    },
+    "prompt": {
+      "ko": "오브젝트 파일이나 실행 파일의 심볼 테이블(함수·전역변수 이름과 주소)을 나열하는 binutils 도구는? (두 글자 명령어)",
+      "en": "Which binutils tool lists the symbol table (function/global names and addresses) of an object or executable? (two-letter command)"
+    },
+    "hints": {
+      "ko": [
+        "'name'의 앞 두 글자와 같은 두 글자 이름입니다.",
+        "`__ -C a.out` 로 C++ 심볼을 디맹글해 봅니다."
+      ],
+      "en": [
+        "A two-letter name, like the first two letters of 'name'.",
+        "`__ -C a.out` demangles C++ symbols."
+      ]
+    }
+  },
+  {
+    "id": "t3_ptrace",
+    "tier": 3,
+    "cat": "system",
+    "track": "system",
+    "points": 115,
+    "ci": true,
+    "hash": "160ec8e507f2527b4de8f753c43de80b5aca90d0918e709d88c5519d6b122e34",
+    "fmt": "시스템 콜 / syscall",
+    "title": {
+      "ko": "프로세스를 붙잡는 콜",
+      "en": "The Call Behind Debuggers"
+    },
+    "prompt": {
+      "ko": "디버거가 다른 프로세스의 제어권을 얻어 메모리·레지스터를 읽고 제어할 때 내부적으로 호출하는 리눅스 시스템 콜의 이름은? (한 단어)",
+      "en": "What Linux system call do debuggers use under the hood to hook into another process and read/control its memory and registers? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "이름은 'process' + 'trace'의 축약입니다.",
+        "안티디버깅 기법은 이 콜이 이미 걸려 있으면 두 번째 호출이 실패하는 점을 악용합니다."
+      ],
+      "en": [
+        "Its name is 'process' + 'trace'.",
+        "Anti-debugging tricks abuse that a second call fails if one is already attached."
+      ]
+    }
+  },
+  {
+    "id": "t4_ret2libc",
+    "tier": 4,
+    "cat": "system",
+    "track": "system",
+    "points": 155,
+    "ci": true,
+    "hash": "c57eaf6530a6ac809ae16cc9062eb65bab051b73b6a2f5fa2202d7c3debb5cb7",
+    "fmt": "기법명 한 단어 / one token",
+    "title": {
+      "ko": "이미 있는 함수로 리턴",
+      "en": "Return Into Existing Code"
+    },
+    "prompt": {
+      "ko": "NX(스택 실행 방지)를 우회하려고, 스택에 셸코드를 넣는 대신 libc의 기존 함수(예: system)로 리턴 주소를 덮어써 실행 흐름을 넘기는 고전 익스플로잇 기법의 이름은? (숫자 포함 한 단어)",
+      "en": "To bypass NX (non-executable stack), instead of injecting shellcode you overwrite the return address to jump into an existing libc function (e.g. system). Name this classic exploit technique. (one token, contains a digit)"
+    },
+    "hints": {
+      "ko": [
+        "'return to libc'에서 to 를 숫자 2로 씁니다.",
+        "`ret___libc` — 보통 libc의 `system(\"/bin/sh\")` 로 점프합니다."
+      ],
+      "en": [
+        "'return to libc', with 'to' written as the digit 2.",
+        "`ret___libc` — typically jumps into libc's `system(\"/bin/sh\")`."
+      ]
+    }
+  },
+  {
+    "id": "t4_seccomp",
+    "tier": 4,
+    "cat": "system",
+    "track": "system",
+    "points": 150,
+    "ci": true,
+    "hash": "b10f708e69418485dbf6225020bf24204fd32b2a50c17e4fd16a76e09558a5f9",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "시스템 콜 화이트리스트",
+      "en": "Filter the Syscalls"
+    },
+    "prompt": {
+      "ko": "프로세스나 컨테이너가 호출할 수 있는 시스템 콜을 화이트리스트로 제한해 공격 표면을 줄이는 리눅스 커널 보안 기능의 이름은? (한 단어)",
+      "en": "What Linux kernel security feature restricts which system calls a process/container may make (via a whitelist), shrinking the attack surface? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'secure computing mode'를 줄인 이름입니다.",
+        "Docker는 기본 `sec____` 프로파일로 위험한 syscall을 막습니다."
+      ],
+      "en": [
+        "Short for 'secure computing mode'.",
+        "Docker ships a default `sec____` profile blocking dangerous syscalls."
+      ]
+    }
+  },
+  {
+    "id": "t0_ioc",
+    "tier": 0,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 45,
+    "ci": true,
+    "hash": "7354a0024740d89096dc6137ff3bb47df328ab8ea22f20e88c059d387e58aeae",
+    "fmt": "약어 / acronym (3글자)",
+    "title": {
+      "ko": "침해의 흔적",
+      "en": "Traces of a Breach"
+    },
+    "prompt": {
+      "ko": "침해가 발생했음을 알려 주는 관찰 가능한 흔적(악성 IP·해시·도메인 등)을 통칭하는 3글자 약어는?",
+      "en": "What 3-letter acronym collectively names the observable artifacts (malicious IPs, hashes, domains) that signal a compromise has occurred?"
+    },
+    "hints": {
+      "ko": [
+        "Indicator Of Compromise.",
+        "위협 인텔리전스 피드가 이 값들을 공유합니다."
+      ],
+      "en": [
+        "Indicator Of Compromise.",
+        "Threat-intel feeds share these values."
+      ]
+    }
+  },
+  {
+    "id": "t0_ram",
+    "tier": 0,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 45,
+    "ci": true,
+    "hash": "a631f4488a457da27b4a64dc8f2d85085b50ff568be99125cf6f8f45c759878e",
+    "fmt": "약자 / abbreviation (3글자)",
+    "title": {
+      "ko": "가장 먼저 수집",
+      "en": "Grab It First"
+    },
+    "prompt": {
+      "ko": "휘발성이 높아 전원을 끄면 사라지므로 포렌식에서 가장 먼저 수집해야 하는 주기억장치의 3글자 약자는? (수집 순서상 최우선)",
+      "en": "What 3-letter abbreviation names the volatile main memory that must be collected first in forensics because it is lost on power-off? (top of the order of volatility)"
+    },
+    "hints": {
+      "ko": [
+        "Random Access Memory.",
+        "이 영역을 통째로 저장한 것을 '메모리 덤프'라고 합니다."
+      ],
+      "en": [
+        "Random Access Memory.",
+        "A full capture of it is called a 'memory dump'."
+      ]
+    }
+  },
+  {
+    "id": "t1_netstat",
+    "tier": 1,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 60,
+    "ci": true,
+    "hash": "9a990e354cd9648e4a6371a05999dbd45da5831e866917f41b0f966f07bfea86",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "열린 연결 보기",
+      "en": "Open Connections"
+    },
+    "prompt": {
+      "ko": "호스트의 열린 포트와 활성 네트워크 연결(TCP/UDP)을 보여 주는 고전 명령어는? (한 단어)",
+      "en": "Which classic command shows a host open ports and active network connections (TCP/UDP)? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'network statistics'의 축약입니다.",
+        "`____ -ano` 로 연결과 PID를 함께 봅니다(요즘은 `ss` 로 대체)."
+      ],
+      "en": [
+        "Short for 'network statistics'.",
+        "`____ -ano` shows connections with PIDs (modern `ss` replaces it)."
+      ]
+    }
+  },
+  {
+    "id": "t2_steghide",
+    "tier": 2,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 85,
+    "ci": true,
+    "hash": "cb4acd2b3839eea32ef807b243408ba3be1bbe74006bdf696f498cb966c688fe",
+    "fmt": "도구명 / tool name",
+    "title": {
+      "ko": "그림 속 데이터",
+      "en": "Data Concealed in a Picture"
+    },
+    "prompt": {
+      "ko": "이미지·오디오 파일 안에 데이터를 숨기거나(임베드) 추출하는 대표적인 스테가노그래피 CLI 도구의 이름은? (한 단어)",
+      "en": "Which popular steganography CLI tool embeds or extracts data concealed within image/audio files? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'steganography' + 'hide'를 합친 이름입니다.",
+        "`____ extract -sf cover.jpg` 로 숨긴 데이터를 꺼냅니다."
+      ],
+      "en": [
+        "Its name blends 'steganography' + 'hide'.",
+        "`____ extract -sf cover.jpg` pulls out the concealed data."
+      ]
+    }
+  },
+  {
+    "id": "t3_c2",
+    "tier": 3,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 110,
+    "ci": true,
+    "hash": "9c0abe51c6e6655d81de2d044d4fb194931f058c0426c67c7285d8f5657ed64a",
+    "fmt": "약어 / acronym (2글자)",
+    "title": {
+      "ko": "좀비의 사령탑",
+      "en": "The Attacker Command Post"
+    },
+    "prompt": {
+      "ko": "감염된 좀비 호스트가 지시를 받고 탈취 데이터를 보내는, 공격자가 운영하는 명령·제어 서버를 가리키는 2글자 약어는? (C&C 라고도 함)",
+      "en": "What 2-character abbreviation names the attacker-run command-and-control server that infected hosts beacon to for orders and data exfiltration? (also written C&C)"
+    },
+    "hints": {
+      "ko": [
+        "'Command and Control'에서 두 번째 C를 숫자 2로 줄입니다.",
+        "비콘 주기(beacon interval)를 분석해 이 트래픽을 탐지합니다."
+      ],
+      "en": [
+        "'Command and Control', the second C written as the digit 2.",
+        "Analysts spot it by its beacon interval."
+      ]
+    }
+  },
+  {
+    "id": "t4_rootkit",
+    "tier": 4,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 155,
+    "ci": true,
+    "hash": "189ca7f3ff5335190ea4ecedaaad8e9613c8165bf99d563a82b1033af59c0e37",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "스스로를 숨기는 것",
+      "en": "Hiding Its Own Tracks"
+    },
+    "prompt": {
+      "ko": "커널이나 시스템 깊숙이 숨어 자신의 존재(프로세스·파일·연결)를 은폐하며 지속적 관리자 권한을 유지하는 악성코드 유형의 이름은? (한 단어)",
+      "en": "What single word names malware that hides deep in the kernel/system, concealing its own presence (processes, files, connections) to keep persistent admin access?"
+    },
+    "hints": {
+      "ko": [
+        "'root'(관리자) + 'kit'(도구모음)의 합성어입니다.",
+        "커널 모드 변종은 API를 후킹(SSDT 등)해 결과를 조작합니다."
+      ],
+      "en": [
+        "A blend of 'root' (admin) + 'kit' (toolset).",
+        "Kernel-mode variants hook APIs (e.g. SSDT) to falsify results."
+      ]
+    }
+  },
+  {
+    "id": "t4_shimcache",
+    "tier": 4,
+    "cat": "forensics",
+    "track": "forensics",
+    "points": 150,
+    "ci": true,
+    "hash": "513eecf62e066a0b3ac8a9e09a2a1ed5006d690351897f6db49def663656ef99",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "호환성 캐시의 흔적",
+      "en": "The Compatibility Cache"
+    },
+    "prompt": {
+      "ko": "윈도우 애플리케이션 호환성 데이터베이스(AppCompatCache)에 남아 프로그램 실행·존재 흔적을 보여 주는 포렌식 아티팩트의 통칭은? (한 단어)",
+      "en": "What single word names the Windows forensic artifact stored in the Application Compatibility database (AppCompatCache) that evidences program execution/presence?"
+    },
+    "hints": {
+      "ko": [
+        "'shim'(호환성 계층) + 'cache'의 합성어입니다.",
+        "레지스트리 `...\\\\AppCompatCache` 값에서 파싱합니다."
+      ],
+      "en": [
+        "A blend of 'shim' (compat layer) + 'cache'.",
+        "Parsed from the registry `...\\\\AppCompatCache` value."
+      ]
+    }
+  },
+  {
+    "id": "t0_saas",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 45,
+    "ci": true,
+    "hash": "98650c35cd5ea2afde8468b6d1866d3de00c715eb34044136bc3aad5c9b7b3db",
+    "fmt": "약어 / acronym",
+    "title": {
+      "ko": "설치 없는 소프트웨어",
+      "en": "Software, Just Use It"
+    },
+    "prompt": {
+      "ko": "사용자가 설치·인프라 관리 없이 웹으로 바로 쓰는 완성형 소프트웨어 제공 모델(예: Gmail, Salesforce)을 가리키는 약어는?",
+      "en": "What abbreviation names the model that delivers ready-to-use software over the web with no install or infra management (e.g. Gmail, Salesforce)?"
+    },
+    "hints": {
+      "ko": [
+        "Software as a Service.",
+        "`S__S` — 4글자 약어입니다."
+      ],
+      "en": [
+        "Software as a Service.",
+        "`S__S` — a 4-character abbreviation."
+      ]
+    }
+  },
+  {
+    "id": "t0_sharedresp",
+    "tier": 0,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 50,
+    "ci": true,
+    "hash": "2dbab7a48de51f5c2cbc3e0d6a9a9d6d2a6be0581df0789db88ec55154ba239d",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "누가 무엇을 책임지나",
+      "en": "Who Secures What"
+    },
+    "prompt": {
+      "ko": "클라우드 보안에서 '클라우드 자체(of the cloud)는 제공업체가, 클라우드 안(in the cloud)의 데이터·설정은 고객이 책임진다'는 원칙을 가리키는 두 단어(영문) 모델 이름은? (`____ ____ model`)",
+      "en": "In cloud security, what two-word model states the provider secures the cloud itself while the customer secures their data/configuration in the cloud? (`____ ____ model`)"
+    },
+    "hints": {
+      "ko": [
+        "'공유된 책임'을 영어 두 단어로 옮긴 것입니다.",
+        "`shared ______________` — 오설정에 의한 데이터 유출은 대개 고객 책임 영역."
+      ],
+      "en": [
+        "Two English words for '공유된 책임'.",
+        "`shared ______________` — misconfig breaches usually fall on the customer side."
+      ]
+    }
+  },
+  {
+    "id": "t1_helm",
+    "tier": 1,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 65,
+    "ci": true,
+    "hash": "ab14d3faa25e917efe6e7135d4ecca197866738885a88b9b95d1a16d2bb5b323",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "차트로 배포",
+      "en": "Deploy by Chart"
+    },
+    "prompt": {
+      "ko": "쿠버네티스 애플리케이션을 'chart'라는 패키지 단위로 배포·관리하는 대표적인 패키지 매니저의 이름은? (한 단어)",
+      "en": "What is the name of the popular package manager that deploys and manages Kubernetes apps as packages called 'charts'? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "배의 '키(방향타)'를 뜻하는 영어 단어입니다(쿠버네티스=키잡이 테마).",
+        "`____ install myrelease ./chart` 로 배포합니다."
+      ],
+      "en": [
+        "The English word for a ship steering wheel (fits the Kubernetes helmsman theme).",
+        "`____ install myrelease ./chart` deploys it."
+      ]
+    }
+  },
+  {
+    "id": "t2_ingress",
+    "tier": 2,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 90,
+    "ci": true,
+    "hash": "487a0a9a39038de9767bdcbc6f81bf46cd7dcedb81be97d41dd6079d35bd922e",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "외부 트래픽 라우팅",
+      "en": "Routing Traffic In"
+    },
+    "prompt": {
+      "ko": "쿠버네티스에서 외부 HTTP(S) 트래픽을 클러스터 내부 서비스로 라우팅하는 규칙(호스트/경로 기반)을 정의하는 리소스의 이름은? (한 단어)",
+      "en": "In Kubernetes, what resource defines rules (host/path-based) that route external HTTP(S) traffic to internal services? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'들어오는 트래픽(inbound)'을 뜻하는 영어 단어이며, 반대말은 egress 입니다.",
+        "보통 nginx/traefik 컨트롤러가 이 리소스를 구현합니다."
+      ],
+      "en": [
+        "The English word for 'inbound', the opposite of egress.",
+        "An nginx/traefik controller usually implements it."
+      ]
+    }
+  },
+  {
+    "id": "t3_privesc",
+    "tier": 3,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 130,
+    "ci": true,
+    "hash": "d3fa9e1e93989d0b1b266c8f4a5eafad0d0b3ff1db8c6136a9b8fcbf30a29b5e",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "권한을 끌어올리다",
+      "en": "Climbing the Privileges"
+    },
+    "prompt": {
+      "ko": "낮은 권한으로 침투한 뒤, 과도한 권한 정책이나 취약점을 악용해 더 높은 권한(관리자/root)을 획득하는 공격 단계를 가리키는 두 단어(영문)는?",
+      "en": "What two-word term names the attack stage where a low-privilege foothold is leveraged (via over-permissive policies or a vuln) to gain higher (admin/root) privileges?"
+    },
+    "hints": {
+      "ko": [
+        "'권한 상승'을 영어 두 단어로 옮긴 것입니다.",
+        "`privilege ____________` — 수직(vertical)/수평(horizontal)으로 나뉩니다."
+      ],
+      "en": [
+        "Two English words for '권한 상승'.",
+        "`privilege ____________` — split into vertical and horizontal."
+      ]
+    }
+  },
+  {
+    "id": "t4_datapoisoning",
+    "tier": 4,
+    "cat": "ai",
+    "track": "cloud",
+    "points": 140,
+    "ci": true,
+    "hash": "8523305e90d58767dc73336f41bf038b80c9a9823f9bd3ea010594bcc5abd2e8",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "학습 데이터 오염",
+      "en": "Corrupting the Training Set"
+    },
+    "prompt": {
+      "ko": "공격자가 머신러닝/LLM의 학습 데이터에 악의적 샘플을 몰래 주입해 모델의 판단이나 출력을 왜곡시키는, OWASP LLM Top 10에 포함된 공격을 가리키는 두 단어(영문)는?",
+      "en": "What two-word attack (in the OWASP LLM Top 10) secretly injects malicious samples into an ML/LLM's training data to skew the model's behavior or output?"
+    },
+    "hints": {
+      "ko": [
+        "학습 '데이터'를 '오염'시킨다는 뜻의 두 단어입니다.",
+        "`data ________` — 백도어(트리거) 삽입에도 쓰입니다."
+      ],
+      "en": [
+        "Two words meaning to contaminate the training data.",
+        "`data ________` — also used to plant backdoor triggers."
+      ]
+    }
+  },
+  {
+    "id": "t4_gvisor",
+    "tier": 4,
+    "cat": "cloud",
+    "track": "cloud",
+    "points": 140,
+    "ci": true,
+    "hash": "1f6d325084c7647bcd2a0352753a861a30a972c5ad6b75f6c2f1092961bb98f8",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "유저공간 커널 샌드박스",
+      "en": "A Kernel in User Space"
+    },
+    "prompt": {
+      "ko": "구글이 만든, 컨테이너와 호스트 커널 사이에서 시스템 콜을 가로채 사용자공간 커널로 처리함으로써 강한 격리를 제공하는 샌드박스 런타임의 이름은? (한 단어)",
+      "en": "What is the name of Google's sandbox runtime that intercepts container syscalls and services them in a user-space kernel for stronger isolation? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "소문자 g 로 시작하며 뒤에 'Visor(면갑)'가 붙습니다.",
+        "`runsc` 런타임으로 구현되어 Docker/K8s 에 연결됩니다."
+      ],
+      "en": [
+        "Starts with a lowercase g, followed by 'Visor'.",
+        "Implemented as the `runsc` runtime, plugged into Docker/K8s."
+      ]
+    }
   }
 ];

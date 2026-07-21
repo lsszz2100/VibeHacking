@@ -57,9 +57,9 @@ Opening the site runs a boot sequence and drops you into an **infiltration conso
 | `vault` 금고 | **3** | XOR(단일/반복키)·ROT47·Base85·포맷스트링·SSTI·탐지 규칙 언어·AD·ELF매직·메시지 인증 코드·IMDS·STS 임시 자격증명·클라우드 오설정 감시·동적 링크 테이블 덮어쓰기·도커 소켓 마운트·IMDSv2 토큰·프로세스 이미지 치환 인젝션·위치 독립 실행파일 | 30 | 7 |
 | `core` 코어 | **4** | 체인/이중·3중 디코딩, Vigenère, 컨테이너 탈출, K8s 시크릿 저장 방식, AES-GCM, JWT, AI 보안, 윈도우 실행 흔적, 메모리 포렌식, 메모리 보호기법, 코드 재사용·해제 후 사용 익스플로잇, 서버리스 초기화 지연, USB 장치 흔적, NTFS 메타데이터, 타임스탬프 조작, 글리브 힙 캐시 poisoning / chained decoding, Vigenère, container escape, how K8s stores secrets, AES-GCM, JWT, AI security, Windows execution artifacts, memory forensics, memory protections, code-reuse & use-after-free exploitation, serverless init latency, USB device artifacts, NTFS metadata, timestamp tampering, glibc heap-cache poisoning | 29 | 5 |
 
-총 **154문제**(분야: 웹 35 · 암호 35 · 시스템 28 · 포렌식 28 · 클라우드/AI 28). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **175문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/AI 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **154 challenges** (web 35 · crypto 35 · system 28 · forensics 28 · cloud/AI 28); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **175 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/AI 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 
