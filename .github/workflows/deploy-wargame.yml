@@ -33,6 +33,12 @@ jobs:
       - name: Verify challenge integrity (structure, no leaks, counts in sync)
         run: node wargame/scripts/verify.js
 
+      # Catches the leak verify.js structurally cannot see: an answer of one
+      # challenge sitting in plain text in another challenge's prompt or hints.
+      # Runs without --reveal so the log never prints the offending token.
+      - name: Scan for cross-challenge answer leaks
+        run: node wargame/scripts/leakscan.js
+
   deploy:
     needs: validate
     environment:

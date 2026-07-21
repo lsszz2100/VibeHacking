@@ -302,11 +302,11 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "두 자리씩 한 바이트입니다.",
-        "`echo '...' | xxd -r -p` 또는 콘솔에서 파싱."
+        "브라우저 콘솔에서 두 자리씩 잘라 `parseInt(b, 16)` 로 파싱해 보세요."
       ],
       "en": [
         "Every two digits is one byte.",
-        "Try `echo '...' | xxd -r -p`."
+        "In the console, slice it two digits at a time and `parseInt(b, 16)`."
       ]
     }
   },
@@ -545,7 +545,7 @@ const CHALLENGES = [
     "fmt": "단어 / word",
     "title": {
       "ko": "가장 흔한 비밀번호",
-      "en": "The Most Common Password"
+      "en": "The Most Common One"
     },
     "prompt": {
       "ko": "MD5 해시 `5f4dcc3b5aa765d61d8327deb882cf99` 의 평문은? (아주 유명한 단어)",
@@ -917,11 +917,11 @@ const CHALLENGES = [
     },
     "hints": {
       "ko": [
-        "50 4E 47 는 ASCII로 'PNG' 입니다.",
+        "`50 4E 47` 세 바이트를 ASCII로 읽으면 형식 이름 세 글자가 됩니다.",
         "이미지 형식."
       ],
       "en": [
-        "50 4E 47 is 'PNG' in ASCII.",
+        "Read the bytes `50 4E 47` as ASCII and you get the three-letter format name.",
         "An image format."
       ]
     }
@@ -1360,8 +1360,8 @@ const CHALLENGES = [
       "en": "The Final Gate"
     },
     "prompt": {
-      "ko": "마지막 도전입니다. 아래는 단일 바이트 키 `0x37` 로 XOR된 플래그입니다. 복호화하면 당신은 진정한 해커:\n\n`717b76704c4e58426854585a475b5243525368435f5268415e55526840564550565a524a`",
-      "en": "The final challenge. Below is a flag XOR-ed with the single-byte key `0x37`. Decrypt it and you are a true hacker:\n\n`717b76704c4e58426854585a475b5243525368435f5268415e55526840564550565a524a`"
+      "ko": "마지막 도전입니다. 아래는 단일 바이트 키 `0x37` 로 XOR된 플래그입니다. 복호화하면 금고는 당신의 것:\n\n`717b76704c4e58426854585a475b5243525368435f5268415e55526840564550565a524a`",
+      "en": "The final challenge. Below is a flag XOR-ed with the single-byte key `0x37`. Decrypt it and the vault is yours:\n\n`717b76704c4e58426854585a475b5243525368435f5268415e55526840564550565a524a`"
     },
     "hints": {
       "ko": [
@@ -1413,11 +1413,11 @@ const CHALLENGES = [
     "fmt": "명령어 / command",
     "title": {
       "ko": "숨은 문자열",
-      "en": "Hidden Strings"
+      "en": "Hidden Text"
     },
     "prompt": {
       "ko": "바이너리에서 사람이 읽을 수 있는 ASCII 문자열만 뽑아내는 고전 유닉스 명령은? (명령어 이름)",
-      "en": "Which classic Unix command extracts human-readable ASCII strings from a binary? (command name)"
+      "en": "Which classic Unix command extracts the human-readable ASCII text out of a binary? (command name)"
     },
     "hints": {
       "ko": [
@@ -1425,7 +1425,7 @@ const CHALLENGES = [
         "`____ ./malware.bin | grep FLAG`"
       ],
       "en": [
-        "The name literally means 'strings'.",
+        "The command is named after exactly what it pulls out.",
         "`____ ./malware.bin | grep FLAG`"
       ]
     }
@@ -1590,11 +1590,11 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "반대 명령은 `detach` 입니다.",
-        "`attach <PID>` 형태로 사용합니다."
+        "`____ <PID>` 형태로 사용합니다."
       ],
       "en": [
         "The opposite command is `detach`.",
-        "Used as `attach <PID>`."
+        "Used as `____ <PID>`."
       ]
     }
   },
@@ -1813,11 +1813,11 @@ const CHALLENGES = [
     },
     "hints": {
       "ko": [
-        "고래 떼(pod)에서 따온 이름.",
+        "고래가 무리 지어 다니는 그 무리를 뜻하는 영단어에서 따왔습니다.",
         "`kubectl get ____`"
       ],
       "en": [
-        "Named after a pod of whales.",
+        "Named after the English word for a group of whales.",
         "`kubectl get ____`"
       ]
     }
@@ -1865,7 +1865,7 @@ const CHALLENGES = [
     },
     "prompt": {
       "ko": "SSRF로 클라우드 인스턴스의 임시 자격증명을 탈취할 때 노리는, 모든 주요 클라우드의 메타데이터 서비스 링크-로컬 IP 주소는?",
-      "en": "Which link-local IP address (the metadata service across major clouds) do attackers target via SSRF to steal instance credentials?"
+      "en": "Which link-local IP address (the metadata service across major clouds) do attackers target via SSRF to steal an instance's temporary keys?"
     },
     "hints": {
       "ko": [
@@ -2197,11 +2197,11 @@ const CHALLENGES = [
     "fmt": "사용자:비밀번호 / user:pass",
     "title": {
       "ko": "가로챈 자격증명",
-      "en": "Intercepted credentials"
+      "en": "Intercepted Login"
     },
     "prompt": {
       "ko": "`Authorization: Basic YWRtaW46czNjcjN0` 헤더를 보았습니다. 디코딩하면 자격증명은?",
-      "en": "You saw `Authorization: Basic YWRtaW46czNjcjN0`. Decode it — what are the credentials?"
+      "en": "You saw `Authorization: Basic YWRtaW46czNjcjN0`. Decode it — what is the `user:password` pair?"
     },
     "hints": {
       "ko": [
@@ -2589,7 +2589,7 @@ const CHALLENGES = [
     "fmt": "한 단어 / one word",
     "title": {
       "ko": "설정을 유출하라",
-      "en": "Leak the Config"
+      "en": "Leak the App Settings"
     },
     "prompt": {
       "ko": "Flask/Jinja2 SSTI에서 `{{ ____ }}` 로 접근하면 앱의 SECRET_KEY 등 설정값이 통째로 노출되는, 템플릿 전역 객체의 이름은? (소문자 한 단어)",
@@ -2598,11 +2598,11 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "Flask 앱 설정을 담는 딕셔너리형 전역입니다.",
-        "`app.config` 의 마지막 단어."
+        "앱 객체에서 `app.____` 로 꺼내 쓰는 그 이름입니다."
       ],
       "en": [
         "A dict-like global holding the Flask app settings.",
-        "The last word of `app.config`."
+        "Read off the app object as `app.____`."
       ]
     }
   },
@@ -2682,11 +2682,11 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "영어 'not equal' 의 줄임말입니다.",
-        "`$gt`, `$ne`, `$regex` 같은 비교 연산자 계열."
+        "`$gt`, `$lt`, `$regex` 같은 비교 연산자 계열."
       ],
       "en": [
         "Short for 'not equal'.",
-        "Same family as `$gt`, `$ne`, `$regex`."
+        "Same family as `$gt`, `$lt`, `$regex`."
       ]
     }
   },
@@ -2705,7 +2705,7 @@ const CHALLENGES = [
     },
     "prompt": {
       "ko": "취약한 서버가 요청의 `Origin` 을 그대로 `Access-Control-Allow-Origin` 에 반사합니다. 여기에 더해 피해자의 인증 세션(자격증명)까지 실린 교차-출처 요청을 브라우저가 허용하게 하려면, 서버가 반드시 `true` 로 내보내야 하는 응답 헤더는? `Access-Control-Allow-________`",
-      "en": "A vulnerable server reflects the request's `Origin` back into `Access-Control-Allow-Origin`. To also let the browser attach the victim's authenticated session (credentials) on that cross-origin request, which response header must the server set to `true`? `Access-Control-Allow-________`"
+      "en": "A vulnerable server reflects the request's `Origin` back into `Access-Control-Allow-Origin`. To also let the browser send the victim's authenticated session on that cross-origin request, which response header must the server set to `true`? `Access-Control-Allow-________`"
     },
     "hints": {
       "ko": [
@@ -2713,7 +2713,7 @@ const CHALLENGES = [
         "이 헤더가 `true` 이면 ACAO 는 와일드카드 `*` 를 쓸 수 없습니다."
       ],
       "en": [
-        "It governs whether credentials (the authenticated session) may be sent.",
+        "It governs whether the authenticated session may be sent at all.",
         "When it is `true`, ACAO cannot use the wildcard `*`."
       ]
     }
@@ -3218,7 +3218,7 @@ const CHALLENGES = [
       ],
       "en": [
         "GCC's `-fstack-protector` inserts this value.",
-        "From the idiom 'canary in a coal mine'."
+        "From the idiom about the bird kept in a coal mine."
       ]
     }
   },
@@ -3488,8 +3488,8 @@ const CHALLENGES = [
       "en": "Borrowing a Role"
     },
     "prompt": {
-      "ko": "AWS에서 다른 IAM 역할의 임시 자격 증명을 발급받기 위해 호출하는 STS API 액션의 이름은? (예: `sts:________`)",
-      "en": "Which STS API action do you call in AWS to obtain temporary credentials for another IAM role? (e.g. `sts:________`)"
+      "ko": "AWS에서 다른 역할의 임시 자격 증명을 발급받기 위해 호출하는 STS API 액션의 이름은? (예: `sts:________`)",
+      "en": "Which STS API action do you call in AWS to obtain temporary keys for another role? (e.g. `sts:________`)"
     },
     "hints": {
       "ko": [
@@ -3516,8 +3516,8 @@ const CHALLENGES = [
       "en": "Watching for Misconfigurations"
     },
     "prompt": {
-      "ko": "클라우드 인프라의 오설정(퍼블릭 버킷, 과도한 IAM 권한 등)을 지속적으로 스캔·경고하는 보안 도구 카테고리의 약자는?",
-      "en": "What abbreviation names the security tool category that continuously scans and alerts on cloud misconfigurations (public buckets, over-privileged IAM, etc.)?"
+      "ko": "클라우드 인프라의 오설정(퍼블릭 버킷, 과도한 권한 부여 등)을 지속적으로 스캔·경고하는 보안 도구 카테고리의 약자는?",
+      "en": "What abbreviation names the security tool category that continuously scans and alerts on cloud misconfigurations (public buckets, excessive permissions, etc.)?"
     },
     "hints": {
       "ko": [
@@ -3577,11 +3577,11 @@ const CHALLENGES = [
     },
     "hints": {
       "ko": [
-        "`dd` 나 FTK Imager로 만듭니다.",
+        "FTK Imager 같은 이미징 도구로 만듭니다.",
         "'그림/사본'을 뜻하는 영단어가 뒤에 옵니다."
       ],
       "en": [
-        "Made with tools like `dd` or FTK Imager.",
+        "Made with imaging tools such as FTK Imager.",
         "Ends with the word meaning 'a copy/picture'."
       ]
     }
@@ -3712,8 +3712,8 @@ const CHALLENGES = [
       "en": "The Command-Line Packet Hunter"
     },
     "prompt": {
-      "ko": "GUI 없이 터미널에서 네트워크 패킷을 실시간 캡처하고 `.pcap` 로 저장하는 대표적인 명령줄 도구는? (Wireshark 의 텍스트판 형제, 한 단어)",
-      "en": "Which classic command-line tool captures network packets in real time from a terminal (no GUI) and can save them as `.pcap`? (the text-mode sibling of Wireshark, one word)"
+      "ko": "GUI 없이 터미널에서 네트워크 패킷을 실시간 캡처하고 `.pcap` 로 저장하는 대표적인 명령줄 도구는? (GUI 패킷 분석기의 텍스트판 형제, 한 단어)",
+      "en": "Which classic command-line tool captures network packets in real time from a terminal (no GUI) and can save them as `.pcap`? (the text-mode sibling of the well-known GUI analyzer, one word)"
     },
     "hints": {
       "ko": [
@@ -3858,11 +3858,11 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "'Multi-Factor Authentication' 의 머리글자입니다.",
-        "루트 계정에 이것이 없으면 CSPM 도구가 가장 먼저 경고하는 항목입니다."
+        "루트 계정에 이것이 없으면 클라우드 설정 점검 도구가 가장 먼저 경고합니다."
       ],
       "en": [
         "Initials of 'Multi-Factor Authentication'.",
-        "Missing it on the root account is the first thing a CSPM tool flags."
+        "Missing it on the root account is the first thing a cloud posture scanner flags."
       ]
     }
   },
@@ -3909,7 +3909,7 @@ const CHALLENGES = [
     },
     "prompt": {
       "ko": "웹 UI에서 손으로 클릭하는 대신, 선언적 설정 파일(코드)로 인프라를 프로비저닝·관리하는 방식을 가리키는 3글자 약어는?",
-      "en": "What 3-letter acronym names the practice of provisioning and managing infrastructure through declarative config files (code) instead of clicking through a web UI by hand?"
+      "en": "What 3-letter acronym names the practice of provisioning and managing infrastructure through declarative definition files (code) instead of clicking through a web UI by hand?"
     },
     "hints": {
       "ko": [
@@ -4021,7 +4021,7 @@ const CHALLENGES = [
     },
     "prompt": {
       "ko": "컨테이너 안에 호스트의 Docker 데몬 유닉스 소켓을 마운트하면 그 컨테이너는 사실상 호스트 root가 됩니다(원하는 특권 컨테이너를 새로 띄울 수 있으므로). 이 소켓의 기본 절대 경로는?",
-      "en": "Mounting the host's Docker daemon Unix socket into a container effectively hands it host root (it can spawn any privileged container it likes). What is that socket's default absolute path?"
+      "en": "Mounting the host's Docker daemon Unix socket into a container effectively hands it host root (it can spawn any container it likes, with full host access). What is that socket's default absolute path?"
     },
     "hints": {
       "ko": [
@@ -4356,17 +4356,17 @@ const CHALLENGES = [
       "en": "Even the Executable Won't Sit Still"
     },
     "prompt": {
-      "ko": "ASLR 이 실행파일 본체(.text 등)의 로드 주소까지 매 실행마다 무작위화할 수 있도록, 위치 독립적으로 컴파일된 실행파일을 가리키는 3글자 약어는? (`checksec` 이 이 항목을 enabled/disabled 로 보고하며, 이것이 없으면 실행파일의 코드 주소가 고정됩니다)",
-      "en": "What 3-letter abbreviation names an executable compiled position-independently, so ASLR can randomize even the main program's load address (.text, …) on every run? (`checksec` reports this field as enabled/disabled; without it the executable's code addresses stay fixed)"
+      "ko": "로더의 주소 무작위화가 실행파일 본체(.text 등)의 로드 주소까지 매 실행마다 흩어놓을 수 있도록, 위치 독립적으로 컴파일된 실행파일을 가리키는 3글자 약어는? (`checksec` 이 이 항목을 enabled/disabled 로 보고하며, 이것이 없으면 실행파일의 코드 주소가 고정됩니다)",
+      "en": "What 3-letter abbreviation names an executable compiled position-independently, so the loader's address randomization can cover even the main program's load address (.text, …) on every run? (`checksec` reports this field as enabled/disabled; without it the executable's code addresses stay fixed)"
     },
     "hints": {
       "ko": [
         "Position-______ Executable 세 단어의 머리글자입니다.",
-        "checksec 출력에서 'No ___' 로 표시되면 코드 주소가 고정이라 ROP 가젯 주소가 예측 가능해집니다."
+        "checksec 출력에서 'No ___' 로 표시되면 코드 주소가 고정이라 가젯 주소가 예측 가능해집니다."
       ],
       "en": [
         "It is the initials of Position-______ Executable.",
-        "checksec shows 'No ___' when code addresses are fixed, making ROP gadget addresses predictable."
+        "checksec shows 'No ___' when code addresses are fixed, making gadget addresses predictable."
       ]
     }
   },
