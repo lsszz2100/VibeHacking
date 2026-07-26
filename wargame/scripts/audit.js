@@ -117,3 +117,98 @@ console.log(`    (${terms.size} terms checked across ${topicRows.length} tier ro
 for (const s of spelled.sort((a, b) => a.tier - b.tier)) {
   console.log(`  ⚠ [t${s.tier}] ${s.id} — spelled in ${s.node} as "${s.term}"`);
 }
+
+// [G] Does the answer the grader actually accepts match what fmt/prompt promise?
+// t4_mft shipped with fmt "(3글자, $___)" and a prompt saying the acronym "starts
+// with $", while the stored hash only ever accepted the acronym WITHOUT it — a
+// player who followed the stated format was marked wrong, and nothing caught it.
+//
+// The answer exists only as SHA-256, so recover its *shape* the same way [F]
+// works: enumerate a bounded candidate space, hash each under the app's grading
+// rule, and keep only the length/charset of whatever hits. The plaintext is
+// never stored or printed — only the shape is compared against the declaration.
+// Challenges that declare nothing checkable, or whose answer is too long to
+// enumerate, are reported as unchecked rather than silently passing.
+const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+const DIGIT = '0123456789';
+
+function declarationOf(ch) {
+  const fmt = ch.fmt || '';
+  // a literal skeleton in fmt, e.g. "$___" -> requires a "$" prefix
+  let affix = null;
+  const tmpl = fmt.match(/([^\s(),/|_]*)_{2,}([^\s(),/|_]*)/);
+  if (tmpl && (tmpl[1] || tmpl[2])) affix = { pre: tmpl[1] || '', post: tmpl[2] || '' };
+  // "($ 포함)" / "(include the `$`)" also make the marker part of the answer
+  const inc = fmt.match(/([^\s(),/|]+)\s*포함/) || fmt.match(/include\s+(?:the\s+)?`?([^\s`)]+)`?/i);
+  if (!affix && inc) affix = { pre: inc[1].replace(/`/g, ''), post: '' };
+  // "( $ 제외 / no $ )" explicitly says the marker is NOT typed
+  const exc = fmt.match(/([^\s(),/|]+)\s*제외/) || fmt.match(/\bno\s+`?([^\s`)]+)`?/i);
+  const forbid = !affix && exc ? exc[1].replace(/`/g, '') : null;
+  // declared length: "3글자", "2자리", "3-letter", "4 digits". fmt only — prompts
+  // quote unrelated numbers ("outputs 40 hex chars") that are not the answer.
+  const lm = fmt.match(/(\d+)\s*(?:글자|자리)/) || fmt.match(/(\d+)[-\s]?(?:letter|char|digit)/i);
+  const len = lm ? +lm[1] : null;
+  return { affix, forbid, len, declares: !!(affix || forbid || len) };
+}
+
+const decl = new Map();
+for (const ch of CHALLENGES) {
+  const d = declarationOf(ch);
+  // case-sensitive answers are not enumerable over a lowercase space
+  if (d.declares && ch.ci && !/FLAG\{/.test(ch.fmt)) decl.set(ch.id, d);
+}
+// hash -> id, restricted to the challenges we can say something about
+const wanted = new Map();
+for (const ch of CHALLENGES) if (decl.has(ch.id)) wanted.set(ch.hash, ch.id);
+
+const shape = new Map(); // id -> { len, marker }; marker '' means the bare answer
+function sweep(charset, maxLen, pre = '', post = '') {
+  const buf = [];
+  (function rec(depth) {
+    if (depth > 0) {
+      const id = wanted.get(sha(pre + buf.join('') + post));
+      if (id && !shape.has(id)) shape.set(id, { len: buf.length, marker: pre + post });
+    }
+    if (depth === maxLen || wanted.size === shape.size) return;
+    for (const c of charset) { buf.push(c); rec(depth + 1); buf.pop(); }
+  })(0);
+}
+// staged so the cheap spaces run first; the 36^4 sweep only if still needed
+sweep(LOWER, 4);
+sweep(DIGIT, 4);
+sweep(LOWER + DIGIT, 3);
+let stillOpen = [...decl.keys()].filter(id => !shape.has(id));
+if (stillOpen.some(id => (decl.get(id).len || 0) >= 4)) sweep(LOWER + DIGIT, 4);
+// An answer may legitimately carry its declared marker ("$ne"), and a fmt that
+// claims the marker is NOT typed can be wrong the same way. Both only match once
+// the marker is applied, so retry every declared marker INCLUDING the forbidden
+// ones, otherwise a wrong "제외" slips through as merely unchecked.
+stillOpen = [...decl.keys()].filter(id => !shape.has(id));
+const markers = new Set();
+for (const id of stillOpen) {
+  const d = decl.get(id);
+  if (d.affix) markers.add(JSON.stringify([d.affix.pre, d.affix.post]));
+  if (d.forbid) markers.add(JSON.stringify([d.forbid, '']));
+}
+for (const m of markers) {
+  const [pre, post] = JSON.parse(m);
+  sweep(LOWER + DIGIT, 3, pre, post);
+}
+
+const bad = [], unchecked = [];
+for (const [id, d] of decl) {
+  const s = shape.get(id);
+  if (!s) { unchecked.push(id); continue; }
+  const want = d.affix ? d.affix.pre + d.affix.post : '';
+  if (d.affix && s.marker !== want) {
+    bad.push(`${id} — fmt/prompt declare a "${want}" marker, but the graded answer has none`);
+  } else if (d.forbid && s.marker) {
+    bad.push(`${id} — fmt says "${d.forbid} 제외 / no ${d.forbid}", but the graded answer carries it`);
+  } else if (d.len && s.len !== d.len) {
+    bad.push(`${id} — declares ${d.len} chars, but the graded answer is ${s.len}`);
+  }
+}
+console.log(`\n--- [G] fmt/prompt declarations that the grader contradicts: ${bad.length} ---`);
+console.log(`    (${decl.size} challenges declare a length/marker; ${shape.size} answers recovered by bounded sweep, ${unchecked.length} too long to enumerate)`);
+for (const b of bad) console.log(`  ⚠ ${b}`);
+if (unchecked.length) console.log(`    unchecked: ${unchecked.join(' ')}`);
