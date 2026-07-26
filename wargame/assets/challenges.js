@@ -3790,14 +3790,14 @@ const CHALLENGES = [
     "points": 150,
     "ci": true,
     "hash": "29a44d58cc6374a2e166bb1738c0ca4f012d7ba929f18365ff5f7e75ba99e6b7",
-    "fmt": "약어 / acronym (3글자, $___)",
+    "fmt": "약어 / acronym (3글자, $ 제외 / no $)",
     "title": {
       "ko": "모든 파일의 장부",
       "en": "The Ledger of Every File"
     },
     "prompt": {
-      "ko": "NTFS 볼륨에서 모든 파일·디렉터리의 이름·타임스탬프·클러스터 위치 등 레코드를 담아, 디스크 포렌식과 타임라인 분석의 핵심이 되는 메타데이터 구조가 있습니다. `$` 로 시작하는 이 구조의 3글자 약어는?",
-      "en": "On an NTFS volume there is a metadata structure holding a record for every file and directory — names, timestamps, cluster locations — central to disk forensics and timeline analysis. What is its 3-letter acronym (it starts with `$`)?"
+      "ko": "NTFS 볼륨에서 모든 파일·디렉터리의 이름·타임스탬프·클러스터 위치 등 레코드를 담아, 디스크 포렌식과 타임라인 분석의 핵심이 되는 메타데이터 구조가 있습니다. 이 구조의 3글자 약어는? (파일명에 붙는 `$` 접두사는 빼고 약어만 입력)",
+      "en": "On an NTFS volume there is a metadata structure holding a record for every file and directory — names, timestamps, cluster locations — central to disk forensics and timeline analysis. What is its 3-letter acronym? (enter the acronym only, without the `$` prefix its filename carries)"
     },
     "hints": {
       "ko": [
