@@ -6,6 +6,10 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
+// --strict: exit non-zero on [G] contradictions so CI can gate on it. The other
+// sections stay informational ([A] MISSING is a known heuristic false positive).
+const STRICT = process.argv.includes('--strict');
+
 const WG = path.resolve(__dirname, '..');
 const src = fs.readFileSync(path.join(WG, 'assets/challenges.js'), 'utf8');
 const sandbox = {};
@@ -132,6 +136,13 @@ for (const s of spelled.sort((a, b) => a.tier - b.tier)) {
 const LOWER = 'abcdefghijklmnopqrstuvwxyz';
 const DIGIT = '0123456789';
 
+// A marker is a literal the answer itself carries ("$", "0x", "--"). Prose words
+// ("no hyphen") describe how to type the answer and must not be treated as one.
+const isMarker = (t) => {
+  const v = String(t || '').replace(/`/g, '');
+  return v.length > 0 && v.length <= 3 && (/[^\p{L}\p{N}]/u.test(v) || v.length <= 2);
+};
+
 function declarationOf(ch) {
   const fmt = ch.fmt || '';
   // a literal skeleton in fmt, e.g. "$___" -> requires a "$" prefix
@@ -140,10 +151,10 @@ function declarationOf(ch) {
   if (tmpl && (tmpl[1] || tmpl[2])) affix = { pre: tmpl[1] || '', post: tmpl[2] || '' };
   // "($ 포함)" / "(include the `$`)" also make the marker part of the answer
   const inc = fmt.match(/([^\s(),/|]+)\s*포함/) || fmt.match(/include\s+(?:the\s+)?`?([^\s`)]+)`?/i);
-  if (!affix && inc) affix = { pre: inc[1].replace(/`/g, ''), post: '' };
+  if (!affix && inc && isMarker(inc[1])) affix = { pre: inc[1].replace(/`/g, ''), post: '' };
   // "( $ 제외 / no $ )" explicitly says the marker is NOT typed
   const exc = fmt.match(/([^\s(),/|]+)\s*제외/) || fmt.match(/\bno\s+`?([^\s`)]+)`?/i);
-  const forbid = !affix && exc ? exc[1].replace(/`/g, '') : null;
+  const forbid = !affix && exc && isMarker(exc[1]) ? exc[1].replace(/`/g, '') : null;
   // declared length: "3글자", "2자리", "3-letter", "4 digits". fmt only — prompts
   // quote unrelated numbers ("outputs 40 hex chars") that are not the answer.
   const lm = fmt.match(/(\d+)\s*(?:글자|자리)/) || fmt.match(/(\d+)[-\s]?(?:letter|char|digit)/i);
@@ -211,4 +222,12 @@ for (const [id, d] of decl) {
 console.log(`\n--- [G] fmt/prompt declarations that the grader contradicts: ${bad.length} ---`);
 console.log(`    (${decl.size} challenges declare a length/marker; ${shape.size} answers recovered by bounded sweep, ${unchecked.length} too long to enumerate)`);
 for (const b of bad) console.log(`  ⚠ ${b}`);
+if (STRICT) {
+  if (bad.length) {
+    console.error(`\naudit --strict: FAIL — ${bad.length} challenge(s) promise a format the grader does not accept (see [G]).`);
+    process.exitCode = 1;
+  } else {
+    console.log(`\naudit --strict: OK — no fmt/answer contradictions.`);
+  }
+}
 if (unchecked.length) console.log(`    unchecked: ${unchecked.join(' ')}`);

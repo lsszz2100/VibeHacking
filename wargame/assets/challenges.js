@@ -738,14 +738,14 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "b1565820a5cdac40e0520d23f9d0b1497f240ddc51d72eac6423d97d952d444f",
-    "fmt": "알고리즘명 / name",
+    "fmt": "알고리즘명, 하이픈 없이 / name, no hyphen",
     "title": {
       "ko": "해시의 정체",
       "en": "Identify the Hash"
     },
     "prompt": {
-      "ko": "40자리 16진수(160비트)로 출력되며, 충돌 공격이 발견되어 사용이 권장되지 않는 해시 알고리즘은? (이름)",
-      "en": "Which hash algorithm outputs 40 hex chars (160-bit) and is deprecated due to collision attacks? (name)"
+      "ko": "40자리 16진수(160비트)로 출력되며, 충돌 공격이 발견되어 사용이 권장되지 않는 해시 알고리즘은? (이름을 하이픈 없이 붙여서 입력)",
+      "en": "Which hash algorithm outputs 40 hex chars (160-bit) and is deprecated due to collision attacks? (write the name as one token, without a hyphen)"
     },
     "hints": {
       "ko": [

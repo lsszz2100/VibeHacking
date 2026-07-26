@@ -39,6 +39,15 @@ jobs:
       - name: Scan for cross-challenge answer leaks
         run: node wargame/scripts/leakscan.js
 
+      # Catches what neither of the above can: a challenge promising a format
+      # (declared length, a "$" marker) that the grader does not actually
+      # accept, so a player following the stated format is marked wrong.
+      # Only [G] gates the build — the other sections stay informational, and
+      # the [A] MISSING lines are a known heuristic false positive. The output
+      # carries no plaintext answers, only ids and recovered shapes.
+      - name: Check answer formats match what challenges promise
+        run: node wargame/scripts/audit.js --strict
+
   deploy:
     needs: validate
     environment:
