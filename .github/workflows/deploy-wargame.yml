@@ -48,6 +48,15 @@ jobs:
       - name: Check answer formats match what challenges promise
         run: node wargame/scripts/audit.js --strict
 
+      # The above are all static checks. This one actually plays the game:
+      # every challenge that ships a ciphertext or a planted flag is solved
+      # from its own prompt and submitted to the app's grading rule, so a
+      # challenge whose stated instructions no longer lead to the accepted
+      # answer fails the build. Runs without --reveal, so no derived
+      # plaintext reaches the log.
+      - name: Solve every derivable challenge from its own prompt
+        run: node wargame/scripts/solve-derivable.js
+
   deploy:
     needs: validate
     environment:

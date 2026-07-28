@@ -86,9 +86,27 @@ python3 -m http.server 8000
 
 ## ⚙️ GitHub Pages 배포 / Deployment
 
-`.github/workflows/deploy-wargame.yml` 가 `wargame/` 변경 시 자동으로 Pages에 배포합니다. 배포 전 `validate` 잡이 `node wargame/scripts/verify.js`로 문제 데이터를 구조적으로 검증하고, 실패하면 배포가 차단됩니다(id 중복, 잘못된 해시 형식, 존재하지 않는 tier/track 참조, 프롬프트/힌트에 정답이 실수로 그대로 노출됐는지, index.html HUD와 README 문제 수 불일치 등). 평문 정답은 필요 없어 공개 CI에서도 안전합니다.
+`.github/workflows/deploy-wargame.yml` 가 `wargame/` 변경 시 자동으로 Pages에 배포합니다. 배포 전 `validate` 잡이 네 가지 검사를 돌리고, 하나라도 실패하면 배포가 차단됩니다.
 
-`.github/workflows/deploy-wargame.yml` auto-deploys to Pages on `wargame/` changes. Before deploying, a `validate` job runs `node wargame/scripts/verify.js` to structurally check the challenge data and blocks deployment on failure (duplicate ids, malformed hashes, dangling tier/track references, an answer accidentally leaked into a prompt/hint, or the index.html HUD count drifting from the README). It needs no plaintext answers, so it's safe to run in public CI.
+| 스크립트 | 검사 내용 |
+|---|---|
+| `verify.js` | 구조 — id 중복, 해시 형식, 존재하지 않는 tier/track, 자기 프롬프트에 정답 노출, index.html HUD·README 문제 수 불일치 |
+| `leakscan.js` | 한 문제의 정답이 **다른 문제**의 프롬프트·힌트에 평문으로 들어있는지 (n-gram 해시 대조) |
+| `audit.js --strict` | `fmt`가 약속한 형식(길이·`$` 같은 마커)을 채점기가 실제로 받아주는지 |
+| `solve-derivable.js` | 암호문·심어둔 플래그가 있는 문제를 **프롬프트만 보고 실제로 풀어** 앱 채점 규칙에 제출 |
+
+앞의 셋은 정적 검사이고, `solve-derivable.js`는 실제로 게임을 플레이합니다. 안내대로 따라 풀었는데 오답 처리되는 문제(정답 형식 모순, 깨진 암호문, 사라진 아티팩트)는 이 검사만 잡을 수 있습니다. 네 스크립트 모두 평문 정답을 저장하지 않고 출력하지도 않아 공개 CI에서도 안전합니다.
+
+`.github/workflows/deploy-wargame.yml` auto-deploys to Pages on `wargame/` changes. Before deploying, a `validate` job runs four checks and blocks the deployment if any of them fails.
+
+| Script | What it checks |
+|---|---|
+| `verify.js` | Structure — duplicate ids, malformed hashes, dangling tier/track refs, an answer leaked into its own prompt, HUD/README counts drifting apart |
+| `leakscan.js` | One challenge's answer sitting in plain text in **another** challenge's prompt or hints (n-gram hash lookup) |
+| `audit.js --strict` | Whether the grader really accepts the format `fmt` promises (declared length, markers like `$`) |
+| `solve-derivable.js` | Actually solves every challenge that ships a ciphertext or a planted flag **from its own prompt** and submits it to the app's grading rule |
+
+The first three are static; the last one plays the game. A challenge where following the stated instructions gets you marked wrong — a format contradiction, a corrupted ciphertext, a plant that went missing — is only catchable that way. None of the four stores or prints a plaintext answer, so all are safe in public CI.
 
 **최초 1회 설정** (저장소 소유자):
 1. 저장소 **Settings → Pages → Build and deployment → Source** 를 **"GitHub Actions"** 로 설정.
