@@ -6,9 +6,14 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-// --strict: exit non-zero on [G] contradictions so CI can gate on it. The other
-// sections stay informational ([A] MISSING is a known heuristic false positive).
+// --strict: exit non-zero on [F] leaks and [G] contradictions so CI can gate on
+// them. The other sections stay informational ([A] MISSING is a known heuristic
+// false positive).
+// --reveal: print the offending README term. A term is only a finding because it
+// IS an answer, so naming it in a public CI log hands that answer out — keep it
+// local-only, the same rule leakscan.js follows.
 const STRICT = process.argv.includes('--strict');
+const REVEAL = process.argv.includes('--reveal');
 
 const WG = path.resolve(__dirname, '..');
 const src = fs.readFileSync(path.join(WG, 'assets/challenges.js'), 'utf8');
@@ -116,10 +121,16 @@ for (const [term, node] of terms) {
   const hit = ciHash.get(sha(term.toLowerCase())) || csHash.get(sha(term));
   if (hit) spelled.push({ term, node, id: hit.id, tier: hit.tier });
 }
+// A table that stops matching would make this section report a silent 0 forever,
+// so treat "could not read the table" as a finding rather than a pass.
+const fBlocked = topicRows.length === TIERS.length ? null
+  : `README's tier table did not parse — ${topicRows.length}/${TIERS.length} topic rows matched, so [F] checked nothing`;
 console.log(`\n--- [F] README topic terms that ARE a challenge answer: ${spelled.length} ---`);
 console.log(`    (${terms.size} terms checked across ${topicRows.length} tier rows; describe the topic, don't name the answer)`);
+if (fBlocked) console.log(`  ⚠ ${fBlocked}`);
 for (const s of spelled.sort((a, b) => a.tier - b.tier)) {
-  console.log(`  ⚠ [t${s.tier}] ${s.id} — spelled in ${s.node} as "${s.term}"`);
+  const where = REVEAL ? `as "${s.term}"` : `(term hidden — rerun locally with --reveal)`;
+  console.log(`  ⚠ [t${s.tier}] ${s.id} — spelled in ${s.node} ${where}`);
 }
 
 // [G] Does the answer the grader actually accepts match what fmt/prompt promise?
@@ -222,12 +233,20 @@ for (const [id, d] of decl) {
 console.log(`\n--- [G] fmt/prompt declarations that the grader contradicts: ${bad.length} ---`);
 console.log(`    (${decl.size} challenges declare a length/marker; ${shape.size} answers recovered by bounded sweep, ${unchecked.length} too long to enumerate)`);
 for (const b of bad) console.log(`  ⚠ ${b}`);
+if (unchecked.length) console.log(`    unchecked: ${unchecked.join(' ')}`);
+
 if (STRICT) {
-  if (bad.length) {
-    console.error(`\naudit --strict: FAIL — ${bad.length} challenge(s) promise a format the grader does not accept (see [G]).`);
+  const fail = [];
+  if (fBlocked) fail.push(`[F] ${fBlocked}`);
+  for (const s of spelled.sort((a, b) => a.tier - b.tier)) {
+    fail.push(`[F] ${s.id} — the ${s.node} topic row spells out its answer${REVEAL ? ` ("${s.term}")` : ''}`);
+  }
+  for (const b of bad) fail.push(`[G] ${b}`);
+  if (fail.length) {
+    console.error(`\naudit --strict: FAIL — ${fail.length} issue(s):`);
+    for (const f of fail) console.error(`  ✗ ${f}`);
     process.exitCode = 1;
   } else {
-    console.log(`\naudit --strict: OK — no fmt/answer contradictions.`);
+    console.log(`\naudit --strict: OK — README's topic rows name no answers ([F]), no fmt/answer contradictions ([G]).`);
   }
 }
-if (unchecked.length) console.log(`    unchecked: ${unchecked.join(' ')}`);

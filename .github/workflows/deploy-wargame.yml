@@ -41,11 +41,13 @@ jobs:
 
       # Catches what neither of the above can: a challenge promising a format
       # (declared length, a "$" marker) that the grader does not actually
-      # accept, so a player following the stated format is marked wrong.
-      # Only [G] gates the build — the other sections stay informational, and
-      # the [A] MISSING lines are a known heuristic false positive. The output
-      # carries no plaintext answers, only ids and recovered shapes.
-      - name: Check answer formats match what challenges promise
+      # accept, so a player following the stated format is marked wrong ([G]),
+      # and README's own tier table handing out an answer as a topic ([F]).
+      # Those two gate the build — the other sections stay informational, and
+      # the [A] MISSING lines are a known heuristic false positive. Runs
+      # without --reveal, so a leaked term is reported by id only; the log
+      # carries no plaintext answers, just ids and recovered shapes.
+      - name: Check README and answer formats against the grader
         run: node wargame/scripts/audit.js --strict
 
       # The above are all static checks. This one actually plays the game:
