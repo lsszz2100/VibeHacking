@@ -206,7 +206,7 @@ const CHALLENGES = [
     "points": 50,
     "ci": true,
     "hash": "e7d3685715939842749cc27b38d0ccb9706d4d14a5304ef9eee093780eab5df9",
-    "fmt": "단어 / word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "0과 1의 언어",
       "en": "Language of 0s and 1s"
@@ -458,7 +458,7 @@ const CHALLENGES = [
     "points": 60,
     "ci": true,
     "hash": "c0946106b732f9f6ae889101ab987ed1bbcfe3eda2ad0a971be31575ad676851",
-    "fmt": "단어 / word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "점과 선",
       "en": "Dots and Dashes"
@@ -486,7 +486,7 @@ const CHALLENGES = [
     "points": 60,
     "ci": true,
     "hash": "870b1fc137c2af20441f74a26febf99739d79cee1246063e279ca05f288e943c",
-    "fmt": "파일명 / filename",
+    "fmt": "파일 이름 / file name",
     "title": {
       "ko": "크롤러에게 보내는 쪽지",
       "en": "Note to Crawlers"
@@ -542,7 +542,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
-    "fmt": "단어 / word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "가장 흔한 비밀번호",
       "en": "The Most Common One"
@@ -682,7 +682,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": false,
     "hash": "fa08499e14d0113ba6794623f1badedcc8e9ae51cb5bafc7e14a5af1454bcfe7",
-    "fmt": "3글자 / 3 chars",
+    "fmt": "경로 표기 / path notation (3글자 / 3 chars)",
     "title": {
       "ko": "상위로 올라가기",
       "en": "Climb Up"
@@ -738,7 +738,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "b1565820a5cdac40e0520d23f9d0b1497f240ddc51d72eac6423d97d952d444f",
-    "fmt": "알고리즘명, 하이픈 없이 / name, no hyphen",
+    "fmt": "알고리즘 이름 / algorithm name (4글자 / 4 chars, 하이픈 없이 / no hyphen)",
     "title": {
       "ko": "해시의 정체",
       "en": "Identify the Hash"
@@ -766,7 +766,7 @@ const CHALLENGES = [
     "points": 100,
     "ci": true,
     "hash": "f5f69168bba3cfa1e2a80dff839b48db36df36fa876c1cd9d7d508f3ab308744",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "두 소수의 곱",
       "en": "Product of Two Primes"
@@ -878,7 +878,7 @@ const CHALLENGES = [
     "points": 120,
     "ci": true,
     "hash": "7892df0e4b5a59123524a5c4c4de70dee9a9cd65e29fa21deb8a50e812c1f4a4",
-    "fmt": "예: %x 형식 / e.g. %x",
+    "fmt": "포맷 지정자 / format specifier (예: %x / e.g. %x)",
     "title": {
       "ko": "메모리에 쓰기",
       "en": "Write to Memory"
@@ -1018,7 +1018,7 @@ const CHALLENGES = [
     "points": 110,
     "ci": true,
     "hash": "a38933a27dad50fd2ed7cf588ca553d2b4d1fc704e103dc99b22cb13a32bba56",
-    "fmt": "도구명 / tool name",
+    "fmt": "도구 이름 / tool name",
     "title": {
       "ko": "악성코드 패턴 매칭",
       "en": "Malware Pattern Matching"
@@ -1046,7 +1046,7 @@ const CHALLENGES = [
     "points": 110,
     "ci": true,
     "hash": "ed415da6d67dcb38258965b9a3abec2cbc2ec61710b7b66dedd3e27168e7d2c8",
-    "fmt": "플래그 / flag",
+    "fmt": "TCP 플래그 / TCP flag",
     "title": {
       "ko": "3-way 핸드셰이크",
       "en": "3-Way Handshake"
@@ -1298,7 +1298,7 @@ const CHALLENGES = [
     "points": 160,
     "ci": true,
     "hash": "68c6bc126c7cf29755cb01bd3f683526cc1ec205f8aea51f9c6129cbde83cc91",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "논스를 재사용하지 마라",
       "en": "Never Reuse the Nonce"
@@ -1438,7 +1438,7 @@ const CHALLENGES = [
     "points": 120,
     "ci": true,
     "hash": "69f59c273b6e669ac32a6dd5e1b2cb63333d8b004f9696447aee2d422ce63763",
-    "fmt": "16진수 2자리 / 2 hex digits",
+    "fmt": "16진수 / hex (2글자 / 2 chars)",
     "title": {
       "ko": "아무것도 하지 않는 명령",
       "en": "The Do-Nothing Instruction"
@@ -1550,7 +1550,7 @@ const CHALLENGES = [
     "points": 65,
     "ci": true,
     "hash": "180ca01b95f0dfdd36fbb600e51cf6e46c8ef468de56b017847886fefaf7b6f9",
-    "fmt": "빈칸 한 단어 / one word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "작은 쪽이 먼저",
       "en": "Smallest First"
@@ -1578,7 +1578,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "a919007637abd504f123db0cbc8f290ab16db93adf24b1fc03c50e6131d2b98e",
-    "fmt": "gdb 명령 / gdb command",
+    "fmt": "명령어 / command",
     "title": {
       "ko": "달리는 프로세스에 올라타라",
       "en": "Latch Onto a Running Process"
@@ -1606,7 +1606,7 @@ const CHALLENGES = [
     "points": 120,
     "ci": true,
     "hash": "0497db517ef058cb6d3672d5ffe8f062fddabc4bf56aa1d254b7f078e9a79e49",
-    "fmt": "약어 / acronym (3글자)",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
     "title": {
       "ko": "덮어쓰면 흐름을 뺏는 표",
       "en": "Overwrite It, Hijack the Flow"
@@ -1662,7 +1662,7 @@ const CHALLENGES = [
     "points": 80,
     "ci": true,
     "hash": "28662759fcf7454b4388d4ff2798bf5c3c7dbe92090612b4214a411ea5d17cc8",
-    "fmt": "도구명 / tool name",
+    "fmt": "도구 이름 / tool name",
     "title": {
       "ko": "패킷을 들여다보다",
       "en": "Look Inside Packets"
@@ -1718,7 +1718,7 @@ const CHALLENGES = [
     "points": 110,
     "ci": true,
     "hash": "1051e9777bf787abf20a473ebff51e7416354624cf6071ad45127b069feb474f",
-    "fmt": "서비스명 / service",
+    "fmt": "서비스 이름 / service name",
     "title": {
       "ko": "해시로 평판 조회",
       "en": "Reputation by Hash"
@@ -1746,7 +1746,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "41242b9fae56fad4e6e77dfe33cb18d1c3fc583f988cf25ef9f2d9be0d440bbb",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym (2글자 / 2 chars)",
     "title": {
       "ko": "공개된 버킷",
       "en": "The Public Bucket"
@@ -1774,7 +1774,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "6e884711fb5f5560386641ff08349621f67827bcfe69d8bd4b546a2bd5f00de2",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "관리형 쿠버네티스",
       "en": "Managed Kubernetes"
@@ -1858,7 +1858,7 @@ const CHALLENGES = [
     "points": 130,
     "ci": false,
     "hash": "34146ce1ba492ed7acf9a9925a04541645c203d9652183c6e238f55786c8b66f",
-    "fmt": "IP 주소 / IP",
+    "fmt": "IP 주소 / IP address",
     "title": {
       "ko": "메타데이터의 IP",
       "en": "The Metadata IP"
@@ -1942,7 +1942,7 @@ const CHALLENGES = [
     "points": 50,
     "ci": true,
     "hash": "2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b",
-    "fmt": "단어 / word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "ASCII 십진수",
       "en": "ASCII decimal"
@@ -2054,7 +2054,7 @@ const CHALLENGES = [
     "points": 40,
     "ci": true,
     "hash": "807d0fbcae7c4b20518d4d85664f6820aafdf936104122c5073e7744c46c4b87",
-    "fmt": "단어 / word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "NATO 음성 알파벳",
       "en": "NATO phonetic alphabet"
@@ -2110,7 +2110,7 @@ const CHALLENGES = [
     "points": 60,
     "ci": true,
     "hash": "051375546db9782e3debc25e0241edf1d5e5e2ec0f183dd8634ca5b2c8968bb8",
-    "fmt": "단어 / word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "A1Z26 암호",
       "en": "A1Z26 cipher"
@@ -2306,7 +2306,7 @@ const CHALLENGES = [
     "points": 80,
     "ci": true,
     "hash": "d8156bae0c4243d3742fc4e9774d8aceabe0410249d720c855f98afc88ff846c",
-    "fmt": "기호 / symbol",
+    "fmt": "기호 / symbol (2글자 / 2 chars)",
     "title": {
       "ko": "SQL 한 줄 주석",
       "en": "SQL line comment"
@@ -2334,7 +2334,7 @@ const CHALLENGES = [
     "points": 80,
     "ci": true,
     "hash": "0b5a52cdc4f5481343077f16476c5afde78732e28c9c5eafbf7f9a9a54a0540d",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "직접 객체 참조 취약점",
       "en": "Insecure direct object reference"
@@ -2446,7 +2446,7 @@ const CHALLENGES = [
     "points": 110,
     "ci": true,
     "hash": "f9ccd92bb6af4cb45e43113867e61dab39a4e7a2a0a88980a940250637773199",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "키 기반 메시지 인증",
       "en": "Keyed message authentication"
@@ -2474,7 +2474,7 @@ const CHALLENGES = [
     "points": 120,
     "ci": true,
     "hash": "f1454f676ceb25587d73dec3e5f5e5bba4cb8f075d9478f87e66ae9f11068e2d",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "블록을 사슬로 엮다",
       "en": "Chaining the Blocks"
@@ -2670,7 +2670,7 @@ const CHALLENGES = [
     "points": 130,
     "ci": true,
     "hash": "5f664be5d489773c905edcf99b771251121c7c4539fe760305c424ebda69373a",
-    "fmt": "연산자 / operator ($ 포함)",
+    "fmt": "연산자 / operator ($ 포함 / include $)",
     "title": {
       "ko": "같지 않으면 참",
       "en": "True When Not Equal"
@@ -2726,7 +2726,7 @@ const CHALLENGES = [
     "points": 170,
     "ci": true,
     "hash": "1ecb76524bc07187f9be47535fc44a9dff07e6d525396d40b2a441c9a52ab523",
-    "fmt": "약칭 / abbreviation (예: AB.CD)",
+    "fmt": "약어 / acronym (예: AB.CD / e.g. AB.CD)",
     "title": {
       "ko": "두 서버의 엇갈린 셈",
       "en": "Two Servers Disagree"
@@ -2754,7 +2754,7 @@ const CHALLENGES = [
     "points": 160,
     "ci": true,
     "hash": "ca74bea00c269f053d5ac8df6f09be5b1e86f973195de3fd98e4a1e9838ce8e0",
-    "fmt": "약어 / acronym (4글자)",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
     "title": {
       "ko": "가로챈 코드를 무력화하라",
       "en": "Neutralize the Stolen Code"
@@ -2950,7 +2950,7 @@ const CHALLENGES = [
     "points": 40,
     "ci": true,
     "hash": "3ebff31b62c0637c54d4ffa990d5c100ea359994b35f4b342ff49797542148cd",
-    "fmt": "알고리즘명 / algorithm",
+    "fmt": "알고리즘 이름 / algorithm name (3글자 / 3 chars)",
     "title": {
       "ko": "파일의 지문",
       "en": "The File's Fingerprint"
@@ -3062,7 +3062,7 @@ const CHALLENGES = [
     "points": 40,
     "ci": true,
     "hash": "d457e3a99392a03f47057f50ac1cbc5d0365131575477971bf85177a0c0fed22",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "누가 무엇을 할 수 있는가",
       "en": "Who Can Do What"
@@ -3090,7 +3090,7 @@ const CHALLENGES = [
     "points": 50,
     "ci": true,
     "hash": "38faba71b3a6cfc9e5f93fe6a17abe770093ba938baa488aa016fca907eadcaa",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "나만의 가상 네트워크",
       "en": "My Own Virtual Network"
@@ -3118,7 +3118,7 @@ const CHALLENGES = [
     "points": 60,
     "ci": true,
     "hash": "42e7ab5b52beca9d20fbc05fa6b72c0a48755ada50d340472ab6f1832cbf42ac",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "리소스의 고유 이름표",
       "en": "The Resource's Unique Tag"
@@ -3174,7 +3174,7 @@ const CHALLENGES = [
     "points": 140,
     "ci": true,
     "hash": "738ab575cf55699b4b9eb6ef605a20282cf7363f4cf086867bd42da96ec22498",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "매번 바뀌는 주소",
       "en": "The Address Keeps Moving"
@@ -3286,7 +3286,7 @@ const CHALLENGES = [
     "points": 85,
     "ci": true,
     "hash": "d86580392e249926e944c40917377c0428bb1afc300fe31d4d321900da973495",
-    "fmt": "도구명 / tool name",
+    "fmt": "도구 이름 / tool name",
     "title": {
       "ko": "실시간으로 훔쳐보기",
       "en": "Watching in Real Time"
@@ -3342,7 +3342,7 @@ const CHALLENGES = [
     "points": 150,
     "ci": true,
     "hash": "d1e909483b98bf9e8b8c2ae3e1688365ecb2e7b75286c9784646d3d76c1c0dc6",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "이미 있는 조각을 이어붙이다",
       "en": "Chaining What's Already There"
@@ -3370,7 +3370,7 @@ const CHALLENGES = [
     "points": 160,
     "ci": true,
     "hash": "9e92f50f72fc1a740d5187ba781df8f89cf52b3085e6c49334945dca8a2f53db",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "이미 해제된 메모리",
       "en": "Memory After It's Freed"
@@ -3426,7 +3426,7 @@ const CHALLENGES = [
     "points": 45,
     "ci": true,
     "hash": "db9831b53a8574d33f3d7ce6820598c67224687dbe57cbbc10b6070e5aa57744",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "가까운 곳에서 전송",
       "en": "Served from Near You"
@@ -3510,7 +3510,7 @@ const CHALLENGES = [
     "points": 130,
     "ci": true,
     "hash": "5d269f85e3e967c8a49655adcd5090ab75980245bcb66eba8e6f056413dc80e7",
-    "fmt": "약자 / abbreviation",
+    "fmt": "약어 / acronym",
     "title": {
       "ko": "설정 실수를 계속 감시하다",
       "en": "Watching for Misconfigurations"
@@ -3678,7 +3678,7 @@ const CHALLENGES = [
     "points": 50,
     "ci": true,
     "hash": "9b7ecc6eeb83abf9ade10fe38865df4499be3568dcc507ae2ec3b44989cb0093",
-    "fmt": "명령어 / command (2글자)",
+    "fmt": "명령어 / command (2글자 / 2 chars)",
     "title": {
       "ko": "비트 단위 그대로 복제",
       "en": "Bit-for-Bit Copy"
@@ -3734,7 +3734,7 @@ const CHALLENGES = [
     "points": 85,
     "ci": true,
     "hash": "117b405eea833174250f59af5a817ab521ebafecc77441483223441a0ec4a890",
-    "fmt": "빈칸 한 단어 / one word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "메타데이터 없이 파일을 건지다",
       "en": "Recover Files With No Metadata"
@@ -3762,7 +3762,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "788eb2efc52660fe41472319f0d2c623be6540c956921b3632fcc934bf1be10d",
-    "fmt": "약어 / acronym (3글자)",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
     "title": {
       "ko": "파일 뒤에 숨은 흐름",
       "en": "The Stream Behind the File"
@@ -3790,7 +3790,7 @@ const CHALLENGES = [
     "points": 150,
     "ci": true,
     "hash": "29a44d58cc6374a2e166bb1738c0ca4f012d7ba929f18365ff5f7e75ba99e6b7",
-    "fmt": "약어 / acronym (3글자, $ 제외 / no $)",
+    "fmt": "약어 / acronym (3글자 / 3 chars, $ 제외 / no $)",
     "title": {
       "ko": "모든 파일의 장부",
       "en": "The Ledger of Every File"
@@ -3846,7 +3846,7 @@ const CHALLENGES = [
     "points": 45,
     "ci": true,
     "hash": "cb0356a0532e824bd17b1ad6f24af01a2d9bbdda8891918ab6b91d9835f7c3ec",
-    "fmt": "약어 / acronym (3글자)",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
     "title": {
       "ko": "비밀번호만으론 부족하다",
       "en": "A Password Is Not Enough"
@@ -3958,7 +3958,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "2552b1c0272ab701af519fff4e4299f03720e72a3e3b57f7214b81d13c7eceff",
-    "fmt": "약어 / acronym (4글자)",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
     "title": {
       "ko": "역할로 권한을 묶다",
       "en": "Permissions by Role"
@@ -4070,7 +4070,7 @@ const CHALLENGES = [
     "points": 50,
     "ci": true,
     "hash": "86769308ebb37d8caa407ecbcd1b314ea73428e47970f46d1d8828b2badda879",
-    "fmt": "장비명 / device (2 단어)",
+    "fmt": "장비 이름 / device name (두 단어 / two words)",
     "title": {
       "ko": "증거를 지키는 한 방향 장치",
       "en": "The One-Way Guardian of Evidence"
@@ -4098,7 +4098,7 @@ const CHALLENGES = [
     "points": 60,
     "ci": true,
     "hash": "3ed0256da8da5eabae7aa1680886a2aa394dd7c002eb2f3b02e9f0f9ec9daa2c",
-    "fmt": "시그니처 / signature (2글자)",
+    "fmt": "시그니처 / signature (2글자 / 2 chars)",
     "title": {
       "ko": "윈도우 실행파일의 서명",
       "en": "The Windows Executable's Signature"
@@ -4126,7 +4126,7 @@ const CHALLENGES = [
     "points": 60,
     "ci": true,
     "hash": "9d0fbf9349f646f1435072f2b0212084752ef4601bd6b012fbbe61b6c5e03930",
-    "fmt": "확장자 / extension (3글자)",
+    "fmt": "확장자 / extension (3글자 / 3 chars)",
     "title": {
       "ko": "안드로이드가 실행하는 바이트코드",
       "en": "The Bytecode Android Runs"
@@ -4154,7 +4154,7 @@ const CHALLENGES = [
     "points": 85,
     "ci": true,
     "hash": "7c6e059c91d86331d06879929b56905cb02d57df32d4c491744e7b3e7eb9918a",
-    "fmt": "한 단어 / one word (-ing)",
+    "fmt": "한 단어 / one word (-ing으로 끝남 / ends in -ing)",
     "title": {
       "ko": "정적 분석을 무력화하는 압축",
       "en": "The Compression That Blinds Static Analysis"
@@ -4210,7 +4210,7 @@ const CHALLENGES = [
     "points": 105,
     "ci": true,
     "hash": "34e36214d1921828dd0bb0ed46fdf64a14d0d33aa3757aee9e40acfe9df5711f",
-    "fmt": "빈칸 한 단어 / one word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "정상 프로세스의 껍데기를 빼앗다",
       "en": "Stealing a Legit Process's Shell"
@@ -4238,7 +4238,7 @@ const CHALLENGES = [
     "points": 45,
     "ci": true,
     "hash": "5c0be87ed7434d69005f8bbd84cad8ae6abfd49121b4aaeeb4c1f4a2e2987711",
-    "fmt": "명령어 한 단어 / one command word",
+    "fmt": "명령어 / command",
     "title": {
       "ko": "이 시스템의 정체를 물어라",
       "en": "Ask the System Who It Is"
@@ -4266,7 +4266,7 @@ const CHALLENGES = [
     "points": 65,
     "ci": true,
     "hash": "c06edbcb7bfdeb6bc176a30810bed1afd47feb85f65c2bbcf66853164f7515e4",
-    "fmt": "도구 이름 한 단어 / one tool name",
+    "fmt": "도구 이름 / tool name",
     "title": {
       "ko": "ELF 헤더를 낱낱이 펼쳐라",
       "en": "Unfold Every ELF Header"
@@ -4294,7 +4294,7 @@ const CHALLENGES = [
     "points": 70,
     "ci": true,
     "hash": "306e2b4264b7dbf0107520e1823108bd5d17635be7742b6f9660a6c527cb4fd2",
-    "fmt": "도구 이름 한 단어 / one tool name",
+    "fmt": "도구 이름 / tool name",
     "title": {
       "ko": "바이너리를 어셈블리로 풀어헤쳐라",
       "en": "Spill a Binary into Assembly"
@@ -4322,7 +4322,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "761f8a60b54fcf3965300ced84ed9a0db0eb70c89482e61f9e79a1a1ca251f18",
-    "fmt": "도구 이름 한 단어 / one tool name",
+    "fmt": "도구 이름 / tool name",
     "title": {
       "ko": "커널을 두드리는 소리를 엿듣다",
       "en": "Eavesdrop on Every Kernel Call"
@@ -4350,7 +4350,7 @@ const CHALLENGES = [
     "points": 120,
     "ci": true,
     "hash": "558211ed72b2d6967037419dff6f1e7cfd002d178c8fdeeb1239760d4e4c4059",
-    "fmt": "3글자 약어 / 3-letter abbreviation",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
     "title": {
       "ko": "실행파일마저 매번 자리를 바꾸게 하라",
       "en": "Even the Executable Won't Sit Still"
@@ -4378,7 +4378,7 @@ const CHALLENGES = [
     "points": 155,
     "ci": true,
     "hash": "30bf9a328005656691e93a15d16168cee5fa58f1fe4ff4c2d9d1f9d8baf42253",
-    "fmt": "빈칸 한 단어(소문자) / one lowercase word",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "해제된 청크의 은밀한 캐시를 노려라",
       "en": "Poison the Cache of Freed Chunks"
@@ -4490,7 +4490,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "2ca7289b5248632c8fe5386b972e8fde6585068c5cb8e2948489e10e7be6d4d8",
-    "fmt": "도구 이름 / tool (2글자)",
+    "fmt": "도구 이름 / tool name (2글자 / 2 chars)",
     "title": {
       "ko": "심볼 테이블 나열",
       "en": "List the Symbols"
@@ -4546,7 +4546,7 @@ const CHALLENGES = [
     "points": 155,
     "ci": true,
     "hash": "c57eaf6530a6ac809ae16cc9062eb65bab051b73b6a2f5fa2202d7c3debb5cb7",
-    "fmt": "기법명 한 단어 / one token",
+    "fmt": "한 단어 / one word",
     "title": {
       "ko": "이미 있는 함수로 리턴",
       "en": "Return Into Existing Code"
@@ -4602,7 +4602,7 @@ const CHALLENGES = [
     "points": 45,
     "ci": true,
     "hash": "7354a0024740d89096dc6137ff3bb47df328ab8ea22f20e88c059d387e58aeae",
-    "fmt": "약어 / acronym (3글자)",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
     "title": {
       "ko": "침해의 흔적",
       "en": "Traces of a Breach"
@@ -4630,7 +4630,7 @@ const CHALLENGES = [
     "points": 45,
     "ci": true,
     "hash": "a631f4488a457da27b4a64dc8f2d85085b50ff568be99125cf6f8f45c759878e",
-    "fmt": "약자 / abbreviation (3글자)",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
     "title": {
       "ko": "가장 먼저 수집",
       "en": "Grab It First"
@@ -4686,7 +4686,7 @@ const CHALLENGES = [
     "points": 85,
     "ci": true,
     "hash": "cb4acd2b3839eea32ef807b243408ba3be1bbe74006bdf696f498cb966c688fe",
-    "fmt": "도구명 / tool name",
+    "fmt": "도구 이름 / tool name",
     "title": {
       "ko": "그림 속 데이터",
       "en": "Data Concealed in a Picture"
@@ -4714,7 +4714,7 @@ const CHALLENGES = [
     "points": 110,
     "ci": true,
     "hash": "9c0abe51c6e6655d81de2d044d4fb194931f058c0426c67c7285d8f5657ed64a",
-    "fmt": "약어 / acronym (2글자)",
+    "fmt": "약어 / acronym (2글자 / 2 chars)",
     "title": {
       "ko": "좀비의 사령탑",
       "en": "The Attacker Command Post"

@@ -42,8 +42,10 @@ jobs:
       # Catches what neither of the above can: a challenge promising a format
       # (declared length, a "$" marker) that the grader does not actually
       # accept, so a player following the stated format is marked wrong ([G]),
-      # and README's own tier table handing out an answer as a topic ([F]).
-      # Those two gate the build — the other sections stay informational, and
+      # README's own tier table handing out an answer as a topic ([F]), and a
+      # fmt that drifts off the notation rules or hides a spelling ambiguity
+      # the player will be marked wrong for ([H]).
+      # Those three gate the build — the other sections stay informational, and
       # the [A] MISSING lines are a known heuristic false positive. Runs
       # without --reveal, so a leaked term is reported by id only; the log
       # carries no plaintext answers, just ids and recovered shapes.

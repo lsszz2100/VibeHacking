@@ -235,6 +235,113 @@ console.log(`    (${decl.size} challenges declare a length/marker; ${shape.size}
 for (const b of bad) console.log(`  ⚠ ${b}`);
 if (unchecked.length) console.log(`    unchecked: ${unchecked.join(' ')}`);
 
+// [H] Is fmt written in the project's own notation, and does it warn the player
+// where the answer's spelling is genuinely ambiguous?
+//
+// t2_sha1 accepted the algorithm name only unhyphenated while its own hints
+// wrote sibling names WITH a hyphen, so a player following the page's spelling
+// was marked wrong. [G] could not see it: fmt declared neither a length nor a
+// marker, so there was nothing to contradict. The rule that does catch it is
+// about the ANSWER, not the declaration — an answer whose rendering a player
+// could reasonably separate must pin its length, because inserting a hyphen or
+// a space always changes the length and the declaration rules it out. Stating a
+// length gives nothing away; it says how to type the answer, not what it is.
+//
+// The lexicon half keeps fmt worth reading: the same shape was being described
+// as 약자/약어/약칭 and as 단어/한 단어/빈칸 한 단어, and qualifiers drifted between
+// Korean-only "(3글자)" and bilingual "(3글자 / 3 chars)".
+const BASES = new Set([
+  'FLAG{...}', '한 단어 / one word', '두 단어 / two words', '약어 / acronym',
+  '명령어 / command', '도구 이름 / tool name', '숫자 / number', '확장자 / extension',
+  '8진수 / octal', '16진수 / hex', '절대 경로 / absolute path', '파일 이름 / file name',
+  '알고리즘 이름 / algorithm name', '기호 / symbol', '연산자 / operator',
+  '시스템 콜 / syscall', 'HTTP 메서드 / HTTP method', '헤더 접미사 / header suffix',
+  '스킴 이름 / scheme name', '서비스 이름 / service name', 'API 액션 / API action',
+  '레지스트리 키 / registry key', 'CIDR 표기 / CIDR notation', '경로 표기 / path notation',
+  '리눅스 capability / Linux capability', '사용자:비밀번호 / user:pass', '제목 / title',
+  '문구 / phrase', '식 / expression', 'TCP 플래그 / TCP flag', '값 그대로 / literal',
+  '장비 이름 / device name', '시그니처 / signature', '포맷 지정자 / format specifier',
+  'IP 주소 / IP address',
+]);
+// every qualifier is bilingual and comes from this list
+const QUALIFIERS = [
+  /^(\d+)글자 \/ (\d+) chars$/,
+  /^하이픈 없이 \/ no hyphen$/,
+  /^두 단어 \/ two words$/,
+  /^-ing으로 끝남 \/ ends in -ing$/,
+  /^(\S+) 포함 \/ include (\S+)$/,
+  /^(\S+) 제외 \/ no (\S+)$/,
+  /^예: (.+) \/ e\.g\. (.+)$/,
+];
+
+const notation = [];
+for (const ch of CHALLENGES) {
+  const fmt = ch.fmt || '';
+  const m = fmt.match(/^(.*?)\s*\(([^()]*)\)$/);
+  const base = m ? m[1] : fmt;
+  if (!BASES.has(base)) { notation.push(`${ch.id} — "${base}" is not one of the ${BASES.size} approved fmt bases`); continue; }
+  if (!m) continue;
+  for (const q of m[2].split(', ')) {
+    const rule = QUALIFIERS.find(r => r.test(q));
+    if (!rule) { notation.push(`${ch.id} — qualifier "${q}" is not written in the approved bilingual form`); continue; }
+    const g = q.match(rule);
+    // "(3글자 / 4 chars)" would tell the two languages different things
+    if (g[1] && g[2] && g[1] !== g[2]) notation.push(`${ch.id} — qualifier "${q}" disagrees between Korean and English`);
+  }
+}
+
+// Which answers are spelling-ambiguous? Recover shapes for every enumerable
+// challenge, not just the ones that opted into a declaration. Separators are in
+// the charset precisely so an answer that carries one is visible here.
+const SEPS = '-._/: ';
+const allWanted = new Map();
+for (const ch of CHALLENGES) if (ch.ci && !/FLAG\{/.test(ch.fmt)) allWanted.set(ch.hash, ch.id);
+const plain = new Map(); // id -> { len, sep, compound }; plaintext never kept
+function scan(charset, maxLen) {
+  const buf = [];
+  (function rec(depth) {
+    if (depth > 0) {
+      const id = allWanted.get(sha(buf.join('')));
+      if (id && !plain.has(id)) {
+        const p = buf.join(''), pattern = p.replace(/[a-z]/g, 'a').replace(/\d/g, '9');
+        plain.set(id, { len: p.length, sep: [...SEPS].some(c => p.includes(c)), compound: /^a+9+$|^9+a+$/.test(pattern) });
+      }
+    }
+    if (depth === maxLen) return;
+    for (const c of charset) { buf.push(c); rec(depth + 1); buf.pop(); }
+  })(0);
+}
+scan(LOWER, 4);
+scan(DIGIT, 4);
+scan(LOWER + DIGIT, 4);
+scan(LOWER + SEPS, 4);
+
+const undisclosed = [];
+for (const ch of CHALLENGES) {
+  const p = plain.get(ch.id);
+  if (!p || !(p.sep || p.compound)) continue;
+  if (declarationOf(ch).len === null) {
+    const why = p.sep ? 'carries a separator' : 'is letters run into digits';
+    notation.push(`${ch.id} — the graded answer ${why}, so fmt must declare its length; a player who separates it is marked wrong`);
+    undisclosed.push(ch.id);
+  }
+}
+
+// fmt is shown on the challenge card but leakscan.js only reads title/prompt/
+// hints, so a fmt that names its own answer would go unnoticed.
+const fmtLeaks = [];
+for (const ch of CHALLENGES) {
+  const tokens = (ch.fmt || '').split(/[\s,()/|]+/).map(t => t.replace(/`/g, '').trim());
+  if (tokens.some(t => t.length >= 2 && (ciHash.get(sha(t.toLowerCase())) || csHash.get(sha(t)))?.id === ch.id)) {
+    fmtLeaks.push(`${ch.id} — its own fmt spells the answer out`);
+  }
+}
+
+const hBad = notation.concat(fmtLeaks);
+console.log(`\n--- [H] fmt notation and spelling-hazard disclosure: ${hBad.length} ---`);
+console.log(`    (${CHALLENGES.length} fmt strings against ${BASES.size} approved bases; ${plain.size} answers recovered, ${[...plain.values()].filter(p => p.sep || p.compound).length} spelling-ambiguous)`);
+for (const n of hBad) console.log(`  ⚠ ${n}`);
+
 if (STRICT) {
   const fail = [];
   if (fBlocked) fail.push(`[F] ${fBlocked}`);
@@ -242,11 +349,12 @@ if (STRICT) {
     fail.push(`[F] ${s.id} — the ${s.node} topic row spells out its answer${REVEAL ? ` ("${s.term}")` : ''}`);
   }
   for (const b of bad) fail.push(`[G] ${b}`);
+  for (const h of hBad) fail.push(`[H] ${h}`);
   if (fail.length) {
     console.error(`\naudit --strict: FAIL — ${fail.length} issue(s):`);
     for (const f of fail) console.error(`  ✗ ${f}`);
     process.exitCode = 1;
   } else {
-    console.log(`\naudit --strict: OK — README's topic rows name no answers ([F]), no fmt/answer contradictions ([G]).`);
+    console.log(`\naudit --strict: OK — README's topic rows name no answers ([F]), no fmt/answer contradictions ([G]), fmt on-notation with every spelling hazard disclosed ([H]).`);
   }
 }

@@ -92,7 +92,7 @@ python3 -m http.server 8000
 |---|---|
 | `verify.js` | 구조 — id 중복, 해시 형식, 존재하지 않는 tier/track, 자기 프롬프트에 정답 노출, index.html HUD·README 문제 수 불일치 |
 | `leakscan.js` | 한 문제의 정답이 **다른 문제**의 프롬프트·힌트에 평문으로 들어있는지 (n-gram 해시 대조) |
-| `audit.js --strict` | `fmt`가 약속한 형식(길이·`$` 같은 마커)을 채점기가 실제로 받아주는지 `[G]`, 아래 계층표의 주제 열이 어느 문제의 정답을 그대로 적어 스포일하는지 `[F]` |
+| `audit.js --strict` | `fmt`가 약속한 형식(길이·`$` 같은 마커)을 채점기가 실제로 받아주는지 `[G]`, 위 계층표의 주제 열이 어느 문제의 정답을 그대로 적어 스포일하는지 `[F]`, `fmt`가 표기 규약을 지키고 표기가 갈리는 정답의 길이를 공개하는지 `[H]` |
 | `solve-derivable.js` | 암호문·심어둔 플래그가 있는 문제를 **프롬프트만 보고 실제로 풀어** 앱 채점 규칙에 제출 |
 
 앞의 셋은 정적 검사이고, `solve-derivable.js`는 실제로 게임을 플레이합니다. 안내대로 따라 풀었는데 오답 처리되는 문제(정답 형식 모순, 깨진 암호문, 사라진 아티팩트)는 이 검사만 잡을 수 있습니다. 네 스크립트 모두 평문 정답을 저장하지 않고 출력하지도 않아 공개 CI에서도 안전합니다.
@@ -103,7 +103,7 @@ python3 -m http.server 8000
 |---|---|
 | `verify.js` | Structure — duplicate ids, malformed hashes, dangling tier/track refs, an answer leaked into its own prompt, HUD/README counts drifting apart |
 | `leakscan.js` | One challenge's answer sitting in plain text in **another** challenge's prompt or hints (n-gram hash lookup) |
-| `audit.js --strict` | Whether the grader really accepts the format `fmt` promises — declared length, markers like `$` `[G]` — and whether the tier table above hands a player an answer as a topic `[F]` |
+| `audit.js --strict` | Whether the grader really accepts the format `fmt` promises — declared length, markers like `$` `[G]` — whether the tier table above hands a player an answer as a topic `[F]`, and whether `fmt` follows the notation rules and discloses a length wherever the answer's spelling is ambiguous `[H]` |
 | `solve-derivable.js` | Actually solves every challenge that ships a ciphertext or a planted flag **from its own prompt** and submits it to the app's grading rule |
 
 The first three are static; the last one plays the game. A challenge where following the stated instructions gets you marked wrong — a format contradiction, a corrupted ciphertext, a plant that went missing — is only catchable that way. None of the four stores or prints a plaintext answer, so all are safe in public CI.
@@ -118,3 +118,18 @@ The first three are static; the last one plays the game. A challenge where follo
 ## 🛠️ 문제 추가 / Adding challenges
 
 문제 데이터는 `assets/challenges.js`(자동 생성, 해시만 포함)에 있습니다. 평문 정답이 노출되지 않도록 생성기로 만드는 것을 권장합니다. 새 문제는 `id`, `tier`, `cat`, `points`, `hash`(정답 SHA-256), `title/prompt/hints`(ko·en) 필드를 가집니다.
+
+### `fmt` 표기 규약 / Answer-format notation
+
+`fmt`는 문제 카드에 그대로 표시되어 **"무엇을 답하는가"가 아니라 "어떻게 입력하는가"**를 알려줍니다. 정답을 알아도 표기가 어긋나 오답 처리되는 일을 막는 것이 목적이므로, 아래 규약을 따르고 `audit.js --strict`의 `[H]`가 이를 강제합니다.
+
+`fmt` is shown verbatim on the challenge card. It tells the player **how to type the answer, never what it is** — its whole job is to stop someone who knows the answer from being marked wrong over spelling. `audit.js --strict` enforces the rules below in `[H]`.
+
+1. **기본형은 승인된 어휘만 / Use an approved base.** `한 단어 / one word`, `약어 / acronym`, `명령어 / command`, `도구 이름 / tool name` 등 35종. 같은 뜻을 약자·약어·약칭처럼 제각기 쓰지 않습니다. The lexicon lives in `audit.js`; a new category must be added there deliberately, not invented inline.
+2. **수식어는 괄호 하나에, 항상 이중언어 / Qualifiers go in one parenthesis, always bilingual.** `(3글자 / 3 chars)`, `(하이픈 없이 / no hyphen)`, `($ 제외 / no $)`, `(예: AB.CD / e.g. AB.CD)`. 둘 이상은 쉼표로 구분합니다. 한국어와 영어가 서로 다른 말을 하면(`(3글자 / 4 chars)`) 실패합니다.
+3. **표기가 갈릴 수 있으면 길이를 선언 / Declare the length when the spelling is ambiguous.** 정답이 구분자(`-` `.` `_` `/` `:` 공백)를 품고 있거나 문자 뒤에 숫자가 바로 붙는 형태(`SHA1` 부류)라면, 플레이어가 하이픈이나 공백을 끼워 넣을 수 있습니다. 구분자를 넣으면 길이가 반드시 달라지므로 **길이 선언 하나로 잘못된 표기가 배제되며, 정답 자체는 조금도 누설되지 않습니다.** `[H]`는 열거로 복원되는 정답을 모두 훑어 이 선언이 빠진 문제를 찾아냅니다.
+4. **선언한 길이는 사실이어야 함 / A declared length must be true.** `[G]`가 저장된 해시로부터 정답의 형태를 복원해 대조합니다.
+5. **`fmt`가 정답을 적지 말 것 / Never spell the answer in `fmt`.** `leakscan.js`는 `title`·`prompt`·`hints`만 보므로 `[H]`가 `fmt`를 따로 검사합니다.
+
+> 이 규약은 실제 사고에서 나왔습니다. `t4_mft`는 `$`를 붙이라고 안내하면서 채점은 `$` 없는 형태만 받았고, `t2_sha1`은 힌트가 `SHA-256`이라 적어 놓고 하이픈 있는 답을 거부했습니다. 앱은 문제당 정답 해시를 하나만 갖기 때문에 변형을 함께 수용할 수 없고, 따라서 **표기는 `fmt`가 책임져야 합니다.**
+> Both rules 3 and 4 exist because of real bugs: `t4_mft` told players to type a `$` its grader rejected, and `t2_sha1` printed `SHA-256` in its own hints while refusing a hyphen. One challenge stores exactly one answer hash, so variants cannot be accepted — the notation has to carry that weight.
