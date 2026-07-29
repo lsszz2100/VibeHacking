@@ -83,6 +83,15 @@ const TRACKS = [
     "desc_ko": "컨테이너/쿠버네티스·클라우드 메타데이터·LLM 보안.",
     "desc_en": "Containers/K8s, cloud metadata, LLM security."
   }
+,
+  {
+    "id": "ai",
+    "icon": "🤖",
+    "ko": "AI·LLM 보안",
+    "en": "AI & LLM Security",
+    "desc_ko": "프롬프트 인젝션·적대적 예제·모델 복제·도구 호출 권한.",
+    "desc_en": "Prompt injection, adversarial examples, model copying, tool-calling privilege."
+  }
 ];
 
 const CHALLENGES = [
@@ -4983,6 +4992,986 @@ const CHALLENGES = [
       "en": [
         "Starts with a lowercase g, followed by 'Visor'.",
         "Implemented as the `runsc` runtime, plugged into Docker/K8s."
+      ]
+    }
+  },
+  {
+    "id": "t0_hallucination",
+    "tier": 0,
+    "cat": "ai",
+    "track": "ai",
+    "points": 45,
+    "ci": true,
+    "hash": "2c229d9fff93795f5e6a9d9b9ac19d6d1211b7c82c052a0aac3c95e7449137a0",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "자신 있게 틀리기",
+      "en": "Confidently Wrong"
+    },
+    "prompt": {
+      "ko": "언어 모델이 근거가 없는데도 사실인 양 매끄럽게 지어내는 출력을 부르는 말은? (영어 한 단어)",
+      "en": "What do we call output a language model invents with no grounding, yet states as smoothly as fact? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "사람이 없는 것을 보거나 듣는 증상에서 따온 이름입니다.",
+        "모델은 \"모른다\"가 아니라 그럴듯한 문장을 만들어 냅니다."
+      ],
+      "en": [
+        "Named after perceiving something that is not there.",
+        "The model does not say \"I do not know\" — it produces something plausible."
+      ]
+    }
+  },
+  {
+    "id": "t0_guardrail",
+    "tier": 0,
+    "cat": "ai",
+    "track": "ai",
+    "points": 40,
+    "ci": true,
+    "hash": "2f0a9e4fec74e596ad09c1ed0f7b77efd01d2149acc4d492e06a87a0da365b1f",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "난간을 세워라",
+      "en": "A Rail Along the Edge"
+    },
+    "prompt": {
+      "ko": "모델의 입력과 출력을 정책에 따라 검사·차단해 위험한 응답이 나가지 않게 막는 보호 장치를 통칭하는 영어 한 단어는?",
+      "en": "What single English word names the protective layer that inspects and blocks a model's inputs and outputs against policy so unsafe responses never leave?"
+    },
+    "hints": {
+      "ko": [
+        "도로 갓길에 세워 차가 벼랑으로 떨어지지 않게 막는 그 시설의 이름입니다.",
+        "모델 자체를 고치는 것이 아니라 바깥에 두르는 층입니다."
+      ],
+      "en": [
+        "Named after the barrier on a road that keeps a car from going over the edge.",
+        "It wraps around the model rather than changing it."
+      ]
+    }
+  },
+  {
+    "id": "t0_inference",
+    "tier": 0,
+    "cat": "ai",
+    "track": "ai",
+    "points": 45,
+    "ci": true,
+    "hash": "925733dafd743699fa17409329abdb2728da89ba5736e44ad0fd4a67836e9f9c",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "학습은 끝났다",
+      "en": "Training Is Over"
+    },
+    "prompt": {
+      "ko": "학습이 모두 끝난 모델이 실제 요청을 받아 응답을 만들어 내는 실행 단계를 뭐라고 부릅니까? (영어 한 단어)",
+      "en": "What is the runtime stage called, where a fully trained model takes a real request and produces a response? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "학습(training)과 짝을 이루는 반대편 단계입니다.",
+        "이 단계의 비용이 서비스 운영비의 대부분을 차지합니다."
+      ],
+      "en": [
+        "The counterpart stage to training.",
+        "Its cost dominates what it takes to run the service."
+      ]
+    }
+  },
+  {
+    "id": "t0_dataset",
+    "tier": 0,
+    "cat": "ai",
+    "track": "ai",
+    "points": 40,
+    "ci": true,
+    "hash": "b277fd623676a525c29b9eb155afc8c9010681814ceafb2d7627f47b9a232576",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "재료 창고",
+      "en": "The Pantry"
+    },
+    "prompt": {
+      "ko": "모델을 학습시킬 때 먹이는 자료 묶음 전체를 가리키는 영어 한 단어는?",
+      "en": "What single English word names the whole body of material a model is trained on?"
+    },
+    "hints": {
+      "ko": [
+        "자료(data)와 묶음(set)을 합친 낱말입니다.",
+        "여기에 손을 대는 공격이 오염(poisoning)입니다."
+      ],
+      "en": [
+        "A compound of data and set.",
+        "Tampering with it is what poisoning attacks do."
+      ]
+    }
+  },
+  {
+    "id": "t0_tokenizer",
+    "tier": 0,
+    "cat": "ai",
+    "track": "ai",
+    "points": 50,
+    "ci": true,
+    "hash": "5f97e3774c51edd1d63706c2ec3826c564a067794770cdab0f8c4797971cacf9",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "글자를 조각내는 것",
+      "en": "The Chopper"
+    },
+    "prompt": {
+      "ko": "사람이 쓴 문장을 모델이 실제로 다루는 작은 조각들로 잘라 번호를 매기는 구성요소의 이름은? (영어 한 단어)",
+      "en": "What is the component called that cuts human text into the small numbered pieces a model actually consumes? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "잘라낸 조각 하나하나를 \"토큰\"이라 부릅니다 — 그 일을 하는 주체의 이름을 답하세요.",
+        "같은 문장이라도 이것이 다르면 조각 수가 달라집니다."
+      ],
+      "en": [
+        "Each piece it produces is called a token — name the thing that does the cutting.",
+        "Change it and the same sentence costs a different number of pieces."
+      ]
+    }
+  },
+  {
+    "id": "t0_seed",
+    "tier": 0,
+    "cat": "ai",
+    "track": "ai",
+    "points": 50,
+    "ci": true,
+    "hash": "19b25856e1c150ca834cffc8b59b23adbd0ec0389e58eb22b3b64768098d002b",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "같은 답을 두 번",
+      "en": "The Same Answer Twice"
+    },
+    "prompt": {
+      "ko": "난수 생성을 고정해 같은 입력에 같은 출력이 재현되도록 만들 때 지정하는 값의 이름은? (영어 한 단어)",
+      "en": "What is the value called that you pin down so a random generator repeats itself and the same input yields the same output? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "땅에 심는 그 낱말과 같은 단어입니다.",
+        "실험을 재현하거나 버그를 다시 만들어 낼 때 반드시 기록해 둡니다."
+      ],
+      "en": [
+        "The same word as the thing you plant in soil.",
+        "You record it when you need an experiment or a bug to reproduce."
+      ]
+    }
+  },
+  {
+    "id": "t0_alignment",
+    "tier": 0,
+    "cat": "ai",
+    "track": "ai",
+    "points": 60,
+    "ci": true,
+    "hash": "47ccb97a79f5a2bff2713968c83bbbea9cd53d2edf6b0a47439910e111c95fe9",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "의도를 맞추다",
+      "en": "Matching Intent"
+    },
+    "prompt": {
+      "ko": "모델이 사람의 의도와 운영 정책을 따르도록 학습·조정하는 작업 전반을 가리키는 영어 한 단어는?",
+      "en": "What single English word covers the work of training and tuning a model so it follows human intent and operator policy?"
+    },
+    "hints": {
+      "ko": [
+        "바퀴 정렬을 맞춘다고 할 때 쓰는 그 단어입니다.",
+        "이것을 무너뜨려 금지된 응답을 끌어내려는 시도가 안전장치 우회 공격입니다."
+      ],
+      "en": [
+        "The same word used for lining up a car's wheels.",
+        "Attacks that pull forbidden output are attempts to break exactly this."
+      ]
+    }
+  },
+  {
+    "id": "t1_rag",
+    "tier": 1,
+    "cat": "ai",
+    "track": "ai",
+    "points": 65,
+    "ci": true,
+    "hash": "a3e690053061793bb12ad4c32aace5856f57f1694d3608df1379d240ce1bbc5b",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "찾아서 붙여주기",
+      "en": "Fetch, Then Answer"
+    },
+    "prompt": {
+      "ko": "모델이 답하기 전에 외부 문서를 먼저 검색해 그 내용을 프롬프트에 끼워 넣어 주는 구조의 3글자 약어는?",
+      "en": "What 3-letter abbreviation names the design where documents are searched first and pasted into the prompt before the model answers?"
+    },
+    "hints": {
+      "ko": [
+        "Retrieval-Augmented Generation의 머리글자입니다.",
+        "검색된 문서에 공격 문구가 심겨 있으면 그것이 그대로 모델 입력이 됩니다."
+      ],
+      "en": [
+        "The initials of Retrieval-Augmented Generation.",
+        "If the fetched document carries planted instructions, they become model input verbatim."
+      ]
+    }
+  },
+  {
+    "id": "t1_embedding",
+    "tier": 1,
+    "cat": "ai",
+    "track": "ai",
+    "points": 70,
+    "ci": true,
+    "hash": "aa580156f36e357b5bfb0dcd869a026c7b0a244e7b01cba17d5da1dc1e7039cd",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "의미를 숫자로",
+      "en": "Meaning as Numbers"
+    },
+    "prompt": {
+      "ko": "단어나 문서의 의미를 고정 길이의 실수 벡터로 바꾼 표현을 뭐라고 부릅니까? (영어 한 단어)",
+      "en": "What do we call the representation that turns a word or document's meaning into a fixed-length vector of numbers? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "비슷한 뜻일수록 벡터 사이 거리가 가깝습니다.",
+        "이 벡터만 있어도 원문을 상당 부분 되살릴 수 있어 그 자체가 민감 정보입니다."
+      ],
+      "en": [
+        "Closer vectors mean closer meanings.",
+        "The vectors alone can reconstruct much of the original text, so they are sensitive on their own."
+      ]
+    }
+  },
+  {
+    "id": "t1_mcp",
+    "tier": 1,
+    "cat": "ai",
+    "track": "ai",
+    "points": 70,
+    "ci": true,
+    "hash": "10182ab855ff772753c05b2fea333666b5f312835d32936b6b03e08ef2cbd6d3",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "도구를 꽂는 규격",
+      "en": "The Socket for Tools"
+    },
+    "prompt": {
+      "ko": "모델에 외부 도구와 자원을 표준화된 방식으로 연결하기 위해 Anthropic이 공개한 개방형 프로토콜의 3글자 약어는?",
+      "en": "What 3-letter abbreviation names the open protocol Anthropic published for connecting external tools and resources to a model in a standard way?"
+    },
+    "hints": {
+      "ko": [
+        "Model Context Protocol의 머리글자입니다.",
+        "연결한 서버가 신뢰할 수 없으면 그 서버의 응답이 곧 모델 입력이 됩니다."
+      ],
+      "en": [
+        "The initials of Model Context Protocol.",
+        "If a connected server is untrusted, its responses become model input."
+      ]
+    }
+  },
+  {
+    "id": "t1_lora",
+    "tier": 1,
+    "cat": "ai",
+    "track": "ai",
+    "points": 70,
+    "ci": true,
+    "hash": "d339f720de1fd92a672df9ef19a8cdbda6171cbf33fcd35ad95c46f8aebaf628",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "가볍게 갈아끼우기",
+      "en": "Swap In, Stay Light"
+    },
+    "prompt": {
+      "ko": "원본 가중치는 얼려 둔 채 작은 저계수 행렬만 학습해 덧붙이는 경량 미세조정 기법의 4글자 약어는?",
+      "en": "What 4-letter abbreviation names the lightweight tuning method that freezes the original weights and trains only small low-rank matrices to add on top?"
+    },
+    "hints": {
+      "ko": [
+        "Low-Rank Adaptation의 머리글자입니다.",
+        "결과물이 작은 파일이라 배포가 쉽고, 그래서 출처가 불분명한 것을 받아 붙이는 위험도 큽니다."
+      ],
+      "en": [
+        "The initials of Low-Rank Adaptation.",
+        "The result is a small file — easy to share, and just as easy to accept from an unknown source."
+      ]
+    }
+  },
+  {
+    "id": "t1_safetensors",
+    "tier": 1,
+    "cat": "ai",
+    "track": "ai",
+    "points": 65,
+    "ci": true,
+    "hash": "54f843a33581bf0d9ae8bd35563b3e93d6439e0fe198199b1b52107ae628e3b2",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "열어도 안전하게",
+      "en": "Safe to Open"
+    },
+    "prompt": {
+      "ko": "가중치를 불러오는 것만으로 임의 코드가 실행되지 않도록, 실행 가능한 객체 없이 순수 수치와 메타데이터만 담게 설계된 모델 저장 포맷의 이름은? (영어 한 단어)",
+      "en": "What single English word names the model file format designed to hold only raw numbers and metadata — no executable objects — so that merely loading weights cannot run code?"
+    },
+    "hints": {
+      "ko": [
+        "이름 자체가 \"안전한 텐서\"라는 뜻의 합성어입니다.",
+        "이 포맷이 대체하려는 쪽은 파이썬 객체를 통째로 복원하는 방식입니다."
+      ],
+      "en": [
+        "The name itself is a compound meaning \"safe tensors\".",
+        "It exists to replace a format that restores whole Python objects."
+      ]
+    }
+  },
+  {
+    "id": "t1_logit",
+    "tier": 1,
+    "cat": "ai",
+    "track": "ai",
+    "points": 60,
+    "ci": true,
+    "hash": "76eee315ea0140598642eafd3a69dae02d07e140c90da4971b09a9601e6a8bf1",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "확률이 되기 직전",
+      "en": "Just Before Probability"
+    },
+    "prompt": {
+      "ko": "모델의 마지막 층이 내놓는, 아직 확률로 정규화되지 않은 각 후보의 원시 점수를 뭐라고 부릅니까? (영어 한 단어)",
+      "en": "What do we call the raw per-candidate score a model's final layer emits, before it is normalized into a probability? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "이 값들을 지수화해 합이 1이 되도록 나누면 확률이 됩니다.",
+        "API가 이 값을 그대로 돌려주면 모델을 베껴 가기가 훨씬 쉬워집니다."
+      ],
+      "en": [
+        "Exponentiate them and divide by their sum and you get probabilities.",
+        "An API that hands these back makes copying the model far easier."
+      ]
+    }
+  },
+  {
+    "id": "t1_quantization",
+    "tier": 1,
+    "cat": "ai",
+    "track": "ai",
+    "points": 60,
+    "ci": true,
+    "hash": "00337646bb399b2abd588064f50b7de7cca824b6598885681211cf09ec41de3d",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "정밀도를 깎다",
+      "en": "Trading Precision for Room"
+    },
+    "prompt": {
+      "ko": "가중치를 더 낮은 비트 정밀도로 표현해 메모리와 연산량을 줄이는 모델 경량화 기법을 뭐라고 부릅니까? (영어 한 단어)",
+      "en": "What single English word names the technique of representing weights at lower bit precision to cut memory and compute?"
+    },
+    "hints": {
+      "ko": [
+        "32비트를 8비트나 4비트로 줄이는 그 작업입니다.",
+        "값을 구간으로 몰아 넣는다는 뜻의 낱말입니다."
+      ],
+      "en": [
+        "Going from 32-bit down to 8- or 4-bit.",
+        "The word means forcing values into discrete steps."
+      ]
+    }
+  },
+  {
+    "id": "t2_indirect",
+    "tier": 2,
+    "cat": "ai",
+    "track": "ai",
+    "points": 90,
+    "ci": true,
+    "hash": "fdbf5bfd03fbfa1453c3e55ff5ec913e444b2fe5c7529be42aac8965b0290770",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "내가 쓰지 않은 명령",
+      "en": "An Instruction I Never Typed"
+    },
+    "prompt": {
+      "ko": "공격자가 사용자에게 직접 입력시키는 대신, 모델이 나중에 읽게 될 웹페이지나 문서에 지시문을 미리 심어 두는 공격 유형을 뭐라고 부릅니까? (영어 한 단어)",
+      "en": "What single English word describes the kind of attack where the adversary plants instructions in a page or document the model will later read, instead of having the user type them?"
+    },
+    "hints": {
+      "ko": [
+        "사용자가 직접 넣는 쪽과 대비되는 낱말입니다.",
+        "요약을 시킨 웹페이지, 붙여넣은 이력서, 받은 메일 본문이 모두 통로가 됩니다."
+      ],
+      "en": [
+        "The opposite word to what the user types in themselves.",
+        "A page you asked it to summarize, a pasted résumé, the body of an email — all are carriers."
+      ]
+    }
+  },
+  {
+    "id": "t2_spotlighting",
+    "tier": 2,
+    "cat": "ai",
+    "track": "ai",
+    "points": 100,
+    "ci": true,
+    "hash": "29a47755539232c8f6272ae7f29947c37e3275d305d90520a612906cd222c4d3",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "조명을 비춰 구분하라",
+      "en": "Shine a Light on It"
+    },
+    "prompt": {
+      "ko": "모델에게 건네는 외부 데이터를 표시·인코딩·구획으로 명확히 티나게 만들어, 그 안의 문장을 지시로 오해하지 않게 하는 방어 기법의 이름은? (영어 한 단어)",
+      "en": "What single English word names the defense that marks, encodes, or fences external data so visibly that the model will not mistake sentences inside it for instructions?"
+    },
+    "hints": {
+      "ko": [
+        "무대에서 한 사람에게만 빛을 쏘는 그 장치의 이름에서 왔습니다.",
+        "\"이 대목은 자료일 뿐 명령이 아니다\"를 모델이 알아보게 만드는 것이 목적입니다."
+      ],
+      "en": [
+        "Named after the stage light that picks out one person.",
+        "The point is to let the model see \"this block is data, not orders\"."
+      ]
+    }
+  },
+  {
+    "id": "t2_delimiter",
+    "tier": 2,
+    "cat": "ai",
+    "track": "ai",
+    "points": 80,
+    "ci": true,
+    "hash": "c4b3f42c1c768312aed1d1af8bdbcbc70096a9de3140b990a36db384f1799791",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "여기부터는 남의 말",
+      "en": "Where Their Words Begin"
+    },
+    "prompt": {
+      "ko": "사용자 입력이 어디서 시작하고 끝나는지 모델에게 알려 주려고 프롬프트에 끼워 넣는 경계 표시 문자열을 통칭하는 영어 한 단어는?",
+      "en": "What single English word names the boundary marker inserted into a prompt to tell the model where user input starts and stops?"
+    },
+    "hints": {
+      "ko": [
+        "CSV의 쉼표, 문장의 따옴표가 하는 역할과 같은 이름입니다.",
+        "이 표시를 공격자가 그대로 흉내 내 쓰면 경계가 무너지므로 예측 불가능한 값이어야 합니다."
+      ],
+      "en": [
+        "The same name as the comma in a CSV or the quotes around a string.",
+        "If an attacker can reproduce the marker the boundary collapses, so it must be unpredictable."
+      ]
+    }
+  },
+  {
+    "id": "t2_membership",
+    "tier": 2,
+    "cat": "ai",
+    "track": "ai",
+    "points": 90,
+    "ci": true,
+    "hash": "bf5cf59e356652253268c604cbf8df8cfdb03a4a0d32b27ad158e581709c80e4",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "너 거기 있었니",
+      "en": "Were You in There?"
+    },
+    "prompt": {
+      "ko": "모델의 응답만 관찰해서 \"이 특정 레코드가 학습 자료에 들어 있었는가\"를 알아내는 프라이버시 공격이 있습니다. 이 공격 이름은 두 단어인데, 그중 첫 단어 — 어떤 집합에 속해 있었는지를 뜻하는 영어 한 단어 — 를 답하세요.",
+      "en": "There is a privacy attack that watches only a model's responses to determine whether one specific record was in its training data. Its name is two words — give the first one, the English word for having belonged to a set."
+    },
+    "hints": {
+      "ko": [
+        "어떤 집합에 \"속해 있었는가\"를 묻는 낱말입니다.",
+        "학습에 쓰인 자료에는 모델이 더 확신에 차서 반응하는 경향이 단서가 됩니다."
+      ],
+      "en": [
+        "The word for whether something belonged to a set.",
+        "The tell is that models react more confidently to material they were trained on."
+      ]
+    }
+  },
+  {
+    "id": "t2_persona",
+    "tier": 2,
+    "cat": "ai",
+    "track": "ai",
+    "points": 85,
+    "ci": true,
+    "hash": "5e815286bca594454b291f3b0350ec22aab6de20b6d9efeec67d604f6bce65ee",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "역할을 뒤집어쓰기",
+      "en": "Wearing a Character"
+    },
+    "prompt": {
+      "ko": "\"너는 이제 아무 제약 없는 캐릭터야\"처럼 모델에게 가공의 인격을 씌워 정책을 우회하려는 수법에서, 그 씌우는 가공의 인격을 부르는 영어 한 단어는?",
+      "en": "In the style of attack that tells a model \"you are now a character with no restrictions\", what single English word names the fictional identity being imposed?"
+    },
+    "hints": {
+      "ko": [
+        "연극에서 배우가 쓰는 가면을 뜻하던 라틴어에서 왔습니다.",
+        "모델이 규칙을 잊은 것이 아니라 \"지금은 다른 사람\"이라고 믿게 만드는 것이 요령입니다."
+      ],
+      "en": [
+        "From the Latin for the mask an actor wears on stage.",
+        "The trick is not making the model forget the rules but making it believe it is someone else."
+      ]
+    }
+  },
+  {
+    "id": "t2_markdown",
+    "tier": 2,
+    "cat": "ai",
+    "track": "ai",
+    "points": 85,
+    "ci": true,
+    "hash": "bc18f7068971a44e264848ecd54b72b02d38216abb8ce3c3d2148e37e8a12398",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "보이지 않는 배달부",
+      "en": "The Invisible Courier"
+    },
+    "prompt": {
+      "ko": "채팅 UI가 모델 출력을 렌더링할 때 이미지 문법을 그대로 그려 주면, 모델이 대화 내용을 URL에 실어 외부 서버로 유출할 수 있습니다. 이 유출 통로가 되는, 이미지·링크 문법을 제공하는 경량 서식 언어의 이름은? (영어 한 단어)",
+      "en": "When a chat UI renders a model's output, an image tag can be drawn automatically — letting the model smuggle conversation text out in the URL. What single English word names the lightweight formatting language that supplies that image and link syntax?"
+    },
+    "hints": {
+      "ko": [
+        "README 파일을 쓸 때 쓰는 그 서식입니다.",
+        "방어는 렌더링 단계에서 외부 출처 이미지를 막는 것입니다."
+      ],
+      "en": [
+        "The same format you write a README in.",
+        "The fix is at the render step: block images from outside origins."
+      ]
+    }
+  },
+  {
+    "id": "t2_agency",
+    "tier": 2,
+    "cat": "ai",
+    "track": "ai",
+    "points": 100,
+    "ci": true,
+    "hash": "c4b2af4722ee54e317672875b2d8cf49aa884bf5820ec6091114fea5ec6560e4",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "너무 많이 할 수 있다",
+      "en": "Allowed to Do Too Much"
+    },
+    "prompt": {
+      "ko": "OWASP LLM Top 10에는 모델에 붙인 도구·권한·자율성이 필요 이상으로 커서, 인젝션 한 번이 곧 실제 행동으로 이어지는 위험을 가리키는 항목이 있습니다. \"Excessive ____\"의 빈칸에 들어갈 영어 한 단어는?",
+      "en": "OWASP LLM Top 10 has an entry for giving a model more tools, permissions, and autonomy than it needs, so that a single injection turns straight into real-world action. What single English word completes \"Excessive ____\"?"
+    },
+    "hints": {
+      "ko": [
+        "\"행위 주체로서 스스로 할 수 있는 정도\"를 뜻하는 낱말입니다.",
+        "완화책은 도구를 읽기 전용으로 줄이고 사람 승인을 끼워 넣는 것입니다."
+      ],
+      "en": [
+        "The noun for how much a thing can act on its own behalf.",
+        "The mitigation is read-only tools and a human approval step."
+      ]
+    }
+  },
+  {
+    "id": "t3_fgsm",
+    "tier": 3,
+    "cat": "ai",
+    "track": "ai",
+    "points": 110,
+    "ci": true,
+    "hash": "0803943eb2beae79b08298d94cdeabf6623ec58886b5cc68409b713619e3c89c",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "한 걸음이면 충분하다",
+      "en": "One Step Is Enough"
+    },
+    "prompt": {
+      "ko": "손실의 기울기 부호만 보고 입력에 아주 작은 섭동을 한 번에 더해 오분류를 유도하는, 가장 고전적인 적대적 예제 생성 기법의 4글자 약어는?",
+      "en": "What 4-letter abbreviation names the classic adversarial-example method that reads only the sign of the loss gradient and adds one tiny perturbation to the input in a single step?"
+    },
+    "hints": {
+      "ko": [
+        "Fast Gradient Sign Method의 머리글자입니다.",
+        "반복 없이 한 번에 끝나기 때문에 빠르지만 그만큼 약합니다."
+      ],
+      "en": [
+        "The initials of Fast Gradient Sign Method.",
+        "One shot, no iteration — fast, and correspondingly weak."
+      ]
+    }
+  },
+  {
+    "id": "t3_pgd",
+    "tier": 3,
+    "cat": "ai",
+    "track": "ai",
+    "points": 120,
+    "ci": true,
+    "hash": "4be678262bd5d9ecaa03661f1d11374d7ac5ceeb6d28d1f6a77dc68c0cd6473c",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "경계 안으로 되밀며",
+      "en": "Pushed Back Inside"
+    },
+    "prompt": {
+      "ko": "작은 걸음을 여러 번 반복하되 매 걸음마다 허용된 섭동 범위 안으로 다시 투영해 넣는, 반복형 적대적 예제 공격의 3글자 약어는?",
+      "en": "What 3-letter abbreviation names the iterative adversarial attack that takes many small steps, projecting back inside the allowed perturbation ball after each one?"
+    },
+    "hints": {
+      "ko": [
+        "Projected Gradient Descent의 머리글자입니다.",
+        "강건성을 주장하려면 최소한 이 공격은 견뎌야 한다고 여겨집니다."
+      ],
+      "en": [
+        "The initials of Projected Gradient Descent.",
+        "Surviving it is treated as the minimum bar for claiming robustness."
+      ]
+    }
+  },
+  {
+    "id": "t3_epsilon",
+    "tier": 3,
+    "cat": "ai",
+    "track": "ai",
+    "points": 105,
+    "ci": true,
+    "hash": "6ebf3c8d63ef6b217bcee69e31f77f3634bbbef1346de27e229c17122974e27b",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "얼마나 흔들 수 있나",
+      "en": "How Far You May Push"
+    },
+    "prompt": {
+      "ko": "적대적 예제를 만들 때 \"원본에서 이만큼까지만 바꿀 수 있다\"는 섭동 크기의 상한을 나타내는 그리스 문자의 이름을 영어로 쓰면? (한 단어)",
+      "en": "When crafting adversarial examples, a Greek letter denotes the budget — how far from the original you may move. Write that letter's name in English. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "그리스 알파벳의 다섯 번째 글자이고, 수학에서 \"아주 작은 양\"의 대명사입니다.",
+        "이 값이 커질수록 공격은 쉬워지지만 변형이 사람 눈에 띄기 시작합니다."
+      ],
+      "en": [
+        "The fifth letter of the Greek alphabet, mathematics' byword for a very small quantity.",
+        "Raise it and the attack gets easier — and visible."
+      ]
+    }
+  },
+  {
+    "id": "t3_inversion",
+    "tier": 3,
+    "cat": "ai",
+    "track": "ai",
+    "points": 125,
+    "ci": true,
+    "hash": "418df28d06f462b0eb70db5b82e164c9ed72b4992b8eac275d344a83600ea4e9",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "거꾸로 되짚기",
+      "en": "Running It Backwards"
+    },
+    "prompt": {
+      "ko": "모델의 출력이나 신뢰도만 반복 관찰해 학습에 쓰인 원본 데이터(예: 얼굴 이미지)를 되살려 내는 공격을 \"model ____\"이라 부릅니다. 빈칸의 영어 한 단어는?",
+      "en": "Repeatedly probing a model's outputs or confidences to reconstruct the original training data — a face image, say — is called \"model ____\". What single English word fills the blank?"
+    },
+    "hints": {
+      "ko": [
+        "함수를 거꾸로 푸는 연산의 이름과 같습니다.",
+        "출력에 담긴 정보가 많을수록(확률 전체를 돌려줄수록) 잘 통합니다."
+      ],
+      "en": [
+        "The same word as the operation that undoes a function.",
+        "The more the output reveals — full probabilities, say — the better it works."
+      ]
+    }
+  },
+  {
+    "id": "t3_surrogate",
+    "tier": 3,
+    "cat": "ai",
+    "track": "ai",
+    "points": 130,
+    "ci": true,
+    "hash": "8dc7e1ff18ccb788b377a80ce80a30294bdddbbfa696856cb6e3d49c7eac4b83",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "대신 세우는 모델",
+      "en": "A Stand-In Model"
+    },
+    "prompt": {
+      "ko": "표적 모델에 질의를 퍼부어 그 응답으로 대신 학습시킨 복제 모델 — 이후 이 모델을 놓고 마음껏 공격을 설계한 뒤 원본에 옮겨 붙입니다 — 을 부르는 영어 한 단어는?",
+      "en": "You flood a target model with queries and train a copy on its answers, then design attacks freely against the copy before carrying them over. What single English word names that copy?"
+    },
+    "hints": {
+      "ko": [
+        "본인 대신 역할을 떠맡는 사람을 가리키는 낱말입니다.",
+        "흰 상자 공격을 검은 상자 표적에 쓰기 위한 다리 역할을 합니다."
+      ],
+      "en": [
+        "The word for someone who stands in for another.",
+        "It is the bridge that lets white-box attacks reach a black-box target."
+      ]
+    }
+  },
+  {
+    "id": "t3_suffix",
+    "tier": 3,
+    "cat": "ai",
+    "track": "ai",
+    "points": 115,
+    "ci": true,
+    "hash": "a1b7c6f1aa933f882745c9a905739790931b7fb9a01e49b44d2b4d19e1bf8e39",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "뒤에 붙는 헛소리",
+      "en": "Gibberish on the End"
+    },
+    "prompt": {
+      "ko": "사람에게는 의미 없는 문자열처럼 보이지만 프롬프트 끝에 덧붙이면 모델의 거절을 무너뜨리도록 최적화로 찾아낸 토큰 뭉치를 \"adversarial ____\"라고 부릅니다. 빈칸의 영어 한 단어는?",
+      "en": "A string that looks like nonsense to a human but is optimized so that appending it to a prompt collapses the model's refusal is called an \"adversarial ____\". What single English word fills the blank?"
+    },
+    "hints": {
+      "ko": [
+        "낱말 뒤에 붙는 어미를 가리키는 문법 용어와 같은 단어입니다.",
+        "앞에 붙이는 접두사(prefix)와 짝을 이룹니다."
+      ],
+      "en": [
+        "The same word as the grammatical ending attached after a stem.",
+        "It pairs with prefix, which goes on the front."
+      ]
+    }
+  },
+  {
+    "id": "t3_transferability",
+    "tier": 3,
+    "cat": "ai",
+    "track": "ai",
+    "points": 140,
+    "ci": true,
+    "hash": "105b4e5c58919ec9d0b4359cd5274e42ab6668b534de0bae6466df01784f95fd",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "옮겨 붙는 성질",
+      "en": "It Carries Over"
+    },
+    "prompt": {
+      "ko": "한 모델을 겨냥해 만든 적대적 예제가 구조도 학습 데이터도 다른 별개의 모델에서까지 그대로 통하는 성질을 뭐라고 부릅니까? (영어 한 단어)",
+      "en": "What single English word names the property whereby an adversarial example crafted against one model still works on a different model with another architecture and another training set?"
+    },
+    "hints": {
+      "ko": [
+        "\"옮기다(transfer)\"에 성질을 뜻하는 어미를 붙인 낱말입니다.",
+        "이 성질 덕분에 표적의 내부를 몰라도 대리 모델만으로 공격이 성립합니다."
+      ],
+      "en": [
+        "The verb transfer plus the ending that turns it into a property.",
+        "It is why an attacker never needs the target's internals — a stand-in model suffices."
+      ]
+    }
+  },
+  {
+    "id": "t4_smoothing",
+    "tier": 4,
+    "cat": "ai",
+    "track": "ai",
+    "points": 170,
+    "ci": true,
+    "hash": "3637a614cb738f813fb7c3b401e83c1c700bf3e97e5add3269d818cf73f0175d",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "증명된 반경",
+      "en": "A Radius You Can Prove"
+    },
+    "prompt": {
+      "ko": "입력에 무작위 잡음을 섞어 여러 번 추론한 뒤 다수결로 답을 내면, 일정 반경 안의 어떤 섭동에도 예측이 바뀌지 않음을 수학적으로 보장할 수 있습니다. 이 인증된(certified) 방어의 이름 \"randomized ____\"의 빈칸에 들어갈 영어 한 단어는?",
+      "en": "Adding random noise to the input, running the model many times, and taking a majority vote yields a mathematical guarantee that no perturbation within some radius can change the prediction. This certified defense is called \"randomized ____\". What single English word fills the blank?"
+    },
+    "hints": {
+      "ko": [
+        "거친 표면을 문질러 매끈하게 만드는 동작을 뜻하는 낱말입니다.",
+        "경험적 방어와 달리 \"이 반경 안에서는 절대 안 뚫린다\"를 증명해 줍니다."
+      ],
+      "en": [
+        "The word for rubbing a rough surface flat.",
+        "Unlike empirical defenses it proves a radius inside which nothing can break it."
+      ]
+    }
+  },
+  {
+    "id": "t4_distillation",
+    "tier": 4,
+    "cat": "ai",
+    "track": "ai",
+    "points": 160,
+    "ci": true,
+    "hash": "b862b5591f08e64c551dd311fb916b8ed02978398a677535eb8c903fd4cae827",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "증류해서 옮기기",
+      "en": "Boiled Down and Poured Over"
+    },
+    "prompt": {
+      "ko": "큰 교사 모델의 부드러운 출력 분포를 작은 학생 모델에게 학습시켜 능력을 옮기는 기법의 이름은? (영어 한 단어) — 방어 기법으로도, 모델을 훔치는 수단으로도 쓰입니다.",
+      "en": "Training a small student model on a large teacher model's soft output distribution to carry its ability over — what is that technique called? (one English word) It serves as a defense and as a way to steal a model alike."
+    },
+    "hints": {
+      "ko": [
+        "술을 내리거나 물을 정제할 때 쓰는 그 공정의 이름입니다.",
+        "방어로 쓰면 기울기를 뭉개고, 공격으로 쓰면 남의 모델을 베껴 옵니다."
+      ],
+      "en": [
+        "Named after the process used to refine spirits or purify water.",
+        "As a defense it blunts gradients; as an attack it copies someone else's model."
+      ]
+    }
+  },
+  {
+    "id": "t4_pickle",
+    "tier": 4,
+    "cat": "ai",
+    "track": "ai",
+    "points": 180,
+    "ci": true,
+    "hash": "6d08a4e630e4aa0d5cd873e65aea0a23df42de61073ecb49ef17158fe6a9dcea",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "불러오는 순간 실행된다",
+      "en": "Loading Is Executing"
+    },
+    "prompt": {
+      "ko": "파이썬 객체를 통째로 직렬화하는 이 표준 포맷은 복원 과정에서 임의 코드를 실행할 수 있어, 공개 저장소에서 받은 모델 가중치 파일이 곧 실행 파일이 되는 공급망 위험을 만듭니다. 이 포맷의 이름은? (영어 한 단어)",
+      "en": "This standard Python format serializes whole objects and can execute arbitrary code while restoring them — which makes a weights file downloaded from a public hub effectively an executable, and a supply-chain risk. What is the format called? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "오이를 식초에 절여 두는 그 음식과 같은 이름입니다.",
+        "이 위험 때문에 나온 대안이 순수 수치만 담는 저장 포맷입니다."
+      ],
+      "en": [
+        "The same word as the cucumber preserved in vinegar.",
+        "The alternative format that holds only raw numbers exists because of this risk."
+      ]
+    }
+  },
+  {
+    "id": "t4_gcg",
+    "tier": 4,
+    "cat": "ai",
+    "track": "ai",
+    "points": 190,
+    "ci": true,
+    "hash": "432dfd9c30ad50adec635fc2813fde786455c0110998d93528a5b3744fab4cf3",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "토큰을 좌표처럼",
+      "en": "Tokens as Coordinates"
+    },
+    "prompt": {
+      "ko": "기울기 정보를 이용해 매 단계 한 토큰 자리씩 후보를 골라 탐욕적으로 교체하며, 거절을 뚫는 문자열을 자동으로 찾아내는 — 공개 모델에서 널리 재현된 — 안전장치 우회 자동화 기법의 3글자 약어는?",
+      "en": "What 3-letter abbreviation names the automated method — widely reproduced on open models — that uses gradient information to greedily swap one token position at a time until it finds a string that defeats refusal?"
+    },
+    "hints": {
+      "ko": [
+        "Greedy Coordinate Gradient의 머리글자입니다.",
+        "찾아낸 문자열이 다른 모델에도 그대로 옮겨 붙는다는 점이 이 연구의 충격이었습니다."
+      ],
+      "en": [
+        "The initials of Greedy Coordinate Gradient.",
+        "The shock of the paper was that what it found carried over to other models."
+      ]
+    }
+  },
+  {
+    "id": "t4_crescendo",
+    "tier": 4,
+    "cat": "ai",
+    "track": "ai",
+    "points": 150,
+    "ci": true,
+    "hash": "eedc28b678375cc1e2a7ab92f0588674249376eea7d369dfd440af8b5fbec3d5",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "점점 세게",
+      "en": "Louder, Gradually"
+    },
+    "prompt": {
+      "ko": "한 번에 위험한 요청을 하지 않고, 무해한 질문에서 시작해 여러 차례에 걸쳐 조금씩 수위를 올려 결국 정책을 넘게 만드는 다중 턴 우회 기법의 이름은? (음악 용어에서 온 영어 한 단어)",
+      "en": "Rather than asking for the dangerous thing outright, this multi-turn attack opens with something harmless and escalates by one step each turn until the policy is crossed. What is it called? (one English word, borrowed from music)"
+    },
+    "hints": {
+      "ko": [
+        "악보에서 소리를 점점 크게 하라는 그 지시어입니다.",
+        "턴 하나만 떼어 놓고 보면 어느 것도 위반이 아니라는 점이 탐지를 어렵게 합니다."
+      ],
+      "en": [
+        "The score marking that tells a player to grow steadily louder.",
+        "Detection is hard because no single turn, taken alone, violates anything."
+      ]
+    }
+  },
+  {
+    "id": "t4_deputy",
+    "tier": 4,
+    "cat": "ai",
+    "track": "ai",
+    "points": 155,
+    "ci": true,
+    "hash": "00652261d8f5e7a4521daae4c82d601c42ac334acafc208438ebc9fc384f725b",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "권한을 빌려 쓴 심부름꾼",
+      "en": "The Errand Boy's Badge"
+    },
+    "prompt": {
+      "ko": "자신보다 높은 권한을 가진 구성요소를 꾀어 그 권한으로 대신 행동하게 만드는 고전적 보안 문제를 \"confused ____ problem\"이라 부릅니다. 도구를 붙인 모델이 사용자 권한을 넘어 행동할 때 정확히 이 문제가 재현됩니다. 빈칸의 영어 한 단어는?",
+      "en": "Tricking a component that holds more authority than you into acting with that authority on your behalf is the classic \"confused ____ problem\" — reproduced exactly when a tool-wielding model acts beyond the user's own permissions. What single English word fills the blank?"
+    },
+    "hints": {
+      "ko": [
+        "보안관을 대신해 일하는 사람을 가리키는 낱말입니다.",
+        "1988년 Norm Hardy가 붙인 이름으로, 대리 권한을 다루는 모든 시스템에 되풀이됩니다."
+      ],
+      "en": [
+        "The word for the one who acts on the sheriff's behalf.",
+        "Named by Norm Hardy in 1988; it recurs in every system that delegates authority."
+      ]
+    }
+  },
+  {
+    "id": "t4_unlearning",
+    "tier": 4,
+    "cat": "ai",
+    "track": "ai",
+    "points": 130,
+    "ci": true,
+    "hash": "4d9b7c1f73c9748596f1a93d7ce6224ed651b19aee8ca6406d86285d49945789",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "배운 것을 지우기",
+      "en": "Making It Forget"
+    },
+    "prompt": {
+      "ko": "이미 학습이 끝난 모델에서 특정 데이터가 남긴 영향만 골라 제거해, 처음부터 그 데이터 없이 학습한 것과 사실상 같은 상태로 만들려는 연구 분야를 뭐라고 부릅니까? (영어 한 단어)",
+      "en": "What single English word names the research area that removes one specific data point's influence from an already-trained model, aiming for a state indistinguishable from having trained without it?"
+    },
+    "hints": {
+      "ko": [
+        "learning 앞에 부정 접두사를 붙인 낱말입니다.",
+        "삭제 요구권(잊힐 권리)을 모델에 적용하려면 반드시 필요한 기술입니다."
+      ],
+      "en": [
+        "The word learning with a negating prefix on the front.",
+        "It is what the right to erasure would require if it is to reach a model."
       ]
     }
   }
