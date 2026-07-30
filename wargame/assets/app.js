@@ -76,14 +76,21 @@
   const layerById   = id => LAYERS.find(l => l.id === id);
 
   /* ===== ranks / scoring ===== */
+  // Earned ranks are fractions of the pool, not fixed solve counts: a fixed
+  // count decays as the pool grows — "70 solves = Legend" was 93% back when the
+  // pool was 75 but only a third of 210. These are the 75-era ratios
+  // (15/32/52/70 of 75) rounded. Egg/Newbie stay absolute: "have you started
+  // at all" is not a share of anything.
   const RANKS = [
-    { min:0,  icon:"🥚", ko:"알",     en:"Egg" },
-    { min:1,  icon:"🐣", ko:"뉴비",   en:"Newbie" },
-    { min:15, icon:"🦊", ko:"수습",   en:"Apprentice" },
-    { min:32, icon:"🐺", ko:"해커",   en:"Hacker" },
-    { min:52, icon:"🦅", ko:"엘리트", en:"Elite" },
-    { min:70, icon:"👑", ko:"레전드", en:"Legend" }
+    { min:0,   icon:"🥚", ko:"알",     en:"Egg" },
+    { min:1,   icon:"🐣", ko:"뉴비",   en:"Newbie" },
+    { at:0.20, icon:"🦊", ko:"수습",   en:"Apprentice" },
+    { at:0.43, icon:"🐺", ko:"해커",   en:"Hacker" },
+    { at:0.69, icon:"🦅", ko:"엘리트", en:"Elite" },
+    { at:0.93, icon:"👑", ko:"레전드", en:"Legend" }
   ];
+  const rankMin = r => r.min != null ? r.min : Math.ceil(r.at * CHALLENGES.length);
+  const rankOf  = n => RANKS.slice().reverse().find(r => n >= rankMin(r));
   const HINT_PENALTY = 0.2, MIN_AWARD = 0.2;
 
   /* ===== i18n ===== */
@@ -257,7 +264,7 @@
     const n = solvedCount(), tot = CHALLENGES.length;
     document.getElementById("hudScore").textContent = totalScore();
     document.getElementById("hudSolved").textContent = n + "/" + tot;
-    const rank = RANKS.slice().reverse().find(r => n >= r.min);
+    const rank = rankOf(n);
     const rk = document.getElementById("hudRank");
     rk.textContent = rank.icon; rk.title = rank[L()];
     document.getElementById("hudBar").style.width = (n / tot * 100) + "%";
@@ -457,7 +464,7 @@
 
   function showStatus(){
     const n = solvedCount(), tot = CHALLENGES.length;
-    const rank = RANKS.slice().reverse().find(r => n >= r.min);
+    const rank = rankOf(n);
     blank();
     print('<span class="bold">' + esc(S("statusHdr")) + '</span>');
     print('<span class="tbl"><span class="dim">' + esc(S("score")) + ':</span> <span class="ok">' + totalScore() + '</span></span>');

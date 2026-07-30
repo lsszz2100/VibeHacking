@@ -73,6 +73,52 @@ for (const t of TIERS) {
   }
 }
 
+// --- rank ladder sanity: thresholds must track the pool, not lag behind it ---
+// This decayed silently once: thresholds scaled for a 75-challenge pool left
+// "Legend" at 70 solves, which is 93% of 75 but only a third of 210. Pull the
+// real ladder and its resolver out of app.js instead of restating them here (a
+// copy would drift the same way) and resolve them against the actual pool.
+const LEGEND_MIN_SHARE = 0.8; // the top rank has to mean "nearly cleared it"
+const appJs = fs.readFileSync(path.join(WG, 'assets/app.js'), 'utf8');
+const ranksSrc = appJs.match(/const RANKS = \[[\s\S]*?\];/);
+const rankMinSrc = appJs.match(/const rankMin = .*;/);
+
+if (!ranksSrc || !rankMinSrc) {
+  fail('app.js: could not find the RANKS ladder and/or its rankMin resolver, so the rank checks ran on nothing');
+} else {
+  const resolveRanks = (pool, tail) => {
+    const s = { CHALLENGES: { length: pool } };
+    vm.createContext(s);
+    vm.runInContext(`${ranksSrc[0]}\n${rankMinSrc[0]}\n${tail}`, s);
+    return s.t;
+  };
+  const steps = resolveRanks(total, 'this.t=RANKS.map(rankMin);');
+  const top = steps[steps.length - 1];
+
+  if (steps[0] !== 0) {
+    fail(`rank ladder: the lowest rank starts at ${steps[0]} solves, so a player with 0 solves has no rank`);
+  }
+  for (let i = 1; i < steps.length; i++) {
+    if (steps[i] <= steps[i - 1]) {
+      fail(`rank ladder: rank ${i} unlocks at ${steps[i]} solves, not above rank ${i - 1} at ${steps[i - 1]} — one of them is unreachable`);
+    }
+  }
+  if (top > total) {
+    fail(`rank ladder: the top rank needs ${top} solves but only ${total} challenges exist`);
+  } else if (top < Math.ceil(LEGEND_MIN_SHARE * total)) {
+    const pct = Math.round((top / total) * 100);
+    fail(`rank ladder: the top rank lands at ${top}/${total} (${pct}%), below the ${Math.round(LEGEND_MIN_SHARE * 100)}% the top rank is supposed to mean — thresholds have fallen behind the pool`);
+  }
+
+  // It also has to be a *function* of the pool. Re-resolve against a doubled
+  // pool: if the top rank does not move, someone hardcoded counts again and the
+  // ladder will decay on the next expansion even if it passes the checks today.
+  const doubled = resolveRanks(total * 2, 'this.t=rankMin(RANKS[RANKS.length-1]);');
+  if (doubled === top) {
+    fail(`rank ladder: the top rank stays at ${top} solves when the pool doubles to ${total * 2} — thresholds are hardcoded counts, not shares of the pool`);
+  }
+}
+
 // --- every track must have at least one challenge in each tier band it claims ---
 for (const tr of TRACKS) {
   const count = CHALLENGES.filter((c) => c.track === tr.id).length;
@@ -104,4 +150,4 @@ if (errors.length) {
   for (const e of errors) console.error(' - ' + e);
   process.exit(1);
 }
-console.log(`wargame verify: OK — ${total} challenges, ${TIERS.length} tiers, ${TRACKS.length} tracks, no leaks, counts in sync.`);
+console.log(`wargame verify: OK — ${total} challenges, ${TIERS.length} tiers, ${TRACKS.length} tracks, no leaks, counts in sync, rank ladder scaled to the pool.`);

@@ -44,6 +44,15 @@ Opening the site runs a boot sequence and drops you into an **infiltration conso
 4. Progress, score, language and sound auto-save to `localStorage`.
 5. The top status bar shows score, rank (🥚→👑) and breach progress live.
 
+### 등급 / Ranks
+
+등급 기준은 **전체 문제 수에 대한 비율**입니다 — 문제가 늘어도 기준이 저절로 따라옵니다. 현재 필요한 정확한 문제 수는 `status` 명령으로 확인하세요.
+Rank thresholds are **shares of the challenge pool**, so they scale with it as the pool grows. Run `status` for the exact counts you need right now.
+
+| 등급 / rank | 🥚 알 / Egg | 🐣 뉴비 / Newbie | 🦊 수습 / Apprentice | 🐺 해커 / Hacker | 🦅 엘리트 / Elite | 👑 레전드 / Legend |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| 필요 / required | 0 | 첫 1문제 / first solve | 20% | 43% | 69% | 93% |
+
 > 💡 첫 플래그는 **이 페이지의 소스**에 숨어 있습니다. `Ctrl+U` 를 눌러 보세요. 콘솔(F12)·쿠키·숨겨진 DOM에도 심어진 플래그가 있습니다.
 > The first flag hides in **this page's source** — press `Ctrl+U`. More flags are planted in the console (F12), a cookie, and a hidden DOM node.
 
