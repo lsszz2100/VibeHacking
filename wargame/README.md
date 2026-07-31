@@ -101,7 +101,7 @@ python3 -m http.server 8000
 |---|---|
 | `verify.js` | 구조 — id 중복, 해시 형식, 존재하지 않는 tier/track, 자기 프롬프트에 정답 노출, index.html HUD·README 문제 수 불일치 |
 | `leakscan.js` | 한 문제의 정답이 **다른 문제**의 프롬프트·힌트에 평문으로 들어있는지 (n-gram 해시 대조) |
-| `audit.js --strict` | `fmt`가 약속한 형식(길이·`$` 같은 마커)을 채점기가 실제로 받아주는지 `[G]`, 위 계층표의 주제 열이 어느 문제의 정답을 그대로 적어 스포일하는지 `[F]`, `fmt`가 표기 규약을 지키고 표기가 갈리는 정답의 길이를 공개하는지 `[H]` |
+| `audit.js --strict` | `fmt`가 약속한 형식(길이·`$` 같은 마커)을 채점기가 실제로 받아주는지 `[G]`, 위 계층표의 주제 열이 어느 문제의 정답을 그대로 적어 스포일하는지 `[F]`, `fmt`가 표기 규약을 지키고 표기가 갈리는 정답의 길이를 공개하는지 `[H]`, 교재 492개 장이 그 정답을 다른 표기로 더 자주 쓰는데 `fmt`가 침묵하는지 `[I]` |
 | `solve-derivable.js` | 암호문·심어둔 플래그가 있는 문제를 **프롬프트만 보고 실제로 풀어** 앱 채점 규칙에 제출 |
 
 앞의 셋은 정적 검사이고, `solve-derivable.js`는 실제로 게임을 플레이합니다. 안내대로 따라 풀었는데 오답 처리되는 문제(정답 형식 모순, 깨진 암호문, 사라진 아티팩트)는 이 검사만 잡을 수 있습니다. 네 스크립트 모두 평문 정답을 저장하지 않고 출력하지도 않아 공개 CI에서도 안전합니다.
@@ -112,7 +112,7 @@ python3 -m http.server 8000
 |---|---|
 | `verify.js` | Structure — duplicate ids, malformed hashes, dangling tier/track refs, an answer leaked into its own prompt, HUD/README counts drifting apart |
 | `leakscan.js` | One challenge's answer sitting in plain text in **another** challenge's prompt or hints (n-gram hash lookup) |
-| `audit.js --strict` | Whether the grader really accepts the format `fmt` promises — declared length, markers like `$` `[G]` — whether the tier table above hands a player an answer as a topic `[F]`, and whether `fmt` follows the notation rules and discloses a length wherever the answer's spelling is ambiguous `[H]` |
+| `audit.js --strict` | Whether the grader really accepts the format `fmt` promises — declared length, markers like `$` `[G]` — whether the tier table above hands a player an answer as a topic `[F]`, whether `fmt` follows the notation rules and discloses a length wherever the answer's spelling is ambiguous `[H]`, and whether the repo's own 492 chapters spell that answer another way at least as often while `fmt` stays silent `[I]` |
 | `solve-derivable.js` | Actually solves every challenge that ships a ciphertext or a planted flag **from its own prompt** and submits it to the app's grading rule |
 
 The first three are static; the last one plays the game. A challenge where following the stated instructions gets you marked wrong — a format contradiction, a corrupted ciphertext, a plant that went missing — is only catchable that way. None of the four stores or prints a plaintext answer, so all are safe in public CI.
@@ -139,6 +139,10 @@ The first three are static; the last one plays the game. A challenge where follo
 3. **표기가 갈릴 수 있으면 길이를 선언 / Declare the length when the spelling is ambiguous.** 정답이 구분자(`-` `.` `_` `/` `:` 공백)를 품고 있거나 문자 뒤에 숫자가 바로 붙는 형태(`SHA1` 부류)라면, 플레이어가 하이픈이나 공백을 끼워 넣을 수 있습니다. 구분자를 넣으면 길이가 반드시 달라지므로 **길이 선언 하나로 잘못된 표기가 배제되며, 정답 자체는 조금도 누설되지 않습니다.** `[H]`는 열거로 복원되는 정답을 모두 훑어 이 선언이 빠진 문제를 찾아냅니다.
 4. **선언한 길이는 사실이어야 함 / A declared length must be true.** `[G]`가 저장된 해시로부터 정답의 형태를 복원해 대조합니다.
 5. **`fmt`가 정답을 적지 말 것 / Never spell the answer in `fmt`.** `leakscan.js`는 `title`·`prompt`·`hints`만 보므로 `[H]`가 `fmt`를 따로 검사합니다.
+6. **교재가 다르게 적는 표기라면 밝힐 것 / Disclose it when the chapters spell it another way.** 정답이 교재 492개 장에 나오는 여러 어절짜리 용어라면, 교재가 그 용어를 붙여서·하이픈으로·띄어서 쓰는 빈도를 `[I]`가 세어 **채점 표기만큼 자주 다르게 적는지** 확인합니다. 그렇다면 `한 단어 / one word`, `두 단어 / two words`, `(하이픈 없이 / no hyphen)`, `(- 포함 / include -)` 가운데 그 둘을 갈라 주는 표기를 달아야 합니다. 여기서 배운 대로 입력한 사람이 오답이 되어서는 안 되기 때문입니다. **길이는 붙여쓰기와 분리 표기를 갈라 주지만 하이픈과 공백은 길이가 같으므로, 그 둘 사이에서는 길이 선언이 소용없습니다.** `[I]` counts how this repo's own chapters render the term; if they write it the other way at least as often, `fmt` must say which rendering the grader takes.
 
 > 이 규약은 실제 사고에서 나왔습니다. `t4_mft`는 `$`를 붙이라고 안내하면서 채점은 `$` 없는 형태만 받았고, `t2_sha1`은 힌트가 `SHA-256`이라 적어 놓고 하이픈 있는 답을 거부했습니다. 앱은 문제당 정답 해시를 하나만 갖기 때문에 변형을 함께 수용할 수 없고, 따라서 **표기는 `fmt`가 책임져야 합니다.**
 > Both rules 3 and 4 exist because of real bugs: `t4_mft` told players to type a `$` its grader rejected, and `t2_sha1` printed `SHA-256` in its own hints while refusing a hyphen. One challenge stores exactly one answer hash, so variants cannot be accepted — the notation has to carry that weight.
+>
+> 6번은 3번의 사각지대를 메웁니다. `fine-tuning`을 붙여 쓴 정답은 구분자도 없고 문자+숫자 복합도 아니라 3번이 길이를 요구하지 않지만, 통용 표기는 하이픈이라 그대로 입력한 사람이 틀립니다. 그런 정답은 열거로 복원하기엔 너무 길어 `[H]`가 형태조차 알 수 없으므로, 후보를 교재에서 가져옵니다.
+> Rule 6 covers rule 3's blind spot: an answer like `finetuning` carries no separator and is not letters-run-into-digits, so nothing asks it to declare a length — yet the usual rendering is hyphenated. Answers that long are past what enumeration can reach, so the candidates come from the chapters instead.

@@ -6,9 +6,9 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-// --strict: exit non-zero on [F] leaks and [G] contradictions so CI can gate on
-// them. The other sections stay informational ([A] MISSING is a known heuristic
-// false positive).
+// --strict: exit non-zero on the checks that can mark a correct player wrong or
+// hand an answer out — [F] [G] [H] [I] — so CI can gate on them. The other
+// sections stay informational ([A] MISSING is a known heuristic false positive).
 // --reveal: print the offending README term. A term is only a finding because it
 // IS an answer, so naming it in a public CI log hands that answer out — keep it
 // local-only, the same rule leakscan.js follows.
@@ -342,6 +342,128 @@ console.log(`\n--- [H] fmt notation and spelling-hazard disclosure: ${hBad.lengt
 console.log(`    (${CHALLENGES.length} fmt strings against ${BASES.size} approved bases; ${plain.size} answers recovered, ${[...plain.values()].filter(p => p.sep || p.compound).length} spelling-ambiguous)`);
 for (const n of hBad) console.log(`  ⚠ ${n}`);
 
+// [I] Does the grader insist on a spelling our own chapters contradict?
+//
+// [H] only sees a hazard when the answer ITSELF carries a separator, and only
+// while it stays inside a four-character sweep. The case that slips past is the
+// mirror image: an answer written closed up whose ordinary rendering is
+// hyphenated. A player types "fine-tuning" the way this repo's own chapters
+// write it, is marked wrong, and fmt said nothing. Enumeration cannot reach a
+// ten-letter answer, so the candidates come from the only authority the project
+// has on how these terms are spelled — the 492 chapters. Every hyphenated token
+// and every two/three-word run there is re-rendered closed, hyphenated, spaced
+// and underscored, and each rendering is hashed against the stored answers. The
+// corpus supplies the word; the hash only reports which rendering the grader
+// takes, so nothing is recovered that the chapters did not already say.
+//
+// A match is not yet a hazard. It becomes one when the chapters write the term
+// the OTHER way at least as often (and at least MIN_EVIDENCE times), because
+// that is the spelling a player who learned it here would reach for. fmt then
+// has to separate the two: a length settles closed-versus-separated, but a
+// hyphen and a space are the same length, so those need the word count or the
+// marker said out loud.
+//
+// MIN_EVIDENCE is a false-positive margin, not a detector: one stray "root kit"
+// in a chapter should not force a disclosure onto "rootkit". At the current
+// content it changes no verdict — dropping it to 1 finds the same hazards — but
+// it is what keeps the sweep at tens of thousands of terms instead of 280k.
+const MIN_EVIDENCE = 3;
+const REPO = path.resolve(WG, '..');
+function chapters(dir, out = []) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (e.name === '.git' || e.name === 'node_modules') continue;
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) chapters(p, out);
+    else if (e.name.endsWith('.md')) out.push(p);
+  }
+  return out;
+}
+const freqClosed = new Map(), freqHyphen = new Map(), freqSpace = new Map();
+const bump = (m, k) => m.set(k, (m.get(k) || 0) + 1);
+const chapterFiles = chapters(REPO);
+for (const f of chapterFiles) {
+  const txt = fs.readFileSync(f, 'utf8').toLowerCase();
+  let w1 = null, w2 = null, end = -1;
+  for (const m of txt.matchAll(/[a-z]+(?:-[a-z]+)*/g)) {
+    const w = m[0];
+    if (w.includes('-')) { bump(freqHyphen, w); w1 = w2 = null; end = -1; continue; }
+    bump(freqClosed, w);
+    // only a single space keeps a run going; punctuation or a newline ends it
+    if (w1 !== null && txt.slice(end, m.index) === ' ') {
+      bump(freqSpace, `${w1} ${w}`);
+      if (w2 !== null) bump(freqSpace, `${w2} ${w1} ${w}`);
+      w2 = w1;
+    } else w2 = null;
+    w1 = w; end = m.index + w.length;
+  }
+}
+
+const RENDERINGS = ['closed', 'hyphen', 'space', 'under'];
+const render = (form, parts) => parts.join(form === 'closed' ? '' : form === 'hyphen' ? '-' : form === 'space' ? ' ' : '_');
+// underscores belong to code, not prose, so that rendering has no corpus support
+const evidence = (form, parts) =>
+  (form === 'closed' ? freqClosed : form === 'hyphen' ? freqHyphen : form === 'space' ? freqSpace : new Map())
+    .get(render(form, parts)) || 0;
+
+// A term can only ever produce a hazard through a rendering the chapters use at
+// least MIN_EVIDENCE times, so terms that never reach it are dropped before the
+// hash sweep rather than matched and then discarded. The closed form counts as a
+// rendering here: "railfence" written often enough is a rival to a spaced answer
+// that the chapters themselves happen to write only once.
+const attested = (parts) => Math.max(evidence('closed', parts), evidence('hyphen', parts), evidence('space', parts)) >= MIN_EVIDENCE;
+const termParts = new Set();
+for (const h of freqHyphen.keys()) { const p = h.split('-'); if (attested(p)) termParts.add(p.join(' ')); }
+for (const s of freqSpace.keys()) { const p = s.split(' '); if (attested(p)) termParts.add(s); }
+
+// id -> the rendering the grader accepts, and the term it came from
+const graded = new Map();
+for (const t of termParts) {
+  const parts = t.split(' ');
+  for (const form of RENDERINGS) {
+    const id = allWanted.get(sha(render(form, parts)));
+    if (!id) continue;
+    // an answer can match several terms; keep the best-attested one
+    const ev = RENDERINGS.reduce((s, f) => s + evidence(f, parts), 0);
+    const prev = graded.get(id);
+    if (!prev || ev > prev.ev) graded.set(id, { form, parts, ev });
+  }
+}
+
+// Does fmt tell the two renderings apart? "한 단어 / one word" deliberately does
+// NOT settle a hyphen: a hyphenated compound is still one word, which is exactly
+// how a "fine-tuning" answer would keep looking compliant.
+function separates(ch, form, rival, parts) {
+  const fmt = ch.fmt || '';
+  const sameLength = form !== 'closed' && rival !== 'closed';
+  if (!sameLength && declarationOf(ch).len !== null) return true;
+  if (form === 'closed') return rival === 'space' ? /한 단어 \/ one word/.test(fmt) : /하이픈 없이 \/ no hyphen/.test(fmt);
+  if (form === 'space') return parts.length === 2 ? /두 단어 \/ two words/.test(fmt) : /문구 \/ phrase|제목 \/ title/.test(fmt);
+  if (form === 'hyphen') return /- 포함 \/ include -/.test(fmt);
+  return /_ 포함 \/ include _/.test(fmt);
+}
+const SPELLING = { closed: 'closed up', hyphen: 'with a hyphen', space: 'as separate words', under: 'with an underscore' };
+
+const iBad = [];
+let hazardous = 0;
+if (freqHyphen.size < 500) {
+  // a trimmed checkout would leave the lexicon empty and every answer "clean"
+  iBad.push(`the chapter corpus is missing or unreadable — ${chapterFiles.length} .md files yielded only ${freqHyphen.size} hyphenated terms, so nothing could be checked`);
+} else {
+  for (const [id, m] of graded) {
+    const mine = evidence(m.form, m.parts);
+    const rivals = RENDERINGS.filter(f => f !== m.form && evidence(f, m.parts) >= MIN_EVIDENCE && evidence(f, m.parts) >= mine);
+    if (!rivals.length) continue;
+    hazardous++;
+    const ch = CHALLENGES.find(c => c.id === id);
+    for (const r of rivals.filter(r => !separates(ch, m.form, r, m.parts))) {
+      iBad.push(`${id} — our own chapters spell this answer ${SPELLING[r]} at least as often as the grader's spelling, and fmt does not rule that out`);
+    }
+  }
+}
+console.log(`\n--- [I] answers our own chapters spell another way: ${iBad.length} ---`);
+console.log(`    (${allWanted.size} graded answers against ${termParts.size} terms the ${chapterFiles.length} chapters use ${MIN_EVIDENCE}+ times; ${graded.size} answers are one of them, ${hazardous} spelled another way at least as often)`);
+for (const n of iBad) console.log(`  ⚠ ${n}`);
+
 if (STRICT) {
   const fail = [];
   if (fBlocked) fail.push(`[F] ${fBlocked}`);
@@ -350,11 +472,12 @@ if (STRICT) {
   }
   for (const b of bad) fail.push(`[G] ${b}`);
   for (const h of hBad) fail.push(`[H] ${h}`);
+  for (const i of iBad) fail.push(`[I] ${i}`);
   if (fail.length) {
     console.error(`\naudit --strict: FAIL — ${fail.length} issue(s):`);
     for (const f of fail) console.error(`  ✗ ${f}`);
     process.exitCode = 1;
   } else {
-    console.log(`\naudit --strict: OK — README's topic rows name no answers ([F]), no fmt/answer contradictions ([G]), fmt on-notation with every spelling hazard disclosed ([H]).`);
+    console.log(`\naudit --strict: OK — README's topic rows name no answers ([F]), no fmt/answer contradictions ([G]), fmt on-notation with every spelling hazard disclosed ([H]), no answer graded against the chapters' own spelling ([I]).`);
   }
 }
