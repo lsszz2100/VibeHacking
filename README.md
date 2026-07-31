@@ -500,6 +500,7 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 ---
 
+- [Dark-Moon](https://github.com/ASCIT31/Dark-Moon): LLM 오케스트레이션 기반 자율 침투 테스트 오픈소스 플랫폼(GPL-3.0). self-hosted(docker-compose), MCP 서버, Privacy Gateway 제공, Web/API/Active Directory/Kubernetes 공격 체인 자동화, Nuclei·NetExec·BloodHound·sqlmap 등 50여 개 도구 통합.
 ## 11. AI 기반 사이버보안
 
 > **2026년 현재, AI가 사이버보안의 판도를 바꾸고 있다.**
