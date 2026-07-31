@@ -91,6 +91,14 @@ const TRACKS = [
     "en": "AI & LLM Security",
     "desc_ko": "프롬프트 인젝션·적대적 예제·모델 복제·도구 호출 권한.",
     "desc_en": "Prompt injection, adversarial examples, model copying, tool-calling privilege."
+  },
+  {
+    "id": "network",
+    "icon": "🛰️",
+    "ko": "네트워크·프로토콜",
+    "en": "Network & Protocols",
+    "desc_ko": "TCP/IP·DNS·TLS·무선·라우팅과 그 위에서 벌어지는 공격과 방어.",
+    "desc_en": "TCP/IP, DNS, TLS, wireless and routing — and the attacks and defenses on top of them."
   }
 ];
 
@@ -5972,6 +5980,986 @@ const CHALLENGES = [
       "en": [
         "The word learning with a negating prefix on the front.",
         "It is what the right to erasure would require if it is to reach a model."
+      ]
+    }
+  },
+  {
+    "id": "t0_ping",
+    "tier": 0,
+    "cat": "network",
+    "track": "network",
+    "points": 40,
+    "ci": true,
+    "hash": "758d61f26a44448384e5c4468a0dcb7a2abe456067b0f7b505bc28b9411fe931",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "살아 있나요?",
+      "en": "Are You There?"
+    },
+    "prompt": {
+      "ko": "원격 장비가 응답하는지 확인하려고 에코 요청을 보내고 왕복 시간을 알려 주는 한 단어짜리 명령은?",
+      "en": "Which one-word command sends an echo request to see whether a remote machine answers, and reports the round-trip time?"
+    },
+    "hints": {
+      "ko": [
+        "잠수함 음파 탐지기가 내는 소리에서 이름을 따왔습니다.",
+        "`____ -c 4 example.com` 처럼 네 번만 보낼 수도 있습니다."
+      ],
+      "en": [
+        "Named after the sound sonar makes.",
+        "`____ -c 4 example.com` sends just four of them."
+      ]
+    }
+  },
+  {
+    "id": "t0_httpsport",
+    "tier": 0,
+    "cat": "network",
+    "track": "network",
+    "points": 45,
+    "ci": true,
+    "hash": "6d05621ab7cb7b4fb796ca2ffbe1a141e0d4319d3deb6a05322b9de85d69b923",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "자물쇠가 걸린 포트",
+      "en": "The Locked Port"
+    },
+    "prompt": {
+      "ko": "HTTPS가 기본으로 사용하는 TCP 포트 번호는? (숫자만)",
+      "en": "Which TCP port number does HTTPS use by default? (number only)"
+    },
+    "hints": {
+      "ko": [
+        "암호화하지 않는 HTTP는 80번을 씁니다.",
+        "세 자리이고 4로 시작합니다."
+      ],
+      "en": [
+        "Plain HTTP uses 80.",
+        "Three digits, starting with a 4."
+      ]
+    }
+  },
+  {
+    "id": "t0_dhcp",
+    "tier": 0,
+    "cat": "network",
+    "track": "network",
+    "points": 45,
+    "ci": true,
+    "hash": "6f89bddf8582a8d223e132d10c9436e788687f159fbbf5ac36a6eb14d307a3fa",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "주소를 나눠 주는 쪽",
+      "en": "Who Hands Out Addresses"
+    },
+    "prompt": {
+      "ko": "네트워크에 막 접속한 장비에 IP 주소·서브넷 마스크·기본 경로를 자동으로 임대해 주는 프로토콜의 4글자 약자는?",
+      "en": "What 4-letter acronym names the protocol that automatically leases an IP address, a subnet mask and a default route to a machine that just joined the network?"
+    },
+    "hints": {
+      "ko": [
+        "Dynamic Host Configuration Protocol 의 머리글자입니다.",
+        "가짜 서버가 이 요청에 먼저 답해 버리면 서브넷 전체의 통신을 원하는 쪽으로 유도할 수 있습니다."
+      ],
+      "en": [
+        "Initials of Dynamic Host Configuration Protocol.",
+        "A rogue server that answers these requests first can steer a whole subnet."
+      ]
+    }
+  },
+  {
+    "id": "t0_gateway",
+    "tier": 0,
+    "cat": "network",
+    "track": "network",
+    "points": 50,
+    "ci": true,
+    "hash": "4ea5ee68fea05586106890ded5733820bb77d919cda27bc4b8139b7cd33b8889",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "밖으로 나가는 문",
+      "en": "The Way Out"
+    },
+    "prompt": {
+      "ko": "목적지가 로컬 서브넷 밖이면 장비는 패킷을 LAN 안의 특정 주소로 넘깁니다. 나가는 패킷이 가장 먼저 거치는 이 라우터 인터페이스를 가리키는 '기본 ____' 의 영어 한 단어는?",
+      "en": "When a packet's destination sits outside the local subnet, the machine hands it to one particular address on the LAN. What single English word names that 'default ____' — the router interface every outbound packet meets first?"
+    },
+    "hints": {
+      "ko": [
+        "통과해 지나가는 '문' 을 뜻하는 영어 단어입니다.",
+        "`ip route` 출력에서 `default via ...` 줄이 이것을 가리킵니다."
+      ],
+      "en": [
+        "The English word for a gate you pass through.",
+        "`ip route` points at it on the `default via ...` line."
+      ]
+    }
+  },
+  {
+    "id": "t0_mtu",
+    "tier": 0,
+    "cat": "network",
+    "track": "network",
+    "points": 50,
+    "ci": true,
+    "hash": "49be6e401e7f8b9844afb969dcbc96e78205ed86ec1e5a46150bd4ab4fdd5686",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "이보다 크면 쪼갠다",
+      "en": "Bigger Than This Gets Split"
+    },
+    "prompt": {
+      "ko": "한 프레임에 실을 수 있는 최대 페이로드 크기(보통 이더넷에서 1500바이트)로, 이보다 크면 패킷을 조각내야 하는 값을 가리키는 3글자 약자는?",
+      "en": "What 3-letter acronym names the largest payload a link will carry in one frame — 1500 bytes on ordinary Ethernet — above which a packet must be fragmented?"
+    },
+    "hints": {
+      "ko": [
+        "Maximum Transmission Unit 의 머리글자입니다.",
+        "터널은 헤더를 덧붙이므로 그 안에서는 이 값을 보통 낮춰 잡습니다."
+      ],
+      "en": [
+        "Initials of Maximum Transmission Unit.",
+        "A tunnel adds headers, so this value is usually lowered inside one."
+      ]
+    }
+  },
+  {
+    "id": "t0_loopback",
+    "tier": 0,
+    "cat": "network",
+    "track": "network",
+    "points": 60,
+    "ci": true,
+    "hash": "64edaa3fb9310e98cdb183cddbf156d9964a05c017fa7f8ee3c262909fa36759",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "자기 자신에게",
+      "en": "Back to Itself"
+    },
+    "prompt": {
+      "ko": "모든 장비에는 트래픽이 밖으로 나가지 않고 자기 자신에게 되돌아오는 가상 인터페이스가 있습니다 — 리눅스의 `lo`, IPv4의 `127.0.0.1`, IPv6의 `::1`. 이 인터페이스를 부르는 영어 한 단어는?",
+      "en": "Every machine has a virtual interface whose traffic never leaves it — `lo` on Linux, `127.0.0.1` on IPv4, `::1` on IPv6. What single English word names it?"
+    },
+    "hints": {
+      "ko": [
+        "'고리' 를 뜻하는 단어와 '되돌아옴' 을 뜻하는 단어를 붙인 합성어입니다.",
+        "여기에만 바인딩한 서비스는 다른 장비에서 접근할 수 없습니다."
+      ],
+      "en": [
+        "A compound of 'loop' and the word for coming back.",
+        "A service bound only to it cannot be reached from another machine."
+      ]
+    }
+  },
+  {
+    "id": "t0_osi",
+    "tier": 0,
+    "cat": "network",
+    "track": "network",
+    "points": 60,
+    "ci": true,
+    "hash": "75e07ef9bcaa8fd530089f7d81a3da7eda54a1cae0ebf0dbc72d0657deea2ae7",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "일곱 층",
+      "en": "Seven Layers"
+    },
+    "prompt": {
+      "ko": "물리·데이터링크·네트워크·전송·세션·표현·응용의 일곱 계층으로 나눈, 문제가 어느 계층에 있는지 말할 때 지금도 쓰는 참조 모델의 3글자 약자는?",
+      "en": "What 3-letter acronym names the seven-layer reference model — physical, data link, network, transport, session, presentation, application — engineers still use to say which layer a problem lives on?"
+    },
+    "hints": {
+      "ko": [
+        "Open Systems Interconnection 의 머리글자입니다.",
+        "일상적으로 말하는 L7·L3 가 이 모델의 계층 번호입니다."
+      ],
+      "en": [
+        "Initials of Open Systems Interconnection.",
+        "Everyday talk of 'L7' and 'L3' means this model's layers."
+      ]
+    }
+  },
+  {
+    "id": "t1_arp",
+    "tier": 1,
+    "cat": "network",
+    "track": "network",
+    "points": 60,
+    "ci": true,
+    "hash": "cf835fc094349f22c2214fc8256cb895fcbcc01c77083c0f94114703d9e79a29",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "그 IP는 누구 것?",
+      "en": "Who Has That IP?"
+    },
+    "prompt": {
+      "ko": "같은 LAN 안에서 IPv4 주소만 아는 장비가 프레임에 들어갈 하드웨어 주소를 알아내야 합니다. 세그먼트 전체에 '10.0.0.5 를 가진 쪽?' 하고 물은 뒤 응답을 캐시에 담아 두는 이 프로토콜의 3글자 약자는?",
+      "en": "Inside one LAN segment a machine that knows only an IPv4 address still needs the hardware address that belongs in the frame. What 3-letter acronym names the protocol that asks the whole segment 'who has 10.0.0.5?' and caches the reply?"
+    },
+    "hints": {
+      "ko": [
+        "Address Resolution Protocol 의 머리글자입니다.",
+        "`____ -a` 로 캐시 표를 볼 수 있습니다. 응답에 인증이 없어 위조가 쉽습니다."
+      ],
+      "en": [
+        "Initials of Address Resolution Protocol.",
+        "`____ -a` prints the cached table; the replies are unauthenticated, so they are easy to forge."
+      ]
+    }
+  },
+  {
+    "id": "t1_icmp",
+    "tier": 1,
+    "cat": "network",
+    "track": "network",
+    "points": 60,
+    "ci": true,
+    "hash": "c3eac7105ca647900c32b5eced7a6ccb56cded0790ef0bc08614a5ad31e54025",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "오류를 알려 주는 전령",
+      "en": "The Messenger for Errors"
+    },
+    "prompt": {
+      "ko": "사용자 데이터가 아니라 IP 자체의 제어·오류 메시지('목적지 도달 불가', '시간 초과', 에코 요청/응답)를 실어 나르는 프로토콜의 4글자 약자는?",
+      "en": "Which 4-letter protocol acronym carries IP's own control and error messages — 'destination unreachable', 'time exceeded', the echo request/reply pair — rather than user data?"
+    },
+    "hints": {
+      "ko": [
+        "Internet Control Message Protocol 의 머리글자입니다.",
+        "방화벽이 통째로 막아 두는 일이 많아, 조용한 장비가 곧 꺼진 장비는 아닙니다."
+      ],
+      "en": [
+        "Initials of Internet Control Message Protocol.",
+        "Firewalls often drop it wholesale, so a silent machine is not proof it is down."
+      ]
+    }
+  },
+  {
+    "id": "t1_mx",
+    "tier": 1,
+    "cat": "network",
+    "track": "network",
+    "points": 65,
+    "ci": true,
+    "hash": "d7f890c4f72a3d49b69870b2dc2850c698e7b841eb2dd7cd21e4de551a29f4c4",
+    "fmt": "약어 / acronym (2글자 / 2 chars)",
+    "title": {
+      "ko": "편지는 어디로",
+      "en": "Where the Mail Goes"
+    },
+    "prompt": {
+      "ko": "어떤 도메인의 메일을 어느 서버가 받는지 알려 주고, 여러 개일 때는 우선순위 숫자로 고르게 하는 DNS 레코드 종류의 2글자 약자는?",
+      "en": "Which 2-letter DNS record type tells a sender which server accepts email for a domain, using a preference number to choose among several?"
+    },
+    "hints": {
+      "ko": [
+        "Mail eXchanger 의 줄임입니다.",
+        "`dig example.com __` 로 조회합니다. 방치된 항목은 남의 서버로 메일을 넘길 수 있습니다."
+      ],
+      "en": [
+        "Short for Mail eXchanger.",
+        "`dig example.com __` lists them; a stale entry can hand mail to someone else."
+      ]
+    }
+  },
+  {
+    "id": "t1_vlan",
+    "tier": 1,
+    "cat": "network",
+    "track": "network",
+    "points": 65,
+    "ci": true,
+    "hash": "c3b258168c41c0bce97616716bef315eeed33eb1142904bfe7f32eb392c7cf80",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "한 스위치, 여러 네트워크",
+      "en": "One Switch, Many Networks"
+    },
+    "prompt": {
+      "ko": "물리 스위치 한 대가 12비트 ID(802.1Q)로 구분되는 여러 개의 독립된 도메인을 나르게 해 주는 논리적 분할의 4글자 약자는?",
+      "en": "What 4-letter acronym names the logical segmentation that lets one physical switch carry several separate domains, each tagged with its own 12-bit id (802.1Q)?"
+    },
+    "hints": {
+      "ko": [
+        "Virtual Local Area Network 의 머리글자입니다.",
+        "포트를 트렁크 자동 협상 상태로 두면 그 사이를 건너뛰는 공격이 가능합니다."
+      ],
+      "en": [
+        "Initials of Virtual Local Area Network.",
+        "Leaving a port negotiating trunk mode lets an attacker hop between them."
+      ]
+    }
+  },
+  {
+    "id": "t1_traceroute",
+    "tier": 1,
+    "cat": "network",
+    "track": "network",
+    "points": 70,
+    "ci": true,
+    "hash": "261063ce089e84d540c499ef21de9486c2be4ee6c79142a2dca537262239e6a5",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "어디를 거쳐 가나",
+      "en": "Which Way Did It Go"
+    },
+    "prompt": {
+      "ko": "TTL 을 1, 2, 3 으로 늘려 가며 탐침을 보내고 돌아오는 '시간 초과' 응답을 읽어, 패킷이 거쳐 가는 라우터를 하나씩 밝혀내는 고전 명령은? (한 단어, 유닉스 표기)",
+      "en": "Which classic command reveals every router a packet passes through by sending probes with a time-to-live of 1, then 2, then 3, and reading each 'time exceeded' reply? (one word, the Unix spelling)"
+    },
+    "hints": {
+      "ko": [
+        "'추적' 을 뜻하는 단어에 '경로' 를 뜻하는 단어를 붙였습니다.",
+        "윈도우에서는 `tracert` 라고 씁니다. 여기서 묻는 것은 유닉스 쪽 이름입니다."
+      ],
+      "en": [
+        "The word for tracing joined with the word for a route.",
+        "Windows spells it `tracert`; this asks for the Unix name."
+      ]
+    }
+  },
+  {
+    "id": "t1_nat",
+    "tier": 1,
+    "cat": "network",
+    "track": "network",
+    "points": 70,
+    "ci": true,
+    "hash": "d919a100ce6b45524d415d52d088d5817587c6dd8c3691b03b8063c44d043523",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "하나의 공인 주소 뒤에",
+      "en": "Behind One Public Address"
+    },
+    "prompt": {
+      "ko": "사설 출발지 주소를 공인 주소 하나로 바꿔 쓰고(응답이 돌아올 수 있도록 포트를 기억하며), 가정 네트워크 전체가 IPv4 주소 하나를 나눠 쓰게 해 주는 라우터 기능의 3글자 약자는?",
+      "en": "What 3-letter acronym names the router function that rewrites private source addresses into one public address — tracking ports so replies find their way back — letting a whole home network share a single IPv4 address?"
+    },
+    "hints": {
+      "ko": [
+        "Network Address Translation 의 머리글자입니다.",
+        "그래서 이 뒤에 있는 장비는 포워딩 규칙 없이는 밖에서 먼저 접속할 수 없습니다."
+      ],
+      "en": [
+        "Initials of Network Address Translation.",
+        "It is why a machine behind it cannot be reached from outside without a forwarding rule."
+      ]
+    }
+  },
+  {
+    "id": "t1_whois",
+    "tier": 1,
+    "cat": "network",
+    "track": "network",
+    "points": 65,
+    "ci": true,
+    "hash": "b1140742ba42ab97d3e8b01c0cbb29d4de2c347d735e20160f00468af5b2b021",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "이 도메인 주인은",
+      "en": "Who Owns This Domain"
+    },
+    "prompt": {
+      "ko": "정찰 단계에서 레지스트리에 질의해 도메인의 등록자·등록기관·네임서버·만료일을 가져오는 한 단어짜리 명령(그리고 그 뒤의 프로토콜)의 이름은?",
+      "en": "In reconnaissance, which one-word command — and the protocol behind it — asks a registry for a domain's registrant, registrar, name servers and expiry date?"
+    },
+    "hints": {
+      "ko": [
+        "'who is' 라는 물음에서 빈칸을 뺀 형태입니다.",
+        "요즘은 등록기관이 개인정보 보호를 이유로 상당 부분을 가려서 내보냅니다."
+      ],
+      "en": [
+        "The question 'who is' with the space taken out.",
+        "Registrars now redact much of the output for privacy."
+      ]
+    }
+  },
+  {
+    "id": "t2_sni",
+    "tier": 2,
+    "cat": "network",
+    "track": "network",
+    "points": 80,
+    "ci": true,
+    "hash": "a97c5f2dd3d5023df257f9b37f1922f92a1aa1248b2eb082200c838724b51e2b",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "암호화 전에 새어 나가는 이름",
+      "en": "The Name That Leaks First"
+    },
+    "prompt": {
+      "ko": "TLS 핸드셰이크에서 ClientHello 는 암호화가 시작되기 전에 요청 대상의 이름을 평문으로 실어 보냅니다. HTTPS 인데도 중간 장비가 어느 사이트에 접속하는지 알 수 있는 이유이죠. 이 확장의 3글자 약자는?",
+      "en": "In a TLS handshake the ClientHello carries the requested name in the clear, before any encryption begins — which is how a middlebox can tell which site you are visiting even over HTTPS. What 3-letter acronym names that extension?"
+    },
+    "hints": {
+      "ko": [
+        "Server Name Indication 의 머리글자입니다.",
+        "IP 하나가 여러 인증서를 서비스할 수 있는 것도 서버가 이 값을 이렇게 일찍 알기 때문입니다."
+      ],
+      "en": [
+        "Initials of Server Name Indication.",
+        "One IP can serve many certificates only because the server learns the name this early."
+      ]
+    }
+  },
+  {
+    "id": "t2_ipsec",
+    "tier": 2,
+    "cat": "network",
+    "track": "network",
+    "points": 85,
+    "ci": true,
+    "hash": "be9f13bdf5f5b56126d09f0489cf3f8464ae4b68e8787a8b9e68f5fa73aa8202",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "IP 계층의 터널",
+      "en": "A Tunnel at the IP Layer"
+    },
+    "prompt": {
+      "ko": "AH·ESP 로 무결성과 암호화를, IKE 로 키 교환을 담당하며 네트워크 계층 자체에서 트래픽을 보호해 대부분의 사이트 간 VPN 의 바탕이 되는 프로토콜 모음의 이름은? (붙여서 한 덩어리로)",
+      "en": "Which protocol suite secures traffic at the network layer itself — AH and ESP for integrity and encryption, IKE for key exchange — and underpins most site-to-site VPNs? (one token, no space)"
+    },
+    "hints": {
+      "ko": [
+        "'IP' 뒤에 'security' 의 앞 세 글자를 붙인 이름입니다.",
+        "전송 모드는 페이로드만, 터널 모드는 원본 패킷 전체를 감쌉니다."
+      ],
+      "en": [
+        "'IP' joined with the first three letters of 'security'.",
+        "Transport mode protects the payload; tunnel mode wraps the entire original packet."
+      ]
+    }
+  },
+  {
+    "id": "t2_eviltwin",
+    "tier": 2,
+    "cat": "network",
+    "track": "network",
+    "points": 85,
+    "ci": true,
+    "hash": "35a53abb01f049ed49f551625c5c1fc45f2381c7804aa0e13c239b1b60ceceb0",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "똑같은 이름의 가짜",
+      "en": "The Fake With the Same Name"
+    },
+    "prompt": {
+      "ko": "공격자가 진짜와 똑같은 네트워크 이름을 더 강한 신호로 내보내는 무선 AP 를 세워, 단말이 그쪽에 붙게 만들고 오가는 트래픽을 가로챕니다. 이 가짜 AP 를 부르는 영어 두 단어는?",
+      "en": "An attacker stands up an access point announcing the same network name as the real one, with a stronger signal, so clients associate with it and hand over their traffic. What two-word English term names this rogue access point?"
+    },
+    "hints": {
+      "ko": [
+        "'사악한' 을 뜻하는 형용사와 '쌍둥이' 를 뜻하는 명사, 두 단어입니다.",
+        "가짜 로그인 페이지까지 붙이면 비밀번호도 함께 수집됩니다."
+      ],
+      "en": [
+        "Two words: a wicked adjective plus the noun for an identical sibling.",
+        "Pair it with a fake login page and it collects the password too."
+      ]
+    }
+  },
+  {
+    "id": "t2_deauth",
+    "tier": 2,
+    "cat": "network",
+    "track": "network",
+    "points": 90,
+    "ci": true,
+    "hash": "da26748823899561eb2a55fd5a9d867d39a9d00a942e15828438fcf9e8de3804",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "잠깐 끊어라",
+      "en": "Knock Them Off"
+    },
+    "prompt": {
+      "ko": "802.11 관리 프레임은 오랫동안 인증되지 않아, 단말에게 연결을 끊으라고 알리는 프레임을 누구나 위조할 수 있었습니다. 가짜 AP 로 유도할 때도, 재접속 순간의 핸드셰이크를 잡을 때도 쓰였죠. 이 프레임과 공격을 부르는 짧은 이름은? (한 단어, 줄인 형태)",
+      "en": "802.11 management frames went unauthenticated for years, so anyone could forge the one telling a client to disconnect — used both to push a client onto a rogue AP and to capture the handshake on reconnect. What is the common short name for that frame and attack? (one word, the abbreviated form)"
+    },
+    "hints": {
+      "ko": [
+        "'되돌리다' 를 뜻하는 접두사 뒤에 'authentication' 의 줄임을 붙인 형태입니다.",
+        "802.11w 의 보호된 관리 프레임이 이 문제의 해결책입니다."
+      ],
+      "en": [
+        "The prefix meaning 'undo' in front of the shortened form of 'authentication'.",
+        "802.11w (protected management frames) is the fix."
+      ]
+    }
+  },
+  {
+    "id": "t2_wep",
+    "tier": 2,
+    "cat": "network",
+    "track": "network",
+    "points": 90,
+    "ci": true,
+    "hash": "e5b3d61431b57b959f330ed5c6a6285ed52a86b3da8205ca175e5198e014f3c1",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "24비트짜리 실수",
+      "en": "A 24-Bit Mistake"
+    },
+    "prompt": {
+      "ko": "최초의 802.11 암호화 방식은 24비트 초기화 벡터와 RC4 를 썼는데, 이 값이 몇 시간이면 반복되어 수집한 트래픽만으로 몇 분 만에 키가 복구되었습니다. 이 방식의 3글자 약자는?",
+      "en": "The original 802.11 encryption scheme paired RC4 with a 24-bit initialization vector that repeats within hours, letting the key be recovered from captured traffic in minutes. What is its 3-letter acronym?"
+    },
+    "hints": {
+      "ko": [
+        "Wired Equivalent Privacy 의 머리글자 — 이름이 약속한 것보다 훨씬 못했습니다.",
+        "뒤이어 WPA, 그다음 WPA2 가 이것을 대체했습니다."
+      ],
+      "en": [
+        "Initials of Wired Equivalent Privacy — a name that promised more than it delivered.",
+        "WPA, and then WPA2, replaced it."
+      ]
+    }
+  },
+  {
+    "id": "t2_snmp",
+    "tier": 2,
+    "cat": "network",
+    "track": "network",
+    "points": 100,
+    "ci": true,
+    "hash": "9e7f55c19ed75b9bb3bfcc7c65182fdeac0236803c4bf26ed437824b7338956a",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "열려 있는 관리 통로",
+      "en": "The Management Door Left Open"
+    },
+    "prompt": {
+      "ko": "라우터·스위치·프린터는 UDP 기반 관리 프로토콜로 상태 값과 설정을 노출합니다. 버전 1 과 2c 는 공유 문자열 하나만으로 인증하는데, 수많은 장비가 그 값을 `public` 그대로 두고 있죠. 이 프로토콜의 4글자 약자는?",
+      "en": "Routers, switches and printers expose their counters and settings over a UDP management protocol whose versions 1 and 2c authenticate with nothing but a shared string — left at `public` on countless devices. What is its 4-letter acronym?"
+    },
+    "hints": {
+      "ko": [
+        "Simple Network Management Protocol 의 머리글자입니다.",
+        "버전 3 에 와서야 제대로 된 인증과 암호화가 붙었습니다."
+      ],
+      "en": [
+        "Initials of Simple Network Management Protocol.",
+        "Version 3 was the first to add real authentication and encryption."
+      ]
+    }
+  },
+  {
+    "id": "t2_promiscuous",
+    "tier": 2,
+    "cat": "network",
+    "track": "network",
+    "points": 80,
+    "ci": true,
+    "hash": "85f5d2e0be9805a29999c2226a417e555c9c442870d4e745a522483db17f80d9",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "내 것이 아닌 프레임까지",
+      "en": "Frames That Are Not Yours"
+    },
+    "prompt": {
+      "ko": "네트워크 카드는 보통 자기 하드웨어 주소로 오지 않은 프레임을 버립니다. 세그먼트의 모든 것을 잡으려는 스니퍼는 카드를 어떤 모드로 바꿀까요? (영어 한 단어)",
+      "en": "A network card normally discards frames not addressed to its own hardware address. To capture everything on the segment, a sniffer puts the card into which mode? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "'가리지 않는' 을 뜻하는 영어 형용사입니다.",
+        "스위치 환경에서는 이것만으로 부족해 미러 포트나 탭이 함께 필요합니다."
+      ],
+      "en": [
+        "The English adjective for 'indiscriminate'.",
+        "On a switched network it is not enough by itself — you also need a mirror port or a tap."
+      ]
+    }
+  },
+  {
+    "id": "t3_rebinding",
+    "tier": 3,
+    "cat": "network",
+    "track": "network",
+    "points": 105,
+    "ci": true,
+    "hash": "0807d29b7231e5549c90e5dfccbd5f545aecad98b7530890abf4e4a1a0280bb9",
+    "fmt": "한 단어 / one word (-ing으로 끝남 / ends in -ing)",
+    "title": {
+      "ko": "같은 이름, 다른 주소",
+      "en": "Same Name, New Address"
+    },
+    "prompt": {
+      "ko": "공격자의 도메인이 처음에는 공인 주소로 응답해 페이지를 띄우고, 레코드 수명을 1초로 둔 채 다시 물으면 `192.168.0.1` 로 응답합니다. 이미 로드된 스크립트가 같은 출처 자격으로 피해자의 공유기와 통신할 수 있게 되죠. 이 공격을 'DNS ____' 이라 부릅니다. 빈칸의 영어 한 단어는?",
+      "en": "An attacker's domain first answers with a public address so the page loads, then — with a one-second record lifetime — answers again with `192.168.0.1`, so the already-loaded script may talk to the victim's router under the same origin. This attack is called 'DNS ____'. What one English word fills the blank?"
+    },
+    "hints": {
+      "ko": [
+        "'다시 묶는다' 는 뜻의 동사에 -ing 를 붙인 형태입니다.",
+        "해석된 주소를 고정하거나, 목적지에서 요청이 자칭하는 이름을 검증하면 막힙니다."
+      ],
+      "en": [
+        "The '-ing' form of a verb meaning to bind again, to something else.",
+        "Pinning the resolved address, or checking at the target which name the request claims, defeats it."
+      ]
+    }
+  },
+  {
+    "id": "t3_amplification",
+    "tier": 3,
+    "cat": "network",
+    "track": "network",
+    "points": 110,
+    "ci": true,
+    "hash": "ccc52fa33c390d49c7971ec7a3cce9de2d5dc8a40a2d34532644f576dd3a5c42",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "작게 묻고 크게 받는다",
+      "en": "Small Question, Huge Answer"
+    },
+    "prompt": {
+      "ko": "공격자가 출발지 주소를 피해자로 위조해 개방 리졸버나 NTP 서버에 작은 UDP 질의를 보내면, 훨씬 큰 응답이 전부 피해자에게 쏟아집니다. 공격자가 쓴 대역폭의 수십 배가 되기도 하죠. 이 효과를 가리키는 영어 한 단어는? ('DNS ____ 공격' 의 그 단어)",
+      "en": "A DDoS technique forges the victim's address as the source of small UDP queries to open resolvers or NTP servers, whose far larger replies all land on the victim — dozens of times the attacker's own bandwidth. What single English word names that multiplying effect (as in 'DNS ____ attack')?"
+    },
+    "hints": {
+      "ko": [
+        "소리나 크기를 키운다는 뜻의 명사입니다.",
+        "응답 크기와 질의 크기의 비를 이것의 '계수' 라고 부릅니다."
+      ],
+      "en": [
+        "The noun for making something louder or larger.",
+        "The ratio of reply size to query size is called the factor of this."
+      ]
+    }
+  },
+  {
+    "id": "t3_slowloris",
+    "tier": 3,
+    "cat": "network",
+    "track": "network",
+    "points": 115,
+    "ci": true,
+    "hash": "1f2aff657741018a68ef7540764440d4387176bdf4eb0ffd7d7798d8a3d674f2",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "느리게 목을 조른다",
+      "en": "Slow Strangulation"
+    },
+    "prompt": {
+      "ko": "이 서비스 거부 공격은 웹 서버에 연결을 잔뜩 열어 두고 몇 초에 한 번씩 헤더 한 줄만 흘려보내 연결을 간신히 살려 둡니다. 대역폭을 거의 쓰지 않고도 연결 풀이 고갈되죠. 느리게 움직이는 영장류의 이름을 딴 이 공격의 이름은? (한 단어)",
+      "en": "This denial of service opens many connections to a web server and keeps each barely alive by dribbling out a single partial header every few seconds, exhausting the connection pool on almost no bandwidth. It is named after a slow-moving primate. What is it called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'느린' 을 뜻하는 단어에, 눈이 큰 야행성 영장류의 이름을 붙였습니다.",
+        "요청을 전부 받아 두었다가 넘기는 리버스 프록시를 앞에 두면 무력화됩니다."
+      ],
+      "en": [
+        "'slow' joined with the name of a big-eyed nocturnal primate.",
+        "A reverse proxy that buffers the whole request before forwarding defeats it."
+      ]
+    }
+  },
+  {
+    "id": "t3_pivoting",
+    "tier": 3,
+    "cat": "network",
+    "track": "network",
+    "points": 120,
+    "ci": true,
+    "hash": "230bb2b52c70291db9127a0dea376a56a037af5057ed7ca08918985e2db2875d",
+    "fmt": "한 단어 / one word (-ing으로 끝남 / ends in -ing)",
+    "title": {
+      "ko": "발판을 딛고 안쪽으로",
+      "en": "Using the Foothold to Go Deeper"
+    },
+    "prompt": {
+      "ko": "인터넷에 노출된 장비 한 대를 장악한 공격자가 그 장비를 통해 트래픽을 흘려보내, 외부에 열린 적 없는 내부 서브넷까지 닿습니다 — SSH 터널·포트 포워딩·SOCKS 프록시로요. 이렇게 네트워크 안쪽으로 옮겨 가는 행위를 가리키는 영어 한 단어(-ing 형)는?",
+      "en": "Having taken one internet-facing machine, the attacker routes traffic through it to reach the internal subnet that was never exposed — with SSH tunnels, port forwards, a SOCKS proxy. What single English word, in its -ing form, names moving deeper into a network this way?"
+    },
+    "hints": {
+      "ko": [
+        "한 발을 축으로 삼아 도는 동작을 뜻하는 동사의 -ing 형입니다.",
+        "네트워크 분할(세그멘테이션)은 바로 이 비용을 올리려고 존재합니다."
+      ],
+      "en": [
+        "The -ing form of the verb for turning on a fixed point, the way a basketball player does.",
+        "Network segmentation exists precisely to make this expensive."
+      ]
+    }
+  },
+  {
+    "id": "t3_portknock",
+    "tier": 3,
+    "cat": "network",
+    "track": "network",
+    "points": 125,
+    "ci": true,
+    "hash": "d2e949a46902f80a82c919b99f035c9d0d29cada38b12ccac42d88d3c9aa0ebb",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "정해진 순서로 두드려라",
+      "en": "Knock in the Right Order"
+    },
+    "prompt": {
+      "ko": "서비스를 방화벽 뒤에 숨겨 두고, 클라이언트가 닫힌 포트들을 미리 약속한 순서대로 두드렸을 때만 해당 포트를 열어 주는 방식이 있습니다. 올바른 리듬으로 두드린 사람에게만 문이 열리는 셈이죠. 이 기법을 부르는 영어 두 단어는?",
+      "en": "A service can hide behind a firewall that opens its port only after the client has attempted connections to a prearranged sequence of closed ports — the door opens only for whoever taps the right rhythm. What two-word English term names this technique?"
+    },
+    "hints": {
+      "ko": [
+        "두 번째 단어는 문 앞에서 하는 동작의 -ing 형입니다.",
+        "인증이 아니라 은닉입니다 — 순서를 엿본 사람은 그대로 따라 할 수 있습니다."
+      ],
+      "en": [
+        "The second word is the -ing form of what you do at a door.",
+        "It is obscurity, not authentication — anyone who watches the sequence can replay it."
+      ]
+    }
+  },
+  {
+    "id": "t3_ja3",
+    "tier": 3,
+    "cat": "network",
+    "track": "network",
+    "points": 130,
+    "ci": true,
+    "hash": "d823ade9182081d884b7e1b914e89bbdb03a8ea0e6a393a4596ad940c7b44bee",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "손을 어떻게 흔드는가",
+      "en": "How You Shake Hands"
+    },
+    "prompt": {
+      "ko": "TLS 를 복호화하지 않고도, ClientHello 에 실린 암호 스위트·확장·곡선 목록을 순서 그대로 해시하면 클라이언트 라이브러리를 식별하는 지문이 나옵니다. HTTPS 위에서도 특정 악성코드 계열이 드러나죠. Salesforce 가 공개한 이 지문의 3글자 이름은?",
+      "en": "Without decrypting TLS at all, a defender can hash the ordered list of cipher suites, extensions and curves in the ClientHello to get a fingerprint identifying the client library — so a malware family stands out even over HTTPS. What is the 3-character name of this fingerprint, published by Salesforce?"
+    },
+    "hints": {
+      "ko": [
+        "이니셜 두 글자 뒤에 숫자 3 이 붙습니다. 후속 규격은 같은 방식으로 4 가 붙습니다.",
+        "서버 쪽에도 짝이 되는 지문이 있고, 이름 끝에 S 가 붙습니다."
+      ],
+      "en": [
+        "Two initials followed by the digit 3; its successor is named the same way with a 4.",
+        "Servers have a counterpart fingerprint whose name ends in an S."
+      ]
+    }
+  },
+  {
+    "id": "t3_bgp",
+    "tier": 3,
+    "cat": "network",
+    "track": "network",
+    "points": 140,
+    "ci": true,
+    "hash": "5ed8c466a446c1f9802271d7393e807a8470b936cff34f05bc617cf4d5a7dd72",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "인터넷은 신뢰로 굴러간다",
+      "en": "The Internet Runs on Trust"
+    },
+    "prompt": {
+      "ko": "자율 시스템(AS)들이 자기가 닿을 수 있는 주소 대역을 서로 알리는 이 프로토콜에는 소유권을 증명하는 장치가 없습니다. 그래서 남의 대역을 자기 것이라 광고하면 그 네트워크로 갈 트래픽을 끌어올 수 있죠. 이 라우팅 프로토콜의 3글자 약자는?",
+      "en": "The protocol autonomous systems use to advertise which address blocks they can reach has no built-in proof of ownership — so an operator announcing a prefix it does not hold can pull another network's traffic to itself. What is this routing protocol's 3-letter acronym?"
+    },
+    "hints": {
+      "ko": [
+        "자율 시스템 사이에서 TCP 179 번 위로 동작합니다.",
+        "2008년 유튜브 접속 장애와 여러 건의 암호화폐 거래소 탈취가 거짓 광고 하나에서 시작됐습니다."
+      ],
+      "en": [
+        "It runs between autonomous systems over TCP port 179.",
+        "The 2008 YouTube outage and several crypto-exchange thefts began with one false announcement here."
+      ]
+    }
+  },
+  {
+    "id": "t4_quic",
+    "tier": 4,
+    "cat": "network",
+    "track": "network",
+    "points": 140,
+    "ci": true,
+    "hash": "387166e8d5e3d12859c7b18a34dae7f4337e6a8039347f8d5279e6f7f854c40d",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "UDP 위에 올라탄 전송",
+      "en": "Transport on Top of UDP"
+    },
+    "prompt": {
+      "ko": "HTTP/3 는 TCP 위에서 동작하지 않습니다. 이 전송 프로토콜은 UDP 위에서 스트림을 다중화하고 핸드셰이크와 암호화를 안에 품고 있어, 별도의 TLS 계층이 없고 패킷 하나를 잃어도 해당 스트림만 멈춥니다. 이 프로토콜의 이름은? (붙여서 한 덩어리로)",
+      "en": "HTTP/3 does not run on TCP at all. Its transport multiplexes streams over UDP with the handshake and encryption built in, so there is no separate TLS layer and a lost packet stalls only its own stream. What is this transport protocol called? (one token)"
+    },
+    "hints": {
+      "ko": [
+        "네 글자입니다. 구글에서 처음엔 약자로 읽혔지만 지금은 그냥 프로토콜 이름입니다.",
+        "UDP 위에 있으므로 TCP 만 이해하는 중간 장비는 내용을 들여다볼 수 없습니다."
+      ],
+      "en": [
+        "Four letters; first read as an acronym at Google, now simply the protocol's name.",
+        "Because it rides UDP, middleboxes that only understand TCP cannot inspect it."
+      ]
+    }
+  },
+  {
+    "id": "t4_doh",
+    "tier": 4,
+    "cat": "network",
+    "track": "network",
+    "points": 150,
+    "ci": true,
+    "hash": "30ba046924427f14548567adbd8f9e36ca530c6d5b9b81ab1d767a1278e9491b",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "질의까지 숨긴다",
+      "en": "Hiding the Lookup Too"
+    },
+    "prompt": {
+      "ko": "이름 해석은 원래 UDP 53 번을 평문으로 오갔기 때문에 경로상의 누구나 보고 바꿀 수 있었습니다. 이 질의를 리졸버로 향하는 평범한 HTTPS 요청 안에 감싸 넣는 방식의 3글자 약자는? — 기업 방화벽에서 웹 트래픽과 구분되지 않는다는 부작용도 함께 옵니다.",
+      "en": "Name resolution used to travel in the clear over UDP 53, so anyone on the path could read and rewrite it. What 3-letter acronym names the scheme that wraps those queries inside an ordinary HTTPS request to a resolver — which also makes them indistinguishable from web traffic at the enterprise firewall?"
+    },
+    "hints": {
+      "ko": [
+        "프로토콜 이름, 'over', 그리고 보안 웹 프로토콜 — 각각의 첫 글자만 땄습니다.",
+        "전용 포트를 그대로 쓰는 형제 규격도 있는데, 그쪽은 HTTPS 안에 숨지 않습니다."
+      ],
+      "en": [
+        "The protocol's name, the word 'over', and the secure web protocol — first letters only.",
+        "A sibling scheme keeps a dedicated port instead of hiding inside HTTPS."
+      ]
+    }
+  },
+  {
+    "id": "t4_rpki",
+    "tier": 4,
+    "cat": "network",
+    "track": "network",
+    "points": 160,
+    "ci": true,
+    "hash": "9dd287895fae6b057f80e8e7a17d5f53f373f27aed24718b493cc63e45cd82f4",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "이 대역이 정말 네 것인가",
+      "en": "Prove the Prefix Is Yours"
+    },
+    "prompt": {
+      "ko": "자기 것이 아닌 주소 대역을 광고하지 못하도록, 각 대역과 그것을 광고해도 되는 AS 를 묶은 서명 객체를 공개하고 라우터가 어긋나는 광고를 거부하게 합니다. 이 인증서 기반 구조의 4글자 약자는?",
+      "en": "To stop a network from announcing address space it does not hold, operators publish signed objects binding each prefix to the autonomous system allowed to originate it, and routers reject announcements that contradict them. What 4-letter acronym names this certificate infrastructure?"
+    },
+    "hints": {
+      "ko": [
+        "Resource Public Key Infrastructure 의 머리글자입니다.",
+        "서명된 객체 자체는 ROA 라고 부릅니다."
+      ],
+      "en": [
+        "Initials of Resource Public Key Infrastructure.",
+        "The signed object itself is called a ROA."
+      ]
+    }
+  },
+  {
+    "id": "t4_ocsp",
+    "tier": 4,
+    "cat": "network",
+    "track": "network",
+    "points": 170,
+    "ci": true,
+    "hash": "b913067f07fd41354ac64402bf7b5b5d3b2862ed567dbf77eb52db9277db5be5",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "이 인증서 아직 살아 있나",
+      "en": "Is This Certificate Still Good"
+    },
+    "prompt": {
+      "ko": "브라우저가 폐기 목록 전체를 내려받는 대신, 특정 인증서 하나가 폐기되었는지 발급 CA 에 실시간으로 물어볼 수 있습니다. 다만 서버가 그 응답을 대신 첨부(stapling)하지 않으면 CA 에게 접속 사이트를 알려 주는 셈이 되죠. 이 프로토콜의 4글자 약자는?",
+      "en": "A browser can ask the issuing CA in real time whether one specific certificate has been revoked, instead of downloading an entire revocation list — at the cost of telling the CA which site you are visiting, unless the server staples the answer itself. What 4-letter acronym names this protocol?"
+    },
+    "hints": {
+      "ko": [
+        "Online Certificate Status Protocol 의 머리글자입니다.",
+        "이것이 대체한 목록 기반 방식은 CRL 입니다."
+      ],
+      "en": [
+        "Initials of Online Certificate Status Protocol.",
+        "The list-based alternative it replaced is the CRL."
+      ]
+    }
+  },
+  {
+    "id": "t4_krack",
+    "tier": 4,
+    "cat": "network",
+    "track": "network",
+    "points": 180,
+    "ci": true,
+    "hash": "f7c1cc0ee77f3053be6032dfaa32913d9af58a7f64b06e352d2d7f4df5c11699",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "핸드셰이크를 되감다",
+      "en": "Rewinding the Handshake"
+    },
+    "prompt": {
+      "ko": "2017년 WPA2 의 4-way 핸드셰이크 결함으로, 공격자가 세 번째 메시지를 재전송해 단말이 이미 쓴 키를 다시 설치하고 카운터를 되돌리게 만들 수 있었습니다. 암호를 몰라도 트래픽이 복호화되었죠. 이 키 재설치 공격에 붙은 한 단어짜리 이름은?",
+      "en": "In 2017 a flaw in the WPA2 four-way handshake let an attacker replay message three, forcing the client to reinstall an already-used key and reset its counter — decrypting traffic without ever learning the passphrase. What one-word name was given to this key reinstallation attack?"
+    },
+    "hints": {
+      "ko": [
+        "'Key Reinstallation AttaCK' 에서 뽑아낸, 균열을 뜻하는 단어의 일부러 틀린 철자입니다.",
+        "해결은 새 비밀번호가 아니라 단말 쪽 패치였습니다."
+      ],
+      "en": [
+        "A deliberate misspelling of the word for a crack or flaw, drawn out of 'Key Reinstallation AttaCK'.",
+        "The fix was a client-side patch, not a new passphrase."
+      ]
+    }
+  },
+  {
+    "id": "t4_netflow",
+    "tier": 4,
+    "cat": "network",
+    "track": "network",
+    "points": 190,
+    "ci": true,
+    "hash": "fc9c32a4bcde53e93edee75376691f5192b33ca4f197c78805ce9d748ae0cdf5",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "패킷 대신 대화 기록",
+      "en": "Conversations, Not Packets"
+    },
+    "prompt": {
+      "ko": "규모가 커지면 모든 패킷을 저장할 수 없으므로, 라우터는 대화 단위로 출발지·목적지·포트·프로토콜·바이트/패킷 수를 담은 레코드를 내보냅니다. 몇 달 뒤에도 주기적 통신이나 대용량 전송을 찾아내기에 충분하죠. 지금은 IPFIX 로 표준화된 이 흐름 레코드에 시스코가 붙인 이름은? (붙여서 한 덩어리로)",
+      "en": "Storing every packet is impossible at scale, so routers export one record per conversation — source, destination, ports, protocol, byte and packet counts — enough to spot a periodic call-home or a large transfer months later. What is Cisco's name for these flow records, now generalized as IPFIX? (one token)"
+    },
+    "hints": {
+      "ko": [
+        "'net' 뒤에 '흐름' 을 뜻하는 영어 단어를 붙였습니다.",
+        "템플릿은 아홉 번째 버전에서 도입되었고, 이를 바탕으로 만든 IETF 표준이 IPFIX 입니다."
+      ],
+      "en": [
+        "'net' joined with the English word for a stream of movement.",
+        "Templates arrived in its ninth version; the IETF standard built on it is IPFIX."
+      ]
+    }
+  },
+  {
+    "id": "t4_wireguard",
+    "tier": 4,
+    "cat": "network",
+    "track": "network",
+    "points": 200,
+    "ci": true,
+    "hash": "28387a164997aec602d65711a6a74d4ee162d8fb5987702e7962031a61262887",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "4천 줄짜리 VPN",
+      "en": "A VPN in Four Thousand Lines"
+    },
+    "prompt": {
+      "ko": "이 VPN 은 리눅스 커널 안에 수천 줄로 구현되어 있고, 암호 협상을 아예 제공하지 않으며(고정된 현대 알고리즘 한 벌), SSH 처럼 공개키로 상대를 식별하고, UDP 위에서 동작합니다. 이름은? (붙여서 한 덩어리로)",
+      "en": "This VPN lives in the Linux kernel in a few thousand lines, offers no cipher negotiation at all (one fixed modern suite), identifies peers by public key the way SSH does, and runs over UDP. What is it called? (one token)"
+    },
+    "hints": {
+      "ko": [
+        "'선(wire)' 뒤에 '지키는 사람' 을 뜻하는 영어 단어를 붙였습니다.",
+        "코드가 작아 감사하기 쉽다는 점이 강점이었고, 리눅스 5.6 에 병합되었습니다."
+      ],
+      "en": [
+        "'wire' joined with the English word for one who protects.",
+        "Its small codebase was the argument for auditability; it merged into Linux 5.6."
       ]
     }
   }
