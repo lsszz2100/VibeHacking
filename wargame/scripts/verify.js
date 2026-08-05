@@ -65,11 +65,73 @@ for (const ch of CHALLENGES) {
   }
 }
 
-// --- tier gating sanity: need <= number of challenges unlocked by then ---
-for (const t of TIERS) {
-  const countAtOrBelow = CHALLENGES.filter((c) => c.tier <= t.id).length;
-  if (t.need > countAtOrBelow) {
-    fail(`tier ${t.id} (${t.en}) needs ${t.need} solves but only ${countAtOrBelow} challenges exist at tier <= ${t.id}`);
+// --- tier gating sanity: the unlock bar must track each tier's pool ---
+// Same decay as the rank ladder below, one layer down: the `need` counts in
+// challenges.js were set for a 50-challenge game (7b474ab: "Rebalance tier
+// thresholds (T1 6/10, T2 9/15, T3 7/12) ... for 50") and sat still through six
+// expansions, so a layer that once took ~60% of its locks came to open on ~1/8.
+// app.js now derives the bar from the tier's live pool; run *its* code here on
+// stub pools rather than restating the rule (a copy would drift the same way).
+const TIER_NEED_MIN_SHARE = 0.4; // opening a layer has to mean you worked it
+const CALIBRATION = { pools: { 0: 6, 1: 10, 2: 15, 3: 12, 4: 7 }, need: [4, 6, 9, 7, 5] };
+const appJs = fs.readFileSync(path.join(WG, 'assets/app.js'), 'utf8');
+const needAtSrc = appJs.match(/const TIER_NEED_AT = .*;/);
+const tierNeedSrc = appJs.match(/const tierNeed = [\s\S]*?\n  \};/);
+
+if (!needAtSrc || !tierNeedSrc) {
+  fail('app.js: could not find TIER_NEED_AT and/or the tierNeed resolver, so the tier-gate checks ran on nothing');
+} else {
+  const resolveNeed = (pools) => {
+    const s = { TIERS, tierChals: (tid) => ({ length: pools[tid] || 0 }) };
+    vm.createContext(s);
+    vm.runInContext(`${needAtSrc[0]}\n${tierNeedSrc[0]}\nthis.t=TIERS.map(x=>tierNeed(x.id));`, s);
+    return s.t;
+  };
+  const pools = {};
+  for (const t of TIERS) pools[t.id] = CHALLENGES.filter((c) => c.tier === t.id).length;
+  const need = resolveNeed(pools);
+
+  // Fidelity: replayed at the pool it was calibrated for, the share has to
+  // reproduce the counts the game actually shipped with. Otherwise this is a
+  // new difficulty curve wearing the old one's clothes.
+  const replay = resolveNeed(CALIBRATION.pools);
+  if (replay.join(',') !== CALIBRATION.need.join(',')) {
+    fail(`tier gates: replayed at the 50-challenge pool the shares give ${replay.join('/')}, but the game shipped ${CALIBRATION.need.join('/')} — the shares are not the original gate`);
+  }
+
+  for (const t of TIERS) {
+    const n = need[t.id], pool = pools[t.id];
+    // An empty tier resolves to need 0, which opens the next layer for free.
+    // This is the one bound the resolver's own clamp cannot save us from.
+    if (pool === 0) {
+      fail(`tier ${t.id} (${t.en}) has no challenges, so its gate is 0 and the next layer opens unearned`);
+    } else if (n < 1 || n > pool) {
+      // Unreachable while tierNeed clamps to [1, pool] and every share is <= 1;
+      // kept so a resolver that drops the clamp fails here instead of silently
+      // capping. Drift is caught by the fidelity and share checks, not by this.
+      fail(`tier ${t.id} (${t.en}) needs ${n} solves against a pool of ${pool} — the gate is outside its own bounds`);
+    } else if (n < Math.ceil(TIER_NEED_MIN_SHARE * pool)) {
+      const pct = Math.round((n / pool) * 100);
+      fail(`tier ${t.id} (${t.en}) opens the next layer at ${n}/${pool} (${pct}%), below the ${Math.round(TIER_NEED_MIN_SHARE * 100)}% a breach is supposed to mean — the gate has fallen behind the pool`);
+    }
+  }
+
+  // And it has to be a *function* of the pool: double every tier and every bar
+  // must move, or someone hardcoded counts again and the next expansion decays.
+  const doubledPools = {};
+  for (const t of TIERS) doubledPools[t.id] = pools[t.id] * 2;
+  const doubled = resolveNeed(doubledPools);
+  for (const t of TIERS) {
+    if (doubled[t.id] === need[t.id]) {
+      fail(`tier ${t.id} (${t.en}) stays at ${need[t.id]} solves when its pool doubles to ${doubledPools[t.id]} — the gate is a hardcoded count, not a share`);
+    }
+  }
+
+  // The generated `need` field still ships in challenges.js. If app.js starts
+  // reading it again outside tierNeed's own fallback, the stale count is back.
+  const outside = appJs.replace(tierNeedSrc[0], '');
+  if (/\.need\b/.test(outside)) {
+    fail('app.js: reads the raw .need field outside tierNeed — that is the stale generated count, not the pool-scaled gate');
   }
 }
 
@@ -79,7 +141,6 @@ for (const t of TIERS) {
 // real ladder and its resolver out of app.js instead of restating them here (a
 // copy would drift the same way) and resolve them against the actual pool.
 const LEGEND_MIN_SHARE = 0.8; // the top rank has to mean "nearly cleared it"
-const appJs = fs.readFileSync(path.join(WG, 'assets/app.js'), 'utf8');
 const ranksSrc = appJs.match(/const RANKS = \[[\s\S]*?\];/);
 const rankMinSrc = appJs.match(/const rankMin = .*;/);
 
@@ -150,4 +211,4 @@ if (errors.length) {
   for (const e of errors) console.error(' - ' + e);
   process.exit(1);
 }
-console.log(`wargame verify: OK — ${total} challenges, ${TIERS.length} tiers, ${TRACKS.length} tracks, no leaks, counts in sync, rank ladder scaled to the pool.`);
+console.log(`wargame verify: OK — ${total} challenges, ${TIERS.length} tiers, ${TRACKS.length} tracks, no leaks, counts in sync, tier gates and rank ladder scaled to the pool.`);

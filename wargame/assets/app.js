@@ -176,10 +176,24 @@
   /* ===== challenge helpers ===== */
   const tierChals = tid => CHALLENGES.filter(c => c.tier === tid);
   const tierSolved = tid => tierChals(tid).filter(c => state.solved[c.id]).length;
+  // How much of a layer you must breach before the next one opens, as a share of
+  // that layer's own pool. The `need` counts in challenges.js were calibrated for
+  // a 50-challenge game (7b474ab: "Rebalance tier thresholds (T1 6/10, T2 9/15,
+  // T3 7/12) ... for 50") and never moved through six expansions, so by 245 they
+  // gated a layer on roughly an eighth of it. These are those same 50-era ratios,
+  // written as the fractions the commit message spelled them with; the count is
+  // re-derived from whatever the pool holds now, so expansions carry it along.
+  const TIER_NEED_AT = { 0: 4/6, 1: 6/10, 2: 9/15, 3: 7/12, 4: 5/7 };
+  const tierNeed = tid => {
+    const pool = tierChals(tid).length;
+    const at = TIER_NEED_AT[tid];
+    if (at == null) return (TIERS.find(x => x.id === tid) || {}).need || 0;
+    return Math.min(pool, Math.max(1, Math.round(at * pool)));
+  };
   const isTierUnlocked = tid => {
     if (tid === 0) return true;
     const prev = TIERS.find(x => x.id === tid - 1);
-    return tierSolved(prev.id) >= prev.need;
+    return tierSolved(prev.id) >= tierNeed(prev.id);
   };
   const solvedCount = () => Object.keys(state.solved).length;
   const totalScore = () => Object.values(state.solved).reduce((a, b) => a + (b.earned || 0), 0);
@@ -305,7 +319,7 @@
       const tier = TIERS.find(t => t.id === lay.tier);
       const unlocked = isTierUnlocked(lay.tier);
       const sc = tierSolved(lay.tier), tc = tierChals(lay.tier).length;
-      const fullBreach = sc >= tier.need;
+      const fullBreach = sc >= tierNeed(lay.tier);
       let statusHtml, cls;
       if (!unlocked){ statusHtml = '🔒 ' + esc(S("locked")); cls = "locked-row"; }
       else if (fullBreach){ statusHtml = '<span class="ok">✓ ' + esc(S("breached")) + '</span>'; cls = "solved-row"; }
@@ -315,7 +329,7 @@
         '<span class="id">[' + esc(lay.id) + ']</span>' +
         '<span class="kw">TIER ' + lay.tier + '</span>' +
         '<span>' + esc(name) + '</span>' +
-        '<span class="dim">' + sc + '/' + tc + ' · ' + (L()==="ko"?"통과":"need") + ' ' + tier.need + '</span>' +
+        '<span class="dim">' + sc + '/' + tc + ' · ' + (L()==="ko"?"통과":"need") + ' ' + tierNeed(lay.tier) + '</span>' +
         statusHtml + '</span></span>');
     });
     blank();
@@ -345,7 +359,7 @@
         '</span></span>');
     });
     blank();
-    const need = tier.need, have = tierSolved(lay.tier);
+    const need = tierNeed(lay.tier), have = tierSolved(lay.tier);
     if (have < need){
       print('<span class="warn">' + (L()==="ko"
         ? ("이 계층 침투까지 " + (need - have) + "개 남음.")
@@ -476,7 +490,7 @@
       const sc = tierSolved(lay.tier), tc = tierChals(lay.tier).length;
       const unlocked = isTierUnlocked(lay.tier);
       const bar = barStr(sc, tc);
-      const tag = !unlocked ? '🔒' : (sc >= tier.need ? '<span class="ok">✓</span>' : '<span class="warn">▸</span>');
+      const tag = !unlocked ? '🔒' : (sc >= tierNeed(lay.tier) ? '<span class="ok">✓</span>' : '<span class="warn">▸</span>');
       print('<span class="tbl"><span class="row"><span class="id">[' + esc(lay.id) + ']</span>' +
         tag + ' <span class="dim">' + bar + ' ' + sc + '/' + tc + '</span></span></span>');
     });
@@ -493,7 +507,7 @@
     LAYERS.forEach((lay, i) => {
       const tier = TIERS.find(t => t.id === lay.tier);
       const unlocked = isTierUnlocked(lay.tier);
-      const breached = tierSolved(lay.tier) >= tier.need;
+      const breached = tierSolved(lay.tier) >= tierNeed(lay.tier);
       const icon = !unlocked ? "🔒" : (breached ? "✓" : "▸");
       const cls = !unlocked ? "dim" : (breached ? "ok" : "warn");
       const label = lay.id;
