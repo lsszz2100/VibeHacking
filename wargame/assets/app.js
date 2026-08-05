@@ -78,13 +78,18 @@
   /* ===== ranks / scoring ===== */
   // Earned ranks are fractions of the pool, not fixed solve counts: a fixed
   // count decays as the pool grows — "70 solves = Legend" was 93% back when the
-  // pool was 75 but only a third of 210. These are the 75-era ratios
-  // (15/32/52/70 of 75) rounded. Egg/Newbie stay absolute: "have you started
-  // at all" is not a share of anything.
+  // pool was 75 but only a third of 210. Hacker/Elite/Legend are the 75-era
+  // ratios (32/52/70 of 75) rounded. Egg/Newbie stay absolute: "have you
+  // started at all" is not a share of anything.
+  // Apprentice is deliberately off that curve. Its 75-era ratio, 0.20, lands at
+  // 49 of 245 — past the tier-0 breach at 31, so the whole opening stretch runs
+  // without a single progression event. The 50-challenge game handed you two
+  // inside ten solves (a layer at 4, Apprentice at 10). 0.12 puts it at 30,
+  // just ahead of the first unlock, which is the order that game had.
   const RANKS = [
     { min:0,   icon:"🥚", ko:"알",     en:"Egg" },
     { min:1,   icon:"🐣", ko:"뉴비",   en:"Newbie" },
-    { at:0.20, icon:"🦊", ko:"수습",   en:"Apprentice" },
+    { at:0.12, icon:"🦊", ko:"수습",   en:"Apprentice" },
     { at:0.43, icon:"🐺", ko:"해커",   en:"Hacker" },
     { at:0.69, icon:"🦅", ko:"엘리트", en:"Elite" },
     { at:0.93, icon:"👑", ko:"레전드", en:"Legend" }
