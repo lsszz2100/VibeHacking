@@ -3483,11 +3483,11 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "AWS의 ELB/ALB가 이 역할을 합니다.",
-        "'짐을 나누다'는 뜻의 영단어 두 개."
+        "'짐을 고르게 나누는 장치'를 뜻하는 영단어 두 개 — 행위(-ing)가 아니라 장치(-er)의 이름입니다."
       ],
       "en": [
         "AWS's ELB/ALB serve this role.",
-        "Two English words meaning 'to distribute weight evenly'."
+        "Two English words for the thing that spreads the weight evenly — name the device (-er), not the activity (-ing)."
       ]
     }
   },
