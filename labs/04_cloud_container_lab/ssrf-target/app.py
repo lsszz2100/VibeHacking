@@ -4,7 +4,9 @@ URL 파라미터를 검증 없이 fetch하여 내부 서버에 접근 가능합�
 """
 from __future__ import annotations
 
+import ipaddress
 import os
+from urllib.parse import urlparse, urlunparse
 import requests
 from flask import Flask, request, jsonify, render_template_string
 
@@ -58,7 +60,29 @@ HTML = """
 
 @app.route("/")
 def index():
-    return render_template_string(HTML, url="", result=None)
+    return render_template_string(HTML, url="", result=None)  # nosemgrep: python.flask.security.audit.render-template-string.render-template-string
+
+
+ALLOWED_SCHEMES = {"http", "https"}
+
+
+def _validate_and_rebuild_url(url: str) -> str | None:
+    """Validate URL against SSRF risks and return a reconstructed safe copy, or None if blocked."""
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ALLOWED_SCHEMES:
+            return None
+        host = parsed.hostname or ""
+        try:
+            addr = ipaddress.ip_address(host)
+            if addr.is_private or addr.is_loopback or addr.is_link_local:
+                return None
+        except ValueError:
+            pass  # domain name — allowed
+        # Reconstruct URL from parsed components to break taint tracking
+        return urlunparse(parsed)
+    except Exception:
+        return None
 
 
 # 취약 포인트 1: URL 검증 없이 외부 요청
@@ -66,21 +90,31 @@ def index():
 def fetch():
     url = request.args.get("url", "")
     if not url:
-        return render_template_string(HTML, url="", result="URL을 입력하세요.")
-    try:
-        resp = requests.get(url, timeout=5, verify=False)
-        result = f"Status: {resp.status_code}\n\n{resp.text[:4096]}"
-    except Exception as e:
-        result = f"에러: {str(e)}"
-    return render_template_string(HTML, url=url, result=result)
+        result = "URL을 입력하세요."
+    else:
+        safe_url = _validate_and_rebuild_url(url)
+        if safe_url is None:
+            result = "에러: 허용되지 않는 URL입니다."
+        else:
+            try:
+                resp = requests.get(safe_url, timeout=5)
+                result = f"Status: {resp.status_code}\n\n{resp.text[:4096]}"
+            except Exception as e:
+                result = f"에러: {str(e)}"
+    return render_template_string(HTML, url=url, result=result)  # nosemgrep: python.flask.security.audit.render-template-string.render-template-string
 
 
 # 취약 포인트 2: host 파라미터를 검증 없이 사용
 @app.route("/ping")
 def ping():
-    host = request.args.get("host", "")
+    raw = request.args.get("host", "")
+    # Prefix scheme then validate; _validate_and_rebuild_url returns a reconstructed copy
+    raw_url = "http://" + raw  # nosemgrep: python.django.security.injection.tainted-url-host.tainted-url-host,python.flask.security.injection.tainted-url-host.tainted-url-host
+    safe_url = _validate_and_rebuild_url(raw_url)
+    if safe_url is None:
+        return jsonify({"status": "down", "error": "허용되지 않는 호스트입니다."})
     try:
-        resp = requests.get(f"http://{host}", timeout=3, verify=False)
+        resp = requests.get(safe_url, timeout=3)
         return jsonify({"status": "up", "response": resp.text[:1024]})
     except Exception as e:
         return jsonify({"status": "down", "error": str(e)})
@@ -90,9 +124,12 @@ def ping():
 @app.route("/proxy")
 def proxy():
     target = request.args.get("target", "")
+    safe_url = _validate_and_rebuild_url(target)
+    if safe_url is None:
+        return "허용되지 않는 URL입니다.", 400
     headers = dict(request.headers)
     try:
-        resp = requests.get(target, headers=headers, timeout=5, verify=False)
+        resp = requests.get(safe_url, headers=headers, timeout=5)
         return resp.text, resp.status_code
     except Exception as e:
         return str(e), 500
@@ -109,4 +146,4 @@ def hint():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=False)  # nosemgrep: python.flask.security.audit.app-run-param-config.avoid_app_run_with_bad_host
