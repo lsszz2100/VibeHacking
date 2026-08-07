@@ -100,7 +100,15 @@ const TRACKS = [
     "desc_ko": "TCP/IP·DNS·TLS·무선·라우팅과 그 위에서 벌어지는 공격과 방어.",
     "desc_en": "TCP/IP, DNS, TLS, wireless and routing — and the attacks and defenses on top of them."
   }
-];
+,
+{
+    "id": "mobile",
+    "icon": "📱",
+    "ko": "모바일 보안",
+    "en": "Mobile Security",
+    "desc_ko": "안드로이드·iOS 앱 분석과 후킹, 기기 아티팩트와 물리 추출.",
+    "desc_en": "Android and iOS app analysis and hooking, device artifacts and physical extraction."
+  }];
 
 const CHALLENGES = [
   {
@@ -6960,6 +6968,986 @@ const CHALLENGES = [
       "en": [
         "'wire' joined with the English word for one who protects.",
         "Its small codebase was the argument for auditability; it merged into Linux 5.6."
+      ]
+    }
+  },
+  {
+    "id": "t0_adb",
+    "tier": 0,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 40,
+    "ci": true,
+    "hash": "7e16a033d8a9e716f5572ef0b23b296050bcf72c23a67c1198b995de62701b20",
+    "fmt": "명령어 / command (3글자 / 3 chars)",
+    "title": {
+      "ko": "기기와 PC를 잇는 다리",
+      "en": "The Bridge to the Handset"
+    },
+    "prompt": {
+      "ko": "USB나 네트워크로 안드로이드 기기와 통신하면서 연결 목록 확인, 파일 주고받기, 셸 실행까지 하는 세 글자 명령줄 도구는? (명령어 이름)",
+      "en": "Which three-letter command-line tool talks to an Android handset over USB or the network — listing what is connected, moving files both ways, opening a shell? (command name)"
+    },
+    "hints": {
+      "ko": [
+        "Android Debug Bridge의 머리글자입니다.",
+        "`____ devices` 로 연결된 기기를 확인하고, `____ shell` 로 셸에 들어갑니다."
+      ],
+      "en": [
+        "The initials of Android Debug Bridge.",
+        "`____ devices` lists what is connected; `____ shell` drops you into one."
+      ]
+    }
+  },
+  {
+    "id": "t0_logcat",
+    "tier": 0,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 45,
+    "ci": true,
+    "hash": "b54dba0f4f562ebe1c69b0ab6871de94590a8b3ea83ff3609b1a9a200fd41491",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "기기가 혼잣말하는 곳",
+      "en": "What the Handset Says to Itself"
+    },
+    "prompt": {
+      "ko": "안드로이드의 시스템·앱 로그 버퍼를 실시간으로 흘려보내는 명령은? 앱이 죽었을 때, 그리고 개발자가 실수로 값을 찍어둔 걸 찾을 때 가장 먼저 보는 곳입니다. (한 단어)",
+      "en": "Which Android command streams the system and application log buffers in real time — the first place to look when an app dies, and where a developer's stray debug print turns up? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "`log` 뒤에 파일을 이어 붙여 출력하는 유닉스 명령 이름이 붙어 있습니다.",
+        "`-s MyApp:D` 처럼 태그와 우선순위로 걸러서 봅니다."
+      ],
+      "en": [
+        "It joins `log` with the name of the Unix command that concatenates files.",
+        "You filter it by tag and priority, as in `-s MyApp:D`."
+      ]
+    }
+  },
+  {
+    "id": "t0_ipa",
+    "tier": 0,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 45,
+    "ci": true,
+    "hash": "78324857e8d9bfa749dc301271df54a6572de9f4c3df8a9507cfa7b7d2b25f8e",
+    "fmt": "확장자 / extension (3글자 / 3 chars)",
+    "title": {
+      "ko": "애플 쪽 꾸러미",
+      "en": "The Package on the Apple Side"
+    },
+    "prompt": {
+      "ko": "iOS 애플리케이션은 어떤 세 글자 확장자를 가진 아카이브로 배포될까요? 안드로이드 쪽 패키지 파일에 대응하는 형식입니다. (점 없이, 소문자)",
+      "en": "An iOS application ships as an archive carrying which three-letter file extension — the counterpart to the package file on the Android side? (no dot, lowercase)"
+    },
+    "hints": {
+      "ko": [
+        "iOS App Store Package의 머리글자입니다.",
+        "확장자를 .zip 으로 바꿔 풀면 안에 `Payload/` 폴더가 들어 있습니다."
+      ],
+      "en": [
+        "The initials of iOS App Store Package.",
+        "Rename it to .zip, unpack it, and a `Payload/` folder is inside."
+      ]
+    }
+  },
+  {
+    "id": "t0_plist",
+    "tier": 0,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 50,
+    "ci": true,
+    "hash": "9ceec13202afbf12ee3abb994c669c711749c18e194326734db6123e94947e04",
+    "fmt": "확장자 / extension (5글자 / 5 chars)",
+    "title": {
+      "ko": "애플이 설정을 담는 그릇",
+      "en": "How Apple Keeps Its Settings"
+    },
+    "prompt": {
+      "ko": "애플 플랫폼은 앱 설정과 번들 메타데이터(Info 파일, 환경설정 등)를 XML 또는 그것을 압축한 바이너리 형태의 파일에 담습니다. 그 파일의 확장자는? (점 없이, 소문자, 다섯 글자)",
+      "en": "Apple platforms keep app settings and bundle metadata — the Info file, preferences — in files stored as XML or as a packed binary form of it. What is that file extension? (no dot, lowercase, five characters)"
+    },
+    "hints": {
+      "ko": [
+        "`property list` 를 줄인 말입니다.",
+        "`plutil -convert xml1` 로 바이너리 형태를 읽을 수 있는 텍스트로 바꿉니다."
+      ],
+      "en": [
+        "A contraction of `property list`.",
+        "`plutil -convert xml1` turns the packed binary form back into readable text."
+      ]
+    }
+  },
+  {
+    "id": "t0_imei",
+    "tier": 0,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 50,
+    "ci": true,
+    "hash": "f93f54d9bf26556c995f8871b142d3376b33cb85825001d08a80891be4cc338f",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "기기 자체에 새겨진 번호",
+      "en": "The Number Burned Into the Handset"
+    },
+    "prompt": {
+      "ko": "가입자나 SIM이 아니라 단말기 그 자체에 고유한 15자리 식별번호를 가리키는 네 글자 약어는? 통신사가 도난 단말을 차단할 때 쓰는 번호입니다.",
+      "en": "What four-letter acronym names the 15-digit identifier unique to the handset itself — not to the SIM and not to the subscriber — the number a carrier blocks when a device is reported stolen?"
+    },
+    "hints": {
+      "ko": [
+        "International Mobile Equipment Identity의 머리글자입니다.",
+        "단말기에서 `*#06#` 를 누르면 화면에 뜹니다."
+      ],
+      "en": [
+        "The initials of International Mobile Equipment Identity.",
+        "Dial `*#06#` on the handset and it appears on screen."
+      ]
+    }
+  },
+  {
+    "id": "t0_sqlite",
+    "tier": 0,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 50,
+    "ci": true,
+    "hash": "0cd8666848bf286d951c3d230e8b6e092fde03c3a080e3454467e496e7b14e78",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "앱이 모든 걸 쌓아두는 곳",
+      "en": "Where the App Keeps Everything"
+    },
+    "prompt": {
+      "ko": "메시지, 연락처, 통화 기록, 브라우저 방문 기록 — 안드로이드와 iOS 양쪽 모두 앱이 이 데이터를 서버 없이 파일 하나로 동작하는 내장형 데이터베이스에 담아둡니다. 그 데이터베이스 엔진의 이름은? (한 단어)",
+      "en": "Messages, contacts, call logs, browsing history — on both mobile platforms an app keeps them in a serverless, single-file embedded database. What is that database engine called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "파일은 보통 `.db` 로 끝나고, 엔진 이름은 질의 언어 이름으로 시작합니다.",
+        "옆에 놓인 저널·선행기록 파일에 지워진 행이 남아 있는 경우가 많아 포렌식에서 먼저 챙깁니다."
+      ],
+      "en": [
+        "Its files usually end in `.db`, and the engine's name starts with the query language's name.",
+        "The journal and write-ahead files beside it often still hold deleted rows, which is why forensics grabs them too."
+      ]
+    }
+  },
+  {
+    "id": "t0_smishing",
+    "tier": 0,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 60,
+    "ci": true,
+    "hash": "78c73f4ad535fc2356cf220584e870928ae0e84c6b93f4f310fcf684a13089ed",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "문자로 오는 미끼",
+      "en": "The Bait That Arrives by Text"
+    },
+    "prompt": {
+      "ko": "이메일이 아니라 문자메시지로 전달되는 피싱 — 가짜 로그인 페이지나 앱 설치로 이어지는 링크가 문자로 오는 수법을 가리키는 영어 한 단어는?",
+      "en": "What single English word names phishing delivered by text message rather than email — a link in an SMS leading to a fake login page or an app install?"
+    },
+    "hints": {
+      "ko": [
+        "`SMS` 와 `phishing` 을 합친 말입니다.",
+        "음성 통화로 하는 사촌뻘 수법은 vishing 이라고 부릅니다."
+      ],
+      "en": [
+        "A blend of `SMS` and `phishing`.",
+        "Its voice-call cousin goes by vishing."
+      ]
+    }
+  },
+  {
+    "id": "t1_frida",
+    "tier": 1,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 70,
+    "ci": true,
+    "hash": "db77ca6bb991f807190b0c8cb00c09b74094f089a2efb2a0e629d00540973846",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "달리는 앱에 손을 넣다",
+      "en": "Reaching Into a Running App"
+    },
+    "prompt": {
+      "ko": "실행 중인 안드로이드·iOS 프로세스 안에 자바스크립트 엔진을 밀어 넣어, 함수의 인자와 반환값을 실행 도중에 바꿔치기할 수 있게 해주는 동적 계측 도구는? 루팅 탐지나 인증서 검사를 무력화하는 표준 수단입니다. (한 단어)",
+      "en": "Which dynamic instrumentation toolkit pushes a JavaScript engine into a live process on either mobile platform, letting you rewrite a function's arguments and return value as it runs — the standard way to neutralise a root check or a certificate check? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "북유럽 여자 이름에서 따왔고, CLI로 `____-trace` 같은 도구가 함께 옵니다.",
+        "`Java.perform(function(){ ... })` 안에서 대상 앱의 클래스를 바꿔치기합니다."
+      ],
+      "en": [
+        "Named after a Nordic given name; its CLI ships `____-trace` alongside.",
+        "`Java.perform(function(){ ... })` runs your replacement inside the target app."
+      ]
+    }
+  },
+  {
+    "id": "t1_smali",
+    "tier": 1,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 65,
+    "ci": true,
+    "hash": "ffedf9e8186b7de0f265c93bbad5be7d98ac729b682d41018660b782e8c14e1d",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "안드로이드 바이트코드의 사람 말",
+      "en": "Android Bytecode You Can Read"
+    },
+    "prompt": {
+      "ko": "안드로이드 패키지의 바이트코드를 풀면, 사람이 읽고 고친 뒤 다시 조립할 수 있는 어셈블리 비슷한 중간 언어가 나옵니다. 검사를 걷어내고 앱을 다시 빌드하는 고전적 수법이 여기서 나옵니다. 이 언어의 이름은? (한 단어)",
+      "en": "Unpacking an Android package's bytecode yields an assembly-like intermediate language you can read, edit and reassemble — the classic way to strip a check and rebuild the app. What is that language called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "아이슬란드어로 `어셈블러`를 뜻하는 단어입니다.",
+        "파일은 `.____` 로 끝나고 `invoke-virtual` 같은 줄로 채워져 있습니다."
+      ],
+      "en": [
+        "The Icelandic word for `assembler`.",
+        "The files end in `.____` and are full of lines like `invoke-virtual`."
+      ]
+    }
+  },
+  {
+    "id": "t1_magisk",
+    "tier": 1,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 65,
+    "ci": true,
+    "hash": "0c93ab2fe5044f4c0b20b7d78b969dec372970a5002a195ff891f5fddc604e83",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "시스템을 건드리지 않는 루팅",
+      "en": "Rooting Without Touching the System"
+    },
+    "prompt": {
+      "ko": "`/system` 을 고치는 대신 부트 이미지를 패치하는 방식으로 루팅하고, 모듈 체계와 금융 앱에 들키지 않게 감추는 기능을 함께 제공하는 안드로이드 프레임워크는? (한 단어)",
+      "en": "Which Android framework roots a device by patching the boot image instead of modifying `/system`, and ships a module system plus a hiding feature so banking apps do not notice? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "`systemless` 루팅이라는 말이 이 도구에서 나왔습니다.",
+        "모듈은 읽기 전용 파티션을 건드리지 않고 마운트 위에 얹히는 방식으로 설치됩니다."
+      ],
+      "en": [
+        "The phrase `systemless root` came from this tool.",
+        "Its modules mount on top rather than writing into the read-only partition."
+      ]
+    }
+  },
+  {
+    "id": "t1_mobsf",
+    "tier": 1,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 65,
+    "ci": true,
+    "hash": "9556953937616fdd7b1bbae66a034a19f4096c5cd7c9c5c6bedb4f3131cfe923",
+    "fmt": "도구 이름 / tool name (5글자 / 5 chars)",
+    "title": {
+      "ko": "올려두면 알아서 훑는다",
+      "en": "Upload It and It Reads Everything"
+    },
+    "prompt": {
+      "ko": "안드로이드·iOS 패키지를 올리면 정적 분석과 동적 분석을 자동으로 돌려 점수가 매겨진 보고서를 웹 화면에 뽑아주는 오픈소스 프레임워크의 짧은 이름은? (다섯 글자)",
+      "en": "Which open-source framework takes an uploaded package from either mobile platform, runs static and dynamic analysis automatically, and produces a scored report in a web page? (the short name, five characters)"
+    },
+    "hints": {
+      "ko": [
+        "Mobile Security Framework를 줄인 이름입니다.",
+        "하드코딩된 키, 바깥에 열려 있는 컴포넌트, 약한 암호 사용을 한 번에 짚어줍니다."
+      ],
+      "en": [
+        "Short for Mobile Security Framework.",
+        "It flags hardcoded keys, components left open to other apps, and weak crypto in one pass."
+      ]
+    }
+  },
+  {
+    "id": "t1_androguard",
+    "tier": 1,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 60,
+    "ci": true,
+    "hash": "40f882cd892640537bd13d0db2ab65721cb2ea4dcb89118fea6350d2d2f3fc1d",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "파이썬으로 패키지를 뜯다",
+      "en": "Taking a Package Apart in Python"
+    },
+    "prompt": {
+      "ko": "안드로이드 패키지를 프로그램으로 분석할 수 있게 해주는 파이썬 라이브러리·도구 모음은? 매니페스트, 인증서, 바이트코드, 호출 그래프를 다루며 자동 분석기들의 엔진 노릇을 합니다. (한 단어)",
+      "en": "Which Python library and toolset parses Android packages programmatically — manifest, certificates, bytecode, call graphs — and sits underneath most automated package analysers as their engine? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "`Andro` 뒤에 `보초·수호자`를 뜻하는 영단어가 붙어 있습니다.",
+        "보통 `AnalyzeAPK()` 한 번 호출로 시작합니다."
+      ],
+      "en": [
+        "`Andro` joined with the English word for a sentry or protector.",
+        "You normally start with a single `AnalyzeAPK()` call."
+      ]
+    }
+  },
+  {
+    "id": "t1_xposed",
+    "tier": 1,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 70,
+    "ci": true,
+    "hash": "1a8cda18718af69436f38ba17672ca4e688b04d01fde043696a1cd91935cbaba",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "앱을 다시 빌드하지 않고 바꾼다",
+      "en": "Changing an App Without Rebuilding It"
+    },
+    "prompt": {
+      "ko": "어떤 패키지도 다시 포장하지 않고, 모듈을 얹어 앱과 시스템 자체의 자바 메서드 동작을 실행 시점에 바꿔버리는 오래된 안드로이드 프레임워크는? (한 단어, X로 시작)",
+      "en": "Which veteran Android framework lets modules change the behaviour of apps — and of the system itself — by hooking Java methods at runtime, without repackaging a single app? (one word, starts with X)"
+    },
+    "hints": {
+      "ko": [
+        "영단어 `exposed` 에서 앞 모음을 뺀 철자입니다.",
+        "루트와 부팅 과정에 얹히는 프레임워크가 필요하며, 요즘 다시 구현된 것이 LSPosed 입니다."
+      ],
+      "en": [
+        "The English word `exposed` with the leading vowel dropped.",
+        "It needs root and a framework hooked into boot; LSPosed is the modern reimplementation."
+      ]
+    }
+  },
+  {
+    "id": "t1_manifest",
+    "tier": 1,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 60,
+    "ci": true,
+    "hash": "4d6d5495f4d21e18bb99cafab67d86e1d05f668ed210f65c398352ee73751303",
+    "fmt": "파일 이름 / file name (19글자 / 19 chars)",
+    "title": {
+      "ko": "제일 먼저 열어보는 파일",
+      "en": "The First File a Reviewer Opens"
+    },
+    "prompt": {
+      "ko": "안드로이드 패키지 안에서 앱의 구성요소, 요구 권한, 그리고 다른 앱이 그 구성요소에 닿을 수 있는지를 정하는 플래그를 선언하는 파일은? 분석자가 가장 먼저 여는 파일입니다. (확장자까지)",
+      "en": "Which file inside an Android package declares the app's components, the permissions it asks for, and the flags deciding whether other apps may reach those components — the first file a reviewer opens? (file name with extension)"
+    },
+    "hints": {
+      "ko": [
+        "패키지 루트에 있고, 디코드하기 전에는 바이너리 XML로 들어 있습니다.",
+        "`____.xml` — 플랫폼 이름 뒤에 배의 적하목록을 뜻하는 영단어가 붙습니다."
+      ],
+      "en": [
+        "It sits at the package root, stored as binary XML until you decode it.",
+        "`____.xml` — the platform's own name followed by the English word for a ship's cargo list."
+      ]
+    }
+  },
+  {
+    "id": "t2_exported",
+    "tier": 2,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 90,
+    "ci": true,
+    "hash": "427da8ba22c9532ad8030312c9c265f2e239456d024bc2c38b99cd9d5fabadab",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "바깥으로 열린 문",
+      "en": "The Door Left Open Outward"
+    },
+    "prompt": {
+      "ko": "안드로이드 매니페스트에서 액티비티·서비스·리시버에 붙는 불리언 속성 하나가, 기기에 설치된 다른 앱이 그 구성요소를 직접 호출할 수 있는지를 결정합니다. 권한 선언 없이 참으로 두면 아무 앱이나 바로 들어옵니다. 이 속성의 이름은? (소문자 한 단어)",
+      "en": "In an Android manifest one boolean attribute on an activity, service or receiver decides whether other applications on the device may invoke it directly. Left true with no permission beside it, any installed app walks straight in. What is that attribute called? (one lowercase word)"
+    },
+    "hints": {
+      "ko": [
+        "`밖으로 내보내다`라는 뜻의 영어 동사의 과거분사형입니다.",
+        "API 31부터는 인텐트 필터가 있으면 이 값을 반드시 명시해야 합니다."
+      ],
+      "en": [
+        "The past participle of the English verb meaning `to send out`.",
+        "Since API 31 it must be declared explicitly whenever an intent filter is present."
+      ]
+    }
+  },
+  {
+    "id": "t2_debuggable",
+    "tier": 2,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 85,
+    "ci": true,
+    "hash": "e8d50b39c1715fa546274d4c6200c535a8599eb7f0c4b3cf82c4c0a26c8dbbc2",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "출시본에 남은 스위치",
+      "en": "The Switch Left On in the Release"
+    },
+    "prompt": {
+      "ko": "릴리스 빌드에 이 매니페스트 플래그가 참인 채로 나가면, 기기에 있는 누구든 그 앱 프로세스에 디버거를 붙여 메모리를 읽을 수 있습니다. 이 플래그의 이름은? (소문자 한 단어)",
+      "en": "If a release build ships with this manifest flag set true, anyone on the device can hook a debugger onto the app process and read its memory. What is the flag called? (one lowercase word)"
+    },
+    "hints": {
+      "ko": [
+        "`debug` 에 `~할 수 있는`을 뜻하는 어미가 붙은 형용사입니다.",
+        "자동 점검 도구가 출시 빌드의 대표적 실수로 지목하고, 스토어도 이 상태의 빌드를 거부합니다."
+      ],
+      "en": [
+        "The adjective made from `debug` plus the ending meaning `capable of`.",
+        "Scanners flag it as the classic release-build blunder, and the store rejects such a build."
+      ]
+    }
+  },
+  {
+    "id": "t2_keychain",
+    "tier": 2,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 90,
+    "ci": true,
+    "hash": "350ced6e5159ece6ce1355bd5038aa53f1825528c9b7b83fee7a683351d4895b",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "아이폰이 비밀을 넣어두는 곳",
+      "en": "Where the iPhone Puts Its Secrets"
+    },
+    "prompt": {
+      "ko": "iOS에서 앱의 비밀번호·토큰·인증서를 담아두는 암호화된 시스템 저장소의 이름은? 항목마다 보호 등급이 붙어, 화면이 잠긴 동안 읽을 수 있는지가 정해집니다. (영어 한 단어)",
+      "en": "On iOS, which encrypted system store holds an app's passwords, tokens and certificates, with each item tagged by a protection class that decides whether it can be read while the screen is locked? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "열쇠를 꿰어 두는 고리를 뜻하는 영단어입니다.",
+        "`...WhenUnlocked` 로 표시된 항목은 잠긴 상태에서는 읽히지 않습니다."
+      ],
+      "en": [
+        "The English word for the ring you keep your keys on.",
+        "Items marked `...WhenUnlocked` stay unreadable while the device is locked."
+      ]
+    }
+  },
+  {
+    "id": "t2_keystore",
+    "tier": 2,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 90,
+    "ci": true,
+    "hash": "284aaf4da604624b89af5327fadfd2c05bdb818ae8222755e2649dd7a223d244",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "키를 꺼내지 않고 쓴다",
+      "en": "Using a Key Without Ever Holding It"
+    },
+    "prompt": {
+      "ko": "안드로이드에서 앱이 키의 바이트를 한 번도 읽지 않은 채 서명·복호화에 사용할 수 있도록, 키 자체는 하드웨어 안에 두고 연산만 대신해 주는 시스템 저장소의 이름은? (한 단어)",
+      "en": "On Android, which system-backed store lets an app sign or decrypt with a key while never reading the key's bytes — the material stays inside hardware and only the operation comes back? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "`key` 뒤에 `물건을 넣어두는 곳`을 뜻하는 영단어가 붙습니다.",
+        "키마다 화면 잠금 해제나 지문 인증을 매번 요구하도록 묶어둘 수 있습니다."
+      ],
+      "en": [
+        "`key` joined with the English word for a place where things are kept.",
+        "A key can be bound to require a screen unlock or a fingerprint before every use."
+      ]
+    }
+  },
+  {
+    "id": "t2_webview",
+    "tier": 2,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 85,
+    "ci": true,
+    "hash": "0acd18246f16d696d2fc996fba2c89a24e8af3e89c40e74b3e21e4f62a3d9b0f",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "앱 속의 브라우저",
+      "en": "A Browser Inside the App"
+    },
+    "prompt": {
+      "ko": "앱 화면 안에 브라우저 엔진을 심어 페이지를 그려주는 안드로이드 구성요소는? 자바스크립트를 켜고 자바 객체를 그 안으로 이어주는 순간 원격 코드 실행 통로가 됩니다. (한 단어)",
+      "en": "Which Android component embeds a browser engine inside an app to render pages — and turns into a remote-code path the moment the app enables JavaScript and bridges a Java object into it? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "`web` 뒤에 UI 화면 요소를 뜻하는 영단어가 붙습니다.",
+        "API 17 이전에는 `addJavascriptInterface` 하나로 임의 메서드가 열렸습니다."
+      ],
+      "en": [
+        "`web` joined with the English word for a UI element you look at.",
+        "Before API 17, `addJavascriptInterface` alone exposed arbitrary methods."
+      ]
+    }
+  },
+  {
+    "id": "t2_mitmproxy",
+    "tier": 2,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 80,
+    "ci": true,
+    "hash": "ce9f671e0613719d1ca3c3a40d1051a489226520a5d0b7b5b1b076f8386a99b3",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "터미널에서 트래픽을 가로채다",
+      "en": "Intercepting Traffic From a Terminal"
+    },
+    "prompt": {
+      "ko": "파이썬 애드온으로 스크립트를 짤 수 있고 콘솔에서 대화형으로 흐름을 들여다보는 HTTPS 가로채기 프록시는? 휴대폰 트래픽을 명령줄로 볼 때 표준처럼 쓰입니다. (한 단어)",
+      "en": "Which console-based interactive HTTPS interception proxy — scriptable with Python addons — is the usual command-line choice for watching a handset's traffic? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "중간자 공격을 뜻하는 네 글자 약어 뒤에 중계 서버를 뜻하는 영단어가 붙습니다.",
+        "`____ -s script.py` 로 애드온을 얹어 흐름을 즉석에서 고쳐 씁니다."
+      ],
+      "en": [
+        "The four-letter abbreviation for a machine-in-the-middle attack joined with the word for an intermediary server.",
+        "`____ -s script.py` loads an addon that rewrites flows on the fly."
+      ]
+    }
+  },
+  {
+    "id": "t2_objection",
+    "tier": 2,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 100,
+    "ci": true,
+    "hash": "4194b692f5789e4b223671d25da3dd235692fd43dc7df93536bbc79edd70b8e0",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "스크립트 없이 바로",
+      "en": "No Script Required"
+    },
+    "prompt": {
+      "ko": "계측 엔진 위에 얹혀서, 스크립트를 한 줄도 짜지 않고 인증서 검증 끄기·루팅 탐지 우회·iOS 자격증명 저장소 덤프 같은 작업을 명령 한 줄로 해주는 모바일 탐색 도구는? (한 단어)",
+      "en": "Which runtime mobile exploration toolkit rides on top of the instrumentation engine and gives you one-line commands — turn off certificate validation, bypass root checks, dump the iOS credential store — with no scripting at all? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "법정에서 변호사가 외치는 그 영단어입니다.",
+        "`android sslpinning disable` 같은 한 줄 명령이 대표적입니다."
+      ],
+      "en": [
+        "The English word a lawyer shouts in court.",
+        "`android sslpinning disable` is one of its signature one-liners."
+      ]
+    }
+  },
+  {
+    "id": "t3_sqlcipher",
+    "tier": 3,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 105,
+    "ci": true,
+    "hash": "dd1238bf489d99d5431a583104be059406a0a48bfa9a6b29ec388e25c3cfa98d",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "파일을 가져가도 못 읽는다",
+      "en": "Take the File, Read Nothing"
+    },
+    "prompt": {
+      "ko": "모바일 내장형 데이터베이스에 그대로 끼워 넣어 파일 전체를 AES로 투명하게 암호화해 주는 확장은? 기기에서 파일만 빼내 봐야 키 없이는 아무것도 안 나옵니다. (한 단어)",
+      "en": "Which drop-in extension to the embedded mobile database transparently encrypts the entire file with AES, so pulling the file off the handset yields nothing without the key? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "질의 언어 이름 뒤에 암호를 뜻하는 영단어가 붙습니다.",
+        "메신저들이 이걸 쓰고, 분석자는 앱이 키를 어디에 숨겼는지부터 찾습니다."
+      ],
+      "en": [
+        "The query language's name joined with the English word for a cipher.",
+        "Messaging apps use it, so an analyst's first job is finding where the app stashed the key."
+      ]
+    }
+  },
+  {
+    "id": "t3_apfs",
+    "tier": 3,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 110,
+    "ci": true,
+    "hash": "7f84316a5f2d53f24e49949bc0e7e18e0488a8398fcfa802d92fe50adcaf977e",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "플래시를 위해 새로 짠 파일시스템",
+      "en": "A Filesystem Written for Flash"
+    },
+    "prompt": {
+      "ko": "iOS 10.3부터 애플 기기의 파일시스템은 플래시 저장장치를 염두에 두고 새로 만든 것으로 바뀌었습니다. 기록 시 복사 방식의 클론과 파일별 암호화 키를 쓰며, 그전의 저널링 파일시스템을 대체했습니다. 네 글자 이름은?",
+      "en": "Since iOS 10.3 the filesystem on Apple devices has been the one written for flash storage — copy-on-write clones, a key per file — replacing the journaled filesystem used before. What is its four-letter name?"
+    },
+    "hints": {
+      "ko": [
+        "Apple File System의 머리글자입니다.",
+        "기록 시 복사 구조 때문에, 지운 파일의 블록이 다른 곳에서 여전히 참조되고 있을 수 있습니다."
+      ],
+      "en": [
+        "The initials of Apple File System.",
+        "Because of its copy-on-write design, a deleted file's blocks may still be referenced elsewhere."
+      ]
+    }
+  },
+  {
+    "id": "t3_zygote",
+    "tier": 3,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 115,
+    "ci": true,
+    "hash": "d8be86c985bdd2938cc6cdc9b43039273be1fd97f3e4daed0329bade585dd6ef",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "모든 앱의 어버이",
+      "en": "The Parent Every App Is Forked From"
+    },
+    "prompt": {
+      "ko": "안드로이드의 모든 애플리케이션 프로세스는, 런타임과 프레임워크 클래스를 미리 올려둔 하나의 부모 프로세스에서 갈라져 나옵니다. 덕분에 앱 시작이 빠르고 메모리 페이지가 공유됩니다. 이 부모 프로세스의 이름은? (생물학 용어에서 온 한 단어)",
+      "en": "On Android every application process is forked from one already-initialised parent that has the runtime and framework classes preloaded — which is why app start is fast and the pages are shared. What is that parent process called? (one word, borrowed from biology)"
+    },
+    "hints": {
+      "ko": [
+        "수정 직후 하나의 세포를 가리키는 생물학 용어이고, 거기서 모든 세포가 갈라져 나옵니다.",
+        "모든 앱에 한꺼번에 영향을 주려는 후킹 프레임워크는 바로 여기에 자신을 끼워 넣습니다."
+      ],
+      "en": [
+        "The biology term for the single cell formed at fertilisation, from which every other cell divides.",
+        "A hooking framework that wants to reach every app injects itself right here."
+      ]
+    }
+  },
+  {
+    "id": "t3_overlay",
+    "tier": 3,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 130,
+    "ci": true,
+    "hash": "b4b33d2441645d4dd0a0694b5989a0a14a5cc22fe9865e6b7b7eae966e0de36c",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "진짜 화면 위에 덧씌운 가짜",
+      "en": "A Fake Drawn Over the Real One"
+    },
+    "prompt": {
+      "ko": "안드로이드 트로이목마가 정상 금융 앱 위에 자기 화면을 전체 크기로 덧그려서, 피해자가 로그인 정보를 공격자의 창에 입력하게 만드는 수법이 있습니다. 위에 덧그려지는 그 창을 가리키는 영어 한 단어는? 기법 이름도 여기서 나왔습니다.",
+      "en": "An Android trojan draws a full-screen window of its own on top of a legitimate banking app, so the victim types their login details into the attacker's window. What single English word names the window drawn on top — the technique is named after it?"
+    },
+    "hints": {
+      "ko": [
+        "무언가 위에 덧씌워 놓은 것을 뜻하는 영단어입니다.",
+        "`다른 앱 위에 표시` 권한이 이걸 가능하게 하고, 최근 버전은 그 상태에서 화면을 어둡게 하거나 아예 막습니다."
+      ],
+      "en": [
+        "The English word for something laid over the top of something else.",
+        "The `draw over other apps` permission is what makes it possible; newer versions dim or block the screen while it is up."
+      ]
+    }
+  },
+  {
+    "id": "t3_accessibility",
+    "tier": 3,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 125,
+    "ci": true,
+    "hash": "714db89df42bdb7ce4beb63d373d13ea159049419e7d5032748900d46a677550",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "장애인을 돕던 문",
+      "en": "The Door Built to Help"
+    },
+    "prompt": {
+      "ko": "안드로이드 뱅킹 트로이목마는 거의 예외 없이 유난히 힘이 센 서비스 권한 하나를 요구합니다. 한번 허용되면 앱은 모든 화면의 내용을 읽고 사용자를 대신해 탭과 입력까지 할 수 있습니다. 장애가 있는 사용자를 돕기 위해 만들어졌지만 악용되는 이 서비스의 이름은? (영어 한 단어)",
+      "en": "Android banking trojans almost always ask for one particular far-reaching service permission: once granted, the app can read the contents of every screen and inject taps and text on the user's behalf. Which service — built to help users with disabilities — is the one they abuse? (one English word)"
+    },
+    "hints": {
+      "ko": [
+        "누구나 닿을 수 있고 쓸 수 있는 성질을 뜻하는 영어 명사입니다.",
+        "악성코드 계열들이 이걸 표준 발판으로 삼는 바람에 스토어 정책이 사용을 크게 제한했습니다."
+      ],
+      "en": [
+        "The English noun for the quality of being reachable and usable by everyone.",
+        "Store policy now restricts it heavily precisely because malware families made it their standard foothold."
+      ]
+    }
+  },
+  {
+    "id": "t3_provider",
+    "tier": 3,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 130,
+    "ci": true,
+    "hash": "7dbfab25663eedec7faad2180a389c02de8d3f0147de8256ce310840714011e7",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "앱의 데이터를 내다 파는 창구",
+      "en": "The Counter Where an App Sells Its Data"
+    },
+    "prompt": {
+      "ko": "앱의 데이터를 URI로 주소를 붙여 다른 앱에 내주는 안드로이드 구성요소 종류는? 권한 없이 닿을 수 있게 두면 경로 탈출이나 인젝션이 앱의 비공개 데이터베이스까지 그대로 들어갑니다. (영어 두 단어)",
+      "en": "Which kind of Android component hands an app's data to other apps behind a URI-addressed interface — and, left reachable with no permission, lets a path traversal or an injection reach straight into the app's private database? (two English words)"
+    },
+    "hints": {
+      "ko": [
+        "앞 단어는 내놓는 것 자체를, 뒤 단어는 무언가를 공급하는 주체를 뜻합니다.",
+        "기기 셸에서 `____ query --uri ____://...` 형태로 직접 질의해 볼 수 있습니다."
+      ],
+      "en": [
+        "The first word is what it serves; the second is the English word for one who supplies something.",
+        "From a device shell you query it directly as `____ query --uri ____://...`."
+      ]
+    }
+  },
+  {
+    "id": "t3_manifestdb",
+    "tier": 3,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 120,
+    "ci": true,
+    "hash": "e756e93b6f4aa77acae40bf29c0439f968de49f7831e1497bedaf9f9c34a85cc",
+    "fmt": "파일 이름 / file name (11글자 / 11 chars)",
+    "title": {
+      "ko": "백업의 색인",
+      "en": "The Index of the Backup"
+    },
+    "prompt": {
+      "ko": "iTunes/Finder 백업에서 파일들은 해시된 이름으로 흩뿌려진 폴더에 저장됩니다. 그 해시 이름을 원래의 도메인과 상대 경로로 되돌려주는, 백업 안에 들어 있는 내장 데이터베이스 색인 파일의 이름은? (확장자까지)",
+      "en": "In an iTunes/Finder backup the files sit under hashed names in fan-out folders. Which embedded-database index inside the backup maps each hashed name back to its original domain and relative path? (file name with extension)"
+    },
+    "hints": {
+      "ko": [
+        "이것이 없으면 백업의 모든 파일은 그냥 40자짜리 이름 덩어리일 뿐입니다.",
+        "안의 `Files` 테이블을 질의하면 각 항목의 원래 도메인과 경로가 나옵니다."
+      ],
+      "en": [
+        "Without it, every file in the backup is just a 40-character name.",
+        "Query its `Files` table and each entry's original domain and path come back."
+      ]
+    }
+  },
+  {
+    "id": "t4_playintegrity",
+    "tier": 4,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 130,
+    "ci": true,
+    "hash": "e319a392ce5b190c0836b1e7d8cb0219bdc2cbc3d5f9ebc2d86f78dd2ffb1d3f",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "기기가 진짜인지 서버가 묻는다",
+      "en": "The Server Asks Whether the Device Is Real"
+    },
+    "prompt": {
+      "ko": "구글의 현재 서버측 증명 서비스는 기기가 정품이고 변조되지 않았으며 정상 경로로 받은 앱을 실행 중인지를 앱 백엔드에 알려줍니다. 2025년에 종료된 SafetyNet Attestation을 대체한 이 API의 두 단어 이름은?",
+      "en": "Google's current server-side attestation service tells an app's backend whether the device is genuine, unmodified, and running a properly obtained app — replacing SafetyNet Attestation, which was shut down in 2025. What is the two-word name of the replacement API?"
+    },
+    "hints": {
+      "ko": [
+        "앞 단어는 구글 앱 스토어의 이름이고, 뒤 단어는 온전하고 변조되지 않은 상태를 뜻하는 영단어입니다.",
+        "루팅 프레임워크와 이 판정 사이의 숨바꼭질은 끝나지 않습니다."
+      ],
+      "en": [
+        "The first word is the name of Google's app store; the second is the English word for being whole and unaltered.",
+        "Rooting frameworks and its verdicts play a permanent game of cat and mouse."
+      ]
+    }
+  },
+  {
+    "id": "t4_fbe",
+    "tier": 4,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 140,
+    "ci": true,
+    "hash": "cd76c504b2220574e94d887f571aba8de921c9a5ad082c9fc79dd9fcca4f3ff9",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "파일마다 다른 열쇠",
+      "en": "A Different Key for Every File"
+    },
+    "prompt": {
+      "ko": "안드로이드 7부터는 파일마다 사용자 자격증명에서 파생된 각자의 키로 암호화되어, 잠금 해제 전에는 해제된 것만 보입니다. 사용자 데이터 파티션 전체를 하나의 덩어리로 암호화하던 예전 방식을 대체했습니다. 새 방식의 세 글자 약어는?",
+      "en": "Since Android 7 each file is encrypted with its own key derived from the user's credential, so before the first unlock only what has been unlocked is readable — replacing the older scheme that encrypted the whole userdata partition as one blob. What is the three-letter acronym for the newer scheme?"
+    },
+    "hints": {
+      "ko": [
+        "File-Based Encryption의 머리글자이고, 예전 방식은 FDE 입니다.",
+        "잠금 해제 전에도 알람과 전화가 되는 Direct Boot가 이 방식 덕분에 가능합니다."
+      ],
+      "en": [
+        "The initials of File-Based Encryption; the older scheme was FDE.",
+        "It is what makes Direct Boot possible — alarms and calls work before the first unlock."
+      ]
+    }
+  },
+  {
+    "id": "t4_cellebrite",
+    "tier": 4,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 150,
+    "ci": true,
+    "hash": "83d152812bf09572a346dd563dd0d4611ed3256980e72cd7a2a3d64ef436733e",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "법정으로 가는 상자",
+      "en": "The Box That Goes to Court"
+    },
+    "prompt": {
+      "ko": "법집행기관 모바일 포렌식에서 사실상 표준으로 쓰이는 추출 장비·소프트웨어를 만드는 이스라엘 업체는? UFED 제품군으로 알려져 있습니다. (회사 이름, 한 단어)",
+      "en": "Which Israeli vendor's extraction hardware and software is the de-facto standard in law-enforcement mobile forensics, known for its UFED product line? (company name, one word)"
+    },
+    "hints": {
+      "ko": [
+        "휴대폰을 뜻하는 `cell` 로 말장난을 한 이름입니다.",
+        "같은 시장의 경쟁사로는 Grayshift와 MSAB이 있습니다."
+      ],
+      "en": [
+        "The name puns on `cell` phone.",
+        "Its rivals in the same market are Grayshift and MSAB."
+      ]
+    }
+  },
+  {
+    "id": "t4_secureenclave",
+    "tier": 4,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 155,
+    "ci": true,
+    "hash": "8da74d871e702819fadc373935978eb30a4ee2eb3431cf7a4fe3a5fa9144facc",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "본체가 뚫려도 열리지 않는다",
+      "en": "Sealed Even When the Main OS Falls"
+    },
+    "prompt": {
+      "ko": "애플 기기에는 자체 부트 ROM과 메모리를 가진 별도의 보조 프로세서가 있어서, 키를 보관하고 생체 대조를 직접 수행합니다. 메인 OS가 완전히 장악당해도 키 자체는 읽히지 않습니다. 애플이 이 보조 프로세서에 붙인 두 단어 이름은?",
+      "en": "On Apple devices a separate coprocessor with its own boot ROM and memory holds the keys and performs the biometric matching, so even a fully compromised main OS cannot read the key material. What two-word name does Apple give this coprocessor?"
+    },
+    "hints": {
+      "ko": [
+        "뒤 단어는 다른 영역 안에 둘러싸인 작은 영토를 뜻합니다.",
+        "안드로이드 하드웨어 쪽에서 이에 대응하는 것은 신뢰 실행 환경입니다."
+      ],
+      "en": [
+        "The second word means a small territory enclosed within another.",
+        "Its counterpart on Android hardware is a trusted execution environment."
+      ]
+    }
+  },
+  {
+    "id": "t4_chipoff",
+    "tier": 4,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 160,
+    "ci": true,
+    "hash": "7ff6825a74a68709b132544138002e7611995c753aae315a72dab3e52fc24906",
+    "fmt": "한 단어 / one word (8글자 / 8 chars, - 포함 / include -)",
+    "title": {
+      "ko": "마지막 수단",
+      "en": "The Last Resort"
+    },
+    "prompt": {
+      "ko": "기기가 부팅되지 않고 논리적 추출도 불가능할 때, 분석자는 플래시 메모리 패키지 자체를 기판에서 떼어내 전용 리더에 물려 읽습니다. 이 파괴적 물리 추출 기법의 이름은? (하이픈 포함 여덟 글자)",
+      "en": "When a handset will not boot and no logical extraction is possible, an examiner desolders the flash memory package itself and reads it in a dedicated programmer. What is this destructive physical extraction technique called? (hyphenated, eight characters)"
+    },
+    "hints": {
+      "ko": [
+        "앞은 떼어내는 부품, 뒤는 그것이 떨어져 나오는 방향을 뜻합니다.",
+        "단말기는 그대로 망가지고, 암호화가 걸려 있으면 덤프를 떠도 못 읽을 수 있습니다."
+      ],
+      "en": [
+        "The first part is the component removed; the second is the direction it comes away in.",
+        "The handset is destroyed in the process, and encryption may still leave the dump unreadable."
+      ]
+    }
+  },
+  {
+    "id": "t4_pegasus",
+    "tier": 4,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 170,
+    "ci": true,
+    "hash": "a9d1e780687ac78d0eff2fc993037b1dd95440913ae402eb2acb488ee9eb6c03",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "클릭 없이 들어오는 것",
+      "en": "It Arrives Without a Click"
+    },
+    "prompt": {
+      "ko": "NSO Group이 만든 상용 감시 도구로, 클릭 한 번 없이 성립하는 공격 사슬을 통해 양쪽 모바일 플랫폼을 감염시키고, 기자와 활동가의 휴대폰에서 거듭 발견된 이 스파이웨어의 이름은? (한 단어)",
+      "en": "What is the name of NSO Group's commercial surveillance implant, delivered through chains that need no interaction at all, found repeatedly on the handsets of journalists and activists? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "그리스 신화에 나오는 날개 달린 말의 이름입니다.",
+        "Amnesty의 Mobile Verification Toolkit이 백업에서 이것의 흔적을 찾으려고 만들어졌습니다."
+      ],
+      "en": [
+        "Named after the winged horse of Greek myth.",
+        "Amnesty's Mobile Verification Toolkit was written to find its traces in backups."
+      ]
+    }
+  },
+  {
+    "id": "t4_jtag",
+    "tier": 4,
+    "cat": "mobile",
+    "track": "mobile",
+    "points": 190,
+    "ci": true,
+    "hash": "207b5240a6be2b603970be7673ad498434931a2493daa60a5283826bb85a6ea5",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "기판에 남겨진 시험용 문",
+      "en": "The Test Door Left on the Board"
+    },
+    "prompt": {
+      "ko": "플래시를 떼어내는 방식이 일반화되기 전, 분석자는 기판 제조사가 시험용으로 남겨둔 디버그 포트에 납땜해 프로세서와 직접 통신하며 잠긴 단말의 플래시를 읽어냈습니다. 이 인터페이스를 규정한 네 글자 표준의 이름은?",
+      "en": "Before desoldering became routine, examiners read a locked handset's flash through the debug port the board maker left behind for testing — soldering onto its test points to talk to the processor directly. Which four-letter standard names that interface?"
+    },
+    "hints": {
+      "ko": [
+        "이를 표준화한 위원회 Joint Test Action Group의 머리글자입니다(IEEE 1149.1).",
+        "기판의 시험 패드에 물리며, 파괴적이지는 않지만 대단히 느립니다."
+      ],
+      "en": [
+        "The initials of Joint Test Action Group, the committee that standardised it (IEEE 1149.1).",
+        "You solder onto the board's test pads; it is non-destructive but very slow."
       ]
     }
   }

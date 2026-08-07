@@ -81,18 +81,21 @@
   // pool was 75 but only a third of 210. Hacker and Elite are the 75-era ratios
   // (32/52 of 75) rounded. Egg/Newbie stay absolute: "have you started at all"
   // is not a share of anything.
-  // Apprentice and Legend are deliberately off that curve, at both ends.
-  // Apprentice's 75-era ratio, 0.20, lands at 49 of 245 — past the tier-0
-  // breach at 31, so the whole opening stretch runs without a single
+  // Apprentice and Legend are deliberately off that curve, at both ends. Both
+  // were picked against the pool as it stood then — 245 challenges — and the
+  // solve counts below are that snapshot, kept because they are what the
+  // reasoning was about. Only the ratios ship, so the counts move on their own.
+  // Apprentice's 75-era ratio, 0.20, landed at 49 of that 245 — past the tier-0
+  // breach at 31, so the whole opening stretch ran without a single
   // progression event. The 50-challenge game handed you two inside ten solves
-  // (a layer at 4, Apprentice at 10). 0.12 puts it at 30, just ahead of the
+  // (a layer at 4, Apprentice at 10). 0.12 put it at 30, just ahead of the
   // first unlock, which is the order that game had.
-  // Legend's 0.93 was faithful to 75 and scales to 245 without decaying, but
-  // faithful is not the same as wanted: at 228 of 245 it left only 17 solves
-  // you could ever miss, reached by a 58-solve run from Elite with nothing in
-  // between. 0.85 puts it at 209 — 36 missable, 39 since Elite — and still
-  // means "nearly cleared it". The guard floor is 0.80, so this deliberately
-  // spends most of the room above it.
+  // Legend's 0.93 was faithful to 75 and scaled on without decaying, but
+  // faithful is not the same as wanted: at 228 of that 245 it left only 17
+  // solves you could ever miss, reached by a 58-solve run from Elite with
+  // nothing in between. 0.85 put it at 209 — 36 missable, 39 since Elite — and
+  // still means "nearly cleared it". The guard floor is 0.80, so this
+  // deliberately spends most of the room above it.
   const RANKS = [
     { min:0,   icon:"🥚", ko:"알",     en:"Egg" },
     { min:1,   icon:"🐣", ko:"뉴비",   en:"Newbie" },
@@ -191,8 +194,8 @@
   // How much of a layer you must breach before the next one opens, as a share of
   // that layer's own pool. The `need` counts in challenges.js were calibrated for
   // a 50-challenge game (7b474ab: "Rebalance tier thresholds (T1 6/10, T2 9/15,
-  // T3 7/12) ... for 50") and never moved through six expansions, so by 245 they
-  // gated a layer on roughly an eighth of it. These are those same 50-era ratios,
+  // T3 7/12) ... for 50") and never moved through six expansions, so by the time
+  // the pool reached 245 they gated a layer on roughly an eighth of it. These are those same 50-era ratios,
   // written as the fractions the commit message spelled them with; the count is
   // re-derived from whatever the pool holds now, so expansions carry it along.
   const TIER_NEED_AT = { 0: 4/6, 1: 6/10, 2: 9/15, 3: 7/12, 4: 5/7 };
