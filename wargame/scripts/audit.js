@@ -7,7 +7,7 @@ const path = require('path');
 const vm = require('vm');
 
 // --strict: exit non-zero on the checks that can mark a correct player wrong or
-// hand an answer out — [F] [G] [H] [I] — so CI can gate on them. The other
+// hand an answer out — [F] [G] [H] [I] [J] — so CI can gate on them. The other
 // sections stay informational ([A] MISSING is a known heuristic false positive).
 // --reveal: print the offending README term. A term is only a finding because it
 // IS an answer, so naming it in a public CI log hands that answer out — keep it
@@ -464,6 +464,156 @@ console.log(`\n--- [I] answers our own chapters spell another way: ${iBad.length
 console.log(`    (${allWanted.size} graded answers against ${termParts.size} terms the ${chapterFiles.length} chapters use ${MIN_EVIDENCE}+ times; ${graded.size} answers are one of them, ${hazardous} spelled another way at least as often)`);
 for (const n of iBad) console.log(`  ⚠ ${n}`);
 
+// [J] Does the grader insist on one word-form where the reader just met another?
+//
+// [I] settles how a term is BROKEN UP — closed, hyphenated, spaced. What no
+// guard has looked at is which FORM of the word the grader takes. t1_lb asked
+// for the device (an -er noun) while its own hint glossed the act, and the
+// player who paid for that hint was marked wrong by it. Separation cannot see
+// that: "balancer" and "balancing" are one word each and the same shape, so the
+// word count fmt declares rules out neither.
+//
+// Two things put a form in a player's head, so both count as evidence: the 492
+// chapters they learned the term from, and the challenge text in front of them.
+// Neither half is told the answer. The corpus half groups every attested term
+// by its stem and hashes the forms that family already has; the self-text half
+// mutates each visible token into its own siblings and hashes those. A hit
+// reports only which form the grader takes, which the corpus or the challenge
+// had already written.
+//
+// A rival is a hazard when the chapters use it at least as often as the graded
+// form, or when it sits in the challenge's own text at all. fmt then has to
+// tell the two apart, and only two things do: a declared length, when the forms
+// are different lengths, and "-ing으로 끝남 / ends in -ing".
+//
+// Two limits, stated so this is not mistaken for a clean bill:
+//   - challenges solve-derivable.js covers are exempt. Their answer is decoded
+//     or read off the page rather than recalled, so no chapter's spelling can
+//     mislead; firing there would only buy a meaningless fmt qualifier.
+//   - a gloss that PARAPHRASES the wrong form is invisible. t1_lb's own hint
+//     ("to distribute weight evenly") shares no stem with the answer, and the
+//     chapters never write "load balancing" at all, so neither half sees it.
+//     Only a cognate is detectable; the paraphrase case is still a read.
+const solverSrc = fs.readFileSync(path.join(WG, 'scripts/solve-derivable.js'), 'utf8');
+const solverBlock = solverSrc.slice(solverSrc.indexOf('const SOLVERS = new Map(['));
+const DERIVABLE = new Set([...solverBlock.matchAll(/^ {2}\['(\w+)',/gm)].map(m => m[1]));
+
+// One suffix comes off, then the spelling changes English makes to attach it are
+// undone, so that "balance", "balancer" and "balancing" land on one stem. Longest
+// suffix first, and never down to a stub: "portion" must not become "port".
+const SUFFIXES = ['ations', 'ation', 'ities', 'ity', 'ments', 'ment', 'ances', 'ance',
+  'ences', 'ence', 'ings', 'ing', 'ers', 'er', 'ors', 'or', 'ies', 'ied', 'ed', 'es', 's'];
+const ENDINGS = ['', 'e', 'er', 'ers', 'or', 'ors', 'ing', 'ings', 'ed', 's', 'es',
+  'ion', 'ation', 'ity', 'ment', 'ance', 'ence', 'y'];
+function stemOf(w) {
+  let s = w;
+  for (const suf of SUFFIXES) {
+    if (s.endsWith(suf) && s.length - suf.length >= 4) { s = s.slice(0, -suf.length); break; }
+  }
+  if (/([bdfglmnprtz])\1$/.test(s)) s = s.slice(0, -1); // "stopping" -> "stop"
+  return s.replace(/e$/, '').replace(/y$/, 'i');
+}
+// The self-text half never learns the answer, so it cannot stem TOWARDS it —
+// it grows every form the token's stem can take and lets the hash pick.
+function siblingsOf(w) {
+  const st = stemOf(w), out = new Set();
+  if (st.length < 3) return out;
+  for (const e of ENDINGS) {
+    out.add(st + e);
+    if (/[bdglmnprt]$/.test(st) && /^(ing|ed|er|ers)/.test(e)) out.add(st + st.slice(-1) + e);
+  }
+  out.delete(w);
+  return out;
+}
+// "한 단어 / one word" is true of both forms, and so is every word count: only a
+// length or the -ing qualifier actually separates two forms of one stem.
+function separatesForm(ch, mine, rival) {
+  const fmt = ch.fmt || '';
+  if (/-ing으로 끝남 \/ ends in -ing/.test(fmt) && mine.endsWith('ing') && !rival.endsWith('ing')) return true;
+  return declarationOf(ch).len !== null && mine.length !== rival.length;
+}
+
+const jBad = [];
+const formPlain = new Map(); // id -> the graded form; plaintext never printed
+const formSeen = new Set();  // ids that have a rival form at all, separated or not
+const seenPair = new Set();
+function noteRival(id, mine, rival, where) {
+  formPlain.set(id, mine);
+  if (DERIVABLE.has(id)) return;
+  formSeen.add(id);
+  const ch = CHALLENGES.find(c => c.id === id);
+  if (!ch || separatesForm(ch, mine, rival)) return;
+  const key = `${id}|${rival}`;
+  if (seenPair.has(key)) return;
+  seenPair.add(key);
+  jBad.push(`${id} — ${where} this answer in another form of the same word, and fmt does not rule that form out`);
+}
+
+let families = 0, formsHashed = 0;
+if (!DERIVABLE.size) {
+  // a renamed SOLVERS would silently exempt nothing and check everything, or a
+  // moved one would exempt nothing at all — either way the count must not be 0
+  jBad.push('solve-derivable.js no longer declares SOLVERS where this check reads it, so no challenge could be exempted');
+} else {
+  // grouped per rendering, so this stays the word-form axis and leaves the
+  // closed/hyphen/spaced axis entirely to [I]. A missing corpus already fails [I].
+  const byStem = new Map();
+  for (const [freq, sep] of [[freqClosed, ''], [freqSpace, ' '], [freqHyphen, '-']]) {
+    for (const [term, n] of freq) {
+      if (n < MIN_EVIDENCE) continue;
+      const parts = sep ? term.split(sep) : [term];
+      const head = parts[parts.length - 1];
+      if (head.length < 4) continue;
+      const key = `${sep}|${parts.slice(0, -1).join(sep)}|${stemOf(head)}`;
+      if (!byStem.has(key)) byStem.set(key, []);
+      byStem.get(key).push([term, n]);
+    }
+  }
+  for (const members of byStem.values()) {
+    if (members.length < 2) continue;
+    families++;
+    for (const [term, n] of members) {
+      formsHashed++;
+      const id = allWanted.get(sha(term));
+      if (!id) continue;
+      for (const [rival, m] of members) {
+        if (rival !== term && m >= n) noteRival(id, term, rival, 'our own chapters write');
+      }
+    }
+  }
+  // A stemmer that stopped grouping would leave every family a singleton and
+  // report a clean chapters half forever, so the grouping has to prove it ran.
+  if (families < 500) {
+    jBad.push(`only ${families} stem families formed from ${freqClosed.size} chapter words — the corpus or the stemmer stopped grouping, so the chapters half checked nothing`);
+  }
+  for (const ch of CHALLENGES) {
+    if (!allWanted.has(ch.hash)) continue;
+    const text = [ch.title.ko, ch.title.en, ch.prompt.ko, ch.prompt.en,
+      ...(ch.hints.ko || []), ...(ch.hints.en || []), ch.fmt].filter(Boolean).join('\n').toLowerCase();
+    for (const t of new Set([...text.matchAll(/[a-z]{4,}/g)].map(m => m[0]))) {
+      if (sha(t) === ch.hash) continue; // the answer itself is leakscan's finding, not ours
+      for (const sib of siblingsOf(t)) {
+        formsHashed++;
+        if (sha(sib) === ch.hash) noteRival(ch.id, sib, t, "the challenge's own text writes");
+      }
+    }
+  }
+}
+
+// Recovering a form also recovers its length, which reaches past the four-character
+// sweep [G] is bounded by — so the lengths [G] had to leave unchecked get checked here.
+for (const [id, p] of formPlain) {
+  if (shape.has(id)) continue;
+  const d = declarationOf(CHALLENGES.find(c => c.id === id));
+  if (d.len !== null && d.len !== p.length) {
+    jBad.push(`${id} — fmt declares ${d.len} chars but the graded answer is ${p.length} (too long for [G]'s sweep)`);
+  }
+}
+
+console.log(`\n--- [J] answers graded in one word-form while another is in front of the player: ${jBad.length} ---`);
+console.log(`    (${families} stem families in the chapters and ${CHALLENGES.length} challenge texts, ${formsHashed} forms hashed; ${formPlain.size} answers recovered by form, ${formSeen.size} with a rival form, ${DERIVABLE.size} derivable challenges exempt)`);
+for (const n of jBad) console.log(`  ⚠ ${n}`);
+
 if (STRICT) {
   const fail = [];
   if (fBlocked) fail.push(`[F] ${fBlocked}`);
@@ -473,11 +623,12 @@ if (STRICT) {
   for (const b of bad) fail.push(`[G] ${b}`);
   for (const h of hBad) fail.push(`[H] ${h}`);
   for (const i of iBad) fail.push(`[I] ${i}`);
+  for (const j of jBad) fail.push(`[J] ${j}`);
   if (fail.length) {
     console.error(`\naudit --strict: FAIL — ${fail.length} issue(s):`);
     for (const f of fail) console.error(`  ✗ ${f}`);
     process.exitCode = 1;
   } else {
-    console.log(`\naudit --strict: OK — README's topic rows name no answers ([F]), no fmt/answer contradictions ([G]), fmt on-notation with every spelling hazard disclosed ([H]), no answer graded against the chapters' own spelling ([I]).`);
+    console.log(`\naudit --strict: OK — README's topic rows name no answers ([F]), no fmt/answer contradictions ([G]), fmt on-notation with every spelling hazard disclosed ([H]), no answer graded against the chapters' own spelling ([I]) or against a word-form the player is looking at ([J]).`);
   }
 }

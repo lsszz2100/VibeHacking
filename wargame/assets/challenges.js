@@ -567,7 +567,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
-    "fmt": "한 단어 / one word",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
     "title": {
       "ko": "가장 흔한 비밀번호",
       "en": "The Most Common One"
@@ -1127,14 +1127,14 @@ const CHALLENGES = [
     "points": 140,
     "ci": true,
     "hash": "5b56570fc818acea65eb7a740b4c95bbf7ebc5fb83f2f016924d10cacfae5dff",
-    "fmt": "한 단어 / one word",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
     "title": {
       "ko": "컨테이너 탈출",
       "en": "Container Escape"
     },
     "prompt": {
       "ko": "컨테이너 탈출에 자주 악용되는, 호스트의 모든 권한·디바이스 접근을 부여하는 `docker run` 플래그는? `--________` (한 단어)",
-      "en": "Which `docker run` flag grants full host privileges/device access and is often abused for container escape? `--________` (one word)"
+      "en": "Which `docker run` flag hands a container the host's full rights and device access, and is often abused for container escape? `--________` (one word)"
     },
     "hints": {
       "ko": [
@@ -1603,7 +1603,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "a919007637abd504f123db0cbc8f290ab16db93adf24b1fc03c50e6131d2b98e",
-    "fmt": "명령어 / command",
+    "fmt": "명령어 / command (6글자 / 6 chars)",
     "title": {
       "ko": "달리는 프로세스에 올라타라",
       "en": "Latch Onto a Running Process"
@@ -3843,7 +3843,7 @@ const CHALLENGES = [
     "points": 155,
     "ci": true,
     "hash": "bd79d5302f5ec355456457038a0bf3fd630f6c0bf6364176acb5ccf878901d1c",
-    "fmt": "한 단어 / one word",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
     "title": {
       "ko": "시간을 지우는 자",
       "en": "The One Who Rewrites Time"
@@ -5243,7 +5243,7 @@ const CHALLENGES = [
     "points": 70,
     "ci": true,
     "hash": "aa580156f36e357b5bfb0dcd869a026c7b0a244e7b01cba17d5da1dc1e7039cd",
-    "fmt": "한 단어 / one word",
+    "fmt": "한 단어 / one word (-ing으로 끝남 / ends in -ing)",
     "title": {
       "ko": "의미를 숫자로",
       "en": "Meaning as Numbers"
@@ -5355,7 +5355,7 @@ const CHALLENGES = [
     "points": 60,
     "ci": true,
     "hash": "76eee315ea0140598642eafd3a69dae02d07e140c90da4971b09a9601e6a8bf1",
-    "fmt": "한 단어 / one word",
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
     "title": {
       "ko": "확률이 되기 직전",
       "en": "Just Before Probability"
@@ -7371,7 +7371,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "427da8ba22c9532ad8030312c9c265f2e239456d024bc2c38b99cd9d5fabadab",
-    "fmt": "한 단어 / one word",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
     "title": {
       "ko": "바깥으로 열린 문",
       "en": "The Door Left Open Outward"
