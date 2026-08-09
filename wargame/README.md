@@ -104,7 +104,7 @@ python3 -m http.server 8000
 |---|---|
 | `verify.js` | 구조 — id 중복, 해시 형식, 존재하지 않는 tier/track, 자기 프롬프트에 정답 노출, index.html HUD·README 문제 수 불일치 |
 | `leakscan.js` | 한 문제의 정답이 **다른 문제**의 프롬프트·힌트에 평문으로 들어있는지 (n-gram 해시 대조) |
-| `audit.js --strict` | `fmt`가 약속한 형식(길이·`$` 같은 마커)을 채점기가 실제로 받아주는지 `[G]`, 위 계층표의 주제 열이 어느 문제의 정답을 그대로 적어 스포일하는지 `[F]`, `fmt`가 표기 규약을 지키고 표기가 갈리는 정답의 길이를 공개하는지 `[H]`, 교재 492개 장이 그 정답을 다른 표기로 더 자주 쓰는데 `fmt`가 침묵하는지 `[I]`, 교재나 문제 자신의 텍스트가 그 정답을 **같은 낱말의 다른 꼴**로 쓰는데 `fmt`가 갈라 주지 않는지 `[J]` |
+| `audit.js --strict` | 페이지에서 읽어 답하는 문제(제목·`<meta>`·주석·숨긴 요소·쿠키·`window.__hint`)가 **빠짐없이 선언돼 있고 `solve-derivable.js`에 그 플랜트를 실제로 증명하는 솔버가 있는지** `[A]` — 새 문제가 페이지를 읽게 만들어졌는데 솔버가 없으면 지식 문제인 척 조용히 섞여 들어가므로, `fmt`가 약속한 형식(길이·`$` 같은 마커)을 채점기가 실제로 받아주는지 `[G]`, 위 계층표의 주제 열이 어느 문제의 정답을 그대로 적어 스포일하는지 `[F]`, `fmt`가 표기 규약을 지키고 표기가 갈리는 정답의 길이를 공개하는지 `[H]`, 교재 492개 장이 그 정답을 다른 표기로 더 자주 쓰는데 `fmt`가 침묵하는지 `[I]`, 교재나 문제 자신의 텍스트가 그 정답을 **같은 낱말의 다른 꼴**로 쓰는데 `fmt`가 갈라 주지 않는지 `[J]` |
 | `solve-derivable.js` | 암호문·심어둔 플래그가 있는 문제를 **프롬프트만 보고 실제로 풀어** 앱 채점 규칙에 제출 |
 
 앞의 셋은 정적 검사이고, `solve-derivable.js`는 실제로 게임을 플레이합니다. 안내대로 따라 풀었는데 오답 처리되는 문제(정답 형식 모순, 깨진 암호문, 사라진 아티팩트)는 이 검사만 잡을 수 있습니다. 네 스크립트 모두 평문 정답을 저장하지 않고 출력하지도 않아 공개 CI에서도 안전합니다.
@@ -115,7 +115,7 @@ python3 -m http.server 8000
 |---|---|
 | `verify.js` | Structure — duplicate ids, malformed hashes, dangling tier/track refs, an answer leaked into its own prompt, HUD/README counts drifting apart |
 | `leakscan.js` | One challenge's answer sitting in plain text in **another** challenge's prompt or hints (n-gram hash lookup) |
-| `audit.js --strict` | Whether the grader really accepts the format `fmt` promises — declared length, markers like `$` `[G]` — whether the tier table above hands a player an answer as a topic `[F]`, whether `fmt` follows the notation rules and discloses a length wherever the answer's spelling is ambiguous `[H]`, whether the repo's own 492 chapters spell that answer another way at least as often while `fmt` stays silent `[I]`, and whether the chapters or the challenge's own text write it in **another form of the same word** that `fmt` never separates `[J]` |
+| `audit.js --strict` | Whether every challenge answered by reading this page — the title, a `<meta>`, an HTML comment, a hidden element, a cookie, `window.__hint` — **is declared and carries a `solve-derivable.js` solver that proves the plant is still there** `[A]`, since a new page-reading challenge with no solver would otherwise pass as one more knowledge question, whether the grader really accepts the format `fmt` promises — declared length, markers like `$` `[G]` — whether the tier table above hands a player an answer as a topic `[F]`, whether `fmt` follows the notation rules and discloses a length wherever the answer's spelling is ambiguous `[H]`, whether the repo's own 492 chapters spell that answer another way at least as often while `fmt` stays silent `[I]`, and whether the chapters or the challenge's own text write it in **another form of the same word** that `fmt` never separates `[J]` |
 | `solve-derivable.js` | Actually solves every challenge that ships a ciphertext or a planted flag **from its own prompt** and submits it to the app's grading rule |
 
 The first three are static; the last one plays the game. A challenge where following the stated instructions gets you marked wrong — a format contradiction, a corrupted ciphertext, a plant that went missing — is only catchable that way. None of the four stores or prints a plaintext answer, so all are safe in public CI.

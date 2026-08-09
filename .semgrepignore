@@ -1,0 +1,11 @@
+# Everything under labs/ is deliberately vulnerable teaching material.
+#
+# Each target reproduces a specific bug class so learners can find and exploit
+# it — missing URL validation, unsanitised SQL, unchecked buffers, disabled TLS
+# verification. The flaws are the lesson, not defects to repair. "Fixing" them
+# silently deletes the exercise, so scanner findings here are expected and a
+# hardening patch against these files will be declined.
+#
+# The labs run only inside their own docker-compose networks (labs/start_lab.sh)
+# and are never deployed. Nothing in labs/ ships to production.
+labs/

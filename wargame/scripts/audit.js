@@ -7,8 +7,8 @@ const path = require('path');
 const vm = require('vm');
 
 // --strict: exit non-zero on the checks that can mark a correct player wrong or
-// hand an answer out — [F] [G] [H] [I] [J] — so CI can gate on them. The other
-// sections stay informational ([A] MISSING is a known heuristic false positive).
+// hand an answer out — [A] [F] [G] [H] [I] [J] — so CI can gate on them. The
+// other sections stay informational.
 // --reveal: print the offending README term. A term is only a finding because it
 // IS an answer, so naming it in a public CI log hands that answer out — keep it
 // local-only, the same rule leakscan.js follows.
@@ -26,25 +26,29 @@ const appJs = fs.readFileSync(path.join(WG, 'assets/app.js'), 'utf8');
 const indexHtml = fs.readFileSync(path.join(WG, 'index.html'), 'utf8');
 const haystack = appJs + '\n' + indexHtml;
 
+const crypto = require('crypto');
+const sha = (str) => crypto.createHash('sha256').update(str, 'utf8').digest('hex');
+const solverSrc = fs.readFileSync(path.join(WG, 'scripts/solve-derivable.js'), 'utf8');
+// Anchored to the table, not the file: if SOLVERS is renamed, indexOf misses and
+// the slice yields nothing to match, so [A] and [J] both fail loudly instead of
+// reading solver-shaped lines from somewhere else in the source.
+const solverBlock = solverSrc.slice(solverSrc.indexOf('const SOLVERS = new Map(['));
+
 const idsInApp = new Set();
 // find every challenge id literally referenced in app.js/index.html
 for (const ch of CHALLENGES) {
   if (haystack.includes(ch.id)) idsInApp.add(ch.id);
 }
 
-// Heuristic: a challenge needs an in-site artifact if its prompt tells the
-// player to inspect THIS page / console / terminal rather than decode given text.
-const ARTIFACT_RE = /이 페이지|this page|개발자도구|devtools|콘솔|console|window\.|현재 (위치|디렉|셸)|이 (셸|터미널)|this (shell|terminal)|localStorage|쿠키|cookie|숨겨져 있|hidden in|페이지 소스|view source|network 탭|네트워크 탭/i;
+// Heuristic net for [A]. Deliberately wide: it exists to notice a NEW challenge
+// that reads something off this page, not to decide anything on its own. Every
+// id it catches must be either planted (PLANTED) or waived (NOT_PLANTED).
+const ARTIFACT_RE = /이 페이지|this page|개발자도구|devtools|콘솔|console|window\.|현재 (위치|디렉|셸)|(?:^|[^가-힣])이 (셸|터미널)|this (shell|terminal)|localStorage|쿠키|cookie|숨겨져 있|hidden in|페이지 소스|view source|network 탭|네트워크 탭|\bDOM\b|display\s*:\s*none|숨겨진 요소|hidden element/i;
 
-const artifactNeeded = [];
 const oneHint = [];
 const shortAnswerNoFmt = [];
 
 for (const ch of CHALLENGES) {
-  const p = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
-  if (ARTIFACT_RE.test(p)) {
-    artifactNeeded.push(ch);
-  }
   if ((ch.hints.ko || []).length < 2 || (ch.hints.en || []).length < 2) oneHint.push(ch);
   // ci (case-insensitive short answer) but fmt still demands FLAG{...} wrapper?
   if (ch.ci && /FLAG\{/.test(ch.fmt)) shortAnswerNoFmt.push(ch);
@@ -71,12 +75,103 @@ for (const t of TIERS) {
   console.log(row);
 }
 
-console.log(`\n--- [A] In-site artifact-dependent challenges (${artifactNeeded.length}) ---`);
-console.log('    (flag must be planted in index.html/app.js — verify each is wired)');
-for (const ch of artifactNeeded) {
-  const wired = idsInApp.has(ch.id);
-  console.log(`  ${wired ? 'OK ' : '⚠ MISSING'}  [${ch.id}]  ${ch.title.ko}`);
+// [A] Six challenges are answered by reading something off this page rather than
+// by knowing a fact. For those the page IS the question: edit the plant and the
+// challenge becomes unsolvable while every hash still looks fine.
+//
+// The old check guessed the set from prompt wording, then asked only whether the
+// challenge id appeared somewhere in the two files. It was wrong in both
+// directions. Five knowledge questions were flagged for merely saying 쿠키 /
+// 콘솔 / 현재 디렉터리 — one of them because `이 (셸|터미널)` matched across a
+// Korean word boundary in "없[이 터미널]에서" — while t1_css, whose flag really
+// is planted in a display:none div, was not flagged at all. Seven of ten rows
+// were noise, so a real miss would have read as more of the same.
+//
+// So: name the set, and check that each member is actually covered. The value
+// itself is NOT re-checked here — solve-derivable.js already reads every plant
+// off the page and submits it to the grader, and it does that better than a
+// second copy could, because it takes the anchor from the prompt (`the <meta>
+// whose name is X`) and so also catches a prompt that drifts away from the page.
+// Duplicating it would only give us two things to keep in step.
+//
+// What nothing covered is the gap between the two lists. A NEW challenge that
+// reads something off the page but never gets a solver is not a failure over
+// there — it simply isn't in SOLVERS, and its silence looks exactly like the 234
+// knowledge questions. [A] is what closes that: the net below catches such a
+// challenge, and every planted id must hold a solver.
+const PLANTED = {
+  t0_source: 'flag sits in an HTML comment in index.html',
+  t0_meta: 'flag is the content of <meta name="ctf-flag">',
+  t0_title: 'answer is index.html\'s <title>',
+  t1_css: 'flag is the text of a display:none element',
+  t1_cookie: 'flag is the cookie app.js bakes',
+  t0_devtools: 'flag is the window global app.js sets',
+};
+
+// A challenge the net catches that is not planted. Each is a knowledge question
+// whose wording merely brushes the net; the reason is the point of the entry.
+const NOT_PLANTED = {
+  t0_ls: 'asks for a Linux command; "현재 디렉터리" is the shell\'s, not this page\'s',
+  t2_xss: 'asks which cookie attribute blocks document.cookie — a fact, no cookie to read here',
+  t2_mitmproxy: 'asks for a proxy by name; the 콘솔 is that tool\'s, not the browser\'s',
+  t3_overlay: 'asks what the window drawn on top is called; nothing is drawn on this page',
+};
+
+const aBad = [], aRows = [];
+const plantedIds = new Set(Object.keys(PLANTED));
+
+// Which ids solve-derivable.js declares as reading the page. Parsed from the
+// source the same way [J] reads SOLVERS, so a rename over there surfaces here
+// instead of quietly emptying this check.
+const artifactSolvers = new Set(
+  [...solverBlock.matchAll(/^ {2}\['(\w+)', \{ kind: '(\w+)'/gm)]
+    .filter(m => m[2] === 'artifact').map(m => m[1]));
+if (!artifactSolvers.size) {
+  aBad.push('solve-derivable.js declares no artifact solvers where this check reads them — SOLVERS moved or its shape changed, so nothing could be cross-checked');
 }
+
+for (const [id, what] of Object.entries(PLANTED)) {
+  if (!CHALLENGES.some(c => c.id === id)) {
+    aBad.push(`${id} — declared planted but no such challenge; drop it from PLANTED`);
+    aRows.push(['GONE', id, what]);
+  } else if (!artifactSolvers.has(id)) {
+    aBad.push(`${id} — reads off the page but solve-derivable.js has no artifact solver for it, so nothing proves the plant is still there`);
+    aRows.push(['UNSOLVED', id, what]);
+  } else {
+    aRows.push(['OK', id, what]);
+  }
+}
+for (const id of artifactSolvers) {
+  if (!plantedIds.has(id)) {
+    aBad.push(`${id} — solve-derivable.js solves it as a planted artifact but PLANTED does not list it; the two lists disagree`);
+    aRows.push(['UNLISTED', id, 'solver exists, not declared here']);
+  }
+}
+
+// Net vs. set. Anything caught but unclassified is a new challenge nobody has
+// ruled on; anything planted the net misses is a blind spot we state out loud.
+const caught = CHALLENGES.filter(ch => ARTIFACT_RE.test((ch.prompt.ko || '') + '\n' + (ch.prompt.en || '')));
+for (const ch of caught) {
+  if (!plantedIds.has(ch.id) && !(ch.id in NOT_PLANTED)) {
+    aBad.push(`${ch.id} — reads like it needs something planted on the page; add it to PLANTED or say why not in NOT_PLANTED`);
+  }
+}
+for (const id of Object.keys(NOT_PLANTED)) {
+  if (!CHALLENGES.some(c => c.id === id)) aBad.push(`${id} — waived in NOT_PLANTED but no longer exists; drop the entry`);
+  else if (plantedIds.has(id)) aBad.push(`${id} — listed both as planted and as waived`);
+  else if (!caught.some(c => c.id === id)) aBad.push(`${id} — waived in NOT_PLANTED but the net no longer catches it; drop the entry`);
+}
+const blind = [...plantedIds].filter(id => !caught.some(c => c.id === id));
+
+console.log(`\n--- [A] challenges answered by reading this page, left unproven: ${aBad.length} ---`);
+console.log(`    (${plantedIds.size} declared planted, each cross-checked against solve-derivable.js's`);
+console.log(`     ${artifactSolvers.size} artifact solvers, which is what actually reads the value back;`);
+console.log(`     net caught ${caught.length}, ${Object.keys(NOT_PLANTED).length} waived as knowledge questions)`);
+for (const [state, id, what] of aRows) {
+  console.log(`  ${state.padEnd(8)} [${id}] ${what}`);
+}
+if (blind.length) console.log(`    the net would not have found these on its own (declared, so still cross-checked above): ${blind.join(' ')}`);
+for (const n of aBad) console.log(`  ⚠ ${n}`);
 
 console.log(`\n--- [B] Challenge ids NOT referenced anywhere in app.js/index.html (${CHALLENGES.length - idsInApp.size}) ---`);
 console.log('    (fine for pure decode/knowledge tasks; a concern only if artifact-dependent)');
@@ -96,8 +191,6 @@ console.log(`\n--- [E] Points: min ${Math.min(...pts)}, max ${Math.max(...pts)},
 // grading rule (ci ? lowercase : as-typed) and look for a hash hit. A hit means
 // the table hands a player that challenge's answer. Needs no plaintext, so it
 // stays safe to run anywhere.
-const crypto = require('crypto');
-const sha = (str) => crypto.createHash('sha256').update(str, 'utf8').digest('hex');
 const ciHash = new Map(), csHash = new Map();
 for (const c of CHALLENGES) (c.ci ? ciHash : csHash).set(c.hash, c);
 
@@ -494,8 +587,6 @@ for (const n of iBad) console.log(`  ⚠ ${n}`);
 //     ("to distribute weight evenly") shares no stem with the answer, and the
 //     chapters never write "load balancing" at all, so neither half sees it.
 //     Only a cognate is detectable; the paraphrase case is still a read.
-const solverSrc = fs.readFileSync(path.join(WG, 'scripts/solve-derivable.js'), 'utf8');
-const solverBlock = solverSrc.slice(solverSrc.indexOf('const SOLVERS = new Map(['));
 const DERIVABLE = new Set([...solverBlock.matchAll(/^ {2}\['(\w+)',/gm)].map(m => m[1]));
 
 // One suffix comes off, then the spelling changes English makes to attach it are
@@ -616,6 +707,7 @@ for (const n of jBad) console.log(`  ⚠ ${n}`);
 
 if (STRICT) {
   const fail = [];
+  for (const a of aBad) fail.push(`[A] ${a}`);
   if (fBlocked) fail.push(`[F] ${fBlocked}`);
   for (const s of spelled.sort((a, b) => a.tier - b.tier)) {
     fail.push(`[F] ${s.id} — the ${s.node} topic row spells out its answer${REVEAL ? ` ("${s.term}")` : ''}`);
@@ -629,6 +721,6 @@ if (STRICT) {
     for (const f of fail) console.error(`  ✗ ${f}`);
     process.exitCode = 1;
   } else {
-    console.log(`\naudit --strict: OK — README's topic rows name no answers ([F]), no fmt/answer contradictions ([G]), fmt on-notation with every spelling hazard disclosed ([H]), no answer graded against the chapters' own spelling ([I]) or against a word-form the player is looking at ([J]).`);
+    console.log(`\naudit --strict: OK — every challenge that reads this page is declared and has a solver proving the plant ([A]), README's topic rows name no answers ([F]), no fmt/answer contradictions ([G]), fmt on-notation with every spelling hazard disclosed ([H]), no answer graded against the chapters' own spelling ([I]) or against a word-form the player is looking at ([J]).`);
   }
 }
