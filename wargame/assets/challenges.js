@@ -108,6 +108,14 @@ const TRACKS = [
     "en": "Mobile Security",
     "desc_ko": "안드로이드·iOS 앱 분석과 후킹, 기기 아티팩트와 물리 추출.",
     "desc_en": "Android and iOS app analysis and hooking, device artifacts and physical extraction."
+  },
+  {
+    "id": "hardware",
+    "icon": "🔌",
+    "ko": "하드웨어·IoT",
+    "en": "Hardware & IoT",
+    "desc_ko": "직렬 버스·펌웨어·무선 프로토콜과 산업 제어 시스템.",
+    "desc_en": "Serial buses, firmware, wireless protocols and industrial control systems."
   }];
 
 const CHALLENGES = [
@@ -4219,11 +4227,11 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "열역학에서 '무질서도'를 뜻하는 바로 그 단어입니다.",
-        "`ent`, `binwalk -E`, PEStudio가 이 값을 계산해 줍니다."
+        "`ent`와 PEStudio가 이 값을 계산해 주고, 펌웨어 이미지를 훑는 도구들도 대개 이 값을 그래프로 그려 줍니다."
       ],
       "en": [
         "It is the very word thermodynamics uses for 'disorder'.",
-        "`ent`, `binwalk -E`, and PEStudio all compute this value for you."
+        "`ent` and PEStudio compute this value for you, and firmware-carving tools usually plot it as a graph."
       ]
     }
   },
@@ -7948,6 +7956,986 @@ const CHALLENGES = [
       "en": [
         "The initials of Joint Test Action Group, the committee that standardised it (IEEE 1149.1).",
         "You solder onto the board's test pads; it is non-destructive but very slow."
+      ]
+    }
+  },
+  {
+    "id": "t0_shodan",
+    "tier": 0,
+    "cat": "iot",
+    "track": "hardware",
+    "points": 40,
+    "ci": true,
+    "hash": "66c240d3ce0d0a66ebc97cb3a3b3ac895c7b279812b2c6a06dcf61be599c6e74",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "이미 훑어 둔 인터넷",
+      "en": "The Internet, Already Indexed"
+    },
+    "prompt": {
+      "ko": "웹 문서 대신 인터넷에 노출된 장치의 응답 배너를 미리 모아 두고, `port:554` 같은 필터로 열려 있는 카메라나 제어 장비를 곧바로 찾아 주는 검색 서비스는? 이름은 윌리엄 깁슨의 소설 『뉴로맨서』에 나오는 인공지능에서 따왔습니다. (한 단어)",
+      "en": "Which search service indexes the response banners of internet-exposed devices instead of web pages, so a filter like `port:554` turns up open cameras and control gear directly? It is named after the artificial intelligence in William Gibson's novel *Neuromancer*. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "『뉴로맨서』에 등장하는 인공지능의 이름을 그대로 씁니다.",
+        "`country:KR` 처럼 필터를 겹쳐 좁힐 수 있고, 결과에는 장비가 스스로 보낸 응답이 그대로 담겨 있습니다."
+      ],
+      "en": [
+        "It carries the name of the artificial intelligence in *Neuromancer*.",
+        "Filters stack — `country:KR` narrows it — and each result carries the reply the device sent out itself."
+      ]
+    }
+  },
+  {
+    "id": "t0_uart",
+    "tier": 0,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 50,
+    "ci": true,
+    "hash": "e0a003b44f4a197d7a48ada2d2659f598b5f953f40e9e3ed7a3c979d25ec4336",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "라벨 없는 네 개의 패드",
+      "en": "Four Unlabelled Pads"
+    },
+    "prompt": {
+      "ko": "기판을 열면 라벨 없는 패드 네 개가 나란히 놓여 있습니다. 전원과 접지를 짚어 내고 나머지 두 선을 어댑터에 물린 뒤 115200 으로 맞추면 부팅 기록과 로그인 프롬프트가 흘러나옵니다. 클럭 선 없이 양쪽이 속도만 맞춰 주고받는 이 직렬 통신 방식의 네 글자 약어는?",
+      "en": "Open the case and four unlabelled pads sit in a row. Work out which are power and ground, wire the other two to an adapter, set 115200, and the boot log and a login prompt come pouring out. Which four-letter abbreviation names this serial scheme, where the two ends agree on a speed instead of sharing a clock line?"
+    },
+    "hints": {
+      "ko": [
+        "Universal Asynchronous Receiver/Transmitter 의 머리글자입니다.",
+        "송신과 수신은 서로 엇갈려 잇고 접지는 반드시 함께 씁니다. 속도가 어긋나면 깨진 문자만 쏟아집니다."
+      ],
+      "en": [
+        "The initials of Universal Asynchronous Receiver/Transmitter.",
+        "Cross transmit to receive and share ground. Get the speed wrong and all you get is garbage characters."
+      ]
+    }
+  },
+  {
+    "id": "t1_binwalk",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 60,
+    "ci": true,
+    "hash": "c1738b1106e3c38d173efec0e9b36f25a4875c13dcafe1564e5e830acbbbf6a4",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "이미지 속을 걸어 다니다",
+      "en": "Walking Through the Image"
+    },
+    "prompt": {
+      "ko": "펌웨어 이미지를 알려진 시그니처 표와 대조해 그 안에 든 압축 커널과 파일 시스템이 몇 바이트째에 있는지 찾아 주고, `-e` 를 붙이면 찾아낸 조각을 통째로 뽑아내 주는 도구는? (한 단어)",
+      "en": "Which tool matches a firmware image against a table of known signatures to report at which offset the compressed kernel and the filesystem begin, and with `-e` carves those pieces straight out? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "이진 파일(binary) 안을 걸어 다닌다(walk)는 두 말을 이어 붙인 이름입니다.",
+        "오프셋만 알아내면 같은 조각을 손으로 잘라 낼 수도 있습니다. 이 도구는 그 오프셋 찾기를 자동으로 해 주는 것입니다."
+      ],
+      "en": [
+        "Two words joined: walking through a binary.",
+        "Once you know the offset you could cut the same piece out by hand — the tool is what finds the offset for you."
+      ]
+    }
+  },
+  {
+    "id": "t1_mqtt",
+    "tier": 1,
+    "cat": "iot",
+    "track": "hardware",
+    "points": 60,
+    "ci": true,
+    "hash": "046adb88a188465c6ba56443392821e60e97d3806445ba0e9daea6fb7a94271e",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "1883번 뒤의 게시판",
+      "en": "The Noticeboard Behind Port 1883"
+    },
+    "prompt": {
+      "ko": "센서는 값을 보내고 앱은 그것을 받아 가는데, 둘은 서로를 모릅니다. 중개 서버가 주제(topic)별로 글을 받아 구독자에게 뿌려 주기 때문입니다. 인증 없이 열린 중개 서버에 `#` 를 구독하면 그 집의 모든 값이 한꺼번에 쏟아집니다. 기본 포트 1883 을 쓰는 이 경량 메시징 규약의 네 글자 약어는?",
+      "en": "The sensor publishes and the app consumes, yet neither knows the other: a broker in the middle files everything by topic and fans it out to subscribers. Subscribe to `#` on an unauthenticated broker and the whole house pours out at once. Which four-letter abbreviation names this lightweight messaging protocol, listening on port 1883 by default?"
+    },
+    "hints": {
+      "ko": [
+        "Message Queuing Telemetry Transport 의 머리글자입니다.",
+        "`#` 는 그 아래 모든 주제를 한꺼번에 받는 와일드카드이고, TLS 를 씌우면 8883 을 씁니다."
+      ],
+      "en": [
+        "The initials of Message Queuing Telemetry Transport.",
+        "`#` is the wildcard that takes every topic beneath it; wrapped in TLS it moves to 8883."
+      ]
+    }
+  },
+  {
+    "id": "t1_spi",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 65,
+    "ci": true,
+    "hash": "8f3c56908f47fbc950a725e79edb78c8df6ea5125d5f26b81ebf6eadea8eb72e",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "클럭을 함께 쓰는 네 가닥",
+      "en": "Four Wires and a Shared Clock"
+    },
+    "prompt": {
+      "ko": "플래시 칩과 프로세서를 잇는 동기식 직렬 버스입니다. 주도하는 쪽이 클럭을 내보내고 데이터는 방향이 다른 두 가닥으로 동시에 오가며, 상대를 고를 때는 그 칩에 연결된 선택 선을 낮춰 줍니다. 이 버스의 세 글자 약어는?",
+      "en": "A synchronous serial bus wiring a flash chip to its processor: the controlling side drives the clock, data travels on two wires — one each way — at the same time, and you pick a device by pulling its own select line low. Which three-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Serial Peripheral Interface 의 머리글자입니다.",
+        "신호는 클럭·두 데이터 선·칩 선택 넷이며, 클립으로 칩을 물면 기판에 붙은 채로도 읽어낼 수 있습니다."
+      ],
+      "en": [
+        "The initials of Serial Peripheral Interface.",
+        "Four signals: clock, the two data lines, and chip select. Clip onto the chip and you can read it without unsoldering it."
+      ]
+    }
+  },
+  {
+    "id": "t1_i2c",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 65,
+    "ci": true,
+    "hash": "85ac83cb04df5961f37da5600856bcfca3481aa2e7e40782e79a168b2c034024",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "두 가닥이면 충분하다",
+      "en": "Two Wires Are Enough"
+    },
+    "prompt": {
+      "ko": "데이터 선과 클럭 선 단 두 가닥에 여러 장치를 나란히 매달고, 7비트 주소를 불러 상대를 고르는 버스입니다. 대화는 정해진 시작 조건으로 열고 정지 조건으로 닫습니다. 온도 센서나 작은 설정용 칩이 흔히 이 버스에 붙습니다. 이 버스의 세 글자 표기는?",
+      "en": "A bus that hangs many devices off just two wires — data and clock — and picks one by calling its seven-bit address, opening each exchange with a start condition and closing it with a stop. Temperature sensors and small configuration chips usually sit here. Which three-character notation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Inter-Integrated Circuit 을 줄인 표기이며, 가운데 숫자는 앞 글자가 두 번 들어간다는 뜻입니다.",
+        "두 선에는 풀업 저항이 필요하고, 주소를 0x03 부터 0x77 까지 훑으면 응답하는 장치가 드러납니다."
+      ],
+      "en": [
+        "A contraction of Inter-Integrated Circuit; the digit in the middle counts a repeated initial.",
+        "Both lines need pull-up resistors, and sweeping addresses 0x03 through 0x77 reveals whatever answers."
+      ]
+    }
+  },
+  {
+    "id": "t1_gpio",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 70,
+    "ci": true,
+    "hash": "722a08a99490cd9e10bd5853e74d11f3f67109d24c8ba3def16eb9757409d789",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "용도가 정해지지 않은 핀",
+      "en": "Pins With No Fixed Job"
+    },
+    "prompt": {
+      "ko": "소프트웨어가 입력으로도 출력으로도 정할 수 있는 범용 핀입니다. 리눅스에서는 `/sys/class/` 아래로 드러나고, 전원이 들어오는 순간 몇몇 핀의 전압이 어느 매체로 부팅할지를 결정하며(스트래핑), 전용 회로가 없을 때는 이 핀을 손으로 두드려 프로토콜을 흉내 냅니다. 이 핀을 가리키는 네 글자 약어는?",
+      "en": "General pins that software can make either an input or an output. Linux exposes them under `/sys/class/`, the voltage on a few of them at power-up decides which medium the chip boots from (strapping), and with no dedicated peripheral you can bit-bang a protocol by toggling them by hand. Which four-letter abbreviation names them?"
+    },
+    "hints": {
+      "ko": [
+        "General Purpose Input/Output 의 머리글자입니다.",
+        "부팅 순간 특정 핀을 접지로 끌어내려 복구 모드나 다른 부팅 매체를 강제하는 수법이 흔합니다."
+      ],
+      "en": [
+        "The initials of General Purpose Input/Output.",
+        "Holding one of them low at power-up to force recovery mode, or a different boot medium, is a standard trick."
+      ]
+    }
+  },
+  {
+    "id": "t1_busybox",
+    "tier": 1,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 70,
+    "ci": true,
+    "hash": "9d75f0d7c398df565d7ac04c6819b62d6d8f9560f5eb4672596ecd8f7e96ae91",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "한 파일에 담긴 도구 상자",
+      "en": "A Toolbox in One File"
+    },
+    "prompt": {
+      "ko": "임베디드 리눅스 기기의 `/bin` 을 들여다보면 목록 출력·파일 출력·압축 해제까지 수십 개 명령이 전부 같은 파일을 가리키는 심볼릭 링크입니다. 실행 파일 하나가 자기가 어떤 이름으로 불렸는지(argv[0]) 보고 그 명령처럼 행세하기 때문입니다. 이 단일 바이너리의 이름은? (한 단어)",
+      "en": "Look at `/bin` on an embedded Linux device and dozens of commands — listing, printing, unpacking — are all symlinks to the same file. One executable checks which name it was invoked under (argv[0]) and behaves as that command. What is this single binary called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "혼자서 여러 일을 다 해내는 '바쁜 상자'라는 뜻의 이름입니다.",
+        "링크 목록만 봐도 그 기기에 어떤 명령이 있는지 드러나고, 빠진 명령은 정적 빌드로 올려 넣어 씁니다."
+      ],
+      "en": [
+        "A 'busy box' that does everyone's job by itself.",
+        "The list of symlinks tells you what that device can do, and whatever is missing you upload as a static build."
+      ]
+    }
+  },
+  {
+    "id": "t2_squashfs",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 80,
+    "ci": true,
+    "hash": "5cce3f70c6cb9f62ab53e322fa3975d02128080e1341e41de3a8dd3712cf1607",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "눌러 담은 읽기 전용",
+      "en": "Squeezed Flat and Read-Only"
+    },
+    "prompt": {
+      "ko": "펌웨어를 뜯으면 거의 언제나 나오는 압축 읽기 전용 파일 시스템입니다. 헤더의 매직은 이름 앞부분을 뒤집어 놓은 `hsqs` 로, 이미지 안에서 이 네 글자를 찾으면 루트 파일 시스템이 시작되는 자리를 알 수 있습니다. 이 파일 시스템의 이름은? (여덟 글자)",
+      "en": "Take a firmware image apart and this compressed read-only filesystem is almost always what you find. Its header magic is `hsqs` — the front of its own name turned around — so locating those four bytes locates the start of the root filesystem. What is it called? (eight characters)"
+    },
+    "hints": {
+      "ko": [
+        "앞부분은 '납작하게 짓누르다'라는 영단어이고, 뒤에는 파일 시스템을 뜻하는 두 글자가 붙습니다.",
+        "전용 해제 도구로 통째로 풀면 기기의 루트 디렉터리가 그대로 되살아나고, 설정 파일과 시작 스크립트를 읽을 수 있습니다."
+      ],
+      "en": [
+        "The front is the English verb for pressing something flat; two letters for 'filesystem' follow.",
+        "Unpack it with its own extractor and the device's root directory comes back whole, with its settings and startup scripts intact."
+      ]
+    }
+  },
+  {
+    "id": "t2_nvram",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 80,
+    "ci": true,
+    "hash": "fe8a08d50188af6557b650e7147d90773c7abb75b1a55709f2caaded7511dbde",
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "title": {
+      "ko": "공장 초기화가 지우는 곳",
+      "en": "What a Factory Reset Erases"
+    },
+    "prompt": {
+      "ko": "공유기의 설정은 파일이 아니라 이름=값 쌍의 목록으로 따로 떼어 둔 저장 영역에 들어 있고, 전원을 내려도 남습니다. 셸에서 값을 읽고 바꾸고 확정하는 명령이 따로 있으며, 공장 초기화란 결국 이 영역을 비우는 일입니다. 이 저장 영역의 이름은? (다섯 글자)",
+      "en": "A router's settings are not files: they live as name=value pairs in a storage area of their own that survives losing power. The shell has its own commands to read, set and commit them, and a factory reset is really just this area being wiped. What is it called? (five characters)"
+    },
+    "hints": {
+      "ko": [
+        "'비휘발성'을 뜻하는 두 글자에 임의 접근 기억장치의 약어를 이어 붙인 이름입니다.",
+        "값 하나만 바꿔 원격 접속 데몬을 켜 둔 채로 기기를 돌려주면 접근 경로가 그대로 남습니다."
+      ],
+      "en": [
+        "Two letters for 'non-volatile' joined to the abbreviation for random-access memory.",
+        "Flip a single value to leave a remote-access daemon enabled, hand the device back, and the way in stays open."
+      ]
+    }
+  },
+  {
+    "id": "t2_uboot",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 85,
+    "ci": true,
+    "hash": "fdd9d7dafdf5d9f56032ef62548ba1d9b6752d0eca84e21556790a28be916329",
+    "fmt": "한 단어 / one word (6글자 / 6 chars, - 포함 / include -)",
+    "title": {
+      "ko": "아무 키나 누르십시오",
+      "en": "Hit Any Key to Stop Autoboot"
+    },
+    "prompt": {
+      "ko": "직렬 콘솔을 붙여 전원을 넣으면 \"Hit any key to stop autoboot\" 가 잠깐 뜨고, 그 사이에 키를 누르면 프롬프트가 열립니다. `printenv` 로 환경변수를 보고 `bootargs` 끝에 `init=/bin/sh` 를 붙인 뒤 부팅하면 비밀번호 없이 루트 셸로 떨어집니다. 임베디드 기기 대부분이 쓰는 이 오픈소스 부트로더의 이름은? (하이픈 포함 여섯 글자)",
+      "en": "Wire up a serial console, power up, and \"Hit any key to stop autoboot\" flashes by; press one in time and you get a prompt. `printenv` shows the environment, appending `init=/bin/sh` to `bootargs` and booting drops you into a root shell with no password. Which open-source bootloader — the one most embedded devices ship — is this? (six characters, hyphenated)"
+    },
+    "hints": {
+      "ko": [
+        "앞의 한 글자는 '보편적인(Universal)'을, 뒤는 부팅을 뜻하며 그 사이를 하이픈이 잇습니다.",
+        "`setenv` 로 고친 값은 `saveenv` 를 해야 남습니다. 저장하지 않으면 다음 부팅에 원래대로 돌아가므로, 흔적을 남기지 않으려면 일부러 저장하지 않습니다."
+      ],
+      "en": [
+        "A single letter for 'universal', a hyphen, then booting.",
+        "`setenv` only changes it for now; `saveenv` makes it stick. Leaving it unsaved is how you get in without leaving a trace."
+      ]
+    }
+  },
+  {
+    "id": "t2_zigbee",
+    "tier": 2,
+    "cat": "iot",
+    "track": "hardware",
+    "points": 85,
+    "ci": true,
+    "hash": "1f3becd002ecb4bf81e110b76587aacdfbdaa36457db51f08518695f1eac5863",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "벌이 추는 춤",
+      "en": "The Dance of the Bee"
+    },
+    "prompt": {
+      "ko": "802.15.4 위에 얹혀 2.4GHz 의 11번부터 26번 채널을 쓰는 저전력 메시 규약입니다. 전구와 문 센서가 서로를 거쳐 신호를 나르는데, 새 장치가 망에 들어오는 그 순간만은 망 키가 널리 알려진 기본 키로 감싸여 공중을 지나갑니다. 이 규약의 이름은? (여섯 글자)",
+      "en": "A low-power mesh protocol riding on 802.15.4 across channels 11 to 26 in the 2.4 GHz band, where bulbs and door sensors relay for one another. Only at the instant a device joins does the network key cross the air, wrapped in a well-known default key. What is this protocol called? (six characters)"
+    },
+    "hints": {
+      "ko": [
+        "꿀벌이 방향을 알릴 때 추는 지그재그 춤에서 이름을 따왔습니다.",
+        "합류하는 찰나만 잡으면 되므로, 장치를 억지로 떨어뜨려 다시 붙게 만드는 것이 공격의 핵심입니다."
+      ],
+      "en": [
+        "Named for the zig-zag dance a honeybee performs to give directions.",
+        "You only need that one instant, so the attack is really about knocking a device off so it has to rejoin."
+      ]
+    }
+  },
+  {
+    "id": "t2_ble",
+    "tier": 2,
+    "cat": "iot",
+    "track": "hardware",
+    "points": 90,
+    "ci": true,
+    "hash": "3c367e3dcc8171c287f300e4650f887aa36a046b68257158ae691fb9a9aa5078",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "37, 38, 39",
+      "en": "37, 38 and 39"
+    },
+    "prompt": {
+      "ko": "스마트 밴드와 자물쇠가 쓰는 저전력 근거리 무선입니다. 존재를 알리는 신호는 37·38·39 세 채널로만 나가기 때문에 그 셋만 지켜보면 주변 기기가 모두 드러나고, 짝을 맺는 과정을 처음부터 붙잡으면 그 뒤의 통신을 풀어 읽을 수 있습니다. 이 무선 규격의 세 글자 약어는?",
+      "en": "The low-power short-range radio in fitness bands and door locks. Advertising goes out on only three channels — 37, 38 and 39 — so watching those three shows you every device nearby, and catching a pairing exchange from its very first packet lets you read what follows. Which three-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Bluetooth Low Energy 의 머리글자입니다.",
+        "보통 동글로는 짝짓기 순간을 놓칩니다. 세 채널을 동시에 따라다니는 전용 스니퍼가 있어야 합니다."
+      ],
+      "en": [
+        "The initials of Bluetooth Low Energy.",
+        "An ordinary dongle misses the pairing moment; you need a sniffer that follows all three channels at once."
+      ]
+    }
+  },
+  {
+    "id": "t2_upnp",
+    "tier": 2,
+    "cat": "iot",
+    "track": "hardware",
+    "points": 90,
+    "ci": true,
+    "hash": "2d91dec1adadfb907ec12f4ce4fab767dad29c48383a497debd2da484d3f1065",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "알아서 열리는 문",
+      "en": "The Door That Opens Itself"
+    },
+    "prompt": {
+      "ko": "집 안의 장치들이 서로를 자동으로 찾고, 공유기에게 \"내 포트를 밖으로 열어 달라\"고 스스로 요청하게 해 주는 규격입니다. UDP 1900 으로 존재를 알리고, XML 설명서를 받아 그 안에 적힌 주소로 SOAP 명령을 던집니다. 이 규격의 네 글자 약어는?",
+      "en": "The standard that lets household devices discover one another and ask the router to open a port to the outside world on their own behalf. Presence goes out on UDP 1900, a description document in XML comes back, and commands go as SOAP to the address inside it. Which four-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Universal Plug and Play 의 머리글자입니다.",
+        "이 규격은 요청한 쪽이 누구인지 확인하지 않습니다. 게다가 이것을 인터넷 쪽 회선에까지 열어 둔 공유기가 아직 남아 있습니다."
+      ],
+      "en": [
+        "The initials of Universal Plug and Play.",
+        "It never checks who is asking — and there are still routers that answer it on the internet-facing side."
+      ]
+    }
+  },
+  {
+    "id": "t2_rfid",
+    "tier": 2,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 90,
+    "ci": true,
+    "hash": "22e46dd1bd16cea8e78f77486ea313ac3f8af0f54c7c3f56bc737b20013c92d4",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "전지 없이 대답하는 카드",
+      "en": "A Card That Answers With No Battery"
+    },
+    "prompt": {
+      "ko": "출입증에는 전지가 없는데도 리더에 대면 대답합니다. 리더가 쏘는 전파에서 전력을 얻어 자기 식별 번호를 실어 보내기 때문입니다. 125kHz 대의 구형 계열과 13.56MHz 대의 신형 계열로 나뉘는 이 무선 식별 기술의 네 글자 약어는?",
+      "en": "An access badge has no battery, yet it answers the moment you hold it to a reader: it harvests power from the reader's field and sends its identifier back. Which four-letter abbreviation names this identification technology, split between an older 125 kHz family and a newer one at 13.56 MHz?"
+    },
+    "hints": {
+      "ko": [
+        "Radio Frequency Identification 의 머리글자입니다.",
+        "구형 125kHz 출입증은 번호를 그대로 흘려보낼 뿐 아무것도 확인하지 않아, 스쳐 지나며 읽어 그대로 흉내 낼 수 있습니다."
+      ],
+      "en": [
+        "The initials of Radio Frequency Identification.",
+        "An old 125 kHz badge just emits its number and checks nothing, so brushing past to read it is enough to reproduce it."
+      ]
+    }
+  },
+  {
+    "id": "t2_modbus",
+    "tier": 2,
+    "cat": "ics",
+    "track": "hardware",
+    "points": 100,
+    "ci": true,
+    "hash": "f07ca10904fa33095440bdad6c7422510f0f275e432c9ad580e89cdb8bf87729",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "1979년에 태어난 말",
+      "en": "A Language Born in 1979"
+    },
+    "prompt": {
+      "ko": "1979년에 나온 산업용 통신 규약이 지금도 TCP 502 위에서 그대로 쓰입니다. 인증도 암호화도 없고, 요청을 보낸 쪽이 누구인지 묻지도 않아서 함수 코드 0x05 를 한 번 던지는 것만으로 출력 접점 하나를 켜고 끌 수 있습니다. 이 규약의 이름은? (여섯 글자)",
+      "en": "A protocol from 1979 still runs, unchanged, over TCP 502. There is no authentication, no encryption, and no question of who is asking — one request with function code 0x05 flips a single output coil on or off. What is it called? (six characters)"
+    },
+    "hints": {
+      "ko": [
+        "제어기를 만들던 Modicon 사가 자사 장비를 잇기 위해 만든 '버스'라는 뜻입니다.",
+        "0x01·0x03 은 읽기, 0x05·0x06 은 쓰기입니다. 장치 주소를 1번부터 훑어 살아 있는 슬레이브를 찾는 것부터 시작합니다."
+      ],
+      "en": [
+        "Modicon, the controller maker, named it as a bus for tying its own gear together.",
+        "0x01 and 0x03 read, 0x05 and 0x06 write. You start by sweeping unit addresses from 1 to see which slaves answer."
+      ]
+    }
+  },
+  {
+    "id": "t3_sdr",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 105,
+    "ci": true,
+    "hash": "6ada229987020103f85b4b3a991a34aed52ed919d01a6c3f0ac1fd40c2093e6e",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "회로 대신 코드로 만든 무전기",
+      "en": "A Radio Made Out of Code"
+    },
+    "prompt": {
+      "ko": "복조와 변조를 전용 회로가 아니라 소프트웨어가 처리하는 무전 방식입니다. 값싼 TV 수신 동글로는 듣기만 하고, HackRF 같은 장비를 쓰면 보내기도 합니다. 덕분에 규격 문서가 없는 신호도 폭포수 화면에서 찾아내 블록을 이어 붙여 풀어 볼 수 있습니다. 이 방식의 세 글자 약어는?",
+      "en": "A radio where the modulating and demodulating happen in software rather than in dedicated circuitry: a cheap TV dongle only listens, a HackRF also transmits. That is what lets you find an undocumented signal on a waterfall display and take it apart by chaining processing blocks. Which three-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Software Defined Radio 의 머리글자입니다.",
+        "GNU Radio 같은 도구에서 블록을 이어 복조기를 만들고, 그 전에 먼저 폭포수 화면에서 신호가 어느 주파수에 앉아 있는지 찾습니다."
+      ],
+      "en": [
+        "The initials of Software Defined Radio.",
+        "You build the demodulator by wiring blocks together in something like GNU Radio — after finding, on the waterfall, where the signal actually sits."
+      ]
+    }
+  },
+  {
+    "id": "t3_plc",
+    "tier": 3,
+    "cat": "ics",
+    "track": "hardware",
+    "points": 110,
+    "ci": true,
+    "hash": "eec1534dcbd984de8cafe9df20c2247355356d2d558c8892bec64a666835ff8f",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "공장 바닥의 작은 컴퓨터",
+      "en": "The Small Computer on the Plant Floor"
+    },
+    "prompt": {
+      "ko": "밸브와 모터에 직접 연결되어, 입력을 모두 읽고 논리를 한 번 풀고 출력을 내보내는 일을 정해진 주기로 끝없이 되풀이하는 산업용 제어기입니다. 프로그램은 전기 회로도를 닮은 사다리 모양 도면으로 그립니다. 이 제어기의 세 글자 약어는?",
+      "en": "The industrial controller wired straight to valves and motors, endlessly repeating one fixed cycle: read every input, solve the logic once, drive the outputs. Its programs are drawn as ladder diagrams that look like wiring schematics. Which three-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Programmable Logic Controller 의 머리글자입니다.",
+        "주기가 밀리초 단위라, 통신 부하를 조금만 걸어도 제어 주기가 늘어져 공정이 흔들립니다."
+      ],
+      "en": [
+        "The initials of Programmable Logic Controller.",
+        "The cycle runs in milliseconds, so even a modest flood of traffic stretches it out and the process starts to wobble."
+      ]
+    }
+  },
+  {
+    "id": "t3_scada",
+    "tier": 3,
+    "cat": "ics",
+    "track": "hardware",
+    "points": 110,
+    "ci": true,
+    "hash": "c1be5afcba3465f3790728b2c9ae2afe0d662f343417a67edff8b53b8eafca1e",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "관제실에서 내려다보는 층",
+      "en": "The Layer You Watch From"
+    },
+    "prompt": {
+      "ko": "현장에 흩어진 제어기들에서 값을 주기적으로 끌어모아 관제실 화면에 띄우고, 운전원의 명령을 다시 현장으로 내려보내는 상위 감시·제어 계층입니다. 운전원이 보는 화면 자체는 HMI 라고 따로 부릅니다. 이 계층을 가리키는 다섯 글자 약어는?",
+      "en": "The supervisory layer that polls values from controllers scattered across a site, puts them on the control-room screens, and pushes the operator's commands back down. The screen the operator actually looks at has its own name, HMI. Which five-letter abbreviation names the layer? "
+    },
+    "hints": {
+      "ko": [
+        "Supervisory Control And Data Acquisition 의 머리글자입니다.",
+        "이 계층은 현장 제어기 위에 얹혀 값을 모으고 명령을 배분할 뿐, 실제 밸브를 여닫는 논리는 아래층이 갖고 있습니다."
+      ],
+      "en": [
+        "The initials of Supervisory Control And Data Acquisition.",
+        "It sits above the field controllers gathering values and dispatching commands; the logic that actually moves a valve lives on the layer below."
+      ]
+    }
+  },
+  {
+    "id": "t3_ota",
+    "tier": 3,
+    "cat": "iot",
+    "track": "hardware",
+    "points": 115,
+    "ci": true,
+    "hash": "b08bcc8b8e779d1e6476417faa59ea2424e18bbfbbf5b44e6a047e8917cc6f8a",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "공중으로 오는 갱신",
+      "en": "The Update Arrives Through the Air"
+    },
+    "prompt": {
+      "ko": "기기를 회수하지 않고 무선으로 새 펌웨어를 내려보내 갱신하는 방식입니다. 내려받은 이미지의 서명을 확인하지 않으면 공격자가 만든 이미지가 그대로 설치되고, 갱신이 실패할 때를 대비해 두 벌의 파티션을 번갈아 쓰며 이전 것으로 되돌립니다. 이 갱신 방식의 세 글자 약어는?",
+      "en": "Updating firmware by pushing it to the device over the air instead of collecting the hardware. If the downloaded image's signature is never checked, whatever an attacker built gets installed as-is; and to survive a failed update the device alternates between two partition sets and rolls back to the previous one. Which three-letter abbreviation names this? "
+    },
+    "hints": {
+      "ko": [
+        "Over-The-Air 의 머리글자입니다.",
+        "되돌리기 구조가 있는 기기에서는, 서명이 유효한 옛 이미지를 일부러 되돌려 이미 고친 결함을 되살리는 공격까지 막아야 합니다."
+      ],
+      "en": [
+        "The initials of Over-The-Air.",
+        "Where rollback exists you must also stop an attacker replaying an older, still-validly-signed image to bring a patched flaw back."
+      ]
+    }
+  },
+  {
+    "id": "t3_mifare",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 115,
+    "ci": true,
+    "hash": "c66ccfa83cb0ac6dbf2b0210599f43227cd482608282341ca0d7e4636c795e5b",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "48비트로 지킨 카드",
+      "en": "Guarded by Forty-Eight Bits"
+    },
+    "prompt": {
+      "ko": "13.56MHz 대에서 가장 널리 깔린 비접촉 카드 계열입니다. 표준 암호 대신 48비트짜리 자체 설계 스트림 암호를 썼는데 난수가 예측 가능해서, 카드 하나만 몇 초 두면 nested·darkside 같은 공격으로 섹터 키가 줄줄이 나옵니다. Proxmark 같은 장비로 키를 얻고 그대로 복제합니다. 이 카드 계열의 이름은? (여섯 글자)",
+      "en": "The most widely deployed contactless card family at 13.56 MHz. Instead of a standard cipher it used a home-grown 48-bit stream cipher whose randomness is predictable, so a few seconds with one card and the nested and darkside attacks hand you the sector keys one after another — read them off with something like a Proxmark and clone it. What is this card family called? (six characters)"
+    },
+    "hints": {
+      "ko": [
+        "NXP(옛 필립스)의 카드 상표이며, 자체 암호의 이름은 Crypto-1 입니다.",
+        "기본 키가 그대로 남은 섹터가 하나만 있어도 거기서부터 나머지 섹터의 키를 차례로 끌어냅니다."
+      ],
+      "en": [
+        "NXP's (formerly Philips's) card brand; the home-grown cipher is called Crypto-1.",
+        "A single sector still holding a factory default key is enough to unravel the keys to all the others."
+      ]
+    }
+  },
+  {
+    "id": "t3_eeprom",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 120,
+    "ci": true,
+    "hash": "addd6c13848263cbc7a6dacc2baca9a64ed1cfb5f78ac1a32ea2349818dcc1fd",
+    "fmt": "약어 / acronym (6글자 / 6 chars)",
+    "title": {
+      "ko": "자외선을 쬐던 형의 후예",
+      "en": "Successor to the Chip With a Window"
+    },
+    "prompt": {
+      "ko": "설정값과 교정 데이터를 담고 전원을 내려도 잊지 않는 작은 8핀 칩입니다. 앞 세대는 지우려면 뚜껑의 창으로 자외선을 한참 쬐어야 했지만, 이것은 전기를 걸어 바이트 단위로 지우고 다시 씁니다. 이 칩을 가리키는 여섯 글자 약어는?",
+      "en": "A small eight-pin chip that holds settings and calibration data and does not forget them when the power goes. Its predecessor had to be erased under ultraviolet light through a window in its lid; this one erases and rewrites electrically, a byte at a time. Which six-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Electrically Erasable Programmable Read-Only Memory 의 머리글자입니다.",
+        "클립으로 물려 기판에 붙은 채 읽고 쓸 수 있어서, 값 한 바이트만 바꿔도 잠금이 풀리는 기기가 실제로 있습니다."
+      ],
+      "en": [
+        "The initials of Electrically Erasable Programmable Read-Only Memory.",
+        "You can clip onto it and read or write in circuit — on some devices changing a single byte is what unlocks them."
+      ]
+    }
+  },
+  {
+    "id": "t3_zwave",
+    "tier": 3,
+    "cat": "iot",
+    "track": "hardware",
+    "points": 125,
+    "ci": true,
+    "hash": "20cdd2d895b1a52582f73dd1ffd51473e78f9300f45340abacfcb436c2053d20",
+    "fmt": "한 단어 / one word (6글자 / 6 chars, - 포함 / include -)",
+    "title": {
+      "ko": "900MHz의 이웃",
+      "en": "The Neighbour at 900 MHz"
+    },
+    "prompt": {
+      "ko": "2.4GHz 의 혼잡을 피해 900MHz 대를 쓰는 홈 오토메이션 무선 규격입니다. 초기 보안 계층 S0 는 망 키를 넘겨줄 때 전부 0 으로 채운 임시 키로 감싸는 바람에, 그 순간만 잡으면 망 키가 그대로 드러납니다. 이 규격의 이름은? (하이픈 포함 여섯 글자)",
+      "en": "A home-automation radio that dodges the crowded 2.4 GHz band by working around 900 MHz. Its first security layer, S0, wrapped the network key in a temporary key of all zeroes while handing it over — catch that moment and the network key is simply there. What is this standard called? (six characters, hyphenated)"
+    },
+    "hints": {
+      "ko": [
+        "알파벳 마지막 글자와 '파동'을 뜻하는 영단어를 하이픈으로 이은 이름입니다.",
+        "S2 는 이 문제를 공개키 교환으로 고쳤지만, 옛 기기와의 호환 때문에 S0 로 낮춰 붙게 만드는 공격이 남아 있습니다."
+      ],
+      "en": [
+        "The last letter of the alphabet, a hyphen, and the English word for a wave.",
+        "S2 fixed it with a public-key exchange, but backwards compatibility still lets an attacker force a device down to S0."
+      ]
+    }
+  },
+  {
+    "id": "t3_ecu",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 130,
+    "ci": true,
+    "hash": "74661500aa577db1ae2b41a4be2a01a4a29ba58d625ed00e89a633af171ceacd",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "차 한 대에 든 수십 개의 머리",
+      "en": "Dozens of Brains in One Car"
+    },
+    "prompt": {
+      "ko": "요즘 자동차에는 엔진·제동·계기판을 각각 맡은 소형 제어기가 수십 개 들어 있고, 이들은 두 가닥 버스 하나로 이어져 서로 방송하듯 값을 주고받습니다. 이 버스에는 보낸 쪽을 확인하는 장치가 없어서, 진짜보다 조금 더 자주 위조 프레임을 밀어 넣으면 계기판의 값을 덮어쓸 수 있습니다. OBD-II 커넥터로 같은 버스에 올라탈 수 있는 이 소형 제어기의 세 글자 약어는?",
+      "en": "A modern car carries dozens of small controllers — one for the engine, one for braking, one for the cluster — all wired to a single two-wire bus over which they broadcast to each other. Nothing on that bus checks who sent a frame, so injecting forged ones slightly faster than the real ones overwrites what the cluster displays. Which three-letter abbreviation names these controllers, reachable over the same bus through the OBD-II connector?"
+    },
+    "hints": {
+      "ko": [
+        "Electronic Control Unit 의 머리글자입니다.",
+        "진단 커넥터는 좌석 아래 손 닿는 곳에 있고, 구간을 나누는 중계 장치가 없는 차에서는 거기서 모든 제어기가 보입니다."
+      ],
+      "en": [
+        "The initials of Electronic Control Unit.",
+        "The diagnostic connector sits within reach under the dash, and on a car where nothing segments the bus every controller is visible from it."
+      ]
+    }
+  },
+  {
+    "id": "t3_jffs2",
+    "tier": 3,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 130,
+    "ci": true,
+    "hash": "f1f2365057c1b7d76a90b3906392dc13b8473ec79d8a9886137545128ce01d41",
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "title": {
+      "ko": "덧붙여 쓰는 플래시",
+      "en": "Written by Appending"
+    },
+    "prompt": {
+      "ko": "플래시 칩 위에 바로 얹히는 쓰기 가능 파일 시스템으로, 변경을 제자리에 고쳐 쓰지 않고 로그처럼 뒤에 덧붙이며 블록을 고르게 닳게 만듭니다. 공유기의 설정 영역에서 흔히 보이고, 지금은 더 큰 플래시를 겨냥한 후속 규격에 자리를 내주고 있습니다. 이 파일 시스템의 이름은? (다섯 글자)",
+      "en": "A writable filesystem that sits directly on a flash chip, never modifying in place but appending changes like a log so the blocks wear down evenly. It shows up in router settings partitions and is now giving way to a successor aimed at larger flash. What is it called? (five characters)"
+    },
+    "hints": {
+      "ko": [
+        "'저널링 플래시 파일 시스템'의 머리글자 뒤에 세대 번호가 붙은 이름입니다.",
+        "지운 파일도 실제로는 뒤에 '지웠다'고 덧쓴 것뿐이라, 원본 조각이 앞쪽 블록에 그대로 남아 있는 경우가 많습니다."
+      ],
+      "en": [
+        "The initials of 'journalling flash file system' followed by a generation number.",
+        "A deleted file was only appended over with a note that it is gone, so the original often still sits in an earlier block."
+      ]
+    }
+  },
+  {
+    "id": "t4_uds",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 130,
+    "ci": true,
+    "hash": "6f674393f8f10434965c60647c243c1b3beeb296365d716af1eb69cb1068956b",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "정비소가 쓰는 말",
+      "en": "What the Workshop Speaks"
+    },
+    "prompt": {
+      "ko": "ISO 14229 로 규정된 차량 진단 규약입니다. 0x10 으로 진단 세션을 바꾸고, 0x27 이 내주는 시드에 제조사 알고리즘을 적용해 키를 돌려주면 잠금이 풀리며, 그 뒤에는 0x34 부터 0x37 까지의 요청으로 제어기 메모리에 직접 써 넣을 수 있습니다. 이 규약의 세 글자 약어는?",
+      "en": "The vehicle diagnostic protocol specified in ISO 14229. Request 0x10 switches the diagnostic session, 0x27 hands you a random challenge which you answer with a key computed by the maker's algorithm to unlock, and from there requests 0x34 through 0x37 write straight into the controller's memory. Which three-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Unified Diagnostic Services 의 머리글자입니다.",
+        "시드에서 키를 만드는 알고리즘이 제어기 펌웨어 안에 그대로 들어 있어서, 이미지를 한 번 떠내면 인증을 통째로 재현할 수 있습니다."
+      ],
+      "en": [
+        "The initials of Unified Diagnostic Services.",
+        "The challenge-to-key algorithm ships inside the controller's own firmware, so dumping the image once is enough to reproduce the unlock forever."
+      ]
+    }
+  },
+  {
+    "id": "t4_dnp3",
+    "tier": 4,
+    "cat": "ics",
+    "track": "hardware",
+    "points": 140,
+    "ci": true,
+    "hash": "72a2cb3652088fb68c90905d141fc1e71dbd6155c26b70bc392635d5a1a1312e",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "쌓아 두었다 보고한다",
+      "en": "It Reports What It Kept"
+    },
+    "prompt": {
+      "ko": "북미의 전력·수도 계통에서 널리 쓰는 원격 감시 규약입니다. 상위가 물어볼 때만 답하는 대신, 현장 장치가 사건이 일어난 시각을 붙여 차곡차곡 쌓아 두었다가 보고하기 때문에 통신이 끊겼던 구간의 기록까지 나중에 되살아납니다. IEEE 1815 로 표준화된 이 규약의 네 글자 표기는?",
+      "en": "The telemetry protocol common on North American power and water systems. Rather than only answering when polled, the field device timestamps events and stores them up to report later, so the record survives an outage in the link and comes back afterwards. Which four-character designation names this protocol, standardised as IEEE 1815?"
+    },
+    "hints": {
+      "ko": [
+        "Distributed Network Protocol 의 머리글자에 버전 번호를 붙여 씁니다.",
+        "인증 기능은 한참 뒤에 선택 사항으로 덧붙었을 뿐이라, 현장에는 아직 아무 확인 없이 명령을 받는 구간이 남아 있습니다."
+      ],
+      "en": [
+        "The initials of Distributed Network Protocol with the version number attached.",
+        "Authentication was bolted on much later as an option, so there are still segments in the field taking commands with no checking at all."
+      ]
+    }
+  },
+  {
+    "id": "t4_gatt",
+    "tier": 4,
+    "cat": "iot",
+    "track": "hardware",
+    "points": 150,
+    "ci": true,
+    "hash": "2d75922b17e1706e0b58fb149213ad98e94a39f007b6f30fb5a355a4ecd9165d",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "서비스와 특성",
+      "en": "Services and Characteristics"
+    },
+    "prompt": {
+      "ko": "저전력 근거리 무선 기기의 기능은 서비스와 특성이라는 두 계층으로 드러나고, 각각은 짧은 핸들과 UUID 로 구분됩니다. 스마트 자물쇠 중에는 열림 명령을 받는 특성에 쓰기 권한만 열어 두고 사용자 확인은 전적으로 앱에 맡긴 것이 있어서, 그 핸들에 값을 직접 써 넣으면 그냥 열립니다. 이 속성 계층을 규정한 네 글자 약어는?",
+      "en": "A low-energy device exposes what it can do as two layers, services and characteristics, each identified by a short handle and a UUID. Some smart locks leave the unlock characteristic writable and delegate all user checking to the phone app — write to that handle directly and the lock simply opens. Which four-letter abbreviation names this attribute layer?"
+    },
+    "hints": {
+      "ko": [
+        "Generic Attribute Profile 의 머리글자입니다.",
+        "전용 탐색 도구로 특성 목록을 훑고 핸들에 값을 한 번 써 보는 것이 첫 시도이며, 읽기가 막혀 있어도 쓰기는 열려 있는 경우가 흔합니다."
+      ],
+      "en": [
+        "The initials of Generic Attribute Profile.",
+        "Enumerate the characteristics with a scanning tool and try writing to a handle — reads are often blocked while writes are left open."
+      ]
+    }
+  },
+  {
+    "id": "t4_s7comm",
+    "tier": 4,
+    "cat": "ics",
+    "track": "hardware",
+    "points": 155,
+    "ci": true,
+    "hash": "f03038af69439668d4fb92cb04a11e69c719abbe82478b2a9ed80178076a9c26",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "102번 위의 대화",
+      "en": "The Conversation Over Port 102"
+    },
+    "prompt": {
+      "ko": "지멘스 제어기가 엔지니어링 소프트웨어와 주고받는 독자 규약으로, TCP 102(ISO-TSAP) 위에 얹혀 있습니다. 구형 판에는 인증이 아예 없어서 정지와 기동 명령을 그대로 다시 흘려보내는 것만으로 공정을 멈출 수 있었습니다. 패킷 분석기의 해독기 이름으로도 그대로 쓰이는 이 규약의 통칭은? (여섯 글자)",
+      "en": "Siemens controllers speak this proprietary protocol to their engineering software, carried over TCP 102 (ISO-TSAP). Older revisions had no authentication at all, so replaying a captured stop or start command was enough to halt a process. What is the protocol commonly called — the same name a packet analyser gives its dissector? (six characters)"
+    },
+    "hints": {
+      "ko": [
+        "제어기 제품군 이름 뒤에 '통신'의 앞 네 글자를 붙여 부릅니다.",
+        "규약에 재생 방지 장치가 없어서, 예전에 오간 명령을 그대로 다시 보내는 것만으로 같은 동작이 일어납니다."
+      ],
+      "en": [
+        "The controller family's name with the first four letters of 'communication' after it.",
+        "Nothing in it prevents replay, so sending an old captured command again simply performs it again."
+      ]
+    }
+  },
+  {
+    "id": "t4_historian",
+    "tier": 4,
+    "cat": "ics",
+    "track": "hardware",
+    "points": 160,
+    "ci": true,
+    "hash": "604c00db87b22994f944ce913b66ca936bd63fad7305b4218c338eb9c9592118",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "공정의 기록 보관자",
+      "en": "Keeper of the Plant Record"
+    },
+    "prompt": {
+      "ko": "현장에서 올라오는 태그 값을 시계열로 오래 보관하고, 사무망의 보고서 도구가 그것을 조회하게 해 주는 서버입니다. 두 망 사이에 다리를 놓는 자리에 있다 보니 사무망을 통해 들어온 공격자가 현장망으로 건너가는 발판으로 자주 쓰입니다. OSIsoft PI 가 대표적인 이 서버의 이름은? (한 단어)",
+      "en": "The server that keeps tag values coming up from the plant as long-term time series, so reporting tools on the business network can query them. Because it bridges the two networks, an attacker who lands on the business side routinely uses it as the stepping stone across. OSIsoft PI is the best-known example — what is this kind of server called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "역사를 기록하는 사람을 뜻하는 영단어를 그대로 씁니다.",
+        "양쪽 망에 발을 걸치고 있으므로, 여기가 뚫리면 두 망을 갈라 둔 구획이 사실상 무의미해집니다."
+      ],
+      "en": [
+        "The English word for a person who records history.",
+        "It has a foot in both networks, so once it falls the separation between them stops meaning anything."
+      ]
+    }
+  },
+  {
+    "id": "t4_purdue",
+    "tier": 4,
+    "cat": "ics",
+    "track": "hardware",
+    "points": 160,
+    "ci": true,
+    "hash": "8bee569effff17714a7478210fa1f4be983f4157da39f05f032f725ae5b1c6d3",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "레벨 0에서 5까지",
+      "en": "From Level 0 to Level 5"
+    },
+    "prompt": {
+      "ko": "센서와 구동기가 있는 맨 아래 레벨 0 부터 기업망인 레벨 5 까지 산업 제어망을 계층으로 나누고, 3 과 4 사이에 완충 구역을 두어 두 세계가 직접 만나지 않게 하라고 정리한 참조 모델입니다. 인디애나주 웨스트라피엣에 있는 대학의 이름을 그대로 딴 이 모델은? (여섯 글자)",
+      "en": "The reference model that divides an industrial network into levels — sensors and actuators at level 0 up to the enterprise network at level 5 — and puts a buffer zone between 3 and 4 so the two worlds never meet directly. It carries the name of a university in West Lafayette, Indiana. What is the model called? (six characters)"
+    },
+    "hints": {
+      "ko": [
+        "웨스트라피엣에 있는 그 대학의 이름입니다.",
+        "실무에서 이 모델이 무너지는 지점은 대개 완충 구역을 건너뛰고 현장망으로 바로 들어가는 원격 유지보수 회선입니다."
+      ],
+      "en": [
+        "The name of that university in West Lafayette.",
+        "In practice the model breaks at the remote-maintenance link that skips the buffer zone and reaches the plant network directly."
+      ]
+    }
+  },
+  {
+    "id": "t4_stuxnet",
+    "tier": 4,
+    "cat": "ics",
+    "track": "hardware",
+    "points": 170,
+    "ci": true,
+    "hash": "8a3a886f05dc317741cacf05cfb87c2439e43adb83e0df72bfb240f96cf3f51c",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "원심분리기를 겨눈 코드",
+      "en": "The Code That Aimed at Centrifuges"
+    },
+    "prompt": {
+      "ko": "2010년에 발견된 웜입니다. 윈도우 제로데이 네 개와 훔친 서명으로 퍼졌지만, 특정 제조사의 주파수 변환기가 붙은 제어기를 만났을 때만 깨어나 회전 속도를 몰래 흔들었고, 그동안 관제 화면에는 미리 녹음해 둔 정상값을 되돌려 주었습니다. 이 웜의 이름은? (일곱 글자)",
+      "en": "The worm found in 2010. It spread with four Windows zero-days and stolen signing certificates, but only woke up on controllers driving frequency converters from particular makers, where it quietly varied the rotor speed while replaying previously recorded normal values to the monitoring screens. What is it called? (seven characters)"
+    },
+    "hints": {
+      "ko": [
+        "코드 안에 있던 두 문자열 조각(파일 이름의 일부와 커널 드라이버 이름의 일부)을 이어 붙여 붙인 이름입니다.",
+        "USB 로 옮겨 다니며 바로 가기 파일 처리의 결함으로 실행됐기 때문에, 망을 물리적으로 갈라 둔 것만으로는 막지 못했습니다."
+      ],
+      "en": [
+        "Named by joining two fragments found inside the code itself — part of a filename and part of a kernel driver name.",
+        "It travelled on USB and ran through a flaw in shortcut-file handling, so physically separating the network was not enough to stop it."
+      ]
+    }
+  },
+  {
+    "id": "t4_openocd",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 180,
+    "ci": true,
+    "hash": "9d2d46d712063d6b3ac8b70889c01cb5d55fa67c7ca5271465538b259927382a",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "3333번과 4444번",
+      "en": "3333 and 4444"
+    },
+    "prompt": {
+      "ko": "디버그 어댑터용 설정 파일과 대상 칩용 설정 파일을 각각 `-f` 로 하나씩 물려 실행하면, 4444번에는 텔넷 콘솔을 3333번에는 디버거가 붙을 자리를 열어 주는 온칩 디버깅 도구는? 콘솔에서 코어를 세운 뒤 `dump_image` 로 내장 플래시를 통째로 떠낼 수 있습니다. (한 단어)",
+      "en": "Which on-chip debugging tool, started with one `-f` for the debug adapter's configuration and another for the target chip's, opens a telnet console on 4444 and a port on 3333 where a debugger can connect? Halt the core from that console and `dump_image` lifts the internal flash out whole. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'열린(open)'에 온칩 디버거(On-Chip Debugger)의 머리글자를 이어 붙인 이름입니다.",
+        "설정 파일 두 개를 주는 것이 시작이고, 대상 파일이 맞지 않으면 코어를 아예 인식하지 못합니다. 읽기 보호가 걸린 칩은 여기서 막힙니다."
+      ],
+      "en": [
+        "'open' joined to the initials of On-Chip Debugger.",
+        "Two configuration files is where you start; with the wrong target file it never recognises the core at all — and a read-protected chip stops you here."
+      ]
+    }
+  },
+  {
+    "id": "t4_flashrom",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 190,
+    "ci": true,
+    "hash": "70df835909790827312c474bdeae830a159ba6a0ffd5eed62a0b88749b9ced24",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "칩을 통째로 읽고 되쓴다",
+      "en": "Read the Chip, Write It Back"
+    },
+    "prompt": {
+      "ko": "직렬 플래시 칩을 CH341A 나 Bus Pirate 같은 값싼 프로그래머에 물려 `-r` 로 통째로 읽어 내고, 고친 이미지를 `-w` 로 되써 넣는 도구는? 어떤 어댑터를 쓸지는 `--programmer` 로 지정합니다. (한 단어)",
+      "en": "Which tool reads a serial flash chip out whole with `-r` through a cheap programmer such as a CH341A or a Bus Pirate, and writes a modified image back with `-w`, choosing the adapter with `--programmer`? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "플래시와 롬, 두 낱말을 그대로 이어 붙인 이름입니다.",
+        "되쓰기 전에 두 번 읽어 같은 값이 나오는지 확인하고 원본을 따로 보관하십시오. 잘못 쓰면 기기가 다시 깨어나지 않습니다."
+      ],
+      "en": [
+        "Two words joined as they are: flash and ROM.",
+        "Read twice and compare before writing, and keep the original safe — a bad write leaves a device that never comes back up."
+      ]
+    }
+  },
+  {
+    "id": "t4_secureboot",
+    "tier": 4,
+    "cat": "hardware",
+    "track": "hardware",
+    "points": 200,
+    "ci": true,
+    "hash": "c6cf0b83f25bc0ffbfce01013a7faba0b00a0a5623acf1f029700a9327e23530",
+    "fmt": "두 단어 / two words (11글자 / 11 chars)",
+    "title": {
+      "ko": "퓨즈에 새긴 신뢰",
+      "en": "Trust Burned Into a Fuse"
+    },
+    "prompt": {
+      "ko": "전원이 들어오면 칩 안에 구워져 바꿀 수 없는 1차 코드가 먼저 돌면서 다음 단계의 서명을 확인하고, 통과한 그 단계가 다시 다음 단계를 확인하는 사슬이 이어집니다. 사슬의 뿌리가 되는 공개키의 해시는 한 번만 쓸 수 있는 퓨즈에 구워 되돌릴 수 없게 만듭니다. 이 구조를 부르는 두 단어는? (공백 포함 열한 글자)",
+      "en": "At power-up, immutable first-stage code inside the chip verifies the signature on the next stage, and that stage in turn verifies the one after it, on down the chain. The hash of the public key at the root of the chain is burned into one-time fuses so it can never be taken back. What two words name this arrangement? (eleven characters including the space)"
+    },
+    "hints": {
+      "ko": [
+        "'안전한'을 뜻하는 형용사와 부팅을 뜻하는 명사, 두 낱말을 띄어 씁니다.",
+        "퓨즈를 굽지 않은 채 출고된 기기에서는 사슬의 뿌리가 비어 있어서, 자기 키로 서명한 이미지를 정품처럼 통과시킬 수 있습니다."
+      ],
+      "en": [
+        "The adjective for 'safe' and the noun for starting a machine up, as two separate words.",
+        "On a device shipped with the fuses unburned the root of the chain is empty, and an image signed with your own key passes as genuine."
       ]
     }
   }

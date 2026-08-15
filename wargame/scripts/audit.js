@@ -115,6 +115,8 @@ const NOT_PLANTED = {
   t2_xss: 'asks which cookie attribute blocks document.cookie — a fact, no cookie to read here',
   t2_mitmproxy: 'asks for a proxy by name; the 콘솔 is that tool\'s, not the browser\'s',
   t3_overlay: 'asks what the window drawn on top is called; nothing is drawn on this page',
+  t2_uboot: 'asks for a bootloader by name; its 콘솔 is a serial line into a device, not this page',
+  t4_openocd: 'asks for a debugger by name; the 콘솔 is the telnet one that tool opens on 4444',
 };
 
 const aBad = [], aRows = [];
@@ -601,7 +603,14 @@ function stemOf(w) {
   for (const suf of SUFFIXES) {
     if (s.endsWith(suf) && s.length - suf.length >= 4) { s = s.slice(0, -suf.length); break; }
   }
-  if (/([bdfglmnprtz])\1$/.test(s)) s = s.slice(0, -1); // "stopping" -> "stop"
+  // "stopping" -> "stopp" -> "stop". The same floor the suffix loop uses applies
+  // here: undoing the doubling must not cut down to a stub either. Without it a
+  // four-letter word is stemmed to three and collects strangers — "gatt" landed
+  // on "gat" and so did "gate", two unrelated words the corpus writes in
+  // comparable numbers, and being the same length no fmt could ever part them.
+  // The floor also keeps a genuinely doubled base together with its own forms:
+  // "buzz" and "buzzing" both stop at "buzz" instead of splitting.
+  if (/([bdfglmnprtz])\1$/.test(s) && s.length - 1 >= 4) s = s.slice(0, -1);
   return s.replace(/e$/, '').replace(/y$/, 'i');
 }
 // The self-text half never learns the answer, so it cannot stem TOWARDS it —
