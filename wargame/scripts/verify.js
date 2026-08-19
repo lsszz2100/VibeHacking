@@ -75,6 +75,7 @@ for (const ch of CHALLENGES) {
 const TIER_NEED_MIN_SHARE = 0.4; // opening a layer has to mean you worked it
 const CALIBRATION = { pools: { 0: 6, 1: 10, 2: 15, 3: 12, 4: 7 }, need: [4, 6, 9, 7, 5] };
 const appJs = fs.readFileSync(path.join(WG, 'assets/app.js'), 'utf8');
+let livePools = null, liveNeed = null; // the real pools/gates, for the README table check below
 const needAtSrc = appJs.match(/const TIER_NEED_AT = .*;/);
 const tierNeedSrc = appJs.match(/const tierNeed = [\s\S]*?\n  \};/);
 
@@ -90,6 +91,7 @@ if (!needAtSrc || !tierNeedSrc) {
   const pools = {};
   for (const t of TIERS) pools[t.id] = CHALLENGES.filter((c) => c.tier === t.id).length;
   const need = resolveNeed(pools);
+  livePools = pools; liveNeed = need;
 
   // Fidelity: replayed at the pool it was calibrated for, the share has to
   // reproduce the counts the game actually shipped with. Otherwise this is a
@@ -97,6 +99,25 @@ if (!needAtSrc || !tierNeedSrc) {
   const replay = resolveNeed(CALIBRATION.pools);
   if (replay.join(',') !== CALIBRATION.need.join(',')) {
     fail(`tier gates: replayed at the 50-challenge pool the shares give ${replay.join('/')}, but the game shipped ${CALIBRATION.need.join('/')} — the shares are not the original gate`);
+  }
+
+  // One anchor pins a point, not a shape, and tier 0's bar is no longer a flat
+  // share: it leaves the same 4-of-6 anchor on a sub-linear curve, so every
+  // exponent from 0.5 to 1 reproduces those 4 solves and the replay above sees
+  // nothing. Whatever the entrance costs a player is decided entirely by how
+  // that curve behaves far from the anchor, which is exactly where nothing was
+  // being checked. Replay a second time at 16x the calibration pool, where the
+  // flat tiers still land on their share and tier 0 does not: 42 of 96 is the
+  // 0.85 curve, 96 would be the flat 4/6 it replaced, and 25 would be a curve
+  // gentle enough to hand the layer away. A bare number here is deliberate —
+  // restating the formula would drift with it and check nothing.
+  const CALIBRATION_WIDE = {
+    pools: { 0: 96, 1: 160, 2: 240, 3: 192, 4: 112 },
+    need: [42, 96, 144, 112, 80]
+  };
+  const wide = resolveNeed(CALIBRATION_WIDE.pools);
+  if (wide.join(',') !== CALIBRATION_WIDE.need.join(',')) {
+    fail(`tier gates: replayed at 16x the calibration pool the gates give ${wide.join('/')}, but this curve is supposed to give ${CALIBRATION_WIDE.need.join('/')} — the shape changed away from the anchor, where the original replay cannot see it`);
   }
 
   for (const t of TIERS) {
@@ -203,6 +224,37 @@ if (!totalKo || Number(totalKo[1]) !== total) {
 }
 if (!totalEn || Number(totalEn[1]) !== total) {
   fail(`wargame/README.md EN total says ${totalEn ? totalEn[1] : '<missing>'} but challenges.js has ${total}`);
+}
+
+// --- README's tier table has to describe the tier gates that actually ship ---
+// Both of its number columns are hand-maintained and neither was ever checked.
+// The breach column survived that because it printed TIER_NEED_AT itself, a
+// constant, so no expansion could age it — but it also meant the table showed
+// the declared share rather than the gate, and tiers 3 and 4 had drifted a point
+// off the count players are really held to. Tier 0 is no longer a constant at
+// all, so leaving the column unchecked would hand it a fresh way to rot: every
+// future track moves that cell and nothing would say so. Read both columns off
+// the same pools and gates the app resolves, and let the table be the thing
+// under test rather than a note about it.
+if (livePools && liveNeed) {
+  const rows = readme.split('\n').filter(l => /^\| `(perimeter|webserver|internal|vault|core)`/.test(l));
+  if (rows.length !== TIERS.length) {
+    fail(`wargame/README.md: tier table did not parse — ${rows.length}/${TIERS.length} rows matched, so its counts went unchecked`);
+  } else {
+    for (const row of rows) {
+      const cells = row.split('|').map(c => c.trim());
+      const tid = Number((cells[2].match(/\d+/) || [])[0]);
+      const tier = TIERS.find(t => t.id === tid);
+      if (!tier) { fail(`wargame/README.md tier table: row "${cells[1]}" names tier ${cells[2]}, which does not exist`); continue; }
+      const pool = livePools[tid], want = Math.round((liveNeed[tid] / pool) * 100);
+      if (Number(cells[4]) !== pool) {
+        fail(`wargame/README.md tier table: ${tier.en} row says ${cells[4]} challenges but the tier holds ${pool}`);
+      }
+      if (cells[5] !== `${want}%`) {
+        fail(`wargame/README.md tier table: ${tier.en} row breaches at ${cells[5]} but the gate is ${liveNeed[tid]}/${pool} (${want}%)`);
+      }
+    }
+  }
 }
 
 // --- report ---

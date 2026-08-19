@@ -198,9 +198,25 @@
   // the pool reached 245 they gated a layer on roughly an eighth of it. These are those same 50-era ratios,
   // written as the fractions the commit message spelled them with; the count is
   // re-derived from whatever the pool holds now, so expansions carry it along.
-  const TIER_NEED_AT = { 0: 4/6, 1: 6/10, 2: 9/15, 3: 7/12, 4: 5/7 };
+  // Tier 0 is not in this table; it is the entrance, and it scales differently.
+  const TIER_NEED_AT = { 1: 6/10, 2: 9/15, 3: 7/12, 4: 5/7 };
   const tierNeed = tid => {
     const pool = tierChals(tid).length;
+    // The entrance is the one layer where a flat share is the wrong rule, and
+    // fixing the decay above made that worse rather than better. Expansions add
+    // tracks — breadth — so tier 0 collects a couple of warm-ups every time a
+    // new subject arrives, and 4/6 of a pool that had grown to 55 asked for 37
+    // solves before a second layer existed at all: 12% of the whole game spent
+    // in the tutorial, where the 50-lock game it was calibrated on asked for 4.
+    // Nobody needs the hardware warm-ups to be ready for the web tier above.
+    // So the entrance keeps the same anchor (4 of 6) and grows sub-linearly out
+    // of it — the bar still moves with the pool, it just stops racing it. At 55
+    // that is 26, which is 8% of the game, about what 4 of 50 was.
+    if (tid === TIERS[0].id) {
+      const ENTRY_POOL = 6, ENTRY_NEED = 4, ENTRY_CURVE = 0.85;
+      const n = ENTRY_NEED * Math.pow(pool / ENTRY_POOL, ENTRY_CURVE);
+      return Math.min(pool, Math.max(1, Math.round(n)));
+    }
     const at = TIER_NEED_AT[tid];
     if (at == null) return (TIERS.find(x => x.id === tid) || {}).need || 0;
     return Math.min(pool, Math.max(1, Math.round(at * pool)));
