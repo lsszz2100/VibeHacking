@@ -88,5 +88,10 @@ jobs:
         with:
           # Pages backend has been observed sitting in `deployment_queued`
           # past the 600s default before completing; the deploy itself
-          # succeeds, only the action's own polling times out first.
-          timeout: 1800
+          # succeeds, only the action's own polling times out first. This
+          # input is in MILLISECONDS (the action's own default is 600000),
+          # so 30 minutes is 1800000 — written as 1800 it was 1.8s, which
+          # is under the 5s first poll, so the run passed only when Pages
+          # happened to finish before that poll and aborted the deployment
+          # whenever it did not.
+          timeout: 1800000
