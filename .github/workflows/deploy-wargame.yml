@@ -72,6 +72,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure Pages
+        id: pages
         uses: actions/configure-pages@v5
         with:
           # Auto-enable Pages with the GitHub Actions source if not already enabled.
@@ -94,3 +95,21 @@ jobs:
         # backend ever sits in `deployment_queued` past 10 minutes again
         # the way it did on 2026-07-02, this input cannot wait it out;
         # check the live bytes and re-run instead.
+
+      - name: Setup Node
+        if: always()
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # The step above reports on the deployment; this one reports on the
+      # site. They have come apart in both directions — a red deploy whose
+      # bytes had already landed, and a red deploy that really had left the
+      # old app.js live — and telling those apart used to mean reading the
+      # raw log for whether the cancel succeeded, then fetching files by
+      # hand. `always()` so it still answers that question when the deploy
+      # step is the thing that failed; page_url is empty in that case, so
+      # fall back to the base URL Configure Pages resolved.
+      - name: Verify the live site is this commit
+        if: always()
+        run: node wargame/scripts/live-check.js "${{ steps.deployment.outputs.page_url || steps.pages.outputs.base_url }}"
