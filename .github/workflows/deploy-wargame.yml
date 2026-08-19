@@ -85,13 +85,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          # Pages backend has been observed sitting in `deployment_queued`
-          # past the 600s default before completing; the deploy itself
-          # succeeds, only the action's own polling times out first. This
-          # input is in MILLISECONDS (the action's own default is 600000),
-          # so 30 minutes is 1800000 — written as 1800 it was 1.8s, which
-          # is under the 5s first poll, so the run passed only when Pages
-          # happened to finish before that poll and aborted the deployment
-          # whenever it did not.
-          timeout: 1800000
+        # No `timeout` here on purpose. 600000ms is both this action's
+        # default and its hard maximum (MAX_TIMEOUT in deployment.js), so
+        # the 30 minutes this repo tried to buy in July 2026 was never
+        # available: 1800 was read as 1.8s — under the 5s first poll, so a
+        # run passed only when Pages happened to beat that poll — and
+        # 1800000 is silently clamped straight back to 600000. If the
+        # backend ever sits in `deployment_queued` past 10 minutes again
+        # the way it did on 2026-07-02, this input cannot wait it out;
+        # check the live bytes and re-run instead.
