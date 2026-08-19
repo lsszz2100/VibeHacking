@@ -86,13 +86,6 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          # TEMPORARY — removed in the very next commit. No artifact by this
-          # name exists, so this attempt is guaranteed to fail and the retry
-          # below has to be the thing that actually deploys. The github-pages
-          # environment only accepts deployments from the default branch, so
-          # there is nowhere else this can be demonstrated.
-          artifact_name: github-pages-deliberately-absent
         # No `timeout` here on purpose. 600000ms is both this action's
         # default and its hard maximum (MAX_TIMEOUT in deployment.js), so
         # the 30 minutes this repo tried to buy in July 2026 was never
@@ -114,6 +107,14 @@ jobs:
       # Retrying only the deploy step is the version that works, because the
       # upload above has already run exactly once and is not repeated. Taking
       # the backend at its word about "later" before trying again.
+      #
+      # Demonstrated rather than assumed, in run #63: the first attempt was
+      # pointed at an artifact name that does not exist, and the log shows it
+      # erroring, the 30s wait running, and the retry reporting `Found 1
+      # artifact(s)` — one, not two — and deploying, with live-check then
+      # confirming all ten files on the live site. The injection was removed
+      # in the commit right after. It had to run on the default branch: the
+      # github-pages environment rejects deployments from anywhere else.
       - name: Wait before retrying the deployment
         if: steps.deployment.outcome == 'failure'
         run: sleep 30
