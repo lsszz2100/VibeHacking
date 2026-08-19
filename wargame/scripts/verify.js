@@ -226,6 +226,76 @@ if (!totalEn || Number(totalEn[1]) !== total) {
   fail(`wargame/README.md EN total says ${totalEn ? totalEn[1] : '<missing>'} but challenges.js has ${total}`);
 }
 
+// --- the repo's own docs carry the challenge count too, and nobody was watching ---
+// wargame/README.md and index.html are checked above, but the count is also
+// printed in six docs at the repo root, in four languages, and every one of
+// them is hand-maintained. Two sessions have been spent editing them by hand
+// after an expansion, and that is exactly the kind of work that gets done
+// nine tenths of the way: this check was written because the Japanese and
+// Chinese wargame paragraphs in AI_LEARNING.md still said 100, a number the
+// game left behind three expansions ago.
+//
+// Listing the individual sentences would age as badly as the numbers do, so
+// this reads the invariant instead: in these docs, a number described as a
+// count of challenges has to be the count of challenges. Two things keep it
+// honest. It only looks at lines that name the wargame, which is what lets
+// AI_LEARNING.md keep its study-plan counts (5문제, 10問, 択一式2問) without
+// a single false alarm — they are about quizzes the reader asks an AI for,
+// not about this game. And every listed doc has to yield at least one such
+// number, so a doc that quietly stops carrying the count fails here rather
+// than passing by having nothing left to check.
+//
+// Unchecked, deliberately: a count written with no unit word and outside a
+// badge ("315개") is invisible to this, and so is one on a line that never
+// names the wargame. wargame/README.md is not in the list — it has its own
+// total and tier-table checks above, and its prose legitimately counts other
+// things ("6문제 중 4문제"), which this sweep would have to allowlist.
+const DOCS_WITH_COUNT = ['README.md', 'README.en.md', 'README.ja.md', 'README.zh.md', 'USAGE.md', 'AI_LEARNING.md'];
+const COUNT_PHRASE = /(\d[\d,]*)\s*(문제|challenges?|問題?|道挑战|道题|题)/g;
+const WARGAME_LINE = /워게임|wargame|ワーゲーム|战争游戏|vibe\.corp|LAYER BREACHED/i;
+// Shield badges spell the count with no unit at all (`...infiltration·315-9933ff`),
+// so they need their own read. Scoped to badges whose own slug names the
+// wargame, so the repo's section and line-count badges cannot be dragged in.
+const BADGE = /img\.shields\.io\/badge\/([^)\]\s]*)/g;
+
+for (const doc of DOCS_WITH_COUNT) {
+  let text;
+  try {
+    text = fs.readFileSync(path.join(ROOT, doc), 'utf8');
+  } catch (e) {
+    fail(`${doc}: listed as carrying the challenge count but could not be read (${e.code}) — the count in it went unchecked`);
+    continue;
+  }
+  let found = 0;
+  text.split('\n').forEach((line, i) => {
+    const at = `${doc}:${i + 1}`;
+    if (WARGAME_LINE.test(line)) {
+      COUNT_PHRASE.lastIndex = 0;
+      let m;
+      while ((m = COUNT_PHRASE.exec(line))) {
+        found++;
+        if (Number(m[1].replace(/,/g, '')) !== total) {
+          fail(`${at} says "${m[0]}" but challenges.js has ${total} challenges`);
+        }
+      }
+    }
+    BADGE.lastIndex = 0;
+    let b;
+    while ((b = BADGE.exec(line))) {
+      if (!WARGAME_LINE.test(b[1])) continue;
+      const n = b[1].match(/·(\d[\d,]*)/);
+      if (!n) continue;
+      found++;
+      if (Number(n[1].replace(/,/g, '')) !== total) {
+        fail(`${at} wargame badge shows ${n[1]} but challenges.js has ${total} challenges`);
+      }
+    }
+  });
+  if (found === 0) {
+    fail(`${doc}: no wargame challenge count found at all — either it stopped carrying one (drop it from DOCS_WITH_COUNT) or this check has gone blind to how it is written now`);
+  }
+}
+
 // --- README's tier table has to describe the tier gates that actually ship ---
 // Both of its number columns are hand-maintained and neither was ever checked.
 // The breach column survived that because it printed TIER_NEED_AT itself, a

@@ -546,7 +546,7 @@ VibeHacking レポジトリ
 - 実習環境を自動起動
 - ステップごとに実習を案内
 
-> 🎮 **ワーゲームで力試し**: 理論を学んだら[ブラウザワーゲーム](wargame/README.md)（`https://lsszz2100.github.io/VibeHacking/`）で腕試しを。偽シェルで5つのセキュリティ層を突破するターミナル型CTF、全100問。AI CLIに「ワーゲームN番のヒントだけ」と聞くこともできます。
+> 🎮 **ワーゲームで力試し**: 理論を学んだら[ブラウザワーゲーム](wargame/README.md)（`https://lsszz2100.github.io/VibeHacking/`）で腕試しを。偽シェルで5つのセキュリティ層を突破するターミナル型CTF、全315問。AI CLIに「ワーゲームN番のヒントだけ」と聞くこともできます。
 
 ---
 
@@ -901,7 +901,7 @@ VibeHacking 仓库目录
 - 自动启动实验环境
 - 逐步引导实践
 
-> 🎮 **用战争游戏检验**：学完理论后，在[浏览器战争游戏](wargame/README.md)（`https://lsszz2100.github.io/VibeHacking/`）中检验自己 —— 用伪 Shell 攻破五道安全层的终端式 CTF，共 100 题。你甚至可以让 AI CLI「只给战争游戏第 N 题一个提示」。
+> 🎮 **用战争游戏检验**：学完理论后，在[浏览器战争游戏](wargame/README.md)（`https://lsszz2100.github.io/VibeHacking/`）中检验自己 —— 用伪 Shell 攻破五道安全层的终端式 CTF，共 315 题。你甚至可以让 AI CLI「只给战争游戏第 N 题一个提示」。
 
 ---
 
