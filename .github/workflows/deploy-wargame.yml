@@ -65,7 +65,7 @@ jobs:
     needs: validate
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -95,6 +95,26 @@ jobs:
         # backend ever sits in `deployment_queued` past 10 minutes again
         # the way it did on 2026-07-02, this input cannot wait it out;
         # check the live bytes and re-run instead.
+        #
+        # A failure here does not end the job any more — see the retry below.
+        continue-on-error: true
+
+      # Three of this workflow's fifteen historical failures were the backend
+      # answering `Deployment failed, try again later.` (#16, #17, #19), and
+      # the person who then re-ran the failed *job* got a different failure
+      # instead: re-running the job re-runs the upload, and deploy-pages
+      # refuses on "Multiple artifacts named github-pages" (#19, #28, #56).
+      # Retrying only the deploy step is the version that works, because the
+      # upload above has already run exactly once and is not repeated. Taking
+      # the backend at its word about "later" before trying again.
+      - name: Wait before retrying the deployment
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 30
+
+      - name: Deploy to GitHub Pages (retry)
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v4
 
       - name: Setup Node
         if: always()
@@ -112,4 +132,4 @@ jobs:
       # fall back to the base URL Configure Pages resolved.
       - name: Verify the live site is this commit
         if: always()
-        run: node wargame/scripts/live-check.js "${{ steps.deployment.outputs.page_url || steps.pages.outputs.base_url }}"
+        run: node wargame/scripts/live-check.js "${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url || steps.pages.outputs.base_url }}"
