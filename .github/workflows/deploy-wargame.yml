@@ -86,6 +86,13 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # TEMPORARY — removed in the very next commit. No artifact by this
+          # name exists, so this attempt is guaranteed to fail and the retry
+          # below has to be the thing that actually deploys. The github-pages
+          # environment only accepts deployments from the default branch, so
+          # there is nowhere else this can be demonstrated.
+          artifact_name: github-pages-deliberately-absent
         # No `timeout` here on purpose. 600000ms is both this action's
         # default and its hard maximum (MAX_TIMEOUT in deployment.js), so
         # the 30 minutes this repo tried to buy in July 2026 was never
