@@ -117,6 +117,7 @@ const NOT_PLANTED = {
   t3_overlay: 'asks what the window drawn on top is called; nothing is drawn on this page',
   t2_uboot: 'asks for a bootloader by name; its 콘솔 is a serial line into a device, not this page',
   t4_openocd: 'asks for a debugger by name; the 콘솔 is the telnet one that tool opens on 4444',
+  t4_purple: 'asks what mixing the two teams\' colours is called; the shared screen belongs to those teams, not to this page',
 };
 
 const aBad = [], aRows = [];

