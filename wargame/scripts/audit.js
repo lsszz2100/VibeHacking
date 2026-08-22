@@ -189,7 +189,7 @@ for (const ch of shortAnswerNoFmt) console.log(`  [${ch.id}] fmt=${ch.fmt}`);
 const pts = CHALLENGES.map(c => c.points);
 console.log(`\n--- [E] Points: min ${Math.min(...pts)}, max ${Math.max(...pts)}, avg ${(pts.reduce((a,b)=>a+b,0)/pts.length).toFixed(0)} ---`);
 
-// [F] Does README's topics column spell out any answer?
+// [F] Do README's topic tables spell out any answer?
 // Answers live only as SHA-256, so hash each topic term under the app's own
 // grading rule (ci ? lowercase : as-typed) and look for a hash hit. A hit means
 // the table hands a player that challenge's answer. Needs no plaintext, so it
@@ -198,12 +198,19 @@ const ciHash = new Map(), csHash = new Map();
 for (const c of CHALLENGES) (c.ci ? ciHash : csHash).set(c.hash, c);
 
 const readme = fs.readFileSync(path.join(WG, 'README.md'), 'utf8');
-const topicRows = readme.split('\n').filter(l => /^\| `(perimeter|webserver|internal|vault|core)`/.test(l));
+// The topics used to be a fifth column of the tier table, which by ten tracks
+// had grown to 3,354 characters in one cell. They now live in a per-track table
+// under each tier, so read them from there — one row per tier x track pair that
+// actually holds challenges. Anchored on the track ids, which are the same
+// strings challenges.js grades against, so renaming a track breaks the match
+// loudly rather than quietly emptying this check.
+const trackRe = new RegExp('^\\| `(' + TRACKS.map(t => t.id).join('|') + ')` ');
+const topicRows = readme.split('\n').filter(l => trackRe.test(l));
 const terms = new Map();
 for (const row of topicRows) {
   const cells = row.split('|');
-  if (cells.length < 4) continue;
-  for (const chunk of cells[3].split(/[,·/()|]|\s—\s/)) {
+  if (cells.length < 3) continue;
+  for (const chunk of cells[2].split(/[,·/()|]|\s—\s/)) {
     const t = chunk.trim().replace(/^\*+|\*+$/g, '').replace(/`/g, '');
     if (t.length >= 2 && !terms.has(t)) terms.set(t, cells[1].trim());
     for (const w of t.split(/\s+/)) {
@@ -219,10 +226,12 @@ for (const [term, node] of terms) {
 }
 // A table that stops matching would make this section report a silent 0 forever,
 // so treat "could not read the table" as a finding rather than a pass.
-const fBlocked = topicRows.length === TIERS.length ? null
-  : `README's tier table did not parse — ${topicRows.length}/${TIERS.length} topic rows matched, so [F] checked nothing`;
+const wantRows = TIERS.reduce((n, t) => n + TRACKS.filter(tr =>
+  CHALLENGES.some(c => c.tier === t.id && c.track === tr.id)).length, 0);
+const fBlocked = topicRows.length === wantRows ? null
+  : `README's per-track topic tables did not parse — ${topicRows.length}/${wantRows} rows matched, so [F] checked ${topicRows.length ? 'only part of the table' : 'nothing'}`;
 console.log(`\n--- [F] README topic terms that ARE a challenge answer: ${spelled.length} ---`);
-console.log(`    (${terms.size} terms checked across ${topicRows.length} tier rows; describe the topic, don't name the answer)`);
+console.log(`    (${terms.size} terms checked across ${topicRows.length} tier x track rows; describe the topic, don't name the answer)`);
 if (fBlocked) console.log(`  ⚠ ${fBlocked}`);
 for (const s of spelled.sort((a, b) => a.tier - b.tier)) {
   const where = REVEAL ? `as "${s.term}"` : `(term hidden — rerun locally with --reveal)`;

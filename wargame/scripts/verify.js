@@ -298,6 +298,9 @@ for (const doc of DOCS_WITH_COUNT) {
 
 // --- README's tier table has to describe the tier gates that actually ship ---
 // Both of its number columns are hand-maintained and neither was ever checked.
+// The topics that used to share this table now live in the per-track tables
+// below it, so the row is node | tier | count | breach and the two numbers
+// sit one cell further left than they did; [F] in audit.js follows the topics.
 // The breach column survived that because it printed TIER_NEED_AT itself, a
 // constant, so no expansion could age it — but it also meant the table showed
 // the declared share rather than the gate, and tiers 3 and 4 had drifted a point
@@ -317,11 +320,11 @@ if (livePools && liveNeed) {
       const tier = TIERS.find(t => t.id === tid);
       if (!tier) { fail(`wargame/README.md tier table: row "${cells[1]}" names tier ${cells[2]}, which does not exist`); continue; }
       const pool = livePools[tid], want = Math.round((liveNeed[tid] / pool) * 100);
-      if (Number(cells[4]) !== pool) {
-        fail(`wargame/README.md tier table: ${tier.en} row says ${cells[4]} challenges but the tier holds ${pool}`);
+      if (Number(cells[3]) !== pool) {
+        fail(`wargame/README.md tier table: ${tier.en} row says ${cells[3]} challenges but the tier holds ${pool}`);
       }
-      if (cells[5] !== `${want}%`) {
-        fail(`wargame/README.md tier table: ${tier.en} row breaches at ${cells[5]} but the gate is ${liveNeed[tid]}/${pool} (${want}%)`);
+      if (cells[4] !== `${want}%`) {
+        fail(`wargame/README.md tier table: ${tier.en} row breaches at ${cells[4]} but the gate is ${liveNeed[tid]}/${pool} (${want}%)`);
       }
     }
   }
