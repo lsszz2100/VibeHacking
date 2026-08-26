@@ -347,6 +347,48 @@ const SOLVERS = new Map([
     const tail = param(ch, /Ends with \.([\d.]+?)\.?$/m);
     return `${range}.${tail}`;
   } }],
+
+  /* --- physical: badge frames and an access log, parsed from the prompt --- */
+  ['t2_wiegandfc', { kind: 'computed', via: 'facility code from a 26-bit frame', solve: (ch) => {
+    const bits = span(ch, /^[01]{20,}$/);
+    return String(parseInt(bits.slice(1, 9), 2));
+  } }],
+  ['t3_wiegandcn', { kind: 'computed', via: 'card number from a 26-bit frame', solve: (ch) => {
+    const bits = span(ch, /^[01]{20,}$/);
+    return String(parseInt(bits.slice(9, 25), 2));
+  } }],
+  ['t4_wiegandflag', { kind: 'computed', via: 'full 26-bit frame parse', solve: (ch) => {
+    const bits = span(ch, /^[01]{20,}$/);
+    const fc = parseInt(bits.slice(1, 9), 2);
+    const cn = parseInt(bits.slice(9, 25), 2);
+    return `FLAG{FC${fc}_CN${cn}}`;
+  } }],
+  ['t2_bcc', { kind: 'computed', via: 'xor check byte over a UID', solve: (ch) => {
+    const uid = span(ch, /^[0-9a-fA-F]{8}$/);
+    let x = 0;
+    for (let i = 0; i < 8; i += 2) x ^= parseInt(uid.slice(i, i + 2), 16);
+    return x.toString(16).padStart(2, '0');
+  } }],
+  ['t4_emdec', { kind: 'computed', via: 'lower 32 bits of a tag id', solve: (ch) => {
+    const id = span(ch, /^[0-9a-fA-F]{10}$/);
+    return String(parseInt(id.slice(-8), 16));
+  } }],
+  ['t4_tailgatelog', { kind: 'computed', via: 'smallest follow-through gap', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced access log in the prompt');
+    const rows = m[1].trim().split('\n').map((l) => l.split(',').map((s) => s.trim()));
+    let best = null;
+    for (let i = 1; i < rows.length; i++) {
+      const [, badge, door, action, gap] = rows[i];
+      const prev = rows[i - 1];
+      if (action === 'ACCESS_NO_BADGE' && prev[3] === 'ACCESS_GRANTED' && prev[2] === door) {
+        const g = Number(gap);
+        if (g > 0 && g <= 3000 && (!best || g < best.g)) best = { id: badge, g };
+      }
+    }
+    if (!best) throw new Error('no tailgate row matched the rule');
+    return `FLAG{TAILGATE_${best.id}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

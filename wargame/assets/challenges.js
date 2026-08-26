@@ -124,6 +124,14 @@ const TRACKS = [
     "en": "Blue Team & Detection",
     "desc_ko": "로그 수집·탐지 룰·사고 대응과 위협 인텔리전스.",
     "desc_en": "Log collection, detection rules, incident response and threat intelligence."
+  },
+  {
+    "id": "physical",
+    "icon": "🚪",
+    "ko": "물리 보안 침투",
+    "en": "Physical Security",
+    "desc_ko": "출입 통제·잠금장치·RFID 배지·물리 정찰과 사회공학.",
+    "desc_en": "Access control, locks, RFID badges, physical recon and social engineering."
   }];
 
 const CHALLENGES = [
@@ -8290,7 +8298,7 @@ const CHALLENGES = [
     },
     "prompt": {
       "ko": "802.15.4 위에 얹혀 2.4GHz 의 11번부터 26번 채널을 쓰는 저전력 메시 규약입니다. 전구와 문 센서가 서로를 거쳐 신호를 나르는데, 새 장치가 망에 들어오는 그 순간만은 망 키가 널리 알려진 기본 키로 감싸여 공중을 지나갑니다. 이 규약의 이름은? (여섯 글자)",
-      "en": "A low-power mesh protocol riding on 802.15.4 across channels 11 to 26 in the 2.4 GHz band, where bulbs and door sensors relay for one another. Only at the instant a device joins does the network key cross the air, wrapped in a well-known default key. What is this protocol called? (six characters)"
+      "en": "A low-power mesh protocol riding on 802.15.4 across channels 11 to 26 in the 2.4 GHz band, where bulbs and door sensors pass messages for one another. Only at the instant a device joins does the network key cross the air, wrapped in a well-known default key. What is this protocol called? (six characters)"
     },
     "hints": {
       "ko": [
@@ -9924,6 +9932,987 @@ const CHALLENGES = [
       "en": [
         "The name is the English word for open with this field's three-letter abbreviation stuck to it, written as one word.",
         "When connectors keep inserting the same object under different names the graph bloats with duplicates, and tuning the merge rules becomes most of the operational work."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t0_tailgate",
+    "tier": 0,
+    "cat": "recon",
+    "track": "physical",
+    "points": 50,
+    "ci": true,
+    "hash": "37a73c503ccb3a4d58086b0eac683493e9e63292a56af36299574f08edcbd41a",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "뒤를 따라",
+      "en": "Right Behind You"
+    },
+    "prompt": {
+      "ko": "인가된 사람이 배지로 문을 연 직후, 자신의 자격 증명 없이 바로 뒤따라 통제 구역으로 들어가는 물리 침투 기법을 무엇이라 부르는가?",
+      "en": "An authorised person badges a door open; you slip through right behind them with no credential of your own. What is this physical-entry technique called?"
+    },
+    "hints": {
+      "ko": [
+        "출퇴근 러시아워에 성공률이 가장 높다.",
+        "피해자가 눈치채지 못한 채 이루어진다는 점에서, 도움을 부탁해 문을 잡게 만드는 방식과 구별된다."
+      ],
+      "en": [
+        "Success rate peaks during the morning and evening rush.",
+        "It differs from the variant where you ask someone to hold the door: here the victim never knows."
+      ]
+    }
+  },
+  {
+    "id": "t0_skimming",
+    "tier": 0,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 50,
+    "ci": true,
+    "hash": "b27947c8b049242a090bd1b144f1632b9343107134ae594aaf2db06326779405",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "지나가며 한 번",
+      "en": "One Pass, Up Close"
+    },
+    "prompt": {
+      "ko": "피해자 옆에 슬쩍 붙어 지갑이나 주머니 속 출입 카드에 리더를 가까이 대고, 본인 모르게 카드의 무선 신호를 읽어 복제를 준비하는 행위를 무엇이라 부르는가? (한 단어)",
+      "en": "Slipping up next to someone and holding a reader close to the access card in their wallet or pocket, reading its radio signal without their knowledge to prepare a copy. What is this called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "우유 위의 크림을 '걷어 내듯' 정보를 얕게 떠 간다는 뜻의 낱말이다.",
+        "저주파 카드는 이 방식으로 5~10cm 거리에서 몇 초 만에 읽힌다."
+      ],
+      "en": [
+        "The word is the one for lifting the cream off the top of the milk — here, the card data with a scanner.",
+        "A low-frequency card can be lifted this way in seconds from 5-10 cm."
+      ]
+    }
+  },
+  {
+    "id": "t1_wiegand",
+    "tier": 1,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 100,
+    "ci": true,
+    "hash": "4ddb6fb26b0402e3e68bb58270c9c82610ae6219e5c53afbb118e1dbc7315eb5",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "두 가닥의 평문",
+      "en": "Two Wires, No Secrets"
+    },
+    "prompt": {
+      "ko": "카드 리더와 문 안쪽 컨트롤러를 잇는 고전적인 배선 규약은 DATA0/DATA1 두 신호선으로 카드 번호를 암호화 없이 그대로 전송한다. 신호선에 소형 장치를 물리면 도청과 리플레이가 가능하다. 이 규약의 이름은?",
+      "en": "The classic wiring between a card reader and the controller inside the door sends the card number over two lines (DATA0/DATA1) with no encryption at all. Tap the wire and you can eavesdrop and replay. Name the protocol."
+    },
+    "hints": {
+      "ko": [
+        "한 사람 이름에서 따왔다.",
+        "이를 대체하려고 뒤에 암호화·양방향 리더 표준이 만들어졌다."
+      ],
+      "en": [
+        "It is named after a person.",
+        "An encrypted, two-way reader standard was later built to replace it."
+      ]
+    }
+  },
+  {
+    "id": "t1_proxmark",
+    "tier": 1,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 100,
+    "ci": true,
+    "hash": "005efc0a070010ef2604d2445710ff748500ed69a008ffe7ceb1af992cf5d201",
+    "fmt": "도구 이름 / tool name (9글자 / 9 chars)",
+    "title": {
+      "ko": "카드 실험실",
+      "en": "The Card Lab"
+    },
+    "prompt": {
+      "ko": "125 kHz 저주파와 13.56 MHz 고주파 무선 출입 카드를 모두 읽고, 쓰고, 에뮬레이션하며 리더-카드 통신을 스니핑할 수 있는 대표적인 오픈소스 연구 장비의 이름은? (제품명 그대로, 버전 숫자 포함)",
+      "en": "The best-known open-source device for researching contactless access cards: it reads, writes and emulates both 125 kHz and 13.56 MHz cards and can sniff reader-to-card traffic. Give the product name exactly, including its version digit."
+    },
+    "hints": {
+      "ko": [
+        "명령 예: `lf search`, `hf mf autopwn`.",
+        "이름은 8글자 영문 뒤에 버전 숫자 하나가 붙어 총 9글자다. RDV4 는 그 최신 하드웨어 리비전."
+      ],
+      "en": [
+        "Sample commands: `lf search`, `hf mf autopwn`.",
+        "Eight letters plus one version digit, nine characters total. RDV4 is its latest hardware revision."
+      ]
+    }
+  },
+  {
+    "id": "t1_bumpkey",
+    "tier": 1,
+    "cat": "lockpick",
+    "track": "physical",
+    "points": 100,
+    "ci": true,
+    "hash": "7350550e0b70fb991a289f0e972c3b48afe3a7cb57e7e66da8dde85468eea9a7",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "한 번의 충격",
+      "en": "One Sharp Tap"
+    },
+    "prompt": {
+      "ko": "핀 텀블러 자물쇠의 모든 홈을 최대 깊이로 깎아 만든 특수 열쇠다. 키홀에 넣고 끝을 가볍게 두드리면 그 충격으로 키 핀이 드라이버 핀을 위로 튕겨, 전단선에 순간적으로 틈이 생기고 그 찰나에 플러그가 돈다. 이 열쇠의 이름은? (두 단어)",
+      "en": "A key cut so every bitting is at maximum depth. Seat it in the keyhole and tap the end: the impact throws the key pins into the driver pins, opening a momentary gap at the shear line, and you turn the plug in that instant. What is this key called? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "이 기법 자체는 '범핑(bumping)'이라 부른다. 여기서 묻는 것은 그 도구다.",
+        "스풀 핀·세레이티드 핀은 이 충격을 흡수해 방어한다."
+      ],
+      "en": [
+        "The technique itself is called bumping; this asks for the tool it uses.",
+        "Spool and serrated pins defend against it by absorbing the impact."
+      ]
+    }
+  },
+  {
+    "id": "t1_deadbolt",
+    "tier": 1,
+    "cat": "lockpick",
+    "track": "physical",
+    "points": 100,
+    "ci": true,
+    "hash": "2f69ca657a86d5ebe9acac1df47340c5cd1fc7667ee3831f9422ed369cc96c2c",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "밀리지 않는 빗장",
+      "en": "The Bolt That Won't Give"
+    },
+    "prompt": {
+      "ko": "플라스틱 카드를 문틈에 넣어 경사진 빗장을 밀어 넘기는 공격은 스프링으로 튀어나오는 래치볼트에만 통한다. 스프링이 없어 카드로는 밀 수 없고, 열쇠나 손잡이를 돌려야만 움직이는 잠금 방식의 이름은? (한 단어)",
+      "en": "Sliding a card into the door gap to push a bevelled bolt back only works on a spring-loaded latch bolt. Name the bolt that has no spring, cannot be pushed with a card, and only moves when a key or thumbturn is turned. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "가정집 현관문의 보조 잠금이 보통 이것이다.",
+        "영문으로 dead + bolt."
+      ],
+      "en": [
+        "This is usually the secondary lock on a house's front door.",
+        "dead + bolt."
+      ]
+    }
+  },
+  {
+    "id": "t1_dumpster",
+    "tier": 1,
+    "cat": "recon",
+    "track": "physical",
+    "points": 100,
+    "ci": true,
+    "hash": "377bd50a9621a7592d8fea5ec2b152c37583a4d59c52197d6c71be2d39e47fcd",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "버린 것에서 줍기",
+      "en": "Picking Through the Trash"
+    },
+    "prompt": {
+      "ko": "폐기된 서류, 라벨, 구형 하드웨어에서 내부 프로세스·조직도·계정 정보를 수집하는 정찰 기법을 흔히 무엇이라 부르는가? (두 단어)",
+      "en": "The reconnaissance technique of harvesting internal processes, org charts and account details from discarded documents, labels and old hardware. What is it commonly called? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "말 그대로 쓰레기통에 들어가는 행위를 가리킨다.",
+        "허가 없이 접근 가능한 것은 공용 도로에서 닿는 쓰레기통뿐이다(관할에 따라 다름)."
+      ],
+      "en": [
+        "It refers, literally, to climbing into the bin.",
+        "Only bins reachable from a public road may be approached without permission, and even that varies by jurisdiction."
+      ]
+    }
+  },
+  {
+    "id": "t1_t5577",
+    "tier": 1,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 100,
+    "ci": true,
+    "hash": "79aa1308c637e1c83b300314c8f01614b9e691b40fb3cef030e62b34bbe1df8f",
+    "fmt": "값 그대로 / literal (5글자 / 5 chars)",
+    "title": {
+      "ko": "빈 카드",
+      "en": "The Blank Card"
+    },
+    "prompt": {
+      "ko": "Proxmark 로 읽어낸 EM4100 또는 HID Prox 데이터를 그대로 써 넣어 원본처럼 동작하게 만드는, 여러 저주파 규격을 흉내 낼 수 있는 재기록 가능 범용 카드 칩의 이름은? (제품명 그대로, 5글자)",
+      "en": "The rewritable, multi-emulation low-frequency chip that EM4100 or HID Prox data read with a Proxmark gets written onto so a blank behaves like the original. Give the chip name exactly. (5 characters)"
+    },
+    "hints": {
+      "ko": [
+        "영문 한 글자 + 숫자 넉 자, 총 다섯 글자.",
+        "Proxmark 명령 `lf em 410x clone` 이 기록하는 대상이 바로 이 칩이다."
+      ],
+      "en": [
+        "One letter followed by four digits, five characters.",
+        "The Proxmark command `lf em 410x clone` writes onto exactly this chip."
+      ]
+    }
+  },
+  {
+    "id": "t2_wiegandfc",
+    "tier": 2,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 150,
+    "ci": true,
+    "hash": "5a39cadd1b007093db50744797c7a04a34f73b35ed444704206705b02597d6fd",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "26비트의 앞자리",
+      "en": "The Front of 26 Bits"
+    },
+    "prompt": {
+      "ko": "신호선 도청으로 잡은 26비트 표준 카드 프레임이다:\n\n`01100011110111000000100111`\n\n구조는 [선행 패리티 1비트][시설 코드 8비트][카드 번호 16비트][후행 패리티 1비트]. 시설 코드(facility code)를 십진수로 구하라.",
+      "en": "A 26-bit standard badge frame captured off the wire:\n\n`01100011110111000000100111`\n\nLayout: [leading parity 1][facility code 8][card number 16][trailing parity 1]. Give the facility code as a base-ten number."
+    },
+    "hints": {
+      "ko": [
+        "맨 앞 비트를 버리고 그다음 여덟 비트를 이진수로 읽으면 된다.",
+        "`11000111` 을 십진수로 바꾼다."
+      ],
+      "en": [
+        "Drop the first bit, then read the next eight bits as a binary number.",
+        "Convert `11000111` to a base-ten number."
+      ]
+    }
+  },
+  {
+    "id": "t2_bcc",
+    "tier": 2,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 150,
+    "ci": true,
+    "hash": "af327a6478537246e0d9f0c589986d5f067d2e2351a1ca5a0a4962424da0e408",
+    "fmt": "16진수 / hex (2글자 / 2 chars)",
+    "title": {
+      "ko": "닫는 바이트",
+      "en": "The Closing Byte"
+    },
+    "prompt": {
+      "ko": "MIFARE Classic 블록 0에서 4바이트 UID 바로 뒤에는 UID 네 바이트를 모두 XOR 한 검사 바이트(BCC)가 온다. UID 가 `04A3B2C1` 일 때 BCC 를 16진수 두 자리로 구하라.",
+      "en": "In MIFARE Classic block 0, the 4-byte UID is followed by a check byte (BCC) equal to the XOR of all four UID bytes. For UID `04A3B2C1`, give the BCC as two hex digits."
+    },
+    "hints": {
+      "ko": [
+        "0x04 ^ 0xA3 ^ 0xB2 ^ 0xC1.",
+        "두 바이트씩 순서대로 XOR 해 나가면 된다: 04^A3 = A7, 그다음 ^B2, 그다음 ^C1."
+      ],
+      "en": [
+        "0x04 XOR 0xA3 XOR 0xB2 XOR 0xC1.",
+        "Fold left: 04^A3 = A7, then ^B2, then ^C1."
+      ]
+    }
+  },
+  {
+    "id": "t2_crypto1",
+    "tier": 2,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 150,
+    "ci": true,
+    "hash": "d6e28ce76102d571d5e6f00cfe76d9a0b693da780f0d34933bef834d598ca096",
+    "fmt": "값 그대로 / literal (7글자 / 7 chars)",
+    "title": {
+      "ko": "48비트의 약속",
+      "en": "A 48-Bit Promise"
+    },
+    "prompt": {
+      "ko": "교통·출입에 널리 쓰인 MIFARE Classic 카드가 섹터 인증에 사용하는 스트림 암호의 이름은? 48비트 키와 예측 가능한 난수 발생기 탓에 논스 통계 기반 키 복구 공격으로 깨진다. (제품명 그대로, 7글자)",
+      "en": "The stream cipher that the widely-deployed MIFARE Classic card uses for sector authentication. Its 48-bit key and predictable RNG let nonce-statistics key-recovery attacks break it. Give the name exactly. (7 characters)"
+    },
+    "hints": {
+      "ko": [
+        "영문 6글자 + 숫자 1자.",
+        "NXP 가 만든 사유 알고리즘으로, 2008년 학계가 구조를 복원해 공개했다."
+      ],
+      "en": [
+        "Six letters plus one digit.",
+        "A proprietary NXP algorithm; academics reverse-engineered and published its structure in 2008."
+      ]
+    }
+  },
+  {
+    "id": "t2_magic",
+    "tier": 2,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 150,
+    "ci": true,
+    "hash": "6beec648e11826d4c218cc45a57bdbf865e15d6441ee9c5d58c924e0186bb40c",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "쓰기 금지가 풀린 카드",
+      "en": "The Card With No Lock on Block 0"
+    },
+    "prompt": {
+      "ko": "MIFARE Classic 카드를 완전히 복제하려면 보통 읽기 전용인 블록 0(UID 포함)까지 다시 써야 한다. 정품 카드는 이를 막지만, UID 블록 쓰기를 허용하도록 특별히 제작된 복제용 카드가 있다. 이 카드를 흔히 무엇이라 부르는가? (두 단어)",
+      "en": "Fully cloning a MIFARE Classic card means rewriting block 0, which holds the UID and is normally read-only. Genuine cards forbid it, but special cloning cards are made that allow the UID block to be written. What are these commonly called? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "gen1a·gen2 처럼 세대 구분이 있고, 값싼 중국산이 흔하다.",
+        "Proxmark 의 블록 0 덮어쓰기 명령이 통하는 바로 그 카드다."
+      ],
+      "en": [
+        "They come in generations like gen1a and gen2; cheap Chinese ones are common.",
+        "It is the card on which Proxmark's block-0 overwrite command works."
+      ]
+    }
+  },
+  {
+    "id": "t2_rex",
+    "tier": 2,
+    "cat": "lockpick",
+    "track": "physical",
+    "points": 150,
+    "ci": true,
+    "hash": "3227fe6bde46249b0aae4b69ef6efd806422a46788e281d050d32d0d9fbde723",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "나갈 때 열림",
+      "en": "Opens On the Way Out"
+    },
+    "prompt": {
+      "ko": "문 안쪽에 설치되어, 사람이 나가려 다가오면 움직임을 감지해 전자 잠금을 자동으로 푸는 센서가 있다. 문 아래 틈으로 얇은 철사나 냉각 스프레이를 넣어 바깥에서 오작동시킬 수 있다. 이 '퇴실 요청' 센서를 가리키는 세 글자 약어는?",
+      "en": "A sensor mounted inside the door that detects someone approaching to leave and automatically releases the electronic lock. It can be tripped from outside by feeding a thin wire or a blast of cooling spray under the door. Give the three-letter acronym for this request-to-exit sensor."
+    },
+    "hints": {
+      "ko": [
+        "Request to EXit.",
+        "보통 PIR(적외선) 방식이라 온도 변화에 반응한다."
+      ],
+      "en": [
+        "Request to EXit.",
+        "Usually a PIR unit, so it reacts to a change in temperature."
+      ]
+    }
+  },
+  {
+    "id": "t2_piggyback",
+    "tier": 2,
+    "cat": "recon",
+    "track": "physical",
+    "points": 150,
+    "ci": true,
+    "hash": "00d7b7366f72734cf8da733e6cee0050de6b06c3ebf96be7f97fdefb637ebcf6",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "문 좀 잡아주세요",
+      "en": "Hold the Door?"
+    },
+    "prompt": {
+      "ko": "피해자가 자신이 뒤따르는 사람을 위해 문을 잡아주고 있다는 사실을 분명히 아는 상태에서 이루어지는 동반 진입 기법이다. 큰 상자를 든 배달원이 '양손이 꽉 차서요, 문 좀 잡아주실 수 있을까요?'라고 부탁하는 방식이 전형적이다. 이 기법의 이름은? (한 단어)",
+      "en": "An accompanied-entry technique done with the victim fully aware they are holding the door for the person following them. The classic move is a delivery person with a big box asking, 'my hands are full, could you hold the door?' Name it. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "누군가의 등에 업혀 간다는 뜻의 낱말이다.",
+        "몰래 뒤따르는 방식보다 탐지 위험이 높다 — 피해자의 기억에 남기 때문."
+      ],
+      "en": [
+        "The word means riding on someone's back.",
+        "Detection risk is higher than the unnoticed variant because the victim remembers the encounter."
+      ]
+    }
+  },
+  {
+    "id": "t2_loiding",
+    "tier": 2,
+    "cat": "lockpick",
+    "track": "physical",
+    "points": 150,
+    "ci": true,
+    "hash": "789b6df5bcceac40c9fee35a419f414fb24357a7a69ab037142c31943e6d1c3f",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "카드 한 장",
+      "en": "Just a Card"
+    },
+    "prompt": {
+      "ko": "빳빳한 플라스틱 카드를 문과 문틀 사이 틈에 밀어 넣고 경첩 반대 방향으로 눌러, 경사면을 가진 스프링식 래치볼트를 밀어 넘겨 여는 고전적인 우회 기법의 이름은? 영화에서 신용카드로 문을 여는 장면이 바로 이것이다. (한 단어)",
+      "en": "Sliding a stiff plastic card into the gap between door and frame and pushing it toward the hinge side to force a bevelled spring latch bolt back. This is the 'open the door with a credit card' move from films. Name the technique. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'celluloid'(셀룰로이드)에서 온 낱말이라는 설이 있다.",
+        "스프링이 없는 빗장에는 통하지 않는다."
+      ],
+      "en": [
+        "The word is thought to derive from 'celluloid'.",
+        "It does not work on a spring-less bolt."
+      ]
+    }
+  },
+  {
+    "id": "t2_defaultkey",
+    "tier": 2,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 150,
+    "ci": true,
+    "hash": "aada78153eebcd57a5f2bb70064da66636df01e521e427a0af3183ae33024044",
+    "fmt": "16진수 / hex (12글자 / 12 chars)",
+    "title": {
+      "ko": "공장에서 나온 그대로",
+      "en": "Straight From the Factory"
+    },
+    "prompt": {
+      "ko": "MIFARE Classic 섹터마다 Key A / Key B 두 개의 6바이트 키가 있다. 배포된 카드가 바꾸지 않고 그대로 두는 경우가 흔한, 공장 출하 시의 기본 키 값을 16진수로 쓰라. (공백 없이 12글자)",
+      "en": "Each MIFARE Classic sector holds a Key A and a Key B, six bytes each. Write the factory-default key value that deployed cards are so often left with unchanged, in hex. (12 characters, no spaces)"
+    },
+    "hints": {
+      "ko": [
+        "한 바이트를 여섯 번 반복한다.",
+        "Proxmark `hf mf chk` 가 가장 먼저 시도하는 키다. 000000000000, A0A1A2A3A4A5 도 흔한 후보지만 '공장 기본'은 이것."
+      ],
+      "en": [
+        "One byte repeated six times.",
+        "It is the first key Proxmark's `hf mf chk` tries. 000000000000 and A0A1A2A3A4A5 are also common, but the factory default is this one."
+      ]
+    }
+  },
+  {
+    "id": "t3_wiegandcn",
+    "tier": 3,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 200,
+    "ci": true,
+    "hash": "83176a0c492ab1caa51b1df7210ec081afa95e8f4182d3c5dc051f5c25d6dc6b",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "26비트의 가운데",
+      "en": "The Middle of 26 Bits"
+    },
+    "prompt": {
+      "ko": "앞 문제와 같은 26비트 프레임이다:\n\n`01100011110111000000100111`\n\n[선행 패리티 1][시설 코드 8][카드 번호 16][후행 패리티 1] 구조에서, 이번에는 카드 번호(card number)를 십진수로 구하라.",
+      "en": "The same 26-bit frame as before:\n\n`01100011110111000000100111`\n\nLayout [leading parity 1][facility code 8][card number 16][trailing parity 1]. This time give the card number as a base-ten number."
+    },
+    "hints": {
+      "ko": [
+        "선행 패리티 한 비트와 시설 코드 여덟 비트, 합쳐 앞의 아홉 비트를 건너뛰고 그다음 16비트를 읽는다.",
+        "`1011100000010011` 을 십진수로 바꾼다."
+      ],
+      "en": [
+        "Skip the leading parity bit and the eight facility-code bits — nine bits in all — then read the next sixteen.",
+        "Convert `1011100000010011` to a base-ten number."
+      ]
+    }
+  },
+  {
+    "id": "t3_hardnested",
+    "tier": 3,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 200,
+    "ci": true,
+    "hash": "cf7808c645396213268a42b1689b767cbdf388f93c3a37dfb81e08930b305c63",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "아무것도 모를 때",
+      "en": "When You Know Nothing"
+    },
+    "prompt": {
+      "ko": "MIFARE Classic 카드에서 어떤 섹터 키도 알지 못할 때 쓰는 키 복구 공격이다. 나은 난수 발생기를 가진 후기 카드에도 통하며, 알려진 키 하나로 시작하는 가벼운 변종보다 훨씬 많은 논스를 수집해 통계적으로 키를 좁혀 나간다. 이 공격의 이름은? (한 단어)",
+      "en": "The key-recovery attack for a MIFARE Classic card when not one sector key is known. It works even on later cards with a better RNG, collecting far more nonces than the lighter variant that starts from a known key, and narrowing the key statistically. Name it. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "알려진 키로 시작하는 가벼운 변종의 이름 앞에, '어렵다'는 뜻의 영어 낱말이 붙는다.",
+        "Proxmark 가 이 공격에 쓰는 서브커맨드 이름이 곧 정답이다."
+      ],
+      "en": [
+        "It is the lighter, known-key variant's name with a word meaning 'difficult' stuck on the front.",
+        "The Proxmark sub-command for this attack is the answer itself."
+      ]
+    }
+  },
+  {
+    "id": "t3_relay",
+    "tier": 3,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 200,
+    "ci": true,
+    "hash": "682fbae20f3428bcec4c117c57bea18d438c4758d972909b41dbe22884e0d6b8",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "먼 곳의 카드",
+      "en": "A Card Far Away"
+    },
+    "prompt": {
+      "ko": "한쪽 장치는 피해자 주머니 속 카드에, 다른 쪽 장치는 정품 리더(게이트)에 대고, 둘 사이의 카드 통신을 인터넷이나 블루투스로 실시간 중계한다. 그러면 카드가 도시 반대편에 있어도 리더는 '근접해 있다'고 믿는다. 근접 가정을 무너뜨리는 이 공격의 이름은? (한 단어)",
+      "en": "One device is held to the card in the victim's pocket, another to the genuine reader at the gate, and the card's traffic is forwarded live between them over the internet or Bluetooth. The reader believes the card is close even when it is across the city. Name the attack that breaks the proximity assumption. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "육상 계주에서 바통을 넘기는 그 낱말이다.",
+        "방어책은 응답 왕복 시간을 재 근접을 검증하는 것, 그리고 UWB 측정이다."
+      ],
+      "en": [
+        "The word is the one for passing a baton in a race.",
+        "Defences time the response round trip to check closeness, plus UWB ranging."
+      ]
+    }
+  },
+  {
+    "id": "t3_desfire",
+    "tier": 3,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 200,
+    "ci": true,
+    "hash": "eead99bd6ca785bb0837ecf72b1f4be9cbed9e4aeabb638853c3486209cc066f",
+    "fmt": "값 그대로 / literal",
+    "title": {
+      "ko": "권장 교체품",
+      "en": "The Recommended Replacement"
+    },
+    "prompt": {
+      "ko": "MIFARE Classic 을 대체하도록 권장되는 NXP 의 13.56 MHz 카드 제품군이다. AES-128 상호 인증을 사용하며 현재 알려진 실용적 취약점이 없다. EV1/EV2/EV3 세대가 있다. 이 제품군의 이름은? (제품명 그대로)",
+      "en": "The NXP 13.56 MHz card family recommended in place of MIFARE Classic. It uses AES-128 mutual authentication and has no currently known practical weakness. Generations EV1/EV2/EV3 exist. Give the family name. (exact product name)"
+    },
+    "hints": {
+      "ko": [
+        "'MIFARE ___ EV3' 의 빈칸.",
+        "DES 로 시작하지만 실제 암호는 AES 다 — 이름은 역사적 잔재."
+      ],
+      "en": [
+        "The blank in 'MIFARE ___ EV3'.",
+        "The name starts with DES but the cipher is AES; the name is a historical leftover."
+      ]
+    }
+  },
+  {
+    "id": "t3_iclass",
+    "tier": 3,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 200,
+    "ci": true,
+    "hash": "496fcf5e742df9f0814514758313fcc32095bab10b6c5421786764f5dbb11b55",
+    "fmt": "값 그대로 / literal",
+    "title": {
+      "ko": "노출된 마스터 키",
+      "en": "The Exposed Master Key"
+    },
+    "prompt": {
+      "ko": "HID 의 13.56 MHz 카드 제품군으로, 초기 세대는 3DES 를 쓰고 카드 전체에 공통으로 적용되는 마스터 인증 키가 연구자들에게 추출되어 큰 논란이 되었다. 이후 더 새로운 세대로 대체를 권고받았다. 이 제품군의 이름은? (제품명 그대로)",
+      "en": "The HID 13.56 MHz card family whose early generation used 3DES and whose card-wide master authentication key was extracted by researchers, a major controversy. HID later urged migration to its newer generations. Give the family name. (exact product name)"
+    },
+    "hints": {
+      "ko": [
+        "소문자 i 로 시작하는 여섯 글자.",
+        "HID 의 순서에서 Prox 바로 다음이 이것이다."
+      ],
+      "en": [
+        "Six letters, starts with a lowercase i.",
+        "In HID's lineage this comes right after Prox."
+      ]
+    }
+  },
+  {
+    "id": "t3_osdp",
+    "tier": 3,
+    "cat": "lockpick",
+    "track": "physical",
+    "points": 200,
+    "ci": true,
+    "hash": "fd48f5deb37199827d44c04b80efa2e8c431ee2b938234749ca050960af33e4c",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "평문 배선의 후계",
+      "en": "Successor to the Plaintext Wire"
+    },
+    "prompt": {
+      "ko": "카드 리더와 컨트롤러 사이의 고전 배선 규약이 암호화도 없고 단방향이며 도청·리플레이에 취약하다는 점을 해결하기 위해 SIA 가 표준화한 후계 프로토콜이다. RS-485 위에서 AES-128 로 보호되는 양방향 통신을 제공하고, 리더 상태 보고와 원격 설정도 지원한다. 이 표준의 약어는? (4글자)",
+      "en": "The SIA-standardised successor to the classic reader-to-controller wiring, built to fix its lack of encryption, one-way nature and exposure to eavesdropping and replay. It offers AES-128-protected two-way communication over RS-485, plus reader status reporting and remote configuration. Give the four-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "Open Supervised Device Protocol.",
+        "IEC 60839-11-5 로도 채택되었다."
+      ],
+      "en": [
+        "Open Supervised Device Protocol.",
+        "Also adopted as IEC 60839-11-5."
+      ]
+    }
+  },
+  {
+    "id": "t3_rubberducky",
+    "tier": 3,
+    "cat": "recon",
+    "track": "physical",
+    "points": 200,
+    "ci": true,
+    "hash": "4a1c8278d61ee04cb77c534729b226540ce3d31a424ea7f7787a32876ec92dc8",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "키보드인 척",
+      "en": "Pretends To Be a Keyboard"
+    },
+    "prompt": {
+      "ko": "USB 저장장치처럼 생겼지만 꽂으면 운영체제에 키보드(HID)로 인식되어, 미리 적어 둔 키 입력을 사람보다 빠르게 자동으로 타이핑해 명령을 실행하는 Hak5 의 물리 침투 장비다. 이 장비의 이름은? (두 단어, 장난감 이름)",
+      "en": "It looks like a USB drive, but plugged in it registers as a keyboard (HID) and types a pre-written keystroke payload faster than a person could, running commands. This is Hak5's physical-intrusion device. Name it. (two words, a toy's name)"
+    },
+    "hints": {
+      "ko": [
+        "욕조에 띄우는 노란 장난감.",
+        "페이로드는 'Ducky Script' 라는 간단한 스크립트로 작성한다. 같은 제품군에 Bash Bunny, LAN Turtle 이 있다."
+      ],
+      "en": [
+        "The yellow toy you float in a bath.",
+        "Payloads are written in a small language called 'Ducky Script'. Siblings in the range are the Bash Bunny and LAN Turtle."
+      ]
+    }
+  },
+  {
+    "id": "t3_udt",
+    "tier": 3,
+    "cat": "lockpick",
+    "track": "physical",
+    "points": 200,
+    "ci": true,
+    "hash": "3452df462642811f533aab3320644f938fef707baf69845935a7c7cdafdf90bd",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "문 밑으로",
+      "en": "Under It Goes"
+    },
+    "prompt": {
+      "ko": "문과 바닥 사이 틈으로 납작하고 긴 금속 리더를 밀어 넣고, 끝에 달린 갈고리로 안쪽 레버 핸들이나 퇴실 버튼을 걸어 당겨 여는 침투 도구가 있다. 상업용 유리문에서 특히 잘 통한다. 이 도구를 가리키는 세 글자 약어는?",
+      "en": "A long flat metal leader is fed through the gap between door and floor, and a hook on its end catches the inside lever handle or exit button and pulls it. It works especially well on commercial glass doors. Give the three-letter acronym for this tool."
+    },
+    "hints": {
+      "ko": [
+        "Under Door Tool.",
+        "방어책은 문 하단 씰(door bottom seal)과 레버를 문에서 멀리 두는 것."
+      ],
+      "en": [
+        "Under Door Tool.",
+        "Defences: a door bottom seal, and mounting the lever away from the door."
+      ]
+    }
+  },
+  {
+    "id": "t3_evilmaid",
+    "tier": 3,
+    "cat": "physical",
+    "track": "physical",
+    "points": 200,
+    "ci": true,
+    "hash": "4def14799cbe0dfb0cbb43bbb2513211c3294bb18eb2f2337fc982fe959d625e",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "잠깐 자리를 비운 사이",
+      "en": "While It Was Left Alone"
+    },
+    "prompt": {
+      "ko": "호텔 방에 노트북을 두고 나간 짧은 시간 동안, 침입자가 부트로더나 펌웨어를 변조해 다음 부팅 때 디스크 암호 문구를 가로채는 백도어를 심는다. 물리 접근을 전제로 한 이 공격 유형을 흔히 무엇이라 부르는가? (두 단어)",
+      "en": "In the brief window a laptop is left in a hotel room, an intruder tampers with the bootloader or firmware to plant a backdoor that captures the disk passphrase on the next boot. What is this physical-access attack class commonly called? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "객실 청소를 가장한 위협을 빗댄 이름이다.",
+        "방어책은 펌웨어 서명 검증과 TPM 측정 부팅, 그리고 기기를 시야 밖에 두지 않는 것."
+      ],
+      "en": [
+        "The name pictures a threat disguised as room cleaning.",
+        "Defences: verified firmware with TPM measured boot, and never leaving the device out of sight."
+      ]
+    }
+  },
+  {
+    "id": "t4_wiegandflag",
+    "tier": 4,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 250,
+    "ci": false,
+    "hash": "77af13bf37945b207c3d101a405d3733e1720c7382cc6fd8f36b190e1c13d90b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "프레임 전체를 읽어라",
+      "en": "Read the Whole Frame"
+    },
+    "prompt": {
+      "ko": "리더 배선에서 잡아낸 또 다른 26비트 표준 프레임이다:\n\n`00111000000011010100001010`\n\n구조 [선행 패리티 1][시설 코드 8][카드 번호 16][후행 패리티 1]. 시설 코드와 카드 번호를 각각 10진수로 구해 `FLAG{FC<시설코드>_CN<카드번호>}` 형태로 제출하라. 예: 시설 코드 7, 카드 번호 42 → `FLAG{FC7_CN42}`.",
+      "en": "Another 26-bit standard frame captured off the reader wiring:\n\n`00111000000011010100001010`\n\nLayout [leading parity 1][facility code 8][card number 16][trailing parity 1]. Read the facility code and card number in decimal and submit `FLAG{FC<facility>_CN<number>}`. Example: facility 7, number 42 -> `FLAG{FC7_CN42}`."
+    },
+    "hints": {
+      "ko": [
+        "인덱스 1~8 이 시설 코드, 인덱스 9~24 가 카드 번호.",
+        "`01110000` 과 `0001101010000101` 를 각각 10진수로 바꾼다."
+      ],
+      "en": [
+        "Indices 1-8 are the facility code, indices 9-24 the card number.",
+        "Convert `01110000` and `0001101010000101` to decimal."
+      ]
+    }
+  },
+  {
+    "id": "t4_impossible",
+    "tier": 4,
+    "cat": "physical",
+    "track": "physical",
+    "points": 250,
+    "ci": true,
+    "hash": "064886e835e259dbf6c62901fdc086cf3aeda2ebbfd72c07fd5558364d162bef",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "동시에 두 곳",
+      "en": "Two Places at Once"
+    },
+    "prompt": {
+      "ko": "복제된 배지는 원본과 똑같은 ID 를 전송한다. 그래서 출입 로그에서, 같은 배지가 걸어서 갈 수 없을 만큼 떨어진 두 리더에서 짧은 시간 안에 연달아 쓰인 패턴을 찾으면 복제를 탐지할 수 있다. 로그인 이상 탐지에서도 쓰이는, 이 패턴을 가리키는 두 단어짜리 용어는?",
+      "en": "A cloned badge transmits the exact same ID as the original. So in access logs you can spot cloning by finding the same badge used at two readers too far apart to walk between in the time elapsed. Give the two-word term for this pattern, also used in login anomaly detection."
+    },
+    "hints": {
+      "ko": [
+        "형용사 + 명사. '갈 수 없는 ___'.",
+        "안티패스백(anti-passback)은 이를 아예 막는 통제이고, 이 용어는 로그에서 그것을 탐지하는 신호를 가리킨다."
+      ],
+      "en": [
+        "Adjective + noun: 'the ___ you cannot make'.",
+        "Anti-passback is the control that prevents it; this term names the detection signal for it in logs."
+      ]
+    }
+  },
+  {
+    "id": "t4_tailgatelog",
+    "tier": 4,
+    "cat": "physical",
+    "track": "physical",
+    "points": 250,
+    "ci": false,
+    "hash": "eec0714f9d2335f00468942c2a6a0a1bcb6f1602fe5c51494f091594044cd7c6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "가장 바짝 붙은 자",
+      "en": "The Closest Follower"
+    },
+    "prompt": {
+      "ko": "데이터센터 출입 로그다. 열은 `시각,배지,도어,행위,간격(ms)`.\n\n```\n2024-01-15 09:01:00,EMP001,DOOR_A,ACCESS_GRANTED,0\n2024-01-15 09:01:02,UNKNOWN,DOOR_A,ACCESS_NO_BADGE,1800\n2024-01-15 09:05:30,EMP002,DOOR_B,ACCESS_GRANTED,0\n2024-01-15 09:07:45,EMP003,DOOR_C,ACCESS_GRANTED,0\n2024-01-15 09:07:47,UNKNOWN,DOOR_C,ACCESS_NO_BADGE,2100\n2024-01-15 09:15:00,EMP004,DOOR_A,ACCESS_GRANTED,0\n2024-01-15 09:15:01,INTRUDER_X7,DOOR_A,ACCESS_NO_BADGE,950\n2024-01-15 09:20:00,EMP005,DOOR_B,ACCESS_GRANTED,0\n```\n\n같은 도어에서 `ACCESS_GRANTED` 직후 `ACCESS_NO_BADGE` 가 이어지고 그 간격이 0보다 크고 3000ms 이하이면 테일게이팅이다. 그중 간격이 가장 짧은(가장 위험한) 침입자의 배지 값을 골라 `FLAG{TAILGATE_<배지>}` 로 제출하라.",
+      "en": "A data-centre access log. Columns: `time,badge,door,action,gap_ms`.\n\n```\n2024-01-15 09:01:00,EMP001,DOOR_A,ACCESS_GRANTED,0\n2024-01-15 09:01:02,UNKNOWN,DOOR_A,ACCESS_NO_BADGE,1800\n2024-01-15 09:05:30,EMP002,DOOR_B,ACCESS_GRANTED,0\n2024-01-15 09:07:45,EMP003,DOOR_C,ACCESS_GRANTED,0\n2024-01-15 09:07:47,UNKNOWN,DOOR_C,ACCESS_NO_BADGE,2100\n2024-01-15 09:15:00,EMP004,DOOR_A,ACCESS_GRANTED,0\n2024-01-15 09:15:01,INTRUDER_X7,DOOR_A,ACCESS_NO_BADGE,950\n2024-01-15 09:20:00,EMP005,DOOR_B,ACCESS_GRANTED,0\n```\n\nA tailgate is an `ACCESS_NO_BADGE` that follows an `ACCESS_GRANTED` at the same door with a gap greater than 0 and at most 3000 ms. Take the intruder with the smallest (most dangerous) gap and submit `FLAG{TAILGATE_<badge>}`."
+    },
+    "hints": {
+      "ko": [
+        "세 건이 조건을 만족한다: 1800, 2100, 950 ms.",
+        "배지 값을 대문자 그대로 넣는다."
+      ],
+      "en": [
+        "Three rows qualify: gaps of 1800, 2100 and 950 ms.",
+        "Use the badge value exactly, uppercase."
+      ]
+    }
+  },
+  {
+    "id": "t4_prng",
+    "tier": 4,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 250,
+    "ci": true,
+    "hash": "bffa23f772e18ab156e74f41cc1613b815966a9ae2639a9778a898728fb766da",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "예측되는 무작위",
+      "en": "Predictable Randomness"
+    },
+    "prompt": {
+      "ko": "MIFARE Classic 의 섹터 키 복구 공격이 성립하는 근본 원인은, 카드가 인증 때 보내는 논스가 진짜 무작위가 아니라 카드에 전원이 들어온 뒤 흐른 시간만으로 예측 가능하다는 데 있다. 이렇게 약하게 구현된 '난수 발생기'를 가리키는 네 글자 약어는?",
+      "en": "The sector-key recovery attack on MIFARE Classic works fundamentally because the nonce the card sends during authentication is not truly random — it is predictable from nothing but the time elapsed since the card was powered on. Give the four-letter acronym for this weakly-implemented 'random number generator'."
+    },
+    "hints": {
+      "ko": [
+        "Pseudo-Random Number Generator.",
+        "카드마다 전원 인가 시점의 상태로 초기화되므로 리더가 시점을 통제하면 논스도 통제된다."
+      ],
+      "en": [
+        "Pseudo-Random Number Generator.",
+        "It seeds from the power-on state, so a reader that controls timing controls the nonce."
+      ]
+    }
+  },
+  {
+    "id": "t4_seos",
+    "tier": 4,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 250,
+    "ci": true,
+    "hash": "d2b9a5fcbca8ab66c8d52875aa1d3723ff9c1597f945ee54993fac07e2e8aa58",
+    "fmt": "값 그대로 / literal (4글자 / 4 chars)",
+    "title": {
+      "ko": "PKI 를 얹은 배지",
+      "en": "A Badge With PKI"
+    },
+    "prompt": {
+      "ko": "HID 의 최신 고보안 크리덴셜 기술로, AES-128 에 더해 공개키 기반구조(PKI)와 상호 인증을 결합하고 스마트폰 기반 배지도 지원한다. 고보안 시설에 권장되며 암호화 양방향 리더 프로토콜과 함께 쓰인다. 이 기술의 이름은? (제품명 그대로, 4글자)",
+      "en": "HID's newest high-security credential technology: AES-128 plus a public-key infrastructure (PKI) and mutual authentication, with smartphone-based badges supported. Recommended for high-security sites and paired with the encrypted two-way reader protocol. Give the name. (exact product name, 4 characters)"
+    },
+    "hints": {
+      "ko": [
+        "네 글자, 소문자로 시작하는 제품명. HID 고보안 계열의 최상위.",
+        "'Secure identity' 를 줄인 이름으로 읽힌다."
+      ],
+      "en": [
+        "Four letters, product name starting lowercase; the top of HID's high-security lineage.",
+        "It reads as a contraction of 'secure identity'."
+      ]
+    }
+  },
+  {
+    "id": "t4_mantrap",
+    "tier": 4,
+    "cat": "physical",
+    "track": "physical",
+    "points": 250,
+    "ci": true,
+    "hash": "23d0694d329c22c83b0f2fbb6979d3f0ab8fdf5ca240b95a3b2051dddfcc6d20",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "한 번에 한 명",
+      "en": "One at a Time"
+    },
+    "prompt": {
+      "ko": "두 개의 문이 잇달아 있고, 앞문이 완전히 닫히고 잠긴 뒤에야 뒷문이 열리는 작은 통로 구조다. 그 사이 공간에서 배지와 체중을 확인해 한 번에 한 사람만 통과시켜, 뒤따라 들어오는 것을 물리적으로 차단한다. 이 구조의 이름은? (한 단어)",
+      "en": "A small vestibule with two doors in series: the inner door opens only after the outer one has fully closed and locked. In the space between, the badge and the occupant's weight are checked so exactly one person passes at a time, physically blocking anyone from following through. Name this structure. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'사람을 가두는 덫' 이라는 뜻의 두 낱말을 붙여 쓴다.",
+        "공항 보안 구역이나 데이터센터 입구에서 흔히 본다. 회전문(revolving door)도 같은 목적."
+      ],
+      "en": [
+        "Two words meaning 'a trap for a person', written closed up.",
+        "Common at airport security zones and data-centre entrances; a revolving door serves the same purpose."
+      ]
+    }
+  },
+  {
+    "id": "t4_distbound",
+    "tier": 4,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 250,
+    "ci": true,
+    "hash": "e8a23a7c23533320b4288a6d96b987dd8570e4ee60f76c99482c059db037d1be",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "왕복 시간을 재라",
+      "en": "Time the Round Trip"
+    },
+    "prompt": {
+      "ko": "카드 신호를 중계해 근접 가정을 깨는 공격을 막기 위한 프로토콜 계열이다. 리더가 카드에 challenge 를 보내고 응답이 돌아오기까지의 시간을 나노초 단위로 재서, 그 시간이 빛의 속도로 왕복 가능한 거리 이내인지 확인한다. 중계 장비가 끼면 지연이 늘어 탐지된다. 이 기법을 가리키는 두 단어짜리 용어는?",
+      "en": "A family of protocols against the attack that forwards a card's signal to break the proximity assumption. The reader sends a challenge and times the response to the nanosecond, checking that the round trip is short enough for the signal to have travelled there and back at light speed. A forwarding device adds delay and is detected. Give the two-word term."
+    },
+    "hints": {
+      "ko": [
+        "명사 + 동명사: '거리 ___'.",
+        "UWB(초광대역) 무선이 이를 하드웨어로 구현한 대표 사례다."
+      ],
+      "en": [
+        "noun + gerund: '___ bounding'.",
+        "UWB radio is the headline hardware implementation of it."
+      ]
+    }
+  },
+  {
+    "id": "t4_ptes",
+    "tier": 4,
+    "cat": "recon",
+    "track": "physical",
+    "points": 250,
+    "ci": true,
+    "hash": "97342e4f868b426d49832c6e88baef24f0ff24fe0fb02e6949d0f2b99b1b2dbf",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "일곱 단계의 표준",
+      "en": "The Seven-Phase Standard"
+    },
+    "prompt": {
+      "ko": "이 트랙의 물리 침투 절차 — 사전 참여, 정찰, 침투 시도, 후속 행동, 보고 — 는 침투 테스트 전반을 일곱 단계로 정리한 공개 표준의 물리 도메인을 따른다. 사전 참여·정보 수집·위협 모델링·취약점 분석·익스플로잇·후속 행동·보고의 그 표준을 가리키는 네 글자 약어는?",
+      "en": "This track's physical procedure — pre-engagement, reconnaissance, exploitation attempts, post-exploitation, reporting — follows the physical domain of an open standard that lays out penetration testing in seven phases: pre-engagement, intelligence gathering, threat modeling, vulnerability analysis, exploitation, post-exploitation, reporting. Give the four-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "Penetration Testing Execution Standard.",
+        "OWASP 테스트 가이드나 OSSTMM 과는 다른 문서다."
+      ],
+      "en": [
+        "Penetration Testing Execution Standard.",
+        "A different document from the OWASP Testing Guide or OSSTMM."
+      ]
+    }
+  },
+  {
+    "id": "t4_emdec",
+    "tier": 4,
+    "cat": "rfid",
+    "track": "physical",
+    "points": 250,
+    "ci": true,
+    "hash": "349531ea0fbdb12960612634a265f60b41e40f7d924e6b39f6e9db3e74431358",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "태그가 뱉은 숫자",
+      "en": "The Number the Tag Spat Out"
+    },
+    "prompt": {
+      "ko": "Proxmark `lf search` 가 EM4100 태그를 찾아 40비트 ID `1A2B3C4D5E` 를 출력했다. 이 ID 의 하위 32비트(마지막 8개 16진수 자리)를 10진수로 구하라.",
+      "en": "Proxmark `lf search` found an EM4100 tag and printed its 40-bit ID `1A2B3C4D5E`. Give the lower 32 bits of that ID (the last 8 hex digits) as a decimal number."
+    },
+    "hints": {
+      "ko": [
+        "앞 두 자리 `1A` 를 버리고 `2B3C4D5E` 를 16진수로 읽는다.",
+        "0x2B3C4D5E."
+      ],
+      "en": [
+        "Drop the leading `1A` and read `2B3C4D5E` as hex.",
+        "0x2B3C4D5E."
+      ]
+    }
+  },
+  {
+    "id": "t4_maglock",
+    "tier": 4,
+    "cat": "lockpick",
+    "track": "physical",
+    "points": 250,
+    "ci": true,
+    "hash": "f26b4fff08de59ff712136253c5f4ebc4b974a726b36838709d1385fbe9265df",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "정전이면 열린다",
+      "en": "Power Out, Door Open"
+    },
+    "prompt": {
+      "ko": "전자석과 금속판의 자력으로 문을 붙잡는 잠금장치다. 화재 대피를 위해 대개 페일세이프로 배선되어, 전원선을 자르거나 브레이커를 내리거나 정전이 나면 잠금이 풀린다. UPS 가 없으면 정전 한 번에 모든 문이 열린다. 이 장치를 흔히 부르는 축약 이름은? (한 단어)",
+      "en": "A lock that holds a door shut with the magnetic force between an electromagnet and an armature plate. It is usually wired fail-safe for fire evacuation, so cutting the power line, tripping the breaker, or a blackout releases it. With no UPS, one outage opens every door. Give the common shortened name for this device. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "magnetic + lock 을 줄인 말.",
+        "보안 우선이면 페일시큐어로 배선하고 UPS 와 금속 도관 보호를 더한다."
+      ],
+      "en": [
+        "A contraction of magnetic + lock.",
+        "For a security-first door, wire it fail-secure and add a UPS and metal conduit protection."
       ]
     }
   }
