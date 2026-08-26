@@ -72,6 +72,155 @@ curl -x http://127.0.0.1:8080 -k https://target.com/
 http --proxy=http:http://127.0.0.1:8080 GET https://target.com/
 ```
 
+### 1.4 소스 컴파일로 취약한 APM/Tomcat 타깃 직접 구축
+
+컨테이너 이미지는 빠르지만 웹서버 → WAS → DB로 이어지는 서버 스택의 계층 구조와 그 사이의 연동 취약점(AJP 커넥터, WAR 배포, 정보 노출)은 드러내지 않는다. 의도적으로 낡은 버전의 스택을 소스로 직접 세우면 다음을 실습할 수 있다.
+
+- **버전 기반 CVE**: Apache 1.3.x / PHP 4.x / 구형 Tomcat에는 공개된 원격 취약점이 다수 있다.
+- **서버 레벨 공격면**: Tomcat Manager 기본 자격증명으로 WAR 배포, AJP(8009)를 통한 Ghostcat(CVE-2020-1938) 파일 읽기, `phpinfo()` 정보 노출.
+- **WAF 우회 연습**: `mod_security`를 켜고 끄며 같은 페이로드의 탐지/차단 차이를 비교.
+
+> ⚠️ 낡은 버전은 원격 코드 실행이 쉬우므로 **호스트온리(격리) 네트워크의 VM에서만** 구동한다. 인터넷 노출 금지.
+
+#### APM(Apache + PHP + MySQL) 소스 설치
+
+```bash
+# 0. 빌드 도구 (RHEL/CentOS 계열)
+yum -y groupinstall "Development Tools"
+yum -y install ncurses-devel gd gd-devel libjpeg-devel libpng-devel freetype-devel
+
+# 1. MySQL — 전용 계정 사용, 데몬을 root로 실행하지 않는다
+tar xzf mysql-4.0.27.tar.gz && cd mysql-4.0.27
+./configure --prefix=/usr/local/mysql \
+  --localstatedir=/usr/local/mysql/data \
+  --with-mysqld-user=mysql \
+  --enable-thread-safe-client \
+  --with-charset=euc_kr
+make && make install
+useradd -s /bin/false -M -r mysql
+/usr/local/mysql/bin/mysql_install_db
+chown -R mysql:mysql /usr/local/mysql/data
+cp support-files/my-large.cnf /etc/my.cnf
+install -m700 support-files/mysql.server /etc/init.d/mysqld
+chkconfig --add mysqld
+/etc/init.d/mysqld start                  # netstat -nltp 로 3306 LISTEN 확인
+```
+
+```bash
+# 2. MySQL 최소 보안 — 설치 직후 root 비밀번호가 없다
+mysqladmin -u root password 'LabR00t!'
+mysql -u root -p'LabR00t!' -e "DELETE FROM mysql.user WHERE User='' OR Password=''; \
+  DROP DATABASE IF EXISTS test; FLUSH PRIVILEGES;"
+# 외부 접속이 필요 없으면 /etc/my.cnf 에 skip-networking → /tmp/mysql.sock 만 사용
+```
+
+```bash
+# 3. Apache — DSO(모듈 동적 로드) 방식, 가상호스트 활성화
+tar xzf apache_1.3.41.tar.gz && cd apache_1.3.41
+./configure --prefix=/usr/local/apache \
+  --enable-shared=max --enable-rule=SHARED_CORE \
+  --enable-module=so --enable-module=vhost_alias
+make && make install
+ln -s /usr/local/apache/bin/apachectl /etc/init.d/httpd
+# 서비스 순서: 웹서버는 DB보다 "늦게 시작 / 먼저 종료"
+#   /etc/init.d/mysqld  → # chkconfig: 2345 90 20
+#   /etc/init.d/httpd   → # chkconfig: 2345 91 19
+chkconfig --add httpd && apachectl start   # 80 LISTEN 확인
+```
+
+```bash
+# 4. PHP — Apache APXS로 모듈 연동, MySQL·GD 바인딩
+tar xzf php-4.4.8.tar.gz && cd php-4.4.8
+./configure --prefix=/usr/local/php \
+  --with-apxs=/usr/local/apache/bin/apxs \
+  --with-mysql=/usr/local/mysql \
+  --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --with-zlib
+make && make install
+cp php.ini-dist /usr/local/php/lib/php.ini
+# httpd.conf 에 핸들러 등록:
+#   DirectoryIndex index.html index.php
+#   AddType application/x-httpd-php .php
+# SELinux가 libphp4.so 로드를 막으면(cannot restore segment prot after reloc):
+#   setenforce 0   (또는 /etc/selinux/config 의 SELINUX=disabled)
+apachectl configtest && apachectl restart
+```
+
+```bash
+# 5. 연동 확인 — 파란 phpinfo 화면이 뜨면 성공(소스가 그대로 보이면 실패)
+echo '<?php phpinfo(); ?>' > /usr/local/apache/htdocs/index.php
+curl -s http://127.0.0.1/ | grep -o 'PHP Version [0-9.]*'
+```
+
+#### Java + Tomcat WAS 설치
+
+```bash
+# 1. JDK (tar.gz — 이미 컴파일된 바이너리, 소스 빌드 아님)
+tar xzf jdk-8u311-linux-x64.tar.gz -C /usr/local
+ln -s /usr/local/jdk1.8.0_311 /usr/local/java
+cat >> /etc/profile <<'EOF'
+export JAVA_HOME=/usr/local/java
+export PATH=$PATH:$JAVA_HOME/bin
+export CLASSPATH=.:$JAVA_HOME/jre/lib/ext:$JAVA_HOME/lib/tools.jar
+EOF
+source /etc/profile && java -version
+```
+
+```bash
+# 2. Tomcat — 반드시 비-root 전용 계정으로 실행(root 실행은 흔한 보안 사고)
+useradd tomcat
+#   내려받기: archive.apache.org 의 tomcat-7/v7.0.59/bin/apache-tomcat-7.0.59.tar.gz
+su - tomcat -c '
+  tar xzf apache-tomcat-7.0.59.tar.gz && ln -s apache-tomcat-7.0.59 tomcat
+  echo "export CATALINA_HOME=\$HOME/tomcat"                     >> ~/.bashrc
+  echo "export PATH=\$JAVA_HOME/bin:\$CATALINA_HOME/bin:\$PATH"  >> ~/.bashrc
+  source ~/.bashrc && startup.sh
+'
+# http://<타깃IP>:8080 에서 기본 페이지가 뜨면 정상. 8005(shutdown)·8009(AJP)도 확인
+```
+
+```bash
+# 3-A. 80 포트 연결 — iptables 리다이렉트
+iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080
+
+# 3-B. mod_jk 커넥터로 Apache ↔ Tomcat 연동 (AJP13, 포트 8009)
+tar xzf tomcat-connectors-1.2.40-src.tar.gz
+cd tomcat-connectors-1.2.40-src/native
+./configure --with-apxs=/usr/local/apache/bin/apxs && make && make install
+cat >> /usr/local/apache/conf/httpd.conf <<'EOF'
+LoadModule jk_module libexec/mod_jk.so
+JkWorkersFile "conf/workers.properties"
+JkLogFile "logs/mod_jk.log"
+JkMount /*.jsp worker1
+JkMount /*.do worker1
+JkMount /servlet/* worker1
+EOF
+cat > /usr/local/apache/conf/workers.properties <<'EOF'
+worker.list=worker1
+worker.worker1.type=ajp13
+worker.worker1.host=localhost
+worker.worker1.port=8009
+EOF
+apachectl configtest && apachectl restart
+```
+
+```jsp
+<%-- webapps/ROOT/hello.jsp — Tomcat 동작 확인용 --%>
+<%@ page contentType="text/html; charset=utf-8" %>
+<%! String s = "Hello WAS"; %>
+<html><body><%= s %> — <%= request.getRemoteAddr() %></body></html>
+```
+
+#### 이 타깃으로 연습할 공격면
+
+| 공격면 | 진입점 | 연습 내용 |
+|--------|--------|-----------|
+| 정보 노출 | `/index.php` (phpinfo) | 절대경로·로드된 모듈·환경변수·DB 소켓 위치 수집 |
+| Tomcat Manager | `/manager/html` | `tomcat-users.xml` 기본 자격증명 → WAR 업로드 → JSP 웹셸 |
+| Ghostcat | AJP 8009 외부 노출 | CVE-2020-1938 — `WEB-INF` 하위 임의 파일 읽기·포함 |
+| 구버전 CVE | Apache 1.3.x / PHP 4.x | mod_* 버퍼 오버플로우, `register_globals`·`allow_url_include` 악용 |
+| WAF 우회 | `mod_security` on/off | 인코딩·주석·대소문자 변형 페이로드의 탐지 차이 |
+| JSP 경로 처리 | `hello.jsp` | 확장자 대소문자·경로 정규화 우회로 소스 노출/실행 |
+
 ---
 
 ## 2. CTF 문제 1: SQL 인젝션으로 플래그 추출
@@ -1462,6 +1611,155 @@ curl -x http://127.0.0.1:8080 -k https://target.com/
 # httpie proxy
 http --proxy=http:http://127.0.0.1:8080 GET https://target.com/
 ```
+
+### 1.4 Building a Vulnerable APM/Tomcat Target from Source
+
+Container images are fast, but they hide the layered structure of a web server → WAS → DB stack and the integration bugs that live between the layers (AJP connector, WAR deployment, information disclosure). Standing up a deliberately old stack from source lets you practice:
+
+- **Version-based CVEs**: Apache 1.3.x / PHP 4.x / old Tomcat carry many public remote vulnerabilities.
+- **Server-level attack surface**: WAR deployment via Tomcat Manager default credentials, Ghostcat (CVE-2020-1938) file read through AJP (8009), `phpinfo()` disclosure.
+- **WAF bypass practice**: toggle `mod_security` on and off and compare detection/blocking of the same payload.
+
+> ⚠️ Old versions are trivially RCE-able, so run this **only in a VM on a host-only (isolated) network**. Never expose it to the internet.
+
+#### APM (Apache + PHP + MySQL) source install
+
+```bash
+# 0. Build tools (RHEL/CentOS family)
+yum -y groupinstall "Development Tools"
+yum -y install ncurses-devel gd gd-devel libjpeg-devel libpng-devel freetype-devel
+
+# 1. MySQL — use a dedicated account, never run the daemon as root
+tar xzf mysql-4.0.27.tar.gz && cd mysql-4.0.27
+./configure --prefix=/usr/local/mysql \
+  --localstatedir=/usr/local/mysql/data \
+  --with-mysqld-user=mysql \
+  --enable-thread-safe-client \
+  --with-charset=euc_kr
+make && make install
+useradd -s /bin/false -M -r mysql
+/usr/local/mysql/bin/mysql_install_db
+chown -R mysql:mysql /usr/local/mysql/data
+cp support-files/my-large.cnf /etc/my.cnf
+install -m700 support-files/mysql.server /etc/init.d/mysqld
+chkconfig --add mysqld
+/etc/init.d/mysqld start                  # confirm 3306 LISTEN with netstat -nltp
+```
+
+```bash
+# 2. MySQL minimal hardening — root has no password right after install
+mysqladmin -u root password 'LabR00t!'
+mysql -u root -p'LabR00t!' -e "DELETE FROM mysql.user WHERE User='' OR Password=''; \
+  DROP DATABASE IF EXISTS test; FLUSH PRIVILEGES;"
+# If no external access is needed: add skip-networking to /etc/my.cnf → /tmp/mysql.sock only
+```
+
+```bash
+# 3. Apache — DSO (dynamic module loading), virtual hosts enabled
+tar xzf apache_1.3.41.tar.gz && cd apache_1.3.41
+./configure --prefix=/usr/local/apache \
+  --enable-shared=max --enable-rule=SHARED_CORE \
+  --enable-module=so --enable-module=vhost_alias
+make && make install
+ln -s /usr/local/apache/bin/apachectl /etc/init.d/httpd
+# Service order: the web server starts "later than / stops earlier than" the DB
+#   /etc/init.d/mysqld  → # chkconfig: 2345 90 20
+#   /etc/init.d/httpd   → # chkconfig: 2345 91 19
+chkconfig --add httpd && apachectl start   # confirm 80 LISTEN
+```
+
+```bash
+# 4. PHP — module integration via Apache APXS, MySQL/GD bindings
+tar xzf php-4.4.8.tar.gz && cd php-4.4.8
+./configure --prefix=/usr/local/php \
+  --with-apxs=/usr/local/apache/bin/apxs \
+  --with-mysql=/usr/local/mysql \
+  --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --with-zlib
+make && make install
+cp php.ini-dist /usr/local/php/lib/php.ini
+# Register the handler in httpd.conf:
+#   DirectoryIndex index.html index.php
+#   AddType application/x-httpd-php .php
+# If SELinux blocks loading libphp4.so (cannot restore segment prot after reloc):
+#   setenforce 0   (or SELINUX=disabled in /etc/selinux/config)
+apachectl configtest && apachectl restart
+```
+
+```bash
+# 5. Verify integration — a blue phpinfo page means success (raw source means failure)
+echo '<?php phpinfo(); ?>' > /usr/local/apache/htdocs/index.php
+curl -s http://127.0.0.1/ | grep -o 'PHP Version [0-9.]*'
+```
+
+#### Java + Tomcat WAS install
+
+```bash
+# 1. JDK (tar.gz — a prebuilt binary, not a source build)
+tar xzf jdk-8u311-linux-x64.tar.gz -C /usr/local
+ln -s /usr/local/jdk1.8.0_311 /usr/local/java
+cat >> /etc/profile <<'EOF'
+export JAVA_HOME=/usr/local/java
+export PATH=$PATH:$JAVA_HOME/bin
+export CLASSPATH=.:$JAVA_HOME/jre/lib/ext:$JAVA_HOME/lib/tools.jar
+EOF
+source /etc/profile && java -version
+```
+
+```bash
+# 2. Tomcat — always run under a dedicated non-root account (running as root is a common incident)
+useradd tomcat
+#   download: apache-tomcat-7.0.59.tar.gz from archive.apache.org under tomcat-7/v7.0.59/bin/
+su - tomcat -c '
+  tar xzf apache-tomcat-7.0.59.tar.gz && ln -s apache-tomcat-7.0.59 tomcat
+  echo "export CATALINA_HOME=\$HOME/tomcat"                     >> ~/.bashrc
+  echo "export PATH=\$JAVA_HOME/bin:\$CATALINA_HOME/bin:\$PATH"  >> ~/.bashrc
+  source ~/.bashrc && startup.sh
+'
+# http://<target-IP>:8080 shows the default page when healthy. Also check 8005 (shutdown) and 8009 (AJP)
+```
+
+```bash
+# 3-A. Wire up port 80 — iptables redirect
+iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080
+
+# 3-B. Link Apache <-> Tomcat with the mod_jk connector (AJP13, port 8009)
+tar xzf tomcat-connectors-1.2.40-src.tar.gz
+cd tomcat-connectors-1.2.40-src/native
+./configure --with-apxs=/usr/local/apache/bin/apxs && make && make install
+cat >> /usr/local/apache/conf/httpd.conf <<'EOF'
+LoadModule jk_module libexec/mod_jk.so
+JkWorkersFile "conf/workers.properties"
+JkLogFile "logs/mod_jk.log"
+JkMount /*.jsp worker1
+JkMount /*.do worker1
+JkMount /servlet/* worker1
+EOF
+cat > /usr/local/apache/conf/workers.properties <<'EOF'
+worker.list=worker1
+worker.worker1.type=ajp13
+worker.worker1.host=localhost
+worker.worker1.port=8009
+EOF
+apachectl configtest && apachectl restart
+```
+
+```jsp
+<%-- webapps/ROOT/hello.jsp — Tomcat health check --%>
+<%@ page contentType="text/html; charset=utf-8" %>
+<%! String s = "Hello WAS"; %>
+<html><body><%= s %> — <%= request.getRemoteAddr() %></body></html>
+```
+
+#### Attack surface to practice against this target
+
+| Attack surface | Entry point | What to practice |
+|----------------|-------------|------------------|
+| Info disclosure | `/index.php` (phpinfo) | Harvest absolute paths, loaded modules, environment variables, DB socket path |
+| Tomcat Manager | `/manager/html` | `tomcat-users.xml` default credentials → WAR upload → JSP webshell |
+| Ghostcat | AJP 8009 exposed | CVE-2020-1938 — arbitrary file read/include under `WEB-INF` |
+| Old-version CVEs | Apache 1.3.x / PHP 4.x | mod_* buffer overflows, abuse of `register_globals` / `allow_url_include` |
+| WAF bypass | `mod_security` on/off | Compare detection of encoded/commented/case-varied payloads |
+| JSP path handling | `hello.jsp` | Source disclosure/execution via extension case or path normalization bypass |
 
 ---
 

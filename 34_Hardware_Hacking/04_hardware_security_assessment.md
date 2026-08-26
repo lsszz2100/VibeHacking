@@ -319,6 +319,102 @@ Option B: 칩 탈착 후 읽기 (더 안전)
   소켓 어댑터 + 프로그래머 사용 (CH341A, 약 $5)
 ```
 
+### 3.4 CMOS/BIOS 비밀번호 물리적 우회
+
+BIOS/UEFI 설정 비밀번호(Supervisor/User)와 부팅 비밀번호(Power-on)는 메인보드에 저장되며, **물리 접근이 확보되면 대부분 우회 가능**하다. "케이스를 열 수 있으면 펌웨어 설정은 지켜지지 않는다"를 실증하는 대표 사례이자, 평가 시 섀시 봉인·부팅 매체 제어와 함께 확인해야 할 항목이다.
+
+#### 저장 위치 파악 (우회 방법이 갈린다)
+
+```
+데스크톱 메인보드:
+  - CMOS RAM (RTC 배터리 CR2032 로 값 유지) → 배터리 제거·리셋 점퍼로 초기화 가능
+  - 최신 UEFI는 설정을 SPI 플래시의 인증 영역에 저장 → 배터리 제거로 안 지워짐
+
+노트북:
+  - 대부분 별도 EEPROM(24Cxx I2C, 93Cxx Microwire) 또는 EC(임베디드 컨트롤러)에 저장
+  - RTC 배터리를 빼도 비밀번호가 남음 → 칩을 직접 읽고 써야 함
+  - 서비스 매뉴얼의 "password clear" 점퍼/패드(예: JP1, R-pad, S2 스위치) 위치 확인
+
+하드디스크 비밀번호(ATA Security)는 별개:
+  - 드라이브 펌웨어(HPA 영역)에 저장 → CMOS 클리어로 안 풀림
+  - hdparm --security-unlock / --security-erase, 또는 벤더 마스터 비밀번호
+```
+
+#### 방법 1 — RTC 배터리 제거 / 리셋 점퍼
+
+```bash
+# 데스크톱 기준 (전원 코드 완전 분리 후 작업)
+# A. CR2032 배터리를 5~30분 분리 (모델별 상이, 캐패시터 방전까지 대기)
+# B. CLR_CMOS / CLRTC / JBAT1 점퍼를 1-2 → 2-3 핀으로 10초 이동 후 원위치
+# C. 점퍼가 없으면 배터리 소켓의 + / - 단자를 금속으로 수 초 단락
+# 결과: BIOS 설정이 공장 기본값으로, 설정·부팅 비밀번호 삭제
+```
+
+#### 방법 2 — cmospwd (CMOS 저장형 구형 BIOS)
+
+```bash
+sudo apt install cmospwd          # Kali/Debian
+
+cmospwd                           # 저장된 비밀번호 복구 시도 (Award/AMI/Phoenix/IBM 등)
+cmospwd /d  > cmos_backup.txt      # CMOS 덤프
+cmospwd /k                        # CMOS를 kill(초기화) — 비밀번호 포함 전체 리셋
+# Linux는 I/O 포트 접근에 root 권한(ioperm) 필요
+# 32비트 CRC 특성상 서로 다른 비밀번호가 같은 해시 → 그중 하나만 복구됨(로그인엔 충분)
+
+# cmospwd도 안 되고 DOS를 쓸 수 있으면 CRC 저장 위치(0x2E-0x2F)를 직접 0으로:
+#   debug
+#   -o 70 2E
+#   -o 71 0
+#   -q
+```
+
+#### 방법 3 — 벤더 백도어 / 마스터 비밀번호
+
+```
+Award 4.5x    : AWARD_SW , 589589 , d8on
+Phoenix 구버전 : phoenix
+AMI           : AMI , A.M.I. , 589721
+노트북(Dell/HP/Lenovo 등):
+  - POST에서 3회 오입력 → "System Disabled" + 해시/서비스태그 표시
+  - 제조사별 알고리즘으로 해시 → 마스터 비밀번호 산출 (모델 세대에 따라 상이)
+  - 최신 기종은 이 방식이 막혀 있어 메인보드 교체나 정품 서비스가 유일
+```
+
+#### 방법 4 — 노트북 EEPROM 직접 읽기/쓰기
+
+```bash
+# 비밀번호를 별도 EEPROM에 저장하는 노트북 (24C02, 24C64, 93C46 등)
+# 1. 보드에서 8핀 SOIC 칩 식별 (키보드/RTC 근처, "24" 또는 "93" 접두 모델명)
+# 2. SOIC-8 클립 + CH341A 프로그래머로 인서킷 덤프
+#    SPI형 :  flashrom -p ch341a_spi -r eeprom.bin
+#    I2C형(24Cxx) :  ch341eeprom -s 24c64 -r eeprom.bin
+# 3. cmospwd 를 덤프 파일에 적용하거나, 비밀번호 오프셋을 0x00 으로 덮어쓰고 재기록
+ch341eeprom -s 24c64 -w eeprom_clean.bin
+```
+
+#### 평가 체크리스트
+
+```
+[ ] 섀시 인트루전 스위치(케이스 개봉 감지) 유무 및 로깅 여부
+[ ] 설정 비번만 있고 부팅 비번 없음 → USB/PXE 부팅으로 완전 우회 가능
+[ ] Boot order·외부 부팅이 비번 없이 F12 메뉴로 바뀌는가
+[ ] BIOS 플래시 쓰기 방지(SPI WP 핀, Boot Guard) 적용 여부
+[ ] TPM 측정 부팅이 BIOS 설정 변경·CMOS 클리어를 감지하는가
+[ ] 풀디스크 암호화 여부 — BIOS를 우회해도 디스크 데이터가 보호되는지
+```
+
+#### 방어
+
+```
+- 케이스 물리 잠금 + 섀시 인트루전 스위치를 SIEM 으로 수집
+- 최신 UEFI: 설정을 배터리 비휘발 영역이 아닌 SPI 플래시 인증 영역에 저장
+- Secure Boot + TPM PCR 측정 → 펌웨어/설정 변조 시 디스크 키 봉인 해제 거부
+- 풀디스크 암호화(BitLocker/LUKS)로 "물리 접근 = 데이터 유출"의 연결을 끊음
+- 부팅 비밀번호와 설정 비밀번호를 모두 설정, 외부 부팅 비활성화
+```
+
+> ⚠️ 소유 장비 또는 폐기·반납 예정 장비에서만. 배터리·점퍼 조작 전 전원 코드와(노트북은) 주 배터리까지 완전 분리하고 정전기 방지 조치를 한다.
+
 ---
 
 ## 4. 임베디드 기기 위협 모델링
@@ -1156,6 +1252,102 @@ Option A: In-circuit read (with power on)
 Option B: Desolder and read (safer)
   Socket adapter + programmer (CH341A, ~$5)
 ```
+
+### 3.4 Physical Bypass of CMOS/BIOS Passwords
+
+BIOS/UEFI setup passwords (Supervisor/User) and the power-on password are stored on the motherboard, and **with physical access they can almost always be bypassed**. This is the textbook demonstration of "if you can open the case, the firmware settings are not enforced" — and an item to check during assessment alongside chassis seals and boot-media control.
+
+#### Identify where it is stored (this dictates the bypass)
+
+```
+Desktop motherboard:
+  - CMOS RAM (retained by the RTC coin cell, CR2032) → clearable by battery pull or reset jumper
+  - Modern UEFI stores settings in an authenticated region of SPI flash → a battery pull does NOT clear it
+
+Laptop:
+  - Usually stored in a separate EEPROM (24Cxx I2C, 93Cxx Microwire) or the EC (embedded controller)
+  - The password survives an RTC battery pull → you must read and rewrite the chip directly
+  - Locate the "password clear" jumper/pad from the service manual (e.g., JP1, an R-pad, an S2 switch)
+
+Hard disk password (ATA Security) is separate:
+  - Stored in drive firmware (HPA area) → not cleared by a CMOS reset
+  - hdparm --security-unlock / --security-erase, or a vendor master password
+```
+
+#### Method 1 — RTC battery pull / reset jumper
+
+```bash
+# Desktop (work only after fully unplugging the power cord)
+# A. Remove the CR2032 for 5-30 min (varies by model; wait for capacitors to drain)
+# B. Move the CLR_CMOS / CLRTC / JBAT1 jumper from pins 1-2 to 2-3 for 10 s, then move it back
+# C. No jumper? Short the + / - terminals of the battery socket with metal for a few seconds
+# Result: BIOS settings revert to factory defaults, clearing the setup and power-on passwords
+```
+
+#### Method 2 — cmospwd (older BIOSes that store in CMOS)
+
+```bash
+sudo apt install cmospwd          # Kali/Debian
+
+cmospwd                           # attempt to recover the stored password (Award/AMI/Phoenix/IBM, etc.)
+cmospwd /d  > cmos_backup.txt      # dump CMOS
+cmospwd /k                        # kill (reset) CMOS — full reset including the password
+# On Linux, I/O port access needs root (ioperm)
+# Because of the 32-bit CRC, different passwords hash the same → only one is recovered (enough to log in)
+
+# If cmospwd fails and DOS is available, zero the CRC storage location (0x2E-0x2F) directly:
+#   debug
+#   -o 70 2E
+#   -o 71 0
+#   -q
+```
+
+#### Method 3 — vendor backdoor / master passwords
+
+```
+Award 4.5x     : AWARD_SW , 589589 , d8on
+Phoenix (old)  : phoenix
+AMI            : AMI , A.M.I. , 589721
+Laptops (Dell/HP/Lenovo, etc.):
+  - 3 wrong entries at POST → "System Disabled" + a hash / service tag is shown
+  - A per-vendor algorithm turns that hash into a master password (varies by model generation)
+  - Newer machines block this path — motherboard replacement or authorized service is the only option
+```
+
+#### Method 4 — reading/writing a laptop EEPROM directly
+
+```bash
+# Laptops that store the password in a separate EEPROM (24C02, 24C64, 93C46, etc.)
+# 1. Identify the 8-pin SOIC chip on the board (near the keyboard/RTC, model name prefixed "24" or "93")
+# 2. In-circuit dump with a SOIC-8 clip + CH341A programmer
+#    SPI type :  flashrom -p ch341a_spi -r eeprom.bin
+#    I2C type (24Cxx) :  ch341eeprom -s 24c64 -r eeprom.bin
+# 3. Run cmospwd against the dump, or zero the password offset and rewrite
+ch341eeprom -s 24c64 -w eeprom_clean.bin
+```
+
+#### Assessment checklist
+
+```
+[ ] Chassis intrusion switch (case-open detection) present and logged?
+[ ] Setup password only, no power-on password → fully bypassable by booting USB/PXE
+[ ] Can boot order / external boot be changed from the F12 menu with no password?
+[ ] BIOS flash write protection applied (SPI WP pin, Boot Guard)?
+[ ] Does TPM measured boot detect BIOS setting changes / a CMOS clear?
+[ ] Full-disk encryption — is disk data protected even if the BIOS is bypassed?
+```
+
+#### Defense
+
+```
+- Physical case lock + feed the chassis intrusion switch into the SIEM
+- Modern UEFI: store settings in an authenticated SPI-flash region, not a battery-backed area
+- Secure Boot + TPM PCR measurement → refuse to unseal the disk key if firmware/settings are tampered
+- Full-disk encryption (BitLocker/LUKS) breaks the "physical access = data disclosure" link
+- Set both a power-on and a setup password; disable external boot
+```
+
+> ⚠️ Only on hardware you own or that is slated for disposal/return. Before touching a battery or jumper, fully disconnect the power cord (and, on laptops, the main battery) and take anti-static precautions.
 
 ---
 
