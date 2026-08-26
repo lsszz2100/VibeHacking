@@ -389,6 +389,50 @@ const SOLVERS = new Map([
     if (!best) throw new Error('no tailgate row matched the rule');
     return `FLAG{TAILGATE_${best.id}}`;
   } }],
+
+  /* --- automotive: CAN captures, a checksum and a seed-key computation --- */
+  ['t2_canlog', { kind: 'computed', via: 'ascii payload carried on one CAN id', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced capture in the prompt');
+    const target = (ch.prompt.en.match(/`0x([0-9A-Fa-f]+)`/) || [])[1];
+    if (!target) throw new Error('prompt does not name the target identifier');
+    let hex = '';
+    for (const line of m[1].trim().split('\n')) {
+      const f = line.match(/\)\s+\S+\s+([0-9A-Fa-f]+)#([0-9A-Fa-f]*)/);
+      if (f && f[1].toUpperCase() === target.toUpperCase()) hex += f[2];
+    }
+    const ascii = Buffer.from(hex, 'hex').toString('latin1');
+    const g = ascii.match(/FLAG\{[^}]+\}/);
+    return g ? g[0] : ascii;
+  } }],
+  ['t2_cansum', { kind: 'computed', via: 'xor over a stated can payload', solve: (ch) => {
+    const span = (ch.prompt.en.match(/`([0-9A-Fa-f]{2}(?: [0-9A-Fa-f]{2}){6})`/) || [])[1];
+    if (!span) throw new Error('no seven-byte payload span in the prompt');
+    let x = 0;
+    for (const b of span.split(/\s+/)) x ^= parseInt(b, 16);
+    return `FLAG{CKSUM_${x.toString(16).toUpperCase().padStart(2, '0')}}`;
+  } }],
+  ['t3_seedkey', { kind: 'computed', via: 'xor key from a stated challenge and constant', solve: (ch) => {
+    const chal = (ch.prompt.en.match(/challenge `0x([0-9A-Fa-f]{8})`/) || [])[1];
+    const konst = (ch.prompt.en.match(/XOR 0x([0-9A-Fa-f]{8})/) || [])[1];
+    if (!chal || !konst) throw new Error('challenge value or constant not stated');
+    const k = ((parseInt(chal, 16) ^ parseInt(konst, 16)) >>> 0).toString(16).toUpperCase().padStart(8, '0');
+    return `FLAG{KEY_${k}}`;
+  } }],
+  ['t4_cancapstone', { kind: 'computed', via: 'speed and rpm read from OBD reply frames', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced frames in the prompt');
+    const frames = [...m[1].matchAll(/#([0-9A-Fa-f]+)/g)].map((x) => x[1].toUpperCase());
+    let speed = null, rpm = null;
+    for (const f of frames) {
+      const a = f.indexOf('410D');
+      if (a >= 0) speed = parseInt(f.slice(a + 4, a + 6), 16);
+      const b = f.indexOf('410C');
+      if (b >= 0) rpm = (parseInt(f.slice(b + 4, b + 6), 16) * 256 + parseInt(f.slice(b + 6, b + 8), 16)) / 4;
+    }
+    if (speed === null || rpm === null) throw new Error('missing the 0x0D or 0x0C reply');
+    return `FLAG{SPEED${speed}_RPM${rpm}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

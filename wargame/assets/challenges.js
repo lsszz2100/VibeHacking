@@ -132,6 +132,14 @@ const TRACKS = [
     "en": "Physical Security",
     "desc_ko": "출입 통제·잠금장치·RFID 배지·물리 정찰과 사회공학.",
     "desc_en": "Access control, locks, RFID badges, physical recon and social engineering."
+  },
+  {
+    "id": "automotive",
+    "icon": "🚗",
+    "ko": "자동차 해킹",
+    "en": "Automotive",
+    "desc_ko": "CAN 버스·OBD-II·UDS 진단·ECU·텔레매틱스와 V2X.",
+    "desc_en": "CAN bus, OBD-II, UDS diagnostics, ECUs, telematics and V2X."
   }];
 
 const CHALLENGES = [
@@ -10913,6 +10921,1021 @@ const CHALLENGES = [
       "en": [
         "A contraction of magnetic + lock.",
         "For a security-first door, wire it fail-secure and add a UPS and metal conduit protection."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t0_bosch",
+    "tier": 0,
+    "cat": "can",
+    "track": "automotive",
+    "points": 50,
+    "ci": true,
+    "hash": "0600c79833cc723f51a26a1c39b46fcc6bb909a6db9b8c9a3885469f8aaa3fc2",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "버스를 만든 회사",
+      "en": "Who Built the Bus"
+    },
+    "prompt": {
+      "ko": "차량 내부의 수십 개 제어 장치를 잇는 2선식 차동 신호 버스는 1986년 독일의 한 자동차 부품 회사가 발표했고, 이후 거의 모든 승용차의 표준이 되었다. 이 회사의 이름은? (한 단어)",
+      "en": "The two-wire differential bus that links the dozens of controllers inside a vehicle was published in 1986 by a German automotive-parts company, and went on to become standard in almost every passenger car. Name the company. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "가솔린 직분사, 안티록 브레이크, 전동 공구로도 유명하다.",
+        "본사는 슈투트가르트 인근 게를링겐."
+      ],
+      "en": [
+        "The same firm is known for fuel injection, anti-lock brakes and power tools.",
+        "Headquartered near Stuttgart, in Gerlingen."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t0_candump",
+    "tier": 0,
+    "cat": "can",
+    "track": "automotive",
+    "points": 50,
+    "ci": true,
+    "hash": "2770f5a4a692984e6ba96cf7b1cfc011671b3cff6b6234a96695303755bce253",
+    "fmt": "명령어 / command",
+    "title": {
+      "ko": "버스를 엿듣기",
+      "en": "Listen to the Bus"
+    },
+    "prompt": {
+      "ko": "리눅스 can-utils 모음에는 지정한 CAN 인터페이스에 흐르는 모든 프레임을 타임스탬프와 함께 터미널에 그대로 찍어 주는 명령이 있다. 트래픽을 처음 살필 때 가장 먼저 실행하는 도구다. 그 명령의 이름은?",
+      "en": "The Linux can-utils package has a command that prints every frame on a given CAN interface straight to the terminal, with timestamps. It is the first tool you reach for when surveying traffic. Name the command."
+    },
+    "hints": {
+      "ko": [
+        "이름은 버스 이름 뒤에 'dump' 를 붙인 것이다.",
+        "`-l` 옵션은 로그 파일에 저장하고, canplayer 로 재생한다."
+      ],
+      "en": [
+        "The name is the bus name followed by 'dump'.",
+        "The `-l` option writes a log file that canplayer can replay."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t1_socketcan",
+    "tier": 1,
+    "cat": "can",
+    "track": "automotive",
+    "points": 100,
+    "ci": true,
+    "hash": "fee453f4c60741d04fde81aac8ca19ee78bf72978b4b1b3a9f7750a0cf2a8211",
+    "fmt": "값 그대로 / literal (9글자 / 9 chars)",
+    "title": {
+      "ko": "네트워크로 취급되는 버스",
+      "en": "The Bus as a Network"
+    },
+    "prompt": {
+      "ko": "리눅스 커널은 CAN 버스를 일반 네트워크 인터페이스처럼 다루게 해 주는 서브시스템을 내장한다. `AF_CAN` 소켓 패밀리로 표준 소켓 API 를 쓰고, `ip link` 로 인터페이스를 올리며, can-utils 프로그램들이 그 위에서 동작한다. 이 서브시스템의 이름은?",
+      "en": "The Linux kernel ships a subsystem that lets you treat a CAN bus like an ordinary network interface: the `AF_CAN` socket family gives you the standard socket API, `ip link` brings the interface up, and the can-utils programs run on top of it. Name it."
+    },
+    "hints": {
+      "ko": [
+        "'socket' 과 'CAN' 을 그대로 붙인 이름이다.",
+        "가상 인터페이스는 `modprobe vcan` 으로 만든다."
+      ],
+      "en": [
+        "The name is just 'socket' and 'CAN' run together.",
+        "You make a virtual interface with `modprobe vcan`."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t1_arbitration",
+    "tier": 1,
+    "cat": "can",
+    "track": "automotive",
+    "points": 100,
+    "ci": true,
+    "hash": "e49f5710c8d3e66821f0e0ee1c3ed574df3f0b48e2a65c4c357b654fa10ef402",
+    "fmt": "한 단어 / one word (11글자 / 11 chars)",
+    "title": {
+      "ko": "낮은 번호가 이긴다",
+      "en": "Lowest Number Wins"
+    },
+    "prompt": {
+      "ko": "여러 노드가 동시에 전송을 시작하면 CAN 은 충돌을 파괴 없이 해결한다. 각 노드는 자신이 보낸 비트와 버스에서 읽히는 비트를 비교하다가 달라지는 순간 조용히 물러나고, 식별자가 수치상 가장 낮은 프레임이 버스를 계속 차지한다. 손실되는 메시지는 없다. 이 과정을 가리키는 한 단어는? (11글자)",
+      "en": "When several nodes begin transmitting at once, CAN resolves the clash without destroying anything: each node compares the bit it sent with the bit it reads back, drops out the instant they differ, and the frame with the numerically lowest identifier keeps the bus. No message is lost. Give the one word for this process. (11 characters)"
+    },
+    "hints": {
+      "ko": [
+        "법정 밖에서 분쟁을 가리는 절차와 같은 낱말이다.",
+        "그래서 CAN 식별자는 우선순위 역할을 겸한다 — 0x000 이 최고 우선순위."
+      ],
+      "en": [
+        "The word is the same one used for settling a dispute out of court.",
+        "This is why a CAN identifier doubles as a priority — 0x000 is highest."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t1_recessive",
+    "tier": 1,
+    "cat": "can",
+    "track": "automotive",
+    "points": 100,
+    "ci": true,
+    "hash": "d5512f5151f813dba9717443758686e9d12a188b87033f587f2e1dea34540ba4",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "물러서는 비트",
+      "en": "The Yielding Bit"
+    },
+    "prompt": {
+      "ko": "CAN 버스의 두 비트 상태 중 하나는 '우세(dominant)'라 불리며 논리 0 에 해당하고 버스를 능동적으로 끌어내린다. 다른 하나는 논리 1 로, 아무도 버스를 구동하지 않을 때의 기본 상태이며 우세 비트가 나타나면 덮인다. 이 물러서는 쪽 비트 상태의 이름은? (한 단어)",
+      "en": "Of the two bit states on a CAN bus, one is called 'dominant' — it is logical 0 and actively pulls the bus down. The other is logical 1, the resting state when no node drives the bus, and it is overwritten whenever a dominant bit appears. Name this yielding state. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "유전학에서 '우성' 에 대비되는 그 낱말이다.",
+        "같은 값이 다섯 번 연속되면 반대 비트를 끼워 넣는 비트 스터핑이 동기화를 유지한다."
+      ],
+      "en": [
+        "It is the genetics word paired against 'dominant'.",
+        "Bit stuffing — inserting an opposite bit after five equal ones — keeps clocks in sync."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t1_elm327",
+    "tier": 1,
+    "cat": "can",
+    "track": "automotive",
+    "points": 100,
+    "ci": true,
+    "hash": "a1925d1b20f214a63daefa42a35e2dadfbb4b47cabc8c6adb646a0e331d87877",
+    "fmt": "값 그대로 / literal (6글자 / 6 chars)",
+    "title": {
+      "ko": "싸구려 동글의 두뇌",
+      "en": "The Cheap Dongle's Brain"
+    },
+    "prompt": {
+      "ko": "저렴한 블루투스·USB 진단 동글은 대부분 캐나다 ELM Electronics 가 만든 특정 인터프리터 IC 의 명령어 집합(AT 명령)을 그대로 흉내 낸다. 스마트폰 진단 앱은 이 명령어 규약에 맞춰 대화한다. 그 IC 의 모델명은? (6글자)",
+      "en": "A cheap Bluetooth or USB diagnostic dongle almost always emulates the command set (AT commands) of one interpreter IC made by ELM Electronics of Canada. Phone diagnostic apps talk to that command dialect. Give the IC's model name. (6 characters)"
+    },
+    "hints": {
+      "ko": [
+        "글자 셋에 숫자 셋. 앞 세 글자는 제조사 이름과 같다.",
+        "정품은 PIC 마이크로컨트롤러 기반이고, 시중엔 복제 클론이 흔하다."
+      ],
+      "en": [
+        "Three letters then three digits; the letters match the maker's name.",
+        "The genuine part is built on a PIC microcontroller; cheap clones are everywhere."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t1_extid",
+    "tier": 1,
+    "cat": "can",
+    "track": "automotive",
+    "points": 100,
+    "ci": true,
+    "hash": "35135aaa6cc23891b40cb3f378c53a17a1127210ce60e125ccf03efcfdaec458",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "긴 쪽 식별자",
+      "en": "The Longer Identifier"
+    },
+    "prompt": {
+      "ko": "고전 CAN 2.0A 프레임의 식별자는 11비트다. CAN 2.0B 와, 그 위에 얹는 상용차 프로토콜 J1939 는 더 긴 확장 식별자를 쓴다. 확장 식별자는 몇 비트인가? (숫자)",
+      "en": "A classic CAN 2.0A frame carries an 11-bit identifier. CAN 2.0B, and the commercial-vehicle protocol J1939 layered on top of it, use a longer extended identifier instead. How many bits is the extended identifier? (a number)"
+    },
+    "hints": {
+      "ko": [
+        "11비트 기본부(base) 뒤에 18비트가 더 붙는다.",
+        "11 + 18."
+      ],
+      "en": [
+        "An 18-bit extension is appended to the 11-bit base part.",
+        "11 + 18."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t1_immobilizer",
+    "tier": 1,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 100,
+    "ci": true,
+    "hash": "c03c0b6efb07a00580ea64951ce612915ea7ddee022a63f05d97a98d1b40c53b",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "열쇠가 있어야 시동",
+      "en": "No Key, No Start"
+    },
+    "prompt": {
+      "ko": "1990년대 후반부터 의무화된 도난 방지 장치로, 시동 계통과 연료 분사를 비활성 상태로 잡아 둔다. 키에 내장된 소형 트랜스폰더 칩이 정확한 코드로 응답할 때만 엔진 제어 장치가 시동을 허용한다. 이 장치를 부르는 한 단어는?",
+      "en": "A theft-prevention device, mandatory since the late 1990s, that holds the starter circuit and fuel injection inactive. The engine controller only allows a start when a small transponder chip in the key answers with the correct code. What one word names this device?"
+    },
+    "hints": {
+      "ko": [
+        "'움직이지 못하게 하는 것' 이라는 뜻의 -er 명사다.",
+        "이걸 우회하려는 시도가 신호 증폭 공격과 키 복제로 이어진다."
+      ],
+      "en": [
+        "An -er noun meaning 'the thing that stops something from moving'.",
+        "Trying to get past it is what the signal-amplification and key-cloning attacks are for."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t2_canlog",
+    "tier": 2,
+    "cat": "can",
+    "track": "automotive",
+    "points": 150,
+    "ci": false,
+    "hash": "266714fa37423b154a1721384f72bd2230f1154838cf692f9ffdfac62fa3b19b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "진단 범위의 프레임",
+      "en": "Frames in the Diagnostic Range"
+    },
+    "prompt": {
+      "ko": "아래는 vcan0 에서 받은 표준 CAN 로그 캡처다(타임스탬프·인터페이스·ID#데이터). 대부분은 주기적 계기 트래픽이지만, 진단용 상위 식별자 `0x7FF` 로 나가는 프레임들의 페이로드를 시간 순서대로 이어 ASCII 로 읽으면 플래그가 된다.\n\n```\n(1690000000.010203) vcan0 100#1122334455667788\n(1690000000.011000) vcan0 7FF#464C41477B43414E\n(1690000000.012000) vcan0 2B0#0000000000000000\n(1690000000.013000) vcan0 7FF#5F4255535F534E49\n(1690000000.014000) vcan0 1A0#00FF00FF00FF00FF\n(1690000000.015000) vcan0 7FF#464645447D\n(1690000000.016000) vcan0 300#0118000000000000\n```\n\n`FLAG{...}` 형태로 제출하라.",
+      "en": "Below is a standard CAN-log capture from vcan0 (timestamp, interface, ID#data). Most of it is periodic instrument traffic, but if you take the payloads of the frames sent on `0x7FF` — the top diagnostic identifier — in time order and read them as ASCII, you get the flag.\n\n```\n(1690000000.010203) vcan0 100#1122334455667788\n(1690000000.011000) vcan0 7FF#464C41477B43414E\n(1690000000.012000) vcan0 2B0#0000000000000000\n(1690000000.013000) vcan0 7FF#5F4255535F534E49\n(1690000000.014000) vcan0 1A0#00FF00FF00FF00FF\n(1690000000.015000) vcan0 7FF#464645447D\n(1690000000.016000) vcan0 300#0118000000000000\n```\n\nSubmit it as `FLAG{...}`."
+    },
+    "hints": {
+      "ko": [
+        "`7FF:7FF` 필터를 걸면 그 식별자만 남는다.",
+        "`46 4C 41 47` 은 `F L A G`. 세 프레임을 붙이면 21바이트다."
+      ],
+      "en": [
+        "A `7FF:7FF` filter isolates just that identifier.",
+        "`46 4C 41 47` is `F L A G`. The three frames concatenate to 21 bytes."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t2_cansum",
+    "tier": 2,
+    "cat": "can",
+    "track": "automotive",
+    "points": 150,
+    "ci": false,
+    "hash": "85942abd8aa0d9daeda2a7575f5eff0af5ec857d530f93f08dd696f3c2ffeb13",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "페이로드를 닫는 바이트",
+      "en": "The Byte That Closes the Payload"
+    },
+    "prompt": {
+      "ko": "어떤 ECU 는 8바이트 CAN 프레임의 마지막 바이트를 앞 7바이트 전체의 XOR 로 채운다(단순 무결성 검사). 앞 7바이트가 `12 34 56 78 9A BC DE` 일 때 여덟 번째 바이트를 구하고, `FLAG{CKSUM_XX}` 형태로 제출하라. XX 는 대문자 16진수 두 자리다.",
+      "en": "One ECU fills the last byte of an 8-byte CAN frame with the XOR of the first seven bytes (a crude integrity check). Given the first seven bytes `12 34 56 78 9A BC DE`, work out the eighth byte and submit it as `FLAG{CKSUM_XX}`, where XX is two uppercase hex digits."
+    },
+    "hints": {
+      "ko": [
+        "XOR 은 결합·교환 법칙이 성립한다 — 순서는 무관하다.",
+        "`12 ^ 34 = 26`; 계속 누적해 나가라."
+      ],
+      "en": [
+        "XOR is associative and commutative — order does not matter.",
+        "`12 ^ 34 = 26`; keep folding."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t2_obdrpm",
+    "tier": 2,
+    "cat": "uds",
+    "track": "automotive",
+    "points": 150,
+    "ci": true,
+    "hash": "2f11192801e83bf30f01139f338c5cf52a5e5cdf3e5b7c2d3ef5b051e9fd1fde",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "회전수 두 바이트",
+      "en": "Two Bytes of Revs"
+    },
+    "prompt": {
+      "ko": "OBD-II 표준에서 엔진 회전수(PID 0x0C)의 응답은 두 데이터 바이트 A, B 로 오고, 실제 값은 rpm = (A × 256 + B) ÷ 4 이다. 어떤 응답이 A = 0x1A, B = 0xF8 을 담고 있었다. rpm 값은? (숫자)",
+      "en": "In OBD-II, the reply for engine speed (PID 0x0C) carries two data bytes A and B, and the real value is rpm = (A × 256 + B) ÷ 4. One reply held A = 0x1A and B = 0xF8. What is the rpm? (a number)"
+    },
+    "hints": {
+      "ko": [
+        "0x1A = 26, 0xF8 = 248.",
+        "26 × 256 + 248 = 6904; 그다음 4로 나눈다."
+      ],
+      "en": [
+        "0x1A = 26, 0xF8 = 248.",
+        "26 × 256 + 248 = 6904; then divide by four."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t2_isotp",
+    "tier": 2,
+    "cat": "can",
+    "track": "automotive",
+    "points": 150,
+    "ci": true,
+    "hash": "f5ca38f748a1d6eaf726b8a42fb575c3c71f1864a8143301782de13da2d9202b",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "여러 프레임에 걸친 응답",
+      "en": "A Reply Across Frames"
+    },
+    "prompt": {
+      "ko": "8바이트를 넘는 진단 응답은 ISO-TP(ISO 15765-2)로 나뉘어 전송된다. 첫 프레임(First Frame)은 첫 바이트의 하위 4비트와 둘째 바이트를 합쳐 전체 길이를 12비트로 알린다. 첫 두 바이트가 `10 14` 인 첫 프레임이 알리는 전체 메시지 길이는 몇 바이트인가? (숫자)",
+      "en": "A diagnostic reply longer than 8 bytes is split with ISO-TP (ISO 15765-2). Its First Frame encodes the total length in 12 bits: the low nibble of the first byte joined with the second byte. For a First Frame whose first two bytes are `10 14`, how many bytes is the whole message? (a number)"
+    },
+    "hints": {
+      "ko": [
+        "첫 바이트 0x10 → 상위 니블 1 은 'First Frame' 표시, 하위 니블은 0.",
+        "그래서 길이는 앞에 0x0 을 붙인 0x14 — 이 한 바이트를 10진수로."
+      ],
+      "en": [
+        "First byte 0x10 → the high nibble 1 marks 'First Frame', the low nibble is 0.",
+        "So the length is 0x14 with a leading 0x0 — convert that single byte to decimal."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t2_flexray",
+    "tier": 2,
+    "cat": "can",
+    "track": "automotive",
+    "points": 150,
+    "ci": true,
+    "hash": "86786512a7dd7ba7cfd49bd20df5bf6ee61b2a1a9ee9fe21bf7c50d4040da4e4",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "시간표대로 도는 버스",
+      "en": "A Bus on a Timetable"
+    },
+    "prompt": {
+      "ko": "CAN 보다 빠르고 결정적인 차량 버스다: 최대 10 Mbit/s, 두 채널 이중화, 시간 트리거 방식이라 각 메시지가 고정된 슬롯에 실린다. 조향·제동 케이블을 전자식으로 대체하는 X-by-wire 안전 계통에 쓰이며, BMW 7 시리즈가 처음 양산 적용했다. 이 버스의 이름은? (한 단어)",
+      "en": "A vehicle bus faster and more deterministic than CAN: up to 10 Mbit/s, two redundant channels, time-triggered so every message rides in a fixed slot. Used for X-by-wire safety systems that replace steering and braking cables, and first shipped in the BMW 7 Series. Name the bus. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'유연한' 과 '광선' 을 붙인 상표명이다.",
+        "정적 세그먼트는 시간표대로, 동적 세그먼트는 미니슬롯으로 남는 대역을 나눈다."
+      ],
+      "en": [
+        "A trademark joining 'flexible' and 'ray'.",
+        "A static segment runs to the timetable; a dynamic segment shares the rest with minislots."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t2_lin",
+    "tier": 2,
+    "cat": "can",
+    "track": "automotive",
+    "points": 150,
+    "ci": true,
+    "hash": "2f48b881ea7073f1c6f083b296a360bd4c9cf51edaacba1cd9c34d8ae3d994ec",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "미러와 창문용 곁버스",
+      "en": "The Side Bus for Mirrors"
+    },
+    "prompt": {
+      "ko": "CAN 을 깔기엔 아까운 저속·저비용 기능(도어 미러, 파워 윈도, 와이퍼, 실내등)을 위한 단선 직렬 서브버스다. 하나의 마스터가 슬레이브들을 폴링하고 슬레이브끼리는 직접 말하지 않는다. 12V 단선, 최대 19.2 kbit/s. 세 글자 약어는?",
+      "en": "A single-wire, low-speed, low-cost serial sub-bus for functions not worth a CAN drop — door mirrors, power windows, wipers, cabin lights. One master polls the slaves; slaves never talk to each other. Single 12 V wire, up to 19.2 kbit/s. Give the three-letter abbreviation."
+    },
+    "hints": {
+      "ko": [
+        "머리글자는 Local Interconnect Network.",
+        "CAN 곁가지로 붙어 브리지 컨트롤러를 거쳐 본선과 오간다."
+      ],
+      "en": [
+        "The initials of Local Interconnect Network.",
+        "It hangs off a CAN branch and reaches the main bus through a bridging controller."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t2_busoff",
+    "tier": 2,
+    "cat": "can",
+    "track": "automotive",
+    "points": 150,
+    "ci": true,
+    "hash": "831458df99c1bcf16c11a0fe8402f26a3ed92ae89e67c88474b37c0f5dfd90de",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "카운터가 넘치면",
+      "en": "When the Counter Overflows"
+    },
+    "prompt": {
+      "ko": "CAN 컨트롤러는 전송 오류 카운터(TEC)를 유지한다. 값이 127 을 넘으면 '에러 수동' 상태가 되고, 255 를 넘으면 노드가 아예 회선에서 스스로 떨어져 나간다. 공격자가 표적 ECU 를 겨냥해 오류 프레임을 반복 주입하면 그 노드를 이 상태로 밀어 넣어 무력화할 수 있다. 이 마지막 상태의 이름은? (두 단어)",
+      "en": "A CAN controller keeps a transmit error counter (TEC). Past 127 it goes 'error passive'; past 255 the node drops itself off the wire entirely. An attacker who keeps injecting error frames aimed at one ECU can push that node into this state and take it out. Name this final state. (two words)"
+    },
+    "hints": {
+      "ko": [
+        "두 낱말 모두 짧다. 첫 낱말은 이 회선 자체를 가리킨다.",
+        "복구하려면 보통 회선에서 일정한 유휴 시퀀스를 128번 관측해야 한다."
+      ],
+      "en": [
+        "Both words are short; the first word is the wire itself.",
+        "Recovery usually needs 128 observed idle sequences on the wire."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t2_dbc",
+    "tier": 2,
+    "cat": "can",
+    "track": "automotive",
+    "points": 150,
+    "ci": true,
+    "hash": "e93f0a474e01c65ef2b56ca0a310de856f5d95a1be13f63bf4bd1c25c1ce3596",
+    "fmt": "확장자 / extension",
+    "title": {
+      "ko": "원시 바이트에 이름 붙이기",
+      "en": "Naming the Raw Bytes"
+    },
+    "prompt": {
+      "ko": "CAN 프레임의 페이로드는 그냥 바이트 뭉치다. Vector 사가 정한 텍스트 데이터베이스 파일 포맷은 식별자마다 어떤 비트 범위가 어떤 신호(엔진 온도, 조향각 …)이고 스케일·오프셋·단위가 무엇인지 적어 둔다. cantools 같은 도구가 이 파일을 불러 원시 프레임을 물리값으로 디코딩한다. 이 파일 포맷의 세 글자 확장자는?",
+      "en": "A CAN payload is just a blob of bytes. A text database file format defined by Vector records, per identifier, which bit range is which signal (engine temperature, steering angle …) and its scale, offset and unit. Tools like cantools load this file to decode raw frames into physical values. Give the format's three-letter extension."
+    },
+    "hints": {
+      "ko": [
+        "CAN 뒤에 database.",
+        "리버싱으로 이 파일을 채워 나가는 것이 알 수 없는 신호를 해독하는 작업이다."
+      ],
+      "en": [
+        "CAN followed by database.",
+        "Building this file up by reverse engineering is how you decode unknown signals."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t3_seedkey",
+    "tier": 3,
+    "cat": "uds",
+    "track": "automotive",
+    "points": 200,
+    "ci": false,
+    "hash": "e096b32db5ffad52f6eb146c4d89fd3f1f60748b2799e70123e82edf8705b640",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "메이커 알고리즘",
+      "en": "The Maker's Algorithm"
+    },
+    "prompt": {
+      "ko": "ISO 14229 진단 프로토콜의 SecurityAccess(서비스 0x27)는 챌린지-응답이다. `27 01` 을 보내면 ECU 가 4바이트 챌린지 값을 돌려주고, 클라이언트는 메이커 고유 알고리즘으로 응답 키를 계산해 `27 02` 로 보낸다. 펌웨어를 덤프해 보니 알고리즘은 단순히 `key = challenge XOR 0xDEADBEEF` 였다. ECU 가 돌려준 챌린지가 `0x1A2B3C4D` 일 때, 계산한 키를 `FLAG{KEY_XXXXXXXX}` (대문자 16진수 8자리)로 제출하라.",
+      "en": "In the ISO 14229 diagnostic protocol, SecurityAccess (service 0x27) is a challenge-response. You send `27 01`, the ECU returns a 4-byte challenge value, and the client computes the response key with the maker's own algorithm and sends it as `27 02`. Dumping the firmware shows the algorithm is just `key = challenge XOR 0xDEADBEEF`. The ECU returned the challenge `0x1A2B3C4D`. Submit the computed key as `FLAG{KEY_XXXXXXXX}` (eight uppercase hex digits)."
+    },
+    "hints": {
+      "ko": [
+        "1A ^ DE, 2B ^ AD, 3C ^ BE, 4D ^ EF 를 바이트별로.",
+        "결과의 첫 바이트는 0xC4 다."
+      ],
+      "en": [
+        "Take 1A ^ DE, 2B ^ AD, 3C ^ BE, 4D ^ EF byte by byte.",
+        "The first byte of the result is 0xC4."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t3_freshness",
+    "tier": 3,
+    "cat": "uds",
+    "track": "automotive",
+    "points": 200,
+    "ci": true,
+    "hash": "d37985420b738554ca1d44a989de02c07bb53296b6246c1f72bb0c75aa8e0534",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "재생을 막는 숫자",
+      "en": "The Number That Stops Replay"
+    },
+    "prompt": {
+      "ko": "차량용 보안 온보드 통신 방식은 선택한 CAN 프레임에 짧은 인증 코드(잘린 MAC)를 붙인다. 그것만으로는 공격자가 프레임을 통째로 녹음했다가 나중에 다시 흘리면 통과한다. 그래서 매번 증가하는 값을 함께 MAC 계산에 넣어, 지난 프레임을 재생하면 검증이 깨지게 한다. 이 단조 증가 값을 부르는 한 단어는?",
+      "en": "An automotive secure onboard communication scheme attaches a short authenticator (a truncated MAC) to selected CAN frames. That alone is not enough — an attacker can record a whole frame and replay it later and it still verifies. So a value that rises every time is folded into the MAC as well, breaking verification for any replayed frame. What one word names this monotonically increasing value?"
+    },
+    "hints": {
+      "ko": [
+        "'신선함' 이라는 뜻의 -ness 명사다.",
+        "보통 트립 카운터와 타임스탬프를 합쳐 만든다."
+      ],
+      "en": [
+        "A '-ness' noun meaning 'newness'.",
+        "It is usually built from a trip counter and a timestamp."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t3_pkes",
+    "tier": 3,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 200,
+    "ci": true,
+    "hash": "15bf42007b25958227aff0d05b5097335a56c094bee38a2bbf1ef24faa1fcc2e",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "다가가면 열린다",
+      "en": "It Opens as You Approach"
+    },
+    "prompt": {
+      "ko": "키를 주머니에 넣은 채 손잡이를 잡으면 문이 열리고 버튼으로 시동이 걸리는 편의 기능이다. 차와 키가 초저주파(LF) 신호로 서로의 근접을 확인한다. 공격자 둘이 각각 안테나를 들고, 집 안의 키에서 나온 신호를 차까지 실시간으로 증폭·전달하면 차는 키가 마당에 있는 것처럼 속아 문을 열고 시동까지 건다. 이 편의 기능의 네 글자 약어는?",
+      "en": "A convenience feature where the door opens when you grab the handle with the key still in your pocket, and a button starts the engine. Car and key confirm each other's proximity over a low-frequency (LF) signal. Two attackers, each holding an antenna, amplify and pass that signal in real time from the key indoors out to the car, so the car is fooled into thinking the key is in the driveway — and it opens and starts. Give the four-letter abbreviation for this feature."
+    },
+    "hints": {
+      "ko": [
+        "Passive Keyless Entry and Start.",
+        "대응책: 키에 모션 센서를 넣어 정지 시 잠들게 하거나, UWB 거리 측정을 쓴다."
+      ],
+      "en": [
+        "Passive Keyless Entry and Start.",
+        "Countermeasures: a motion sensor that sleeps the key when still, or UWB ranging."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t3_rolljam",
+    "tier": 3,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 200,
+    "ci": true,
+    "hash": "35fdfb4f116f4184c867d3de2961f728646047c451b11bb4db8e986b7c5b3d01",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "미룬 코드를 나중에",
+      "en": "The Withheld Code, Later"
+    },
+    "prompt": {
+      "ko": "구형 무선 키는 버튼을 누를 때마다 다음 롤링 코드를 보낸다 — 재생 공격을 막기 위해서다. 한 연구자가 공개한 장치는 이 전송을 방해(재밍)하면서 동시에 녹음한다. 사용자가 한 번 더 누르면 첫 코드는 계속 붙잡아 둔 채 두 번째만 차에 흘려보내, 아직 쓰지 않은 첫 코드를 손에 넣는다. 나중에 그 코드로 문을 연다. 이 장치이자 기법의 이름은? (한 단어)",
+      "en": "An older wireless key sends the next rolling code each time you press the button — to defeat replay. A device published by a researcher jams that transmission while recording it. When the user presses again, it keeps holding the first code and forwards only the second to the car, so it now holds an unused code. Later it uses that code to open the door. Name the device and technique. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "'구르다' 와 '방해하다' 를 붙인 이름.",
+        "Samy Kamkar 가 2015년 DEF CON 에서 시연했다."
+      ],
+      "en": [
+        "'Roll' plus 'jam'.",
+        "Samy Kamkar demonstrated it at DEF CON 2015."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t3_uconnect",
+    "tier": 3,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 200,
+    "ci": true,
+    "hash": "b8fbb972a4544db24be462594e826be5798d4e22287819c299f34b8c3a710634",
+    "fmt": "값 그대로 / literal (8글자 / 8 chars)",
+    "title": {
+      "ko": "셀룰러에서 버스로",
+      "en": "From Cellular to the Bus"
+    },
+    "prompt": {
+      "ko": "2015년, 연구자들은 피아트크라이슬러 차량의 인포테인먼트 시스템이 셀룰러망 쪽으로 열어 둔 포트(6667/tcp)를 통해 원격 침투했고, 거기서 별도 마이크로컨트롤러를 거쳐 CAN 버스로 넘어가 고속도로를 달리던 Jeep Cherokee 의 제동과 조향에 개입했다. 140만 대 리콜로 이어졌다. 이 인포테인먼트 시스템의 제품명은? (8글자)",
+      "en": "In 2015, researchers remotely broke into the infotainment system of Fiat Chrysler vehicles through a port it left open toward the cellular network (6667/tcp), pivoted from there through a separate microcontroller onto the CAN bus, and interfered with the braking and steering of a Jeep Cherokee driving on a highway. It led to a recall of 1.4 million vehicles. Give the product name of that infotainment system. (8 characters)"
+    },
+    "hints": {
+      "ko": [
+        "'you connect' 처럼 읽는 이름이고, U 로 시작한다.",
+        "Charlie Miller 와 Chris Valasek 의 연구다."
+      ],
+      "en": [
+        "The name reads like 'you connect' and starts with U.",
+        "The work of Charlie Miller and Chris Valasek."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t3_gnss",
+    "tier": 3,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 200,
+    "ci": true,
+    "hash": "c97147d5c731672d8a583714b1886d79e983b4d438e83b0fa737860afb6a48f1",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "가짜 하늘 신호",
+      "en": "A Fake Signal From the Sky"
+    },
+    "prompt": {
+      "ko": "차량의 위치 인식은 여러 위성 항법 시스템(미국 GPS, 러시아 GLONASS, 유럽 Galileo, 중국 BeiDou)의 신호에 의존한다. 이들을 통칭하는 네 글자 약어가 있다. 공격자가 진짜보다 강한 가짜 신호를 방출하면 수신기를 장악해 차량이 인식하는 위치를 서서히 딴 곳으로 끌고 갈 수 있다(스푸핑). 이 통칭 약어는?",
+      "en": "A vehicle's sense of location relies on signals from several satellite navigation systems (the US GPS, Russia's GLONASS, Europe's Galileo, China's BeiDou). There is a four-letter abbreviation covering all of them. An attacker who emits a counterfeit signal stronger than the real one can capture the receiver and slowly walk the vehicle's perceived position elsewhere (spoofing). Give that umbrella abbreviation."
+    },
+    "hints": {
+      "ko": [
+        "Global Navigation Satellite System.",
+        "방어: 다중 주파수 수신, 관성 센서 융합, 신호 도래각 검사."
+      ],
+      "en": [
+        "Global Navigation Satellite System.",
+        "Defenses: multi-frequency reception, inertial-sensor fusion, angle-of-arrival checks."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t3_canfd",
+    "tier": 3,
+    "cat": "can",
+    "track": "automotive",
+    "points": 200,
+    "ci": true,
+    "hash": "c1decdc8ae919581c75ce8fe6b270795d6771c62daed4cc92d316cae0239262e",
+    "fmt": "값 그대로 / literal (5글자 / 5 chars)",
+    "title": {
+      "ko": "더 긴 페이로드",
+      "en": "A Longer Payload"
+    },
+    "prompt": {
+      "ko": "2012년 고전 버스의 원 개발사가 내놓은 확장 규격이다. 식별자와 버스 접근 규칙은 그대로지만, 프레임당 데이터가 8바이트에서 최대 64바이트로 늘고 데이터 구간만 더 빠른 비트레이트로 전환된다. 최신 ECU 와 진단은 대부분 이 규격을 쓴다. 이 확장의 이름은? (5글자, 공백 없이)",
+      "en": "A 2012 extension of the classic bus by its original creator. The identifiers and the bus-access rules are unchanged, but data per frame grows from 8 bytes to as much as 64, and the data phase alone switches to a faster bitrate. Most recent ECUs and diagnostics use it. Name the extension. (5 characters, no space)"
+    },
+    "hints": {
+      "ko": [
+        "버스 이름 뒤에 'Flexible Data-rate'.",
+        "BRS(비트레이트 전환)와 ESI(에러 상태 표시) 필드가 추가된다."
+      ],
+      "en": [
+        "The bus name followed by 'Flexible Data-rate'.",
+        "It adds the BRS (bit-rate switch) and ESI (error state indicator) fields."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t3_tara",
+    "tier": 3,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 200,
+    "ci": true,
+    "hash": "42570c45c81fdb5d1964f9e7aaead823df063412a3ae28ddca46dadb25bf6282",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "위협을 먼저 헤아리기",
+      "en": "Weigh the Threats First"
+    },
+    "prompt": {
+      "ko": "자동차 사이버보안 국제표준 ISO/SAE 21434 는 개발 초기에 구조화된 분석을 요구한다: 자산을 나열하고, 위협 시나리오와 공격 경로를 도출하고, 각 위험의 심각도·가능성을 매겨 대응 우선순위를 정한다. 이 활동의 네 글자 약어는?",
+      "en": "The automotive cybersecurity standard ISO/SAE 21434 requires a structured analysis early in development: list the assets, derive threat scenarios and attack paths, and rate each risk's severity and likelihood to set treatment priorities. Give the four-letter abbreviation for this activity."
+    },
+    "hints": {
+      "ko": [
+        "머리글자는 Threat Analysis and Risk Assessment.",
+        "위협 분류에는 STRIDE 를 흔히 빌려 쓴다."
+      ],
+      "en": [
+        "The initials of Threat Analysis and Risk Assessment.",
+        "STRIDE is commonly borrowed for the threat classification."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t3_dtc",
+    "tier": 3,
+    "cat": "uds",
+    "track": "automotive",
+    "points": 200,
+    "ci": true,
+    "hash": "749c19eaea3e42cf520672004ff732875c4d343449b3a1f64f972e9008b6c4b2",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "저장된 고장 코드",
+      "en": "Stored Fault Codes"
+    },
+    "prompt": {
+      "ko": "차량이 이상을 감지하면 표준화된 고장 코드(예: `P0301` — 1번 실린더 실화)를 저장한다. OBD-II 서비스 0x03 또는 ISO 14229 서비스 0x19 로 읽고, 서비스 0x04 로 지운다. 정비소 스캐너가 제일 먼저 뽑아 보는 것이다. 이 코드를 부르는 세 글자 약어는?",
+      "en": "When a vehicle detects a fault it stores a standardized code (e.g. `P0301` — cylinder 1 misfire). You read them with OBD-II service 0x03 or ISO 14229 service 0x19, and clear them with service 0x04. It is the first thing a workshop scanner pulls. Give the three-letter abbreviation for these codes."
+    },
+    "hints": {
+      "ko": [
+        "Diagnostic Trouble Code.",
+        "첫 글자: P 파워트레인, B 바디, C 섀시, U 네트워크."
+      ],
+      "en": [
+        "Diagnostic Trouble Code.",
+        "First letter: P powertrain, B body, C chassis, U network."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_cancapstone",
+    "tier": 4,
+    "cat": "uds",
+    "track": "automotive",
+    "points": 250,
+    "ci": false,
+    "hash": "6599a6e444faa0cb5e7968b5a9093ce468dee99c316bf915dd7f4f07122176bc",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "두 응답을 읽어라",
+      "en": "Read Both Replies"
+    },
+    "prompt": {
+      "ko": "아래는 OBD-II 스캔 세션의 응답 프레임들이다. 응답은 `7E8` 로 오고, 형식은 `[길이][0x41][PID][데이터…]` 다.\n\n```\n(12.100) vcan0 7E8#03410D4B00000000\n(12.140) vcan0 7E8#04410C0FA0000000\n(12.180) vcan0 7E8#0341050550000000\n```\n\nPID 0x0D(차속)의 데이터 바이트는 그대로 km/h 다. PID 0x0C(회전수)의 두 데이터 바이트 A, B 는 (A×256+B)÷4 rpm 이다. 두 값을 읽어 `FLAG{SPEED<kmh>_RPM<rpm>}` 형태로 제출하라. 예: 차속 30, 회전수 900 → `FLAG{SPEED30_RPM900}`.",
+      "en": "Below are reply frames from an OBD-II scan session. Replies come on `7E8`, formatted `[length][0x41][PID][data…]`.\n\n```\n(12.100) vcan0 7E8#03410D4B00000000\n(12.140) vcan0 7E8#04410C0FA0000000\n(12.180) vcan0 7E8#0341050550000000\n```\n\nThe data byte for PID 0x0D (vehicle speed) is km/h as-is. The two data bytes A, B for PID 0x0C (engine revs) give (A×256+B)÷4 rpm. Read both and submit `FLAG{SPEED<kmh>_RPM<rpm>}`. Example: speed 30, revs 900 → `FLAG{SPEED30_RPM900}`."
+    },
+    "hints": {
+      "ko": [
+        "관심 있는 프레임은 `41 0D ..` 와 `41 0C .. ..` 두 개다.",
+        "`0x4B` 를 10진수로; 회전수는 `0x0F`, `0xA0` 두 바이트."
+      ],
+      "en": [
+        "The two frames that matter are `41 0D ..` and `41 0C .. ..`.",
+        "Convert `0x4B` to decimal; the revs use the two bytes `0x0F` and `0xA0`."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_j1939",
+    "tier": 4,
+    "cat": "can",
+    "track": "automotive",
+    "points": 250,
+    "ci": true,
+    "hash": "08b815c73fc74e0ec34a336c52482bb6d1cc7aee7e5dada0594326a1eb2e1832",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "트럭용 상위 프로토콜",
+      "en": "The Protocol for Trucks"
+    },
+    "prompt": {
+      "ko": "상용차(트럭·버스)는 CAN 위에 J1939 프로토콜을 얹어 확장 식별자를 쓴다. 그 식별자 안에는 매개변수 그룹 번호(PGN)가 들어 있는데, 어떤 브로드캐스트 메시지의 PGN 이 16진수로 `0xF004` (엔진 토크·속도) 였다. 이 PGN 을 10진수로 나타내면? (숫자)",
+      "en": "Commercial vehicles (trucks, buses) run the J1939 protocol on top of CAN, using its extended identifiers. Inside such an identifier sits a Parameter Group Number (PGN); for one broadcast message the PGN was `0xF004` in hex (engine torque and speed). Write that PGN in base ten. (a number)"
+    },
+    "hints": {
+      "ko": [
+        "0xF004 = F×4096 + 0×256 + 0×16 + 4.",
+        "= 15 × 4096 + 4."
+      ],
+      "en": [
+        "0xF004 = F×4096 + 0×256 + 0×16 + 4.",
+        "= 15 × 4096 + 4."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_secoc",
+    "tier": 4,
+    "cat": "uds",
+    "track": "automotive",
+    "points": 250,
+    "ci": true,
+    "hash": "8f1b29ab77ec4176488f61c9ce62fd9249e68a5eb05e784dc4a6a38992bf4e3b",
+    "fmt": "값 그대로 / literal (5글자 / 5 chars)",
+    "title": {
+      "ko": "프레임에 서명을",
+      "en": "Signing the Frame"
+    },
+    "prompt": {
+      "ko": "한 자동차 소프트웨어 표준은 CAN 처럼 인증이 없는 버스 위에서, 선택된 메시지마다 대칭키 기반 잘린 MAC 과 매번 증가하는 재생 방지 값을 함께 붙이는 계층을 정의한다. 수신 ECU 는 둘 다 맞을 때만 메시지를 받아들인다. 이 계층의 다섯 글자 이름은?",
+      "en": "One automotive software standard defines a layer that, on an unauthenticated bus like CAN, attaches to each selected message a symmetric-key truncated MAC together with a value that increments every time, to stop replay. The receiving ECU accepts a message only when both check out. Give the layer's five-letter name."
+    },
+    "hints": {
+      "ko": [
+        "Secure Onboard Communication 을 줄인 이름 — 대문자로 S, e, C, O, C.",
+        "키는 별도 보안 하드웨어에 두고, 4바이트로 잘린 MAC 이 흔하다."
+      ],
+      "en": [
+        "A contraction of Secure Onboard Communication — capitalised S, e, C, O, C.",
+        "Keys sit in dedicated security hardware; a MAC truncated to 4 bytes is common."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_bsm",
+    "tier": 4,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 250,
+    "ci": true,
+    "hash": "b8b42d30bdeb0fda93dadac5bcd6888975644b277000f9885d939c27226bec4c",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "10Hz로 외치는 내 위치",
+      "en": "My Position, Ten Times a Second"
+    },
+    "prompt": {
+      "ko": "V2X(차량-사물 통신)에서 각 차량은 약 10Hz로 자신의 위치·속도·진행 방향·크기를 짧은 메시지로 방송한다. 주변 차량은 이를 모아 충돌을 예측한다. 공격자가 가짜 메시지를 뿌리면 존재하지 않는 유령 차량을 만들어 급제동을 유도할 수 있다. DSRC(미국)에서 이 핵심 메시지를 부르는 세 글자 약어는?",
+      "en": "In V2X (vehicle-to-everything), each vehicle broadcasts a short message about its position, speed, heading and size at roughly 10 Hz. Nearby vehicles gather these to predict collisions. An attacker who sprays fake ones can conjure a phantom vehicle that does not exist and trigger hard braking. Give the three-letter abbreviation for this core message in DSRC (US)."
+    },
+    "hints": {
+      "ko": [
+        "Basic Safety Message.",
+        "유럽 ETSI 에서는 CAM(Cooperative Awareness Message) 이라 부른다."
+      ],
+      "en": [
+        "Basic Safety Message.",
+        "In Europe (ETSI) it is called the CAM, Cooperative Awareness Message."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_scms",
+    "tier": 4,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 250,
+    "ci": true,
+    "hash": "7d38360b4b0a1be035646a6e951066ad641bb61f54fc1efc848e5340305c43ae",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "익명 인증서를 발급하고 폐기하는 곳",
+      "en": "Where Anonymous Certs Are Issued and Revoked"
+    },
+    "prompt": {
+      "ko": "V2X 메시지는 서명되어야 하지만 고정된 인증서를 쓰면 차량이 추적된다. 그래서 미국 V2X 는 전용 PKI 를 두어 차량마다 자주 바뀌는 단기 익명 인증서 다발을 발급하고, 거짓 메시지를 보내는 오동작 차량을 탐지해 그 인증서를 폐기한다. 이 관리 체계의 네 글자 약어는?",
+      "en": "V2X messages must be signed, but a fixed certificate lets a vehicle be tracked. So the US V2X system runs a dedicated PKI that issues each vehicle a batch of frequently-rotating short-lived anonymous certificates, and detects vehicles sending false messages so it can revoke theirs. Give the four-letter abbreviation for this management system."
+    },
+    "hints": {
+      "ko": [
+        "Security Credential Management System.",
+        "구성요소: 등록 CA, 익명 CA, 오동작 판정 기관."
+      ],
+      "en": [
+        "Security Credential Management System.",
+        "Its parts: an enrollment CA, a pseudonym CA, a misbehavior authority."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_sybil",
+    "tier": 4,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 250,
+    "ci": true,
+    "hash": "a832e6b2ee33c8e0c1a9e77bb4e9dd70bd4918ada3aee036b589efe69182c30d",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "한 대가 여러 대인 척",
+      "en": "One Car Pretending to Be Many"
+    },
+    "prompt": {
+      "ko": "한 대의 악성 V2X 장치가 서로 다른 차량 식별자 수십 개를 동시에 만들어 내, 텅 빈 도로에 가상의 교통 정체를 지어내거나 반대로 교차로를 강제로 비우게 만든다. 여러 개의 가짜 정체성으로 분산 시스템의 다수결·평판을 뒤엎는 이 공격 유형의 이름은? (한 단어)",
+      "en": "A single malicious V2X device fabricates dozens of distinct vehicle identities at once, inventing a virtual traffic jam on an empty road or, the other way, forcing an intersection to clear. Name this class of attack — overturning a distributed system's majority vote or reputation with many fake identities. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "다중 인격을 다룬 1973년 소설이자 영화의 제목에서 왔다.",
+        "방어: 위치·시각 검증, 신호 도래각, 하드웨어에 묶인 인증서."
+      ],
+      "en": [
+        "Named after a 1973 novel and film about multiple personalities.",
+        "Defenses: position and time checks, angle-of-arrival, hardware-bound certificates."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_r155",
+    "tier": 4,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 250,
+    "ci": true,
+    "hash": "994f725225739441e53a86aaaff99b6636f8cbccfa8cf3eb40f8a7cae0fa5114",
+    "fmt": "값 그대로 / literal (4글자 / 4 chars)",
+    "title": {
+      "ko": "형식 승인의 전제조건",
+      "en": "A Precondition for Type Approval"
+    },
+    "prompt": {
+      "ko": "2021년 발효된 UNECE 규정으로, 약 60개국에서 신차 형식 승인을 받으려면 제조사가 인증된 사이버보안 관리체계(CSMS)를 갖추고 차량 수명 주기 전체에 걸쳐 위협을 관리함을 증명해야 한다. ISO/SAE 21434 가 그 기술적 이행 수단이다. 이 규정의 짧은 표기는? (R 뒤에 숫자 세 자리)",
+      "en": "A UNECE regulation in force since 2021: to get type approval for a new vehicle in about 60 countries, a maker must have a certified Cyber Security Management System (CSMS) and show it manages threats across the whole vehicle lifecycle. ISO/SAE 21434 is the technical means of meeting it. Give the regulation's short designation. (R followed by three digits)"
+    },
+    "hints": {
+      "ko": [
+        "짝을 이루는 규정 R156 은 소프트웨어 업데이트 관리체계(SUMS)를 다룬다.",
+        "WP.29 산하에서 만들어졌다."
+      ],
+      "en": [
+        "Its sibling regulation R156 covers a Software Update Management System (SUMS).",
+        "Drafted under WP.29."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_hsm",
+    "tier": 4,
+    "cat": "ecu",
+    "track": "automotive",
+    "points": 250,
+    "ci": true,
+    "hash": "2e6cd7ebeba70c8a4c4741e6bf70b518d310b305b6b93d43c5d6319c9042e2ef",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "ECU 안의 금고",
+      "en": "A Safe Inside the ECU"
+    },
+    "prompt": {
+      "ko": "최신 ECU 는 서명 키와 암호 연산을 메인 코어에서 떼어 낸 변조 방지 하드웨어 블록에 맡긴다. 키는 이 블록 밖으로 절대 나오지 않고, 부팅 시 펌웨어 서명 검증과 보안 통신 MAC 계산을 이 안에서 한다. EVITA 프로젝트가 자동차용 프로파일(light·medium·full)을 정의했다. 이 하드웨어 블록의 세 글자 약어는?",
+      "en": "A modern ECU offloads its signing keys and crypto operations to a tamper-resistant hardware block separated from the main core. Keys never leave the block; firmware-signature checks at boot and secure-communication MAC computation happen inside it. The EVITA project defined automotive profiles for it (light, medium, full). Give the three-letter abbreviation for this hardware block."
+    },
+    "hints": {
+      "ko": [
+        "Hardware Security Module.",
+        "PC·서버의 TPM 과 목적이 비슷하지만 자동차 실시간 요구에 맞춘 축소판이다."
+      ],
+      "en": [
+        "Hardware Security Module.",
+        "Similar in purpose to a PC/server TPM, but a trimmed version for automotive real-time needs."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_autosar",
+    "tier": 4,
+    "cat": "ecu",
+    "track": "automotive",
+    "points": 250,
+    "ci": true,
+    "hash": "c9a19b5ab6a7f7dbc870c590582418898b6107e6f1e1844aef5647c70f27c98d",
+    "fmt": "값 그대로 / literal (7글자 / 7 chars)",
+    "title": {
+      "ko": "공급사가 함께 쓰는 뼈대",
+      "en": "The Skeleton Suppliers Share"
+    },
+    "prompt": {
+      "ko": "대부분의 자동차 ECU 소프트웨어는 완성차·부품사 컨소시엄이 정한 표준 계층 아키텍처 위에 올라간다. 애플리케이션 계층 아래에 런타임 환경(RTE)과 기본 소프트웨어(BSW)를 두어, 통신·진단·암호 스택·보안 통신 계층을 하드웨어와 무관하게 재사용한다. 이 아키텍처의 일곱 글자 이름은?",
+      "en": "Most automotive ECU software sits on a standard layered architecture defined by a consortium of carmakers and suppliers. Below the application layer it puts a runtime environment (RTE) and basic software (BSW), so the communication, diagnostics, crypto stack and the secure-communication layer are reused independently of the hardware. Give the architecture's seven-letter name."
+    },
+    "hints": {
+      "ko": [
+        "AUTomotive Open System ARchitecture 의 축약.",
+        "Classic 플랫폼은 OSEK 계열 RTOS, Adaptive 플랫폼은 POSIX 기반이다."
+      ],
+      "en": [
+        "A contraction of AUTomotive Open System ARchitecture.",
+        "The Classic platform uses an OSEK-family RTOS; the Adaptive platform is POSIX-based."
+      ]
+    }
+  }
+  ,
+  {
+    "id": "t4_tcu",
+    "tier": 4,
+    "cat": "telematics",
+    "track": "automotive",
+    "points": 250,
+    "ci": true,
+    "hash": "6cfc5e6ffb375b3a1d26631c4fe61e7a2f03ee1d5b4ba69d75febaa8f484e72d",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "인터넷으로 열린 창",
+      "en": "The Window to the Internet"
+    },
+    "prompt": {
+      "ko": "차량에서 셀룰러 모뎀(4G/5G), GPS 수신기, Wi-Fi, 때로는 이심(eSIM)까지 담아 차량을 외부 네트워크에 연결하는 상자다. 원격 진단, 긴급통보, 무선 펌웨어 갱신이 모두 여기를 지난다. 내부적으로 CAN 버스에 물려 있어, 원격 공격자에게는 차량 내부로 들어가는 첫 발판이 된다. 이 유닛의 세 글자 약어는?",
+      "en": "A box in the vehicle carrying a cellular modem (4G/5G), a GPS receiver, Wi-Fi and sometimes an eSIM, connecting the vehicle to outside networks. Remote diagnostics, emergency calls and wireless firmware updates all pass through it. Internally it is wired into the CAN bus, so for a remote attacker it is the first foothold into the vehicle. Give the three-letter abbreviation for this unit."
+    },
+    "hints": {
+      "ko": [
+        "Telematics Control Unit.",
+        "인포테인먼트 헤드유닛과는 별개 모듈인 경우가 많다."
+      ],
+      "en": [
+        "Telematics Control Unit.",
+        "Often a separate module from the infotainment head unit."
       ]
     }
   }
