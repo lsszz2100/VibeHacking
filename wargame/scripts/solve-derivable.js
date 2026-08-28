@@ -625,6 +625,56 @@ const SOLVERS = new Map([
     const n = paths[1].split(',').map((s) => s.trim()).filter(Boolean).length;
     return `FLAG{KEYSEC_${sec}_DA_${n}}`;
   } }],
+
+  /* --- advanced reversing: Shannon score of a byte histogram, a single-byte
+     XOR key from a known PE header, cyclomatic complexity of a CFG, and a
+     triage-brief capstone, each parsed out of a fenced block --- */
+  ['t2_reshannon', { kind: 'computed', via: 'Shannon information content of the fenced byte histogram, to two decimals', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced histogram in the prompt');
+    const counts = [...m[1].matchAll(/^\s*0x[0-9a-fA-F]+:\s*(\d+)\s*$/gm)].map((x) => Number(x[1]));
+    if (!counts.length) throw new Error('no histogram rows found');
+    const total = counts.reduce((a, c) => a + c, 0);
+    let h = 0;
+    for (const c of counts) { const p = c / total; if (p > 0) h -= p * Math.log2(p); }
+    return `FLAG{H_${h.toFixed(2)}}`;
+  } }],
+  ['t2_rexorkey', { kind: 'computed', via: 'first ciphertext byte XOR the first known-plaintext byte', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced ciphertext in the prompt');
+    const b = m[1];
+    const cipher = (b.match(/cipher_hex:\s*(.+)/) || [])[1];
+    const prefix = (b.match(/known_prefix_hex:\s*(.+)/) || [])[1];
+    if (!cipher || !prefix) throw new Error('cipher_hex / known_prefix_hex not both stated');
+    const bytes = cipher.trim().split(/\s+/).map((x) => parseInt(x, 16));
+    const known = prefix.trim().split(/\s+/).map((x) => parseInt(x, 16));
+    const keys = new Set();
+    for (let i = 0; i < known.length && i < bytes.length; i++) keys.add(bytes[i] ^ known[i]);
+    if (keys.size !== 1) throw new Error('the known prefix does not give one consistent key');
+    const k = [...keys][0].toString(16).toUpperCase().padStart(2, '0');
+    return `FLAG{XORKEY_${k}}`;
+  } }],
+  ['t3_recyclomatic', { kind: 'computed', via: 'E - N + 2 over the fenced edge list and node count', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced CFG in the prompt');
+    const b = m[1];
+    const N = Number((b.match(/nodes:\s*(\d+)/) || [])[1]);
+    const E = [...b.matchAll(/^\s*\S+\s*->\s*\S+\s*$/gm)].length;
+    if (!N || !E) throw new Error('node count / edge list not both present');
+    return `FLAG{CC_${E - N + 2}}`;
+  } }],
+  ['t4_recapstone', { kind: 'computed', via: 'CFG complexity, anti-debug API count and a randomness gate from the fenced brief', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced brief in the prompt');
+    const b = m[1];
+    const N = Number((b.match(/cfg_nodes:\s*(\d+)/) || [])[1]);
+    const E = [...b.matchAll(/^\s*\S+\s*->\s*\S+\s*$/gm)].length;
+    const apis = (b.match(/antidbg_apis:\s*(.+)/) || [])[1];
+    const rand = Number((b.match(/randomness:\s*([\d.]+)/) || [])[1]);
+    if (!N || !E || !apis || !Number.isFinite(rand)) throw new Error('cfg_nodes / cfg_edges / antidbg_apis / randomness not all stated');
+    const k = apis.split(',').map((s) => s.trim()).filter(Boolean).length;
+    return `FLAG{M${E - N + 2}_K${k}_${rand >= 7.2 ? 'PACKED' : 'CLEAN'}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

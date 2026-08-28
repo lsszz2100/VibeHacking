@@ -164,7 +164,16 @@ const TRACKS = [
     "en": "Active Directory",
     "desc_ko": "Kerberos 티켓 공격·자격 증명 탈취·횡이동·도메인 지속성·공격 그래프 분석.",
     "desc_en": "Kerberos ticket attacks, credential theft, lateral movement, domain persistence, attack-graph analysis."
-  }];
+  },
+  {
+    "id": "revadv",
+    "icon": "🔬",
+    "ko": "리버싱 심화",
+    "en": "Advanced Reversing",
+    "desc_ko": "안티디버깅 우회·언패킹과 난독화 해제·심볼릭 실행·바이너리 분석과 패치 디핑.",
+    "desc_en": "Bypassing anti-debug, unpacking and deobfuscation, symbolic execution, binary analysis and patch diffing."
+  }
+];
 
 const CHALLENGES = [
   {
@@ -4241,8 +4250,8 @@ const CHALLENGES = [
       "en": "The Compression That Blinds Static Analysis"
     },
     "prompt": {
-      "ko": "악성코드가 실제 코드를 압축·암호화해 껍데기(stub) 속에 숨기고, 실행 시점에만 메모리에서 원본을 복원해 정적 분석과 시그니처 탐지를 회피하는 기법을 무엇이라 하나요? (UPX가 대표 도구, 영어 한 단어의 -ing 형태)",
-      "en": "What is the technique where malware compresses/encrypts its real code inside a stub and restores the original only in memory at runtime—evading static analysis and signature detection? (UPX is the classic tool; one English word, the '-ing' form)"
+      "ko": "악성코드가 실제 코드를 압축·암호화해 껍데기(stub) 속에 숨기고, 실행 시점에만 메모리에서 원본을 복원해 정적 분석과 시그니처 탐지를 회피하는 기법을 무엇이라 하나요? (대표 압축기가 여럿 있으며, 영어 한 단어의 -ing 형태)",
+      "en": "What is the technique where malware compresses/encrypts its real code inside a stub and restores the original only in memory at runtime—evading static analysis and signature detection? (several classic packers exist; one English word, the '-ing' form)"
     },
     "hints": {
       "ko": [
@@ -14900,6 +14909,987 @@ const CHALLENGES = [
       "en": [
         "2^42 = 4398046511104. 4500 MH/s = 4.5e9 h/s. 4398046511104 / 4.5e9 = 977.3… → 977.",
         "paths_to_da lists two accounts, so the trailing number is 2."
+      ]
+    }
+  }
+,
+  {
+    "id": "t0_reupx",
+    "tier": 0,
+    "cat": "unpack",
+    "track": "revadv",
+    "points": 50,
+    "ci": true,
+    "hash": "7f196630cc8f69902d7370f94978deda7808b8a4c9a249cba8307cff9bb8ad7d",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "상자에 넣었다 꺼내기",
+      "en": "Boxed and Unboxed"
+    },
+    "prompt": {
+      "ko": "실행 파일을 압축해 크기를 줄이고 읽을 수 있는 텍스트와 임포트를 한눈에 안 보이게 하는, 가장 흔한 오픈소스 실행 압축기가 있다. 원본으로 되돌리는 `-d` 옵션도 자체적으로 제공한다. 이 도구의 세 글자 이름은?",
+      "en": "The most common open-source executable compressor: it shrinks a binary and hides its readable text and imports from a casual look, and it ships its own `-d` switch to reverse the process. Give its three-letter name."
+    },
+    "hints": {
+      "ko": [
+        "\"Ultimate Packer for eXecutables\".",
+        "`-d` 플래그로 그대로 풀린다 — 커스텀 스터브가 아니라면."
+      ],
+      "en": [
+        "\"Ultimate Packer for eXecutables\".",
+        "The `-d` flag reverses it cleanly unless the stub was tampered with."
+      ]
+    }
+  },
+  {
+    "id": "t0_reidb",
+    "tier": 0,
+    "cat": "antidbg",
+    "track": "revadv",
+    "points": 50,
+    "ci": true,
+    "hash": "baaa7edbcb7edf9ae6f09c6761a5251357fa634275a54baf95698472c8bfd4c1",
+    "fmt": "한 단어 / one word (17글자 / 17 chars)",
+    "title": {
+      "ko": "나 지금 감시당해?",
+      "en": "Am I Being Watched?"
+    },
+    "prompt": {
+      "ko": "가장 단순한 안티디버깅 검사다. 프로그램이 이 kernel32 API 를 호출하면, 현재 프로세스에 디버거가 붙어 있을 때 0 이 아닌 값이 돌아온다. 낙타표기(CamelCase)로 된 이 함수 이름은?",
+      "en": "The simplest anti-debugging check of all: the program calls this one kernel32 API and gets a non-zero result whenever a debugger is attached to the current process. Give the CamelCase function name."
+    },
+    "hints": {
+      "ko": [
+        "이름 그대로 영어 문장처럼 읽힌다 — \"…디버거…있음\".",
+        "내부적으로는 프로세스 구조체의 한 바이트를 그대로 읽어 돌려줄 뿐이다."
+      ],
+      "en": [
+        "The name reads like the English question it asks.",
+        "Internally it just returns one byte read straight out of a process structure."
+      ]
+    }
+  },
+  {
+    "id": "t1_rerdtsc",
+    "tier": 1,
+    "cat": "antidbg",
+    "track": "revadv",
+    "points": 65,
+    "ci": true,
+    "hash": "eb2de26967fef49abafd3ef18fee17918a4bbf4987b53e862ad3cf0d10f1c372",
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "title": {
+      "ko": "시계를 두 번 본다",
+      "en": "Reading the Clock Twice"
+    },
+    "prompt": {
+      "ko": "API 를 전혀 부르지 않는 타이밍 기반 디버거 탐지. 이 x86 명령을 두 번 실행해 그 사이에 흐른 CPU 사이클 수를 재고, 값이 비정상적으로 크면 사람이 한 줄씩 스텝 실행 중이라고 판단한다. 이 명령의 니모닉은?",
+      "en": "A timing-based debugger check that calls no API at all: run this x86 instruction twice, measure the CPU cycles elapsed between the two reads, and if the gap is abnormally large conclude a human is single-stepping. Give the instruction mnemonic."
+    },
+    "hints": {
+      "ko": [
+        "\"Read Time-Stamp Counter\". 결과는 EDX:EAX 에 담긴다.",
+        "더 정확한 직렬화 변종은 뒤에 P 가 붙는다."
+      ],
+      "en": [
+        "\"Read Time-Stamp Counter\"; the result lands in EDX:EAX.",
+        "The serializing variant adds a trailing P."
+      ]
+    }
+  },
+  {
+    "id": "t1_repeb",
+    "tier": 1,
+    "cat": "antidbg",
+    "track": "revadv",
+    "points": 65,
+    "ci": true,
+    "hash": "e836ed483041befd5394167dcab06c61b93afff6bfe4c7cf312b75ff1482e083",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "API 를 건너뛰고 직접 읽기",
+      "en": "Skipping the API"
+    },
+    "prompt": {
+      "ko": "후킹된 API 를 우회하려고, 안티디버깅 코드는 문서화된 함수 대신 프로세스마다 존재하는 이 구조체의 `BeingDebugged` 바이트(오프셋 2)를 fs:[0x30] / gs:[0x60] 을 통해 직접 읽는다. 이 구조체의 세 글자 약어는?",
+      "en": "To dodge a hooked API, anti-debug code skips the documented function and reads the `BeingDebugged` byte (offset 2) straight out of this per-process structure via fs:[0x30] / gs:[0x60]. Give its three-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Process Environment Block\".",
+        "TEB 안의 포인터를 따라가면 나온다."
+      ],
+      "en": [
+        "\"Process Environment Block\".",
+        "Reached by following a pointer inside the TEB."
+      ]
+    }
+  },
+  {
+    "id": "t1_reoep",
+    "tier": 1,
+    "cat": "unpack",
+    "track": "revadv",
+    "points": 65,
+    "ci": true,
+    "hash": "58bb894930d137ea1fd027e329a49d4ce6051fdc77e7db1ad25a5c20c0688230",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "진짜 시작점",
+      "en": "Where It Really Starts"
+    },
+    "prompt": {
+      "ko": "패커의 스터브가 원본 코드를 메모리에 풀어 놓은 뒤, 실행은 프로그램이 원래 시작하던 그 주소로 점프한다. 언패킹의 목표 지점인 이 \"원래 진입점\"을 가리키는 세 글자 약어는?",
+      "en": "After a packer stub has unpacked the original code into memory, execution jumps to the address where the program was always meant to begin. Give the three-letter acronym for that original entry point — the goal of any unpack."
+    },
+    "hints": {
+      "ko": [
+        "\"Original Entry Point\".",
+        "스터브 끝의 꼬리 점프(tail jump)가 대개 여기로 향한다."
+      ],
+      "en": [
+        "\"Original Entry Point\".",
+        "The stub's tail jump usually lands right on it."
+      ]
+    }
+  },
+  {
+    "id": "t1_redie",
+    "tier": 1,
+    "cat": "unpack",
+    "track": "revadv",
+    "points": 65,
+    "ci": true,
+    "hash": "a8d79f40ddb79de569d778f1c0b832f9cc266b32274b702cff4ba2b8a0dd1549",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "무엇으로 만들었나",
+      "en": "What Built This"
+    },
+    "prompt": {
+      "ko": "뭔가를 풀기 전에 먼저 지문을 뜬다 — 이 파일은 어떤 컴파일러나 패커가 만들었나? PEiD 의 오픈소스 후계 격으로, 시그니처와 휴리스틱으로 이 질문에 답하는 도구의 세 글자 약칭은?",
+      "en": "Before you unpack anything you fingerprint the file: which compiler or packer produced it? Give the three-letter short name of the open-source successor to PEiD that answers this with signatures and heuristics."
+    },
+    "hints": {
+      "ko": [
+        "\"Detect It Easy\". GUI 와 CLI(diec) 를 모두 제공한다.",
+        "규칙은 커스텀 스크립트 언어로 쓰여 있다."
+      ],
+      "en": [
+        "\"Detect It Easy\"; ships both a GUI and a CLI (diec).",
+        "Its rules are written in a small custom scripting language."
+      ]
+    }
+  },
+  {
+    "id": "t1_reangr",
+    "tier": 1,
+    "cat": "symbolic",
+    "track": "revadv",
+    "points": 65,
+    "ci": true,
+    "hash": "055e06e69658ef5d1a8e43593368ffadb2a5cd50bca32e7e09b1943595eaaaa1",
+    "fmt": "도구 이름 / tool name (4글자 / 4 chars)",
+    "title": {
+      "ko": "모든 경로를 한꺼번에",
+      "en": "Every Path at Once"
+    },
+    "prompt": {
+      "ko": "VEX IR 과 Claripy 솔버 위에 세워진, 가장 널리 쓰이는 오픈소스 파이썬 심볼릭 실행 프레임워크. 입력을 구체적인 값이 아니라 기호 변수로 두고 분기마다 상태를 갈라 목표 지점에 도달하는 입력을 풀어낸다. 이 프레임워크의 이름은?",
+      "en": "The most widely used open-source Python symbolic-execution framework, built on the VEX IR and the Claripy solver: it keeps input as symbolic variables rather than concrete values, forks state at each branch, and solves for an input that reaches a target. Name it."
+    },
+    "hints": {
+      "ko": [
+        "소문자 네 글자, 발음은 \"앵거\".",
+        "Shellphish 팀(UC Santa Barbara)이 만들었다."
+      ],
+      "en": [
+        "Four lowercase letters, said \"anger\".",
+        "Built by the Shellphish team at UC Santa Barbara."
+      ]
+    }
+  },
+  {
+    "id": "t1_recfg",
+    "tier": 1,
+    "cat": "binary",
+    "track": "revadv",
+    "points": 65,
+    "ci": true,
+    "hash": "e67d23e7820c49a8051dac2831f38290f5e72f66c8db5079eeb60d82f14894c0",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "블록과 화살표",
+      "en": "Blocks and Arrows"
+    },
+    "prompt": {
+      "ko": "디스어셈블러가 그리는 그래프다. 노드는 한 진입·한 탈출을 가진 명령 묶음(기본 블록)이고, 엣지는 그 사이의 분기와 점프다. 함수의 구조를 한눈에 보게 해 주는 이 그래프의 세 글자 약어는?",
+      "en": "The graph a disassembler draws: nodes are straight-line instruction runs with one entry and one exit (basic blocks), edges are the branches and jumps between them. It lays a function's structure out at a glance. Give the three-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Control Flow Graph\".",
+        "엣지 수 − 노드 수 + 2 로 이 그래프의 복잡도를 잰다."
+      ],
+      "en": [
+        "\"Control Flow Graph\".",
+        "Edges − nodes + 2 measures this graph's complexity."
+      ]
+    }
+  },
+  {
+    "id": "t2_reint3",
+    "tier": 2,
+    "cat": "antidbg",
+    "track": "revadv",
+    "points": 90,
+    "ci": true,
+    "hash": "c57cb8dbe2abdb37124ab9fe9ad3a564b4538f4c6ae1ad56309480a594cc46f7",
+    "fmt": "한 단어 / one word (4글자 / 4 chars)",
+    "title": {
+      "ko": "한 바이트짜리 함정",
+      "en": "A One-Byte Trap"
+    },
+    "prompt": {
+      "ko": "소프트웨어 브레이크포인트를 걸면 디버거가 원래 명령의 첫 바이트를 오패치 0xCC 로 덮어쓴다. 안티디버깅 코드는 자기 코드 영역에 이 바이트가 있는지 스캔해 브레이크포인트를 찾아낸다. 0xCC 에 해당하는 명령 니모닉을 공백 없이 쓰면?",
+      "en": "Setting a software breakpoint makes the debugger overwrite the first byte of the target instruction with opcode 0xCC. Anti-debug code scans its own code section for that byte to spot breakpoints. Write the instruction mnemonic for 0xCC with no space."
+    },
+    "hints": {
+      "ko": [
+        "3 번 인터럽트를 부르는 한 바이트 명령이다.",
+        "두 바이트 형태 `CD 03` 도 있지만 디버거는 한 바이트짜리를 쓴다."
+      ],
+      "en": [
+        "The one-byte instruction that raises interrupt 3.",
+        "A two-byte form `CD 03` exists, but debuggers use the one-byte one."
+      ]
+    }
+  },
+  {
+    "id": "t2_resmt",
+    "tier": 2,
+    "cat": "symbolic",
+    "track": "revadv",
+    "points": 90,
+    "ci": true,
+    "hash": "43ea6d6889cf4170260fbd156aa5f48e96af615a2065112fbbf48b0e65cad5dd",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "식을 풀어 주는 엔진",
+      "en": "The Engine That Solves"
+    },
+    "prompt": {
+      "ko": "심볼릭 실행이 경로를 따라 모은 제약식(부등식·비트벡터·배열)을 넘겨 \"이 식을 만족하는 값이 있는가, 있다면 무엇인가\"를 답해 주는 솔버 종류. 순수 불리언 SAT 를 정수·비트벡터 이론으로 확장한 이것의 세 글자 약어는?",
+      "en": "Symbolic execution hands the constraints it gathered along a path (inequalities, bit-vectors, arrays) to this kind of solver, which answers \"is there a satisfying assignment, and what is it?\". It extends pure boolean SAT with theories like integers and bit-vectors. Give the three-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Satisfiability Modulo Theories\".",
+        "CVC5 등이 대표적인 구현이다."
+      ],
+      "en": [
+        "\"Satisfiability Modulo Theories\".",
+        "CVC5 and Bitwuzla are well-known implementations."
+      ]
+    }
+  },
+  {
+    "id": "t2_repathexpl",
+    "tier": 2,
+    "cat": "symbolic",
+    "track": "revadv",
+    "points": 90,
+    "ci": true,
+    "hash": "a8a67c860f634e13312a7de48355390444b64de8b58bd31a763601f6c7dc848e",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "갈라지고 또 갈라지고",
+      "en": "Fork After Fork"
+    },
+    "prompt": {
+      "ko": "심볼릭 실행의 근본적인 확장성 문제. 분기를 만날 때마다 상태가 둘로 갈라지므로, 탐색해야 할 경로 수가 코드의 분기 개수에 대해 지수적으로 늘어난다. 루프와 중첩 조건이 이를 폭발시킨다. 이 현상을 부르는 두 단어는?",
+      "en": "The fundamental scalability problem of symbolic execution: every branch forks the state in two, so the number of paths to explore grows exponentially with the branch count, and loops and nested conditions blow it up. What two words name this?"
+    },
+    "hints": {
+      "ko": [
+        "첫 단어는 \"경로\", 둘째 단어는 \"폭발\".",
+        "병합(state merging)·요약·가지치기가 완화 기법이다."
+      ],
+      "en": [
+        "First word \"path\", second word \"explosion\".",
+        "State merging, summaries and pruning are the mitigations."
+      ]
+    }
+  },
+  {
+    "id": "t2_reunsat",
+    "tier": 2,
+    "cat": "symbolic",
+    "track": "revadv",
+    "points": 90,
+    "ci": true,
+    "hash": "af3a14c11c198ad9e92ed4a8f341a59e2602c0e1088144f05f0a6607d3cac3c1",
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "title": {
+      "ko": "갈 수 없는 길",
+      "en": "A Road You Cannot Take"
+    },
+    "prompt": {
+      "ko": "솔버에게 현재 경로의 제약식을 넘겼더니 \"이 조건을 모두 만족하는 입력은 존재하지 않는다\"는 판정이 돌아왔다. 그 경로는 실제로 실행될 수 없으므로 탐색에서 버린다. 이 판정을 가리키는 솔버 용어(한 단어)는?",
+      "en": "You hand the solver the constraints for the current path and it reports back that no input can satisfy all of them at once. That path can never actually run, so you drop it from the search. Give the one-word solver verdict."
+    },
+    "hints": {
+      "ko": [
+        "반대 판정은 \"sat\".",
+        "\"unsatisfiable\" 의 줄임말."
+      ],
+      "en": [
+        "The opposite verdict is \"sat\".",
+        "Short for \"unsatisfiable\"."
+      ]
+    }
+  },
+  {
+    "id": "t2_reiat",
+    "tier": 2,
+    "cat": "unpack",
+    "track": "revadv",
+    "points": 90,
+    "ci": true,
+    "hash": "3df05ba6053db552571d26c662c79f7363a804a352f6e0187c1d9a9382cdbaae",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "메모리에서 뜬 뒤 고쳐야 할 표",
+      "en": "The Table to Rebuild After Dumping"
+    },
+    "prompt": {
+      "ko": "언패킹된 프로세스를 메모리에서 통째로 덤프하면 코드는 살아나지만, API 호출이 향하는 이 포인터 표는 로더가 채워 넣은 런타임 주소들이라 파일에 그대로 담기지 않는다. 전용 임포트 복원 도구로 재구성해야 한다. 이 표의 세 글자 약어는?",
+      "en": "Dump an unpacked process straight out of memory and the code is intact, but the pointer table that API calls jump through holds runtime addresses the loader filled in, so it does not survive to the file. You rebuild it with a dedicated import-fixing tool. Give its three-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Import Address Table\".",
+        "INT(이름 표)와 짝을 이룬다."
+      ],
+      "en": [
+        "\"Import Address Table\".",
+        "Paired with the INT (name table)."
+      ]
+    }
+  },
+  {
+    "id": "t2_reopaque",
+    "tier": 2,
+    "cat": "binary",
+    "track": "revadv",
+    "points": 90,
+    "ci": true,
+    "hash": "fa38098b383ea16075a856def30090a539a229ca434a8c3098f5f98f5cfe2677",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "늘 참인 거짓 갈림길",
+      "en": "A Branch That Never Branches"
+    },
+    "prompt": {
+      "ko": "난독화가 삽입하는 조건식. 실행 시점에는 항상 같은 결과가 나오지만(예: `7*x*x - 1` 은 절대 완전제곱수가 아님) 정적 분석기는 그 사실을 모르므로, 도달 불가능한 죽은 가지가 제어 흐름 그래프에 잔뜩 생겨 분석을 어지럽힌다. 이 조건식을 부르는 두 단어는?",
+      "en": "A predicate obfuscation inserts whose outcome is always the same at run time (e.g. `7*x*x - 1` is never a perfect square) but which a static analyzer cannot prove, so the control-flow graph fills with unreachable dead branches that clutter analysis. What two words name it?"
+    },
+    "hints": {
+      "ko": [
+        "첫 단어는 \"속이 안 보이는\", 둘째 단어는 조건식.",
+        "기호 실행이나 제약 솔버로 \"이 가지는 죽었다\"를 증명해 제거한다."
+      ],
+      "en": [
+        "First word \"you cannot see through it\", second word is a conditional expression.",
+        "Symbolic execution or a constraint-solver query proves the branch dead and removes it."
+      ]
+    }
+  },
+  {
+    "id": "t2_reshannon",
+    "tier": 2,
+    "cat": "unpack",
+    "track": "revadv",
+    "points": 150,
+    "ci": false,
+    "hash": "c868ef7e06d4c82baa922cb8f569fc354b9564eb44d873bae0bd6ce23491d7a8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "무작위도 재기",
+      "en": "Measuring Randomness"
+    },
+    "prompt": {
+      "ko": "아래 히스토그램은 어느 PE 섹션의 바이트 값 빈도다. 이 분포의 섀넌 정보량을 바이트당 비트로 계산하라(H = −Σ pᵢ·log₂ pᵢ). 소수점 둘째 자리까지 반올림한 값 x 로 `FLAG{H_<x>}` 를 제출하라 (예: `FLAG{H_3.00}`).\n\n```\nhistogram:\n0x41: 8\n0x42: 4\n0x43: 2\n0x44: 2\n```",
+      "en": "The histogram below is the byte-value frequency of some PE section. Compute the Shannon information content of this distribution in bits per byte (H = −Σ pᵢ·log₂ pᵢ). Submit `FLAG{H_<x>}` with x rounded to two decimals (e.g. `FLAG{H_3.00}`).\n\n```\nhistogram:\n0x41: 8\n0x42: 4\n0x43: 2\n0x44: 2\n```"
+    },
+    "hints": {
+      "ko": [
+        "총 16 바이트. p = 1/2, 1/4, 1/8, 1/8.",
+        "1/2·1 + 1/4·2 + 1/8·3 + 1/8·3."
+      ],
+      "en": [
+        "16 bytes total; p = 1/2, 1/4, 1/8, 1/8.",
+        "1/2·1 + 1/4·2 + 1/8·3 + 1/8·3."
+      ]
+    }
+  },
+  {
+    "id": "t2_rexorkey",
+    "tier": 2,
+    "cat": "unpack",
+    "track": "revadv",
+    "points": 150,
+    "ci": false,
+    "hash": "d15ae5a5a47da40dcb6e5fd2b1da9cd01e0c861736644d56b22b312814aae100",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "알려진 머리로 열쇠 찾기",
+      "en": "Key From a Known Head"
+    },
+    "prompt": {
+      "ko": "스터브가 페이로드를 한 바이트 XOR 로 가려 놓았다. 풀린 페이로드는 PE 파일이므로 첫 두 바이트가 0x4D 0x5A 여야 한다. 아래 암호문 앞부분과 알려진 평문 앞부분(`known_prefix_hex`)으로 단일 바이트 키를 복구해 대문자 두 자리 16진수 KK 로 `FLAG{XORKEY_<KK>}` 를 제출하라.\n\n```\ncipher_hex: 17 00 ca 5a 3d\nknown_prefix_hex: 4d 5a\n```",
+      "en": "A stub masks its payload with a single-byte XOR. The decrypted payload is a PE file, so its first two bytes must be 0x4D 0x5A. Recover the one-byte key from the ciphertext head and the known plaintext head (`known_prefix_hex`) below, and submit `FLAG{XORKEY_<KK>}` with KK as two uppercase hex digits.\n\n```\ncipher_hex: 17 00 ca 5a 3d\nknown_prefix_hex: 4d 5a\n```"
+    },
+    "hints": {
+      "ko": [
+        "0x17 XOR 0x4D = ?",
+        "두 번째 바이트로도 같은 키가 나오는지 확인: 0x00 XOR 0x5A."
+      ],
+      "en": [
+        "0x17 XOR 0x4D = ?",
+        "Check the second byte gives the same key: 0x00 XOR 0x5A."
+      ]
+    }
+  },
+  {
+    "id": "t3_renanomites",
+    "tier": 3,
+    "cat": "antidbg",
+    "track": "revadv",
+    "points": 130,
+    "ci": true,
+    "hash": "4a8205c46080ba12af61485632c6aca0c8f2b59649da72e72645e209db3762d7",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "디버거가 있어야 실행되는 코드",
+      "en": "Code That Needs a Debugger to Run"
+    },
+    "prompt": {
+      "ko": "Armadillo 보호기의 대표 기법. 분기 명령들을 오패치 0xCC 로 바꿔 놓고, 그 자리에 오면 발생하는 예외를 별도의 디버거 스레드가 잡아 원래 점프 목적지와 크기를 테이블에서 찾아 처리한다. 디버거를 떼면 프로그램이 망가진다. 이 기법의 이름(한 단어)은?",
+      "en": "Armadillo's signature trick: replace branch instructions with opcode 0xCC, and when execution hits one, a dedicated debugger thread catches the exception and looks the real jump target and size up in a table. Detach the debugger and the program breaks. Give the one-word name."
+    },
+    "hints": {
+      "ko": [
+        "\"nano\" + \"mites\" — 아주 작은 조각들.",
+        "언패킹하려면 그 테이블을 통째로 덤프해 분기들을 복원해야 한다."
+      ],
+      "en": [
+        "\"nano\" + \"mites\" — tiny fragments.",
+        "Unpacking means dumping that whole table and restoring the branches."
+      ]
+    }
+  },
+  {
+    "id": "t3_rentglobalflag",
+    "tier": 3,
+    "cat": "antidbg",
+    "track": "revadv",
+    "points": 130,
+    "ci": true,
+    "hash": "b91756826b562c1f5b5f31eb894c43897ba5a370fc38b5b7a619523a5c59f019",
+    "fmt": "한 단어 / one word (12글자 / 12 chars)",
+    "title": {
+      "ko": "BeingDebugged 옆의 또 다른 밀고자",
+      "en": "The Tell Next to BeingDebugged"
+    },
+    "prompt": {
+      "ko": "같은 프로세스 구조체 안, `BeingDebugged` 근처(32비트에서 오프셋 0x68)에 있는 필드. 디버거가 프로세스를 띄우면 힙 검증·꼬리 검사·프리 검사에 해당하는 비트들이 켜져 값이 0x70 이 된다. 낙타표기로 된 이 필드 이름은?",
+      "en": "A field in the same process structure as `BeingDebugged`, near it (offset 0x68 on 32-bit). When a debugger launches the process, the bits for heap tail-checking, free-checking and validation switch on and the value becomes 0x70. Give the CamelCase field name."
+    },
+    "hints": {
+      "ko": [
+        "\"Nt\" + \"Global\" + \"Flag\".",
+        "HKLM\\...\\Image File Execution Options 의 GlobalFlag 레지스트리 값과 대응된다."
+      ],
+      "en": [
+        "\"Nt\" + \"Global\" + \"Flag\".",
+        "Mirrors the GlobalFlag registry value under Image File Execution Options."
+      ]
+    }
+  },
+  {
+    "id": "t3_reptrace",
+    "tier": 3,
+    "cat": "antidbg",
+    "track": "revadv",
+    "points": 130,
+    "ci": true,
+    "hash": "160ec8e507f2527b4de8f753c43de80b5aca90d0918e709d88c5519d6b122e34",
+    "fmt": "시스템 콜 / syscall",
+    "title": {
+      "ko": "먼저 나를 추적하기",
+      "en": "Trace Myself First"
+    },
+    "prompt": {
+      "ko": "리눅스에서 한 프로세스는 오직 하나의 추적자만 가질 수 있다. 그래서 안티디버깅 바이너리는 시작하자마자 `PTRACE_TRACEME` 인자로 자기 자신에게 이 시스템 콜을 걸어 추적자 자리를 미리 차지한다 — 이후 디버거가 이 프로세스를 추적하려 하면 실패한다. 이 시스템 콜의 이름은?",
+      "en": "On Linux a process can have only one tracer. So an anti-debug binary calls this syscall on itself with `PTRACE_TRACEME` the moment it starts, claiming the tracer slot up front — any debugger that later tries to trace the process then fails. Name the syscall."
+    },
+    "hints": {
+      "ko": [
+        "디버거와 시스템 콜 트레이서가 뒤에서 쓰는 바로 그 시스템 콜.",
+        "getppid 로 부모가 디버거인지 보는 변종도 흔하다."
+      ],
+      "en": [
+        "The very syscall a debugger and a syscall tracer use under the hood.",
+        "A getppid variant that checks whether the parent is a debugger is also common."
+      ]
+    }
+  },
+  {
+    "id": "t3_rez3",
+    "tier": 3,
+    "cat": "symbolic",
+    "track": "revadv",
+    "points": 130,
+    "ci": true,
+    "hash": "47d1607efc92e4e3b765be65c7ec2ac063524455d36ae201aec7cccd4a6e431e",
+    "fmt": "도구 이름 / tool name (2글자 / 2 chars)",
+    "title": {
+      "ko": "레드먼드에서 온 솔버",
+      "en": "The Solver from Redmond"
+    },
+    "prompt": {
+      "ko": "대표 심볼릭 실행 엔진이 경로 제약을 넘길 때 기본으로 쓰는, 마이크로소프트 리서치가 만든 오픈소스 솔버. 이름은 알파벳 한 글자와 숫자 한 개로 되어 있다. 이 솔버의 이름은?",
+      "en": "The open-source solver from Microsoft Research that the leading symbolic-execution engine uses by default to discharge its path constraints. Its name is one letter and one digit. Name it."
+    },
+    "hints": {
+      "ko": [
+        "\"Z\" 다음에 숫자 하나.",
+        "Leonardo de Moura 와 Nikolaj Bjørner 가 만들었다."
+      ],
+      "en": [
+        "\"Z\" followed by a single digit.",
+        "Built by Leonardo de Moura and Nikolaj Bjørner."
+      ]
+    }
+  },
+  {
+    "id": "t3_reconcolic",
+    "tier": 3,
+    "cat": "symbolic",
+    "track": "revadv",
+    "points": 130,
+    "ci": true,
+    "hash": "90362ee44786fecb70f23e56c420ab7919bfe0442160eb7b78b7556da1713b25",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "구체와 기호를 함께",
+      "en": "Concrete and Symbolic Together"
+    },
+    "prompt": {
+      "ko": "순수 심볼릭 실행이 경로 수 폭증과 모델링 불가능한 호출에 막힐 때 쓰는 절충. 실제 구체 입력으로 프로그램을 돌리면서 동시에 심볼릭 제약을 모으고, 막다른 곳에서는 구체 값으로 대체해 진행한다. \"concrete\" 와 \"symbolic\" 을 합친 이 한 단어는?",
+      "en": "The compromise used when pure symbolic execution stalls on the blow-up of paths or un-modelable calls: run the program on a real concrete input while gathering symbolic constraints alongside, and fall back to concrete values where you get stuck. Give the one-word blend of \"concrete\" and \"symbolic\"."
+    },
+    "hints": {
+      "ko": [
+        "앞은 \"conc\", 뒤는 \"olic\".",
+        "DART 와 SAGE 가 이 방식을 대중화했다."
+      ],
+      "en": [
+        "Starts \"conc\", ends \"olic\".",
+        "DART and SAGE popularized it."
+      ]
+    }
+  },
+  {
+    "id": "t3_rescylla",
+    "tier": 3,
+    "cat": "unpack",
+    "track": "revadv",
+    "points": 130,
+    "ci": true,
+    "hash": "ada35511800414771968518262225a95a7d92a913d21c462eacd40e5b29356cc",
+    "fmt": "도구 이름 / tool name (6글자 / 6 chars)",
+    "title": {
+      "ko": "덤프하고 임포트를 되살리는 도구",
+      "en": "Dump, Then Revive the Imports"
+    },
+    "prompt": {
+      "ko": "x64dbg 의 플러그인(그리고 독립 실행 버전)으로, 실행이 원래 진입점에 도달한 순간 프로세스 메모리를 덤프하고 임포트 주소 표를 스캔·재구성해 다시 실행 가능한 PE 로 만들어 준다. ImpREC 의 현대적 대체품인 이 도구의 이름은?",
+      "en": "An x64dbg plugin (and standalone) that dumps process memory the moment execution reaches the original entry point, then scans and rebuilds the import address table into a runnable PE again. The modern replacement for ImpREC. Name it."
+    },
+    "hints": {
+      "ko": [
+        "그리스 신화의 바다 괴물 이름.",
+        "x64dbg 메뉴에서 Plugins → 이 이름 으로 연다."
+      ],
+      "en": [
+        "Named after the sea monster of Greek myth.",
+        "Opened from x64dbg under Plugins → this name."
+      ]
+    }
+  },
+  {
+    "id": "t3_rebindiff",
+    "tier": 3,
+    "cat": "binary",
+    "track": "revadv",
+    "points": 130,
+    "ci": true,
+    "hash": "187a0ae8ae7b43389a10c68b99586cea71c48dd3dfcd554fbb1de2d3358ec0b8",
+    "fmt": "도구 이름 / tool name (7글자 / 7 chars)",
+    "title": {
+      "ko": "두 버전을 나란히",
+      "en": "Two Versions Side by Side"
+    },
+    "prompt": {
+      "ko": "패치된 바이너리와 패치 전 바이너리의 함수들을 그래프 동형·기본 블록·호출 관계로 매칭해, 조용히 고쳐진 함수 하나를 짚어 준다. 패치 데이(N-day) 분석의 표준 도구로, 원래 zynamics 가 만들었고 지금은 구글이 무료 배포한다. 이 도구의 이름은?",
+      "en": "Matches functions between a patched binary and its pre-patch version by graph isomorphism, basic blocks and call relations, pointing straight at the one function that was quietly fixed. The standard tool for patch-day (N-day) analysis, originally by zynamics, now free from Google. Name it."
+    },
+    "hints": {
+      "ko": [
+        "\"Bin\" + \"Diff\".",
+        "BinExport 로 뽑은 .BinExport 두 개를 비교한다. Diaphora 는 오픈소스 대안."
+      ],
+      "en": [
+        "\"Bin\" + \"Diff\".",
+        "Compares two .BinExport files from BinExport; Diaphora is the open-source alternative."
+      ]
+    }
+  },
+  {
+    "id": "t3_retaint",
+    "tier": 3,
+    "cat": "binary",
+    "track": "revadv",
+    "points": 130,
+    "ci": true,
+    "hash": "fa98300cb837a85a162a55ca501c9142499a8133ea52be35be508fffbe6a868b",
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "title": {
+      "ko": "오염을 따라간다",
+      "en": "Following the Stain"
+    },
+    "prompt": {
+      "ko": "공격자가 제어하는 입력(소스: recv, argv, 파일)에 표식을 붙이고, 그것이 연산을 거쳐 전파되는 것을 추적해 위험한 함수(싱크: memcpy, system, strcpy)까지 도달하는지를 본다. 소스→싱크 데이터 흐름을 쫓는 이 분석의 이름(한 단어)은?",
+      "en": "Mark attacker-controlled input (sources: recv, argv, files), track how the mark propagates through operations, and see whether it reaches a dangerous function (sinks: memcpy, system, strcpy). Give the one word for this source-to-sink data-flow analysis."
+    },
+    "hints": {
+      "ko": [
+        "얼룩·오염이라는 뜻의 영어 단어.",
+        "동적 버전은 DBI(Pin/DynamoRIO) 위에 구현한다."
+      ],
+      "en": [
+        "The English word for a stain or contamination.",
+        "The dynamic version is built on DBI (Pin/DynamoRIO)."
+      ]
+    }
+  },
+  {
+    "id": "t3_recyclomatic",
+    "tier": 3,
+    "cat": "binary",
+    "track": "revadv",
+    "points": 200,
+    "ci": false,
+    "hash": "a18e21382b65a3648b7f8ed80c5915c076693885df247c8450bbcf3f70dc699d",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "분기의 무게",
+      "en": "The Weight of the Branches"
+    },
+    "prompt": {
+      "ko": "아래는 한 함수의 제어 흐름 그래프다. 순환 복잡도 M = E − N + 2 (E 는 엣지 수, N 은 노드 수, 연결 요소 1개) 를 계산해 `FLAG{CC_<M>}` 를 제출하라.\n\n```\nnodes: 6\nedges:\nn1 -> n2\nn2 -> n3\nn2 -> n4\nn3 -> n5\nn4 -> n5\nn5 -> n6\nn5 -> n2\n```",
+      "en": "Below is a function's control flow graph. Compute the cyclomatic complexity M = E − N + 2 (E edges, N nodes, one connected component) and submit `FLAG{CC_<M>}`.\n\n```\nnodes: 6\nedges:\nn1 -> n2\nn2 -> n3\nn2 -> n4\nn3 -> n5\nn4 -> n5\nn5 -> n6\nn5 -> n2\n```"
+    },
+    "hints": {
+      "ko": [
+        "엣지 7 개, 노드 6 개.",
+        "7 − 6 + 2."
+      ],
+      "en": [
+        "7 edges, 6 nodes.",
+        "7 − 6 + 2."
+      ]
+    }
+  },
+  {
+    "id": "t4_reveh",
+    "tier": 4,
+    "cat": "antidbg",
+    "track": "revadv",
+    "points": 160,
+    "ci": true,
+    "hash": "005bc5c2e3eda888e9710622372ad53ddfaca6ac6d69d21e043dd1c159bfd1f7",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "내가 먼저 잡는 예외",
+      "en": "The Exception I Catch First"
+    },
+    "prompt": {
+      "ko": "예외 기반 안티디버깅. 프로그램이 자기 핸들러를 먼저 등록해 두고 일부러 예외(예: `int 2d`, 잘못된 접근)를 일으킨다. 디버거가 붙어 있으면 디버거가 예외를 먼저 삼켜 핸들러가 호출되지 않는다 — 그 사실로 디버거를 탐지한다. SEH 보다 먼저 불리는 이 핸들러 체계의 세 글자 약어는?",
+      "en": "Exception-based anti-debug: the program registers its own handler first, then deliberately raises an exception (e.g. `int 2d`, a bad access). If a debugger is attached it swallows the exception first and the handler never runs — which is how the debugger is detected. Give the three-letter acronym for this handler mechanism that runs before SEH."
+    },
+    "hints": {
+      "ko": [
+        "\"Vectored Exception Handler\".",
+        "AddVectoredExceptionHandler 로 등록한다."
+      ],
+      "en": [
+        "\"Vectored Exception Handler\".",
+        "Registered with AddVectoredExceptionHandler."
+      ]
+    }
+  },
+  {
+    "id": "t4_redr7",
+    "tier": 4,
+    "cat": "antidbg",
+    "track": "revadv",
+    "points": 160,
+    "ci": true,
+    "hash": "4f6b77ca378b9303b4b597f5e070910f7a3426509fde089c1bd2f43755434ee9",
+    "fmt": "한 단어 / one word (3글자 / 3 chars)",
+    "title": {
+      "ko": "하드웨어 브레이크포인트의 스위치",
+      "en": "The Switch for Hardware Breakpoints"
+    },
+    "prompt": {
+      "ko": "CPU 의 디버그 레지스터 중 DR0–DR3 은 하드웨어 브레이크포인트 주소 4 개를 담고, 이 제어 레지스터가 각각의 활성화 여부·조건·길이를 지정한다. 안티디버깅 코드는 이 레지스터가 0 이 아닌지를 검사해 하드웨어 브레이크포인트를 탐지한다. 이 제어 레지스터의 이름은?",
+      "en": "Among the CPU debug registers, DR0–DR3 hold four hardware-breakpoint addresses and this control register sets each one's enable bit, condition and length. Anti-debug code checks whether it is non-zero to detect hardware breakpoints. Name that control register."
+    },
+    "hints": {
+      "ko": [
+        "DR 다음에 숫자 하나 — DR6 은 상태, 이건 제어.",
+        "GetThreadContext 로 읽어 검사한다."
+      ],
+      "en": [
+        "DR followed by one digit — DR6 is status, this is control.",
+        "Read and checked via GetThreadContext."
+      ]
+    }
+  },
+  {
+    "id": "t4_reklee",
+    "tier": 4,
+    "cat": "symbolic",
+    "track": "revadv",
+    "points": 160,
+    "ci": true,
+    "hash": "d588e832322b257a2154fcc67e09f64db3c1c95578607edf20a64443e9e2d928",
+    "fmt": "도구 이름 / tool name (4글자 / 4 chars)",
+    "title": {
+      "ko": "LLVM 비트코드를 상징적으로",
+      "en": "Symbolic Over LLVM Bitcode"
+    },
+    "prompt": {
+      "ko": "LLVM 비트코드 위에서 동작하는 심볼릭 실행 엔진. 소스가 있는 프로그램을 clang 으로 .bc 로 컴파일한 뒤 모든 경로를 탐색하며 고커버리지 테스트 케이스와 크래시 입력을 자동 생성한다. OSDI 2008 에서 발표된 스탠퍼드 도구의 이름(네 글자)은?",
+      "en": "A symbolic-execution engine that runs on LLVM bitcode: compile a source program to .bc with clang, then explore every path to auto-generate high-coverage test cases and crashing inputs. Give the four-letter name of this Stanford tool from OSDI 2008."
+    },
+    "hints": {
+      "ko": [
+        "바우하우스 시대 스위스 태생 화가의 성을 대문자로.",
+        "coreutils 의 버그를 무더기로 찾아낸 것으로 유명하다."
+      ],
+      "en": [
+        "The surname of a Bauhaus-era Swiss-born painter, in capitals.",
+        "Famous for finding a pile of bugs in coreutils."
+      ]
+    }
+  },
+  {
+    "id": "t4_resimproc",
+    "tier": 4,
+    "cat": "symbolic",
+    "track": "revadv",
+    "points": 160,
+    "ci": true,
+    "hash": "59528e910aa712073ec89af050c3dcd9854949f37aac25d1edd7469ea6888c22",
+    "fmt": "한 단어 / one word (12글자 / 12 chars)",
+    "title": {
+      "ko": "함수를 파이썬 요약으로",
+      "en": "A Function as a Python Summary"
+    },
+    "prompt": {
+      "ko": "대표 파이썬 심볼릭 실행 엔진에서, 심볼릭 실행이 라이브러리 함수(strlen, malloc, printf) 안으로 들어가 경로가 폭증하는 것을 막으려고 그 함수를 파이썬으로 쓴 등가 요약으로 통째로 대체한다. 이 대체 객체를 부르는 용어(한 단어, 낙타표기)는?",
+      "en": "In the leading Python symbolic-execution engine, to stop symbolic execution from stepping into a library function (strlen, malloc, printf) and blowing up the path count, you replace the whole function with an equivalent summary written in Python. Give the one-word CamelCase term for that replacement object."
+    },
+    "hints": {
+      "ko": [
+        "\"Sim\" + \"Procedure\".",
+        "수백 개가 엔진에 기본 탑재돼 있고, 모델링된 libc 호출마다 하나씩 있다."
+      ],
+      "en": [
+        "\"Sim\" + \"Procedure\".",
+        "Hundreds ship with the engine, one per modeled libc call."
+      ]
+    }
+  },
+  {
+    "id": "t4_revirt",
+    "tier": 4,
+    "cat": "unpack",
+    "track": "revadv",
+    "points": 160,
+    "ci": true,
+    "hash": "0b7635b2568f0d2eac8368ab3e852fc053475ef98f24b891ef02e9d467229709",
+    "fmt": "한 단어 / one word (14글자 / 14 chars)",
+    "title": {
+      "ko": "기계 안의 기계",
+      "en": "A Machine Inside the Machine"
+    },
+    "prompt": {
+      "ko": "VMProtect 류 보호기가 쓰는 가장 무거운 난독화. 원본 x86 코드를 커스텀 바이트코드로 컴파일하고, 바이너리에 심은 인터프리터(디스패처 + 핸들러들)가 그 바이트코드를 실행한다. 분석가는 먼저 그 가상 머신 자체를 리버싱해야 한다. 이 기법을 부르는 한 단어는?",
+      "en": "The heaviest obfuscation, used by protectors like VMProtect: compile the original x86 code to a custom bytecode that an embedded interpreter (a dispatcher plus handlers) executes. The analyst must first reverse the virtual machine itself. Give the one word for this technique."
+    },
+    "hints": {
+      "ko": [
+        "\"virtual\" 에서 나온 명사, -ization 으로 끝난다.",
+        "각 원본 명령은 하나의 핸들러 루틴이 된다."
+      ],
+      "en": [
+        "A noun from \"virtual\", ending -ization.",
+        "Each original instruction becomes one handler routine."
+      ]
+    }
+  },
+  {
+    "id": "t4_rethemida",
+    "tier": 4,
+    "cat": "unpack",
+    "track": "revadv",
+    "points": 160,
+    "ci": true,
+    "hash": "575db00f2d576134a485eebbd99865370d6ef12e26a8743669881cb8dd241a46",
+    "fmt": "도구 이름 / tool name (7글자 / 7 chars)",
+    "title": {
+      "ko": "상용 보호기의 대명사",
+      "en": "The Byword for Commercial Protectors"
+    },
+    "prompt": {
+      "ko": "Oreans 가 만든 상용 보호기로, WinLicense 와 짝을 이루며 CISC·FISH·TIGER 등 여러 가상 머신과 겹겹의 안티디버깅·안티덤프 트릭으로 악명 높다. 언패킹 튜토리얼에 가장 자주 등장하는 이 보호기의 이름은?",
+      "en": "Oreans' commercial protector, paired with WinLicense, notorious for multiple virtual machines (CISC, FISH, TIGER) and layered anti-debug and anti-dump tricks. The one that shows up most often in unpacking tutorials. Name it."
+    },
+    "hints": {
+      "ko": [
+        "그리스 신화의 정의의 여신 Themis 에서 딴 이름.",
+        "VMProtect 와 함께 가장 널리 쓰이는 두 상용 보호기 중 하나."
+      ],
+      "en": [
+        "Named after Themis, the Greek goddess of justice.",
+        "One of the two most widely used commercial protectors alongside VMProtect."
+      ]
+    }
+  },
+  {
+    "id": "t4_reunicorn",
+    "tier": 4,
+    "cat": "binary",
+    "track": "revadv",
+    "points": 160,
+    "ci": true,
+    "hash": "c6cb50e7eea0df1fd3eaf52ada2358f5423afd7c0b5ee2395231a9b3208ffcaf",
+    "fmt": "도구 이름 / tool name (7글자 / 7 chars)",
+    "title": {
+      "ko": "CPU 만 떼어 낸 에뮬레이터",
+      "en": "Just the CPU, Emulated"
+    },
+    "prompt": {
+      "ko": "QEMU 의 TCG 엔진에서 CPU 에뮬레이터만 떼어 낸 경량 프레임워크. OS 도 디바이스도 없이 원하는 아키텍처의 코드 조각(셸코드, VM 핸들러, 펌웨어 루틴)을 메모리에 올려 한 명령씩 돌리고 훅을 건다. 무지개색 말 이름의 이 프레임워크는?",
+      "en": "A lightweight framework that carves just the CPU emulator out of QEMU's TCG engine. With no OS and no devices, you map a chunk of code for any architecture (shellcode, a VM handler, a firmware routine) into memory, run it instruction by instruction and hook it. Named after the rainbow-colored horse."
+    },
+    "hints": {
+      "ko": [
+        "Capstone·Keystone 과 같은 팀(Nguyen Anh Quynh)이 만들었다.",
+        "\"uni\" + 뿔 달린 말."
+      ],
+      "en": [
+        "Same team as Capstone and Keystone (Nguyen Anh Quynh).",
+        "\"uni\" + the horned horse."
+      ]
+    }
+  },
+  {
+    "id": "t4_reflirt",
+    "tier": 4,
+    "cat": "binary",
+    "track": "revadv",
+    "points": 160,
+    "ci": true,
+    "hash": "8a1c4dba781ac7028b2ef429fd6fc683b51497b75686a14a3a95f7cbe30d7600",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "라이브러리 함수에 이름 붙이기",
+      "en": "Naming the Library Functions"
+    },
+    "prompt": {
+      "ko": "정적 링크된 바이너리에서는 libc 의 strcpy·printf 같은 함수가 이름 없이 통째로 박혀 있어 분석을 방해한다. IDA 의 이 시그니처 기술은 각 라이브러리 함수의 첫 바이트 패턴을 미리 만들어 둔 .sig 와 대조해 자동으로 이름을 붙여 준다. 이 기술의 다섯 글자 약어는?",
+      "en": "In a statically linked binary, libc functions like strcpy and printf sit inlined with no names, getting in the analyst's way. IDA's signature technology matches each library function's leading byte pattern against prebuilt .sig files and labels them automatically. Give its five-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Fast Library Identification and Recognition Technology\".",
+        "Ghidra 의 대응 기능은 Function ID."
+      ],
+      "en": [
+        "\"Fast Library Identification and Recognition Technology\".",
+        "Ghidra's equivalent is Function ID."
+      ]
+    }
+  },
+  {
+    "id": "t4_reflatten",
+    "tier": 4,
+    "cat": "binary",
+    "track": "revadv",
+    "points": 160,
+    "ci": true,
+    "hash": "d7438873944c5d07995176b9853f8c9fb1121714432c7bf498ae4a0c18fcc399",
+    "fmt": "한 단어 / one word (-ing으로 끝남 / ends in -ing)",
+    "title": {
+      "ko": "모든 블록을 한 층으로",
+      "en": "Every Block on One Floor"
+    },
+    "prompt": {
+      "ko": "OLLVM 이 제공하는 제어 흐름 난독화. 함수의 모든 기본 블록을 하나의 거대한 switch 문 아래 같은 높이로 펼치고, 상태 변수와 디스패처 루프가 다음에 어느 블록으로 갈지 정하게 만든다. 원래의 중첩된 if/while 구조가 사라진다. 이 기법의 이름(-ing 으로 끝나는 한 단어)은?",
+      "en": "A control-flow obfuscation from OLLVM: spread every basic block of a function to the same level under one giant switch, and let a state variable and a dispatcher loop decide which block runs next. The original nested if/while structure disappears. Give the one-word name, ending in -ing."
+    },
+    "hints": {
+      "ko": [
+        "평평하게 만든다 — \"flat\" 에서 나온 동명사.",
+        "역난독화는 심볼릭 실행으로 상태 변수를 풀어 원래 엣지를 복원한다."
+      ],
+      "en": [
+        "It makes things flat — a gerund from \"flat\".",
+        "Deobfuscation recovers the original edges by solving the state variable symbolically."
+      ]
+    }
+  },
+  {
+    "id": "t4_recapstone",
+    "tier": 4,
+    "cat": "binary",
+    "track": "revadv",
+    "points": 250,
+    "ci": false,
+    "hash": "32e27919373a5cb203cf22ef0961831bafa83db0f2807b46b000e0c5d2ae2b57",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "분석 브리핑",
+      "en": "The Analysis Brief"
+    },
+    "prompt": {
+      "ko": "한 의심 함수에 대한 자동 분석 결과다. 아래 브리핑에서 세 값을 뽑아라: 순환 복잡도 m = E − N + 2, 발견된 안티디버깅 API 수 k, 그리고 섹션 무작위도 점수가 7.2 이상이면 `PACKED` 아니면 `CLEAN`. `FLAG{M<m>_K<k>_<PACKED|CLEAN>}` 를 제출하라.\n\n```\ncfg_nodes: 9\ncfg_edges:\na -> b\nb -> c\nb -> d\nc -> e\nd -> e\ne -> f\nf -> g\ng -> h\nh -> i\ni -> f\ne -> b\nf -> c\nantidbg_apis: CheckRemoteDebuggerPresent, NtQueryInformationProcess, OutputDebugString\nrandomness: 7.6\n```",
+      "en": "An automated analysis of one suspicious function. Pull three values from the brief below: cyclomatic complexity m = E − N + 2, the count k of anti-debug APIs found, and `PACKED` if the section randomness score is 7.2 or above else `CLEAN`. Submit `FLAG{M<m>_K<k>_<PACKED|CLEAN>}`.\n\n```\ncfg_nodes: 9\ncfg_edges:\na -> b\nb -> c\nb -> d\nc -> e\nd -> e\ne -> f\nf -> g\ng -> h\nh -> i\ni -> f\ne -> b\nf -> c\nantidbg_apis: CheckRemoteDebuggerPresent, NtQueryInformationProcess, OutputDebugString\nrandomness: 7.6\n```"
+    },
+    "hints": {
+      "ko": [
+        "엣지 12, 노드 9 → m = 5. API 3 개.",
+        "7.6 ≥ 7.2 이므로 PACKED."
+      ],
+      "en": [
+        "12 edges, 9 nodes → m = 5; three APIs.",
+        "7.6 ≥ 7.2 so PACKED."
       ]
     }
   }

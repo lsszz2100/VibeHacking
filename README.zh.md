@@ -9,9 +9,9 @@
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#目录)
 [![Lines](https://img.shields.io/badge/Lines-560%2C000%2B-orange)](#目录)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai驱动的网络安全)
-[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·525-9933ff)](https://lsszz2100.github.io/VibeHacking/)
+[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·560-9933ff)](https://lsszz2100.github.io/VibeHacking/)
 
-> 🎮 **浏览器终端渗透 CTF 战争游戏** — 用伪 Shell（`connect`·`cat`·`submit`）逐层攻破目标 `vibe.corp` 的 5 道安全层（外围→Web→内网→金库→核心），通关 525 道挑战。含启动序列、`ACCESS GRANTED` 演出、矩阵雨、音效、提示与中英文。取材自本仓库的 75 个章节。([介绍](wargame/README.md) · 启用 GitHub Pages 后可访问)
+> 🎮 **浏览器终端渗透 CTF 战争游戏** — 用伪 Shell（`connect`·`cat`·`submit`）逐层攻破目标 `vibe.corp` 的 5 道安全层（外围→Web→内网→金库→核心），通关 560 道挑战。含启动序列、`ACCESS GRANTED` 演出、矩阵雨、音效、提示与中英文。取材自本仓库的 75 个章节。([介绍](wargame/README.md) · 启用 GitHub Pages 后可访问)
 
 <br/>
 
