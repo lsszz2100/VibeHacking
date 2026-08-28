@@ -148,6 +148,14 @@ const TRACKS = [
     "en": "Zero Trust",
     "desc_ko": "신원·기기 검증·마이크로세그멘테이션·ZTNA·정책 엔진.",
     "desc_en": "Identity and device verification, microsegmentation, ZTNA, policy engines."
+  },
+  {
+    "id": "web3",
+    "icon": "⛓️",
+    "ko": "블록체인·Web3",
+    "en": "Blockchain & Web3",
+    "desc_ko": "EVM 내부·스마트 컨트랙트 취약점·DeFi 공격·온체인 포렌식.",
+    "desc_en": "EVM internals, smart contract bugs, DeFi attacks, on-chain forensics."
   }];
 
 const CHALLENGES = [
@@ -3274,7 +3282,7 @@ const CHALLENGES = [
     },
     "prompt": {
       "ko": "함수 리턴 직전 스택에 심어둔 무작위 값이 변조되었는지 검사해 스택 버퍼 오버플로우를 탐지하는 보호 기법을, 탄광에서 유독가스를 미리 감지하던 새의 이름을 따서 부르는 한 단어는?",
-      "en": "Which stack buffer overflow protection (checking a random value planted before return for tampering) is named after the bird once used to detect toxic gas in mines?"
+      "en": "Which stack buffer overflow protection (checking a random value planted before return for tampering) is named after the bird once used to detect toxic fumes in mines?"
     },
     "hints": {
       "ko": [
@@ -12924,6 +12932,986 @@ const CHALLENGES = [
       "en": [
         "Hardware 10+0+7=17, OS 15+8+7=30, agent 15+0=15, behavior -20+0=-20.",
         "17+30+15-20 = 42."
+      ]
+    }
+  },
+  {
+    "id": "t0_web3gas",
+    "tier": 0,
+    "cat": "evm",
+    "track": "web3",
+    "points": 50,
+    "ci": true,
+    "hash": "2fe840e13244a9d748883574c1f1b7b1d7020eb39d0735b8f91ef5cf6f35173e",
+    "fmt": "한 단어 / one word (3글자 / 3 chars)",
+    "title": {
+      "ko": "모든 연산에 붙는 요금",
+      "en": "The Fee on Every Operation"
+    },
+    "prompt": {
+      "ko": "이더리움에서는 스토리지 쓰기, 산술, 외부 호출 등 모든 연산이 정해진 양의 수수료 단위를 소모한다. 복잡한 컨트랙트 호출일수록 이 단위를 더 많이 쓰고, 이 단위당 가격을 높게 부르면 검증자가 그 트랜잭션을 먼저 처리한다. 자동차가 태우는 것에 빗댄 이 수수료 단위의 영어 이름은?",
+      "en": "On Ethereum, every operation — a storage write, arithmetic, an external call — consumes a fixed amount of a fee unit. A more complex contract call spends more of it, and bidding a higher price per unit makes validators process your transaction sooner. What is the English name for this fee unit, named after what a car burns?"
+    },
+    "hints": {
+      "ko": [
+        "세 글자, 자동차 연료.",
+        "가격 단위는 Gwei."
+      ],
+      "en": [
+        "Three letters, car fuel.",
+        "Its price is quoted in Gwei."
+      ]
+    }
+  },
+  {
+    "id": "t0_web3evm",
+    "tier": 0,
+    "cat": "evm",
+    "track": "web3",
+    "points": 50,
+    "ci": true,
+    "hash": "603871c2ddd41c26ee77495e2e31e6de7f9957e0dea3b0f09abf8a5ee17a0d4a",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "모든 노드가 똑같이 돌리는 기계",
+      "en": "The Machine Every Node Runs Alike"
+    },
+    "prompt": {
+      "ko": "이더리움에서 컨트랙트 바이트코드를 실행하는 가상 머신이 있다. 스택(최대 1024항목)·메모리·스토리지·콜데이터로 구성되고, 모든 노드에서 동일한 결과를 보장한다 — 그래야 합의가 성립한다. 이 실행 환경의 세 글자 약어는?",
+      "en": "A virtual machine executes contract bytecode on Ethereum. It has a stack (up to 1024 items), memory, storage and calldata, and it guarantees the same result on every node — which is what makes consensus possible. Give the three-letter acronym for this execution environment."
+    },
+    "hints": {
+      "ko": [
+        "\"Ethereum Virtual Machine\".",
+        "오피코드 CALL·SLOAD·SSTORE 를 실행한다."
+      ],
+      "en": [
+        "\"Ethereum Virtual Machine\".",
+        "It runs opcodes like CALL, SLOAD, SSTORE."
+      ]
+    }
+  },
+  {
+    "id": "t1_web3solidity",
+    "tier": 1,
+    "cat": "contract",
+    "track": "web3",
+    "points": 65,
+    "ci": true,
+    "hash": "659dae769fc38e2b1061c8111dfb7cbda70050430d86d87fd3ae497aefc767ae",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "컨트랙트를 쓰는 언어",
+      "en": "The Language Contracts Are Written In"
+    },
+    "prompt": {
+      "ko": "이더리움 스마트 컨트랙트를 작성하는 주력 언어. C++·JavaScript 를 닮은 정적 타입 언어이고, 0.8 버전부터 산술 오버플로가 기본으로 revert 된다. 파일 확장자는 .sol 이다. 이 언어의 이름은?",
+      "en": "The dominant language for writing Ethereum smart contracts. Statically typed, resembling C++ and JavaScript, and since version 0.8 arithmetic overflow reverts by default. The file extension is .sol. Name this language."
+    },
+    "hints": {
+      "ko": [
+        "여덟 글자, \"견고함\"이라는 뜻.",
+        "Remix IDE 에서 바로 컴파일해 볼 수 있다."
+      ],
+      "en": [
+        "Eight letters, means \"firmness\".",
+        "You can compile it right in the Remix IDE."
+      ]
+    }
+  },
+  {
+    "id": "t1_web3wei",
+    "tier": 1,
+    "cat": "evm",
+    "track": "web3",
+    "points": 65,
+    "ci": true,
+    "hash": "1ed2b38c11c70aa02adedf9fe807482472daef00689af3eeb6141346ec3f3c70",
+    "fmt": "한 단어 / one word (3글자 / 3 chars)",
+    "title": {
+      "ko": "이더의 가장 작은 조각",
+      "en": "The Smallest Slice of Ether"
+    },
+    "prompt": {
+      "ko": "이더리움 금액은 내부적으로 정수로만 다뤄진다. 1 ETH = 10^18 의 이 단위이며, 컨트랙트의 `value`·`balance` 는 전부 이 단위다. 한 암호학자의 이름을 딴 이 최소 단위의 세 글자 이름은?",
+      "en": "Ether amounts are handled internally as integers only. 1 ETH = 10^18 of this unit, and a contract's `value` and `balance` are all in it. Give the three-letter name of this smallest unit, named after a cryptographer."
+    },
+    "hints": {
+      "ko": [
+        "세 글자.",
+        "1 Gwei = 10^9 of this."
+      ],
+      "en": [
+        "Three letters.",
+        "1 Gwei = 10^9 of this."
+      ]
+    }
+  },
+  {
+    "id": "t1_web3keccak",
+    "tier": 1,
+    "cat": "evm",
+    "track": "web3",
+    "points": 65,
+    "ci": true,
+    "hash": "07b72b422e9f1f16afad4fb7f7121cddff7c1f57a1e5a8c6e9c14301043f5138",
+    "fmt": "값 그대로 / literal (9글자 / 9 chars)",
+    "title": {
+      "ko": "이더리움의 만능 해시",
+      "en": "Ethereum's Everywhere Hash"
+    },
+    "prompt": {
+      "ko": "이더리움은 주소 도출, 함수 셀렉터, 스토리지 슬롯 계산, 이벤트 토픽에 모두 같은 256비트 해시 함수를 쓴다. SHA-3 표준화 과정에서 나온 원본 알고리즘으로, 패딩이 최종 SHA3-256 과 다르다. 비트 수까지 포함한 이 함수의 Solidity 내장 이름은?",
+      "en": "Ethereum uses one 256-bit hash function for address derivation, function selectors, storage slot computation and event topics. It is the original algorithm from the SHA-3 standardization process, with padding that differs from final SHA3-256. Give its Solidity built-in name including the bit-size suffix."
+    },
+    "hints": {
+      "ko": [
+        "\"keccak\" + 비트 수.",
+        "Solidity: `keccak256(abi.encodePacked(...))`."
+      ],
+      "en": [
+        "\"keccak\" + the bit count.",
+        "Solidity: `keccak256(abi.encodePacked(...))`."
+      ]
+    }
+  },
+  {
+    "id": "t1_web3erc20",
+    "tier": 1,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 65,
+    "ci": true,
+    "hash": "47eeb2eac350e1923b8cbdfa4396a077b36e62a01946c2904ea7932d52b7c5f2",
+    "fmt": "약어 / acronym (5글자 / 5 chars, 하이픈 없이 / no hyphen)",
+    "title": {
+      "ko": "대체 가능 토큰의 규격",
+      "en": "The Fungible Token Spec"
+    },
+    "prompt": {
+      "ko": "이더리움에서 대체 가능한(fungible) 토큰이 지켜야 하는 인터페이스 표준. `totalSupply()`·`balanceOf(address)`·`transfer(address,uint256)`·`approve`·`allowance` 여섯 함수와 `Transfer`·`Approval` 두 이벤트를 정의한다. 지갑·거래소가 아무 토큰이나 다룰 수 있는 건 이 표준 덕분이다. 이 표준의 이름(하이픈 없이)은?",
+      "en": "The interface standard a fungible token must follow on Ethereum. It defines six functions — `totalSupply()`, `balanceOf(address)`, `transfer(address,uint256)`, `approve`, `allowance` — and two events, `Transfer` and `Approval`. Wallets and exchanges can handle any token because of it. Name this standard (no hyphen)."
+    },
+    "hints": {
+      "ko": [
+        "\"ERC\" + 번호. 하이픈 없이 다섯 글자.",
+        "NFT 는 ERC721."
+      ],
+      "en": [
+        "\"ERC\" + a number. Five characters, no hyphen.",
+        "NFTs use ERC721."
+      ]
+    }
+  },
+  {
+    "id": "t1_web3reentrancy",
+    "tier": 1,
+    "cat": "contract",
+    "track": "web3",
+    "points": 65,
+    "ci": true,
+    "hash": "f8e63de0a2892e35ccc0c153775aa405050923bd27d282ce23f7617de4783972",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "The DAO를 무너뜨린 것",
+      "en": "What Brought Down The DAO"
+    },
+    "prompt": {
+      "ko": "취약한 `withdraw()` 는 잔액을 0으로 만들기 전에 `msg.sender.call{value: ...}` 로 외부에 ETH 를 먼저 보낸다. 받는 컨트랙트의 `receive()` 가 그 순간 다시 `withdraw()` 를 호출하면, 아직 갱신 안 된 잔액으로 또 인출된다 — 볼트가 빌 때까지. 2016년 The DAO($60M)를 뚫은 이 취약점의 이름은?",
+      "en": "A vulnerable `withdraw()` sends ETH out via `msg.sender.call{value: ...}` before zeroing the balance. If the receiving contract's `receive()` calls `withdraw()` again right then, it withdraws once more against a balance that is not yet updated — until the vault is empty. Name this vulnerability that broke The DAO in 2016 ($60M)."
+    },
+    "hints": {
+      "ko": [
+        "\"re\" + \"entrancy\" — 다시 들어감.",
+        "방어는 검사-효과-상호작용 순서, 또는 nonReentrant 가드."
+      ],
+      "en": [
+        "\"re\" + \"entrancy\" - entering again.",
+        "Defended by the checks-effects-interactions ordering, or a nonReentrant guard."
+      ]
+    }
+  },
+  {
+    "id": "t1_web3eoa",
+    "tier": 1,
+    "cat": "evm",
+    "track": "web3",
+    "points": 65,
+    "ci": true,
+    "hash": "7d36d8de1b144b09050482ad18a5598d233380cdffd5c8818864c206bac8b8b0",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "사람이 쥔 계정",
+      "en": "The Account a Human Holds"
+    },
+    "prompt": {
+      "ko": "이더리움에는 두 종류의 계정이 있다. 하나는 코드가 없고 개인 키로만 통제되며 트랜잭션을 스스로 시작할 수 있다. 다른 하나는 배포된 코드를 가지며 호출되어야만 실행된다. 앞의 것 — 개인 키가 통제하는 계정 — 을 부르는 세 글자 약어는?",
+      "en": "Ethereum has two kinds of account. One has no code, is controlled only by a private key, and can start a transaction itself. The other holds deployed code and only runs when called. Give the three-letter acronym for the first — the account a private key controls."
+    },
+    "hints": {
+      "ko": [
+        "\"Externally Owned Account\".",
+        "반대는 컨트랙트 계정(contract account)."
+      ],
+      "en": [
+        "\"Externally Owned Account\".",
+        "The opposite is a contract account."
+      ]
+    }
+  },
+  {
+    "id": "t2_web3cei",
+    "tier": 2,
+    "cat": "contract",
+    "track": "web3",
+    "points": 90,
+    "ci": true,
+    "hash": "7003a83a33ee667a6feca59ad1e5404c544a238a557cc21c475b030934dc4acb",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "콜백 공격을 막는 순서",
+      "en": "The Ordering That Blocks the Callback Attack"
+    },
+    "prompt": {
+      "ko": "컨트랙트가 외부 호출을 한 뒤에야 자기 상태를 갱신하면, 그 외부가 되돌아 들어와(callback) 갱신 안 된 상태로 함수를 다시 실행할 수 있다. 표준 방어는 함수 본문을 세 단계로 고정하는 것이다: 먼저 조건을 검사하고, 다음 내부 상태를 모두 갱신하고, 마지막에만 외부와 상호작용한다. 이 세 단계 순서의 약어는?",
+      "en": "If a contract updates its state only after making an external call, that external party can call back in and run the function again against un-updated state. The standard defense fixes the function body into three phases: check the conditions first, then update all internal state, and only then interact with anything external. Give the acronym for this three-phase ordering."
+    },
+    "hints": {
+      "ko": [
+        "Checks — Effects — Interactions.",
+        "C, E, I."
+      ],
+      "en": [
+        "Checks - Effects - Interactions.",
+        "C, E, I."
+      ]
+    }
+  },
+  {
+    "id": "t2_web3txorigin",
+    "tier": 2,
+    "cat": "contract",
+    "track": "web3",
+    "points": 90,
+    "ci": true,
+    "hash": "c5f58daa1e98cade54453e1588e6e240ef2049aa149f2c2fc99433b835e553c6",
+    "fmt": "값 그대로 / literal (9글자 / 9 chars)",
+    "title": {
+      "ko": "누가 원래 시작했나",
+      "en": "Who Originally Started It"
+    },
+    "prompt": {
+      "ko": "Solidity 에서 `msg.sender` 는 직접 호출자이고, 다른 전역 변수는 트랜잭션을 처음 서명한 계정을 가리킨다. 인증에 후자를 쓰면(SWC-115), 피해자가 공격자의 컨트랙트를 호출하도록 유도하는 순간 그 컨트랙트가 피해자 명의로 지갑 함수를 호출할 수 있다. 인증에 쓰면 안 되는 이 전역 변수의 이름은? (점 포함)",
+      "en": "In Solidity `msg.sender` is the direct caller, while another global refers to the account that first signed the transaction. Using the latter for authentication (SWC-115) lets an attacker's contract call a wallet function as the victim, the moment the victim is tricked into calling that contract. Name this global you must not use for auth (include the dot)."
+    },
+    "hints": {
+      "ko": [
+        "`tx.` + `origin`.",
+        "고쳐 쓸 것: `msg.sender`."
+      ],
+      "en": [
+        "`tx.` + `origin`.",
+        "Use `msg.sender` instead."
+      ]
+    }
+  },
+  {
+    "id": "t2_web3delegatecall",
+    "tier": 2,
+    "cat": "evm",
+    "track": "web3",
+    "points": 90,
+    "ci": true,
+    "hash": "42a841eaaf146552ff6f21a3f586a727059106bc3b60ac3cc9ef86ea46f20ef0",
+    "fmt": "한 단어 / one word (12글자 / 12 chars)",
+    "title": {
+      "ko": "남의 코드, 내 스토리지",
+      "en": "Their Code, My Storage"
+    },
+    "prompt": {
+      "ko": "이 저수준 호출은 대상 컨트랙트의 코드를 실행하되 `msg.sender`·`msg.value`·그리고 결정적으로 **스토리지**는 호출한 쪽의 것을 그대로 쓴다. 업그레이더블 프록시 패턴의 핵심이지만, 두 컨트랙트의 스토리지 슬롯이 어긋나면 상태가 덮어써진다 — 2017년 Parity 멀티시그($30M)의 원인. 이 opcode(0xF4)의 Solidity 이름은?",
+      "en": "This low-level call runs the target contract's code but keeps the caller's `msg.sender`, `msg.value`, and crucially its **storage**. It is the heart of the upgradeable-proxy pattern, but if the two contracts' storage slots do not line up, state gets overwritten — the cause of the 2017 Parity multisig loss ($30M). Give the Solidity name of this opcode (0xF4)."
+    },
+    "hints": {
+      "ko": [
+        "\"delegate\" + \"call\".",
+        "일반 `call` 과 달리 컨텍스트를 넘기지 않고 유지한다."
+      ],
+      "en": [
+        "\"delegate\" + \"call\".",
+        "Unlike a plain `call`, it preserves the context instead of switching it."
+      ]
+    }
+  },
+  {
+    "id": "t2_web3selector",
+    "tier": 2,
+    "cat": "evm",
+    "track": "web3",
+    "points": 90,
+    "ci": true,
+    "hash": "d53915b9ab562425ce909c86d583c04f553d805e8ba939c2b9f7c73647c9555f",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "호출을 라우팅하는 4바이트",
+      "en": "The Four Bytes That Route a Call"
+    },
+    "prompt": {
+      "ko": "컨트랙트에 트랜잭션을 보낼 때, calldata 의 첫 4바이트가 어떤 함수를 실행할지 정한다. 이 4바이트는 함수 시그니처 문자열(예: `transfer(address,uint256)`)의 Keccak-256 해시 앞 4바이트다. `transfer(address,uint256)` 의 경우 `0xa9059cbb`. calldata 맨 앞의 이 4바이트를 부르는 두 단어(명사 + 명사)는?",
+      "en": "When you send a transaction to a contract, the first 4 bytes of the calldata decide which function runs. Those 4 bytes are the leading 4 bytes of the Keccak-256 hash of the function signature string (e.g. `transfer(address,uint256)`) — `0xa9059cbb` for that one. What two words (noun + noun) name these first 4 bytes of calldata?"
+    },
+    "hints": {
+      "ko": [
+        "\"function\" + \"selector\".",
+        "4byte.directory 로 역조회할 수 있다."
+      ],
+      "en": [
+        "\"function\" + \"selector\".",
+        "Reverse-lookup it at 4byte.directory."
+      ]
+    }
+  },
+  {
+    "id": "t2_web3selfdestruct",
+    "tier": 2,
+    "cat": "contract",
+    "track": "web3",
+    "points": 90,
+    "ci": true,
+    "hash": "45c423dfef7889446c0718652044edbf79e8026de38c948d16a38b6dcfe80a66",
+    "fmt": "한 단어 / one word (12글자 / 12 chars)",
+    "title": {
+      "ko": "컨트랙트를 지우는 opcode",
+      "en": "The Opcode That Erases a Contract"
+    },
+    "prompt": {
+      "ko": "이 opcode(0xFF)는 호출된 컨트랙트를 삭제하고, 남은 ETH 를 지정한 주소로 강제 전송한다 — 받는 쪽에 `receive()` 가 없어도 들어간다. 접근 제어 없이 노출되면(SWC-106) 누구나 컨트랙트를 파괴할 수 있다. 이 opcode 의 Solidity 이름은?",
+      "en": "This opcode (0xFF) deletes the contract that calls it and force-sends its remaining ETH to a designated address — it lands even if the recipient has no `receive()`. Exposed without access control (SWC-106), anyone can destroy the contract. Give the Solidity name of this opcode."
+    },
+    "hints": {
+      "ko": [
+        "\"self\" + \"destruct\", 한 단어.",
+        "강제 ETH 주입에도 쓰인다 (balance == 0 검사 우회)."
+      ],
+      "en": [
+        "\"self\" + \"destruct\", one word.",
+        "Also used to force ETH into a contract (bypassing a balance == 0 check)."
+      ]
+    }
+  },
+  {
+    "id": "t2_web3flashloan",
+    "tier": 2,
+    "cat": "defi",
+    "track": "web3",
+    "points": 90,
+    "ci": true,
+    "hash": "45d41ff539eb1589f7df8ebcefaf27d29f5657879d881bc0827171e8fcc0aab1",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "한 트랜잭션 안에서 빌리고 갚기",
+      "en": "Borrow and Repay in One Transaction"
+    },
+    "prompt": {
+      "ko": "담보 없이 거액을 빌리되, 같은 트랜잭션이 끝나기 전에 수수료와 함께 상환하지 못하면 트랜잭션 전체가 revert 되어 아무 일도 없던 게 된다. 그 자체로는 합법적인 도구지만, bZx·Beanstalk·Euler 공격에서 가격 조작에 쓸 자본을 순간적으로 마련하는 엔진이었다. 이 대출을 부르는 두 단어는?",
+      "en": "Borrow a large sum with no collateral, but if you do not repay it with a fee before the same transaction ends, the whole transaction reverts as if nothing happened. Legitimate on its own, but in the bZx, Beanstalk and Euler attacks it was the engine that momentarily supplied the capital for price manipulation. What two words name this loan?"
+    },
+    "hints": {
+      "ko": [
+        "\"flash\" — 순식간.",
+        "Aave·dYdX 가 제공한다. 원자성(atomicity)에 기댄다."
+      ],
+      "en": [
+        "\"flash\" - in an instant.",
+        "Offered by Aave and dYdX. It relies on atomicity."
+      ]
+    }
+  },
+  {
+    "id": "t2_web3swap",
+    "tier": 2,
+    "cat": "defi",
+    "track": "web3",
+    "points": 150,
+    "ci": false,
+    "hash": "dfe4e74b66042bd21c61071ebd89eed2dc03ce49a947c549caac39f841c2932f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "상수곱 스왑 출력",
+      "en": "Constant-Product Swap Output"
+    },
+    "prompt": {
+      "ko": "상수곱 AMM 은 두 준비금의 곱 k = x·y 를 스왑 전후로 유지한다. 입력 토큰에는 수수료가 먼저 붙는다: 실효 입력 = 입력 × (1 − 수수료). 그 뒤 새 준비금으로 k 를 맞추고, 상대 토큰의 감소분이 출력이다. 아래 스왑의 USDC 출력을 정수로 내림하여 `FLAG{SWAP_OUT_<정수>}` 를 제출하라.\n\n```\npool: 100 ETH, 300000 USDC\nswap in: 5 ETH -> USDC\nfee: 0.3%\n```",
+      "en": "A constant-product AMM keeps the product k = x*y of its two reserves fixed across a swap. The input token is taxed first: effective input = input * (1 - fee). Then k is restored with the new reserves, and the drop in the other reserve is the output. Floor the USDC output of the swap below to a whole number and submit `FLAG{SWAP_OUT_<integer>}`.\n\n```\npool: 100 ETH, 300000 USDC\nswap in: 5 ETH -> USDC\nfee: 0.3%\n```"
+    },
+    "hints": {
+      "ko": [
+        "실효 입력 = 5 × 0.997 = 4.985. new_x = 104.985.",
+        "new_y = (100·300000) / 104.985. 출력 = 300000 − new_y ≈ 14244.89 → 내림 14244."
+      ],
+      "en": [
+        "Effective input = 5 * 0.997 = 4.985. new_x = 104.985.",
+        "new_y = (100*300000) / 104.985. Output = 300000 - new_y ~ 14244.89 -> floor 14244."
+      ]
+    }
+  },
+  {
+    "id": "t2_web3calldata",
+    "tier": 2,
+    "cat": "evm",
+    "track": "web3",
+    "points": 150,
+    "ci": false,
+    "hash": "2fc21fdb4def2a67427c1526367af56b9bd455c0e63d3285fffcd5a7c54f0a07",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "calldata 디코딩",
+      "en": "Decoding Calldata"
+    },
+    "prompt": {
+      "ko": "아래는 토큰 `transfer(address,uint256)` 호출의 raw calldata 다. 앞 4바이트는 어떤 함수를 부를지 정하는 메서드 id, 그 다음 32바이트는 왼쪽 0-패딩된 수신 주소, 마지막 32바이트는 uint256 금액이다. 금액을 10진수로 읽어 `FLAG{AMOUNT_<10진수>}` 를 제출하라.\n\n```\n0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000000000000002710\n```",
+      "en": "Below is the raw calldata of a token `transfer(address,uint256)` call. The first 4 bytes are the method id that picks which function to run, the next 32 bytes are the left-zero-padded recipient address, and the last 32 bytes are the uint256 amount. Read the amount as a base-ten integer and submit `FLAG{AMOUNT_<integer>}`.\n\n```\n0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000000000000002710\n```"
+    },
+    "hints": {
+      "ko": [
+        "`0x` 와 8자, 64자를 떼면 마지막 64자가 금액.",
+        "마지막 워드는 `...2710` = 0x2710."
+      ],
+      "en": [
+        "Strip `0x`, the first 8 chars and the next 64; the last 64 hex chars are the amount.",
+        "The last word is `...2710` = 0x2710."
+      ]
+    }
+  },
+  {
+    "id": "t3_web3oracle",
+    "tier": 3,
+    "cat": "defi",
+    "track": "web3",
+    "points": 130,
+    "ci": true,
+    "hash": "64b97f56679f11a59298c57559f9b595830486dfd548d256ba82c0d9bd289ac8",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "DeFi의 눈",
+      "en": "The Eyes of DeFi"
+    },
+    "prompt": {
+      "ko": "스마트 컨트랙트는 체인 밖 데이터를 스스로 알 수 없다. 대출·청산·파생상품이 자산 가격을 알려면 외부에서 값을 받아와야 한다. DeFi 에서 이 가격 공급 장치를 부르는 두 단어(명사 + 명사)는? 이걸 한 교환소 풀의 즉시 시세로 순진하게 구현하면, 원자적 대출로 같은 블록 안에서 그 풀을 흔들어 값을 조작할 수 있다.",
+      "en": "A smart contract cannot know off-chain data by itself. For lending, liquidation or derivatives to know an asset's price, a value must be supplied from outside. What two words (noun + noun) does DeFi use for this price supply mechanism? Implemented naively as one exchange pool's spot quote, an atomic borrow can shake that pool within the same block and manipulate the value."
+    },
+    "hints": {
+      "ko": [
+        "가격(price) + 공급 흐름(feed).",
+        "안전한 설계: 시간가중 평균, 또는 여러 제공자 합의."
+      ],
+      "en": [
+        "price + a feed of values.",
+        "Safe designs: a time-weighted average, or many providers in agreement."
+      ]
+    }
+  },
+  {
+    "id": "t3_web3twap",
+    "tier": 3,
+    "cat": "defi",
+    "track": "web3",
+    "points": 130,
+    "ci": true,
+    "hash": "435634ef069ca5d3959116d33109d2d6bdf61914fb3c5590d84648a73216d12f",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "시간으로 뭉갠 가격",
+      "en": "Price Smeared Over Time"
+    },
+    "prompt": {
+      "ko": "단일 블록의 즉시 시세는 순간적인 대량 거래 한 방에 크게 움직인다. 그래서 안전한 온체인 가격은 일정 시간 창(예: 30분) 동안의 가격을 시간으로 가중 평균해 쓴다. 짧은 조작을 비싸고 무의미하게 만드는 이 가격의 네 글자 약어는?",
+      "en": "A single block's spot quote moves a lot on one momentary large trade. So a safe on-chain price uses the price averaged, weighted by time, over a window (say 30 minutes). Give the four-letter acronym for this price, which makes a brief manipulation expensive and pointless."
+    },
+    "hints": {
+      "ko": [
+        "\"Time-Weighted Average Price\".",
+        "Uniswap v2 가 누적값(cumulative)으로 노출한다."
+      ],
+      "en": [
+        "\"Time-Weighted Average Price\".",
+        "Uniswap v2 exposes it as a cumulative value."
+      ]
+    }
+  },
+  {
+    "id": "t3_web3mev",
+    "tier": 3,
+    "cat": "defi",
+    "track": "web3",
+    "points": 130,
+    "ci": true,
+    "hash": "ec8eb7a9ebcc48e69a54cf80fdb00b490b9b740f0e52fe7e2fbb4f1a8509edb5",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "블록의 보이지 않는 세금",
+      "en": "The Invisible Tax on a Block"
+    },
+    "prompt": {
+      "ko": "블록에 트랜잭션을 넣는 순서를 정하는 것은 블록 제안자다. 순서를 바꾸고, 트랜잭션을 끼워 넣고, 검열함으로써 뽑아낼 수 있는 최대 이익 — 프론트러닝·백러닝·청산 선점이 모두 여기 들어간다. 세 글자 약어는?",
+      "en": "The block proposer decides the order transactions go into a block. The maximum profit extractable by reordering, inserting and censoring transactions — front-running, back-running and beating others to a liquidation all fall under it. Give the three-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Maximal Extractable Value\" (예전엔 Miner Extractable).",
+        "M, E, V."
+      ],
+      "en": [
+        "\"Maximal Extractable Value\" (formerly Miner Extractable).",
+        "M, E, V."
+      ]
+    }
+  },
+  {
+    "id": "t3_web3sandwich",
+    "tier": 3,
+    "cat": "defi",
+    "track": "web3",
+    "points": 130,
+    "ci": true,
+    "hash": "8f5c570f55dd7921c9861e941be98a9492991d1a862d05283f6ddad56c891cca",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "피해자를 사이에 끼우다",
+      "en": "Putting the Victim in the Middle"
+    },
+    "prompt": {
+      "ko": "봇이 아직 처리되지 않은 큰 매수 스왑을 발견하면, 그 앞에 자기 매수를 넣어 가격을 올리고(피해자는 비싸게 산다), 피해자 거래 바로 뒤에 자기 매도를 넣어 차익을 챙긴다. 피해자 트랜잭션을 두 개로 감싸는 이 순서 조작 공격을 부르는, 음식에 빗댄 여덟 글자 영어 단어는?",
+      "en": "A bot spots a large pending buy swap, places its own buy in front to push the price up (the victim buys high), and places its own sell right behind the victim's trade to take the difference. What eight-letter English word, named after a food, names this ordering attack that wraps the victim's transaction in two?"
+    },
+    "hints": {
+      "ko": [
+        "빵 두 조각 사이에 속을 넣은 음식.",
+        "방어: 슬리피지 허용치 최소화, 비공개 제출 경로 사용."
+      ],
+      "en": [
+        "A food with a filling between two slices of bread.",
+        "Defenses: minimal slippage tolerance, a private submission path."
+      ]
+    }
+  },
+  {
+    "id": "t3_web3mempool",
+    "tier": 3,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 130,
+    "ci": true,
+    "hash": "b3ef9b748e9bb2991abb2e45715e8d566b56d7efa5675cf0f1da1c781ad143ed",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "대기실은 공개다",
+      "en": "The Waiting Room Is Public"
+    },
+    "prompt": {
+      "ko": "서명되었지만 아직 블록에 포함되지 않은 트랜잭션들이 각 노드의 이 대기 영역에 머문다. 누구나 그 내용을 볼 수 있고, 이익을 노리는 봇들은 이곳을 24시간 감시한다. 이 공개된 대기 영역을 부르는 일곱 글자 영어 단어는?",
+      "en": "Transactions that are signed but not yet in a block sit in this waiting area on each node. Anyone can see their contents, and profit-hunting bots watch it around the clock. Give the seven-letter English word for this public waiting area."
+    },
+    "hints": {
+      "ko": [
+        "\"memory\" + \"pool\".",
+        "이걸 우회하는 비공개 제출 경로가 따로 있다."
+      ],
+      "en": [
+        "\"memory\" + \"pool\".",
+        "Private submission paths exist to bypass it."
+      ]
+    }
+  },
+  {
+    "id": "t3_web3cp",
+    "tier": 3,
+    "cat": "defi",
+    "track": "web3",
+    "points": 130,
+    "ci": true,
+    "hash": "5e5be14804c66fd10629463c83a4d42a927ba1582e28edd18099a7480c1c03e7",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "x 곱하기 y는 그대로",
+      "en": "x Times y Stays the Same"
+    },
+    "prompt": {
+      "ko": "Uniswap v2 류 AMM 은 두 토큰 준비금 x, y 에 대해 x·y = k 를 스왑 전후로 유지한다. 한쪽을 많이 사면 그쪽 준비금이 줄고 값이 오른다 — 곡선이 자동으로 가격을 매긴다. 이 불변식을 부르는 \"___ 곱\"(\"___ product\") 두 단어는?",
+      "en": "A Uniswap-v2-style AMM keeps x*y = k for its two token reserves x, y across a swap. Buy a lot of one side and its reserve shrinks and its price rises — the curve prices it automatically. What two words name this invariant, the \"___ product\" formula?"
+    },
+    "hints": {
+      "ko": [
+        "k 가 \"일정하다(constant)\".",
+        "\"constant\" + \"product\"."
+      ],
+      "en": [
+        "k is held \"constant\".",
+        "\"constant\" + \"product\"."
+      ]
+    }
+  },
+  {
+    "id": "t3_web3chainlink",
+    "tier": 3,
+    "cat": "defi",
+    "track": "web3",
+    "points": 130,
+    "ci": true,
+    "hash": "b4bfe090fdd6cdf453b0c961c5cde06a23a5e401e90028225860d0c8b5578c4c",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "여러 제공자의 합의 가격",
+      "en": "A Price Many Providers Agree On"
+    },
+    "prompt": {
+      "ko": "단일 교환소 시세 대신, 여러 독립 데이터 제공자가 각자 보고한 값을 온체인에서 집계·중앙값 처리해 하나의 가격으로 내놓는 탈중앙 네트워크가 있다. DeFi 프로토콜이 가격 조작을 피하려면 이걸 쓰라고 권장된다. 이 네트워크의 이름은?",
+      "en": "Instead of one exchange's quote, a decentralized network takes values reported by many independent data providers and aggregates/medianizes them on-chain into a single price. DeFi protocols are advised to use it to avoid price manipulation. Name this network."
+    },
+    "hints": {
+      "ko": [
+        "\"chain\" + \"link\", 한 단어.",
+        "토큰 티커는 LINK."
+      ],
+      "en": [
+        "\"chain\" + \"link\", one word.",
+        "Its token ticker is LINK."
+      ]
+    }
+  },
+  {
+    "id": "t3_web3flashbots",
+    "tier": 3,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 130,
+    "ci": true,
+    "hash": "02fabb74a0a08a6217c01435b4ff498593502b2dbc71edda2d514faf6268c8be",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "대기실을 건너뛰는 지름길",
+      "en": "The Shortcut Past the Waiting Room"
+    },
+    "prompt": {
+      "ko": "공개된 대기 영역에 트랜잭션을 흘리면 봇의 먹잇감이 된다. 대신 트랜잭션 번들을 블록 빌더에게 직접(비공개 채널로) 제출해, 공개되지 않고 원하는 순서로 포함되게 하는 서비스가 있다. 실패한 번들은 온체인에 남지 않는다. 이 서비스의 이름은?",
+      "en": "Leak a transaction into the public waiting area and it becomes bot bait. Instead, a service lets you submit a transaction bundle straight to block builders (via a private channel), so it is included in your chosen order without ever being public. A failed bundle never lands on-chain. Name this service."
+    },
+    "hints": {
+      "ko": [
+        "\"flash\" + \"bots\", 한 단어.",
+        "이후 블록 빌딩 인프라로 확장됐다."
+      ],
+      "en": [
+        "\"flash\" + \"bots\", one word.",
+        "It later grew into block-building infrastructure."
+      ]
+    }
+  },
+  {
+    "id": "t3_web3merkle",
+    "tier": 3,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 200,
+    "ci": false,
+    "hash": "1df5a88ca90b7326dd788e23245d63fa671e439190d18bc129d480e2e86e8ff3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "머클 루트 계산",
+      "en": "Computing a Merkle Root"
+    },
+    "prompt": {
+      "ko": "네 개의 리프 값을 UTF-8 문자열로 각각 SHA-256 해싱해 32바이트 다이제스트를 얻는다. 그 다음 왼쪽부터 둘씩 짝지어 두 다이제스트를 이어 붙인 64바이트를 다시 SHA-256 한다: H = SHA256(left ‖ right). 두 번 올라가면 루트가 나온다. 루트의 앞 8개 16진수 문자를 소문자로 읽어 `FLAG{MROOT_<hex8>}` 를 제출하라.\n\n```\nleaves: alpha, bravo, charlie, delta\n```",
+      "en": "Hash each of the four leaf values as a UTF-8 string with SHA-256 to get a 32-byte digest. Then pair them left to right and hash the 64 bytes formed by concatenating the two digests: H = SHA256(left || right). Go up two levels to reach the root. Read the first 8 hex characters of the root in lowercase and submit `FLAG{MROOT_<hex8>}`.\n\n```\nleaves: alpha, bravo, charlie, delta\n```"
+    },
+    "hints": {
+      "ko": [
+        "H01 = SHA256(SHA256('alpha') ‖ SHA256('bravo')), H23 = SHA256(SHA256('charlie') ‖ SHA256('delta')).",
+        "root = SHA256(H01 ‖ H23). 앞 8자를 취한다."
+      ],
+      "en": [
+        "H01 = SHA256(SHA256('alpha') || SHA256('bravo')), H23 = SHA256(SHA256('charlie') || SHA256('delta')).",
+        "root = SHA256(H01 || H23). Take its first 8 chars."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3doublespend",
+    "tier": 4,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 160,
+    "ci": true,
+    "hash": "4efe5da76e096b45ecf01e51ee2557afdb340067077f8b4ed708e736f1f0a49c",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "같은 코인을 두 번",
+      "en": "The Same Coin, Twice"
+    },
+    "prompt": {
+      "ko": "공격자가 전체 해시파워/지분의 과반을 쥐면, 거래소에 입금해 확인을 받은 뒤 비밀리에 그 입금이 없는 더 긴 대안 체인을 채굴한다. 대안 체인을 공개하면 원래 입금 트랜잭션이 무효화되고 코인은 공격자에게 돌아간다 — 이미 출금·교환한 자산은 그대로 남긴 채. 이 공격 결과를 부르는 두 단어(형용사 + 동사)는?",
+      "en": "With a majority of total hashpower/stake, an attacker deposits to an exchange, waits for confirmations, then secretly mines a longer alternative chain without that deposit. Publishing the alternative chain voids the original deposit and returns the coins to the attacker — while the assets already withdrawn and exchanged stay gone. What two words (adjective + verb) name this outcome?"
+    },
+    "hints": {
+      "ko": [
+        "같은 자금을 두 곳에 쓴다.",
+        "\"double\" + \"spend\". 방어: 대형 입금에 확인 수 늘리기."
+      ],
+      "en": [
+        "Spending the same funds in two places.",
+        "\"double\" + \"spend\". Defense: more confirmations for large deposits."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3eclipse",
+    "tier": 4,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 160,
+    "ci": true,
+    "hash": "80b1509ea37643250da601f2d24fe9b236b76fd3a3d7d18498d760cdd38813b2",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "노드를 세상에서 가리다",
+      "en": "Blotting Out a Node's World"
+    },
+    "prompt": {
+      "ko": "공격자가 피해 노드의 모든 아웃바운드 P2P 연결 슬롯을 자기 노드들로 채우면, 그 피해 노드가 보는 블록체인은 전부 공격자가 만든 것이 된다. 위조 트랜잭션 주입, 0-확인 이중지불 노출, 채굴력 낭비 유도가 가능해진다. 천문 현상에 빗댄 이 공격의 일곱 글자 영어 이름은?",
+      "en": "If an attacker fills every one of a victim node's outbound P2P connection slots with attacker nodes, the entire blockchain that victim sees is one the attacker crafted. Forged-transaction injection, exposure to 0-confirmation double spends, and wasted mining power all follow. Give the seven-letter English name for this attack, named after an astronomical event."
+    },
+    "hints": {
+      "ko": [
+        "해가 가려지는 현상.",
+        "방어: 고정 피어, AS 레벨 연결 다양화, feeler 연결."
+      ],
+      "en": [
+        "When the sun is blotted out.",
+        "Defenses: fixed peers, AS-level connection diversity, feeler connections."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3selfish",
+    "tier": 4,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 160,
+    "ci": true,
+    "hash": "6c3cb0846df80695a05ea3583b1813d2244daf397181aa3079ffefce948da4bc",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "블록을 숨겼다가",
+      "en": "Sitting on a Block"
+    },
+    "prompt": {
+      "ko": "정직한 채굴자는 블록을 찾으면 바로 공개한다. 이 전략은 다르다: 블록을 찾아도 비밀에 부치고 몰래 앞서 나가다가, 정직한 체인이 따라붙는 순간 숨겨둔 더 긴 체인을 공개해 정직한 블록들을 고아로 만든다. Eyal & Sirer(2014)는 25% 해시파워만 있어도 이론상 이득이라고 보였다. 이 전략을 부르는 두 단어(형용사 + 동명사)는?",
+      "en": "An honest miner publishes a block as soon as it is found. This strategy is different: keep a found block secret, build a hidden lead, and the moment the honest chain catches up, release the longer hidden chain to orphan the honest blocks. Eyal & Sirer (2014) showed it is theoretically profitable with just 25% hashpower. What two words (adjective + gerund) name this strategy?"
+    },
+    "hints": {
+      "ko": [
+        "이기적으로(selfish) 채굴(mining)한다.",
+        "\"selfish\" + \"mining\"."
+      ],
+      "en": [
+        "You mine \"selfishly\".",
+        "\"selfish\" + \"mining\"."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3malleability",
+    "tier": 4,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 160,
+    "ci": true,
+    "hash": "6c8d98ad8b2979aa859f142614fb70b7a7b7362fb043b14b492bb9c57238d333",
+    "fmt": "한 단어 / one word (12글자 / 12 chars)",
+    "title": {
+      "ko": "같은 거래, 다른 이름표",
+      "en": "Same Transaction, Different Label"
+    },
+    "prompt": {
+      "ko": "ECDSA 서명 `(r, s)` 는 `(r, n − s)` 로 바꿔도 여전히 유효하다. 이러면 트랜잭션 내용은 그대로인데 그 해시(TxID)가 달라진다. Mt. Gox 는 이 때문에 출금 추적에 혼란을 겪었다. Bitcoin 은 SegWit 으로, Ethereum 은 EIP-2(s 를 절반 이하로 제한)로 대응했다. 서명 하나로 TxID 가 바뀌는 이 성질의 열두 글자 영어 이름은?",
+      "en": "An ECDSA signature `(r, s)` is still valid rewritten as `(r, n - s)`. The transaction content is unchanged but its hash (TxID) is now different. Mt. Gox was thrown into confusion tracking withdrawals because of it. Bitcoin answered with SegWit, Ethereum with EIP-2 (restricting s to half or less). Give the twelve-letter English name for this property where one signature edit changes the TxID."
+    },
+    "hints": {
+      "ko": [
+        "\"malleable\"(주물러 모양을 바꿀 수 있는) + -ity.",
+        "SegWit 은 서명을 TxID 계산에서 분리했다."
+      ],
+      "en": [
+        "\"malleable\" (able to be reshaped) + -ity.",
+        "SegWit moved the signature out of the TxID calculation."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3proxy",
+    "tier": 4,
+    "cat": "contract",
+    "track": "web3",
+    "points": 160,
+    "ci": true,
+    "hash": "1241936d4dd3aad68fe7bfbdfe854b935926bc678fc72377e15166078916227a",
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "title": {
+      "ko": "얇은 껍데기, 갈아끼는 알맹이",
+      "en": "A Thin Shell, a Swappable Core"
+    },
+    "prompt": {
+      "ko": "컨트랙트는 불변이지만 업그레이드가 필요할 때가 있다. 해법: 상태와 잔액을 보관하는 얇은 컨트랙트가 모든 호출을 별도의 로직 컨트랙트로 넘겨 실행시키되 스토리지는 자기 것을 쓰고, 업그레이드는 그 로직 주소만 바꾸는 것이다. 두 컨트랙트의 슬롯이 어긋나면 상태가 깨져서 EIP-1967 이 슬롯을 표준화했다. 이 얇은 컨트랙트를 부르는 다섯 글자 영어 단어는?",
+      "en": "A contract is immutable, but sometimes needs upgrading. The solution: a thin contract that holds the state and balance forwards every call to a separate logic contract to run there while using its own storage, and an upgrade just changes that logic address. State breaks if the two contracts' slots do not line up, which is why EIP-1967 standardized the slots. Give the five-letter English word for this thin contract."
+    },
+    "hints": {
+      "ko": [
+        "대리인·중개. UUPS·Transparent 두 스타일이 있다.",
+        "다섯 글자, \"대리\"."
+      ],
+      "en": [
+        "A stand-in or intermediary. Two styles: UUPS and Transparent.",
+        "Five letters, means \"a stand-in\"."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3slither",
+    "tier": 4,
+    "cat": "contract",
+    "track": "web3",
+    "points": 160,
+    "ci": true,
+    "hash": "116a0ec3504893574a262fd4b1c9961bdfad14e3fd9f5331a4999ccadf502384",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "감사의 첫 관문",
+      "en": "The First Gate of an Audit"
+    },
+    "prompt": {
+      "ko": "Trail of Bits 가 만든 파이썬 기반 정적 분석기. 소스를 실행하지 않고 코드 패턴을 분석해 콜백 배수 버그, 임의 송금, 초기화 안 된 스토리지, 약한 난수원 등을 빠르게 잡아낸다. 빠르고 자동화하기 쉬워 거의 모든 컨트랙트 감사의 첫 단계로 돌린다. 뱀의 움직임을 딴 이 도구의 이름은?",
+      "en": "A Python-based static analyzer from Trail of Bits. Without executing the source, it analyzes code patterns and quickly flags callback-drain bugs, arbitrary sends, uninitialized storage, weak randomness and more. Fast and easy to automate, it is run as the first step of nearly every contract audit. Name this tool, named after how a snake moves."
+    },
+    "hints": {
+      "ko": [
+        "뱀이 미끄러지듯 기어가는 동작.",
+        "일곱 글자. Mythril·Echidna 와 함께 쓰인다."
+      ],
+      "en": [
+        "The gliding way a snake crawls.",
+        "Seven letters. Used alongside Mythril and Echidna."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3foundry",
+    "tier": 4,
+    "cat": "contract",
+    "track": "web3",
+    "points": 160,
+    "ci": true,
+    "hash": "dfb316701857783dac69a14d1fe3fd60cff21d56e830baf7f0e3871bd73eee39",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "솔리디티로 쓰는 익스플로잇",
+      "en": "Exploits Written in Solidity"
+    },
+    "prompt": {
+      "ko": "테스트를 JavaScript 가 아니라 Solidity 자체로 작성하는 개발·테스트 프레임워크. `forge` 로 메인넷을 특정 블록에서 포크해 사고 당시 상태를 재현하고, `--match-test` 로 익스플로잇 테스트를 돌려 취약점을 PoC 로 증명한다. `cast` 로 온체인 조회·전송, `anvil` 로 로컬 노드. 이 프레임워크의 이름은?",
+      "en": "A development and testing framework where you write tests in Solidity itself, not JavaScript. With `forge` you fork mainnet at a chosen block to reproduce the state at the time of the incident, and run an exploit test with `--match-test` to prove a vulnerability as a PoC. `cast` does on-chain queries and sends; `anvil` is the local node. Name this framework."
+    },
+    "hints": {
+      "ko": [
+        "금속을 녹여 붓는 주조 공장.",
+        "일곱 글자. 명령어 셋: forge, cast, anvil."
+      ],
+      "en": [
+        "A works where metal is cast.",
+        "Seven letters. Three commands: forge, cast, anvil."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3tornado",
+    "tier": 4,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 160,
+    "ci": true,
+    "hash": "fd41c45a9748674bd8345684ff00324bc126290b37df6a48cbb026df5abdae0f",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "자금 출처를 흐리는 믹서",
+      "en": "The Mixer That Blurs the Source"
+    },
+    "prompt": {
+      "ko": "탈취한 자금을 곧바로 현금화하면 추적당한다. 그래서 공격자는 이더리움 믹서에 자금을 예치하고 나중에 다른 주소로 빼서 입출금의 연결을 끊는다. 영지식 증명으로 예치자와 인출자의 관계를 숨기는 이 서비스는 2022년 미국 OFAC 제재 대상이 되었다. 회오리 이름을 딴 이 믹서의 두 단어 이름은?",
+      "en": "Cash out stolen funds directly and you get traced. So attackers deposit funds into an Ethereum mixer and later withdraw to a different address, severing the link between deposit and withdrawal. Using zero-knowledge proofs to hide which depositor a withdrawal belongs to, this service was placed under US OFAC sanctions in 2022. Give the two-word name of this mixer, named after a windstorm."
+    },
+    "hints": {
+      "ko": [
+        "회오리바람 + \"현금\".",
+        "\"Tornado\" + \"Cash\"."
+      ],
+      "en": [
+        "A whirlwind + \"cash\".",
+        "\"Tornado\" + \"Cash\"."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3pause",
+    "tier": 4,
+    "cat": "onchain",
+    "track": "web3",
+    "points": 160,
+    "ci": true,
+    "hash": "6210c0bf05396716df932f0729df69de0533933e5ad9871fd07b61811c4c28df",
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "title": {
+      "ko": "사고 대응의 첫 손짓",
+      "en": "An Incident Responder's First Move"
+    },
+    "prompt": {
+      "ko": "Web3 사고 초동 대응 5분 체크리스트에서, 의심 트랜잭션과 컨트랙트 잔액을 확인한 직후에 하는 것: 컨트랙트에 이 기능이 있으면 즉시 호출해 더 이상 상태를 바꾸는 함수가 실행되지 못하게 막는다. OpenZeppelin 의 Pausable 이 제공하는, 이 긴급 정지 함수의 다섯 글자 이름은?",
+      "en": "In the Web3 incident-response 5-minute checklist, right after checking the suspicious transaction and the contract's balance: if the contract has this function, call it at once so no more state-changing function can run. Give the five-letter name of this emergency-stop function, provided by OpenZeppelin's Pausable."
+    },
+    "hints": {
+      "ko": [
+        "멈춤 버튼.",
+        "다섯 글자. 반대는 unpause()."
+      ],
+      "en": [
+        "A stop button.",
+        "Five letters. The opposite is unpause()."
+      ]
+    }
+  },
+  {
+    "id": "t4_web3capstone",
+    "tier": 4,
+    "cat": "defi",
+    "track": "web3",
+    "points": 250,
+    "ci": false,
+    "hash": "5094e4eeffd5d2656da0a18a22caa6eb03aa16c78e3eaab33d502bcd97aa04cb",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "원자적 대출 가격 조작",
+      "en": "Atomic-Borrow Price Manipulation"
+    },
+    "prompt": {
+      "ko": "상수곱 AMM 풀에서 한 트랜잭션 안에 대량의 USDC 를 빌려 전부 ETH 로 스왑하면 풀 시세가 크게 움직인다. 입력에는 0.3% 수수료가 먼저 붙는다(실효 입력 = 입력 × 0.997). k = x·y 는 유지된다. 아래 상황에서 (1) 받는 ETH 를 정수로 내림한 값과 (2) 스왑 전후 ETH 시세(USDC/ETH)의 변화율을 반올림한 정수(%)를 구해 `FLAG{ETH<정수>_IMPACT<정수>}` 를 제출하라.\n\n```\npool: 200 ETH, 500000 USDC\nflash-borrow: 100000 USDC -> swap all to ETH\nfee: 0.3%\n```",
+      "en": "In a constant-product AMM pool, borrowing a large amount of USDC within a single transaction and swapping it all to ETH moves the pool's quote a lot. The input is taxed 0.3% first (effective input = input * 0.997). k = x*y is kept. For the situation below, work out (1) the ETH received, floored to a whole number, and (2) the percent change in the ETH quote (USDC/ETH) from before to after the swap, rounded to a whole number. Submit `FLAG{ETH<integer>_IMPACT<integer>}`.\n\n```\npool: 200 ETH, 500000 USDC\nflash-borrow: 100000 USDC -> swap all to ETH\nfee: 0.3%\n```"
+    },
+    "hints": {
+      "ko": [
+        "실효 입력 99700. new_y = 599700, new_x = (200·500000)/599700 ≈ 166.75. ETH 받음 ≈ 33.25 → 33.",
+        "이전 시세 500000/200 = 2500. 이후 599700/166.75 ≈ 3596.4. 변화율 ≈ +43.9% → 44."
+      ],
+      "en": [
+        "Effective input 99700. new_y = 599700, new_x = (200*500000)/599700 ~ 166.75. ETH received ~ 33.25 -> 33.",
+        "Old quote 500000/200 = 2500. New 599700/166.75 ~ 3596.4. Change ~ +43.9% -> 44."
       ]
     }
   }

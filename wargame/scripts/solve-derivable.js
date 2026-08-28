@@ -501,6 +501,62 @@ const SOLVERS = new Map([
     s += -10 * num(/recent_anomalies:\s*(\d+)/) + (yes(/off_hours:\s*(\w+)/) ? -5 : 0);
     return `FLAG{POSTURE_${s}}`;
   } }],
+
+  /* --- blockchain / web3: an AMM swap, an ABI-encoded amount, a Merkle root,
+     and a flash-loan price manipulation, each from a fenced block --- */
+  ['t2_web3swap', { kind: 'computed', via: 'constant-product AMM output for the stated swap', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced pool state in the prompt');
+    const b = m[1];
+    const pool = b.match(/pool:\s*([\d.]+)\s+(\w+),\s*([\d.]+)\s+(\w+)/);
+    const swap = b.match(/swap in:\s*([\d.]+)\s+(\w+)/);
+    const feeM = b.match(/fee:\s*([\d.]+)\s*%/);
+    if (!pool || !swap || !feeM) throw new Error('pool / swap / fee not all stated');
+    const fee = Number(feeM[1]) / 100;
+    let xIn, yOut;
+    if (swap[2] === pool[2]) { xIn = Number(pool[1]); yOut = Number(pool[3]); }
+    else { xIn = Number(pool[3]); yOut = Number(pool[1]); }
+    const k = xIn * yOut;
+    const eff = Number(swap[1]) * (1 - fee);
+    const out = yOut - k / (xIn + eff);
+    return `FLAG{SWAP_OUT_${Math.floor(out)}}`;
+  } }],
+  ['t2_web3calldata', { kind: 'computed', via: 'the uint256 word at the tail of ABI-encoded calldata', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced calldata in the prompt');
+    const hex = m[1].replace(/\s+/g, '').replace(/^0x/i, '');
+    if (hex.length < 136) throw new Error(`calldata is only ${hex.length} hex chars`);
+    return `FLAG{AMOUNT_${BigInt('0x' + hex.slice(-64))}}`;
+  } }],
+  ['t3_web3merkle', { kind: 'computed', via: 'sha256 Merkle root over the four stated leaves', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced leaf list in the prompt');
+    const leaves = (m[1].match(/leaves:\s*(.+)/) || [])[1];
+    if (!leaves) throw new Error('the fenced block does not name the leaves');
+    const parts = leaves.split(',').map((s) => s.trim()).filter(Boolean);
+    if (parts.length !== 4) throw new Error(`expected four leaves, got ${parts.length}`);
+    const h = (buf) => crypto.createHash('sha256').update(buf).digest();
+    const d = parts.map((p) => h(p));
+    const root = h(Buffer.concat([h(Buffer.concat([d[0], d[1]])), h(Buffer.concat([d[2], d[3]]))]));
+    return `FLAG{MROOT_${root.toString('hex').slice(0, 8)}}`;
+  } }],
+  ['t4_web3capstone', { kind: 'computed', via: 'flash-loan swap: ETH out and percent price impact', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced pool state in the prompt');
+    const b = m[1];
+    const pool = b.match(/pool:\s*([\d.]+)\s+ETH,\s*([\d.]+)\s+USDC/);
+    const borrow = b.match(/flash-borrow:\s*([\d.]+)\s+USDC/);
+    const feeM = b.match(/fee:\s*([\d.]+)\s*%/);
+    if (!pool || !borrow || !feeM) throw new Error('pool / borrow / fee not all stated');
+    const ethR = Number(pool[1]), usdcR = Number(pool[2]);
+    const fee = Number(feeM[1]) / 100;
+    const k = ethR * usdcR;
+    const newUsdc = usdcR + Number(borrow[1]) * (1 - fee);
+    const newEth = k / newUsdc;
+    const ethOut = ethR - newEth;
+    const impact = Math.round(((newUsdc / newEth) / (usdcR / ethR) - 1) * 100);
+    return `FLAG{ETH${Math.floor(ethOut)}_IMPACT${impact}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

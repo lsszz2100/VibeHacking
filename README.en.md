@@ -9,9 +9,9 @@
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#table-of-contents)
 [![Lines](https://img.shields.io/badge/Lines-560%2C000%2B-orange)](#table-of-contents)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-ai-powered-cybersecurity)
-[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·455-9933ff)](https://lsszz2100.github.io/VibeHacking/)
+[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·490-9933ff)](https://lsszz2100.github.io/VibeHacking/)
 
-> 🎮 **Browser terminal infiltration CTF** — drive a fake shell (`connect` · `cat` · `submit`) to breach 5 security layers of `vibe.corp` (perimeter→web→internal→vault→core) and clear 455 challenges. Boot sequence, `ACCESS GRANTED` effects, matrix rain, sound, hints, KO/EN. Drawn from this repo's 75 sections. ([about](wargame/README.md) · available once GitHub Pages is enabled)
+> 🎮 **Browser terminal infiltration CTF** — drive a fake shell (`connect` · `cat` · `submit`) to breach 5 security layers of `vibe.corp` (perimeter→web→internal→vault→core) and clear 490 challenges. Boot sequence, `ACCESS GRANTED` effects, matrix rain, sound, hints, KO/EN. Drawn from this repo's 75 sections. ([about](wargame/README.md) · available once GitHub Pages is enabled)
 
 <br/>
 
