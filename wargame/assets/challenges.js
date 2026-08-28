@@ -15151,7 +15151,7 @@ const CHALLENGES = [
       "en": "A One-Byte Trap"
     },
     "prompt": {
-      "ko": "소프트웨어 브레이크포인트를 걸면 디버거가 원래 명령의 첫 바이트를 오패치 0xCC 로 덮어쓴다. 안티디버깅 코드는 자기 코드 영역에 이 바이트가 있는지 스캔해 브레이크포인트를 찾아낸다. 0xCC 에 해당하는 명령 니모닉을 공백 없이 쓰면?",
+      "ko": "소프트웨어 브레이크포인트를 걸면 디버거가 원래 명령의 첫 바이트를 옵코드 0xCC 로 덮어쓴다. 안티디버깅 코드는 자기 코드 영역에 이 바이트가 있는지 스캔해 브레이크포인트를 찾아낸다. 0xCC 에 해당하는 명령 니모닉을 공백 없이 쓰면?",
       "en": "Setting a software breakpoint makes the debugger overwrite the first byte of the target instruction with opcode 0xCC. Anti-debug code scans its own code section for that byte to spot breakpoints. Write the instruction mnemonic for 0xCC with no space."
     },
     "hints": {
@@ -15185,7 +15185,7 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "\"Satisfiability Modulo Theories\".",
-        "CVC5 등이 대표적인 구현이다."
+        "CVC5·Bitwuzla 가 대표적인 구현이다."
       ],
       "en": [
         "\"Satisfiability Modulo Theories\".",
@@ -15375,7 +15375,7 @@ const CHALLENGES = [
       "en": "Code That Needs a Debugger to Run"
     },
     "prompt": {
-      "ko": "Armadillo 보호기의 대표 기법. 분기 명령들을 오패치 0xCC 로 바꿔 놓고, 그 자리에 오면 발생하는 예외를 별도의 디버거 스레드가 잡아 원래 점프 목적지와 크기를 테이블에서 찾아 처리한다. 디버거를 떼면 프로그램이 망가진다. 이 기법의 이름(한 단어)은?",
+      "ko": "Armadillo 보호기의 대표 기법. 분기 명령들을 0xCC 한 바이트로 바꿔 놓고, 그 자리에 오면 발생하는 예외를 별도의 디버거 스레드가 잡아 원래 점프 목적지와 크기를 테이블에서 찾아 처리한다. 디버거를 떼면 프로그램이 망가진다. 이 기법의 이름(한 단어)은?",
       "en": "Armadillo's signature trick: replace branch instructions with opcode 0xCC, and when execution hits one, a dedicated debugger thread catches the exception and looks the real jump target and size up in a table. Detach the debugger and the program breaks. Give the one-word name."
     },
     "hints": {
@@ -15679,7 +15679,7 @@ const CHALLENGES = [
     "hash": "d588e832322b257a2154fcc67e09f64db3c1c95578607edf20a64443e9e2d928",
     "fmt": "도구 이름 / tool name (4글자 / 4 chars)",
     "title": {
-      "ko": "LLVM 비트코드를 상징적으로",
+      "ko": "LLVM 비트코드 위의 심볼릭 실행",
       "en": "Symbolic Over LLVM Bitcode"
     },
     "prompt": {
