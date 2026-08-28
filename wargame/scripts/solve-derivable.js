@@ -557,6 +557,74 @@ const SOLVERS = new Map([
     const impact = Math.round(((newUsdc / newEth) / (usdcR / ethR) - 1) * 100);
     return `FLAG{ETH${Math.floor(ethOut)}_IMPACT${impact}}`;
   } }],
+
+  /* --- active directory: a well-known SID, a Kerberoastable count, a shortest
+     attack-path hop count, and a roasting-brief capstone, each from a fenced
+     block --- */
+  ['t2_adsid', { kind: 'computed', via: 'domain SID with the named group\'s well-known RID appended', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced values in the prompt');
+    const b = m[1];
+    const sid = (b.match(/domain_sid:\s*(\S+)/) || [])[1];
+    const group = (b.match(/group:\s*(.+)/) || [])[1];
+    if (!sid || !group) throw new Error('domain_sid / group not both stated');
+    const RID = {
+      'administrator': 500, 'krbtgt': 502, 'domain admins': 512, 'domain users': 513,
+      'domain guests': 514, 'domain computers': 515, 'domain controllers': 516,
+      'schema admins': 518, 'enterprise admins': 519, 'group policy creator owners': 520,
+    };
+    const rid = RID[group.trim().toLowerCase()];
+    if (rid === undefined) throw new Error(`no well-known RID for "${group.trim()}"`);
+    return `FLAG{SID_${sid}-${rid}}`;
+  } }],
+  ['t2_adroast', { kind: 'computed', via: 'enabled user accounts that carry an SPN, from the fenced LDAP dump', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced LDAP dump in the prompt');
+    const rows = m[1].split('\n').map((l) => l.trim()).filter((l) => l.includes('|'));
+    if (!rows.length) throw new Error('no account rows found');
+    let n = 0;
+    for (const r of rows) {
+      const f = r.split('|').map((x) => x.trim());
+      const isUser = f[1] === 'user';
+      const hasSpn = /spn=yes/.test(f[2]);
+      const uac = Number((f[3].match(/uac=(\d+)/) || [])[1] || 0);
+      if (isUser && hasSpn && !(uac & 2)) n++;
+    }
+    return `FLAG{ROAST_${n}}`;
+  } }],
+  ['t3_adbloodpath', { kind: 'computed', via: 'BFS shortest path from OWNED to DC over the fenced edge list', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced edge list in the prompt');
+    const b = m[1];
+    const adj = new Map();
+    for (const em of b.matchAll(/^\s*(\S+)\s*->\s*(\S+)/gm)) {
+      if (!adj.has(em[1])) adj.set(em[1], []);
+      adj.get(em[1]).push(em[2]);
+    }
+    const start = (b.match(/OWNED=(\S+)/) || [])[1];
+    const goal = (b.match(/DC=(\S+)/) || [])[1];
+    if (!start || !goal) throw new Error('OWNED / DC nodes not both stated');
+    const q = [[start, 0]];
+    const seen = new Set([start]);
+    while (q.length) {
+      const [node, d] = q.shift();
+      if (node === goal) return `FLAG{HOPS_${d}}`;
+      for (const nx of (adj.get(node) || [])) if (!seen.has(nx)) { seen.add(nx); q.push([nx, d + 1]); }
+    }
+    throw new Error('no path from OWNED to DC');
+  } }],
+  ['t4_adcapstone', { kind: 'computed', via: 'RC4 keyspace exhaustion time and count of roasted paths to Domain Admin', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced brief in the prompt');
+    const b = m[1];
+    const ks = b.match(/keyspace:\s*2\^(\d+)/);
+    const rate = b.match(/hashcat_rate:\s*([\d.]+)/);
+    const paths = b.match(/paths_to_da:\s*(.+)/);
+    if (!ks || !rate || !paths) throw new Error('keyspace / hashcat_rate / paths_to_da not all stated');
+    const sec = Math.floor(Number(2n ** BigInt(ks[1])) / (Number(rate[1]) * 1e6));
+    const n = paths[1].split(',').map((s) => s.trim()).filter(Boolean).length;
+    return `FLAG{KEYSEC_${sec}_DA_${n}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

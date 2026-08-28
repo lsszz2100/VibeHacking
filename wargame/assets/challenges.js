@@ -156,6 +156,14 @@ const TRACKS = [
     "en": "Blockchain & Web3",
     "desc_ko": "EVM 내부·스마트 컨트랙트 취약점·DeFi 공격·온체인 포렌식.",
     "desc_en": "EVM internals, smart contract bugs, DeFi attacks, on-chain forensics."
+  },
+  {
+    "id": "adattack",
+    "icon": "🎫",
+    "ko": "액티브 디렉터리 공격",
+    "en": "Active Directory",
+    "desc_ko": "Kerberos 티켓 공격·자격 증명 탈취·횡이동·도메인 지속성·공격 그래프 분석.",
+    "desc_en": "Kerberos ticket attacks, credential theft, lateral movement, domain persistence, attack-graph analysis."
   }];
 
 const CHALLENGES = [
@@ -929,8 +937,8 @@ const CHALLENGES = [
       "en": "Trace of Kerberos"
     },
     "prompt": {
-      "ko": "Kerberoasting 공격 탐지의 핵심이 되는, RC4 서비스 티켓 요청을 나타내는 Windows 보안 이벤트 ID는? (숫자)",
-      "en": "Which Windows Security Event ID (for an RC4 service ticket request) is key to detecting Kerberoasting? (number)"
+      "ko": "서비스 계정 티켓을 오프라인으로 크래킹하려는 정찰을 탐지하는 핵심 신호다. 취약한 RC4 로 암호화된 서비스 티켓(TGS) 요청을 나타내는 Windows 보안 이벤트 ID는? (숫자)",
+      "en": "The key signal for spotting reconnaissance that aims to crack service-account tickets offline: which Windows Security Event ID marks a service-ticket (TGS) request encrypted with the weak RC4 cipher? (number)"
     },
     "hints": {
       "ko": [
@@ -13912,6 +13920,986 @@ const CHALLENGES = [
       "en": [
         "Effective input 99700. new_y = 599700, new_x = (200*500000)/599700 ~ 166.75. ETH received ~ 33.25 -> 33.",
         "Old quote 500000/200 = 2500. New 599700/166.75 ~ 3596.4. Change ~ +43.9% -> 44."
+      ]
+    }
+  },
+  {
+    "id": "t0_adkdc",
+    "tier": 0,
+    "cat": "kerberos",
+    "track": "adattack",
+    "points": 50,
+    "ci": true,
+    "hash": "2fc54199d41f9fba84e526a57819bc630714f0394ff1391f648e38fd4639caac",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "티켓을 찍어 주는 곳",
+      "en": "Where the Tickets Are Issued"
+    },
+    "prompt": {
+      "ko": "액티브 디렉터리에서 사용자의 신원을 확인하고, 다른 서비스에 접근할 때 쓰는 티켓을 발급하는 서비스가 있다. 모든 도메인 컨트롤러가 이 서비스를 돌리며, 티켓 서명에 쓰는 마스터 키들을 쥐고 있다. 이 서비스의 세 글자 약어는?",
+      "en": "One service in Active Directory verifies a user's identity and issues the tickets they use to reach other services. Every domain controller runs it, and it holds the master keys that sign those tickets. Give its three-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Key Distribution Center\".",
+        "내부적으로 AS(인증)와 TGS(티켓 발급) 두 부분으로 나뉜다."
+      ],
+      "en": [
+        "\"Key Distribution Center\".",
+        "Internally split into the AS (authentication) and the TGS (ticket-granting) halves."
+      ]
+    }
+  },
+  {
+    "id": "t0_adbloodhound",
+    "tier": 0,
+    "cat": "enum",
+    "track": "adattack",
+    "points": 50,
+    "ci": true,
+    "hash": "2b8b3644ac7e9a7db891504e3d4bdb9bf1664317add2647d8ab5315960828302",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "공격 경로를 그래프로",
+      "en": "Attack Paths as a Graph"
+    },
+    "prompt": {
+      "ko": "수집기(SharpHound)가 도메인의 사용자·그룹·세션·ACL 을 긁어 오면, 이 도구가 그것을 Neo4j 그래프로 만들어 \"일반 계정에서 도메인 관리자까지 가는 최단 경로\"를 Cypher 쿼리로 답해 준다. 개(犬) 이름을 딴 이 도구는?",
+      "en": "A collector (SharpHound) scrapes the domain's users, groups, sessions and ACLs; this tool turns that into a Neo4j graph and answers \"shortest path from a normal account to Domain Admin\" with a Cypher query. Name this tool, named after a breed of dog."
+    },
+    "hints": {
+      "ko": [
+        "피(blood) + 사냥개(hound).",
+        "SpecterOps 가 만들었고, 무료 커뮤니티 에디션이 있다."
+      ],
+      "en": [
+        "blood + hound.",
+        "Made by SpecterOps; there is a free community edition."
+      ]
+    }
+  },
+  {
+    "id": "t1_adkerberos",
+    "tier": 1,
+    "cat": "kerberos",
+    "track": "adattack",
+    "points": 65,
+    "ci": true,
+    "hash": "d6f845779b5f0a377f3854eb15f1b5b6ec3b34afb690b5f1241bb4c69d680c41",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "저승 문을 지키는 개",
+      "en": "The Dog at the Gate of the Underworld"
+    },
+    "prompt": {
+      "ko": "액티브 디렉터리의 네트워크 인증 프로토콜. 비밀번호를 네트워크로 보내지 않고, 시간이 찍힌 암호화된 티켓으로 신원을 증명한다. MIT 에서 만들었고 그리스 신화의 머리 셋 달린 개에서 이름을 땄다. 이 프로토콜의 이름은?",
+      "en": "Active Directory's network authentication protocol. It never sends passwords over the wire; identity is proven with time-stamped, encrypted tickets. Built at MIT and named after the three-headed dog of Greek myth. Name it."
+    },
+    "hints": {
+      "ko": [
+        "머리 셋 달린 개의 이름.",
+        "기본 포트는 88 (TCP/UDP)."
+      ],
+      "en": [
+        "The name of the three-headed dog.",
+        "Its default port is 88 (TCP/UDP)."
+      ]
+    }
+  },
+  {
+    "id": "t1_adspn",
+    "tier": 1,
+    "cat": "enum",
+    "track": "adattack",
+    "points": 65,
+    "ci": true,
+    "hash": "1d0efc7baea5a0184eb3fd2ccd143ef34a7c0bcc480c726ba6f7fb9c5189c46a",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "서비스를 가리키는 이름",
+      "en": "The Name That Points at a Service"
+    },
+    "prompt": {
+      "ko": "특정 서비스 인스턴스를 고유하게 식별하는 문자열로, 형식은 `클래스/호스트:포트` 다(예: `MSSQLSvc/db.corp.local:1433`). Kerberos 클라이언트가 어떤 서비스의 티켓을 요청하려면 이 이름을 알아야 하고, 인증된 도메인 사용자는 누구나 아무 서비스에나 그 티켓을 요청할 수 있다. 이 이름의 세 글자 약어는?",
+      "en": "A string that uniquely identifies one service instance, in the form `class/host:port` (e.g. `MSSQLSvc/db.corp.local:1433`). A Kerberos client must know it to request a ticket for that service, and any authenticated domain user may request that ticket for any service. Give the three-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Service Principal Name\".",
+        "`setspn -L <계정>` 으로 계정에 걸린 것을 나열한다."
+      ],
+      "en": [
+        "\"Service Principal Name\".",
+        "`setspn -L <account>` lists the ones registered on an account."
+      ]
+    }
+  },
+  {
+    "id": "t1_adkerberoast",
+    "tier": 1,
+    "cat": "kerberos",
+    "track": "adattack",
+    "points": 65,
+    "ci": true,
+    "hash": "2134d2df9dad63fa67d404cf69f2dd4070b4a2f660b121a51d81505df3b24f33",
+    "fmt": "한 단어 / one word (13글자 / 13 chars, -ing으로 끝남 / ends in -ing)",
+    "title": {
+      "ko": "서비스 계정 티켓 오프라인 굽기",
+      "en": "Roasting Service-Account Tickets Offline"
+    },
+    "prompt": {
+      "ko": "평범한 도메인 계정 하나만 있으면 된다. SPN 이 걸린 모든 계정의 서비스 티켓을 요청하면, 그 티켓은 해당 서비스 계정의 비밀번호 해시로 암호화되어 돌아온다. 이것을 파일로 저장해 hashcat 으로 오프라인 크래킹하면 약한 서비스 비밀번호는 순식간에 뚫린다. 이 공격의 이름(-ing 로 끝남)은?",
+      "en": "You need only one ordinary domain account. Request a service ticket for every SPN account and it comes back encrypted with that service account's password hash. Save it to a file, crack it offline with hashcat, and weak service passwords fall in seconds. Name this attack (ends in -ing)."
+    },
+    "hints": {
+      "ko": [
+        "\"Kerberos\" + 고기를 굽다(roasting).",
+        "hashcat 모드 13100 (TGS-REP etype 23)."
+      ],
+      "en": [
+        "\"Kerberos\" + roasting.",
+        "hashcat mode 13100 (TGS-REP etype 23)."
+      ]
+    }
+  },
+  {
+    "id": "t1_adpth",
+    "tier": 1,
+    "cat": "lateral",
+    "track": "adattack",
+    "points": 65,
+    "ci": true,
+    "hash": "80ce523ad320b1c837c94cbb559dccaef4cc33d1ee48459ecd1c2eeaab8fd787",
+    "fmt": "값 그대로 / literal (13글자 / 13 chars, - 포함 / include -)",
+    "title": {
+      "ko": "해시만으로 로그인",
+      "en": "Log In With Just the Hash"
+    },
+    "prompt": {
+      "ko": "NTLM 인증은 평문 비밀번호가 필요 없다 — NT 해시만 있으면 챌린지·응답을 만들 수 있다. 그래서 메모리나 SAM 에서 훔친 NT 해시를 크래킹 없이 그대로 `psexec`·`wmiexec` 에 넣어, 그 해시를 공유하는 모든 머신에서 코드를 실행할 수 있다. 이 기법의 이름(하이픈 포함)은?",
+      "en": "NTLM authentication needs no plaintext password — the NT hash alone builds the challenge-response. So a hash stolen from memory or the SAM goes straight into `psexec`/`wmiexec` with no cracking, running code on every machine that shares it. Name this technique (hyphenated)."
+    },
+    "hints": {
+      "ko": [
+        "해시를 \"그대로 넘긴다(pass)\".",
+        "대응책: 머신마다 로컬 관리자 비밀번호를 다르게 (LAPS)."
+      ],
+      "en": [
+        "You \"pass\" the hash along as-is.",
+        "Countered by a unique local-admin password per machine (LAPS)."
+      ]
+    }
+  },
+  {
+    "id": "t1_adntds",
+    "tier": 1,
+    "cat": "enum",
+    "track": "adattack",
+    "points": 65,
+    "ci": true,
+    "hash": "65a1a9be5b86629015b01ea28efab0d2ddc7648d008dd6c16f1d746a63a5bfa5",
+    "fmt": "값 그대로 / literal (8글자 / 8 chars, . 포함 / include .)",
+    "title": {
+      "ko": "도메인의 비밀번호 전부",
+      "en": "Every Password in the Domain"
+    },
+    "prompt": {
+      "ko": "도메인 컨트롤러에 있는 이 데이터베이스 파일에는 도메인의 모든 계정과 그 비밀번호 해시가 들어 있다. 파일을 빼내거나(복제 권한을 악용해 원격으로도) 손에 넣으면 도메인 전체를 오프라인에서 크래킹할 수 있다. `C:\\Windows\\NTDS\\` 에 있는 이 파일의 이름은?",
+      "en": "This database file on a domain controller holds every account in the domain and its password hash. Exfiltrate it (or pull the hashes remotely by abusing replication rights) and you can crack the whole domain offline. Name the file, found in `C:\\Windows\\NTDS\\`."
+    },
+    "hints": {
+      "ko": [
+        "\"NT Directory Services\" + `.dit` 확장자.",
+        "오프라인 추출엔 SYSTEM 하이브의 부트 키도 필요하다."
+      ],
+      "en": [
+        "\"NT Directory Services\" + the `.dit` extension.",
+        "Offline extraction also needs the boot key from the SYSTEM hive."
+      ]
+    }
+  },
+  {
+    "id": "t1_adkerbrute",
+    "tier": 1,
+    "cat": "enum",
+    "track": "adattack",
+    "points": 65,
+    "ci": true,
+    "hash": "efe257d7c92ba896b5c67eae68e790a00c9b9351d836991b360576ad35207f6c",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "로그인 없이 계정 찾기",
+      "en": "Finding Accounts Without Logging In"
+    },
+    "prompt": {
+      "ko": "로스팅을 시작하려면 유효한 사용자명 목록이 필요하다. 이 Go 도구는 자격 증명 없이 이름 목록을 KDC 에 던지고, Kerberos 사전 인증 오류 코드(계정 존재 시 PREAUTH_REQUIRED, 없으면 PRINCIPAL_UNKNOWN)를 읽어 어떤 계정이 실재하는지 가려낸다. 이 도구의 이름은?",
+      "en": "To start roasting you need a list of valid usernames. This Go tool sprays a name list at the KDC with nothing to log in as and reads the Kerberos pre-auth error codes (PREAUTH_REQUIRED if the account exists, PRINCIPAL_UNKNOWN if not) to tell which accounts are real. Name it."
+    },
+    "hints": {
+      "ko": [
+        "\"Kerberos\" + \"brute\".",
+        "userenum · passwordspray · bruteuser 하위 명령이 있다."
+      ],
+      "en": [
+        "\"Kerberos\" + \"brute\".",
+        "It has userenum, passwordspray and bruteuser sub-commands."
+      ]
+    }
+  },
+  {
+    "id": "t2_adasrep",
+    "tier": 2,
+    "cat": "kerberos",
+    "track": "adattack",
+    "points": 90,
+    "ci": true,
+    "hash": "0c9ecf82abe8a3ac79c76ba4fec7dee19584499e728a1cc9171d0d765dc45515",
+    "fmt": "값 그대로 / literal (15글자 / 15 chars, - 포함 / include -)",
+    "title": {
+      "ko": "도메인 계정 없이 굽기",
+      "en": "Roasting With No Domain Account"
+    },
+    "prompt": {
+      "ko": "SPN 서비스 계정을 굽는 것과 달리, 이 공격은 도메인 자격 증명이 전혀 필요 없다 — 사용자명 목록만 있으면 된다. Kerberos 사전 인증이 꺼진 계정에 AS-REQ 를 보내면, 응답의 일부가 그 계정의 비밀번호 해시로 암호화되어 돌아온다. hashcat 모드 18200 으로 크래킹하는 이 공격의 이름(하이픈 포함)은?",
+      "en": "Unlike roasting SPN service accounts, this attack needs no domain account at all — only a username list. Send an AS-REQ for an account that has Kerberos pre-authentication disabled and part of the reply comes back encrypted with that account's NT hash. Cracked with hashcat mode 18200. Name this attack (hyphenated)."
+    },
+    "hints": {
+      "ko": [
+        "굽는 대상이 TGS-REP 가 아니라 AS-REP 다.",
+        "전제: 계정에 DONT_REQ_PREAUTH 플래그."
+      ],
+      "en": [
+        "What you roast is the AS-REP, not the TGS-REP.",
+        "Prerequisite: the account carries the DONT_REQ_PREAUTH flag."
+      ]
+    }
+  },
+  {
+    "id": "t2_adgolden",
+    "tier": 2,
+    "cat": "persist",
+    "track": "adattack",
+    "points": 90,
+    "ci": true,
+    "hash": "a5cf75865b718bf518d2e66c9a3ccc07e31a4aa5f1b417c4bbe448a607ec083e",
+    "fmt": "두 단어 / two words (13글자 / 13 chars)",
+    "title": {
+      "ko": "krbtgt 해시로 위조한 TGT",
+      "en": "A TGT Forged From the krbtgt Hash"
+    },
+    "prompt": {
+      "ko": "krbtgt 계정의 NT 해시를 손에 넣으면, KDC 와 한 번도 통신하지 않고 임의의 사용자(존재하지 않는 사용자도, RID 500 관리자도) 명의의 TGT 를 직접 만들 수 있다. krbtgt 비밀번호를 두 번 리셋하기 전까지 계속 유효하다. 이 위조 티켓을 부르는 두 단어(형용사 + 명사)는?",
+      "en": "With the krbtgt account's NT hash you can mint a TGT for any user — one that does not exist, or the RID-500 Administrator — without ever talking to the KDC. It stays valid until the krbtgt password is reset twice. What two words (adjective + noun) name this forged ticket?"
+    },
+    "hints": {
+      "ko": [
+        "금(金) + 티켓.",
+        "은색 버전은 서비스 하나만 노린다."
+      ],
+      "en": [
+        "gold + ticket.",
+        "The silver version targets just one service."
+      ]
+    }
+  },
+  {
+    "id": "t2_addcsync",
+    "tier": 2,
+    "cat": "lateral",
+    "track": "adattack",
+    "points": 90,
+    "ci": true,
+    "hash": "9ffe1c9cd4e0676ccf5f4f2bad989c346ece741395ce41f21593cc9c6d665e71",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "가짜 DC 로 해시 복제",
+      "en": "Replicating Hashes as a Fake DC"
+    },
+    "prompt": {
+      "ko": "도메인 컨트롤러인 척 다른 DC 에게 \"디렉터리 변경분을 복제해 달라\"(DS-Replication-Get-Changes)고 요청하면, DC 는 요청한 계정의 비밀번호 해시를 그대로 넘겨준다. DC 에 셸을 올릴 필요 없이, 복제 권한만 있으면 krbtgt 를 포함한 모든 해시를 뽑는다. mimikatz·secretsdump 의 이 기능 이름은?",
+      "en": "Pretend to be a domain controller and ask a real DC to \"replicate directory changes\" (DS-Replication-Get-Changes), and it hands over the password hashes for the accounts you name. No shell on the DC needed — just replication rights — and you pull every hash including krbtgt. Name this mimikatz/secretsdump feature."
+    },
+    "hints": {
+      "ko": [
+        "\"DC\" + 동기화(sync).",
+        "필요 권한: GetChanges + GetChangesAll."
+      ],
+      "en": [
+        "\"DC\" + sync.",
+        "Rights needed: GetChanges + GetChangesAll."
+      ]
+    }
+  },
+  {
+    "id": "t2_adntlmrelay",
+    "tier": 2,
+    "cat": "lateral",
+    "track": "adattack",
+    "points": 90,
+    "ci": true,
+    "hash": "f8dc74722c9eef0fb93a2b134ab120430e1612b2ef2a1ffa5409f6a440ae1f94",
+    "fmt": "두 단어 / two words (10글자 / 10 chars)",
+    "title": {
+      "ko": "인증을 가로채 그대로 전달",
+      "en": "Catch the Auth, Pass It On"
+    },
+    "prompt": {
+      "ko": "피해자의 NTLM 인증을 가로챈 뒤 크래킹하지 않고, 다른 서비스(LDAP·SMB·ADCS 등)로 그대로 흘려보내 피해자 명의로 인증한다. 프린트 스풀러나 EFSRPC 를 악용해 대상(DC 포함)이 내 호스트로 인증하도록 강제(coerce)하면 시동이 걸린다. Impacket 의 `ntlmrelayx` 가 하는 이 공격의 두 단어 이름은?",
+      "en": "Intercept a victim's NTLM authentication and, without cracking it, forward it unchanged to another service (LDAP, SMB, ADCS, …) to authenticate as them. Kick it off by coercing a target (a DC included) to authenticate to your host — abusing the print spooler or EFSRPC. What two words name this attack, done by Impacket's `ntlmrelayx`?"
+    },
+    "hints": {
+      "ko": [
+        "인증을 그대로 이어 넘긴다.",
+        "SMB 서명·LDAP 채널 바인딩·EPA 가 이를 막는다."
+      ],
+      "en": [
+        "You forward the authentication on, unbroken.",
+        "Blocked by SMB signing, LDAP channel binding and EPA."
+      ]
+    }
+  },
+  {
+    "id": "t2_adkerbdeleg",
+    "tier": 2,
+    "cat": "kerberos",
+    "track": "adattack",
+    "points": 90,
+    "ci": true,
+    "hash": "dbecb5c1825de04ba052b8fa03e8d3276a9c3d7e34e90af0fca1fc3b168ab9fc",
+    "fmt": "두 단어 / two words (24글자 / 24 chars)",
+    "title": {
+      "ko": "모든 TGT 를 메모리에 담는 서버",
+      "en": "A Server That Keeps Every TGT in Memory"
+    },
+    "prompt": {
+      "ko": "이 위임 설정이 걸린 서버는, 자신에게 인증하는 모든 사용자의 TGT 를 메모리에 통째로 보관한다. 그 서버를 장악한 뒤 프린터 버그 등으로 DC 컴퓨터 계정이 인증하도록 강제하면, DC 의 TGT 를 그대로 얻는다. `TrustedForDelegation` 플래그가 만드는 이 위임 유형의 두 단어(형용사 + 명사) 이름은?",
+      "en": "A server with this delegation setting stores in memory the full TGT of every user who authenticates to it. Own that server, coerce the DC computer account to authenticate to it (e.g. the printer bug), and you hold the DC's TGT. What two words (adjective + noun) name this delegation type, created by the `TrustedForDelegation` flag?"
+    },
+    "hints": {
+      "ko": [
+        "제한(constrained)이 없는 위임.",
+        "현대적 대안은 리소스 기반(resource-based) 위임."
+      ],
+      "en": [
+        "Delegation with no constraint on it.",
+        "The modern alternative is resource-based delegation."
+      ]
+    }
+  },
+  {
+    "id": "t2_adpsexec",
+    "tier": 2,
+    "cat": "lateral",
+    "track": "adattack",
+    "points": 90,
+    "ci": true,
+    "hash": "e84cd3a84016fb474e1bbcb70f0100e66d8eda8897518c46eb3ccf8a0ae79771",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "ADMIN$ 에 서비스를 심어 실행",
+      "en": "Drop a Service on ADMIN$ and Run"
+    },
+    "prompt": {
+      "ko": "로컬 관리자 권한(또는 그 해시)으로 원격 머신의 `ADMIN$` 공유에 실행 파일을 올리고, 임시 서비스를 만들어 SYSTEM 으로 명령을 돌린다. 안정적이지만 서비스 설치 이벤트(ID 7045)를 남겨 탐지가 쉽다. Sysinternals 도구와 Impacket 의 `psexec.py` 가 쓰는 이 기법의 이름은?",
+      "en": "With local-admin rights (or the hash) you copy an executable to the remote machine's `ADMIN$` share, create a temporary service, and run your command as SYSTEM. Reliable, but it leaves a service-install event (ID 7045) that is easy to catch. Name this method, used by the Sysinternals tool and Impacket's `psexec.py`."
+    },
+    "hints": {
+      "ko": [
+        "\"Process\" + \"Execute\" 의 준말.",
+        "조용한 대안: WMI(`wmiexec`)는 서비스를 안 만든다."
+      ],
+      "en": [
+        "Short for \"Process\" + \"Execute\".",
+        "Quieter alternative: WMI (`wmiexec`) creates no service."
+      ]
+    }
+  },
+  {
+    "id": "t2_adsid",
+    "tier": 2,
+    "cat": "enum",
+    "track": "adattack",
+    "points": 150,
+    "ci": false,
+    "hash": "1b2fe281fdb858f59236872884709f6b6bb9086cee07e9f8b26829441598e0df",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "잘 알려진 RID 붙이기",
+      "en": "Appending a Well-Known RID"
+    },
+    "prompt": {
+      "ko": "도메인 그룹의 SID 는 `도메인 SID` 뒤에 그 그룹의 잘 알려진 RID 를 붙인 것이다. 예: Administrator = -500, krbtgt = -502, Domain Users = -513, Domain Controllers = -516, Schema Admins = -518, Enterprise Admins = -519. 아래 값으로 지정된 그룹의 전체 SID 를 만들어 `FLAG{SID_<전체 SID>}` 를 제출하라.\n\n```\ndomain_sid: S-1-5-21-1004336348-1177238915-682003330\ngroup: Domain Admins\n```",
+      "en": "A domain group's SID is the `domain SID` with that group's well-known RID appended. E.g. Administrator = -500, krbtgt = -502, Domain Users = -513, Domain Controllers = -516, Schema Admins = -518, Enterprise Admins = -519. Build the full SID of the group named below and submit `FLAG{SID_<full SID>}`.\n\n```\ndomain_sid: S-1-5-21-1004336348-1177238915-682003330\ngroup: Domain Admins\n```"
+    },
+    "hints": {
+      "ko": [
+        "Domain Admins 의 RID 는 512.",
+        "형식: `FLAG{SID_S-1-5-21-...-682003330-512}`."
+      ],
+      "en": [
+        "The RID of Domain Admins is 512.",
+        "Format: `FLAG{SID_S-1-5-21-...-682003330-512}`."
+      ]
+    }
+  },
+  {
+    "id": "t2_adroast",
+    "tier": 2,
+    "cat": "enum",
+    "track": "adattack",
+    "points": 150,
+    "ci": false,
+    "hash": "d1ee9482aac06debc898e3306c143cf3f7473771faaee8ef744e1cbe187849de",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "구울 수 있는 계정 세기",
+      "en": "Counting the Roastable Accounts"
+    },
+    "prompt": {
+      "ko": "아래 LDAP 덤프에서 굽기 가능한(roastable) 계정을 센다. 조건: `class` 가 user(컴퓨터 아님) 이고, `spn` 이 yes 이며, 계정이 활성(`uac` 값에 0x2(=2, 비활성) 비트가 없음). 조건을 모두 만족하는 계정 수 n 으로 `FLAG{ROAST_<n>}` 를 제출하라.\n\n```\naccounts:\nsvc_sql    | user     | spn=yes | uac=512\nsvc_web    | user     | spn=yes | uac=514\njdoe       | user     | spn=no  | uac=512\nDC01$      | computer | spn=yes | uac=532480\nsvc_backup | user     | spn=yes | uac=66048\nkrbtgt     | user     | spn=yes | uac=514\n```",
+      "en": "In the LDAP dump below, count the roastable accounts. A row qualifies when `class` is user (not computer), `spn` is yes, and the account is enabled (its `uac` value has no 0x2 (=2, disabled) bit). Submit `FLAG{ROAST_<n>}` for the count n.\n\n```\naccounts:\nsvc_sql    | user     | spn=yes | uac=512\nsvc_web    | user     | spn=yes | uac=514\njdoe       | user     | spn=no  | uac=512\nDC01$      | computer | spn=yes | uac=532480\nsvc_backup | user     | spn=yes | uac=66048\nkrbtgt     | user     | spn=yes | uac=514\n```"
+    },
+    "hints": {
+      "ko": [
+        "uac 514 = 512 + 2 → 비활성. uac 66048 = 512 + 65536 → 활성.",
+        "svc_sql 과 svc_backup 만 통과 → 2."
+      ],
+      "en": [
+        "uac 514 = 512 + 2 → disabled. uac 66048 = 512 + 65536 → enabled.",
+        "Only svc_sql and svc_backup pass → 2."
+      ]
+    }
+  },
+  {
+    "id": "t3_adsilver",
+    "tier": 3,
+    "cat": "persist",
+    "track": "adattack",
+    "points": 130,
+    "ci": true,
+    "hash": "95f5c45f1fac8c78f6172165e42c4fbd6a6f0c91cc4527052760fa7f6faea90b",
+    "fmt": "두 단어 / two words (13글자 / 13 chars)",
+    "title": {
+      "ko": "KDC 를 건드리지 않는 위조",
+      "en": "A Forgery That Never Touches the KDC"
+    },
+    "prompt": {
+      "ko": "위조 TGT 를 만들려면 krbtgt 키가 필요하지만, 이 위조 티켓은 노리는 서비스 계정(또는 컴퓨터 계정)의 NT 해시 하나만 있으면 된다. KDC 와 통신하지 않고 그 서비스 하나에 대한 서비스 티켓을 직접 서명해 만들며, KDC 로그가 남지 않아 탐지가 어렵다. 이 티켓을 부르는 두 단어(형용사 + 명사)는?",
+      "en": "Forging a TGT needs the krbtgt key, but this forged ticket needs only the NT hash of the one service (or computer) account you target. You sign a service ticket for that single service yourself without contacting the KDC, so no KDC log appears and detection is hard. What two words (adjective + noun) name it?"
+    },
+    "hints": {
+      "ko": [
+        "금(金)보다 값이 낮은 금속.",
+        "CIFS·HOST·HTTP 같은 SPN 클래스별로 만든다."
+      ],
+      "en": [
+        "The metal worth less than gold.",
+        "Minted per SPN class — CIFS, HOST, HTTP, …"
+      ]
+    }
+  },
+  {
+    "id": "t3_adshadowcreds",
+    "tier": 3,
+    "cat": "persist",
+    "track": "adattack",
+    "points": 130,
+    "ci": true,
+    "hash": "cb7220aabbfa303c6772751a5133c9ac68ed3fa3f8755a75278fa0b9b1a718bb",
+    "fmt": "두 단어 / two words (18글자 / 18 chars)",
+    "title": {
+      "ko": "비밀번호 대신 키를 심다",
+      "en": "Plant a Key Instead of a Password"
+    },
+    "prompt": {
+      "ko": "대상 계정의 비밀번호를 리셋하는 대신(눈에 띈다), 그 계정의 `msDS-KeyCredentialLink` 속성에 공격자가 만든 공개키를 써 넣는다. 그러면 그 개인키로 인증서를 얻어 대상 계정 명의의 Kerberos TGT 를 받는다. 속성 쓰기 권한(GenericWrite 등)만 있으면 된다. pywhisker·Whisker 가 하는 이 기법의 두 단어 이름은?",
+      "en": "Instead of resetting the target account's password (noisy), write an attacker-generated public key into its `msDS-KeyCredentialLink` attribute. Then use the private key to obtain a certificate and get a Kerberos TGT as that account. Only write access to the attribute (GenericWrite, …) is required. What two words name this technique, done by pywhisker/Whisker?"
+    },
+    "hints": {
+      "ko": [
+        "진짜 자격 증명 옆에 몰래 두는 \"그림자\" 자격 증명.",
+        "키 신뢰(Key Trust)와 인증서 사전 인증 위에서 동작한다."
+      ],
+      "en": [
+        "A \"shadow\" credential set beside the real one.",
+        "Rides on Key Trust and PKINIT."
+      ]
+    }
+  },
+  {
+    "id": "t3_adadminsdholder",
+    "tier": 3,
+    "cat": "persist",
+    "track": "adattack",
+    "points": 130,
+    "ci": true,
+    "hash": "e19d79f730076b908ffd9db98b5cb1946e7bf8ddd15dfe6a0315b66e41fea536",
+    "fmt": "한 단어 / one word (13글자 / 13 chars)",
+    "title": {
+      "ko": "스스로 복구되는 백도어",
+      "en": "A Backdoor That Heals Itself"
+    },
+    "prompt": {
+      "ko": "AD 에는 보호 대상 계정(adminCount=1, 예: Domain Admins 멤버)의 ACL 을 60분마다 하나의 템플릿 객체에서 그대로 복사해 덮어쓰는 SDProp 프로세스가 있다. 그 템플릿 객체의 ACL 에 자기 계정을 추가하면, 관리자가 지워도 다음 주기에 다시 살아나는 지속성이 생긴다. 이 컨테이너 객체의 이름은?",
+      "en": "AD runs an SDProp process that every 60 minutes copies the ACL of one template object over every protected account (adminCount=1, e.g. Domain Admins members). Add your account to that template's ACL and you get persistence that comes back next cycle even after an admin removes it. Name this container object."
+    },
+    "hints": {
+      "ko": [
+        "\"Admin\" + \"SD\"(보안 기술자) + \"Holder\".",
+        "경로: `CN=AdminSDHolder,CN=System,DC=...`."
+      ],
+      "en": [
+        "\"Admin\" + \"SD\" (security descriptor) + \"Holder\".",
+        "Path: `CN=AdminSDHolder,CN=System,DC=...`."
+      ]
+    }
+  },
+  {
+    "id": "t3_addcshadow",
+    "tier": 3,
+    "cat": "persist",
+    "track": "adattack",
+    "points": 130,
+    "ci": true,
+    "hash": "30e711222cff6dd67fb962e19c9517b0cd054d1e2877a47e1962ae1fb6666ec8",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "가짜 DC 를 잠깐 등록",
+      "en": "Register a Rogue DC, Briefly"
+    },
+    "prompt": {
+      "ko": "가짜 DC 로 해시를 \"가져오는\" 공격과 달리, 이 공격은 자신을 잠깐 도메인 컨트롤러로 등록해 악의적 복제 변경(예: 어떤 계정을 특권 그룹에 추가)을 AD 에 \"밀어 넣고\" 곧바로 등록을 해제한다. 정상적인 쓰기 로그가 남지 않아 탐지가 어렵다. mimikatz 의 이 기법 이름은?",
+      "en": "Unlike the attack that \"pulls\" hashes as a fake DC, this one registers itself as a domain controller just long enough to \"push\" a malicious replication change into AD (e.g. adding an account to a sensitive group), then deregisters. No normal write is logged, so detection is hard. Name this mimikatz technique."
+    },
+    "hints": {
+      "ko": [
+        "\"DC\" + 그림자(shadow).",
+        "필요 권한: 도메인 객체에 대한 복제 관련 쓰기 (사실상 DA)."
+      ],
+      "en": [
+        "\"DC\" + shadow.",
+        "Needs replication-related write on the domain object (effectively DA)."
+      ]
+    }
+  },
+  {
+    "id": "t3_adrbcd",
+    "tier": 3,
+    "cat": "kerberos",
+    "track": "adattack",
+    "points": 130,
+    "ci": true,
+    "hash": "49f21a9e3f3a4e2deed8d8f6fbcabc732665f13ef0f4cdb92909626ad5e57f8f",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "대상 객체에 쓰기만 되면",
+      "en": "Just Write to the Target Object"
+    },
+    "prompt": {
+      "ko": "또 다른 위임 방식으로, 대상 컴퓨터 객체의 `msDS-AllowedToActOnBehalfOfOtherIdentity` 속성에 쓰기 권한(GenericWrite/GenericAll)만 있으면 된다. 공격자가 통제하는 SPN 보유 주체를 그 속성에 넣으면, 그 주체가 대상 컴퓨터에 임의 사용자(Administrator 포함)를 가장할 수 있다. 이 위임의 네 글자 약어는?",
+      "en": "Another delegation flavour where you need only write access (GenericWrite/GenericAll) on the target computer object's `msDS-AllowedToActOnBehalfOfOtherIdentity` attribute. Place a principal you control that has an SPN into that attribute, and it can impersonate any user (Administrator included) to that computer. Give the four-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Resource-Based Constrained Delegation\".",
+        "기본 도메인은 일반 사용자도 컴퓨터 계정을 10개까지 만들 수 있어 SPN 주체 확보가 쉽다."
+      ],
+      "en": [
+        "\"Resource-Based Constrained Delegation\".",
+        "By default any user can create up to 10 computer accounts, so getting an SPN principal is easy."
+      ]
+    }
+  },
+  {
+    "id": "t3_adpkinit",
+    "tier": 3,
+    "cat": "kerberos",
+    "track": "adattack",
+    "points": 130,
+    "ci": true,
+    "hash": "55dcd089541a1b0ebbe69acfdd89f10bcfeff72f55cfeb16997ea6a8b703e481",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "비밀번호 대신 인증서로 TGT",
+      "en": "A TGT From a Certificate, Not a Password"
+    },
+    "prompt": {
+      "ko": "이 Kerberos 확장은 클라이언트가 비밀번호 대신 X.509 인증서로 AS-REQ 를 보내 TGT 를 받게 해 준다. 스마트카드 로그온의 기반이며, 인증서 기반 AD 공격(취약 템플릿에서 인증서 발급, 계정에 키 심기)이 모두 이 위에서 동작한다. 이 확장의 이름은?",
+      "en": "This Kerberos extension lets a client send an AS-REQ with an X.509 certificate instead of a password to get a TGT. It is the basis of smart-card logon, and every certificate-based AD attack (enrolling a cert from a weak template, planting a key on an account) rides on it. Name the extension."
+    },
+    "hints": {
+      "ko": [
+        "\"Public Key Cryptography for Initial Authentication in Kerberos\".",
+        "받은 TGT 에서 NTLM 해시를 뽑아내는 것을 UnPAC-the-hash 라 한다."
+      ],
+      "en": [
+        "\"Public Key Cryptography for Initial Authentication in Kerberos\".",
+        "Extracting the NTLM hash from the resulting TGT is called UnPAC-the-hash."
+      ]
+    }
+  },
+  {
+    "id": "t3_adcoerce",
+    "tier": 3,
+    "cat": "lateral",
+    "track": "adattack",
+    "points": 130,
+    "ci": true,
+    "hash": "4f19080a73c31a8ebdead7af1c39b1bf885bc8abec5a8f291dc2cbb368e1e871",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "DC 를 억지로 인증시키기",
+      "en": "Forcing the DC to Authenticate"
+    },
+    "prompt": {
+      "ko": "2021년 공개된 이 기법은 MS-EFSRPC 원격 프로시저(`EfsRpcOpenFileRaw` 등)를 악용해, 인증 없이 또는 낮은 권한으로 대상(주로 DC)이 공격자 호스트로 즉시 컴퓨터 계정 인증을 하도록 강제한다. 그 인증을 ADCS 웹 등록 서비스로 넘기면 DC 인증서를 얻는다. 작은 하마를 연상시키는 이름의 이 도구는?",
+      "en": "This 2021 technique abuses the MS-EFSRPC remote procedures (`EfsRpcOpenFileRaw`, …) to force a target (usually a DC) to authenticate its computer account to the attacker's host immediately, unauthenticated or with low privilege. Forward that to the ADCS web-enrollment service and you get a DC certificate. Name this tool, whose name plays on a small hippo."
+    },
+    "hints": {
+      "ko": [
+        "\"Petit\"(작은) + \"Potam\"(하마) 느낌의 프랑스어 말장난.",
+        "다른 강제 인증 벡터: PrinterBug(MS-RPRN), ShadowCoerce, DFSCoerce."
+      ],
+      "en": [
+        "\"Petit\" + \"Potam\".",
+        "Other coercion vectors: PrinterBug (MS-RPRN), ShadowCoerce, DFSCoerce."
+      ]
+    }
+  },
+  {
+    "id": "t3_adesc1",
+    "tier": 3,
+    "cat": "enum",
+    "track": "adattack",
+    "points": 130,
+    "ci": true,
+    "hash": "ddec564fa140b5aaf8b9c4bc6714ded5fb5c9baabfc3bfa6bbc2ed278de72077",
+    "fmt": "값 그대로 / literal (4글자 / 4 chars)",
+    "title": {
+      "ko": "인증서 템플릿 오설정 1번",
+      "en": "Certificate Template Misconfig No. 1"
+    },
+    "prompt": {
+      "ko": "ADCS 공격 분류(Certipy·\"Certified Pre-Owned\")에서, 낮은 권한 사용자가 등록할 수 있고 동시에 요청서에 임의의 subjectAltName 을 넣을 수 있는 인증서 템플릿의 오설정. 그래서 Administrator 명의로 인증서를 발급받아 도메인을 장악한다. 이 오설정의 이름(ESC + 번호)은?",
+      "en": "In the ADCS attack taxonomy (Certipy, \"Certified Pre-Owned\"), the certificate-template misconfiguration where a low-rights user can enroll AND supply an arbitrary subjectAltName in the request — so you get a certificate as Administrator and own the domain. Name this misconfiguration (ESC + number)."
+    },
+    "hints": {
+      "ko": [
+        "\"ESCalation\" 1번.",
+        "방어: 템플릿에서 \"요청자가 제목 제공\" 해제, 관리자 승인 요구."
+      ],
+      "en": [
+        "\"ESCalation\" number 1.",
+        "Fix: turn off \"supply in request\" for the subject, require manager approval."
+      ]
+    }
+  },
+  {
+    "id": "t3_adbloodpath",
+    "tier": 3,
+    "cat": "enum",
+    "track": "adattack",
+    "points": 200,
+    "ci": false,
+    "hash": "3c49b46dac3682d81d747c37b40aee4939a29424a9da79e0567822234b94f7f4",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "그래프에서 최단 경로",
+      "en": "Shortest Path Through the Graph"
+    },
+    "prompt": {
+      "ko": "아래는 AD 공격 경로 그래프의 방향 간선 목록이다. `OWNED` 노드에서 출발해 방향 간선을 따라 `DC` 노드에 도달한다. 각 간선(MemberOf, AdminTo, HasSession, GenericAll, ForceChangePassword 등)은 1홉이다. 최단 경로의 간선 수 n 으로 `FLAG{HOPS_<n>}` 를 제출하라.\n\n```\nedges:\njdoe -> IT_STAFF (MemberOf)\nIT_STAFF -> svc_deploy (GenericAll)\nsvc_deploy -> WEB01 (AdminTo)\nWEB01 -> tadmin (HasSession)\ntadmin -> DOMAIN_ADMINS (MemberOf)\nDOMAIN_ADMINS -> DC01 (AdminTo)\njdoe -> HELP_DESK (MemberOf)\nHELP_DESK -> tadmin (ForceChangePassword)\nnodes: OWNED=jdoe DC=DC01\n```",
+      "en": "Below is the directed edge list of an AD attack-path graph. Start at the `OWNED` node and follow directed edges to reach the `DC` node. Every edge (MemberOf, AdminTo, HasSession, GenericAll, ForceChangePassword, …) is one hop. Submit `FLAG{HOPS_<n>}` for the edge count n of the shortest path.\n\n```\nedges:\njdoe -> IT_STAFF (MemberOf)\nIT_STAFF -> svc_deploy (GenericAll)\nsvc_deploy -> WEB01 (AdminTo)\nWEB01 -> tadmin (HasSession)\ntadmin -> DOMAIN_ADMINS (MemberOf)\nDOMAIN_ADMINS -> DC01 (AdminTo)\njdoe -> HELP_DESK (MemberOf)\nHELP_DESK -> tadmin (ForceChangePassword)\nnodes: OWNED=jdoe DC=DC01\n```"
+    },
+    "hints": {
+      "ko": [
+        "짧은 길: jdoe → HELP_DESK → tadmin → DOMAIN_ADMINS → DC01.",
+        "그 길의 간선은 네 개. 긴 길(IT_STAFF 경유)은 여섯 개."
+      ],
+      "en": [
+        "Short way: jdoe → HELP_DESK → tadmin → DOMAIN_ADMINS → DC01.",
+        "That way has four edges. The long way (via IT_STAFF) has six."
+      ]
+    }
+  },
+  {
+    "id": "t4_adzerologon",
+    "tier": 4,
+    "cat": "lateral",
+    "track": "adattack",
+    "points": 160,
+    "ci": true,
+    "hash": "65f462bc53bef3047bbcb0925f799c96d06b3f1a811bc6cf5572ddd756e27eb4",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "전부 0 이면 통과",
+      "en": "All Zeros Gets You In"
+    },
+    "prompt": {
+      "ko": "CVE-2020-1472. Netlogon 이 쓰는 AES-CFB8 구현의 결함으로, 클라이언트 챌린지와 IV 를 전부 0 으로 두면 평균 256번에 한 번 인증이 통과한다. 인증 없는 공격자가 DC 컴퓨터 계정의 비밀번호를 빈 값으로 리셋해 즉시 도메인을 장악한다. 이 취약점의 이름은?",
+      "en": "CVE-2020-1472. A flaw in the AES-CFB8 use inside Netlogon: set the client challenge and IV to all zeros and authentication succeeds about one try in 256. An unauthenticated attacker resets the DC computer account's password to empty and owns the domain at once. Name this vulnerability."
+    },
+    "hints": {
+      "ko": [
+        "\"Zero\" + \"logon\".",
+        "Secura 가 명명·공개했다."
+      ],
+      "en": [
+        "\"Zero\" + \"logon\".",
+        "Named and disclosed by Secura."
+      ]
+    }
+  },
+  {
+    "id": "t4_adsidhistory",
+    "tier": 4,
+    "cat": "persist",
+    "track": "adattack",
+    "points": 160,
+    "ci": true,
+    "hash": "a425201749bcae45c4fdb35db4625a18b78f0c5bbaf3d5329f39812756d07a98",
+    "fmt": "두 단어 / two words (11글자 / 11 chars)",
+    "title": {
+      "ko": "옛 SID 를 실어 나르는 칸",
+      "en": "The Field That Carries Old SIDs"
+    },
+    "prompt": {
+      "ko": "도메인 이전(migration)을 위해 만들어진 이 속성은 계정의 예전 SID 들을 담아, 옛 도메인의 리소스 접근을 유지시켜 준다. 여기에 특권 SID(예: Enterprise Admins, 도메인SID-519)를 주입하면 계정이 그 그룹 멤버가 아닌데도 그 권한을 갖는다 — 그룹 목록에는 안 보인다. 이 속성의 두 단어 이름은?",
+      "en": "Built for domain migrations, this attribute holds an account's former SIDs so it keeps access to resources in the old domain. Inject a high-power SID (e.g. Enterprise Admins, domainSID-519) here and the account gains that access without being in the group — and it does not show in the group list. Give the two-word name."
+    },
+    "hints": {
+      "ko": [
+        "SID + 이력(history).",
+        "SID 필터링(Trust 상)과 도메인 내 감사가 방어."
+      ],
+      "en": [
+        "SID + history.",
+        "Defended by SID filtering (across trusts) and in-domain auditing."
+      ]
+    }
+  },
+  {
+    "id": "t4_addiamond",
+    "tier": 4,
+    "cat": "persist",
+    "track": "adattack",
+    "points": 160,
+    "ci": true,
+    "hash": "e141d7a4bc31f636844151e88dcf1320a49ffca5dccfa6adee42b3b52f346d11",
+    "fmt": "두 단어 / two words (14글자 / 14 chars)",
+    "title": {
+      "ko": "진짜 TGT 를 뜯어 고치기",
+      "en": "Take a Real TGT and Edit It"
+    },
+    "prompt": {
+      "ko": "완전히 처음부터 위조하는 TGT 는 특정 방어 검사에서 걸린다. 이 티켓은 대신 KDC 에게 진짜 TGT 를 정상적으로 요청한 뒤, krbtgt 키로 복호화해 안의 특권 정보(그룹·SID)를 고치고 다시 서명한다. 진짜 티켓에서 파생됐기에 더 은밀하다. 보석 이름을 딴 이 티켓의 두 단어 이름은?",
+      "en": "A TGT forged entirely from scratch trips certain defensive checks. This ticket instead asks the KDC for a genuine TGT the normal way, then decrypts it with the krbtgt key, edits the privilege data (groups, SIDs) inside, and re-signs it. Derived from a real ticket, it is stealthier. Name this ticket (two words, named after a gemstone)."
+    },
+    "hints": {
+      "ko": [
+        "금·은 다음의 값비싼 보석.",
+        "Rubeus 의 `diamond` 명령."
+      ],
+      "en": [
+        "The precious stone that follows gold and silver here.",
+        "Rubeus's `diamond` command."
+      ]
+    }
+  },
+  {
+    "id": "t4_adlaps",
+    "tier": 4,
+    "cat": "lateral",
+    "track": "adattack",
+    "points": 160,
+    "ci": true,
+    "hash": "a03e9a0ef8296a393caa16ec68e1194f63f3c3b987f570c5323c790341d666a6",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "머신마다 다른 관리자 비번",
+      "en": "A Different Admin Password Per Machine"
+    },
+    "prompt": {
+      "ko": "마이크로소프트의 무료 솔루션으로, 각 도메인 가입 머신의 로컬 Administrator 비밀번호를 무작위로 만들고 주기적으로 회전시켜, 기밀 AD 속성(`ms-Mcs-AdmPwd` 또는 신형의 암호화 속성)에 저장한다. 한 머신의 해시를 훔쳐도 다른 머신에서 재사용할 수 없게 만든다. 이 솔루션의 네 글자 약어는?",
+      "en": "Microsoft's free solution that randomizes and periodically rotates each domain-joined machine's local Administrator password, storing it in a confidential AD attribute (`ms-Mcs-AdmPwd`, or the encrypted attribute in the new version). A hash stolen from one machine can no longer be reused on another. Give the four-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Local Administrator Password Solution\".",
+        "읽기 권한을 잘못 위임하면 오히려 공격 경로가 된다."
+      ],
+      "en": [
+        "\"Local Administrator Password Solution\".",
+        "Misdelegated read rights on it become an attack path instead."
+      ]
+    }
+  },
+  {
+    "id": "t4_adkrbtgtreset",
+    "tier": 4,
+    "cat": "persist",
+    "track": "adattack",
+    "points": 160,
+    "ci": true,
+    "hash": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+    "fmt": "숫자 / number",
+    "title": {
+      "ko": "몇 번 리셋해야 하나",
+      "en": "How Many Resets It Takes"
+    },
+    "prompt": {
+      "ko": "krbtgt 계정은 Active 와 Previous 두 개의 키를 동시에 유지한다. 그래서 이 비밀번호를 한 번만 리셋하면 위조된 기존 TGT 는 Previous 키로 여전히 검증된다. 위조 TGT 를 완전히 무효화하려면 (최소 10시간 간격을 두고) 연달아 몇 번 리셋해야 하는가? (숫자)",
+      "en": "The krbtgt account keeps two keys at once, Active and Previous. So resetting its password just once still lets an existing forged TGT validate against the Previous key. To fully invalidate forged TGTs, how many consecutive resets are required (with at least 10 hours between them)? (number)"
+    },
+    "hints": {
+      "ko": [
+        "Previous 키까지 새 키로 밀어내야 한다.",
+        "1보다 크고 3보다 작다."
+      ],
+      "en": [
+        "You must push the Previous key out with a new one too.",
+        "More than one, fewer than three."
+      ]
+    }
+  },
+  {
+    "id": "t4_adskeleton",
+    "tier": 4,
+    "cat": "persist",
+    "track": "adattack",
+    "points": 160,
+    "ci": true,
+    "hash": "a6fadbb2db71e757d1ebb261a29fe9c55b195b758a975811340e3cca83f37348",
+    "fmt": "두 단어 / two words (12글자 / 12 chars)",
+    "title": {
+      "ko": "모든 계정에 통하는 하나의 비번",
+      "en": "One Password That Opens Every Account"
+    },
+    "prompt": {
+      "ko": "이 mimikatz 기법은 DC 의 LSASS 를 메모리에서 패치해, 도메인 전체의 모든 계정에 대해 하나의 마스터 비밀번호가 추가로 통하게 만든다(각 계정의 진짜 비밀번호도 그대로 작동). DC 를 재부팅하면 사라진다. 옛날 만능 열쇠를 뜻하는 두 단어 이름은?",
+      "en": "This mimikatz technique patches a DC's LSASS in memory so that one master password additionally works for every account in the domain (each account's real password still works too). It clears on a DC reboot. Name it with the two words for an old universal key."
+    },
+    "hints": {
+      "ko": [
+        "옛날 문 대부분을 여는 만능 열쇠.",
+        "기본 마스터 비밀번호는 \"mimikatz\"."
+      ],
+      "en": [
+        "The universal key that opened most old locks.",
+        "The default master password is \"mimikatz\"."
+      ]
+    }
+  },
+  {
+    "id": "t4_adgpo",
+    "tier": 4,
+    "cat": "lateral",
+    "track": "adattack",
+    "points": 160,
+    "ci": true,
+    "hash": "b46825e4c9999e9c555b72d2711f8a5dd552a1790bb9a5dc12d6c5efc6426c04",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "OU 전체에 작업을 밀어넣기",
+      "en": "Push a Task to a Whole OU"
+    },
+    "prompt": {
+      "ko": "서버가 가득한 OU 에 연결된 이 도메인 전역 정책 객체 중 하나를 편집할 권한을 얻으면, 그 OU 의 모든 머신에 예약 작업이나 시작 스크립트를 밀어넣어 코드를 실행할 수 있다. `SharpGPOAbuse` 가 하는 공격의 대상인 이 객체의 세 글자 약어는?",
+      "en": "Get the right to edit one of these domain-wide policy objects linked to an OU full of servers, and you can push a scheduled task or a startup script to every machine in that OU to run code. Give the three-letter acronym for this object, the target of `SharpGPOAbuse`."
+    },
+    "hints": {
+      "ko": [
+        "\"Group Policy Object\".",
+        "공격 그래프 엣지: `GPLink`, `WriteGPLink`."
+      ],
+      "en": [
+        "\"Group Policy Object\".",
+        "Attack-graph edges: `GPLink`, `WriteGPLink`."
+      ]
+    }
+  },
+  {
+    "id": "t4_adpac",
+    "tier": 4,
+    "cat": "kerberos",
+    "track": "adattack",
+    "points": 160,
+    "ci": true,
+    "hash": "eade1e1268e28e35a4b71c694260c0224da4d65ffdb435e5081346fea4135a88",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "티켓 안의 권한 명세",
+      "en": "The Authorization Blob Inside a Ticket"
+    },
+    "prompt": {
+      "ko": "마이크로소프트가 Kerberos 티켓 안에 넣는 구조로, 사용자의 SID·그룹 멤버십·권한을 담는다. KDC 가 서명하며, 이것을 위조하거나 편집하는 것이 티켓 위조 공격의 핵심이다. MS14-068 은 이 구조의 서명 검증 결함이었다. 이 구조의 세 글자 약어는?",
+      "en": "A structure Microsoft puts inside a Kerberos ticket carrying the user's SIDs, group memberships and privileges. The KDC signs it, and forging or editing it is the heart of ticket-forgery attacks. MS14-068 was a flaw in validating its signature. Give the three-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Privilege Attribute Certificate\".",
+        "서비스는 이 구조의 검증을 KDC 에 맡길 수 있다."
+      ],
+      "en": [
+        "\"Privilege Attribute Certificate\".",
+        "A service can have the KDC re-check the structure for it."
+      ]
+    }
+  },
+  {
+    "id": "t4_addpapi",
+    "tier": 4,
+    "cat": "lateral",
+    "track": "adattack",
+    "points": 160,
+    "ci": true,
+    "hash": "c00a959ff9006e1d1f9216ea904de806420b52922cf3045bdaa7c31d92728640",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "도메인이 쥔 만능 복호화 키",
+      "en": "The Domain-Held Master Decryption Key"
+    },
+    "prompt": {
+      "ko": "윈도우가 저장된 브라우저 비밀번호, RDP 자격 증명, 무선 키 등을 사용자별로 암호화하는 데 쓰는 데이터 보호 API. 도메인 환경에서는 DC 가 백업 마스터 키를 갖고 있어, 그것을 뽑으면 도메인 내 어떤 사용자의 보호된 비밀도 복호화할 수 있다. 이 API 의 다섯 글자 약어는?",
+      "en": "The Windows data-protection API used to encrypt, per user, saved browser passwords, RDP logins, Wi-Fi keys and more. On a domain the DC holds a backup master key; extract it and you can decrypt any domain user's protected secrets. Give the five-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Data Protection API\".",
+        "mimikatz `lsadump::backupkeys`, SharpDPAPI."
+      ],
+      "en": [
+        "\"Data Protection API\".",
+        "mimikatz `lsadump::backupkeys`, SharpDPAPI."
+      ]
+    }
+  },
+  {
+    "id": "t4_adcapstone",
+    "tier": 4,
+    "cat": "kerberos",
+    "track": "adattack",
+    "points": 250,
+    "ci": false,
+    "hash": "fb1ff02dfa287774aae03427db13d12d84f95f7e0028d63b009ad2421f523054",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "로스팅 캡스톤",
+      "en": "Roasting Capstone"
+    },
+    "prompt": {
+      "ko": "아래는 로스팅 작전 브리핑이다. (1) RC4 서비스 티켓 하나의 전체 키 공간을 소진하는 최악의 시간(초)을 `floor(keyspace / (hashcat_rate × 10^6))` 로 구한다. (2) `paths_to_da` 에 나열된, 도메인 관리자까지 경로가 열리는 크랙된 계정 수를 센다. `FLAG{KEYSEC_<초>_DA_<수>}` 를 제출하라.\n\n```\nrc4_hash_count: 5\nhashcat_rate: 4500          (MH/s, mode 13100)\nkeyspace: 2^42\npaths_to_da: svc_backup, svc_adm\n```",
+      "en": "Below is a roasting-operation brief. (1) Work out the worst-case time in seconds to exhaust the whole key space of one RC4 service ticket as `floor(keyspace / (hashcat_rate * 10^6))`. (2) Count the cracked accounts listed in `paths_to_da` that open a path to Domain Admin. Submit `FLAG{KEYSEC_<seconds>_DA_<count>}`.\n\n```\nrc4_hash_count: 5\nhashcat_rate: 4500          (MH/s, mode 13100)\nkeyspace: 2^42\npaths_to_da: svc_backup, svc_adm\n```"
+    },
+    "hints": {
+      "ko": [
+        "2^42 = 4398046511104. 4500 MH/s = 4.5×10^9 h/s. 4398046511104 / 4.5e9 = 977.3… → 977.",
+        "paths_to_da 목록에는 계정이 둘. 그래서 뒷자리는 2."
+      ],
+      "en": [
+        "2^42 = 4398046511104. 4500 MH/s = 4.5e9 h/s. 4398046511104 / 4.5e9 = 977.3… → 977.",
+        "paths_to_da lists two accounts, so the trailing number is 2."
       ]
     }
   }
