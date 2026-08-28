@@ -433,6 +433,74 @@ const SOLVERS = new Map([
     if (speed === null || rpm === null) throw new Error('missing the 0x0D or 0x0C reply');
     return `FLAG{SPEED${speed}_RPM${rpm}}`;
   } }],
+
+  /* --- zero trust: a weighted risk score, a maturity percent, a policy
+     evaluation and a device-posture total, each read from a fenced block --- */
+  ['t2_ztrisk', { kind: 'computed', via: 'weighted sum of four risk sub-scores', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced risk profile in the prompt');
+    const b = m[1];
+    const g = (re) => { const x = b.match(re); if (!x) throw new Error(`missing ${re}`); return Number(x[1]); };
+    const total = Math.trunc(
+      g(/user_score:\s*(\d+)/) * g(/user (0\.\d+)/) +
+      g(/device_score:\s*(\d+)/) * g(/device (0\.\d+)/) +
+      g(/network_score:\s*(\d+)/) * g(/network (0\.\d+)/) +
+      g(/behavioral_score:\s*(\d+)/) * g(/behavioral (0\.\d+)/));
+    return `FLAG{RISK_${total}}`;
+  } }],
+  ['t2_ztmm', { kind: 'computed', via: 'CISA ZTMM overall percent from five pillar levels', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced maturity table in the prompt');
+    const lv = [...m[1].matchAll(/(?:Identity|Devices|Networks|Applications|Data):\s*([1-4])/g)].map((x) => Number(x[1]));
+    if (lv.length !== 5) throw new Error(`expected five pillar levels, got ${lv.length}`);
+    return `FLAG{ZTMM_${Math.round(lv.reduce((a, c) => a + c, 0) / 20 * 100)}}`;
+  } }],
+  ['t3_ztseg', { kind: 'computed', via: 'count flows permitted by a priority-ordered segmentation policy', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced policy in the prompt');
+    const body = m[1];
+    const segs = [...body.matchAll(/^\s*([a-z]+)\s+(\d+\.\d+\.\d+\.\d+)\/(\d+)\s*$/gm)]
+      .map((x) => ({ name: x[1], base: x[2], len: Number(x[3]) }));
+    const rules = [...body.matchAll(/^\s*(\d+)\s+([a-z*]+)\s*->\s*([a-z*]+)\s+(\S+)\s+(ALLOW|DENY)\s*$/gm)]
+      .map((x) => ({ prio: Number(x[1]), src: x[2], dst: x[3], pp: x[4], act: x[5] }))
+      .sort((a, c) => a.prio - c.prio);
+    const flows = [...body.matchAll(/^\s*([A-Z])\s+(\d+\.\d+\.\d+\.\d+)\s*->\s*(\d+\.\d+\.\d+\.\d+)\s+(\w+)\/(\d+)\s*$/gm)]
+      .map((x) => ({ s: x[2], d: x[3], proto: x[4], port: Number(x[5]) }));
+    const ipn = (ip) => ip.split('.').reduce((a, o) => ((a << 8) >>> 0) + Number(o), 0) >>> 0;
+    const segOf = (ip) => {
+      const v = ipn(ip);
+      const hit = segs.find((s) => { const mask = s.len === 0 ? 0 : (~0 << (32 - s.len)) >>> 0; return (v & mask) === (ipn(s.base) & mask); });
+      return hit ? hit.name : null;
+    };
+    const decide = (f) => {
+      const ss = segOf(f.s), ds = segOf(f.d);
+      if (!ss || !ds) return 'DENY';
+      for (const r of rules) {
+        if (r.src !== '*' && r.src !== ss) continue;
+        if (r.dst !== '*' && r.dst !== ds) continue;
+        if (r.pp !== 'any') {
+          const [pr, po] = r.pp.split('/');
+          if (pr.toLowerCase() !== f.proto.toLowerCase() || Number(po) !== f.port) continue;
+        }
+        return r.act;
+      }
+      return 'DENY';
+    };
+    return `FLAG{ALLOWED_${flows.filter((f) => decide(f) === 'ALLOW').length}}`;
+  } }],
+  ['t4_ztcapstone', { kind: 'computed', via: 'device posture score from the stated weighting', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced device profile in the prompt');
+    const b = m[1];
+    const yes = (re) => /yes/i.test((b.match(re) || [])[1] || '');
+    const num = (re) => Number((b.match(re) || [])[1] || 0);
+    let s = 0;
+    s += (yes(/tpm_2_0:\s*(\w+)/) ? 10 : 0) + (yes(/measured_boot:\s*(\w+)/) ? 8 : 0) + (yes(/disk_encryption:\s*(\w+)/) ? 7 : 0);
+    s += (yes(/patched_30d:\s*(\w+)/) ? 15 : 0) + (yes(/firewall:\s*(\w+)/) ? 8 : 0) + (yes(/current_av:\s*(\w+)/) ? 7 : 0);
+    s += (yes(/endpoint_agent:\s*(\w+)/) ? 15 : 0) + (yes(/mdm_enrolled:\s*(\w+)/) ? 10 : 0);
+    s += -10 * num(/recent_anomalies:\s*(\d+)/) + (yes(/off_hours:\s*(\w+)/) ? -5 : 0);
+    return `FLAG{POSTURE_${s}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

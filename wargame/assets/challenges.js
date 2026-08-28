@@ -140,6 +140,14 @@ const TRACKS = [
     "en": "Automotive",
     "desc_ko": "CAN 버스·OBD-II·UDS 진단·ECU·텔레매틱스와 V2X.",
     "desc_en": "CAN bus, OBD-II, UDS diagnostics, ECUs, telematics and V2X."
+  },
+  {
+    "id": "zerotrust",
+    "icon": "🛂",
+    "ko": "제로 트러스트",
+    "en": "Zero Trust",
+    "desc_ko": "신원·기기 검증·마이크로세그멘테이션·ZTNA·정책 엔진.",
+    "desc_en": "Identity and device verification, microsegmentation, ZTNA, policy engines."
   }];
 
 const CHALLENGES = [
@@ -11936,6 +11944,986 @@ const CHALLENGES = [
       "en": [
         "Telematics Control Unit.",
         "Often a separate module from the infotainment head unit."
+      ]
+    }
+  },
+  {
+    "id": "t0_ztverify",
+    "tier": 0,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 50,
+    "ci": true,
+    "hash": "a12dd3a7fd3203a452eb34d91a9be20569d5e337a3384347068895c07f3e0c5a",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "좌우명의 뒷말",
+      "en": "The Other Half of the Motto"
+    },
+    "prompt": {
+      "ko": "제로 트러스트를 한 줄로 요약하는 좌우명이 있다: \"절대 신뢰하지 말고, 항상 ___하라(Never trust, always ___).\" 내부 IP든 회사 장비든 자동으로 믿지 않고, 모든 접근 요청을 매번 다시 확인한다는 뜻이다. 빈칸에 들어갈 영어 한 단어는?",
+      "en": "Zero trust boils down to one motto: \"Never trust, always ___.\" Nothing is trusted automatically — not an internal IP, not a corporate laptop — and every access request is checked again, every time. What one English word fills the blank?"
+    },
+    "hints": {
+      "ko": [
+        "여섯 글자, -y 로 끝난다.",
+        "\"확인/검증\"이라는 뜻."
+      ],
+      "en": [
+        "Six letters, ends in -y.",
+        "It means to check or confirm."
+      ]
+    }
+  },
+  {
+    "id": "t0_ztmoat",
+    "tier": 0,
+    "cat": "segmentation",
+    "track": "zerotrust",
+    "points": 50,
+    "ci": true,
+    "hash": "edf1eb932299d2c1e3c973f57e454fbdf5aceeed86bae113708c69d9adc737f4",
+    "fmt": "한 단어 / one word (4글자 / 4 chars)",
+    "title": {
+      "ko": "성과 해자",
+      "en": "Castle and What"
+    },
+    "prompt": {
+      "ko": "제로 트러스트가 대체하려는 전통적 경계 보안 모델에는 별칭이 있다. 성벽(방화벽) 하나만 넘으면 내부는 자유롭게 돌아다닐 수 있다는 구조를 중세 성에 빗대어 \"성과 ___(castle-and-___)\" 모델이라 부른다. 성을 둘러싼 물웅덩이를 가리키는 영어 한 단어를 쓰라.",
+      "en": "The traditional perimeter model that zero trust replaces has a nickname. Because crossing one wall (the firewall) lets you roam freely inside, it is likened to a medieval castle: the \"castle-and-___\" model. Give the one English word for the water-filled ditch around a castle."
+    },
+    "hints": {
+      "ko": [
+        "네 글자.",
+        "성을 둘러싼 물 도랑."
+      ],
+      "en": [
+        "Four letters.",
+        "The water-filled ditch encircling a castle."
+      ]
+    }
+  },
+  {
+    "id": "t1_ztbeyondcorp",
+    "tier": 1,
+    "cat": "ztna",
+    "track": "zerotrust",
+    "points": 65,
+    "ci": true,
+    "hash": "8bfcd1ca63982a856117239fcd93bca1bb5a26f10f62bf9eb2b0192d11748f7b",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "VPN 없는 회사",
+      "en": "The Company Without a VPN"
+    },
+    "prompt": {
+      "ko": "구글은 2009년 Operation Aurora 공격을 겪은 뒤, 직원이 VPN 없이 어디서든 안전하게 일할 수 있는 모델을 만들었다. 접근은 네트워크 위치가 아니라 사용자 신원과 기기 상태로 결정되고, 사내 앱은 인터넷에 그대로 노출된다. 이 모델의 이름은?",
+      "en": "After the 2009 Operation Aurora attack, Google built a model letting staff work securely from anywhere with no VPN. Access is decided by user identity and device state, not network location, and internal apps sit directly on the internet. What is this model called?"
+    },
+    "hints": {
+      "ko": [
+        "구글이 논문 시리즈로 2014–2020년에 공개했다.",
+        "\"Beyond\" + 회사(corp)."
+      ],
+      "en": [
+        "Google published it as a paper series, 2014-2020.",
+        "\"Beyond\" + the corporation."
+      ]
+    }
+  },
+  {
+    "id": "t1_ztmicro",
+    "tier": 1,
+    "cat": "segmentation",
+    "track": "zerotrust",
+    "points": 65,
+    "ci": true,
+    "hash": "18f4b7d4baa29fa62e19a10863c98a7e3b99bc647f6057361997ce4276edac50",
+    "fmt": "한 단어 / one word (17글자 / 17 chars)",
+    "title": {
+      "ko": "같은 서브넷도 못 믿는다",
+      "en": "Not Even the Same Subnet"
+    },
+    "prompt": {
+      "ko": "전통적인 네트워크 계층 분리는 서브넷 단위로만 나눠서, 같은 서브넷 안에서는 서버끼리 자유롭게 통신한다. 제로 트러스트는 워크로드·프로세스 수준까지 격리해 같은 서브넷에 있어도 허용된 포트·방향만 통과시킨다. 침해된 호스트에서 옆 호스트로 넘어가는 것을 근본적으로 막는 이 세분화 기법의 이름은?",
+      "en": "Traditional network-layer separation only divides by subnet, so servers inside one subnet talk freely. Zero trust isolates down to the workload and process level, so even same-subnet hosts only pass the ports and directions explicitly allowed. What is this segmentation technique called that fundamentally stops an attacker crossing from a compromised host to the next?"
+    },
+    "hints": {
+      "ko": [
+        "\"micro\" + \"segmentation\", 한 단어로.",
+        "Calico·Cilium·VMware NSX 가 구현한다."
+      ],
+      "en": [
+        "\"micro\" + \"segmentation\", one word.",
+        "Implemented by Calico, Cilium, VMware NSX."
+      ]
+    }
+  },
+  {
+    "id": "t1_ztfido",
+    "tier": 1,
+    "cat": "identity",
+    "track": "zerotrust",
+    "points": 65,
+    "ci": true,
+    "hash": "0ffb8f7c7e3e199f6c5b96a026d5a06be9f78696938518de231990d15827e506",
+    "fmt": "값 그대로 / literal (5글자 / 5 chars)",
+    "title": {
+      "ko": "피싱이 안 통하는 인증",
+      "en": "Auth That Phishing Can't Touch"
+    },
+    "prompt": {
+      "ko": "SMS 일회용 코드는 SIM 스와핑에 뚫리고, 사용자는 가짜 사이트에도 코드를 넣는다. 이를 막는 피싱 저항(phishing-resistant) 다중 인증 표준은 WebAuthn(브라우저–서버)과 CTAP2(인증자–클라이언트)로 구성되며, 개인키는 기기를 떠나지 않고 서명은 도메인에 묶인다. 패스키(passkey)의 기반이 되는 이 표준의 이름은? (버전 숫자 포함)",
+      "en": "SMS one-time codes fall to SIM swapping, and users type codes into fake sites too. The phishing-resistant multi-factor standard that stops this is built from WebAuthn (browser-server) and CTAP2 (authenticator-client); the private key never leaves the device and the signature is bound to the domain. Name this standard that passkeys are built on (include the version digit)."
+    },
+    "hints": {
+      "ko": [
+        "FIDO Alliance 가 만들었다. 이름 뒤에 숫자 2 가 붙는다.",
+        "\"Fast IDentity Online\" + \"2\"."
+      ],
+      "en": [
+        "Made by the FIDO Alliance. A digit 2 follows the name.",
+        "\"Fast IDentity Online\" + \"2\"."
+      ]
+    }
+  },
+  {
+    "id": "t1_ztsaml",
+    "tier": 1,
+    "cat": "identity",
+    "track": "zerotrust",
+    "points": 65,
+    "ci": true,
+    "hash": "78e43414e3135d34e45890a645b72dcd996ed45cf3548220220eb67a87bc2a7f",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "XML로 로그인 넘기기",
+      "en": "Handing Off Login in XML"
+    },
+    "prompt": {
+      "ko": "엔터프라이즈 SSO 에서 서비스 제공자(SP)와 신원 제공자(IdP)는 XML 로 서명된 어서션(assertion)을 주고받아 사용자를 인증한다. 무겁고 모바일·API 에는 잘 안 맞지만 B2B 웹앱에서 여전히 지배적인, 이 XML 기반 인증·인가 표준의 네 글자 약어는?",
+      "en": "In enterprise SSO, the Service Provider (SP) and Identity Provider (IdP) exchange XML-signed assertions to authenticate a user. Heavy and a poor fit for mobile/APIs, but still dominant for B2B web apps. Give the four-letter acronym for this XML-based authentication/authorization standard."
+    },
+    "hints": {
+      "ko": [
+        "\"Security Assertion Markup Language\".",
+        "OAuth·OpenID Connect 와 함께 자주 비교된다."
+      ],
+      "en": [
+        "\"Security Assertion Markup Language\".",
+        "Often compared alongside OAuth and OpenID Connect."
+      ]
+    }
+  },
+  {
+    "id": "t1_ztoidc",
+    "tier": 1,
+    "cat": "identity",
+    "track": "zerotrust",
+    "points": 65,
+    "ci": true,
+    "hash": "4dcdefd0d389cd15882de8a808334bb06a586b7a74fd0932d0e13fdb945e223c",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "OAuth 위에 얹은 신원",
+      "en": "Identity Layered on Top of OAuth"
+    },
+    "prompt": {
+      "ko": "OAuth 2.0 은 \"이 앱이 당신의 데이터에 접근해도 됩니까?\"라는 권한 위임만 다룬다. 그 위에 얇게 얹어 \"당신이 누구인지\"를 표준화한 인증 계층이 있다. iss·sub·aud·exp 같은 클레임을 담은 서명 토큰(ID 토큰)을 발급하며, 현대 웹·모바일 로그인의 사실상 표준이다. 이 네 글자 약어는?",
+      "en": "OAuth 2.0 only handles authorization delegation — \"is it OK for this app to access your data?\". A thin authentication layer sits on top of it, standardizing \"who you are\". It issues a signed token (the ID token) carrying claims like iss, sub, aud and exp, and is the de facto standard for modern web/mobile login. Give the four-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"OpenID Connect\".",
+        "\"Sign in with Google\" 뒤에서 도는 프로토콜."
+      ],
+      "en": [
+        "\"OpenID Connect\".",
+        "The protocol behind \"Sign in with Google\"."
+      ]
+    }
+  },
+  {
+    "id": "t1_ztew",
+    "tier": 1,
+    "cat": "segmentation",
+    "track": "zerotrust",
+    "points": 65,
+    "ci": true,
+    "hash": "94a49a6234ecdbe75b086d8e009a9bdd4d1124bc3144fab96a5177660b194eeb",
+    "fmt": "한 단어 / one word (9글자 / 9 chars, - 포함 / include -)",
+    "title": {
+      "ko": "내부에서 옆으로 흐르는 트래픽",
+      "en": "Traffic That Flows Sideways"
+    },
+    "prompt": {
+      "ko": "경계 방화벽이 지키는 것은 인터넷↔내부의 남북(north-south) 트래픽이다. 그러나 현대 기업 트래픽의 75–80% 는 내부 서버끼리 오가는 트래픽이고, 침해 후 옆 호스트로 넘어가는 이동도 이 트래픽을 탄다. 경계 방화벽이 볼 수 없는 이 내부 서버 간 트래픽을 부르는, 방위를 딴 하이픈 단어는?",
+      "en": "A perimeter firewall guards north-south traffic (internet to internal). But 75-80% of modern enterprise traffic runs server-to-server inside, and an attacker's post-breach hop to the next host rides it too. What hyphenated compass term names this inter-server traffic that a perimeter firewall never sees?"
+    },
+    "hints": {
+      "ko": [
+        "남북(north-south)의 반대 방향.",
+        "\"동-서\", 하이픈으로 이어 쓴다."
+      ],
+      "en": [
+        "The opposite axis to north-south.",
+        "\"east\" and \"west\", joined with a hyphen."
+      ]
+    }
+  },
+  {
+    "id": "t2_ztpep",
+    "tier": 2,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 90,
+    "ci": true,
+    "hash": "3d66f74fd48822744da1ff290dd7c6b3c664f833e0aaca3671f93eefbf0ba6c4",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "결정을 집행하는 문지기",
+      "en": "The Gate That Enforces the Verdict"
+    },
+    "prompt": {
+      "ko": "표준 참조 제로 트러스트 아키텍처는 접근 통제를 둘로 나눈다. 한쪽 컴포넌트가 허용/거부를 판단하면, 리소스 바로 앞에 서서 그 판단을 실제로 강제하는 다른 컴포넌트가 있다. 연결을 열거나 끊는 이 집행 지점의 세 글자 약어는?",
+      "en": "The standard reference zero trust architecture splits access control in two. One component decides allow or deny; another stands right in front of the resource and actually enforces that ruling, opening or cutting the connection. Give the three-letter acronym for this enforcement point."
+    },
+    "hints": {
+      "ko": [
+        "\"Policy ___ Point\" — P.E.P.",
+        "판단(decision)과 집행(enforcement) 중 집행 쪽."
+      ],
+      "en": [
+        "\"Policy ___ Point\" - P.E.P.",
+        "Of decision vs enforcement, this is enforcement."
+      ]
+    }
+  },
+  {
+    "id": "t2_ztjit",
+    "tier": 2,
+    "cat": "identity",
+    "track": "zerotrust",
+    "points": 90,
+    "ci": true,
+    "hash": "ec03a0a8851d9cf0aa2320035b8699d6d3bbb4a8a8c160b0dd41c5c5ed086f9c",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "필요할 때만 잠깐",
+      "en": "Only When Needed, Only For a Moment"
+    },
+    "prompt": {
+      "ko": "관리자 권한을 상시 부여해 두면 계정 하나가 뚫릴 때 피해가 크다. 대신 \"DB 서버에 10분만 관리자 권한\"처럼 요청·승인 시 임시 토큰을 짧은 TTL 로 발급하고 만료되면 자동 회수한다. 이 접근 방식의 세 글자 약어는?",
+      "en": "Standing always-on admin rights mean a single compromised account does a lot of damage. Instead, on request and approval you issue a temporary token with a short TTL — \"admin on the DB server for 10 minutes\" — auto-revoked on expiry. Give the three-letter acronym for this approach."
+    },
+    "hints": {
+      "ko": [
+        "\"Just-In-Time\".",
+        "PAM 도구(CyberArk, Entra PIM)가 제공한다."
+      ],
+      "en": [
+        "\"Just-In-Time\".",
+        "Provided by PAM tools (CyberArk, Entra PIM)."
+      ]
+    }
+  },
+  {
+    "id": "t2_ztpkce",
+    "tier": 2,
+    "cat": "identity",
+    "track": "zerotrust",
+    "points": 90,
+    "ci": true,
+    "hash": "ca74bea00c269f053d5ac8df6f09be5b1e86f973195de3fd98e4a1e9838ce8e0",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "가로챈 코드를 못 쓰게",
+      "en": "Making a Stolen Code Useless"
+    },
+    "prompt": {
+      "ko": "모바일 앱이나 브라우저 단일 페이지 앱 같은 공개 클라이언트는 클라이언트 시크릿을 안전히 숨길 수 없다. OAuth 2.0 은 클라이언트가 code_verifier 를 만들고 그 해시(code_challenge)를 먼저 보낸 뒤, 토큰 교환 때 원본 verifier 를 제시하게 해서 가로챈 authorization code 를 무력화한다. 이 확장의 네 글자 약어는?",
+      "en": "Public clients like mobile apps or browser single-page apps cannot keep a client secret. OAuth 2.0 has the client generate a code_verifier, send its hash (code_challenge) first, then present the original verifier at token exchange — so an intercepted authorization code is worthless. Give the four-letter acronym for this extension."
+    },
+    "hints": {
+      "ko": [
+        "\"Proof Key for Code Exchange\", RFC 7636.",
+        "\"픽시(pixy)\"라고 읽는다."
+      ],
+      "en": [
+        "\"Proof Key for Code Exchange\", RFC 7636.",
+        "Pronounced \"pixy\"."
+      ]
+    }
+  },
+  {
+    "id": "t2_ztspiffe",
+    "tier": 2,
+    "cat": "ztna",
+    "track": "zerotrust",
+    "points": 90,
+    "ci": true,
+    "hash": "10aca797a724c7e9a6d5dc015a8e73dbf16e76faa1c33c4ed8e4e03d69d7733a",
+    "fmt": "약어 / acronym (6글자 / 6 chars)",
+    "title": {
+      "ko": "워크로드에게 신분증을",
+      "en": "An ID Card for Every Workload"
+    },
+    "prompt": {
+      "ko": "제로 트러스트에서는 사람뿐 아니라 서비스·컨테이너·함수도 신원을 가져야 한다. IP 주소가 아니라 암호학적 신원으로 워크로드를 식별하는 오픈 표준이 있고, 그 구현체(SPIRE)가 각 워크로드에 자동으로 신원 문서를 발급한다. 이 워크로드 신원 프레임워크의 여섯 글자 약어는?",
+      "en": "In zero trust, not just people but services, containers and functions need identities. An open standard identifies workloads by cryptographic identity rather than IP address, and its implementation (SPIRE) auto-issues an identity document to each workload. Give the six-letter acronym for this workload identity framework."
+    },
+    "hints": {
+      "ko": [
+        "\"Secure Production Identity Framework For Everyone\".",
+        "구현체는 SPIRE."
+      ],
+      "en": [
+        "\"Secure Production Identity Framework For Everyone\".",
+        "Its implementation is SPIRE."
+      ]
+    }
+  },
+  {
+    "id": "t2_ztlateral",
+    "tier": 2,
+    "cat": "segmentation",
+    "track": "zerotrust",
+    "points": 90,
+    "ci": true,
+    "hash": "aaed576b3acacd21f1b2262a9dd71f47c8853134d94868708a0c638f7ad89f92",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "한 대에서 옆 대로",
+      "en": "From One Box to the Next"
+    },
+    "prompt": {
+      "ko": "공격자가 웹서버 한 대를 침해한 뒤, 내부 신뢰를 이용해 DB·파일서버·도메인 컨트롤러로 옮겨 다니는 것. 평평한 네트워크에서는 탐지가 어렵고 APT 의 핵심 전술이다. 세분화와 \"침해를 가정하라\" 설계가 막으려는, 이 내부 이동을 부르는 두 단어(형용사 + 명사)는?",
+      "en": "After compromising one web server, the attacker uses internal trust to hop to the DB, file servers and domain controller. Hard to detect on a flat network and a core APT tactic. What two words (adjective + noun) name this internal hopping that segmentation and \"assume-a-breach\" design are meant to stop?"
+    },
+    "hints": {
+      "ko": [
+        "\"옆으로(lateral)\" 일어나는 \"이동(movement)\".",
+        "내부 서버 간 트래픽을 타고 일어난다."
+      ],
+      "en": [
+        "Movement that happens \"sideways\" - lateral + movement.",
+        "It rides internal server-to-server traffic."
+      ]
+    }
+  },
+  {
+    "id": "t2_ztdeny",
+    "tier": 2,
+    "cat": "segmentation",
+    "track": "zerotrust",
+    "points": 90,
+    "ci": true,
+    "hash": "898b87a202ccb4d24bb00fe34a618cdac20d7564d6c255ba33cba99f7bab5467",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "명시되지 않으면 막는다",
+      "en": "If It Isn't Listed, It's Blocked"
+    },
+    "prompt": {
+      "ko": "제로 트러스트 세그멘테이션의 첫 번째 원칙: 명시적으로 허용되지 않은 모든 트래픽은 차단한다. Kubernetes 에서는 빈 podSelector 의 NetworkPolicy 하나로, Calico 에서는 GlobalNetworkPolicy 로 이 기준선을 깐 뒤 필요한 허용 규칙만 더한다. 이 기본 자세를 부르는 두 단어(형용사 + 동사)는?",
+      "en": "The first principle of zero trust segmentation: block all traffic not explicitly allowed. In Kubernetes you lay this baseline with one NetworkPolicy on an empty podSelector; in Calico with a GlobalNetworkPolicy — then add only the allow rules you need. What two words (adjective + verb) name this baseline stance?"
+    },
+    "hints": {
+      "ko": [
+        "\"기본값은 ___\" — default + deny.",
+        "반대는 default allow(기본 허용)."
+      ],
+      "en": [
+        "\"the default is to ___\" - default + deny.",
+        "The opposite is default allow."
+      ]
+    }
+  },
+  {
+    "id": "t2_ztrisk",
+    "tier": 2,
+    "cat": "identity",
+    "track": "zerotrust",
+    "points": 150,
+    "ci": false,
+    "hash": "191b9c15c4b3331010024dd955a41eb20b320b59151758a5dfb1140189e490a6",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "가중 리스크 점수",
+      "en": "Weighted Risk Score"
+    },
+    "prompt": {
+      "ko": "제로 트러스트 접근 결정 시스템은 접근 요청을 네 축으로 채점하고 가중 평균해 최종 리스크 점수를 낸다(소수점 이하 버림). 아래 프로필로 총점을 계산하고 `FLAG{RISK_<총점>}` 을 제출하라.\n\n```\nuser_score:       72\ndevice_score:     55\nnetwork_score:    40\nbehavioral_score: 30\nweights: user 0.30, device 0.35, network 0.20, behavioral 0.15\n```",
+      "en": "A zero trust access-decision system scores an access request on four axes and takes a weighted average for the final risk score (truncate the fraction). Compute the total for the profile below and submit `FLAG{RISK_<total>}`.\n\n```\nuser_score:       72\ndevice_score:     55\nnetwork_score:    40\nbehavioral_score: 30\nweights: user 0.30, device 0.35, network 0.20, behavioral 0.15\n```"
+    },
+    "hints": {
+      "ko": [
+        "72·0.30 + 55·0.35 + 40·0.20 + 30·0.15.",
+        "합은 53.35 → 버림 → 53."
+      ],
+      "en": [
+        "72*0.30 + 55*0.35 + 40*0.20 + 30*0.15.",
+        "The sum is 53.35 -> truncated -> 53."
+      ]
+    }
+  },
+  {
+    "id": "t2_ztmm",
+    "tier": 2,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 150,
+    "ci": false,
+    "hash": "9bb4343bb702b17988b192623cc07afc208b766dd0a9b1cabdf878bd72ec493f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "성숙도 백분율",
+      "en": "Maturity Percentage"
+    },
+    "prompt": {
+      "ko": "CISA Zero Trust Maturity Model v2.0 은 5개 기둥을 각각 레벨 1(전통)~4(최적)로 평가한다. 전체 성숙도(%) = round(다섯 기둥 레벨의 합 / 가능한 최댓값 × 100), 여기서 각 기둥의 최댓값은 레벨 4 다. 아래 평가 결과로 전체 성숙도를 구해 `FLAG{ZTMM_<백분율>}` 을 제출하라.\n\n```\nIdentity:      3\nDevices:       2\nNetworks:      2\nApplications:  3\nData:          1\n```",
+      "en": "The CISA Zero Trust Maturity Model v2.0 rates five pillars each on levels 1 (Traditional) to 4 (Optimal). Overall maturity (%) = round(sum of the five pillar levels / the maximum possible x 100), where each pillar maxes at level 4. Compute it for the assessment below and submit `FLAG{ZTMM_<percent>}`.\n\n```\nIdentity:      3\nDevices:       2\nNetworks:      2\nApplications:  3\nData:          1\n```"
+    },
+    "hints": {
+      "ko": [
+        "레벨 합 = 3+2+2+3+1 = 11.",
+        "합 11 을 최댓값(다섯 기둥 × 레벨 4)으로 나눠 100 을 곱하면 55."
+      ],
+      "en": [
+        "Level sum = 3+2+2+3+1 = 11.",
+        "Eleven over the maximum (five pillars at level four each), times one hundred, rounds to 55."
+      ]
+    }
+  },
+  {
+    "id": "t3_ztmesh",
+    "tier": 3,
+    "cat": "segmentation",
+    "track": "zerotrust",
+    "points": 130,
+    "ci": true,
+    "hash": "eace17f238330edbd7ab7e9d3ae19dc5e7b69c2584c6e23eb8d7752690abea14",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "사이드카가 대신 거는 상호 인증",
+      "en": "The Sidecar That Handles Mutual Auth"
+    },
+    "prompt": {
+      "ko": "쿠버네티스에서 각 워크로드 옆에 프록시(Envoy 등)를 사이드카로 붙여 서비스 간 통신을 가로채는 계층이 있다. 애플리케이션 코드를 건드리지 않고 서비스끼리 오가는 모든 트래픽에 상호 인증(mTLS)과 인가 정책을 투명하게 적용한다. Istio·Linkerd 가 대표적인, 이 계층을 부르는 두 단어(명사 + 명사)는?",
+      "en": "In Kubernetes, a layer attaches a proxy (Envoy, etc.) as a sidecar next to each workload and intercepts service-to-service traffic. Without touching application code, it transparently applies mutual authentication (mTLS) and authorization policy to every packet between services. Istio and Linkerd are the well-known examples. What two words (noun + noun) name this layer?"
+    },
+    "hints": {
+      "ko": [
+        "Istio 의 컨트롤 플레인은 istiod, 데이터 플레인은 Envoy 사이드카.",
+        "\"서비스\" + \"그물망\"."
+      ],
+      "en": [
+        "Istio's control plane is istiod; its data plane is the Envoy sidecar.",
+        "\"service\" + a woven net."
+      ]
+    }
+  },
+  {
+    "id": "t3_ztsase",
+    "tier": 3,
+    "cat": "ztna",
+    "track": "zerotrust",
+    "points": 130,
+    "ci": true,
+    "hash": "38872ec390687b35105ee4cde982f13cb38b8701360b023a38794c4d96b5947c",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "엣지에서 다 합친다",
+      "en": "Everything Converged at the Edge"
+    },
+    "prompt": {
+      "ko": "Gartner 가 2019년에 이름 붙인 아키텍처. SD-WAN 네트워킹과 보안 기능(SWG·CASB·ZTNA·FWaaS)을 클라우드 엣지에서 하나의 서비스로 통합해, 지사·재택·모바일 사용자가 데이터센터를 경유하지 않고 가까운 PoP 에서 정책을 적용받는다. 이 네 글자 약어는? (\"사시\"라고 읽는다)",
+      "en": "An architecture Gartner named in 2019. It converges SD-WAN networking with security functions (SWG, CASB, ZTNA, FWaaS) into one cloud-edge service, so branch, remote and mobile users get policy applied at a nearby PoP instead of hairpinning through a data center. Give the four-letter acronym (pronounced \"sassy\")."
+    },
+    "hints": {
+      "ko": [
+        "\"Secure Access Service Edge\".",
+        "Zscaler·Cloudflare One·Prisma Access 가 이 범주."
+      ],
+      "en": [
+        "\"Secure Access Service Edge\".",
+        "Zscaler, Cloudflare One, Prisma Access are in this category."
+      ]
+    }
+  },
+  {
+    "id": "t3_ztdark",
+    "tier": 3,
+    "cat": "segmentation",
+    "track": "zerotrust",
+    "points": 130,
+    "ci": true,
+    "hash": "3adb710573d353b7eddd3325b6877826a9740cb39a4996e9fd41b57d13f0e129",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "인증 전엔 아무것도 안 보인다",
+      "en": "Nothing Is Visible Until You Authenticate"
+    },
+    "prompt": {
+      "ko": "Software-Defined Perimeter 의 핵심 성질: 인증에 성공하기 전까지 서버와 서비스는 존재 자체가 네트워크에서 보이지 않는다. 포트는 기본 DROP 이고 스캐너에 응답하지 않는다. CSA 문서가 이 상태를 부르는 두 단어(형용사 + 명사)는?",
+      "en": "The defining property of a Software-Defined Perimeter: until you authenticate successfully, the servers and services are invisible on the network — ports default to DROP and never answer a scanner. What two words (adjective + noun) does the CSA spec use for this state?"
+    },
+    "hints": {
+      "ko": [
+        "색이 어둡고(dark), 구름(cloud) 처럼 잡히지 않는다.",
+        "\"어두운 구름\"."
+      ],
+      "en": [
+        "Dark in colour, uncatchable like a cloud.",
+        "\"dark\" + \"cloud\"."
+      ]
+    }
+  },
+  {
+    "id": "t3_ztztx",
+    "tier": 3,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 130,
+    "ci": true,
+    "hash": "053e412ad396d2b568fcfe5df7004f489f518bffa394c6fc1ffab81b141851f5",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "포레스터의 확장판",
+      "en": "Forrester's Extended Edition"
+    },
+    "prompt": {
+      "ko": "제로 트러스트라는 용어를 2010년에 만든 곳은 포레스터(Forrester)다. 이후 포레스터는 이를 7개 기둥(데이터·네트워크·사람·워크로드·기기·가시성·자동화)으로 확장한 프레임워크를 발표했다. \"Zero Trust eXtended\" 를 줄인 세 글자 약어는?",
+      "en": "Forrester coined the term \"zero trust\" in 2010. It later published a framework extending this into seven pillars (data, networks, people, workloads, devices, visibility, automation). Give the three-letter acronym for \"Zero Trust eXtended\"."
+    },
+    "hints": {
+      "ko": [
+        "Z, T, 그리고 eXtended 의 X.",
+        "구글·연방정부의 제로 트러스트 모델과 함께 자주 인용된다."
+      ],
+      "en": [
+        "Z, T, and the X of eXtended.",
+        "Cited alongside the Google and federal zero trust models."
+      ]
+    }
+  },
+  {
+    "id": "t3_ztrp",
+    "tier": 3,
+    "cat": "identity",
+    "track": "zerotrust",
+    "points": 130,
+    "ci": true,
+    "hash": "aeb0388497c8c3d375c157ee720698ac7878be870ad8f1aa99372fac5db45b54",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "패스키를 도메인에 묶는 것",
+      "en": "What Ties a Passkey to a Domain"
+    },
+    "prompt": {
+      "ko": "WebAuthn 에서 패스키는 특정 출처(origin)에 바인딩된다. 인증자는 서명 시 이 식별자를 함께 넣고, 브라우저는 현재 도메인과 일치할 때만 인증을 진행한다 — 그래서 피싱 사이트로는 패스키가 절대 넘어가지 않는다. 인증을 요청하고 어서션을 신뢰하는 쪽(서비스)을 가리키는 두 단어 용어는? (RP)",
+      "en": "In WebAuthn a passkey is bound to a specific origin. The authenticator includes this identifier in the signature, and the browser only proceeds when it matches the current domain — so a passkey never travels to a phishing site. What two-word term names the side (the service) that requests authentication and relies on the assertion? (RP)"
+    },
+    "hints": {
+      "ko": [
+        "\"Relying ___\" — 어서션을 \"신뢰하고 의존하는\" 쪽.",
+        "엔터프라이즈 SSO 의 서비스 제공자(SP)에 해당한다. R.P."
+      ],
+      "en": [
+        "\"Relying ___\" - the side that relies on the assertion.",
+        "The counterpart of the service provider (SP) in enterprise SSO. R.P."
+      ]
+    }
+  },
+  {
+    "id": "t3_ztcaep",
+    "tier": 3,
+    "cat": "identity",
+    "track": "zerotrust",
+    "points": 130,
+    "ci": true,
+    "hash": "6efff77026095598475903547781295e01fb489a175aded6d990d5b9d6080109",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "세션 중간에 마음을 바꾸다",
+      "en": "Changing Your Mind Mid-Session"
+    },
+    "prompt": {
+      "ko": "한 번 발급된 액세스 토큰은 만료까지 유효하다 — 그 사이 사용자가 위험해져도. 이를 고치려고 OpenID Foundation 의 Shared Signals Framework 위에 만든 프로파일이 있다. IdP 가 \"이 세션은 이제 위험함\", \"기기가 비준수로 바뀜\" 같은 이벤트를 실시간으로 밀어 자원 서버가 세션을 즉시 재평가하게 한다. 이 네 글자 약어는?",
+      "en": "An issued access token stays valid until expiry — even if the user becomes risky in between. To fix that, a profile was built on the OpenID Foundation's Shared Signals Framework: the IdP pushes events like \"this session is now risky\" or \"device turned non-compliant\" in real time so the resource server re-evaluates the session at once. Give the four-letter acronym."
+    },
+    "hints": {
+      "ko": [
+        "\"Continuous Access Evaluation Profile\".",
+        "Google 은 이 개념을 CAE 라 부른다. C.A.E.P."
+      ],
+      "en": [
+        "\"Continuous Access Evaluation Profile\".",
+        "Google calls the concept CAE. C.A.E.P."
+      ]
+    }
+  },
+  {
+    "id": "t3_ztsplit",
+    "tier": 3,
+    "cat": "ztna",
+    "track": "zerotrust",
+    "points": 130,
+    "ci": true,
+    "hash": "ca3a95441df7d80c3386a85db51bcbb43b5cfdac3656c20422088a6c9a317cd9",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "터널 밖으로 새는 트래픽",
+      "en": "Traffic That Leaks Outside the Tunnel"
+    },
+    "prompt": {
+      "ko": "전통 VPN 을 쓰면서 성능을 위해 일부 트래픽(예: 사내 대상만)을 터널로 보내고 나머지는 로컬 인터넷으로 바로 내보내는 설정이 있다. 편하지만, 감염된 단말이 터널 밖 경로로 공격자와 통신하거나 검사를 우회하는 보안 구멍이 된다. 이 설정을 부르는 두 단어(형용사 + 동명사)는?",
+      "en": "With a traditional VPN, for performance you can send only some traffic (say, corporate-bound) through the tunnel and let the rest go straight out to the local internet. Convenient, but it becomes a hole: an infected endpoint can talk to an attacker on the non-tunnel path or dodge inspection. What two words (adjective + gerund) name this configuration?"
+    },
+    "hints": {
+      "ko": [
+        "터널을 \"쪼갠다(split)\".",
+        "반대는 full tunnel(전체 터널링)."
+      ],
+      "en": [
+        "You \"split\" the tunnel.",
+        "The opposite is full tunnel."
+      ]
+    }
+  },
+  {
+    "id": "t3_ztopa",
+    "tier": 3,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 130,
+    "ci": true,
+    "hash": "1fbe8e4f4059ee0e7e8ac840aefd2ac3224c51bb038c09f80ebb767600b9378a",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "코드로 쓰는 인가 규칙",
+      "en": "Authorization Rules Written as Code"
+    },
+    "prompt": {
+      "ko": "API 게이트웨이·Kubernetes·마이크로서비스가 공통으로 쓰는 정책 결정 엔진. Rego 라는 선언형 언어로 \"관리자 역할 + 규정 준수 기기 + 두 번째 인증 요소 검증 + 업무시간\" 같은 조건을 코드로 정의하면, 서비스는 결정을 이 엔진에 위임한다(policy as code). CNCF 프로젝트인 이 엔진의 세 글자 약어는?",
+      "en": "A policy-decision engine used in common by API gateways, Kubernetes and microservices. You write conditions like \"admin role + compliant device + verified second factor + business hours\" as code in a declarative language called Rego, and services delegate the decision to this engine (policy as code). Give the three-letter acronym for this CNCF project."
+    },
+    "hints": {
+      "ko": [
+        "\"Open Policy Agent\".",
+        "규칙 언어는 Rego. O.P.A."
+      ],
+      "en": [
+        "\"Open Policy Agent\".",
+        "Its rule language is Rego. O.P.A."
+      ]
+    }
+  },
+  {
+    "id": "t3_ztseg",
+    "tier": 3,
+    "cat": "segmentation",
+    "track": "zerotrust",
+    "points": 200,
+    "ci": false,
+    "hash": "72b31637749b5f1996a81c1edbbd0fef2c08cfd7aaf02544602a86c0e5f2e88b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "세그멘테이션 정책 평가",
+      "en": "Evaluating a Segmentation Policy"
+    },
+    "prompt": {
+      "ko": "아래는 네트워크 세그멘테이션 정책과 검증할 트래픽 흐름이다. 규칙은 priority 오름차순으로 평가하며, 처음 매칭되는 규칙의 action 을 따른다. 어떤 규칙도 매칭되지 않으면 fallback 을 적용한다. `*` 는 모든 세그먼트, `any` 는 모든 프로토콜/포트를 뜻한다. ALLOW 로 판정되는 흐름의 개수를 세어 `FLAG{ALLOWED_<개수>}` 를 제출하라.\n\n```\nsegments:\n  web    10.0.1.0/24\n  app    10.0.2.0/24\n  db     10.0.3.0/24\n  admin  10.0.9.0/24\nrules:\n  100  web -> app  tcp/8080  ALLOW\n  100  app -> db  tcp/5432  ALLOW\n  50  admin -> *  any  ALLOW\n  200  web -> db  any  DENY\nfallback: DENY\nflows:\n  A  10.0.1.5 -> 10.0.2.7  tcp/8080\n  B  10.0.1.5 -> 10.0.3.7  tcp/5432\n  C  10.0.2.9 -> 10.0.3.7  tcp/5432\n  D  10.0.9.2 -> 10.0.3.7  tcp/22\n  E  10.0.1.8 -> 10.0.2.7  tcp/22\n```",
+      "en": "Below is a network segmentation policy and traffic flows to check. Evaluate rules in ascending priority order and take the action of the first rule that matches; if no rule matches, apply the fallback. `*` means any segment, `any` means any protocol/port. Count the flows that resolve to ALLOW and submit `FLAG{ALLOWED_<count>}`.\n\n```\nsegments:\n  web    10.0.1.0/24\n  app    10.0.2.0/24\n  db     10.0.3.0/24\n  admin  10.0.9.0/24\nrules:\n  100  web -> app  tcp/8080  ALLOW\n  100  app -> db  tcp/5432  ALLOW\n  50  admin -> *  any  ALLOW\n  200  web -> db  any  DENY\nfallback: DENY\nflows:\n  A  10.0.1.5 -> 10.0.2.7  tcp/8080\n  B  10.0.1.5 -> 10.0.3.7  tcp/5432\n  C  10.0.2.9 -> 10.0.3.7  tcp/5432\n  D  10.0.9.2 -> 10.0.3.7  tcp/22\n  E  10.0.1.8 -> 10.0.2.7  tcp/22\n```"
+    },
+    "hints": {
+      "ko": [
+        "A: web→app:8080 은 규칙 100 으로 ALLOW. B: web→db 는 규칙 200 으로 DENY.",
+        "C(app→db:5432) ALLOW, D(admin→어디든) ALLOW, E(web→app 이지만 포트가 8080 아님) → fallback DENY. ALLOW 3개."
+      ],
+      "en": [
+        "A: web->app:8080 matches rule 100 ALLOW. B: web->db matches rule 200 DENY.",
+        "C (app->db:5432) ALLOW, D (admin->anywhere) ALLOW, E (web->app but the port is not 8080) -> fallback DENY. Three ALLOW."
+      ]
+    }
+  },
+  {
+    "id": "t4_ztoptimal",
+    "tier": 4,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 160,
+    "ci": true,
+    "hash": "9a714950f9841458f5433dd5e74d1cffc8ad95a80a0c2f12e99f4e3f3d4871d3",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "성숙도의 끝단계",
+      "en": "The Final Stage of Maturity"
+    },
+    "prompt": {
+      "ko": "CISA Zero Trust Maturity Model v2.0 은 각 기둥을 네 단계로 진단한다: Traditional → Initial → Advanced → ___. 자동화된 위험 기반 접근 결정, 비밀번호 없는 지속 인증, 실시간 기기 위험 신호 연동이 모두 갖춰진 최고 단계의 이름(영어 한 단어)은?",
+      "en": "The CISA Zero Trust Maturity Model v2.0 diagnoses each pillar across four stages: Traditional -> Initial -> Advanced -> ___. Name the top stage (one English word) - where automated risk-based access decisions, passwordless continuous authentication, and real-time device-risk signal integration are all in place."
+    },
+    "hints": {
+      "ko": [
+        "일곱 글자, \"최적의\"라는 뜻.",
+        "Advanced 다음, 마지막 단계."
+      ],
+      "en": [
+        "Seven letters, means \"most favourable\".",
+        "The stage after Advanced; the last one."
+      ]
+    }
+  },
+  {
+    "id": "t4_ztbeyondprod",
+    "tier": 4,
+    "cat": "ztna",
+    "track": "zerotrust",
+    "points": 160,
+    "ci": true,
+    "hash": "596adcecfd4f084410fd829dcd96dc973ea829a3312275e969006348ed0d8e5b",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "서비스끼리의 제로 트러스트",
+      "en": "Zero Trust Between Services"
+    },
+    "prompt": {
+      "ko": "구글의 사용자→앱 제로 트러스트 모델이 사람의 접근을 다룬다면, 서비스→서비스(워크로드 간) 통신에 같은 원칙을 적용한 구글의 별도 모델이 있다. 상호 인증(mTLS), 코드 출처 검증, 이미지 서명, 최소 권한 서비스 아이덴티티를 프로덕션 전반에 강제한다. 이 모델의 이름은?",
+      "en": "Where Google's user-to-app zero trust model covers people's access, Google has a separate model applying the same principles to service-to-service (workload-to-workload) communication: mutual authentication (mTLS), code-provenance checks, image signing and least-privilege service identity enforced across production. Name this model."
+    },
+    "hints": {
+      "ko": [
+        "\"Beyond\" + 프로덕션(prod).",
+        "구글의 사용자 접근 제로 트러스트 모델의 워크로드 짝."
+      ],
+      "en": [
+        "\"Beyond\" + production (prod).",
+        "The workload counterpart to Google's user-access zero trust model."
+      ]
+    }
+  },
+  {
+    "id": "t4_ztsvid",
+    "tier": 4,
+    "cat": "ztna",
+    "track": "zerotrust",
+    "points": 160,
+    "ci": true,
+    "hash": "10d33837bf4b30c7ca650b1f2f3f80eb3ce5044f00c764dafbecddd1a9dfe464",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "워크로드의 신원 문서",
+      "en": "A Workload's Identity Document"
+    },
+    "prompt": {
+      "ko": "워크로드 신원 프레임워크의 구현체인 SPIRE 는 각 워크로드에 짧은 수명의 검증 가능한 신원 문서를 자동으로 발급·회전한다. 이 문서는 X.509 인증서 형태이거나 JWT 형태이며, 안에 그 워크로드의 신원 URI 가 담긴다. 이 신원 문서를 가리키는 네 글자 약어는?",
+      "en": "SPIRE, the implementation of the workload identity framework, auto-issues and rotates a short-lived, verifiable identity document for each workload. It comes as an X.509 certificate or a JWT and carries that workload's identity URI inside. Give the four-letter acronym for this identity document."
+    },
+    "hints": {
+      "ko": [
+        "S, V, I, D.",
+        "X.509-형과 JWT-형 두 가지가 있다."
+      ],
+      "en": [
+        "S, V, I, D.",
+        "Two forms exist: an X.509 one and a JWT one."
+      ]
+    }
+  },
+  {
+    "id": "t4_ztassume",
+    "tier": 4,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 160,
+    "ci": true,
+    "hash": "7f390f96b0ae0bcf9cdc9133e4804ed51bf1e7771c12c2f61667ebd417000d0a",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "이미 뚫렸다고 치자",
+      "en": "Assume They're Already In"
+    },
+    "prompt": {
+      "ko": "제로 트러스트 설계 원칙 중 하나: 시스템이 이미 침해된 것으로 가정하고 설계한다. 그래서 폭발 반경을 줄이는 네트워크 격리, 최소 권한, 종단간 암호화, 지속적 모니터링을 기본값으로 깐다. 이 원칙을 부르는 두 단어(동사 + 명사)는?",
+      "en": "One of the zero trust design principles: design as if the system is already compromised. So you make blast-radius-shrinking network isolation, least privilege, end-to-end encryption and continuous monitoring the defaults. What two words (verb + noun) name this principle?"
+    },
+    "hints": {
+      "ko": [
+        "\"침해를 ___한다\" — assume + breach.",
+        "\"never trust\", \"least privilege\" 와 나란히 놓이는 원칙."
+      ],
+      "en": [
+        "\"___ a breach\" - assume + breach.",
+        "Listed alongside \"never trust\" and \"least privilege\"."
+      ]
+    }
+  },
+  {
+    "id": "t4_ztpe",
+    "tier": 4,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 160,
+    "ci": true,
+    "hash": "35288adc70200689015b350fa40bd50c0d2e530cea58b79437bf3360c25105cd",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "허용을 결정하는 두뇌",
+      "en": "The Brain That Decides Allow"
+    },
+    "prompt": {
+      "ko": "표준 참조 제로 트러스트 아키텍처(SP 800-207)에서, 주체·자산·요청·위협 인텔·조직 정책을 입력으로 받아 신뢰 점수를 계산하고 최종적으로 접근 허용/거부를 내리는 컴포넌트가 있다. 결정만 담당하며, 실제 연결 수립은 짝 컴포넌트가 한다. 이 결정 컴포넌트의 두 단어 이름은?",
+      "en": "In the standard reference zero trust architecture (SP 800-207), one component takes subject, asset, request, threat intel and organizational policy as input, computes a trust score, and ultimately grants or denies access. It only decides; a paired component actually sets up the connection. Give the two-word name of this deciding component."
+    },
+    "hints": {
+      "ko": [
+        "\"정책 ___\" — policy + engine.",
+        "엔진(engine) 이 판단하고, 관리자(administrator) 가 실행한다."
+      ],
+      "en": [
+        "\"policy ___\" - policy + engine.",
+        "The engine decides; a paired administrator acts."
+      ]
+    }
+  },
+  {
+    "id": "t4_ztscim",
+    "tier": 4,
+    "cat": "identity",
+    "track": "zerotrust",
+    "points": 160,
+    "ci": true,
+    "hash": "474a4139b79689269d0a7cb075400d54210bc5f55dd9b87985b7fcf70232c269",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "입사하면 계정, 퇴사하면 삭제",
+      "en": "Account on Hire, Gone on Departure"
+    },
+    "prompt": {
+      "ko": "제로 트러스트에서 계정 수명주기 자동화는 핵심이다. HR 시스템에서 입사가 확정되면 즉시 필요한 모든 앱에 계정이 생성되고, 퇴사 시각에 맞춰 전 앱에서 동시에 비활성화된다 — 방치된 계정(고아 계정)이 공격면이 되지 않도록. IdP 와 앱 사이의 이 사용자 프로비저닝/디프로비저닝 표준의 네 글자 약어는?",
+      "en": "In zero trust, automating the account lifecycle is essential. When HR confirms a hire, accounts are created at once in every app that's needed; at the minute of departure they are disabled across all apps simultaneously — so no stale (orphan) account becomes attack surface. Give the four-letter acronym for this user provisioning/deprovisioning standard between the IdP and apps."
+    },
+    "hints": {
+      "ko": [
+        "\"System for Cross-domain Identity Management\".",
+        "\"스킴(skim)\"이라고 읽는다."
+      ],
+      "en": [
+        "\"System for Cross-domain Identity Management\".",
+        "Pronounced \"skim\"."
+      ]
+    }
+  },
+  {
+    "id": "t4_ztagentless",
+    "tier": 4,
+    "cat": "ztna",
+    "track": "zerotrust",
+    "points": 160,
+    "ci": true,
+    "hash": "d4da05401722d0b0de037850b5e5aa188802854054f1d69fd7e06bb91b1d43e1",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "브라우저만 있으면 된다",
+      "en": "A Browser Is All You Need"
+    },
+    "prompt": {
+      "ko": "ZTNA 배포에는 두 방식이 있다. 하나는 기기에 클라이언트를 깔고 신원·기기 상태를 컨트롤러에 보내 앱별 터널을 연다. 다른 하나는 클라이언트 설치 없이, 사용자가 브라우저로 접속하면 ZTNA 프록시가 IdP 인증 뒤 앱 대신 응답한다. 이 클라이언트 없는 방식을 부르는 영어 한 단어는?",
+      "en": "ZTNA has two deployment styles. One installs a client on the device that reports identity and device state to the controller and opens per-app tunnels. The other needs no client at all: the user connects via a browser and the ZTNA proxy responds on the app's behalf after IdP auth. Give the one English word for this client-free style."
+    },
+    "hints": {
+      "ko": [
+        "\"agent\" + \"-less\" (없음).",
+        "반대는 agent-based(에이전트 기반)."
+      ],
+      "en": [
+        "\"agent\" + \"-less\".",
+        "The opposite is agent-based."
+      ]
+    }
+  },
+  {
+    "id": "t4_ztpdp",
+    "tier": 4,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 160,
+    "ci": true,
+    "hash": "b78df455e7e2088f31b9bc5b5b4c34718b1e77f2846a846107f456dd74622a35",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "판단을 내리는 논리 컴포넌트",
+      "en": "The Logical Component That Rules"
+    },
+    "prompt": {
+      "ko": "표준 참조 제로 트러스트 아키텍처에서, 주체의 접근 요청을 받아 허용/거부를 판단하고 그 판정을 집행 지점(enforcement point)에 넘기는 논리 컴포넌트가 있다. 내부적으로는 판단부와 실행부로 나뉘지만, 하나로 묶어 세 글자 약어로 부른다. 이 약어는?",
+      "en": "In the standard reference zero trust architecture, a logical component receives the subject's access request, rules allow or deny, and hands the verdict to the enforcement point. Internally it splits into a deciding part and an acting part, but as a whole it goes by a three-letter acronym. Give it."
+    },
+    "hints": {
+      "ko": [
+        "\"Policy ___ Point\" — 집행 지점(P.E.P.)의 짝.",
+        "판단(decision)을 내리는 쪽. P.D.P."
+      ],
+      "en": [
+        "\"Policy ___ Point\" - the pair of the enforcement point (P.E.P.).",
+        "The side that makes the decision. P.D.P."
+      ]
+    }
+  },
+  {
+    "id": "t4_zttrustalgo",
+    "tier": 4,
+    "cat": "policy",
+    "track": "zerotrust",
+    "points": 160,
+    "ci": true,
+    "hash": "f86440363b9b9ce8524a46991c21414f84d4a65b5cf2dfa1b96d455dc7785be9",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "결정을 내리는 계산식",
+      "en": "The Formula Behind the Verdict"
+    },
+    "prompt": {
+      "ko": "표준 참조 제로 트러스트 아키텍처는 접근 결정의 핵심 계산 로직에 이름을 붙였다. 주체의 과거 행동, 요청하는 자산의 상태, 위협 인텔리전스, 환경 요소를 입력받아 점수화하고, 정해진 임계값과 비교해 허용 여부를 낸다. \"신뢰 ___\"(trust ___)로 불리는 이 결정 로직을, 두 단어로 답하라.",
+      "en": "The standard reference zero trust architecture gives a name to the core computation behind an access decision. It takes the subject's history, the requested asset's state, threat intelligence and environmental factors, scores them, and compares against a set threshold to produce allow or deny. It is called the \"trust ___\". Answer with the two-word term."
+    },
+    "hints": {
+      "ko": [
+        "점수를 내는 \"계산 절차\".",
+        "\"trust\" + \"algorithm\"."
+      ],
+      "en": [
+        "The step-by-step \"computation\" that produces the score.",
+        "\"trust\" + \"algorithm\"."
+      ]
+    }
+  },
+  {
+    "id": "t4_ztcapstone",
+    "tier": 4,
+    "cat": "ztna",
+    "track": "zerotrust",
+    "points": 250,
+    "ci": false,
+    "hash": "f8012ce9989ed3507b6a04e30fbe74b4db8f4b1785441c5df69db95d91133c79",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "기기 포스처 종합 점수",
+      "en": "Device Posture Composite Score"
+    },
+    "prompt": {
+      "ko": "제로 트러스트 접근 결정에 쓰이는 기기 포스처 점수를 아래 배점으로 계산한다:\n\n- 하드웨어: TPM 2.0 +10, 측정 부팅(measured boot) +8, 디스크 암호화 +7\n- OS: 30일 이내 패치 +15, 방화벽 켜짐 +8, 최신 백신 +7\n- 에이전트: 엔드포인트 탐지 에이전트 실행 +15, MDM 등록 +10\n- 행동: 최근 이상 탐지 1건당 −10, 비업무시간 접근이면 −5\n\n아래 기기 프로필의 총점을 구해 `FLAG{POSTURE_<총점>}` 을 제출하라.\n\n```\ntpm_2_0:          yes\nmeasured_boot:    no\ndisk_encryption:  yes\npatched_30d:      yes\nfirewall:         yes\ncurrent_av:       yes\nendpoint_agent:   yes\nmdm_enrolled:     no\nrecent_anomalies: 2\noff_hours:        no\n```",
+      "en": "Compute the device posture score used in a zero trust access decision, with this weighting:\n\n- Hardware: TPM 2.0 +10, measured boot +8, disk encryption +7\n- OS: patched within 30 days +15, firewall on +8, current AV +7\n- Agent: endpoint detection agent running +15, MDM enrolled +10\n- Behavior: -10 per recent anomaly, -5 if the access is off-hours\n\nWork out the total for the device profile below and submit `FLAG{POSTURE_<total>}`.\n\n```\ntpm_2_0:          yes\nmeasured_boot:    no\ndisk_encryption:  yes\npatched_30d:      yes\nfirewall:         yes\ncurrent_av:       yes\nendpoint_agent:   yes\nmdm_enrolled:     no\nrecent_anomalies: 2\noff_hours:        no\n```"
+    },
+    "hints": {
+      "ko": [
+        "하드웨어 10+0+7=17, OS 15+8+7=30, 에이전트 15+0=15, 행동 −20+0=−20.",
+        "17+30+15−20 = 42."
+      ],
+      "en": [
+        "Hardware 10+0+7=17, OS 15+8+7=30, agent 15+0=15, behavior -20+0=-20.",
+        "17+30+15-20 = 42."
       ]
     }
   }
