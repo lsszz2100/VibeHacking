@@ -172,6 +172,14 @@ const TRACKS = [
     "en": "Advanced Reversing",
     "desc_ko": "안티디버깅 우회·언패킹과 난독화 해제·심볼릭 실행·바이너리 분석과 패치 디핑.",
     "desc_en": "Bypassing anti-debug, unpacking and deobfuscation, symbolic execution, binary analysis and patch diffing."
+  },
+  {
+    "id": "pwn",
+    "icon": "💥",
+    "ko": "바이너리 익스플로잇 심화",
+    "en": "Advanced Binary Exploitation",
+    "desc_ko": "스택·힙 손상 프리미티브, 고급 코드 재사용 체인, glibc 힙 내부 공격, 현대 완화 기법 우회.",
+    "desc_en": "Memory-corruption primitives, advanced code-reuse chains, glibc heap-internal attacks, and bypassing modern mitigations."
   }
 ];
 
@@ -1708,11 +1716,11 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "Global Offset Table 의 머리글자입니다.",
-        "짝을 이루는 것은 `PLT`(Procedure Linkage Table) 입니다."
+        "짝을 이루는 것은 프로시저 링키지 테이블입니다."
       ],
       "en": [
         "Initials of 'Global Offset Table'.",
-        "Its counterpart is the `PLT` (Procedure Linkage Table)."
+        "Its counterpart is the procedure linkage table."
       ]
     }
   },
@@ -15890,6 +15898,986 @@ const CHALLENGES = [
       "en": [
         "12 edges, 9 nodes → m = 5; three APIs.",
         "7.6 ≥ 7.2 so PACKED."
+      ]
+    }
+  },
+  {
+    "id": "t0_pwnrip",
+    "tier": 0,
+    "cat": "corruption",
+    "track": "pwn",
+    "points": 50,
+    "ci": true,
+    "hash": "ec23f21a695f29e3a2f846d6582b11df07c01c17023ac9c1c3c5bbb882956664",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "다음 명령이 가리키는 곳",
+      "en": "Where Execution Points Next"
+    },
+    "prompt": {
+      "ko": "함수 에필로그가 저장된 값을 스택에서 꺼내 그 주소로 점프한다. 이 “다음에 실행할 명령의 주소”를 담는 x86-64 레지스터의 세 글자 이름은? 이것을 덮으면 실행 흐름을 가로챈다.",
+      "en": "A function epilogue pops a saved value off the stack and jumps to it. What is the three-letter x86-64 register that holds the address of the next instruction to run? Overwriting it hijacks control."
+    },
+    "hints": {
+      "ko": [
+        "x86 에서는 EIP 였다.",
+        "명령 포인터의 64비트 이름."
+      ],
+      "en": [
+        "On x86 it was EIP.",
+        "The 64-bit name of the instruction pointer."
+      ]
+    }
+  },
+  {
+    "id": "t0_pwnsigsegv",
+    "tier": 0,
+    "cat": "corruption",
+    "track": "pwn",
+    "points": 50,
+    "ci": true,
+    "hash": "df2e2388b8dd82c3a4420a1321ee7036ab5bc8e9e6770557c4f59149376041fa",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "잘못된 접근이 부르는 신호",
+      "en": "The Signal for a Bad Access"
+    },
+    "prompt": {
+      "ko": "매핑되지 않은 주소를 읽거나 쓰면 커널이 프로세스에 전달하는 POSIX 시그널의 이름은? 크래시 로그의 “segmentation fault” 뒤에 있는 그 시그널이다.",
+      "en": "When a process reads or writes an unmapped address, the kernel delivers a POSIX signal. Name it — the signal behind a \"segmentation fault\" crash."
+    },
+    "hints": {
+      "ko": [
+        "SIG 로 시작한다.",
+        "번호는 11번."
+      ],
+      "en": [
+        "It starts with SIG.",
+        "Its number is 11."
+      ]
+    }
+  },
+  {
+    "id": "t1_pwnshellcode",
+    "tier": 1,
+    "cat": "corruption",
+    "track": "pwn",
+    "points": 65,
+    "ci": true,
+    "hash": "698dbb84c72062561f3dcefcad776b1daf38ce2de3e060d971fec8ed878ffc5f",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "셸을 띄우는 작은 코드",
+      "en": "Small Code That Pops a Shell"
+    },
+    "prompt": {
+      "ko": "공격자가 버퍼에 밀어 넣는, 보통 위치 독립적인 짧은 기계어 조각으로 실행되면 execve(\"/bin/sh\") 같은 것을 수행한다. 이 주입 코드의 한 단어 명칭은?",
+      "en": "A short, usually position-independent chunk of machine code an attacker injects into a buffer; when executed it does something like execve(\"/bin/sh\"). What is the one-word name for this injected code?"
+    },
+    "hints": {
+      "ko": [
+        "셸 + 코드.",
+        "NX 가 켜지면 그대로는 실행되지 않는다."
+      ],
+      "en": [
+        "Shell + code.",
+        "With NX on, it will not run as-is."
+      ]
+    }
+  },
+  {
+    "id": "t1_pwnnx",
+    "tier": 1,
+    "cat": "mitigation",
+    "track": "pwn",
+    "points": 65,
+    "ci": true,
+    "hash": "e5b564a7a4059dccb9c20cd678603a6f30c5f3db3af9b421e7f87eb37b030337",
+    "fmt": "약어 / acronym (2글자 / 2 chars)",
+    "title": {
+      "ko": "실행 못 하는 페이지",
+      "en": "A Page You Cannot Run"
+    },
+    "prompt": {
+      "ko": "스택·힙 같은 데이터 페이지를 실행 불가로 표시해 주입된 셸코드가 그 위에서 실행되지 않게 하는 CPU 비트의 두 글자 이름은? AMD 가 붙인 이름이며 인텔은 XD, 윈도우는 DEP 라 부른다.",
+      "en": "The two-letter name of the CPU bit that marks data pages (stack, heap) non-executable so injected shellcode cannot run there. It is AMD's name; Intel calls it XD and Windows calls it DEP."
+    },
+    "hints": {
+      "ko": [
+        "No-eXecute.",
+        "우회하려면 코드 재사용으로 넘어가야 한다."
+      ],
+      "en": [
+        "No-eXecute.",
+        "To bypass it you pivot to code reuse."
+      ]
+    }
+  },
+  {
+    "id": "t1_pwnplt",
+    "tier": 1,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 65,
+    "ci": true,
+    "hash": "013bf32a27d95e317699b1104f097bc4e71f0bf15cdbb27c03b652e6cfc503b9",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "지연 바인딩의 도약대",
+      "en": "The Trampoline of Lazy Binding"
+    },
+    "prompt": {
+      "ko": "동적 링크 바이너리에서 라이브러리 함수를 처음 호출할 때 거치는 트램펄린 스텁 표의 세 글자 약어는? 각 엔트리는 해석된 주소 표를 통해 점프하며, 미해석 시 리졸버로 넘긴다.",
+      "en": "The three-letter acronym for the trampoline stub table a dynamically linked binary jumps through on the first call to a library function. Each entry jumps via the resolved-address table, falling through to the resolver when unresolved."
+    },
+    "hints": {
+      "ko": [
+        "Procedure Linkage ___.",
+        "짝을 이루는 표는 전역 오프셋 테이블."
+      ],
+      "en": [
+        "Procedure Linkage ___.",
+        "Its partner is the global offset table."
+      ]
+    }
+  },
+  {
+    "id": "t1_pwngadget",
+    "tier": 1,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 65,
+    "ci": true,
+    "hash": "4e5aa69abae351334eed8431e02b51275cfcd3cb31bc544887544eb6a9d2e155",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "ret 로 끝나는 조각",
+      "en": "A Snippet Ending in ret"
+    },
+    "prompt": {
+      "ko": "코드 재사용 체인에서 사용하는, `ret` 로 끝나는 짧은 기존 명령 시퀀스(예: `pop rdi ; ret`) 하나하나를 부르는 한 단어는?",
+      "en": "The one word for each short existing instruction sequence ending in `ret` (e.g. `pop rdi ; ret`) that a code-reuse chain links together."
+    },
+    "hints": {
+      "ko": [
+        "ROPgadget·ropper 로 찾는다.",
+        "여러 개를 이어 붙이면 체인이 된다."
+      ],
+      "en": [
+        "You find them with ROPgadget or ropper.",
+        "Chaining several makes a chain."
+      ]
+    }
+  },
+  {
+    "id": "t1_pwnfastbin",
+    "tier": 1,
+    "cat": "heap",
+    "track": "pwn",
+    "points": 65,
+    "ci": true,
+    "hash": "ba84aa09f7835d3e8eff2b7091d85a2972c07155bac4184d5d58270e53d54c36",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "작은 청크의 단일 연결 통",
+      "en": "Single-Linked Bin for Small Chunks"
+    },
+    "prompt": {
+      "ko": "glibc 힙에서 가장 작은 크기 클래스의 해제 청크를 LIFO 단일 연결 리스트로 담아 두는 통의 한 단어 이름은? 합치기(coalescing)를 건너뛰어 빠르지만 fd 위조 공격의 표적이 된다.",
+      "en": "The one-word name of the glibc heap container that holds freed chunks of the smallest size classes in a LIFO singly linked list. It skips coalescing for speed, which makes it a target for fd-forgery attacks."
+    },
+    "hints": {
+      "ko": [
+        "빠르다는 뜻의 접두어 + 통.",
+        "tcache 가 도입되기 전 주력 표적이었다."
+      ],
+      "en": [
+        "The \"fast\" prefix + bin.",
+        "It was the main target before tcache existed."
+      ]
+    }
+  },
+  {
+    "id": "t1_pwnrelro",
+    "tier": 1,
+    "cat": "mitigation",
+    "track": "pwn",
+    "points": 65,
+    "ci": true,
+    "hash": "e7a95bb25161b45cd5ebea12731bb3bb62dbc89317f15606f6f9b9765f79e5d5",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "시작 후 읽기 전용",
+      "en": "Read-Only After Startup"
+    },
+    "prompt": {
+      "ko": "로더가 재배치를 마친 뒤 전역 오프셋 테이블 같은 링킹 관련 섹션을 읽기 전용으로 만들어 덮어쓰기를 막는 완화 기법의 다섯 글자 약어는? Full 모드는 지연 바인딩을 끄고 그 표 전체를 잠근다. NX 와 함께 흔히 켜진다.",
+      "en": "The five-letter acronym for the mitigation that, after the loader finishes relocations, marks linking-related sections such as the global offset table read-only to block overwrites. Full mode disables lazy binding and locks that entire table. It is commonly enabled alongside NX."
+    },
+    "hints": {
+      "ko": [
+        "RELocation Read-Only.",
+        "partial 과 full 두 단계가 있다."
+      ],
+      "en": [
+        "RELocation Read-Only.",
+        "It has partial and full levels."
+      ]
+    }
+  },
+  {
+    "id": "t2_pwnret2csu",
+    "tier": 2,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 90,
+    "ci": true,
+    "hash": "21e0d550675f480968037b2d9672e139c4d24e2ac5f69267bec5a761717141d2",
+    "fmt": "값 그대로 / literal (7글자 / 7 chars)",
+    "title": {
+      "ko": "초기화 루틴의 만능 조각",
+      "en": "A Universal Snippet in the Init Routine"
+    },
+    "prompt": {
+      "ko": "`__libc_csu_init` 안의 두 블록을 이용해 rbx·rbp·r12·r13·r14·r15 를 채우고 rdx·rsi·edi 를 세팅해 임의 함수를 호출하는, x86-64 SysV 에서 쓰는 기법의 이름은? (retN… 형태)",
+      "en": "The name of the x86-64 SysV technique that abuses the two blocks inside `__libc_csu_init` to load rbx/rbp/r12/r13/r14/r15 and set rdx/rsi/edi to call an arbitrary function. (Of the form retN…)"
+    },
+    "hints": {
+      "ko": [
+        "ret2 + 그 init 심볼의 약어.",
+        "인자 세 개까지 제어할 때 흔히 쓴다."
+      ],
+      "en": [
+        "ret2 + the short name of that init symbol.",
+        "Common when you need control of up to three arguments."
+      ]
+    }
+  },
+  {
+    "id": "t2_pwnsrop",
+    "tier": 2,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 90,
+    "ci": true,
+    "hash": "2206e6ea3d82c29cb7ad4b1ea2fd08120563daa4f2b9dcd5297fa799c9c261f9",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "가짜 프레임으로 모든 레지스터",
+      "en": "Every Register from a Forged Frame"
+    },
+    "prompt": {
+      "ko": "스택에 시그널 프레임을 위조하고 시그널 복귀 시스템 콜을 호출해 한 번에 모든 레지스터(명령 포인터 포함)를 원하는 값으로 세팅하는 공격 기법의 네 글자 약어는?",
+      "en": "The four-letter acronym for the attack that forges a signal frame on the stack and calls the signal-return syscall to set every register (including the instruction pointer) at once to chosen values."
+    },
+    "hints": {
+      "ko": [
+        "Signal-Return-Oriented ___.",
+        "gadget 하나로 레지스터 전체를 통제한다."
+      ],
+      "en": [
+        "Signal-Return-Oriented ___.",
+        "One gadget controls the whole register set."
+      ]
+    }
+  },
+  {
+    "id": "t2_pwnstackpivot",
+    "tier": 2,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 90,
+    "ci": true,
+    "hash": "c558059f483163db4c90e89504d2f476cbd934c012201aaaa5cb8e6bd0b155a0",
+    "fmt": "두 단어 / two words (11글자 / 11 chars)",
+    "title": {
+      "ko": "rsp 를 옮겨 심다",
+      "en": "Move rsp Where You Control"
+    },
+    "prompt": {
+      "ko": "NX 때문에 셸코드를 직접 실행할 수 없을 때, 짧은 버퍼밖에 못 덮으면 rsp 를 공격자 통제 영역(예: .bss 나 힙)으로 옮겨 더 긴 체인을 이어 간다. 이 두 단어 기법은? `xchg eax, esp` 나 `leave ; ret` 같은 조각으로 수행한다.",
+      "en": "With NX blocking injected shellcode, when you can only overwrite a short buffer, this two-word technique moves rsp into an attacker-controlled area (e.g. .bss or heap) to continue a longer chain. It is done with snippets like `xchg eax, esp` or `leave ; ret`."
+    },
+    "hints": {
+      "ko": [
+        "스택 + 회전축.",
+        "짧은 오버플로에서 긴 체인으로 넘어가는 다리."
+      ],
+      "en": [
+        "Stack + a pivot point.",
+        "The bridge from a short overflow to a long chain."
+      ]
+    }
+  },
+  {
+    "id": "t2_pwndoublefree",
+    "tier": 2,
+    "cat": "heap",
+    "track": "pwn",
+    "points": 90,
+    "ci": true,
+    "hash": "d040424042bb9e3bb2550ca5212f4309c758fc11c29e77c13cca5c113361710d",
+    "fmt": "두 단어 / two words (11글자 / 11 chars)",
+    "title": {
+      "ko": "같은 청크를 두 번",
+      "en": "The Same Chunk Twice"
+    },
+    "prompt": {
+      "ko": "이미 해제된 힙 청크를 한 번 더 free 하여 같은 청크가 통(bin)에 두 번 올라가게 만드는 버그의 두 단어 이름은? 이후 malloc 두 번으로 같은 주소를 두 포인터가 갖게 된다.",
+      "en": "The two-word name for the bug that frees an already-freed heap chunk so the same chunk sits in a bin twice. Two later mallocs then hand the same address to two pointers."
+    },
+    "hints": {
+      "ko": [
+        "한 번 더 free.",
+        "glibc 는 fastbin 맨 앞 중복만 검사한다."
+      ],
+      "en": [
+        "Free it once more.",
+        "glibc only checks the immediate fastbin top for a repeat."
+      ]
+    }
+  },
+  {
+    "id": "t2_pwnsafelink",
+    "tier": 2,
+    "cat": "mitigation",
+    "track": "pwn",
+    "points": 90,
+    "ci": true,
+    "hash": "0059ecd08cbbb51d4f142df636c8a4dbb7090f2255a3798cdb307236ad211fe4",
+    "fmt": "한 단어 / one word (12글자 / 12 chars, - 포함 / include -)",
+    "title": {
+      "ko": "포인터를 주소로 뒤섞기",
+      "en": "Mangling Pointers with Their Address"
+    },
+    "prompt": {
+      "ko": "glibc 2.32 부터 tcache·fastbin 의 fd 포인터를 그 청크가 놓인 주소로 뒤섞어(XOR) 저장해 단순 fd 위조를 어렵게 만든 완화 기법의 이름은? 하이픈 한 개가 들어간다.",
+      "en": "The name of the glibc 2.32+ mitigation that stores tcache/fastbin fd pointers XOR-mangled with the address of the chunk holding them, so a naive fd forgery no longer works. It contains one hyphen."
+    },
+    "hints": {
+      "ko": [
+        "안전한 + 연결.",
+        "우회하려면 heap 주소 leak 이 먼저 필요하다."
+      ],
+      "en": [
+        "Safe + linking.",
+        "Bypassing it first needs a heap address leak."
+      ]
+    }
+  },
+  {
+    "id": "t2_pwnhouseofforce",
+    "tier": 2,
+    "cat": "heap",
+    "track": "pwn",
+    "points": 90,
+    "ci": true,
+    "hash": "739f15744beb9c7e55e4a85b5d4db9fe7e6cb224b4c6f579815dc6e6f9876a21",
+    "fmt": "문구 / phrase (14글자 / 14 chars)",
+    "title": {
+      "ko": "탑 청크 크기를 최대로",
+      "en": "Max Out the Top Chunk Size"
+    },
+    "prompt": {
+      "ko": "탑 청크의 size 필드를 0xffff…ffff 로 덮은 뒤, 다음 malloc 요청 크기를 조절해 그 할당이 임의 주소를 반환하게 만드는 고전 힙 기법의 세 단어 이름은? (fastbin 같은 통을 거치지 않고 탑 청크만 노린다. House …)",
+      "en": "The three-word name of the classic heap technique that overwrites the top chunk's size field with 0xffff…ffff, then sizes the next malloc so the allocation returns an arbitrary address. (It targets only the top chunk, not bins like fastbin. House …)"
+    },
+    "hints": {
+      "ko": [
+        "House of ___ — 힘으로 밀어붙인다.",
+        "탑 청크를 강제로 크게 만든다."
+      ],
+      "en": [
+        "House of ___ — brute strength.",
+        "It forces the top chunk large."
+      ]
+    }
+  },
+  {
+    "id": "t2_pwnoffset",
+    "tier": 2,
+    "cat": "corruption",
+    "track": "pwn",
+    "points": 150,
+    "ci": false,
+    "hash": "cc0e1570e711f7a78a9034955730a5e8f8230dc2fb0038221f49ed504a4025c8",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "리턴 주소까지의 거리",
+      "en": "Distance to the Return Address"
+    },
+    "prompt": {
+      "ko": "아래 스택 프레임 레이아웃에서 버퍼 시작부터 저장된 리턴 주소를 덮기 시작하는 지점까지의 바이트 수를 구해 `FLAG{OFFSET_<n>}` 로 제출하라 (n 은 십진수).\n\n```\nbuffer: 64\nsaved_rbp: 8\n```",
+      "en": "From the stack-frame layout below, compute the number of bytes from the start of the buffer to where the saved return address begins, and submit `FLAG{OFFSET_<n>}` (n in decimal).\n\n```\nbuffer: 64\nsaved_rbp: 8\n```"
+    },
+    "hints": {
+      "ko": [
+        "버퍼를 지나 저장된 rbp 까지 채운 뒤가 리턴 주소.",
+        "64 + 8."
+      ],
+      "en": [
+        "Fill past the buffer and the saved rbp; the return address is next.",
+        "64 + 8."
+      ]
+    }
+  },
+  {
+    "id": "t2_pwnrebase",
+    "tier": 2,
+    "cat": "mitigation",
+    "track": "pwn",
+    "points": 150,
+    "ci": false,
+    "hash": "27ec145a053b5a790794a09ce5fd4bd766961fabc34f1b17c5466030a9bb39fd",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "유출된 주소로 기준 되찾기",
+      "en": "Recover the Base From a Leak"
+    },
+    "prompt": {
+      "ko": "위치 독립 실행 파일에서 한 심볼의 런타임 주소가 유출됐다. 그 심볼의 이미지 내 고정 오프셋을 빼서 로드 기준 주소를 구하고 `FLAG{BASE_<HEX>}` 로 제출하라 (HEX 는 0x 없이 대문자).\n\n```\nleaked_addr: 0x5566aab3b189\nsymbol_offset: 0x1189\n```",
+      "en": "A symbol's runtime address leaked from a position-independent binary. Subtract its fixed in-image offset to get the load base and submit `FLAG{BASE_<HEX>}` (HEX uppercase, no 0x).\n\n```\nleaked_addr: 0x5566aab3b189\nsymbol_offset: 0x1189\n```"
+    },
+    "hints": {
+      "ko": [
+        "base = leaked_addr - symbol_offset.",
+        "기준 주소는 페이지 정렬(끝이 000)이어야 맞다."
+      ],
+      "en": [
+        "base = leaked_addr - symbol_offset.",
+        "A correct base is page-aligned (ends in 000)."
+      ]
+    }
+  },
+  {
+    "id": "t3_pwnbrop",
+    "tier": 3,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 130,
+    "ci": true,
+    "hash": "5fc7b092817bdcb850a9bb00aeb86e89df1bc8e2f81f4d56449f8f6bf8a83522",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "바이너리 없이 원격에서",
+      "en": "Remote, With No Binary"
+    },
+    "prompt": {
+      "ko": "바이너리 사본 없이, 크래시 여부만 관찰되는 fork 형 원격 서비스에서 스택 가드값과 gadget 을 한 바이트씩 추론해 익스플로잇을 세우는 기법의 네 글자 약어는? (Blind …)",
+      "en": "The four-letter acronym for building an exploit against a forking remote service — with no copy of the binary — by inferring the stack guard value and gadgets one byte at a time from crash/no-crash behavior. (Blind …)"
+    },
+    "hints": {
+      "ko": [
+        "Blind Return-Oriented ___.",
+        "fork 는 자식이 죽어도 스택 가드값이 유지된다는 점을 이용."
+      ],
+      "en": [
+        "Blind Return-Oriented ___.",
+        "It exploits that a fork keeps the stack guard value even when a child dies."
+      ]
+    }
+  },
+  {
+    "id": "t3_pwnonegadget",
+    "tier": 3,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 130,
+    "ci": true,
+    "hash": "f5068638402438158518b3c573ad03a75f805fc8d56e52870de41d27894479b5",
+    "fmt": "한 단어 / one word (10글자 / 10 chars, - 포함 / include -)",
+    "title": {
+      "ko": "제약만 맞으면 셸",
+      "en": "A Shell If the Constraints Hold"
+    },
+    "prompt": {
+      "ko": "libc 안의 단 하나의 주소로 점프하면 특정 레지스터/스택 제약이 충족될 때 execve(\"/bin/sh\", …) 가 실행되는 그 주소(또는 이를 찾아 주는 도구)의 이름은? 하이픈 한 개가 들어간다.",
+      "en": "The name of the single libc address (or the tool that finds it) which, when its register/stack constraints hold, runs execve(\"/bin/sh\", …) on a jump there. It contains one hyphen."
+    },
+    "hints": {
+      "ko": [
+        "하나 + gadget.",
+        "제약(constraints)을 satisfy 해야 한다."
+      ],
+      "en": [
+        "One + gadget.",
+        "You must satisfy its constraints."
+      ]
+    }
+  },
+  {
+    "id": "t3_pwnret2dlresolve",
+    "tier": 3,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 130,
+    "ci": true,
+    "hash": "b5c23f4bf1ceec20228442f304fd9e0669721496ed26fb1e638f72a948d73ed5",
+    "fmt": "값 그대로 / literal (13글자 / 13 chars)",
+    "title": {
+      "ko": "리졸버를 속여 심볼 위조",
+      "en": "Trick the Resolver into a Symbol"
+    },
+    "prompt": {
+      "ko": "_dl_runtime_resolve 에 위조한 Elf64_Rela·Elf64_Sym·문자열을 넘겨, libc leak 없이 원하는 함수(예: system)를 동적 링커가 직접 해석·호출하게 만드는 기법의 이름은? (ret2 … resolve)",
+      "en": "The name of the technique that hands _dl_runtime_resolve a forged Elf64_Rela, Elf64_Sym and string so the dynamic linker itself resolves and calls a chosen function (e.g. system) with no libc leak. (ret2 … resolve)"
+    },
+    "hints": {
+      "ko": [
+        "ret2 + dl + resolve.",
+        "전역 오프셋 테이블이 쓰기 가능한 부분 강화 상태여야 성립."
+      ],
+      "en": [
+        "ret2 + dl + resolve.",
+        "Works when the global offset table is still writable (partial hardening)."
+      ]
+    }
+  },
+  {
+    "id": "t3_pwnfsop",
+    "tier": 3,
+    "cat": "heap",
+    "track": "pwn",
+    "points": 130,
+    "ci": true,
+    "hash": "720042b329958264bfdc14618da903012ca8ed031b253c098c076d90d67853d1",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "FILE 구조체를 무기로",
+      "en": "Weaponizing FILE Structures"
+    },
+    "prompt": {
+      "ko": "_IO_FILE 구조체와 그 vtable 포인터를 위조해, fflush·exit 같은 정리 과정에서 위조된 함수 포인터가 호출되도록 흐름을 가로채는 기법의 네 글자 약어는? (File Stream …)",
+      "en": "The four-letter acronym for hijacking control by forging _IO_FILE structures and their vtable pointers so a forged function pointer is invoked during cleanup like fflush or exit. (File Stream …)"
+    },
+    "hints": {
+      "ko": [
+        "File Stream Oriented ___.",
+        "_IO_list_all 을 자주 노린다."
+      ],
+      "en": [
+        "File Stream Oriented ___.",
+        "It often targets _IO_list_all."
+      ]
+    }
+  },
+  {
+    "id": "t3_pwnunlink",
+    "tier": 3,
+    "cat": "heap",
+    "track": "pwn",
+    "points": 130,
+    "ci": true,
+    "hash": "5baaa7e431673fcb271daf0382394bc75dd6afef1c106daecc6e377897eb8eee",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "연결 리스트에서 빼내기",
+      "en": "Splicing Out of a Linked List"
+    },
+    "prompt": {
+      "ko": "인접 free 청크를 병합할 때 리스트에서 청크를 빼내는 매크로가 `fd->bk = bk; bk->fd = fd` 를 수행하는데, fd·bk 를 위조하면 임의 주소 쓰기가 되는 고전 공격의 한 단어 이름은? (glibc 의 안전 검사가 이를 막는다.)",
+      "en": "When merging adjacent free chunks, the macro that splices a chunk out of a list runs `fd->bk = bk; bk->fd = fd`; forging fd and bk turns it into an arbitrary write. Give the one-word name of this classic attack. (glibc's safe-unlinking check now blocks it.)"
+    },
+    "hints": {
+      "ko": [
+        "리스트에서 노드를 “빼는” 동작 이름 그대로.",
+        "fd 와 bk 포인터를 위조한다."
+      ],
+      "en": [
+        "The very name of the \"remove a node from a list\" operation.",
+        "You forge the fd and bk pointers."
+      ]
+    }
+  },
+  {
+    "id": "t3_pwntcachepoison",
+    "tier": 3,
+    "cat": "heap",
+    "track": "pwn",
+    "points": 130,
+    "ci": true,
+    "hash": "f5a3e2f5bdb2ed7970be1074ebec3d174594c663638c0eb3f0f43f882803dda7",
+    "fmt": "두 단어 / two words (16글자 / 16 chars)",
+    "title": {
+      "ko": "캐시 fd 를 물들이다",
+      "en": "Poison the Cache fd"
+    },
+    "prompt": {
+      "ko": "해제된 tcache 청크의 next(fd) 포인터를 임의 주소로 덮어써, 두 번째 malloc 이 그 임의 주소를 반환하게 만드는 두 단어 기법은? use-after-free 나 overflow 로 fd 를 조작한다.",
+      "en": "The two-word technique that overwrites a freed tcache chunk's next (fd) pointer with an arbitrary address so a second malloc returns that arbitrary address. You corrupt the fd via a use-after-free or overflow."
+    },
+    "hints": {
+      "ko": [
+        "tcache + 중독.",
+        "fd 뒤섞기(mangling) 완화가 켜지면 막힌다."
+      ],
+      "en": [
+        "tcache + poisoning.",
+        "An fd-mangling mitigation stops it."
+      ]
+    }
+  },
+  {
+    "id": "t3_pwnfortify",
+    "tier": 3,
+    "cat": "mitigation",
+    "track": "pwn",
+    "points": 130,
+    "ci": true,
+    "hash": "4a58c6bdbbf52d5d3d7a5370b5bd560be5194f93d16ea7a817fd806ba289ab81",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "컴파일러가 크기를 안다",
+      "en": "The Compiler Knows the Size"
+    },
+    "prompt": {
+      "ko": "glibc 의 특정 빌드 강화 수준으로 컴파일하면 memcpy·sprintf·strcpy 등이 목적지 버퍼 크기를 아는 검사판(`__memcpy_chk` 등)으로 바뀌어 오버플로를 런타임에 잡는다. “강하게 하다”라는 뜻의, 이 강화 기능을 부르는 한 단어 영어 동사는? (기능 매크로 이름의 앞 단어이기도 하다.)",
+      "en": "Compiling at a certain glibc build-hardening level swaps memcpy/sprintf/strcpy for checked variants (`__memcpy_chk`, …) that know the destination buffer size and catch overflows at runtime. What one-word English verb — meaning \"to make strong\" — names this hardening? (It is also the leading word of the feature-macro name.)"
+    },
+    "hints": {
+      "ko": [
+        "“요새화하다”라는 뜻의 영어 동사.",
+        "기능 매크로 이름(`_____SOURCE`)의 앞 단어이기도 하다."
+      ],
+      "en": [
+        "The English verb meaning \"to strengthen\".",
+        "Also the leading word of the `_____SOURCE` feature macro."
+      ]
+    }
+  },
+  {
+    "id": "t3_pwnpartial",
+    "tier": 3,
+    "cat": "mitigation",
+    "track": "pwn",
+    "points": 130,
+    "ci": true,
+    "hash": "52b6c8f0483a56c642fbacd119398fa538323af684601aa5cd17bb8a22552064",
+    "fmt": "두 단어 / two words (17글자 / 17 chars)",
+    "title": {
+      "ko": "하위 바이트만 덮기",
+      "en": "Overwrite Only the Low Bytes"
+    },
+    "prompt": {
+      "ko": "주소 무작위화가 있어도 한 페이지 안의 하위 12비트 오프셋은 고정이다. 포인터의 하위 1~2바이트만 덮어 같은 라이브러리 안 다른 위치로 흐름을 돌리는, 전체 주소 leak 없이 쓰는 두 단어 기법은?",
+      "en": "Even under address randomization, the low 12-bit offset within a page is fixed. The two-word technique that overwrites only a pointer's low 1–2 bytes to redirect flow to a nearby location in the same library, with no full address leak — name it."
+    },
+    "hints": {
+      "ko": [
+        "부분 + 덮어쓰기.",
+        "1바이트면 정렬 니블은 확정, 상위는 브루트포스."
+      ],
+      "en": [
+        "Partial + overwrite.",
+        "One byte fixes the aligned nibble; brute the rest."
+      ]
+    }
+  },
+  {
+    "id": "t3_pwnlibcbase",
+    "tier": 3,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 200,
+    "ci": false,
+    "hash": "6542320ffbb8e1a1a6b033b97449ffc286ddc079843be2c0dd1dd98a46790c4f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "leak 에서 system 주소로",
+      "en": "From a Leak to system"
+    },
+    "prompt": {
+      "ko": "puts 의 런타임 주소가 유출됐다. 아래 libc 오프셋들로 libc 기준 주소를 구한 뒤 system 의 런타임 주소를 계산해 `FLAG{SYSTEM_<HEX>}` 로 제출하라 (HEX 는 0x 없이 대문자).\n\n```\nleaked_puts: 0x7f8e4c0a4aa0\nputs_offset: 0x84420\nsystem_offset: 0x52290\n```",
+      "en": "The runtime address of puts leaked. Using the libc offsets below, recover the libc base, then compute the runtime address of system and submit `FLAG{SYSTEM_<HEX>}` (HEX uppercase, no 0x).\n\n```\nleaked_puts: 0x7f8e4c0a4aa0\nputs_offset: 0x84420\nsystem_offset: 0x52290\n```"
+    },
+    "hints": {
+      "ko": [
+        "base = leaked_puts - puts_offset.",
+        "system = base + system_offset."
+      ],
+      "en": [
+        "base = leaked_puts - puts_offset.",
+        "system = base + system_offset."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwnsigreturn",
+    "tier": 4,
+    "cat": "codereuse",
+    "track": "pwn",
+    "points": 160,
+    "ci": true,
+    "hash": "1d090afdc178ac306e52a6b210f32bf16100f91219ace5ed42c48bec531fd7ba",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "핸들러 복귀 시스템 콜",
+      "en": "The Syscall That Returns From a Handler"
+    },
+    "prompt": {
+      "ko": "시그널 핸들러가 끝날 때 커널이 스택의 저장 프레임에서 모든 레지스터를 복원하려고 실행하는 시스템 콜의 한 단어 이름은? 가짜 시그널 프레임을 세우는 그 공격이 바로 이 시스템 콜을 악용한다.",
+      "en": "The one-word name of the syscall the kernel runs when a signal handler ends, to restore every register from the saved frame on the stack. The forged-signal-frame attack abuses exactly this syscall."
+    },
+    "hints": {
+      "ko": [
+        "sig + return.",
+        "rt_ 접두 버전도 있다."
+      ],
+      "en": [
+        "sig + return.",
+        "There is also an rt_-prefixed version."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwncet",
+    "tier": 4,
+    "cat": "mitigation",
+    "track": "pwn",
+    "points": 160,
+    "ci": true,
+    "hash": "014b813850156c80c54c8b76e3f616b39bf159542e35e63b96a98c2087901269",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "섀도 스택과 간접 분기 검사",
+      "en": "Shadow Stack and Branch Checks"
+    },
+    "prompt": {
+      "ko": "인텔의 하드웨어 제어 흐름 보호 기술로, 리턴 주소 사본을 보관하는 섀도 스택과 간접 분기의 목적지를 endbr 로 강제하는 IBT 를 합친 것의 세 글자 약어는?",
+      "en": "The three-letter acronym for Intel's hardware control-flow protection combining a shadow stack (a protected copy of return addresses) with IBT that forces computed branch targets to land on endbr."
+    },
+    "hints": {
+      "ko": [
+        "Control-flow Enforcement ___.",
+        "코드 재사용 공격을 하드웨어로 막으려는 기능."
+      ],
+      "en": [
+        "Control-flow Enforcement ___.",
+        "Hardware aimed at breaking code-reuse attacks."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwncfi",
+    "tier": 4,
+    "cat": "mitigation",
+    "track": "pwn",
+    "points": 160,
+    "ci": true,
+    "hash": "9a139df4b9daf5841eaa822faab8e1da7b615ed95ff9eeb30afd3c61a90c76d2",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "허용된 목적지만",
+      "en": "Only Sanctioned Targets"
+    },
+    "prompt": {
+      "ko": "간접 호출·리턴이 컴파일 시 계산된 허용 목적지 집합으로만 가도록 강제해 코드 재사용 공격을 막는 방어의 일반 명칭(세 글자 약어)은? Clang 의 구현과 마이크로소프트의 Control Flow Guard 가 그 예다.",
+      "en": "The three-letter acronym for the general class of defense that forces computed calls and returns to reach only a compile-time set of sanctioned targets, blocking code-reuse attacks. Clang's implementation and Microsoft's Control Flow Guard are examples."
+    },
+    "hints": {
+      "ko": [
+        "Control-Flow Integrity.",
+        "흐름 “무결성”을 지킨다."
+      ],
+      "en": [
+        "Control-Flow Integrity.",
+        "It preserves the integrity of control flow."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwnfastbindup",
+    "tier": 4,
+    "cat": "heap",
+    "track": "pwn",
+    "points": 160,
+    "ci": true,
+    "hash": "64ce5b64f3bbfd21b84757c55f528071e245bc823d9f5fe485980383e9b96243",
+    "fmt": "두 단어 / two words (11글자 / 11 chars)",
+    "title": {
+      "ko": "통 하나에 같은 청크 두 번",
+      "en": "Same Chunk Twice in One Bin"
+    },
+    "prompt": {
+      "ko": "작은 크기 청크를 A→B→A 순으로 free 하면(중간에 다른 청크를 끼워 즉시 중복 검사를 피함) 같은 청크가 그 단일 연결 통에 두 번 올라간다. 이 원자적 힙 공격의 두 단어 이름은? (tcache 가 없던 시절의 고전 기법이다.)",
+      "en": "Freeing small chunks in the order A→B→A (a different chunk between, to dodge the immediate-repeat check) lands the same chunk in that singly linked bin twice. Name this atomic heap attack in two words. (A classic from before tcache existed.)"
+    },
+    "hints": {
+      "ko": [
+        "fastbin + 복제.",
+        "A→B→A 로 즉시 중복 검사를 피한다."
+      ],
+      "en": [
+        "fastbin + duplicate.",
+        "A→B→A dodges the immediate-repeat check."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwntypeconfusion",
+    "tier": 4,
+    "cat": "corruption",
+    "track": "pwn",
+    "points": 160,
+    "ci": true,
+    "hash": "e6357c028fa10dcb2d26e2be866be51109036df7d1ece04973f92896590dcc9b",
+    "fmt": "두 단어 / two words (14글자 / 14 chars)",
+    "title": {
+      "ko": "다른 타입으로 착각",
+      "en": "Mistaken for Another Type"
+    },
+    "prompt": {
+      "ko": "한 타입으로 할당된 객체를 다른 타입으로 해석해 접근하게 만들어(예: 잘못된 캐스팅) 필드·vtable 을 오독하게 하는 버그 클래스의 두 단어 이름은? 브라우저 엔진 익스플로잇에서 특히 흔하다.",
+      "en": "The two-word name of the bug class where an object allocated as one type is accessed as another (e.g. a bad cast), so fields or vtables are misread. It is especially common in browser-engine exploits."
+    },
+    "hints": {
+      "ko": [
+        "타입 + 혼동.",
+        "유효한 포인터를 잘못된 레이아웃으로 읽는다."
+      ],
+      "en": [
+        "Type + confusion.",
+        "A valid pointer read with the wrong layout."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwnintoverflow",
+    "tier": 4,
+    "cat": "corruption",
+    "track": "pwn",
+    "points": 160,
+    "ci": true,
+    "hash": "0e070952ce1a5d30e21c0ee2fceade126a0a04f57363b246ba03373de6a48d37",
+    "fmt": "두 단어 / two words (16글자 / 16 chars)",
+    "title": {
+      "ko": "길이 계산이 넘칠 때",
+      "en": "When a Length Calculation Wraps"
+    },
+    "prompt": {
+      "ko": "크기·길이 산술이 타입의 최대값을 넘겨 작은 값으로 감싸이면(wrap), 이후 할당·복사 검사가 통과돼 힙 오버플로로 이어지는 버그 클래스의 두 단어 이름은?",
+      "en": "The two-word name of the bug class where size or length arithmetic exceeds a type's maximum and wraps to a small value, so a later allocation or copy check passes and a heap overflow follows."
+    },
+    "hints": {
+      "ko": [
+        "정수 + 넘침.",
+        "부호/무부호 혼용도 흔한 원인."
+      ],
+      "en": [
+        "Integer + overflow.",
+        "Signed/unsigned mixups are a common cause too."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwnpwntools",
+    "tier": 4,
+    "cat": "corruption",
+    "track": "pwn",
+    "points": 160,
+    "ci": true,
+    "hash": "e07b4702f67a3d9c1a1f3931c272863a00c57d2e96a18059770375addc2d5190",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "익스플로잇용 파이썬 프레임워크",
+      "en": "The Python Framework for Exploits"
+    },
+    "prompt": {
+      "ko": "CTF 익스플로잇 작성의 사실상 표준인 파이썬 라이브러리로 `cyclic`, `ELF`, `asm`, `p64`, 그리고 `process`/`remote` 튜브를 제공한다. 한 단어 이름은?",
+      "en": "The de-facto standard Python library for writing CTF exploits, providing `cyclic`, `ELF`, `asm`, `p64`, and `process`/`remote` tubes. Give its one-word name."
+    },
+    "hints": {
+      "ko": [
+        "pwn + tools.",
+        "`from pwn import *` 로 시작한다."
+      ],
+      "en": [
+        "pwn + tools.",
+        "You start with `from pwn import *`."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwnoffbyone",
+    "tier": 4,
+    "cat": "corruption",
+    "track": "pwn",
+    "points": 160,
+    "ci": true,
+    "hash": "ba206932f071ee45a0b7063bfc16fb59f2fde39dd1f50363a0291524e61a42fc",
+    "fmt": "한 단어 / one word (10글자 / 10 chars, - 포함 / include -)",
+    "title": {
+      "ko": "딱 한 바이트 넘어",
+      "en": "Just One Byte Too Far"
+    },
+    "prompt": {
+      "ko": "루프 경계나 널 종료 계산 실수로 버퍼 경계를 정확히 한 바이트 넘겨 쓰는 오류를 부르는 이름은? 힙에서는 인접 청크의 size 최하위 바이트를 건드려 “널 바이트 중독”으로 이어진다. 하이픈 두 개가 들어간다.",
+      "en": "The name for writing exactly one byte past a buffer boundary due to a loop-bound or null-terminator miscalculation. On the heap it clobbers the least-significant byte of the next chunk's size, leading to a \"null-byte poison\". It contains two hyphens."
+    },
+    "hints": {
+      "ko": [
+        "하나 만큼 어긋남.",
+        "off ___ ___ one."
+      ],
+      "en": [
+        "Off by a single count.",
+        "off ___ ___ one."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwnwilderness",
+    "tier": 4,
+    "cat": "heap",
+    "track": "pwn",
+    "points": 160,
+    "ci": true,
+    "hash": "7dab81ed42daebac0d1e21e7c115cc51447e9a816df707efd314d634d8d32a76",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "힙의 마지막 청크",
+      "en": "The Heap's Last Chunk"
+    },
+    "prompt": {
+      "ko": "힙의 끝에서 아직 매핑되지 않은 메모리(brk 경계)와 접해 있는, 필요 시 잘라 쓰는 마지막 대형 free 청크(=탑 청크)를 부르는 다른 한 단어 이름은? 이 청크는 fastbin·tcache 같은 작은 통에는 들어가지 않는다.",
+      "en": "The one-word alternative name for the heap's last large free chunk (the top chunk) that borders the yet-unmapped memory at the brk boundary and is carved from as needed. This chunk never enters small bins like fastbin or tcache."
+    },
+    "hints": {
+      "ko": [
+        "개척되지 않은 “황야”.",
+        "탑 청크의 size 를 노리는 그 고전 기법의 표적이다."
+      ],
+      "en": [
+        "The untamed \"frontier\".",
+        "It is the target of the classic top-chunk-size technique."
+      ]
+    }
+  },
+  {
+    "id": "t4_pwncapstone",
+    "tier": 4,
+    "cat": "heap",
+    "track": "pwn",
+    "points": 250,
+    "ci": false,
+    "hash": "5d63bb4403aede2d1fd2f5b23174605e8afa3794fd3715155c14d458f904d818",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔드투엔드 익스플로잇 브리핑",
+      "en": "End-to-End Exploit Brief"
+    },
+    "prompt": {
+      "ko": "아래 브리핑으로 익스플로잇 요약 플래그를 조립하라. 리턴 주소까지의 오프셋 = buffer + saved_rbp, libc 기준 = leaked_libc − libc_leak_offset, win 주소 = libc 기준 + onegadget_offset. nx 가 on 이면 태그는 NXON, 아니면 NXOFF. 제출: `FLAG{PWN_O<offset>_W<WIN_HEX>_<TAG>}` (WIN_HEX 는 0x 없이 대문자).\n\n```\nbuffer: 40\nsaved_rbp: 8\nleaked_libc: 0x7f4455a1c6a0\nlibc_leak_offset: 0x1ec6a0\nonegadget_offset: 0xe3afe\nnx: on\n```",
+      "en": "Assemble the exploit-summary flag from the brief below. offset to the return address = buffer + saved_rbp; libc base = leaked_libc − libc_leak_offset; win address = libc base + onegadget_offset. If nx is on the tag is NXON, else NXOFF. Submit `FLAG{PWN_O<offset>_W<WIN_HEX>_<TAG>}` (WIN_HEX uppercase, no 0x).\n\n```\nbuffer: 40\nsaved_rbp: 8\nleaked_libc: 0x7f4455a1c6a0\nlibc_leak_offset: 0x1ec6a0\nonegadget_offset: 0xe3afe\nnx: on\n```"
+    },
+    "hints": {
+      "ko": [
+        "offset = 40 + 8 = 48; base = leaked_libc − libc_leak_offset.",
+        "win = base + onegadget_offset; nx=on → NXON."
+      ],
+      "en": [
+        "offset = 40 + 8 = 48; base = leaked_libc − libc_leak_offset.",
+        "win = base + onegadget_offset; nx=on → NXON."
       ]
     }
   }

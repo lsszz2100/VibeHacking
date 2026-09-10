@@ -675,6 +675,55 @@ const SOLVERS = new Map([
     const k = apis.split(',').map((s) => s.trim()).filter(Boolean).length;
     return `FLAG{M${E - N + 2}_K${k}_${rand >= 7.2 ? 'PACKED' : 'CLEAN'}}`;
   } }],
+
+  ['t2_pwnoffset', { kind: 'computed', via: 'buffer size plus saved rbp gives the distance to the return address', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced layout in the prompt');
+    const b = m[1];
+    const buffer = Number((b.match(/buffer:\s*(\d+)/) || [])[1]);
+    const saved = Number((b.match(/saved_rbp:\s*(\d+)/) || [])[1]);
+    if (!Number.isFinite(buffer) || !Number.isFinite(saved)) throw new Error('buffer / saved_rbp not both stated');
+    return `FLAG{OFFSET_${buffer + saved}}`;
+  } }],
+  ['t2_pwnrebase', { kind: 'computed', via: 'leaked runtime address minus the symbol offset gives the PIE load base', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced leak in the prompt');
+    const b = m[1];
+    const leaked = (b.match(/leaked_addr:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const off = (b.match(/symbol_offset:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    if (!leaked || !off) throw new Error('leaked_addr / symbol_offset not both stated');
+    const base = BigInt(leaked) - BigInt(off);
+    return `FLAG{BASE_${base.toString(16).toUpperCase()}}`;
+  } }],
+  ['t3_pwnlibcbase', { kind: 'computed', via: 'libc base from the puts leak, then base plus the system offset', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced offsets in the prompt');
+    const b = m[1];
+    const puts = (b.match(/leaked_puts:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const po = (b.match(/puts_offset:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const so = (b.match(/system_offset:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    if (!puts || !po || !so) throw new Error('leaked_puts / puts_offset / system_offset not all stated');
+    const base = BigInt(puts) - BigInt(po);
+    const system = base + BigInt(so);
+    return `FLAG{SYSTEM_${system.toString(16).toUpperCase()}}`;
+  } }],
+  ['t4_pwncapstone', { kind: 'computed', via: 'return-address offset, libc base from the leak, one-gadget win address and the NX tag', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced brief in the prompt');
+    const b = m[1];
+    const buffer = Number((b.match(/buffer:\s*(\d+)/) || [])[1]);
+    const saved = Number((b.match(/saved_rbp:\s*(\d+)/) || [])[1]);
+    const leaked = (b.match(/leaked_libc:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const lo = (b.match(/libc_leak_offset:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const og = (b.match(/onegadget_offset:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const nx = (b.match(/nx:\s*(\w+)/) || [])[1];
+    if (!Number.isFinite(buffer) || !Number.isFinite(saved) || !leaked || !lo || !og || !nx)
+      throw new Error('buffer / saved_rbp / leaked_libc / libc_leak_offset / onegadget_offset / nx not all stated');
+    const offset = buffer + saved;
+    const win = (BigInt(leaked) - BigInt(lo)) + BigInt(og);
+    const tag = nx.toLowerCase() === 'on' ? 'NXON' : 'NXOFF';
+    return `FLAG{PWN_O${offset}_W${win.toString(16).toUpperCase()}_${tag}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
