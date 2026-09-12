@@ -188,6 +188,14 @@ const TRACKS = [
     "en": "Game Hacking",
     "desc_ko": "게임 메모리 스캔·안티치트 분석·패킷 조작·코드 인젝션과 서버 취약점.",
     "desc_en": "Game memory scanning, anti-cheat analysis, packet manipulation, code injection and server flaws."
+  },
+  {
+    "id": "supplychain",
+    "icon": "📦",
+    "ko": "공급망 보안",
+    "en": "Supply Chain",
+    "desc_ko": "패키지 저장소 공격·CI/빌드 파이프라인 오염·서명과 증명·의존성 검증과 방어.",
+    "desc_en": "Package-registry attacks, CI/build-pipeline poisoning, signing and attestation, dependency verification and defense."
   }
 ];
 
@@ -3996,7 +4004,7 @@ const CHALLENGES = [
       ],
       "en": [
         "A 4-letter English preposition marking where something originates.",
-        "`FR__` — pinning it to `latest` hurts reproducibility and supply-chain safety."
+        "`FR__` — leaving it at `latest` hurts reproducibility and supply-chain safety."
       ]
     }
   },
@@ -6684,7 +6692,7 @@ const CHALLENGES = [
       ],
       "en": [
         "The '-ing' form of a verb meaning to bind again, to something else.",
-        "Pinning the resolved address, or checking at the target which name the request claims, defeats it."
+        "Fixing the resolved address, or checking at the target which name the request claims, defeats it."
       ]
     }
   },
@@ -15111,8 +15119,8 @@ const CHALLENGES = [
       "en": "Every Path at Once"
     },
     "prompt": {
-      "ko": "VEX IR 과 Claripy 솔버 위에 세워진, 가장 널리 쓰이는 오픈소스 파이썬 심볼릭 실행 프레임워크. 입력을 구체적인 값이 아니라 기호 변수로 두고 분기마다 상태를 갈라 목표 지점에 도달하는 입력을 풀어낸다. 이 프레임워크의 이름은?",
-      "en": "The most widely used open-source Python symbolic-execution framework, built on the VEX IR and the Claripy solver: it keeps input as symbolic variables rather than concrete values, forks state at each branch, and solves for an input that reaches a target. Name it."
+      "ko": "바이너리 리프팅 중간표현(IR)과 Claripy 솔버 위에 세워진, 가장 널리 쓰이는 오픈소스 파이썬 심볼릭 실행 프레임워크. 입력을 구체적인 값이 아니라 기호 변수로 두고 분기마다 상태를 갈라 목표 지점에 도달하는 입력을 풀어낸다. 이 프레임워크의 이름은?",
+      "en": "The most widely used open-source Python symbolic-execution framework, built on a binary-lifting intermediate representation (IR) and the Claripy solver: it keeps input as symbolic variables rather than concrete values, forks state at each branch, and solves for an input that reaches a target. Name it."
     },
     "hints": {
       "ko": [
@@ -17866,6 +17874,986 @@ const CHALLENGES = [
       "en": [
         "health = 0x140000000 + 0x908 = 0x140000908.",
         "5 patch bytes → N5, anticheat=kernel → KERNEL."
+      ]
+    }
+  },
+  {
+    "id": "t0_sctypo",
+    "tier": 0,
+    "cat": "registry",
+    "track": "supplychain",
+    "points": 50,
+    "ci": true,
+    "hash": "8f8227a4d592e07c2e8596e42503337621010b8cdd10cac7bab1c49869eb9aff",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "오타를 노리는 가짜 패키지",
+      "en": "Fake Packages that Prey on Typos"
+    },
+    "prompt": {
+      "ko": "인기 라이브러리 이름과 한두 글자만 다른 이름(예: 정상 이름의 철자를 살짝 바꾼 것)으로 악성 패키지를 레지스트리에 올려, 개발자가 이름을 잘못 입력하면 설치되게 만드는 공격을 무엇이라 하는가? (한 단어)",
+      "en": "Uploading a malicious package whose name differs from a popular library by only a character or two (a slightly misspelled variant), so a developer who mistypes the name installs it. What is this attack called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "오타(typo)를 이용한 무단 점유(squatting).",
+        "npm 의 lodahs, l0dash 같은 오타 이름 사례."
+      ],
+      "en": [
+        "A combination of \"typo\" and \"squatting\".",
+        "Examples: lodahs and l0dash on npm."
+      ]
+    }
+  },
+  {
+    "id": "t0_scpypi",
+    "tier": 0,
+    "cat": "registry",
+    "track": "supplychain",
+    "points": 50,
+    "ci": true,
+    "hash": "cd88a6fb14237c165e8b0713d64a73ea8a4bb24e3b8e171bce8c7f5307a748ed",
+    "fmt": "한 단어 / one word (4글자 / 4 chars)",
+    "title": {
+      "ko": "파이썬 패키지의 본거지",
+      "en": "Home of Python Packages"
+    },
+    "prompt": {
+      "ko": "pip 이 기본으로 패키지를 내려받고, 개발자가 배포한 패키지가 공개되는 파이썬 공식 패키지 인덱스의 이름은? (4글자)",
+      "en": "The official Python package index that pip downloads from by default and where developers publish their packages. Name it. (4 chars)"
+    },
+    "hints": {
+      "ko": [
+        "Python Package Index.",
+        "도메인은 pypi.org."
+      ],
+      "en": [
+        "Python Package Index.",
+        "Its domain is pypi.org."
+      ]
+    }
+  },
+  {
+    "id": "t1_scdepconf",
+    "tier": 1,
+    "cat": "registry",
+    "track": "supplychain",
+    "points": 65,
+    "ci": true,
+    "hash": "0bc67e144a861f2640ab444a4ac60fe65146abb5eae5aba8c66aaaea9ac9cbd7",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "공개 저장소가 사설 저장소를 이긴다",
+      "en": "Public Beats Private"
+    },
+    "prompt": {
+      "ko": "패키지 관리자가 같은 이름의 패키지에 대해 사설 레지스트리보다 공개 레지스트리의 더 높은 버전을 먼저 설치하는 동작을 악용해, 내부 전용 패키지명과 동일한 패키지를 공개 레지스트리에 더 높은 버전으로 올려 원격 코드 실행을 얻는 공격의 이름은? (두 단어)",
+      "en": "Abusing a package manager that installs the highest version of a name from a public registry ahead of a private one — by publishing a package with the same name as an internal-only one at a higher version on the public registry — to gain remote code execution. Name this attack. (two words)"
+    },
+    "hints": {
+      "ko": [
+        "첫 단어는 \"의존성\"의 영어.",
+        "내부/공개 저장소 사이의 \"혼동\"을 노린다."
+      ],
+      "en": [
+        "The first word is the English for \"의존성\".",
+        "It relies on a \"confusion\" between internal and public sources."
+      ]
+    }
+  },
+  {
+    "id": "t1_scbirsan",
+    "tier": 1,
+    "cat": "registry",
+    "track": "supplychain",
+    "points": 65,
+    "ci": true,
+    "hash": "b55312ae3d9a7c1f900b797755ddefec7c6634b515570c3110356bd4d194d96c",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "그 기법을 세상에 알린 연구자",
+      "en": "The Researcher Who Went Public"
+    },
+    "prompt": {
+      "ko": "2021년 Apple·Microsoft·PayPal 등 35개 이상의 대기업을 상대로, 공개 레지스트리 우선 설치 버그를 악용해 원격 코드 실행을 시연하고 이 공격 부류를 널리 알린 보안 연구자의 성(last name)은?",
+      "en": "In 2021 this security researcher demonstrated remote code execution against 35+ major companies (Apple, Microsoft, PayPal…) by abusing the public-registry-first install bug, bringing this class of attack to wide attention. Give the researcher's last name."
+    },
+    "hints": {
+      "ko": [
+        "이름은 Alex.",
+        "루마니아 출신 버그바운티 헌터."
+      ],
+      "en": [
+        "First name Alex.",
+        "A Romanian bug-bounty hunter."
+      ]
+    }
+  },
+  {
+    "id": "t1_sclockfile",
+    "tier": 1,
+    "cat": "registry",
+    "track": "supplychain",
+    "points": 65,
+    "ci": true,
+    "hash": "d6f5483103ee386e1f3453bff6da949b7d95fe942218d3774a449e38bbd9317f",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "정확한 버전을 못박는 파일",
+      "en": "The File that Nails Versions Down"
+    },
+    "prompt": {
+      "ko": "package-lock.json, poetry.lock, Cargo.lock 처럼 해석된 의존성의 정확한 버전과 무결성 해시를 기록해, 팀 전체가 완전히 동일한 의존성 트리를 재현하도록 보장하는 파일을 통칭하는 한 단어(합성어)는? (8글자)",
+      "en": "package-lock.json, poetry.lock, Cargo.lock — the general single-word (compound) term for a file that records the exact resolved versions and integrity hashes of dependencies so the whole team reproduces an identical dependency tree. (8 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"잠금(lock)\" + \"파일(file)\".",
+        "이것이 커밋되어 있어야 재현 가능한 설치가 된다."
+      ],
+      "en": [
+        "\"lock\" + \"file\".",
+        "Committing it is what makes installs reproducible."
+      ]
+    }
+  },
+  {
+    "id": "t1_scsolarwinds",
+    "tier": 1,
+    "cat": "scdefense",
+    "track": "supplychain",
+    "points": 65,
+    "ci": true,
+    "hash": "9be86f84d21c22b8064382f2d651838c101aa37bdbab6a719b890395bbfdfa94",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "18,000개 조직을 한 번에",
+      "en": "18,000 Orgs at Once"
+    },
+    "prompt": {
+      "ko": "2020년, 이 회사의 Orion 네트워크 관리 소프트웨어 빌드 시스템이 침해되어 서명된 트로이목마 업데이트가 약 18,000개 조직에 배포되었다. 이 사건의 중심이 된 소프트웨어 회사의 이름은? (10글자)",
+      "en": "In 2020 this company's Orion network-management software build system was compromised, shipping a signed trojanized update to roughly 18,000 organizations. Name the software company at the center of the incident. (10 chars)"
+    },
+    "hints": {
+      "ko": [
+        "태양 + 바람.",
+        "제품 이름은 Orion."
+      ],
+      "en": [
+        "Sun + winds.",
+        "Its product was named Orion."
+      ]
+    }
+  },
+  {
+    "id": "t1_scevent",
+    "tier": 1,
+    "cat": "scdefense",
+    "track": "supplychain",
+    "points": 65,
+    "ci": true,
+    "hash": "51a61607df20797bf1908ee42902fc386a105e8acbe7e5f48d331460fe53e213",
+    "fmt": "한 단어 / one word (12글자 / 12 chars, - 포함 / include -)",
+    "title": {
+      "ko": "넘겨받은 권한이 부른 사고",
+      "en": "A Handover Gone Wrong"
+    },
+    "prompt": {
+      "ko": "2018년, 원 저자가 이 인기 npm 라이브러리의 배포 권한을 자원한 낯선 기여자에게 넘긴 뒤, 그 기여자가 비트코인 지갑 앱을 노리는 악성 코드를 담은 flatmap-stream 의존성을 몰래 추가한 사건이 발생했다. 권한이 넘어간 그 npm 패키지의 이름은? (하이픈 포함)",
+      "en": "In 2018 the original author handed publish rights of this popular npm library to a volunteer stranger, who then quietly added a malicious flatmap-stream dependency targeting a Bitcoin wallet app. Name the npm package whose rights were handed over. (includes a hyphen)"
+    },
+    "hints": {
+      "ko": [
+        "\"이벤트\" + \"스트림\".",
+        "악성 코드는 flatmap-stream 에 있었고, 이 패키지가 그것을 끌어왔다."
+      ],
+      "en": [
+        "\"event\" + \"stream\".",
+        "The payload lived in flatmap-stream, which this package pulled in."
+      ]
+    }
+  },
+  {
+    "id": "t1_scxz",
+    "tier": 1,
+    "cat": "scdefense",
+    "track": "supplychain",
+    "points": 65,
+    "ci": true,
+    "hash": "2102be1d76d86ed3386da600b3520c1a21519cfe43c75d3fdc63396e2e13b231",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "거의 성공할 뻔한 백도어",
+      "en": "The Backdoor that Nearly Shipped"
+    },
+    "prompt": {
+      "ko": "2024년 CVE-2024-3094 로 공개된, 여러 해에 걸친 사회공학으로 신뢰를 얻은 기여자가 릴리스 tarball 의 빌드 스크립트에 sshd 인증 우회 백도어를 은닉했다가 우연히 발각된 사건의 대상이 된 압축 유틸리티 프로젝트의 이름은? (두 단어)",
+      "en": "The compression utility project behind CVE-2024-3094 (2024): a contributor who earned trust over years via social engineering hid an sshd authentication-bypass backdoor in the release tarball's build script, caught by chance. Name the two-word project."
+    },
+    "hints": {
+      "ko": [
+        "확장자 .xz 를 만드는 도구 모음.",
+        "두 번째 단어는 \"유틸리티들\"의 축약."
+      ],
+      "en": [
+        "The toolset that produces the .xz extension.",
+        "The second word is short for \"utilities\"."
+      ]
+    }
+  },
+  {
+    "id": "t2_scpinning",
+    "tier": 2,
+    "cat": "cipoison",
+    "track": "supplychain",
+    "points": 90,
+    "ci": true,
+    "hash": "686e7703891701ea8e1356e93c76310f0ad3d680563e8cff2df15650b9792a10",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "움직이는 태그를 못박기",
+      "en": "Nail Down a Moving Tag"
+    },
+    "prompt": {
+      "ko": "CI 워크플로우에서 재사용하는 외부 액션을 v4 같은 이동 가능한(재할당 가능한) 태그 대신 전체 커밋 다이제스트(예: @<40자리 SHA>)로 참조해, 그 태그가 나중에 악성 커밋으로 바뀌어도 실행 내용이 고정되게 하는 방어 기법을 무엇이라 하는가? (한 단어, -ing)",
+      "en": "Referencing a reused external CI action by its full commit digest (e.g. @<40-hex SHA>) instead of a movable tag like v4, so that even if the tag is later repointed at a malicious commit, what runs stays fixed. What is this defensive practice called? (one -ing word)"
+    },
+    "hints": {
+      "ko": [
+        "핀으로 고정한다는 뜻의 동명사.",
+        "태그는 재할당 가능, 커밋 해시는 불변."
+      ],
+      "en": [
+        "A gerund meaning to fix with a pin.",
+        "Tags are mutable; a commit hash is immutable."
+      ]
+    }
+  },
+  {
+    "id": "t2_scprt",
+    "tier": 2,
+    "cat": "cipoison",
+    "track": "supplychain",
+    "points": 90,
+    "ci": true,
+    "hash": "eeb09ca83b62e754e09b938a88b4fb11f58d877d375fd47d4c31d15508b75f33",
+    "fmt": "값 그대로 / literal (19글자 / 19 chars, _ 포함 / include _)",
+    "title": {
+      "ko": "포크가 시크릿을 만지는 트리거",
+      "en": "The Trigger that Lets Forks Touch Secrets"
+    },
+    "prompt": {
+      "ko": "GitHub Actions 에서, 포크가 보낸 PR 에 대해서도 워크플로우가 베이스 저장소의 시크릿과 쓰기 권한 토큰을 가진 특권 컨텍스트에서 실행되는 트리거 이벤트가 있다. 신뢰되지 않은 PR 코드를 이 컨텍스트에서 체크아웃·실행하면 시크릿 탈취로 이어진다. 이 이벤트의 정확한 식별자는? (밑줄 포함)",
+      "en": "In GitHub Actions, one trigger event runs the workflow in a trusted, secret-bearing context — with the base repository's secrets and a write-scoped token — even for PRs from forks. Checking out and running untrusted PR code in that context leaks the secrets. Give the exact identifier of this event. (includes underscores)"
+    },
+    "hints": {
+      "ko": [
+        "pull_request 의 위험한 형제.",
+        "_target 로 끝난다."
+      ],
+      "en": [
+        "The dangerous sibling of pull_request.",
+        "It ends in _target."
+      ]
+    }
+  },
+  {
+    "id": "t2_scperms",
+    "tier": 2,
+    "cat": "cipoison",
+    "track": "supplychain",
+    "points": 90,
+    "ci": true,
+    "hash": "4fe3cdd404ea0290bad96d3e1ccd92979d33ac63c4c18ad80e94d0452ce43391",
+    "fmt": "한 단어 / one word (11글자 / 11 chars)",
+    "title": {
+      "ko": "토큰의 힘을 깎아내기",
+      "en": "Trim the Token's Power"
+    },
+    "prompt": {
+      "ko": "GitHub Actions 에서 잡에 자동 주입되는 토큰은 기본적으로 광범위한 쓰기 권한을 갖는다. 최소 권한 원칙을 적용하려면 워크플로우나 잡 최상단에 특정 YAML 키를 선언해 이 토큰의 범위를 contents: read 처럼 좁힌다. 그 YAML 키의 이름은? (한 단어)",
+      "en": "In GitHub Actions the token auto-injected into a job has broad write scope by default. To apply least privilege you declare a particular YAML key at the workflow or job top level, narrowing the token to e.g. contents: read. Name that YAML key. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "\"권한들\"의 영어 복수형.",
+        "contents, packages, id-token 등의 하위 키를 갖는다."
+      ],
+      "en": [
+        "The English plural for \"권한\".",
+        "It takes sub-keys like contents, packages, id-token."
+      ]
+    }
+  },
+  {
+    "id": "t2_scsbom",
+    "tier": 2,
+    "cat": "provenance",
+    "track": "supplychain",
+    "points": 90,
+    "ci": true,
+    "hash": "98f3ae1ef67113d8140d4f6cb8d2830070e21ea48f091be519659846c771a374",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "소프트웨어의 성분표",
+      "en": "The Ingredient List of Software"
+    },
+    "prompt": {
+      "ko": "제품에 포함된 모든 오픈소스·서드파티 구성요소와 그 버전·라이선스를 기계가 읽을 수 있게 나열해, 새 취약점이 공개됐을 때 영향 범위를 즉시 조회할 수 있게 하는 명세서를 뜻하는 4글자 약어는? (Software Bill of Materials)",
+      "en": "A machine-readable inventory of every open-source and third-party component in a product, with versions and licenses, so that when a new vulnerability is disclosed you can instantly query whether you are affected. Give the 4-letter acronym. (Software Bill of Materials)"
+    },
+    "hints": {
+      "ko": [
+        "Bill of Materials 앞에 Software.",
+        "식품의 성분표에 해당."
+      ],
+      "en": [
+        "\"Software\" in front of Bill of Materials.",
+        "The food-label ingredient list, for software."
+      ]
+    }
+  },
+  {
+    "id": "t2_scslsa",
+    "tier": 2,
+    "cat": "cipoison",
+    "track": "supplychain",
+    "points": 90,
+    "ci": true,
+    "hash": "a2492840045afb23635945b2e8d669b2fec7b9a37d9ebd50f199d896430ba328",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "빌드 보증의 눈금",
+      "en": "A Ladder of Build Assurance"
+    },
+    "prompt": {
+      "ko": "Google 이 제안하고 OpenSSF 가 관리하는, 빌드 과정의 무결성과 출처 보증 성숙도를 여러 레벨(예: L1~L3)로 나누어 요구사항을 정의한 공급망 보안 프레임워크의 약어는? 레벨이 오를수록 서명된 프로비넌스와 SBOM 첨부 요구가 강해진다. \"살사\"처럼 읽는다. (4글자)",
+      "en": "Proposed by Google and stewarded by OpenSSF, this supply-chain framework defines requirements across levels (e.g. L1–L3) for the integrity and provenance-assurance maturity of the build process (higher levels demand stronger signed provenance and SBOM attachment). Give the acronym — pronounced \"salsa\". (4 chars)"
+    },
+    "hints": {
+      "ko": [
+        "Supply-chain Levels for Software Artifacts.",
+        "발음이 소스(salsa)와 같다."
+      ],
+      "en": [
+        "Supply-chain Levels for Software Artifacts.",
+        "Sounds like the dip, salsa."
+      ]
+    }
+  },
+  {
+    "id": "t2_sccosign",
+    "tier": 2,
+    "cat": "provenance",
+    "track": "supplychain",
+    "points": 90,
+    "ci": true,
+    "hash": "5d55da39858da0af660e60d0ced267a9a870c95bb928e2979ec677baefe88f96",
+    "fmt": "도구 이름 / tool name (6글자 / 6 chars)",
+    "title": {
+      "ko": "컨테이너에 서명하기",
+      "en": "Sign that Container"
+    },
+    "prompt": {
+      "ko": "Sigstore 프로젝트에 속한, 컨테이너 이미지와 소프트웨어 아티팩트에 (키리스로도) 디지털 서명을 붙이고 검증하는 대표 CLI 도구의 이름은? sign 앞에 접두어가 붙는다. (6글자)",
+      "en": "The flagship CLI in the Sigstore project that attaches and verifies digital signatures (keyless too) on container images and software artifacts. Its name is \"sign\" with a prefix. (6 chars)"
+    },
+    "hints": {
+      "ko": [
+        "co- + sign.",
+        "ghcr.io 이미지에 서명·검증할 때 쓴다."
+      ],
+      "en": [
+        "co- + sign.",
+        "Used to sign/verify ghcr.io images."
+      ]
+    }
+  },
+  {
+    "id": "t2_scdist",
+    "tier": 2,
+    "cat": "registry",
+    "track": "supplychain",
+    "points": 150,
+    "ci": false,
+    "hash": "5d95bf647633c01da82990cf109ca34cfd481acb5d60e1594d9712c5e41e9a05",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "오타 거리 재기",
+      "en": "Measure the Typo Distance"
+    },
+    "prompt": {
+      "ko": "오타로 유사해진 패키지 이름 탐지는 정상 이름과 후보 이름 사이의 편집 거리(삽입·삭제·치환 각 1)를 잰다. 아래 두 이름의 레벤슈타인 편집 거리를 구해 `FLAG{DIST_<n>}` 로 제출하라.\n\n```\nlegit: requests\ncandidate: requsets\n```",
+      "en": "Detecting look-alike (typo) package names measures the edit distance (insert/delete/substitute = 1 each) between a legitimate name and a candidate. Compute the Levenshtein distance between the two names below and submit as `FLAG{DIST_<n>}`.\n\n```\nlegit: requests\ncandidate: requsets\n```"
+    },
+    "hints": {
+      "ko": [
+        "두 이름을 나란히 정렬해 다른 위치를 세어 본다.",
+        "치환/전위는 최소 연산 수로 계산."
+      ],
+      "en": [
+        "Align the two names and count differing positions.",
+        "Use the minimum number of single-char edits."
+      ]
+    }
+  },
+  {
+    "id": "t2_scresolve",
+    "tier": 2,
+    "cat": "registry",
+    "track": "supplychain",
+    "points": 150,
+    "ci": false,
+    "hash": "7cfb03c9ebf8693141df63f49fafc5cd8ea6fbf04ec9469f7377e88258463512",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "어느 버전이 설치되나",
+      "en": "Which Version Wins"
+    },
+    "prompt": {
+      "ko": "pip 을 extra-index-url 로만 설정하면 사설·공개 레지스트리를 병렬 조회해 시맨틱 버전이 더 높은 쪽을 설치한다(이것이 혼동 공격의 핵심). 아래 상황에서 실제로 설치되는 버전을 골라 `FLAG{RESOLVED_<version>}` 로 제출하라.\n\n```\npackage: internal-auth\nprivate_registry: 1.4.2\npublic_registry: 9.0.1\npip_option: extra-index-url (parallel lookup, highest semver installed)\n```",
+      "en": "Configuring pip with only extra-index-url makes it query private and public registries in parallel and install whichever has the higher semantic version (the crux of the confusion attack). For the situation below, pick the version actually installed and submit as `FLAG{RESOLVED_<version>}`.\n\n```\npackage: internal-auth\nprivate_registry: 1.4.2\npublic_registry: 9.0.1\npip_option: extra-index-url (parallel lookup, highest semver installed)\n```"
+    },
+    "hints": {
+      "ko": [
+        "major 를 먼저 비교한다.",
+        "더 높은 버전이 출처와 무관하게 이긴다."
+      ],
+      "en": [
+        "Compare the major component first.",
+        "The higher version wins regardless of source."
+      ]
+    }
+  },
+  {
+    "id": "t3_screkor",
+    "tier": 3,
+    "cat": "provenance",
+    "track": "supplychain",
+    "points": 130,
+    "ci": true,
+    "hash": "6c70a238c7396f83f6eb6b5d5347acb96d85eeebb4d9d780d695e2b3dfcdb8a9",
+    "fmt": "도구 이름 / tool name (5글자 / 5 chars)",
+    "title": {
+      "ko": "지울 수 없는 서명 장부",
+      "en": "The Tamper-Evident Ledger"
+    },
+    "prompt": {
+      "ko": "Sigstore 에서 서명 이벤트를 추가 전용(append-only)·변조 탐지 가능한 투명성 로그에 기록해, 어떤 아티팩트가 언제 무슨 신원으로 서명됐는지 나중에 공개적으로 감사·대조할 수 있게 하는 구성요소의 이름은? (5글자)",
+      "en": "The Sigstore component that records signing events in an append-only, tamper-evident transparency log, so anyone can later publicly audit which artifact was signed, when, and under what identity. Name it. (5 chars)"
+    },
+    "hints": {
+      "ko": [
+        "라틴어로 \"증인/기록\"에서 유래.",
+        "Sigstore 를 이루는 투명성 로그 구성요소."
+      ],
+      "en": [
+        "From Latin for \"witness/record\".",
+        "The transparency-log component of Sigstore."
+      ]
+    }
+  },
+  {
+    "id": "t3_scfulcio",
+    "tier": 3,
+    "cat": "provenance",
+    "track": "supplychain",
+    "points": 130,
+    "ci": true,
+    "hash": "c112f25225e65a15ef1c72d9aef5bdb787484e925274aa84f75cfda56c43b732",
+    "fmt": "도구 이름 / tool name (6글자 / 6 chars)",
+    "title": {
+      "ko": "순간만 사는 인증서",
+      "en": "Certificates that Live a Moment"
+    },
+    "prompt": {
+      "ko": "Sigstore 의 키리스 서명에서, 개발자의 연합 신원(federated identity, 예: 이메일)을 확인한 뒤 그 신원에 묶인 아주 짧은 수명의 X.509 인증서를 발급하는 무료 인증기관(CA) 구성요소의 이름은? (6글자)",
+      "en": "In Sigstore keyless signing, the free certificate-authority component that verifies a developer's federated identity (e.g. email) and then issues a very short-lived X.509 certificate bound to that identity. Name it. (6 chars)"
+    },
+    "hints": {
+      "ko": [
+        "라틴어로 \"받침점/지렛목\".",
+        "단기 인증서라 개인키를 장기 보관하지 않아도 된다."
+      ],
+      "en": [
+        "Latin for \"fulcrum\".",
+        "Short-lived certs mean no long-term private key to store."
+      ]
+    }
+  },
+  {
+    "id": "t3_scintoto",
+    "tier": 3,
+    "cat": "provenance",
+    "track": "supplychain",
+    "points": 130,
+    "ci": true,
+    "hash": "218b19e828c138ea1d9262d4a48b57db65f23baeacdac18e42ac9bcfea28f27c",
+    "fmt": "한 단어 / one word (7글자 / 7 chars, - 포함 / include -)",
+    "title": {
+      "ko": "파이프라인 전 구간을 증명",
+      "en": "Attest the Whole Pipeline"
+    },
+    "prompt": {
+      "ko": "공급망 파이프라인의 각 단계(step)를 누가·무슨 재료로·무슨 산출물을 만들었는지 서명된 링크 메타데이터로 기록하고, 정의된 레이아웃과 대조해 전체 사슬의 무결성을 검증하는 프레임워크의 이름은? 라틴어로 \"전체적으로\"를 뜻한다. (하이픈 포함)",
+      "en": "The framework that records each step of a supply-chain pipeline — who ran it, with what materials, producing what products — as signed link metadata, then verifies the whole chain against a defined layout. Its name is Latin for \"as a whole\". (includes a hyphen)"
+    },
+    "hints": {
+      "ko": [
+        "라틴어 in toto.",
+        "단계별 링크 + 레이아웃으로 검증."
+      ],
+      "en": [
+        "Latin: in toto.",
+        "Per-step links plus a layout drive verification."
+      ]
+    }
+  },
+  {
+    "id": "t3_screpro",
+    "tier": 3,
+    "cat": "cipoison",
+    "track": "supplychain",
+    "points": 130,
+    "ci": true,
+    "hash": "09d00b20d8e222f36096ed5c6b6e6f7f216b96d839ca0fe9c87f01337827a787",
+    "fmt": "한 단어 / one word (12글자 / 12 chars)",
+    "title": {
+      "ko": "비트까지 똑같은 빌드",
+      "en": "Bit-for-Bit Identical Builds"
+    },
+    "prompt": {
+      "ko": "동일한 소스에서 누가·언제·어디서 빌드해도 비트 단위로 완전히 동일한 산출물이 나오도록 보장하여, 공개 소스와 배포 바이너리가 일치하는지 독립 검증할 수 있게 하는 빌드 방식을 \"___ builds\"라 한다. 컴파일러가 스스로 백도어를 재생산하는 부류의 공격 탐지에도 핵심이다. 빈칸의 한 단어는? (12글자)",
+      "en": "Building so that anyone, anytime, anywhere gets a bit-for-bit identical output from the same source — letting anyone independently confirm that a published binary matches its public source. It is called \"___ builds\" and is key to detecting the class of attack where a compiler reproduces a backdoor in itself. Give the blank (one word, 12 chars)."
+    },
+    "hints": {
+      "ko": [
+        "\"재현 가능한\"의 영어.",
+        "Debian 등이 이 프로젝트를 운영한다."
+      ],
+      "en": [
+        "English for \"재현 가능한\".",
+        "Debian and others run such a project."
+      ]
+    }
+  },
+  {
+    "id": "t3_sccyclonedx",
+    "tier": 3,
+    "cat": "provenance",
+    "track": "supplychain",
+    "points": 130,
+    "ci": true,
+    "hash": "384e73e12d7248c89ff20539885d931a88dc0be911662eb0e134a372e1e84316",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "SBOM 을 담는 표준 포맷",
+      "en": "A Standard Format for SBOMs"
+    },
+    "prompt": {
+      "ko": "OWASP 가 관리하며, 구성요소·의존성 관계·취약점 영향 정보까지 표현할 수 있어 SPDX 와 함께 SBOM 의 2대 기계판독 표준으로 꼽히는 포맷의 이름은? (한 단어, 9글자)",
+      "en": "Stewarded by OWASP, this format can express components, dependency relationships, and vulnerability impact information; together with SPDX it is one of the two major machine-readable SBOM standards. Name it. (one word, 9 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"Cyclone\" + \"DX\".",
+        "OWASP 프로젝트, JSON/XML 로 표현된다."
+      ],
+      "en": [
+        "\"Cyclone\" + \"DX\".",
+        "An OWASP project, expressed in JSON/XML."
+      ]
+    }
+  },
+  {
+    "id": "t3_scgrype",
+    "tier": 3,
+    "cat": "scdefense",
+    "track": "supplychain",
+    "points": 130,
+    "ci": true,
+    "hash": "9a397a190a62d4118a2d65313d08590edccf20ca4cdad7fcece1d624e7e2f96d",
+    "fmt": "도구 이름 / tool name (5글자 / 5 chars)",
+    "title": {
+      "ko": "SBOM 을 CVE 에 대조",
+      "en": "Match an SBOM against CVEs"
+    },
+    "prompt": {
+      "ko": "Anchore 가 만든 오픈소스 스캐너로, syft 가 생성한 구성요소 목록이나 컨테이너 이미지를 입력받아 알려진 취약점(CVE) 데이터베이스와 대조해 취약한 의존성을 찾아낸다. 이 도구의 이름은? (5글자)",
+      "en": "An open-source scanner by Anchore that takes a component list produced by syft, or a container image, and matches it against a known-vulnerability (CVE) database to find vulnerable dependencies. Name the tool. (5 chars)"
+    },
+    "hints": {
+      "ko": [
+        "syft 의 짝꿍 스캐너.",
+        "\"gr\" 로 시작하는 5글자."
+      ],
+      "en": [
+        "The scanner paired with syft.",
+        "5 letters starting with \"gr\"."
+      ]
+    }
+  },
+  {
+    "id": "t3_scmaintainer",
+    "tier": 3,
+    "cat": "scdefense",
+    "track": "supplychain",
+    "points": 130,
+    "ci": true,
+    "hash": "9c5646b582f10531c791dd2372854409c96e8276f979c0aa4a505ec760e06100",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "신뢰를 쌓아 권한을 얻다",
+      "en": "Earn Trust, Then Publish"
+    },
+    "prompt": {
+      "ko": "공격자가 오랜 기간 선의의 기여로 신뢰를 얻거나 기존 계정을 탈취해 패키지 배포 권한을 손에 넣는 유형을 \"___ 탈취/침해\"라 한다. 여기서 패키지의 배포·관리 권한을 가진 사람을 뜻하는 한 단어는? (10글자)",
+      "en": "When an attacker earns trust through long-term legitimate contributions, or hijacks an existing account, to gain a package's publish rights, we call it a compromised \"___\". Give the single word for the person who holds publish/maintenance rights over a package. (10 chars)"
+    },
+    "hints": {
+      "ko": [
+        "오픈소스 프로젝트를 \"유지보수\"하는 사람.",
+        "XZ 사건이 이 유형의 대표 사례."
+      ],
+      "en": [
+        "The person who \"maintains\" an open-source project.",
+        "The XZ incident is the textbook case."
+      ]
+    }
+  },
+  {
+    "id": "t3_scnamespace",
+    "tier": 3,
+    "cat": "registry",
+    "track": "supplychain",
+    "points": 130,
+    "ci": true,
+    "hash": "9359f3bb2efa7aabd0264fb67fb1d99f91871778e9b887179d6b2debaa251ec6",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "이름을 미리 예약하다",
+      "en": "Reserve the Name First"
+    },
+    "prompt": {
+      "ko": "공개 레지스트리 선점·이름 충돌 공격을 막기 위해, 조직 스코프(예: npm 의 @org/)를 등록하거나 사설 미러로 내부 이름을 예약·격리하는 방어를 쓴다. 여기서 이렇게 예약·격리되는 \"이름 공간\"을 뜻하는 한 단어(합성어)는? (9글자)",
+      "en": "To block public-registry landgrabs and name-collision attacks, teams register an organization scope (e.g. npm's @org/) or reserve internal names via a private mirror. Give the single (compound) word for the reserved, isolated \"space of names\". (9 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"name\" + \"space\".",
+        "@org/ 스코프가 이것을 예약한다."
+      ],
+      "en": [
+        "\"name\" + \"space\".",
+        "An @org/ scope reserves one."
+      ]
+    }
+  },
+  {
+    "id": "t3_scpin",
+    "tier": 3,
+    "cat": "cipoison",
+    "track": "supplychain",
+    "points": 200,
+    "ci": false,
+    "hash": "e6afdbb9eeebe50bccf24f5967e0ea2fa1e8ae22f951ead437209464bce0c4ab",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "해시로 못박기",
+      "en": "Pin It by Hash"
+    },
+    "prompt": {
+      "ko": "의존성·아티팩트를 신뢰하려면 그 정확한 바이트의 암호학적 해시를 고정(핀)하고, 내려받은 것을 재계산해 대조한다. 아래 바이트열의 SHA-256 을 구해 앞 8자리 16진수를 대문자로 `FLAG{PIN_<8HEX>}` 로 제출하라.\n\n```\nsign_bytes: release-artifact-2024\n```",
+      "en": "To trust a dependency or artifact you pin the cryptographic hash of its exact bytes, then recompute and compare what you downloaded. Compute the SHA-256 of the byte string below and submit its first 8 hex digits, uppercase, as `FLAG{PIN_<8HEX>}`.\n\n```\nsign_bytes: release-artifact-2024\n```"
+    },
+    "hints": {
+      "ko": [
+        "sha256 다이제스트의 앞 4바이트(8 hex).",
+        "대문자로 제출."
+      ],
+      "en": [
+        "First 4 bytes (8 hex) of the sha256 digest.",
+        "Submit uppercase."
+      ]
+    }
+  },
+  {
+    "id": "t4_scsunburst",
+    "tier": 4,
+    "cat": "scdefense",
+    "track": "supplychain",
+    "points": 160,
+    "ci": true,
+    "hash": "18bc252d5f9e432963d44f6b9ba547472b3549e714eca4c95e9c8828c43add1b",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "서명된 업데이트 속 그림자",
+      "en": "A Shadow in a Signed Update"
+    },
+    "prompt": {
+      "ko": "2020년 Orion 빌드 파이프라인 침해에서, 서명된 업데이트에 심겨 배포된 백도어(악성 DLL 형태로 명령·제어 서버와 통신)를 부르는 코드네임은? 태양 관련 단어다. (8글자)",
+      "en": "The codename for the backdoor planted into the signed update shipped in the 2020 Orion build-pipeline compromise (a malicious DLL that beaconed to a command-and-control server). It is a sun-related word. (8 chars)"
+    },
+    "hints": {
+      "ko": [
+        "해(sun)가 터져 나오는 모습.",
+        "FireEye 가 명명했다."
+      ],
+      "en": [
+        "The sun bursting out.",
+        "Named by FireEye."
+      ]
+    }
+  },
+  {
+    "id": "t4_scscorecard",
+    "tier": 4,
+    "cat": "scdefense",
+    "track": "supplychain",
+    "points": 160,
+    "ci": true,
+    "hash": "8fad3e916b98df98caa7f0e95f9920cc0b3fc997b0518b6490157602bb072af8",
+    "fmt": "도구 이름 / tool name (9글자 / 9 chars)",
+    "title": {
+      "ko": "저장소 보안을 채점하다",
+      "en": "Grade a Repo's Security"
+    },
+    "prompt": {
+      "ko": "OpenSSF 가 만든 도구로, 오픈소스 저장소의 보안 관행(브랜치 보호, 서명된 릴리스, 위험한 CI 트리거, 의존성 업데이트 자동화, SBOM 발행 등)을 자동 점검해 각 항목과 종합을 0~10 점으로 매긴다. 이 도구의 이름은? (9글자)",
+      "en": "An OpenSSF tool that automatically checks an open-source repository's security practices (branch protection, signed releases, dangerous CI triggers, automated dependency updates, SBOM publication…) and grades each check and the whole on a 0–10 scale. Name the tool. (9 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"점수\" + \"카드\".",
+        "OpenSSF 프로젝트, GitHub Action 으로도 돌린다."
+      ],
+      "en": [
+        "\"score\" + \"card\".",
+        "An OpenSSF project, also run as a GitHub Action."
+      ]
+    }
+  },
+  {
+    "id": "t4_sctuf",
+    "tier": 4,
+    "cat": "provenance",
+    "track": "supplychain",
+    "points": 160,
+    "ci": true,
+    "hash": "c42a4f1674e21a4dfc0d9167d8830ee922e364fa5d3571159954b86f59f34684",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "업데이트 시스템을 견고하게",
+      "en": "Harden the Update System"
+    },
+    "prompt": {
+      "ko": "저장소나 개별 키가 침해되어도 롤백 공격·키 손상·프리즈 공격을 견디도록, 역할 분리와 임계(threshold) 서명·키 폐기를 규정한 소프트웨어 업데이트 보안 프레임워크의 3글자 약어는? (The Update Framework)",
+      "en": "A software-update security framework that survives repository or individual-key compromise — resisting rollback, key-compromise, and freeze attacks — via role separation, threshold signing, and key revocation. Give the 3-letter acronym. (The Update Framework)"
+    },
+    "hints": {
+      "ko": [
+        "The __ Framework.",
+        "Notary 등 여러 배포 시스템이 채택."
+      ],
+      "en": [
+        "The __ Framework.",
+        "Adopted by Notary and other distribution systems."
+      ]
+    }
+  },
+  {
+    "id": "t4_scvex",
+    "tier": 4,
+    "cat": "provenance",
+    "track": "supplychain",
+    "points": 160,
+    "ci": true,
+    "hash": "a8796d378552ff66f8b3420145f4dc654df50dae9b438a9f83309744a1a4d2af",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "그 취약점, 실제로 위험한가",
+      "en": "Is That CVE Actually Exploitable"
+    },
+    "prompt": {
+      "ko": "SBOM 이 나열한 구성요소에 딸린 취약점이 실제 제품에서 악용 가능한지(영향 없음/조사 중/수정됨/악용 가능)를 벤더가 명시해 스캐너 오탐을 줄이도록 표준화한 문서의 3글자 약어는? (Vulnerability Exploitability eXchange)",
+      "en": "A standardized document in which a vendor states whether a vulnerability attached to an SBOM component is actually exploitable in the product (not-affected / under-investigation / fixed / exploitable), cutting scanner false positives. Give the 3-letter acronym. (Vulnerability Exploitability eXchange)"
+    },
+    "hints": {
+      "ko": [
+        "Vulnerability Exploitability eXchange.",
+        "SBOM 의 짝으로 쓰인다."
+      ],
+      "en": [
+        "Vulnerability Exploitability eXchange.",
+        "Used as a companion to an SBOM."
+      ]
+    }
+  },
+  {
+    "id": "t4_scppe",
+    "tier": 4,
+    "cat": "cipoison",
+    "track": "supplychain",
+    "points": 160,
+    "ci": true,
+    "hash": "79b296dde86122db801869195e25b6820ba9f3417ea83946f15fab114c0282b7",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "파이프라인 정의를 무기화",
+      "en": "Weaponize the Pipeline Definition"
+    },
+    "prompt": {
+      "ko": "공격자가 빌드 스크립트나 CI 설정 파일(파이프라인 정의) 자체를 조작해, 빌드가 실행되는 순간 자신의 명령이 CI 러너의 권한으로 실행되게 만드는 \"오염된 파이프라인 실행\" 공격의 3글자 약어는? (Poisoned Pipeline Execution)",
+      "en": "The 3-letter acronym for the \"Poisoned Pipeline Execution\" attack, where an attacker manipulates the build script or CI configuration file (the pipeline definition) itself so that at build time their commands run with the CI runner's privileges."
+    },
+    "hints": {
+      "ko": [
+        "Poisoned Pipeline Execution.",
+        "세 단어의 첫 글자."
+      ],
+      "en": [
+        "Poisoned Pipeline Execution.",
+        "Initials of the three words."
+      ]
+    }
+  },
+  {
+    "id": "t4_scselfhosted",
+    "tier": 4,
+    "cat": "cipoison",
+    "track": "supplychain",
+    "points": 160,
+    "ci": true,
+    "hash": "4ff74fee4b291f59e0b1cd0a1b95896d08600e87126221fe3d21dcb168a6d323",
+    "fmt": "한 단어 / one word (11글자 / 11 chars, - 포함 / include -)",
+    "title": {
+      "ko": "직접 굴리는 위험한 러너",
+      "en": "The Risky Runner You Run Yourself"
+    },
+    "prompt": {
+      "ko": "공용 저장소에서 특히 위험한 CI 실행기 유형이 있다: 조직이 직접 운영하는 이 러너는 상태가 유지되어(오염 잔존) 포크 PR 이 던진 코드가 내부 네트워크·시크릿에 닿을 수 있다. 관리형(GitHub 제공) 러너와 대비되는 이 러너 유형의 이름은? (하이픈 포함)",
+      "en": "One CI runner type is especially risky for public repositories: operated by the organization itself, it holds state (contamination persists), so code from a fork PR can reach the internal network and secrets. Name this runner type, contrasted with managed (provider-hosted) runners. (includes a hyphen)"
+    },
+    "hints": {
+      "ko": [
+        "\"self\" + \"hosted\".",
+        "managed / GitHub-hosted 의 반대."
+      ],
+      "en": [
+        "\"self\" + \"hosted\".",
+        "The opposite of managed / GitHub-hosted."
+      ]
+    }
+  },
+  {
+    "id": "t4_sckaseya",
+    "tier": 4,
+    "cat": "scdefense",
+    "track": "supplychain",
+    "points": 160,
+    "ci": true,
+    "hash": "b877247ca363e711e92a81d9e9c696c4ea8ed5ee1527970fbab046c997f97d9e",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "MSP 를 지렛대로",
+      "en": "Leverage the MSP"
+    },
+    "prompt": {
+      "ko": "2021년, 이 회사의 VSA 원격 관리 소프트웨어 취약점을 악용해 관리형 서비스 제공자(MSP)를 경유, 다운스트림 고객사 수천 곳에 REvil 랜섬웨어를 대규모로 배포한 사건이 있었다. 그 소프트웨어 회사의 이름은? (6글자)",
+      "en": "In 2021, attackers abused a vulnerability in this company's VSA remote-management software to pivot through managed service providers (MSPs) and mass-deploy REvil ransomware to thousands of downstream customers. Name the software company. (6 chars)"
+    },
+    "hints": {
+      "ko": [
+        "VSA 제품으로 유명.",
+        "K 로 시작하는 6글자."
+      ],
+      "en": [
+        "Known for its VSA product.",
+        "6 letters starting with K."
+      ]
+    }
+  },
+  {
+    "id": "t4_scliblzma",
+    "tier": 4,
+    "cat": "provenance",
+    "track": "supplychain",
+    "points": 160,
+    "ci": true,
+    "hash": "c6dffbdce5e632453df99580d68c18429a9d04edda0baffc1e4240dbd2f77dd8",
+    "fmt": "도구 이름 / tool name (7글자 / 7 chars)",
+    "title": {
+      "ko": "백도어가 실제로 살던 곳",
+      "en": "Where the Backdoor Actually Lived"
+    },
+    "prompt": {
+      "ko": "2024년 CVE-2024-3094 사건에서, 은닉된 sshd 인증 우회 코드는 압축 유틸리티가 함께 제공하는 압축 라이브러리에 빌드 과정에서 주입되었다. sshd 가 (systemd 경유로) 링크하게 되어 표적이 된 그 라이브러리의 이름은? (7글자)",
+      "en": "In the 2024 CVE-2024-3094 incident, the hidden sshd auth-bypass code was injected during build into the compression library shipped alongside the compression utility. sshd ended up linking it (via systemd), making it the target. Name that library. (7 chars)"
+    },
+    "hints": {
+      "ko": [
+        "lib + 압축 알고리즘 이름(LZMA).",
+        "xz 프로젝트가 제공한다."
+      ],
+      "en": [
+        "lib + the compression algorithm name (LZMA).",
+        "Shipped by the xz project."
+      ]
+    }
+  },
+  {
+    "id": "t4_screview",
+    "tier": 4,
+    "cat": "registry",
+    "track": "supplychain",
+    "points": 160,
+    "ci": true,
+    "hash": "9db3f780def6105eee3cc930de4d0982607760820fddaa3facdd3813ccb40628",
+    "fmt": "명령어 / command (두 단어 / two words)",
+    "title": {
+      "ko": "lock 과 어긋나면 실패하라",
+      "en": "Fail if It Drifts from the Lock"
+    },
+    "prompt": {
+      "ko": "package-lock.json 과 정확히 일치하는 의존성만 설치하고, lock 파일과 어긋나거나 lock 이 없으면 아예 실패해, CI 에서 반복 가능하고 변조되지 않은 설치를 보장하는 npm 명령은? install 이 아니다. (두 단어)",
+      "en": "The npm command that installs only dependencies matching package-lock.json exactly, and fails outright if they drift from the lock or if the lock is missing — guaranteeing repeatable, untampered installs in CI. It is not \"install\". (two words)"
+    },
+    "hints": {
+      "ko": [
+        "두 번째 단어는 CI 의 약자.",
+        "clean install 을 뜻한다."
+      ],
+      "en": [
+        "The second word is the abbreviation for CI.",
+        "It means a clean install."
+      ]
+    }
+  },
+  {
+    "id": "t4_sccapstone",
+    "tier": 4,
+    "cat": "cipoison",
+    "track": "supplychain",
+    "points": 250,
+    "ci": false,
+    "hash": "3dd9aa467fdbf1577f3b98f5dc316fa7fe7e71fe150bb6bd16cd847974838109",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "공급망 사고 종합 판정",
+      "en": "Supply-Chain Incident Assessment"
+    },
+    "prompt": {
+      "ko": "들어온 의존성 하나를 세 축으로 판정한다: (1) 정상 이름과의 편집 거리 D(레벤슈타인), (2) extra-index-url 병렬 조회에서 실제 설치되는 버전의 major 값 V(사설/공개 중 더 높은 시맨틱 버전), (3) 서명 상태(verified → SIGNED, 그 외 → UNSIGNED). 아래 값으로 `FLAG{SC_D<D>_V<V>_<SIG>}` 를 만들어 제출하라.\n\n```\nlegit_pkg: express\nfound_pkg: expres\nprivate_registry: 2.0.0\npublic_registry: 8.1.0\nsignature: unverified\n```",
+      "en": "Assess one incoming dependency along three axes: (1) edit distance D from the legit name (Levenshtein), (2) the major V of the version actually installed under extra-index-url parallel lookup (the higher semantic version among private/public), (3) signature status (verified → SIGNED, else → UNSIGNED). Build and submit `FLAG{SC_D<D>_V<V>_<SIG>}` from the values below.\n\n```\nlegit_pkg: express\nfound_pkg: expres\nprivate_registry: 2.0.0\npublic_registry: 8.1.0\nsignature: unverified\n```"
+    },
+    "hints": {
+      "ko": [
+        "express vs expres → D.",
+        "두 버전 중 major 가 큰 쪽 → V, 서명은 verified 아님."
+      ],
+      "en": [
+        "express vs expres → D.",
+        "Higher major of the two versions → V; signature is not verified."
       ]
     }
   }

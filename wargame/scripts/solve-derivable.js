@@ -771,6 +771,63 @@ const SOLVERS = new Map([
     const tag = ac.toLowerCase() === 'kernel' ? 'KERNEL' : 'USER';
     return `FLAG{GH_A${health}_N${n}_${tag}}`;
   } }],
+  ['t2_scdist', { kind: 'computed', via: 'Levenshtein edit distance between the legit and candidate package names', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced names in the prompt');
+    const b = m[1];
+    const a = (b.match(/legit:\s*(\S+)/) || [])[1];
+    const c = (b.match(/candidate:\s*(\S+)/) || [])[1];
+    if (!a || !c) throw new Error('legit / candidate not both stated');
+    const lev = (x, y) => {
+      const d = Array.from({ length: x.length + 1 }, (_, i) => [i, ...Array(y.length).fill(0)]);
+      for (let j = 0; j <= y.length; j++) d[0][j] = j;
+      for (let i = 1; i <= x.length; i++) for (let j = 1; j <= y.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (x[i - 1] === y[j - 1] ? 0 : 1));
+      return d[x.length][y.length];
+    };
+    return `FLAG{DIST_${lev(a, c)}}`;
+  } }],
+  ['t2_scresolve', { kind: 'computed', via: 'higher semantic version wins parallel extra-index-url lookup', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced versions in the prompt');
+    const b = m[1];
+    const priv = (b.match(/private_registry:\s*([0-9.]+)/) || [])[1];
+    const pub = (b.match(/public_registry:\s*([0-9.]+)/) || [])[1];
+    if (!priv || !pub) throw new Error('private / public versions not both stated');
+    const cmp = (x, y) => { const px = x.split('.').map(Number), py = y.split('.').map(Number); for (let i = 0; i < 3; i++) { if ((px[i] || 0) !== (py[i] || 0)) return (px[i] || 0) - (py[i] || 0); } return 0; };
+    const win = cmp(pub, priv) > 0 ? pub : priv;
+    return `FLAG{RESOLVED_${win}}`;
+  } }],
+  ['t3_scpin', { kind: 'computed', via: 'first four bytes of the SHA-256 of the exact byte string', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced bytes in the prompt');
+    const v = (m[1].match(/sign_bytes:\s*(\S+)/) || [])[1];
+    if (!v) throw new Error('sign_bytes not stated');
+    const digest = crypto.createHash('sha256').update(v).digest('hex');
+    return `FLAG{PIN_${digest.slice(0, 8).toUpperCase()}}`;
+  } }],
+  ['t4_sccapstone', { kind: 'computed', via: 'edit distance, higher-version major, and signature status into one composite tag', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced brief in the prompt');
+    const b = m[1];
+    const legit = (b.match(/legit_pkg:\s*(\S+)/) || [])[1];
+    const found = (b.match(/found_pkg:\s*(\S+)/) || [])[1];
+    const priv = (b.match(/private_registry:\s*([0-9.]+)/) || [])[1];
+    const pub = (b.match(/public_registry:\s*([0-9.]+)/) || [])[1];
+    const sig = (b.match(/signature:\s*(\w+)/) || [])[1];
+    if (!legit || !found || !priv || !pub || !sig) throw new Error('legit_pkg / found_pkg / versions / signature not all stated');
+    const lev = (x, y) => {
+      const d = Array.from({ length: x.length + 1 }, (_, i) => [i, ...Array(y.length).fill(0)]);
+      for (let j = 0; j <= y.length; j++) d[0][j] = j;
+      for (let i = 1; i <= x.length; i++) for (let j = 1; j <= y.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (x[i - 1] === y[j - 1] ? 0 : 1));
+      return d[x.length][y.length];
+    };
+    const cmp = (x, y) => { const px = x.split('.').map(Number), py = y.split('.').map(Number); for (let i = 0; i < 3; i++) { if ((px[i] || 0) !== (py[i] || 0)) return (px[i] || 0) - (py[i] || 0); } return 0; };
+    const dist = lev(legit, found);
+    const win = cmp(pub, priv) > 0 ? pub : priv;
+    const major = win.split('.')[0];
+    const tag = sig.toLowerCase() === 'verified' ? 'SIGNED' : 'UNSIGNED';
+    return `FLAG{SC_D${dist}_V${major}_${tag}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
