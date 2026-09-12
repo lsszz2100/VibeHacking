@@ -724,6 +724,53 @@ const SOLVERS = new Map([
     const tag = nx.toLowerCase() === 'on' ? 'NXON' : 'NXOFF';
     return `FLAG{PWN_O${offset}_W${win.toString(16).toUpperCase()}_${tag}}`;
   } }],
+  ['t2_ghpointerchain', { kind: 'computed', via: 'module base plus the sum of every offset in the simplified pointer-chain model', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced layout in the prompt');
+    const b = m[1];
+    const base = (b.match(/module_base:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const offLine = (b.match(/offsets:\s*([0-9a-fA-Fx, ]+)/) || [])[1];
+    if (!base || !offLine) throw new Error('module_base / offsets not both stated');
+    const offs = (offLine.match(/0x[0-9a-fA-F]+/g) || []).map((h) => BigInt(h));
+    if (!offs.length) throw new Error('no offsets parsed');
+    const addr = BigInt(base) + offs.reduce((a, x) => a + x, 0n);
+    return `FLAG{PTR_${addr.toString(16).toUpperCase()}}`;
+  } }],
+  ['t3_ghrebase', { kind: 'computed', via: 'static address minus dump base, added onto the runtime load base', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced values in the prompt');
+    const b = m[1];
+    const stat = (b.match(/static_addr:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const dump = (b.match(/dump_base:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const run = (b.match(/runtime_base:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    if (!stat || !dump || !run) throw new Error('static_addr / dump_base / runtime_base not all stated');
+    const rt = BigInt(stat) - BigInt(dump) + BigInt(run);
+    return `FLAG{RUNTIME_${rt.toString(16).toUpperCase()}}`;
+  } }],
+  ['t3_ghchecksum', { kind: 'computed', via: 'XOR of every payload byte gives the trailing verification byte', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced payload in the prompt');
+    const line = (m[1].match(/payload_hex:\s*([0-9a-fA-F ]+)/) || [])[1];
+    if (!line) throw new Error('payload_hex not stated');
+    const bytes = (line.match(/[0-9a-fA-F]{2}/g) || []).map((h) => parseInt(h, 16));
+    if (!bytes.length) throw new Error('no bytes parsed');
+    const x = bytes.reduce((a, b) => a ^ b, 0);
+    return `FLAG{CKSUM_${x.toString(16).toUpperCase().padStart(2, '0')}}`;
+  } }],
+  ['t4_ghcapstone', { kind: 'computed', via: 'health address from base plus offset, patch-byte count, and the anti-cheat tag', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced brief in the prompt');
+    const b = m[1];
+    const base = (b.match(/module_base:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const off = (b.match(/health_offset:\s*(0x[0-9a-fA-F]+)/) || [])[1];
+    const patchLine = (b.match(/patch_bytes:\s*([0-9a-fA-F ]+)/) || [])[1];
+    const ac = (b.match(/anticheat:\s*(\w+)/) || [])[1];
+    if (!base || !off || !patchLine || !ac) throw new Error('module_base / health_offset / patch_bytes / anticheat not all stated');
+    const health = (BigInt(base) + BigInt(off)).toString(16).toUpperCase();
+    const n = (patchLine.match(/[0-9a-fA-F]{2}/g) || []).length;
+    const tag = ac.toLowerCase() === 'kernel' ? 'KERNEL' : 'USER';
+    return `FLAG{GH_A${health}_N${n}_${tag}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

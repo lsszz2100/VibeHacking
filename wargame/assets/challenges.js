@@ -180,6 +180,14 @@ const TRACKS = [
     "en": "Advanced Binary Exploitation",
     "desc_ko": "스택·힙 손상 프리미티브, 고급 코드 재사용 체인, glibc 힙 내부 공격, 현대 완화 기법 우회.",
     "desc_en": "Memory-corruption primitives, advanced code-reuse chains, glibc heap-internal attacks, and bypassing modern mitigations."
+  },
+  {
+    "id": "gamehack",
+    "icon": "🎮",
+    "ko": "게임 해킹",
+    "en": "Game Hacking",
+    "desc_ko": "게임 메모리 스캔·안티치트 분석·패킷 조작·코드 인젝션과 서버 취약점.",
+    "desc_en": "Game memory scanning, anti-cheat analysis, packet manipulation, code injection and server flaws."
   }
 ];
 
@@ -16878,6 +16886,986 @@ const CHALLENGES = [
       "en": [
         "offset = 40 + 8 = 48; base = leaked_libc − libc_leak_offset.",
         "win = base + onegadget_offset; nx=on → NXON."
+      ]
+    }
+  },
+  {
+    "id": "t0_ghcheatengine",
+    "tier": 0,
+    "cat": "memory",
+    "track": "gamehack",
+    "points": 50,
+    "ci": true,
+    "hash": "cc45b819018b1fa386b586bf0d4566db284c9c6811a660f31349bdf871c9f241",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "메모리 스캐너의 대명사",
+      "en": "The Iconic Memory Scanner"
+    },
+    "prompt": {
+      "ko": "실행 중인 게임에서 체력·재화 같은 값을 검색하고 수정하며 값을 고정(락)까지 할 수 있게 해 주는, PC 게임 조작의 대표 오픈소스 도구다. 두 단어 이름은?",
+      "en": "The flagship open-source tool that scans, edits, and even locks values like health or currency in a running game. Give its two-word name."
+    },
+    "hints": {
+      "ko": [
+        "약자는 CE.",
+        "Dark Byte 가 만들었다."
+      ],
+      "en": [
+        "Abbreviated CE.",
+        "Created by Dark Byte."
+      ]
+    }
+  },
+  {
+    "id": "t0_ghfrozen",
+    "tier": 0,
+    "cat": "memory",
+    "track": "gamehack",
+    "points": 50,
+    "ci": true,
+    "hash": "ffb304816a1090313e833215c08dae3d209cfad1ffd1f674f0909a2ae99e1394",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "값이 절대 안 변할 때",
+      "en": "When a Value Never Moves"
+    },
+    "prompt": {
+      "ko": "트레이너에서 체력 옆의 체크박스를 켜면 게임이 그 주소에 무엇을 쓰든 도구가 매 틱 원하는 값을 다시 써 넣어 값이 변하지 않는다. 이 잠긴 상태를 부르는 한 단어(과거분사형)는?",
+      "en": "Ticking the checkbox beside a health value makes the tool rewrite your chosen number every tick, so it never moves no matter what the game stores. What one word (a past participle) names this locked state?"
+    },
+    "hints": {
+      "ko": [
+        "‘얼려서’ 잠근다.",
+        "반대는 활성(active)."
+      ],
+      "en": [
+        "It is \"iced\" in place.",
+        "The opposite of active."
+      ]
+    }
+  },
+  {
+    "id": "t1_ghaob",
+    "tier": 1,
+    "cat": "memory",
+    "track": "gamehack",
+    "points": 70,
+    "ci": true,
+    "hash": "64664eba74e4a788e2f1e80c5475e5413907ece303661ce17959959c99b5f66b",
+    "fmt": "한 단어 / one word (3글자 / 3 chars)",
+    "title": {
+      "ko": "업데이트를 견디는 바이트 패턴",
+      "en": "A Byte Pattern That Survives Updates"
+    },
+    "prompt": {
+      "ko": "고정 주소 대신, 와일드카드가 섞인 고유한 바이트 시퀀스를 검색해 게임이 패치돼 주소가 밀려도 같은 코드를 다시 찾는 스캔 방식을 부르는 세 글자 약어는? (Array Of Bytes)",
+      "en": "Instead of a fixed address, you search for a unique byte sequence with wildcards so you can relocate the same code even after the game is patched. What three-letter acronym names this scan? (Array Of Bytes)"
+    },
+    "hints": {
+      "ko": [
+        "Array __ Bytes.",
+        "시그니처 스캔이라고도 부른다."
+      ],
+      "en": [
+        "Array __ Bytes.",
+        "Also called a signature scan."
+      ]
+    }
+  },
+  {
+    "id": "t1_ghpointer",
+    "tier": 1,
+    "cat": "memory",
+    "track": "gamehack",
+    "points": 70,
+    "ci": true,
+    "hash": "1cdf95bd12e993d5aaf216f5f4ac1148b4b003ed0a253b781b25866eeaa27af3",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "재시작에도 살아남는 경로",
+      "en": "A Path That Survives a Restart"
+    },
+    "prompt": {
+      "ko": "재시작할 때마다 값의 실제 주소는 바뀌지만, 정적 기준에서 오프셋을 따라 여러 단계를 거치면 매번 같은 값에 도달한다. 이렇게 주소를 담은 값을 따라가는 다단계 체인을 무엇 체인이라 하나? (한 단어)",
+      "en": "The real address of a value changes on every restart, yet following a fixed chain of offsets from a static base lands on the same value each time. This multi-level chain of address-holding values is a ______ chain. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "주소를 가리키는 값.",
+        "정적 기준 + 오프셋 목록."
+      ],
+      "en": [
+        "A value that points at an address.",
+        "A static base plus a list of offsets."
+      ]
+    }
+  },
+  {
+    "id": "t1_ghbattleye",
+    "tier": 1,
+    "cat": "anticheat",
+    "track": "gamehack",
+    "points": 70,
+    "ci": true,
+    "hash": "585e6ba97e8aa8b9c0b12d81c36b99f363091176f653a39eca199814be9eae66",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "PUBG·R6 뒤의 감시자",
+      "en": "The Watcher Behind PUBG and R6"
+    },
+    "prompt": {
+      "ko": "PUBG, Rainbow Six Siege, DayZ 등에서 쓰이는 상용 커널 모드 안티치트로, 자체 커널 드라이버로 메모리 무결성과 후킹을 감시한다. 한 단어(“Battle” + 눈) 제품 이름은?",
+      "en": "A commercial kernel-mode anti-cheat used by PUBG, Rainbow Six Siege, and DayZ that watches memory integrity and hooking through its own kernel driver. Give its one-word name (\"Battle\" + eye)."
+    },
+    "hints": {
+      "ko": [
+        "‘Battle’ + eye.",
+        "독일제, 2004 년 등장."
+      ],
+      "en": [
+        "\"Battle\" + eye.",
+        "German-made, since 2004."
+      ]
+    }
+  },
+  {
+    "id": "t1_ghvac",
+    "tier": 1,
+    "cat": "anticheat",
+    "track": "gamehack",
+    "points": 70,
+    "ci": true,
+    "hash": "24ee89a12054959a73e27b834e621336cdceccaf1f78e228db4f77defe71c414",
+    "fmt": "한 단어 / one word (3글자 / 3 chars)",
+    "title": {
+      "ko": "밸브의 서버측 판정",
+      "en": "Valve's Server-Side Verdict"
+    },
+    "prompt": {
+      "ko": "Steam 게임에 내장된 밸브의 안티치트로, 알려진 치트 시그니처를 탐지하면 즉시가 아니라 나중에 물결처럼 한꺼번에 계정을 밴한다. 세 글자 약어(Valve Anti-Cheat)는?",
+      "en": "Valve's built-in anti-cheat for Steam titles that, on matching a known cheat signature, bans accounts later in a coordinated wave rather than instantly. Give the three-letter acronym (Valve Anti-Cheat)."
+    },
+    "hints": {
+      "ko": [
+        "Valve __-Cheat.",
+        "‘밴 웨이브’로 유명."
+      ],
+      "en": [
+        "Valve __-Cheat.",
+        "Famous for its \"ban waves\"."
+      ]
+    }
+  },
+  {
+    "id": "t1_ghspeedhack",
+    "tier": 1,
+    "cat": "netcode",
+    "track": "gamehack",
+    "points": 70,
+    "ci": true,
+    "hash": "01994f31029747c029f1881d6ccdf6ad2002ff14fc9ec26effca5218fa7d547b",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "시간을 빠르게 감기",
+      "en": "Fast-Forwarding Time"
+    },
+    "prompt": {
+      "ko": "게임이 시간 경과를 묻는 함수(예: 틱·타이머)를 가로채 부풀린 값을 돌려줌으로써 캐릭터·애니메이션을 실제보다 빠르게 굴리는 고전 조작을 무엇이라 하나? (한 단어)",
+      "en": "Hooking the function the game asks for elapsed time (a tick or timer) and returning an inflated value makes the character and animations run faster than real time. What is this classic manipulation called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "speed + hack.",
+        "클럭 함수를 후킹한다."
+      ],
+      "en": [
+        "speed + hack.",
+        "It hooks the clock function."
+      ]
+    }
+  },
+  {
+    "id": "t1_ghloadlibrary",
+    "tier": 1,
+    "cat": "injection",
+    "track": "gamehack",
+    "points": 70,
+    "ci": true,
+    "hash": "feb72743426cf2d92a0c6209a595837650df128d14fc9025001b209f3e298530",
+    "fmt": "한 단어 / one word (11글자 / 11 chars)",
+    "title": {
+      "ko": "가장 단순한 DLL 주입",
+      "en": "The Simplest DLL Injection"
+    },
+    "prompt": {
+      "ko": "표적 프로세스 안에서 이 Win32 함수를 원격 스레드로 호출하게 만들면, 디스크의 치트 DLL 경로를 인자로 넘겨 그 모듈을 통째로 적재시킬 수 있다. 가장 흔한 주입에 쓰이는 이 함수 이름은? (한 단어)",
+      "en": "Make the target process call this Win32 function from a remote thread, passing the path of a cheat DLL on disk, and the whole module gets loaded. Name the function used in the most common injection. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "Load + Library.",
+        "경로 문자열을 인자로 받는다."
+      ],
+      "en": [
+        "Load + Library.",
+        "It takes a path string argument."
+      ]
+    }
+  },
+  {
+    "id": "t2_ghrpm",
+    "tier": 2,
+    "cat": "memory",
+    "track": "gamehack",
+    "points": 90,
+    "ci": true,
+    "hash": "603804cfd7a43745f9dc3053241ba70591aa5784d455fad1c40233dcb191e8e2",
+    "fmt": "한 단어 / one word (17글자 / 17 chars)",
+    "title": {
+      "ko": "남의 프로세스를 읽는 API",
+      "en": "The API That Reads Another Process"
+    },
+    "prompt": {
+      "ko": "PROCESS_VM_READ 핸들을 얻은 뒤, 다른 프로세스의 가상 주소에서 바이트를 자기 버퍼로 복사해 오는 Win32 함수의 이름은? 대응하는 쓰기 함수는 이름 앞부분만 다르다. (한 단어)",
+      "en": "With a PROCESS_VM_READ handle, this Win32 function copies bytes from another process's virtual address into your own buffer. Its write counterpart differs only in the leading verb. Give the one-word name."
+    },
+    "hints": {
+      "ko": [
+        "Read + Process + Memory.",
+        "kernel32 안에 들어 있다."
+      ],
+      "en": [
+        "Read + Process + Memory.",
+        "It lives in kernel32."
+      ]
+    }
+  },
+  {
+    "id": "t2_ghdissect",
+    "tier": 2,
+    "cat": "memory",
+    "track": "gamehack",
+    "points": 90,
+    "ci": true,
+    "hash": "39b9ff254c82e47496efb1194f2ff85aa877c76bd7ffd04fcf85e726e9611359",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "구조체를 되살리는 뷰어",
+      "en": "Rebuilding a Struct in the Viewer"
+    },
+    "prompt": {
+      "ko": "CE 의 구조체 뷰어에서 한 기준 주소를 열어 인접 오프셋들의 값을 나열하고 자료형을 붙여 게임의 클래스/구조체 레이아웃을 손으로 복원하는 기능을 가리키는 영어 한 단어(해부하다라는 뜻의 동사)는?",
+      "en": "In CE's structure viewer you open a base address, list the values at nearby offsets, and tag their types to rebuild a game's class/struct layout by hand. What one English verb (meaning \"to anatomize\") names this feature?"
+    },
+    "hints": {
+      "ko": [
+        "개구리를 해부하듯 뜯어본다.",
+        "‘구조체 ____ / structures’ 메뉴."
+      ],
+      "en": [
+        "Like anatomizing a specimen on the table.",
+        "The \"____ data / structures\" menu."
+      ]
+    }
+  },
+  {
+    "id": "t2_ghpointerchain",
+    "tier": 2,
+    "cat": "memory",
+    "track": "gamehack",
+    "points": 150,
+    "ci": false,
+    "hash": "35031a479c8c6cdedf9b16fc39ff84af79a721f850c19145f39561a32b5fd524",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "포인터 체인 해석",
+      "en": "Resolve the Pointer Chain"
+    },
+    "prompt": {
+      "ko": "아래 단순화 모델로 최종 주소를 구하라. 최종 = module_base + 모든 offset 의 합. 결과를 `FLAG{PTR_<HEX>}` 로 제출하라(HEX 는 0x 없이 대문자).\n\n```\nmodule_base: 0x140000000\noffsets: 0x18, 0x4A0, 0xC4, 0x214\n```",
+      "en": "Using the simplified model below, compute the final address. final = module_base + the sum of every offset. Submit as `FLAG{PTR_<HEX>}` (HEX uppercase, no 0x).\n\n```\nmodule_base: 0x140000000\noffsets: 0x18, 0x4A0, 0xC4, 0x214\n```"
+    },
+    "hints": {
+      "ko": [
+        "0x18+0x4A0+0xC4+0x214 = 0x790.",
+        "module_base 에 0x790 을 더한다."
+      ],
+      "en": [
+        "0x18+0x4A0+0xC4+0x214 = 0x790.",
+        "Add 0x790 to module_base."
+      ]
+    }
+  },
+  {
+    "id": "t2_gheac",
+    "tier": 2,
+    "cat": "anticheat",
+    "track": "gamehack",
+    "points": 90,
+    "ci": true,
+    "hash": "8d1e1fe5ae5cb2b1660bce35282ad215d21e86f0447c0143b9fa67beb50d6e7c",
+    "fmt": "한 단어 / one word (3글자 / 3 chars)",
+    "title": {
+      "ko": "에픽의 이지 안티치트",
+      "en": "Epic's Easy Anti-Cheat"
+    },
+    "prompt": {
+      "ko": "Fortnite, Apex, Rust 등이 채택한 에픽 소유의 상용 안티치트로, 커널 드라이버와 사용자 모드 모듈을 함께 쓴다. 세 글자 약어는? (Easy Anti-Cheat)",
+      "en": "Epic-owned commercial anti-cheat adopted by Fortnite, Apex, and Rust, combining a kernel driver with a user-mode module. Give the three-letter acronym. (Easy Anti-Cheat)"
+    },
+    "hints": {
+      "ko": [
+        "Easy __-Cheat.",
+        "Epic Games 가 인수·소유."
+      ],
+      "en": [
+        "Easy __-Cheat.",
+        "Now owned by Epic Games."
+      ]
+    }
+  },
+  {
+    "id": "t2_ghreplay",
+    "tier": 2,
+    "cat": "netcode",
+    "track": "gamehack",
+    "points": 90,
+    "ci": true,
+    "hash": "ac203c9843b5bd8c883e07039ff82820c94422010be6108bb82403ca25376a22",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "같은 패킷을 다시 보내기",
+      "en": "Send the Same Packet Again"
+    },
+    "prompt": {
+      "ko": "유효한 게임 패킷(예: ‘아이템 획득’)을 한 번 캡처한 뒤 서버가 순번·논스로 거르지 않으면 그대로 여러 번 재전송해 효과를 반복시키는 공격을 무엇 공격이라 하나? (한 단어)",
+      "en": "Capture a valid game packet (say \"item obtained\") and, if the server does not filter by sequence or nonce, resend it verbatim many times to repeat the effect. What is this attack called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "다시 재생한다.",
+        "순번/논스로 막는다."
+      ],
+      "en": [
+        "You play it back.",
+        "Defeated by sequence numbers or nonces."
+      ]
+    }
+  },
+  {
+    "id": "t2_ghdesync",
+    "tier": 2,
+    "cat": "netcode",
+    "track": "gamehack",
+    "points": 90,
+    "ci": true,
+    "hash": "3b7f4c18090c4155ae7590994ea2ea85ad94a5bd87036bbaff5bee9841165ddd",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "클라이언트와 서버가 어긋날 때",
+      "en": "When Client and Server Disagree"
+    },
+    "prompt": {
+      "ko": "클라이언트가 보는 상태와 서버 권위 상태가 어긋난 틈을 악용하는 버그를 통칭해 무엇이라 하나? 대표 사례로 순간이동·투명화가 나타난다. (한 단어, ‘de’ + 동기화)",
+      "en": "The umbrella name for bugs that exploit a gap between what the client sees and the server's authoritative state, producing effects like teleporting or invisibility. Give the one word (\"de\" + synchronization)."
+    },
+    "hints": {
+      "ko": [
+        "동기화가 깨진 상태.",
+        "de + sync."
+      ],
+      "en": [
+        "Synchronization is broken.",
+        "de + sync."
+      ]
+    }
+  },
+  {
+    "id": "t2_ghdetour",
+    "tier": 2,
+    "cat": "injection",
+    "track": "gamehack",
+    "points": 90,
+    "ci": true,
+    "hash": "cea5cd4fd91f7fa0acf0b787f0a12d5378a3ad542f768ce9a5f1d5d1b4d992e3",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "함수 앞머리를 우회시키기",
+      "en": "Divert a Function's Entry"
+    },
+    "prompt": {
+      "ko": "대상 함수의 첫 명령들을 점프로 덮어 자기 코드로 실행 흐름을 돌렸다가 원래 함수로 되돌려 보내는 후킹 방식을, 마이크로소프트 동명 라이브러리에서 따와 무엇이라 하나? (한 단어)",
+      "en": "A hooking method that overwrites a target function's first instructions with a jump to divert flow into your code, then returns to the original — named after Microsoft's library of the same name. What is it? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "우회로를 낸다.",
+        "Microsoft ______ 라이브러리."
+      ],
+      "en": [
+        "It makes a bypass road.",
+        "Microsoft's ______ library."
+      ]
+    }
+  },
+  {
+    "id": "t2_ghcreateremotethread",
+    "tier": 2,
+    "cat": "injection",
+    "track": "gamehack",
+    "points": 90,
+    "ci": true,
+    "hash": "baa3ca034a94f32ada4000a543f57aef1374dcdd9954764ed24ff291925bcddb",
+    "fmt": "한 단어 / one word (18글자 / 18 chars)",
+    "title": {
+      "ko": "남의 프로세스에서 스레드 시작",
+      "en": "Start a Thread in Another Process"
+    },
+    "prompt": {
+      "ko": "핸들을 얻은 표적 프로세스 안에서 지정한 시작 주소로 새 실행 스레드를 만들어, 흔히 로더 함수 호출을 트리거하는 데 쓰이는 Win32 함수 이름은? (한 단어)",
+      "en": "Given a handle to a target process, this Win32 function creates a new thread there at a start address you choose — commonly used to trigger a loader call. Name it. (one word)"
+    },
+    "hints": {
+      "ko": [
+        "Create + Remote + Thread.",
+        "시작 주소를 인자로 준다."
+      ],
+      "en": [
+        "Create + Remote + Thread.",
+        "You pass it a start address."
+      ]
+    }
+  },
+  {
+    "id": "t3_ghreclass",
+    "tier": 3,
+    "cat": "memory",
+    "track": "gamehack",
+    "points": 120,
+    "ci": true,
+    "hash": "dd3e11e4df96c4ef70dee1c423d957e20d20d94446bcb6eb5abb33a0319867e3",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "런타임 클래스 재구성 도구",
+      "en": "The Runtime Class Rebuilder"
+    },
+    "prompt": {
+      "ko": "실행 중인 프로세스의 메모리 블록을 열어 필드마다 자료형·이름을 붙이고 C++ 헤더로 내보내, 게임 오브젝트의 클래스 정의를 통째로 역설계하는 별도 도구의 이름은? (‘Re’ + 클래스, 한 단어)",
+      "en": "This standalone tool opens a live process's memory block, lets you name and type each field, and exports a C++ header — reverse-engineering a game object's whole class definition. Name it. (\"Re\" + class, one word)"
+    },
+    "hints": {
+      "ko": [
+        "ReClass.NET 이 대표 구현.",
+        "Re + Class."
+      ],
+      "en": [
+        "ReClass.NET is the popular build.",
+        "Re + Class."
+      ]
+    }
+  },
+  {
+    "id": "t3_ghrebase",
+    "tier": 3,
+    "cat": "memory",
+    "track": "gamehack",
+    "points": 200,
+    "ci": false,
+    "hash": "d6835116d8117d2b0c534700a885c96dffbfc1a157aea4312842c12251c83bb3",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "모듈 리베이스",
+      "en": "Rebase the Module"
+    },
+    "prompt": {
+      "ko": "저장된 덤프에서 본 주소를 이번 실행의 로드 주소로 변환하라. runtime = static_addr − dump_base + runtime_base. `FLAG{RUNTIME_<HEX>}` 로 제출(0x 없이 대문자).\n\n```\nstatic_addr:  0x7FF612345678\ndump_base:    0x7FF612340000\nruntime_base: 0x7FF7ABCD0000\n```",
+      "en": "Convert an address seen in a saved dump to this run's load address. runtime = static_addr − dump_base + runtime_base. Submit `FLAG{RUNTIME_<HEX>}` (uppercase, no 0x).\n\n```\nstatic_addr:  0x7FF612345678\ndump_base:    0x7FF612340000\nruntime_base: 0x7FF7ABCD0000\n```"
+    },
+    "hints": {
+      "ko": [
+        "RVA = static_addr − dump_base = 0x5678.",
+        "runtime_base + 0x5678."
+      ],
+      "en": [
+        "RVA = static_addr − dump_base = 0x5678.",
+        "Add that RVA to runtime_base."
+      ]
+    }
+  },
+  {
+    "id": "t3_ghhwid",
+    "tier": 3,
+    "cat": "anticheat",
+    "track": "gamehack",
+    "points": 120,
+    "ci": true,
+    "hash": "bc45e91a086497cd817cb3024ac5c0d733111a74378257b11991e1e435b7e71e",
+    "fmt": "한 단어 / one word (4글자 / 4 chars)",
+    "title": {
+      "ko": "계정을 바꿔도 소용없다",
+      "en": "A New Account Won't Help"
+    },
+    "prompt": {
+      "ko": "치터가 밴 후 새 계정을 만들어도, 디스크·메인보드·MAC 등에서 뽑은 기기 지문으로 다시 차단하는 밴 방식을 무엇 밴이라 하나? 네 글자 약어(HardWare ID)는?",
+      "en": "Even after a banned cheater makes a new account, they are blocked again by a device fingerprint drawn from disk, motherboard, MAC, and more. What is this ban called? Give the four-letter acronym (HardWare ID)."
+    },
+    "hints": {
+      "ko": [
+        "HardWare + ID.",
+        "스푸퍼로 우회를 시도한다."
+      ],
+      "en": [
+        "HardWare + ID.",
+        "Cheaters try \"spoofers\" to evade it."
+      ]
+    }
+  },
+  {
+    "id": "t3_ghheartbeat",
+    "tier": 3,
+    "cat": "anticheat",
+    "track": "gamehack",
+    "points": 120,
+    "ci": true,
+    "hash": "6b20e9b742e448a5040d026ac2543b7e1901731b50790eea284f575bfccba943",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "규칙적인 생존 신호",
+      "en": "The Regular Sign of Life"
+    },
+    "prompt": {
+      "ko": "클라이언트가 서버로 일정 간격마다 보내는, 무결성 상태를 담은 서명된 주기 메시지로, 이 신호가 끊기거나 변조되면 서버가 세션을 끊는다. 심장 박동에 빗댄 한 단어는?",
+      "en": "A signed, periodic message the client sends the server at a fixed interval carrying its integrity state; if the signal stops or is tampered with, the server drops the session. What one word (a cardiac metaphor) names it?"
+    },
+    "hints": {
+      "ko": [
+        "심장이 뛰듯 규칙적.",
+        "heart + beat."
+      ],
+      "en": [
+        "Regular like a pulse.",
+        "heart + beat."
+      ]
+    }
+  },
+  {
+    "id": "t3_ghvanguard",
+    "tier": 3,
+    "cat": "anticheat",
+    "track": "gamehack",
+    "points": 120,
+    "ci": true,
+    "hash": "6a62362c11e91c9f8205c47bbb30833a257c979f663b9a73d3c814ce228fe3dd",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "부팅 때부터 지키는 라이엇",
+      "en": "Riot Guarding from Boot"
+    },
+    "prompt": {
+      "ko": "Valorant 를 위해 라이엇이 만든 안티치트로, 부팅 시점부터 로드되는 커널 드라이버로 상시 동작해 논란이 됐다. 한 단어(‘선봉’) 이름은?",
+      "en": "Riot's anti-cheat for Valorant, controversial for a kernel driver that loads at system boot and runs at all times. Give its one-word name (meaning \"the front guard\")."
+    },
+    "hints": {
+      "ko": [
+        "‘선봉대’라는 뜻.",
+        "Riot Games 가 개발."
+      ],
+      "en": [
+        "It means \"the front guard\".",
+        "Built by Riot Games."
+      ]
+    }
+  },
+  {
+    "id": "t3_ghinterpolation",
+    "tier": 3,
+    "cat": "netcode",
+    "track": "gamehack",
+    "points": 120,
+    "ci": true,
+    "hash": "31452c6365937965d455b2824bcd105e762adf3575d35b3ff125bca6e380651e",
+    "fmt": "한 단어 / one word (13글자 / 13 chars)",
+    "title": {
+      "ko": "스냅샷 사이를 메우기",
+      "en": "Filling Between Snapshots"
+    },
+    "prompt": {
+      "ko": "클라이언트가 서버 스냅샷 사이의 빈 시간을 부드럽게 메우려고 과거 두 상태 사이를 계산해 표시하는 기법으로, 이 지연을 악용하면 ‘핏펙(peeker's advantage)’이 생긴다. 무엇이라 하나? (한 단어)",
+      "en": "To smooth the gap between server snapshots, the client renders a computed state between two past updates; abusing this delay creates \"peeker's advantage\". What is this technique called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "두 점 사이를 보간.",
+        "반대는 외삽(extrapolation)."
+      ],
+      "en": [
+        "Computing between two points.",
+        "Its opposite is extrapolation."
+      ]
+    }
+  },
+  {
+    "id": "t3_ghchecksum",
+    "tier": 3,
+    "cat": "netcode",
+    "track": "gamehack",
+    "points": 140,
+    "ci": false,
+    "hash": "1c9a4248eec42e3d9cda428dfc65c0c996d1f275bad1f220badd1785d88e4455",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "위조 패킷의 체크섬",
+      "en": "Checksum for a Forged Packet"
+    },
+    "prompt": {
+      "ko": "서버가 받아들이도록, 아래 페이로드 바이트 전체의 XOR 로 끝자리 검증 바이트를 계산하라. 결과를 두 자리 대문자 16진수로 `FLAG{CKSUM_<HH>}` 형태로 제출하라.\n\n```\npayload_hex: 6f 70 63 3a 05 2a 19\n```",
+      "en": "So the server accepts it, compute the trailing verification byte as the XOR of every payload byte below. Submit it as a two-digit uppercase hex value in the form `FLAG{CKSUM_<HH>}`.\n\n```\npayload_hex: 6f 70 63 3a 05 2a 19\n```"
+    },
+    "hints": {
+      "ko": [
+        "모든 바이트를 XOR 한다.",
+        "6f^70^63^3a^05^2a^19."
+      ],
+      "en": [
+        "XOR all the bytes together.",
+        "6f^70^63^3a^05^2a^19."
+      ]
+    }
+  },
+  {
+    "id": "t3_ghinlinehook",
+    "tier": 3,
+    "cat": "injection",
+    "track": "gamehack",
+    "points": 120,
+    "ci": true,
+    "hash": "e90ad926ea9af9f7a915cdb6a45b3917d4c38a95ec5870b1652b8429202b2537",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "명령 자리에 심는 점프",
+      "en": "A Jump Planted in the Code"
+    },
+    "prompt": {
+      "ko": "함수 본문 첫 바이트들을 직접 jmp 명령으로 덮어써 실행 흐름을 가로채는 후킹 방식을 두 단어로 무엇이라 하나? 임포트 표 항목을 바꾸는 방식과 달리 실제 코드 바이트를 수정한다. (두 단어)",
+      "en": "Overwriting a function's first bytes directly with a jmp to intercept its flow — unlike editing an import table, this modifies the actual code bytes. What is this hook called, in two words?"
+    },
+    "hints": {
+      "ko": [
+        "코드에 직접 심는다(inline).",
+        "____ + hook, 공백으로 나뉜 두 단어."
+      ],
+      "en": [
+        "Planted inline in the code.",
+        "____ + hook, two space-separated words."
+      ]
+    }
+  },
+  {
+    "id": "t3_ghiat",
+    "tier": 3,
+    "cat": "injection",
+    "track": "gamehack",
+    "points": 120,
+    "ci": true,
+    "hash": "367564e0b324ba180f9da6a02fd7450b0da6ccc09259a48de93e6a7c3e4e17b1",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "임포트 표를 노린 후킹",
+      "en": "Hooking via the Import Table"
+    },
+    "prompt": {
+      "ko": "PE 가 임포트한 함수들의 실제 주소가 로더에 의해 채워지는 Import Address Table 에서 항목 하나를 자기 함수 주소로 바꿔 호출을 가로채는 후킹을 두 단어로 무엇이라 하나? (표 이름의 세 글자 약어 + hook)",
+      "en": "Loaders fill a PE's imported function addresses into the Import Address Table; swapping one entry for your own function address to intercept the call is what, in two words? (the table's three-letter acronym + hook)"
+    },
+    "hints": {
+      "ko": [
+        "표 이름의 세 글자 약어 + 후킹.",
+        "세 글자 약어 + hook, 공백으로 나뉜 두 단어."
+      ],
+      "en": [
+        "The table's three-letter acronym + hook.",
+        "acronym + hook, two space-separated words."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghintegrity",
+    "tier": 4,
+    "cat": "anticheat",
+    "track": "gamehack",
+    "points": 160,
+    "ci": true,
+    "hash": "78587c41ed99a3375022dc28be882f72b1a608a0dac7aa900c61f48b2bb37be6",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "코드가 변조됐는가",
+      "en": "Has the Code Been Touched"
+    },
+    "prompt": {
+      "ko": "안티치트가 실행 중인 코드 섹션의 해시를 주기적으로 계산해 원본과 대조함으로써 패치·후킹으로 인한 변조를 잡아내는 검사를 ‘코드 ____ 검사’라 한다. 빈칸의 한 단어(무결성)는?",
+      "en": "An anti-cheat periodically hashes the running code section and compares it to the original to catch tampering from patches or hooks. This is a \"code ______ check\". What one word fills the blank (meaning wholeness)?"
+    },
+    "hints": {
+      "ko": [
+        "변조되지 않은 온전함.",
+        "checksum 으로 원본과 대조."
+      ],
+      "en": [
+        "The property of being unaltered.",
+        "Compared against the original by checksum."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghhypervisor",
+    "tier": 4,
+    "cat": "anticheat",
+    "track": "gamehack",
+    "points": 160,
+    "ci": true,
+    "hash": "cd8cbcf04ca5f4ce7d9a921b13748278791723a9bb3283d0e3506e0466b96822",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "Ring -1 의 관찰자",
+      "en": "The Watcher at Ring -1"
+    },
+    "prompt": {
+      "ko": "치트와 안티치트 모두, OS 커널보다 아래(Ring -1)에서 게스트를 들여다보려고 이 가상화 계층을 쓴다. 게스트 OS를 얹어 실행·감시하는 이 계층을 부르는 한 단어는?",
+      "en": "Both cheats and anti-cheats reach beneath the OS kernel (Ring -1) using this hardware-assisted layer (VT-x/AMD-V) to observe a guest. What one word names the layer that hosts and watches a guest OS?"
+    },
+    "hints": {
+      "ko": [
+        "Ring -1 계층.",
+        "VT-x/AMD-V 로 구현."
+      ],
+      "en": [
+        "The Ring -1 layer.",
+        "Built on VT-x/AMD-V."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghheuristic",
+    "tier": 4,
+    "cat": "anticheat",
+    "track": "gamehack",
+    "points": 160,
+    "ci": true,
+    "hash": "bcbb0eeac8d6a4240d57cdd7fa1415a152f30c13a9b06c26043dd6155b636fca",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "행동으로 잡아내기",
+      "en": "Caught by Behavior"
+    },
+    "prompt": {
+      "ko": "시그니처가 없어도, 불가능한 반응 속도·항상 명중 같은 통계적으로 비정상인 플레이 패턴을 서버가 행동 기반으로 탐지해 치터를 가려낸다. 이런 규칙·통계 기반 탐지를 무엇 탐지라 하나? (한 단어, 발견법)",
+      "en": "Even without a signature, the server flags statistically improbable play — impossible reaction times, always-on-target aim — to spot cheaters. What is this rule- and statistics-based detection called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "시그니처가 아니라 ‘행동’을 본다.",
+        "경험적 발견법."
+      ],
+      "en": [
+        "It watches behavior, not signatures.",
+        "An empirical, rule-of-thumb approach."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghlagswitch",
+    "tier": 4,
+    "cat": "netcode",
+    "track": "gamehack",
+    "points": 160,
+    "ci": true,
+    "hash": "b5c0efc1c09691b10c75eaa1a769dc6335e2d6812fb95b859230dbbba49bb3bc",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "내 회선을 끊었다 붙였다",
+      "en": "Choking Your Own Line"
+    },
+    "prompt": {
+      "ko": "물리 스위치나 방화벽 규칙으로 자기 상향 패킷을 잠시 끊어, 서버에서 자기 캐릭터가 멈춘 듯 보이는 동안 로컬에선 계속 움직여 이득을 챙기는 장치/기법을 무엇이라 하나? (한 단어)",
+      "en": "Using a physical switch or firewall rule to briefly cut your own upstream packets, you keep moving locally while your avatar appears stalled server-side. What is this device/technique called? (one word)"
+    },
+    "hints": {
+      "ko": [
+        "lag + switch.",
+        "상향 트래픽을 조인다."
+      ],
+      "en": [
+        "lag + switch.",
+        "It chokes upstream traffic."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghrubberbanding",
+    "tier": 4,
+    "cat": "netcode",
+    "track": "gamehack",
+    "points": 160,
+    "ci": true,
+    "hash": "f499bd42152aeb130dbc93d8e1c3a0bc9829d80e809e3a43f0dec16990b8f3e7",
+    "fmt": "한 단어 / one word (13글자 / 13 chars, -ing으로 끝남 / ends in -ing)",
+    "title": {
+      "ko": "서버가 되돌리는 순간",
+      "en": "When the Server Snaps You Back"
+    },
+    "prompt": {
+      "ko": "서버가 권위 검증으로 클라이언트의 부정한 이동을 거부하고 마지막 유효 위치로 캐릭터를 홱 되돌리는, 고무줄에 빗댄 현상을 무엇이라 하나? (‘-ing’으로 끝나는 한 단어)",
+      "en": "Server-authoritative validation rejects an illegal client move and yanks the character back to its last valid position — a rubber-band effect. What is this called? (one word ending in \"-ing\")"
+    },
+    "hints": {
+      "ko": [
+        "고무줄처럼 튕겨 돌아간다.",
+        "rubber + band + ing."
+      ],
+      "en": [
+        "Snaps back like a rubber band.",
+        "rubber + band + ing."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghopcode",
+    "tier": 4,
+    "cat": "netcode",
+    "track": "gamehack",
+    "points": 160,
+    "ci": true,
+    "hash": "5c14f71237b74747a89b1bada2d45dc11e4825664db0a31138dde261b7893789",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "패킷의 행동 지정 필드",
+      "en": "The Action Field in a Packet"
+    },
+    "prompt": {
+      "ko": "게임 패킷 앞머리에서 어떤 행동(이동·공격·아이템 사용)인지를 가리키는 정수 필드로, 이 값을 다른 명령으로 바꿔치기하면 서버가 의도치 않은 동작을 수행하게 만들 수 있다. 이 필드를 부르는 한 단어(operation code)는?",
+      "en": "The integer field at the head of a game packet that identifies which action it is (move, attack, use item); flipping it to another command can make the server perform an unintended operation. What one word names this field (operation code)?"
+    },
+    "hints": {
+      "ko": [
+        "명령 코드.",
+        "operation + code."
+      ],
+      "en": [
+        "The operation code.",
+        "operation + code."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghmanualmapping",
+    "tier": 4,
+    "cat": "injection",
+    "track": "gamehack",
+    "points": 160,
+    "ci": true,
+    "hash": "82fa220c3e1d2ce32c5f4065ba79cb35d816fe1b2d43d021067b774787e8c735",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "모듈 목록에 안 남기는 주입",
+      "en": "Injection the Module List Won't Show"
+    },
+    "prompt": {
+      "ko": "로더 API 를 쓰지 않고 섹션 배치·재배치·임포트 해결을 직접 수행해 DLL 을 적재함으로써, 프로세스의 정식 모듈 목록에 등록되지 않아 탐지를 회피하는 은밀한 주입 기법을 두 단어로 무엇이라 하나?",
+      "en": "Loading a DLL by performing section placement, relocation, and import resolution yourself instead of the loader API — so it never registers in the process's module list — is what stealthy injection, in two words?"
+    },
+    "hints": {
+      "ko": [
+        "손수(manual) 매핑한다.",
+        "____ + mapping, 두 단어."
+      ],
+      "en": [
+        "You map it by hand.",
+        "____ + mapping, two words."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghvmt",
+    "tier": 4,
+    "cat": "injection",
+    "track": "gamehack",
+    "points": 160,
+    "ci": true,
+    "hash": "d4bf696eb64f854fa21cceb64d9b328ee350a9321308bf54ded8e541499a7c80",
+    "fmt": "한 단어 / one word (3글자 / 3 chars)",
+    "title": {
+      "ko": "가상 함수 표의 포인터 교체",
+      "en": "Swap a Virtual Method Pointer"
+    },
+    "prompt": {
+      "ko": "C++ 객체의 가상 함수 주소들이 모인 표에서 항목 하나를 자기 함수로 바꿔치기하면, 그 객체의 가상 메서드 호출을 가로챌 수 있다. 이 표(Virtual Method Table)의 세 글자 약어는?",
+      "en": "Swapping one entry in the table of a C++ object's virtual function addresses lets you intercept that object's virtual method calls. Give the three-letter acronym for this table (Virtual Method Table)."
+    },
+    "hints": {
+      "ko": [
+        "Virtual Method Table.",
+        "vtable 이라고도 부른다."
+      ],
+      "en": [
+        "Virtual Method Table.",
+        "Also called the vtable."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghsetwindowshookex",
+    "tier": 4,
+    "cat": "injection",
+    "track": "gamehack",
+    "points": 160,
+    "ci": true,
+    "hash": "c738e2dec307853b632fb2dcddc37fef80575bd8f125f088a1a411d7457d53f2",
+    "fmt": "한 단어 / one word (16글자 / 16 chars)",
+    "title": {
+      "ko": "메시지 훅으로 DLL 태우기",
+      "en": "Ride a Message Hook into a Process"
+    },
+    "prompt": {
+      "ko": "메시지 훅 체인에 콜백을 등록하면 대상 스레드가 자기 DLL 을 자동으로 적재하게 만들 수 있다. WH_KEYBOARD 같은 훅 종류를 받는 이 Win32 함수 이름은? (한 단어, 끝에 Ex)",
+      "en": "Registering a callback in the message-hook chain can make a target thread auto-load your DLL. Name the Win32 function that takes a hook type like WH_KEYBOARD. (one word, ending in Ex)"
+    },
+    "hints": {
+      "ko": [
+        "Set + Windows + Hook + Ex.",
+        "WH_* 상수를 인자로 받는다."
+      ],
+      "en": [
+        "Set + Windows + Hook + Ex.",
+        "It takes a WH_* constant."
+      ]
+    }
+  },
+  {
+    "id": "t4_ghcapstone",
+    "tier": 4,
+    "cat": "injection",
+    "track": "gamehack",
+    "points": 250,
+    "ci": false,
+    "hash": "1abbfece9ec0af8bebd901e6da84830a637374c7b0150ced30590ea67dec1157",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔드투엔드 치트 브리핑",
+      "en": "End-to-End Cheat Brief"
+    },
+    "prompt": {
+      "ko": "아래 브리핑으로 요약 플래그를 조립하라. health 주소 = module_base + health_offset. nop_count = patch_bytes 의 바이트 수. anticheat 가 kernel 이면 태그 KERNEL, 아니면 USER. 제출: `FLAG{GH_A<HEALTH_HEX>_N<nop_count>_<TAG>}` (HEALTH_HEX 는 0x 없이 대문자).\n\n```\nmodule_base:   0x140000000\nhealth_offset: 0x908\npatch_bytes:   b8 01 00 00 00\nanticheat:     kernel\n```",
+      "en": "Assemble the summary flag from the brief. health address = module_base + health_offset. nop_count = number of bytes in patch_bytes. If anticheat is kernel the tag is KERNEL, else USER. Submit `FLAG{GH_A<HEALTH_HEX>_N<nop_count>_<TAG>}` (HEALTH_HEX uppercase, no 0x).\n\n```\nmodule_base:   0x140000000\nhealth_offset: 0x908\npatch_bytes:   b8 01 00 00 00\nanticheat:     kernel\n```"
+    },
+    "hints": {
+      "ko": [
+        "health = 0x140000000 + 0x908 = 0x140000908.",
+        "patch 바이트 5개 → N5, anticheat=kernel → KERNEL."
+      ],
+      "en": [
+        "health = 0x140000000 + 0x908 = 0x140000908.",
+        "5 patch bytes → N5, anticheat=kernel → KERNEL."
       ]
     }
   }
