@@ -2859,24 +2859,24 @@ const CHALLENGES = [
     "track": "web",
     "points": 160,
     "ci": true,
-    "hash": "ca74bea00c269f053d5ac8df6f09be5b1e86f973195de3fd98e4a1e9838ce8e0",
+    "hash": "1f1db39707f5f4940bf0b6583b8d02059c6db96dafc477fd4540ece2df51ed2f",
     "fmt": "약어 / acronym (4글자 / 4 chars)",
     "title": {
-      "ko": "가로챈 코드를 무력화하라",
-      "en": "Neutralize the Stolen Code"
+      "ko": "훔친 토큰을 소유자에게 묶어라",
+      "en": "Bind a Token to Its Holder"
     },
     "prompt": {
-      "ko": "모바일·SPA 같은 공개 클라이언트에서 OAuth 2.0 인가 코드가 가로채여도 재사용을 막기 위해, 클라이언트가 임의의 `code_verifier` 와 그 해시인 `code_challenge` 를 주고받도록 한 확장 규격의 4글자 약어는?",
-      "en": "For public clients (mobile / SPA), which 4-letter OAuth 2.0 extension makes the client exchange a random `code_verifier` and its hash `code_challenge`, so a stolen authorization code cannot be replayed?"
+      "ko": "공개 클라이언트에서 각 요청을 클라이언트 개인키로 서명한 증명 JWT 와 함께 보내 액세스 토큰을 그 키에 묶는(sender-constrained) OAuth 2.0 확장(RFC 9449)의 4글자 약어는? 이러면 순수 bearer 토큰을 훔쳐도 재사용할 수 없다.",
+      "en": "Which 4-letter OAuth 2.0 extension (RFC 9449) binds an access token to a client key by attaching to every request a proof JWT signed with that key (sender-constrained), so a stolen bearer token cannot be replayed?"
     },
     "hints": {
       "ko": [
-        "Proof Key for Code Exchange 의 약어입니다.",
-        "흔히 '픽시' 라고 읽습니다. (RFC 7636)"
+        "Demonstrating Proof-of-Possession 의 약어입니다.",
+        "요청마다 개인키로 서명한 증명 JWT 를 같은 이름의 헤더에 싣습니다."
       ],
       "en": [
-        "Acronym of 'Proof Key for Code Exchange'.",
-        "Commonly pronounced 'pixy'. (RFC 7636)"
+        "Acronym of 'Demonstrating Proof-of-Possession'.",
+        "Each request carries a key-signed proof JWT in a header of the same name."
       ]
     }
   },
