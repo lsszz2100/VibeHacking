@@ -927,6 +927,21 @@ const SOLVERS = new Map([
     const shortObj = obj === 'DOMAIN_ADMIN' ? 'DA' : (obj === 'STEALTH_EXIT' ? 'SE' : obj);
     return `FLAG{RT_R${redirs}_${hosts}HOSTS_${gate}_${shortObj}}`;
   } }],
+  ['t4_ptcapstone', { kind: 'computed', via: 'purple team debrief summary: total tests, detected, blocked, defense score %', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced debrief in the prompt');
+    const text = m[1];
+    const tests = text.match(/-\s*Test\s*\d+:[^\n]+/g) || [];
+    const total = tests.length;
+    let detected = 0;
+    let blocked = 0;
+    for (const t of tests) {
+      if (/Blocked/i.test(t)) blocked++;
+      else if (/Detected/i.test(t)) detected++;
+    }
+    const score = Math.round(((detected + blocked) / total) * 100);
+    return `FLAG{PT_${total}_${detected}_${blocked}_${score}%}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

@@ -213,7 +213,16 @@ const TRACKS = [
     "en": "Red Team & C2",
     "desc_ko": "C2 프레임워크·리디렉터 인프라·EDR 우회와 인젝션·모의 침투 오퍼레이션.",
     "desc_en": "C2 frameworks, redirector infra, EDR evasion & injection, red team ops."
-  }];
+  },
+  {
+    "id": "purpleteam",
+    "icon": "🟣",
+    "ko": "퍼플팀·공격/탐지 검증",
+    "en": "Purple Team & Emulation",
+    "desc_ko": "BAS 자동화·공격 에뮬레이션·탐지 커버리지 매트릭스·협업 피드백 루프.",
+    "desc_en": "Breach & attack simulation, adversary emulation, detection coverage matrix, collaborative feedback loops."
+  }
+];
 
 const CHALLENGES = [
   {
@@ -20833,5 +20842,985 @@ const CHALLENGES = [
         "evasion_gate is PASSED, DOMAIN_ADMIN shortens to DA."
       ]
     }
-  }
+  },
+{
+  "id": "t0_ptbas",
+  "tier": 0,
+  "cat": "concept",
+  "track": "purpleteam",
+  "points": 50,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "침해 및 공격 시뮬레이션",
+    "en": "Breach and Attack Simulation"
+  },
+  "prompt": {
+    "ko": "공격 시나리오를 소프트웨어 에이전트로 자동 반복 실행하여 방어 솔루션의 유효성을 실시간 검증하는 기술 범주의 영문 3글자 약어를 입력하세요.",
+    "en": "Enter the three-letter acronym for the technology category that automatically and continuously runs offensive playbooks to validate defensive posture."
+  },
+  "hints": {
+    "ko": [
+      "Breach and Attack Simulation의 약자입니다.",
+      "B, A, S 의 머리글자 조합입니다."
+    ],
+    "en": [
+      "Acronym for Breach and Attack Simulation.",
+      "Three-letter acronym starting with B."
+    ]
+  },
+  "hash": "cc9fa8a98cb88dc915470d0b946d6f510f6dd6a16e435285781a9bf02c6d986d"
+},
+{
+  "id": "t0_ptpurple",
+  "tier": 0,
+  "cat": "concept",
+  "track": "purpleteam",
+  "points": 50,
+  "ci": true,
+  "fmt": "두 단어 / two words (14글자 / 14 chars)",
+  "title": {
+    "ko": "공격과 방어의 협업 훈련",
+    "en": "Collaborative Offensive-Defensive Exercise"
+  },
+  "prompt": {
+    "ko": "적대적 공격 모의 인원과 보안 관제 인원이 실시간으로 소통하며 공격 기법을 시험하고 즉각적인 탐지 규칙을 보완하는 협력적 보안 수행 방식을 일컫는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word term describing a collaborative cybersecurity exercise where offensive operators and defensive analysts work side-by-side to test techniques and tune detections in real time."
+  },
+  "hints": {
+    "ko": [
+      "적색과 청색을 합친 보라색에서 유래한 명칭입니다.",
+      "두 번째 단어는 team 뒤에 -ing 가 붙습니다."
+    ],
+    "en": [
+      "Named after the blend of red and blue.",
+      "The second word is team with an -ing suffix."
+    ]
+  },
+  "hash": "2add02b62a3483a62a87eb99503edbe389de1cbc4468ce205b8999dc5cb8fc6b"
+},
+{
+  "id": "t1_ptatomic",
+  "tier": 1,
+  "cat": "emulation",
+  "track": "purpleteam",
+  "points": 100,
+  "ci": true,
+  "fmt": "도구 이름 / tool name (15글자 / 15 chars)",
+  "title": {
+    "ko": "오픈소스 기법별 단위 테스트 라이브러리",
+    "en": "Open Source Technique Unit Test Library"
+  },
+  "prompt": {
+    "ko": "보안 벤더가 공개한 프레임워크로, ATT&CK 매트릭스의 각 기법에 매핑되는 간단한 실행 스크립트들을 YAML 형식으로 모아둔 오픈소스 테스트 모음의 명칭(세 단어)을 입력하세요.",
+    "en": "Name the open-source library of simple, vendor-released scripted tests mapped to the ATT&CK framework defined in structured YAML files (three words)."
+  },
+  "hints": {
+    "ko": [
+      "더 이상 쪼갤 수 없는 가장 작은 단위를 뜻하는 형용사로 시작합니다.",
+      "세 단어이며 마지막 두 단어는 붉은 진영을 뜻합니다."
+    ],
+    "en": [
+      "Starts with an adjective meaning of or forming a single indivisible unit.",
+      "Three words, ending with the offensive side color and unit."
+    ]
+  },
+  "hash": "3c9b6faf4c4e80e8304a52d8d21eafca13767cf2b0f26b2525208f39404a2719"
+},
+{
+  "id": "t1_ptcaldera",
+  "tier": 1,
+  "cat": "emulation",
+  "track": "purpleteam",
+  "points": 100,
+  "ci": true,
+  "fmt": "한 단어 / one word (7글자 / 7 chars)",
+  "title": {
+    "ko": "MITRE 자동화 공격 에뮬레이션 플랫폼",
+    "en": "MITRE Automated Adversary Emulation Platform"
+  },
+  "prompt": {
+    "ko": "MITRE 연구진이 개발하여 공개한 자동 공격 모의 프레임워크로, 플러그인 기반 아키텍처와 GUI 웹 콘솔 및 에이전트를 제공하는 소프트웨어의 이름을 입력하세요.",
+    "en": "Enter the name of the automated adversary emulation platform built and open-sourced by MITRE researchers, featuring a plugin architecture and agent orchestration."
+  },
+  "hints": {
+    "ko": [
+      "화산 분화구가 무너져 내려 생긴 거대한 웅덩이를 뜻하는 지질학 용어입니다.",
+      "C로 시작하는 7글자 소문자 영단어입니다."
+    ],
+    "en": [
+      "A geological term for a large volcanic crater formed by a collapsed magma chamber.",
+      "7 letters starting with C."
+    ]
+  },
+  "hash": "c8af8eddc390ade1893b286195a1439a4aebd238740c62dd818c71ebe8ce08c4"
+},
+{
+  "id": "t1_ptvectr",
+  "tier": 1,
+  "cat": "tracking",
+  "track": "purpleteam",
+  "points": 100,
+  "ci": true,
+  "fmt": "도구 이름 / tool name (5글자 / 5 chars)",
+  "title": {
+    "ko": "공격 테스트 및 탐지 진행 추적 도구",
+    "en": "Adversary Testing and Assessment Tracker"
+  },
+  "prompt": {
+    "ko": "Security Risk Advisors(SRA)에서 개발한 무료 웹 플랫폼으로, 공격 모의 결과와 각 단계별 방어 탐지 유효성을 점수화하여 매트릭스 형태로 시각화해 주는 도구의 이름을 입력하세요.",
+    "en": "Enter the name of the free assessment web application developed by Security Risk Advisors (SRA) to track adversary test execution and defensive visibility metrics."
+  },
+  "hints": {
+    "ko": [
+      "Vector에서 o가 빠진 형태의 5글자 철자입니다.",
+      "보안 평가 결과를 추적하는 5글자 소문자 플랫폼명입니다."
+    ],
+    "en": [
+      "Spelled like vector but missing the letter o.",
+      "5 lowercase letters tracking adversary assessments."
+    ]
+  },
+  "hash": "07383623bce9936c4fbc8f4cccae4c43ba1c9c216ad3cdd400da5e23f3239c4b"
+},
+{
+  "id": "t1_ptpipeline",
+  "tier": 1,
+  "cat": "telemetry",
+  "track": "purpleteam",
+  "points": 100,
+  "ci": true,
+  "fmt": "두 단어 / two words (18글자 / 18 chars)",
+  "title": {
+    "ko": "보안 이벤트 관측 데이터 수집 경로",
+    "en": "Security Telemetry Ingestion Path"
+  },
+  "prompt": {
+    "ko": "엔드포인트 및 네트워크 센서에서 발생한 로우 이벤트를 필터링, 정규화, 라우팅하여 중앙 저장소나 분석 엔진으로 전달하는 일련의 데이터 처리 경로를 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word term for the architecture and sequence that filters, enriches, transforms, and routes raw event records from host sensors to central log stores."
+  },
+  "hints": {
+    "ko": [
+      "첫 단어는 원격 측정 데이터를 의미하며, 둘째 단어는 파이프라인입니다.",
+      "telemetry 와 pipeline 의 조합입니다."
+    ],
+    "en": [
+      "First word means remote event measurement data, second word is pipeline.",
+      "Two words: remote measurement stream plus pipeline."
+    ]
+  },
+  "hash": "712a46eb6217cae3d044181add8e04e89aa21f3ff74d5a7fe74ccca43281c5be"
+},
+{
+  "id": "t1_ptblindspot",
+  "tier": 1,
+  "cat": "detection",
+  "track": "purpleteam",
+  "points": 100,
+  "ci": true,
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "미탐지 및 가시성 공백",
+    "en": "Visibility and Detection Void"
+  },
+  "prompt": {
+    "ko": "감시 센서 미설치나 로그 감사 정책 누락으로 인해 특정 공격 기법이 실행되었음에도 보안 조직에서 전혀 인지할 수 없는 감시 사각지대를 의미하는 한 단어를 입력하세요.",
+    "en": "Enter the compound word describing an unmonitored security gap where adversary actions occur without triggering any events or sensor alerts."
+  },
+  "hints": {
+    "ko": [
+      "운전할 때 사이드미러에 보이지 않는 사각지대를 가리키는 일상 단어와 같습니다.",
+      "blind와 spot의 합성어입니다."
+    ],
+    "en": [
+      "The same common term used for areas outside a driver's field of vision in mirrors.",
+      "Compound of blind and spot."
+    ]
+  },
+  "hash": "e624902085d353a4d64295d9d3cbf2b7bee0eca8053d20fbd9be288236e50a30"
+},
+{
+  "id": "t1_ptscythe",
+  "tier": 1,
+  "cat": "emulation",
+  "track": "purpleteam",
+  "points": 100,
+  "ci": true,
+  "fmt": "한 단어 / one word (6글자 / 6 chars)",
+  "title": {
+    "ko": "엔터프라이즈 위협 에뮬레이션 솔루션",
+    "en": "Enterprise Threat Emulation Platform"
+  },
+  "prompt": {
+    "ko": "실제 적대적 행위자의 캠페인을 정밀하게 재현하여 방어 프로세스를 검증할 수 있도록 돕는 엔터프라이즈 상용 공격 모의 플랫폼으로, 큰 낫을 뜻하는 6글자 영단어를 입력하세요.",
+    "en": "Name the commercial threat emulation platform used to validate defensive workflows against simulated real-world threat campaigns, named after a long curved agricultural cutting blade."
+  },
+  "hints": {
+    "ko": [
+      "사신이 들고 다니는 큰 낫을 뜻하는 단어입니다.",
+      "S로 시작하는 6글자입니다."
+    ],
+    "en": [
+      "A long-handled farming tool with a curved blade used for cutting crops.",
+      "Starts with S, 6 letters."
+    ]
+  },
+  "hash": "c3d86f22a7ded2800073326863c1c0e9d2c8b1bb6296eb9ef589c642c7f1c2a8"
+},
+{
+  "id": "t2_ptmatrix",
+  "tier": 2,
+  "cat": "matrix",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words (15글자 / 15 chars)",
+  "title": {
+    "ko": "방어 기법 대응표",
+    "en": "Defensive Mapping Table"
+  },
+  "prompt": {
+    "ko": "엔터프라이즈의 보안 탐지 룰과 제어 장치가 적대적 공격 분류표의 전술/기법을 얼마나 포괄하고 있는지 행렬(행/열) 형태로 시각화한 표를 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word term for a structured tabular grid that maps an organization's existing defensive capabilities and detection rules across adversary techniques."
+  },
+  "hints": {
+    "ko": [
+      "첫 단어는 범위를 아우르는 포괄성을 의미하며, 둘째 단어는 수학의 행렬을 뜻합니다.",
+      "coverage 와 matrix 의 조합입니다."
+    ],
+    "en": [
+      "First word means the extent to which something is covered, second word is matrix.",
+      "Two words: defensive scope plus matrix."
+    ]
+  },
+  "hash": "2c3febd2f26d0784a51e65c75eccce4931d13220786a629a543dda765330dcb7"
+},
+{
+  "id": "t2_pttest",
+  "tier": 2,
+  "cat": "emulation",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words (11글자 / 11 chars)",
+  "title": {
+    "ko": "최소 실행 단위 시험",
+    "en": "Minimal Execution Unit Test"
+  },
+  "prompt": {
+    "ko": "특정 공격 서브테크닉 하나를 검증하기 위해 명령 프롬프트나 파워셸 등에서 단일 목적으로 실행되도록 구성된 독립적인 최소 실행 검증 단위를 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word phrase for an individual, tightly scoped test case designed to execute a single specific technique and confirm detection fidelity."
+  },
+  "hints": {
+    "ko": [
+      "원자 수준의 최소 단위를 의미하는 형용사 + 시험(test).",
+      "더 이상 쪼갤 수 없는 단위 테스트 명칭입니다."
+    ],
+    "en": [
+      "Adjective referring to atoms or indivisible units, plus test.",
+      "Single technique atomic execution test."
+    ]
+  },
+  "hash": "61341d783ae404e24c9ce0f490d4f391010475556cedaf5d627546f66b6c057b"
+},
+{
+  "id": "t2_ptstratus",
+  "tier": 2,
+  "cat": "cloud",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "한 단어 / one word (7글자 / 7 chars)",
+  "title": {
+    "ko": "오픈소스 클라우드 공격 모의 도구",
+    "en": "Open Source Cloud Emulation Tool"
+  },
+  "prompt": {
+    "ko": "DataDog 보안 연구팀에서 공개한 Go 언어 기반 도구로, AWS·Azure·GCP·K8s 환경에서 실제 악의적 API 호출 및 권한 남용 행위를 모의 실행해 클라우드 경보를 테스트하는 도구의 첫 단어를 입력하세요.",
+    "en": "Enter the first word of the open-source Go tool created by the DataDog team to emulate malicious attacks and test detection alerts in AWS, Azure, GCP, and Kubernetes."
+  },
+  "hints": {
+    "ko": [
+      "낮게 깔리는 층운(구름의 한 종류)을 뜻하는 7글자 라틴어 단어입니다.",
+      "S로 시작합니다."
+    ],
+    "en": [
+      "Latin word for low-altitude horizontal cloud layers with a flat base.",
+      "7 letters starting with S."
+    ]
+  },
+  "hash": "590433118f455fdaabb569fb1c948bc78e224765a4b5a995ee2619c27f39797d"
+},
+{
+  "id": "t2_pthayabusa",
+  "tier": 2,
+  "cat": "analysis",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "도구 이름 / tool name (8글자 / 8 chars)",
+  "title": {
+    "ko": "고속 윈도우 이벤트 로그 분석기",
+    "en": "High-Speed Windows Event Log Analyzer"
+  },
+  "prompt": {
+    "ko": "Yamato Security에서 Rust 언어로 제작한 초고속 윈도우 이벤트 로그(EVTX) 검증 도구로, 서식화된 규칙을 바탕으로 위협 타임라인을 신속히 생성하는 오픈소스 도구의 이름을 입력하세요.",
+    "en": "Name the fast Windows event log (EVTX) threat hunting and timeline generation tool written in Rust by Yamato Security."
+  },
+  "hints": {
+    "ko": [
+      "일본어로 매(peregrine falcon)를 뜻하는 8글자 단어입니다.",
+      "일본어로 날렵한 매를 의미하는 8글자입니다."
+    ],
+    "en": [
+      "Japanese word for the peregrine falcon, famed for high speed.",
+      "Japanese term for the high-speed peregrine falcon."
+    ]
+  },
+  "hash": "704920010b8fa885144b4df0dcc3650c74c9cb384e06a8c534f912a1c2f89169"
+},
+{
+  "id": "t2_ptchainsaw",
+  "tier": 2,
+  "cat": "analysis",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "도구 이름 / tool name (8글자 / 8 chars)",
+  "title": {
+    "ko": "신속 이벤트 로그 헌팅 유틸리티",
+    "en": "Rapid Event Log Hunting Utility"
+  },
+  "prompt": {
+    "ko": "WithSecure(구 F-Secure) 연구원들이 공개한 오픈소스 Rust CLI 도구로, 윈도우 이벤트 로그 대용량 파일을 검색 규칙으로 초고속 파싱해 의심 행위를 추려내는 유틸리티의 이름을 입력하세요.",
+    "en": "Enter the name of the open-source Rust command-line tool released by WithSecure to rapidly hunt through large Windows event logs."
+  },
+  "hints": {
+    "ko": [
+      "나무를 벨 때 모터로 회전하며 자르는 전기톱을 뜻하는 영단어입니다.",
+      "대용량 EVTX 로그를 빠르게 썰어내는 8글자 톱 이름입니다."
+    ],
+    "en": [
+      "A portable mechanical power saw that cuts with a set of teeth attached to a rotating chain.",
+      "Portable power saw with a rotating chain."
+    ]
+  },
+  "hash": "29d206102becea673c7006fe5777b388c58dfd67699b99b538d151644c7688dc"
+},
+{
+  "id": "t2_pthypothesis",
+  "tier": 2,
+  "cat": "engineering",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "한 단어 / one word (10글자 / 10 chars)",
+  "title": {
+    "ko": "탐지 엔지니어링의 시작 가설",
+    "en": "Detection Engineering Premise"
+  },
+  "prompt": {
+    "ko": "새로운 탐지 로직을 개발하거나 위협 헌팅을 시작할 때, '공격자가 환경에 침투하여 X 기법을 쓸 경우 Y 흔적이 남을 것이다'라는 전제를 체계적으로 설정하는 과학적 추론 단계를 뜻하는 한 단어를 입력하세요.",
+    "en": "Enter the scientific word for the proposed explanation or educated premise that serves as the starting point for developing a detection logic or threat hunt."
+  },
+  "hints": {
+    "ko": [
+      "실험이나 관찰을 통해 증명되기 전 단계의 과학적 '가설'을 뜻하는 영단어입니다.",
+      "과학적 탐구의 출발점이 되는 10글자 가설 단어입니다."
+    ],
+    "en": [
+      "An assumption or tentative proposition made in order to test its logical consequences.",
+      "10-letter word for an educated proposition to test."
+    ]
+  },
+  "hash": "7beb7f4a57251263ca5d7274880aa4ba470a8b32e18885340ca2fd40a588fe23"
+},
+{
+  "id": "t2_ptprofiling",
+  "tier": 2,
+  "cat": "baseline",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words (18글자 / 18 chars)",
+  "title": {
+    "ko": "정상 행위 기준선 프로파일링",
+    "en": "Standard Operational Behavior Characterization"
+  },
+  "prompt": {
+    "ko": "공격 행위 탐지의 신뢰도를 높이기 위해, 프로덕션 환경 내 시스템들의 평상시 정상 프로세스, 계정 활동, 네트워크 흐름의 일반적 범위를 측정하여 표준 양식을 정립하는 기법을 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word term for capturing and analyzing normal operational metrics across systems to establish an expected standard before evaluating anomalies."
+  },
+  "hints": {
+    "ko": [
+      "기준선(baseline) + 프로파일링(profiling).",
+      "정상 상태 기준선(baseline)을 수립하는 활동입니다."
+    ],
+    "en": [
+      "Compound phrase composed of baseline and profiling.",
+      "Two words combining baseline and profiling."
+    ]
+  },
+  "hash": "513327fdb661c7143b8227e1271701c9f2e16d2fd1c6654e51d25d55768eb50b"
+},
+{
+  "id": "t2_ptpipeline",
+  "tier": 2,
+  "cat": "pipeline",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words (19글자 / 19 chars)",
+  "title": {
+    "ko": "자동 유효성 검증 파이프라인",
+    "en": "Automated Control Check Workflow"
+  },
+  "prompt": {
+    "ko": "탐지 규칙의 신규 배포나 변경 시, 가상 환경에서 모의 공격을 자동 트리거하여 예상대로 알림이 발생하는지 CI/CD 단계에서 연속 검증하는 체계를 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word phrase describing an automated continuous delivery workflow that executes synthetic attacks in test environments to test and assert detection rules before release."
+  },
+  "hints": {
+    "ko": [
+      "유효성 입증(validation) + 처리 파이프라인(pipeline).",
+      "탐지 규칙의 배포 전 자동 검증을 수행하는 흐름입니다."
+    ],
+    "en": [
+      "Two words combining validation and pipeline.",
+      "Two words: validation and pipeline."
+    ]
+  },
+  "hash": "4c3e10b8156b0e4b064c2ad0eb9cb3c13e9ca7112318788d1a9f53bfbdb51446"
+},
+{
+  "id": "t3_ptdac",
+  "tier": 3,
+  "cat": "dac",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "문구 / phrase (17글자 / 17 chars)",
+  "title": {
+    "ko": "코드로서의 탐지 관리 패러다임",
+    "en": "Programmable Rule Lifecycle"
+  },
+  "prompt": {
+    "ko": "탐지 규칙, 쿼리, 알림 설정을 일반 소프트웨어 코드처럼 Git 버전 관리, 코드 리뷰, 유닛 테스트를 거쳐 프로덕션에 자동 배포하는 최신 보안 운영 방법론(세 단어)을 입력하세요.",
+    "en": "Enter the three-word industry phrase for managing alert rules and threat queries using standard software engineering practices such as version control, code review, and automated testing."
+  },
+  "hints": {
+    "ko": [
+      "프로그래밍 방식으로 인프라를 정의하는 코드화 사상에서 유래한 개념입니다.",
+      "중간 전치사는 as 입니다."
+    ],
+    "en": [
+      "Modeled after the programmable infrastructure engineering concept.",
+      "Three words: Detection ___ Code."
+    ]
+  },
+  "hash": "ebc12011a8008eedfd9c016bfb468050194bfc9f41f17a65955df8d74b1df50a"
+},
+{
+  "id": "t3_ptflow",
+  "tier": 3,
+  "cat": "ctid",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words (11글자 / 11 chars)",
+  "title": {
+    "ko": "순차적 위협 행위 흐름 모델",
+    "en": "Adversary Action Flow Language"
+  },
+  "prompt": {
+    "ko": "MITRE 산하 연구 컨소시엄에서 개발한 오픈소스 표준 언어로, 단편적인 공격 기법들의 인과 관계와 순차적 전개 과정을 시계열 그래프로 표현하는 모델의 명칭(두 단어)을 입력하세요.",
+    "en": "Name the open-source language developed by the threat research consortium under MITRE to visually and formally capture the sequential cause-and-effect pathways of adversary actions (two words)."
+  },
+  "hints": {
+    "ko": [
+      "공격(attack)의 흐름(flow)을 나타내는 직관적인 두 단어입니다.",
+      "공격 기법 전개 순서를 나타내는 두 단어입니다."
+    ],
+    "en": [
+      "Two words: attack and flow.",
+      "Two words: attack followed by flow."
+    ]
+  },
+  "hash": "f84d92b243bf26f78ef0545c28a6a7ad650fe4e4eca03ebace365e0cbab89c96"
+},
+{
+  "id": "t3_ptprelude",
+  "tier": 3,
+  "cat": "tool",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words (16글자 / 16 chars)",
+  "title": {
+    "ko": "자율 위협 모의 플랫폼",
+    "en": "Autonomous Offensive Testing Platform"
+  },
+  "prompt": {
+    "ko": "David Kennedy와 전직 정부 요원들이 설립한 보안 기업에서 제작한 자율 데스크톱 공격 모의 도구로, 프로덕션 호스트에서 안전한 테스트 체인을 연속 실행하는 상용/오픈소스 도구의 전체 명칭(두 단어)을 입력하세요.",
+    "en": "Enter the two-word product name created by cybersecurity veterans to autonomously execute safe offensive chains continuously across enterprise endpoints."
+  },
+  "hints": {
+    "ko": [
+      "음악의 전주곡을 뜻하는 회사명 + 조작자/운영자를 뜻하는 단어입니다.",
+      "데스크톱 자율 모의 도구 명칭입니다."
+    ],
+    "en": [
+      "The first word means an introductory piece of music, the second is an operative or agent.",
+      "Two words: musical prelude plus operator."
+    ]
+  },
+  "hash": "98bbb32a7d83a6afb3af0c6c48a0531dbdd8bf222cf2e6ade22f38a47d5ca948"
+},
+{
+  "id": "t3_ptmonkey",
+  "tier": 3,
+  "cat": "tool",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words (16글자 / 16 chars)",
+  "title": {
+    "ko": "오픈소스 내부망 감염 시뮬레이터",
+    "en": "Open Source Internal Infection Simulator"
+  },
+  "prompt": {
+    "ko": "Guardicore(현재 Akamai 인수)에서 오픈소스로 공개한 침투 시뮬레이션 도구로, 데이터센터나 클라우드 내부에서 스스로 복제 전파를 시도하며 분할 통제의 결함을 찾아내는 원숭이 이름의 도구(두 단어)를 입력하세요.",
+    "en": "Enter the two-word name of the open-source automated breach simulator originally created by Guardicore that attempts safe worm-like spread to test network segmentation."
+  },
+  "hints": {
+    "ko": [
+      "감염(infection) + 원숭이(monkey).",
+      "스스로 전파되며 분할을 시험하는 원숭이 도구입니다."
+    ],
+    "en": [
+      "Two words: infection and monkey.",
+      "Two words: infection and monkey."
+    ]
+  },
+  "hash": "abe7524dc4a6e80d5efce0e250a36b1ef5d57b484097b3b8b5eb5bd71951369f"
+},
+{
+  "id": "t3_pttabletop",
+  "tier": 3,
+  "cat": "exercise",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words (17글자 / 17 chars)",
+  "title": {
+    "ko": "시나리오 기반 모의 도상 훈련",
+    "en": "Scenario Discussion Drill"
+  },
+  "prompt": {
+    "ko": "실제 시스템을 직접 공격하는 대신, 가상의 침해 시나리오를 바탕으로 보안 담당자, 경영진, 인프라 팀이 둘러앉아 대응 절차와 통제 유효성을 말과 문서로 검토하는 모의 훈련의 영문 명칭(두 단어)을 입력하세요.",
+    "en": "Enter the two-word term for a discussion-based rehearsal where incident stakeholders review their roles and procedures in response to a simulated emergency scenario."
+  },
+  "hints": {
+    "ko": [
+      "테이블 위에 둘러앉아 진행한다는 데서 유래한 단어입니다.",
+      "tabletop + exercise."
+    ],
+    "en": [
+      "Refers to sitting around a table to deliberate, followed by exercise.",
+      "Discussion-based tabletop exercise."
+    ]
+  },
+  "hash": "565452f77345ffbeeea948277adc8e8e4d145aaff0b2ca36c6b2319f943856fa"
+},
+{
+  "id": "t3_ptresilience",
+  "tier": 3,
+  "cat": "concept",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "한 단어 / one word (10글자 / 10 chars)",
+  "title": {
+    "ko": "사고 발생 후 신속 회복 탄력성",
+    "en": "Cyber Incident Elasticity"
+  },
+  "prompt": {
+    "ko": "완벽한 침해 예방이 불가능함을 인정하고, 실제 공격이 성공하여 손상이 발생하더라도 핵심 비즈니스 기능을 중단 없이 지속하고 신속하게 원래 상태로 복구할 수 있는 조직의 능력을 뜻하는 한 단어를 입력하세요.",
+    "en": "Enter the single word defining an organization's capability to anticipate, withstand, recover from, and adapt to adverse cyber conditions or successful compromises."
+  },
+  "hints": {
+    "ko": [
+      "외력에 굴하지 않고 튀어 오르는 복원력, 탄력성을 뜻하는 10글자 명사입니다.",
+      "외부 충격을 견디고 원래대로 회복하는 10글자 능력입니다."
+    ],
+    "en": [
+      "The capacity to recover quickly from difficulties; organizational elasticity.",
+      "10-letter word for systemic elasticity and recovery."
+    ]
+  },
+  "hash": "b8cbc700577c96ee3ab0c84374f0b5a763cc3e584e900aa16ba2e2fbe5358b1f"
+},
+{
+  "id": "t3_ptgap",
+  "tier": 3,
+  "cat": "analysis",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words (12글자 / 12 chars)",
+  "title": {
+    "ko": "기대 방어와 실측 역량 간의 격차 분석",
+    "en": "Defensive Capability Disparity Assessment"
+  },
+  "prompt": {
+    "ko": "보안 정책상 존재한다고 믿었던 방어 기법과 실제 테스트 실행을 통해 드러난 현실 탐지 능력 사이의 불일치를 측정하고 식별하는 비교 평가 기법을 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word term for the comparative evaluation process identifying discrepancies between desired security posture and observed detection performance."
+  },
+  "hints": {
+    "ko": [
+      "틈, 격차를 뜻하는 세 글자 단어(gap) + 분석(analysis).",
+      "격차를 뜻하는 세 글자(gap)와 분석(analysis)의 조합입니다."
+    ],
+    "en": [
+      "Two words: a space or discrepancy, followed by analysis.",
+      "Two words: gap and analysis."
+    ]
+  },
+  "hash": "87dbca0746da73be012a45c7f5a969dd6a7db047cb914fe4bd3b06c76eacebb9"
+},
+{
+  "id": "t3_ptctid",
+  "tier": 3,
+  "cat": "organization",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "위협 정보 기반 방어 연구 센터",
+    "en": "Center for Threat-Informed Defense"
+  },
+  "prompt": {
+    "ko": "글로벌 기업들과 공공 혁신 기관이 함께 설립한 비영리 공동 연구 기관으로, 실전 사이버 방어 솔루션과 매핑 도구를 개발하여 전 세계에 무료 공개하는 'Center for Threat-Informed Defense'의 4글자 약어를 입력하세요.",
+    "en": "Provide the four-letter acronym for the non-profit collaborative R&D organization operated by public research foundations that conducts open cyber research."
+  },
+  "hints": {
+    "ko": [
+      "Center for Threat-Informed Defense 의 머리글자 4개입니다.",
+      "Center for Threat-Informed Defense 의 머리글자입니다."
+    ],
+    "en": [
+      "Acronym formed by Center for Threat-Informed Defense.",
+      "4-letter acronym starting with C."
+    ]
+  },
+  "hash": "a67689179f7220101fa09858074d13cd3f385271a482954aa6d49837a24499c0"
+},
+{
+  "id": "t3_ptsightline",
+  "tier": 3,
+  "cat": "framework",
+  "track": "purpleteam",
+  "points": 150,
+  "ci": true,
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "MITRE 센서 시선 매핑 프로젝트",
+    "en": "Sensor Line-of-Sight Mapping Study"
+  },
+  "prompt": {
+    "ko": "위협 연구 컨소시엄에서 진행한 연구 프로젝트로, 엔드포인트에 배치된 특정 데이터 소스 센서가 어떤 공격 동작을 직접 시각적으로 관측할 수 있는지 시야 범위를 체계화한 개념의 단일 영단어를 입력하세요.",
+    "en": "Name the research study project that documents the direct observational visibility of security data sources against offensive actions, using an optical line-of-sight metaphor."
+  },
+  "hints": {
+    "ko": [
+      "시야선, 시선(視線)을 뜻하는 9글자 복합 영단어입니다.",
+      "sight + line."
+    ],
+    "en": [
+      "An unobstructed line from an observer to an object; sight plus line.",
+      "9-letter word for direct visual line of sight."
+    ]
+  },
+  "hash": "ef8646221cd252b93bcdea8eaa6c5257afa33c73ed3ed14ffd523890613fe561"
+},
+{
+  "id": "t4_ptdefense",
+  "tier": 4,
+  "cat": "strategy",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": true,
+  "fmt": "문구 / phrase (23글자 / 23 chars)",
+  "title": {
+    "ko": "위협 정보 기반 선제적 방어 철학",
+    "en": "Threat-Informed Defense Philosophy"
+  },
+  "prompt": {
+    "ko": "막연한 추측이나 체크리스트 기반 점검 대신, 실제 야전에서 관측된 공격 행위자의 구체적 전술 지식을 중심에 두고 사이버 방어 우선순위를 수립하는 최상위 운영 철학(세 단어)을 입력하세요.",
+    "en": "Enter the three-word strategic concept of applying an understanding of real-world adversary behaviors to continuously prioritize, optimize, and test security defenses."
+  },
+  "hints": {
+    "ko": [
+      "위협(threat) + 정보를 바탕으로 한(informed) + 방어(defense).",
+      "위협 정보를 바탕으로 방어를 최적화하는 3개 단어 철학입니다."
+    ],
+    "en": [
+      "Three words: threat, informed, defense.",
+      "Three words: threat, informed, defense."
+    ]
+  },
+  "hash": "3f811b43ea1ce14e509d6731daa75cc6546038b3572b5530f33b5d4c2eef6d01"
+},
+{
+  "id": "t4_ptplan",
+  "tier": 4,
+  "cat": "planning",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": true,
+  "fmt": "두 단어 / two words (14글자 / 14 chars)",
+  "title": {
+    "ko": "적대적 위협 모의 실행 계획서",
+    "en": "Adversary Scenario Blueprint"
+  },
+  "prompt": {
+    "ko": "특정 위협 행위자(예: FIN7, APT29)의 전체 공격 라이프사이클을 실증하기 위해, 침투부터 목적 달성까지 각 단계별 실행 명령과 기대 효과를 상세히 설계해 둔 시나리오 가이드 문서를 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word phrase for a comprehensive step-by-step roadmap detailing technical commands and infrastructure modeling an identifiable threat group's lifecycle."
+  },
+  "hints": {
+    "ko": [
+      "모의, 에뮬레이션(emulation) + 계획(plan).",
+      "위협 행위자의 시나리오를 재현하기 위한 모의 계획서입니다."
+    ],
+    "en": [
+      "Two words combining emulation and plan.",
+      "Two words combining emulation and plan."
+    ]
+  },
+  "hash": "7899e5a9d734ef7fe0840dd566f609202fbc8317af23b5da11cbeb80556a0f73"
+},
+{
+  "id": "t4_ptengenuity",
+  "tier": 4,
+  "cat": "organization",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": true,
+  "fmt": "두 단어 / two words (15글자 / 15 chars)",
+  "title": {
+    "ko": "공공 혁신 재단 기술 법인",
+    "en": "Public Innovation Tech Entity"
+  },
+  "prompt": {
+    "ko": "보안 벤더 솔루션의 실제 공격 차단 및 탐지 능력을 정량 평가하는 엔터프라이즈 평가를 주관하는 MITRE 산하의 기술 혁신 기술 사업 법인 명칭(두 단어)을 입력하세요.",
+    "en": "Enter the two-word entity under MITRE that conducts independent enterprise evaluations testing endpoint security tools against simulated APT attacks."
+  },
+  "hints": {
+    "ko": [
+      "기관명 MITRE + 독창성(ingenuity)을 변형한 단어입니다.",
+      "엔터프라이즈 평가를 총괄하는 MITRE 산하 법인명입니다."
+    ],
+    "en": [
+      "The parent institute name MITRE followed by Engenuity.",
+      "Two words: MITRE followed by Engenuity."
+    ]
+  },
+  "hash": "bdf3bc5d53280caabcd5c033eb19b1d2537c7990451434eaaa7bcd9678905c7e"
+},
+{
+  "id": "t4_ptruletuning",
+  "tier": 4,
+  "cat": "tuning",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": true,
+  "fmt": "두 단어 / two words (11글자 / 11 chars)",
+  "title": {
+    "ko": "탐지 규칙 최적화 및 오탐 완화",
+    "en": "Detection Logic Refinement"
+  },
+  "prompt": {
+    "ko": "합법적인 업무 활동으로 인해 과도하게 울리는 오탐(False Positive)을 걸러내고, 진짜 위협 징후만 정확히 집어내도록 탐지 쿼리의 조건식과 예외 목록을 정밀 조정하는 엔지니어링 과정을 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word term for the iterative process of refining detection query logic and filters to suppress benign noise while preserving alerts for malicious activity."
+  },
+  "hints": {
+    "ko": [
+      "규칙(rule) + 미세 조정(tuning).",
+      "오탐을 제거하기 위한 쿼리 미세 조정 작업입니다."
+    ],
+    "en": [
+      "Two words: rule and tuning.",
+      "Two words: rule and tuning."
+    ]
+  },
+  "hash": "e575a0641288aba1e94f11b96dafb5d99b658947a4e7c86d6089c064b2ce46dd"
+},
+{
+  "id": "t4_ptfidelity",
+  "tier": 4,
+  "cat": "signal",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": true,
+  "fmt": "두 단어 / two words (13글자 / 13 chars)",
+  "title": {
+    "ko": "고신뢰성 탐지 신호 품질",
+    "en": "Premium Quality Alert Signal"
+  },
+  "prompt": {
+    "ko": "노이즈가 거의 없고 경보가 발생했을 때 실제 침해 사고일 확률이 극히 높아 분석가가 즉시 심각한 대응 조치에 착수할 수 있는 우수한 품질의 알림 속성을 일컫는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word industry phrase describing alerts that carry an exceptionally high signal-to-noise ratio, consistently indicating genuine malicious activity with minimal false positives."
+  },
+  "hints": {
+    "ko": [
+      "높은 충실도, 원음 재생력을 뜻하는 오디오 용어(Hi-Fi)의 원래 영문 표현입니다.",
+      "원음 재생력을 뜻하는 Hi-Fi 의 전체 명칭입니다."
+    ],
+    "en": [
+      "Opposite of low, followed by fidelity.",
+      "Two words: high followed by fidelity."
+    ]
+  },
+  "hash": "36b11812d7122bfd514b689282d76afd11e39b347b5bbfec8294c38466b8960d"
+},
+{
+  "id": "t4_ptfatigue",
+  "tier": 4,
+  "cat": "operations",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": true,
+  "fmt": "두 단어 / two words (13글자 / 13 chars)",
+  "title": {
+    "ko": "과도한 경보로 인한 피로도 누적",
+    "en": "Operational Warning Exhaustion"
+  },
+  "prompt": {
+    "ko": "하루에 수천 건씩 쏟아지는 무의미한 알림에 시달려 관제 분석가의 주의력이 둔화되고, 결국 치명적인 진짜 침해 신호를 놓치게 만드는 보안 운영의 고질적 문제를 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word psychological and operational problem where security personnel become desensitized to constant, overwhelming volumes of warnings, causing critical incidents to be overlooked."
+  },
+  "hints": {
+    "ko": [
+      "경보(alert) + 피로(fatigue).",
+      "경보 과다로 인한 피로를 뜻하는 두 단어입니다."
+    ],
+    "en": [
+      "Two words combining alert and fatigue.",
+      "Two words: alert followed by fatigue."
+    ]
+  },
+  "hash": "7f6ff636be5bb2c42ff2b3d0b15b6831cd3758b120d2e2bb4956aebbb237883f"
+},
+{
+  "id": "t4_ptdecal",
+  "tier": 4,
+  "cat": "methodology",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": true,
+  "fmt": "두 단어 / two words (15글자 / 15 chars)",
+  "title": {
+    "ko": "탐지 및 가시성 평가 라이프사이클",
+    "en": "Detection and Coverage Assessment Lifecycle"
+  },
+  "prompt": {
+    "ko": "Security Risk Advisors(SRA)에서 정립한 방법론으로, 탐지 엔지니어링 과정을 정의·테스트·검증·개선 4단계 순환 고리로 체계화한 평가 프레임워크 명칭(두 단어)을 입력하세요.",
+    "en": "Name the two-word cyclic methodology framework established by security researchers that structures the detection engineering process through defined phases."
+  },
+  "hints": {
+    "ko": [
+      "스마트폰이나 모형에 붙이는 스티커 판박이와 동음이의어인 약칭 + framework.",
+      "판박이 스티커(decal)와 동일한 철자의 프레임워크명입니다."
+    ],
+    "en": [
+      "Shares spelling with the transfer decorative sticker term decal, plus framework.",
+      "Two words: decal framework."
+    ]
+  },
+  "hash": "0bc2f2ec0207510a52167aa8a9ee2b515688332a0a49d622f9c757d7d85dcc63"
+},
+{
+  "id": "t4_ptcover",
+  "tier": 4,
+  "cat": "metric",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": true,
+  "fmt": "두 단어 / two words (18글자 / 18 chars)",
+  "title": {
+    "ko": "방어 탐지 포괄 범위",
+    "en": "Adversary Surveillance Breadth"
+  },
+  "prompt": {
+    "ko": "보안 모니터링 시스템이 지원하는 전체 기법 풀 중에서, 실제 경보 로직이나 가시성이 확보되어 방어 능력이 검증된 기법들의 비율 및 범위를 일컫는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word term describing the breadth and proportion of attacker techniques against which an organization has active, verified detection rules."
+  },
+  "hints": {
+    "ko": [
+      "탐지(detection) + 범위/적용률(coverage).",
+      "방어 기법의 탐지 포괄 비율을 의미합니다."
+    ],
+    "en": [
+      "Two words combining detection and coverage.",
+      "Two words: detection and coverage."
+    ]
+  },
+  "hash": "0c517ee98daa4c2b9816f3da9e4662d894470da0d186ef30feac615ffe36aa68"
+},
+{
+  "id": "t4_ptfeedback",
+  "tier": 4,
+  "cat": "process",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": true,
+  "fmt": "두 단어 / two words (13글자 / 13 chars)",
+  "title": {
+    "ko": "공격과 탐지의 지속 순환 고리",
+    "en": "Continuous Iterative Improvement Cycle"
+  },
+  "prompt": {
+    "ko": "공격 시뮬레이션 결과가 즉시 방어 탐지 개선으로 이어지고, 개선된 탐지 규칙을 다시 공격으로 재검증하는 양방향의 끊김 없는 지속적 개선 체계를 뜻하는 두 영단어를 입력하세요.",
+    "en": "Enter the two-word engineering phrase for the cyclical mechanism where the output of adversary testing feeds directly back into detection improvements, which are then re-tested."
+  },
+  "hints": {
+    "ko": [
+      "피드백(feedback) + 고리(loop).",
+      "공격과 탐지가 서로를 향상시키는 순환 루프입니다."
+    ],
+    "en": [
+      "Two words: feedback and loop.",
+      "Two words: feedback and loop."
+    ]
+  },
+  "hash": "d24160a34a159244044db0d7fe2bafb2e7eb4c2a5f6e8c478e75c96c1df9ea3a"
+},
+{
+  "id": "t4_ptcapstone",
+  "tier": 4,
+  "cat": "capstone",
+  "track": "purpleteam",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "공동 검증 작전 사후 브리핑 롤업",
+    "en": "Joint Emulation Debrief Rollup"
+  },
+  "prompt": {
+    "ko": "공동 검증 실전 교전 후 작성된 아래 펜스된 디브리프 요약문에서:\n1. 총 에뮬레이션 실행 기법 수(Total)\n2. 경보 탐지(Detected) 건수\n3. 자동 차단(Blocked) 건수\n4. 방어 성공률(Defense Score = (Detected + Blocked) / Total * 100, 정수 반올림 %)\n을 집계하여 `FLAG{PT_총기법_탐지_차단_성공률}` 형식으로 제출하세요. (예: `FLAG{PT_20_12_5_85%}`)\n\n```\n[JOINT EVALUATION FINAL ENGAGEMENT DEBRIEF]\nScope: Production Subnet (Tier 4 Core Cluster)\n- Test 1: T1059.003 - Command Line Script -> Blocked by AppLocker\n- Test 2: T1055.001 - Dynamic Memory Writing -> Detected by Host Event EID 8\n- Test 3: T1003.001 - Security Subsystem Memory -> Blocked by Hardware Shield Module\n- Test 4: T1078.002 - Directory Accounts -> Detected by Decoy Honey Account\n- Test 5: T1021.006 - Internal Remote Execution -> Missed (No audit policy)\n- Test 6: T1562.001 - Endpoint Tampering -> Blocked by Anti-Tamper Filter\n- Test 7: T1047 - Management Interface Execution -> Detected by Correlation Engine Rule\n- Test 8: T1071.004 - Network Covert Protocol -> Missed (High protocol volume)\n- Test 9: T1087.002 - Identity Discovery -> Detected by Active Defense Node\n- Test 10: T1486 - Bulk Data Scrambling -> Blocked by Filesystem Minifilter\n```",
+    "en": "From the fenced final debrief summary, count the total executed tests, the detected tests, the blocked tests, and compute the total defense success score ((Detected + Blocked) / Total * 100 rounded to integer percent). Submit in `FLAG{PT_total_detected_blocked_pct%}` format. (e.g. `FLAG{PT_20_12_5_85%}`)\n\n```\n[JOINT EVALUATION FINAL ENGAGEMENT DEBRIEF]\nScope: Production Subnet (Tier 4 Core Cluster)\n- Test 1: T1059.003 - Command Line Script -> Blocked by AppLocker\n- Test 2: T1055.001 - Dynamic Memory Writing -> Detected by Host Event EID 8\n- Test 3: T1003.001 - Security Subsystem Memory -> Blocked by Hardware Shield Module\n- Test 4: T1078.002 - Directory Accounts -> Detected by Decoy Honey Account\n- Test 5: T1021.006 - Internal Remote Execution -> Missed (No audit policy)\n- Test 6: T1562.001 - Endpoint Tampering -> Blocked by Anti-Tamper Filter\n- Test 7: T1047 - Management Interface Execution -> Detected by Correlation Engine Rule\n- Test 8: T1071.004 - Network Covert Protocol -> Missed (High protocol volume)\n- Test 9: T1087.002 - Identity Discovery -> Detected by Active Defense Node\n- Test 10: T1486 - Bulk Data Scrambling -> Blocked by Filesystem Minifilter\n```"
+  },
+  "hints": {
+    "ko": [
+      "Total: 10건, Blocked: 4건(Test 1, 3, 6, 10), Detected: 4건(Test 2, 4, 7, 9).",
+      "방어 성공률 = (4 + 4) / 10 = 80%."
+    ],
+    "en": [
+      "Total: 10 tests. Blocked: 4 (Tests 1, 3, 6, 10). Detected: 4 (Tests 2, 4, 7, 9).",
+      "Defense score = (4 + 4) / 10 = 80%."
+    ]
+  },
+  "hash": "abfb0c366ca81423713744e27b8ae58a647f8d68680678a7c6e530ef73c9d069"
+}
 ];

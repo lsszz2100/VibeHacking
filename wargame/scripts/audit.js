@@ -122,6 +122,7 @@ const NOT_PLANTED = {
   t4_osreconng: 'asks for a recon framework by name; its 콘솔 is that tool\'s interactive prompt, not the browser console',
   t3_rtmalleable: 'asks for the C2 profile design by name; C2 통신 양식을 정의하는 프로필 개념 질문',
   t3_rtbeacon: 'fenced console session record calculation; the 콘솔 log is the problem artifact, not this page',
+  t1_ptcaldera: 'asks for the MITRE emulation tool by name; GUI 웹 콘솔 is that tool\'s interface, not this page',
 };
 
 const aBad = [], aRows = [];
