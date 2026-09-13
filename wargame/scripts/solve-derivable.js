@@ -942,6 +942,64 @@ const SOLVERS = new Map([
     const score = Math.round(((detected + blocked) / total) * 100);
     return `FLAG{PT_${total}_${detected}_${blocked}_${score}%}`;
   } }],
+  ['t2_scadapurduelevel', { kind: 'computed', via: 'parse asset roles to deduce Purdue hierarchy levels (L0, L2, L4)', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced inventory block in prompt');
+    const text = m[1];
+    const lines = text.split('\n').filter(l => l.includes('Asset'));
+    const levels = [];
+    for (const l of lines) {
+      if (/Sensor|Probe|Actuator|Physical|Positioner/i.test(l)) levels.push('L0');
+      else if (/HMI|Terminal|Operator|Supervision/i.test(l)) levels.push('L2');
+      else if (/ERP|Database|Corporate|Business/i.test(l)) levels.push('L4');
+      else if (/PLC|Controller|Basic/i.test(l)) levels.push('L1');
+      else if (/Historian|EWS|Manufacturing/i.test(l)) levels.push('L3');
+    }
+    return `FLAG{PURDUE_${levels.join('_')}}`;
+  } }],
+  ['t2_scadamodbusfunc', { kind: 'computed', via: 'extract Function Code and 2-byte target address from Modbus PDU hex', solve: (ch) => {
+    const m = ch.prompt.en.match(/PDU Hex:\s+([0-9a-fA-F ]+)/);
+    if (!m) throw new Error('no PDU Hex found in prompt');
+    const bytes = m[1].trim().split(/\s+/).map(b => parseInt(b, 16));
+    const fc = bytes[0];
+    const addr = (bytes[1] << 8) | bytes[2];
+    return `FLAG{MODBUS_FC${fc}_ADDR${addr}}`;
+  } }],
+  ['t3_scadacrc16', { kind: 'computed', via: 'calculate Modbus RTU standard CRC-16 over fenced raw payload bytes', solve: (ch) => {
+    const m = ch.prompt.en.match(/Raw Bytes:\s+([0-9a-fA-F ]+)/);
+    if (!m) throw new Error('no Raw Bytes found in prompt');
+    const bytes = m[1].trim().split(/\s+/).map(b => parseInt(b, 16));
+    let crc = 0xFFFF;
+    for (const b of bytes) {
+      crc ^= b;
+      for (let i = 0; i < 8; i++) {
+        if (crc & 1) {
+          crc = (crc >> 1) ^ 0xA001;
+        } else {
+          crc >>= 1;
+        }
+      }
+    }
+    const hex = crc.toString(16).toUpperCase().padStart(4, '0');
+    return `FLAG{CRC_${hex}}`;
+  } }],
+  ['t4_scadacapstone', { kind: 'computed', via: 'aggregate injected function code, coil address, peak pressure, and SIS trip state', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced incident report in prompt');
+    const text = m[1];
+    const fcMatch = text.match(/Function Code\s+(?:0x)?([0-9a-fA-F]+)/i);
+    const coilMatch = text.match(/Decimal\s+(\d+)/i);
+    const pressMatch = text.match(/(\d+)\s+PSI/i);
+    const sisMatch = text.match(/Safety Instrumented System \(SIS\):\s+([A-Z]+)/i);
+    if (!fcMatch || !coilMatch || !pressMatch || !sisMatch) {
+      throw new Error('failed to parse incident report fields');
+    }
+    const fc = parseInt(fcMatch[1], 16);
+    const coil = coilMatch[1];
+    const psi = pressMatch[1];
+    const status = sisMatch[1];
+    return `FLAG{ICS_FC${fc}_COIL${coil}_P${psi}_${status}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

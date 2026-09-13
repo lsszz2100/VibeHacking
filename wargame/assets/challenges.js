@@ -221,6 +221,14 @@ const TRACKS = [
     "en": "Purple Team & Emulation",
     "desc_ko": "BAS 자동화·공격 에뮬레이션·탐지 커버리지 매트릭스·협업 피드백 루프.",
     "desc_en": "Breach & attack simulation, adversary emulation, detection coverage matrix, collaborative feedback loops."
+  },
+  {
+    "id": "icsscada",
+    "icon": "🏭",
+    "ko": "산업제어시스템·SCADA",
+    "en": "ICS/SCADA & OT",
+    "desc_ko": "Purdue 모델·Modbus/S7/DNP3 산업 프로토콜·PLC 로직 조작·OT 사이버 물리 보안.",
+    "desc_en": "Purdue model, Modbus/S7/DNP3 industrial protocols, PLC logic tampering, OT cyber-physical security."
   }
 ];
 
@@ -6063,7 +6071,7 @@ const CHALLENGES = [
       "en": "The Errand Boy's Badge"
     },
     "prompt": {
-      "ko": "자신보다 높은 권한을 가진 구성요소를 꾀어 그 권한으로 대신 행동하게 만드는 고전적 보안 문제를 \"confused ____ problem\"이라 부릅니다. 도구를 붙인 모델이 사용자 권한을 넘어 행동할 때 정확히 이 문제가 재현됩니다. 빈칸의 영어 한 단어는?",
+      "ko": "자신보다 높은 인가 권한을 가진 구성요소를 꾀어 그 권한으로 대신 행동하게 만드는 고전적 보안 문제를 \"confused ____ problem\"이라 부릅니다. 도구를 붙인 모델이 사용자 권한을 넘어 행동할 때 정확히 이 문제가 재현됩니다. 빈칸의 영어 한 단어는?",
       "en": "Tricking a component that holds more authority than you into acting with that authority on your behalf is the classic \"confused ____ problem\" — reproduced exactly when a tool-wielding model acts beyond the user's own permissions. What single English word fills the blank?"
     },
     "hints": {
@@ -18532,7 +18540,7 @@ const CHALLENGES = [
       "en": "Earn Trust, Then Publish"
     },
     "prompt": {
-      "ko": "공격자가 오랜 기간 선의의 기여로 신뢰를 얻거나 기존 계정을 탈취해 패키지 배포 권한을 손에 넣는 유형을 \"___ 탈취/침해\"라 한다. 여기서 패키지의 배포·관리 권한을 가진 사람을 뜻하는 한 단어는? (10글자)",
+      "ko": "공격자가 오랜 기간 선의의 기여로 신뢰를 얻거나 기존 계정을 탈취해 패키지 배포 권한을 손에 넣는 유형을 \"___ 탈취/침해\"라 한다. 여기서 패키지의 배포·관리 인가 권한을 가진 사람을 뜻하는 한 단어는? (10글자)",
       "en": "When an attacker earns trust through long-term legitimate contributions, or hijacks an existing account, to gain a package's publish rights, we call it a compromised \"___\". Give the single word for the person who holds publish/maintenance rights over a package. (10 chars)"
     },
     "hints": {
@@ -21822,5 +21830,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "abfb0c366ca81423713744e27b8ae58a647f8d68680678a7c6e530ef73c9d069"
+},
+{
+  "id": "t0_scadapurduel2",
+  "tier": 0,
+  "cat": "purdue",
+  "track": "icsscada",
+  "points": 50,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "변전소 계측·보호 전용 제어 장치",
+    "en": "Substation Protection and Metering Controller"
+  },
+  "prompt": {
+    "ko": "현대 디지털 변전소 및 전력 제어망에서 변압기나 송전선로의 전압·전류를 실시간 계측하고, 이상 과전류 발생 시 마이크로프로세서 판단으로 차단기를 직접 개방(Trip)시키는 스마트 보호 제어 장치를 무엇이라 부르는가? 영문 3글자 약어로 입력하세요.",
+    "en": "In modern digital substations and power control networks, which microprocessor-based smart device measures voltage and current in real time and automatically trips circuit breakers when faults occur? Enter the 3-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Intelligent Electronic Device의 머리글자입니다.",
+      "산업 자동화 피라미드 레벨 1에 상주하며 차단기 트립과 계측을 직접 실행합니다."
+    ],
+    "en": [
+      "Initials of Intelligent Electronic Device.",
+      "Sits at Level 1 basic control directly executing breaker protection and metering."
+    ]
+  },
+  "hash": "f3c5e65e2d83bcc9f08526c32381760e78b9df6c77cf5e5b96ad722fff540bd1"
+},
+{
+  "id": "t0_scadahmi",
+  "tier": 0,
+  "cat": "purdue",
+  "track": "icsscada",
+  "points": 50,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "중앙 통제실 공정 그래픽 조작반",
+    "en": "Control Room Process Graphics Panel"
+  },
+  "prompt": {
+    "ko": "산업 공정 현장의 압력·유량 게이지와 밸브 개폐 상태를 그래픽 화면에 도식화하여 보여주고, 제어실 운영자가 클릭이나 터치로 제어 명령을 내릴 수 있도록 돕는 사용자 인터페이스 소프트웨어/하드웨어를 무엇이라 부르는가? 영문 3글자 약어로 입력하세요.",
+    "en": "What graphical interface hardware and software renders piping pressure, tank levels, and valve states on screen while allowing human operators to issue setpoint commands? Enter the 3-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Human-Machine Interface의 약자입니다.",
+      "자동화 피라미드 레벨 2 조작자 화면 계층을 담당합니다."
+    ],
+    "en": [
+      "Short for Human-Machine Interface.",
+      "Occupies Level 2 supervisory supervisory screen operations."
+    ]
+  },
+  "hash": "ddde5686528130ef73bfef8b97138a30b25efa186177a57e6aa38a9d544ac7f1"
+},
+{
+  "id": "t1_scadartu",
+  "tier": 1,
+  "cat": "plc",
+  "track": "icsscada",
+  "points": 65,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "광역 원격지 텔레메트리 단말",
+    "en": "Wide-Area Remote Telemetry Station"
+  },
+  "prompt": {
+    "ko": "송유관, 가스 파이프라인, 수자원 댐 등 지리적으로 멀리 떨어진 험지 현장에 설치되어 센서 신호를 취합하고 라디오나 셀룰러 모뎀을 통해 중앙 감시 호스트와 원격 통신하는 자율 단말기를 무엇이라 부르는가? 영문 3글자 약어로 입력하세요.",
+    "en": "What autonomous telemetry terminal is deployed across wide geographical expanses like oil pipelines or water dams to collect sensor signals and link with central supervisory servers over radio or cellular? Enter the 3-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Remote Terminal Unit의 이니셜입니다.",
+      "현장 HMI 없이 원격 통신 프로토콜에 특화된 견고한 장비입니다."
+    ],
+    "en": [
+      "Initials of Remote Terminal Unit.",
+      "Rugged device built for long-distance serial or cellular telemetry without local screens."
+    ]
+  },
+  "hash": "3b526b8e428f2eab28b25f1cc565d1a4e689ab26a7d00dcf493b30f8c01db0da"
+},
+{
+  "id": "t1_scadambap",
+  "tier": 1,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 65,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "산업용 이더넷 캡슐화 전용 헤더",
+    "en": "Industrial Ethernet Framing Header"
+  },
+  "prompt": {
+    "ko": "시리얼 버스용 요청을 TCP/IP 포트 502 네트워크 위로 실어나르기 위해, 트랜잭션 번호와 프로토콜 번호, 패킷 길이 및 슬레이브 번호를 포함하는 7바이트 크기의 전용 헤더를 무엇이라 부르는가? 영문 4글자 약어로 입력하세요.",
+    "en": "What 7-byte specialized header prepends transaction ID, protocol zero, length, and slave identity to carry serial industrial requests across TCP/IP port 502? Enter the 4-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "MB Application Protocol Header의 약칭입니다.",
+      "기존 직렬 버스 검증 코드 대신 TCP 체크섬과 이 7바이트 프리픽스를 사용합니다."
+    ],
+    "en": [
+      "Stands for MB Application Protocol Header.",
+      "Replaces serial framing with a 7-byte prefix relying on TCP transport integrity."
+    ]
+  },
+  "hash": "c175b439e00467aa83f76b8ad192f14d71ccec5867103da13c10b99081428744"
+},
+{
+  "id": "t1_scadasis",
+  "tier": 1,
+  "cat": "threat",
+  "track": "icsscada",
+  "points": 65,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "플랜트 비상 정지 안전 전용 계장",
+    "en": "Dedicated Plant Safety Shutdown System"
+  },
+  "prompt": {
+    "ko": "일반 공정 제어망이 사이버 공격을 받거나 물리적 한계치를 초과할 때, 독립된 센서와 로직 솔버를 통해 즉각 긴급 차단(ESD)을 단행하여 폭발이나 누출 참사를 방지하는 안전 계장 시스템을 무엇이라 부르는가? 영문 3글자 약어로 입력하세요.",
+    "en": "Which dedicated plant protection system operates independently from standard process controllers to trigger emergency shutdowns when variables exceed critical physical thresholds? Enter the 3-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Safety Instrumented System의 머리글자입니다.",
+      "HMI 모니터링망과 분리된 독립 안전 루프를 형성합니다."
+    ],
+    "en": [
+      "Initials of Safety Instrumented System.",
+      "Forms an isolated protective loop distinct from standard process controllers."
+    ]
+  },
+  "hash": "b225c9ee17d9f5d96bd41277196e05fa8f1a43368dc87e412442be4f360f33bc"
+},
+{
+  "id": "t1_scadadcs",
+  "tier": 1,
+  "cat": "plc",
+  "track": "icsscada",
+  "points": 65,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "대규모 연속 공정 분산 제어 아키텍처",
+    "en": "Continuous Process Distributed Architecture"
+  },
+  "prompt": {
+    "ko": "정유 공장, 발전소, 화학 플랜트 등 대규모 연속 공정에서 수많은 제어 루프를 하나의 중앙 컴퓨터가 아닌 플랜트 구역별로 분산된 제어기에 분담시키고 통합 감시하는 시스템을 무엇이라 부르는가? 영문 3글자 약어로 입력하세요.",
+    "en": "What plant-wide control architecture distributes thousands of continuous feedback loops across decentralized controllers while maintaining unified supervisory visibility? Enter the 3-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Distributed Control System의 약자입니다.",
+      "개별 독립 제어기 연결보다 단일 벤더의 통합 데이터베이스와 통일된 엔지니어링 환경을 제공합니다."
+    ],
+    "en": [
+      "Stands for Distributed Control System.",
+      "Provides vendor-integrated loop configurations across massive petrochemical facilities."
+    ]
+  },
+  "hash": "ae0305a9427a91f6f63e55af0eaa1d9c4c02af07f672d15e4a77d99b65327822"
+},
+{
+  "id": "t1_scadagoose",
+  "tier": 1,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 65,
+  "ci": true,
+  "fmt": "약어 / acronym (5글자 / 5 chars)",
+  "title": {
+    "ko": "IEC 61850 레이어 2 초고속 전력 메시지",
+    "en": "IEC 61850 Layer-2 High-Speed Power Message"
+  },
+  "prompt": {
+    "ko": "지능형 변전소 자동화 표준에서 차단기 연동과 같은 위험 방지 명령을 4밀리초 이내로 전송하기 위해, IP 라우팅 지연을 피하고자 이더넷 레이어 2(EtherType 0x88B8)로 직접 멀티캐스트되는 초고속 메시지 프로토콜은? 영문 5글자 약어로 입력하세요.",
+    "en": "Which IEC 61850 protocol multicasts peer-to-peer over raw Ethernet Layer 2 (EtherType 0x88B8) to achieve sub-4ms trip times without IP stack latency? Enter the 5-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Generic Object Oriented Substation Event의 약어입니다.",
+      "네트워크 혼잡 시에도 차단기 신호를 확실히 전달하기 위해 점진적 재전송 간격 메커니즘을 둡니다."
+    ],
+    "en": [
+      "Stands for Generic Object Oriented Substation Event.",
+      "Repeats messages with exponential backoff to ensure delivery across substation buses."
+    ]
+  },
+  "hash": "c2d37dd0575766e4deedf7ba072ad35b87e9223af01d2829a81960ba7164f606"
+},
+{
+  "id": "t1_scadaews",
+  "tier": 1,
+  "cat": "purdue",
+  "track": "icsscada",
+  "points": 65,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "제어 로직 컴파일 및 다운로드 워크스테이션",
+    "en": "Engineering Logic Authoring Workstation"
+  },
+  "prompt": {
+    "ko": "제어 엔지니어가 플랜트 제어기의 프로그램을 작성하고 펌웨어를 다운로드하며 하드웨어 I/O 모듈 설정을 변경할 수 있는 인가 권한을 가진, 공격자의 최우선 표적이 되는 Level 3 manufacturing 호스트를 무엇이라 부르는가? 영문 3글자 약어로 입력하세요.",
+    "en": "Which authoritative Level 3 manufacturing computer is used by controls engineers to draft logic, compile project binaries, and push firmware to plant field units? Enter the 3-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Engineering Workstation의 이니셜입니다.",
+      "이 단말이 침해당하면 공격자가 공정 제어 로직을 무단으로 재작성할 수 있습니다."
+    ],
+    "en": [
+      "Initials of Engineering Workstation.",
+      "Compromise of this node allows unauthorized ladder deployment directly to controllers."
+    ]
+  },
+  "hash": "6170a7c7da6dcc357ec3fa66e71eb9d27b0de935fda6d4f117de3413ee0eb417"
+},
+{
+  "id": "t2_scadapurduelevel",
+  "tier": 2,
+  "cat": "purdue",
+  "track": "icsscada",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "산업 설비 계층 자산 분류",
+    "en": "Automation Asset Hierarchy Layer Identification"
+  },
+  "prompt": {
+    "ko": "아래 펜스된 산업 설비 인벤토리 목록에서 세 개 자산의 역할을 검토하고, 각 자산이 위치한 산업 계층 자동화 피라미드 레벨 번호(L0, L1, L2, L3, L4 중)를 파악하여 `FLAG{PURDUE_L<A>_L<B>_L<C>}` 형식으로 제출하세요.\n(예: Asset 1이 L0, Asset 2이 L2, Asset 3이 L4인 경우 -> `FLAG{PURDUE_L1_L2_L3}`)\n\n```\n[INDUSTRIAL ASSET INVENTORY]\n- Asset 1: Thermocouple Temperature Probe & Pneumatic Valve Positioner -> Physical process interface\n- Asset 2: Human-Machine Interface (HMI) Touch Terminal -> Control room operator supervision\n- Asset 3: Enterprise Resource Planning (ERP) & Billing Database -> Corporate business network\n```",
+    "en": "Review the three assets in the fenced inventory brief and determine their automation hierarchy levels (from L0, L1, L2, L3, L4). Submit in `FLAG{PURDUE_L<A>_L<B>_L<C>}` format.\n\n```\n[INDUSTRIAL ASSET INVENTORY]\n- Asset 1: Thermocouple Temperature Probe & Pneumatic Valve Positioner -> Physical process interface\n- Asset 2: Human-Machine Interface (HMI) Touch Terminal -> Control room operator supervision\n- Asset 3: Enterprise Resource Planning (ERP) & Billing Database -> Corporate business network\n```"
+  },
+  "hints": {
+    "ko": [
+      "물리 공정 센서/구동기는 Level 0입니다.",
+      "운영자 감시 터미널은 Level 2, 기업 전산 ERP는 Level 4에 해당합니다."
+    ],
+    "en": [
+      "Physical sensors and actuators belong to Level 0.",
+      "Operator monitoring terminals are Level 2, and corporate ERP systems sit at Level 4."
+    ]
+  },
+  "hash": "98a1f8b8f18ca1e4b3be870d6fc0c0c5f3ef717d80e160351dc2f99f4db9f0ad"
+},
+{
+  "id": "t2_scadamodbusfunc",
+  "tier": 2,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "산업 프레임 기능 코드 및 주소 파싱",
+    "en": "Industrial Frame Function and Target Offset"
+  },
+  "prompt": {
+    "ko": "아래 펜스된 패킷 덤프에서 PDU 헥스 스트림의 첫 번째 바이트(Function Code)와 그 뒤에 이어지는 2바이트 목표 주소(Offset Address)를 10진수로 계산하여 `FLAG{MODBUS_FC<코드>_ADDR<주소>}` 형식으로 제출하세요.\n(예: FC 0x05, Addr 0x0028(40) -> `FLAG{MODBUS_FC1_ADDR100}`)\n\n```\n[CAPTURED PROTOCOL PAYLOAD]\nTransaction: 0x1F2A\nProtocol:    0x0000\nLength:      0x0006\nDevice ID:   0x01\nPDU Hex:     05 00 28 ff 00\n```",
+    "en": "Extract the first byte (Function Code) and the subsequent 2-byte target address from the fenced PDU hex stream in decimal. Submit in `FLAG{MODBUS_FC<num>_ADDR<addr>}` format.\n\n```\n[CAPTURED PROTOCOL PAYLOAD]\nTransaction: 0x1F2A\nProtocol:    0x0000\nLength:      0x0006\nDevice ID:   0x01\nPDU Hex:     05 00 28 ff 00\n```"
+  },
+  "hints": {
+    "ko": [
+      "PDU Hex의 첫 바이트 05는 10진수로 5입니다.",
+      "주소 바이트 00 28은 16진수 0x0028로서 10진수 40입니다."
+    ],
+    "en": [
+      "The first byte 05 corresponds to decimal 5.",
+      "The address bytes 00 28 evaluate to hexadecimal 0x0028, which is decimal 40."
+    ]
+  },
+  "hash": "d52574738fda5386e4a4966dc8283ed3c1a9098e8f236689205aa74bc8f5d89b"
+},
+{
+  "id": "t2_scadacip",
+  "tier": 2,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 90,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "공통 산업 상호운용성 객체 모델",
+    "en": "Common Industrial Interoperability Model"
+  },
+  "prompt": {
+    "ko": "ODVA에서 제정하여 EtherNet/IP, ControlNet, DeviceNet 등 다양한 물리 계층 위에서 동일한 제어 객체, 클래스, 인스턴스, 서비스 구조를 제공하는 응용 계층 표준 프로토콜을 무엇이라 부르는가? 영문 3글자 약어로 입력하세요.",
+    "en": "Which ODVA application layer specification standardizes object-oriented device modeling and messaging across EtherNet/IP, ControlNet, and DeviceNet? Enter the 3-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Common Industrial Protocol의 머리글자입니다.",
+      "산업용 컨트롤러 간 객체 연결 수립에 핵심적으로 사용됩니다."
+    ],
+    "en": [
+      "Initials of Common Industrial Protocol.",
+      "Forms the messaging foundation across modern EtherNet/IP factory plants."
+    ]
+  },
+  "hash": "c263ca4101c5d1efa048cd241233bb7e0c4350039a0e1e5554b1db8c53c1b66a"
+},
+{
+  "id": "t2_scadaindustroyer",
+  "tier": 2,
+  "cat": "threat",
+  "track": "icsscada",
+  "points": 90,
+  "ci": true,
+  "fmt": "한 단어 / one word (12글자 / 12 chars)",
+  "title": {
+    "ko": "전력망 전용 공격 프레임워크",
+    "en": "Electric Grid Targeted Framework"
+  },
+  "prompt": {
+    "ko": "2016년 우크라이나 키이우 변전소를 공격하여 도시 일대에 실제 정전을 초래했으며, IEC 60870-5-104 및 IEC 61850 등 전력 전용 통신 규격을 직접 구사하여 차단기를 무단 조작한 모듈식 사이버 무기의 이름은? 영문 12글자로 입력하세요.",
+    "en": "What modular cyber weapon targeted a Kyiv electrical transmission station in 2016 to cause blackouts using native IEC 60870-5-104 and IEC 61850 payload modules? Enter the 12-letter name."
+  },
+  "hints": {
+    "ko": [
+      "보안 업계에서 CrashOverride라는 별칭으로도 분석되었습니다.",
+      "i로 시작하는 12글자 영단어입니다."
+    ],
+    "en": [
+      "Also tracked across the threat intelligence community as CrashOverride.",
+      "Begins with i and spans 12 characters."
+    ]
+  },
+  "hash": "684babd4ec035c198c385d8b6eae60fcfc353039a438a6de2e6ee8fd928d0936"
+},
+{
+  "id": "t2_scadadiode",
+  "tier": 2,
+  "cat": "purdue",
+  "track": "icsscada",
+  "points": 90,
+  "ci": true,
+  "fmt": "두 단어 / two words (10글자 / 10 chars)",
+  "title": {
+    "ko": "물리 계층 일방향 통신 보안 게이트웨이",
+    "en": "Physical Unidirectional Security Appliance"
+  },
+  "prompt": {
+    "ko": "제어망(OT)에서 기업망(IT)으로 공정 데이터 복제는 허용하되, 광케이블 송신기(LED)와 수신기(포토다이오드)를 하드웨어적으로 분리하여 외부에서 제어망으로의 어떠한 전기적/전자적 역방향 신호 침투도 원천 차단하는 물리적 보안 장치를 무엇이라 부르는가? 영문 두 단어(공백 포함 10글자)로 입력하세요.",
+    "en": "What hardware security appliance permits optical data transmission strictly in one direction from OT to IT while physically blocking all return pulses? Enter the two words (10 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "데이터(data)와 다이오드(diode)의 결합어입니다.",
+      "소프트웨어 방화벽 취약점 우회를 물리 법칙으로 무력화합니다."
+    ],
+    "en": [
+      "Compound phrase formed by data and diode.",
+      "Prevents external inbound intrusion using hardware-enforced optical physics."
+    ]
+  },
+  "hash": "7bc304337e325028530d6dc61c3758b0172bbb833bf2255c042c86c11dd39971"
+},
+{
+  "id": "t2_scadaactuator",
+  "tier": 2,
+  "cat": "plc",
+  "track": "icsscada",
+  "points": 90,
+  "ci": true,
+  "fmt": "한 단어 / one word (8글자 / 8 chars)",
+  "title": {
+    "ko": "물리적 운동 변환 구동 메커니즘",
+    "en": "Physical Motion Conversion Mechanism"
+  },
+  "prompt": {
+    "ko": "컨트롤러가 전송하는 전기적 또는 공압 신호를 전달받아 밸브를 물리적으로 회전시키거나 피스톤을 밀어내는 등 공정 시스템의 기계적 움직임을 직접 실행하는 현장 장치를 무엇이라 부르는가? 영문 8글자로 입력하세요.",
+    "en": "What physical field component converts electrical or pneumatic control signals into mechanical motion, such as turning a valve stem or sliding a damper? Enter the 8-letter word."
+  },
+  "hints": {
+    "ko": [
+      "센서가 현장 상태를 읽는다면, 이 장치는 현장 상태를 직접 움직입니다.",
+      "a로 시작하여 r로 끝납니다."
+    ],
+    "en": [
+      "While sensors read physical states, these devices drive physical movements.",
+      "Starts with a and ends with r."
+    ]
+  },
+  "hash": "425edd11c26ae24d6726f66925c024ad7978400bd4ebb10bc943854ab93b3778"
+},
+{
+  "id": "t2_scadabpcs",
+  "tier": 2,
+  "cat": "plc",
+  "track": "icsscada",
+  "points": 90,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "플랜트 일상 운전 기본 공정 제어 루프",
+    "en": "Plant Routine Operational Loop System"
+  },
+  "prompt": {
+    "ko": "비상 차단을 담당하는 안전 계장(SIS)과 구분되며, 화학 반응이나 유체 이송 중 밸브와 모터를 미세 조정하여 온도·압력을 일상적인 가동 목표 범위 내로 지속 유지하는 기본 공정 제어 시스템을 무엇이라 부르는가? 영문 4글자 약어로 입력하세요.",
+    "en": "Contrasted with emergency shutdown safety logic, which system handles everyday closed-loop regulation of flows, levels, and pressures within normal tolerances? Enter the 4-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Basic Process Control System의 약자입니다.",
+      "일반적으로 HMI 및 주 컨트롤러와 실시간으로 루프를 순환합니다."
+    ],
+    "en": [
+      "Stands for Basic Process Control System.",
+      "Maintains nominal operating equilibrium before emergency limits are approached."
+    ]
+  },
+  "hash": "9b3e82a0f00883e08608c9a0c2c14f34748accaba3cd5ec32d34fba4a9acd72f"
+},
+{
+  "id": "t2_scadaopcua",
+  "tier": 2,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 90,
+  "ci": true,
+  "fmt": "두 단어 / two words (6글자 / 6 chars)",
+  "title": {
+    "ko": "크로스 플랫폼 산업 상호운용성 표준",
+    "en": "Cross-Platform Industrial Interoperability Standard"
+  },
+  "prompt": {
+    "ko": "과거 Windows DCOM 의존성으로 인해 방화벽 통과와 보안에 취약했던 레거시 OPC 규격을 탈피하여, 리눅스와 임베디드 장비에서도 실행 가능하고 내장 암호화 및 인증서 기반 상호 인증을 지원하는 개방형 산업 통신 아키텍처는? 영문 두 단어(공백 포함 6글자)로 입력하세요.",
+    "en": "Which open industrial communication standard replaced Windows-bound DCOM legacy mechanisms with a cross-platform binary/JSON architecture featuring built-in encryption and certificate validation? Enter the two words (6 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "OPC Unified Architecture의 축약 표기입니다.",
+      "TCP 포트 4840을 기본으로 사용하며 정보 모델링 확장을 지원합니다."
+    ],
+    "en": [
+      "Shortened designation for OPC Unified Architecture.",
+      "Communicates over TCP port 4840 with cryptographic security profiles."
+    ]
+  },
+  "hash": "bff1f9c3eb8f0ad04f7fac7b0138e9488a20936f4a66cb18e41047cbaea6de8e"
+},
+{
+  "id": "t3_scadacrc16",
+  "tier": 3,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "산업 직렬 버스 오류 검증 체크섬 계산",
+    "en": "Serial Fieldbus Frame Checksum Verification"
+  },
+  "prompt": {
+    "ko": "아래 펜스된 시리얼 프레임 페이로드 6바이트에 대해 표준 16비트 순환중복검사(초깃값 0xFFFF, 다항식 0xA001, LSB 우선)을 계산하고, 산출된 16비트 정수값을 16진수 대문자 4자리로 표현하여 `FLAG{CRC_<HEX4>}` 형식으로 제출하세요.\n(예: 산출값이 0x12AB인 경우 -> `FLAG{CRC_12AB}`)\n\n```\n[SERIAL FIELD FRAME]\nRaw Bytes: 01 03 00 00 00 0A\n```",
+    "en": "Calculate the standard industrial fieldbus CRC-16 (initial 0xFFFF, polynomial 0xA001, LSB-first) over the 6 fenced payload bytes. Format the resulting 16-bit integer as a 4-character uppercase hex string in `FLAG{CRC_<HEX4>}`.\n\n```\n[SERIAL FIELD FRAME]\nRaw Bytes: 01 03 00 00 00 0A\n```"
+  },
+  "hints": {
+    "ko": [
+      "초깃값 0xFFFF에서 각 바이트를 XOR한 뒤 8비트 시프트하며 0xA001을 조건부 XOR합니다.",
+      "계산 결과 16비트 정수 16진수는 CDC5입니다."
+    ],
+    "en": [
+      "Initialize with 0xFFFF, XOR each byte and process 8 shifts conditionally XORing with 0xA001.",
+      "The computed 16-bit integer in uppercase hex produces CDC5."
+    ]
+  },
+  "hash": "9e01053b6726e7696379ff934b1e36cdc301fc9255b5b82065df8de637292c84"
+},
+{
+  "id": "t3_scadatriton",
+  "tier": 3,
+  "cat": "threat",
+  "track": "icsscada",
+  "points": 130,
+  "ci": true,
+  "fmt": "한 단어 / one word (6글자 / 6 chars)",
+  "title": {
+    "ko": "안전 계장 제어기 메모리 주입 무기",
+    "en": "Safety Controller Memory Injection Weapon"
+  },
+  "prompt": {
+    "ko": "2017년 사우디아라비아 석유화학 공장에서 발견되었으며, 플랜트 안전 계장(SIS) 제어기의 메모리에 쉘코드를 주입하고 로직을 변조하여 비상 상황 시 폭발 방지 차단 메커니즘을 무력화하려 했던 공격 프레임워크(일명 HatMan)의 명칭은? 영문 6글자로 입력하세요.",
+    "en": "What advanced malware discovered in 2017 targeted industrial safety controllers (TMR safety controllers) to modify memory firmware and suppress emergency flaring trips? Enter the 6-letter name."
+  },
+  "hints": {
+    "ko": [
+      "바다의 신 트리톤에서 유래한 이름입니다.",
+      "안전 계장 제어기를 직접 겨냥한 역사상 최초의 파괴적 악성코드입니다."
+    ],
+    "en": [
+      "Named after the Greek mythological sea messenger.",
+      "First known malware engineered specifically to compromise safety instrumented systems."
+    ]
+  },
+  "hash": "b7933ed6180d9e2895a9d2df885e2a8b92e998a3c16297581f5b8698daacf492"
+},
+{
+  "id": "t3_scadapipedream",
+  "tier": 3,
+  "cat": "threat",
+  "track": "icsscada",
+  "points": 130,
+  "ci": true,
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "모듈식 산업 제어 공격 프레임워크",
+    "en": "Modular Industrial Attack Toolkit"
+  },
+  "prompt": {
+    "ko": "2022년 미국 CISA와 정부 기관들이 합동 경보를 발령한 다목적 ICS 악성코드 프레임워크로, Omron 및 Schneider 장비, CODESYS, 개방형 산업 통신 서버 등을 상대로 정찰·서비스 거부·공정 조작을 자율적으로 수행하는 사이버 무기(일명 INCONTROLLER)의 이름은? 영문 9글자로 입력하세요.",
+    "en": "Which multi-vendor ICS attack framework highlighted by CISA in 2022 incorporated specialized tools targeting Omron PLCs, Schneider gear, and open industrial servers? Enter the 9-letter name."
+  },
+  "hints": {
+    "ko": [
+      "파이프(pipe)와 꿈(dream)이 결합된 단어입니다.",
+      "산업 통신 스캔부터 컨트롤러 충돌 유도까지 전용 모듈을 갖추고 있습니다."
+    ],
+    "en": [
+      "Compound noun joining pipe and dream.",
+      "Contains modular tools such as BadOmen and EvilScholar for automated manipulation."
+    ]
+  },
+  "hash": "ff29cc984c48b2dd04fb0ecc4e422183269cd560b0e55997f9f0ee37300444cd"
+},
+{
+  "id": "t3_scadabacnet",
+  "tier": 3,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 130,
+  "ci": true,
+  "fmt": "약어 / acronym (6글자 / 6 chars)",
+  "title": {
+    "ko": "스마트 빌딩 공조·설비 자동화 규격",
+    "en": "Building Automation and Control Networking"
+  },
+  "prompt": {
+    "ko": "대형 건물이나 데이터센터의 냉난방 공조(HVAC), 조명 제어, 전력 분전반 및 물리 보안 설비 간의 통신을 위해 ASHRAE에서 제정하였으며, UDP 포트 47808을 주로 사용하는 산업 표준 프로토콜은? 영문 6글자 약어로 입력하세요.",
+    "en": "Which ASHRAE building automation protocol coordinates HVAC systems, lighting, and environmental chillers typically communicating over UDP port 47808? Enter the 6-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Building Automation and Control networks의 약칭입니다.",
+      "BAC로 시작하는 6글자 식별자입니다."
+    ],
+    "en": [
+      "Portmanteau abbreviation of Building Automation and Control networks.",
+      "Standardized under ANSI/ASHRAE Standard 135."
+    ]
+  },
+  "hash": "ecad56bc95994b1593affed2c6357a7f5147482696745615bf97ec9fa43e9008"
+},
+{
+  "id": "t3_scadakeyswitch",
+  "tier": 3,
+  "cat": "plc",
+  "track": "icsscada",
+  "points": 130,
+  "ci": true,
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "제어기 물리 운전 모드 전환 잠금 장치",
+    "en": "Physical Mode Switch Hardware Key"
+  },
+  "prompt": {
+    "ko": "제어기 전면 패널에 부착되어 물리적 열쇠를 꽂아 돌림으로써 동작 모드를 RUN(로직 실행 전용/원격 다운로드 거부), REM(원격 설정 허용), PROG(프로그램 중단 및 수정) 상태로 하드웨어적으로 전환하는 보안 잠금 스위치를 무엇이라 부르는가? 영문 9글자로 입력하세요.",
+    "en": "What physical lock switch on controller front panels requires a mechanical key to select between RUN (logic execution only), REM (remote modification allowed), and PROG (halt for rewrite)? Enter the 9-letter word."
+  },
+  "hints": {
+    "ko": [
+      "key와 switch가 합쳐진 한 단어입니다.",
+      "RUN 모드로 돌려놓고 열쇠를 뽑아 보관하면 원격 펌웨어/로직 변조를 물리적으로 방지합니다."
+    ],
+    "en": [
+      "Compound word combining key and switch.",
+      "Removing the physical key in RUN position prevents remote network logic overwrites."
+    ]
+  },
+  "hash": "7a9a3e7805edf8aaf0c7dbb1245bd713cef8ffa44131fec4eeefd37a0afdb2c4"
+},
+{
+  "id": "t3_scadatriconex",
+  "tier": 3,
+  "cat": "plc",
+  "track": "icsscada",
+  "points": 130,
+  "ci": true,
+  "fmt": "한 단어 / one word (8글자 / 8 chars)",
+  "title": {
+    "ko": "삼중 모듈 이중화 안전 계장 브랜드",
+    "en": "Triple Modular Redundant Safety Controller"
+  },
+  "prompt": {
+    "ko": "세 개의 독립된 연산 채널과 2-out-of-3 하드웨어 투표(Voting) 회로를 갖춘 TMR 아키텍처를 적용하여, 원자력 및 대형 화학 플랜트의 비상 정지 안전 시스템(SIS)으로 널리 사용되는 Schneider Electric의 제어기 브랜드 명칭은? 영문 8글자로 입력하세요.",
+    "en": "Which industry-standard safety controller line features Triple Modular Redundancy (TMR) with two-out-of-three voting across chemical and nuclear emergency shutdown installations? Enter the 8-letter name."
+  },
+  "hints": {
+    "ko": [
+      "2017년 사우디 플랜트 침해 사고의 타깃이었던 장비 브랜드입니다.",
+      "T로 시작하여 x로 끝나는 8글자 단어입니다."
+    ],
+    "en": [
+      "The safety system brand targeted during the 2017 petrochemical safety incident.",
+      "Begins with T and concludes with x."
+    ]
+  },
+  "hash": "faa8038dcd6567dccbcd3279d740cc76d9190be3744048cae63676c44f287755"
+},
+{
+  "id": "t3_scadaairgap",
+  "tier": 3,
+  "cat": "purdue",
+  "track": "icsscada",
+  "points": 130,
+  "ci": true,
+  "fmt": "두 단어 / two words (7글자 / 7 chars)",
+  "title": {
+    "ko": "물리적 통신선 차단 망분리 격리",
+    "en": "Physical Network Isolation Boundary"
+  },
+  "prompt": {
+    "ko": "외부 공용 인터넷망이나 기업 내부 업무망(IT)으로부터 제어망(OT)을 어떠한 물리적 케이블이나 무선 통신 링크로도 연결하지 않고 완전히 분리시키는 전통적인 물리적 망분리 보안 개념을 무엇이라 부르는가? 영문 두 단어(공백 포함 7글자)로 입력하세요.",
+    "en": "What traditional security architecture completely separates critical industrial networks from external enterprise systems without any physical cable or wireless link? Enter the two words (7 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "공기(air)와 틈(gap)의 결합어입니다.",
+      "USB 외장 매체나 유지보수 노트북을 통한 감염으로 인해 무결성이 뚫릴 수 있습니다."
+    ],
+    "en": [
+      "Two words combining air and gap.",
+      "Can still be breached through maintenance laptops or infected flash drives."
+    ]
+  },
+  "hash": "5a771e984965c72d53e44e5313d95ae897c074d8e8107901d7dbc8a3c1b2d011"
+},
+{
+  "id": "t3_scadablackenergy",
+  "tier": 3,
+  "cat": "threat",
+  "track": "icsscada",
+  "points": 130,
+  "ci": true,
+  "fmt": "한 단어 / one word (11글자 / 11 chars)",
+  "title": {
+    "ko": "2015년 지역 전력망 마비 선행 침투 트로이목마",
+    "en": "2015 Regional Grid Blackout Precursor Trojan"
+  },
+  "prompt": {
+    "ko": "2015년 12월 우크라이나 배전 회사 3곳의 제어실 컴퓨터에 침투하여 마우스를 원격 조작하고 UPS 전원을 차단하는 등 역사상 최초의 대규모 정전 공격에 선행 침투 통로로 사용된 트로이목마 악성코드 패밀리는? 영문 11글자로 입력하세요.",
+    "en": "Which malware family was deployed via malicious macro documents in late 2015 to establish backdoors into Ukrainian regional electrical distribution control stations? Enter the 11-letter name."
+  },
+  "hints": {
+    "ko": [
+      "검은(black) 에너지(energy)를 의미하는 명칭입니다.",
+      "버전 3 변종이 ICS 환경 침투에 주로 동원되었습니다."
+    ],
+    "en": [
+      "Compound noun combining black and energy.",
+      "Its version 3 variant dropped KillDisk to wipe system drives."
+    ]
+  },
+  "hash": "c79782cbb554d612835c0731175cdd04078303fdd442d2f52a3d41b76c9c453e"
+},
+{
+  "id": "t3_scadasil",
+  "tier": 3,
+  "cat": "purdue",
+  "track": "icsscada",
+  "points": 130,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "기능 안전 위험 저감 정량화 지표",
+    "en": "Functional Safety Risk Reduction Rating"
+  },
+  "prompt": {
+    "ko": "IEC 61508 및 IEC 61511 기능 안전 표준에서 정의하며, 안전 계측 시스템(SIS)이 위험 상황 발생 시 주어진 안전 기능을 성공적으로 수행할 확률에 따라 1단계부터 4단계까지 위험 저감 수준을 부여하는 정량적 등급 지표는? 영문 3글자 약어로 입력하세요.",
+    "en": "Which quantitative safety rating defined under IEC 61508 assigns levels 1 through 4 to specify the required risk reduction performance of an instrumented protective function? Enter the 3-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Safety Integrity Level의 머리글자입니다.",
+      "원자력이나 대형 정유 시설은 3등급 또는 4등급 인증 장비를 요구합니다."
+    ],
+    "en": [
+      "Initials of Safety Integrity Level.",
+      "High-hazard petrochemical processes frequently mandate high-rating certified safety loops."
+    ]
+  },
+  "hash": "867a6ad21bd588df03f04d2263fa60651fd5b65ba552133a69684e9b0a3b17ae"
+},
+{
+  "id": "t4_scadacapstone",
+  "tier": 4,
+  "cat": "threat",
+  "track": "icsscada",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "산업 공정 교란 침해 인시던트 종합 분석",
+    "en": "Industrial Process Disruption Incident Synthesis"
+  },
+  "prompt": {
+    "ko": "아래 펜스된 화학 공정 이상 사후 분석 브리프에서:\n1. 불법 주입된 Function Code 10진수(FC)\n2. 강제 변조된 코일 주소 10진수(COIL)\n3. 측정된 최고 압력 정수(P)\n4. 안전 차단 시스템(SIS)의 동작 상태(TRIPPED 또는 NORMAL)\n를 집계하여 `FLAG{ICS_FC<코드>_COIL<주소>_P<압력>_<상태>}` 형식으로 제출하세요.\n(예: FC 5, 코일 164, 압력 840, SIS TRIPPED -> `FLAG{ICS_FC1_COIL200_P500_NORMAL}`)\n\n```\n[ICS PROCESS ANOMALY INCIDENT REPORT]\nFacility: Petrochemical Hydrocracker Train #2\nSubnet: Level 1 Distributed Controller Enclosure\n- Injected Command: Function Code 0x05 (Write Single Coil)\n- Manipulated Address: 0x00A4 (Decimal 164) -> Emergency Vent Flap Forced Shut\n- Telemetry Sensor Peak: 840 PSI (Maximum Design Rating: 650 PSI)\n- Safety Instrumented System (SIS): TRIPPED (Hardware Safety Circuit Depressurized)\n```",
+    "en": "From the fenced post-incident brief, parse the decimal Function Code, the decimal manipulated coil offset, the recorded peak pressure value, and the final SIS trigger status. Submit in `FLAG{ICS_FC<num>_COIL<addr>_P<psi>_<status>}` format.\n\n```\n[ICS PROCESS ANOMALY INCIDENT REPORT]\nFacility: Petrochemical Hydrocracker Train #2\nSubnet: Level 1 Distributed Controller Enclosure\n- Injected Command: Function Code 0x05 (Write Single Coil)\n- Manipulated Address: 0x00A4 (Decimal 164) -> Emergency Vent Flap Forced Shut\n- Telemetry Sensor Peak: 840 PSI (Maximum Design Rating: 650 PSI)\n- Safety Instrumented System (SIS): TRIPPED (Hardware Safety Circuit Depressurized)\n```"
+  },
+  "hints": {
+    "ko": [
+      "Function Code 0x05는 10진수 5입니다.",
+      "코일 주소 164, 최고 압력 840, SIS 상태는 TRIPPED입니다."
+    ],
+    "en": [
+      "Function Code 0x05 is decimal 5.",
+      "Target coil is 164, peak pressure reached 840, and SIS status reads TRIPPED."
+    ]
+  },
+  "hash": "bfc836ca4b90bcbbf636beccfdd7e34b29bc87ac8d6b56665feeddb63e58a781"
+},
+{
+  "id": "t4_scadaprofinet",
+  "tier": 4,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 160,
+  "ci": true,
+  "fmt": "한 단어 / one word (8글자 / 8 chars)",
+  "title": {
+    "ko": "고속 모션 동기화 실시간 산업 이더넷",
+    "en": "Isochronous Real-Time Industrial Ethernet"
+  },
+  "prompt": {
+    "ko": "지멘스와 PI 협회가 표준화하여 표준 TCP/IP 통신뿐만 아니라 전용 ASIC을 통해 1밀리초 미만의 정밀 모션 제어용 IRT(Isochronous Real-Time) 통신을 지원하는 대표적인 산업용 이더넷 프로토콜은? 영문 8글자로 입력하세요.",
+    "en": "Which industrial Ethernet standard developed alongside PROFIBUS supports both standard TCP/IP and microsecond-level Isochronous Real-Time (IRT) cyclic communication? Enter the 8-letter name."
+  },
+  "hints": {
+    "ko": [
+      "PROFI와 NET이 결합된 명칭입니다.",
+      "로봇 용접 및 고속 컨베이어 제어에 널리 활용됩니다."
+    ],
+    "en": [
+      "Portmanteau combining PROFI and NET.",
+      "Ubiquitous across European manufacturing and high-speed robotic assembly."
+    ]
+  },
+  "hash": "939b89c88a17a801232dfe8c9bea7fe49123c466694eb67f41313793d24b1974"
+},
+{
+  "id": "t4_scadamms",
+  "tier": 4,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 160,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "산업 공정 제조 메시지 사양 통신",
+    "en": "Manufacturing Message Specification Protocol"
+  },
+  "prompt": {
+    "ko": "ISO 9506에 정의되어 있으며, IEC 61850의 클라이언트-서버 통신에서 현장 스마트 계측 릴레이와 중앙 운영 서버 간의 복잡한 공정 데이터셋 조회, 이벤트 리포팅, 파일 전송에 사용되는 메시징 표준은? 영문 3글자 약어로 입력하세요.",
+    "en": "Which ISO 9506 messaging specification standardizes client-server reporting and structured parameter exchanges between supervisory systems and protective substation relays under IEC 61850? Enter the 3-letter acronym."
+  },
+  "hints": {
+    "ko": [
+      "Manufacturing Message Specification의 약자입니다.",
+      "하위 이벤트 멀티캐스트가 고속 전송이라면, 이 규격은 TCP/IP 상에서 동작하는 상위 클라이언트-서버 프로토콜입니다."
+    ],
+    "en": [
+      "Initials of Manufacturing Message Specification.",
+      "Governs full TCP/IP client-server transactions contrasting with Layer-2 event multicasts."
+    ]
+  },
+  "hash": "75f828791805ab68ac5579812fadd94207b0c51a68989ab121810e2625d0cb3d"
+},
+{
+  "id": "t4_scadaholding",
+  "tier": 4,
+  "cat": "plc",
+  "track": "icsscada",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (16글자 / 16 chars)",
+  "title": {
+    "ko": "아날로그 공정 제어 읽기/쓰기 16비트 레지스터",
+    "en": "Read/Write 16-Bit Process Register Memory"
+  },
+  "prompt": {
+    "ko": "산업 제어 메모리 모델 중 16비트 워드 크기를 가지며, 운영자가 목표 설정값(Set Point)이나 PID 제어 파라미터를 읽고 쓸 수 있는(Read/Write) 가장 핵심적인 레지스터 유형을 무엇이라 부르는가? 영문 두 단어(공백 포함 16글자)로 입력하세요.",
+    "en": "In industrial memory maps, which 16-bit word storage table allows both reading telemetry and writing operational parameters like target temperatures or flow limits? Enter the two words (16 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "Function Code 0x03으로 읽고 0x06 또는 0x10으로 씁니다.",
+      "holding과 register의 조합입니다."
+    ],
+    "en": [
+      "Interrogated via Function Code 0x03 and rewritten via codes 0x06 or 0x10.",
+      "Two words joining holding and register."
+    ]
+  },
+  "hash": "2d84c9f5e61e5484dd58c6029652bf4f2b958676f8f462e2aa29912fc94fd8c9"
+},
+{
+  "id": "t4_scadacontrolflow",
+  "tier": 4,
+  "cat": "threat",
+  "track": "icsscada",
+  "points": 160,
+  "ci": true,
+  "fmt": "문구 / phrase (20글자 / 20 chars)",
+  "title": {
+    "ko": "센서 텔레메트리 기만 조작 침투 기법",
+    "en": "Telemetry Deception Sensor Tampering Attack"
+  },
+  "prompt": {
+    "ko": "공격자가 제어기 네트워크의 통신 패킷을 변조하여, 실제 물리 현장에서는 압력이나 수위가 임계치를 넘어 치솟고 있음에도 HMI 모니터 상에는 정상 범위의 위조된 값을 전송함으로써 운영자의 조기 인지와 수동 개입을 방해하는 사이버 물리 기만 공격 기법을 무엇이라 부르는가? 영문 문구(공백 포함 20글자)로 입력하세요.",
+    "en": "What cyber-physical deception technique injects forged measurements into supervisory telemetry so operators view nominal readings while physical process variables drift into catastrophic failure? Enter the phrase (20 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "거짓(false) 데이터(data) 주입(injection)을 의미하는 영문 표현입니다.",
+      "스턱스넷이 원심분리기 파괴 도중 모니터링 화면을 정상으로 위장했던 수법입니다."
+    ],
+    "en": [
+      "Composed of the three words false, data, and injection.",
+      "Technique famously demonstrated when centrifuges were damaged while displaying peaceful loops."
+    ]
+  },
+  "hash": "471e3c7e574de1b90a0143f4fbf1d2b4f7c31ce06979c2cecacc4d1411e7453c"
+},
+{
+  "id": "t4_scadainterlock",
+  "tier": 4,
+  "cat": "purdue",
+  "track": "icsscada",
+  "points": 160,
+  "ci": true,
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "위험 상태 상호 구속 안전 차단 메커니즘",
+    "en": "Mutual Constraint Safety Cutout Mechanism"
+  },
+  "prompt": {
+    "ko": "기계적 또는 전기적 연동 회로를 통해, 한 장비(예: 메인 밸브)가 열려 있거나 특정 위험 조건이 충족되지 않으면 다른 장치(예: 고전압 스위치)의 전원이 절대 켜지지 않도록 물리적으로 강제 구속하는 안전 메커니즘을 무엇이라 부르는가? 영문 9글자로 입력하세요.",
+    "en": "Which hardware-enforced or hardwired safety circuit ensures that a piece of equipment cannot energize or open unless specific prerequisite conditions are satisfied? Enter the 9-letter word."
+  },
+  "hints": {
+    "ko": [
+      "서로 맞물려 잠근다는 의미의 영단어입니다.",
+      "소프트웨어 오작동이나 네트워크 침해 시에도 물리적 사고를 방지하는 최후의 보루입니다."
+    ],
+    "en": [
+      "Refers to locking mechanisms tied together across physical relays.",
+      "Starts with i and ends with k."
+    ]
+  },
+  "hash": "6e749f0d99c77cfcaceb6a549932a3cab6e591b1909485fcd8a2649209c8fac9"
+},
+{
+  "id": "t4_scadasafetytrip",
+  "tier": 4,
+  "cat": "threat",
+  "track": "icsscada",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (11글자 / 11 chars)",
+  "title": {
+    "ko": "플랜트 안전 계측 긴급 차단 동작",
+    "en": "Automated Protective Plant Trip Action"
+  },
+  "prompt": {
+    "ko": "산업 시설에서 배관 압력이나 반응로 온도가 허용 한계를 돌파했을 때, 설비 파열과 인명 피해를 방어하기 위해 안전 시스템이 주 연료 밸브를 즉각 닫고 전원을 차단하여 공정을 비상 정지시키는 자동 보호 조치를 무엇이라 부르는가? 영문 두 단어(공백 포함 11글자)로 입력하세요.",
+    "en": "What automatic protective action shuts main fuel valves and halts processing lines instantly when dangerous physical limits are breached to avert explosions? Enter the two words (11 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "안전(safety)과 트립(trip)의 조합입니다.",
+      "일단 이 상태가 발동되면 현장 기술자의 수동 점검과 리셋 인가 전까지 재기동이 금지됩니다."
+    ],
+    "en": [
+      "Two words combining safety and trip.",
+      "Forces the facility into fail-safe isolation until engineers physically authorize a restart."
+    ]
+  },
+  "hash": "d322835a916fdc3d275b52c376244b7326e045bc05a4adb8259ff647f91c43c2"
+},
+{
+  "id": "t4_scadaunitid",
+  "tier": 4,
+  "cat": "protocol",
+  "track": "icsscada",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (7글자 / 7 chars)",
+  "title": {
+    "ko": "중계 브리지 하위 종단 식별 주소 필드",
+    "en": "Subordinate Bridge Device Address Field"
+  },
+  "prompt": {
+    "ko": "산업 이더넷 헤더의 마지막 7번째 바이트에 위치하며, 단일 IP를 공유하는 프로토콜 브리지가 하위 시리얼 버스(RS-485)에 물려 있는 수많은 현장 슬레이브 장비들 중 타깃 장치를 식별하여 요청을 라우팅할 때 사용하는 1바이트 식별자 필드는? 영문 두 단어(공백 포함 7글자)로 입력하세요.",
+    "en": "Which 1-byte field placed at the tail of the Ethernet encapsulation header identifies downstream serial slave devices behind a bridged network converter? Enter the two words (7 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "유닛(unit)과 식별자(id)의 결합어입니다.",
+      "순수 네트워크 종단에서는 0x01이나 0xFF가 주로 채워지지만, 직렬 버스 변환 환경에서는 1부터 247 사이의 실제 슬레이브 번호가 할당됩니다."
+    ],
+    "en": [
+      "Combines unit and id.",
+      "Routes packets to the specific multidrop serial address bridged behind the bridge converter."
+    ]
+  },
+  "hash": "4dbd41a76e6fa957b9599bc49d4d7cc8f6229b025b68cb16d4403aac857a7fba"
+},
+{
+  "id": "t4_scadadpi",
+  "tier": 4,
+  "cat": "purdue",
+  "track": "icsscada",
+  "points": 160,
+  "ci": true,
+  "fmt": "문구 / phrase (22글자 / 22 chars)",
+  "title": {
+    "ko": "산업 프로토콜 페이로드 심층 검사 기술",
+    "en": "Industrial Payload Deep Inspection Technology"
+  },
+  "prompt": {
+    "ko": "전통적인 L3/L4 방화벽이 TCP 포트 502만 열려 있으면 모든 트래픽을 통과시키는 것과 달리, 패킷 내부의 기능 코드(Function Code)와 타깃 레지스터 주소를 검사하여 인가된 읽기 명령만 통과시키고 불법적인 원격 로직 쓰기나 펌웨어 다운로드 명령을 차단하는 심층 검사 기술은? 영문 문구(공백 포함 22글자)로 입력하세요.",
+    "en": "Which advanced network inspection methodology inspects payload function codes and memory addresses within industrial packets, selectively dropping unauthorized write commands while permitting telemetry reads? Enter the phrase (22 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "심층(deep) 패킷(packet) 검사(inspection)를 의미하는 3단어 영문 표현입니다.",
+      "OT 전용 방화벽에서 제어 명령 화이트리스팅을 구현하는 핵심 기술입니다."
+    ],
+    "en": [
+      "Three-word phrase composed of deep, packet, and inspection.",
+      "Allows security appliances to differentiate harmless telemetry polling from destructive parameter overrides."
+    ]
+  },
+  "hash": "a8b78669237802860885f5641ba6ba5ff420880ee711c8977902ac67a58a1977"
+},
+{
+  "id": "t4_scadaladder",
+  "tier": 4,
+  "cat": "plc",
+  "track": "icsscada",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (12글자 / 12 chars)",
+  "title": {
+    "ko": "사다리꼴 시퀀스 도면 기반 표준 그래픽 제어 언어",
+    "en": "Ladder Schematic Standard Graphical Control Logic"
+  },
+  "prompt": {
+    "ko": "IEC 61131-3 표준에 정의된 프로그래밍 언어 중 가장 널리 쓰이며, 전원 모선(Power Rail) 사이에 개폐 접점(NO/NC)과 코일 심볼을 사다리 가로대(Rung) 형태로 배치하여 시퀀스 제어 논리를 직관적으로 표현하는 그래픽 언어는? 영문 두 단어(공백 포함 12글자)로 입력하세요.",
+    "en": "Which IEC 61131-3 graphical programming language models industrial sequencing logic as rungs between power rails using switch contacts and output coils? Enter the two words (12 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "사다리(ladder)와 로직(logic)의 결합어입니다.",
+      "전기 기술자가 전기 배선 결선도를 보듯 직관적으로 읽을 수 있도록 고안되었습니다."
+    ],
+    "en": [
+      "Two words combining ladder and logic.",
+      "Simulates contact logic diagrams and coils across sequential rungs."
+    ]
+  },
+  "hash": "e7190be04c4c6fdc462ea11d1011fab64fa69866e1b85931fbda375d7df9632a"
 }
 ];
