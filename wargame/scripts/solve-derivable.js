@@ -828,6 +828,60 @@ const SOLVERS = new Map([
     const tag = sig.toLowerCase() === 'verified' ? 'SIGNED' : 'UNSIGNED';
     return `FLAG{SC_D${dist}_V${major}_${tag}}`;
   } }],
+  ['t2_osgeo', { kind: 'computed', via: 'DMS latitude/longitude converted to decimal degrees, rounded to two places', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced coordinates in the prompt');
+    const b = m[1];
+    const parse = (key) => {
+      const r = b.match(new RegExp(key + ':\\s*(\\d+)\\s*deg\\s*(\\d+)\\s*min\\s*(\\d+)\\s*sec\\s*([NSEW])'));
+      if (!r) return null;
+      const val = Number(r[1]) + Number(r[2]) / 60 + Number(r[3]) / 3600;
+      const signed = /[SW]/.test(r[4]) ? -val : val;
+      return Math.round(signed * 100) / 100;
+    };
+    const lat = parse('gps_lat'), lon = parse('gps_lon');
+    if (lat === null || lon === null) throw new Error('gps_lat / gps_lon not both stated');
+    return `FLAG{GEO_${lat}_${lon}}`;
+  } }],
+  ['t2_osemail', { kind: 'computed', via: 'a corporate email built by applying the stated name pattern', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced values in the prompt');
+    const b = m[1];
+    const first = (b.match(/first:\s*(\S+)/) || [])[1];
+    const last = (b.match(/last:\s*(\S+)/) || [])[1];
+    const domain = (b.match(/domain:\s*(\S+)/) || [])[1];
+    const pattern = (b.match(/pattern:\s*(\S+)/) || [])[1];
+    if (!first || !last || !domain || !pattern) throw new Error('first / last / domain / pattern not all stated');
+    const local = pattern
+      .replace(/\{first\}/g, first.toLowerCase())
+      .replace(/\{last\}/g, last.toLowerCase())
+      .replace(/\{f\}/g, first[0].toLowerCase())
+      .replace(/\{l\}/g, last[0].toLowerCase());
+    return `FLAG{EMAIL_${local}@${domain}}`;
+  } }],
+  ['t3_osrate', { kind: 'computed', via: 'credential submission rate = submitted / sent as a percentage to one decimal', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced tally in the prompt');
+    const b = m[1];
+    const sent = Number((b.match(/sent:\s*(\d+)/) || [])[1]);
+    const sub = Number((b.match(/submitted:\s*(\d+)/) || [])[1]);
+    if (!sent || Number.isNaN(sub)) throw new Error('sent / submitted not both stated');
+    return `FLAG{PWNED_${(sub / sent * 100).toFixed(1)}}`;
+  } }],
+  ['t4_oscapstone', { kind: 'computed', via: 'subdomain count, submission rate, and SPF presence into one composite tag', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced brief in the prompt');
+    const b = m[1];
+    const subsLine = (b.match(/subdomains:\s*(.+)/) || [])[1];
+    const sent = Number((b.match(/sent:\s*(\d+)/) || [])[1]);
+    const sub = Number((b.match(/submitted:\s*(\d+)/) || [])[1]);
+    const auth = (b.match(/sender_auth:\s*(\w+)/) || [])[1];
+    if (!subsLine || !sent || Number.isNaN(sub) || !auth) throw new Error('subdomains / sent / submitted / sender_auth not all stated');
+    const n = subsLine.split(',').map((s) => s.trim()).filter(Boolean).length;
+    const c = (sub / sent * 100).toFixed(1);
+    const tag = auth.toLowerCase() === 'present' ? 'AUTH' : 'NOAUTH';
+    return `FLAG{OS_N${n}_C${c}_${tag}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

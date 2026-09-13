@@ -118,6 +118,8 @@ const NOT_PLANTED = {
   t2_uboot: 'asks for a bootloader by name; its 콘솔 is a serial line into a device, not this page',
   t4_openocd: 'asks for a debugger by name; the 콘솔 is the telnet one that tool opens on 4444',
   t4_purple: 'asks what mixing the two teams\' colours is called; the shared screen belongs to those teams, not to this page',
+  t3_osevilginx: 'asks for a phishing framework by name; the session 쿠키 it relays is the victim\'s auth cookie on the real site, not one set on this page',
+  t4_osreconng: 'asks for a recon framework by name; its 콘솔 is that tool\'s interactive prompt, not the browser console',
 };
 
 const aBad = [], aRows = [];

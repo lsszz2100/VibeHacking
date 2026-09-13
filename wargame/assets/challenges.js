@@ -196,6 +196,14 @@ const TRACKS = [
     "en": "Supply Chain",
     "desc_ko": "패키지 저장소 공격·CI/빌드 파이프라인 오염·서명과 증명·의존성 검증과 방어.",
     "desc_en": "Package-registry attacks, CI/build-pipeline poisoning, signing and attestation, dependency verification and defense."
+  },
+  {
+    "id": "osint",
+    "icon": "🕵️",
+    "ko": "OSINT·사회공학",
+    "en": "OSINT & Social Engineering",
+    "desc_ko": "공개 정보 정찰·표적 프로파일링·피싱과 사회공학·피싱 인프라와 탐지 회피.",
+    "desc_en": "Open-source recon, target profiling, phishing and social engineering, phishing infrastructure and evasion."
   }
 ];
 
@@ -7248,11 +7256,11 @@ const CHALLENGES = [
     "hints": {
       "ko": [
         "`SMS` 와 `phishing` 을 합친 말입니다.",
-        "음성 통화로 하는 사촌뻘 수법은 vishing 이라고 부릅니다."
+        "음성 통화로 하는 사촌뻘 수법도 따로 있습니다."
       ],
       "en": [
         "A blend of `SMS` and `phishing`.",
-        "Its voice-call cousin goes by vishing."
+        "It has a voice-call cousin too."
       ]
     }
   },
@@ -18854,6 +18862,986 @@ const CHALLENGES = [
       "en": [
         "express vs expres → D.",
         "Higher major of the two versions → V; signature is not verified."
+      ]
+    }
+  },
+  {
+    "id": "t0_osdork",
+    "tier": 0,
+    "cat": "recon",
+    "track": "osint",
+    "points": 50,
+    "ci": true,
+    "hash": "753fdce9d6d0d8fe46237f996985f98a5bb4f62e396b6cf353eb9beb5698d170",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "검색 연산자로 캐내기",
+      "en": "Prying with Search Operators"
+    },
+    "prompt": {
+      "ko": "site:, inurl:, intitle: 같은 검색 엔진 연산자를 조합해 일반 검색으로는 드러나지 않는 노출 문서·설정·로그인 페이지를 찾아내는 정찰 기법을 (Google) ___ 이라 한다. 빈칸의 한 단어(-ing)는?",
+      "en": "Combining search-engine operators like site:, inurl:, intitle: to surface exposed documents, configs, and login pages that ordinary search hides is called (Google) ___. What one -ing word fills the blank?"
+    },
+    "hints": {
+      "ko": [
+        "광부(dork)가 파낸다는 어감의 동명사.",
+        "예: `site:target.com inurl:admin`."
+      ],
+      "en": [
+        "A gerund; pairs with \"Google\".",
+        "e.g. `site:target.com inurl:admin`."
+      ]
+    }
+  },
+  {
+    "id": "t0_osphish",
+    "tier": 0,
+    "cat": "socialeng",
+    "track": "osint",
+    "points": 50,
+    "ci": true,
+    "hash": "2ce4ce947f548d483889bf6b6c4731ebd50a8f8e48fc7b84373c5cc4cf1d35b3",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "미끼를 던지는 사기",
+      "en": "Casting the Lure"
+    },
+    "prompt": {
+      "ko": "정상 기관을 사칭한 이메일·문자·사이트로 피해자를 속여 자격증명이나 금전을 빼내는, 침해의 최초 진입점 1위로 꼽히는 사회공학 공격의 총칭(영어 한 단어)은?",
+      "en": "The umbrella term (one English word) for the social-engineering attack that impersonates a trusted party via email, text, or a site to trick a victim out of passwords or money — the #1 initial-access vector. Name it."
+    },
+    "hints": {
+      "ko": [
+        "\"fishing\"의 철자를 비튼 말.",
+        "스피어형·고래형 변종이 있다."
+      ],
+      "en": [
+        "A respelling of \"fishing\".",
+        "Has spear and whale variants."
+      ]
+    }
+  },
+  {
+    "id": "t1_osfofa",
+    "tier": 1,
+    "cat": "recon",
+    "track": "osint",
+    "points": 65,
+    "ci": true,
+    "hash": "a4a52c41c7622622e76b8f8887dce3867fbfb588f5d4904986405bcd5f1f6258",
+    "fmt": "한 단어 / one word (4글자 / 4 chars)",
+    "title": {
+      "ko": "중국판 장비 검색엔진",
+      "en": "A Device Search Engine from China"
+    },
+    "prompt": {
+      "ko": "인터넷에 노출된 장비·서비스·배너를 인덱싱해 질의할 수 있게 하는 중국 발 검색엔진으로, 다른 인터넷 장비 검색엔진과 같은 부류다. 네 글자 이름은?",
+      "en": "A China-origin search engine that indexes internet-exposed devices, services, and banners for querying — the same class as other internet-device search engines. Give its four-letter name."
+    },
+    "hints": {
+      "ko": [
+        "白帽汇(BaiMaoHui) 가 운영.",
+        "네 글자 로마자."
+      ],
+      "en": [
+        "Operated by BaiMaoHui.",
+        "Four Latin letters."
+      ]
+    }
+  },
+  {
+    "id": "t1_osamass",
+    "tier": 1,
+    "cat": "recon",
+    "track": "osint",
+    "points": 65,
+    "ci": true,
+    "hash": "f921d1889072e9ff2d3587566c40996b61e0736493edb48ea6a74cdf0ef31e57",
+    "fmt": "도구 이름 / tool name (5글자 / 5 chars)",
+    "title": {
+      "ko": "서브도메인을 긁어모으다",
+      "en": "Amassing Subdomains"
+    },
+    "prompt": {
+      "ko": "OWASP 가 관리하는 대표 정찰 도구로, 인증서 로그·패시브 DNS·스크래핑을 엮어 한 루트 도메인의 서브도메인을 대규모로 열거하고 자산 지도를 그린다. 이 도구의 이름은? (5글자)",
+      "en": "The flagship OWASP reconnaissance tool that fuses certificate logs, passive DNS, and scraping to enumerate a root domain's subdomains at scale and map its attack surface. Name it. (5 chars)"
+    },
+    "hints": {
+      "ko": [
+        "영어로 '긁어모으다'라는 뜻의 동사와 철자가 같다.",
+        "서브도메인 열거의 표준."
+      ],
+      "en": [
+        "Its name is an English verb meaning to gather into a pile.",
+        "A standard for subdomain enumeration."
+      ]
+    }
+  },
+  {
+    "id": "t1_ostineye",
+    "tier": 1,
+    "cat": "profiling",
+    "track": "osint",
+    "points": 65,
+    "ci": true,
+    "hash": "035ebdc7bd0dec1ab06e24717c8d4a0d7a3c1ee2cedfccc3beb1ec471f805017",
+    "fmt": "도구 이름 / tool name (6글자 / 6 chars)",
+    "title": {
+      "ko": "사진을 거꾸로 찾다",
+      "en": "Search by the Picture"
+    },
+    "prompt": {
+      "ko": "인물·프로필 사진 한 장을 올리면 그 이미지가 인터넷 어디에 또 올라와 있는지 찾아 주는 대표적 역방향 이미지 검색 엔진의 이름은? 프로필 사진으로 부계정·본명을 추적할 때 쓴다. (6글자)",
+      "en": "Upload a single profile photo and this leading reverse-image search engine finds everywhere else that image appears online — used to trace alt accounts or real names from an avatar. Name it. (6 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"tin\" + \"eye\".",
+        "구글 이미지와 함께 쓰는 역방향 검색."
+      ],
+      "en": [
+        "\"tin\" + \"eye\".",
+        "A reverse-image search used alongside Google Images."
+      ]
+    }
+  },
+  {
+    "id": "t1_osvishing",
+    "tier": 1,
+    "cat": "socialeng",
+    "track": "osint",
+    "points": 65,
+    "ci": true,
+    "hash": "64653ddbd8589569106a2b6f7fe2900191d366e0f953c6a200ddc745d3057ac1",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "전화로 속이기",
+      "en": "The Con over the Phone"
+    },
+    "prompt": {
+      "ko": "전화 통화(음성)로 은행·보안팀·경영진을 사칭해 실시간으로 피해자를 압박하며 정보를 캐내는 사회공학 변종을 뜻하는 영어 한 단어는? AI 합성 음성으로 단가가 급락했다.",
+      "en": "The one-word term for the social-engineering variant carried out over a voice phone call — impersonating a bank, security team, or executive to pressure a victim in real time. AI voice cloning has slashed its cost. Name it."
+    },
+    "hints": {
+      "ko": [
+        "voice + phishing 의 합성.",
+        "전화(voice)로 하는 그것."
+      ],
+      "en": [
+        "A blend of voice + phishing.",
+        "Done over the voice channel."
+      ]
+    }
+  },
+  {
+    "id": "t1_osspf",
+    "tier": 1,
+    "cat": "phishinfra",
+    "track": "osint",
+    "points": 65,
+    "ci": true,
+    "hash": "e80938dd3117ffc8a04416375d37b7b4a828803b35c2d2c78c02bb7306af90db",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "누가 이 도메인 메일을 보낼 수 있나",
+      "en": "Who May Send for This Domain"
+    },
+    "prompt": {
+      "ko": "도메인의 DNS TXT 레코드에 \"이 도메인을 발신자로 쓸 수 있는 메일 서버 IP 목록\"을 게시해, 수신 서버가 발신 IP의 정당성을 검사하게 하는 이메일 인증 표준의 3글자 약어는? (Sender Policy Framework)",
+      "en": "The 3-letter email-authentication standard that publishes, in a domain's DNS TXT record, the list of mail-server IPs allowed to send as that domain, so receivers can check the sending IP's legitimacy. (Sender Policy Framework)"
+    },
+    "hints": {
+      "ko": [
+        "Sender Policy Framework.",
+        "이메일 발신자 인증 3대 표준의 하나."
+      ],
+      "en": [
+        "Sender Policy Framework.",
+        "One of the three core mail-authentication standards."
+      ]
+    }
+  },
+  {
+    "id": "t1_osdehashed",
+    "tier": 1,
+    "cat": "profiling",
+    "track": "osint",
+    "points": 65,
+    "ci": true,
+    "hash": "2845ea217ce36706d19951eced705773f7a10258ca9dbee971da83e781960a5b",
+    "fmt": "서비스 이름 / service name (8글자 / 8 chars)",
+    "title": {
+      "ko": "유출 덤프를 한 곳에서 검색",
+      "en": "Search the Breach Dumps"
+    },
+    "prompt": {
+      "ko": "과거 유출 사고에서 흘러나온 방대한 데이터 덤프를 통합 색인해, 이메일·사용자명·도메인으로 그 안의 자격증명(평문·해시 포함)을 검색하게 해 주는 대표 유료 유출 검색 서비스의 이름은? 자격증명 재사용 공격의 출발점이 된다. (8글자)",
+      "en": "The leading paid breach-search service that indexes vast data dumps leaked from past incidents, letting you search by email, username, or domain for the passwords inside (plaintext and hashed). A starting point for credential-reuse attacks. Name it. (8 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"de\" + 해시를 되돌린다는 어감.",
+        "평문·해시 자격증명까지 검색."
+      ],
+      "en": [
+        "\"de\" + undoing a hash.",
+        "Searches plaintext and hashed credentials."
+      ]
+    }
+  },
+  {
+    "id": "t2_osharvester",
+    "tier": 2,
+    "cat": "profiling",
+    "track": "osint",
+    "points": 90,
+    "ci": true,
+    "hash": "ca609acc12732c3b0eb5c5074d6bc912fafadefdff187dddf84be5ca880edc15",
+    "fmt": "도구 이름 / tool name (12글자 / 12 chars)",
+    "title": {
+      "ko": "이메일을 수확하다",
+      "en": "Harvesting Emails"
+    },
+    "prompt": {
+      "ko": "검색엔진·PGP 키서버·인증서 로그 등 여러 공개 출처를 한 번에 훑어 한 도메인의 이메일 주소와 서브도메인을 자동 수집하는 고전 OSINT 정찰 도구의 이름은? (한 단어, 12글자)",
+      "en": "A classic reconnaissance tool that sweeps many public sources at once — search engines, PGP key servers, certificate logs — to auto-collect a domain's email addresses and subdomains — a classic OSINT workhorse. Name it. (one word, 12 chars)"
+    },
+    "hints": {
+      "ko": [
+        "정관사 the + \"수확기\".",
+        "Kali 에 기본 포함."
+      ],
+      "en": [
+        "The definite article \"the\" + \"harvester\".",
+        "Ships with Kali by default."
+      ]
+    }
+  },
+  {
+    "id": "t2_osmaltego",
+    "tier": 2,
+    "cat": "profiling",
+    "track": "osint",
+    "points": 90,
+    "ci": true,
+    "hash": "3a2a51087fcc5f5f6e4b2abd9083bce0b2ac0dfea9fc344a204ec617e7b0ffb0",
+    "fmt": "도구 이름 / tool name (7글자 / 7 chars)",
+    "title": {
+      "ko": "점과 선으로 그리는 관계도",
+      "en": "A Graph of Dots and Links"
+    },
+    "prompt": {
+      "ko": "사람·도메인·이메일·회사를 노드로 두고 \"transform\"을 돌려 그 사이 관계를 시각적 그래프로 확장·연결해 주는 대표적 OSINT 링크 분석 도구의 이름은? (7글자)",
+      "en": "The leading OSINT link-analysis tool that places people, domains, emails, and companies as nodes and runs \"transforms\" to expand and connect their relationships into a visual graph. Name it. (7 chars)"
+    },
+    "hints": {
+      "ko": [
+        "Paterva/Maltego 사가 개발.",
+        "transform 으로 노드를 확장한다."
+      ],
+      "en": [
+        "By Paterva/Maltego.",
+        "You expand nodes with \"transforms\"."
+      ]
+    }
+  },
+  {
+    "id": "t2_ospretext",
+    "tier": 2,
+    "cat": "socialeng",
+    "track": "osint",
+    "points": 90,
+    "ci": true,
+    "hash": "4af7e90ef70bb04b734bfa93ec56ca1e2902c546281b96238d50bb497bde5166",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "그럴듯한 시나리오 지어내기",
+      "en": "Inventing a Plausible Story"
+    },
+    "prompt": {
+      "ko": "\"전산팀인데 계정 점검 중입니다\" 처럼, 표적이 정보를 내주는 것이 자연스럽게 느껴지도록 거짓 신분과 상황(구실)을 미리 지어내 신뢰를 얻는 사회공학 기법을 뜻하는 영어 한 단어(-ing)는?",
+      "en": "The one-word (-ing) social-engineering technique of inventing a false identity and scenario (a pretext) in advance — \"I'm from IT, doing an account audit\" — so that handing over information feels natural to the target. Name it."
+    },
+    "hints": {
+      "ko": [
+        "구실(pretext)을 지어내는 행위.",
+        "여러 전화·이메일 사기의 뼈대가 된다."
+      ],
+      "en": [
+        "Building a \"pretext\".",
+        "It underpins many phone- and email-based cons."
+      ]
+    }
+  },
+  {
+    "id": "t2_osdkim",
+    "tier": 2,
+    "cat": "phishinfra",
+    "track": "osint",
+    "points": 90,
+    "ci": true,
+    "hash": "c07a4be094e861cb910c6b0c21eb0f64a22d8c60e0d18eaaccba3c229690ee37",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "메일에 도장을 찍다",
+      "en": "A Cryptographic Stamp on Mail"
+    },
+    "prompt": {
+      "ko": "발신 도메인이 개인키로 메일 헤더·본문에 디지털 서명을 붙이고, 수신자는 DNS 에 게시된 공개키로 검증해 메일이 전송 중 위·변조되지 않았음을 확인하는 이메일 인증 표준의 4글자 약어는? (DomainKeys Identified Mail)",
+      "en": "The 4-letter email-authentication standard where the sending domain signs the message header and body with a private key, and the receiver verifies it with a public key published in DNS, confirming the mail was not altered in transit. (DomainKeys Identified Mail)"
+    },
+    "hints": {
+      "ko": [
+        "DomainKeys Identified Mail.",
+        "DNS 에 공개키(selector._domainkey)를 둔다."
+      ],
+      "en": [
+        "DomainKeys Identified Mail.",
+        "Its public key sits at selector._domainkey in DNS."
+      ]
+    }
+  },
+  {
+    "id": "t2_osdmarc",
+    "tier": 2,
+    "cat": "phishinfra",
+    "track": "osint",
+    "points": 90,
+    "ci": true,
+    "hash": "6aa0d92ee66b3edb3d8b74b3e02a7d38cde1390742c7e072a9b7192760515966",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "실패하면 어떻게 할지 정하기",
+      "en": "Say What to Do on Failure"
+    },
+    "prompt": {
+      "ko": "하위 두 인증(발신 IP 검사·서명 검사) 결과와 From 헤더 도메인의 정렬 일치를 확인하고, 실패한 메일을 어떻게 처리할지(none/quarantine/reject) 정책으로 지시하며 리포트까지 받는 상위 이메일 인증 표준의 5글자 약어는?",
+      "en": "The 5-letter top-layer email-authentication standard that checks the two lower authentication results (sending-IP and signature) and their agreement with the From-header domain, dictates via policy how to handle failures (none/quarantine/reject), and receives reports. Name it."
+    },
+    "hints": {
+      "ko": [
+        "Domain-based Message Authentication, Reporting & Conformance.",
+        "p=reject 가 가장 강한 정책."
+      ],
+      "en": [
+        "Domain-based Message Authentication, Reporting & Conformance.",
+        "p=reject is the strongest policy."
+      ]
+    }
+  },
+  {
+    "id": "t2_oscrtsh",
+    "tier": 2,
+    "cat": "recon",
+    "track": "osint",
+    "points": 90,
+    "ci": true,
+    "hash": "f6da92f871878f0651619d89afdc2c2d09ffd876574ba441b78e5476e1a9f9b8",
+    "fmt": "값 그대로 / literal (6글자 / 6 chars, . 포함 / include .)",
+    "title": {
+      "ko": "발급된 인증서를 뒤지다",
+      "en": "Comb the Issued Certificates"
+    },
+    "prompt": {
+      "ko": "공개 인증서 투명성(Certificate Transparency) 로그를 웹에서 질의해, 한 도메인에 발급된 TLS 인증서들과 그 안의 서브도메인(SAN)을 그대로 긁어낼 수 있게 해 주는 대표 사이트의 도메인 이름은? (점 포함, 6글자)",
+      "en": "The go-to website for querying public Certificate Transparency logs from the browser, letting you pull every TLS certificate issued for a domain and the subdomains (SANs) inside them. Give its domain name. (includes a dot, 6 chars)"
+    },
+    "hints": {
+      "ko": [
+        "Sectigo 가 운영.",
+        "\"cert\" 축약 + `.sh` 국가 TLD."
+      ],
+      "en": [
+        "Run by Sectigo.",
+        "Short for \"cert\" + the `.sh` TLD."
+      ]
+    }
+  },
+  {
+    "id": "t2_osgeo",
+    "tier": 2,
+    "cat": "recon",
+    "track": "osint",
+    "points": 150,
+    "ci": false,
+    "hash": "5263653748ae21b32711c8ba88f06c47d3ed988f4b625cade37a151a8afd5ff7",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "사진 좌표를 십진수로",
+      "en": "Photo Coordinates to Decimal"
+    },
+    "prompt": {
+      "ko": "공개된 사진의 내장 메타데이터에서 아래 GPS 좌표(도/분/초)를 얻었다. 십진수 도(decimal degrees)로 변환하되 각각 소수점 둘째 자리로 반올림하고, N·E 는 양수로 둔 뒤 `FLAG{GEO_<lat>_<lon>}` 로 제출하라.\n\n```\ngps_lat: 37 deg 33 min 36 sec N\ngps_lon: 126 deg 58 min 12 sec E\n```",
+      "en": "From a public photo's embedded metadata you recovered the GPS coordinates below (degrees/minutes/seconds). Convert each to decimal degrees, round to two decimals, keep N/E positive, and submit `FLAG{GEO_<lat>_<lon>}`.\n\n```\ngps_lat: 37 deg 33 min 36 sec N\ngps_lon: 126 deg 58 min 12 sec E\n```"
+    },
+    "hints": {
+      "ko": [
+        "도 + 분/60 + 초/3600.",
+        "37 + 33/60 + 36/3600 = 37.56."
+      ],
+      "en": [
+        "deg + min/60 + sec/3600.",
+        "37 + 33/60 + 36/3600 = 37.56."
+      ]
+    }
+  },
+  {
+    "id": "t2_osemail",
+    "tier": 2,
+    "cat": "profiling",
+    "track": "osint",
+    "points": 150,
+    "ci": false,
+    "hash": "3bdd5d0f12dc61320b6b0cc967f6da9eb9ff3d89fc92503927731b908539e1ce",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "이름에서 회사 이메일 짓기",
+      "en": "Build the Corporate Email"
+    },
+    "prompt": {
+      "ko": "프로파일링에서 확인한 사내 이메일 규칙에 이름을 대입해 표적의 주소를 만든다. 아래 값으로 주소를 조립해 `FLAG{EMAIL_<주소>}` 로 제출하라. 토큰: {first}=이름 소문자, {f}=이름 첫 글자 소문자, {last}=성 소문자, {l}=성 첫 글자 소문자.\n\n```\nfirst: Jimin\nlast: Park\ndomain: samsung.com\npattern: {f}{last}\n```",
+      "en": "Apply a discovered corporate email convention to a name to derive the target's address. Assemble it from the values below and submit `FLAG{EMAIL_<address>}`. Tokens: {first}=first name lowercase, {f}=first initial lowercase, {last}=last name lowercase, {l}=last initial lowercase.\n\n```\nfirst: Jimin\nlast: Park\ndomain: samsung.com\npattern: {f}{last}\n```"
+    },
+    "hints": {
+      "ko": [
+        "{f} = j, {last} = park.",
+        "local-part 뒤에 @domain 을 붙인다."
+      ],
+      "en": [
+        "{f} = j, {last} = park.",
+        "Append @domain after the local part."
+      ]
+    }
+  },
+  {
+    "id": "t3_osevilginx",
+    "tier": 3,
+    "cat": "phishinfra",
+    "track": "osint",
+    "points": 130,
+    "ci": true,
+    "hash": "cee67bf29d4af13ab0eec4c04b6e56f264efae10c1d96023e44396a2a1a620b0",
+    "fmt": "도구 이름 / tool name (8글자 / 8 chars)",
+    "title": {
+      "ko": "세션 쿠키를 가로채는 프록시",
+      "en": "The Proxy that Steals Session Cookies"
+    },
+    "prompt": {
+      "ko": "피해자와 진짜 로그인 페이지 사이에 리버스 프록시로 끼어들어 자격증명뿐 아니라 인증 후 세션 쿠키까지 중계·탈취해 다단계 인증을 무력화하는 대표 피싱 프레임워크의 이름은? nginx 를 비튼 이름이다. (8글자)",
+      "en": "The flagship phishing framework that inserts a reverse proxy between the victim and the real login page, relaying and stealing not just the password but the post-auth session cookie, defeating multi-factor authentication. Its name puns on nginx. (8 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"evil\" + nginx.",
+        "2 버전이 널리 쓰인다."
+      ],
+      "en": [
+        "\"evil\" + nginx.",
+        "Version 2 is the widely used one."
+      ]
+    }
+  },
+  {
+    "id": "t3_osaitm",
+    "tier": 3,
+    "cat": "phishinfra",
+    "track": "osint",
+    "points": 130,
+    "ci": true,
+    "hash": "6c06e8a884b7f04ac200c587ec40cabd0bc51b4dfb9ab774adfe77f29202ab18",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "중간에서 실시간 중계",
+      "en": "Relaying Live in the Middle"
+    },
+    "prompt": {
+      "ko": "피해자와 정상 서비스 사이에 리버스 프록시로 앉아 로그인·다단계 인증·세션 토큰 발급을 실시간으로 중계하며 세션을 가로채는 현대 피싱의 공격 위치를 가리키는 4글자 약어는? 고전 MITM 을 자격증명·세션 탈취용으로 좁힌 표현이다.",
+      "en": "The 4-letter acronym for the modern-phishing position — sitting as a reverse proxy between victim and legitimate service, relaying login, multi-factor authentication, and session-token issuance in real time to hijack the session. It narrows the classic MITM to credential/session theft."
+    },
+    "hints": {
+      "ko": [
+        "Adversary-in-the-Middle.",
+        "MITM 의 자격증명·세션 특화판."
+      ],
+      "en": [
+        "Adversary-in-the-Middle.",
+        "A credential/session-focused take on MITM."
+      ]
+    }
+  },
+  {
+    "id": "t3_oscialdini",
+    "tier": 3,
+    "cat": "socialeng",
+    "track": "osint",
+    "points": 130,
+    "ci": true,
+    "hash": "fdec438ea518f5886c8f96b1a8ef1bd62b35d9880473387a0c8978919b49c4c7",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "설득의 여섯 원칙",
+      "en": "Six Principles of Persuasion"
+    },
+    "prompt": {
+      "ko": "권위(authority)·희소성(scarcity)·상호성(reciprocity)·사회적 증거(social proof)·호감·일관성 같은 \"설득의 6원칙\"을 정리해, 사회공학 시나리오 설계의 심리 이론적 토대가 된 심리학자의 성(last name)은?",
+      "en": "The last name of the psychologist whose \"six principles of persuasion\" — authority, scarcity, reciprocity, social proof, liking, commitment — became the psychological backbone for designing social-engineering scenarios."
+    },
+    "hints": {
+      "ko": [
+        "저서 \"Influence\" 로 유명.",
+        "로버트 ___ ."
+      ],
+      "en": [
+        "Famous for the book \"Influence\".",
+        "Robert ___ ."
+      ]
+    }
+  },
+  {
+    "id": "t3_osbec",
+    "tier": 3,
+    "cat": "socialeng",
+    "track": "osint",
+    "points": 130,
+    "ci": true,
+    "hash": "4ba2a5b900f015f04d3eeb650885bca26a1c3c59d6fbabb67e3a944140ebc57b",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "CEO 를 사칭한 송금 사기",
+      "en": "The CEO-Impersonation Wire Fraud"
+    },
+    "prompt": {
+      "ko": "경영진이나 거래처를 사칭한 이메일로 재무·회계 담당자를 속여 계좌를 바꾸거나 긴급 송금을 지시하는, 피해액 기준 최대 규모의 기업 대상 이메일 사기 유형의 3글자 약어는? (Business Email Compromise)",
+      "en": "The 3-letter acronym for the highest-dollar-loss corporate email fraud: impersonating an executive or vendor to trick finance/accounting staff into changing account details or wiring funds urgently. (Business Email Compromise)"
+    },
+    "hints": {
+      "ko": [
+        "Business Email Compromise.",
+        "CEO 사기(CEO fraud)라고도 불린다."
+      ],
+      "en": [
+        "Business Email Compromise.",
+        "Also called CEO fraud."
+      ]
+    }
+  },
+  {
+    "id": "t3_ossherlock",
+    "tier": 3,
+    "cat": "profiling",
+    "track": "osint",
+    "points": 130,
+    "ci": true,
+    "hash": "4bfbdf7ebee257ff0658b04db68feca37c7b68ef3f419b437efef43d3f5d84b6",
+    "fmt": "도구 이름 / tool name (8글자 / 8 chars)",
+    "title": {
+      "ko": "사용자명 하나로 전 사이트 추적",
+      "en": "One Username Across Every Site"
+    },
+    "prompt": {
+      "ko": "하나의 사용자명(handle)을 입력하면 수백 개 소셜·커뮤니티 사이트에서 그 이름의 계정이 존재하는지 한 번에 훑어 주는 대표 오픈소스 OSINT 도구의 이름은? 명탐정 이름을 땄다. (8글자)",
+      "en": "Give it a single username (handle) and this leading open-source OSINT tool checks hundreds of social and community sites at once for an account by that name. Named after a fictional detective. (8 chars)"
+    },
+    "hints": {
+      "ko": [
+        "베이커가 221B 의 그 탐정.",
+        "account enumeration 표준 도구."
+      ],
+      "en": [
+        "The detective of 221B Baker Street.",
+        "A standard account-enumeration tool."
+      ]
+    }
+  },
+  {
+    "id": "t3_oscensys",
+    "tier": 3,
+    "cat": "recon",
+    "track": "osint",
+    "points": 130,
+    "ci": true,
+    "hash": "03c21d445bf45fc582e900ca135e61e574fed76050b474ba9583b22eda81c35e",
+    "fmt": "도구 이름 / tool name (6글자 / 6 chars)",
+    "title": {
+      "ko": "인터넷을 통째로 스캔",
+      "en": "Scanning the Whole Internet"
+    },
+    "prompt": {
+      "ko": "미시간대 연구에서 출발해, 전 IPv4 를 주기적으로 스캔하고 TLS 인증서·호스트·서비스를 색인해 질의하게 해 주는 인터넷 자산 검색 플랫폼의 이름은? 다른 인터넷 스캔 검색엔진과 자주 비교된다. (6글자)",
+      "en": "Born from University of Michigan research, this internet-asset search platform periodically scans all of IPv4 and indexes TLS certificates, hosts, and services for querying. Often compared with other internet-scan engines. (6 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"census\" 를 비튼 이름.",
+        "ZMap 스캔에 뿌리를 둔다."
+      ],
+      "en": [
+        "A play on \"census\".",
+        "Rooted in the ZMap scanner."
+      ]
+    }
+  },
+  {
+    "id": "t3_oshibp",
+    "tier": 3,
+    "cat": "profiling",
+    "track": "osint",
+    "points": 130,
+    "ci": true,
+    "hash": "2db98bc570cfc1a41e1d90956b1d8df250afbefac5f165faef85e49651b2e2b0",
+    "fmt": "서비스 이름 / service name (14글자 / 14 chars)",
+    "title": {
+      "ko": "내 계정이 털렸나",
+      "en": "Was My Account Breached"
+    },
+    "prompt": {
+      "ko": "이메일 주소나 사용자명을 넣으면 그 계정이 지금까지 공개된 데이터 유출 사고에 포함됐는지 알려 주는, Troy Hunt 가 만든 대표 유출 조회 서비스의 이름은? 공백 없이 한 단어로 붙여 쓴다. (14글자, \"___pwned\")",
+      "en": "Enter an email or username and this leading breach-lookup service by Troy Hunt tells you whether that account appears in known public data breaches. Written as one word, no spaces. (14 chars, \"___pwned\")"
+    },
+    "hints": {
+      "ko": [
+        "\"내가 pwn 당했었나\" 를 그대로.",
+        "약자로 HIBP."
+      ],
+      "en": [
+        "Literally \"have I been pwned\".",
+        "Abbreviated HIBP."
+      ]
+    }
+  },
+  {
+    "id": "t3_ospunycode",
+    "tier": 3,
+    "cat": "phishinfra",
+    "track": "osint",
+    "points": 130,
+    "ci": true,
+    "hash": "b8b082c81c4d3841a236651b6129f42dd7566820db3d6db32d7c4521f1acb718",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "유니코드를 ASCII 도메인으로",
+      "en": "Unicode into an ASCII Domain"
+    },
+    "prompt": {
+      "ko": "유니코드(비ASCII) 문자가 섞인 국제화 도메인을 xn-- 로 시작하는 ASCII 문자열로 변환하는 인코딩의 이름은? 키릴 \"а\" 로 apple 을 흉내 낸 도메인이 브라우저 주소창에서 이 형태로 드러난다. (8글자)",
+      "en": "The encoding that turns an internationalized domain containing Unicode (non-ASCII) characters into an ASCII string beginning with xn-- . A domain faking \"apple\" with a Cyrillic \"а\" shows up in this form in the address bar. Name it. (8 chars)"
+    },
+    "hints": {
+      "ko": [
+        "xn-- 접두어로 표현된다.",
+        "IDN 호모그래프 공격의 정체."
+      ],
+      "en": [
+        "Rendered with the xn-- prefix.",
+        "The mechanism behind IDN homograph attacks."
+      ]
+    }
+  },
+  {
+    "id": "t3_osrate",
+    "tier": 3,
+    "cat": "socialeng",
+    "track": "osint",
+    "points": 200,
+    "ci": false,
+    "hash": "02e37893139f6cb070e049464b36f4de20df2a0fe2d30943de9e9f9ec3cbf453",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "캠페인 제출률 계산",
+      "en": "Compute the Submission Rate"
+    },
+    "prompt": {
+      "ko": "피싱 시뮬레이션 캠페인의 결과를 집계했다. \"자격증명 제출률 = 자격증명을 실제로 입력·제출한 사람 수 ÷ 발송 수 × 100\" 을 소수점 첫째 자리까지 구해 `FLAG{PWNED_<rate>}` 로 제출하라.\n\n```\nsent: 500\nopened: 240\nclicked: 60\nsubmitted: 45\n```",
+      "en": "You tallied a phishing-simulation campaign. Compute \"credential submission rate = people who actually submitted a password ÷ sent × 100\" to one decimal place and submit `FLAG{PWNED_<rate>}`.\n\n```\nsent: 500\nopened: 240\nclicked: 60\nsubmitted: 45\n```"
+    },
+    "hints": {
+      "ko": [
+        "분모는 발송 수(sent), 분자는 submitted.",
+        "45/500 = 0.09."
+      ],
+      "en": [
+        "Denominator is sent, numerator is submitted.",
+        "45/500 = 0.09."
+      ]
+    }
+  },
+  {
+    "id": "t4_oswayback",
+    "tier": 4,
+    "cat": "recon",
+    "track": "osint",
+    "points": 160,
+    "ci": true,
+    "hash": "72343adaaf014c81771dd828c362aa6e59052212759a34b6e5815e4dfc8040b4",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "지워진 페이지를 되살리다",
+      "en": "Resurrect a Deleted Page"
+    },
+    "prompt": {
+      "ko": "archive.org 가 운영하는, 과거 시점의 웹페이지 스냅샷을 보존·열람하게 해 주는 서비스의 이름은? 지워진 이메일·직원 명단·설정 파일을 옛 스냅샷에서 되찾을 때 정찰에 쓴다. (두 단어)",
+      "en": "The archive.org service that preserves and lets you view snapshots of web pages as they were at past points in time — used in reconnaissance to recover deleted emails, staff lists, or configuration files from old snapshots. Name it. (two words)"
+    },
+    "hints": {
+      "ko": [
+        "\"돌아가는 길(way back)\" + 기계.",
+        "archive.org 의 대표 기능."
+      ],
+      "en": [
+        "\"way back\" + machine.",
+        "The flagship feature of archive.org."
+      ]
+    }
+  },
+  {
+    "id": "t4_osreconng",
+    "tier": 4,
+    "cat": "recon",
+    "track": "osint",
+    "points": 160,
+    "ci": true,
+    "hash": "4ed5ce96054998a226a465e7344092404cf2909299a77604d945e9fa083ce8fd",
+    "fmt": "도구 이름 / tool name (8글자 / 8 chars, - 포함 / include -)",
+    "title": {
+      "ko": "모듈로 굴러가는 정찰 콘솔",
+      "en": "A Modular Recon Console"
+    },
+    "prompt": {
+      "ko": "Metasploit 같은 모듈형 콘솔 인터페이스를 가진 웹 OSINT 정찰 프레임워크로, marketplace 에서 모듈을 설치해 도메인·이메일·유출 정보를 자동 수집한다. 이 도구의 이름은? (하이픈 포함, 8글자)",
+      "en": "A modular, Metasploit-like OSINT web-reconnaissance framework; you install modules from its marketplace to auto-collect domains, emails, and breach data. Name it. (includes a hyphen, 8 chars)"
+    },
+    "hints": {
+      "ko": [
+        "정찰(recon) + \"next generation\" 약자.",
+        "workspaces 로 결과를 관리한다."
+      ],
+      "en": [
+        "recon + the abbreviation for \"next generation\".",
+        "Manages results in workspaces."
+      ]
+    }
+  },
+  {
+    "id": "t4_osfiletype",
+    "tier": 4,
+    "cat": "recon",
+    "track": "osint",
+    "points": 160,
+    "ci": true,
+    "hash": "b5d21a3634324fab0b1a3d19098214999144ebed20f809b0993bb46bc4037ded",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "확장자로 좁히는 연산자",
+      "en": "Narrow by Extension"
+    },
+    "prompt": {
+      "ko": "구글 검색에서 결과를 특정 확장자(pdf, xlsx, sql, log 등)로만 좁히는 연산자는 `___:pdf` 형태로 쓴다. 노출된 문서·백업을 캐낼 때 site: 와 함께 자주 쓰이는 이 연산자 키워드(콜론 앞 한 단어)는? (8글자)",
+      "en": "In Google search, the operator that restricts results to a specific extension (pdf, xlsx, sql, log…) is written `___:pdf`. Give the operator keyword (the single word before the colon), frequently paired with site: to mine exposed documents and backups. (8 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"file\" + \"type\".",
+        "`ext:` 는 일부 엔진의 동의어."
+      ],
+      "en": [
+        "\"file\" + \"type\".",
+        "`ext:` is a synonym on some engines."
+      ]
+    }
+  },
+  {
+    "id": "t4_osmetagoofil",
+    "tier": 4,
+    "cat": "profiling",
+    "track": "osint",
+    "points": 160,
+    "ci": true,
+    "hash": "61809ad4de2b5044ec8abb16e31b90cd080e657717da245a5e1952033a43bad6",
+    "fmt": "도구 이름 / tool name (10글자 / 10 chars)",
+    "title": {
+      "ko": "문서에서 새어 나온 메타데이터",
+      "en": "Metadata Leaking from Documents"
+    },
+    "prompt": {
+      "ko": "표적 도메인에서 공개 문서(pdf·docx·xlsx)를 대량 내려받아 그 안에 남은 작성자·사용자명·경로·소프트웨어 버전 같은 메타데이터를 추출·집계해 내부 명명 규칙과 인프라를 추론하는 OSINT 도구의 이름은? (10글자)",
+      "en": "An OSINT tool that bulk-downloads public documents (pdf/docx/xlsx) from a target domain and extracts and aggregates leftover metadata — authors, usernames, paths, software versions — to infer internal naming conventions and infrastructure. Name it. (10 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"meta\" + \"goofil\".",
+        "FOCA 의 커맨드라인 사촌."
+      ],
+      "en": [
+        "\"meta\" + \"goofil\".",
+        "The command-line cousin of FOCA."
+      ]
+    }
+  },
+  {
+    "id": "t4_osbaiting",
+    "tier": 4,
+    "cat": "socialeng",
+    "track": "osint",
+    "points": 160,
+    "ci": true,
+    "hash": "f92e83aa91978bc343224ae42af55602e02f6eaa8c87857a83dc926a02a60a11",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "주차장에 흘린 USB",
+      "en": "A USB Dropped in the Lot"
+    },
+    "prompt": {
+      "ko": "\"급여명세\"라고 라벨 붙인 USB 를 주차장·로비에 흘려 두고 호기심에 꽂게 유도하거나, 무료 영화·경품 미끼로 악성코드를 실행시키는 사회공학 기법을 뜻하는 영어 한 단어(-ing)는?",
+      "en": "The one-word (-ing) social-engineering technique of leaving a USB labeled \"payroll\" in a parking lot or lobby to tempt someone to plug it in out of curiosity, or luring with free movies/prizes to run malware. Name it."
+    },
+    "hints": {
+      "ko": [
+        "미끼(bait)를 놓는 행위.",
+        "USB 드롭이 대표 사례."
+      ],
+      "en": [
+        "Setting out \"bait\".",
+        "The USB drop is the classic case."
+      ]
+    }
+  },
+  {
+    "id": "t4_oswaterhole",
+    "tier": 4,
+    "cat": "socialeng",
+    "track": "osint",
+    "points": 160,
+    "ci": true,
+    "hash": "7b9a716133dbc39d77f69f1bcf6b7ef8c83dde3e75265be540bc001cda66dbd8",
+    "fmt": "두 단어 / two words",
+    "title": {
+      "ko": "표적이 모이는 사이트를 감염",
+      "en": "Poison the Site the Target Visits"
+    },
+    "prompt": {
+      "ko": "표적을 직접 노리는 대신, 표적 집단이 자주 방문하는 정상 웹사이트(업계 포털·커뮤니티)를 먼저 침해해 방문자에게 악성코드를 심는, 사자가 물웅덩이에서 먹잇감을 기다리는 데 빗댄 공격의 이름은? (두 단어)",
+      "en": "Instead of hitting the target directly, first compromise a legitimate website the target group frequents (an industry portal or community) to serve malware to its visitors — named after a predator waiting at a water source. (two words)"
+    },
+    "hints": {
+      "ko": [
+        "사자가 기다리는 \"물웅덩이\".",
+        "APT 정찰에서 자주 쓴다."
+      ],
+      "en": [
+        "The \"water source\" a predator waits at.",
+        "Common in APT operations."
+      ]
+    }
+  },
+  {
+    "id": "t4_oshomoglyph",
+    "tier": 4,
+    "cat": "socialeng",
+    "track": "osint",
+    "points": 160,
+    "ci": true,
+    "hash": "ef7be02955816c289e74f87adec3a5c7d876d2c21cf1345195e6e920602d46ee",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "똑같아 보이는 다른 글자",
+      "en": "A Different Letter that Looks the Same"
+    },
+    "prompt": {
+      "ko": "라틴 \"a\" 와 키릴 \"а\" 처럼 눈으로는 구별되지 않지만 코드포인트가 다른 글자를 뜻하는 말은? 이런 글자로 정상 도메인과 똑같아 보이는 가짜 도메인을 만드는 것이 IDN ___ 공격이다. (9글자)",
+      "en": "The term for characters that look identical to the eye but have different code points — like Latin \"a\" versus Cyrillic \"а\". Building a fake domain that looks identical to a real one with such characters is an IDN ___ attack. (9 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"homo\"(같은) + \"glyph\"(글자꼴).",
+        "브라우저 주소창에서 xn-- 형태로 드러난다."
+      ],
+      "en": [
+        "\"homo\" (same) + \"glyph\" (character shape).",
+        "Its true form surfaces as an xn-- domain."
+      ]
+    }
+  },
+  {
+    "id": "t4_osgophish",
+    "tier": 4,
+    "cat": "phishinfra",
+    "track": "osint",
+    "points": 160,
+    "ci": true,
+    "hash": "3ca675037664afdee19703e96d9fe43867dcadd43722c3c2d9728a714331a2fc",
+    "fmt": "도구 이름 / tool name (7글자 / 7 chars)",
+    "title": {
+      "ko": "캠페인을 굴리고 지표를 재다",
+      "en": "Run Campaigns, Measure the Clicks"
+    },
+    "prompt": {
+      "ko": "오픈소스 피싱 시뮬레이션 프레임워크로, 이메일 템플릿·랜딩 페이지·발송 그룹을 관리하고 열람·클릭·자격증명 제출률을 대시보드로 집계한다. Go 언어로 작성된 이 도구의 이름은? (7글자)",
+      "en": "An open-source phishing-simulation framework that manages email templates, landing pages, and sending groups, and tallies open/click/credential-submission rates on a dashboard. Written in Go. Name it. (7 chars)"
+    },
+    "hints": {
+      "ko": [
+        "\"Go\" 언어 + phish.",
+        "내부 인식훈련·레드팀에서 표준."
+      ],
+      "en": [
+        "The \"Go\" language + phish.",
+        "Standard for internal awareness training and red teams."
+      ]
+    }
+  },
+  {
+    "id": "t4_osseg",
+    "tier": 4,
+    "cat": "phishinfra",
+    "track": "osint",
+    "points": 160,
+    "ci": true,
+    "hash": "ea42cfa102bd7aac62b7cc8f323802129072eca6c96585421adc1c5ace46c1dd",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "메일 관문의 검문소",
+      "en": "The Inbound Mail Checkpoint"
+    },
+    "prompt": {
+      "ko": "조직으로 드나드는 이메일을 스팸·피싱·악성 첨부·악성 링크 기준으로 필터링·격리하는 경계 이메일 필터링 장비/서비스(Proofpoint·Mimecast 등)를 통칭하는 3글자 약어는? 피싱 인프라는 이것을 통과하도록 정상값을 갖춘다.",
+      "en": "The 3-letter acronym for the perimeter appliance/service (Proofpoint, Mimecast…) that filters and quarantines inbound and outbound email for spam, phishing, malicious attachments, and links. Phishing infrastructure is tuned to pass it."
+    },
+    "hints": {
+      "ko": [
+        "Secure Email 뒤에 관문을 뜻하는 영어 단어를 붙인 3글자.",
+        "Proofpoint·Mimecast·Barracuda 등."
+      ],
+      "en": [
+        "Secure Email plus a word meaning a gate.",
+        "Proofpoint, Mimecast, Barracuda, etc."
+      ]
+    }
+  },
+  {
+    "id": "t4_oscapstone",
+    "tier": 4,
+    "cat": "phishinfra",
+    "track": "osint",
+    "points": 250,
+    "ci": false,
+    "hash": "10c273e33521dad85d0ab9e519d25e0bae6be2c1604d96135f763f206d126e1b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "정찰에서 캠페인까지 종합",
+      "en": "Recon-to-Campaign Rollup"
+    },
+    "prompt": {
+      "ko": "한 표적에 대한 정찰·캠페인 결과를 종합한다: (1) 열거된 서브도메인 개수 N, (2) 자격증명 제출률 C = submitted ÷ sent × 100 (소수 첫째 자리), (3) 표적 도메인에 발신자 인증(sender-authentication) 레코드가 있는지(present → AUTH, 아니면 NOAUTH). 아래 값으로 `FLAG{OS_N<N>_C<C>_<AUTH>}` 를 만들어 제출하라.\n\n```\nsubdomains: mail.acme.co.kr, vpn.acme.co.kr, dev.acme.co.kr, git.acme.co.kr\nsent: 200\nsubmitted: 24\nsender_auth: present\n```",
+      "en": "Roll up recon and campaign results for one target: (1) N = number of enumerated subdomains, (2) C = credential submission rate = submitted ÷ sent × 100 (one decimal), (3) whether the target domain has a sender-authentication record (present → AUTH, else NOAUTH). Build and submit `FLAG{OS_N<N>_C<C>_<AUTH>}` from the values below.\n\n```\nsubdomains: mail.acme.co.kr, vpn.acme.co.kr, dev.acme.co.kr, git.acme.co.kr\nsent: 200\nsubmitted: 24\nsender_auth: present\n```"
+    },
+    "hints": {
+      "ko": [
+        "서브도메인은 콤마로 4개.",
+        "24/200 = 12.0, sender_auth present → AUTH."
+      ],
+      "en": [
+        "Four comma-separated subdomains.",
+        "24/200 = 12.0, sender_auth present → AUTH."
       ]
     }
   }
