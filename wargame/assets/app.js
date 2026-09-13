@@ -139,7 +139,15 @@
       finaleSub:"진정한 바이브 해커. 친구에게 이 터미널을 던져 보세요.",
       mapHdr:"=== 침투 경로 ===",
       soundOn:"사운드 ON", soundOff:"사운드 OFF",
-      hintLabel:"힌트", lockLabel:"잠금장치", format:"형식"
+      hintLabel:"힌트", lockLabel:"잠금장치", format:"형식",
+      exportHdr:"=== 세이브 토큰 (진행도 백업) ===",
+      exportTip:"이 토큰을 복사하여 다른 기기에서 `import <토큰>`으로 복원하세요.",
+      importDone:"진행도가 성공적으로 복원되었습니다.",
+      importErr:"유효하지 않은 세이브 토큰입니다.",
+      importUsage:"사용법: import <토큰>",
+      searchHdr:"=== 잠금장치 검색 결과 ===",
+      searchEmpty:"일치하는 잠금장치가 없습니다:",
+      searchUsage:"사용법: search <검색어>"
     },
     en: {
       bootDone:"Boot complete. Welcome to the infiltration console.",
@@ -170,7 +178,15 @@
       finaleSub:"A true vibe hacker. Throw this terminal at a friend.",
       mapHdr:"=== INFILTRATION PATH ===",
       soundOn:"sound ON", soundOff:"sound OFF",
-      hintLabel:"hint", lockLabel:"lock", format:"format"
+      hintLabel:"hint", lockLabel:"lock", format:"format",
+      exportHdr:"=== SAVE TOKEN (progress backup) ===",
+      exportTip:"Copy this token and restore on another device via `import <token>`.",
+      importDone:"Progress restored successfully.",
+      importErr:"Invalid save token.",
+      importUsage:"Usage: import <token>",
+      searchHdr:"=== SEARCH RESULTS ===",
+      searchEmpty:"No matching locks found for:",
+      searchUsage:"Usage: search <query>"
     }
   };
 
@@ -330,6 +346,9 @@
       ["hint","현재 표적 힌트 공개 / reveal a hint"],
       ["submit <flag>","플래그 제출 / submit a flag  (또는 그냥 입력)"],
       ["status","점수·등급·진행 / score & progress  (whoami)"],
+      ["search <검색어>","잠금장치 검색 / search locks  (find)"],
+      ["export","진행도 백업 토큰 생성 / export save token"],
+      ["import <토큰>","진행도 복원 / import save token"],
       ["lang","한/영 전환 / toggle language"],
       ["sound","사운드 토글 / toggle sound"],
       ["clear","화면 지우기 / clear screen"],
@@ -553,6 +572,120 @@
       : "✓ breached · ▸ in progress · 🔒 locked — breach a layer to open the next.") + '</span>');
   }
 
+  function doExport(){
+    const payload = {
+      v: 1,
+      ts: Date.now(),
+      solved: state.solved,
+      hints: state.hints,
+      lang: state.lang,
+      sound: state.sound
+    };
+    let token = "";
+    try {
+      const raw = JSON.stringify(payload);
+      token = "VIBE-" + btoa(unescape(encodeURIComponent(raw)));
+    } catch (e) {
+      printText("내보내기 실패 / Export failed: " + e.message, "err");
+      return;
+    }
+    blank();
+    print('<span class="bold ok">' + esc(S("exportHdr")) + '</span>');
+    print('<span class="tbl"><span class="cmd-h" style="word-break:break-all;user-select:all;">' + esc(token) + '</span></span>');
+    blank();
+    print('<span class="dim">' + esc(S("exportTip")) + '</span>');
+    blank();
+  }
+
+  function doImport(arg){
+    const token = (arg || "").trim();
+    if (!token){
+      printText(S("importUsage"), "warn");
+      return;
+    }
+    let clean = token;
+    if (clean.startsWith("VIBE-")) clean = clean.slice(5);
+    try {
+      const jsonStr = decodeURIComponent(escape(atob(clean)));
+      const payload = JSON.parse(jsonStr);
+      if (!payload || typeof payload !== "object" || !payload.solved || typeof payload.solved !== "object"){
+        throw new Error("Invalid payload structure");
+      }
+      const validIds = new Set(CHALLENGES.map(c => c.id));
+      const cleanSolved = {};
+      for (const [id, val] of Object.entries(payload.solved)){
+        if (validIds.has(id) && val && typeof val === "object"){
+          cleanSolved[id] = {
+            earned: typeof val.earned === "number" ? val.earned : 0,
+            at: val.at || Date.now()
+          };
+        }
+      }
+      const cleanHints = {};
+      if (payload.hints && typeof payload.hints === "object"){
+        for (const [id, count] of Object.entries(payload.hints)){
+          if (validIds.has(id) && typeof count === "number"){
+            cleanHints[id] = count;
+          }
+        }
+      }
+      state.solved = cleanSolved;
+      state.hints = cleanHints;
+      if (payload.lang === "ko" || payload.lang === "en") state.lang = payload.lang;
+      if (typeof payload.sound === "boolean") state.sound = payload.sound;
+      save();
+      refreshHud();
+      sGrant();
+      blank();
+      printText("✓ " + S("importDone") + " (" + S("solved") + ": " + solvedCount() + " / " + S("score") + ": " + totalScore() + ")", "ok");
+      blank();
+    } catch (e){
+      sDeny();
+      printText("╳ " + S("importErr"), "err");
+    }
+  }
+
+  function doSearch(arg){
+    const q = (arg || "").trim().toLowerCase();
+    if (!q){
+      printText(S("searchUsage"), "warn");
+      return;
+    }
+    const matched = CHALLENGES.filter(c => {
+      return c.id.toLowerCase().includes(q) ||
+        (c.cat && c.cat.toLowerCase().includes(q)) ||
+        (c.track && c.track.toLowerCase().includes(q)) ||
+        (c.title && c.title.ko && c.title.ko.toLowerCase().includes(q)) ||
+        (c.title && c.title.en && c.title.en.toLowerCase().includes(q));
+    });
+    blank();
+    if (!matched.length){
+      printText(S("searchEmpty") + " " + arg, "dim");
+      return;
+    }
+    print('<span class="bold">' + esc(S("searchHdr")) + ' (' + matched.length + ')</span>');
+    const MAX_RESULTS = 25;
+    const list = matched.slice(0, MAX_RESULTS);
+    list.forEach(c => {
+      const isSolved = !!state.solved[c.id];
+      const mark = isSolved ? '<span class="ok">✓</span>' : '<span class="dim">-</span>';
+      const lay = layerByTier(c.tier);
+      const nodeTag = lay ? lay.id : "t" + c.tier;
+      const title = c.title ? (c.title[L()] || c.title.ko || c.title.en) : c.id;
+      print('<span class="tbl"><span class="row">' +
+        '<span class="id">[' + esc(nodeTag) + ']</span> ' +
+        '<span class="bold">' + esc(c.id) + '</span> ' +
+        '<span class="dim">(' + esc(c.cat || c.track || "") + ')</span> ' +
+        '<span>' + esc(title) + '</span> ' +
+        mark +
+        '</span></span>');
+    });
+    if (matched.length > MAX_RESULTS){
+      print('<span class="dim">' + (L() === "ko" ? "... 외 " + (matched.length - MAX_RESULTS) + "개 일치" : "... and " + (matched.length - MAX_RESULTS) + " more") + '</span>');
+    }
+    blank();
+  }
+
   /* ===== command dispatch ===== */
   function run(raw){
     const line = raw.trim();
@@ -594,6 +727,9 @@
       case "hint": case "힌트": doHint(arg); break;
       case "submit": case "flag": case "answer": trySubmit(arg); break;
       case "status": case "whoami": case "stat": case "id": showStatus(); break;
+      case "search": case "find": case "검색": doSearch(arg); break;
+      case "export": case "backup": doExport(); break;
+      case "import": case "restore": doImport(arg); break;
       case "lang": case "언어": toggleLang(); break;
       case "sound": case "mute": toggleSound(); break;
       case "clear": case "cls": out.innerHTML = ""; break;

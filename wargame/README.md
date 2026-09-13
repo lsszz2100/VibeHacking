@@ -25,6 +25,9 @@ Opening the site runs a boot sequence and drops you into an **infiltration conso
 | `hint` | 현재 표적 힌트 공개 (점수 −20%/개) / reveal a hint (−20% each) |
 | `submit <flag>` | 플래그 제출 / submit a flag (or just type it when a target is open) |
 | `status` | 점수·등급·계층별 진행도 / score, rank, per-layer progress |
+| `search <검색어>` | 잠금장치 검색 / search locks by keyword (e.g. `search jwt`) |
+| `export` | 진행도 백업 토큰 생성 / export save token for backup |
+| `import <토큰>` | 백업 토큰으로 진행도 복원 / restore progress from save token |
 | `lang` / `sound` | 한·영 전환 / 사운드 토글 · toggle language / sound |
 | `clear` / `reset` | 화면 지우기 / 진행도 초기화 · clear screen / reset progress |
 
