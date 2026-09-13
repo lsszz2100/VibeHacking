@@ -80,6 +80,8 @@ start_lab() {
         "05_full_scenario_lab"
         "06_firmware_lab"
         "07_mobile_lab"
+        "08_llm_security_lab"
+        "09_ics_scada_lab"
     )
 
     local lab_names=(
@@ -91,6 +93,8 @@ start_lab() {
         "전체 시나리오 통합 랩"
         "펌웨어 해킹 랩"
         "모바일 보안 랩"
+        "AI/LLM 보안 랩"
+        "ICS/SCADA 제어 보안 랩"
     )
 
     local lab_ports=(
@@ -102,10 +106,12 @@ start_lab() {
         "http://localhost:8888 (DMZ 웹)"
         "취약 펌웨어 웹 패널: http://localhost:8062  |  분석: docker exec -it firmware_analyzer bash"
         "취약 모바일 API: http://localhost:8072  |  분석: docker exec -it apk_analyzer bash"
+        "http://localhost:8088"
+        "HMI 패널: http://localhost:8089  |  Modbus TCP: localhost:5020"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 7 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~7 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 9 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~9 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -142,7 +148,7 @@ start_all() {
         exit 0
     fi
 
-    for i in 1 2 3 4 5 6 7; do
+    for i in 1 2 3 4 5 6 7 8 9; do
         start_lab "$i"
         echo ""
     done
@@ -170,6 +176,8 @@ print_summary() {
     echo "  05 전체 시나리오:    http://localhost:8888"
     echo "  06 펌웨어:           http://localhost:8062 (취약 펌웨어 웹 패널)"
     echo "  07 모바일:           http://localhost:8072 (취약 모바일 API)"
+    echo "  08 AI/LLM 보안:      http://localhost:8088"
+    echo "  09 ICS/SCADA 제어:   http://localhost:8089 (HMI) | Modbus: :5020"
 }
 
 # -------------------------------------------------------
@@ -187,11 +195,14 @@ usage() {
     echo "  05    전체 시나리오 통합 랩 (기업환경 APT 시뮬레이션)"
     echo "  06    펌웨어 해킹 랩 (binwalk, QEMU 에뮬레이션, 하드코딩 자격증명)"
     echo "  07    모바일 보안 랩 (APK 정적분석, Frida, JWT alg:none 우회)"
+    echo "  08    AI/LLM 보안 랩 (프롬프트 인젝션, RAG 주입, 에이전트 도구 남용)"
+    echo "  09    ICS/SCADA 제어 보안 랩 (Modbus/TCP, 코일 조작, FDI, SIS 트립)"
     echo "  all   모든 랩 시작"
     echo "  ps    실행 중인 랩 목록"
     echo ""
     echo -e "${BOLD}예시:${RESET}"
     echo "  $0 01        # 웹 해킹 랩만 시작"
+    echo "  $0 09        # ICS/SCADA 랩만 시작"
     echo "  $0 all       # 전체 랩 시작"
     echo "  $0 ps        # 상태 확인"
     echo ""

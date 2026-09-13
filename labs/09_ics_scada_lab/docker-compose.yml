@@ -1,0 +1,11 @@
+services:
+  ics_scada_lab:
+    build: .
+    container_name: ics_scada_lab
+    ports:
+      - "8089:8089"
+      - "5020:5020"
+    restart: unless-stopped
+    labels:
+      - "lab=09"
+      - "group=ics_scada"

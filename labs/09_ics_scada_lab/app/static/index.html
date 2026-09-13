@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCADA HMI - Petrochemical Hydrocracker Train #2</title>
+  <style>
+    :root {
+      --bg-dark: #0d1117;
+      --panel-bg: #161b22;
+      --border-color: #30363d;
+      --accent-green: #2ea043;
+      --accent-cyan: #58a6ff;
+      --accent-amber: #d29922;
+      --accent-red: #f85149;
+      --text-main: #c9d1d9;
+      --text-muted: #8b949e;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 1.5rem;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-weight: bold;
+    }
+    .badge-live { background: rgba(46, 160, 67, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+
+    .alarm-banner {
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    .alarm-normal { background: rgba(46, 160, 67, 0.15); border: 1px solid var(--accent-green); color: var(--accent-green); }
+    .alarm-warning { background: rgba(210, 153, 34, 0.2); border: 1px solid var(--accent-amber); color: var(--accent-amber); animation: pulse 1.5s infinite; }
+    .alarm-critical { background: rgba(248, 81, 73, 0.25); border: 2px solid var(--accent-red); color: var(--accent-red); animation: flash 0.8s infinite; }
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    @keyframes flash { 0%, 100% { background: rgba(248, 81, 73, 0.35); } 50% { background: rgba(248, 81, 73, 0.1); } }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    @media (max-width: 900px) { .grid-container { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .panel h2 {
+      font-size: 1.1rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+      color: var(--text-main);
+    }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .gauge-card {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+    }
+    .gauge-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+    .gauge-value { font-family: var(--font-mono); font-size: 1.8rem; font-weight: bold; }
+    .gauge-unit { font-size: 0.85rem; color: var(--text-muted); }
+
+    .indicator-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 4px;
+      margin-bottom: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+    .led {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-left: 8px;
+    }
+    .led-on { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+    .led-off { background: #484f58; }
+    .led-alert { background: var(--accent-red); box-shadow: 0 0 8px var(--accent-red); }
+
+    /* Challenges Section */
+    .challenges-container {
+      margin-top: 25px;
+    }
+    .challenge-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+    .challenge-card.solved {
+      border-color: var(--accent-green);
+      background: rgba(46, 160, 67, 0.05);
+    }
+    .challenge-info h3 { font-size: 1rem; margin-bottom: 4px; }
+    .challenge-info p { font-size: 0.85rem; color: var(--text-muted); }
+    .code-snippet {
+      background: #090d13;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #79c0ff;
+      display: inline-block;
+      margin-top: 6px;
+    }
+    .flag-box {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--accent-green);
+      background: rgba(46, 160, 67, 0.15);
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px dashed var(--accent-green);
+    }
+
+    button {
+      background: #21262d;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    button:hover { background: #30363d; }
+    .btn-reset { color: var(--accent-red); border-color: rgba(248, 81, 73, 0.4); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>🏭 Hydrocracker Train #2 SCADA Supervision</h1>
+      <p style="color: var(--text-muted); font-size: 0.85rem;">Purdue Level 2 Supervisory Operator Console & Virtual PLC</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <span class="badge badge-live">MODBUS TCP :5020</span>
+      <button class="btn-reset" onclick="resetPLC()">Reset Process</button>
+    </div>
+  </div>
+
+  <div id="alarmBanner" class="alarm-banner alarm-normal">
+    <span id="alarmText">STATUS: Normal Operating Conditions</span>
+    <span id="systemTripState" class="badge" style="background: rgba(0,0,0,0.3);">NORMAL</span>
+  </div>
+
+  <div class="grid-container">
+    <!-- Telemetry Gauges -->
+    <div class="panel">
+      <h2>실시간 공정 텔레메트리 (Telemetry Gauges)</h2>
+      <div class="telemetry-grid">
+        <div class="gauge-card">
+          <div class="gauge-title">REACTOR CORE TEMP</div>
+          <div id="tempVal" class="gauge-value" style="color: var(--accent-green);">75</div>
+          <div class="gauge-unit">°C (Safe: 50~120°C)</div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-title">VESSEL PRESSURE</div>
+          <div id="pressVal" class="gauge-value" style="color: var(--accent-cyan);">320</div>
+          <div class="gauge-unit">PSI (Safe: 200~450 PSI)</div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-title">COOLANT FLOW RATE</div>
+          <div id="flowVal" class="gauge-value">120</div>
+          <div class="gauge-unit">L/min</div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-title">TEMP SETPOINT (REG 3)</div>
+          <div id="setpointVal" class="gauge-value">80</div>
+          <div class="gauge-unit">°C Target</div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">
+        💡 <strong>Modbus 매핑 요약</strong>:
+        <code>Coil 0: ESD</code> | <code>Coil 1: Cooling Pump</code> | <code>Coil 2: Interlock Flap</code> | <code>Coil 3: Vent Valve</code><br>
+        <code>Reg 0: Temp</code> | <code>Reg 1: Pressure</code> | <code>Reg 2: Flow</code> | <code>Reg 3: Setpoint</code> | <code>Reg 100: Secret Diagnostic</code>
+      </div>
+    </div>
+
+    <!-- Actuator & Safety Interlock Status -->
+    <div class="panel">
+      <h2>구동기 및 안전 연동 상태</h2>
+      <div class="indicator-row">
+        <span>COIL 1: COOLING PUMP</span>
+        <span style="display: flex; align-items: center;">
+          <span id="pumpText">ON</span>
+          <span id="pumpLed" class="led led-on"></span>
+        </span>
+      </div>
+      <div class="indicator-row">
+        <span>COIL 2: SAFETY INTERLOCK</span>
+        <span style="display: flex; align-items: center;">
+          <span id="interlockText">ARMED</span>
+          <span id="interlockLed" class="led led-on"></span>
+        </span>
+      </div>
+      <div class="indicator-row">
+        <span>COIL 3: EMERGENCY VENT</span>
+        <span style="display: flex; align-items: center;">
+          <span id="ventText">CLOSED</span>
+          <span id="ventLed" class="led led-off"></span>
+        </span>
+      </div>
+      <div class="indicator-row">
+        <span>COIL 0: EMERGENCY SHUTDOWN</span>
+        <span style="display: flex; align-items: center;">
+          <span id="esdText">READY</span>
+          <span id="esdLed" class="led led-off"></span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTF Challenges Section -->
+  <div class="challenges-container">
+    <h2 style="font-size: 1.2rem; margin-bottom: 12px; color: var(--accent-cyan);">🎯 실습 챌린지 (Attack & Exploit Challenges)</h2>
+
+    <!-- Challenge 1 -->
+    <div id="card-ch1" class="challenge-card">
+      <div class="challenge-info">
+        <h3>Challenge 1: Modbus 정찰 및 비밀 레지스터 조회 (Reconnaissance)</h3>
+        <p>Modbus FC03(Read Holding Registers)을 전송하여 숨겨진 진단 레지스터 <code>100번</code>의 값을 읽어내세요.</p>
+        <div class="code-snippet">python3 exploit_modbus.py --recon</div>
+      </div>
+      <div id="flag-ch1"><span style="color: var(--text-muted); font-size: 0.85rem;">[미해결]</span></div>
+    </div>
+
+    <!-- Challenge 2 -->
+    <div id="card-ch2" class="challenge-card">
+      <div class="challenge-info">
+        <h3>Challenge 2: 불법 코일 조작을 통한 냉각수 펌프 차단 (Unauthorized Coil Write)</h3>
+        <p>Modbus FC05(Write Single Coil)를 사용해 가동 중인 냉각수 펌프(<code>Coil 1</code>)를 0으로 강제 정지시키세요.</p>
+        <div class="code-snippet">python3 exploit_modbus.py --kill-pump</div>
+      </div>
+      <div id="flag-ch2"><span style="color: var(--text-muted); font-size: 0.85rem;">[미해결]</span></div>
+    </div>
+
+    <!-- Challenge 3 -->
+    <div id="card-ch3" class="challenge-card">
+      <div class="challenge-info">
+        <h3>Challenge 3: 거짓 데이터 주입 및 센서 텔레메트리 기만 (False Data Injection)</h3>
+        <p>냉각 차단으로 실제 압력이 480 PSI를 돌파할 때, 레지스터 1(Pressure)에 300 이하의 정상 수치를 덮어써 HMI 모니터링을 기만하세요.</p>
+        <div class="code-snippet">python3 exploit_modbus.py --spoof-pressure 300</div>
+      </div>
+      <div id="flag-ch3"><span style="color: var(--text-muted); font-size: 0.85rem;">[미해결]</span></div>
+    </div>
+
+    <!-- Challenge 4 -->
+    <div id="card-ch4" class="challenge-card">
+      <div class="challenge-info">
+        <h3>Challenge 4: 안전 인터록 무력화 및 플랜트 긴급 트립 유발 (Emergency Safety Trip)</h3>
+        <p>온도가 150°C 이상으로 과열되도록 유도하여 안전 계장(SIS)의 긴급 하드웨어 차단(Emergency Safety Trip)을 발동시키세요.</p>
+        <div class="code-snippet">python3 exploit_modbus.py --trigger-trip</div>
+      </div>
+      <div id="flag-ch4"><span style="color: var(--text-muted); font-size: 0.85rem;">[미해결]</span></div>
+    </div>
+  </div>
+
+  <script>
+    async function updateTelemetry() {
+      try {
+        const res = await fetch('/api/telemetry');
+        const data = await res.json();
+
+        // Update gauges
+        const temp = data.actual.temperature;
+        const press = data.actual.pressure;
+        document.getElementById('tempVal').innerText = temp;
+        document.getElementById('pressVal').innerText = press;
+        document.getElementById('flowVal').innerText = data.registers['2_flow_rate'];
+        document.getElementById('setpointVal').innerText = data.registers['3_setpoint'];
+
+        // Gauge colors
+        document.getElementById('tempVal').style.color = temp > 120 ? 'var(--accent-red)' : (temp > 90 ? 'var(--accent-amber)' : 'var(--accent-green)');
+        document.getElementById('pressVal').style.color = press > 450 ? 'var(--accent-red)' : (press > 380 ? 'var(--accent-amber)' : 'var(--accent-cyan)');
+
+        // Actuators
+        const pumpOn = data.coils['1_cooling_pump'] === 1;
+        document.getElementById('pumpText').innerText = pumpOn ? 'RUNNING' : 'STOPPED';
+        document.getElementById('pumpLed').className = 'led ' + (pumpOn ? 'led-on' : 'led-alert');
+
+        const interlockArmed = data.coils['2_interlock'] === 1;
+        document.getElementById('interlockText').innerText = interlockArmed ? 'ARMED' : 'BYPASSED';
+        document.getElementById('interlockLed').className = 'led ' + (interlockArmed ? 'led-on' : 'led-alert');
+
+        const ventOpen = data.coils['3_vent_valve'] === 1;
+        document.getElementById('ventText').innerText = ventOpen ? 'OPEN (FLARING)' : 'CLOSED';
+        document.getElementById('ventLed').className = 'led ' + (ventOpen ? 'led-alert' : 'led-off');
+
+        const esdOn = data.coils['0_esd'] === 1;
+        document.getElementById('esdText').innerText = esdOn ? 'TRIPPED' : 'READY';
+        document.getElementById('esdLed').className = 'led ' + (esdOn ? 'led-alert' : 'led-off');
+
+        // Alarm Banner
+        const banner = document.getElementById('alarmBanner');
+        const alarmText = document.getElementById('alarmText');
+        const tripState = document.getElementById('systemTripState');
+
+        if (data.status.is_tripped) {
+          banner.className = 'alarm-banner alarm-critical';
+          alarmText.innerText = '🚨 ' + data.status.trip_reason;
+          tripState.innerText = 'TRIPPED';
+        } else if (data.status.alarm_active) {
+          banner.className = 'alarm-banner alarm-warning';
+          alarmText.innerText = '⚠️ ' + data.status.alarm_message;
+          tripState.innerText = 'WARNING';
+        } else {
+          banner.className = 'alarm-banner alarm-normal';
+          alarmText.innerText = 'STATUS: ' + data.status.alarm_message;
+          tripState.innerText = 'NORMAL';
+        }
+
+        // Check solved flags
+        for (let i = 1; i <= 4; i++) {
+          const chKey = 'ch' + i;
+          if (data.solved[chKey]) {
+            fetchFlag(chKey);
+          }
+        }
+      } catch (e) {
+        console.error("Telemetry update error:", e);
+      }
+    }
+
+    async function fetchFlag(chKey) {
+      try {
+        const res = await fetch('/api/flag/' + chKey);
+        const data = await res.json();
+        if (data.solved) {
+          const card = document.getElementById('card-' + chKey);
+          card.classList.add('solved');
+          const box = document.getElementById('flag-' + chKey);
+          box.innerHTML = `<span class="flag-box">${data.flag}</span>`;
+        }
+      } catch (e) {}
+    }
+
+    async function resetPLC() {
+      if (confirm('프로세스 및 PLC 상태를 초기화하시겠습니까?')) {
+        await fetch('/api/reset', { method: 'POST' });
+        updateTelemetry();
+      }
+    }
+
+    setInterval(updateTelemetry, 1000);
+    updateTelemetry();
+  </script>
+</body>
+</html>

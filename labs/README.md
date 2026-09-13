@@ -38,6 +38,7 @@ docker-compose --version
 | 06 | [펌웨어 해킹 랩](./06_firmware_lab/) | binwalk, QEMU 에뮬레이션, 하드코딩 자격증명 | ★★★ |
 | 07 | [모바일 보안 랩](./07_mobile_lab/) | APK 분석, JWT alg:none, 하드코딩 API 키 | ★★★ |
 | 08 | [AI/LLM 보안 랩](./08_llm_security_lab/) | 프롬프트 인젝션, RAG 간접 주입, 에이전트 도구 남용, 시스템 프롬프트 탈취 | ★★★ |
+| 09 | [ICS/SCADA 제어 보안 랩](./09_ics_scada_lab/) | Modbus/TCP 제어, 비인가 코일 조작, 텔레메트리 기만(FDI), SIS 비상 트립 | ★★★ |
 
 ---
 
@@ -93,6 +94,13 @@ docker-compose --version
 - 비위생적 마크다운 출력 렌더링을 통한 XSS 공격
 - RAG(검색 증강 생성) 지식 베이스 문서를 통한 간접 프롬프트 주입
 - 자율 AI 에이전트의 과도한 권한(Excessive Agency)과 위험 도구 남용 통제
+
+### 09. ICS/SCADA 제어 보안 랩
+- Purdue 참조 아키텍처 및 산업 필드버스 네트워크 분석
+- Modbus/TCP(포트 5020) 프로토콜 역공학 및 기능 코드(FC03/FC05/FC06) 조작
+- 비인가 코일 조작을 통한 물리적 냉각 펌프 무단 중단 공격
+- 센서 텔레메트리 기만(False Data Injection)을 통한 과압 은폐
+- 안전 계장 시스템(SIS) 비상 안전 트립 발동 및 심층 패킷 검사(DPI) 방어
 
 ---
 

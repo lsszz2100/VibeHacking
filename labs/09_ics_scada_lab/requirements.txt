@@ -1,0 +1,4 @@
+fastapi>=0.110.0
+uvicorn>=0.28.0
+pymodbus>=3.6.0
+jinja2>=3.1.3

@@ -211,6 +211,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★",
         "related": [11, 31, 58],
     },
+    "09": {
+        "name": "ICS/SCADA 제어 보안 랩",
+        "dir":  "09_ics_scada_lab",
+        "desc": "Modbus/TCP 제어 · 비인가 코일 조작 · 텔레메트리 기만(FDI) · SIS 비상 안전 트립",
+        "url":  "HMI 패널: http://localhost:8089  |  Modbus TCP: localhost:5020",
+        "difficulty": "★★★",
+        "related": [37, 63],
+    },
 }
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────
