@@ -120,6 +120,8 @@ const NOT_PLANTED = {
   t4_purple: 'asks what mixing the two teams\' colours is called; the shared screen belongs to those teams, not to this page',
   t3_osevilginx: 'asks for a phishing framework by name; the session 쿠키 it relays is the victim\'s auth cookie on the real site, not one set on this page',
   t4_osreconng: 'asks for a recon framework by name; its 콘솔 is that tool\'s interactive prompt, not the browser console',
+  t3_rtmalleable: 'asks for the C2 profile design by name; C2 통신 양식을 정의하는 프로필 개념 질문',
+  t3_rtbeacon: 'fenced console session record calculation; the 콘솔 log is the problem artifact, not this page',
 };
 
 const aBad = [], aRows = [];
@@ -376,6 +378,7 @@ const QUALIFIERS = [
   /^하이픈 없이 \/ no hyphen$/,
   /^두 단어 \/ two words$/,
   /^-ing으로 끝남 \/ ends in -ing$/,
+  /^-er로 끝남 \/ ends in -er$/,
   /^(\S+) 포함 \/ include (\S+)$/,
   /^(\S+) 제외 \/ no (\S+)$/,
   /^예: (.+) \/ e\.g\. (.+)$/,
@@ -642,6 +645,7 @@ function siblingsOf(w) {
 function separatesForm(ch, mine, rival) {
   const fmt = ch.fmt || '';
   if (/-ing으로 끝남 \/ ends in -ing/.test(fmt) && mine.endsWith('ing') && !rival.endsWith('ing')) return true;
+  if (/-er로 끝남 \/ ends in -er/.test(fmt) && mine.endsWith('er') && !rival.endsWith('er')) return true;
   return declarationOf(ch).len !== null && mine.length !== rival.length;
 }
 

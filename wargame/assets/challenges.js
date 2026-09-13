@@ -205,7 +205,15 @@ const TRACKS = [
     "desc_ko": "공개 정보 정찰·표적 프로파일링·피싱과 사회공학·피싱 인프라와 탐지 회피.",
     "desc_en": "Open-source recon, target profiling, phishing and social engineering, phishing infrastructure and evasion."
   }
-];
+,
+  {
+    "id": "redteam",
+    "icon": "🏴‍☠️",
+    "ko": "레드팀·C2",
+    "en": "Red Team & C2",
+    "desc_ko": "C2 프레임워크·리디렉터 인프라·EDR 우회와 인젝션·모의 침투 오퍼레이션.",
+    "desc_en": "C2 frameworks, redirector infra, EDR evasion & injection, red team ops."
+  }];
 
 const CHALLENGES = [
   {
@@ -19842,6 +19850,987 @@ const CHALLENGES = [
       "en": [
         "Four comma-separated subdomains.",
         "24/200 = 12.0, sender_auth present → AUTH."
+      ]
+    }
+  }
+,
+  {
+    "id": "t0_rtbeaconing",
+    "tier": 0,
+    "cat": "c2",
+    "track": "redteam",
+    "points": 50,
+    "ci": true,
+    "hash": "9e17068bfc673ad5c833b1583419d3b254cba1edac4f1e0e9920d6f1a7d3a1ad",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "주기적인 신호음",
+      "en": "The Periodic Signal"
+    },
+    "prompt": {
+      "ko": "침투한 시스템에 설치된 악성 에이전트가 통제 서버(C2)에 정기적으로 체크인 신호를 보내 새 명령이 있는지 확인하는 주기적 통신 행위를 무엇이라 하는가? 등대나 비행기 위치 신호 장치에서 유래한 -ing 형태의 영어 9글자 단어다.",
+      "en": "What 9-letter -ing word names the periodic communication where an implanted agent regularly checks in with its command server to query for new tasks, named after a radio homing transmitter or lighthouse signal?"
+    },
+    "hints": {
+      "ko": [
+        "신호소(beacon)에서 유래한 동명사 형태입니다.",
+        "\"beacon\" + \"ing\""
+      ],
+      "en": [
+        "A gerund derived from the noun \"beacon\".",
+        "\"beacon\" + \"ing\""
+      ]
+    }
+  },
+  {
+    "id": "t0_rtredteam",
+    "tier": 0,
+    "cat": "ops",
+    "track": "redteam",
+    "points": 50,
+    "ci": true,
+    "hash": "7b9d03921904ac13e69ea29431f519b8d8087fb0ed25a72a633a72079479b11d",
+    "fmt": "두 단어 / two words (8글자 / 8 chars)",
+    "title": {
+      "ko": "공격자 시점의 실전 검증",
+      "en": "Adversary Perspective Validation"
+    },
+    "prompt": {
+      "ko": "사전 고지 없이 실제 공격자의 전술과 기법을 모사하여 조직의 탐지·대응 능력과 보안 태세를 실전처럼 검증하는 모의 침투 수행 주체를 부르는 두 단어(8글자)는? 방어자를 뜻하는 파란색 조직과 대비되는 붉은색 계열 명칭이다.",
+      "en": "What two-word (8 chars) name describes the entity that emulates real-world adversary tactics and techniques without prior warning to test an organization's detection and response posture, contrasting with the blue-badged defenders?"
+    },
+    "hints": {
+      "ko": [
+        "붉은색(Red) + 팀(Team).",
+        "블루팀의 대척점에 선 침투 조직."
+      ],
+      "en": [
+        "The colour red plus team.",
+        "The opposing offensive entity to the blue team."
+      ]
+    }
+  },
+  {
+    "id": "t1_rtsliver",
+    "tier": 1,
+    "cat": "c2",
+    "track": "redteam",
+    "points": 65,
+    "ci": true,
+    "hash": "66cb86b497f2b457cc6a19fafda4952bfbd831ed9c2d7ba12157ef269ecf3885",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "Go 언어로 빚은 은빛 C2",
+      "en": "The Silver Implant"
+    },
+    "prompt": {
+      "ko": "Bishop Fox사에서 공개한 오픈소스 적대적 에뮬레이션 C2 프레임워크로, Go 언어로 작성되어 크로스 플랫폼(Windows/macOS/Linux) 바이너리를 생성하고 mTLS·가상 사설망 터널·DNS·HTTP(S) 등 다양한 프로토콜을 지원하는 프레임워크 이름은? (6글자)",
+      "en": "What 6-letter open-source adversary emulation C2 framework released by Bishop Fox is written in Go, compiles cross-platform binaries, and supports mTLS, VPN tunnels, DNS, and HTTP(S) egress channels?"
+    },
+    "hints": {
+      "ko": [
+        "얇은 조각이나 파편을 뜻하는 영어 6글자 단어.",
+        "Bishop Fox가 개발한 대표적 오픈소스 C2."
+      ],
+      "en": [
+        "An English word meaning a small, thin, narrow piece of something cut or split off.",
+        "Bishop Fox's flagship open-source C2 framework."
+      ]
+    }
+  },
+  {
+    "id": "t1_rtmythic",
+    "tier": 1,
+    "cat": "c2",
+    "track": "redteam",
+    "points": 65,
+    "ci": true,
+    "hash": "ad883743f3455653ef1b18a16f2e60660f82fe273f67836f9b0b9f39491e4049",
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "도커 기반 다중 에이전트 C2",
+      "en": "Dockerized Multi-Agent C2"
+    },
+    "prompt": {
+      "ko": "각 페이로드와 C2 프로필이 독립된 도커 컨테이너로 격리 동작하며, 웹 UI와 gRPC/WebSocket을 통해 여러 오퍼레이터가 협업할 수 있도록 설계된 오픈소스 사후 침투 C2 프레임워크의 이름은? 신화적인 것을 뜻하는 영어 6글자 단어다.",
+      "en": "What 6-letter open-source post-exploitation C2 framework isolates each agent payload and C2 profile into independent Docker containers and provides web UI collaboration via gRPC and WebSockets, named after something from mythology?"
+    },
+    "hints": {
+      "ko": [
+        "신화의, 가공의를 뜻하는 영어 6글자 형용사.",
+        "과거에는 Apfell이라는 이름으로 불렸습니다."
+      ],
+      "en": [
+        "An adjective meaning relating to or found in myths.",
+        "Formerly known as Apfell."
+      ]
+    }
+  },
+  {
+    "id": "t1_rtredirector",
+    "tier": 1,
+    "cat": "infra",
+    "track": "redteam",
+    "points": 65,
+    "ci": true,
+    "hash": "79603d241682d5ee6bbef7e2b6149680e71d2dd6be35c90d1f2ae26be95c0a84",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "배후의 서버를 감추는 전초기지",
+      "en": "The Outpost Shielding the Core"
+    },
+    "prompt": {
+      "ko": "실제 C2 팀 서버의 IP 주소가 블루팀이나 위협 인텔리전스에 노출되는 것을 막기 위해 에이전트와 팀 서버 사이에 배치하는 프록시 노드를 무엇이라 부르는가? 요청을 다른 곳으로 돌려보낸다는 의미의 10글자 단어다.",
+      "en": "What 10-letter term names a proxy node placed between deployed agents and the central backend team server to shield the true team server IP from defenders and threat intelligence?"
+    },
+    "hints": {
+      "ko": [
+        "방향을 바꾼다는 redirect에 -or 접미사를 붙인 단어.",
+        "Apache URL 재작성 규칙이나 Nginx 리버스 프록시로 주로 구축합니다."
+      ],
+      "en": [
+        "Formed by appending -or to the verb redirect.",
+        "Commonly implemented using Apache rewrite rules or Nginx reverse proxies."
+      ]
+    }
+  },
+  {
+    "id": "t1_rtamsiscan",
+    "tier": 1,
+    "cat": "evasion",
+    "track": "redteam",
+    "points": 65,
+    "ci": true,
+    "hash": "0669320b5058f4cfe827e208d721d8ebf76bc2e1bbf453766b054007c3aacd36",
+    "fmt": "한 단어 / one word (14글자 / 14 chars)",
+    "title": {
+      "ko": "버퍼 검사의 관문",
+      "en": "The Buffer Inspection Gate"
+    },
+    "prompt": {
+      "ko": "윈도우 안티멀웨어 스캔 인터페이스 라이브러리(amsi.dll)에서 제공하는 핵심 내보내기 함수로, PowerShell 스크립트나 매크로가 메모리에서 실행되기 전 검사 대상 버퍼의 내용과 크기를 수신하여 등록된 안티바이러스 엔진에 판정을 위임하는 14글자 API 함수 이름은?",
+      "en": "What 14-letter export function in Windows amsi.dll receives the content and length of an in-memory buffer before PowerShell or script execution, dispatching it to registered antivirus engines for inspection?"
+    },
+    "hints": {
+      "ko": [
+        "인터페이스 약어 접두사 + Scan + Buffer.",
+        "메모리 패칭 우회 기법의 주 표적이 되는 함수."
+      ],
+      "en": [
+        "Compound of the interface acronym prefix, Scan, and Buffer.",
+        "The primary function targeted by in-memory return-clean byte patches."
+      ]
+    }
+  },
+  {
+    "id": "t1_rtetwti",
+    "tier": 1,
+    "cat": "evasion",
+    "track": "redteam",
+    "points": 65,
+    "ci": true,
+    "hash": "6dd97eba58ba6dd43ff866a47b517e764cf287f08849af343ebb91a7ecd20edd",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "커널이 흘리는 위협 인텔리전스",
+      "en": "Kernel Threat Intelligence Telemetry"
+    },
+    "prompt": {
+      "ko": "유저모드 후킹 우회를 무력화하기 위해 윈도우 커널(ntoskrnl.exe) 수준에서 메모리 할당, 스레드 생성 등의 민감 동작을 가로채 EDR 센서로 직접 원격 측정(telemetry) 이벤트를 쏴주는 이벤트 추적 공급자(Threat Intelligence)의 5글자 약어는?",
+      "en": "What 5-letter acronym identifies the kernel-level event tracing Threat Intelligence provider in ntoskrnl.exe that emits telemetry on sensitive operations like virtual memory allocation and thread creation directly to EDR sensors, bypassing user-mode hooks?"
+    },
+    "hints": {
+      "ko": [
+        "윈도우 이벤트 추적 약어 3글자 + Threat Intelligence의 머리글자.",
+        "커널 레벨의 위협 인텔리전스 추적 기능."
+      ],
+      "en": [
+        "The 3-letter event tracing acronym plus the initials of Threat Intelligence.",
+        "The kernel-level telemetry provider monitored by modern EDR agents."
+      ]
+    }
+  },
+  {
+    "id": "t1_rtopsec",
+    "tier": 1,
+    "cat": "ops",
+    "track": "redteam",
+    "points": 65,
+    "ci": true,
+    "hash": "17fc517571db7aebd1337d311be0be67afae2a63f75698384591af94b0ea8aa3",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "흔적을 지우는 작전 규율",
+      "en": "The Discipline of Operational Security"
+    },
+    "prompt": {
+      "ko": "모의 침투 오퍼레이션 수행 시 아군의 인프라, 도구, 공격 의도와 TTPs가 블루팀에 의해 식별되거나 분석되지 않도록 행동과 설정을 철저히 통제하는 '작전 보안'을 뜻하는 군사 용어 기반 5글자 약어는?",
+      "en": "What 5-letter military-derived acronym stands for Operational Security — the practice of controlling friendly actions, configurations, and artifacts during an engagement to deny defenders indicators of the team's identity, infrastructure, and intent?"
+    },
+    "hints": {
+      "ko": [
+        "Operations + Security 의 합성 약어.",
+        "군사 및 정보기관에서 보안 유지를 부르는 말."
+      ],
+      "en": [
+        "Portmanteau of Operations and Security.",
+        "Military and intelligence concept for guarding indicators and intent."
+      ]
+    }
+  },
+  {
+    "id": "t2_rtdropper",
+    "tier": 2,
+    "cat": "c2",
+    "track": "redteam",
+    "points": 90,
+    "ci": true,
+    "hash": "a934d8d273e44f15ccddbcd7180cf99d0fff719acff064f0b080299f9cd83e41",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "화물을 품고 들어가는 배달부",
+      "en": "The Cargo Courier"
+    },
+    "prompt": {
+      "ko": "내부에 본체 페이로드를 압축 또는 암호화된 형태로 포함하고 있어, 최초 실행 시 디스크나 메모리에 악성 코드를 풀어놓고 실행시키는 역할을 전담하는 1단계 침투 유틸리티를 무엇이라 하는가? (7글자)",
+      "en": "What 7-letter term describes a first-stage utility that embeds the core payload within itself in an encrypted or compressed state, unpacking and executing it onto disk or into memory upon initial execution?"
+    },
+    "hints": {
+      "ko": [
+        "떨어뜨린다(drop)는 동사에서 유래한 7글자 명사.",
+        "원격에서 다운로드받는 다운로더/스테이저와 달리 내부에 페이로드를 품고 있습니다."
+      ],
+      "en": [
+        "Derived from the verb to drop, ending in -er.",
+        "Unlike remote stagers, it carries the payload bytes bundled inside itself."
+      ]
+    }
+  },
+  {
+    "id": "t2_rtvariance",
+    "tier": 2,
+    "cat": "c2",
+    "track": "redteam",
+    "points": 150,
+    "ci": false,
+    "hash": "85a874d64447632d91f908933cd556fb99389f7777c269b50d90ebf3e8fa9b7b",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비컨 슬립 변동 범위 계산",
+      "en": "Beacon Sleep Variance Window Calculation"
+    },
+    "prompt": {
+      "ko": "C2 비컨 에이전트가 탐지를 회피하기 위해 기본 슬립 시간(sleep)과 무작위 편차 비율(variance_pct)을 기반으로 매번 랜덤한 수면 간격을 선택한다. 아래 설정값에서 가능한 최소 수면 시간(초) min_s와 최대 수면 시간(초) max_s를 계산하여 `FLAG{SLEEP_<min_s>_<max_s>}` 형식으로 제출하라. (단, min_s = sleep * (1 - variance_pct/100), max_s = sleep * (1 + variance_pct/100) 이며 정수로 계산)\n\n```\nsleep: 60\nvariance_pct: 20\n```",
+      "en": "To evade cadence detection, a C2 agent computes a random sleep interval from its base sleep duration and randomized variance percentage. Given the configuration below, calculate the minimum sleep seconds min_s and maximum sleep seconds max_s, and submit `FLAG{SLEEP_<min_s>_<max_s>}` where min_s = sleep * (1 - variance_pct/100) and max_s = sleep * (1 + variance_pct/100) as integers.\n\n```\nsleep: 60\nvariance_pct: 20\n```"
+    },
+    "hints": {
+      "ko": [
+        "60 * (1 - 0.20) = 48.",
+        "60 * (1 + 0.20) = 72."
+      ],
+      "en": [
+        "60 * (1 - 0.20) = 48.",
+        "60 * (1 + 0.20) = 72."
+      ]
+    }
+  },
+  {
+    "id": "t2_rtdomainfront",
+    "tier": 2,
+    "cat": "infra",
+    "track": "redteam",
+    "points": 90,
+    "ci": true,
+    "hash": "a6a94c454025ce38e53066741dd1327695d591042f0be8a527ae8eb4686bf481",
+    "fmt": "두 단어 / two words (15글자 / 15 chars)",
+    "title": {
+      "ko": "대형 분산망 뒤로 숨는 도메인 앞면",
+      "en": "The Fronted Domain Behind the Edge"
+    },
+    "prompt": {
+      "ko": "TLS 핸드셰이크의 서버 이름 표시(Server Name Indication)에는 신뢰받는 정상 도메인을 기재하고, 실제 암호화된 내부 HTTP Host 헤더에는 공격자의 C2 백엔드 도메인을 기재하여 중간 방화벽의 검사를 우회하는 콘텐츠 분산망 기반 인프라 은닉 기법의 명칭은? (두 단어, 15글자)",
+      "en": "What two-word (15 chars) edge evasion technique places a reputable domain in the plaintext Server Name Indication while targeting the attacker's origin server in the encrypted HTTP Host header to deceive inspecting perimeter proxies?"
+    },
+    "hints": {
+      "ko": [
+        "도메인(Domain) + 앞면(Fronting).",
+        "외측 서버 지시자와 암호화된 내부 HTTP Host의 불일치를 활용합니다."
+      ],
+      "en": [
+        "Compound of domain and fronting.",
+        "Relies on mismatch between handshake destination name and inner HTTP Host header."
+      ]
+    }
+  },
+  {
+    "id": "t2_rtfastflux",
+    "tier": 2,
+    "cat": "infra",
+    "track": "redteam",
+    "points": 90,
+    "ci": true,
+    "hash": "4970eadf519761d860e5f6e6001b160edad67f46394464532b9fc6862f15b383",
+    "fmt": "두 단어 / two words (9글자 / 9 chars)",
+    "title": {
+      "ko": "쉴 새 없이 도는 DNS 주소",
+      "en": "Rapidly Rotating DNS Addresses"
+    },
+    "prompt": {
+      "ko": "단일 정규화 도메인 이름에 매우 짧은 DNS TTL(예: 60초)을 설정하고 수많은 중계 IP 풀을 끊임없이 교체 매핑하여 특정 C2 IP에 대한 블랙리스트 차단을 무력화하는 DNS 기법은? (두 단어, 9글자)",
+      "en": "What two-word (9 chars) DNS technique combines very low TTL values with continuously rotating IP mappings across a distributed pool of hosts to defeat static IP blocking of C2 nodes?"
+    },
+    "hints": {
+      "ko": [
+        "빠르다(Fast) + 유동/변화(Flux).",
+        "봇넷과 C2 인프라 내구성을 극대화하기 위해 고안된 기법."
+      ],
+      "en": [
+        "Compound of fast and flux.",
+        "Originally engineered to keep botnet and C2 infrastructure resilient against takedown."
+      ]
+    }
+  },
+  {
+    "id": "t2_rtprofile",
+    "tier": 2,
+    "cat": "infra",
+    "track": "redteam",
+    "points": 150,
+    "ci": false,
+    "hash": "60cd9af6833f4265373dc42c4e3586c7c1e0f62c431dce333d60fc81b7b4d0cb",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "중계 노드 라우팅 규칙 파싱",
+      "en": "Proxy Node Routing Rule Parse"
+    },
+    "prompt": {
+      "ko": "C2 인프라 중계 노드의 라우팅 설정 파일에서 포워딩 대상 IP(redirector_ip), 대상 포트(target_port), 프로토콜(proto)을 파싱하여 `FLAG{REDIR_<redirector_ip>:<target_port>_<proto>}` 형식으로 조립하라.\n\n```\nredirector_ip: 198.51.100.42\ntarget_port: 8443\nproto: HTTPS\n```",
+      "en": "Parse the target IP (redirector_ip), target port (target_port), and protocol (proto) from the intermediate proxy routing configuration below and assemble `FLAG{REDIR_<redirector_ip>:<target_port>_<proto>}`.\n\n```\nredirector_ip: 198.51.100.42\ntarget_port: 8443\nproto: HTTPS\n```"
+    },
+    "hints": {
+      "ko": [
+        "198.51.100.42 뒤에 콜론과 8443, 언더스코어와 HTTPS.",
+        "소문자/대문자는 표기 그대로 조립."
+      ],
+      "en": [
+        "198.51.100.42 followed by colon and 8443, then underscore and HTTPS.",
+        "Preserve exact case."
+      ]
+    }
+  },
+  {
+    "id": "t2_rtunhooking",
+    "tier": 2,
+    "cat": "evasion",
+    "track": "redteam",
+    "points": 90,
+    "ci": true,
+    "hash": "77a066ef7106d9d7519839e11752efd53baa3f5f378a55cc2750a6f8063baae5",
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "EDR 낚싯바늘 뽑기",
+      "en": "Pulling the EDR Hook"
+    },
+    "prompt": {
+      "ko": "보안 에이전트(EDR)가 프로세스 메모리의 ntdll.dll 함수 시작부에 삽입해 둔 jmp 명령 후킹을 제거하기 위해, 디스크의 깨끗한 ntdll.dll .text 섹션을 읽어 메모리에 다시 덮어쓰는 기법을 무엇이라 하는가? (9글자)",
+      "en": "What 9-letter technique restores tampered API functions by reading an untampered .text section from ntdll.dll on disk and mapping it over the in-memory copy to erase EDR jmp detours?"
+    },
+    "hints": {
+      "ko": [
+        "후크(hook)를 푼다(un-)는 의미의 9글자 단어.",
+        "Peruns Fart 등 여러 변종이 있습니다."
+      ],
+      "en": [
+        "Formed by un- + hook + -ing.",
+        "Variations include Peruns Fart and fresh-ntdll overwrites."
+      ]
+    }
+  },
+  {
+    "id": "t2_rtmodule",
+    "tier": 2,
+    "cat": "evasion",
+    "track": "redteam",
+    "points": 90,
+    "ci": true,
+    "hash": "3a235e622cd8b1ffd41c4ea2b211be9959623f02f1d6a0ba4e60a3b8b2722890",
+    "fmt": "두 단어 / two words (15글자 / 15 chars)",
+    "title": {
+      "ko": "정상 DLL 발로 밟기",
+      "en": "Trampling Legitimate DLLs"
+    },
+    "prompt": {
+      "ko": "미사용 정상 DLL(예: 스캔 인터페이스 등에 안 쓰이는 윈도우 보조 DLL)을 프로세스에 합법적으로 로드한 뒤, 해당 DLL의 .text 섹션을 자신의 쉘코드로 덮어써서 비정상적인 실행 권한 메모리 할당(PAGE_EXECUTE_READWRITE) 지표를 숨기는 기법은? (두 단어, 15글자)",
+      "en": "What two-word (15 chars) technique legitimately loads an unused Windows DLL into a process and overwrites its .text section with shellcode, masking suspicious unbacked executable memory allocations?"
+    },
+    "hints": {
+      "ko": [
+        "모듈(Module)을 밟는다(Stomping).",
+        "DLL 비우기/덮어쓰기 기법으로도 불립니다."
+      ],
+      "en": [
+        "Compound of module and stomping.",
+        "Also referred to as DLL overwriting."
+      ]
+    }
+  },
+  {
+    "id": "t2_rtassumed",
+    "tier": 2,
+    "cat": "ops",
+    "track": "redteam",
+    "points": 90,
+    "ci": true,
+    "hash": "cd9d358a6a1408d5fce275ee06eb7f7c629c0a31f912765b61b4983a0dc9ea0c",
+    "fmt": "두 단어 / two words (14글자 / 14 chars)",
+    "title": {
+      "ko": "침해를 전제하는 훈련 모델",
+      "en": "The Presumed Intrusion Model"
+    },
+    "prompt": {
+      "ko": "초기 침투(피싱, 외곽 취약점 등) 단계에 과도한 시간과 비용을 쏟는 대신, 공격자가 이미 내부 엔드포인트나 계정 권한을 확보했다고 가정하고 내부 거점 전파와 권한상승, 탐지대응 검증에 집중하는 평가 모델은? (두 단어, 14글자)",
+      "en": "What two-word (14 chars) assessment approach skips exhaustive initial-access stages by starting the offensive engagement from pre-established internal foothold accounts, focusing effort on internal network pivot and objective validation?"
+    },
+    "hints": {
+      "ko": [
+        "가정된(Assumed) + 침해(Breach).",
+        "제로 트러스트의 핵심 철학 중 하나이기도 합니다."
+      ],
+      "en": [
+        "Compound of assumed and breach.",
+        "A core operating assumption shared with zero trust."
+      ]
+    }
+  },
+  {
+    "id": "t3_rtstager",
+    "tier": 3,
+    "cat": "c2",
+    "track": "redteam",
+    "points": 130,
+    "ci": true,
+    "hash": "c4f91e1ec4fd86f3db8d93c523c2c8f37c10bc81164c791465c86ce49d5b0b7f",
+    "fmt": "한 단어 / one word (6글자 / 6 chars, -er로 끝남 / ends in -er)",
+    "title": {
+      "ko": "다음 무대를 부르는 초소형 로더",
+      "en": "The Minimal Stage Summoner"
+    },
+    "prompt": {
+      "ko": "익스플로잇이나 최초 진입 시 페이로드 크기 제약을 극복하기 위해, 수백 바이트 크기의 최소화된 코드로 네트워크 연결을 수립하고 메모리로 본체(stage)를 다운로드해 즉시 실행시키는 소형 페이로드는? (6글자)",
+      "en": "What 6-letter term designates an ultra-compact payload designed to fit within tight exploit buffers, establish egress, fetch the full implant binary over the wire into memory, and jump to it?"
+    },
+    "hints": {
+      "ko": [
+        "단계/무대(stage)를 진행시키는 주체(-er).",
+        "반대 개념으로 본체를 직접 품은 stageless가 있습니다."
+      ],
+      "en": [
+        "The noun for that which stages, ending in -er.",
+        "Contrasted with monolithic stageless implants."
+      ]
+    }
+  },
+  {
+    "id": "t3_rtmalleable",
+    "tier": 3,
+    "cat": "c2",
+    "track": "redteam",
+    "points": 130,
+    "ci": true,
+    "hash": "23bf116122202346e3f34cfee51b7eb94c2cdbb62015b620c7a55bc18e8b7a34",
+    "fmt": "두 단어 / two words (12글자 / 12 chars)",
+    "title": {
+      "ko": "형상을 바꾸는 통신 프로필",
+      "en": "The Shape-Shifting Wire Profile"
+    },
+    "prompt": {
+      "ko": "상용 C2 도구에서 도입되어 에이전트와 서버 간의 HTTP GET/POST 헤더, 쿠키, URI, 응답 본문 형식을 마치 정상 웹 서비스(뉴스, 포털 등) 트래픽처럼 임의로 위장·조형할 수 있게 정의하는 프로필 명세 기법은? (두 단어, 12글자)",
+      "en": "What two-word (12 chars) profile specification introduced by modern commercial C2 tools allows operators to customize HTTP URIs, headers, metadata encodings, and response bodies to blend traffic with benign commercial services?"
+    },
+    "hints": {
+      "ko": [
+        "가소성 있는, 변형 가능한을 뜻하는 malleable + C2.",
+        "프로필 DSL 파일로 HTTP 통신 외형을 커스터마이징합니다."
+      ],
+      "en": [
+        "The adjective malleable followed by C2.",
+        "Employs a custom profile DSL to mold traffic shapes."
+      ]
+    }
+  },
+  {
+    "id": "t3_rtbeacon",
+    "tier": 3,
+    "cat": "c2",
+    "track": "redteam",
+    "points": 200,
+    "ci": false,
+    "hash": "dfaf0448a0bf4c39e6f30ffb88c41e00a798b1fddbf375e77def03d5f0b71377",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "비컨 세션 신호 통계 분석",
+      "en": "Beacon Session Signal Rollup"
+    },
+    "prompt": {
+      "ko": "C2 팀 서버 콘솔에 기록된 비컨 통신 데이터에서 (1) 체크인 성공률 R = (successful ÷ beacons_sent) × 100 (소수 첫째 자리), (2) 평균 레이턴시 L (ms 단위 정수), (3) 세션 상태 status(ACTIVE 또는 DORMANT)를 추출하여 `FLAG{C2_R<R>_L<L>_<status>}` 형식으로 제출하라.\n\n```\nbeacons_sent: 250\nsuccessful: 245\navg_latency_ms: 18\nstatus: ACTIVE\n```",
+      "en": "From the C2 session record below, extract (1) check-in success rate R = (successful / beacons_sent) * 100 to one decimal place, (2) integer average latency L in ms, and (3) the session status (ACTIVE or DORMANT). Submit `FLAG{C2_R<R>_L<L>_<status>}`.\n\n```\nbeacons_sent: 250\nsuccessful: 245\navg_latency_ms: 18\nstatus: ACTIVE\n```"
+    },
+    "hints": {
+      "ko": [
+        "245 / 250 = 0.98 -> 98.0.",
+        "avg_latency_ms 는 18, status 는 ACTIVE."
+      ],
+      "en": [
+        "245 / 250 = 0.98 -> 98.0.",
+        "avg_latency_ms is 18, status is ACTIVE."
+      ]
+    }
+  },
+  {
+    "id": "t3_rtapachemod",
+    "tier": 3,
+    "cat": "infra",
+    "track": "redteam",
+    "points": 130,
+    "ci": true,
+    "hash": "7371fac2562d3c8d2b75fab97e17a3e6935d7b5258dc045a32d8c8fcfe615132",
+    "fmt": "한 단어 / one word (11글자 / 11 chars)",
+    "title": {
+      "ko": "방문자를 감별하는 웹 재작성기",
+      "en": "The Visitor Filtering Rewriter"
+    },
+    "prompt": {
+      "ko": "Apache 웹서버 기반 C2 중계 노드에서 사전 승인된 User-Agent나 올바른 경로로 들어온 비컨 요청만 실제 백엔드 C2로 프록시하고, 보안 분석가나 웹 스캐너의 요청은 정상적인 가짜 사이트로 넘겨버릴 때 가장 널리 쓰이는 Apache 모듈 이름은? (언더스코어 포함 11글자)",
+      "en": "What 11-letter Apache module (including underscore) is standardly used on C2 redirectors to inspect User-Agent and query patterns, proxying authorized beacons to the team server while forwarding scanners to benign cover sites?"
+    },
+    "hints": {
+      "ko": [
+        "URL 재작성을 수행하는 모듈.",
+        "mod_ + rewrite."
+      ],
+      "en": [
+        "The standard URL rewrite engine for Apache.",
+        "mod_ + rewrite."
+      ]
+    }
+  },
+  {
+    "id": "t3_rtchisel",
+    "tier": 3,
+    "cat": "infra",
+    "track": "redteam",
+    "points": 130,
+    "ci": true,
+    "hash": "4437f8f0e4476fec3cf0ae3c120609dda3efe2fd6d601ec75d8f02ec0aa4d185",
+    "fmt": "도구 이름 / tool name (6글자 / 6 chars)",
+    "title": {
+      "ko": "HTTP 위를 뚫는 고속 터널",
+      "en": "The Fast Tunnel Over HTTP"
+    },
+    "prompt": {
+      "ko": "Go 언어로 작성되어 단일 실행 파일로 배포 가능하며, 방화벽을 통과할 수 있는 HTTP 통신 위에 WebSocket과 SSH 암호화 터널을 얹어 내부 네트워크로의 역방향 TCP/UDP 포트포워딩과 SOCKS5 프록시를 고속으로 제공하는 오픈소스 터널링 도구 이름은? (6글자)",
+      "en": "What 6-letter open-source tunneling tool written in Go packs an SSH-secured TCP/UDP port forwarder and SOCKS5 proxy over an HTTP/WebSocket connection, shipping as a standalone binary to punch egress through strict proxies?"
+    },
+    "hints": {
+      "ko": [
+        "끌이나 조각칼을 뜻하는 영어 6글자 도구 이름.",
+        "jpillora가 제작한 대표적 프록시 터널링 도구."
+      ],
+      "en": [
+        "An English noun for a long-bladed hand tool with a beveled cutting edge.",
+        "Written by jpillora, common in offensive pivoting."
+      ]
+    }
+  },
+  {
+    "id": "t3_rtdirectsyscall",
+    "tier": 3,
+    "cat": "evasion",
+    "track": "redteam",
+    "points": 130,
+    "ci": true,
+    "hash": "6d7daf289dc715d3cd5cd47e804698810872c3afadcd9591a16e294118309b8f",
+    "fmt": "두 단어 / two words (15글자 / 15 chars)",
+    "title": {
+      "ko": "유저모드를 건너뛰는 직통 커널 진입",
+      "en": "Direct Kernel Entry Skipping User Mode"
+    },
+    "prompt": {
+      "ko": "EDR이 ntdll.dll의 유저모드 API(예: NtAllocateVirtualMemory)에 설치한 인라인 훅을 완전히 우회하기 위해, 어셈블리로 레지스터에 시스템 호출 번호(SSN)를 직접 채우고 syscall 명령을 자체 실행하여 커널로 직접 전환하는 기법은? (두 단어, 15글자)",
+      "en": "What two-word (15 chars) evasion technique completely bypasses user-mode ntdll inline hooks by loading the system call number directly into registers and issuing the syscall assembly instruction from the attacker's own memory?"
+    },
+    "hints": {
+      "ko": [
+        "직접적인(Direct) + 시스템 콜 복수형(Syscalls).",
+        "Syswhispers 등의 도구가 이 코드를 자동 생성합니다."
+      ],
+      "en": [
+        "Direct plus the plural of syscall.",
+        "Tools like Syswhispers automate generating these stubs."
+      ]
+    }
+  },
+  {
+    "id": "t3_rthellsgate",
+    "tier": 3,
+    "cat": "evasion",
+    "track": "redteam",
+    "points": 130,
+    "ci": true,
+    "hash": "d0993a1472cf61aa81ee3d70a6d5d50f291289f5746f429769708e6ef70a18b9",
+    "fmt": "두 단어 / two words (10글자 / 10 chars)",
+    "title": {
+      "ko": "지옥의 문을 여는 SSN 동적 추출",
+      "en": "Dynamic SSN Recovery at the Gates of Hell"
+    },
+    "prompt": {
+      "ko": "윈도우 빌드마다 달라지는 시스템 콜 번호(SSN)를 하드코딩하지 않고, 로드된 ntdll의 함수 바이트를 검사하여 후킹되지 않은 opcode 패턴(`mov r10, rcx; mov eax, <SSN>`)으로부터 SSN을 런타임에 동적으로 계산해 추출하는 유명 기법의 명칭은? (두 단어, 10글자)",
+      "en": "What two-word (10 chars) dynamic invocation technique reads in-memory ntdll bytes to parse the unhooked opcode stub pattern and dynamically extract the System Service Number at runtime without hardcoding across Windows builds?"
+    },
+    "hints": {
+      "ko": [
+        "지옥(Hells) + 문(Gate).",
+        "후킹되어 바이트가 깨진 경우 이웃 함수를 뒤지는 것은 Halos Gate로 발전했습니다."
+      ],
+      "en": [
+        "Compound of hells and gate.",
+        "Later evolved into Halos Gate to scan neighboring stubs if the target is hooked."
+      ]
+    }
+  },
+  {
+    "id": "t3_rtcrownjewels",
+    "tier": 3,
+    "cat": "ops",
+    "track": "redteam",
+    "points": 130,
+    "ci": true,
+    "hash": "fcbcace95f7e17606845b537340df7a9698d19a4721ba618e77cc6820c6a54bd",
+    "fmt": "두 단어 / two words (12글자 / 12 chars)",
+    "title": {
+      "ko": "오퍼레이션의 최종 왕관 보석",
+      "en": "The Operation's Royal Treasure"
+    },
+    "prompt": {
+      "ko": "침투 캠페인 기획에서 단순 관리자 권한 획득을 넘어 고객 금융 데이터, 코어 소스코드, 고객 식별 정보 등 침해 발생 시 비즈니스에 치명타를 주는 표적 조직의 최우선 핵심 자산을 비유하는 두 단어(12글자)는?",
+      "en": "What two-word (12 chars) metaphorical expression designates an organization's most critical assets — customer financial records, core intellectual property, customer PII — that serve as the ultimate objective in an adversary emulation?"
+    },
+    "hints": {
+      "ko": [
+        "왕관(Crown) + 보석들(Jewels).",
+        "영국 왕실의 왕관 보석에서 유래한 표현."
+      ],
+      "en": [
+        "Compound of crown and jewels.",
+        "Metaphor derived from the coronation regalia of monarchs."
+      ]
+    }
+  },
+  {
+    "id": "t3_rtroe",
+    "tier": 3,
+    "cat": "ops",
+    "track": "redteam",
+    "points": 130,
+    "ci": true,
+    "hash": "96da98abfd6dacd48bc52a08b85c666d2dccfd8b37dc87978d904da608aba82c",
+    "fmt": "문구 / phrase (19글자 / 19 chars)",
+    "title": {
+      "ko": "교전 규칙의 서약",
+      "en": "The Operational Charter"
+    },
+    "prompt": {
+      "ko": "침투 훈련을 시작하기 전 고객사 의뢰인과 침투팀 간에 서명하는 핵심 합의 문서로, 대상 시스템 범위, 제외 자산, 허용되는 공격 시간대, 비상 중단 연락망과 에스컬레이션 절차를 정의하는 문구(19글자)는?",
+      "en": "What 19-letter phrase (abbreviated ROE) describes the binding agreement signed between client sponsors and the offensive team establishing engagement boundaries, out-of-scope assets, testing hours, and emergency halt protocols?"
+    },
+    "hints": {
+      "ko": [
+        "규칙(Rules) + 전치사 of + 교전(Engagement).",
+        "군사 교전수칙에서 따온 용어."
+      ],
+      "en": [
+        "Three-word phrase starting with Rules and ending with Engagement.",
+        "Military term setting limits on when, where, and how force may be applied."
+      ]
+    }
+  },
+  {
+    "id": "t4_rthavoc",
+    "tier": 4,
+    "cat": "c2",
+    "track": "redteam",
+    "points": 160,
+    "ci": true,
+    "hash": "c13660685e4547f4975999112a567d5207ec43f24c697d52e674f6f67f9c7483",
+    "fmt": "도구 이름 / tool name (5글자 / 5 chars)",
+    "title": {
+      "ko": "모던 C++과 Qt로 무장한 프레임워크",
+      "en": "Modern C++ and Qt Framework"
+    },
+    "prompt": {
+      "ko": "C++20과 Qt 기반의 현대적인 다크 테마 GUI를 제공하며, Demon 에이전트와 수면 시 메모리 암호화, 우회 시스템 콜, x64 반사적 로더(KaynLdr)를 내장해 EDR 회피를 기본 설계로 삼은 최신 오픈소스 C2 프레임워크 이름은? (5글자)",
+      "en": "What 5-letter open-source post-exploitation command-and-control framework built on C++20 and Qt features the Demon agent with native in-sleep memory encryption, trampoline syscalls, and custom loaders designed against modern EDRs?"
+    },
+    "hints": {
+      "ko": [
+        "대혼란, 파괴를 뜻하는 영어 5글자 단어.",
+        "Demon 에이전트를 사용하는 C2 프레임워크."
+      ],
+      "en": [
+        "A 5-letter English word meaning widespread destruction or confusion.",
+        "Features the Demon payload and KaynLdr."
+      ]
+    }
+  },
+  {
+    "id": "t4_rtlistener",
+    "tier": 4,
+    "cat": "infra",
+    "track": "redteam",
+    "points": 160,
+    "ci": true,
+    "hash": "c4c05d40a8c3ebc0eb0c4edcff5d4e9964a5fbb5e24860711a92aa16668bfbd7",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "망망대해를 지키는 C2 수신 소켓",
+      "en": "The Inbound Listening Socket"
+    },
+    "prompt": {
+      "ko": "C2 팀 서버 또는 중계 노드에서 침투된 에이전트로부터 전달되는 인바운드 비컨 신호와 명령 결과를 수신하기 위해 특정 IP와 포트를 바인딩하고 대기하는 네트워크 소켓 서비스를 일컫는 8글자 단어는?",
+      "en": "What 8-letter networking term designates the server-side service or socket binding a designated port to accept inbound connections and task results from deployed beacons?"
+    },
+    "hints": {
+      "ko": [
+        "듣는 사람(listen + er).",
+        "Metasploit의 exploit/multi/handler와 유사한 역할."
+      ],
+      "en": [
+        "Formed by listen + -er.",
+        "The equivalent of a multi/handler in Metasploit."
+      ]
+    }
+  },
+  {
+    "id": "t4_rtech",
+    "tier": 4,
+    "cat": "infra",
+    "track": "redteam",
+    "points": 160,
+    "ci": true,
+    "hash": "89332e726a92700b68820e4371347aff05cfbe5fcef459a7e9916266fbbbb6ac",
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "title": {
+      "ko": "TLS 핸드셰이크 전체 암호화",
+      "en": "Full Handshake Client Hello Encryption"
+    },
+    "prompt": {
+      "ko": "과거 암호화 호스트 규격의 한계를 극복하고 TLS 1.3에서 서버 이름을 포함한 Client Hello 메시지 전체를 암호화 DNS로 수신한 공용 키로 암호화하여 중간 검사 장비의 도메인 식별을 원천 차단하는 IETF 최신 표준의 3글자 약어는?",
+      "en": "What 3-letter IETF standard supersedes ESNI by encrypting the entire Client Hello message (including destination server name) under a public key fetched over secure DNS, preventing intermediate appliances from observing the destination hostname?"
+    },
+    "hints": {
+      "ko": [
+        "Encrypted Client Hello의 머리글자.",
+        "TLS 1.3에서 도메인 유출을 막는 최신 암호화 규격."
+      ],
+      "en": [
+        "Initials of Encrypted Client Hello.",
+        "Latest TLS 1.3 mechanism for encrypting the outer handshake metadata."
+      ]
+    }
+  },
+  {
+    "id": "t4_rtdnstunnel",
+    "tier": 4,
+    "cat": "infra",
+    "track": "redteam",
+    "points": 160,
+    "ci": true,
+    "hash": "1aea394465d9f93c05be8fc269b455d1a57f2a5d40beae11e8bb71909b2de4c2",
+    "fmt": "두 단어 / two words (13글자 / 13 chars)",
+    "title": {
+      "ko": "이름 풀이로 빠져나가는 은밀한 터널",
+      "en": "Covert Tunneling Through Name Resolution"
+    },
+    "prompt": {
+      "ko": "사내망의 엄격한 아웃바운드 차단 환경에서 내부 DNS 서버가 외부 권한 네임서버로 재귀 질의를 수행한다는 점을 악용하여, C2 명령과 유출 데이터를 DNS 서브도메인 및 TXT 레코드에 인코딩해 은닉 교환하는 기법은? (두 단어, 13글자)",
+      "en": "What two-word (13 chars) egress technique encodes C2 tasking and exfiltrated bytes into subdomain labels and TXT record responses, exploiting internal recursive resolvers to bridge isolated networks?"
+    },
+    "hints": {
+      "ko": [
+        "DNS + 터널링(Tunneling).",
+        "dnscat2나 iodine 같은 도구가 대표적입니다."
+      ],
+      "en": [
+        "DNS plus tunneling.",
+        "Employed by tools such as dnscat2 and iodine."
+      ]
+    }
+  },
+  {
+    "id": "t4_rtcobalt",
+    "tier": 4,
+    "cat": "ops",
+    "track": "redteam",
+    "points": 160,
+    "ci": true,
+    "hash": "cbaeb588ba32c2354e35fa1b41e2588ac49febab11dc96364a6ec1730c041809",
+    "fmt": "두 단어 / two words (13글자 / 13 chars)",
+    "title": {
+      "ko": "상용 침투 플랫폼의 사실상 표준",
+      "en": "The De Facto Commercial Offensive Standard"
+    },
+    "prompt": {
+      "ko": "2012년 Raphael Mudge가 출시하여 전 세계 침투 조직과 사이버 위협 행위자 모두에게 가장 널리 쓰이는 대표적인 상용 적대적 에뮬레이션 플랫폼으로, 비컨(Beacon)과 팀 서버(Team Server) 아키텍처를 대중화한 소프트웨어 이름은? (두 단어, 13글자)",
+      "en": "What two-word (13 chars) commercial adversary emulation platform originally authored by Raphael Mudge in 2012 popularized the Beacon and Team Server operational architecture across corporate offensive operators and APTs alike?"
+    },
+    "hints": {
+      "ko": [
+        "코발트(Cobalt) + 스트라이크(Strike).",
+        "상용 침투 도구의 대명사."
+      ],
+      "en": [
+        "Compound of Cobalt and Strike.",
+        "The standard benchmark for commercial offensive operations."
+      ]
+    }
+  },
+  {
+    "id": "t4_rtsleepobf",
+    "tier": 4,
+    "cat": "evasion",
+    "track": "redteam",
+    "points": 160,
+    "ci": true,
+    "hash": "af5c94c7adb51cdc11d55bc732f8e4c169b3fe18d704a620e3a8d921facfa00f",
+    "fmt": "두 단어 / two words (17글자 / 17 chars)",
+    "title": {
+      "ko": "잠든 사이 스스로를 감추는 마법",
+      "en": "Camouflage in Slumber"
+    },
+    "prompt": {
+      "ko": "비컨 에이전트가 다음 체크인까지 대기하는 수면(sleep) 시간 동안 자신의 실행 메모리 영역을 RC4나 XOR로 암호화하고 메모리 보호 속성을 RX에서 RW 등으로 낮춰 EDR의 인메모리 서명 스캔(Moneta 등)을 회피하는 기법은? (두 단어, 17글자)",
+      "en": "What two-word (17 chars) evasive technique encrypts an implant's memory space and alters protection flags during its idle sleep window, shielding signatures from in-memory scanners like Moneta?"
+    },
+    "hints": {
+      "ko": [
+        "수면(Sleep) + 난독화(Obfuscation).",
+        "Ekko, Foliage, Cronos 등이 대표적 구현체입니다."
+      ],
+      "en": [
+        "Compound of sleep and obfuscation.",
+        "Implemented by projects like Ekko, Foliage, and Cronos."
+      ]
+    }
+  },
+  {
+    "id": "t4_rtcallstack",
+    "tier": 4,
+    "cat": "evasion",
+    "track": "redteam",
+    "points": 160,
+    "ci": true,
+    "hash": "54df5944390aa72dc523270b2fd2ab3884858f1608263a4f912ff605afb49ce3",
+    "fmt": "문구 / phrase (19글자 / 19 chars)",
+    "title": {
+      "ko": "호출 스택의 족보 세탁",
+      "en": "Laundering the Call Stack Lineage"
+    },
+    "prompt": {
+      "ko": "EDR이 민감 API 호출 발생 시 유효한 정상 모듈에서 호출되었는지 스택 백트레이스를 검사하는 방어를 속이기 위해, 실제 리턴 주소와 스택 프레임을 정상적인 Windows 라이브러리(예: kernel32.dll)의 정상 흐름처럼 인위적으로 조작하는 기법은? (문구, 19글자)",
+      "en": "What 19-letter phrase describes synthetically constructing or rewiring thread return addresses and frames so that EDR kernel call stack walk inspections observe an apparently benign invocation path originating in signed libraries?"
+    },
+    "hints": {
+      "ko": [
+        "Call Stack + 스푸핑(Spoofing).",
+        "SilentTrinity, Synthetic Stack Walkers 등에서 쓰입니다."
+      ],
+      "en": [
+        "Call stack plus spoofing.",
+        "Defeats stack unwinding analysis in modern EDR engines."
+      ]
+    }
+  },
+  {
+    "id": "t4_rtghosting",
+    "tier": 4,
+    "cat": "evasion",
+    "track": "redteam",
+    "points": 160,
+    "ci": true,
+    "hash": "729b8817c6ee007d63a47aa22f76e9dd06ffd432b16fadea3f6c577c11c7ba94",
+    "fmt": "두 단어 / two words (15글자 / 15 chars)",
+    "title": {
+      "ko": "유령처럼 사라진 파일로 실행하기",
+      "en": "Execution Through the Phantom File"
+    },
+    "prompt": {
+      "ko": "보안 백신의 파일 생성 스캔(IRP_MJ_CREATE) 시점을 무력화하기 위해, 디스크에 임시 페이로드 파일을 쓰고 삭제 대기(delete-pending) 상태로 설정한 후 해당 파일로부터 실행 섹션을 매핑하고 프로세스를 생성해 보안 솔루션이 파일을 검사하려 할 때 공유 위반 또는 삭제 상태로 스캔을 실패하게 만드는 프로세스 주입 기법은? (두 단어, 15글자)",
+      "en": "What two-word (15 chars) injection technique evades filesystem minifilter scanning by setting a payload file into a delete-pending state before mapping its section and spawning the process, causing defender scanners to fail upon file opening?"
+    },
+    "hints": {
+      "ko": [
+        "프로세스(Process) + 유령화(Ghosting).",
+        "Kingston의 연구로 널리 알려진 고급 회피 인젝션 기법."
+      ],
+      "en": [
+        "Compound of process and ghosting.",
+        "Pioneered by security researchers to bypass AV minifilter scan callbacks."
+      ]
+    }
+  },
+  {
+    "id": "t4_rtbyovd",
+    "tier": 4,
+    "cat": "ops",
+    "track": "redteam",
+    "points": 160,
+    "ci": true,
+    "hash": "7993f8ef0e6c1d80ec7b4c7c7391b5b78fbaca5d3ae2838581e8ab5bf3fcecf7",
+    "fmt": "약어 / acronym (5글자 / 5 chars)",
+    "title": {
+      "ko": "취약한 정상 드라이버를 등에 업고",
+      "en": "Riding the Signed Flawed Driver"
+    },
+    "prompt": {
+      "ko": "Windows 64비트 환경의 드라이버 서명 강제(DSE)를 우회하기 위해, 공격자가 직접 미서명 드라이버를 올리지 않고 마이크로소프트의 정상 디지털 서명을 보유하고 있으나 기저에 취약점(임의 메모리 읽기/쓰기 등)을 가진 구버전 정상 드라이버를 적재해 커널을 공격하는 전략의 5글자 약어는?",
+      "en": "What 5-letter acronym designates the offensive tactic of loading a legitimately signed yet vulnerable third-party driver to bypass Driver Signature Enforcement and achieve arbitrary kernel read/write to blind EDR callbacks?"
+    },
+    "hints": {
+      "ko": [
+        "Bring Your Own Vulnerable Driver 의 머리글자 5개.",
+        "자신의 취약한 드라이버를 가져오기."
+      ],
+      "en": [
+        "Initials of Bring Your Own Vulnerable Driver.",
+        "Commonly abuses signed anti-cheat or hardware utility drivers."
+      ]
+    }
+  },
+  {
+    "id": "t4_rtcapstone",
+    "tier": 4,
+    "cat": "ops",
+    "track": "redteam",
+    "points": 250,
+    "ci": false,
+    "hash": "d09cd01c70fad44ad9049f5acc8eb9fb9ad084faafa09e0e8b2cdb2e39dd0433",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔드투엔드 모의 침투 오퍼레이션 종합",
+      "en": "End-to-End Adversary Emulation Operation Rollup"
+    },
+    "prompt": {
+      "ko": "어느 모의 침투 캠페인의 작전 브리핑 결과가 주어졌다: (1) 생존한 C2 중계 노드 수 R, (2) 횡이동으로 확보한 내부 호스트 수 H, (3) EDR 회피 성공 여부 evasion_gate(PASSED 또는 FAILED), (4) 달성한 최종 목표 target_objective(DOMAIN_ADMIN 또는 STEALTH_EXIT). 아래 값으로 `FLAG{RT_R<R>_<H>HOSTS_<evasion_gate>_<short_objective>}` 를 조립하여 제출하라. (단, DOMAIN_ADMIN은 DA, STEALTH_EXIT는 SE 로 축약)\n\n```\nredirectors: 4\nhosts: 12\nevasion_gate: PASSED\ntarget_objective: DOMAIN_ADMIN\n```",
+      "en": "Roll up an offensive engagement from the post-operation debrief: (1) R = number of surviving redirectors, (2) H = number of compromised internal hosts, (3) evasion_gate (PASSED or FAILED), (4) target_objective abbreviated (DOMAIN_ADMIN -> DA, STEALTH_EXIT -> SE). Assemble and submit `FLAG{RT_R<R>_<H>HOSTS_<evasion_gate>_<short_objective>}` from the brief below.\n\n```\nredirectors: 4\nhosts: 12\nevasion_gate: PASSED\ntarget_objective: DOMAIN_ADMIN\n```"
+    },
+    "hints": {
+      "ko": [
+        "R은 4, H는 12HOSTS.",
+        "evasion_gate는 PASSED, DOMAIN_ADMIN 축약은 DA."
+      ],
+      "en": [
+        "R is 4, H is 12HOSTS.",
+        "evasion_gate is PASSED, DOMAIN_ADMIN shortens to DA."
       ]
     }
   }

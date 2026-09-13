@@ -882,6 +882,51 @@ const SOLVERS = new Map([
     const tag = auth.toLowerCase() === 'present' ? 'AUTH' : 'NOAUTH';
     return `FLAG{OS_N${n}_C${c}_${tag}}`;
   } }],
+  ['t2_rtvariance', { kind: 'computed', via: 'beacon sleep variance bounds = sleep * (1 - variance_pct/100) .. sleep * (1 + variance_pct/100)', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced config in the prompt');
+    const b = m[1];
+    const sleep = Number((b.match(/sleep:\s*(\d+)/) || [])[1]);
+    const variance = Number((b.match(/variance_pct:\s*(\d+)/) || [])[1]);
+    if (!sleep || Number.isNaN(variance)) throw new Error('sleep / variance_pct not both stated');
+    const min_s = Math.round(sleep * (1 - variance / 100));
+    const max_s = Math.round(sleep * (1 + variance / 100));
+    return `FLAG{SLEEP_${min_s}_${max_s}}`;
+  } }],
+  ['t2_rtprofile', { kind: 'computed', via: 'intermediate proxy routing parse into target IP, port, and protocol', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced config in the prompt');
+    const b = m[1];
+    const ip = (b.match(/redirector_ip:\s*([^\s]+)/) || [])[1];
+    const port = (b.match(/target_port:\s*(\d+)/) || [])[1];
+    const proto = (b.match(/proto:\s*([A-Za-z0-9]+)/) || [])[1];
+    if (!ip || !port || !proto) throw new Error('redirector_ip / target_port / proto not all stated');
+    return `FLAG{REDIR_${ip}:${port}_${proto}}`;
+  } }],
+  ['t3_rtbeacon', { kind: 'computed', via: 'beacon check-in success rate R, latency L, and session status into composite flag', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced telemetry in the prompt');
+    const b = m[1];
+    const sent = Number((b.match(/beacons_sent:\s*(\d+)/) || [])[1]);
+    const succ = Number((b.match(/successful:\s*(\d+)/) || [])[1]);
+    const lat = (b.match(/avg_latency_ms:\s*(\d+)/) || [])[1];
+    const status = (b.match(/status:\s*([A-Za-z]+)/) || [])[1];
+    if (!sent || Number.isNaN(succ) || !lat || !status) throw new Error('beacons_sent / successful / avg_latency_ms / status not all stated');
+    const r = (succ / sent * 100).toFixed(1);
+    return `FLAG{C2_R${r}_L${lat}_${status}}`;
+  } }],
+  ['t4_rtcapstone', { kind: 'computed', via: 'red team debrief composite: redirectors, compromised hosts, evasion gate, and abbreviated objective', solve: (ch) => {
+    const m = ch.prompt.en.match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced debrief in the prompt');
+    const b = m[1];
+    const redirs = (b.match(/redirectors:\s*(\d+)/) || [])[1];
+    const hosts = (b.match(/hosts:\s*(\d+)/) || [])[1];
+    const gate = (b.match(/evasion_gate:\s*([A-Za-z]+)/) || [])[1];
+    const obj = (b.match(/target_objective:\s*([A-Za-z_]+)/) || [])[1];
+    if (!redirs || !hosts || !gate || !obj) throw new Error('redirectors / hosts / evasion_gate / target_objective not all stated');
+    const shortObj = obj === 'DOMAIN_ADMIN' ? 'DA' : (obj === 'STEALTH_EXIT' ? 'SE' : obj);
+    return `FLAG{RT_R${redirs}_${hosts}HOSTS_${gate}_${shortObj}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
