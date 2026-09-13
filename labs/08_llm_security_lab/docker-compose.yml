@@ -1,0 +1,22 @@
+version: "3.8"
+
+networks:
+  llm_lab_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+
+services:
+  llm_app:
+    build: .
+    container_name: llm_security_lab
+    networks:
+      llm_lab_net:
+        ipv4_address: 172.21.0.10
+    ports:
+      - "8088:8088"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - APP_PORT=8088
+    restart: unless-stopped

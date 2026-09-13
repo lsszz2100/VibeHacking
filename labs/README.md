@@ -37,6 +37,7 @@ docker-compose --version
 | 05 | [전체 시나리오 통합 랩](./05_full_scenario_lab/) | APT 체인, 내부망 침투, 데이터 탈취 | ★★★★ |
 | 06 | [펌웨어 해킹 랩](./06_firmware_lab/) | binwalk, QEMU 에뮬레이션, 하드코딩 자격증명 | ★★★ |
 | 07 | [모바일 보안 랩](./07_mobile_lab/) | APK 분석, JWT alg:none, 하드코딩 API 키 | ★★★ |
+| 08 | [AI/LLM 보안 랩](./08_llm_security_lab/) | 프롬프트 인젝션, RAG 간접 주입, 에이전트 도구 남용, 시스템 프롬프트 탈취 | ★★★ |
 
 ---
 
@@ -85,6 +86,13 @@ docker-compose --version
 - 하드코딩된 API 키 추출 및 취약한 백엔드 API 인증 우회
 - JWT alg:none 취약점을 이용한 권한 상승 공격
 - Frida·objection을 통한 런타임 동적 분석 기초
+
+### 08. AI/LLM 보안 랩
+- OWASP Top 10 for LLM 기반 실전 취약점 공격 및 방어 실습
+- 시스템 프롬프트 탈취(Jailbreak) 및 기밀 마스터 키 추출
+- 비위생적 마크다운 출력 렌더링을 통한 XSS 공격
+- RAG(검색 증강 생성) 지식 베이스 문서를 통한 간접 프롬프트 주입
+- 자율 AI 에이전트의 과도한 권한(Excessive Agency)과 위험 도구 남용 통제
 
 ---
 
