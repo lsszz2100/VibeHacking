@@ -346,6 +346,7 @@
       ["hint","현재 표적 힌트 공개 / reveal a hint"],
       ["submit <flag>","플래그 제출 / submit a flag  (또는 그냥 입력)"],
       ["status","점수·등급·진행 / score & progress  (whoami)"],
+      ["stats","트랙별·계층별 침투 통계 / stats dashboard  (chart)"],
       ["search <검색어>","잠금장치 검색 / search locks  (find)"],
       ["export","진행도 백업 토큰 생성 / export save token"],
       ["import <토큰>","진행도 복원 / import save token"],
@@ -550,6 +551,49 @@
     return '<span class="ok">' + "█".repeat(f) + '</span><span class="dim">' + "░".repeat(w - f) + '</span>';
   }
 
+  function showStats(){
+    const n = solvedCount(), tot = CHALLENGES.length;
+    const rank = rankOf(n);
+    const pct = tot ? Math.round((n / tot) * 100) : 0;
+    blank();
+    print('<span class="bold">📊 ' + (L()==="ko" ? "침투 통계 대시보드" : "INFILTRATION STATS DASHBOARD") + '</span>');
+    print('<span class="tbl"><span class="dim">' + (L()==="ko" ? "전체 진행률" : "Overall Progress") + ':</span> ' +
+      barStr(n, tot) + ' <span class="ok bold">' + n + '/' + tot + ' (' + pct + '%)</span></span>');
+    print('<span class="tbl"><span class="dim">' + esc(S("score")) + ':</span> <span class="ok">' + totalScore() + '</span>' +
+      '  <span class="dim">' + esc(S("rank")) + ':</span> ' + rank.icon + ' <span class="kw">' + esc(rank[L()]) + '</span></span>');
+    blank();
+    print('<span class="bold">' + (L()==="ko" ? "트랙별 진행 현황 (22 Tracks)" : "Progress by Track (22 Tracks)") + '</span>');
+
+    TRACKS.forEach(tr => {
+      const chals = CHALLENGES.filter(c => c.track === tr.id);
+      const sc = chals.filter(c => state.solved[c.id]).length;
+      const tc = chals.length;
+      const trPct = tc ? Math.round((sc / tc) * 100) : 0;
+      const name = (tr.icon ? tr.icon + " " : "") + (tr[L()] || tr.en);
+      const bar = barStr(sc, tc);
+      const statusIcon = sc === tc ? '<span class="ok">✓</span>' : (sc > 0 ? '<span class="warn">▸</span>' : '<span class="dim">·</span>');
+      print('<span class="tbl"><span class="row">' +
+        '<span class="id" style="width:210px;display:inline-block;">' + statusIcon + ' ' + esc(name) + '</span>' +
+        '<span class="dim">' + bar + ' ' + String(sc).padStart(2, " ") + '/' + tc + ' (' + String(trPct).padStart(3, " ") + '%)</span>' +
+        '</span></span>');
+    });
+
+    blank();
+    print('<span class="bold">' + (L()==="ko" ? "계층별 침투 상태 (5 Tiers)" : "Progress by Tier (5 Tiers)") + '</span>');
+    LAYERS.forEach(lay => {
+      const sc = tierSolved(lay.tier), tc = tierChals(lay.tier).length;
+      const need = tierNeed(lay.tier);
+      const unlocked = isTierUnlocked(lay.tier);
+      const breached = sc >= need;
+      const bar = barStr(sc, tc);
+      const tag = !unlocked ? '🔒' : (breached ? '<span class="ok">✓ ' + esc(S("breached")) + '</span>' : '<span class="warn">▸ ' + sc + '/' + need + '</span>');
+      print('<span class="tbl"><span class="row">' +
+        '<span class="id" style="width:140px;display:inline-block;">[' + esc(lay.id) + '] T' + lay.tier + '</span>' +
+        '<span class="dim">' + bar + ' ' + sc + '/' + tc + '</span>  ' + tag +
+        '</span></span>');
+    });
+  }
+
   function showMap(){
     blank();
     print('<span class="bold">' + esc(S("mapHdr")) + '</span>');
@@ -727,6 +771,7 @@
       case "hint": case "힌트": doHint(arg); break;
       case "submit": case "flag": case "answer": trySubmit(arg); break;
       case "status": case "whoami": case "stat": case "id": showStatus(); break;
+      case "stats": case "chart": case "dashboard": case "통계": showStats(); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(); break;
       case "import": case "restore": doImport(arg); break;
@@ -827,8 +872,93 @@
     sEnter();
     run(v);
   });
+  const AUTO_COMMANDS = [
+    "help", "ls", "nodes", "map", "connect", "back", "cat", "hint",
+    "submit", "status", "stats", "search", "export", "import", "lang",
+    "sound", "clear", "reset", "banner"
+  ];
+
+  function getLCP(arr){
+    if (!arr || !arr.length) return "";
+    let prefix = arr[0];
+    for (let i = 1; i < arr.length; i++){
+      while (!arr[i].startsWith(prefix)){
+        prefix = prefix.slice(0, -1);
+        if (!prefix) return "";
+      }
+    }
+    return prefix;
+  }
+
+  function doAutoComplete(){
+    const v = input.value;
+    const trimmed = v.trimStart();
+    if (!trimmed) return;
+    const leadingSpaces = v.slice(0, v.length - trimmed.length);
+
+    // 1. connect / cd / ssh node completion
+    const connMatch = trimmed.match(/^(connect|cd|ssh|nc)\s+(\S*)$/i);
+    if (connMatch){
+      const prefix = connMatch[1];
+      const argPrefix = connMatch[2].toLowerCase();
+      const nodeIds = LAYERS.map(l => l.id);
+      const matches = nodeIds.filter(id => id.startsWith(argPrefix));
+      if (matches.length === 1){
+        input.value = leadingSpaces + prefix + " " + matches[0] + " ";
+        sKey();
+      } else if (matches.length > 1){
+        blank();
+        echoCmd(v);
+        print('<span class="dim">' + matches.join("  ") + '</span>');
+        const lcp = getLCP(matches);
+        if (lcp.length > argPrefix.length){
+          input.value = leadingSpaces + prefix + " " + lcp;
+        }
+      }
+      return;
+    }
+
+    // 2. cat lock completion in current layer
+    const catMatch = trimmed.match(/^(cat|open|less)\s+(\S*)$/i);
+    if (catMatch && cwd){
+      const prefix = catMatch[1];
+      const argPrefix = catMatch[2];
+      const locks = currentLocks();
+      const lockNums = locks.map((_, i) => String(i + 1));
+      const matches = lockNums.filter(num => num.startsWith(argPrefix));
+      if (matches.length === 1){
+        input.value = leadingSpaces + prefix + " " + matches[0] + " ";
+        sKey();
+      } else if (matches.length > 1 && matches.length <= 20){
+        blank();
+        echoCmd(v);
+        print('<span class="dim">' + matches.join("  ") + '</span>');
+      }
+      return;
+    }
+
+    // 3. Command completion
+    if (!trimmed.includes(" ")){
+      const cmdPrefix = trimmed.toLowerCase();
+      const matches = AUTO_COMMANDS.filter(c => c.startsWith(cmdPrefix));
+      if (matches.length === 1){
+        input.value = leadingSpaces + matches[0] + " ";
+        sKey();
+      } else if (matches.length > 1){
+        blank();
+        echoCmd(v);
+        print('<span class="dim">' + matches.join("  ") + '</span>');
+        const lcp = getLCP(matches);
+        if (lcp.length > cmdPrefix.length){
+          input.value = leadingSpaces + lcp;
+        }
+      }
+    }
+  }
+
   input.addEventListener("keydown", e => {
-    if (e.key === "ArrowUp"){ if (hi > 0){ hi--; input.value = history[hi] || ""; } e.preventDefault(); }
+    if (e.key === "Tab"){ e.preventDefault(); doAutoComplete(); }
+    else if (e.key === "ArrowUp"){ if (hi > 0){ hi--; input.value = history[hi] || ""; } e.preventDefault(); }
     else if (e.key === "ArrowDown"){ if (hi < history.length - 1){ hi++; input.value = history[hi] || ""; } else { hi = history.length; input.value = ""; } e.preventDefault(); }
     else if (e.key.length === 1){ sKey(); }
   });
