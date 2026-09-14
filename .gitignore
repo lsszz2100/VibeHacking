@@ -48,3 +48,7 @@ __pycache__/
 *.py.bak
 .venv/
 venv/
+
+# Infra DB HA & Backup Runtime Data
+infra/db_ha_backup/data/
+

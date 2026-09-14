@@ -1,0 +1,68 @@
+# Patroni + etcd + PostgreSQL High Availability Cluster Configuration
+# Production Specification for Zero-Loss HA
+
+scope: pg-vibe-cluster
+namespace: /service
+name: pg-node1
+
+etcd3:
+  hosts:
+    - 10.0.1.11:2379
+    - 10.0.1.12:2379
+    - 10.0.1.13:2379
+
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: 10.0.1.21:8008
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    synchronous_mode: true
+    synchronous_mode_strict: false
+    synchronous_node_count: 1
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+        shared_buffers: 4GB
+        wal_level: replica
+        max_wal_senders: 10
+        max_replication_slots: 10
+        synchronous_commit: "on"
+        wal_keep_size: 1024MB
+        archive_mode: "on"
+        archive_command: "pgbackrest --stanza=vibe-cluster archive-push %p"
+        hot_standby: "on"
+
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: 10.0.1.21:5432
+  data_dir: /var/lib/postgresql/16/data
+  bin_dir: /usr/lib/postgresql/16/bin
+  pgpass: /var/lib/postgresql/.pgpass
+  authentication:
+    replication:
+      username: replicator
+      password: ReplicatorSecurePassword2026!
+    superuser:
+      username: postgres
+      password: PostgresSuperSecurePassword2026!
+
+watchdog:
+  mode: automatic
+  device: /dev/watchdog
+  safety_margin: 5
+
+tags:
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false
