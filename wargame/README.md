@@ -67,11 +67,11 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 
 | 계층 / node | 티어 / tier | 문제 / count | 통과 / breach |
 |------|:---:|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 83 | 45% |
-| `webserver` 웹서버 | **1** | 146 | 60% |
-| `internal` 내부망 | **2** | 177 | 60% |
-| `vault` 금고 | **3** | 192 | 58% |
-| `core` 코어 | **4** | 207 | 71% |
+| `perimeter` 외곽 | **0** | 85 | 45% |
+| `webserver` 웹서버 | **1** | 152 | 60% |
+| `internal` 내부망 | **2** | 185 | 60% |
+| `vault` 금고 | **3** | 201 | 58% |
+| `core` 코어 | **4** | 217 | 71% |
 
 <details>
 <summary><b>계층별 주제 펼쳐 보기 / topics by layer</b></summary>
@@ -103,6 +103,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `redteam` 🏴‍☠️ 레드팀·C2 (2) | 통제 서버 에이전트의 정기 체크인 통신 행위·공격자 관점에서 탐지 역량을 검증하는 실전 모의 조직 / periodic agent check-in communications, the offensive entity testing detection posture |
 | `purpleteam` 🟣 퍼플팀·공격/탐지 검증 (2) | 침해 및 공격 시뮬레이션의 영문 3글자 약어·공격과 탐지 검증을 함께 돌려 보안성을 높이는 양방향 순환 구조 / the 3-letter acronym for breach & attack simulation, the two-way iterative loop tuning detections against attacks |
 | `icsscada` 🏭 산업제어시스템·SCADA (2) | 변전소 차단기 연동 스마트 계측 장치·중앙 관제실 공정 도식화 조작 단말 / smart substation breaker metering instruments, supervisory graphics console |
+| `maldev` 🦠 악성코드 기법·방어 회피 (2) | 레거시 실행파일 시작 블록과 좌표 이동 감지 / legacy executable preamble and coordinate displacement tracking |
 
 #### `webserver` 웹서버 — 티어 1 / tier 1
 
@@ -131,6 +132,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `redteam` 🏴‍☠️ 레드팀·C2 (6) | Go 기반 크로스 플랫폼 통제 도구·도커 격리 협업 통제 서버·팀 서버 IP 를 감추는 중계 노드·안티바이러스 버퍼 검사 API·커널 위협 원격 측정 공급자·공격 인프라와 의도를 감추는 작전 규율 / Go-written cross-platform implant, Docker-isolated multi-agent server, intermediate forwarder node shielding the core server, Windows buffer inspection export, kernel threat telemetry provider, operational discipline protecting offensive indicators |
 | `purpleteam` 🟣 퍼플팀·공격/탐지 검증 (6) | 단위 기법별 명령을 야믈로 정의해 실행하는 경량 테스트 모음·MITRE가 만든 자동 적대 행위 모의 엔진·보안 평가 결과와 방어 현황을 기록 추적하는 웹 관리 도구·엔드포인트나 네트워크에서 수집되는 원격 보안 관측 데이터·로그 정책 부재로 발생하는 탐지 공백 구역·엔터프라이즈 환경용 유료 침해 공격 모의 도구 / lightweight YAML unit command tests, MITRE automated adversary testing engine, web tracking tool for adversary testing results, collected endpoint and network event streams, unmonitored logging deficiency areas, commercial enterprise-grade adversary simulation suite |
 | `icsscada` 🏭 산업제어시스템·SCADA (6) | 원격지 텔레메트리 단말·이더넷 캡슐화 전용 접두 헤더·긴급 정지 전용 계장·분산 공정 제어망·이더넷 계층 고속 전송 규격·제어 로직 작성용 워크스테이션 / remote telemetry stations, industrial encapsulation header, emergency shutdown loop, distributed plant controllers, high-speed substation frame delivery, logic authoring workstation |
+| `maldev` 🦠 악성코드 기법·방어 회피 (6) | 공개 심볼 목록, 스레드 초기화 콜백, 프롤로그 점프 엔진, ntdll 스텁 파싱, 비동기 호출 대기열, 파이버 단위 저장소 / public symbol directory, thread initialization callbacks, prologue jump engine, ntdll stub parsing, asynchronous call queuing, and fiber storage |
 
 #### `internal` 내부망 — 티어 2 / tier 2
 
@@ -159,6 +161,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `redteam` 🏴‍☠️ 레드팀·C2 (8) | 내부에 악성 화물을 포함한 초기 배달체·수면 편차 비율에 따른 지터 구간 계산·외측 서버 지시자와 헤더 불일치를 악용한 분산망 은닉·단기 수명의 다중 IP 로테이션·트래픽 전달 규칙 파싱·메모리 내 훅 복원·정상 DLL 실행 영역 덮어쓰기·초기 침투 성공을 가정한 평가 모델 / in-cargo payload courier, sleep interval calculation given variance rates, front-side domain mismatch over edge networks, rapid low-TTL IP rotation, traffic forwarding rule rollup, in-memory hook restoration, overwriting loaded module text, the presumed intrusion assessment model |
 | `purpleteam` 🟣 퍼플팀·공격/탐지 검증 (8) | 전술별 규칙 커버리지 비율 계산·테스트 결과 성공/실패/방어율 산출·클라우드 네이티브 환경 전용 공격 모의 도구·러스트로 작성된 초고속 윈도우 이벤트 로그 포렌식 도구·파이썬/러스트 기반 서명 규칙 고속 사냥 도구·탐지 엔지니어링의 시작점인 위협 가정 수립·정상 행위 표준 패턴 분석·방어 통제의 실효성을 입증하는 확인 절차 / tactic coverage ratio rollup, execution pass/fail and defense score calculation, cloud-native adversary test utility, fast Rust-based Windows event parser, rapid structured-rule hunting utility, establishing threat assumptions, expected normal behavior profile, confirming defensive control effectiveness |
 | `icsscada` 🏭 산업제어시스템·SCADA (8) | 자산 계층 판정·패킷 기능 번호와 대상 주소 파싱·공통 객체 규격·전력망 사이버 무기·물리 일방향 통신 관문·기계 운동 변환 구동기·일상 제어 루프 시스템·개방형 상호운용성 표준 / hierarchy placement, frame function code and target offset derivation, common object specification, electrical grid disruption weapon, physical unidirectional gate, mechanical motion driver, routine regulation loop, open interoperability standard |
+| `maldev` 🦠 악성코드 기법·방어 회피 (8) | 컴파일러 툴체인 식별자, 상대 주소의 파일 오프셋 계산, 문자열 해싱 연산, 이웃 스텁 거리 가감, 초기 스레드 디스패치, 트랜잭션 분신 프로세스, 프로세서 정보 조회, 고해상도 주기 계측 / compiler toolchain identifier, relative address to raw offset math, string hashing arithmetic, neighbor stub distance deduction, initial thread dispatch, transacted phantom process, processor feature query, and precision interval measurement |
 
 #### `vault` 금고 — 티어 3 / tier 3
 
@@ -187,6 +190,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `redteam` 🏴‍☠️ 레드팀·C2 (9) | 네트워크에서 본체를 당겨오는 초소형 로더·정상 웹 트래픽으로 위장하는 가변 프로필·비컨 체크인 성공률과 레이턴시 집계·비인가 스캐너를 쳐내는 웹서버 재작성 모듈·단일 바이너리 내부망 터널링·레지스터에 SSN 을 직접 채우는 커널 진입·로드된 ntdll 에서 시스템 호출 번호 동적 추출·표적 조직의 최우선 핵심 자산·교전 규칙과 안전 합의 문서 / minimal network payload fetcher, traffic-molding profile specification, beacon session success rate and latency rollup, web server rewrite rules deflecting scanners, single-binary TCP/UDP internal tunneling, filling registers directly for kernel transition, dynamic recovery of system call numbers, paramount core organizational assets, the binding rules and scope charter |
 | `purpleteam` 🟣 퍼플팀·공격/탐지 검증 (9) | 프로세스 실행과 감시 센서 수집 사이 최대 지연 시간 산출·탐지 코드를 형상 관리하는 방법론·자율 보안 테스트 플랫폼 Operator 제작사·오픈소스 다중 플랫폼 내부망 침투 시뮬레이터·시나리오 기반 모의 토론 훈련·공격 침해 후 신속한 회복 탄력성·예상 방어와 실제 탐지 능력 간의 차이·조직 전반의 총체적 보안 태세·공격 주체나 위협 행위자 관점의 시뮬레이션 / process event sensor ingest latency rollup, detection code versioning methodology, developer behind autonomous testing Operator, open-source multi-platform internal infection simulator, discussion-based incident rehearsal, rapid operational recovery capacity, disparity between expected and actual visibility, overall organizational readiness state, actor-centric threat execution |
 | `icsscada` 🏭 산업제어시스템·SCADA (9) | 직렬 버스 체크섬 계산·안전 계장 메모리 공격 도구·다목적 산업 사이버 무기·빌딩 자동화 프로토콜·제어기 물리 운전 스위치·삼중 이중화 안전 장비·물리 망분리 격리·지역 배전망 정전 트로이목마·기능 안전 무결성 등급 / serial frame error check math, safety system memory override toolkit, modular multi-vendor weapon, building automation protocol, physical run-mode key, triple-redundant controller line, physical isolation, distribution blackout trojan, functional safety rating |
+| `maldev` 🦠 악성코드 기법·방어 회피 (9) | 절대 번지 보정 목록, 무디스크 인메모리 매핑, 깊은 스텁 바이트 분석, 정품 모듈 내부 명령어 경유, 디스크 이미지 교체 주입, 트랜잭션 섹션 뷰 주입, 비동기 콜백 체인 스케줄링, 디렉터리 참여 상태 확인, 클록 틱 차이 판정 / absolute address fixup list, diskless in-memory mapping, deep stub byte analysis, genuine module instruction transition, on-disk image swapping injection, transacted section view mapping, asynchronous callback staging, directory realm participation check, and clock tick delta verification |
 
 #### `core` 코어 — 티어 4 / tier 4
 
@@ -215,12 +219,13 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `redteam` 🏴‍☠️ 레드팀·C2 (10) | 모던 다크 테마 공격 통제 프레임워크·인바운드 연결 수신 소켓·Client Hello 전체 암호화 규격·이름 풀이 질의를 통한 데이터 터널링·사실상 표준의 상용 모의 침투 도구·대기 중 메모리 암호화와 속성 변경·스택 백트레이스를 속이는 리턴 프레임 조작·삭제 대기 파일을 이용한 탐지 회피 주입·취약한 서명 드라이버를 악용한 커널 장악·종합 침투 오퍼레이션 보고서 계산 / modern C++ dark-themed framework, inbound listening network socket, full handshake Client Hello encryption standard, egress tunneling through DNS queries, de facto commercial offensive tool, encrypting dormant memory in idle sleep, synthetic return frame construction, minifilter-evading delete-pending process injection, exploiting signed vulnerable drivers, rolling up an end-to-end intrusion brief |
 | `purpleteam` 🟣 퍼플팀·공격/탐지 검증 (10) | 모의 테스트 결과 종합 차단/탐지율 산출·오탐을 줄이고 실효성을 높이는 규칙 최적화·사람/프로세스/기술의 3대 핵심 보안 요소·노이즈를 배제한 신호 정밀도·다양한 보안 도구를 자동 연계하는 조율 기술·탐지 및 커버리지 평가 라이프사이클·적대적 공격 기법 분류 체계·자산 및 기술 범위에 대한 감시율·이벤트 발생 시 보안 담당자에게 통보되는 신호·위협 행위의 징후를 식별하는 핵심 기능 / comprehensive synthetic test result rollup, reducing noise through rule optimization, people/process/technology trinity, high-signal precision, automated security workflow coordination, visibility and assessment lifecycle, offensive technique taxonomy, scope of defensive surveillance, notification signals emitted to analysts, identifying malicious threat indicators |
 | `icsscada` 🏭 산업제어시스템·SCADA (10) | 화학 공정 인시던트 종합 분석·실시간 등시성 산업 이더넷·복합 공정 객체 보고 사양·아날로그 읽기 쓰기 메모리·측정값 기만 주입 수법·상호 구속 안전 차단 회로·긴급 자동 차단 동작·하위 브리지 장치 식별 번호·산업 패킷 심층 검사 기술·접점 도면 그래픽 제어 언어 / chemical incident synthesis, isochronous real-time industrial ethernet, structured telemetry reporting standard, read-write telemetry words, telemetry spoofing deception, hardwired mutual cutout circuit, emergency plant trip, bridged slave identifier, industrial payload deep inspection, contact circuit graphical language |
+| `maldev` 🦠 악성코드 기법·방어 회피 (10) | 타깃 라이브러리 심볼 위임, 사전 캐시 오브젝트 폴더, 함수 주소 오름차순 번호 도출, 반출 디렉터리 항목 변조, 네이티브 커널 대기 디스패치, 서명 라이브러리 코드 치환, 글로벌 데이터 테이블 경유 주입, 윈도우 서브클래스 메모리 조작, 대기 상태 메모리 암호화 루틴, 고도화 방어 회피 침해사고 분석 종합 / target library symbol delegation, pre-cached object directory path, function address ascending order derivation, public symbol table redirection, native kernel wait dispatch, signed library code replacement, global data table routed injection, window subclass memory manipulation, dormant state memory encryption routine, and advanced defense evasion debrief capstone |
 
 </details>
 
-총 **805문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **840문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **805 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **840 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 

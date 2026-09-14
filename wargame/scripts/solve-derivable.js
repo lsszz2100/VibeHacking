@@ -1000,6 +1000,46 @@ const SOLVERS = new Map([
     const status = sisMatch[1];
     return `FLAG{ICS_FC${fc}_COIL${coil}_P${psi}_${status}}`;
   } }],
+  ['t2_mlpedir', { kind: 'computed', via: 'calculate raw disk file offset from RVA and section mapping', solve: (ch) => {
+    const m = (ch.prompt.en || ch.prompt.ko).match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced block');
+    const rva = parseInt(m[1].match(/RVA:\s*0x([0-9a-fA-F]+)/)[1], 16);
+    const va = parseInt(m[1].match(/VirtualAddress:\s*0x([0-9a-fA-F]+)/)[1], 16);
+    const raw = parseInt(m[1].match(/PointerToRawData:\s*0x([0-9a-fA-F]+)/)[1], 16);
+    const off = (rva - va + raw).toString(16).toUpperCase().padStart(8, '0');
+    return `FLAG{PE_RAW_${off}}`;
+  } }],
+  ['t2_mldjb2', { kind: 'computed', via: 'compute 32-bit unsigned DJB2 hash of target API name', solve: (ch) => {
+    const m = (ch.prompt.en || ch.prompt.ko).match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced block');
+    const api = m[1].match(/target_api:\s*([A-Za-z0-9_]+)/)[1];
+    let h = 5381;
+    for (let i = 0; i < api.length; i++) {
+      h = (((h << 5) + h) + api.charCodeAt(i)) & 0xFFFFFFFF;
+    }
+    const hex = (h >>> 0).toString(16).toUpperCase().padStart(8, '0');
+    return `FLAG{DJB2_${hex}}`;
+  } }],
+  ['t3_mlrdtsc', { kind: 'computed', via: 'compute cycle delta from timestamp counter and compare with threshold', solve: (ch) => {
+    const m = (ch.prompt.en || ch.prompt.ko).match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced block');
+    const start = parseInt(m[1].match(/start_cycles:\s*(\d+)/)[1], 10);
+    const end = parseInt(m[1].match(/end_cycles:\s*(\d+)/)[1], 10);
+    const threshold = parseInt(m[1].match(/threshold:\s*(\d+)/)[1], 10);
+    const delta = end - start;
+    const status = delta > threshold ? 'DETECTED' : 'CLEAN';
+    return `FLAG{TSC_${delta}_${status}}`;
+  } }],
+  ['t4_mlcapstone', { kind: 'computed', via: 'aggregate malware evasion incident briefing parameters into composite flag', solve: (ch) => {
+    const m = (ch.prompt.en || ch.prompt.ko).match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced block');
+    const text = m[1];
+    const inj = text.match(/Injection Technique:\s*(\S+)/)[1].toUpperCase();
+    const sys = text.match(/Syscall Mode:\s*(\S+)/)[1].toUpperCase();
+    const src = text.match(/Clean Library Source:\s*(\S+)/)[1].toUpperCase();
+    const res = text.match(/Detection Mitigation:\s*(\S+)/)[1].toUpperCase();
+    return `FLAG{ML_${inj}_${sys}_${src}_${res}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

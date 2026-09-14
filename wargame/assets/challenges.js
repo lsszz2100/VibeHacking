@@ -229,6 +229,14 @@ const TRACKS = [
     "en": "ICS/SCADA & OT",
     "desc_ko": "Purdue 모델·Modbus/S7/DNP3 산업 프로토콜·PLC 로직 조작·OT 사이버 물리 보안.",
     "desc_en": "Purdue model, Modbus/S7/DNP3 industrial protocols, PLC logic tampering, OT cyber-physical security."
+  },
+  {
+    "id": "maldev",
+    "icon": "🦠",
+    "ko": "악성코드 기법·방어 회피",
+    "en": "Malware & Defense Evasion",
+    "desc_ko": "PE 구조 내부·API 해싱·간접 시스템콜·메모리 인젝션과 샌드박스 회피 분석.",
+    "desc_en": "PE internals, API hashing, indirect syscalls, memory injection, and sandbox evasion analysis."
   }
 ];
 
@@ -22810,5 +22818,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "e7190be04c4c6fdc462ea11d1011fab64fa69866e1b85931fbda375d7df9632a"
+},
+{
+  "id": "t0_mldosheader",
+  "tier": 0,
+  "cat": "peinternals",
+  "track": "maldev",
+  "points": 50,
+  "ci": true,
+  "fmt": "두 단어 / two words (10글자 / 10 chars)",
+  "title": {
+    "ko": "PE 파일 맨 앞의 레거시 구조체",
+    "en": "PE File Foremost Legacy Header Structure"
+  },
+  "prompt": {
+    "ko": "윈도우 실행 파일(PE)의 오프셋 0에 위치하며, 매직 서명 바이트(0x5A4D)로 시작하고 마지막 필드인 e_lfanew에 실제 NT 헤더의 오프셋을 저장하는 16비트 레거시 구조체 이름은 무엇인가요? 영문 두 단어(10글자)로 입력하세요.",
+    "en": "Which legacy structure sits at offset 0 of every Windows PE executable, beginning with the magic signature bytes (0x5A4D) and storing the offset to the NT headers in its e_lfanew field? Enter the two words (10 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "16비트 디스크 운영체제 환경 호환을 위한 최상단 구조체입니다.",
+      "운영체제 약칭과 머리부(두 단어)의 조합입니다."
+    ],
+    "en": [
+      "Top-level structure preserved for backward compatibility with 16-bit disk operating environments.",
+      "Combines the disk OS acronym with the word for a leading section."
+    ]
+  },
+  "hash": "0139589287615e1ab3c727ca2928e9230a68e9adf324d2a71b4b87b33ec62843"
+},
+{
+  "id": "t0_mlcursor",
+  "tier": 0,
+  "cat": "sandboxdodge",
+  "track": "maldev",
+  "points": 50,
+  "ci": true,
+  "fmt": "두 단어 / two words (15글자 / 15 chars)",
+  "title": {
+    "ko": "샌드박스 회피를 위한 사용자 마우스 포인터 좌표 변화 감지",
+    "en": "Sandbox Evasion via User Mouse Pointer Tracking"
+  },
+  "prompt": {
+    "ko": "가상화 분석 환경이 무인 자동화 상태인지 판별하기 위해, GetCursorPos API를 일정 간격으로 호출하여 실제 인간 사용자가 마우스를 움직이고 있는지 확인하는 행위 분석 우회 기법은 무엇인가요? 영문 두 단어(15글자)로 입력하세요.",
+    "en": "Which evasion technique polls GetCursorPos over an interval to ensure an actual human user is maneuvering the mouse rather than running inside an unattended automated sandbox? Enter the two words (15 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "화면 상의 포인터를 뜻하는 외래어와 이동/움직임을 뜻하는 영단어의 조합입니다.",
+      "마우스 포인터 위치가 고정되어 있으면 실행을 자진 중단합니다."
+    ],
+    "en": [
+      "Combines the pointer term with the word denoting physical displacement or motion.",
+      "Terminates execution if pointer coordinates remain completely static."
+    ]
+  },
+  "hash": "8a45d2d068e5a3553814915f9a0c07e436d3dde2bc185bc37ca4cf7a56d54f06"
+},
+{
+  "id": "t1_mleat",
+  "tier": 1,
+  "cat": "peinternals",
+  "track": "maldev",
+  "points": 65,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "DLL이 제공하는 함수 주소 목록 테이블 구조",
+    "en": "Public Symbol Address Directory Table in PE"
+  },
+  "prompt": {
+    "ko": "윈도우 DLL이나 실행 파일에서 외부 모듈이 호출할 수 있도록 공개하는 함수들의 상대 가상 주소(RVA) 배열을 보관하는 PE 내보내기 주소 테이블의 3글자 영문 약어는 무엇인가요?",
+    "en": "What is the 3-letter acronym for the table structure in a Windows PE binary that holds an array of relative virtual addresses (RVAs) of public functions accessible to external callers?"
+  },
+  "hints": {
+    "ko": [
+      "수입 주소 목록 테이블에 대응되는 반출 주소 테이블입니다.",
+      "Export, Address, Table의 각 첫 글자를 딴 약칭입니다."
+    ],
+    "en": [
+      "Counterpart to the import address directory for external symbols.",
+      "Three-letter acronym representing Export Address Table."
+    ]
+  },
+  "hash": "e57bd924047ef39d2a206c8bc5c06a0ed38baa918c5054859f5e8ffd23037371"
+},
+{
+  "id": "t1_mltls",
+  "tier": 1,
+  "cat": "peinternals",
+  "track": "maldev",
+  "points": 65,
+  "ci": true,
+  "fmt": "두 단어 / two words (12글자 / 12 chars)",
+  "title": {
+    "ko": "메인 진입점보다 먼저 실행되는 스레드 로컬 스토리지 콜백",
+    "en": "Thread Local Storage Callbacks Executing Before Entry Point"
+  },
+  "prompt": {
+    "ko": "PE 헤더의 디렉터리에 등록되어 프로세스의 메인 진입점(OEP/main) 코드가 실행되기 전 스레드 생성/종료 시점에 커널에 의해 먼저 자동 호출되는 콜백 함수 메커니즘을 무엇이라 하나요? 영문 두 단어(12글자)로 입력하세요.",
+    "en": "What two-word term (12 characters) identifies the callback function mechanism registered in the PE TLS directory that automatically executes upon thread/process initialization before the main program entry point runs?"
+  },
+  "hints": {
+    "ko": [
+      "스레드 로컬 스토리지의 약칭(TLS)과 응답 호출을 뜻하는 단어의 조합입니다.",
+      "디버거 진입점 브레이크포인트보다 먼저 실행되어 안티디버깅 코드를 심는 데 자주 쓰입니다."
+    ],
+    "en": [
+      "Combines the storage acronym with the term for an asynchronously registered handler.",
+      "Frequently abused to run anti-debug routines prior to the primary debugger breakpoint."
+    ]
+  },
+  "hash": "7dc77b8b67003466fdc4b06b1eea803d3c172eae627edceda8c5d71031d71240"
+},
+{
+  "id": "t1_mlminhook",
+  "tier": 1,
+  "cat": "apihide",
+  "track": "maldev",
+  "points": 65,
+  "ci": true,
+  "fmt": "한 단어 / one word (7글자 / 7 chars)",
+  "title": {
+    "ko": "미니멀 x86/x64 트램펄린 API 후킹 라이브러리",
+    "en": "Minimalist x86/x64 Trampoline API Hooking Engine"
+  },
+  "prompt": {
+    "ko": "Tsuda Kageyu가 개발한 경량 C 언어 기반 오픈소스 라이브러리로, 2바이트 점프 명령어와 원본 프롤로그 보존 트램펄린을 사용해 유저모드 API 인라인 후킹을 가장 직관적이고 안정적으로 구현하는 도구의 이름은 무엇인가요? 영문 한 단어(7글자)로 입력하세요.",
+    "en": "What is the name of the popular lightweight open-source C library created by Tsuda Kageyu that provides clean x86/x64 inline API redirection utilizing two-byte jumps and prologue trampolines? Enter the single word (7 characters)."
+  },
+  "hints": {
+    "ko": [
+      "최소(minimal)의 축약형과 갈고리(hook)의 결합어입니다.",
+      "많은 보안 연구 도구 및 게임 모딩에서 프롤로그 패치용 표준 엔진으로 활용됩니다."
+    ],
+    "en": [
+      "A portmanteau of minimal and hook.",
+      "Industry-standard utility for reliable prologue patch insertion."
+    ]
+  },
+  "hash": "bf540e94778508f920d6fb9e4da9ca6835056a16fb441fdd6576e1108560872d"
+},
+{
+  "id": "t1_mlhellsgate",
+  "tier": 1,
+  "cat": "apihide",
+  "track": "maldev",
+  "points": 65,
+  "ci": true,
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "ntdll 수출 디렉터리를 순회해 SSN을 구하는 직접 시스템콜 원조 기법",
+    "en": "Dynamic Syscall Resolution via Export Parsing by Paul Laîné"
+  },
+  "prompt": {
+    "ko": "Paul Laîné와 sksm(VX-Underground)이 고안한 기법으로, 로드된 ntdll의 내보내기 디렉터리를 파싱하여 원하는 Nt/Zw 함수의 바이트 스텁(mov r10, rcx; mov eax, <SSN>)에서 시스템 서비스 번호를 동적으로 읽어내어 EDR 유저모드 후킹을 우회하는 기법의 명칭은 무엇인가요? 띄어쓰기 없는 영문 한 단어(9글자)로 입력하세요.",
+    "en": "Which foundational technique, authored by Paul Laîné and sksm at VX-Underground, parses ntdll export structures in memory to dynamically harvest System Service Numbers directly from opcode bytes? Enter the single word without spaces (9 characters)."
+  },
+  "hints": {
+    "ko": [
+      "지옥의 문을 뜻하는 영문 구문을 공백 없이 표기한 9글자 단어입니다.",
+      "스텁 첫 바이트가 0xE9 점프로 변조되어 있지 않은 정상 함수에서 번호를 추출합니다."
+    ],
+    "en": [
+      "The English phrase for the infernal portal written as a single combined term.",
+      "Fails if the stub prologue begins with an 0xE9 jump opcode."
+    ]
+  },
+  "hash": "a883299e2a6a7f12985f0b7a0f4703d25cd86a15648076edd64ce3bfa5c4e01d"
+},
+{
+  "id": "t1_mlapc",
+  "tier": 1,
+  "cat": "injecttech",
+  "track": "maldev",
+  "points": 65,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "스레드 경보 가능 상태에서 실행되는 비동기 프로시저 호출",
+    "en": "Asynchronous Routine Queued to Alertable Thread"
+  },
+  "prompt": {
+    "ko": "윈도우 운영체제에서 특정 스레드가 SleepEx, WaitForSingleObjectEx 등 경보 가능(Alertable) 상태에 진입할 때 실행되도록 커널 또는 유저 레벨 대기열에 적재되는 비동기 프로시저 호출 메커니즘의 3글자 영문 약어는 무엇인가요?",
+    "en": "What 3-letter acronym represents the Windows kernel mechanism allowing routines to be dispatched asynchronously to a thread whenever that thread enters an alertable wait state?"
+  },
+  "hints": {
+    "ko": [
+      "QueueUser로 시작하는 함수를 통해 페이로드 주입에 자주 사용됩니다.",
+      "Asynchronous, Procedure, Call의 앞 글자를 딴 약어입니다."
+    ],
+    "en": [
+      "Associated with the QueueUser... Win32 export.",
+      "Three-letter acronym for Asynchronous Procedure Call."
+    ]
+  },
+  "hash": "a3ab747d76de03ff13b83c41df689d51fedb1d2836acae0489732d7da5cfc321"
+},
+{
+  "id": "t1_mlfls",
+  "tier": 1,
+  "cat": "sandboxdodge",
+  "track": "maldev",
+  "points": 65,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "스레드 생성 없이 페이로드를 격발하는 파이버 로컬 스토리지 콜백",
+    "en": "Fiber Local Storage Callback Execution Without New Threads"
+  },
+  "prompt": {
+    "ko": "윈도우의 경량 단위인 파이버(Fiber)가 소멸하거나 프로세스가 정리될 때 실행되는 정리 콜백 함수를 전용 할당 API를 통해 등록하여, 원격 스레드 생성 이벤트를 전혀 발생시키지 않고 셸코드를 실행시키는 기법의 3글자 영문 약어는 무엇인가요?",
+    "en": "What 3-letter acronym denotes the storage allocation mechanism whose deletion callback is abused to detonate shellcode upon thread/process rundown without creating distinct new threads?"
+  },
+  "hints": {
+    "ko": [
+      "스레드 전용 저장소(TLS)에 대응되는 Fiber 전용 스토리지입니다.",
+      "Fiber, Local, Storage의 세 머리글자입니다."
+    ],
+    "en": [
+      "The fiber equivalent of Thread Local Storage.",
+      "Initials of Fiber Local Storage."
+    ]
+  },
+  "hash": "220f9818160a605e7d916e1ab1f3c6f06cf7a3509c0762f0d911e20f9ee11027"
+},
+{
+  "id": "t2_mlrich",
+  "tier": 2,
+  "cat": "peinternals",
+  "track": "maldev",
+  "points": 90,
+  "ci": true,
+  "fmt": "두 단어 / two words (11글자 / 11 chars)",
+  "title": {
+    "ko": "MSVC 컴파일러 빌드 툴체인 메타데이터를 담은 서명 블록",
+    "en": "Undocumented MSVC Compiler Toolchain Identification Block"
+  },
+  "prompt": {
+    "ko": "MSVC 링커로 컴파일된 윈도우 PE 파일의 레거시 스텁과 NT 헤더 사이에 삽입되는 비공개 데이터 블록으로, 개발에 사용된 컴파일러 버전, 빌드 ID, 오브젝트 카운트를 마스크 키로 난독화하여 보관하는 영역은 무엇인가요? 영문 두 단어(11글자)로 입력하세요.",
+    "en": "What undocumented metadata block is inserted between the legacy stub and NT headers by the Microsoft Visual C++ linker, containing masked records of compiler versions, build numbers, and object counts? Enter the two words (11 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "블록 끝에 부유함을 뜻하는 4글자 매직 표식 문자열과 체크섬 키가 위치합니다.",
+      "위협 인텔리전스에서 공격 조직의 빌드 환경 및 도구 체인을 프로파일링하는 데 핵심 지표로 쓰입니다."
+    ],
+    "en": [
+      "Concludes with a 4-letter marker meaning wealthy alongside a mask key.",
+      "Valued in cyber threat intelligence to correlate distinct adversary tool builds."
+    ]
+  },
+  "hash": "cbe3a47e34048e8c5973e0ce1b943c51c2424873e063782a17ba520bf9db408e"
+},
+{
+  "id": "t2_mlpedir",
+  "tier": 2,
+  "cat": "peinternals",
+  "track": "maldev",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PE 섹션 헤더 기반 가상 주소의 파일 원시 오프셋 변환",
+    "en": "Calculate PE File Raw Offset from Virtual RVA"
+  },
+  "prompt": {
+    "ko": "아래 펜스 블록에 주어진 PE 내보내기 디렉터리의 상대 가상 주소(RVA)와 해당 섹션(.rdata)의 가상 주소 및 파일 내 원시 오프셋 정보를 바탕으로, 디스크 파일 상에서의 실제 16진수 파일 오프셋(Raw Offset)을 계산하여 플래그(FLAG{PE_RAW_<8자리 대문자 헥스>})를 구하세요.\n\n```\nRVA: 0x00042800\nSection: .rdata\nVirtualAddress: 0x00040000\nPointerToRawData: 0x0003E000\n```",
+    "en": "Given the relative virtual address (RVA) and enclosing section (.rdata) mapping below, compute the exact raw disk file offset (RawOffset = RVA - VirtualAddress + PointerToRawData) and enter the flag formatted as FLAG{PE_RAW_<8 hex digits uppercase>}.\n\n```\nRVA: 0x00042800\nSection: .rdata\nVirtualAddress: 0x00040000\nPointerToRawData: 0x0003E000\n```"
+  },
+  "hints": {
+    "ko": [
+      "공식: RawOffset = RVA - VirtualAddress + PointerToRawData 입니다.",
+      "0x00042800 - 0x00040000 = 0x2800 이며, 여기에 0x0003E000을 더합니다."
+    ],
+    "en": [
+      "Formula: RawOffset = RVA - VirtualAddress + PointerToRawData.",
+      "Compute 0x42800 - 0x40000 = 0x2800, then add 0x3E000."
+    ]
+  },
+  "hash": "5f91faf6f0c3fcd350d3c764e6ee89b53e58774d7d1748cdf7b6b7ab6d5e077f"
+},
+{
+  "id": "t2_mldjb2",
+  "tier": 2,
+  "cat": "apihide",
+  "track": "maldev",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "API 해싱용 고전 DJB2 문자열 해시 계산",
+    "en": "Compute Classic DJB2 Hash for Dynamic API Resolution"
+  },
+  "prompt": {
+    "ko": "악성코드 분석 회피 및 임포트 테이블 난독화에 널리 쓰이는 Dan Bernstein의 DJB2 알고리즘(초기값 5381, hash = ((hash << 5) + hash) + c, 32비트 부호없는 정수 연산)을 적용하여, 아래 주어진 타깃 API 함수의 해시를 구하고 플래그(FLAG{DJB2_<8자리 대문자 헥스>})를 도출하세요.\n\n```\ntarget_api: NtCreateThreadEx\ninit_val: 5381\nalgorithm: DJB2\n```",
+    "en": "Apply the classic 32-bit unsigned DJB2 string hashing algorithm (hash = ((hash << 5) + hash) + c, initial value 5381) to the given target API name below to derive the flag in the format FLAG{DJB2_<8 uppercase hex digits>}.\n\n```\ntarget_api: NtCreateThreadEx\ninit_val: 5381\nalgorithm: DJB2\n```"
+  },
+  "hints": {
+    "ko": [
+      "각 문자의 ASCII 값을 순서대로 순회하며 누적합니다.",
+      "매 연산마다 32비트 부호없는 정수 마스크(& 0xFFFFFFFF)를 유지하세요."
+    ],
+    "en": [
+      "Iterate over each ASCII character code in order.",
+      "Ensure 32-bit unsigned wrapping using bitwise mask & 0xFFFFFFFF."
+    ]
+  },
+  "hash": "962294e93d82f3289d56a137466c63415d9971751bc77e131f9b509e18f83766"
+},
+{
+  "id": "t2_mlhalosgate",
+  "tier": 2,
+  "cat": "apihide",
+  "track": "maldev",
+  "points": 90,
+  "ci": true,
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "후킹된 이웃 스텁을 위아래로 탐색하는 게이트 기법",
+    "en": "Neighbor Scanning Syscall Extraction Technique"
+  },
+  "prompt": {
+    "ko": "Hell's Gate가 후킹된 0xE9 바이트 스텁에서 번호 추출에 실패하는 한계를 극복하기 위해, Reenz0h(SECTOR7)가 고안한 기법으로 인접한 위아래 이웃 시스템콜 스텁의 바이트를 검색하여 정상 스텁의 번호에 인덱스 거리(±1, ±2...)를 가감해 타깃 번호를 복원하는 기법은? 띄어쓰기 없는 영문 한 단어(9글자)로 입력하세요.",
+    "en": "Which enhancement, developed by Reenz0h from SECTOR7, scans neighboring syscall stubs above and below a hooked function to deduce its service number by adding or subtracting neighbor index distances? Enter the single word (9 characters)."
+  },
+  "hints": {
+    "ko": [
+      "성인의 머리 뒤에 빛나는 원형 고리를 뜻하는 단어와 통로(Gate)의 합성어입니다.",
+      "지옥의 문(Hell)에 대비되는 광명의 후광 명칭입니다."
+    ],
+    "en": [
+      "Named after a celestial circle of light coupled with gate.",
+      "Nine letters written as one combined word without punctuation."
+    ]
+  },
+  "hash": "ed307056b3902b8d401ba46a758da2538dea395660e9389b1f3042cf633e2809"
+},
+{
+  "id": "t2_mlearlybird",
+  "tier": 2,
+  "cat": "injecttech",
+  "track": "maldev",
+  "points": 90,
+  "ci": true,
+  "fmt": "두 단어 / two words (10글자 / 10 chars)",
+  "title": {
+    "ko": "EDR 후킹 모듈 적재 전 초기 스레드에 비동기 루틴을 거는 주입",
+    "en": "Pre-Hook Initialization Injection Technique"
+  },
+  "prompt": {
+    "ko": "CyberBit 연구진이 발표한 기법으로, CREATE_SUSPENDED 플래그로 신규 프로세스를 생성한 후 보안 소프트웨어의 감시 모듈이 인라인 후킹을 심기 전에 비동기 프로시저를 메인 스레드에 큐잉하고 ResumeThread로 즉시 격발시키는 회피 주입 기법은 무엇인가요? 영문 두 단어(10글자)로 입력하세요.",
+    "en": "Which injection technique, documented by CyberBit researchers, spawns a sacrificial process in a suspended state and queues an asynchronous execution callback before security telemetry engines and userland hook DLLs initialize? Enter the two words (10 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "일찍 일어나는 조류가 먹이를 잡는다는 서양 속담에서 유래한 명칭입니다.",
+      "일찍(early)과 조류(bird)의 두 단어 결합입니다."
+    ],
+    "en": [
+      "Namesake of the proverb about the prompt winged creature catching the worm.",
+      "Consists of two simple words: the adverb of punctuality followed by a feathered animal."
+    ]
+  },
+  "hash": "d6ec3deea140bd61572ddf737cdfffdef56da82430546e49bc31eb7e7bd51462"
+},
+{
+  "id": "t2_mldoppelganging",
+  "tier": 2,
+  "cat": "injecttech",
+  "track": "maldev",
+  "points": 90,
+  "ci": true,
+  "fmt": "두 단어 / two words (21글자 / 21 chars)",
+  "title": {
+    "ko": "NTFS 트랜잭션을 악용하여 파일 없는 실행을 위장하는 공격",
+    "en": "Ghost Process Masquerading via NTFS Transaction Abuse"
+  },
+  "prompt": {
+    "ko": "블랙햇 2017에서 발표된 기법으로, 윈도우 NTFS 트랜잭션(TxF)을 생성하여 임의의 정상 파일에 페이로드를 쓰고 이를 바탕으로 섹션을 생성(NtCreateSection)한 후, 트랜잭션을 롤백하여 디스크에는 변경 흔적을 남기지 않고 프로세스를 실행하는 기법의 전체 명칭은 무엇인가요? 영문 두 단어(21글자)로 입력하세요.",
+    "en": "Which evasion mechanism, debuted at Black Hat 2017, writes malicious code into a transacted file (TxF), maps an executable section, and then rolls back the transaction so no malicious file bytes persist on disk? Enter the two words (21 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "자신과 똑같이 생긴 분신을 뜻하는 독일어 유래 단어가 포함됩니다.",
+      "프로세스를 뜻하는 단어와 분신화 행위를 뜻하는 13글자 단어의 결합입니다."
+    ],
+    "en": [
+      "Incorporates the folklore term for a ghostly double or double-walker.",
+      "Two words: process followed by the gerund form of doppelgang."
+    ]
+  },
+  "hash": "619038e85a78866a38c97d3fad81f6bf3ecd58b3e1f395830c08052f4c5d5b1f"
+},
+{
+  "id": "t2_mlcpuid",
+  "tier": 2,
+  "cat": "sandboxdodge",
+  "track": "maldev",
+  "points": 90,
+  "ci": true,
+  "fmt": "한 단어 / one word (5글자 / 5 chars)",
+  "title": {
+    "ko": "가상머신 감지 비트를 판별하는 x86 명령어",
+    "en": "x86 Instruction for Virtual Machine Presence Detection"
+  },
+  "prompt": {
+    "ko": "x86/x64 아키텍처에서 프로세서의 모델, 캐시, 확장 기능 정보를 조회하는 기계어 명령어로, EAX=1을 입력하고 실행했을 때 ECX 레지스터의 31번째 비트(가상머신 플래그 비트)가 1인지 검사하여 악성코드가 가상 샌드박스 분석 환경에 있는지 판별하는 명령어는? 영문 한 단어(5글자)로 입력하세요.",
+    "en": "Which x86 processor instruction, when invoked with function leaf EAX=1, exposes the guest-environment presence indicator at bit 31 of register ECX to reveal whether execution occurs within a guest VM? Enter the single word (5 characters)."
+  },
+  "hints": {
+    "ko": [
+      "중앙 처리 장치 약칭과 식별의 머리글자 두 자가 붙은 명령어입니다.",
+      "소문자 5글자 단어로 어셈블리 니모닉 그대로입니다."
+    ],
+    "en": [
+      "Assembly mnemonic combining processor initials with identification.",
+      "Five-letter single instruction mnemonic."
+    ]
+  },
+  "hash": "b31d956b5ee33d5b79d03cc245d3afbeda31ec1a9a22c19f35cb5f114150b16c"
+},
+{
+  "id": "t2_mlqpc",
+  "tier": 2,
+  "cat": "sandboxdodge",
+  "track": "maldev",
+  "points": 90,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "시간 가속 및 후킹을 탐지하는 고해상도 성능 카운터",
+    "en": "High-Resolution Performance Counter Evasion"
+  },
+  "prompt": {
+    "ko": "윈도우 하드웨어 고해상도 타이머의 틱 값을 쿼리하여 마이크로초 단위의 정밀한 실행 지연을 측정하는 Win32 API로, 지연 함수 후킹이나 가상 샌드박스의 시간 가속 조작을 판별하는 데 사용되는 QueryPerformanceCounter의 3글자 영문 약어는 무엇인가요?",
+    "en": "What 3-letter acronym commonly designates QueryPerformanceCounter, the high-resolution hardware performance timer queried by evasive binaries to detect sandbox clock acceleration or hooked delay wrappers?"
+  },
+  "hints": {
+    "ko": [
+      "Query, Performance, Counter 세 단어의 첫 글자를 딴 약칭입니다.",
+      "3글자 알파벳입니다."
+    ],
+    "en": [
+      "Initials taken from Query, Performance, and Counter.",
+      "Three-letter uppercase or lowercase abbreviation."
+    ]
+  },
+  "hash": "51434775a01859ce48caeefb267baaced2c207f81e9ee150aa624f3b634155db"
+},
+{
+  "id": "t3_mlreloc",
+  "tier": 3,
+  "cat": "peinternals",
+  "track": "maldev",
+  "points": 130,
+  "ci": true,
+  "fmt": "두 단어 / two words (16글자 / 16 chars)",
+  "title": {
+    "ko": "주소 공간 무작위화로 인해 베이스가 바뀔 때 포인터를 보정하는 재배치 디렉터리",
+    "en": "Relocation Directory for Dynamic Base Re-basing"
+  },
+  "prompt": {
+    "ko": "주소 공간 무작위화가 적용되어 PE 파일이 컴파일 시 지정된 선호 이미지 베이스가 아닌 다른 임의의 가상 메모리 주소에 로드될 때, 코드 및 데이터 섹션 내의 절대 메모리 참조 포인터들을 보정하기 위해 사용하는 .reloc 섹션의 핵심 디렉터리 이름은 무엇인가요? 영문 두 단어(16글자)로 입력하세요.",
+    "en": "Which two-word PE data directory (16 characters) residing in the .reloc section details absolute memory offsets that the loader must patch whenever address randomization forces the binary away from its preferred ImageBase?"
+  },
+  "hints": {
+    "ko": [
+      "기준/토대를 뜻하는 단어와 재배치(복수형)를 뜻하는 단어의 결합입니다.",
+      "공백 포함 16글자이며 두 번째 단어 끝에 s가 붙습니다."
+    ],
+    "en": [
+      "Two words combining the word for foundation with the plural noun for moving positions.",
+      "Sixteen characters total ending in a plural letter."
+    ]
+  },
+  "hash": "f518329230ba7d3333c70527bc97839465d9db7553ccc7dd048e34428b583ed5"
+},
+{
+  "id": "t3_mlreflective",
+  "tier": 3,
+  "cat": "peinternals",
+  "track": "maldev",
+  "points": 130,
+  "ci": true,
+  "fmt": "두 단어 / two words (14글자 / 14 chars)",
+  "title": {
+    "ko": "자체 로더를 내장하여 디스크를 거치지 않고 메모리에 적재되는 라이브러리",
+    "en": "Self-Loading Dynamic Library Without Disk Footprint"
+  },
+  "prompt": {
+    "ko": "Stephen Fewer가 고안한 기법으로, 윈도우 OS의 표준 모듈 적재 API나 디스크 저장을 거치지 않고, 모듈 자체에 내장된 로더 루틴이 자신의 헤더와 섹션을 대상 메모리에 직접 파싱·매핑하여 로딩을 완료하는 라이브러리 형태는 무엇인가요? 영문 두 단어(14글자)로 입력하세요.",
+    "en": "Which two-word library architecture (14 characters total), devised by Stephen Fewer, contains a self-parsing loader export that directly maps its own headers, imports, and relocations entirely in-memory without invoking default system loaders?"
+  },
+  "hints": {
+    "ko": [
+      "빛을 반사하듯 자체 투영한다는 의미의 형용사와 공유 라이브러리 약어의 결합입니다.",
+      "현대 침투 프레임워크의 표준 인메모리 페이로드 포맷입니다."
+    ],
+    "en": [
+      "Two words: an adjective meaning capable of reflecting, followed by the shared library acronym.",
+      "Standard in-memory payload design adopted across prominent offensive security suites."
+    ]
+  },
+  "hash": "f1bdaa32a2183f3e275f470945b07870868096acb682416c15525bc83e76f476"
+},
+{
+  "id": "t3_mltartarus",
+  "tier": 3,
+  "cat": "apihide",
+  "track": "maldev",
+  "points": 130,
+  "ci": true,
+  "fmt": "한 단어 / one word (12글자 / 12 chars)",
+  "title": {
+    "ko": "스텁 내부 변형 후킹 패턴까지 탐지하여 번호를 찾는 게이트 기법",
+    "en": "Extended Syscall Stub Pattern Resolution Technique"
+  },
+  "prompt": {
+    "ko": "최신 보안 모듈이 시스템 함수 앞부분의 인라인 점프 대신 스텁 중간에 후킹을 심는 변형 패턴을 식별하기 위해, Trickbot 분석가들이 고안하고 VX-Underground에 공개된 기법으로 스텁 전체의 바이트 시퀀스를 더 깊게 검사하여 시스템 서비스 번호를 추출하는 기법은? 영문 한 단어(12글자)로 입력하세요.",
+    "en": "Which advanced gate variant, formulated to overcome hooks placed further down inside the stub prologue rather than merely at the first instruction, thoroughly parses inner opcode patterns to identify the proper system service number? Enter the single word (12 characters)."
+  },
+  "hints": {
+    "ko": [
+      "그리스 신화의 가장 깊은 나락 지옥인 명칭과 통로(gate)의 합성어입니다.",
+      "12글자 단어로 끝부분은 gate로 끝납니다."
+    ],
+    "en": [
+      "Named after the deepest mythological underworld pit merged with gate.",
+      "Twelve-letter single compound word ending in gate."
+    ]
+  },
+  "hash": "5ae7f0f5218f572d11a7e25857ca9fb6325bf31d02cf509f931f16bead8fe35e"
+},
+{
+  "id": "t3_mlindirect",
+  "tier": 3,
+  "cat": "apihide",
+  "track": "maldev",
+  "points": 130,
+  "ci": true,
+  "fmt": "두 단어 / two words (16글자 / 16 chars)",
+  "title": {
+    "ko": "합법적 시스템 모듈 내부 명령어로 점프하여 호출 스택을 위장하는 기법",
+    "en": "Execution Transition Jumping into Genuine Module Memory"
+  },
+  "prompt": {
+    "ko": "직접 시스템 호출을 사용할 때 반환 주소가 정상 모듈 외측을 가리켜 발생하는 호출 스택(Call Stack) 검사를 우회하기 위해, 자체 코드에서는 레지스터에 번호만 세팅한 뒤 실제 시스템 진입 명령어는 정품 ntdll 메모리 영역 내부로 점프하여 실행되게 만드는 기법은? 영문 두 단어(16글자)로 입력하세요.",
+    "en": "Which execution model sets the service number within local code but jumps directly into a legitimate gadget within ntdll so that return addresses preserve valid call stack unwind chains? Enter the two words (16 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "직접(direct)의 반대말인 간접 방식을 나타내는 영단어와 시스템 진입 약어의 결합입니다.",
+      "보안 소프트웨어의 비인가 메모리 영역 시스템 진입 탐지를 회피하는 표준 기법입니다."
+    ],
+    "en": [
+      "Contrasts with direct invocation by employing an intermediate jump.",
+      "Two words: antonym of direct followed by the kernel entry term."
+    ]
+  },
+  "hash": "f0d950101619545e29c9a52dfdac33cadf43c9d4ce0da22878ec6c602889a69c"
+},
+{
+  "id": "t3_mlherpaderping",
+  "tier": 3,
+  "cat": "injecttech",
+  "track": "maldev",
+  "points": 130,
+  "ci": true,
+  "fmt": "두 단어 / two words (20글자 / 20 chars)",
+  "title": {
+    "ko": "스레드 생성 전 디스크 파일 내용을 정상 바이트로 덮어쓰는 회피 주입",
+    "en": "Executable Rewriting Prior to Thread Execution Technique"
+  },
+  "prompt": {
+    "ko": "Johnny Shaw가 발표한 기법으로, 디스크에 페이로드를 쓰고 섹션 객체를 생성한 직후, 스레드가 생성되어 커널 이미지 로드 알림이 발생하기 전에 디스크 상의 원본 파일 내용을 합법적인 정상 파일 바이트로 덮어써서 보안 제품의 검사를 교란하는 기법은? 영문 두 단어(20글자)로 입력하세요.",
+    "en": "Which evasion technique, developed by Johnny Shaw, writes target payload bytes to disk, builds a section, and overwrites the on-disk file with benign binary bytes before creating the initial thread to fool kernel process creation callbacks? Enter the two words (20 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "인터넷 밈 표현인 herpaderp에서 파생된 두 단어 명칭입니다.",
+      "디스크의 파일 내용과 메모리의 실행 이미지를 의도적으로 불일치시킵니다."
+    ],
+    "en": [
+      "Derived from the playful colloquial internet expression herpaderp.",
+      "Exploits differences between on-disk file bytes and the in-memory section image."
+    ]
+  },
+  "hash": "d39e8a5d9ad4a3920764dbc639740fd3ae624bfb4d26acb9593aa993e75c15ef"
+},
+{
+  "id": "t3_mltransacted",
+  "tier": 3,
+  "cat": "injecttech",
+  "track": "maldev",
+  "points": 130,
+  "ci": true,
+  "fmt": "두 단어 / two words (20글자 / 20 chars)",
+  "title": {
+    "ko": "트랜잭션 파일 섹션을 주소 공간에 매핑하는 할로잉 변종",
+    "en": "Transacted Hybrid Execution Technique"
+  },
+  "prompt": {
+    "ko": "고전적인 코드 영역 언매핑 탐지와 도플갱잉의 복잡성을 개선한 절충형 기법으로, 정상 프로세스를 중단 상태로 띄운 뒤 파일 트랜잭션(TxF) 객체로부터 로드된 섹션을 타깃 주소 공간에 매핑하여 실행하는 하이브리드 기법은 무엇인가요? 영문 두 단어(20글자)로 입력하세요.",
+    "en": "What two-word term (20 characters) describes the hybrid technique that marries process code replacement with NTFS Transactions (TxF), mapping a transacted ghost section into a suspended target?"
+  },
+  "hints": {
+    "ko": [
+      "트랜잭션이 적용된 상태를 뜻하는 단어와 속을 비워낸다는 단어의 결합입니다.",
+      "기존 코드 섹션을 강제로 언맵하지 않고 새로운 트랜잭션 뷰를 얹습니다."
+    ],
+    "en": [
+      "Combines the past-participle of transact with the gerund for emptying out.",
+      "Avoids noisy unmapping invocations."
+    ]
+  },
+  "hash": "254b5fb69605c46265a57adc1ae200240094756b8fa27d562a35855cf9545fab"
+},
+{
+  "id": "t3_mltimerqueue",
+  "tier": 3,
+  "cat": "sandboxdodge",
+  "track": "maldev",
+  "points": 130,
+  "ci": true,
+  "fmt": "두 단어 / two words (11글자 / 11 chars)",
+  "title": {
+    "ko": "대기 시간 비동기 콜백 체인을 스케줄링하는 윈도우 타이머 메커니즘",
+    "en": "Windows Timer Callback Mechanism for In-Memory Protection"
+  },
+  "prompt": {
+    "ko": "최신 메모리 난독화 도구가 단일 스레드 호출 스택 감시를 피하기 위해 사용하는 윈도우 비동기 메커니즘으로, CreateTimerQueueTimer API를 통해 실행 콜백 체인(메모리 보호 변경 → 암호화 → 대기 → 복호화 → 보호 복구)을 워커 스레드에서 시차를 두고 격발시키는 대기열 구조체 이름은? 영문 두 단어(11글자)로 입력하세요.",
+    "en": "Which native Windows scheduling mechanism, manipulated via CreateTimerQueueTimer, is exploited by memory-masking tools to choreograph asynchronous execution chains that alter protections and encrypt payloads during dormant intervals? Enter the two words (11 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "시간을 측정하는 기기와 줄지어 선 대기열을 뜻하는 두 단어 결합입니다.",
+      "기본 메인 스레드가 정지되어 있는 동안 독립적인 시스템 백그라운드 콜백으로 메모리를 보호합니다."
+    ],
+    "en": [
+      "Combines the timekeeper noun with the word for a waiting line.",
+      "Enables background worker threads to execute staged memory protection tasks."
+    ]
+  },
+  "hash": "429817240753c1a4fd3c63b8dde36b5007af67fd0dc6a9fdafab33c90e0f4829"
+},
+{
+  "id": "t3_mldomainjoined",
+  "tier": 3,
+  "cat": "sandboxdodge",
+  "track": "maldev",
+  "points": 130,
+  "ci": true,
+  "fmt": "두 단어 / two words (13글자 / 13 chars)",
+  "title": {
+    "ko": "타깃 기업 환경 검증을 위한 디렉터리 서비스 가입 상태 확인",
+    "en": "Directory Service Member Host Verification Evasion"
+  },
+  "prompt": {
+    "ko": "표적형 지능형 공격 악성코드가 일반적인 격리 분석실이나 분석가의 독립형 가상머신에서 실행되는 것을 방지하기 위해, NetGetJoinInformation API를 호출하여 호스트가 기업 중앙 디렉터리 영역에 참여하고 있는지 확인하는 환경 감지 상태는 무엇인가요? 과거분사 수식형 영문 두 단어(13글자)로 입력하세요.",
+    "en": "Which environment validation status, queried via NetGetJoinInformation to confirm the victim workstation is an authenticated member of an enterprise central directory rather than an isolated lab VM, is expressed as a two-word past-participle phrase (13 characters)?"
+  },
+  "hints": {
+    "ko": [
+      "영역/도메인을 뜻하는 단어와 결합/가입된 상태를 뜻하는 과거분사의 조합입니다.",
+      "중앙 컨트롤러와 통신할 수 없는 단독 워크그룹 PC에서는 즉시 조기 종료합니다."
+    ],
+    "en": [
+      "Two words combining the administrative territory noun with joined.",
+      "Bails out early if the returned status indicates a standalone workgroup."
+    ]
+  },
+  "hash": "542a44eda054c1c057dce0eae4673a5856c71ab1d895d4a930cfaef767e24960"
+},
+{
+  "id": "t3_mlrdtsc",
+  "tier": 3,
+  "cat": "sandboxdodge",
+  "track": "maldev",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "타임스탬프 카운터 차이를 이용한 디버깅 탐지 판정",
+    "en": "Timestamp Counter Delta Calculation for Debugger Detection"
+  },
+  "prompt": {
+    "ko": "아래 펜스 블록에 주어진 악성코드의 안티디버깅 루틴 실행 전후 CPU 타임스탬프 카운터 측정값(TSC)을 파싱하여, 경과 사이클 델타(end_cycles - start_cycles)를 구하고 주어진 임계값(threshold)과 비교하여 임계값 초과 시 'DETECTED', 이하 시 'CLEAN' 상태 태그를 조합한 플래그(FLAG{TSC_<delta>_<상태>})를 도출하세요.\n\n```\nstart_cycles: 154200100\nend_cycles: 158720100\nthreshold: 1000000\n```",
+    "en": "Parse the cycle counts below, compute the elapsed cycle delta (end_cycles - start_cycles), and compare it with the stated threshold. If the delta exceeds the threshold append 'DETECTED', otherwise 'CLEAN', producing the flag in the format FLAG{TSC_<delta>_<status>}.\n\n```\nstart_cycles: 154200100\nend_cycles: 158720100\nthreshold: 1000000\n```"
+  },
+  "hints": {
+    "ko": [
+      "delta = 158720100 - 154200100 = 4520000 입니다.",
+      "4520000은 threshold인 1000000을 초과하므로 DETECTED 판정입니다."
+    ],
+    "en": [
+      "Compute cycle delta: 158720100 - 154200100 = 4520000.",
+      "Since 4520000 > 1000000, the verdict is DETECTED."
+    ]
+  },
+  "hash": "2fcc7fa02132703ff3eb592fb0e419d77c35af373ab70c28a0e0c0e59d9cf474"
+},
+{
+  "id": "t4_mlexportforward",
+  "tier": 4,
+  "cat": "peinternals",
+  "track": "maldev",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (17글자 / 17 chars)",
+  "title": {
+    "ko": "수출 심볼을 타 라이브러리 함수로 위임하는 기법",
+    "en": "Symbol Delegation Redirection to External Binary Libraries"
+  },
+  "prompt": {
+    "ko": "윈도우 PE 규격에서 특정 DLL이 내보내는 함수의 주소 RVA가 코드 섹션 내의 오프셋 대신 'NTDLL.RtlAllocateHeap'과 같은 타깃 모듈 심볼 문자열을 가리켜, OS 로더가 호출 요청을 타 모듈로 자동 전송하게 만드는 기능의 이름은 무엇인가요? 영문 두 단어(17글자)로 입력하세요.",
+    "en": "Which PE specification feature (two words, 17 characters total) configures an export table entry's RVA to point directly at an ASCII delegation string, commanding the OS loader to pass invocation directly to an external binary?"
+  },
+  "hints": {
+    "ko": [
+      "반출/수출을 뜻하는 단어와 전송/전달을 뜻하는 동명사의 결합입니다.",
+      "DLL 프록시 공격에서 원본 함수의 기능을 100% 보존하며 호출 흐름을 가로채는 핵심 원리입니다."
+    ],
+    "en": [
+      "Combines the outward shipping noun with the term for relaying onward.",
+      "Fundamental mechanism underpinning robust DLL proxying persistence."
+    ]
+  },
+  "hash": "ca323aa1249ea2a3b88c4984d32f44b811865155dfdd02b7a3c19a90b8fd0e4c"
+},
+{
+  "id": "t4_mlknowndlls",
+  "tier": 4,
+  "cat": "peinternals",
+  "track": "maldev",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (10글자 / 10 chars)",
+  "title": {
+    "ko": "언후킹을 위해 순수한 원본 섹션을 획득하는 객체 디렉터리",
+    "en": "Object Directory for Clean Unhooked Sections"
+  },
+  "prompt": {
+    "ko": "디스크에서 시스템 라이브러리 파일을 새로 읽어오는 행위가 보안 모듈의 파일 감시에 의해 차단될 때, 윈도우 객체 관리자 네임스페이스의 전용 디렉터리에 이미 사전 캐싱되어 있는 섹션 객체를 NtMapViewOfSection으로 직접 매핑하여 훅이 전혀 없는 깨끗한 코드 섹션을 메모리에 얻어내는 기법에 사용되는 이 객체 디렉터리 명칭은 무엇인가요? 공백 포함 두 단어(10글자)로 입력하세요.",
+    "en": "Which Windows object manager directory maintains pre-allocated system section mappings that researchers map via NtMapViewOfSection to obtain fresh, unhooked code without performing suspicious disk reads? Enter the two words (10 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "알려진(known)과 모듈 확장자 복수형(dlls)의 결합어입니다.",
+      "윈도우 커널이 부팅 시 핵심 시스템 모듈의 로딩 성능 최적화를 위해 캐시해 두는 오브젝트 디렉터리입니다."
+    ],
+    "en": [
+      "Two words: adjective meaning familiar or recognized, followed by dynamic libraries in plural.",
+      "Pre-cached kernel section store facilitating rapid system module binding."
+    ]
+  },
+  "hash": "c4ed3d2feea8058215cf7a24c1c1abce1652c63ab9526c0c91e9fae2536f47ae"
+},
+{
+  "id": "t4_mlfreshycalls",
+  "tier": 4,
+  "cat": "apihide",
+  "track": "maldev",
+  "points": 160,
+  "ci": true,
+  "fmt": "한 단어 / one word (11글자 / 11 chars)",
+  "title": {
+    "ko": "시스템 함수 주소 정렬을 통해 런타임에 번호를 추론하는 기법",
+    "en": "Dynamic Syscall Deduction via Address Ordering Framework"
+  },
+  "prompt": {
+    "ko": "ntdll의 모든 시스템콜 함수들이 커널에 등록될 때 가상 메모리 주소 오름차순과 시스템 서비스 번호 순서가 정확히 일치한다는 원리를 활용하여, 수출 함수 테이블을 주소순으로 정렬함으로써 개별 함수의 바이트 스텁 후킹 여부와 상관없이 완벽하게 시스템 번호를 동적 계산해내는 기법의 이름은? 띄어쓰기 없는 영문 한 단어(11글자)로 입력하세요.",
+    "en": "Which dynamic invocation framework leverages the invariant that ntdll functions are arranged in ascending virtual memory order matching their numerical service numbers, sorting export addresses to accurately deduce syscall numbers even when stubs are heavily patched? Enter the single word (11 characters)."
+  },
+  "hints": {
+    "ko": [
+      "신선함을 뜻하는 형용사 변형과 호출(calls)의 결합어입니다.",
+      "바이트 패턴 검색 없이 함수 포인터 주소 정렬만으로 시스템콜 번호를 복원합니다."
+    ],
+    "en": [
+      "A compound word merging the slang term for fresh with calls.",
+      "Derives ordinal syscall slots purely from address sorting without inspecting prologue bytes."
+    ]
+  },
+  "hash": "3b89bbb0b762d646221a43543a035fbd5e1625cae42204a93ac5733645787fb3"
+},
+{
+  "id": "t4_mleathook",
+  "tier": 4,
+  "cat": "apihide",
+  "track": "maldev",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (8글자 / 8 chars)",
+  "title": {
+    "ko": "반출 심볼 테이블 항목을 변조해 GetProcAddress를 가로채는 기법",
+    "en": "Symbol Directory Modification Hooking Technique"
+  },
+  "prompt": {
+    "ko": "모듈의 함수 코드 첫 머리를 수정하는 인라인 방식이나 임포트 테이블을 수정하는 방식 대신, 로드된 모듈의 내보내기 디렉터리 내 특정 함수 포인터 엔트리를 자신의 콜백 주소로 변경하여, 타 프로세스가 GetProcAddress를 통해 해당 함수의 주소를 질의할 때 실행 흐름이 가로채지도록 만드는 기법은 무엇인가요? 영문 두 단어(8글자)로 입력하세요.",
+    "en": "Which hooking method modifies the target function RVA entry inside a loaded module's Symbol Directory table so that any subsequent GetProcAddress resolution resolves to an attacker-controlled redirection? Enter the two words (8 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "수출 테이블 약어 3글자와 갈고리를 뜻하는 4글자 단어의 결합입니다.",
+      "코드 섹션의 수정 없이 내보내기 헤더만 수정하므로 무결성 검사를 우회하기 쉽습니다."
+    ],
+    "en": [
+      "Two words: three-letter export table acronym followed by hook.",
+      "Manipulates public symbol tables rather than patching instruction bytes directly."
+    ]
+  },
+  "hash": "6373787a49efb82af4809e34603640686843315cc8027e489c9aff93c95218b5"
+},
+{
+  "id": "t4_mlntdelayexecution",
+  "tier": 4,
+  "cat": "apihide",
+  "track": "maldev",
+  "points": 160,
+  "ci": true,
+  "fmt": "한 단어 / one word (16글자 / 16 chars)",
+  "title": {
+    "ko": "Sleep 래퍼가 궁극적으로 진입하는 저수준 시스템콜 함수",
+    "en": "Underlying Native System Call Behind Win32 Delay Wrappers"
+  },
+  "prompt": {
+    "ko": "kernel32의 Sleep이나 SleepEx 함수가 내부적으로 호출하는 윈도우 네이티브 커널 시스템콜 함수로, 100나노초 단위의 음수 상대 시간 대기 인터벌을 인자로 받아 프로세스 스레드의 실행을 일시 중단시키는 핵심 네이티브 API의 명칭은 무엇인가요? 띄어쓰기 없는 영문 한 단어(16글자)로 입력하세요.",
+    "en": "Which low-level native NT system call is internally dispatched by kernel32 delay functions to suspend execution, accepting a negative 64-bit integer representing relative delay in 100-nanosecond units? Enter the single word name (16 characters)."
+  },
+  "hints": {
+    "ko": [
+      "Nt 접두사로 시작하며 지연과 실행을 뜻하는 영단어의 결합입니다.",
+      "16글자의 단일 시스템콜 식별자입니다."
+    ],
+    "en": [
+      "Begins with Nt, followed by Delay and Execution.",
+      "Sixteen-letter single native system call identifier."
+    ]
+  },
+  "hash": "324fad45ccf53acf1b14628c121422772bf74e7f2241e3e6e1ee77e2e043c992"
+},
+{
+  "id": "t4_mlmoduleoverloading",
+  "tier": 4,
+  "cat": "injecttech",
+  "track": "maldev",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (18글자 / 18 chars)",
+  "title": {
+    "ko": "정상 서명된 모듈의 메모리 섹션을 페이로드로 대체하는 주입 기법",
+    "en": "Signed Legitimate Binary Section Overwrite Technique"
+  },
+  "prompt": {
+    "ko": "합법적으로 디지털 서명된 정상 모듈을 타깃 프로세스에 로드한 후, 해당 모듈의 코드 섹션 메모리 권한을 변경하고 자신의 셸코드나 페이로드를 통째로 덮어써서, 메모리 스캐너가 보기에 유효한 서명 모듈의 백킹 메모리로 위장시키는 고도화된 주입 기법은? 영문 두 단어(18글자)로 입력하세요.",
+    "en": "Which advanced in-memory evasion technique loads a legitimately signed third-party library into process memory and overwrites its code section with instructions so that the executed memory space appears legitimately backed by a signed on-disk file? Enter the two words (18 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "모듈을 뜻하는 단어와 초과 적재/과적을 뜻하는 영단어의 결합입니다.",
+      "정상적인 파일 매핑 속성을 보존하여 프라이빗 메모리 헌팅 규칙을 무력화합니다."
+    ],
+    "en": [
+      "Two words: component term followed by overloading.",
+      "Preserves image memory mapping attributes to evade unbacked private memory scans."
+    ]
+  },
+  "hash": "7ed41fec42f69f75ec0413d3a4c4c7fc1694f8e57639cffb1d645a2fb069969a"
+},
+{
+  "id": "t4_mlatombombing",
+  "tier": 4,
+  "cat": "injecttech",
+  "track": "maldev",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (12글자 / 12 chars)",
+  "title": {
+    "ko": "글로벌 아톰 테이블을 악용하여 원격 메모리에 코드를 쓰는 기법",
+    "en": "Injection via Global Atom Table Manipulation"
+  },
+  "prompt": {
+    "ko": "enSilo 연구진이 발표한 기법으로, 셸코드를 윈도우 글로벌 아톰 테이블에 문자열 형태로 저장한 뒤, 타깃 프로세스의 스레드가 GlobalGetAtomName을 호출하도록 비동기 루틴을 큐잉하여 가상 메모리 쓰기 API 호출 없이 원격 프로세스 메모리에 코드를 기록하는 회피 주입 기법은 무엇인가요? 영문 두 단어(12글자)로 입력하세요.",
+    "en": "Which memory injection technique, discovered by enSilo researchers, stores shellcode fragments in the Windows Global Atom Table and forces a victim thread to call GlobalGetAtomName, writing code into memory without invoking WriteProcessMemory? Enter the two words (12 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "물리학의 원자를 뜻하는 단어와 폭격을 뜻하는 단어의 결합입니다.",
+      "보안 제품이 집중 감시하는 가상 메모리 쓰기 시스템콜을 전혀 거치지 않고 페이로드를 전달합니다."
+    ],
+    "en": [
+      "Two words combining the microscopic particle noun with bombing.",
+      "Bypasses endpoint inspection by avoiding conventional memory write APIs."
+    ]
+  },
+  "hash": "162b13056cfcce8e22d1d6f170669ad2ab6ea8fd57f856c3202470b1812be911"
+},
+{
+  "id": "t4_mlextrawindow",
+  "tier": 4,
+  "cat": "injecttech",
+  "track": "maldev",
+  "points": 160,
+  "ci": true,
+  "fmt": "문구 / phrase (18글자 / 18 chars)",
+  "title": {
+    "ko": "윈도우 창 내부 구조체의 예약 바이트 영역을 덮어쓰는 인젝션",
+    "en": "Injection via Subclass Reserved Window Storage Manipulation"
+  },
+  "prompt": {
+    "ko": "PROPagate 공격 등에서 악용되는 기법으로, SetWindowLongPtr API를 사용하여 탐색기나 데스크톱 창의 클래스에 할당된 윈도우 여유 메모리 영역(cbWndExtra)의 서브클래싱 포인터를 조작함으로써 임의 코드를 원격 실행하는 타깃 구조체 메모리 영역 명칭은 무엇인가요? 영문 3단어 문구(18글자)로 입력하세요.",
+    "en": "Which window memory structure area (allocated via cbWndExtra and manipulated with SetWindowLongPtr to hijack window subclassing pointers in Explorer windows) is described by this three-word phrase (18 characters total)?"
+  },
+  "hints": {
+    "ko": [
+      "추가적인(extra), 창(window), 바이트(bytes)를 뜻하는 세 단어 문구입니다.",
+      "SetWindowLongPtr의 유저 데이터 또는 서브클래스 포인터를 덮어씁니다."
+    ],
+    "en": [
+      "Three words: additional, graphical viewport term, and plural data unit.",
+      "Replaces window procedure structures allocated in cbWndExtra."
+    ]
+  },
+  "hash": "22e031de0bc75fcab49db48bbc7ca4d38d8da2bea303d744d161dce6635c6ada"
+},
+{
+  "id": "t4_mlsleepmask",
+  "tier": 4,
+  "cat": "sandboxdodge",
+  "track": "maldev",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words (10글자 / 10 chars)",
+  "title": {
+    "ko": "대기 시간 동안 프로세스 메모리와 실행 코드를 암호화하는 루틴",
+    "en": "In-Memory Beacon Obfuscation and Protection Routine"
+  },
+  "prompt": {
+    "ko": "현대 지휘통제 소프트웨어가 단말 대기 상태에 들어갈 때, 메모리 스캐너의 시그니처 및 실행 권한 스캔을 차단하기 위해 자신의 셸코드, 설정값, 힙 메모리를 암호화하고 페이지 보호 속성을 접근 불가로 변경한 뒤 깨어날 때 복원하는 보호 루틴의 총칭은? 영문 두 단어(10글자)로 입력하세요.",
+    "en": "What two-word generic term (10 characters total) identifies the evasion routine that dynamically encrypts an implant's in-memory footprint (image, heap, parameters) and masks executable memory protections to PAGE_NOACCESS during quiescent intervals?"
+  },
+  "hints": {
+    "ko": [
+      "수면/휴식을 뜻하는 단어와 차폐 가면을 뜻하는 단어의 결합입니다.",
+      "스캐너가 메모리를 전수 검사하더라도 암호화된 불투명 바이트만 보이게 만듭니다."
+    ],
+    "en": [
+      "Two words: dormant resting term followed by face covering or shield.",
+      "Obfuscates in-memory beacons into inert opaque data blocks during dormant windows."
+    ]
+  },
+  "hash": "c027b81bef32fc58499850a2204028d3a1d6524abbcfd2bf2f1c5a6aa26c10a0"
+},
+{
+  "id": "t4_mlcapstone",
+  "tier": 4,
+  "cat": "sandboxdodge",
+  "track": "maldev",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "악성코드 방어 회피 및 다계층 탐지 침해사고 분석 종합 캡스톤",
+    "en": "Malware Defense Evasion Incident Investigation Capstone"
+  },
+  "prompt": {
+    "ko": "보안 관제 센터와 침해사고 대응팀이 분석한 고도화 방어 회피 악성코드 인시던트 보고서가 아래 펜스 블록에 주어졌습니다. 주입 기법(Injection Technique), 시스템콜 모드(Syscall Mode), 클린 모듈 소스(Clean Library Source), 그리고 최종 탐지 완화 결과(Detection Mitigation) 값을 대문자로 종합하여 최종 플래그(FLAG{ML_<인젝션>_<시스템콜>_<소스>_<결과>})를 도출하세요.\n\n```\n[INCIDENT INVESTIGATION REPORT #9042]\nArchitecture: x64\nInjection Technique: EarlyBird_APC\nSyscall Mode: INDIRECT_JMP\nClean Library Source: KnownDlls\nSleep Mode: TimerQueue_Ekko\nSandbox Timing Delta: 4800000\nDetection Mitigation: SUCCESS\n```",
+    "en": "A composite incident investigation briefing for an evasive malware campaign is fenced below. Extract the Injection Technique, Syscall Mode, Clean Library Source, and Detection Mitigation fields in uppercase to assemble the capstone flag formatted as FLAG{ML_<INJECTION>_<SYSCALL>_<SOURCE>_<RESULT>}.\n\n```\n[INCIDENT INVESTIGATION REPORT #9042]\nArchitecture: x64\nInjection Technique: EarlyBird_APC\nSyscall Mode: INDIRECT_JMP\nClean Library Source: KnownDlls\nSleep Mode: TimerQueue_Ekko\nSandbox Timing Delta: 4800000\nDetection Mitigation: SUCCESS\n```"
+  },
+  "hints": {
+    "ko": [
+      "보고서의 항목을 순서대로 추출합니다: EarlyBird_APC, INDIRECT_JMP, KnownDlls, SUCCESS.",
+      "모든 단어는 언더스코어(_)로 연결되고 대문자 표기됩니다: FLAG{ML_<인젝션>_<시스템콜>_<소스>_<결과>}."
+    ],
+    "en": [
+      "Extract the four target fields: EarlyBird_APC, INDIRECT_JMP, KnownDlls, and SUCCESS.",
+      "Assemble them in uppercase with underscores: FLAG{ML_<INJECTION>_<SYSCALL>_<SOURCE>_<RESULT>}."
+    ]
+  },
+  "hash": "68dee88cb4f12de3e1404f0dfa10ec9abea37c12214006f7b23f33b9f1b7c5b0"
 }
 ];
