@@ -235,6 +235,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★☆",
         "related": [54, 10, 44],
     },
+    "12": {
+        "name": "CI/CD & 소프트웨어 공급망 침투 랩",
+        "dir":  "12_cicd_supply_chain_lab",
+        "desc": "PipePoison: Poisoned Pipeline Execution (PPE) · 의존성 혼동(Dependency Confusion) · 빌드 러너 Secrets 탈취 · 릴리스 백도어 변조",
+        "url":  "웹 콘솔 & CI/CD API: http://localhost:8012",
+        "difficulty": "★★★☆",
+        "related": [18, 35, 59],
+    },
 }
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────

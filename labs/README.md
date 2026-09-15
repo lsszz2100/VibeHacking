@@ -41,6 +41,7 @@ docker-compose --version
 | 09 | [ICS/SCADA 제어 보안 랩](./09_ics_scada_lab/) | Modbus/TCP 제어, 비인가 코일 조작, 텔레메트리 기만(FDI), SIS 비상 트립 | ★★★ |
 | 10 | [Kubernetes & 컨테이너 보안 랩](./10_k8s_security_lab/) | SA 토큰 탈취, RBAC 과다 권한 남용, hostPath 탈출, privileged 컨테이너 장악 | ★★★ |
 | 11 | [Active Directory & Kerberos 침투 랩](./11_ad_kerberos_lab/) | AS-REP Roasting, Kerberoasting, DCSync, Golden Ticket 도메인 장악 | ★★★☆ |
+| 12 | [CI/CD & 공급망 보안 랩](./12_cicd_supply_chain_lab/) | Poisoned Pipeline(PPE), 의존성 혼동(Dependency Confusion), 러너 시크릿 탈취, 릴리스 백도어 & SLSA 변조 | ★★★☆ |
 
 ---
 
@@ -119,6 +120,13 @@ docker-compose --version
 - 복제 권한(`DS-Replication-Get-Changes-All`)을 악용한 DCSync 공격 및 `krbtgt` 해시 탈취
 - 탈취한 `krbtgt` 키와 도메인 SID를 결합한 만능 Golden Ticket 위조 및 도메인 컨트롤러 장악
 - SIEM 보안 감사 이벤트(Event ID 4768, 4769, 4662, 4672) 탐지 및 gMSA·AES 강화 대책 실무 습득
+
+### 12. CI/CD & 소프트웨어 공급망 침투 랩 (PipePoison)
+- OctoCorp 엔터프라이즈 CI/CD 파이프라인 아키텍처 및 SDLC 공격면 분석
+- `pull_request_target` 트리거 기반 Poisoned Pipeline Execution (PPE) 커맨드 인젝션 및 러너 탈출
+- 비공개/공용 패키지 인덱스 간 버전 우선순위를 악용한 의존성 혼동(Dependency Confusion) 및 악성 인스톨 훅 실행
+- CI/CD 러너 메모리 및 환경변수 덤프를 통한 HashiCorp Vault 마스터 토큰 및 클라우드 시크릿 탈취
+- 빌드 산출물 무단 변조(SolarWinds 스타일) 및 SLSA Level 3 출처 증적 / Sigstore Cosign 무결성 서명 방어 대책 실무 적용
 
 ---
 

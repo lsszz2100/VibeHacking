@@ -1,0 +1,10 @@
+services:
+  cicd_supply_chain_lab:
+    build: .
+    container_name: cicd_supply_chain_lab
+    ports:
+      - "8012:8012"
+    restart: unless-stopped
+    labels:
+      - "lab=12"
+      - "group=cicd_supply_chain"

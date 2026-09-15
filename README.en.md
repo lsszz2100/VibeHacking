@@ -1486,18 +1486,23 @@ MITRE ATT&CK-based TTP documentation, dual-audience (executive/technical) report
 
 ```
 labs/
-├── 01_web_hacking_lab/      ← SQLi/XSS/SSRF/JWT vulnerable Flask app (Docker-based)
-├── 02_pwn_lab/              ← BOF/format string/heap exploit vulnerable binary environment
-├── 03_network_lab/          ← Packet analysis/MITM/ARP spoofing pcap + practice environment
-├── 04_cloud_container_lab/  ← Vulnerable Docker/K8s environment, container escape scenarios
-├── 05_full_scenario_lab/    ← Recon→Intrusion→Lateral movement→Privilege escalation→Exfiltration
-├── 06_firmware_lab/         ← binwalk extraction · QEMU ARM emulation · hardcoded-credential CTF
-├── 07_mobile_lab/           ← Android APK static analysis · Frida · JWT alg:none bypass CTF
-├── start_lab.sh             ← Full lab docker-compose up automation
-└── stop_all.sh              ← Stop all labs
+├── 01_web_hacking_lab/          ← SQLi/XSS/SSRF/JWT vulnerable Flask app (Docker-based)
+├── 02_pwn_lab/                  ← BOF/format string/heap exploit vulnerable binary environment
+├── 03_network_lab/              ← Packet analysis/MITM/ARP spoofing pcap + practice environment
+├── 04_cloud_container_lab/      ← Vulnerable Docker/K8s environment, container escape scenarios
+├── 05_full_scenario_lab/        ← Recon→Intrusion→Lateral movement→Privilege escalation→Exfiltration
+├── 06_firmware_lab/             ← binwalk extraction · QEMU ARM emulation · hardcoded-credential CTF
+├── 07_mobile_lab/               ← Android APK static analysis · Frida · JWT alg:none bypass CTF
+├── 08_llm_security_lab/         ← Prompt injection · Indirect RAG poisoning · Agent tool abuse CTF
+├── 09_ics_scada_lab/            ← Modbus/TCP coil manipulation · FDI telemetry spoofing · SIS trip CTF
+├── 10_k8s_security_lab/         ← SA token theft · RBAC escalation · hostPath node breakout CTF
+├── 11_ad_kerberos_lab/          ← AS-REP/Kerberoasting · DCSync replication · Golden Ticket takeover CTF
+├── 12_cicd_supply_chain_lab/    ← Poisoned Pipeline (PPE) · Dependency Confusion · Runner Secrets · SLSA Tampering CTF
+├── start_lab.sh                 ← Full lab docker-compose up automation
+└── stop_all.sh                  ← Stop all labs
 ```
 
-7 Docker-based CTF vulnerable environments — web, binary, network, cloud, full scenario, firmware, and mobile, ready for local practice. 13 flags total, one `start_lab.sh` command to spin up the entire environment.
+12 Docker-based CTF vulnerable environments — web, binary, network, cloud, full scenario, firmware, mobile, LLM, ICS/SCADA, K8s, AD/Kerberos, and CI/CD supply chain, ready for local practice. Spin up with `start_lab.sh`.
 
 ---
 

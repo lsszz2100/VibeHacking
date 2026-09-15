@@ -84,6 +84,7 @@ start_lab() {
         "09_ics_scada_lab"
         "10_k8s_security_lab"
         "11_ad_kerberos_lab"
+        "12_cicd_supply_chain_lab"
     )
 
     local lab_names=(
@@ -99,6 +100,7 @@ start_lab() {
         "ICS/SCADA 제어 보안 랩"
         "Kubernetes & 컨테이너 보안 랩"
         "Active Directory & Kerberos 침투 랩"
+        "CI/CD & 소프트웨어 공급망 침투 랩"
     )
 
     local lab_ports=(
@@ -114,10 +116,11 @@ start_lab() {
         "HMI 패널: http://localhost:8089  |  Modbus TCP: localhost:5020"
         "웹 콘솔 & API: http://localhost:8090"
         "웹 콘솔 & Kerberos API: http://localhost:8011"
+        "웹 콘솔 & CI/CD API: http://localhost:8012"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 11 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~11 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 12 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~12 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -154,7 +157,7 @@ start_all() {
         exit 0
     fi
 
-    for i in 1 2 3 4 5 6 7 8 9 10 11; do
+    for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
         start_lab "$i"
         echo ""
     done
@@ -207,12 +210,14 @@ usage() {
     echo "  09    ICS/SCADA 제어 보안 랩 (Modbus/TCP, 코일 조작, FDI, SIS 트립)"
     echo "  10    Kubernetes & 컨테이너 보안 랩 (SA 토큰 탈취, RBAC 오설정, hostPath 탈출, privileged)"
     echo "  11    Active Directory & Kerberos 랩 (AS-REP Roasting, Kerberoasting, DCSync, Golden Ticket)"
+    echo "  12    CI/CD & 소프트웨어 공급망 랩 (Poisoned Pipeline, 의존성 혼동, 러너 시크릿, SLSA 변조)"
     echo "  all   모든 랩 시작"
     echo "  ps    실행 중인 랩 목록"
     echo ""
     echo -e "${BOLD}예시:${RESET}"
     echo "  $0 01        # 웹 해킹 랩만 시작"
     echo "  $0 11        # AD & Kerberos 랩만 시작"
+    echo "  $0 12        # CI/CD 공급망 랩만 시작"
     echo "  $0 all       # 전체 랩 시작"
     echo "  $0 ps        # 상태 확인"
     echo ""
@@ -239,6 +244,7 @@ case "$ARG" in
     09|9) start_lab 9 ;;
     10)   start_lab 10 ;;
     11)   start_lab 11 ;;
+    12)   start_lab 12 ;;
     all|ALL) start_all ;;
     ps|status) print_summary ;;
     ""|--help|-h) usage ;;

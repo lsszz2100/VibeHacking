@@ -1486,18 +1486,23 @@ MITRE ATT&CKベースTTP文書化、経営層/技術チーム二重レポート�
 
 ```
 labs/
-├── 01_web_hacking_lab/      ← SQLi・XSS・SSRF・JWT脆弱Flaskアプリ（Docker）
-├── 02_pwn_lab/              ← BOF・フォーマット文字列・ヒープ脆弱バイナリ環境
-├── 03_network_lab/          ← パケット分析・MITM・ARPスプーフィングpcap+実習環境
-├── 04_cloud_container_lab/  ← 脆弱Docker/K8s環境、コンテナ脱出シナリオ
-├── 05_full_scenario_lab/    ← 偵察→侵入→横断移動→権限昇格→流出 統合シナリオ
-├── 06_firmware_lab/         ← binwalk抽出・QEMU ARMエミュレーション・ハードコード資格情報CTF
-├── 07_mobile_lab/           ← Android APK静的解析・Frida・JWT alg:none バイパスCTF
-├── start_lab.sh             ← 全ラボdocker-compose up自動化
-└── stop_all.sh              ← 全ラボ停止
+├── 01_web_hacking_lab/          ← SQLi・XSS・SSRF・JWT脆弱Flaskアプリ（Docker）
+├── 02_pwn_lab/                  ← BOF・フォーマット文字列・ヒープ脆弱バイナリ環境
+├── 03_network_lab/              ← パケット分析・MITM・ARPスプーフィングpcap+実習環境
+├── 04_cloud_container_lab/      ← 脆弱Docker/K8s環境、コンテナ脱出シナリオ
+├── 05_full_scenario_lab/        ← 偵察→侵入→横断移動→権限昇格→流出 統合シナリオ
+├── 06_firmware_lab/             ← binwalk抽出・QEMU ARMエミュレーション・ハードコード資格情報CTF
+├── 07_mobile_lab/               ← Android APK静的解析・Frida・JWT alg:none バイパスCTF
+├── 08_llm_security_lab/         ← プロンプトインジェクション・間接RAG汚染・AIツール悪用CTF
+├── 09_ics_scada_lab/            ← Modbus/TCPコイル操作・FDI偽装・SIS安全トリップCTF
+├── 10_k8s_security_lab/         ← SAトークン奪取・RBAC昇格・hostPathノード脱出CTF
+├── 11_ad_kerberos_lab/          ← AS-REP/Kerberoasting・DCSync複製・Golden Ticketドメイン掌握CTF
+├── 12_cicd_supply_chain_lab/    ← Poisoned Pipeline(PPE)・依存関係混同・ランナーシークレット・SLSA改ざんCTF
+├── start_lab.sh                 ← 全ラボdocker-compose up自動化
+└── stop_all.sh                  ← 全ラボ停止
 ```
 
-7つのDockerベースCTF脆弱環境 — Web・バイナリ・ネットワーク・クラウド・統合シナリオ・ファームウェア・モバイルをローカルで即座に実習。フラグ13個、`start_lab.sh` 一発で全環境起動。
+12個のDockerベースCTF脆弱環境 — Web・バイナリ・ネットワーク・クラウド・統合シナリオ・ファームウェア・モバイル・LLM・ICS/SCADA・K8s・AD/Kerberos・CI/CDサプライチェーンをローカルで即座に実習。`start_lab.sh` 一発で全環境起動。
 
 ---
 

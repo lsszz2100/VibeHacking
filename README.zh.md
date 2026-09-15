@@ -1486,18 +1486,23 @@ Semgrep/Bandit/CodeQL静态分析、Source→Sink数据流追踪、CI/CD安全�
 
 ```
 labs/
-├── 01_web_hacking_lab/      ← SQLi/XSS/SSRF/JWT漏洞Flask应用（Docker）
-├── 02_pwn_lab/              ← BOF/格式字符串/堆利用漏洞二进制环境
-├── 03_network_lab/          ← 数据包分析/MITM/ARP欺骗pcap+实验环境
-├── 04_cloud_container_lab/  ← 漏洞Docker/K8s环境、容器逃逸场景
-├── 05_full_scenario_lab/    ← 侦察→入侵→横向移动→权限提升→数据外泄综合场景
-├── 06_firmware_lab/         ← binwalk 提取 · QEMU ARM 仿真 · 硬编码凭证 CTF
-├── 07_mobile_lab/           ← Android APK 静态分析 · Frida · JWT alg:none 绕过 CTF
-├── start_lab.sh             ← 一键docker-compose up启动全部实验
-└── stop_all.sh              ← 停止全部实验
+├── 01_web_hacking_lab/          ← SQLi/XSS/SSRF/JWT漏洞Flask应用（Docker）
+├── 02_pwn_lab/                  ← BOF/格式字符串/堆利用漏洞二进制环境
+├── 03_network_lab/              ← 数据包分析/MITM/ARP欺骗pcap+实验环境
+├── 04_cloud_container_lab/      ← 漏洞Docker/K8s环境、容器逃逸场景
+├── 05_full_scenario_lab/        ← 侦察→入侵→横向移动→权限提升→数据外泄综合场景
+├── 06_firmware_lab/             ← binwalk 提取 · QEMU ARM 仿真 · 硬编码凭证 CTF
+├── 07_mobile_lab/               ← Android APK 静态分析 · Frida · JWT alg:none 绕过 CTF
+├── 08_llm_security_lab/         ← 提示词注入 · 间接RAG投毒 · Agent高危工具滥用 CTF
+├── 09_ics_scada_lab/            ← Modbus/TCP 线圈操纵 · FDI遥测欺骗 · SIS安全跳闸 CTF
+├── 10_k8s_security_lab/         ← SA令牌窃取 · RBAC权限提升 · hostPath节点逃逸 CTF
+├── 11_ad_kerberos_lab/          ← AS-REP/Kerberoasting · DCSync复制 · Golden Ticket域权限掌控 CTF
+├── 12_cicd_supply_chain_lab/    ← Poisoned Pipeline (PPE) · 依赖混淆 · Runner凭证窃取 · SLSA篡改 CTF
+├── start_lab.sh                 ← 一键docker-compose up启动全部实验
+└── stop_all.sh                  ← 停止全部实验
 ```
 
-7个Docker化CTF漏洞环境——Web、二进制、网络、云原生、综合场景、固件、移动，可在本地即时实验。共13个Flag，`start_lab.sh`一键启动全部环境。
+12个Docker化CTF漏洞环境——Web、二进制、网络、云原生、综合场景、固件、移动、LLM、ICS/SCADA、K8s、AD/Kerberos、CI/CD供应链，可在本地即时实验。`start_lab.sh`一键启动全部环境。
 
 ---
 
