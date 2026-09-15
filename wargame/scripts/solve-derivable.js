@@ -1040,6 +1040,43 @@ const SOLVERS = new Map([
     const res = text.match(/Detection Mitigation:\s*(\S+)/)[1].toUpperCase();
     return `FLAG{ML_${inj}_${sys}_${src}_${res}}`;
   } }],
+  /* --- wireless & rf: channel center frequency in MHz, free-space path loss in dB,
+     OOK pulse train binary-to-hex demodulation, and incident debrief capstone --- */
+  ['t2_wlchanfreq', { kind: 'computed', via: 'calculate 2.4 GHz Wi-Fi channel center frequency in MHz', solve: (ch) => {
+    const m = (ch.prompt.en || ch.prompt.ko).match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced block');
+    const chNum = parseInt(m[1].match(/channel:\s*(\d+)/)[1], 10);
+    const freq = 2407 + 5 * chNum;
+    return `FLAG{FREQ_${freq}MHZ}`;
+  } }],
+  ['t2_wlpathloss', { kind: 'computed', via: 'compute free-space RF path loss from transmit and receive power', solve: (ch) => {
+    const m = (ch.prompt.en || ch.prompt.ko).match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced block');
+    const tx = parseInt(m[1].match(/tx_power_dbm:\s*([-\d]+)/)[1], 10);
+    const rx = parseInt(m[1].match(/rx_power_dbm:\s*([-\d]+)/)[1], 10);
+    const loss = tx - rx;
+    return `FLAG{PATHLOSS_${loss}DB}`;
+  } }],
+  ['t3_wlookdecode', { kind: 'computed', via: 'decode OOK pulse train above threshold into binary and hex byte', solve: (ch) => {
+    const m = (ch.prompt.en || ch.prompt.ko).match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced block');
+    const samples = JSON.parse(m[1].match(/pulse_samples_us:\s*(\[[^\]]+\])/)[1]);
+    const th = parseInt(m[1].match(/threshold_us:\s*(\d+)/)[1], 10);
+    const bits = samples.map(s => s > th ? '1' : '0').join('');
+    const val = parseInt(bits, 2);
+    const hex = '0x' + val.toString(16).toUpperCase().padStart(2, '0');
+    return `FLAG{RF_PULSE_${hex}}`;
+  } }],
+  ['t4_wlcapstone', { kind: 'computed', via: 'aggregate wireless incident forensic report parameters into composite flag', solve: (ch) => {
+    const m = (ch.prompt.en || ch.prompt.ko).match(/```([\s\S]+?)```/);
+    if (!m) throw new Error('no fenced block');
+    const mac = m[1].match(/rogue_station_mac:\s*["']?([A-Fa-f0-9:]+)["']?/)[1];
+    const chNum = m[1].match(/channel:\s*(\d+)/)[1];
+    const atk = m[1].match(/attack_type:\s*["']?([A-Z_]+)["']?/)[1];
+    const cnt = m[1].match(/deauth_packet_count:\s*(\d+)/)[1];
+    const last4 = mac.replace(/:/g, '').slice(-4).toUpperCase();
+    return `FLAG{WL_${last4}_CH${chNum}_${atk}_${cnt}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

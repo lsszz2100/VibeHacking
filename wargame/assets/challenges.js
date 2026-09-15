@@ -237,6 +237,14 @@ const TRACKS = [
     "en": "Malware & Defense Evasion",
     "desc_ko": "PE 구조 내부·API 해싱·간접 시스템콜·메모리 인젝션과 샌드박스 회피 분석.",
     "desc_en": "PE internals, API hashing, indirect syscalls, memory injection, and sandbox evasion analysis."
+  },
+  {
+    "id": "wireless",
+    "icon": "📡",
+    "ko": "무선·RF 해킹",
+    "en": "Wireless & RF Hacking",
+    "desc_ko": "Wi-Fi 802.11·BLE GATT·RF 신호 분석·SDR 복조와 무선 IoT 메시 프로토콜 보안.",
+    "desc_en": "Wi-Fi 802.11, BLE GATT, RF signal analysis, SDR demodulation, and wireless IoT mesh protocol security."
   }
 ];
 
@@ -23798,5 +23806,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "68dee88cb4f12de3e1404f0dfa10ec9abea37c12214006f7b23f33b9f1b7c5b0"
+},
+{
+  "id": "t0_wlbeacon",
+  "tier": 0,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 50,
+  "ci": true,
+  "hash": "8a62e967fcd6dfa5d75308c37808b4668a7faf1cdb06e09ac0a7161827603887",
+  "fmt": "한 단어 / one word (6글자 / 6 chars)",
+  "title": {
+    "ko": "주기적 무선 브로드캐스트",
+    "en": "Periodic Wireless Announcement"
+  },
+  "prompt": {
+    "ko": "Wi-Fi AP가 자신의 존재, 무선망 이름(SSID), 지원 속도 및 암호화 방식을 주변 단말들에게 알리기 위해 주기적으로 전송하는 802.11 관리 프레임의 유형을 입력하세요.",
+    "en": "Enter the type of 802.11 management frame periodically broadcast by a Wi-Fi AP to announce its presence, SSID, data rates, and encryption parameters to nearby stations."
+  },
+  "hints": {
+    "ko": [
+      "등대처럼 사방으로 신호를 비추며 네트워크의 기본 정보를 알리는 역할을 합니다.",
+      "영어 소문자 6글자 단어입니다."
+    ],
+    "en": [
+      "It acts like a lighthouse radiating network parameters in all directions.",
+      "A 6-letter lowercase English word."
+    ]
+  }
+},
+{
+  "id": "t0_wlook",
+  "tier": 0,
+  "cat": "rfsdr",
+  "track": "wireless",
+  "points": 50,
+  "ci": true,
+  "hash": "d773c6ef7075afce51676a0275e0953d475ef86ff98b8e0f9474e42a8e4a8b09",
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "반송파 온-오프 변조",
+    "en": "On-Off Keying Modulation"
+  },
+  "prompt": {
+    "ko": "디지털 데이터의 비트 1과 0을 반송파의 존재 여부(진폭의 유/무)만으로 단순하게 전환하여 전송하는 진폭 편이 방식(ASK)의 대표적인 영문 약어를 입력하세요.",
+    "en": "Enter the common 3-letter acronym for the simplest form of amplitude-shift keying (ASK) modulation that represents digital binary 1 and 0 by the presence or absence of a carrier wave."
+  },
+  "hints": {
+    "ko": [
+      "차량용 스마트키나 구형 차고 문 리모컨(433MHz 대역)에서 흔히 사용되는 방식입니다.",
+      "영어 대문자 3글자 약어(On-Off Keying)입니다."
+    ],
+    "en": [
+      "Commonly used in legacy garage door openers and basic key fobs operating on 433 MHz.",
+      "3-letter acronym for On-Off Keying."
+    ]
+  }
+},
+{
+  "id": "t1_wlairmon",
+  "tier": 1,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 65,
+  "ci": true,
+  "hash": "72e04bd5ff4d7efa6d300f002ab753cda06df021739b3d40b04f664b89b82ee6",
+  "fmt": "도구 이름 / tool name (9글자 / 9 chars, - 포함 / include -)",
+  "title": {
+    "ko": "무선 감시 모드 활성화 스크립트",
+    "en": "Wireless Monitor Mode Script"
+  },
+  "prompt": {
+    "ko": "리눅스 무선 랜카드를 스테이션 관리 모드(Managed)에서 공중의 모든 프레임을 무차별 수신하는 감시 모드(Monitor)로 전환하고 방해 프로세스를 정리하는 Aircrack 툴체인의 스크립트 이름을 입력하세요.",
+    "en": "Enter the name of the script in the Aircrack suite used to enable monitor mode on Linux wireless interfaces and terminate conflicting network services."
+  },
+  "hints": {
+    "ko": [
+      "일반적으로 check kill 옵션과 start wlan0 명령으로 실행합니다.",
+      "하이픈(-)이 포함된 9글자 도구 이름입니다."
+    ],
+    "en": [
+      "Typically invoked with 'check kill' and 'start <interface>' options.",
+      "A 9-character tool name including a hyphen."
+    ]
+  }
+},
+{
+  "id": "t1_wlkismet",
+  "tier": 1,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 65,
+  "ci": true,
+  "hash": "00479cd598180fcdb67c97d4f8faf11d8205cb461d7335d16683f1c48697e50e",
+  "fmt": "도구 이름 / tool name (6글자 / 6 chars)",
+  "title": {
+    "ko": "수동형 무선 침투 탐지기",
+    "en": "Passive Wireless Sniffer"
+  },
+  "prompt": {
+    "ko": "패킷을 일체 송신하지 않고 순수 수동 패킷 감청만으로 숨겨진 무선망(Hidden SSID), 접속된 클라이언트 단말, 비인가 AP를 탐지할 수 있는 대표적인 오픈소스 무선 패킷 분석 도구의 이름을 입력하세요.",
+    "en": "Enter the name of the popular open-source passive wireless network detector and sniffer that identifies hidden SSIDs and client stations without transmitting any radio frames."
+  },
+  "hints": {
+    "ko": [
+      "GPS 장치와 연동하여 워드라이빙 맵을 구축할 때 널리 쓰입니다.",
+      "영어 소문자 6글자 단어입니다."
+    ],
+    "en": [
+      "Frequently paired with GPS receivers to map discovered networks during wardriving.",
+      "A 6-letter lowercase English word."
+    ]
+  }
+},
+{
+  "id": "t1_wlhci",
+  "tier": 1,
+  "cat": "blegatt",
+  "track": "wireless",
+  "points": 65,
+  "ci": true,
+  "hash": "aef0839575127e7bb3eb0c7c574ebc8d9a7163d9a4bca11fbfced360a82ecfd6",
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "호스트 컨트롤러 인터페이스",
+    "en": "Host Controller Interface"
+  },
+  "prompt": {
+    "ko": "블루투스 프로토콜 스택에서 상위 소프트웨어 계층(Host)과 하위 라디오 펌웨어/하드웨어 계층(Controller) 간의 표준 통신 명령 및 이벤트 인터페이스를 뜻하는 영문 약어를 입력하세요.",
+    "en": "Enter the standard 3-letter acronym for the communication interface between the Bluetooth host stack and the lower hardware radio controller."
+  },
+  "hints": {
+    "ko": [
+      "리눅스에서 인터페이스 제어 시 사용하는 상태 관리 명령어나 hcidump 도구의 접두어로 쓰입니다.",
+      "Host Controller Interface의 3글자 약어입니다."
+    ],
+    "en": [
+      "Appears as the prefix in Linux Bluetooth utility commands like hcidump.",
+      "3-letter acronym for Host Controller Interface."
+    ]
+  }
+},
+{
+  "id": "t1_wlfsk",
+  "tier": 1,
+  "cat": "rfsdr",
+  "track": "wireless",
+  "points": 65,
+  "ci": true,
+  "hash": "21d26d5677e716fbc2e5d33a6084a8d2849c89ee3af97eff1d53dd04407075de",
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "주파수 편이 변조",
+    "en": "Frequency Shift Keying"
+  },
+  "prompt": {
+    "ko": "디지털 0과 1 신호를 반송파의 두 개 이상의 서로 다른 이산 주파수로 전환하여 전송하는 디지털 무선 변조 방식의 영문 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the digital radio modulation scheme that encodes binary data by shifting the carrier frequency between discrete values."
+  },
+  "hints": {
+    "ko": [
+      "진폭 변화가 없어 무선 잡음에 강하며 블루투스 기본 전송률(BR)과 지그비 물리 계층에서 널리 쓰입니다.",
+      "Frequency Shift Keying의 3글자 약어입니다."
+    ],
+    "en": [
+      "Constant amplitude makes it robust against noise; utilized in Bluetooth Basic Rate.",
+      "3-letter acronym for Frequency Shift Keying."
+    ]
+  }
+},
+{
+  "id": "t1_wlrtlsdr",
+  "tier": 1,
+  "cat": "rfsdr",
+  "track": "wireless",
+  "points": 65,
+  "ci": true,
+  "hash": "a52e223bbd3db2279d118929dce45a0218d9a4809629f7793b00c708148cd957",
+  "fmt": "장비 이름 / device name (7글자 / 7 chars, - 포함 / include -)",
+  "title": {
+    "ko": "초저가 DVB-T 라디오 수신기",
+    "en": "Low-Cost DVB-T Radio Receiver Dongle"
+  },
+  "prompt": {
+    "ko": "원래 지상파 디지털 TV 튜너(RTL2832U) 칩셋이었으나 원시 IQ 데이터를 읽을 수 있음이 발견되어 저가형 입문 소프트웨어 라디오 수신기의 대명사가 된 장비 명칭을 입력하세요.",
+    "en": "Enter the name of the ultra low-cost USB radio dongle based on the RTL2832U demodulator chip that popularized software-defined radio tuning for hobbyists and security researchers."
+  },
+  "hints": {
+    "ko": [
+      "24MHz부터 1.7GHz 대역까지 수신 가능한 대표적인 20달러 내외의 범용 수신기입니다.",
+      "하이픈(-)이 포함된 7글자 이름입니다."
+    ],
+    "en": [
+      "Covers roughly 24 MHz to 1.7 GHz and costs around twenty dollars.",
+      "A 7-character name including a hyphen."
+    ]
+  }
+},
+{
+  "id": "t1_wlorawan",
+  "tier": 1,
+  "cat": "meshproto",
+  "track": "wireless",
+  "points": 65,
+  "ci": true,
+  "hash": "5491e0fb8af3b7d694f066f6832cbb3ba6a71bca49ce6d6791f3d69b1a0aef1b",
+  "fmt": "한 단어 / one word (7글자 / 7 chars)",
+  "title": {
+    "ko": "저전력 장거리 광역 통신망",
+    "en": "Long Range Wide Area Network"
+  },
+  "prompt": {
+    "ko": "배터리로 동작하는 원격 IoT 센서들을 위해 1GHz 미만의 비면허 주파수 대역에서 수 킬로미터 이상의 장거리 통신을 저전력으로 제공하는 개방형 무선 네트워킹 프로토콜 규격의 이름을 입력하세요.",
+    "en": "Enter the name of the open low-power wide-area networking protocol designed for battery-operated wireless IoT devices communicating over multi-kilometer distances."
+  },
+  "hints": {
+    "ko": [
+      "스마트 미터링이나 환경 모니터링 센서에 주로 쓰이며 게이트웨이와 네트워크 서버 구조를 가집니다.",
+      "영어 소문자 7글자 단어입니다."
+    ],
+    "en": [
+      "Employed extensively in smart city sensors and agricultural telemetry.",
+      "A 7-letter lowercase English word."
+    ]
+  }
+},
+{
+  "id": "t2_wlbssid",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 90,
+  "ci": true,
+  "hash": "c7889f88e7d1584e0cc12d8e10c101369bea2c098fb3b0a0b745ba4d1160bbd2",
+  "fmt": "약어 / acronym (5글자 / 5 chars)",
+  "title": {
+    "ko": "기지국 하드웨어 고유 식별자",
+    "en": "Base Station Hardware Identifier"
+  },
+  "prompt": {
+    "ko": "동일한 무선 네트워크 이름(SSID)을 가진 여러 AP 중에서 특정 무선 라디오 장비 인터페이스를 구별하기 위해 사용되는 48비트 MAC 주소 기반 식별자의 영문 약어를 입력하세요.",
+    "en": "Enter the 5-letter acronym representing the 48-bit MAC address identifier that uniquely differentiates a specific wireless radio interface from other access points."
+  },
+  "hints": {
+    "ko": [
+      "Basic Service Set Identifier의 줄임말입니다.",
+      "영어 5글자 약어입니다."
+    ],
+    "en": [
+      "Abbreviation for Basic Service Set Identifier.",
+      "A 5-letter English acronym."
+    ]
+  }
+},
+{
+  "id": "t2_wlndef",
+  "tier": 2,
+  "cat": "meshproto",
+  "track": "wireless",
+  "points": 90,
+  "ci": true,
+  "hash": "5b3968c05bae02892a63cefef7b3c66afca91a95914138400cd5f9c83e0882c9",
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "근거리 무선 데이터 교환 포맷",
+    "en": "NFC Data Exchange Format"
+  },
+  "prompt": {
+    "ko": "NFC 태그나 스마트폰 간에 URI, 텍스트, MIME 미디어 등의 구조화된 데이터를 캡슐화하여 전송할 때 사용하는 표준 바이너리 데이터 교환 형식의 영문 약어를 입력하세요.",
+    "en": "Enter the 4-letter acronym for the lightweight binary data encapsulation format standardized by the NFC Forum for storing URIs, text records, and MIME payloads on contactless tags."
+  },
+  "hints": {
+    "ko": [
+      "NFC Forum에서 제정한 표준 규격입니다.",
+      "영어 4글자 약어(NFC Data Exchange Format)입니다."
+    ],
+    "en": [
+      "Standard specification published by the NFC Forum.",
+      "4-letter acronym for NFC Data Exchange Format."
+    ]
+  }
+},
+{
+  "id": "t2_wlcrackle",
+  "tier": 2,
+  "cat": "blegatt",
+  "track": "wireless",
+  "points": 90,
+  "ci": true,
+  "hash": "bccea3247c0ef214fe3e2a8bb3cd9836ff0757f852ded2eaaed145fdff41caf8",
+  "fmt": "도구 이름 / tool name (7글자 / 7 chars)",
+  "title": {
+    "ko": "저전력 블루투스 암호 분석기",
+    "en": "Low-Energy Pairing Traffic Cracker"
+  },
+  "prompt": {
+    "ko": "블루투스 저전력 레거시 페어링 핸드셰이크를 도청한 캡처 덤프 파일에서 임시 키(TK)를 무차별 대입하여 단기 키(STK)를 도출하고 암호화된 통신 내용을 복호화하는 오픈소스 분석 도구의 이름을 입력하세요.",
+    "en": "Enter the name of the open-source security tool that brute-forces the Temporary Key (TK) from captured Bluetooth Low Energy legacy pairing exchanges to derive the Short Term Key (STK) and decrypt the conversation."
+  },
+  "hints": {
+    "ko": [
+      "Just Works 페어링의 경우 TK가 0으로 고정되어 즉시 복호화가 가능합니다.",
+      "영어 소문자 7글자 도구 이름입니다."
+    ],
+    "en": [
+      "Instantly recovers STK for Just Works pairing where TK is fixed to zero.",
+      "A 7-letter lowercase tool name."
+    ]
+  }
+},
+{
+  "id": "t2_wlbdaddr",
+  "tier": 2,
+  "cat": "blegatt",
+  "track": "wireless",
+  "points": 90,
+  "ci": true,
+  "hash": "92675ddead27a41076a37a2464f0508972e4780365f4e11db4f756521f537dde",
+  "fmt": "약어 / acronym (7글자 / 7 chars, _ 포함 / include _)",
+  "title": {
+    "ko": "블루투스 하드웨어 링크 주소",
+    "en": "Bluetooth Device Hardware Address"
+  },
+  "prompt": {
+    "ko": "블루투스 장비의 물리 계층 통신을 위해 각 기기에 영구적으로 부여되는 48비트 IEEE 고유 하드웨어 주소의 공식 표준 약어 명칭을 입력하세요.",
+    "en": "Enter the official standard 7-character acronym (with an underscore) representing the 48-bit hardware address assigned to a Bluetooth transceiver."
+  },
+  "hints": {
+    "ko": [
+      "Bluetooth Device Address를 줄여 언더스코어(_)와 함께 표기합니다.",
+      "언더스코어가 포함된 7글자 약어입니다."
+    ],
+    "en": [
+      "Shorthand for Bluetooth Device Address written with an underscore.",
+      "A 7-character acronym containing an underscore."
+    ]
+  }
+},
+{
+  "id": "t2_wlgqrx",
+  "tier": 2,
+  "cat": "rfsdr",
+  "track": "wireless",
+  "points": 90,
+  "ci": true,
+  "hash": "dde13f987d7fed7db7baeb6aae460f4735ef963228c172437664879f5b77010f",
+  "fmt": "도구 이름 / tool name (4글자 / 4 chars)",
+  "title": {
+    "ko": "오픈소스 스펙트럼 청취기",
+    "en": "Open-Source Spectrum Visualizer"
+  },
+  "prompt": {
+    "ko": "GNU Radio 프레임워크와 Qt GUI를 기반으로 실시간 폭포수(Waterfall) 디스플레이와 AM/FM 복조를 제공하여 무선 신호를 탐지하고 청취할 수 있는 대표적인 오픈소스 수신기 소프트웨어 이름을 입력하세요.",
+    "en": "Enter the name of the popular open-source software-defined radio receiver application powered by GNU Radio and Qt that features real-time waterfall FFT plotting and audio demodulation."
+  },
+  "hints": {
+    "ko": [
+      "범용 수신 동글 장비와 연동하여 무선 주파수 신호를 시각적으로 스캔할 때 널리 쓰입니다.",
+      "영어 소문자 4글자 프로그램 이름입니다."
+    ],
+    "en": [
+      "Widely used alongside generic USB tuner dongles to visually sweep and listen to radio frequencies.",
+      "A 4-letter lowercase software name."
+    ]
+  }
+},
+{
+  "id": "t2_wlcc1101",
+  "tier": 2,
+  "cat": "meshproto",
+  "track": "wireless",
+  "points": 90,
+  "ci": true,
+  "hash": "b6e8b606a4cb7fb64ade9014e936b2b18de70413cec8b3724808f036098867c2",
+  "fmt": "장비 이름 / device name (6글자 / 6 chars)",
+  "title": {
+    "ko": "서브 기가헤르츠 무선 트랜시버 칩셋",
+    "en": "Sub-GHz RF Transceiver Chipset"
+  },
+  "prompt": {
+    "ko": "300~928MHz 비면허 ISM 대역 무선 패킷을 패킷 스니핑하고 재생(Replay)할 수 있어 Flipper Zero 등 무선 침투 도구에 널리 탑재된 텍사스 인스트루먼트사의 대표적인 저전력 RF 트랜시버 칩셋 이름을 입력하세요.",
+    "en": "Enter the name of the popular low-power sub-1GHz RF transceiver chipset by Texas Instruments widely embedded in wireless security tools like Flipper Zero to capture and replay signals across 300-928 MHz."
+  },
+  "hints": {
+    "ko": [
+      "CC로 시작하는 6글자 칩셋 모델 번호입니다.",
+      "433MHz 차량 리모컨 신호나 차고 문 신호 분석에 주로 사용됩니다."
+    ],
+    "en": [
+      "A 6-character chipset part number beginning with CC.",
+      "Commonly used to analyze 433 MHz rolling code and fixed code signals."
+    ]
+  }
+},
+{
+  "id": "t2_wlchanfreq",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 150,
+  "ci": false,
+  "hash": "20ca4cfd8c156bf46264241a4967b2309165ba382363940de63caa8b9633c0cd",
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "2.4GHz 무선 채널 중심 주파수 계산",
+    "en": "Calculate 2.4 GHz Channel Frequency"
+  },
+  "prompt": {
+    "ko": "아래 2.4GHz Wi-Fi 채널 규칙과 대상 채널 번호를 읽고 해당 채널의 중심 주파수를 MHz 단위로 계산하여 플래그를 생성하세요.\n\n```text\nband: 2.4 GHz ISM\nformula: center_freq_mhz = 2407 + (5 * channel)\nchannel: 11\n```\n\n결과는 `FLAG{FREQ_<mhz>MHZ}` 형식으로 제출하세요.",
+    "en": "Read the 2.4 GHz channel formula and target channel below, compute the exact center frequency in MHz, and construct the flag:\n\n```text\nband: 2.4 GHz ISM\nformula: center_freq_mhz = 2407 + (5 * channel)\nchannel: 11\n```\n\nSubmit in the format `FLAG{FREQ_<mhz>MHZ}`."
+  },
+  "hints": {
+    "ko": [
+      "2407에 (5 * 11)을 더합니다.",
+      "2407 + 55 = 2462 MHz가 됩니다."
+    ],
+    "en": [
+      "Multiply 5 by 11 and add to 2407.",
+      "2407 + 55 yields 2462 MHz."
+    ]
+  }
+},
+{
+  "id": "t2_wlpathloss",
+  "tier": 2,
+  "cat": "rfsdr",
+  "track": "wireless",
+  "points": 150,
+  "ci": false,
+  "hash": "a45cfb0d2cb4f37dbf5e18e476420c136d495f25a17a5ef848885ea4bc06bf22",
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "무선 전파 자유 공간 손실 계산",
+    "en": "Compute Free-Space Path Loss"
+  },
+  "prompt": {
+    "ko": "아래 무선 신호 송수신 링크 버짓 측정값을 확인하고 송신 전력과 수신 신호 강도의 차이로 발생하는 경로 손실(Path Loss, dB 단위)을 계산하여 플래그를 생성하세요.\n\n```text\ntx_power_dbm: 20\nrx_power_dbm: -65\nrule: path_loss_db = tx_power_dbm - rx_power_dbm\n```\n\n결과는 `FLAG{PATHLOSS_<loss>DB}` 형식으로 제출하세요.",
+    "en": "Examine the link budget measurements below and compute the total path loss in dB from the difference between transmit power and received power:\n\n```text\ntx_power_dbm: 20\nrx_power_dbm: -65\nrule: path_loss_db = tx_power_dbm - rx_power_dbm\n```\n\nSubmit in the format `FLAG{PATHLOSS_<loss>DB}`."
+  },
+  "hints": {
+    "ko": [
+      "20에서 -65를 빼면 양수 85가 됩니다.",
+      "손실값은 85 dB입니다."
+    ],
+    "en": [
+      "Subtracting -65 from 20 results in 85.",
+      "The resulting loss is 85 dB."
+    ]
+  }
+},
+{
+  "id": "t3_wlpmkid",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 130,
+  "ci": true,
+  "hash": "e89cd346087bc352371d9a069a809ac458b21023f07b850d923df9cf38d58e97",
+  "fmt": "약어 / acronym (5글자 / 5 chars)",
+  "title": {
+    "ko": "비연결식 사전 공격용 키 식별자",
+    "en": "Clientless Pre-Shared Key Identifier"
+  },
+  "prompt": {
+    "ko": "WPA2 무선망에서 사용자가 접속할 때까지 기다리지 않고, AP의 첫 번째 EAPOL 프레임에 담긴 RSN 고유 속성을 캡처하여 오프라인 해시 크래킹을 수행할 수 있게 해주는 128비트 식별자 약어를 입력하세요.",
+    "en": "Enter the 5-letter acronym for the 128-bit key identifier found inside the RSN IE of the first EAPOL frame that allows attackers to crack WPA2 pre-shared keys without waiting for an active client connection."
+  },
+  "hints": {
+    "ko": [
+      "Pairwise Master Key Identifier의 줄임말입니다.",
+      "영어 5글자 약어입니다."
+    ],
+    "en": [
+      "Acronym for Pairwise Master Key Identifier.",
+      "A 5-letter English acronym."
+    ]
+  }
+},
+{
+  "id": "t3_wldragonfly",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 130,
+  "ci": true,
+  "hash": "e2ca6aec52558fcc04311983bad03e38ca5e799c239d202ae7a4f58aff8a6970",
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "WPA3 동등 동시 인증 교환 프로토콜",
+    "en": "WPA3 SAE Key Exchange Protocol"
+  },
+  "prompt": {
+    "ko": "WPA3의 핵심 보안 기법인 SAE(동등 동시 인증)에서 사용되며, 패스워드 인증 키 교환(PAKE) 구조를 적용하여 오프라인 사전 대입 공격을 방지하는 알고리즘 핸드셰이크 명칭을 입력하세요.",
+    "en": "Enter the name of the password-authenticated key exchange handshake protocol used by WPA3 SAE (Simultaneous Authentication of Equals) to prevent offline dictionary guessing attacks."
+  },
+  "hints": {
+    "ko": [
+      "곤충의 이름을 딴 암호학적 키 교환 프로토콜입니다.",
+      "영어 소문자 9글자 단어(잠자리)입니다."
+    ],
+    "en": [
+      "Cryptographic key exchange protocol named after an insect.",
+      "A 9-letter lowercase English word for an insect."
+    ]
+  }
+},
+{
+  "id": "t3_wlradiotap",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 130,
+  "ci": true,
+  "hash": "60a78ad78e8af8f3d582551ff97c8eb174bf4db678317180d12825020355bddf",
+  "fmt": "한 단어 / one word (8글자 / 8 chars)",
+  "title": {
+    "ko": "수신 메타데이터 캡처 헤더",
+    "en": "Physical Capture Metadata Header"
+  },
+  "prompt": {
+    "ko": "802.11 모니터 모드 패킷 캡처 시 무선 인터페이스가 수신한 신호 강도(dBm), 주파수 채널, 변조 속도, 안테나 잡음 등의 물리 계층 메타데이터를 프레임 페이로드 앞부분에 덧붙여 기록하는 사실상 표준 캡처 헤더의 이름을 입력하세요.",
+    "en": "Enter the name of the de facto standard capture header prepended to 802.11 frames in monitor mode that encapsulates physical layer metadata such as dBm signal power, frequency, and data rate."
+  },
+  "hints": {
+    "ko": [
+      "네트워크 패킷 분석기에서 802.11 프레임을 열었을 때 가장 최상단 계층으로 파싱됩니다.",
+      "영어 소문자 8글자 단어입니다."
+    ],
+    "en": [
+      "Parsed as the outermost packet dissection layer when examining monitor mode captures in protocol analyzers.",
+      "An 8-letter lowercase English word."
+    ]
+  }
+},
+{
+  "id": "t3_wlblueborne",
+  "tier": 3,
+  "cat": "blegatt",
+  "track": "wireless",
+  "points": 130,
+  "ci": true,
+  "hash": "4330ea9ea79f92cbca98c084f003ec52f117b7efe826991fc79b9b6d1055ded7",
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "무페어링 원격 블루투스 공격군",
+    "en": "Zero-Click Bluetooth Threat Family"
+  },
+  "prompt": {
+    "ko": "사용자 승인이나 사전 페어링 절차 없이도 블루투스가 켜져 있는 기기들을 공중에서 원격 코드 실행(RCE) 및 중간자 감청으로 공격할 수 있었던 2017년 Armis 사가 공개한 일련의 취약점 세트 명칭을 입력하세요.",
+    "en": "Enter the name of the critical attack vector and vulnerability suite disclosed by Armis in 2017 that allowed remote code execution and traffic interception over the air against unpaired Bluetooth devices."
+  },
+  "hints": {
+    "ko": [
+      "안드로이드, iOS, 윈도우, 리눅스 스택 모두에 영향을 미쳤던 대형 보안 이슈입니다.",
+      "영어 소문자 9글자 단어입니다."
+    ],
+    "en": [
+      "Impacted billions of devices across Android, iOS, Windows, and Linux stacks without requiring user pairing.",
+      "A 9-letter lowercase English word."
+    ]
+  }
+},
+{
+  "id": "t3_wlknob",
+  "tier": 3,
+  "cat": "blegatt",
+  "track": "wireless",
+  "points": 130,
+  "ci": true,
+  "hash": "741094f66e2c146a26a8f234983129173be2bdd7c26be0041ce21a4f19bb4cea",
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "블루투스 암호 키 엔트로피 축소 공격",
+    "en": "Key Negotiation of Bluetooth Attack"
+  },
+  "prompt": {
+    "ko": "블루투스 연결 설정 과정에서 암호화 키 길이 협상 절차의 결함을 악용하여 공격자가 비밀키 길이를 1바이트(8비트)로 강제 다운그레이드한 뒤 실시간으로 복호화하는 공격의 영문 약어를 입력하세요.",
+    "en": "Enter the 4-letter acronym for the attack that exploits weak Bluetooth encryption key negotiation to coerce the effective key size down to a single byte, enabling trivial brute-force recovery of session keys."
+  },
+  "hints": {
+    "ko": [
+      "Key Negotiation of Bluetooth의 영문 약칭입니다.",
+      "영어 4글자 약어(CVE-2019-9506)입니다."
+    ],
+    "en": [
+      "Acronym for Key Negotiation of Bluetooth.",
+      "A 4-letter English acronym (CVE-2019-9506)."
+    ]
+  }
+},
+{
+  "id": "t3_wlbias",
+  "tier": 3,
+  "cat": "blegatt",
+  "track": "wireless",
+  "points": 130,
+  "ci": true,
+  "hash": "fa4824e83746480e1029c47ad659fdc3854195c0fa76c9209807cef32e29243e",
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "블루투스 신뢰 장치 사칭 공격",
+    "en": "Bluetooth Impersonation Attacks"
+  },
+  "prompt": {
+    "ko": "이미 페어링된 기기 간 재연결(Secure Connections) 시 상호 인증 절차의 취약점을 악용하여 장기 링크 키를 모르더라도 정상 장비의 주소를 사칭하여 연결을 수립하는 공격의 영문 약어를 입력하세요.",
+    "en": "Enter the 4-letter acronym for the vulnerability family that allows an adversary to impersonate a previously paired Bluetooth device during reconnection without knowing the shared link key."
+  },
+  "hints": {
+    "ko": [
+      "Bluetooth Impersonation Attacks의 줄임말입니다.",
+      "영어 4글자 약어(CVE-2020-10135)입니다."
+    ],
+    "en": [
+      "Acronym for Bluetooth Impersonation Attacks.",
+      "A 4-letter English acronym (CVE-2020-10135)."
+    ]
+  }
+},
+{
+  "id": "t3_wlurh",
+  "tier": 3,
+  "cat": "rfsdr",
+  "track": "wireless",
+  "points": 130,
+  "ci": true,
+  "hash": "e3dc58b2f011784889a95bd0a70b717da333af07e3da03c77df920329ed4be00",
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "만능 무선 신호 분석 도구",
+    "en": "Universal Radio Protocol Suite"
+  },
+  "prompt": {
+    "ko": "미지의 IoT 무선 센서나 리모컨의 RF 신호를 소프트웨어 라디오로 수신하여 자동 복조, 패킷 필드 역공학, 메시지 생성 및 모의 전송을 통합 환경에서 제공하는 오픈소스 무선 분석 프로그램의 영문 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the complete graphical suite used to investigate unknown wireless protocols via software-defined radio, performing demodulation, protocol reverse engineering, and fuzzing."
+  },
+  "hints": {
+    "ko": [
+      "Universal Radio의 약칭을 포함하는 3글자 도구 이름입니다.",
+      "영어 3글자 약어입니다."
+    ],
+    "en": [
+      "A 3-letter acronym containing Universal Radio.",
+      "A 3-letter English acronym."
+    ]
+  }
+},
+{
+  "id": "t3_wlkillerbee",
+  "tier": 3,
+  "cat": "meshproto",
+  "track": "wireless",
+  "points": 130,
+  "ci": true,
+  "hash": "29054d44f3b0d032f9bdd37d39b447e6e43b795aa3167022b89efed0da1b0ccb",
+  "fmt": "도구 이름 / tool name (9글자 / 9 chars)",
+  "title": {
+    "ko": "지그비 침투 테스트 도구 모음",
+    "en": "IEEE 802.15.4 Security Assessment Framework"
+  },
+  "prompt": {
+    "ko": "호환 하드웨어 동글(RZ Raven 등)을 제어하여 IEEE 802.15.4 메시 네트워크의 트래픽을 가로채고, 패킷을 주입하며, 키 재전송 공격을 자동화하는 유명한 파이썬 기반 보안 진단 프레임워크의 이름을 입력하세요.",
+    "en": "Enter the name of the renowned Python-based framework and tool suite used to inspect, inject, and exploit IEEE 802.15.4 mesh radio networks using USB dongles."
+  },
+  "hints": {
+    "ko": [
+      "zbid, zbwireshark, zbreplay 등의 보조 도구를 포함하고 있습니다.",
+      "벌(Bee)과 살인자(Killer)를 조합한 9글자 도구 이름입니다."
+    ],
+    "en": [
+      "Ships with helper utilities such as zbid, zbwireshark, and zbreplay.",
+      "A 9-letter tool name combining killer and bee."
+    ]
+  }
+},
+{
+  "id": "t3_wlookdecode",
+  "tier": 3,
+  "cat": "rfsdr",
+  "track": "wireless",
+  "points": 200,
+  "ci": false,
+  "hash": "e81e34401281ea84957094899512db905ef916f3c581e4a0dfd2f28808655755",
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "온-오프 펄스 폭 복조 디코딩",
+    "en": "Demodulate RF Pulse Train"
+  },
+  "prompt": {
+    "ko": "아래 433MHz 대역에서 수신된 8개 연속 신호 펄스의 지속 시간(마이크로초)을 확인하고 임계값 규칙에 따라 8비트 2진수를 판정한 뒤 16진수 바이트 플래그를 도출하세요.\n\n```text\npulse_samples_us: [1000, 300, 1000, 1000, 300, 1000, 300, 300]\nthreshold_us: 500\nrule: pulse > threshold is 1 else 0\nhex_format: 0x followed by 2 uppercase hex digits\n```\n\n결과는 `FLAG{RF_PULSE_<hex>}` 형식으로 제출하세요.",
+    "en": "Examine the 8 measured RF pulse durations in microseconds below, classify each pulse against the threshold to form an 8-bit binary value, and format the resulting hex byte into the flag:\n\n```text\npulse_samples_us: [1000, 300, 1000, 1000, 300, 1000, 300, 300]\nthreshold_us: 500\nrule: pulse > threshold is 1 else 0\nhex_format: 0x followed by 2 uppercase hex digits\n```\n\nSubmit in the format `FLAG{RF_PULSE_<hex>}`."
+  },
+  "hints": {
+    "ko": [
+      "펄스가 500보다 크면 1, 작으면 0입니다: [1, 0, 1, 1, 0, 1, 0, 0].",
+      "2진수 10110100은 16진수로 0xB4입니다."
+    ],
+    "en": [
+      "Pulses above 500 become 1 and below become 0: [1, 0, 1, 1, 0, 1, 0, 0].",
+      "Binary 10110100 converts to hexadecimal 0xB4."
+    ]
+  }
+},
+{
+  "id": "t4_wlkarma",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 160,
+  "ci": true,
+  "hash": "6d4b9ee62028b80981988484e790bac1fdd5a9eb9f30022c6268397e5dd2b79f",
+  "fmt": "한 단어 / one word (5글자 / 5 chars)",
+  "title": {
+    "ko": "프로브 요청 기만 접속 유도 공격",
+    "en": "Probe Request Redirection Attack"
+  },
+  "prompt": {
+    "ko": "클라이언트 기기가 과거 접속했던 Wi-Fi 망을 찾기 위해 주기적으로 송출하는 프로브 요청(Probe Request)을 감청하여 대상이 찾는 어떤 SSID에 대해서도 자신이 해당 AP인 것처럼 허위 응답을 보내 강제 접속을 유도하는 고전적 공격 기법의 명칭을 입력하세요.",
+    "en": "Enter the name of the classic wireless attack technique where a rogue AP listens for probe requests from roaming clients and falsely responds to whatever SSID is requested to entice an automatic connection."
+  },
+  "hints": {
+    "ko": [
+      "업보나 인과응보를 뜻하는 산스크리트어 단어에서 유래했습니다.",
+      "영어 소문자 5글자 단어입니다."
+    ],
+    "en": [
+      "Named after the Sanskrit concept of cause and effect or spiritual principle.",
+      "A 5-letter lowercase English word."
+    ]
+  }
+},
+{
+  "id": "t4_wlpmf",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 160,
+  "ci": true,
+  "hash": "b4ed158315fa7dab0098739618ec72dd05650c1c5e1d4ca7d33f382002d572e8",
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "802.11w 보호 관리 프레임",
+    "en": "Protected Management Frames"
+  },
+  "prompt": {
+    "ko": "공격자가 위조된 연결 해제(Disassociation) 및 인증 해제(Deauthentication) 프레임을 전송하여 정상 사용자를 강제로 튕겨내는 서비스 거부 공격을 방지하기 위해 802.11w에 추가된 암호학적 보호 기능의 영문 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the security feature standardized in IEEE 802.11w (and mandated in WPA3) that provides cryptographic integrity protection to unicast and multicast management frames."
+  },
+  "hints": {
+    "ko": [
+      "Protected Management Frames의 줄임말입니다.",
+      "WPA3 환경에서는 필수로 강제 적용되는 3글자 약어입니다."
+    ],
+    "en": [
+      "Acronym for Protected Management Frames.",
+      "Mandatory in WPA3 networks; a 3-letter acronym."
+    ]
+  }
+},
+{
+  "id": "t4_wlmana",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 160,
+  "ci": true,
+  "hash": "c1212091aa78c0075bb40728f8a5db14549c21e8034482ce2b3683e4217ab395",
+  "fmt": "도구 이름 / tool name (4글자 / 4 chars)",
+  "title": {
+    "ko": "고급 악성 기지국 툴킷",
+    "en": "Advanced Rogue Access Point Toolkit"
+  },
+  "prompt": {
+    "ko": "현대 스마트폰과 노트북의 강화된 무선 프로브 알고리즘을 우회하기 위해 설계되었으며, 라우드(Loud) 모드와 로그인 인증 정보 수집 기능을 탑재한 SensePost의 진화형 사설 AP 공격 도구 이름을 입력하세요.",
+    "en": "Enter the name of the rogue access point toolkit developed by SensePost that bypasses modern client probing restrictions and captures authentication tokens across enterprise networks."
+  },
+  "hints": {
+    "ko": [
+      "고전적 가짜 기지국 유도 기법의 진화형 도구로 유명합니다.",
+      "마나(초자연적 힘)를 뜻하는 영어 4글자 도구 이름입니다."
+    ],
+    "en": [
+      "Regarded as the next-generation evolution of classic rogue AP techniques.",
+      "A 4-letter lowercase tool name named after spiritual life-force."
+    ]
+  }
+},
+{
+  "id": "t4_wlbluesnarf",
+  "tier": 4,
+  "cat": "blegatt",
+  "track": "wireless",
+  "points": 160,
+  "ci": true,
+  "hash": "df79802e66dcae2668eb91b8f6bc0acf240535f1472977ffbcf6a29bee47af02",
+  "fmt": "한 단어 / one word (12글자 / 12 chars, -ing으로 끝남 / ends in -ing)",
+  "title": {
+    "ko": "비인가 블루투스 연락처 탈취",
+    "en": "Unauthorized Bluetooth Data Theft"
+  },
+  "prompt": {
+    "ko": "공격자가 취약한 블루투스 장치에 인증 없이 접속한 후 사용자의 인지나 화면 알림 없이 전화번호부(주소록), 일정, 사진 등의 내부 데이터를 은밀하게 다운로드하는 공격 행위의 영문 명칭을 입력하세요.",
+    "en": "Enter the term for the wireless attack where an unauthorized party accesses a Bluetooth-enabled mobile device to covertly extract phonebook contacts, calendars, and text messages without user alert."
+  },
+  "hints": {
+    "ko": [
+      "OBEX 프로토콜의 인증 미흡을 악용하는 대표적인 공격 방식입니다.",
+      "-ing으로 끝나는 12글자 영어 단어입니다."
+    ],
+    "en": [
+      "Exploits unauthenticated OBEX services on accessible mobile handsets.",
+      "A 12-letter English word ending in -ing."
+    ]
+  }
+},
+{
+  "id": "t4_wlbluebug",
+  "tier": 4,
+  "cat": "blegatt",
+  "track": "wireless",
+  "points": 160,
+  "ci": true,
+  "hash": "3c6202c78d538b1ba9fd25caf016b72016c08480ba3e17f9b0b02a255bb427f9",
+  "fmt": "한 단어 / one word (11글자 / 11 chars, -ing으로 끝남 / ends in -ing)",
+  "title": {
+    "ko": "블루투스 원격 명령 제어 공격",
+    "en": "Bluetooth Remote Command Takeover"
+  },
+  "prompt": {
+    "ko": "블루투스 핸드셋의 시리얼 포트 프로파일(SPP) 취약점을 이용하여 장치에 은밀하게 백도어를 생성하고, 숨겨진 AT 명령어를 내려 임의로 전화를 걸거나 주변 소리를 도청하는 고위험 공격 명칭을 입력하세요.",
+    "en": "Enter the term for the advanced Bluetooth exploit that gives an attacker full remote control over a phone via AT commands, enabling unauthorized calls and room eavesdropping."
+  },
+  "hints": {
+    "ko": [
+      "단순 데이터 다운로드보다 훨씬 깊숙이 기기를 제어하여 마이크를 활성화할 수 있습니다.",
+      "-ing으로 끝나는 11글자 영어 단어입니다."
+    ],
+    "en": [
+      "Far more intrusive than simple data theft, allowing execution of backdoor telephony commands.",
+      "An 11-letter English word ending in -ing."
+    ]
+  }
+},
+{
+  "id": "t4_wljustworks",
+  "tier": 4,
+  "cat": "blegatt",
+  "track": "wireless",
+  "points": 160,
+  "ci": true,
+  "hash": "30b301fcb691becb0fb9f367daa603e7ad2270d974e3352a86a88030c4c3d142",
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "무인증 블루투스 페어링 결함 모델",
+    "en": "Unauthenticated Low Energy Pairing Model"
+  },
+  "prompt": {
+    "ko": "키패드나 화면이 없는 소형 저전력 블루투스 IoT 장치를 위한 페어링 연합 모델로, 임시 키(TK)가 0으로 고정되어 있어 패킷 스니핑 공격자에게 트래픽 복호화 및 중간자(MITM) 공격을 허용하는 모델 이름을 입력하세요.",
+    "en": "Enter the name of the Bluetooth Low Energy association pairing model designed for headless Low Energy peripherals that fixes the Temporary Key (TK) to zero, leaving the connection vulnerable to eavesdropping."
+  },
+  "hints": {
+    "ko": [
+      "Passkey Entry나 Numeric Comparison과 구별되는 가장 단순한 페어링 방식입니다.",
+      "공백 없이 합쳐진 9글자 소문자 단어(Just Works)입니다."
+    ],
+    "en": [
+      "Contrast with Passkey Entry and Numeric Comparison as the zero-user-interaction model.",
+      "A 9-letter closed compound word without spaces."
+    ]
+  }
+},
+{
+  "id": "t4_wldsss",
+  "tier": 4,
+  "cat": "rfsdr",
+  "track": "wireless",
+  "points": 160,
+  "ci": true,
+  "hash": "613c27a7a2df4b94a536e78ca13d693eb3d8a0b22fabf255ef1cb6a2f6bd4a23",
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "직접 시퀀스 확산 대역 변조",
+    "en": "Direct Sequence Spread Spectrum"
+  },
+  "prompt": {
+    "ko": "전송하려는 원래 신호의 각 데이터 비트에 더 높은 칩 속도의 유사 난수(PN) 확산 코드를 곱하여 신호 대역폭을 넓게 확산시킴으로써 도청과 전파 방해에 강하게 만드는 확산 대역 기술의 영문 약어를 입력하세요.",
+    "en": "Enter the 4-letter acronym for the spread-spectrum modulation technique that multiplies original data bits by a high-rate pseudo-random chipping sequence to distribute energy across a wide bandwidth."
+  },
+  "hints": {
+    "ko": [
+      "초기 802.11b 규격과 지그비(IEEE 802.15.4)에서 기본 확산 기술로 활용되었습니다.",
+      "Direct Sequence Spread Spectrum의 4글자 약어입니다."
+    ],
+    "en": [
+      "Employed in early 802.11b Wi-Fi networks as well as IEEE 802.15.4 radios.",
+      "4-letter acronym for Direct Sequence Spread Spectrum."
+    ]
+  }
+},
+{
+  "id": "t4_wlfhss",
+  "tier": 4,
+  "cat": "rfsdr",
+  "track": "wireless",
+  "points": 160,
+  "ci": true,
+  "hash": "8f8064d16c66f57c78419fff76c495211b9054e92c82e6a68d6d2737b2f936d0",
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "주파수 도약 확산 대역 변조",
+    "en": "Frequency Hopping Spread Spectrum"
+  },
+  "prompt": {
+    "ko": "사전에 정의된 유사 난수 패턴에 따라 시간에 맞춰 반송파 주파수를 여러 채널 사이로 빠르게 도약시키며 패킷을 전송하여 협대역 방해 전파와 스니핑을 회피하는 기술의 영문 약어를 입력하세요.",
+    "en": "Enter the 4-letter acronym for the transmission technique that rapidly switches a carrier frequency among many distinct channels in a pseudo-random sequence known to both sender and receiver."
+  },
+  "hints": {
+    "ko": [
+      "클래식 블루투스가 2.4GHz 대역에서 초당 1600회 도약하며 사용하는 핵심 기술입니다.",
+      "Frequency Hopping Spread Spectrum의 4글자 약어입니다."
+    ],
+    "en": [
+      "Classic Bluetooth utilizes this scheme by hopping across 79 channels 1600 times per second.",
+      "4-letter acronym for Frequency Hopping Spread Spectrum."
+    ]
+  }
+},
+{
+  "id": "t4_wl6lowpan",
+  "tier": 4,
+  "cat": "meshproto",
+  "track": "wireless",
+  "points": 160,
+  "ci": true,
+  "hash": "b350adc690113979b905541e6541da4c8146b9b7a31f30a70a698c5fe21fc176",
+  "fmt": "한 단어 / one word (7글자 / 7 chars)",
+  "title": {
+    "ko": "저전력 무선망용 IPv6 적응 계층",
+    "en": "IPv6 over Low-Power WPAN"
+  },
+  "prompt": {
+    "ko": "리소스가 극도로 제한된 802.15.4 무선 센서 네트워크 노드가 인터넷 상의 호스트와 직접 IPv6 패킷을 주고받을 수 있도록 헤더 압축과 프래그멘테이션을 처리해주는 IETF 표준 적응 계층의 명칭을 입력하세요.",
+    "en": "Enter the 7-character designation of the IETF standard adaptation layer that provides stateless header compression and packet fragmentation so low-power 802.15.4 sensor nodes can natively speak IPv6."
+  },
+  "hints": {
+    "ko": [
+      "스마트 그리드와 사물인터넷(IoT) 장치에 IP 통신을 부여할 때 필수적인 규격입니다.",
+      "숫자로 시작하는 7글자 소문자 표준 명칭입니다."
+    ],
+    "en": [
+      "Critical protocol enabling end-to-end IP connectivity on constrained embedded mesh devices.",
+      "A 7-character name starting with a digit."
+    ]
+  }
+},
+{
+  "id": "t4_wlcapstone",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wireless",
+  "points": 250,
+  "ci": false,
+  "hash": "cb34e7ca79c65925c1db2847dacada3fbe2b3cb84b1a90826e0dcbc5186d48b8",
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "무선 침해 사고 종합 포렌식 리포트",
+    "en": "Wireless Incident Forensic Debrief"
+  },
+  "prompt": {
+    "ko": "보안 관제 센터에서 탐지한 아래 무선 침해 사고 브리핑 명세를 분석하여 종합 대응 플래그를 생성하세요.\n\n```text\nrogue_station_mac: \"00:11:22:33:44:55\"\nchannel: 6\nattack_type: \"DEAUTH_FLOOD\"\ndeauth_packet_count: 3420\nsignal_strength_dbm: -48\nrule: FLAG{WL_<last_4_hex_of_mac>_CH<channel>_<attack_type>_<packet_count>}\n```\n\n(참고: 기기 주소의 마지막 4자리 16진수 문자열은 콜론 없이 대문자로 표기합니다.)",
+    "en": "Synthesize the wireless incident debrief briefing below and assemble the forensic incident flag:\n\n```text\nrogue_station_mac: \"00:11:22:33:44:55\"\nchannel: 6\nattack_type: \"DEAUTH_FLOOD\"\ndeauth_packet_count: 3420\nsignal_strength_dbm: -48\nrule: FLAG{WL_<last_4_hex_of_mac>_CH<channel>_<attack_type>_<packet_count>}\n```\n\n(Note: extract the last 4 hex characters of the hardware address without colons in uppercase.)"
+  },
+  "hints": {
+    "ko": [
+      "장치 주소 00:11:22:33:44:55의 마지막 4자리 16진수는 4455입니다.",
+      "포맷 규칙: WL_4455_CH6_DEAUTH_FLOOD_3420"
+    ],
+    "en": [
+      "The trailing 4 hex digits of 00:11:22:33:44:55 are 4455.",
+      "Format rule yields WL_4455_CH6_DEAUTH_FLOOD_3420."
+    ]
+  }
 }
 ];
