@@ -1,0 +1,10 @@
+services:
+  ad_kerberos_lab:
+    build: .
+    container_name: ad_kerberos_lab
+    ports:
+      - "8011:8011"
+    restart: unless-stopped
+    labels:
+      - "lab=11"
+      - "group=ad_kerberos"

@@ -227,6 +227,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★",
         "related": [14, 29, 38],
     },
+    "11": {
+        "name": "Active Directory & Kerberos 침투 랩",
+        "dir":  "11_ad_kerberos_lab",
+        "desc": "KeroShield: AS-REP Roasting · Kerberoasting · DCSync 복제 탈취 · Golden Ticket 도메인 장악",
+        "url":  "웹 콘솔 & Kerberos API: http://localhost:8011",
+        "difficulty": "★★★☆",
+        "related": [54, 10, 44],
+    },
 }
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────

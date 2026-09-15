@@ -40,6 +40,7 @@ docker-compose --version
 | 08 | [AI/LLM 보안 랩](./08_llm_security_lab/) | 프롬프트 인젝션, RAG 간접 주입, 에이전트 도구 남용, 시스템 프롬프트 탈취 | ★★★ |
 | 09 | [ICS/SCADA 제어 보안 랩](./09_ics_scada_lab/) | Modbus/TCP 제어, 비인가 코일 조작, 텔레메트리 기만(FDI), SIS 비상 트립 | ★★★ |
 | 10 | [Kubernetes & 컨테이너 보안 랩](./10_k8s_security_lab/) | SA 토큰 탈취, RBAC 과다 권한 남용, hostPath 탈출, privileged 컨테이너 장악 | ★★★ |
+| 11 | [Active Directory & Kerberos 침투 랩](./11_ad_kerberos_lab/) | AS-REP Roasting, Kerberoasting, DCSync, Golden Ticket 도메인 장악 | ★★★☆ |
 
 ---
 
@@ -110,6 +111,14 @@ docker-compose --version
 - `hostPath` 볼륨 마운트 기반 악성 Pod 배포를 통한 노드 루트 탈출(Breakout)
 - `privileged: true` 및 `hostPID: true` 옵션을 악용한 호스트 네임스페이스(`nsenter`) 장악
 - Pod Security Standards (PSS) 및 CKS 기반 방어 대책 실무 적용
+
+### 11. Active Directory & Kerberos 침투 랩 (KeroShield)
+- 엔터프라이즈 윈도우 도메인(CORP.LOCAL) 및 Kerberos KDC 아키텍처 분석
+- `DONT_REQ_PREAUTH` 계정 식별 및 AS-REP Roasting 오프라인 패스워드 크래킹
+- 서비스 계정 SPN(Service Principal Name) 조회 및 Kerberoasting TGS 티켓 추출
+- 복제 권한(`DS-Replication-Get-Changes-All`)을 악용한 DCSync 공격 및 `krbtgt` 해시 탈취
+- 탈취한 `krbtgt` 키와 도메인 SID를 결합한 만능 Golden Ticket 위조 및 도메인 컨트롤러 장악
+- SIEM 보안 감사 이벤트(Event ID 4768, 4769, 4662, 4672) 탐지 및 gMSA·AES 강화 대책 실무 습득
 
 ---
 

@@ -69,6 +69,7 @@ LAB_DIRS=(
     "08_llm_security_lab"
     "09_ics_scada_lab"
     "10_k8s_security_lab"
+    "11_ad_kerberos_lab"
 )
 
 LAB_NAMES=(
@@ -82,6 +83,7 @@ LAB_NAMES=(
     "AI/LLM 보안 랩"
     "ICS/SCADA 제어 보안 랩"
     "Kubernetes & 컨테이너 보안 랩"
+    "Active Directory & Kerberos 침투 랩"
 )
 
 stopped_count=0
