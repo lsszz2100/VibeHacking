@@ -25,7 +25,7 @@ Opening the site runs a boot sequence and drops you into an **infiltration conso
 | `hint` | 현재 표적 힌트 공개 (점수 −20%/개) / reveal a hint (−20% each) |
 | `submit <flag>` | 플래그 제출 / submit a flag (or just type it when a target is open) |
 | `status` | 점수·등급·계층별 진행도 / score, rank, per-layer progress |
-| `stats` | 22개 트랙별·5개 계층별 침투 통계 대시보드 / stats visualization dashboard |
+| `stats` | 27개 트랙별·5개 계층별 침투 통계 대시보드 / stats visualization dashboard |
 | `search <검색어>` | 잠금장치 검색 / search locks by keyword (e.g. `search jwt`) |
 | `export` | 진행도 백업 토큰 생성 / export save token for backup |
 | `import <토큰>` | 백업 토큰으로 진행도 복원 / restore progress from save token |
@@ -67,11 +67,11 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 
 | 계층 / node | 티어 / tier | 문제 / count | 통과 / breach |
 |------|:---:|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 89 | 45% |
-| `webserver` 웹서버 | **1** | 164 | 60% |
-| `internal` 내부망 | **2** | 201 | 60% |
-| `vault` 금고 | **3** | 219 | 58% |
-| `core` 코어 | **4** | 237 | 71% |
+| `perimeter` 외곽 | **0** | 92 | 45% |
+| `webserver` 웹서버 | **1** | 170 | 60% |
+| `internal` 내부망 | **2** | 209 | 60% |
+| `vault` 금고 | **3** | 228 | 58% |
+| `core` 코어 | **4** | 246 | 72% |
 
 <details>
 <summary><b>계층별 주제 펼쳐 보기 / topics by layer</b></summary>
@@ -106,6 +106,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `maldev` 🦠 악성코드 기법·방어 회피 (2) | 레거시 실행파일 시작 블록과 좌표 이동 감지 / legacy executable preamble and coordinate displacement tracking |
 | `wireless` 📡 무선·RF 해킹 (2) | 기지국 무선 방송 알림 프레임과 반송파 온오프 진폭 변조 / periodic broadcast frame and carrier amplitude state modulation |
 | `sidechannel` ⚡ 부채널·결함주입 (2) | 션트 저항 기반 전압 파형 계측 기기·신호 전압 레벨 조정 소자 / shunt resistor voltage trace instrumentation, domain voltage translation |
+| `wasm` 🧩 WebAssembly 보안 (3) | 모듈 헤더 4바이트 16진 식별자·공식 S-표현식 텍스트 표현 형식·기본 메모리 블록 규격 단위 / module header 4-byte hex sequence, official S-expression text notation, standard memory block unit |
 
 #### `webserver` 웹서버 — 티어 1 / tier 1
 
@@ -137,6 +138,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `maldev` 🦠 악성코드 기법·방어 회피 (6) | 공개 심볼 목록, 스레드 초기화 콜백, 프롤로그 점프 엔진, ntdll 스텁 파싱, 비동기 호출 대기열, 파이버 단위 저장소 / public symbol directory, thread initialization callbacks, prologue jump engine, ntdll stub parsing, asynchronous call queuing, and fiber storage |
 | `wireless` 📡 무선·RF 해킹 (6) | 패킷 청취 인터페이스 전환기·수동형 무선망 탐색기·하드웨어 무선 계층 규격 인터페이스·주파수 편이 변조·초저가 수신 전용 동글·저전력 장거리 광역망 / monitor mode converter, passive wireless sniffer, lower radio hardware interface, frequency state modulation, low-cost dongle receiver, and wide area low-power mesh |
 | `sidechannel` ⚡ 부채널·결함주입 (6) | 단일 파형 연산 패턴 식별·비트 상태 가중치 모델·클럭 과인가 결함·전원 강하 결함·표면 근접 자계 탐침·고차 마스킹 곱셈 검증 모델 / single waveform operation pattern analysis, bit weight modeling, clock frequency faulting, supply voltage dip faulting, surface magnetic sensing, high-order multiplication scheme |
+| `wasm` 🧩 WebAssembly 보안 (6) | 환경 리소스 연동 인터페이스·가변 길이 정수 압축 포맷·함수 디스패치 참조 격리 타입·LIFO 피연산자 머신 규격·외부 객체 참조 타입·공개 심볼 식별 체계 / environment resource interface standard, variable-length integer compression, function dispatch reference type, LIFO operand machine model, external object reference type, public symbol identifier scheme |
 
 #### `internal` 내부망 — 티어 2 / tier 2
 
@@ -168,6 +170,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `maldev` 🦠 악성코드 기법·방어 회피 (8) | 컴파일러 툴체인 식별자, 상대 주소의 파일 오프셋 계산, 문자열 해싱 연산, 이웃 스텁 거리 가감, 초기 스레드 디스패치, 트랜잭션 분신 프로세스, 프로세서 정보 조회, 고해상도 주기 계측 / compiler toolchain identifier, relative address to raw offset math, string hashing arithmetic, neighbor stub distance deduction, initial thread dispatch, transacted phantom process, processor feature query, and precision interval measurement |
 | `wireless` 📡 무선·RF 해킹 (8) | 기지국 고유 주소·근거리 태그 교환 규격·단기 키 복구 분석기·무선 기기 하드웨어 식별자·스펙트럼 관측 소프트웨어·서브 기가헤르츠 무선 송수신 칩셋·중심 주파수 산출·전파 감쇄 손실 계산 / base station physical identifier, near-field tag exchange standard, pairing traffic analyzer, hardware link identifier, spectrum observing suite, sub-GHz RF transceiver chipset, channel center frequency arithmetic, and free-space attenuation math |
 | `sidechannel` ⚡ 부채널·결함주입 (8) | 통계적 차분 평균 전력 분석·피어슨 공분산 통계 지표 산출·임계 펄스 폭 계산·고속 MOSFET 단락 스위치·캐시 라인 강제 비움 명령·경합 주소 캐시 밀어내기·상수 전력 소비 차분 회로·반도체 고유 지문 물리 복제 방지 소자 / statistical differential power trace averaging, Pearson covariance metric computation, critical pulse width determination, fast MOSFET grounding switch, cache line clearing primitive, cache set collision displacement, complementary constant-consumption logic, semiconductor physical fingerprinting |
+| `wasm` 🧩 WebAssembly 보안 (8) | 동적 메모리 증설 바이트코드·할당 용량 바이트 연산·현재 페이지 수 조회 명령어·선형 메모리 구조체 오프셋 분석·동적 디스패치 파라미터 정합성·32비트 메모리 기록 바이트코드·32비트 메모리 인출 바이트코드·바이너리 모듈 어셈블러 도구 / dynamic memory expansion byte instruction, capacity sizing calculation, current page count query, linear memory struct displacement, dynamic dispatch type conformance, 32-bit store instruction, 32-bit load instruction, binary assembler tool |
 
 #### `vault` 금고 — 티어 3 / tier 3
 
@@ -199,6 +202,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `maldev` 🦠 악성코드 기법·방어 회피 (9) | 절대 번지 보정 목록, 무디스크 인메모리 매핑, 깊은 스텁 바이트 분석, 정품 모듈 내부 명령어 경유, 디스크 이미지 교체 주입, 트랜잭션 섹션 뷰 주입, 비동기 콜백 체인 스케줄링, 디렉터리 참여 상태 확인, 클록 틱 차이 판정 / absolute address fixup list, diskless in-memory mapping, deep stub byte analysis, genuine module instruction transition, on-disk image swapping injection, transacted section view mapping, asynchronous callback staging, directory realm participation check, and clock tick delta verification |
 | `wireless` 📡 무선·RF 해킹 (9) | 사전 공격용 고유 식별 블록·동등 동시 인증 교환 규격·수신 메타데이터 캡처 헤더·무페어링 무선 익스플로잇 취약점·연결 암호화 축소 공격·신뢰 기기 사칭 기법·미지의 무선 패킷 분석 도구·개인 통신망 공격 프레임워크·원시 펄스 폭 복조 디코딩 / pairwise identifier block, simultaneous equality exchange handshake, capture metadata frame header, zero-click radio vulnerability group, link encryption downgrade attack, trusted device impersonation method, universal signal analysis suite, low-power mesh attack framework, and raw pulse train decoding |
 | `sidechannel` ⚡ 부채널·결함주입 (9) | 상관 계수 기반 최적 키 판정·버스 상태 비트 천이 거리 지표·광학 결함 유도 소자·전자기 과도 자기장 발생 권선 코일·전자기 누출 도청 차폐 규격·분기 목적지 예측 구조체·위상 편차 기반 진난수 발진 루프·표면 침습 감지 능동 메탈 그리드·급격 전압 변동 감지 아날로그 판별기 / correlation peak key selection, bus transition distance metric, optical fault sensor, transient magnetic coil, compromising emanation shield criteria, speculative target prediction branch cache, phase drift random oscillation loop, invasive microprobing active shield grid, voltage dip analog discriminator |
+| `wasm` 🧩 WebAssembly 보안 (9) | 복구 불가 예외 중단 상태·테이블 기반 간접 분기 명령어·브라우저 DOM 싱크 스크립트 주입·가변 바이트 스트림 디코딩·고정밀 타이머 공유 메모리 API·0번지 고정 매핑 특성·C 스타일 역컴파일 도구·선형 메모리 경계 강제·비정상 종료 사후 덤프 규격 / unrecoverable abnormal termination state, table-based dispatch instruction, browser DOM sink injection, variable byte stream decoding, high-resolution timer shared memory API, deterministic zero base mapping, C-like decompiler tool, memory bounds enforcement, post-mortem diagnostic dump |
 
 #### `core` 코어 — 티어 4 / tier 4
 
@@ -230,12 +234,13 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `maldev` 🦠 악성코드 기법·방어 회피 (10) | 타깃 라이브러리 심볼 위임, 사전 캐시 오브젝트 폴더, 함수 주소 오름차순 번호 도출, 반출 디렉터리 항목 변조, 네이티브 커널 대기 디스패치, 서명 라이브러리 코드 치환, 글로벌 데이터 테이블 경유 주입, 윈도우 서브클래스 메모리 조작, 대기 상태 메모리 암호화 루틴, 고도화 방어 회피 침해사고 분석 종합 / target library symbol delegation, pre-cached object directory path, function address ascending order derivation, public symbol table redirection, native kernel wait dispatch, signed library code replacement, global data table routed injection, window subclass memory manipulation, dormant state memory encryption routine, and advanced defense evasion debrief capstone |
 | `wireless` 📡 무선·RF 해킹 (10) | 단말 탐색 응답 유도 공격·보호 관리 프레임 암호 규격·진화형 사설 기지국 툴킷·비인가 주소록 탈취 기법·원격 제어 및 백도어 통화 공격·무인증 단순 페어링 모델·직접 확산 대역 변조·주파수 도약 통신 기법·소형 센서용 인터넷 프로토콜·무선 침해 사고 종합 분석 / probe response redirection attack, management frame cryptographic protection, advanced rogue access toolkit, unauthorized address book extraction, remote AT control intrusion, unauthenticated pairing mode, direct sequence spectrum spreading, pseudo-random channel hopping, sensor network internet standard, and comprehensive wireless incident debrief |
 | `sidechannel` ⚡ 부채널·결함주입 (10) | 누출 정량 평가 집단 통계 검정·기저 함수 선형 근사 부채널 모델·레지스터 이진 상태 뒤집힘 결함·불변 실리콘 신뢰 닻 메모리·비순차 명령어 파이프라인 누출·세라믹 커패시터 압전 진동 누출·보안 암호 전용 하드웨어 가속기·고주파 잡음 감쇄 아날로그 필터·오픈 하드웨어 부채널 평가 플랫폼·부채널 침해 사고 종합 포렌식 리포트 / leakage quantification two-sample t-test assessment, base-function linear profiling SCA, register state bit-toggle fault, immutable on-die trust anchor memory, speculative pipeline execution leakage, ceramic capacitor acoustic leakage, dedicated crypto security engine, high-frequency glitch suppression filter, open-source SCA assessment platform, comprehensive hardware forensic debrief |
+| `wasm` 🧩 WebAssembly 보안 (9) | 가상머신 격리 경계 탈출·부동소수점 비트 패킹 타입 오류·호출 프레임 격리 스택 체계·모듈 바이트코드 무작위 생성 퍼저·가비지 컬렉션 표준 확장·역량 기반 상호운용 모델·상대 경로 조작 격리 우회·구조적 제어 흐름 분기 제한·침해 사고 포렌식 캡스톤 / virtual machine isolation breakout, floating-point bit-packing type flaw, isolated call frame stack, bytecode generation fuzzer, garbage collection specification, capability composition model, upward path containment bypass, structured control flow branch restriction, incident response forensics capstone |
 
 </details>
 
-총 **910문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **945문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **910 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **945 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 

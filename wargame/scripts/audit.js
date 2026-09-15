@@ -123,6 +123,8 @@ const NOT_PLANTED = {
   t3_rtmalleable: 'asks for the C2 profile design by name; C2 통신 양식을 정의하는 프로필 개념 질문',
   t3_rtbeacon: 'fenced console session record calculation; the 콘솔 log is the problem artifact, not this page',
   t1_ptcaldera: 'asks for the MITRE emulation tool by name; GUI 웹 콘솔 is that tool\'s interface, not this page',
+  t3_wasmxss: 'asks for a client-side injection acronym; DOM sink manipulation is a concept, not this page',
+  t1_wasmimport: 'asks for an external reference type keyword; DOM reference handling is a concept, not this page',
 };
 
 const aBad = [], aRows = [];

@@ -1108,6 +1108,38 @@ const SOLVERS = new Map([
     const glitch = text.match(/Glitch width:\s*(\w+)/)[1];
     return `FLAG{SC_${cipher}_${attack}_${key}_GLITCH_${glitch}}`;
   } }],
+  /* --- webassembly: linear memory sizing, struct offset calculation, LEB128 decoding, and incident forensics capstone --- */
+  ['t2_wasmpages', { kind: 'computed', via: 'calculate linear memory byte size after dynamic allocation', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const init = parseInt(text.match(/INITIAL_PAGES:\s*(\d+)/)[1], 10);
+    const add = parseInt(text.match(/ADDITIONAL_PAGES:\s*(\d+)/)[1], 10);
+    const page = parseInt(text.match(/PAGE_SIZE_BYTES:\s*(\d+)/)[1], 10);
+    return ((init + add) * page).toString();
+  } }],
+  ['t2_wasmoffset', { kind: 'computed', via: 'calculate padding bytes between buffer and target variable', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const buf = parseInt(text.match(/0x([0-9A-Fa-f]+)\] user_buf/)[1], 16);
+    const target = parseInt(text.match(/0x([0-9A-Fa-f]+)\] is_admin/)[1], 16);
+    return (target - buf).toString();
+  } }],
+  ['t3_wasmlebdecode', { kind: 'computed', via: 'decode unsigned 2-byte LEB128 stream into decimal flag', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const m = text.match(/STREAM:\s*\[(0x[0-9A-Fa-f]+),\s*(0x[0-9A-Fa-f]+)\]/);
+    const b1 = parseInt(m[1], 16);
+    const b2 = parseInt(m[2], 16);
+    const val = ((b2 & 0x7F) << 7) | (b1 & 0x7F);
+    return `FLAG{LEB128_VAL_${val}}`;
+  } }],
+  ['t4_wasmcapstone', { kind: 'computed', via: 'aggregate Wasm incident briefing parameters into forensic flag', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const p = parseInt(text.match(/INITIAL_PAGES\s*=\s*(\d+)/)[1], 10);
+    const b = parseInt(text.match(/BUFFER_OFFSET\s*=\s*0x([0-9A-Fa-f]+)/)[1], 16);
+    const t = parseInt(text.match(/TARGET_OFFSET\s*=\s*0x([0-9A-Fa-f]+)/)[1], 16);
+    const i = parseInt(text.match(/POISONED_TABLE_INDEX\s*=\s*(\d+)/)[1], 10);
+    const delta = t - b;
+    const checksum = (p * 1000) + delta + (i * 10);
+    return `FLAG{WASM-${checksum}-EXPLOITED}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

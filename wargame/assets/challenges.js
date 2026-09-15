@@ -255,6 +255,15 @@ const TRACKS = [
     "desc_ko": "전력 분석(SPA·DPA·CPA)·전자기파 누출·글리칭 결함 주입과 하드웨어 방어 기법.",
     "desc_en": "Power analysis (SPA/DPA/CPA), electromagnetic emanation, glitch fault injection, and hardware countermeasures."
   }
+  ,
+  {
+    "id": "wasm",
+    "icon": "🧩",
+    "ko": "WebAssembly 보안",
+    "en": "WebAssembly Security",
+    "desc_ko": "Wasm 바이트코드·선형 메모리 오버플로우·간접 호출 테이블 조작·샌드박스 보안.",
+    "desc_en": "Wasm bytecode, linear memory overflows, indirect call table poisoning, and sandbox security."
+  }
 ];
 
 const CHALLENGES = [
@@ -25774,6 +25783,986 @@ const CHALLENGES = [
       "en": [
         "Combine AES128, CPA, 0x9B, and 35NS.",
         "Substitute the reported values in order into the template placeholders."
+      ]
+    }
+  },
+  {
+    "id": "t0_wasmmagic",
+    "tier": 0,
+    "cat": "wasmbinary",
+    "track": "wasm",
+    "points": 40,
+    "ci": true,
+    "fmt": "16진수 / hex (8글자 / 8 chars)",
+    "hash": "f6d30b253590859bb83cd73cf9ba17654b7891fbc5bbe17dac1d19256e51bb7d",
+    "title": {
+      "ko": "Wasm 바이너리 매직 넘버",
+      "en": "Wasm Binary Magic Number"
+    },
+    "prompt": {
+      "ko": "WebAssembly 바이너리 모듈 파일의 시작 4바이트 매직 넘버를 8자리 16진수 문자열로 입력하세요. (첫 바이트 0x00 뒤에 아스키 'a', 's', 'm'의 16진수 코드가 순서대로 이어집니다)",
+      "en": "Enter the 4-byte magic number header of a WebAssembly module file as an 8-character hex string. (Starts with 0x00 followed by ASCII codes for 'a', 's', and 'm')"
+    },
+    "hints": {
+      "ko": [
+        "ASCII 'a'는 0x61, 's'는 0x73, 'm'은 0x6d입니다.",
+        "00 뒤에 세 글자의 16진수 값을 차례대로 붙이세요."
+      ],
+      "en": [
+        "ASCII 'a' is 0x61, 's' is 0x73, 'm' is 0x6d.",
+        "Append the three hex values after 00."
+      ]
+    }
+  },
+  {
+    "id": "t0_wasmwat",
+    "tier": 0,
+    "cat": "wasmbinary",
+    "track": "wasm",
+    "points": 50,
+    "ci": true,
+    "fmt": "약어 / acronym (3글자 / 3 chars)",
+    "hash": "f00a787f7492a95e165b470702f4fe9373583fbdc025b2c8bdf0262cc48fcff4",
+    "title": {
+      "ko": "Wasm 텍스트 표현 형식",
+      "en": "WebAssembly Text Format"
+    },
+    "prompt": {
+      "ko": "WebAssembly 모듈을 사람이 직접 읽고 디버깅할 수 있도록 S-표현식 문법으로 정의한 공식 텍스트 형식의 3글자 영문 약어를 입력하세요.",
+      "en": "Enter the 3-letter English acronym for the official human-readable text format of WebAssembly using S-expression syntax."
+    },
+    "hints": {
+      "ko": [
+        "WebAssembly Text의 영문 머리글자 조합입니다.",
+        "W로 시작하는 3글자 약어입니다."
+      ],
+      "en": [
+        "Initial letters of WebAssembly Text.",
+        "A 3-letter acronym starting with W."
+      ]
+    }
+  },
+  {
+    "id": "t0_wasmpagesize",
+    "tier": 0,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 60,
+    "ci": true,
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "hash": "d2ae344ff76b818854414dfa946b37180a456219cbcebeaff16cea01076b340c",
+    "title": {
+      "ko": "선형 메모리 페이지 규격 단위",
+      "en": "Linear Memory Page Unit"
+    },
+    "prompt": {
+      "ko": "WebAssembly 가상머신 선형 메모리의 1페이지 크기(65,536 바이트)를 이진 단위 접두사 KiB를 붙인 5글자 규격 표기로 입력하세요. (숫자 뒤에 KiB 결합)",
+      "en": "Enter the capacity of a single standard page in WebAssembly linear memory (65,536 bytes) in binary KiB unit notation. (5 characters: number followed by KiB)"
+    },
+    "hints": {
+      "ko": [
+        "65536을 1024로 나눈 정수 수치 뒤에 KiB를 결합하세요.",
+        "총 5글자이며 대소문자 구분 없이 채점됩니다."
+      ],
+      "en": [
+        "Divide 65536 by 1024 and append KiB to the quotient.",
+        "Total 5 characters, case-insensitive."
+      ]
+    }
+  },
+  {
+    "id": "t1_wasmwasi",
+    "tier": 1,
+    "cat": "wasmbinary",
+    "track": "wasm",
+    "points": 70,
+    "ci": true,
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "hash": "f5e33862a28cb3fe7e60893e4d6e2f0c96c509b468bcb3de84064b7cf2b0d291",
+    "title": {
+      "ko": "시스템 인터페이스 규격",
+      "en": "System Interface Standard"
+    },
+    "prompt": {
+      "ko": "웹 브라우저 외부의 서버 및 런타임 환경에서 WebAssembly가 파일시스템, 소켓, 표준 I/O 등 OS 자원에 접근할 수 있게 해주는 표준 시스템 인터페이스의 4글자 약어를 입력하세요.",
+      "en": "Enter the 4-letter acronym for the standard system interface enabling WebAssembly to access OS resources (filesystem, sockets, stdio) outside browsers."
+    },
+    "hints": {
+      "ko": [
+        "WebAssembly System Interface의 머리글자 조합입니다.",
+        "W로 시작해 I로 끝나는 4글자입니다."
+      ],
+      "en": [
+        "Initial letters of WebAssembly System Interface.",
+        "4 letters starting with W and ending with I."
+      ]
+    }
+  },
+  {
+    "id": "t1_wasmleb128",
+    "tier": 1,
+    "cat": "wasmbinary",
+    "track": "wasm",
+    "points": 75,
+    "ci": true,
+    "fmt": "약어 / acronym (6글자 / 6 chars)",
+    "hash": "ec69baa186ff8c5e6c0f92c9f238a407fe99a64b9b5c27301fff79c9406abccf",
+    "title": {
+      "ko": "가변 정수 바이트 압축 규격",
+      "en": "Variable Byte Integer Encoding"
+    },
+    "prompt": {
+      "ko": "바이너리 규격에서 정수와 인덱스를 가변 바이트 길이로 압축 표현하기 위해 채택한 6글자 인코딩 표준 명칭을 입력하세요. (리틀 엔디언 기반 128 진법)",
+      "en": "Enter the 6-character variable-length integer compression encoding standard used in binary module specifications."
+    },
+    "hints": {
+      "ko": [
+        "LEB 뒤에 세 자리 숫자가 결합됩니다.",
+        "1바이트당 7비트의 유효 데이터를 인코딩합니다."
+      ],
+      "en": [
+        "Combines LEB with a 3-digit number.",
+        "Encodes 7 bits of payload per byte."
+      ]
+    }
+  },
+  {
+    "id": "t1_wasmtable",
+    "tier": 1,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 80,
+    "ci": true,
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "hash": "b716f4f515b5b33c436c786a2e217d11c85a13f9be87ff27d8ca273b83c570e9",
+    "title": {
+      "ko": "함수 참조 요소 타입",
+      "en": "Function Reference Element Type"
+    },
+    "prompt": {
+      "ko": "WebAssembly 테이블에서 함수 포인터 참조를 불투명한 인덱스로 안전하게 격리 보관할 때 지정하는 기본 참조 타입 키워드를 입력하세요. (7글자: 함수 참조 타입)",
+      "en": "Enter the default opaque reference type keyword specified in WebAssembly tables to manage function pointers safely. (7 letters: function reference)"
+    },
+    "hints": {
+      "ko": [
+        "함수를 뜻하는 func와 참조를 뜻하는 ref의 결합입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines func with ref.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t1_wasmstack",
+    "tier": 1,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 85,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "efab2a88331d6183ab32e8c55ecb72e83d60082705aac286beb1b255a6cc052c",
+    "title": {
+      "ko": "LIFO 피연산자 머신 아키텍처",
+      "en": "LIFO Operand Machine Model"
+    },
+    "prompt": {
+      "ko": "WebAssembly 가상머신 엔진은 레지스터 방식이 아닌 피연산자를 밀어넣고 꺼내는 LIFO 구조의 연산 모델을 채택하고 있습니다. 이러한 가상 머신 아키텍처 유형을 무엇이라 합니까? (두 단어)",
+      "en": "WebAssembly executes operations using a Last-In First-Out operand buffer rather than hardware registers. What is this virtual machine architecture called? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "자료구조 스택과 기계를 뜻하는 단어의 결합입니다.",
+        "소문자로 두 단어를 입력하세요."
+      ],
+      "en": [
+        "Combines the word stack with machine.",
+        "Type two words in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t1_wasmimport",
+    "tier": 1,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 85,
+    "ci": true,
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "hash": "d804db28980c23976201e2468de0ea1beaa3731a521b5038f48a3583499ef7fd",
+    "title": {
+      "ko": "호스트 외부 객체 참조 타입",
+      "en": "Host External Reference Type"
+    },
+    "prompt": {
+      "ko": "모듈이 외부 호스트(브라우저 DOM, JS 객체 등)의 임의 참조를 안전하고 불투명하게 다루기 위해 Wasm 2.0에 도입된 참조 타입 키워드를 입력하세요. (9글자)",
+      "en": "Enter the 9-letter reference type keyword introduced in Wasm to hold opaque references to host objects (DOM nodes, host handles)."
+    },
+    "hints": {
+      "ko": [
+        "외부를 뜻하는 extern과 참조를 뜻하는 ref의 결합입니다.",
+        "소문자로 9글자를 입력하세요."
+      ],
+      "en": [
+        "Combines extern with ref.",
+        "Enter as 9 lowercase letters."
+      ]
+    }
+  },
+  {
+    "id": "t1_wasmexport",
+    "tier": 1,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 90,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "00271d5f93ecfa680f88cbc9df609e01efac29be429b1bed7f2dd3df0113637d",
+    "title": {
+      "ko": "공개 심볼 식별 명칭",
+      "en": "Public Symbol Identifier"
+    },
+    "prompt": {
+      "ko": "Wasm 모듈 내부에서 정의된 함수나 선형 메모리를 외부 호스트에서 호출할 수 있도록 심볼 테이블에 등록하는 공개 명칭을 가리키는 두 단어를 입력하세요. (두 단어: 공개 이름)",
+      "en": "Enter the two-word term referring to the string identifier attached to module functions so external callers can invoke them. (two words)"
+    },
+    "hints": {
+      "ko": [
+        "외부로 내보냄을 뜻하는 단어와 이름을 뜻하는 단어의 결합입니다.",
+        "소문자로 두 단어를 입력하세요."
+      ],
+      "en": [
+        "Combines the verb for outward exposure with name.",
+        "Type two lowercase words."
+      ]
+    }
+  },
+  {
+    "id": "t2_wasmgrow",
+    "tier": 2,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 100,
+    "ci": true,
+    "fmt": "명령어 / command",
+    "hash": "f89a8235d6215f461064133cf433cddd88c3c52cd100b45d31e46b501adafe17",
+    "title": {
+      "ko": "동적 메모리 확장 바이트코드",
+      "en": "Dynamic Memory Expand Opcode"
+    },
+    "prompt": {
+      "ko": "WebAssembly 바이트코드에서 실행 중 할당된 선형 메모리 페이지 수를 추가로 늘리기 위해 호출하는 명령어를 입력하세요. (소문자, 중간 마침표 포함)",
+      "en": "Enter the Wasm bytecode instruction called at runtime to dynamically expand allocated linear memory page count. (lowercase, with dot)"
+    },
+    "hints": {
+      "ko": [
+        "메모리를 의미하는 단어와 자라다/늘리다를 뜻하는 동사가 마침표로 연결됩니다.",
+        "스택에서 추가할 페이지 수를 인자로 받습니다."
+      ],
+      "en": [
+        "Connects memory with the verb grow using a period.",
+        "Takes the number of pages to add from the stack."
+      ]
+    }
+  },
+  {
+    "id": "t2_wasmpages",
+    "tier": 2,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 110,
+    "ci": true,
+    "fmt": "숫자 / number",
+    "hash": "00f3c864c3d43d309d88730dc744ab6051688db2e5a9b685e4f3d922c846817f",
+    "title": {
+      "ko": "선형 메모리 확장 바이트 계산",
+      "en": "Linear Memory Sizing Calculation"
+    },
+    "prompt": {
+      "ko": "Wasm 모듈이 초기 메모리로 4페이지를 선언한 뒤, 실행 중 3페이지를 추가 확장 요청하였습니다. 현재 이 모듈의 총 선형 메모리 용량은 몇 바이트(bytes)입니까? (1페이지 = 65,536 바이트)\n\n```alloc\nINITIAL_PAGES: 4\nADDITIONAL_PAGES: 3\nPAGE_SIZE_BYTES: 65536\n```",
+      "en": "A Wasm module declared 4 initial pages and subsequently requested 3 additional pages at runtime. What is the total memory capacity in bytes? (1 page = 65,536 bytes)\n\n```alloc\nINITIAL_PAGES: 4\nADDITIONAL_PAGES: 3\nPAGE_SIZE_BYTES: 65536\n```"
+    },
+    "hints": {
+      "ko": [
+        "총 페이지 수는 4 + 3 = 7입니다.",
+        "7에 65536을 곱한 계산 결과 숫자를 입력하세요."
+      ],
+      "en": [
+        "Total page count is 4 + 3 = 7.",
+        "Multiply 7 by 65536 to get the answer."
+      ]
+    }
+  },
+  {
+    "id": "t2_wasmsizeop",
+    "tier": 2,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 110,
+    "ci": true,
+    "fmt": "명령어 / command",
+    "hash": "aec78aa0d70505249cb8edbbf33c3bc3c5ba5b4bac53dc1f42f32a8d83d92274",
+    "title": {
+      "ko": "현재 메모리 페이지 조회 명령어",
+      "en": "Current Memory Size Opcode"
+    },
+    "prompt": {
+      "ko": "WebAssembly 바이트코드에서 현재 모듈에 할당된 선형 메모리의 페이지 수를 조회하여 반환하는 기본 명령어를 입력하세요.",
+      "en": "Enter the core Wasm bytecode instruction that queries and returns the current number of allocated memory pages."
+    },
+    "hints": {
+      "ko": [
+        "메모리 키워드 뒤에 마침표와 크기를 뜻하는 4글자 영단어가 결합됩니다.",
+        "i32 타입 페이지 수를 반환합니다."
+      ],
+      "en": [
+        "Combines memory with a dot and the 4-letter word for dimension/magnitude.",
+        "Returns page count as i32."
+      ]
+    }
+  },
+  {
+    "id": "t2_wasmoffset",
+    "tier": 2,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 120,
+    "ci": true,
+    "fmt": "숫자 / number",
+    "hash": "98010bd9270f9b100b6214a21754fd33bdc8d41b2bc9f9dd16ff54d3c34ffd71",
+    "title": {
+      "ko": "메모리 구조체 오프셋 분석",
+      "en": "Linear Memory Struct Offset Forensics"
+    },
+    "prompt": {
+      "ko": "Wasm 메모리 오버플로우 분석입니다. 사용자 입력 버퍼가 오프셋 `0x1000`에 위치하고, 인가 변수가 오프셋 `0x1030`에 위치합니다. 버퍼 시작부터 인가 변수 직전까지 채워야 하는 10진수 패딩 바이트 수를 계산하세요.\n\n```layout\n[0x1000] user_buf\n[0x1030] is_admin\n```",
+      "en": "Wasm memory overflow analysis. User input buffer starts at offset `0x1000`, and privilege flag sits at offset `0x1030`. Calculate the decimal count of padding bytes required to reach the flag.\n\n```layout\n[0x1000] user_buf\n[0x1030] is_admin\n```"
+    },
+    "hints": {
+      "ko": [
+        "0x1030에서 0x1000을 뺀 차이는 16진수 0x30입니다.",
+        "16진수 0x30을 10진수 숫자로 변환하세요."
+      ],
+      "en": [
+        "0x1030 minus 0x1000 equals 0x30 in hex.",
+        "Convert hex 0x30 to decimal."
+      ]
+    }
+  },
+  {
+    "id": "t2_wasmtypesig",
+    "tier": 2,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 120,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "4c2f399f2b45297e0a6adc26e8086950b51c810b9481c3872f6f45ca3dac8939",
+    "title": {
+      "ko": "함수 시그니처 정합성 검증",
+      "en": "Function Signature Consistency"
+    },
+    "prompt": {
+      "ko": "WebAssembly는 런타임 동적 테이블 디스패치 시 대상 함수의 매개변수와 반환값 명세를 대조하여 잘못된 함수 실행을 차단합니다. 이 대조 대상을 무엇이라 부릅니까? (두 단어: 형태와 서명)",
+      "en": "What parameter and return specification does WebAssembly strictly check against target functions during dynamic table dispatch? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "자료의 형태를 뜻하는 영단어와 고유 서명을 뜻하는 영단어가 공백으로 결합됩니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines the word for data form with signature.",
+        "Enter in lowercase with a space."
+      ]
+    }
+  },
+  {
+    "id": "t2_wasmstorops",
+    "tier": 2,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 125,
+    "ci": true,
+    "fmt": "명령어 / command",
+    "hash": "58b71d7265d8deed861209d093a89d6dee1e75be45440620db03f663ab7b0c3b",
+    "title": {
+      "ko": "32비트 메모리 저장 명령어",
+      "en": "32-bit Memory Store Instruction"
+    },
+    "prompt": {
+      "ko": "피연산자 버퍼에서 32비트 정수 값을 꺼내어 메모리의 지정된 주소에 기록(저장)하는 Wasm 바이트코드 기본 명령어를 입력하세요.",
+      "en": "Enter the Wasm bytecode instruction that pops a 32-bit integer and writes it into memory at a specified address."
+    },
+    "hints": {
+      "ko": [
+        "32비트 정수형 약어 뒤에 마침표와 저장하다를 뜻하는 영단어가 붙습니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines the 32-bit integer type with a dot and the verb store.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t2_wasmloadops",
+    "tier": 2,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 125,
+    "ci": true,
+    "fmt": "명령어 / command",
+    "hash": "daca4fc718ce535b05a24e9a7fc5014613cf0044dfa6d6029fe83ccb3019a424",
+    "title": {
+      "ko": "32비트 메모리 로드 명령어",
+      "en": "32-bit Memory Load Instruction"
+    },
+    "prompt": {
+      "ko": "메모리의 지정된 주소로부터 32비트 정수를 읽어와 피연산자 버퍼에 푸시하는 Wasm 바이트코드 기본 명령어를 입력하세요.",
+      "en": "Enter the core bytecode instruction that reads a 32-bit integer from memory and pushes it onto the operand buffer."
+    },
+    "hints": {
+      "ko": [
+        "32비트 정수형 약어 뒤에 마침표와 적재하다를 뜻하는 영단어가 결합됩니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines the 32-bit integer type with a dot and the verb load.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t2_wasmwat2wasm",
+    "tier": 2,
+    "cat": "wasmbinary",
+    "track": "wasm",
+    "points": 130,
+    "ci": true,
+    "fmt": "도구 이름 / tool name",
+    "hash": "28738e5a05cfba54d4bd41d0ce7b8a14ad0ed8edc68a6c6cfafbd9309b991b12",
+    "title": {
+      "ko": "바이너리 어셈블러 도구",
+      "en": "WABT Assembler Tool"
+    },
+    "prompt": {
+      "ko": "WABT 툴킷에서 텍스트 S-표현식 파일을 컴파일된 바이너리 파일로 빌드해 주는 핵심 CLI 변환 유틸리티의 이름을 입력하세요.",
+      "en": "Enter the name of the core WABT CLI translation utility that builds text S-expression files into binary modules."
+    },
+    "hints": {
+      "ko": [
+        "텍스트 약어 이름 뒤에 2(to)와 바이너리 확장자 이름이 결합된 도구명입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines text format acronym, digit 2, and binary format extension.",
+        "Enter in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t3_wasmtrap",
+    "tier": 3,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 140,
+    "ci": true,
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "hash": "3a53db8a2c8a17ee3ea667bc146718c004d4446dee670a46d426e563ced7bc2f",
+    "title": {
+      "ko": "가상머신 비정상 중단 상태",
+      "en": "Abnormal Termination State"
+    },
+    "prompt": {
+      "ko": "0으로 나누기나 경계 초과 접근 등 복구 불가능한 불법 연산 발생 시 런타임 엔진이 실행을 즉시 취소하고 중단시키는 상태를 의미하는 5글자 영단어를 입력하세요.",
+      "en": "Enter the 5-letter English word meaning immediate abnormal cancellation/termination of execution when an unrecoverable fault occurs."
+    },
+    "hints": {
+      "ko": [
+        "중단하다, 취소하다를 뜻하는 표준 C 라이브러리 함수명이기도 합니다.",
+        "A로 시작하는 5글자 영단어입니다."
+      ],
+      "en": [
+        "Shares the name with standard C library function for abnormal termination.",
+        "Starts with A and has 5 letters."
+      ]
+    }
+  },
+  {
+    "id": "t3_wasmtablepoison",
+    "tier": 3,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 145,
+    "ci": true,
+    "fmt": "명령어 / command",
+    "hash": "52a6de529aaaeb6cdd9210b36737b20a2416047e8fde0cc946f19ff11a88f85a",
+    "title": {
+      "ko": "동적 테이블 분기 바이트코드",
+      "en": "Table Dynamic Branch Instruction"
+    },
+    "prompt": {
+      "ko": "메모리 내 함수 포인터 변수가 변조되었을 때, 공격자가 원하는 대체 유효 함수로 흐름을 가로채기 위해 실행되는 Wasm 테이블 기반 간접 호출 바이트코드 명령어를 입력하세요.",
+      "en": "Enter the Wasm table-based dynamic call instruction dispatched when function pointer indices in memory are tampered with."
+    },
+    "hints": {
+      "ko": [
+        "호출을 뜻하는 단어 뒤에 언더스코어(_)와 간접적임을 뜻하는 영단어가 붙습니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines call with an underscore and the adjective indirect.",
+        "Enter in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t3_wasmxss",
+    "tier": 3,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 150,
+    "ci": true,
+    "fmt": "약어 / acronym",
+    "hash": "20ad8b4d31a4140434cd5416ab7eec420bc8cec755c82d872de632e5abcaf81d",
+    "title": {
+      "ko": "호스트 브라우저 브리지 인젝션",
+      "en": "Host Browser Bridge Injection"
+    },
+    "prompt": {
+      "ko": "모듈 내부에서 검증되지 않은 원시 문자열이 호스트 브라우저의 화면 조작 싱크(innerHTML 등)로 흘러들어갈 때 발생하는 웹 취약점 약어를 입력하세요.",
+      "en": "Enter the acronym for the client-side injection flaw occurring when unvalidated data from a module flows into host browser DOM manipulation sinks."
+    },
+    "hints": {
+      "ko": [
+        "DOM 환경에서 발생하는 크로스사이트 스크립팅 취약점입니다.",
+        "소문자로 공백을 포함해 입력하세요."
+      ],
+      "en": [
+        "Cross-site scripting occurring within Document Object Model context.",
+        "Enter in lowercase with a space."
+      ]
+    }
+  },
+  {
+    "id": "t3_wasmlebdecode",
+    "tier": 3,
+    "cat": "wasmbinary",
+    "track": "wasm",
+    "points": 155,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "hash": "bd5e500ab38e0ea00ce0742258fdf23ff2b8baa01aec70b1e0cc26bde7c08bf1",
+    "title": {
+      "ko": "가변 바이트 스트림 복원",
+      "en": "Variable Byte Stream Decoding"
+    },
+    "prompt": {
+      "ko": "바이너리 파서 디코딩 테스트입니다. 2바이트 가변 바이트 스트림 `[0xE5, 0x03]`을 디코딩하여 산출된 10진수 정수를 `FLAG{LEB128_VAL_<정수>}` 형식으로 제출하세요.\n\n```bytes\nSTREAM: [0xE5, 0x03]\n```",
+      "en": "Binary parser decoding forensics. Decode the 2-byte variable stream `[0xE5, 0x03]` and assemble into `FLAG{LEB128_VAL_<INTEGER>}` format.\n\n```bytes\nSTREAM: [0xE5, 0x03]\n```"
+    },
+    "hints": {
+      "ko": [
+        "0xE5 하위 7비트는 101, 0x03을 7비트 시프트하면 384입니다.",
+        "384 + 101 = 485를 템플릿의 <정수> 위치에 대입하세요."
+      ],
+      "en": [
+        "0xE5 lower 7 bits is 101; 0x03 shifted left by 7 is 384.",
+        "Substitute 485 into the <INTEGER> placeholder."
+      ]
+    }
+  },
+  {
+    "id": "t3_wasmspectre",
+    "tier": 3,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word",
+    "hash": "147a5477837f76263486dc7038b8035203de896a472b42312463982dd55be972",
+    "title": {
+      "ko": "고정밀 타이머 공유 버퍼 API",
+      "en": "Shared Buffer Timer API"
+    },
+    "prompt": {
+      "ko": "브라우저 환경에서 워커 스레드 간 메모리를 공유하여 부채널 공격에 필요한 초정밀 타이머를 구성할 때 악용되는 웹 API 객체 명칭을 입력하세요. (대소문자 무관)",
+      "en": "Enter the web API object name that shares memory across worker threads, leveraged to construct high-resolution timers for cache attacks."
+    },
+    "hints": {
+      "ko": [
+        "공유된 배열 버퍼를 뜻하는 영단어 조합입니다.",
+        "소문자로 띄어쓰기 없이 입력하세요."
+      ],
+      "en": [
+        "Compound term for shared array buffer.",
+        "Type as a single lowercase word without spaces."
+      ]
+    }
+  },
+  {
+    "id": "t3_wasmaslr",
+    "tier": 3,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 165,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "8cf936fad0b9095f60b6838dc97b07ec8ac50c8bcdab25ddec3c986008f969e0",
+    "title": {
+      "ko": "결정론적 베이스 주소 특성",
+      "en": "Deterministic Base Address Mapping"
+    },
+    "prompt": {
+      "ko": "선형 메모리는 주소 공간 무작위화 없이 항상 주소 0번지부터 고정 매핑되는 특성을 가집니다. '0번지 기반'을 의미하는 하이픈 포함 두 단어 영문 표현을 입력하세요.",
+      "en": "Linear memory maps deterministically starting from offset 0, lacking address space randomization. Enter the hyphenated two-word expression meaning based at zero."
+    },
+    "hints": {
+      "ko": [
+        "숫자 0을 뜻하는 영단어와 기반을 뜻하는 과거분사의 하이픈 결합입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Hyphenated combination of zero and based.",
+        "Enter in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t3_wasmcockpit",
+    "tier": 3,
+    "cat": "wasmbinary",
+    "track": "wasm",
+    "points": 165,
+    "ci": true,
+    "fmt": "도구 이름 / tool name",
+    "hash": "3fc64d58001453dd9a9682d4b3be88f98b64f38557633a8af06dac4b480349ed",
+    "title": {
+      "ko": "바이너리 역컴파일러 도구",
+      "en": "Binary Decompiler Tool"
+    },
+    "prompt": {
+      "ko": "WABT 패키지에 포함되어 바이너리 모듈을 C 언어와 유사한 가독성 높은 구조화된 슈도코드로 변환해 주는 CLI 도구 이름을 입력하세요.",
+      "en": "Enter the name of the WABT CLI tool that translates binary modules into readable C-like pseudocode."
+    },
+    "hints": {
+      "ko": [
+        "바이너리 확장자 이름 뒤에 하이픈(-)과 역컴파일을 뜻하는 영단어가 붙습니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines format name with a hyphen and decompile.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t3_wasmboundcheck",
+    "tier": 3,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 170,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "ff137ff19ca3636be6064cf790f5fb4dea2f11279e848a5eed54578c94276711",
+    "title": {
+      "ko": "메모리 접근 한계 가드",
+      "en": "Memory Bounds Enforcement"
+    },
+    "prompt": {
+      "ko": "가상머신이 메모리 로드 및 스토어 연산 시 허용된 페이지 한계를 벗어나지 않도록 강제하는 경계 검증 기법을 무엇이라 합니까? (두 단어)",
+      "en": "What runtime guard mechanism validates that memory loads and stores stay strictly within allocated page limits? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "경계 한계를 뜻하는 영단어(복수형)와 확인을 뜻하는 단어의 조합입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combination of bounds and check.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t3_wasmcoredump",
+    "tier": 3,
+    "cat": "wasmbinary",
+    "track": "wasm",
+    "points": 170,
+    "ci": true,
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "hash": "0508fee168ecae71e5f5ca61bc74c66502fd4f47b3e5a1395511b4efcea52b4c",
+    "title": {
+      "ko": "크래시 사후 진단 덤프 규격",
+      "en": "Crash Diagnostic Dump Format"
+    },
+    "prompt": {
+      "ko": "런타임 비정상 중단 발생 시 로컬 변수와 메모리 상태를 바이너리 커스텀 섹션으로 덤프하는 진단 포맷 명칭을 입력하세요.",
+      "en": "Enter the diagnostic format name that dumps execution state into custom sections upon runtime crash."
+    },
+    "hints": {
+      "ko": [
+        "유닉스 운영체제의 코어 덤프와 동일한 영단어입니다.",
+        "8글자 소문자로 공백 없이 입력하세요."
+      ],
+      "en": [
+        "Shares the same English compound word as Unix crash dumps.",
+        "Enter as 8 lowercase letters without spaces."
+      ]
+    }
+  },
+  {
+    "id": "t4_wasmsandboxesc",
+    "tier": 4,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 180,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "88e0c8d05f023e714a0d8982a91d45fe6e0fa4ddc7ee4020cd96dd88bff5cfe3",
+    "title": {
+      "ko": "가상머신 격리 탈출 취약점",
+      "en": "Sandbox Isolation Breakout"
+    },
+    "prompt": {
+      "ko": "엔진 컴파일러 최적화 결함이나 데이터 형 불일치를 악용하여 가상머신 격리 경계를 뚫고 호스트 권한을 획득하는 공격을 무엇이라 합니까? (두 단어)",
+      "en": "What exploit breaks out of VM isolation boundaries by leveraging compiler optimization flaws or data mismatching? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "모래상자 격리를 탈출한다는 의미의 두 영단어 조합입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combination of the words sandbox and escape.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t4_wasmnanboxing",
+    "tier": 4,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 185,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "5ed660b81326730e8041321e6570e98007d8086950aeaec098c902033772badf",
+    "title": {
+      "ko": "부동소수점 비트 패킹 타입 혼동",
+      "en": "Float NaN Bit-Packing Confusion"
+    },
+    "prompt": {
+      "ko": "부동소수점 NaN 비트 패턴 여유 공간에 포인터와 메타데이터를 압축 저장하는 인터프리터 최적화 기법을 무엇이라 합니까? (두 단어)",
+      "en": "What interpreter optimization technique packs pointers and metadata into unused bits of floating-point NaN representations? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "수학에서 숫자가 아님을 뜻하는 약어와 상자에 넣는 행위의 결합입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines the acronym for Not-a-Number with boxing.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t4_wasmshadowstack",
+    "tier": 4,
+    "cat": "wasmmem",
+    "track": "wasm",
+    "points": 190,
+    "ci": true,
+    "fmt": "두 단어 / two words (10글자 / 10 chars)",
+    "hash": "67a4fbfea6a3c559ffb4a727639efcc2b55bb97298d294ae31bceb55c4973f4d",
+    "title": {
+      "ko": "호출 프레임 분리 방어 체계",
+      "en": "Isolated Frame Stack Architecture"
+    },
+    "prompt": {
+      "ko": "반환 주소와 제어 흐름 프레임을 오염 가능한 선형 데이터 영역과 완전히 분리된 독립 공간에 유지하는 방어 기법을 의미하는 10글자 영문 명칭을 입력하세요. (두 단어: 안전한 스택)",
+      "en": "Enter the 10-character English term for maintaining return addresses in an isolated storage space separated from corruptible data buffers. (two words)"
+    },
+    "hints": {
+      "ko": [
+        "안전함을 뜻하는 단어와 적재 버퍼를 뜻하는 단어의 결합입니다.",
+        "총 10글자 (공백 포함) 소문자입니다."
+      ],
+      "en": [
+        "Combines safe with the word for LIFO buffer.",
+        "Total 10 characters including space."
+      ]
+    }
+  },
+  {
+    "id": "t4_wasmfuzzing",
+    "tier": 4,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 195,
+    "ci": true,
+    "fmt": "도구 이름 / tool name",
+    "hash": "276daeef1cbd1fc7c65e3ffc6f4fe4ac88097a3377725a7d1859b206783403b4",
+    "title": {
+      "ko": "모듈 바이트코드 무작위 생성 퍼저",
+      "en": "Bytecode Generation Fuzzer"
+    },
+    "prompt": {
+      "ko": "Rust 기반으로 유효한 WebAssembly 바이너리 모듈을 무작위 생성하여 엔진 취약점을 테스트하는 오픈소스 차분 테스트 도구 이름을 입력하세요.",
+      "en": "Enter the name of the open-source differential testing tool that generates valid random WebAssembly modules for engine verification."
+    },
+    "hints": {
+      "ko": [
+        "바이너리 형식 이름 뒤에 하이픈(-)과 대장장이를 뜻하는 영단어가 결합됩니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines format acronym with a hyphen and smith.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t4_wasmgc",
+    "tier": 4,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 200,
+    "ci": true,
+    "fmt": "약어 / acronym (6글자 / 6 chars)",
+    "hash": "4e0d1de7c7b340739ee0452e5caade0e0af9eeb125995ea4bb21288ac875da59",
+    "title": {
+      "ko": "가비지 컬렉션 표준 확장",
+      "en": "Garbage Collection Extension"
+    },
+    "prompt": {
+      "ko": "고수준 언어의 객체 참조와 자동 메모리 관리를 지원하기 위해 표준화된 WebAssembly 가비지 컬렉션 확장의 6글자 약어를 입력하세요.",
+      "en": "Enter the 6-letter acronym for the official WebAssembly extension providing managed garbage-collected types."
+    },
+    "hints": {
+      "ko": [
+        "바이너리 형식 이름 뒤에 가비지 컬렉션의 약어인 GC가 붙습니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Appends GC (Garbage Collection) to format name.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t4_wasmcomponent",
+    "tier": 4,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 210,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "7b88dbdd4a4dca7ef1842a1e2b7fc1dfa1612a43ddc3900e2d5d356a1f7d897c",
+    "title": {
+      "ko": "역량 기반 상호운용 체계",
+      "en": "Capability Interop Framework"
+    },
+    "prompt": {
+      "ko": "서로 다른 언어로 빌드된 모듈 간 격리 경계와 세밀한 역량 인터페이스를 정의하는 차세대 규격을 무엇이라 부릅니까? (두 단어: 부품과 모형)",
+      "en": "What next-generation architecture standard defines capability interfaces across isolated modules written in diverse languages? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "구성 부품을 뜻하는 단어와 모형/체계를 뜻하는 단어가 공백으로 결합됩니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines component with model separated by a space.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t4_wasmrce",
+    "tier": 4,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 220,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "2e25ed6548177a4bbdd4d18826cf02cbb3e6b468be0d8146d4c565763d2e4ffa",
+    "title": {
+      "ko": "파일시스템 격리 우회 취약점",
+      "en": "Filesystem Isolation Bypass"
+    },
+    "prompt": {
+      "ko": "시스템 인터페이스의 부실한 상대 경로 검증(상위 폴더 이동 허용)으로 인해 샌드박스를 우회하여 호스트 파일시스템을 조작하는 취약점을 무엇이라 합니까? (두 단어: 디렉터리 순회)",
+      "en": "What vulnerability bypasses filesystem containment via insecure path normalization allowing upward navigation outside sandbox roots? (two words)"
+    },
+    "hints": {
+      "ko": [
+        "폴더/디렉터리를 뜻하는 단어와 탐색/순회를 뜻하는 단어의 조합입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combination of directory and traversal.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t4_wasmctrlflow",
+    "tier": 4,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 230,
+    "ci": true,
+    "fmt": "두 단어 / two words",
+    "hash": "5a5b90a3a6eae3c3f3b8ba14c6f78000036f832b19a42f8a47205cf09718799a",
+    "title": {
+      "ko": "구조적 제어 흐름 분기 제한",
+      "en": "Structured Control Flow Constraints"
+    },
+    "prompt": {
+      "ko": "네이티브 바이너리와 달리 정형화된 블록 구조만을 허용하여 명령어 중간이나 제멋대로의 코드 주소로 분기할 수 없는 제약을 무엇이라 합니까? (두 단어: 임의 도약)",
+      "en": "What branch behavior is strictly disallowed by structured control flow, preventing transfers to arbitrary code offsets? (two words: arbitrary and leap/jump)"
+    },
+    "hints": {
+      "ko": [
+        "임의의를 뜻하는 단어와 도약/점프를 뜻하는 영단어가 공백으로 결합됩니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Combines arbitrary with jump separated by a space.",
+        "Type in lowercase."
+      ]
+    }
+  },
+  {
+    "id": "t4_wasmcapstone",
+    "tier": 4,
+    "cat": "wasmexploit",
+    "track": "wasm",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "hash": "63e58f48e0e8b04cdf77bcf02ae3ac00e92db5b70ba95fb53c200e4bf5353dd1",
+    "title": {
+      "ko": "Wasm 침해 사고 종합 포렌식 캡스톤",
+      "en": "Wasm Incident Forensics Capstone"
+    },
+    "prompt": {
+      "ko": "WebAssembly 침해 사고 종합 포렌식 브리핑입니다. 침해된 모듈 분석 보고서에서 다음 파라미터가 추출되었습니다.\n\n- 초기 메모리 페이지: `P = 8`\n- 버퍼 오프셋: `B = 0x2000`, 타깃 변수 오프셋: `T = 0x2058` (오프셋 차이 $\\Delta = T - B$ 바이트)\n- 오염된 디스패치 인덱스: `I = 14`\n- 검증 체크섬 수식: `(P * 1000) + (T - B) + (I * 10)`\n\n산출된 검증 체크섬을 `FLAG{WASM-<checksum>-EXPLOITED}` 형식으로 조립하여 제출하세요.\n\n```briefing\n[WASM FORENSIC ARTIFACT]\nINITIAL_PAGES = 8\nBUFFER_OFFSET = 0x2000\nTARGET_OFFSET = 0x2058\nPOISONED_TABLE_INDEX = 14\n```",
+      "en": "WebAssembly incident forensics briefing. Analysis of the compromised module yielded the following parameters:\n\n- Initial memory pages: `P = 8`\n- Buffer offset: `B = 0x2000`, target variable offset: `T = 0x2058` (delta $\\Delta = T - B$ bytes)\n- Poisoned dispatch index: `I = 14`\n- Checksum formula: `(P * 1000) + (T - B) + (I * 10)`\n\nAssemble the result into `FLAG{WASM-<checksum>-EXPLOITED}` format.\n\n```briefing\n[WASM FORENSIC ARTIFACT]\nINITIAL_PAGES = 8\nBUFFER_OFFSET = 0x2000\nTARGET_OFFSET = 0x2058\nPOISONED_TABLE_INDEX = 14\n```"
+    },
+    "hints": {
+      "ko": [
+        "P*1000 = 8000, T - B = 0x2058 - 0x2000 = 88, I*10 = 140입니다.",
+        "체크섬 값을 계산하여 FLAG{WASM-<체크섬>-EXPLOITED} 템플릿에 대입하세요."
+      ],
+      "en": [
+        "P*1000 = 8000, T - B = 0x2058 - 0x2000 = 88, I*10 = 140.",
+        "Calculate checksum and place it into the FLAG{WASM-<checksum>-EXPLOITED} template."
       ]
     }
   }
