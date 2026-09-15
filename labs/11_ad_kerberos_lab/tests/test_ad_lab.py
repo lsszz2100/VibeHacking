@@ -6,10 +6,19 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 
-# Add app dir to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app")))
+import importlib.util
 
-from main import app, DOMAIN_NAME, DOMAIN_SID, FLAGS, ACCOUNTS_DB
+_main_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app", "main.py"))
+_spec = importlib.util.spec_from_file_location("ad_lab_main", _main_path)
+_mod = importlib.util.module_from_spec(_spec)
+sys.modules["ad_lab_main"] = _mod
+_spec.loader.exec_module(_mod)
+
+app = _mod.app
+DOMAIN_NAME = _mod.DOMAIN_NAME
+DOMAIN_SID = _mod.DOMAIN_SID
+FLAGS = _mod.FLAGS
+ACCOUNTS_DB = _mod.ACCOUNTS_DB
 
 client = TestClient(app)
 

@@ -6,10 +6,18 @@ import sys
 import pytest
 from fastapi.testclient import TestClient
 
-# Add app dir to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app")))
+import importlib.util
 
-from main import app, FLAGS, STATE, VAULT_SECRETS
+_main_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app", "main.py"))
+_spec = importlib.util.spec_from_file_location("cicd_lab_main", _main_path)
+_mod = importlib.util.module_from_spec(_spec)
+sys.modules["cicd_lab_main"] = _mod
+_spec.loader.exec_module(_mod)
+
+app = _mod.app
+FLAGS = _mod.FLAGS
+STATE = _mod.STATE
+VAULT_SECRETS = _mod.VAULT_SECRETS
 
 client = TestClient(app)
 
