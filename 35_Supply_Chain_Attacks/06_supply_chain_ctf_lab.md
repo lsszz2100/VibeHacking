@@ -6,6 +6,10 @@
 
 # 공급망 공격 CTF 실습 랩
 
+> 💡 **바이브해킹 실습 랩 (PipePoison) 및 워게임 연계**:
+> - **인터랙티브 실습 랩 12**: [`labs/12_cicd_supply_chain_lab/`](file:///mnt/d/%EB%B0%94%EC%9D%B4%EB%B8%8C%ED%95%B4%ED%82%B9%20%EC%9E%90%EB%A3%8C/vibe-hacking/labs/12_cicd_supply_chain_lab/) — Poisoned Pipeline Execution(PPE), Dependency Confusion, CI/CD 러너 시크릿 탈취, SLSA 릴리스 아티팩트 변조 4단계 시뮬레이터 및 자동 익스플로잇 (`python3 vhack.py lab start 12`, 웹 콘솔: http://localhost:8012)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `supplychain` 트랙 (35개 문제)에서 타이포스쿼팅, 락파일 조작, SolarWinds/XZ 침해 기법을 직접 풀어볼 수 있습니다.
+
 ## 실습 환경 준비
 
 ### Docker Compose 환경

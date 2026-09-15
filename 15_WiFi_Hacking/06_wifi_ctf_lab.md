@@ -6,6 +6,9 @@
 
 # WiFi 해킹 CTF 실습 랩
 
+> 💡 **워게임 트랙 26 `wireless` (무선·RF·하드웨어 통신 보안) 연계**:
+> 워게임 터미널(`wargame/`)의 26번째 트랙 `wireless` (35개 문제)에서 802.11 비콘 프레임, WPA2/WPA3 4-Way Handshake 및 Dragonfly 동시 인증 취약점, RTL-SDR 신호 캡처, OOK 펄스 복조, Bluetooth BLE Just Works MITM, LoRaWAN 및 Zigbee 프로토콜 분석 문제를 직접 풀어볼 수 있습니다.
+
 ## 실습 환경 준비
 
 ### 사전 요구사항

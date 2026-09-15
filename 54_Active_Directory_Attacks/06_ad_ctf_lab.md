@@ -6,6 +6,10 @@
 
 # Active Directory CTF 실습 랩
 
+> 💡 **바이브해킹 실습 랩 (KeroShield) 및 워게임 연계**:
+> - **인터랙티브 실습 랩 11**: [`labs/11_ad_kerberos_lab/`](file:///mnt/d/%EB%B0%94%EC%9D%B4%EB%B8%8C%ED%95%B4%ED%82%B9%20%EC%9E%90%EB%A3%8C/vibe-hacking/labs/11_ad_kerberos_lab/) — Active Directory 4단계 킬체인(AS-REP Roasting, Kerberoasting, DCSync, Golden Ticket 도메인 장악) 완제 웹 콘솔 및 자동 익스플로잇 (`python3 vhack.py lab start 11`, 웹 콘솔: http://localhost:8011)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `activedirectory` 트랙 (35개 문제)에서 BloodHound 경로 탐색, 티켓 위조, 권한 상승 문제를 직접 풀어볼 수 있습니다.
+
 ## 개요
 
 Kerberoasting, Pass-the-Hash, BloodHound 분석, DCSync 공격을 실습하는 CTF 환경입니다.
