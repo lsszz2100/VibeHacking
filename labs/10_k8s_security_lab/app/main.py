@@ -405,28 +405,79 @@ def list_clusterroles(authorization: Optional[str] = Header(None)):
 class ExecRequest(BaseModel):
     command: str
 
+
+VALID_DIRS = {
+    "/", "/app", "/root", "/var", "/var/run", "/var/run/secrets",
+    "/var/run/secrets/kubernetes.io", "/var/run/secrets/kubernetes.io/serviceaccount",
+    "/etc", "/host", "/host/root", "/host/etc", "/host/etc/kubernetes",
+}
+
+
 @app.post("/api/terminal/exec")
 def terminal_exec(req: ExecRequest):
     cmd_raw = req.command.strip()
     if not cmd_raw:
         return {"output": "", "exit_code": 0}
 
-    # Pipeline or multiple commands support
+    # Security check: Limit command length to avoid memory exhaustion DoS
+    if len(cmd_raw) > 4096:
+        return {"output": "bash: command length exceeds maximum allowed limit (4096 characters)", "exit_code": 1}
+
+    # Pipeline handling: e.g. echo ... | base64 -d
+    if "|" in cmd_raw:
+        pipeline_stages = [stage.strip() for stage in cmd_raw.split("|")]
+        pipe_input = ""
+        last_exit = 0
+        for stage in pipeline_stages:
+            res = execute_single_cmd(stage, stdin_data=pipe_input)
+            pipe_input = res["output"]
+            last_exit = res["exit_code"]
+            if last_exit != 0:
+                break
+        return {"output": pipe_input, "exit_code": last_exit}
+
+    # Sequence handling: && or ;
     if "&&" in cmd_raw:
         subcmds = cmd_raw.split("&&")
         out_total = []
         for sc in subcmds:
             res = execute_single_cmd(sc.strip())
-            out_total.append(res["output"])
+            if res["output"]:
+                out_total.append(res["output"])
             if res["exit_code"] != 0:
                 return {"output": "\n".join(out_total), "exit_code": res["exit_code"]}
+        return {"output": "\n".join(out_total), "exit_code": 0}
+
+    if ";" in cmd_raw:
+        subcmds = cmd_raw.split(";")
+        out_total = []
+        for sc in subcmds:
+            if sc.strip():
+                res = execute_single_cmd(sc.strip())
+                if res["output"]:
+                    out_total.append(res["output"])
         return {"output": "\n".join(out_total), "exit_code": 0}
 
     return execute_single_cmd(cmd_raw)
 
 
-def execute_single_cmd(cmd: str) -> Dict[str, Any]:
-    parts = shlex.split(cmd)
+def resolve_virtual_path(raw_path: str) -> str:
+    """Safely normalizes and resolves relative/absolute paths within virtual FS."""
+    if raw_path.startswith("/"):
+        return os.path.normpath(raw_path)
+    return os.path.normpath(os.path.join(cluster.term_cwd, raw_path))
+
+
+def execute_single_cmd(cmd: str, stdin_data: str = "") -> Dict[str, Any]:
+    cmd = cmd.strip()
+    if not cmd:
+        return {"output": "", "exit_code": 0}
+
+    try:
+        parts = shlex.split(cmd)
+    except ValueError as e:
+        return {"output": f"bash: syntax error: {str(e)}", "exit_code": 2}
+
     if not parts:
         return {"output": "", "exit_code": 0}
 
@@ -454,14 +505,52 @@ def execute_single_cmd(cmd: str) -> Dict[str, Any]:
     if prog == "hostname":
         return {"output": cluster.term_env["HOSTNAME"], "exit_code": 0}
 
+    # cd
+    if prog == "cd":
+        target = args[0] if args else "/root"
+        if target in ["~", "$HOME"]:
+            target = "/root"
+        new_path = resolve_virtual_path(target)
+        if new_path == "/host" or new_path.startswith("/host/"):
+            if not cluster.hostpath_pod_created:
+                return {"output": f"bash: cd: {target}: No such file or directory", "exit_code": 1}
+        if new_path in VALID_DIRS or any(k.startswith(new_path + "/") for k in VIRTUAL_FS):
+            cluster.term_cwd = new_path
+            return {"output": "", "exit_code": 0}
+        return {"output": f"bash: cd: {target}: No such file or directory", "exit_code": 1}
+
+    # echo
+    if prog == "echo":
+        text = " ".join(args)
+        if text.startswith("-n "):
+            text = text[3:]
+        return {"output": text, "exit_code": 0}
+
+    # base64
+    if prog == "base64":
+        is_decode = "-d" in args or "--decode" in args
+        text_to_process = stdin_data
+        for a in args:
+            if not a.startswith("-"):
+                text_to_process = a
+                break
+        if is_decode:
+            try:
+                decoded = base64.b64decode(text_to_process.strip()).decode("utf-8", errors="replace")
+                return {"output": decoded, "exit_code": 0}
+            except Exception as ex:
+                return {"output": f"base64: invalid input: {ex}", "exit_code": 1}
+        else:
+            encoded = base64.b64encode(text_to_process.encode("utf-8")).decode("utf-8")
+            return {"output": encoded, "exit_code": 0}
+
     # ls
     if prog == "ls":
         target = args[0] if args and not args[0].startswith("-") else cluster.term_cwd
         if target.startswith("-") and len(args) > 1:
             target = args[1]
         
-        # Check in virtual fs
-        target = os.path.normpath(target)
+        target = resolve_virtual_path(target)
         if target in ["/var/run/secrets/kubernetes.io/serviceaccount", "/run/secrets/kubernetes.io/serviceaccount"]:
             return {"output": "ca.crt\nnamespace\ntoken", "exit_code": 0}
         if target in ["/var/run/secrets/kubernetes.io", "/run/secrets/kubernetes.io"]:
@@ -491,7 +580,6 @@ def execute_single_cmd(cmd: str) -> Dict[str, Any]:
             if target == "/host/etc/kubernetes":
                 return {"output": "kubelet.conf  pki", "exit_code": 0}
 
-        # Fallback listing
         matches = [k for k in VIRTUAL_FS if k.startswith(target)]
         if matches:
             entries = set()
@@ -506,8 +594,11 @@ def execute_single_cmd(cmd: str) -> Dict[str, Any]:
     # cat
     if prog == "cat":
         if not args:
+            if stdin_data:
+                return {"output": stdin_data, "exit_code": 0}
             return {"output": "cat: missing file operand", "exit_code": 1}
-        filepath = os.path.normpath(args[0])
+
+        filepath = resolve_virtual_path(args[0])
         
         # Check virtual fs
         if filepath in VIRTUAL_FS:
@@ -529,7 +620,6 @@ def execute_single_cmd(cmd: str) -> Dict[str, Any]:
 
     # curl simulation
     if prog == "curl":
-        # Extract headers and URL
         url = ""
         auth = ""
         post_data = None
@@ -550,6 +640,8 @@ def execute_single_cmd(cmd: str) -> Dict[str, Any]:
                 post_data = args[i + 1]
                 method = "POST"
                 i += 2
+            elif arg in ["-s", "-S", "-k", "-i", "-I", "-L", "--silent"]:
+                i += 1  # pass through flags safely
             elif arg.startswith("http://") or arg.startswith("https://") or arg.startswith("/"):
                 url = arg
                 i += 1
@@ -559,7 +651,6 @@ def execute_single_cmd(cmd: str) -> Dict[str, Any]:
         if not url:
             return {"output": "curl: no URL specified!", "exit_code": 2}
 
-        # Normalize URL path
         url_path = url
         if "://" in url_path:
             url_path = "/" + url_path.split("://", 1)[1].split("/", 1)[1] if "/" in url_path.split("://", 1)[1] else "/"
@@ -569,7 +660,6 @@ def execute_single_cmd(cmd: str) -> Dict[str, Any]:
             err = {"kind": "Status", "apiVersion": "v1", "status": "Failure", "message": "Unauthorized", "code": 401}
             return {"output": json.dumps(err, indent=2), "exit_code": 0}
 
-        # Route simulated curl endpoints
         if url_path == "/api/v1/namespaces":
             return {"output": json.dumps(list_namespaces(auth), indent=2), "exit_code": 0}
         
@@ -606,19 +696,34 @@ def execute_single_cmd(cmd: str) -> Dict[str, Any]:
             return {"output": "kubectl controls the Kubernetes cluster manager.\nFind more information at: https://kubernetes.io/docs/reference/kubectl/", "exit_code": 0}
 
         action = args[0]
+
+        # kubectl auth can-i
+        if action == "auth" and len(args) > 1 and args[1] == "can-i":
+            verb = args[2] if len(args) > 2 else ""
+            resource = args[3] if len(args) > 3 else ""
+            if (verb, resource) in [("list", "secrets"), ("get", "secrets"), ("create", "pods"), ("list", "pods"), ("get", "pods")]:
+                return {"output": "yes", "exit_code": 0}
+            return {"output": "no", "exit_code": 0}
+
         # kubectl get
         if action == "get":
             res_type = args[1] if len(args) > 1 else ""
             res_type = res_type.lower()
             ns = "monitoring"
             all_ns = False
+            fmt_yaml = False
+            fmt_json = False
 
-            # parse flags
             for idx, a in enumerate(args[2:], start=2):
                 if a in ["-A", "--all-namespaces"]:
                     all_ns = True
                 elif a in ["-n", "--namespace"] and idx + 1 < len(args):
                     ns = args[idx + 1]
+                elif a in ["-o", "--output"] and idx + 1 < len(args):
+                    if args[idx + 1] == "yaml":
+                        fmt_yaml = True
+                    elif args[idx + 1] == "json":
+                        fmt_json = True
 
             if res_type in ["pod", "pods", "po"]:
                 pods_to_show = cluster.pods if all_ns else [p for p in cluster.pods if p["namespace"] == ns]
@@ -631,6 +736,17 @@ def execute_single_cmd(cmd: str) -> Dict[str, Any]:
             if res_type in ["secret", "secrets"]:
                 cluster.solved["ch2"] = True
                 target_ns = list(cluster.secrets.keys()) if all_ns else [ns]
+                
+                # Single secret detail
+                if len(args) > 2 and not args[2].startswith("-"):
+                    single_sname = args[2]
+                    sec_data = cluster.secrets.get(ns, {}).get(single_sname)
+                    if not sec_data:
+                        return {"output": f"Error from server (NotFound): secrets \"{single_sname}\" not found", "exit_code": 1}
+                    if fmt_yaml or fmt_json:
+                        formatted = {"apiVersion": "v1", "kind": "Secret", "metadata": {"name": single_sname, "namespace": ns}, "data": sec_data, "type": "Opaque"}
+                        return {"output": json.dumps(formatted, indent=2), "exit_code": 0}
+
                 header = f"{'NAMESPACE':<16} {'NAME':<32} {'TYPE':<20} {'DATA':<6} {'AGE':<6}"
                 rows = [header]
                 for nspace in target_ns:
@@ -772,6 +888,11 @@ class FlagVerifyRequest(BaseModel):
 @app.post("/api/verify_flag")
 def verify_flag(req: FlagVerifyRequest):
     submitted = req.flag.strip()
+    if not submitted or len(submitted) > 128:
+        return {"success": False, "message": "Invalid flag format: length out of bounds"}
+    if not re.match(r"^FLAG\{[A-Za-z0-9_!@#$%^&*+-]+\}$", submitted):
+        return {"success": False, "message": "Invalid flag format: must match FLAG{...}"}
+
     for ch_id, flg in cluster.flags.items():
         if submitted == flg:
             cluster.solved[ch_id] = True
