@@ -246,6 +246,15 @@ const TRACKS = [
     "desc_ko": "Wi-Fi 802.11·BLE GATT·RF 신호 분석·SDR 복조와 무선 IoT 메시 프로토콜 보안.",
     "desc_en": "Wi-Fi 802.11, BLE GATT, RF signal analysis, SDR demodulation, and wireless IoT mesh protocol security."
   }
+  ,
+  {
+    "id": "sidechannel",
+    "icon": "⚡",
+    "ko": "부채널·결함주입",
+    "en": "Side-Channel & Fault Injection",
+    "desc_ko": "전력 분석(SPA·DPA·CPA)·전자기파 누출·글리칭 결함 주입과 하드웨어 방어 기법.",
+    "desc_en": "Power analysis (SPA/DPA/CPA), electromagnetic emanation, glitch fault injection, and hardware countermeasures."
+  }
 ];
 
 const CHALLENGES = [
@@ -24787,4 +24796,985 @@ const CHALLENGES = [
     ]
   }
 }
+,
+{
+  "id": "t0_scscope",
+  "tier": 0,
+  "cat": "powerleak",
+  "track": "sidechannel",
+  "points": 50,
+  "ci": true,
+  "hash": "f282478d9f2200308980682a27986404354fa2691b7cce2b05deae269a634c68",
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "전력 파형 계측 장비",
+    "en": "Power Waveform Instrument"
+  },
+  "prompt": {
+    "ko": "타깃 보드의 션트 저항에 유입되는 전압 강하를 측정하여 실시간 전력 소비 파형을 화면에 표시하는 대표적인 전자 계측 장비의 영단어를 입력하세요.",
+    "en": "Enter the English name of the core electronic instrument measuring voltage drops across shunt resistors to display real-time power traces."
+  },
+  "hints": {
+    "ko": [
+      "초당 수억 번 이상의 샘플링 속도로 파형을 캡처하는 계측기입니다.",
+      "약어로 scope라고도 불리는 장비의 정식 영단어입니다."
+    ],
+    "en": [
+      "Test instrument capturing waveforms at millions or billions of samples per second.",
+      "Formal name of the instrument often called scope."
+    ]
+  }
+},
+{
+  "id": "t0_sclevel",
+  "tier": 0,
+  "cat": "glitchfault",
+  "track": "sidechannel",
+  "points": 50,
+  "ci": true,
+  "hash": "9d57c2b9ae86a9eb399a0e72552ee70df212d91ea63f397544f08971cc194aed",
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "로직 전압 변환 회로",
+    "en": "Logic Level Shifter Circuit"
+  },
+  "prompt": {
+    "ko": "결함 주입 장비의 5V 펄스 출력을 1.8V 저전압 마이크로컨트롤러 타깃 핀에 안전하게 인가하기 위해 사용하는 신호 레벨 변환 소자의 영문 합성어를 공백 없이 입력하세요.",
+    "en": "Enter the compound English word (no spaces) for the hardware component used to safely adapt 5V glitch output pulses down to 1.8V target logic levels."
+  },
+  "hints": {
+    "ko": [
+      "두 개의 서로 다른 전압 도메인 사이에서 신호를 변환(shift)해 주는 회로입니다.",
+      "level과 shifter의 결합어입니다."
+    ],
+    "en": [
+      "Translates digital signals between disparate voltage domains.",
+      "Concatenation of level and shifter."
+    ]
+  }
+},
+{
+  "id": "t1_scspa",
+  "tier": 1,
+  "cat": "powerleak",
+  "track": "sidechannel",
+  "points": 65,
+  "ci": true,
+  "hash": "01698ce1dc071ffe29922c335dbf3179df86febd3fdc1114a8817ef2d577274a",
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "단순 전력 분석 공격",
+    "en": "Simple Power Analysis"
+  },
+  "prompt": {
+    "ko": "단 하나의 전력 소비 파형을 관찰하여 모듈러 거듭제곱의 제곱과 곱셈 연산 시 나타나는 패턴 차이로부터 비밀 지수를 판별하는 기법의 영문 3글자 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the side-channel technique directly inspecting a single power trace to differentiate cryptographic operations."
+  },
+  "hints": {
+    "ko": [
+      "Simple Power Analysis의 약어입니다.",
+      "복수 파형 통계 분석과 대비되는 단일 파형 기본 분석입니다."
+    ],
+    "en": [
+      "Acronym for Simple Power Analysis.",
+      "Contrasts with multi-trace statistical power analysis."
+    ]
+  }
+},
+{
+  "id": "t1_schamweight",
+  "tier": 1,
+  "cat": "powerleak",
+  "track": "sidechannel",
+  "points": 65,
+  "ci": true,
+  "hash": "7ef566b1eb0347a289c5edf2227de0da7d52fed5e3680bb25710787556174de7",
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "해밍 무게 전력 누출 모델",
+    "en": "Hamming Weight Leakage Model"
+  },
+  "prompt": {
+    "ko": "디지털 데이터 버스에서 1로 설정된 비트 수의 합계에 비례하여 동적 전력이 소비된다고 가정하는 기초 부채널 모델의 영문 합성어를 공백 없이 입력하세요.",
+    "en": "Enter the compound English term (no spaces) designating the baseline power leakage model proportional to the number of non-zero set bits in a data word."
+  },
+  "hints": {
+    "ko": [
+      "데이터 값 내 1의 개수를 세는 수학적 함수(Hamming Weight)입니다.",
+      "hamming과 weight를 공백 없이 연결합니다."
+    ],
+    "en": [
+      "Mathematical count of set binary bits.",
+      "Concatenate hamming and weight."
+    ]
+  }
+},
+{
+  "id": "t1_scoverclock",
+  "tier": 1,
+  "cat": "glitchfault",
+  "track": "sidechannel",
+  "points": 65,
+  "ci": true,
+  "hash": "cb489f635dbfe707874be03666f9956c30cf235dd451370fe62d65bdcef9ec4b",
+  "fmt": "한 단어 / one word (-ing으로 끝남 / ends in -ing)",
+  "title": {
+    "ko": "클럭 주파수 과인가 결함",
+    "en": "Clock Frequency Glitch Fault"
+  },
+  "prompt": {
+    "ko": "타깃 마이크로컨트롤러에 정격 사양 이상의 극단적인 고주파 클럭 펄스를 순간적으로 인가하여 플립플롭의 셋업 타임 위반을 유발하는 기법을 뜻하는 영단어를 입력하세요.",
+    "en": "Enter the English word for driving the clock frequency beyond rated specifications to force flip-flop setup-time violations."
+  },
+  "hints": {
+    "ko": [
+      "하드웨어의 클럭 속도를 기준치보다 높이는 행위를 뜻합니다.",
+      "over와 clocking의 결합어입니다."
+    ],
+    "en": [
+      "Increasing hardware clock speed above specification.",
+      "Compound of over and clocking."
+    ]
+  }
+},
+{
+  "id": "t1_scundervolt",
+  "tier": 1,
+  "cat": "glitchfault",
+  "track": "sidechannel",
+  "points": 65,
+  "ci": true,
+  "hash": "391b68c63387cc5e516dfb2505bda95a1b5f8497f11b48dd2d03066fa08c9bdf",
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "전원 전압 강하 글리칭",
+    "en": "Supply Voltage Drop Glitching"
+  },
+  "prompt": {
+    "ko": "타깃 프로세서의 전원 공급선(VCC) 전압을 임계치 이하로 순간적으로 강하시켜 명령어 디코딩 실패나 비교문 점프 스킵을 유발하는 글리칭 기법의 영단어를 입력하세요.",
+    "en": "Enter the English word for momentarily dropping core supply voltage below minimum operating threshold to corrupt logic execution."
+  },
+  "hints": {
+    "ko": [
+      "과전압(overvoltage)의 반대 개념인 저전압 현상입니다.",
+      "under와 voltage의 결합어입니다."
+    ],
+    "en": [
+      "Opposite condition of overvoltage.",
+      "Compound of under and voltage."
+    ]
+  }
+},
+{
+  "id": "t1_scnearfield",
+  "tier": 1,
+  "cat": "emleak",
+  "track": "sidechannel",
+  "points": 65,
+  "ci": true,
+  "hash": "065540ce877909b4ee2654a5e6114ab09d68fe195399eb312d0729f8fc3481ed",
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "근계 전자기파 탐촉자",
+    "en": "Near-Field EM Probe"
+  },
+  "prompt": {
+    "ko": "집적회로 표면 수 밀리미터 거리에서 발생하는 미세한 전자기 방출(EM)을 비접촉으로 국소 측정하기 위해 사용하는 소형 루프 프로브의 측정 영역을 뜻하는 영문 합성어를 입력하세요.",
+    "en": "Enter the English compound word designating the close-proximity electromagnetic domain targeted by miniature loop probes scanning an integrated circuit package."
+  },
+  "hints": {
+    "ko": [
+      "원계(far-field)와 대비되는 안테나 전자기장 영역입니다.",
+      "near와 field의 결합어입니다."
+    ],
+    "en": [
+      "Electromagnetic field proximity zone close to a radiating antenna structure.",
+      "Compound of near and field."
+    ]
+  }
+},
+{
+  "id": "t1_scisw",
+  "tier": 1,
+  "cat": "chipcounter",
+  "track": "sidechannel",
+  "points": 65,
+  "ci": true,
+  "hash": "f3bde39751e3c56942ac272bc87d88ed5c3fbc4f04c0a1387ebbbbb92a44e8d3",
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "3인 제안 고차 곱셈 마스킹 프로토콜",
+    "en": "Private Circuits Masking Scheme"
+  },
+  "prompt": {
+    "ko": "Ishai, Sahai, Wagner가 2003년 암호학회(Crypto)에서 제안하여 부채널 방어 회로의 프로빙 보안성 검증 기준으로 확립된 곱셈 마스킹 기법의 저자 3인 앞글자 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym of the landmark 2003 Ishai-Sahai-Wagner multiplication scheme establishing probing security for masked cryptographic hardware."
+  },
+  "hints": {
+    "ko": [
+      "Ishai, Sahai, Wagner의 머리글자 3글자입니다.",
+      "저자 3인의 첫 글자 3개를 소문자로 입력하세요."
+    ],
+    "en": [
+      "Initials of authors Ishai, Sahai, and Wagner.",
+      "Lowercase initials of the three authors."
+    ]
+  }
+},
+{
+  "id": "t2_scdpa",
+  "tier": 2,
+  "cat": "powerleak",
+  "track": "sidechannel",
+  "points": 90,
+  "ci": true,
+  "hash": "5cda568a0b6d6385d61606962902296d4b81a92e9f8bad6ba99c6d46975c3743",
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "차분 전력 분석 기법",
+    "en": "Differential Power Analysis"
+  },
+  "prompt": {
+    "ko": "폴 코처(Paul Kocher)가 제안한 기법으로, 수천 개의 파형을 수집한 뒤 중간값의 특정 비트(0 또는 1)를 기준으로 파형 그룹을 분할하여 평균의 차이를 구하는 기법의 영문 3글자 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the statistical power attack introduced by Paul Kocher partitioning traces according to an intermediate bit value."
+  },
+  "hints": {
+    "ko": [
+      "Differential Power Analysis의 약어입니다.",
+      "단일 파형 단순 분석과 달리 통계적 차분 평균으로 잡음을 제거합니다."
+    ],
+    "en": [
+      "Acronym for Differential Power Analysis.",
+      "Statistical differential averaging technique."
+    ]
+  }
+},
+{
+  "id": "t2_scpearson",
+  "tier": 2,
+  "cat": "powerleak",
+  "track": "sidechannel",
+  "points": 150,
+  "ci": false,
+  "hash": "8cbc7e31f8939299a61844b70abae5dff81d4196c7c9f9db046279b3917fa5e4",
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CPA 피어슨 공분산 통계 계산",
+    "en": "CPA Pearson Covariance Computation"
+  },
+  "prompt": {
+    "ko": "CPA 측정 샘플 벡터 X=[12, 18, 14, 22, 14](평균 16)와 해밍 모델 벡터 Y=[2, 4, 3, 5, 1](평균 3)에 대해 공분산 분자 sum((X-meanX)*(Y-meanY))=22 및 편차제곱합 곱 SS_X*SS_Y=640이 주어졌습니다. 분자와 분모곱을 대입하여 FLAG{PEARSON_NUM_<분자>_SS_<분모곱>} 플래그를 완성하세요.",
+    "en": "Given power vector X=[12, 18, 14, 22, 14] (mean 16) and model Y=[2, 4, 3, 5, 1] (mean 3), covariance numerator is 22 and sum-of-squares product SS_X*SS_Y is 640. Format as FLAG{PEARSON_NUM_<num>_SS_<prod>}."
+  },
+  "hints": {
+    "ko": [
+      "분자는 22, 분모곱은 640입니다.",
+      "구한 값을 템플릿의 <분자>와 <분모곱> 위치에 대입하세요."
+    ],
+    "en": [
+      "Numerator is 22 and SS product is 640.",
+      "Substitute these values into the template placeholders."
+    ]
+  }
+},
+{
+  "id": "t2_scpulse",
+  "tier": 2,
+  "cat": "glitchfault",
+  "track": "sidechannel",
+  "points": 150,
+  "ci": false,
+  "hash": "b562c70cd1c07493c209f10ab3b0effebba3807d568a5e32596d5d35108c9cf4",
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "글리치 펄스 폭 계산",
+    "en": "Glitch Pulse Width Calculation"
+  },
+  "prompt": {
+    "ko": "100MHz 시스템 클럭(주기 10ns)으로 동작하는 프로세서의 조건부 분기문 실행 시점에 순간적인 전원 전압 강하 글리치를 인가하려 합니다. 플립플롭 셋업 위반에 요구되는 글리치 지속 시간이 정확히 3.5 클럭 주기일 때, 필요한 펄스 폭(ns)을 계산하여 FLAG{GLITCH_WIDTH_<폭>NS} 형식으로 제출하세요.",
+    "en": "A 100MHz core (10ns clock period) requires a supply voltage dip glitch lasting exactly 3.5 cycles to skip a conditional branch. Compute pulse width in nanoseconds and format as FLAG{GLITCH_WIDTH_<width>NS}."
+  },
+  "hints": {
+    "ko": [
+      "10ns 클럭 주기에 3.5를 곱하면 35ns입니다.",
+      "구한 폭 35를 템플릿의 <폭> 위치에 대입하세요."
+    ],
+    "en": [
+      "Multiplying 10ns by 3.5 gives 35ns.",
+      "Substitute 35 into the template placeholder."
+    ]
+  }
+},
+{
+  "id": "t2_sccrowbar",
+  "tier": 2,
+  "cat": "glitchfault",
+  "track": "sidechannel",
+  "points": 90,
+  "ci": true,
+  "hash": "be0c96b17d8481575fa72aee2fe75c42f269bfb893012fcaffb561583ba07827",
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "전원 레일 단락 글리치 회로",
+    "en": "Power Shunt Glitching Circuit"
+  },
+  "prompt": {
+    "ko": "저저항 고속 N-채널 MOSFET을 전원 레일과 접지 사이에 배치하고 순간적으로 게이트를 개방하여 수십 나노초 동안 전원선을 단락시키는 전압 글리칭 하드웨어 회로의 영단어를 입력하세요.",
+    "en": "Enter the English name for the power supply shorting circuit placing a fast MOSFET between VCC and GND to generate steep negative voltage transients."
+  },
+  "hints": {
+    "ko": [
+      "쇠지렛대(지레)를 의미하는 단어에서 유래한 회로 명칭입니다.",
+      "crow와 bar의 결합어입니다."
+    ],
+    "en": [
+      "Circuit named after an iron prying bar.",
+      "Compound of crow and bar."
+    ]
+  }
+},
+{
+  "id": "t2_scclflush",
+  "tier": 2,
+  "cat": "emleak",
+  "track": "sidechannel",
+  "points": 90,
+  "ci": true,
+  "hash": "37eb59b28b5dd1ab97852562ed9ebfe23fe2f9295c3d2053d4062d780c6aea80",
+  "fmt": "명령어 / command",
+  "title": {
+    "ko": "캐시 라인 플러시 명령어",
+    "en": "Cache Line Flush Instruction"
+  },
+  "prompt": {
+    "ko": "Flush+Reload 캐시 타이밍 부채널 공격에서 타깃 메모리 라인을 CPU L1/L2/L3 캐시 계층 전체에서 강제로 비우기 위해 실행하는 x86 시스템 명령어의 영문 이름을 입력하세요.",
+    "en": "Enter the x86 assembly instruction executed in Flush+Reload cache attacks to evict target memory lines from all CPU cache levels."
+  },
+  "hints": {
+    "ko": [
+      "Cache Line Flush의 약어 형태인 인텔 x86 어셈블리 명령어입니다.",
+      "7글자의 소문자 명령어입니다."
+    ],
+    "en": [
+      "Intel assembly mnemonic standing for Cache Line Flush.",
+      "7-letter instruction."
+    ]
+  }
+},
+{
+  "id": "t2_sceviction",
+  "tier": 2,
+  "cat": "emleak",
+  "track": "sidechannel",
+  "points": 90,
+  "ci": true,
+  "hash": "5cc8e726bbdeb2fe3ac8fdb21623f05ad1e6c9b3d5e53620592acb4e446e58c5",
+  "fmt": "한 단어 / one word (8글자 / 8 chars)",
+  "title": {
+    "ko": "캐시 세트 경합 축출 세트",
+    "en": "Cache Set Displacement Action"
+  },
+  "prompt": {
+    "ko": "Prime+Probe 공격에서 캐시 비우기 명령어 권한이 없을 때, 동일한 캐시 셋에 매핑되는 더미 메모리 버퍼를 대량으로 읽어들여 기존 캐시 엔트리를 밀어내는 축출 행위를 뜻하는 영단어를 입력하세요.",
+    "en": "Enter the English noun for displacing cache lines by flooding conflicting memory addresses when cache flush instructions are unavailable."
+  },
+  "hints": {
+    "ko": [
+      "퇴거 또는 축출을 의미하는 영단어입니다.",
+      "evict의 명사 파생어입니다."
+    ],
+    "en": [
+      "Noun meaning the forced removal or displacement of a tenant/entry.",
+      "Derived from evict."
+    ]
+  }
+},
+{
+  "id": "t2_scdualrail",
+  "tier": 2,
+  "cat": "chipcounter",
+  "track": "sidechannel",
+  "points": 90,
+  "ci": true,
+  "hash": "c966fec454e0725f08375687d9581d1bed3818b220ea9bd69164cabcfede4f4d",
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "이중 레일 차분 논리 회로",
+    "en": "Dual-Rail Differential Logic"
+  },
+  "prompt": {
+    "ko": "데이터 1비트를 전송할 때 정방향 선과 반전 선 2가닥을 항상 쌍으로 운용하고 사전 충전 단계를 두어 0과 1 천이 시 전력 소모를 균일화하는 하드웨어 논리 스타일을 공백 없이 입력하세요.",
+    "en": "Enter the compound English word (no spaces) designating the differential logic style using complementary dual lines to equalize power consumption."
+  },
+  "hints": {
+    "ko": [
+      "Dual-rail precharge logic 회로를 뜻합니다.",
+      "dual과 rail을 공백 없이 결합합니다."
+    ],
+    "en": [
+      "Differential logic utilizing two physical signal lines.",
+      "Concatenate dual and rail."
+    ]
+  }
+},
+  {
+    "id": "t2_scsram",
+    "tier": 2,
+    "cat": "chipcounter",
+    "track": "sidechannel",
+    "points": 90,
+    "ci": true,
+    "hash": "3f488ffe5bd4a8c1eef49ac51ce149851a739ff0d65abd91bad4f48dc6ae73e2",
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "정적 반도체 소자 전원 상태 PUF",
+      "en": "Static Cell Startup State PUF"
+    },
+    "prompt": {
+      "ko": "전원이 들어올 때 크로스 커플링된 인버터 래치의 미세한 반도체 공정 편차로 인해 셀마다 0 또는 1로 고유하게 수렴하는 특성을 이용해 칩 고유 지문을 생성하는 휘발성 메모리 기술 약어를 입력하세요.",
+      "en": "Enter the 4-letter acronym for the static semiconductor memory technology whose power-on state randomness provides an unclonable physical fingerprint (PUF)."
+    },
+    "hints": {
+      "ko": [
+        "Static Random Access Memory의 약어입니다.",
+        "영문 소문자 4글자입니다."
+      ],
+      "en": [
+        "Acronym for Static Random Access Memory.",
+        "4-letter lowercase acronym."
+      ]
+    }
+  },
+  {
+    "id": "t3_sccpa",
+    "tier": 3,
+    "cat": "powerleak",
+    "track": "sidechannel",
+    "points": 200,
+    "ci": false,
+    "hash": "08a00ce64da67d6def98226430792c88ce33083769dce0ccf2432b537190518f",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CPA 최고 상관 계수 판정",
+      "en": "CPA Peak Correlation Selection"
+    },
+    "prompt": {
+      "ko": "AES-128 SubBytes 출력 전력 누출 분석에서 4개의 키 가설에 대한 상관계수 절대값이 K0(0x3A)=0.124, K1(0x7E)=0.892, K2(0x9F)=0.215, K3(0xC4)=0.341로 산출되었습니다. 가장 높은 상관계수를 기록한 정답 키 바이트를 선택하여 FLAG{CPA_KEY_0x<BYTE>} 형식으로 제출하세요.",
+      "en": "CPA correlation values for 4 key candidates are K0(0x3A)=0.124, K1(0x7E)=0.892, K2(0x9F)=0.215, K3(0xC4)=0.341. Select the peak key byte and submit as FLAG{CPA_KEY_0x<BYTE>}."
+    },
+    "hints": {
+      "ko": [
+        "최대 상관 계수는 0.892이며 해당 키 바이트는 7E입니다.",
+        "구한 바이트 7E를 템플릿의 <BYTE> 위치에 대입하세요."
+      ],
+      "en": [
+        "Peak correlation is 0.892 belonging to key 0x7E.",
+        "Substitute 7E into the template placeholder."
+      ]
+    }
+  },
+  {
+    "id": "t3_schamdist",
+    "tier": 3,
+    "cat": "powerleak",
+    "track": "sidechannel",
+    "points": 130,
+    "ci": true,
+    "hash": "267538268f6ff9d7930afcb5bc63ea9e792d3f02027402fe538a77e49f59abad",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "해밍 거리 버스 상태 천이 모델",
+      "en": "Hamming Distance Transition Model"
+    },
+    "prompt": {
+      "ko": "CMOS 버스에서 이전 클록 사이클의 값과 현재 클록 사이클의 값 사이에서 비트가 변경될 때 발생하는 동적 충방전 전력 누출을 모델링하는 수학적 거리 척도를 공백 없이 입력하세요.",
+      "en": "Enter the compound mathematical term (no spaces) designating the distance metric counting the number of toggled bit positions between two states."
+    },
+    "hints": {
+      "ko": [
+        "두 이진 벡터 간 서로 다른 비트의 개수를 측정하는 척도입니다.",
+        "hamming과 distance의 결합어입니다."
+      ],
+      "en": [
+        "Metric measuring bit differences between two binary vectors.",
+        "Concatenate hamming and distance."
+      ]
+    }
+  },
+  {
+    "id": "t3_scphoto",
+    "tier": 3,
+    "cat": "glitchfault",
+    "track": "sidechannel",
+    "points": 130,
+    "ci": true,
+    "hash": "84b5fa09ea019ffcfc13d501cc051fae16c10f8d80a14b06fa9b62e407a0bca5",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "광학 결함 주입 광검출기",
+      "en": "Optical Fault Photo Sensor Detector"
+    },
+    "prompt": {
+      "ko": "레이저 결함 주입(LFI) 공격 시 실리콘 트랜지스터에 광전류를 유도하거나 반대로 온칩에서 공격 레이저 광선을 감지하는 반도체 광검출 소자의 영단어를 입력하세요.",
+      "en": "Enter the English term for the semiconductor photodetector junction that converts optical laser pulses into electric currents in LFI scenarios."
+    },
+    "hints": {
+      "ko": [
+        "빛을 감지하여 전류를 흘리는 다이오드입니다.",
+        "photo와 diode의 결합어입니다."
+      ],
+      "en": [
+        "Semiconductor diode that generates current upon absorbing light.",
+        "Compound of photo and diode."
+      ]
+    }
+  },
+  {
+    "id": "t3_scsolenoid",
+    "tier": 3,
+    "cat": "glitchfault",
+    "track": "sidechannel",
+    "points": 130,
+    "ci": true,
+    "hash": "ac160a618eb3f4e8ab7545a431fe1f6a6d44d569249872259f63bb12184aeed0",
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "EMFI 전자기 결함 인젝터 코일",
+      "en": "EMFI Inductive Micro-Coil"
+    },
+    "prompt": {
+      "ko": "전자기 결함 주입(EMFI) 장비에서 순간 방전된 수백 볼트 전압을 강한 국소 자기장으로 변환하여 칩 내부에 와전류를 유도하는 원통형 권선 코일의 영단어를 입력하세요.",
+      "en": "Enter the English term for the cylindrical coil of wire used in EMFI probes to concentrate transient magnetic pulses into an integrated circuit die."
+    },
+    "hints": {
+      "ko": [
+        "원통형으로 촘촘하게 감은 도선 코일을 의미하는 물리학 용어입니다.",
+        "8글자의 소문자 영단어입니다."
+      ],
+      "en": [
+        "Cylindrical coil generating uniform magnetic fields when energized.",
+        "8-letter word."
+      ]
+    }
+  },
+  {
+    "id": "t3_sctempest",
+    "tier": 3,
+    "cat": "emleak",
+    "track": "sidechannel",
+    "points": 130,
+    "ci": true,
+    "hash": "8b04871d9242d20c23aee1c8b8018bf73414a1a3e1072adb9c34aece613c9fc7",
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "전자기 방출 도청 차폐 규격",
+      "en": "Compromising Emanations Shielding Standard"
+    },
+    "prompt": {
+      "ko": "컴퓨터 모니터나 케이블, 암호 장비의 전자기 누출 신호를 외부에서 가로채는 도청 공격 및 이를 차단하기 위한 미 국가안보국(NSA) 차폐 표준 규격의 코드명을 입력하세요.",
+      "en": "Enter the famous US government codename for standards preventing compromising electromagnetic emanations from electronic processing equipment."
+    },
+    "hints": {
+      "ko": [
+        "폭풍우를 뜻하는 영어 단어와 동일한 코드명입니다.",
+        "7글자의 소문자 명칭입니다."
+      ],
+      "en": [
+        "Codename identical to the English word meaning a violent storm.",
+        "7 letters long."
+      ]
+    }
+  },
+  {
+    "id": "t3_scbranch",
+    "tier": 3,
+    "cat": "emleak",
+    "track": "sidechannel",
+    "points": 130,
+    "ci": true,
+    "hash": "9059c7c3d5a305bdb3a040a71b3916b0f3626772d8f2f98d63ad2d184478424e",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "분기 타깃 버퍼 투기적 오염",
+      "en": "Branch Target Buffer Speculation"
+    },
+    "prompt": {
+      "ko": "Spectre Variant 2 공격에서 간접 분기의 목적지 주소를 사전에 예측하는 CPU 하드웨어 캐시인 Branch Target Buffer(BTB)의 앞글자 조합 영문 용어를 공백 없이 입력하세요.",
+      "en": "Enter the compound English word (no spaces) designating the branch target prediction cache polluted in Spectre Variant 2 attacks."
+    },
+    "hints": {
+      "ko": [
+        "분기(branch)와 타깃(target)의 합성어입니다.",
+        "branch와 target을 결합하십시오."
+      ],
+      "en": [
+        "Compound of branch and target.",
+        "Concatenate branch and target."
+      ]
+    }
+  },
+  {
+    "id": "t3_scringosc",
+    "tier": 3,
+    "cat": "chipcounter",
+    "track": "sidechannel",
+    "points": 130,
+    "ci": true,
+    "hash": "4fa6487667e16404a530968a51c3777f3fc5f9e6eee3acaea66b4e7a1146f418",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "링 오실레이터 위상 편차 진난수원",
+      "en": "Ring Oscillator Randomness TRNG"
+    },
+    "prompt": {
+      "ko": "홀수 개의 인버터를 고리 모양으로 연결하여 반도체 열 잡음에 의한 위상 편차를 유도함으로써 하드웨어 진난수(TRNG)를 생성하는 회로 구조의 영문 명칭을 공백 없이 입력하세요.",
+      "en": "Enter the compound English word (no spaces) for the circuit looping an odd number of NOT gates to harvest thermal phase noise and random drift for hardware true random number generation."
+    },
+    "hints": {
+      "ko": [
+        "고리(ring) 형태의 발진기(oscillator)입니다.",
+        "ring과 oscillator를 결합합니다."
+      ],
+      "en": [
+        "Oscillator consisting of an odd count of inverting stages.",
+        "Concatenate ring and oscillator."
+      ]
+    }
+  },
+  {
+    "id": "t3_scactivemesh",
+    "tier": 3,
+    "cat": "chipcounter",
+    "track": "sidechannel",
+    "points": 130,
+    "ci": true,
+    "hash": "8bf79fe11eacd5d7d2a57b03c3c20d93913cffef12c76b7b53c1a768a3fbb92b",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "실리콘 다이 최상층 능동 차폐망",
+      "en": "Silicon Top-Layer Active Mesh"
+    },
+    "prompt": {
+      "ko": "물리적 마이크로프로빙 침습 공격을 감지하기 위해 보안 마이크로컨트롤러 실리콘 다이 최상위 금속층에 실시간 신호를 순환시키는 보호 차폐 그물망을 공백 없이 입력하세요.",
+      "en": "Enter the compound English word (no spaces) for the active conductive grid routed over the top metal layer of a chip to detect physical decapsulation and microprobing."
+    },
+    "hints": {
+      "ko": [
+        "능동적인(active) 그물망(mesh)입니다.",
+        "active와 mesh를 결합합니다."
+      ],
+      "en": [
+        "Active protective mesh network on top silicon.",
+        "Concatenate active and mesh."
+      ]
+    }
+  },
+  {
+    "id": "t3_sccomparator",
+    "tier": 3,
+    "cat": "chipcounter",
+    "track": "sidechannel",
+    "points": 130,
+    "ci": true,
+    "hash": "1958910ec11446e9b7b72509855ff68dc999b59730fc2e70edc602bf9a10e1d7",
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "온칩 초고속 전압 판별기",
+      "en": "On-Chip Voltage Dip Detector"
+    },
+    "prompt": {
+      "ko": "타깃 전원 전압 레일과 내부 밴드갭 기준 전압을 지속적으로 비교하여 급격한 전압 강하가 감지되면 클러스터 리셋을 발동시키는 아날로그 회로 소자의 영단어를 입력하세요.",
+      "en": "Enter the English noun for the analog circuit component comparing supply voltage against a bandgap reference to trigger defensive resets upon voltage dips."
+    },
+    "hints": {
+      "ko": [
+        "두 신호의 전압을 비교(compare)하는 회로 소자입니다.",
+        "compare의 행위자 명사형 단어입니다."
+      ],
+      "en": [
+        "Electronic device comparing two voltages and outputting a binary signal.",
+        "Noun form of the verb compare."
+      ]
+    }
+  },
+  {
+    "id": "t4_scwelch",
+    "tier": 4,
+    "cat": "powerleak",
+    "track": "sidechannel",
+    "points": 160,
+    "ci": true,
+    "hash": "55218052f4e1f8c07a24f44577a7b4a9902d62b9c5f6ac459d5595c0dd4f35f3",
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "title": {
+      "ko": "TVLA 통계 검정 부채널 평가",
+      "en": "TVLA Unequal-Variance t-Test Assessment"
+    },
+    "prompt": {
+      "ko": "ISO/IEC 17825 및 암호 하드웨어 안전성 평가(TVLA)에서 고정 데이터 파형과 난수 파형 사이의 유의미한 누출을 정량 평가하는 t-검정 창안자의 영문 성씨를 입력하세요.",
+      "en": "Enter the surname of the statistician whose unequal-variance t-test is standardly employed in Test Vector Leakage Assessment (TVLA)."
+    },
+    "hints": {
+      "ko": [
+        "이분산 t-검정(t-test)의 창안자입니다.",
+        "w로 시작하는 5글자의 소문자 성씨입니다."
+      ],
+      "en": [
+        "Creator of the unequal-variance t-test for distributions with unequal spreads.",
+        "5-letter surname starting with w."
+      ]
+    }
+  },
+  {
+    "id": "t4_scstochastic",
+    "tier": 4,
+    "cat": "powerleak",
+    "track": "sidechannel",
+    "points": 160,
+    "ci": true,
+    "hash": "04cd87fad96e800bb5e992b740d9f8a1eaf59d6ad7556067aba5231ffeff0d88",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "기저 함수 선형 근사 프로파일링 기법",
+      "en": "Linear Profiling Model Attack"
+    },
+    "prompt": {
+      "ko": "Schindler 등이 제안한 프로파일링 부채널 기법으로, 회로의 전력 소비를 기저 함수의 선형 결합으로 근사하여 템플릿 공격보다 적은 파형으로 키를 추출하는 통계적 분석법의 영단어를 입력하세요.",
+      "en": "Enter the English term for the profiling SCA approach approximating power consumption via linear combinations of base functions."
+    },
+    "hints": {
+      "ko": [
+        "확률론적, 추계학적을 의미하는 통계학 전문 영단어입니다.",
+        "s로 시작하는 10글자 단어입니다."
+      ],
+      "en": [
+        "Word meaning randomly determined or based on probability distributions.",
+        "10 letters starting with s."
+      ]
+    }
+  },
+  {
+    "id": "t4_scbitflip",
+    "tier": 4,
+    "cat": "glitchfault",
+    "track": "sidechannel",
+    "points": 160,
+    "ci": true,
+    "hash": "a4e64d815b33ba592ccc50563f3b04a4beac925651ed0f56e5728ef4e27eaba0",
+    "fmt": "한 단어 / one word (하이픈 없이 / no hyphen)",
+    "title": {
+      "ko": "레지스터 단일 비트 반전 결함",
+      "en": "Register Single Bit Flip Fault"
+    },
+    "prompt": {
+      "ko": "전압 글리칭이나 집속 레이저 조사에 의해 CPU 레지스터나 메모리 셀의 특정 비트 상태가 0에서 1로 혹은 1에서 0으로 반전되는 하드웨어 결함 현상을 공백 없이 입력하세요.",
+      "en": "Enter the compound English term (no spaces) for the hardware fault condition where a physical register or static memory bit is toggled between binary states."
+    },
+    "hints": {
+      "ko": [
+        "비트(bit)를 뒤집는다(flip)는 뜻입니다.",
+        "bit와 flip을 결합합니다."
+      ],
+      "en": [
+        "Flipping of a single binary bit value.",
+        "Concatenate bit and flip."
+      ]
+    }
+  },
+  {
+    "id": "t4_scbootrom",
+    "tier": 4,
+    "cat": "glitchfault",
+    "track": "sidechannel",
+    "points": 160,
+    "ci": true,
+    "hash": "d386c5c143462fe155e25d185e32411adaee1e1948a80309eae11777e79bc50b",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "실리콘 마스크 부트 롬 신뢰 닻",
+      "en": "Silicon Mask Boot ROM Trust Anchor"
+    },
+    "prompt": {
+      "ko": "시스템 온 칩(System-on-Chip) 제조 공정에서 실리콘 마스크로 하드코딩되어 수정이 불가능하며, 글리칭 공격으로 서명 검증 루프를 무력화하여 덤프를 시도하는 최하위 하드웨어 신뢰 닻 메모리 영역을 공백 없이 입력하세요.",
+      "en": "Enter the compound English term (no spaces) designating the immutable masked read-only memory executed at power-on representing the silicon Root of Trust."
+    },
+    "hints": {
+      "ko": [
+        "부팅(boot)용 롬(rom) 메모리입니다.",
+        "boot와 rom을 결합합니다."
+      ],
+      "en": [
+        "On-die masked read-only memory holding primary bootloader.",
+        "Concatenate boot and rom."
+      ]
+    }
+  },
+  {
+    "id": "t4_scoutoforder",
+    "tier": 4,
+    "cat": "emleak",
+    "track": "sidechannel",
+    "points": 160,
+    "ci": true,
+    "hash": "213279b24f4324d91b1610bc5d307d5e412fba37a52e825d99b5d6247dd6e650",
+    "fmt": "한 단어 / one word (하이픈 없이 / no hyphen)",
+    "title": {
+      "ko": "비순차적 명령어 실행 엔진",
+      "en": "Instruction Out-of-Sequence Pipeline"
+    },
+    "prompt": {
+      "ko": "Meltdown 및 마이크로아키텍처 부채널 취약점의 근본 원인으로, 데이터 준비가 완료된 명령어를 프로그램 순서와 무관하게 앞서 실행하는 CPU 실행 패러다임을 공백과 하이픈 없이 입력하세요.",
+      "en": "Enter the English phrase (no spaces, no hyphens) for the processor pipeline paradigm executing ready instructions ahead of program sequence."
+    },
+    "hints": {
+      "ko": [
+        "순서가 어긋난(out of order) 실행입니다.",
+        "세 단어를 공백 없이 결합합니다."
+      ],
+      "en": [
+        "Execution paradigm running ahead of sequence.",
+        "Concatenate the three words: out, of, and order."
+      ]
+    }
+  },
+  {
+    "id": "t4_scpiezo",
+    "tier": 4,
+    "cat": "emleak",
+    "track": "sidechannel",
+    "points": 160,
+    "ci": true,
+    "hash": "37f8f57b62128202fa9031fafd071b89e117c7a105c6c41ac18447df710cccca",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "음향 부채널 세라믹 압전 현상",
+      "en": "Acoustic Side-Channel Piezo Effect"
+    },
+    "prompt": {
+      "ko": "메인보드 세라믹 커패시터 양단 전압 변동이 기계적 진동으로 변환되어 초음파 음향 누출을 유발하는 고체 물리학 현상의 영문 형용사를 입력하세요.",
+      "en": "Enter the English adjective for the physical effect where electric voltage induces mechanical strain in ceramic capacitors generating acoustic side-channel leakages."
+    },
+    "hints": {
+      "ko": [
+        "압전 효과를 뜻하는 영단어입니다.",
+        "13글자의 소문자 영단어입니다."
+      ],
+      "en": [
+        "Physical effect generating electric polarization from stress or vice versa.",
+        "13-letter term: piezoelectric."
+      ]
+    }
+  },
+  {
+    "id": "t4_sccryptoco",
+    "tier": 4,
+    "cat": "chipcounter",
+    "track": "sidechannel",
+    "points": 160,
+    "ci": true,
+    "hash": "60a2cdfbd9f3d8f4e802cb0546c42a0da5067ae692701534644daab4bfc1a197",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "하드웨어 전용 보안 암호 보조처리기",
+      "en": "Dedicated Crypto Accelerator Engine"
+    },
+    "prompt": {
+      "ko": "메인 CPU와 물리적으로 분리되어 상수 시간 연산과 차분 부채널 방지 마스킹이 하드웨어 레벨에서 보장되는 보안 보조 프로세서의 영문 합성어를 공백 없이 입력하세요.",
+      "en": "Enter the compound English word (no spaces) for the dedicated hardware auxiliary engine ensuring constant-time, SCA-hardened cryptographic execution."
+    },
+    "hints": {
+      "ko": [
+        "암호(crypto)와 보조프로세서(coprocessor)의 결합어입니다.",
+        "두 영단어를 공백 없이 이어 붙입니다."
+      ],
+      "en": [
+        "Hardware coprocessor executing cryptographic operations securely.",
+        "Concatenate crypto and coprocessor."
+      ]
+    }
+  },
+  {
+    "id": "t4_sclowpass",
+    "tier": 4,
+    "cat": "chipcounter",
+    "track": "sidechannel",
+    "points": 160,
+    "ci": true,
+    "hash": "3b2d40b395bad037ff8761c04dc4b16c3c502fd71137f92bccad236921aad57f",
+    "fmt": "한 단어 / one word",
+    "title": {
+      "ko": "전원 노이즈 저역 통과 필터",
+      "en": "Power Rail Low-Pass RC Filter"
+    },
+    "prompt": {
+      "ko": "외부에서 인가되는 고주파 전압 글리칭 펄스와 스파이크 잡음을 감쇄시켜 핵심 로직 회로를 보호하는 아날로그 RC 회로 필터 명칭을 공백 없이 입력하세요.",
+      "en": "Enter the compound English word (no spaces) designating the analog RC filter network attenuating high-frequency glitch spikes on power lines."
+    },
+    "hints": {
+      "ko": [
+        "저주파를 통과시키는 저역 통과(low-pass) 필터입니다.",
+        "low와 pass를 결합합니다."
+      ],
+      "en": [
+        "Filter passing low-frequency signals while suppressing transients.",
+        "Concatenate low and pass."
+      ]
+    }
+  },
+  {
+    "id": "t4_scchipwhisper",
+    "tier": 4,
+    "cat": "chipcounter",
+    "track": "sidechannel",
+    "points": 160,
+    "ci": true,
+    "hash": "5f954c32188757e15e7dfe655bf47db4fb880a8aacd1b40ed72af61c443b0f2b",
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "표준 오픈 하드웨어 부채널 도구",
+      "en": "Standard Open Hardware SCA Platform"
+    },
+    "prompt": {
+      "ko": "Colin O’Flynn이 창안한 오픈소스 하드웨어 부채널 분석(SCA) 및 글리칭 결함 주입 실습 평가용 대표 장비 플랫폼의 브랜드 명칭을 공백 없이 입력하세요.",
+      "en": "Enter the ubiquitous open-source hardware brand name (no spaces) created by Colin O Flynn for side-channel power analysis and glitch injection."
+    },
+    "hints": {
+      "ko": [
+        "칩(chip)과 속삭이는 자(whisperer)의 합성어입니다.",
+        "chip과 whisperer를 결합합니다."
+      ],
+      "en": [
+        "Popular open hardware side-channel assessment board.",
+        "Concatenate chip and whisperer."
+      ]
+    }
+  },
+  {
+    "id": "t4_sidecapstone",
+    "tier": 4,
+    "cat": "powerleak",
+    "track": "sidechannel",
+    "points": 250,
+    "ci": false,
+    "hash": "da8f3b6a2dff9ae35e57c8185ba49969a3c7e0760d339456774bbebc30d43324",
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "하드웨어 부채널·글리칭 포렌식 캡스톤",
+      "en": "Hardware SCA & Glitch Forensics Capstone"
+    },
+    "prompt": {
+      "ko": "하드웨어 침해 사고 종합 보고서: (1) 암호 알고리즘: AES128, (2) 부채널 공격 기법: CPA, (3) 도출된 1바이트 키 후보: 0x9B, (4) 서명 검증 우회에 투입된 전압 글리치 폭: 35NS. 보고서의 핵심 필드를 결합하여 FLAG{SC_<알고리즘>_<기법>_<키>_GLITCH_<폭>} 형식의 마스터 플래그를 완성하세요.",
+      "en": "Incident forensics report: (1) Cipher: AES128, (2) Attack: CPA, (3) Key byte: 0x9B, (4) Glitch width: 35NS. Synthesize into master flag format FLAG{SC_<CIPHER>_<ATTACK>_<KEY>_GLITCH_<WIDTH>}."
+    },
+    "hints": {
+      "ko": [
+        "알고리즘 AES128, 기법 CPA, 키 0x9B, 폭 35NS를 조합합니다.",
+        "보고서의 값들을 순서대로 템플릿 위치에 대입하세요."
+      ],
+      "en": [
+        "Combine AES128, CPA, 0x9B, and 35NS.",
+        "Substitute the reported values in order into the template placeholders."
+      ]
+    }
+  }
 ];

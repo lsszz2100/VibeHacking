@@ -338,11 +338,12 @@
   function showHelp(){
     const rows = [
       ["help","명령 목록 / list commands"],
-      ["ls","현재 위치 목록 (계층 또는 잠금장치) / list here"],
+      ["ls [필터]","현재 위치 목록 (트랙·unsolved 필터 가능) / list here"],
+      ["tracks","26개 전체 트랙 현황 / list all 26 tracks"],
       ["map","침투 경로 지도 / infiltration map"],
       ["connect <노드>","계층에 접속 / connect to a layer  (cd <node>)"],
       ["back","상위로 / go up  (cd ..)"],
-      ["cat <번호>","잠금장치(문제) 열기 / open a lock  (open <n>)"],
+      ["cat <번호|id>","잠금장치(문제) 열기 / open a lock  (open <n|id>)"],
       ["hint","현재 표적 힌트 공개 / reveal a hint"],
       ["submit <flag>","플래그 제출 / submit a flag  (또는 그냥 입력)"],
       ["status","점수·등급·진행 / score & progress  (whoami)"],
@@ -357,7 +358,7 @@
     ];
     blank();
     print('<span class="bold">' + (L()==="ko"?"사용 가능한 명령":"AVAILABLE COMMANDS") + '</span>');
-    rows.forEach(r => print('<span class="tbl"><span class="cmd-h">' + r[0].padEnd(16," ").replace(/ /g,"&nbsp;") +
+    rows.forEach(r => print('<span class="tbl"><span class="cmd-h">' + r[0].padEnd(18," ").replace(/ /g,"&nbsp;") +
       '</span> <span class="dim">' + esc(r[1]) + '</span></span>'));
     blank();
     print('<span class="dim">' + esc(S("welcome")) + '</span>');
@@ -368,15 +369,17 @@
     print('<span class="bold">' + esc(S("nodesHdr")) + '</span>');
     LAYERS.forEach(lay => {
       const tier = TIERS.find(t => t.id === lay.tier);
-      const unlocked = isTierUnlocked(lay.tier);
       const sc = tierSolved(lay.tier), tc = tierChals(lay.tier).length;
-      const fullBreach = sc >= tierNeed(lay.tier);
-      let statusHtml, cls;
-      if (!unlocked){ statusHtml = '🔒 ' + esc(S("locked")); cls = "locked-row"; }
-      else if (fullBreach){ statusHtml = '<span class="ok">✓ ' + esc(S("breached")) + '</span>'; cls = "solved-row"; }
-      else { statusHtml = '<span class="warn">▸ ' + esc(S("open")) + '</span>'; cls = ""; }
-      const name = lay[L()];
-      print('<span class="tbl"><span class="row ' + cls + '">' +
+      const need = tierNeed(lay.tier);
+      const unlocked = isTierUnlocked(lay.tier);
+      const breached = sc >= need;
+      const statusHtml = !unlocked
+        ? '<span class="dim">🔒 ' + esc(S("locked")) + '</span>'
+        : (breached
+          ? '<span class="ok">✓ ' + esc(S("breached")) + '</span>'
+          : '<span class="warn">▸ ' + esc(S("open")) + ' (' + (need - sc) + esc(S("needMore")) + ')</span>');
+      const name = lay[L()] + " · " + esc(tier["desc_" + L()]);
+      print('<span class="tbl"><span class="row' + (unlocked ? "" : " locked-row") + '">' +
         '<span class="id">[' + esc(lay.id) + ']</span>' +
         '<span class="kw">TIER ' + lay.tier + '</span>' +
         '<span>' + esc(name) + '</span>' +
@@ -388,12 +391,27 @@
       ? "`connect &lt;노드&gt;` 로 계층에 침투하세요." : "Breach a layer with `connect &lt;node&gt;`.") + '</span>');
   }
 
-  function showLocks(nodeId){
+  function showLocks(nodeId, filterArg){
     const lay = layerById(nodeId);
+    if (!lay) return;
     const tier = TIERS.find(t => t.id === lay.tier);
-    const chals = locksOf(nodeId);
+    let chals = locksOf(nodeId);
+    let filterDesc = "";
+    if (filterArg && filterArg.trim()){
+      const q = filterArg.trim().toLowerCase();
+      if (q === "unsolved" || q === "todo" || q === "미해결"){
+        chals = chals.filter(c => !state.solved[c.id]);
+        filterDesc = " (" + (L()==="ko" ? "미해결" : "unsolved") + ")";
+      } else if (q === "solved" || q === "done" || q === "해결"){
+        chals = chals.filter(c => !!state.solved[c.id]);
+        filterDesc = " (" + (L()==="ko" ? "해결됨" : "solved") + ")";
+      } else {
+        chals = chals.filter(c => (c.track && c.track.toLowerCase().includes(q)) || (c.cat && c.cat.toLowerCase().includes(q)));
+        filterDesc = " [" + q + "]";
+      }
+    }
     blank();
-    print('<span class="bold">' + esc(S("connected")) + ' [' + esc(nodeId) + '] ' + esc(lay[L()]) + '</span>');
+    print('<span class="bold">' + esc(S("connected")) + ' [' + esc(nodeId) + '] ' + esc(lay[L()]) + esc(filterDesc) + ' (' + chals.length + ')</span>');
     print('<span class="dim">' + esc(tier["desc_" + L()]) + '</span>');
     print('<span class="dim">' + esc(S("locksHdr")) + '</span>');
     chals.forEach((c, i) => {
@@ -403,6 +421,7 @@
       const cls = solved ? "solved-row" : "";
       print('<span class="tbl"><span class="row ' + cls + '">' +
         mark + ' <span class="id">' + num + '</span>' +
+        '<span class="dim" style="width:110px;display:inline-block;">' + esc(c.id) + '</span>' +
         '<span class="ct">' + esc(c.cat) + '</span>' +
         '<span>' + esc(c.title[L()]) + '</span>' +
         '<span class="dim">' + c.points + 'pt</span>' +
@@ -420,11 +439,29 @@
   }
 
   function catLock(arg){
-    if (!cwd){ printText(S("connFirst"), "warn"); return; }
-    const chals = locksOf(cwd);
     let ch = null;
-    if (/^\d+$/.test(arg)){ ch = chals[parseInt(arg,10) - 1]; }
-    if (!ch) ch = chals.find(c => c.id === arg);
+    let chals = cwd ? locksOf(cwd) : [];
+    if (cwd && /^\d+$/.test(arg)){ ch = chals[parseInt(arg,10) - 1]; }
+    if (!ch && cwd) ch = chals.find(c => c.id === arg);
+    // UI 2.0: global lookup by challenge id if not found in current layer
+    if (!ch && arg){
+      const direct = CHALLENGES.find(c => c.id.toLowerCase() === (arg || "").trim().toLowerCase());
+      if (direct){
+        if (!isTierUnlocked(direct.tier)){
+          printText(S("nodeLocked"), "err");
+          sDeny();
+          return;
+        }
+        const targetLay = layerByTier(direct.tier);
+        if (targetLay){
+          cwd = targetLay.id;
+          chals = locksOf(cwd);
+          ch = direct;
+          refreshHud();
+        }
+      }
+    }
+    if (!cwd && !ch){ printText(S("connFirst"), "warn"); return; }
     if (!ch){ printText(S("noLock") + " " + arg, "err"); sDeny(); return; }
     target = ch.id;
     const solved = !!state.solved[ch.id];
@@ -433,7 +470,7 @@
     const idx = chals.indexOf(ch) + 1;
     box.innerHTML =
       '<div class="cbh">' +
-        '<span class="tag">' + esc(S("lockLabel")) + ' ' + String(idx).padStart(2,"0") + '</span>' +
+        '<span class="tag">' + esc(S("lockLabel")) + ' ' + (idx > 0 ? String(idx).padStart(2,"0") : esc(ch.id)) + '</span>' +
         '<span class="ct">' + esc(ch.cat) + (ch.track ? ' · ' + esc(ch.track) : '') + '</span>' +
         (solved ? '<span class="ok">✓ ' + esc(S("breached")) + '</span>' : '') +
         '<span class="pt">' + ch.points + 'pt</span>' +
@@ -562,7 +599,7 @@
     print('<span class="tbl"><span class="dim">' + esc(S("score")) + ':</span> <span class="ok">' + totalScore() + '</span>' +
       '  <span class="dim">' + esc(S("rank")) + ':</span> ' + rank.icon + ' <span class="kw">' + esc(rank[L()]) + '</span></span>');
     blank();
-    print('<span class="bold">' + (L()==="ko" ? "트랙별 진행 현황 (22 Tracks)" : "Progress by Track (22 Tracks)") + '</span>');
+    print('<span class="bold">' + (L()==="ko" ? ("트랙별 진행 현황 (" + TRACKS.length + " Tracks)") : ("Progress by Track (" + TRACKS.length + " Tracks)")) + '</span>');
 
     TRACKS.forEach(tr => {
       const chals = CHALLENGES.filter(c => c.track === tr.id);
@@ -592,6 +629,25 @@
         '<span class="dim">' + bar + ' ' + sc + '/' + tc + '</span>  ' + tag +
         '</span></span>');
     });
+  }
+
+  function showTracks(){
+    blank();
+    print('<span class="bold">' + (L()==="ko" ? ("=== 트랙 목록 (총 " + TRACKS.length + "개 트랙) ===") : ("=== TRACK DIRECTORY (" + TRACKS.length + " tracks) ===")) + '</span>');
+    TRACKS.forEach((tr, i) => {
+      const chals = CHALLENGES.filter(c => c.track === tr.id);
+      const sc = chals.filter(c => state.solved[c.id]).length;
+      const tc = chals.length;
+      const pct = tc ? Math.round((sc / tc) * 100) : 0;
+      const name = (tr.icon ? tr.icon + " " : "") + (tr[L()] || tr.en);
+      const mark = sc === tc ? '<span class="ok">✓</span>' : (sc > 0 ? '<span class="warn">▸</span>' : '<span class="dim">·</span>');
+      print('<span class="tbl"><span class="row">' +
+        '<span class="id" style="width:230px;display:inline-block;">' + mark + ' <b>' + esc(tr.id) + '</b> (' + esc(name) + ')</span>' +
+        '<span class="dim">' + sc + '/' + tc + ' (' + pct + '%)</span>' +
+        '</span></span>');
+    });
+    blank();
+    print('<span class="dim">' + (L()==="ko" ? "트랙 검색: `search <트랙명>` 또는 계층 내 `ls <트랙명>`" : "Search a track: `search <track>` or `ls <track>` inside a layer") + '</span>');
   }
 
   function showMap(){
@@ -756,7 +812,11 @@
     switch (cmd){
       case "help": case "?": case "도움말": showHelp(); break;
       case "ls": case "dir": case "list":
-        if (cwd) showLocks(cwd); else showNodes(); break;
+        if (cwd) showLocks(cwd, arg);
+        else if (arg && layerById(arg.toLowerCase())) showLocks(arg.toLowerCase());
+        else showNodes();
+        break;
+      case "tracks": case "track": case "트랙": showTracks(); break;
       case "nodes": showNodes(); break;
       case "map": case "지도": showMap(); break;
       case "connect": case "cd": case "ssh": case "nc": {
@@ -975,7 +1035,15 @@
 
   // quick chips
   document.querySelectorAll(".chip").forEach(ch => {
-    ch.addEventListener("click", () => { input.focus(); audio(); run(ch.dataset.cmd); });
+    ch.addEventListener("click", () => {
+      input.focus();
+      audio();
+      if (ch.dataset.input != null) {
+        input.value = ch.dataset.input;
+      } else if (ch.dataset.cmd) {
+        run(ch.dataset.cmd);
+      }
+    });
   });
   // hud buttons
   document.getElementById("soundBtn").addEventListener("click", () => { audio(); toggleSound(); input.focus(); });

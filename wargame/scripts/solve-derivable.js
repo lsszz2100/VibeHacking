@@ -1077,6 +1077,37 @@ const SOLVERS = new Map([
     const last4 = mac.replace(/:/g, '').slice(-4).toUpperCase();
     return `FLAG{WL_${last4}_CH${chNum}_${atk}_${cnt}}`;
   } }],
+  /* --- side-channel: Pearson covariance numerator & SS product, glitch pulse width in ns,
+     CPA peak correlation key byte, and hardware forensic capstone --- */
+  ['t2_scpearson', { kind: 'computed', via: 'extract Pearson covariance numerator and SS product into composite flag', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const num = text.match(/numerator is (\d+)/)[1];
+    const ss = text.match(/SS_X\*SS_Y is (\d+)/)[1];
+    return `FLAG{PEARSON_NUM_${num}_SS_${ss}}`;
+  } }],
+  ['t2_scpulse', { kind: 'computed', via: 'multiply clock period by cycle count to find glitch pulse width in ns', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const period = parseFloat(text.match(/(\d+)ns clock period/)[1]);
+    const cycles = parseFloat(text.match(/([\d.]+) cycles/)[1]);
+    const width = Math.round(period * cycles);
+    return `FLAG{GLITCH_WIDTH_${width}NS}`;
+  } }],
+  ['t3_sccpa', { kind: 'computed', via: 'identify key byte candidate with peak Pearson correlation', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const matches = Array.from(text.matchAll(/K\d\((0x[0-9A-Fa-f]+)\)=([\d.]+)/g));
+    if (!matches.length) throw new Error('no CPA correlation values parsed');
+    matches.sort((a, b) => parseFloat(b[2]) - parseFloat(a[2]));
+    const peakKey = matches[0][1];
+    return `FLAG{CPA_KEY_${peakKey}}`;
+  } }],
+  ['t4_sidecapstone', { kind: 'computed', via: 'aggregate hardware SCA and glitch forensics report into master flag', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const cipher = text.match(/Cipher:\s*(\w+)/)[1];
+    const attack = text.match(/Attack:\s*(\w+)/)[1];
+    const key = text.match(/Key byte:\s*(0x[0-9A-Fa-f]+)/)[1];
+    const glitch = text.match(/Glitch width:\s*(\w+)/)[1];
+    return `FLAG{SC_${cipher}_${attack}_${key}_GLITCH_${glitch}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
