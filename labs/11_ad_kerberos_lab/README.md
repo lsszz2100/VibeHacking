@@ -13,6 +13,9 @@ KeroShield는 엔터프라이즈 윈도우 도메인 환경(`CORP.LOCAL`)에서 
 - **포레스트 기능 수준**: Windows Server 2022
 - **도메인 SID**: `S-1-5-21-382947192-284918239-192837482`
 - **웹 대화형 콘솔 & REST API 포트**: `http://localhost:8011`
+- **연계 교재**: [54장 Active Directory CTF 실습 랩](../../54_Active_Directory_Attacks/06_ad_ctf_lab.md)
+- **관련 워게임 트랙**: `activedirectory` (35개 문제)
+- **CLI 간편 실행**: `python3 vhack.py lab start 11`
 
 ---
 

@@ -6,6 +6,10 @@
 
 # CTF 스타일 시스템 해킹 실습
 
+> 💡 **바이브해킹 실습 랩 및 워게임 연계**:
+> - **인터랙티브 실습 랩 02**: [`labs/02_pwn_lab/`](../labs/02_pwn_lab/) — 스택 오버플로우, ret2libc, ROP 체이닝, 포맷스트링, tcache 힙 공격 바이너리 챌린지 번들 (`python3 vhack.py lab start 02`, nc 포트: `10001~10005`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `pwn` 트랙 (35개 문제)에서 ASLR/PIE 베이스 계산, ROP 가젯 탐색, One-Gadget, Fastbin/Tcache 익스플로잇을 직접 실습할 수 있습니다.
+
 ## 실습 환경 준비
 
 ### Docker / GDB 환경 설정

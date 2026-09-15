@@ -6,6 +6,10 @@
 
 # 쿠버네티스 CTF 실습 랩
 
+> 💡 **바이브해킹 실습 랩 (KubeShield) 및 워게임 연계**:
+> - **인터랙티브 실습 랩 10**: [`labs/10_k8s_security_lab/`](../labs/10_k8s_security_lab/) — ServiceAccount 토큰 탈취, RBAC 과다 권한 남용, hostPath 루트 탈출, privileged 컨테이너 기반 노드 장악 4단계 웹 콘솔 및 API 실습 (`python3 vhack.py lab start 10`, 웹 콘솔 & K8s API: `http://localhost:8090`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `cloud` 트랙 (35개 문제)에서 K8s 시크릿 디코딩, Pod 보안 표준(PSS), 클러스터 권한 상승 문제를 직접 실습할 수 있습니다.
+
 ## 개요
 
 이 랩은 실제 쿠버네티스 공격 시나리오를 시뮬레이션하는 CTF(Capture The Flag) 실습입니다. 4개의 챌린지를 순서대로 풀면서 쿠버네티스 보안 취약점을 체험합니다. 각 챌린지는 플래그를 획득하는 방식으로 진행됩니다.

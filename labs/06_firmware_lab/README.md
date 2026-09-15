@@ -1,5 +1,10 @@
 # 펌웨어 해킹 랩 (06_firmware_lab)
 
+> 💡 **교재 및 워게임 연계 안내**:
+> - **연계 교재**: [61장 펌웨어 해킹 (Firmware Hacking)](../../61_Firmware_Hacking/06_firmware_ctf_lab.md)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`) `hardware` 트랙 (35개 문제)
+> - **CLI 간편 실행**: `python3 vhack.py lab start 06` (웹 패널: `http://localhost:8062`, 분석 쉘: `docker exec -it firmware_analyzer bash`)
+
 이 랩은 임베디드 장치 펌웨어 추출, QEMU 에뮬레이션, 바이너리 분석을 실습하기 위한 환경입니다.
 binwalk 기반 정적 분석부터 QEMU ARM 에뮬레이션을 통한 서비스 구동, 하드코딩 자격증명 발견 CTF까지 단계별로 진행합니다.
 섹션 61 (펌웨어/IoT 보안) 과 연동됩니다.

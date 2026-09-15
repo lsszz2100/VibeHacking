@@ -6,6 +6,10 @@
 
 # 컨테이너 & 쿠버네티스 보안 CTF 실습 랩
 
+> 💡 **바이브해킹 실습 랩 (KubeShield) 및 워게임 연계**:
+> - **인터랙티브 실습 랩 10**: [`labs/10_k8s_security_lab/`](../labs/10_k8s_security_lab/) — ServiceAccount 토큰 탈취, 과다 RBAC 권한 남용, hostPath 루트 탈출, privileged 컨테이너 기반 호스트 장악 4단계 실습 랩 (`python3 vhack.py lab start 10`, 웹 콘솔 & K8s API: `http://localhost:8090`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `cloud` 트랙 (35개 문제)에서 K8s 시크릿 디코딩, Pod 보안 정책, 클러스터 권한 상승 문제를 직접 실습할 수 있습니다.
+
 ## 실습 환경 준비
 
 ### Docker Compose 환경

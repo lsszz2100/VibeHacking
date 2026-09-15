@@ -6,6 +6,10 @@
 
 # 모바일 해킹 CTF 실습 랩
 
+> 💡 **바이브해킹 실습 랩 및 워게임 연계**:
+> - **인터랙티브 실습 랩 07**: [`labs/07_mobile_lab/`](../labs/07_mobile_lab/) — APK 디컴파일 정적 분석, 하드코딩 API 키 추출, JWT alg:none 인증 우회, Frida 런타임 후킹 실습 랩 (`python3 vhack.py lab start 07`, 취약 API 서버: `http://localhost:8072`, 분석 쉘: `docker exec -it apk_analyzer bash`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `mobile` 트랙 (35개 문제)에서 AndroidManifest.xml 오설정, exported 컴포넌트 남용, 모바일 포렌식 문제를 직접 실습할 수 있습니다.
+
 ## 실습 환경 준비
 
 ### 필수 도구 설치

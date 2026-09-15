@@ -1,5 +1,10 @@
 # 네트워크 해킹 랩 (03_network_lab)
 
+> 💡 **교재 및 워게임 연계 안내**:
+> - **연계 교재**: [02장 네트워크 해킹 (Network Hacking)](../../02_Network_Hacking/06_network_ctf_lab.md)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`) `network` 트랙 (35개 문제)
+> - **CLI 간편 실행**: `python3 vhack.py lab start 03` (진입: `docker exec -it net_lab_attacker bash`)
+
 이 랩은 실제 기업 네트워크 환경을 시뮬레이션합니다.
 네트워크 스캔, 취약한 서비스 공격, 크리덴셜 브루트포스, DNS 정보 수집, 피벗까지
 실전 네트워크 침투 테스트 절차를 단계별로 실습합니다.

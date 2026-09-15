@@ -6,6 +6,10 @@
 
 # 클라우드 보안 CTF 실습 랩
 
+> 💡 **바이브해킹 실습 랩 및 워게임 연계**:
+> - **인터랙티브 실습 랩 04**: [`labs/04_cloud_container_lab/`](../labs/04_cloud_container_lab/) — AWS IMDSv1/v2 SSRF 자격증명 탈취, S3 버킷 공개 노출 및 변조, 컨테이너 탈출 실습 랩 (`python3 vhack.py lab start 04`, SSRF 웹: `http://localhost:8080`, K8s API: `http://localhost:8443`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `cloud` 트랙 (35개 문제)에서 IAM 정책 오설정, 메타데이터 토큰 탈취, S3 버킷 정책 분석을 직접 실습할 수 있습니다.
+
 ## 실습 환경 준비
 
 ### Docker Compose 환경

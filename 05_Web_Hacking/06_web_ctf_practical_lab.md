@@ -6,6 +6,10 @@
 
 # 웹 해킹 CTF 실습 랩 — SQL 인젝션·XSS·SSRF·SSTI 종합
 
+> 💡 **바이브해킹 실습 랩 및 워게임 연계**:
+> - **인터랙티브 실습 랩 01**: [`labs/01_web_hacking_lab/`](../labs/01_web_hacking_lab/) — DVWA, OWASP Juice Shop, WebGoat, 커스텀 SQLi 취약 웹앱 종합 번들 (`python3 vhack.py lab start 01`, 접속: DVWA `http://localhost:8080/dvwa/`, Juice Shop `http://localhost:3001`, WebGoat `http://localhost:8081/WebGoat`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `web` 트랙 (35개 문제)에서 SQLi, XSS 필터 우회, CSRF 토큰 탈취, JWT 위조, SSTI 템플릿 주입 문제를 직접 실습할 수 있습니다.
+
 ## 1. 실습 환경 설정
 
 ### 1.1 Docker 기반 취약 웹앱 구축

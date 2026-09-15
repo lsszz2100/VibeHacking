@@ -1,5 +1,10 @@
 # 🧪 Lab 09: ICS/SCADA & OT Security Lab (산업제어시스템/SCADA 실습 랩)
 
+> 💡 **교재 및 워게임 연계 안내**:
+> - **연계 교재**: [37장 ICS/SCADA (산업제어시스템)](../../37_ICS_SCADA/06_ics_ctf_lab.md), [63장 OT/ICS Advanced](../../63_OT_ICS_Advanced/06_ot_ics_ctf_lab.md)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`) `icsscada` 트랙 (35개 문제)
+> - **CLI 간편 실행**: `python3 vhack.py lab start 09` (HMI: `http://localhost:8089`, Modbus: `localhost:5020`)
+
 산업용 제어 시스템(ICS)과 운영 기술(OT) 환경을 모의하는 가상 PLC 및 HMI 감시 제어 대시보드 실습 환경입니다.  
 Purdue 모델 Level 1~2 영역의 Modbus/TCP(포트 5020) 제어 프로토콜을 분석하고, 비인가 코일 조작, 텔레메트리 센서 기만(False Data Injection), 안전 계장 시스템(SIS) 비상 트립 유발까지 4단계 실전 사이버 물리 공격을 실습합니다.
 

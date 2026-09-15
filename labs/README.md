@@ -26,26 +26,26 @@ docker-compose --version
 
 ---
 
-## 랩 목록
+## 랩 목록 및 교재·워게임 연계 매트릭스
 
-| # | 랩 이름 | 핵심 주제 | 난이도 |
-|---|---------|-----------|--------|
-| 01 | [웹 해킹 랩](./01_web_hacking_lab/) | SQLi, XSS, CSRF, IDOR, 인증 우회 | ★★☆ |
-| 02 | [바이너리 익스플로잇 랩](./02_pwn_lab/) | BOF, ret2libc, ROP, 포맷스트링, 힙 | ★★★ |
-| 03 | [네트워크 해킹 랩](./03_network_lab/) | 포트 스캔, 크리덴셜 공격, 피벗 | ★★☆ |
-| 04 | [클라우드/컨테이너 보안 랩](./04_cloud_container_lab/) | K8s, IMDS, 컨테이너 탈출 | ★★★ |
-| 05 | [전체 시나리오 통합 랩](./05_full_scenario_lab/) | APT 체인, 내부망 침투, 데이터 탈취 | ★★★★ |
-| 06 | [펌웨어 해킹 랩](./06_firmware_lab/) | binwalk, QEMU 에뮬레이션, 하드코딩 자격증명 | ★★★ |
-| 07 | [모바일 보안 랩](./07_mobile_lab/) | APK 분석, JWT alg:none, 하드코딩 API 키 | ★★★ |
-| 08 | [AI/LLM 보안 랩](./08_llm_security_lab/) | 프롬프트 인젝션, RAG 간접 주입, 에이전트 도구 남용, 시스템 프롬프트 탈취 | ★★★ |
-| 09 | [ICS/SCADA 제어 보안 랩](./09_ics_scada_lab/) | Modbus/TCP 제어, 비인가 코일 조작, 텔레메트리 기만(FDI), SIS 비상 트립 | ★★★ |
-| 10 | [Kubernetes & 컨테이너 보안 랩](./10_k8s_security_lab/) | SA 토큰 탈취, RBAC 과다 권한 남용, hostPath 탈출, privileged 컨테이너 장악 | ★★★ |
-| 11 | [Active Directory & Kerberos 침투 랩](./11_ad_kerberos_lab/) | AS-REP Roasting, Kerberoasting, DCSync, Golden Ticket 도메인 장악 | ★★★☆ |
-| 12 | [CI/CD & 공급망 보안 랩](./12_cicd_supply_chain_lab/) | Poisoned Pipeline(PPE), 의존성 혼동(Dependency Confusion), 러너 시크릿 탈취, 릴리스 백도어 & SLSA 변조 | ★★★☆ |
+| # | 랩 이름 | 핵심 주제 | 난이도 | 연계 교재 챕터 | 연계 워게임 트랙 |
+|---|---------|-----------|--------|----------------|------------------|
+| 01 | [웹 해킹 랩](./01_web_hacking_lab/) | SQLi, XSS, CSRF, IDOR, 인증 우회 | ★★☆ | [05장 웹 해킹](../05_Web_Hacking/06_web_ctf_practical_lab.md) | `web` |
+| 02 | [바이너리 익스플로잇 랩](./02_pwn_lab/) | BOF, ret2libc, ROP, 포맷스트링, 힙 | ★★★ | [03장 시스템 해킹](../03_System_Hacking/06_system_ctf_lab.md) | `pwn` |
+| 03 | [네트워크 해킹 랩](./03_network_lab/) | 포트 스캔, 크리덴셜 공격, 피벗 | ★★☆ | [02장 네트워크 해킹](../02_Network_Hacking/06_network_ctf_lab.md) | `network` |
+| 04 | [클라우드/컨테이너 보안 랩](./04_cloud_container_lab/) | K8s, IMDS, 컨테이너 탈출 | ★★★ | [14장 클라우드 보안](../14_Cloud_Security/06_cloud_security_ctf_lab.md) | `cloud` |
+| 05 | [전체 시나리오 통합 랩](./05_full_scenario_lab/) | APT 체인, 내부망 침투, 데이터 탈취 | ★★★★ | [10장 침투 테스트](../10_Pentest_Methodology/06_pentest_ctf_lab.md) | `redteam` / `purpleteam` |
+| 06 | [펌웨어 해킹 랩](./06_firmware_lab/) | binwalk, QEMU 에뮬레이션, 하드코딩 자격증명 | ★★★ | [61장 펌웨어 해킹](../61_Firmware_Hacking/06_firmware_ctf_lab.md) | `hardware` |
+| 07 | [모바일 보안 랩](./07_mobile_lab/) | APK 분석, JWT alg:none, 하드코딩 API 키 | ★★★ | [28장 모바일 해킹](../28_Mobile_Hacking/06_mobile_ctf_lab.md) | `mobile` |
+| 08 | [AI/LLM 보안 랩](./08_llm_security_lab/) | 프롬프트 인젝션, RAG 간접 주입, 에이전트 도구 남용, 시스템 프롬프트 탈취 | ★★★ | [11장 AI 보안](../11_AI_Powered_Security/06_ai_security_ctf_lab.md), [69장 LLM 보안](../69_LLM_Security/06_llm_security_ctf_lab.md) | `ai` |
+| 09 | [ICS/SCADA 제어 보안 랩](./09_ics_scada_lab/) | Modbus/TCP 제어, 비인가 코일 조작, 텔레메트리 기만(FDI), SIS 비상 트립 | ★★★ | [37장 ICS/SCADA](../37_ICS_SCADA/06_ics_ctf_lab.md) | `icsscada` |
+| 10 | [Kubernetes & 컨테이너 보안 랩](./10_k8s_security_lab/) | SA 토큰 탈취, RBAC 과다 권한 남용, hostPath 탈출, privileged 컨테이너 장악 | ★★★ | [29장 컨테이너](../29_Container_Kubernetes_Security/06_container_ctf_lab.md), [70장 쿠버네티스](../70_Kubernetes_Security/06_k8s_security_ctf_lab.md) | `cloud` |
+| 11 | [Active Directory & Kerberos 침투 랩](./11_ad_kerberos_lab/) | AS-REP Roasting, Kerberoasting, DCSync, Golden Ticket 도메인 장악 | ★★★☆ | [54장 Active Directory](../54_Active_Directory_Attacks/06_ad_ctf_lab.md) | `activedirectory` |
+| 12 | [CI/CD & 공급망 보안 랩](./12_cicd_supply_chain_lab/) | Poisoned Pipeline(PPE), 의존성 혼동(Dependency Confusion), 러너 시크릿 탈취, 릴리스 백도어 & SLSA 변조 | ★★★☆ | [18장 DevSecOps](../18_DevSecOps/06_devsecops_ctf_lab.md), [35장 공급망 공격](../35_Supply_Chain_Attacks/06_supply_chain_ctf_lab.md) | `supplychain` |
 
 ---
 
-## 각 랩 학습 목표
+## 각 랩 학습 목표 및 핸즈온 가이드
 
 ### 01. 웹 해킹 랩
 - OWASP Top 10 취약점을 직접 실습
@@ -53,6 +53,9 @@ docker-compose --version
 - XSS(Reflected, Stored, DOM)의 원리와 방어책 이해
 - Burp Suite를 활용한 웹 트래픽 분석 및 조작
 - DVWA, Juice Shop, WebGoat 등 검증된 취약 환경 활용
+- **교재 챕터 연계**: [05장 웹 해킹 CTF 실습 랩](../05_Web_Hacking/06_web_ctf_practical_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `web` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 01` (접속: `http://localhost:8080/dvwa/`, `http://localhost:3001`)
 
 ### 02. 바이너리 익스플로잇 랩
 - x86/x64 스택 구조 및 스택 오버플로우 원리 이해
@@ -60,36 +63,54 @@ docker-compose --version
 - ret2libc 및 ROP 가젯 체이닝 기법 습득
 - 포맷 스트링 취약점을 활용한 메모리 읽기/쓰기
 - tcache poisoning을 통한 힙 익스플로잇
+- **교재 챕터 연계**: [03장 시스템 해킹 CTF 실습 랩](../03_System_Hacking/06_system_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `pwn` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 02` (접속: `nc localhost 10001~10005`)
 
 ### 03. 네트워크 해킹 랩
 - nmap을 이용한 네트워크 스캔 및 서비스 핑거프린팅
 - 취약한 서비스(SSH, FTP, Telnet) 크리덴셜 공격
 - DNS zone transfer 취약점 및 SMTP 릴레이 남용
 - 피벗(pivoting)을 통한 내부 네트워크 접근
+- **교재 챕터 연계**: [02장 네트워크 해킹 CTF 실습 랩](../02_Network_Hacking/06_network_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `network` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 03` (진입: `docker exec -it net_lab_attacker bash`)
 
 ### 04. 클라우드/컨테이너 보안 랩
 - AWS IMDS(Instance Metadata Service) 취약점 실습
 - SSRF를 통한 클라우드 자격증명 탈취
 - Docker 컨테이너 권한 남용 및 탈출(escape) 기법
 - 취약한 컨테이너 레지스트리 악용
+- **교재 챕터 연계**: [14장 클라우드 보안 CTF 실습 랩](../14_Cloud_Security/06_cloud_security_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `cloud` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 04` (접속: `http://localhost:8080`, `http://localhost:8443`)
 
 ### 05. 전체 시나리오 통합 랩
 - APT(Advanced Persistent Threat) 공격 체인 시뮬레이션
 - 외부 웹 → SSRF → 내부망 이동 → 데이터베이스 침투
 - LDAP 열거 및 SMB/FTP 파일 서버 접근
 - 전체 침투 테스트 보고서 작성 실습
+- **교재 챕터 연계**: [10장 침투 테스트 방법론 CTF 실습 랩](../10_Pentest_Methodology/06_pentest_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `redteam` 및 `purpleteam` 트랙
+- **빠른 실행**: `python3 vhack.py lab start 05` (접속: `http://localhost:8888`)
 
 ### 06. 펌웨어 해킹 랩
 - binwalk를 이용한 펌웨어 구조 분석 및 파일시스템 자동 추출
 - QEMU user-mode로 ARM/MIPS 임베디드 바이너리 에뮬레이션
 - squashfs, LZMA 등 다양한 압축 포맷 해제 실습
 - 펌웨어 바이너리 내 하드코딩 자격증명 탐색 및 CTF 플래그 획득
+- **교재 챕터 연계**: [61장 펌웨어 해킹 CTF 실습 랩](../61_Firmware_Hacking/06_firmware_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `hardware` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 06` (접속: `http://localhost:8062`, 분석 쉘: `docker exec -it firmware_analyzer bash`)
 
 ### 07. 모바일 보안 랩
 - jadx·apktool을 활용한 Android APK 정적 역컴파일 및 소스 탐색
 - 하드코딩된 API 키 추출 및 취약한 백엔드 API 인증 우회
 - JWT alg:none 취약점을 이용한 권한 상승 공격
 - Frida·objection을 통한 런타임 동적 분석 기초
+- **교재 챕터 연계**: [28장 모바일 해킹 CTF 실습 랩](../28_Mobile_Hacking/06_mobile_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `mobile` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 07` (접속: `http://localhost:8072`, 분석 쉘: `docker exec -it apk_analyzer bash`)
 
 ### 08. AI/LLM 보안 랩
 - OWASP Top 10 for LLM 기반 실전 취약점 공격 및 방어 실습
@@ -97,6 +118,9 @@ docker-compose --version
 - 비위생적 마크다운 출력 렌더링을 통한 XSS 공격
 - RAG(검색 증강 생성) 지식 베이스 문서를 통한 간접 프롬프트 주입
 - 자율 AI 에이전트의 과도한 권한(Excessive Agency)과 위험 도구 남용 통제
+- **교재 챕터 연계**: [11장 AI 보안 CTF 실습 랩](../11_AI_Powered_Security/06_ai_security_ctf_lab.md), [69장 LLM 보안 CTF 실습 랩](../69_LLM_Security/06_llm_security_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `ai` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 08` (웹 콘솔: `http://localhost:8088`)
 
 ### 09. ICS/SCADA 제어 보안 랩
 - Purdue 참조 아키텍처 및 산업 필드버스 네트워크 분석
@@ -104,6 +128,9 @@ docker-compose --version
 - 비인가 코일 조작을 통한 물리적 냉각 펌프 무단 중단 공격
 - 센서 텔레메트리 기만(False Data Injection)을 통한 과압 은폐
 - 안전 계장 시스템(SIS) 비상 안전 트립 발동 및 심층 패킷 검사(DPI) 방어
+- **교재 챕터 연계**: [37장 ICS/SCADA CTF 실습 랩](../37_ICS_SCADA/06_ics_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `icsscada` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 09` (HMI 패널: `http://localhost:8089`, Modbus TCP: `localhost:5020`)
 
 ### 10. Kubernetes & 컨테이너 보안 랩
 - 클라우드 네이티브 아키텍처 및 K8s API 서버 인증 체계 이해
@@ -112,6 +139,9 @@ docker-compose --version
 - `hostPath` 볼륨 마운트 기반 악성 Pod 배포를 통한 노드 루트 탈출(Breakout)
 - `privileged: true` 및 `hostPID: true` 옵션을 악용한 호스트 네임스페이스(`nsenter`) 장악
 - Pod Security Standards (PSS) 및 CKS 기반 방어 대책 실무 적용
+- **교재 챕터 연계**: [29장 컨테이너 & 쿠버네티스 CTF 실습 랩](../29_Container_Kubernetes_Security/06_container_ctf_lab.md), [70장 쿠버네티스 CTF 실습 랩](../70_Kubernetes_Security/06_k8s_security_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `cloud` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 10` (웹 콘솔 & K8s API: `http://localhost:8090`)
 
 ### 11. Active Directory & Kerberos 침투 랩 (KeroShield)
 - 엔터프라이즈 윈도우 도메인(CORP.LOCAL) 및 Kerberos KDC 아키텍처 분석
@@ -120,6 +150,9 @@ docker-compose --version
 - 복제 권한(`DS-Replication-Get-Changes-All`)을 악용한 DCSync 공격 및 `krbtgt` 해시 탈취
 - 탈취한 `krbtgt` 키와 도메인 SID를 결합한 만능 Golden Ticket 위조 및 도메인 컨트롤러 장악
 - SIEM 보안 감사 이벤트(Event ID 4768, 4769, 4662, 4672) 탐지 및 gMSA·AES 강화 대책 실무 습득
+- **교재 챕터 연계**: [54장 Active Directory CTF 실습 랩](../54_Active_Directory_Attacks/06_ad_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `activedirectory` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 11` (웹 콘솔 & API: `http://localhost:8011`)
 
 ### 12. CI/CD & 소프트웨어 공급망 침투 랩 (PipePoison)
 - OctoCorp 엔터프라이즈 CI/CD 파이프라인 아키텍처 및 SDLC 공격면 분석
@@ -127,6 +160,10 @@ docker-compose --version
 - 비공개/공용 패키지 인덱스 간 버전 우선순위를 악용한 의존성 혼동(Dependency Confusion) 및 악성 인스톨 훅 실행
 - CI/CD 러너 메모리 및 환경변수 덤프를 통한 HashiCorp Vault 마스터 토큰 및 클라우드 시크릿 탈취
 - 빌드 산출물 무단 변조(SolarWinds 스타일) 및 SLSA Level 3 출처 증적 / Sigstore Cosign 무결성 서명 방어 대책 실무 적용
+- **교재 챕터 연계**: [18장 DevSecOps CTF 실습 랩](../18_DevSecOps/06_devsecops_ctf_lab.md), [35장 공급망 공격 CTF 실습 랩](../35_Supply_Chain_Attacks/06_supply_chain_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `supplychain` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 12` (웹 콘솔 & API: `http://localhost:8012`)
+
 
 ---
 

@@ -1,5 +1,10 @@
 # 모바일 보안 랩 (07_mobile_lab)
 
+> 💡 **교재 및 워게임 연계 안내**:
+> - **연계 교재**: [28장 모바일 해킹 (Mobile Hacking)](../../28_Mobile_Hacking/06_mobile_ctf_lab.md)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`) `mobile` 트랙 (35개 문제)
+> - **CLI 간편 실행**: `python3 vhack.py lab start 07` (API 서버: `http://localhost:8072`, 분석 쉘: `docker exec -it apk_analyzer bash`)
+
 이 랩은 Android APK 정적 분석, 취약한 모바일 백엔드 API 공격, Frida 동적 분석을 실습하기 위한 환경입니다.
 하드코딩 API 키 추출부터 JWT alg:none 우회 공격까지 실제 모바일 앱 취약점 패턴을 다룹니다.
 

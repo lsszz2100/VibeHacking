@@ -1,5 +1,10 @@
 # 전체 시나리오 통합 랩 (05_full_scenario_lab)
 
+> 💡 **교재 및 워게임 연계 안내**:
+> - **연계 교재**: [10장 침투 테스트 방법론 (Pentest)](../../10_Pentest_Methodology/06_pentest_ctf_lab.md), [17장 레드팀 오퍼레이션](../../17_Red_Team_Operations/06_red_team_ctf_lab.md)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`) `redteam` 및 `purpleteam` 트랙
+> - **CLI 간편 실행**: `python3 vhack.py lab start 05` (진입점: `http://localhost:8888`)
+
 이 랩은 실제 APT(Advanced Persistent Threat) 공격 체인을 시뮬레이션합니다.
 외부에서 DMZ 웹 앱 침투 → SSRF로 내부망 탐색 → DB 침투 → 데이터 탈취까지
 전체 침투 테스트 절차를 경험합니다.

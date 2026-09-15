@@ -6,6 +6,10 @@
 
 # 펌웨어 CTF 실습 랩
 
+> 💡 **바이브해킹 실습 랩 및 워게임 연계**:
+> - **인터랙티브 실습 랩 06**: [`labs/06_firmware_lab/`](../labs/06_firmware_lab/) — Binwalk 펌웨어 구조 분석, SquashFS 파일시스템 추출, QEMU ARM/MIPS 에뮬레이션, 하드코딩 자격증명 탐색 실습 랩 (`python3 vhack.py lab start 06`, 취약 웹 패널: `http://localhost:8062`, 분석 쉘: `docker exec -it firmware_analyzer bash`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `hardware` 트랙 (35개 문제)에서 펌웨어 헤더 시그니처, 부트로더(U-Boot) 분석, SPI 플래시 덤프 분석을 직접 실습할 수 있습니다.
+
 ## 랩 개요
 
 펌웨어 보안 취약점을 CTF 형식으로 학습한다. 펌웨어 이미지 분석, 숨겨진 자격증명 추출, 파일시스템 언패킹, 업데이트 서명 우회 등 실제 임베디드 기기 공격 기법을 실습한다.

@@ -14,7 +14,9 @@
 - **대상 클러스터**: `corp-k8s-cluster.local` (Kubernetes v1.28.3)
 - **웹 대시보드 및 웹 터미널**: `http://localhost:8090`
 - **K8s API 서버 엔드포인트**: `http://localhost:8090/api/v1/...`
-- **관련 워게임 트랙**: `cloudsec` (클라우드 & 컨테이너 보안)
+- **연계 교재**: [29장 컨테이너 & 쿠버네티스 보안](../../29_Container_Kubernetes_Security/06_container_ctf_lab.md), [70장 쿠버네티스 보안](../../70_Kubernetes_Security/06_k8s_security_ctf_lab.md)
+- **관련 워게임 트랙**: `cloud` (클라우드 & 컨테이너 보안, 35개 문제)
+- **CLI 간편 실행**: `python3 vhack.py lab start 10`
 - **난이도**: ★★★☆ (중상급)
 
 ---

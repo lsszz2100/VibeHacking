@@ -6,6 +6,10 @@
 
 # ICS/SCADA CTF 실습 랩
 
+> 💡 **바이브해킹 실습 랩 및 워게임 연계**:
+> - **인터랙티브 실습 랩 09**: [`labs/09_ics_scada_lab/`](../labs/09_ics_scada_lab/) — Modbus/TCP 프로토콜 조작(FC03/FC05/FC06), 비인가 코일 조작을 통한 펌프 중단, 센서 텔레메트리 기만(FDI), 안전 계장 시스템(SIS) 비상 트립 실습 랩 (`python3 vhack.py lab start 09`, HMI 웹 패널: `http://localhost:8089`, Modbus TCP: `localhost:5020`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `icsscada` 트랙 (35개 문제)에서 Modbus RTU CRC-16 계산, Purdue 모델 계층 분석, Stuxnet/Triton 공격 기법 문제를 직접 실습할 수 있습니다.
+
 ## 개요
 
 Modbus/DNP3 프로토콜 익스플로잇, SCADA HMI 공격, OT 포렌식을 실습하는 CTF 환경입니다.

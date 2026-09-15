@@ -6,6 +6,10 @@
 
 # CTF 스타일 네트워크 해킹 실습
 
+> 💡 **바이브해킹 실습 랩 및 워게임 연계**:
+> - **인터랙티브 실습 랩 03**: [`labs/03_network_lab/`](../labs/03_network_lab/) — Nmap 포트 정찰, 취약 서비스 자격증명 공격, DNS Zone Transfer, 듀얼 홈 호스트 기반 내부 피버팅(Pivoting) 실습 랩 (`python3 vhack.py lab start 03`, 진입: `docker exec -it net_lab_attacker bash`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `network` 트랙 (35개 문제)에서 패킷 헤더 파싱, 서브넷 계산, TCP 핸드셰이크, 프로토콜 기만 문제를 직접 실습할 수 있습니다.
+
 ## 실습 환경 준비
 
 ### Docker Compose 환경

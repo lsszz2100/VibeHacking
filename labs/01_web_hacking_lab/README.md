@@ -1,5 +1,10 @@
 # 웹 해킹 랩 (01_web_hacking_lab)
 
+> 💡 **교재 및 워게임 연계 안내**:
+> - **연계 교재**: [05장 웹 해킹 (Web Hacking)](../../05_Web_Hacking/06_web_ctf_practical_lab.md)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`) `web` 트랙 (35개 문제)
+> - **CLI 간편 실행**: `python3 vhack.py lab start 01` (종료: `python3 vhack.py lab stop 01`)
+
 이 랩은 OWASP Top 10 취약점을 포함한 다양한 웹 보안 취약점을 실습하기 위한 환경입니다.
 DVWA, OWASP Juice Shop, WebGoat, 커스텀 SQLi 타겟 앱을 Nginx 리버스 프록시 뒤에 구성합니다.
 

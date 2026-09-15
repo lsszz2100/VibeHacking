@@ -1,5 +1,10 @@
 # 클라우드/컨테이너 보안 랩 (04_cloud_container_lab)
 
+> 💡 **교재 및 워게임 연계 안내**:
+> - **연계 교재**: [14장 클라우드 보안 (Cloud Security)](../../14_Cloud_Security/06_cloud_security_ctf_lab.md)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`) `cloud` 트랙 (35개 문제)
+> - **CLI 간편 실행**: `python3 vhack.py lab start 04` (접속: `http://localhost:8080`, `http://localhost:8443`)
+
 이 랩은 클라우드 환경(AWS)과 컨테이너(Docker/Kubernetes)에서 발생하는
 보안 취약점을 실습합니다. SSRF, IMDS 자격증명 탈취, K8s API 인증 취약점,
 컨테이너 탈출 기법을 단계별로 학습합니다.

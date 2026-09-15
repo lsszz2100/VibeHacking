@@ -1,5 +1,10 @@
 # 🧪 Lab 08: AI & LLM Security Lab (AI/LLM 보안 실습 랩)
 
+> 💡 **교재 및 워게임 연계 안내**:
+> - **연계 교재**: [11장 AI 보안](../../11_AI_Powered_Security/06_ai_security_ctf_lab.md), [69장 LLM 보안](../../69_LLM_Security/06_llm_security_ctf_lab.md)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`) `ai` 트랙 (35개 문제)
+> - **CLI 간편 실행**: `python3 vhack.py lab start 08` (웹 콘솔: `http://localhost:8088`)
+
 OWASP Top 10 for LLM Applications 기반의 대형 언어 모델 및 자율 AI 에이전트 보안 취약점 실습 환경입니다.  
 시스템 프롬프트 탈취(Jailbreak), 마크다운 XSS 인젝션, RAG 간접 프롬프트 인젝션, 에이전트 도구 남용(Excessive Agency) 4단계 공격과 방어를 단계별로 실습합니다.
 

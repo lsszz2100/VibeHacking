@@ -9,7 +9,9 @@
 - **서비스 포트**: `8012` (웹 대시보드 및 CI/CD REST API)
 - **컨테이너 이름**: `cicd_supply_chain_lab`
 - **난이도**: ★★★☆
-- **관련 워게임 트랙**: `supplychain` (트랙 18), `cloud` (트랙 5), `devsecops` (트랙 24)
+- **연계 교재**: [18장 DevSecOps CTF 실습 랩](../../18_DevSecOps/06_devsecops_ctf_lab.md), [35장 공급망 공격 CTF 실습 랩](../../35_Supply_Chain_Attacks/06_supply_chain_ctf_lab.md)
+- **관련 워게임 트랙**: `supplychain` (35개 문제)
+- **CLI 간편 실행**: `python3 vhack.py lab start 12`
 
 ---
 
