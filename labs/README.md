@@ -39,6 +39,7 @@ docker-compose --version
 | 07 | [모바일 보안 랩](./07_mobile_lab/) | APK 분석, JWT alg:none, 하드코딩 API 키 | ★★★ |
 | 08 | [AI/LLM 보안 랩](./08_llm_security_lab/) | 프롬프트 인젝션, RAG 간접 주입, 에이전트 도구 남용, 시스템 프롬프트 탈취 | ★★★ |
 | 09 | [ICS/SCADA 제어 보안 랩](./09_ics_scada_lab/) | Modbus/TCP 제어, 비인가 코일 조작, 텔레메트리 기만(FDI), SIS 비상 트립 | ★★★ |
+| 10 | [Kubernetes & 컨테이너 보안 랩](./10_k8s_security_lab/) | SA 토큰 탈취, RBAC 과다 권한 남용, hostPath 탈출, privileged 컨테이너 장악 | ★★★ |
 
 ---
 
@@ -101,6 +102,14 @@ docker-compose --version
 - 비인가 코일 조작을 통한 물리적 냉각 펌프 무단 중단 공격
 - 센서 텔레메트리 기만(False Data Injection)을 통한 과압 은폐
 - 안전 계장 시스템(SIS) 비상 안전 트립 발동 및 심층 패킷 검사(DPI) 방어
+
+### 10. Kubernetes & 컨테이너 보안 랩
+- 클라우드 네이티브 아키텍처 및 K8s API 서버 인증 체계 이해
+- Pod 내부 마운트된 ServiceAccount 토큰 추출 및 정찰 기법
+- 과도하게 부여된 ClusterRole 및 RoleBinding을 통한 프로덕션 시크릿 덤프
+- `hostPath` 볼륨 마운트 기반 악성 Pod 배포를 통한 노드 루트 탈출(Breakout)
+- `privileged: true` 및 `hostPID: true` 옵션을 악용한 호스트 네임스페이스(`nsenter`) 장악
+- Pod Security Standards (PSS) 및 CKS 기반 방어 대책 실무 적용
 
 ---
 

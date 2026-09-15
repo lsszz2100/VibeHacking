@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KubeShield - Kubernetes & Container Security Lab</title>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --panel-bg: #111827;
+      --panel-border: #1f2937;
+      --accent-cyan: #38bdf8;
+      --accent-blue: #3b82f6;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-amber: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--panel-border);
+      margin-bottom: 24px;
+    }
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-title h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      letter-spacing: -0.5px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .badge-cyan { background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.4); }
+    .badge-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn {
+      background: var(--panel-bg);
+      color: var(--text-main);
+      border: 1px solid var(--panel-border);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+    .btn-danger {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* Status Grid */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .status-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .status-card .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .status-card .value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    /* Main Layout */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 1024px) {
+      .layout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Challenges Panel */
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .panel-header h2 {
+      font-size: 1.1rem;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .challenge-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .challenge-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 14px;
+      transition: border-color 0.2s;
+    }
+    .challenge-card.solved {
+      border-color: var(--accent-green);
+      background: rgba(16, 185, 129, 0.05);
+    }
+    .challenge-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .challenge-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+    .challenge-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .challenge-hint {
+      background: #0d1320;
+      border-left: 3px solid var(--accent-amber);
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      margin-bottom: 10px;
+      color: #fbbf24;
+      word-break: break-all;
+    }
+    .flag-input-group {
+      display: flex;
+      gap: 8px;
+    }
+    .flag-input {
+      flex: 1;
+      background: #090d16;
+      border: 1px solid var(--panel-border);
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+    .flag-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+    }
+    .btn-submit {
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .btn-submit:hover {
+      background: #2563eb;
+    }
+
+    /* Terminal */
+    .terminal-container {
+      display: flex;
+      flex-direction: column;
+      height: 580px;
+      background: #090d16;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .terminal-header {
+      background: #111827;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .terminal-title {
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .terminal-controls {
+      display: flex;
+      gap: 6px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 12px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .btn-chip {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+    }
+    .btn-chip:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    .terminal-body {
+      flex: 1;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #e5e7eb;
+    }
+    .terminal-prompt {
+      color: #10b981;
+    }
+    .terminal-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: #111827;
+      border-top: 1px solid var(--panel-border);
+    }
+    .prompt-label {
+      color: #10b981;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+    .terminal-input:focus {
+      outline: none;
+    }
+
+    /* Architecture / Defense Guide Section */
+    .guide-section {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .guide-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 14px;
+    }
+    .guide-card h3 {
+      font-size: 0.95rem;
+      color: var(--accent-cyan);
+      margin-bottom: 8px;
+    }
+    .guide-card p, .guide-card ul {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .guide-card ul {
+      margin-left: 18px;
+      margin-top: 6px;
+    }
+    .guide-card li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-title">
+        <h1>⎈ KubeShield</h1>
+        <span class="badge badge-cyan">Kubernetes v1.28.3</span>
+        <span class="badge badge-green" id="cluster-status-badge">Cluster Online</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn" onclick="fetchStatus()">Refresh</button>
+        <button class="btn btn-danger" onclick="resetCluster()">Reset Lab</button>
+      </div>
+    </div>
+
+    <!-- Cluster Status Cards -->
+    <div class="status-grid">
+      <div class="status-card">
+        <div class="label">Target Cluster</div>
+        <div class="value" style="color: var(--accent-cyan); font-size: 1rem;">corp-k8s-cluster.local</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Active Nodes</div>
+        <div class="value">3 <span style="font-size:0.8rem; color:var(--text-muted);">(1 Master, 2 Workers)</span></div>
+      </div>
+      <div class="status-card">
+        <div class="label">Initial Access Pod</div>
+        <div class="value" style="color: var(--accent-amber); font-size: 0.95rem;">prometheus-node-exporter</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Cluster Threat Level</div>
+        <div class="value" id="threat-level" style="color: var(--accent-green);">NORMAL</div>
+      </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="layout-grid">
+      <!-- Left: Challenges -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>🎯 CTF Challenges (4 Stages)</h2>
+          <span id="progress-text" class="badge badge-cyan">0 / 4 Solved</span>
+        </div>
+        <div class="challenge-list" id="challenge-list">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <!-- Right: Web Terminal -->
+      <div class="terminal-container">
+        <div class="terminal-header">
+          <div class="terminal-title">Container Shell: monitoring/prometheus-node-exporter-49xdf</div>
+          <div class="terminal-controls">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <button class="btn-chip" onclick="runChipCmd('cat /var/run/secrets/kubernetes.io/serviceaccount/token')">🔑 Read SA Token</button>
+          <button class="btn-chip" onclick="runChipCmd('kubectl get pods -A')">📦 List All Pods</button>
+          <button class="btn-chip" onclick="runChipCmd('kubectl get clusterrolebindings')">📜 List RBAC Roles</button>
+          <button class="btn-chip" onclick="runChipCmd('kubectl get secrets -n production')">🔓 Dump Prod Secrets</button>
+          <button class="btn-chip" onclick="runChipCmd('kubectl apply -f evil-pod.yaml')">🚀 Deploy Escape Pod</button>
+          <button class="btn-chip" onclick="runChipCmd('kubectl exec -it escape-exploit-pod -- nsenter')">⚡ Host Breakout</button>
+        </div>
+
+        <div class="terminal-body" id="term-body">Welcome to KubeShield Interactive Terminal.
+Type 'help', 'kubectl get pods -A', or check the ServiceAccount token path.
+Type 'clear' to clear console output.
+</div>
+
+        <div class="terminal-input-row">
+          <span class="prompt-label">root@node-exporter:/app#</span>
+          <input type="text" id="term-input" class="terminal-input" placeholder="Type command..." autocomplete="off" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Defense & Architecture Section -->
+    <div class="guide-section">
+      <div class="panel-header">
+        <h2>🛡️ Kubernetes Security & Defense Hardening (CKS Guide)</h2>
+      </div>
+      <div class="guide-grid">
+        <div class="guide-card">
+          <h3>1. RBAC Least Privilege</h3>
+          <p>ServiceAccount에 <code>cluster-admin</code> 또는 광범위한 리소스(Secrets, Pods) 권한을 부여하지 마십시오.</p>
+          <ul>
+            <li><code>RoleBinding</code>은 네임스페이스 격리 원칙 준수</li>
+            <li>Secrets에 대한 <code>get</code>, <code>list</code> 권한 엄격 통제</li>
+            <li>정기적인 RBAC 감사: <code>kubectl-who-can</code> 활용</li>
+          </ul>
+        </div>
+        <div class="guide-card">
+          <h3>2. Pod Security Standards (PSS)</h3>
+          <p>위험한 볼륨 마운트 및 호스트 권한 탈취를 네임스페이스 레벨에서 원천 차단하십시오.</p>
+          <ul>
+            <li><code>pod-security.kubernetes.io/enforce: restricted</code> 적용</li>
+            <li><code>hostPath</code> 볼륨 사용 전면 금지</li>
+            <li><code>privileged: true</code> 및 <code>CAP_SYS_ADMIN</code> 차단</li>
+          </ul>
+        </div>
+        <div class="guide-card">
+          <h3>3. ServiceAccount Token Protection</h3>
+          <p>토큰 자동 마운트를 비활성화하고 Bound Service Account Token을 적용하십시오.</p>
+          <ul>
+            <li><code>automountServiceAccountToken: false</code> 명시</li>
+            <li>단기 수명 토큰(Projected Token) 기본 강제</li>
+            <li>네트워크 정책(NetworkPolicy)으로 API 서버 접근 제한</li>
+          </ul>
+        </div>
+        <div class="guide-card">
+          <h3>4. Node & Runtime Security</h3>
+          <p>Falco 및 eBPF 기반 실시간 런타임 위협 탐지를 배포하십시오.</p>
+          <ul>
+            <li>Falco 규칙으로 컨테이너 내 <code>nsenter</code> 실행 실시간 차단</li>
+            <li>Kubelet <code>--anonymous-auth=false</code> 적용</li>
+            <li>읽기 전용 루트 파일시스템 (<code>readOnlyRootFilesystem: true</code>) 강제</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let cmdHistory = [];
+    let historyIdx = -1;
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/challenges');
+        const data = await res.json();
+        renderChallenges(data.challenges);
+
+        const status = data.cluster_status;
+        const threatElem = document.getElementById('threat-level');
+        const statusBadge = document.getElementById('cluster-status-badge');
+
+        if (status.cluster_takeover) {
+          threatElem.innerText = 'CRITICAL (CLUSTER COMPROMISED)';
+          threatElem.style.color = 'var(--accent-red)';
+          statusBadge.className = 'badge badge-red';
+          statusBadge.innerText = 'Compromised';
+        } else if (status.hostpath_escaped) {
+          threatElem.innerText = 'HIGH (HOST ESCAPED)';
+          threatElem.style.color = 'var(--accent-amber)';
+        } else {
+          threatElem.innerText = 'NORMAL';
+          threatElem.style.color = 'var(--accent-green)';
+          statusBadge.className = 'badge badge-green';
+          statusBadge.innerText = 'Cluster Online';
+        }
+      } catch (e) {
+        console.error("Failed to load status:", e);
+      }
+    }
+
+    function renderChallenges(challenges) {
+      const container = document.getElementById('challenge-list');
+      container.innerHTML = '';
+      let solvedCount = 0;
+
+      challenges.forEach(ch => {
+        if (ch.solved) solvedCount++;
+        const card = document.createElement('div');
+        card.className = `challenge-card ${ch.solved ? 'solved' : ''}`;
+
+        card.innerHTML = `
+          <div class="challenge-header">
+            <span class="challenge-title">${ch.title}</span>
+            <span class="badge ${ch.solved ? 'badge-green' : 'badge-cyan'}">${ch.solved ? 'SOLVED' : 'UNSOLVED'}</span>
+          </div>
+          <div class="challenge-desc">${ch.desc}</div>
+          <div class="challenge-hint">💡 <b>힌트:</b> ${ch.hint}</div>
+          <div class="flag-input-group">
+            <input type="text" class="flag-input" id="flag-input-${ch.id}" placeholder="FLAG{...}" value="${ch.flag || ''}" ${ch.solved ? 'readonly' : ''} />
+            <button class="btn-submit" onclick="submitFlag('${ch.id}')">${ch.solved ? 'Checked' : 'Submit'}</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('progress-text').innerText = `${solvedCount} / ${challenges.length} Solved`;
+      if (solvedCount === challenges.length) {
+        document.getElementById('progress-text').className = 'badge badge-green';
+      }
+    }
+
+    async function submitFlag(chId) {
+      const input = document.getElementById(`flag-input-${chId}`);
+      const val = input.value.trim();
+      if (!val) return;
+
+      const res = await fetch('/api/verify_flag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flag: val })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("🎉 정답입니다! " + data.message);
+        fetchStatus();
+      } else {
+        alert("❌ 틀렸습니다: " + data.message);
+      }
+    }
+
+    async function resetCluster() {
+      if (!confirm("클러스터 환경을 초기 상태로 리셋하시겠습니까?")) return;
+      await fetch('/api/reset', { method: 'POST' });
+      const termBody = document.getElementById('term-body');
+      termBody.innerText += "\n[!] Cluster reset complete. Initial state restored.\n";
+      fetchStatus();
+    }
+
+    const termInput = document.getElementById('term-input');
+    const termBody = document.getElementById('term-body');
+
+    function runChipCmd(cmd) {
+      termInput.value = cmd;
+      handleCommand(cmd);
+    }
+
+    async function handleCommand(cmd) {
+      cmd = cmd.trim();
+      if (!cmd) return;
+
+      termBody.innerText += `\nroot@node-exporter:/app# ${cmd}\n`;
+      cmdHistory.push(cmd);
+      historyIdx = cmdHistory.length;
+
+      if (cmd === 'clear') {
+        termBody.innerText = '';
+        termInput.value = '';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/terminal/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: cmd })
+        });
+        const data = await res.json();
+        if (data.output) {
+          termBody.innerText += `${data.output}\n`;
+        }
+      } catch (e) {
+        termBody.innerText += `Error: ${e.message}\n`;
+      }
+
+      termBody.scrollTop = termBody.scrollHeight;
+      termInput.value = '';
+      fetchStatus();
+    }
+
+    termInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        handleCommand(termInput.value);
+      } else if (e.key === 'ArrowUp') {
+        if (historyIdx > 0) {
+          historyIdx--;
+          termInput.value = cmdHistory[historyIdx];
+        }
+      } else if (e.key === 'ArrowDown') {
+        if (historyIdx < cmdHistory.length - 1) {
+          historyIdx++;
+          termInput.value = cmdHistory[historyIdx];
+        } else {
+          historyIdx = cmdHistory.length;
+          termInput.value = '';
+        }
+      }
+    });
+
+    // Initial load
+    fetchStatus();
+  </script>
+</body>
+</html>

@@ -219,6 +219,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★",
         "related": [37, 63],
     },
+    "10": {
+        "name": "Kubernetes & 컨테이너 보안 랩",
+        "dir":  "10_k8s_security_lab",
+        "desc": "K8s ServiceAccount 토큰 탈취 · RBAC 과다 권한 남용 · hostPath 루트 마운트 탈출 · privileged 컨테이너 장악",
+        "url":  "웹 콘솔 & API: http://localhost:8090",
+        "difficulty": "★★★",
+        "related": [14, 29, 38],
+    },
 }
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────

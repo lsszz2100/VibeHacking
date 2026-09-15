@@ -1,0 +1,10 @@
+services:
+  k8s_security_lab:
+    build: .
+    container_name: k8s_security_lab
+    ports:
+      - "8090:8090"
+    restart: unless-stopped
+    labels:
+      - "lab=10"
+      - "group=k8s_security"
