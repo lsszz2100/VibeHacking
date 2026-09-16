@@ -42,6 +42,7 @@ docker-compose --version
 | 10 | [Kubernetes & 컨테이너 보안 랩](./10_k8s_security_lab/) | SA 토큰 탈취, RBAC 과다 권한 남용, hostPath 탈출, privileged 컨테이너 장악 | ★★★ | [29장 컨테이너](../29_Container_Kubernetes_Security/06_container_ctf_lab.md), [70장 쿠버네티스](../70_Kubernetes_Security/06_k8s_security_ctf_lab.md) | `cloud` |
 | 11 | [Active Directory & Kerberos 침투 랩](./11_ad_kerberos_lab/) | AS-REP Roasting, Kerberoasting, DCSync, Golden Ticket 도메인 장악 | ★★★☆ | [54장 Active Directory](../54_Active_Directory_Attacks/06_ad_ctf_lab.md) | `activedirectory` |
 | 12 | [CI/CD & 공급망 보안 랩](./12_cicd_supply_chain_lab/) | Poisoned Pipeline(PPE), 의존성 혼동(Dependency Confusion), 러너 시크릿 탈취, 릴리스 백도어 & SLSA 변조 | ★★★☆ | [18장 DevSecOps](../18_DevSecOps/06_devsecops_ctf_lab.md), [35장 공급망 공격](../35_Supply_Chain_Attacks/06_supply_chain_ctf_lab.md) | `supplychain` |
+| 13 | [eBPF 커널 보안 랩](./13_ebpf_kernel_lab/) | Kprobe 시스템콜 도청, bpf_probe_write_user 메모리 변조 권한상승, XDP 은닉 통신, BPF LSM 무결성 방어 | ★★★★ | [01장 리눅스 기초](../01_Linux_Basics/06_linux_ctf_practical_lab.md), [26장 리눅스 하드닝](../26_Linux_Hardening/README.md), [70장 쿠버네티스](../70_Kubernetes_Security/06_k8s_security_ctf_lab.md) | `ebpf` |
 
 ---
 
@@ -163,6 +164,16 @@ docker-compose --version
 - **교재 챕터 연계**: [18장 DevSecOps CTF 실습 랩](../18_DevSecOps/06_devsecops_ctf_lab.md), [35장 공급망 공격 CTF 실습 랩](../35_Supply_Chain_Attacks/06_supply_chain_ctf_lab.md)
 - **워게임 트랙**: 워게임 터미널(`wargame/`) `supplychain` 트랙 (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 12` (웹 콘솔 & API: `http://localhost:8012`)
+
+### 13. eBPF 커널 침투 및 런타임 보안 랩 (BPFGuard)
+- 리눅스 커널 eBPF 서브시스템 아키텍처 및 커널 공간 계측 메커니즘 분석
+- `sys_enter_execve` 시스템 콜 진입점에 Kprobe 후킹을 통한 비인가 자격증명 및 API 토큰 도청
+- `bpf_probe_write_user` 커널 헬퍼 악용을 통한 `/etc/sudoers` 유저 버퍼 메모리 변조 및 무패스워드 루트 권한 상승
+- 초고속 데이터 경로(XDP) 드라이버 후킹을 통한 스텔스 ICMP 은닉 채널(Covert Channel) 데이터 유출
+- BPF LSM(`bpf_lsm_bpf`) 무결성 서명 강제 검증, JIT 하드닝, unprivileged_bpf 차단 등 다층 방어 체계 실증
+- **교재 챕터 연계**: [01장 리눅스 기초 CTF 실습 랩](../01_Linux_Basics/06_linux_ctf_practical_lab.md), [26장 리눅스 하드닝](../26_Linux_Hardening/README.md), [70장 쿠버네티스 보안](../70_Kubernetes_Security/06_k8s_security_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `ebpf` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 13` (웹 콘솔 & API: `http://localhost:8013`)
 
 
 ---

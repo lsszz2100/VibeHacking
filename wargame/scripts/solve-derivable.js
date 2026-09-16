@@ -1140,6 +1140,22 @@ const SOLVERS = new Map([
     const checksum = (p * 1000) + delta + (i * 10);
     return `FLAG{WASM-${checksum}-EXPLOITED}`;
   } }],
+  ['t4_ebpfcapstone', { kind: 'computed', via: 'aggregate eBPF incident telemetry parameters into secured flag', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const m = parseInt(text.match(/TAMPERED_MAP_ENTRIES\s*=\s*(\d+)/)[1], 10);
+    const d = parseInt(text.match(/DROPPED_XDP_PACKETS\s*=\s*(\d+)/)[1], 10);
+    const h = parseInt(text.match(/BLOCKED_HOOK_ID\s*=\s*(\d+)/)[1], 10);
+    const checksum = (m * 2) + d + (h * 10);
+    return `FLAG{EBPF-${checksum}-SECURED}`;
+  } }],
+  ['t4_firmwarecapstone', { kind: 'computed', via: 'aggregate firmware reverse engineering parameters into extracted flag', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const o = parseInt(text.match(/SQUASHFS_START_OFFSET\s*=\s*(\d+)/)[1], 10);
+    const b = parseInt(text.match(/COMPRESSED_BLOCK_COUNT\s*=\s*(\d+)/)[1], 10);
+    const p = parseInt(text.match(/HARDCODED_BACKDOOR_PORT\s*=\s*(\d+)/)[1], 10);
+    const checksum = o + (b * 10) + (p * 1);
+    return `FLAG{FIRMWARE-${checksum}-EXTRACTED}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

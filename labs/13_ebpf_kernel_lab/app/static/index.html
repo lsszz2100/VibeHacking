@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BPFGuard // eBPF Kernel Penetration & Defense Lab</title>
+  <style>
+    :root {
+      --bg-base: #0a0d14;
+      --bg-card: #111726;
+      --bg-surface: #182238;
+      --border: #243452;
+      --accent: #00f0ff;
+      --accent-dim: rgba(0, 240, 255, 0.15);
+      --danger: #ff0055;
+      --danger-dim: rgba(255, 0, 85, 0.15);
+      --warning: #ffb800;
+      --success: #00ff88;
+      --success-dim: rgba(0, 255, 136, 0.15);
+      --text: #e2e8f0;
+      --text-muted: #8493a8;
+      --font-mono: 'Fira Code', 'Courier New', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header.navbar {
+      background: rgba(17, 23, 38, 0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand .icon { font-size: 1.5rem; }
+    .brand .title {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--accent);
+      font-size: 1.25rem;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+    }
+    .status-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    main {
+      flex: 1;
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .card-title {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stage-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .stage-title {
+      font-weight: 600;
+      color: #fff;
+    }
+    .stage-pill {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .stage-pill.solved {
+      background: var(--success-dim);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+    .stage-pill.unsolved {
+      background: var(--danger-dim);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .flag-box {
+      background: #000;
+      border: 1px dashed var(--success);
+      color: var(--success);
+      font-family: var(--font-mono);
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      word-break: break-all;
+    }
+
+    .btn {
+      background: var(--bg-surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-primary {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-danger {
+      background: var(--danger-dim);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .terminal-container {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      height: 280px;
+    }
+    .terminal-output {
+      flex: 1;
+      overflow-y: auto;
+      color: #38bdf8;
+      white-space: pre-wrap;
+      margin-bottom: 0.5rem;
+    }
+    .terminal-input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .terminal-prompt {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--font-mono);
+    }
+
+    .policy-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1rem;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="brand">
+      <span class="icon">🐝</span>
+      <span class="title">BPFGUARD</span>
+      <span style="font-size: 0.85rem; color: var(--text-muted);">// eBPF & Kernel Security Lab</span>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <span class="status-badge"><span class="dot"></span> PORT: 8013</span>
+      <button class="btn btn-danger" onclick="resetLab()">Reset Lab</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left Column: Attack Stages -->
+    <div class="card">
+      <div class="card-title">
+        <span>⚔️ 4-STAGE eBPF KILL CHAIN</span>
+        <span id="progress-text" style="font-size: 0.85rem; color: var(--accent);">0 / 4 SOLVED</span>
+      </div>
+
+      <!-- Stage 1 -->
+      <div class="stage-item" id="stage1-card">
+        <div class="stage-header">
+          <span class="stage-title">1. Kprobe Syscall Interception (execve)</span>
+          <span class="stage-pill unsolved" id="badge-stage1">UNSOLVED</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Attach a kprobe hook onto <code>sys_enter_execve</code> to sniff credentials and tokens during user command dispatch.
+        </p>
+        <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+          <button class="btn btn-primary" onclick="solveStage1()">Attach Kprobe (Sniff)</button>
+        </div>
+        <div class="flag-box" id="flag-stage1" style="display: none;"></div>
+      </div>
+
+      <!-- Stage 2 -->
+      <div class="stage-item" id="stage2-card">
+        <div class="stage-header">
+          <span class="stage-title">2. In-Memory Sudoers Mutation</span>
+          <span class="stage-pill unsolved" id="badge-stage2">UNSOLVED</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Invoke <code>bpf_probe_write_user</code> to mutate memory buffers on <code>/etc/sudoers</code> reads and escalate to root.
+        </p>
+        <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+          <button class="btn btn-primary" onclick="solveStage2()">Mutate Buffer (NOPASSWD)</button>
+        </div>
+        <div class="flag-box" id="flag-stage2" style="display: none;"></div>
+      </div>
+
+      <!-- Stage 3 -->
+      <div class="stage-item" id="stage3-card">
+        <div class="stage-header">
+          <span class="stage-title">3. XDP Covert ICMP Exfiltration</span>
+          <span class="stage-pill unsolved" id="badge-stage3">UNSOLVED</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Attach an XDP driver hook to inject stealth covert payloads into ICMP packets, bypassing standard host firewall rules.
+        </p>
+        <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+          <button class="btn btn-primary" onclick="solveStage3()">Inject XDP Tunnel</button>
+        </div>
+        <div class="flag-box" id="flag-stage3" style="display: none;"></div>
+      </div>
+
+      <!-- Stage 4 -->
+      <div class="stage-item" id="stage4-card">
+        <div class="stage-header">
+          <span class="stage-title">4. BPF LSM Kernel Hardening Defense</span>
+          <span class="stage-pill unsolved" id="badge-stage4">UNSOLVED</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Enable all 4 kernel defense policies on the right panel, then click below to verify that rootkit execution is blocked!
+        </p>
+        <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+          <button class="btn btn-primary" onclick="verifyStage4()">Verify LSM Defense</button>
+        </div>
+        <div class="flag-box" id="flag-stage4" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Right Column: Defense Policies & Shell -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <div class="card">
+        <div class="card-title">
+          <span>🛡️ KERNEL SECURITY CONTROLS & LSM</span>
+        </div>
+        <div class="policy-toggle">
+          <div>
+            <div style="font-weight: 600;">kernel.unprivileged_bpf_disabled</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Prevent unprivileged users from calling sys_bpf()</div>
+          </div>
+          <input type="checkbox" id="chk-unpriv" onchange="togglePolicy('unprivileged_bpf_disabled', this.checked)">
+        </div>
+        <div class="policy-toggle">
+          <div>
+            <div style="font-weight: 600;">net.core.bpf_jit_harden</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Constant blinding against JIT spraying attacks</div>
+          </div>
+          <input type="checkbox" id="chk-jitharden" onchange="togglePolicy('bpf_jit_harden', this.checked)">
+        </div>
+        <div class="policy-toggle">
+          <div>
+            <div style="font-weight: 600;">bpf_lsm_bpf Integrity Hook</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Require SHA256 digital signatures for loaded BPF bytecodes</div>
+          </div>
+          <input type="checkbox" id="chk-lsm" onchange="togglePolicy('bpf_lsm_enforced', this.checked)">
+        </div>
+        <div class="policy-toggle">
+          <div>
+            <div style="font-weight: 600;">Falco / Tetragon Runtime Audit</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Real-time kernel telemetry & suspicious probe alert daemon</div>
+          </div>
+          <input type="checkbox" id="chk-audit" onchange="togglePolicy('runtime_audit_enabled', this.checked)">
+        </div>
+      </div>
+
+      <div class="card" style="flex: 1;">
+        <div class="card-title">
+          <span>💻 HOST SIMULATOR TERMINAL</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">type 'help'</span>
+        </div>
+        <div class="terminal-container">
+          <div class="terminal-output" id="term-out">BPFGuard Linux Kernel 6.5.0-generic (x86_64)&#10;Type 'bpftool prog list', 'sudo -l', or 'help'.&#10;</div>
+          <div class="terminal-input-row">
+            <span class="terminal-prompt">lowpriv@bpf-guard:~$</span>
+            <input class="terminal-input" id="term-in" type="text" onkeydown="handleTerminalKey(event)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    BPFGuard eBPF Kernel Penetration Lab // Port 8013 // Vibe-Hacking Offensive & Defensive Framework
+  </footer>
+
+  <script>
+    async function fetchStatus() {
+      const res = await fetch('/api/ebpf/status');
+      const data = await res.json();
+      
+      const stages = data.stages_solved;
+      let count = 0;
+      for (const [st, solved] of Object.entries(stages)) {
+        const badge = document.getElementById(`badge-${st}`);
+        if (badge) {
+          if (solved) {
+            count++;
+            badge.className = 'stage-pill solved';
+            badge.innerText = 'SOLVED';
+          } else {
+            badge.className = 'stage-pill unsolved';
+            badge.innerText = 'UNSOLVED';
+          }
+        }
+      }
+      document.getElementById('progress-text').innerText = `${count} / 4 SOLVED`;
+
+      const pol = data.policies;
+      document.getElementById('chk-unpriv').checked = pol.unprivileged_bpf_disabled;
+      document.getElementById('chk-jitharden').checked = pol.bpf_jit_harden;
+      document.getElementById('chk-lsm').checked = pol.bpf_lsm_enforced;
+      document.getElementById('chk-audit').checked = pol.runtime_audit_enabled;
+    }
+
+    async function solveStage1() {
+      const res = await fetch('/api/ebpf/kprobe/attach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          symbol: 'sys_enter_execve',
+          target_syscall: 'sys_enter_execve',
+          run_as_user: 'attacker'
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFlag('stage1', data.flag);
+        appendTerminal(`[+] eBPF Kprobe attached: intercepted token ${data.sniffed_data.intercepted_args[1]}`);
+      } else {
+        alert(data.detail || data.message || 'Stage 1 failed');
+      }
+      fetchStatus();
+    }
+
+    async function solveStage2() {
+      const res = await fetch('/api/ebpf/mutate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_process: 'sudo',
+          target_file: '/etc/sudoers',
+          helper: 'bpf_probe_write_user',
+          replacement_content: 'lowpriv ALL=(ALL) NOPASSWD: ALL'
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFlag('stage2', data.flag);
+        appendTerminal('[+] bpf_probe_write_user: Sudoers read buffer mutated! Run "sudo whoami".');
+      } else {
+        alert(data.detail || data.message || 'Stage 2 failed');
+      }
+      fetchStatus();
+    }
+
+    async function solveStage3() {
+      const res = await fetch('/api/ebpf/xdp/load', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          interface: 'eth0',
+          action: 'covert_tunnel',
+          covert_payload: 'icmp_stealth_exfil'
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFlag('stage3', data.flag);
+        appendTerminal('[+] XDP Covert Driver hooked: ICMP tunnel active.');
+      } else {
+        alert(data.detail || data.message || 'Stage 3 failed');
+      }
+      fetchStatus();
+    }
+
+    async function verifyStage4() {
+      const res = await fetch('/api/ebpf/verify', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFlag('stage4', data.flag);
+        appendTerminal('[+] Stage 4 Verified: All BPF LSM & Sysctl policies verified.');
+      } else {
+        alert(data.message || 'Stage 4 incomplete. Check hardening policies.');
+      }
+      fetchStatus();
+    }
+
+    function showFlag(stage, flag) {
+      const el = document.getElementById(`flag-${stage}`);
+      if (el) {
+        el.innerText = flag;
+        el.style.display = 'block';
+      }
+    }
+
+    async function togglePolicy(policyName, value) {
+      const body = {};
+      body[policyName] = value;
+      await fetch('/api/ebpf/policies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      appendTerminal(`[*] Kernel policy '${policyName}' set to ${value}`);
+      fetchStatus();
+    }
+
+    async function resetLab() {
+      if (!confirm('Are you sure you want to reset the lab state?')) return;
+      await fetch('/api/reset', { method: 'POST' });
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById(`flag-stage${i}`);
+        if (el) el.style.display = 'none';
+      }
+      appendTerminal('[*] Lab reset to initial clean state.');
+      fetchStatus();
+    }
+
+    function appendTerminal(text) {
+      const out = document.getElementById('term-out');
+      out.innerText += text + '\n';
+      out.scrollTop = out.scrollHeight;
+    }
+
+    async function handleTerminalKey(e) {
+      if (e.key === 'Enter') {
+        const inp = document.getElementById('term-in');
+        const cmd = inp.value.trim();
+        inp.value = '';
+        if (!cmd) return;
+        appendTerminal(`lowpriv@bpf-guard:~$ ${cmd}`);
+        const res = await fetch('/api/terminal/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: cmd })
+        });
+        const data = await res.json();
+        if (data.output) {
+          appendTerminal(data.output);
+        }
+      }
+    }
+
+    window.onload = fetchStatus;
+  </script>
+</body>
+</html>

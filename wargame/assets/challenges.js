@@ -264,6 +264,24 @@ const TRACKS = [
     "desc_ko": "Wasm 바이트코드·선형 메모리 오버플로우·간접 호출 테이블 조작·샌드박스 보안.",
     "desc_en": "Wasm bytecode, linear memory overflows, indirect call table poisoning, and sandbox security."
   }
+  ,
+  {
+    "id": "ebpf",
+    "icon": "🐝",
+    "ko": "eBPF·커널 보안",
+    "en": "eBPF & Kernel Security",
+    "desc_ko": "eBPF 바이트코드·kprobe/tracepoint 후킹·XDP 패킷 필터링·eBPF 기반 루트킷 및 런타임 보안.",
+    "desc_en": "eBPF bytecode, kprobe/tracepoint hooking, XDP packet filtering, eBPF rootkits, and runtime security."
+  }
+  ,
+  {
+    "id": "firmware",
+    "icon": "💾",
+    "ko": "임베디드·펌웨어 보안",
+    "en": "Firmware & Embedded Security",
+    "desc_ko": "펌웨어 추출·SquashFS/UBIFS·U-Boot 부트로더·QEMU 에뮬레이션·하드웨어 인터페이스 보안.",
+    "desc_en": "Firmware extraction, SquashFS/UBIFS, U-Boot bootloader, QEMU emulation, and hardware interface security."
+  }
 ];
 
 const CHALLENGES = [
@@ -26765,5 +26783,1965 @@ const CHALLENGES = [
         "Calculate checksum and place it into the FLAG{WASM-<checksum>-EXPLOITED} template."
       ]
     }
-  }
+  },
+  {
+    "id": "t0_ebpfmagic",
+    "tier": 0,
+    "cat": "ebpfcore",
+    "track": "ebpf",
+    "points": 45,
+    "ci": true,
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "eBPF 소스코드 C 컴파일러 프론트엔드",
+      "en": "eBPF C Compiler Frontend"
+    },
+    "prompt": {
+      "ko": "eBPF C 코드를 BPF 타깃 기계어 바이트코드로 직접 컴파일하기 위해 사용하는 표준 LLVM C 컴파일러 도구 이름을 입력하세요.",
+      "en": "Enter the name of the standard LLVM C compiler tool used to compile eBPF programs directly into BPF target bytecode."
+    },
+    "hints": {
+      "ko": [
+        "LLVM 프로젝트의 C/C++ 컴파일러 도구 이름입니다.",
+        "소문자 5글자로 입력하세요."
+      ],
+      "en": [
+        "LLVM's premier C/C++ compiler tool.",
+        "Type in 5 lowercase characters."
+      ]
+    },
+    "hash": "ca802557296d271593c83ffa0e2caf2c010c2c89d3ef24ade7f867ec01cd1627"
+  },
+  {
+  "id": "t0_ebpfbpftool",
+  "tier": 0,
+  "cat": "ebpftool",
+  "track": "ebpf",
+  "points": 50,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "eBPF 표준 제어 CLI",
+    "en": "Standard eBPF Inspection CLI"
+  },
+  "prompt": {
+    "ko": "리눅스 커널에 적재된 eBPF 프로그램, 맵(map), 링크 및 BTF 정보를 조회하고 디버깅하는 공식 표준 CLI 유틸리티 이름을 입력하세요.",
+    "en": "Enter the official CLI utility name used to inspect and manipulate loaded eBPF programs, maps, links, and BTF information in Linux."
+  },
+  "hints": {
+    "ko": [
+      "bpf라는 접두어 뒤에 도구를 뜻하는 tool 단어가 붙습니다.",
+      "커널 소스 트리의 tools/bpf 디렉토리에서 제공됩니다."
+    ],
+    "en": [
+      "Prefix bpf followed by the English word tool.",
+      "Distributed under tools/bpf in the Linux kernel source tree."
+    ]
+  },
+  "hash": "6aa5767ae5e10bb68bfcc5a5f9cf839697c813b03dc5b9f390fb135af0353abe"
+},
+{
+  "id": "t0_ebpfsyscall",
+  "tier": 0,
+  "cat": "ebpfcore",
+  "track": "ebpf",
+  "points": 50,
+  "ci": true,
+  "fmt": "시스템 콜 / syscall",
+  "title": {
+    "ko": "eBPF 제어 시스템 콜",
+    "en": "eBPF Multiplexing Syscall"
+  },
+  "prompt": {
+    "ko": "eBPF 프로그램 로드, 맵 생성, BTF 적재 등 모든 eBPF 작업을 수행하기 위해 유저스페이스에서 호출하는 단일 다중화 시스템 콜 이름을 입력하세요.",
+    "en": "Enter the name of the multiplexed system call executed by user space to perform operations such as loading programs, creating maps, and updating BTF."
+  },
+  "hints": {
+    "ko": [
+      "서브시스템의 원조 이름인 세 글자입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Three letters identical to the original subsystem name.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "92ff6a66f4f66779ebddacbc8b449467070fa12527c73e2cc76e81756fe22b29"
+},
+{
+  "id": "t1_ebpfverifier",
+  "tier": 1,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 65,
+  "ci": true,
+  "fmt": "한 단어 / one word (-er로 끝남 / ends in -er)",
+  "title": {
+    "ko": "eBPF 커널 안전성 검증기",
+    "en": "Kernel In-Flight Bytecode Checker"
+  },
+  "prompt": {
+    "ko": "eBPF 바이트코드가 커널에 적재되기 전 유한 루프, 메모리 범위 초과, 유효하지 않은 포인터 역참조가 없음을 정적으로 증명하는 커널 컴포넌트의 영문 명칭을 입력하세요.",
+    "en": "Enter the English term for the kernel component that statically verifies bytecode termination, bounds checking, and pointer validity before execution."
+  },
+  "hints": {
+    "ko": [
+      "검증하다(verify)라는 동사에서 파생된 명사입니다.",
+      "소문자 8글자로 입력하세요."
+    ],
+    "en": [
+      "Derived from the verb verify.",
+      "Type 8 lowercase characters."
+    ]
+  },
+  "hash": "88c9eae68eb300b2971a2bec9e5a26ff4179fd661d6b7d861e4c6557b9aaee14"
+},
+{
+  "id": "t1_ebpfxdp",
+  "tier": 1,
+  "cat": "ebpfnet",
+  "track": "ebpf",
+  "points": 70,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "초고속 데이터 패킷 경로",
+    "en": "Express Data Path"
+  },
+  "prompt": {
+    "ko": "네트워크 드라이버 레벨에서 소켓 버퍼(sk_buff) 할당 전 최소 지연시간으로 패킷을 고속 처리/필터링하는 eBPF 데이터 경로 기술의 3글자 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the high-performance eBPF network path that processes incoming packets at the driver level prior to sk_buff allocation."
+  },
+  "hints": {
+    "ko": [
+      "Express Data Path의 머리글자입니다.",
+      "소문자 3글자로 입력하세요."
+    ],
+    "en": [
+      "Initials of Express Data Path.",
+      "Type 3 lowercase characters."
+    ]
+  },
+  "hash": "7a41e6578151efb063f872758978a60725ef6928ae4c2c02b9f9f44bef356d41"
+},
+{
+  "id": "t1_ebpfkprobe",
+  "tier": 1,
+  "cat": "ebpftrace",
+  "track": "ebpf",
+  "points": 70,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "커널 함수 동적 계측 프로브",
+    "en": "Dynamic Kernel Instrumentation Probe"
+  },
+  "prompt": {
+    "ko": "임의의 커널 함수 진입점에 브레이크포인트를 삽입하여 실행 인자와 시스템 콜을 추적하는 리눅스 동적 트레이싱 프로브의 이름을 입력하세요.",
+    "en": "Enter the name of the Linux dynamic tracing probe attached to arbitrary kernel function entry points to intercept parameters and execution."
+  },
+  "hints": {
+    "ko": [
+      "커널(kernel)의 k와 탐침(probe)의 합성어입니다.",
+      "반환점 프로브는 끝에 ret이 붙는 kretprobe입니다."
+    ],
+    "en": [
+      "Compound word formed from kernel (k) and probe.",
+      "Its return counterpart is named kretprobe."
+    ]
+  },
+  "hash": "64b699c1fa698d8cc6f5131c1b96f9017edc8633c72c04337d6aea27a2f4bf22"
+},
+{
+  "id": "t1_ebpfbtf",
+  "tier": 1,
+  "cat": "ebpfcore",
+  "track": "ebpf",
+  "points": 75,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "eBPF 타입 포맷",
+    "en": "BPF Type Format"
+  },
+  "prompt": {
+    "ko": "eBPF 프로그램과 커널 자료구조의 디버그 정보 및 필드 오프셋을 메타데이터로 압축 인코딩하여 CO-RE를 가능하게 하는 포맷의 3글자 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the metadata format encoding C type structures and offsets to enable Compile Once - Run Everywhere (CO-RE)."
+  },
+  "hints": {
+    "ko": [
+      "BPF Type Format의 머리글자입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Initials of BPF Type Format.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "3ca0fdf06e7ffb5cfadfbe01505f6555595ae7abb78843bad2f1a128b4617741"
+},
+{
+  "id": "t1_ebpftracepoint",
+  "tier": 1,
+  "cat": "ebpftrace",
+  "track": "ebpf",
+  "points": 75,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "커널 정적 트레이싱 포인트",
+    "en": "Static Kernel Instrumentation Hook"
+  },
+  "prompt": {
+    "ko": "커널 개발자가 소스코드에 정적으로 배치하여 커널 버전이 바뀌어도 시그니처와 안정성이 보장되는 정적 이벤트 추적 지점을 무엇이라 합니까?",
+    "en": "What is the name for the static hook placed explicitly into Linux kernel source by maintainers to provide stable event instrumentation across kernel updates?"
+  },
+  "hints": {
+    "ko": [
+      "추적(trace)과 지점(point)이 결합된 합성어입니다.",
+      "소문자 10글자로 입력하세요."
+    ],
+    "en": [
+      "Compound of trace and point.",
+      "Type 10 lowercase characters."
+    ]
+  },
+  "hash": "c148561ceb75990b897ae96a017178298e4ab6a2cd8a254b3c791628c0e73907"
+},{
+    "id": "t2_ebpfcore",
+    "tier": 2,
+    "cat": "ebpfcore",
+    "track": "ebpf",
+    "points": 95,
+    "ci": true,
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "표준 eBPF 사용자 공간 C 라이브러리",
+      "en": "Standard User-Space eBPF C Library"
+    },
+    "prompt": {
+      "ko": "리눅스 커널 소스 트리에서 공식 유지보수되며 CO-RE 릴로케이션과 bpf 시스템 콜 래퍼를 제공하는 핵심 C 라이브러리 이름을 입력하세요.",
+      "en": "Enter the name of the official upstream C library maintaining bpf syscall wrappers and CO-RE relocation support."
+    },
+    "hints": {
+      "ko": [
+        "library의 약칭 접두어 lib 뒤에 bpf가 결합됩니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Prefix lib followed by bpf.",
+        "Type in lowercase."
+      ]
+    },
+    "hash": "464f4b7210b4ca140c38d332d3075463eaa169b241253b2de624fc35117157a4"
+  },
+  
+{
+  "id": "t2_ebpfuprobe",
+  "tier": 2,
+  "cat": "ebpftrace",
+  "track": "ebpf",
+  "points": 100,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "유저 공간 동적 계측 프로브",
+    "en": "User-Space Dynamic Probe"
+  },
+  "prompt": {
+    "ko": "OpenSSL의 SSL_write나 libc의 malloc 등 유저 공간 바이너리/공유 라이브러리의 함수 진입점을 추적하는 프로브 메커니즘 이름을 입력하세요.",
+    "en": "Enter the name of the probe mechanism attaching to user-space binary and shared library functions such as SSL_write or malloc."
+  },
+  "hints": {
+    "ko": [
+      "유저(user)의 u와 탐침(probe)의 합성어입니다.",
+      "반환 프로브는 uretprobe입니다."
+    ],
+    "en": [
+      "Formed by prepending 'u' (user) to probe.",
+      "Return variant is uretprobe."
+    ]
+  },
+  "hash": "7b15caaaf7408dea60227490cb5e563922598d423f0c7a14c26da4d49f0a5d3f"
+},
+{
+  "id": "t2_ebpfcilium",
+  "tier": 2,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 105,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "eBPF 기반 클라우드 네이티브 CNI",
+    "en": "eBPF-Powered Kubernetes CNI"
+  },
+  "prompt": {
+    "ko": "iptables/kube-proxy를 eBPF로 완전히 대체하여 L3/L4/L7 고속 네트워킹과 세분화된 보안 정책을 제공하는 CNCF 졸업 CNI 프로젝트 이름을 입력하세요.",
+    "en": "Enter the name of the CNCF graduated open-source CNI project that replaces iptables and kube-proxy with eBPF for cloud-native networking and security."
+  },
+  "hints": {
+    "ko": [
+      "세포의 섬모(cilia)에서 유래한 라틴어 어원의 오픈소스 이름입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Named after the Latin term for cellular cilia.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "8873184952915b685c7b6d50d0e91cc49af8935b61f11b4a47a67627abbee3c5"
+},
+{
+  "id": "t2_ebpftetragon",
+  "tier": 2,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 110,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "eBPF 실시간 런타임 보안 엔진",
+    "en": "eBPF Security Enforcement Engine"
+  },
+  "prompt": {
+    "ko": "커널 레벨에서 프로세스 실행, 파일 접근, 네트워크 연결을 실시간으로 감시하고 인라인 차단(kill)을 지원하는 Cilium 산하 보안 가시성/제어 엔진 이름을 입력하세요.",
+    "en": "Enter the name of the Cilium runtime security agent providing real-time kernel observability and in-kernel inline policy enforcement."
+  },
+  "hints": {
+    "ko": [
+      "사각형을 뜻하는 기하학 용어(tetra-)에서 유래했습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Named after the geometric term for a four-sided polygon.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "7e3f9fad8d9e9aae4ce83e05cc940805ad5a7a9da372a645edd2a0a1f40c3e20"
+},
+{
+  "id": "t2_ebpfringbuf",
+  "tier": 2,
+  "cat": "ebpfcore",
+  "track": "ebpf",
+  "points": 110,
+  "ci": true,
+  "fmt": "두 단어 / two words",
+  "title": {
+    "ko": "고성능 이벤트 링 버퍼",
+    "en": "High-Efficiency Circular Event Queue"
+  },
+  "prompt": {
+    "ko": "과거 perf event array의 CPU별 버퍼 낭비와 이벤트 순서 역전 문제를 해결하기 위해 리눅스 5.8에 도입된 메모리 공유 맵 구조를 무엇이라 합니까? (두 단어: 원형 버퍼)",
+    "en": "What two-word memory map structure was introduced in Linux 5.8 to overcome per-CPU event memory waste and preserve ordering between kernel and user space?"
+  },
+  "hints": {
+    "ko": [
+      "원형 링을 뜻하는 단어와 임시 기억장치 버퍼 단어의 조합입니다.",
+      "소문자로 공백을 포함해 입력하세요."
+    ],
+    "en": [
+      "Combines ring and buffer separated by a space.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "d465be6fd74807c769b4909883ed5b1241bb17fd4b0ce6af2cfeb99c367912f5"
+},
+{
+  "id": "t2_ebpfjit",
+  "tier": 2,
+  "cat": "ebpfcore",
+  "track": "ebpf",
+  "points": 115,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "적시 기계어 컴파일러",
+    "en": "Just-In-Time Compiler"
+  },
+  "prompt": {
+    "ko": "eBPF 가상머신 인터프리터의 오버헤드를 없애고 호스트 CPU(x86_64, ARM64)의 네이티브 기계어로 바이트코드를 직접 변환하는 컴파일러 메커니즘의 3글자 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the compiler in the kernel that transforms eBPF bytecode directly into native host machine instructions for maximum execution speed."
+  },
+  "hints": {
+    "ko": [
+      "Just-In-Time의 약칭입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Acronym for Just-In-Time.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "ec03a0a8851d9cf0aa2320035b8699d6d3bbb4a8a8c160b0dd41c5c5ed086f9c"
+},
+  {
+    "id": "t2_ebpfprobetype",
+    "tier": 2,
+    "cat": "ebpfcore",
+    "track": "ebpf",
+    "points": 115,
+    "ci": true,
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "eBPF 명령어 구조체 축약 명칭",
+      "en": "eBPF Instruction Struct Identifier"
+    },
+    "prompt": {
+      "ko": "eBPF 가상머신에서 64비트 명령어 하나를 표현하는 C 언어 커널 핵심 구조체(struct bpf_insn)의 인스트럭션 4글자 축약어를 소문자로 입력하세요.",
+      "en": "Enter the 4-letter acronym for instruction used in the core kernel C struct (struct bpf_insn) representing a single 64-bit eBPF instruction."
+    },
+    "hints": {
+      "ko": [
+        "instruction의 모음 축약형 4글자입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Vowel-abbreviated 4-letter form of instruction.",
+        "Type in lowercase."
+      ]
+    },
+    "hash": "7bd0f5d6331ec275a129fbbb22832610a1e4d724c2f0ef3ca2a45093fcc8a737"
+  },
+  {
+  "id": "t2_ebpfframereg",
+  "tier": 2,
+  "cat": "ebpfcore",
+  "track": "ebpf",
+  "points": 120,
+  "ci": true,
+  "fmt": "기호 / symbol (3글자 / 3 chars)",
+  "title": {
+    "ko": "읽기 전용 스택 프레임 레지스터",
+    "en": "Read-Only Stack Frame Register"
+  },
+  "prompt": {
+    "ko": "eBPF 512바이트 스택의 프레임 포인터로 사용되며, 검증기에 의해 쓰기가 엄격히 금지된 유일한 읽기 전용 레지스터 이름을 소문자로 입력하세요.",
+    "en": "Enter the name of the sole read-only register serving as the stack frame pointer for the 512-byte eBPF stack."
+  },
+  "hints": {
+    "ko": [
+      "영문자 r 뒤에 10이 붙습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Letter r followed by the number 10.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "25e33bf8a5fb556a14d7b883a433b2ad340d32f991e17ba775cd7db520d25560"
+},
+{
+  "id": "t2_ebpfstacksize",
+  "tier": 2,
+  "cat": "ebpfcore",
+  "track": "ebpf",
+  "points": 120,
+  "ci": true,
+  "fmt": "숫자 / number",
+  "title": {
+    "ko": "eBPF 런타임 스택 크기 한도",
+    "en": "eBPF Stack Size Limit"
+  },
+  "prompt": {
+    "ko": "eBPF 프로그램이 스택 오버플로우로 인한 커널 크래시를 방지하기 위해 강제하는 런타임 스택의 최대 바이트 크기를 정수 숫자로 입력하세요.",
+    "en": "Enter the maximum stack size limit in bytes enforced by the eBPF verifier to prevent stack exhaustion crashes in the kernel."
+  },
+  "hints": {
+    "ko": [
+      "2의 9제곱(2^9)에 해당하는 바이트 수입니다.",
+      "반 킬로바이트 크기입니다."
+    ],
+    "en": [
+      "Equals 2 to the power of 9 bytes.",
+      "Half a kilobyte."
+    ]
+  },
+  "hash": "94f8607915dff25f013e45fc0642fb9830b0fb25ab0ab46d477eaf1061def379"
+},
+{
+  "id": "t2_ebpfxdpaction",
+  "tier": 2,
+  "cat": "ebpfnet",
+  "track": "ebpf",
+  "points": 120,
+  "ci": true,
+  "fmt": "약어 / acronym (8글자 / 8 chars)",
+  "title": {
+    "ko": "XDP 즉각 패킷 폐기 판정",
+    "en": "XDP Immediate Packet Drop"
+  },
+  "prompt": {
+    "ko": "DDoS 방어 시 NIC 드라이버 레벨에서 악성 패킷을 즉각 폐기하여 상위 네트워크 스택의 CPU 자원 소모를 차단하는 XDP 반환 액션 코드 이름을 입력하세요.",
+    "en": "Enter the XDP action return code enum used to discard malicious packets directly at the driver level during DDoS mitigation."
+  },
+  "hints": {
+    "ko": [
+      "XDP_ 접두어 뒤에 DROP 단어가 결합됩니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Prefix XDP_ followed by DROP.",
+      "Enter in lowercase."
+    ]
+  },
+  "hash": "da2f8a52b03cec9f058dfc8f39529fec475da1595f7b6e1fcf61ada3b510fd80"
+},
+{
+  "id": "t3_ebpfprobewrite",
+  "tier": 3,
+  "cat": "ebpfexploit",
+  "track": "ebpf",
+  "points": 140,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "유저 공간 메모리 조작 헬퍼",
+    "en": "User Memory Mutation Helper"
+  },
+  "prompt": {
+    "ko": "커널 공간에서 실행 중인 프로세스의 유저 메모리 영역에 임의의 데이터를 덮어쓸 수 있어 공격자가 인증 토큰이나 반환값을 변조하는 데 악용하는 BPF 헬퍼 함수 이름을 입력하세요.",
+    "en": "Enter the name of the BPF helper function allowing eBPF programs to modify user-space memory, often abused by rootkits to tamper with authentication credentials."
+  },
+  "hints": {
+    "ko": [
+      "bpf_probe_로 시작하며 write와 user가 밑줄로 결합됩니다.",
+      "커널 dmesg에 경고를 남기는 대표적 헬퍼입니다."
+    ],
+    "en": [
+      "Begins with bpf_probe_ and appends write_user with underscores.",
+      "Triggers a loud warning in kernel dmesg."
+    ]
+  },
+  "hash": "315f9dca08b7401a775656181cedf70fd2fe8f5cd962b93df20e2b7b982f197e"
+},
+{
+  "id": "t3_ebpfoverwrite",
+  "tier": 3,
+  "cat": "ebpfexploit",
+  "track": "ebpf",
+  "points": 145,
+  "ci": true,
+  "fmt": "시스템 콜 / syscall",
+  "title": {
+    "ko": "디렉터리 엔트리 은닉 타깃 시스템 콜",
+    "en": "Directory Entry Hiding Syscall Target"
+  },
+  "prompt": {
+    "ko": "eBPF 기반 루트킷이 악성 파일이나 프로세스 PID 디렉터리를 `ls`나 `ps` 명령어로부터 은닉하기 위해 후킹하는 64비트 시스템 콜 이름을 입력하세요.",
+    "en": "Enter the 64-bit system call hooked by eBPF rootkits to redact file entries and process directories from tools like ls and ps."
+  },
+  "hints": {
+    "ko": [
+      "get directory entries의 약어로 숫자 64가 붙습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Abbreviation of get directory entries with suffix 64.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "05a2824bbd1f34e3874d7075477dce42937340ac34188ffa3aae8b62da9c068a"
+},
+{
+  "id": "t3_ebpfcgroup",
+  "tier": 3,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 150,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "컨테이너 리소스 제어 그룹 연계",
+    "en": "Control Group Subsystem Binding"
+  },
+  "prompt": {
+    "ko": "특정 컨테이너나 네임스페이스에 속한 프로세스에만 eBPF 소켓 필터와 디바이스 접근 제어를 격리 적용하기 위해 eBPF 프로그램을 결합(attach)하는 리눅스 커널 서브시스템 이름을 입력하세요.",
+    "en": "Enter the name of the Linux kernel subsystem to which eBPF programs are attached to enforce container-scoped socket filtering and device permissions."
+  },
+  "hints": {
+    "ko": [
+      "control group의 축약형인 단어입니다.",
+      "소문자 6글자로 입력하세요."
+    ],
+    "en": [
+      "Abbreviated form of control group.",
+      "Type 6 lowercase characters."
+    ]
+  },
+  "hash": "833785326ccced334aeb0466ce3942083ffb9f68dbce3f856367a57fc20f8f76"
+},
+{
+  "id": "t3_ebpftailcall",
+  "tier": 3,
+  "cat": "ebpfcore",
+  "track": "ebpf",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words",
+  "title": {
+    "ko": "스택 프레임 재사용 프로그램 전이",
+    "en": "Stack-Reusing Program Transition"
+  },
+  "prompt": {
+    "ko": "단일 eBPF 명령어 수 한도를 초과하는 복잡한 패킷 파싱 로직을 구현하기 위해 현재 스택을 재사용하면서 다른 eBPF 프로그램으로 분기 실행을 넘기는 메커니즘을 무엇이라 합니까? (두 단어)",
+    "en": "What two-word mechanism allows one eBPF program to trigger execution of another without returning, reusing the existing stack frame to chain complex logic?"
+  },
+  "hints": {
+    "ko": [
+      "꼬리를 뜻하는 tail과 호출을 뜻하는 call의 결합입니다.",
+      "소문자로 공백을 포함해 입력하세요."
+    ],
+    "en": [
+      "Combines tail and call with a space.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "d770707ae38d9dc445eee3b18fc852e0c0b1b10e4bd5d0b5ce5971822ae65533"
+},
+{
+  "id": "t3_ebpfoverride",
+  "tier": 3,
+  "cat": "ebpfexploit",
+  "track": "ebpf",
+  "points": 155,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "함수 반환값 강제 조작 헬퍼",
+    "en": "Kernel Return Override Helper"
+  },
+  "prompt": {
+    "ko": "에러 주입(Error Injection) 화이트리스트에 등록된 커널 함수의 실제 실행을 생략하고 임의의 반환 에러 코드를 유저 공간에 반환할 수 있게 하는 BPF 헬퍼 함수 이름을 입력하세요.",
+    "en": "Enter the BPF helper function name that skips execution of whitelisted kernel functions and injects an arbitrary return error code."
+  },
+  "hints": {
+    "ko": [
+      "bpf_override_ 뒤에 return이 결합됩니다.",
+      "소문자로 밑줄을 포함해 입력하세요."
+    ],
+    "en": [
+      "Prefix bpf_override_ followed by return.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "8b0d3d36ed8ff05b1469a193d3f04d61b54fba412dba646808993818495d84df"
+},
+{
+  "id": "t3_ebpfmapspec",
+  "tier": 3,
+  "cat": "ebpfcore",
+  "track": "ebpf",
+  "points": 160,
+  "ci": true,
+  "fmt": "약어 / acronym (15글자 / 15 chars)",
+  "title": {
+    "ko": "범용 키-값 해시 맵 타입",
+    "en": "Generic Key-Value Hash Map Type"
+  },
+  "prompt": {
+    "ko": "커널과 유저스페이스 간 임의의 구조체 키와 값을 효율적으로 조회/갱신하기 위해 정의된 표준 BPF 해시 맵 타입 상수의 이름을 소문자로 입력하세요.",
+    "en": "Enter the exact enum constant name for the generic BPF hash map type used for arbitrary key-value storage between kernel and user space in lowercase."
+  },
+  "hints": {
+    "ko": [
+      "BPF_MAP_TYPE_ 뒤에 HASH가 결합됩니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Prefix BPF_MAP_TYPE_ followed by HASH.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "b568e1dfca7c84d430486e32f530c4245d8408e9d2ffade8af706dbd17b83433"
+},
+{
+  "id": "t3_ebpfsudoevasion",
+  "tier": 3,
+  "cat": "ebpfexploit",
+  "track": "ebpf",
+  "points": 160,
+  "ci": true,
+  "fmt": "절대 경로 / absolute path",
+  "title": {
+    "ko": "권한 상승 조작 타깃 경로",
+    "en": "Privilege Escalation File Path"
+  },
+  "prompt": {
+    "ko": "eBPF 루트킷이 `sys_enter_openat`이나 `sys_exit_read`를 가로채 일반 사용자에게 패스워드 없는 루트 권한을 허용하도록 가상 내용을 속여 반환하는 시스템 설정 파일의 절대 경로를 입력하세요.",
+    "en": "Enter the absolute configuration file path whose read buffer is manipulated by eBPF privilege escalation implants to grant passwordless root permissions."
+  },
+  "hints": {
+    "ko": [
+      "/etc/ 아래 위치하는 관리자 권한 위임 파일입니다.",
+      "sudo 명령어의 규칙 파일입니다."
+    ],
+    "en": [
+      "Configuration file under /etc governing sudo rules.",
+      "Enter the full path starting with slash."
+    ]
+  },
+  "hash": "9f71d7c504e27bce09fd5b796dd784ecacb1c4e17fdd90d851648841256cfda0"
+},
+{
+  "id": "t3_ebpflsm",
+  "tier": 3,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 165,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "리눅스 보안 모듈 프레임워크",
+    "en": "Linux Security Module Framework"
+  },
+  "prompt": {
+    "ko": "리눅스 5.7부터 eBPF 프로그램을 보안 후크(MAC)로 등록하여 파일/소켓/프로세스 생성 작업을 사전 감사 및 접근 거부할 수 있게 지원하는 커널 보안 서브시스템 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the Linux kernel security framework that allows eBPF hooks (BPF_PROG_TYPE_LSM) to enforce Mandatory Access Control policies."
+  },
+  "hints": {
+    "ko": [
+      "Linux Security Module의 머리글자입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Initials of Linux Security Module.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "a5c925bdac8831ac7d9b3174e242443ca9ebf6e5b6790b454a9a6bf4680b18ed"
+},
+{
+  "id": "t3_ebpfspectre",
+  "tier": 3,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 165,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "eBPF 추측 실행 부채널 완화",
+    "en": "Speculative Execution Mitigation"
+  },
+  "prompt": {
+    "ko": "비특권 eBPF를 통해 분기 예측기(Branch Predictor)를 훈련시켜 커널 가상 메모리 데이터를 유출하는 부채널 공격 기법의 이름을 소문자로 입력하세요.",
+    "en": "Enter the name of the CPU speculative execution side-channel vulnerability that necessitated strict verifier blinding and array masking in unprivileged eBPF."
+  },
+  "hints": {
+    "ko": [
+      "유령을 뜻하는 영단어로 멜트다운과 함께 발표된 취약점입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Named after the word for a phantom or ghost.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "8c7ad921eb8dd3697c98e3b04c00b7bafd3f78780457867775e57b26d2280946"
+},
+{
+  "id": "t3_ebpfcaps",
+  "tier": 3,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 170,
+  "ci": true,
+  "fmt": "리눅스 capability / Linux capability",
+  "title": {
+    "ko": "전용 BPF 리눅스 역량",
+    "en": "Dedicated BPF Linux Capability"
+  },
+  "prompt": {
+    "ko": "리눅스 5.8에서 완전한 CAP_SYS_ADMIN 루트 권한 없이도 eBPF 프로그램을 생성/적재할 수 있도록 분리 신설된 전용 리눅스 capability 이름을 소문자로 입력하세요.",
+    "en": "Enter the dedicated Linux capability introduced in kernel 5.8 that permits creating and loading BPF programs without requiring full CAP_SYS_ADMIN."
+  },
+  "hints": {
+    "ko": [
+      "CAP_ 접두어 뒤에 BPF가 붙습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Prefix CAP_ followed by BPF.",
+      "Enter in lowercase."
+    ]
+  },
+  "hash": "edd31cfa74420c8a383c6291869d254583da48f235cf53250699d3e6186cc9e8"
+},
+{
+  "id": "t4_ebpftc",
+  "tier": 4,
+  "cat": "ebpfnet",
+  "track": "ebpf",
+  "points": 185,
+  "ci": true,
+  "fmt": "약어 / acronym (2글자 / 2 chars)",
+  "title": {
+    "ko": "트래픽 컨트롤 eBPF 서브시스템",
+    "en": "Traffic Control Subsystem"
+  },
+  "prompt": {
+    "ko": "sk_buff 메타데이터를 모두 포함하여 인그레스(Ingress) 및 이그레스(Egress) 양방향 패킷 헤더를 변조하거나 패킷을 리디렉션하는 트래픽 제어 서브시스템의 2글자 약어를 입력하세요.",
+    "en": "Enter the 2-letter acronym for the Linux Traffic Control subsystem supporting eBPF filters on both ingress and egress directions with full sk_buff access."
+  },
+  "hints": {
+    "ko": [
+      "Traffic Control의 머리글자 두 글자입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Initials of Traffic Control.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "8f455bba4522752c63bbcd2b6d4c954e66a2bade8792dbe67be7c088affa422e"
+},
+{
+  "id": "t4_ebpftraceroute",
+  "tier": 4,
+  "cat": "ebpftrace",
+  "track": "ebpf",
+  "points": 190,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "고수준 eBPF 트레이싱 스크립트 언어",
+    "en": "High-Level eBPF Tracing Tool"
+  },
+  "prompt": {
+    "ko": "DTrace나 SystemTap과 유사한 간결한 원라이너 문법으로 커널 및 유저 프로세스의 프로브를 즉석에서 정의하고 분석할 수 있는 오픈소스 도구 이름을 입력하세요.",
+    "en": "Enter the name of the high-level tracing language and tool for Linux eBPF inspired by awk, C, and DTrace for rapid dynamic profiling."
+  },
+  "hints": {
+    "ko": [
+      "bpf 접두어 뒤에 trace 단어가 결합됩니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Combines bpf with trace.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "3cd5dc46d52c3731a32e18d3cd0016f841fb1e4388b80421dfc08c7f8eb47e98"
+},
+{
+  "id": "t4_ebpftunnelexfil",
+  "tier": 4,
+  "cat": "ebpfexploit",
+  "track": "ebpf",
+  "points": 200,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "eBPF 은닉 데이터 유출 프로토콜",
+    "en": "Covert Data Exfiltration Protocol"
+  },
+  "prompt": {
+    "ko": "eBPF 소켓 필터가 호스트의 방화벽 로그에 소켓 커넥션을 남기지 않고 페이로드에 민감 데이터를 은닉 삽입하여 전송할 때 즐겨 악용하는 3계층 에코 제어 프로토콜 약어를 입력하세요.",
+    "en": "Enter the 4-letter acronym for the Layer 3 protocol commonly weaponized by eBPF covert exfiltration implants to embed stolen data inside echo request payloads."
+  },
+  "hints": {
+    "ko": [
+      "핑(ping) 유틸리티가 사용하는 제어 메시지 프로토콜입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Protocol utilized by the ping network diagnostic utility.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "c3eac7105ca647900c32b5eced7a6ccb56cded0790ef0bc08614a5ad31e54025"
+},
+{
+  "id": "t4_ebpfrootkit",
+  "tier": 4,
+  "cat": "ebpfexploit",
+  "track": "ebpf",
+  "points": 210,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "대표적 오픈소스 eBPF 루트킷",
+    "en": "Pioneering Open-Source eBPF Rootkit"
+  },
+  "prompt": {
+    "ko": "XDP/TC 패킷 트리거를 수신하여 역방향 셸을 생성하고 프로세스 은닉을 수행하여 eBPF의 위험성을 대중에 알린 유명한 오픈소스 개념증명 루트킷 이름을 입력하세요.",
+    "en": "Enter the name of the notorious open-source proof-of-concept eBPF rootkit that leverages TC and XDP to trigger reverse shells on special TCP packets."
+  },
+  "hints": {
+    "ko": [
+      "boop이라는 의성어 뒤에 kit이 붙은 도구 이름입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Combines the word boop with kit.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "873164e81ff9e87d4f7d75d1fdc234f2d0870185719f3c5d15f9642dcb6bd845"
+},
+{
+  "id": "t4_ebpfbpfman",
+  "tier": 4,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 220,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "시스템 레벨 eBPF 프로그램 데몬",
+    "en": "System-Level eBPF Manager Daemon"
+  },
+  "prompt": {
+    "ko": "쿠버네티스와 리눅스 노드 전반에서 여러 eBPF 프로그램의 적재, 서명 검증, 우선순위 조율을 중앙 데몬으로 관리하는 CNCF 샌드박스 프로젝트 이름을 입력하세요.",
+    "en": "Enter the name of the CNCF sandbox project that operates as a system daemon to manage, secure, and inspect eBPF program lifecycle across Kubernetes nodes."
+  },
+  "hints": {
+    "ko": [
+      "bpf 접두어 뒤에 관리자를 뜻하는 man이 결합됩니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Formed by appending man to bpf.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "0671bbb69b48268c907b5b15580da7ece8152ff4ebd4ed5b6726a6038cfd7f64"
+},
+{
+  "id": "t4_ebpfsigndigest",
+  "tier": 4,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 230,
+  "ci": true,
+  "fmt": "알고리즘 이름 / algorithm name",
+  "title": {
+    "ko": "eBPF 모듈 서명 검증 해시 알고리즘",
+    "en": "eBPF Module Cryptographic Digest"
+  },
+  "prompt": {
+    "ko": "커널 또는 보안 데몬이 허가되지 않은 임의 eBPF 바이트코드 로드를 방지하기 위해 디지털 서명 검증에 표준으로 요구하는 암호화 해시 알고리즘 이름을 입력하세요.",
+    "en": "Enter the cryptographic digest algorithm standardly used to verify digitally signed eBPF ELF objects prior to kernel loading."
+  },
+  "hints": {
+    "ko": [
+      "256비트 길이를 갖는 SHA-2 제품군 알고리즘입니다.",
+      "하이픈 없이 소문자로 입력하세요."
+    ],
+    "en": [
+      "256-bit member of the Secure Hash Algorithm 2 family.",
+      "Type in lowercase without hyphens."
+    ]
+  },
+  "hash": "5d5b09f6dcb2d53a5fffc60c4ac0d55fabdf556069d6631545f42aa6e3500f2e"
+},
+{
+  "id": "t4_ebpfcapstone",
+  "tier": 4,
+  "cat": "ebpfsec",
+  "track": "ebpf",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "eBPF 커널 침해 탐지 및 방어 캡스톤",
+    "en": "eBPF Kernel Incident Response Capstone"
+  },
+  "prompt": {
+    "ko": "eBPF 악성 루트킷 침해 대응 포렌식 분석 보고서입니다. 호스트 커널 텔레메트리로부터 다음 인시던트 파라미터가 추출되었습니다.\n\n- 조작된 BPF 맵 엔트리 수: `M = 1024`\n- XDP 드롭된 악성 패킷 수: `D = 42`\n- 차단된 kprobe 훅 ID: `H = 7`\n- 검증 체크섬 수식: `(M * 2) + D + (H * 10)`\n\n산출된 검증 체크섬을 `FLAG{EBPF-<checksum>-SECURED}` 형식으로 조립하여 제출하세요.\n\n```briefing\n[EBPF TELEMETRY ARTIFACT]\nTAMPERED_MAP_ENTRIES = 1024\nDROPPED_XDP_PACKETS = 42\nBLOCKED_HOOK_ID = 7\n```",
+    "en": "eBPF rootkit incident forensics briefing. Kernel telemetry extracted the following parameters:\n\n- Tampered BPF map entries: `M = 1024`\n- XDP dropped packets: `D = 42`\n- Blocked hook ID: `H = 7`\n- Checksum formula: `(M * 2) + D + (H * 10)`\n\nAssemble the result into `FLAG{EBPF-<checksum>-SECURED}` format.\n\n```briefing\n[EBPF TELEMETRY ARTIFACT]\nTAMPERED_MAP_ENTRIES = 1024\nDROPPED_XDP_PACKETS = 42\nBLOCKED_HOOK_ID = 7\n```"
+  },
+  "hints": {
+    "ko": [
+      "M*2 = 2048, D = 42, H*10 = 70입니다. 합산하면 2160입니다.",
+      "체크섬 값을 계산하여 FLAG{EBPF-<체크섬>-SECURED} 템플릿에 대입하세요."
+    ],
+    "en": [
+      "M*2 = 2048, D = 42, H*10 = 70. Sum equals 2160.",
+      "Calculate checksum and place it into the FLAG{EBPF-<checksum>-SECURED} template."
+    ]
+  },
+  "hash": "7070e5c9938864bc80002d9d0e3370f00428121cc3834ac792b8c18d859a33b6"
+},
+{
+  "id": "t0_firmwarebinwalk",
+  "tier": 0,
+  "cat": "firmwarecore",
+  "track": "firmware",
+  "points": 45,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "펌웨어 시그니처 분석 및 추출 도구",
+    "en": "Firmware Extraction Tool"
+  },
+  "prompt": {
+    "ko": "바이너리 이미지 내부의 매직 바이트와 압축 파일시스템 시그니처를 스캔하고 자동 압축 해제(-e 옵션)를 수행하는 대표적인 임베디드 리버싱 도구 이름을 입력하세요.",
+    "en": "Enter the name of the standard firmware analysis tool used to scan binary images for magic signatures and extract compressed filesystems."
+  },
+  "hints": {
+    "ko": [
+      "바이너리(bin)와 걷기(walk)의 합성어입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Compound word formed from bin and walk.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "c1738b1106e3c38d173efec0e9b36f25a4875c13dcafe1564e5e830acbbbf6a4"
+},  {
+    "id": "t0_firmwarehexdump",
+    "tier": 0,
+    "cat": "firmwarecore",
+    "track": "firmware",
+    "points": 50,
+    "ci": true,
+    "fmt": "명령어 / command (7글자 / 7 chars)",
+    "title": {
+      "ko": "16진수 바이너리 덤프 명령어",
+      "en": "Hexadecimal Binary Dump Command"
+    },
+    "prompt": {
+      "ko": "펌웨어 바이너리의 원시(raw) 바이트를 16진수와 아스키 문자로 동시에 화면에 출력하여 파일 시그니처와 오프셋을 관찰할 때 사용하는 표준 리눅스 CLI 유틸리티 명령어를 입력하세요.",
+      "en": "Enter the standard Linux CLI utility command used to display binary firmware bytes simultaneously in hexadecimal and ASCII representations."
+    },
+    "hints": {
+      "ko": [
+        "16진수(hex)와 덤프(dump)의 합성어입니다.",
+        "소문자 7글자로 입력하세요."
+      ],
+      "en": [
+        "Compound word formed from hex and dump.",
+        "Type in 7 lowercase characters."
+      ]
+    },
+    "hash": "9891f67674e9d6bc48c300dc6efd17c4ca24007d20e33c7de6025d4bbdd8baa4"
+  },
+  
+{
+  "id": "t0_firmwareuart",
+  "tier": 0,
+  "cat": "firmwarehw",
+  "track": "firmware",
+  "points": 50,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "임베디드 비동기 직렬 콘솔 포트",
+    "en": "Universal Asynchronous Serial Port"
+  },
+  "prompt": {
+    "ko": "보드 PCB 상의 TX, RX, GND 핀을 연결하여 부트로더 및 리눅스 셸 제어 세션에 직접 접근할 수 있는 비동기 직렬 통신 인터페이스의 4글자 약어를 입력하세요.",
+    "en": "Enter the 4-letter acronym for the asynchronous serial hardware interface consisting of TX, RX, and GND pins commonly exploited to obtain shell access."
+  },
+  "hints": {
+    "ko": [
+      "Universal Asynchronous Receiver/Transmitter의 머리글자입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Initials of Universal Asynchronous Receiver-Transmitter.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "e0a003b44f4a197d7a48ada2d2659f598b5f953f40e9e3ed7a3c979d25ec4336"
+},
+{
+  "id": "t1_firmwaresquashfs",
+  "tier": 1,
+  "cat": "firmwarefs",
+  "track": "firmware",
+  "points": 65,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "임베디드 읽기 전용 압축 파일시스템",
+    "en": "Compressed Read-Only Filesystem"
+  },
+  "prompt": {
+    "ko": "공유기나 IoT 기기 펌웨어에서 플래시 메모리 절약을 위해 가장 널리 사용되는 읽기 전용 압축 파일시스템의 이름을 입력하세요.",
+    "en": "Enter the name of the ubiquitous read-only compressed filesystem format widely deployed on embedded routers and IoT flash memory."
+  },
+  "hints": {
+    "ko": [
+      "squash와 fs가 결합된 단어입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Combines squash with fs.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "5cce3f70c6cb9f62ab53e322fa3975d02128080e1341e41de3a8dd3712cf1607"
+},
+{
+  "id": "t1_firmwareuboot",
+  "tier": 1,
+  "cat": "firmwareboot",
+  "track": "firmware",
+  "points": 70,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "범용 임베디드 오픈소스 부트로더",
+    "en": "Universal Embedded Bootloader"
+  },
+  "prompt": {
+    "ko": "ARM, MIPS, RISC-V 등 임베디드 시스템에서 커널 이미지를 로드하고 `bootargs` 환경변수를 수정할 수 있는 가장 대표적인 오픈소스 부트로더 이름을 입력하세요.",
+    "en": "Enter the name of the most prominent open-source embedded bootloader supporting ARM, MIPS, and RISC-V with interactive environment variable modification."
+  },
+  "hints": {
+    "ko": [
+      "영문자 u 뒤에 하이픈(-)과 boot가 붙습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Single letter u followed by hyphen and boot.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "fdd9d7dafdf5d9f56032ef62548ba1d9b6752d0eca84e21556790a28be916329"
+},{
+    "id": "t1_firmwareqemu",
+    "tier": 1,
+    "cat": "firmwareemu",
+    "track": "firmware",
+    "points": 70,
+    "ci": true,
+    "fmt": "도구 이름 / tool name",
+    "title": {
+      "ko": "경량 다중 아키텍처 CPU 시뮬레이터",
+      "en": "Lightweight CPU Emulation Framework"
+    },
+    "prompt": {
+      "ko": "QEMU 코어를 기반으로 분리되어 ARM, MIPS, x86 등 다양한 아키텍처의 기계어 실행을 바이트 단위로 제어할 수 있는 오픈소스 CPU 에뮬레이션 엔진 이름을 입력하세요.",
+      "en": "Enter the name of the lightweight multi-architecture CPU emulation engine derived from QEMU core supporting granular execution hooks."
+    },
+    "hints": {
+      "ko": [
+        "전설 속 일각수를 뜻하는 영단어입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Named after the mythical single-horned horse.",
+        "Type in lowercase."
+      ]
+    },
+    "hash": "c6cb50e7eea0df1fd3eaf52ada2358f5423afd7c0b5ee2395231a9b3208ffcaf"
+  },
+  
+{
+  "id": "t1_firmwarenvram",
+  "tier": 1,
+  "cat": "firmwarefs",
+  "track": "firmware",
+  "points": 75,
+  "ci": true,
+  "fmt": "약어 / acronym (5글자 / 5 chars)",
+  "title": {
+    "ko": "비휘발성 설정 저장 메모리",
+    "en": "Non-Volatile Configuration Memory"
+  },
+  "prompt": {
+    "ko": "공유기의 관리자 비밀번호, Wi-Fi SSID, LAN IP 등 부팅 설정 파라미터가 키-값 쌍으로 저장되는 비휘발성 메모리 인터페이스의 5글자 약어를 입력하세요.",
+    "en": "Enter the 5-letter acronym for the non-volatile random-access memory interface storing router credentials, SSIDs, and network configurations as key-value pairs."
+  },
+  "hints": {
+    "ko": [
+      "Non-Volatile RAM의 약칭입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Abbreviation of Non-Volatile RAM.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "fe8a08d50188af6557b650e7147d90773c7abb75b1a55709f2caaded7511dbde"
+},
+{
+  "id": "t1_firmwarejtag",
+  "tier": 1,
+  "cat": "firmwarehw",
+  "track": "firmware",
+  "points": 75,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "하드웨어 온칩 디버깅 인터페이스",
+    "en": "On-Chip Hardware Debugging Interface"
+  },
+  "prompt": {
+    "ko": "TDI, TDO, TCK, TMS 핀을 통해 칩의 플래시 메모리를 덤프하거나 CPU 레지스터를 실시간 정지/검사할 수 있는 IEEE 1149.1 표준 테스트 인터페이스 약어를 입력하세요.",
+    "en": "Enter the 4-letter acronym for the IEEE 1149.1 boundary-scan interface using TDI, TDO, TCK, and TMS pins for hardware flash dumping and CPU register debugging."
+  },
+  "hints": {
+    "ko": [
+      "Joint Test Action Group의 머리글자입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Initials of Joint Test Action Group.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "207b5240a6be2b603970be7673ad498434931a2493daa60a5283826bb85a6ea5"
+},
+{
+  "id": "t2_firmwareendianness",
+  "tier": 2,
+  "cat": "firmwarerev",
+  "track": "firmware",
+  "points": 95,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "바이트 저장 순서 체계",
+    "en": "Byte Storage Order Architecture"
+  },
+  "prompt": {
+    "ko": "MIPS 및 ARM 아키텍처 바이너리 리버싱 시 빅 엔디안(Big)과 리틀 엔디안(Little)으로 갈리는 메모리 바이트 저장 정렬 체계를 뜻하는 영단어를 입력하세요.",
+    "en": "Enter the English term representing the order or sequence of bytes of a word of digital data in computer memory (Big versus Little)."
+  },
+  "hints": {
+    "ko": [
+      "endian 뒤에 성질을 나타내는 접미사 -ness가 붙습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Word formed by appending -ness to endian.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "fefbffe6775c7b77121b1732e7553dc719b6e6cabff5208e1f82aa3c11cb4d65"
+},
+{
+  "id": "t2_firmwarespiflash",
+  "tier": 2,
+  "cat": "firmwarehw",
+  "track": "firmware",
+  "points": 100,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "직렬 플래시 칩 통신 프로토콜",
+    "en": "Serial Peripheral Interface"
+  },
+  "prompt": {
+    "ko": "SOIC-8 패키지 8핀 롬(ROM) 칩에서 펌웨어를 추출할 때 MOSI, MISO, SCK, CS 라인을 연결하여 통신하는 동기식 직렬 버스 프로토콜 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the synchronous serial interface commonly used with SOIC-8 flash ROM chips over MOSI, MISO, SCK, and CS lines."
+  },
+  "hints": {
+    "ko": [
+      "Serial Peripheral Interface의 약자입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Initials of Serial Peripheral Interface.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "8f3c56908f47fbc950a725e79edb78c8df6ea5125d5f26b81ebf6eadea8eb72e"
+},
+{
+  "id": "t2_firmwareentropy",
+  "tier": 2,
+  "cat": "firmwarerev",
+  "track": "firmware",
+  "points": 105,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "데이터 불확실성 및 암호화 탐지 척도",
+    "en": "Data Randomness Metric"
+  },
+  "prompt": {
+    "ko": "바이너리 내에서 압축 또는 암호화된 블록의 존재 여부를 시각적으로 식별하기 위해 측정하는 바이트 무작위성(Shannon 척도)의 이름을 입력하세요.",
+    "en": "Enter the term for the measure of randomness (Shannon metric, 0.0 to 8.0) used to distinguish plain code from encrypted or compressed firmware regions."
+  },
+  "hints": {
+    "ko": [
+      "섀넌(Shannon)의 정보량/무작위성 척도입니다.",
+      "소문자 7글자로 입력하세요."
+    ],
+    "en": [
+      "Shannon's metric of information randomness.",
+      "Type 7 lowercase characters."
+    ]
+  },
+  "hash": "67671a2f53dd910a8b35840edb6a0a1e751ae5532178ca7f025b823eee317992"
+},
+{
+  "id": "t2_firmwarefirmadyne",
+  "tier": 2,
+  "cat": "firmwareemu",
+  "track": "firmware",
+  "points": 105,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "자동화 리눅스 펌웨어 에뮬레이션 프레임워크",
+    "en": "Automated Dynamic Emulation Framework"
+  },
+  "prompt": {
+    "ko": "리눅스 기반 임베디드 펌웨어 이미지를 입력받아 QEMU 가상화와 커널 수정(커스텀 NVRAM)을 통해 네트워크 서비스를 자동으로 구동하는 오픈소스 프레임워크 이름을 입력하세요.",
+    "en": "Enter the name of the pioneering open-source dynamic analysis framework that automates system emulation of Linux-based firmware using QEMU."
+  },
+  "hints": {
+    "ko": [
+      "firmware와 dynamic의 합성어에서 유래했습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Portmanteau of firmware and dynamic.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "033619a6eddc039d46d868b91468d8f4b3a71a5a3431f1175d3f9a54354b1518"
+},
+{
+  "id": "t2_firmwarechroot",
+  "tier": 2,
+  "cat": "firmwareemu",
+  "track": "firmware",
+  "points": 110,
+  "ci": true,
+  "fmt": "명령어 / command",
+  "title": {
+    "ko": "루트 디렉터리 격리 전환 명령어",
+    "en": "Change Root Directory Command"
+  },
+  "prompt": {
+    "ko": "추출된 펌웨어 루트 파일시스템 내부로 진입하여 qemu-user 정적 바이너리와 함께 격리 실행 환경을 구성할 때 사용하는 표준 리눅스 명령어를 입력하세요.",
+    "en": "Enter the standard Linux command used to change the apparent root directory for the current running process to an extracted firmware rootfs."
+  },
+  "hints": {
+    "ko": [
+      "change root의 축약 명령어입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Abbreviation of change root.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "854eaadd4121381fa26981f42839b386f4f15214da4daeab47d959b487f1e3b5"
+},
+{
+  "id": "t2_firmwareinitrd",
+  "tier": 2,
+  "cat": "firmwareboot",
+  "track": "firmware",
+  "points": 110,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "초기 램 디스크 이미지",
+    "en": "Initial RAM Disk Image"
+  },
+  "prompt": {
+    "ko": "리눅스 커널 부팅 초기 단계에서 실제 루트 파일시스템을 마운트하기 전 메모리에 적재되는 임시 루트 파일시스템의 약칭을 입력하세요.",
+    "en": "Enter the acronym for the temporary root filesystem loaded into memory during Linux boot prior to mounting the real root device."
+  },
+  "hints": {
+    "ko": [
+      "initial ramdisk의 축약어입니다.",
+      "소문자 6글자로 입력하세요."
+    ],
+    "en": [
+      "Contraction of initial RAM disk.",
+      "Type 6 lowercase characters."
+    ]
+  },
+  "hash": "09e6c018d2c8c4903308613dd1b72484d57eadf12ec50ddc8f52e5accce470f2"
+},
+{
+  "id": "t2_firmwarebasecalc",
+  "tier": 2,
+  "cat": "firmwarerev",
+  "track": "firmware",
+  "points": 115,
+  "ci": true,
+  "fmt": "16진수 / hex",
+  "title": {
+    "ko": "MIPS 커널 언캐시드 메모리 세그먼트 베이스",
+    "en": "MIPS KSEG1 Base Address"
+  },
+  "prompt": {
+    "ko": "MIPS 32비트 아키텍처에서 부트 벡터(Reset Vector)가 위치하며 MMU 변환을 거치지 않는 kseg1 가상 주소 시작점을 16진수(`0x...` 형식)로 입력하세요.",
+    "en": "Enter the starting base address in hex (0x... format) for the MIPS32 unmapped and uncached kseg1 segment containing the reset vector."
+  },
+  "hints": {
+    "ko": [
+      "최상위 비트가 1이고 나머지가 0인 32비트 주소입니다.",
+      "0x8로 시작하고 0이 7개 붙습니다."
+    ],
+    "en": [
+      "32-bit address with highest nibble 8 followed by zeros.",
+      "Format as 0x80000000."
+    ]
+  },
+  "hash": "90235e1470d2a03c7dab9ab589ed5e47df7d76965211405289d650a821c466d6"
+},
+{
+  "id": "t2_firmwarebusybox",
+  "tier": 2,
+  "cat": "firmwarefs",
+  "track": "firmware",
+  "points": 115,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "임베디드 리눅스의 스위스 군용 칼",
+    "en": "Swiss Army Knife of Embedded Linux"
+  },
+  "prompt": {
+    "ko": "단일 실행 파일 안에 sh, ls, cat, ifconfig 등 수많은 표준 유닉스 유틸리티를 경량화하여 통합 제공하는 임베디드 리눅스 핵심 패키지 이름을 입력하세요.",
+    "en": "Enter the name of the multi-call binary providing miniature versions of many common UNIX utilities for resource-constrained embedded systems."
+  },
+  "hints": {
+    "ko": [
+      "바쁜 상자라는 뜻의 영단어 합성어입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Combines busy and box.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "9d75f0d7c398df565d7ac04c6819b62d6d8f9560f5eb4672596ecd8f7e96ae91"
+},
+{
+  "id": "t2_firmwareubifs",
+  "tier": 2,
+  "cat": "firmwarefs",
+  "track": "firmware",
+  "points": 120,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "순수 플래시 메모리 전용 파일시스템",
+    "en": "Unsorted Block Image Filesystem"
+  },
+  "prompt": {
+    "ko": "NAND 플래시 메모리의 배드 블록 관리 및 웨어 레벨링을 담당하는 UBI 볼륨 계층 위에서 동작하는 저널링 파일시스템 이름을 입력하세요.",
+    "en": "Enter the name of the journaling file system designed for raw NAND flash memory operating on top of the Unsorted Block Images layer."
+  },
+  "hints": {
+    "ko": [
+      "ubi 접두어 뒤에 fs가 결합됩니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Prefix ubi followed by fs.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "f2b9a9b7fc3ac970c0135980978f43e04ec731ea0e59e9bfbd6436d0caa2f8b2"
+},{
+    "id": "t2_firmwarecve",
+    "tier": 2,
+    "cat": "firmwaresec",
+    "track": "firmware",
+    "points": 120,
+    "ci": true,
+    "fmt": "약어 / acronym (4글자 / 4 chars)",
+    "title": {
+      "ko": "소프트웨어 구성 요소 자재 명세서",
+      "en": "Software Bill of Materials"
+    },
+    "prompt": {
+      "ko": "펌웨어 내 포함된 오픈소스 라이브러리와 바이너리 의존성 및 패키지 버전을 투명하게 명시하는 자재 명세서의 4글자 약어를 입력하세요.",
+      "en": "Enter the 4-letter acronym for the formalized specification listing all libraries, packages, and components comprising a firmware build."
+    },
+    "hints": {
+      "ko": [
+        "Software Bill of Materials의 머리글자입니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Initials of Software Bill of Materials.",
+        "Type in lowercase."
+      ]
+    },
+    "hash": "98f3ae1ef67113d8140d4f6cb8d2830070e21ea48f091be519659846c771a374"
+  },
+  
+{
+  "id": "t3_firmwareghidrabase",
+  "tier": 3,
+  "cat": "firmwarerev",
+  "track": "firmware",
+  "points": 140,
+  "ci": true,
+  "fmt": "두 단어 / two words",
+  "title": {
+    "ko": "펌웨어 메모리 매핑 기준 주소",
+    "en": "Firmware Memory Rebase Origin"
+  },
+  "prompt": {
+    "ko": "헤더가 없는 순수 바이너리(raw binary) 덤프를 Ghidra나 IDA Pro에서 분석할 때 절대 주소 포인터와 문자열 참조를 올바르게 복원하기 위해 설정해야 하는 시작 주소를 무엇이라 합니까? (두 단어: 기준 주소)",
+    "en": "What two-word term describes the starting memory address specified in reverse engineering disassemblers so absolute pointers and string references align correctly?"
+  },
+  "hints": {
+    "ko": [
+      "기본/기준을 뜻하는 base와 주소를 뜻하는 address의 결합입니다.",
+      "소문자로 공백을 포함해 입력하세요."
+    ],
+    "en": [
+      "Combines base and address separated by a space.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "28aec3139d822ec5cd5e72b3da0aec509959e95c148c9faea19609d9f632f0b5"
+},{
+    "id": "t3_firmwarebackdoor",
+    "tier": 3,
+    "cat": "firmwaresec",
+    "track": "firmware",
+    "points": 145,
+    "ci": true,
+    "fmt": "서비스 이름 / service name",
+    "title": {
+      "ko": "비암호화 레거시 원격 관리 포트",
+      "en": "Unencrypted Legacy Remote Protocol"
+    },
+    "prompt": {
+      "ko": "공유기 펌웨어에서 디버깅 목적으로 기본 활성화되어 23번 포트 통신 내용이 평문 노출되는 레거시 원격 터미널 서비스 프로토콜 이름을 입력하세요.",
+      "en": "Enter the name of the legacy remote terminal service running on port 23 often left open on embedded routers transmitting credentials in plaintext."
+    },
+    "hints": {
+      "ko": [
+        "telecommunications network의 약칭에서 유래했습니다.",
+        "소문자로 입력하세요."
+      ],
+      "en": [
+        "Derived from telecommunications network.",
+        "Type in lowercase."
+      ]
+    },
+    "hash": "5a4f77d09a9b2832e2e548152026ceb71b9bcea7d2cadf4b44cc8d23c428001d"
+  },
+  
+{
+  "id": "t3_firmwarecmdinj",
+  "tier": 3,
+  "cat": "firmwaresec",
+  "track": "firmware",
+  "points": 150,
+  "ci": true,
+  "fmt": "두 단어 / two words",
+  "title": {
+    "ko": "웹 관리 페이지 OS 시스템 명령 주입",
+    "en": "OS Shell Command Execution Flaw"
+  },
+  "prompt": {
+    "ko": "공유기 웹 관리자 페이지(CGI, PHP 등)가 핑(ping) 테스트나 NTP 서버 설정 입력값을 검증 없이 `system()`이나 `popen()`에 전달할 때 발생하는 가장 흔한 취약점 유형을 입력하세요. (두 단어)",
+    "en": "Enter the two-word vulnerability term occurring when embedded web CGIs pass unvalidated user inputs directly to shell execution functions like system() or popen()."
+  },
+  "hints": {
+    "ko": [
+      "명령(command)과 주입(injection)의 결합입니다.",
+      "소문자로 공백을 포함해 입력하세요."
+    ],
+    "en": [
+      "Combines command and injection with a space.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "5e8e5af630e323f31857c1cc395ce98e2bf222272a7adf06b13a4ba4154b1893"
+},
+{
+  "id": "t3_firmwareupnp",
+  "tier": 3,
+  "cat": "firmwaresec",
+  "track": "firmware",
+  "points": 150,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "자동 포트포워딩 프로토콜",
+    "en": "Universal Plug and Play Protocol"
+  },
+  "prompt": {
+    "ko": "로컬 네트워크 기기가 라우터에 요청하여 방화벽 포트를 자동으로 개방하게 해주지만, 인증 결여와 버퍼 오버플로우로 자주 악용되는 프로토콜 약어를 입력하세요.",
+    "en": "Enter the 4-letter acronym for the network protocol enabling automated NAT traversal and port forwarding, frequently exploited via unauthenticated SOAP services."
+  },
+  "hints": {
+    "ko": [
+      "Universal Plug and Play의 약칭입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Initials of Universal Plug and Play.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "2d91dec1adadfb907ec12f4ce4fab767dad29c48383a497debd2da484d3f1065"
+},
+{
+  "id": "t3_firmwarebootargs",
+  "tier": 3,
+  "cat": "firmwareboot",
+  "track": "firmware",
+  "points": 155,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "U-Boot 커널 부팅 인자 환경변수",
+    "en": "Kernel Boot Arguments Variable"
+  },
+  "prompt": {
+    "ko": "U-Boot 프롬프트에서 `init=/bin/sh`를 덧붙여 인증 없이 루트 셸을 즉시 획득할 수 있도록 커널 커맨드라인을 지정하는 핵심 환경변수 이름을 입력하세요.",
+    "en": "Enter the name of the U-Boot environment variable containing the kernel command line parameters, commonly edited to set init=/bin/sh for direct root access."
+  },
+  "hints": {
+    "ko": [
+      "boot와 arguments의 축약형인 args가 결합되었습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Combines boot and args.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "369947606056cbb3b1d87c4a6f324475ea74e6a5f52e7d67e09d4dcca82162b2"
+},
+{
+  "id": "t3_firmwareemufakenvram",
+  "tier": 3,
+  "cat": "firmwareemu",
+  "track": "firmware",
+  "points": 160,
+  "ci": true,
+  "fmt": "두 단어 / two words",
+  "title": {
+    "ko": "동적 링커 프리로드 후킹 대상",
+    "en": "Dynamic Linker Preload Target"
+  },
+  "prompt": {
+    "ko": "Firmadyne이나 리버스 엔지니어가 `LD_PRELOAD`를 통해 NVRAM 조회 함수(`nvram_get`)를 가로채 모의 응답을 반환할 때 컴파일하여 주입하는 ELF 바이너리 형태를 무엇이라 합니까? (두 단어: 공유 라이브러리)",
+    "en": "What two-word compiled ELF binary format is injected via LD_PRELOAD to hook hardware calls like nvram_get and simulate responses during emulation?"
+  },
+  "hints": {
+    "ko": [
+      "공유(shared)와 도서관/라이브러리(library)의 결합입니다.",
+      "소문자로 공백을 포함해 입력하세요."
+    ],
+    "en": [
+      "Combines shared and library separated by a space.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "38f6c569edcb922a1907ec94ae8ed28ccccfc005ec6db53da38870be6546a608"
+},
+{
+  "id": "t3_firmwaremodho",
+  "tier": 3,
+  "cat": "firmwaresec",
+  "track": "firmware",
+  "points": 160,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "추출된 펌웨어 보안 감사 스크립트",
+    "en": "Static Firmware Security Scanner"
+  },
+  "prompt": {
+    "ko": "추출된 펌웨어 파일시스템 디렉토리에서 SSL 개인키, 하드코딩된 패스워드, 취약 바이너리를 자동으로 탐색하는 유명한 bash 기반 정적 분석 도구 이름을 입력하세요.",
+    "en": "Enter the name of the popular Bash script used to search extracted firmware filesystems for sensitive artifacts like private keys, admin passwords, and binaries."
+  },
+  "hints": {
+    "ko": [
+      "firmware의 firm과 walker가 결합된 도구 이름입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Compound of firm and walker.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "68722cc806eb77a27b760c26a9b16797a65563c2836394ac13e1d701a52f446d"
+},
+{
+  "id": "t3_firmwareendianmips",
+  "tier": 3,
+  "cat": "firmwarerev",
+  "track": "firmware",
+  "points": 165,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "리틀 엔디안 MIPS 아키텍처 식별자",
+    "en": "Little-Endian MIPS Identifier"
+  },
+  "prompt": {
+    "ko": "Broadcom 등 다수의 공유기 칩셋에서 사용하는 리틀 엔디안(Little Endian) 방식 32비트 MIPS 아키텍처의 리눅스 타깃 트리플 약어를 소문자로 입력하세요.",
+    "en": "Enter the 6-character target architecture identifier representing 32-bit Little-Endian MIPS commonly found in router chipsets."
+  },
+  "hints": {
+    "ko": [
+      "mips 뒤에 endian-little의 el이 붙습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Appends 'el' (endian little) to mips.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "944356dcbd5b8dbb6de9ca200ca73ae6e9f9bd1f2e4ce8c498608b6185122b0b"
+},
+{
+  "id": "t3_firmwareslowbof",
+  "tier": 3,
+  "cat": "firmwaresec",
+  "track": "firmware",
+  "points": 165,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "경계 검사 부실 표준 C 복사 함수",
+    "en": "Unbounded String Copy Function"
+  },
+  "prompt": {
+    "ko": "길이 검증 없이 NULL 바이트를 만날 때까지 스택 버퍼로 문자열을 복사하여 임베디드 CGI에서 스택 오버플로우를 유발하는 대표적인 C 라이브러리 함수 이름을 입력하세요.",
+    "en": "Enter the standard C library function that copies strings without bounds checking until a null byte is found, frequently causing stack overflows in embedded CGIs."
+  },
+  "hints": {
+    "ko": [
+      "string copy의 축약 명칭입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Abbreviation of string copy.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "c666ece6f0c76098e870043443e05331c96aa111c06486c17c86373253376e20"
+},
+{
+  "id": "t3_firmwaresecureboot",
+  "tier": 3,
+  "cat": "firmwaresec",
+  "track": "firmware",
+  "points": 170,
+  "ci": true,
+  "fmt": "두 단어 / two words",
+  "title": {
+    "ko": "하드웨어 신뢰 기반 보안 부팅",
+    "en": "Hardware Root of Trust Boot Chain"
+  },
+  "prompt": {
+    "ko": "하드웨어 RoT(Root of Trust) 및 비대칭 암호 서명을 검증하여 허가되지 않은 변조 펌웨어의 부팅을 차단하는 보안 기술을 무엇이라 합니까? (두 단어)",
+    "en": "What two-word security mechanism uses cryptographic signature verification chained from hardware RoT to prevent unauthenticated, modified firmware from booting?"
+  },
+  "hints": {
+    "ko": [
+      "안전한(secure)과 부팅(boot)의 결합입니다.",
+      "소문자로 공백을 포함해 입력하세요."
+    ],
+    "en": [
+      "Combines secure and boot with a space.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "c6cf0b83f25bc0ffbfce01013a7faba0b00a0a5623acf1f029700a9327e23530"
+},
+{
+  "id": "t4_firmwarefuzzing",
+  "tier": 4,
+  "cat": "firmwaresec",
+  "track": "firmware",
+  "points": 185,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "QEMU 모드 지원 커버리지 가이드 퍼저",
+    "en": "Coverage-Guided Binary Fuzzer"
+  },
+  "prompt": {
+    "ko": "소스코드가 없는 임베디드 독점 바이너리를 QEMU 에뮬레이션 모드(-Q)를 통해 커버리지 가이드 방식으로 퍼징할 수 있는 대표적 도구 이름을 입력하세요.",
+    "en": "Enter the name of the premier coverage-guided fuzzing framework supporting closed-source embedded binaries via QEMU instrumentation mode."
+  },
+  "hints": {
+    "ko": [
+      "AFL의 현대적 커뮤니티 포크로 뒤에 플러스 기호 두 개가 붙습니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Modern fork of American Fuzzy Lop with two plus signs.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "1659c5c4917032d07fad8c67c6c33639c872d99c312c4299d131e33140e3cb67"
+},
+{
+  "id": "t4_firmwarepatchdiff",
+  "tier": 4,
+  "cat": "firmwarerev",
+  "track": "firmware",
+  "points": 190,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "바이너리 함수 제어 흐름 패치 비교 도구",
+    "en": "Binary Patch Diffing Tool"
+  },
+  "prompt": {
+    "ko": "제조사가 보안 패치 전후로 배포한 두 펌웨어 바이너리의 함수 제어 흐름 그래프(CFG)를 비교하여 1-day 취약점 패치 지점을 신속히 식별하는 도구 이름을 입력하세요.",
+    "en": "Enter the name of the industry-standard binary comparison tool that diffs control flow graphs to isolate security patches and 1-day vulnerabilities."
+  },
+  "hints": {
+    "ko": [
+      "binary와 diff의 합성어입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Compound of binary and diff.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "187a0ae8ae7b43389a10c68b99586cea71c48dd3dfcd554fbb1de2d3358ec0b8"
+},
+{
+  "id": "t4_firmwareglitch",
+  "tier": 4,
+  "cat": "firmwarehw",
+  "track": "firmware",
+  "points": 200,
+  "ci": true,
+  "fmt": "두 단어 / two words",
+  "title": {
+    "ko": "전원 전압 결함 주입 공격",
+    "en": "Power Rail Fault Injection Flaw"
+  },
+  "prompt": {
+    "ko": "부팅 서명 검증 루프 실행 순간 전원 VDD 전압을 수십 나노초 동안 순간적으로 강하시켜 CPU 명령어 분기를 건너뛰게 만드는 결함 주입 공격 기법을 무엇이라 합니까? (두 단어: 전압 결함)",
+    "en": "What two-word fault injection attack abruptly drops the core VDD voltage for tens of nanoseconds during signature verification to skip security branch instructions?"
+  },
+  "hints": {
+    "ko": [
+      "전압(voltage)과 글리칭(glitching)의 결합입니다.",
+      "소문자로 공백을 포함해 입력하세요."
+    ],
+    "en": [
+      "Combines voltage and glitching with a space.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "46ed73803a2b95bbc359d5ce0673269d62e10b89270d9b09d26a7a1bbc9e6d4c"
+},
+{
+  "id": "t4_firmwareemacs",
+  "tier": 4,
+  "cat": "firmwaresec",
+  "track": "firmware",
+  "points": 210,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "바이너리 반환 지향 가젯 스캐너",
+    "en": "Return-Oriented Programming Gadget Scanner"
+  },
+  "prompt": {
+    "ko": "MIPS/ARM 펌웨어 바이너리에서 NX(Non-Executable) 스택 완화 기법을 우회하기 위해 `jr ra` 또는 `pop {pc}`로 끝나는 가젯 시퀀스를 자동 탐색하는 도구 이름을 입력하세요.",
+    "en": "Enter the name of the tool used to search embedded binaries for return-oriented programming (ROP) gadget sequences ending in return instructions."
+  },
+  "hints": {
+    "ko": [
+      "ROP 접두어 뒤에 gadget이 결합된 도구 이름입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Combines ROP and gadget.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "4f169a013ca71653b0daee4a324f48e8640a81250de1b47afe1c4dd96428747a"
+},
+{
+  "id": "t4_firmwaretrustzone",
+  "tier": 4,
+  "cat": "firmwarehw",
+  "track": "firmware",
+  "points": 220,
+  "ci": true,
+  "fmt": "한 단어 / one word",
+  "title": {
+    "ko": "ARM 하드웨어 보안 영역 격리 기술",
+    "en": "ARM Hardware Security Extension"
+  },
+  "prompt": {
+    "ko": "ARM 프로세서에서 메인 OS(Normal World)와 보안 OS(Secure World)를 하드웨어 수준에서 분리하여 암호키와 결제 정보를 안전하게 보호하는 TEE 하드웨어 아키텍처 이름을 입력하세요.",
+    "en": "Enter the name of ARM's system-wide hardware security approach that partitions the SoC into Normal World and Secure World execution environments."
+  },
+  "hints": {
+    "ko": [
+      "신뢰(trust)와 영역(zone)이 결합된 상표명입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Combines trust and zone into a single word.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "edb70ad82cc6bb2d74090018c7ffc649cc14f00099f4fd806110a96741ca0ee8"
+},
+{
+  "id": "t4_firmwarespiundump",
+  "tier": 4,
+  "cat": "firmwarehw",
+  "track": "firmware",
+  "points": 230,
+  "ci": true,
+  "fmt": "도구 이름 / tool name",
+  "title": {
+    "ko": "오픈소스 하드웨어 롬 플래시 프로그래머",
+    "en": "Open-Source ROM Flash Utility"
+  },
+  "prompt": {
+    "ko": "CH341A, Bus Pirate, Raspberry Pi 등 다양한 하드웨어 프로그래머를 연결하여 마더보드와 IoT 보드의 BIOS/SPI 플래시 칩을 읽고 쓰고 검증하는 대표적 CLI 도구 이름을 입력하세요.",
+    "en": "Enter the name of the universal open-source CLI utility used to identify, read, write, and verify BIOS/ROM flash chips across various programmer interfaces."
+  },
+  "hints": {
+    "ko": [
+      "flash와 rom이 결합된 단어입니다.",
+      "소문자로 입력하세요."
+    ],
+    "en": [
+      "Combines flash and rom into a single word.",
+      "Type in lowercase."
+    ]
+  },
+  "hash": "70df835909790827312c474bdeae830a159ba6a0ffd5eed62a0b88749b9ced24"
+},
+{
+  "id": "t4_firmwarecapstone",
+  "tier": 4,
+  "cat": "firmwaresec",
+  "track": "firmware",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IoT 펌웨어 추출 및 리버싱 종합 캡스톤",
+    "en": "IoT Firmware Reverse Engineering Capstone"
+  },
+  "prompt": {
+    "ko": "IoT 무선 공유기 펌웨어 침해 사고 및 백도어 분석 종합 보고서입니다. 펌웨어 역공학 분석 과정에서 다음 인시던트 파라미터가 추출되었습니다.\n\n- 파일시스템 시작 오프셋: `O = 4096`\n- 압축 블록 수: `B = 12`\n- 발견된 하드코딩 백도어 포트: `P = 24`\n- 검증 체크섬 수식: `O + (B * 10) + (P * 1)`\n\n산출된 검증 체크섬을 `FLAG{FIRMWARE-<checksum>-EXTRACTED}` 형식으로 조립하여 제출하세요.\n\n```briefing\n[FIRMWARE REVERSE ARTIFACT]\nSQUASHFS_START_OFFSET = 4096\nCOMPRESSED_BLOCK_COUNT = 12\nHARDCODED_BACKDOOR_PORT = 24\n```",
+    "en": "IoT router firmware breach analysis briefing. Reverse engineering of the compromised image extracted the following parameters:\n\n- SquashFS start offset: `O = 4096`\n- Compressed block count: `B = 12`\n- Hardcoded backdoor port: `P = 24`\n- Checksum formula: `O + (B * 10) + (P * 1)`\n\nAssemble the result into `FLAG{FIRMWARE-<checksum>-EXTRACTED}` format.\n\n```briefing\n[FIRMWARE REVERSE ARTIFACT]\nSQUASHFS_START_OFFSET = 4096\nCOMPRESSED_BLOCK_COUNT = 12\nHARDCODED_BACKDOOR_PORT = 24\n```"
+  },
+  "hints": {
+    "ko": [
+      "O = 4096, B*10 = 120, P*1 = 24입니다. 합산하면 4240입니다.",
+      "체크섬 값을 계산하여 FLAG{FIRMWARE-<체크섬>-EXTRACTED} 템플릿에 대입하세요."
+    ],
+    "en": [
+      "O = 4096, B*10 = 120, P*1 = 24. Sum equals 4240.",
+      "Calculate checksum and place it into the FLAG{FIRMWARE-<checksum>-EXTRACTED} template."
+    ]
+  },
+  "hash": "d93ed67f1a7f1dbc398f6b75d5e8e04a40d72cf31bd447a05cd9f965921a2a59"
+}
 ];

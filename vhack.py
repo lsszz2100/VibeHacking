@@ -243,6 +243,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★☆",
         "related": [18, 35, 59],
     },
+    "13": {
+        "name": "eBPF 커널 침투 및 런타임 보안 랩",
+        "dir":  "13_ebpf_kernel_lab",
+        "desc": "BPFGuard: Kprobe 시스템콜 도청 · bpf_probe_write_user 메모리 변조 권한상승 · XDP 스텔스 은닉 채널 · BPF LSM 무결성 방어",
+        "url":  "웹 콘솔 & eBPF API: http://localhost:8013",
+        "difficulty": "★★★★",
+        "related": [1, 26, 70],
+    },
 }
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────

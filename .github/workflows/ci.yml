@@ -1,0 +1,78 @@
+name: Continuous Integration & Security Audits
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wargame-audit:
+    name: Wargame 1K Suite Audits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 1. Verify Challenge Integrity & Structural Invariants
+        run: node wargame/scripts/verify.js
+
+      - name: 2. Grader Heuristics & Strict Anti-Ambiguity Audit
+        run: node wargame/scripts/audit.js --strict
+
+      - name: 3. Cross-Challenge Answer Leak Scan
+        run: node wargame/scripts/leakscan.js
+
+      - name: 4. Automated Ciphertext / Derivable Solver Engine
+        run: node wargame/scripts/solve-derivable.js
+
+  labs-automated-tests:
+    name: Hands-on Labs & Simulator Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest fastapi starlette pydantic httpx flask pyjwt pymodbus
+
+      - name: Run Full Pytest Suite (Labs 01~13 + Infra)
+        run: pytest -v
+
+  cli-smoke-test:
+    name: VibeHacking CLI Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: CLI Help Command
+        run: python3 vhack.py --help
+
+      - name: CLI Section Listing
+        run: python3 vhack.py list
+
+      - name: CLI Lab Inventory Listing
+        run: python3 vhack.py lab ls
