@@ -6,15 +6,17 @@
 
 ## 1. 프로젝트 개요 및 현재 상태 (Current Status)
 
-- **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH)
-- **인터랙티브 실습 랩 (Docker Labs)**: 총 12개 실전 랩 완비 (`labs/01` ~ `labs/12`)
-- **브라우저 터미널 워게임**: **총 29개 트랙 / 1015 문제** 달성 (`wargame/index.html`, HUD `0/1015`)
-  - **27번째 신규 트랙**: `wasm` 🧩 WebAssembly 보안 (35개 문제: Tier 0~4)
-  - 헤더 식별자, LEB128 정수 압축, 선형 메모리 버퍼 오버플로우 오프셋, 간접 호출(`call_indirect`) 변조, Wasm 샌드박스 탈출 및 포렌식 캡스톤
+- **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH) + 주요 원본 보안 가이드 인제스천(`41_Korean_Certifications/07_kisa_critical_infrastructure_assessment.md`, `21_Windows_Exploitation/07_windows_exploit_writing_guide.md`)
+- **인터랙티브 실습 랩 (Docker Labs)**: 총 13개 실전 랩 완비 (`labs/01` ~ `labs/13`)
+- **브라우저 터미널 워게임**: **총 29개 트랙 / 1,015문제** 달성 (`wargame/index.html`, HUD `0/1015`)
+  - **27번째 트랙**: `wasm` 🧩 WebAssembly 보안 (35개 문제: Tier 0~4)
+  - **28번째 트랙**: `ebpf` 🐝 eBPF & Kernel Security (35개 문제: Tier 0~4)
+  - **29번째 트랙**: `firmware` 💾 Firmware & Embedded Security (35개 문제: Tier 0~4)
+- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Wargame 감사, Pytest 82개 랩 테스트, CLI 스모크 테스트 자동화)
 
 ---
 
-## 2. 실습 랩(1~12) & 교재 & 워게임 연계 매트릭스
+## 2. 실습 랩(1~13) & 교재 & 워게임 연계 매트릭스
 
 | 랩 ID | 랩 이름 | 주요 침투/방어 주제 | 연계 교재 챕터 | 워게임 트랙 | 실행 명령 |
 | :---: | :--- | :--- | :--- | :---: | :--- |
@@ -30,6 +32,7 @@
 | **10** | Kubernetes 보안 랩 (KubeShield) | SA 토큰 탈취, RBAC 남용, hostPath 탈출, privileged 장악 | `29_Container_Kubernetes_Security`, `70_Kubernetes_Security` | `cloud` | `python3 vhack.py lab start 10` |
 | **11** | Active Directory 랩 (KeroShield) | AS-REP & Kerberoasting, DCSync, Golden Ticket | `54_Active_Directory_Attacks` | `activedirectory` | `python3 vhack.py lab start 11` |
 | **12** | CI/CD & 공급망 랩 (PipePoison) | PPE 커맨드 인젝션, 의존성 혼동, 러너 시크릿 탈취, SLSA 변조 | `18_DevSecOps`, `35_Supply_Chain_Attacks` | `supplychain` | `python3 vhack.py lab start 12` |
+| **13** | eBPF 커널 보안 랩 (BPFGuard) | Kprobe 시스템콜 도청, bpf_probe_write_user 메모리 변조, XDP 은닉 통신, BPF LSM 방어 | `01_Linux_Basics`, `26_Linux_Hardening`, `70_Kubernetes_Security` | `ebpf` | `python3 vhack.py lab start 13` |
 
 ---
 
@@ -38,19 +41,19 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (42개 테스트: HA DB 백업, Lab 10, Lab 11, Lab 12)
+# 1. 전체 단위/통합 테스트 (82개 테스트 전원 통과: Labs 01~13 및 HA DB 백업)
 pytest
 
-# 2. 워게임 무결성 및 구조 검증 (1015 문제, 27트랙, 5티어)
+# 2. 워게임 무결성 및 구조 검증 (1,015문제, 29트랙, 5티어)
 node wargame/scripts/verify.js
 
-# 3. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔
+# 3. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
 node wargame/scripts/leakscan.js
 
-# 4. 워게임 채점 규칙 및 README 포맷 엄격 감사
+# 4. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
 node wargame/scripts/audit.js --strict
 
-# 5. 연산/유도형 챌린지 113개 자동 풀이 검증
+# 5. 연산/유도형 챌린지 115개 자동 풀이 검증 (115/115 통과)
 node wargame/scripts/solve-derivable.js
 ```
 
