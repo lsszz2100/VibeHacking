@@ -135,14 +135,21 @@ python3 vhack.py update                  # git pull 获取最新内容
 ### 实验环境 (基于 Docker)
 
 | # | 实验室名称 | 内容 | 访问地址 | 难度 |
-|:-:|-----------|------|----------|:----:|
+|:----:|-----------|------|----------|:----:|
 | **01** | Web 渗透实验室 | DVWA · Juice Shop · WebGoat | 8080(DVWA·SQLi) / 3001(Juice Shop) / 8081(WebGoat) | ★★☆ |
 | **02** | 二进制漏洞利用实验室 | BOF · ret2libc · ROP · fmtstr · heap | nc localhost 10001~10005 | ★★★ |
 | **03** | 网络渗透实验室 | SSH · FTP · DNS · SMTP 漏洞服务 | docker exec shell | ★★☆ |
-| **04** | 云/容器安全实验室 | SSRF · AWS IMDS · K8s 逃逸 | http://localhost:8080 | ★★★ |
+| **04** | 云/容器安全实验室 | SSRF · AWS IMDS · K8s 逃逸 | http://localhost:8040 | ★★★ |
 | **05** | 综合场景实验室 | APT 攻击链模拟 | http://localhost:8888 | ★★★★ |
 | **06** | 固件渗透实验室 | binwalk · QEMU 仿真 · 硬编码凭证 | http://localhost:8062 | ★★★ |
 | **07** | 移动安全实验室 | APK 静态分析 · Frida · JWT alg:none 绕过 | http://localhost:8072 | ★★★ |
+| **08** | LLM 安全实验室 | 提示词注入 · RAG 污染 · 安全护栏越狱 | http://localhost:8088 | ★★★ |
+| **09** | ICS/SCADA 工控安全实验室 | Modbus 协议操纵 · PLC 寄存器攻击 | Modbus: 5020 / Web: 8089 | ★★★ |
+| **10** | Kubernetes 安全实验室 | RBAC 提权 · Kubelet 漏洞利用 · Pod 逃逸 | http://localhost:8090 | ★★★★ |
+| **11** | Active Directory / Kerberos 实验室 | Kerberoasting · AS-REP Roasting · Pass-the-Hash | http://localhost:8011 | ★★★★ |
+| **12** | CI/CD 供应链安全实验室 | GitHub Actions 投毒 · 依赖混淆管道劫持 | http://localhost:8012 | ★★★ |
+| **13** | eBPF / 内核安全实验室 | eBPF Rootkit 逃避 · 系统调用 Hook · 运行时安全 | http://localhost:8013 | ★★★★★ |
+| **14** | 恶意文档(Maldoc)分析实验室 | VBA 宏反混淆 · RTF/OOXML 漏洞利用分析 | http://localhost:8014 | ★★★★ |
 
 ```bash
 # 快速实践示例：Web 渗透

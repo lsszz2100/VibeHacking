@@ -189,28 +189,36 @@ vhack lab ls
 ```
 🔬 실습 환경 목록
 
-  #     이름                       난이도   설명
+     #  이름                           난이도  설명
   ───────────────────────────────────────────────────────────────────────────
-   01   🧪 웹 해킹 랩               ★★☆   DVWA · Juice Shop · WebGoat — SQLi, XSS, IDOR, 인증 우회
-         URL: http://localhost:8080   관련 섹션: 5, 12, 23
-
-   02   🧪 바이너리 익스플로잇 랩    ★★★   BOF · ret2libc · ROP · fmtstr · tcache heap
+    01  🧪 웹 해킹 랩                     ★★☆  DVWA · Juice Shop · WebGoat — SQLi, XSS, IDOR, 인증 우회
+         URL: http://localhost:8080/dvwa/  |  Juice Shop: http://localhost:3001  |  WebGoat: http://localhost:8081/WebGoat  관련 섹션: 5, 12, 23
+    02  🧪 바이너리 익스플로잇 랩               ★★★  BOF · ret2libc · ROP · fmtstr · tcache heap
          URL: nc localhost 10001~10005  관련 섹션: 9, 19, 3
-
-   03   🧪 네트워크 해킹 랩          ★★☆   SSH · FTP · DNS zone transfer · SMTP relay · 피벗
+    03  🧪 네트워크 해킹 랩                  ★★☆  SSH · FTP · DNS zone transfer · SMTP relay · 피벗
          URL: docker exec -it net_lab_attacker bash  관련 섹션: 2, 24, 10
-
-   04   🧪 클라우드/컨테이너 보안 랩  ★★★   AWS IMDS · SSRF → 자격증명 탈취 · K8s 탈출 · 컨테이너 탈출
-         URL: http://localhost:8080 (SSRF target)  관련 섹션: 14, 29, 38
-
-   05   🧪 전체 시나리오 통합 랩      ★★★★  APT 체인 · 외부 웹 → 내부망 이동 → DB 침투 → 데이터 탈취
+    04  🧪 클라우드/컨테이너 보안 랩             ★★★  AWS IMDS · SSRF → 자격증명 탈취 · K8s 탈출 · 컨테이너 탈출
+         URL: http://localhost:8040 (SSRF target)  관련 섹션: 14, 29, 38
+    05  🧪 전체 시나리오 통합 랩              ★★★★  APT 체인 · 외부 웹 → 내부망 이동 → DB 침투 → 데이터 탈취
          URL: http://localhost:8888  관련 섹션: 10, 17, 44
-
-   06   🧪 펌웨어 해킹 랩            ★★★   binwalk 추출 · QEMU ARM 에뮬레이션 · 하드코딩 자격증명 발견 CTF
-         URL: http://localhost:8062 (웹 패널) · docker exec -it firmware_analyzer bash  관련 섹션: 61, 27, 65
-
-   07   🧪 모바일 보안 랩            ★★★   APK 정적 분석(jadx·apktool) · Frida 동적 분석 · JWT alg:none 우회
-         URL: http://localhost:8072 (취약 API) · docker exec -it apk_analyzer bash  관련 섹션: 28, 52, 47
+    06  🧪 펌웨어 해킹 랩                   ★★★  binwalk 추출 · QEMU ARM 에뮬레이션 · 하드코딩 자격증명 발견 CTF
+         URL: 취약 펌웨어 웹 패널: http://localhost:8062  |  분석 환경: docker exec -it firmware_analyzer bash  관련 섹션: 61, 27, 65
+    07  🧪 모바일 보안 랩                   ★★★  Android APK 정적 분석(jadx·apktool) · Frida 동적 분석 · 하드코딩 API 키 · JWT alg:none 우회
+         URL: 취약 모바일 API: http://localhost:8072  |  분석 환경: docker exec -it apk_analyzer bash  관련 섹션: 28, 52, 47
+    08  🧪 AI/LLM 보안 랩                ★★★  프롬프트 인젝션 · RAG 간접 주입 · 에이전트 도구 남용 · 시스템 프롬프트 유출
+         URL: http://localhost:8088  관련 섹션: 11, 31, 58
+    09  🧪 ICS/SCADA 제어 보안 랩          ★★★  Modbus/TCP 제어 · 비인가 코일 조작 · 텔레메트리 기만(FDI) · SIS 비상 안전 트립
+         URL: HMI 패널: http://localhost:8089  |  Modbus TCP: localhost:5020  관련 섹션: 37, 63
+    10  🧪 Kubernetes & 컨테이너 보안 랩     ★★★  K8s ServiceAccount 토큰 탈취 · RBAC 과다 권한 남용 · hostPath 루트 마운트 탈출 · privileged 컨테이너 장악
+         URL: 웹 콘솔 & API: http://localhost:8090  관련 섹션: 14, 29, 38
+    11  🧪 Active Directory & Kerberos 침투 랩   ★★★☆  KeroShield: AS-REP Roasting · Kerberoasting · DCSync 복제 탈취 · Golden Ticket 도메인 장악
+         URL: 웹 콘솔 & Kerberos API: http://localhost:8011  관련 섹션: 54, 10, 44
+    12  🧪 CI/CD & 소프트웨어 공급망 침투 랩    ★★★☆  PipePoison: Poisoned Pipeline Execution (PPE) · 의존성 혼동(Dependency Confusion) · 빌드 러너 Secrets 탈취 · 릴리스 백도어 변조
+         URL: 웹 콘솔 & CI/CD API: http://localhost:8012  관련 섹션: 18, 35, 59
+    13  🧪 eBPF 커널 침투 및 런타임 보안 랩     ★★★★  BPFGuard: Kprobe 시스템콜 도청 · bpf_probe_write_user 메모리 변조 권한상승 · XDP 스텔스 은닉 채널 · BPF LSM 무결성 방어
+         URL: 웹 콘솔 & eBPF API: http://localhost:8013  관련 섹션: 1, 26, 70
+    14  🧪 문서형 악성코드 & PDF 분석 랩       ★★★☆  DocArmor: OLE/VBA 매크로 난독화 해제 · PDF FlateDecode 스트림 분석 · CVE-2017-11882 수식 에디터 RCE · CVE-2021-40444 MSHTML 외부 OLE 차단
+         URL: 웹 콘솔 & MalDoc API: http://localhost:8014  관련 섹션: 6, 7, 45
 ```
 
 ### 4-2. 실습 환경 시작 (`lab start`)
@@ -248,10 +256,17 @@ vhack lab start 01
 | **SQLi 타겟** | http://localhost:8080/sqli/ | — |
 | **Lab 02 — pwn** | `nc localhost 10001` (BOF) · `10002` (ret2libc) · `10003` (ROP) · `10004` (fmtstr) · `10005` (heap) | — |
 | **Lab 03 — 네트워크** | `docker exec -it net_lab_attacker bash` | — |
-| **Lab 04 — 클라우드** | http://localhost:8080 (SSRF) · http://localhost:8443 (K8s) · http://localhost:5000 (Registry) | — |
+| **Lab 04 — 클라우드** | http://localhost:8040 (SSRF) · http://localhost:8443 (K8s) · http://localhost:5000 (Registry) | — |
 | **Lab 05 — 통합** | http://localhost:8888 | admin / admin123 |
 | **Lab 06 — 펌웨어** | http://localhost:8062 (웹 패널) · `docker exec -it firmware_analyzer bash` (binwalk 분석) | admin / firmware_admin_2024 |
 | **Lab 07 — 모바일** | http://localhost:8072 (취약 API) · `docker exec -it apk_analyzer bash` (jadx·frida) | API 키: sk-mobile-dev-key-2024-insecure |
+| **Lab 08 — AI/LLM** | http://localhost:8088 | — |
+| **Lab 09 — ICS/SCADA** | http://localhost:8089 (HMI 패널) · Modbus TCP localhost:5020 | — |
+| **Lab 10 — K8s** | http://localhost:8090 | — |
+| **Lab 11 — AD/Kerberos** | http://localhost:8011 | — |
+| **Lab 12 — CI/CD** | http://localhost:8012 | — |
+| **Lab 13 — eBPF** | http://localhost:8013 | — |
+| **Lab 14 — MalDoc** | http://localhost:8014 | — |
 
 ### 4-4. 실습 환경 종료
 
@@ -697,8 +712,17 @@ vhack list                        # no more "python3 vhack.py" needed
 | 01 Web | `vhack lab start 01` | http://localhost:8080 | SQLi, XSS, CSRF |
 | 02 Pwn | `vhack lab start 02` | `nc localhost 10001~10005` | BOF, ret2libc, ROP, fmtstr, heap |
 | 03 Network | `vhack lab start 03` | `docker exec -it net_lab_attacker bash` | SSH, FTP, DNS |
-| 04 Cloud | `vhack lab start 04` | http://localhost:8080 | SSRF, K8s, containers |
+| 04 Cloud | `vhack lab start 04` | http://localhost:8040 | SSRF, K8s, containers |
 | 05 Full | `vhack lab start 05` | http://localhost:8888 | APT chain simulation |
+| 06 Firmware | `vhack lab start 06` | http://localhost:8062 | binwalk, QEMU, credentials |
+| 07 Mobile | `vhack lab start 07` | http://localhost:8072 | APK, jadx, Frida, JWT |
+| 08 LLM | `vhack lab start 08` | http://localhost:8088 | Prompt injection, RAG, guardrails |
+| 09 ICS/SCADA | `vhack lab start 09` | http://localhost:8089 | Modbus TCP, PLC registers, HMI |
+| 10 K8s | `vhack lab start 10` | http://localhost:8090 | RBAC, hostPath escape, Kubelet |
+| 11 AD | `vhack lab start 11` | http://localhost:8011 | Kerberoasting, AS-REP, Golden Ticket |
+| 12 CI/CD | `vhack lab start 12` | http://localhost:8012 | GitHub Actions PPE, dependency confusion |
+| 13 eBPF | `vhack lab start 13` | http://localhost:8013 | Syscall hooking, rootkit, BPF LSM |
+| 14 MalDoc | `vhack lab start 14` | http://localhost:8014 | VBA macros, PDF streams, CVE exploits |
 
 ## Study Tips
 

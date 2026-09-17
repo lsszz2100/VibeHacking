@@ -116,7 +116,7 @@ services:
       cloud_lab_net:
         ipv4_address: 172.18.0.50
     ports:
-      - "8080:5000"
+      - "8040:5000"
     environment:
       - METADATA_SERVER=http://172.18.0.20
       - SECRET_FLAG=FLAG{ssrf_t0_1mds_pwn3d}

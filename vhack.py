@@ -177,7 +177,7 @@ LABS: dict[str, dict] = {
         "name": "클라우드/컨테이너 보안 랩",
         "dir":  "04_cloud_container_lab",
         "desc": "AWS IMDS · SSRF → 자격증명 탈취 · K8s 탈출 · 컨테이너 탈출",
-        "url":  "http://localhost:8080 (SSRF target)",
+        "url":  "http://localhost:8040 (SSRF target)",
         "difficulty": "★★★",
         "related": [14, 29, 38],
     },

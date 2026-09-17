@@ -139,10 +139,17 @@ python3 vhack.py update                  # git pull で最新コンテンツ取�
 | **01** | Webハッキングラボ | DVWA · Juice Shop · WebGoat | 8080(DVWA·SQLi) / 3001(Juice Shop) / 8081(WebGoat) | ★★☆ |
 | **02** | バイナリエクスプロイトラボ | BOF · ret2libc · ROP · fmtstr · heap | nc localhost 10001~10005 | ★★★ |
 | **03** | ネットワークハッキングラボ | SSH · FTP · DNS · SMTP脆弱サービス | docker exec シェル | ★★☆ |
-| **04** | クラウド/コンテナセキュリティラボ | SSRF · AWS IMDS · K8s脱出 | http://localhost:8080 | ★★★ |
+| **04** | クラウド/コンテナセキュリティラボ | SSRF · AWS IMDS · K8s脱出 | http://localhost:8040 | ★★★ |
 | **05** | 総合シナリオラボ | APT攻撃チェーンシミュレーション | http://localhost:8888 | ★★★★ |
 | **06** | ファームウェアハッキングラボ | binwalk · QEMUエミュレーション · ハードコード資格情報 | http://localhost:8062 | ★★★ |
 | **07** | モバイルセキュリティラボ | APK静的解析 · Frida · JWT alg:none バイパス | http://localhost:8072 | ★★★ |
+| **08** | LLMセキュリティラボ | プロンプトインジェクション · RAG汚染 · ガードレール脱獄 | http://localhost:8088 | ★★★ |
+| **09** | ICS/SCADAセキュリティラボ | Modbusプロトコル改ざん · PLCレジスタ攻撃 | Modbus: 5020 / Web: 8089 | ★★★ |
+| **10** | Kubernetesセキュリティラボ | RBAC権限昇格 · Kubeletエクスプロイト · Pod脱出 | http://localhost:8090 | ★★★★ |
+| **11** | Active Directory / Kerberosラボ | Kerberoasting · AS-REP Roasting · Pass-the-Hash | http://localhost:8011 | ★★★★ |
+| **12** | CI/CDサプライチェーンセキュリティラボ | GitHub Actionsポイズニング · 依存関係混乱攻撃 | http://localhost:8012 | ★★★ |
+| **13** | eBPF / カーネルセキュリティラボ | eBPFルートキット検知回避 · Syscallフック · ランタイム保護 | http://localhost:8013 | ★★★★★ |
+| **14** | 悪性文書(Maldoc)解析ラボ | VBAマクロ難読化解除 · RTF/OOXMLエクスプロイト解析 | http://localhost:8014 | ★★★★ |
 
 ```bash
 # 実習例: Webハッキング

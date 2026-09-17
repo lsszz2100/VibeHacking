@@ -61,7 +61,7 @@ features = {
     "한국어 완성도"  : "처음부터 한국어로 기획·작성",
     "이중언어"       : "한국어 / English 전 파일 제공",
     "완전한 커버리지": "75섹션 전 보안 영역",
-    "CTF 실습 환경"  : "도커 기반 7개 랩 즉시 구동",
+    "CTF 실습 환경"  : "도커 기반 14개 랩 즉시 구동",
 }
 assert all(features.values()), "All checks passed ✓"
 ```
@@ -181,10 +181,17 @@ python3 vhack.py update                 # git pull
 | **01** | 웹 해킹 랩 | DVWA · Juice Shop · WebGoat | 8080(DVWA·SQLi) / 3001(Juice Shop) / 8081(WebGoat) | ★★☆ |
 | **02** | 바이너리 익스플로잇 랩 | BOF · ret2libc · ROP · fmtstr · heap | nc localhost 10001~10005 | ★★★ |
 | **03** | 네트워크 해킹 랩 | SSH · FTP · DNS · SMTP 취약 서비스 | docker exec 진입 | ★★☆ |
-| **04** | 클라우드/컨테이너 보안 랩 | SSRF · AWS IMDS · K8s 탈출 | http://localhost:8080 | ★★★ |
+| **04** | 클라우드/컨테이너 보안 랩 | SSRF · AWS IMDS · K8s 탈출 | http://localhost:8040 | ★★★ |
 | **05** | 전체 시나리오 통합 랩 | APT 공격 체인 시뮬레이션 | http://localhost:8888 | ★★★★ |
 | **06** | 펌웨어 해킹 랩 | binwalk · QEMU 에뮬레이션 · 하드코딩 자격증명 | http://localhost:8062 | ★★★ |
 | **07** | 모바일 보안 랩 | APK 정적분석 · Frida · JWT alg:none 우회 | http://localhost:8072 | ★★★ |
+| **08** | LLM 보안 랩 | 프롬프트 인젝션 · RAG 오염 · 가드레일 탈옥 | http://localhost:8088 | ★★★ |
+| **09** | ICS/SCADA 보안 랩 | Modbus 프로토콜 조작 · PLC 레지스터 공격 | Modbus: 5020 / Web: 8089 | ★★★ |
+| **10** | Kubernetes 보안 랩 | RBAC 권한 상승 · Kubelet 익스플로잇 · Pod 탈출 | http://localhost:8090 | ★★★★ |
+| **11** | Active Directory / Kerberos 랩 | Kerberoasting · AS-REP Roasting · Pass-the-Hash | http://localhost:8011 | ★★★★ |
+| **12** | CI/CD 공급망 보안 랩 | GitHub Actions 포이즈닝 · 의존성 혼선 파이프라인 탈취 | http://localhost:8012 | ★★★ |
+| **13** | eBPF / 커널 보안 랩 | eBPF 루트킷 탐지 우회 · Syscall 후킹 · 런타임 보안 | http://localhost:8013 | ★★★★★ |
+| **14** | 악성 문서(Maldoc) 분석 랩 | VBA 매크로 난독화 해제 · RTF/OOXML 익스플로잇 | http://localhost:8014 | ★★★★ |
 
 ```bash
 # 빠른 실습 예시: 웹 해킹

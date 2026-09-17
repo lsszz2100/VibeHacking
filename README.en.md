@@ -135,14 +135,21 @@ python3 vhack.py update                  # git pull latest content
 ### Lab Environments (Docker-based)
 
 | # | Lab Name | Content | Access | Difficulty |
-|:-:|----------|---------|--------|:----------:|
+|:----:|----------|---------|--------|:----------:|
 | **01** | Web Hacking Lab | DVWA · Juice Shop · WebGoat | 8080(DVWA·SQLi) / 3001(Juice Shop) / 8081(WebGoat) | ★★☆ |
 | **02** | Binary Exploitation Lab | BOF · ret2libc · ROP · fmtstr · heap | nc localhost 10001~10005 | ★★★ |
 | **03** | Network Hacking Lab | SSH · FTP · DNS · SMTP vulnerable services | docker exec shell | ★★☆ |
-| **04** | Cloud/Container Security Lab | SSRF · AWS IMDS · K8s escape | http://localhost:8080 | ★★★ |
+| **04** | Cloud/Container Security Lab | SSRF · AWS IMDS · K8s escape | http://localhost:8040 | ★★★ |
 | **05** | Full Scenario Lab | APT attack chain simulation | http://localhost:8888 | ★★★★ |
 | **06** | Firmware Hacking Lab | binwalk · QEMU emulation · hardcoded credentials | http://localhost:8062 | ★★★ |
 | **07** | Mobile Security Lab | APK static analysis · Frida · JWT alg:none bypass | http://localhost:8072 | ★★★ |
+| **08** | LLM Security Lab | Prompt injection · RAG poisoning · Guardrail bypass | http://localhost:8088 | ★★★ |
+| **09** | ICS/SCADA Security Lab | Modbus protocol manipulation · PLC register attacks | Modbus: 5020 / Web: 8089 | ★★★ |
+| **10** | Kubernetes Security Lab | RBAC privilege escalation · Kubelet exploit · Pod escape | http://localhost:8090 | ★★★★ |
+| **11** | Active Directory / Kerberos Lab | Kerberoasting · AS-REP Roasting · Pass-the-Hash | http://localhost:8011 | ★★★★ |
+| **12** | CI/CD Supply Chain Lab | GitHub Actions poisoning · Dependency confusion | http://localhost:8012 | ★★★ |
+| **13** | eBPF / Kernel Security Lab | eBPF rootkit evasion · Syscall hooking · Runtime security | http://localhost:8013 | ★★★★★ |
+| **14** | Malicious Document (Maldoc) Lab | VBA macro deobfuscation · RTF/OOXML exploit analysis | http://localhost:8014 | ★★★★ |
 
 ```bash
 # Quick practice example: Web Hacking

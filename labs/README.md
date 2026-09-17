@@ -85,7 +85,7 @@ docker-compose --version
 - 취약한 컨테이너 레지스트리 악용
 - **교재 챕터 연계**: [14장 클라우드 보안 CTF 실습 랩](../14_Cloud_Security/06_cloud_security_ctf_lab.md)
 - **워게임 트랙**: 워게임 터미널(`wargame/`) `cloud` 트랙 (35개 문제)
-- **빠른 실행**: `python3 vhack.py lab start 04` (접속: `http://localhost:8080`, `http://localhost:8443`)
+- **빠른 실행**: `python3 vhack.py lab start 04` (접속: `http://localhost:8040`, `http://localhost:8443`)
 
 ### 05. 전체 시나리오 통합 랩
 - APT(Advanced Persistent Threat) 공격 체인 시뮬레이션
