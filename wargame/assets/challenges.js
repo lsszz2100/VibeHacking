@@ -281,6 +281,14 @@ const TRACKS = [
     "en": "Firmware & Embedded Security",
     "desc_ko": "펌웨어 추출·SquashFS/UBIFS·U-Boot 부트로더·QEMU 에뮬레이션·하드웨어 인터페이스 보안.",
     "desc_en": "Firmware extraction, SquashFS/UBIFS, U-Boot bootloader, QEMU emulation, and hardware interface security."
+  }  ,
+  {
+    "id": "maldoc",
+    "icon": "📑",
+    "ko": "문서형 악성코드·PDF 포렌식",
+    "en": "MalDoc & PDF Forensics",
+    "desc_ko": "OLE 복합 바이너리·VBA 난독화 해제·PDF FlateDecode 스트림 분해·수식 에디터 RCE·MSHTML 외부 OLE 차단.",
+    "desc_en": "OLE compound binaries, VBA deobfuscation, PDF FlateDecode stream decomposition, Equation Editor RCE, MSHTML defense."
   }
 ];
 
@@ -28743,5 +28751,987 @@ const CHALLENGES = [
     ]
   },
   "hash": "d93ed67f1a7f1dbc398f6b75d5e8e04a40d72cf31bd447a05cd9f965921a2a59"
+}
+,
+  // ── [30] maldoc (문서형 악성코드 & PDF 포렌식) ───────────────────────
+{
+  "id": "t0_maldocolemagic",
+  "tier": 0,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 50,
+  "ci": true,
+  "fmt": "16진수 / hex (8글자 / 8 chars)",
+  "title": {
+    "ko": "OLE2 복합 파일 시그니처 매직 넘버",
+    "en": "OLE2 Compound File Magic Bytes"
+  },
+  "prompt": {
+    "ko": "레거시 마이크로소프트 오피스 문서(.doc, .xls, .ppt)의 기반이 되는 OLE2 (Compound File Binary Format, CFBF) 파일의 앞 4바이트 시그니처를 16진수 8자리로 입력하세요.",
+    "en": "Enter the first 4 bytes magic number in 8 hex digits for the OLE2 Compound File Binary Format (CFBF) used by legacy Office documents."
+  },
+  "hints": {
+    "ko": [
+      "16진수 8자리 소문자로 입력하세요 (0x 접두사 제외).",
+      "D0 로 시작하고 E0 로 끝납니다."
+    ],
+    "en": [
+      "Type 8 hex digits in lowercase without 0x prefix.",
+      "Starts with D0 and ends with E0."
+    ]
+  },
+  "hash": "0f8f11f004bc116e459daa966b516fc4fbd653509e79b5177eca1acd5544093a"
+},
+{
+  "id": "t0_maldocpdfmagic",
+  "tier": 0,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 50,
+  "ci": true,
+  "fmt": "시그니처 / signature (4글자 / 4 chars)",
+  "title": {
+    "ko": "PDF 파일 포맷 매직 헤더",
+    "en": "PDF File Format Magic Header"
+  },
+  "prompt": {
+    "ko": "문서 파일의 시작을 알리는 파일 헤더의 첫 4글자 ASCII 시그니처를 입력하세요 (버전 번호 제외).",
+    "en": "Enter the first 4 ASCII characters of the portable document format file header signature (excluding version numbers)."
+  },
+  "hints": {
+    "ko": [
+      "퍼센트 기호(%)로 시작합니다.",
+      "특수기호 뒤에 포맷 영문 세 글자가 붙습니다."
+    ],
+    "en": [
+      "Starts with a percent symbol (%).",
+      "Special character followed by 3 lowercase format letters."
+    ]
+  },
+  "hash": "3d8fc6831ad14eb0927c434887933d4061297d761d268eeac98969e7c05b0ecb"
+},
+{
+  "id": "t0_maldocrtf",
+  "tier": 0,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 50,
+  "ci": true,
+  "fmt": "시그니처 / signature (5글자 / 5 chars)",
+  "title": {
+    "ko": "RTF 문서 식별 시그니처",
+    "en": "Rich Text Format File Signature"
+  },
+  "prompt": {
+    "ko": "스피어 피싱 문서에서 OLE 객체를 은닉할 때 자주 쓰이는 서식 있는 텍스트 포맷 문서의 시작 제어 시그니처 5글자를 입력하세요.",
+    "en": "Enter the opening 5-character control word signature of a Rich Text Format document."
+  },
+  "hints": {
+    "ko": [
+      "중괄호 { 와 역슬래시 \\ 로 시작합니다.",
+      "특수문자 2개 뒤에 포맷 영문 3글자가 소문자로 옵니다."
+    ],
+    "en": [
+      "Starts with brace { and backslash \\.",
+      "Two symbols followed by 3 lowercase letters."
+    ]
+  },
+  "hash": "7a8881177498fb4dd23f15b8b8ba0b17073ae4d991b6792b29f7e9bfcda90122"
+},
+{
+  "id": "t0_maldocflate",
+  "tier": 0,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 50,
+  "ci": true,
+  "fmt": "값 그대로 / literal (12글자 / 12 chars)",
+  "title": {
+    "ko": "PDF 스트림 기본 압축 필터",
+    "en": "Default PDF Stream Compression Filter"
+  },
+  "prompt": {
+    "ko": "PDF 객체 내부의 데이터 스트림을 zlib/deflate 방식으로 압축 해제할 때 지정하는 표준 PDF 필터 이름을 입력하세요 (슬래시 포함).",
+    "en": "Enter the standard PDF filter name specified to decompress stream objects via zlib/deflate (include leading slash)."
+  },
+  "hints": {
+    "ko": [
+      "슬래시(/)로 시작하며 Decode로 끝납니다.",
+      "Deflate 알고리즘의 앞 다섯 글자 Flate가 포함됩니다."
+    ],
+    "en": [
+      "Starts with a slash and ends with Decode.",
+      "Contains Flate from the deflate algorithm."
+    ]
+  },
+  "hash": "5a958d65bc90d3c3ad2d898a7074c860f1b83ebf4ae4a0692d1b958ebabbe855"
+},
+{
+  "id": "t0_maldocvbaauto",
+  "tier": 0,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 50,
+  "ci": true,
+  "fmt": "한 단어 / one word (8글자 / 8 chars)",
+  "title": {
+    "ko": "워드 문서 열람 시 자동 실행 프로시저",
+    "en": "Word Document Auto-Execution Procedure"
+  },
+  "prompt": {
+    "ko": "워드 문서(.doc)가 열릴 때 사용자의 별도 버튼 클릭 없이 자동으로 매크로 코드를 기동하는 대표적인 자동 실행 서브루틴 이름을 입력하세요.",
+    "en": "Enter the name of the standard VBA auto-execution subroutine triggered immediately when a Word document is opened."
+  },
+  "hints": {
+    "ko": [
+      "자동(Auto)과 열기(Open)의 영단어가 결합된 8글자 단어입니다.",
+      "언더스코어 없이 붙여 씁니다."
+    ],
+    "en": [
+      "Compound of Auto and Open.",
+      "Written as a single 8-letter word without underscores."
+    ]
+  },
+  "hash": "91d1b1a776eb4876b623b5ca73c4a65681165c5e63bb99cbb4238dc59e119762"
+},
+{
+  "id": "t0_maldocsector",
+  "tier": 0,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 50,
+  "ci": true,
+  "fmt": "한 단어 / one word (6글자 / 6 chars)",
+  "title": {
+    "ko": "OLE 복합 문서의 최소 블록 할당 단위",
+    "en": "OLE CFBF Minimum Allocation Unit"
+  },
+  "prompt": {
+    "ko": "OLE 복합 문서(CFBF) 구조에서 디스크 파일처럼 데이터를 일정 바이트(버전3: 512B, 버전4: 4096B) 단위로 쪼개어 번호를 매겨 관리하는 기본 할당 단위 명칭을 입력하세요.",
+    "en": "In OLE Compound File structure, enter the English term for the fixed-size allocation block (512B or 4096B) managed by FAT chain indexing."
+  },
+  "hints": {
+    "ko": [
+      "하드디스크의 물리적 저장 블록 명칭과 동일합니다.",
+      "s로 시작하는 6글자 영단어입니다."
+    ],
+    "en": [
+      "Same name as physical storage block on storage media.",
+      "6-letter English word starting with s."
+    ]
+  },
+  "hash": "9d5d7fcf3aa35a4809f92551aed1f26e3beb8532c2ddcb279e07f0e3d410251a"
+},
+{
+  "id": "t0_maldocdde",
+  "tier": 0,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 50,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "오피스 동적 데이터 교환 프로토콜",
+    "en": "Office Dynamic Data Exchange"
+  },
+  "prompt": {
+    "ko": "VBA 매크로 없이도 수식 필드 구문을 악용해 cmd.exe나 powershell을 기동할 수 있는 윈도우 동적 데이터 교환 프로토콜의 3글자 영문 약어를 입력하세요.",
+    "en": "Enter the 3-letter acronym for the legacy Windows protocol abused in Office fields to execute arbitrary commands without VBA."
+  },
+  "hints": {
+    "ko": [
+      "Dynamic Data Exchange의 약자입니다.",
+      "알파벳 D 2개와 E 1개로 구성됩니다."
+    ],
+    "en": [
+      "Stands for Dynamic Data Exchange.",
+      "Composed of two D's and one E."
+    ]
+  },
+  "hash": "d890670bbb8186a202e50b7c6de3278c8a8652d06c4eaa3167bb4c8cdfbdef9c"
+},
+{
+  "id": "t1_maldocchrw",
+  "tier": 1,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 70,
+  "ci": false,
+  "fmt": "한 단어 / one word (1글자 / 1 chars)",
+  "title": {
+    "ko": "VBA ChrW 난독화 함수 디코딩",
+    "en": "VBA ChrW Obfuscation Function Decoding"
+  },
+  "prompt": {
+    "ko": "악성 매크로에서 흔히 문자열을 은닉할 때 ChrW(112) 함수를 호출합니다. 이 함수가 반환하는 단일 ASCII 문자를 대소문자를 구분하여 정확히 입력하세요.",
+    "en": "Enter the exact single ASCII character returned by the VBA function ChrW(112) used in obfuscated macros."
+  },
+  "hints": {
+    "ko": [
+      "10진수 112의 16진수 값은 0x70 입니다.",
+      "powershell의 소문자 첫 글자입니다."
+    ],
+    "en": [
+      "Decimal 112 is 0x70 in hex.",
+      "The first lowercase letter of powershell."
+    ]
+  },
+  "hash": "148de9c5a7a44d19e56cd9ae1a554bf67847afb0c58f6e12fa29ac7ddfca9940"
+},
+{
+  "id": "t1_maldocstrrev",
+  "tier": 1,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 70,
+  "ci": true,
+  "fmt": "파일 이름 / file name (7글자 / 7 chars)",
+  "title": {
+    "ko": "VBA StrReverse 문자열 역순 난독화",
+    "en": "VBA StrReverse String Obfuscation"
+  },
+  "prompt": {
+    "ko": "악성 VBA 스크립트에서 `StrReverse(\"exe.tam\")` 코드가 실행되었습니다. 반전된 결과 문자열(파일명)을 입력하세요.",
+    "en": "Enter the decoded filename string resulting from executing `StrReverse(\"exe.tam\")` in a VBA macro."
+  },
+  "hints": {
+    "ko": [
+      "문자열을 오른쪽에서 왼쪽으로 뒤집어 읽으세요.",
+      "확장자 .exe 앞 세 글자는 mat 입니다."
+    ],
+    "en": [
+      "Reverse the string from right to left.",
+      "Preceding .exe is the reversed three-letter word."
+    ]
+  },
+  "hash": "3e26f28c2664478e026fd4bf1c7c084b2e14b50f4a2de4deb4ab995255cfa4a9"
+},
+{
+  "id": "t1_maldocpdfopen",
+  "tier": 1,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 70,
+  "ci": true,
+  "fmt": "값 그대로 / literal (11글자 / 11 chars)",
+  "title": {
+    "ko": "PDF 열람 시 자동 실행 트리거 사전 키",
+    "en": "PDF Document Open Action Dictionary Key"
+  },
+  "prompt": {
+    "ko": "PDF 카탈로그(Catalog) 딕셔너리에서 사용자가 문서를 열 때 자동으로 특정 자바스크립트나 페이지 이동 액션을 실행하도록 지정하는 PDF 키워드를 입력하세요 (슬래시 포함).",
+    "en": "Enter the PDF dictionary keyword specifying automatic execution when a document is viewed (include leading slash)."
+  },
+  "hints": {
+    "ko": [
+      "열기(Open)와 동작(Action)의 합성어입니다.",
+      "슬래시(/)로 시작하며 11글자입니다."
+    ],
+    "en": [
+      "Compound of Open and Action.",
+      "Starts with slash and has 11 characters."
+    ]
+  },
+  "hash": "9a40185f98383e0d2405ea5615baed63298f25b268e2c8ef61c699bb336ab2b2"
+},
+{
+  "id": "t1_maldocpdfjs",
+  "tier": 1,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 70,
+  "ci": true,
+  "fmt": "값 그대로 / literal (11글자 / 11 chars)",
+  "title": {
+    "ko": "PDF 임베디드 스크립트 객체 이름",
+    "en": "PDF Embedded Script Object Key"
+  },
+  "prompt": {
+    "ko": "PDF 파일 내부에 악성 자바스크립트 코드가 삽입되어 있음을 나타내는 대표적인 PDF 사전 키워드를 입력하세요 (슬래시 포함).",
+    "en": "Enter the PDF dictionary key that indicates embedded script code inside PDF objects (include leading slash)."
+  },
+  "hints": {
+    "ko": [
+      "자바스크립트 기술명 그대로 표기됩니다.",
+      "슬래시(/) 뒤에 J와 S가 대문자로 시작하는 표기입니다."
+    ],
+    "en": [
+      "Literal name of the scripting language.",
+      "Starts with slash followed by the language name."
+    ]
+  },
+  "hash": "caf651975f18a0bda775dc40428a85d8788016f70ef1f7467357e769dabb2a4c"
+},
+{
+  "id": "t1_maldocooxmlrels",
+  "tier": 1,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 70,
+  "ci": true,
+  "fmt": "파일 이름 / file name (17글자 / 17 chars)",
+  "title": {
+    "ko": "OOXML 외부 관계 정의 파일명",
+    "en": "OOXML Relationships Definition Filename"
+  },
+  "prompt": {
+    "ko": "원격 템플릿 인젝션 공격에서 악성 매크로 템플릿의 외부 다운로드 URL을 Target 속성에 기록하는 word/_rels/ 폴더 내부의 핵심 관계 정의 XML 파일명을 입력하세요.",
+    "en": "Enter the relationship XML filename inside word/_rels/ where attackers configure the external malicious template Target URL."
+  },
+  "hints": {
+    "ko": [
+      "워드 본문 파일명 뒤에 .rels 확장자가 붙은 형태입니다.",
+      "document.xml 에 관계 확장자가 추가된 형태입니다."
+    ],
+    "en": [
+      "The primary document XML name appended with the rels extension.",
+      "17 characters: document.xml.rels."
+    ]
+  },
+  "hash": "6878183cc1d14d0d45cf3d6cf91baa2220cae4d7f6821c463b650c5537466f1e"
+},
+{
+  "id": "t1_maldocoledump",
+  "tier": 1,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 70,
+  "ci": true,
+  "fmt": "도구 이름 / tool name (7글자 / 7 chars)",
+  "title": {
+    "ko": "OLE 스트림 분석 파이썬 도구",
+    "en": "OLE Stream Inspection Python Tool"
+  },
+  "prompt": {
+    "ko": "보안 연구원 디디에 스티븐스가 개발한 도구로, OLE 파일 내부의 스트림 목록과 VBA 매크로 존재 유무(대문자 M 표기)를 점검하는 대표적 CLI 도구명을 입력하세요.",
+    "en": "Enter the name of Didier Stevens' command-line tool used to inspect OLE file streams and identify VBA macros (denoted by M)."
+  },
+  "hints": {
+    "ko": [
+      "ole 접두사에 dump가 붙은 7글자 소문자 이름입니다.",
+      "파이썬 스크립트로 널리 배포됩니다."
+    ],
+    "en": [
+      "Prefix ole followed by dump.",
+      "7 lowercase letters."
+    ]
+  },
+  "hash": "fb1d206c09d14dab2009e921e0430d23dfb621fd749707e89ec0b0b20adf6649"
+},
+{
+  "id": "t1_maldocpdfid",
+  "tier": 1,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 70,
+  "ci": true,
+  "fmt": "도구 이름 / tool name (5글자 / 5 chars)",
+  "title": {
+    "ko": "PDF 초동 검사 카운팅 도구",
+    "en": "PDF Rapid Triage Counting Tool"
+  },
+  "prompt": {
+    "ko": "의심스러운 PDF 파일 내부에 자바스크립트, 실행 액션, 난독화 스트림 등 위험 요소가 몇 개 포함되어 있는지 신속하게 요약 카운트해 주는 초동 점검 도구명을 입력하세요.",
+    "en": "Enter the tool name that rapidly scans PDF files and counts occurrences of suspicious elements and stream filters."
+  },
+  "hints": {
+    "ko": [
+      "pdf 뒤에 식별자를 뜻하는 영문 약자 2글자가 결합된 5글자 도구명입니다.",
+      "소문자 5글자입니다."
+    ],
+    "en": [
+      "Formed by appending identifier abbreviation to pdf.",
+      "5 lowercase letters."
+    ]
+  },
+  "hash": "cd5321a0238434a497222f365fd992b28de4adb6203c61fe2b896810c462ecfc"
+},
+{
+  "id": "t2_maldocpdfparser",
+  "tier": 2,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 100,
+  "ci": true,
+  "fmt": "도구 이름 / tool name (10글자 / 10 chars)",
+  "title": {
+    "ko": "PDF 객체 심층 파싱 도구",
+    "en": "PDF Deep Object Parsing Tool"
+  },
+  "prompt": {
+    "ko": "PDF 파일 내의 특정 인덱스 객체를 지정하여 스트림 내용을 디컴프레스 추출하고 내부 연쇄 참조를 추적하는 심층 분석 CLI 도구명을 입력하세요 (하이픈 포함).",
+    "en": "Enter the command-line analysis tool used to extract, decompress, and inspect specific PDF objects by reference (includes a hyphen)."
+  },
+  "hints": {
+    "ko": [
+      "pdf와 parser 사이에 하이픈(-)이 들어간 10글자입니다.",
+      "디디에 스티븐스의 대표 도구입니다."
+    ],
+    "en": [
+      "Contains a hyphen between pdf and parser.",
+      "10 lowercase characters."
+    ]
+  },
+  "hash": "c898666dcf3392dca8bc34c750026e6d24667e7a5eb3ad8322334b53e8b35a11"
+},
+{
+  "id": "t2_maldocxorvba",
+  "tier": 2,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 100,
+  "ci": true,
+  "fmt": "16진수 / hex (2글자 / 2 chars)",
+  "title": {
+    "ko": "단일 바이트 XOR 페이로드 복호화",
+    "en": "Single-Byte XOR Payload Decryption"
+  },
+  "prompt": {
+    "ko": "악성 매크로의 바이트 배열 중 첫 번째 암호화 바이트가 0x0F 입니다. 원본 복호화 텍스트의 첫 글자가 'u' (ASCII 0x75)로 밝혀졌다면, 공격자가 사용한 1바이트 XOR 키 값을 16진수 대문자 2자리로 구하세요 (0x 제외).",
+    "en": "If an encrypted byte is 0x0F and decrypts to 'u' (ASCII 0x75), calculate the single-byte XOR key in 2 hex uppercase characters."
+  },
+  "hints": {
+    "ko": [
+      "0x0F XOR 0x75 계산을 수행하세요.",
+      "결과는 6과 알파벳 A의 조합입니다."
+    ],
+    "en": [
+      "Compute 0x0F XOR 0x75.",
+      "Two uppercase characters."
+    ]
+  },
+  "hash": "0e9deef32abfc454392d21725f9defeff1f79a1528f24373d20877bacd697959"
+},
+{
+  "id": "t2_maldocheapspray",
+  "tier": 2,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 100,
+  "ci": true,
+  "fmt": "16진수 / hex (10글자 / 10 chars)",
+  "title": {
+    "ko": "PDF 브라우저 힙 스프레이 타깃 주소",
+    "en": "Classic Heap Spray Landing Address"
+  },
+  "prompt": {
+    "ko": "32비트 Adobe Reader 취약점 공격 시 자바스크립트 힙 스프레이로 NOP 슬레드와 셸코드를 채워 넣을 때 착륙 지점으로 가장 흔히 사용되던 대표적인 가상 메모리 주소를 0x 접두사를 포함해 10자리 소문자로 입력하세요.",
+    "en": "Enter the classic 32-bit virtual memory landing address targeted by PDF JavaScript heap spray exploits (10 characters starting with 0x)."
+  },
+  "hints": {
+    "ko": [
+      "0x 접두사 뒤에 1바이트 0c 가 네 번 반복되는 주소입니다.",
+      "0x0c... 형태입니다."
+    ],
+    "en": [
+      "Starts with 0x followed by byte 0c repeated 4 times.",
+      "10 characters total."
+    ]
+  },
+  "hash": "a3cdc9de40d836ec7afbb56469040653bdcc69f434d6b8080eb6c50b7ee1f575"
+},
+{
+  "id": "t2_maldocrtfobj",
+  "tier": 2,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 100,
+  "ci": true,
+  "fmt": "값 그대로 / literal (7글자 / 7 chars)",
+  "title": {
+    "ko": "RTF 임베디드 OLE 객체 제어 단어",
+    "en": "RTF Embedded OLE Object Control Word"
+  },
+  "prompt": {
+    "ko": "RTF 문서 내부에 취약한 외부 OLE 객체(예: Equation Editor)를 삽입할 때 선언하는 필수 RTF 제어 단어를 역슬래시를 포함해 7글자로 입력하세요.",
+    "en": "Enter the essential RTF control word declaring an embedded OLE object inside an RTF stream (include leading backslash, 7 chars)."
+  },
+  "hints": {
+    "ko": [
+      "역슬래시 뒤에 객체를 뜻하는 영단어가 소문자로 결합됩니다.",
+      "역슬래시 1개와 소문자 6개입니다."
+    ],
+    "en": [
+      "Backslash followed by the English word for object.",
+      "7 characters total."
+    ]
+  },
+  "hash": "963997f9c254064f72d0878d8b583acd1a9e2db22d5f8c0716587646e58e0aa7"
+},
+{
+  "id": "t2_maldocpayloadc2",
+  "tier": 2,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 100,
+  "ci": true,
+  "fmt": "값 그대로 / literal (15글자 / 15 chars)",
+  "title": {
+    "ko": "난독화 매크로 C2 통신 주소 추출",
+    "en": "Deobfuscate Macro C2 Endpoint"
+  },
+  "prompt": {
+    "ko": "난독화된 VBA 코드 `Split(\"moc.proc-tpa.2a//:ptth\", \":\")(0)` 및 문자열 반전 루틴을 분석하여 공격자가 2차 페이로드를 다운로드하려는 C2 도메인(FQDN)을 입력하세요.",
+    "en": "Enter the extracted C2 FQDN domain targeted by the reversed download string routine."
+  },
+  "hints": {
+    "ko": [
+      "역순 문자열에서 http:// 이후의 도메인 호스트명을 읽으세요.",
+      "a2로 시작하고 .com으로 끝납니다."
+    ],
+    "en": [
+      "Extract the hostname after http:// from the reversed string.",
+      "Starts with a2 and ends with .com."
+    ]
+  },
+  "hash": "d5b1fcb8781c09850c0096a30cca791a44a42e2bd81e9feecb831a9ff6960ca9"
+},
+{
+  "id": "t2_maldocxlm4",
+  "tier": 2,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 100,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "Excel 4.0 레거시 매크로 기술명",
+    "en": "Excel 4.0 Legacy Macro Technology"
+  },
+  "prompt": {
+    "ko": "VBA 보안 검사를 우회하기 위해 엑셀 시트 셀 내부의 EXEC, CALL 수식을 직접 실행하는 레거시 매크로 시트 기술의 3글자 영문 약칭을 입력하세요.",
+    "en": "Enter the 3-letter acronym for legacy Excel 4.0 macro sheet technology abusing EXEC/CALL formulas."
+  },
+  "hints": {
+    "ko": [
+      "엑셀(XL) 매크로(M)를 뜻하는 세 글자 대문자 약어입니다.",
+      "XML과 철자가 다릅니다."
+    ],
+    "en": [
+      "3-letter uppercase acronym for Excel Macros.",
+      "Distinct from XML."
+    ]
+  },
+  "hash": "3eaf65d6d6db3dfe49a629ea709ad6bd9fbc9422ab170c1ec2cfc5f279e74e5b"
+},
+{
+  "id": "t2_maldocdotminject",
+  "tier": 2,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 100,
+  "ci": true,
+  "fmt": "한 단어 / one word (15글자 / 15 chars)",
+  "title": {
+    "ko": "외부 서식 템플릿 연계 인젝션 기법",
+    "en": "Remote Template Injection Technique"
+  },
+  "prompt": {
+    "ko": "일반 docx 문서 내부의 TargetURL 관계를 조작하여 문서 실행 시 원격 C2에서 악성 매크로 서식 파일을 불러오도록 유도하는 공격 기법 명칭을 영문 스네이크 표기로 입력하세요.",
+    "en": "Enter the 15-character snake_case term for the attack technique where a docx dynamically fetches external malicious templates from a remote server."
+  },
+  "hints": {
+    "ko": [
+      "원격을 뜻하는 remote와 서식을 뜻하는 template이 결합된 형태입니다.",
+      "언더스코어로 구분된 영문 15글자 표기입니다."
+    ],
+    "en": [
+      "Compound of remote and template.",
+      "15 characters separated by an underscore."
+    ]
+  },
+  "hash": "46e967975c38d22e31097cc5b9e898c0c6a79f9f7e5604092021a5255870adbb"
+},
+{
+  "id": "t3_maldoceqn11882",
+  "tier": 3,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 130,
+  "ci": true,
+  "fmt": "파일 이름 / file name (12글자 / 12 chars)",
+  "title": {
+    "ko": "CVE-2017-11882 수식 에디터 프로세스명",
+    "en": "Equation Editor Vulnerable Process Name"
+  },
+  "prompt": {
+    "ko": "스택 버퍼 오버플로우로 인해 ASLR/DEP 보호 없이 임의 명령이 실행되던 마이크로소프트 오피스 수식 편집기의 실행 바이너리 파일명을 대문자로 입력하세요 (확장자 포함).",
+    "en": "Enter the uppercase executable name (including extension) of the legacy Microsoft Equation Editor process vulnerable to stack buffer overflow."
+  },
+  "hints": {
+    "ko": [
+      "EQN으로 시작하고 32.EXE로 끝납니다.",
+      "Equation Editor 32비트 프로세스 파일명입니다."
+    ],
+    "en": [
+      "Starts with EQN and ends with 32.EXE.",
+      "12 uppercase characters."
+    ]
+  },
+  "hash": "50cb146d2b4b832dc0cc588312f596520dac31b22823b4f0757ff5d6f3563f64"
+},
+{
+  "id": "t3_maldocmshtml40444",
+  "tier": 3,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 130,
+  "ci": true,
+  "fmt": "약어 / acronym (6글자 / 6 chars)",
+  "title": {
+    "ko": "CVE-2021-40444 오피스 렌더링 엔진",
+    "en": "Office Rendering Engine in CVE-2021-40444"
+  },
+  "prompt": {
+    "ko": "CVE-2021-40444 공격에서 악성 ActiveX 컨트롤 및 원격 HTML을 렌더링하도록 악용된 마이크로소프트 레거시 브라우저 렌더링 엔진(Trident)의 DLL/컴포넌트 명칭을 대문자 6글자로 입력하세요.",
+    "en": "Enter the 6-character uppercase component name of Microsoft's Trident engine abused in CVE-2021-40444 to render malicious remote ActiveX payloads."
+  },
+  "hints": {
+    "ko": [
+      "마이크로소프트의 MS와 HTML의 합성어입니다.",
+      "대문자 6글자입니다."
+    ],
+    "en": [
+      "Compound of Microsoft prefix MS and HTML.",
+      "6 uppercase letters."
+    ]
+  },
+  "hash": "fa0339a1d7821f40c6af418118d1b8e06916c441ae1c8b37b798ccdb65cc4e3e"
+},
+{
+  "id": "t3_maldocfollina30190",
+  "tier": 3,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 130,
+  "ci": true,
+  "fmt": "스킴 이름 / scheme name (7글자 / 7 chars)",
+  "title": {
+    "ko": "CVE-2022-30190 Follina 악용 URI 스킴",
+    "en": "Follina Vulnerability Abused URI Scheme"
+  },
+  "prompt": {
+    "ko": "Follina 취약점에서 마이크로소프트 진단 지원 도구를 원격으로 구동하여 PowerShell 명령을 실행하게 만들었던 특수 커스텀 URI 프로토콜 핸들러 이름을 입력하세요.",
+    "en": "Enter the custom URI protocol handler abused by the Follina exploit to invoke the Microsoft Support Diagnostic Tool."
+  },
+  "hints": {
+    "ko": [
+      "ms- 접두사 뒤에 msdt가 붙은 7글자 소문자입니다.",
+      "하이픈이 포함되어 있습니다."
+    ],
+    "en": [
+      "Prefix ms- followed by msdt.",
+      "7 lowercase characters including hyphen."
+    ]
+  },
+  "hash": "a69a5e389cbf1c8cfc37f2f6b90620cc9b02fd783dfa2c06d54e655a53d6b104"
+},
+{
+  "id": "t3_maldocdotm",
+  "tier": 3,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 130,
+  "ci": true,
+  "fmt": "확장자 / extension (4글자 / 4 chars)",
+  "title": {
+    "ko": "오피스 매크로 서식 템플릿 파일 확장자",
+    "en": "Office Macro-Enabled Template Extension"
+  },
+  "prompt": {
+    "ko": "워드 문서 원격 템플릿 인젝션 공격에서 공격자가 C2 서버에 호스팅하여 희생자 PC로 다운로드시키는 매크로 사용 서식 템플릿 파일의 확장자 4글자를 마침표 없이 입력하세요.",
+    "en": "Enter the 4-letter file extension (without dot) of Word macro-enabled templates fetched during external injection attacks."
+  },
+  "hints": {
+    "ko": [
+      "dotx 대신 매크로(Macro)를 뜻하는 m으로 끝납니다.",
+      "소문자 4글자입니다."
+    ],
+    "en": [
+      "Ends with m for macro instead of dotx.",
+      "4 lowercase letters."
+    ]
+  },
+  "hash": "ff480c96bd8d87ac83debbc83c6c41e0ec19f616188da64bca37ba263cac2001"
+},
+{
+  "id": "t3_maldocvbaevent",
+  "tier": 3,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 130,
+  "ci": true,
+  "fmt": "한 단어 / one word (13글자 / 13 chars)",
+  "title": {
+    "ko": "ThisDocument 이벤트 기반 자동 실행 함수",
+    "en": "ThisDocument Event-Driven Auto Execution"
+  },
+  "prompt": {
+    "ko": "ThisDocument 클래스 모듈 내부에서 문서가 열릴 때 발생하는 이벤트 핸들러 서브루틴 이름을 소문자 스네이크 표기로 입력하세요.",
+    "en": "Enter the lowercase snake_case name of the event handler subroutine in ThisDocument triggered when a document opens."
+  },
+  "hints": {
+    "ko": [
+      "document와 open 사이에 언더스코어(_)가 들어간 13글자입니다.",
+      "모두 소문자로 작성하세요."
+    ],
+    "en": [
+      "13 characters with an underscore between document and open.",
+      "All lowercase."
+    ]
+  },
+  "hash": "67a4e06344eef5feb7b954548a81a3804070f6a3f18481033611ff42be9dd9e7"
+},
+{
+  "id": "t3_maldocvbacrc",
+  "tier": 3,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 130,
+  "ci": true,
+  "fmt": "문구 / phrase (7글자 / 7 chars)",
+  "title": {
+    "ko": "VBA 프로젝트 바이너리 저장 구조 표준 규격",
+    "en": "VBA Binary Storage Structure Specification"
+  },
+  "prompt": {
+    "ko": "마이크로소프트가 공개한 VBA 매크로 스트림의 압축 알고리즘 및 P-Code 바이너리 구조 표준 기술 문서 코드네임을 소문자로 입력하세요.",
+    "en": "Enter the lowercase Microsoft open specification code for the VBA project binary storage and compression format."
+  },
+  "hints": {
+    "ko": [
+      "ms- 접두사 뒤에 ovba 가 결합된 7글자입니다.",
+      "하이픈이 포함되어 있습니다."
+    ],
+    "en": [
+      "Prefix ms- followed by ovba.",
+      "7 characters total."
+    ]
+  },
+  "hash": "9392d75a4cb476551285fda88d816aceab3f1baa123b5f04a3e42ffd3c0a5eff"
+},
+{
+  "id": "t3_maldocvbaentropy",
+  "tier": 3,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 130,
+  "ci": true,
+  "fmt": "한 단어 / one word (7글자 / 7 chars)",
+  "title": {
+    "ko": "암호화 스트림 탐지 정보 엔트로피",
+    "en": "Information Metric for Encrypted Stream"
+  },
+  "prompt": {
+    "ko": "악성코드 분석가가 난독화되거나 암호화된 OLE 스트림을 식별할 때 측정하는 데이터 무작위도(정보량) 측정 지표의 영문 단어를 대소문자 무관하게 입력하세요.",
+    "en": "Enter the 7-letter English term for the information randomness metric calculated to detect encrypted or compressed maldoc streams."
+  },
+  "hints": {
+    "ko": [
+      "섀넌(Shannon)의 정보 이론에서 정의된 개념입니다.",
+      "E로 시작하는 7글자 영단어입니다."
+    ],
+    "en": [
+      "Concept defined in Shannon's information theory.",
+      "7-letter English word starting with E."
+    ]
+  },
+  "hash": "67671a2f53dd910a8b35840edb6a0a1e751ae5532178ca7f025b823eee317992"
+},
+{
+  "id": "t4_maldocshellemul",
+  "tier": 4,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 170,
+  "ci": true,
+  "fmt": "한 단어 / one word (6글자 / 6 chars)",
+  "title": {
+    "ko": "x86 셸코드 가상 에뮬레이션 엔진",
+    "en": "x86 Shellcode Emulation Library"
+  },
+  "prompt": {
+    "ko": "PDF나 오피스 익스플로잇에서 추출된 x86 셸코드를 실제 프로세스 실행 없이 가상 CPU 환경에서 스텝 실행하며 API 호출을 동적 복원해 주는 대표적인 오픈소스 C 라이브러리 이름을 입력하세요.",
+    "en": "Enter the open-source C library used to emulate x86 shellcode and extract hooked API calls without execution."
+  },
+  "hints": {
+    "ko": [
+      "lib 접두사 뒤에 emu가 붙은 6글자 소문자입니다.",
+      "셸코드 에뮬레이터 핵심 엔진입니다."
+    ],
+    "en": [
+      "Prefix lib followed by emu.",
+      "6 lowercase characters."
+    ]
+  },
+  "hash": "124000f8c4145cdfb57f8a48f70ab241e04237f5f40b613f41d8cdcf70220767"
+},
+{
+  "id": "t4_maldocpdfexploit",
+  "tier": 4,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 170,
+  "ci": true,
+  "fmt": "한 단어 / one word (8글자 / 8 chars)",
+  "title": {
+    "ko": "PDF 폰트 파서 커널 취약점 타깃 포맷",
+    "en": "Target Font Format for PDF Kernel Exploits"
+  },
+  "prompt": {
+    "ko": "과거 PDF 리더 및 윈도우 커널 win32k 폰트 파서에서 수많은 권한상승 제로데이를 유발했던 대표적인 외곽선 글꼴 포맷 명칭을 영문 소문자로 입력하세요.",
+    "en": "Enter the lowercase font format name whose parser historically caused numerous kernel RCE and privesc zero-days in PDF readers."
+  },
+  "hints": {
+    "ko": [
+      "TTF 확장자로 잘 알려진 글꼴 규격의 공식 명칭입니다.",
+      "true와 type의 합성어입니다."
+    ],
+    "en": [
+      "Official name of the font technology associated with TTF.",
+      "Compound of true and type."
+    ]
+  },
+  "hash": "9dee90fca7a7e4d3dcb63e274e6ff1f51bcf31383f8a3df1bb9ada09306e2958"
+},
+{
+  "id": "t4_maldocmotwbypass",
+  "tier": 4,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 170,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "인터넷 출처 식별 보안 표식 약어",
+    "en": "Internet Origin Zone Identifier Acronym"
+  },
+  "prompt": {
+    "ko": "인터넷에서 다운로드된 문서에 자동으로 NTFS Zone.Identifier 스트림을 부착하여 보호된 보기 모드로 열리게 강제하는 윈도우 보안 메커니즘의 4글자 영문 약어를 대문자로 입력하세요.",
+    "en": "Enter the 4-letter uppercase acronym for the Windows security mechanism that tags downloaded files with Zone.Identifier."
+  },
+  "hints": {
+    "ko": [
+      "웹의 표식(Mark of the Web)의 영문 약자입니다.",
+      "알파벳 4글자 대문자입니다."
+    ],
+    "en": [
+      "Stands for Mark of the Web.",
+      "4 uppercase letters."
+    ]
+  },
+  "hash": "857c5437fbe000e3f3e5c7136b14c75c64d642b720ed3d7a8b14f4267d48bcf5"
+},
+{
+  "id": "t4_maldocvbaamsi",
+  "tier": 4,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 170,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "오피스 매크로 런타임 검사 인터페이스",
+    "en": "Office Macro Runtime Inspection Interface"
+  },
+  "prompt": {
+    "ko": "Office 365 및 윈도우 환경에서 실행 시간에 복호화된 VBA 코드를 안티바이러스 엔진에 전달하여 스캔하도록 연동해 주는 통합 보안 인터페이스의 4글자 영문 약어를 대문자로 입력하세요.",
+    "en": "Enter the 4-letter uppercase acronym for the Windows security interface that passes runtime-decrypted VBA macro code to installed antivirus engines."
+  },
+  "hints": {
+    "ko": [
+      "Antimalware Scan Interface 의 약자입니다.",
+      "A로 시작하여 I로 끝납니다."
+    ],
+    "en": [
+      "Stands for Antimalware Scan Interface.",
+      "Starts with A and ends with I."
+    ]
+  },
+  "hash": "8d7c969ccf0975a7766a17c3beaccbd26de1cadf2bf2fabd4e7125a8471611d2"
+},
+{
+  "id": "t4_maldoccabtraversal",
+  "tier": 4,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 170,
+  "ci": true,
+  "fmt": "경로 표기 / path notation (3글자 / 3 chars)",
+  "title": {
+    "ko": "CAB 아카이브 경로 순회 시퀀스",
+    "en": "CAB Archive Path Traversal Sequence"
+  },
+  "prompt": {
+    "ko": "CVE-2021-40444 복합 익스플로잇에서 CAB 압축 아카이브 내부 파일명이 임의 디렉터리에 추출되도록 조작할 때 삽입하는 상위 디렉터리 순회 상대 경로 문자열 3글자를 입력하세요.",
+    "en": "Enter the 3-character relative path traversal string used inside manipulated CAB archives to escape the target directory."
+  },
+  "hints": {
+    "ko": [
+      "마침표(점) 2개와 슬래시 1개로 구성됩니다.",
+      "리눅스/유닉스 상위 폴더 이동 기호입니다."
+    ],
+    "en": [
+      "Composed of two dots and a slash.",
+      "Standard parent directory relative syntax."
+    ]
+  },
+  "hash": "fa08499e14d0113ba6794623f1badedcc8e9ae51cb5bafc7e14a5af1454bcfe7"
+},
+{
+  "id": "t4_maldocyararule",
+  "tier": 4,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 170,
+  "ci": true,
+  "fmt": "문구 / phrase (23글자 / 23 chars)",
+  "title": {
+    "ko": "OLE 매크로 복합 헤더 바이트 시그니처",
+    "en": "OLE CFBF Compound Header Hex Pattern"
+  },
+  "prompt": {
+    "ko": "문서형 악성코드 탐지 규칙을 작성할 때 OLE 파일 헤더의 8바이트 매직 시그니처 `\\xD0\\xCF\\x11\\xE0\\xA1\\xB1\\x1A\\xE1` 전체를 바이트 사이 공백 1칸으로 구분한 23자리 16진수 대문자 문자열을 구하세요.",
+    "en": "Enter the full 8-byte OLE CFBF header magic signature formatted as uppercase 2-digit hex pairs separated by spaces (23 characters total)."
+  },
+  "hints": {
+    "ko": [
+      "D0 CF 11 E0 A1 B1 1A E1 형식입니다.",
+      "각 바이트 사이에 공백이 정확히 한 칸 들어갑니다."
+    ],
+    "en": [
+      "Format: D0 CF 11 E0 A1 B1 1A E1.",
+      "Single space between each 2-digit hex byte."
+    ]
+  },
+  "hash": "8ae60527ff47d919786f26c93c019f1f0a203ef900d5e1dadaa27d6b779262ad"
+},
+{
+  "id": "t4_maldoccapstone",
+  "tier": 4,
+  "cat": "maldoc",
+  "track": "maldoc",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "문서형 악성코드 & PDF 포렌식 종합 캡스톤",
+    "en": "Malicious Document & PDF Forensics Capstone"
+  },
+  "prompt": {
+    "ko": "CVE-2021-40444 변종 공격 시나리오입니다. 피해자에게 전달된 악성 인보이스 docx는 doc.rels 내부에 `http://198.51.100.22/macro_template.docm` 원격 서식을 참조하며, 다운로드된 서식 파일은 x86 셸코드를 드롭하여 C2 `c2.maldoc-investigation.net:8443` 으로 비컨을 시도합니다. 다음 분석 결과를 종합하여 표준 판정 플래그를 계산하세요:\n\n1. OLE CFBF 식별 여부: `CFBF_VER3`\n2. 악용 취약점 CVE: `CVE-2021-40444`\n3. C2 프로토콜: `HTTPS`\n\n형식: `FLAG{SHA256(\"<CVE>:<CFBF>:<PROTO>\") 앞 26자리 소문자}`",
+    "en": "In a simulated CVE-2021-40444 incident debrief, compute the composite artifact flag using SHA256(\"CVE-2021-40444:CFBF_VER3:HTTPS\")."
+  },
+  "hints": {
+    "ko": [
+      "입력 문자열은 `CVE-2021-40444:CFBF_VER3:HTTPS` 입니다.",
+      "이 문자열의 sha256 해시 앞 26자리를 구해 FLAG{...} 로 감싸세요."
+    ],
+    "en": [
+      "Input string is `CVE-2021-40444:CFBF_VER3:HTTPS`.",
+      "Take the first 26 chars of its sha256 and wrap in FLAG{...}."
+    ]
+  },
+  "hash": "128ddd7d67e9652599b13838fc584d76a7fc0a8e1911f8acf86373db564b97f3"
 }
 ];

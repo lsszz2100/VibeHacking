@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocArmor - MalDoc & PDF Analysis Suite</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --accent-green: #00ff66;
+            --accent-cyan: #00e5ff;
+            --accent-amber: #ffb300;
+            --accent-red: #ff3366;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Fira Code', monospace, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            color: var(--accent-cyan);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hud-badge {
+            background: #21262d;
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .card.solved {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 12px rgba(0, 255, 102, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            color: var(--accent-amber);
+            font-weight: bold;
+        }
+
+        .status-tag {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #30363d;
+            color: var(--text-secondary);
+        }
+
+        .status-tag.cleared {
+            background: rgba(0, 255, 102, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 12px;
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        button.btn-action {
+            width: 100%;
+            padding: 10px;
+            background: #238636;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.btn-action:hover {
+            background: #2ea043;
+        }
+
+        .flag-box {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: #090d10;
+            border: 1px dashed var(--accent-green);
+            color: var(--accent-green);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            word-break: break-all;
+            display: none;
+        }
+
+        .console-log {
+            background: #05070a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 0.85rem;
+            color: #7ee787;
+            height: 180px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📑 DocArmor: MalDoc & PDF Analysis Suite</h1>
+        <div class="hud-badge" id="hudProgress">STATUS: 0/4 CLEARED</div>
+    </div>
+
+    <div class="grid-container">
+        <!-- Stage 1 -->
+        <div class="card" id="cardStage1">
+            <div class="card-header">
+                <div class="card-title">Stage 1: VBA 매크로 난독화 해제</div>
+                <div class="status-tag" id="tagStage1">PENDING</div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+                OLE 스트림 내에서 XOR 바이트 마스킹과 StrReverse로 은닉된 C2 통신 명령을 디코딩합니다.
+            </p>
+            <div class="form-group">
+                <label>XOR Key (Decimal):</label>
+                <input type="number" id="s1_key" value="90">
+            </div>
+            <div class="form-group">
+                <label>Decoded Payload Fragment:</label>
+                <input type="text" id="s1_payload" value="powershell.exe -nop -w hidden -enc c2.apt-group.corp">
+            </div>
+            <button class="btn-action" onclick="solveStage1()">VBA 분석 및 복원</button>
+            <div class="flag-box" id="flagStage1"></div>
+        </div>
+
+        <!-- Stage 2 -->
+        <div class="card" id="cardStage2">
+            <div class="card-header">
+                <div class="card-title">Stage 2: PDF FlateDecode 스트림 분석</div>
+                <div class="status-tag" id="tagStage2">PENDING</div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+                압축된 PDF 스트림 객체를 인플레이션하고 /OpenAction 내 힙스프레이 셸코드를 탐색합니다.
+            </p>
+            <div class="form-group">
+                <label>Target Object ID:</label>
+                <input type="number" id="s2_obj" value="7">
+            </div>
+            <div class="form-group">
+                <label>Filter Type:</label>
+                <input type="text" id="s2_filter" value="/FlateDecode">
+            </div>
+            <div class="form-group">
+                <label>Trigger Action:</label>
+                <input type="text" id="s2_action" value="/OpenAction">
+            </div>
+            <button class="btn-action" onclick="solveStage2()">PDF 스트림 인플레이션</button>
+            <div class="flag-box" id="flagStage2"></div>
+        </div>
+
+        <!-- Stage 3 -->
+        <div class="card" id="cardStage3">
+            <div class="card-header">
+                <div class="card-title">Stage 3: CVE-2017-11882 수식 에디터 RCE</div>
+                <div class="status-tag" id="tagStage3">PENDING</div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+                EQNEDT32.EXE 폰트 이름 버퍼 오버플로우 오프셋을 역추적하여 WinExec 실행 인자를 추출합니다.
+            </p>
+            <div class="form-group">
+                <label>Font Name Buffer Length:</label>
+                <input type="number" id="s3_len" value="44">
+            </div>
+            <div class="form-group">
+                <label>Target API Symbol:</label>
+                <input type="text" id="s3_api" value="WinExec">
+            </div>
+            <button class="btn-action" onclick="solveStage3()">수식 에디터 오버플로우 분석</button>
+            <div class="flag-box" id="flagStage3"></div>
+        </div>
+
+        <!-- Stage 4 -->
+        <div class="card" id="cardStage4">
+            <div class="card-header">
+                <div class="card-title">Stage 4: CVE-2021-40444 MSHTML OLE 방어</div>
+                <div class="status-tag" id="tagStage4">PENDING</div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+                OOXML 문서 관계에서 외부 악성 CAB 참조를 무력화하고 보안 격리 정책을 적용합니다.
+            </p>
+            <div class="form-group">
+                <label>Target Mode:</label>
+                <input type="text" id="s4_mode" value="External">
+            </div>
+            <div class="form-group">
+                <label>Block External Relationships:</label>
+                <select id="s4_block">
+                    <option value="true">True (차단 활성화)</option>
+                    <option value="false">False</option>
+                </select>
+            </div>
+            <button class="btn-action" onclick="solveStage4()">MSHTML 방어 정책 적용</button>
+            <div class="flag-box" id="flagStage4"></div>
+        </div>
+    </div>
+
+    <h3 style="margin-bottom: 8px; color: var(--text-secondary);">🛰️ System Telemetry & Analysis Logs</h3>
+    <div class="console-log" id="consoleLog">
+        [SYS] DocArmor Analytics Engine Initialized on port 8014.<br>
+        [SYS] Ready to accept OLE stream disassemblies and PDF forensic inspections.
+    </div>
+
+    <script>
+        async function fetchStatus() {
+            const res = await fetch('/api/maldoc/status');
+            const data = await res.json();
+            document.getElementById('hudProgress').innerText = `STATUS: ${data.solved_count}/4 CLEARED`;
+
+            if (data.stages.stage1_vba_deobfuscation) markSolved('cardStage1', 'tagStage1');
+            if (data.stages.stage2_pdf_stream_analysis) markSolved('cardStage2', 'tagStage2');
+            if (data.stages.stage3_cve_2017_11882_equation) markSolved('cardStage3', 'tagStage3');
+            if (data.stages.stage4_cve_2021_40444_mshtml) markSolved('cardStage4', 'tagStage4');
+        }
+
+        function markSolved(cardId, tagId, flag, flagBoxId) {
+            document.getElementById(cardId).classList.add('solved');
+            const tag = document.getElementById(tagId);
+            tag.innerText = 'CLEARED';
+            tag.classList.add('cleared');
+            if (flag && flagBoxId) {
+                const box = document.getElementById(flagBoxId);
+                box.innerText = flag;
+                box.style.display = 'block';
+            }
+        }
+
+        function log(msg) {
+            const c = document.getElementById('consoleLog');
+            c.innerHTML += `<br>[LOG] ${msg}`;
+            c.scrollTop = c.scrollHeight;
+        }
+
+        async function solveStage1() {
+            const res = await fetch('/api/maldoc/vba/deobfuscate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    sample_id: 'SAMPLE_OLE_MACRO_01',
+                    xor_key: parseInt(document.getElementById('s1_key').value),
+                    reversed_payload: document.getElementById('s1_payload').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                markSolved('cardStage1', 'tagStage1', data.flag, 'flagStage1');
+                log(data.message);
+                fetchStatus();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function solveStage2() {
+            const res = await fetch('/api/maldoc/pdf/analyze', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    object_id: parseInt(document.getElementById('s2_obj').value),
+                    filter_type: document.getElementById('s2_filter').value,
+                    trigger_action: document.getElementById('s2_action').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                markSolved('cardStage2', 'tagStage2', data.flag, 'flagStage2');
+                log(data.message);
+                fetchStatus();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function solveStage3() {
+            const res = await fetch('/api/maldoc/cve/equation', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    font_name_length: parseInt(document.getElementById('s3_len').value),
+                    target_api: document.getElementById('s3_api').value,
+                    command_payload: 'cmd.exe /c calc.exe'
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                markSolved('cardStage3', 'tagStage3', data.flag, 'flagStage3');
+                log(data.message);
+                fetchStatus();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function solveStage4() {
+            const res = await fetch('/api/maldoc/cve/mshtml', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    target_mode: document.getElementById('s4_mode').value,
+                    block_external_relations: document.getElementById('s4_block').value === 'true',
+                    quarantine_cab: true
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                markSolved('cardStage4', 'tagStage4', data.flag, 'flagStage4');
+                log(data.message);
+                fetchStatus();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        window.onload = fetchStatus;
+    </script>
+</body>
+</html>

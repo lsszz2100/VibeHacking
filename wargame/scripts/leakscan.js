@@ -101,6 +101,8 @@ const ALLOWLIST = new Map([
   ['t4_firmwaretrustzone -> t0_soc', 'ARM TrustZone secure world implemented on SoC'],
   ['t4_firmwarespiundump -> t0_ztverify', 'SPI flash checksum check references verify'],
   ['t4_firmwarecapstone -> t1_firmwaresquashfs', 'Capstone extracts SquashFS filesystem'],
+  ['t1_maldocpdfid -> t1_triage', 'PDF rapid triage scan references triage methodology'],
+  ['t4_maldoccapstone -> t4_ebpfsigndigest', 'Maldoc capstone specifies sha256 hash formatting'],
 ]);
 
 function loadChallenges() {

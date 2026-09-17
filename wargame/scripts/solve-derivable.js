@@ -1156,6 +1156,20 @@ const SOLVERS = new Map([
     const checksum = o + (b * 10) + (p * 1);
     return `FLAG{FIRMWARE-${checksum}-EXTRACTED}`;
   } }],
+  ['t1_maldocchrw', { kind: 'computed', via: 'ChrW character decoding', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/ChrW\((\d+)\)/);
+    return String.fromCharCode(parseInt(m[1], 10));
+  } }],
+  ['t4_maldoccapstone', { kind: 'computed', via: 'SHA256 of CVE, CFBF version, and C2 protocol', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const cve = text.match(/(CVE-\d{4}-\d+)/)[1];
+    const cfbf = text.match(/(CFBF_VER\d)/)[1];
+    const proto = text.match(/(HTTPS|HTTP)/)[1];
+    const input = `${cve}:${cfbf}:${proto}`;
+    const hash = crypto.createHash('sha256').update(input).digest('hex').slice(0, 26);
+    return `FLAG{${hash}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that

@@ -72,6 +72,7 @@ LAB_DIRS=(
     "11_ad_kerberos_lab"
     "12_cicd_supply_chain_lab"
     "13_ebpf_kernel_lab"
+    "14_maldoc_lab"
 )
 
 LAB_NAMES=(
@@ -88,6 +89,7 @@ LAB_NAMES=(
     "Active Directory & Kerberos 침투 랩"
     "CI/CD & 소프트웨어 공급망 침투 랩"
     "eBPF 커널 침투 및 런타임 보안 랩"
+    "문서형 악성코드 & PDF 분석 랩"
 )
 
 stopped_count=0

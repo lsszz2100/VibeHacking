@@ -67,11 +67,11 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 
 | 계층 / node | 티어 / tier | 문제 / count | 통과 / breach |
 |------|:---:|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 98 | 44% |
-| `webserver` 웹서버 | **1** | 180 | 60% |
-| `internal` 내부망 | **2** | 229 | 60% |
-| `vault` 금고 | **3** | 248 | 58% |
-| `core` 코어 | **4** | 260 | 72% |
+| `perimeter` 외곽 | **0** | 105 | 44% |
+| `webserver` 웹서버 | **1** | 187 | 60% |
+| `internal` 내부망 | **2** | 236 | 60% |
+| `vault` 금고 | **3** | 255 | 58% |
+| `core` 코어 | **4** | 267 | 72% |
 
 <details>
 <summary><b>계층별 주제 펼쳐 보기 / topics by layer</b></summary>
@@ -109,6 +109,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `wasm` 🧩 WebAssembly 보안 (3) | 모듈 헤더 4바이트 16진 식별자·공식 S-표현식 텍스트 표현 형식·기본 메모리 블록 규격 단위 / module header 4-byte hex sequence, official S-expression text notation, standard memory block unit |
 | `ebpf` 🐝 eBPF·커널 보안 (3) | 오브젝트 파일 표준 실행 형식·커널 상태 점검용 CLI 유틸리티·커널 자원 다중 제어 시스템 콜 / standard object format, kernel inspection CLI utility, and multiplexed control system call |
 | `firmware` 💾 임베디드·펌웨어 보안 (3) | 임베디드 펌웨어 이미지 분석 도구·인쇄 가능 연속 문자 추출 명령·직렬 비동기 통신 하드웨어 포트 / firmware extraction utility, printable character extraction command, and asynchronous serial interface |
+| `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | OLE2 복합 파일 고유 매직 바이트·PDF 파일 헤더·RTF 식별자·PDF 압축 해제 필터·VBA 자동 실행 서브루틴·OLE 저장소 엔티티 구조·동적 데이터 교환 프로토콜 / OLE2 compound magic bytes, PDF file header, RTF identification marker, PDF inflate compression filter, VBA auto-execution subroutine, OLE storage entity structure, dynamic data exchange protocol |
 
 #### `webserver` 웹서버 — 티어 1 / tier 1
 
@@ -143,6 +144,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `wasm` 🧩 WebAssembly 보안 (6) | 환경 리소스 연동 인터페이스·가변 길이 정수 압축 포맷·함수 디스패치 참조 격리 타입·LIFO 피연산자 머신 규격·외부 객체 참조 타입·공개 심볼 식별 체계 / environment resource interface standard, variable-length integer compression, function dispatch reference type, LIFO operand machine model, external object reference type, public symbol identifier scheme |
 | `ebpf` 🐝 eBPF·커널 보안 (5) | 커널 적재 전 안전성 보장 컴포넌트·고성능 패킷 드라이버 처리 경로·커널 동적 함수 프로브·타입 디버그 메타데이터 포맷·커널 정적 이벤트 후킹 지점 / kernel safety check layer, high-speed driver packet path, dynamic kernel probe, type debug metadata format, and static kernel hook point |
 | `firmware` 💾 임베디드·펌웨어 보안 (5) | 임베디드 읽기 전용 압축 파일시스템·오픈소스 범용 부트로더·경량 다중 아키텍처 CPU 시뮬레이터·비휘발성 설정 저장 메모리·온칩 하드웨어 디버깅 인터페이스 / compressed read-only filesystem, open-source embedded bootloader, lightweight CPU simulator framework, non-volatile configuration memory, and on-chip debugging interface |
+| `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | VBA 문자 함수 연산·역순 문자열 치환·PDF 문서 카탈로그 키·PDF 임베디드 스크립트 액션·Word 외부 리소스 명세·OLE 데이터 덤프 도구·PDF 의심 태그 분류기 / VBA character mapping, reverse string transform, PDF catalog action key, embedded script action, Word external relationship file, OLE artifact inspector, fast PDF scanning utility |
 
 #### `internal` 내부망 — 티어 2 / tier 2
 
@@ -177,6 +179,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `wasm` 🧩 WebAssembly 보안 (8) | 동적 메모리 증설 바이트코드·할당 용량 바이트 연산·현재 페이지 수 조회 명령어·선형 메모리 구조체 오프셋 분석·동적 디스패치 파라미터 정합성·32비트 메모리 기록 바이트코드·32비트 메모리 인출 바이트코드·바이너리 모듈 어셈블러 도구 / dynamic memory expansion byte instruction, capacity sizing calculation, current page count query, linear memory struct displacement, dynamic dispatch type conformance, 32-bit store instruction, 32-bit load instruction, binary assembler tool |
 | `ebpf` 🐝 eBPF·커널 보안 (10) | 유저 공간 C 헬퍼 라이브러리·유저 프로세스 동적 프로브·클라우드 네이티브 네트워크 인터페이스·커널 인라인 런타임 보안 감시자·고효율 링 버퍼·인라인 기계어 생성기·아키텍처 인스트럭션 축약어·스택 프레임 전용 레지스터·스택 바이트 한도·고속 패킷 폐기 판정 / user-space C library, user dynamic probe, cloud-native CNI, in-kernel runtime security enforcer, ring buffer structure, in-kernel machine compiler, instruction acronym, frame register, stack byte limit, and packet drop action |
 | `firmware` 💾 임베디드·펌웨어 보안 (10) | 바이트 저장 정렬 체계·직렬 롬 칩 통신 규격·정보 불확실성 무작위도 척도·동적 펌웨어 가상화 프레임워크·루트 디렉터리 격리 명령어·초기 인메모리 디스크 이미지·MIPS 가상 메모리 세그먼트·경량 유닉스 통합 유틸리티·플래시 전용 파일시스템·소프트웨어 자재 명세서 / byte storage ordering, serial ROM interface, information randomness metric, dynamic firmware framework, root directory isolate command, initial in-memory disk, MIPS uncached base, miniature UNIX toolbox, flash filesystem, and software bill of materials |
+| `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | 심층 객체 파서·단일 바이트 배타적 논리합 복호화·고전 자바스크립트 힙 배치 주소·RTF 객체 임베딩 제어어·난독화 매크로 통신 도메인·엑셀 수식 시트 매크로 규격·원격 템플릿 로드 공격 / deep object decompressor, single-byte bitwise decryption, classic heap allocation address, RTF object control word, obfuscated communication target, formula sheet macro, remote template inclusion |
 
 #### `vault` 금고 — 티어 3 / tier 3
 
@@ -211,6 +214,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `wasm` 🧩 WebAssembly 보안 (9) | 복구 불가 예외 중단 상태·테이블 기반 간접 분기 명령어·브라우저 DOM 싱크 스크립트 주입·가변 바이트 스트림 디코딩·고정밀 타이머 공유 메모리 API·0번지 고정 매핑 특성·C 스타일 역컴파일 도구·선형 메모리 경계 강제·비정상 종료 사후 덤프 규격 / unrecoverable abnormal termination state, table-based dispatch instruction, browser DOM sink injection, variable byte stream decoding, high-resolution timer shared memory API, deterministic zero base mapping, C-like decompiler tool, memory bounds enforcement, post-mortem diagnostic dump |
 | `ebpf` 🐝 eBPF·커널 보안 (10) | 유저 메모리 변조 헬퍼·디렉터리 은닉 후킹 시스템 콜·컨테이너 리소스 제어 그룹 결합·스택 재사용 프로그램 전이·커널 함수 반환값 강제 조작·범용 해시 맵 타입·권한 상승 위임 설정 경로·리눅스 보안 모듈 프레임워크·추측 실행 부채널 완화·전용 리눅스 역량 / user memory mutation helper, directory hiding syscall, control group binding, tail call transition, return value override helper, hash map type, privilege configuration path, Linux security module, speculative execution defense, and dedicated Linux capability |
 | `firmware` 💾 임베디드·펌웨어 보안 (10) | 펌웨어 메모리 매핑 기준 주소·비암호화 레거시 터미널 서비스·웹 시스템 명령 주입 결함·포트포워딩 네트워크 프로토콜·커널 부팅 인자 환경변수·동적 링커 프리로드 주입 형식·정적 파일시스템 보안 감사기·리틀 엔디안 MIPS 식별자·경계 미검증 복사 함수·하드웨어 기반 보안 부팅 / memory mapping base address, unencrypted legacy terminal service, web command injection flaw, port forwarding protocol, kernel boot argument variable, shared library preload target, static security scanner, little-endian MIPS architecture, unbounded copy function, and hardware root of trust boot |
+| `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | 레거시 수식 편집기 실행 파일·외부 액티브X 렌더링 엔진·진단 도구 프로토콜 핸들러 스키마·필터 해제 단축 플래그·문서 객체 수준 자동화 이벤트·오피스 VBA 프로젝트 바이너리 규격·은닉 페이로드 정보 무질서도 지표 / legacy equation editor binary, external activex layout engine, diagnostic tool scheme, filter bypass switch, document level automation procedure, office project binary standard, information disorder metric |
 
 #### `core` 코어 — 티어 4 / tier 4
 
@@ -245,12 +249,13 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `wasm` 🧩 WebAssembly 보안 (9) | 가상머신 격리 경계 탈출·부동소수점 비트 패킹 타입 오류·호출 프레임 격리 스택 체계·모듈 바이트코드 무작위 생성 퍼저·가비지 컬렉션 표준 확장·역량 기반 상호운용 모델·상대 경로 조작 격리 우회·구조적 제어 흐름 분기 제한·침해 사고 포렌식 캡스톤 / virtual machine isolation breakout, floating-point bit-packing type flaw, isolated call frame stack, bytecode generation fuzzer, garbage collection specification, capability composition model, upward path containment bypass, structured control flow branch restriction, incident response forensics capstone |
 | `ebpf` 🐝 eBPF·커널 보안 (7) | 트래픽 제어 서브시스템·고수준 동적 트레이싱 스크립트 도구·은닉 데이터 유출 네트워크 프로토콜·개념증명 커널 임플란트·중앙 eBPF 관리 데몬·모듈 무결성 인가 알고리즘·커널 침해 분석 캡스톤 / traffic control subsystem, high-level dynamic tracing tool, covert network protocol, proof-of-concept kernel implant, centralized eBPF daemon, cryptographic authenticity verification algorithm, and kernel incident response capstone |
 | `firmware` 💾 임베디드·펌웨어 보안 (7) | 바이너리 변환 지원 커버리지 가이드 퍼저·함수 흐름 블록 패치 비교 도구·전원 전압 결함 주입 기법·코드 재사용 명령열 탐색 도구·하드웨어 보안 영역 격리 체계·오픈소스 바이오스 롬 플래셔·펌웨어 역공학 종합 캡스톤 / coverage-guided binary translation fuzzer, control flow block comparison tool, power voltage glitching attack, code reuse sequence finder, hardware security extension, open-source ROM flasher, and firmware reverse engineering capstone |
+| `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | 가상 셸코드 샌드박스 실행기·임베디드 폰트 파싱 규격·인터넷 다운로드 보안 식별 표식·오피스 런타임 악성코드 검사 인터페이스·압축 아카이브 디렉터리 순회 시퀀스·탐지 규칙 복합 헤더 바이트열·문서형 악성코드 포렌식 종합 캡스톤 / virtual execution sandbox engine, embedded font format, internet download zone mark, runtime antimalware inspection interface, archive traversal sequence, compound header byte layout, document forensic capstone |
 
 </details>
 
-총 **1015문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **1050문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35 · 문서형 악성코드·PDF 포렌식 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **1015 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **1050 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35 · maldoc & PDF forensics 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 

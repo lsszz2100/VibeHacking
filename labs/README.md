@@ -43,6 +43,7 @@ docker-compose --version
 | 11 | [Active Directory & Kerberos 침투 랩](./11_ad_kerberos_lab/) | AS-REP Roasting, Kerberoasting, DCSync, Golden Ticket 도메인 장악 | ★★★☆ | [54장 Active Directory](../54_Active_Directory_Attacks/06_ad_ctf_lab.md) | `activedirectory` |
 | 12 | [CI/CD & 공급망 보안 랩](./12_cicd_supply_chain_lab/) | Poisoned Pipeline(PPE), 의존성 혼동(Dependency Confusion), 러너 시크릿 탈취, 릴리스 백도어 & SLSA 변조 | ★★★☆ | [18장 DevSecOps](../18_DevSecOps/06_devsecops_ctf_lab.md), [35장 공급망 공격](../35_Supply_Chain_Attacks/06_supply_chain_ctf_lab.md) | `supplychain` |
 | 13 | [eBPF 커널 보안 랩](./13_ebpf_kernel_lab/) | Kprobe 시스템콜 도청, bpf_probe_write_user 메모리 변조 권한상승, XDP 은닉 통신, BPF LSM 무결성 방어 | ★★★★ | [01장 리눅스 기초](../01_Linux_Basics/06_linux_ctf_practical_lab.md), [26장 리눅스 하드닝](../26_Linux_Hardening/README.md), [70장 쿠버네티스](../70_Kubernetes_Security/06_k8s_security_ctf_lab.md) | `ebpf` |
+| 14 | [문서형 악성코드 분석 랩](./14_maldoc_lab/) | OLE/VBA 매크로 난독화 해제, PDF FlateDecode 스트림 분석, CVE-2017-11882 수식 에디터 RCE, CVE-2021-40444 MSHTML 방어 | ★★★☆ | [06장 악성코드 분석](../06_Malware_Analysis/07_document_malware_analysis.md) | `maldoc` |
 
 ---
 
@@ -174,6 +175,17 @@ docker-compose --version
 - **교재 챕터 연계**: [01장 리눅스 기초 CTF 실습 랩](../01_Linux_Basics/06_linux_ctf_practical_lab.md), [26장 리눅스 하드닝](../26_Linux_Hardening/README.md), [70장 쿠버네티스 보안](../70_Kubernetes_Security/06_k8s_security_ctf_lab.md)
 - **워게임 트랙**: 워게임 터미널(`wargame/`) `ebpf` 트랙 (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 13` (웹 콘솔 & API: `http://localhost:8013`)
+
+### 14. 문서형 악성코드 분석 랩 (DocArmor)
+- MS Office 바이너리 OLE(Compound File) 및 OpenXML 아키텍처 분석
+- 다층 난독화(ChrW 연산, XOR 바이트 마스킹, StrReverse) VBA 매크로 분석 및 C2 URL 복원
+- PDF 문서의 FlateDecode 스트림 인플레이션 및 `/OpenAction`과 `/JavaScript` 내 힙 스프레이 셸코드 탐색
+- Microsoft Equation Editor `EQNEDT32.EXE` 폰트 이름 버퍼 오버플로우(CVE-2017-11882) RCE 분석
+- Word OOXML `document.xml.rels` 외부 OLE 참조(CVE-2021-40444 MSHTML CAB) 탐지 및 보안 격리 방어
+- **교재 챕터 연계**: [06장 악성코드 분석 - 문서형 악성코드](../06_Malware_Analysis/07_document_malware_analysis.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `maldoc` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 14` (웹 콘솔 & API: `http://localhost:8014`)
+
 
 
 ---

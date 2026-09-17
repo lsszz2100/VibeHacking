@@ -1,0 +1,10 @@
+services:
+  maldoc_lab:
+    build: .
+    container_name: maldoc_lab
+    ports:
+      - "8014:8014"
+    restart: unless-stopped
+    labels:
+      - "lab=14"
+      - "group=maldoc_analysis"

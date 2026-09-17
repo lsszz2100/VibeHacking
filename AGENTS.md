@@ -6,17 +6,20 @@
 
 ## 1. 프로젝트 개요 및 현재 상태 (Current Status)
 
-- **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH) + 주요 원본 보안 가이드 인제스천(`41_Korean_Certifications/07_kisa_critical_infrastructure_assessment.md`, `21_Windows_Exploitation/07_windows_exploit_writing_guide.md`)
-- **인터랙티브 실습 랩 (Docker Labs)**: 총 13개 실전 랩 완비 (`labs/01` ~ `labs/13`)
-- **브라우저 터미널 워게임**: **총 29개 트랙 / 1,015문제** 달성 (`wargame/index.html`, HUD `0/1015`)
+- **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH) + 주요 원본 보안 가이드 인제스천(`41_Korean_Certifications/07_kisa_critical_infrastructure_assessment.md`, `21_Windows_Exploitation/07_windows_exploit_writing_guide.md`, `06_Malware_Analysis/07_document_malware_analysis.md`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 14개 실전 랩 완비** (`labs/01` ~ `labs/14`)
+  - **Lab 14 (DocArmor)**: 문서형 악성코드 & PDF 포렌식 랩 (OLE/VBA 매크로, CVE-2017-11882, CVE-2021-40444, PDF FlateDecode)
+- **브라우저 터미널 워게임**: **총 30개 트랙 / 1,050문제** 달성 (`wargame/index.html`, HUD `0/1050`)
   - **27번째 트랙**: `wasm` 🧩 WebAssembly 보안 (35개 문제: Tier 0~4)
   - **28번째 트랙**: `ebpf` 🐝 eBPF & Kernel Security (35개 문제: Tier 0~4)
   - **29번째 트랙**: `firmware` 💾 Firmware & Embedded Security (35개 문제: Tier 0~4)
-- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Wargame 감사, Pytest 82개 랩 테스트, CLI 스모크 테스트 자동화)
+  - **30번째 트랙**: `maldoc` 📑 문서형 악성코드 & PDF 포렌식 (35개 문제: Tier 0~4)
+- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Wargame 4대 엄격 검증, Pytest 93개 랩 테스트, CLI 스모크 테스트 자동화)
+- **vhack CLI 고도화**: `vhack lab test [lab_id]` (개별/전체 무결성 자동 테스트), `vhack lab status` (14개 랩 종합 대시보드) 완비
 
 ---
 
-## 2. 실습 랩(1~13) & 교재 & 워게임 연계 매트릭스
+## 2. 실습 랩(1~14) & 교재 & 워게임 연계 매트릭스
 
 | 랩 ID | 랩 이름 | 주요 침투/방어 주제 | 연계 교재 챕터 | 워게임 트랙 | 실행 명령 |
 | :---: | :--- | :--- | :--- | :---: | :--- |
@@ -33,6 +36,7 @@
 | **11** | Active Directory 랩 (KeroShield) | AS-REP & Kerberoasting, DCSync, Golden Ticket | `54_Active_Directory_Attacks` | `activedirectory` | `python3 vhack.py lab start 11` |
 | **12** | CI/CD & 공급망 랩 (PipePoison) | PPE 커맨드 인젝션, 의존성 혼동, 러너 시크릿 탈취, SLSA 변조 | `18_DevSecOps`, `35_Supply_Chain_Attacks` | `supplychain` | `python3 vhack.py lab start 12` |
 | **13** | eBPF 커널 보안 랩 (BPFGuard) | Kprobe 시스템콜 도청, bpf_probe_write_user 메모리 변조, XDP 은닉 통신, BPF LSM 방어 | `01_Linux_Basics`, `26_Linux_Hardening`, `70_Kubernetes_Security` | `ebpf` | `python3 vhack.py lab start 13` |
+| **14** | 문서형 악성코드 & PDF 랩 (DocArmor) | OLE/VBA 매크로 난독화 해제, PDF FlateDecode 분석, CVE-2017-11882, CVE-2021-40444 | `06_Malware_Analysis`, `07_Digital_Forensics`, `45_Malware_Development` | `maldoc` | `python3 vhack.py lab start 14` |
 
 ---
 
@@ -41,19 +45,22 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (82개 테스트 전원 통과: Labs 01~13 및 HA DB 백업)
+# 1. 전체 단위/통합 테스트 (93개 테스트 전원 통과: Labs 01~14 및 HA DB 백업)
 pytest
 
-# 2. 워게임 무결성 및 구조 검증 (1,015문제, 29트랙, 5티어)
+# 2. 실습 랩 CLI 자동 무결성 검증 (vhack lab test)
+python3 vhack.py lab test --all
+
+# 3. 워게임 무결성 및 구조 검증 (1,050문제, 30트랙, 5티어)
 node wargame/scripts/verify.js
 
-# 3. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
+# 4. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
 node wargame/scripts/leakscan.js
 
-# 4. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
+# 5. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
 node wargame/scripts/audit.js --strict
 
-# 5. 연산/유도형 챌린지 115개 자동 풀이 검증 (115/115 통과)
+# 6. 연산/유도형 챌린지 117개 자동 풀이 검증 (117/117 통과)
 node wargame/scripts/solve-derivable.js
 ```
 

@@ -86,6 +86,7 @@ start_lab() {
         "11_ad_kerberos_lab"
         "12_cicd_supply_chain_lab"
         "13_ebpf_kernel_lab"
+        "14_maldoc_lab"
     )
 
     local lab_names=(
@@ -103,6 +104,7 @@ start_lab() {
         "Active Directory & Kerberos 침투 랩"
         "CI/CD & 소프트웨어 공급망 침투 랩"
         "eBPF 커널 침투 및 런타임 보안 랩"
+        "문서형 악성코드 & PDF 분석 랩"
     )
 
     local lab_ports=(
@@ -120,10 +122,11 @@ start_lab() {
         "웹 콘솔 & Kerberos API: http://localhost:8011"
         "웹 콘솔 & CI/CD API: http://localhost:8012"
         "웹 콘솔 & eBPF API: http://localhost:8013"
+        "웹 콘솔 & MalDoc API: http://localhost:8014"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 13 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~13 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 14 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~14 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -160,7 +163,7 @@ start_all() {
         exit 0
     fi
 
-    for i in 1 2 3 4 5 6 7 8 9 10 11 12 13; do
+    for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14; do
         start_lab "$i"
         echo ""
     done
@@ -194,6 +197,7 @@ print_summary() {
     echo "  11 AD/Kerberos 보안:  http://localhost:8011"
     echo "  12 CI/CD 공급망 보안: http://localhost:8012"
     echo "  13 eBPF 커널 보안:    http://localhost:8013"
+    echo "  14 MalDoc/PDF 분석:   http://localhost:8014"
 }
 
 # -------------------------------------------------------
@@ -217,14 +221,14 @@ usage() {
     echo "  11    Active Directory & Kerberos 랩 (AS-REP Roasting, Kerberoasting, DCSync, Golden Ticket)"
     echo "  12    CI/CD & 소프트웨어 공급망 랩 (Poisoned Pipeline, 의존성 혼동, 러너 시크릿, SLSA 변조)"
     echo "  13    eBPF 커널 보안 랩 (Kprobe 도청, bpf_probe_write_user 메모리 변조, XDP 은닉 채널, LSM 방어)"
+    echo "  14    문서형 악성코드 분석 랩 (VBA 난독화 해제, PDF FlateDecode, CVE-2017-11882, CVE-2021-40444)"
     echo "  all   모든 랩 시작"
     echo "  ps    실행 중인 랩 목록"
     echo ""
     echo -e "${BOLD}예시:${RESET}"
     echo "  $0 01        # 웹 해킹 랩만 시작"
-    echo "  $0 11        # AD & Kerberos 랩만 시작"
-    echo "  $0 12        # CI/CD 공급망 랩만 시작"
     echo "  $0 13        # eBPF 커널 보안 랩만 시작"
+    echo "  $0 14        # 문서형 악성코드 분석 랩만 시작"
     echo "  $0 all       # 전체 랩 시작"
     echo "  $0 ps        # 상태 확인"
     echo ""
@@ -253,6 +257,7 @@ case "$ARG" in
     11)   start_lab 11 ;;
     12)   start_lab 12 ;;
     13)   start_lab 13 ;;
+    14)   start_lab 14 ;;
     all|ALL) start_all ;;
     ps|status) print_summary ;;
     ""|--help|-h) usage ;;

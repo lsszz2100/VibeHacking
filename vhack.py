@@ -9,7 +9,9 @@ vhack — VibeHacking CLI
   python3 vhack.py study 05 1           # 01_owasp_top10.md 열기
   python3 vhack.py lab ls               # 실습 환경 목록
   python3 vhack.py lab start 01         # 웹 해킹 랩 시작
-  python3 vhack.py lab status           # 실행 중인 컨테이너 확인
+  python3 vhack.py lab status           # 실행 중인 컨테이너 및 대시보드 확인
+  python3 vhack.py lab test 14          # 특정 랩 테스트 실행
+  python3 vhack.py lab test --all       # 전체 랩 테스트 일괄 실행
   python3 vhack.py search "SQL 인젝션"   # 전체 MD 검색
   python3 vhack.py alias install        # 쉘 alias 자동 등록 → vhack 으로 바로 사용
   python3 vhack.py update               # 최신 버전으로 업데이트
@@ -251,6 +253,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [1, 26, 70],
     },
+    "14": {
+        "name": "문서형 악성코드 & PDF 분석 랩",
+        "dir":  "14_maldoc_lab",
+        "desc": "DocArmor: OLE/VBA 매크로 난독화 해제 · PDF FlateDecode 스트림 분석 · CVE-2017-11882 수식 에디터 RCE · CVE-2021-40444 MSHTML 외부 OLE 차단",
+        "url":  "웹 콘솔 & MalDoc API: http://localhost:8014",
+        "difficulty": "★★★☆",
+        "related": [6, 7, 45],
+    },
 }
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────
@@ -297,13 +307,14 @@ def _run_compose(lab_dir: Path, *args: str) -> int:
     return 1
 
 
-def _check_docker() -> bool:
+def _check_docker(silent: bool = False) -> bool:
     try:
         subprocess.run(["docker", "info"], capture_output=True, check=True)
         return True
     except (FileNotFoundError, subprocess.CalledProcessError):
-        print(red("✗ Docker가 실행 중이지 않거나 설치되지 않았습니다."))
-        print(yellow("  → https://docs.docker.com/get-docker/ 참조"))
+        if not silent:
+            print(red("✗ Docker가 실행 중이지 않거나 설치되지 않았습니다."))
+            print(yellow("  → https://docs.docker.com/get-docker/ 참조"))
         return False
 
 
@@ -476,6 +487,8 @@ def cmd_lab(args: argparse.Namespace) -> None:
         _lab_stop(args.lab_id, getattr(args, "all", False))
     elif sub == "status":
         _lab_status()
+    elif sub == "test":
+        _lab_test(getattr(args, "lab_id", None), getattr(args, "all", False))
     elif sub == "logs":
         _lab_logs(args.lab_id)
     else:
@@ -495,13 +508,15 @@ def _lab_ls() -> None:
             f"{meta['desc']}"
         )
         print(f"  {'':>5}  {dim('URL:')} {cyan(meta['url'])}  {dim('관련 섹션:')} {rel}")
-    print(f"\n  {dim('사용법:')} {cyan('vhack lab start 01')}  {cyan('vhack lab stop 01')}  {cyan('vhack lab status')}\n")
+    print(f"\n  {dim('사용법:')} {cyan('vhack lab start 01')}  {cyan('vhack lab test 14')}  {cyan('vhack lab status')}\n")
 
 
 def _lab_start(lab_id: str | None) -> None:
     if not lab_id:
         print(red("✗ 랩 번호를 지정하세요.  예: vhack lab start 01"))
         sys.exit(1)
+    if lab_id.isdigit():
+        lab_id = f"{int(lab_id):02d}"
     meta = LABS.get(lab_id)
     if not meta:
         valid = ", ".join(LABS.keys())
@@ -523,6 +538,7 @@ def _lab_start(lab_id: str | None) -> None:
         print(green(f"\n✓ {meta['name']} 시작 완료!"))
         print(f"  접근: {cyan(meta['url'])}")
         print(f"  로그: {cyan(f'vhack lab logs {lab_id}')}")
+        print(f"  테스트: {cyan(f'vhack lab test {lab_id}')}")
         print(f"  종료: {cyan(f'vhack lab stop {lab_id}')}")
         if lab_id == "01":
             print(yellow("\n  ⚠ DVWA 초기 설정 필요:"))
@@ -545,6 +561,8 @@ def _lab_stop(lab_id: str | None, stop_all: bool = False) -> None:
     if not _check_docker():
         sys.exit(1)
 
+    if lab_id and lab_id.isdigit():
+        lab_id = f"{int(lab_id):02d}"
     targets = list(LABS.keys()) if stop_all else ([lab_id] if lab_id else [])
     if not targets:
         print(red("✗ 랩 번호를 지정하거나 --all 을 사용하세요."))
@@ -565,30 +583,119 @@ def _lab_stop(lab_id: str | None, stop_all: bool = False) -> None:
 
 
 def _lab_status() -> None:
-    if not _check_docker():
-        sys.exit(1)
-    print(bold(cyan("\n📊 실행 중인 랩 컨테이너\n")))
-    try:
-        result = subprocess.run(
-            ["docker", "ps", "--format",
-             "table {{.Names}}\t{{.Status}}\t{{.Ports}}"],
-            capture_output=True, text=True, check=True,
-        )
-        lines = result.stdout.strip().splitlines()
-        if len(lines) <= 1:
-            print(dim("  실행 중인 컨테이너 없음\n"))
+    docker_online = _check_docker(silent=True)
+
+    active_containers: dict[str, dict] = {}
+    if docker_online:
+        try:
+            result = subprocess.run(
+                ["docker", "ps", "--format", "{{.Names}}\t{{.Status}}\t{{.Ports}}"],
+                capture_output=True, text=True, check=True,
+            )
+            for line in result.stdout.strip().splitlines():
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    cname = parts[0].strip()
+                    cstatus = parts[1].strip()
+                    cports = parts[2].strip() if len(parts) >= 3 else ""
+                    active_containers[cname] = {"status": cstatus, "ports": cports}
+        except subprocess.CalledProcessError:
+            print(red("  docker ps 조회 실패"))
+
+    print(bold(cyan("\n📊 VibeHacking 실습 환경 현황 대시보드\n")))
+    if not docker_online:
+        print(yellow("  ⚠ Docker 데몬이 실행 중이지 않습니다 (모든 실습 환경 오프라인 상태)"))
+        print(dim("    → Docker 실행 후 `vhack lab start <번호>` 로 컨테이너를 가동할 수 있습니다.\n"))
+    print(f"  {'#':>3}  {'상태':<12} {'랩 이름':<28} {'난이도':>6}  {'주요 포트 / URL'}")
+    print("  " + "─" * 80)
+
+    running_count = 0
+    for lab_id, meta in sorted(LABS.items()):
+        lab_dir_name = meta["dir"]
+        is_running = any(lab_dir_name in c or f"_{lab_id}" in c for c in active_containers.keys())
+        if is_running:
+            running_count += 1
+            status_badge = green("● RUNNING ")
         else:
-            for line in lines:
-                print("  " + line)
-            print()
-    except subprocess.CalledProcessError:
-        print(red("  docker ps 실패"))
+            status_badge = dim("○ STOPPED ")
+
+        url_disp = meta["url"].split("|")[0].strip()
+        print(f"  {lab_id:>3}  {status_badge} {meta['name']:<26} {meta['difficulty']:>6}  {cyan(url_disp)}")
+
+    print("\n  " + "─" * 80)
+    print(f"  {bold('활성 랩')}: {green(str(running_count))} / {len(LABS)}개 가동 중")
+    if active_containers:
+        print(bold(cyan("\n  [실행 중인 Docker 컨테이너 목록]")))
+        for name, info in active_containers.items():
+            print(f"   • {bold(name)}: {info['status']} {dim(info['ports'])}")
+    print(f"\n  {dim('명령어:')} {cyan('vhack lab start <번호>')}  {cyan('vhack lab test <번호>')}  {cyan('vhack lab stop <번호>')}\n")
+
+
+def _lab_test(lab_id: str | None, test_all: bool = False) -> None:
+    """실습 환경(Lab) 테스트 스위트 실행 (pytest 기반)"""
+    if not test_all and not lab_id:
+        print(bold(cyan("\n🧪 실습 환경(Lab) 자동 검증 도구\n")))
+        print("  개별 랩 단위 또는 전체 랩 테스트 스위트를 수행할 수 있습니다.\n")
+        print(f"  {dim('사용법:')}")
+        print(f"    {cyan('vhack lab test 14')}    — Lab 14 (문서형 악성코드 랩) 테스트 실행")
+        print(f"    {cyan('vhack lab test --all')} — 전체 14개 랩 테스트 일괄 실행\n")
+        print("  " + "─" * 65)
+        for lid, meta in sorted(LABS.items()):
+            test_dir = LABS_DIR / meta["dir"] / "tests"
+            has_tests = test_dir.exists() and any(test_dir.glob("test_*.py"))
+            badge = green("● 테스트 스위트 구비") if has_tests else dim("○ 테스트 준비중")
+            print(f"  {lid:>3}  {meta['name']:<28} {badge}")
+        print()
+        return
+
+    if lab_id and lab_id.isdigit():
+        lab_id = f"{int(lab_id):02d}"
+
+    targets = list(LABS.keys()) if test_all else [lab_id]
+
+    print(bold(cyan(f"\n🧪 VibeHacking 랩 무결성 검증 시작 ({'전체' if test_all else f'Lab {lab_id}'})\n")))
+    total_passed = 0
+    total_failed = 0
+    total_tests = 0
+
+    for lid in targets:
+        meta = LABS.get(lid)
+        if not meta:
+            print(red(f"✗ 랩 '{lid}'이 존재하지 않습니다."))
+            continue
+        test_dir = LABS_DIR / meta["dir"] / "tests"
+        if not test_dir.exists() or not any(test_dir.glob("test_*.py")):
+            print(yellow(f"  ⚠ [{lid}] {meta['name']}: 테스트 디렉토리 없음, 건너뜀"))
+            continue
+
+        cmd = [sys.executable, "-m", "pytest", str(test_dir), "-q", "--tb=short"]
+        res = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True)
+        if res.returncode == 0:
+            m = re.search(r"(\d+)\s+passed", res.stdout)
+            p_cnt = int(m.group(1)) if m else 0
+            total_tests += p_cnt
+            print(f"  {green('✓')} [{lid}] {meta['name']}: {bold(green(str(p_cnt)))} passed {dim('(100% Green)')}")
+            total_passed += 1
+        else:
+            print(red(f"  ✗ [{lid}] {meta['name']}: 테스트 실패"))
+            if res.stdout:
+                for ln in res.stdout.strip().splitlines()[-5:]:
+                    print(dim(f"    {ln}"))
+            total_failed += 1
+
+    print("\n  " + "─" * 65)
+    if total_failed == 0 and total_passed > 0:
+        print(bold(green(f"  🎉 모든 랩 검증 완료! (총 {total_passed}개 랩, {total_tests}개 테스트 All Green)")) + "\n")
+    elif total_failed > 0:
+        print(bold(red(f"  ⚠ 검증 결과: 성공 {total_passed}개 / 실패 {total_failed}개")) + "\n")
 
 
 def _lab_logs(lab_id: str | None) -> None:
     if not lab_id:
         print(red("✗ 랩 번호를 지정하세요.  예: vhack lab logs 01"))
         sys.exit(1)
+    if lab_id.isdigit():
+        lab_id = f"{int(lab_id):02d}"
     meta = LABS.get(lab_id)
     if not meta:
         print(red(f"✗ 랩 '{lab_id}'이 존재하지 않습니다."))
@@ -991,7 +1098,9 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py lab start 01       웹 해킹 랩 시작
           python3 vhack.py lab stop 01        웹 해킹 랩 종료
           python3 vhack.py lab stop --all     모든 랩 종료
-          python3 vhack.py lab status         실행 중인 컨테이너
+          python3 vhack.py lab status         실행 중인 컨테이너 및 대시보드
+          python3 vhack.py lab test 14        Lab 14 무결성 테스트
+          python3 vhack.py lab test --all     전체 14개 랩 테스트 일괄 실행
           python3 vhack.py lab logs 01        랩 로그 보기
           python3 vhack.py search "Kerberos"  전체 문서 검색
           python3 vhack.py info 54            섹션 상세 정보
@@ -1018,13 +1127,16 @@ def build_parser() -> argparse.ArgumentParser:
     lab_sub = p_lab.add_subparsers(dest="lab_cmd", metavar="<서브명령>")
     lab_sub.add_parser("ls", help="실습 환경 목록")
     p_start = lab_sub.add_parser("start", help="실습 환경 시작")
-    p_start.add_argument("lab_id", metavar="랩번호", help="01~07")
+    p_start.add_argument("lab_id", metavar="랩번호", help="01~14")
     p_stop = lab_sub.add_parser("stop", help="실습 환경 종료")
-    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~07")
+    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~14")
     p_stop.add_argument("--all", action="store_true", help="모든 랩 종료")
-    lab_sub.add_parser("status", help="실행 중인 컨테이너 확인")
+    lab_sub.add_parser("status", help="실행 중인 컨테이너 및 랩 대시보드 확인")
+    p_test = lab_sub.add_parser("test", help="실습 환경 자동 검증/테스트 실행")
+    p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~14 (생략 시 안내)")
+    p_test.add_argument("--all", action="store_true", help="전체 14개 랩 테스트 일괄 실행")
     p_logs = lab_sub.add_parser("logs", help="랩 로그 보기")
-    p_logs.add_argument("lab_id", metavar="랩번호", help="01~07")
+    p_logs.add_argument("lab_id", metavar="랩번호", help="01~14")
 
     # search
     p_search = sub.add_parser("search", help="전체 문서에서 키워드 검색")
