@@ -73,6 +73,7 @@ LAB_DIRS=(
     "12_cicd_supply_chain_lab"
     "13_ebpf_kernel_lab"
     "14_maldoc_lab"
+    "15_web3_smart_contract_lab"
 )
 
 LAB_NAMES=(
@@ -90,6 +91,7 @@ LAB_NAMES=(
     "CI/CD & 소프트웨어 공급망 침투 랩"
     "eBPF 커널 침투 및 런타임 보안 랩"
     "문서형 악성코드 & PDF 분석 랩"
+    "Web3 & 스마트 컨트랙트 보안 랩"
 )
 
 stopped_count=0

@@ -108,6 +108,10 @@ DBC(Database CAN) 파일은 메시지 ID와 신호 정의를 담은 텍스트 �
 | HackRF One | Sub-GHz / V2X RF | ~$300 |
 | Proxmark3 | RFID/NFC (키리스) | ~$350 |
 | JTAG 디버거 (J-Link) | ECU 펌웨어 추출 | ~$400 |
+| [03_telematics_and_ota_attacks.md](./03_telematics_and_ota_attacks.md) | **텔레매틱스 & OTA 업데이트 공격** — 텔레매틱스(Telematics)는 자동차와 외부 네트워크(인터넷, 셀룰러망)를 연결하는 통신 시스템이다. GPS 추적, 원격 진단, 긴급 구조 신호(eCall) 등을 제공한다. OTA... |
+| [04_automotive_security_testing.md](./04_automotive_security_testing.md) | **자동차 보안 테스트 — 침투 테스트·퍼징·인증 검증** — 자동차 보안 테스트(Automotive Security Testing)는 차량의 전자 시스템(ECU, CAN 버스, 텔레매틱스, 무선 인터페이스 등)에 대한 체계적인 침투 테스트 및 ... |
+| [05_automotive_security_defense.md](./05_automotive_security_defense.md) | **자동차 사이버보안 방어 — ISO/SAE 21434·UNECE WP.29·안전한 OTA 업데이트** — 현대 자동차는 100개 이상의 ECU(Electronic Control Unit)와 수천만 줄의 소프트웨어로 구성된 이동하는 컴퓨터입니다. 차량 해킹은 인명 피해로 이어질 수 있어 일... |
+| [06_automotive_ctf_lab.md](./06_automotive_ctf_lab.md) | **자동차 해킹 CTF 실습 랩** — CAN 버스 분석, OBD-II 통신, ECU 챌린지를 실습하는 CTF 환경입니다. 가상 CAN 환경에서 안전하게 실습합니다. |
 
 ---
 

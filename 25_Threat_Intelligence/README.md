@@ -7,6 +7,9 @@
 | [01_cti_fundamentals.md](./01_cti_fundamentals.md) | CTI 계층, IOC 유형, MITRE ATT&CK, MISP 플랫폼, 보고서 구조 |
 | [02_osint_for_threat_intel.md](./02_osint_for_threat_intel.md) | Shodan/Censys, 패시브 DNS, 악성코드 DB, C2 인프라 추적 |
 | [03_incident_response.md](./03_incident_response.md) | IR 프레임워크, 증거 수집, 타임라인 재구성, 격리·박멸, 허니팟 |
+| [04_cti_platform_operations.md](./04_cti_platform_operations.md) | **CTI 플랫폼 운영** — 대부분의 조직은 상용 CTI 서비스(VirusTotal, CrowdStrike 등)를 사용하지만, 자체 플랫폼이 필요한 경우도 있습니다. |
+| [05_threat_intel_automation.md](./05_threat_intel_automation.md) | **위협 인텔리전스 자동화 — MISP·OpenCTI·IOC 보강·STIX/TAXII** — 위협 인텔리전스(Threat Intelligence, TI)는 사이버 공격자, 그들의 도구, 전술, 절차(TTP)에 대한 정보를 수집·분석·공유하는 체계입니다. "어떤 IP가 우리를 ... |
+| [06_threat_intel_ctf_lab.md](./06_threat_intel_ctf_lab.md) | **위협 인텔리전스 CTF 실습 랩** — version: "3.9" |
 
 ## 학습 목표
 

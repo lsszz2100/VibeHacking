@@ -150,6 +150,7 @@ python3 vhack.py update                  # git pull 获取最新内容
 | **12** | CI/CD 供应链安全实验室 | GitHub Actions 投毒 · 依赖混淆管道劫持 | http://localhost:8012 | ★★★ |
 | **13** | eBPF / 内核安全实验室 | eBPF Rootkit 逃避 · 系统调用 Hook · 运行时安全 | http://localhost:8013 | ★★★★★ |
 | **14** | 恶意文档(Maldoc)分析实验室 | VBA 宏反混淆 · RTF/OOXML 漏洞利用分析 | http://localhost:8014 | ★★★★ |
+| **15** | Web3 & 智能合约安全实验室 | 重入攻击 · 整数溢出 · tx.origin 钓鱼 · 闪电贷价格操纵 | http://localhost:8015 | ★★★★ |
 
 ```bash
 # 快速实践示例：Web 渗透

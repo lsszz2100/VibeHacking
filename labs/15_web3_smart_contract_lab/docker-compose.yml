@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  web3-security-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web3_smart_contract_lab
+    restart: unless-stopped
+    ports:
+      - "8015:8015"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8015
+    labels:
+      - "lab=web3"
+      - "service=web3-simulator"

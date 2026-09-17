@@ -24,6 +24,8 @@
 | 02 | [prompt_injection_jailbreak.md](02_prompt_injection_jailbreak.md) | 프롬프트 인젝션·간접 인젝션·탈옥·시스템 프롬프트 유출 | ★★★ |
 | 03 | [model_extraction_inversion.md](03_model_extraction_inversion.md) | 모델 추출·멤버십 추론·데이터 재구성 | ★★★★ |
 | 04 | [llm_agent_security.md](04_llm_agent_security.md) | 도구 사용 에이전트·RAG 중독·MCP 보안 | ★★★★ |
+| [05_ai_security_defense.md](./05_ai_security_defense.md) | **AI/ML 보안 방어 — 적대적 견고성·모델 모니터링·OWASP LLM Top 10 완화** — 기계 학습 모델은 전통적인 소프트웨어와 다른 공격 표면을 가집니다. 코드 취약점 외에도 훈련 데이터 오염, 모델 추출, 적대적 입력 등 AI 고유의 위협이 존재합니다. |
+| [06_ai_ml_ctf_lab.md](./06_ai_ml_ctf_lab.md) | **AI/ML 보안 CTF 실습 랩** — version: "3.9" |
 
 ## 학습 목표
 

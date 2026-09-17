@@ -7,6 +7,9 @@
 | [01_oracle_mysql_attack.md](./01_oracle_mysql_attack.md) | Oracle TNS 공격, MySQL UDF 셸, 해시 크랙, 포트 스캔 자동화 |
 | [02_db_privilege_escalation.md](./02_db_privilege_escalation.md) | DB 권한 상승 — 저권한 계정 → DBA → OS 쉘 전 과정 |
 | [03_db_forensics_defense.md](./03_db_forensics_defense.md) | DB 포렌식, Binlog/Redo Log 분석, 실시간 침해 탐지 자동화 |
+| [04_nosql_and_cloud_db_attacks.md](./04_nosql_and_cloud_db_attacks.md) | **NoSQL 및 클라우드 DB 공격** — 관계형 DB (SQL): |
+| [05_database_defense_and_hardening.md](./05_database_defense_and_hardening.md) | **DB 방어 및 하드닝** — 데이터베이스는 조직의 핵심 자산(개인정보, 금융 데이터, 영업 기밀)을 저장합니다. DB가 침해되면 단순한 시스템 침해와 달리 데이터 자체가 유출되므로 복구가 불가능한 피해가 발생합니다. |
+| [06_database_ctf_lab.md](./06_database_ctf_lab.md) | **데이터베이스 해킹 CTF 실습 랩** — SQL 인젝션, 권한 상승, NoSQL 인젝션, 데이터베이스 포렌식을 실습하는 CTF 환경입니다. |
 
 ## 학습 목표
 

@@ -7,6 +7,9 @@
 | [01_firewall_and_iptables.md](./01_firewall_and_iptables.md) | iptables/nftables/firewalld 설정, 브루트포스·스캔 차단, 커널 파라미터 |
 | [02_pam_and_auth_hardening.md](./02_pam_and_auth_hardening.md) | PAM 구조, 패스워드 정책, 계정 잠금, SSH 강화, auditd 감사 로깅 |
 | [03_kisa_vulnerability_assessment.md](./03_kisa_vulnerability_assessment.md) | KISA 취약점 점검 항목, CVSS 평가, 자동화 점검 스크립트, 보고서 구조 |
+| [04_linux_security_auditing.md](./04_linux_security_auditing.md) | **Linux 보안 감사** — 보안 감사 vs 침투 테스트: |
+| [05_linux_hardening_automation.md](./05_linux_hardening_automation.md) | **Linux 보안 강화 자동화 — CIS 벤치마크·Ansible·감사 스크립트** — 새로 설치된 Linux 서버는 기본 설정으로는 보안에 취약합니다. 불필요한 서비스 실행, 약한 패스워드 정책, 넓은 파일 권한 등이 문제입니다. 보안 강화는 이를 체계적으로 개선하는 ... |
+| [06_linux_hardening_ctf_lab.md](./06_linux_hardening_ctf_lab.md) | **Linux 하드닝 CTF 실습 랩** — version: "3.9" |
 
 ## 학습 목표
 

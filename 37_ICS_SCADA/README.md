@@ -126,6 +126,9 @@ Purdue 참조 모델(PERA)은 ICS 환경의 네트워크 계층화를 정의한�
 | 레벨 2 | 영역 감독 제어 | HMI, 엔지니어링 워크스테이션 | 화이트리스트 |
 | 레벨 1 | 기본 제어 | PLC, RTU, DCS 컨트롤러 | 물리적 보안, 프로토콜 필터링 |
 | 레벨 0 | 현장 | 센서, 액추에이터, 모터 | 물리적 접근 통제 |
+| [04_ics_security_architecture.md](./04_ics_security_architecture.md) | **— ICS 보안 아키텍처 및 방어 전략** — IT 보안 (정보 기술): |
+| [05_ics_security_defense.md](./05_ics_security_defense.md) | **ICS/SCADA 보안 방어 — IEC 62443·네트워크 분리·OT 모니터링** — 산업 제어 시스템(ICS)과 SCADA는 발전소, 수처리장, 제조 시설 등 핵심 인프라를 제어합니다. 사이버 공격으로 물리적 피해, 인명 피해, 환경 오염이 발생할 수 있어 IT 보안... |
+| [06_ics_ctf_lab.md](./06_ics_ctf_lab.md) | **ICS/SCADA CTF 실습 랩** — Modbus/DNP3 프로토콜 익스플로잇, SCADA HMI 공격, OT 포렌식을 실습하는 CTF 환경입니다. |
 
 ---
 

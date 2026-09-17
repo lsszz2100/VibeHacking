@@ -61,7 +61,7 @@ features = {
     "한국어 완성도"  : "처음부터 한국어로 기획·작성",
     "이중언어"       : "한국어 / English 전 파일 제공",
     "완전한 커버리지": "75섹션 전 보안 영역",
-    "CTF 실습 환경"  : "도커 기반 14개 랩 즉시 구동",
+    "CTF 실습 환경"  : "도커 기반 15개 랩 즉시 구동",
 }
 assert all(features.values()), "All checks passed ✓"
 ```
@@ -192,6 +192,7 @@ python3 vhack.py update                 # git pull
 | **12** | CI/CD 공급망 보안 랩 | GitHub Actions 포이즈닝 · 의존성 혼선 파이프라인 탈취 | http://localhost:8012 | ★★★ |
 | **13** | eBPF / 커널 보안 랩 | eBPF 루트킷 탐지 우회 · Syscall 후킹 · 런타임 보안 | http://localhost:8013 | ★★★★★ |
 | **14** | 악성 문서(Maldoc) 분석 랩 | VBA 매크로 난독화 해제 · RTF/OOXML 익스플로잇 | http://localhost:8014 | ★★★★ |
+| **15** | Web3 & 스마트 컨트랙트 보안 랩 | Reentrancy · 정수 오버플로 · tx.origin · Flash Loan | http://localhost:8015 | ★★★★ |
 
 ```bash
 # 빠른 실습 예시: 웹 해킹

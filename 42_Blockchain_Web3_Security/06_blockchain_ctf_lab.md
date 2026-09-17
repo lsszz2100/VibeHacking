@@ -6,6 +6,10 @@
 
 # 블록체인 / Web3 보안 CTF 실습 랩
 
+> 💡 **바이브해킹 실습 랩 및 워게임 연계**:
+> - **인터랙티브 실습 랩 15**: [`labs/15_web3_smart_contract_lab/`](../labs/15_web3_smart_contract_lab/) — Reentrancy, 정수 오버플로, tx.origin 피싱, Flash Loan 오라클 조작 (`vhack lab start 15`, 웹 콘솔 & API: `http://localhost:8015`)
+> - **워게임 트랙**: 워게임 터미널(`wargame/`)의 `web3` 트랙 (35개 문제)에서 스마트 컨트랙트 및 디파이 공격을 직접 실습할 수 있습니다.
+
 ## 실습 환경 준비
 
 ```bash

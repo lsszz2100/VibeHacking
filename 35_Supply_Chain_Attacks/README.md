@@ -157,6 +157,10 @@ source /tmp/supply-chain-lab/bin/activate
 | `02_build_and_ci_poisoning.md` | CI/CD 파이프라인 침해, 빌드 환경 공격, Python 감사 도구 |
 | `03_hardware_and_firmware_supply_chain.md` | 하드웨어 임플란트, 펌웨어 공격, SBOM, Python 검증기 |
 | `04_detection_and_defense.md` | 탐지 기법, 제로트러스트 아키텍처, 인시던트 대응, Python SBOM diff |
+| [03_Dependency_Confusion_and_Typosquatting.md](./03_Dependency_Confusion_and_Typosquatting.md) | **의존성 혼동 공격 및 타이포스쿼팅** — 의존성 혼동(Dependency Confusion)은 패키지 관리자(npm, pip, Maven 등)가 같은 이름의 패키지가 공개 저장소에 존재하면 내부 사설 레지스트리보다 공개 버전... |
+| [04_Open_Source_Backdoor_Techniques.md](./04_Open_Source_Backdoor_Techniques.md) | **오픈소스 백도어 삽입 기법** — 오픈소스 백도어 삽입은 공격자가 오픈소스 프로젝트에 기여자로 위장해 장기간 신뢰를 쌓은 뒤, 악성 코드를 코드베이스에 몰래 삽입하는 공격이다. 소스 코드가 공개되어 있음에도 코드 리뷰... |
+| [05_supply_chain_defense.md](./05_supply_chain_defense.md) | **공급망 보안 방어 — SBOM·의존성 스캔·벤더 위험 관리** — 공급망 공격은 직접 표적을 공격하는 대신, 표적이 신뢰하는 소프트웨어/하드웨어 공급자를 공격합니다. SolarWinds(2020), Log4Shell(2021), XZ Utils(20... |
+| [06_supply_chain_ctf_lab.md](./06_supply_chain_ctf_lab.md) | **공급망 공격 CTF 실습 랩** — version: "3.9" |
 
 ---
 

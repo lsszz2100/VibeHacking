@@ -32,6 +32,9 @@
 | I2C 버스 | GPIO 2(SDA) / 3(SCL) — `i2c-1` |
 | JTAG | OpenOCD + Raspberry Pi GPIO bitbang |
 | 전원 제어 | GPIO 기반 릴레이 모듈 (글리칭용) |
+| [04_hardware_security_assessment.md](./04_hardware_security_assessment.md) | **하드웨어 보안 평가 — 디바이스 감사·물리 보안·탬퍼 방지** — 하드웨어 보안 평가(Hardware Security Assessment)는 IoT 기기, 임베디드 시스템, 산업용 장치 등의 물리적 하드웨어를 체계적으로 분석해 보안 취약점을 찾고 개... |
+| [05_hardware_security_defense.md](./05_hardware_security_defense.md) | **하드웨어 보안 방어 — 시큐어 부트·TPM·물리 보안·변조 감지** — 소프트웨어 보안이 아무리 강해도 물리적으로 장치에 접근할 수 있다면 무용지물이 될 수 있습니다. 하드웨어 보안은 물리적 공격(콜드 부트, JTAG, 글리칭), 공급망 공격, 부트 과정... |
+| [06_hardware_ctf_lab.md](./06_hardware_ctf_lab.md) | **하드웨어 해킹 CTF 실습 랩** — sudo apt install -y sigrok pulseview |
 
 ```bash
 # Raspberry Pi 준비

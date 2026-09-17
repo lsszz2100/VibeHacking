@@ -261,6 +261,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★☆",
         "related": [6, 7, 45],
     },
+    "15": {
+        "name": "Web3 & 스마트 컨트랙트 보안 랩",
+        "dir":  "15_web3_smart_contract_lab",
+        "desc": "ChainDefend: Reentrancy · 정수 오버플로 · tx.origin 피싱 · Flash Loan AMM 가격 조작",
+        "url":  "웹 콘솔 & EVM API: http://localhost:8015",
+        "difficulty": "★★★★",
+        "related": [42],
+    },
 }
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────
@@ -1077,9 +1085,190 @@ def cmd_quick(args: argparse.Namespace) -> None:
          f"  {cyan('python3 vhack.py update')}  — 최신 내용 반영"),
     ]
 
-    for title, desc in steps:
-        print(bold(yellow(f"  {title}")))
-        print(f"{desc}\n")
+# ── 명령어: doctor ────────────────────────────────────────────────────────────
+def cmd_doctor(args: argparse.Namespace) -> None:
+    """시스템 필수 의존성, 포트 충돌, 실습 환경 자가 진단"""
+    import shutil
+    import socket
+    import platform
+    import importlib.util
+
+    print(bold(cyan("\n🩺 VibeHacking 환경 자가 진단 (Doctor)\n")))
+    checks_passed = 0
+    checks_warn = 0
+    checks_fail = 0
+
+    def report(status: str, title: str, detail: str = ""):
+        nonlocal checks_passed, checks_warn, checks_fail
+        if status == "ok":
+            checks_passed += 1
+            icon = green("[✓]")
+        elif status == "warn":
+            checks_warn += 1
+            icon = yellow("[!]")
+        else:
+            checks_fail += 1
+            icon = red("[✗]")
+        det_str = f" — {dim(detail)}" if detail else ""
+        print(f"  {icon} {bold(title)}{det_str}")
+
+    # 1. Python Check
+    py_ver = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    if sys.version_info >= (3, 10):
+        report("ok", f"Python: v{py_ver} ({platform.system()} {platform.machine()})")
+    else:
+        report("fail", f"Python: v{py_ver}", "Python 3.10 이상이 권장됩니다.")
+
+    # 2. Git Check
+    try:
+        git_v = subprocess.check_output(["git", "--version"], text=True, stderr=subprocess.DEVNULL).strip()
+        report("ok", f"Git: {git_v}")
+    except Exception:
+        report("warn", "Git 미설치 또는 실행 불가", "업데이트 및 형상 관리에 Git이 필요합니다.")
+
+    # 3. Docker Check
+    docker_ok = False
+    try:
+        d_v = subprocess.check_output(["docker", "--version"], text=True, stderr=subprocess.DEVNULL).strip()
+        d_info = subprocess.run(["docker", "info"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if d_info.returncode == 0:
+            docker_ok = True
+            report("ok", f"Docker: {d_v} (데몬 정상 작동)")
+        else:
+            report("warn", f"Docker: {d_v}", "Docker 데몬이 실행 중이지 않습니다. (sudo systemctl start docker)")
+    except Exception:
+        report("warn", "Docker 미설치", "CTF 랩 구동을 위해 Docker 설치가 권장됩니다. (https://docs.docker.com)")
+
+    # 4. Docker Compose Check
+    compose_ok = False
+    for cmd in [["docker", "compose", "version"], ["docker-compose", "--version"]]:
+        try:
+            c_v = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip()
+            compose_ok = True
+            report("ok", f"Docker Compose: {c_v}")
+            break
+        except Exception:
+            continue
+    if not compose_ok:
+        report("warn", "Docker Compose 미설치", "다중 컨테이너 랩 실행에 필요합니다.")
+
+    # 5. Node.js Check (Wargame audit / verify)
+    try:
+        node_v = subprocess.check_output(["node", "--version"], text=True, stderr=subprocess.DEVNULL).strip()
+        report("ok", f"Node.js: {node_v} (워게임 검증 스위트 지원)")
+    except Exception:
+        report("ok", "Node.js 미설치 (선택사항)", "워게임 플레이는 브라우저로 가능하며, node는 스크립트 검증용입니다.")
+
+    # 6. Python Libraries Check
+    required_libs = [
+        ("pytest", "테스트 프레임워크"),
+        ("fastapi", "시뮬레이터 API"),
+        ("starlette", "ASGI 엔진"),
+        ("pydantic", "데이터 유효성 검증"),
+        ("httpx", "HTTP 테스트 클라이언트"),
+        ("flask", "Flask 취약 앱"),
+        ("pymodbus", "ICS/SCADA Modbus 클라이언트"),
+        ("jwt", "JWT 분석 라이브러리 (pyjwt)"),
+        ("jinja2", "템플릿 렌더링"),
+    ]
+    missing_libs = []
+    for lib, desc in required_libs:
+        if importlib.util.find_spec(lib) is None:
+            missing_libs.append(lib)
+
+    if not missing_libs:
+        report("ok", f"파이썬 필수 의존성 패키지 ({len(required_libs)}개 전체 설치됨)")
+    else:
+        report("warn", f"미설치 파이썬 패키지: {', '.join(missing_libs)}", f"pip install {' '.join(missing_libs)}")
+
+    # 7. Disk Space
+    try:
+        total, used, free = shutil.disk_usage(str(REPO_ROOT))
+        free_gb = free // (2**30)
+        if free_gb >= 10:
+            report("ok", f"디스크 여유 공간: {free_gb} GB")
+        elif free_gb >= 3:
+            report("warn", f"디스크 여유 공간 부족: {free_gb} GB", "도커 이미지 빌드 시 5GB 이상 권장")
+        else:
+            report("fail", f"디스크 여유 공간 심각: {free_gb} GB")
+    except Exception:
+        pass
+
+    # 8. Host Ports Check
+    lab_ports = [
+        (8080, "Lab 01 (DVWA/SQLi)"),
+        (8040, "Lab 04 (SSRF)"),
+        (8088, "Lab 08 (LLM)"),
+        (8089, "Lab 09 (ICS Web)"),
+        (8090, "Lab 10 (K8s Web)"),
+        (8011, "Lab 11 (AD Kerberos)"),
+        (8012, "Lab 12 (CI/CD)"),
+        (8013, "Lab 13 (eBPF)"),
+        (8014, "Lab 14 (MalDoc)"),
+        (8015, "Lab 15 (Web3)"),
+        (8888, "Lab 05 (Full APT)"),
+        (3001, "Lab 01 (Juice Shop)"),
+    ]
+    occupied_ports = []
+    for port, lab_name in lab_ports:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.1)
+            res = s.connect_ex(("127.0.0.1", port))
+            if res == 0:
+                occupied_ports.append((port, lab_name))
+
+    if not occupied_ports:
+        report("ok", f"실습 랩 주요 포트 ({len(lab_ports)}개 포트 모두 충돌 없음)")
+    else:
+        occ_str = ", ".join([f"{p} ({n})" for p, n in occupied_ports])
+        report("ok", f"현재 활성화된 랩/점유 포트 ({len(occupied_ports)}개)", occ_str)
+
+    print(f"\n  진단 요약: {green(f'{checks_passed} 통과')}, {yellow(f'{checks_warn} 주의')}, {red(f'{checks_fail} 실패')}\n")
+    if checks_fail == 0 and checks_warn == 0:
+        print(bold(green("  🎉 모든 시스템 및 실습 환경이 완벽하게 준비되었습니다!\n")))
+    elif checks_fail == 0:
+        print(bold(cyan("  💡 실습 환경 구성에 지장이 없으나, 일부 주의 사항을 확인하세요.\n")))
+
+
+# ── 명령어: wargame ───────────────────────────────────────────────────────────
+def cmd_wargame(args: argparse.Namespace) -> None:
+    """브라우저 워게임 로컬 서버 즉시 실행 및 브라우저 오픈"""
+    wargame_dir = REPO_ROOT / "wargame"
+    if not wargame_dir.exists():
+        print(red("✗ wargame 디렉토리를 찾을 수 없습니다."))
+        return
+
+    port = args.port
+    url = f"http://localhost:{port}"
+    print(bold(cyan("\n🎮 VibeHacking 워게임 로컬 침투 콘솔")))
+    print(dim(f"  디렉토리: {wargame_dir}"))
+    print(f"  접속 주소: {bold(green(url))}")
+    print(dim("  종료하려면 Ctrl+C를 누르세요.\n"))
+
+    if not args.no_browser:
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception:
+            pass
+
+    import http.server
+    import socketserver
+    class WargameHTTPHandler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *a, **kw):
+            super().__init__(*a, directory=str(wargame_dir), **kw)
+        def log_message(self, format, *a):
+            pass
+
+    socketserver.TCPServer.allow_reuse_address = True
+    try:
+        with socketserver.TCPServer(("", port), WargameHTTPHandler) as httpd:
+            print(green(f"✓ 워게임 로컬 웹 서버 실행 중 (포트 {port})"))
+            httpd.serve_forever()
+    except KeyboardInterrupt:
+        print(yellow("\n[-] 워게임 서버를 정상적으로 종료했습니다.\n"))
+    except OSError as e:
+        print(red(f"\n✗ 서버 실행 실패 (포트 {port}가 이미 사용 중인지 확인하세요): {e}\n"))
 
 
 # ── 메인 파서 ─────────────────────────────────────────────────────────────────
@@ -1099,14 +1288,16 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py lab stop 01        웹 해킹 랩 종료
           python3 vhack.py lab stop --all     모든 랩 종료
           python3 vhack.py lab status         실행 중인 컨테이너 및 대시보드
-          python3 vhack.py lab test 14        Lab 14 무결성 테스트
-          python3 vhack.py lab test --all     전체 14개 랩 테스트 일괄 실행
+          python3 vhack.py lab test 15        Lab 15 무결성 테스트
+          python3 vhack.py lab test --all     전체 15개 랩 테스트 일괄 실행
           python3 vhack.py lab logs 01        랩 로그 보기
           python3 vhack.py search "Kerberos"  전체 문서 검색
           python3 vhack.py info 54            섹션 상세 정보
           python3 vhack.py alias install      쉘 alias 자동 등록
           python3 vhack.py alias remove       alias 제거
           python3 vhack.py alias status       설치 현황 확인
+          python3 vhack.py doctor             자가 진단 및 포트 충돌 점검
+          python3 vhack.py wargame            브라우저 워게임 로컬 서버 실행
           python3 vhack.py update             git pull
         """),
     )
@@ -1127,16 +1318,16 @@ def build_parser() -> argparse.ArgumentParser:
     lab_sub = p_lab.add_subparsers(dest="lab_cmd", metavar="<서브명령>")
     lab_sub.add_parser("ls", help="실습 환경 목록")
     p_start = lab_sub.add_parser("start", help="실습 환경 시작")
-    p_start.add_argument("lab_id", metavar="랩번호", help="01~14")
+    p_start.add_argument("lab_id", metavar="랩번호", help="01~15")
     p_stop = lab_sub.add_parser("stop", help="실습 환경 종료")
-    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~14")
+    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~15")
     p_stop.add_argument("--all", action="store_true", help="모든 랩 종료")
     lab_sub.add_parser("status", help="실행 중인 컨테이너 및 랩 대시보드 확인")
     p_test = lab_sub.add_parser("test", help="실습 환경 자동 검증/테스트 실행")
-    p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~14 (생략 시 안내)")
-    p_test.add_argument("--all", action="store_true", help="전체 14개 랩 테스트 일괄 실행")
+    p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~15 (생략 시 안내)")
+    p_test.add_argument("--all", action="store_true", help="전체 15개 랩 테스트 일괄 실행")
     p_logs = lab_sub.add_parser("logs", help="랩 로그 보기")
-    p_logs.add_argument("lab_id", metavar="랩번호", help="01~14")
+    p_logs.add_argument("lab_id", metavar="랩번호", help="01~15")
 
     # search
     p_search = sub.add_parser("search", help="전체 문서에서 키워드 검색")
@@ -1157,6 +1348,14 @@ def build_parser() -> argparse.ArgumentParser:
     alias_sub.add_parser("remove", help="설치된 alias 제거")
     alias_sub.add_parser("status", help="설치 현황 확인")
 
+    # doctor
+    sub.add_parser("doctor", help="시스템 필수 의존성, 포트 충돌, 실습 환경 자가 진단")
+
+    # wargame
+    p_wg = sub.add_parser("wargame", help="브라우저 워게임 로컬 서버 즉시 실행 및 브라우저 오픈")
+    p_wg.add_argument("--port", type=int, default=8000, help="웹 서버 포트 (기본값: 8000)")
+    p_wg.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
+
     # update
     sub.add_parser("update", help="git pull로 최신 버전 업데이트")
 
@@ -1173,13 +1372,15 @@ def main() -> None:
         return
 
     dispatch = {
-        "list":   cmd_list,
-        "study":  cmd_study,
-        "lab":    cmd_lab,
-        "search": cmd_search,
-        "info":   cmd_info,
-        "alias":  cmd_alias,
-        "update": cmd_update,
+        "list":    cmd_list,
+        "study":   cmd_study,
+        "lab":     cmd_lab,
+        "search":  cmd_search,
+        "info":    cmd_info,
+        "alias":   cmd_alias,
+        "doctor":  cmd_doctor,
+        "wargame": cmd_wargame,
+        "update":  cmd_update,
     }
 
     handler = dispatch.get(args.command)

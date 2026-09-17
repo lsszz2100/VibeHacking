@@ -46,6 +46,9 @@ __pycache__/
 *.pyc
 *.pyo
 *.py.bak
+*.egg-info/
+dist/
+build/
 .venv/
 venv/
 

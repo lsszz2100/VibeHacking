@@ -22,6 +22,8 @@ OSINT와 사회공학은 "사람을 속이는 기법"이라는 통념을 넘어�
 | 02 | [target_profiling.md](02_target_profiling.md) | LinkedIn/GitHub/SNS 추적, theHarvester·Sherlock·Maltego, 이메일·도메인·인물 자동화 | ★★★ |
 | 03 | [social_engineering_attacks.md](03_social_engineering_attacks.md) | 피싱/비싱/스미싱/프리텍스팅/USB 드롭, 심리 트리거(Cialdini), 사회공학 사이클 | ★★★ |
 | 04 | [phishing_infra_and_evasion.md](04_phishing_infra_and_evasion.md) | GoPhish·evilginx2(MFA 우회), 도메인 squatting, SPF/DKIM 정상화, SEG·EDR 탐지 회피 | ★★★★ |
+| [05_osint_defense_and_counter_intelligence.md](./05_osint_defense_and_counter_intelligence.md) | **OSINT 방어 및 대항 인텔리전스 — 디지털 발자국 최소화·소셜 엔지니어링 인식·피싱 방어** — OSINT(Open Source Intelligence)는 공개된 정보를 수집하는 기법입니다. 공격자는 공격 전에 표적의 이메일, 소셜 미디어, 직원 정보, 기술 스택을 OSINT로 ... |
+| [06_osint_ctf_lab.md](./06_osint_ctf_lab.md) | **OSINT & 소셜 엔지니어링 CTF 실습 랩** — version: "3.9" |
 
 ## 17번 섹션과의 차이
 

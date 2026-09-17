@@ -53,7 +53,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest fastapi starlette pydantic httpx flask pyjwt pymodbus jinja2
 
-      - name: Run Full Pytest Suite (Labs 01~14 + Infra)
+      - name: Run Full Pytest Suite (Labs 01~15 + Infra)
         run: pytest -v
 
   cli-smoke-test:
@@ -76,6 +76,9 @@ jobs:
 
       - name: CLI Help Command
         run: python3 vhack.py --help
+
+      - name: CLI Doctor Diagnostic
+        run: python3 vhack.py doctor
 
       - name: CLI Section Listing
         run: python3 vhack.py list

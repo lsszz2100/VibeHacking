@@ -34,20 +34,27 @@ vhack — VibeHacking CLI
 명령어:
   list      전체 75개 섹션 목록 표시
   study     섹션 파일 열람
-  lab       Docker 실습 환경 관리
+  lab       Docker 실습 환경 관리 (01~15)
   search    전체 마크다운 문서 검색
   info      섹션 상세 정보
   alias     셸 alias 자동 등록/제거/확인
+  doctor    시스템 필수 의존성, 포트 충돌, 실습 환경 자가 진단
+  wargame   브라우저 워게임 로컬 서버 즉시 실행 및 브라우저 오픈
   update    git pull로 최신 버전 업데이트
 ```
 
 ### 설치 & 전역 사용
 
 ```bash
-# 방법 1: python3으로 직접 실행 (설치 불필요)
-python3 vhack.py list
+# 방법 1 (신규 권장): pip 표준 설치 → vhack 명령어 시스템 전역 등록
+pip install -e .
 
-# 방법 2: alias 자동 등록 → vhack 으로 바로 사용 (권장)
+# 방법 2: 셸 alias 자동 등록 → vhack 으로 바로 사용
+python3 vhack.py alias install
+source ~/.bashrc
+
+# 방법 3: python3으로 직접 실행
+python3 vhack.py list
 python3 vhack.py alias install
 source ~/.bashrc   # 현재 세션에 즉시 적용
 vhack list
@@ -219,6 +226,8 @@ vhack lab ls
          URL: 웹 콘솔 & eBPF API: http://localhost:8013  관련 섹션: 1, 26, 70
     14  🧪 문서형 악성코드 & PDF 분석 랩       ★★★☆  DocArmor: OLE/VBA 매크로 난독화 해제 · PDF FlateDecode 스트림 분석 · CVE-2017-11882 수식 에디터 RCE · CVE-2021-40444 MSHTML 외부 OLE 차단
          URL: 웹 콘솔 & MalDoc API: http://localhost:8014  관련 섹션: 6, 7, 45
+    15  🧪 Web3 & 스마트 컨트랙트 보안 랩      ★★★★  ChainDefend: Reentrancy · 정수 오버플로 · tx.origin 피싱 · Flash Loan AMM 가격 조작
+         URL: 웹 콘솔 & EVM API: http://localhost:8015  관련 섹션: 42
 ```
 
 ### 4-2. 실습 환경 시작 (`lab start`)
@@ -267,6 +276,7 @@ vhack lab start 01
 | **Lab 12 — CI/CD** | http://localhost:8012 | — |
 | **Lab 13 — eBPF** | http://localhost:8013 | — |
 | **Lab 14 — MalDoc** | http://localhost:8014 | — |
+| **Lab 15 — Web3** | http://localhost:8015 | — |
 
 ### 4-4. 실습 환경 종료
 
@@ -723,6 +733,7 @@ vhack list                        # no more "python3 vhack.py" needed
 | 12 CI/CD | `vhack lab start 12` | http://localhost:8012 | GitHub Actions PPE, dependency confusion |
 | 13 eBPF | `vhack lab start 13` | http://localhost:8013 | Syscall hooking, rootkit, BPF LSM |
 | 14 MalDoc | `vhack lab start 14` | http://localhost:8014 | VBA macros, PDF streams, CVE exploits |
+| 15 Web3 | `vhack lab start 15` | http://localhost:8015 | Reentrancy, overflow, tx.origin, flash loan |
 
 ## Study Tips
 

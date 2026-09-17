@@ -9,6 +9,7 @@
 | [03_ai_assisted_pentesting.md](./03_ai_assisted_pentesting.md) | AI를 활용한 침투 테스트 워크플로우, 프롬프트 엔지니어링, 실전 활용 |
 | [04_ai_ctf_automation.md](./04_ai_ctf_automation.md) | AI 기반 CTF 자동화 — 웹/바이너리/포렌식/크립토 전 분야 |
 | [05_claude_gpt_cyber_integration.md](./05_claude_gpt_cyber_integration.md) | Claude + GPT-4o 통합 활용 — TAC 접근법, 이중 분석 파이프라인 |
+| [06_ai_security_ctf_lab.md](./06_ai_security_ctf_lab.md) | **CTF 스타일 AI 보안 실습** — docker --version |
 
 ## 학습 목표
 - 2026년 AI 보안 생태계와 주요 모델 이해

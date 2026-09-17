@@ -150,6 +150,7 @@ python3 vhack.py update                  # git pull latest content
 | **12** | CI/CD Supply Chain Lab | GitHub Actions poisoning · Dependency confusion | http://localhost:8012 | ★★★ |
 | **13** | eBPF / Kernel Security Lab | eBPF rootkit evasion · Syscall hooking · Runtime security | http://localhost:8013 | ★★★★★ |
 | **14** | Malicious Document (Maldoc) Lab | VBA macro deobfuscation · RTF/OOXML exploit analysis | http://localhost:8014 | ★★★★ |
+| **15** | Web3 & Smart Contract Lab | Reentrancy · Batch overflow · tx.origin phishing · Flash loan | http://localhost:8015 | ★★★★ |
 
 ```bash
 # Quick practice example: Web Hacking

@@ -1,0 +1,24 @@
+{
+  "name": "VibeHacking Infiltration Console",
+  "short_name": "VibeHacking",
+  "description": "1,050 Browser-based cybersecurity infiltration CTF challenges",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#02060a",
+  "theme_color": "#02060a",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='36' fill='%2302060a'/%3E%3Ctext x='25' y='130' font-family='monospace' font-size='100' font-weight='bold' fill='%2327ff8b'%3E%26gt;_%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%2302060a'/%3E%3Ctext x='65' y='350' font-family='monospace' font-size='270' font-weight='bold' fill='%2327ff8b'%3E%26gt;_%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

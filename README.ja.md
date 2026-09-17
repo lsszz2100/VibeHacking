@@ -150,6 +150,7 @@ python3 vhack.py update                  # git pull で最新コンテンツ取�
 | **12** | CI/CDサプライチェーンセキュリティラボ | GitHub Actionsポイズニング · 依存関係混乱攻撃 | http://localhost:8012 | ★★★ |
 | **13** | eBPF / カーネルセキュリティラボ | eBPFルートキット検知回避 · Syscallフック · ランタイム保護 | http://localhost:8013 | ★★★★★ |
 | **14** | 悪性文書(Maldoc)解析ラボ | VBAマクロ難読化解除 · RTF/OOXMLエクスプロイト解析 | http://localhost:8014 | ★★★★ |
+| **15** | Web3 & スマートコントラクトセキュリティラボ | Reentrancy · 整数オーバーフロー · tx.origin · フラッシュローン | http://localhost:8015 | ★★★★ |
 
 ```bash
 # 実習例: Webハッキング

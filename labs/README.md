@@ -44,6 +44,7 @@ docker-compose --version
 | 12 | [CI/CD & 공급망 보안 랩](./12_cicd_supply_chain_lab/) | Poisoned Pipeline(PPE), 의존성 혼동(Dependency Confusion), 러너 시크릿 탈취, 릴리스 백도어 & SLSA 변조 | ★★★☆ | [18장 DevSecOps](../18_DevSecOps/06_devsecops_ctf_lab.md), [35장 공급망 공격](../35_Supply_Chain_Attacks/06_supply_chain_ctf_lab.md) | `supplychain` |
 | 13 | [eBPF 커널 보안 랩](./13_ebpf_kernel_lab/) | Kprobe 시스템콜 도청, bpf_probe_write_user 메모리 변조 권한상승, XDP 은닉 통신, BPF LSM 무결성 방어 | ★★★★ | [01장 리눅스 기초](../01_Linux_Basics/06_linux_ctf_practical_lab.md), [26장 리눅스 하드닝](../26_Linux_Hardening/README.md), [70장 쿠버네티스](../70_Kubernetes_Security/06_k8s_security_ctf_lab.md) | `ebpf` |
 | 14 | [문서형 악성코드 분석 랩](./14_maldoc_lab/) | OLE/VBA 매크로 난독화 해제, PDF FlateDecode 스트림 분석, CVE-2017-11882 수식 에디터 RCE, CVE-2021-40444 MSHTML 방어 | ★★★☆ | [06장 악성코드 분석](../06_Malware_Analysis/07_document_malware_analysis.md) | `maldoc` |
+| 15 | [Web3 & 스마트 컨트랙트 보안 랩](./15_web3_smart_contract_lab/) | Reentrancy, 정수 오버플로, tx.origin 피싱, Flash Loan AMM 가격 조작 | ★★★★ | [42장 블록체인/Web3](../42_Blockchain_Web3_Security/06_blockchain_ctf_lab.md) | `web3` |
 
 ---
 
@@ -185,6 +186,16 @@ docker-compose --version
 - **교재 챕터 연계**: [06장 악성코드 분석 - 문서형 악성코드](../06_Malware_Analysis/07_document_malware_analysis.md)
 - **워게임 트랙**: 워게임 터미널(`wargame/`) `maldoc` 트랙 (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 14` (웹 콘솔 & API: `http://localhost:8014`)
+
+### 15. Web3 & 스마트 컨트랙트 보안 랩 (ChainDefend)
+- EVM 기반 이더리움 스마트 컨트랙트 핵심 보안 취약점 4대 실습
+- Checks-Effects-Interactions 패턴 위반 재진입(Reentrancy) 취약점 악용 및 금고 전액 탈취
+- uint256 래핑 및 배치 전송(Batch Overflow) 정수 오버플로를 통한 무제한 토큰 발행
+- tx.origin 피싱 기법을 이용한 컨트랙트 관리자 권한 탈취
+- 플래시론(Flash Loan)을 활용한 탈중앙화 거래소(AMM) 현물 가격 오라클 조작 및 담보 차익 착취
+- **교재 챕터 연계**: [42장 블록체인 및 Web3 보안 CTF 실습 랩](../42_Blockchain_Web3_Security/06_blockchain_ctf_lab.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `web3` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 15` (웹 콘솔 & API: `http://localhost:8015`)
 
 
 

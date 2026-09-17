@@ -22,6 +22,8 @@
 | 02 | [layer2_attacks.md](02_layer2_attacks.md) | VLAN hopping, STP/DHCP 공격, CAM overflow, DAI 우회 | ★★★ |
 | 03 | [routing_protocol_attacks.md](03_routing_protocol_attacks.md) | OSPF/EIGRP/BGP 경로 주입, HSRP/VRRP 하이재킹 | ★★★★ |
 | 04 | [management_plane_exploitation.md](04_management_plane_exploitation.md) | SNMP·TACACS+·NETCONF·설정 파일 추출, 장비 백도어 식별 | ★★★★ |
+| [05_network_device_hardening.md](./05_network_device_hardening.md) | **네트워크 장비 보안 강화 — Cisco·Juniper 보안 설정·네트워크 장비 모니터링** — 라우터, 스위치, 방화벽은 네트워크의 핵심이지만 종종 보안 설정이 소홀합니다. 기본 커뮤니티 문자열(public/private), 텔넷 사용, 불필요한 서비스 활성화 등이 흔한 문제입니다. |
+| [06_network_device_ctf_lab.md](./06_network_device_ctf_lab.md) | **네트워크 장치 해킹 CTF 실습 랩** — version: "3.9" |
 
 ## 선수 지식
 
