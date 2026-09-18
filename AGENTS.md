@@ -91,7 +91,7 @@ node wargame/scripts/leakscan.js
 # 8. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
 node wargame/scripts/audit.js --strict
 
-# 9. 연산/유도형 챌린지 117개 자동 풀이 검증 (117/117 통과)
+# 9. 연산/유도형 챌린지 118개 자동 풀이 검증 (118/118 통과)
 node wargame/scripts/solve-derivable.js
 ```
 
@@ -107,6 +107,11 @@ node wargame/scripts/solve-derivable.js
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
 
+- **2026-09-18 (Lab 17 KubeShield, Docsify Plugin Suite, 17 Labs 124 Tests All Green, Remote Sync)**:
+  - **Lab 17 KubeShield 랩 신규 구축**: `labs/17_kubernetes_cloud_native_lab/` (특권 파드 탈출 vs PSA Restricted, RBAC 와일드카드 권한 상승 vs 최소 권한, IMDSv1 SSRF vs IMDSv2 Hop Limit 1 / NetworkPolicy, 공급망 위조 이미지 침투 vs Kyverno/Sigstore Cosign 어드미션 웹훅, 포트 8017, 11개 단위 테스트 전원 통과)
+  - **Docsify 웹 뷰어 플러그인 고도화**: Mermaid 10 실시간 다이어그램 렌더링, `docsify-pagination` 챕터 이동 네비게이션, `docsify-copy-code` 코드 복사, `zoom-image` 이미지 확대, 상단 고정 네비게이션 바 & 실습 랩/워게임 원클릭 연동 배너 배치
+  - **17개 랩 124개 무결성 테스트 통과**: `vhack lab test --all` -> 17개 랩 124개 테스트 100% All Green, 전체 Pytest 127개 테스트 통과
+  - **원격 저장소 동기화**: `main` 브랜치 커밋(`64e82c1`, `4f0fdfc`) 원격 저장소(`https://github.com/lsszz2100/VibeHacking.git`) 푸시 완료
 - **2026-09-18 (Lab 16, Docsify Portal, Wargame 31 Tracks / 1,085 Challenges, Docker Setup CLI)**:
   - **Lab 16 MemShield 랩 신규 구축**: `labs/16_memory_forensics_lab/` (DKOM unlinking, VAD RWX injection, C2 socket reconstruction, LSASS NTLM dump & LSA PPL defense, 포트 8016, 11개 테스트 전원 통과)
   - **75개 챕터 웹 리더 포털 구축**: Docsify 기반 다크 테마 포털(`index.html`, `_sidebar.md`, `_navbar.md`, `docs/`), GitHub Pages 자동 배포(`.github/workflows/deploy-docs.yml`), `vhack docs` CLI 내장 웹 서버 제공
