@@ -31,9 +31,13 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/1085</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/1120</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
+      <button id="badgeBtn" class="hud-btn" title="Badges / Achievements">🏆</button>
+      <button id="exportBtn" class="hud-btn" title="Export progress JSON">💾</button>
+      <button id="importBtn" class="hud-btn" title="Import progress JSON">📂</button>
+      <input type="file" id="importFileInput" accept=".json,text/plain" style="display:none">
       <button id="soundBtn" class="hud-btn" title="sound">🔊</button>
       <button id="langBtn" class="hud-btn" title="language">EN</button>
     </span>
@@ -48,9 +52,11 @@
     <button class="chip" data-cmd="ls">ls</button>
     <button class="chip" data-cmd="tracks">tracks</button>
     <button class="chip" data-cmd="map">map</button>
+    <button class="chip" data-cmd="badges">badges</button>
     <button class="chip" data-cmd="status">status</button>
     <button class="chip" data-cmd="stats">stats</button>
     <button class="chip" data-input="search ">search</button>
+    <button class="chip" data-cmd="export">export</button>
     <button class="chip" data-cmd="hint">hint</button>
     <button class="chip" data-cmd="clear">clear</button>
   </div>
@@ -62,6 +68,20 @@
            autocapitalize="off" aria-label="command input">
     <span class="caret" aria-hidden="true"></span>
   </form>
+
+  <!-- toast notifications -->
+  <div id="toastContainer" aria-live="polite"></div>
+
+  <!-- badges modal -->
+  <div id="badgeModal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <span id="modalTitle" class="modal-title">🏆 ACHIEVEMENTS // OPERATOR BADGES</span>
+        <button id="modalClose" class="modal-close" aria-label="Close">✕</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
 </div>
 
 <!-- planted: CSS-hidden flag (t1_css) -->

@@ -90,6 +90,7 @@ start_lab() {
         "15_web3_smart_contract_lab"
         "16_memory_forensics_lab"
         "17_kubernetes_cloud_native_lab"
+        "18_ai_agent_mcp_lab"
     )
 
     local lab_names=(
@@ -111,6 +112,7 @@ start_lab() {
         "Web3 & 스마트 컨트랙트 보안 랩"
         "메모리 포렌식 & Volatility 3 분석 랩"
         "클라우드 네이티브 & Kubernetes 보안 랩"
+        "AI 에이전트 & MCP 보안 랩"
     )
 
     local lab_ports=(
@@ -132,10 +134,11 @@ start_lab() {
         "웹 콘솔 & EVM API: http://localhost:8015"
         "웹 콘솔 & Volatility API: http://localhost:8016"
         "웹 콘솔 & Kubernetes API: http://localhost:8017"
+        "웹 콘솔 & Agent API: http://localhost:8018"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 17 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~17 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 18 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~18 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -235,6 +238,8 @@ usage() {
     echo "  14    문서형 악성코드 분석 랩 (VBA 난독화 해제, PDF FlateDecode, CVE-2017-11882, CVE-2021-40444)"
     echo "  15    Web3 & 스마트 컨트랙트 랩 (Reentrancy, 정수 오버플로, tx.origin 피싱, Flash Loan)"
     echo "  16    메모리 포렌식 & Volatility 랩 (DKOM 은닉, VAD RWX 쉘코드, C2 비컨, LSASS PPL 방어)"
+    echo "  17    클라우드 네이티브 & Kubernetes 보안 랩 (특권 파드 탈출, RBAC 권한상승, IMDSv2, Cosign 서명)"
+    echo "  18    AI 에이전트 & MCP 보안 랩 (간접 프롬프트 주입, 과도한 권한, MCP 도구 섀도잉, 단기 기능 토큰)"
     echo "  all   모든 랩 시작"
     echo "  ps    실행 중인 랩 목록"
     echo ""

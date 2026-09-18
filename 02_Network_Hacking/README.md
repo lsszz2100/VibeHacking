@@ -10,6 +10,7 @@
 | [04_mitm_advanced.md](./04_mitm_advanced.md) | **MITM 심화 — ARP 스푸핑·SSL 스트리핑·bettercap·mitmproxy** — MITM(Man-In-The-Middle, 중간자 공격)은 공격자가 두 당사자 사이에 몰래 끼어들어 통신을 가로채거나 변조하는 공격입니다. 피해자는 정상적으로 통신하고 있다고 느끼지만... |
 | [05_network_exploitation_techniques.md](./05_network_exploitation_techniques.md) | **고급 네트워크 익스플로잇 기법** — 네트워크 서비스는 공격자에게 가장 직접적인 진입점이다. SMB, RDP, VNC, FTP 같은 서비스는 오랜 역사를 가진 만큼 알려진 취약점도 많다. |
 | [06_network_ctf_lab.md](./06_network_ctf_lab.md) | **CTF 스타일 네트워크 해킹 실습** — 아래 docker-compose.yml을 사용해 실습 환경을 구성한다. |
+| [07_practical_packet_analysis_deepdive.md](./07_practical_packet_analysis_deepdive.md) | **실전 패킷 분석 심화 — 와이어샤크 프로토콜 해부 및 패킷 포렌식** — 실전 패킷 분석은 네트워크 케이블과 무선 전파를 오가는 바이트 스트림을 직접 캡처하고, 프로토콜 사양(RFC)에 따라 비트 단위로 해체(Dissection)하여 이상 징후, 데이터 유... |
 
 ## 학습 목표
 - TCP/IP 프로토콜 스택 완전 이해

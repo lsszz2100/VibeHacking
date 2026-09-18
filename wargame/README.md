@@ -67,11 +67,11 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 
 | 계층 / node | 티어 / tier | 문제 / count | 통과 / breach |
 |------|:---:|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 112 | 43% |
-| `webserver` 웹서버 | **1** | 194 | 60% |
-| `internal` 내부망 | **2** | 243 | 60% |
-| `vault` 금고 | **3** | 262 | 58% |
-| `core` 코어 | **4** | 274 | 72% |
+| `perimeter` 외곽 | **0** | 119 | 43% |
+| `webserver` 웹서버 | **1** | 201 | 60% |
+| `internal` 내부망 | **2** | 250 | 60% |
+| `vault` 금고 | **3** | 269 | 58% |
+| `core` 코어 | **4** | 281 | 72% |
 
 
 <details>
@@ -112,6 +112,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `firmware` 💾 임베디드·펌웨어 보안 (3) | 임베디드 펌웨어 이미지 분석 도구·인쇄 가능 연속 문자 추출 명령·직렬 비동기 통신 하드웨어 포트 / firmware extraction utility, printable character extraction command, and asynchronous serial interface |
 | `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | OLE2 복합 파일 고유 매직 바이트·PDF 파일 헤더·RTF 식별자·PDF 압축 해제 필터·VBA 자동 실행 서브루틴·OLE 저장소 엔티티 구조·동적 데이터 교환 프로토콜 / OLE2 compound magic bytes, PDF file header, RTF identification marker, PDF inflate compression filter, VBA auto-execution subroutine, OLE storage entity structure, dynamic data exchange protocol |
 | `volatility` 🧠 메모리 포렌식·Volatility (7) | 커널 구조체 타입 정의 규격·리눅스 전용 물리 획득 모듈·경량 실행 덤프 유틸리티·가상 머신 메모리 이미지 포맷·최대 절전 상태 기록 파일·가상 스왑 파일 아티팩트·입력 이미지 지정 스위치 / kernel structure type definition format, Linux physical memory kernel module, standalone Windows memory utility, virtual machine dump format, hibernation image record storage, paging file swap artifact, image input specification option |
+| `aiagent` 🤖 AI 에이전트·MCP (7) | 모델 컨텍스트 프로토콜·악성 지시문 주입·도구 호출 스키마·원격 통신 규격·사람 승인 통제·검색 지식 오염·실행 격리 샌드박스 / Model Context Protocol fundamentals, prompt injection threat, tool calling interface, remote procedure framing, human-in-the-loop oversight, knowledge poisoning exfiltration, sandbox containment |
 
 
 #### `webserver` 웹서버 — 티어 1 / tier 1
@@ -149,6 +150,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `firmware` 💾 임베디드·펌웨어 보안 (5) | 임베디드 읽기 전용 압축 파일시스템·오픈소스 범용 부트로더·경량 다중 아키텍처 CPU 시뮬레이터·비휘발성 설정 저장 메모리·온칩 하드웨어 디버깅 인터페이스 / compressed read-only filesystem, open-source embedded bootloader, lightweight CPU simulator framework, non-volatile configuration memory, and on-chip debugging interface |
 | `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | VBA 문자 함수 연산·역순 문자열 치환·PDF 문서 카탈로그 키·PDF 임베디드 스크립트 액션·Word 외부 리소스 명세·OLE 데이터 덤프 도구·PDF 의심 태그 분류기 / VBA character mapping, reverse string transform, PDF catalog action key, embedded script action, Word external relationship file, OLE artifact inspector, fast PDF scanning utility |
 | `volatility` 🧠 메모리 포렌식·Volatility (7) | 활성 프로세스 이중 연결 리스트 순회·부모 자식 계층 시각화·로드된 라이브러리 목록 열거·점유 커널 객체 식별·기동 시점 실행 매개변수 파싱·세션 환경 변수 추출·시스템 디바이스 드라이버 점검 / active process linked list traversal, parent child hierarchy tree, loaded shared library enumeration, open kernel object identification, launch arguments reconstruction, process session variable dump, loaded system device drivers |
+| `aiagent` 🤖 AI 에이전트·MCP (7) | 도구 인자 목적지 변조·과도한 권한 위험·도구 목록 매니페스트 검색·가상 역할 우회·눈에 안 보이는 공백 문자 은닉 주입·비신뢰 입력 태그 격리·환경변수 정적 토큰 노출 / tool parameter tampering, excessive capability scope, tools list manifest discovery, roleplay bypass, zero-width steganography, untrusted input encapsulation, static token exposure |
 
 
 #### `internal` 내부망 — 티어 2 / tier 2
@@ -186,6 +188,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `firmware` 💾 임베디드·펌웨어 보안 (10) | 바이트 저장 정렬 체계·직렬 롬 칩 통신 규격·정보 불확실성 무작위도 척도·동적 펌웨어 가상화 프레임워크·루트 디렉터리 격리 명령어·초기 인메모리 디스크 이미지·MIPS 가상 메모리 세그먼트·경량 유닉스 통합 유틸리티·플래시 전용 파일시스템·소프트웨어 자재 명세서 / byte storage ordering, serial ROM interface, information randomness metric, dynamic firmware framework, root directory isolate command, initial in-memory disk, MIPS uncached base, miniature UNIX toolbox, flash filesystem, and software bill of materials |
 | `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | 심층 객체 파서·단일 바이트 배타적 논리합 복호화·고전 자바스크립트 힙 배치 주소·RTF 객체 임베딩 제어어·난독화 매크로 통신 도메인·엑셀 수식 시트 매크로 규격·원격 템플릿 로드 공격 / deep object decompressor, single-byte bitwise decryption, classic heap allocation address, RTF object control word, obfuscated communication target, formula sheet macro, remote template inclusion |
 | `volatility` 🧠 메모리 포렌식·Volatility (7) | 풀 메모리 스캔 언링크 탐지·커널 객체 직접 변조 기법·프로세스 구조체 할당 마커·네트워크 엔드포인트 복원·열린 파일 디스크립터 열거·악성코드 중복 방지 동기화 객체·개별 커널 스레드 스캐너 / memory pool scanning unlinked detection, kernel structure direct tampering, process structure allocation marker, socket endpoint reconstruction, open file descriptor enumeration, deduplication synchronization object, kernel execution thread scanner |
+| `aiagent` 🤖 AI 에이전트·MCP (7) | 도구 명칭 충돌 섀도잉·에이전트 도구를 통한 SSRF·스케줄러 스크립트 변조 영속성·평문 원격 프로시저 패킷 가로채기·도구 설명문 포이즈닝·대화 컨텍스트 자격증명 추출·출력 데이터 손실 방지 / tool shadowing collision, SSRF via agent tool, scheduler script persistence, plaintext RPC sniffing, schema description poisoning, context credential harvesting, output loss prevention |
 
 
 #### `vault` 금고 — 티어 3 / tier 3
@@ -223,6 +226,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `firmware` 💾 임베디드·펌웨어 보안 (10) | 펌웨어 메모리 매핑 기준 주소·비암호화 레거시 터미널 서비스·웹 시스템 명령 주입 결함·포트포워딩 네트워크 프로토콜·커널 부팅 인자 환경변수·동적 링커 프리로드 주입 형식·정적 파일시스템 보안 감사기·리틀 엔디안 MIPS 식별자·경계 미검증 복사 함수·하드웨어 기반 보안 부팅 / memory mapping base address, unencrypted legacy terminal service, web command injection flaw, port forwarding protocol, kernel boot argument variable, shared library preload target, static security scanner, little-endian MIPS architecture, unbounded copy function, and hardware root of trust boot |
 | `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | 레거시 수식 편집기 실행 파일·외부 액티브X 렌더링 엔진·진단 도구 프로토콜 핸들러 스키마·필터 해제 단축 플래그·문서 객체 수준 자동화 이벤트·오피스 VBA 프로젝트 바이너리 규격·은닉 페이로드 정보 무질서도 지표 / legacy equation editor binary, external activex layout engine, diagnostic tool scheme, filter bypass switch, document level automation procedure, office project binary standard, information disorder metric |
 | `volatility` 🧠 메모리 포렌식·Volatility (7) | 실행 쓰기 동시 허용 영역 탐지·쇼트 주소 기술자 태그·프로세스 껍데기 교체 기법·함수 프롤로그 점프 변조 추적·실행 바이너리 디스크 재구성·전체 가상 메모리 공간 덤프·주소 영역 보호 속성 순회 / executable writeable segment scanner, short descriptor memory tag, process replacement technique, inline function redirection tracing, memory executable reconstruction, full virtual space dump, address range protection traversal |
+| `aiagent` 🤖 AI 에이전트·MCP (7) | 단기 수명 기능 토큰·기획과 실행 모델 권한 분리·에이전트 간 측면 전파·논리 유도형 악성 문서 평가 우회·시스템콜 커널 런타임 추적·암호학적 레지스트리 공개키 서명·대리인 요청자 권한 상속 / short-lived capability tokens, planner executor separation, inter-agent lateral hop, adversarial deductive evasion, runtime syscall tracking, cryptographic registry verification, delegated caller authorization |
 
 
 #### `core` 코어 — 티어 4 / tier 4
@@ -260,12 +264,13 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `firmware` 💾 임베디드·펌웨어 보안 (7) | 바이너리 변환 지원 커버리지 가이드 퍼저·함수 흐름 블록 패치 비교 도구·전원 전압 결함 주입 기법·코드 재사용 명령열 탐색 도구·하드웨어 보안 영역 격리 체계·오픈소스 바이오스 롬 플래셔·펌웨어 역공학 종합 캡스톤 / coverage-guided binary translation fuzzer, control flow block comparison tool, power voltage glitching attack, code reuse sequence finder, hardware security extension, open-source ROM flasher, and firmware reverse engineering capstone |
 | `maldoc` 📑 문서형 악성코드·PDF 포렌식 (7) | 가상 셸코드 샌드박스 실행기·임베디드 폰트 파싱 규격·인터넷 다운로드 보안 식별 표식·오피스 런타임 악성코드 검사 인터페이스·압축 아카이브 디렉터리 순회 시퀀스·탐지 규칙 복합 헤더 바이트열·문서형 악성코드 포렌식 종합 캡스톤 / virtual execution sandbox engine, embedded font format, internet download zone mark, runtime antimalware inspection interface, archive traversal sequence, compound header byte layout, document forensic capstone |
 | `volatility` 🧠 메모리 포렌식·Volatility (7) | 로컬 계정 보안 데이터베이스 추출·보안 서브시스템 티켓 덤프·보호 프로세스 라이트 레지스트리 방어·호환성 데이터베이스 실행 흔적·시스템 서비스 디스패치 테이블 조작·바이너리 컴파일 정보 하이브·엔터프라이즈 메모리 침해 종합 캡스톤 / local account database extraction, security subsystem ticket dump, protected process light defense setting, application compatibility execution trail, system service dispatch table tampering, binary compilation record hive, enterprise memory incident capstone |
+| `aiagent` 🤖 AI 에이전트·MCP (7) | 제로 트러스트 통합 아키텍처·다계층 자율 에이전트 킬체인 차단·기밀 컴퓨팅 하드웨어 엔클레이브 원격 증명·보조 가드 모델과 커널 보안 모듈 융합·시맨틱 추론 정합성 형식 검증·단기 워크로드 인증서 기반 채널·에이전트 보안 종합 캡스톤 / zero trust architecture, full autonomous killchain interception, confidential computing remote attestation, dual guard model and kernel security hooks, semantic reasoning soundness verification, ephemeral workload identity channel, defense in depth capstone |
 
 </details>
 
-총 **1085문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35 · 문서형 악성코드·PDF 포렌식 35 · 메모리 포렌식·Volatility 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **1120문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35 · 문서형 악성코드·PDF 포렌식 35 · 메모리 포렌식·Volatility 35 · AI 에이전트·MCP 보안 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **1085 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35 · maldoc & PDF forensics 35 · memory forensics & Volatility 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **1120 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35 · maldoc & PDF forensics 35 · memory forensics & Volatility 35 · AI agent & MCP security 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 

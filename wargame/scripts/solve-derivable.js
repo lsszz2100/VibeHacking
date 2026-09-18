@@ -1176,7 +1176,217 @@ const SOLVERS = new Map([
     const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 26);
     return `FLAG{${hash}}`;
   } }],
-]);
+
+  ['t0_aiagent_mcp_concept', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t0_aiagent_prompt_injection', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t0_aiagent_tool_calling', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t0_aiagent_json_rpc', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t0_aiagent_hitl_safeguard', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t0_aiagent_rag_exfiltration', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t0_aiagent_sandbox_boundary', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t1_aiagent_tool_hijacking', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t1_aiagent_excessive_agency', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t1_aiagent_mcp_manifest', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t1_aiagent_jailbreak_bypass', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t1_aiagent_zero_width_space', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t1_aiagent_untrusted_input', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t1_aiagent_static_token_leak', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t2_aiagent_mcp_tool_shadow', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t2_aiagent_ssrf_via_tool', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t2_aiagent_system_cron_inject', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t2_aiagent_rpc_man_in_middle', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t2_aiagent_schema_poisoning', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t2_aiagent_api_key_harvest', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t2_aiagent_output_quarantine', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t3_aiagent_mcp_ephemeral_token', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t3_aiagent_privilege_separation', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t3_aiagent_multi_agent_pivot', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t3_aiagent_adversarial_rag_eval', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t3_aiagent_bpf_agent_monitor', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t3_aiagent_signed_mcp_registry', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t3_aiagent_confused_deputy', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t4_aiagent_zero_trust_architecture', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t4_aiagent_full_autonomous_killchain', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t4_aiagent_attestation_enclave', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t4_aiagent_prompt_firewall_lsm', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t4_aiagent_semantic_integrity', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t4_aiagent_ephemeral_session_mtls', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],
+  ['t4_aiagent_capstone_defense', { kind: 'computed', via: 'SHA256 of identifier in prompt', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/`([^`]+)`/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+    return `FLAG{${hash}}`;
+  } }],]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag

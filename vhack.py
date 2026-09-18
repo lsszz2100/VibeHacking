@@ -286,6 +286,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [29, 38, 70],
     },
+    "18": {
+        "name": "AI 에이전트 & MCP 보안 랩",
+        "dir":  "18_ai_agent_mcp_lab",
+        "desc": "AgentGuard: 간접 프롬프트 주입 및 도구 탈취 · 과도한 에이전트 권한 남용 · 악성 MCP 도구 섀도잉 · 단기 기능 토큰 방어",
+        "url":  "웹 콘솔 & Agent API: http://localhost:8018",
+        "difficulty": "★★★★",
+        "related": [11, 69],
+    },
 }
 
 
@@ -1226,6 +1234,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8015, "Lab 15 (Web3)"),
         (8016, "Lab 16 (Memory Forensics)"),
         (8017, "Lab 17 (Kubernetes)"),
+        (8018, "Lab 18 (AI Agent & MCP)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

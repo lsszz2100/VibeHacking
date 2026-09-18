@@ -1,0 +1,9 @@
+services:
+  agentguard-app:
+    build: .
+    ports:
+      - "8018:8018"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MCP_AUTH_TOKEN=mcp_sec_admin_tok_8941a920e8b
+    restart: unless-stopped

@@ -142,6 +142,9 @@
       hintLabel:"힌트", lockLabel:"잠금장치", format:"형식",
       exportHdr:"=== 세이브 토큰 (진행도 백업) ===",
       exportTip:"이 토큰을 복사하여 다른 기기에서 `import <토큰>`으로 복원하세요.",
+      exportDone:"진행도 JSON 백업 파일이 다운로드되었습니다.",
+      badgesHdr:"=== 요원 업적 및 뱃지 ===",
+      badgeUnlocked:"새 업적 달성!",
       importDone:"진행도가 성공적으로 복원되었습니다.",
       importErr:"유효하지 않은 세이브 토큰입니다.",
       importUsage:"사용법: import <토큰>",
@@ -181,6 +184,9 @@
       hintLabel:"hint", lockLabel:"lock", format:"format",
       exportHdr:"=== SAVE TOKEN (progress backup) ===",
       exportTip:"Copy this token and restore on another device via `import <token>`.",
+      exportDone:"Progress JSON backup file downloaded.",
+      badgesHdr:"=== OPERATOR ACHIEVEMENTS & BADGES ===",
+      badgeUnlocked:"Achievement Unlocked!",
       importDone:"Progress restored successfully.",
       importErr:"Invalid save token.",
       importUsage:"Usage: import <token>",
@@ -192,8 +198,9 @@
 
   /* ===== state ===== */
   const LS = "vibe_wargame_v1";  // keep key so prior solvers retain progress
-  let state = { solved:{}, hints:{}, lang:"ko", sound:true };
+  let state = { solved:{}, hints:{}, badges:{}, lang:"ko", sound:true };
   try { const s = JSON.parse(localStorage.getItem(LS)); if (s) state = Object.assign(state, s); } catch (e) {}
+  if (!state.badges || typeof state.badges !== "object") state.badges = {};
   if (typeof state.sound !== "boolean") state.sound = true;
   function save() { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {} }
   function S(k){ return STR[state.lang][k]; }
@@ -339,7 +346,7 @@
     const rows = [
       ["help","명령 목록 / list commands"],
       ["ls [필터]","현재 위치 목록 (트랙·unsolved 필터 가능) / list here"],
-      ["tracks","26개 전체 트랙 현황 / list all 26 tracks"],
+      ["tracks", TRACKS.length + "개 전체 트랙 현황 / list all " + TRACKS.length + " tracks"],
       ["map","침투 경로 지도 / infiltration map"],
       ["connect <노드>","계층에 접속 / connect to a layer  (cd <node>)"],
       ["back","상위로 / go up  (cd ..)"],
@@ -348,9 +355,10 @@
       ["submit <flag>","플래그 제출 / submit a flag  (또는 그냥 입력)"],
       ["status","점수·등급·진행 / score & progress  (whoami)"],
       ["stats","트랙별·계층별 침투 통계 / stats dashboard  (chart)"],
+      ["badges","요원 업적 및 뱃지 확인 / view operator badges"],
       ["search <검색어>","잠금장치 검색 / search locks  (find)"],
-      ["export","진행도 백업 토큰 생성 / export save token"],
-      ["import <토큰>","진행도 복원 / import save token"],
+      ["export [json]","진행도 백업 토큰/JSON 내보내기 / export save token or JSON"],
+      ["import [토큰]","진행도 토큰/파일 복원 / import save token or file"],
       ["lang","한/영 전환 / toggle language"],
       ["sound","사운드 토글 / toggle sound"],
       ["clear","화면 지우기 / clear screen"],
@@ -522,6 +530,7 @@
     const earned = awardFor(ch);
     state.solved[ch.id] = { earned: earned, ts: Date.now() };
     save();
+    checkAchievements(false);
     const lay = layerById(cwd), tier = TIERS.find(t => t.id === lay.tier);
     const beforeUnlockedNext = isTierUnlocked(tier.id + 1);
     sGrant();
@@ -672,12 +681,225 @@
       : "✓ breached · ▸ in progress · 🔒 locked — breach a layer to open the next.") + '</span>');
   }
 
-  function doExport(){
+  /* ===== operator achievements & badges ===== */
+  const ACHIEVEMENTS = [
+    {
+      id: "first_blood",
+      icon: "🩸",
+      title: { ko: "첫 침투 (First Blood)", en: "First Blood" },
+      desc: { ko: "첫 번째 잠금장치 침투 성공", en: "Breach your very first lock." },
+      check: () => solvedCount() >= 1
+    },
+    {
+      id: "layer1_breach",
+      icon: "🌐",
+      title: { ko: "웹 인필트레이터 (Web Infiltrator)", en: "Web Infiltrator" },
+      desc: { ko: "계층 1 (웹 서버) 진입 자격 획득", en: "Unlock Layer 1 (Web Server)." },
+      check: () => isTierUnlocked(1)
+    },
+    {
+      id: "century",
+      icon: "💯",
+      title: { ko: "센추리 해커 (Century Hacker)", en: "Century Hacker" },
+      desc: { ko: "총 100개 이상의 잠금장치 침투", en: "Breach 100 or more locks." },
+      check: () => solvedCount() >= 100
+    },
+    {
+      id: "half_thousand",
+      icon: "🛡️",
+      title: { ko: "사이버 센티넬 (Cyber Sentinel)", en: "Cyber Sentinel" },
+      desc: { ko: "총 500개 이상의 잠금장치 침투", en: "Breach 500 or more locks." },
+      check: () => solvedCount() >= 500
+    },
+    {
+      id: "kilohacker",
+      icon: "⚡",
+      title: { ko: "킬로 오퍼레이터 (Kilo Operator)", en: "Kilo Operator" },
+      desc: { ko: "총 1,000개 이상의 잠금장치 침투", en: "Breach 1,000 or more locks." },
+      check: () => solvedCount() >= 1000
+    },
+    {
+      id: "pure_operator",
+      icon: "🎯",
+      title: { ko: "순수 침투가 (Pure Operator)", en: "Pure Operator" },
+      desc: { ko: "힌트를 전혀 쓰지 않고 50문제 이상 해결", en: "Solve 50+ locks without using hints." },
+      check: () => Object.keys(state.solved).filter(id => !state.hints[id]).length >= 50
+    },
+    {
+      id: "ai_agent_sentinel",
+      icon: "🤖",
+      title: { ko: "AI Agent Sentinel", en: "AI Agent Sentinel" },
+      desc: { ko: "AI Agent & MCP 보안 트랙(aiagent) 전 문제 침투", en: "Breach all 35 challenges in the aiagent track." },
+      check: () => {
+        const aiChals = CHALLENGES.filter(c => c.track === "aiagent");
+        return aiChals.length > 0 && aiChals.every(c => !!state.solved[c.id]);
+      }
+    },
+    {
+      id: "vault_breaker",
+      icon: "🔐",
+      title: { ko: "볼트 브레이커 (Vault Breaker)", en: "Vault Breaker" },
+      desc: { ko: "계층 3 (금고 / Vault) 개방", en: "Unlock Layer 3 (The Vault)." },
+      check: () => isTierUnlocked(3)
+    },
+    {
+      id: "crown_jewels",
+      icon: "💎",
+      title: { ko: "크라운 주얼 (Crown Jewels)", en: "Crown Jewels" },
+      desc: { ko: "최고 계층인 코어 (Core) 침투 개방", en: "Unlock Layer 4 (Core / Crown Jewels)." },
+      check: () => isTierUnlocked(4)
+    },
+    {
+      id: "grandmaster",
+      icon: "👑",
+      title: { ko: "바이브 레전드 (Vibe Legend)", en: "Vibe Legend" },
+      desc: { ko: "레전드 최고 등급 달성 (85% 이상 침투)", en: "Reach the Legend rank (85%+ breaches)." },
+      check: () => {
+        const legRank = RANKS.find(r => r.en === "Legend");
+        return legRank && solvedCount() >= rankMin(legRank);
+      }
+    }
+  ];
+
+  function showToast(icon, title, desc){
+    const container = document.getElementById("toastContainer");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.innerHTML =
+      '<span class="toast-icon">' + esc(icon) + '</span>' +
+      '<div class="toast-body">' +
+        '<div class="toast-title">' + esc(title) + '</div>' +
+        '<div class="toast-desc">' + esc(desc) + '</div>' +
+      '</div>';
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add("toast-leave");
+      setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+    }, 4500);
+  }
+
+  function checkAchievements(silent){
+    if (!state.badges || typeof state.badges !== "object") state.badges = {};
+    let newlyUnlocked = 0;
+    ACHIEVEMENTS.forEach(ach => {
+      if (!state.badges[ach.id] && ach.check()){
+        state.badges[ach.id] = { ts: Date.now() };
+        newlyUnlocked++;
+        if (!silent){
+          const title = ach.title[L()] || ach.title.ko;
+          const desc = ach.desc[L()] || ach.desc.ko;
+          showToast(ach.icon, (L()==="ko" ? "업적 달성: " : "Achievement: ") + title, desc);
+          print('<span class="bold ok">🏆 [' + esc(S("badgeUnlocked")) + '] ' + ach.icon + ' ' + esc(title) + '</span>');
+          sGrant();
+        }
+      }
+    });
+    if (newlyUnlocked > 0) save();
+  }
+
+  function showBadgesTerminal(){
+    blank();
+    print('<span class="bold ok">' + esc(S("badgesHdr")) + '</span>');
+    const earnedCount = ACHIEVEMENTS.filter(a => !!(state.badges && state.badges[a.id])).length;
+    print('<span class="dim">' + (L()==="ko" ? ("달성한 업적: " + earnedCount + " / " + ACHIEVEMENTS.length) : ("Earned Badges: " + earnedCount + " / " + ACHIEVEMENTS.length)) + '</span>');
+    blank();
+    ACHIEVEMENTS.forEach(ach => {
+      const isEarned = !!(state.badges && state.badges[ach.id]);
+      const mark = isEarned ? '<span class="ok">[✓]</span>' : '<span class="dim">[🔒]</span>';
+      const icon = ach.icon;
+      const title = ach.title[L()] || ach.title.ko;
+      const desc = ach.desc[L()] || ach.desc.ko;
+      const titleFmt = isEarned ? '<span class="bold ok">' + esc(title) + '</span>' : '<span class="dim">' + esc(title) + '</span>';
+      print('<span class="tbl"><span class="row">' +
+        mark + ' ' + icon + ' ' + titleFmt + ' — <span class="dim">' + esc(desc) + '</span>' +
+        '</span></span>');
+    });
+    blank();
+    print('<span class="dim">' + (L()==="ko" ? "상단 🏆 버튼을 누르면 업적 대시보드 팝업이 열립니다." : "Click the 🏆 button in HUD to open the badges modal.") + '</span>');
+    blank();
+  }
+
+  function showBadgesModal(){
+    const modal = document.getElementById("badgeModal");
+    const body = document.getElementById("modalBody");
+    if (!modal || !body) return;
+    const earnedCount = ACHIEVEMENTS.filter(a => !!(state.badges && state.badges[a.id])).length;
+    const titleEl = document.getElementById("modalTitle");
+    if (titleEl){
+      titleEl.textContent = "🏆 " + (L()==="ko" ? "요원 업적 대시보드" : "OPERATOR ACHIEVEMENTS") + " (" + earnedCount + "/" + ACHIEVEMENTS.length + ")";
+    }
+    body.innerHTML = "";
+    ACHIEVEMENTS.forEach(ach => {
+      const isEarned = !!(state.badges && state.badges[ach.id]);
+      const title = ach.title[L()] || ach.title.ko;
+      const desc = ach.desc[L()] || ach.desc.ko;
+      const card = document.createElement("div");
+      card.className = "badge-card " + (isEarned ? "unlocked" : "locked");
+      card.innerHTML =
+        '<div class="badge-card-icon">' + ach.icon + '</div>' +
+        '<div class="badge-card-info">' +
+          '<div class="badge-card-title">' + esc(title) + '</div>' +
+          '<div class="badge-card-desc">' + esc(desc) + '</div>' +
+          '<div class="badge-card-status">' +
+            (isEarned ? '✓ ' + (L()==="ko" ? "달성 완료" : "UNLOCKED") : '🔒 ' + (L()==="ko" ? "잠김" : "LOCKED")) +
+          '</div>' +
+        '</div>';
+      body.appendChild(card);
+    });
+    modal.style.display = "flex";
+  }
+
+  function hideBadgesModal(){
+    const modal = document.getElementById("badgeModal");
+    if (modal) modal.style.display = "none";
+    input.focus();
+  }
+
+  /* ===== export & import ===== */
+  function exportJSON(){
     const payload = {
       v: 1,
       ts: Date.now(),
       solved: state.solved,
       hints: state.hints,
+      badges: state.badges || {},
+      lang: state.lang,
+      sound: state.sound
+    };
+    try {
+      const jsonStr = JSON.stringify(payload, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const dateStr = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = "vibe_wargame_backup_" + dateStr + ".json";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 300);
+      showToast("💾", S("exportDone"), "vibe_wargame_backup_" + dateStr + ".json");
+      print('<span class="ok">✓ ' + esc(S("exportDone")) + '</span>');
+    } catch (e){
+      printText("JSON 내보내기 실패 / JSON export failed: " + e.message, "err");
+    }
+  }
+
+  function doExport(arg){
+    const mode = (arg || "").trim().toLowerCase();
+    if (mode === "json" || mode === "file"){
+      exportJSON();
+      return;
+    }
+    const payload = {
+      v: 1,
+      ts: Date.now(),
+      solved: state.solved,
+      hints: state.hints,
+      badges: state.badges || {},
       lang: state.lang,
       sound: state.sound
     };
@@ -694,55 +916,108 @@
     print('<span class="tbl"><span class="cmd-h" style="word-break:break-all;user-select:all;">' + esc(token) + '</span></span>');
     blank();
     print('<span class="dim">' + esc(S("exportTip")) + '</span>');
+    print('<span class="dim">' + (L()==="ko" ? "Tip: 파일 백업은 `export json` 또는 상단 💾 버튼을 누르세요." : "Tip: For file backup, type `export json` or click the 💾 button.") + '</span>');
+    blank();
+  }
+
+  function loadPayload(payload){
+    if (!payload || typeof payload !== "object" || !payload.solved || typeof payload.solved !== "object"){
+      throw new Error("Invalid payload structure");
+    }
+    const validIds = new Set(CHALLENGES.map(c => c.id));
+    const cleanSolved = {};
+    for (const [id, val] of Object.entries(payload.solved)){
+      if (validIds.has(id) && val && typeof val === "object"){
+        cleanSolved[id] = {
+          earned: typeof val.earned === "number" ? val.earned : 0,
+          at: val.at || Date.now()
+        };
+      }
+    }
+    const cleanHints = {};
+    if (payload.hints && typeof payload.hints === "object"){
+      for (const [id, count] of Object.entries(payload.hints)){
+        if (validIds.has(id) && typeof count === "number"){
+          cleanHints[id] = count;
+        }
+      }
+    }
+    const cleanBadges = {};
+    if (payload.badges && typeof payload.badges === "object"){
+      for (const [bid, bval] of Object.entries(payload.badges)){
+        if (typeof bval === "object" && bval !== null){
+          cleanBadges[bid] = bval;
+        } else if (bval) {
+          cleanBadges[bid] = { ts: Date.now() };
+        }
+      }
+    }
+    state.solved = cleanSolved;
+    state.hints = cleanHints;
+    state.badges = cleanBadges;
+    if (payload.lang === "ko" || payload.lang === "en") state.lang = payload.lang;
+    if (typeof payload.sound === "boolean") state.sound = payload.sound;
+    save();
+    refreshHud();
+    checkAchievements(true);
+    sGrant();
+    blank();
+    printText("✓ " + S("importDone") + " (" + S("solved") + ": " + solvedCount() + " / " + S("score") + ": " + totalScore() + ")", "ok");
     blank();
   }
 
   function doImport(arg){
     const token = (arg || "").trim();
     if (!token){
+      const fileInput = document.getElementById("importFileInput");
+      if (fileInput){
+        fileInput.click();
+        printText(L()==="ko" ? "파일 선택창을 열었습니다. (또는 `import <토큰>` 사용)" : "Opened file picker. (or use `import <token>`)", "dim");
+        return;
+      }
       printText(S("importUsage"), "warn");
       return;
     }
     let clean = token;
     if (clean.startsWith("VIBE-")) clean = clean.slice(5);
     try {
-      const jsonStr = decodeURIComponent(escape(atob(clean)));
+      let jsonStr;
+      if (clean.startsWith("{")){
+        jsonStr = clean;
+      } else {
+        jsonStr = decodeURIComponent(escape(atob(clean)));
+      }
       const payload = JSON.parse(jsonStr);
-      if (!payload || typeof payload !== "object" || !payload.solved || typeof payload.solved !== "object"){
-        throw new Error("Invalid payload structure");
-      }
-      const validIds = new Set(CHALLENGES.map(c => c.id));
-      const cleanSolved = {};
-      for (const [id, val] of Object.entries(payload.solved)){
-        if (validIds.has(id) && val && typeof val === "object"){
-          cleanSolved[id] = {
-            earned: typeof val.earned === "number" ? val.earned : 0,
-            at: val.at || Date.now()
-          };
-        }
-      }
-      const cleanHints = {};
-      if (payload.hints && typeof payload.hints === "object"){
-        for (const [id, count] of Object.entries(payload.hints)){
-          if (validIds.has(id) && typeof count === "number"){
-            cleanHints[id] = count;
-          }
-        }
-      }
-      state.solved = cleanSolved;
-      state.hints = cleanHints;
-      if (payload.lang === "ko" || payload.lang === "en") state.lang = payload.lang;
-      if (typeof payload.sound === "boolean") state.sound = payload.sound;
-      save();
-      refreshHud();
-      sGrant();
-      blank();
-      printText("✓ " + S("importDone") + " (" + S("solved") + ": " + solvedCount() + " / " + S("score") + ": " + totalScore() + ")", "ok");
-      blank();
+      loadPayload(payload);
     } catch (e){
       sDeny();
       printText("╳ " + S("importErr"), "err");
     }
+  }
+
+  function importFromFile(file){
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const content = (e.target.result || "").trim();
+        let payload;
+        if (content.startsWith("{")){
+          payload = JSON.parse(content);
+        } else {
+          let clean = content;
+          if (clean.startsWith("VIBE-")) clean = clean.slice(5);
+          payload = JSON.parse(decodeURIComponent(escape(atob(clean))));
+        }
+        loadPayload(payload);
+        showToast("📂", S("importDone"), solvedCount() + "/" + CHALLENGES.length);
+      } catch (err){
+        sDeny();
+        showToast("╳", S("importErr"), err.message);
+        printText("╳ " + S("importErr"), "err");
+      }
+    };
+    reader.readAsText(file);
   }
 
   function doSearch(arg){
@@ -832,8 +1107,10 @@
       case "submit": case "flag": case "answer": trySubmit(arg); break;
       case "status": case "whoami": case "stat": case "id": showStatus(); break;
       case "stats": case "chart": case "dashboard": case "통계": showStats(); break;
+      case "badges": case "badge": case "achievements": case "achievement": case "업적":
+        showBadgesTerminal(); break;
       case "search": case "find": case "검색": doSearch(arg); break;
-      case "export": case "backup": doExport(); break;
+      case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
       case "lang": case "언어": toggleLang(); break;
       case "sound": case "mute": toggleSound(); break;
@@ -915,6 +1192,7 @@
           : ("restored progress: " + n + "/" + CHALLENGES.length + " breached. `status` to review, `map` for the path.")) + '</span>');
       }
       refreshHud();
+      checkAchievements(true);
     });
   }
 
@@ -934,7 +1212,7 @@
   });
   const AUTO_COMMANDS = [
     "help", "ls", "nodes", "map", "connect", "back", "cat", "hint",
-    "submit", "status", "stats", "search", "export", "import", "lang",
+    "submit", "status", "stats", "badges", "search", "export", "import", "lang",
     "sound", "clear", "reset", "banner"
   ];
 
@@ -1048,6 +1326,40 @@
   // hud buttons
   document.getElementById("soundBtn").addEventListener("click", () => { audio(); toggleSound(); input.focus(); });
   document.getElementById("langBtn").addEventListener("click", () => { toggleLang(); input.focus(); });
+
+  const exportBtn = document.getElementById("exportBtn");
+  if (exportBtn) exportBtn.addEventListener("click", () => { audio(); exportJSON(); input.focus(); });
+
+  const importBtn = document.getElementById("importBtn");
+  const importFileInput = document.getElementById("importFileInput");
+  if (importBtn && importFileInput){
+    importBtn.addEventListener("click", () => { audio(); importFileInput.click(); });
+    importFileInput.addEventListener("change", e => {
+      if (e.target.files && e.target.files[0]){
+        importFromFile(e.target.files[0]);
+        e.target.value = "";
+      }
+      input.focus();
+    });
+  }
+
+  const badgeBtn = document.getElementById("badgeBtn");
+  if (badgeBtn) badgeBtn.addEventListener("click", () => { audio(); showBadgesModal(); });
+
+  const modalClose = document.getElementById("modalClose");
+  if (modalClose) modalClose.addEventListener("click", () => hideBadgesModal());
+
+  const badgeModal = document.getElementById("badgeModal");
+  if (badgeModal){
+    badgeModal.addEventListener("click", e => {
+      if (e.target === badgeModal) hideBadgesModal();
+    });
+  }
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && badgeModal && badgeModal.style.display === "flex"){
+      hideBadgesModal();
+    }
+  });
 
   /* ===== matrix rain ===== */
   (function rain(){

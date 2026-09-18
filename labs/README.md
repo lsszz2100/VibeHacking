@@ -47,6 +47,7 @@ docker-compose --version
 | 15 | [Web3 & 스마트 컨트랙트 보안 랩](./15_web3_smart_contract_lab/) | Reentrancy, 정수 오버플로, tx.origin 피싱, Flash Loan AMM 가격 조작 | ★★★★ | [42장 블록체인/Web3](../42_Blockchain_Web3_Security/06_blockchain_ctf_lab.md) | `web3` |
 | 16 | [메모리 포렌식 & Volatility 랩](./16_memory_forensics_lab/) | DKOM 은닉 프로세스 적출, VAD RWX 쉘코드 탐지, C2 비컨 복원, LSASS PPL 방어 | ★★★★ | [06장 악성코드 분석](../06_Malware_Analysis/README.md), [07장 디지털 포렌식](../07_Digital_Forensics/06_forensics_ctf_lab.md), [44장 사고 대응](../44_Incident_Response_DFIR/README.md) | `volatility` |
 | 17 | [클라우드 네이티브 & Kubernetes 랩](./17_kubernetes_cloud_native_lab/) | 특권 파드 탈출, RBAC 와일드카드 권한상승, 클라우드 IMDS 탈취, Cosign 어드미션 제어 | ★★★★ | [29장 컨테이너](../29_Container_Kubernetes_Security/README.md), [38장 클라우드 네이티브](../38_Cloud_Native_Security/README.md), [70장 쿠버네티스](../70_Kubernetes_Security/README.md) | `cloud` |
+| 18 | [AI 에이전트 & MCP 보안 랩](./18_ai_agent_mcp_lab/) | 간접 프롬프트 주입, 과도한 권한 남용, 악성 MCP 도구 섀도잉, 단기 기능 토큰 방어 | ★★★★ | [11장 AI 보안](../11_AI_Powered_Security/README.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `aiagent` / `ai` |
 
 
 ---
@@ -218,6 +219,15 @@ docker-compose --version
 - **교재 챕터 연계**: [29장 컨테이너 보안](../29_Container_Kubernetes_Security/README.md), [38장 클라우드 네이티브 보안](../38_Cloud_Native_Security/README.md), [70장 쿠버네티스 보안](../70_Kubernetes_Security/README.md)
 - **워게임 트랙**: 워게임 터미널(`wargame/`) `cloud` 트랙
 - **빠른 실행**: `python3 vhack.py lab start 17` (웹 콘솔 & API: `http://localhost:8017`)
+### 18. AI 에이전트 & MCP 보안 랩 (AgentGuard)
+- 자율형 AI 에이전트 및 MCP(Model Context Protocol) 4대 핵심 침해 시나리오 및 방어 체계 실습
+- 고객 지원 티켓 내 악성 프롬프트 주입을 통한 자율 에이전트의 도구 호출(`read_file`, `send_webhook`) 하이재킹 및 API 키 유출
+- 과도한 에이전트 권한(Excessive Agency)을 악용한 시스템 스케줄러(`/etc/agent/cron.d/backup.sh`) 변조 및 임의 bash 명령 실행
+- 악성 MCP 서버 동적 등록을 통한 정상 보안 도구(`crypto_verify`) 덮어쓰기(Tool Shadowing) 및 가짜 도구 실행
+- 비암호화 내부 통신/환경변수 노출을 통한 정적 MCP 마스터 토큰 탈취 및 Zero Trust 단기(Ephemeral) 기능 토큰 방어
+- **교재 챕터 연계**: [11장 AI 보안](../11_AI_Powered_Security/README.md), [69장 LLM 보안](../69_LLM_Security/README.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `aiagent` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 18` (웹 콘솔 & API: `http://localhost:8018`)
 
 
 

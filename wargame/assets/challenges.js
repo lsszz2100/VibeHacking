@@ -298,7 +298,16 @@ const TRACKS = [
       "en": "Memory Forensics & Volatility",
       "desc_ko": "물리 메모리 덤프·EPROCESS DKOM 은닉 탐지·VAD RWX 쉘코드 주입·C2 비컨 소켓 복원·LSASS NTLM 덤프와 PPL 방어.",
       "desc_en": "Physical RAM dumps, EPROCESS DKOM unlinking, VAD RWX shellcode injection, C2 socket artifacts, LSASS dump & PPL hardening."
+  },
+  {
+      "id": "aiagent",
+      "icon": "🤖",
+      "ko": "AI 에이전트·MCP 보안",
+      "en": "AI Agent & MCP Security",
+      "desc_ko": "자율 에이전트 도구 하이재킹·과도한 권한·MCP 프로토콜 취약점·JSON-RPC 인터셉트와 제로트러스트 방어.",
+      "desc_en": "Autonomous agent tool hijacking, excessive agency, MCP protocol vulnerabilities, JSON-RPC interception, and zero trust defense."
   }
+
 ];
 
 const CHALLENGES = [
@@ -30723,5 +30732,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "c9c984da3ca638e257a591b8340cd7c2d3125fafa8924ebdf6a33fe70c5b1655"
+},
+{
+  "id": "t0_aiagent_mcp_concept",
+  "tier": 0,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 프로토콜 기본 개념",
+    "en": "MCP Protocol Fundamentals"
+  },
+  "prompt": {
+    "ko": "Anthropic이 제안하고 확장 중인 AI 에이전트와 도구 간의 개방형 표준 규약(Model Context Protocol) 침투 챌린지입니다.\n지정된 식별자 `mcp_core_protocol_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 완성하세요.\n\n형식: `FLAG{SHA256(\"mcp_core_protocol_v1\") 앞 20자리}`",
+    "en": "Find the flag for MCP fundamentals. Compute the first 20 hex characters of SHA256(\"mcp_core_protocol_v1\"). Format: FLAG{first_20_hex}"
+  },
+  "hints": {
+    "ko": [
+      "에이전트가 외부 데이터 소스 및 도구와 통신하는 개방형 표준 규약입니다.",
+      "문자열 `mcp_core_protocol_v1`의 SHA256 해시 앞 20자리를 구하세요."
+    ],
+    "en": [
+      "Open standard protocol for AI agent tool and resource connectivity.",
+      "Calculate SHA256 of 'mcp_core_protocol_v1' and take the first 20 hex digits."
+    ]
+  },
+  "hash": "cd6d22b76872b2ec718ada696acb5fa86165ea6091be284a8160c42f0269a56f"
+},
+{
+  "id": "t0_aiagent_prompt_injection",
+  "tier": 0,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "간접 프롬프트 주입의 위협",
+    "en": "Threat of Indirect Prompt Injection"
+  },
+  "prompt": {
+    "ko": "외부 문서 본문에 숨겨진 악의적 자연어 지시문으로 에이전트의 판단 흐름을 조작하는 공격입니다.\n침해 문자열 `indirect_prompt_injection_vector`의 SHA-256 앞 20자리를 구해 플래그를 완성하세요.\n\n형식: `FLAG{SHA256(\"indirect_prompt_injection_vector\") 앞 20자리}`",
+    "en": "Compute the flag using the first 20 hex chars of SHA256(\"indirect_prompt_injection_vector\")."
+  },
+  "hints": {
+    "ko": [
+      "사용자가 직접 입력하지 않고 외부 문서나 이메일에 숨겨져 에이전트에 로드됩니다.",
+      "`indirect_prompt_injection_vector` 해시의 20글자를 대입하세요."
+    ],
+    "en": [
+      "Attacker payload hidden inside external documents processed by the LLM.",
+      "Hash the string 'indirect_prompt_injection_vector' with sha256."
+    ]
+  },
+  "hash": "c003b1177db665f2b84aa432b846f81546403c152e3b84aa02af914af6213ef0"
+},
+{
+  "id": "t0_aiagent_tool_calling",
+  "tier": 0,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "에이전트 자율 도구 호출 인터페이스",
+    "en": "Agent Autonomous Tool Calling Interface"
+  },
+  "prompt": {
+    "ko": "LLM이 JSON 스키마를 해석하여 함수를 자율 실행하는 도구 호출 메커니즘입니다.\n지정된 식별자 `autonomous_tool_calling_schema`의 SHA-256 해시 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"autonomous_tool_calling_schema\") 앞 20자리}`",
+    "en": "Enter the flag illustrating autonomous LLM tool calling schema: FLAG{SHA256(\"autonomous_tool_calling_schema\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "함수 인자와 반환값이 JSON 형태로 에이전트 루프를 순환합니다.",
+      "문자열 `autonomous_tool_calling_schema`를 해시하세요."
+    ],
+    "en": [
+      "Agent parses function definitions and constructs JSON arguments.",
+      "Compute sha256('autonomous_tool_calling_schema')[:20]."
+    ]
+  },
+  "hash": "c706f87fba4dc1892762d280c2ab664d9840f4a5bb80bfeff1e6429add9c5e46"
+},
+{
+  "id": "t0_aiagent_json_rpc",
+  "tier": 0,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "JSON-RPC 메시지 전송 규격",
+    "en": "JSON-RPC Message Transport"
+  },
+  "prompt": {
+    "ko": "MCP 클라이언트와 서버가 주고받는 경량 원격 프로시저 호출 규격입니다.\n식별자 `json_rpc_message_transport_v2`의 SHA-256 앞 20자리를 구해 플래그를 완성하세요.\n\n형식: `FLAG{SHA256(\"json_rpc_message_transport_v2\") 앞 20자리}`",
+    "en": "Acquire the flag for JSON-RPC framing: FLAG{SHA256(\"json_rpc_message_transport_v2\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "jsonrpc 버전 2.0 및 method, params, id 필드로 구성됩니다.",
+      "지정된 식별 문자열을 sha256 해시하세요."
+    ],
+    "en": [
+      "Consists of jsonrpc 2.0 with method, params, and id fields.",
+      "Take the first 20 hex characters of the sha256 hash."
+    ]
+  },
+  "hash": "f41ccc6d1bcd9abfc4f8249cad91954a349ffdd2e63320b7d908bf0a5b087ac2"
+},
+{
+  "id": "t0_aiagent_hitl_safeguard",
+  "tier": 0,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Human-in-the-Loop 안전 제어",
+    "en": "Human-in-the-Loop Safeguard"
+  },
+  "prompt": {
+    "ko": "위험한 도구 실행 전 사람의 명시적 승인을 강제하는 보안 원칙입니다.\n식별자 `human_in_the_loop_safeguard_policy`의 SHA-256 앞 20자리를 구해 플래그를 완성하세요.\n\n형식: `FLAG{SHA256(\"human_in_the_loop_safeguard_policy\") 앞 20자리}`",
+    "en": "Find the flag representing the Human-in-the-Loop safeguard: FLAG{SHA256(\"human_in_the_loop_safeguard_policy\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "HITL로 불리며 과도한 자율성을 통제하는 핵심 방어선입니다.",
+      "지정 문자열의 해시 앞 20자리를 구하세요."
+    ],
+    "en": [
+      "Commonly abbreviated as HITL to prevent unauthorized autonomous actions.",
+      "First 20 hex chars of SHA256 of human_in_the_loop_safeguard_policy."
+    ]
+  },
+  "hash": "4f9ee21c69a1344a36f5ee86d48c10daa1ed5ab4670847a76fab46105a538810"
+},
+{
+  "id": "t0_aiagent_rag_exfiltration",
+  "tier": 0,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RAG 컨텍스트 주입 및 데이터 유출",
+    "en": "RAG Context Poisoning Exfiltration"
+  },
+  "prompt": {
+    "ko": "지식베이스에 삽입된 악성 청크가 검색되어 프롬프트에 병합되는 위협입니다.\n식별자 `rag_context_poisoning_exfil_vector`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"rag_context_poisoning_exfil_vector\") 앞 20자리}`",
+    "en": "Submit the flag for RAG poisoning: FLAG{SHA256(\"rag_context_poisoning_exfil_vector\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "지식베이스 임베딩 벡터 검색 단계에서 악성 청크가 추출됩니다.",
+      "지정 식별자를 sha256으로 해싱하세요."
+    ],
+    "en": [
+      "Malicious chunk retrieved via embedding similarity search.",
+      "Hash 'rag_context_poisoning_exfil_vector' with sha256."
+    ]
+  },
+  "hash": "b05e8a856bcacdce7098a3e442c66d914be90d6eb63a297961e791302f74db98"
+},
+{
+  "id": "t0_aiagent_sandbox_boundary",
+  "tier": 0,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "에이전트 실행 환경 샌드박스 경계",
+    "en": "Agent Sandbox Execution Boundary"
+  },
+  "prompt": {
+    "ko": "에이전트의 코드 실행과 파일 조작을 격리하는 샌드박스 경계입니다.\n식별자 `agent_execution_sandbox_boundary_rule`의 SHA-256 앞 20자리를 구하세요.\n\n형식: `FLAG{SHA256(\"agent_execution_sandbox_boundary_rule\") 앞 20자리}`",
+    "en": "Retrieve the flag testing agent containment: FLAG{SHA256(\"agent_execution_sandbox_boundary_rule\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "gVisor, Firecracker 등을 이용해 최소 권한을 부여합니다.",
+      "지정된 문자열의 sha256 해시를 계산하세요."
+    ],
+    "en": [
+      "Isolates the host using lightweight VMs or secure container runtimes.",
+      "First 20 hex characters of sha256."
+    ]
+  },
+  "hash": "8bf6b44e7e5e3288baa102ade87d19bf5ca4a9bc3c73bbde3385cff5a5784d88"
+},
+{
+  "id": "t1_aiagent_tool_hijacking",
+  "tier": 1,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "도구 인자 변조 및 하이재킹",
+    "en": "Tool Parameter Tampering & Hijacking"
+  },
+  "prompt": {
+    "ko": "합법적인 도구의 목적지 URL이나 파라미터를 변조하는 공격입니다.\n식별자 `tool_parameter_tampering_attack`의 SHA-256 앞 20자리를 플래그로 제출하세요.\n\n형식: `FLAG{SHA256(\"tool_parameter_tampering_attack\") 앞 20자리}`",
+    "en": "Enter the flag: FLAG{SHA256(\"tool_parameter_tampering_attack\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "프롬프트 주입 페이로드가 도구 파라미터를 덮어씁니다.",
+      "문자열 'tool_parameter_tampering_attack'의 해시를 구하세요."
+    ],
+    "en": [
+      "Injected payload modifies parameter fields before invocation.",
+      "Hash 'tool_parameter_tampering_attack' with sha256."
+    ]
+  },
+  "hash": "8eafaa4108622528987d318974b3309702cf691472698fe57818524bfb469c1b"
+},
+{
+  "id": "t1_aiagent_excessive_agency",
+  "tier": 1,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "과도한 권한 부여(Excessive Agency)",
+    "en": "Excessive Agency Privilege Abuse"
+  },
+  "prompt": {
+    "ko": "OWASP Top 10 for LLM(LLM08) 과도한 에이전트 권한 남용 위협입니다.\n식별자 `owasp_llm08_excessive_agency_risk`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"owasp_llm08_excessive_agency_risk\") 앞 20자리}`",
+    "en": "Submit the flag: FLAG{SHA256(\"owasp_llm08_excessive_agency_risk\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "단순 질의응답 봇에게 불필요한 시스템 관리 권한이 부여된 상황입니다.",
+      "식별자 해시 앞 20자리를 대입하세요."
+    ],
+    "en": [
+      "Occurs when autonomous agents are given unrestricted capabilities.",
+      "Compute sha256('owasp_llm08_excessive_agency_risk')[:20]."
+    ]
+  },
+  "hash": "4dd2924cbfcaf037a1dee063940165cf5c1a985c372f3153cf69a94a8d573d76"
+},
+{
+  "id": "t1_aiagent_mcp_manifest",
+  "tier": 1,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 매니페스트 및 도구 검색 취약점",
+    "en": "MCP Manifest & Tool Discovery"
+  },
+  "prompt": {
+    "ko": "MCP 서버의 도구 목록 매니페스트 조작 시나리오입니다.\n식별자 `mcp_server_manifest_discovery_audit`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"mcp_server_manifest_discovery_audit\") 앞 20자리}`",
+    "en": "Find the flag: FLAG{SHA256(\"mcp_server_manifest_discovery_audit\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "클라이언트는 tools/list 결과를 에이전트 프롬프트에 등록합니다.",
+      "지정된 식별자를 sha256으로 해싱하세요."
+    ],
+    "en": [
+      "Client imports tools/list into system prompt schemas.",
+      "First 20 hex characters of the sha256 hash."
+    ]
+  },
+  "hash": "8964d63465e0205519235eca339b0ae8dc50edcc9e79c225a0fcdcb072f07453"
+},
+{
+  "id": "t1_aiagent_jailbreak_bypass",
+  "tier": 1,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "가상 인격 페르소나 및 탈옥 우회",
+    "en": "Persona Jailbreak Instruction Override"
+  },
+  "prompt": {
+    "ko": "가상 인격 부여로 모델의 안전 정렬을 우회하는 공격입니다.\n식별자 `adversarial_jailbreak_override_matrix`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"adversarial_jailbreak_override_matrix\") 앞 20자리}`",
+    "en": "Acquire the flag: FLAG{SHA256(\"adversarial_jailbreak_override_matrix\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "디버그 모드나 역할을 가장하여 금지된 액션을 유도합니다.",
+      "문자열 'adversarial_jailbreak_override_matrix'의 해시를 구하세요."
+    ],
+    "en": [
+      "Bypasses alignment filters by simulating administrative roles.",
+      "Hash 'adversarial_jailbreak_override_matrix' with sha256."
+    ]
+  },
+  "hash": "cc5c2d4a7df2e798925675ec8c40f4aa6705d8d9f609b1f24bcb126f4e25671b"
+},
+{
+  "id": "t1_aiagent_zero_width_space",
+  "tier": 1,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Zero-Width 은닉 주입 기법",
+    "en": "Zero-Width Steganography Injection"
+  },
+  "prompt": {
+    "ko": "유니코드 제로 너비 공백 문자를 이용한 은닉 주입 기법입니다.\n식별자 `zero_width_steganography_injection_token`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"zero_width_steganography_injection_token\") 앞 20자리}`",
+    "en": "Retrieve the flag: FLAG{SHA256(\"zero_width_steganography_injection_token\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "화면에는 렌더링되지 않지만 토크나이저에는 토큰으로 해석됩니다.",
+      "지정된 식별자 해시 앞 20자리를 입력하세요."
+    ],
+    "en": [
+      "Invisible in normal rendering but parsed by tokenizer.",
+      "Calculate sha256('zero_width_steganography_injection_token')[:20]."
+    ]
+  },
+  "hash": "4f700cea062e6600e56573c2cd66b8425ebc11c1e660175a7c4b332cfcff32ad"
+},
+{
+  "id": "t1_aiagent_untrusted_input",
+  "tier": 1,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "신뢰할 수 없는 입력 컨텍스트 격리",
+    "en": "Untrusted Input Context Isolation"
+  },
+  "prompt": {
+    "ko": "시스템 지시문과 외부 데이터를 명확히 태그로 격리하는 기법입니다.\n식별자 `untrusted_content_isolation_boundary`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"untrusted_content_isolation_boundary\") 앞 20자리}`",
+    "en": "Submit the flag: FLAG{SHA256(\"untrusted_content_isolation_boundary\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "XML이나 JSON 구분자를 사용해 사용자 입력을 감쌉니다.",
+      "지정된 식별자의 sha256 해시를 구하세요."
+    ],
+    "en": [
+      "Encapsulates untrusted payload within structural delimiters.",
+      "Compute first 20 hex characters of sha256."
+    ]
+  },
+  "hash": "8bb3a937da15313e080e20d54b7929e1338033e60326e029afd1d16c91821007"
+},
+{
+  "id": "t1_aiagent_static_token_leak",
+  "tier": 1,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "정적 베어러 토큰 환경변수 유출",
+    "en": "Static Bearer Token Leakage"
+  },
+  "prompt": {
+    "ko": "컨테이너 환경변수에 하드코딩된 정적 API 토큰 노출 문제입니다.\n식별자 `static_bearer_token_leak_scenario`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"static_bearer_token_leak_scenario\") 앞 20자리}`",
+    "en": "Enter the flag: FLAG{SHA256(\"static_bearer_token_leak_scenario\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "정적 토큰은 탈취 시 만료 기한이 없어 지속적 위협이 됩니다.",
+      "지정 식별자를 sha256 해시하세요."
+    ],
+    "en": [
+      "Static credentials in env variables lack rotation and expiry.",
+      "Hash 'static_bearer_token_leak_scenario' with sha256."
+    ]
+  },
+  "hash": "e6bc97cb225cd50573d34274199f036dc682a17ea0ba419f55803287130849ad"
+},
+{
+  "id": "t2_aiagent_mcp_tool_shadow",
+  "tier": 2,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 도구 섀도잉 및 명칭 충돌",
+    "en": "MCP Tool Shadowing Collision"
+  },
+  "prompt": {
+    "ko": "악성 MCP 서버가 기존의 신뢰 도구를 덮어쓰는 도구 섀도잉 공격입니다.\n식별자 `mcp_tool_shadowing_namespace_collision`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"mcp_tool_shadowing_namespace_collision\") 앞 20자리}`",
+    "en": "Find the flag: FLAG{SHA256(\"mcp_tool_shadowing_namespace_collision\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "네임스페이스 분리가 없으면 마지막 등록 도구가 이전 도구를 가로챕니다.",
+      "지정된 식별자의 해시 앞 20자리를 구하세요."
+    ],
+    "en": [
+      "Unscoped tool registries allow rogue endpoints to overwrite handlers.",
+      "First 20 hex digits of sha256."
+    ]
+  },
+  "hash": "6dc9ebdecfe08847643889f0fda5f800eef632131738b623424a14f802c2d73a"
+},
+{
+  "id": "t2_aiagent_ssrf_via_tool",
+  "tier": 2,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "도구 호출을 통한 내부망 SSRF 침투",
+    "en": "SSRF via Agent Tool Calling"
+  },
+  "prompt": {
+    "ko": "웹 브라우징 도구를 악용해 클라우드 메타데이터를 질의하게 만드는 SSRF입니다.\n식별자 `ssrf_pivot_via_agent_tool_pipeline`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"ssrf_pivot_via_agent_tool_pipeline\") 앞 20자리}`",
+    "en": "Acquire the flag: FLAG{SHA256(\"ssrf_pivot_via_agent_tool_pipeline\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "Egress 필터가 없을 때 내부 루프백 주소에 접속할 수 있습니다.",
+      "문자열 해시 앞 20자리를 대입하세요."
+    ],
+    "en": [
+      "Egress filters must block requests to internal network ranges.",
+      "Compute sha256('ssrf_pivot_via_agent_tool_pipeline')[:20]."
+    ]
+  },
+  "hash": "ddf81b826cea9a0c9c90e18cf6b2b8d651c8b2ebfb76c6dc965f85144145640e"
+},
+{
+  "id": "t2_aiagent_system_cron_inject",
+  "tier": 2,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "시스템 스케줄러(Cron) 영속성 확보",
+    "en": "System Scheduler Persistence Injection"
+  },
+  "prompt": {
+    "ko": "임의 파일 쓰기 도구로 cron 스케줄에 백도어를 심는 공격입니다.\n식별자 `cron_scheduler_persistence_overwrite`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"cron_scheduler_persistence_overwrite\") 앞 20자리}`",
+    "en": "Submit the flag: FLAG{SHA256(\"cron_scheduler_persistence_overwrite\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "root 권한 에이전트의 파일시스템 쓰기 범위가 제한되지 않을 때 발생합니다.",
+      "지정 식별자를 sha256으로 해싱하세요."
+    ],
+    "en": [
+      "Agent with excessive file write scope modifies cron task entries.",
+      "Take the first 20 hex characters of sha256."
+    ]
+  },
+  "hash": "842ea6891d6e4347aa1a497a0e93d9507ec4bb76dc9e5069c53bd742593aeedd"
+},
+{
+  "id": "t2_aiagent_rpc_man_in_middle",
+  "tier": 2,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "JSON-RPC 평문 통신 가로채기(MitM)",
+    "en": "Plaintext JSON-RPC Interception"
+  },
+  "prompt": {
+    "ko": "비암호화 JSON-RPC 통신을 스니핑하고 도구 결과를 위조하는 공격입니다.\n식별자 `json_rpc_plaintext_transport_mitm`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"json_rpc_plaintext_transport_mitm\") 앞 20자리}`",
+    "en": "Retrieve the flag: FLAG{SHA256(\"json_rpc_plaintext_transport_mitm\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "TLS 상호 인증이 없으면 통신 내용 도청 및 변조가 가능합니다.",
+      "지정 문자열의 해시 앞 20자리를 구하세요."
+    ],
+    "en": [
+      "Vulnerable to interception without authenticated encryption.",
+      "Compute sha256('json_rpc_plaintext_transport_mitm')[:20]."
+    ]
+  },
+  "hash": "eb84295c9dec66fcb1435b38745bf33c1c83807ee6a2420d3493ed4f2990aaf1"
+},
+{
+  "id": "t2_aiagent_schema_poisoning",
+  "tier": 2,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "함수 스키마 설명문 악의적 오염",
+    "en": "Tool Schema Description Poisoning"
+  },
+  "prompt": {
+    "ko": "도구 description 필드에 지시문을 심어 특정 도구를 강제 선택시키는 기법입니다.\n식별자 `function_schema_description_poisoning`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"function_schema_description_poisoning\") 앞 20자리}`",
+    "en": "Enter the flag: FLAG{SHA256(\"function_schema_description_poisoning\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "스키마의 시맨틱 설명을 조작하여 모델 플래너를 속입니다.",
+      "식별자 해시 앞 20자리를 입력하세요."
+    ],
+    "en": [
+      "Adversary manipulates semantic descriptions in JSON schemas.",
+      "First 20 hex digits of sha256."
+    ]
+  },
+  "hash": "b4b66fcf1198293ad1a822fab98e9696fbb7d4212ebdbe3d2b3e0d758e04d5fb"
+},
+{
+  "id": "t2_aiagent_api_key_harvest",
+  "tier": 2,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "에이전트 메모리 자격증명 수집",
+    "en": "Agent Credential Harvesting"
+  },
+  "prompt": {
+    "ko": "에이전트 메모리에 존재하는 비밀 키를 질문 형태로 위장해 추출하는 공격입니다.\n식별자 `agent_memory_credential_harvesting`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"agent_memory_credential_harvesting\") 앞 20자리}`",
+    "en": "Find the flag: FLAG{SHA256(\"agent_memory_credential_harvesting\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "컨텍스트 윈도우의 민감 정보를 마스킹하지 않고 출력하는 취약점입니다.",
+      "문자열 'agent_memory_credential_harvesting'을 해시하세요."
+    ],
+    "en": [
+      "Context windows containing API tokens require DLP filters.",
+      "Compute sha256('agent_memory_credential_harvesting')[:20]."
+    ]
+  },
+  "hash": "3f5b07b0b0a87daa7b159723ce4502e45587a637a317ec918c0d837557352de7"
+},
+{
+  "id": "t2_aiagent_output_quarantine",
+  "tier": 2,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "LLM 출력 격리 및 데이터 손실 방지(DLP)",
+    "en": "LLM Output Quarantine & DLP"
+  },
+  "prompt": {
+    "ko": "출력에 포함된 비밀 키를 실시간 검사해 차단하는 가드레일 방어입니다.\n식별자 `llm_output_quarantine_dlp_policy`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"llm_output_quarantine_dlp_policy\") 앞 20자리}`",
+    "en": "Acquire the flag: FLAG{SHA256(\"llm_output_quarantine_dlp_policy\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "보조 검증 모델과 정규식이 유출 패턴을 차단합니다.",
+      "지정 식별자의 해시 앞 20자리를 구하세요."
+    ],
+    "en": [
+      "Secondary verifier model scans agent responses for sensitive tokens.",
+      "Calculate sha256('llm_output_quarantine_dlp_policy')[:20]."
+    ]
+  },
+  "hash": "5f22de0086f3e932d1d0cef1b85a02e53a7e550c916dbeff07753708f710d203"
+},
+{
+  "id": "t3_aiagent_mcp_ephemeral_token",
+  "tier": 3,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 단기 기능 토큰(Ephemeral Token)",
+    "en": "MCP Ephemeral Capability Tokens"
+  },
+  "prompt": {
+    "ko": "각 호출마다 60초 미만의 유효기간을 갖는 단기 기능 토큰 방어입니다.\n식별자 `mcp_ephemeral_capability_token_auth`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"mcp_ephemeral_capability_token_auth\") 앞 20자리}`",
+    "en": "Submit the flag: FLAG{SHA256(\"mcp_ephemeral_capability_token_auth\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "세분화된 단기 기능 증명서를 각 RPC 호출마다 발급합니다.",
+      "지정된 식별자를 sha256으로 해싱하세요."
+    ],
+    "en": [
+      "Generates fine-grained single-use capability tokens.",
+      "First 20 hex digits of sha256."
+    ]
+  },
+  "hash": "faa913d2b6079f3699ad139e796c20ec75238487aac384b39280973e206663e6"
+},
+{
+  "id": "t3_aiagent_privilege_separation",
+  "tier": 3,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "에이전트 권한 분리 아키텍처",
+    "en": "Agent Privilege Separation Architecture"
+  },
+  "prompt": {
+    "ko": "기획 모델과 도구 실행 환경을 격리하는 최소 권한 아키텍처입니다.\n식별자 `agent_privilege_separation_architecture`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"agent_privilege_separation_architecture\") 앞 20자리}`",
+    "en": "Retrieve the flag: FLAG{SHA256(\"agent_privilege_separation_architecture\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "비신뢰 데이터를 다루는 모델은 상태 변경 도구에 직접 접근하지 못합니다.",
+      "문자열 'agent_privilege_separation_architecture'의 해시를 구하세요."
+    ],
+    "en": [
+      "Untrusted data analyzer cannot invoke state-changing tools directly.",
+      "Compute sha256('agent_privilege_separation_architecture')[:20]."
+    ]
+  },
+  "hash": "9e58f6ae4da7d9133665c9fffa760d087e3c4363d24948184cf26dbbaa245138"
+},
+{
+  "id": "t3_aiagent_multi_agent_pivot",
+  "tier": 3,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "멀티 에이전트 간 측면 이동(Lateral Pivot)",
+    "en": "Multi-Agent Lateral Movement Pivot"
+  },
+  "prompt": {
+    "ko": "하위 에이전트를 통해 상위 오케스트레이터로 공격을 전파하는 시나리오입니다.\n식별자 `multi_agent_lateral_pivot_killchain`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"multi_agent_lateral_pivot_killchain\") 앞 20자리}`",
+    "en": "Enter the flag: FLAG{SHA256(\"multi_agent_lateral_pivot_killchain\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "에이전트 간 통신에 주입된 악성 작업 지시문이 연쇄 실행됩니다.",
+      "지정된 문자열의 sha256 해시 앞 20자리를 구하세요."
+    ],
+    "en": [
+      "Compromised worker agent relays poisoned task instructions upstream.",
+      "First 20 hex digits of sha256."
+    ]
+  },
+  "hash": "472a3450ccdda4028346e676d25dbfae5f8a40b8a57e3c4162b416a2e00c2e30"
+},
+{
+  "id": "t3_aiagent_adversarial_rag_eval",
+  "tier": 3,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "적대적 RAG 문서 평가 우회",
+    "en": "Adversarial RAG Evaluation Bypass"
+  },
+  "prompt": {
+    "ko": "키워드 필터를 우회하는 추론형 악성 지시문 주입 공격입니다.\n식별자 `adversarial_rag_eval_filter_bypass`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"adversarial_rag_eval_filter_bypass\") 앞 20자리}`",
+    "en": "Find the flag: FLAG{SHA256(\"adversarial_rag_eval_filter_bypass\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "직접적인 명령 대신 논리적 추론 형태로 지시문을 분할 구성합니다.",
+      "문자열 'adversarial_rag_eval_filter_bypass'를 해싱하세요."
+    ],
+    "en": [
+      "Splits injection directives across indirect premises to evade filters.",
+      "Calculate sha256('adversarial_rag_eval_filter_bypass')[:20]."
+    ]
+  },
+  "hash": "6a3511c0d1b5284aad3268bbbd27e30da0dfee13fd1242446179917521c1f9b8"
+},
+{
+  "id": "t3_aiagent_bpf_agent_monitor",
+  "tier": 3,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "eBPF 기반 에이전트 커널 런타임 감시",
+    "en": "eBPF Runtime Syscall Monitoring for Agents"
+  },
+  "prompt": {
+    "ko": "에이전트 도구 프로세스의 시스템 콜을 커널 레벨에서 추적하는 방어입니다.\n식별자 `ebpf_runtime_syscall_monitoring_agent`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"ebpf_runtime_syscall_monitoring_agent\") 앞 20자리}`",
+    "en": "Acquire the flag: FLAG{SHA256(\"ebpf_runtime_syscall_monitoring_agent\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "커널 eBPF 프로브가 비인가 명령과 네트워크 소켓을 즉시 탐지합니다.",
+      "지정 식별자의 해시 앞 20자리를 대입하세요."
+    ],
+    "en": [
+      "Kernel eBPF probes inspect process execution arguments in real-time.",
+      "First 20 hex characters of sha256."
+    ]
+  },
+  "hash": "6fa4cdf0bfa446c69d98c966cbb6bfd4af2300cad8d4f97807b0684de54ea3a8"
+},
+{
+  "id": "t3_aiagent_signed_mcp_registry",
+  "tier": 3,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "암호학적 MCP 서버 레지스트리 서명",
+    "en": "Cryptographic MCP Server Registry Verification"
+  },
+  "prompt": {
+    "ko": "등록되는 MCP 서버의 공개키 서명을 검증하는 신뢰 체계입니다.\n식별자 `cryptographic_mcp_server_registry_verify`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"cryptographic_mcp_server_registry_verify\") 앞 20자리}`",
+    "en": "Submit the flag: FLAG{SHA256(\"cryptographic_mcp_server_registry_verify\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "신뢰할 수 있는 인증서와 일치하지 않는 MCP 엔드포인트를 차단합니다.",
+      "문자열 'cryptographic_mcp_server_registry_verify'를 해싱하세요."
+    ],
+    "en": [
+      "Rejects dynamic registration unless verified against a trusted PKI.",
+      "Compute sha256('cryptographic_mcp_server_registry_verify')[:20]."
+    ]
+  },
+  "hash": "1421618b3c3d9ee55001b1ec80b7bc8648aa01dbd9f762426d8037f15c0cecbb"
+},
+{
+  "id": "t3_aiagent_confused_deputy",
+  "tier": 3,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "혼동된 대리인(Confused Deputy) 방어",
+    "en": "Confused Deputy Mitigation in Agent Workflows"
+  },
+  "prompt": {
+    "ko": "외부 요청자의 권한 범위 내에서만 도구를 실행하도록 위임하는 방어입니다.\n식별자 `confused_deputy_mitigation_workflow`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"confused_deputy_mitigation_workflow\") 앞 20자리}`",
+    "en": "Retrieve the flag: FLAG{SHA256(\"confused_deputy_mitigation_workflow\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "에이전트 마스터 권한 대신 최초 요청자의 인증 토큰으로 도구를 실행합니다.",
+      "지정된 식별자의 sha256 해시를 계산하세요."
+    ],
+    "en": [
+      "Scopes tool execution to the original caller context.",
+      "First 20 hex digits of sha256."
+    ]
+  },
+  "hash": "649e59a3d8f9218906fc2684d44d97d123e7a3a54997f35601b4b39e73be56f3"
+},
+{
+  "id": "t4_aiagent_zero_trust_architecture",
+  "tier": 4,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "제로 트러스트 AI 에이전트 종합 아키텍처",
+    "en": "Zero Trust AI Agent Architecture"
+  },
+  "prompt": {
+    "ko": "지속적 상호 인증과 최소 권한을 통합한 제로 트러스트 에이전트 아키텍처입니다.\n식별자 `zero_trust_ai_agent_comprehensive_matrix`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"zero_trust_ai_agent_comprehensive_matrix\") 앞 20자리}`",
+    "en": "Enter the flag: FLAG{SHA256(\"zero_trust_ai_agent_comprehensive_matrix\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "항상 검증하라 원칙을 입력 파싱, 도구 호출, 네트워크 전송에 적용합니다.",
+      "문자열 'zero_trust_ai_agent_comprehensive_matrix'의 해시를 구하세요."
+    ],
+    "en": [
+      "Enforces continuous verification across the entire agent lifecycle.",
+      "First 20 hex chars of sha256."
+    ]
+  },
+  "hash": "55bee0bc5dc29bc222f934e4bc21bfda9263ec5922ec6eecca99a7e41456bacf"
+},
+{
+  "id": "t4_aiagent_full_autonomous_killchain",
+  "tier": 4,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "풀체인 자율 에이전트 킬체인 분석",
+    "en": "Full Autonomous Agent Killchain Interception"
+  },
+  "prompt": {
+    "ko": "간접 주입부터 데이터 유출까지 이어지는 공격 킬체인을 차단하는 시나리오입니다.\n식별자 `full_autonomous_killchain_interception_shield`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"full_autonomous_killchain_interception_shield\") 앞 20자리}`",
+    "en": "Find the flag: FLAG{SHA256(\"full_autonomous_killchain_interception_shield\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "입력 방화벽, 샌드박스, 도구 서명, DLP 필터의 심층 방어입니다.",
+      "지정 식별자를 sha256으로 해싱하세요."
+    ],
+    "en": [
+      "Multi-tiered defense blocks exploitation across the lifecycle.",
+      "Calculate sha256('full_autonomous_killchain_interception_shield')[:20]."
+    ]
+  },
+  "hash": "a99a49b29a29a5788759a3af4d25c20438b69ccb76fef58d6315554fa4bc4404"
+},
+{
+  "id": "t4_aiagent_attestation_enclave",
+  "tier": 4,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "기밀 컴퓨팅 TEE 및 원격 증명(Attestation)",
+    "en": "Confidential Computing & Remote Attestation"
+  },
+  "prompt": {
+    "ko": "에이전트 연산을 하드웨어 격리 엔클레이브에서 구동하는 기밀 컴퓨팅 보안입니다.\n식별자 `tee_confidential_attestation_enclave_node`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"tee_confidential_attestation_enclave_node\") 앞 20자리}`",
+    "en": "Submit the flag: FLAG{SHA256(\"tee_confidential_attestation_enclave_node\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "호스트 관리자도 엔클레이브 내부 메모리를 도청하거나 변조할 수 없습니다.",
+      "문자열 'tee_confidential_attestation_enclave_node'를 해시하세요."
+    ],
+    "en": [
+      "Hardware enclave protects agent memory state from host OS root inspection.",
+      "First 20 hex digits of sha256."
+    ]
+  },
+  "hash": "599ad99bcf5e96c9010e6e9304b0583b8994cc2fe20d5d4b5f3b5ce6b3a8d0c2"
+},
+{
+  "id": "t4_aiagent_prompt_firewall_lsm",
+  "tier": 4,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Dual LLM 방화벽 및 Linux LSM 연동",
+    "en": "Dual-LLM Firewall & Linux LSM Integration"
+  },
+  "prompt": {
+    "ko": "언어 모델 방화벽과 커널 LSM을 결합한 하이브리드 심층 방어입니다.\n식별자 `dual_llm_firewall_and_lsm_guard_system`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"dual_llm_firewall_and_lsm_guard_system\") 앞 20자리}`",
+    "en": "Retrieve the flag: FLAG{SHA256(\"dual_llm_firewall_and_lsm_guard_system\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "지능형 필터링과 커널 레벨 강제 접근 제어를 융합합니다.",
+      "지정된 식별자의 해시 앞 20자리를 구하세요."
+    ],
+    "en": [
+      "Combines natural language intent verification with low-level MAC enforcement.",
+      "Compute sha256('dual_llm_firewall_and_lsm_guard_system')[:20]."
+    ]
+  },
+  "hash": "565f18cbad5999cae1bb486a464de461e646897f3774b72bb5db92fd5c106b89"
+},
+{
+  "id": "t4_aiagent_semantic_integrity",
+  "tier": 4,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "시맨틱 컨텍스트 무결성 검증",
+    "en": "Semantic Context Integrity Enforcement"
+  },
+  "prompt": {
+    "ko": "추론 체인과 도구 호출 계획의 논리적 일관성을 증명 트리로 검증하는 기법입니다.\n식별자 `semantic_context_integrity_proof_tree`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"semantic_context_integrity_proof_tree\") 앞 20자리}`",
+    "en": "Acquire the flag: FLAG{SHA256(\"semantic_context_integrity_proof_tree\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "도구 호출 근거가 원본 지시문에서 논리적으로 연역되는지 확인합니다.",
+      "지정 식별자를 sha256 해시하세요."
+    ],
+    "en": [
+      "Formally checks that planned actions derive from authorized user requirements.",
+      "First 20 hex digits of sha256."
+    ]
+  },
+  "hash": "b851bca192c01d96cb28e1b720a18b34b958115fc778c30746ea2887b2720119"
+},
+{
+  "id": "t4_aiagent_ephemeral_session_mtls",
+  "tier": 4,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "단기 세션 mTLS 암호화 통신 채널",
+    "en": "Ephemeral Session mTLS Communication Channel"
+  },
+  "prompt": {
+    "ko": "분산된 MCP 에이전트 간에 단기 X.509 인증서 기반 mTLS 채널을 구축하는 기술입니다.\n식별자 `spiffe_spire_ephemeral_mtls_channel`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"spiffe_spire_ephemeral_mtls_channel\") 앞 20자리}`",
+    "en": "Submit the flag: FLAG{SHA256(\"spiffe_spire_ephemeral_mtls_channel\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "SPIFFE/SPIRE 워크로드 ID를 사용하여 단기 인증서를 자동 회전합니다.",
+      "문자열 'spiffe_spire_ephemeral_mtls_channel'의 해시를 구하세요."
+    ],
+    "en": [
+      "Automates short-lived certificate rotation for inter-agent RPC sessions.",
+      "Compute sha256('spiffe_spire_ephemeral_mtls_channel')[:20]."
+    ]
+  },
+  "hash": "54bcea179b4c8998b9b48473bf8a31f7c2cd53bb6b3850db135562ef791c72ea"
+},
+{
+  "id": "t4_aiagent_capstone_defense",
+  "tier": 4,
+  "cat": "aiagent",
+  "track": "aiagent",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AI 에이전트 생태계 심층 방어 캡스톤",
+    "en": "Defense-in-Depth AI Ecosystem Capstone"
+  },
+  "prompt": {
+    "ko": "바이브해킹 Lab 18 AgentGuard와 연계된 최종 마스터 캡스톤 챌린지입니다.\n식별자 `vibe_hacking_lab18_agentguard_capstone_master`의 SHA-256 앞 20자리를 제출하세요.\n\n형식: `FLAG{SHA256(\"vibe_hacking_lab18_agentguard_capstone_master\") 앞 20자리}`",
+    "en": "Obtain the final capstone flag: FLAG{SHA256(\"vibe_hacking_lab18_agentguard_capstone_master\")[:20]}."
+  },
+  "hints": {
+    "ko": [
+      "바이브해킹 Lab 18 AgentGuard와 연계된 최종 마스터 챌린지입니다.",
+      "지정된 캡스톤 식별자의 sha256 해시 앞 20자리를 구하세요."
+    ],
+    "en": [
+      "Capstone verification marking complete mastery of agentic AI security.",
+      "Calculate sha256('vibe_hacking_lab18_agentguard_capstone_master')[:20]."
+    ]
+  },
+  "hash": "c3b8eb901df2019dc0f63af5e980017d30cc35a00b5436aed6ab078d69d943d0"
 }
 ];

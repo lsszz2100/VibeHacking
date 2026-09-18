@@ -125,6 +125,75 @@ body{
   animation:blink 1s steps(1) infinite;margin-left:-6px;pointer-events:none}
 @keyframes blink{50%{opacity:0}}
 
+/* ---- Toast Notifications ---- */
+#toastContainer{
+  position:fixed;top:18px;right:18px;z-index:100;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none;
+}
+.toast{
+  pointer-events:auto;min-width:280px;max-width:380px;
+  padding:10px 14px;border-radius:6px;
+  background:rgba(3,16,10,.95);border:1px solid var(--green);
+  box-shadow:0 0 16px rgba(39,255,139,.35),inset 0 0 10px rgba(12,94,51,.5);
+  color:var(--txt);font-family:var(--mono);font-size:12px;
+  display:flex;align-items:flex-start;gap:10px;
+  animation:toastIn .3s ease-out forwards;transition:opacity .3s,transform .3s;
+}
+.toast.toast-leave{opacity:0;transform:translateX(30px)}
+.toast-icon{font-size:20px;line-height:1}
+.toast-body{flex:1}
+.toast-title{font-weight:700;color:var(--green);margin-bottom:2px}
+.toast-desc{font-size:11px;color:var(--muted)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-15px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---- Modal (Badges & Overlays) ---- */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(2,6,10,.85);
+  backdrop-filter:blur(2px);z-index:90;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.modal-box{
+  background:#03140c;border:1px solid var(--green);
+  box-shadow:0 0 30px rgba(39,255,139,.3),inset 0 0 20px rgba(12,94,51,.3);
+  border-radius:8px;width:100%;max-width:680px;max-height:85vh;
+  display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:91;
+  font-family:var(--mono);
+}
+.modal-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-bottom:1px solid var(--green-deep);
+  background:rgba(8,40,24,.6);
+}
+.modal-title{font-weight:700;color:var(--green);font-size:14px;letter-spacing:.5px}
+.modal-close{
+  cursor:pointer;background:transparent;border:1px solid var(--line);
+  color:var(--muted);font-family:var(--mono);font-size:13px;
+  padding:2px 8px;border-radius:4px;transition:.15s;
+}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+.modal-body{
+  padding:16px;overflow-y:auto;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;
+}
+.badge-card{
+  padding:10px 12px;border:1px solid var(--line);border-radius:6px;
+  background:rgba(4,20,12,.4);display:flex;gap:10px;align-items:center;
+  transition:.15s;
+}
+.badge-card.unlocked{
+  border-color:var(--green-dim);background:rgba(6,32,18,.7);
+  box-shadow:0 0 10px rgba(39,255,139,.18);
+}
+.badge-card.locked{opacity:.55}
+.badge-card-icon{font-size:24px;min-width:32px;text-align:center}
+.badge-card-info{flex:1;min-width:0}
+.badge-card-title{font-weight:700;font-size:13px;color:var(--txt)}
+.badge-card.unlocked .badge-card-title{color:var(--green)}
+.badge-card-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.badge-card-status{font-size:11px;margin-top:4px}
+.badge-card.unlocked .badge-card-status{color:var(--amber)}
+.badge-card.locked .badge-card-status{color:var(--muted)}
+
 /* ---- responsive ---- */
 @media(max-width:680px){
   body{font-size:14px}
