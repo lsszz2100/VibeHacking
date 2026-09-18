@@ -7,27 +7,32 @@
 ## 1. 프로젝트 개요 및 현재 상태 (Current Status)
 
 - **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH)
+  - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `.github/workflows/deploy-docs.yml`), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화 및 챕터별 학습 목표/실습 랩 링크 체계화
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 15개 실전 랩 완비** (`labs/01` ~ `labs/15`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 16개 실전 랩 완비** (`labs/01` ~ `labs/16`)
   - **Lab 14 (DocArmor)**: 문서형 악성코드 & PDF 포렌식 랩 (OLE/VBA 매크로, CVE-2017-11882, CVE-2021-40444, PDF FlateDecode)
   - **Lab 15 (Web3 & Smart Contract Security)**: EVM 모의 환경, Reentrancy(DAO), Batch Overflow, tx.origin 인증 우회, Flash Loan AMM 가격 조작, Web3 CLI(`forge`/`cast`/`solc`) 터미널 에뮬레이터 (포트: `8015`)
-- **브라우저 터미널 워게임**: **총 30개 트랙 / 1,050문제** 달성 (`wargame/index.html`, HUD `0/1050`)
+  - **Lab 16 (MemShield)**: 메모리 포렌식 & Volatility 3 분석 랩 (DKOM 숨김 프로세스 언링크, VAD RWX 셸코드 주입, 악성 C2 소켓 복원, LSASS NTLM 덤프 & LSA PPL 방어, 포트: `8016`)
+- **브라우저 터미널 워게임**: **총 31개 트랙 / 1,085문제** 달성 (`wargame/index.html`, HUD `0/1085`)
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **27번째 트랙**: `wasm` 🧩 WebAssembly 보안 (35개 문제: Tier 0~4)
   - **28번째 트랙**: `ebpf` 🐝 eBPF & Kernel Security (35개 문제: Tier 0~4)
   - **29번째 트랙**: `firmware` 💾 Firmware & Embedded Security (35개 문제: Tier 0~4)
   - **30번째 트랙**: `maldoc` 📑 문서형 악성코드 & PDF 포렌식 (35개 문제: Tier 0~4)
+  - **31번째 트랙**: `volatility` 🧠 메모리 포렌식 & Volatility (35개 문제: Tier 0~4)
 - **표준 파이썬 패키징**: [pyproject.toml](file:///mnt/d/바이브해킹%20자료/vibe-hacking/pyproject.toml) 기반 패키징 완비 (`pip install -e .` 지원, 글로벌 `vhack` 명령 제공)
 - **vhack CLI 고도화**:
-  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8015 가용성 등 8개 영역 시스템 진단 도구
+  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8016 가용성 등 8개 영역 시스템 진단 도구
+  - `vhack setup-docker`: OS 및 WSL2 환경 자동 감지, Docker CE / Compose 자동 설치 및 WSL2 연동 진단 가이드 (`--dry-run`, `-y`)
+  - `vhack docs`: 75개 챕터 웹 리더 포털 로컬 HTTP 서버 실행
   - `vhack wargame`: 내장 웹서버 구동 및 브라우저 자동 실행
-  - `vhack lab test [--all | <lab_id>]`: 15개 실습 랩 자동 무결성 검증 (102개 테스트)
-  - `vhack lab status`: 15개 랩 종합 상태 대시보드
-- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~15, `vhack doctor`, Pytest 105개 랩 테스트, Wargame 4대 엄격 검증 스위트 자동화)
+  - `vhack lab test [--all | <lab_id>]`: 16개 실습 랩 자동 무결성 검증 (113개 테스트)
+  - `vhack lab status`: 16개 랩 종합 상태 대시보드
+- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~16, `vhack doctor`, Pytest 116개 랩 테스트, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
 
 ---
 
-## 2. 실습 랩(1~15) & 교재 & 워게임 연계 매트릭스
+## 2. 실습 랩(1~16) & 교재 & 워게임 연계 매트릭스
 
 | 랩 ID | 랩 이름 | 주요 침투/방어 주제 | 연계 교재 챕터 | 워게임 트랙 | 실행 명령 |
 | :---: | :--- | :--- | :--- | :---: | :--- |
@@ -46,6 +51,7 @@
 | **13** | eBPF 커널 보안 랩 (BPFGuard) | Kprobe 시스템콜 도청, bpf_probe_write_user 메모리 변조, XDP 은닉 통신, BPF LSM 방어 | `01_Linux_Basics`, `26_Linux_Hardening`, `70_Kubernetes_Security` | `ebpf` | `vhack lab start 13` |
 | **14** | 문서형 악성코드 & PDF 랩 (DocArmor) | OLE/VBA 매크로 난독화 해제, PDF FlateDecode 분석, CVE-2017-11882, CVE-2021-40444 | `06_Malware_Analysis`, `07_Digital_Forensics`, `45_Malware_Development` | `maldoc` | `vhack lab start 14` |
 | **15** | Web3 & 스마트 컨트랙트 랩 (Web3Sec) | Reentrancy(DAO), Batch Overflow, tx.origin 인증 우회, Flash Loan AMM 조작 | `42_Blockchain_Web3_Security` | `web` / `pwn` | `vhack lab start 15` |
+| **16** | 메모리 포렌식 & Volatility 랩 (MemShield) | DKOM 프로세스 은닉, VAD RWX 인젝션, C2 소켓 복원, LSASS NTLM dump & LSA PPL 방어 | `07_Digital_Forensics`, `44_Incident_Response_DFIR` | `volatility` | `vhack lab start 16` |
 
 ---
 
@@ -54,10 +60,10 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (105개 테스트 전원 통과: Labs 01~15 및 HA DB 백업)
+# 1. 전체 단위/통합 테스트 (116개 테스트 전원 통과: Labs 01~16 및 HA DB 백업)
 pytest
 
-# 2. 실습 랩 CLI 자동 무결성 검증 (15개 랩 102개 테스트 통과)
+# 2. 실습 랩 CLI 자동 무결성 검증 (16개 랩 113개 테스트 통과)
 python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
@@ -65,19 +71,22 @@ vhack lab test --all
 # 3. 환경 진단 검사 (8개 영역 100% 정상 확인)
 vhack doctor
 
-# 4. 75개 섹션 README 동기화 검증
-python3 tools/sync_section_readmes.py
+# 4. Docker 환경 진단 및 설정 가이드
+vhack setup-docker --dry-run
 
-# 5. 워게임 무결성 및 구조 검증 (1,050문제, 30트랙, 5티어)
+# 5. 75개 챕터 웹 리더 포털 실행
+vhack docs
+
+# 6. 워게임 무결성 및 구조 검증 (1,085문제, 31트랙, 5티어)
 node wargame/scripts/verify.js
 
-# 6. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
+# 7. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
 node wargame/scripts/leakscan.js
 
-# 7. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
+# 8. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
 node wargame/scripts/audit.js --strict
 
-# 8. 연산/유도형 챌린지 117개 자동 풀이 검증 (117/117 통과)
+# 9. 연산/유도형 챌린지 117개 자동 풀이 검증 (117/117 통과)
 node wargame/scripts/solve-derivable.js
 ```
 
@@ -93,6 +102,11 @@ node wargame/scripts/solve-derivable.js
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
 
+- **2026-09-18 (Lab 16, Docsify Portal, Wargame 31 Tracks / 1,085 Challenges, Docker Setup CLI)**:
+  - **Lab 16 MemShield 랩 신규 구축**: `labs/16_memory_forensics_lab/` (DKOM unlinking, VAD RWX injection, C2 socket reconstruction, LSASS NTLM dump & LSA PPL defense, 포트 8016, 11개 테스트 전원 통과)
+  - **75개 챕터 웹 리더 포털 구축**: Docsify 기반 다크 테마 포털(`index.html`, `_sidebar.md`, `_navbar.md`, `docs/`), GitHub Pages 자동 배포(`.github/workflows/deploy-docs.yml`), `vhack docs` CLI 내장 웹 서버 제공
+  - **워게임 31번째 트랙 (`volatility`) 확장**: 35개 문제 추가로 1,050제 → 1,085제 확장, 4대 엄격 검증 스위트 (`verify.js`, `audit.js --strict`, `leakscan.js`, `solve-derivable.js`) 전원 무결격 통과
+  - **로컬 개발 환경 편의성 강화 (`vhack setup-docker`)**: Linux 배포판 및 WSL2 자동 감지, Docker Desktop 연동 안내, 비대화형/Dry-run 설치 지원, `vhack doctor` 연계
 - **2026-09-17 (Lab 15, 75 Sections Sync, CLI DX & Packaging)**:
   - **Lab 15 Web3 랩 신규 구축**: `labs/15_web3_smart_contract_lab/` (EVM 시뮬레이터, Reentrancy, Batch Overflow, tx.origin, Flash Loan AMM, Web3 CLI, 포트 8015, 12개 테스트 전원 통과)
   - **75개 전 섹션 README.md 표준화 & 동기화**: 53개 신규 생성, 22개 업데이트 및 `tools/sync_section_readmes.py` 동기화 도구 완비

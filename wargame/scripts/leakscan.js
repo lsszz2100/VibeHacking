@@ -103,6 +103,19 @@ const ALLOWLIST = new Map([
   ['t4_firmwarecapstone -> t1_firmwaresquashfs', 'Capstone extracts SquashFS filesystem'],
   ['t1_maldocpdfid -> t1_triage', 'PDF rapid triage scan references triage methodology'],
   ['t4_maldoccapstone -> t4_ebpfsigndigest', 'Maldoc capstone specifies sha256 hash formatting'],
+  // Memory Forensics & Volatility domain terms and capstone integration
+  ['t4_rootkit -> t4_volssdt', 'Rootkit detection references SSDT table hooking'],
+  ['t1_volpslist -> t0_ps', 'pslist plugin is named after UNIX ps command'],
+  ['t1_volpstree -> t0_ps', 'pstree plugin is named after UNIX ps command'],
+  ['t1_voldlllist -> t1_repeb', 'dlllist traverses loaded module lists in the PEB'],
+  ['t1_volcmdline -> t1_repeb', 'cmdline extracts execution parameters from the PEB'],
+  ['t2_volpsscan -> t3_pwnunlink', 'psscan detects unlinked processes from ActiveProcessLinks'],
+  ['t2_volpsscan -> t1_volpslist', 'psscan results are cross-referenced with pslist'],
+  ['t2_volpsscan -> t0_ps', 'psscan identifies hidden processes bypassing ps listing'],
+  ['t2_voldkom -> t4_rootkit', 'DKOM is used by kernel rootkits to hide processes'],
+  ['t3_volapihooks -> t2_reiat', 'apihooks detects user-mode IAT hooks'],
+  ['t4_volcapstone -> t2_voldkom', 'Capstone investigates DKOM unlinking in memory dump'],
+  ['t4_volcapstone -> t4_volrunasppl', 'Capstone investigates LSASS dumping against RunAsPPL protection'],
 ]);
 
 function loadChallenges() {

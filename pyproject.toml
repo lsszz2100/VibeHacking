@@ -49,3 +49,10 @@ vhack = "vhack:main"
 
 [tool.setuptools]
 py-modules = ["vhack"]
+
+[tool.pytest.ini_options]
+testpaths = ["labs", "infra"]
+python_files = ["test_*.py"]
+norecursedirs = [".*", "node_modules"]
+
+

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>VibeHacking — 75개 섹션 사이버보안 웹 리더 & 통합 포털</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="실전 사이버보안 & 해킹 종합 바이블 (75개 섹션, 16개 실습 랩, 1,050+ 워게임)">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --base-font-size: 15px;
+      --theme-color: #00f0ff;
+      --sidebar-width: 320px;
+      --sidebar-background: #0d1117;
+      --content-max-width: 1050px;
+      --mono-tint: #161b22;
+      --code-inline-background: #21262d;
+      --code-inline-color: #79c0ff;
+    }
+    .portal-banner {
+      background: linear-gradient(90deg, #1f2937, #111827);
+      border-bottom: 1px solid #374151;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      font-size: 0.9rem;
+    }
+    .portal-links a {
+      color: #9ca3af;
+      margin-left: 16px;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .portal-links a:hover {
+      color: #00f0ff;
+    }
+    .badge-accent {
+      background: rgba(0, 240, 255, 0.15);
+      color: #00f0ff;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-banner">
+    <div>
+      <span class="badge-accent">VibeHacking 2.0</span>
+      <span style="margin-left: 8px; color: #f3f4f6; font-weight: 600;">실전 보안 지식 포털</span>
+    </div>
+    <div class="portal-links">
+      <a href="#/"><i class="fa-solid fa-book"></i> 교재(75장)</a>
+      <a href="/wargame/" target="_blank"><i class="fa-solid fa-terminal"></i> 워게임(1,085제)</a>
+      <a href="#/labs/README"><i class="fa-solid fa-flask"></i> 실습 랩(16개)</a>
+      <a href="https://github.com/lsszz2100/VibeHacking" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
+    </div>
+  </div>
+
+  <div id="app">포털 로딩 중...</div>
+
+  <script>
+    window.$docsify = {
+      name: 'VibeHacking Bible',
+      repo: 'https://github.com/lsszz2100/VibeHacking',
+      loadSidebar: '_sidebar.md',
+      loadNavbar: '_navbar.md',
+      subMaxLevel: 3,
+      auto2top: true,
+      homepage: 'README.md',
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: '보안 챕터 / 키워드 검색...',
+        noData: '검색 결과가 없습니다.',
+        depth: 3
+      },
+      copyCode: {
+        buttonText: '복사',
+        errorText: '실패',
+        successText: '복사됨 ✓'
+      }
+    };
+  </script>
+  <!-- Docsify Core & Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-c.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+</body>
+</html>

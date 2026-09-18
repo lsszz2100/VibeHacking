@@ -74,6 +74,7 @@ LAB_DIRS=(
     "13_ebpf_kernel_lab"
     "14_maldoc_lab"
     "15_web3_smart_contract_lab"
+    "16_memory_forensics_lab"
 )
 
 LAB_NAMES=(
@@ -92,7 +93,9 @@ LAB_NAMES=(
     "eBPF 커널 침투 및 런타임 보안 랩"
     "문서형 악성코드 & PDF 분석 랩"
     "Web3 & 스마트 컨트랙트 보안 랩"
+    "메모리 포렌식 & Volatility 3 분석 랩"
 )
+
 
 stopped_count=0
 

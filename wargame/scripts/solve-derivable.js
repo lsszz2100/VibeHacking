@@ -1170,12 +1170,22 @@ const SOLVERS = new Map([
     const hash = crypto.createHash('sha256').update(input).digest('hex').slice(0, 26);
     return `FLAG{${hash}}`;
   } }],
+  ['t4_volcapstone', { kind: 'computed', via: 'SHA256 of DKOM PID, target PID, C2 port, and registry defense', solve: (ch) => {
+    const text = ch.prompt.en || ch.prompt.ko;
+    const m = text.match(/(\d+:\d+:\d+:[A-Za-z0-9]+)/);
+    const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 26);
+    return `FLAG{${hash}}`;
+  } }],
 ]);
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag
    challenge cannot arrive without someone deciding which bucket it is in. */
-const DECLINED = new Map([]);
+const DECLINED = new Map([
+  ['t2_volpooltag', 'case-sensitive 4-character kernel pool tag knowledge question'],
+  ['t3_volvads', 'case-sensitive short VAD tag knowledge question'],
+  ['t4_volrunasppl', 'case-sensitive registry DWORD value name knowledge question'],
+]);
 
 /* ===== run ===== */
 

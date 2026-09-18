@@ -13,6 +13,7 @@ vhack — VibeHacking CLI
   python3 vhack.py lab test 14          # 특정 랩 테스트 실행
   python3 vhack.py lab test --all       # 전체 랩 테스트 일괄 실행
   python3 vhack.py search "SQL 인젝션"   # 전체 MD 검색
+  python3 vhack.py setup-docker          # Docker/Compose 환경 자동 설치 및 진단
   python3 vhack.py alias install        # 쉘 alias 자동 등록 → vhack 으로 바로 사용
   python3 vhack.py update               # 최신 버전으로 업데이트
 """
@@ -269,7 +270,16 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [42],
     },
+    "16": {
+        "name": "메모리 포렌식 & Volatility 3 분석 랩",
+        "dir":  "16_memory_forensics_lab",
+        "desc": "MemShield: DKOM 은닉 프로세스 적출 · VAD RWX 쉘코드 탐지 · C2 비컨 네트워크 아티팩트 복원 · LSASS NTLM 덤프 & PPL 커널 방어",
+        "url":  "웹 콘솔 & Volatility API: http://localhost:8016",
+        "difficulty": "★★★★",
+        "related": [6, 7, 44],
+    },
 }
+
 
 # ── 배너 ─────────────────────────────────────────────────────────────────────
 BANNER = rf"""
@@ -1135,9 +1145,9 @@ def cmd_doctor(args: argparse.Namespace) -> None:
             docker_ok = True
             report("ok", f"Docker: {d_v} (데몬 정상 작동)")
         else:
-            report("warn", f"Docker: {d_v}", "Docker 데몬이 실행 중이지 않습니다. (sudo systemctl start docker)")
+            report("warn", f"Docker: {d_v}", "Docker 데몬이 실행 중이지 않거나 WSL 연동이 필요합니다. ('vhack setup-docker' 권장)")
     except Exception:
-        report("warn", "Docker 미설치", "CTF 랩 구동을 위해 Docker 설치가 권장됩니다. (https://docs.docker.com)")
+        report("warn", "Docker 미설치 또는 미연동", "CTF 랩 구동을 위해 Docker 설정이 필요합니다. ('vhack setup-docker' 권장)")
 
     # 4. Docker Compose Check
     compose_ok = False
@@ -1150,7 +1160,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         except Exception:
             continue
     if not compose_ok:
-        report("warn", "Docker Compose 미설치", "다중 컨테이너 랩 실행에 필요합니다.")
+        report("warn", "Docker Compose 미설치", "다중 컨테이너 랩 실행에 필요합니다. ('vhack setup-docker' 권장)")
 
     # 5. Node.js Check (Wargame audit / verify)
     try:
@@ -1206,6 +1216,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8013, "Lab 13 (eBPF)"),
         (8014, "Lab 14 (MalDoc)"),
         (8015, "Lab 15 (Web3)"),
+        (8016, "Lab 16 (Memory Forensics)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -1224,10 +1235,220 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         report("ok", f"현재 활성화된 랩/점유 포트 ({len(occupied_ports)}개)", occ_str)
 
     print(f"\n  진단 요약: {green(f'{checks_passed} 통과')}, {yellow(f'{checks_warn} 주의')}, {red(f'{checks_fail} 실패')}\n")
-    if checks_fail == 0 and checks_warn == 0:
+    if not docker_ok or not compose_ok:
+        print(dim("  💡 팁: 'python3 vhack.py setup-docker' 명령으로 Docker 자동 설치 및 WSL2 연동 설정을 진행할 수 있습니다.\n"))
+    elif checks_fail == 0 and checks_warn == 0:
         print(bold(green("  🎉 모든 시스템 및 실습 환경이 완벽하게 준비되었습니다!\n")))
     elif checks_fail == 0:
         print(bold(cyan("  💡 실습 환경 구성에 지장이 없으나, 일부 주의 사항을 확인하세요.\n")))
+
+
+# ── 명령어: setup-docker ──────────────────────────────────────────────────────
+def _is_wsl() -> bool:
+    if os.environ.get("WSL_DISTRO_NAME") or os.environ.get("WSL_INTEROP"):
+        return True
+    try:
+        with open("/proc/version", "r") as f:
+            v = f.read().lower()
+            return "microsoft" in v or "wsl" in v
+    except Exception:
+        return False
+
+
+def cmd_setup_docker(args: argparse.Namespace) -> None:
+    """Docker 및 Docker Compose 자동 설치 및 환경 진단 가이드"""
+    import platform
+    import shutil
+
+    print(bold(cyan("\n🐳 VibeHacking Docker & Docker Compose 설치 가이드 / 설정 도구\n")))
+
+    is_wsl = _is_wsl() or getattr(args, "wsl", False)
+    os_sys = platform.system()
+    distro_name = ""
+    distro_id = ""
+
+    if os_sys == "Linux":
+        try:
+            with open("/etc/os-release", "r") as f:
+                lines = f.readlines()
+            for line in lines:
+                if line.startswith("ID="):
+                    distro_id = line.strip().split("=")[1].strip('"').lower()
+                elif line.startswith("PRETTY_NAME="):
+                    distro_name = line.strip().split("=")[1].strip('"')
+        except Exception:
+            distro_name = "Linux"
+            distro_id = "linux"
+    elif os_sys == "Darwin":
+        distro_name = "macOS"
+        distro_id = "darwin"
+    elif os_sys == "Windows":
+        distro_name = "Windows"
+        distro_id = "windows"
+
+    # 현재 도커 및 컴포즈 감지
+    docker_bin = shutil.which("docker")
+    compose_bin = shutil.which("docker-compose")
+    docker_version = ""
+    compose_version = ""
+    daemon_running = False
+
+    if docker_bin:
+        try:
+            docker_version = subprocess.check_output([docker_bin, "--version"], text=True, stderr=subprocess.DEVNULL).strip()
+        except Exception:
+            pass
+        try:
+            res = subprocess.run([docker_bin, "info"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if res.returncode == 0:
+                daemon_running = True
+        except Exception:
+            pass
+
+    # compose v2 검사
+    if docker_bin:
+        try:
+            res = subprocess.check_output([docker_bin, "compose", "version"], text=True, stderr=subprocess.DEVNULL).strip()
+            compose_version = res
+        except Exception:
+            pass
+    if not compose_version and compose_bin:
+        try:
+            res = subprocess.check_output([compose_bin, "--version"], text=True, stderr=subprocess.DEVNULL).strip()
+            compose_version = res
+        except Exception:
+            pass
+
+    # 그룹 멤버십 검사 (Linux)
+    in_docker_group = False
+    if os_sys == "Linux":
+        try:
+            id_grps = subprocess.check_output(["id", "-Gn"], text=True).split()
+            if "docker" in id_grps:
+                in_docker_group = True
+        except Exception:
+            pass
+
+    print(bold("  [현재 환경 진단 결과]"))
+    print(f"  • 운영체제:     {bold(distro_name or os_sys)}" + (bold(yellow(" (WSL2 환경)")) if is_wsl else ""))
+    print(f"  • Docker CLI:   " + (green(docker_version) if docker_version else yellow("미설치 또는 미연동")))
+    print(f"  • Docker 데몬:  " + (green("정상 작동 중 (Active)") if daemon_running else red("정지 상태 또는 미연동")))
+    print(f"  • Compose:      " + (green(compose_version) if compose_version else yellow("미설치")))
+    if os_sys == "Linux":
+        print(f"  • 사용자 권한:  " + (green("docker 그룹 포함됨 (sudo 없이 사용 가능)") if in_docker_group else yellow("docker 그룹 미포함 (sudo 필요)")))
+    print()
+
+    # 이미 완벽하게 설정된 경우
+    if daemon_running and compose_version and (in_docker_group or os_sys != "Linux"):
+        print(bold(green("  ✓ Docker 및 Docker Compose가 이미 완벽하게 준비되어 있습니다!")))
+        print(dim("  랩을 실행하려면 다음 명령어를 사용하세요:"))
+        print(f"    {cyan('python3 vhack.py lab ls')}")
+        print(f"    {cyan('python3 vhack.py lab start 01')}\n")
+        return
+
+    # WSL2 전용 안내
+    if is_wsl:
+        print(bold(yellow("  💡 WSL2 사용자 권장 설정 안내:")))
+        print(dim("  ─────────────────────────────────────────────────────────────────"))
+        print(f"  {bold('옵션 1 (가장 권장): Windows Docker Desktop 연동')}")
+        print("  1. Windows 호스트에서 Docker Desktop 실행")
+        print("  2. Settings(설정 ⚙️) -> Resources -> WSL integration 이동")
+        print("  3. 'Enable integration with additional distros' 아래 현재 배포판 체크 활성화")
+        print("  4. 'Apply & restart' 클릭 후 현재 WSL2 터미널 재시작\n")
+
+        print(f"  {bold('옵션 2: WSL2 내부에 Native Docker CE 직접 설치')}")
+        print("  WSL2 내부에 리눅스용 Docker 엔진을 직접 설치하여 독립 실행할 수 있습니다.")
+        print(dim("  ─────────────────────────────────────────────────────────────────\n"))
+
+    # 플랫폼별 설치 명령어 준비
+    install_cmds: list[tuple[str, str]] = []
+    post_cmds: list[tuple[str, str]] = []
+
+    user_name = os.environ.get("USER", "") or "$USER"
+
+    if distro_id in ["ubuntu", "debian", "kali", "pop"]:
+        install_cmds = [
+            ("패키지 목록 갱신 및 필수 도구 설치", "sudo apt-get update && sudo apt-get install -y ca-certificates curl gnupg"),
+            ("공식 Docker 설치 스크립트 실행", "curl -fsSL https://get.docker.com | sudo sh"),
+        ]
+        post_cmds = [
+            ("현재 사용자를 docker 그룹에 추가", f"sudo usermod -aG docker {user_name}"),
+            ("Docker 데몬 시작 및 부팅 시 자동 시작", "sudo systemctl enable --now docker 2>/dev/null || sudo service docker start"),
+        ]
+    elif distro_id in ["fedora", "rhel", "centos", "rocky", "alma"]:
+        install_cmds = [
+            ("공식 Docker 설치 스크립트 실행", "curl -fsSL https://get.docker.com | sudo sh"),
+        ]
+        post_cmds = [
+            ("현재 사용자를 docker 그룹에 추가", f"sudo usermod -aG docker {user_name}"),
+            ("Docker 데몬 시작 및 부팅 시 자동 시작", "sudo systemctl enable --now docker"),
+        ]
+    elif distro_id in ["arch", "manjaro"]:
+        install_cmds = [
+            ("Arch 공식 패키지 매니저로 설치", "sudo pacman -Sy --noconfirm docker docker-compose"),
+        ]
+        post_cmds = [
+            ("현재 사용자를 docker 그룹에 추가", f"sudo usermod -aG docker {user_name}"),
+            ("Docker 데몬 시작 및 부팅 시 자동 시작", "sudo systemctl enable --now docker"),
+        ]
+    elif os_sys == "Darwin":
+        install_cmds = [
+            ("Homebrew를 통한 Docker Desktop 설치", "brew install --cask docker"),
+        ]
+        post_cmds = [
+            ("또는 경량 Colima 가상화 컨테이너 런타임 사용", "brew install colima docker docker-compose && colima start"),
+        ]
+    else:
+        install_cmds = [
+            ("공식 Docker 설치 스크립트 실행", "curl -fsSL https://get.docker.com | sudo sh"),
+        ]
+        post_cmds = [
+            ("현재 사용자를 docker 그룹에 추가", f"sudo usermod -aG docker {user_name}"),
+        ]
+
+    # 실행할 명령 표시
+    print(bold("  [자동 설치 및 설정 계획]"))
+    for desc, cmd in install_cmds + post_cmds:
+        print(f"  • {desc}:")
+        print(f"    {cyan(cmd)}")
+    print()
+
+    if getattr(args, "dry_run", False):
+        print(bold(cyan("  [--dry-run 모드] 실제 시스템 변경 없이 명령만 표시되었습니다.\n")))
+        return
+
+    # 대화형 프롬프트 또는 -y 자동 확인
+    auto_yes = getattr(args, "yes", False)
+    if not auto_yes:
+        try:
+            ans = input(bold("  위 명령어를 실행하여 Docker 설정을 진행하시겠습니까? [y/N]: ")).strip().lower()
+            if ans not in ["y", "yes"]:
+                print(yellow("\n  설치가 취소되었습니다. 위 명령어를 필요할 때 수동으로 실행하세요.\n"))
+                return
+        except (KeyboardInterrupt, EOFError):
+            print(yellow("\n  설치가 취소되었습니다.\n"))
+            return
+
+    print(bold(cyan("\n  🚀 Docker 설치 및 설정을 시작합니다...\n")))
+
+    for desc, cmd in install_cmds:
+        print(bold(f"  ▶ {desc}..."))
+        ret = subprocess.run(cmd, shell=True)
+        if ret.returncode != 0:
+            print(red(f"  ✗ 단계 실패: {cmd}"))
+            print(yellow("  수동으로 명령어를 확인하고 다시 시도하세요.\n"))
+            return
+
+    for desc, cmd in post_cmds:
+        print(bold(f"  ▶ {desc}..."))
+        subprocess.run(cmd, shell=True)
+
+    print(bold(green("\n  ✓ Docker 설치 작업이 완료되었습니다!")))
+    print(bold(yellow("\n  [중요] 권한 적용을 위한 후속 조치:")))
+    print("  1. 새로 추가된 docker 그룹 권한을 즉시 적용하려면 다음 명령을 실행하세요:")
+    print(f"     {bold(cyan('newgrp docker'))}")
+    print("  2. 또는 현재 터미널 창을 닫고 새로 열어주세요.")
+    print(f"  3. 이후 {cyan('python3 vhack.py doctor')} 로 환경을 재점검하세요.\n")
 
 
 # ── 명령어: wargame ───────────────────────────────────────────────────────────
@@ -1271,7 +1492,44 @@ def cmd_wargame(args: argparse.Namespace) -> None:
         print(red(f"\n✗ 서버 실행 실패 (포트 {port}가 이미 사용 중인지 확인하세요): {e}\n"))
 
 
+# ── 명령어: docs ─────────────────────────────────────────────────────────────
+def cmd_docs(args: argparse.Namespace) -> None:
+    """75개 챕터 종합 사이버보안 웹 리더 포털 로컬 서버 실행"""
+    port = args.port
+    url = f"http://localhost:{port}"
+    print(bold(cyan("\n📖 VibeHacking 75개 챕터 웹 리더 & 통합 포털")))
+    print(dim(f"  루트 디렉토리: {REPO_ROOT}"))
+    print(f"  접속 주소: {bold(green(url))}")
+    print(dim("  종료하려면 Ctrl+C를 누르세요.\n"))
+
+    if not args.no_browser:
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception:
+            pass
+
+    import http.server
+    import socketserver
+    class DocsHTTPHandler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *a, **kw):
+            super().__init__(*a, directory=str(REPO_ROOT), **kw)
+        def log_message(self, format, *a):
+            pass
+
+    socketserver.TCPServer.allow_reuse_address = True
+    try:
+        with socketserver.TCPServer(("", port), DocsHTTPHandler) as httpd:
+            print(green(f"✓ 웹 리더 포털 서버 실행 중 (포트 {port})"))
+            httpd.serve_forever()
+    except KeyboardInterrupt:
+        print(yellow("\n[-] 웹 리더 포털 서버를 정상적으로 종료했습니다.\n"))
+    except OSError as e:
+        print(red(f"\n✗ 서버 실행 실패 (포트 {port}가 이미 사용 중인지 확인하세요): {e}\n"))
+
+
 # ── 메인 파서 ─────────────────────────────────────────────────────────────────
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="vhack",
@@ -1288,8 +1546,8 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py lab stop 01        웹 해킹 랩 종료
           python3 vhack.py lab stop --all     모든 랩 종료
           python3 vhack.py lab status         실행 중인 컨테이너 및 대시보드
-          python3 vhack.py lab test 15        Lab 15 무결성 테스트
-          python3 vhack.py lab test --all     전체 15개 랩 테스트 일괄 실행
+          python3 vhack.py lab test 16        Lab 16 무결성 테스트
+          python3 vhack.py lab test --all     전체 16개 랩 테스트 일괄 실행
           python3 vhack.py lab logs 01        랩 로그 보기
           python3 vhack.py search "Kerberos"  전체 문서 검색
           python3 vhack.py info 54            섹션 상세 정보
@@ -1298,7 +1556,9 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py alias status       설치 현황 확인
           python3 vhack.py doctor             자가 진단 및 포트 충돌 점검
           python3 vhack.py wargame            브라우저 워게임 로컬 서버 실행
+          python3 vhack.py docs               75개 챕터 웹 리더 포털 로컬 서버 실행
           python3 vhack.py update             git pull
+
         """),
     )
     sub = p.add_subparsers(dest="command", metavar="<명령어>")
@@ -1356,6 +1616,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_wg.add_argument("--port", type=int, default=8000, help="웹 서버 포트 (기본값: 8000)")
     p_wg.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
 
+    # docs
+    p_docs = sub.add_parser("docs", help="75개 챕터 웹 리더 & 통합 포털 로컬 서버 실행")
+    p_docs.add_argument("--port", type=int, default=3000, help="웹 서버 포트 (기본값: 3000)")
+    p_docs.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
+
+    # setup-docker
+    p_docker = sub.add_parser("setup-docker", help="Docker 및 Docker Compose 환경 자동 설치/설정 가이드")
+    p_docker.add_argument("--dry-run", action="store_true", help="실제 실행 없이 실행될 명령어만 출력")
+    p_docker.add_argument("-y", "--yes", action="store_true", help="확인 프롬프트 없이 자동 설치 진행")
+    p_docker.add_argument("--wsl", action="store_true", help="WSL2 환경 전용 가이드 강제 출력")
+
     # update
     sub.add_parser("update", help="git pull로 최신 버전 업데이트")
 
@@ -1372,16 +1643,19 @@ def main() -> None:
         return
 
     dispatch = {
-        "list":    cmd_list,
-        "study":   cmd_study,
-        "lab":     cmd_lab,
-        "search":  cmd_search,
-        "info":    cmd_info,
-        "alias":   cmd_alias,
-        "doctor":  cmd_doctor,
-        "wargame": cmd_wargame,
-        "update":  cmd_update,
+        "list":         cmd_list,
+        "study":        cmd_study,
+        "lab":          cmd_lab,
+        "search":       cmd_search,
+        "info":         cmd_info,
+        "alias":        cmd_alias,
+        "doctor":       cmd_doctor,
+        "setup-docker": cmd_setup_docker,
+        "wargame":      cmd_wargame,
+        "docs":         cmd_docs,
+        "update":       cmd_update,
     }
+
 
     handler = dispatch.get(args.command)
     if handler:

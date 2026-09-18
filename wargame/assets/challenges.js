@@ -290,6 +290,15 @@ const TRACKS = [
     "desc_ko": "OLE 복합 바이너리·VBA 난독화 해제·PDF FlateDecode 스트림 분해·수식 에디터 RCE·MSHTML 외부 OLE 차단.",
     "desc_en": "OLE compound binaries, VBA deobfuscation, PDF FlateDecode stream decomposition, Equation Editor RCE, MSHTML defense."
   }
+,
+  {
+      "id": "volatility",
+      "icon": "🧠",
+      "ko": "메모리 포렌식·Volatility",
+      "en": "Memory Forensics & Volatility",
+      "desc_ko": "물리 메모리 덤프·EPROCESS DKOM 은닉 탐지·VAD RWX 쉘코드 주입·C2 비컨 소켓 복원·LSASS NTLM 덤프와 PPL 방어.",
+      "desc_en": "Physical RAM dumps, EPROCESS DKOM unlinking, VAD RWX shellcode injection, C2 socket artifacts, LSASS dump & PPL hardening."
+  }
 ];
 
 const CHALLENGES = [
@@ -29733,5 +29742,986 @@ const CHALLENGES = [
     ]
   },
   "hash": "128ddd7d67e9652599b13838fc584d76a7fc0a8e1911f8acf86373db564b97f3"
+}
+,
+{
+  "id": "t0_volprofile",
+  "tier": 0,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 50,
+  "ci": true,
+  "fmt": "약어 / acronym (3글자 / 3 chars)",
+  "title": {
+    "ko": "Volatility 3 중간 심볼 규격 파일 포맷",
+    "en": "Volatility 3 Intermediate Symbol Format"
+  },
+  "prompt": {
+    "ko": "Volatility 3에서 이전 버전의 OS 프로파일 대신 커널 데이터 구조체 및 오프셋 메타데이터를 저장하기 위해 도입한 JSON 기반 중간 심볼 규격의 3글자 영문 약어를 구하세요.",
+    "en": "Enter the 3-letter acronym of the Intermediate Symbol Format used by Volatility 3 to represent kernel data structures."
+  },
+  "hints": {
+    "ko": [
+      "Intermediate Symbol Format의 영문 머리글자 약어입니다.",
+      "ISF 규격의 JSON 파일로 제공됩니다."
+    ],
+    "en": [
+      "Acronym of Intermediate Symbol Format.",
+      "Standard three-letter abbreviation."
+    ]
+  },
+  "hash": "f2b2ca559ad003bb2251a3780ba30623a6697858c2f1f0a1c6e118ba82b6b69a"
+},
+{
+  "id": "t0_vollime",
+  "tier": 0,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 50,
+  "ci": true,
+  "fmt": "도구 이름 / tool name (4글자 / 4 chars)",
+  "title": {
+    "ko": "리눅스 커널 메모리 획득 도구",
+    "en": "Linux Kernel Memory Acquisition Tool"
+  },
+  "prompt": {
+    "ko": "리눅스 및 안드로이드 시스템에서 활성 물리 메모리(RAM)를 로드 가능한 커널 모듈(LKM) 형태로 획득하는 대표적인 오픈소스 도구 이름을 구하세요.",
+    "en": "Enter the 4-letter name of the popular loadable kernel module tool used to acquire live physical RAM on Linux and Android."
+  },
+  "hints": {
+    "ko": [
+      "Linux Memory Extractor의 약칭입니다.",
+      "상큼한 초록색 감귤류 과일과 철자가 같습니다."
+    ],
+    "en": [
+      "Short for Linux Memory Extractor.",
+      "Spelled identically to the green citrus fruit."
+    ]
+  },
+  "hash": "efbaa8cbfffc1af3afcf8082a3732e4d5111104ae3f6ef8b2545975e50497505"
+},
+{
+  "id": "t0_voldumpit",
+  "tier": 0,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 50,
+  "ci": true,
+  "fmt": "도구 이름 / tool name (6글자 / 6 chars)",
+  "title": {
+    "ko": "윈도우 경량 물리 메모리 덤퍼",
+    "en": "Lightweight Windows Physical RAM Dumper"
+  },
+  "prompt": {
+    "ko": "윈도우 환경에서 설치 없이 단일 실행 파일로 더블 클릭 또는 CLI 인자로 전체 물리 RAM을 .raw 파일로 즉시 덤프해 주는 대표적인 포렌식 유틸리티 이름을 구하세요.",
+    "en": "Enter the 6-letter name of the standalone Windows forensic utility that dumps physical RAM to a raw image file."
+  },
+  "hints": {
+    "ko": [
+      "MoonSols / Comae 사에서 개발한 대표적인 도구입니다.",
+      "'덤프하라'는 의미의 영어 단어 조합입니다."
+    ],
+    "en": [
+      "Created by MoonSols / Comae Technologies.",
+      "Compound verb phrase meaning 'dump it'."
+    ]
+  },
+  "hash": "113b5cab2eca5d6c73a9fda3f0ac6d6db29c015438bc7cdcfb679decb301580a"
+},
+{
+  "id": "t0_volrawext",
+  "tier": 0,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 50,
+  "ci": true,
+  "fmt": "확장자 / extension (4글자 / 4 chars)",
+  "title": {
+    "ko": "가상 머신 메모리 덤프 확장자",
+    "en": "Virtual Machine Memory Dump Extension"
+  },
+  "prompt": {
+    "ko": "하이퍼바이저(VMware 등) 환경에서 실행 중인 게스트 머신의 물리 메모리 전체를 디스크에 보존할 때 사용하는 대표적인 4글자 메모리 파일 확장자를 점(.) 없이 구하세요.",
+    "en": "Enter the 4-letter extension (without dot) of memory dump files saved by hypervisors such as VMware."
+  },
+  "hints": {
+    "ko": [
+      "가상 머신(Virtual Machine)과 메모리(Memory)의 합성 약어입니다.",
+      ".____ 파일로 디스크에 저장됩니다."
+    ],
+    "en": [
+      "Compound acronym of virtual machine and memory.",
+      "Four letters without dot."
+    ]
+  },
+  "hash": "78e2178412ee6e087e3ea117107ff99c455ee8464f326ea0795200dc26f8ba3f"
+},
+{
+  "id": "t0_volhiberfil",
+  "tier": 0,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 50,
+  "ci": true,
+  "fmt": "파일 이름 / file name (12글자 / 12 chars)",
+  "title": {
+    "ko": "윈도우 최대 절전 모드 메모리 저장 파일",
+    "en": "Windows Hibernation Memory File"
+  },
+  "prompt": {
+    "ko": "윈도우 운영체제가 최대 절전 모드(Hibernation)로 진입할 때 물리 메모리의 활성 상태를 압축하여 루트 드라이브에 저장하는 시스템 파일 이름을 확장자 포함 12글자로 구하세요.",
+    "en": "Enter the 12-character system filename (with extension) that stores compressed RAM contents during Windows hibernation."
+  },
+  "hints": {
+    "ko": [
+      "C:\\ 루트 디렉터리에 숨김 속성으로 존재합니다.",
+      "확장자는 .sys 입니다."
+    ],
+    "en": [
+      "Hidden in the system drive root (C:\\).",
+      "Extension is .sys."
+    ]
+  },
+  "hash": "4640de4a6f04825bccf9d8dc7f818cad287c3d2aeb6cd608f39466ccdd2e36fa"
+},
+{
+  "id": "t0_volpagefile",
+  "tier": 0,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 50,
+  "ci": true,
+  "fmt": "파일 이름 / file name (12글자 / 12 chars)",
+  "title": {
+    "ko": "가상 메모리 페이징 스왑 파일",
+    "en": "Virtual Memory Paging File"
+  },
+  "prompt": {
+    "ko": "운영체제에서 물리 메모리가 부족할 때 가상 메모리 페이지를 디스크로 스왑 아웃하여 임시 보관하는 윈도우 페이징 파일 이름을 확장자 포함 12글자로 구하세요.",
+    "en": "Enter the 12-character Windows paging file name (with extension) used to swap virtual memory pages to disk."
+  },
+  "hints": {
+    "ko": [
+      "메모리 포렌식 시 RAM 덤프와 함께 분석되는 주요 스왑 아티팩트입니다.",
+      "확장자는 .sys 입니다."
+    ],
+    "en": [
+      "Major swap artifact analyzed alongside physical memory.",
+      "Ends with .sys."
+    ]
+  },
+  "hash": "8178821615ce2be4d1012ea9547be66acd32cfcc8faedd7469ba2ae1d231551a"
+},
+{
+  "id": "t0_volpluginflag",
+  "tier": 0,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 50,
+  "ci": true,
+  "fmt": "한 단어 / one word (1글자 / 1 chars)",
+  "title": {
+    "ko": "메모리 덤프 파일 지정 옵션 문자",
+    "en": "Memory File Option Character"
+  },
+  "prompt": {
+    "ko": "Volatility 3 CLI 실행 시 분석 대상 메모리 덤프 파일 경로를 지정하기 위해 사용하는 단축 옵션 알파벳 1글자(하이픈 없이)를 구하세요.",
+    "en": "Enter the single-letter CLI option character (without hyphen) used in Volatility to specify the target memory dump file."
+  },
+  "hints": {
+    "ko": [
+      "파일(File)의 첫 글자를 딴 단일 소문자 알파벳입니다.",
+      "예: vol -_ memory.raw windows.pslist"
+    ],
+    "en": [
+      "Single lowercase letter named after 'file'.",
+      "Used as the short flag -f."
+    ]
+  },
+  "hash": "252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111"
+},
+{
+  "id": "t1_volpslist",
+  "tier": 1,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 80,
+  "ci": true,
+  "fmt": "명령어 / command (6글자 / 6 chars)",
+  "title": {
+    "ko": "활성 프로세스 연결 리스트 순회 플러그인",
+    "en": "Active Process Linked List Plugin"
+  },
+  "prompt": {
+    "ko": "윈도우 EPROCESS 구조체의 ActiveProcessLinks 이중 연결 리스트를 순회하여 현재 실행 중인 프로세스 목록을 출력하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 6-letter Volatility plugin command that walks the ActiveProcessLinks doubly linked list of EPROCESS blocks."
+  },
+  "hints": {
+    "ko": [
+      "windows.pslist 플러그인의 핵심 명령어입니다.",
+      "프로세스(ps)와 목록(list)의 합성어입니다."
+    ],
+    "en": [
+      "Core command of the windows.pslist plugin.",
+      "Compound of ps and list."
+    ]
+  },
+  "hash": "6b6d0e1cb2357e7f281c219204e6591840030ba91bc6a35525c2657bd585af34"
+},
+{
+  "id": "t1_volpstree",
+  "tier": 1,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 80,
+  "ci": true,
+  "fmt": "명령어 / command (6글자 / 6 chars)",
+  "title": {
+    "ko": "부모-자식 프로세스 계층 트리 플러그인",
+    "en": "Parent-Child Process Tree Plugin"
+  },
+  "prompt": {
+    "ko": "PPID(부모 PID)와 PID 간의 계층 관계를 트리 구조로 시각화하여 비정상 자식 프로세스 생성을 식별하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 6-letter Volatility plugin command that renders process hierarchies based on PPID and PID relationships."
+  },
+  "hints": {
+    "ko": [
+      "프로세스(ps)와 계층 구조 트리(tree)의 결합어입니다.",
+      "트리 구조 계층 렌더링 도구입니다."
+    ],
+    "en": [
+      "Compound of process prefix and hierarchical tree.",
+      "Visualizes parent-child relationship."
+    ]
+  },
+  "hash": "62233cc03b4eb3079c372e75ac7ec196c74c7f334af74ca6fbecbad9875752a8"
+},
+{
+  "id": "t1_voldlllist",
+  "tier": 1,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 80,
+  "ci": true,
+  "fmt": "명령어 / command (7글자 / 7 chars)",
+  "title": {
+    "ko": "로드된 동적 링크 라이브러리 열거 플러그인",
+    "en": "Loaded Dynamic Link Library Plugin"
+  },
+  "prompt": {
+    "ko": "특정 프로세스가 메모리 공간에 로드한 모든 DLL의 베이스 주소, 크기, 로드 경로를 열거하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 7-letter Volatility plugin command that enumerates loaded DLL modules and their base addresses."
+  },
+  "hints": {
+    "ko": [
+      "PEB의 InLoadOrderModuleList를 순회합니다.",
+      "dll과 list의 합성어입니다."
+    ],
+    "en": [
+      "Walks the PEB InLoadOrderModuleList.",
+      "Compound of dll and list."
+    ]
+  },
+  "hash": "4328a5a594ec1848fcfa52124f4bea9ca45a2174a8bba1302007521323f79bcc"
+},
+{
+  "id": "t1_volhandles",
+  "tier": 1,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 80,
+  "ci": true,
+  "fmt": "값 그대로 / literal (15글자 / 15 chars, . 포함 / include .)",
+  "title": {
+    "ko": "프로세스 커널 객체 핸들 열거 플러그인",
+    "en": "Process Kernel Object Handles Plugin"
+  },
+  "prompt": {
+    "ko": "프로세스가 열어둔 파일 핸들, 레지스트리 키 핸들, 뮤텍스, 세마포어 등 커널 객체 핸들 테이블을 열거하는 Volatility 3 플러그인 풀네임(windows.____)을 구하세요.",
+    "en": "Enter the full Volatility 3 plugin name (windows.____) that lists open kernel object handles (files, registry keys, mutexes)."
+  },
+  "hints": {
+    "ko": [
+      "windows 접두사와 점(.), 그리고 핸들 복수형이 결합된 형태입니다.",
+      "windows.pslist 플러그인과 동일한 네이밍 규칙입니다."
+    ],
+    "en": [
+      "Starts with windows. followed by the plural form of handle.",
+      "Follows the standard Volatility 3 plugin naming scheme."
+    ]
+  },
+  "hash": "55ed64ff3503551f38e53a38c3d735cc663c0e8f05e6c86669d7506646e67f0d"
+},
+{
+  "id": "t1_volcmdline",
+  "tier": 1,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 80,
+  "ci": true,
+  "fmt": "명령어 / command (7글자 / 7 chars)",
+  "title": {
+    "ko": "프로세스 명령줄 인자 복원 플러그인",
+    "en": "Process Command-Line Arguments Plugin"
+  },
+  "prompt": {
+    "ko": "PEB 내부 ProcessParameters 구조체를 파싱하여 프로세스 실행 시 전달된 전체 명령줄 문자열을 출력하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 7-letter Volatility plugin command that parses process command-line launch arguments from the PEB."
+  },
+  "hints": {
+    "ko": [
+      "명령줄(Command Line)의 줄임말입니다.",
+      "악성 파워셸 스크립트나 인젝션 인자를 볼 때 필수적입니다."
+    ],
+    "en": [
+      "Short for command line.",
+      "Vital for revealing encoded PowerShell arguments."
+    ]
+  },
+  "hash": "6256d62f9c97e24aeaa430ba5a68d81dd339678a5e2627d86e6202a989ec0e0d"
+},
+{
+  "id": "t1_volenvars",
+  "tier": 1,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 80,
+  "ci": true,
+  "fmt": "명령어 / command (6글자 / 6 chars)",
+  "title": {
+    "ko": "프로세스 환경 변수 추출 플러그인",
+    "en": "Process Environment Variables Plugin"
+  },
+  "prompt": {
+    "ko": "각 프로세스의 메모리 세션에 설정된 환경 변수(Environment Variables) 블록을 덤프하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 6-letter Volatility plugin command that dumps environment variables set for each process."
+  },
+  "hints": {
+    "ko": [
+      "환경 변수(Environment Variables)의 약칭 형태입니다.",
+      "windows.envars 플러그인으로 호출됩니다."
+    ],
+    "en": [
+      "Shortened representation of environment variables.",
+      "Called as windows.envars."
+    ]
+  },
+  "hash": "aeea283b44ffa6bc1cf916ddbd6ffce9a869a8693f31285702e5b17e6cbfc39f"
+},
+{
+  "id": "t1_volmodules",
+  "tier": 1,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 80,
+  "ci": true,
+  "fmt": "명령어 / command (7글자 / 7 chars)",
+  "title": {
+    "ko": "커널 드라이버 목록 플러그인",
+    "en": "Kernel Driver List Plugin"
+  },
+  "prompt": {
+    "ko": "커널 주소 공간에 로드된 모든 시스템 디바이스 드라이버(.sys)와 구성 요소를 열거하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 7-letter Volatility plugin command that lists loaded kernel-space drivers and system components."
+  },
+  "hints": {
+    "ko": [
+      "영문 단어 module 뒤에 복수형 접미사를 붙인 형태입니다.",
+      "PsLoadedModuleList 리스트를 순회합니다."
+    ],
+    "en": [
+      "Plural form of kernel components.",
+      "Traverses PsLoadedModuleList in kernel space."
+    ]
+  },
+  "hash": "fbc6c1d4c3b6db8fb54278582eb1d965ed644e97509e130346ae130da5406cb3"
+},
+{
+  "id": "t2_volpsscan",
+  "tier": 2,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 110,
+  "ci": true,
+  "fmt": "명령어 / command (6글자 / 6 chars)",
+  "title": {
+    "ko": "커널 풀 메모리 스캔 프로세스 탐지 플러그인",
+    "en": "Kernel Pool Process Scanner Plugin"
+  },
+  "prompt": {
+    "ko": "링크드 리스트에서 언링크(Unlink)되어 은닉되었거나 이미 종료된 프로세스의 잔재를 커널 메모리 풀 스캔으로 찾아내는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 6-letter Volatility plugin command that scans kernel memory pool tags for unlinked or terminated processes."
+  },
+  "hints": {
+    "ko": [
+      "pslist와 대비되는 풀 태그 스캐너입니다.",
+      "ps와 scan의 합성어입니다."
+    ],
+    "en": [
+      "Pool tag scanner counterpart to pslist.",
+      "Compound of ps and scan."
+    ]
+  },
+  "hash": "624b2694ea91b7aebc2057f74828e2a1a1ab3e188a10970b0bd533d4dfb64b51"
+},
+{
+  "id": "t2_voldkom",
+  "tier": 2,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 110,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "커널 객체 직접 조작 은닉 기법",
+    "en": "Direct Kernel Object Manipulation"
+  },
+  "prompt": {
+    "ko": "커널 드라이버를 통해 ActiveProcessLinks의 Flink와 Blink 포인터를 직접 수정하여 루트킷 프로세스를 은닉하는 공격 기법의 영문 4글자 약어를 구하세요.",
+    "en": "Enter the 4-letter acronym for the technique where kernel object pointers (ActiveProcessLinks) are modified to hide processes."
+  },
+  "hints": {
+    "ko": [
+      "Direct Kernel Object Manipulation의 머리글자입니다.",
+      "커널 메모리 구조체를 직접 덮어쓰는 은닉 기법입니다."
+    ],
+    "en": [
+      "Initialism for Direct Kernel Object Manipulation.",
+      "Classic rootkit process unlinking method."
+    ]
+  },
+  "hash": "abe09318745ef92cdef5e5133ba4c1ad033c84b72df2b7a9629e9923fd52104d"
+},
+{
+  "id": "t2_volpooltag",
+  "tier": 2,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 110,
+  "ci": false,
+  "fmt": "시그니처 / signature (4글자 / 4 chars)",
+  "title": {
+    "ko": "EPROCESS 커널 풀 메모리 태그",
+    "en": "EPROCESS Kernel Pool Allocation Tag"
+  },
+  "prompt": {
+    "ko": "윈도우 메모리 풀 스캐너가 물리 메모리 전역에서 커널 EPROCESS 구조체 블록을 식별하기 위해 탐색하는 4바이트 대소문자 구분 풀 태그 시그니처를 구하세요.",
+    "en": "Enter the exact case-sensitive 4-character pool tag signature used to identify EPROCESS blocks in memory pool scans."
+  },
+  "hints": {
+    "ko": [
+      "Process의 앞글자 4자이며 첫 글자만 대문자입니다.",
+      "대소문자 구분에 주의하세요 (P___)."
+    ],
+    "en": [
+      "First four letters of Process, capitalized first letter.",
+      "Case-sensitive format: P___."
+    ]
+  },
+  "hash": "7325e29a3e86163e178566fcd281784d521ee84c43cc630520a4ed463f2b1b99"
+},
+{
+  "id": "t2_volnetscan",
+  "tier": 2,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 110,
+  "ci": true,
+  "fmt": "명령어 / command (7글자 / 7 chars)",
+  "title": {
+    "ko": "네트워크 엔드포인트 및 C2 소켓 스캔 플러그인",
+    "en": "Network Endpoint and Socket Scanner Plugin"
+  },
+  "prompt": {
+    "ko": "메모리 덤프에서 TCPv4/v6, UDP 엔드포인트 객체를 스캔하여 비정상 외부 C2 서버 IP와 연결된 PID를 복원하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 7-letter Volatility plugin command that scans physical memory for network endpoints and active socket connections."
+  },
+  "hints": {
+    "ko": [
+      "windows.netscan 플러그인으로 호출됩니다.",
+      "net과 scan의 합성어입니다."
+    ],
+    "en": [
+      "Executed as windows.netscan.",
+      "Compound of net and scan."
+    ]
+  },
+  "hash": "5f994ff1335ae3003ab0e3590f54b8d5ccc2833a93a6394e593d21d0ea425399"
+},
+{
+  "id": "t2_volfilescan",
+  "tier": 2,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 110,
+  "ci": true,
+  "fmt": "명령어 / command (8글자 / 8 chars)",
+  "title": {
+    "ko": "파일 객체 풀 스캔 플러그인",
+    "en": "File Object Pool Scanner Plugin"
+  },
+  "prompt": {
+    "ko": "물리 메모리 풀에서 FILE_OBJECT 포인터를 검색하여 시스템에서 열렸던 파일 경로 및 물리 오프셋을 열거하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 8-letter Volatility plugin command that scans memory pools for FILE_OBJECT pointers."
+  },
+  "hints": {
+    "ko": [
+      "파일(file)과 스캔(scan)의 합성어입니다.",
+      "디스크 파일 덤프 시 필요한 물리 오프셋을 제공합니다."
+    ],
+    "en": [
+      "Compound of file and scan.",
+      "Provides physical memory offsets to dump files."
+    ]
+  },
+  "hash": "04e372a2329d9153d38345bdc28fd0205a1771cdc8c280c03d6820824228a412"
+},
+{
+  "id": "t2_volmutants",
+  "tier": 2,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 110,
+  "ci": true,
+  "fmt": "명령어 / command (7글자 / 7 chars)",
+  "title": {
+    "ko": "뮤텍스 객체 스캔 플러그인",
+    "en": "Mutex and Mutant Object Scanner Plugin"
+  },
+  "prompt": {
+    "ko": "악성코드가 중복 실행을 방지하기 위해 생성하는 고유 뮤텍스(KMUTANT) 명칭을 메모리 풀에서 탐색하는 Volatility 3 플러그인 명령어를 구하세요.",
+    "en": "Enter the 7-letter Volatility 3 plugin command used to scan for mutant/mutex objects in memory."
+  },
+  "hints": {
+    "ko": [
+      "windows.mutants 플러그인입니다.",
+      "뮤턴트(mutant)의 복수형입니다."
+    ],
+    "en": [
+      "Executed as windows.mutants.",
+      "Plural form of mutant."
+    ]
+  },
+  "hash": "d67d932bade829f63f787bc31aba9e94d109b247c63db6c7acd219e16cba1e62"
+},
+{
+  "id": "t2_volthrdscan",
+  "tier": 2,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 110,
+  "ci": true,
+  "fmt": "명령어 / command (8글자 / 8 chars)",
+  "title": {
+    "ko": "커널 스레드 객체 스캔 플러그인",
+    "en": "Kernel Thread Object Scanner Plugin"
+  },
+  "prompt": {
+    "ko": "프로세스 구조체가 손상되었을 때 개별 커널 스레드(ETHREAD) 객체를 직접 스캔하여 쉘코드 실행 스레드를 역추적하는 플러그인 명령어를 구하세요.",
+    "en": "Enter the 8-letter Volatility plugin command that scans for ETHREAD objects to trace execution threads."
+  },
+  "hints": {
+    "ko": [
+      "스레드(thread)의 축약형(thrd)과 scan의 합성어입니다.",
+      "windows.thrdscan 으로 실행됩니다."
+    ],
+    "en": [
+      "Compound of thrd and scan.",
+      "Executed as windows.thrdscan."
+    ]
+  },
+  "hash": "364c47b99ad147a18af32c31771ced28da2e3af2c298db5176b9403b7cea8883"
+},
+{
+  "id": "t3_volmalfind",
+  "tier": 3,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 140,
+  "ci": true,
+  "fmt": "명령어 / command (7글자 / 7 chars)",
+  "title": {
+    "ko": "VAD RWX 은닉 코드 인젝션 탐지 플러그인",
+    "en": "VAD RWX Hidden Code Injection Scanner"
+  },
+  "prompt": {
+    "ko": "프로세스 가상 메모리(VAD) 중 실행 및 쓰기(PAGE_EXECUTE_READWRITE) 권한을 동시에 가지며 파일 매핑이 없는 주입된 쉘코드를 탐지하는 핵심 플러그인 명령어를 구하세요.",
+    "en": "Enter the 7-letter Volatility plugin command that detects injected shellcode in unmapped PAGE_EXECUTE_READWRITE VAD regions."
+  },
+  "hints": {
+    "ko": [
+      "악성코드(mal)를 찾는(find) 플러그인입니다.",
+      "PE 헤더 시그니처와 디스어셈블리 코드를 함께 덤프합니다."
+    ],
+    "en": [
+      "Portmanteau of malware and find.",
+      "Dumps disassembled instructions and hex views of suspicious VADs."
+    ]
+  },
+  "hash": "b7f6589956eb0c14261f63c80a364c88a34e2dd36969a044525b645f70ee32b8"
+},
+{
+  "id": "t3_volvads",
+  "tier": 3,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 140,
+  "ci": false,
+  "fmt": "시그니처 / signature (4글자 / 4 chars)",
+  "title": {
+    "ko": "쇼트 VAD 노드 풀 태그 시그니처",
+    "en": "Short VAD Node Pool Tag Signature"
+  },
+  "prompt": {
+    "ko": "윈도우 x64 커널에서 짧은 형태의 가상 주소 디스크립터(MMVAD_SHORT) 노드를 할당할 때 풀 메모리 헤더에 남기는 4글자 대소문자 태그 시그니처를 구하세요.",
+    "en": "Enter the exact case-sensitive 4-character pool tag signature used for MMVAD_SHORT node allocations."
+  },
+  "hints": {
+    "ko": [
+      "Vad로 시작하며 Short의 S가 붙습니다.",
+      "대소문자 구분에 유의하세요 (VadS)."
+    ],
+    "en": [
+      "Starts with Vad, followed by capital S.",
+      "Case-sensitive format: VadS."
+    ]
+  },
+  "hash": "5ba8df87e71701266dbd9c7855101e44d20b4b188290bf19d55fd2c6090712e1"
+},
+{
+  "id": "t3_volhollowing",
+  "tier": 3,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 140,
+  "ci": true,
+  "fmt": "한 단어 / one word (9글자 / 9 chars)",
+  "title": {
+    "ko": "프로세스 할로잉 주입 기법",
+    "en": "Process Replacement Injection Technique"
+  },
+  "prompt": {
+    "ko": "정상 프로세스를 일시 중단 상태로 생성한 후 원본 섹션을 언매핑하고 악성 바이너리를 채워 넣는 인젝션 기법(Process ____)의 빈칸 영문 단어를 구하세요.",
+    "en": "Enter the 9-letter English word filling the blank in 'Process ____', where a benign process's memory is unmapped and replaced with malicious code."
+  },
+  "hints": {
+    "ko": [
+      "속을 텅 비워낸다는 뜻의 단어입니다.",
+      "-ing으로 끝나는 9글자 단어입니다."
+    ],
+    "en": [
+      "Meaning to scoop out or empty the inside.",
+      "Ends in -ing (9 letters)."
+    ]
+  },
+  "hash": "34e36214d1921828dd0bb0ed46fdf64a14d0d33aa3757aee9e40acfe9df5711f"
+},
+{
+  "id": "t3_volapihooks",
+  "tier": 3,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 140,
+  "ci": true,
+  "fmt": "명령어 / command (8글자 / 8 chars)",
+  "title": {
+    "ko": "인라인 및 IAT API 후킹 탐지 플러그인",
+    "en": "Inline and IAT API Hook Detector"
+  },
+  "prompt": {
+    "ko": "메모리에 로드된 DLL의 함수 프롤로그가 JMP 또는 CALL 명령어로 변조된 인라인 후킹을 찾아내는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 8-letter Volatility plugin command that detects inline modifications and JMP patches in loaded DLL functions."
+  },
+  "hints": {
+    "ko": [
+      "API와 hooks의 합성어입니다.",
+      "루트킷의 시스템 함수 가로채기 탐지에 사용됩니다."
+    ],
+    "en": [
+      "Compound of api and hooks.",
+      "Used to identify intercepted system APIs."
+    ]
+  },
+  "hash": "275323b600f4a25dacbf92284d9291ec3519509254b01b605fc5ea22848bbfd5"
+},
+{
+  "id": "t3_volprocdump",
+  "tier": 3,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 140,
+  "ci": true,
+  "fmt": "명령어 / command (8글자 / 8 chars)",
+  "title": {
+    "ko": "프로세스 가상 메모리 PE 파일 복원 덤프",
+    "en": "Process Executable Reconstruction Dump"
+  },
+  "prompt": {
+    "ko": "분석 대상 프로세스의 메모리 영역에서 실행 가능한 PE 바이너리를 디스크 파일(.exe) 형태로 복원 추출하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 8-letter Volatility plugin command that reconstructs an executable PE file from process memory onto disk."
+  },
+  "hints": {
+    "ko": [
+      "proc과 dump의 합성어입니다.",
+      "패킹된 악성코드가 메모리에서 언팩된 후 덤프할 때 유용합니다."
+    ],
+    "en": [
+      "Compound of proc and dump.",
+      "Essential for capturing unpacked payloads in memory."
+    ]
+  },
+  "hash": "6784a8ff96a5bf2516f3758404af647c43b2b25d8f17dd2454cd27893ce56699"
+},
+{
+  "id": "t3_volmemdump",
+  "tier": 3,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 140,
+  "ci": true,
+  "fmt": "명령어 / command (7글자 / 7 chars)",
+  "title": {
+    "ko": "프로세스 전체 주소 공간 덤프 플러그인",
+    "en": "Entire Process Address Space Dump Plugin"
+  },
+  "prompt": {
+    "ko": "특정 프로세스가 사용하는 힙, 스택, VAD 영역을 포함한 전체 가상 메모리 공간을 단일 .dmp 파일로 추출하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 7-letter Volatility plugin command that extracts a process's entire virtual memory space (heap, stack, pages) into a dump."
+  },
+  "hints": {
+    "ko": [
+      "memory dump의 축약어입니다.",
+      "mem과 dump의 합성어입니다."
+    ],
+    "en": [
+      "Short for memory dump.",
+      "Compound of mem and dump."
+    ]
+  },
+  "hash": "3e7bfb6b70b844e2b1c96451c815afe7b8ffbf9611d1edfd72a8ae442d690fb4"
+},
+{
+  "id": "t3_volvadjust",
+  "tier": 3,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 140,
+  "ci": true,
+  "fmt": "명령어 / command (7글자 / 7 chars)",
+  "title": {
+    "ko": "VAD 트리 상세 속성 출력 플러그인",
+    "en": "VAD Tree Detailed Inspection Plugin"
+  },
+  "prompt": {
+    "ko": "프로세스의 모든 VAD 노드를 순회하며 가상 메모리 범위, 페이지 보호 속성, 커밋 상태를 상세히 열거하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 7-letter Volatility plugin command that enumerates every VAD node, memory ranges, and page protection attributes."
+  },
+  "hints": {
+    "ko": [
+      "vad와 info의 합성어입니다.",
+      "windows.vadinfo 플러그인으로 호출됩니다."
+    ],
+    "en": [
+      "Compound of vad and info.",
+      "Executed as windows.vadinfo."
+    ]
+  },
+  "hash": "a4a9638995e8c199b9b5b2159704d5926a10fd137ba3b6b6ee30059b03aecbde"
+},
+{
+  "id": "t4_volhashdump",
+  "tier": 4,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 170,
+  "ci": true,
+  "fmt": "명령어 / command (8글자 / 8 chars)",
+  "title": {
+    "ko": "SAM 레지스트리 NTLM 해시 덤프 플러그인",
+    "en": "SAM Registry NTLM Hash Dumper"
+  },
+  "prompt": {
+    "ko": "메모리 내 SAM 및 SYSTEM 레지스트리 하이브에서 로컬 계정의 LM 및 NTLM 패스워드 해시를 추출하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 8-letter Volatility plugin command that extracts LM and NTLM password hashes from in-memory SAM registry hives."
+  },
+  "hints": {
+    "ko": [
+      "hash와 dump의 합성어입니다.",
+      "windows.hashdump 플러그인으로 실행됩니다."
+    ],
+    "en": [
+      "Compound of hash and dump.",
+      "Executed as windows.hashdump."
+    ]
+  },
+  "hash": "09ca55dc9341b21502948461e215be3949e327631677407a83d7c336d01a7f2f"
+},
+{
+  "id": "t4_vollsadump",
+  "tier": 4,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 170,
+  "ci": true,
+  "fmt": "명령어 / command (7글자 / 7 chars)",
+  "title": {
+    "ko": "LSA Secrets 및 자격 증명 덤프 플러그인",
+    "en": "LSA Secrets and Credential Dumper"
+  },
+  "prompt": {
+    "ko": "LSASS 메모리 및 LSA Secrets 키에서 도메인 캐시 자격증명, 서비스 계정 비밀번호를 추출하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 7-letter Volatility plugin command that dumps LSA secrets and domain credentials from memory."
+  },
+  "hints": {
+    "ko": [
+      "lsa와 dump의 합성어입니다.",
+      "windows.lsadump 플러그인으로 실행됩니다."
+    ],
+    "en": [
+      "Compound of lsa and dump.",
+      "Executed as windows.lsadump."
+    ]
+  },
+  "hash": "01802bde7b6b576b2836952d5df3b1651fa7e79680cf89a0ebd73df5dea574f1"
+},
+{
+  "id": "t4_volrunasppl",
+  "tier": 4,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 170,
+  "ci": false,
+  "fmt": "레지스트리 키 / registry key (8글자 / 8 chars)",
+  "title": {
+    "ko": "LSASS 보호 프로세스 라이트 레지스트리 값",
+    "en": "LSASS Protected Process Light Registry Value"
+  },
+  "prompt": {
+    "ko": "관리자 권한 프로세스라 할지라도 lsass.exe 메모리에 오픈 핸들을 획득하지 못하도록 방어하는 윈도우 LSA 보호 레지스트리 DWORD 명칭을 대소문자 구분 8글자로 구하세요.",
+    "en": "Enter the exact case-sensitive 8-character registry DWORD value name that enforces Protected Process Light (PPL) on lsass.exe."
+  },
+  "hints": {
+    "ko": [
+      "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa 아래에 위치합니다.",
+      "Run, As, PPL의 단어가 결합된 파스칼 표기법입니다."
+    ],
+    "en": [
+      "Located under HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa.",
+      "PascalCase compound of Run, As, and PPL."
+    ]
+  },
+  "hash": "b283ddf6dacb3732b37cac04a404c6c6476ae92a0f9bdd024ed9a7a7d7a829fe"
+},
+{
+  "id": "t4_volshimcache",
+  "tier": 4,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 170,
+  "ci": true,
+  "fmt": "명령어 / command (9글자 / 9 chars)",
+  "title": {
+    "ko": "애플리케이션 호환성 캐시 복원 플러그인",
+    "en": "Application Compatibility Cache Parser Plugin"
+  },
+  "prompt": {
+    "ko": "이미 삭제된 실행 파일이라도 실행 경로와 타임스탬프 흔적을 보존하는 윈도우 AppCompatCache 데이터를 파싱하는 Volatility 플러그인 명령어를 구하세요.",
+    "en": "Enter the 9-letter Volatility plugin command that parses the Windows Application Compatibility Cache (AppCompatCache)."
+  },
+  "hints": {
+    "ko": [
+      "심(shim)과 캐시(cache)의 합성어입니다.",
+      "windows 접두사 뒤에 결합하여 호출합니다."
+    ],
+    "en": [
+      "Compound of shim and cache.",
+      "Appended after windows. to invoke the plugin."
+    ]
+  },
+  "hash": "513eecf62e066a0b3ac8a9e09a2a1ed5006d690351897f6db49def663656ef99"
+},
+{
+  "id": "t4_volssdt",
+  "tier": 4,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 170,
+  "ci": true,
+  "fmt": "약어 / acronym (4글자 / 4 chars)",
+  "title": {
+    "ko": "시스템 서비스 디스패치 테이블",
+    "en": "System Service Dispatch Table"
+  },
+  "prompt": {
+    "ko": "커널 모드 루트킷이 시스템 콜 번호와 커널 서비스 루틴 주소 매핑을 가로채기 위해 조작하는 윈도우 커널 디스패치 테이블의 4글자 영문 약어를 구하세요.",
+    "en": "Enter the 4-letter acronym of the Windows kernel table manipulated by rootkits to hook syscall numbers to malicious handlers."
+  },
+  "hints": {
+    "ko": [
+      "System Service Descriptor Table의 약어입니다.",
+      "windows.ssdt 플러그인으로 후킹을 탐지합니다."
+    ],
+    "en": [
+      "Initialism for System Service Descriptor Table.",
+      "Inspected using windows.ssdt."
+    ]
+  },
+  "hash": "64846bbf77192fd855a0f3c8a70417175247cc89cd86b2a3478860653bf393d7"
+},
+{
+  "id": "t4_volamcache",
+  "tier": 4,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 170,
+  "ci": true,
+  "fmt": "한 단어 / one word (7글자 / 7 chars)",
+  "title": {
+    "ko": "실행 바이너리 해시 레지스트리 하이브",
+    "en": "Execution Artifact Registry Hive"
+  },
+  "prompt": {
+    "ko": "최근 실행된 프로그램의 파일 SHA-1 해시, 볼륨 GUID, 컴파일 타임스탬프를 보관하는 윈도우 아티팩트 하이브 파일(____.hve)의 앞부분 단어를 구하세요.",
+    "en": "Enter the 7-letter prefix of the artifact hive (____.hve) that stores recent binary execution hashes and compilation timestamps."
+  },
+  "hints": {
+    "ko": [
+      "C:\\Windows\\AppCompat\\Programs 경로 아래 저장되는 하이브입니다.",
+      "7글자 영문 소문자입니다."
+    ],
+    "en": [
+      "Located under C:\\Windows\\AppCompat\\Programs directory.",
+      "Seven lowercase letters."
+    ]
+  },
+  "hash": "2869d8488d48f2df6e5cc1c8719a493ad7efda7d895549a01d72fb4774fb6cf9"
+},
+{
+  "id": "t4_volcapstone",
+  "tier": 4,
+  "cat": "volatility",
+  "track": "volatility",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "메모리 포렌식 & Volatility 3 종합 분석 캡스톤",
+    "en": "Memory Forensics & Volatility 3 Capstone"
+  },
+  "prompt": {
+    "ko": "엔터프라이즈 침해 사고 메모리 덤프 종합 분석 결과입니다. 다음 핵심 침해 지표를 조합하여 최종 포렌식 판정 플래그를 계산하세요:\n\n1. DKOM 언링크 은닉 프로세스 PID: `4820`\n2. Reflective VAD RWX 인젝션 타깃 프로세스 PID: `2440`\n3. 외부 C2 원격 포트: `8443`\n4. LSASS 커널 방어 레지스트리 값: `RunAsPPL`\n\n형식: `FLAG{SHA256(\"<PID1>:<PID2>:<PORT>:<REG>\") 앞 26자리 소문자}`\n입력 문자열: `4820:2440:8443:RunAsPPL`",
+    "en": "In a comprehensive enterprise memory incident debrief, compute the composite forensic flag using SHA256(\"4820:2440:8443:RunAsPPL\")."
+  },
+  "hints": {
+    "ko": [
+      "입력 문자열은 `4820:2440:8443:RunAsPPL` 입니다.",
+      "이 문자열의 sha256 해시 앞 26자리를 구해 FLAG{...} 로 감싸세요."
+    ],
+    "en": [
+      "Target string is `4820:2440:8443:RunAsPPL`.",
+      "Take the first 26 chars of its sha256 and wrap in FLAG{...}."
+    ]
+  },
+  "hash": "c9c984da3ca638e257a591b8340cd7c2d3125fafa8924ebdf6a33fe70c5b1655"
 }
 ];

@@ -45,6 +45,8 @@ docker-compose --version
 | 13 | [eBPF 커널 보안 랩](./13_ebpf_kernel_lab/) | Kprobe 시스템콜 도청, bpf_probe_write_user 메모리 변조 권한상승, XDP 은닉 통신, BPF LSM 무결성 방어 | ★★★★ | [01장 리눅스 기초](../01_Linux_Basics/06_linux_ctf_practical_lab.md), [26장 리눅스 하드닝](../26_Linux_Hardening/README.md), [70장 쿠버네티스](../70_Kubernetes_Security/06_k8s_security_ctf_lab.md) | `ebpf` |
 | 14 | [문서형 악성코드 분석 랩](./14_maldoc_lab/) | OLE/VBA 매크로 난독화 해제, PDF FlateDecode 스트림 분석, CVE-2017-11882 수식 에디터 RCE, CVE-2021-40444 MSHTML 방어 | ★★★☆ | [06장 악성코드 분석](../06_Malware_Analysis/07_document_malware_analysis.md) | `maldoc` |
 | 15 | [Web3 & 스마트 컨트랙트 보안 랩](./15_web3_smart_contract_lab/) | Reentrancy, 정수 오버플로, tx.origin 피싱, Flash Loan AMM 가격 조작 | ★★★★ | [42장 블록체인/Web3](../42_Blockchain_Web3_Security/06_blockchain_ctf_lab.md) | `web3` |
+| 16 | [메모리 포렌식 & Volatility 랩](./16_memory_forensics_lab/) | DKOM 은닉 프로세스 적출, VAD RWX 쉘코드 탐지, C2 비컨 복원, LSASS PPL 방어 | ★★★★ | [06장 악성코드 분석](../06_Malware_Analysis/README.md), [07장 디지털 포렌식](../07_Digital_Forensics/06_forensics_ctf_lab.md), [44장 사고 대응](../44_Incident_Response_DFIR/README.md) | `volatility` |
+
 
 ---
 
@@ -196,6 +198,17 @@ docker-compose --version
 - **교재 챕터 연계**: [42장 블록체인 및 Web3 보안 CTF 실습 랩](../42_Blockchain_Web3_Security/06_blockchain_ctf_lab.md)
 - **워게임 트랙**: 워게임 터미널(`wargame/`) `web3` 트랙 (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 15` (웹 콘솔 & API: `http://localhost:8015`)
+
+### 16. 메모리 포렌식 & Volatility 3 분석 랩 (MemShield)
+- Windows 10 엔터프라이즈 메모리 덤프(`victim_win10_enterprise_x64.dmp`) 대상 Volatility 3 심층 포렌식 실습
+- `ActiveProcessLinks` 조작(DKOM)으로 은닉된 악성 프로세스(`svch0st.exe`) 풀 스캔(`psscan`, `pstree`) 적출
+- `explorer.exe` 내 `PAGE_EXECUTE_READWRITE` (RWX) VAD 영역 및 PE 헤더(MZ) 인젝션 셸코드 분석(`malfind`)
+- 은닉 프로세스의 원격 C2 비컨(`198.51.100.89:8443`) 네트워크 소켓 아티팩트 복원(`netscan`)
+- `lsass.exe` 메모리 NTLM 해시 덤프(`lsadump`) 및 Windows LSA PPL(Protected Process Light) 커널 하드닝 방어
+- **교재 챕터 연계**: [06장 악성코드 분석](../06_Malware_Analysis/README.md), [07장 디지털 포렌식](../07_Digital_Forensics/06_forensics_ctf_lab.md), [44장 사고 대응/DFIR](../44_Incident_Response_DFIR/README.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `volatility` 트랙 (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 16` (웹 콘솔 & API: `http://localhost:8016`)
+
 
 
 

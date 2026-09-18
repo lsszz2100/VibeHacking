@@ -505,7 +505,37 @@ vhack update
 
 ---
 
-## 9. 학습 로드맵 예시
+## 9. vhack setup-docker — Docker 및 실습 환경 자동 설치
+
+```bash
+# Docker 및 Docker Compose 환경 진단 및 설치 가이드
+vhack setup-docker
+
+# 실행 명령 미리보기 (시스템 변경 없음)
+vhack setup-docker --dry-run
+
+# 프롬프트 없이 자동 진행
+vhack setup-docker -y
+
+# WSL2 전용 가이드 강제 출력
+vhack setup-docker --wsl
+```
+
+---
+
+## 10. vhack docs — 75개 챕터 웹 리더 포털 로컬 실행
+
+```bash
+# 75개 챕터 웹 리더 포털 로컬 실행 (기본 포트 3000)
+vhack docs
+
+# 특정 포트 지정 및 브라우저 자동 열기 억제
+vhack docs --port 3123 --no-browser
+```
+
+---
+
+## 11. 학습 로드맵 예시
 
 ### 초보자 로드맵 (6개월)
 
@@ -646,7 +676,7 @@ root@vibe:/perimeter$ submit FLAG{...}   # 정답 제출 → ACCESS GRANTED
 | `hint` | 힌트 공개 (점수 −20%/개) |
 | `status` / `lang` / `sound` | 진행도 / 한·영 전환 / 사운드 토글 |
 
-- **5계층 1050 문제**, 한 계층의 요구 개수를 풀면 `LAYER BREACHED` 로 다음 계층이 열립니다.
+- **5계층 1085 문제**, 한 계층의 요구 개수를 풀면 `LAYER BREACHED` 로 다음 계층이 열립니다.
 - 정답은 **SHA-256 해시로만** 저장되어(평문 없음) 브라우저 안에서 검증됩니다 — 교육용, 외부 시스템 공격 금지.
 - 각 문제는 본 레포의 75개 섹션 주제와 연결됩니다. 자세한 안내는 [`wargame/README.md`](wargame/README.md) 참고.
 - 💡 첫 플래그는 페이지 소스(`Ctrl+U`)에 숨어 있습니다. AI CLI에게 "워게임 N번 힌트만 줘"처럼 물어볼 수도 있습니다.
@@ -694,6 +724,8 @@ python3 vhack.py alias remove            # Unregister alias
 # Search & info
 python3 vhack.py search "SQL injection"  # Search all docs
 python3 vhack.py info 54                 # Section details
+python3 vhack.py docs                    # Launch web reader portal
+python3 vhack.py setup-docker            # Auto-install & diagnose Docker
 python3 vhack.py update                  # Git pull
 ```
 
@@ -765,7 +797,7 @@ root@vibe:/perimeter$ submit FLAG{...} # submit → ACCESS GRANTED
 | `hint` | reveal a hint (−20% each) |
 | `status` / `lang` / `sound` | progress / toggle language / toggle sound |
 
-- **5 layers, 1050 challenges.** Clearing a layer's quota fires `LAYER BREACHED` and unlocks the next.
+- **5 layers, 1085 challenges.** Clearing a layer's quota fires `LAYER BREACHED` and unlocks the next.
 - Answers are stored as **SHA-256 hashes only** (no plaintext) and verified in the browser — educational, never attack external systems.
 - Each challenge maps to a topic from the repo's 75 sections. See [`wargame/README.md`](wargame/README.md) for details.
 - 💡 The first flag hides in the page source (`Ctrl+U`). You can even ask an AI CLI for "just a hint on wargame #N".

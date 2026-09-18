@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  memory-forensics-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: memory_forensics_lab
+    restart: unless-stopped
+    ports:
+      - "8016:8016"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8016
+    labels:
+      - "lab=memory_forensics"
+      - "service=memshield-workstation"
