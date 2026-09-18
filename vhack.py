@@ -278,6 +278,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [6, 7, 44],
     },
+    "17": {
+        "name": "클라우드 네이티브 & Kubernetes 보안 랩",
+        "dir":  "17_kubernetes_cloud_native_lab",
+        "desc": "KubeShield: 특권 파드 탈출 · RBAC 와일드카드 권한상승 · 클라우드 IMDS 탈취 및 방어 · Cosign 공급망 어드미션 제어",
+        "url":  "웹 콘솔 & Kubernetes API: http://localhost:8017",
+        "difficulty": "★★★★",
+        "related": [29, 38, 70],
+    },
 }
 
 
@@ -1217,6 +1225,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8014, "Lab 14 (MalDoc)"),
         (8015, "Lab 15 (Web3)"),
         (8016, "Lab 16 (Memory Forensics)"),
+        (8017, "Lab 17 (Kubernetes)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

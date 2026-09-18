@@ -46,6 +46,7 @@ docker-compose --version
 | 14 | [문서형 악성코드 분석 랩](./14_maldoc_lab/) | OLE/VBA 매크로 난독화 해제, PDF FlateDecode 스트림 분석, CVE-2017-11882 수식 에디터 RCE, CVE-2021-40444 MSHTML 방어 | ★★★☆ | [06장 악성코드 분석](../06_Malware_Analysis/07_document_malware_analysis.md) | `maldoc` |
 | 15 | [Web3 & 스마트 컨트랙트 보안 랩](./15_web3_smart_contract_lab/) | Reentrancy, 정수 오버플로, tx.origin 피싱, Flash Loan AMM 가격 조작 | ★★★★ | [42장 블록체인/Web3](../42_Blockchain_Web3_Security/06_blockchain_ctf_lab.md) | `web3` |
 | 16 | [메모리 포렌식 & Volatility 랩](./16_memory_forensics_lab/) | DKOM 은닉 프로세스 적출, VAD RWX 쉘코드 탐지, C2 비컨 복원, LSASS PPL 방어 | ★★★★ | [06장 악성코드 분석](../06_Malware_Analysis/README.md), [07장 디지털 포렌식](../07_Digital_Forensics/06_forensics_ctf_lab.md), [44장 사고 대응](../44_Incident_Response_DFIR/README.md) | `volatility` |
+| 17 | [클라우드 네이티브 & Kubernetes 랩](./17_kubernetes_cloud_native_lab/) | 특권 파드 탈출, RBAC 와일드카드 권한상승, 클라우드 IMDS 탈취, Cosign 어드미션 제어 | ★★★★ | [29장 컨테이너](../29_Container_Kubernetes_Security/README.md), [38장 클라우드 네이티브](../38_Cloud_Native_Security/README.md), [70장 쿠버네티스](../70_Kubernetes_Security/README.md) | `cloud` |
 
 
 ---
@@ -208,6 +209,16 @@ docker-compose --version
 - **교재 챕터 연계**: [06장 악성코드 분석](../06_Malware_Analysis/README.md), [07장 디지털 포렌식](../07_Digital_Forensics/06_forensics_ctf_lab.md), [44장 사고 대응/DFIR](../44_Incident_Response_DFIR/README.md)
 - **워게임 트랙**: 워게임 터미널(`wargame/`) `volatility` 트랙 (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 16` (웹 콘솔 & API: `http://localhost:8016`)
+### 17. 클라우드 네이티브 & Kubernetes 보안 랩 (KubeShield)
+- 엔터프라이즈 Kubernetes 클러스터 대상 4대 핵심 침해 시나리오 및 방어 체계 실습
+- 특권 컨테이너(`privileged: true`, `hostPath: /host`)를 통한 호스트 OS 네임스페이스 탈출 및 Pod Security Standards(PSA restricted) 차단
+- 마운트된 ServiceAccount 토큰의 와일드카드(`*.* / [*]`) ClusterRole 악용 `cluster-admin` 권한 상승 및 최소 권한(Least Privilege) RBAC 정비
+- AWS/클라우드 메타데이터(IMDSv1) 취약점을 통한 노드 IAM 자격 증명 탈취 및 IMDSv2 Hop Limit 1 / Egress NetworkPolicy 방어
+- 서명되지 않은 악성 백도어 이미지 침투 시도 및 Kyverno/Gatekeeper 어드미션 웹훅과 Sigstore Cosign 서명 검증 강제화
+- **교재 챕터 연계**: [29장 컨테이너 보안](../29_Container_Kubernetes_Security/README.md), [38장 클라우드 네이티브 보안](../38_Cloud_Native_Security/README.md), [70장 쿠버네티스 보안](../70_Kubernetes_Security/README.md)
+- **워게임 트랙**: 워게임 터미널(`wargame/`) `cloud` 트랙
+- **빠른 실행**: `python3 vhack.py lab start 17` (웹 콘솔 & API: `http://localhost:8017`)
+
 
 
 

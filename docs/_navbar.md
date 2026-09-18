@@ -1,5 +1,6 @@
 * 🏠 [홈](#/)
 * 📚 [교재 목차](#/_sidebar)
-* 🧪 [실습 랩 (1~16)](#/labs/README)
-* 🎮 [워게임 (PWA)](/wargame/)
+* 🧪 [실습 랩 (1~17)](#/labs/README)
+* 🎮 [워게임 (1,085제)](/wargame/)
+* 📖 [CLI 가이드](#/USAGE)
 * 🌐 [GitHub](https://github.com/lsszz2100/VibeHacking)

@@ -1,6 +1,6 @@
 * **시작하기**
   * [🏠 프로젝트 소개](README.md)
-  * [🔬 실습 랩 가이드 (1~16)](labs/README.md)
+  * [🔬 실습 랩 가이드 (1~17)](labs/README.md)
   * [🎮 브라우저 워게임 (PWA)](wargame/index.html)
 
 * **1. 시스템 & 저수준 보안**

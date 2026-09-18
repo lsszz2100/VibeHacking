@@ -89,6 +89,7 @@ start_lab() {
         "14_maldoc_lab"
         "15_web3_smart_contract_lab"
         "16_memory_forensics_lab"
+        "17_kubernetes_cloud_native_lab"
     )
 
     local lab_names=(
@@ -109,6 +110,7 @@ start_lab() {
         "문서형 악성코드 & PDF 분석 랩"
         "Web3 & 스마트 컨트랙트 보안 랩"
         "메모리 포렌식 & Volatility 3 분석 랩"
+        "클라우드 네이티브 & Kubernetes 보안 랩"
     )
 
     local lab_ports=(
@@ -129,10 +131,11 @@ start_lab() {
         "웹 콘솔 & MalDoc API: http://localhost:8014"
         "웹 콘솔 & EVM API: http://localhost:8015"
         "웹 콘솔 & Volatility API: http://localhost:8016"
+        "웹 콘솔 & Kubernetes API: http://localhost:8017"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 16 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~16 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 17 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~17 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"

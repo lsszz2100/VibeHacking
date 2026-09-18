@@ -75,6 +75,7 @@ LAB_DIRS=(
     "14_maldoc_lab"
     "15_web3_smart_contract_lab"
     "16_memory_forensics_lab"
+    "17_kubernetes_cloud_native_lab"
 )
 
 LAB_NAMES=(
@@ -94,6 +95,7 @@ LAB_NAMES=(
     "문서형 악성코드 & PDF 분석 랩"
     "Web3 & 스마트 컨트랙트 보안 랩"
     "메모리 포렌식 & Volatility 3 분석 랩"
+    "클라우드 네이티브 & Kubernetes 보안 랩"
 )
 
 

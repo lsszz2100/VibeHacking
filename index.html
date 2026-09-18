@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>VibeHacking — 75개 섹션 사이버보안 웹 리더 & 통합 포털</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <meta name="description" content="실전 사이버보안 & 해킹 종합 바이블 (75개 섹션, 16개 실습 랩, 1,085+ 워게임)">
+  <meta name="description" content="실전 사이버보안 & 해킹 종합 바이블 (75개 섹션, 17개 실습 랩, 1,085+ 워게임)">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -48,7 +48,22 @@
       font-weight: bold;
       border: 1px solid rgba(0, 240, 255, 0.3);
     }
+    .mermaid {
+      background: #161b22;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #30363d;
+      text-align: center;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
   </style>
+  <!-- Mermaid Engine -->
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+    window.mermaid = mermaid;
+  </script>
 </head>
 <body>
   <div class="portal-banner">
@@ -59,7 +74,8 @@
     <div class="portal-links">
       <a href="#/"><i class="fa-solid fa-book"></i> 교재(75장)</a>
       <a href="/wargame/" target="_blank"><i class="fa-solid fa-terminal"></i> 워게임(1,085제)</a>
-      <a href="#/labs/README"><i class="fa-solid fa-flask"></i> 실습 랩(16개)</a>
+      <a href="#/labs/README"><i class="fa-solid fa-flask"></i> 실습 랩(17개)</a>
+      <a href="#/USAGE"><i class="fa-solid fa-terminal"></i> CLI 가이드</a>
       <a href="https://github.com/lsszz2100/VibeHacking" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
     </div>
   </div>
@@ -75,6 +91,12 @@
       subMaxLevel: 3,
       auto2top: true,
       homepage: 'README.md',
+      pagination: {
+        previousText: '이전 챕터',
+        nextText: '다음 챕터',
+        crossChapter: true,
+        crossChapterText: true,
+      },
       search: {
         maxAge: 86400000,
         paths: 'auto',
@@ -86,17 +108,42 @@
         buttonText: '복사',
         errorText: '실패',
         successText: '복사됨 ✓'
-      }
+      },
+      markdown: {
+        renderer: {
+          code: function(code, lang) {
+            if (lang === "mermaid") {
+              return '<div class="mermaid">' + code + '</div>';
+            }
+            return this.origin.code.apply(this, arguments);
+          }
+        }
+      },
+      plugins: [
+        function (hook, vm) {
+          hook.doneEach(function () {
+            if (window.mermaid) {
+              window.mermaid.run({
+                querySelector: '.mermaid'
+              });
+            }
+          });
+        }
+      ]
     };
   </script>
   <!-- Docsify Core & Plugins -->
   <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-c.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-docker.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js"></script>
 </body>
 </html>

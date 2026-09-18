@@ -9,10 +9,11 @@
 - **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH)
   - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `.github/workflows/deploy-docs.yml`), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화 및 챕터별 학습 목표/실습 랩 링크 체계화
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 16개 실전 랩 완비** (`labs/01` ~ `labs/16`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 17개 실전 랩 완비** (`labs/01` ~ `labs/17`)
   - **Lab 14 (DocArmor)**: 문서형 악성코드 & PDF 포렌식 랩 (OLE/VBA 매크로, CVE-2017-11882, CVE-2021-40444, PDF FlateDecode)
   - **Lab 15 (Web3 & Smart Contract Security)**: EVM 모의 환경, Reentrancy(DAO), Batch Overflow, tx.origin 인증 우회, Flash Loan AMM 가격 조작, Web3 CLI(`forge`/`cast`/`solc`) 터미널 에뮬레이터 (포트: `8015`)
   - **Lab 16 (MemShield)**: 메모리 포렌식 & Volatility 3 분석 랩 (DKOM 숨김 프로세스 언링크, VAD RWX 셸코드 주입, 악성 C2 소켓 복원, LSASS NTLM 덤프 & LSA PPL 방어, 포트: `8016`)
+  - **Lab 17 (KubeShield)**: 클라우드 네이티브 & Kubernetes 보안 랩 (특권 파드 탈출, RBAC 와일드카드 권한상승, 클라우드 IMDSv1 SSRF 탈취 및 IMDSv2 방어, Cosign 공급망 어드미션 제어, 포트: `8017`)
 - **브라우저 터미널 워게임**: **총 31개 트랙 / 1,085문제** 달성 (`wargame/index.html`, HUD `0/1085`)
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **27번째 트랙**: `wasm` 🧩 WebAssembly 보안 (35개 문제: Tier 0~4)
@@ -20,19 +21,22 @@
   - **29번째 트랙**: `firmware` 💾 Firmware & Embedded Security (35개 문제: Tier 0~4)
   - **30번째 트랙**: `maldoc` 📑 문서형 악성코드 & PDF 포렌식 (35개 문제: Tier 0~4)
   - **31번째 트랙**: `volatility` 🧠 메모리 포렌식 & Volatility (35개 문제: Tier 0~4)
+- **웹 뷰어 / 온라인 리더 포털 (Docsify 4.13.1)**:
+  - Mermaid 10 실시간 다이어그램 렌더링, `docsify-copy-code` 코드 블록 복사, `docsify-pagination` 챕터 이동 네비게이션, `zoom-image` 이미지 확대
+  - 상단 통합 포털 네비게이션 바 & 실습 랩/워게임 원클릭 연동 배너
 - **표준 파이썬 패키징**: [pyproject.toml](file:///mnt/d/바이브해킹%20자료/vibe-hacking/pyproject.toml) 기반 패키징 완비 (`pip install -e .` 지원, 글로벌 `vhack` 명령 제공)
 - **vhack CLI 고도화**:
-  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8016 가용성 등 8개 영역 시스템 진단 도구
+  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8017 가용성 등 8개 영역 시스템 진단 도구
   - `vhack setup-docker`: OS 및 WSL2 환경 자동 감지, Docker CE / Compose 자동 설치 및 WSL2 연동 진단 가이드 (`--dry-run`, `-y`)
   - `vhack docs`: 75개 챕터 웹 리더 포털 로컬 HTTP 서버 실행
   - `vhack wargame`: 내장 웹서버 구동 및 브라우저 자동 실행
-  - `vhack lab test [--all | <lab_id>]`: 16개 실습 랩 자동 무결성 검증 (113개 테스트)
-  - `vhack lab status`: 16개 랩 종합 상태 대시보드
-- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~16, `vhack doctor`, Pytest 116개 랩 테스트, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
+  - `vhack lab test [--all | <lab_id>]`: 17개 실습 랩 자동 무결성 검증 (124개 테스트)
+  - `vhack lab status`: 17개 랩 종합 상태 대시보드
+- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~17, `vhack doctor`, Pytest 127개 랩 테스트, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
 
 ---
 
-## 2. 실습 랩(1~16) & 교재 & 워게임 연계 매트릭스
+## 2. 실습 랩(1~17) & 교재 & 워게임 연계 매트릭스
 
 | 랩 ID | 랩 이름 | 주요 침투/방어 주제 | 연계 교재 챕터 | 워게임 트랙 | 실행 명령 |
 | :---: | :--- | :--- | :--- | :---: | :--- |
@@ -45,13 +49,14 @@
 | **07** | 모바일 보안 랩 | APK 디컴파일, API 키 탈취, JWT none | `28_Mobile_Hacking` | `mobile` | `vhack lab start 07` |
 | **08** | AI/LLM 보안 랩 (AI Shield) | 프롬프트 인젝션(Jailbreak), RAG 간접 주입, 도구 남용 | `11_AI_Powered_Security`, `69_LLM_Security` | `ai` | `vhack lab start 08` |
 | **09** | ICS/SCADA 보안 랩 (GridGuard) | Modbus/TCP FC03/05 조작, 센서 기만(FDI), SIS 비상 트립 | `37_ICS_SCADA`, `63_OT_ICS_Advanced` | `icsscada` | `vhack lab start 09` |
-| **10** | Kubernetes 보안 랩 (KubeShield) | SA 토큰 탈취, RBAC 남용, hostPath 탈출, privileged 장악 | `29_Container_Kubernetes_Security`, `70_Kubernetes_Security` | `cloud` | `vhack lab start 10` |
+| **10** | Kubernetes 보안 랩 (KubeShield v1) | SA 토큰 탈취, RBAC 남용, hostPath 탈출, privileged 장악 | `29_Container_Kubernetes_Security`, `70_Kubernetes_Security` | `cloud` | `vhack lab start 10` |
 | **11** | Active Directory 랩 (KeroShield) | AS-REP & Kerberoasting, DCSync, Golden Ticket | `54_Active_Directory_Attacks` | `activedirectory` | `vhack lab start 11` |
 | **12** | CI/CD & 공급망 랩 (PipePoison) | PPE 커맨드 인젝션, 의존성 혼동, 러너 시크릿 탈취, SLSA 변조 | `18_DevSecOps`, `35_Supply_Chain_Attacks` | `supplychain` | `vhack lab start 12` |
 | **13** | eBPF 커널 보안 랩 (BPFGuard) | Kprobe 시스템콜 도청, bpf_probe_write_user 메모리 변조, XDP 은닉 통신, BPF LSM 방어 | `01_Linux_Basics`, `26_Linux_Hardening`, `70_Kubernetes_Security` | `ebpf` | `vhack lab start 13` |
 | **14** | 문서형 악성코드 & PDF 랩 (DocArmor) | OLE/VBA 매크로 난독화 해제, PDF FlateDecode 분석, CVE-2017-11882, CVE-2021-40444 | `06_Malware_Analysis`, `07_Digital_Forensics`, `45_Malware_Development` | `maldoc` | `vhack lab start 14` |
 | **15** | Web3 & 스마트 컨트랙트 랩 (Web3Sec) | Reentrancy(DAO), Batch Overflow, tx.origin 인증 우회, Flash Loan AMM 조작 | `42_Blockchain_Web3_Security` | `web` / `pwn` | `vhack lab start 15` |
 | **16** | 메모리 포렌식 & Volatility 랩 (MemShield) | DKOM 프로세스 은닉, VAD RWX 인젝션, C2 소켓 복원, LSASS NTLM dump & LSA PPL 방어 | `07_Digital_Forensics`, `44_Incident_Response_DFIR` | `volatility` | `vhack lab start 16` |
+| **17** | 클라우드 네이티브 & K8s 랩 (KubeShield) | 특권 파드 탈출, RBAC 와일드카드 권한상승, 클라우드 IMDS 탈취, Cosign 어드미션 제어 | `29_Container_Kubernetes_Security`, `38_Cloud_Native_Security`, `70_Kubernetes_Security` | `cloud` | `vhack lab start 17` |
 
 ---
 
@@ -60,10 +65,10 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (116개 테스트 전원 통과: Labs 01~16 및 HA DB 백업)
+# 1. 전체 단위/통합 테스트 (127개 테스트 전원 통과: Labs 01~17 및 HA DB 백업)
 pytest
 
-# 2. 실습 랩 CLI 자동 무결성 검증 (16개 랩 113개 테스트 통과)
+# 2. 실습 랩 CLI 자동 무결성 검증 (17개 랩 124개 테스트 통과)
 python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
