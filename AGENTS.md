@@ -65,10 +65,10 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (127개 테스트 전원 통과: Labs 01~17 및 HA DB 백업)
+# 1. 전체 단위/통합 테스트 (134개 테스트 전원 통과: Labs 01~18 및 HA DB 백업)
 pytest
 
-# 2. 실습 랩 CLI 자동 무결성 검증 (17개 랩 124개 테스트 통과)
+# 2. 실습 랩 CLI 자동 무결성 검증 (18개 랩 131개 테스트 통과)
 python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
@@ -82,7 +82,7 @@ vhack setup-docker --dry-run
 # 5. 75개 챕터 웹 리더 포털 실행
 vhack docs
 
-# 6. 워게임 무결성 및 구조 검증 (1,085문제, 31트랙, 5티어)
+# 6. 워게임 무결성 및 구조 검증 (1,120문제, 32트랙, 5티어)
 node wargame/scripts/verify.js
 
 # 7. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
@@ -91,7 +91,7 @@ node wargame/scripts/leakscan.js
 # 8. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
 node wargame/scripts/audit.js --strict
 
-# 9. 연산/유도형 챌린지 118개 자동 풀이 검증 (118/118 통과)
+# 9. 연산/유도형 챌린지 153개 자동 풀이 검증 (153/153 통과)
 node wargame/scripts/solve-derivable.js
 ```
 
@@ -107,6 +107,16 @@ node wargame/scripts/solve-derivable.js
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
 
+- **2026-09-19 (Lab 18 AgentGuard, Wargame Track 32 / 1,120 Challenges, Wargame UX & Badges, Deep-dive Ingestion, 18 Labs 131 Tests All Green, Remote Sync)**:
+  - **Lab 18 AgentGuard 랩 신규 구축**: `labs/18_ai_agent_mcp_lab/` (간접 프롬프트 인젝션, MCP 도구 자율 실행 하이재킹, 데이터 유출, 시스템 커맨드 탈출, eBPF/LSM 보안 필터 방어, 포트 8018, 7개 단위 테스트 전원 통과)
+  - **워게임 32번째 트랙 (`aiagent`) 확장**: 35개 문제 추가로 1,085제 → 1,120제 확장, 4대 엄격 검증 스위트 (`verify.js`, `audit.js --strict`, `leakscan.js`, `solve-derivable.js` 153/1120) 전원 무결격 통과
+  - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
+  - **대용량 미분류 자료 인제스천**:
+    - `02_Network_Hacking/07_practical_packet_analysis_deepdive.md` (와이어샤크 TCP 세션 재구성, ZeroWindow/재전송 이상 분석, DNS 터널링 탐지 스크립트, SSLKEYLOGFILE 복호화 실무, Scapy 기반 TCP 패킷 카빙)
+    - `07_Digital_Forensics/07_filesystem_forensics_deepdive.md` (FAT32 디렉터리 엔트리 32B 및 0xE5 삭제 복구, NTFS 1024B $MFT 레코드 분석, $0x10 vs $0x30 타임스톰핑 탐지, Data Run 디코딩, EXT2/3/4 Inode Extents 및 슬랙 공간 카빙)
+    - `tools/sync_section_readmes.py` 전 섹션 동기화 완료
+  - **18개 랩 131개 무결성 테스트 통과**: `vhack lab test --all` -> 18개 랩 131개 테스트 100% All Green, 전체 Pytest 134개 테스트 통과
+  - **원격 저장소 동기화**: `main` 브랜치 커밋(`b1602e0`) 원격 저장소(`https://github.com/lsszz2100/VibeHacking.git`) 푸시 완료
 - **2026-09-18 (Lab 17 KubeShield, Docsify Plugin Suite, 17 Labs 124 Tests All Green, Remote Sync)**:
   - **Lab 17 KubeShield 랩 신규 구축**: `labs/17_kubernetes_cloud_native_lab/` (특권 파드 탈출 vs PSA Restricted, RBAC 와일드카드 권한 상승 vs 최소 권한, IMDSv1 SSRF vs IMDSv2 Hop Limit 1 / NetworkPolicy, 공급망 위조 이미지 침투 vs Kyverno/Sigstore Cosign 어드미션 웹훅, 포트 8017, 11개 단위 테스트 전원 통과)
   - **Docsify 웹 뷰어 플러그인 고도화**: Mermaid 10 실시간 다이어그램 렌더링, `docsify-pagination` 챕터 이동 네비게이션, `docsify-copy-code` 코드 복사, `zoom-image` 이미지 확대, 상단 고정 네비게이션 바 & 실습 랩/워게임 원클릭 연동 배너 배치
