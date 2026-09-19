@@ -1386,7 +1386,44 @@ const SOLVERS = new Map([
     const m = text.match(/`([^`]+)`/);
     const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
     return `FLAG{${hash}}`;
-  } }],]);
+  } }],
+]);
+
+// DroidShield (Android) & WinAppSec (Windows Client) challenges: computed from identifier in prompt
+const DROIDPWN_WINCLIENT_IDS = [
+  "t0_droidpwn_apk_manifest", "t0_droidpwn_smali_opcode", "t1_droidpwn_su_binary_check", "t1_droidpwn_test_keys_check",
+  "t1_droidpwn_magisk_package", "t1_droidpwn_okhttp_pinner", "t1_droidpwn_dex_magic", "t1_droidpwn_apktool_disasm",
+  "t2_droidpwn_frida_java_hook", "t2_droidpwn_native_interceptor", "t2_droidpwn_xor_c2_recovery", "t2_droidpwn_jni_onload_hook",
+  "t2_droidpwn_trustmanager_bypass", "t2_droidpwn_smali_branch_patch", "t2_droidpwn_android_id_spoof", "t2_droidpwn_dex_classloader",
+  "t2_droidpwn_sms_receiver_hijack", "t2_droidpwn_exported_activity_access", "t2_droidpwn_shared_prefs_leak", "t2_droidpwn_native_crypto_hook",
+  "t3_droidpwn_anti_frida_maps", "t3_droidpwn_cfg_flattening_defuse", "t3_droidpwn_dlsym_interception", "t3_droidpwn_play_integrity_eval",
+  "t3_droidpwn_apk_signing_block", "t3_droidpwn_cleartext_traffic_perm", "t3_droidpwn_content_provider_injection", "t3_droidpwn_binder_transaction_audit",
+  "t3_droidpwn_dex_checksum_bypass", "t3_droidpwn_accessibility_defense", "t4_droidpwn_banking_trojan_capstone", "t4_droidpwn_zygisk_module_isolation",
+  "t4_droidpwn_in_memory_dex_carving", "t4_droidpwn_full_chain_anti_analysis", "t4_droidpwn_zero_trust_mobile_posture",
+  "t0_winclient_pe_dos_magic", "t0_winclient_teb_seh_head", "t1_winclient_nseh_short_jump", "t1_winclient_pop_pop_ret_gadget",
+  "t1_winclient_egghunter_tag_search", "t1_winclient_fodhelper_uac_exec", "t1_winclient_dep_nx_stack_guard", "t1_winclient_aslr_entropy_eval",
+  "t2_winclient_mona_safeseh_audit", "t2_winclient_hevd_arbitrary_write", "t2_winclient_eprocess_token_swap", "t2_winclient_ntaccesscheck_probe",
+  "t2_winclient_seh_trylevel_audit", "t2_winclient_safe_dll_search_mode", "t2_winclient_pipe_impersonation", "t2_winclient_com_inprocserver32",
+  "t2_winclient_process_hollowing_unmap", "t2_winclient_iat_virtualprotect", "t2_winclient_minidump_lsass_audit", "t2_winclient_ms_settings_protocol",
+  "t3_winclient_dispatch_device_control", "t3_winclient_smep_cr4_bit20", "t3_winclient_cfg_indirect_guard", "t3_winclient_etweventwrite_patch",
+  "t3_winclient_queueuserapc_inject", "t3_winclient_hells_gate_ssn", "t3_winclient_nonpaged_pool_leak", "t3_winclient_hvci_vbs_enforce",
+  "t3_winclient_msbuild_applocker_bypass", "t3_winclient_g_cioptions_dse", "t4_winclient_fullchain_incident_capstone", "t4_winclient_dkom_activeprocesslinks",
+  "t4_winclient_byovd_kernel_defense", "t4_winclient_ntdll_disk_unhooking", "t4_winclient_vsm_isolated_vtl1"
+];
+
+for (const id of DROIDPWN_WINCLIENT_IDS) {
+  SOLVERS.set(id, {
+    kind: 'computed',
+    via: 'SHA256 of identifier in prompt',
+    solve: (ch) => {
+      const text = (ch.prompt.ko || '') + '\n' + (ch.prompt.en || '');
+      const m = text.match(/SHA(?:-)?256\("([^"]+)"\)/);
+      if (!m) throw new Error(`prompt does not contain SHA256("...") identifier for ${ch.id}`);
+      const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
+      return `FLAG{${hash}}`;
+    }
+  });
+}
 
 /* Exact-match challenges deliberately left uncovered. Anything ci:false that
    is neither solved above nor listed here fails the run, so a new flag

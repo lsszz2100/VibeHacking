@@ -48,6 +48,8 @@ docker-compose --version
 | 16 | [메모리 포렌식 & Volatility 랩](./16_memory_forensics_lab/) | DKOM 은닉 프로세스 적출, VAD RWX 쉘코드 탐지, C2 비컨 복원, LSASS PPL 방어 | ★★★★ | [06장 악성코드 분석](../06_Malware_Analysis/README.md), [07장 디지털 포렌식](../07_Digital_Forensics/06_forensics_ctf_lab.md), [44장 사고 대응](../44_Incident_Response_DFIR/README.md) | `volatility` |
 | 17 | [클라우드 네이티브 & Kubernetes 랩](./17_kubernetes_cloud_native_lab/) | 특권 파드 탈출, RBAC 와일드카드 권한상승, 클라우드 IMDS 탈취, Cosign 어드미션 제어 | ★★★★ | [29장 컨테이너](../29_Container_Kubernetes_Security/README.md), [38장 클라우드 네이티브](../38_Cloud_Native_Security/README.md), [70장 쿠버네티스](../70_Kubernetes_Security/README.md) | `cloud` |
 | 18 | [AI 에이전트 & MCP 보안 랩](./18_ai_agent_mcp_lab/) | 간접 프롬프트 주입, 과도한 권한 남용, 악성 MCP 도구 섀도잉, 단기 기능 토큰 방어 | ★★★★ | [11장 AI 보안](../11_AI_Powered_Security/README.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `aiagent` / `ai` |
+| 19 | [안드로이드 악성코드 & Frida 후킹 랩](./19_android_frida_lab/) | 루팅 탐지 우회, SSL Pinning 무력화, JNI 네이티브 후킹, C2 패킷 난독화 해제 | ★★★★ | [28장 모바일 해킹](../28_Mobile_Hacking/07_frida_android_dynamic_analysis_deepdive.md) | `droidpwn` / `mobile` |
+| 20 | [윈도우 애플리케이션 & 커널 취약점 랩](./20_winapp_exploit_lab/) | SEH 덮어쓰기, Egg Hunter 메모리 탐색, FODHelper UAC 우회, HEVD 커널 Arbitrary Write | ★★★★ | [03장 시스템 해킹](../03_System_Hacking/08_windows_seh_and_driver_exploit_deepdive.md) | `winclient` / `pwn` |
 
 
 ---
@@ -228,6 +230,26 @@ docker-compose --version
 - **교재 챕터 연계**: [11장 AI 보안](../11_AI_Powered_Security/README.md), [69장 LLM 보안](../69_LLM_Security/README.md)
 - **워게임 트랙**: 워게임 터미널(`wargame/`) `aiagent` 트랙 (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 18` (웹 콘솔 & API: `http://localhost:8018`)
+
+### 19. 안드로이드 악성코드 & Frida 후킹 랩 (DroidShield)
+- 안드로이드 환경에서의 동적 계측(Dynamic Binary Instrumentation) 기법 및 악성코드 행위 분석
+- `isDeviceRooted()` 및 `File.exists` 후킹을 통한 다계층 루팅 탐지 우회
+- `TrustManagerImpl` 및 OkHttp3 `CertificatePinner` 무력화를 통한 범용 SSL Pinning 우회 및 트래픽 가로채기
+- C/C++ 네이티브 공유 라이브러리(`libnative-crypto.so`) 내 라이선스 검증 함수의 런타임 리턴값 조작 (`Interceptor.attach`)
+- 단일 바이트 XOR(0x5A)로 난독화된 C2 원격 명령 패킷 역공학 및 C2 차단 플래그 획득
+- **교재 챕터 연계**: [28장 모바일 해킹](../28_Mobile_Hacking/07_frida_android_dynamic_analysis_deepdive.md)
+- **워게임 트랙**: `droidpwn` / `mobile`
+- **빠른 실행**: `python3 vhack.py lab start 19` (웹 콘솔 & API: `http://localhost:8019`)
+
+### 20. 윈도우 애플리케이션 & 커널 취약점 랩 (WinAppSec)
+- Windows 구조적 예외 처리(SEH) 덮어쓰기 및 SafeSEH 미적용 모듈의 `pop pop ret` 가젯 공격 체인 실습
+- 40바이트 제한된 버퍼 공간에서 가상 메모리 공간을 스캔하는 32바이트 `w00tw00t` Egg Hunter 어셈블리 쉘코드 분석
+- `ms-settings` 레지스트리 하이재킹을 통한 FODHelper UAC(사용자 계정 컨트롤) 자동 승격 우회
+- 취약한 디바이스 드라이버(HEVD 스타일)의 IOCTL `0x22200B` 핸들러를 통한 Arbitrary Write(Write-What-Where) 및 SYSTEM 토큰 스왑(Ring 0 권한 장악)
+- **교재 챕터 연계**: [03장 시스템 해킹](../03_System_Hacking/08_windows_seh_and_driver_exploit_deepdive.md)
+- **워게임 트랙**: `winclient` / `pwn`
+- **빠른 실행**: `python3 vhack.py lab start 20` (웹 콘솔 & API: `http://localhost:8020`)
+
 
 
 

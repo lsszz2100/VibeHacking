@@ -1,0 +1,12 @@
+services:
+  droidshield-app:
+    build: .
+    ports:
+      - "8019:8019"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_FLAG_ROOT=FLAG{dr01d_r00t_byp4ss_succ3ss_9281}
+      - LAB_FLAG_PINNING=FLAG{ss1_p1nn1ng_fr1da_unp1nn3d_7143}
+      - LAB_FLAG_JNI=FLAG{jn1_n4t1v3_h00k_l1c3ns3_p4ss_3301}
+      - LAB_FLAG_C2=FLAG{c2_d30bfusc4t3d_p4ck3t_cl34r_8829}
+    restart: unless-stopped

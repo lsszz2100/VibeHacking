@@ -308,7 +308,23 @@ const TRACKS = [
       "desc_en": "Autonomous agent tool hijacking, excessive agency, MCP protocol vulnerabilities, JSON-RPC interception, and zero trust defense."
   }
 
-];
+,
+  {
+      "id": "droidpwn",
+      "icon": "📱",
+      "ko": "안드로이드 리버싱·후킹",
+      "en": "Android Reversing & Frida",
+      "desc_ko": "루팅 탐지 우회·SSL Pinning 무력화·JNI 네이티브 후킹·DEX/Smali 분석 및 C2 패킷 역공학.",
+      "desc_en": "Root detection bypass, universal SSL unpinning, JNI native hooking, DEX/Smali analysis, and C2 packet reverse engineering."
+},
+  {
+      "id": "winclient",
+      "icon": "🪟",
+      "ko": "윈도우 클라이언트·커널 익스플로잇",
+      "en": "Windows Client & Kernel Exploits",
+      "desc_ko": "SEH 덮어쓰기·SafeSEH 우회·Egg Hunter·UAC 자동승격 바이패스 및 HEVD 커널 Arbitrary Write/Ring 0 장악.",
+      "desc_en": "SEH overwrite, SafeSEH bypass, Egg Hunter, UAC elevation bypass, and HEVD kernel arbitrary write / Ring 0 token stealing."
+}];
 
 const CHALLENGES = [
   {
@@ -31713,4 +31729,1964 @@ const CHALLENGES = [
   },
   "hash": "c3b8eb901df2019dc0f63af5e980017d30cc35a00b5436aed6ab078d69d943d0"
 }
-];
+,
+{
+  "id": "t0_droidpwn_apk_manifest",
+  "tier": 0,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "APK 구조와 AndroidManifest",
+    "en": "APK Structure & AndroidManifest"
+  },
+  "prompt": {
+    "ko": "안드로이드 APK 패키지 무결성 검증 챌린지입니다.\n지정된 식별자 `apk_android_manifest_structure_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apk_android_manifest_structure_v1\") 앞 20자리}`",
+    "en": "Validate APK package structure. Compute first 20 hex characters of SHA256(\"apk_android_manifest_structure_v1\").\n\nFormat: `FLAG{SHA256(\"apk_android_manifest_structure_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `apk_android_manifest_structure_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"apk_android_manifest_structure_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "93ee877b4400301c48591a9d0efb2bd392a634973477fa81226a10e2d2089e26"
+},
+{
+  "id": "t0_droidpwn_smali_opcode",
+  "tier": 0,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Smali 바이트코드 연산자",
+    "en": "Smali Bytecode Opcodes"
+  },
+  "prompt": {
+    "ko": "Dalvik 가상머신 Smali opcode 분석 챌린지입니다.\n지정된 식별자 `smali_const_string_opcode_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"smali_const_string_opcode_v1\") 앞 20자리}`",
+    "en": "Analyze Dalvik VM Smali opcodes. Compute first 20 hex characters of SHA256(\"smali_const_string_opcode_v1\").\n\nFormat: `FLAG{SHA256(\"smali_const_string_opcode_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `smali_const_string_opcode_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"smali_const_string_opcode_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "145bf12a2701531a9b4143e50d7a251bf43af28751c5695ee6e6e59534c9b4be"
+},
+{
+  "id": "t1_droidpwn_su_binary_check",
+  "tier": 1,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SU 바이너리 루팅 탐지",
+    "en": "SU Binary Root Detection"
+  },
+  "prompt": {
+    "ko": "기본 시스템 경로 `/system/bin/su` 탐지 무력화 챌린지입니다.\n지정된 식별자 `root_detect_su_binary_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"root_detect_su_binary_bypass_v1\") 앞 20자리}`",
+    "en": "Bypass standard /system/bin/su checks. Compute first 20 hex characters of SHA256(\"root_detect_su_binary_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"root_detect_su_binary_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `root_detect_su_binary_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"root_detect_su_binary_bypass_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "076accd15d5c17f31edb2739fcc40e1dcc11929f5f713e2b42103a8bf212b0da"
+},
+{
+  "id": "t1_droidpwn_test_keys_check",
+  "tier": 1,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ROM 빌드 태그 무결성",
+    "en": "ROM Build Tags Integrity"
+  },
+  "prompt": {
+    "ko": "ROM 빌드 태그 `test-keys` 스푸핑 챌린지입니다.\n지정된 식별자 `build_tags_test_keys_spoof_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"build_tags_test_keys_spoof_v1\") 앞 20자리}`",
+    "en": "Spoof test-keys build tags. Compute first 20 hex characters of SHA256(\"build_tags_test_keys_spoof_v1\").\n\nFormat: `FLAG{SHA256(\"build_tags_test_keys_spoof_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `build_tags_test_keys_spoof_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"build_tags_test_keys_spoof_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "da5544cdc0473f4369b6fe2eaa898874797ce78fd7f2a31276c9d637c0ae9488"
+},
+{
+  "id": "t1_droidpwn_magisk_package",
+  "tier": 1,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Magisk 패키지 은닉",
+    "en": "Magisk Package Cloaking"
+  },
+  "prompt": {
+    "ko": "루팅 관리자 패키지 은닉 기법 분석 챌린지입니다.\n지정된 식별자 `magisk_package_cloaking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"magisk_package_cloaking_v1\") 앞 20자리}`",
+    "en": "Analyze Magisk cloaking mechanisms. Compute first 20 hex characters of SHA256(\"magisk_package_cloaking_v1\").\n\nFormat: `FLAG{SHA256(\"magisk_package_cloaking_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `magisk_package_cloaking_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"magisk_package_cloaking_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5594968b0d372f18f3300674d5fc8f4103d1dddd10fdd5494ccaf00b38fff54a"
+},
+{
+  "id": "t1_droidpwn_okhttp_pinner",
+  "tier": 1,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OkHttp3 인증서 피닝 우회",
+    "en": "OkHttp3 Certificate Pinner Bypass"
+  },
+  "prompt": {
+    "ko": "OkHttp3 `CertificatePinner` 런타임 우회 챌린지입니다.\n지정된 식별자 `okhttp3_certificate_pinner_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"okhttp3_certificate_pinner_bypass_v1\") 앞 20자리}`",
+    "en": "Bypass OkHttp3 CertificatePinner check. Compute first 20 hex characters of SHA256(\"okhttp3_certificate_pinner_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"okhttp3_certificate_pinner_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `okhttp3_certificate_pinner_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"okhttp3_certificate_pinner_bypass_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8ef5984e55669dd17d18a94ff99e6b9fbed32dd4913d564ae48b3982b6be64b9"
+},
+{
+  "id": "t1_droidpwn_dex_magic",
+  "tier": 1,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DEX 헤더 매직 분석",
+    "en": "DEX Header Magic Verification"
+  },
+  "prompt": {
+    "ko": "DEX 파일 헤더 포맷 분석 챌린지입니다.\n지정된 식별자 `dex_header_magic_format_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dex_header_magic_format_v1\") 앞 20자리}`",
+    "en": "Verify DEX file format magic headers. Compute first 20 hex characters of SHA256(\"dex_header_magic_format_v1\").\n\nFormat: `FLAG{SHA256(\"dex_header_magic_format_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `dex_header_magic_format_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"dex_header_magic_format_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "1b58a2e5546446e9f36d02729eb86497eabeaee3db54b34927c0eb0287b1e575"
+},
+{
+  "id": "t1_droidpwn_apktool_disasm",
+  "tier": 1,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Apktool 디스어셈블 분석",
+    "en": "Apktool Disassembly Analysis"
+  },
+  "prompt": {
+    "ko": "Apktool 리소스 및 바이트코드 역공학 챌린지입니다.\n지정된 식별자 `apktool_disassembly_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apktool_disassembly_analysis_v1\") 앞 20자리}`",
+    "en": "Reverse engineer Apktool resources. Compute first 20 hex characters of SHA256(\"apktool_disassembly_analysis_v1\").\n\nFormat: `FLAG{SHA256(\"apktool_disassembly_analysis_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `apktool_disassembly_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"apktool_disassembly_analysis_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "56d549ae6a78edfd24dd4a571a9a2dddafc2c57bce0835ff022ea2017bb01498"
+},
+{
+  "id": "t2_droidpwn_frida_java_hook",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Frida Java.use 메서드 조작",
+    "en": "Frida Java.use Method Hook"
+  },
+  "prompt": {
+    "ko": "Frida `Java.use`를 통한 런타임 메서드 변조 챌린지입니다.\n지정된 식별자 `frida_java_use_method_hook_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"frida_java_use_method_hook_v1\") 앞 20자리}`",
+    "en": "Hook Java methods via Frida Java.use. Compute first 20 hex characters of SHA256(\"frida_java_use_method_hook_v1\").\n\nFormat: `FLAG{SHA256(\"frida_java_use_method_hook_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `frida_java_use_method_hook_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"frida_java_use_method_hook_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "6026502588c07ae26a8f56568521101c9091eec153983e96ddbdb2815082c0fc"
+},
+{
+  "id": "t2_droidpwn_native_interceptor",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Frida Interceptor 네이티브 후킹",
+    "en": "Frida Native Interceptor Hook"
+  },
+  "prompt": {
+    "ko": "`Interceptor.attach`를 통한 공유 라이브러리 반환값 조작 챌린지입니다.\n지정된 식별자 `frida_native_interceptor_attach_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"frida_native_interceptor_attach_v1\") 앞 20자리}`",
+    "en": "Intercept native export calls via Frida. Compute first 20 hex characters of SHA256(\"frida_native_interceptor_attach_v1\").\n\nFormat: `FLAG{SHA256(\"frida_native_interceptor_attach_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `frida_native_interceptor_attach_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"frida_native_interceptor_attach_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2f0ac0c0475a505ef0f5dd44efa83a2910c16544c4719f4aaed058d0c9c2e0c8"
+},
+{
+  "id": "t2_droidpwn_xor_c2_recovery",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "단일 바이트 XOR C2 복호화",
+    "en": "Single-Byte XOR C2 Recovery"
+  },
+  "prompt": {
+    "ko": "악성 안드로이드 C2 통신 단일 바이트 XOR 복호화 챌린지입니다.\n지정된 식별자 `xor_c2_communication_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"xor_c2_communication_recovery_v1\") 앞 20자리}`",
+    "en": "Recover XOR-obfuscated C2 commands. Compute first 20 hex characters of SHA256(\"xor_c2_communication_recovery_v1\").\n\nFormat: `FLAG{SHA256(\"xor_c2_communication_recovery_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `xor_c2_communication_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"xor_c2_communication_recovery_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "cc595fed94fd6f287658acb1f72aee7ca53d3e775a2894f31c524814dd704cdf"
+},
+{
+  "id": "t2_droidpwn_jni_onload_hook",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "JNI_OnLoad 초기화 추적",
+    "en": "JNI_OnLoad Initialization Tracing"
+  },
+  "prompt": {
+    "ko": "네이티브 모듈 로드 시점 JNI_OnLoad 추적 챌린지입니다.\n지정된 식별자 `jni_onload_initialization_trace_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"jni_onload_initialization_trace_v1\") 앞 20자리}`",
+    "en": "Trace JNI_OnLoad runtime loading. Compute first 20 hex characters of SHA256(\"jni_onload_initialization_trace_v1\").\n\nFormat: `FLAG{SHA256(\"jni_onload_initialization_trace_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `jni_onload_initialization_trace_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"jni_onload_initialization_trace_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "64ade0cb2688f7f1b8e00945c18f4bbfd28d22cc9f4ef3e93a75525b98355473"
+},
+{
+  "id": "t2_droidpwn_trustmanager_bypass",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Conscrypt TrustManagerImpl 우회",
+    "en": "Conscrypt TrustManagerImpl Bypass"
+  },
+  "prompt": {
+    "ko": "Conscrypt `TrustManagerImpl.verifyChain` 우회 챌린지입니다.\n지정된 식별자 `trustmanager_verify_chain_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"trustmanager_verify_chain_bypass_v1\") 앞 20자리}`",
+    "en": "Bypass Conscrypt TrustManagerImpl.verifyChain. Compute first 20 hex characters of SHA256(\"trustmanager_verify_chain_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"trustmanager_verify_chain_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `trustmanager_verify_chain_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"trustmanager_verify_chain_bypass_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8759afc8c4d55255131c4b6bd9756d101df0d563521f88f29d3bbcb977ae3bbe"
+},
+{
+  "id": "t2_droidpwn_smali_branch_patch",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Smali 조건 분기 바이패스",
+    "en": "Smali Conditional Branch Patch"
+  },
+  "prompt": {
+    "ko": "Smali 조건 분기 `if-nez` 반전 패치 챌린지입니다.\n지정된 식별자 `smali_conditional_branch_patch_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"smali_conditional_branch_patch_v1\") 앞 20자리}`",
+    "en": "Patch conditional if-nez branches in Smali. Compute first 20 hex characters of SHA256(\"smali_conditional_branch_patch_v1\").\n\nFormat: `FLAG{SHA256(\"smali_conditional_branch_patch_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `smali_conditional_branch_patch_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"smali_conditional_branch_patch_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b8447c162d5d7d9ca24995fd3aa64169473b923879e802fcf9e3d4efbd19d26f"
+},
+{
+  "id": "t2_droidpwn_android_id_spoof",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "안드로이드 ID 기기 지문 스푸핑",
+    "en": "Android ID Fingerprint Spoofing"
+  },
+  "prompt": {
+    "ko": "고유 식별자 `android_id` 동적 스푸핑 챌린지입니다.\n지정된 식별자 `android_id_fingerprint_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"android_id_fingerprint_spoofing_v1\") 앞 20자리}`",
+    "en": "Spoof android_id hardware attributes. Compute first 20 hex characters of SHA256(\"android_id_fingerprint_spoofing_v1\").\n\nFormat: `FLAG{SHA256(\"android_id_fingerprint_spoofing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `android_id_fingerprint_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"android_id_fingerprint_spoofing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bf3cddb5d871ad37be653c32b45c17dd3ec276f8524454d81682f6faa8897e78"
+},
+{
+  "id": "t2_droidpwn_dex_classloader",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "동적 DexClassLoader 탐지",
+    "en": "Dynamic DexClassLoader Detection"
+  },
+  "prompt": {
+    "ko": "인메모리 동적 클래스 로딩 기법 분석 챌린지입니다.\n지정된 식별자 `dynamic_dex_class_loader_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dynamic_dex_class_loader_analysis_v1\") 앞 20자리}`",
+    "en": "Audit dynamic DexClassLoader payloads. Compute first 20 hex characters of SHA256(\"dynamic_dex_class_loader_analysis_v1\").\n\nFormat: `FLAG{SHA256(\"dynamic_dex_class_loader_analysis_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `dynamic_dex_class_loader_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"dynamic_dex_class_loader_analysis_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5da84b49366a568f6e1428c0b0efb0c63bb1931936c37c5261b61610cf92f958"
+},
+{
+  "id": "t2_droidpwn_sms_receiver_hijack",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SMS 리시버 우선순위 탈취",
+    "en": "SMS Receiver Priority Hijack"
+  },
+  "prompt": {
+    "ko": "고우선순위 BroadcastReceiver 인텐트 하이재킹 챌린지입니다.\n지정된 식별자 `sms_receiver_priority_hijack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sms_receiver_priority_hijack_v1\") 앞 20자리}`",
+    "en": "Intercept SMS BroadcastReceiver priority. Compute first 20 hex characters of SHA256(\"sms_receiver_priority_hijack_v1\").\n\nFormat: `FLAG{SHA256(\"sms_receiver_priority_hijack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sms_receiver_priority_hijack_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sms_receiver_priority_hijack_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a851b0a4ca60b10746d2833ba60fe1c4320c12f08887a3b976b3e727676feb49"
+},
+{
+  "id": "t2_droidpwn_exported_activity_access",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "노출된 액티비티 비인가 접근",
+    "en": "Exported Activity Unauthorized Access"
+  },
+  "prompt": {
+    "ko": "`exported=true` 액티비티 직접 기동 챌린지입니다.\n지정된 식별자 `exported_activity_unauthorized_access_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"exported_activity_unauthorized_access_v1\") 앞 20자리}`",
+    "en": "Invoke vulnerable exported Android activities. Compute first 20 hex characters of SHA256(\"exported_activity_unauthorized_access_v1\").\n\nFormat: `FLAG{SHA256(\"exported_activity_unauthorized_access_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `exported_activity_unauthorized_access_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"exported_activity_unauthorized_access_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "816401447a2ea4a749deb24df5b1ab8e13790dbe04826a32423c3257609007dc"
+},
+{
+  "id": "t2_droidpwn_shared_prefs_leak",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SharedPreferences 평문 유출",
+    "en": "SharedPreferences Plaintext Leak"
+  },
+  "prompt": {
+    "ko": "`shared_prefs` 내부 저장소 크리덴셜 분석 챌린지입니다.\n지정된 식별자 `shared_preferences_plaintext_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"shared_preferences_plaintext_leak_v1\") 앞 20자리}`",
+    "en": "Extract plaintext tokens from shared_prefs. Compute first 20 hex characters of SHA256(\"shared_preferences_plaintext_leak_v1\").\n\nFormat: `FLAG{SHA256(\"shared_preferences_plaintext_leak_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `shared_preferences_plaintext_leak_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"shared_preferences_plaintext_leak_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2e82a588d2bb606b147d0bd3ac51224b2d7bcf6154b42fb22cba04b4064846a6"
+},
+{
+  "id": "t2_droidpwn_native_crypto_hook",
+  "tier": 2,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "네이티브 암호화 파라미터 덤프",
+    "en": "Native Crypto Parameter Dump"
+  },
+  "prompt": {
+    "ko": "C/C++ 네이티브 `EVP_CipherInit_ex` 키 추출 챌린지입니다.\n지정된 식별자 `native_crypto_parameter_dump_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"native_crypto_parameter_dump_v1\") 앞 20자리}`",
+    "en": "Dump native OpenSSL cipher keys. Compute first 20 hex characters of SHA256(\"native_crypto_parameter_dump_v1\").\n\nFormat: `FLAG{SHA256(\"native_crypto_parameter_dump_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `native_crypto_parameter_dump_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"native_crypto_parameter_dump_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a4f02e7585d5e720c6030a288240f86a21822fddbbdb7e4803159b8f78b61388"
+},
+{
+  "id": "t3_droidpwn_anti_frida_maps",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "안티 프리다 /proc/self/maps 우회",
+    "en": "Anti-Frida /proc/self/maps Bypass"
+  },
+  "prompt": {
+    "ko": "메모리 매핑 기반 안티 프리다 탐지 우회 챌린지입니다.\n지정된 식별자 `anti_frida_maps_detection_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"anti_frida_maps_detection_bypass_v1\") 앞 20자리}`",
+    "en": "Bypass memory mapping anti-Frida scans. Compute first 20 hex characters of SHA256(\"anti_frida_maps_detection_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"anti_frida_maps_detection_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `anti_frida_maps_detection_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"anti_frida_maps_detection_bypass_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "39fde512b967518b1bdef47d035b4913bbe0515e71111b82a665578b85843704"
+},
+{
+  "id": "t3_droidpwn_cfg_flattening_defuse",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "제어 흐름 평탄화 난독화 해제",
+    "en": "Control Flow Flattening Defusal"
+  },
+  "prompt": {
+    "ko": "제어 흐름 평탄화(Control Flow Flattening) 분석 챌린지입니다.\n지정된 식별자 `control_flow_flattening_defusal_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"control_flow_flattening_defusal_v1\") 앞 20자리}`",
+    "en": "Deobfuscate flattened control flow dispatchers. Compute first 20 hex characters of SHA256(\"control_flow_flattening_defusal_v1\").\n\nFormat: `FLAG{SHA256(\"control_flow_flattening_defusal_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `control_flow_flattening_defusal_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"control_flow_flattening_defusal_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ab9d725594c48f52ff84e5dd243f96ad76770fea91d8ff5df3afcac0079e3dfc"
+},
+{
+  "id": "t3_droidpwn_dlsym_interception",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "런타임 dlsym 심볼 가로채기",
+    "en": "Runtime dlsym Symbol Interception"
+  },
+  "prompt": {
+    "ko": "동적 심볼 해석 API `dlsym` 후킹 챌린지입니다.\n지정된 식별자 `runtime_dlsym_symbol_interception_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"runtime_dlsym_symbol_interception_v1\") 앞 20자리}`",
+    "en": "Intercept runtime dlsym lookups. Compute first 20 hex characters of SHA256(\"runtime_dlsym_symbol_interception_v1\").\n\nFormat: `FLAG{SHA256(\"runtime_dlsym_symbol_interception_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `runtime_dlsym_symbol_interception_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"runtime_dlsym_symbol_interception_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bf72870375903cbde9427788ae721a9d9f5f4a80f7c8937b526986c2ce9a902b"
+},
+{
+  "id": "t3_droidpwn_play_integrity_eval",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Play Integrity 기기 판정 분석",
+    "en": "Play Integrity Verdict Evaluation"
+  },
+  "prompt": {
+    "ko": "Google Play Integrity 원격 증명 분석 챌린지입니다.\n지정된 식별자 `play_integrity_verdict_evaluation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"play_integrity_verdict_evaluation_v1\") 앞 20자리}`",
+    "en": "Audit Play Integrity hardware attestation. Compute first 20 hex characters of SHA256(\"play_integrity_verdict_evaluation_v1\").\n\nFormat: `FLAG{SHA256(\"play_integrity_verdict_evaluation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `play_integrity_verdict_evaluation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"play_integrity_verdict_evaluation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "610c35856e55e99639a380870ab84989effdd108e7bd930cbfa700a885d9014b"
+},
+{
+  "id": "t3_droidpwn_apk_signing_block",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "APK 서명 블록 무결성",
+    "en": "APK Signing Block Integrity"
+  },
+  "prompt": {
+    "ko": "APK Signature Scheme v2/v3 블록 구조 챌린지입니다.\n지정된 식별자 `apk_signing_block_integrity_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apk_signing_block_integrity_v1\") 앞 20자리}`",
+    "en": "Audit APK Signature Scheme v2/v3 blocks. Compute first 20 hex characters of SHA256(\"apk_signing_block_integrity_v1\").\n\nFormat: `FLAG{SHA256(\"apk_signing_block_integrity_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `apk_signing_block_integrity_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"apk_signing_block_integrity_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2f15973efb4955d719df199386f768d965985a1032ceb15db92ba577c28b6dfa"
+},
+{
+  "id": "t3_droidpwn_cleartext_traffic_perm",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "네트워크 보안 구성 평문 통신",
+    "en": "Network Security Config Cleartext"
+  },
+  "prompt": {
+    "ko": "안드로이드 네트워크 보안 구성 분석 챌린지입니다.\n지정된 식별자 `network_security_config_cleartext_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"network_security_config_cleartext_v1\") 앞 20자리}`",
+    "en": "Audit cleartextTrafficPermitted configurations. Compute first 20 hex characters of SHA256(\"network_security_config_cleartext_v1\").\n\nFormat: `FLAG{SHA256(\"network_security_config_cleartext_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `network_security_config_cleartext_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"network_security_config_cleartext_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "43ccba90299de77739c19aa35f530c2de39ff98570898fe40b0a18dd93058865"
+},
+{
+  "id": "t3_droidpwn_content_provider_injection",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ContentProvider URI 인젝션",
+    "en": "ContentProvider URI Injection"
+  },
+  "prompt": {
+    "ko": "ContentProvider SQL 인젝션 취약점 챌린지입니다.\n지정된 식별자 `content_provider_uri_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"content_provider_uri_injection_v1\") 앞 20자리}`",
+    "en": "Exploit ContentProvider SQL queries. Compute first 20 hex characters of SHA256(\"content_provider_uri_injection_v1\").\n\nFormat: `FLAG{SHA256(\"content_provider_uri_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `content_provider_uri_injection_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"content_provider_uri_injection_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a19bb8988a5f6710fbdf7317c6cb279ae04c979b242280d3a423b0c1b7a3c7c0"
+},
+{
+  "id": "t3_droidpwn_binder_transaction_audit",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Binder IPC 트랜잭션 감사",
+    "en": "Binder IPC Transaction Audit"
+  },
+  "prompt": {
+    "ko": "`/dev/binder` 통신 트랜잭션 도청 챌린지입니다.\n지정된 식별자 `binder_ipc_transaction_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"binder_ipc_transaction_audit_v1\") 앞 20자리}`",
+    "en": "Monitor /dev/binder IPC calls. Compute first 20 hex characters of SHA256(\"binder_ipc_transaction_audit_v1\").\n\nFormat: `FLAG{SHA256(\"binder_ipc_transaction_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `binder_ipc_transaction_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"binder_ipc_transaction_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "627493e100935db771abe46e453331adeb5b35d89f6789cffd55f1ee9ef83da8"
+},
+{
+  "id": "t3_droidpwn_dex_checksum_bypass",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DEX Adler-32 체크섬 패치",
+    "en": "DEX Adler-32 Checksum Patch"
+  },
+  "prompt": {
+    "ko": "DEX 파일 헤더 Adler-32 체크섬 재계산 챌린지입니다.\n지정된 식별자 `dex_adler32_checksum_patch_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dex_adler32_checksum_patch_v1\") 앞 20자리}`",
+    "en": "Recalculate DEX header Adler-32 checksums. Compute first 20 hex characters of SHA256(\"dex_adler32_checksum_patch_v1\").\n\nFormat: `FLAG{SHA256(\"dex_adler32_checksum_patch_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `dex_adler32_checksum_patch_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"dex_adler32_checksum_patch_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5fbdcf6fbda0169ba623d494ecb69bd9ad9f2f52b8be04cc5560a0692029fa75"
+},
+{
+  "id": "t3_droidpwn_accessibility_defense",
+  "tier": 3,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "접근성 오버레이 트로이 방어",
+    "en": "Accessibility Overlay Trojan Defense"
+  },
+  "prompt": {
+    "ko": "가짜 화면 오버레이 공격 차단 챌린지입니다.\n지정된 식별자 `accessibility_overlay_trojan_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"accessibility_overlay_trojan_defense_v1\") 앞 20자리}`",
+    "en": "Prevent accessibility overlay phishing. Compute first 20 hex characters of SHA256(\"accessibility_overlay_trojan_defense_v1\").\n\nFormat: `FLAG{SHA256(\"accessibility_overlay_trojan_defense_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `accessibility_overlay_trojan_defense_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"accessibility_overlay_trojan_defense_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b47d25880796f71b910cf10423c878f20717e2a989bf86a024ea075a7152e64f"
+},
+{
+  "id": "t4_droidpwn_banking_trojan_capstone",
+  "tier": 4,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "모바일 뱅킹 트로이 침해 캡스톤",
+    "en": "Mobile Banking Trojan Capstone"
+  },
+  "prompt": {
+    "ko": "모바일 뱅킹 트로이목마 침해 사고 종합 캡스톤 챌린지입니다.\n지정된 식별자 `mobile_banking_trojan_incident_capstone_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"mobile_banking_trojan_incident_capstone_v1\") 앞 20자리}`",
+    "en": "Comprehensive mobile banking Trojan incident analysis. Compute first 20 hex characters of SHA256(\"mobile_banking_trojan_incident_capstone_v1\").\n\nFormat: `FLAG{SHA256(\"mobile_banking_trojan_incident_capstone_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `mobile_banking_trojan_incident_capstone_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"mobile_banking_trojan_incident_capstone_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c246a2b06ebe80a0679872b7097b6c6335997d1e7a70699b01ce02316544cff4"
+},
+{
+  "id": "t4_droidpwn_zygisk_module_isolation",
+  "tier": 4,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Zygisk 네이티브 샌드박스 격리",
+    "en": "Zygisk Native Sandbox Isolation"
+  },
+  "prompt": {
+    "ko": "Zygisk 런타임 네이티브 메모리 격리 챌린지입니다.\n지정된 식별자 `zygisk_native_sandbox_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"zygisk_native_sandbox_isolation_v1\") 앞 20자리}`",
+    "en": "Isolate native Zygisk hooks in Zygote. Compute first 20 hex characters of SHA256(\"zygisk_native_sandbox_isolation_v1\").\n\nFormat: `FLAG{SHA256(\"zygisk_native_sandbox_isolation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `zygisk_native_sandbox_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"zygisk_native_sandbox_isolation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3e39c8ae4485a607fe1e2dbb90b4da018a9bba0899c6c147427fe8c3f9fb47cd"
+},
+{
+  "id": "t4_droidpwn_in_memory_dex_carving",
+  "tier": 4,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "인메모리 난독화 DEX 복원 카빙",
+    "en": "In-Memory Obfuscated DEX Carving"
+  },
+  "prompt": {
+    "ko": "동적 복호화된 인메모리 DEX 스트림 덤프 챌린지입니다.\n지정된 식별자 `in_memory_dex_carving_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"in_memory_dex_carving_recovery_v1\") 앞 20자리}`",
+    "en": "Carve unpacked DEX bytecodes from process memory. Compute first 20 hex characters of SHA256(\"in_memory_dex_carving_recovery_v1\").\n\nFormat: `FLAG{SHA256(\"in_memory_dex_carving_recovery_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `in_memory_dex_carving_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"in_memory_dex_carving_recovery_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5857d79f13b0531a3c3a287d945f2e6d59f3799425aa0eba74dbbac9a186350e"
+},
+{
+  "id": "t4_droidpwn_full_chain_anti_analysis",
+  "tier": 4,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "풀체인 안티 분석 종합 방어",
+    "en": "Full-Chain Anti-Analysis Defeat"
+  },
+  "prompt": {
+    "ko": "다계층 디버거 및 DBI 복합 탐지 무력화 챌린지입니다.\n지정된 식별자 `full_chain_anti_analysis_defeat_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"full_chain_anti_analysis_defeat_v1\") 앞 20자리}`",
+    "en": "Neutralize multi-layered debugger and DBI hooks. Compute first 20 hex characters of SHA256(\"full_chain_anti_analysis_defeat_v1\").\n\nFormat: `FLAG{SHA256(\"full_chain_anti_analysis_defeat_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `full_chain_anti_analysis_defeat_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"full_chain_anti_analysis_defeat_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "213e8d262e8cfe70111083a78da42708aefe2b58c8ffb3aba75f2527d792a951"
+},
+{
+  "id": "t4_droidpwn_zero_trust_mobile_posture",
+  "tier": 4,
+  "cat": "droidpwn",
+  "track": "droidpwn",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "모바일 제로 트러스트 기기 포스처",
+    "en": "Mobile Zero Trust Device Posture"
+  },
+  "prompt": {
+    "ko": "기기 무결성 기반 제로 트러스트 인가 챌린지입니다.\n지정된 식별자 `zero_trust_mobile_posture_attestation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"zero_trust_mobile_posture_attestation_v1\") 앞 20자리}`",
+    "en": "Enforce Zero Trust device posture attestation. Compute first 20 hex characters of SHA256(\"zero_trust_mobile_posture_attestation_v1\").\n\nFormat: `FLAG{SHA256(\"zero_trust_mobile_posture_attestation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `zero_trust_mobile_posture_attestation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"zero_trust_mobile_posture_attestation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bf1a26ed13d26b096c221c3f933ce30d36115c39fa99caffdbd20d28bfe6814c"
+},
+{
+  "id": "t0_winclient_pe_dos_magic",
+  "tier": 0,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PE DOS 매직 헤더 검증",
+    "en": "PE DOS Magic Header Check"
+  },
+  "prompt": {
+    "ko": "Windows PE 파일의 MZ DOS 시그니처 챌린지입니다.\n지정된 식별자 `pe_dos_magic_header_check_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"pe_dos_magic_header_check_v1\") 앞 20자리}`",
+    "en": "Verify Windows PE DOS signature. Compute first 20 hex characters of SHA256(\"pe_dos_magic_header_check_v1\").\n\nFormat: `FLAG{SHA256(\"pe_dos_magic_header_check_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `pe_dos_magic_header_check_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"pe_dos_magic_header_check_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f70746d4ff62549febaffade2c58d7d6656c14e2d8dbf68ffd32e1a468aba54a"
+},
+{
+  "id": "t0_winclient_teb_seh_head",
+  "tier": 0,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "TEB FS:0 SEH 체인 헤드",
+    "en": "TEB FS:0 SEH Chain Head"
+  },
+  "prompt": {
+    "ko": "TEB 구조체 FS:[0] 예외 체인 챌린지입니다.\n지정된 식별자 `teb_fs_zero_seh_chain_head_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"teb_fs_zero_seh_chain_head_v1\") 앞 20자리}`",
+    "en": "Inspect TEB FS:0 SEH registration record. Compute first 20 hex characters of SHA256(\"teb_fs_zero_seh_chain_head_v1\").\n\nFormat: `FLAG{SHA256(\"teb_fs_zero_seh_chain_head_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `teb_fs_zero_seh_chain_head_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"teb_fs_zero_seh_chain_head_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "4e318b7587eea7befc135ac8c71ea9e53c3f03a4eacb4d7b500d15b4a56c9f87"
+},
+{
+  "id": "t1_winclient_nseh_short_jump",
+  "tier": 1,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "nSEH 전방 6바이트 점프",
+    "en": "nSEH Forward 6-Byte Short Jump"
+  },
+  "prompt": {
+    "ko": "nSEH `\\xeb\\x06` 쇼트 점프 구성 챌린지입니다.\n지정된 식별자 `nseh_short_jump_forward_six_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"nseh_short_jump_forward_six_v1\") 앞 20자리}`",
+    "en": "Construct nSEH short jump forward. Compute first 20 hex characters of SHA256(\"nseh_short_jump_forward_six_v1\").\n\nFormat: `FLAG{SHA256(\"nseh_short_jump_forward_six_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `nseh_short_jump_forward_six_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"nseh_short_jump_forward_six_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "24edbd0c7cd4f9ede2eb5257b097e89d3454e801c8660f3048a9c3b1fb0e11c4"
+},
+{
+  "id": "t1_winclient_pop_pop_ret_gadget",
+  "tier": 1,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SafeSEH 우회 POP-POP-RET 가젯",
+    "en": "SafeSEH POP-POP-RET Gadget"
+  },
+  "prompt": {
+    "ko": "SafeSEH 미적용 모듈의 `pop pop ret` 가젯 챌린지입니다.\n지정된 식별자 `safeseh_pop_pop_ret_gadget_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"safeseh_pop_pop_ret_gadget_v1\") 앞 20자리}`",
+    "en": "Find SafeSEH-free pop-pop-ret gadgets. Compute first 20 hex characters of SHA256(\"safeseh_pop_pop_ret_gadget_v1\").\n\nFormat: `FLAG{SHA256(\"safeseh_pop_pop_ret_gadget_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `safeseh_pop_pop_ret_gadget_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"safeseh_pop_pop_ret_gadget_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3a2fa1e2cd97db8c27c0529433bde93c9c41b56392231f439779bbf5f81aa33a"
+},
+{
+  "id": "t1_winclient_egghunter_tag_search",
+  "tier": 1,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "에그 헌터 w00tw00t 마커 탐색",
+    "en": "Egg Hunter w00tw00t Tag Search"
+  },
+  "prompt": {
+    "ko": "에그 헌터 4바이트 태그 2회 탐색 챌린지입니다.\n지정된 식별자 `egghunter_tag_search_w00t_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"egghunter_tag_search_w00t_v1\") 앞 20자리}`",
+    "en": "Search for double tag marker in memory. Compute first 20 hex characters of SHA256(\"egghunter_tag_search_w00t_v1\").\n\nFormat: `FLAG{SHA256(\"egghunter_tag_search_w00t_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `egghunter_tag_search_w00t_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"egghunter_tag_search_w00t_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f72a9239a52c0cd581edd62ee895c6b5188fc9ce9fc9fbfa5f318603b2d324a2"
+},
+{
+  "id": "t1_winclient_fodhelper_uac_exec",
+  "tier": 1,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "FODHelper UAC 자동 승격",
+    "en": "FODHelper UAC Auto-Elevation"
+  },
+  "prompt": {
+    "ko": "FODHelper 레지스트리 자동 승격 챌린지입니다.\n지정된 식별자 `fodhelper_uac_auto_elevation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fodhelper_uac_auto_elevation_v1\") 앞 20자리}`",
+    "en": "Exploit FODHelper auto-elevation registry keys. Compute first 20 hex characters of SHA256(\"fodhelper_uac_auto_elevation_v1\").\n\nFormat: `FLAG{SHA256(\"fodhelper_uac_auto_elevation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fodhelper_uac_auto_elevation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fodhelper_uac_auto_elevation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b9ca1163044a327c3ee560f6d278d474127298b4f171b8778d7a0dcf90b03dad"
+},
+{
+  "id": "t1_winclient_dep_nx_stack_guard",
+  "tier": 1,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DEP/NX 실행 방지 통제",
+    "en": "DEP/NX Stack Execution Prevention"
+  },
+  "prompt": {
+    "ko": "하드웨어 DEP 메모리 보호 정책 분석 챌린지입니다.\n지정된 식별자 `dep_nx_stack_execution_prevention_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dep_nx_stack_execution_prevention_v1\") 앞 20자리}`",
+    "en": "Analyze Data Execution Prevention mitigations. Compute first 20 hex characters of SHA256(\"dep_nx_stack_execution_prevention_v1\").\n\nFormat: `FLAG{SHA256(\"dep_nx_stack_execution_prevention_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `dep_nx_stack_execution_prevention_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"dep_nx_stack_execution_prevention_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5d6e101074cf4fac93713cd15b81e131e56165fc42efeeb46f668154e06393e8"
+},
+{
+  "id": "t1_winclient_aslr_entropy_eval",
+  "tier": 1,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ASLR 엔트로피 난수화 분석",
+    "en": "ASLR Entropy Randomization Audit"
+  },
+  "prompt": {
+    "ko": "주소 공간 난수화(ASLR) 엔트로피 분석 챌린지입니다.\n지정된 식별자 `aslr_entropy_randomization_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"aslr_entropy_randomization_audit_v1\") 앞 20자리}`",
+    "en": "Audit ASLR address space randomization. Compute first 20 hex characters of SHA256(\"aslr_entropy_randomization_audit_v1\").\n\nFormat: `FLAG{SHA256(\"aslr_entropy_randomization_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `aslr_entropy_randomization_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"aslr_entropy_randomization_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "29c71e24cab34af48ff27bd72b927ef1515b5b6a118872ffbe1315d66246857f"
+},
+{
+  "id": "t2_winclient_mona_safeseh_audit",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Mona 모듈 SafeSEH 감사",
+    "en": "Mona Modules SafeSEH Audit"
+  },
+  "prompt": {
+    "ko": "Mona 스크립트를 통한 바이너리 보호 검사 챌린지입니다.\n지정된 식별자 `mona_modules_safeseh_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"mona_modules_safeseh_audit_v1\") 앞 20자리}`",
+    "en": "Audit module protections using mona. Compute first 20 hex characters of SHA256(\"mona_modules_safeseh_audit_v1\").\n\nFormat: `FLAG{SHA256(\"mona_modules_safeseh_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `mona_modules_safeseh_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"mona_modules_safeseh_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8eae4845ef97483b738235b026150e2a39de7d316fc204ba4d9e163ea33e136c"
+},
+{
+  "id": "t2_winclient_hevd_arbitrary_write",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "HEVD IOCTL 0x22200B 쓰기",
+    "en": "HEVD IOCTL 0x22200B Write"
+  },
+  "prompt": {
+    "ko": "HEVD 드라이버 Write-What-Where 취약점 챌린지입니다.\n지정된 식별자 `hevd_ioctl_arbitrary_write_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"hevd_ioctl_arbitrary_write_v1\") 앞 20자리}`",
+    "en": "Trigger HEVD arbitrary write IOCTL. Compute first 20 hex characters of SHA256(\"hevd_ioctl_arbitrary_write_v1\").\n\nFormat: `FLAG{SHA256(\"hevd_ioctl_arbitrary_write_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `hevd_ioctl_arbitrary_write_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"hevd_ioctl_arbitrary_write_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8a17da381ec96e15c4f2f13eb863f9fb974aa3c5e7886d8e5694aff74af5a656"
+},
+{
+  "id": "t2_winclient_eprocess_token_swap",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "EPROCESS SYSTEM 토큰 스왑",
+    "en": "EPROCESS SYSTEM Token Swap"
+  },
+  "prompt": {
+    "ko": "커널 EPROCESS 구조체 보안 토큰 교체 챌린지입니다.\n지정된 식별자 `eprocess_system_token_swap_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"eprocess_system_token_swap_v1\") 앞 20자리}`",
+    "en": "Swap security token pointer in EPROCESS. Compute first 20 hex characters of SHA256(\"eprocess_system_token_swap_v1\").\n\nFormat: `FLAG{SHA256(\"eprocess_system_token_swap_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `eprocess_system_token_swap_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"eprocess_system_token_swap_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "015066e454a0b7d850b319cda58d02fe1b1c28173c403dd4028e8a39785eef63"
+},
+{
+  "id": "t2_winclient_ntaccesscheck_probe",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "NtAccessCheck 페이지 프로브",
+    "en": "NtAccessCheck Page Probe"
+  },
+  "prompt": {
+    "ko": "NtAccessCheck 시스템콜 메모리 스캔 챌린지입니다.\n지정된 식별자 `ntaccesscheck_page_probe_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ntaccesscheck_page_probe_v1\") 앞 20자리}`",
+    "en": "Probe unmapped virtual pages with NtAccessCheck. Compute first 20 hex characters of SHA256(\"ntaccesscheck_page_probe_v1\").\n\nFormat: `FLAG{SHA256(\"ntaccesscheck_page_probe_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `ntaccesscheck_page_probe_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"ntaccesscheck_page_probe_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b88eb7d53dbd6c0b02fd5a6aa56679af83e036bbb56f994d6c7cd2793dbc008e"
+},
+{
+  "id": "t2_winclient_seh_trylevel_audit",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MSVC SEH TryLevel 스택 분석",
+    "en": "MSVC SEH TryLevel Stack Audit"
+  },
+  "prompt": {
+    "ko": "컴파일러 SEH 스코프 인덱스 `TryLevel` 분석 챌린지입니다.\n지정된 식별자 `msvc_seh_trylevel_stack_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"msvc_seh_trylevel_stack_audit_v1\") 앞 20자리}`",
+    "en": "Analyze compiler TryLevel stack offsets. Compute first 20 hex characters of SHA256(\"msvc_seh_trylevel_stack_audit_v1\").\n\nFormat: `FLAG{SHA256(\"msvc_seh_trylevel_stack_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `msvc_seh_trylevel_stack_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"msvc_seh_trylevel_stack_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "6fa8b6f7700959673825382813517dbccc88c07152d300e00c243325fc5f3667"
+},
+{
+  "id": "t2_winclient_safe_dll_search_mode",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SafeDllSearchMode 경로 감사",
+    "en": "SafeDllSearchMode Path Audit"
+  },
+  "prompt": {
+    "ko": "DLL 검색 순서 하이재킹 완화 모드 챌린지입니다.\n지정된 식별자 `safe_dll_search_mode_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"safe_dll_search_mode_audit_v1\") 앞 20자리}`",
+    "en": "Audit SafeDllSearchMode registry settings. Compute first 20 hex characters of SHA256(\"safe_dll_search_mode_audit_v1\").\n\nFormat: `FLAG{SHA256(\"safe_dll_search_mode_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `safe_dll_search_mode_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"safe_dll_search_mode_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bf14a6b203eebe48b316a64aafd64fccb5a5aa2c9950735b21a21c22090281f5"
+},
+{
+  "id": "t2_winclient_pipe_impersonation",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Named Pipe 클라이언트 가장",
+    "en": "Named Pipe Client Impersonation"
+  },
+  "prompt": {
+    "ko": "파이프 통신 `ImpersonateNamedPipeClient` 챌린지입니다.\n지정된 식별자 `named_pipe_client_impersonation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"named_pipe_client_impersonation_v1\") 앞 20자리}`",
+    "en": "Audit Named Pipe impersonation calls. Compute first 20 hex characters of SHA256(\"named_pipe_client_impersonation_v1\").\n\nFormat: `FLAG{SHA256(\"named_pipe_client_impersonation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `named_pipe_client_impersonation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"named_pipe_client_impersonation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c69c3dc2af20c160dec16e4df79cab2b2f8dfd734eb4cec105cd6e8dc993c4f4"
+},
+{
+  "id": "t2_winclient_com_inprocserver32",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "COM InprocServer32 하이재킹",
+    "en": "COM InprocServer32 Hijacking"
+  },
+  "prompt": {
+    "ko": "레지스트리 `InprocServer32` COM 하이재킹 챌린지입니다.\n지정된 식별자 `com_inprocserver32_hijacking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"com_inprocserver32_hijacking_v1\") 앞 20자리}`",
+    "en": "Hijack CLSID InprocServer32 registry subkeys. Compute first 20 hex characters of SHA256(\"com_inprocserver32_hijacking_v1\").\n\nFormat: `FLAG{SHA256(\"com_inprocserver32_hijacking_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `com_inprocserver32_hijacking_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"com_inprocserver32_hijacking_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "1496c8781ad005516584337481e42dd85d9a17349ac07918b12431aa0d2f64c7"
+},
+{
+  "id": "t2_winclient_process_hollowing_unmap",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Process Hollowing ZwUnmapView",
+    "en": "Process Hollowing ZwUnmapView"
+  },
+  "prompt": {
+    "ko": "프로세스 할로잉 원본 섹션 언매핑 챌린지입니다.\n지정된 식별자 `process_hollowing_zwunmapview_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"process_hollowing_zwunmapview_v1\") 앞 20자리}`",
+    "en": "Unmap victim sections in Process Hollowing. Compute first 20 hex characters of SHA256(\"process_hollowing_zwunmapview_v1\").\n\nFormat: `FLAG{SHA256(\"process_hollowing_zwunmapview_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `process_hollowing_zwunmapview_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"process_hollowing_zwunmapview_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e439ce7d014ba28e92ea53eff4a1b44ff3a7a81d4a540e1a4348be77bb04cdb6"
+},
+{
+  "id": "t2_winclient_iat_virtualprotect",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IAT VirtualProtect 쓰기 권한",
+    "en": "IAT VirtualProtect Write Permission"
+  },
+  "prompt": {
+    "ko": "IAT 후킹 전 `VirtualProtect` 권한 변경 챌린지입니다.\n지정된 식별자 `iat_virtualprotect_write_permission_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"iat_virtualprotect_write_permission_v1\") 앞 20자리}`",
+    "en": "Modify IAT memory page protections. Compute first 20 hex characters of SHA256(\"iat_virtualprotect_write_permission_v1\").\n\nFormat: `FLAG{SHA256(\"iat_virtualprotect_write_permission_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `iat_virtualprotect_write_permission_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"iat_virtualprotect_write_permission_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c0eb47fb4668026117c11b9cd85d9ab59eb8c164630a79d7fe61ddbdb997aef1"
+},
+{
+  "id": "t2_winclient_minidump_lsass_audit",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MiniDumpWriteDump LSASS 덤프",
+    "en": "MiniDumpWriteDump LSASS Dump"
+  },
+  "prompt": {
+    "ko": "LSASS 메모리 덤프 API 오남용 감사 챌린지입니다.\n지정된 식별자 `minidumpwritedump_lsass_dump_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"minidumpwritedump_lsass_dump_v1\") 앞 20자리}`",
+    "en": "Audit MiniDumpWriteDump abuse against LSASS. Compute first 20 hex characters of SHA256(\"minidumpwritedump_lsass_dump_v1\").\n\nFormat: `FLAG{SHA256(\"minidumpwritedump_lsass_dump_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `minidumpwritedump_lsass_dump_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"minidumpwritedump_lsass_dump_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8450a7c5b85e0269333d467349b9041989fe7527ffa23ea95ca61171bb0787a1"
+},
+{
+  "id": "t2_winclient_ms_settings_protocol",
+  "tier": 2,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ms-settings 프로토콜 핸들러",
+    "en": "ms-settings Protocol Handler"
+  },
+  "prompt": {
+    "ko": "`ms-settings` URI 프로토콜 하이재킹 챌린지입니다.\n지정된 식별자 `ms_settings_protocol_handler_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ms_settings_protocol_handler_v1\") 앞 20자리}`",
+    "en": "Hijack ms-settings shell protocol handler. Compute first 20 hex characters of SHA256(\"ms_settings_protocol_handler_v1\").\n\nFormat: `FLAG{SHA256(\"ms_settings_protocol_handler_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `ms_settings_protocol_handler_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"ms_settings_protocol_handler_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "32c9c6ada0ef9080ccebaf4f219598408f2ea2aa832c3ba2b6ecac076db27ce7"
+},
+{
+  "id": "t3_winclient_dispatch_device_control",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "커널 드라이버 Dispatch 디스패처",
+    "en": "Kernel Driver Dispatch Handler"
+  },
+  "prompt": {
+    "ko": "`DispatchDeviceControl` IRP 핸들러 분석 챌린지입니다.\n지정된 식별자 `dispatch_device_control_handler_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dispatch_device_control_handler_v1\") 앞 20자리}`",
+    "en": "Audit driver DispatchDeviceControl IRP routines. Compute first 20 hex characters of SHA256(\"dispatch_device_control_handler_v1\").\n\nFormat: `FLAG{SHA256(\"dispatch_device_control_handler_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `dispatch_device_control_handler_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"dispatch_device_control_handler_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "1fd16ac551c37451036530b2df651b10e8851d2cfed7e2e91f4cea565da4dba0"
+},
+{
+  "id": "t3_winclient_smep_cr4_bit20",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SMEP 활성화 CR4 레지스터 비트",
+    "en": "SMEP Enable CR4 Register Bit"
+  },
+  "prompt": {
+    "ko": "SMEP 활성화 CR4 제어 레지스터 비트 20 분석 챌린지입니다.\n지정된 식별자 `smep_enable_cr4_bit20_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"smep_enable_cr4_bit20_v1\") 앞 20자리}`",
+    "en": "Audit Supervisor Mode Execution Prevention bit. Compute first 20 hex characters of SHA256(\"smep_enable_cr4_bit20_v1\").\n\nFormat: `FLAG{SHA256(\"smep_enable_cr4_bit20_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `smep_enable_cr4_bit20_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"smep_enable_cr4_bit20_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8c149d27e0d286cd8e32559bde52b6da9754060cdfa565e450363a68128d2899"
+},
+{
+  "id": "t3_winclient_cfg_indirect_guard",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MSVC 제어 흐름 가드 CFG",
+    "en": "MSVC Control Flow Guard CFG"
+  },
+  "prompt": {
+    "ko": "간접 호출 대상 검증 CFG 챌린지입니다.\n지정된 식별자 `control_flow_guard_cfg_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"control_flow_guard_cfg_audit_v1\") 앞 20자리}`",
+    "en": "Analyze Control Flow Guard indirect call checks. Compute first 20 hex characters of SHA256(\"control_flow_guard_cfg_audit_v1\").\n\nFormat: `FLAG{SHA256(\"control_flow_guard_cfg_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `control_flow_guard_cfg_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"control_flow_guard_cfg_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "00f19f5cc60b1f2abcdfb9ee3e6cc40a965dfb5b49485ca6c35bd2ede0ec1e23"
+},
+{
+  "id": "t3_winclient_etweventwrite_patch",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ETW EtwEventWrite 패치",
+    "en": "ETW EtwEventWrite Patching"
+  },
+  "prompt": {
+    "ko": "EDR 텔레메트리 차단 `EtwEventWrite` 패치 챌린지입니다.\n지정된 식별자 `etweventwrite_telemetry_patch_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"etweventwrite_telemetry_patch_v1\") 앞 20자리}`",
+    "en": "Audit in-memory EtwEventWrite disabling patches. Compute first 20 hex characters of SHA256(\"etweventwrite_telemetry_patch_v1\").\n\nFormat: `FLAG{SHA256(\"etweventwrite_telemetry_patch_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `etweventwrite_telemetry_patch_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"etweventwrite_telemetry_patch_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "cb7a532c9821fd6f7c672d0c3c7f4f04cb97db6d748cfbce39e8d3c704665318"
+},
+{
+  "id": "t3_winclient_queueuserapc_inject",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "QueueUserAPC 얼리 버드 주입",
+    "en": "QueueUserAPC Early Bird Injection"
+  },
+  "prompt": {
+    "ko": "`QueueUserAPC` 비동기 프로시저 주입 챌린지입니다.\n지정된 식별자 `queueuserapc_early_bird_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"queueuserapc_early_bird_injection_v1\") 앞 20자리}`",
+    "en": "Execute shellcode via QueueUserAPC early bird injection. Compute first 20 hex characters of SHA256(\"queueuserapc_early_bird_injection_v1\").\n\nFormat: `FLAG{SHA256(\"queueuserapc_early_bird_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `queueuserapc_early_bird_injection_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"queueuserapc_early_bird_injection_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "abee272b5236355d4af9b0b373a902747bdbf6d01f5539bdeb915bbf4696f755"
+},
+{
+  "id": "t3_winclient_hells_gate_ssn",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Hell's Gate 직접 시스템콜",
+    "en": "Hell's Gate Direct Syscall SSN"
+  },
+  "prompt": {
+    "ko": "Hell's Gate 직접 시스템콜 SSN 추출 챌린지입니다.\n지정된 식별자 `hells_gate_direct_syscall_ssn_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"hells_gate_direct_syscall_ssn_v1\") 앞 20자리}`",
+    "en": "Extract System Service Numbers via Hell's Gate. Compute first 20 hex characters of SHA256(\"hells_gate_direct_syscall_ssn_v1\").\n\nFormat: `FLAG{SHA256(\"hells_gate_direct_syscall_ssn_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `hells_gate_direct_syscall_ssn_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"hells_gate_direct_syscall_ssn_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5bf63096ba4e16fdd9b967c04aef92d44bd21fb927eb43f8576a08f81d7dcc80"
+},
+{
+  "id": "t3_winclient_nonpaged_pool_leak",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "NonPagedPool 커널 청크 분석",
+    "en": "NonPagedPool Kernel Chunk Audit"
+  },
+  "prompt": {
+    "ko": "NonPagedPool 커널 청크 손상 분석 챌린지입니다.\n지정된 식별자 `nonpaged_pool_kernel_chunk_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"nonpaged_pool_kernel_chunk_audit_v1\") 앞 20자리}`",
+    "en": "Audit NonPagedPool kernel allocation overflows. Compute first 20 hex characters of SHA256(\"nonpaged_pool_kernel_chunk_audit_v1\").\n\nFormat: `FLAG{SHA256(\"nonpaged_pool_kernel_chunk_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `nonpaged_pool_kernel_chunk_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"nonpaged_pool_kernel_chunk_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "18cc625c19ab42568a911e76d41d9c9a4ea752861d2bdf7cefc7175fd5c1f6de"
+},
+{
+  "id": "t3_winclient_hvci_vbs_enforce",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "HVCI 가상화 기반 보안 강제화",
+    "en": "HVCI Virtualization-Based Security"
+  },
+  "prompt": {
+    "ko": "하이퍼바이저 기반 HVCI 커널 무결성 챌린지입니다.\n지정된 식별자 `hvci_vbs_hypervisor_enforce_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"hvci_vbs_hypervisor_enforce_v1\") 앞 20자리}`",
+    "en": "Enforce Hypervisor-Protected Code Integrity. Compute first 20 hex characters of SHA256(\"hvci_vbs_hypervisor_enforce_v1\").\n\nFormat: `FLAG{SHA256(\"hvci_vbs_hypervisor_enforce_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `hvci_vbs_hypervisor_enforce_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"hvci_vbs_hypervisor_enforce_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "cff20b111c20f340a72a2e9fd864520ec46d66b16d870e3e12fb6bf00db6742b"
+},
+{
+  "id": "t3_winclient_msbuild_applocker_bypass",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MSBuild LOLBin 실행 우회",
+    "en": "MSBuild LOLBin Execution Bypass"
+  },
+  "prompt": {
+    "ko": "MSBuild를 통한 애플리케이션 제어 우회 챌린지입니다.\n지정된 식별자 `msbuild_applocker_execution_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"msbuild_applocker_execution_bypass_v1\") 앞 20자리}`",
+    "en": "Bypass AppLocker whitelists using MSBuild LOLBins. Compute first 20 hex characters of SHA256(\"msbuild_applocker_execution_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"msbuild_applocker_execution_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `msbuild_applocker_execution_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"msbuild_applocker_execution_bypass_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e4054e3d3ceeadb2fdd565a819de63eab664093d52f61b48ec1c62296b4a8a2b"
+},
+{
+  "id": "t3_winclient_g_cioptions_dse",
+  "tier": 3,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DSE 드라이버 서명 g_CiOptions",
+    "en": "DSE Driver Signature g_CiOptions"
+  },
+  "prompt": {
+    "ko": "드라이버 서명 강제(DSE) 전역 변수 `g_CiOptions` 챌린지입니다.\n지정된 식별자 `g_cioptions_driver_signature_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"g_cioptions_driver_signature_v1\") 앞 20자리}`",
+    "en": "Inspect Driver Signature Enforcement g_CiOptions. Compute first 20 hex characters of SHA256(\"g_cioptions_driver_signature_v1\").\n\nFormat: `FLAG{SHA256(\"g_cioptions_driver_signature_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `g_cioptions_driver_signature_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"g_cioptions_driver_signature_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "941a6678938ce2f5bfb8f73ddce1d48bcf558bc2c0db339ac5d4d4765c8f1bd1"
+},
+{
+  "id": "t4_winclient_fullchain_incident_capstone",
+  "tier": 4,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "윈도우 클라이언트 침해 분석 캡스톤",
+    "en": "Windows Client Incident Capstone"
+  },
+  "prompt": {
+    "ko": "SEH, UAC, 커널 익스플로잇 통합 침해 분석 캡스톤 챌린지입니다.\n지정된 식별자 `windows_client_incident_fullchain_capstone_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"windows_client_incident_fullchain_capstone_v1\") 앞 20자리}`",
+    "en": "Full-chain Windows incident forensic capstone. Compute first 20 hex characters of SHA256(\"windows_client_incident_fullchain_capstone_v1\").\n\nFormat: `FLAG{SHA256(\"windows_client_incident_fullchain_capstone_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `windows_client_incident_fullchain_capstone_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"windows_client_incident_fullchain_capstone_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "6ace3ae32079862d32319cd4b9da168708b15e5d7f12a8ee069a4d09d7747904"
+},
+{
+  "id": "t4_winclient_dkom_activeprocesslinks",
+  "tier": 4,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DKOM ActiveProcessLinks 은닉",
+    "en": "DKOM ActiveProcessLinks Stealth"
+  },
+  "prompt": {
+    "ko": "ActiveProcessLinks 언링크 은닉 분석 챌린지입니다.\n지정된 식별자 `dkom_activeprocesslinks_stealth_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dkom_activeprocesslinks_stealth_v1\") 앞 20자리}`",
+    "en": "Audit ActiveProcessLinks unlinking rootkits. Compute first 20 hex characters of SHA256(\"dkom_activeprocesslinks_stealth_v1\").\n\nFormat: `FLAG{SHA256(\"dkom_activeprocesslinks_stealth_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `dkom_activeprocesslinks_stealth_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"dkom_activeprocesslinks_stealth_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a060a4d8ea9b53541877122e4e76b7633671bfcf12ff0498d3ea3a42d040377e"
+},
+{
+  "id": "t4_winclient_byovd_kernel_defense",
+  "tier": 4,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BYOVD 취약 드라이버 차단",
+    "en": "BYOVD Vulnerable Driver Defense"
+  },
+  "prompt": {
+    "ko": "서명된 취약 드라이버 악용(BYOVD) 차단 챌린지입니다.\n지정된 식별자 `byovd_vulnerable_driver_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"byovd_vulnerable_driver_defense_v1\") 앞 20자리}`",
+    "en": "Defend against Bring Your Own Vulnerable Driver attacks. Compute first 20 hex characters of SHA256(\"byovd_vulnerable_driver_defense_v1\").\n\nFormat: `FLAG{SHA256(\"byovd_vulnerable_driver_defense_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `byovd_vulnerable_driver_defense_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"byovd_vulnerable_driver_defense_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "797db0367b4446459e92430e7bc67044457d69f580cfcc99979cb95ced913d58"
+},
+{
+  "id": "t4_winclient_ntdll_disk_unhooking",
+  "tier": 4,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "NTDLL 디스크 .text 리플렉시브 언후킹",
+    "en": "NTDLL Disk .text Reflexive Unhooking"
+  },
+  "prompt": {
+    "ko": "ntdll 디스크 원본 `.text` 섹션 복원 챌린지입니다.\n지정된 식별자 `ntdll_disk_text_reflexive_unhooking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ntdll_disk_text_reflexive_unhooking_v1\") 앞 20자리}`",
+    "en": "Restore hooked memory from disk clean .text sections. Compute first 20 hex characters of SHA256(\"ntdll_disk_text_reflexive_unhooking_v1\").\n\nFormat: `FLAG{SHA256(\"ntdll_disk_text_reflexive_unhooking_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `ntdll_disk_text_reflexive_unhooking_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"ntdll_disk_text_reflexive_unhooking_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5994103cddbce4028b81af856ebd06c803164b7373ba4f0fec4ea5d278125abc"
+},
+{
+  "id": "t4_winclient_vsm_isolated_vtl1",
+  "tier": 4,
+  "cat": "winclient",
+  "track": "winclient",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "가상화 보안 격리 VTL 1 방어",
+    "en": "VSM Isolated VTL 1 Defense"
+  },
+  "prompt": {
+    "ko": "Windows VSM 가상 신뢰 레벨(VTL 1) 보호 챌린지입니다.\n지정된 식별자 `vsm_isolated_vtl1_trustlet_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"vsm_isolated_vtl1_trustlet_defense_v1\") 앞 20자리}`",
+    "en": "Secure kernel credentials in Virtual Trust Level 1. Compute first 20 hex characters of SHA256(\"vsm_isolated_vtl1_trustlet_defense_v1\").\n\nFormat: `FLAG{SHA256(\"vsm_isolated_vtl1_trustlet_defense_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `vsm_isolated_vtl1_trustlet_defense_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"vsm_isolated_vtl1_trustlet_defense_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "1cb3bf3b5e7a97981b0345c435911da5bbfc5b95b1558e40b942d5d85cc641f6"
+}];

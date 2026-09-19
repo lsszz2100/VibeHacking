@@ -294,6 +294,22 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [11, 69],
     },
+    "19": {
+        "name": "안드로이드 악성코드 & Frida 후킹 랩",
+        "dir":  "19_android_frida_lab",
+        "desc": "DroidShield: 루팅 탐지 우회 · SSL Pinning 무력화 · JNI 네이티브 후킹 · C2 패킷 난독화 해제",
+        "url":  "웹 콘솔 & Frida API: http://localhost:8019",
+        "difficulty": "★★★★",
+        "related": [28, 52, 47],
+    },
+    "20": {
+        "name": "윈도우 애플리케이션 & 커널 취약점 랩",
+        "dir":  "20_winapp_exploit_lab",
+        "desc": "WinAppSec: SEH 덮어쓰기 · Egg Hunter 메모리 탐색 · FODHelper UAC 우회 · HEVD 커널 Arbitrary Write",
+        "url":  "웹 콘솔 & WinApp API: http://localhost:8020",
+        "difficulty": "★★★★",
+        "related": [3, 9, 45],
+    },
 }
 
 
@@ -1235,6 +1251,8 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8016, "Lab 16 (Memory Forensics)"),
         (8017, "Lab 17 (Kubernetes)"),
         (8018, "Lab 18 (AI Agent & MCP)"),
+        (8019, "Lab 19 (Android Frida)"),
+        (8020, "Lab 20 (WinApp Exploit)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -1546,6 +1564,52 @@ def cmd_docs(args: argparse.Namespace) -> None:
         print(red(f"\n✗ 서버 실행 실패 (포트 {port}가 이미 사용 중인지 확인하세요): {e}\n"))
 
 
+# ── 명령어: portal ──────────────────────────────────────────────────────────
+def cmd_portal(args: argparse.Namespace) -> None:
+    """통합 웹 관제 대시보드 로컬 서버 실행 (20개 랩 On/Off 제어, 진단, 웹 리더/워게임 연계)"""
+    import uvicorn
+    port = args.port
+    url = f"http://localhost:{port}"
+    print(bold(cyan("\n🌐 VibeHacking 통합 웹 관제 대시보드 (Portal)")))
+    print(dim(f"  20개 실습 랩 상태 확인, 원클릭 시작/중지 및 통합 관제 포털"))
+    print(f"  접속 주소: {bold(green(url))}")
+    print(dim("  종료하려면 Ctrl+C를 누르세요.\n"))
+
+    if not args.no_browser:
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception:
+            pass
+
+    from portal.server import app as portal_app
+    uvicorn.run(portal_app, host="0.0.0.0", port=port, log_level="warning")
+
+
+# ── 명령어: ctf ────────────────────────────────────────────────────────────
+def cmd_ctf(args: argparse.Namespace) -> None:
+    """로컬 모의해킹 대회 (CTF) 스코어보드 & 채점 엔진 로컬 서버 실행"""
+    import uvicorn
+    port = args.port
+    url = f"http://localhost:{port}"
+    print(bold(cyan("\n🏆 VibeHacking CTF Arena & Scoreboard Engine")))
+    print(dim(f"  실전 랩 기반 플래그 채점, Dynamic Scoring, First Blood 및 실시간 순위표"))
+    print(f"  접속 주소: {bold(green(url))}")
+    print(dim("  종료하려면 Ctrl+C를 누르세요.\n"))
+
+    if not args.no_browser:
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception:
+            pass
+
+    from ctf.server import app as ctf_app
+    uvicorn.run(ctf_app, host="0.0.0.0", port=port, log_level="warning")
+
+
+
+
 # ── 메인 파서 ─────────────────────────────────────────────────────────────────
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1596,16 +1660,16 @@ def build_parser() -> argparse.ArgumentParser:
     lab_sub = p_lab.add_subparsers(dest="lab_cmd", metavar="<서브명령>")
     lab_sub.add_parser("ls", help="실습 환경 목록")
     p_start = lab_sub.add_parser("start", help="실습 환경 시작")
-    p_start.add_argument("lab_id", metavar="랩번호", help="01~15")
+    p_start.add_argument("lab_id", metavar="랩번호", help="01~20")
     p_stop = lab_sub.add_parser("stop", help="실습 환경 종료")
-    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~15")
+    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~20")
     p_stop.add_argument("--all", action="store_true", help="모든 랩 종료")
     lab_sub.add_parser("status", help="실행 중인 컨테이너 및 랩 대시보드 확인")
     p_test = lab_sub.add_parser("test", help="실습 환경 자동 검증/테스트 실행")
-    p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~15 (생략 시 안내)")
-    p_test.add_argument("--all", action="store_true", help="전체 15개 랩 테스트 일괄 실행")
+    p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~20 (생략 시 안내)")
+    p_test.add_argument("--all", action="store_true", help="전체 20개 랩 테스트 일괄 실행")
     p_logs = lab_sub.add_parser("logs", help="랩 로그 보기")
-    p_logs.add_argument("lab_id", metavar="랩번호", help="01~15")
+    p_logs.add_argument("lab_id", metavar="랩번호", help="01~20")
 
     # search
     p_search = sub.add_parser("search", help="전체 문서에서 키워드 검색")
@@ -1639,6 +1703,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_docs.add_argument("--port", type=int, default=3000, help="웹 서버 포트 (기본값: 3000)")
     p_docs.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
 
+    # portal
+    p_portal = sub.add_parser("portal", help="통합 웹 관제 대시보드 (20개 랩 제어, 진단, 웹 리더 연계)")
+    p_portal.add_argument("--port", type=int, default=8800, help="웹 서버 포트 (기본값: 8800)")
+    p_portal.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
+
+    # ctf
+    p_ctf = sub.add_parser("ctf", help="모의해킹 대회 (CTF) 스코어보드 & 플래그 채점 서버 실행")
+    p_ctf.add_argument("--port", type=int, default=8888, help="웹 서버 포트 (기본값: 8888)")
+    p_ctf.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
+
+    # bundle
+    p_bundle = sub.add_parser("bundle", help="오프라인 배포 무결성 검증 및 패키징 번들 생성")
+    p_bundle.add_argument("--tar", metavar="OUTPUT_PATH", help="tar.gz 압축 패키지 생성 경로")
+
     # setup-docker
     p_docker = sub.add_parser("setup-docker", help="Docker 및 Docker Compose 환경 자동 설치/설정 가이드")
     p_docker.add_argument("--dry-run", action="store_true", help="실제 실행 없이 실행될 명령어만 출력")
@@ -1649,6 +1727,14 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("update", help="git pull로 최신 버전 업데이트")
 
     return p
+
+
+def cmd_bundle(args: argparse.Namespace) -> None:
+    bundle_script = REPO_ROOT / "tools" / "bundle_offline.py"
+    cmd = [sys.executable, str(bundle_script)]
+    if getattr(args, "tar", None):
+        cmd.extend(["--tar", args.tar])
+    subprocess.run(cmd)
 
 
 def main() -> None:
@@ -1671,6 +1757,9 @@ def main() -> None:
         "setup-docker": cmd_setup_docker,
         "wargame":      cmd_wargame,
         "docs":         cmd_docs,
+        "portal":       cmd_portal,
+        "ctf":          cmd_ctf,
+        "bundle":       cmd_bundle,
         "update":       cmd_update,
     }
 

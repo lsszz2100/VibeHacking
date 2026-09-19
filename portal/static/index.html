@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VibeHacking — 통합 웹 관제 포털</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text: #f3f4f6;
+      --text-dim: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #0f172a; border-bottom: 1px solid var(--card-border); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: bold; color: var(--accent-cyan); }
+    .brand span { color: #a5f3fc; font-weight: normal; font-size: 0.9rem; }
+    nav { display: flex; gap: 0.5rem; }
+    .nav-btn { background: transparent; border: 1px solid var(--card-border); color: var(--text-dim); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+    .nav-btn.active, .nav-btn:hover { background: #1e293b; color: var(--accent-cyan); border-color: var(--accent-cyan); }
+
+    .main-container { flex: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
+    
+    /* System Status Bar */
+    .status-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 1rem; }
+    .stat-title { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.25rem; }
+    .stat-val { font-size: 1.4rem; font-weight: bold; color: var(--accent-cyan); }
+
+    /* Labs Grid */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .labs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+    .lab-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.15s, border-color 0.15s; }
+    .lab-card:hover { transform: translateY(-2px); border-color: #374151; }
+    .lab-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+    .lab-badge { font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: #1e293b; color: var(--accent-cyan); }
+    .status-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: bold; padding: 2px 8px; border-radius: 9999px; }
+    .status-running { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+    .status-stopped { background: rgba(156, 163, 175, 0.1); color: var(--text-dim); border: 1px solid var(--card-border); }
+    .lab-title { font-size: 1.05rem; font-weight: bold; margin-bottom: 0.5rem; }
+    .lab-desc { font-size: 0.825rem; color: var(--text-dim); line-height: 1.4; margin-bottom: 1rem; flex: 1; }
+    
+    .lab-actions { display: flex; gap: 0.5rem; align-items: center; border-top: 1px solid var(--card-border); padding-top: 0.75rem; }
+    .btn { background: #1f2937; border: 1px solid var(--card-border); color: var(--text); padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: background 0.15s; text-decoration: none; }
+    .btn:hover { background: #374151; }
+    .btn-green { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border-color: rgba(16, 185, 129, 0.4); }
+    .btn-green:hover { background: rgba(16, 185, 129, 0.3); }
+    .btn-red { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border-color: rgba(239, 68, 68, 0.4); }
+    .btn-red:hover { background: rgba(239, 68, 68, 0.3); }
+    .btn-cyan { background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); border-color: rgba(6, 182, 212, 0.4); }
+
+    /* Frame View (Docs/Wargame/CTF) */
+    .frame-container { width: 100%; height: calc(100vh - 120px); border: none; border-radius: 8px; display: none; background: #0b0f19; }
+    .frame-container.active { display: block; }
+
+    /* Toast */
+    #toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background: #1f2937; border: 1px solid var(--accent-cyan); border-radius: 6px; color: var(--text); font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 9999; }
+    #toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    ⚡ VIBEHACKING
+    <span>통합 보안 포털 & 관제 센터</span>
+  </div>
+  <nav>
+    <button class="nav-btn active" onclick="switchView('labs')">🧪 20대 실습 랩</button>
+    <button class="nav-btn" onclick="switchView('docs')">📚 교재 리더 (:3000)</button>
+    <button class="nav-btn" onclick="switchView('wargame')">🎮 워게임 (:8000)</button>
+    <button class="nav-btn" onclick="switchView('ctf')">🏆 CTF 경기장 (:8888)</button>
+  </nav>
+</header>
+
+<div class="main-container">
+  <!-- LABS & DASHBOARD VIEW -->
+  <div id="view-labs">
+    <div class="status-bar" id="sys-status">
+      <div class="stat-card">
+        <div class="stat-title">Docker 엔진 상태</div>
+        <div class="stat-val" id="stat-docker">확인 중...</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">활성 실습 랩</div>
+        <div class="stat-val" id="stat-active-labs">- / 20</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">CPU 점유율</div>
+        <div class="stat-val" id="stat-cpu">- %</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">디스크 여유 공간</div>
+        <div class="stat-val" id="stat-disk">- GB</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h2>🛡️ 실전 침투 & 방어 실습 환경 (20 Labs)</h2>
+      <button class="btn btn-cyan" onclick="fetchLabs()">🔄 새로고침</button>
+    </div>
+
+    <div class="labs-grid" id="labs-list">
+      <!-- Generated via JS -->
+    </div>
+  </div>
+
+  <!-- IFRAME VIEWS -->
+  <iframe id="view-docs" class="frame-container" src="http://localhost:3000"></iframe>
+  <iframe id="view-wargame" class="frame-container" src="http://localhost:8000"></iframe>
+  <iframe id="view-ctf" class="frame-container" src="http://localhost:8888"></iframe>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function switchView(tab) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.frame-container').forEach(f => f.classList.remove('active'));
+    document.getElementById('view-labs').style.display = 'none';
+
+    if (tab === 'labs') {
+      document.getElementById('view-labs').style.display = 'block';
+      event.target.classList.add('active');
+    } else {
+      const frame = document.getElementById('view-' + tab);
+      frame.classList.add('active');
+      event.target.classList.add('active');
+    }
+  }
+
+  async function fetchStatus() {
+    try {
+      const res = await fetch('/api/system/status');
+      const data = await res.json();
+      document.getElementById('stat-docker').innerText = data.docker_running ? '🟢 가동 중' : (data.docker_installed ? '🟡 중지됨' : '🔴 미설치');
+      document.getElementById('stat-cpu').innerText = data.cpu_usage_percent + '%';
+      document.getElementById('stat-disk').innerText = data.disk_free_gb + ' GB';
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function fetchLabs() {
+    try {
+      const res = await fetch('/api/labs');
+      const data = await res.json();
+      const container = document.getElementById('labs-list');
+      container.innerHTML = '';
+      
+      let runningCount = 0;
+
+      data.labs.forEach(lab => {
+        if (lab.is_running) runningCount++;
+        const card = document.createElement('div');
+        card.className = 'lab-card';
+
+        const statusHtml = lab.is_running
+          ? '<span class="status-pill status-running">● ONLINE</span>'
+          : '<span class="status-pill status-stopped">○ STOPPED</span>';
+
+        const portLink = lab.port 
+          ? `<a href="http://localhost:${lab.port}" target="_blank" class="btn btn-cyan">🌐 열기 (:${lab.port})</a>` 
+          : '';
+
+        card.innerHTML = `
+          <div>
+            <div class="lab-top">
+              <span class="lab-badge">LAB ${lab.id} (${lab.difficulty})</span>
+              ${statusHtml}
+            </div>
+            <div class="lab-title">${lab.name}</div>
+            <div class="lab-desc">${lab.desc}</div>
+          </div>
+          <div class="lab-actions">
+            ${portLink}
+            <button class="btn btn-green" onclick="controlLab('${lab.id}', 'start')">▶ 시작</button>
+            <button class="btn btn-red" onclick="controlLab('${lab.id}', 'stop')">■ 중지</button>
+            <button class="btn" onclick="testLab('${lab.id}')">🧪 테스트</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('stat-active-labs').innerText = `${runningCount} / ${data.total}`;
+    } catch (e) {
+      console.error(e);
+      showToast('랩 목록 로드 실패');
+    }
+  }
+
+  async function controlLab(id, action) {
+    showToast(`Lab ${id} ${action} 요청 중...`);
+    try {
+      const res = await fetch(`/api/labs/${id}/${action}`, { method: 'POST' });
+      const data = await res.json();
+      showToast(`Lab ${id}: ${data.status}`);
+      setTimeout(fetchLabs, 1500);
+    } catch (e) {
+      showToast(`요청 실패: ${e.message}`);
+    }
+  }
+
+  async function testLab(id) {
+    showToast(`Lab ${id} 무결성 테스트 실행 중...`);
+    try {
+      const res = await fetch(`/api/labs/${id}/test`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`🎉 Lab ${id} 테스트 전원 통과! (All Green)`);
+      } else {
+        showToast(`⚠️ Lab ${id} 테스트 실패: ${data.status}`);
+      }
+    } catch (e) {
+      showToast(`테스트 오류: ${e.message}`);
+    }
+  }
+
+  fetchStatus();
+  fetchLabs();
+  setInterval(fetchStatus, 5000);
+  setInterval(fetchLabs, 10000);
+</script>
+</body>
+</html>
