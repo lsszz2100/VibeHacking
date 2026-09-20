@@ -1408,7 +1408,12 @@ const DROIDPWN_WINCLIENT_IDS = [
   "t3_winclient_dispatch_device_control", "t3_winclient_smep_cr4_bit20", "t3_winclient_cfg_indirect_guard", "t3_winclient_etweventwrite_patch",
   "t3_winclient_queueuserapc_inject", "t3_winclient_hells_gate_ssn", "t3_winclient_nonpaged_pool_leak", "t3_winclient_hvci_vbs_enforce",
   "t3_winclient_msbuild_applocker_bypass", "t3_winclient_g_cioptions_dse", "t4_winclient_fullchain_incident_capstone", "t4_winclient_dkom_activeprocesslinks",
-  "t4_winclient_byovd_kernel_defense", "t4_winclient_ntdll_disk_unhooking", "t4_winclient_vsm_isolated_vtl1"
+  "t4_winclient_byovd_kernel_defense", "t4_winclient_ntdll_disk_unhooking", "t4_winclient_vsm_isolated_vtl1",
+  "t0_carcan_can_bus_arbitration_id", "t0_carcan_obd2_diagnostic_port",
+  "t1_carcan_can_dlc_data_length", "t1_carcan_candump_traffic_sniff", "t1_carcan_canplayer_replay_attack", "t1_carcan_cansend_manual_frame", "t1_carcan_cangen_fuzzing_dos", "t1_carcan_vcan_virtual_driver",
+  "t2_carcan_obd2_speed_pid_service01", "t2_carcan_obd2_engine_rpm_calc", "t2_carcan_uds_diagnostic_session", "t2_carcan_uds_security_access_seed", "t2_carcan_uds_seed_key_recovery", "t2_carcan_isotp_flow_control_frame", "t2_carcan_isotp_first_frame_chunk", "t2_carcan_uds_read_did_vin", "t2_carcan_uds_write_did_config", "t2_carcan_uds_routine_control_abs", "t2_carcan_dbc_signal_decoding", "t2_carcan_crc16_checksum_bypass",
+  "t3_carcan_can_busoff_attack", "t3_carcan_error_frame_injection", "t3_carcan_uds_ecu_reset_hard", "t3_carcan_uds_request_download_flash", "t3_carcan_uds_transfer_data_block", "t3_carcan_uds_request_transfer_exit", "t3_carcan_gateway_filtering_bypass", "t3_carcan_someip_sd_spoofing", "t3_carcan_doip_uds_payload_extract", "t3_carcan_secoc_freshness_value",
+  "t4_carcan_connected_vehicle_capstone", "t4_carcan_ecu_firmware_reverse_s19", "t4_carcan_adas_radar_spoofing", "t4_carcan_ota_firmware_tampering", "t4_carcan_zero_trust_in_vehicle_ids"
 ];
 
 for (const id of DROIDPWN_WINCLIENT_IDS) {

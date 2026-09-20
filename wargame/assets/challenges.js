@@ -324,7 +324,16 @@ const TRACKS = [
       "en": "Windows Client & Kernel Exploits",
       "desc_ko": "SEH 덮어쓰기·SafeSEH 우회·Egg Hunter·UAC 자동승격 바이패스 및 HEVD 커널 Arbitrary Write/Ring 0 장악.",
       "desc_en": "SEH overwrite, SafeSEH bypass, Egg Hunter, UAC elevation bypass, and HEVD kernel arbitrary write / Ring 0 token stealing."
-}];
+  },
+  {
+      "id": "carcan",
+      "icon": "🚗",
+      "ko": "차량 보안·CAN Bus·UDS",
+      "en": "Automotive Security & CAN Bus",
+      "desc_ko": "CAN 2.0 중재 ID·OBD-II PID 질의·UDS 진단 세션 및 펌웨어 플래싱·ISO-TP 흐름 제어·SecOC 인증 방어.",
+      "desc_en": "CAN 2.0 arbitration ID, OBD-II PID query, UDS diagnostic session & flashing, ISO-TP flow control, SecOC defense."
+  }
+];
 
 const CHALLENGES = [
   {
@@ -33689,4 +33698,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "1cb3bf3b5e7a97981b0345c435911da5bbfc5b95b1558e40b942d5d85cc641f6"
-}];
+},
+{
+  "id": "t0_carcan_can_bus_arbitration_id",
+  "tier": 0,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 10,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CAN 버스 중재 ID 구조",
+    "en": "CAN Bus Arbitration ID"
+  },
+  "prompt": {
+    "ko": "차량 네트워크 표준 CAN 2.0A에서 프레임 우선순위를 결정하는 11비트 중재 ID(Arbitration ID) 분석 챌린지입니다.\n지정된 식별자 `carcan_can_bus_arbitration_id_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_can_bus_arbitration_id_v1\") 앞 20자리}`",
+    "en": "Analyze standard 11-bit CAN Arbitration ID determining message priority in automotive networks.\nCompute the first 20 hex characters of SHA256(\"carcan_can_bus_arbitration_id_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_can_bus_arbitration_id_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_can_bus_arbitration_id_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_can_bus_arbitration_id_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "09e5440027df3117c79a2aa33491e70179bacc7acc6b5fbe44db66823f6832c1"
+},
+{
+  "id": "t0_carcan_obd2_diagnostic_port",
+  "tier": 0,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 20,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OBD-II 16핀 진단 커넥터",
+    "en": "OBD-II 16-Pin Diagnostic Port"
+  },
+  "prompt": {
+    "ko": "차량 하단 온보드 진단 포트(OBD-II SAE J1962) 핀 배열 및 CAN High/Low(핀 6, 14) 분석 챌린지입니다.\n지정된 식별자 `carcan_obd2_diagnostic_port_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_obd2_diagnostic_port_v1\") 앞 20자리}`",
+    "en": "Identify CAN High and CAN Low pinout (pins 6 and 14) on the SAE J1962 OBD-II diagnostic port.\nCompute the first 20 hex characters of SHA256(\"carcan_obd2_diagnostic_port_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_obd2_diagnostic_port_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_obd2_diagnostic_port_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_obd2_diagnostic_port_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7c23a2202bbca68edee2897e3c676a47b690f8d9fe7bc864752bdf6d28e153b7"
+},
+{
+  "id": "t1_carcan_can_dlc_data_length",
+  "tier": 1,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CAN DLC 데이터 길이 코드",
+    "en": "CAN DLC Data Length Code"
+  },
+  "prompt": {
+    "ko": "클래식 CAN 프레임 페이로드 바이트 크기를 정의하는 DLC(Data Length Code, 최대 8바이트) 분석 챌린지입니다.\n지정된 식별자 `carcan_can_dlc_data_length_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_can_dlc_data_length_v1\") 앞 20자리}`",
+    "en": "Inspect Data Length Code (DLC) defining classic CAN frame payload limits up to 8 bytes.\nCompute the first 20 hex characters of SHA256(\"carcan_can_dlc_data_length_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_can_dlc_data_length_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_can_dlc_data_length_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_can_dlc_data_length_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "17ecfcf7887287e489fc1a4135c498f67c6f7028b4ccdfc2bbba50b11b562356"
+},
+{
+  "id": "t1_carcan_candump_traffic_sniff",
+  "tier": 1,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 40,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SocketCAN candump 트래픽 스니핑",
+    "en": "SocketCAN candump Sniffing"
+  },
+  "prompt": {
+    "ko": "리눅스 can-utils 패키지의 candump 유틸리티로 vcan0 인터페이스의 실시간 브로드캐스트 패킷을 모니터링하는 챌린지입니다.\n지정된 식별자 `carcan_candump_traffic_sniff_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_candump_traffic_sniff_v1\") 앞 20자리}`",
+    "en": "Monitor real-time broadcast packets on SocketCAN interface vcan0 using the candump utility.\nCompute the first 20 hex characters of SHA256(\"carcan_candump_traffic_sniff_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_candump_traffic_sniff_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_candump_traffic_sniff_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_candump_traffic_sniff_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ba0e8088dc22cb33188142e51b60fb224318ae1b94583ed982620e21bcab02df"
+},
+{
+  "id": "t1_carcan_canplayer_replay_attack",
+  "tier": 1,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "canplayer CAN 프레임 재생 공격",
+    "en": "canplayer CAN Replay Attack"
+  },
+  "prompt": {
+    "ko": "도어 언락 또는 클러스터 조작 패킷 로그를 캡처한 뒤 canplayer로 재생하여 액추에이터를 조작하는 챌린지입니다.\n지정된 식별자 `carcan_canplayer_replay_attack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_canplayer_replay_attack_v1\") 앞 20자리}`",
+    "en": "Execute replay attack on vehicle actuators by feeding captured CAN log files into canplayer.\nCompute the first 20 hex characters of SHA256(\"carcan_canplayer_replay_attack_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_canplayer_replay_attack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_canplayer_replay_attack_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_canplayer_replay_attack_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bb29914177970a8104e2172362fe65ee7fd4dbdcaa573acb2291f12e30282a19"
+},
+{
+  "id": "t1_carcan_cansend_manual_frame",
+  "tier": 1,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "cansend 수동 프레임 인젝션",
+    "en": "cansend Manual Frame Injection"
+  },
+  "prompt": {
+    "ko": "cansend 도구를 이용해 특정 중재 ID와 8바이트 16진수 페이로드를 직접 차량 CAN 버스에 인젝션하는 챌린지입니다.\n지정된 식별자 `carcan_cansend_manual_frame_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_cansend_manual_frame_v1\") 앞 20자리}`",
+    "en": "Directly transmit arbitrary CAN frames with specific Arbitration ID and hex payload using cansend.\nCompute the first 20 hex characters of SHA256(\"carcan_cansend_manual_frame_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_cansend_manual_frame_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_cansend_manual_frame_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_cansend_manual_frame_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ab14505a515da507144c788068be35f9f76ef326f218b60a9c347df8aaccc838"
+},
+{
+  "id": "t1_carcan_cangen_fuzzing_dos",
+  "tier": 1,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "cangen 무작위 프레임 플러딩 DoS",
+    "en": "cangen Random Frame Flooding DoS"
+  },
+  "prompt": {
+    "ko": "cangen을 활용하여 ID 0x000(최고 우선순위) 프레임을 대량 주입하여 CAN 버스를 점유하고 ECU 통신을 마비시키는 챌린지입니다.\n지정된 식별자 `carcan_cangen_fuzzing_dos_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_cangen_fuzzing_dos_v1\") 앞 20자리}`",
+    "en": "Flood CAN bus with high-priority Arbitration ID 0x000 frames using cangen to induce denial of service.\nCompute the first 20 hex characters of SHA256(\"carcan_cangen_fuzzing_dos_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_cangen_fuzzing_dos_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_cangen_fuzzing_dos_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_cangen_fuzzing_dos_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "537856e69d055492fc8f16c7508b439b8ab421370e5ea960c997d67308ad19dc"
+},
+{
+  "id": "t1_carcan_vcan_virtual_driver",
+  "tier": 1,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Linux vcan0 가상 인터페이스 구축",
+    "en": "Linux vcan0 Virtual Driver Setup"
+  },
+  "prompt": {
+    "ko": "실제 하드웨어 없이 모의 해킹 환경을 구성하기 위해 ip link 커맨드로 가상 CAN(vcan0) 인터페이스를 활성화하는 챌린지입니다.\n지정된 식별자 `carcan_vcan_virtual_driver_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_vcan_virtual_driver_v1\") 앞 20자리}`",
+    "en": "Configure virtual CAN interface vcan0 using ip link command for isolated in-vehicle test environments.\nCompute the first 20 hex characters of SHA256(\"carcan_vcan_virtual_driver_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_vcan_virtual_driver_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_vcan_virtual_driver_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_vcan_virtual_driver_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5488b5846da69845cf5d9be497e9fb272d262ff700061a226ebb0e18b6301f04"
+},
+{
+  "id": "t2_carcan_obd2_speed_pid_service01",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OBD-II Service 01 차속(Speed) 쿼리",
+    "en": "OBD-II Service 01 Vehicle Speed"
+  },
+  "prompt": {
+    "ko": "차량 속도를 질의하기 위해 ID 0x7DF로 Service 01 PID 0x0D 요청 프레임을 전송하고 응답 바이트를 연산하는 챌린지입니다.\n지정된 식별자 `carcan_obd2_speed_pid_service01_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_obd2_speed_pid_service01_v1\") 앞 20자리}`",
+    "en": "Query vehicle speed via OBD-II PID 0x0D on diagnostic broadcast ID 0x7DF and parse response payload.\nCompute the first 20 hex characters of SHA256(\"carcan_obd2_speed_pid_service01_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_obd2_speed_pid_service01_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_obd2_speed_pid_service01_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_obd2_speed_pid_service01_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7253d385c308a6c4bd1ea22a59462ffef303b9c142e0a4b9a421c10bb180e123"
+},
+{
+  "id": "t2_carcan_obd2_engine_rpm_calc",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OBD-II 엔진 RPM 공식 연산",
+    "en": "OBD-II Engine RPM Calculation"
+  },
+  "prompt": {
+    "ko": "Service 01 PID 0x0C 응답 데이터 2바이트 (A, B)를 공식 ((A*256)+B)/4 에 대입하여 정확한 분당 엔진 회전수를 도출하는 챌린지입니다.\n지정된 식별자 `carcan_obd2_engine_rpm_calc_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_obd2_engine_rpm_calc_v1\") 앞 20자리}`",
+    "en": "Calculate engine revolutions per minute from two response bytes using formula ((A*256)+B)/4.\nCompute the first 20 hex characters of SHA256(\"carcan_obd2_engine_rpm_calc_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_obd2_engine_rpm_calc_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_obd2_engine_rpm_calc_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_obd2_engine_rpm_calc_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "948f5cfc61b97861cda0aac8ff92f5c9ca6212a1d41e4ced631c1ad54d2334e0"
+},
+{
+  "id": "t2_carcan_uds_diagnostic_session",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UDS 진단 세션 제어 (0x10)",
+    "en": "UDS DiagnosticSessionControl (0x10)"
+  },
+  "prompt": {
+    "ko": "ISO 14229 UDS 프로토콜에서 0x10 서비스를 호출하여 기본 세션에서 프로그래밍/확장 진단 세션(0x02, 0x03)으로 전환하는 챌린지입니다.\n지정된 식별자 `carcan_uds_diagnostic_session_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_diagnostic_session_v1\") 앞 20자리}`",
+    "en": "Transition ECU from default to extended or programming diagnostic session via UDS service 0x10.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_diagnostic_session_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_diagnostic_session_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_diagnostic_session_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_diagnostic_session_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2c3ceef89a2ff7efa8b9642ab11a0517986a50a02c86b2285219e6ffec3c3e01"
+},
+{
+  "id": "t2_carcan_uds_security_access_seed",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UDS SecurityAccess Seed 요청 (0x27)",
+    "en": "UDS SecurityAccess Seed Request (0x27)"
+  },
+  "prompt": {
+    "ko": "보안 보호된 진단 루틴 실행을 위해 UDS 0x27 서브기능 0x01로 암호화 Seed 챌린지를 요청하는 챌린지입니다.\n지정된 식별자 `carcan_uds_security_access_seed_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_security_access_seed_v1\") 앞 20자리}`",
+    "en": "Request pseudorandom security seed challenge from ECU via UDS service 0x27 subfunction 0x01.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_security_access_seed_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_security_access_seed_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_security_access_seed_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_security_access_seed_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2816ac61cff00e409fa3793d3af9564b38e412a456e59f0335aa89c588792b4b"
+},
+{
+  "id": "t2_carcan_uds_seed_key_recovery",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Seed-Key 알고리즘 역공학",
+    "en": "Seed-Key Algorithm Reverse Engineering"
+  },
+  "prompt": {
+    "ko": "펌웨어 바이너리에서 추출한 Seed-Key 변환 로직(비트 회전 및 대칭 상수 XOR)을 분석하여 Key 검증을 통과하는 챌린지입니다.\n지정된 식별자 `carcan_uds_seed_key_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_seed_key_recovery_v1\") 앞 20자리}`",
+    "en": "Reverse engineer proprietary bitwise shift and XOR constants from ECU firmware to generate valid security keys.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_seed_key_recovery_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_seed_key_recovery_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_seed_key_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_seed_key_recovery_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "82a2eca6da26f243bb8c29134b9dd4eaf0ba7a121d38a3dbb25db61aa3dd65aa"
+},
+{
+  "id": "t2_carcan_isotp_flow_control_frame",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ISO-TP Flow Control 프레임 제어",
+    "en": "ISO-TP Flow Control Frame"
+  },
+  "prompt": {
+    "ko": "8바이트를 초과하는 진단 데이터 수신 시 ISO 15765-2 표준 Flow Control (0x30 00 00) 프레임으로 블록 전송을 제어하는 챌린지입니다.\n지정된 식별자 `carcan_isotp_flow_control_frame_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_isotp_flow_control_frame_v1\") 앞 20자리}`",
+    "en": "Control multi-frame segmented diagnostic transmission using ISO 15765-2 Flow Control (FC) frame 0x30.\nCompute the first 20 hex characters of SHA256(\"carcan_isotp_flow_control_frame_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_isotp_flow_control_frame_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_isotp_flow_control_frame_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_isotp_flow_control_frame_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "beca5442fd49ed8019f9d684d58e1b62d7a4a8882063fa3077eee39a0a960bbc"
+},
+{
+  "id": "t2_carcan_isotp_first_frame_chunk",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ISO-TP First Frame(FF) 길이 파싱",
+    "en": "ISO-TP First Frame Length Parsing"
+  },
+  "prompt": {
+    "ko": "연속 프레임 시작을 알리는 First Frame(상위 4비트 0x1)에서 12비트 전체 페이로드 길이 필드를 디코딩하는 챌린지입니다.\n지정된 식별자 `carcan_isotp_first_frame_chunk_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_isotp_first_frame_chunk_v1\") 앞 20자리}`",
+    "en": "Parse 12-bit total payload length field from ISO-TP First Frame header (nibble 0x1).\nCompute the first 20 hex characters of SHA256(\"carcan_isotp_first_frame_chunk_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_isotp_first_frame_chunk_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_isotp_first_frame_chunk_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_isotp_first_frame_chunk_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d1af5aeb54d9a6c410ca68933f0e4f4c6167c1ca02acaa10668d7a671f7767ad"
+},
+{
+  "id": "t2_carcan_uds_read_did_vin",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UDS 0x22 DID 차대번호(VIN) 조회",
+    "en": "UDS 0x22 ReadDataByIdentifier VIN"
+  },
+  "prompt": {
+    "ko": "UDS 0x22 서비스와 표준 식별자 DID 0xF190을 호출하여 차량 17자리 고유 차대번호(VIN)를 획득하는 챌린지입니다.\n지정된 식별자 `carcan_uds_read_did_vin_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_read_did_vin_v1\") 앞 20자리}`",
+    "en": "Query 17-character Vehicle Identification Number (VIN) using UDS service 0x22 and standardized DID 0xF190.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_read_did_vin_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_read_did_vin_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_read_did_vin_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_read_did_vin_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "135054d8be394af3daada2ef63d3618a94f4bedbb55b708abf98bc20d6389e97"
+},
+{
+  "id": "t2_carcan_uds_write_did_config",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UDS 0x2E 파라미터 변조",
+    "en": "UDS 0x2E WriteDataByIdentifier"
+  },
+  "prompt": {
+    "ko": "UDS WriteDataByIdentifier(0x2E) 명령어로 보안 인증 후 ECU 내부 코딩 파라미터(속도 제한 등)를 무단 변조하는 챌린지입니다.\n지정된 식별자 `carcan_uds_write_did_config_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_write_did_config_v1\") 앞 20자리}`",
+    "en": "Overwrite ECU internal calibration parameters such as speed limiters using UDS service 0x2E.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_write_did_config_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_write_did_config_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_write_did_config_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_write_did_config_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "88bd6c2e3dc07dc47230f1b3b6282db864a6ba0397266eb7a1aab54dd06cfffa"
+},
+{
+  "id": "t2_carcan_uds_routine_control_abs",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UDS 0x31 루틴 제어(RoutineControl)",
+    "en": "UDS 0x31 RoutineControl ABS Test"
+  },
+  "prompt": {
+    "ko": "주행 중 UDS RoutineControl(0x31) 서비스를 트리거하여 ABS 밸브 점검 및 펌프 강제 구동 루틴을 오작동시키는 챌린지입니다.\n지정된 식별자 `carcan_uds_routine_control_abs_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_routine_control_abs_v1\") 앞 20자리}`",
+    "en": "Trigger in-vehicle diagnostic actuator routines like ABS pump tests via UDS service 0x31.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_routine_control_abs_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_routine_control_abs_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_routine_control_abs_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_routine_control_abs_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ac0682d0d938672d86d5eedf2ca19db761ab386d59f3670ae0f880672b063c92"
+},
+{
+  "id": "t2_carcan_dbc_signal_decoding",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CAN DBC 파일 신호 역공학",
+    "en": "CAN DBC Database Signal Decoding"
+  },
+  "prompt": {
+    "ko": "차량 CAN 데이터베이스 파일(.dbc) 문법(BO_, SG_)을 분석하여 조향각(Steering Angle) 신호의 시작 비트, 길이, 스케일링 팩터를 추출하는 챌린지입니다.\n지정된 식별자 `carcan_dbc_signal_decoding_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_dbc_signal_decoding_v1\") 앞 20자리}`",
+    "en": "Extract start bit, bit length, scale, and offset of steering angle signals by decoding CAN DBC database files.\nCompute the first 20 hex characters of SHA256(\"carcan_dbc_signal_decoding_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_dbc_signal_decoding_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_dbc_signal_decoding_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_dbc_signal_decoding_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "17bce6c33264f67cf4e78f16f4b32efe51cfa0c1d55f299292513cb371a4c29f"
+},
+{
+  "id": "t2_carcan_crc16_checksum_bypass",
+  "tier": 2,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 210,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CAN 프레임 카운터 및 체크섬 우회",
+    "en": "CAN Alive Counter & CRC-16 Bypass"
+  },
+  "prompt": {
+    "ko": "ECU가 검증하는 4비트 Alive Counter 증분과 페이로드 CRC-16 체크섬을 실시간 재계산하여 위조 프레임을 주입하는 챌린지입니다.\n지정된 식별자 `carcan_crc16_checksum_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_crc16_checksum_bypass_v1\") 앞 20자리}`",
+    "en": "Recalculate rolling 4-bit message counter and CRC-16 checksums on the fly to inject spoofed safety frames.\nCompute the first 20 hex characters of SHA256(\"carcan_crc16_checksum_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_crc16_checksum_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_crc16_checksum_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_crc16_checksum_bypass_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b99b0668cb59112c253e777e1c73a98d7b597468801bc5686135e085d6e85654"
+},
+{
+  "id": "t3_carcan_can_busoff_attack",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 230,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ECU Bus-Off 고립 공격",
+    "en": "Targeted ECU Bus-Off Isolation"
+  },
+  "prompt": {
+    "ko": "대상 ECU가 송신하는 특정 프레임의 ACK 비트 타이밍에 도미넌트 비트를 인위적으로 덮어써 송신 에러 카운터(TEC)가 255를 초과해 버스에서 영구 격리되도록 만드는 챌린지입니다.\n지정된 식별자 `carcan_can_busoff_attack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_can_busoff_attack_v1\") 앞 20자리}`",
+    "en": "Inject dominant bits precisely during transmission to force target Transmit Error Counter (TEC) > 255 into Bus-Off.\nCompute the first 20 hex characters of SHA256(\"carcan_can_busoff_attack_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_can_busoff_attack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_can_busoff_attack_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_can_busoff_attack_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7000f946103e14159ea279537c5b67b254b9ee9f8d8cda4d318a46149b27098d"
+},
+{
+  "id": "t3_carcan_error_frame_injection",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "능동 에러 프레임(Active Error) 인젝션",
+    "en": "Active Error Frame Injection"
+  },
+  "prompt": {
+    "ko": "연속된 6개의 비트(Bit Stuffing 규칙 위반)를 강제로 송출하여 전 네트워크 노드에 에러 프레임을 전파하고 통신 무결성을 교란하는 챌린지입니다.\n지정된 식별자 `carcan_error_frame_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_error_frame_injection_v1\") 앞 20자리}`",
+    "en": "Violate CAN bit stuffing rules by transmitting 6 consecutive dominant bits to trigger Active Error flags across all nodes.\nCompute the first 20 hex characters of SHA256(\"carcan_error_frame_injection_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_error_frame_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_error_frame_injection_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_error_frame_injection_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a607cb9e89a12e4759e62454d74aa1d081046571e820a9f9e80fceae196c9525"
+},
+{
+  "id": "t3_carcan_uds_ecu_reset_hard",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 270,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UDS 0x11 ECU 하드 리셋 DoS",
+    "en": "UDS 0x11 ECU Hard Reset DoS"
+  },
+  "prompt": {
+    "ko": "주행 중인 상태에서 UDS Service 0x11 (하드 리셋 0x01)을 엔진 컨트롤 유닛(ECU)에 연속 전송하여 시동 꺼짐을 유발하는 챌린지입니다.\n지정된 식별자 `carcan_uds_ecu_reset_hard_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_ecu_reset_hard_v1\") 앞 20자리}`",
+    "en": "Send repetitive UDS service 0x11 subfunction 0x01 hard resets to force powertrain ECU reboot during operation.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_ecu_reset_hard_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_ecu_reset_hard_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_ecu_reset_hard_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_ecu_reset_hard_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a1fae701e43af62a2d347fa4708acaf4daedf07fd784b9cddee3c8007ea7d348"
+},
+{
+  "id": "t3_carcan_uds_request_download_flash",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 290,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UDS 0x34 RequestDownload 펌웨어 플래싱",
+    "en": "UDS 0x34 RequestDownload Flashing"
+  },
+  "prompt": {
+    "ko": "UDS 0x34 서비스로 ECU 플래시 메모리 시작 주소와 크기를 지정하여 펌웨어 재작성 모드로 진입하는 챌린지입니다.\n지정된 식별자 `carcan_uds_request_download_flash_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_request_download_flash_v1\") 앞 20자리}`",
+    "en": "Initiate firmware flashing sequence by specifying target memory address and uncompressed length via UDS 0x34.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_request_download_flash_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_request_download_flash_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_request_download_flash_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_request_download_flash_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ee93aaa1e2a04554a4ff910cc3a6eb784ff29431ebf3c1f4b13da03e5df89a40"
+},
+{
+  "id": "t3_carcan_uds_transfer_data_block",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 310,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UDS 0x36 TransferData 롬 블록 주입",
+    "en": "UDS 0x36 TransferData Block Injection"
+  },
+  "prompt": {
+    "ko": "UDS 0x36 서비스로 블록 시퀀스 카운터(BSC)를 일치시키며 변조된 부트로더 바이너리를 ECU 플래시 메모리에 기록하는 챌린지입니다.\n지정된 식별자 `carcan_uds_transfer_data_block_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_transfer_data_block_v1\") 앞 20자리}`",
+    "en": "Transmit malicious firmware blocks matching blockSequenceCounter to ECU flash memory via UDS 0x36.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_transfer_data_block_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_transfer_data_block_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_transfer_data_block_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_transfer_data_block_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9947eefe8423c2a9730a0408c16d63639af0c12b2fd315ab23380de6e9e4b143"
+},
+{
+  "id": "t3_carcan_uds_request_transfer_exit",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 330,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UDS 0x37 RequestTransferExit 전송 종결",
+    "en": "UDS 0x37 RequestTransferExit Validation"
+  },
+  "prompt": {
+    "ko": "UDS 0x37 서비스로 펌웨어 데이터 전송을 종결하고 ECU 내부 체크섬(CRC/해시) 검증 핸들러를 속여 재부팅을 유도하는 챌린지입니다.\n지정된 식별자 `carcan_uds_request_transfer_exit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_uds_request_transfer_exit_v1\") 앞 20자리}`",
+    "en": "Conclude firmware flashing transfer and validate checksum handler bypass via UDS service 0x37.\nCompute the first 20 hex characters of SHA256(\"carcan_uds_request_transfer_exit_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_uds_request_transfer_exit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_uds_request_transfer_exit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_uds_request_transfer_exit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ea77bc39c68124c3517726abc1d57a2f2289bbe2ff67c0bfa3d2cce8be92c124"
+},
+{
+  "id": "t3_carcan_gateway_filtering_bypass",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "차량 중앙 게이트웨이(CGW) 필터링 우회",
+    "en": "Central Gateway (CGW) Filter Bypass"
+  },
+  "prompt": {
+    "ko": "인포테인먼트 CAN에서 파워트레인 CAN으로 직접 전달되지 않는 방화벽 규칙을 진단 게이트웨이 터널링 프레임을 통해 우회하는 챌린지입니다.\n지정된 식별자 `carcan_gateway_filtering_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_gateway_filtering_bypass_v1\") 앞 20자리}`",
+    "en": "Bypass Central Gateway (CGW) inter-bus message filtering by encapsulating frames in diagnostic gateway routing services.\nCompute the first 20 hex characters of SHA256(\"carcan_gateway_filtering_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_gateway_filtering_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_gateway_filtering_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_gateway_filtering_bypass_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "209d7fab1f8224045a6afa09c95f7c8f115401c1f40cf48042441ed310093646"
+},
+{
+  "id": "t3_carcan_someip_sd_spoofing",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 370,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "차량 이더넷 SOME/IP SD 스푸핑",
+    "en": "Automotive Ethernet SOME/IP SD Spoofing"
+  },
+  "prompt": {
+    "ko": "차량용 이더넷 기반 SOME/IP Service Discovery 프로토콜의 멀티캐스트 오퍼(OfferService) 메시지를 스푸핑하여 악성 서비스로 라우팅하는 챌린지입니다.\n지정된 식별자 `carcan_someip_sd_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_someip_sd_spoofing_v1\") 앞 20자리}`",
+    "en": "Spoof SOME/IP Service Discovery (SD) multicast OfferService entries to hijack automotive Ethernet RPC endpoints.\nCompute the first 20 hex characters of SHA256(\"carcan_someip_sd_spoofing_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_someip_sd_spoofing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_someip_sd_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_someip_sd_spoofing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "58e28557a31f557ef0f7bfd11ac4330e9e014e409ceae68624936fbea303cd88"
+},
+{
+  "id": "t3_carcan_doip_uds_payload_extract",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 390,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DoIP (ISO 13400) 진단 트래픽 탈취",
+    "en": "DoIP (ISO 13400) Diagnostic Interception"
+  },
+  "prompt": {
+    "ko": "TCP 13400 포트로 전송되는 Diagnostics over IP(DoIP) 프로토콜 헤더를 파싱하고 캡슐화된 내부 UDS 페이로드를 탈취하는 챌린지입니다.\n지정된 식별자 `carcan_doip_uds_payload_extract_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_doip_uds_payload_extract_v1\") 앞 20자리}`",
+    "en": "Intercept TCP port 13400 Diagnostics over IP (DoIP) traffic and extract encapsulated UDS diagnostic payload bytes.\nCompute the first 20 hex characters of SHA256(\"carcan_doip_uds_payload_extract_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_doip_uds_payload_extract_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_doip_uds_payload_extract_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_doip_uds_payload_extract_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3dbb9d3a5d0a4fbf3b68ae065ef3aa927e91d8e9fb9bdd6d53b16387d5909846"
+},
+{
+  "id": "t3_carcan_secoc_freshness_value",
+  "tier": 3,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 410,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AUTOSAR SecOC 보안 CAN MAC 분석",
+    "en": "AUTOSAR SecOC MAC & Freshness Analysis"
+  },
+  "prompt": {
+    "ko": "AUTOSAR Secure Onboard Communication(SecOC)에서 재생 방지를 위해 적용된 Freshness Value와 CMAC-AES128 인증 태그를 분석하는 챌린지입니다.\n지정된 식별자 `carcan_secoc_freshness_value_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_secoc_freshness_value_v1\") 앞 20자리}`",
+    "en": "Analyze AUTOSAR SecOC truncated CMAC-AES128 authentication tags and Freshness Value counters preventing frame replay.\nCompute the first 20 hex characters of SHA256(\"carcan_secoc_freshness_value_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_secoc_freshness_value_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_secoc_freshness_value_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_secoc_freshness_value_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2a4c3062c035af5d1de750ba0b30356ac2ef8662ec1225fdea8a8a7da7acbbd6"
+},
+{
+  "id": "t4_carcan_connected_vehicle_capstone",
+  "tier": 4,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 450,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "커넥티드 카 텔레매틱스 침투 캡스톤",
+    "en": "Connected Vehicle Telematics Capstone"
+  },
+  "prompt": {
+    "ko": "셀룰러 텔레매틱스 박스(TCU) 원격 취약점 익스플로잇 후 SPI/UART를 거쳐 차량 내부 CAN 버스로 피버팅하는 종합 침투 시나리오 챌린지입니다.\n지정된 식별자 `carcan_connected_vehicle_capstone_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_connected_vehicle_capstone_v1\") 앞 20자리}`",
+    "en": "Comprehensive incident response investigating remote cellular TCU exploit chaining to internal powertrain CAN bus.\nCompute the first 20 hex characters of SHA256(\"carcan_connected_vehicle_capstone_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_connected_vehicle_capstone_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_connected_vehicle_capstone_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_connected_vehicle_capstone_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "4333f2d868d3d8ee8fe7bada5b57e0d47830875e7ece79e7ec751f3912e8ce34"
+},
+{
+  "id": "t4_carcan_ecu_firmware_reverse_s19",
+  "tier": 4,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 470,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Motorola S19 펌웨어 역공학",
+    "en": "Motorola S19 ECU Firmware Reversing"
+  },
+  "prompt": {
+    "ko": "ECU 플래시 덤프 Motorola S-Record(S19/S28) 포맷의 체크섬과 베이스 주소를 복원하고 Ghidra로 Tricore/RH850 마이크로컨트롤러 코드를 분석하는 챌린지입니다.\n지정된 식별자 `carcan_ecu_firmware_reverse_s19_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_ecu_firmware_reverse_s19_v1\") 앞 20자리}`",
+    "en": "Reconstruct base address and memory maps from Motorola S-Record (S19) firmware dumps for Tricore microcontroller analysis.\nCompute the first 20 hex characters of SHA256(\"carcan_ecu_firmware_reverse_s19_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_ecu_firmware_reverse_s19_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_ecu_firmware_reverse_s19_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_ecu_firmware_reverse_s19_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b774e99f488e6b6f85e9fb4fc9dc87fdb8ff3a4a7810eee1b9d5f1cf900b93cd"
+},
+{
+  "id": "t4_carcan_adas_radar_spoofing",
+  "tier": 4,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 480,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ADAS 전방 레이더 CAN 기만 공격",
+    "en": "ADAS Forward Radar CAN Spoofing"
+  },
+  "prompt": {
+    "ko": "자율주행 ADAS ECU의 장애물 감지 CAN 프레임을 가로채 가상의 장애물 거리(Distance)와 상대 속도(Relative Velocity)를 조작하여 유령 제동을 유발하는 챌린지입니다.\n지정된 식별자 `carcan_adas_radar_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_adas_radar_spoofing_v1\") 앞 20자리}`",
+    "en": "Inject spoofed forward radar obstacle distance and velocity signals into ADAS CAN bus to trigger phantom braking.\nCompute the first 20 hex characters of SHA256(\"carcan_adas_radar_spoofing_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_adas_radar_spoofing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_adas_radar_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_adas_radar_spoofing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "31ec0db7e4d7db78a548f632e798c08da5abe8eda1f880a0982a94a09736875e"
+},
+{
+  "id": "t4_carcan_ota_firmware_tampering",
+  "tier": 4,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 490,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "차량 무선(OTA) 업데이트 변조",
+    "en": "Automotive OTA Firmware Tampering"
+  },
+  "prompt": {
+    "ko": "차량 OTA(Over-The-Air) 패키지 다운로드 과정에서 TLS 인증서 검증 결함을 악용해 변조된 롬 바이너리를 전달하고 무결성 해시를 일치시키는 챌린지입니다.\n지정된 식별자 `carcan_ota_firmware_tampering_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_ota_firmware_tampering_v1\") 앞 20자리}`",
+    "en": "Exploit TLS validation flaw in automotive Over-The-Air (OTA) download client to push malicious ECU update packages.\nCompute the first 20 hex characters of SHA256(\"carcan_ota_firmware_tampering_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_ota_firmware_tampering_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_ota_firmware_tampering_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_ota_firmware_tampering_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a786e3d7c0276701b14c64c967bdd4c4761b39e919665b86f0a2690c138bf85e"
+},
+{
+  "id": "t4_carcan_zero_trust_in_vehicle_ids",
+  "tier": 4,
+  "cat": "carcan",
+  "track": "carcan",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "차량 내부 제로 트러스트 침입탐지(IVN-IDS)",
+    "en": "Zero Trust In-Vehicle IDS Defense"
+  },
+  "prompt": {
+    "ko": "차량 네트워크(CAN/Ethernet) 전 구간에 메시지 엔트로피, 송신 주기성(Inter-arrival Time), 하드웨어 송신원 핑거프린팅을 적용하는 차세대 IVN-IDS 방어 챌린지입니다.\n지정된 식별자 `carcan_zero_trust_in_vehicle_ids_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"carcan_zero_trust_in_vehicle_ids_v1\") 앞 20자리}`",
+    "en": "Design In-Vehicle Network IDS combining frame entropy, inter-arrival interval timing, and transceiver physical fingerprinting.\nCompute the first 20 hex characters of SHA256(\"carcan_zero_trust_in_vehicle_ids_v1\").\n\nFormat: `FLAG{SHA256(\"carcan_zero_trust_in_vehicle_ids_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `carcan_zero_trust_in_vehicle_ids_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"carcan_zero_trust_in_vehicle_ids_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f3a711b9e0ee50ddcf7fc1949f87f4fe13ea6394c4b4b45bd89fee3d505eb19c"
+}
+];

@@ -541,9 +541,54 @@ def cmd_lab(args: argparse.Namespace) -> None:
         _lab_test(getattr(args, "lab_id", None), getattr(args, "all", False))
     elif sub == "logs":
         _lab_logs(args.lab_id)
+    elif sub == "solve":
+        _lab_solve(getattr(args, "lab_id", None), getattr(args, "step", 1))
     else:
         print(red(f"✗ 알 수 없는 lab 서브명령: {sub}"))
         sys.exit(1)
+
+
+def _lab_solve(lab_id: str | None, step: int = 1) -> None:
+    if not lab_id:
+        print(red("✗ 랩 번호를 지정하세요. 예: vhack lab solve 19 [--step 1]"))
+        sys.exit(1)
+    if lab_id.isdigit():
+        lab_id = f"{int(lab_id):02d}"
+    try:
+        from labs.solvers import get_lab_solver, run_lab_solve_step
+    except ImportError:
+        print(red("✗ labs.solvers 모듈을 불러올 수 없습니다."))
+        return
+
+    solver_data = get_lab_solver(lab_id)
+    if not solver_data:
+        print(red(f"✗ Lab {lab_id}에 대한 솔버가 없습니다. (01~20 지원)"))
+        return
+
+    res = run_lab_solve_step(lab_id, step)
+    if not res["success"]:
+        print(red(f"✗ 실패: {res.get('error')}"))
+        return
+
+    print(bold(cyan(f"\n⚡ [Lab {lab_id}] {res['title']} — 자동 익스플로잇 솔루션 & 방어 가이드\n")))
+    step_num = res["step"]
+    step_name = res["name"]
+    step_label = f"Step {step_num}: {step_name}"
+    print(f"  {bold('🎯 공격 단계')} : {yellow(step_label)}")
+    print(f"  {bold('📍 공격 대상')} : {res['target']}")
+    print(f"  {bold('📖 취약점 원리')} :")
+    for line in textwrap.wrap(res['poc_explanation'], width=70):
+        print(f"     {dim(line)}")
+    print(f"\n  {bold('💥 PoC 익스플로잇 페이로드')} :")
+    for line in res['exploit_payload'].splitlines():
+        print(f"     {green(line)}")
+    print(f"\n  {bold('🛡️ 방어 및 보안 패치 (Mitigation)')} :")
+    for line in textwrap.wrap(res['defense'], width=70):
+        print(f"     {blue(line)}")
+    print(f"\n  {bold('💻 모의 공격 실행 결과 (Output)')} :")
+    for line in res['output'].splitlines():
+        print(f"     {cyan(line)}")
+    print("\n" + "─" * 75 + "\n")
 
 
 def _lab_ls() -> None:
@@ -1670,6 +1715,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_test.add_argument("--all", action="store_true", help="전체 20개 랩 테스트 일괄 실행")
     p_logs = lab_sub.add_parser("logs", help="랩 로그 보기")
     p_logs.add_argument("lab_id", metavar="랩번호", help="01~20")
+    p_solve = lab_sub.add_parser("solve", help="실습 랩 단계별 PoC 공격 및 패치 솔루션 확인")
+    p_solve.add_argument("lab_id", metavar="랩번호", help="01~20")
+    p_solve.add_argument("--step", type=int, default=1, help="단계 번호 (기본값: 1)")
+
+    # solve (top-level shortcut)
+    p_top_solve = sub.add_parser("solve", help="실습 랩 단계별 PoC 공격 및 패치 솔루션 확인")
+    p_top_solve.add_argument("lab_id", metavar="랩번호", help="01~20")
+    p_top_solve.add_argument("--step", type=int, default=1, help="단계 번호 (기본값: 1)")
 
     # search
     p_search = sub.add_parser("search", help="전체 문서에서 키워드 검색")
@@ -1760,6 +1813,7 @@ def main() -> None:
         "portal":       cmd_portal,
         "ctf":          cmd_ctf,
         "bundle":       cmd_bundle,
+        "solve":        lambda a: _lab_solve(a.lab_id, getattr(a, "step", 1)),
         "update":       cmd_update,
     }
 

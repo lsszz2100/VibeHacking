@@ -13,30 +13,34 @@
 - **인터랙티브 실습 랩 (Docker Labs)**: **총 20개 실전 랩 완비** (`labs/01` ~ `labs/20`)
   - **Lab 19 (DroidShield)**: 안드로이드 리버싱 & Frida 후킹 랩 (루팅 탐지 우회, SSL Pinning 패치, Native 심볼 후킹, JNI Crypto 암호문 복호화, 포트: `8019`)
   - **Lab 20 (WinAppSec)**: 윈도우 바이너리 & 커널 드라이버 랩 (SEH 스택 오버라이트, SafeSEH/DEP/ASLR 회피, UAC 바이패스, HEVD IOCTL 임의 메모리 쓰기, Token Stealing 권한상승, 포트: `8020`)
-- **브라우저 터미널 워게임**: **총 34개 트랙 / 1,190문제** 달성 (`wargame/index.html`, HUD `0/1190`)
+- **브라우저 터미널 워게임**: **총 35개 트랙 / 1,225문제** 달성 (`wargame/index.html`, HUD `0/1225`)
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
   - **신규 트랙**:
     - `droidpwn` 📱 모바일 & 안드로이드 보안 (35개 문제: Tier 0~4)
     - `winclient` 🪟 Windows 클라이언트 & 드라이버 익스플로잇 (35개 문제: Tier 0~4)
+    - `carcan` 🚗 차량 보안·CAN Bus·UDS 진단 (35개 문제: Tier 0~4)
 - **통합 웹 관제 대시보드 (Portal)**:
-  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(20개 랩 시작/중지/재시작), 자원 모니터링, 교재/워게임 원클릭 연동 (`vhack portal [--port 8800]`)
+  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(20개 랩 시작/중지/재시작), 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 자원 모니터링, 교재/워게임 원클릭 연동 (`vhack portal [--port 8800]`)
+- **실습 랩 자동 익스플로잇 솔버 (Solvers)**:
+  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 20개 전체 랩의 1~2단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
 - **CTF 대회 스코어보드 & 채점 엔진 (CTF)**:
-  - `ctf/server.py` 기반 실시간 참가자 등록, 1,190개 문제 플래그 제출 및 채점, 34개 트랙 실시간 순위표 및 점수 그래프 (`vhack ctf [--port 8888]`)
+  - `ctf/server.py`, `ctf/tests/test_ctf.py`: 26개 랩 플래그 등록, First Blood 알림 및 +50pt 보너스, 제출 팀 증가에 따른 점수 자동 감쇠(Dynamic Scoring Engine: 500pt -> 100pt), 실시간 순위표 및 First Blood 영예의 전당 피드 (`vhack ctf [--port 8888]`)
 - **오프라인 번들러 패키징 (Bundler)**:
-  - `tools/bundle_offline.py` 및 `vhack bundle [--tar <path>]` 통한 20개 랩, 34개 트랙, 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증 및 배포 아카이브 생성 지원
+  - `tools/bundle_offline.py` 및 `vhack bundle [--tar <path>]` 통한 20개 랩, 35개 트랙(1,225문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증 및 배포 아카이브 생성 지원
 - **표준 파이썬 패키징**: [pyproject.toml](file:///mnt/d/바이브해킹%20자료/vibe-hacking/pyproject.toml) 기반 패키징 완비 (`pip install -e .` 지원, 글로벌 `vhack` 명령 제공)
 - **vhack CLI 고도화**:
+  - `vhack solve`: 20개 실습 랩의 1~2단계 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
   - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8020 가용성 등 시스템 진단
   - `vhack setup-docker`: OS 및 WSL2 환경 자동 감지, Docker CE / Compose 자동 설치 및 WSL2 연동 진단 가이드
   - `vhack docs`: 75개 챕터 웹 리더 포털 로컬 HTTP 서버 실행
-  - `vhack portal`: 통합 웹 관제 대시보드 실행
-  - `vhack ctf`: 모의해킹 대회 스코어보드 및 채점 서버 실행
-  - `vhack bundle`: 오프라인 배포 무결성 검증 및 압축 번들 생성
+  - `vhack portal`: 통합 웹 관제 대시보드 실행 (웹 터미널, 실시간 로그, 솔루션 모달 탑재)
+  - `vhack ctf`: 모의해킹 대회 스코어보드 및 Dynamic Scoring/First Blood 채점 서버 실행
+  - `vhack bundle`: 오프라인 배포 무결성 검증 및 압축 번들 생성 (1,225문제 동기화)
   - `vhack wargame`: 내장 웹서버 구동 및 브라우저 자동 실행
   - `vhack lab test [--all | <lab_id>]`: 20개 실습 랩 자동 무결성 검증 (144개 테스트 All Green)
   - `vhack lab status`: 20개 랩 종합 상태 대시보드
-- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~20, `vhack doctor`, Pytest 전체 랩 테스트, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
+- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~20, `vhack doctor`, Pytest 전체 151개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
 
 ---
 
@@ -95,19 +99,22 @@ vhack docs
 # 7. 통합 웹 관제 대시보드 실행
 vhack portal
 
-# 8. 모의해킹 대회 스코어보드 & 채점 엔진 실행
+# 8. 모의해킹 대회 스코어보드 & Dynamic Scoring 채점 엔진 실행
 vhack ctf
 
-# 9. 워게임 무결성 및 구조 검증 (1,190문제, 34트랙, 5티어)
+# 9. 20개 실습 랩 자동 익스플로잇 솔버 실행
+vhack solve 01 --step 1
+
+# 10. 워게임 무결성 및 구조 검증 (1,225문제, 35트랙, 5티어)
 node wargame/scripts/verify.js
 
-# 10. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
+# 11. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
 node wargame/scripts/leakscan.js
 
-# 11. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
+# 12. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
 node wargame/scripts/audit.js --strict
 
-# 12. 연산/유도형 챌린지 223개 자동 풀이 검증 (223/223 통과)
+# 13. 연산/유도형 챌린지 258개 자동 풀이 검증 (258/258 통과)
 node wargame/scripts/solve-derivable.js
 ```
 
@@ -123,6 +130,12 @@ node wargame/scripts/solve-derivable.js
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
 
+- **2026-09-20 (Portal Web Console/Logs/Solver Modal, Lab Solvers DB & CLI, Track 35 carcan 1,225 Milestone, CTF First Blood & Dynamic Scoring, 151 Tests All Green)**:
+  - **웹 포털 관제 고도화 (`vhack portal`)**: 20개 랩 제어 외에 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), 취약점 원리/대책/PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`) 모달 UI 추가, 단위 테스트 전원 통과
+  - **20개 실습 랩 자동 익스플로잇 솔버 구축 (`vhack solve`)**: `labs/solvers.py`에 20개 랩 1~2단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
+  - **워게임 35번째 트랙 (`carcan`) 확장 및 1,225문제 마일스톤**: 차량 보안·CAN Bus·UDS 진단 트랙 35개 문제 구축으로 1,225문제 완비, 4대 무결성 검증 (`verify.js`, `audit.js --strict`, `leakscan.js`, `solve-derivable.js` 258/1225) 전원 0결함 완벽 통과
+  - **CTF 대회 스코어보드 고도화 (`vhack ctf`)**: 26개 랩 플래그 풀 구축, 문제 최초 해결 시 First Blood 뱃지 및 +50pt 보너스 지급, 참가자 수에 비례한 점수 자동 감쇠 알고리즘(Dynamic Scoring: 500pt -> 100pt), First Blood 명예의 전당 피드 및 스코어보드 UI 탑재
+  - **전체 151개 테스트 100% 통과**: `pytest -q` (Labs 01~20 144개 테스트 + solvers 4개 + portal 6개 + ctf 4개 등 151개 ALL GREEN)
 - **2026-09-19 (Lab 18 AgentGuard, Wargame Track 32 / 1,120 Challenges, Wargame UX & Badges, Deep-dive Ingestion, 18 Labs 131 Tests All Green, Remote Sync)**:
   - **Lab 18 AgentGuard 랩 신규 구축**: `labs/18_ai_agent_mcp_lab/` (간접 프롬프트 인젝션, MCP 도구 자율 실행 하이재킹, 데이터 유출, 시스템 커맨드 탈출, eBPF/LSM 보안 필터 방어, 포트 8018, 7개 단위 테스트 전원 통과)
   - **워게임 32번째 트랙 (`aiagent`) 확장**: 35개 문제 추가로 1,085제 → 1,120제 확장, 4대 엄격 검증 스위트 (`verify.js`, `audit.js --strict`, `leakscan.js`, `solve-derivable.js` 153/1120) 전원 무결격 통과

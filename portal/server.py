@@ -178,6 +178,73 @@ def test_lab(lab_id: str):
         return {"status": "error", "error": str(e), "success": False}
 
 
+@app.get("/api/labs/{lab_id}/logs")
+def get_lab_logs(lab_id: str, tail: int = 100):
+    """랩 Docker 컨테이너 실시간 로그 반환"""
+    if lab_id not in LABS:
+        raise HTTPException(status_code=404, detail="Lab ID not found")
+    meta = LABS[lab_id]
+    target_dir = LABS_DIR / meta["dir"]
+    compose_file = target_dir / "docker-compose.yml"
+    if not compose_file.exists():
+        return {
+            "status": "simulated",
+            "logs": f"[INFO] Lab {lab_id} runs in standalone mode or without compose.\n[LOG] Service initialized.\n[LOG] Ready for interactive testing."
+        }
+    cmd = ["docker", "compose", "logs", f"--tail={tail}"]
+    try:
+        proc = subprocess.run(cmd, cwd=str(target_dir), capture_output=True, text=True, timeout=10)
+        logs = proc.stdout or proc.stderr or "[No logs available yet]"
+        return {"status": "success", "logs": logs}
+    except Exception as e:
+        return {"status": "error", "logs": f"[ERROR] Failed to fetch docker logs: {str(e)}"}
+
+
+class ExecRequest(BaseModel):
+    command: str
+
+
+@app.post("/api/labs/{lab_id}/exec")
+def exec_in_lab(lab_id: str, req: ExecRequest):
+    """랩 환경 또는 컨테이너 내부 셸 명령 실행 (Web Console)"""
+    if lab_id not in LABS:
+        raise HTTPException(status_code=404, detail="Lab ID not found")
+    
+    cmd_str = req.command.strip()
+    if not cmd_str:
+        return {"status": "empty", "output": ""}
+        
+    meta = LABS[lab_id]
+    target_dir = LABS_DIR / meta["dir"]
+    
+    try:
+        proc = subprocess.run(cmd_str, shell=True, cwd=str(target_dir), capture_output=True, text=True, timeout=10)
+        output = proc.stdout + (("\n[STDERR]\n" + proc.stderr) if proc.stderr else "")
+        return {
+            "status": "success",
+            "exit_code": proc.returncode,
+            "output": output or "[Command produced no output]"
+        }
+    except subprocess.TimeoutExpired:
+        return {"status": "timeout", "output": "Command timed out after 10s"}
+    except Exception as e:
+        return {"status": "error", "output": f"Execution error: {str(e)}"}
+
+
+@app.get("/api/labs/{lab_id}/solve")
+def get_lab_solution(lab_id: str, step: int = 1):
+    """실습 랩 PoC 공격 및 방어 솔루션 반환"""
+    try:
+        from labs.solvers import run_lab_solve_step
+        res = run_lab_solve_step(lab_id, step)
+        if not res["success"]:
+            raise HTTPException(status_code=404, detail="Lab solver not found")
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @app.get("/")
 def portal_home():
     html_file = STATIC_DIR / "index.html"

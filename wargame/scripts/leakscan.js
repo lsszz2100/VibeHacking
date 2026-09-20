@@ -152,6 +152,22 @@ const ALLOWLIST = new Map([
   ['t4_winclient_dkom_activeprocesslinks -> t2_voldkom', 'DKOM process unlinking modifies ActiveProcessLinks list'],
   ['t4_winclient_byovd_kernel_defense -> t4_rtbyovd', 'BYOVD defense mitigates vulnerable signed driver abuse'],
   ['t4_winclient_ntdll_disk_unhooking -> t2_rtunhooking', 'Disk unhooking restores original ntdll syscall stubs'],
+  ['t0_carcan_can_bus_arbitration_id -> t1_arbitration', 'CAN bus protocol uses bitwise arbitration for collision resolution'],
+  ['t1_carcan_candump_traffic_sniff -> t1_socketcan', 'CAN dump utility operates on SocketCAN network interface'],
+  ['t1_carcan_candump_traffic_sniff -> t0_candump', 'Traffic sniffing challenge references candump utility name'],
+  ['t1_carcan_cansend_manual_frame -> t1_arbitration', 'Frame injection challenge references CAN arbitration mechanism'],
+  ['t1_carcan_cangen_fuzzing_dos -> t1_arbitration', 'CAN generation fuzzing saturates bus arbitration scheme'],
+  ['t2_carcan_uds_security_access_seed -> t0_seed', 'UDS SecurityAccess service requests diagnostic seed'],
+  ['t2_carcan_uds_routine_control_abs -> t2_scadaactuator', 'Routine control diagnostic tests ABS hydraulic actuator'],
+  ['t2_carcan_dbc_signal_decoding -> t2_dbc', 'CAN signal decoding references DBC database format'],
+  ['t3_carcan_gateway_filtering_bypass -> t0_gateway', 'Gateway filtering bypass references central automotive gateway'],
+  ['t3_carcan_secoc_freshness_value -> t4_autosar', 'SecOC security specification defined by AUTOSAR consortium'],
+  ['t3_carcan_secoc_freshness_value -> t4_secoc', 'Secure Onboard Communication references SecOC standard'],
+  ['t3_carcan_secoc_freshness_value -> t3_freshness', 'SecOC MAC verification incorporates freshness counter'],
+  ['t4_carcan_connected_vehicle_capstone -> t4_tcu', 'Connected vehicle capstone pivots through Telematics Control Unit'],
+  ['t4_carcan_ecu_firmware_reverse_s19 -> t3_firmwareghidrabase', 'ECU firmware binary reversing references Ghidra base address analysis'],
+  ['t4_carcan_ota_firmware_tampering -> t3_ota', 'Firmware update tampering references automotive OTA update client'],
+  ['t4_carcan_zero_trust_in_vehicle_ids -> t3_maldocvbaentropy', 'In-vehicle IDS evaluates CAN traffic Shannon entropy'],
 ]);
 
 function loadChallenges() {

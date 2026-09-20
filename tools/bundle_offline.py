@@ -62,10 +62,10 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count != 1190:
-        return False, f"Expected 1,190 challenges in challenges.js, found {id_count}"
+    if id_count != 1225:
+        return False, f"Expected 1,225 challenges in challenges.js, found {id_count}"
     
-    print(f"  ✓ Wargame database verified: {id_count} challenges across 34 tracks.")
+    print(f"  ✓ Wargame database verified: {id_count} challenges across 35 tracks.")
     return True, f"{id_count} challenges verified"
 
 def check_offline_assets():

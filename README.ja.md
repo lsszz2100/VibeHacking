@@ -9,10 +9,10 @@
 [![Files](https://img.shields.io/badge/Docs-491%2B%20Files-brightgreen)](#目次)
 [![Lines](https://img.shields.io/badge/Lines-560%2C000%2B-orange)](#目次)
 [![AI Powered](https://img.shields.io/badge/AI--Powered-Claude%20%2B%20GPT-red)](#11-aiを活用したサイバーセキュリティ)
-[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·1190-9933ff)](https://lsszz2100.github.io/VibeHacking/)
+[![Play Wargame](https://img.shields.io/badge/Play_Wargame-terminal_infiltration·1225-9933ff)](https://lsszz2100.github.io/VibeHacking/)
 &nbsp; [![Wargame source](https://img.shields.io/badge/Wargame_source-wargame/-555555?style=flat-square&labelColor=111111)](wargame/README.md)
 
-> 🎮 **ブラウザのターミナルで遊ぶ侵入CTFワーゲーム** — 偽シェル（`connect`・`cat`・`submit`）でターゲット `vibe.corp` のセキュリティ層5つ（外周→Web→内部→金庫→コア）を1層ずつ突破し、1190 問をクリア。起動シーケンス・`ACCESS GRANTED` 演出・マトリックスレイン・サウンド・ヒント・日英対応。本リポジトリの75セクション基盤。([紹介](wargame/README.md) · GitHub Pages有効化後にアクセス可能)
+> 🎮 **ブラウザのターミナルで遊ぶ侵入CTFワーゲーム** — 偽シェル（`connect`・`cat`・`submit`）でターゲット `vibe.corp` のセキュリティ層5つ（外周→Web→内部→金庫→コア）を1層ずつ突破し、1225 問をクリア。起動シーケンス・`ACCESS GRANTED` 演出・マトリックスレイン・サウンド・ヒント・日英対応。本リポジトリの75セクション基盤。([紹介](wargame/README.md) · GitHub Pages有効化後にアクセス可能)
 
 <br/>
 

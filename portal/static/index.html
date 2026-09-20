@@ -53,11 +53,29 @@
     .btn-green:hover { background: rgba(16, 185, 129, 0.3); }
     .btn-red { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border-color: rgba(239, 68, 68, 0.4); }
     .btn-red:hover { background: rgba(239, 68, 68, 0.3); }
-    .btn-cyan { background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); border-color: rgba(6, 182, 212, 0.4); }
+    .btn-amber { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border-color: rgba(245, 158, 11, 0.4); }
+    .btn-amber:hover { background: rgba(245, 158, 11, 0.3); }
 
     /* Frame View (Docs/Wargame/CTF) */
     .frame-container { width: 100%; height: calc(100vh - 120px); border: none; border-radius: 8px; display: none; background: #0b0f19; }
     .frame-container.active { display: block; }
+
+    /* Modals (Terminal, Logs, Solver) */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); display: none; justify-content: center; align-items: center; z-index: 5000; backdrop-filter: blur(4px); }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: var(--card-bg); border: 1px solid var(--accent-cyan); border-radius: 10px; width: 90%; max-width: 900px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+    .modal-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 1.1rem; font-weight: bold; color: var(--accent-cyan); }
+    .modal-close { background: transparent; border: none; color: var(--text-dim); font-size: 1.25rem; cursor: pointer; }
+    .modal-close:hover { color: var(--accent-red); }
+    .modal-body { padding: 1.25rem; overflow-y: auto; flex: 1; font-family: monospace; font-size: 0.85rem; }
+    
+    /* Terminal UI */
+    .term-window { background: #000; border-radius: 6px; padding: 1rem; border: 1px solid #334155; min-height: 350px; display: flex; flex-direction: column; }
+    .term-output { flex: 1; overflow-y: auto; white-space: pre-wrap; color: #38bdf8; line-height: 1.4; margin-bottom: 0.75rem; max-height: 350px; }
+    .term-input-row { display: flex; align-items: center; gap: 8px; border-top: 1px solid #1e293b; padding-top: 8px; }
+    .term-prompt { color: var(--accent-green); font-weight: bold; }
+    .term-input { flex: 1; background: transparent; border: none; outline: none; color: #f8fafc; font-family: monospace; font-size: 0.9rem; }
 
     /* Toast */
     #toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background: #1f2937; border: 1px solid var(--accent-cyan); border-radius: 6px; color: var(--text); font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 9999; }
@@ -185,10 +203,13 @@
             <div class="lab-title">${lab.name}</div>
             <div class="lab-desc">${lab.desc}</div>
           </div>
-          <div class="lab-actions">
+          <div class="lab-actions" style="flex-wrap: wrap;">
             ${portLink}
             <button class="btn btn-green" onclick="controlLab('${lab.id}', 'start')">▶ 시작</button>
             <button class="btn btn-red" onclick="controlLab('${lab.id}', 'stop')">■ 중지</button>
+            <button class="btn" onclick="openTerminal('${lab.id}', '${lab.name}')">💻 셸</button>
+            <button class="btn" onclick="openLogs('${lab.id}', '${lab.name}')">📜 로그</button>
+            <button class="btn btn-amber" onclick="openSolver('${lab.id}', '${lab.name}')">💡 솔루션</button>
             <button class="btn" onclick="testLab('${lab.id}')">🧪 테스트</button>
           </div>
         `;
@@ -229,10 +250,158 @@
     }
   }
 
+  // --- Terminal UI Logic ---
+  let activeTerminalLab = null;
+  function openTerminal(id, name) {
+    activeTerminalLab = id;
+    document.getElementById('modal-term-title').innerText = `💻 Lab ${id} (${name}) — Web Shell Console`;
+    document.getElementById('term-output').innerText = `[*] Connected to Lab ${id} workspace environment.\n[*] Type shell commands (e.g. 'ls -la', 'ps aux', 'id', 'curl http://localhost:8000') below.\n`;
+    document.getElementById('term-modal').classList.add('open');
+    setTimeout(() => document.getElementById('term-input').focus(), 100);
+  }
+
+  async function sendTermCommand() {
+    const inp = document.getElementById('term-input');
+    const cmd = inp.value.trim();
+    if (!cmd || !activeTerminalLab) return;
+    inp.value = '';
+    
+    const out = document.getElementById('term-output');
+    out.innerText += `\n$ ${cmd}\n`;
+    out.scrollTop = out.scrollHeight;
+
+    try {
+      const res = await fetch(`/api/labs/${activeTerminalLab}/exec`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: cmd })
+      });
+      const data = await res.json();
+      out.innerText += `${data.output}\n`;
+      out.scrollTop = out.scrollHeight;
+    } catch (e) {
+      out.innerText += `[Error executing command: ${e.message}]\n`;
+      out.scrollTop = out.scrollHeight;
+    }
+  }
+
+  // --- Logs Viewer Logic ---
+  let activeLogsLab = null;
+  async function openLogs(id, name) {
+    activeLogsLab = id;
+    document.getElementById('modal-logs-title').innerText = `📜 Lab ${id} (${name}) — Live Container Logs`;
+    document.getElementById('logs-output').innerText = "로그 가져오는 중...";
+    document.getElementById('logs-modal').classList.add('open');
+    await refreshLogs();
+  }
+
+  async function refreshLogs() {
+    if (!activeLogsLab) return;
+    try {
+      const res = await fetch(`/api/labs/${activeLogsLab}/logs?tail=150`);
+      const data = await res.json();
+      const pre = document.getElementById('logs-output');
+      pre.innerText = data.logs || "로그가 없습니다.";
+      pre.scrollTop = pre.scrollHeight;
+    } catch (e) {
+      document.getElementById('logs-output').innerText = `로그 조회 실패: ${e.message}`;
+    }
+  }
+
+  // --- Solver Walkthrough Logic ---
+  async function openSolver(id, name) {
+    document.getElementById('modal-solve-title').innerText = `💡 Lab ${id} (${name}) — PoC Exploit & Defense Walkthrough`;
+    document.getElementById('solve-content').innerHTML = "<div style='color:#38bdf8'>솔루션 불러오는 중...</div>";
+    document.getElementById('solve-modal').classList.add('open');
+
+    try {
+      const res = await fetch(`/api/labs/${id}/solve?step=1`);
+      const data = await res.json();
+      document.getElementById('solve-content').innerHTML = `
+        <div style="margin-bottom: 1rem; border-bottom: 1px solid #1f2937; padding-bottom: 0.5rem;">
+          <h3 style="color:#f59e0b; margin-bottom: 0.25rem;">Step ${data.step}: ${data.name}</h3>
+          <div style="color:#94a3b8; font-size:0.8rem;">타깃: <code>${data.target}</code></div>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <h4 style="color:#06b6d4; margin-bottom: 0.25rem;">📖 취약점 원리 및 공격 시나리오</h4>
+          <p style="color:#cbd5e1; line-height: 1.5; font-size: 0.85rem;">${data.poc_explanation}</p>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <h4 style="color:#10b981; margin-bottom: 0.25rem;">💥 PoC 익스플로잇 페이로드</h4>
+          <pre style="background:#090d16; padding: 0.75rem; border-radius: 4px; border: 1px solid #334155; color:#4ade80; overflow-x:auto;">${data.exploit_payload}</pre>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <h4 style="color:#38bdf8; margin-bottom: 0.25rem;">🛡️ 방어 및 보안 패치 (Mitigation)</h4>
+          <p style="color:#cbd5e1; line-height: 1.5; font-size: 0.85rem;">${data.defense}</p>
+        </div>
+        <div>
+          <h4 style="color:#a855f7; margin-bottom: 0.25rem;">💻 모의 공격 실행 결과 (Output)</h4>
+          <pre style="background:#090d16; padding: 0.75rem; border-radius: 4px; border: 1px solid #334155; color:#c084fc; overflow-x:auto;">${data.output}</pre>
+        </div>
+      `;
+    } catch (e) {
+      document.getElementById('solve-content').innerHTML = `<div style="color:#ef4444">솔루션 로드 오류: ${e.message}</div>`;
+    }
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
   fetchStatus();
   fetchLabs();
   setInterval(fetchStatus, 5000);
   setInterval(fetchLabs, 10000);
 </script>
+
+<!-- Terminal Modal -->
+<div id="term-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-term-title">💻 Web Terminal</div>
+      <button class="modal-close" onclick="closeModal('term-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="term-window">
+        <div class="term-output" id="term-output"></div>
+        <div class="term-input-row">
+          <span class="term-prompt">$</span>
+          <input type="text" id="term-input" class="term-input" placeholder="명령어 입력 후 Enter..." onkeydown="if(event.key==='Enter') sendTermCommand()">
+          <button class="btn btn-cyan" onclick="sendTermCommand()">전송</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Logs Modal -->
+<div id="logs-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-logs-title">📜 Container Logs</div>
+      <div>
+        <button class="btn btn-cyan" onclick="refreshLogs()" style="margin-right: 8px;">🔄 새로고침</button>
+        <button class="modal-close" onclick="closeModal('logs-modal')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <pre id="logs-output" style="background:#000; padding:1rem; border-radius:6px; color:#a5f3fc; line-height:1.4; max-height:450px; overflow-y:auto;"></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Solver Modal -->
+<div id="solve-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-solve-title">💡 PoC Exploit Solver</div>
+      <button class="modal-close" onclick="closeModal('solve-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="solve-content">
+      <!-- Generated via JS -->
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

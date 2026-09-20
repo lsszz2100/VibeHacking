@@ -43,3 +43,29 @@ def test_list_labs(client):
     ids = [l["id"] for l in data["labs"]]
     assert "19" in ids
     assert "20" in ids
+
+
+def test_lab_logs(client):
+    res = client.get("/api/labs/01/logs")
+    assert res.status_code == 200
+    data = res.json()
+    assert "logs" in data
+    assert "status" in data
+
+
+def test_lab_exec(client):
+    res = client.post("/api/labs/01/exec", json={"command": "echo 'VIBE_PORTAL_TEST'"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert "VIBE_PORTAL_TEST" in data["output"]
+
+
+def test_lab_solve(client):
+    res = client.get("/api/labs/19/solve?step=1")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "Frida" in data["name"]
+    assert "FLAG{" in data["output"]
+
