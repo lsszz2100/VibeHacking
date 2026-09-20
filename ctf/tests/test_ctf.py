@@ -35,6 +35,7 @@ def test_ctf_home(client):
     assert "text/html" in res.headers["content-type"]
     assert "CTF Arena" in res.text
     assert "First Blood" in res.text
+    assert "scoreCanvas" in res.text
 
 
 def test_get_challenges(client):
@@ -42,17 +43,35 @@ def test_get_challenges(client):
     assert res.status_code == 200
     data = res.json()
     assert "challenges" in data
-    assert len(data["challenges"]) >= 20
+    assert len(data["challenges"]) >= 22
     ids = [c["id"] for c in data["challenges"]]
     assert "LAB01_SQLI" in ids
     assert "LAB19_ROOT" in ids
     assert "LAB20_SEH" in ids
-    assert "CARCAN_ECU" in ids
+    assert "LAB21_CAN" in ids
+    assert "LAB21_UDS" in ids
 
 
-def test_register_and_submit_flag_with_first_blood(client):
-    team_alpha = "Alpha_Sec"
-    team_beta = "Beta_Sec"
+def test_timeline_endpoint(client):
+    res = client.get("/api/ctf/timeline")
+    assert res.status_code == 200
+    data = res.json()
+    assert "timeline" in data
+    assert "teams" in data
+    assert len(data["timeline"]) >= 2
+
+
+def test_sse_stream_handshake(client):
+    # Test once=True so it sends handshake and closes without blocking
+    res = client.get("/api/ctf/stream?once=true")
+    assert res.status_code == 200
+    assert "text/event-stream" in res.headers["content-type"]
+    assert "handshake" in res.text
+
+
+def test_register_and_submit_flag_with_first_blood_and_timeline(client):
+    team_alpha = "Alpha_Sec_V2"
+    team_beta = "Beta_Sec_V2"
 
     # Register teams
     client.post("/api/ctf/register", json={"team_name": team_alpha})
@@ -61,17 +80,17 @@ def test_register_and_submit_flag_with_first_blood(client):
     # Wrong flag submission
     sub_fail = client.post("/api/ctf/submit", json={
         "team_name": team_alpha,
-        "chal_id": "LAB01_SQLI",
+        "chal_id": "LAB21_CAN",
         "flag": "FLAG{wrong_flag}",
     })
     assert sub_fail.status_code == 200
     assert sub_fail.json()["status"] == "wrong_flag"
 
-    # First Blood submission by Alpha_Sec
+    # First Blood submission by Alpha_Sec_V2
     sub_alpha = client.post("/api/ctf/submit", json={
         "team_name": team_alpha,
-        "chal_id": "LAB01_SQLI",
-        "flag": "FLAG{sqli_admin_bypass_success_01}",
+        "chal_id": "LAB21_CAN",
+        "flag": "FLAG{can_bus_arbitration_speed_spoof_8821}",
     })
     assert sub_alpha.status_code == 200
     d_alpha = sub_alpha.json()
@@ -80,11 +99,11 @@ def test_register_and_submit_flag_with_first_blood(client):
     assert d_alpha["first_blood_bonus"] == 50
     assert d_alpha["points_awarded"] == 550  # 500 base + 50 FB bonus
 
-    # Second submission by Beta_Sec (Dynamic score decayed, no First Blood)
+    # Second submission by Beta_Sec_V2 (Dynamic score decayed, no First Blood)
     sub_beta = client.post("/api/ctf/submit", json={
         "team_name": team_beta,
-        "chal_id": "LAB01_SQLI",
-        "flag": "FLAG{sqli_admin_bypass_success_01}",
+        "chal_id": "LAB21_CAN",
+        "flag": "FLAG{can_bus_arbitration_speed_spoof_8821}",
     })
     assert sub_beta.status_code == 200
     d_beta = sub_beta.json()
@@ -93,17 +112,15 @@ def test_register_and_submit_flag_with_first_blood(client):
     assert d_beta["first_blood_bonus"] == 0
     assert d_beta["points_awarded"] == 425  # 500 * 0.85 = 425
 
-    # Check first bloods endpoint
-    fb_res = client.get("/api/ctf/firstbloods")
-    assert fb_res.status_code == 200
-    fb_list = fb_res.json()["first_bloods"]
-    assert any(fb["chal_id"] == "LAB01_SQLI" and fb["team"] == team_alpha for fb in fb_list)
+    # Check team profile endpoint
+    prof_res = client.get(f"/api/ctf/team/{team_alpha}")
+    assert prof_res.status_code == 200
+    prof = prof_res.json()
+    assert prof["score"] >= 550
+    assert any(s["chal_id"] == "LAB21_CAN" and s["first_blood"] is True for s in prof["solves"])
 
-    # Scoreboard check
-    board_res = client.get("/api/ctf/scoreboard")
-    assert board_res.status_code == 200
-    bdata = board_res.json()
-    teams = {item["team"]: item for item in bdata["scoreboard"]}
-    assert team_alpha in teams
-    assert teams[team_alpha]["first_blood_count"] >= 1
-    assert teams[team_alpha]["score"] >= 550
+    # Timeline has events recorded
+    time_res = client.get("/api/ctf/timeline")
+    assert time_res.status_code == 200
+    t_events = time_res.json()["timeline"]
+    assert any(ev["team"] == team_alpha and ev["chal_id"] == "LAB21_CAN" for ev in t_events)

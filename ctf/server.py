@@ -4,15 +4,17 @@ import os
 import sys
 import time
 import math
+import json
+import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-app = FastAPI(title="VibeHacking CTF Arena", version="1.1.0")
+app = FastAPI(title="VibeHacking CTF Arena", version="1.2.0")
 
 
 def compute_dynamic_score(
@@ -274,9 +276,42 @@ class CTFState:
                 "solves": [],
                 "first_blood": None,
             },
+            "LAB21_CAN": {
+                "id": "LAB21_CAN",
+                "title": "CarCan: CAN Bus Speedometer Spoofing",
+                "category": "carcan",
+                "initial_points": 500,
+                "flag": "FLAG{can_bus_arbitration_speed_spoof_8821}",
+                "solves": [],
+                "first_blood": None,
+            },
+            "LAB21_UDS": {
+                "id": "LAB21_UDS",
+                "title": "CarCan: UDS SecurityAccess Seed-Key Bypass",
+                "category": "carcan",
+                "initial_points": 500,
+                "flag": "FLAG{uds_security_access_seed_key_unlocked_3714}",
+                "solves": [],
+                "first_blood": None,
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
+        self.score_timeline: List[dict] = []
+        self.subscribers: List[asyncio.Queue] = []
+
+        # Initialize base timeline
+        t0 = int(time.time()) - 60
+        self.score_timeline.append({"time": t0, "team": "Admin_RedTeam", "score": 0, "chal_id": "INIT"})
+        self.score_timeline.append({"time": t0, "team": "BlueGuardians", "score": 0, "chal_id": "INIT"})
+
+    def broadcast_event(self, event: dict):
+        """Broadcast real-time event to all connected SSE clients"""
+        for q in list(self.subscribers):
+            try:
+                q.put_nowait(event)
+            except Exception:
+                pass
 
     def get_points(self, chal_id: str) -> int:
         """Dynamic Scoring: 다음 solve 시 획득할 점수 (solves 수가 늘어날수록 점수 차감, 최저 100점)"""
@@ -328,6 +363,40 @@ def get_firstbloods():
     return {"first_bloods": state.first_bloods_feed}
 
 
+@app.get("/api/ctf/timeline")
+def get_timeline():
+    """시계열 점수 추이 데이터 반환 (차트 렌더링용)"""
+    return {
+        "teams": list(state.teams.keys()),
+        "timeline": state.score_timeline,
+    }
+
+
+@app.get("/api/ctf/team/{team_name}")
+def get_team_profile(team_name: str):
+    """특정 팀의 세부 해결 내역 및 First Blood 뱃지 반환"""
+    team = state.teams.get(team_name)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    details = []
+    for cid in team["solves"]:
+        c = state.challenges.get(cid, {})
+        details.append({
+            "chal_id": cid,
+            "title": c.get("title", cid),
+            "category": c.get("category", "unknown"),
+            "first_blood": cid in team.get("first_bloods", []),
+        })
+    return {
+        "team": team_name,
+        "score": team["score"],
+        "solves_count": len(team["solves"]),
+        "first_blood_count": len(team.get("first_bloods", [])),
+        "solves": details,
+    }
+
+
 @app.get("/api/ctf/scoreboard")
 def get_scoreboard():
     """실시간 스코어보드 순위, 점수, First Blood 뱃지 반환"""
@@ -351,6 +420,35 @@ def get_scoreboard():
     }
 
 
+@app.get("/api/ctf/stream")
+async def sse_stream(request: Request, once: bool = False):
+    """실시간 점수 및 First Blood 스트리밍 (Server-Sent Events)"""
+    async def event_generator():
+        yield "event: handshake\ndata: {\"status\": \"connected\"}\n\n"
+        if once:
+            return
+
+        queue = asyncio.Queue()
+        state.subscribers.append(queue)
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    event = await asyncio.wait_for(queue.get(), timeout=15.0)
+                    yield f"event: {event.get('type', 'message')}\ndata: {json.dumps(event)}\n\n"
+                except asyncio.TimeoutError:
+                    # Keep-alive heartbeat
+                    yield ": ping\n\n"
+        except asyncio.CancelledError:
+            pass
+        finally:
+            if queue in state.subscribers:
+                state.subscribers.remove(queue)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
 @app.post("/api/ctf/register")
 def register_team(req: TeamRegisterRequest):
     name = req.team_name.strip()
@@ -358,7 +456,10 @@ def register_team(req: TeamRegisterRequest):
         raise HTTPException(status_code=400, detail="Team name too short")
     if name in state.teams:
         return {"status": "exists", "message": "Team already registered", "team": name}
+    now = int(time.time())
     state.teams[name] = {"name": name, "score": 0, "solves": [], "first_bloods": [], "last_solve": 0}
+    state.score_timeline.append({"time": now, "team": name, "score": 0, "chal_id": "REGISTER"})
+    state.broadcast_event({"type": "team_registered", "team": name, "time": now})
     return {"status": "registered", "team": name}
 
 
@@ -415,6 +516,29 @@ def submit_flag(req: FlagSubmitRequest):
     team["score"] += pts
     team["last_solve"] = now
 
+    # Record score timeline progression
+    state.score_timeline.append({
+        "time": now,
+        "team": tname,
+        "score": team["score"],
+        "chal_id": req.chal_id,
+        "pts": pts,
+        "first_blood": is_first_blood,
+    })
+
+    # Broadcast event via SSE
+    state.broadcast_event({
+        "type": "flag_solve",
+        "team": tname,
+        "chal_id": req.chal_id,
+        "title": chal["title"],
+        "points": pts,
+        "first_blood": is_first_blood,
+        "bonus": first_blood_bonus,
+        "time": now,
+        "score": team["score"],
+    })
+
     msg = f"Correct! Earned {pts} points."
     if is_first_blood:
         msg += f" [FIRST BLOOD! 🩸 +{first_blood_bonus}pt Bonus!]"
@@ -438,40 +562,80 @@ def ctf_home():
       <meta charset="UTF-8">
       <title>VibeHacking CTF Arena & Scoreboard</title>
       <style>
-        body { background: #0b0f19; color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; padding: 2rem; margin: 0; }
-        .container { max-width: 1100px; margin: 0 auto; }
-        h1 { color: #ec4899; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; }
+        :root {
+          --bg: #0b0f19;
+          --card: #1e293b;
+          --card-border: #334155;
+          --accent: #ec4899;
+          --cyan: #38bdf8;
+          --red: #f43f5e;
+          --gold: #fbbf24;
+          --green: #4ade80;
+        }
+        body { background: var(--bg); color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; padding: 2rem; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; }
         .banner { background: linear-gradient(90deg, #3730a3 0%, #1e1b4b 100%); border-left: 4px solid #818cf8; padding: 12px 16px; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.95rem; }
-        .grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: #111827; border-radius: 8px; overflow: hidden; }
         th, td { padding: 12px 14px; border-bottom: 1px solid #1f2937; text-align: left; }
-        th { background: #1f2937; color: #38bdf8; font-weight: 600; font-size: 0.9rem; }
-        .rank-1 { color: #fbbf24; font-weight: bold; background: rgba(251, 191, 36, 0.05); }
-        .badge { background: #ec4899; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        th { background: #1f2937; color: var(--cyan); font-weight: 600; font-size: 0.9rem; }
+        .rank-1 { color: var(--gold); font-weight: bold; background: rgba(251, 191, 36, 0.05); }
+        .badge { background: var(--accent); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
         .badge-fb { background: #dc2626; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
-        .card { background: #1e293b; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid #334155; }
+        .card { background: var(--card); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid var(--card-border); }
         .input-box { background: #0f172a; border: 1px solid #475569; color: white; padding: 10px; border-radius: 6px; margin-right: 8px; font-size: 0.95rem; }
-        button { background: #ec4899; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         button:hover { background: #db2777; }
-        .fb-feed-item { padding: 8px 10px; border-bottom: 1px solid #334155; font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between; }
+        .fb-feed-item { padding: 8px 10px; border-bottom: 1px solid var(--card-border); font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between; }
         .fb-feed-item:last-child { border-bottom: none; }
-        .fb-team { color: #f43f5e; font-weight: bold; }
+        .fb-team { color: var(--red); font-weight: bold; }
+        .toast { position: fixed; top: 20px; right: 20px; background: rgba(244, 63, 94, 0.95); color: white; padding: 14px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 1000; display: none; animation: slideIn 0.3s forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* Interactive Scoreboard Chart Canvas */
+        .chart-box {
+          background: #020617;
+          border: 1px solid #1e293b;
+          border-radius: 8px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+          position: relative;
+        }
+        canvas { width: 100%; height: 240px; display: block; }
+        .live-tag { display: inline-flex; align-items: center; gap: 6px; color: var(--green); font-size: 0.85rem; font-weight: bold; }
+        .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: blink 1.2s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
       </style>
     </head>
     <body>
+      <div id="toastBox" class="toast"></div>
+
       <div class="container">
-        <h1>🏆 VibeHacking CTF Arena</h1>
-        <p style="color: #94a3b8; margin-top: 0;">26개 실습 랩 플래그 채점, 실시간 Dynamic Scoring & First Blood 영예의 전당</p>
+        <h1>
+          🏆 VibeHacking CTF Arena
+          <span class="live-tag"><span class="live-dot"></span> LIVE SSE STREAMING</span>
+        </h1>
+        <p style="color: #94a3b8; margin-top: 0;">28개 실습 랩 플래그 채점, 실시간 Dynamic Scoring & First Blood 영예의 전당</p>
 
         <div class="banner">
           ⚡ <b>Dynamic Scoring Engine:</b> 문제 기본 500pt에서 해결 팀 증가에 따라 점수 자동 감쇠(최저 100pt) | <b>🩸 First Blood:</b> 문제 최초 해결 시 <b>+50pt 추가 보너스</b> 지급!
+        </div>
+
+        <!-- Interactive Score Timeline Chart -->
+        <div class="chart-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <b style="color: var(--cyan); font-size: 0.95rem;">📈 팀별 실시간 점수 추이 그래프 (Score Progression Timeline)</b>
+            <span id="chartLegend" style="font-size: 0.8rem; display: flex; gap: 12px;"></span>
+          </div>
+          <canvas id="scoreCanvas" width="1120" height="240"></canvas>
         </div>
 
         <div class="card">
           <h3 style="margin-top: 0;">🚩 플래그 제출 (Flag Submit)</h3>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <input id="teamInput" class="input-box" style="flex: 1; min-width: 150px;" placeholder="팀 이름 (예: Admin_RedTeam)">
-            <input id="chalInput" class="input-box" style="flex: 1; min-width: 150px;" placeholder="문제 ID (예: LAB01_SQLI)">
+            <input id="chalInput" class="input-box" style="flex: 1; min-width: 150px;" placeholder="문제 ID (예: LAB21_CAN)">
             <input id="flagInput" class="input-box" style="flex: 2; min-width: 250px;" placeholder="FLAG{...}">
             <button onclick="submitFlag()">제출하기</button>
           </div>
@@ -480,7 +644,7 @@ def ctf_home():
 
         <div class="grid">
           <div>
-            <h2 style="color: #38bdf8; margin-bottom: 0.5rem;">📊 실시간 리더보드 (Scoreboard)</h2>
+            <h2 style="color: var(--cyan); margin-bottom: 0.5rem;">📊 실시간 리더보드 (Scoreboard)</h2>
             <table>
               <thead>
                 <tr>
@@ -496,7 +660,7 @@ def ctf_home():
           </div>
 
           <div>
-            <h2 style="color: #f43f5e; margin-bottom: 0.5rem;">🩸 First Blood 피드</h2>
+            <h2 style="color: var(--red); margin-bottom: 0.5rem;">🩸 First Blood 피드</h2>
             <div class="card" style="padding: 0.5rem;" id="fbFeed">
               <div style="padding: 12px; color: #94a3b8; text-align: center;">아직 첫 피를 흘린 자가 없습니다...</div>
             </div>
@@ -505,6 +669,102 @@ def ctf_home():
       </div>
 
       <script>
+        const TEAM_COLORS = ['#ec4899', '#38bdf8', '#fbbf24', '#4ade80', '#a855f7', '#f43f5e', '#34d399', '#f97316'];
+        let cachedTimeline = [];
+
+        function showToast(msg) {
+          const t = document.getElementById('toastBox');
+          t.innerHTML = msg;
+          t.style.display = 'block';
+          setTimeout(() => { t.style.display = 'none'; }, 4500);
+        }
+
+        async function drawTimelineChart() {
+          try {
+            const res = await fetch('/api/ctf/timeline');
+            const data = await res.json();
+            cachedTimeline = data.timeline;
+            const teams = data.teams;
+
+            const canvas = document.getElementById('scoreCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;
+            const H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+
+            // Group events by team
+            const series = {};
+            teams.forEach((t, i) => {
+              series[t] = { color: TEAM_COLORS[i % TEAM_COLORS.length], points: [] };
+            });
+
+            data.timeline.forEach(ev => {
+              if (series[ev.team]) {
+                series[ev.team].points.push({ time: ev.time, score: ev.score });
+              }
+            });
+
+            // Calculate min/max time and score
+            let minT = Infinity, maxT = -Infinity, maxS = 500;
+            data.timeline.forEach(ev => {
+              if (ev.time < minT) minT = ev.time;
+              if (ev.time > maxT) maxT = ev.time;
+              if (ev.score > maxS) maxS = ev.score;
+            });
+            if (minT === maxT) maxT = minT + 60;
+            maxS = Math.ceil(maxS * 1.15);
+
+            // Draw grid lines
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+              const y = H - 30 - (i / 4) * (H - 50);
+              ctx.beginPath();
+              ctx.moveTo(40, y);
+              ctx.lineTo(W - 20, y);
+              ctx.stroke();
+
+              ctx.fillStyle = '#64748b';
+              ctx.font = '10px monospace';
+              ctx.fillText(Math.round((i / 4) * maxS), 5, y + 3);
+            }
+
+            // Draw lines for each team
+            const legendDiv = document.getElementById('chartLegend');
+            legendDiv.innerHTML = teams.map((t, idx) => `
+              <span style="color: ${TEAM_COLORS[idx % TEAM_COLORS.length]}; font-weight: bold;">■ ${t}</span>
+            `).join('');
+
+            teams.forEach((t) => {
+              const s = series[t];
+              if (!s.points.length) return;
+              ctx.strokeStyle = s.color;
+              ctx.lineWidth = 2.5;
+              ctx.beginPath();
+
+              s.points.forEach((pt, idx) => {
+                const x = 40 + ((pt.time - minT) / (maxT - minT)) * (W - 60);
+                const y = H - 30 - (pt.score / maxS) * (H - 50);
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+              });
+              ctx.stroke();
+
+              // Draw point circles
+              s.points.forEach((pt) => {
+                const x = 40 + ((pt.time - minT) / (maxT - minT)) * (W - 60);
+                const y = H - 30 - (pt.score / maxS) * (H - 50);
+                ctx.fillStyle = s.color;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+              });
+            });
+          } catch (e) {
+            console.error('차트 렌더링 실패:', e);
+          }
+        }
+
         async function loadBoard() {
           try {
             const res = await fetch('/api/ctf/scoreboard');
@@ -553,14 +813,43 @@ def ctf_home():
             resSpan.innerText = data.message;
             resSpan.style.color = data.status === 'correct' ? '#4ade80' : '#f87171';
             loadBoard();
+            drawTimelineChart();
           } catch (e) {
             resSpan.innerText = '오류 발생: ' + e.message;
             resSpan.style.color = '#f87171';
           }
         }
 
+        // Connect real-time Server-Sent Events (SSE)
+        function initSSE() {
+          try {
+            const es = new EventSource('/api/ctf/stream');
+            es.addEventListener('flag_solve', (e) => {
+              const ev = JSON.parse(e.data);
+              if (ev.first_blood) {
+                showToast(`🩸 <b>FIRST BLOOD!</b> <span style="color:#fbbf24;">${ev.team}</span>님이 <b>${ev.title || ev.chal_id}</b> 최초 해결! (+${ev.points}pt)`);
+              } else {
+                showToast(`🚩 <b>FLAG SOLVE!</b> <span style="color:#38bdf8;">${ev.team}</span>님이 <b>${ev.title || ev.chal_id}</b> 해결! (+${ev.points}pt)`);
+              }
+              loadBoard();
+              drawTimelineChart();
+            });
+            es.addEventListener('team_registered', (e) => {
+              loadBoard();
+              drawTimelineChart();
+            });
+            es.onerror = () => {
+              // Reconnect automatically handled by browser EventSource
+            };
+          } catch (err) {
+            console.warn('SSE 연결 실패, 폴링으로 전환:', err);
+          }
+        }
+
         loadBoard();
-        setInterval(loadBoard, 3000);
+        drawTimelineChart();
+        initSSE();
+        setInterval(loadBoard, 5000);
       </script>
     </body>
     </html>

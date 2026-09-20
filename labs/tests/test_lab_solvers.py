@@ -3,10 +3,10 @@
 import pytest
 from labs.solvers import SOLVERS, get_lab_solver, run_lab_solve_step
 
-def test_all_20_labs_have_solvers():
-    """Check that all 20 labs have defined solvers."""
-    assert len(SOLVERS) == 20
-    for i in range(1, 21):
+def test_all_21_labs_have_solvers():
+    """Check that all 21 labs have defined solvers."""
+    assert len(SOLVERS) == 21
+    for i in range(1, 22):
         key = str(i).zfill(2)
         assert key in SOLVERS, f"Lab {key} is missing a solver definition"
         solver = SOLVERS[key]
@@ -41,6 +41,11 @@ def test_run_lab_solve_step():
     assert res20["success"] is True
     assert "HEVD" in res20["name"]
     assert "FLAG{" in res20["output"]
+
+    res21 = run_lab_solve_step("21", 1)
+    assert res21["success"] is True
+    assert "CAN" in res21["name"]
+    assert "FLAG{" in res21["output"]
 
 def test_invalid_lab_solver():
     """Test invalid lab handling."""

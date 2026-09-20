@@ -1,0 +1,11 @@
+services:
+  carcan-app:
+    build: .
+    ports:
+      - "8021:8021"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_FLAG_CAN=FLAG{can_bus_arbitration_speed_spoof_8821}
+      - LAB_FLAG_UDS=FLAG{uds_security_access_seed_key_unlocked_3714}
+      - LAB_FLAG_RESET=FLAG{uds_ecu_reset_hard_failsafe_pwned_9021}
+    restart: unless-stopped

@@ -310,6 +310,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [3, 9, 45],
     },
+    "21": {
+        "name": "차량 보안 & CAN Bus 실전 랩",
+        "dir":  "21_automotive_can_lab",
+        "desc": "CarCanLab: CAN 패킷 스니핑/주입 · 계기판 속도 스푸핑 · UDS SecurityAccess 시드키 인증 우회 · ECU hardReset DoS",
+        "url":  "웹 콘솔 & 가상 계기판: http://localhost:8021",
+        "difficulty": "★★★★",
+        "related": [37, 61, 63],
+    },
 }
 
 
@@ -1534,7 +1542,12 @@ def cmd_setup_docker(args: argparse.Namespace) -> None:
 
 # ── 명령어: wargame ───────────────────────────────────────────────────────────
 def cmd_wargame(args: argparse.Namespace) -> None:
-    """브라우저 워게임 로컬 서버 즉시 실행 및 브라우저 오픈"""
+    """브라우저 워게임 로컬 서버 실행 또는 CLI 모드 실행"""
+    if getattr(args, "cli", False):
+        from wargame.cli import interactive_play
+        interactive_play()
+        return
+
     wargame_dir = REPO_ROOT / "wargame"
     if not wargame_dir.exists():
         print(red("✗ wargame 디렉토리를 찾을 수 없습니다."))
@@ -1571,6 +1584,42 @@ def cmd_wargame(args: argparse.Namespace) -> None:
         print(yellow("\n[-] 워게임 서버를 정상적으로 종료했습니다.\n"))
     except OSError as e:
         print(red(f"\n✗ 서버 실행 실패 (포트 {port}가 이미 사용 중인지 확인하세요): {e}\n"))
+
+
+def cmd_play(args: argparse.Namespace) -> None:
+    """터미널 네이티브 워게임 클라이언트 (CLI 모드)"""
+    from wargame.cli import (
+        interactive_play,
+        print_tracks_summary,
+        search_challenges,
+        submit_flag_cli,
+        print_challenge_info,
+        load_wargame_db,
+    )
+    if getattr(args, "list", False):
+        print_tracks_summary()
+        return
+    if getattr(args, "search", None):
+        search_challenges(args.search)
+        return
+    if getattr(args, "submit", None):
+        chal_id, flag = args.submit
+        ok, msg = submit_flag_cli(chal_id, flag)
+        if ok:
+            print(green(f"\n{msg}\n"))
+        else:
+            print(red(f"\n{msg}\n"))
+        return
+    if getattr(args, "chal", None):
+        _, _, challenges = load_wargame_db()
+        ch = next((c for c in challenges if c["id"] == args.chal), None)
+        if ch:
+            print_challenge_info(ch)
+        else:
+            print(red(f"Challenge '{args.chal}' not found."))
+        return
+    interactive_play()
+
 
 
 # ── 명령어: docs ─────────────────────────────────────────────────────────────
@@ -1750,6 +1799,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_wg = sub.add_parser("wargame", help="브라우저 워게임 로컬 서버 즉시 실행 및 브라우저 오픈")
     p_wg.add_argument("--port", type=int, default=8000, help="웹 서버 포트 (기본값: 8000)")
     p_wg.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
+    p_wg.add_argument("--cli", action="store_true", help="터미널 CUI 워게임 모드로 실행")
+
+    # play
+    p_play = sub.add_parser("play", help="터미널 네이티브 워게임 플레이어 (35개 트랙, 1,225문제 CLI 모드)")
+    p_play.add_argument("--list", action="store_true", help="35개 트랙 로드맵 및 진행도 요약 출력")
+    p_play.add_argument("--search", metavar="KEYWORD", help="키워드로 챌린지 검색")
+    p_play.add_argument("--chal", metavar="CHAL_ID", help="특정 챌린지 상세 지문 및 힌트 조회")
+    p_play.add_argument("--submit", nargs=2, metavar=("CHAL_ID", "FLAG"), help="터미널에서 직접 플래그 제출")
 
     # docs
     p_docs = sub.add_parser("docs", help="75개 챕터 웹 리더 & 통합 포털 로컬 서버 실행")
@@ -1809,6 +1866,7 @@ def main() -> None:
         "doctor":       cmd_doctor,
         "setup-docker": cmd_setup_docker,
         "wargame":      cmd_wargame,
+        "play":         cmd_play,
         "docs":         cmd_docs,
         "portal":       cmd_portal,
         "ctf":          cmd_ctf,
