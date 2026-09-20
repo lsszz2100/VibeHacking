@@ -50,7 +50,7 @@ docker-compose --version
 | 18 | [AI 에이전트 & MCP 보안 랩](./18_ai_agent_mcp_lab/) | 간접 프롬프트 주입, 과도한 권한 남용, 악성 MCP 도구 섀도잉, 단기 기능 토큰 방어 | ★★★★ | [11장 AI 보안](../11_AI_Powered_Security/README.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `aiagent` / `ai` |
 | 19 | [안드로이드 악성코드 & Frida 후킹 랩](./19_android_frida_lab/) | 루팅 탐지 우회, SSL Pinning 무력화, JNI 네이티브 후킹, C2 패킷 난독화 해제 | ★★★★ | [28장 모바일 해킹](../28_Mobile_Hacking/07_frida_android_dynamic_analysis_deepdive.md) | `droidpwn` / `mobile` |
 | 20 | [윈도우 애플리케이션 & 커널 취약점 랩](./20_winapp_exploit_lab/) | SEH 덮어쓰기, Egg Hunter 메모리 탐색, FODHelper UAC 우회, HEVD 커널 Arbitrary Write | ★★★★ | [03장 시스템 해킹](../03_System_Hacking/08_windows_seh_and_driver_exploit_deepdive.md) | `winclient` / `pwn` |
-
+| 21 | [차량 보안 & CAN Bus 랩](./21_automotive_can_lab/) | CAN 버스 스푸핑, UDS 시드-키 인증 우회, ECU DoS | ★★★★ | [36장 자동차 해킹](../36_Automotive_Hacking/README.md), [62장 차량 보안](../62_Automotive_Security/README.md) | `carcan` |
 
 ---
 
@@ -250,10 +250,15 @@ docker-compose --version
 - **워게임 트랙**: `winclient` / `pwn`
 - **빠른 실행**: `python3 vhack.py lab start 20` (웹 콘솔 & API: `http://localhost:8020`)
 
-
-
-
-
+### 21. 차량 보안 & CAN Bus 실전 랩 (CarCanLab)
+- 자동차 내부 네트워크 표준 프로토콜(CAN 2.0B, UDS ISO 14229) 대상 핵심 공격 및 방어 실습
+- CAN 버스 트래픽 스니핑 및 계기판 속도계(CAN ID `0x244`) 패킷 스푸핑을 통한 조작 공격
+- UDS 진단 세션(`0x10`) 및 SecurityAccess(`0x27`) 시드-키 알고리즘 역산을 통한 보안 인증 우회 및 펌웨어 메모리 덤프(`0x34`) 플래그 탈취
+- 중재 ID `0x000` 최고 우선순위 패킷 플러딩을 통한 CAN 버스 DoS 공격 및 ECU 강제 하드리셋(`0x11`)
+- HTML5 Canvas 기반 사이버 계기판, UDS 진단 콘솔, 실시간 CAN 트래픽 모니터링 웹 대시보드 제공
+- **교재 챕터 연계**: [36장 자동차 해킹](../36_Automotive_Hacking/README.md), [37장 ICS/SCADA](../37_ICS_SCADA/README.md), [61장 펌웨어 해킹](../61_Firmware_Hacking/README.md), [62장 자동차 보안](../62_Automotive_Security/README.md)
+- **워게임 트랙**: `carcan`
+- **빠른 실행**: `python3 vhack.py lab start 21` (웹 콘솔 & 대시보드: `http://localhost:8021`)
 
 ---
 
