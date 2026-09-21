@@ -50,6 +50,9 @@ def test_get_challenges(client):
     assert "LAB20_SEH" in ids
     assert "LAB21_CAN" in ids
     assert "LAB21_UDS" in ids
+    assert "LAB22_BOLA" in ids
+    assert "LAB22_GRAPHQL" in ids
+    assert "LAB22_JWT" in ids
 
 
 def test_timeline_endpoint(client):

@@ -294,6 +294,33 @@ class CTFState:
                 "solves": [],
                 "first_blood": None,
             },
+            "LAB22_BOLA": {
+                "id": "LAB22_BOLA",
+                "title": "APIGuard: BOLA & BFLA Privilege Escalation",
+                "category": "api",
+                "initial_points": 500,
+                "flag": "FLAG{bola_idor_bfla_api_privilege_escalated_4822}",
+                "solves": [],
+                "first_blood": None,
+            },
+            "LAB22_GRAPHQL": {
+                "id": "LAB22_GRAPHQL",
+                "title": "APIGuard: GraphQL Introspection & Secret Vault Extraction",
+                "category": "api",
+                "initial_points": 500,
+                "flag": "FLAG{graphql_introspection_batching_bypass_7193}",
+                "solves": [],
+                "first_blood": None,
+            },
+            "LAB22_JWT": {
+                "id": "LAB22_JWT",
+                "title": "APIGuard: JWT None Algorithm Signature Bypass",
+                "category": "api",
+                "initial_points": 500,
+                "flag": "FLAG{jwt_alg_none_jwks_confusion_pwned_8842}",
+                "solves": [],
+                "first_blood": None,
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []

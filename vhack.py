@@ -318,6 +318,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [37, 61, 63],
     },
+    "22": {
+        "name": "API 보안 & Modern Auth 실전 랩",
+        "dir":  "22_api_security_lab",
+        "desc": "APIGuard: REST BOLA/IDOR · BFLA 관리자 탈취 · GraphQL Introspection & Batching · JWT 'none' 서명 우회",
+        "url":  "웹 콘솔 & API 대시보드: http://localhost:8022",
+        "difficulty": "★★★☆",
+        "related": [5, 52, 60],
+    },
 }
 
 
@@ -548,7 +556,7 @@ def cmd_lab(args: argparse.Namespace) -> None:
     elif sub == "test":
         _lab_test(getattr(args, "lab_id", None), getattr(args, "all", False))
     elif sub == "logs":
-        _lab_logs(args.lab_id)
+        _lab_logs(args.lab_id, getattr(args, "follow", False), getattr(args, "tail", 50))
     elif sub == "solve":
         _lab_solve(getattr(args, "lab_id", None), getattr(args, "step", 1))
     else:
@@ -793,9 +801,9 @@ def _lab_test(lab_id: str | None, test_all: bool = False) -> None:
         print(bold(red(f"  ⚠ 검증 결과: 성공 {total_passed}개 / 실패 {total_failed}개")) + "\n")
 
 
-def _lab_logs(lab_id: str | None) -> None:
+def _lab_logs(lab_id: str | None, follow: bool = False, tail: int = 50) -> None:
     if not lab_id:
-        print(red("✗ 랩 번호를 지정하세요.  예: vhack lab logs 01"))
+        print(red("✗ 랩 번호를 지정하세요.  예: vhack lab logs 01 [-f]"))
         sys.exit(1)
     if lab_id.isdigit():
         lab_id = f"{int(lab_id):02d}"
@@ -806,7 +814,10 @@ def _lab_logs(lab_id: str | None) -> None:
     if not _check_docker():
         sys.exit(1)
     lab_path = LABS_DIR / meta["dir"]
-    _run_compose(lab_path, "logs", "-f", "--tail=50")
+    args = ["logs", f"--tail={tail}"]
+    if follow:
+        args.append("-f")
+    _run_compose(lab_path, *args)
 
 
 # ── 명령어: search ────────────────────────────────────────────────────────────
@@ -1306,6 +1317,8 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8018, "Lab 18 (AI Agent & MCP)"),
         (8019, "Lab 19 (Android Frida)"),
         (8020, "Lab 20 (WinApp Exploit)"),
+        (8021, "Lab 21 (Automotive CAN)"),
+        (8022, "Lab 22 (API Security APIGuard)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -1754,23 +1767,31 @@ def build_parser() -> argparse.ArgumentParser:
     lab_sub = p_lab.add_subparsers(dest="lab_cmd", metavar="<서브명령>")
     lab_sub.add_parser("ls", help="실습 환경 목록")
     p_start = lab_sub.add_parser("start", help="실습 환경 시작")
-    p_start.add_argument("lab_id", metavar="랩번호", help="01~20")
+    p_start.add_argument("lab_id", metavar="랩번호", help="01~22")
     p_stop = lab_sub.add_parser("stop", help="실습 환경 종료")
-    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~20")
+    p_stop.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~22")
     p_stop.add_argument("--all", action="store_true", help="모든 랩 종료")
     lab_sub.add_parser("status", help="실행 중인 컨테이너 및 랩 대시보드 확인")
     p_test = lab_sub.add_parser("test", help="실습 환경 자동 검증/테스트 실행")
-    p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~20 (생략 시 안내)")
-    p_test.add_argument("--all", action="store_true", help="전체 20개 랩 테스트 일괄 실행")
-    p_logs = lab_sub.add_parser("logs", help="랩 로그 보기")
-    p_logs.add_argument("lab_id", metavar="랩번호", help="01~20")
+    p_test.add_argument("lab_id", nargs="?", metavar="랩번호", help="01~22 (생략 시 안내)")
+    p_test.add_argument("--all", action="store_true", help="전체 22개 랩 테스트 일괄 실행")
+    p_logs = lab_sub.add_parser("logs", help="랩 실시간 로그 보기")
+    p_logs.add_argument("lab_id", metavar="랩번호", help="01~22")
+    p_logs.add_argument("-f", "--follow", action="store_true", help="실시간 로그 계속 출력")
+    p_logs.add_argument("-n", "--tail", type=int, default=50, help="출력할 마지막 줄 수 (기본값: 50)")
     p_solve = lab_sub.add_parser("solve", help="실습 랩 단계별 PoC 공격 및 패치 솔루션 확인")
-    p_solve.add_argument("lab_id", metavar="랩번호", help="01~20")
+    p_solve.add_argument("lab_id", metavar="랩번호", help="01~22")
     p_solve.add_argument("--step", type=int, default=1, help="단계 번호 (기본값: 1)")
+
+    # logs (top-level shortcut)
+    p_top_logs = sub.add_parser("logs", help="실습 랩 컨테이너 실시간 로그 확인")
+    p_top_logs.add_argument("lab_id", metavar="랩번호", help="01~22")
+    p_top_logs.add_argument("-f", "--follow", action="store_true", help="실시간 로그 계속 출력")
+    p_top_logs.add_argument("-n", "--tail", type=int, default=50, help="출력할 마지막 줄 수 (기본값: 50)")
 
     # solve (top-level shortcut)
     p_top_solve = sub.add_parser("solve", help="실습 랩 단계별 PoC 공격 및 패치 솔루션 확인")
-    p_top_solve.add_argument("lab_id", metavar="랩번호", help="01~20")
+    p_top_solve.add_argument("lab_id", metavar="랩번호", help="01~22")
     p_top_solve.add_argument("--step", type=int, default=1, help="단계 번호 (기본값: 1)")
 
     # search
@@ -1802,8 +1823,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_wg.add_argument("--cli", action="store_true", help="터미널 CUI 워게임 모드로 실행")
 
     # play
-    p_play = sub.add_parser("play", help="터미널 네이티브 워게임 플레이어 (35개 트랙, 1,225문제 CLI 모드)")
-    p_play.add_argument("--list", action="store_true", help="35개 트랙 로드맵 및 진행도 요약 출력")
+    p_play = sub.add_parser("play", help="터미널 네이티브 워게임 플레이어 (36개 트랙, 1,260문제 CLI 모드)")
+    p_play.add_argument("--list", action="store_true", help="36개 트랙 로드맵 및 진행도 요약 출력")
     p_play.add_argument("--search", metavar="KEYWORD", help="키워드로 챌린지 검색")
     p_play.add_argument("--chal", metavar="CHAL_ID", help="특정 챌린지 상세 지문 및 힌트 조회")
     p_play.add_argument("--submit", nargs=2, metavar=("CHAL_ID", "FLAG"), help="터미널에서 직접 플래그 제출")
@@ -1814,7 +1835,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_docs.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
 
     # portal
-    p_portal = sub.add_parser("portal", help="통합 웹 관제 대시보드 (20개 랩 제어, 진단, 웹 리더 연계)")
+    p_portal = sub.add_parser("portal", help="통합 웹 관제 대시보드 (22개 랩 제어, 진단, 웹 리더 연계)")
     p_portal.add_argument("--port", type=int, default=8800, help="웹 서버 포트 (기본값: 8800)")
     p_portal.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
 
@@ -1871,6 +1892,7 @@ def main() -> None:
         "portal":       cmd_portal,
         "ctf":          cmd_ctf,
         "bundle":       cmd_bundle,
+        "logs":         lambda a: _lab_logs(a.lab_id, getattr(a, "follow", False), getattr(a, "tail", 50)),
         "solve":        lambda a: _lab_solve(a.lab_id, getattr(a, "step", 1)),
         "update":       cmd_update,
     }

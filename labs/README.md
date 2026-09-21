@@ -51,6 +51,7 @@ docker-compose --version
 | 19 | [안드로이드 악성코드 & Frida 후킹 랩](./19_android_frida_lab/) | 루팅 탐지 우회, SSL Pinning 무력화, JNI 네이티브 후킹, C2 패킷 난독화 해제 | ★★★★ | [28장 모바일 해킹](../28_Mobile_Hacking/07_frida_android_dynamic_analysis_deepdive.md) | `droidpwn` / `mobile` |
 | 20 | [윈도우 애플리케이션 & 커널 취약점 랩](./20_winapp_exploit_lab/) | SEH 덮어쓰기, Egg Hunter 메모리 탐색, FODHelper UAC 우회, HEVD 커널 Arbitrary Write | ★★★★ | [03장 시스템 해킹](../03_System_Hacking/08_windows_seh_and_driver_exploit_deepdive.md) | `winclient` / `pwn` |
 | 21 | [차량 보안 & CAN Bus 랩](./21_automotive_can_lab/) | CAN 버스 스푸핑, UDS 시드-키 인증 우회, ECU DoS | ★★★★ | [36장 자동차 해킹](../36_Automotive_Hacking/README.md), [62장 차량 보안](../62_Automotive_Security/README.md) | `carcan` |
+| 22 | [API 보안 & Modern Auth 랩](./22_api_security_lab/) | REST BOLA/BFLA, GraphQL Introspection & Batching, JWT 'none' 서명 우회 | ★★★☆ | [05장 웹 해킹](../05_Web_Hacking/README.md), [52장 API 보안](../52_API_Security/README.md) | `apisec` / `web` |
 
 ---
 
@@ -259,6 +260,17 @@ docker-compose --version
 - **교재 챕터 연계**: [36장 자동차 해킹](../36_Automotive_Hacking/README.md), [37장 ICS/SCADA](../37_ICS_SCADA/README.md), [61장 펌웨어 해킹](../61_Firmware_Hacking/README.md), [62장 자동차 보안](../62_Automotive_Security/README.md)
 - **워게임 트랙**: `carcan`
 - **빠른 실행**: `python3 vhack.py lab start 21` (웹 콘솔 & 대시보드: `http://localhost:8021`)
+
+### 22. API 보안 & Modern Auth 실전 랩 (APIGuard)
+- OWASP API Security Top 10 핵심 취약점 실전 시뮬레이션 및 방어 대책 실습
+- REST API 소유권 검증 누락(BOLA / IDOR)을 악용한 타인 민감 주문서 열람
+- 클라이언트 조작 HTTP 커스텀 헤더 기반 기능 수준 권한 우회(BFLA)를 통한 전체 사용자 DB 덤프
+- GraphQL Schema Introspection 쿼리 분석을 통한 숨겨진 Vault 식별 및 API 마스터 키 탈취
+- JWT `alg: none` 알고리즘 서명 우회(CVE-2015-9235 스타일) 및 페이로드 조작을 통한 시스템 최고 관리자 권한 획득
+- 사이버 Modern API Console 웹 대시보드 및 원클릭 PoC 테스트 지원
+- **교재 챕터 연계**: [05장 웹 해킹](../05_Web_Hacking/README.md), [52장 API 보안](../52_API_Security/README.md), [60장 브라우저 보안](../60_Browser_Security/README.md)
+- **워게임 트랙**: `apisec` / `web`
+- **빠른 실행**: `python3 vhack.py lab start 22` (웹 콘솔 & 대시보드: `http://localhost:8022`)
 
 ---
 

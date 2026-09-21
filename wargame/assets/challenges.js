@@ -332,6 +332,14 @@ const TRACKS = [
       "en": "Automotive Security & CAN Bus",
       "desc_ko": "CAN 2.0 중재 ID·OBD-II PID 질의·UDS 진단 세션 및 펌웨어 플래싱·ISO-TP 흐름 제어·SecOC 인증 방어.",
       "desc_en": "CAN 2.0 arbitration ID, OBD-II PID query, UDS diagnostic session & flashing, ISO-TP flow control, SecOC defense."
+  },
+  {
+      "id": "apisec",
+      "icon": "🌐",
+      "ko": "API 보안·REST·GraphQL·JWT",
+      "en": "API Security & Modern Auth",
+      "desc_ko": "OWASP API Top 10·BOLA/IDOR·BFLA 권한 상승·GraphQL 인트로스펙션 및 배치 공격·JWT None 알고리즘·OAuth2 취약점.",
+      "desc_en": "OWASP API Top 10, BOLA/IDOR, BFLA privilege escalation, GraphQL introspection & batching abuse, JWT None algorithm, OAuth2 flaws."
   }
 ];
 
@@ -34678,5 +34686,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "f3a711b9e0ee50ddcf7fc1949f87f4fe13ea6394c4b4b45bd89fee3d505eb19c"
-}
+},
+{
+    "id": "t0_apisec_rest_methods",
+    "tier": 0,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 10,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "HTTP 메서드와 RESTful API 기초",
+      "en": "HTTP Methods & RESTful API Basics"
+    },
+    "prompt": {
+      "ko": "REST 아키텍처의 핵심 HTTP 메서드(GET, POST, PUT, DELETE, PATCH) 분석 챌린지입니다.\n지정된 식별자 `apisec_rest_methods_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_rest_methods_v1\") 앞 20자리}`",
+      "en": "Analyze standard HTTP methods (GET, POST, PUT, DELETE, PATCH) in REST architecture.\nCompute the first 20 hex characters of SHA256(\"apisec_rest_methods_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_rest_methods_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_rest_methods_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_rest_methods_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "87dead6652045870496e8f28696745d578516e93b69674b52d3caf3ab7bbc374"
+  },
+  {
+    "id": "t0_apisec_json_syntax",
+    "tier": 0,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 20,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "JSON 데이터 교환 포맷 및 파싱",
+      "en": "JSON Data Interchange & Parsing"
+    },
+    "prompt": {
+      "ko": "현대 API 통신의 표준 데이터 포맷인 JSON(JavaScript Object Notation) 구조 분석 챌린지입니다.\n지정된 식별자 `apisec_json_syntax_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_json_syntax_v1\") 앞 20자리}`",
+      "en": "Examine JSON structure used as the ubiquitous payload format in modern web APIs.\nCompute the first 20 hex characters of SHA256(\"apisec_json_syntax_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_json_syntax_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_json_syntax_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_json_syntax_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "32130d4100803646029aeaab864b423875f4e48a31c88ef92556ce8eebb9cf2b"
+  },
+  {
+    "id": "t1_apisec_bearer_token",
+    "tier": 1,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 30,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Authorization 헤더와 Bearer 토큰",
+      "en": "Authorization Header & Bearer Token"
+    },
+    "prompt": {
+      "ko": "HTTP Authorization 헤더를 통한 Bearer 토큰 전송 규격(RFC 6750) 분석 챌린지입니다.\n지정된 식별자 `apisec_bearer_token_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_bearer_token_v1\") 앞 20자리}`",
+      "en": "Investigate RFC 6750 Bearer Token usage in HTTP Authorization headers.\nCompute the first 20 hex characters of SHA256(\"apisec_bearer_token_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_bearer_token_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_bearer_token_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_bearer_token_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "ea3efed4ac9656b2d3126fa4cc86461ddc866b333c19abaa5c640a9fb9841854"
+  },
+  {
+    "id": "t1_apisec_api_key_header",
+    "tier": 1,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 40,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "X-API-Key 헤더 인증 취약점",
+      "en": "X-API-Key Header Authentication Flaws"
+    },
+    "prompt": {
+      "ko": "정적 API 키 전송 방식의 한계와 URL 쿼리 스트링 노출 위험성 분석 챌린지입니다.\n지정된 식별자 `apisec_api_key_header_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_api_key_header_v1\") 앞 20자리}`",
+      "en": "Analyze risks of static API key leaks in query strings and headers.\nCompute the first 20 hex characters of SHA256(\"apisec_api_key_header_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_api_key_header_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_api_key_header_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_api_key_header_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "22604e818c17e354d283ae0d431449bb3e3eaf11ee9468fb105b92d95f7cb3b1"
+  },
+  {
+    "id": "t1_apisec_cors_wildcard",
+    "tier": 1,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CORS Origin 와일드카드 오설정",
+      "en": "CORS Wildcard Misconfiguration"
+    },
+    "prompt": {
+      "ko": "Access-Control-Allow-Origin: * 및 자격 증명(Credentials) 허용 오설정 분석 챌린지입니다.\n지정된 식별자 `apisec_cors_wildcard_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_cors_wildcard_v1\") 앞 20자리}`",
+      "en": "Inspect cross-origin resource sharing (CORS) wildcard exposure and credential leaks.\nCompute the first 20 hex characters of SHA256(\"apisec_cors_wildcard_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_cors_wildcard_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_cors_wildcard_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_cors_wildcard_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "60d613878d0e6b314b5e8b8000e0787b26a1060dbc022e5d84c20c58a80334b6"
+  },
+  {
+    "id": "t1_apisec_rate_limiting",
+    "tier": 1,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 60,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "HTTP 429와 Rate Limiting 부재",
+      "en": "Lack of Rate Limiting & HTTP 429"
+    },
+    "prompt": {
+      "ko": "API 엔드포인트에 요청 빈도 제한(Rate Limiting)이 누락되어 발생하는 무차별 대입 공격 분석 챌린지입니다.\n지정된 식별자 `apisec_rate_limiting_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_rate_limiting_v1\") 앞 20자리}`",
+      "en": "Evaluate vulnerability of unrestricted endpoints lacking 429 Too Many Requests limits.\nCompute the first 20 hex characters of SHA256(\"apisec_rate_limiting_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_rate_limiting_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_rate_limiting_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_rate_limiting_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "ce6ece94a1ab4ed116e249871d112b8e7dbf7445f11ed87e5a01a29fb9b3a1ab"
+  },
+  {
+    "id": "t1_apisec_mass_assignment",
+    "tier": 1,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 70,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Mass Assignment 객체 자동 바인딩",
+      "en": "Mass Assignment Vulnerability"
+    },
+    "prompt": {
+      "ko": "클라이언트 JSON 요청 파라미터가 백엔드 도메인 모델에 무검증 자동 매핑되는 취약점 분석 챌린지입니다.\n지정된 식별자 `apisec_mass_assignment_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_mass_assignment_v1\") 앞 20자리}`",
+      "en": "Analyze blind parameter binding leading to unauthorized property mutation.\nCompute the first 20 hex characters of SHA256(\"apisec_mass_assignment_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_mass_assignment_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_mass_assignment_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_mass_assignment_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "f39e0be7bd7b8606686bf0f2a8a4e3030d461aa80e106f12908c4ec19c1fd41f"
+  },
+  {
+    "id": "t1_apisec_openapi_spec",
+    "tier": 1,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 80,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Swagger & OpenAPI 스펙 노출",
+      "en": "Swagger & OpenAPI Spec Exposure"
+    },
+    "prompt": {
+      "ko": "공개된 `/swagger.json` 또는 `/openapi.json` 명세서를 통한 비공개 엔드포인트 정찰 챌린지입니다.\n지정된 식별자 `apisec_openapi_spec_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_openapi_spec_v1\") 앞 20자리}`",
+      "en": "Perform API reconnaissance via publicly accessible Swagger / OpenAPI definition endpoints.\nCompute the first 20 hex characters of SHA256(\"apisec_openapi_spec_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_openapi_spec_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_openapi_spec_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_openapi_spec_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "fdbf2ff8cecd7d0793d72885e3db65eb98046013a3c3c6f53126f3f533258dd7"
+  },
+  {
+    "id": "t2_apisec_bola_idor_orders",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BOLA / IDOR 객체 수준 권한 검증 누락",
+      "en": "BOLA / IDOR Object Level Authorization"
+    },
+    "prompt": {
+      "ko": "OWASP API1 BOLA 취약점을 악용하여 다른 사용자의 주문 식별자를 직접 변조해 열람하는 챌린지입니다.\n지정된 식별자 `apisec_bola_idor_orders_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_bola_idor_orders_v1\") 앞 20자리}`",
+      "en": "Exploit broken object-level authorization by modifying order resource identifiers.\nCompute the first 20 hex characters of SHA256(\"apisec_bola_idor_orders_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_bola_idor_orders_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_bola_idor_orders_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_bola_idor_orders_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "fa76e6a18098cbffd045667c911f43368d9429b52b6f3c71cdeaa8427c4405c5"
+  },
+  {
+    "id": "t2_apisec_bfla_admin_header",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 110,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "BFLA 커스텀 헤더 주입 권한 상승",
+      "en": "BFLA Custom Header Privilege Escalation"
+    },
+    "prompt": {
+      "ko": "OWASP API5 BFLA 취약점을 악용하여 클라이언트 커스텀 헤더(`X-Admin-Role`)로 관리자 기능을 호출하는 챌린지입니다.\n지정된 식별자 `apisec_bfla_admin_header_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_bfla_admin_header_v1\") 앞 20자리}`",
+      "en": "Exploit broken function-level authorization by injecting custom admin assertion headers.\nCompute the first 20 hex characters of SHA256(\"apisec_bfla_admin_header_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_bfla_admin_header_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_bfla_admin_header_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_bfla_admin_header_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "64f51aa87ca1454552c311238c1d29a530ca41dded994a1b293320cac70f11a0"
+  },
+  {
+    "id": "t2_apisec_graphql_schema_intro",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 120,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GraphQL Schema Introspection 분석",
+      "en": "GraphQL Schema Introspection Analysis"
+    },
+    "prompt": {
+      "ko": "운영 환경에서 비활성화되지 않은 `__schema` 메타 쿼리를 실행하여 숨겨진 타입을 탐색하는 챌린지입니다.\n지정된 식별자 `apisec_graphql_schema_intro_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_graphql_schema_intro_v1\") 앞 20자리}`",
+      "en": "Extract full GraphQL schemas using __schema introspection queries in production.\nCompute the first 20 hex characters of SHA256(\"apisec_graphql_schema_intro_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_graphql_schema_intro_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_graphql_schema_intro_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_graphql_schema_intro_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "ec633eb146869d2ea80fcfc84ef6b8aba48fb94f5b900913b5daf7cdaa42ab85"
+  },
+  {
+    "id": "t2_apisec_graphql_query_depth",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 130,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GraphQL 중첩 쿼리 Depth DoS",
+      "en": "GraphQL Nested Query Depth DoS"
+    },
+    "prompt": {
+      "ko": "순환 참조 관계의 필드를 무한 중첩 질의하여 서버 CPU와 메모리를 고갈시키는 공격 분석 챌린지입니다.\n지정된 식별자 `apisec_graphql_query_depth_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_graphql_query_depth_v1\") 앞 20자리}`",
+      "en": "Trigger resource exhaustion by exploiting cyclic relationships without query depth limiting.\nCompute the first 20 hex characters of SHA256(\"apisec_graphql_query_depth_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_graphql_query_depth_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_graphql_query_depth_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_graphql_query_depth_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "0888a44bc3c43b43fac4b4bd0fd09b8f868fc0b024c21edc5ee828c9ccd14693"
+  },
+  {
+    "id": "t2_apisec_jwt_none_algorithm",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 140,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "JWT alg: none 서명 우회 취약점",
+      "en": "JWT alg: none Signature Bypass"
+    },
+    "prompt": {
+      "ko": "JWT 헤더의 알고리즘을 `none`으로 설정하고 서명부를 비워 무결성 검증을 무력화하는 챌린지입니다.\n지정된 식별자 `apisec_jwt_none_algorithm_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_jwt_none_algorithm_v1\") 앞 20자리}`",
+      "en": "Bypass JWT token validation by setting alg header to 'none' and stripping signatures.\nCompute the first 20 hex characters of SHA256(\"apisec_jwt_none_algorithm_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_jwt_none_algorithm_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_jwt_none_algorithm_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_jwt_none_algorithm_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "a92c7f1af7ca84b7f26bc7ce82347e83db1cedb549d0d3f02a7f9322d8f55171"
+  },
+  {
+    "id": "t2_apisec_jwt_claim_tampering",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "JWT 클레임 변조 및 권한 탈취",
+      "en": "JWT Claim Tampering & Privilege Theft"
+    },
+    "prompt": {
+      "ko": "서명 검증이 미흡한 JWT의 페이로드에서 `role: admin` 클레임을 조작하여 관리자 권한을 획득하는 챌린지입니다.\n지정된 식별자 `apisec_jwt_claim_tampering_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_jwt_claim_tampering_v1\") 앞 20자리}`",
+      "en": "Tamper with JWT claims like role to gain unauthorized administrative privileges.\nCompute the first 20 hex characters of SHA256(\"apisec_jwt_claim_tampering_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_jwt_claim_tampering_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_jwt_claim_tampering_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_jwt_claim_tampering_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "ec7ced482b98881e19cf658b2cd538a010652680d4810088cf51deb789d8b415"
+  },
+  {
+    "id": "t2_apisec_graphql_batching_brute",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 160,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GraphQL 배치 쿼리 무차별 대입",
+      "en": "GraphQL Batching Query Brute Force"
+    },
+    "prompt": {
+      "ko": "단일 HTTP POST 요청에 수백 개의 별칭(Alias) 또는 배열 쿼리를 포함하여 Rate Limit을 우회하는 챌린지입니다.\n지정된 식별자 `apisec_graphql_batching_brute_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_graphql_batching_brute_v1\") 앞 20자리}`",
+      "en": "Bypass HTTP-level rate limiting using GraphQL query batching and field aliases.\nCompute the first 20 hex characters of SHA256(\"apisec_graphql_batching_brute_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_graphql_batching_brute_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_graphql_batching_brute_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_graphql_batching_brute_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "ef5da8d194dd27c5a9b5e6b216b23f46e1e15875c3873c18c37028f6660af88d"
+  },
+  {
+    "id": "t2_apisec_oauth2_redirect_uri",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 170,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "OAuth2 Redirect URI 탈취 취약점",
+      "en": "OAuth2 Redirect URI Hijacking"
+    },
+    "prompt": {
+      "ko": "인가 서버의 리다이렉트 URI 유효성 검증 미흡으로 인가 코드(Code)가 공격자 서버로 유출되는 챌린지입니다.\n지정된 식별자 `apisec_oauth2_redirect_uri_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_oauth2_redirect_uri_v1\") 앞 20자리}`",
+      "en": "Hijack OAuth2 authorization codes due to loose redirect_uri regex validation.\nCompute the first 20 hex characters of SHA256(\"apisec_oauth2_redirect_uri_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_oauth2_redirect_uri_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_oauth2_redirect_uri_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_oauth2_redirect_uri_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "03948670d991b49d44cb21e012bd754849b0113b8732ce19f7ea2fbf9fcf3cd3"
+  },
+  {
+    "id": "t2_apisec_ssrf_webhook",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 180,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "웹훅 등록을 통한 클라우드 SSRF",
+      "en": "Webhook Registration Cloud SSRF"
+    },
+    "prompt": {
+      "ko": "사용자 입력 웹훅 URL에 내부 IP 필터링이 누락되어 클라우드 메타데이터(169.254.169.254)를 탈취하는 챌린지입니다.\n지정된 식별자 `apisec_ssrf_webhook_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_ssrf_webhook_v1\") 앞 20자리}`",
+      "en": "Exploit webhook endpoints to trigger SSRF against cloud instance metadata services.\nCompute the first 20 hex characters of SHA256(\"apisec_ssrf_webhook_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_ssrf_webhook_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_ssrf_webhook_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_ssrf_webhook_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "5c0221e33560595cd8fe2af507db6339e56165eccb799397c01e1e0c34d4c7ed"
+  },
+  {
+    "id": "t2_apisec_api_versioning_leak",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 190,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "레거시 API 엔드포인트 방치 취약점",
+      "en": "Unpatched Legacy API Version Exposure"
+    },
+    "prompt": {
+      "ko": "새 버전(`/v2/`)에서는 패치되었으나 구버전(`/v1/`)에 방치된 인증 결함을 공략하는 챌린지입니다.\n지정된 식별자 `apisec_api_versioning_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_api_versioning_leak_v1\") 앞 20자리}`",
+      "en": "Exploit security regressions in deprecated but unretired legacy API endpoints.\nCompute the first 20 hex characters of SHA256(\"apisec_api_versioning_leak_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_api_versioning_leak_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_api_versioning_leak_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_api_versioning_leak_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "b9f1ba75bc4d1af6639f2872172f20a3aca8bd5c489c519daba0c3b4028ca00c"
+  },
+  {
+    "id": "t2_apisec_jwt_weak_hmac_secret",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "JWT 취약한 대칭 비밀키 오프라인 크랙",
+      "en": "Offline Cracking of Weak JWT HMAC Secrets"
+    },
+    "prompt": {
+      "ko": "사전 공격(Dictionary Attack)에 취약한 짧은 비밀키로 서명된 HS256 JWT를 복구하는 챌린지입니다.\n지정된 식별자 `apisec_jwt_weak_hmac_secret_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_jwt_weak_hmac_secret_v1\") 앞 20자리}`",
+      "en": "Recover weak HMAC secret keys through offline dictionary cracking with hashcat.\nCompute the first 20 hex characters of SHA256(\"apisec_jwt_weak_hmac_secret_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_jwt_weak_hmac_secret_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_jwt_weak_hmac_secret_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_jwt_weak_hmac_secret_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "7e827fec08e6da94aee44bb4a7f54764f3cc3ae2a6da87b19ce5694fc77d840a"
+  },
+  {
+    "id": "t2_apisec_lack_of_resource_limits",
+    "tier": 2,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 210,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "페이지네이션 부재와 자원 고갈",
+      "en": "Lack of Resource Limits & Pagination"
+    },
+    "prompt": {
+      "ko": "`limit` 파라미터 상한이 지정되지 않아 수백만 건의 레코드를 한 번에 조회해 서버를 마비시키는 챌린지입니다.\n지정된 식별자 `apisec_lack_of_resource_limits_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_lack_of_resource_limits_v1\") 앞 20자리}`",
+      "en": "Cause severe backend latency or memory exhaustion by requesting unbounded page sizes.\nCompute the first 20 hex characters of SHA256(\"apisec_lack_of_resource_limits_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_lack_of_resource_limits_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_lack_of_resource_limits_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_lack_of_resource_limits_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "41eda80bfb6e5b1b8f48f39ffd1b7107cb64779a0f35b9d93846e9de59d0f80a"
+  },
+  {
+    "id": "t3_apisec_jwt_jwks_spoofing",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 230,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "JWT jku 헤더 스푸핑 공격",
+      "en": "JWT jku Header JWKS Spoofing"
+    },
+    "prompt": {
+      "ko": "JWT 헤더의 `jku`(JWK Set URL)를 공격자가 제어하는 공개키 서버로 위조하여 임의 서명을 검증시키는 챌린지입니다.\n지정된 식별자 `apisec_jwt_jwks_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_jwt_jwks_spoofing_v1\") 앞 20자리}`",
+      "en": "Spoof JWKS URL in jku headers to force the server to verify tokens with attacker public keys.\nCompute the first 20 hex characters of SHA256(\"apisec_jwt_jwks_spoofing_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_jwt_jwks_spoofing_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_jwt_jwks_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_jwt_jwks_spoofing_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "dff3f584efa01c1a099d702bcdfd9ba93bd2fca7b43536eabfed7b78bd4e09bf"
+  },
+  {
+    "id": "t3_apisec_jwt_key_confusion_rs256_hs256",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "RS256 vs HS256 알고리즘 혼동 공격",
+      "en": "RS256 vs HS256 Algorithm Confusion"
+    },
+    "prompt": {
+      "ko": "비대칭 RSA 공개키를 대칭 HMAC 비밀키로 착각하도록 알고리즘을 변조하여 서명 위조에 성공하는 챌린지입니다.\n지정된 식별자 `apisec_jwt_key_confusion_rs256_hs256_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_jwt_key_confusion_rs256_hs256_v1\") 앞 20자리}`",
+      "en": "Sign HMAC tokens using public RSA keys due to algorithm confusion vulnerabilities.\nCompute the first 20 hex characters of SHA256(\"apisec_jwt_key_confusion_rs256_hs256_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_jwt_key_confusion_rs256_hs256_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_jwt_key_confusion_rs256_hs256_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_jwt_key_confusion_rs256_hs256_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "7305706a5bdee118bb0312ea790f701c0bf1faddfe2231804225f3c286ea7098"
+  },
+  {
+    "id": "t3_apisec_jwt_kid_path_traversal",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 270,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "JWT kid 헤더 디렉토리 트래버설",
+      "en": "JWT kid Header Directory Traversal"
+    },
+    "prompt": {
+      "ko": "`kid`(Key ID) 파라미터의 파일 경로 탐색 취약점을 악용하여 `/dev/null` 빈 파일로 비밀키를 고정시키는 챌린지입니다.\n지정된 식별자 `apisec_jwt_kid_path_traversal_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_jwt_kid_path_traversal_v1\") 앞 20자리}`",
+      "en": "Exploit path traversal in kid headers to force verification with empty files like /dev/null.\nCompute the first 20 hex characters of SHA256(\"apisec_jwt_kid_path_traversal_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_jwt_kid_path_traversal_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_jwt_kid_path_traversal_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_jwt_kid_path_traversal_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "384734819c45e14a4b39da841385783c664836f62dafe3c56dd491b97aaf03ea"
+  },
+  {
+    "id": "t3_apisec_graphql_field_duplication",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 290,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GraphQL 필드 중복 연산 고갈 DoS",
+      "en": "GraphQL Field Duplication DoS"
+    },
+    "prompt": {
+      "ko": "동일한 무거운 계산 필드를 수천 번 중복 호출하여 백엔드 리졸버 쓰레드를 독점하는 챌린지입니다.\n지정된 식별자 `apisec_graphql_field_duplication_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_graphql_field_duplication_v1\") 앞 20자리}`",
+      "en": "Exhaust backend compute capacity by repeating heavy fields thousands of times in a query.\nCompute the first 20 hex characters of SHA256(\"apisec_graphql_field_duplication_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_graphql_field_duplication_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_graphql_field_duplication_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_graphql_field_duplication_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "5854af7ee496c5b516f6ff008dbfc1e9bb5c230f41937ce0a8ab71057a240b17"
+  },
+  {
+    "id": "t3_apisec_oauth2_pkce_downgrade",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 310,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "OAuth2 PKCE 다운그레이드 공격",
+      "en": "OAuth2 PKCE Downgrade Attack"
+    },
+    "prompt": {
+      "ko": "클라이언트가 전송한 code_challenge 검증을 서버가 선택적으로 생략하여 인가 코드를 가로채는 챌린지입니다.\n지정된 식별자 `apisec_oauth2_pkce_downgrade_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_oauth2_pkce_downgrade_v1\") 앞 20자리}`",
+      "en": "Downgrade PKCE verification requirements in OAuth2 flows to intercept authorization codes.\nCompute the first 20 hex characters of SHA256(\"apisec_oauth2_pkce_downgrade_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_oauth2_pkce_downgrade_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_oauth2_pkce_downgrade_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_oauth2_pkce_downgrade_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "ad18a4233393d724f88e71de0dcf4fa73cde9aab95a42e40a5733bef1e044ac9"
+  },
+  {
+    "id": "t3_apisec_rest_api_smuggling",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 330,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "API 게이트웨이 HTTP Request Smuggling",
+      "en": "API Gateway HTTP Request Smuggling"
+    },
+    "prompt": {
+      "ko": "프론트엔드 프록시와 백엔드 API 서버 간 Content-Length / Transfer-Encoding 해석 불일치를 공략하는 챌린지입니다.\n지정된 식별자 `apisec_rest_api_smuggling_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_rest_api_smuggling_v1\") 앞 20자리}`",
+      "en": "Smuggle hidden API requests through HTTP parsing discrepancies between reverse proxies.\nCompute the first 20 hex characters of SHA256(\"apisec_rest_api_smuggling_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_rest_api_smuggling_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_rest_api_smuggling_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_rest_api_smuggling_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "9d49aa7f21ae66709c6a2f31cc70d739d1e5fb9dc410b3f00f2869b1a2b74c95"
+  },
+  {
+    "id": "t3_apisec_grpc_reflection_abuse",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 350,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "gRPC Server Reflection 정찰 및 익스플로잇",
+      "en": "gRPC Server Reflection Recon & Exploit"
+    },
+    "prompt": {
+      "ko": "운영 환경에 노출된 gRPC Reflection API를 사용하여 Protobuf 스키마를 복원하고 비인가 RPC를 호출하는 챌린지입니다.\n지정된 식별자 `apisec_grpc_reflection_abuse_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_grpc_reflection_abuse_v1\") 앞 20자리}`",
+      "en": "Dump internal Protobuf definitions via gRPC reflection and execute unauthenticated RPCs.\nCompute the first 20 hex characters of SHA256(\"apisec_grpc_reflection_abuse_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_grpc_reflection_abuse_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_grpc_reflection_abuse_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_grpc_reflection_abuse_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "ea3edb0d94557f9c762d2de63187a93f768b019d2112af566815a4f42a2ac42a"
+  },
+  {
+    "id": "t3_apisec_websocket_hijacking",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 370,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CSWSH 실시간 웹소켓 세션 탈취",
+      "en": "Cross-Site WebSocket Hijacking (CSWSH)"
+    },
+    "prompt": {
+      "ko": "웹소켓 핸드셰이크 시 Origin 헤더 및 CSRF 토큰 검증 부재를 악용하여 실시간 스트림 데이터를 가로채는 챌린지입니다.\n지정된 식별자 `apisec_websocket_hijacking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_websocket_hijacking_v1\") 앞 20자리}`",
+      "en": "Hijack full-duplex WebSocket connections lacking Origin header validation.\nCompute the first 20 hex characters of SHA256(\"apisec_websocket_hijacking_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_websocket_hijacking_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_websocket_hijacking_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_websocket_hijacking_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "cf0bf1e398354c098e6eaeed9604c4db849327f0e25cb343d39f74493b66b088"
+  },
+  {
+    "id": "t3_apisec_graphql_directive_overload",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 390,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GraphQL @skip/@include 지시어 필터 우회",
+      "en": "GraphQL Directive Filter Bypass"
+    },
+    "prompt": {
+      "ko": "WAF나 복잡도 계산 엔진이 정적 쿼리만을 검사할 때 동적 지시어를 활용해 비인가 데이터를 우회 획득하는 챌린지입니다.\n지정된 식별자 `apisec_graphql_directive_overload_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_graphql_directive_overload_v1\") 앞 20자리}`",
+      "en": "Bypass query inspection rules by manipulating dynamic directives like @skip and @include.\nCompute the first 20 hex characters of SHA256(\"apisec_graphql_directive_overload_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_graphql_directive_overload_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_graphql_directive_overload_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_graphql_directive_overload_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "e796ba14004870c65c0bbd109c7441a9d8d5736f742adeaf93acb0f1f8c93d32"
+  },
+  {
+    "id": "t3_apisec_token_side_jacking",
+    "tier": 3,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 410,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "DPoP 부재와 토큰 사이드재킹 공격",
+      "en": "Token Side-Jacking & Lack of DPoP"
+    },
+    "prompt": {
+      "ko": "발행된 베어러 토큰이 특정 클라이언트 키에 바인딩(DPoP/mTLS)되지 않아 발생하는 세션 가로채기 분석 챌린지입니다.\n지정된 식별자 `apisec_token_side_jacking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_token_side_jacking_v1\") 앞 20자리}`",
+      "en": "Exploit sender-constraining gaps (lack of DPoP / mTLS) to replay stolen access tokens.\nCompute the first 20 hex characters of SHA256(\"apisec_token_side_jacking_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_token_side_jacking_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_token_side_jacking_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_token_side_jacking_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "342786d69e98bb645acbe53e07f74acfd4df81db9bd7c1f3b68bb3866fe8db1c"
+  },
+  {
+    "id": "t4_apisec_graphql_engine_rce",
+    "tier": 4,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 450,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GraphQL 리졸버 템플릿 인젝션(SSTI) RCE",
+      "en": "GraphQL Resolver SSTI to RCE"
+    },
+    "prompt": {
+      "ko": "리졸버 내부의 동적 문자열 템플릿 처리 취약점을 공략하여 서버 셸 명령을 원격 실행하는 챌린지입니다.\n지정된 식별자 `apisec_graphql_engine_rce_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_graphql_engine_rce_v1\") 앞 20자리}`",
+      "en": "Achieve remote code execution via Server-Side Template Injection within GraphQL resolvers.\nCompute the first 20 hex characters of SHA256(\"apisec_graphql_engine_rce_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_graphql_engine_rce_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_graphql_engine_rce_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_graphql_engine_rce_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "a08daba01d1b625a8dcc3f2871bdfd5cb19664847eb4a1e54c265313897aba01"
+  },
+  {
+    "id": "t4_apisec_distributed_graphql_apollo_federation",
+    "tier": 4,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 470,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Apollo Federation 분산 게이트웨이 침투",
+      "en": "Apollo Federation Subgraph Impersonation"
+    },
+    "prompt": {
+      "ko": "분산 서브그래프 간 내부 통신 헤더를 위조하여 게이트웨이 인증을 우회하고 백엔드 서비스를 장악하는 챌린지입니다.\n지정된 식별자 `apisec_distributed_graphql_apollo_federation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_distributed_graphql_apollo_federation_v1\") 앞 20자리}`",
+      "en": "Impersonate internal federated subgraph routers to bypass edge gateway authorization checks.\nCompute the first 20 hex characters of SHA256(\"apisec_distributed_graphql_apollo_federation_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_distributed_graphql_apollo_federation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_distributed_graphql_apollo_federation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_distributed_graphql_apollo_federation_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "b55f5ce960f73574b7a23663606d61792e6d91ea7e6417553ac7db9fb64fa6fa"
+  },
+  {
+    "id": "t4_apisec_enterprise_api_gateway_bypass",
+    "tier": 4,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 480,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 API 게이트웨이 라우트 불일치 우회",
+      "en": "Enterprise API Gateway Routing Mismatch Bypass"
+    },
+    "prompt": {
+      "ko": "Kong / Envoy API Gateway와 업스트림 서비스 간 URL 정규화(Normalization) 차이를 악용한 ACL 우회 챌린지입니다.\n지정된 식별자 `apisec_enterprise_api_gateway_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_enterprise_api_gateway_bypass_v1\") 앞 20자리}`",
+      "en": "Exploit path normalization differences between edge API gateways and upstream application servers.\nCompute the first 20 hex characters of SHA256(\"apisec_enterprise_api_gateway_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_enterprise_api_gateway_bypass_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_enterprise_api_gateway_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_enterprise_api_gateway_bypass_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "ba88922c89ecedb6a502b44b436668e21c036b2f0c7ef9758959e61117e4e4cb"
+  },
+  {
+    "id": "t4_apisec_zero_trust_api_mesh_defense",
+    "tier": 4,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 490,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "서비스 메시 mTLS & 제로 트러스트 API 방어",
+      "en": "Service Mesh mTLS & Zero Trust API Defense"
+    },
+    "prompt": {
+      "ko": "Istio / Linkerd 서비스 메시 환경에서 Spiffe ID 기반 mTLS 상호 인증과 세분화된 인가 정책(AuthorizationPolicy) 구축 챌린지입니다.\n지정된 식별자 `apisec_zero_trust_api_mesh_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_zero_trust_api_mesh_defense_v1\") 앞 20자리}`",
+      "en": "Establish end-to-end zero-trust API protection using service mesh mTLS and Spiffe/Spire identities.\nCompute the first 20 hex characters of SHA256(\"apisec_zero_trust_api_mesh_defense_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_zero_trust_api_mesh_defense_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_zero_trust_api_mesh_defense_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_zero_trust_api_mesh_defense_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "2b3f3e0a5d7a579212aa9ea559d2fa58592655e2e9c811c756cfb80edb1f18f0"
+  },
+  {
+    "id": "t4_apisec_modern_auth_capstone_pwn",
+    "tier": 4,
+    "cat": "apisec",
+    "track": "apisec",
+    "points": 500,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "API 보안 캡스톤: BOLA + GraphQL + JWT 풀체인 장악",
+      "en": "API Security Capstone: Full Chain Exploitation"
+    },
+    "prompt": {
+      "ko": "BOLA 취약점으로 획득한 메타데이터와 GraphQL 스키마 인트로스펙션, JWT 서명 우회를 결합한 최종 엔드포인트 장악 챌린지입니다.\n지정된 식별자 `apisec_modern_auth_capstone_pwn_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"apisec_modern_auth_capstone_pwn_v1\") 앞 20자리}`",
+      "en": "Execute a full-chain kill scenario combining BOLA, GraphQL introspection, and forged JWTs.\nCompute the first 20 hex characters of SHA256(\"apisec_modern_auth_capstone_pwn_v1\").\n\nFormat: `FLAG{SHA256(\"apisec_modern_auth_capstone_pwn_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "식별자 `apisec_modern_auth_capstone_pwn_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+        "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+      ],
+      "en": [
+        "Compute the first 20 hex chars of SHA-256(\"apisec_modern_auth_capstone_pwn_v1\").",
+        "Wrap in `FLAG{...}` format."
+      ]
+    },
+    "hash": "70e33a1009bfa863a59700508555a513627faa6bea98f9fe6f87e1357fe32d21"
+  }
 ];

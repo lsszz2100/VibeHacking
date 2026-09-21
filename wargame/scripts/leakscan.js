@@ -168,6 +168,24 @@ const ALLOWLIST = new Map([
   ['t4_carcan_ecu_firmware_reverse_s19 -> t3_firmwareghidrabase', 'ECU firmware binary reversing references Ghidra base address analysis'],
   ['t4_carcan_ota_firmware_tampering -> t3_ota', 'Firmware update tampering references automotive OTA update client'],
   ['t4_carcan_zero_trust_in_vehicle_ids -> t3_maldocvbaentropy', 'In-vehicle IDS evaluates CAN traffic Shannon entropy'],
+  // API Security & Modern Auth domain terms
+  ['t0_apisec_rest_methods -> t3_imdsv2', 'REST methods challenge references HTTP verb analysis'],
+  ['t2_apisec_bola_idor_orders -> t2_idor', 'BOLA challenge analyzes Insecure Direct Object References'],
+  ['t2_apisec_bfla_admin_header -> t3_privesc', 'BFLA challenge analyzes privilege escalation mechanisms'],
+  ['t2_apisec_graphql_schema_intro -> t4_graphql', 'GraphQL introspection challenge examines GraphQL schemas'],
+  ['t2_apisec_ssrf_webhook -> t3_imds', 'Webhook SSRF challenge analyzes cloud metadata queries'],
+  ['t2_apisec_jwt_weak_hmac_secret -> t3_hmac', 'Weak JWT HMAC challenge analyzes HMAC secret cracking'],
+  ['t3_apisec_jwt_key_confusion_rs256_hs256 -> t2_rsa', 'Algorithm confusion involves RSA public keys'],
+  ['t3_apisec_jwt_key_confusion_rs256_hs256 -> t3_hmac', 'Algorithm confusion involves HMAC algorithm'],
+  ['t3_apisec_jwt_kid_path_traversal -> t4_wasmrce', 'Key ID path traversal discussion cites RCE impact'],
+  ['t3_apisec_oauth2_pkce_downgrade -> t2_ztpkce', 'PKCE downgrade challenge analyzes PKCE verification'],
+  ['t3_apisec_rest_api_smuggling -> t0_gateway', 'API request smuggling involves reverse proxy gateways'],
+  ['t3_apisec_token_side_jacking -> t4_oauth', 'Token side-jacking discusses OAuth token replay'],
+  ['t4_apisec_distributed_graphql_apollo_federation -> t0_gateway', 'Apollo Federation challenge cites API gateways'],
+  ['t4_apisec_enterprise_api_gateway_bypass -> t0_gateway', 'Enterprise gateway bypass challenge analyzes API gateways'],
+  ['t4_apisec_zero_trust_api_mesh_defense -> t2_ztspiffe', 'API mesh defense integrates SPIFFE identities'],
+  ['t4_apisec_zero_trust_api_mesh_defense -> t3_ztmesh', 'API mesh defense references service mesh architecture'],
+  ['t4_apisec_modern_auth_capstone_pwn -> t4_graphql', 'Capstone challenge integrates GraphQL introspection'],
 ]);
 
 function loadChallenges() {

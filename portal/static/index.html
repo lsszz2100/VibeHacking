@@ -348,6 +348,13 @@
     document.getElementById(id).classList.remove('open');
   }
 
+  // Keyboard shortcut: Escape to close modals
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      ['term-modal', 'logs-modal', 'solve-modal'].forEach(closeModal);
+    }
+  });
+
   fetchStatus();
   fetchLabs();
   setInterval(fetchStatus, 5000);

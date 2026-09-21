@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  apiguard-lab:
+    build: .
+    container_name: vibehacking-lab22-apiguard
+    ports:
+      - "8022:8022"
+    environment:
+      - LAB_FLAG_BOLA=FLAG{bola_idor_bfla_api_privilege_escalated_4822}
+      - LAB_FLAG_GRAPHQL=FLAG{graphql_introspection_batching_bypass_7193}
+      - LAB_FLAG_JWT=FLAG{jwt_alg_none_jwks_confusion_pwned_8842}
+    restart: unless-stopped
