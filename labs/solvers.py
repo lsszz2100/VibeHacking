@@ -380,6 +380,38 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "Role Elevated: admin -> FLAG{jwt_alg_none_jwks_confusion_pwned_8842}"
             }
         ]
+    },
+    "23": {
+        "title": "SOC 위협 헌팅 & SIEM/IR 랩 (SOCHunter)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Sysmon 프로세스 인젝션 & Parent PID Spoofing 식별 및 격리",
+                "target": "POST /api/v1/hunting/contain_process (process_id: 4892)",
+                "poc_explanation": "Sysmon EventCode 8(CreateRemoteThread) 로그를 분석하여 powershell.exe로부터 메모리 주입을 당한 타깃 프로세스 spoolsv.exe(PID: 4892)를 특정하고 종료 격리합니다.",
+                "exploit_payload": '{"process_id": 4892}',
+                "defense": "공격 표면 축소(ASR) 규칙 적용 및 Windows Defender Credential Guard/LSA PPL을 활성화하여 프로세스 인젝션 원천 차단.",
+                "sample_output": "Process spoolsv.exe (PID 4892) terminated! FLAG{sysmon_parent_pid_spoofing_remote_thread_injected_3821}"
+            },
+            {
+                "step": 2,
+                "name": "Suricata NIDS 경보 & DNS 터널링 / JA3 비콘 C2 차단",
+                "target": "POST /api/v1/firewall/block_ip (ip: 198.51.100.88)",
+                "poc_explanation": "60자 이상의 고엔트로피 DNS 쿼리와 Cobalt Strike TLS JA3 지문(72a589da586844d7f0818ce684948eea)이 식별된 악성 C2 IP(198.51.100.88)를 특정하고 경계 방화벽 차단 목록에 등록합니다.",
+                "exploit_payload": '{"ip": "198.51.100.88"}',
+                "defense": "외부 직접 DNS 쿼리(포트 53) 차단 및 사내 재귀 DNS 해석기 강제, NIDS/NGFW 내 JA3/JA3S 차단 룰셋 배포.",
+                "sample_output": "Firewall blocklist updated! FLAG{suricata_dns_tunnel_ja3_c2_beacon_correlated_9482}"
+            },
+            {
+                "step": 3,
+                "name": "SIEM Pass-the-Hash / LSASS 덤프 상관분석 & SOAR 자동 격리",
+                "target": "POST /api/v1/soar/isolate_endpoint (hostname: WKSTN-FIN-04, compromised_user: FIN_ADMIN)",
+                "poc_explanation": "LSASS 접근(Event 10) 및 Pass-the-Hash(Event 4624 LogonType 9)가 발생한 재무팀 침해 단말(WKSTN-FIN-04)과 계정(FIN_ADMIN)을 대상으로 SOAR 자동화 격리 및 토큰 폐기 플레이북을 실행합니다.",
+                "exploit_payload": '{"hostname": "WKSTN-FIN-04", "compromised_user": "FIN_ADMIN"}',
+                "defense": "Active Directory 계층형 관리 모델(Tier 0/1/2) 수립, LAPS 배포 및 비정상 로그온 탐지 시 자동 격리 SOAR 파이프라인 연동.",
+                "sample_output": "SOAR Playbook Executed: Host isolated, tokens revoked! FLAG{siem_lsass_mimikatz_pass_the_hash_soar_contained_7129}"
+            }
+        ]
     }
 }
 

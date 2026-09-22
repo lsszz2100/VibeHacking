@@ -52,6 +52,7 @@ docker-compose --version
 | 20 | [윈도우 애플리케이션 & 커널 취약점 랩](./20_winapp_exploit_lab/) | SEH 덮어쓰기, Egg Hunter 메모리 탐색, FODHelper UAC 우회, HEVD 커널 Arbitrary Write | ★★★★ | [03장 시스템 해킹](../03_System_Hacking/08_windows_seh_and_driver_exploit_deepdive.md) | `winclient` / `pwn` |
 | 21 | [차량 보안 & CAN Bus 랩](./21_automotive_can_lab/) | CAN 버스 스푸핑, UDS 시드-키 인증 우회, ECU DoS | ★★★★ | [36장 자동차 해킹](../36_Automotive_Hacking/README.md), [62장 차량 보안](../62_Automotive_Security/README.md) | `carcan` |
 | 22 | [API 보안 & Modern Auth 랩](./22_api_security_lab/) | REST BOLA/BFLA, GraphQL Introspection & Batching, JWT 'none' 서명 우회 | ★★★☆ | [05장 웹 해킹](../05_Web_Hacking/README.md), [52장 API 보안](../52_API_Security/README.md) | `apisec` / `web` |
+| 23 | [SOC 위협 헌팅 & SIEM/IR 랩](./23_soc_threat_hunting_lab/) | Sysmon 인젝션 탐지, Suricata NIDS & DNS 비콘 C2 차단, Pass-the-Hash & SOAR 자동 격리 | ★★★★ | [44장 침해 대응 & DFIR](../44_Incident_Response_DFIR/07_soc_siem_threat_hunting_deepdive.md), [75장 레드팀 보고서](../75_Red_Team_Reporting/README.md) | `sochunt` / `purpleteam` |
 
 ---
 
@@ -271,6 +272,16 @@ docker-compose --version
 - **교재 챕터 연계**: [05장 웹 해킹](../05_Web_Hacking/README.md), [52장 API 보안](../52_API_Security/README.md), [60장 브라우저 보안](../60_Browser_Security/README.md)
 - **워게임 트랙**: `apisec` / `web`
 - **빠른 실행**: `python3 vhack.py lab start 22` (웹 콘솔 & 대시보드: `http://localhost:8022`)
+
+### 23. SOC 위협 헌팅 & SIEM/IR 실전 랩 (SOCHunter)
+- 엔터프라이즈 SOC 텔레메트리(Sysmon, Suricata NIDS, Windows Security Event) 기반 능동적 위협 헌팅 및 실시간 사고 대응 실습
+- Sysmon EventCode 8(CreateRemoteThread) 로그 분석을 통한 Parent PID Spoofing 및 프로세스 메모리 주입(spoolsv.exe) 탐지 및 프로세스 강제 종료 격리
+- 고엔트로피 DNS 터널링 쿼리 및 Cobalt Strike TLS JA3 지문(`72a589da586844d7f0818ce684948eea`) 비콘 상관분석을 통한 외부 C2 IP 식별 및 경계 방화벽 차단 정책 배포
+- Windows EventCode 4624 LogonType 9/3 및 EventCode 10 LSASS 덤프 로그 분석을 통한 Pass-the-Hash 공격 확정 및 SOAR 엔드포인트 자동 격리/자격증명 폐기 플레이북 실행
+- 사이버 SOC 관제 대시보드 및 실시간 텔레메트리 헌팅 콘솔 제공
+- **교재 챕터 연계**: [44장 침해 대응 & DFIR](../44_Incident_Response_DFIR/07_soc_siem_threat_hunting_deepdive.md), [75장 레드팀 보고서](../75_Red_Team_Reporting/README.md)
+- **워게임 트랙**: `sochunt` / `purpleteam`
+- **빠른 실행**: `python3 vhack.py lab start 23` (웹 콘솔 & 대시보드: `http://localhost:8023`)
 
 ---
 

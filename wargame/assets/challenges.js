@@ -340,6 +340,14 @@ const TRACKS = [
       "en": "API Security & Modern Auth",
       "desc_ko": "OWASP API Top 10·BOLA/IDOR·BFLA 권한 상승·GraphQL 인트로스펙션 및 배치 공격·JWT None 알고리즘·OAuth2 취약점.",
       "desc_en": "OWASP API Top 10, BOLA/IDOR, BFLA privilege escalation, GraphQL introspection & batching abuse, JWT None algorithm, OAuth2 flaws."
+  },
+  {
+      "id": "sochunt",
+      "icon": "🛡️",
+      "ko": "SOC 위협 헌팅·SIEM·IR",
+      "en": "SOC Threat Hunting & Incident Response",
+      "desc_ko": "Sysmon 프로세스 인젝션·Suricata NIDS 탐지·DNS 터널링 및 JA3 C2 비콘·Pass-the-Hash·SPL/KQL 상관분석·SOAR 자동 격리.",
+      "desc_en": "Sysmon process injection, Suricata NIDS detection, DNS tunneling & JA3 C2 beacons, Pass-the-Hash, SPL/KQL correlation, SOAR auto containment."
   }
 ];
 
@@ -35667,4 +35675,985 @@ const CHALLENGES = [
     },
     "hash": "70e33a1009bfa863a59700508555a513627faa6bea98f9fe6f87e1357fe32d21"
   }
+,
+{
+  "id": "t0_sochunt_soc_tiers",
+  "tier": 0,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 10,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SOC 조직 구조와 티어별 역할",
+    "en": "SOC Architecture & Tier Roles"
+  },
+  "prompt": {
+    "ko": "현대 엔터프라이즈 SOC의 Tier 1(경보 트리아지), Tier 2(사고 심층 분석/대응), Tier 3(선제적 위협 헌팅) 조직 체계 분석 챌린지입니다.\n지정된 식별자 `sochunt_soc_tiers_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_soc_tiers_v1\") 앞 20자리}`",
+    "en": "Analyze modern SOC tier architecture: Tier 1 (Alert Triage), Tier 2 (Incident Response), and Tier 3 (Proactive Threat Hunting).\nCompute the first 20 hex characters of SHA256(\"sochunt_soc_tiers_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_soc_tiers_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_soc_tiers_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_soc_tiers_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bdf866f9f0adcb2687073d9c591393124475869fbc08cf8e82c89dce726f8e5d"
+},
+{
+  "id": "t0_sochunt_sysmon_eventids",
+  "tier": 0,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 20,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Sysmon 핵심 Event ID 체계",
+    "en": "Sysmon Core Event ID Telemetry"
+  },
+  "prompt": {
+    "ko": "Windows 엔드포인트 텔레메트리 핵심인 Sysmon Event ID 1(프로세스 생성), 3(네트워크 연결), 8(CreateRemoteThread) 체계 분석 챌린지입니다.\n지정된 식별자 `sochunt_sysmon_eventids_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_sysmon_eventids_v1\") 앞 20자리}`",
+    "en": "Inspect Sysmon telemetry schema including Event ID 1 (ProcessCreate), 3 (NetworkConnect), and 8 (CreateRemoteThread).\nCompute the first 20 hex characters of SHA256(\"sochunt_sysmon_eventids_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_sysmon_eventids_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_sysmon_eventids_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_sysmon_eventids_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9dd8ba14363ab74beb1b85b5f9d427b2430ac20ee97033094d2340a19d8adf03"
+},
+{
+  "id": "t1_sochunt_suricata_fastlog",
+  "tier": 1,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Suricata NIDS 경보 및 로그 포맷",
+    "en": "Suricata NIDS Alert & Log Format"
+  },
+  "prompt": {
+    "ko": "오픈소스 침입 탐지 시스템(Suricata)의 fast.log 및 eve.json 경보 포맷과 시그니처 매칭 분석 챌린지입니다.\n지정된 식별자 `sochunt_suricata_fastlog_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_suricata_fastlog_v1\") 앞 20자리}`",
+    "en": "Examine Suricata fast.log and eve.json alert schema for network signature matching.\nCompute the first 20 hex characters of SHA256(\"sochunt_suricata_fastlog_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_suricata_fastlog_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_suricata_fastlog_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_suricata_fastlog_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "cbddca6a6bc63bb8204715785ec8fcd245999d51bcb42d690f4fc7348406e2b5"
+},
+{
+  "id": "t1_sochunt_winevent_security",
+  "tier": 1,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 40,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Windows 보안 이벤트 4624 로그온 구조",
+    "en": "Windows Security Event 4624 Logon Structure"
+  },
+  "prompt": {
+    "ko": "Windows Security.evtx의 대표 감사 로그 Event 4624(성공한 로그온) 필드 구조 및 인증 패키지 분석 챌린지입니다.\n지정된 식별자 `sochunt_winevent_security_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_winevent_security_v1\") 앞 20자리}`",
+    "en": "Analyze Windows Security event 4624 logon structure and authentication package attributes.\nCompute the first 20 hex characters of SHA256(\"sochunt_winevent_security_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_winevent_security_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_winevent_security_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_winevent_security_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "76db46644e77c06125d4d05624db581fbba0c3fdc734bfea604cf19997732545"
+},
+{
+  "id": "t1_sochunt_siem_cim",
+  "tier": 1,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SIEM 공통 정보 모델 (CIM) 정규화",
+    "en": "SIEM Common Information Model (CIM)"
+  },
+  "prompt": {
+    "ko": "이기종 보안 장비 로그를 일관된 필드로 정규화하는 Splunk CIM 및 Elastic ECS 데이터 모델 분석 챌린지입니다.\n지정된 식별자 `sochunt_siem_cim_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_siem_cim_v1\") 앞 20자리}`",
+    "en": "Understand multi-source normalization via Splunk Common Information Model (CIM) and Elastic ECS.\nCompute the first 20 hex characters of SHA256(\"sochunt_siem_cim_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_siem_cim_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_siem_cim_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_siem_cim_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "17d8b7a7807c3911e9c7bf5f442a93336c51a0247641f9175f5cd1698fd635a0"
+},
+{
+  "id": "t1_sochunt_mitre_attack",
+  "tier": 1,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MITRE ATT&CK 프레임워크 전술과 기법",
+    "en": "MITRE ATT&CK Tactics & Techniques"
+  },
+  "prompt": {
+    "ko": "사이버 위협 행위자의 침투 수명주기를 매핑하는 MITRE ATT&CK 전술 및 기법 분류 체계 분석 챌린지입니다.\n지정된 식별자 `sochunt_mitre_attack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_mitre_attack_v1\") 앞 20자리}`",
+    "en": "Map adversary behaviors using the MITRE ATT&CK matrix across enterprise tactics and techniques.\nCompute the first 20 hex characters of SHA256(\"sochunt_mitre_attack_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_mitre_attack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_mitre_attack_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_mitre_attack_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "4d075b6487d3ce4ed559e89d7b09df49d94f0e2679b25b45444f6df0f25ef3e0"
+},
+{
+  "id": "t1_sochunt_incident_picerl",
+  "tier": 1,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SANS 침해사고 대응 6단계 (PICERL)",
+    "en": "SANS Incident Response Lifecycle (PICERL)"
+  },
+  "prompt": {
+    "ko": "SANS 표준 사고 대응 프레임워크(Preparation, Identification, Containment, Eradication, Recovery, Lessons Learned) 분석 챌린지입니다.\n지정된 식별자 `sochunt_incident_picerl_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_incident_picerl_v1\") 앞 20자리}`",
+    "en": "Review SANS 6-stage incident response methodology (PICERL).\nCompute the first 20 hex characters of SHA256(\"sochunt_incident_picerl_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_incident_picerl_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_incident_picerl_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_incident_picerl_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3f888fc55b839d9ab2134c17fe0f0402a82a22e66f074020fee228d8c55968fb"
+},
+{
+  "id": "t1_sochunt_parent_pid_spoofing",
+  "tier": 1,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Parent PID Spoofing 비정상 계층 식별",
+    "en": "Parent PID Spoofing Tree Anomaly"
+  },
+  "prompt": {
+    "ko": "Sysmon Event 1 로그에서 Office 문서가 비정상적으로 명령 셸 자식 프로세스를 기동하는 비정상 프로세스 계층 헌팅 챌린지입니다.\n지정된 식별자 `sochunt_parent_pid_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_parent_pid_spoofing_v1\") 앞 20자리}`",
+    "en": "Detect anomalous process hierarchies where productivity software spawns command interpreters.\nCompute the first 20 hex characters of SHA256(\"sochunt_parent_pid_spoofing_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_parent_pid_spoofing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_parent_pid_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_parent_pid_spoofing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e66b65035fe8f66ac9781a6aacfc7b1188b862f82802fbd88ec7df639a442955"
+},
+{
+  "id": "t2_sochunt_dns_tunneling_entropy",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DNS 터널링 고엔트로피 서브도메인 탐지",
+    "en": "High Entropy DNS Tunneling Detection"
+  },
+  "prompt": {
+    "ko": "DNS 쿼리 서브도메인의 섀넌 엔트로피와 길이를 분석하여 데이터 유출 터널을 탐지하는 챌린지입니다.\n지정된 식별자 `sochunt_dns_tunneling_entropy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_dns_tunneling_entropy_v1\") 앞 20자리}`",
+    "en": "Analyze Shannon entropy and length of DNS query subdomains to detect data exfiltration tunnels.\nCompute the first 20 hex characters of SHA256(\"sochunt_dns_tunneling_entropy_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_dns_tunneling_entropy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_dns_tunneling_entropy_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_dns_tunneling_entropy_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "66f3be2a09f9b1b3e8a5db3ff02a0bb9e6682541691e61e22c6f46c246d4a3eb"
+},
+{
+  "id": "t2_sochunt_tls_ja3_fingerprint",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "TLS Client Hello JA3 해시 지문 분석",
+    "en": "TLS Client Hello JA3 Fingerprinting"
+  },
+  "prompt": {
+    "ko": "암호화 통신에서도 C2 프레임워크(Cobalt Strike, Sliver) 클라이언트를 식별할 수 있는 JA3 지문 분석 챌린지입니다.\n지정된 식별자 `sochunt_tls_ja3_fingerprint_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_tls_ja3_fingerprint_v1\") 앞 20자리}`",
+    "en": "Fingerprint encrypted C2 beaconing using TLS Client Hello JA3 hashing.\nCompute the first 20 hex characters of SHA256(\"sochunt_tls_ja3_fingerprint_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_tls_ja3_fingerprint_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_tls_ja3_fingerprint_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_tls_ja3_fingerprint_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "98e24f75a60ab552e3cd79b3cbdfd59b6094b0f8c4c3f2d8b869d14e3c101668"
+},
+{
+  "id": "t2_sochunt_lolbins_certutil",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "LOLBins Certutil 외부 다운로드 헌팅",
+    "en": "LOLBins Certutil Download Hunting"
+  },
+  "prompt": {
+    "ko": "윈도우 내장 유틸리티 certutil.exe의 urlcache 옵션을 악용한 외부 페이로드 다운로드 탐지 챌린지입니다.\n지정된 식별자 `sochunt_lolbins_certutil_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_lolbins_certutil_v1\") 앞 20자리}`",
+    "en": "Hunt living-off-the-land binaries downloading external payloads via certutil urlcache.\nCompute the first 20 hex characters of SHA256(\"sochunt_lolbins_certutil_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_lolbins_certutil_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_lolbins_certutil_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_lolbins_certutil_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "eb9e113586ff19c0f9d480b70b75fd42da966a6b1b90da11a2af4de0a301809b"
+},
+{
+  "id": "t2_sochunt_lsass_access_mask",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Sysmon Event 10 LSASS 메모리 접근 마스크",
+    "en": "Sysmon Event 10 LSASS Access Mask"
+  },
+  "prompt": {
+    "ko": "Mimikatz 등 자격증명 덤프 도구가 LSASS 프로세스에 요청하는 GrantedAccess 마스크(0x1010, 0x1410) 탐지 챌린지입니다.\n지정된 식별자 `sochunt_lsass_access_mask_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_lsass_access_mask_v1\") 앞 20자리}`",
+    "en": "Detect credential theft tools opening handles to LSASS with GrantedAccess masks like 0x1010.\nCompute the first 20 hex characters of SHA256(\"sochunt_lsass_access_mask_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_lsass_access_mask_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_lsass_access_mask_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_lsass_access_mask_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "4370d0072a6577ddc89cb0e452c90ef00c4ef25d498d40b4bcdea9498e9c62e0"
+},
+{
+  "id": "t2_sochunt_logon_type_9",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Logon Type 9 NewCredentials 인증 추적",
+    "en": "Logon Type 9 NewCredentials Tracking"
+  },
+  "prompt": {
+    "ko": "Windows EventCode 4624 LogonType 9(NewCredentials)가 의미하는 Pass-the-Hash / Overpass-the-Hash 정황 분석 챌린지입니다.\n지정된 식별자 `sochunt_logon_type_9_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_logon_type_9_v1\") 앞 20자리}`",
+    "en": "Correlate Windows Logon Type 9 NewCredentials indicating Pass-the-Hash authentication.\nCompute the first 20 hex characters of SHA256(\"sochunt_logon_type_9_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_logon_type_9_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_logon_type_9_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_logon_type_9_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9314791ea8ace4444463c630017d1185298f41a581b609bffeabca9fa57d4e45"
+},
+{
+  "id": "t2_sochunt_sigma_rule_syntax",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Sigma 탐지 룰 표준 문법 작성",
+    "en": "Sigma Generic Detection Rule Syntax"
+  },
+  "prompt": {
+    "ko": "SIEM 벤더 독립적인 오픈소스 탐지 룰 포맷인 Sigma의 logsource, detection, condition 명세 분석 챌린지입니다.\n지정된 식별자 `sochunt_sigma_rule_syntax_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_sigma_rule_syntax_v1\") 앞 20자리}`",
+    "en": "Understand generic Sigma rule structures across logsource, detection selections, and conditions.\nCompute the first 20 hex characters of SHA256(\"sochunt_sigma_rule_syntax_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_sigma_rule_syntax_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_sigma_rule_syntax_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_sigma_rule_syntax_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2a3cc998b311463043a7c684f2d4933821fb26e29a3ab98a56416060d6d270ca"
+},
+{
+  "id": "t2_sochunt_remote_thread_injection",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CreateRemoteThread (Event 8) 메모리 주입 분석",
+    "en": "CreateRemoteThread Memory Injection Analysis"
+  },
+  "prompt": {
+    "ko": "Sysmon Event 8 로그에서 원본 프로세스가 타깃 프로세스에 원격 스레드를 생성하는 DLL 인젝션 탐지 챌린지입니다.\n지정된 식별자 `sochunt_remote_thread_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_remote_thread_injection_v1\") 앞 20자리}`",
+    "en": "Analyze Sysmon Event 8 CreateRemoteThread to detect reflective DLL or shellcode injection.\nCompute the first 20 hex characters of SHA256(\"sochunt_remote_thread_injection_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_remote_thread_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_remote_thread_injection_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_remote_thread_injection_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5769551d970f3a2c51c75fbdabbb9cf964aa37aefdef54e2e8b0fc62c16f60a8"
+},
+{
+  "id": "t2_sochunt_beacon_jitter_analysis",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "C2 비콘 주기성 및 Jitter 통계적 헌팅",
+    "en": "Statistical C2 Beaconing & Jitter Hunting"
+  },
+  "prompt": {
+    "ko": "네트워크 연결 타임스탬프 델타(Delta) 편차를 계산하여 Jitter가 가미된 C2 비콘 주기를 밝혀내는 챌린지입니다.\n지정된 식별자 `sochunt_beacon_jitter_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_beacon_jitter_analysis_v1\") 앞 20자리}`",
+    "en": "Calculate connection interval variances to unmask periodic C2 beacons obscured by jitter.\nCompute the first 20 hex characters of SHA256(\"sochunt_beacon_jitter_analysis_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_beacon_jitter_analysis_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_beacon_jitter_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_beacon_jitter_analysis_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "700b300aefb614174d9ffae311f80f96d43aa665cf2b1ad5d7efb692bdb6af1c"
+},
+{
+  "id": "t2_sochunt_splunk_spl_lolbin",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Splunk SPL 파이프라인 상관분석 쿼리",
+    "en": "Splunk SPL Correlation Pipeline"
+  },
+  "prompt": {
+    "ko": "index=sysmon EventCode=1 Image=*\\certutil.exe 조건으로 필터링 및 통계를 산출하는 SPL 쿼리 작성 챌린지입니다.\n지정된 식별자 `sochunt_splunk_spl_lolbin_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_splunk_spl_lolbin_v1\") 앞 20자리}`",
+    "en": "Formulate Splunk Processing Language (SPL) search pipelines to isolate LOLBins command arguments.\nCompute the first 20 hex characters of SHA256(\"sochunt_splunk_spl_lolbin_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_splunk_spl_lolbin_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_splunk_spl_lolbin_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_splunk_spl_lolbin_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3433ac42c43290fb309f3e7124083c18fa5718fcc509aabc888c611e85839710"
+},
+{
+  "id": "t2_sochunt_kql_lateral_movement",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Azure Sentinel KQL 횡적 이동 헌팅",
+    "en": "Azure Sentinel KQL Lateral Movement Hunting"
+  },
+  "prompt": {
+    "ko": "SecurityEvent 테이블에서 WMI 및 PowerShell 원격 명령 실행을 집계하는 Kusto Query Language(KQL) 챌린지입니다.\n지정된 식별자 `sochunt_kql_lateral_movement_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_kql_lateral_movement_v1\") 앞 20자리}`",
+    "en": "Construct KQL hunting queries in Microsoft Sentinel detecting remote process execution via WMI.\nCompute the first 20 hex characters of SHA256(\"sochunt_kql_lateral_movement_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_kql_lateral_movement_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_kql_lateral_movement_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_kql_lateral_movement_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d83064bd4df01880253d99bb615526142417e1d477e51982925ee3658c991d8a"
+},
+{
+  "id": "t2_sochunt_zeek_conn_log",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Zeek conn.log 연결 상태 플래그 분석",
+    "en": "Zeek conn.log Connection State Analysis"
+  },
+  "prompt": {
+    "ko": "네트워크 트래픽 메타데이터 엔진인 Zeek의 연결 상태 플래그(S0, SF, RSTO, REJ)를 해석하는 챌린지입니다.\n지정된 식별자 `sochunt_zeek_conn_log_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_zeek_conn_log_v1\") 앞 20자리}`",
+    "en": "Interpret Zeek connection state flags like S0 and RSTO to detect port scanning and blocked connections.\nCompute the first 20 hex characters of SHA256(\"sochunt_zeek_conn_log_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_zeek_conn_log_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_zeek_conn_log_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_zeek_conn_log_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fcf7ba547ee9676f5f3ce1e848ab989bfda1e1db757450e2cf75acfe34921ee9"
+},
+{
+  "id": "t2_sochunt_mimikatz_sekurlsa",
+  "tier": 2,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 210,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Mimikatz sekurlsa NTLM 덤프 행위 탐지",
+    "en": "Mimikatz sekurlsa NTLM Dump Detection"
+  },
+  "prompt": {
+    "ko": "LSASS 메모리에서 인증 공급자 보안 패키지를 탐색하여 NTLM 해시를 덤프하는 Mimikatz 행위 탐지 챌린지입니다.\n지정된 식별자 `sochunt_mimikatz_sekurlsa_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_mimikatz_sekurlsa_v1\") 앞 20자리}`",
+    "en": "Detect Mimikatz sekurlsa module querying authentication providers to dump plaintext/NTLM hashes.\nCompute the first 20 hex characters of SHA256(\"sochunt_mimikatz_sekurlsa_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_mimikatz_sekurlsa_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_mimikatz_sekurlsa_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_mimikatz_sekurlsa_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8225e9258504ea26563cc4ad029881ff3bdcb7bedc727b37e357059f2cf0a176"
+},
+{
+  "id": "t3_sochunt_soar_playbook_workflow",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 230,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SOAR 자동화 격리 및 차단 플레이북",
+    "en": "SOAR Automated Containment Playbook"
+  },
+  "prompt": {
+    "ko": "고위험 위협 경보 발생 시 EDR API로 엔드포인트를 격리하고 방화벽에 IoC를 자동 배포하는 SOAR 워크플로우 챌린지입니다.\n지정된 식별자 `sochunt_soar_playbook_workflow_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_soar_playbook_workflow_v1\") 앞 20자리}`",
+    "en": "Design automated SOAR playbooks orchestrating host isolation via EDR and firewall IoC updates.\nCompute the first 20 hex characters of SHA256(\"sochunt_soar_playbook_workflow_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_soar_playbook_workflow_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_soar_playbook_workflow_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_soar_playbook_workflow_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b0ca72e5c189ae16d940fa8daf35c6d024b8992e678487560ec07c16a171330e"
+},
+{
+  "id": "t3_sochunt_process_hollowing_etw",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Process Hollowing 언매핑과 ETW 패칭 대응",
+    "en": "Process Hollowing Unmap & ETW Patching Defense"
+  },
+  "prompt": {
+    "ko": "합법 프로세스(svchost) 생성 후 메모리를 비우고 악성 코드를 주입하는 기법과 ETW 침묵 탐지 챌린지입니다.\n지정된 식별자 `sochunt_process_hollowing_etw_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_process_hollowing_etw_v1\") 앞 20자리}`",
+    "en": "Correlate Process Hollowing unmapping and EtwEventWrite user-mode tampering stubs.\nCompute the first 20 hex characters of SHA256(\"sochunt_process_hollowing_etw_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_process_hollowing_etw_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_process_hollowing_etw_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_process_hollowing_etw_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "4cce04444434ed77ac6414ef740ea000dc4f65e22c5c91380901fac0e66b4bdb"
+},
+{
+  "id": "t3_sochunt_overpass_the_hash",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 270,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Overpass-the-Hash Kerberos TGT 요청 헌팅",
+    "en": "Overpass-the-Hash Kerberos TGT Request Hunting"
+  },
+  "prompt": {
+    "ko": "NTLM 해시를 사용해 Kerberos AS-REQ을 요청하여 유효한 TGT 티켓을 획득하는 Overpass-the-Hash 탐지 챌린지입니다.\n지정된 식별자 `sochunt_overpass_the_hash_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_overpass_the_hash_v1\") 앞 20자리}`",
+    "en": "Identify Overpass-the-Hash by correlating Kerberos Event 4768 requesting RC4-HMAC encryption.\nCompute the first 20 hex characters of SHA256(\"sochunt_overpass_the_hash_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_overpass_the_hash_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_overpass_the_hash_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_overpass_the_hash_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7c5eab4e5fbd70f09a0c892893c45eeb164d866db8adfb12e48f222cdf9d1073"
+},
+{
+  "id": "t3_sochunt_dns_dga_clustering",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 290,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "도메인 생성 알고리즘(DGA) C2 클러스터링",
+    "en": "Domain Generation Algorithm (DGA) Clustering"
+  },
+  "prompt": {
+    "ko": "악성코드가 C2 차단을 우회하기 위해 날짜 기반으로 대량 생성하는 DGA 도메인 탐지 및 차단 챌린지입니다.\n지정된 식별자 `sochunt_dns_dga_clustering_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_dns_dga_clustering_v1\") 앞 20자리}`",
+    "en": "Cluster algorithmic pseudo-random subdomains generated by DGA malware families.\nCompute the first 20 hex characters of SHA256(\"sochunt_dns_dga_clustering_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_dns_dga_clustering_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_dns_dga_clustering_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_dns_dga_clustering_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "69b0f2e50a38a073863c2b5266c693ea9abf3b10fa271f89d4dbba8edfc43c24"
+},
+{
+  "id": "t3_sochunt_kernel_byovd_hunting",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 310,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BYOVD 취약 드라이버 로드 헌팅",
+    "en": "BYOVD Vulnerable Driver Load Hunting"
+  },
+  "prompt": {
+    "ko": "공격자가 커널 메모리 보호(DSE)를 우회하기 위해 정당하게 서명된 취약 드라이버를 로드하는 행위 탐지 챌린지입니다.\n지정된 식별자 `sochunt_kernel_byovd_hunting_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_kernel_byovd_hunting_v1\") 앞 20자리}`",
+    "en": "Hunt Bring Your Own Vulnerable Driver (BYOVD) tactics abusing signed drivers via Sysmon Event 6/7.\nCompute the first 20 hex characters of SHA256(\"sochunt_kernel_byovd_hunting_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_kernel_byovd_hunting_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_kernel_byovd_hunting_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_kernel_byovd_hunting_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "1b990c82fd26247cf842f41d164eeee039463f72e45f81c897a5eff63b854498"
+},
+{
+  "id": "t3_sochunt_covert_icmp_tunnel",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 330,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ICMP 은닉 터널 데이터 유출 분석",
+    "en": "Covert ICMP Tunnel Data Exfiltration"
+  },
+  "prompt": {
+    "ko": "방화벽의 비인가 포트 차단을 회피하기 위해 ICMP Echo Request/Reply 데이터 필드에 정보를 은닉 전송하는 챌린지입니다.\n지정된 식별자 `sochunt_covert_icmp_tunnel_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_covert_icmp_tunnel_v1\") 앞 20자리}`",
+    "en": "Carve and reconstruct exfiltrated sensitive data embedded within ICMP Echo Request payload fields.\nCompute the first 20 hex characters of SHA256(\"sochunt_covert_icmp_tunnel_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_covert_icmp_tunnel_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_covert_icmp_tunnel_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_covert_icmp_tunnel_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "141dca44ae3a070b4118e28e6abb111f23c86f1b45145a114bab0ac0e27ee0af"
+},
+{
+  "id": "t3_sochunt_kerberoasting_spn",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Kerberoasting 서비스 티켓 대량 요청 탐지",
+    "en": "Kerberoasting Service Ticket Bulk Request"
+  },
+  "prompt": {
+    "ko": "서비스 주체 이름(SPN)이 등록된 도메인 계정의 TGS 티켓(Event 4769, 암호화 0x17 RC4)을 대량 요청하는 행위 헌팅 챌린지입니다.\n지정된 식별자 `sochunt_kerberoasting_spn_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_kerberoasting_spn_v1\") 앞 20자리}`",
+    "en": "Detect bulk Kerberos TGS-REQ ticket requests with RC4 encryption (0x17) characteristic of Kerberoasting.\nCompute the first 20 hex characters of SHA256(\"sochunt_kerberoasting_spn_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_kerberoasting_spn_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_kerberoasting_spn_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_kerberoasting_spn_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ef3be4023810b4ebf6a73a311942625a4004c3b90dcd61d1d64962ebca20f678"
+},
+{
+  "id": "t3_sochunt_yara_l_chronicle",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 370,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Google SecOps YARA-L 멀티 이벤트 상관분석",
+    "en": "Google SecOps YARA-L Multi-Event Correlation"
+  },
+  "prompt": {
+    "ko": "클라우드 스케일 SIEM에서 프로세스 생성 이벤트와 네트워크 아웃바운드 연결 이벤트를 결합하는 YARA-L 룰 챌린지입니다.\n지정된 식별자 `sochunt_yara_l_chronicle_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_yara_l_chronicle_v1\") 앞 20자리}`",
+    "en": "Author multi-event detection logic correlating endpoint process events with network sockets in YARA-L.\nCompute the first 20 hex characters of SHA256(\"sochunt_yara_l_chronicle_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_yara_l_chronicle_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_yara_l_chronicle_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_yara_l_chronicle_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "40a1c4a71d72d17d0c3db012bfe55e0ed524c756f1539e7908c30223f8f9f996"
+},
+{
+  "id": "t3_sochunt_edr_telemetry_silencing",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 390,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "EDR 텔레메트리 블라인드 침묵 공격 탐지",
+    "en": "EDR Telemetry Silencing & Blind Spot Detection"
+  },
+  "prompt": {
+    "ko": "공격자가 EDR 에이전트 서비스나 미니필터 드라이버를 중단하여 로그 유입을 차단하는 텔레메트리 공백(Heartbeat 결손) 헌팅 챌린지입니다.\n지정된 식별자 `sochunt_edr_telemetry_silencing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_edr_telemetry_silencing_v1\") 앞 20자리}`",
+    "en": "Identify blind spots caused by adversaries terminating EDR services or blinding kernel telemetry agents.\nCompute the first 20 hex characters of SHA256(\"sochunt_edr_telemetry_silencing_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_edr_telemetry_silencing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_edr_telemetry_silencing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_edr_telemetry_silencing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8189ac9101ce2ea6a9a58fc3836b9701c3192bdc8d892d34450ba9d084e5c959"
+},
+{
+  "id": "t3_sochunt_apt_c2_ja3s_server_mesh",
+  "tier": 3,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 410,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "JA3S 서버 지문과 C2 인프라 클러스터링",
+    "en": "JA3S Server Fingerprinting & C2 Infrastructure Clustering"
+  },
+  "prompt": {
+    "ko": "서버 측 Server Hello JA3S 지문과 X.509 인증서 발급자 패턴을 결합하여 APT C2 통신 인프라망을 클러스터링하는 챌린지입니다.\n지정된 식별자 `sochunt_apt_c2_ja3s_server_mesh_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_apt_c2_ja3s_server_mesh_v1\") 앞 20자리}`",
+    "en": "Correlate JA3S server fingerprints and TLS certificate metadata to map adversary proxy infrastructure.\nCompute the first 20 hex characters of SHA256(\"sochunt_apt_c2_ja3s_server_mesh_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_apt_c2_ja3s_server_mesh_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_apt_c2_ja3s_server_mesh_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_apt_c2_ja3s_server_mesh_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "14d5e718d83513986463a4b94054b5104d387383bca384d57e43870050b65f8b"
+},
+{
+  "id": "t4_sochunt_golden_ticket_krbtgt",
+  "tier": 4,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 450,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Golden Ticket KRBTGT NTLM 위조 헌팅",
+    "en": "Golden Ticket KRBTGT Forgery Hunting"
+  },
+  "prompt": {
+    "ko": "도메인 핵심 계정 KRBTGT 해시 유출로 인해 조작된 10년 만기 TGT 티켓과 비정상 SID 히스토리 헌팅 챌린지입니다.\n지정된 식별자 `sochunt_golden_ticket_krbtgt_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_golden_ticket_krbtgt_v1\") 앞 20자리}`",
+    "en": "Hunt Golden Ticket forgeries by auditing abnormal ticket lifetimes and extra SID injections.\nCompute the first 20 hex characters of SHA256(\"sochunt_golden_ticket_krbtgt_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_golden_ticket_krbtgt_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_golden_ticket_krbtgt_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_golden_ticket_krbtgt_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "756c880736b2d10e9fea9927b970deb3dfb338d43fee13462bc45330cd343f2f"
+},
+{
+  "id": "t4_sochunt_shadow_admin_acl",
+  "tier": 4,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 470,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Shadow Admin 숨겨진 AD ACL 권한 헌팅",
+    "en": "Active Directory Shadow Admin ACL Hunting"
+  },
+  "prompt": {
+    "ko": "Domain Admins 그룹에 속하지 않으면서 GenericAll, WriteDacl 등 위험한 ACL로 도메인을 장악하는 Shadow Admin 탐지 챌린지입니다.\n지정된 식별자 `sochunt_shadow_admin_acl_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_shadow_admin_acl_v1\") 앞 20자리}`",
+    "en": "Detect covert Active Directory persistence via Shadow Admin accounts abusing excessive ACLs.\nCompute the first 20 hex characters of SHA256(\"sochunt_shadow_admin_acl_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_shadow_admin_acl_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_shadow_admin_acl_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_shadow_admin_acl_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "808acae3b052ab45e4aee46d92fe4501f1f9c4a5073848129176cfacd539d13d"
+},
+{
+  "id": "t4_sochunt_cloud_trail_imds_pivot",
+  "tier": 4,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 480,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AWS CloudTrail & IMDS 피벗 이상 헌팅",
+    "en": "AWS CloudTrail & IMDS Pivot Anomaly Hunting"
+  },
+  "prompt": {
+    "ko": "EC2 인스턴스 프로파일 자격증명이 엔드포인트 외부 인터넷 IP에서 호출되는 위험 징후를 추적하는 멀티 클라우드 헌팅 챌린지입니다.\n지정된 식별자 `sochunt_cloud_trail_imds_pivot_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_cloud_trail_imds_pivot_v1\") 앞 20자리}`",
+    "en": "Hunt IAM credential theft by correlating instance metadata token exfiltration with external CloudTrail API calls.\nCompute the first 20 hex characters of SHA256(\"sochunt_cloud_trail_imds_pivot_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_cloud_trail_imds_pivot_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_cloud_trail_imds_pivot_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_cloud_trail_imds_pivot_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2925676894cb9690a11e4eec9004cf47f1ee5c216d0d200b021dd7058745e2d4"
+},
+{
+  "id": "t4_sochunt_zero_trust_pipeline",
+  "tier": 4,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 490,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 제로 트러스트 SOC 통합 파이프라인",
+    "en": "Enterprise Zero Trust SOC Pipeline Architecture"
+  },
+  "prompt": {
+    "ko": "엔드포인트, 신원, 네트워크, 클라우드의 모든 신호를 결합하여 실시간 동적 신뢰 평가를 수행하는 차세대 방어 체계 구축 챌린지입니다.\n지정된 식별자 `sochunt_zero_trust_pipeline_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_zero_trust_pipeline_v1\") 앞 20자리}`",
+    "en": "Architect next-generation automated SOC defenses fusing continuous identity verification and EDR telemetry.\nCompute the first 20 hex characters of SHA256(\"sochunt_zero_trust_pipeline_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_zero_trust_pipeline_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_zero_trust_pipeline_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_zero_trust_pipeline_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "0d9b0ef36d9b282004d368228f89649d2dbd247e7dbcca71491e1ded6a0fa8f9"
+},
+{
+  "id": "t4_sochunt_apt_capstone_incident",
+  "tier": 4,
+  "cat": "sochunt",
+  "track": "sochunt",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SOC 위협 헌팅 캡스톤: APT 공격 풀체인 트리아지",
+    "en": "SOC Threat Hunting Capstone: Full APT Triage"
+  },
+  "prompt": {
+    "ko": "초기 피싱 매크로 -> Sysmon 인젝션 -> Suricata C2 탐지 -> LSASS 덤프 -> Pass-the-Hash -> SOAR 자동 격리 풀체인 종합 실전 챌린지입니다.\n지정된 식별자 `sochunt_apt_capstone_incident_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sochunt_apt_capstone_incident_v1\") 앞 20자리}`",
+    "en": "Execute comprehensive incident triage across phishing execution, process injection, C2 beacons, and automated containment.\nCompute the first 20 hex characters of SHA256(\"sochunt_apt_capstone_incident_v1\").\n\nFormat: `FLAG{SHA256(\"sochunt_apt_capstone_incident_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `sochunt_apt_capstone_incident_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"sochunt_apt_capstone_incident_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "01c4d4fb066bfd7a78c1823d0842d06ceebeb16f625683b519a88c12e4d9ad36"
+}
 ];

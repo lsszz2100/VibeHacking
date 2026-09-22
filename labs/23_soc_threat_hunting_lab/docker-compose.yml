@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  sochunter-lab:
+    build: .
+    container_name: vibehacking-lab23-sochunter
+    ports:
+      - "8023:8023"
+    environment:
+      - LAB_FLAG_SYSMON=FLAG{sysmon_parent_pid_spoofing_remote_thread_injected_3821}
+      - LAB_FLAG_SURICATA=FLAG{suricata_dns_tunnel_ja3_c2_beacon_correlated_9482}
+      - LAB_FLAG_SIEM=FLAG{siem_lsass_mimikatz_pass_the_hash_soar_contained_7129}
+    restart: unless-stopped

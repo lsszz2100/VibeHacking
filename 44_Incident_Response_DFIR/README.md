@@ -14,6 +14,7 @@
 | [04_threat_containment_and_eradication.md](./04_threat_containment_and_eradication.md) | **위협 격리, 박멸, 복구** — 침해사고 대응(Incident Response)의 핵심 3단계다. 격리(Containment)는 감염된 시스템을 네트워크에서 차단해 피해가 번지지 않도록 막는다. 박멸(Eradicat... |
 | [05_malware_triage_and_containment.md](./05_malware_triage_and_containment.md) | **악성코드 트리아지 및 억제** — 트리아지(Triage)는 의료 분야에서 유래한 용어로 "빠른 분류 및 우선순위 결정"을 의미한다. 악성코드 트리아지는 사고 발생 초기에 빠른 시간(수 분~수십 분) 안에 악성코드의 유... |
 | [06_ir_dfir_ctf_lab.md](./06_ir_dfir_ctf_lab.md) | **침해사고 대응 / DFIR CTF 실습 랩** — pip install volatility3 yara-python scapy dpkt pyshark |
+| [07_soc_siem_threat_hunting_deepdive.md](./07_soc_siem_threat_hunting_deepdive.md) | **차세대 SOC 관제 및 SIEM 실전 위협 헌팅 심층 가이드 (Modern SOC & SIEM Threat Hunting Deep-Dive)** — 엔터프라이즈 보안관제(SOC)는 단순 경보 알림(Alert-driven) 방식에서 가설 기반의 능동적 위협 헌팅(Hypothesis-driven Threat Hunting)으로 진화했... |
 
 ## 🎯 학습 목표
 

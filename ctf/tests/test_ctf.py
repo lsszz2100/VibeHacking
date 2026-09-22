@@ -53,6 +53,9 @@ def test_get_challenges(client):
     assert "LAB22_BOLA" in ids
     assert "LAB22_GRAPHQL" in ids
     assert "LAB22_JWT" in ids
+    assert "LAB23_SYSMON" in ids
+    assert "LAB23_SURICATA" in ids
+    assert "LAB23_SIEM" in ids
 
 
 def test_timeline_endpoint(client):

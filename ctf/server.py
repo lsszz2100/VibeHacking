@@ -321,6 +321,33 @@ class CTFState:
                 "solves": [],
                 "first_blood": None,
             },
+            "LAB23_SYSMON": {
+                "id": "LAB23_SYSMON",
+                "title": "SOCHunter: Sysmon RemoteThread Process Injection",
+                "category": "dfir",
+                "initial_points": 500,
+                "flag": "FLAG{sysmon_parent_pid_spoofing_remote_thread_injected_3821}",
+                "solves": [],
+                "first_blood": None,
+            },
+            "LAB23_SURICATA": {
+                "id": "LAB23_SURICATA",
+                "title": "SOCHunter: Suricata DNS Tunneling & C2 JA3 Beacon",
+                "category": "dfir",
+                "initial_points": 500,
+                "flag": "FLAG{suricata_dns_tunnel_ja3_c2_beacon_correlated_9482}",
+                "solves": [],
+                "first_blood": None,
+            },
+            "LAB23_SIEM": {
+                "id": "LAB23_SIEM",
+                "title": "SOCHunter: SIEM Pass-the-Hash & SOAR Remediation",
+                "category": "dfir",
+                "initial_points": 500,
+                "flag": "FLAG{siem_lsass_mimikatz_pass_the_hash_soar_contained_7129}",
+                "solves": [],
+                "first_blood": None,
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []

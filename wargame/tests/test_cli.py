@@ -27,7 +27,7 @@ def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
     assert len(tracks) == 36
-    assert len(challenges) == 1260
+    assert len(challenges) == 1295
     assert any(t["id"] == "carcan" for t in tracks)
     assert any(t["id"] == "apisec" for t in tracks)
 
