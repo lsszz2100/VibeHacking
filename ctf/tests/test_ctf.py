@@ -36,6 +36,9 @@ def test_ctf_home(client):
     assert "CTF Arena" in res.text
     assert "First Blood" in res.text
     assert "scoreCanvas" in res.text
+    assert "chalGrid" in res.text
+    assert "hintModal" in res.text
+    assert "loadChallenges" in res.text
 
 
 def test_get_challenges(client):
@@ -43,7 +46,7 @@ def test_get_challenges(client):
     assert res.status_code == 200
     data = res.json()
     assert "challenges" in data
-    assert len(data["challenges"]) >= 37
+    assert len(data["challenges"]) >= 40
     ids = [c["id"] for c in data["challenges"]]
     assert "LAB01_SQLI" in ids
     assert "LAB19_ROOT" in ids
@@ -59,10 +62,15 @@ def test_get_challenges(client):
     assert "LAB24_FUZZ" in ids
     assert "LAB24_ASAN" in ids
     assert "LAB24_TRIAGE" in ids
+    assert "LAB25_INDIRECT" in ids
+    assert "LAB25_GUARDRAIL" in ids
+    assert "LAB25_SHADOW" in ids
 
     # Check hints_count field
     fuzz_chal = next(c for c in data["challenges"] if c["id"] == "LAB24_FUZZ")
     assert fuzz_chal["hints_count"] >= 1
+    ai_chal = next(c for c in data["challenges"] if c["id"] == "LAB25_INDIRECT")
+    assert ai_chal["hints_count"] >= 1
 
 
 def test_timeline_endpoint(client):

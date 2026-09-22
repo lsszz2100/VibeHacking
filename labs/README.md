@@ -54,6 +54,7 @@ docker-compose --version
 | 22 | [API 보안 & Modern Auth 랩](./22_api_security_lab/) | REST BOLA/BFLA, GraphQL Introspection & Batching, JWT 'none' 서명 우회 | ★★★☆ | [05장 웹 해킹](../05_Web_Hacking/README.md), [52장 API 보안](../52_API_Security/README.md) | `apisec` / `web` |
 | 23 | [SOC 위협 헌팅 & SIEM/IR 랩](./23_soc_threat_hunting_lab/) | Sysmon 인젝션 탐지, Suricata NIDS & DNS 비콘 C2 차단, Pass-the-Hash & SOAR 자동 격리 | ★★★★ | [44장 침해 대응 & DFIR](../44_Incident_Response_DFIR/07_soc_siem_threat_hunting_deepdive.md), [75장 레드팀 보고서](../75_Red_Team_Reporting/README.md) | `sochunt` / `purpleteam` |
 | 24 | [퍼징 & 취약점 발굴 랩](./24_fuzzing_vulnerability_lab/) | AFL++ 커버리지 유도 퍼징, ASAN 섀도우 메모리 덤프 UAF 분석, 크래시 트리아지 & 패치 검증 | ★★★★ | [30장 취약점 분석](../30_Vulnerability_Research/README.md), [66장 익스플로잇 개발](../66_Exploit_Development/README.md) | `fuzzing` / `pwn` |
+| 25 | [AI 레드팀 & 탈옥 평가 랩](./25_ai_redteam_lab/) | RAG 간접 프롬프트 인젝션, 적대적 토큰 가드레일 우회, MCP 도구 섀도잉 및 에이전트 샌드박스 | ★★★★ | [56장 AI 레드팀](../56_AI_Red_Teaming/07_ai_red_teaming_and_guardrail_eval_deepdive.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `airedteam` / `ai` |
 
 ---
 
@@ -292,6 +293,14 @@ docker-compose --version
 - **교재 챕터 연계**: [30장 취약점 분석](../30_Vulnerability_Research/07_practical_fuzzing_and_crash_triage_deepdive.md), [66장 익스플로잇 개발](../66_Exploit_Development/README.md)
 - **워게임 트랙**: `fuzzing` / `pwn`
 - **빠른 실행**: `python3 vhack.py lab start 24` (웹 콘솔 & 대시보드: `http://localhost:8024`)
+
+### 25. AI 레드팀 & 탈옥 평가 실전 랩 (AIRedGuard)
+- 외부 지식베이스(RAG) 문서 오염을 통한 간접 프롬프트 주입(Indirect Prompt Injection) 및 기밀 토큰 유출
+- 제로위드 공백(\u200b)과 적대적 토큰 분할을 통한 단순 키워드 블랙리스트 우회 및 NFKC 유니코드 정규화 방어
+- 악성 MCP 도구 섀도잉(Tool Shadowing)을 통한 비인가 시스템 셸 명령 실행 및 Capabilities 암호학적 토큰 샌드박스 통제
+- **교재 챕터 연계**: [56장 AI 레드팀](../56_AI_Red_Teaming/07_ai_red_teaming_and_guardrail_eval_deepdive.md), [69장 LLM 보안](../69_LLM_Security/README.md)
+- **워게임 트랙**: `airedteam` / `ai`
+- **빠른 실행**: `python3 vhack.py lab start 25` (웹 콘솔 & 시뮬레이터: `http://localhost:8025`)
 
 ---
 

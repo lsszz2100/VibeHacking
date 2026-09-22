@@ -356,6 +356,14 @@ const TRACKS = [
       "en": "Fuzzing & Vulnerability Research (ASAN)",
       "desc_ko": "AFL++ 커버리지 유도 퍼징·ASAN 섀도우 메모리 UAF 분석·크래시 트리아지 및 재현 PoC·댕글링 포인터 패치 검증.",
       "desc_en": "AFL++ coverage-guided fuzzing, ASAN shadow memory UAF analysis, crash triage, reproducible PoC synthesis, and memory safety patch verification."
+  },
+  {
+    "id": "airedteam",
+    "icon": "🤺",
+    "ko": "AI 레드팀·가드레일 우회",
+    "en": "AI Red Teaming & Guardrails",
+    "desc_ko": "간접 프롬프트 주입(IPI)·적대적 토큰 분할·MCP 도구 섀도잉·Llama Guard 회피·에이전트 샌드박스 보안.",
+    "desc_en": "Indirect prompt injection (IPI), adversarial token splitting, MCP tool shadowing, Llama Guard evasion, agent sandbox security."
   }
 ];
 
@@ -37644,5 +37652,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "b87219cbbe86437c8d7b28d5e78e0a599b738e340c7c8b7c8e92177de10a5c22"
+},
+{
+  "id": "t0_airedteam_redteam_concept",
+  "tier": 0,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 10,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MITRE ATLAS AI 위협 매트릭스",
+    "en": "MITRE ATLAS AI Threat Matrix"
+  },
+  "prompt": {
+    "ko": "AI 및 머신러닝 시스템을 표적으로 하는 적대적 공격 기법을 체계화한 MITRE ATLAS 프레임워크를 분석합니다.\n지정된 식별자 `airedteam_redteam_concept_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_redteam_concept_v1\") 앞 20자리}`",
+    "en": "Analyze the MITRE ATLAS matrix cataloging adversarial threats against AI systems.\nCompute the first 20 hex characters of SHA256(\"airedteam_redteam_concept_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_redteam_concept_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_redteam_concept_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_redteam_concept_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3ab37452903091e070287b549eaa2f0c29681867ec610aa6e208f0c544708c6b"
+},
+{
+  "id": "t0_airedteam_direct_jailbreak",
+  "tier": 0,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 20,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "직접 프롬프트 주입 및 탈옥 기초",
+    "en": "Direct Prompt Injection & Jailbreak Basics"
+  },
+  "prompt": {
+    "ko": "사용자가 모델에 직접 입력하여 기본 안전 지침을 우회하는 직접 탈옥 기법을 분석합니다.\n지정된 식별자 `airedteam_direct_jailbreak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_direct_jailbreak_v1\") 앞 20자리}`",
+    "en": "Analyze direct jailbreak techniques that override safety instructions.\nCompute the first 20 hex characters of SHA256(\"airedteam_direct_jailbreak_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_direct_jailbreak_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_direct_jailbreak_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_direct_jailbreak_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c14d2bdd60fda8b752537677defa659c67c9e9646b87118eb5e2faaa81a9510c"
+},
+{
+  "id": "t0_airedteam_system_prompt_leak",
+  "tier": 0,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "시스템 프롬프트 추출 정찰",
+    "en": "System Prompt Extraction Reconnaissance"
+  },
+  "prompt": {
+    "ko": "모델의 초기 지침과 비공개 지시문을 유출시키는 프롬프트 누출 공격을 조사합니다.\n지정된 식별자 `airedteam_system_prompt_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_system_prompt_leak_v1\") 앞 20자리}`",
+    "en": "Investigate prompt leaking attacks that extract system instructions.\nCompute the first 20 hex characters of SHA256(\"airedteam_system_prompt_leak_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_system_prompt_leak_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_system_prompt_leak_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_system_prompt_leak_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "997f731cff34957a78cde5f488d5e8bf517fe2d995ca7dfbf0f432db22fe51f8"
+},
+{
+  "id": "t1_airedteam_indirect_injection",
+  "tier": 1,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 40,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "간접 프롬프트 주입(IPI) 아키텍처",
+    "en": "Indirect Prompt Injection (IPI) Architecture"
+  },
+  "prompt": {
+    "ko": "외부 문서나 웹페이지에 악성 지시문을 심어 에이전트가 읽을 때 실행되도록 하는 간접 프롬프트 주입 공격을 평가합니다.\n지정된 식별자 `airedteam_indirect_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_indirect_injection_v1\") 앞 20자리}`",
+    "en": "Evaluate indirect prompt injection where untrusted external data carries hidden instructions.\nCompute the first 20 hex characters of SHA256(\"airedteam_indirect_injection_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_indirect_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_indirect_injection_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_indirect_injection_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d19aa64f8e8b588b7e09e3c55534d48982b63828bb5bc7f6c761b4f1eaf52b74"
+},
+{
+  "id": "t1_airedteam_delimiter_defense",
+  "tier": 1,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "XML 구분자 기반 컨텍스트 격리",
+    "en": "XML Delimiter Context Isolation"
+  },
+  "prompt": {
+    "ko": "외부 비신뢰 데이터와 시스템 지침을 명확히 분리하기 위한 XML 태그 구분자 방어 기법을 분석합니다.\n지정된 식별자 `airedteam_delimiter_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_delimiter_defense_v1\") 앞 20자리}`",
+    "en": "Analyze XML delimiter defense separating untrusted data from instructions.\nCompute the first 20 hex characters of SHA256(\"airedteam_delimiter_defense_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_delimiter_defense_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_delimiter_defense_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_delimiter_defense_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "90c401859051164f9466ef6b4ec41325153698eb5da38211d20a8471e21072fe"
+},
+{
+  "id": "t1_airedteam_zero_width_space",
+  "tier": 1,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "제로위드 공백 유니코드 난독화 우회",
+    "en": "Zero-Width Space Unicode Obfuscation"
+  },
+  "prompt": {
+    "ko": "키워드 필터링을 우회하기 위해 단어 사이에 Zero-Width Space(U+200B)를 삽입하는 난독화 기법을 분석합니다.\n지정된 식별자 `airedteam_zero_width_space_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_zero_width_space_v1\") 앞 20자리}`",
+    "en": "Analyze zero-width space Unicode obfuscation evading keyword filters.\nCompute the first 20 hex characters of SHA256(\"airedteam_zero_width_space_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_zero_width_space_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_zero_width_space_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_zero_width_space_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fc23dd1e59ce21d1323373053dd0baeab33195c336de61ccfc15418afe4fc22c"
+},
+{
+  "id": "t1_airedteam_homoglyph_attack",
+  "tier": 1,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "호모글리프 문자 유사도 치환 공격",
+    "en": "Homoglyph Character Substitution Evasion"
+  },
+  "prompt": {
+    "ko": "라틴 문자와 시각적으로 유사한 키릴 문자 등을 치환하여 텍스트 정합 필터를 회피하는 공격을 평가합니다.\n지정된 식별자 `airedteam_homoglyph_attack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_homoglyph_attack_v1\") 앞 20자리}`",
+    "en": "Evaluate homoglyph substitution evasion bypassing exact keyword matching.\nCompute the first 20 hex characters of SHA256(\"airedteam_homoglyph_attack_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_homoglyph_attack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_homoglyph_attack_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_homoglyph_attack_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "26644623d890e3dae2d1445d1de17b5b8b01050af5cab500abe595f20ac4e307"
+},
+{
+  "id": "t1_airedteam_mcp_tool_list",
+  "tier": 1,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 프로토콜 도구 열거 메서드",
+    "en": "MCP Protocol Tool Enumeration Method"
+  },
+  "prompt": {
+    "ko": "Model Context Protocol(MCP)에서 클라이언트가 서버에 사용 가능한 도구 목록을 조회하는 메서드를 조사합니다.\n지정된 식별자 `airedteam_mcp_tool_list_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_mcp_tool_list_v1\") 앞 20자리}`",
+    "en": "Investigate the MCP tools/list protocol method enumerating registered tools.\nCompute the first 20 hex characters of SHA256(\"airedteam_mcp_tool_list_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_mcp_tool_list_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_mcp_tool_list_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_mcp_tool_list_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fb25e057f4390fc23447f38c6251d5967b7bcf6c6dcd2d67bc0c8b9ecaf9f37f"
+},
+{
+  "id": "t1_airedteam_pyrit_framework",
+  "tier": 1,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Microsoft PyRIT AI 레드팀 오케스트레이터",
+    "en": "Microsoft PyRIT AI Red Team Orchestrator"
+  },
+  "prompt": {
+    "ko": "Microsoft에서 개발한 생성형 AI 레드팀 자동화 및 변이 스캔 프레임워크 PyRIT을 분석합니다.\n지정된 식별자 `airedteam_pyrit_framework_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_pyrit_framework_v1\") 앞 20자리}`",
+    "en": "Analyze Microsoft PyRIT framework automating multi-turn AI red team mutations.\nCompute the first 20 hex characters of SHA256(\"airedteam_pyrit_framework_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_pyrit_framework_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_pyrit_framework_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_pyrit_framework_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8bcb90c386ef2ee7149ddb11e06b09e420745b02470966450dc5f6b553e7d702"
+},
+{
+  "id": "t2_airedteam_multi_turn_crescendo",
+  "tier": 2,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 75,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "다회차 점진적 맥락 오염 (Crescendo)",
+    "en": "Multi-Turn Crescendo Jailbreak"
+  },
+  "prompt": {
+    "ko": "초기에는 무해한 질문으로 시작하여 점진적으로 모델의 안전 경계를 무너뜨리는 다회차 탈옥 기법을 분석합니다.\n지정된 식별자 `airedteam_multi_turn_crescendo_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_multi_turn_crescendo_v1\") 앞 20자리}`",
+    "en": "Analyze the multi-turn Crescendo jailbreak technique escalating prompt severity.\nCompute the first 20 hex characters of SHA256(\"airedteam_multi_turn_crescendo_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_multi_turn_crescendo_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_multi_turn_crescendo_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_multi_turn_crescendo_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ee32b6fa786b681eef3b8b85f01f8198067ed9e6d27b3969fa18c8ada15e53f6"
+},
+{
+  "id": "t2_airedteam_token_splitting_bpe",
+  "tier": 2,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BPE 서브워드 토큰 분할 가드레일 우회",
+    "en": "BPE Token Splitting Guardrail Evasion"
+  },
+  "prompt": {
+    "ko": "BPE 토크나이저의 서브워드 분할 특성을 악용해 차단 토큰 생성을 회피하는 공격 메커니즘을 분석합니다.\n지정된 식별자 `airedteam_token_splitting_bpe_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_token_splitting_bpe_v1\") 앞 20자리}`",
+    "en": "Analyze BPE subword splitting evasion bypassing blocklist token generation.\nCompute the first 20 hex characters of SHA256(\"airedteam_token_splitting_bpe_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_token_splitting_bpe_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_token_splitting_bpe_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_token_splitting_bpe_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8c27fddad47dee220826dc7d10be45c65ad5be5e286ad99e77c447e53c8a437b"
+},
+{
+  "id": "t2_airedteam_nfkc_normalization",
+  "tier": 2,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "NFKC 유니코드 정규화 전처리 방어",
+    "en": "NFKC Unicode Normalization Preprocessing Defense"
+  },
+  "prompt": {
+    "ko": "호모글리프와 전각 문자를 표준 문자로 변환하여 가드레일 회피를 무력화하는 NFKC 유니코드 정규화를 분석합니다.\n지정된 식별자 `airedteam_nfkc_normalization_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_nfkc_normalization_v1\") 앞 20자리}`",
+    "en": "Analyze Unicode NFKC normalization preprocessing defeating homoglyph evasion.\nCompute the first 20 hex characters of SHA256(\"airedteam_nfkc_normalization_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_nfkc_normalization_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_nfkc_normalization_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_nfkc_normalization_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "78ef63f8c398b98dd6631894231dadb5a37be019b66daefbe7dd0acad4bb7019"
+},
+{
+  "id": "t2_airedteam_dual_llm_pattern",
+  "tier": 2,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "이중 LLM 비특권-특권 분리 아키텍처",
+    "en": "Dual-LLM Privileged Separation Pattern"
+  },
+  "prompt": {
+    "ko": "비신뢰 외부 입력을 처리하는 비특권 모델과 핵심 작업을 수행하는 특권 모델을 분리하는 방어 패턴을 평가합니다.\n지정된 식별자 `airedteam_dual_llm_pattern_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_dual_llm_pattern_v1\") 앞 20자리}`",
+    "en": "Evaluate Dual-LLM architectural pattern isolating untrusted ingestion from execution.\nCompute the first 20 hex characters of SHA256(\"airedteam_dual_llm_pattern_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_dual_llm_pattern_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_dual_llm_pattern_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_dual_llm_pattern_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "66b2ec64de18e019df98248ab1d3ff9d50e7245972942622bdb6a56a6abafef7"
+},
+{
+  "id": "t2_airedteam_mcp_tool_shadowing",
+  "tier": 2,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MCP 악성 도구 섀도잉 및 호출 하이재킹",
+    "en": "MCP Tool Shadowing & Invocation Hijacking"
+  },
+  "prompt": {
+    "ko": "신뢰할 수 있는 도구와 유사한 설명으로 악성 도구를 등록하여 에이전트의 실행을 가로채는 도구 섀도잉 기법을 분석합니다.\n지정된 식별자 `airedteam_mcp_tool_shadowing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_mcp_tool_shadowing_v1\") 앞 20자리}`",
+    "en": "Analyze MCP tool shadowing hijacking agent autonomous tool selection.\nCompute the first 20 hex characters of SHA256(\"airedteam_mcp_tool_shadowing_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_mcp_tool_shadowing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_mcp_tool_shadowing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_mcp_tool_shadowing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "6e1ecde77a86fa7dfcc0cadf8b9975f1fd5ea4b64e2562d9cf4fd26751fc0932"
+},
+{
+  "id": "t2_airedteam_prompt_leaking_canary",
+  "tier": 2,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 105,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "프롬프트 유출 탐지 카나리 토큰",
+    "en": "Prompt Leaking Canary Token"
+  },
+  "prompt": {
+    "ko": "시스템 프롬프트 내부에 고유한 비밀 문자열을 심어두고 출력에 노출되는지 모니터링하는 카나리 토큰 기법을 분석합니다.\n지정된 식별자 `airedteam_prompt_leaking_canary_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_prompt_leaking_canary_v1\") 앞 20자리}`",
+    "en": "Analyze canary token tripwires embedded in system prompts to detect exfiltration.\nCompute the first 20 hex characters of SHA256(\"airedteam_prompt_leaking_canary_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_prompt_leaking_canary_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_prompt_leaking_canary_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_prompt_leaking_canary_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ae2ff21c36d4a47782583d2670d9466a6c40669dd08bd38157bd2ef86b354e34"
+},
+{
+  "id": "t2_airedteam_garak_scanner",
+  "tier": 2,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Garak LLM 취약점 전수 스캐너",
+    "en": "Garak LLM Vulnerability Scanner"
+  },
+  "prompt": {
+    "ko": "탈옥, 프롬프트 인젝션, 환각 등 LLM 대상 다양한 공격 프로브를 자동으로 실행하는 Garak 스캐너를 평가합니다.\n지정된 식별자 `airedteam_garak_scanner_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_garak_scanner_v1\") 앞 20자리}`",
+    "en": "Evaluate the Garak open-source vulnerability scanner across automated probe suites.\nCompute the first 20 hex characters of SHA256(\"airedteam_garak_scanner_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_garak_scanner_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_garak_scanner_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_garak_scanner_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2f066e4252c89198d404cdd981fdbe55bbc8a53289662a1544ab5ac35c475cc2"
+},
+{
+  "id": "t2_airedteam_embedding_distance",
+  "tier": 2,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 115,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "의미론적 가드레일 임베딩 유사도",
+    "en": "Semantic Guardrail Embedding Similarity"
+  },
+  "prompt": {
+    "ko": "두 텍스트 벡터 간의 방향 각도를 측정하여 적대적 프롬프트의 의미적 유사성을 판정하는 코사인 유사도 분석을 조사합니다.\n지정된 식별자 `airedteam_embedding_distance_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_embedding_distance_v1\") 앞 20자리}`",
+    "en": "Investigate cosine distance metrics between embedding vectors for guardrail classification.\nCompute the first 20 hex characters of SHA256(\"airedteam_embedding_distance_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_embedding_distance_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_embedding_distance_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_embedding_distance_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "322345d7913b990e12e0014b520dbef265f75ee46798b30af2156ed438df8525"
+},
+{
+  "id": "t2_airedteam_excessive_agency",
+  "tier": 2,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OWASP LLM06 과도한 에이전트 자율 권한",
+    "en": "OWASP LLM06 Excessive Agency"
+  },
+  "prompt": {
+    "ko": "에이전트에 과도한 자율 권한과 고위험 시스템 도구가 부여되어 발생하는 OWASP LLM06 취약점을 분석합니다.\n지정된 식별자 `airedteam_excessive_agency_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_excessive_agency_v1\") 앞 20자리}`",
+    "en": "Analyze OWASP LLM06 excessive agency risks arising from uncontained autonomous permissions.\nCompute the first 20 hex characters of SHA256(\"airedteam_excessive_agency_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_excessive_agency_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_excessive_agency_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_excessive_agency_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "11741ada19d04b6ea467b1143d8e4513db77883f21397c37fe522a1a56899bf2"
+},
+{
+  "id": "t3_airedteam_gcg_adversarial_suffix",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Greedy Coordinate Gradient 적대적 접미사",
+    "en": "Greedy Coordinate Gradient Adversarial Suffix"
+  },
+  "prompt": {
+    "ko": "그래디언트 기반 탐색으로 가드레일을 무력화하는 적대적 문자열 접미사를 자동 생성하는 GCG 알고리즘을 분석합니다.\n지정된 식별자 `airedteam_gcg_adversarial_suffix_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_gcg_adversarial_suffix_v1\") 앞 20자리}`",
+    "en": "Analyze Greedy Coordinate Gradient (GCG) search optimizing adversarial suffixes.\nCompute the first 20 hex characters of SHA256(\"airedteam_gcg_adversarial_suffix_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_gcg_adversarial_suffix_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_gcg_adversarial_suffix_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_gcg_adversarial_suffix_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9eba5842cb9979d23685fd5a73f67dbed8b3b5919c453af093be630e79274b0b"
+},
+{
+  "id": "t3_airedteam_autodan_hierarchical",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AutoDAN 계층적 유전 알고리즘 탈옥",
+    "en": "AutoDAN Genetic Algorithm Jailbreak"
+  },
+  "prompt": {
+    "ko": "자연어 가독성을 유지하면서 유전 알고리즘을 통해 은닉형 탈옥 프롬프트를 진화시키는 공격 체계를 분석합니다.\n지정된 식별자 `airedteam_autodan_hierarchical_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_autodan_hierarchical_v1\") 앞 20자리}`",
+    "en": "Analyze AutoDAN genetic algorithm generating readable stealth jailbreak prompts.\nCompute the first 20 hex characters of SHA256(\"airedteam_autodan_hierarchical_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_autodan_hierarchical_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_autodan_hierarchical_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_autodan_hierarchical_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f81f97103c7815ddf2757c4c0c552acd9cfcb1e83d4f7bb030ae6a06bab9eb01"
+},
+{
+  "id": "t3_airedteam_rag_chunk_poisoning",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RAG 지식 청크 오염 및 검색 가로채기",
+    "en": "RAG Knowledge Chunk Poisoning Attack"
+  },
+  "prompt": {
+    "ko": "벡터 데이터베이스의 유사도 검색 순위를 조작하여 악성 인젝션 청크가 상위에 검색되도록 오염시키는 기법을 평가합니다.\n지정된 식별자 `airedteam_rag_chunk_poisoning_v1`의 SHA-256 해시 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_rag_chunk_poisoning_v1\") 앞 20자리}`",
+    "en": "Evaluate vector DB knowledge poisoning ranking malicious injection chunks at top.\nCompute the first 20 hex characters of SHA256(\"airedteam_rag_chunk_poisoning_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_rag_chunk_poisoning_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_rag_chunk_poisoning_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_rag_chunk_poisoning_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ed9d628a98fa446a484c06a62d62254244ecf03cce1205bd0d401c9aebcfb76a"
+},
+{
+  "id": "t3_airedteam_mcp_capabilities_token",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Capabilities 암호학적 토큰 기반 도구 인가",
+    "en": "Capabilities Token Tool Authorization"
+  },
+  "prompt": {
+    "ko": "에이전트의 도구 실행 시 사용자 승인에 기반한 단기 서명 토큰을 검증하는 최소 권한 샌드박스 메커니즘을 분석합니다.\n지정된 식별자 `airedteam_mcp_capabilities_token_v1`의 SHA-256 해시 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_mcp_capabilities_token_v1\") 앞 20자리}`",
+    "en": "Analyze capabilities-based cryptographic token verification for agent tool dispatch.\nCompute the first 20 hex characters of SHA256(\"airedteam_mcp_capabilities_token_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_mcp_capabilities_token_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_mcp_capabilities_token_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_mcp_capabilities_token_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d96eac2d5c0cac5a3971c80e4988ea3c65bbe898236eaee883a836ba20720304"
+},
+{
+  "id": "t3_airedteam_llama_guard_taxonomy",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 175,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Meta Llama Guard 유해성 분류 모델",
+    "en": "Meta Llama Guard Safety Classifier"
+  },
+  "prompt": {
+    "ko": "프롬프트 및 모델 응답의 유해성을 다계층 범주로 분류하는 Meta Llama Guard 안전 모델 아키텍처를 분석합니다.\n지정된 식별자 `airedteam_llama_guard_taxonomy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_llama_guard_taxonomy_v1\") 앞 20자리}`",
+    "en": "Analyze Meta Llama Guard safety model architecture classifying harmful prompt categories.\nCompute the first 20 hex characters of SHA256(\"airedteam_llama_guard_taxonomy_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_llama_guard_taxonomy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_llama_guard_taxonomy_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_llama_guard_taxonomy_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "59879cddd36d8b29a7962bc758796a2f3c87e1af59be40350bc77433ffea8b9d"
+},
+{
+  "id": "t3_airedteam_nemo_guardrails_colang",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "NVIDIA NeMo Guardrails Colang 언어",
+    "en": "NVIDIA NeMo Guardrails Colang Language"
+  },
+  "prompt": {
+    "ko": "NeMo Guardrails 프레임워크에서 대화 흐름 규칙과 가드레일 정책을 코드로 정의하는 Colang 언어를 분석합니다.\n지정된 식별자 `airedteam_nemo_guardrails_colang_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_nemo_guardrails_colang_v1\") 앞 20자리}`",
+    "en": "Analyze the Colang language defining policy flows in NVIDIA NeMo Guardrails.\nCompute the first 20 hex characters of SHA256(\"airedteam_nemo_guardrails_colang_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_nemo_guardrails_colang_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_nemo_guardrails_colang_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_nemo_guardrails_colang_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c75373c05ed10bc978df8bb88ec103061d5149dfea5503fa28983b6fd6282db6"
+},
+{
+  "id": "t3_airedteam_ebpf_agent_sandbox",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "eBPF 커널 기반 에이전트 런타임 샌드박싱",
+    "en": "eBPF Kernel Agent Runtime Sandboxing"
+  },
+  "prompt": {
+    "ko": "에이전트가 실행하는 도구 프로세스의 시스템콜을 커널 수준에서 실시간 인터셉트하여 격리하는 방어 기법을 분석합니다.\n지정된 식별자 `airedteam_ebpf_agent_sandbox_v1`의 SHA-256 해시 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_ebpf_agent_sandbox_v1\") 앞 20자리}`",
+    "en": "Analyze eBPF kernel tracing intercepting agent tool syscalls at runtime.\nCompute the first 20 hex characters of SHA256(\"airedteam_ebpf_agent_sandbox_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_ebpf_agent_sandbox_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_ebpf_agent_sandbox_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_ebpf_agent_sandbox_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "46d0dfdfe51952c0fcf15ed8cd2a2ea79a822c38b9e1f8fbebb982238390d928"
+},
+{
+  "id": "t3_airedteam_pair_adversarial_loop",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PAIR 적대적 프롬프트 자동 정제 루프",
+    "en": "PAIR Adversarial Refinement Loop"
+  },
+  "prompt": {
+    "ko": "공격자 LLM과 대상 LLM이 상호작용하며 탈옥 성공률을 자동으로 높이는 PAIR 공격 프레임워크를 분석합니다.\n지정된 식별자 `airedteam_pair_adversarial_loop_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"airedteam_pair_adversarial_loop_v1\") 앞 20자리}`",
+    "en": "Analyze PAIR algorithmic loop escalating jailbreak success via autonomous LLM refinement.\nCompute the first 20 hex characters of SHA256(\"airedteam_pair_adversarial_loop_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_pair_adversarial_loop_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_pair_adversarial_loop_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_pair_adversarial_loop_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "88ddf4320c1326928fd82a2ef9d99cfb93ab22d8a3583521b10e66b849737b0b"
+},
+{
+  "id": "t3_airedteam_jailbreak_entropy",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 210,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "토큰 확률 엔트로피 기반 이상치 탐지",
+    "en": "Token Probability Entropy Anomaly Detection"
+  },
+  "prompt": {
+    "ko": "탈옥 입력 시 발생하는 비정형 토큰 시퀀스의 정보 엔트로피 및 Perplexity 급증을 분석하여 방어하는 메커니즘을 평가합니다.\n지정된 식별자 `airedteam_jailbreak_entropy_v1`의 SHA-256 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_jailbreak_entropy_v1\") 앞 20자리}`",
+    "en": "Evaluate token probability entropy anomaly detection identifying out-of-distribution jailbreak sequences.\nCompute the first 20 hex characters of SHA256(\"airedteam_jailbreak_entropy_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_jailbreak_entropy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_jailbreak_entropy_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_jailbreak_entropy_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b4de4e5aa7124f434f20a7cfd024d84e58cff0196e067f5fd2ea2b79fae1e088"
+},
+{
+  "id": "t3_airedteam_multimodal_visual_injection",
+  "tier": 3,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 220,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "멀티모달 시각적 타이포그래피 주입 공격",
+    "en": "Multimodal Visual Typography Prompt Injection"
+  },
+  "prompt": {
+    "ko": "이미지 내부의 텍스트 렌더링을 통해 비전 언어 모델(VLM)의 텍스트 가드레일을 우회하는 공격 기법을 분석합니다.\n지정된 식별자 `airedteam_multimodal_visual_injection_v1`의 SHA-256 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_multimodal_visual_injection_v1\") 앞 20자리}`",
+    "en": "Analyze visual typography injection in images bypassing text guardrails in VLMs.\nCompute the first 20 hex characters of SHA256(\"airedteam_multimodal_visual_injection_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_multimodal_visual_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_multimodal_visual_injection_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_multimodal_visual_injection_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "118c1022daaea4f054200cc8a78bfc954e775136b22ad67d4e1eccd90b347f15"
+},
+{
+  "id": "t4_airedteam_autonomous_killchain",
+  "tier": 4,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 260,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "에이전트 자율 킬체인 하이재킹 복합 방어",
+    "en": "Autonomous Agent Killchain Hijacking Defense"
+  },
+  "prompt": {
+    "ko": "정찰, 도구 실행, 데이터 유출로 이어지는 에이전트 자율 사이버 킬체인의 각 단계를 차단하는 심층 방어 아키텍처를 분석합니다.\n지정된 식별자 `airedteam_autonomous_killchain_v1`의 SHA-256 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_autonomous_killchain_v1\") 앞 20자리}`",
+    "en": "Analyze defense-in-depth architecture mitigating autonomous agent killchain hijacking.\nCompute the first 20 hex characters of SHA256(\"airedteam_autonomous_killchain_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_autonomous_killchain_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_autonomous_killchain_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_autonomous_killchain_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3839aaa4aa065c83273bf8357b20c5eea4924a4a979c3dd0dfd503c5a81e99f8"
+},
+{
+  "id": "t4_airedteam_stealth_backdoor_trigger",
+  "tier": 4,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 270,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "파인튜닝 가중치 스텔스 백도어 트리거 탐지",
+    "en": "Fine-Tuning Weight Stealth Backdoor Trigger"
+  },
+  "prompt": {
+    "ko": "모델 학습 또는 가중치 파인튜닝 시 삽입된 은닉형 백도어 트리거를 활성화 분석 및 가중치 무결성 검증 기법으로 식별합니다.\n지정된 식별자 `airedteam_stealth_backdoor_trigger_v1`의 SHA-256 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_stealth_backdoor_trigger_v1\") 앞 20자리}`",
+    "en": "Identify hidden backdoor triggers embedded during model training and verify weight integrity.\nCompute the first 20 hex characters of SHA256(\"airedteam_stealth_backdoor_trigger_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_stealth_backdoor_trigger_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_stealth_backdoor_trigger_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_stealth_backdoor_trigger_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "47651d0d881321b9326ed1706464f314ac1917c13cf0d1947a262a0b3deb0c60"
+},
+{
+  "id": "t4_airedteam_tool_namespace_isolation",
+  "tier": 4,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 280,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 도구 네임스페이스 및 mTLS 격리",
+    "en": "Enterprise Tool Namespace & mTLS Isolation"
+  },
+  "prompt": {
+    "ko": "분산 MCP 환경에서 도구 간 상호 인증(mTLS)과 엄격한 FQDN 네임스페이스 강제를 통한 섀도잉 방지 체계를 평가합니다.\n지정된 식별자 `airedteam_tool_namespace_isolation_v1`의 SHA-256 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_tool_namespace_isolation_v1\") 앞 20자리}`",
+    "en": "Evaluate distributed MCP tool namespacing and mTLS isolation preventing tool hijacking.\nCompute the first 20 hex characters of SHA256(\"airedteam_tool_namespace_isolation_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_tool_namespace_isolation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_tool_namespace_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_tool_namespace_isolation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7167e41f7ebb52a586cc554a577fa9046aa680dea7236eb08449057407ee08f5"
+},
+{
+  "id": "t4_airedteam_side_channel_token_timing",
+  "tier": 4,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 290,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "토큰 생성 시간차 내부 캐시 사이드채널 분석",
+    "en": "Token Generation Timing Side-Channel Analysis"
+  },
+  "prompt": {
+    "ko": "KV 캐시 히트율 및 토큰 생성 간격의 미세 시간차를 측정하여 모델 내부 상태를 유추하는 부채널 공격을 분석합니다.\n지정된 식별자 `airedteam_side_channel_token_timing_v1`의 SHA-256 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_side_channel_token_timing_v1\") 앞 20자리}`",
+    "en": "Analyze timing side-channel measuring KV-cache hit differentials to infer internal model state.\nCompute the first 20 hex characters of SHA256(\"airedteam_side_channel_token_timing_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_side_channel_token_timing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_side_channel_token_timing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_side_channel_token_timing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3420de6627f90a2b003b4bd8d5ea0f14593a1e102d6e7774fce95d99eeff659f"
+},
+{
+  "id": "t4_airedteam_prompt_firewall_lsm",
+  "tier": 4,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 300,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "LSM 커널 모듈 연계 프롬프트 방화벽",
+    "en": "LSM Kernel-Coupled Prompt Firewall"
+  },
+  "prompt": {
+    "ko": "Linux Security Module(LSM) 훅과 인공지능 프롬프트 방화벽을 결합하여 비인가 자율 프로세스 생성을 원천 차단하는 커널 방어를 분석합니다.\n지정된 식별자 `airedteam_prompt_firewall_lsm_v1`의 SHA-256 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_prompt_firewall_lsm_v1\") 앞 20자리}`",
+    "en": "Analyze Linux Security Module (LSM) coupled with AI prompt firewalls blocking unauthorized process spawning.\nCompute the first 20 hex characters of SHA256(\"airedteam_prompt_firewall_lsm_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_prompt_firewall_lsm_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_prompt_firewall_lsm_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_prompt_firewall_lsm_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2319dac68ff45495b317287ac8b3c73205863841c1b70f063a9f77e8d4d190c1"
+},
+{
+  "id": "t4_airedteam_semantic_integrity_attestation",
+  "tier": 4,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 320,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "TEE 기반 에이전트 추론 무결성 원격 증명",
+    "en": "TEE-Based Agent Semantic Remote Attestation"
+  },
+  "prompt": {
+    "ko": "기밀 컴퓨팅(TEE / Confidential Enclave) 내부에서 실행되는 에이전트 추론 단계의 암호학적 해시 체인을 통한 원격 증명 기법을 평가합니다.\n지정된 식별자 `airedteam_semantic_integrity_attestation_v1`의 SHA-256 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_semantic_integrity_attestation_v1\") 앞 20자리}`",
+    "en": "Evaluate TEE-based cryptographic remote attestation guaranteeing agent semantic inference integrity.\nCompute the first 20 hex characters of SHA256(\"airedteam_semantic_integrity_attestation_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_semantic_integrity_attestation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_semantic_integrity_attestation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_semantic_integrity_attestation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "94184eb88adc8359d304c290df743bead5a17afd2bd22ddbf68d9d4f0ed6e4aa"
+},
+{
+  "id": "t4_airedteam_capstone_redteam_eval",
+  "tier": 4,
+  "cat": "airedteam",
+  "track": "airedteam",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 AI 레드팀 종합 평가 캡스톤",
+    "en": "Enterprise AI Red Team Assessment Capstone"
+  },
+  "prompt": {
+    "ko": "다단계 간접 프롬프트 주입, 가드레일 우회, MCP 도구 섀도잉 및 에이전트 격리까지 전 과정을 평가하는 AI 레드팀 캡스톤 챌린지입니다.\n지정된 식별자 `airedteam_capstone_redteam_eval_v1`의 SHA-256 앞 20자리로 플래그를 생성하세요.\n\n형식: `FLAG{SHA256(\"airedteam_capstone_redteam_eval_v1\") 앞 20자리}`",
+    "en": "Complete end-to-end AI red team assessment: indirect injection, guardrail evasion, tool shadowing, and sandbox containment.\nCompute the first 20 hex characters of SHA256(\"airedteam_capstone_redteam_eval_v1\").\n\nFormat: `FLAG{SHA256(\"airedteam_capstone_redteam_eval_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `airedteam_capstone_redteam_eval_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"airedteam_capstone_redteam_eval_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "00cdf6fc2de28b53bc341ac29e169b7e52a44d5f5b022cf30eaac7d86037216d"
 }
 ];

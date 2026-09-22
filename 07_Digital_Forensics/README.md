@@ -11,6 +11,7 @@
 | [05_forensics_automation_and_tools.md](./05_forensics_automation_and_tools.md) | **포렌식 자동화 및 도구** — Autopsy는 The Sleuth Kit(TSK) 기반의 오픈소스 디지털 포렌식 플랫폼이다. GUI 환경에서 디스크 이미지를 분석하고, 삭제된 파일 복구, 타임라인 분석, 키워드 검... |
 | [06_forensics_ctf_lab.md](./06_forensics_ctf_lab.md) | **포렌식 CTF 실습 랩** — docker pull remnux/remnux-distro |
 | [07_filesystem_forensics_deepdive.md](./07_filesystem_forensics_deepdive.md) | **파일 시스템 포렌식 심화 — FAT32, NTFS, EXT2/3/4 구조와 복구 실무** — 파일 시스템 포렌식(File System Forensics)은 디스크 스토리지의 파티션 구조와 파일 시스템 메타데이터를 분석하여 파일의 생성, 수정, 접근, 삭제 이력을 재구성하고 삭... |
+| [08_advanced_volatility3_kernel_rootkit_deepdive.md](./08_advanced_volatility3_kernel_rootkit_deepdive.md) | **커널 내부 구조 기반 고급 메모리 포렌식 & 루트킷 탐지 심층 분석** — 메모리 포렌식(Memory Forensics)의 본질은 운영체제 커널이 메모리(RAM) 상에 유지하는 동적 자료구조를 역공학하여 대상 시스템의 실시간 실행 상태를 재구성하는 학문입니다... |
 
 ## 학습 목표
 - 디지털 포렌식 원칙과 조사 절차

@@ -384,6 +384,42 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "취약점 분류는 CWE-416(Use-After-Free)이며, chunk->data = NULL; 패치로 댕글링 포인터를 무력화합니다."}
                 ],
             },
+            "LAB25_INDIRECT": {
+                "id": "LAB25_INDIRECT",
+                "title": "AIRedGuard: Indirect Prompt Injection & RAG Taint",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{indirect_prompt_injection_rag_taint_unlocked_9102}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "외부 문서 검색 청크에 시스템 지시 무효화 및 [AIRedGuard_FLAG_SECRET] 유출 명령을 심으세요."}
+                ],
+            },
+            "LAB25_GUARDRAIL": {
+                "id": "LAB25_GUARDRAIL",
+                "title": "AIRedGuard: Token Splitting & Guardrail Bypass",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{adversarial_token_guardrail_bypass_verified_4819}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "BPE 서브워드 토큰 분할(p-a-s-s-w-o-r-d) 또는 유니코드 제로위드 공백(\\u200b)으로 금지어 필터를 우회하세요."}
+                ],
+            },
+            "LAB25_SHADOW": {
+                "id": "LAB25_SHADOW",
+                "title": "AIRedGuard: MCP Tool Shadowing & Agent Sandbox Containment",
+                "category": "ai",
+                "initial_points": 500,
+                "flag": "FLAG{mcp_tool_shadowing_agent_sandbox_contained_7341}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "동일 이름의 악성 MCP 도구를 선언하여 정상 도구를 섀도잉하고 격리 샌드박스 정책을 분석하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -767,20 +803,54 @@ def ctf_home():
         .live-tag { display: inline-flex; align-items: center; gap: 6px; color: var(--green); font-size: 0.85rem; font-weight: bold; }
         .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: blink 1.2s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+
+        /* Challenges Grid & Hint Shop */
+        .chal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 1rem; max-height: 440px; overflow-y: auto; padding-right: 4px; }
+        .chal-card { background: #0f172a; border: 1px solid var(--card-border); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; transition: border-color 0.2s, transform 0.15s; cursor: pointer; }
+        .chal-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
+        .chal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+        .chal-cat { font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: var(--cyan); font-weight: bold; text-transform: uppercase; }
+        .chal-points { font-size: 0.85rem; font-weight: bold; color: var(--gold); }
+        .chal-title { font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; color: #f1f5f9; line-height: 1.3; }
+        .chal-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: #94a3b8; }
+        .btn-hint { background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); color: var(--gold); padding: 4px 8px; border-radius: 4px; font-size: 0.78rem; cursor: pointer; font-weight: 600; }
+        .btn-hint:hover { background: rgba(251, 191, 36, 0.3); }
+
+        /* Modal Overlay */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: #1e293b; border: 1px solid var(--card-border); border-radius: 10px; width: 90%; max-width: 500px; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+        .modal-title { font-size: 1.1rem; font-weight: bold; color: var(--cyan); margin-top: 0; display: flex; align-items: center; gap: 8px; }
+        .modal-body { margin: 1rem 0; font-size: 0.95rem; line-height: 1.5; color: #cbd5e1; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-cancel { background: #334155; color: #cbd5e1; }
+        .btn-cancel:hover { background: #475569; }
+        .btn-confirm { background: var(--gold); color: #0f172a; }
+        .btn-confirm:hover { background: #f59e0b; }
       </style>
     </head>
     <body>
       <div id="toastBox" class="toast"></div>
+
+      <!-- Hint Modal -->
+      <div id="hintModal" class="modal-overlay">
+        <div class="modal-content">
+          <h3 id="modalTitle" class="modal-title">💡 힌트 상점</h3>
+          <div id="modalBody" class="modal-body"></div>
+          <div class="modal-actions" id="modalActions">
+            <button class="btn-cancel" onclick="closeHintModal()">닫기</button>
+          </div>
+        </div>
+      </div>
 
       <div class="container">
         <h1>
           🏆 VibeHacking CTF Arena
           <span class="live-tag"><span class="live-dot"></span> LIVE SSE STREAMING</span>
         </h1>
-        <p style="color: #94a3b8; margin-top: 0;">28개 실습 랩 플래그 채점, 실시간 Dynamic Scoring & First Blood 영예의 전당</p>
+        <p style="color: #94a3b8; margin-top: 0;">25개 실습 랩 40개 플래그 채점, 실시간 Dynamic Scoring & First Blood 영예의 전당</p>
 
         <div class="banner">
-          ⚡ <b>Dynamic Scoring Engine:</b> 문제 기본 500pt에서 해결 팀 증가에 따라 점수 자동 감쇠(최저 100pt) | <b>🩸 First Blood:</b> 문제 최초 해결 시 <b>+50pt 추가 보너스</b> 지급!
+          ⚡ <b>Dynamic Scoring Engine:</b> 문제 기본 500pt에서 해결 팀 증가에 따라 점수 자동 감쇠(최저 100pt) | <b>🩸 First Blood:</b> 문제 최초 해결 시 <b>+50pt 추가 보너스</b> 지급! | <b>💡 힌트 상점:</b> 문제별 힌트 해금 시 50pt 차감
         </div>
 
         <!-- Interactive Score Timeline Chart -->
@@ -790,6 +860,19 @@ def ctf_home():
             <span id="chartLegend" style="font-size: 0.8rem; display: flex; gap: 12px;"></span>
           </div>
           <canvas id="scoreCanvas" width="1120" height="240"></canvas>
+        </div>
+
+        <!-- Challenges & Interactive Hint Shop -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <h3 style="margin: 0; color: var(--gold); display: flex; align-items: center; gap: 8px;">
+              💡 챌린지 아레나 & 힌트 상점 (Challenge Arena & Hint Shop)
+            </h3>
+            <span style="font-size: 0.82rem; color: #94a3b8;">문제를 클릭하면 플래그 입력창에 자동 등록됩니다</span>
+          </div>
+          <div class="chal-grid" id="chalGrid">
+            <div style="padding: 20px; color: #64748b; text-align: center; grid-column: 1 / -1;">챌린지 목록을 불러오는 중...</div>
+          </div>
         </div>
 
         <div class="card">
@@ -958,6 +1041,95 @@ def ctf_home():
           }
         }
 
+        async function loadChallenges() {
+          try {
+            const res = await fetch('/api/ctf/challenges');
+            const data = await res.json();
+            const grid = document.getElementById('chalGrid');
+            if (!grid) return;
+            grid.innerHTML = data.challenges.map(c => `
+              <div class="chal-card" onclick="selectChal('${c.id}')">
+                <div>
+                  <div class="chal-header">
+                    <span class="chal-cat">${c.category}</span>
+                    <span class="chal-points">${c.current_points}pt</span>
+                  </div>
+                  <div class="chal-title">${c.title || c.id}</div>
+                </div>
+                <div class="chal-footer">
+                  <span>🚩 Solves: ${c.solves_count}</span>
+                  ${c.hints_count > 0 ? `<button class="btn-hint" onclick="event.stopPropagation(); requestHint('${c.id}', '${(c.title || c.id).replace(/'/g, "\\'")}')">💡 힌트 (50pt)</button>` : ''}
+                </div>
+              </div>
+            `).join('');
+          } catch (e) {
+            console.error('챌린지 로드 실패:', e);
+          }
+        }
+
+        function selectChal(id) {
+          document.getElementById('chalInput').value = id;
+          document.getElementById('flagInput').focus();
+          showToast(`🎯 문제 [${id}]가 선택되었습니다.`);
+        }
+
+        function requestHint(chalId, title) {
+          const team = document.getElementById('teamInput').value.trim() || 'Admin_RedTeam';
+          const modal = document.getElementById('hintModal');
+          const mTitle = document.getElementById('modalTitle');
+          const mBody = document.getElementById('modalBody');
+          const mActions = document.getElementById('modalActions');
+          
+          mTitle.innerHTML = `💡 힌트 상점: ${chalId}`;
+          mBody.innerHTML = `
+            <p style="margin-top:0;"><b>[${title}]</b> 문제의 힌트를 확인하시겠습니까?</p>
+            <div style="background: rgba(251,191,36,0.1); border-left: 3px solid var(--gold); padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 0.9rem;">
+              ⚠️ 팀 <b>${team}</b>의 점수에서 <b>50pt</b>가 차감됩니다.<br>(이미 해금한 경우 차감 없이 무료로 재확인)
+            </div>
+          `;
+          mActions.innerHTML = `
+            <button class="btn-cancel" onclick="closeHintModal()">취소</button>
+            <button class="btn-confirm" onclick="unlockHint('${chalId}')">50pt 지불 및 해금</button>
+          `;
+          modal.style.display = 'flex';
+        }
+
+        async function unlockHint(chalId) {
+          const team = document.getElementById('teamInput').value.trim() || 'Admin_RedTeam';
+          const mBody = document.getElementById('modalBody');
+          const mActions = document.getElementById('modalActions');
+          
+          try {
+            const res = await fetch('/api/ctf/hints/unlock', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({team_name: team, chal_id: chalId, hint_index: 0})
+            });
+            const data = await res.json();
+            if (!res.ok) {
+              mBody.innerHTML = `<p style="color: var(--red);">❌ 해금 실패: ${data.detail || data.message}</p>`;
+              return;
+            }
+            
+            mBody.innerHTML = `
+              <div style="background: rgba(74, 222, 128, 0.1); border-left: 3px solid var(--green); padding: 12px; margin-bottom: 12px; border-radius: 4px;">
+                <b style="color: var(--green);">🔓 ${data.status === 'already_unlocked' ? '기존 해금된 힌트' : '힌트 해금 완료 (-50pt)'}</b>
+                <div style="margin-top: 8px; font-family: monospace; font-size: 0.95rem; color: #f1f5f9; line-height: 1.4;">${data.hint}</div>
+              </div>
+              <div style="font-size: 0.85rem; color: #94a3b8;">팀 ${team} 현재 점수: <b>${data.remaining_score}</b> pt</div>
+            `;
+            mActions.innerHTML = `<button class="btn-cancel" onclick="closeHintModal()">닫기</button>`;
+            loadBoard();
+            drawTimelineChart();
+          } catch (e) {
+            mBody.innerHTML = `<p style="color: var(--red);">오류 발생: ${e.message}</p>`;
+          }
+        }
+
+        function closeHintModal() {
+          document.getElementById('hintModal').style.display = 'none';
+        }
+
         async function submitFlag() {
           const team = document.getElementById('teamInput').value;
           const chal = document.getElementById('chalInput').value;
@@ -974,6 +1146,7 @@ def ctf_home():
             resSpan.innerText = data.message;
             resSpan.style.color = data.status === 'correct' ? '#4ade80' : '#f87171';
             loadBoard();
+            loadChallenges();
             drawTimelineChart();
           } catch (e) {
             resSpan.innerText = '오류 발생: ' + e.message;
@@ -993,6 +1166,13 @@ def ctf_home():
                 showToast(`🚩 <b>FLAG SOLVE!</b> <span style="color:#38bdf8;">${ev.team}</span>님이 <b>${ev.title || ev.chal_id}</b> 해결! (+${ev.points}pt)`);
               }
               loadBoard();
+              loadChallenges();
+              drawTimelineChart();
+            });
+            es.addEventListener('hint_unlocked', (e) => {
+              const ev = JSON.parse(e.data);
+              showToast(`💡 <b>힌트 해금!</b> <span style="color:#fbbf24;">${ev.team}</span>님이 <b>${ev.chal_id}</b> 힌트 구매 (-${ev.cost}pt)`);
+              loadBoard();
               drawTimelineChart();
             });
             es.addEventListener('team_registered', (e) => {
@@ -1008,9 +1188,10 @@ def ctf_home():
         }
 
         loadBoard();
+        loadChallenges();
         drawTimelineChart();
         initSSE();
-        setInterval(loadBoard, 5000);
+        setInterval(() => { loadBoard(); loadChallenges(); }, 6000);
       </script>
     </body>
     </html>

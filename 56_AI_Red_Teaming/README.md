@@ -13,6 +13,7 @@
 | [04_adversarial_examples.md](./04_adversarial_examples.md) | **적대적 예제 (Adversarial Examples)** — 적대적 예제는 사람의 눈에는 원본과 거의 동일하게 보이지만, AI 모델은 완전히 다르게 분류하도록 정교하게 조작된 입력 데이터이다. 예를 들어 고양이 사진에 사람이 알아볼 수 없는 미... |
 | [05_ai_red_team_defense.md](./05_ai_red_team_defense.md) | **AI 레드팀 방어 (AI Red Team Defense)** — AI 레드팀 방어는 AI 시스템에 대한 공격 기법을 연구하고, 발견된 취약점을 기반으로 방어 체계를 구축하는 활동이다. 일반 소프트웨어 보안과 달리 AI는 학습 데이터, 모델 가중치,... |
 | [06_ai_red_team_ctf_lab.md](./06_ai_red_team_ctf_lab.md) | **AI 레드팀 CTF 실습 랩** — AI 보안 취약점을 CTF 형식으로 학습한다. 프롬프트 인젝션, 모델 추출, 적대적 입력 등 AI 공격 기법을 실습한다. |
+| [07_ai_red_teaming_and_guardrail_eval_deepdive.md](./07_ai_red_teaming_and_guardrail_eval_deepdive.md) | **AI 레드팀 및 가드레일 평가 실전 딥다이브 (AI Red Teaming & Guardrail Evaluation)** — AI 시스템에 대한 레드팀 평가는 전통적인 소프트웨어 침투 테스트와 근본적으로 다릅니다. 고정된 소스코드 취약점뿐만 아니라, 확률적 추론(Probabilistic Inference)과... |
 
 ## 🎯 학습 목표
 

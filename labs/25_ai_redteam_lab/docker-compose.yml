@@ -1,0 +1,10 @@
+services:
+  ai_redteam_lab:
+    build: .
+    container_name: vhack_lab25_airedteam
+    ports:
+      - "8025:8025"
+    restart: unless-stopped
+    environment:
+      - ENV=production
+      - LOG_LEVEL=info

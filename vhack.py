@@ -342,6 +342,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [30, 66, 74],
     },
+    "25": {
+        "name": "AI 레드팀 & 탈옥 방어 실전 랩",
+        "dir":  "25_ai_redteam_lab",
+        "desc": "AIRedGuard: 간접 프롬프트 주입(IPI) RAG 오염 · BPE 토큰 분할 가드레일 우회 · MCP 악성 도구 섀도잉 격리 샌드박스",
+        "url":  "웹 콘솔 & AI 레드팀 대시보드: http://localhost:8025",
+        "difficulty": "★★★★",
+        "related": [11, 56, 73],
+    },
 }
 
 

@@ -126,6 +126,7 @@ const NOT_PLANTED = {
   t3_wasmxss: 'asks for a client-side injection acronym; DOM sink manipulation is a concept, not this page',
   t1_wasmimport: 'asks for an external reference type keyword; DOM reference handling is a concept, not this page',
   t4_fuzzing_browser_dom_fuzzing: 'asks for a browser DOM fuzzing concept; DOM tree mutation is a parser concept, not this page',
+  t1_airedteam_indirect_injection: 'asks for an indirect prompt injection concept; 외부 데이터 소스 주입 시나리오 개념 질문, not this page',
 };
 
 const aBad = [], aRows = [];
