@@ -72,3 +72,18 @@ def test_lab_solve(client):
     assert "Frida" in data["name"]
     assert "FLAG{" in data["output"]
 
+
+def test_lab_exec_blocked_dangerous_command(client):
+    res = client.post("/api/labs/01/exec", json={"command": "rm -rf /"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "blocked"
+    assert "위험한 시스템 파괴 명령어" in data["output"]
+
+
+def test_lab_logs_bounded_tail(client):
+    res = client.get("/api/labs/01/logs?tail=99999")
+    assert res.status_code == 200
+    data = res.json()
+    assert "logs" in data
+

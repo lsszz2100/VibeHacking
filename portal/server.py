@@ -84,7 +84,7 @@ def get_system_status():
 
 @app.get("/api/labs")
 def list_labs():
-    """20개 전체 실습 랩의 최신 상태 및 메타데이터 반환"""
+    """23개 전체 실습 랩의 최신 상태 및 메타데이터 반환"""
     result = []
     for lid, meta in sorted(LABS.items()):
         port = get_lab_port(lid)
@@ -180,18 +180,22 @@ def test_lab(lab_id: str):
 
 @app.get("/api/labs/{lab_id}/logs")
 def get_lab_logs(lab_id: str, tail: int = 100):
-    """랩 Docker 컨테이너 실시간 로그 반환"""
+    """랩 Docker 컨테이너 실시간 로그 반환 (최대 1000줄 제한)"""
     if lab_id not in LABS:
         raise HTTPException(status_code=404, detail="Lab ID not found")
     meta = LABS[lab_id]
-    target_dir = LABS_DIR / meta["dir"]
+    target_dir = (LABS_DIR / meta["dir"]).resolve()
+    if not target_dir.is_relative_to(LABS_DIR.resolve()) or not target_dir.exists():
+        raise HTTPException(status_code=400, detail="Invalid lab directory")
+
     compose_file = target_dir / "docker-compose.yml"
     if not compose_file.exists():
         return {
             "status": "simulated",
             "logs": f"[INFO] Lab {lab_id} runs in standalone mode or without compose.\n[LOG] Service initialized.\n[LOG] Ready for interactive testing."
         }
-    cmd = ["docker", "compose", "logs", f"--tail={tail}"]
+    safe_tail = max(1, min(int(tail), 1000))
+    cmd = ["docker", "compose", "logs", f"--tail={safe_tail}"]
     try:
         proc = subprocess.run(cmd, cwd=str(target_dir), capture_output=True, text=True, timeout=10)
         logs = proc.stdout or proc.stderr or "[No logs available yet]"
@@ -204,9 +208,15 @@ class ExecRequest(BaseModel):
     command: str
 
 
+DANGEROUS_PATTERNS = [
+    "rm -rf /", "rm -rf /*", "mkfs", ":(){ :|:& };:",
+    "> /dev/sd", "> /dev/nvme", "dd if=/dev/zero",
+]
+
+
 @app.post("/api/labs/{lab_id}/exec")
 def exec_in_lab(lab_id: str, req: ExecRequest):
-    """랩 환경 또는 컨테이너 내부 셸 명령 실행 (Web Console)"""
+    """랩 환경 또는 컨테이너 내부 셸 명령 실행 (Web Console - 보안 필터 적용)"""
     if lab_id not in LABS:
         raise HTTPException(status_code=404, detail="Lab ID not found")
     
@@ -215,7 +225,18 @@ def exec_in_lab(lab_id: str, req: ExecRequest):
         return {"status": "empty", "output": ""}
         
     meta = LABS[lab_id]
-    target_dir = LABS_DIR / meta["dir"]
+    target_dir = (LABS_DIR / meta["dir"]).resolve()
+    if not target_dir.is_relative_to(LABS_DIR.resolve()) or not target_dir.exists():
+        raise HTTPException(status_code=400, detail="Invalid lab directory path")
+
+    # 호스트 파괴 명령어 차단
+    for danger in DANGEROUS_PATTERNS:
+        if danger in cmd_str:
+            return {
+                "status": "blocked",
+                "exit_code": 1,
+                "output": f"[SECURITY ERROR] 위험한 시스템 파괴 명령어가 차단되었습니다: {danger}"
+            }
     
     try:
         proc = subprocess.run(cmd_str, shell=True, cwd=str(target_dir), capture_output=True, text=True, timeout=10)
@@ -234,9 +255,10 @@ def exec_in_lab(lab_id: str, req: ExecRequest):
 @app.get("/api/labs/{lab_id}/solve")
 def get_lab_solution(lab_id: str, step: int = 1):
     """실습 랩 PoC 공격 및 방어 솔루션 반환"""
+    safe_step = max(1, min(int(step), 10))
     try:
         from labs.solvers import run_lab_solve_step
-        res = run_lab_solve_step(lab_id, step)
+        res = run_lab_solve_step(lab_id, safe_step)
         if not res["success"]:
             raise HTTPException(status_code=404, detail="Lab solver not found")
         return res

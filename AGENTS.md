@@ -49,7 +49,7 @@
   - `vhack wargame`: 내장 웹서버 구동 및 브라우저 자동 실행 (또는 `--cli` 터미널 모드)
   - `vhack lab test [--all | <lab_id>]`: 23개 실습 랩 자동 무결성 검증 (164개 테스트 All Green)
   - `vhack lab status`: 23개 랩 종합 상태 대시보드
-- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~23, `vhack doctor`, Pytest 전체 171개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
+- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~23, `vhack doctor`, Pytest 전체 186개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
 
 ---
 
@@ -88,7 +88,7 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (171개 테스트 전원 통과: Labs 01~23, Portal, CTF, Wargame CLI)
+# 1. 전체 단위/통합 테스트 (186개 테스트 전원 통과: Labs 01~23, Solvers, Portal, CTF, Wargame CLI)
 pytest -q
 
 # 2. 실습 랩 CLI 자동 무결성 검증 (23개 랩 164개 테스트 통과)
@@ -96,7 +96,7 @@ python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
 
-# 3. 환경 진단 검사 (8개 영역 100% 정상 확인)
+# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 23개 랩 포트 충돌 검사 완비)
 vhack doctor
 
 # 4. 오프라인 패키징 및 무결성 전수 검사
@@ -108,7 +108,7 @@ vhack setup-docker --dry-run
 # 6. 75개 챕터 웹 리더 포털 실행
 vhack docs
 
-# 7. 통합 웹 관제 대시보드 실행
+# 7. 통합 웹 관제 대시보드 실행 (127.0.0.1 기본 안전 바인딩)
 vhack portal
 
 # 8. 모의해킹 대회 스코어보드 & Dynamic Scoring 채점 엔진 실행
@@ -137,19 +137,35 @@ node wargame/scripts/solve-derivable.js
 1. **민감 인증정보 보호**: Git 작업 시 토큰, 패스워드, SSH 개인키를 명령어 인자나 커밋 메시지, 코드에 절대 포함하지 마십시오. (`~/.netrc` 또는 git credential helper 사용)
 2. **양방향 링크 무결성**: 교재 챕터(`06_*_lab.md`), `labs/README.md`, 각 랩의 `README.md` 간의 상대 링크와 워게임 트랙 표기가 항상 동기화되도록 유지하십시오.
 3. **독립 테스트 환경 격리**: 실습 랩 테스트 작성 시 FastAPI 및 패키지 임포트 스코프 충돌을 방지하기 위해 dynamic import isolation 패턴을 준수하십시오.
+4. **로컬 서비스 보안 바인딩**: 개발/관리 웹 서버(`portal`, `ctf`)는 RCE 위험을 차단하기 위해 기본적으로 루프백 인터페이스(`127.0.0.1`)에 바인딩하며, 웹 셸 실행 시 경로 이탈(Path Traversal) 검증 및 파괴적 시스템 명령어 방어 필터를 필수로 적용합니다.
 
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
 
-- **2026-09-22 (Lab 23 SOCHunter, SOC Threat Hunting Deepdive Ingestion, Wargame Track 37 sochunt 1,295 Milestone, 171 Tests All Green)**:
-  - **Lab 23 SOC 위협 헌팅 & SIEM 랩 신규 구축 (`labs/23_soc_threat_hunting_lab/`)**: Sysmon Event ID 8(CreateRemoteThread) 기반 메모리 인젝션 및 난독화 PowerShell 실행 탐지, Suricata NIDS 시그니처 룰셋 작성(C2 JA3 및 DNS 터널링 엔트로피 탐지), Splunk SPL / Sentinel KQL 기반 다단계 APT 래터럴 무브먼트 헌팅 쿼리 및 SOAR 자동 호스트 격리 플레이북, 7개 단위 테스트 전원 통과 (포트 8023)
+- **2026-09-22 (전체 기능 교차검증·보안 강화 및 186개 테스트 All Green 달성)**:
+  - **보안 취약점 방어 및 포털 하드닝**:
+    - `vhack portal` 및 `vhack ctf`: 외부 비인가 원격 명령 실행을 방지하기 위해 기본 호스트 바인딩을 `0.0.0.0`에서 안전한 루프백 `127.0.0.1`로 전환하고, CLI `--host` 인자 옵션 지원.
+    - `portal/server.py`: 웹 콘솔 명령 실행(`exec_in_lab`) 시 `target_dir`의 Path Traversal 검증(`is_relative_to`) 및 시스템 파괴 명령어(`rm -rf /`, `mkfs` 등) 원천 차단 보안 필터 탑재.
+    - 로그 스트리밍(`get_lab_logs`) 줄 수(`tail`) 및 솔루션 스텝(`step`) 안전 범위 경계값 제한 적용.
+    - `portal/static/index.html`: UI 상의 랩 카운트(20 -> 23) 불일치 전면 수정.
+  - **설정 및 테스트 스위트 불일치 해결**:
+    - `pyproject.toml`: 설명 내 랩/문제 수(15 Labs, 1050 Wargame -> 23 Labs, 1295 Wargame) 동기화 및 `testpaths`에 `portal`, `ctf`, `wargame` 추가로 186개 전체 하위 시스템 통합 테스트 파이프라인 완성.
+    - `wargame/tests/test_cli.py`: 신규 트랙 `sochunt` 반영에 따른 37개 트랙 및 플래그 검증 단언(assertion) 동기화.
+    - `vhack doctor`: Lab 06 (8062), Lab 07 (8072), Lab 09 (5020) 포트 점유 검사 추가로 23개 포트 정밀 진단 완비.
+  - **전체 검증 스위트 100% 통과**:
+    - `pytest -q`: **186 passed** (Labs 01~23 164개 + solvers 4개 + portal 8개 + ctf 6개 + wargame cli 4개)
+    - `vhack lab test --all`: 23개 실습 랩 164개 테스트 All Green
+    - 워게임 4대 스위트: `verify.js` (1295제), `audit.js --strict` ([A]~[J] 0결함), `leakscan.js` (0 leaks), `solve-derivable.js` (328/1295) 전원 통과
+    - `bundle_offline.py --check-only`: 4대 하위 시스템 100% clean and offline-ready.
+
+- **2026-09-22 (Lab 23 SOCHunter, SOC Threat Hunting Deepdive Ingestion, Wargame Track 37 sochunt 1,295 Milestone)**:
+  - **Lab 23 SOC 위협 헌팅 & SIEM 랩 신규 구축 (`labs/23_soc_threat_hunting_lab/`)**: Sysmon Event ID 8(CreateRemoteThread) 기반 메모리 인젝션 및 난독화 PowerShell 실행 탐지, Suricata NIDS 시그니처 룰셋 작성, Splunk SPL / Sentinel KQL 기반 다단계 APT 래터럴 무브먼트 헌팅 쿼리 및 SOAR 자동 호스트 격리 플레이북, 7개 단위 테스트 전원 통과 (포트 8023)
   - **23개 랩 익스플로잇 솔버 완성 (`labs/solvers.py`)**: Lab 23 Sysmon/Suricata/SIEM 단계별 자동 분석 및 플래그 획득 솔버 연동 (`vhack solve 23 [--step 1|2|3]`) 및 단위 테스트 통과
   - **대용량 미분류 자료 인제스천 (SOC & DFIR 위협 헌팅 심층 분석)**:
     - `44_Incident_Response_DFIR/07_soc_siem_threat_hunting_deepdive.md` (3계층 SOC 운영 아키텍처, Sysmon EID 1/3/8/10/11 텔레메트리 파이프라인, Suricata 7 고성능 룰셋 최적화, Splunk SPL vs Microsoft Sentinel KQL 실전 헌팅 쿼리, SOAR 자동 격리 워크플로우)
     - `tools/sync_section_readmes.py` 전 섹션 인덱스 동기화 완료
   - **워게임 37번째 트랙 (`sochunt`) 확장 및 1,295문제 마일스톤**: SOC 분석, EDR 원격 스레드 탐지, Zeek/Suricata NIDS, Splunk/KQL 상관분석, Kerberoasting/Golden Ticket 이상 징후 추적을 포괄하는 35개 문제 추가로 1,260제 → 1,295제 확장 완료, 4대 엄격 무결성 검증 (`verify.js`, `audit.js --strict`, `leakscan.js`, `solve-derivable.js` 328/1295) 전원 0결함 완벽 통과
-  - **전체 171개 테스트 100% 통과**: `pytest -q` (Labs 01~23 164개 테스트 + solvers 4개 + portal 6개 + ctf 6개 + wargame cli 4개 등 171개 ALL GREEN) 및 `bundle_offline.py --check-only` 무결성 검증 완료
 
 - **2026-09-21 (Lab 22 APIGuard, Deepdive Corelan Exploit Ingestion, Wargame Track 36 apisec 1,260 Milestone, CLI DX Logs & Modal ESC, 164 Tests All Green)**:
   - **Lab 22 API 보안 & 현대적 인증 랩 신규 구축 (`labs/22_api_security_lab/`)**: REST BOLA/IDOR 취약점을 통한 타 고객 주문 데이터 유출, BFLA(Broken Function Level Authorization) 헤더 조작 관리자 함수 탈취, GraphQL Introspection 시스템 시크릿 열람, JWT `alg: none` 서명 검증 우회 임의 토큰 위조, 실시간 사이버 API 관제 대시보드 탑재, 7개 단위 테스트 전원 통과 (포트 8022)

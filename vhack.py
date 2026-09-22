@@ -1312,8 +1312,11 @@ def cmd_doctor(args: argparse.Namespace) -> None:
     lab_ports = [
         (8080, "Lab 01 (DVWA/SQLi)"),
         (8040, "Lab 04 (SSRF)"),
+        (8062, "Lab 06 (Firmware Web Panel)"),
+        (8072, "Lab 07 (Mobile Vulnerable API)"),
         (8088, "Lab 08 (LLM)"),
         (8089, "Lab 09 (ICS Web)"),
+        (5020, "Lab 09 (Modbus TCP)"),
         (8090, "Lab 10 (K8s Web)"),
         (8011, "Lab 11 (AD Kerberos)"),
         (8012, "Lab 12 (CI/CD)"),
@@ -1682,13 +1685,15 @@ def cmd_docs(args: argparse.Namespace) -> None:
 
 # ── 명령어: portal ──────────────────────────────────────────────────────────
 def cmd_portal(args: argparse.Namespace) -> None:
-    """통합 웹 관제 대시보드 로컬 서버 실행 (20개 랩 On/Off 제어, 진단, 웹 리더/워게임 연계)"""
+    """통합 웹 관제 대시보드 로컬 서버 실행 (23개 랩 On/Off 제어, 진단, 웹 리더/워게임 연계)"""
     import uvicorn
+    host = getattr(args, "host", "127.0.0.1")
     port = args.port
-    url = f"http://localhost:{port}"
+    display_host = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
+    url = f"http://{display_host}:{port}"
     print(bold(cyan("\n🌐 VibeHacking 통합 웹 관제 대시보드 (Portal)")))
-    print(dim(f"  20개 실습 랩 상태 확인, 원클릭 시작/중지 및 통합 관제 포털"))
-    print(f"  접속 주소: {bold(green(url))}")
+    print(dim(f"  23개 실습 랩 상태 확인, 원클릭 시작/중지 및 통합 관제 포털"))
+    print(f"  접속 주소: {bold(green(url))} (바인딩: {host})")
     print(dim("  종료하려면 Ctrl+C를 누르세요.\n"))
 
     if not args.no_browser:
@@ -1699,18 +1704,20 @@ def cmd_portal(args: argparse.Namespace) -> None:
             pass
 
     from portal.server import app as portal_app
-    uvicorn.run(portal_app, host="0.0.0.0", port=port, log_level="warning")
+    uvicorn.run(portal_app, host=host, port=port, log_level="warning")
 
 
 # ── 명령어: ctf ────────────────────────────────────────────────────────────
 def cmd_ctf(args: argparse.Namespace) -> None:
     """로컬 모의해킹 대회 (CTF) 스코어보드 & 채점 엔진 로컬 서버 실행"""
     import uvicorn
+    host = getattr(args, "host", "127.0.0.1")
     port = args.port
-    url = f"http://localhost:{port}"
+    display_host = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
+    url = f"http://{display_host}:{port}"
     print(bold(cyan("\n🏆 VibeHacking CTF Arena & Scoreboard Engine")))
     print(dim(f"  실전 랩 기반 플래그 채점, Dynamic Scoring, First Blood 및 실시간 순위표"))
-    print(f"  접속 주소: {bold(green(url))}")
+    print(f"  접속 주소: {bold(green(url))} (바인딩: {host})")
     print(dim("  종료하려면 Ctrl+C를 누르세요.\n"))
 
     if not args.no_browser:
@@ -1721,7 +1728,7 @@ def cmd_ctf(args: argparse.Namespace) -> None:
             pass
 
     from ctf.server import app as ctf_app
-    uvicorn.run(ctf_app, host="0.0.0.0", port=port, log_level="warning")
+    uvicorn.run(ctf_app, host=host, port=port, log_level="warning")
 
 
 
@@ -1845,11 +1852,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     # portal
     p_portal = sub.add_parser("portal", help="통합 웹 관제 대시보드 (23개 랩 제어, 진단, 웹 리더 연계)")
+    p_portal.add_argument("--host", default="127.0.0.1", help="바인딩 호스트 IP (기본값: 127.0.0.1 - 보안 권장)")
     p_portal.add_argument("--port", type=int, default=8800, help="웹 서버 포트 (기본값: 8800)")
     p_portal.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
 
     # ctf
     p_ctf = sub.add_parser("ctf", help="모의해킹 대회 (CTF) 스코어보드 & 플래그 채점 서버 실행")
+    p_ctf.add_argument("--host", default="127.0.0.1", help="바인딩 호스트 IP (기본값: 127.0.0.1 - 보안 권장)")
     p_ctf.add_argument("--port", type=int, default=8888, help="웹 서버 포트 (기본값: 8888)")
     p_ctf.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 비활성화")
 

@@ -26,10 +26,11 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 36
+    assert len(tracks) == 37
     assert len(challenges) == 1295
     assert any(t["id"] == "carcan" for t in tracks)
     assert any(t["id"] == "apisec" for t in tracks)
+    assert any(t["id"] == "sochunt" for t in tracks)
 
 
 def test_verify_flag_logic():
@@ -51,6 +52,13 @@ def test_verify_flag_logic():
     h20_api = hashlib.sha256(ident_api.encode("utf-8")).hexdigest()[:20]
     flag_api = f"FLAG{{{h20_api}}}"
     assert verify_flag(ch_api, flag_api) is True
+
+    # Test sochunt first challenge
+    ch_soc = next(c for c in challenges if c["id"] == "t0_sochunt_soc_tiers")
+    ident_soc = "sochunt_soc_tiers_v1"
+    h20_soc = hashlib.sha256(ident_soc.encode("utf-8")).hexdigest()[:20]
+    flag_soc = f"FLAG{{{h20_soc}}}"
+    assert verify_flag(ch_soc, flag_soc) is True
     assert verify_flag(ch, "") is False
 
 
