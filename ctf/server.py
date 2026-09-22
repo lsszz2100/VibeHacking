@@ -38,8 +38,8 @@ def compute_dynamic_score(
 class CTFState:
     def __init__(self):
         self.teams: Dict[str, dict] = {
-            "Admin_RedTeam": {"name": "Admin_RedTeam", "score": 0, "solves": [], "first_bloods": [], "last_solve": 0},
-            "BlueGuardians": {"name": "BlueGuardians", "score": 0, "solves": [], "first_bloods": [], "last_solve": 0},
+            "Admin_RedTeam": {"name": "Admin_RedTeam", "score": 0, "solves": [], "first_bloods": [], "last_solve": 0, "unlocked_hints": {}},
+            "BlueGuardians": {"name": "BlueGuardians", "score": 0, "solves": [], "first_bloods": [], "last_solve": 0, "unlocked_hints": {}},
         }
         self.challenges: Dict[str, dict] = {
             "LAB01_SQLI": {
@@ -348,6 +348,42 @@ class CTFState:
                 "solves": [],
                 "first_blood": None,
             },
+            "LAB24_FUZZ": {
+                "id": "LAB24_FUZZ",
+                "title": "FuzzMaster: AFL++ Coverage Crash Trigger",
+                "category": "pwn",
+                "initial_points": 500,
+                "flag": "FLAG{afl_coverage_guided_crash_triggered_4918}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "타깃 바이너리의 매직 헤더는 'FUZZ'(0x46555a5a)이며, 0xdeadbeef 패턴으로 댕글링 포인터를 트리거합니다."}
+                ],
+            },
+            "LAB24_ASAN": {
+                "id": "LAB24_ASAN",
+                "title": "FuzzMaster: ASAN Heap-UAF Shadow Memory Triage",
+                "category": "pwn",
+                "initial_points": 500,
+                "flag": "FLAG{asan_heap_uaf_shadow_memory_decoded_8372}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "ASAN 덤프에서 0xfd 섀도우 바이트와 free_session_chunk 호출 스택의 0x603000000040 주소를 분석하세요."}
+                ],
+            },
+            "LAB24_TRIAGE": {
+                "id": "LAB24_TRIAGE",
+                "title": "FuzzMaster: CWE-416 PoC Synthesis & Patch Verification",
+                "category": "pwn",
+                "initial_points": 500,
+                "flag": "FLAG{crash_triage_cwe416_poc_reproduced_patch_verified_1054}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "취약점 분류는 CWE-416(Use-After-Free)이며, chunk->data = NULL; 패치로 댕글링 포인터를 무력화합니다."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -394,6 +430,12 @@ class FlagSubmitRequest(BaseModel):
     flag: str
 
 
+class HintUnlockRequest(BaseModel):
+    team_name: str
+    chal_id: str
+    hint_index: int = 0
+
+
 @app.get("/api/ctf/challenges")
 def get_challenges():
     """모의해킹 대회 문제 목록 및 현재 실시간 배점 반환"""
@@ -407,6 +449,7 @@ def get_challenges():
             "current_points": state.get_points(cid),
             "solves_count": len(c["solves"]),
             "first_blood": c["first_blood"],
+            "hints_count": len(c.get("hints", [])),
         })
     return {"challenges": data}
 
@@ -448,6 +491,7 @@ def get_team_profile(team_name: str):
         "solves_count": len(team["solves"]),
         "first_blood_count": len(team.get("first_bloods", [])),
         "solves": details,
+        "unlocked_hints": team.get("unlocked_hints", {}),
     }
 
 
@@ -511,7 +555,7 @@ def register_team(req: TeamRegisterRequest):
     if name in state.teams:
         return {"status": "exists", "message": "Team already registered", "team": name}
     now = int(time.time())
-    state.teams[name] = {"name": name, "score": 0, "solves": [], "first_bloods": [], "last_solve": 0}
+    state.teams[name] = {"name": name, "score": 0, "solves": [], "first_bloods": [], "last_solve": 0, "unlocked_hints": {}}
     state.score_timeline.append({"time": now, "team": name, "score": 0, "chal_id": "REGISTER"})
     state.broadcast_event({"type": "team_registered", "team": name, "time": now})
     return {"status": "registered", "team": name}
@@ -604,6 +648,69 @@ def submit_flag(req: FlagSubmitRequest):
         "first_blood": is_first_blood,
         "first_blood_bonus": first_blood_bonus,
         "total_score": team["score"],
+    }
+
+
+@app.post("/api/ctf/hints/unlock")
+def unlock_hint(req: HintUnlockRequest):
+    """CTF 힌트 구매 및 점수 차감 시스템"""
+    tname = req.team_name.strip()
+    if tname not in state.teams:
+        raise HTTPException(status_code=404, detail="Team not found. Please register first.")
+    
+    chal = state.challenges.get(req.chal_id)
+    if not chal:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+        
+    hints = chal.get("hints", [])
+    if not hints or req.hint_index < 0 or req.hint_index >= len(hints):
+        raise HTTPException(status_code=404, detail="Hint not available for this challenge")
+        
+    team = state.teams[tname]
+    team.setdefault("unlocked_hints", {})
+    team["unlocked_hints"].setdefault(req.chal_id, [])
+    
+    target_hint = hints[req.hint_index]
+    
+    if req.hint_index in team["unlocked_hints"][req.chal_id]:
+        return {
+            "status": "already_unlocked",
+            "message": "Hint already unlocked",
+            "hint": target_hint["text"],
+            "cost": 0,
+            "remaining_score": team["score"],
+        }
+        
+    cost = target_hint.get("cost", 50)
+    team["score"] = max(0, team["score"] - cost)
+    team["unlocked_hints"][req.chal_id].append(req.hint_index)
+    now = int(time.time())
+    
+    # Record penalty in timeline
+    state.score_timeline.append({
+        "time": now,
+        "team": tname,
+        "score": team["score"],
+        "chal_id": f"HINT_{req.chal_id}_{req.hint_index}",
+        "cost": cost,
+    })
+    
+    state.broadcast_event({
+        "type": "hint_unlocked",
+        "team": tname,
+        "chal_id": req.chal_id,
+        "hint_index": req.hint_index,
+        "cost": cost,
+        "score": team["score"],
+        "time": now,
+    })
+    
+    return {
+        "status": "unlocked",
+        "message": f"Hint unlocked! Deducted {cost} points.",
+        "hint": target_hint["text"],
+        "cost": cost,
+        "remaining_score": team["score"],
     }
 
 

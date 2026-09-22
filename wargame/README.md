@@ -67,11 +67,11 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 
 | 계층 / node | 티어 / tier | 문제 / count | 통과 / breach |
 |------|:---:|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 129 | 42% |
-| `webserver` 웹서버 | **1** | 231 | 60% |
-| `internal` 내부망 | **2** | 310 | 60% |
-| `vault` 금고 | **3** | 319 | 58% |
-| `core` 코어 | **4** | 306 | 72% |
+| `perimeter` 외곽 | **0** | 131 | 42% |
+| `webserver` 웹서버 | **1** | 237 | 60% |
+| `internal` 내부망 | **2** | 322 | 60% |
+| `vault` 금고 | **3** | 329 | 58% |
+| `core` 코어 | **4** | 311 | 71% |
 
 
 <details>
@@ -118,6 +118,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `carcan` 🚗 차량 보안·CAN Bus (2) | CAN 버스 11비트 우선순위 판정자·SAE J1962 16핀 진단 커넥터 규격 / CAN 11-bit message collision resolution and SAE J1962 16-pin diagnostic connector interface |
 | `apisec` 🌐 API 보안 (2) | 웹 프로토콜 기본 요청 메서드·계층형 데이터 교환 직렬화 포맷 / standard web protocol request verbs, hierarchical data interchange format |
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (2) | 관제 조직 티어별 역할 분석·시스템 모니터 텔레메트리 식별 체계 / operational watch tier architecture and system telemetry monitor schema |
+| `fuzzing` ⚡ 퍼징·취약점 발굴 (2) | 커버리지 기반 퍼징 피드백 루프 구조·새니타이저 섀도우 메모리 1:8 변환 메커니즘 / coverage-guided feedback loop architecture and shadow memory translation schema |
 
 
 #### `webserver` 웹서버 — 티어 1 / tier 1
@@ -161,6 +162,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `carcan` 🚗 차량 보안·CAN Bus (6) | 프레임 데이터 길이 코드·실시간 트래픽 스니퍼·반복 송출 공격 도구·수동 프레임 주입·고우선순위 플러딩 DoS·가상 소켓 인터페이스 드라이버 / data length code, real-time traffic sniffer, repeated transmission utility, manual frame injection, high-priority flooding DoS, and virtual socket interface driver |
 | `apisec` 🌐 API 보안 (6) | 토큰 인증 요청 규격·정적 키 전달 방식·교차 출처 자원 공유 정책·단위 시간당 요청 제한·객체 자동 속성 바인딩·기계 판독형 엔드포인트 명세 / token authorization standard, static key transmission, cross-origin resource sharing, rate limiting per time unit, automatic property binding, machine-readable endpoint specifications |
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (6) | NIDS 경보 포맷·보안 이벤트 4624·CIM 데이터 모델 정규화·ATT&CK 기법 분류·침해사고 대응 수명주기·부모 프로세스 비정상 계층 / NIDS alert formats, Security 4624 logons, CIM normalization, ATT&CK mapping, incident response lifecycle, and parent process anomalies |
+| `fuzzing` ⚡ 퍼징·취약점 발굴 (6) | 초기 코퍼스 품질과 엣지 탐색 가속·인프로세스 하네스 구조·비트 단위 변이 전략·하드웨어 분기 추적 기술·메모리 오류 시그널 분류·비교 분기 매직 해결 계측 / initial corpus quality, in-process harness interface, mutation strategies, hardware branch tracing, crash signal taxonomy, comparison bypass instrumentation |
 
 
 #### `internal` 내부망 — 티어 2 / tier 2
@@ -204,6 +206,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `carcan` 🚗 차량 보안·CAN Bus (12) | 차속 진단 질의·엔진 회전수 공식 연산·확장 진단 세션 전환·시큐리티 액세스 난수 챌린지 요청·인증키 대칭 상수 복원·흐름 제어 프레임 규격·첫 프레임 길이 디코딩·차대번호 식별자 획득·캘리브레이션 파라미터 변조·구동기 점검 루틴 조작·데이터베이스 비트마스크 신호 추출·생존 카운터 체크섬 재계산 / vehicle speed diagnostic query, engine RPM calculation, extended session transition, security access pseudorandom challenge request, access key symmetric constant recovery, flow control frame, first frame length decoding, VIN identifier retrieval, parameter tampering, mechanical driver test routine manipulation, database signal extraction, alive counter and checksum recalculation |
 | `apisec` 🌐 API 보안 (12) | 객체 참조 번호 변조·기능 권한 헤더 조작·타입 메타 질의 분석·순환 참조 깊이 부하·서명 알고리즘 부재 처리·토큰 관리자 역할 변조·배열 묶음 질의 악용·인가 코드 전달 주소 위조·웹훅 내부 주소 조회·미사용 구버전 경로·약한 대칭 비밀키 탐색·무제한 목록 조회 부하 / resource identifier tampering, function permission header manipulation, type schema discovery, circular reference depth strain, unsigned algorithm handling, token role modification, batch query array abuse, authorization code redirect address spoofing, webhook internal address query, unretired legacy endpoints, weak symmetric key recovery, unbounded list query overhead |
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (12) | DNS 터널링 무작위성·TLS 핸드셰이크 지문 분석·LOLBins 다운로드 탐지·LSASS 메모리 접근 마스크·Logon Type 9 인증 추적·포맷 독립적 탐지 규칙 문법·원격 스레드 주입 분석·주기적 신호 통계 분석·SPL 파이프라인 쿼리·KQL 횡적 이동 헌팅·프로토콜 분석 데몬 상태 플래그·인증 패키지 덤프 탐지 / DNS tunneling randomness, TLS handshake fingerprinting, LOLBins download hunting, LSASS access masks, Logon Type 9 tracking, vendor-agnostic detection rules, remote thread injection analysis, periodic check-in signals, SPL pipeline queries, KQL lateral movement hunting, network metadata daemon connection flags, credential package dump detection |
+| `fuzzing` ⚡ 퍼징·취약점 발굴 (12) | 힙 해제 후 재참조 섀도우 값·스택 프레임 보호 레드존·전역 변수 경계 침범·부분 바이트 접근 인코딩·공유 메모리 비트맵 전이 추적·분기 실행 횟수 지수 버킷·바이너리 동적 변환 모드·동적 계측 엔진 연동·스택 트레이스 프레임 해싱·오류 복구 지속 실행 모드·미정의 동작 탐지·초기화되지 않은 메모리 읽기 / freed allocation shadow markers, stack frame redzones, global buffer bounds, partial allocation bytes, shared memory edge bitmaps, exponential counter bucketing, binary dynamic translation, dynamic instrumentation engines, stack trace frame deduplication, sanitizer recovery execution, undefined behavior checks, uninitialized memory read tracking |
 
 
 #### `vault` 금고 — 티어 3 / tier 3
@@ -247,6 +250,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `carcan` 🚗 차량 보안·CAN Bus (10) | 전송 에러 카운터 증가를 통한 제어기 버스오프 고립·스터핑 규칙 위반 능동 에러 유발·파워트레인 강제 리셋 DoS·플래시 메모리 다운로드 요청·변조 롬 블록 순차 전송·전송 종결 체크섬 인가·중앙 중계 제어기 라우팅 터널 우회·이더넷 서비스 디스커버리 조작·IP 기반 진단 캡슐화 패킷 가로채기·차량 보안 통신 시간 유효성 값 분석 / controller bus-off isolation via transmit error counter, bit stuffing active error injection, powertrain hard reset DoS, flash download request, modified ROM block sequential transfer, transfer exit validation, central routing controller tunnel bypass, Ethernet service discovery manipulation, IP-based diagnostic packet interception, and onboard communication message recency counter analysis |
 | `apisec` 🌐 API 보안 (10) | 원격 키 세트 주소 변조·공개키 기반 대칭 서명 혼동·키 식별 경로 탐색 조작·중복 필드 연산 부하·코드 검증 다운그레이드·역방향 프록시 요청 은닉·원격 프로시저 스키마 반사·양방향 통신 세션 가로채기·조건부 처리 지시어 우회·클라이언트 바인딩 미흡 토큰 재사용 / remote key set address manipulation, public key symmetric confusion, key identifier path traversal, repeated field computation overhead, code verification downgrade, reverse intermediary request concealment, remote procedure schema reflection, bidirectional session interception, conditional directive bypass, unbound token reuse |
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (10) | 자동화 오케스트레이션 대응 플레이북·프로세스 언매핑과 이벤트 추적 대응·Overpass-the-Hash 티켓 변환·DGA 알고리즘 클러스터링·취약 드라이버 남용 헌팅·에코 질의 은닉 터널 데이터 유출·서비스 계정 티켓 추출·YARA-L 멀티 이벤트 상관분석·단말 감시 침묵 공격 탐지·서버 응답 지문 클러스터링 / automated orchestrated containment playbooks, process unmapping and event tracing defense, Overpass-the-Hash ticket requests, DGA clustering, vulnerable driver abuse hunting, covert echo query tunnel exfiltration, service account ticket harvesting, YARA-L multi-event correlation, endpoint sensor silencing detection, server response fingerprint clustering |
+| `fuzzing` ⚡ 퍼징·취약점 발굴 (10) | 입력값 테스트케이스 크기 최소화·객체 생명주기 결함 트리아지·인접 힙 청크 손상 분석·결정적 재현 익스플로잇 합성·지속적 통합 분산 퍼징 체계·자동 이진 탐색 회귀 분석·문맥 자유 문법 기반 생성·다중 엔진 차분 비교·댕글링 참조 결함 중화·제어 흐름 실행 가드 / testcase minimization, temporal allocation lifecycles, adjacent heap chunk corruption, deterministic reproduction synthesis, continuous fuzzing architecture, automated regression bisection, context-free grammar generation, differential engine comparison, dangling reference neutralization, control flow guard defense |
 
 
 #### `core` 코어 — 티어 4 / tier 4
@@ -290,12 +294,13 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `carcan` 🚗 차량 보안·CAN Bus (5) | 텔레매틱스 제어기 침투 및 내부 버스 망 전이·모토로라 S19 펌웨어 역공학·전방 감지 센서 신호 조작 긴급 제동 유발·무선 업데이트 클라이언트 위변조 검증 공격·네트워크 엔트로피 기반 차량 내부 침입 탐지 / telematics control unit intrusion and internal bus traversal, Motorola S19 firmware reversing, forward sensor signal spoofing phantom braking, wireless update authenticity verification tampering, and in-vehicle network IDS defense |
 | `apisec` 🌐 API 보안 (5) | 리졸버 템플릿 코드 주입·연합 서브그래프 라우터 위장·경계 라우팅 경로 정규화 차이 우회·서비스 메시 상호 인증·풀체인 다계층 침투 캡스톤 / resolver template injection, federated subgraph router impersonation, edge routing path normalization discrepancy, service mesh mutual authentication, full-chain multi-layer intrusion capstone |
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (5) | Golden Ticket 위조 헌팅·Shadow Admin 계정 탐지·클라우드 감사 로그 피벗 추적·제로 트러스트 관제 파이프라인·위협 헌팅 풀체인 캡스톤 / Golden Ticket forgery hunting, Shadow Admin account detection, cloud audit log pivot tracking, zero-trust monitoring pipelines, threat hunting full-chain capstone |
+| `fuzzing` ⚡ 퍼징·취약점 발굴 (5) | 커널 시스템콜 인터페이스 퍼징·브라우저 엔진 중간 표현식 변이·스마트 컨트랙트 불변성 검증·기호 실행 결합 하이브리드 탐색·엔터프라이즈 취약점 발굴 및 책임 공개 / kernel system call fuzzing, browser engine intermediate representation mutation, smart contract invariant testing, hybrid symbolic constraint solving, enterprise vulnerability research lifecycle |
 
 </details>
 
-총 **1295문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35 · 문서형 악성코드·PDF 포렌식 35 · 메모리 포렌식·Volatility 35 · AI 에이전트·MCP 보안 35 · 안드로이드 리버싱·후킹 35 · 윈도우 클라이언트·커널 익스플로잇 35 · 차량 보안·CAN Bus·UDS 35 · API 보안·REST·GraphQL·JWT 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **1330문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35 · 문서형 악성코드·PDF 포렌식 35 · 메모리 포렌식·Volatility 35 · AI 에이전트·MCP 보안 35 · 안드로이드 리버싱·후킹 35 · 윈도우 클라이언트·커널 익스플로잇 35 · 차량 보안·CAN Bus·UDS 35 · API 보안·REST·GraphQL·JWT 35 · SOC 위협 헌팅·SIEM·IR 35 · 퍼징·취약점 발굴·ASAN 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **1295 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35 · maldoc & PDF forensics 35 · memory forensics & Volatility 35 · AI agent & MCP security 35 · Android reversing & Frida 35 · Windows client & kernel exploits 35 · Automotive security & CAN bus 35 · API security & modern auth 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **1330 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35 · maldoc & PDF forensics 35 · memory forensics & Volatility 35 · AI agent & MCP security 35 · Android reversing & Frida 35 · Windows client & kernel exploits 35 · Automotive security & CAN bus 35 · API security & modern auth 35 · SOC threat hunting & SIEM 35 · Fuzzing & vulnerability research 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 

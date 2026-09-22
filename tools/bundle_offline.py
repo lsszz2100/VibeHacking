@@ -62,7 +62,7 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count != 1295:
+    if id_count != 1330:
         return False, f"Expected 1,295 challenges in challenges.js, found {id_count}"
     
     print(f"  ✓ Wargame database verified: {id_count} challenges across 37 tracks.")

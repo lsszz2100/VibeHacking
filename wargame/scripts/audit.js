@@ -125,6 +125,7 @@ const NOT_PLANTED = {
   t1_ptcaldera: 'asks for the MITRE emulation tool by name; GUI 웹 콘솔 is that tool\'s interface, not this page',
   t3_wasmxss: 'asks for a client-side injection acronym; DOM sink manipulation is a concept, not this page',
   t1_wasmimport: 'asks for an external reference type keyword; DOM reference handling is a concept, not this page',
+  t4_fuzzing_browser_dom_fuzzing: 'asks for a browser DOM fuzzing concept; DOM tree mutation is a parser concept, not this page',
 };
 
 const aBad = [], aRows = [];

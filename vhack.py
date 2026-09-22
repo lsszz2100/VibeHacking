@@ -334,6 +334,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [44, 75],
     },
+    "24": {
+        "name": "퍼징 & 취약점 분석 실전 랩",
+        "dir":  "24_fuzzing_vulnerability_lab",
+        "desc": "FuzzMaster: AFL++ 커버리지 기반 퍼징 · ASAN 섀도우 메모리 Heap-UAF 트리아지 · CWE-416 재현 PoC & 패치 검증",
+        "url":  "웹 콘솔 & 퍼징 대시보드: http://localhost:8024",
+        "difficulty": "★★★★",
+        "related": [30, 66, 74],
+    },
 }
 
 
@@ -1331,6 +1339,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8021, "Lab 21 (Automotive CAN)"),
         (8022, "Lab 22 (API Security APIGuard)"),
         (8023, "Lab 23 (SOCHunter Threat Hunting)"),
+        (8024, "Lab 24 (FuzzMaster AFL++ & ASAN)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -1839,8 +1848,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_wg.add_argument("--cli", action="store_true", help="터미널 CUI 워게임 모드로 실행")
 
     # play
-    p_play = sub.add_parser("play", help="터미널 네이티브 워게임 플레이어 (37개 트랙, 1,295문제 CLI 모드)")
-    p_play.add_argument("--list", action="store_true", help="37개 트랙 로드맵 및 진행도 요약 출력")
+    p_play = sub.add_parser("play", help="터미널 네이티브 워게임 플레이어 (38개 트랙, 1,330문제 CLI 모드)")
+    p_play.add_argument("--list", action="store_true", help="38개 트랙 로드맵 및 진행도 요약 출력")
     p_play.add_argument("--search", metavar="KEYWORD", help="키워드로 챌린지 검색")
     p_play.add_argument("--chal", metavar="CHAL_ID", help="특정 챌린지 상세 지문 및 힌트 조회")
     p_play.add_argument("--submit", nargs=2, metavar=("CHAL_ID", "FLAG"), help="터미널에서 직접 플래그 제출")

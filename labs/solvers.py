@@ -412,6 +412,38 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "SOAR Playbook Executed: Host isolated, tokens revoked! FLAG{siem_lsass_mimikatz_pass_the_hash_soar_contained_7129}"
             }
         ]
+    },
+    "24": {
+        "title": "퍼징 & 취약점 발굴 랩 (FuzzMaster)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "AFL++ 커버리지 유도 퍼징 & 크래시 트리거",
+                "target": "POST /api/fuzz/trigger_crash (payload_hex)",
+                "poc_explanation": "타깃 바이너리의 FUZZ 매직 헤더(0x46555a5a) 뒤에 댕글링 포인터 조건을 활성화하는 0xdeadbeef 패턴을 주입하여 SIGSEGV 크래시를 유발합니다.",
+                "exploit_payload": "46555a5a01000000deadbeef",
+                "defense": "Fuzzing 코퍼스 기반 회귀 테스트 파이프라인(OSS-Fuzz) 구축 및 컴파일 타임 Sanitizer 적용.",
+                "sample_output": "💥 Crash reproduced! SIGSEGV at pc 0x4012b8 -> FLAG{afl_coverage_guided_crash_triggered_4918}"
+            },
+            {
+                "step": 2,
+                "name": "ASAN 섀도우 메모리 덤프 역추적 & UAF 주소 규명",
+                "target": "POST /api/asan/analyze (bug_type, buggy_address, freed_by_function)",
+                "poc_explanation": "AddressSanitizer 덤프에서 0xfd(해제 영역) 섀도우 바이트와 free_session_chunk 호출 스택을 분석하여 취약 주소 0x603000000040을 규명합니다.",
+                "exploit_payload": '{"bug_type": "heap-use-after-free", "buggy_address": "0x603000000040", "freed_by_function": "free_session_chunk"}',
+                "defense": "스마트 포인터(std::unique_ptr) 또는 메모리 할당 해제 즉시 포인터 NULL 초기화 강제.",
+                "sample_output": "🎯 Root cause analysis verified! FLAG{asan_heap_uaf_shadow_memory_decoded_8372}"
+            },
+            {
+                "step": 3,
+                "name": "CWE-416 크래시 트리아지 & 댕글링 포인터 중화 패치",
+                "target": "POST /api/triage/verify_patch (cwe_id, patch_code)",
+                "poc_explanation": "CWE-416 Use-After-Free 결함을 식별하고 chunk->data = NULL; 포인터 초기화 패치를 적용하여 회귀 퍼징 100,000회를 통과시킵니다.",
+                "exploit_payload": '{"cwe_id": "CWE-416", "patch_code": "chunk->data = NULL; chunk = NULL;"}',
+                "defense": "Control Flow Guard(CFG) 및 Clang SafeStack, 정적 분석(SAST) 단계 댕글링 포인터 검출 룰 적용.",
+                "sample_output": "🛡️ Patch Verified! Clean execution (0 memory errors) -> FLAG{crash_triage_cwe416_poc_reproduced_patch_verified_1054}"
+            }
+        ]
     }
 }
 

@@ -53,6 +53,7 @@ docker-compose --version
 | 21 | [차량 보안 & CAN Bus 랩](./21_automotive_can_lab/) | CAN 버스 스푸핑, UDS 시드-키 인증 우회, ECU DoS | ★★★★ | [36장 자동차 해킹](../36_Automotive_Hacking/README.md), [62장 차량 보안](../62_Automotive_Security/README.md) | `carcan` |
 | 22 | [API 보안 & Modern Auth 랩](./22_api_security_lab/) | REST BOLA/BFLA, GraphQL Introspection & Batching, JWT 'none' 서명 우회 | ★★★☆ | [05장 웹 해킹](../05_Web_Hacking/README.md), [52장 API 보안](../52_API_Security/README.md) | `apisec` / `web` |
 | 23 | [SOC 위협 헌팅 & SIEM/IR 랩](./23_soc_threat_hunting_lab/) | Sysmon 인젝션 탐지, Suricata NIDS & DNS 비콘 C2 차단, Pass-the-Hash & SOAR 자동 격리 | ★★★★ | [44장 침해 대응 & DFIR](../44_Incident_Response_DFIR/07_soc_siem_threat_hunting_deepdive.md), [75장 레드팀 보고서](../75_Red_Team_Reporting/README.md) | `sochunt` / `purpleteam` |
+| 24 | [퍼징 & 취약점 발굴 랩](./24_fuzzing_vulnerability_lab/) | AFL++ 커버리지 유도 퍼징, ASAN 섀도우 메모리 덤프 UAF 분석, 크래시 트리아지 & 패치 검증 | ★★★★ | [30장 취약점 분석](../30_Vulnerability_Research/README.md), [66장 익스플로잇 개발](../66_Exploit_Development/README.md) | `fuzzing` / `pwn` |
 
 ---
 
@@ -282,6 +283,15 @@ docker-compose --version
 - **교재 챕터 연계**: [44장 침해 대응 & DFIR](../44_Incident_Response_DFIR/07_soc_siem_threat_hunting_deepdive.md), [75장 레드팀 보고서](../75_Red_Team_Reporting/README.md)
 - **워게임 트랙**: `sochunt` / `purpleteam`
 - **빠른 실행**: `python3 vhack.py lab start 23` (웹 콘솔 & 대시보드: `http://localhost:8023`)
+
+### 24. 퍼징 & 취약점 발굴 실전 랩 (FuzzMaster)
+- AFL++ 커버리지 피드백 비트맵 기반 타깃 바이너리 퍼징 시뮬레이션 및 SIGSEGV 크래시 유발
+- AddressSanitizer(ASAN) 섀도우 메모리 덤프(`0xfd` 해제 블록) 분석 및 Use-After-Free 취약 메모리 오프셋 규명
+- CWE-416(Use-After-Free) 결함 분류 및 결정적 크래시 재현 입력값(PoC) 합성, 댕글링 포인터 중화 패치 검증
+- 실시간 AFL++ 통계 모니터, ASAN 섀도우 바이트 뷰어, 크래시 트리아지 웹 콘솔 제공
+- **교재 챕터 연계**: [30장 취약점 분석](../30_Vulnerability_Research/07_practical_fuzzing_and_crash_triage_deepdive.md), [66장 익스플로잇 개발](../66_Exploit_Development/README.md)
+- **워게임 트랙**: `fuzzing` / `pwn`
+- **빠른 실행**: `python3 vhack.py lab start 24` (웹 콘솔 & 대시보드: `http://localhost:8024`)
 
 ---
 

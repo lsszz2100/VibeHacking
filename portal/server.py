@@ -84,7 +84,7 @@ def get_system_status():
 
 @app.get("/api/labs")
 def list_labs():
-    """23개 전체 실습 랩의 최신 상태 및 메타데이터 반환"""
+    """24개 전체 실습 랩의 최신 상태 및 메타데이터 반환"""
     result = []
     for lid, meta in sorted(LABS.items()):
         port = get_lab_port(lid)

@@ -348,6 +348,14 @@ const TRACKS = [
       "en": "SOC Threat Hunting & Incident Response",
       "desc_ko": "Sysmon 프로세스 인젝션·Suricata NIDS 탐지·DNS 터널링 및 JA3 C2 비콘·Pass-the-Hash·SPL/KQL 상관분석·SOAR 자동 격리.",
       "desc_en": "Sysmon process injection, Suricata NIDS detection, DNS tunneling & JA3 C2 beacons, Pass-the-Hash, SPL/KQL correlation, SOAR auto containment."
+  },
+  {
+      "id": "fuzzing",
+      "icon": "⚡",
+      "ko": "퍼징·취약점 발굴·ASAN",
+      "en": "Fuzzing & Vulnerability Research (ASAN)",
+      "desc_ko": "AFL++ 커버리지 유도 퍼징·ASAN 섀도우 메모리 UAF 분석·크래시 트리아지 및 재현 PoC·댕글링 포인터 패치 검증.",
+      "desc_en": "AFL++ coverage-guided fuzzing, ASAN shadow memory UAF analysis, crash triage, reproducible PoC synthesis, and memory safety patch verification."
   }
 ];
 
@@ -36655,5 +36663,986 @@ const CHALLENGES = [
     ]
   },
   "hash": "01c4d4fb066bfd7a78c1823d0842d06ceebeb16f625683b519a88c12e4d9ad36"
+}
+,
+{
+  "id": "t0_fuzzing_afl_basics",
+  "tier": 0,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 10,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AFL++ 커버리지 유도 퍼징 기본 원리",
+    "en": "AFL++ Coverage-guided Fuzzing Fundamentals"
+  },
+  "prompt": {
+    "ko": "기본 블록 분기 전이(Edge Coverage)를 피드백 루프로 삼는 AFL++ 퍼징 아키텍처 분석 챌린지입니다.\n지정된 식별자 `fuzzing_afl_basics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_afl_basics_v1\") 앞 20자리}`",
+    "en": "Analyze AFL++ coverage-guided fuzzing architecture using branch transition feedback loops.\nCompute the first 20 hex characters of SHA256(\"fuzzing_afl_basics_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_afl_basics_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_afl_basics_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_afl_basics_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "15792c6263f44d5d330b74b10d7d822c20e35fadb8f80c0e44287ff487f792c9"
+},
+{
+  "id": "t0_fuzzing_asan_shadow",
+  "tier": 0,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 20,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AddressSanitizer 섀도우 메모리 1:8 매핑",
+    "en": "AddressSanitizer Shadow Memory 1:8 Mapping"
+  },
+  "prompt": {
+    "ko": "8바이트 애플리케이션 메모리를 1바이트 섀도우 바이트에 매핑하는 ASAN 메모리 보호 메커니즘 분석 챌린지입니다.\n지정된 식별자 `fuzzing_asan_shadow_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_asan_shadow_v1\") 앞 20자리}`",
+    "en": "Inspect ASAN shadow memory mechanism mapping 8 application bytes to 1 shadow byte.\nCompute the first 20 hex characters of SHA256(\"fuzzing_asan_shadow_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_asan_shadow_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_asan_shadow_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_asan_shadow_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "94a9176995d166f359bd3a67ab7b74cfb287b6842a444fcc0c21bd114be07195"
+},
+{
+  "id": "t1_fuzzing_seed_corpus",
+  "tier": 1,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "초기 시드 코퍼스 구축과 커버리지 엣지",
+    "en": "Initial Seed Corpus Quality & Edge Discovery"
+  },
+  "prompt": {
+    "ko": "작고 유효한 파일 포맷 기반 초기 시드 코퍼스 구성 및 코드 분기 탐색 가속화 분석 챌린지입니다.\n지정된 식별자 `fuzzing_seed_corpus_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_seed_corpus_v1\") 앞 20자리}`",
+    "en": "Understand seed corpus curation for maximizing branch edge discovery and parsing depth.\nCompute the first 20 hex characters of SHA256(\"fuzzing_seed_corpus_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_seed_corpus_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_seed_corpus_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_seed_corpus_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "51a21f26675dfaf28d3d8c6310a60109641419d7cb669f85e7f29c755aba51b0"
+},
+{
+  "id": "t1_fuzzing_libfuzzer",
+  "tier": 1,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 40,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "LibFuzzer 인프로세스 함수 타깃 퍼징",
+    "en": "LibFuzzer In-Process Function Fuzzing"
+  },
+  "prompt": {
+    "ko": "LLVM Clang 내장 LibFuzzer의 LLVMFuzzerTestOneInput 엔트리포인트 및 고속 인메모리 테스트 분석 챌린지입니다.\n지정된 식별자 `fuzzing_libfuzzer_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_libfuzzer_v1\") 앞 20자리}`",
+    "en": "Analyze LibFuzzer LLVMFuzzerTestOneInput harness structure for in-process high-throughput fuzzing.\nCompute the first 20 hex characters of SHA256(\"fuzzing_libfuzzer_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_libfuzzer_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_libfuzzer_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_libfuzzer_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "cf3ccaf32a2760d2912a77abe18e2957063953d165cf3f7178c24f5318d9718b"
+},
+{
+  "id": "t1_fuzzing_mutation_havoc",
+  "tier": 1,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "변이 엔진 Havoc 단계와 비트플립 전략",
+    "en": "Mutation Engine Havoc Stages & BitFlip Strategies"
+  },
+  "prompt": {
+    "ko": "AFL++의 결정적 단계(BitFlip, Arith, Interest)와 비결정적 다중 변이(Havoc) 전략 분석 챌린지입니다.\n지정된 식별자 `fuzzing_mutation_havoc_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_mutation_havoc_v1\") 앞 20자리}`",
+    "en": "Examine deterministic (BitFlip/Interest) vs non-deterministic Havoc mutation strategies in AFL++.\nCompute the first 20 hex characters of SHA256(\"fuzzing_mutation_havoc_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_mutation_havoc_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_mutation_havoc_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_mutation_havoc_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d389673f25de1924c0a72b80fbc531848bf5494e48f344d26a848470bfea7532"
+},
+{
+  "id": "t1_fuzzing_honggfuzz_hardware",
+  "tier": 1,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Honggfuzz 하드웨어 분기 추적 (Intel PT)",
+    "en": "Honggfuzz Hardware Branch Tracing via Intel PT"
+  },
+  "prompt": {
+    "ko": "인텔 프로세서 트레이스(Intel PT) 및 하드웨어 성능 카운터를 활용한 바이너리 피드백 퍼징 분석 챌린지입니다.\n지정된 식별자 `fuzzing_honggfuzz_hardware_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_honggfuzz_hardware_v1\") 앞 20자리}`",
+    "en": "Analyze Honggfuzz hardware performance tracing and Intel PT branch feedback mechanisms.\nCompute the first 20 hex characters of SHA256(\"fuzzing_honggfuzz_hardware_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_honggfuzz_hardware_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_honggfuzz_hardware_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_honggfuzz_hardware_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "20511567729fc5757b66d5639279fc2af9aa278b5b507f770ce1d90d239cdb09"
+},
+{
+  "id": "t1_fuzzing_crash_signals",
+  "tier": 1,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "크래시 시그널 분류 (SIGSEGV vs SIGABRT)",
+    "en": "Crash Signal Triage: SIGSEGV vs SIGABRT"
+  },
+  "prompt": {
+    "ko": "불법 메모리 접근(SIGSEGV, Signal 11)과 비정상 중단(SIGABRT, Signal 6) 시그널 매핑 분석 챌린지입니다.\n지정된 식별자 `fuzzing_crash_signals_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_crash_signals_v1\") 앞 20자리}`",
+    "en": "Classify crash signals: SIGSEGV (Invalid Memory Access) vs SIGABRT (Assertion Abort).\nCompute the first 20 hex characters of SHA256(\"fuzzing_crash_signals_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_crash_signals_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_crash_signals_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_crash_signals_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "30dbed0a6ebf189f2500c4256f71a17fb0f82d39f70b24443c635407f23b9547"
+},
+{
+  "id": "t1_fuzzing_cmplog_deflag",
+  "tier": 1,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AFL++ CmpLog과 매직 헤더 바이패스",
+    "en": "AFL++ CmpLog & Magic Header Bypass Instrumentation"
+  },
+  "prompt": {
+    "ko": "다중 바이트 비교 연산(strcmp, memcmp)을 가로채 매직 값을 자동으로 해결하는 CmpLog 분석 챌린지입니다.\n지정된 식별자 `fuzzing_cmplog_deflag_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_cmplog_deflag_v1\") 앞 20자리}`",
+    "en": "Review AFL++ CmpLog instrumentation for solving multi-byte magic comparisons without dictionaries.\nCompute the first 20 hex characters of SHA256(\"fuzzing_cmplog_deflag_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_cmplog_deflag_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_cmplog_deflag_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_cmplog_deflag_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "64bf4e8deb4b62844aabc2cef04eb55dd7d47d61661d1db32fa22b790d9978dd"
+},
+{
+  "id": "t2_fuzzing_asan_heap_uaf",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ASAN Heap-Use-After-Free 섀도우 바이트",
+    "en": "ASAN Heap-Use-After-Free Shadow Bytes (0xFD)"
+  },
+  "prompt": {
+    "ko": "해제된 힙 청크에 역참조가 발생할 때 ASAN이 섀도우 메모리에 기록하는 `0xfd` 마커 분석 챌린지입니다.\n지정된 식별자 `fuzzing_asan_heap_uaf_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_asan_heap_uaf_v1\") 앞 20자리}`",
+    "en": "Decode ASAN shadow memory value 0xfd denoting freed heap allocations during UAF dereference.\nCompute the first 20 hex characters of SHA256(\"fuzzing_asan_heap_uaf_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_asan_heap_uaf_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_asan_heap_uaf_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_asan_heap_uaf_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2eefe9a8299775b3ca7af2f69362ae848c01d204754d3c60316767bd4ef0a5cf"
+},
+{
+  "id": "t2_fuzzing_stack_overflow_redzone",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "스택 버퍼 오버플로우와 Stack Redzone (0xF1)",
+    "en": "Stack Buffer Overflow & ASAN Stack Redzone (0xF1)"
+  },
+  "prompt": {
+    "ko": "스택 프레임 내 로컬 버퍼 경계를 보호하는 ASAN Stack Redzone 바이트 `0xf1` 및 오버플로우 탐지 분석 챌린지입니다.\n지정된 식별자 `fuzzing_stack_overflow_redzone_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_stack_overflow_redzone_v1\") 앞 20자리}`",
+    "en": "Inspect ASAN stack redzone sentinel 0xf1 framing local variables to trap stack buffer overflow.\nCompute the first 20 hex characters of SHA256(\"fuzzing_stack_overflow_redzone_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_stack_overflow_redzone_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_stack_overflow_redzone_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_stack_overflow_redzone_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a59f586857ee74f2bb298f102c9f99f3e6263bcad5f3963c8006ec2b79fcfa02"
+},
+{
+  "id": "t2_fuzzing_global_overflow",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "전역 변수 경계 침범과 Global Redzone (0xF9)",
+    "en": "Global Variable Out-of-Bounds & Global Redzone (0xF9)"
+  },
+  "prompt": {
+    "ko": "BSS 및 데이터 세그먼트 전역 변수 사이를 채우는 Global Redzone 바이트 `0xf9` 검출 분석 챌린지입니다.\n지정된 식별자 `fuzzing_global_overflow_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_global_overflow_v1\") 앞 20자리}`",
+    "en": "Analyze ASAN global redzone bytes 0xf9 surrounding data/bss segment global buffers.\nCompute the first 20 hex characters of SHA256(\"fuzzing_global_overflow_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_global_overflow_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_global_overflow_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_global_overflow_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8aa5e8beeed49b1297e70b5017fe69b41e2b829970b3c5af3ba2fbac9cb8bf5f"
+},
+{
+  "id": "t2_fuzzing_asan_shadow_bytes",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "부분 접근 허용 섀도우 바이트 0x01~0x07",
+    "en": "Partial Allocation Addressability: Shadow Bytes 0x01-0x07"
+  },
+  "prompt": {
+    "ko": "8바이트 블록 중 선두 k바이트만 접근 가능한 상태를 나타내는 ASAN 섀도우 바이트 값 분석 챌린지입니다.\n지정된 식별자 `fuzzing_asan_shadow_bytes_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_asan_shadow_bytes_v1\") 앞 20자리}`",
+    "en": "Understand partial shadow byte encoding 0x01 to 0x07 for allocations not aligned to 8 bytes.\nCompute the first 20 hex characters of SHA256(\"fuzzing_asan_shadow_bytes_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_asan_shadow_bytes_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_asan_shadow_bytes_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_asan_shadow_bytes_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "6b752692448d8d7aa42d4eac42e539c301ba52d14e69d6029e270b51afce2660"
+},
+{
+  "id": "t2_fuzzing_afl_area_ptr",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AFL++ 64KB 공유 메모리 비트맵 (__afl_area_ptr)",
+    "en": "AFL++ 64KB Shared Memory Bitmap (__afl_area_ptr)"
+  },
+  "prompt": {
+    "ko": "타깃 프로세스와 퍼저 간 IPC로 분기 전이를 기록하는 65,536바이트 비트맵 공유 메모리 분석 챌린지입니다.\n지정된 식별자 `fuzzing_afl_area_ptr_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_afl_area_ptr_v1\") 앞 20자리}`",
+    "en": "Analyze the 64KB __afl_area_ptr shared memory edge-tracking bitmap in AFL++.\nCompute the first 20 hex characters of SHA256(\"fuzzing_afl_area_ptr_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_afl_area_ptr_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_afl_area_ptr_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_afl_area_ptr_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8cf57d84c50e59a54ac4df2e31f36ed41802d408ed73158e10f687932bb179b8"
+},
+{
+  "id": "t2_fuzzing_hit_count_bucket",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AFL++ 분기 히트 카운트 버킷 분류 체계",
+    "en": "AFL++ Branch Hit Count 8-Bucket Classification"
+  },
+  "prompt": {
+    "ko": "반복 루프의 실행 횟수를 8개 클래스(1, 2, 3, 4-7, 8-15, 16-31, 32-127, 128-255)로 버킷화하는 원리 분석 챌린지입니다.\n지정된 식별자 `fuzzing_hit_count_bucket_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_hit_count_bucket_v1\") 앞 20자리}`",
+    "en": "Review AFL++ 8-level exponential bucketing for loop execution counters to discover new paths.\nCompute the first 20 hex characters of SHA256(\"fuzzing_hit_count_bucket_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_hit_count_bucket_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_hit_count_bucket_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_hit_count_bucket_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d2378380544fb17f0c3f064b044ef694df3d7403bb35f64cb88af72925905144"
+},
+{
+  "id": "t2_fuzzing_qemu_mode",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "소스코드 없는 바이너리 퍼징 (AFL++ QEMU Mode)",
+    "en": "Closed-Source Binary Fuzzing via AFL++ QEMU Mode"
+  },
+  "prompt": {
+    "ko": "바이너리 전용 환경에서 TCG(Tiny Code Generator) 동적 변환을 통해 분기 커버리지를 캡처하는 QEMU 모드 분석 챌린지입니다.\n지정된 식별자 `fuzzing_qemu_mode_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_qemu_mode_v1\") 앞 20자리}`",
+    "en": "Understand AFL++ QEMU mode dynamic translation for instrumenting closed-source binaries.\nCompute the first 20 hex characters of SHA256(\"fuzzing_qemu_mode_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_qemu_mode_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_qemu_mode_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_qemu_mode_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "4ebef49edda59db28047862cc60df6b90161c7ad9839f8b5d57ceff6fd2d32ed"
+},
+{
+  "id": "t2_fuzzing_frida_mode",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AFL++ Frida 모드와 동적 바이너리 계측",
+    "en": "AFL++ Frida Mode & Dynamic Binary Instrumentation"
+  },
+  "prompt": {
+    "ko": "Frida Gum 기반 DBI 엔진으로 공유 라이브러리 특정 함수 영역만 정밀 계측하는 기법 분석 챌린지입니다.\n지정된 식별자 `fuzzing_frida_mode_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_frida_mode_v1\") 앞 20자리}`",
+    "en": "Analyze AFL++ Frida mode using Frida Gum DBI for targeted function coverage tracking.\nCompute the first 20 hex characters of SHA256(\"fuzzing_frida_mode_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_frida_mode_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_frida_mode_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_frida_mode_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fc0e868e65d987f282e3ada4b5f19622fdee29de9284782c584e1905ff04cdbe"
+},
+{
+  "id": "t2_fuzzing_crash_dedup_hash",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "크래시 중복 제거와 스택 트레이스 해싱",
+    "en": "Crash Deduplication via Stack Trace Frame Hashing"
+  },
+  "prompt": {
+    "ko": "수천 개의 고유 크래시 파일 중 최상위 N개 스택 프레임 해시로 동일 결함을 그룹화하는 트리아지 분석 챌린지입니다.\n지정된 식별자 `fuzzing_crash_dedup_hash_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_crash_dedup_hash_v1\") 앞 20자리}`",
+    "en": "Examine stack hash grouping for automated deduplication of unique crash inputs.\nCompute the first 20 hex characters of SHA256(\"fuzzing_crash_dedup_hash_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_crash_dedup_hash_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_crash_dedup_hash_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_crash_dedup_hash_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "0c3bc64cc2ca8c70e7ba754ae58ba4c52babed2e001aaff2ddffd0327568d9d7"
+},
+{
+  "id": "t2_fuzzing_asan_recover",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ASAN Recovery 모드 (-fsanitize-recover)",
+    "en": "AddressSanitizer Recovery Mode (-fsanitize-recover)"
+  },
+  "prompt": {
+    "ko": "최초 오류에서 즉시 종료되지 않고 후속 취약점까지 단일 실행에서 연속 수집하는 Recovery 모드 분석 챌린지입니다.\n지정된 식별자 `fuzzing_asan_recover_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_asan_recover_v1\") 앞 20자리}`",
+    "en": "Review ASAN recovery mode allowing the process to continue past non-fatal sanitizer errors.\nCompute the first 20 hex characters of SHA256(\"fuzzing_asan_recover_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_asan_recover_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_asan_recover_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_asan_recover_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "81c3b87cc2a97a0b6091eac25085c8575777af85fa333647b4be645d4ca1b300"
+},
+{
+  "id": "t2_fuzzing_ubsan_undefined",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UndefinedBehaviorSanitizer (UBSan) 통합 퍼징",
+    "en": "UndefinedBehaviorSanitizer (UBSan) Combined Fuzzing"
+  },
+  "prompt": {
+    "ko": "정수 오버플로우, 0으로 나누기, 불법 시프트 등 정의되지 않은 동작을 탐지하는 UBSan 컴파일 옵션 분석 챌린지입니다.\n지정된 식별자 `fuzzing_ubsan_undefined_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_ubsan_undefined_v1\") 앞 20자리}`",
+    "en": "Analyze UBSan integration to catch undefined behaviors like integer overflows and null pointer shifts.\nCompute the first 20 hex characters of SHA256(\"fuzzing_ubsan_undefined_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_ubsan_undefined_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_ubsan_undefined_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_ubsan_undefined_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "087ca11f78fce77bb3ce5a20dc7904447707c385dc82361781ae3b62ee7eb625"
+},
+{
+  "id": "t2_fuzzing_msan_uninit",
+  "tier": 2,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MemorySanitizer (MSan) 초기화되지 않은 메모리 읽기",
+    "en": "MemorySanitizer (MSan) Uninitialized Memory Reads"
+  },
+  "prompt": {
+    "ko": "초기화되지 않은 힙/스택 메모리 읽기로 인한 정보 유출 취약점을 탐지하는 MSan 섀도우 비트 분석 챌린지입니다.\n지정된 식별자 `fuzzing_msan_uninit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_msan_uninit_v1\") 앞 20자리}`",
+    "en": "Inspect MemorySanitizer (MSan) shadow bit tracking for detecting uninitialized memory reads.\nCompute the first 20 hex characters of SHA256(\"fuzzing_msan_uninit_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_msan_uninit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_msan_uninit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_msan_uninit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7f65ab0bc51d204e7d998694002776f3c4d26f545cd84566d7e038b3eb16df87"
+},
+{
+  "id": "t3_fuzzing_afl_tmin_minimization",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 210,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "afl-tmin을 활용한 크래시 테스트케이스 최소화",
+    "en": "Crash Testcase Minimization via afl-tmin"
+  },
+  "prompt": {
+    "ko": "대용량 크래시 파일에서 동일한 오류 경로를 유발하는 핵심 바이트만 남기고 정제하는 afl-tmin 알고리즘 분석 챌린지입니다.\n지정된 식별자 `fuzzing_afl_tmin_minimization_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_afl_tmin_minimization_v1\") 앞 20자리}`",
+    "en": "Review afl-tmin input minimization removing irrelevant bytes while preserving crash signatures.\nCompute the first 20 hex characters of SHA256(\"fuzzing_afl_tmin_minimization_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_afl_tmin_minimization_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_afl_tmin_minimization_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_afl_tmin_minimization_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "16cb066b9b9a25e64b6e6eb3f12b765927e019702c9015af31685a3fdeb89c82"
+},
+{
+  "id": "t3_fuzzing_cwe416_uaf_triage",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 220,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CWE-416 Use-After-Free 트리아지 및 취약 라이프사이클",
+    "en": "CWE-416 Use-After-Free Triage & Allocation Lifecycle"
+  },
+  "prompt": {
+    "ko": "할당(malloc), 해제(free), 비정상 재참조(dereference)의 객체 생명주기 결함 분석 챌린지입니다.\n지정된 식별자 `fuzzing_cwe416_uaf_triage_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_cwe416_uaf_triage_v1\") 앞 20자리}`",
+    "en": "Triage CWE-416 Use-After-Free defects by reconstructing alloc-free-dereference temporal lifecycles.\nCompute the first 20 hex characters of SHA256(\"fuzzing_cwe416_uaf_triage_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_cwe416_uaf_triage_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_cwe416_uaf_triage_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_cwe416_uaf_triage_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "df4ddaa1bca637aa528dfd760c9135154a5fd4449bf165ad08bdb13affcadec4"
+},
+{
+  "id": "t3_fuzzing_cwe122_heap_triage",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 230,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CWE-122 힙 버퍼 오버플로우와 힙 청크 손상",
+    "en": "CWE-122 Heap-based Buffer Overflow Chunk Corruption"
+  },
+  "prompt": {
+    "ko": "인접 청크 헤더(size, flags) 오버라이트 및 Fastbin/Tcache 포이즈닝으로 이어지는 힙 오버플로우 트리아지 분석 챌린지입니다.\n지정된 식별자 `fuzzing_cwe122_heap_triage_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_cwe122_heap_triage_v1\") 앞 20자리}`",
+    "en": "Analyze CWE-122 heap corruption corrupting chunk metadata and leading to tcache tampering.\nCompute the first 20 hex characters of SHA256(\"fuzzing_cwe122_heap_triage_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_cwe122_heap_triage_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_cwe122_heap_triage_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_cwe122_heap_triage_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "639a0b3fa9c6a5f45e0073e6b04d8af3f795e3bf5125232d2797b0656917f45d"
+},
+{
+  "id": "t3_fuzzing_deterministic_poc",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 240,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "결정적 재현 익스플로잇 PoC 합성",
+    "en": "Deterministic Exploit PoC Synthesis & Reproduction"
+  },
+  "prompt": {
+    "ko": "랜덤 시드 환경에서도 동일 레지스터 상태(RIP, RSP)로 100% 재현 가능한 독립형 C PoC 제작 기법 분석 챌린지입니다.\n지정된 식별자 `fuzzing_deterministic_poc_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_deterministic_poc_v1\") 앞 20자리}`",
+    "en": "Synthesize deterministic standalone C exploit PoCs from fuzzer crash artifacts.\nCompute the first 20 hex characters of SHA256(\"fuzzing_deterministic_poc_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_deterministic_poc_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_deterministic_poc_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_deterministic_poc_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ac56e32cd53c69dd5b66d9ab37c20f336a62c310650dd489b35eb7d57b3bbb15"
+},
+{
+  "id": "t3_fuzzing_oss_fuzz_pipeline",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Google OSS-Fuzz 지속적 통합 아키텍처",
+    "en": "Google OSS-Fuzz Continuous Integration Pipeline"
+  },
+  "prompt": {
+    "ko": "수천 개 오픈소스 프로젝트를 대상으로 24/7 분산 퍼징과 자동 버그 리포트를 수행하는 OSS-Fuzz 구조 분석 챌린지입니다.\n지정된 식별자 `fuzzing_oss_fuzz_pipeline_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_oss_fuzz_pipeline_v1\") 앞 20자리}`",
+    "en": "Review OSS-Fuzz automated continuous fuzzing architecture and automated bug filing lifecycle.\nCompute the first 20 hex characters of SHA256(\"fuzzing_oss_fuzz_pipeline_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_oss_fuzz_pipeline_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_oss_fuzz_pipeline_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_oss_fuzz_pipeline_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "68491cccb92c43dd9bbd3cf9c45957675a1387f7ab998937e10d65eccc1701d3"
+},
+{
+  "id": "t3_fuzzing_clusterfuzz_triage",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 260,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ClusterFuzz 자동 근본 원인 분석 (Bisection)",
+    "en": "ClusterFuzz Automated Root Cause Git Bisection"
+  },
+  "prompt": {
+    "ko": "취약점을 유발한 커밋(Regressed)과 해결한 커밋(Fixed)을 자동으로 이진 탐색(Git Bisect)하는 파이프라인 분석 챌린지입니다.\n지정된 식별자 `fuzzing_clusterfuzz_triage_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_clusterfuzz_triage_v1\") 앞 20자리}`",
+    "en": "Analyze automated git commit bisection in ClusterFuzz for pinpointing regression origins.\nCompute the first 20 hex characters of SHA256(\"fuzzing_clusterfuzz_triage_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_clusterfuzz_triage_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_clusterfuzz_triage_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_clusterfuzz_triage_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7e4a404454c514c6646e40416b83605671cb28f95464f344580f86f07768b536"
+},
+{
+  "id": "t3_fuzzing_grammar_fuzzing",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 270,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "문법 기반 구조화 퍼징 (Grammar-based Fuzzing)",
+    "en": "Grammar-based Structured Fuzzing (Protobuf / ANTLR)"
+  },
+  "prompt": {
+    "ko": "SQL, JavaScript, 프로토콜 버퍼와 같이 복잡한 문맥 자유 문법(CFG)을 준수하는 생성형 퍼징 기법 분석 챌린지입니다.\n지정된 식별자 `fuzzing_grammar_fuzzing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_grammar_fuzzing_v1\") 앞 20자리}`",
+    "en": "Understand grammar-based generation for complex parsers like SQL and JS interpreters.\nCompute the first 20 hex characters of SHA256(\"fuzzing_grammar_fuzzing_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_grammar_fuzzing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_grammar_fuzzing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_grammar_fuzzing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d89042ec7afedf86711fb59f186fa4e31a76fa6c494e1e0aafb17cdce86930d0"
+},
+{
+  "id": "t3_fuzzing_differential_fuzzing",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 280,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "차분 퍼징 (Differential Fuzzing)과 로직 결함",
+    "en": "Differential Fuzzing for Discrepancy & Logic Flaws"
+  },
+  "prompt": {
+    "ko": "동일한 스펙을 구현한 두 개 이상의 엔진(예: OpenSSL vs LibreSSL)에 동일 입력을 주입해 출력 불일치를 탐지하는 기법 분석 챌린지입니다.\n지정된 식별자 `fuzzing_differential_fuzzing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_differential_fuzzing_v1\") 앞 20자리}`",
+    "en": "Analyze differential fuzzing executing identical inputs across multiple implementations to find divergence.\nCompute the first 20 hex characters of SHA256(\"fuzzing_differential_fuzzing_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_differential_fuzzing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_differential_fuzzing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_differential_fuzzing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9341f42f5b450881f2ae11bad27132a1a7f36c77a93715c2a8fe49bc7cab61a8"
+},
+{
+  "id": "t3_fuzzing_dangling_ptr_patch",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 290,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "댕글링 포인터 중화 및 스마트 포인터 리팩토링",
+    "en": "Dangling Pointer Neutralization & Smart Pointer Refactoring"
+  },
+  "prompt": {
+    "ko": "원시 포인터(Raw Pointer)의 해제 후 NULL 미할당 결함을 C++ unique_ptr 또는 자동 소멸자 패턴으로 교체하는 패치 분석 챌린지입니다.\n지정된 식별자 `fuzzing_dangling_ptr_patch_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_dangling_ptr_patch_v1\") 앞 20자리}`",
+    "en": "Refactor raw dangling pointer deallocation to RAII std::unique_ptr memory-safe patterns.\nCompute the first 20 hex characters of SHA256(\"fuzzing_dangling_ptr_patch_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_dangling_ptr_patch_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_dangling_ptr_patch_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_dangling_ptr_patch_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fee3838a42b4a93d626be3a668b38216281f05f7d842e8dac0fa3f585e44ad56"
+},
+{
+  "id": "t3_fuzzing_cfi_safe_stack",
+  "tier": 3,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 300,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "제어 흐름 무결성 (CFI)과 SafeStack 컴파일 방어",
+    "en": "Control Flow Integrity (CFI) & SafeStack Hardening"
+  },
+  "prompt": {
+    "ko": "간접 분기 타깃을 검증하는 Clang Forward-edge CFI 및 반환 주소를 격리하는 SafeStack 심층 방어 분석 챌린지입니다.\n지정된 식별자 `fuzzing_cfi_safe_stack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_cfi_safe_stack_v1\") 앞 20자리}`",
+    "en": "Examine Clang Control Flow Integrity (CFI) and SafeStack dual-stack defense against control hijacking.\nCompute the first 20 hex characters of SHA256(\"fuzzing_cfi_safe_stack_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_cfi_safe_stack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_cfi_safe_stack_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_cfi_safe_stack_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9aef773bb1734193344d0f7f669175f2305c6f5d7fc2c7ab85db9772a88e2268"
+},
+{
+  "id": "t4_fuzzing_kernel_syzkaller",
+  "tier": 4,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 310,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "리눅스 커널 시스템콜 퍼징 (syzkaller & KASAN)",
+    "en": "Linux Kernel System Call Fuzzing with syzkaller & KASAN"
+  },
+  "prompt": {
+    "ko": "커널 시스템콜 시그니처(syzlang) 기반 구조화 퍼징과 커널 섀도우 메모리(KASAN) 덤프 분석 챌린지입니다.\n지정된 식별자 `fuzzing_kernel_syzkaller_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_kernel_syzkaller_v1\") 앞 20자리}`",
+    "en": "Analyze Linux kernel attack surface fuzzing using syzkaller syzlang and KASAN bug triage.\nCompute the first 20 hex characters of SHA256(\"fuzzing_kernel_syzkaller_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_kernel_syzkaller_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_kernel_syzkaller_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_kernel_syzkaller_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5ea45872bb71d001aaf988436c0e4fcfe16b25867b6cc313bb4a82b19ee858c3"
+},
+{
+  "id": "t4_fuzzing_browser_dom_fuzzing",
+  "tier": 4,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 320,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "브라우저 DOM 및 V8 JIT 퍼징 기법 (Domato / Fuzzilli)",
+    "en": "Browser DOM & V8 JIT Compiler Fuzzing (Domato & Fuzzilli)"
+  },
+  "prompt": {
+    "ko": "웹킷/Blink DOM 트리 변이 및 V8 JavaScript 인터미디어트 언어(FuzzIL) 기반 컴파일러 버그 탐색 분석 챌린지입니다.\n지정된 식별자 `fuzzing_browser_dom_fuzzing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_browser_dom_fuzzing_v1\") 앞 20자리}`",
+    "en": "Examine V8 JIT engine fuzzing using FuzzIL intermediate language and Domato generation.\nCompute the first 20 hex characters of SHA256(\"fuzzing_browser_dom_fuzzing_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_browser_dom_fuzzing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_browser_dom_fuzzing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_browser_dom_fuzzing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5e384b6d16df3d2c48d64b12a7cececd459478d464d189f079de9db47aa17e39"
+},
+{
+  "id": "t4_fuzzing_smart_contract_echidna",
+  "tier": 4,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 330,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "이더리움 스마트 컨트랙트 프로퍼티 퍼징 (Echidna)",
+    "en": "Smart Contract Property-Based Fuzzing with Echidna"
+  },
+  "prompt": {
+    "ko": "Solidity 컨트랙트의 불변성(Invariant) 검증을 위한 트랜잭션 시퀀스 생성 퍼징 분석 챌린지입니다.\n지정된 식별자 `fuzzing_smart_contract_echidna_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_smart_contract_echidna_v1\") 앞 20자리}`",
+    "en": "Analyze EVM invariant property testing using Echidna transaction sequence fuzzing.\nCompute the first 20 hex characters of SHA256(\"fuzzing_smart_contract_echidna_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_smart_contract_echidna_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_smart_contract_echidna_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_smart_contract_echidna_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "558cf35b55e063344c81ce033f3dca8d99bf1402ce1ec2602ad96ab95889e516"
+},
+{
+  "id": "t4_fuzzing_concolic_symbolic",
+  "tier": 4,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 340,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "하이브리드 퍼징: 콘콜릭 실행과 SMT 솔버 (SymCC / Z3)",
+    "en": "Hybrid Fuzzing: Concolic Execution & SMT Solvers (SymCC & Z3)"
+  },
+  "prompt": {
+    "ko": "퍼저가 통과하기 어려운 복잡한 조건식을 기호 실행(Symbolic Execution)과 SMT 솔버(Z3)로 해결하는 하이브리드 기법 분석 챌린지입니다.\n지정된 식별자 `fuzzing_concolic_symbolic_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_concolic_symbolic_v1\") 앞 20자리}`",
+    "en": "Review hybrid fuzzing combining concolic execution (SymCC) and SMT constraint solving (Z3).\nCompute the first 20 hex characters of SHA256(\"fuzzing_concolic_symbolic_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_concolic_symbolic_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_concolic_symbolic_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_concolic_symbolic_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c403fa4e6e117e372203c40aa309070f7da1f5518dce6bc5d4df923b7c58aced"
+},
+{
+  "id": "t4_fuzzing_zero_day_triage_capstone",
+  "tier": 4,
+  "cat": "fuzzing",
+  "track": "fuzzing",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 제로데이 발굴 및 취약점 책임 공개 캡스톤",
+    "en": "Enterprise 0-Day Fuzzing & Coordinated Vulnerability Disclosure"
+  },
+  "prompt": {
+    "ko": "AFL++ 클러스터에서 발견된 원격 코드 실행(RCE) 크래시의 ASAN 분석, 재현 PoC 작성 및 제조사 패치 검증 풀체인 캡스톤 챌린지입니다.\n지정된 식별자 `fuzzing_zero_day_triage_capstone_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"fuzzing_zero_day_triage_capstone_v1\") 앞 20자리}`",
+    "en": "Complete end-to-end 0-day research: cluster fuzzing, ASAN triage, PoC development, and patch validation.\nCompute the first 20 hex characters of SHA256(\"fuzzing_zero_day_triage_capstone_v1\").\n\nFormat: `FLAG{SHA256(\"fuzzing_zero_day_triage_capstone_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `fuzzing_zero_day_triage_capstone_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"fuzzing_zero_day_triage_capstone_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b87219cbbe86437c8d7b28d5e78e0a599b738e340c7c8b7c8e92177de10a5c22"
 }
 ];

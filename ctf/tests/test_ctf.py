@@ -43,7 +43,7 @@ def test_get_challenges(client):
     assert res.status_code == 200
     data = res.json()
     assert "challenges" in data
-    assert len(data["challenges"]) >= 22
+    assert len(data["challenges"]) >= 37
     ids = [c["id"] for c in data["challenges"]]
     assert "LAB01_SQLI" in ids
     assert "LAB19_ROOT" in ids
@@ -56,6 +56,13 @@ def test_get_challenges(client):
     assert "LAB23_SYSMON" in ids
     assert "LAB23_SURICATA" in ids
     assert "LAB23_SIEM" in ids
+    assert "LAB24_FUZZ" in ids
+    assert "LAB24_ASAN" in ids
+    assert "LAB24_TRIAGE" in ids
+
+    # Check hints_count field
+    fuzz_chal = next(c for c in data["challenges"] if c["id"] == "LAB24_FUZZ")
+    assert fuzz_chal["hints_count"] >= 1
 
 
 def test_timeline_endpoint(client):
@@ -130,3 +137,58 @@ def test_register_and_submit_flag_with_first_blood_and_timeline(client):
     assert time_res.status_code == 200
     t_events = time_res.json()["timeline"]
     assert any(ev["team"] == team_alpha and ev["chal_id"] == "LAB21_CAN" for ev in t_events)
+
+
+def test_hint_unlock_and_penalty(client):
+    team_hint = "Hint_Hunter_Team"
+    client.post("/api/ctf/register", json={"team_name": team_hint})
+
+    # 먼저 점수 획득을 위해 플래그 하나 제출
+    client.post("/api/ctf/submit", json={
+        "team_name": team_hint,
+        "chal_id": "LAB01_SQLI",
+        "flag": "FLAG{sqli_admin_bypass_success_01}",
+    })
+    prof_before = client.get(f"/api/ctf/team/{team_hint}").json()
+    score_before = prof_before["score"]
+    assert score_before > 0
+
+    # 1. 힌트 해금 (LAB24_FUZZ, hint_index 0, cost 50)
+    res_unlock = client.post("/api/ctf/hints/unlock", json={
+        "team_name": team_hint,
+        "chal_id": "LAB24_FUZZ",
+        "hint_index": 0,
+    })
+    assert res_unlock.status_code == 200
+    d_unlock = res_unlock.json()
+    assert d_unlock["status"] == "unlocked"
+    assert d_unlock["cost"] == 50
+    assert "FUZZ" in d_unlock["hint"]
+    assert d_unlock["remaining_score"] == score_before - 50
+
+    # 2. 이미 해금된 힌트 재조회 (비용 0, status already_unlocked)
+    res_reunlock = client.post("/api/ctf/hints/unlock", json={
+        "team_name": team_hint,
+        "chal_id": "LAB24_FUZZ",
+        "hint_index": 0,
+    })
+    assert res_reunlock.status_code == 200
+    d_reunlock = res_reunlock.json()
+    assert d_reunlock["status"] == "already_unlocked"
+    assert d_reunlock["cost"] == 0
+    assert d_reunlock["remaining_score"] == score_before - 50
+
+    # 3. 팀 프로필에서 unlocked_hints에 등록되었는지 확인
+    prof_after = client.get(f"/api/ctf/team/{team_hint}").json()
+    assert prof_after["score"] == score_before - 50
+    assert "LAB24_FUZZ" in prof_after["unlocked_hints"]
+    assert 0 in prof_after["unlocked_hints"]["LAB24_FUZZ"]
+
+    # 4. 존재하지 않는 힌트 인덱스 요청 시 404 에러
+    res_404 = client.post("/api/ctf/hints/unlock", json={
+        "team_name": team_hint,
+        "chal_id": "LAB24_FUZZ",
+        "hint_index": 999,
+    })
+    assert res_404.status_code == 404
+
