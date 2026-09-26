@@ -477,6 +477,39 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "⚡ Tool Shadowing Exploited! Privileged tool invoked -> FLAG{mcp_tool_shadowing_agent_sandbox_contained_7341}"
             }
         ]
+    },
+    "26": {
+        "title": "Lab 26: MalSandbox - Malware Analysis & Dynamic Sandbox Lab",
+        "description": "정적 PE 엔트로피 파싱, 안티 디버그 우회, YARA 시그니처 룰셋 매칭 및 동적 샌드박스 행위 격리",
+        "steps": [
+            {
+                "step": 1,
+                "name": "PE 바이너리 언패킹 및 IsDebuggerPresent PEB 패치",
+                "target": "POST /api/analyze/static (sample_name, unpack, patch_anti_debug)",
+                "poc_explanation": "UPX 패킹된 섹션 엔트로피(7.85)를 해제하고 PEB BeingDebugged 플래그를 패치하여 숨겨진 프로세스 인젝션 IAT를 복원합니다.",
+                "exploit_payload": '{"sample_name": "sample_dropper.exe", "unpack": true, "patch_anti_debug": true}',
+                "defense": "섹션 엔트로피 임계값(>7.2) 모니터링 및 TLS 콜백 기반 디버거 탐지 하드닝.",
+                "sample_output": "🔍 PE Analysis Succeeded! Hidden IAT recovered -> FLAG{pe_static_entropy_iat_unpacked_8192}"
+            },
+            {
+                "step": 2,
+                "name": "YARA 시그니처 룰셋 설계 및 쉘코드/C2 매칭",
+                "target": "POST /api/analyze/yara (sample_name, rule_code)",
+                "poc_explanation": "바이너리의 VirtualAllocEx IAT와 PowerShell 인코딩 다운로더 문자열을 매칭하는 휴리스틱 YARA 룰을 적용합니다.",
+                "exploit_payload": '{"sample_name": "sample_dropper.exe", "rule_code": "rule Detect_Dropper { strings: $a = \\"VirtualAllocEx\\" $b = \\"powershell\\" condition: all of them }"}',
+                "defense": "CI/CD 빌드 파이프라인 및 엔드포인트 EDR에 커스텀 YARA 스캐너 연동.",
+                "sample_output": "🎯 YARA Matched! Threat Score CRITICAL -> FLAG{yara_heuristic_rule_c2_hunting_5301}"
+            },
+            {
+                "step": 3,
+                "name": "동적 샌드박스 Sleep 스킵 및 API 인젝션 격리",
+                "target": "POST /api/analyze/dynamic (sample_name, skip_sleep, hook_api, block_run_key)",
+                "poc_explanation": "10분간의 Anti-Sandbox Sleep 지연을 가속(스킵)하고 cuckoomon 후킹으로 프로세스 인젝션 시도를 캡처 및 차단합니다.",
+                "exploit_payload": '{"sample_name": "sample_dropper.exe", "skip_sleep": true, "hook_api": true, "block_run_key": true}',
+                "defense": "커널 드라이버/eBPF 기반 타임스탬프 조작 방어 및 레지스트리 지속성 키 쓰기 보호.",
+                "sample_output": "🛡️ Malware Contained! Behavioral telemetry logged -> FLAG{dynamic_sandbox_telemetry_evasion_blocked_2748}"
+            }
+        ]
     }
 }
 

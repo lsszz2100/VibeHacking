@@ -67,11 +67,11 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 
 | 계층 / node | 티어 / tier | 문제 / count | 통과 / breach |
 |------|:---:|:------:|:--------:|
-| `perimeter` 외곽 | **0** | 134 | 42% |
-| `webserver` 웹서버 | **1** | 243 | 60% |
-| `internal` 내부망 | **2** | 331 | 60% |
-| `vault` 금고 | **3** | 339 | 58% |
-| `core` 코어 | **4** | 318 | 71% |
+| `perimeter` 외곽 | **0** | 137 | 42% |
+| `webserver` 웹서버 | **1** | 249 | 60% |
+| `internal` 내부망 | **2** | 340 | 60% |
+| `vault` 금고 | **3** | 349 | 58% |
+| `core` 코어 | **4** | 325 | 71% |
 
 
 <details>
@@ -120,6 +120,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (2) | 관제 조직 티어별 역할 분석·시스템 모니터 텔레메트리 식별 체계 / operational watch tier architecture and system telemetry monitor schema |
 | `fuzzing` ⚡ 퍼징·취약점 발굴 (2) | 커버리지 기반 퍼징 피드백 루프 구조·새니타이저 섀도우 메모리 1:8 변환 메커니즘 / coverage-guided feedback loop architecture and shadow memory translation schema |
 | `airedteam` 🎯 AI 레드팀·탈옥 (3) | 인공지능 적대적 위협 매트릭스 분류·직접 프롬프트 주입 기본 원리·시스템 지시문 유출 정찰 / AI adversarial threat taxonomy, direct prompt injection principles, system instructions exfiltration recon |
+| `malsandbox` 🦠 악성코드 분석·자동화 샌드박스 (3) | 실행 파일 매직 바이트·기본 헤더 규격·무작위도 산출 측정 원리 / executable magic marker, header structure layout, randomness metric measurement |
 
 
 #### `webserver` 웹서버 — 티어 1 / tier 1
@@ -165,6 +166,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (6) | NIDS 경보 포맷·보안 이벤트 4624·CIM 데이터 모델 정규화·ATT&CK 기법 분류·침해사고 대응 수명주기·부모 프로세스 비정상 계층 / NIDS alert formats, Security 4624 logons, CIM normalization, ATT&CK mapping, incident response lifecycle, and parent process anomalies |
 | `fuzzing` ⚡ 퍼징·취약점 발굴 (6) | 초기 코퍼스 품질과 엣지 탐색 가속·인프로세스 하네스 구조·비트 단위 변이 전략·하드웨어 분기 추적 기술·메모리 오류 시그널 분류·비교 분기 매직 해결 계측 / initial corpus quality, in-process harness interface, mutation strategies, hardware branch tracing, crash signal taxonomy, comparison bypass instrumentation |
 | `airedteam` 🎯 AI 레드팀·탈옥 (6) | 2차 주입 아키텍처·경계 태그 격리 기법·유니코드 제로위드 난독화·유사 문자 치환·도구 열거 프로토콜·오케스트레이션 자동화 / secondary injection architecture, boundary tag isolation, unicode zero-width obfuscation, lookalike glyph substitution, tool enumeration protocol, automated red team orchestration |
+| `malsandbox` 🦠 악성코드 분석·자동화 샌드박스 (6) | 바이너리 파서 활용·임포트 테이블 군집 분석·은닉 문자열 추출·디버거 부착 여부 검사·오픈소스 탐지 패턴 매칭·해시 평판 인텔리전스 조회 / binary parser analysis, import table clustering, covert string extraction, debugger presence inspection, threat detection pattern evaluation, hash reputation intelligence |
 
 
 #### `internal` 내부망 — 티어 2 / tier 2
@@ -210,6 +212,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (12) | DNS 터널링 무작위성·TLS 핸드셰이크 지문 분석·LOLBins 다운로드 탐지·LSASS 메모리 접근 마스크·Logon Type 9 인증 추적·포맷 독립적 탐지 규칙 문법·원격 스레드 주입 분석·주기적 신호 통계 분석·SPL 파이프라인 쿼리·KQL 횡적 이동 헌팅·프로토콜 분석 데몬 상태 플래그·인증 패키지 덤프 탐지 / DNS tunneling randomness, TLS handshake fingerprinting, LOLBins download hunting, LSASS access masks, Logon Type 9 tracking, vendor-agnostic detection rules, remote thread injection analysis, periodic check-in signals, SPL pipeline queries, KQL lateral movement hunting, network metadata daemon connection flags, credential package dump detection |
 | `fuzzing` ⚡ 퍼징·취약점 발굴 (12) | 힙 해제 후 재참조 섀도우 값·스택 프레임 보호 레드존·전역 변수 경계 침범·부분 바이트 접근 인코딩·공유 메모리 비트맵 전이 추적·분기 실행 횟수 지수 버킷·바이너리 동적 변환 모드·동적 계측 엔진 연동·스택 트레이스 프레임 해싱·오류 복구 지속 실행 모드·미정의 동작 탐지·초기화되지 않은 메모리 읽기 / freed allocation shadow markers, stack frame redzones, global buffer bounds, partial allocation bytes, shared memory edge bitmaps, exponential counter bucketing, binary dynamic translation, dynamic instrumentation engines, stack trace frame deduplication, sanitizer recovery execution, undefined behavior checks, uninitialized memory read tracking |
 | `airedteam` 🎯 AI 레드팀·탈옥 (9) | 점진적 맥락 오염 기법·서브워드 토큰 분할·유니코드 정규화 전처리·이중 모델 신뢰 분리 구조·악성 도구 섀도잉 하이재킹·유출 탐지 트립와이어 토큰·자동 취약점 스캐너·의미론적 유사도 판별·과도한 에이전트 자율 범위 결함 / multi-turn context drift, subword token fragmentation, unicode normalization pipeline, dual-model trusted boundary separation, tool shadowing hijacking, leak detection tripwire tokens, automated scanner heuristics, semantic distance evaluation, excessive autonomous scope flaw |
+| `malsandbox` 🦠 악성코드 분석·자동화 샌드박스 (9) | 패커 변칙 섹션 식별·스레드 저장소 사전 실행 콜백·문자열 인코딩 탐지 지시자·가변 기계어 스텁 와일드카드 규칙·모듈 연계 복합 조건식·프로세스 껍데기 교체 징후·시작프로그램 지속성 등록 추적·지연 실행 타임아웃 회피·타이머 사이클 차이 검증 / packer section anomaly, pre-execution thread callbacks, encoding modifier directives, variable payload wildcards, module composite conditions, process shell substitution, persistence registration tracking, delay execution evasion, timing difference verification |
 
 
 #### `vault` 금고 — 티어 3 / tier 3
@@ -255,6 +258,7 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (10) | 자동화 오케스트레이션 대응 플레이북·프로세스 언매핑과 이벤트 추적 대응·Overpass-the-Hash 티켓 변환·DGA 알고리즘 클러스터링·취약 드라이버 남용 헌팅·에코 질의 은닉 터널 데이터 유출·서비스 계정 티켓 추출·YARA-L 멀티 이벤트 상관분석·단말 감시 침묵 공격 탐지·서버 응답 지문 클러스터링 / automated orchestrated containment playbooks, process unmapping and event tracing defense, Overpass-the-Hash ticket requests, DGA clustering, vulnerable driver abuse hunting, covert echo query tunnel exfiltration, service account ticket harvesting, YARA-L multi-event correlation, endpoint sensor silencing detection, server response fingerprint clustering |
 | `fuzzing` ⚡ 퍼징·취약점 발굴 (10) | 입력값 테스트케이스 크기 최소화·객체 생명주기 결함 트리아지·인접 힙 청크 손상 분석·결정적 재현 익스플로잇 합성·지속적 통합 분산 퍼징 체계·자동 이진 탐색 회귀 분석·문맥 자유 문법 기반 생성·다중 엔진 차분 비교·댕글링 참조 결함 중화·제어 흐름 실행 가드 / testcase minimization, temporal allocation lifecycles, adjacent heap chunk corruption, deterministic reproduction synthesis, continuous fuzzing architecture, automated regression bisection, context-free grammar generation, differential engine comparison, dangling reference neutralization, control flow guard defense |
 | `airedteam` 🎯 AI 레드팀·탈옥 (10) | 그래디언트 좌표 탐색 적대적 추가 문자열·유전 알고리즘 기반 제약 우회 생성·검색 증강 지식 청크 오염·역량 토큰 기반 권한 인가·안전 분류 모델 분류 체계·대화 제어 보안 필터 언어·커널 런타임 샌드박싱·적대적 상호 정제 루프·생성 확률 무작위도 이상치 탐지·시각 타이포그래피 주입 공격 / gradient coordinate search adversarial postfix tokens, genetic algorithm restriction bypass generation, retrieval chunk knowledge poisoning, capability token authorization, safety classifier taxonomy, dialog policy barrier language, kernel runtime sandboxing, adversarial interactive refinement, generation probability randomness anomaly detection, visual typography injection attacks |
+| `malsandbox` 🦠 악성코드 분석·자동화 샌드박스 (10) | 인라인 시스템콜 인터셉트·가상머신 지연 가속 기법·도메인 생성 알고리즘 외부 교신 캡처·임시 폴더 드롭 바이너리 수집·기능 역량 프레임워크 매핑·게스트 머신 아티팩트 은닉·휘발성 메모리 코드 영역 추출·섀도 복사본 삭제 시도 감시·다단계 복합 위험 점수 산정·가상 주소 공간 실시간 주사 / inline system call intercept, virtual machine delay acceleration, domain callback capture, drop binary extraction, functional capability framework mapping, guest machine artifact cloaking, volatile memory extraction, shadow copy deletion monitoring, multi-factor risk scoring, virtual address space scanning |
 
 
 #### `core` 코어 — 티어 4 / tier 4
@@ -300,12 +304,13 @@ A layer's breach quota is likewise a **share of that layer's own pool**, so it s
 | `sochunt` 🛡️ 보안관제·위협 헌팅 (5) | Golden Ticket 위조 헌팅·Shadow Admin 계정 탐지·클라우드 감사 로그 피벗 추적·제로 트러스트 관제 파이프라인·위협 헌팅 풀체인 캡스톤 / Golden Ticket forgery hunting, Shadow Admin account detection, cloud audit log pivot tracking, zero-trust monitoring pipelines, threat hunting full-chain capstone |
 | `fuzzing` ⚡ 퍼징·취약점 발굴 (5) | 커널 시스템콜 인터페이스 퍼징·브라우저 엔진 중간 표현식 변이·스마트 컨트랙트 불변성 검증·기호 실행 결합 하이브리드 탐색·엔터프라이즈 취약점 발굴 및 책임 공개 / kernel system call fuzzing, browser engine intermediate representation mutation, smart contract invariant testing, hybrid symbolic constraint solving, enterprise vulnerability research lifecycle |
 | `airedteam` 🎯 AI 레드팀·탈옥 (7) | 자율 에이전트 킬체인 하이재킹·가중치 스텔스 백도어 트리거·상호 인증 기반 도구 논리 영역 격리·토큰 생성 시간차 분석·보안 모듈 연계 프롬프트 방화벽·신뢰 실행 환경 기반 원격 무결성 증명·기업형 레드팀 종합 평가 / autonomous agent killchain hijacking, weight stealth backdoor triggers, mutual TLS tool domain zone isolation, token generation timing analysis, security module prompt firewall, trusted execution environment remote attestation, enterprise red team comprehensive assessment |
+| `malsandbox` 🦠 악성코드 분석·자동화 샌드박스 (7) | 커널 보안 프로브 악성 차단·드라이버 레벨 시스템콜 복원 추적·프로세서 하이퍼 상태 비트 기만·무작위 생성 도메인 군집 분석·표준 위협 인텔리전스 규격 변환·진입점 메모리 복원 덤프·전과정 오케스트레이션 총괄 / kernel probe malicious intervention, driver system call tracking, processor hyper-state bit spoofing, randomized generated domain clustering, threat intelligence standard conversion, entry point memory dump, end-to-end orchestration capstone |
 
 </details>
 
-총 **1365문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35 · 문서형 악성코드·PDF 포렌식 35 · 메모리 포렌식·Volatility 35 · AI 에이전트·MCP 보안 35 · 안드로이드 리버싱·후킹 35 · 윈도우 클라이언트·커널 익스플로잇 35 · 차량 보안·CAN Bus·UDS 35 · API 보안·REST·GraphQL·JWT 35 · SOC 위협 헌팅·SIEM·IR 35 · 퍼징·취약점 발굴·ASAN 35 · AI 레드팀·탈옥·가드레일 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
+총 **1400문제**(분야: 웹 35 · 암호 35 · 시스템 35 · 포렌식 35 · 클라우드/컨테이너 35 · AI/LLM 35 · 네트워크 35 · 모바일 35 · 하드웨어·IoT 35 · 블루팀 탐지·대응 35 · 물리 보안 침투 35 · 자동차 해킹 35 · 제로 트러스트 35 · 블록체인·Web3 35 · 액티브 디렉터리 35 · 리버싱 심화 35 · 바이너리 익스플로잇 심화 35 · 게임 해킹 35 · 공급망 보안 35 · OSINT·사회공학 35 · 레드팀·C2 35 · 퍼플팀·공격/탐지 검증 35 · 산업제어시스템·SCADA 35 · 악성코드 기법·방어 회피 35 · 무선·RF 해킹 35 · 부채널·결함주입 35 · WebAssembly 보안 35 · eBPF·커널 보안 35 · 임베디드·펌웨어 보안 35 · 문서형 악성코드·PDF 포렌식 35 · 메모리 포렌식·Volatility 35 · AI 에이전트·MCP 보안 35 · 안드로이드 리버싱·후킹 35 · 윈도우 클라이언트·커널 익스플로잇 35 · 차량 보안·CAN Bus·UDS 35 · API 보안·REST·GraphQL·JWT 35 · SOC 위협 헌팅·SIEM·IR 35 · 퍼징·취약점 발굴·ASAN 35 · AI 레드팀·탈옥·가드레일 35 · 악성코드 분석·자동화 샌드박스 35). 각 문제는 [Vibe Hacking 본 레포](../README.md)의 75개 섹션 주제와 연결됩니다.
 
-Total **1365 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35 · maldoc & PDF forensics 35 · memory forensics & Volatility 35 · AI agent & MCP security 35 · Android reversing & Frida 35 · Windows client & kernel exploits 35 · Automotive security & CAN bus 35 · API security & modern auth 35 · SOC threat hunting & SIEM 35 · Fuzzing & vulnerability research 35 · AI red teaming & jailbreak 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
+Total **1400 challenges** (web 35 · crypto 35 · system 35 · forensics 35 · cloud/container 35 · AI/LLM 35 · network 35 · mobile 35 · hardware & IoT 35 · blue team & detection 35 · physical security 35 · automotive 35 · zero trust 35 · blockchain & web3 35 · active directory 35 · advanced reversing 35 · advanced binary exploitation 35 · game hacking 35 · supply chain 35 · OSINT & social engineering 35 · red team & C2 35 · purple team & emulation 35 · ICS/SCADA & OT 35 · malware & defense evasion 35 · wireless & RF hacking 35 · side-channel analysis & fault injection 35 · WebAssembly security 35 · eBPF & kernel security 35 · firmware & embedded security 35 · maldoc & PDF forensics 35 · memory forensics & Volatility 35 · AI agent & MCP security 35 · Android reversing & Frida 35 · Windows client & kernel exploits 35 · Automotive security & CAN bus 35 · API security & modern auth 35 · SOC threat hunting & SIEM 35 · Fuzzing & vulnerability research 35 · AI red teaming & jailbreak 35 · Malware analysis & sandbox 35); each maps to a topic from the [main repo](../README.md)'s 75 sections.
 
 ---
 

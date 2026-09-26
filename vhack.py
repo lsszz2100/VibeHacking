@@ -350,6 +350,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [11, 56, 73],
     },
+    "26": {
+        "name": "악성코드 자동 분석 & 동적 샌드박스 랩",
+        "dir":  "26_malware_sandbox_lab",
+        "desc": "MalSandbox: PE Shannon 엔트로피 · IsDebuggerPresent PEB 패치 · YARA 시그니처 룰셋 · 가상 샌드박스 행위 격리",
+        "url":  "웹 콘솔 & 악성코드 분석 센터: http://localhost:8026",
+        "difficulty": "★★★★",
+        "related": [6, 45, 74],
+    },
 }
 
 
@@ -1348,6 +1356,8 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8022, "Lab 22 (API Security APIGuard)"),
         (8023, "Lab 23 (SOCHunter Threat Hunting)"),
         (8024, "Lab 24 (FuzzMaster AFL++ & ASAN)"),
+        (8025, "Lab 25 (AIRedGuard AI Red Team)"),
+        (8026, "Lab 26 (MalSandbox Malware Analysis)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

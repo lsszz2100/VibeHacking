@@ -65,12 +65,17 @@ def test_get_challenges(client):
     assert "LAB25_INDIRECT" in ids
     assert "LAB25_GUARDRAIL" in ids
     assert "LAB25_SHADOW" in ids
+    assert "LAB26_STATIC" in ids
+    assert "LAB26_YARA" in ids
+    assert "LAB26_SANDBOX" in ids
 
     # Check hints_count field
     fuzz_chal = next(c for c in data["challenges"] if c["id"] == "LAB24_FUZZ")
     assert fuzz_chal["hints_count"] >= 1
     ai_chal = next(c for c in data["challenges"] if c["id"] == "LAB25_INDIRECT")
     assert ai_chal["hints_count"] >= 1
+    mal_chal = next(c for c in data["challenges"] if c["id"] == "LAB26_STATIC")
+    assert mal_chal["hints_count"] >= 1
 
 
 def test_timeline_endpoint(client):

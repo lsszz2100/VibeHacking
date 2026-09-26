@@ -22,6 +22,7 @@ api_keys.*
 *.dump
 memdump.*
 *.raw
+*.tar.gz
 wordlists/
 passwords/
 crack_results.*

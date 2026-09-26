@@ -364,6 +364,14 @@ const TRACKS = [
     "en": "AI Red Teaming & Guardrails",
     "desc_ko": "간접 프롬프트 주입(IPI)·적대적 토큰 분할·MCP 도구 섀도잉·Llama Guard 회피·에이전트 샌드박스 보안.",
     "desc_en": "Indirect prompt injection (IPI), adversarial token splitting, MCP tool shadowing, Llama Guard evasion, agent sandbox security."
+  },
+  {
+      "id": "malsandbox",
+      "icon": "🦠",
+      "ko": "악성코드 분석·자동화 샌드박스",
+      "en": "Malware Analysis & Sandbox",
+      "desc_ko": "PE 구조 바이트 파싱·Shannon 엔트로피 패킹 탐지·YARA 룰셋 헌팅·가상 샌드박스 API 후킹 및 동적 행위 격리.",
+      "desc_en": "PE binary byte parsing, Shannon entropy packing analysis, YARA heuristic rule hunting, dynamic sandbox API hooking, and behavioral containment."
   }
 ];
 
@@ -38632,5 +38640,986 @@ const CHALLENGES = [
     ]
   },
   "hash": "00cdf6fc2de28b53bc341ac29e169b7e52a44d5f5b022cf30eaac7d86037216d"
+}
+,
+{
+  "id": "t0_malsandbox_mz_dos_header",
+  "tier": 0,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 10,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PE 매직 넘버와 DOS 헤더",
+    "en": "PE Magic Number & DOS Header"
+  },
+  "prompt": {
+    "ko": "PE 파일의 시그니처 MZ(0x5A4D)와 NT 헤더 시작 오프셋 e_lfanew를 분석합니다.\n지정된 식별자 `malsandbox_mz_dos_header_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_mz_dos_header_v1\") 앞 20자리}`",
+    "en": "Analyze the MZ (0x5A4D) magic number and e_lfanew offset in the PE DOS header.\nCompute the first 20 hex characters of SHA256(\"malsandbox_mz_dos_header_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_mz_dos_header_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_mz_dos_header_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_mz_dos_header_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "6441fe9eb003f4d0ecedb65ad9fd3183ed572269c00324e421370e263ffa9183"
+},
+{
+  "id": "t0_malsandbox_pe_signature",
+  "tier": 0,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 20,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PE NT 헤더 및 머신 아키텍처",
+    "en": "PE NT Header & Machine Architecture"
+  },
+  "prompt": {
+    "ko": "IMAGE_NT_HEADERS 시그니처 0x00004550 및 FileHeader Machine 아키텍처 필드를 분석합니다.\n지정된 식별자 `malsandbox_pe_signature_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_pe_signature_v1\") 앞 20자리}`",
+    "en": "Analyze IMAGE_NT_HEADERS signature 0x00004550 and FileHeader Machine architecture field.\nCompute the first 20 hex characters of SHA256(\"malsandbox_pe_signature_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_pe_signature_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_pe_signature_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_pe_signature_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "75c37a514a41b42f2a352f5b7d71459e6eb165c2ff1cd2adfcfe005b7cbc22d3"
+},
+{
+  "id": "t0_malsandbox_shannon_entropy_concept",
+  "tier": 0,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Shannon 엔트로피 기반 패킹 탐지 원리",
+    "en": "Shannon Entropy & Packing Detection Principle"
+  },
+  "prompt": {
+    "ko": "바이트 무작위도(0.0~8.0)를 수치화한 Shannon 엔트로피와 패킹 의심 임계값(7.2)을 검증합니다.\n지정된 식별자 `malsandbox_shannon_entropy_concept_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_shannon_entropy_concept_v1\") 앞 20자리}`",
+    "en": "Verify Shannon entropy (0.0 to 8.0) and the suspicious packing threshold of 7.2.\nCompute the first 20 hex characters of SHA256(\"malsandbox_shannon_entropy_concept_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_shannon_entropy_concept_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_shannon_entropy_concept_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_shannon_entropy_concept_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9419140a2525265803a941aeec3ebe23920c5351d60bf0fd74ea6057ce111b40"
+},
+{
+  "id": "t1_malsandbox_pefile_parsing",
+  "tier": 1,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 40,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "파이썬 pefile 섹션 테이블 파싱",
+    "en": "Python pefile Section Table Parsing"
+  },
+  "prompt": {
+    "ko": "pefile 라이브러리를 활용하여 PE 섹션 헤더(.text, .data) 및 실행 진입점(AddressOfEntryPoint)을 추출합니다.\n지정된 식별자 `malsandbox_pefile_parsing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_pefile_parsing_v1\") 앞 20자리}`",
+    "en": "Extract PE section headers (.text, .data) and AddressOfEntryPoint using pefile.\nCompute the first 20 hex characters of SHA256(\"malsandbox_pefile_parsing_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_pefile_parsing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_pefile_parsing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_pefile_parsing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "51bf3717b92ffa3abc77470c4a776b0858def3c6d97b602608c7aa8a15460852"
+},
+{
+  "id": "t1_malsandbox_iat_import_table",
+  "tier": 1,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IAT 임포트 테이블 의심 API 군집 식별",
+    "en": "IAT Suspicious API Cluster Identification"
+  },
+  "prompt": {
+    "ko": "Import Address Table에서 프로세스 인젝션에 악용되는 kernel32 API 군집을 프로파일링합니다.\n지정된 식별자 `malsandbox_iat_import_table_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_iat_import_table_v1\") 앞 20자리}`",
+    "en": "Profile the kernel32 process injection API cluster within the Import Address Table.\nCompute the first 20 hex characters of SHA256(\"malsandbox_iat_import_table_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_iat_import_table_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_iat_import_table_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_iat_import_table_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3ccfb1d23056f5bac41def44036159d8ed67d2a40a6839900c8b130e0c4a35a5"
+},
+{
+  "id": "t1_malsandbox_strings_floss",
+  "tier": 1,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "FLOSS 정적 난독화 스택 스트링 추출",
+    "en": "FLOSS Obfuscated Stack Strings Extraction"
+  },
+  "prompt": {
+    "ko": "바이너리 내 런타임에 조립되는 스택 스트링과 은닉 C2 통신 파라미터를 추출합니다.\n지정된 식별자 `malsandbox_strings_floss_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_strings_floss_v1\") 앞 20자리}`",
+    "en": "Extract obfuscated stack strings constructed at runtime and hidden C2 parameters using FLOSS.\nCompute the first 20 hex characters of SHA256(\"malsandbox_strings_floss_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_strings_floss_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_strings_floss_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_strings_floss_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b220fa201e6cde26efe82a72b0393ce4a990ade8b86a50a4852e1f9be7dfd112"
+},
+{
+  "id": "t1_malsandbox_anti_debug_peb",
+  "tier": 1,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PEB BeingDebugged 플래그 안티디버깅",
+    "en": "PEB BeingDebugged Anti-Debugging Flag"
+  },
+  "prompt": {
+    "ko": "FS:[0x30] 또는 GS:[0x60] 오프셋의 PEB BeingDebugged 바이트 플래그 검사 로직을 분석합니다.\n지정된 식별자 `malsandbox_anti_debug_peb_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_anti_debug_peb_v1\") 앞 20자리}`",
+    "en": "Analyze PEB BeingDebugged byte flag inspection at offset FS:[0x30] / GS:[0x60].\nCompute the first 20 hex characters of SHA256(\"malsandbox_anti_debug_peb_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_anti_debug_peb_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_anti_debug_peb_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_anti_debug_peb_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fc66c316bc08e91de7ae44c67bc380bda861914732b9402b35d6e16267dea1ff"
+},
+{
+  "id": "t1_malsandbox_clamav_signature",
+  "tier": 1,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ClamAV 오픈소스 백신 시그니처 매칭",
+    "en": "ClamAV Open-Source Antivirus Signature Matching"
+  },
+  "prompt": {
+    "ko": "오픈소스 ClamAV 바이트패턴 데이터베이스(.ndb) 규격과 악성 매직 시그니처를 검증합니다.\n지정된 식별자 `malsandbox_clamav_signature_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_clamav_signature_v1\") 앞 20자리}`",
+    "en": "Validate open-source ClamAV byte pattern database (.ndb) rules and malware signatures.\nCompute the first 20 hex characters of SHA256(\"malsandbox_clamav_signature_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_clamav_signature_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_clamav_signature_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_clamav_signature_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "888152eaa8927159af26a01312875d6777f100859c53684e13ac6c2f54e75af2"
+},
+{
+  "id": "t1_malsandbox_hash_reputation",
+  "tier": 1,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "VirusTotal API 평판 인텔리전스 쿼리",
+    "en": "VirusTotal API Reputation Intelligence Query"
+  },
+  "prompt": {
+    "ko": "SHA-256 해시 기반 VirusTotal v3 REST API를 연동하여 알려진 위협 탐지율을 판별합니다.\n지정된 식별자 `malsandbox_hash_reputation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_hash_reputation_v1\") 앞 20자리}`",
+    "en": "Query known threat detection ratios via VirusTotal v3 REST API using SHA-256 hashes.\nCompute the first 20 hex characters of SHA256(\"malsandbox_hash_reputation_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_hash_reputation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_hash_reputation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_hash_reputation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "812bda267941af7744acd0500e0340ff64860a363be14ff3b6f4777ebef544cb"
+},
+{
+  "id": "t2_malsandbox_upx_section_entropy",
+  "tier": 2,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 75,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UPX 변칙 섹션 엔트로피 분석 및 언패킹",
+    "en": "UPX Anomaly Section Entropy Analysis & Unpacking"
+  },
+  "prompt": {
+    "ko": "섹션 엔트로피 7.8 이상을 기록하는 UPX0 압축 섹션을 식별하고 진입점 스텁을 복원합니다.\n지정된 식별자 `malsandbox_upx_section_entropy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_upx_section_entropy_v1\") 앞 20자리}`",
+    "en": "Identify UPX0 packed sections with entropy > 7.8 and restore the entry point stub.\nCompute the first 20 hex characters of SHA256(\"malsandbox_upx_section_entropy_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_upx_section_entropy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_upx_section_entropy_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_upx_section_entropy_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9f1a106e2643d44a6ac4e458ba8a0238e57aebd65c0f9785934efda350564421"
+},
+{
+  "id": "t2_malsandbox_tls_callbacks",
+  "tier": 2,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "TLS 콜백(Thread Local Storage) 은닉 실행",
+    "en": "TLS Callback Covert Pre-EP Execution"
+  },
+  "prompt": {
+    "ko": "메인 OEP 실행 이전에 디버거를 탐지하고 종료하기 위해 실행되는 TLS 콜백 배열을 추적합니다.\n지정된 식별자 `malsandbox_tls_callbacks_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_tls_callbacks_v1\") 앞 20자리}`",
+    "en": "Trace TLS callback arrays executed prior to the main OEP to evade debugger attachment.\nCompute the first 20 hex characters of SHA256(\"malsandbox_tls_callbacks_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_tls_callbacks_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_tls_callbacks_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_tls_callbacks_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7c1fcb3ae8cd7919d5d067e345f56e9c701452601c60261554867c5a74c787ad"
+},
+{
+  "id": "t2_malsandbox_yara_string_modifiers",
+  "tier": 2,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "YARA 문자열 수정자(ascii wide nocase) 룰",
+    "en": "YARA String Modifiers (ascii wide nocase)"
+  },
+  "prompt": {
+    "ko": "유니코드와 ANSI 인코딩이 혼재된 드롭퍼의 다운로더 커맨드를 YARA 수정자로 매칭합니다.\n지정된 식별자 `malsandbox_yara_string_modifiers_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_yara_string_modifiers_v1\") 앞 20자리}`",
+    "en": "Match downloader strings across mixed unicode and ANSI encodings with YARA modifiers.\nCompute the first 20 hex characters of SHA256(\"malsandbox_yara_string_modifiers_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_yara_string_modifiers_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_yara_string_modifiers_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_yara_string_modifiers_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7de14ef0b3d9ed2541064d2509d875c2656898a82e55f1f7102427da7153d874"
+},
+{
+  "id": "t2_malsandbox_yara_hex_wildcard",
+  "tier": 2,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "가변 오프셋 쉘코드 와일드카드 헥스 룰",
+    "en": "Shellcode Wildcard Hex Pattern Rule"
+  },
+  "prompt": {
+    "ko": "Call-Pop 상대 오프셋이 변하는 악성 쉘코드 스텁을 헥스 와일드카드(??)로 탐지합니다.\n지정된 식별자 `malsandbox_yara_hex_wildcard_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_yara_hex_wildcard_v1\") 앞 20자리}`",
+    "en": "Detect variable offset shellcode call-pop stubs using YARA hex wildcard (??) syntax.\nCompute the first 20 hex characters of SHA256(\"malsandbox_yara_hex_wildcard_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_yara_hex_wildcard_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_yara_hex_wildcard_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_yara_hex_wildcard_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3e8f7c623decb7db7664e1f578709b016e06470a1c2fefb40d2e70c8967ec498"
+},
+{
+  "id": "t2_malsandbox_pe_module_yara",
+  "tier": 2,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "YARA pe 확장 모듈 복합 조건식 설계",
+    "en": "YARA pe Extension Module Compound Rule"
+  },
+  "prompt": {
+    "ko": "import \"pe\" 모듈을 사용하여 엔트로피 임계값과 IAT VirtualAllocEx 임포트를 동시 검증합니다.\n지정된 식별자 `malsandbox_pe_module_yara_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_pe_module_yara_v1\") 앞 20자리}`",
+    "en": "Design compound YARA rules evaluating section entropy and IAT VirtualAllocEx imports via pe module.\nCompute the first 20 hex characters of SHA256(\"malsandbox_pe_module_yara_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_pe_module_yara_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_pe_module_yara_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_pe_module_yara_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8f70652a98e485cc1bfec8300c1f4b321233733a240c1f7734f058187cb8f14d"
+},
+{
+  "id": "t2_malsandbox_process_hollowing",
+  "tier": 2,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 105,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "프로세스 할로잉(Process Hollowing) 정적 징후",
+    "en": "Process Hollowing Static Signatures"
+  },
+  "prompt": {
+    "ko": "CREATE_SUSPENDED 플래그와 NtMapViewOfSection/SetThreadContext 조합 인젝션을 분석합니다.\n지정된 식별자 `malsandbox_process_hollowing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_process_hollowing_v1\") 앞 20자리}`",
+    "en": "Analyze injection combining CREATE_SUSPENDED with NtMapViewOfSection and SetThreadContext.\nCompute the first 20 hex characters of SHA256(\"malsandbox_process_hollowing_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_process_hollowing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_process_hollowing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_process_hollowing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "16f12f97994a98a6d2e5c8fcf8ab151ca00d0cec975b9f78b6e03b7c73f35016"
+},
+{
+  "id": "t2_malsandbox_registry_run_persistence",
+  "tier": 2,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Run 키 레지스트리 지속성(Persistence) 헌팅",
+    "en": "Registry Run Key Persistence Hunting"
+  },
+  "prompt": {
+    "ko": "HKLM 및 HKCU CurrentVersion\\Run 키에 등록되는 악성 지속성 아티팩트를 추적합니다.\n지정된 식별자 `malsandbox_registry_run_persistence_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_registry_run_persistence_v1\") 앞 20자리}`",
+    "en": "Trace persistence registry artifacts installed in HKLM and HKCU CurrentVersion\\Run keys.\nCompute the first 20 hex characters of SHA256(\"malsandbox_registry_run_persistence_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_registry_run_persistence_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_registry_run_persistence_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_registry_run_persistence_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "600a384b76bdfcd4b354429e35eab1cb941dd2d39c79c5e2874b96c73a529827"
+},
+{
+  "id": "t2_malsandbox_anti_analysis_sleep",
+  "tier": 2,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 115,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Sleep 지연을 악용한 샌드박스 타임아웃 회피",
+    "en": "Sandbox Timeout Evasion via Sleep Delay"
+  },
+  "prompt": {
+    "ko": "600초 이상의 Sleep API 호출로 가상 환경의 기본 분석 타임아웃을 유도하는 기법을 분석합니다.\n지정된 식별자 `malsandbox_anti_analysis_sleep_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_anti_analysis_sleep_v1\") 앞 20자리}`",
+    "en": "Analyze malware calling long Sleep delays (>600s) to exhaust default sandbox analysis timeouts.\nCompute the first 20 hex characters of SHA256(\"malsandbox_anti_analysis_sleep_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_anti_analysis_sleep_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_anti_analysis_sleep_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_anti_analysis_sleep_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "6efe21a102a2c3c96954cb77719d07efad8210bd0c274d4b00fec06a74f84525"
+},
+{
+  "id": "t2_malsandbox_rdtsc_timing_check",
+  "tier": 2,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RDTSC 명령어 클록 사이클 타이밍 검사",
+    "en": "RDTSC Instruction Clock Cycle Timing Check"
+  },
+  "prompt": {
+    "ko": "CPU 클록 카운트의 차이를 측정하여 하이퍼바이저 VM-Exit 오버헤드를 탐지하는 원리를 파악합니다.\n지정된 식별자 `malsandbox_rdtsc_timing_check_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_rdtsc_timing_check_v1\") 앞 20자리}`",
+    "en": "Determine hypervisor VM-Exit overhead detection by measuring CPU cycle differences with RDTSC.\nCompute the first 20 hex characters of SHA256(\"malsandbox_rdtsc_timing_check_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_rdtsc_timing_check_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_rdtsc_timing_check_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_rdtsc_timing_check_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2d1b9b801e00e6ced4512462932b1843df7a52c4cb40860e70273cfc1a118ab2"
+},
+{
+  "id": "t3_malsandbox_cuckoomon_api_hooking",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "cuckoomon 인라인 API 후킹 텔레메트리",
+    "en": "cuckoomon Inline API Hooking Telemetry"
+  },
+  "prompt": {
+    "ko": "샌드박스 내 cuckoomon DLL이 CreateRemoteThread와 메모리 쓰기 시스템콜을 인터셉트하는 원리를 분석합니다.\n지정된 식별자 `malsandbox_cuckoomon_api_hooking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_cuckoomon_api_hooking_v1\") 앞 20자리}`",
+    "en": "Analyze cuckoomon DLL intercepting CreateRemoteThread and memory writes via inline hooking.\nCompute the first 20 hex characters of SHA256(\"malsandbox_cuckoomon_api_hooking_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_cuckoomon_api_hooking_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_cuckoomon_api_hooking_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_cuckoomon_api_hooking_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "46e3e2f03f59a208c9cc2e31cdd19cd4952948dee99a8faf223033939079f687"
+},
+{
+  "id": "t3_malsandbox_sleep_fast_forward",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "게스트 OS 타이머 가속(Sleep Skip) 방어",
+    "en": "Guest OS Sleep Fast-Forwarding Defense"
+  },
+  "prompt": {
+    "ko": "NtDelayExecution 시스템콜 호출 시 지연 시간을 0ms로 즉시 반환하여 대기 회피를 무력화합니다.\n지정된 식별자 `malsandbox_sleep_fast_forward_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_sleep_fast_forward_v1\") 앞 20자리}`",
+    "en": "Neutralize delay evasion by fast-forwarding NtDelayExecution calls to 0ms in guest kernel hooks.\nCompute the first 20 hex characters of SHA256(\"malsandbox_sleep_fast_forward_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_sleep_fast_forward_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_sleep_fast_forward_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_sleep_fast_forward_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "085895e16ab7f8192217f2f0f1797adf78e15ee2a958fa858545ad4b2becc22b"
+},
+{
+  "id": "t3_malsandbox_network_beacon_dns",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "가상 샌드박스 네트워크 DNS C2 비컨 패킷 캡처",
+    "en": "Sandbox Network DNS C2 Beacon Packet Capture"
+  },
+  "prompt": {
+    "ko": "가상 환경 게이트웨이 pcap에서 DGA 의심 DNS 쿼리 및 HTTP POST 비컨 패킷을 추출합니다.\n지정된 식별자 `malsandbox_network_beacon_dns_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_network_beacon_dns_v1\") 앞 20자리}`",
+    "en": "Extract suspicious DGA DNS queries and HTTP POST beacon packets from virtual gateway pcaps.\nCompute the first 20 hex characters of SHA256(\"malsandbox_network_beacon_dns_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_network_beacon_dns_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_network_beacon_dns_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_network_beacon_dns_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "86e5da27e64eb460d4fa27f1388ff7461eab7c81b9f3474d71b254431b8142ae"
+},
+{
+  "id": "t3_malsandbox_dropped_file_carving",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "%TEMP% 디렉터리 드롭 페이로드 자동 카빙",
+    "en": "%TEMP% Directory Dropped Payload Auto-Carving"
+  },
+  "prompt": {
+    "ko": "프로세스가 %TEMP% 또는 %APPDATA% 경로에 생성한 2차 스테이지 DLL 바이너리를 자동 수집합니다.\n지정된 식별자 `malsandbox_dropped_file_carving_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_dropped_file_carving_v1\") 앞 20자리}`",
+    "en": "Automatically carve secondary stage DLL binaries dropped into %TEMP% or %APPDATA% directories.\nCompute the first 20 hex characters of SHA256(\"malsandbox_dropped_file_carving_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_dropped_file_carving_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_dropped_file_carving_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_dropped_file_carving_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "92636a8ff7272781f72698667ca2ae437498eeb692c2c4c3b1b3963d40b252a3"
+},
+{
+  "id": "t3_malsandbox_capa_capability_rule",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 175,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Mandiant CAPA 기반 악성 공격 역량 매핑",
+    "en": "Mandiant CAPA Capability Rule Mapping"
+  },
+  "prompt": {
+    "ko": "CAPA 오픈소스 룰셋을 활용하여 키로깅, 호스트 정찰, C2 통신 등 기능 역량을 ATT&CK에 매핑합니다.\n지정된 식별자 `malsandbox_capa_capability_rule_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_capa_capability_rule_v1\") 앞 20자리}`",
+    "en": "Map malware functional capabilities like keylogging and reconnaissance to MITRE ATT&CK using CAPA.\nCompute the first 20 hex characters of SHA256(\"malsandbox_capa_capability_rule_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_capa_capability_rule_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_capa_capability_rule_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_capa_capability_rule_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "0c0c477ea1517952011c32e12df26a4f6f0e60ceb82428ec4e768eb4f83849f3"
+},
+{
+  "id": "t3_malsandbox_vm_artifact_hiding",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "가상머신 아티팩트(VBox/VMware) 은닉 하드닝",
+    "en": "VM Artifact (VBox/VMware) Cloaking Hardening"
+  },
+  "prompt": {
+    "ko": "VBoxService 레지스트리 및 QEMU 가상 디바이스 드라이버 식별자를 게스트 OS에서 은닉합니다.\n지정된 식별자 `malsandbox_vm_artifact_hiding_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_vm_artifact_hiding_v1\") 앞 20자리}`",
+    "en": "Cloak VBoxService registry keys and QEMU virtual device drivers from guest malware queries.\nCompute the first 20 hex characters of SHA256(\"malsandbox_vm_artifact_hiding_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_vm_artifact_hiding_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_vm_artifact_hiding_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_vm_artifact_hiding_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3dd5c4af56e5ab613f6a54a85afa2462f9bc7b4c8fe3360f8089060c507a9527"
+},
+{
+  "id": "t3_malsandbox_memory_dump_volatility",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "게스트 RAM 덤프와 Volatility 3 malfind 연동",
+    "en": "Guest RAM Dump & Volatility 3 malfind Integration"
+  },
+  "prompt": {
+    "ko": "샌드박스 동적 실행 종료 직후 프로세스 메모리 덤프에서 VAD RWX 인젝션 영역을 추출합니다.\n지정된 식별자 `malsandbox_memory_dump_volatility_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_memory_dump_volatility_v1\") 앞 20자리}`",
+    "en": "Extract VAD RWX injected code caves from post-execution guest RAM dumps using Volatility 3.\nCompute the first 20 hex characters of SHA256(\"malsandbox_memory_dump_volatility_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_memory_dump_volatility_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_memory_dump_volatility_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_memory_dump_volatility_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "32223e037102f06298c79d7b6e16bcc08cde325cb65582dbaa283ae05087b6c3"
+},
+{
+  "id": "t3_malsandbox_ransomware_shadow_vss",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "vssadmin 볼륨 섀도우 삭제 명령 실시간 차단",
+    "en": "vssadmin Shadow Copy Deletion Real-Time Block"
+  },
+  "prompt": {
+    "ko": "랜섬웨어가 실행하는 vssadmin delete shadows /all /quiet 서브프로세스 생성을 실시간 격리합니다.\n지정된 식별자 `malsandbox_ransomware_shadow_vss_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_ransomware_shadow_vss_v1\") 앞 20자리}`",
+    "en": "Isolate ransomware spawning vssadmin delete shadows child processes in real time.\nCompute the first 20 hex characters of SHA256(\"malsandbox_ransomware_shadow_vss_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_ransomware_shadow_vss_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_ransomware_shadow_vss_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_ransomware_shadow_vss_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "78b6e1f7fc220bed2b40270aaa07e146ad592edf3483b681a294e162ab66f8ed"
+},
+{
+  "id": "t3_malsandbox_automated_triage_scoring",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 210,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔트로피·YARA·행위 통합 위협 스코어링",
+    "en": "Integrated Entropy, YARA & Behavioral Threat Scoring"
+  },
+  "prompt": {
+    "ko": "정적 PE 지표(엔트로피, IAT)와 동적 샌드박스 위협 행위를 가중치 결합한 점수 산출 공식을 구현합니다.\n지정된 식별자 `malsandbox_automated_triage_scoring_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_automated_triage_scoring_v1\") 앞 20자리}`",
+    "en": "Implement a weighted threat score combining static PE metrics (entropy, IAT) and dynamic alerts.\nCompute the first 20 hex characters of SHA256(\"malsandbox_automated_triage_scoring_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_automated_triage_scoring_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_automated_triage_scoring_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_automated_triage_scoring_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e178500b9c2e10a620479dc38e3b767e00dbb20520c74efe026528768e11fceb"
+},
+{
+  "id": "t3_malsandbox_yara_memory_scan",
+  "tier": 3,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 220,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "실행 중인 프로세스 가상 메모리 YARA 실시간 주사",
+    "en": "Live Process Virtual Memory YARA Scanning"
+  },
+  "prompt": {
+    "ko": "가상 머신 내부 실행 프로세스의 언패킹된 메모리 페이로드를 대상으로 YARA 스캔을 실시간 수행합니다.\n지정된 식별자 `malsandbox_yara_memory_scan_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_yara_memory_scan_v1\") 앞 20자리}`",
+    "en": "Execute live YARA scans against unpacked memory payloads residing in running guest processes.\nCompute the first 20 hex characters of SHA256(\"malsandbox_yara_memory_scan_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_yara_memory_scan_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_yara_memory_scan_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_yara_memory_scan_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9e3e20f19a79936c5d8f2efe0852815ea1f953cd06a07eedb81a3d5596f1006d"
+},
+{
+  "id": "t4_malsandbox_kernel_ebpf_sandbox",
+  "tier": 4,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 260,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "eBPF LSM 기반 유저모드 후킹 우회 원천 방어",
+    "en": "eBPF LSM Kernel-Level Anti-Bypass Sandbox"
+  },
+  "prompt": {
+    "ko": "유저모드 API 후킹을 무력화하는 Direct Syscall 공격을 커널 eBPF LSM 프로브로 원천 차단합니다.\n지정된 식별자 `malsandbox_kernel_ebpf_sandbox_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_kernel_ebpf_sandbox_v1\") 앞 20자리}`",
+    "en": "Neutralize Direct Syscall attacks bypassing userland hooks using kernel-level eBPF LSM probes.\nCompute the first 20 hex characters of SHA256(\"malsandbox_kernel_ebpf_sandbox_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_kernel_ebpf_sandbox_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_kernel_ebpf_sandbox_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_kernel_ebpf_sandbox_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8297d5331dc3d404fcdff23a1e17206db4bcee4af881d0ec86e8358b952bb3df"
+},
+{
+  "id": "t4_malsandbox_capev2_driver_unhook",
+  "tier": 4,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 270,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CAPEv2 디바이스 드라이버 기반 언후킹 추적",
+    "en": "CAPEv2 Device Driver Kernel Unhooking Tracking"
+  },
+  "prompt": {
+    "ko": "커널 모니터 드라이버를 통해 ntdll 메모리 리로드 및 SSDT 시스템콜 테이블 변조 행위를 로깅합니다.\n지정된 식별자 `malsandbox_capev2_driver_unhook_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_capev2_driver_unhook_v1\") 앞 20자리}`",
+    "en": "Log ntdll memory reloading and SSDT tampering via CAPEv2 kernel device monitoring drivers.\nCompute the first 20 hex characters of SHA256(\"malsandbox_capev2_driver_unhook_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_capev2_driver_unhook_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_capev2_driver_unhook_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_capev2_driver_unhook_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bbdae6fcacbbaca1977dfa736ab8bad778ada386474c8f70bf78fdf27f08faf1"
+},
+{
+  "id": "t4_malsandbox_anti_vm_instruction_cpuid",
+  "tier": 4,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 280,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CPUID 하이퍼바이저 비트 기만 샌드박스 하드닝",
+    "en": "CPUID Hypervisor Bit Spoofing Sandbox Hardening"
+  },
+  "prompt": {
+    "ko": "CPUID Function 1의 ECX 31번째 비트(Hypervisor Present)를 0으로 강제 반환하여 가상화를 은닉합니다.\n지정된 식별자 `malsandbox_anti_vm_instruction_cpuid_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_anti_vm_instruction_cpuid_v1\") 앞 20자리}`",
+    "en": "Spoof CPUID Function 1 ECX bit 31 (Hypervisor Present) to 0 to conceal VM presence.\nCompute the first 20 hex characters of SHA256(\"malsandbox_anti_vm_instruction_cpuid_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_anti_vm_instruction_cpuid_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_anti_vm_instruction_cpuid_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_anti_vm_instruction_cpuid_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c847564e20579579b67beafd829589f1689ee6e6bd6b0cc35e0baf4766c7643b"
+},
+{
+  "id": "t4_malsandbox_dga_entropy_clustering",
+  "tier": 4,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 290,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DGA 도메인 생성 알고리즘 엔트로피 군집 분석",
+    "en": "DGA Domain Generation Algorithm Entropy Clustering"
+  },
+  "prompt": {
+    "ko": "C2 네트워크 로그에서 고엔트로피 무작위 생성 도메인 군집을 K-Means 및 통계적 N-gram으로 식별합니다.\n지정된 식별자 `malsandbox_dga_entropy_clustering_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_dga_entropy_clustering_v1\") 앞 20자리}`",
+    "en": "Identify randomized high-entropy DGA domains from C2 traffic logs using N-gram and clustering.\nCompute the first 20 hex characters of SHA256(\"malsandbox_dga_entropy_clustering_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_dga_entropy_clustering_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_dga_entropy_clustering_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_dga_entropy_clustering_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "197821541995fb6916c7a3e9ef2bb4811db7ecb21448c530088cfacb8306aa85"
+},
+{
+  "id": "t4_malsandbox_stix_misp_export",
+  "tier": 4,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 300,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "STIX 2.1 및 MISP 인텔리전스 IOC 자동 내보내기",
+    "en": "STIX 2.1 & MISP Automated IOC Intelligence Export"
+  },
+  "prompt": {
+    "ko": "동적 샌드박스에서 탐지된 C2 IP, 악성 도메인, 드롭 파일 해시를 표준 STIX 2.1 JSON 번들로 변환합니다.\n지정된 식별자 `malsandbox_stix_misp_export_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_stix_misp_export_v1\") 앞 20자리}`",
+    "en": "Transform detected C2 IPs, domains, and dropped hashes into standard STIX 2.1 JSON threat bundles.\nCompute the first 20 hex characters of SHA256(\"malsandbox_stix_misp_export_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_stix_misp_export_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_stix_misp_export_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_stix_misp_export_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "75344f6cde4c457a6cfdcbf7070658f6bd8ba99afde8e6d9cf3bb5c3b62a223f"
+},
+{
+  "id": "t4_malsandbox_dynamic_unpacking_dump",
+  "tier": 4,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 320,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OEP 진입 감지 자동 메모리 언패킹 및 IAT 재구축",
+    "en": "OEP Detection Dynamic Unpacking & IAT Rebuilding"
+  },
+  "prompt": {
+    "ko": "패커의 압축 해제 루프 완료 후 OEP로 점프하는 순간을 포착하여 언패킹된 PE를 덤프하고 IAT를 복구합니다.\n지정된 식별자 `malsandbox_dynamic_unpacking_dump_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_dynamic_unpacking_dump_v1\") 앞 20자리}`",
+    "en": "Catch execution leaping to the OEP, dump the unpacked memory PE image, and fix the import table.\nCompute the first 20 hex characters of SHA256(\"malsandbox_dynamic_unpacking_dump_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_dynamic_unpacking_dump_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_dynamic_unpacking_dump_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_dynamic_unpacking_dump_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "85003e162f69993e7ab2e5e64d8bd15090344df22cc7ae1d7d6c80a264aea231"
+},
+{
+  "id": "t4_malsandbox_capstone_pipeline_orchestration",
+  "tier": 4,
+  "cat": "malsandbox",
+  "track": "malsandbox",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 악성코드 자동 분석 파이프라인 총괄",
+    "en": "Enterprise Automated Malware Pipeline Capstone"
+  },
+  "prompt": {
+    "ko": "수집(Maltrieve) -> 정적(pefile/YARA) -> 동적(Cuckoo/eBPF) -> 위협 인텔리전스(MISP) 연계 전 과정을 완성합니다.\n지정된 식별자 `malsandbox_capstone_pipeline_orchestration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"malsandbox_capstone_pipeline_orchestration_v1\") 앞 20자리}`",
+    "en": "Orchestrate end-to-end pipeline: Collection -> Static (pefile/YARA) -> Dynamic (Cuckoo/eBPF) -> Threat Intel.\nCompute the first 20 hex characters of SHA256(\"malsandbox_capstone_pipeline_orchestration_v1\").\n\nFormat: `FLAG{SHA256(\"malsandbox_capstone_pipeline_orchestration_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `malsandbox_capstone_pipeline_orchestration_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"malsandbox_capstone_pipeline_orchestration_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c8ae6d47f9e6a01a0f702e229ce16aa12ef930211e6a0a251b3fd3e6049214ee"
 }
 ];

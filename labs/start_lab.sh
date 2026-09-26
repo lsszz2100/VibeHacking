@@ -91,6 +91,14 @@ start_lab() {
         "16_memory_forensics_lab"
         "17_kubernetes_cloud_native_lab"
         "18_ai_agent_mcp_lab"
+        "19_android_frida_lab"
+        "20_winapp_exploit_lab"
+        "21_automotive_can_lab"
+        "22_api_security_lab"
+        "23_soc_threat_hunting_lab"
+        "24_fuzzing_vulnerability_lab"
+        "25_ai_redteam_lab"
+        "26_malware_sandbox_lab"
     )
 
     local lab_names=(
@@ -113,6 +121,14 @@ start_lab() {
         "메모리 포렌식 & Volatility 3 분석 랩"
         "클라우드 네이티브 & Kubernetes 보안 랩"
         "AI 에이전트 & MCP 보안 랩"
+        "안드로이드 악성코드 & Frida 후킹 랩"
+        "윈도우 애플리케이션 & 커널 취약점 랩"
+        "차량 보안 & CAN Bus 랩"
+        "API 보안 & Modern Auth 랩"
+        "SOC 위협 헌팅 & SIEM/IR 랩"
+        "퍼징 & 취약점 발굴 랩"
+        "AI 레드팀 & 탈옥 평가 랩"
+        "악성코드 자동 분석 & 동적 샌드박스 랩"
     )
 
     local lab_ports=(
@@ -135,10 +151,18 @@ start_lab() {
         "웹 콘솔 & Volatility API: http://localhost:8016"
         "웹 콘솔 & Kubernetes API: http://localhost:8017"
         "웹 콘솔 & Agent API: http://localhost:8018"
+        "웹 콘솔 & Frida API: http://localhost:8019"
+        "웹 콘솔 & WinApp API: http://localhost:8020"
+        "웹 콘솔 & 가상 계기판: http://localhost:8021"
+        "웹 콘솔 & API 대시보드: http://localhost:8022"
+        "웹 콘솔 & SIEM 대시보드: http://localhost:8023"
+        "웹 콘솔 & 퍼징 대시보드: http://localhost:8024"
+        "웹 콘솔 & AI 레드팀 대시보드: http://localhost:8025"
+        "웹 콘솔 & 악성코드 분석 센터: http://localhost:8026"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 18 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~18 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 26 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~26 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -276,8 +300,17 @@ case "$ARG" in
     12)   start_lab 12 ;;
     13)   start_lab 13 ;;
     14)   start_lab 14 ;;
-    15)   start_lab 15 ;;
     16)   start_lab 16 ;;
+    17)   start_lab 17 ;;
+    18)   start_lab 18 ;;
+    19)   start_lab 19 ;;
+    20)   start_lab 20 ;;
+    21)   start_lab 21 ;;
+    22)   start_lab 22 ;;
+    23)   start_lab 23 ;;
+    24)   start_lab 24 ;;
+    25)   start_lab 25 ;;
+    26)   start_lab 26 ;;
 
     all|ALL) start_all ;;
     ps|status) print_summary ;;

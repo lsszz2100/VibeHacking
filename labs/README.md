@@ -55,6 +55,7 @@ docker-compose --version
 | 23 | [SOC 위협 헌팅 & SIEM/IR 랩](./23_soc_threat_hunting_lab/) | Sysmon 인젝션 탐지, Suricata NIDS & DNS 비콘 C2 차단, Pass-the-Hash & SOAR 자동 격리 | ★★★★ | [44장 침해 대응 & DFIR](../44_Incident_Response_DFIR/07_soc_siem_threat_hunting_deepdive.md), [75장 레드팀 보고서](../75_Red_Team_Reporting/README.md) | `sochunt` / `purpleteam` |
 | 24 | [퍼징 & 취약점 발굴 랩](./24_fuzzing_vulnerability_lab/) | AFL++ 커버리지 유도 퍼징, ASAN 섀도우 메모리 덤프 UAF 분석, 크래시 트리아지 & 패치 검증 | ★★★★ | [30장 취약점 분석](../30_Vulnerability_Research/README.md), [66장 익스플로잇 개발](../66_Exploit_Development/README.md) | `fuzzing` / `pwn` |
 | 25 | [AI 레드팀 & 탈옥 평가 랩](./25_ai_redteam_lab/) | RAG 간접 프롬프트 인젝션, 적대적 토큰 가드레일 우회, MCP 도구 섀도잉 및 에이전트 샌드박스 | ★★★★ | [56장 AI 레드팀](../56_AI_Red_Teaming/07_ai_red_teaming_and_guardrail_eval_deepdive.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `airedteam` / `ai` |
+| 26 | [악성코드 자동 분석 & 동적 샌드박스 랩](./26_malware_sandbox_lab/) | PE 엔트로피 파싱, 안티디버그 PEB 패치, YARA 휴리스틱 헌팅, Sleep 스킵 동적 샌드박스 격리 | ★★★★ | [06장 악성코드 분석](../06_Malware_Analysis/09_python_malware_analysis_automation_deepdive.md), [45장 악성코드 개발](../45_Malware_Development/README.md) | `malsandbox` / `maldev` |
 
 ---
 
@@ -301,6 +302,14 @@ docker-compose --version
 - **교재 챕터 연계**: [56장 AI 레드팀](../56_AI_Red_Teaming/07_ai_red_teaming_and_guardrail_eval_deepdive.md), [69장 LLM 보안](../69_LLM_Security/README.md)
 - **워게임 트랙**: `airedteam` / `ai`
 - **빠른 실행**: `python3 vhack.py lab start 25` (웹 콘솔 & 시뮬레이터: `http://localhost:8025`)
+
+### 26. 악성코드 자동 분석 & 동적 샌드박스 랩 (MalSandbox)
+- UPX 패킹된 변칙 섹션 Shannon 엔트로피(7.85) 디코딩 및 PEB `IsDebuggerPresent` 패치로 은닉 IAT 복원
+- VirtualAllocEx/CreateRemoteThread 및 PowerShell 다운로더 시그니처 헌팅 고신뢰도 YARA 룰셋 검증
+- 10분 안티 샌드박스 Sleep 지연 가속(스킵), cuckoomon API 인터셉트 텔레메트리 캡처 및 레지스트리 Run 키 지속성 차단 격리
+- **교재 챕터 연계**: [06장 악성코드 분석](../06_Malware_Analysis/09_python_malware_analysis_automation_deepdive.md), [45장 악성코드 개발](../45_Malware_Development/README.md)
+- **워게임 트랙**: `malsandbox` / `maldev`
+- **빠른 실행**: `python3 vhack.py lab start 26` (웹 콘솔 & 분석 센터: `http://localhost:8026`)
 
 ---
 

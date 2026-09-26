@@ -420,6 +420,42 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "동일 이름의 악성 MCP 도구를 선언하여 정상 도구를 섀도잉하고 격리 샌드박스 정책을 분석하세요."}
                 ],
             },
+            "LAB26_STATIC": {
+                "id": "LAB26_STATIC",
+                "title": "MalSandbox: PE Static Parsing & Entropy Decoding",
+                "category": "malware",
+                "initial_points": 500,
+                "flag": "FLAG{pe_static_entropy_iat_unpacked_8192}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "UPX 패킹 섹션 엔트로피를 해제하고 PEB BeingDebugged 플래그를 패치하여 숨겨진 IAT를 복원하세요."}
+                ],
+            },
+            "LAB26_YARA": {
+                "id": "LAB26_YARA",
+                "title": "MalSandbox: YARA Signature & C2 Heuristic Hunting",
+                "category": "malware",
+                "initial_points": 500,
+                "flag": "FLAG{yara_heuristic_rule_c2_hunting_5301}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "VirtualAllocEx/CreateRemoteThread 인젝션 API와 PowerShell 다운로더 키워드를 매칭하는 룰을 작성하세요."}
+                ],
+            },
+            "LAB26_SANDBOX": {
+                "id": "LAB26_SANDBOX",
+                "title": "MalSandbox: Dynamic Evasion Fast-Forward & Containment",
+                "category": "malware",
+                "initial_points": 500,
+                "flag": "FLAG{dynamic_sandbox_telemetry_evasion_blocked_2748}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Sleep(600s) 안티 샌드박스 대기를 스킵하고 cuckoomon API 텔레메트리로 Run키 지속성을 차단하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []

@@ -7,21 +7,21 @@
 ## 1. 프로젝트 개요 및 현재 상태 (Current Status)
 
 - **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH)
-  - **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH)
-  - **10대 심층 인제스천 챕터 완비**:
+  - **11대 심층 인제스천 챕터 완비**:
     1. `02_Network_Hacking/07_practical_packet_analysis_deepdive.md` (Wireshark 심층 해부, 패킷 분석, DNS 터널링, TLS 복호화)
     2. `06_Malware_Analysis/08_advanced_pdf_maldoc_structure_analysis_deepdive.md` (PDF 바이너리 객체, OLE/CFBF 매크로, CVE-2017-11882, CVE-2021-40444, 힙 스프레이)
-    3. `07_Digital_Forensics/07_filesystem_forensics_deepdive.md` (FAT32/NTFS $MFT/EXT4 Inode 파일시스템 포렌식)
-    4. `07_Digital_Forensics/08_advanced_volatility3_kernel_rootkit_deepdive.md` (EPROCESS/Pool Tag, DKOM 3단계 교차 검증, IRP 후킹, Volatility 3 커스텀 플러그인, Stuxnet/BlackEnergy2 루트킷 분석)
-    5. `28_Mobile_Hacking/07_frida_android_dynamic_analysis_deepdive.md` (안드로이드 리버싱 & Frida 런타임 후킹)
-    6. `03_System_Hacking/08_windows_seh_and_driver_exploit_deepdive.md` (Windows SEH 오버라이트 & 커널 취약 드라이버 익스플로잇)
-    7. `09_Exploit_Techniques/07_practical_exploit_writing_corelan_deepdive.md` (Corelan 실전 바이너리 익스플로잇 개발 및 완화 기법 우회)
-    8. `30_Vulnerability_Research/07_practical_fuzzing_and_crash_triage_deepdive.md` (AFL++ 커버리지 퍼징, ASAN 섀도우 메모리 UAF 분석, 크래시 트리아지 & 패치 검증)
-    9. `44_Incident_Response_DFIR/07_soc_siem_threat_hunting_deepdive.md` (SOC 관제 아키텍처, Sysmon 텔레메트리, Suricata NIDS 룰셋, Splunk SPL/KQL 위협 헌팅 및 SOAR 플레이북)
-    10. `56_AI_Red_Teaming/07_ai_red_teaming_and_guardrail_eval_deepdive.md` (간접 프롬프트 주입 IPI, BPE 토큰 분할 가드레일 우회, 악성 MCP 도구 섀도잉 및 커널 eBPF 샌드박싱)
+    3. `06_Malware_Analysis/09_python_malware_analysis_automation_deepdive.md` (파이썬 오픈소스 기반 정적/동적 악성코드 분석 자동화, pefile/peframe, Shannon 엔트로피 패킹 판별, YARA 시그니처 룰셋, Cuckoo 가상 샌드박스 API 후킹 및 안티 분석 회피 무력화)
+    4. `07_Digital_Forensics/07_filesystem_forensics_deepdive.md` (FAT32/NTFS $MFT/EXT4 Inode 파일시스템 포렌식)
+    5. `07_Digital_Forensics/08_advanced_volatility3_kernel_rootkit_deepdive.md` (EPROCESS/Pool Tag, DKOM 3단계 교차 검증, IRP 후킹, Volatility 3 커스텀 플러그인, Stuxnet/BlackEnergy2 루트킷 분석)
+    6. `28_Mobile_Hacking/07_frida_android_dynamic_analysis_deepdive.md` (안드로이드 리버싱 & Frida 런타임 후킹)
+    7. `03_System_Hacking/08_windows_seh_and_driver_exploit_deepdive.md` (Windows SEH 오버라이트 & 커널 취약 드라이버 익스플로잇)
+    8. `09_Exploit_Techniques/07_practical_exploit_writing_corelan_deepdive.md` (Corelan 실전 바이너리 익스플로잇 개발 및 완화 기법 우회)
+    9. `30_Vulnerability_Research/07_practical_fuzzing_and_crash_triage_deepdive.md` (AFL++ 커버리지 퍼징, ASAN 섀도우 메모리 UAF 분석, 크래시 트리아지 & 패치 검증)
+    10. `44_Incident_Response_DFIR/07_soc_siem_threat_hunting_deepdive.md` (SOC 관제 아키텍처, Sysmon 텔레메트리, Suricata NIDS 룰셋, Splunk SPL/KQL 위협 헌팅 및 SOAR 플레이북)
+    11. `56_AI_Red_Teaming/07_ai_red_teaming_and_guardrail_eval_deepdive.md` (간접 프롬프트 주입 IPI, BPE 토큰 분할 가드레일 우회, 악성 MCP 도구 섀도잉 및 커널 eBPF 샌드박싱)
   - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `docs/vendor/` 오프라인 자산화 완비), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 25개 실전 랩 완비** (`labs/01` ~ `labs/25`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 26개 실전 랩 완비** (`labs/01` ~ `labs/26`)
   - **Lab 19 (DroidShield)**: 안드로이드 리버싱 & Frida 후킹 랩 (루팅 탐지 우회, SSL Pinning 패치, Native 심볼 후킹, JNI Crypto 암호문 복호화, 포트: `8019`)
   - **Lab 20 (WinAppSec)**: 윈도우 바이너리 & 커널 드라이버 랩 (SEH 스택 오버라이트, SafeSEH/DEP/ASLR 회피, UAC 바이패스, HEVD IOCTL 임의 메모리 쓰기, Token Stealing 권한상승, 포트: `8020`)
   - **Lab 21 (CarCanLab)**: 차량 보안 & CAN Bus 실전 랩 (CAN 버스 패킷 스니핑/주입, 계기판 속도 스푸핑, UDS SecurityAccess 시드키 인증 우회, ECU hardReset DoS, 포트: `8021`)
@@ -29,40 +29,41 @@
   - **Lab 23 (SOCHunter / BlueShield)**: SOC 관제, SIEM 규칙 탐지, EDR 위협 헌팅 랩 (Sysmon 원격 스레드 인젝션 탐지, Suricata NIDS 탐지 룰 작성, Splunk/KQL 상관분석 및 SOAR 격리 플레이북, 포트: `8023`)
   - **Lab 24 (FuzzMaster)**: 퍼징 & 취약점 분석 실전 랩 (AFL++ 커버리지 기반 퍼징, ASAN 섀도우 메모리 Heap-UAF 트리아지, CWE-416 재현 PoC 및 패치 검증, 포트: `8024`)
   - **Lab 25 (AIRedGuard)**: AI 레드팀 & 탈옥 방어 실전 랩 (간접 프롬프트 주입 IPI RAG 오염, BPE 토큰 분할 가드레일 우회, 악성 MCP 도구 섀도잉 및 샌드박싱, 포트: `8025`)
-- **브라우저 & 터미널 워게임**: **총 39개 트랙 / 1,365문제** 달성 (`wargame/index.html`, HUD `0/1365`, `vhack play`)
-  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 39개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`) 자동 저장 완비
+  - **Lab 26 (MalSandbox)**: 악성코드 자동 분석 & 동적 샌드박스 실전 랩 (PE Shannon 엔트로피 분석, IsDebuggerPresent PEB 패치, YARA 시그니처 룰셋 헌팅, Sleep 지연 가속 및 cuckoomon API 인터셉트 격리, 포트: `8026`)
+- **브라우저 & 터미널 워게임**: **총 40개 트랙 / 1,400문제** 달성 (`wargame/index.html`, HUD `0/1400`, `vhack play`)
+  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 40개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`) 자동 저장 완비
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
-  - **신규 39번째 트랙**:
-    - `airedteam` 🎯 AI 레드팀·탈옥·가드레일 우회 (35개 문제: Tier 0~4)
-  - **4대 엄격 검증 스위트 100% All Green**: `verify.js`, `audit.js --strict` (0결함), `leakscan.js` (0유출), `solve-derivable.js` (398/1365 통과)
+  - **신규 40번째 트랙**:
+    - `malsandbox` 🦠 악성코드 분석·자동화 샌드박스 (35개 문제: Tier 0~4)
+  - **4대 엄격 검증 스위트 100% All Green**: `verify.js`, `audit.js --strict` (0결함), `leakscan.js` (0유출), `solve-derivable.js` (433/1400 통과)
 - **통합 웹 관제 대시보드 (Portal)**:
-  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(25개 랩 시작/중지/재시작), 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), Esc 단축키, 자원 모니터링, 교재/워게임 원클릭 연동 (`vhack portal [--port 8800]`)
+  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(26개 랩 시작/중지/재시작), 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), Esc 단축키, 자원 모니터링, 교재/워게임 원클릭 연동 (`vhack portal [--port 8800]`)
 - **실습 랩 자동 익스플로잇 솔버 (Solvers)**:
-  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 25개 전체 랩의 1~3단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
+  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 26개 전체 랩의 1~3단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
 - **CTF 대회 스코어보드 & 채점 엔진 (CTF)**:
-  - `ctf/server.py`, `ctf/tests/test_ctf.py`: 40개 랩 플래그 풀, 💡 인터랙티브 힌트 상점 모달 UI 및 점수 차감 시스템 (`POST /api/ctf/hints/unlock`), First Blood 알림 및 +50pt 보너스, Dynamic Scoring 감쇠 공식, HTML5 실시간 점수 추이 시계열 그래프(Score Progression Timeline Canvas), 실시간 SSE 스트리밍 (`vhack ctf [--port 8888]`)
+  - `ctf/server.py`, `ctf/tests/test_ctf.py`: 43개 랩 플래그 풀, 💡 인터랙티브 힌트 상점 모달 UI 및 점수 차감 시스템 (`POST /api/ctf/hints/unlock`), First Blood 알림 및 +50pt 보너스, Dynamic Scoring 감쇠 공식, HTML5 실시간 점수 추이 시계열 그래프(Score Progression Timeline Canvas), 실시간 SSE 스트리밍 (`vhack ctf [--port 8888]`)
 - **오프라인 번들러 패키징 (Bundler)**:
-  - `tools/bundle_offline.py` 및 `vhack bundle [--tar <path>]` 통한 25개 랩, 39개 트랙(1,365문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증 및 배포 아카이브 생성 지원
+  - `tools/bundle_offline.py` 및 `vhack bundle [--tar <path>]` 통한 26개 랩, 40개 트랙(1,400문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증 및 배포 아카이브 생성 지원
 - **표준 파이썬 패키징**: [pyproject.toml](file:///mnt/d/바이브해킹%20자료/vibe-hacking/pyproject.toml) 기반 패키징 완비 (`pip install -e .` 지원, 글로벌 `vhack` 명령 제공)
 - **vhack CLI 고도화**:
-  - `vhack play`: 39개 트랙 1,365문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리)
+  - `vhack play`: 40개 트랙 1,400문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리)
   - `vhack logs <lab_id> [-f] [-n N]`: 실습 랩 컨테이너 실시간 로그 스트리밍 단독 명령어 지원
-  - `vhack solve`: 25개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
-  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8025 가용성 등 시스템 진단
+  - `vhack solve`: 26개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
+  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8026 가용성 등 시스템 진단
   - `vhack setup-docker`: OS 및 WSL2 환경 자동 감지, Docker CE / Compose 자동 설치 및 WSL2 연동 진단 가이드
   - `vhack docs`: 75개 챕터 웹 리더 포털 로컬 HTTP 서버 실행
   - `vhack portal`: 통합 웹 관제 대시보드 실행 (웹 터미널, 실시간 로그, 솔루션 모달, Esc 단축키)
   - `vhack ctf`: 모의해킹 대회 스코어보드 및 Dynamic Scoring/First Blood/SSE/차트/힌트 상점 모달 서버 실행
-  - `vhack bundle`: 오프라인 배포 무결성 검증 및 압축 번들 생성 (1,365문제 & 25개 랩 동기화)
+  - `vhack bundle`: 오프라인 배포 무결성 검증 및 압축 번들 생성 (1,400문제 & 26개 랩 동기화)
   - `vhack wargame`: 내장 웹서버 구동 및 브라우저 자동 실행 (또는 `--cli` 터미널 모드)
-  - `vhack lab test [--all | <lab_id>]`: 25개 실습 랩 자동 무결성 검증 (179개 테스트 All Green)
-  - `vhack lab status`: 25개 랩 종합 상태 대시보드
-- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~25, `vhack doctor`, Pytest 전체 202개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
+  - `vhack lab test [--all | <lab_id>]`: 26개 실습 랩 자동 무결성 검증 (187개 테스트 All Green)
+  - `vhack lab status`: 26개 랩 종합 상태 대시보드
+- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~26, `vhack doctor`, Pytest 전체 210개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
 
 ---
 
-## 2. 실습 랩(1~25) & 교재 & 워게임 연계 매트릭스
+## 2. 실습 랩(1~26) & 교재 & 워게임 연계 매트릭스
 
 | 랩 ID | 랩 이름 | 주요 침투/방어 주제 | 연계 교재 챕터 | 워게임 트랙 | 실행 명령 |
 | :---: | :--- | :--- | :--- | :--- | :---: | :--- |
@@ -91,6 +92,7 @@
 | **23** | SOC 위협 헌팅 & SIEM 랩 (SOCHunter) | Sysmon 원격 스레드 인젝션 탐지, Suricata NIDS 룰셋, Splunk/KQL 위협 헌팅, SOAR 격리 | `44_Incident_Response_DFIR` | `sochunt` | `vhack lab start 23` |
 | **24** | 퍼징 & 취약점 분석 실전 랩 (FuzzMaster) | AFL++ 커버리지 기반 퍼징, ASAN 섀도우 메모리 Heap-UAF 트리아지, CWE-416 재현 PoC 및 패치 검증 | `30_Vulnerability_Research`, `66_Exploit_Development`, `74_Code_Auditing` | `fuzzing` | `vhack lab start 24` |
 | **25** | AI 레드팀 & 탈옥 방어 랩 (AIRedGuard) | 간접 프롬프트 주입 IPI, BPE 토큰 분할 가드레일 우회, 악성 MCP 도구 섀도잉 및 샌드박싱 | `11_AI_Powered_Security`, `56_AI_Red_Teaming`, `69_LLM_Security` | `airedteam` | `vhack lab start 25` |
+| **26** | 악성코드 자동 분석 & 동적 샌드박스 랩 (MalSandbox) | PE 엔트로피 분석, IsDebuggerPresent 패치, YARA 룰셋 헌팅, Sleep 지연 가속 및 API 후킹 | `06_Malware_Analysis`, `45_Malware_Development` | `malsandbox` | `vhack lab start 26` |
 
 ---
 
@@ -99,15 +101,15 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (202개 테스트 전원 통과: Labs 01~25, Solvers, Portal, CTF, Wargame CLI)
+# 1. 전체 단위/통합 테스트 (210개 테스트 전원 통과: Labs 01~26, Solvers, Portal, CTF, Wargame CLI)
 pytest -q
 
-# 2. 실습 랩 CLI 자동 무결성 검증 (25개 랩 179개 테스트 통과)
+# 2. 실습 랩 CLI 자동 무결성 검증 (26개 랩 187개 테스트 통과)
 python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
 
-# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 25개 랩 포트 충돌 검사 완비)
+# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 26개 랩 포트 충돌 검사 완비)
 vhack doctor
 
 # 4. 오프라인 패키징 및 무결성 전수 검사
@@ -126,10 +128,10 @@ vhack portal
 # 8. 모의해킹 대회 스코어보드 & Dynamic Scoring 채점 엔진 실행 (힌트 상점 완비)
 vhack ctf
 
-# 9. 24개 실습 랩 자동 익스플로잇 솔버 실행
+# 9. 26개 실습 랩 자동 익스플로잇 솔버 실행
 vhack solve 01 --step 1
 
-# 10. 워게임 무결성 및 구조 검증 (1,330문제, 38트랙, 5티어)
+# 10. 워게임 무결성 및 구조 검증 (1,400문제, 40트랙, 5티어)
 node wargame/scripts/verify.js
 
 # 11. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
@@ -138,7 +140,7 @@ node wargame/scripts/leakscan.js
 # 12. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
 node wargame/scripts/audit.js --strict
 
-# 13. 워게임 텍스트 유도 가능 문제 솔버 전수 검증 (363/1330 통과)
+# 13. 워게임 텍스트 유도 가능 문제 솔버 전수 검증 (433/1400 통과)
 node wargame/scripts/solve-derivable.js
 ```
 
@@ -154,6 +156,36 @@ node wargame/scripts/solve-derivable.js
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
+
+- **2026-09-26 (Lab 26 MalSandbox, Wargame 40 Tracks / 1,400 Challenges Milestone, Python Malware Automation Ingestion, 210 Tests All Green, Offline Bundle)**:
+  - **Lab 26 악성코드 자동 분석 & 동적 샌드박스 랩 신규 구축 (`labs/26_malware_sandbox_lab/`)**:
+    - Shannon 엔트로피(6.5+ 패킹 판별) 및 IAT API 파싱을 통한 의심스러운 메모리 인젝션 호출(VirtualAlloc, WriteProcessMemory) 분석
+    - PEB `BeingDebugged` 플래그 및 커스텀 안티 디버깅 회피 탐지
+    - YARA 휴리스틱 시그니처 룰셋 기반 C2 도메인 및 쉘코드 패턴 헌팅
+    - 동적 가상 샌드박스 텔레메트리, Sleep 타임 지연 가속 및 `cuckoomon` API 후킹 방어
+    - 포트 `8026`, 8개 단위 테스트 전원 통과 (`test_malware_sandbox_lab.py`)
+  - **컴포넌트 풀체인 연동**:
+    - `labs/solvers.py`: Lab 26 정적 엔트로피/YARA/동적 샌드박스 3단계 PoC 자동 솔버 및 26개 랩 테스트 통과
+    - `ctf/server.py`: `LAB26_STATIC`, `LAB26_YARA`, `LAB26_SANDBOX` 플래그 풀 및 💡 힌트 상점 아이템 연동
+    - `portal/server.py` & UI: 26개 랩 제어 및 카운트 동기화
+    - `vhack.py`: `LABS_METADATA` 26번 등록 및 `doctor` 포트 8026 가용성 진단
+    - `labs/start_lab.sh` & `labs/stop_all.sh`: 26개 랩 제어 스크립트 확장
+  - **워게임 40번째 트랙 (`malsandbox`) & 1,400문제 대기록 달성**:
+    - 악성코드 정적/동적 분석, YARA 시그니처, 안티 회피 및 샌드박스 기법을 포괄하는 35개 문제 (Tier 0~4) 완비
+    - `wargame/assets/challenges.js`, `wargame/index.html` (HUD `0/1400`, 40 tracks)
+    - 4대 엄격 무결성 검증 스위트 100% All Green:
+      - `node wargame/scripts/verify.js`: 1,400문제 40개 트랙 5티어 구조 무결성 통과
+      - `node wargame/scripts/audit.js --strict`: [A]~[J] 10대 검사 전 항목 0결함 통과
+      - `node wargame/scripts/leakscan.js`: 0 leaks 통과 (stale allowlist 10종 정리 및 25종 등록)
+      - `node wargame/scripts/solve-derivable.js`: 433/1400 솔버 자동 풀이 100% 검증
+  - **보안 자료 심층 인제스천**:
+    - `06_Malware_Analysis/09_python_malware_analysis_automation_deepdive.md` 신규 심층 챕터 완성 (pefile, Shannon Entropy, YARA Rule Engine, Cuckoo Sandbox Evasion)
+    - `tools/sync_section_readmes.py`: 75개 전 섹션 README 동기화 완료
+  - **오프라인 배포 번들 생성**:
+    - `vhack bundle`: 26개 랩, 40개 트랙(1,400제), 75개 교재(464개 챕터), 오프라인 벤더 에셋 무결성 검증 및 아카이브(`vibe-hacking-offline.tar.gz`, 6.92 MB) 생성 완료
+  - **전체 210개 테스트 100% 통과**:
+    - `pytest -q`: **210 passed** (Labs 01~26 187개 + solvers 4개 + portal 8개 + ctf 7개 + wargame cli 4개)
+    - `vhack lab test --all`: 26개 실습 랩 187개 테스트 전원 통과
 
 - **2026-09-22 (전체 기능 교차검증·보안 강화 및 186개 테스트 All Green 달성)**:
   - **보안 취약점 방어 및 포털 하드닝**:
