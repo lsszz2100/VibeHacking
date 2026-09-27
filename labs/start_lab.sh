@@ -99,6 +99,7 @@ start_lab() {
         "24_fuzzing_vulnerability_lab"
         "25_ai_redteam_lab"
         "26_malware_sandbox_lab"
+        "27_wifi_wpa3_security_lab"
     )
 
     local lab_names=(
@@ -129,6 +130,7 @@ start_lab() {
         "퍼징 & 취약점 발굴 랩"
         "AI 레드팀 & 탈옥 평가 랩"
         "악성코드 자동 분석 & 동적 샌드박스 랩"
+        "무선 네트워크 & WPA3 보안 실전 랩"
     )
 
     local lab_ports=(
@@ -159,10 +161,11 @@ start_lab() {
         "웹 콘솔 & 퍼징 대시보드: http://localhost:8024"
         "웹 콘솔 & AI 레드팀 대시보드: http://localhost:8025"
         "웹 콘솔 & 악성코드 분석 센터: http://localhost:8026"
+        "웹 콘솔 & 무선 보안 센터: http://localhost:8027"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 26 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~26 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 27 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~27 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -311,6 +314,7 @@ case "$ARG" in
     24)   start_lab 24 ;;
     25)   start_lab 25 ;;
     26)   start_lab 26 ;;
+    27)   start_lab 27 ;;
 
     all|ALL) start_all ;;
     ps|status) print_summary ;;

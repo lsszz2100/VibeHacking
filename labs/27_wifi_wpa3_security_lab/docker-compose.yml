@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  wifishield:
+    build: .
+    container_name: lab27_wifishield
+    ports:
+      - "8027:8027"
+    restart: unless-stopped
+    environment:
+      - ENV=production
+      - PYTHONUNBUFFERED=1
+    networks:
+      - wifi_net
+
+networks:
+  wifi_net:
+    driver: bridge

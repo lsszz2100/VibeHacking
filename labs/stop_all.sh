@@ -85,6 +85,7 @@ LAB_DIRS=(
     "24_fuzzing_vulnerability_lab"
     "25_ai_redteam_lab"
     "26_malware_sandbox_lab"
+    "27_wifi_wpa3_security_lab"
 )
 
 LAB_NAMES=(
@@ -114,6 +115,7 @@ LAB_NAMES=(
     "퍼징 & 취약점 발굴 랩"
     "AI 레드팀 & 탈옥 평가 랩"
     "악성코드 자동 분석 & 동적 샌드박스 랩"
+    "무선 네트워크 & WPA3 보안 실전 랩"
 )
 
 

@@ -358,6 +358,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [6, 45, 74],
     },
+    "27": {
+        "name": "무선 네트워크 & WPA3 보안 실전 랩",
+        "dir":  "27_wifi_wpa3_security_lab",
+        "desc": "WiFiShield: WPA2/WPA3 PMKID 오프라인 사전 크래킹 · SAE Dragonfly 부채널 및 Transition 다운그레이드 · Evil Twin & 802.11w PMF 방어",
+        "url":  "웹 콘솔 & 무선 보안 센터: http://localhost:8027",
+        "difficulty": "★★★★",
+        "related": [15, 27, 43],
+    },
 }
 
 
@@ -1358,6 +1366,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8024, "Lab 24 (FuzzMaster AFL++ & ASAN)"),
         (8025, "Lab 25 (AIRedGuard AI Red Team)"),
         (8026, "Lab 26 (MalSandbox Malware Analysis)"),
+        (8027, "Lab 27 (WiFiShield WPA3 & PMKID Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

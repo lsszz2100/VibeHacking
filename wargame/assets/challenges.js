@@ -372,6 +372,14 @@ const TRACKS = [
       "en": "Malware Analysis & Sandbox",
       "desc_ko": "PE 구조 바이트 파싱·Shannon 엔트로피 패킹 탐지·YARA 룰셋 헌팅·가상 샌드박스 API 후킹 및 동적 행위 격리.",
       "desc_en": "PE binary byte parsing, Shannon entropy packing analysis, YARA heuristic rule hunting, dynamic sandbox API hooking, and behavioral containment."
+  },
+  {
+      "id": "wifisec",
+      "icon": "📡",
+      "ko": "무선 네트워크 & Wi-Fi 보안",
+      "en": "Wireless & Wi-Fi Security",
+      "desc_ko": "802.11 프레임 구조·WPA2 4-Way Handshake·RSN IE PMKID 크래킹·WPA3 SAE Dragonfly 부채널·Evil Twin & 802.11w PMF 방어.",
+      "desc_en": "802.11 frame architecture, WPA2 4-way handshake, RSN IE PMKID cracking, WPA3 SAE Dragonfly side-channels, Evil Twin rogue APs, and 802.11w PMF defense."
   }
 ];
 
@@ -39621,5 +39629,986 @@ const CHALLENGES = [
     ]
   },
   "hash": "c8ae6d47f9e6a01a0f702e229ce16aa12ef930211e6a0a251b3fd3e6049214ee"
+}
+,
+{
+  "id": "t0_wifisec_80211_frame_types",
+  "tier": 0,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 10,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "802.11 관리·제어·데이터 3대 프레임 아키텍처",
+    "en": "802.11 Frame Architecture: Management, Control & Data"
+  },
+  "prompt": {
+    "ko": "무선 LAN MAC 계층의 관리(Management: Beacon/Deauth), 제어(Control: RTS/CTS/ACK), 데이터(Data: EAPOL/Payload) 3대 프레임 분류 체계 분석 챌린지입니다.\n지정된 식별자 `wifisec_80211_frame_types_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_80211_frame_types_v1\") 앞 20자리}`",
+    "en": "Inspect 802.11 MAC frame categorization: Management (Beacon/Deauth), Control (RTS/CTS/ACK), and Data (EAPOL/Payload).\nCompute the first 20 hex characters of SHA256(\"wifisec_80211_frame_types_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_80211_frame_types_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_80211_frame_types_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_80211_frame_types_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5bf722db6886e5b856fb8f057e8a2387f4f6c2b93bfda41ddcee0e9e37abd9f9"
+},
+{
+  "id": "t0_wifisec_bssid_essid",
+  "tier": 0,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 20,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BSSID와 ESSID 무선 식별자 체계",
+    "en": "BSSID vs ESSID Wireless Identification"
+  },
+  "prompt": {
+    "ko": "무선 AP의 48비트 하드웨어 MAC 주소인 BSSID와 사람이 읽을 수 있는 네트워크 명칭인 ESSID 식별 체계 분석 챌린지입니다.\n지정된 식별자 `wifisec_bssid_essid_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_bssid_essid_v1\") 앞 20자리}`",
+    "en": "Distinguish between BSSID (hardware AP MAC) and ESSID (human-readable network name).\nCompute the first 20 hex characters of SHA256(\"wifisec_bssid_essid_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_bssid_essid_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_bssid_essid_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_bssid_essid_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c9de9f041a3ad2b9eb68bdc01a6050eae5c666471a866154e54c1dc78f3b0326"
+},
+{
+  "id": "t0_wifisec_monitor_mode",
+  "tier": 0,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "모니터 모드와 Promiscuous 캡처 원리",
+    "en": "Monitor Mode & Promiscuous 802.11 Sniffing"
+  },
+  "prompt": {
+    "ko": "AP와의 결합 없이 공기 중의 모든 802.11 무선 원시 패킷을 가로채는 무선 LAN 카드 모니터 모드(Monitor Mode) 작동 원리 분석 챌린지입니다.\n지정된 식별자 `wifisec_monitor_mode_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_monitor_mode_v1\") 앞 20자리}`",
+    "en": "Understand RF raw sniffing via 802.11 monitor mode without client association.\nCompute the first 20 hex characters of SHA256(\"wifisec_monitor_mode_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_monitor_mode_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_monitor_mode_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_monitor_mode_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8fba62a64dba49b68e7b5699b0e1de7fbf5a0841b92bd2cfa11a715775b981ba"
+},
+{
+  "id": "t1_wifisec_beacon_frame_analysis",
+  "tier": 1,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Beacon 프레임의 RSN IE 태그와 암호 스위트 식별",
+    "en": "Beacon Frame RSN IE Tag & Cipher Suite Identification"
+  },
+  "prompt": {
+    "ko": "AP 주기적 비콘 프레임 내부의 RSN IE (Tag 48) 파싱을 통한 WPA2/WPA3 지원 여부 및 AKM 스위트 식별 분석 챌린지입니다.\n지정된 식별자 `wifisec_beacon_frame_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_beacon_frame_analysis_v1\") 앞 20자리}`",
+    "en": "Parse Beacon frame RSN IE (Tag 48) to discover WPA2/WPA3 support and AKM cipher suites.\nCompute the first 20 hex characters of SHA256(\"wifisec_beacon_frame_analysis_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_beacon_frame_analysis_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_beacon_frame_analysis_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_beacon_frame_analysis_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f9dd48401e2e33f32c1681a5d42a436b63c603c5d5fa4920dd4aae69b8c12627"
+},
+{
+  "id": "t1_wifisec_probe_request_karma",
+  "tier": 1,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 40,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Probe Request 브로드캐스트와 Karma 공격 원리",
+    "en": "Probe Request Broadcasts & Karma Attack Mechanics"
+  },
+  "prompt": {
+    "ko": "과거 연결된 AP를 찾기 위해 단말이 송출하는 Directed Probe Request를 가로채 즉시 가짜 응답을 돌려주는 Karma 공격 원리 분석 챌린지입니다.\n지정된 식별자 `wifisec_probe_request_karma_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_probe_request_karma_v1\") 앞 20자리}`",
+    "en": "Analyze mobile STA Directed Probe Requests exploited by Karma rogue AP attacks.\nCompute the first 20 hex characters of SHA256(\"wifisec_probe_request_karma_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_probe_request_karma_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_probe_request_karma_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_probe_request_karma_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ce261e2cf94c5ab8839f47459e2a1856d10a673a0a476a11e057a43e52c2c6bf"
+},
+{
+  "id": "t1_wifisec_aircrack_ng_suite",
+  "tier": 1,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "aircrack-ng 툴킷 핵심 도구 체계",
+    "en": "Aircrack-ng Wireless Suite Toolchain"
+  },
+  "prompt": {
+    "ko": "무선 침투 테스트 핵심 도구군(airmon-ng, airodump-ng, aireplay-ng, aircrack-ng)의 명령어 파이프라인 분석 챌린지입니다.\n지정된 식별자 `wifisec_aircrack_ng_suite_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_aircrack_ng_suite_v1\") 앞 20자리}`",
+    "en": "Review aircrack-ng toolchain pipeline: airmon-ng, airodump-ng, aireplay-ng, and aircrack-ng.\nCompute the first 20 hex characters of SHA256(\"wifisec_aircrack_ng_suite_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_aircrack_ng_suite_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_aircrack_ng_suite_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_aircrack_ng_suite_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fdbaa15e99a8962dfaf69996e72008d344c00840a402888bca7c90e5b8b66be3"
+},
+{
+  "id": "t1_wifisec_deauth_frame_dos",
+  "tier": 1,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "비인가 802.11 Deauth 프레임 주입을 통한 연결 단절",
+    "en": "Unauthorized 802.11 Deauthentication Injection DoS"
+  },
+  "prompt": {
+    "ko": "비암호화 관리 프레임의 발신지 MAC을 변조하여 정당한 클라이언트와 AP 간 통신을 강제 단절시키는 Deauth DoS 분석 챌린지입니다.\n지정된 식별자 `wifisec_deauth_frame_dos_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_deauth_frame_dos_v1\") 앞 20자리}`",
+    "en": "Investigate 802.11 Deauthentication frame spoofing to sever client-AP wireless sessions.\nCompute the first 20 hex characters of SHA256(\"wifisec_deauth_frame_dos_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_deauth_frame_dos_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_deauth_frame_dos_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_deauth_frame_dos_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "0117502b1a79e21c5deb5795e270b3268f29f3b5662f18d4f1bc32ad6e5e4f87"
+},
+{
+  "id": "t1_wifisec_wpa2_4way_handshake",
+  "tier": 1,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPA2 4-Way Handshake EAPOL 메시지 교환 절차",
+    "en": "WPA2 4-Way Handshake EAPOL Sequence"
+  },
+  "prompt": {
+    "ko": "ANonce, SNonce, MIC, GTK가 교환되는 4단계 EAPOL 핸드셰이크 프로토콜 및 PTK 도출 메커니즘 분석 챌린지입니다.\n지정된 식별자 `wifisec_wpa2_4way_handshake_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_wpa2_4way_handshake_v1\") 앞 20자리}`",
+    "en": "Examine 4-way EAPOL handshake exchanges (ANonce, SNonce, MIC, GTK) and PTK key derivation.\nCompute the first 20 hex characters of SHA256(\"wifisec_wpa2_4way_handshake_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_wpa2_4way_handshake_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_wpa2_4way_handshake_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_wpa2_4way_handshake_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2133020cbde39e740c28d421086c7460b8a16ede1396d10793928e2068da77b9"
+},
+{
+  "id": "t1_wifisec_wps_pin_pixie_dust",
+  "tier": 1,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPS Pixie Dust 공격과 오프라인 PRNG 취약점",
+    "en": "WPS Pixie Dust Attack & PRNG Predictability"
+  },
+  "prompt": {
+    "ko": "WPS 등록 과정에서 무작위 Nonce(E-Hash1/E-Hash2)가 취약한 난수 생성기에 의해 노출되어 발생하는 오프라인 Pixie Dust 공격 분석 챌린지입니다.\n지정된 식별자 `wifisec_wps_pin_pixie_dust_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_wps_pin_pixie_dust_v1\") 앞 20자리}`",
+    "en": "Understand WPS Pixie Dust vulnerability exploiting predictable chip PRNG seeds.\nCompute the first 20 hex characters of SHA256(\"wifisec_wps_pin_pixie_dust_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_wps_pin_pixie_dust_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_wps_pin_pixie_dust_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_wps_pin_pixie_dust_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5c612baf3c6a40dabaca4fb7868778fdfd2835c215d5daae96348fcb9c7e82c2"
+},
+{
+  "id": "t2_wifisec_pmkid_rsn_ie_derivation",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RSN IE 내부 PMKID 도출 공식과 EAPOL 1/4 캡처",
+    "en": "PMKID Derivation via RSN IE in EAPOL Frame 1/4"
+  },
+  "prompt": {
+    "ko": "HMAC-SHA1(PMK, 'PMK Name' | MAC_AP | MAC_STA) 공식에 기반하여 클라이언트 접속 없이 AP 단독으로 PMKID를 수집하는 공격 분석 챌린지입니다.\n지정된 식별자 `wifisec_pmkid_rsn_ie_derivation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_pmkid_rsn_ie_derivation_v1\") 앞 20자리}`",
+    "en": "Analyze PMKID derivation via HMAC-SHA1-128 over RSN IE in first EAPOL message.\nCompute the first 20 hex characters of SHA256(\"wifisec_pmkid_rsn_ie_derivation_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_pmkid_rsn_ie_derivation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_pmkid_rsn_ie_derivation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_pmkid_rsn_ie_derivation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3bb73236dbee64ec01db505ac7378814fd4a964482de8fd3baed7dbb1ac7de12"
+},
+{
+  "id": "t2_wifisec_hashcat_mode_22000",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Hashcat Mode 22000 포맷 구조 및 사전 공격",
+    "en": "Hashcat Mode 22000 Format & Dictionary Attack"
+  },
+  "prompt": {
+    "ko": "WPA-PBKDF2-PMKID 및 EAPOL 핸드셰이크를 단일 표준 해시라인으로 통합한 Hashcat 모드 22000 필드 구조 분석 챌린지입니다.\n지정된 식별자 `wifisec_hashcat_mode_22000_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_hashcat_mode_22000_v1\") 앞 20자리}`",
+    "en": "Deconstruct Hashcat mode 22000 unified hashline format combining PMKID and EAPOL.\nCompute the first 20 hex characters of SHA256(\"wifisec_hashcat_mode_22000_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_hashcat_mode_22000_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_hashcat_mode_22000_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_hashcat_mode_22000_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "68641c6519fa10ac3d48a4194793a8b7d039cd342382c54ad1026ee87008dc14"
+},
+{
+  "id": "t2_wifisec_sae_dragonfly_commit",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPA3 SAE Commit 단계 PWE 타원곡선 도출",
+    "en": "WPA3 SAE Dragonfly Commit Phase & PWE Derivation"
+  },
+  "prompt": {
+    "ko": "WPA3-Personal SAE 핸드셰이크의 첫 번째 Commit 단계에서 비밀번호로부터 Password Element(PWE)를 도출하고 스칼라를 교환하는 암호화 분석 챌린지입니다.\n지정된 식별자 `wifisec_sae_dragonfly_commit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_sae_dragonfly_commit_v1\") 앞 20자리}`",
+    "en": "Examine WPA3 SAE Commit phase generating Password Element (PWE) on elliptic curves.\nCompute the first 20 hex characters of SHA256(\"wifisec_sae_dragonfly_commit_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_sae_dragonfly_commit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_sae_dragonfly_commit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_sae_dragonfly_commit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "dd34cc8926fe98f40d49a946d073aa74510eea4f387c2b3af6c5b0cbd2f15833"
+},
+{
+  "id": "t2_wifisec_sae_confirm_exchange",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPA3 SAE Confirm 단계 해시 검증 및 PMK 확립",
+    "en": "WPA3 SAE Confirm Phase & PMK Shared Secret"
+  },
+  "prompt": {
+    "ko": "상호 간 교환된 Commit 스칼라를 바탕으로 도출된 키(KCK)를 통해 Confirm 토큰을 교차 검증하고 PMK를 확립하는 프로토콜 분석 챌린지입니다.\n지정된 식별자 `wifisec_sae_confirm_exchange_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_sae_confirm_exchange_v1\") 앞 20자리}`",
+    "en": "Analyze WPA3 SAE Confirm message verification using KCK to establish final PMK secret.\nCompute the first 20 hex characters of SHA256(\"wifisec_sae_confirm_exchange_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_sae_confirm_exchange_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_sae_confirm_exchange_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_sae_confirm_exchange_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f5875e1374b7e1d3de89a685bbfb9d5f0bed7dd7711f2194071bbb79fee86e9a"
+},
+{
+  "id": "t2_wifisec_krack_key_reinstallation",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "KRACK (CVE-2017-13077) 키 재설치 공격과 Nonce 초기화",
+    "en": "KRACK Key Reinstallation Attack & Nonce Reuse"
+  },
+  "prompt": {
+    "ko": "WPA2 4-Way Handshake의 Message 3 재전송을 유도하여 기설치된 암호화 키를 재설치시키고 패킷 Nonce 및 재생 카운터를 초기화시키는 KRACK 취약점 분석 챌린지입니다.\n지정된 식별자 `wifisec_krack_key_reinstallation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_krack_key_reinstallation_v1\") 앞 20자리}`",
+    "en": "Deconstruct KRACK (CVE-2017-13077) key reinstallation forcing zeroed nonce streams.\nCompute the first 20 hex characters of SHA256(\"wifisec_krack_key_reinstallation_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_krack_key_reinstallation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_krack_key_reinstallation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_krack_key_reinstallation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "71c6a26b6932978b7b5478df4bcb1683ea60391d84d3655db58f20eb2fbc2e9a"
+},
+{
+  "id": "t2_wifisec_evil_twin_rogue_ap",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Evil Twin 가짜 AP 구축 및 DNS 스푸핑 리다이렉트",
+    "en": "Evil Twin Rogue AP Deployment & DNS Redirection"
+  },
+  "prompt": {
+    "ko": "타깃 기업망과 동일한 SSID 및 고출력 RF 신호로 피해 단말의 접속을 가로채고 DNS 쿼리를 조작하는 Evil Twin 공격 분석 챌린지입니다.\n지정된 식별자 `wifisec_evil_twin_rogue_ap_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_evil_twin_rogue_ap_v1\") 앞 20자리}`",
+    "en": "Deploy Evil Twin AP mimicking target SSID with DNS spoofing redirection.\nCompute the first 20 hex characters of SHA256(\"wifisec_evil_twin_rogue_ap_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_evil_twin_rogue_ap_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_evil_twin_rogue_ap_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_evil_twin_rogue_ap_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3dfce47f6f2155244104e2255b796afe74655fd53decd9d9a73e8dc298c4a42d"
+},
+{
+  "id": "t2_wifisec_captive_portal_phishing",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Captive Portal 웹 피싱과 사내 자격증명 수집",
+    "en": "Captive Portal Phishing & Corporate Credential Harvester"
+  },
+  "prompt": {
+    "ko": "공격자 AP에 연결된 단말의 모든 HTTP/HTTPS 요청을 사내 인증 로그인 페이지로 리다이렉트하여 ID/PW를 탈취하는 Captive Portal 기만 기법 분석 챌린지입니다.\n지정된 식별자 `wifisec_captive_portal_phishing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_captive_portal_phishing_v1\") 앞 20자리}`",
+    "en": "Simulate Captive Portal phishing hijacking HTTP/HTTPS traffic to harvest credentials.\nCompute the first 20 hex characters of SHA256(\"wifisec_captive_portal_phishing_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_captive_portal_phishing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_captive_portal_phishing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_captive_portal_phishing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3f5f420513b51603cb193de833675cd29fc8db1460a6073726b2c3153d13a112"
+},
+{
+  "id": "t2_wifisec_eap_peap_mschapv2",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Enterprise Wi-Fi PEAP-MSCHAPv2 인증 구조와 Asleap 크래킹",
+    "en": "Enterprise PEAP-MSCHAPv2 Architecture & Asleap Cracking"
+  },
+  "prompt": {
+    "ko": "기업용 802.1X EAP 내부의 MSCHAPv2 챌린지/리스폰스 핸드셰이크를 스니핑하고 Asleap/Hashcat으로 NTLM 해시를 복원하는 공격 분석 챌린지입니다.\n지정된 식별자 `wifisec_eap_peap_mschapv2_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_eap_peap_mschapv2_v1\") 앞 20자리}`",
+    "en": "Sniff 802.1X PEAP-MSCHAPv2 challenge/response pairs to crack NTLM responses via Asleap.\nCompute the first 20 hex characters of SHA256(\"wifisec_eap_peap_mschapv2_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_eap_peap_mschapv2_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_eap_peap_mschapv2_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_eap_peap_mschapv2_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7a12eb52b7b9247caf054c8bbf11d0d92b5a7387d01a02655251776b9ee0c472"
+},
+{
+  "id": "t2_wifisec_hostapd_wpe_radius",
+  "tier": 2,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "hostapd-wpe 기반 Rogue RADIUS 서버를 통한 크리덴셜 탈취",
+    "en": "Rogue RADIUS Credential Sniffing via hostapd-wpe"
+  },
+  "prompt": {
+    "ko": "인증서 검증이 미흡한 802.1X 단말을 대상으로 가짜 EAP 인증 서버를 운영하여 사용자 계정과 암호화된 해시를 로깅하는 공격 분석 챌린지입니다.\n지정된 식별자 `wifisec_hostapd_wpe_radius_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_hostapd_wpe_radius_v1\") 앞 20자리}`",
+    "en": "Run rogue RADIUS authentication server using hostapd-wpe to harvest 802.1X enterprise credentials.\nCompute the first 20 hex characters of SHA256(\"wifisec_hostapd_wpe_radius_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_hostapd_wpe_radius_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_hostapd_wpe_radius_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_hostapd_wpe_radius_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c10cce564853eb6cc417303c9a74a9829460aeae0b338e2dfd3f548e6f299e54"
+},
+{
+  "id": "t3_wifisec_dragonblood_timing_leak",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPA3 Dragonblood (CVE-2019-9494) PWE 타이밍 부채널 분석",
+    "en": "WPA3 Dragonblood Timing Side-Channel (CVE-2019-9494)"
+  },
+  "prompt": {
+    "ko": "SAE Dragonfly의 PWE Hunting-and-Pecking 루프 수행 시간 차이를 측정하여 패스워드 후보군을 좁히는 타이밍 누출 취약점 분석 챌린지입니다.\n지정된 식별자 `wifisec_dragonblood_timing_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_dragonblood_timing_leak_v1\") 앞 20자리}`",
+    "en": "Analyze Dragonblood CVE-2019-9494 timing side-channel across Dragonfly PWE calculation loops.\nCompute the first 20 hex characters of SHA256(\"wifisec_dragonblood_timing_leak_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_dragonblood_timing_leak_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_dragonblood_timing_leak_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_dragonblood_timing_leak_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fc7d6323a1c741c79f9b7da386fcf337e947d09a2266e3b335a7b90285ffdf46"
+},
+{
+  "id": "t3_wifisec_dragonblood_cache_sidechannel",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPA3 Dragonblood (CVE-2019-9495) 캐시 접근 패턴 부채널",
+    "en": "WPA3 Dragonblood Cache-based Side Channel (CVE-2019-9495)"
+  },
+  "prompt": {
+    "ko": "모듈러 역원 및 타원곡선 덧셈 시 메모리 캐시 접근 패턴을 Prime+Probe 기법으로 모니터링하여 비밀번호를 복원하는 취약점 분석 챌린지입니다.\n지정된 식별자 `wifisec_dragonblood_cache_sidechannel_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_dragonblood_cache_sidechannel_v1\") 앞 20자리}`",
+    "en": "Inspect CVE-2019-9495 cache-based access leakage during elliptic curve point operations.\nCompute the first 20 hex characters of SHA256(\"wifisec_dragonblood_cache_sidechannel_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_dragonblood_cache_sidechannel_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_dragonblood_cache_sidechannel_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_dragonblood_cache_sidechannel_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "dd375e723cf3e7ce181f7d1d21c193865c2043a5457ebf98e3ed07be6b493656"
+},
+{
+  "id": "t3_wifisec_sae_transition_downgrade",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPA3 Transition 모드 강제 WPA2 다운그레이드 공격",
+    "en": "WPA3 Transition Mode Downgrade Attack to WPA2"
+  },
+  "prompt": {
+    "ko": "WPA2와 WPA3가 공존하는 혼용 AP 환경에서 비콘 내 SAE AKM 스위트를 차단하여 클라이언트가 취약한 WPA2로 협상하도록 유도하는 다운그레이드 분석 챌린지입니다.\n지정된 식별자 `wifisec_sae_transition_downgrade_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_sae_transition_downgrade_v1\") 앞 20자리}`",
+    "en": "Force clients on WPA3-Transition networks to fallback to crackable WPA2 4-way handshakes.\nCompute the first 20 hex characters of SHA256(\"wifisec_sae_transition_downgrade_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_sae_transition_downgrade_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_sae_transition_downgrade_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_sae_transition_downgrade_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ee253b12e4a7d7b2f78e48c8fd1c9dfc055b75743870eee4c508eca00372bb3f"
+},
+{
+  "id": "t3_wifisec_sae_hunting_pecking_loop",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 210,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Dragonfly Hunting-and-Pecking 루프 카운터 누출 분석",
+    "en": "Dragonfly Hunting-and-Pecking Loop Counter Leakage"
+  },
+  "prompt": {
+    "ko": "비표준 타원곡선에서 유효한 점을 찾을 때까지 반복하는 Hunting-and-Pecking 루프 카운터와 비밀번호 간의 종속성 해부 챌린지입니다.\n지정된 식별자 `wifisec_sae_hunting_pecking_loop_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_sae_hunting_pecking_loop_v1\") 앞 20자리}`",
+    "en": "Examine the probabilistic Hunting-and-Pecking loop counter correlation with passphrase candidates.\nCompute the first 20 hex characters of SHA256(\"wifisec_sae_hunting_pecking_loop_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_sae_hunting_pecking_loop_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_sae_hunting_pecking_loop_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_sae_hunting_pecking_loop_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5347eb263cc4c638767faef4d00ae5637d151f7b195809b49c8d9d9f644b51b7"
+},
+{
+  "id": "t3_wifisec_80211w_pmf_bip_cmac",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 220,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IEEE 802.11w PMF 및 BIP (AES-128-CMAC) 무결성 프로토콜",
+    "en": "IEEE 802.11w PMF & BIP (AES-128-CMAC) Integrity Protocol"
+  },
+  "prompt": {
+    "ko": "관리 프레임 위조를 방지하기 위해 IGTK(Integrity Group Temporal Key)와 AES-128-CMAC 무결성 태그를 부여하는 802.11w 메커니즘 분석 챌린지입니다.\n지정된 식별자 `wifisec_80211w_pmf_bip_cmac_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_80211w_pmf_bip_cmac_v1\") 앞 20자리}`",
+    "en": "Study IEEE 802.11w PMF using Broadcast Integrity Protocol (BIP: AES-128-CMAC) with IGTK.\nCompute the first 20 hex characters of SHA256(\"wifisec_80211w_pmf_bip_cmac_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_80211w_pmf_bip_cmac_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_80211w_pmf_bip_cmac_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_80211w_pmf_bip_cmac_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2efc83725ebcdec500c8c64b511b0731cdf8cce987fb89f2de8b2e84d1554a39"
+},
+{
+  "id": "t3_wifisec_pmf_deauth_dos_immunity",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 230,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "802.11w PMF Required 환경에서의 Deauth 플러딩 무력화 검증",
+    "en": "Deauthentication DoS Immunity under PMF Required Mode"
+  },
+  "prompt": {
+    "ko": "PMF Required 모드가 활성화된 무선 단말에 위조된 Deauth 프레임을 주입했을 때 BIP 무결성 검증 실패로 패킷이 즉각 드롭되는 방어 원리 분석 챌린지입니다.\n지정된 식별자 `wifisec_pmf_deauth_dos_immunity_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_pmf_deauth_dos_immunity_v1\") 앞 20자리}`",
+    "en": "Verify forged deauthentication packets being dropped by 802.11w BIP validation in PMF Required mode.\nCompute the first 20 hex characters of SHA256(\"wifisec_pmf_deauth_dos_immunity_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_pmf_deauth_dos_immunity_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_pmf_deauth_dos_immunity_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_pmf_deauth_dos_immunity_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "54045b242642629815ca25257954d30f57a8b137d3893b9373cce497264cbd75"
+},
+{
+  "id": "t3_wifisec_hcxdumptool_raw_injection",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 240,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "hcxdumptool 기반 비접속 무선 패킷 주입 및 EAPOL 캡처",
+    "en": "hcxdumptool Raw Injection & Non-client EAPOL Interception"
+  },
+  "prompt": {
+    "ko": "AP에 Association Request를 직접 주입하여 클라이언트 상호작용 없이 RSN IE 및 EAPOL 프레임을 유도 수집하는 hcxdumptool 분석 챌린지입니다.\n지정된 식별자 `wifisec_hcxdumptool_raw_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_hcxdumptool_raw_injection_v1\") 앞 20자리}`",
+    "en": "Operate hcxdumptool sending association requests to capture EAPOL/PMKID without active clients.\nCompute the first 20 hex characters of SHA256(\"wifisec_hcxdumptool_raw_injection_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_hcxdumptool_raw_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_hcxdumptool_raw_injection_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_hcxdumptool_raw_injection_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e73f71907fa4b46169f08ef4a0cb246b662ab6e24339197df3d1deffa7892ab6"
+},
+{
+  "id": "t3_wifisec_hcxpcapngtool_hash_export",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "hcxpcapngtool을 통한 모던 해시라인 (22000) 추출 자동화",
+    "en": "hcxpcapngtool Modern Hashline 22000 Extraction Pipeline"
+  },
+  "prompt": {
+    "ko": "pcapng 캡처 파일에서 손상된 프레임을 필터링하고 유효한 PMKID 및 EAPOL 메시지를 파싱하여 Hashcat 22000 포맷으로 추출하는 파이프라인 분석 챌린지입니다.\n지정된 식별자 `wifisec_hcxpcapngtool_hash_export_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_hcxpcapngtool_hash_export_v1\") 앞 20자리}`",
+    "en": "Automate pcapng conversion to Hashcat mode 22000 filtering corrupt frames via hcxpcapngtool.\nCompute the first 20 hex characters of SHA256(\"wifisec_hcxpcapngtool_hash_export_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_hcxpcapngtool_hash_export_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_hcxpcapngtool_hash_export_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_hcxpcapngtool_hash_export_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "23f2f3aee2ed56a27e6513fd3b3e5d9799f9a9c6e3257f59d17a88ebb02b0e14"
+},
+{
+  "id": "t3_wifisec_wips_rogue_containment",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 260,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "무선 침입 방지 시스템 (WIPS)의 Rogue AP 전파 차단 및 포트 억제",
+    "en": "WIPS Rogue AP Containment & Switchport Suppression"
+  },
+  "prompt": {
+    "ko": "인가되지 않은 사설 AP 및 Evil Twin 전파를 센서 AP가 실시간 탐지하고 전파 방해 및 스위치 포트 자동 셧다운으로 격리하는 WIPS 아키텍처 분석 챌린지입니다.\n지정된 식별자 `wifisec_wips_rogue_containment_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_wips_rogue_containment_v1\") 앞 20자리}`",
+    "en": "Study Wireless Intrusion Prevention System (WIPS) RF containment and switchport suppression.\nCompute the first 20 hex characters of SHA256(\"wifisec_wips_rogue_containment_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_wips_rogue_containment_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_wips_rogue_containment_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_wips_rogue_containment_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "4bf3165c4cb185f61b7a924eadcbe0564ad1ac34790f451b8da20161a0f6db0a"
+},
+{
+  "id": "t3_wifisec_sae_h2e_hash_to_element",
+  "tier": 3,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 270,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPA3 차세대 H2E (Hash-to-Element) 부채널 방어 매핑",
+    "en": "WPA3 Hash-to-Element (H2E) Side-Channel Hardening"
+  },
+  "prompt": {
+    "ko": "Dragonblood 부채널 공격을 방어하기 위해 도입된 상수 시간(Constant-time) PWE 도출 알고리즘인 SAE-H2E(Hash-to-Element) 암호학적 분석 챌린지입니다.\n지정된 식별자 `wifisec_sae_h2e_hash_to_element_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_sae_h2e_hash_to_element_v1\") 앞 20자리}`",
+    "en": "Evaluate WPA3 Hash-to-Element (H2E) mitigating timing/cache attacks with constant-time point derivation.\nCompute the first 20 hex characters of SHA256(\"wifisec_sae_h2e_hash_to_element_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_sae_h2e_hash_to_element_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_sae_h2e_hash_to_element_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_sae_h2e_hash_to_element_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f7e422a29c8f621257bfe3e29b65658b37ae024f72b103008004e3602a5d62b8"
+},
+{
+  "id": "t4_wifisec_wpa3_enterprise_192bit",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 280,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPA3-Enterprise 192-bit CNSA 스위트 (EAP-TLS / GCMP-256)",
+    "en": "WPA3-Enterprise 192-bit CNSA Suite (EAP-TLS / GCMP-256)"
+  },
+  "prompt": {
+    "ko": "미국 국가보안국 CNSA(Commercial National Security Algorithm) 지침에 따른 ECDSA-384, EAP-TLS, GCMP-256 최고 등급 무선 암호화 아키텍처 분석 챌린지입니다.\n지정된 식별자 `wifisec_wpa3_enterprise_192bit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_wpa3_enterprise_192bit_v1\") 앞 20자리}`",
+    "en": "Analyze NSA CNSA 192-bit security mode with ECDSA P-384, EAP-TLS, and GCMP-256 ciphers.\nCompute the first 20 hex characters of SHA256(\"wifisec_wpa3_enterprise_192bit_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_wpa3_enterprise_192bit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_wpa3_enterprise_192bit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_wpa3_enterprise_192bit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2d35db6d84cc90f301c079b8573bf5a0c9e5f3a7a2710fd9125fa7f65b41cfb1"
+},
+{
+  "id": "t4_wifisec_mac_randomization_tracking",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 290,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "모바일 MAC 주소 무작위화 회피 및 프로브 시그니처 핑거프린팅",
+    "en": "Bypassing Mobile MAC Randomization via Probe Fingerprinting"
+  },
+  "prompt": {
+    "ko": "iOS/Android 단말의 무작위 MAC 주소 보호를 Information Element 순서 및 802.11 파라미터 핑거프린팅으로 역추적하는 위치 추적 분석 챌린지입니다.\n지정된 식별자 `wifisec_mac_randomization_tracking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_mac_randomization_tracking_v1\") 앞 20자리}`",
+    "en": "Investigate STA tracking bypassing MAC randomization using IE ordering and radio capability fingerprinting.\nCompute the first 20 hex characters of SHA256(\"wifisec_mac_randomization_tracking_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_mac_randomization_tracking_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_mac_randomization_tracking_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_mac_randomization_tracking_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3d5e5289b12669539732608ce5a33eca5e2a799d046e35f7a847ce5cf605daeb"
+},
+{
+  "id": "t4_wifisec_owpe_opportunistic_wireless",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 300,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OWE (Enhanced Open / RFC 8110) Diffie-Hellman 무선 도청 방어",
+    "en": "OWE Opportunistic Wireless Encryption & Unauthenticated DH"
+  },
+  "prompt": {
+    "ko": "개방형 Wi-Fi 네트워크에서 패스워드 없이도 Diffie-Hellman 키 교환을 통해 무선 구간 스니핑을 방지하는 OWE(RFC 8110) 암호화 분석 챌린지입니다.\n지정된 식별자 `wifisec_owpe_opportunistic_wireless_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_owpe_opportunistic_wireless_v1\") 앞 20자리}`",
+    "en": "Analyze Opportunistic Wireless Encryption (OWE / RFC 8110) providing passive eavesdropping protection.\nCompute the first 20 hex characters of SHA256(\"wifisec_owpe_opportunistic_wireless_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_owpe_opportunistic_wireless_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_owpe_opportunistic_wireless_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_owpe_opportunistic_wireless_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "948c978cf022efbe23d25fd18f0bf7713ff64908b2c21e93791ca6ab9a1d5681"
+},
+{
+  "id": "t4_wifisec_wpa3_sae_reflection_attack",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 310,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WPA3 SAE 반사 공격 (Reflection Attack) 및 무효 곡선 공격 분석",
+    "en": "WPA3 SAE Reflection & Invalid Curve Attacks"
+  },
+  "prompt": {
+    "ko": "SAE Commit 스칼라를 반사 주입하여 동일 세션 키를 유도하거나 취약한 파라미터 검증을 악용하는 수학적 공격 분석 챌린지입니다.\n지정된 식별자 `wifisec_wpa3_sae_reflection_attack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_wpa3_sae_reflection_attack_v1\") 앞 20자리}`",
+    "en": "Explore mathematical reflection and small-subgroup invalid curve attacks against SAE Commit exchanges.\nCompute the first 20 hex characters of SHA256(\"wifisec_wpa3_sae_reflection_attack_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_wpa3_sae_reflection_attack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_wpa3_sae_reflection_attack_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_wpa3_sae_reflection_attack_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5730ccbae71e45a90e7372a2e856b63463cc4f567485645c9fdf25d60950b808"
+},
+{
+  "id": "t4_wifisec_wlan_client_isolation_bypass",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 320,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "무선 클라이언트 격리 (Client Isolation) 우회 및 ARP 스푸핑",
+    "en": "Wireless Client Isolation Bypass & Default Gateway Relay"
+  },
+  "prompt": {
+    "ko": "동일 AP에 접속된 단말 간 직접 통신 차단(AP Isolation) 정책을 디폴트 게이트웨이 유니캐스트 릴레이를 통해 우회하는 기법 분석 챌린지입니다.\n지정된 식별자 `wifisec_wlan_client_isolation_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_wlan_client_isolation_bypass_v1\") 앞 20자리}`",
+    "en": "Circumvent wireless AP client isolation policies by routing forged frames via default gateway ARP proxies.\nCompute the first 20 hex characters of SHA256(\"wifisec_wlan_client_isolation_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_wlan_client_isolation_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_wlan_client_isolation_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_wlan_client_isolation_bypass_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "017ae1479761e50118054edbc5a30ad9764f2ea8f6adac424612048143b2d3db"
+},
+{
+  "id": "t4_wifisec_aircrack_distributed_gpu",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 330,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "대규모 분산 GPU 클러스터 기반 WPA2/WPA3 사전 공격 파이프라인",
+    "en": "Distributed GPU Cluster Cracking Pipeline for WPA2/WPA3"
+  },
+  "prompt": {
+    "ko": "PBKDF2-HMAC-SHA1(4096회) 연산 부하를 다중 GPU 워커 노드와 Hashtopolis로 분산 오케스트레이션하는 고속 크래킹 파이프라인 분석 챌린지입니다.\n지정된 식별자 `wifisec_aircrack_distributed_gpu_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_aircrack_distributed_gpu_v1\") 앞 20자리}`",
+    "en": "Scale WPA PBKDF2 hash exhaustion across distributed GPU clusters using Hashtopolis orchestration.\nCompute the first 20 hex characters of SHA256(\"wifisec_aircrack_distributed_gpu_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_aircrack_distributed_gpu_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_aircrack_distributed_gpu_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_aircrack_distributed_gpu_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "0f5eb3b35feb325af02f6fd1480d8ced181169172f26e07c47a339c01684a7f6"
+},
+{
+  "id": "t4_wifisec_capstone_wireless_audit",
+  "tier": 4,
+  "cat": "wifisec",
+  "track": "wifisec",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 WPA3 무선 침투 감사 및 802.11w MFP 하드닝 총괄",
+    "en": "Enterprise Wireless Penetration Audit & 802.11w MFP Hardening Capstone"
+  },
+  "prompt": {
+    "ko": "전파 정찰 -> PMKID 수집 -> Dragonblood 부채널 테스트 -> Evil Twin 탐지 -> 802.11w PMF 필수화 전 과정을 완성합니다.\n지정된 식별자 `wifisec_capstone_wireless_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"wifisec_capstone_wireless_audit_v1\") 앞 20자리}`",
+    "en": "Execute comprehensive enterprise wireless audit from PMKID capture and SAE side-channel triage to 802.11w MFP mandatory defense.\nCompute the first 20 hex characters of SHA256(\"wifisec_capstone_wireless_audit_v1\").\n\nFormat: `FLAG{SHA256(\"wifisec_capstone_wireless_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `wifisec_capstone_wireless_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"wifisec_capstone_wireless_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "eef66341fbfed97f30cc3da28a0c0673789f9c89464627f43078b219115c6a62"
 }
 ];

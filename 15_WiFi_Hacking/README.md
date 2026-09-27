@@ -13,6 +13,7 @@
 | [04_Enterprise_WiFi_Attacks.md](./04_Enterprise_WiFi_Attacks.md) | **기업 WiFi 공격 (WPA2-Enterprise / RADIUS)** — WPA2-Enterprise는 가정용 PSK(사전 공유 키) 대신 RADIUS 서버를 통해 사용자별로 인증하는 기업용 WiFi 보안 방식입니다. 각 직원이 개별 계정(아이디/패스워드 ... |
 | [05_rogue_ap_and_detection.md](./05_rogue_ap_and_detection.md) | **로그 AP·캡티브 포털·WiFi 모니터링 및 탐지** — 로그 AP(Rogue AP)는 합법적인 AP처럼 위장한 악성 무선 접속 포인트입니다. 공격자가 카페·공항·회사 근처에서 동일한 SSID를 가진 가짜 AP를 운영하면, 피해자의 기기가 ... |
 | [06_wifi_ctf_lab.md](./06_wifi_ctf_lab.md) | **WiFi 해킹 CTF 실습 랩** — WiFi 해킹 실습은 실제 무선 하드웨어가 필요하지만, 이 랩은 캡처 파일 분석과 소프트웨어 시뮬레이션 방식으로 Docker 환경에서 진행한다. |
+| [07_practical_wpa3_sae_and_pmkid_deepdive.md](./07_practical_wpa3_sae_and_pmkid_deepdive.md) | **심층 분석: WPA3 SAE 드래곤플라이 프로토콜, PMKID 오프라인 크래킹 및 802.11w PMF 방어 딥다이브** — 전통적인 WPA2-PSK 환경에서는 공격자가 정당한 클라이언트가 AP에 접속할 때 발생하는 4-Way Handshake(EAPOL 4단계 교환)를 스니핑하거나, 인위적으로 Deauth... |
 
 ## 🎯 학습 목표
 

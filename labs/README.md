@@ -311,6 +311,16 @@ docker-compose --version
 - **워게임 트랙**: `malsandbox` / `maldev`
 - **빠른 실행**: `python3 vhack.py lab start 26` (웹 콘솔 & 분석 센터: `http://localhost:8026`)
 
+### 27. 무선 네트워크 & WPA3 보안 실전 랩 (WiFiShield)
+- WPA2/WPA3 혼용 AP의 RSN IE 비접속 PMKID 수집 및 오프라인 사전 공격 (Hashcat 22000 모드)
+- WPA3-Personal SAE (Dragonfly) Commit/Confirm PWE 계산 타이밍 부채널 분석 (CVE-2019-9494 Dragonblood)
+- WPA3 Transition 모드 강제 WPA2 다운그레이드 공격 및 4-Way Handshake 가로채기
+- 가짜 AP(Evil Twin / Rogue AP) 구축 및 Deauth 브로드캐스트 플러딩 실습
+- IEEE 802.11w Protected Management Frames (PMF / BIP AES-128-CMAC) 강제 적용 및 악성 AP 격리 방어
+- **교재 챕터 연계**: [15장 WiFi 해킹 심층 딥다이브](../15_WiFi_Hacking/07_practical_wpa3_sae_and_pmkid_deepdive.md)
+- **워게임 트랙**: `wifisec` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 27` (웹 콘솔 & 무선 보안 센터: `http://localhost:8027`)
+
 ---
 
 ## 빠른 시작 가이드

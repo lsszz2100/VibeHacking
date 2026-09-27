@@ -26,13 +26,14 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 40
-    assert len(challenges) == 1400
+    assert len(tracks) == 41
+    assert len(challenges) == 1435
     assert any(t["id"] == "carcan" for t in tracks)
     assert any(t["id"] == "apisec" for t in tracks)
     assert any(t["id"] == "sochunt" for t in tracks)
     assert any(t["id"] == "fuzzing" for t in tracks)
     assert any(t["id"] == "airedteam" for t in tracks)
+    assert any(t["id"] == "wifisec" for t in tracks)
 
 
 def test_verify_flag_logic():

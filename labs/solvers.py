@@ -510,6 +510,39 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Malware Contained! Behavioral telemetry logged -> FLAG{dynamic_sandbox_telemetry_evasion_blocked_2748}"
             }
         ]
+    },
+    "27": {
+        "title": "Lab 27: WiFiShield - Wireless Penetration & WPA3 Security Lab",
+        "description": "WPA2/WPA3 PMKID 오프라인 사전 공격, SAE Dragonfly 부채널 및 Evil Twin/802.11w PMF 방어",
+        "steps": [
+            {
+                "step": 1,
+                "name": "RSN IE EAPOL 비접속 PMKID 수집 및 오프라인 크래킹",
+                "target": "POST /api/wifi/pmkid/crack (bssid, client_mac, captured_pmkid, dictionary_word)",
+                "poc_explanation": "4-Way Handshake 대기 없이 EAPOL 1/4 프레임의 RSN IE에서 PMKID를 수집하고 PBKDF2-HMAC-SHA1 기반 오프라인 사전 공격으로 PSK를 복원합니다.",
+                "exploit_payload": '{"bssid": "00:11:22:33:44:55", "client_mac": "aa:bb:cc:dd:ee:ff", "captured_pmkid": "...", "dictionary_word": "winter2026!corp"}',
+                "defense": "충분한 복잡도의 긴 패스프레이즈(20자 이상) 사용 및 WPA3-Personal SAE 단독 모드 전환.",
+                "sample_output": "⚡ PMKID Cracked! Hashcat 22000 verified -> FLAG{pmkid_rsn_ie_offline_hashcat_cracked_8027}"
+            },
+            {
+                "step": 2,
+                "name": "WPA3 Transition 다운그레이드 & Dragonblood 부채널 공격",
+                "target": "POST /api/wifi/sae/attack (target_ssid, attack_vector, sae_group, injection_frames)",
+                "poc_explanation": "WPA3 전환 모드 AP의 보안 폴백을 악용해 WPA2 핸드셰이크로 다운그레이드하거나 PWE 계산 타이밍 부채널(CVE-2019-9494)을 측정합니다.",
+                "exploit_payload": '{"target_ssid": "Enterprise_Corp_Secure", "attack_vector": "transition_downgrade", "sae_group": 19, "injection_frames": 100}',
+                "defense": "WPA3 Transition 모드를 지양하고 WPA3-Only(SAE 전용) 강제 및 상수 시간(Constant-time) PWE 해시 알고리즘 패치.",
+                "sample_output": "🎯 SAE Exploited! Transition Downgraded -> FLAG{dragonfly_sae_sidechannel_downgraded_9142}"
+            },
+            {
+                "step": 3,
+                "name": "Evil Twin Deauth 플러딩 차단 및 802.11w PMF 방어",
+                "target": "POST /api/wifi/defense/mfp (enable_pmf, pmf_mode, rogue_bssid, isolate_rogue)",
+                "poc_explanation": "악성 AP의 위조 Deauth 브로드캐스트 플러딩을 무력화하기 위해 IEEE 802.11w PMF(BIP AES-128-CMAC)를 required로 강제하고 Rogue AP를 격리합니다.",
+                "exploit_payload": '{"enable_pmf": true, "pmf_mode": "required", "rogue_bssid": "de:ad:be:ef:13:37", "isolate_rogue": true}',
+                "defense": "IEEE 802.11w-2009 PMF 필수 적용 및 WIPS(무선 침입 방지 시스템)를 통한 가짜 AP 자동 탐지 및 포트 셧다운.",
+                "sample_output": "🛡️ 802.11w PMF Enforced! Rogue AP isolated -> FLAG{80211w_pmf_bip_deauth_flood_protected_5583}"
+            }
+        ]
     }
 }
 

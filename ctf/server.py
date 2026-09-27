@@ -456,6 +456,42 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "Sleep(600s) 안티 샌드박스 대기를 스킵하고 cuckoomon API 텔레메트리로 Run키 지속성을 차단하세요."}
                 ],
             },
+            "LAB27_PMKID": {
+                "id": "LAB27_PMKID",
+                "title": "WiFiShield: RSN IE PMKID Offline Hashcat Crack",
+                "category": "wireless",
+                "initial_points": 500,
+                "flag": "FLAG{pmkid_rsn_ie_offline_hashcat_cracked_8027}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "EAPOL 1/4 RSN IE의 HMAC-SHA1-128 해시를 Hashcat 22000 모드와 winter2026!corp 단어로 검증하세요."}
+                ],
+            },
+            "LAB27_SAE": {
+                "id": "LAB27_SAE",
+                "title": "WiFiShield: WPA3 SAE Dragonfly Downgrade & Side-Channel",
+                "category": "wireless",
+                "initial_points": 500,
+                "flag": "FLAG{dragonfly_sae_sidechannel_downgraded_9142}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "WPA3 Transition 모드의 폴백 취약점 또는 Group 19 PWE 타이밍 부채널(CVE-2019-9494)을 트리거하세요."}
+                ],
+            },
+            "LAB27_MFP": {
+                "id": "LAB27_MFP",
+                "title": "WiFiShield: 802.11w PMF Required & Rogue AP Containment",
+                "category": "wireless",
+                "initial_points": 500,
+                "flag": "FLAG{80211w_pmf_bip_deauth_flood_protected_5583}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "IEEE 802.11w PMF 모드를 optional이 아닌 'required'로 설정하고 Rogue BSSID(de:ad:be:ef:13:37)를 격리하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
