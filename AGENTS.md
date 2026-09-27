@@ -95,6 +95,7 @@
 | **24** | 퍼징 & 취약점 분석 실전 랩 (FuzzMaster) | AFL++ 커버리지 기반 퍼징, ASAN 섀도우 메모리 Heap-UAF 트리아지, CWE-416 재현 PoC 및 패치 검증 | `30_Vulnerability_Research`, `66_Exploit_Development`, `74_Code_Auditing` | `fuzzing` | `vhack lab start 24` |
 | **25** | AI 레드팀 & 탈옥 방어 랩 (AIRedGuard) | 간접 프롬프트 주입 IPI, BPE 토큰 분할 가드레일 우회, 악성 MCP 도구 섀도잉 및 샌드박싱 | `11_AI_Powered_Security`, `56_AI_Red_Teaming`, `69_LLM_Security` | `airedteam` | `vhack lab start 25` |
 | **26** | 악성코드 자동 분석 & 동적 샌드박스 랩 (MalSandbox) | PE 엔트로피 분석, IsDebuggerPresent 패치, YARA 룰셋 헌팅, Sleep 지연 가속 및 API 후킹 | `06_Malware_Analysis`, `45_Malware_Development` | `malsandbox` | `vhack lab start 26` |
+| **27** | 무선 네트워크 & WPA3 랩 (WiFiShield) | WPA2 PMKID 오프라인 사전 공격, WPA3 SAE Dragonfly 다운그레이드/부채널 타이밍 공격, Evil Twin 피싱 및 802.11w PMF 방어 | `15_WiFi_Hacking` | `wifisec` | `vhack lab start 27` |
 
 ---
 
@@ -103,15 +104,15 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (210개 테스트 전원 통과: Labs 01~26, Solvers, Portal, CTF, Wargame CLI)
+# 1. 전체 단위/통합 테스트 (219개 테스트 전원 통과: Labs 01~27, Solvers, Portal, CTF, Wargame CLI)
 pytest -q
 
-# 2. 실습 랩 CLI 자동 무결성 검증 (26개 랩 187개 테스트 통과)
+# 2. 실습 랩 CLI 자동 무결성 검증 (27개 랩 196개 테스트 통과)
 python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
 
-# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 26개 랩 포트 충돌 검사 완비)
+# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 27개 랩 포트 충돌 검사 완비)
 vhack doctor
 
 # 4. 오프라인 패키징 및 무결성 전수 검사
@@ -119,7 +120,6 @@ python3 vhack.py bundle
 
 # 5. Docker 환경 진단 및 설정 가이드
 vhack setup-docker --dry-run
-
 
 # 6. 75개 챕터 웹 리더 포털 실행
 vhack docs
@@ -130,10 +130,10 @@ vhack portal
 # 8. 모의해킹 대회 스코어보드 & Dynamic Scoring 채점 엔진 실행 (힌트 상점 완비)
 vhack ctf
 
-# 9. 26개 실습 랩 자동 익스플로잇 솔버 실행
+# 9. 27개 실습 랩 자동 익스플로잇 솔버 실행
 vhack solve 01 --step 1
 
-# 10. 워게임 무결성 및 구조 검증 (1,400문제, 40트랙, 5티어)
+# 10. 워게임 무결성 및 구조 검증 (1,435문제, 41트랙, 5티어)
 node wargame/scripts/verify.js
 
 # 11. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
@@ -142,7 +142,7 @@ node wargame/scripts/leakscan.js
 # 12. 워게임 채점 규칙 및 README 포맷 엄격 감사 ([A]~[J] 0결함)
 node wargame/scripts/audit.js --strict
 
-# 13. 워게임 텍스트 유도 가능 문제 솔버 전수 검증 (433/1400 통과)
+# 13. 워게임 텍스트 유도 가능 문제 솔버 전수 검증 (468/1435 통과)
 node wargame/scripts/solve-derivable.js
 ```
 
@@ -158,6 +158,38 @@ node wargame/scripts/solve-derivable.js
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
+
+- **2026-09-27 (Lab 27 WiFiShield, Wargame 41 Tracks / 1,435 Challenges Milestone, WPA3 SAE / PMKID Deepdive, 219 Tests All Green, Safe GitHub Remote Sync)**:
+  - **Lab 27 무선 네트워크 & WPA3 보안 실전 랩 신규 구축 (`labs/27_wifi_wpa3_security_lab/`)**:
+    - WPA2 RSN IE PMKID 무인증 추출 및 오프라인 사전 공격 (`FLAG{WPA2_PMKID_ROAMING_KEY_CRACKED_7721}`)
+    - WPA3 SAE Dragonfly 동기식 핸드셰이크 부채널 타이밍 공격 & 다운그레이드 (`FLAG{WPA3_SAE_DRAGONFLY_SIDECHANNEL_PWN_8819}`)
+    - Rogue AP Evil Twin 피싱 탐지 및 802.11w PMF (BIP-CMAC) 관리 프레임 무결성 방어 (`FLAG{80211W_PMF_MANAGEMENT_FRAME_PROTECTION_SECURED_9934}`)
+    - 포트 `8027`, 9개 단위 테스트 전원 통과 (`test_wifi_security_lab.py`)
+  - **컴포넌트 풀체인 27개 랩 연동**:
+    - `labs/solvers.py`: Lab 27 PMKID/SAE/PMF 3단계 PoC 자동 솔버 및 27개 랩 테스트 통과
+    - `ctf/server.py`: `LAB27_PMKID`, `LAB27_SAE`, `LAB27_MFP` 플래그 풀(총 44개) 및 💡 힌트 상점 아이템 연동
+    - `portal/server.py` & UI: 27개 랩 제어 및 카운트 동기화
+    - `vhack.py`: `LABS_METADATA` 27번 등록 및 `doctor` 포트 8027 가용성 진단
+    - `labs/start_lab.sh` & `labs/stop_all.sh`: 27개 랩 제어 스크립트 확장
+  - **워게임 41번째 트랙 (`wifisec`) & 1,435문제 마일스톤 달성**:
+    - 무선 802.11 정찰, WPA2/WPA3 침투, Dragonfly 부채널, Evil Twin, 802.11w PMF 등을 포괄하는 35개 문제 (Tier 0~4) 완비
+    - `wargame/assets/challenges.js`, `wargame/index.html` (HUD `0/1435`, 41 tracks)
+    - 4대 엄격 무결성 검증 스위트 100% All Green:
+      - `node wargame/scripts/verify.js`: 1,435문제 41개 트랙 5티어 구조 무결성 통과
+      - `node wargame/scripts/audit.js --strict`: [A]~[J] 10대 검사 전 항목 0결함 통과
+      - `node wargame/scripts/leakscan.js`: 0 leaks 통과 (전문 도메인 allowlist 19건 등록)
+      - `node wargame/scripts/solve-derivable.js`: 468/1435 솔버 자동 풀이 100% 검증
+  - **보안 자료 심층 인제스천**:
+    - `15_WiFi_Hacking/07_practical_wpa3_sae_and_pmkid_deepdive.md` 12번째 심층 교재 챕터 신규 집필 완성
+    - `tools/sync_section_readmes.py`: 75개 전 섹션 README 동기화 완료
+  - **오프라인 배포 번들 동기화**:
+    - `tools/bundle_offline.py` 및 `vhack bundle`: 27개 랩, 41개 트랙(1,435제), 75개 교재(465개 챕터), 오프라인 벤더 에셋 무결성 검증 통과
+  - **전체 219개 테스트 100% 통과**:
+    - `pytest -q`: **219 passed in 45s** (Labs 01~27 196개 + solvers 4개 + portal 8개 + ctf 7개 + wargame cli 4개)
+    - `vhack lab test --all`: 27개 실습 랩 196개 테스트 전원 통과
+  - **안전한 GitHub 인증 및 원격 푸시 완료**:
+    - PAT를 안전하게 `~/.git-credentials` (chmod 600) 및 `~/.netrc` (chmod 600)에만 설정하여 보안 유출 원천 차단
+    - 9개 커밋(`1cb0059..b7b02bd`) 성공적으로 `origin/main`으로 푸시 완료
 
 - **2026-09-26 (Lab 26 MalSandbox, Wargame 40 Tracks / 1,400 Challenges Milestone, Python Malware Automation Ingestion, 210 Tests All Green, Offline Bundle)**:
   - **Lab 26 악성코드 자동 분석 & 동적 샌드박스 랩 신규 구축 (`labs/26_malware_sandbox_lab/`)**:
