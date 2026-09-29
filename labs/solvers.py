@@ -576,6 +576,39 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Cisco L2 Hardened! DAI, Port-Security, BPDU Guard, CoPP Active -> FLAG{cisco_ios_l2_hardened_portsec_dai_bpduguard_copp_secured_7731}"
             }
         ]
+    },
+    "29": {
+        "title": "Lab 29: CertPwn - AD CS & Kerberos Delegation Security Lab",
+        "description": "Active Directory 인증서 서비스(AD CS) ESC1 SAN 주입, PKINIT Pass-the-Certificate 및 NTLM 해시 복원, Kerberos 위임(S4U/RBCD) 공격 및 엔터프라이즈 하드닝",
+        "steps": [
+            {
+                "step": 1,
+                "name": "AD CS ESC1 취약 템플릿 탐색 및 Administrator SAN 주입 인증서 발급",
+                "target": "POST /api/adcs/cert/request (template, target_user, san_upn)",
+                "poc_explanation": "CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT 플래그가 활성화된 ESC1_WebAuth 템플릿에 도메인 관리자 UPN(administrator@corp.local)을 SAN으로 지정하여 관리자 서명 인증서를 탈취합니다.",
+                "exploit_payload": '{"template": "ESC1_WebAuth", "target_user": "bob@corp.local", "san_upn": "administrator@corp.local"}',
+                "defense": "인증서 템플릿에서 CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT 비활성화 및 CA 관리자 승인(CT_FLAG_PEND_ALL_REQUESTS) 강제 적용.",
+                "sample_output": "🎯 ESC1 Exploited! Domain Administrator certificate acquired -> FLAG{adcs_esc1_enrollee_supplies_san_admin_cert_issued_8029}"
+            },
+            {
+                "step": 2,
+                "name": "PKINIT (RFC 4556) Pass-the-Certificate TGT 발급 및 UnPAC-the-Hash",
+                "target": "POST /api/adcs/pkinit/auth (pfx_data, realm, kdc_ip, request_ntlm)",
+                "poc_explanation": "탈취한 관리자 PFX 인증서를 이용해 KDC에 Kerberos PKINIT 사전 인증을 수행하여 TGT를 확보하고 PAC에서 NTLM 해시를 복원합니다.",
+                "exploit_payload": '{"pfx_data": "<BASE64_PFX_DATA>", "realm": "CORP.LOCAL", "kdc_ip": "10.0.0.10", "request_ntlm": true}',
+                "defense": "고권한 관리자 계정을 Protected Users 보안 그룹에 등록하여 PKINIT 인증서 캐싱 및 레거시 자격 증명 복원 차단.",
+                "sample_output": "⚡ Pass-the-Certificate Success! TGT & NTLM Hash extracted -> FLAG{pkinit_tgt_acquired_pass_the_certificate_domain_admin_5921}"
+            },
+            {
+                "step": 3,
+                "name": "Kerberos 위임(S4U2Proxy/RBCD) 차단 및 Enterprise AD CS 하드닝",
+                "target": "POST /api/adcs/delegation/harden (protect_admin_accounts, protected_users_group, template_harden, disable_esc8_ntlm_relay)",
+                "poc_explanation": "도메인 관리자 계정에 USER_NOT_DELEGATED를 설정하고, Protected Users 그룹 적용, ESC1 템플릿 수정, AD CS HTTP 웹 등록 NTLM 릴레이를 차단하여 다층 방어를 완성합니다.",
+                "exploit_payload": '{"protect_admin_accounts": true, "protected_users_group": true, "template_harden": true, "disable_esc8_ntlm_relay": true}',
+                "defense": "Active Directory Tier-0 보안 모델 준수, Kerberos 제약 위임 최소화 및 AD CS 웹 등록 채널 바인딩(EPA) 필수화.",
+                "sample_output": "🛡️ Enterprise AD CS & Kerberos Hardening Complete! -> FLAG{kerberos_delegation_s4u_rbcd_hardened_protected_users_9312}"
+            }
+        ]
     }
 }
 

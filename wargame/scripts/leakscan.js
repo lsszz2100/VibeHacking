@@ -309,6 +309,22 @@ const ALLOWLIST = new Map([
   ['t4_netinfra_cisco_ios_xe_webui_cve -> t3_privesc', 'Web UI privilege escalation discusses privilege escalation'],
   ['t4_netinfra_stp_tc_bpdu_topology_churn -> t4_ebpftc', 'STP topology change BPDU references TC notation'],
   ['t4_netinfra_capstone_enterprise_audit -> t2_snmp', 'Capstone network audit reviews SNMP hardening'],
+  // AD CS & Kerberos Delegation domain terms
+  ['t1_adcs_kerberos_delegation_types -> t3_adrbcd', 'Kerberos delegation types discusses RBCD architecture'],
+  ['t2_adcs_esc1_enrollee_supplies_san -> t3_adesc1', 'ESC1 SAN injection discusses ESC1 vulnerability'],
+  ['t2_adcs_unpac_the_hash -> t4_adpac', 'UnPAC-the-Hash extracts PAC credential info'],
+  ['t2_adcs_rbcd_msds_allowedtoact -> t3_adrbcd', 'RBCD msDS-AllowedToAct discusses RBCD delegation'],
+  ['t3_adcs_esc4_template_acl_overwrite -> t3_adesc1', 'ESC4 ACL modification converts template into ESC1'],
+  ['t3_adcs_esc8_ntlm_relay_web_enroll -> t3_relay', 'ESC8 discusses NTLM relay attacks'],
+  ['t3_adcs_esc8_ntlm_relay_web_enroll -> t2_adntlmrelay', 'ESC8 discusses AD NTLM relay vectors'],
+  ['t3_adcs_esc13_issuance_policies_oid -> t4_container', 'Issuance policy discusses container security'],
+  ['t3_adcs_protected_users_security -> t4_container', 'Protected users group discusses administrative containers'],
+  ['t3_adcs_event_4887_4768_siem -> t0_siem', 'Event ID correlation discusses SIEM detection'],
+  ['t4_adcs_shadow_credentials_keycredentiallink -> t3_adshadowcreds', 'Shadow credentials discusses msDS-KeyCredentialLink'],
+  ['t4_adcs_esc8_relay_petitpotam_efs -> t3_adcoerce', 'PetitPotam discusses authentication coercion'],
+  ['t4_adcs_esc8_relay_petitpotam_efs -> t3_relay', 'PetitPotam attack discusses NTLM relay'],
+  ['t4_adcs_esc8_relay_petitpotam_efs -> t2_adntlmrelay', 'PetitPotam discusses AD NTLM relay chain'],
+  ['t4_adcs_rbcd_coercion_cross_forest -> t3_adrbcd', 'Cross-forest coercion discusses RBCD chains'],
 ]);
 
 function loadChallenges() {

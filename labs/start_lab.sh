@@ -101,6 +101,7 @@ start_lab() {
         "26_malware_sandbox_lab"
         "27_wifi_wpa3_security_lab"
         "28_cisco_network_device_lab"
+        "29_adcs_kerberos_delegation_lab"
     )
 
     local lab_names=(
@@ -133,6 +134,7 @@ start_lab() {
         "악성코드 자동 분석 & 동적 샌드박스 랩"
         "무선 네트워크 & WPA3 보안 실전 랩"
         "네트워크 인프라 & L2 스위치 보안 실전 랩"
+        "AD CS 인증서 침투 & Kerberos 위임 실전 랩"
     )
 
     local lab_ports=(
@@ -165,10 +167,11 @@ start_lab() {
         "웹 콘솔 & 악성코드 분석 센터: http://localhost:8026"
         "웹 콘솔 & 무선 보안 센터: http://localhost:8027"
         "웹 콘솔 & L2 네트워크 관제 센터: http://localhost:8028"
+        "웹 콘솔 & AD CS 보안 센터: http://localhost:8029"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 28 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~28 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 29 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~29 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -306,6 +309,7 @@ case "$ARG" in
     12)   start_lab 12 ;;
     13)   start_lab 13 ;;
     14)   start_lab 14 ;;
+    15)   start_lab 15 ;;
     16)   start_lab 16 ;;
     17)   start_lab 17 ;;
     18)   start_lab 18 ;;
@@ -319,6 +323,7 @@ case "$ARG" in
     26)   start_lab 26 ;;
     27)   start_lab 27 ;;
     28)   start_lab 28 ;;
+    29)   start_lab 29 ;;
 
     all|ALL) start_all ;;
     ps|status) print_summary ;;

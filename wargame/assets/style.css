@@ -194,6 +194,302 @@ body{
 .badge-card.unlocked .badge-card-status{color:var(--amber)}
 .badge-card.locked .badge-card-status{color:var(--muted)}
 
+/* ---- Interactive Playground Modal & Widgets ---- */
+.playground-box {
+  max-width: 920px;
+  width: 95%;
+  max-height: 88vh;
+}
+.playground-nav {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(4, 18, 10, 0.7);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.pg-tab {
+  cursor: pointer;
+  background: rgba(12, 40, 24, 0.5);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  white-space: nowrap;
+  transition: 0.15s;
+}
+.pg-tab:hover {
+  color: var(--txt);
+  border-color: var(--green-dim);
+}
+.pg-tab.active {
+  color: #03140c;
+  background: var(--green);
+  border-color: var(--green);
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(39, 255, 139, 0.4);
+}
+.playground-body {
+  padding: 16px;
+  overflow-y: auto;
+  display: block;
+}
+.pg-panel {
+  display: none;
+}
+.pg-panel.active {
+  display: block;
+}
+
+/* CAN Simulator */
+.can-dashboard {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+}
+.can-gauges {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(3, 16, 9, 0.6);
+  border: 1px solid var(--line);
+  padding: 12px;
+  border-radius: 6px;
+}
+.gauge-card {
+  text-align: center;
+  padding: 8px;
+  background: rgba(2, 8, 4, 0.5);
+  border: 1px solid rgba(39, 255, 139, 0.15);
+  border-radius: 4px;
+}
+.gauge-title {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.gauge-val {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--green);
+  text-shadow: 0 0 8px rgba(39, 255, 139, 0.6);
+}
+.gauge-bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.gauge-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--green), var(--amber), var(--red));
+  transition: width 0.15s ease-out;
+}
+.can-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.can-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.can-input-row input {
+  background: #020804;
+  border: 1px solid var(--line);
+  color: var(--green);
+  font-family: var(--mono);
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+.can-log {
+  height: 180px;
+  overflow-y: auto;
+  background: #010603;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 11px;
+  font-family: var(--mono);
+  line-height: 1.4;
+  color: var(--muted);
+}
+.can-log .frame-item {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  padding: 2px 0;
+}
+.can-log .frame-injected {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+/* SQLi AST Visualizer */
+.sqli-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sqli-input-box input {
+  width: 100%;
+  background: #020804;
+  border: 1px solid var(--green);
+  color: var(--txt);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.sqli-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.sqli-pane {
+  background: rgba(3, 16, 9, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+}
+.sqli-pane.vulnerable {
+  border-color: rgba(255, 77, 77, 0.4);
+}
+.sqli-pane.safe {
+  border-color: rgba(39, 255, 139, 0.4);
+}
+.pane-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+.ast-view {
+  background: #010603;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  font-family: var(--mono);
+  white-space: pre-wrap;
+  min-height: 160px;
+}
+.token-tag {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin: 1px;
+  font-size: 10px;
+}
+.token-kw { background: rgba(59, 130, 246, 0.25); color: #60a5fa; }
+.token-op { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
+.token-lit { background: rgba(16, 185, 129, 0.25); color: #34d399; }
+.token-inj { background: rgba(239, 68, 68, 0.35); color: #f87171; font-weight: 700; }
+.token-cmt { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+
+/* AD CS ASN.1 Inspector */
+.adcs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.adcs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.adcs-card {
+  background: rgba(3, 16, 9, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+}
+.adcs-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.adcs-tag.danger { background: rgba(239, 68, 68, 0.25); color: var(--red); border: 1px solid var(--red); }
+.adcs-tag.ok { background: rgba(39, 255, 139, 0.2); color: var(--green); border: 1px solid var(--green); }
+
+/* JWT Playground */
+.jwt-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.jwt-parts {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.jwt-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.jwt-col textarea {
+  width: 100%;
+  height: 140px;
+  background: #020804;
+  border: 1px solid var(--line);
+  color: var(--txt);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 8px;
+  border-radius: 4px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.jwt-hdr-border { border-color: rgba(244, 63, 94, 0.5) !important; color: #fb7185 !important; }
+.jwt-payload-border { border-color: rgba(168, 85, 247, 0.5) !important; color: #c084fc !important; }
+.jwt-sig-border { border-color: rgba(56, 189, 248, 0.5) !important; color: #38bdf8 !important; }
+
+.pg-btn {
+  cursor: pointer;
+  background: rgba(39, 255, 139, 0.15);
+  border: 1px solid var(--green-dim);
+  color: var(--green);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  transition: 0.15s;
+}
+.pg-btn:hover {
+  background: var(--green);
+  color: #020804;
+}
+.pg-btn.danger {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--red);
+  color: var(--red);
+}
+.pg-btn.danger:hover {
+  background: var(--red);
+  color: #fff;
+}
+.preset-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 /* ---- responsive ---- */
 @media(max-width:680px){
   body{font-size:14px}

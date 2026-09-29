@@ -1,0 +1,10 @@
+services:
+  adcs_lab:
+    build: .
+    container_name: vibe_lab29_adcs
+    labels:
+      - "lab=29"
+      - "name=CertPwn AD CS & Kerberos Delegation Security Lab"
+    ports:
+      - "127.0.0.1:8029:8029"
+    restart: unless-stopped

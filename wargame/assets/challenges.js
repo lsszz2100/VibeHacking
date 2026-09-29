@@ -388,6 +388,14 @@ const TRACKS = [
     "en": "Network Infrastructure & Cisco Security",
     "desc_ko": "Cisco IOS 아키텍처·SNMPv2c 커뮤니티 탈취·DTP 트렁크 스푸핑·VLAN Hopping·802.1D STP Root Bridge 장악 및 L2 하드닝.",
     "desc_en": "Cisco IOS architecture, SNMPv2c R/W running-config dumps, DTP trunk spoofing, VLAN hopping, 802.1D STP root bridge hijacking, and enterprise L2 hardening."
+  },
+  {
+    "id": "adcs",
+    "icon": "🪪",
+    "ko": "ADCS 인증서 침투·Kerberos 위임",
+    "en": "AD CS PKI & Kerberos Delegation",
+    "desc_ko": "Active Directory 인증서 서비스(AD CS)·ESC1~ESC14 취약 템플릿·SAN 주입·PKINIT Pass-the-Certificate·UnPAC-the-Hash·Kerberos S4U2Self/Proxy 및 RBCD 위임.",
+    "desc_en": "Active Directory Certificate Services (AD CS), ESC1-ESC14 vulnerable templates, SAN injection, PKINIT Pass-the-Certificate, UnPAC-the-Hash, and Kerberos delegation (S4U/RBCD)."
   }
 ];
 
@@ -41598,5 +41606,986 @@ const CHALLENGES = [
     ]
   },
   "hash": "b631252f18a65bd87dc2133a1c81df88e33cb16144e357a3c1f7d0db263b73d6"
+},
+{
+  "id": "t0_adcs_pki_architecture",
+  "tier": 0,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Active Directory Certificate Services (AD CS) PKI 아키텍처",
+    "en": "Active Directory Certificate Services (AD CS) PKI Architecture"
+  },
+  "prompt": {
+    "ko": "엔터프라이즈 루트 CA(Enterprise Root CA)와 Active Directory 도메인 컨트롤러 간의 인증서 서비스 연동 구조를 분석합니다.\n지정된 식별자 `adcs_pki_architecture_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_pki_architecture_v1\") 앞 20자리}`",
+    "en": "Analyze the Enterprise Root CA and Active Directory domain controller certificate services integration architecture.\nCompute the first 20 hex characters of SHA256(\"adcs_pki_architecture_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_pki_architecture_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_pki_architecture_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_pki_architecture_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "0ba6844d43de0e96631fc8a3ee0ae9e560428d7d379b70f3ddab9816b7d39539"
+},
+{
+  "id": "t0_adcs_template_basics",
+  "tier": 0,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AD CS 인증서 템플릿 및 EKU 객체 식별자 기초",
+    "en": "AD CS Certificate Templates & EKU Object Identifiers Fundamentals"
+  },
+  "prompt": {
+    "ko": "인증서 템플릿(Certificate Template)의 유효성, 발급 정책 및 EKU(Extended Key Usage) 객체 식별자의 기본 구조를 분석합니다.\n지정된 식별자 `adcs_template_basics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_template_basics_v1\") 앞 20자리}`",
+    "en": "Examine certificate template validity, issuance policies, and Extended Key Usage (EKU) object identifier structures.\nCompute the first 20 hex characters of SHA256(\"adcs_template_basics_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_template_basics_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_template_basics_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_template_basics_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fc2d5270b50bcee04fe5bb2e43941bb91aec8a633c017208490fd3b7dfc96b87"
+},
+{
+  "id": "t0_adcs_kerberos_pkinit_intro",
+  "tier": 0,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Kerberos PKINIT (RFC 4556) 공개키 기반 사전 인증 원리",
+    "en": "Kerberos PKINIT (RFC 4556) Public Key Pre-Authentication Fundamentals"
+  },
+  "prompt": {
+    "ko": "RFC 4556 표준 PKINIT 프로토콜의 X.509 인증서 기반 Kerberos 사전 인증 및 TGT 발급 메커니즘을 분석합니다.\n지정된 식별자 `adcs_kerberos_pkinit_intro_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_kerberos_pkinit_intro_v1\") 앞 20자리}`",
+    "en": "Analyze RFC 4556 PKINIT protocol for X.509 certificate-based Kerberos pre-authentication and TGT issuance.\nCompute the first 20 hex characters of SHA256(\"adcs_kerberos_pkinit_intro_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_kerberos_pkinit_intro_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_kerberos_pkinit_intro_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_kerberos_pkinit_intro_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b68b9e0bf1bc3897edaf1c12094079c0f38fc1f6f077f444c0644059fba01adc"
+},
+{
+  "id": "t1_adcs_certipy_enumeration",
+  "tier": 1,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Certipy 도구를 활용한 도메인 CA 및 취약 템플릿 열거",
+    "en": "Domain CA & Vulnerable Template Enumeration via Certipy"
+  },
+  "prompt": {
+    "ko": "Certipy 및 Certify 도구를 이용해 도메인 환경에서 발급 가능한 인증서 템플릿의 취약점 속성을 자동 열거하는 기법을 분석합니다.\n지정된 식별자 `adcs_certipy_enumeration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_certipy_enumeration_v1\") 앞 20자리}`",
+    "en": "Analyze automated enumeration techniques for vulnerable certificate template attributes using Certipy and Certify.\nCompute the first 20 hex characters of SHA256(\"adcs_certipy_enumeration_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_certipy_enumeration_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_certipy_enumeration_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_certipy_enumeration_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fa9c8b2ce01e22ca21c92769ee2ed607867bdb294c36ca24c7ff89d8e323bab3"
+},
+{
+  "id": "t1_adcs_eku_client_auth",
+  "tier": 1,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Client Authentication 및 Smart Card Logon EKU OID 식별",
+    "en": "Client Authentication & Smart Card Logon EKU OID Analysis"
+  },
+  "prompt": {
+    "ko": "인증서가 Kerberos 로그인 자격 증명으로 사용될 수 있는지 결정하는 클라이언트 인증 EKU OID(1.3.6.1.5.5.7.3.2)를 분석합니다.\n지정된 식별자 `adcs_eku_client_auth_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_eku_client_auth_v1\") 앞 20자리}`",
+    "en": "Examine Client Authentication EKU OID (1.3.6.1.5.5.7.3.2) allowing certificates to function as Kerberos credentials.\nCompute the first 20 hex characters of SHA256(\"adcs_eku_client_auth_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_eku_client_auth_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_eku_client_auth_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_eku_client_auth_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bfae078ba343b4e5cbf3f18b09e8476dd8d7eb186bfc99403bd06f1aa97d999b"
+},
+{
+  "id": "t1_adcs_san_upn_concept",
+  "tier": 1,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Subject Alternative Name (SAN) UPN 사용자 매핑 구조",
+    "en": "Subject Alternative Name (SAN) UPN User Identity Mapping"
+  },
+  "prompt": {
+    "ko": "인증서의 주체 대체 이름(SAN) 필드에 기재된 UPN(User Principal Name)이 도메인 계정에 1:1 바인딩되는 인증 경로를 분석합니다.\n지정된 식별자 `adcs_san_upn_concept_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_san_upn_concept_v1\") 앞 20자리}`",
+    "en": "Assess how the User Principal Name (UPN) within the Subject Alternative Name (SAN) binds to domain user identities.\nCompute the first 20 hex characters of SHA256(\"adcs_san_upn_concept_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_san_upn_concept_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_san_upn_concept_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_san_upn_concept_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "301708b68209aee20429c0647c65fa62345ef4d219096994e4b6cf849fe38ab5"
+},
+{
+  "id": "t1_adcs_enrollment_rights",
+  "tier": 1,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "인증서 템플릿 발급 권한(Enrollment Rights) 보안 설정",
+    "en": "Certificate Template Enrollment Permissions & Access Rights"
+  },
+  "prompt": {
+    "ko": "Domain Users 및 Authenticated Users 그룹에 부여된 부적절한 인증서 템플릿 등록 권한(Enrollment Permissions)을 평가합니다.\n지정된 식별자 `adcs_enrollment_rights_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_enrollment_rights_v1\") 앞 20자리}`",
+    "en": "Evaluate risks associated with overly permissive template enrollment rights granted to Domain Users and Authenticated Users.\nCompute the first 20 hex characters of SHA256(\"adcs_enrollment_rights_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_enrollment_rights_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_enrollment_rights_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_enrollment_rights_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5439c5798643b24eeccf42dbfc37e3286b3685a6339717aea2f432381c63ea92"
+},
+{
+  "id": "t1_adcs_kerberos_delegation_types",
+  "tier": 1,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Kerberos 위임 3대 모델(비제한·제한·RBCD) 아키텍처",
+    "en": "Kerberos Delegation Architecture: Unconstrained, Constrained, and RBCD"
+  },
+  "prompt": {
+    "ko": "비제한 위임, S4U 제한 위임, 리소스 기반 제한 위임(RBCD)의 티켓 전달 및 보안 경계 특성을 분석합니다.\n지정된 식별자 `adcs_kerberos_delegation_types_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_kerberos_delegation_types_v1\") 앞 20자리}`",
+    "en": "Analyze ticket-granting and trust boundaries across Unconstrained, Constrained (S4U), and RBCD delegation models.\nCompute the first 20 hex characters of SHA256(\"adcs_kerberos_delegation_types_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_kerberos_delegation_types_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_kerberos_delegation_types_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_kerberos_delegation_types_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d9ff6dede18292a11c558f5584fc490a558008c4471f523fda232b184b0a94f5"
+},
+{
+  "id": "t1_adcs_ca_manager_approval",
+  "tier": 1,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 75,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CA 관리자 승인 플래그(PEND_ALL_REQUESTS) 통제 분석",
+    "en": "CA Manager Approval Flag (PEND_ALL_REQUESTS) Access Control"
+  },
+  "prompt": {
+    "ko": "인증서 즉시 자동 발급을 차단하고 CA 관리자의 수동 승인을 요구하는 CT_FLAG_PEND_ALL_REQUESTS 방어 설정을 평가합니다.\n지정된 식별자 `adcs_ca_manager_approval_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_ca_manager_approval_v1\") 앞 20자리}`",
+    "en": "Evaluate CT_FLAG_PEND_ALL_REQUESTS configuration requiring CA administrator manual approval before certificate signing.\nCompute the first 20 hex characters of SHA256(\"adcs_ca_manager_approval_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_ca_manager_approval_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_ca_manager_approval_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_ca_manager_approval_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2e7897f68949f3d0df1c7cd87b8eeffeb35e0450a0260500960fb107364d7587"
+},
+{
+  "id": "t2_adcs_esc1_enrollee_supplies_san",
+  "tier": 2,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ESC1 취약점: Enrollee Supplies Subject 기반 SAN 주입",
+    "en": "ESC1 Vulnerability: SAN Injection via Enrollee Supplies Subject"
+  },
+  "prompt": {
+    "ko": "CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT 플래그를 악용하여 Domain Admin의 SAN을 포함한 인증서를 요청하고 탈취하는 메커니즘을 분석합니다.\n지정된 식별자 `adcs_esc1_enrollee_supplies_san_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc1_enrollee_supplies_san_v1\") 앞 20자리}`",
+    "en": "Analyze CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT exploitation to forge certificates containing Domain Administrator SANs.\nCompute the first 20 hex characters of SHA256(\"adcs_esc1_enrollee_supplies_san_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc1_enrollee_supplies_san_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc1_enrollee_supplies_san_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc1_enrollee_supplies_san_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "458430b725f330beac1d624bef58117d59aaef183a3d678ca04186fbf771d4e0"
+},
+{
+  "id": "t2_adcs_esc2_any_purpose_eku",
+  "tier": 2,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ESC2 취약점: Any Purpose EKU 및 비어있는 EKU 템플릿 악용",
+    "en": "ESC2 Vulnerability: Any Purpose EKU & Missing EKU Template Exploitation"
+  },
+  "prompt": {
+    "ko": "Any Purpose(OID 2.5.29.37.0) 또는 EKU가 지정되지 않아 모든 인증 용도로 대체 사용 가능한 취약 템플릿을 분석합니다.\n지정된 식별자 `adcs_esc2_any_purpose_eku_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc2_any_purpose_eku_v1\") 앞 20자리}`",
+    "en": "Assess templates with Any Purpose EKU (2.5.29.37.0) or SubCA capabilities permitting arbitrary authentication usage.\nCompute the first 20 hex characters of SHA256(\"adcs_esc2_any_purpose_eku_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc2_any_purpose_eku_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc2_any_purpose_eku_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc2_any_purpose_eku_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c8a1e2c68567daf4b7c77d10aa902a3939bbd531efa80b9e45e66758a69f1e5e"
+},
+{
+  "id": "t2_adcs_esc3_enrollment_agent",
+  "tier": 2,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ESC3 취약점: Certificate Request Agent 대리 발급 악용",
+    "en": "ESC3 Vulnerability: Enrollment Agent Impersonation Chain"
+  },
+  "prompt": {
+    "ko": "인증서 요청 에이전트(Certificate Request Agent) EKU를 획득하여 다른 도메인 사용자를 대신해 인증서를 대리 요청하는 체인을 분석합니다.\n지정된 식별자 `adcs_esc3_enrollment_agent_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc3_enrollment_agent_v1\") 앞 20자리}`",
+    "en": "Trace the delegation chain exploiting Certificate Request Agent EKU to request credentials on behalf of arbitrary users.\nCompute the first 20 hex characters of SHA256(\"adcs_esc3_enrollment_agent_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc3_enrollment_agent_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc3_enrollment_agent_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc3_enrollment_agent_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e4276a9f4b35d772f9b9be292e06ad77ef74c45d59e72bb5a51eb7526798caeb"
+},
+{
+  "id": "t2_adcs_pkinit_tgt_acquisition",
+  "tier": 2,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PKINIT 인증서 기반 Kerberos TGT 획득 및 ccache 저장",
+    "en": "PKINIT Certificate-Based TGT Acquisition & ccache Export"
+  },
+  "prompt": {
+    "ko": "탈취한 PFX 인증서를 사용하여 KDC에 AS-REQ를 전송하고 TGT 티켓을 획득하여 ccache 파일로 내보내는 과정을 분석합니다.\n지정된 식별자 `adcs_pkinit_tgt_acquisition_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_pkinit_tgt_acquisition_v1\") 앞 20자리}`",
+    "en": "Examine Kerberos AS-REQ authentication using forged PFX certificates to retrieve TGTs and export ccache files.\nCompute the first 20 hex characters of SHA256(\"adcs_pkinit_tgt_acquisition_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_pkinit_tgt_acquisition_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_pkinit_tgt_acquisition_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_pkinit_tgt_acquisition_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "13eb4f1bbad7a5147b6dd8037c4fdbc6a17d386a314502fabb963c080e155a90"
+},
+{
+  "id": "t2_adcs_unpac_the_hash",
+  "tier": 2,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UnPAC-the-Hash 기법을 통한 NTLM 해시 복원 메커니즘",
+    "en": "UnPAC-the-Hash Mechanism: Extracting NTLM Hashes from PKINIT PAC"
+  },
+  "prompt": {
+    "ko": "PKINIT 인증 완료 시 KDC가 PAC_CREDENTIAL_INFO에 담아 반환하는 NTLM 해시를 복호화하여 패스워드 해시를 탈취하는 과정을 분석합니다.\n지정된 식별자 `adcs_unpac_the_hash_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_unpac_the_hash_v1\") 앞 20자리}`",
+    "en": "Analyze PAC_CREDENTIAL_INFO decryption to recover user NTLM hashes directly from PKINIT Kerberos responses.\nCompute the first 20 hex characters of SHA256(\"adcs_unpac_the_hash_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_unpac_the_hash_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_unpac_the_hash_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_unpac_the_hash_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9d7ee50b40fc247771c14bd88183996259e134957fbcf747d06c8b8f78539b74"
+},
+{
+  "id": "t2_adcs_s4u2self_impersonation",
+  "tier": 2,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Kerberos S4U2Self 확장을 통한 임의 사용자 위조 티켓 생성",
+    "en": "Kerberos S4U2Self Extension: Forging Tickets for Arbitrary Users"
+  },
+  "prompt": {
+    "ko": "서비스 계정이 Service-for-User-to-Self 확장을 이용해 임의의 도메인 관리자 명의로 서비스 티켓을 발행받는 과정을 분석합니다.\n지정된 식별자 `adcs_s4u2self_impersonation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_s4u2self_impersonation_v1\") 앞 20자리}`",
+    "en": "Assess how service accounts utilize S4U2Self protocol extensions to generate service tickets pretending to be domain admins.\nCompute the first 20 hex characters of SHA256(\"adcs_s4u2self_impersonation_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_s4u2self_impersonation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_s4u2self_impersonation_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_s4u2self_impersonation_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f5bce7b45825e6a1027d577a27bf069315f73330587bddd62b2efc8e4468f493"
+},
+{
+  "id": "t2_adcs_s4u2proxy_constrained",
+  "tier": 2,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Kerberos S4U2Proxy 제한 위임을 통한 백엔드 타깃 서비스 장악",
+    "en": "Kerberos S4U2Proxy Constrained Delegation Target Takeover"
+  },
+  "prompt": {
+    "ko": "S4U2Proxy를 활용하여 확보한 사용자 신원을 바탕으로 위임이 허용된 백엔드 SPN 서비스로 최종 접근하는 메커니즘을 분석합니다.\n지정된 식별자 `adcs_s4u2proxy_constrained_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_s4u2proxy_constrained_v1\") 앞 20자리}`",
+    "en": "Trace S4U2Proxy delegation forwarding client identities to access designated backend SPN services.\nCompute the first 20 hex characters of SHA256(\"adcs_s4u2proxy_constrained_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_s4u2proxy_constrained_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_s4u2proxy_constrained_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_s4u2proxy_constrained_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "790fc85b7111636d2dbb02971994c5a8782d59b91727b5954c61ba03ea6040df"
+},
+{
+  "id": "t2_adcs_rbcd_msds_allowedtoact",
+  "tier": 2,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "msDS-AllowedToActOnBehalfOfOtherIdentity RBCD 속성 조작",
+    "en": "Manipulating msDS-AllowedToActOnBehalfOfOtherIdentity for RBCD"
+  },
+  "prompt": {
+    "ko": "타깃 컴퓨터 계정의 RBCD 보안 기술자 속성을 변조하여 공격자 제어 계정으로부터의 위임 접근을 승인하는 공격 경로를 분석합니다.\n지정된 식별자 `adcs_rbcd_msds_allowedtoact_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_rbcd_msds_allowedtoact_v1\") 앞 20자리}`",
+    "en": "Examine modifying target machine msDS-AllowedToActOnBehalfOfOtherIdentity security descriptors for RBCD takeover.\nCompute the first 20 hex characters of SHA256(\"adcs_rbcd_msds_allowedtoact_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_rbcd_msds_allowedtoact_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_rbcd_msds_allowedtoact_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_rbcd_msds_allowedtoact_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ae224b2294b4bb5d7de35aec00bd91f9c6ffcd6d2b2728edcb59ad4c03c3c330"
+},
+{
+  "id": "t2_adcs_machine_account_quota",
+  "tier": 2,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MachineAccountQuota 악용 및 컴퓨터 계정 생성 공격",
+    "en": "Abusing MachineAccountQuota for Attacker Computer Account Creation"
+  },
+  "prompt": {
+    "ko": "기본 도메인 정책의 MachineAccountQuota(기본값 10)를 활용하여 공격자가 직접 컴퓨터 계정을 등록하고 SPN을 구성하는 기법을 분석합니다.\n지정된 식별자 `adcs_machine_account_quota_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_machine_account_quota_v1\") 앞 20자리}`",
+    "en": "Assess domain MachineAccountQuota abuse allowing unprivileged users to register computer accounts and configure SPNs.\nCompute the first 20 hex characters of SHA256(\"adcs_machine_account_quota_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_machine_account_quota_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_machine_account_quota_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_machine_account_quota_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "cdf6fa8bdd1858dadc54140bdfce6cce5e5c252c35a70e0a54b41c76cd7bd2f8"
+},
+{
+  "id": "t3_adcs_esc4_template_acl_overwrite",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ESC4 취약점: 템플릿 ACL 쓰기 권한을 악용한 ESC1 변조",
+    "en": "ESC4 Vulnerability: Modifying Template ACLs into ESC1 Configurations"
+  },
+  "prompt": {
+    "ko": "인증서 템플릿에 대한 WriteProperty/WriteDacl 권한을 가진 공격자가 안전한 템플릿을 ESC1 취약 상태로 덮어쓰는 공격을 분석합니다.\n지정된 식별자 `adcs_esc4_template_acl_overwrite_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc4_template_acl_overwrite_v1\") 앞 20자리}`",
+    "en": "Analyze overwriting template parameters with WriteProperty/WriteDacl privileges to convert safe templates into ESC1.\nCompute the first 20 hex characters of SHA256(\"adcs_esc4_template_acl_overwrite_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc4_template_acl_overwrite_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc4_template_acl_overwrite_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc4_template_acl_overwrite_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "78d151ef3d5008e6e51427f2ca8f3d51bf226839086ad2def2ba3c42eaef8a91"
+},
+{
+  "id": "t3_adcs_esc6_ca_flag_san_overwrite",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 215,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ESC6 취약점: EDITF_ATTRIBUTESUBJECTALTNAME2 글로벌 SAN 주입",
+    "en": "ESC6 Vulnerability: EDITF_ATTRIBUTESUBJECTALTNAME2 Global SAN Abuse"
+  },
+  "prompt": {
+    "ko": "CA 설정 플래그 EDITF_ATTRIBUTESUBJECTALTNAME2가 활성화되어 모든 템플릿에 대해 SAN 임의 조작이 허용되는 위험을 분석합니다.\n지정된 식별자 `adcs_esc6_ca_flag_san_overwrite_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc6_ca_flag_san_overwrite_v1\") 앞 20자리}`",
+    "en": "Examine the EDITF_ATTRIBUTESUBJECTALTNAME2 CA flag permitting arbitrary SAN attributes across all published templates.\nCompute the first 20 hex characters of SHA256(\"adcs_esc6_ca_flag_san_overwrite_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc6_ca_flag_san_overwrite_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc6_ca_flag_san_overwrite_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc6_ca_flag_san_overwrite_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "c50701d85150a16ecdf5e0335323a30d6027f3ded37111f5504c6cd1a5f94660"
+},
+{
+  "id": "t3_adcs_esc8_ntlm_relay_web_enroll",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 230,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ESC8 취약점: AD CS HTTP Web Enrollment 대상 NTLM Relay",
+    "en": "ESC8 Vulnerability: NTLM Relay to AD CS HTTP Web Enrollment"
+  },
+  "prompt": {
+    "ko": "AD CS Web Enrollment(CES/NDES/certsrv) 엔드포인트의 NTLM 서명 미적용 취약점을 악용하여 관리자 인증서를 탈취하는 기법을 분석합니다.\n지정된 식별자 `adcs_esc8_ntlm_relay_web_enroll_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc8_ntlm_relay_web_enroll_v1\") 앞 20자리}`",
+    "en": "Analyze relaying NTLM authentication to AD CS HTTP Web Enrollment endpoints lacking Extended Protection for Authentication.\nCompute the first 20 hex characters of SHA256(\"adcs_esc8_ntlm_relay_web_enroll_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc8_ntlm_relay_web_enroll_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc8_ntlm_relay_web_enroll_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc8_ntlm_relay_web_enroll_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "40de090912a30a38012857d9b192968fff6c31fdecf8f95e9f3ea72a8b633207"
+},
+{
+  "id": "t3_adcs_esc9_no_security_extension",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 245,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ESC9 취약점: CT_FLAG_NO_SECURITY_EXTENSION 보안 플래그 우회",
+    "en": "ESC9 Vulnerability: CT_FLAG_NO_SECURITY_EXTENSION Bypass"
+  },
+  "prompt": {
+    "ko": "인증서에 szOID_NTDS_CA_SECURITY_EXT 신원 확장 필드가 포함되지 않도록 설정된 템플릿을 악용하는 공격 메커니즘을 분석합니다.\n지정된 식별자 `adcs_esc9_no_security_extension_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc9_no_security_extension_v1\") 앞 20자리}`",
+    "en": "Assess templates configured with CT_FLAG_NO_SECURITY_EXTENSION omitting szOID_NTDS_CA_SECURITY_EXT extension bindings.\nCompute the first 20 hex characters of SHA256(\"adcs_esc9_no_security_extension_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc9_no_security_extension_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc9_no_security_extension_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc9_no_security_extension_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f601fa538a1e7f21e0b25883989da9a18b60c650b9f814aabecdec1c6f8fddab"
+},
+{
+  "id": "t3_adcs_esc10_weak_certificate_mapping",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 260,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ESC10 취약점: 취약한 인증서 매핑(StrongCertificateBinding) 우회",
+    "en": "ESC10 Vulnerability: Weak Certificate Mapping & Registry Misconfiguration"
+  },
+  "prompt": {
+    "ko": "StrongCertificateBindingEnforcement 레지스트리 값이 1(비강제)로 설정된 도메인 컨트롤러에서의 UPN 스푸핑 공격을 분석합니다.\n지정된 식별자 `adcs_esc10_weak_certificate_mapping_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc10_weak_certificate_mapping_v1\") 앞 20자리}`",
+    "en": "Examine UPN spoofing conditions when StrongCertificateBindingEnforcement registry policy is running in compatibility mode.\nCompute the first 20 hex characters of SHA256(\"adcs_esc10_weak_certificate_mapping_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc10_weak_certificate_mapping_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc10_weak_certificate_mapping_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc10_weak_certificate_mapping_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a203c25da25feddb1256955ced487c1c5e3d93cb5a70da5543c6090f20bdda9f"
+},
+{
+  "id": "t3_adcs_esc13_issuance_policies_oid",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 275,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ESC13 취약점: OID 기반 발급 정책(Issuance Policies) 그룹 연계",
+    "en": "ESC13 Vulnerability: Issuance Policy OIDs & Universal Group Links"
+  },
+  "prompt": {
+    "ko": "특정 OID 발급 정책이 Active Directory의 보안 그룹과 연계되어 인증서 발급 즉시 고권한 그룹에 포함되는 취약점을 분석합니다.\n지정된 식별자 `adcs_esc13_issuance_policies_oid_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc13_issuance_policies_oid_v1\") 앞 20자리}`",
+    "en": "Trace issuance policies linked to Active Directory security groups elevating enrollees to privileged enterprise tiers.\nCompute the first 20 hex characters of SHA256(\"adcs_esc13_issuance_policies_oid_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc13_issuance_policies_oid_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc13_issuance_policies_oid_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc13_issuance_policies_oid_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e13c001dba98c4522d52ad8266b98fdea549fd2448b2d8186776fb8ac6c4672d"
+},
+{
+  "id": "t3_adcs_protected_users_security",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 290,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Protected Users 보안 그룹 적용을 통한 Kerberos/NTLM 하드닝",
+    "en": "Protected Users Security Group Enforcement for Kerberos/NTLM Hardening"
+  },
+  "prompt": {
+    "ko": "민감 관리자 계정을 Protected Users 그룹에 등록하여 NTLM 인증, DES/RC4 암호화, TGT 장기 캐싱 및 위임을 차단하는 설정을 분석합니다.\n지정된 식별자 `adcs_protected_users_security_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_protected_users_security_v1\") 앞 20자리}`",
+    "en": "Evaluate adding privileged accounts to Protected Users to disable NTLM, weak ciphers, cached credentials, and delegation.\nCompute the first 20 hex characters of SHA256(\"adcs_protected_users_security_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_protected_users_security_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_protected_users_security_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_protected_users_security_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d132234cc4373e93802f435d620285ae70b97af0abf83831597e680d1a7f15d3"
+},
+{
+  "id": "t3_adcs_user_not_delegated_flag",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 305,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "USER_NOT_DELEGATED(계정이 민감하여 위임할 수 없음) 플래그 방어",
+    "en": "USER_NOT_DELEGATED (Account is Sensitive and Cannot be Delegated) Flag"
+  },
+  "prompt": {
+    "ko": "Active Directory 사용자 계정 옵션인 '계정이 민감하여 위임할 수 없음' 플래그를 설정하여 KDC의 S4U2Proxy 위임 발급을 차단하는 기법을 분석합니다.\n지정된 식별자 `adcs_user_not_delegated_flag_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_user_not_delegated_flag_v1\") 앞 20자리}`",
+    "en": "Assess configuring the 'Account is sensitive and cannot be delegated' UAC flag to prevent KDC from granting delegation tickets.\nCompute the first 20 hex characters of SHA256(\"adcs_user_not_delegated_flag_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_user_not_delegated_flag_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_user_not_delegated_flag_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_user_not_delegated_flag_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bc618cd3df96a6ba3e9e44ce864209e3b356f0ec2844052febd92045f635412e"
+},
+{
+  "id": "t3_adcs_event_4887_4768_siem",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 320,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Windows Event 4887(인증서 발급) 및 4768(PKINIT TGT) SIEM 탐지",
+    "en": "SIEM Threat Detection for Event ID 4887 (Cert Issued) & 4768 (PKINIT TGT)"
+  },
+  "prompt": {
+    "ko": "인증서 발급 로그(Event ID 4887)와 Kerberos TGT 요청(Event ID 4768) 중 인증서 기반 사전인증 유형을 결합 탐지하는 SIEM 상관분석 룰을 구축합니다.\n지정된 식별자 `adcs_event_4887_4768_siem_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_event_4887_4768_siem_v1\") 앞 20자리}`",
+    "en": "Construct SIEM correlation rules correlating Event ID 4887 certificate issuance with Event ID 4768 PKINIT pre-authentication.\nCompute the first 20 hex characters of SHA256(\"adcs_event_4887_4768_siem_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_event_4887_4768_siem_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_event_4887_4768_siem_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_event_4887_4768_siem_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "5204d67141ab4edc9811757153fdbf6ec48397389da7b979cbea796bf0d1f305"
+},
+{
+  "id": "t3_adcs_epa_channel_binding",
+  "tier": 3,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 335,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AD CS 웹 등록 서비스 EPA(확장 인증 보호) 및 채널 바인딩 적용",
+    "en": "EPA (Extended Protection for Authentication) & Channel Binding on AD CS"
+  },
+  "prompt": {
+    "ko": "AD CS HTTP 가상 디렉터리에 대해 HTTPS 채널 바인딩 토큰(CBT) 및 EPA를 활성화하여 ESC8 NTLM 릴레이를 무력화하는 방어 대책을 분석합니다.\n지정된 식별자 `adcs_epa_channel_binding_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_epa_channel_binding_v1\") 앞 20자리}`",
+    "en": "Analyze hardening AD CS Web Enrollment with Extended Protection for Authentication (EPA) and Channel Binding Tokens (CBT).\nCompute the first 20 hex characters of SHA256(\"adcs_epa_channel_binding_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_epa_channel_binding_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_epa_channel_binding_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_epa_channel_binding_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f1d68a4cd474be5192ddcebc666a88b6568aa8f4c9bc97d4609519e625f7b52b"
+},
+{
+  "id": "t4_adcs_shadow_credentials_keycredentiallink",
+  "tier": 4,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 380,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "msDS-KeyCredentialLink (Shadow Credentials) 주입을 통한 PKINIT 장악",
+    "en": "Shadow Credentials Injection via msDS-KeyCredentialLink & PKINIT Takeover"
+  },
+  "prompt": {
+    "ko": "대상 객체의 msDS-KeyCredentialLink 속성에 공격자의 인증서 공개키를 직접 주입(Whiskey/PyWhiskey)하여 패스워드 없이 PKINIT로 인증하는 기법을 분석합니다.\n지정된 식별자 `adcs_shadow_credentials_keycredentiallink_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_shadow_credentials_keycredentiallink_v1\") 앞 20자리}`",
+    "en": "Examine injecting attacker public keys into target msDS-KeyCredentialLink attributes (Shadow Credentials) to authenticate via PKINIT.\nCompute the first 20 hex characters of SHA256(\"adcs_shadow_credentials_keycredentiallink_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_shadow_credentials_keycredentiallink_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_shadow_credentials_keycredentiallink_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_shadow_credentials_keycredentiallink_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b385d5bb0ab311889dac94024fe0d70ef38fb61b4fd3de760db8df5e8c3667f2"
+},
+{
+  "id": "t4_adcs_golden_certificate_ca_theft",
+  "tier": 4,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 400,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Golden Certificate: Root CA 개인키 탈취를 통한 영구 도메인 장악",
+    "en": "Golden Certificate: Root CA Private Key Exfiltration for Domain Dominance"
+  },
+  "prompt": {
+    "ko": "엔터프라이즈 루트 CA의 개인키를 덤프하여 도메인 내 임의 계정에 대해 영구적으로 유효한 서명 인증서를 자체 위조하는 최고 수준의 공격 체인을 분석합니다.\n지정된 식별자 `adcs_golden_certificate_ca_theft_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_golden_certificate_ca_theft_v1\") 앞 20자리}`",
+    "en": "Trace enterprise Root CA private key theft allowing attackers to forge arbitrary certificates locally without interacting with the CA.\nCompute the first 20 hex characters of SHA256(\"adcs_golden_certificate_ca_theft_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_golden_certificate_ca_theft_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_golden_certificate_ca_theft_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_golden_certificate_ca_theft_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f92fb14af3980b5e9db28a60632a671d4bd4aac8b3711856923bb08b5733c2ad"
+},
+{
+  "id": "t4_adcs_esc8_relay_petitpotam_efs",
+  "tier": 4,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 420,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PetitPotam (MS-EFSR) 강제 인증 유도와 AD CS NTLM 릴레이 복합 공격",
+    "en": "Coerced Authentication via PetitPotam (MS-EFSR) & AD CS NTLM Relay Chain"
+  },
+  "prompt": {
+    "ko": "도메인 컨트롤러에 대해 MS-EFSR RPC 호출로 NTLM 인증을 강제 유도하고, 이를 AD CS HTTP 웹 등록 서버로 릴레이하여 DC 머신 인증서를 탈취하는 공격을 분석합니다.\n지정된 식별자 `adcs_esc8_relay_petitpotam_efs_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_esc8_relay_petitpotam_efs_v1\") 앞 20자리}`",
+    "en": "Analyze coercing Domain Controller NTLM authentication via PetitPotam (MS-EFSR) and relaying it to AD CS Web Enrollment to obtain DC certificates.\nCompute the first 20 hex characters of SHA256(\"adcs_esc8_relay_petitpotam_efs_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_esc8_relay_petitpotam_efs_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_esc8_relay_petitpotam_efs_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_esc8_relay_petitpotam_efs_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "133d4a82e97538bc536a2caf40fe09acaf96d46558173317e2f536b83dfc1598"
+},
+{
+  "id": "t4_adcs_rbcd_coercion_cross_forest",
+  "tier": 4,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 440,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WebDAV/SpoolSample 트리거 및 포레스트 경계 간 RBCD 위임 체인",
+    "en": "WebDAV/SpoolSample Coercion & Cross-Forest RBCD Delegation Chain"
+  },
+  "prompt": {
+    "ko": "SpoolSample 및 WebDAV 강제 인증과 포레스트 간 신뢰 관계(Trust)를 연계하여 다단계 RBCD 위임 티켓을 중계 및 승격하는 고급 공격 기법을 분석합니다.\n지정된 식별자 `adcs_rbcd_coercion_cross_forest_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_rbcd_coercion_cross_forest_v1\") 앞 20자리}`",
+    "en": "Trace advanced coercion vectors combined with cross-forest trust relationships to construct multi-hop RBCD delegation chains.\nCompute the first 20 hex characters of SHA256(\"adcs_rbcd_coercion_cross_forest_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_rbcd_coercion_cross_forest_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_rbcd_coercion_cross_forest_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_rbcd_coercion_cross_forest_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7caa2d07a6fed0c03edd317f073c91aa1a4f507612260c7e0fba0282329a2c17"
+},
+{
+  "id": "t4_adcs_certsrv_post_exploit_persistence",
+  "tier": 4,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 460,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Root CA 백업 및 서브 CA 등록을 통한 은밀한 AD 지속성 구축",
+    "en": "Covert AD Persistence via CA Backup Keys & Rogue Subordinate CA Registration"
+  },
+  "prompt": {
+    "ko": "도메인 장악 후 악의적인 서브 CA(Subordinate CA)를 도메인 신뢰 루트에 은닉 등록하여 EDR 탐지를 회피하는 지속성 기법을 분석합니다.\n지정된 식별자 `adcs_certsrv_post_exploit_persistence_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_certsrv_post_exploit_persistence_v1\") 앞 20자리}`",
+    "en": "Analyze post-compromise persistence establishing rogue subordinate CAs within domain trust stores to evade conventional EDR detection.\nCompute the first 20 hex characters of SHA256(\"adcs_certsrv_post_exploit_persistence_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_certsrv_post_exploit_persistence_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_certsrv_post_exploit_persistence_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_certsrv_post_exploit_persistence_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "0972dbb37222f4a28077f878d4587ec0be8a6f60e58e4591481823bf96a3945d"
+},
+{
+  "id": "t4_adcs_strong_certificate_binding_patch",
+  "tier": 4,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 480,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CVE-2022-26925/26931 패치 및 강력한 인증서 바인딩(KB5014754) 완화",
+    "en": "KB5014754 Strong Certificate Binding Patch (CVE-2022-26925/26931) Mitigation"
+  },
+  "prompt": {
+    "ko": "Microsoft KB5014754 보안 패치가 강제하는 OID 1.3.6.1.4.1.311.25.2 보안 식별자(SID) 인증서 확장과 Full Enforcement 모드 전환 메커니즘을 분석합니다.\n지정된 식별자 `adcs_strong_certificate_binding_patch_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_strong_certificate_binding_patch_v1\") 앞 20자리}`",
+    "en": "Examine the KB5014754 security update requiring OID 1.3.6.1.4.1.311.25.2 SID certificate extensions and full enforcement mode transitions.\nCompute the first 20 hex characters of SHA256(\"adcs_strong_certificate_binding_patch_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_strong_certificate_binding_patch_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_strong_certificate_binding_patch_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_strong_certificate_binding_patch_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "6ad7afc42639e0e9caadaade5f88bd638285090067b94a623a18f8ee9b204c49"
+},
+{
+  "id": "t4_adcs_capstone_enterprise_pki_audit",
+  "tier": 4,
+  "cat": "adcs",
+  "track": "adcs",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 AD CS PKI & Kerberos 위임 전수 감사 및 제로트러스트 캡스톤",
+    "en": "Enterprise AD CS PKI & Kerberos Delegation Full Audit & Zero-Trust Capstone"
+  },
+  "prompt": {
+    "ko": "도메인 전체 CA 템플릿 ACL, EKU 구성, 계정 위임 속성, NTLM 웹 엔드포인트를 감사하고 제로트러스트 다층 방어 체계를 수립하는 종합 캡스톤 평가입니다.\n지정된 식별자 `adcs_capstone_enterprise_pki_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"adcs_capstone_enterprise_pki_audit_v1\") 앞 20자리}`",
+    "en": "Comprehensive capstone evaluating enterprise CA template ACLs, EKU configurations, account delegation flags, and zero-trust hardening.\nCompute the first 20 hex characters of SHA256(\"adcs_capstone_enterprise_pki_audit_v1\").\n\nFormat: `FLAG{SHA256(\"adcs_capstone_enterprise_pki_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `adcs_capstone_enterprise_pki_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"adcs_capstone_enterprise_pki_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "6b28402f1f96ef672b9674cef98dc416486208a3a82a8a59b2d788c52c40f3fa"
 }
 ];
+

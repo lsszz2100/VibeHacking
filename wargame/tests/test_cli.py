@@ -26,8 +26,8 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 42
-    assert len(challenges) == 1470
+    assert len(tracks) == 43
+    assert len(challenges) == 1505
     assert any(t["id"] == "carcan" for t in tracks)
     assert any(t["id"] == "apisec" for t in tracks)
     assert any(t["id"] == "sochunt" for t in tracks)
@@ -35,6 +35,7 @@ def test_load_wargame_db():
     assert any(t["id"] == "airedteam" for t in tracks)
     assert any(t["id"] == "wifisec" for t in tracks)
     assert any(t["id"] == "netinfra" for t in tracks)
+    assert any(t["id"] == "adcs" for t in tracks)
 
 
 def test_verify_flag_logic():
@@ -61,8 +62,13 @@ def test_verify_flag_logic():
     ch_soc = next(c for c in challenges if c["id"] == "t0_sochunt_soc_tiers")
     ident_soc = "sochunt_soc_tiers_v1"
     h20_soc = hashlib.sha256(ident_soc.encode("utf-8")).hexdigest()[:20]
-    flag_soc = f"FLAG{{{h20_soc}}}"
-    assert verify_flag(ch_soc, flag_soc) is True
+    # Test adcs first challenge
+    ch_adcs = next(c for c in challenges if c["id"] == "t0_adcs_pki_architecture")
+    ident_adcs = "adcs_pki_architecture_v1"
+    h20_adcs = hashlib.sha256(ident_adcs.encode("utf-8")).hexdigest()[:20]
+    flag_adcs = f"FLAG{{{h20_adcs}}}"
+    assert verify_flag(ch_adcs, flag_adcs) is True
+
     assert verify_flag(ch, "") is False
 
 

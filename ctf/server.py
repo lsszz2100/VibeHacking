@@ -528,6 +528,42 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "Port-Security, DHCP Snooping, Dynamic ARP Inspection(DAI), BPDU Guard 및 CoPP 제어 평면 정책을 적용하여 방어를 완성하세요."}
                 ],
             },
+            "LAB29_ESC1": {
+                "id": "LAB29_ESC1",
+                "title": "CertPwn: AD CS ESC1 Enrollee Supplies SAN Administrator Certificate Forgery",
+                "category": "activedirectory",
+                "initial_points": 500,
+                "flag": "FLAG{adcs_esc1_enrollee_supplies_san_admin_cert_issued_8029}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "ESC1_WebAuth 템플릿의 CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT 취약점을 악용하여 SAN에 administrator@corp.local을 지정하여 인증서를 요청하세요."}
+                ],
+            },
+            "LAB29_PKINIT": {
+                "id": "LAB29_PKINIT",
+                "title": "CertPwn: PKINIT Pass-the-Certificate TGT Request & UnPAC-the-Hash",
+                "category": "activedirectory",
+                "initial_points": 500,
+                "flag": "FLAG{pkinit_tgt_acquired_pass_the_certificate_domain_admin_5921}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "발급받은 관리자 PFX 인증서로 KDC에 PKINIT 인증을 수행하여 TGT를 확보하고 PAC_CREDENTIAL_INFO에서 NTLM 해시를 복원하세요."}
+                ],
+            },
+            "LAB29_DELEG": {
+                "id": "LAB29_DELEG",
+                "title": "CertPwn: Enterprise AD CS & Kerberos Hardening (Protected Users & Delegation Controls)",
+                "category": "activedirectory",
+                "initial_points": 500,
+                "flag": "FLAG{kerberos_delegation_s4u_rbcd_hardened_protected_users_9312}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "관리자 계정에 USER_NOT_DELEGATED 및 Protected Users 보안 그룹을 적용하고 취약 템플릿과 NTLM 릴레이를 차단하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []

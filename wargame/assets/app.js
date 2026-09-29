@@ -356,6 +356,7 @@
       ["status","점수·등급·진행 / score & progress  (whoami)"],
       ["stats","트랙별·계층별 침투 통계 / stats dashboard  (chart)"],
       ["badges","요원 업적 및 뱃지 확인 / view operator badges"],
+      ["playground [도구]","보안 취약점 시뮬레이터 / vulnerability playground (sim)"],
       ["search <검색어>","잠금장치 검색 / search locks  (find)"],
       ["export [json]","진행도 백업 토큰/JSON 내보내기 / export save token or JSON"],
       ["import [토큰]","진행도 토큰/파일 복원 / import save token or file"],
@@ -856,6 +857,354 @@
     input.focus();
   }
 
+  /* ===== interactive vulnerability playground ===== */
+  let canInterval = null;
+  let canSpeed = 48;
+  let canRpm = 1850;
+  let canInjected = false;
+  let canStatus = "BROADCAST: NORMAL";
+
+  function openPlayground(requestedTab){
+    const modal = document.getElementById("playgroundModal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    if (requestedTab) switchPlaygroundTab(requestedTab);
+    else switchPlaygroundTab("canbus");
+    startCanSimulation();
+    renderSqli();
+    renderAdcs("esc1");
+    initJwt();
+  }
+
+  function hidePlayground(){
+    const modal = document.getElementById("playgroundModal");
+    if (modal) modal.style.display = "none";
+    stopCanSimulation();
+    input.focus();
+  }
+
+  function switchPlaygroundTab(tabName){
+    const validTabs = ["canbus", "sqli", "adcs", "jwt"];
+    if (!validTabs.includes(tabName)) tabName = "canbus";
+    document.querySelectorAll(".pg-tab").forEach(tab => {
+      tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
+    });
+    document.querySelectorAll(".pg-panel").forEach(panel => {
+      panel.classList.toggle("active", panel.id === "pgPanel-" + tabName);
+    });
+    if (tabName === "canbus") startCanSimulation();
+    else stopCanSimulation();
+  }
+
+  // --- 1. CAN Bus Simulator ---
+  function startCanSimulation(){
+    if (canInterval) return;
+    canInterval = setInterval(() => {
+      if (!canInjected) {
+        canSpeed = Math.max(30, Math.min(90, canSpeed + (Math.floor(Math.random() * 5) - 2)));
+        canRpm = Math.max(1200, Math.min(3200, canRpm + (Math.floor(Math.random() * 60) - 30)));
+        canStatus = "BROADCAST: NORMAL";
+      } else {
+        if (Math.random() < 0.25) {
+          canInjected = false;
+          canStatus = "BROADCAST: RESUMED NORMAL";
+        }
+      }
+      updateCanGauges();
+      const speedHex = canSpeed.toString(16).padStart(2, "0").toUpperCase();
+      const rpmHex1 = (canRpm >> 8).toString(16).padStart(2, "0").toUpperCase();
+      const rpmHex2 = (canRpm & 0xFF).toString(16).padStart(2, "0").toUpperCase();
+      const payload = "00 " + speedHex + " " + rpmHex1 + " " + rpmHex2 + " 00 00 00 00";
+      appendCanLog("0x244", 8, payload, canInjected);
+    }, 800);
+  }
+
+  function stopCanSimulation(){
+    if (canInterval){ clearInterval(canInterval); canInterval = null; }
+  }
+
+  function updateCanGauges(){
+    const speedEl = document.getElementById("canSpeedVal");
+    const speedBar = document.getElementById("canSpeedBar");
+    const rpmEl = document.getElementById("canRpmVal");
+    const rpmBar = document.getElementById("canRpmBar");
+    const statusEl = document.getElementById("canStatusText");
+    if (speedEl) speedEl.textContent = canSpeed + " km/h";
+    if (speedBar) speedBar.style.width = Math.min(100, Math.round((canSpeed / 240) * 100)) + "%";
+    if (rpmEl) rpmEl.textContent = canRpm + " RPM";
+    if (rpmBar) rpmBar.style.width = Math.min(100, Math.round((canRpm / 7000) * 100)) + "%";
+    if (statusEl){
+      statusEl.textContent = canStatus;
+      statusEl.style.color = canInjected ? "var(--red)" : "var(--green)";
+    }
+  }
+
+  function appendCanLog(id, dlc, data, isInjected){
+    const logEl = document.getElementById("canLog");
+    if (!logEl) return;
+    const timeStr = new Date().toTimeString().split(" ")[0] + "." + Math.floor(Math.random()*900 + 100);
+    const item = document.createElement("div");
+    item.className = "frame-item" + (isInjected ? " frame-injected" : "");
+    item.innerHTML = '<span>[' + timeStr + '] ID:' + id + ' (DLC:' + dlc + ') DATA:' + data + '</span>' +
+                     '<span>' + (isInjected ? '⚡ INJECTED' : 'RX') + '</span>';
+    logEl.appendChild(item);
+    while (logEl.children.length > 35) logEl.removeChild(logEl.firstChild);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function injectCanFrame(id, dlc, dataHex){
+    id = (id || "").trim();
+    dataHex = (dataHex || "").trim();
+    canInjected = true;
+    if (id.toLowerCase() === "0x244" || id === "244"){
+      const bytes = dataHex.split(/\s+/);
+      const spd = parseInt(bytes[1] || "0", 16);
+      if (!isNaN(spd) && spd > 0) canSpeed = spd;
+      if (spd >= 200){
+        canRpm = 6400;
+        canStatus = "🚨 OVERRIDE: SPEED SPOOFED (" + canSpeed + " km/h)";
+      } else {
+        canRpm = Math.min(6000, canSpeed * 35);
+        canStatus = "⚠️ OVERRIDE: CRUISE LOCKED (" + canSpeed + " km/h)";
+      }
+    } else if (id.toLowerCase() === "0x7df" || id === "7df"){
+      canStatus = "⚡ UDS DIAGNOSTIC UNLOCK (Seed/Key Session Granted)";
+    } else if (id.toLowerCase() === "0x000" || id === "000" || id === "0"){
+      canStatus = "🚨 ARBITRATION BUS FLOOD (Dominant 0-Bits High-Priority DoS)";
+    } else {
+      canStatus = "⚡ CUSTOM FRAME INJECTED: ID " + id;
+    }
+    updateCanGauges();
+    appendCanLog(id, dlc, dataHex, true);
+  }
+
+  // --- 2. SQLi AST Visualizer ---
+  function renderSqli(){
+    const inputEl = document.getElementById("sqliInput");
+    if (!inputEl) return;
+    const rawVal = inputEl.value;
+    const vulnOut = document.getElementById("sqliVulnOutput");
+    const safeOut = document.getElementById("sqliSafeOutput");
+    const vulnBadge = document.getElementById("sqliVulnBadge");
+
+    const hasQuote = /['"]/.test(rawVal);
+    const hasOr = /\bOR\b/i.test(rawVal);
+    const hasUnion = /\bUNION\b/i.test(rawVal);
+    const hasComment = /(--|\/\*|#)/.test(rawVal);
+    const isTautology = /(1\s*=\s*1|'1'\s*=\s*'1'|true)/i.test(rawVal);
+
+    let vulnStatus = "SAFE";
+    let vulnBadgeClass = "token-tag token-lit";
+    if (hasQuote && (hasOr || hasUnion || isTautology)){
+      vulnStatus = "CRITICAL VULNERABILITY";
+      vulnBadgeClass = "token-tag token-inj";
+    } else if (hasQuote){
+      vulnStatus = "SYNTAX HAZARD / ESCAPED";
+      vulnBadgeClass = "token-tag token-op";
+    }
+
+    if (vulnBadge){
+      vulnBadge.textContent = vulnStatus;
+      vulnBadge.className = vulnBadgeClass;
+    }
+
+    const reconstructedQuery = "SELECT id, user, role FROM accounts WHERE user = '" + rawVal + "' AND active = 1;";
+
+    let vulnTree = "=== RECONSTRUCTED RAW QUERY ===\n" + reconstructedQuery + "\n\n" +
+      "=== PARSED SYNTAX TREE (AST) ===\n" +
+      "QueryStatement [SELECT]\n" +
+      "├── Target: accounts\n" +
+      "├── Columns: [id, user, role]\n" +
+      "└── WhereExpression:\n";
+
+    if (hasQuote && hasOr && isTautology){
+      vulnTree += "    ├── [LEFT] user = '" + rawVal.split(/['"]/)[0] + "'\n" +
+                  "    ├── [OPERATOR HIJACK] BinaryOp: OR  <-- INJECTED\n" +
+                  "    ├── [TAUTOLOGY] Literal: 1 = 1 (ALWAYS TRUE) <-- INJECTED\n" +
+                  (hasComment ? "    └── [TRUNCATED] Comment ignored remaining clause: AND active = 1\n" : "") +
+                  "\n[ANALYSIS] Parser evaluated OR 1=1 as root condition.\n" +
+                  "Authentication logic was successfully bypassed!";
+    } else if (hasUnion){
+      vulnTree += "    ├── [LEFT] user = '" + rawVal.split(/['"]/)[0] + "'\n" +
+                  "    └── [HIJACKED UNION] UnionQuery: SELECT ...  <-- INJECTED DATA LEAK\n" +
+                  "\n[ANALYSIS] Additional query concatenated to result set.";
+    } else {
+      vulnTree += "    └── BinaryOp: [user = '" + rawVal + "'] AND [active = 1]\n" +
+                  "\n[ANALYSIS] Normal query structure without structural operator injection.";
+    }
+
+    if (vulnOut) vulnOut.textContent = vulnTree;
+
+    let safeTree = "=== PARAMETERIZED TEMPLATE ===\n" +
+      "SELECT id, user, role FROM accounts WHERE user = ? AND active = 1;\n" +
+      "Bound Parameter [0]: " + JSON.stringify(rawVal) + "\n\n" +
+      "=== PARSED SYNTAX TREE (AST) ===\n" +
+      "QueryStatement [PREPARED]\n" +
+      "├── Target: accounts\n" +
+      "├── Columns: [id, user, role]\n" +
+      "└── WhereExpression [Logical AND]:\n" +
+      "    ├── BinaryOp: [user = ? (Literal Text)]\n" +
+      "    │   └── Bound Value: " + JSON.stringify(rawVal) + " (Type: String, Len: " + rawVal.length + ")\n" +
+      "    └── BinaryOp: [active = 1]\n\n" +
+      "[ANALYSIS] Single string literal binding: quotes and SQL keywords are treated strictly as data bytes, never as parser tokens.";
+
+    if (safeOut) safeOut.textContent = safeTree;
+  }
+
+  // --- 3. AD CS & Kerberos ASN.1 Inspector ---
+  let currentAdcsPreset = "esc1";
+  function renderAdcs(preset){
+    currentAdcsPreset = preset || "esc1";
+    const sanInput = document.getElementById("adcsSanInput");
+    const upn = (sanInput && sanInput.value) ? sanInput.value.trim() : "administrator@vibe.corp";
+    const certEl = document.getElementById("adcsCertPreview");
+    const pacEl = document.getElementById("adcsPacPreview");
+
+    let certText = "";
+    let pacText = "";
+
+    if (currentAdcsPreset === "esc1"){
+      certText =
+        "SEQUENCE (3 elem)  -- Certificate\n" +
+        "  SEQUENCE (7 elem)  -- TBSCertificate\n" +
+        "    [0] EXPLICIT [Version: v3]\n" +
+        "    INTEGER: 0x58291A7C4F2000000001\n" +
+        "    SEQUENCE: sha256WithRSAEncryption\n" +
+        "    SEQUENCE: CN=vibe-CA, DC=vibe, DC=corp\n" +
+        "    SEQUENCE: CN=lowpriv_user, OU=Employees, DC=vibe, DC=corp\n" +
+        "    SEQUENCE (3 elem)  -- Extensions\n" +
+        "      EXTENSION: szOID_CERTIFICATE_TEMPLATE (ESC1-WebEnroll)\n" +
+        "        Flags: CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT (0x00000001)\n" +
+        "      EXTENSION: szOID_ENHANCED_KEY_USAGE (EKU)\n" +
+        "        OID: 1.3.6.1.5.5.7.3.2 (Client Authentication)\n" +
+        "        OID: 1.3.6.1.5.2.3.4   (Kerberos PKINIT Authentication)\n" +
+        "      EXTENSION: szOID_SUBJECT_ALT_NAME2 (SAN) <-- CRITICAL!\n" +
+        "        OtherName (UPN): " + upn + "\n";
+
+      pacText =
+        "=== PKINIT AS-REQ / TGT ISSUANCE EVALUATION ===\n" +
+        "[+] KDC PKINIT Handler inspected certificate...\n" +
+        "[+] SubjectAltName (UPN) matched Active Directory Principal:\n" +
+        "    Target Account: " + upn + "\n" +
+        "[+] Pre-authentication validated via X.509 private key proof.\n" +
+        "[+] KDC generated Kerberos TGT (Ticket Granting Ticket) with PAC:\n\n" +
+        "KERBEROS PAC (Privilege Attribute Certificate):\n" +
+        "├── PAC_LOGON_INFO:\n" +
+        "│   ├── Account SID: S-1-5-21-29481028-109283-500 (Administrator)\n" +
+        "│   ├── Primary Group ID: 513 (Domain Users)\n" +
+        "│   └── Group Memberships:\n" +
+        "│       ├── S-1-5-21-...-512 (Domain Admins) <-- FULL CONTROL\n" +
+        "│       ├── S-1-5-21-...-519 (Enterprise Admins)\n" +
+        "│       └── S-1-5-32-544     (Builtin Administrators)\n" +
+        "└── PAC_SERVER_CHECKSUM: Valid (Signed by krbtgt)\n\n" +
+        "VERDICT: 🚨 ESC1 Domain Compromise. TGT for Domain Admin acquired!";
+    } else if (currentAdcsPreset === "esc2"){
+      certText =
+        "SEQUENCE (3 elem)  -- Certificate\n" +
+        "  SEQUENCE (7 elem)  -- TBSCertificate\n" +
+        "    SEQUENCE: CN=vibe-CA, DC=vibe, DC=corp\n" +
+        "    SEQUENCE: CN=lowpriv_user, OU=Employees, DC=vibe, DC=corp\n" +
+        "    SEQUENCE (2 elem)  -- Extensions\n" +
+        "      EXTENSION: szOID_ENHANCED_KEY_USAGE (EKU)\n" +
+        "        OID: 2.5.29.37.0 (Any Purpose / All Application Policies)\n" +
+        "      EXTENSION: szOID_SUBJECT_ALT_NAME2 (SAN)\n" +
+        "        OtherName (UPN): lowpriv_user@vibe.corp\n";
+
+      pacText =
+        "=== ESC2 EVALUATION ===\n" +
+        "[!] Template specifies Any Purpose EKU (2.5.29.37.0).\n" +
+        "[+] Certificate can be used for Client Auth, Code Signing, or SubCA.\n" +
+        "[+] Can enroll for agent certificate and request on behalf of other users.\n\n" +
+        "VERDICT: ⚠️ ESC2 High Hazard: Misconfigured EKU enables universal misuse.";
+    } else {
+      certText =
+        "SEQUENCE (3 elem)  -- Certificate\n" +
+        "  SEQUENCE (7 elem)  -- TBSCertificate\n" +
+        "    SEQUENCE: CN=vibe-CA, DC=vibe, DC=corp\n" +
+        "    SEQUENCE: CN=lowpriv_user, OU=Employees, DC=vibe, DC=corp\n" +
+        "    SEQUENCE (2 elem)  -- Extensions\n" +
+        "      EXTENSION: szOID_CERTIFICATE_TEMPLATE (User)\n" +
+        "        Flags: CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT (0x00000000) [DISABLED]\n" +
+        "      EXTENSION: szOID_SUBJECT_ALT_NAME2 (SAN)\n" +
+        "        OtherName (UPN): lowpriv_user@vibe.corp [LOCKED TO AD IDENTITY]\n";
+
+      pacText =
+        "=== SECURE TEMPLATE EVALUATION ===\n" +
+        "[+] Enrollee cannot specify custom SAN.\n" +
+        "[+] SAN is automatically populated from requester's AD account.\n" +
+        "[+] PAC issued for: S-1-5-21-...-1104 (lowpriv_user)\n\n" +
+        "VERDICT: 🛡️ SECURE: Privilege escalation prevented by AD identity binding.";
+    }
+
+    if (certEl) certEl.textContent = certText;
+    if (pacEl) pacEl.textContent = pacText;
+  }
+
+  // --- 4. JWT None Algorithm Tester ---
+  function base64UrlEncode(str){
+    try {
+      return btoa(unescape(encodeURIComponent(str)))
+        .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    } catch(e){
+      return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+  }
+
+  function initJwt(){
+    const hdrEl = document.getElementById("jwtHeader");
+    const payEl = document.getElementById("jwtPayload");
+    const sigEl = document.getElementById("jwtSig");
+    if (!hdrEl || !payEl || !sigEl) return;
+    if (!hdrEl.value){
+      hdrEl.value = JSON.stringify({ alg: "RS256", typ: "JWT" }, null, 2);
+      payEl.value = JSON.stringify({ sub: "user_4910", role: "guest", exp: Math.floor(Date.now()/1000) + 3600 }, null, 2);
+      sigEl.value = "c8f2a1b9d4e5f607182930a4b5c6d7e8";
+    }
+    updateJwtDisplay();
+  }
+
+  function updateJwtDisplay(){
+    const hdrEl = document.getElementById("jwtHeader");
+    const payEl = document.getElementById("jwtPayload");
+    const sigEl = document.getElementById("jwtSig");
+    const encodedEl = document.getElementById("jwtEncoded");
+    const resEl = document.getElementById("jwtVerificationResult");
+    if (!hdrEl || !payEl || !sigEl || !encodedEl || !resEl) return;
+
+    let hObj = {}, pObj = {};
+    let hValid = true, pValid = true;
+    try { hObj = JSON.parse(hdrEl.value); } catch(e){ hValid = false; }
+    try { pObj = JSON.parse(payEl.value); } catch(e){ pValid = false; }
+
+    const hB64 = base64UrlEncode(hdrEl.value);
+    const pB64 = base64UrlEncode(payEl.value);
+    const sigVal = (sigEl.value || "").trim();
+    const tokenStr = hB64 + "." + pB64 + (sigVal ? "." + sigVal : ".");
+
+    encodedEl.textContent = tokenStr;
+
+    const alg = (hObj.alg || "").toLowerCase();
+    const role = pObj.role || "unknown";
+
+    let result = "=== JWT VERIFICATION SIMULATION ===\n";
+    if (!hValid || !pValid){
+      result += "❌ SYNTAX ERROR: Header or Payload is not valid JSON.\n";
+    } else if (alg === "none"){
+      result += "🚨 CRITICAL: 'alg' header set to 'none'!\n" +
+        "1. Naive Verification (No algorithm whitelist):\n" +
+        "   jwt.verify(token, secret) -> ACCEPTED (Signature check bypassed!)\n" +
+        "   User Authenticated as: " + JSON.stringify(pObj.sub) + ", Role: " + JSON.stringify(role) + "\n" +
+        (role === "admin" ? "   ⚡ PRIVILEGE ESCALATION ACHIEVED: Administrative access granted!\n" : "") +
+        "2. Secure Verification (Strict whitelist: ['RS256']):\n" +
+        "   jwt.verify(token, pubkey, { algorithms: ['RS256'] }) -> 🛡️ REJECTED (Algorithm 'none' disallowed).\n";
+    } else {
+      result += "🛡️ STANDARD ALGORITHM: " + hObj.alg + "\n" +
+        "Signature required. Tampering with payload without valid private key will invalidate signature.\n" +
+        "Payload Subject: " + JSON.stringify(pObj.sub) + ", Role: " + JSON.stringify(role) + "\n";
+    }
+    resEl.textContent = result;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -1109,6 +1458,16 @@
       case "stats": case "chart": case "dashboard": case "통계": showStats(); break;
       case "badges": case "badge": case "achievements": case "achievement": case "업적":
         showBadgesTerminal(); break;
+      case "playground": case "sim": case "tools": case "실험실":
+        openPlayground(arg); break;
+      case "can": case "canbus":
+        openPlayground("canbus"); break;
+      case "sqli":
+        openPlayground("sqli"); break;
+      case "adcs":
+        openPlayground("adcs"); break;
+      case "jwt":
+        openPlayground("jwt"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -1355,10 +1714,137 @@
       if (e.target === badgeModal) hideBadgesModal();
     });
   }
+
+  // --- Playground Modal Event Handlers ---
+  const playgroundBtn = document.getElementById("playgroundBtn");
+  if (playgroundBtn) playgroundBtn.addEventListener("click", () => { audio(); openPlayground(); });
+
+  const playgroundClose = document.getElementById("playgroundClose");
+  if (playgroundClose) playgroundClose.addEventListener("click", () => hidePlayground());
+
+  const playgroundModal = document.getElementById("playgroundModal");
+  if (playgroundModal){
+    playgroundModal.addEventListener("click", e => {
+      if (e.target === playgroundModal) hidePlayground();
+    });
+  }
+
   document.addEventListener("keydown", e => {
-    if (e.key === "Escape" && badgeModal && badgeModal.style.display === "flex"){
-      hideBadgesModal();
+    if (e.key === "Escape"){
+      if (badgeModal && badgeModal.style.display === "flex") hideBadgesModal();
+      if (playgroundModal && playgroundModal.style.display === "flex") hidePlayground();
     }
+  });
+
+  // Playground Tab switching
+  document.querySelectorAll(".pg-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      audio();
+      switchPlaygroundTab(tab.getAttribute("data-tab"));
+    });
+  });
+
+  // CAN Bus Controls
+  const canSendBtn = document.getElementById("canSendBtn");
+  if (canSendBtn){
+    canSendBtn.addEventListener("click", () => {
+      audio();
+      const id = (document.getElementById("canIdInput") || {}).value;
+      const dlc = (document.getElementById("canDlcInput") || {}).value;
+      const data = (document.getElementById("canDataInput") || {}).value;
+      injectCanFrame(id, dlc, data);
+    });
+  }
+  const canClearBtn = document.getElementById("canClearBtn");
+  if (canClearBtn){
+    canClearBtn.addEventListener("click", () => {
+      const logEl = document.getElementById("canLog");
+      if (logEl) logEl.innerHTML = "";
+    });
+  }
+  document.querySelectorAll("[data-can-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-can-preset");
+      const idEl = document.getElementById("canIdInput");
+      const dlcEl = document.getElementById("canDlcInput");
+      const dataEl = document.getElementById("canDataInput");
+      if (p === "cruise"){
+        if (idEl) idEl.value = "0x244";
+        if (dlcEl) dlcEl.value = "8";
+        if (dataEl) dataEl.value = "00 3C 00 00 00 00 00 00";
+        injectCanFrame("0x244", 8, "00 3C 00 00 00 00 00 00");
+      } else if (p === "overspeed"){
+        if (idEl) idEl.value = "0x244";
+        if (dlcEl) dlcEl.value = "8";
+        if (dataEl) dataEl.value = "00 DC 19 00 00 00 00 00";
+        injectCanFrame("0x244", 8, "00 DC 19 00 00 00 00 00");
+      } else if (p === "uds"){
+        if (idEl) idEl.value = "0x7DF";
+        if (dlcEl) dlcEl.value = "8";
+        if (dataEl) dataEl.value = "02 27 01 00 00 00 00 00";
+        injectCanFrame("0x7DF", 8, "02 27 01 00 00 00 00 00");
+      } else if (p === "dos"){
+        if (idEl) idEl.value = "0x000";
+        if (dlcEl) dlcEl.value = "8";
+        if (dataEl) dataEl.value = "00 00 00 00 00 00 00 00";
+        injectCanFrame("0x000", 8, "00 00 00 00 00 00 00 00");
+      }
+    });
+  });
+
+  // SQLi Controls
+  const sqliIn = document.getElementById("sqliInput");
+  if (sqliIn) sqliIn.addEventListener("input", () => renderSqli());
+  document.querySelectorAll("[data-sqli-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-sqli-preset");
+      if (sqliIn){
+        if (p === "bypass") sqliIn.value = "admin' OR '1'='1' -- ";
+        else if (p === "union") sqliIn.value = "' UNION SELECT id, username, password_hash FROM users -- ";
+        else if (p === "sleep") sqliIn.value = "admin' AND (SELECT SLEEP(5)) -- ";
+        else if (p === "safe") sqliIn.value = "john_doe";
+        renderSqli();
+      }
+    });
+  });
+
+  // AD CS Controls
+  const adcsSanIn = document.getElementById("adcsSanInput");
+  if (adcsSanIn) adcsSanIn.addEventListener("input", () => renderAdcs(currentAdcsPreset));
+  document.querySelectorAll("[data-adcs-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-adcs-preset");
+      renderAdcs(p);
+    });
+  });
+
+  // JWT Controls
+  ["jwtHeader", "jwtPayload", "jwtSig"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", () => updateJwtDisplay());
+  });
+  document.querySelectorAll("[data-jwt-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-jwt-preset");
+      const hdrEl = document.getElementById("jwtHeader");
+      const payEl = document.getElementById("jwtPayload");
+      const sigEl = document.getElementById("jwtSig");
+      if (p === "none"){
+        if (hdrEl) hdrEl.value = JSON.stringify({ alg: "none", typ: "JWT" }, null, 2);
+        if (sigEl) sigEl.value = "";
+      } else if (p === "escalate"){
+        if (payEl) payEl.value = JSON.stringify({ sub: "administrator", role: "admin", exp: Math.floor(Date.now()/1000) + 7200 }, null, 2);
+      } else if (p === "reset"){
+        if (hdrEl) hdrEl.value = JSON.stringify({ alg: "RS256", typ: "JWT" }, null, 2);
+        if (payEl) payEl.value = JSON.stringify({ sub: "user_4910", role: "guest", exp: Math.floor(Date.now()/1000) + 3600 }, null, 2);
+        if (sigEl) sigEl.value = "c8f2a1b9d4e5f607182930a4b5c6d7e8";
+      }
+      updateJwtDisplay();
+    });
   });
 
   /* ===== matrix rain ===== */

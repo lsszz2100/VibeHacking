@@ -74,6 +74,9 @@ def test_get_challenges(client):
     assert "LAB28_SNMP" in ids
     assert "LAB28_VLAN" in ids
     assert "LAB28_HARDEN" in ids
+    assert "LAB29_ESC1" in ids
+    assert "LAB29_PKINIT" in ids
+    assert "LAB29_DELEG" in ids
 
     # Check hints_count field
     fuzz_chal = next(c for c in data["challenges"] if c["id"] == "LAB24_FUZZ")
@@ -86,6 +89,8 @@ def test_get_challenges(client):
     assert wifi_chal["hints_count"] >= 1
     net_chal = next(c for c in data["challenges"] if c["id"] == "LAB28_SNMP")
     assert net_chal["hints_count"] >= 1
+    adcs_chal = next(c for c in data["challenges"] if c["id"] == "LAB29_ESC1")
+    assert adcs_chal["hints_count"] >= 1
 
 
 def test_timeline_endpoint(client):

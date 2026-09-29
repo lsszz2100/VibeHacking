@@ -374,6 +374,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [2, 24, 42],
     },
+    "29": {
+        "name": "AD CS 인증서 침투 & Kerberos 위임 실전 랩",
+        "dir":  "29_adcs_kerberos_delegation_lab",
+        "desc": "CertPwn: AD CS ESC1 SAN 주입 관리자 인증서 발급 · PKINIT Pass-the-Certificate & UnPAC-the-Hash · Kerberos 위임(S4U/RBCD) 공격 및 엔터프라이즈 하드닝",
+        "url":  "웹 콘솔 & AD CS 보안 센터: http://localhost:8029",
+        "difficulty": "★★★★",
+        "related": [11, 48, 54],
+    },
 }
 
 
@@ -797,7 +805,7 @@ def _lab_test(lab_id: str | None, test_all: bool = False) -> None:
         print("  개별 랩 단위 또는 전체 랩 테스트 스위트를 수행할 수 있습니다.\n")
         print(f"  {dim('사용법:')}")
         print(f"    {cyan('vhack lab test 14')}    — Lab 14 (문서형 악성코드 랩) 테스트 실행")
-        print(f"    {cyan('vhack lab test --all')} — 전체 28개 랩 테스트 일괄 실행\n")
+        print(f"    {cyan('vhack lab test --all')} — 전체 29개 랩 테스트 일괄 실행\n")
         print("  " + "─" * 65)
         for lid, meta in sorted(LABS.items()):
             test_dir = LABS_DIR / meta["dir"] / "tests"
@@ -1376,6 +1384,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8026, "Lab 26 (MalSandbox Malware Analysis)"),
         (8027, "Lab 27 (WiFiShield WPA3 & PMKID Lab)"),
         (8028, "Lab 28 (NetShield Cisco & L2 Security Lab)"),
+        (8029, "Lab 29 (CertPwn AD CS & Kerberos Delegation Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]
@@ -1797,7 +1806,7 @@ def build_parser() -> argparse.ArgumentParser:
           python3 vhack.py lab stop --all     모든 랩 종료
           python3 vhack.py lab status         실행 중인 컨테이너 및 대시보드
           python3 vhack.py lab test 16        Lab 16 무결성 테스트
-          python3 vhack.py lab test --all     전체 28개 랩 테스트 일괄 실행
+          python3 vhack.py lab test --all     전체 29개 랩 테스트 일괄 실행
           python3 vhack.py lab logs 01        랩 로그 보기
           python3 vhack.py search "Kerberos"  전체 문서 검색
           python3 vhack.py info 54            섹션 상세 정보

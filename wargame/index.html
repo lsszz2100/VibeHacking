@@ -31,9 +31,10 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/1470</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/1505</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
+      <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
       <button id="badgeBtn" class="hud-btn" title="Badges / Achievements">🏆</button>
       <button id="exportBtn" class="hud-btn" title="Export progress JSON">💾</button>
       <button id="importBtn" class="hud-btn" title="Import progress JSON">📂</button>
@@ -49,6 +50,7 @@
   <!-- quick command chips (discoverability / mobile) -->
   <div id="chips">
     <button class="chip" data-cmd="help">help</button>
+    <button class="chip" data-cmd="playground">playground</button>
     <button class="chip" data-cmd="ls">ls</button>
     <button class="chip" data-cmd="tracks">tracks</button>
     <button class="chip" data-cmd="map">map</button>
@@ -80,6 +82,151 @@
         <button id="modalClose" class="modal-close" aria-label="Close">✕</button>
       </div>
       <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- playground modal -->
+  <div id="playgroundModal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pgModalTitle">
+    <div class="modal-box playground-box">
+      <div class="modal-hdr">
+        <span id="pgModalTitle" class="modal-title">🔬 VULNERABILITY PLAYGROUND &amp; SIMULATORS</span>
+        <button id="playgroundClose" class="modal-close" aria-label="Close">✕</button>
+      </div>
+      <div class="playground-nav">
+        <button class="pg-tab active" data-tab="canbus">🚗 CAN Bus Injector</button>
+        <button class="pg-tab" data-tab="sqli">💉 SQLi AST Visualizer</button>
+        <button class="pg-tab" data-tab="adcs">🪪 AD CS ASN.1 Inspector</button>
+        <button class="pg-tab" data-tab="jwt">🔑 JWT None Tester</button>
+      </div>
+      <div class="playground-body">
+        <!-- CAN Bus Panel -->
+        <div id="pgPanel-canbus" class="pg-panel active">
+          <div class="can-dashboard">
+            <div class="can-gauges">
+              <div class="gauge-card">
+                <div class="gauge-title">Vehicle Speed</div>
+                <div id="canSpeedVal" class="gauge-val">0 km/h</div>
+                <div class="gauge-bar-track"><div id="canSpeedBar" class="gauge-bar-fill"></div></div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-title">Engine RPM</div>
+                <div id="canRpmVal" class="gauge-val">0 RPM</div>
+                <div class="gauge-bar-track"><div id="canRpmBar" class="gauge-bar-fill"></div></div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-title">Bus Telemetry Status</div>
+                <div id="canStatusText" style="font-size:12px;font-weight:700;color:var(--green)">BROADCAST: NORMAL</div>
+              </div>
+            </div>
+            <div class="can-controls">
+              <div class="preset-row">
+                <span class="dim" style="font-size:11px;">Presets:</span>
+                <button class="pg-btn" data-can-preset="cruise">Cruise 60</button>
+                <button class="pg-btn danger" data-can-preset="overspeed">Spoof 220</button>
+                <button class="pg-btn" data-can-preset="uds">UDS Unlock (0x7DF)</button>
+                <button class="pg-btn danger" data-can-preset="dos">Arbitration DoS (0x000)</button>
+              </div>
+              <div class="can-input-row">
+                <input id="canIdInput" type="text" value="0x244" style="width:70px;" placeholder="ID">
+                <input id="canDlcInput" type="number" min="1" max="8" value="8" style="width:45px;" placeholder="DLC">
+                <input id="canDataInput" type="text" value="00 3C 00 00 00 00 00 00" style="flex:1;" placeholder="Data (Hex)">
+                <button id="canSendBtn" class="pg-btn">Inject Frame</button>
+                <button id="canClearBtn" class="pg-btn" style="color:var(--muted)">Clear</button>
+              </div>
+              <div id="canLog" class="can-log"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SQLi AST Visualizer Panel -->
+        <div id="pgPanel-sqli" class="pg-panel">
+          <div class="sqli-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Presets:</span>
+              <button class="pg-btn danger" data-sqli-preset="bypass">Auth Bypass (OR 1=1)</button>
+              <button class="pg-btn danger" data-sqli-preset="union">UNION Select</button>
+              <button class="pg-btn danger" data-sqli-preset="sleep">Time Blind (SLEEP)</button>
+              <button class="pg-btn" data-sqli-preset="safe">Safe Input (john_doe)</button>
+            </div>
+            <div class="sqli-input-box">
+              <input id="sqliInput" type="text" value="admin' OR '1'='1' -- " placeholder="Type SQL parameter input...">
+            </div>
+            <div class="sqli-split">
+              <div class="sqli-pane vulnerable">
+                <div class="pane-title">
+                  <span style="color:var(--red);">⚠️ Vulnerable Concatenation (Raw SQL)</span>
+                  <span id="sqliVulnBadge" class="token-tag token-inj">VULNERABLE</span>
+                </div>
+                <div id="sqliVulnOutput" class="ast-view"></div>
+              </div>
+              <div class="sqli-pane safe">
+                <div class="pane-title">
+                  <span style="color:var(--green);">🛡️ Secure PreparedStatement (Parameterized)</span>
+                  <span id="sqliSafeBadge" class="token-tag token-lit">PROTECTED</span>
+                </div>
+                <div id="sqliSafeOutput" class="ast-view"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AD CS / Kerberos ASN.1 Inspector Panel -->
+        <div id="pgPanel-adcs" class="pg-panel">
+          <div class="adcs-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Presets:</span>
+              <button class="pg-btn danger" data-adcs-preset="esc1">ESC1: SAN Enrollee Impersonation</button>
+              <button class="pg-btn danger" data-adcs-preset="esc2">ESC2: Any Purpose EKU</button>
+              <button class="pg-btn" data-adcs-preset="secure">Secure User Template</button>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <label class="dim" style="font-size:11px;">SubjectAltName (SAN) UPN:</label>
+              <input id="adcsSanInput" type="text" value="administrator@vibe.corp" style="flex:1;background:#020804;border:1px solid var(--line);color:var(--green);font-family:var(--mono);padding:5px 10px;font-size:12px;border-radius:4px;">
+            </div>
+            <div class="adcs-grid">
+              <div class="adcs-card">
+                <div class="pane-title" style="color:var(--txt)">X.509 ASN.1 Certificate Preview</div>
+                <div id="adcsCertPreview" class="ast-view" style="font-size:11px;"></div>
+              </div>
+              <div class="adcs-card">
+                <div class="pane-title" style="color:var(--txt)">Kerberos PKINIT &amp; PAC Token Evaluation</div>
+                <div id="adcsPacPreview" class="ast-view" style="font-size:11px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- JWT None Alg Tester Panel -->
+        <div id="pgPanel-jwt" class="pg-panel">
+          <div class="jwt-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Presets:</span>
+              <button class="pg-btn danger" data-jwt-preset="none">Set "alg": "none" Bypass</button>
+              <button class="pg-btn danger" data-jwt-preset="escalate">Escalate role -&gt; "admin"</button>
+              <button class="pg-btn" data-jwt-preset="reset">Reset RS256 Standard Token</button>
+            </div>
+            <div class="jwt-parts">
+              <div class="jwt-col">
+                <span class="dim" style="font-size:11px;color:#fb7185">Header (JSON)</span>
+                <textarea id="jwtHeader" class="jwt-hdr-border" spellcheck="false"></textarea>
+              </div>
+              <div class="jwt-col">
+                <span class="dim" style="font-size:11px;color:#c084fc">Payload (JSON)</span>
+                <textarea id="jwtPayload" class="jwt-payload-border" spellcheck="false"></textarea>
+              </div>
+              <div class="jwt-col">
+                <span class="dim" style="font-size:11px;color:#38bdf8">Signature (Base64/Hex)</span>
+                <textarea id="jwtSig" class="jwt-sig-border" spellcheck="false"></textarea>
+              </div>
+            </div>
+            <div style="background:#010603;border:1px solid var(--line);border-radius:4px;padding:8px;font-family:var(--mono);font-size:11px;word-break:break-all;">
+              <span class="dim">Encoded Token: </span>
+              <span id="jwtEncoded" style="color:var(--txt);"></span>
+            </div>
+            <div id="jwtVerificationResult" class="ast-view" style="min-height:80px;"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -33,11 +33,11 @@ def check_textbook():
     return True, f"{len(sections)} sections, {total_md} chapters"
 
 def check_labs():
-    print("[2/5] Checking 28 Hands-on Labs...")
+    print("[2/5] Checking 29 Hands-on Labs...")
     labs_dir = ROOT_DIR / "labs"
     lab_dirs = sorted([d for d in labs_dir.iterdir() if d.is_dir() and d.name[:2].isdigit()])
-    if len(lab_dirs) != 28:
-        return False, f"Expected 28 labs, found {len(lab_dirs)}"
+    if len(lab_dirs) != 29:
+        return False, f"Expected 29 labs, found {len(lab_dirs)}"
     
     for l in lab_dirs:
         compose = l / "docker-compose.yml"
@@ -62,10 +62,10 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count != 1470:
-        return False, f"Expected 1,470 challenges in challenges.js, found {id_count}"
+    if id_count != 1505:
+        return False, f"Expected 1,505 challenges in challenges.js, found {id_count}"
     
-    print(f"  ✓ Wargame database verified: {id_count} challenges across 42 tracks.")
+    print(f"  ✓ Wargame database verified: {id_count} challenges across 43 tracks.")
     return True, f"{id_count} challenges verified"
 
 def check_offline_assets():
@@ -86,9 +86,16 @@ def check_offline_assets():
     print(f"  ✓ Offline vendor assets ({len(required_vendor)} files) and Web Portal verified.")
     return True, "Offline assets present"
 
+import hashlib
+
 def create_bundle_archive(out_path):
-    print(f"[5/5] Creating Offline Distribution Archive: {out_path}...")
-    exclude_prefixes = [".git", "__pycache__", ".pytest_cache", ".gemini", "node_modules"]
+    out_file = Path(out_path).resolve()
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    print(f"[5/5] Creating Offline Distribution Archive: {out_file}...")
+    exclude_prefixes = [
+        ".git", "__pycache__", ".pytest_cache", ".gemini", "node_modules",
+        "release", "venv", ".venv", ".mcp.json", ".tar.gz"
+    ]
     
     def filter_func(tarinfo):
         for excl in exclude_prefixes:
@@ -96,11 +103,26 @@ def create_bundle_archive(out_path):
                 return None
         return tarinfo
 
-    with tarfile.open(out_path, "w:gz") as tar:
+    with tarfile.open(out_file, "w:gz") as tar:
         tar.add(ROOT_DIR, arcname="vibe-hacking", filter=filter_func)
     
-    size_mb = os.path.getsize(out_path) / (1024 * 1024)
+    size_mb = os.path.getsize(out_file) / (1024 * 1024)
+    
+    # Calculate SHA-256
+    sha256 = hashlib.sha256()
+    with open(out_file, "rb") as f:
+        while chunk := f.read(65536):
+            sha256.update(chunk)
+    digest = sha256.hexdigest()
+    
+    # Write SHA256SUMS in target directory
+    sums_file = out_file.parent / "SHA256SUMS"
+    with open(sums_file, "w", encoding="utf-8") as f:
+        f.write(f"{digest}  {out_file.name}\n")
+        
     print(f"  ✓ Archive created successfully: {size_mb:.2f} MB")
+    print(f"  ✓ SHA-256: {digest}")
+    print(f"  ✓ Written checksum to: {sums_file}")
 
 def main():
     parser = argparse.ArgumentParser(description="VibeHacking Offline Bundler & Integrity Verifier")
