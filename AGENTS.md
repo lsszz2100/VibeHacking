@@ -182,6 +182,35 @@ node wargame/scripts/solve-derivable.js
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
 
+- **2026-09-29 (Option 1~3 Complete: Lab 29 CertPwn, Wargame Track 43 adcs 1,505 Milestone, Interactive Security Playground, Offline Release v2.0.0 Pipeline, 250 Tests All Green, Remote Sync)**:
+  - **Lab 29 CertPwn 신규 구축 (`labs/29_adcs_kerberos_delegation_lab/`)**: AD CS ESC1 취약 템플릿 탐지, Enrollee Supplies SAN Administrator 인증서 위조 발급, PKINIT TGT 요청 및 Pass-the-Certificate 도메인 장악, RBCD/S4U2proxy 위임 차단 및 Protected Users 그룹 하드닝 (포트 8029, 17개 단위/통합 테스트 전원 통과, 127.0.0.1 루프백 안전 바인딩)
+  - **대용량 미분류 자료 인제스천 (AD CS & Kerberos 위임 심층 분석)**:
+    - `54_Active_Directory_Attacks/07_adcs_esc_and_kerberos_delegation_deepdive.md` (ESC1~ESC13 아키텍처 해부, SAN 변조, PKINIT 흐름, UnPAC-the-Hash, RBCD msDS-AllowedToActOnBehalfOfOtherIdentity, Protected Users 및 msDS-KeyCredentialLink 하드닝)
+    - `tools/sync_section_readmes.py` 전 섹션 동기화 완료
+  - **워게임 43번째 트랙 (`adcs`) 확장 및 1,505문제 마일스톤**: AD CS, ESC1~ESC13, PKINIT, UnPAC-the-Hash, Kerberos RBCD/S4U, Protected Users 등을 포괄하는 35개 문제 추가로 1,470제 → 1,505제 확장 완료, 4대 엄격 무결성 검증 (`verify.js`, `audit.js --strict`, `leakscan.js`, `solve-derivable.js` 538/1505) 전원 0결함 완벽 통과
+  - **워게임 인터랙티브 보안 플레이그라운드 & 시뮬레이터 모달 구축 (`wargame/assets/app.js`, `wargame/index.html`, `wargame/assets/style.css`)**:
+    1. 🚗 CAN Bus Injector & Telemetry Simulator: 차량 속도계/RPM 게이지 시뮬레이션 및 프레임 주입/프리셋(Cruise, Over-speed, UDS, DoS)
+    2. 💉 SQLi AST 구문트리 실시간 시각화기: 취약 Raw SQL(연산자 하이재킹 `OR 1=1`) vs 안전한 Prepared Statement AST 비교
+    3. 🪪 AD CS / Kerberos ASN.1 인스펙터: X.509 ASN.1 Certificate(Subject, SAN, EKU) 구조 파싱, PKINIT TGT 요청 및 PAC 도메인 관리자 권한 진단
+    4. 🔑 JWT None Algorithm 서명 우회 테스터: 실시간 Header/Payload/Signature 인코딩, `alg: none` 서명 우회 및 `role: admin` 권한상승 시뮬레이션
+    - HUD 🔬 버튼, 빠른 커맨드 칩, 터미널 명령어(`playground`, `sim`, `can`, `sqli`, `adcs`, `jwt`) 완비
+  - **완전 오프라인 릴리스 배포 및 스모크 테스트 파이프라인 (`release/`, `tools/bundle_offline.py`, `tools/verify_offline_deployment.sh`)**:
+    - `bundle_offline.py`: 4대 하위 시스템 무결성 전수 검증 및 아카이브(`release/vibehacking-v2.0.0.tar.gz`, 7.01 MB) 생성, SHA-256 자동 계산 및 `release/SHA256SUMS` 기록
+    - `verify_offline_deployment.sh`: 체크섬 무결성, 오프라인 벤더 에셋, 파이썬 컴파일, 워게임 자바스크립트 구문, 번들 무결성, 워게임 검증, CLI 스모크 테스트 7단계 자동 검증 스크립트 구축
+  - **전 플랫폼 연동 및 전체 250개 테스트 100% All Green**:
+    - `pytest -q`: **250 passed** (Labs 01~29 17개 단위 테스트 포함, solvers 4개, portal 8개, ctf 7개, wargame cli 4개)
+    - `vhack doctor`: 포트 8000~8029 진단 및 29개 랩 전수 연동
+    - `vhack solve`: 29개 실습 랩 자동 익스플로잇 솔버 연동
+    - `ctf/server.py`: 50개 랩 플래그 풀 및 힌트 연동
+  - **작업 윤리 및 검증 철칙 엄수**: 무관용 허위 보고 배제, 실검증(CLI 출력 증거 기반), 교차 검증, 보안 검증(127.0.0.1 기본 바인딩), 기능/버그 테스트 및 리팩토링 전수 준수
+  - **원격 저장소 동기화**: `main` 브랜치 커밋(`aace4a0`) 원격 저장소(`https://github.com/lsszz2100/VibeHacking.git`) 푸시 완료
+
+- **2026-09-28 (Lab 28 NetShield, Wargame 42 Tracks / 1,470 Challenges Milestone, Cisco IOS & Enterprise L2 Deepdive, 233 Tests All Green)**:
+  - **Lab 28 네트워크 인프라 & Cisco 스위치 랩 신규 구축 (`labs/28_network_infra_lab/`)**: Cisco IOS SNMPv2c R/W running-config 덤프 및 Type 7 크래킹, DTP Trunk Spoofing & 802.1D STP Priority 0 Root Bridge 하이재킹, Enterprise L2 하드닝 (Port-Security, DHCP Snooping, DAI, BPDU Guard, CoPP), 포트 8028, 14개 단위 테스트 전원 통과
+  - **교재 13번째 심층 챕터**: `32_Network_Device_Hacking/07_cisco_ios_and_enterprise_l2_infrastructure_attack_deepdive.md`
+  - **워게임 42번째 트랙 (`netinfra`) 확장 및 1,470문제 마일스톤 달성**
+  - **전체 233개 테스트 100% 통과**
+
 - **2026-09-27 (Lab 27 WiFiShield, Wargame 41 Tracks / 1,435 Challenges Milestone, WPA3 SAE / PMKID Deepdive, 219 Tests All Green, Safe GitHub Remote Sync)**:
   - **Lab 27 무선 네트워크 & WPA3 보안 실전 랩 신규 구축 (`labs/27_wifi_wpa3_security_lab/`)**:
     - WPA2 RSN IE PMKID 무인증 추출 및 오프라인 사전 공격 (`FLAG{WPA2_PMKID_ROAMING_KEY_CRACKED_7721}`)
