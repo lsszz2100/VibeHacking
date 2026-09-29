@@ -564,6 +564,42 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "관리자 계정에 USER_NOT_DELEGATED 및 Protected Users 보안 그룹을 적용하고 취약 템플릿과 NTLM 릴레이를 차단하세요."}
                 ],
             },
+            "LAB30_SYMBOL": {
+                "id": "LAB30_SYMBOL",
+                "title": "GhidraRev: Headless Symbol Analysis & Prologue Signature Matching",
+                "category": "reversing",
+                "initial_points": 500,
+                "flag": "FLAG{ghidra_headless_symbol_analysis_recovered_8030}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "x86_64 함수 프롤로그 시그니처(55 48 89 E5)를 매칭하고 0x00401200 위치의 심볼을 validate_license_core로 복원하세요."}
+                ],
+            },
+            "LAB30_CFF": {
+                "id": "LAB30_CFF",
+                "title": "GhidraRev: Control Flow Flattening (CFF) Dispatcher Deflattening",
+                "category": "reversing",
+                "initial_points": 500,
+                "flag": "FLAG{control_flow_flattening_state_machine_defused_3921}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "중앙 switch(state) 디스패처 루프의 상태 전이 시퀀스 [10, 40, 25, 90]를 분석하고 불투명 술어를 제거하여 AST를 디플래트닝하세요."}
+                ],
+            },
+            "LAB30_PATCH": {
+                "id": "LAB30_PATCH",
+                "title": "GhidraRev: Anti-Tamper Checksum Bypass & Inline Binary Patching",
+                "category": "reversing",
+                "initial_points": 500,
+                "flag": "FLAG{binary_patch_integrity_hash_bypassed_9942}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "가상 주소 0x00401337의 조건부 분기(74 18 jz)를 90 90 (nop nop) 또는 eb 18 (jmp)로 패치하고 자체 .text 체크섬을 우회하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []

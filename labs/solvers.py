@@ -609,6 +609,38 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Enterprise AD CS & Kerberos Hardening Complete! -> FLAG{kerberos_delegation_s4u_rbcd_hardened_protected_users_9312}"
             }
         ]
+    },
+    "30": {
+        "title": "Ghidra 기반 바이너리 분석 & 고급 난독화 해제 랩 (GhidraRev)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Ghidra Headless 심볼 복원 및 프롤로그 시그니처 매칭",
+                "target": "POST /api/ghidra/analyze/symbols (recover_headless_symbols.py, 0x00401200)",
+                "poc_explanation": "스트립트 바이너리의 x86_64 함수 프롤로그 바이트(55 48 89 E5)를 스캔하여 핵심 검증 함수를 validate_license_core 심볼로 복원합니다.",
+                "exploit_payload": '{"script_name": "recover_headless_symbols.py", "target_function_vaddr": "0x00401200", "match_prologue": true, "rename_symbol": "validate_license_core"}',
+                "defense": "심볼 난독화, 독점 암호화 패커 및 안티 분석 가상 머신 인터프리터를 적용하여 정적 서명 매칭을 방해합니다.",
+                "sample_output": "🔍 Ghidra Headless Analysis Complete! Symbol validate_license_core recovered at 0x00401200 -> FLAG{ghidra_headless_symbol_analysis_recovered_8030}"
+            },
+            {
+                "step": 2,
+                "name": "Control Flow Flattening (CFF) 상태 머신 해체 및 불투명 술어 제거",
+                "target": "POST /api/ghidra/deobfuscate/cff (dispatcher_vaddr: 0x00401240, block_transitions: [10, 40, 25, 90])",
+                "poc_explanation": "중앙 디스패처 switch(state) 루프의 상태 전이 시퀀스를 역산하고 불투명 술어를 제거하여 원래의 선형 제어 흐름 그래프(CFG)를 복원합니다.",
+                "exploit_payload": '{"state_variable_reg": "eax", "dispatcher_vaddr": "0x00401240", "block_transitions": [10, 40, 25, 90], "defuse_opaque_predicates": true}',
+                "defense": "고차원 동적 제어 흐름 다형성(Polymorphic Dispatching) 및 하드웨어 기반 CFI(Control Flow Integrity)를 적용합니다.",
+                "sample_output": "🔓 CFF State Machine Defused! Clean AST reconstructed -> FLAG{control_flow_flattening_state_machine_defused_3921}"
+            },
+            {
+                "step": 3,
+                "name": "안티 탬퍼 무결성 우회 및 바이너리 인라인 패치",
+                "target": "POST /api/ghidra/patch/binary (patch_vaddr: 0x00401337, 74 18 -> 90 90, bypass_integrity_check: true)",
+                "poc_explanation": "조건부 점프(jz loc_fail, 74 18)를 NOP(90 90)로 패치하고, 자체 .text 섹션 체크섬 검증 루틴을 무력화하여 무조건 라이선스 성공으로 유도합니다.",
+                "exploit_payload": '{"patch_vaddr": "0x00401337", "original_hex": "74 18", "replacement_hex": "90 90", "bypass_integrity_check": true}',
+                "defense": "OS 수준 커널 디지털 서명 강제(Authenticode / Code Integrity) 및 Secure Boot TPM 원격 증명을 적용합니다.",
+                "sample_output": "⚡ Binary Patched & Self-Integrity Bypassed! Enterprise license granted -> FLAG{binary_patch_integrity_hash_bypassed_9942}"
+            }
+        ]
     }
 }
 

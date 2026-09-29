@@ -396,6 +396,14 @@ const TRACKS = [
     "en": "AD CS PKI & Kerberos Delegation",
     "desc_ko": "Active Directory 인증서 서비스(AD CS)·ESC1~ESC14 취약 템플릿·SAN 주입·PKINIT Pass-the-Certificate·UnPAC-the-Hash·Kerberos S4U2Self/Proxy 및 RBCD 위임.",
     "desc_en": "Active Directory Certificate Services (AD CS), ESC1-ESC14 vulnerable templates, SAN injection, PKINIT Pass-the-Certificate, UnPAC-the-Hash, and Kerberos delegation (S4U/RBCD)."
+  },
+  {
+    "id": "ghidra",
+    "icon": "🔬",
+    "ko": "Ghidra 역공학·난독화 해제",
+    "en": "Ghidra Reverse Engineering & Deobfuscation",
+    "desc_ko": "Ghidra Sleigh/P-Code 중간 표현·Headless 자동 분석·Control Flow Flattening(CFF) 상태 머신 해체·불투명 술어 제거·안티 탬퍼 체크섬 우회 및 인라인 패칭.",
+    "desc_en": "Ghidra Sleigh/P-Code IR, Headless automated analysis, Control Flow Flattening (CFF) state machine deflattening, opaque predicate removal, self-integrity bypass, and binary patching."
   }
 ];
 
@@ -42586,6 +42594,987 @@ const CHALLENGES = [
     ]
   },
   "hash": "6b28402f1f96ef672b9674cef98dc416486208a3a82a8a59b2d788c52c40f3fa"
+}
+,
+{
+  "id": "t0_ghidra_pcode_concept",
+  "tier": 0,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Ghidra P-Code 중간 언어 기본 아키텍처",
+    "en": "Ghidra P-Code Intermediate Representation Architecture"
+  },
+  "prompt": {
+    "ko": "Ghidra 디컴파일러의 핵심인 약 40개 가상 마이크로 오퍼레이션(P-Code IR) 정규화 아키텍처를 분석합니다.\n지정된 식별자 `ghidra_pcode_concept_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_pcode_concept_v1\") 앞 20자리}`",
+    "en": "Analyze Ghidra decompiler core normalizing machine instructions into ~40 P-Code micro-operations.\nCompute the first 20 hex characters of SHA256(\"ghidra_pcode_concept_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_pcode_concept_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Ghidra P-Code 연산자 명세(COPY, LOAD, STORE, INT_ADD, BRANCH)를 학습하세요.",
+      "식별자 `ghidra_pcode_concept_v1`의 SHA-256 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review Ghidra P-Code micro-operations specifications.",
+      "Compute first 20 hex chars of SHA256(\"ghidra_pcode_concept_v1\")."
+    ]
+  },
+  "hash": "9928fc3f4ba0e6eed0be91a5cd70d1240944f9b9b51a80d29fad820358c5583f"
+},
+{
+  "id": "t0_ghidra_sleigh_spec",
+  "tier": 0,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Sleigh 프로세서 명세 언어와 디스어셈블러",
+    "en": "Sleigh Processor Specification Language & Disassembly"
+  },
+  "prompt": {
+    "ko": "CPU 아키텍처별 명령어 바이트 시퀀스를 P-Code로 변환하는 Ghidra Sleigh 명세 언어 구조를 분석합니다.\n지정된 식별자 `ghidra_sleigh_spec_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_sleigh_spec_v1\") 앞 20자리}`",
+    "en": "Analyze Ghidra Sleigh language defining instruction semantics and translating bytes to P-Code.\nCompute the first 20 hex characters of SHA256(\"ghidra_sleigh_spec_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_sleigh_spec_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Sleigh .slaspec 및 .sinc 파일 구조를 확인하세요.",
+      "식별자 `ghidra_sleigh_spec_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Examine Sleigh specification syntax.",
+      "Extract the first 20 hex characters of SHA256(\"ghidra_sleigh_spec_v1\")."
+    ]
+  },
+  "hash": "6617206eb599cf61b4f5f321656aab4491925634a7e5506ef1f93181db18c521"
+},
+{
+  "id": "t0_ghidra_headless_cli",
+  "tier": 0,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Ghidra Headless CLI 배치 분석 자동화",
+    "en": "Ghidra Headless CLI Batch Analysis Automation"
+  },
+  "prompt": {
+    "ko": "GUI 없이 수백 개의 바이너리를 일괄 역공학 분석하는 analyzeHeadless CLI 파라미터 구조를 분석합니다.\n지정된 식별자 `ghidra_headless_cli_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_headless_cli_v1\") 앞 20자리}`",
+    "en": "Inspect analyzeHeadless CLI utility automating batch binary reverse engineering without GUI.\nCompute the first 20 hex characters of SHA256(\"ghidra_headless_cli_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_headless_cli_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "analyzeHeadless의 -import, -postScript, -overwrite 옵션을 학습하세요.",
+      "식별자 `ghidra_headless_cli_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Understand analyzeHeadless script execution flags.",
+      "Submit first 20 hex of SHA256(\"ghidra_headless_cli_v1\")."
+    ]
+  },
+  "hash": "107ffe46683d4b8ed390b86b70f163f3510a4fa310ea70eb07b0ff38127a2ecb"
+},
+{
+  "id": "t0_ghidra_function_manager",
+  "tier": 0,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "FlatProgramAPI 및 FunctionManager 함수 열거",
+    "en": "FlatProgramAPI & FunctionManager Enumeration"
+  },
+  "prompt": {
+    "ko": "Ghidra Jython/Java API의 FlatProgramAPI와 FunctionManager를 활용한 전체 함수 엔트리포인트 열거를 실습합니다.\n지정된 식별자 `ghidra_function_manager_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_function_manager_v1\") 앞 20자리}`",
+    "en": "Practice enumerating all function entry points using FlatProgramAPI and FunctionManager.\nCompute the first 20 hex characters of SHA256(\"ghidra_function_manager_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_function_manager_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "currentProgram.getFunctionManager().getFunctions(True) API를 확인하세요.",
+      "식별자 `ghidra_function_manager_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review getFunctionManager API methods.",
+      "Extract the first 20 hex characters of SHA256(\"ghidra_function_manager_v1\")."
+    ]
+  },
+  "hash": "afe236b030d28f2b2b5d9f71bb7bb01b011f59b5e6cdc1b81841e3da4db29881"
+},
+{
+  "id": "t0_ghidra_xref_tracing",
+  "tier": 0,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "문자열 상수 및 전역 참조(XREF) 분석",
+    "en": "String Constants & Cross-Reference (XREF) Tracing"
+  },
+  "prompt": {
+    "ko": "바이너리 내 민감 문자열(라이선스, C2, 암호키)과 이를 참조하는 함수 XREF 그래프를 추적합니다.\n지정된 식별자 `ghidra_xref_tracing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_xref_tracing_v1\") 앞 20자리}`",
+    "en": "Trace sensitive strings (license keys, C2 domains) and their caller function cross-reference graphs.\nCompute the first 20 hex characters of SHA256(\"ghidra_xref_tracing_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_xref_tracing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "getReferencesTo(addr) 메소드를 통한 호출점 역추적을 학습하세요.",
+      "식별자 `ghidra_xref_tracing_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Use getReferencesTo for reference graph navigation.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_xref_tracing_v1\")."
+    ]
+  },
+  "hash": "cac9ef5241508acafa6aa177df875047cea99b0b3a67eb6ac14f84bfaebc55cd"
+},
+{
+  "id": "t0_ghidra_data_types",
+  "tier": 0,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "구조체 정의 및 디컴파일러 가독성 향상",
+    "en": "Structure Definitions & Decompiler Readability"
+  },
+  "prompt": {
+    "ko": "Ghidra DataTypeManager를 통해 C 구조체 필드를 정의하고 포인터 오프셋 가독성을 개선하는 기법을 분석합니다.\n지정된 식별자 `ghidra_data_types_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_data_types_v1\") 앞 20자리}`",
+    "en": "Apply DataTypeManager struct definitions to resolve raw pointer offsets into named struct fields.\nCompute the first 20 hex characters of SHA256(\"ghidra_data_types_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_data_types_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "StructureDataType 생성 및 add(DataType, length, name) 메소드를 학습하세요.",
+      "식별자 `ghidra_data_types_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Learn StructureDataType configuration in Ghidra.",
+      "Submit first 20 hex of SHA256(\"ghidra_data_types_v1\")."
+    ]
+  },
+  "hash": "c0acc1a693a863b219349e86362c4d0dbbe954c2d49eaa542c40d2cd706ddd23"
+},
+{
+  "id": "t0_ghidra_entropy_packing",
+  "tier": 0,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "바이너리 섹션별 Shannon 엔트로피 분석",
+    "en": "Binary Section Shannon Entropy Analysis"
+  },
+  "prompt": {
+    "ko": "실행 파일 섹션(.text, .rdata, .data)의 Shannon 엔트로피(6.5+)를 측정하여 패킹 및 암호화 여부를 판별합니다.\n지정된 식별자 `ghidra_entropy_packing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_entropy_packing_v1\") 앞 20자리}`",
+    "en": "Measure section Shannon entropy (6.5+) to identify packed and encrypted binary payloads.\nCompute the first 20 hex characters of SHA256(\"ghidra_entropy_packing_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_entropy_packing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "엔트로피 7.0 이상은 고밀도 압축 또는 암호화된 페이로드를 의미합니다.",
+      "식별자 `ghidra_entropy_packing_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Entropy above 7.0 indicates compression or encryption.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_entropy_packing_v1\")."
+    ]
+  },
+  "hash": "47d78a1f4b166055b3a194f5bea9bc78073e184ae3a7479f1f91940c1c5048f7"
+},
+{
+  "id": "t1_ghidra_prologue_scanning",
+  "tier": 1,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "x86_64 함수 프롤로그 시그니처 매칭",
+    "en": "x86_64 Function Prologue Signature Matching"
+  },
+  "prompt": {
+    "ko": "스트립트 바이너리의 표준 함수 프롤로그 바이트(`55 48 89 E5` - push rbp; mov rbp, rsp)를 스캔하여 미식별 함수를 정의합니다.\n지정된 식별자 `ghidra_prologue_scanning_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_prologue_scanning_v1\") 앞 20자리}`",
+    "en": "Scan standard function prologue bytes (`55 48 89 E5`) to identify uncataloged function entry points.\nCompute the first 20 hex characters of SHA256(\"ghidra_prologue_scanning_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_prologue_scanning_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "findBytes API로 .text 섹션 내 55 48 89 E5 바이트를 탐색하세요.",
+      "식별자 `ghidra_prologue_scanning_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Use findBytes to locate function prologues.",
+      "Submit first 20 hex of SHA256(\"ghidra_prologue_scanning_v1\")."
+    ]
+  },
+  "hash": "81b64203b4bf5fd413d49683d89f3aebe7590d6223d97c43cc86346c71791825"
+},
+{
+  "id": "t1_ghidra_calling_conventions",
+  "tier": 1,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "System V AMD64 ABI vs MS x64 호출 규약 분석",
+    "en": "System V AMD64 ABI vs MS x64 Calling Convention"
+  },
+  "prompt": {
+    "ko": "레지스터 인자 전달 순서(System V: RDI, RSI, RDX, RCX, R8, R9 vs Windows: RCX, RDX, R8, R9)를 디컴파일러에 지정합니다.\n지정된 식별자 `ghidra_calling_conventions_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_calling_conventions_v1\") 앞 20자리}`",
+    "en": "Configure decompiler calling conventions to match System V AMD64 vs Microsoft x64 parameter registers.\nCompute the first 20 hex characters of SHA256(\"ghidra_calling_conventions_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_calling_conventions_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "function.setCallingConvention('__fastcall' 또는 '__stdcall') 메소드를 학습하세요.",
+      "식별자 `ghidra_calling_conventions_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Set accurate function calling convention models.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_calling_conventions_v1\")."
+    ]
+  },
+  "hash": "240a6dadf2e3af6902427d637e42d3c39776e624acbb6435d9e0047f7b39f5b9"
+},
+{
+  "id": "t1_ghidra_decompiler_ast",
+  "tier": 1,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Ghidra 디컴파일러 ClangTokenGroup AST 구조",
+    "en": "Ghidra Decompiler ClangTokenGroup AST Structure"
+  },
+  "prompt": {
+    "ko": "디컴파일러의 C 언어 출력 트리를 구성하는 ClangTokenGroup 및 ClangSyntaxToken 계층 구조를 분석합니다.\n지정된 식별자 `ghidra_decompiler_ast_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_decompiler_ast_v1\") 앞 20자리}`",
+    "en": "Inspect the ClangTokenGroup and ClangSyntaxToken hierarchical AST produced by the Ghidra decompiler.\nCompute the first 20 hex characters of SHA256(\"ghidra_decompiler_ast_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_decompiler_ast_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "DecompInterface를 통해 생성된 C AST 토큰을 순회하세요.",
+      "식별자 `ghidra_decompiler_ast_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Traverse decompiler AST tokens via DecompInterface.",
+      "Submit first 20 hex of SHA256(\"ghidra_decompiler_ast_v1\")."
+    ]
+  },
+  "hash": "3ad6cd81b14cf697ab251796e3bef293e468d6bec3911c3d9fca3c501fa83ea0"
+},
+{
+  "id": "t1_ghidra_cfg_basic_blocks",
+  "tier": 1,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "기본 블록 분할 및 제어 흐름 그래프(CFG)",
+    "en": "Basic Block Partitioning & Control Flow Graph (CFG)"
+  },
+  "prompt": {
+    "ko": "조건부 분기(Jcc) 및 무조건 점프(JMP)를 기준으로 단일 진입·단일 종출 기본 블록(Basic Block)을 모델링합니다.\n지정된 식별자 `ghidra_cfg_basic_blocks_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_cfg_basic_blocks_v1\") 앞 20자리}`",
+    "en": "Model single-entry, single-exit basic blocks and directed graph edges demarcated by Jcc and JMP instructions.\nCompute the first 20 hex characters of SHA256(\"ghidra_cfg_basic_blocks_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_cfg_basic_blocks_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "BasicBlockModel API로 블록의 시작/종료 주소를 쿼리하세요.",
+      "식별자 `ghidra_cfg_basic_blocks_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Use BasicBlockModel API to query block bounds.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_cfg_basic_blocks_v1\")."
+    ]
+  },
+  "hash": "ebfc84e4b6fd1fdd700249461eb4af359ce320d702e9ae2f80f9c24a9276b95b"
+},
+{
+  "id": "t1_ghidra_stripped_symbol_recovery",
+  "tier": 1,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "FID(Function ID) 데이터베이스 기반 스트립트 심볼 복원",
+    "en": "Function ID (FID) Database Stripped Symbol Recovery"
+  },
+  "prompt": {
+    "ko": "Ghidra FID(Function ID) 데이터베이스 및 패턴 해시를 사용하여 libc/CRT 정적 링크 심볼을 자동 복원합니다.\n지정된 식별자 `ghidra_stripped_symbol_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_stripped_symbol_recovery_v1\") 앞 20자리}`",
+    "en": "Utilize Ghidra Function ID (FID) databases to match and label statically-linked libc/CRT library symbols.\nCompute the first 20 hex characters of SHA256(\"ghidra_stripped_symbol_recovery_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_stripped_symbol_recovery_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "FidService를 활성화하여 표준 라이브러리 함수 시그니처를 복원하세요.",
+      "식별자 `ghidra_stripped_symbol_recovery_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Enable FidService for standard library symbol mapping.",
+      "Submit first 20 hex of SHA256(\"ghidra_stripped_symbol_recovery_v1\")."
+    ]
+  },
+  "hash": "b9fb5f968331362b2f8d8d19d465827d1530b6f6711b47c79872ffbfddecf3be"
+},
+{
+  "id": "t1_ghidra_opaque_predicate_math",
+  "tier": 1,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "수학적 불투명 술어(Opaque Predicate) 탐지",
+    "en": "Mathematical Opaque Predicate Detection"
+  },
+  "prompt": {
+    "ko": "항상 참으로 평가되는 수학적 항등식 `(y * (y + 1)) % 2 == 0` 불투명 술어 패턴을 탐지합니다.\n지정된 식별자 `ghidra_opaque_predicate_math_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_opaque_predicate_math_v1\") 앞 20자리}`",
+    "en": "Detect mathematical opaque predicates such as `(y * (y + 1)) % 2 == 0` invariant to all integer inputs.\nCompute the first 20 hex characters of SHA256(\"ghidra_opaque_predicate_math_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_opaque_predicate_math_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "연속된 두 정수의 곱은 항상 짝수임을 이용한 더미 분기문입니다.",
+      "식별자 `ghidra_opaque_predicate_math_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Opaque predicates inject dead branch complexity.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_opaque_predicate_math_v1\")."
+    ]
+  },
+  "hash": "7217aa5cf8d8ba1e42f66c90d12f689621439278634d2caf8c0646d626d6b960"
+},
+{
+  "id": "t1_ghidra_import_table_iat",
+  "tier": 1,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ELF GOT/PLT 및 PE IAT 임포트 함수 추적",
+    "en": "ELF GOT/PLT & PE IAT Import Resolution"
+  },
+  "prompt": {
+    "ko": "동적 링커가 해결하는 라이브러리 임포트 테이블(GOT/PLT 및 IAT)의 악의적 후킹 및 간접 호출(Call [rip+offset])을 분석합니다.\n지정된 식별자 `ghidra_import_table_iat_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_import_table_iat_v1\") 앞 20자리}`",
+    "en": "Analyze indirect calls (CALL [rip+offset]) targeting the Global Offset Table (GOT) and Import Address Table (IAT).\nCompute the first 20 hex characters of SHA256(\"ghidra_import_table_iat_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_import_table_iat_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "_GLOBAL_OFFSET_TABLE_ 섹션 엔트리와 점프 슬롯을 점검하세요.",
+      "식별자 `ghidra_import_table_iat_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect GOT/PLT trampoline stub entries.",
+      "Submit first 20 hex of SHA256(\"ghidra_import_table_iat_v1\")."
+    ]
+  },
+  "hash": "aa9cb62bb0130de4f49d5851e943a94f209215304588a3f9898bff250a579376"
+},
+{
+  "id": "t2_ghidra_cff_state_variable",
+  "tier": 2,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CFF 상태 변수(State Variable) 레지스터 추적",
+    "en": "CFF State Variable Register Tracing"
+  },
+  "prompt": {
+    "ko": "OLLVM 제어 흐름 평탄화에서 중앙 디스패처로 전달되는 가상 상태 변수(예: EAX / [RBP-0x4])의 쓰기 지점을 추적합니다.\n지정된 식별자 `ghidra_cff_state_variable_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_cff_state_variable_v1\") 앞 20자리}`",
+    "en": "Trace write instructions to the virtual state variable register (e.g. EAX or [RBP-0x4]) governing CFF dispatch.\nCompute the first 20 hex characters of SHA256(\"ghidra_cff_state_variable_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_cff_state_variable_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "각 기본 블록의 마지막에 나타나는 MOV [state], imm32 명령어를 탐색하세요.",
+      "식별자 `ghidra_cff_state_variable_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Locate MOV state_var, imm instructions terminating basic blocks.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_cff_state_variable_v1\")."
+    ]
+  },
+  "hash": "77e68b4212cc977e7a79dfd4c6e8086e2645f6d793d1001442c732b85201f0a1"
+},
+{
+  "id": "t2_ghidra_cff_dispatcher_switch",
+  "tier": 2,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CFF 중앙 디스패처 switch-case 점프 테이블 분석",
+    "en": "CFF Central Dispatcher Switch-Case Jump Table"
+  },
+  "prompt": {
+    "ko": "모든 기본 블록의 반환 흐름이 집결하는 중앙 디스패처 루프 및 switch(state) 점프 테이블 가상 주소를 식별합니다.\n지정된 식별자 `ghidra_cff_dispatcher_switch_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_cff_dispatcher_switch_v1\") 앞 20자리}`",
+    "en": "Identify the central dispatcher switch(state) jump table and loop header collecting all flattened block returns.\nCompute the first 20 hex characters of SHA256(\"ghidra_cff_dispatcher_switch_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_cff_dispatcher_switch_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "디스패처 루프 헤더의 CMP state, max_case 및 JMP [table + state*8] 구조를 확인하세요.",
+      "식별자 `ghidra_cff_dispatcher_switch_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect jump table indexing calculations in dispatcher.",
+      "Submit first 20 hex of SHA256(\"ghidra_cff_dispatcher_switch_v1\")."
+    ]
+  },
+  "hash": "b6f246d585f45c8d46a9dd60ce0b8f481f5f107b9c996dedfa95c6a14a0144a6"
+},
+{
+  "id": "t2_ghidra_cff_state_transitions",
+  "tier": 2,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CFF 상태 전이 시퀀스 [10, 40, 25, 90] 역산",
+    "en": "CFF State Transition Sequence Reconstruction"
+  },
+  "prompt": {
+    "ko": "평탄화된 제어 흐름 디스패처의 상태 전이 순서 `[10 -> 40 -> 25 -> 90]`를 역산하여 선형 실행 경로를 복원합니다.\n지정된 식별자 `ghidra_cff_state_transitions_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_cff_state_transitions_v1\") 앞 20자리}`",
+    "en": "Reconstruct the linear execution state transition chain `[10 -> 40 -> 25 -> 90]` through the central dispatcher.\nCompute the first 20 hex characters of SHA256(\"ghidra_cff_state_transitions_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_cff_state_transitions_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "각 케이스 블록의 끝에서 state 변수에 대입되는 상수를 기록하세요.",
+      "식별자 `ghidra_cff_state_transitions_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Log constant state assignments across all relevant blocks.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_cff_state_transitions_v1\")."
+    ]
+  },
+  "hash": "8a2d749a8dee3430fbcf0e74c00fe1074a8fb324ebc7356c3b89cb5183f02515"
+},
+{
+  "id": "t2_ghidra_pcode_nop_sled",
+  "tier": 2,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 95,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "P-Code 레벨 불투명 술어 조건부 분기 NOP화",
+    "en": "P-Code Level Opaque Predicate CBRANCH to NOP Transformation"
+  },
+  "prompt": {
+    "ko": "Ghidra P-Code 수준에서 불투명 술어에 해당하는 `CBRANCH` 연산자를 무조건 분기(`BRANCH`) 또는 `NOP`로 패치합니다.\n지정된 식별자 `ghidra_pcode_nop_sled_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_pcode_nop_sled_v1\") 앞 20자리}`",
+    "en": "Transform P-Code CBRANCH operations evaluated under opaque predicates into unconditional BRANCH or NOP ops.\nCompute the first 20 hex characters of SHA256(\"ghidra_pcode_nop_sled_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_pcode_nop_sled_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "항상 거짓인 도달 불가능 분기 타깃을 제거하세요.",
+      "식별자 `ghidra_pcode_nop_sled_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Eliminate unreachable branch targets from CFG.",
+      "Submit first 20 hex of SHA256(\"ghidra_pcode_nop_sled_v1\")."
+    ]
+  },
+  "hash": "80618c48c8e73384fd953e01f1a4bcecb8467b45571a2a8bd9b8aff80022c591"
+},
+{
+  "id": "t2_ghidra_binary_patch_nop",
+  "tier": 2,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "바이너리 인라인 조건부 점프 90 90 NOP 패치",
+    "en": "Binary Inline Conditional Jump 90 90 NOP Patching"
+  },
+  "prompt": {
+    "ko": "가상 주소 `0x00401337`의 조건부 점프 바이트 `74 18` (jz +0x18)을 `90 90` (nop; nop)으로 덮어써 인증 실패 분기를 무력화합니다.\n지정된 식별자 `ghidra_binary_patch_nop_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_binary_patch_nop_v1\") 앞 20자리}`",
+    "en": "Overwrite conditional jump bytes `74 18` (jz +0x18) at `0x00401337` with `90 90` (nop nop) to neutralize failure branch.\nCompute the first 20 hex characters of SHA256(\"ghidra_binary_patch_nop_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_binary_patch_nop_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "x86_64 NOP 바이트는 단일 바이트 0x90 입니다.",
+      "식별자 `ghidra_binary_patch_nop_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "x86_64 NOP instruction byte is 0x90.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_binary_patch_nop_v1\")."
+    ]
+  },
+  "hash": "bc20a9c8da92a9da229c883cac5386d041dc564be53f660b78a845c85c7b62ad"
+},
+{
+  "id": "t2_ghidra_binary_patch_jmp",
+  "tier": 2,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 105,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "인라인 점프 eb 18 무조건 분기 강제 패치",
+    "en": "Inline Jump eb 18 Unconditional Branch Forcing"
+  },
+  "prompt": {
+    "ko": "조건부 점프 `74 18` (jz)를 무조건 짧은 점프 `eb 18` (jmp short +0x18)로 치환하여 항상 라이선스 성공 루틴으로 리다이렉트합니다.\n지정된 식별자 `ghidra_binary_patch_jmp_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_binary_patch_jmp_v1\") 앞 20자리}`",
+    "en": "Substitute conditional `74 18` with unconditional short jump `eb 18` to force execution into valid license routines.\nCompute the first 20 hex characters of SHA256(\"ghidra_binary_patch_jmp_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_binary_patch_jmp_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "0xEB 오프셋은 1바이트 상대 점프(jmp rel8)를 의미합니다.",
+      "식별자 `ghidra_binary_patch_jmp_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Opcode 0xEB represents relative short unconditional jump.",
+      "Submit first 20 hex of SHA256(\"ghidra_binary_patch_jmp_v1\")."
+    ]
+  },
+  "hash": "3d51bec9fc0f11a35eb34590a593103ef394351c096f6be446b7134e0923e53f"
+},
+{
+  "id": "t2_ghidra_self_checksum_algorithm",
+  "tier": 2,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "런타임 .text 자체 무결성 체크섬 루틴 식별",
+    "en": "Runtime .text Section Self-Checksum Routine Identification"
+  },
+  "prompt": {
+    "ko": "바이너리 초기화 과정에서 자신의 `.text` 섹션 메모리를 읽어 컴파일 시점 해시와 대조하는 안티 탬퍼 루틴을 식별합니다.\n지정된 식별자 `ghidra_self_checksum_algorithm_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_self_checksum_algorithm_v1\") 앞 20자리}`",
+    "en": "Locate the anti-tamper routine calculating CRC32/SHA-256 hashes over its own loaded `.text` memory section.\nCompute the first 20 hex characters of SHA256(\"ghidra_self_checksum_algorithm_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_self_checksum_algorithm_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "verify_text_section_checksum 함수의 호출 지점과 abort 트리거를 추적하세요.",
+      "식별자 `ghidra_self_checksum_algorithm_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Trace calls to self-checksum verification routines.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_self_checksum_algorithm_v1\")."
+    ]
+  },
+  "hash": "282ba17adaead25c4e66f69953e05f1445cd08acf1468a60d6399d8f2287031b"
+},
+{
+  "id": "t3_ghidra_symbolic_execution_deflat",
+  "tier": 3,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "기호 실행(Symbolic Execution)을 통한 CFF 상태 전이 해결",
+    "en": "Symbolic Execution CFF State Transition Resolution"
+  },
+  "prompt": {
+    "ko": "Triton/Angr 또는 Ghidra 기호 실행 엔진을 결합하여 CFF 디스패처의 복잡한 비트 연산 상태 전이 제약조건(SMT solver)을 해결합니다.\n지정된 식별자 `ghidra_symbolic_execution_deflat_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_symbolic_execution_deflat_v1\") 앞 20자리}`",
+    "en": "Employ symbolic execution (SMT solvers) to resolve arithmetic and bitwise constraints governing CFF state transitions.\nCompute the first 20 hex characters of SHA256(\"ghidra_symbolic_execution_deflat_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_symbolic_execution_deflat_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Z3 SMT 솔버를 활용하여 state 변수의 다음 값을 기호적으로 역산하세요.",
+      "식별자 `ghidra_symbolic_execution_deflat_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Use Z3 SMT solver integration to solve state transitions.",
+      "Submit first 20 hex of SHA256(\"ghidra_symbolic_execution_deflat_v1\")."
+    ]
+  },
+  "hash": "a59cdda8dc3aff29c9562d4321605e87a37b6b86f002d85ee471d073f70262cd"
+},
+{
+  "id": "t3_ghidra_pcode_ast_rewriting",
+  "tier": 3,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Ghidra Low P-Code AST 재작성을 통한 디플래트닝",
+    "en": "Ghidra Low P-Code AST Rewriting for Deflattening"
+  },
+  "prompt": {
+    "ko": "디스패처 블록을 우회하여 선행 기본 블록의 출구를 후속 기본 블록의 입구로 직접 연결하도록 P-Code 점프 대상을 재작성합니다.\n지정된 식별자 `ghidra_pcode_ast_rewriting_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_pcode_ast_rewriting_v1\") 앞 20자리}`",
+    "en": "Rewrite P-Code branch destinations to directly link predecessor blocks to real successors, bypassing dispatcher.\nCompute the first 20 hex characters of SHA256(\"ghidra_pcode_ast_rewriting_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_pcode_ast_rewriting_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "PcodeOp.BRANCH 타깃을 디스패처가 아닌 실제 후속 블록 오프셋으로 수정합니다.",
+      "식별자 `ghidra_pcode_ast_rewriting_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Patch PcodeOp branch targets to restore linear control flow.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_pcode_ast_rewriting_v1\")."
+    ]
+  },
+  "hash": "39d83aad7964b4892f72d30f6911948219e649b188214534491c3c564a511293"
+},
+{
+  "id": "t3_ghidra_bogus_control_flow",
+  "tier": 3,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "가짜 제어 흐름(Bogus Control Flow) 도달 불가 블록 제거",
+    "en": "Bogus Control Flow Unreachable Block Elimination"
+  },
+  "prompt": {
+    "ko": "OLLVM Bogus Control Flow 패스가 삽입한 조건부 불투명 술어로 보호되는 데드 코드 및 가짜 블록을 정적 슬라이싱으로 제거합니다.\n지정된 식별자 `ghidra_bogus_control_flow_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_bogus_control_flow_v1\") 앞 20자리}`",
+    "en": "Prune unreachable dead code blocks and phantom edges injected by OLLVM Bogus Control Flow passes via static slicing.\nCompute the first 20 hex characters of SHA256(\"ghidra_bogus_control_flow_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_bogus_control_flow_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "정적 프로그램 슬라이싱(Static Slicing)으로 실행되지 않는 더미 블록을 필터링하세요.",
+      "식별자 `ghidra_bogus_control_flow_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Filter out phantom blocks via static program slicing.",
+      "Submit first 20 hex of SHA256(\"ghidra_bogus_control_flow_v1\")."
+    ]
+  },
+  "hash": "707fbd94122687ad3a85c50c546f9e130b1c088e19ff8b402c5db0cb19afb775"
+},
+{
+  "id": "t3_ghidra_instruction_substitution",
+  "tier": 3,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "명령어 대체(Instruction Substitution) 패턴 정규화",
+    "en": "Instruction Substitution Pattern Normalization"
+  },
+  "prompt": {
+    "ko": "기본 연산(예: `a + b`)을 복잡한 비트 동치식(`(a ^ b) + 2 * (a & b)`)으로 변환한 난독화 패턴을 원본 명령어로 정규화합니다.\n지정된 식별자 `ghidra_instruction_substitution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_instruction_substitution_v1\") 앞 20자리}`",
+    "en": "Normalize obfuscated Boolean-arithmetic identities (e.g. `(a ^ b) + 2 * (a & b)`) back into standard arithmetic primitives.\nCompute the first 20 hex characters of SHA256(\"ghidra_instruction_substitution_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_instruction_substitution_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "MBA(Mixed Boolean-Arithmetic) 간소화 룰셋을 적용하여 식을 단순화하세요.",
+      "식별자 `ghidra_instruction_substitution_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Apply Mixed Boolean-Arithmetic (MBA) rewriting rules.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_instruction_substitution_v1\")."
+    ]
+  },
+  "hash": "aed6b4508d3aac844340d2ddfd2b128efac2339776cf328f50ac83e965653eee"
+},
+{
+  "id": "t3_ghidra_anti_tamper_bypass",
+  "tier": 3,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "안티 탬퍼 자체 체크섬 무력화 (Return 1 패치)",
+    "en": "Anti-Tamper Checksum Neutralization (Return 1 Patch)"
+  },
+  "prompt": {
+    "ko": "`verify_text_section_checksum` 함수의 에필로그를 `mov eax, 1; ret` (`B8 01 00 00 00 C3`)로 패치하여 무조건 무결성 검증을 통과시킵니다.\n지정된 식별자 `ghidra_anti_tamper_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_anti_tamper_bypass_v1\") 앞 20자리}`",
+    "en": "Patch verify_text_section_checksum function epilogue to `mov eax, 1; ret` (`B8 01 00 00 00 C3`) to bypass tamper detection.\nCompute the first 20 hex characters of SHA256(\"ghidra_anti_tamper_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_anti_tamper_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "함수 시작점에 B8 01 00 00 00 C3 바이트를 기록하여 조기 반환(Early Return) 처리하세요.",
+      "식별자 `ghidra_anti_tamper_bypass_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inject early return returning 1 in integrity checker.",
+      "Submit first 20 hex of SHA256(\"ghidra_anti_tamper_bypass_v1\")."
+    ]
+  },
+  "hash": "044c5792cd2c1739c12da7d58f3bfb1dcf4b6fbac4856d55fd13ae8fc0eac539"
+},
+{
+  "id": "t3_ghidra_shadow_memory_redirection",
+  "tier": 3,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 220,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "섀도우 메모리(Shadow Memory) 리다이렉션을 통한 체크섬 기만",
+    "en": "Shadow Memory Redirection Tamper Deception"
+  },
+  "prompt": {
+    "ko": "체크섬 검증 루틴이 패치된 실제 실행 메모리가 아닌, 원본 바이너리 바이트가 복사된 섀도우 메모리 버퍼를 읽도록 포인터를 리다이렉트합니다.\n지정된 식별자 `ghidra_shadow_memory_redirection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_shadow_memory_redirection_v1\") 앞 20자리}`",
+    "en": "Redirect integrity verification pointers to read pristine original bytes from shadow memory buffers rather than patched memory.\nCompute the first 20 hex characters of SHA256(\"ghidra_shadow_memory_redirection_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_shadow_memory_redirection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "포인터 훅을 통해 패치된 바이트 은닉 및 체크섬 연산 기만을 달성하세요.",
+      "식별자 `ghidra_shadow_memory_redirection_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Deceive memory checksum checks via pointer redirection.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_shadow_memory_redirection_v1\")."
+    ]
+  },
+  "hash": "52523447f41b564b6838b43335a2dc6a2ce8d0c06d68e0fae975ceb06ef076d5"
+},
+{
+  "id": "t3_ghidra_vm_interpreter_handler",
+  "tier": 3,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 240,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "가상 머신 기반 난독화(VM Obfuscation) 핸들러 식별",
+    "en": "Virtual Machine Obfuscation Bytecode Handler Identification"
+  },
+  "prompt": {
+    "ko": "커스텀 바이트코드 가상 머신 인터프리터의 가상 프로그램 카운터(VPC), 가상 레지스터(VRegs) 및 핸들러 디스패치 루프를 분석합니다.\n지정된 식별자 `ghidra_vm_interpreter_handler_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_vm_interpreter_handler_v1\") 앞 20자리}`",
+    "en": "Analyze custom bytecode VM interpreters: identify virtual PC (VPC), virtual registers, and opcode dispatch tables.\nCompute the first 20 hex characters of SHA256(\"ghidra_vm_interpreter_handler_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_vm_interpreter_handler_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "가상 옵코드 핸들러 테이블의 간접 호출 패턴(call [handlers + opcode*8])을 역공학하세요.",
+      "식별자 `ghidra_vm_interpreter_handler_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Reverse engineer bytecode handler jump arrays.",
+      "Submit first 20 hex of SHA256(\"ghidra_vm_interpreter_handler_v1\")."
+    ]
+  },
+  "hash": "613a9cce5bff38a8e8204b8331646e4d7dee1c520e41d09809eb58e964f981b0"
+},
+{
+  "id": "t4_ghidra_automated_deflat_plugin",
+  "tier": 4,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Ghidra 전용 CFF 디플래트닝 자동화 플러그인 파이프라인",
+    "en": "Automated Ghidra CFF Deflattening Extension Pipeline"
+  },
+  "prompt": {
+    "ko": "디스패처 탐지, 기본 블록 기호 추적, P-Code 패칭 및 신규 CFG 재구성을 원클릭으로 수행하는 Ghidra 확장 플러그인을 구축합니다.\n지정된 식별자 `ghidra_automated_deflat_plugin_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_automated_deflat_plugin_v1\") 앞 20자리}`",
+    "en": "Build an end-to-end Ghidra Java/Python extension automating dispatcher detection, block tracing, and CFG reconstruction.\nCompute the first 20 hex characters of SHA256(\"ghidra_automated_deflat_plugin_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_automated_deflat_plugin_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Ghidra Plugin 및 ProgramCorrelator 인터페이스를 활용하세요.",
+      "식별자 `ghidra_automated_deflat_plugin_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Implement automated Ghidra ProgramCorrelator pipelines.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_automated_deflat_plugin_v1\")."
+    ]
+  },
+  "hash": "9b8c6f30289c8f367431dd79c365c859f0e9f0885988c95aaee99f9bccca6e0f"
+},
+{
+  "id": "t4_ghidra_control_flow_integrity_cfi",
+  "tier": 4,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 380,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Control Flow Integrity (CFI) 및 Intel CET 간접 분기 방어",
+    "en": "Control Flow Integrity (CFI) & Intel CET Branch Defense"
+  },
+  "prompt": {
+    "ko": "Clang Forward-Edge CFI 및 Intel CET IBT(Indirect Branch Tracking - `ENDBR64` 검증) 하드웨어 방어 메커니즘을 분석합니다.\n지정된 식별자 `ghidra_control_flow_integrity_cfi_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_control_flow_integrity_cfi_v1\") 앞 20자리}`",
+    "en": "Inspect Clang Forward-Edge CFI and Intel CET Indirect Branch Tracking (IBT) enforcing ENDBR64 at indirect call targets.\nCompute the first 20 hex characters of SHA256(\"ghidra_control_flow_integrity_cfi_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_control_flow_integrity_cfi_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ENDBR64 누락 시 발생하는 #CP(Control Protection) 예외를 학습하세요.",
+      "식별자 `ghidra_control_flow_integrity_cfi_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Examine Control Protection exceptions triggered by invalid targets.",
+      "Submit first 20 hex of SHA256(\"ghidra_control_flow_integrity_cfi_v1\")."
+    ]
+  },
+  "hash": "fdc3a59900b167864913141c638599bd80ca4b9d55c804926d0491112c490984"
+},
+{
+  "id": "t4_ghidra_authenticode_signature_bypass",
+  "tier": 4,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 400,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "디지털 코드 서명(Authenticode / IMA) 무결성 검증 방어 우회",
+    "en": "Digital Code Signing (Authenticode / IMA) Integrity Defense Bypass"
+  },
+  "prompt": {
+    "ko": "바이너리 바이트 패치 시 발생하는 PKCS#7 디지털 서명 검증 실패를 극복하기 위한 커널 로더 서명 검증 패치 기법을 분석합니다.\n지정된 식별자 `ghidra_authenticode_signature_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_authenticode_signature_bypass_v1\") 앞 20자리}`",
+    "en": "Analyze kernel-level digital signature validation bypass techniques defeating Authenticode and Linux IMA checks.\nCompute the first 20 hex characters of SHA256(\"ghidra_authenticode_signature_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_authenticode_signature_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "WIN_CERTIFICATE 구조체 및 ci.dll / g_CiOptions 메모리 플래그를 학습하세요.",
+      "식별자 `ghidra_authenticode_signature_bypass_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Understand WIN_CERTIFICATE headers and CI validation flags.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_authenticode_signature_bypass_v1\")."
+    ]
+  },
+  "hash": "b925afa18c87aadfdf58b15d035228805efeb0c3d9b256592dd39a81eb7d3b87"
+},
+{
+  "id": "t4_ghidra_vmprotect_devirtualization",
+  "tier": 4,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 420,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "VMProtect 가상 바이트코드 트레이싱 및 디버추얼라이제이션",
+    "en": "VMProtect Bytecode Tracing & Devirtualization"
+  },
+  "prompt": {
+    "ko": "가상 머신 기반 프로텍터(VMProtect)의 난독화된 PUSH/POP 기반 바이트코드 실행 트레이스를 네이티브 x86_64 코드로 복원합니다.\n지정된 식별자 `ghidra_vmprotect_devirtualization_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_vmprotect_devirtualization_v1\") 앞 20자리}`",
+    "en": "Reconstruct native x86_64 code from virtualized stack-based bytecode execution traces produced by VMProtect.\nCompute the first 20 hex characters of SHA256(\"ghidra_vmprotect_devirtualization_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_vmprotect_devirtualization_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "가상 스택(VStack)과 네이티브 스택 간의 데이터 흐름 동치성을 역산하세요.",
+      "식별자 `ghidra_vmprotect_devirtualization_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Map virtual stack manipulations into native registers.",
+      "Submit first 20 hex of SHA256(\"ghidra_vmprotect_devirtualization_v1\")."
+    ]
+  },
+  "hash": "4eb4a98f4f074b0fa942e334c5cac579c6e1083e1ee39e6f338508d930d47641"
+},
+{
+  "id": "t4_ghidra_firmware_blob_headless_triage",
+  "tier": 4,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 450,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "임베디드 펌웨어 플래시 덤프 자동 파싱 및 암호키 역공학",
+    "en": "Embedded Firmware Flash Dump Automated Parsing & Key Recovery"
+  },
+  "prompt": {
+    "ko": "Ghidra Headless를 활용하여 비정형 임베디드 펌웨어 바이너리 블롭에서 부트로더, 커널 심볼, 하드코딩 AES 키를 자동 적출합니다.\n지정된 식별자 `ghidra_firmware_blob_headless_triage_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_firmware_blob_headless_triage_v1\") 앞 20자리}`",
+    "en": "Automate raw firmware blob triage, base address calculation, and cryptographic key extraction via Ghidra Headless.\nCompute the first 20 hex characters of SHA256(\"ghidra_firmware_blob_headless_triage_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_firmware_blob_headless_triage_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "메모리 맵 베이스 주소(Base Address) 역산 및 벡터 테이블을 정렬하세요.",
+      "식별자 `ghidra_firmware_blob_headless_triage_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Calculate firmware loading base address and IVT vectors.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_firmware_blob_headless_triage_v1\")."
+    ]
+  },
+  "hash": "b8aaa1e9ef7dc70be26cea93a1f90f90f08917f5125706383048ec6c767868d2"
+},
+{
+  "id": "t4_ghidra_secure_boot_remote_attestation",
+  "tier": 4,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 480,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Secure Boot TPM 2.0 PCR 무결성 측정 및 원격 증명",
+    "en": "Secure Boot TPM 2.0 PCR Integrity Measurement & Remote Attestation"
+  },
+  "prompt": {
+    "ko": "하드웨어 신뢰점(Root of Trust) 기반 Secure Boot 체인과 TPM PCR 0/2/4 해시 로그 기반 원격 증명 아키텍처를 분석합니다.\n지정된 식별자 `ghidra_secure_boot_remote_attestation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_secure_boot_remote_attestation_v1\") 앞 20자리}`",
+    "en": "Analyze hardware Root-of-Trust Secure Boot chains and TPM PCR 0/2/4 measurement logs for remote attestation.\nCompute the first 20 hex characters of SHA256(\"ghidra_secure_boot_remote_attestation_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_secure_boot_remote_attestation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "UEFI Authenticated Variables 및 TCG 이벤트 로그를 검증하세요.",
+      "식별자 `ghidra_secure_boot_remote_attestation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Verify TCG event logs and TPM quote signatures.",
+      "Submit first 20 hex of SHA256(\"ghidra_secure_boot_remote_attestation_v1\")."
+    ]
+  },
+  "hash": "2efbfbb99e5e552ab5552cc9ceda0afe7a85beea447f10e341867c07409224b0"
+},
+{
+  "id": "t4_ghidra_capstone_deobfuscation_audit",
+  "tier": 4,
+  "cat": "ghidra",
+  "track": "ghidra",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 바이너리 프로텍션 역공학 및 종합 보안 감사 캡스톤",
+    "en": "Enterprise Binary Protection Reversing & Capstone Security Audit"
+  },
+  "prompt": {
+    "ko": "심볼 스트립, CFF 디스패처, 불투명 술어, 안티 디버깅, 자체 체크섬이 복합 적용된 엔터프라이즈 바이너리를 완전 디오브젝션하는 종합 캡스톤입니다.\n지정된 식별자 `ghidra_capstone_deobfuscation_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"ghidra_capstone_deobfuscation_audit_v1\") 앞 20자리}`",
+    "en": "Comprehensive capstone deobfuscating enterprise protected binaries combining stripped symbols, CFF, opaque predicates, and self-checks.\nCompute the first 20 hex characters of SHA256(\"ghidra_capstone_deobfuscation_audit_v1\").\n\nFormat: `FLAG{SHA256(\"ghidra_capstone_deobfuscation_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Headless 분석 -> CFF 디플래트닝 -> 체크섬 우회 -> 클린 바이너리 패칭의 전 과정을 종합하세요.",
+      "식별자 `ghidra_capstone_deobfuscation_audit_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Synthesize headless analysis, deflattening, and integrity patch.",
+      "Extract first 20 hex chars of SHA256(\"ghidra_capstone_deobfuscation_audit_v1\")."
+    ]
+  },
+  "hash": "6adef36e9f510953ba256be08501a86c9a5a2b73e3b58402df3229c5ec8c7140"
 }
 ];
 

@@ -382,6 +382,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [11, 48, 54],
     },
+    "30": {
+        "name": "바이너리 분석 & 고급 난독화 해제 랩",
+        "dir":  "30_ghidra_deobfuscation_lab",
+        "desc": "GhidraRev: Ghidra Headless 심볼 복원 · Control Flow Flattening(CFF) 상태 머신 디스패처 해체 · 안티 탬퍼 체크섬 우회 및 인라인 바이너리 패칭",
+        "url":  "웹 콘솔 & 리버싱 워크벤치: http://localhost:8030",
+        "difficulty": "★★★★",
+        "related": [4, 19, 65],
+    },
 }
 
 
@@ -1385,6 +1393,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8027, "Lab 27 (WiFiShield WPA3 & PMKID Lab)"),
         (8028, "Lab 28 (NetShield Cisco & L2 Security Lab)"),
         (8029, "Lab 29 (CertPwn AD CS & Kerberos Delegation Lab)"),
+        (8030, "Lab 30 (GhidraRev Binary Analysis & Deobfuscation Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

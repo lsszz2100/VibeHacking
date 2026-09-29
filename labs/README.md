@@ -59,6 +59,7 @@ docker-compose --version
 | 27 | [무선 네트워크 & WPA3 보안 실전 랩](./27_wifi_wpa3_security_lab/) | WPA2/WPA3 PMKID 오프라인 사전 크래킹, SAE Dragonfly 부채널 및 다운그레이드, Evil Twin & 802.11w PMF 방어 | ★★★★ | [15장 WiFi 해킹](../15_WiFi_Hacking/07_practical_wpa3_sae_and_pmkid_deepdive.md) | `wifisec` |
 | 28 | [네트워크 인프라 & Cisco 스위치 보안 실전 랩](./28_cisco_network_device_lab/) | Cisco IOS SNMPv2c R/W running-config 덤프 및 Type 7 크래킹, DTP Trunk Spoofing & STP Root Bridge 탈취, Enterprise L2 하드닝 | ★★★★ | [32장 네트워크 장비 해킹](../32_Network_Device_Hacking/07_cisco_ios_and_enterprise_l2_infrastructure_attack_deepdive.md) | `netinfra` |
 | 29 | [AD CS 인증서 침투 & Kerberos 위임 실전 랩](./29_adcs_kerberos_delegation_lab/) | AD CS ESC1 SAN 주입, PKINIT Pass-the-Certificate & UnPAC-the-Hash, Kerberos 위임(S4U/RBCD) 및 하드닝 | ★★★★ | [54장 Active Directory](../54_Active_Directory_Attacks/07_adcs_esc_and_kerberos_delegation_deepdive.md) | `adcs` / `activedirectory` |
+| 30 | [바이너리 분석 & 고급 난독화 해제 랩](./30_ghidra_deobfuscation_lab/) | Ghidra Headless 심볼 복원, CFF 상태 머신 디플래트닝, 불투명 술어 제거, 안티 탬퍼 우회 & 패칭 | ★★★★ | [04장 리버스 엔지니어링](../04_Reverse_Engineering/07_ghidra_advanced_deobfuscation_deepdive.md) | `ghidra` / `reversing` |
 
 ---
 

@@ -86,6 +86,9 @@ LAB_DIRS=(
     "25_ai_redteam_lab"
     "26_malware_sandbox_lab"
     "27_wifi_wpa3_security_lab"
+    "28_cisco_network_device_lab"
+    "29_adcs_kerberos_delegation_lab"
+    "30_ghidra_deobfuscation_lab"
 )
 
 LAB_NAMES=(
@@ -116,6 +119,9 @@ LAB_NAMES=(
     "AI 레드팀 & 탈옥 평가 랩"
     "악성코드 자동 분석 & 동적 샌드박스 랩"
     "무선 네트워크 & WPA3 보안 실전 랩"
+    "네트워크 인프라 & L2 스위치 보안 실전 랩"
+    "AD CS 인증서 침투 & Kerberos 위임 실전 랩"
+    "바이너리 분석 & 고급 난독화 해제 랩"
 )
 
 

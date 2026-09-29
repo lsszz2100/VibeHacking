@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ghidra_lab:
+    build: .
+    container_name: lab30_ghidra_rev
+    ports:
+      - "127.0.0.1:8030:8030"
+    environment:
+      - ENV=production
+    restart: unless-stopped
