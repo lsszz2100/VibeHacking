@@ -7,7 +7,7 @@
 ## 1. 프로젝트 개요 및 현재 상태 (Current Status)
 
 - **교재 챕터**: 01~75개 종합 보안 챕터 완비 (다국어 지원: KO, EN, JA, ZH)
-  - **11대 심층 인제스천 챕터 완비**:
+  - **12대 심층 인제스천 챕터 완비**:
     1. `02_Network_Hacking/07_practical_packet_analysis_deepdive.md` (Wireshark 심층 해부, 패킷 분석, DNS 터널링, TLS 복호화)
     2. `06_Malware_Analysis/08_advanced_pdf_maldoc_structure_analysis_deepdive.md` (PDF 바이너리 객체, OLE/CFBF 매크로, CVE-2017-11882, CVE-2021-40444, 힙 스프레이)
     3. `06_Malware_Analysis/09_python_malware_analysis_automation_deepdive.md` (파이썬 오픈소스 기반 정적/동적 악성코드 분석 자동화, pefile/peframe, Shannon 엔트로피 패킹 판별, YARA 시그니처 룰셋, Cuckoo 가상 샌드박스 API 후킹 및 안티 분석 회피 무력화)
@@ -148,12 +148,25 @@ node wargame/scripts/solve-derivable.js
 
 ---
 
-## 4. 보안 및 Git 운영 지침 (Security & Operational Rules)
+## 4. 작업 윤리 및 필수 검증 철칙 (Integrity, Mandatory Verification & Operational Rules)
 
-1. **민감 인증정보 보호**: Git 작업 시 토큰, 패스워드, SSH 개인키를 명령어 인자나 커밋 메시지, 코드에 절대 포함하지 마십시오. (`~/.netrc` 또는 git credential helper 사용)
-2. **양방향 링크 무결성**: 교재 챕터(`06_*_lab.md`), `labs/README.md`, 각 랩의 `README.md` 간의 상대 링크와 워게임 트랙 표기가 항상 동기화되도록 유지하십시오.
-3. **독립 테스트 환경 격리**: 실습 랩 테스트 작성 시 FastAPI 및 패키지 임포트 스코프 충돌을 방지하기 위해 dynamic import isolation 패턴을 준수하십시오.
-4. **로컬 서비스 보안 바인딩**: 개발/관리 웹 서버(`portal`, `ctf`)는 RCE 위험을 차단하기 위해 기본적으로 루프백 인터페이스(`127.0.0.1`)에 바인딩하며, 웹 셸 실행 시 경로 이탈(Path Traversal) 검증 및 파괴적 시스템 명령어 방어 필터를 필수로 적용합니다.
+1. **허위 보고 절대 금지 (Zero Tolerance for False / Fabricated Reporting)**:
+   - 실제로 수행하지 않은 작업, 실행하지 않은 명령어나 테스트 결과를 "완료했다"고 허위 보고하거나 추측으로 결과를 보고하는 행위를 엄격히 금지합니다.
+   - 모든 보고는 반드시 실제 실행 결과(CLI 출력, exit code, 로그)를 기반으로만 작성되어야 합니다.
+2. **실검증(Actual Execution) 필수**:
+   - 코드, 설정, 문서, 테스트 작성 및 수정 후에는 반드시 해당 명령어(`pytest`, `node verify.js`, `node audit.js --strict`, `node leakscan.js`, `vhack` CLI 등)를 직접 실행하여 정상 동작 여부와 에러 유무를 확인해야 합니다. "통과될 것이다"라는 추측성 보고는 금지됩니다.
+3. **교차 검증(Cross-Verification) 필수**:
+   - 상호 연관된 모듈 간의 무결성을 반드시 교차 검증해야 합니다. (교재 챕터 ↔ 실습 랩 README ↔ `labs/solvers.py` ↔ `ctf/server.py` ↔ `portal/server.py` ↔ `wargame/assets/challenges.js` ↔ `vhack.py` 간의 메타데이터, 포트 번호, 플래그, 상대 링크 불일치 전수 확인)
+4. **보안 검증(Security Verification) 필수**:
+   - 로컬 웹 서비스 루프백(`127.0.0.1`) 바인딩, 웹 셸 실행 시 Path Traversal 및 위험 명령어 차단 필터, API 파라미터 경계값 검증, Git 토큰 및 API 키/비밀번호 노출 원천 차단(`chmod 600` 관리) 등 시큐어 코딩 및 보안 원칙을 사전에 필수로 검증해야 합니다.
+5. **기능 테스트 & 버그 테스트 필수 (Functional & Edge-Case Bug Testing)**:
+   - 정상 케이스뿐만 아니라 비정상 입력값, 경계값(Boundary conditions), 예외 처리, 동시성/포트 충돌 등 잠재적 버그를 검증하는 테스트 케이스를 필수로 작성하고 실행해야 합니다.
+6. **지속적인 리팩토링(Continuous Refactoring) 필수**:
+   - 기능 구현 완료에 그치지 않고, 코드 중복 제거, 모듈화, 네이밍 개선, 성능 최적화, 불필요한 레거시 정리 등 코드 품질 개선을 항상 수반해야 합니다.
+7. **민감 인증정보 보호**: Git 작업 시 토큰, 패스워드, SSH 개인키를 명령어 인자나 커밋 메시지, 코드에 절대 포함하지 마십시오. (`~/.netrc` 또는 git credential helper 사용)
+8. **양방향 링크 무결성**: 교재 챕터(`06_*_lab.md`), `labs/README.md`, 각 랩의 `README.md` 간의 상대 링크와 워게임 트랙 표기가 항상 동기화되도록 유지하십시오.
+9. **독립 테스트 환경 격리**: 실습 랩 테스트 작성 시 FastAPI 및 패키지 임포트 스코프 충돌을 방지하기 위해 dynamic import isolation 패턴을 준수하십시오.
+10. **로컬 서비스 보안 바인딩**: 개발/관리 웹 서버(`portal`, `ctf`)는 RCE 위험을 차단하기 위해 기본적으로 루프백 인터페이스(`127.0.0.1`)에 바인딩하며, 웹 셸 실행 시 경로 이탈(Path Traversal) 검증 및 파괴적 시스템 명령어 방어 필터를 필수로 적용합니다.
 
 ---
 
