@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  oauth-sso-lab:
+    build: .
+    container_name: vibehacking-lab31-oauth
+    ports:
+      - "127.0.0.1:8031:8031"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENV=production
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8031/api/oauth/info"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

@@ -641,6 +641,38 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "⚡ Binary Patched & Self-Integrity Bypassed! Enterprise license granted -> FLAG{binary_patch_integrity_hash_bypassed_9942}"
             }
         ]
+    },
+    "31": {
+        "title": "OAuth 2.0 / OIDC & Modern SSO 계정 탈취 실습 랩 (SSOShield)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Redirect URI 정규식 우회 및 Authorization Code 가로채기",
+                "target": "POST /api/oauth/exploit/redirect-bypass (client_id: corp-internal-crm, redirect_uri: https://attacker-corp-app.com/callback)",
+                "poc_explanation": "IdP의 느슨한 redirect_uri 검증 정규식(^https?://.*corp-app\\.com.*)을 우회하여 공격자 수신 서버로 피해자 인가 코드를 유출합니다.",
+                "exploit_payload": '{"client_id": "corp-internal-crm", "redirect_uri": "https://attacker-corp-app.com/callback", "target_user": "admin"}',
+                "defense": "정규식 패턴 및 와일드카드를 일체 배격하고, 사전 등록된 완전 일치(Exact Match) Redirect URI만을 허용합니다.",
+                "sample_output": "🔍 Authorization Code Intercepted via Regex Bypass! -> FLAG{OAUTH_REDIRECT_URI_LEAK_7712}"
+            },
+            {
+                "step": 2,
+                "name": "PKCE 다운그레이드 및 Code Verifier 검증 생략 토큰 교환",
+                "target": "POST /api/oauth/exploit/pkce-downgrade (auth_code, client_id, omit_verifier: true)",
+                "poc_explanation": "IdP의 PKCE 강제 검증 누락을 악용하여, 원본 code_verifier 없이 가로챈 인가 코드를 정상 토큰으로 교환합니다.",
+                "exploit_payload": '{"auth_code": "leaked_code_xxx", "client_id": "corp-internal-crm", "omit_verifier": true}',
+                "defense": "모든 클라이언트에 대해 RFC 7636 S256 PKCE 검증을 필수로 강제하고 code_verifier 누락 시 요청을 거절합니다.",
+                "sample_output": "🔓 PKCE Downgrade Success! Access Token & ID Token issued -> FLAG{OAUTH_PKCE_DOWNGRADE_CSRF_8823}"
+            },
+            {
+                "step": 3,
+                "name": "OIDC ID Token JWT Key Confusion & kid 인젝션 관리자 계정 탈취",
+                "target": "POST /api/oauth/exploit/jwt-key-confusion (target_user: admin, forged_role: enterprise_admin, kid: attacker-key)",
+                "poc_explanation": "JWT 헤더의 kid 및 대칭키(HS256) 알고리즘 혼동을 유발하여 위조된 관리자 ID Token으로 최고 권한 세션을 획득합니다.",
+                "exploit_payload": '{"target_user": "admin", "kid_header": "attacker-injected-key-1337", "signature_algorithm": "HS256", "forged_role": "enterprise_admin"}',
+                "defense": "신뢰할 수 있는 IdP의 Asymmetric RS256 공개키만을 JWKS에 고정 바인딩(Pinning)하고 알고리즘 전환을 원천 차단합니다.",
+                "sample_output": "👑 Enterprise Admin Account Takeover Achieved via JWT Key Confusion! -> FLAG{OAUTH_IDTOKEN_KEY_CONFUSION_9934}"
+            }
+        ]
     }
 }
 

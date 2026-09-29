@@ -390,6 +390,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [4, 19, 65],
     },
+    "31": {
+        "name": "OAuth 2.0 & OIDC 실전 랩",
+        "dir":  "31_oauth_sso_lab",
+        "desc": "SSOShield: Loose Regex Redirect URI 우회 · PKCE 다운그레이드 · OIDC ID Token JWT Key Confusion 및 'kid' 인젝션 관리자 탈취",
+        "url":  "웹 콘솔 & SSO 워크벤치: http://localhost:8031",
+        "difficulty": "★★★★",
+        "related": [5, 18, 52],
+    },
 }
 
 
@@ -1394,6 +1402,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8028, "Lab 28 (NetShield Cisco & L2 Security Lab)"),
         (8029, "Lab 29 (CertPwn AD CS & Kerberos Delegation Lab)"),
         (8030, "Lab 30 (GhidraRev Binary Analysis & Deobfuscation Lab)"),
+        (8031, "Lab 31 (SSOShield OAuth 2.0 & OIDC SSO Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

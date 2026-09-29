@@ -326,6 +326,17 @@ const ALLOWLIST = new Map([
   ['t4_ghidra_control_flow_integrity_cfi -> t4_pwncfi', 'CFI discussion references CFI standards'],
   ['t4_ghidra_control_flow_integrity_cfi -> t4_pwncet', 'Intel CET analysis discusses CET instructions'],
   ['t4_ghidra_secure_boot_remote_attestation -> t3_firmwaresecureboot', 'Secure boot attestation references Secure Boot'],
+  // OAuth 2.0 & OIDC SSO Exploitation domain terms
+  ['t0_oauth_pkce_rfc7636 -> t1_scspa', 'PKCE for public clients discusses SPA architecture'],
+  ['t1_oauth_redirect_path_traversal -> t4_maldoccabtraversal', 'Redirect URI path traversal discusses directory traversal'],
+  ['t1_oauth_scope_escalation -> t3_privesc', 'OAuth scope escalation discusses privilege escalation'],
+  ['t2_oauth_key_confusion_rs256_hs256 -> t2_rsa', 'Key confusion attack discusses RS256 RSA public key'],
+  ['t3_oauth_ssrf_token_endpoint -> t3_imds', 'Token endpoint SSRF discusses IMDS metadata access'],
+  ['t3_oauth_ssrf_token_endpoint -> t3_pivoting', 'Token endpoint SSRF discusses internal network pivoting'],
+  ['t3_oauth_dpop_proof_tampering -> t4_oauth', 'DPoP proof tampering discusses OAuth authorization framework'],
+  ['t3_oauth_saml_oauth_bridge_flaw -> t1_ztsaml', 'SAML-OAuth bridge flaw discusses SAML federation'],
+  ['t4_oauth_zero_trust_sso_hardening -> t3_ztcaep', 'Zero Trust SSO hardening discusses CAEP continuous evaluation'],
+  ['t4_oauth_capstone_sso_exploitation_audit -> t4_oauth', 'Capstone SSO audit analyzes OAuth security architecture'],
 ]);
 
 function loadChallenges() {

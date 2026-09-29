@@ -10,6 +10,7 @@
 | [04_waf_bypass_advanced_web.md](./04_waf_bypass_advanced_web.md) | **WAF 우회 & 고급 웹 공격 기법** — WAF(Web Application Firewall)는 웹 애플리케이션 앞단에서 악성 HTTP 요청을 탐지하고 차단하는 보안 장치입니다. SQL Injection, XSS 등의 공격 ... |
 | [05_web_security_tools_and_automation.md](./05_web_security_tools_and_automation.md) | **웹 보안 도구와 자동화** — 브라우저 HTTP 프록시: 127.0.0.1:8080 |
 | [06_web_ctf_practical_lab.md](./06_web_ctf_practical_lab.md) | **웹 해킹 CTF 실습 랩 — SQL 인젝션·XSS·SSRF·SSTI 종합** — docker pull vulnerables/web-dvwa |
+| [07_advanced_oauth2_oidc_and_sso_exploitation_deepdive.md](./07_advanced_oauth2_oidc_and_sso_exploitation_deepdive.md) | **OAuth 2.0 & OIDC 심층 해부: 엔터프라이즈 SSO 취약점과 계정 탈취 공격 기법** — 현대 클라우드 및 엔터프라이즈 환경에서 OAuth 2.0(RFC 6749)과 OpenID Connect(OIDC Core 1.0)는 사실상 표준(De Facto Standard) 싱글... |
 
 ## 학습 목표
 - OWASP Top 10 취약점 이론 및 실습

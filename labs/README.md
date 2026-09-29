@@ -60,6 +60,7 @@ docker-compose --version
 | 28 | [네트워크 인프라 & Cisco 스위치 보안 실전 랩](./28_cisco_network_device_lab/) | Cisco IOS SNMPv2c R/W running-config 덤프 및 Type 7 크래킹, DTP Trunk Spoofing & STP Root Bridge 탈취, Enterprise L2 하드닝 | ★★★★ | [32장 네트워크 장비 해킹](../32_Network_Device_Hacking/07_cisco_ios_and_enterprise_l2_infrastructure_attack_deepdive.md) | `netinfra` |
 | 29 | [AD CS 인증서 침투 & Kerberos 위임 실전 랩](./29_adcs_kerberos_delegation_lab/) | AD CS ESC1 SAN 주입, PKINIT Pass-the-Certificate & UnPAC-the-Hash, Kerberos 위임(S4U/RBCD) 및 하드닝 | ★★★★ | [54장 Active Directory](../54_Active_Directory_Attacks/07_adcs_esc_and_kerberos_delegation_deepdive.md) | `adcs` / `activedirectory` |
 | 30 | [바이너리 분석 & 고급 난독화 해제 랩](./30_ghidra_deobfuscation_lab/) | Ghidra Headless 심볼 복원, CFF 상태 머신 디플래트닝, 불투명 술어 제거, 안티 탬퍼 우회 & 패칭 | ★★★★ | [04장 리버스 엔지니어링](../04_Reverse_Engineering/07_ghidra_advanced_deobfuscation_deepdive.md) | `ghidra` / `reversing` |
+| 31 | [OAuth 2.0 & OIDC SSO 취약점 실전 랩](./31_oauth_sso_lab/) | OAuth 2.0 Redirect URI 우회, PKCE S256 다운그레이드/생략, JWT RS256/HS256 Key Confusion 및 SSO 계정 탈취 | ★★★★ | [05장 웹 해킹](../05_Web_Hacking/07_advanced_oauth2_oidc_and_sso_exploitation_deepdive.md) | `oauth` / `web` |
 
 ---
 
@@ -340,6 +341,24 @@ docker-compose --version
 - **교재 챕터 연계**: [54장 Active Directory 공격 심층 딥다이브](../54_Active_Directory_Attacks/07_adcs_esc_and_kerberos_delegation_deepdive.md)
 - **워게임 트랙**: `adcs` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 29` (웹 콘솔 & AD CS 보안 센터: `http://localhost:8029`)
+
+### 30. 바이너리 분석 & 고급 난독화 해제 랩 (DeobfShield)
+- Ghidra Headless 스크립팅을 통한 심볼 및 레퍼런스 자동 복원
+- CFF(Control Flow Flattening) 상태 머신 디플래트닝 및 디스패처 분기 복원
+- 불투명 술어(Opaque Predicate) 식별 및 NOP 슬레드 패칭
+- Anti-Tamper 및 무결성 검증 루틴 식별 및 안전한 패치 배포
+- **교재 챕터 연계**: [04장 리버스 엔지니어링 심층 딥다이브](../04_Reverse_Engineering/07_ghidra_advanced_deobfuscation_deepdive.md)
+- **워게임 트랙**: `ghidra` / `reversing` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 30` (웹 콘솔 & 리버싱 워크벤치: `http://localhost:8030`)
+
+### 31. OAuth 2.0 & OIDC SSO 취약점 실전 랩 (SSOShield)
+- 정규식 미흡을 악용한 OAuth 2.0 Redirect URI 우회 및 인가 코드(Authorization Code) 도청
+- PKCE S256 다운그레이드 / code_verifier 검증 생략 공격을 통한 인가 코드 주입 및 세션 하이재킹
+- RS256 공개키를 HS256 HMAC 대칭키로 오인시키는 JWT Key Confusion 공격 및 임의 관리자 토큰 위조
+- 엄격한 Redirect URI 완전 일치 검증, PKCE 필수 강제, JWT 알고리즘 화이트리스트 하드닝
+- **교재 챕터 연계**: [05장 웹 해킹 심층 딥다이브](../05_Web_Hacking/07_advanced_oauth2_oidc_and_sso_exploitation_deepdive.md)
+- **워게임 트랙**: `oauth` / `web` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 31` (웹 콘솔 & SSO 취약점 랩: `http://localhost:8031`)
 
 ---
 

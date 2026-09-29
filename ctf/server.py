@@ -600,6 +600,42 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "가상 주소 0x00401337의 조건부 분기(74 18 jz)를 90 90 (nop nop) 또는 eb 18 (jmp)로 패치하고 자체 .text 체크섬을 우회하세요."}
                 ],
             },
+            "LAB31_REDIRECT": {
+                "id": "LAB31_REDIRECT",
+                "title": "SSOShield: Loose Regex Redirect URI Bypass & Auth Code Exfiltration",
+                "category": "web",
+                "initial_points": 500,
+                "flag": "FLAG{OAUTH_REDIRECT_URI_LEAK_7712}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "IdP의 느슨한 redirect_uri 검증 패턴을 우회할 수 있는 하위/상위 도메인을 조작하여 인가 코드를 탈취하세요."}
+                ],
+            },
+            "LAB31_PKCE": {
+                "id": "LAB31_PKCE",
+                "title": "SSOShield: PKCE Downgrade & Code Verifier Omission Token Exchange",
+                "category": "web",
+                "initial_points": 500,
+                "flag": "FLAG{OAUTH_PKCE_DOWNGRADE_CSRF_8823}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "토큰 교환 요청 시 code_verifier를 누락하여 IdP의 PKCE 검증 누락 결함을 악용하세요."}
+                ],
+            },
+            "LAB31_JWT": {
+                "id": "LAB31_JWT",
+                "title": "SSOShield: OIDC ID Token JWT Key Confusion & Admin Takeover",
+                "category": "web",
+                "initial_points": 500,
+                "flag": "FLAG{OAUTH_IDTOKEN_KEY_CONFUSION_9934}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "JWT 헤더의 kid 및 대칭키(HS256) 알고리즘 혼동을 활용하여 enterprise_admin 역할의 위조 ID 토큰을 생성하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []

@@ -404,6 +404,14 @@ const TRACKS = [
     "en": "Ghidra Reverse Engineering & Deobfuscation",
     "desc_ko": "Ghidra Sleigh/P-Code 중간 표현·Headless 자동 분석·Control Flow Flattening(CFF) 상태 머신 해체·불투명 술어 제거·안티 탬퍼 체크섬 우회 및 인라인 패칭.",
     "desc_en": "Ghidra Sleigh/P-Code IR, Headless automated analysis, Control Flow Flattening (CFF) state machine deflattening, opaque predicate removal, self-integrity bypass, and binary patching."
+  },
+  {
+    "id": "oauth",
+    "icon": "🔑",
+    "ko": "OAuth 2.0·OIDC SSO 취약점",
+    "en": "OAuth 2.0 & OIDC SSO Exploitation",
+    "desc_ko": "OAuth 2.0 인가 코드 도청·Redirect URI 정규식 우회·PKCE S256 다운그레이드·JWT RS256/HS256 Key Confusion 및 SSO 계정 탈취.",
+    "desc_en": "OAuth 2.0 authorization code interception, redirect URI regex bypass, PKCE S256 downgrade, JWT RS256/HS256 key confusion, and SSO account takeover."
   }
 ];
 
@@ -15517,7 +15525,7 @@ const CHALLENGES = [
     "points": 90,
     "ci": true,
     "hash": "fa38098b383ea16075a856def30090a539a229ca434a8c3098f5f98f5cfe2677",
-    "fmt": "두 단어 / two words",
+    "fmt": "두 단어 / two words (16글자 / 16 chars)",
     "title": {
       "ko": "늘 참인 거짓 갈림길",
       "en": "A Branch That Never Branches"
@@ -43575,6 +43583,987 @@ const CHALLENGES = [
     ]
   },
   "hash": "6adef36e9f510953ba256be08501a86c9a5a2b73e3b58402df3229c5ec8c7140"
+}
+,
+{
+  "id": "t0_oauth_rfc6749_roles",
+  "tier": 0,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OAuth 2.0 프레임워크 4대 역할 및 인가 위임 모델",
+    "en": "OAuth 2.0 Framework Four Roles & Authorization Delegation Model"
+  },
+  "prompt": {
+    "ko": "OAuth 2.0(RFC 6749)에서 정의하는 4대 기본 역할(Resource Owner, Client, Authorization Server, Resource Server)과 토큰 기반 위임 모델을 분석합니다.\n지정된 식별자 `oauth_rfc6749_roles_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_rfc6749_roles_v1\") 앞 20자리}`",
+    "en": "Analyze the four core roles (Resource Owner, Client, Authorization Server, Resource Server) and token delegation model defined in RFC 6749.\nCompute the first 20 hex characters of SHA256(\"oauth_rfc6749_roles_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_rfc6749_roles_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "RFC 6749 1.1 Roles 명세를 확인하세요.",
+      "식별자 `oauth_rfc6749_roles_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review RFC 6749 1.1 Roles specification.",
+      "Compute first 20 hex characters of SHA256(\"oauth_rfc6749_roles_v1\")."
+    ]
+  },
+  "hash": "e4a7f3fa4ab696448ed079ea495af59e9e701d498ad4173e782e83095bf67522"
+},
+{
+  "id": "t0_oauth_grant_types",
+  "tier": 0,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OAuth 2.0 핵심 Grant Types 인가 흐름 비교",
+    "en": "OAuth 2.0 Core Grant Types Comparison"
+  },
+  "prompt": {
+    "ko": "Authorization Code, Implicit, Resource Owner Password, Client Credentials 4개 기본 인가 방식의 보안 특성을 분석합니다.\n지정된 식별자 `oauth_grant_types_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_grant_types_v1\") 앞 20자리}`",
+    "en": "Compare security properties across the four fundamental OAuth 2.0 grant types.\nCompute the first 20 hex characters of SHA256(\"oauth_grant_types_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_grant_types_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Authorization Code Flow(front-channel -> back-channel) 보안 구조를 학습하세요.",
+      "식별자 `oauth_grant_types_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Learn Authorization Code front-to-back channel architecture.",
+      "Extract first 20 hex chars of SHA256(\"oauth_grant_types_v1\")."
+    ]
+  },
+  "hash": "d830c3a3a255770aac969b273cadcfebae287570ad25401bf31d56d147392ab3"
+},
+{
+  "id": "t0_oidc_core_idtoken",
+  "tier": 0,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OpenID Connect Core 1.0 ID 토큰 구조 및 클레임",
+    "en": "OpenID Connect Core 1.0 ID Token Structure & Claims"
+  },
+  "prompt": {
+    "ko": "OAuth 2.0 기반의 인증 계층인 OIDC Core 1.0의 ID Token(JWT) 구조 및 필수 클레임(iss, sub, aud, exp, iat)을 분석합니다.\n지정된 식별자 `oidc_core_idtoken_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oidc_core_idtoken_v1\") 앞 20자리}`",
+    "en": "Inspect OpenID Connect Core 1.0 identity layer atop OAuth 2.0 and standard ID Token JWT claims.\nCompute the first 20 hex characters of SHA256(\"oidc_core_idtoken_v1\").\n\nFormat: `FLAG{SHA256(\"oidc_core_idtoken_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ID Token의 필수 클레임 규격을 검토하세요.",
+      "식별자 `oidc_core_idtoken_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Examine mandatory ID Token claims in OIDC Core 1.0.",
+      "Submit first 20 hex of SHA256(\"oidc_core_idtoken_v1\")."
+    ]
+  },
+  "hash": "30b1eaf193ea6424da76c01c4026f379f84e5ef080bc92e15849005de417140a"
+},
+{
+  "id": "t0_oauth_redirect_uri_concept",
+  "tier": 0,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Redirect URI 사전 등록 및 유효성 검증 원칙",
+    "en": "Redirect URI Pre-Registration & Validation Principles"
+  },
+  "prompt": {
+    "ko": "Authorization Server가 인가 응답을 전달하는 유일한 신뢰 통로인 redirect_uri의 화이트리스트 검증 원칙을 분석합니다.\n지정된 식별자 `oauth_redirect_uri_concept_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_redirect_uri_concept_v1\") 앞 20자리}`",
+    "en": "Analyze strict whitelist validation requirements for redirect_uri transmitting authorization credentials.\nCompute the first 20 hex characters of SHA256(\"oauth_redirect_uri_concept_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_redirect_uri_concept_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "정규식 부분 일치가 아닌 완전 일치(Exact Match) 검증의 중요성을 확인하세요.",
+      "식별자 `oauth_redirect_uri_concept_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Understand the need for exact string matching over regex.",
+      "Extract first 20 hex chars of SHA256(\"oauth_redirect_uri_concept_v1\")."
+    ]
+  },
+  "hash": "d55bb9ba552926010499e43c3801d95e8e21416492201b5e37cde04f2d6943f9"
+},
+{
+  "id": "t0_oauth_state_parameter",
+  "tier": 0,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OAuth 2.0 State 파라미터와 CSRF 방어 메커니즘",
+    "en": "OAuth 2.0 State Parameter & CSRF Mitigation"
+  },
+  "prompt": {
+    "ko": "클라이언트 세션과 인가 요청을 암호학적으로 바인딩하여 CSRF를 차단하는 state 파라미터 구조를 분석합니다.\n지정된 식별자 `oauth_state_parameter_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_state_parameter_v1\") 앞 20자리}`",
+    "en": "Study the opaque cryptographically random state parameter binding authorization requests to browser sessions.\nCompute the first 20 hex characters of SHA256(\"oauth_state_parameter_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_state_parameter_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "state 파라미터가 누락되면 타인의 계정이 희생자 세션에 바인딩될 수 있습니다.",
+      "식별자 `oauth_state_parameter_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "State prevents cross-site login CSRF.",
+      "Submit first 20 hex of SHA256(\"oauth_state_parameter_v1\")."
+    ]
+  },
+  "hash": "c927fa3e8be4c9e7faca6d494cfb200265ee6d2106ba4c1e2e6bd519eb01b288"
+},
+{
+  "id": "t0_oauth_pkce_rfc7636",
+  "tier": 0,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PKCE (RFC 7636) 인가 코드 탈취 방어 아키텍처",
+    "en": "PKCE (RFC 7636) Authorization Code Defense Architecture"
+  },
+  "prompt": {
+    "ko": "모바일 및 SPA 등 공개 클라이언트에서 인가 코드 가로채기를 차단하는 Proof Key for Code Exchange 규격을 분석합니다.\n지정된 식별자 `oauth_pkce_rfc7636_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_pkce_rfc7636_v1\") 앞 20자리}`",
+    "en": "Analyze Proof Key for Code Exchange (RFC 7636) preventing authorization code interception on public clients.\nCompute the first 20 hex characters of SHA256(\"oauth_pkce_rfc7636_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_pkce_rfc7636_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "code_verifier(고엔트로피 난수)와 code_challenge(SHA256)의 해시 약속 구조를 학습하세요.",
+      "식별자 `oauth_pkce_rfc7636_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review S256 code challenge generation and validation.",
+      "Extract first 20 hex chars of SHA256(\"oauth_pkce_rfc7636_v1\")."
+    ]
+  },
+  "hash": "978e027ccd3cb39eb0dd06ec8ec9ad99b4f1506ad703dccd1c66f15b1b5babb1"
+},
+{
+  "id": "t0_oidc_discovery_jwks",
+  "tier": 0,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OIDC Discovery 및 JWKS 공개키 메타데이터",
+    "en": "OIDC Discovery & JWKS Public Key Metadata"
+  },
+  "prompt": {
+    "ko": "/.well-known/openid-configuration 메타데이터와 /jwks.json 엔드포인트를 통한 IDP 공개키 배포 구조를 분석합니다.\n지정된 식별자 `oidc_discovery_jwks_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oidc_discovery_jwks_v1\") 앞 20자리}`",
+    "en": "Examine OIDC Discovery endpoint metadata and JSON Web Key Set (JWKS) public key distribution.\nCompute the first 20 hex characters of SHA256(\"oidc_discovery_jwks_v1\").\n\nFormat: `FLAG{SHA256(\"oidc_discovery_jwks_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "jwks_uri, authorization_endpoint, token_endpoint 등의 표준 메타데이터를 확인하세요.",
+      "식별자 `oidc_discovery_jwks_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect standard OpenID Connect configuration discovery keys.",
+      "Submit first 20 hex of SHA256(\"oidc_discovery_jwks_v1\")."
+    ]
+  },
+  "hash": "ed26479c3acc5a09c2434f2b173d43a95543035b024c02912ab0ed215a6864c9"
+},
+{
+  "id": "t1_oauth_redirect_subdomain_flaw",
+  "tier": 1,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Redirect URI 서브도메인 정규식 누락 취약점",
+    "en": "Redirect URI Subdomain Regex Omission Vulnerability"
+  },
+  "prompt": {
+    "ko": "미흡한 정규식(`^https://client\\.example\\.com`)으로 인해 공격자 서브도메인(`client.example.com.attacker.com`)으로 인가 코드가 누출되는 취약점을 분석합니다.\n지정된 식별자 `oauth_redirect_subdomain_flaw_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_redirect_subdomain_flaw_v1\") 앞 20자리}`",
+    "en": "Exploit unanchored regex validations allowing attacker-controlled subdomains to receive authorization codes.\nCompute the first 20 hex characters of SHA256(\"oauth_redirect_subdomain_flaw_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_redirect_subdomain_flaw_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "도메인 경계 문자(/ 또는 $) 누락 취약점을 분석하세요.",
+      "식별자 `oauth_redirect_subdomain_flaw_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect regex domain boundary validation omissions.",
+      "Extract first 20 hex chars of SHA256(\"oauth_redirect_subdomain_flaw_v1\")."
+    ]
+  },
+  "hash": "c22cff6a40447957db0739607d2f7fc8927dea35939442fceb9732496905e635"
+},
+{
+  "id": "t1_oauth_redirect_path_traversal",
+  "tier": 1,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Redirect URI 경로 순회 및 오픈 리다이렉트 연계",
+    "en": "Redirect URI Path Traversal & Open Redirect Chaining"
+  },
+  "prompt": {
+    "ko": "정상 콜백 URL에 디렉터리 순회(`../`)를 결합하여 사이트 내 오픈 리다이렉트 경로로 인가 코드를 전달시키는 공격을 분석합니다.\n지정된 식별자 `oauth_redirect_path_traversal_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_redirect_path_traversal_v1\") 앞 20자리}`",
+    "en": "Chain path traversal sequences (`../`) within redirect_uri pointing to open redirectors to leak authorization codes.\nCompute the first 20 hex characters of SHA256(\"oauth_redirect_path_traversal_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_redirect_path_traversal_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "/callback/../../logout?redirect=attacker.com 형태의 연계 체인을 학습하세요.",
+      "식별자 `oauth_redirect_path_traversal_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Study chaining path normalization flaws with open redirectors.",
+      "Submit first 20 hex of SHA256(\"oauth_redirect_path_traversal_v1\")."
+    ]
+  },
+  "hash": "05e759ab1b3aace6f42d79662fbcee469bb6012bc70d8ac1db3bfb556ee12338"
+},
+{
+  "id": "t1_oauth_redirect_param_pollution",
+  "tier": 1,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "HTTP 매개변수 오염(HPP) 기반 Redirect URI 조작",
+    "en": "HTTP Parameter Pollution (HPP) Redirect URI Tampering"
+  },
+  "prompt": {
+    "ko": "동일한 redirect_uri 파라미터를 복수 전송(HPP)하거나 특수문자 파싱 차이를 악용하여 검증을 우회하는 기법을 분석합니다.\n지정된 식별자 `oauth_redirect_param_pollution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_redirect_param_pollution_v1\") 앞 20자리}`",
+    "en": "Bypass redirect URI checks by injecting duplicate query parameters (HPP) parsed differently across gateway and app.\nCompute the first 20 hex characters of SHA256(\"oauth_redirect_param_pollution_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_redirect_param_pollution_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "파서 간 첫 번째 vs 마지막 파라미터 우선순위 차이를 점검하세요.",
+      "식별자 `oauth_redirect_param_pollution_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Analyze parser discrepancy in duplicate query parameter handling.",
+      "Extract first 20 hex chars of SHA256(\"oauth_redirect_param_pollution_v1\")."
+    ]
+  },
+  "hash": "3ff2f371c28e44a4c7c2d5372cc98395a5ea8977583d227af55499f8c42b4a29"
+},
+{
+  "id": "t1_oauth_csrf_state_omission",
+  "tier": 1,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "State 파라미터 부재에 따른 로그인 CSRF 계정 탈취",
+    "en": "Missing State Parameter Login CSRF Account Takeover"
+  },
+  "prompt": {
+    "ko": "state 파라미터가 없거나 고정되어 공격자의 인가 코드를 피해자 브라우저에 강제 주입하여 계정을 연동시키는 CSRF 공격을 분석합니다.\n지정된 식별자 `oauth_csrf_state_omission_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_csrf_state_omission_v1\") 앞 20자리}`",
+    "en": "Perform Login CSRF injecting attacker authorization codes into victim browser sessions lacking state parameter binding.\nCompute the first 20 hex characters of SHA256(\"oauth_csrf_state_omission_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_csrf_state_omission_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "희생자가 결제나 개인정보를 등록하면 공격자 계정에 귀속되는 위협을 분석하세요.",
+      "식별자 `oauth_csrf_state_omission_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Understand victim data binding to attacker profile on login CSRF.",
+      "Submit first 20 hex of SHA256(\"oauth_csrf_state_omission_v1\")."
+    ]
+  },
+  "hash": "e296c06d879fd5fff8ad4a234669792ac052b560785362d5124696ba5501bc51"
+},
+{
+  "id": "t1_oauth_token_leak_referrer",
+  "tier": 1,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Implicit 흐름 URL 프래그먼트 및 Referer 토큰 누출",
+    "en": "Implicit Flow URL Fragment & Referer Token Leakage"
+  },
+  "prompt": {
+    "ko": "Implicit Grant(`response_type=token`) 사용 시 URI 프래그먼트(#access_token)가 서드파티 스크립트나 Referer 헤더로 노출되는 취약점을 분석합니다.\n지정된 식별자 `oauth_token_leak_referrer_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_token_leak_referrer_v1\") 앞 20자리}`",
+    "en": "Analyze access token leakage via Referer request headers and third-party scripts during Implicit Flow fragment transmission.\nCompute the first 20 hex characters of SHA256(\"oauth_token_leak_referrer_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_token_leak_referrer_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "OAuth 2.1에서 Implicit Flow가 완전히 폐기(deprecated)된 이유를 학습하세요.",
+      "식별자 `oauth_token_leak_referrer_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Learn why OAuth 2.1 strictly deprecates the Implicit Grant.",
+      "Extract first 20 hex chars of SHA256(\"oauth_token_leak_referrer_v1\")."
+    ]
+  },
+  "hash": "f9ebe215ad59b8251abb392a2df750171e7e9ea8a27bfe266e6e7d72572c78d8"
+},
+{
+  "id": "t1_oauth_scope_escalation",
+  "tier": 1,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OAuth 스코프 동의 우회 및 비인가 권한 상승",
+    "en": "OAuth Scope Consent Bypass & Privilege Escalation"
+  },
+  "prompt": {
+    "ko": "사용자 동의 화면에 표시되지 않은 관리자 스코프(`scope=admin write`)를 강제 삽입하여 발급받는 인가 취약점을 분석합니다.\n지정된 식별자 `oauth_scope_escalation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_scope_escalation_v1\") 앞 20자리}`",
+    "en": "Exploit authorization servers granting high-privilege scopes (scope=admin) omitted from user consent prompts.\nCompute the first 20 hex characters of SHA256(\"oauth_scope_escalation_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_scope_escalation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "토큰 엔드포인트의 스코프 재검증 결함을 확인하세요.",
+      "식별자 `oauth_scope_escalation_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Check token endpoint scope re-validation deficiencies.",
+      "Submit first 20 hex of SHA256(\"oauth_scope_escalation_v1\")."
+    ]
+  },
+  "hash": "4d7f305410e043f8b5e8cb4db25addfc17fd1928f187a5a3fde600df91f5da03"
+},
+{
+  "id": "t1_oidc_jwt_none_alg",
+  "tier": 1,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OIDC ID 토큰 서명 미검증 (alg: none) 서명 위조",
+    "en": "OIDC ID Token Unsigned (alg: none) Signature Bypass"
+  },
+  "prompt": {
+    "ko": "OIDC 서명 검증 라이브러리의 취약점으로 인해 `alg: none` 헤더를 가진 위조 ID Token이 무조건 신뢰되는 결함을 분석합니다.\n지정된 식별자 `oidc_jwt_none_alg_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oidc_jwt_none_alg_v1\") 앞 20자리}`",
+    "en": "Bypass OIDC identity verification by forging arbitrary admin claims inside ID Tokens with `alg: none` header.\nCompute the first 20 hex characters of SHA256(\"oidc_jwt_none_alg_v1\").\n\nFormat: `FLAG{SHA256(\"oidc_jwt_none_alg_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "빈 서명부(`header.payload.`)를 파싱하는 검증 라이브러리 결함을 분석하세요.",
+      "식별자 `oidc_jwt_none_alg_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect token parser flaws accepting empty signature segments.",
+      "Extract first 20 hex chars of SHA256(\"oidc_jwt_none_alg_v1\")."
+    ]
+  },
+  "hash": "cd887097feb2eaffc2bd0429d5db95bff8e019dcacd9ecba1d825def8c6b11a8"
+},
+{
+  "id": "t2_oauth_pkce_downgrade_plain",
+  "tier": 2,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PKCE S256에서 plain 방식 강제 다운그레이드 공격",
+    "en": "PKCE S256 to plain Method Downgrade Attack"
+  },
+  "prompt": {
+    "ko": "클라이언트가 S256을 요청하더라도 서버가 하위 호환성을 이유로 `code_challenge_method=plain`을 허용할 때 발생하는 다운그레이드 취약점을 분석합니다.\n지정된 식별자 `oauth_pkce_downgrade_plain_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_pkce_downgrade_plain_v1\") 앞 20자리}`",
+    "en": "Force PKCE downgrade to `plain` method on vulnerable servers to bypass cryptographic challenge hashes.\nCompute the first 20 hex characters of SHA256(\"oauth_pkce_downgrade_plain_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_pkce_downgrade_plain_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "RFC 7636에서 plain 방식이 금지되거나 엄격히 제한되어야 하는 이유를 학습하세요.",
+      "식별자 `oauth_pkce_downgrade_plain_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Understand strict requirement for S256 code challenge method.",
+      "Submit first 20 hex of SHA256(\"oauth_pkce_downgrade_plain_v1\")."
+    ]
+  },
+  "hash": "6ae9868f62d938442624697b5925d96d0d554c811629c49fd43b3cef63b70fdc"
+},
+{
+  "id": "t2_oauth_pkce_omission_bypass",
+  "tier": 2,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PKCE 검증 인자 생략을 통한 인가 코드 탈취 주입",
+    "en": "PKCE Verification Argument Omission Attack"
+  },
+  "prompt": {
+    "ko": "인가 엔드포인트에서 생성된 code_challenge를 토큰 엔드포인트 교환 시 code_verifier 파라미터 없이도 성공시키는 서버 로직 결함을 분석합니다.\n지정된 식별자 `oauth_pkce_omission_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_pkce_omission_bypass_v1\") 앞 20자리}`",
+    "en": "Exploit server logic flaw treating missing `code_verifier` parameters as legacy clients and bypassing validation.\nCompute the first 20 hex characters of SHA256(\"oauth_pkce_omission_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_pkce_omission_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "code_challenge가 바인딩된 인가 코드는 code_verifier 없이 절대 교환될 수 없어야 합니다.",
+      "식별자 `oauth_pkce_omission_bypass_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Enforce mandatory verifier matching when challenge was registered.",
+      "Extract first 20 hex chars of SHA256(\"oauth_pkce_omission_bypass_v1\")."
+    ]
+  },
+  "hash": "43bb299ce302266daf249b040cb1830111f44eb3c4ee8b8744349e6013de024b"
+},
+{
+  "id": "t2_oauth_key_confusion_rs256_hs256",
+  "tier": 2,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "JWT RS256 공개키를 HS256 비밀키로 오인하는 키 혼동 공격",
+    "en": "JWT RS256 Public Key to HS256 Secret Key Confusion"
+  },
+  "prompt": {
+    "ko": "서버의 RS256 RSA 공개키(PEM)를 HMAC-SHA256의 대칭 비밀키로 악용하여 임의의 관리자 ID 토큰을 위조하는 Key Confusion 취약점을 분석합니다.\n지정된 식별자 `oauth_key_confusion_rs256_hs256_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_key_confusion_rs256_hs256_v1\") 앞 20자리}`",
+    "en": "Forge administrator ID Tokens by abusing the RS256 public key PEM string as an HMAC-SHA256 symmetric secret key.\nCompute the first 20 hex characters of SHA256(\"oauth_key_confusion_rs256_hs256_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_key_confusion_rs256_hs256_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "공개키 문자열 전체를 바이너리 바이트로 변환하여 HS256 서명을 생성하는 기법을 학습하세요.",
+      "식별자 `oauth_key_confusion_rs256_hs256_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Learn signing with public key bytes as HMAC secret key.",
+      "Submit first 20 hex of SHA256(\"oauth_key_confusion_rs256_hs256_v1\")."
+    ]
+  },
+  "hash": "65e9a02c05149b6c4237f0cfa43c5698e9c48c22ae18be53bc86f5a6f7499552"
+},
+{
+  "id": "t2_oidc_kid_header_injection",
+  "tier": 2,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 95,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "JWT Key ID (kid) 헤더 조작 및 디렉터리 순회 공격",
+    "en": "JWT Key ID (kid) Header Manipulation & Path Traversal"
+  },
+  "prompt": {
+    "ko": "JWT 헤더의 kid 파라미터에 디렉터리 순회(`/dev/null` 또는 알려진 고정 파일)를 삽입하여 빈 키로 서명을 위조하는 공격을 분석합니다.\n지정된 식별자 `oidc_kid_header_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oidc_kid_header_injection_v1\") 앞 20자리}`",
+    "en": "Inject path traversal payloads (`../../../../dev/null`) into the JWT `kid` header to verify signatures against empty keys.\nCompute the first 20 hex characters of SHA256(\"oidc_kid_header_injection_v1\").\n\nFormat: `FLAG{SHA256(\"oidc_kid_header_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "kid 파라미터가 데이터베이스 조회나 파일 시스템 경로에 직접 연결될 때의 위험을 분석하세요.",
+      "식별자 `oidc_kid_header_injection_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect filesystem and SQL injection hazards in kid handling.",
+      "Extract first 20 hex chars of SHA256(\"oidc_kid_header_injection_v1\")."
+    ]
+  },
+  "hash": "b0b0a533a9dbe0ef2273eb0ea2fd0b22c9542b16bae0615de8024e49c11e025b"
+},
+{
+  "id": "t2_oidc_jku_spoofing",
+  "tier": 2,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "JWK Set URL (jku) 헤더 스푸핑 및 악성 공개키 주입",
+    "en": "JWK Set URL (jku) Header Spoofing & Malicious JWKS"
+  },
+  "prompt": {
+    "ko": "JWT 헤더의 jku(JWK Set URL)를 공격자가 제어하는 외부 서버로 변경하여 임의의 개인키로 서명된 토큰을 검증시키는 취약점을 분석합니다.\n지정된 식별자 `oidc_jku_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oidc_jku_spoofing_v1\") 앞 20자리}`",
+    "en": "Spoof the `jku` header parameter pointing to an attacker-controlled JWKS to authenticate self-signed forged tokens.\nCompute the first 20 hex characters of SHA256(\"oidc_jku_spoofing_v1\").\n\nFormat: `FLAG{SHA256(\"oidc_jku_spoofing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "jku 도메인 화이트리스트 검증 부재가 초래하는 위협을 분석하세요.",
+      "식별자 `oidc_jku_spoofing_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Enforce strict domain whitelist checks for jku endpoints.",
+      "Submit first 20 hex of SHA256(\"oidc_jku_spoofing_v1\")."
+    ]
+  },
+  "hash": "89dcf5e4f62169513041802d3c20275e7bbbc1fb1cd2a78f7793d1d3d59468ad"
+},
+{
+  "id": "t2_oauth_code_replay_attack",
+  "tier": 2,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "인가 코드 일회용 무결성 결함 및 다중 교환 공격",
+    "en": "Authorization Code One-Time Use Flaw & Multiple Exchange"
+  },
+  "prompt": {
+    "ko": "발급된 인가 코드(Authorization Code)가 사용 즉시 무효화되지 않아 네트워크 스니핑이나 로그를 통해 다중 토큰을 교환하는 공격을 분석합니다.\n지정된 식별자 `oauth_code_replay_attack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_code_replay_attack_v1\") 앞 20자리}`",
+    "en": "Exploit authorization servers failing to invalidate authorization codes immediately upon first exchange.\nCompute the first 20 hex characters of SHA256(\"oauth_code_replay_attack_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_code_replay_attack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "RFC 6749 4.1.2 규격의 일회용 인가 코드 폐기 원칙을 확인하세요.",
+      "식별자 `oauth_code_replay_attack_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review RFC 6749 requirements for immediate one-time code revocation.",
+      "Extract first 20 hex chars of SHA256(\"oauth_code_replay_attack_v1\")."
+    ]
+  },
+  "hash": "b868c9f2d007671965648dfe46ab5cfb0df538e5b4c95aa0687da184902428ba"
+},
+{
+  "id": "t2_oauth_implicit_account_takeover",
+  "tier": 2,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "모바일 Custom URL Scheme 하이재킹 및 토큰 가로채기",
+    "en": "Mobile Custom URL Scheme Hijacking & Token Interception"
+  },
+  "prompt": {
+    "ko": "모바일 앱에 등록된 동일한 커스텀 URL 스킴(myapp://oauth)을 악성 앱이 가로채어 Implicit 토큰을 탈취하는 취약점을 분석합니다.\n지정된 식별자 `oauth_implicit_account_takeover_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_implicit_account_takeover_v1\") 앞 20자리}`",
+    "en": "Hijack custom mobile URL schemes (e.g. `myapp://oauth`) to intercept access tokens returned via Implicit flow.\nCompute the first 20 hex characters of SHA256(\"oauth_implicit_account_takeover_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_implicit_account_takeover_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Android App Links 및 iOS Universal Links를 통한 도메인 소유권 증명 방어를 학습하세요.",
+      "식별자 `oauth_implicit_account_takeover_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Learn App Links and Universal Links cryptographically bound to web domains.",
+      "Submit first 20 hex of SHA256(\"oauth_implicit_account_takeover_v1\")."
+    ]
+  },
+  "hash": "c80cb537250e6ff21ffacc4af23f1b1320168062bcf66af664d6d72ceac1487c"
+},
+{
+  "id": "t3_oauth_ssrf_token_endpoint",
+  "tier": 3,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OIDC 백엔드 토큰 교환 엔드포인트 SSRF 공격",
+    "en": "OIDC Backend Token Endpoint SSRF Exploitation"
+  },
+  "prompt": {
+    "ko": "클라이언트 백엔드가 토큰 교환을 수행할 때 공격자가 제공한 악성 토큰 엔드포인트 URL을 신뢰하여 내부망으로 요청을 전송하는 SSRF를 분석합니다.\n지정된 식별자 `oauth_ssrf_token_endpoint_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_ssrf_token_endpoint_v1\") 앞 20자리}`",
+    "en": "Exploit server-side token exchange routines trusting dynamic or untrusted token endpoints to achieve SSRF.\nCompute the first 20 hex characters of SHA256(\"oauth_ssrf_token_endpoint_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_ssrf_token_endpoint_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "내부 클라우드 메타데이터(169.254.169.254) 또는 인트라넷 서비스 접근 위험을 점검하세요.",
+      "식별자 `oauth_ssrf_token_endpoint_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Analyze token exchange requests pivoting to internal cloud metadata.",
+      "Extract first 20 hex chars of SHA256(\"oauth_ssrf_token_endpoint_v1\")."
+    ]
+  },
+  "hash": "9a77010d2618778b6f8edf5e2d9663fa52a09a50ed5f4825d9e0a1717ba6c22e"
+},
+{
+  "id": "t3_oidc_dynamic_client_registration",
+  "tier": 3,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RFC 7591 동적 클라이언트 등록(DCR) 비인가 악용",
+    "en": "RFC 7591 Dynamic Client Registration (DCR) Abuse"
+  },
+  "prompt": {
+    "ko": "인증 없이 개방된 RFC 7591 DCR 엔드포인트를 통해 악성 redirect_uri를 가진 신규 클라이언트를 등록하여 자격증명을 탈취하는 기법을 분석합니다.\n지정된 식별자 `oidc_dynamic_client_registration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oidc_dynamic_client_registration_v1\") 앞 20자리}`",
+    "en": "Abuse unauthenticated RFC 7591 Dynamic Client Registration to register rogue clients with arbitrary redirect URIs.\nCompute the first 20 hex characters of SHA256(\"oidc_dynamic_client_registration_v1\").\n\nFormat: `FLAG{SHA256(\"oidc_dynamic_client_registration_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "DCR 엔드포인트에 초기 등록 토큰(Initial Access Token)을 강제해야 하는 보안 요건을 학습하세요.",
+      "식별자 `oidc_dynamic_client_registration_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Require Initial Access Tokens for dynamic client registration.",
+      "Submit first 20 hex of SHA256(\"oidc_dynamic_client_registration_v1\")."
+    ]
+  },
+  "hash": "f40bc9c3b1e34b3308bbbb94066c654e282f8b700e0f0443d67b399b786a326c"
+},
+{
+  "id": "t3_oauth_cross_client_impersonation",
+  "tier": 3,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "동일 IdP 환경 다중 클라이언트 간 Audience 치환 공격",
+    "en": "Cross-Client Impersonation via Missing Audience Validation"
+  },
+  "prompt": {
+    "ko": "동일한 IDP를 공유하는 다중 서비스에서 서비스 A용으로 발급된 ID 토큰을 서비스 B에 제출할 때 aud 클레임을 검증하지 않아 발생하는 계정 가장을 분석합니다.\n지정된 식별자 `oauth_cross_client_impersonation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_cross_client_impersonation_v1\") 앞 20자리}`",
+    "en": "Impersonate users across clients sharing the same IdP when receiving services fail to validate token `aud` claims.\nCompute the first 20 hex characters of SHA256(\"oauth_cross_client_impersonation_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_cross_client_impersonation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ID Token의 aud(Audience) 값이 수신 클라이언트 ID와 정확히 일치해야 함을 검증하세요.",
+      "식별자 `oauth_cross_client_impersonation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Validate that token aud strictly matches recipient client_id.",
+      "Extract first 20 hex chars of SHA256(\"oauth_cross_client_impersonation_v1\")."
+    ]
+  },
+  "hash": "141392c5d3fbe15f1665e99d14fa50c592fbebc283b914a08cd1d35e5591f3ee"
+},
+{
+  "id": "t3_oidc_userinfo_injection",
+  "tier": 3,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "UserInfo 응답 조작을 통한 계정 선점 탈취 (Pre-ATO)",
+    "en": "UserInfo Response Tampering Pre-Account Takeover"
+  },
+  "prompt": {
+    "ko": "OIDC UserInfo 엔드포인트 응답에서 이메일 인증 여부(`email_verified: true`)를 미검증한 채 계정을 연동시켜 희생자 계정을 선점하는 취약점을 분석합니다.\n지정된 식별자 `oidc_userinfo_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oidc_userinfo_injection_v1\") 앞 20자리}`",
+    "en": "Pre-hijack victim accounts by exploiting reliance on unverified email claims in UserInfo endpoint responses.\nCompute the first 20 hex characters of SHA256(\"oidc_userinfo_injection_v1\").\n\nFormat: `FLAG{SHA256(\"oidc_userinfo_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "미인증 이메일을 통한 자동 계정 병합(Account Linking) 취약점 패턴을 분석하세요.",
+      "식별자 `oidc_userinfo_injection_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Study dangerous automatic account merging on unverified emails.",
+      "Submit first 20 hex of SHA256(\"oidc_userinfo_injection_v1\")."
+    ]
+  },
+  "hash": "bf70630ec323072ba42768e83f0de98c663e2318aa4fe79a6ca7222182c06ae4"
+},
+{
+  "id": "t3_oauth_dpop_proof_tampering",
+  "tier": 3,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RFC 9449 DPoP 키 소유 증명 서명 위조 및 HTTP 메서드 불일치",
+    "en": "RFC 9449 DPoP Proof Tampering & HTTP Method Mismatch"
+  },
+  "prompt": {
+    "ko": "Bearer 토큰 도난을 방지하는 DPoP(Demonstrating Proof of Possession) 증명 JWT의 `htm`/`htu` 클레임 검증 결함을 파고드는 공격을 분석합니다.\n지정된 식별자 `oauth_dpop_proof_tampering_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_dpop_proof_tampering_v1\") 앞 20자리}`",
+    "en": "Tamper with RFC 9449 DPoP proof JWTs by exploiting loose validation of `htm` (HTTP method) and `htu` (HTTP URI).\nCompute the first 20 hex characters of SHA256(\"oauth_dpop_proof_tampering_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_dpop_proof_tampering_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "DPoP 증명 토큰의 재사용 방지(jti 클레임 및 시간 윈도우) 검증을 학습하세요.",
+      "식별자 `oauth_dpop_proof_tampering_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Examine DPoP proof jti replay cache and time window validation.",
+      "Extract first 20 hex chars of SHA256(\"oauth_dpop_proof_tampering_v1\")."
+    ]
+  },
+  "hash": "152af53f89b070bc5d22570fb398f9038a33342e2bacfd48325c8b9b4ac04cae"
+},
+{
+  "id": "t3_oauth_jwt_embedded_x5c",
+  "tier": 3,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "JWT x5c 헤더 자체 서명 인증서 주입 공격",
+    "en": "JWT x5c Header Self-Signed Certificate Injection"
+  },
+  "prompt": {
+    "ko": "JWT 헤더의 x5c(X.509 Certificate Chain) 필드에 공격자가 생성한 자체 서명 인증서를 주입하여 신뢰 체인을 위조하는 취약점을 분석합니다.\n지정된 식별자 `oauth_jwt_embedded_x5c_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_jwt_embedded_x5c_v1\") 앞 20자리}`",
+    "en": "Inject attacker self-signed X.509 certificate chains into the JWT `x5c` header when servers fail to verify CA trust.\nCompute the first 20 hex characters of SHA256(\"oauth_jwt_embedded_x5c_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_jwt_embedded_x5c_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "x5c 인증서가 신뢰할 수 있는 루트 CA에 도달하는지 경로 검증을 수행해야 합니다.",
+      "식별자 `oauth_jwt_embedded_x5c_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Validate full PKI trust chain anchoring for embedded x5c certificates.",
+      "Submit first 20 hex of SHA256(\"oauth_jwt_embedded_x5c_v1\")."
+    ]
+  },
+  "hash": "413bd6591b4285cee6e94d354f9a9bc69b5dc12dfeba1618b131230518b35a1e"
+},
+{
+  "id": "t3_oauth_saml_oauth_bridge_flaw",
+  "tier": 3,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 210,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SAML-OAuth 연합 브릿지 NameID 식별자 매핑 결함",
+    "en": "SAML-OAuth Federation Bridge NameID Mapping Flaw"
+  },
+  "prompt": {
+    "ko": "엔터프라이즈 SAML 2.0 단언을 OAuth/OIDC 토큰으로 변환하는 브릿지에서 NameID 서식 불일치를 이용한 관리자 계정 하이재킹을 분석합니다.\n지정된 식별자 `oauth_saml_oauth_bridge_flaw_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_saml_oauth_bridge_flaw_v1\") 앞 20자리}`",
+    "en": "Exploit enterprise SAML-to-OAuth federation bridges with inconsistent NameID canonicalization to hijack administrator identities.\nCompute the first 20 hex characters of SHA256(\"oauth_saml_oauth_bridge_flaw_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_saml_oauth_bridge_flaw_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "SAML NameID와 OIDC sub 클레임의 정규화 매핑 무결성을 학습하세요.",
+      "식별자 `oauth_saml_oauth_bridge_flaw_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Audit SAML assertion claim translation into OIDC sub claims.",
+      "Extract first 20 hex chars of SHA256(\"oauth_saml_oauth_bridge_flaw_v1\")."
+    ]
+  },
+  "hash": "4760f1c89a0033b477b23e65e8571fd74ab11b4243cb189ee1b1f1519689a0fd"
+},
+{
+  "id": "t4_oauth_enterprise_sso_chain",
+  "tier": 4,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 280,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 SSO 취약점 연쇄 침투 및 전사 도메인 장악",
+    "en": "Enterprise SSO Multi-Stage Vulnerability Chain Exploitation"
+  },
+  "prompt": {
+    "ko": "Redirect URI 우회, 인가 코드 가로채기, PKCE 무력화 및 ID 토큰 위조를 결합한 전사적 SSO 계정 장악 침투 체인을 분석합니다.\n지정된 식별자 `oauth_enterprise_sso_chain_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_enterprise_sso_chain_v1\") 앞 20자리}`",
+    "en": "Execute end-to-end SSO compromise chaining redirect URI bypass, authorization code theft, PKCE bypass, and token forgery.\nCompute the first 20 hex characters of SHA256(\"oauth_enterprise_sso_chain_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_enterprise_sso_chain_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "프론트채널 누출과 백엔드 토큰 파싱 결함이 결합될 때 발생하는 파급력을 분석하세요.",
+      "식별자 `oauth_enterprise_sso_chain_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Synthesize multi-layer SSO exploitation vectors across cloud apps.",
+      "Submit first 20 hex of SHA256(\"oauth_enterprise_sso_chain_v1\")."
+    ]
+  },
+  "hash": "7843c5edc3a4d525c78d1239549ad51faaf7ca4d52a583cdde6e66cb3044126c"
+},
+{
+  "id": "t4_oidc_hybrid_flow_c_hash_forgery",
+  "tier": 4,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 320,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OIDC Hybrid Flow c_hash 및 at_hash 무결성 검증 결함",
+    "en": "OIDC Hybrid Flow c_hash & at_hash Validation Failure"
+  },
+  "prompt": {
+    "ko": "ID 토큰과 인가 코드가 동시 전달되는 Hybrid Flow에서 c_hash(코드 해시) 검증 부재로 인한 중간자 코드 주입 공격을 분석합니다.\n지정된 식별자 `oidc_hybrid_flow_c_hash_forgery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oidc_hybrid_flow_c_hash_forgery_v1\") 앞 20자리}`",
+    "en": "Exploit missing c_hash and at_hash validations in OIDC Hybrid Flow responses to inject arbitrary authorization codes.\nCompute the first 20 hex characters of SHA256(\"oidc_hybrid_flow_c_hash_forgery_v1\").\n\nFormat: `FLAG{SHA256(\"oidc_hybrid_flow_c_hash_forgery_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "c_hash가 ID 토큰 서명 알고리즘 해시의 좌측 절반(ASCII)을 나타내는 규격을 검증하세요.",
+      "식별자 `oidc_hybrid_flow_c_hash_forgery_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Verify c_hash calculations matching left-most half of hash output.",
+      "Extract first 20 hex chars of SHA256(\"oidc_hybrid_flow_c_hash_forgery_v1\")."
+    ]
+  },
+  "hash": "97944abc4acfbb8114600306f3ddb6d428499be4c42693963694b3a5554822ce"
+},
+{
+  "id": "t4_oauth_mtls_sender_constrained_bypass",
+  "tier": 4,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 360,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RFC 8705 mTLS 클라이언트 인증 및 Sender-Constrained 바인딩 우회",
+    "en": "RFC 8705 mTLS Client Authentication & Sender-Constrained Bypass"
+  },
+  "prompt": {
+    "ko": "토큰을 클라이언트 TLS 인증서(x5t#S256)에 영구 결합하는 RFC 8705 mTLS 바인딩의 리버스 프록시 헤더 스푸핑 공격을 분석합니다.\n지정된 식별자 `oauth_mtls_sender_constrained_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_mtls_sender_constrained_bypass_v1\") 앞 20자리}`",
+    "en": "Bypass RFC 8705 mutual TLS sender-constrained token protections by spoofing client certificate headers at reverse proxies.\nCompute the first 20 hex characters of SHA256(\"oauth_mtls_sender_constrained_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_mtls_sender_constrained_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "X-Forwarded-Client-Cert(XFCC) 헤더 살균 부재 결함을 분석하세요.",
+      "식별자 `oauth_mtls_sender_constrained_bypass_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Audit reverse proxy sanitation of client certificate forwarded headers.",
+      "Submit first 20 hex of SHA256(\"oauth_mtls_sender_constrained_bypass_v1\")."
+    ]
+  },
+  "hash": "685ed89539035123935cf53eddcf910846cef7a395db4aaf568bd210e0880341"
+},
+{
+  "id": "t4_oidc_rar_rich_authorization_abuse",
+  "tier": 4,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 400,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RFC 9396 Rich Authorization Requests (RAR) 구조화 파라미터 변조",
+    "en": "RFC 9396 Rich Authorization Requests (RAR) Parameter Tampering"
+  },
+  "prompt": {
+    "ko": "복잡한 금융 거래 및 권한 세부사항을 JSON 객체(`authorization_details`)로 전달하는 RAR 사양의 역직렬화 및 권한 조작을 분석합니다.\n지정된 식별자 `oidc_rar_rich_authorization_abuse_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oidc_rar_rich_authorization_abuse_v1\") 앞 20자리}`",
+    "en": "Tamper with JSON structured `authorization_details` under RFC 9396 to manipulate transaction authorization limits.\nCompute the first 20 hex characters of SHA256(\"oidc_rar_rich_authorization_abuse_v1\").\n\nFormat: `FLAG{SHA256(\"oidc_rar_rich_authorization_abuse_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "JAR(RFC 9101 JWT-Secured Authorization Request) 서명 강제의 필요성을 분석하세요.",
+      "식별자 `oidc_rar_rich_authorization_abuse_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Enforce JWT-Secured Authorization Request (JAR) integrity on RAR.",
+      "Extract first 20 hex chars of SHA256(\"oidc_rar_rich_authorization_abuse_v1\")."
+    ]
+  },
+  "hash": "d0a7876f94860b2f3bfc35247554dc69d6927474d3442a3f00909e948d3d5a76"
+},
+{
+  "id": "t4_oauth_fapi_advanced_security_audit",
+  "tier": 4,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 430,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Financial-grade API (FAPI 2.0) 고급 보안 프로파일 종합 감사",
+    "en": "Financial-grade API (FAPI 2.0) Advanced Security Profile Audit"
+  },
+  "prompt": {
+    "ko": "글로벌 오픈뱅킹 표준인 FAPI 2.0 Security Profile에서 요구하는 PKCE 필수, mTLS/DPoP 발신자 바인딩, PAR(Pushed Authorization Requests) 규격을 검증합니다.\n지정된 식별자 `oauth_fapi_advanced_security_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_fapi_advanced_security_audit_v1\") 앞 20자리}`",
+    "en": "Audit compliance against FAPI 2.0 Security Profile mandating PKCE S256, sender-constrained tokens, and PAR (RFC 9126).\nCompute the first 20 hex characters of SHA256(\"oauth_fapi_advanced_security_audit_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_fapi_advanced_security_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "프론트채널 쿼리 스트링 노출을 방지하는 PAR(RFC 9126)의 작동 원리를 확인하세요.",
+      "식별자 `oauth_fapi_advanced_security_audit_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review Pushed Authorization Requests (PAR) eliminating front-channel leaks.",
+      "Submit first 20 hex of SHA256(\"oauth_fapi_advanced_security_audit_v1\")."
+    ]
+  },
+  "hash": "3d9e845a4605e41d513b4ec951051f9cad7919459e2668e4b0bf00274a8d6694"
+},
+{
+  "id": "t4_oauth_zero_trust_sso_hardening",
+  "tier": 4,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 460,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "지속적 접근 평가(CAEP/SSE) 및 제로 트러스트 SSO 방어",
+    "en": "Continuous Access Evaluation (CAEP/SSE) & Zero Trust SSO Hardening"
+  },
+  "prompt": {
+    "ko": "사용자 위험 감지 및 세션 폐기를 실시간 동기화하는 RFC Shared Signals & Events (SSE) 기반 제로 트러스트 토큰 라이프사이클을 분석합니다.\n지정된 식별자 `oauth_zero_trust_sso_hardening_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_zero_trust_sso_hardening_v1\") 앞 20자리}`",
+    "en": "Model Continuous Access Evaluation Protocol (CAEP) real-time session revocation under Zero Trust SSO architectures.\nCompute the first 20 hex characters of SHA256(\"oauth_zero_trust_sso_hardening_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_zero_trust_sso_hardening_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "CAEP 세션 해지 신호 수신 시 리소스 서버의 토큰 즉시 무효화 절차를 학습하세요.",
+      "식별자 `oauth_zero_trust_sso_hardening_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Implement real-time token revocation upon credential compromise alerts.",
+      "Extract first 20 hex chars of SHA256(\"oauth_zero_trust_sso_hardening_v1\")."
+    ]
+  },
+  "hash": "f689a59c8863569b17d653291fbc18303a9d1b4b9a66b9f4aad732124d2a5e6b"
+},
+{
+  "id": "t4_oauth_capstone_sso_exploitation_audit",
+  "tier": 4,
+  "cat": "oauth",
+  "track": "oauth",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "전사적 OAuth 2.0·OIDC SSO 보안 침투 및 종합 감사 캡스톤",
+    "en": "Enterprise OAuth 2.0 & OIDC SSO Security Audit Capstone"
+  },
+  "prompt": {
+    "ko": "리다이렉트 우회, PKCE 다운그레이드, 서명 위조, 발신자 바인딩 우회 등 엔터프라이즈 SSO 취약점 침투 체인을 총괄하고 하드닝을 완성하는 종합 캡스톤입니다.\n지정된 식별자 `oauth_capstone_sso_exploitation_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"oauth_capstone_sso_exploitation_audit_v1\") 앞 20자리}`",
+    "en": "Capstone challenge synthesizing end-to-end OAuth 2.0 & OIDC exploitation, audit methodology, and enterprise Zero Trust defense.\nCompute the first 20 hex characters of SHA256(\"oauth_capstone_sso_exploitation_audit_v1\").\n\nFormat: `FLAG{SHA256(\"oauth_capstone_sso_exploitation_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "사전 등록 완전 일치 검증, S256 강제, RS256 전용 검증, DPoP 바인딩 등 4대 방어선을 확립하세요.",
+      "식별자 `oauth_capstone_sso_exploitation_audit_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Establish full four-pillar defense: exact match, mandatory S256, strict RS256, DPoP binding.",
+      "Submit first 20 hex of SHA256(\"oauth_capstone_sso_exploitation_audit_v1\")."
+    ]
+  },
+  "hash": "996aa1ea7705e26315852ece9cda880e6521eb41c5af3670cf645778ae5bd6d5"
 }
 ];
 
