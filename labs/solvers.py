@@ -543,6 +543,39 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ 802.11w PMF Enforced! Rogue AP isolated -> FLAG{80211w_pmf_bip_deauth_flood_protected_5583}"
             }
         ]
+    },
+    "28": {
+        "title": "Lab 28: NetShield - Cisco & Enterprise L2 Network Infrastructure Security Lab",
+        "description": "Cisco IOS SNMPv2c R/W running-config 덤프 및 Type 7 크래킹, DTP Trunk Spoofing & STP Root Bridge 탈취, Enterprise L2 하드닝(Port-Security/DHCP Snooping/DAI/BPDU Guard/CoPP)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Cisco IOS SNMPv2c R/W running-config 덤프 및 Type 7 크래킹",
+                "target": "POST /api/netinfra/snmp/dump (target_host, community, mib_oid, enable_tftp)",
+                "poc_explanation": "SNMPv2c write 커뮤니티 문자열을 이용해 ciscoConfigCopyMIB(1.3.6.1.4.1.9.9.96)를 트리거하여 running-config를 TFTP로 추출하고 Cisco Type 7 패스워드를 복호화합니다.",
+                "exploit_payload": '{"target_host": "10.0.0.1", "community": "private", "mib_oid": "1.3.6.1.4.1.9.9.96", "enable_tftp": true}',
+                "defense": "SNMPv1/v2c 비활성화, SNMPv3 authPriv(SHA-256 + AES-256) 강제 적용 및 ACL로 관리자 IP 대역만 SNMP 접근 허용.",
+                "sample_output": "⚡ Running-Config Dumped! Type 7 decrypted -> FLAG{cisco_snmpv2c_rw_community_running_config_dumped_8028}"
+            },
+            {
+                "step": 2,
+                "name": "DTP 트렁크 스푸핑 및 STP Root Bridge 하이재킹",
+                "target": "POST /api/netinfra/l2/attack (dtp_spoof, stp_priority, target_vlan, flood_bpdu)",
+                "poc_explanation": "DTP Dynamic Desirable 프레임을 전송하여 스위치 포트를 트렁크로 자동 전환(VLAN Hopping)하고 Priority 0 BPDU를 플러딩하여 STP 루트 브리지를 탈취합니다.",
+                "exploit_payload": '{"dtp_spoof": true, "stp_priority": 0, "target_vlan": 100, "flood_bpdu": true}',
+                "defense": "스위치 접속 포트에 switchport mode access 및 switchport nonegotiate 강제, STP Root Guard 및 BPDU Guard 활성화.",
+                "sample_output": "🎯 L2 Hijacked! Root Bridge acquired on VLAN 100 -> FLAG{dtp_vlan_hopping_and_stp_bpdu_root_bridge_hijacked_4192}"
+            },
+            {
+                "step": 3,
+                "name": "Enterprise L2 인프라 하드닝 (Port-Security, DHCP Snooping, DAI, BPDU Guard, CoPP)",
+                "target": "POST /api/netinfra/l2/harden (port_security, dhcp_snooping, dai, bpdu_guard, copp_rate_limit)",
+                "poc_explanation": "스위치 전체에 Port-Security, DHCP Snooping Trust, Dynamic ARP Inspection(DAI), BPDU Guard 및 Control Plane Policing(CoPP) 정책을 적용하여 L2 공격 벡터를 전면 차단합니다.",
+                "exploit_payload": '{"port_security": true, "dhcp_snooping": true, "dai": true, "bpdu_guard": true, "copp_rate_limit": 1000}',
+                "defense": "Cisco SAFE L2 아키텍처 가이드라인을 준수하여 Zero-Trust 포트 정책 및 분산 DoS 억제 CoPP 프로파일 항시 유지.",
+                "sample_output": "🛡️ Cisco L2 Hardened! DAI, Port-Security, BPDU Guard, CoPP Active -> FLAG{cisco_ios_l2_hardened_portsec_dai_bpduguard_copp_secured_7731}"
+            }
+        ]
     }
 }
 

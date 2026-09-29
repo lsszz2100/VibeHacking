@@ -56,6 +56,8 @@ docker-compose --version
 | 24 | [퍼징 & 취약점 발굴 랩](./24_fuzzing_vulnerability_lab/) | AFL++ 커버리지 유도 퍼징, ASAN 섀도우 메모리 덤프 UAF 분석, 크래시 트리아지 & 패치 검증 | ★★★★ | [30장 취약점 분석](../30_Vulnerability_Research/README.md), [66장 익스플로잇 개발](../66_Exploit_Development/README.md) | `fuzzing` / `pwn` |
 | 25 | [AI 레드팀 & 탈옥 평가 랩](./25_ai_redteam_lab/) | RAG 간접 프롬프트 인젝션, 적대적 토큰 가드레일 우회, MCP 도구 섀도잉 및 에이전트 샌드박스 | ★★★★ | [56장 AI 레드팀](../56_AI_Red_Teaming/07_ai_red_teaming_and_guardrail_eval_deepdive.md), [69장 LLM 보안](../69_LLM_Security/README.md) | `airedteam` / `ai` |
 | 26 | [악성코드 자동 분석 & 동적 샌드박스 랩](./26_malware_sandbox_lab/) | PE 엔트로피 파싱, 안티디버그 PEB 패치, YARA 휴리스틱 헌팅, Sleep 스킵 동적 샌드박스 격리 | ★★★★ | [06장 악성코드 분석](../06_Malware_Analysis/09_python_malware_analysis_automation_deepdive.md), [45장 악성코드 개발](../45_Malware_Development/README.md) | `malsandbox` / `maldev` |
+| 27 | [무선 네트워크 & WPA3 보안 실전 랩](./27_wifi_wpa3_security_lab/) | WPA2/WPA3 PMKID 오프라인 사전 크래킹, SAE Dragonfly 부채널 및 다운그레이드, Evil Twin & 802.11w PMF 방어 | ★★★★ | [15장 WiFi 해킹](../15_WiFi_Hacking/07_practical_wpa3_sae_and_pmkid_deepdive.md) | `wifisec` |
+| 28 | [네트워크 인프라 & Cisco 스위치 보안 실전 랩](./28_cisco_network_device_lab/) | Cisco IOS SNMPv2c R/W running-config 덤프 및 Type 7 크래킹, DTP Trunk Spoofing & STP Root Bridge 탈취, Enterprise L2 하드닝 | ★★★★ | [32장 네트워크 장비 해킹](../32_Network_Device_Hacking/07_cisco_ios_and_enterprise_l2_infrastructure_attack_deepdive.md) | `netinfra` |
 
 ---
 
@@ -320,6 +322,14 @@ docker-compose --version
 - **교재 챕터 연계**: [15장 WiFi 해킹 심층 딥다이브](../15_WiFi_Hacking/07_practical_wpa3_sae_and_pmkid_deepdive.md)
 - **워게임 트랙**: `wifisec` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 27` (웹 콘솔 & 무선 보안 센터: `http://localhost:8027`)
+
+### 28. 네트워크 인프라 & Cisco 스위치 보안 실전 랩
+- Cisco IOS SNMPv2c R/W ciscoConfigCopyMIB(1.3.6.1.4.1.9.9.96)를 통한 running-config TFTP 덤프 및 Type 7 비밀번호 복호화
+- DTP Dynamic Desirable 프레임 스푸핑을 통한 스위치포트 트렁크 강제 협상 및 802.1D STP Priority 0 Root Bridge 하이재킹
+- 엔터프라이즈 L2 스위치 하드닝(Port-Security, DHCP Snooping, Dynamic ARP Inspection, BPDU Guard, CoPP)
+- **교재 챕터 연계**: [32장 네트워크 장비 해킹 심층 딥다이브](../32_Network_Device_Hacking/07_cisco_ios_and_enterprise_l2_infrastructure_attack_deepdive.md)
+- **워게임 트랙**: `netinfra` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 28` (웹 콘솔 & L2 네트워크 관제 센터: `http://localhost:8028`)
 
 ---
 

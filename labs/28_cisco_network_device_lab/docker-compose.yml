@@ -1,0 +1,16 @@
+services:
+  cisco-netshield-lab:
+    build: .
+    container_name: vibehacking-lab28-netshield
+    labels:
+      - "lab=lab"
+      - "lab_id=28"
+    ports:
+      - "8028:8028"
+    restart: unless-stopped
+    networks:
+      - netshield-net
+
+networks:
+  netshield-net:
+    driver: bridge

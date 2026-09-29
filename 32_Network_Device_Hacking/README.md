@@ -24,6 +24,7 @@
 | 04 | [management_plane_exploitation.md](04_management_plane_exploitation.md) | SNMP·TACACS+·NETCONF·설정 파일 추출, 장비 백도어 식별 | ★★★★ |
 | [05_network_device_hardening.md](./05_network_device_hardening.md) | **네트워크 장비 보안 강화 — Cisco·Juniper 보안 설정·네트워크 장비 모니터링** — 라우터, 스위치, 방화벽은 네트워크의 핵심이지만 종종 보안 설정이 소홀합니다. 기본 커뮤니티 문자열(public/private), 텔넷 사용, 불필요한 서비스 활성화 등이 흔한 문제입니다. |
 | [06_network_device_ctf_lab.md](./06_network_device_ctf_lab.md) | **네트워크 장치 해킹 CTF 실습 랩** — version: "3.9" |
+| [07_cisco_ios_and_enterprise_l2_infrastructure_attack_deepdive.md](./07_cisco_ios_and_enterprise_l2_infrastructure_attack_deepdive.md) | **심층 분석: Cisco IOS 아키텍처, L2 VLAN Hopping·STP 탈취 및 엔터프라이즈 스위치 하드닝 딥다이브** — 전통적인 네트워크 보안은 L3/L4 방화벽에 집중되어 있었으나, 실제 침투 테스트 및 APT 공격 시나리오에서는 물리적 포트 접속 또는 악성코드 감염 호스트를 기점으로 한 Layer ... |
 
 ## 선수 지식
 

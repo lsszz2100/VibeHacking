@@ -33,11 +33,11 @@ def check_textbook():
     return True, f"{len(sections)} sections, {total_md} chapters"
 
 def check_labs():
-    print("[2/5] Checking 27 Hands-on Labs...")
+    print("[2/5] Checking 28 Hands-on Labs...")
     labs_dir = ROOT_DIR / "labs"
     lab_dirs = sorted([d for d in labs_dir.iterdir() if d.is_dir() and d.name[:2].isdigit()])
-    if len(lab_dirs) != 27:
-        return False, f"Expected 27 labs, found {len(lab_dirs)}"
+    if len(lab_dirs) != 28:
+        return False, f"Expected 28 labs, found {len(lab_dirs)}"
     
     for l in lab_dirs:
         compose = l / "docker-compose.yml"
@@ -62,10 +62,10 @@ def check_wargame():
     # Verify challenge count by matching top-level tier challenge IDs (t0..t4)
     matches = re.findall(r'^\s*"id":\s*"t[0-4]_', content, re.MULTILINE)
     id_count = len(matches)
-    if id_count != 1435:
-        return False, f"Expected 1,435 challenges in challenges.js, found {id_count}"
+    if id_count != 1470:
+        return False, f"Expected 1,470 challenges in challenges.js, found {id_count}"
     
-    print(f"  ✓ Wargame database verified: {id_count} challenges across 41 tracks.")
+    print(f"  ✓ Wargame database verified: {id_count} challenges across 42 tracks.")
     return True, f"{id_count} challenges verified"
 
 def check_offline_assets():

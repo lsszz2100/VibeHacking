@@ -492,6 +492,42 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "IEEE 802.11w PMF 모드를 optional이 아닌 'required'로 설정하고 Rogue BSSID(de:ad:be:ef:13:37)를 격리하세요."}
                 ],
             },
+            "LAB28_SNMP": {
+                "id": "LAB28_SNMP",
+                "title": "NetShield: Cisco SNMPv2c Running-Config Dump & Type 7 Decrypt",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{cisco_snmpv2c_rw_community_running_config_dumped_8028}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "SNMPv2c write 커뮤니티('private')로 ciscoConfigCopyMIB(1.3.6.1.4.1.9.9.96)를 호출하여 running-config를 추출하고 Type 7 XOR 복호화를 수행하세요."}
+                ],
+            },
+            "LAB28_VLAN": {
+                "id": "LAB28_VLAN",
+                "title": "NetShield: DTP Dynamic Desirable Trunk Spoofing & STP Priority 0 Root Takeover",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{dtp_vlan_hopping_and_stp_bpdu_root_bridge_hijacked_4192}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "DTP desirable 프레임으로 트렁크 네고시에이션을 강제 체결하고 STP Priority 0 BPDU를 플러딩하여 루트 브리지를 선출시키세요."}
+                ],
+            },
+            "LAB28_HARDEN": {
+                "id": "LAB28_HARDEN",
+                "title": "NetShield: Enterprise L2 Hardening (Port-Security/DAI/BPDU Guard/CoPP)",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{cisco_ios_l2_hardened_portsec_dai_bpduguard_copp_secured_7731}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Port-Security, DHCP Snooping, Dynamic ARP Inspection(DAI), BPDU Guard 및 CoPP 제어 평면 정책을 적용하여 방어를 완성하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []

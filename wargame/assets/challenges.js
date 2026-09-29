@@ -380,6 +380,14 @@ const TRACKS = [
       "en": "Wireless & Wi-Fi Security",
       "desc_ko": "802.11 프레임 구조·WPA2 4-Way Handshake·RSN IE PMKID 크래킹·WPA3 SAE Dragonfly 부채널·Evil Twin & 802.11w PMF 방어.",
       "desc_en": "802.11 frame architecture, WPA2 4-way handshake, RSN IE PMKID cracking, WPA3 SAE Dragonfly side-channels, Evil Twin rogue APs, and 802.11w PMF defense."
+  },
+  {
+    "id": "netinfra",
+    "icon": "🖧",
+    "ko": "네트워크 인프라·Cisco 스위치 보안",
+    "en": "Network Infrastructure & Cisco Security",
+    "desc_ko": "Cisco IOS 아키텍처·SNMPv2c 커뮤니티 탈취·DTP 트렁크 스푸핑·VLAN Hopping·802.1D STP Root Bridge 장악 및 L2 하드닝.",
+    "desc_en": "Cisco IOS architecture, SNMPv2c R/W running-config dumps, DTP trunk spoofing, VLAN hopping, 802.1D STP root bridge hijacking, and enterprise L2 hardening."
   }
 ];
 
@@ -40610,5 +40618,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "eef66341fbfed97f30cc3da28a0c0673789f9c89464627f43078b219115c6a62"
+},
+{
+  "id": "t0_netinfra_cisco_ios_modes",
+  "tier": 0,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Cisco IOS 3대 실행 모드 아키텍처",
+    "en": "Cisco IOS Three-Tier Execution Mode Architecture"
+  },
+  "prompt": {
+    "ko": "Cisco IOS의 User EXEC, Privileged EXEC, Global Configuration 3대 관리 모드 아키텍처 분석 챌린지입니다.\n지정된 식별자 `netinfra_cisco_ios_modes_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_cisco_ios_modes_v1\") 앞 20자리}`",
+    "en": "Analyze Cisco IOS three-tier administrative privilege structure from User EXEC to Global Config.\nCompute the first 20 hex characters of SHA256(\"netinfra_cisco_ios_modes_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_cisco_ios_modes_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_cisco_ios_modes_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_cisco_ios_modes_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "4357b4b40cba3735eee4676f825ddc6622f29f4cda8636632ab83ec850059fa9"
+},
+{
+  "id": "t0_netinfra_snmp_default_communities",
+  "tier": 0,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SNMPv1/v2c 기본 커뮤니티 스트링 취약점",
+    "en": "Default Community Strings Vulnerability in SNMPv1/v2c"
+  },
+  "prompt": {
+    "ko": "네트워크 장비에 방치된 기본 SNMP 커뮤니티(public/private)와 UDP 161 포트의 관리 플레인 노출 위험을 분석합니다.\n지정된 식별자 `netinfra_snmp_default_communities_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_snmp_default_communities_v1\") 앞 20자리}`",
+    "en": "Assess risk of default SNMP public and private community strings exposed on UDP port 161.\nCompute the first 20 hex characters of SHA256(\"netinfra_snmp_default_communities_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_snmp_default_communities_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_snmp_default_communities_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_snmp_default_communities_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b60cf217850088d6c8a3b4f1d5ddaa4c971b5ab532de7e86cae219f405c65f14"
+},
+{
+  "id": "t0_netinfra_vlan_fundamentals",
+  "tier": 0,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IEEE 802.1Q VLAN 태깅 및 Native VLAN 격리 원리",
+    "en": "IEEE 802.1Q VLAN Tagging & Native VLAN Isolation Fundamentals"
+  },
+  "prompt": {
+    "ko": "이더넷 프레임의 802.1Q 4바이트 태그 필드와 Native VLAN 1의 무태그(Untagged) 전송 특성을 분석합니다.\n지정된 식별자 `netinfra_vlan_fundamentals_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_vlan_fundamentals_v1\") 앞 20자리}`",
+    "en": "Examine 802.1Q 4-byte encapsulation tag structure and untagged Native VLAN 1 behavior.\nCompute the first 20 hex characters of SHA256(\"netinfra_vlan_fundamentals_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_vlan_fundamentals_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_vlan_fundamentals_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_vlan_fundamentals_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "3250f6a05b9458ad8f7cc2a04e7c5fce8de1162f32b8770611741149a15355eb"
+},
+{
+  "id": "t1_netinfra_dtp_modes_desirable",
+  "tier": 1,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DTP 동적 트렁킹 모드(Dynamic Desirable) 자동 협상 취약점",
+    "en": "DTP Dynamic Desirable Trunking Auto-Negotiation Flaw"
+  },
+  "prompt": {
+    "ko": "스위치 포트의 DTP 기본 동작 모드인 dynamic desirable이 유발하는 비인가 트렁크 협상 위험을 분석합니다.\n지정된 식별자 `netinfra_dtp_modes_desirable_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_dtp_modes_desirable_v1\") 앞 20자리}`",
+    "en": "Evaluate how DTP dynamic desirable mode enables attackers to negotiate an unauthorized 802.1Q trunk.\nCompute the first 20 hex characters of SHA256(\"netinfra_dtp_modes_desirable_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_dtp_modes_desirable_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_dtp_modes_desirable_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_dtp_modes_desirable_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "9e4881dc3141fc2ff47e3abccca58830ac096b728ba4c79aad8de1ad96ab1fd8"
+},
+{
+  "id": "t1_netinfra_cisco_type7_xor_cipher",
+  "tier": 1,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Cisco Type 7 패스워드 고정 XOR 역산 취약점",
+    "en": "Cisco IOS Type 7 Password Fixed XOR Reversal Vulnerability"
+  },
+  "prompt": {
+    "ko": "service password-encryption으로 난독화된 26바이트 고정 키 기반 Type 7 암호문의 즉각 역산 기법을 분석합니다.\n지정된 식별자 `netinfra_cisco_type7_xor_cipher_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_cisco_type7_xor_cipher_v1\") 앞 20자리}`",
+    "en": "Reverse Cisco IOS Type 7 reversible XOR obfuscation against static 26-byte key table.\nCompute the first 20 hex characters of SHA256(\"netinfra_cisco_type7_xor_cipher_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_cisco_type7_xor_cipher_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_cisco_type7_xor_cipher_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_cisco_type7_xor_cipher_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "45c247054f213ea059475aea05142e2b87cffdea899e73c28ad06460cff25fd5"
+},
+{
+  "id": "t1_netinfra_cdp_lldp_recon",
+  "tier": 1,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CDP 및 LLDP 패킷 스니핑을 통한 인프라 토폴로지 정찰",
+    "en": "Infrastructure Reconnaissance via CDP & LLDP Sniffing"
+  },
+  "prompt": {
+    "ko": "Cisco Discovery Protocol 멀티캐스트 패킷을 도청하여 인접 장비 모델, IOS 버전, IP 주소를 수집하는 정찰을 분석합니다.\n지정된 식별자 `netinfra_cdp_lldp_recon_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_cdp_lldp_recon_v1\") 앞 20자리}`",
+    "en": "Sniff unencrypted CDP/LLDP multicast announcements to harvest device model, IOS release, and IP addresses.\nCompute the first 20 hex characters of SHA256(\"netinfra_cdp_lldp_recon_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_cdp_lldp_recon_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_cdp_lldp_recon_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_cdp_lldp_recon_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "59975dbe8ffabe9e20c5de20bfb3c189943e949aac6b57fc0f22e7f929be724b"
+},
+{
+  "id": "t1_netinfra_stp_bridge_priority",
+  "tier": 1,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 75,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IEEE 802.1D Spanning Tree Bridge Priority 및 루트 선정",
+    "en": "IEEE 802.1D STP Bridge Priority & Root Bridge Selection Rules"
+  },
+  "prompt": {
+    "ko": "STP 기본 Bridge Priority(32768)와 Bridge ID(Priority + MAC) 기반 최저치 루트 브리지 선출 메커니즘을 분석합니다.\n지정된 식별자 `netinfra_stp_bridge_priority_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_stp_bridge_priority_v1\") 앞 20자리}`",
+    "en": "Analyze 802.1D Spanning Tree election rules prioritizing the lowest Bridge ID (Priority + MAC).\nCompute the first 20 hex characters of SHA256(\"netinfra_stp_bridge_priority_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_stp_bridge_priority_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_stp_bridge_priority_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_stp_bridge_priority_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b9ddd75712a8272e63b60b1129c43ca8f15ab9eb1464b417f28fb7d64da5c042"
+},
+{
+  "id": "t1_netinfra_snmpwalk_sysdescr",
+  "tier": 1,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "snmpwalk를 활용한 시스템 정보 OID 수집 및 분석",
+    "en": "System OID Enumeration with snmpwalk & MIB Walk"
+  },
+  "prompt": {
+    "ko": "sysDescr OID(1.3.6.1.2.1.1.1.0)를 질의하여 대상 장비의 운영체제 및 하드웨어 아키텍처를 원격 식별합니다.\n지정된 식별자 `netinfra_snmpwalk_sysdescr_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_snmpwalk_sysdescr_v1\") 앞 20자리}`",
+    "en": "Query sysDescr OID 1.3.6.1.2.1.1.1.0 via snmpwalk to enumerate device architecture and IOS version.\nCompute the first 20 hex characters of SHA256(\"netinfra_snmpwalk_sysdescr_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_snmpwalk_sysdescr_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_snmpwalk_sysdescr_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_snmpwalk_sysdescr_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "2383d0c94caf0b41c14467ab33724a8cc3c5088ac43fdb98fba678242104bcfe"
+},
+{
+  "id": "t1_netinfra_switchport_mode_access",
+  "tier": 1,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "switchport mode access 및 nonegotiate 수동 고정",
+    "en": "Explicit switchport mode access & nonegotiate Port Locking"
+  },
+  "prompt": {
+    "ko": "스위치 사용자 포트에 switchport mode access와 switchport nonegotiate를 설정해 DTP 프레임 송출을 차단합니다.\n지정된 식별자 `netinfra_switchport_mode_access_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_switchport_mode_access_v1\") 앞 20자리}`",
+    "en": "Lock access interfaces with switchport mode access and switchport nonegotiate to suppress DTP.\nCompute the first 20 hex characters of SHA256(\"netinfra_switchport_mode_access_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_switchport_mode_access_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_switchport_mode_access_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_switchport_mode_access_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "48cf96d643a12f352795364c54c0e7a0b1322372df61704352e71bb387451ee5"
+},
+{
+  "id": "t2_netinfra_ciscoconfigcopy_mib",
+  "tier": 2,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ciscoConfigCopyMIB 악용 Running-Config 유출 및 덤프",
+    "en": "Running-Config Exfiltration via ciscoConfigCopyMIB SNMP SET"
+  },
+  "prompt": {
+    "ko": "SNMP R/W 커뮤니티와 OID 1.3.6.1.4.1.9.9.96 조작을 통해 running-config를 공격자 서버로 강제 업로드합니다.\n지정된 식별자 `netinfra_ciscoconfigcopy_mib_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_ciscoconfigcopy_mib_v1\") 앞 20자리}`",
+    "en": "Trigger TFTP running-config exfiltration using SNMP SET against ciscoConfigCopyMIB ccCopyTable.\nCompute the first 20 hex characters of SHA256(\"netinfra_ciscoconfigcopy_mib_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_ciscoconfigcopy_mib_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_ciscoconfigcopy_mib_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_ciscoconfigcopy_mib_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e48d764664eee7b4537d88eb3c7967b225c32b3dc8ddeabd4bf92709995c9612"
+},
+{
+  "id": "t2_netinfra_dtp_trunk_spoofing",
+  "tier": 2,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DTP 트렁크 스푸핑을 통한 포트 802.1Q 승격 공격",
+    "en": "DTP Trunk Spoofing & Port Elevation to 802.1Q Trunk"
+  },
+  "prompt": {
+    "ko": "공격자 호스트에서 DTP 트렁크 네고시에이션 프레임을 인젝션하여 스위치 포트를 트렁크로 강제 승격합니다.\n지정된 식별자 `netinfra_dtp_trunk_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_dtp_trunk_spoofing_v1\") 앞 20자리}`",
+    "en": "Inject forged DTP packets to coerce a dynamic switchport into an active 802.1Q trunk link.\nCompute the first 20 hex characters of SHA256(\"netinfra_dtp_trunk_spoofing_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_dtp_trunk_spoofing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_dtp_trunk_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_dtp_trunk_spoofing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "8d9b3280d69e0bfed8c8985e1f765eca9e4c3a433d071d716abfb70f03446d52"
+},
+{
+  "id": "t2_netinfra_vlan_double_tagging",
+  "tier": 2,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "802.1Q Double Tagging 이중 캡슐화 VLAN Hopping",
+    "en": "802.1Q Double Tagging VLAN Hopping Exploitation"
+  },
+  "prompt": {
+    "ko": "Native VLAN 외부 태그와 타깃 격리 VLAN 내부 태그를 중첩 전송하여 스위치 간 격리를 우회하는 공격입니다.\n지정된 식별자 `netinfra_vlan_double_tagging_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_vlan_double_tagging_v1\") 앞 20자리}`",
+    "en": "Exploit switch untagged Native VLAN processing via nested 802.1Q tags to bypass VLAN boundaries.\nCompute the first 20 hex characters of SHA256(\"netinfra_vlan_double_tagging_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_vlan_double_tagging_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_vlan_double_tagging_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_vlan_double_tagging_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "0f43a40a30d56ce5a6f8a6583b54c02f0ca176d22eee8da48b38d9bf08732156"
+},
+{
+  "id": "t2_netinfra_stp_root_bridge_takeover",
+  "tier": 2,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "우선순위 0 BPDU 주입을 통한 STP Root Bridge 탈취",
+    "en": "STP Root Bridge Hijacking via Priority 0 BPDU Injection"
+  },
+  "prompt": {
+    "ko": "공격자가 Priority 0 BPDU를 주입하여 스위치 토폴로지의 루트 브리지를 탈취하고 L2 트래픽을 도청합니다.\n지정된 식별자 `netinfra_stp_root_bridge_takeover_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_stp_root_bridge_takeover_v1\") 앞 20자리}`",
+    "en": "Inject priority 0 BPDUs to usurp the STP root bridge role and force all switched traffic through attacker.\nCompute the first 20 hex characters of SHA256(\"netinfra_stp_root_bridge_takeover_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_stp_root_bridge_takeover_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_stp_root_bridge_takeover_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_stp_root_bridge_takeover_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "bf53e674414aa19ea6eab20e7a9c569b50cf2d8abcbe2bb921d5fa612fdbadd3"
+},
+{
+  "id": "t2_netinfra_mac_flooding_cam_overflow",
+  "tier": 2,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 145,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "macof를 활용한 CAM 테이블 오버플로 및 스위치 허브화",
+    "en": "CAM Table Overflow & Switch Fail-Open Hub State via macof"
+  },
+  "prompt": {
+    "ko": "수십만 개의 위조 소스 MAC 프레임을 연속 전송해 스위치 CAM 테이블을 고갈시키고 페일 오픈(Fail-open)을 유도합니다.\n지정된 식별자 `netinfra_mac_flooding_cam_overflow_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_mac_flooding_cam_overflow_v1\") 앞 20자리}`",
+    "en": "Flood switch CAM table with random source MAC addresses using macof to force broadcast fail-open state.\nCompute the first 20 hex characters of SHA256(\"netinfra_mac_flooding_cam_overflow_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_mac_flooding_cam_overflow_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_mac_flooding_cam_overflow_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_mac_flooding_cam_overflow_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "51fbce4e4070dca0534e85f9d74e47c705e9e5ad29b221c734a097b2c7a4f5c6"
+},
+{
+  "id": "t2_netinfra_port_security_sticky_mac",
+  "tier": 2,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Port Security Sticky MAC 바인딩 및 위반 시 Shutdown 방어",
+    "en": "Port Security Sticky MAC Binding & Violation Shutdown Hardening"
+  },
+  "prompt": {
+    "ko": "switchport port-security mac-address sticky를 통해 포트당 단일 MAC만 허용하고 위반 시 포트를 셧다운합니다.\n지정된 식별자 `netinfra_port_security_sticky_mac_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_port_security_sticky_mac_v1\") 앞 20자리}`",
+    "en": "Harden access ports with sticky MAC learning and shutdown violation mode to thwart unauthorized devices.\nCompute the first 20 hex characters of SHA256(\"netinfra_port_security_sticky_mac_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_port_security_sticky_mac_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_port_security_sticky_mac_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_port_security_sticky_mac_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7f967d2de7982cd2faf9d871da9d57e5e82e999e5cf88d72b44ff8dde1f928ac"
+},
+{
+  "id": "t2_netinfra_dhcp_snooping_trust_port",
+  "tier": 2,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 155,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DHCP Snooping 바인딩 테이블 및 신뢰 포트(Trust Port) 격리",
+    "en": "DHCP Snooping Binding Table & Trust Port Demarcation"
+  },
+  "prompt": {
+    "ko": "스위치에서 DHCP Offer/ACK 프레임을 신뢰 포트(Trust Port)에서만 수용하여 악성 Rogue DHCP 서버를 무력화합니다.\n지정된 식별자 `netinfra_dhcp_snooping_trust_port_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_dhcp_snooping_trust_port_v1\") 앞 20자리}`",
+    "en": "Enforce DHCP Snooping to validate DHCP messages and drop server responses originating from untrusted ports.\nCompute the first 20 hex characters of SHA256(\"netinfra_dhcp_snooping_trust_port_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_dhcp_snooping_trust_port_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_dhcp_snooping_trust_port_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_dhcp_snooping_trust_port_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f24591f99edfd4c255f1a12c96b838a2c0c867acf56088fe8531177632ddb643"
+},
+{
+  "id": "t2_netinfra_dai_arp_inspection",
+  "tier": 2,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Dynamic ARP Inspection (DAI)을 통한 위조 ARP 스푸핑 방어",
+    "en": "Dynamic ARP Inspection (DAI) Anti-ARP Spoofing Mitigation"
+  },
+  "prompt": {
+    "ko": "DHCP Snooping 바인딩 데이터베이스와 대조하여 IP-MAC 매핑이 일치하지 않는 위조 ARP 응답을 드롭합니다.\n지정된 식별자 `netinfra_dai_arp_inspection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_dai_arp_inspection_v1\") 앞 20자리}`",
+    "en": "Configure Dynamic ARP Inspection (DAI) to discard gratuitous and spoofed ARP replies violating bindings.\nCompute the first 20 hex characters of SHA256(\"netinfra_dai_arp_inspection_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_dai_arp_inspection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_dai_arp_inspection_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_dai_arp_inspection_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f96b9bbbe22c7be6b65af78b4e213574d41ea08d523712cab1e6970b21926a89"
+},
+{
+  "id": "t2_netinfra_bpdu_guard_errdisable",
+  "tier": 2,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 165,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Spanning Tree BPDU Guard 활성화 및 포트 err-disabled 격리",
+    "en": "STP BPDU Guard Enforcement & err-disabled Port Isolation"
+  },
+  "prompt": {
+    "ko": "PortFast가 활성화된 단말 포트에서 BPDU가 감지되는 즉시 포트를 err-disabled 상태로 폐쇄합니다.\n지정된 식별자 `netinfra_bpdu_guard_errdisable_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_bpdu_guard_errdisable_v1\") 앞 20자리}`",
+    "en": "Deploy spanning-tree bpduguard default to immediately shut down edge ports receiving unexpected BPDUs.\nCompute the first 20 hex characters of SHA256(\"netinfra_bpdu_guard_errdisable_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_bpdu_guard_errdisable_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_bpdu_guard_errdisable_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_bpdu_guard_errdisable_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e3e2a74727218f2b722d1b7854dc8a4b913f56a354464941eabf0c25e3148ac2"
+},
+{
+  "id": "t3_netinfra_snmpv3_authpriv_sha_aes",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SNMPv3 AuthPriv (SHA-256 인증 및 AES-256 암호화) 전환",
+    "en": "SNMPv3 AuthPriv Migration with SHA-256 & AES-256 Encryption"
+  },
+  "prompt": {
+    "ko": "평문 커뮤니티 v1/v2c를 폐기하고 암호화된 SNMPv3 AuthPriv(SHA-256 인증, AES-256 기밀성)를 수립합니다.\n지정된 식별자 `netinfra_snmpv3_authpriv_sha_aes_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_snmpv3_authpriv_sha_aes_v1\") 앞 20자리}`",
+    "en": "Decommission legacy SNMPv2c and configure SNMPv3 USM AuthPriv with SHA-256 authentication and AES-256.\nCompute the first 20 hex characters of SHA256(\"netinfra_snmpv3_authpriv_sha_aes_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_snmpv3_authpriv_sha_aes_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_snmpv3_authpriv_sha_aes_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_snmpv3_authpriv_sha_aes_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "fa26a96ce0ad95d6ba79741ca73462c8b781beaa1b8501659f899bf9e916df7c"
+},
+{
+  "id": "t3_netinfra_cisco_type5_md5_hashcat",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Cisco Type 5 MD5 솔트 해시 사전 공격 (Hashcat Mode 500)",
+    "en": "Cisco Type 5 ($1$) MD5 Salted Hash Cracking via Hashcat Mode 500"
+  },
+  "prompt": {
+    "ko": "Cisco IOS의 enable secret 5 해시($1$salt$hash) 구조를 분석하고 Hashcat 모드 500으로 패스워드를 복원합니다.\n지정된 식별자 `netinfra_cisco_type5_md5_hashcat_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_cisco_type5_md5_hashcat_v1\") 앞 20자리}`",
+    "en": "Audit Cisco IOS Type 5 salted MD5 passwords using Hashcat mode 500 and wordlist mutation rules.\nCompute the first 20 hex characters of SHA256(\"netinfra_cisco_type5_md5_hashcat_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_cisco_type5_md5_hashcat_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_cisco_type5_md5_hashcat_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_cisco_type5_md5_hashcat_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "a8a7bd18a7af268826f18bbf9d9ee228cea83b507a1e0d25b7fcbe57a539fc80"
+},
+{
+  "id": "t3_netinfra_vlan_acl_vacl",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 210,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "VLAN Access-Map(VACL) 기반 L2 패킷 필터링 아키텍처",
+    "en": "VLAN Access-Map (VACL) Layer 2 Granular Packet Filtering"
+  },
+  "prompt": {
+    "ko": "동일 VLAN 내부 호스트 간 통신을 하드웨어 ASIC 레벨에서 차단하는 VACL(VLAN Access-List)을 구성합니다.\n지정된 식별자 `netinfra_vlan_acl_vacl_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_vlan_acl_vacl_v1\") 앞 20자리}`",
+    "en": "Enforce VACL access-maps in switch ASIC hardware to filter intra-VLAN lateral traffic.\nCompute the first 20 hex characters of SHA256(\"netinfra_vlan_acl_vacl_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_vlan_acl_vacl_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_vlan_acl_vacl_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_vlan_acl_vacl_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "12570a357c5136d1f561db10b80ab9e9fe1a65a5b463efa314ca342c5ecfc196"
+},
+{
+  "id": "t3_netinfra_private_vlan_isolated",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 220,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Private VLAN(PVLAN) Isolated 포트 격리 및 업링크 보호",
+    "en": "Private VLAN (PVLAN) Isolated Port Segregation Architecture"
+  },
+  "prompt": {
+    "ko": "Primary VLAN 아래 Isolated 포트와 Promiscuous 포트를 분리하여 클라이언트 간 통신을 완전 차단합니다.\n지정된 식별자 `netinfra_private_vlan_isolated_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_private_vlan_isolated_v1\") 앞 20자리}`",
+    "en": "Design Private VLANs (PVLAN) with Isolated and Promiscuous mappings to achieve Zero Trust L2 segmentation.\nCompute the first 20 hex characters of SHA256(\"netinfra_private_vlan_isolated_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_private_vlan_isolated_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_private_vlan_isolated_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_private_vlan_isolated_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "f7c1ed3259f247078dc6d5e9aee5593ab0df85a1628c4fbdd99cdb28e04f0397"
+},
+{
+  "id": "t3_netinfra_stp_root_guard",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 225,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "STP Root Guard를 활용한 다운링크 루트 권한 탈취 차단",
+    "en": "STP Root Guard Protection against Downlink Root Usurpation"
+  },
+  "prompt": {
+    "ko": "스위치 다운링크 포트에 Root Guard를 적용하여 우선순위가 높은 BPDU 수신 시 포트를 루트 불일치로 격리합니다.\n지정된 식별자 `netinfra_stp_root_guard_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_stp_root_guard_v1\") 앞 20자리}`",
+    "en": "Apply spanning-tree guard root on distribution ports to prevent rogue switches becoming STP root.\nCompute the first 20 hex characters of SHA256(\"netinfra_stp_root_guard_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_stp_root_guard_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_stp_root_guard_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_stp_root_guard_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "756f1dd6c2d88ec61b51f0971e6b93480aaa9abf2370ff4ece7be05bbdf3bd41"
+},
+{
+  "id": "t3_netinfra_copp_control_plane_policing",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 230,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Control Plane Policing (CoPP) 정책을 통한 CPU DoS 방어",
+    "en": "Control Plane Policing (CoPP) Policy for Route Processor DoS Mitigation"
+  },
+  "prompt": {
+    "ko": "스위치/라우터 CPU(Route Processor)로 유입되는 관리/라우팅 프로토콜 패킷을 Rate-limit하는 CoPP 정책을 수립합니다.\n지정된 식별자 `netinfra_copp_control_plane_policing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_copp_control_plane_policing_v1\") 앞 20자리}`",
+    "en": "Formulate CoPP policy-maps to rate-limit control traffic directed to Route Processor and defend CPU.\nCompute the first 20 hex characters of SHA256(\"netinfra_copp_control_plane_policing_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_copp_control_plane_policing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_copp_control_plane_policing_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_copp_control_plane_policing_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b4101c15dd536ec0ad9faf76f0fd332969f28da7ad8bc2ae3d4adede6dc8b5c7"
+},
+{
+  "id": "t3_netinfra_ip_source_guard_ipsg",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 240,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IP Source Guard (IPSG)를 통한 IP 스푸핑 주소 위조 차단",
+    "en": "IP Source Guard (IPSG) Defense against Source Address Spoofing"
+  },
+  "prompt": {
+    "ko": "DHCP Snooping 바인딩 테이블을 기반으로 허용되지 않은 소스 IP 패킷을 L2 포트 레벨에서 하드웨어 드롭합니다.\n지정된 식별자 `netinfra_ip_source_guard_ipsg_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_ip_source_guard_ipsg_v1\") 앞 20자리}`",
+    "en": "Enforce IP Source Guard (IPSG) on untrusted access ports to drop frames with unassigned IP addresses.\nCompute the first 20 hex characters of SHA256(\"netinfra_ip_source_guard_ipsg_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_ip_source_guard_ipsg_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_ip_source_guard_ipsg_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_ip_source_guard_ipsg_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "30e5b678301fefab4e69a5515767097c1a93bb9616db36c0fc64c15048bb5634"
+},
+{
+  "id": "t3_netinfra_tacacs_radius_aaa",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 245,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "TACACS+ 및 RADIUS 기반 엔터프라이즈 AAA 인증·인가 통제",
+    "en": "Enterprise AAA Control via TACACS+ & RADIUS Server Integration"
+  },
+  "prompt": {
+    "ko": "로컬 패스워드를 대체하여 TACACS+ TCP 49 기반 전체 명령어 인가 및 세부 감사 로깅 파이프라인을 구축합니다.\n지정된 식별자 `netinfra_tacacs_radius_aaa_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_tacacs_radius_aaa_v1\") 앞 20자리}`",
+    "en": "Implement centralized AAA via TACACS+ over TCP 49 with per-command authorization and accounting logs.\nCompute the first 20 hex characters of SHA256(\"netinfra_tacacs_radius_aaa_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_tacacs_radius_aaa_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_tacacs_radius_aaa_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_tacacs_radius_aaa_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7d163ce402060b4326ec5c9c48c02e7d7fd9450b6b8ea3a82ad166f8c478a38d"
+},
+{
+  "id": "t3_netinfra_router_bgp_route_hijacking",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP 경로 하이재킹 분석 및 RPKI ROA 경로 유효성 검증",
+    "en": "BGP Route Hijacking Analysis & RPKI Route Origin Authorization"
+  },
+  "prompt": {
+    "ko": "BGP 피어링에 더 구체적인 /24 프리픽스를 위조 공고하여 글로벌 트래픽을 가로채는 공격과 RPKI 검증을 다룹니다.\n지정된 식별자 `netinfra_router_bgp_route_hijacking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_router_bgp_route_hijacking_v1\") 앞 20자리}`",
+    "en": "Triage BGP prefix injection attacks using RPKI Route Origin Authorization (ROA) validation.\nCompute the first 20 hex characters of SHA256(\"netinfra_router_bgp_route_hijacking_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_router_bgp_route_hijacking_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_router_bgp_route_hijacking_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_router_bgp_route_hijacking_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "02b257045d13f2b4c70526ed305d5bbf595585f489d0aae8b1ea7643dc236b9e"
+},
+{
+  "id": "t3_netinfra_cisco_ios_rommon_recovery",
+  "tier": 3,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 260,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Cisco IOS ROMMON 패스워드 바이패스 및 구성 레지스터",
+    "en": "Cisco IOS ROMMON Password Bypass & Configuration Register 0x2142"
+  },
+  "prompt": {
+    "ko": "콘솔 물리 접속 시 콘솔 브레이크 시그널과 config-register 0x2142를 통해 startup-config를 무시하는 원리를 분석합니다.\n지정된 식별자 `netinfra_cisco_ios_rommon_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_cisco_ios_rommon_recovery_v1\") 앞 20자리}`",
+    "en": "Audit physical console password recovery bypass mechanism using ROMMON configuration register 0x2142.\nCompute the first 20 hex characters of SHA256(\"netinfra_cisco_ios_rommon_recovery_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_cisco_ios_rommon_recovery_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_cisco_ios_rommon_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_cisco_ios_rommon_recovery_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "e944a60e74f85ee70aef77a8e6976960975c8290aa44bcd24b2adee47ed94410"
+},
+{
+  "id": "t4_netinfra_cisco_smart_install_cve",
+  "tier": 4,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 300,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Cisco Smart Install (SMI) 취약점(CVE-2018-0171) 임의 코드 실행",
+    "en": "Cisco Smart Install (SMI) Protocol Abuse (CVE-2018-0171) & RCE"
+  },
+  "prompt": {
+    "ko": "TCP 4786 포트의 Smart Install 프로토콜 버퍼 오버플로를 악용해 원격에서 IOS 장비를 완전 장악하는 기법을 분석합니다.\n지정된 식별자 `netinfra_cisco_smart_install_cve_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_cisco_smart_install_cve_v1\") 앞 20자리}`",
+    "en": "Analyze CVE-2018-0171 Smart Install client buffer overflow on TCP 4786 leading to unauthenticated RCE.\nCompute the first 20 hex characters of SHA256(\"netinfra_cisco_smart_install_cve_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_cisco_smart_install_cve_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_cisco_smart_install_cve_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_cisco_smart_install_cve_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "71b6c605ca854b3a201c57b1e53d8d1aed5e7950ccc495b44d97ca8e272f81f6"
+},
+{
+  "id": "t4_netinfra_snmp_rce_copy_running_startup",
+  "tier": 4,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 310,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SNMP SET을 통한 악성 startup-config 덮어쓰기 및 지속성",
+    "en": "Malicious startup-config Overwrite & Persistence via SNMP SET"
+  },
+  "prompt": {
+    "ko": "ciscoConfigCopyMIB를 악용해 TFTP의 변조된 설정을 스위치의 startup-config로 덮어써 재부팅 후 백도어를 유지합니다.\n지정된 식별자 `netinfra_snmp_rce_copy_running_startup_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_snmp_rce_copy_running_startup_v1\") 앞 20자리}`",
+    "en": "Achieve hardware persistence by staging backdoored startup-config via SNMP ccCopyDestFileType=startupConfig.\nCompute the first 20 hex characters of SHA256(\"netinfra_snmp_rce_copy_running_startup_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_snmp_rce_copy_running_startup_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_snmp_rce_copy_running_startup_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_snmp_rce_copy_running_startup_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "ec1e43dd08930e60228d4ad48498bff34a0202a0ae44ff97bc9476995af5fa7f"
+},
+{
+  "id": "t4_netinfra_bgp_evil_twin_asn_spoof",
+  "tier": 4,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 320,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP AS 경로 조작 및 자율 시스템 피어링 하이재킹",
+    "en": "BGP AS-Path Prepending Manipulation & Autonomous System Hijack"
+  },
+  "prompt": {
+    "ko": "AS-Path Prepending 조작 및 BGP 피어 인증(MD5 Password) 부재를 노려 자율 시스템 간 백본 트래픽을 탈취합니다.\n지정된 식별자 `netinfra_bgp_evil_twin_asn_spoof_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_bgp_evil_twin_asn_spoof_v1\") 앞 20자리}`",
+    "en": "Simulate BGP inter-domain traffic diversion targeting peering links lacking TCP MD5 authentication.\nCompute the first 20 hex characters of SHA256(\"netinfra_bgp_evil_twin_asn_spoof_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_bgp_evil_twin_asn_spoof_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_bgp_evil_twin_asn_spoof_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_bgp_evil_twin_asn_spoof_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "321634f8f90c25ad57c4ea227209ea692743de6876ed42ed9c9aea46a305398c"
+},
+{
+  "id": "t4_netinfra_cisco_ios_xe_webui_cve",
+  "tier": 4,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 330,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Cisco IOS XE Web UI 권한 탈취 취약점(CVE-2023-20198) 분석",
+    "en": "Cisco IOS XE Web UI Privilege Escalation (CVE-2023-20198) Triage"
+  },
+  "prompt": {
+    "ko": "Cisco IOS XE의 NGINX 웹 서버와 WDM 데몬 간 권한 검증 누락으로 임의 privilege 15 계정을 생성하는 기법을 분석합니다.\n지정된 식별자 `netinfra_cisco_ios_xe_webui_cve_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_cisco_ios_xe_webui_cve_v1\") 앞 20자리}`",
+    "en": "Triage CVE-2023-20198 unauthenticated administrative user creation vulnerability in Cisco IOS XE Web UI.\nCompute the first 20 hex characters of SHA256(\"netinfra_cisco_ios_xe_webui_cve_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_cisco_ios_xe_webui_cve_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_cisco_ios_xe_webui_cve_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_cisco_ios_xe_webui_cve_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b5c3def6c19669f40c54a8583885b99968352c04ddf033534ff9ef0c9f410233"
+},
+{
+  "id": "t4_netinfra_stp_tc_bpdu_topology_churn",
+  "tier": 4,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 335,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Topology Change (TC) BPDU 플러딩을 통한 CAM 플러시 DoS",
+    "en": "STP Topology Change (TC) BPDU Flooding & CAM Table Flush DoS"
+  },
+  "prompt": {
+    "ko": "지속적인 TC BPDU를 주입하여 모든 스위치의 CAM 에이징 타이머를 15초로 단축시키고 브로드캐스트 플러딩을 유발합니다.\n지정된 식별자 `netinfra_stp_tc_bpdu_topology_churn_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_stp_tc_bpdu_topology_churn_v1\") 앞 20자리}`",
+    "en": "Inject continuous STP Topology Change (TC) notifications to force rapid CAM aging and switch-wide packet flooding.\nCompute the first 20 hex characters of SHA256(\"netinfra_stp_tc_bpdu_topology_churn_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_stp_tc_bpdu_topology_churn_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_stp_tc_bpdu_topology_churn_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_stp_tc_bpdu_topology_churn_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "7167708f2e802cd296cfb92046f5332cc006417bdbdb8d8ca80b7726bcff9382"
+},
+{
+  "id": "t4_netinfra_quantum_safe_macsec_8021ae",
+  "tier": 4,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 340,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IEEE 802.1AE MACsec L2 점대점 암호화 및 양자 내성 방어",
+    "en": "IEEE 802.1AE MACsec Layer 2 Point-to-Point Encryption Architecture"
+  },
+  "prompt": {
+    "ko": "스위치-라우터 간 전송되는 모든 L2 이더넷 프레임을 AES-GCM-256 하드웨어 암호화로 보호하는 MACsec 아키텍처를 분석합니다.\n지정된 식별자 `netinfra_quantum_safe_macsec_8021ae_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_quantum_safe_macsec_8021ae_v1\") 앞 20자리}`",
+    "en": "Evaluate IEEE 802.1AE MACsec wire-speed AES-GCM-256 encryption defending point-to-point switch trunks.\nCompute the first 20 hex characters of SHA256(\"netinfra_quantum_safe_macsec_8021ae_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_quantum_safe_macsec_8021ae_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_quantum_safe_macsec_8021ae_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_quantum_safe_macsec_8021ae_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "d9f1ed96d3810bdc955e00e567dbf72abb841e0afec3f5ff69e457808f73376f"
+},
+{
+  "id": "t4_netinfra_capstone_enterprise_audit",
+  "tier": 4,
+  "cat": "netinfra",
+  "track": "netinfra",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 네트워크 인프라 침투 테스트 및 CIS 하드닝 총괄",
+    "en": "Enterprise Network Infrastructure Pentest & CIS Benchmark Capstone"
+  },
+  "prompt": {
+    "ko": "SNMP 유출 -> DTP 스푸핑 -> STP 루트 탈취 -> PVLAN/PortSec/CoPP 검증까지 인프라 전 계층 감사를 완성합니다.\n지정된 식별자 `netinfra_capstone_enterprise_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"netinfra_capstone_enterprise_audit_v1\") 앞 20자리}`",
+    "en": "Execute comprehensive enterprise network device audit from SNMP/DTP exploitation to CIS hardening capstone.\nCompute the first 20 hex characters of SHA256(\"netinfra_capstone_enterprise_audit_v1\").\n\nFormat: `FLAG{SHA256(\"netinfra_capstone_enterprise_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "식별자 `netinfra_capstone_enterprise_audit_v1`의 SHA-256 해시 앞 20자리를 추출하세요.",
+      "대소문자를 구분하여 `FLAG{...}` 형태로 제출합니다."
+    ],
+    "en": [
+      "Compute the first 20 hex chars of SHA-256(\"netinfra_capstone_enterprise_audit_v1\").",
+      "Wrap in `FLAG{...}` format."
+    ]
+  },
+  "hash": "b631252f18a65bd87dc2133a1c81df88e33cb16144e357a3c1f7d0db263b73d6"
 }
 ];
