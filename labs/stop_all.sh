@@ -90,6 +90,7 @@ LAB_DIRS=(
     "29_adcs_kerberos_delegation_lab"
     "30_ghidra_deobfuscation_lab"
     "31_oauth_sso_lab"
+    "32_bgp_routeguard_lab"
 )
 
 LAB_NAMES=(
@@ -124,6 +125,7 @@ LAB_NAMES=(
     "AD CS 인증서 침투 & Kerberos 위임 실전 랩"
     "바이너리 분석 & 고급 난독화 해제 랩"
     "OAuth 2.0 & OIDC SSO 취약점 실전 랩"
+    "BGP 라우팅 하이재킹 & RPKI ROA 실전 랩"
 )
 
 

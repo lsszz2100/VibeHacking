@@ -412,6 +412,14 @@ const TRACKS = [
     "en": "OAuth 2.0 & OIDC SSO Exploitation",
     "desc_ko": "OAuth 2.0 인가 코드 도청·Redirect URI 정규식 우회·PKCE S256 다운그레이드·JWT RS256/HS256 Key Confusion 및 SSO 계정 탈취.",
     "desc_en": "OAuth 2.0 authorization code interception, redirect URI regex bypass, PKCE S256 downgrade, JWT RS256/HS256 key confusion, and SSO account takeover."
+  },
+  {
+    "id": "bgp",
+    "icon": "🛣️",
+    "ko": "BGP 라우팅·RPKI 보안",
+    "en": "BGP Routing & RPKI Security",
+    "desc_ko": "BGP-4 피어링·Exact/Sub-prefix LPM 하이재킹·AS-Path 위조·경로 누출·RPKI ROA 검증 및 MANRS 하드닝.",
+    "desc_en": "BGP-4 peering, exact/sub-prefix LPM hijacking, AS-Path forgery, route leaks, RPKI ROA validation, and MANRS hardening."
   }
 ];
 
@@ -44564,6 +44572,987 @@ const CHALLENGES = [
     ]
   },
   "hash": "996aa1ea7705e26315852ece9cda880e6521eb41c5af3670cf645778ae5bd6d5"
+}
+,
+{
+  "id": "t0_bgp_rfc4271_fsm",
+  "tier": 0,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP-4 프로토콜 유한 상태 머신(FSM) 6단계 천이",
+    "en": "BGP-4 Finite State Machine (FSM) Six States"
+  },
+  "prompt": {
+    "ko": "RFC 4271 BGP-4의 유한 상태 머신(Idle, Connect, Active, OpenSent, OpenConfirm, Established) 천이 규칙을 분석합니다.\n지정된 식별자 `bgp_rfc4271_fsm_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_rfc4271_fsm_v1\") 앞 20자리}`",
+    "en": "Analyze the six finite state machine transitions defined in RFC 4271 for BGP-4 peering.\nCompute the first 20 hex characters of SHA256(\"bgp_rfc4271_fsm_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_rfc4271_fsm_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "RFC 4271 Section 8 BGP FSM 상태 전이 다이어그램을 확인하세요.",
+      "식별자 `bgp_rfc4271_fsm_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review RFC 4271 Section 8 BGP FSM specifications.",
+      "Extract first 20 hex chars of SHA256(\"bgp_rfc4271_fsm_v1\")."
+    ]
+  },
+  "hash": "82d0b1e0a3bd59fe12b699921e6c8f401e5a949c2b4a980c0d30393305732773"
+},
+{
+  "id": "t0_bgp_message_types",
+  "tier": 0,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP 4대 핵심 메시지 유형 및 패킷 헤더 구조",
+    "en": "BGP Four Core Message Types & Header Framing"
+  },
+  "prompt": {
+    "ko": "BGP 세션에서 교환되는 OPEN, UPDATE, KEEPALIVE, NOTIFICATION 4대 메시지 유형의 기능과 19바이트 공통 헤더를 분석합니다.\n지정된 식별자 `bgp_message_types_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_message_types_v1\") 앞 20자리}`",
+    "en": "Examine the four primary BGP message formats and 19-byte common header framing.\nCompute the first 20 hex characters of SHA256(\"bgp_message_types_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_message_types_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "UPDATE 메시지가 경로 광고 및 철회(Withdrawn Routes)를 수행함을 파악하세요.",
+      "식별자 `bgp_message_types_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Observe that UPDATE carries route announcements and withdrawals.",
+      "Extract first 20 hex chars of SHA256(\"bgp_message_types_v1\")."
+    ]
+  },
+  "hash": "f192e0ce929f63fd318c6089bbfe8f87895c54deeb8e670699009d739afe87a3"
+},
+{
+  "id": "t0_bgp_as_numbering",
+  "tier": 0,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "자율 시스템 번호(ASN) 체계 및 사설 ASN 범위",
+    "en": "Autonomous System Numbers (ASN) & Private ASN Ranges"
+  },
+  "prompt": {
+    "ko": "2바이트 및 4바이트(RFC 6793) ASN 구조와 RFC 6996 사설 ASN 대역(64512~65534, 4200000000~4294967294)을 분석합니다.\n지정된 식별자 `bgp_as_numbering_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_as_numbering_v1\") 앞 20자리}`",
+    "en": "Inspect 2-byte and 4-byte ASN allocations and standard private ASN allocations under RFC 6996.\nCompute the first 20 hex characters of SHA256(\"bgp_as_numbering_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_as_numbering_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "인터넷상으로 사설 ASN이 누출되지 않도록 필터링해야 함을 확인하세요.",
+      "식별자 `bgp_as_numbering_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Private ASNs must be stripped before egress to public peers.",
+      "Extract first 20 hex chars of SHA256(\"bgp_as_numbering_v1\")."
+    ]
+  },
+  "hash": "ea11e62b64ddb65957cbd3f13923d08c1d0c173c20d756effb6827b03f68adb8"
+},
+{
+  "id": "t0_bgp_path_attributes",
+  "tier": 0,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP 경로 속성(Path Attributes) 4대 범주 분류",
+    "en": "BGP Path Attributes Four Category Classification"
+  },
+  "prompt": {
+    "ko": "Well-known Mandatory, Well-known Discretionary, Optional Transitive, Optional Non-transitive 속성의 전파 특성을 분석합니다.\n지정된 식별자 `bgp_path_attributes_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_path_attributes_v1\") 앞 20자리}`",
+    "en": "Categorize BGP path attributes into mandatory, discretionary, and optional classes.\nCompute the first 20 hex characters of SHA256(\"bgp_path_attributes_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_path_attributes_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ORIGIN, AS_PATH, NEXT_HOP이 Well-known Mandatory임을 확인하세요.",
+      "식별자 `bgp_path_attributes_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "ORIGIN, AS_PATH, and NEXT_HOP are Well-known Mandatory.",
+      "Extract first 20 hex chars of SHA256(\"bgp_path_attributes_v1\")."
+    ]
+  },
+  "hash": "e67fc438101076b151bdc30f77ac6a9d774331d71be7049700bc2bf75bdce884"
+},
+{
+  "id": "t0_bgp_decision_process",
+  "tier": 0,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP 최적 경로 선출(Best Path Selection) 순차 알고리즘",
+    "en": "BGP Best Path Selection Tie-Breaking Algorithm"
+  },
+  "prompt": {
+    "ko": "Weight, Local-Pref, Local Originated, AS-Path 길이, Origin, MED, eBGP 우선, IGP 메트릭 순의 의사결정 체계를 분석합니다.\n지정된 식별자 `bgp_decision_process_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_decision_process_v1\") 앞 20자리}`",
+    "en": "Analyze standard BGP best path tie-breaking sequence from Local-Pref down to router ID.\nCompute the first 20 hex characters of SHA256(\"bgp_decision_process_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_decision_process_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "AS-Path 길이가 짧을수록 경로 우선순위가 높아집니다.",
+      "식별자 `bgp_decision_process_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Shorter AS-Path attributes win before MED evaluation.",
+      "Extract first 20 hex chars of SHA256(\"bgp_decision_process_v1\")."
+    ]
+  },
+  "hash": "28a711135a07829a2ce190d0b9f55d6deb8e7cc0bf00706093765892465a0700"
+},
+{
+  "id": "t0_rpki_roa_structure",
+  "tier": 0,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RPKI 경로 원점 인가(ROA) 페이로드 및 유효성 구조",
+    "en": "RPKI Route Origin Authorization (ROA) Structure"
+  },
+  "prompt": {
+    "ko": "RFC 6482에 정의된 ROA의 핵심 필드(Prefix, MaxLength, Origin AS, X.509 End-Entity Certificate)를 분석합니다.\n지정된 식별자 `rpki_roa_structure_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"rpki_roa_structure_v1\") 앞 20자리}`",
+    "en": "Examine the cryptographic payload of Route Origin Authorizations (ROAs) under RFC 6482.\nCompute the first 20 hex characters of SHA256(\"rpki_roa_structure_v1\").\n\nFormat: `FLAG{SHA256(\"rpki_roa_structure_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ROA는 특정 AS가 해당 IP 접두사를 광고할 수 있는 유일한 권한 증명서입니다.",
+      "식별자 `rpki_roa_structure_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "ROAs bind authorized origin ASNs to IP address prefixes.",
+      "Extract first 20 hex chars of SHA256(\"rpki_roa_structure_v1\")."
+    ]
+  },
+  "hash": "712a344f8726ad90e4b5073bac0b1d36d69767a9955ac86b95c82e75b0b49008"
+},
+{
+  "id": "t0_bgp_peering_model",
+  "tier": 0,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Transit vs Settlement-Free 피어링 및 Valley-Free 원칙",
+    "en": "Transit vs Settlement-Free Peering & Valley-Free Routing"
+  },
+  "prompt": {
+    "ko": "Customer-to-Provider, Peer-to-Peer 경제적 계약 관계와 피어 간 경로 무단 전송을 금지하는 Valley-Free 라우팅 모델을 분석합니다.\n지정된 식별자 `bgp_peering_model_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_peering_model_v1\") 앞 20자리}`",
+    "en": "Study inter-AS commercial relationships and the Valley-Free rule forbidding peer route export.\nCompute the first 20 hex characters of SHA256(\"bgp_peering_model_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_peering_model_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "피어로부터 받은 경로는 고객에게만 보내야 하며 다른 피어나 업스트림에 보내면 안 됩니다.",
+      "식별자 `bgp_peering_model_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Routes learned from a peer must only be exported to customers.",
+      "Extract first 20 hex chars of SHA256(\"bgp_peering_model_v1\")."
+    ]
+  },
+  "hash": "d7de60848ea0662f559eb0c622d116eb0f399f781a7d8381e5fabec7f14ee907"
+},
+{
+  "id": "t1_bgp_exact_prefix_hijack",
+  "tier": 1,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "동일 접두사(Exact Prefix) BGP 하이재킹 공격 원리",
+    "en": "Exact Prefix BGP Hijacking Exploitation"
+  },
+  "prompt": {
+    "ko": "공격자 AS가 합법적 소유자와 동일한 접두사를 위조 광고하여 더 짧은 AS-Path로 트래픽을 가로채는 공격을 분석합니다.\n지정된 식별자 `bgp_exact_prefix_hijack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_exact_prefix_hijack_v1\") 앞 20자리}`",
+    "en": "Simulate exact prefix hijacking where an attacker announces an identical CIDR block with shorter AS-Path.\nCompute the first 20 hex characters of SHA256(\"bgp_exact_prefix_hijack_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_exact_prefix_hijack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "동일 접두사 하이재킹은 BGP Best Path의 AS-Path 길이에 따라 전 세계 트래픽의 일부가 유인됩니다.",
+      "식별자 `bgp_exact_prefix_hijack_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Traffic splits globally based on which origin presents a shorter AS-Path.",
+      "Extract first 20 hex chars of SHA256(\"bgp_exact_prefix_hijack_v1\")."
+    ]
+  },
+  "hash": "216433cf9661fff8718f3c4e3242283cd252dceb148824f957547022d09b428d"
+},
+{
+  "id": "t1_bgp_subprefix_lpm",
+  "tier": 1,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "서브넷 분할 최장 접두사 일치(LPM) 하이재킹",
+    "en": "Sub-prefix Longest Prefix Match (LPM) Hijacking"
+  },
+  "prompt": {
+    "ko": "피해자의 /24 슈퍼넷을 /25 단위로 쪼개어 광고함으로써 AS-Path 길이에 상관없이 모든 트래픽을 흡수하는 최장 일치 공격을 분석합니다.\n지정된 식별자 `bgp_subprefix_lpm_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_subprefix_lpm_v1\") 앞 20자리}`",
+    "en": "Exploit Longest Prefix Match routing behavior by announcing more specific subnets to override aggregate routes.\nCompute the first 20 hex characters of SHA256(\"bgp_subprefix_lpm_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_subprefix_lpm_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "IP 라우팅 엔진은 BGP 메트릭보다 더 긴 서브넷 마스크(Longest Prefix)를 항상 최우선 처리합니다.",
+      "식별자 `bgp_subprefix_lpm_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Longest prefix match takes precedence over any AS-Path length metric.",
+      "Extract first 20 hex chars of SHA256(\"bgp_subprefix_lpm_v1\")."
+    ]
+  },
+  "hash": "fac043aef3b798f6a2f687fbe76f96af38f75fa2c135972dee3500e7791fc07c"
+},
+{
+  "id": "t1_bgp_tcp_md5_flaws",
+  "tier": 1,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RFC 2385 TCP MD5 Signature 취약점 및 TCP-AO 전환",
+    "en": "RFC 2385 TCP MD5 Flaws & RFC 5925 TCP-AO Migration"
+  },
+  "prompt": {
+    "ko": "BGP TCP 포트 179 피어링 보호에 사용되던 MD5 서명의 암호학적 한계와 RFC 5925 TCP-AO(Authentication Option) 전환을 분석합니다.\n지정된 식별자 `bgp_tcp_md5_flaws_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_tcp_md5_flaws_v1\") 앞 20자리}`",
+    "en": "Analyze cryptographic weaknesses in TCP MD5 Signature and modern TCP-AO authentication.\nCompute the first 20 hex characters of SHA256(\"bgp_tcp_md5_flaws_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_tcp_md5_flaws_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "TCP-AO는 SHA-1/AES-128-CMAC 및 마스터 키 롤오버를 지원합니다.",
+      "식별자 `bgp_tcp_md5_flaws_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "TCP-AO provides master key rollover and HMAC-SHA1/AES-CMAC protection.",
+      "Extract first 20 hex chars of SHA256(\"bgp_tcp_md5_flaws_v1\")."
+    ]
+  },
+  "hash": "64de217554cf370c3e09364a2613910050edec5bb25c3f590c7d604d5586b378"
+},
+{
+  "id": "t1_bgp_ttl_security_gtsm",
+  "tier": 1,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "일반 TTL 보안 메커니즘(GTSM)을 통한 BGP 스푸핑 방어",
+    "en": "Generalized TTL Security Mechanism (GTSM, RFC 5082)"
+  },
+  "prompt": {
+    "ko": "eBGP 패킷의 IP TTL을 255로 전송하고 수신단에서 TTL 254 이상만 수용하여 원격지의 BGP 패킷 주입을 차단하는 GTSM을 분석합니다.\n지정된 식별자 `bgp_ttl_security_gtsm_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_ttl_security_gtsm_v1\") 앞 20자리}`",
+    "en": "Evaluate Generalized TTL Security Mechanism (GTSM) discarding spoofed off-path packets.\nCompute the first 20 hex characters of SHA256(\"bgp_ttl_security_gtsm_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_ttl_security_gtsm_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "수신 패킷의 TTL이 254 미만이면 1-hop 피어가 아닌 외부에서 라우팅된 공격 패킷으로 간주합니다.",
+      "식별자 `bgp_ttl_security_gtsm_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Packets with TTL below 254 are dropped as off-path forged injection attempts.",
+      "Extract first 20 hex chars of SHA256(\"bgp_ttl_security_gtsm_v1\")."
+    ]
+  },
+  "hash": "5837e7a70613a2dc6aa83c1e9410ef51ec129d229df445da86b353da971dbd7e"
+},
+{
+  "id": "t1_bgp_route_flapping_dampening",
+  "tier": 1,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP 경로 플래핑 감쇠(RFD) 악용 및 가용성 저해",
+    "en": "BGP Route Flap Damping (RFD, RFC 2439) Exploitation"
+  },
+  "prompt": {
+    "ko": "주기적인 경로 인출/재선언(Flapping)으로 인해 패널티가 누적되어 정상 경로가 장시간 억제(Suppressed)되는 RFD 부작용을 분석합니다.\n지정된 식별자 `bgp_route_flapping_dampening_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_route_flapping_dampening_v1\") 앞 20자리}`",
+    "en": "Study Route Flap Damping denial-of-service where flapping penalties suppress reachability.\nCompute the first 20 hex characters of SHA256(\"bgp_route_flapping_dampening_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_route_flapping_dampening_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "RIPE-378/580 권고에 따라 플래핑 감쇠 임계값을 완화해야 무고한 경로 차단을 방지할 수 있습니다.",
+      "식별자 `bgp_route_flapping_dampening_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Improper flap damping parameters cause collateral reachability blackouts.",
+      "Extract first 20 hex chars of SHA256(\"bgp_route_flapping_dampening_v1\")."
+    ]
+  },
+  "hash": "be71001bc1f33fbfb5586def08ef33497c4f4634855f9ba3ee4b0686b04298c4"
+},
+{
+  "id": "t1_rpki_rov_states",
+  "tier": 1,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RPKI ROV 3대 검증 상태(Valid/Invalid/NotFound) 판정",
+    "en": "RPKI Route Origin Validation (ROV) Three Validation States"
+  },
+  "prompt": {
+    "ko": "BGP 라우터가 수신한 경로를 ROA 캐시와 대조하여 Valid, Invalid, NotFound/Unknown으로 분류하고 Invalid를 폐기하는 절차를 분석합니다.\n지정된 식별자 `rpki_rov_states_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"rpki_rov_states_v1\") 앞 20자리}`",
+    "en": "Model BGP route state evaluation against local ROA table producing Valid, Invalid, and NotFound.\nCompute the first 20 hex characters of SHA256(\"rpki_rov_states_v1\").\n\nFormat: `FLAG{SHA256(\"rpki_rov_states_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ROA가 존재하지만 Origin ASN이나 서브넷 길이가 맞지 않으면 Invalid로 판정되어 즉시 드롭됩니다.",
+      "식별자 `rpki_rov_states_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Routes conflicting with existing ROA records evaluate to Invalid and must be dropped.",
+      "Extract first 20 hex chars of SHA256(\"rpki_rov_states_v1\")."
+    ]
+  },
+  "hash": "89c6f4388a51584d643d6cb4dec65d79984288166dda2d8026a67feb46e93ef8"
+},
+{
+  "id": "t1_bgp_blackholing_rtbh",
+  "tier": 1,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "원격 트리거 블랙홀(RTBH) BGP 커뮤니티 기반 트래픽 폐기",
+    "en": "Remotely Triggered Black Hole (RTBH, RFC 3882) Filtering"
+  },
+  "prompt": {
+    "ko": "공격 대상 IP를 특수 BGP 커뮤니티(예: 65535:666 또는 BLACKHOLE)로 광고하여 업스트림 ISP 라우터에서 Null0 폐기시키는 기법을 분석합니다.\n지정된 식별자 `bgp_blackholing_rtbh_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_blackholing_rtbh_v1\") 앞 20자리}`",
+    "en": "Examine Remotely Triggered Black Hole (RTBH) routing to discard distributed denial of service traffic at line rate.\nCompute the first 20 hex characters of SHA256(\"bgp_blackholing_rtbh_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_blackholing_rtbh_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Next-Hop을 미라우팅 가능 IP(192.0.2.1 등)로 재작성하여 패킷을 드롭시킵니다.",
+      "식별자 `bgp_blackholing_rtbh_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Next-Hop rewrite forces border routers to drop matching traffic into Null0.",
+      "Extract first 20 hex chars of SHA256(\"bgp_blackholing_rtbh_v1\")."
+    ]
+  },
+  "hash": "83948f0a85505774ce3c63db32e23c25ca329ce3c7609f9abf2f2579189b100f"
+},
+{
+  "id": "t2_bgp_aspath_prepending",
+  "tier": 2,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP AS-Path Prepending 남용 및 트래픽 유입 엔지니어링",
+    "en": "BGP AS-Path Prepending Manipulation & Traffic Engineering"
+  },
+  "prompt": {
+    "ko": "자신의 ASN을 여러 번 반복 삽입하여 특정 업스트림 경로의 길이를 인위적으로 늘려 인바운드 트래픽을 편향시키는 기법을 분석합니다.\n지정된 식별자 `bgp_aspath_prepending_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_aspath_prepending_v1\") 앞 20자리}`",
+    "en": "Analyze AS-Path prepending abuse for inbound traffic engineering and its routing side effects.\nCompute the first 20 hex characters of SHA256(\"bgp_aspath_prepending_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_aspath_prepending_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "과도한 Prepending은 글로벌 라우팅 테이블 메모리를 낭비하며 악의적 경로 선호 조작에 악용될 수 있습니다.",
+      "식별자 `bgp_aspath_prepending_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Excessive prepending inflates RIB size and distorts inter-AS path selection.",
+      "Extract first 20 hex chars of SHA256(\"bgp_aspath_prepending_v1\")."
+    ]
+  },
+  "hash": "bfa0863d41487acd5362ab6823a1dae3f3cedef9d1c5f8e8014b1113359a03c0"
+},
+{
+  "id": "t2_bgp_route_leak_rfc7908",
+  "tier": 2,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 75,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RFC 7908 정의 BGP 경로 누출(Route Leak) 6대 유형 분석",
+    "en": "RFC 7908 BGP Route Leak Taxonomy & Detection"
+  },
+  "prompt": {
+    "ko": "Peer-to-Peer 또는 Provider-to-Provider로 수신한 경로를 다른 피어나 업스트림에 무단 재광고하여 트래픽 병목 및 감청을 유발하는 경로 누출을 분석합니다.\n지정된 식별자 `bgp_route_leak_rfc7908_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_route_leak_rfc7908_v1\") 앞 20자리}`",
+    "en": "Study the six distinct route leak classes defined in RFC 7908 violating valley-free peering invariants.\nCompute the first 20 hex characters of SHA256(\"bgp_route_leak_rfc7908_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_route_leak_rfc7908_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Type 1: transit 공급자로부터 받은 경로를 다른 transit 공급자에게 재광고하는 누출입니다.",
+      "식별자 `bgp_route_leak_rfc7908_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Type 1 involves re-advertising transit routes to a transit provider.",
+      "Extract first 20 hex chars of SHA256(\"bgp_route_leak_rfc7908_v1\")."
+    ]
+  },
+  "hash": "4fd95d7b6666f8004fbdb21f5224b4608c9ffe5fc7d98e847ce635f7223457de"
+},
+{
+  "id": "t2_bgp_aspath_spoofing",
+  "tier": 2,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP 1-Hop AS-Path 위조를 통한 RPKI 출처 검증 우회",
+    "en": "1-Hop AS-Path Forgery Bypassing RPKI Origin Validation"
+  },
+  "prompt": {
+    "ko": "공격자 AS가 합법적 소유자의 ASN을 AS-Path 끝에 덧붙여 광고함으로써 단순 RPKI Origin AS 일치 검사를 통과하는 위조 공격을 분석합니다.\n지정된 식별자 `bgp_aspath_spoofing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_aspath_spoofing_v1\") 앞 20자리}`",
+    "en": "Simulate 1-hop AS-Path spoofing where an attacker appends the victim origin ASN to satisfy basic ROV.\nCompute the first 20 hex characters of SHA256(\"bgp_aspath_spoofing_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_aspath_spoofing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ROV는 AS-Path의 마지막 ASN(Origin)만 검증하므로 중간 경로의 위조는 탐지하지 못합니다.",
+      "식별자 `bgp_aspath_spoofing_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "ROV checks only the rightmost ASN in AS_PATH, leaving path sequence unverified.",
+      "Extract first 20 hex chars of SHA256(\"bgp_aspath_spoofing_v1\")."
+    ]
+  },
+  "hash": "983fd61159a4affe69e44fed3dd68f06f95a0f2d6b9ba7ab91f42bb7cb06f1a7"
+},
+{
+  "id": "t2_rpki_maxlength_vulnerability",
+  "tier": 2,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "느슨한 RPKI ROA MaxLength 설정으로 인한 서브넷 공격면",
+    "en": "Permissive ROA MaxLength Vulnerability to Sub-prefix Attacks"
+  },
+  "prompt": {
+    "ko": "예를 들어 /20 접두사에 대해 MaxLength /24를 지정했을 때 공격자가 /24 서브넷을 합법적으로 사칭할 수 있게 되는 설정 결함을 분석합니다.\n지정된 식별자 `rpki_maxlength_vulnerability_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"rpki_maxlength_vulnerability_v1\") 앞 20자리}`",
+    "en": "Inspect vulnerabilities arising from loose MaxLength parameters in ROA registrations.\nCompute the first 20 hex characters of SHA256(\"rpki_maxlength_vulnerability_v1\").\n\nFormat: `FLAG{SHA256(\"rpki_maxlength_vulnerability_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "RFC 9319 권고에 따라 ROA의 MaxLength는 실제 광고 중인 접두사 길이와 엄격히 일치시켜야 합니다.",
+      "식별자 `rpki_maxlength_vulnerability_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "RFC 9319 mandates matching ROA MaxLength exactly to announced prefix lengths.",
+      "Extract first 20 hex chars of SHA256(\"rpki_maxlength_vulnerability_v1\")."
+    ]
+  },
+  "hash": "8ebe2fae210d8bdaf293c0f2268cadbbb8328c8f96808635c12aa797711deec2"
+},
+{
+  "id": "t2_bgp_communities_manipulation",
+  "tier": 2,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP Large Communities(RFC 8092) 속성 조작 및 라우팅 제어",
+    "en": "BGP Large Communities (RFC 8092) Manipulation"
+  },
+  "prompt": {
+    "ko": "12바이트(4-byte Global Admin : 4-byte Data 1 : 4-byte Data 2) Large Communities 속성을 조작하여 업스트림 ISP의 지역 선호도를 강제 변경하는 공격을 분석합니다.\n지정된 식별자 `bgp_communities_manipulation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_communities_manipulation_v1\") 앞 20자리}`",
+    "en": "Analyze BGP Large Communities attribute manipulation overriding upstream routing decisions.\nCompute the first 20 hex characters of SHA256(\"bgp_communities_manipulation_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_communities_manipulation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "인가되지 않은 인바운드 커뮤니티 태그는 피어 인그레스 필터에서 반드시 제거(Strip)되어야 합니다.",
+      "식별자 `bgp_communities_manipulation_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Border ingress policies must strip unauthorized customer community tags.",
+      "Extract first 20 hex chars of SHA256(\"bgp_communities_manipulation_v1\")."
+    ]
+  },
+  "hash": "10b2133107e945e1592b9f9a7a3c2d15bea26360df7adb70b9e32831a47cb4a3"
+},
+{
+  "id": "t2_bgp_flowspec_rfc5575",
+  "tier": 2,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP FlowSpec (RFC 5575/8955) 주입을 통한 트래픽 필터링 오용",
+    "en": "BGP FlowSpec (RFC 5575/8955) Injection & Traffic Redirection"
+  },
+  "prompt": {
+    "ko": "BGP를 통해 5-tuple 방화벽 규칙을 배포하는 FlowSpec을 위조 주입하여 특정 대역 트래픽을 리다이렉트하거나 전면 차단하는 공격을 분석합니다.\n지정된 식별자 `bgp_flowspec_rfc5575_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_flowspec_rfc5575_v1\") 앞 20자리}`",
+    "en": "Evaluate BGP FlowSpec rule propagation and risks of unauthorized dynamic ACL injection.\nCompute the first 20 hex characters of SHA256(\"bgp_flowspec_rfc5575_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_flowspec_rfc5575_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "RFC 8955 검증 규칙에 따라 피어가 자신이 소유하지 않은 접두사에 FlowSpec 룰을 선언하면 거부해야 합니다.",
+      "식별자 `bgp_flowspec_rfc5575_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "RFC 8955 validation prevents peers from injecting FlowSpec rules for foreign prefixes.",
+      "Extract first 20 hex chars of SHA256(\"bgp_flowspec_rfc5575_v1\")."
+    ]
+  },
+  "hash": "bfd53a16e17680a01b1b15d95d37fa30ace2a1eeecff13e5544ef80e6477442b"
+},
+{
+  "id": "t2_bgp_ibgp_split_horizon",
+  "tier": 2,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 95,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "iBGP 스플릿 호라이즌 및 Route Reflector 루프 방지 메커니즘",
+    "en": "iBGP Split-Horizon & Route Reflector Cluster Loop Prevention"
+  },
+  "prompt": {
+    "ko": "iBGP 피어 간 재광고 금지 규칙과 Route Reflector 도입 시 ORIGINATOR_ID 및 CLUSTER_LIST 속성을 통한 루프 방지 원리를 분석합니다.\n지정된 식별자 `bgp_ibgp_split_horizon_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_ibgp_split_horizon_v1\") 앞 20자리}`",
+    "en": "Study iBGP split-horizon constraints and loop avoidance attributes in Route Reflector topologies.\nCompute the first 20 hex characters of SHA256(\"bgp_ibgp_split_horizon_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_ibgp_split_horizon_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "자신의 Cluster ID가 CLUSTER_LIST에 포함되어 있으면 라우팅 루프로 판단하여 경로를 폐기합니다.",
+      "식별자 `bgp_ibgp_split_horizon_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Route reflectors drop announcements containing their own cluster identifier in CLUSTER_LIST.",
+      "Extract first 20 hex chars of SHA256(\"bgp_ibgp_split_horizon_v1\")."
+    ]
+  },
+  "hash": "66797647dab8ec76ab2608dc1cbf71543aa8ffc4742fae380c66c870228bd10b"
+},
+{
+  "id": "t3_bgp_otc_attribute_rfc9234",
+  "tier": 3,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 105,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RFC 9234 Only to Customer (OTC) 속성을 통한 경로 누출 차단",
+    "en": "RFC 9234 Only to Customer (OTC) Leak Prevention Architecture"
+  },
+  "prompt": {
+    "ko": "경로가 고객(Customer)에게 전달되는 순간 비추이적(Non-transitive) OTC 속성을 부여하여 다른 피어나 공급자에게 재광고되는 것을 방어하는 기법을 분석합니다.\n지정된 식별자 `bgp_otc_attribute_rfc9234_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_otc_attribute_rfc9234_v1\") 앞 20자리}`",
+    "en": "Examine RFC 9234 Only to Customer (OTC) BGP attribute mitigating route leaks across peering boundaries.\nCompute the first 20 hex characters of SHA256(\"bgp_otc_attribute_rfc9234_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_otc_attribute_rfc9234_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "피어 또는 공급자 인터페이스로 유입된 경로에 이미 OTC가 세팅되어 있다면 경로 누출로 간주하여 차단합니다.",
+      "식별자 `bgp_otc_attribute_rfc9234_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "OTC flags detect route propagation violations across lateral peering links.",
+      "Extract first 20 hex chars of SHA256(\"bgp_otc_attribute_rfc9234_v1\")."
+    ]
+  },
+  "hash": "1d20403ac9eacb2716e88b5dcbe88cd11bef17b45f8dac1364d888373dee58e3"
+},
+{
+  "id": "t3_rpki_aspa_verification",
+  "tier": 3,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ASPA(Autonomous System Provider Authorization) 기반 상류 경로 검증",
+    "en": "ASPA Verification of Upstream AS-Path Validity"
+  },
+  "prompt": {
+    "ko": "고객 AS가 자신의 공인 상류 공급자(Provider) ASN 목록을 RPKI 객체로 서명 등록하고, BGP 라우터가 수신한 AS-Path의 업링크 무결성을 검증하는 ASPA를 분석합니다.\n지정된 식별자 `rpki_aspa_verification_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"rpki_aspa_verification_v1\") 앞 20자리}`",
+    "en": "Model Autonomous System Provider Authorization (ASPA) validating AS_PATH upstream sequence integrity.\nCompute the first 20 hex characters of SHA256(\"rpki_aspa_verification_v1\").\n\nFormat: `FLAG{SHA256(\"rpki_aspa_verification_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ASPA는 ROV가 감지하지 못하는 1-hop AS-Path 위조 및 중간 경로 조작을 암호학적으로 차단합니다.",
+      "식별자 `rpki_aspa_verification_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "ASPA fills the path validation gap left open by origin-only ROV.",
+      "Extract first 20 hex chars of SHA256(\"rpki_aspa_verification_v1\")."
+    ]
+  },
+  "hash": "815260af8c8fcc2e10e8b2d4ed0045d466fdb12f99a502fb73ae39652c28b2c1"
+},
+{
+  "id": "t3_bgp_bgpsec_path_validation",
+  "tier": 3,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 115,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGPsec (RFC 8205) 홉별 디지털 서명 경로 무결성 아키텍처",
+    "en": "BGPsec (RFC 8205) Hop-by-Hop Cryptographic Path Validation"
+  },
+  "prompt": {
+    "ko": "각 중간 라우터가 수신한 경로에 자신의 서명과 다음 타깃 AS 번호를 서명 체인으로 엮어 AS-Path의 위변조를 원천 차단하는 BGPsec을 분석합니다.\n지정된 식별자 `bgp_bgpsec_path_validation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_bgpsec_path_validation_v1\") 앞 20자리}`",
+    "en": "Analyze BGPsec (RFC 8205) public key cryptography and secure path attribute signature nesting.\nCompute the first 20 hex characters of SHA256(\"bgp_bgpsec_path_validation_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_bgpsec_path_validation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "BGPsec은 모든 홉에서 ECDSA 서명을 연쇄 계산하므로 높은 라우터 연산 자원을 요구합니다.",
+      "식별자 `bgp_bgpsec_path_validation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "BGPsec mandates nested ECDSA signatures from each autonomous system along the route.",
+      "Extract first 20 hex chars of SHA256(\"bgp_bgpsec_path_validation_v1\")."
+    ]
+  },
+  "hash": "1ea3c63eedaf32cd191d4a8418e9ca9e55e5f5d865f7be0434d9d69d20342987"
+},
+{
+  "id": "t3_rpki_rtr_cache_sync",
+  "tier": 3,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RPKI-Router (RTR, RFC 6810/8210) 캐시 동기화 보안",
+    "en": "RPKI-to-Router (RTR, RFC 6810/8210) Transport Security"
+  },
+  "prompt": {
+    "ko": "로컬 BGP 라우터가 RPKI 유효성 검사기(Routinator, Stayrtr)로부터 검증된 VRP(Validated ROA Payloads)를 수신하는 RTR 프로토콜과 SSH/TLS 보안 세션을 분석합니다.\n지정된 식별자 `rpki_rtr_cache_sync_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"rpki_rtr_cache_sync_v1\") 앞 20자리}`",
+    "en": "Evaluate RPKI-to-Router (RTR) cache synchronization protocols and transport protection requirements.\nCompute the first 20 hex characters of SHA256(\"rpki_rtr_cache_sync_v1\").\n\nFormat: `FLAG{SHA256(\"rpki_rtr_cache_sync_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "평문 TCP RTR 세션은 내부자 공격에 의해 VRP 테이블이 변조될 위험이 있으므로 SSH나 IPsec이 권장됩니다.",
+      "식별자 `rpki_rtr_cache_sync_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Unencrypted RTR sessions are susceptible to local man-in-the-middle VRP table spoofing.",
+      "Extract first 20 hex chars of SHA256(\"rpki_rtr_cache_sync_v1\")."
+    ]
+  },
+  "hash": "e3514525826514ba6ff903d466c230ff15b63d0f2af49bbf24c3d0164e6c1506"
+},
+{
+  "id": "t3_bgp_manrs_enterprise_actions",
+  "tier": 3,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 125,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MANRS 라우팅 보안 4대 필수 실천 규범 준수 체계",
+    "en": "MANRS Routing Security Four Essential Actions Framework"
+  },
+  "prompt": {
+    "ko": "필터링(Filtering), 위조 방지(Anti-Spoofing, uRPF), 상호 협력(Coordination), 글로벌 검증(Global Validation) 4대 행동 지침을 분석합니다.\n지정된 식별자 `bgp_manrs_enterprise_actions_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_manrs_enterprise_actions_v1\") 앞 20자리}`",
+    "en": "Assess enterprise conformance to Mutually Agreed Norms for Routing Security (MANRS) actions.\nCompute the first 20 hex characters of SHA256(\"bgp_manrs_enterprise_actions_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_manrs_enterprise_actions_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "uRPF(Strict/Loose)를 적용하여 발신지 IP가 스푸핑된 패킷을 네트워크 경계에서 차단합니다.",
+      "식별자 `bgp_manrs_enterprise_actions_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Unicast Reverse Path Forwarding (uRPF) stops IP spoofing at network perimeters.",
+      "Extract first 20 hex chars of SHA256(\"bgp_manrs_enterprise_actions_v1\")."
+    ]
+  },
+  "hash": "6faf7f99093934ca4509025a9233483216b015e6520eb5a902299b56214334f8"
+},
+{
+  "id": "t3_bgp_evpn_vxlan_interas",
+  "tier": 3,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP EVPN (RFC 7432) 컨트롤 플레인 및 Inter-AS 옵션 공격면",
+    "en": "BGP EVPN (RFC 7432) Control Plane & Inter-AS Option Vulnerabilities"
+  },
+  "prompt": {
+    "ko": "데이터센터 오버레이 네트워킹을 위한 EVPN Type 2(MAC/IP) 및 Type 5(IP Prefix) 라우트 광고와 Inter-AS Option B/C 연동 취약점을 분석합니다.\n지정된 식별자 `bgp_evpn_vxlan_interas_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_evpn_vxlan_interas_v1\") 앞 20자리}`",
+    "en": "Analyze BGP EVPN overlay routing architectures and multi-tenant isolation risks across Inter-AS borders.\nCompute the first 20 hex characters of SHA256(\"bgp_evpn_vxlan_interas_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_evpn_vxlan_interas_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "EVPN 컨트롤 플레인에 Route-Target 및 VNI 필터링이 누락되면 테넌트 간 트래픽이 침범될 수 있습니다.",
+      "식별자 `bgp_evpn_vxlan_interas_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Missing Route-Target validation across Inter-AS borders compromises EVPN isolation.",
+      "Extract first 20 hex chars of SHA256(\"bgp_evpn_vxlan_interas_v1\")."
+    ]
+  },
+  "hash": "1d03dd29f701949345afcf056ca3dd117d3c7ec04be9f6d6c5df8a23f98ea885"
+},
+{
+  "id": "t3_bgp_bmp_monitoring_rfc7854",
+  "tier": 3,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 135,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP Monitoring Protocol (BMP, RFC 7854) 텔레메트리 이상 탐지",
+    "en": "BGP Monitoring Protocol (BMP, RFC 7854) Real-Time Anomaly Telemetry"
+  },
+  "prompt": {
+    "ko": "라우터의 정책 적용 전(Pre-policy) 및 적용 후(Post-policy) BGP 피어링 텔레메트리를 수집하여 비정상 경로 선언을 실시간 탐지하는 BMP를 분석합니다.\n지정된 식별자 `bgp_bmp_monitoring_rfc7854_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_bmp_monitoring_rfc7854_v1\") 앞 20자리}`",
+    "en": "Study BGP Monitoring Protocol telemetry ingestion pipelines for zero-day route hijack detection.\nCompute the first 20 hex characters of SHA256(\"bgp_bmp_monitoring_rfc7854_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_bmp_monitoring_rfc7854_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Pre-policy RIB 데이터를 모니터링하면 라우터가 버린 비정상 하이재킹 시도까지 모두 추적할 수 있습니다.",
+      "식별자 `bgp_bmp_monitoring_rfc7854_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Pre-policy monitoring captures dropped malicious route advertisements prior to filter execution.",
+      "Extract first 20 hex chars of SHA256(\"bgp_bmp_monitoring_rfc7854_v1\")."
+    ]
+  },
+  "hash": "3ae5a830bf197cb70aa0d9af0078cc5acd184156ec67dd1d764bfffbb9539e40"
+},
+{
+  "id": "t4_bgp_crypto_currency_dns_hijack",
+  "tier": 4,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Amazon Route 53 BGP 하이재킹 및 가상자산 지갑 탈취 포렌식",
+    "en": "Amazon Route 53 BGP Hijack & Crypto Wallet Takeover Forensics"
+  },
+  "prompt": {
+    "ko": "실제 발생했던 205.251.192.0/24 DNS 접두사 하이재킹, 권위 DNS 서버 사칭, SSL 인증서 위조 및 지갑 자산 탈취 공격 체인을 심층 분석합니다.\n지정된 식별자 `bgp_crypto_currency_dns_hijack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_crypto_currency_dns_hijack_v1\") 앞 20자리}`",
+    "en": "Reconstruct the historic Amazon Route 53 BGP hijack leading to DNS spoofing and cryptocurrency theft.\nCompute the first 20 hex characters of SHA256(\"bgp_crypto_currency_dns_hijack_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_crypto_currency_dns_hijack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "공격자 AS10297이 /24 서브넷을 전 세계에 전파하여 합법적 DNS 트래픽을 가로챘습니다.",
+      "식별자 `bgp_crypto_currency_dns_hijack_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Attacker AS10297 announced specific /24 DNS subnets redirecting target resolution to rogue servers.",
+      "Extract first 20 hex chars of SHA256(\"bgp_crypto_currency_dns_hijack_v1\")."
+    ]
+  },
+  "hash": "38f26cbf4967091a0dc925dbdc30f0afa57db4a305d32fb3b2fbaa201f3adb6c"
+},
+{
+  "id": "t4_bgp_tier1_transit_interception",
+  "tier": 4,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 175,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "글로벌 Tier-1 통신망 피어링 경로 누출 및 국가간 감청 시뮬레이션",
+    "en": "Global Tier-1 Transit Peering Route Leak & Interception Simulation"
+  },
+  "prompt": {
+    "ko": "대형 통신사(Tier-1 Transit) 간 상호접속 지점에서 발생하는 경로 누출로 인해 대륙 간 민감 트래픽이 제3국으로 우회 감청되는 시나리오를 모델링합니다.\n지정된 식별자 `bgp_tier1_transit_interception_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_tier1_transit_interception_v1\") 앞 20자리}`",
+    "en": "Simulate geopolitical traffic interception orchestrated via strategic Tier-1 inter-AS route leaks.\nCompute the first 20 hex characters of SHA256(\"bgp_tier1_transit_interception_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_tier1_transit_interception_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "트래픽이 원래 목적지에 정상 도달하도록 루프백 중계(Man-in-the-Middle)하므로 탐지가 극히 어렵습니다.",
+      "식별자 `bgp_tier1_transit_interception_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Stealthy MITM forwarding conceals inter-continental traffic detour from end users.",
+      "Extract first 20 hex chars of SHA256(\"bgp_tier1_transit_interception_v1\")."
+    ]
+  },
+  "hash": "398cd253380ee84dee1e419bfcf426903580abdd1bc455e14eb67a27994ee40e"
+},
+{
+  "id": "t4_rpki_tal_compromise_risk",
+  "tier": 4,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RIR Trust Anchor Locator (TAL) 키 손상 위험 및 복원 거버넌스",
+    "en": "RIR Trust Anchor Locator (TAL) Compromise & Governance Risk"
+  },
+  "prompt": {
+    "ko": "5대 대륙별 인터넷 레지스트리(RIR)의 루트 TAL 개인키가 유출되거나 오염될 경우 전 세계 RPKI 유효성 판정에 미치는 영향도를 평가합니다.\n지정된 식별자 `rpki_tal_compromise_risk_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"rpki_tal_compromise_risk_v1\") 앞 20자리}`",
+    "en": "Evaluate catastrophic cascading routing failures if a Regional Internet Registry TAL root key is compromised.\nCompute the first 20 hex characters of SHA256(\"rpki_tal_compromise_risk_v1\").\n\nFormat: `FLAG{SHA256(\"rpki_tal_compromise_risk_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "TAL 키가 손상되면 공격자가 위조 ROA를 전역 배포하여 합법적 인터넷 경로를 일괄 Invalid로 만들 수 있습니다.",
+      "식별자 `rpki_tal_compromise_risk_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Root TAL key compromise enables global blackholing via forged conflicting ROAs.",
+      "Extract first 20 hex chars of SHA256(\"rpki_tal_compromise_risk_v1\")."
+    ]
+  },
+  "hash": "6ed9ed3068d43b01dcd15a4e50bdf46b6ac62a904674ece84eebb9d19cff2788"
+},
+{
+  "id": "t4_bgp_zero_trust_peering_architecture",
+  "tier": 4,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "인터넷 익스체인지(IXP) 무신뢰 라우트 서버 및 자동 방어 파이프라인",
+    "en": "Internet Exchange Point (IXP) Zero-Trust Route Server Pipeline"
+  },
+  "prompt": {
+    "ko": "수백 개 AS가 모이는 IXP Route Server(RS)에서 RPKI ROV, IRRDB 역방향 검증, max-prefix 및 RPKI Invalid 자동 격리 파이프라인을 분석합니다.\n지정된 식별자 `bgp_zero_trust_peering_architecture_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_zero_trust_peering_architecture_v1\") 앞 20자리}`",
+    "en": "Design a Zero Trust IXP route server automated validation pipeline enforcing strict RPKI/IRR filtering.\nCompute the first 20 hex characters of SHA256(\"bgp_zero_trust_peering_architecture_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_zero_trust_peering_architecture_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ARouteServer 등 자동화 프레임워크를 연동하여 인간의 오설정 없는 자율 보안 필터를 확립합니다.",
+      "식별자 `bgp_zero_trust_peering_architecture_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Automated route server policy generation guarantees reproducible routing security standards.",
+      "Extract first 20 hex chars of SHA256(\"bgp_zero_trust_peering_architecture_v1\")."
+    ]
+  },
+  "hash": "2c3eaaeb4688439013ce1ae1fb045f8f3289e5b28fba49859a0e7eefe518d724"
+},
+{
+  "id": "t4_bgp_quantum_resistant_bgpsec",
+  "tier": 4,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 300,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "양자 컴퓨팅 시대 BGPsec 무력화 위협 및 PQC 마이그레이션",
+    "en": "Quantum-Resistant Post-Quantum BGPsec Architecture"
+  },
+  "prompt": {
+    "ko": "Shor 알고리즘에 의한 BGPsec ECDSA 서명 위조 가능성과 ML-DSA, Falcon 등 NIST 포스트 퀀텀 암호화 기반 하이브리드 라우팅 보호를 분석합니다.\n지정된 식별자 `bgp_quantum_resistant_bgpsec_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_quantum_resistant_bgpsec_v1\") 앞 20자리}`",
+    "en": "Assess post-quantum cryptography migration challenges for BGPsec hop-by-hop signing under packet MTU constraints.\nCompute the first 20 hex characters of SHA256(\"bgp_quantum_resistant_bgpsec_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_quantum_resistant_bgpsec_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "PQC 서명의 거대한 바이트 크기는 BGP 메시지 최대 길이(4096바이트)를 초과할 수 있어 확장 프로토콜이 필수적입니다.",
+      "식별자 `bgp_quantum_resistant_bgpsec_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "PQC signature size overhead challenges standard BGP UPDATE maximum buffer limitations.",
+      "Extract first 20 hex chars of SHA256(\"bgp_quantum_resistant_bgpsec_v1\")."
+    ]
+  },
+  "hash": "9b0665899ba8c0c6454679edc22406520a598a1ca4931bc44d955acd2adfcc69"
+},
+{
+  "id": "t4_bgp_soar_automated_ir_isolation",
+  "tier": 4,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "실시간 BMP 텔레메트리 연동 SOAR BGP 세션 자동 차단 및 우회",
+    "en": "SOAR Automated BGP Incident Response & Route Isolation"
+  },
+  "prompt": {
+    "ko": "이상 라우팅 탐지 즉시 BGP 피어 세션을 비상 종료하고 백업 터널로 트래픽을 자동 우회시키는 SOAR 자동화 플레이북을 분석합니다.\n지정된 식별자 `bgp_soar_automated_ir_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_soar_automated_ir_isolation_v1\") 앞 20자리}`",
+    "en": "Architect automated SOAR playbooks reacting to BMP telemetry by shutting compromised peer sessions in seconds.\nCompute the first 20 hex characters of SHA256(\"bgp_soar_automated_ir_isolation_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_soar_automated_ir_isolation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "NETCONF/RESTCONF API를 통해 인시던트 발생 라우터에 자동화된 폐쇄 ACL을 즉각 주입합니다.",
+      "식별자 `bgp_soar_automated_ir_isolation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Programmatic NETCONF APIs teardown compromised peering sessions without manual operator delay.",
+      "Extract first 20 hex chars of SHA256(\"bgp_soar_automated_ir_isolation_v1\")."
+    ]
+  },
+  "hash": "6e68b56c6b48d4f1e5903584562ba724af5ee6eff0703141e01bb6bb7183ecb6"
+},
+{
+  "id": "t4_bgp_capstone_global_routing_audit",
+  "tier": 4,
+  "cat": "bgp",
+  "track": "bgp",
+  "points": 500,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "글로벌 BGP 라우팅·RPKI ROA 보안 침투 및 종합 감사 캡스톤",
+    "en": "Global BGP Routing & RPKI Security Audit Capstone"
+  },
+  "prompt": {
+    "ko": "BGP-4 Exact/Sub-prefix 하이재킹, AS-Path 조작, 경로 누출 침투, RPKI ROV/ASPA/MANRS 전방위 방어 체계를 총괄하는 종합 캡스톤입니다.\n지정된 식별자 `bgp_capstone_global_routing_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"bgp_capstone_global_routing_audit_v1\") 앞 20자리}`",
+    "en": "Capstone challenge synthesizing end-to-end BGP-4 routing attacks, RPKI ROV defense, ASPA path validation, and global MANRS hardening.\nCompute the first 20 hex characters of SHA256(\"bgp_capstone_global_routing_audit_v1\").\n\nFormat: `FLAG{SHA256(\"bgp_capstone_global_routing_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "엄격한 ROV, ASPA 공급자 검증, RFC 9234 OTC 태그 강제, uRPF 스푸핑 방어의 다계층 방어선을 확립하세요.",
+      "식별자 `bgp_capstone_global_routing_audit_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Deploy multi-layered defense: strict ROV, ASPA validation, OTC enforcement, and uRPF anti-spoofing.",
+      "Submit first 20 hex of SHA256(\"bgp_capstone_global_routing_audit_v1\")."
+    ]
+  },
+  "hash": "fccdc5d3ff1f071f0b7267f3b9a2ba24f6352978a60a53e26a56cdf766ac6c30"
 }
 ];
 

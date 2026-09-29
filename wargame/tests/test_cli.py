@@ -26,8 +26,8 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 45
-    assert len(challenges) == 1575
+    assert len(tracks) == 46
+    assert len(challenges) == 1610
     assert any(t["id"] == "carcan" for t in tracks)
     assert any(t["id"] == "apisec" for t in tracks)
     assert any(t["id"] == "sochunt" for t in tracks)
@@ -37,6 +37,7 @@ def test_load_wargame_db():
     assert any(t["id"] == "netinfra" for t in tracks)
     assert any(t["id"] == "adcs" for t in tracks)
     assert any(t["id"] == "oauth" for t in tracks)
+    assert any(t["id"] == "bgp" for t in tracks)
 
 
 def test_verify_flag_logic():

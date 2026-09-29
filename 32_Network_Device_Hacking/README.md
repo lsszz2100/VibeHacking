@@ -25,6 +25,7 @@
 | [05_network_device_hardening.md](./05_network_device_hardening.md) | **네트워크 장비 보안 강화 — Cisco·Juniper 보안 설정·네트워크 장비 모니터링** — 라우터, 스위치, 방화벽은 네트워크의 핵심이지만 종종 보안 설정이 소홀합니다. 기본 커뮤니티 문자열(public/private), 텔넷 사용, 불필요한 서비스 활성화 등이 흔한 문제입니다. |
 | [06_network_device_ctf_lab.md](./06_network_device_ctf_lab.md) | **네트워크 장치 해킹 CTF 실습 랩** — version: "3.9" |
 | [07_cisco_ios_and_enterprise_l2_infrastructure_attack_deepdive.md](./07_cisco_ios_and_enterprise_l2_infrastructure_attack_deepdive.md) | **심층 분석: Cisco IOS 아키텍처, L2 VLAN Hopping·STP 탈취 및 엔터프라이즈 스위치 하드닝 딥다이브** — 전통적인 네트워크 보안은 L3/L4 방화벽에 집중되어 있었으나, 실제 침투 테스트 및 APT 공격 시나리오에서는 물리적 포트 접속 또는 악성코드 감염 호스트를 기점으로 한 Layer ... |
+| [08_bgp_route_hijacking_and_rpki_deepdive.md](./08_bgp_route_hijacking_and_rpki_deepdive.md) | **BGP 라우팅 하이재킹 & RPKI ROA 심층 해부: 인터넷 코어 경로 조작과 글로벌 방어 아키텍처** — 인터넷은 수만 개의 독립적인 네트워크, 즉 자율 시스템(Autonomous System, AS)들이 상호 연결된 거대한 분산 메시 네트워크입니다. 전 세계 100,000개 이상의 AS... |
 
 ## 선수 지식
 

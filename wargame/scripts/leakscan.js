@@ -337,6 +337,17 @@ const ALLOWLIST = new Map([
   ['t3_oauth_saml_oauth_bridge_flaw -> t1_ztsaml', 'SAML-OAuth bridge flaw discusses SAML federation'],
   ['t4_oauth_zero_trust_sso_hardening -> t3_ztcaep', 'Zero Trust SSO hardening discusses CAEP continuous evaluation'],
   ['t4_oauth_capstone_sso_exploitation_audit -> t4_oauth', 'Capstone SSO audit analyzes OAuth security architecture'],
+  // BGP Routing & RPKI Security domain terms
+  ['t0_bgp_peering_model -> t2_exported', 'Peering route model discusses exported routes to peers'],
+  ['t2_bgp_communities_manipulation -> t2_ingress', 'Community manipulation discusses border ingress filter'],
+  ['t3_rpki_rtr_cache_sync -> t2_ipsec', 'RTR cache sync transport security discusses IPsec encryption'],
+  ['t3_bgp_evpn_vxlan_interas -> t3_overlay', 'EVPN VXLAN inter-as discusses overlay networking'],
+  ['t4_bgp_tier1_transit_interception -> t2_ghdetour', 'Tier-1 route leak interception discusses traffic detour'],
+  ['t4_bgp_zero_trust_peering_architecture -> t2_ptpipeline', 'Zero-trust peering discusses automated validation pipeline'],
+  ['t4_bgp_zero_trust_peering_architecture -> t3_screpro', 'Automated route server policy ensures reproducible standards'],
+  ['t4_bgp_quantum_resistant_bgpsec -> t4_nist', 'Post-quantum BGPsec discusses NIST PQC algorithms'],
+  ['t4_bgp_quantum_resistant_bgpsec -> t0_mtu', 'Post-quantum BGPsec discusses MTU limitations'],
+  ['t4_bgp_soar_automated_ir_isolation -> t4_soar', 'Automated incident response discusses SOAR playbooks'],
 ]);
 
 function loadChallenges() {

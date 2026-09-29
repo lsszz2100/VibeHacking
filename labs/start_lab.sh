@@ -104,6 +104,7 @@ start_lab() {
         "29_adcs_kerberos_delegation_lab"
         "30_ghidra_deobfuscation_lab"
         "31_oauth_sso_lab"
+        "32_bgp_routeguard_lab"
     )
 
     local lab_names=(
@@ -139,6 +140,7 @@ start_lab() {
         "AD CS 인증서 침투 & Kerberos 위임 실전 랩"
         "바이너리 분석 & 고급 난독화 해제 랩"
         "OAuth 2.0 & OIDC SSO 취약점 실전 랩"
+        "BGP 라우팅 하이재킹 & RPKI ROA 실전 랩"
     )
 
     local lab_ports=(
@@ -174,10 +176,11 @@ start_lab() {
         "웹 콘솔 & AD CS 보안 센터: http://localhost:8029"
         "웹 콘솔 & 리버싱 워크벤치: http://localhost:8030"
         "웹 콘솔 & SSO 취약점 랩: http://localhost:8031"
+        "웹 콘솔 & BGP 관제 센터: http://localhost:8032"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 31 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~31 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 32 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~32 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -280,6 +283,7 @@ usage() {
     echo "  17    클라우드 네이티브 & Kubernetes 보안 랩 (특권 파드 탈출, RBAC 권한상승, IMDSv2, Cosign 서명)"
     echo "  18    AI 에이전트 & MCP 보안 랩 (간접 프롬프트 주입, 과도한 권한, MCP 도구 섀도잉, 단기 기능 토큰)"
     echo "  31    OAuth 2.0 & OIDC SSO 랩 (Redirect URI 우회, PKCE 다운그레이드, JWT Key Confusion)"
+    echo "  32    BGP 라우팅 하이재킹 & RPKI ROA 실전 랩 (Exact Prefix 하이재킹, Sub-prefix LPM, AS-Path 위조 & RPKI)"
     echo "  all   모든 랩 시작"
     echo "  ps    실행 중인 랩 목록"
     echo ""
@@ -287,6 +291,7 @@ usage() {
     echo "  $0 01        # 웹 해킹 랩만 시작"
     echo "  $0 15        # Web3 & 스마트 컨트랙트 랩만 시작"
     echo "  $0 16        # 메모리 포렌식 랩만 시작"
+    echo "  $0 32        # BGP 라우팅 하이재킹 & RPKI 랩만 시작"
     echo "  $0 all       # 전체 랩 시작"
     echo "  $0 ps        # 상태 확인"
     echo ""
@@ -333,6 +338,7 @@ case "$ARG" in
     29)   start_lab 29 ;;
     30)   start_lab 30 ;;
     31)   start_lab 31 ;;
+    32)   start_lab 32 ;;
 
     all|ALL) start_all ;;
     ps|status) print_summary ;;

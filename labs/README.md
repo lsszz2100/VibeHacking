@@ -61,6 +61,7 @@ docker-compose --version
 | 29 | [AD CS 인증서 침투 & Kerberos 위임 실전 랩](./29_adcs_kerberos_delegation_lab/) | AD CS ESC1 SAN 주입, PKINIT Pass-the-Certificate & UnPAC-the-Hash, Kerberos 위임(S4U/RBCD) 및 하드닝 | ★★★★ | [54장 Active Directory](../54_Active_Directory_Attacks/07_adcs_esc_and_kerberos_delegation_deepdive.md) | `adcs` / `activedirectory` |
 | 30 | [바이너리 분석 & 고급 난독화 해제 랩](./30_ghidra_deobfuscation_lab/) | Ghidra Headless 심볼 복원, CFF 상태 머신 디플래트닝, 불투명 술어 제거, 안티 탬퍼 우회 & 패칭 | ★★★★ | [04장 리버스 엔지니어링](../04_Reverse_Engineering/07_ghidra_advanced_deobfuscation_deepdive.md) | `ghidra` / `reversing` |
 | 31 | [OAuth 2.0 & OIDC SSO 취약점 실전 랩](./31_oauth_sso_lab/) | OAuth 2.0 Redirect URI 우회, PKCE S256 다운그레이드/생략, JWT RS256/HS256 Key Confusion 및 SSO 계정 탈취 | ★★★★ | [05장 웹 해킹](../05_Web_Hacking/07_advanced_oauth2_oidc_and_sso_exploitation_deepdive.md) | `oauth` / `web` |
+| 32 | [BGP 라우팅 하이재킹 & RPKI ROA 실전 랩](./32_bgp_routeguard_lab/) | BGP-4 Exact Prefix 하이재킹, Sub-prefix 최장 일치(LPM) 가로채기, AS-Path 위조 & RPKI ROA 유효성 검증 | ★★★★ | [32장 네트워크 장비 해킹](../32_Network_Device_Hacking/08_bgp_route_hijacking_and_rpki_deepdive.md) | `bgp` / `netinfra` |
 
 ---
 
@@ -359,6 +360,15 @@ docker-compose --version
 - **교재 챕터 연계**: [05장 웹 해킹 심층 딥다이브](../05_Web_Hacking/07_advanced_oauth2_oidc_and_sso_exploitation_deepdive.md)
 - **워게임 트랙**: `oauth` / `web` (35개 문제)
 - **빠른 실행**: `python3 vhack.py lab start 31` (웹 콘솔 & SSO 취약점 랩: `http://localhost:8031`)
+
+### 32. BGP 라우팅 하이재킹 & RPKI ROA 실전 랩 (BGPRouteGuard)
+- BGP-4 피어링 간 Fake AS64500의 Exact Prefix (203.0.113.0/24) 광고를 통한 인터넷 트래픽 가로채기
+- 상위 접두사보다 우선 순위가 높은 /25 서브넷 분할 광고를 통한 Sub-prefix 최장 일치(Longest Prefix Match) 하이재킹
+- 정상 AS 경로를 가장한 AS-Path 조작 및 피어 간 비정상 경로 누출(Route Leak) 공격
+- RPKI ROV(Route Origin Validation) 활성화, Prefix Max-Length 필터링, MANRS Best Practice 및 Only-To-Customer(OTC) 하드닝
+- **교재 챕터 연계**: [32장 네트워크 장비 해킹 심층 딥다이브](../32_Network_Device_Hacking/08_bgp_route_hijacking_and_rpki_deepdive.md)
+- **워게임 트랙**: `bgp` / `netinfra` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 32` (웹 콘솔 & BGP 관제 센터: `http://localhost:8032`)
 
 ---
 

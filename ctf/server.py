@@ -636,6 +636,42 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "JWT 헤더의 kid 및 대칭키(HS256) 알고리즘 혼동을 활용하여 enterprise_admin 역할의 위조 ID 토큰을 생성하세요."}
                 ],
             },
+            "LAB32_PREFIX": {
+                "id": "LAB32_PREFIX",
+                "title": "BGPRouteGuard: Exact Prefix BGP Hijack & Traffic Interception",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{BGP_EXACT_PREFIX_HIJACK_4401}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "공격자 AS 64500에서 동일한 203.0.113.0/24 접두사를 BGP UPDATE로 선언하여 피어 AS 65001의 FIB를 조작하세요."}
+                ],
+            },
+            "LAB32_SUBPREFIX": {
+                "id": "LAB32_SUBPREFIX",
+                "title": "BGPRouteGuard: Sub-prefix LPM Hijacking & Traffic Blackholing",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{BGP_SUBPREFIX_LPM_HIJACK_5512}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "더 긴 서브넷인 /25 접두사를 선언하여 BGP의 최장 접두사 일치(Longest Prefix Match) 원리를 통해 모든 서브넷 트래픽을 흡수하세요."}
+                ],
+            },
+            "LAB32_LEAK": {
+                "id": "LAB32_LEAK",
+                "title": "BGPRouteGuard: AS-Path Forgery & Peer-to-Peer Route Leak",
+                "category": "network",
+                "initial_points": 500,
+                "flag": "FLAG{BGP_ASPATH_LEAK_INTERCEPTION_6623}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "AS-Path 끝에 정당한 AS 64496을 붙여 출처를 위조하고 피어 간 비정상 경로 누출(Route Leak)을 유발하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []

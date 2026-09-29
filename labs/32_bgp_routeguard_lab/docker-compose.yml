@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  bgp_routeguard:
+    build: .
+    container_name: bgp_routeguard_lab
+    ports:
+      - "127.0.0.1:8032:8032"
+    environment:
+      - PORT=8032
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "lab=true"
+      - "lab.id=32"
+      - "lab.name=bgp_routeguard_lab"
+    restart: unless-stopped

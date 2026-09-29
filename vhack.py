@@ -398,6 +398,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [5, 18, 52],
     },
+    "32": {
+        "name": "BGP 라우팅 하이재킹 & RPKI ROA 실전 랩",
+        "dir":  "32_bgp_routeguard_lab",
+        "desc": "BGPRouteGuard: BGP Exact/Sub-prefix(LPM) Hijacking · AS-Path Forgery & Route Leak · RPKI ROA 및 MANRS 하드닝 실전 실습",
+        "url":  "웹 콘솔 & BGP 관제 센터: http://localhost:8032",
+        "difficulty": "★★★★",
+        "related": [2, 14, 32],
+    },
 }
 
 
@@ -1403,6 +1411,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8029, "Lab 29 (CertPwn AD CS & Kerberos Delegation Lab)"),
         (8030, "Lab 30 (GhidraRev Binary Analysis & Deobfuscation Lab)"),
         (8031, "Lab 31 (SSOShield OAuth 2.0 & OIDC SSO Lab)"),
+        (8032, "Lab 32 (BGPRouteGuard BGP Hijack & RPKI Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

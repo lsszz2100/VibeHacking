@@ -673,6 +673,38 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "👑 Enterprise Admin Account Takeover Achieved via JWT Key Confusion! -> FLAG{OAUTH_IDTOKEN_KEY_CONFUSION_9934}"
             }
         ]
+    },
+    "32": {
+        "title": "BGP 라우팅 하이재킹 & RPKI ROA 실전 랩 (BGPRouteGuard)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "BGP-4 Exact Prefix 하이재킹 및 트래픽 가로채기",
+                "target": "POST /api/bgp/exploit/prefix-hijack (as_path: [64500], prefix: 203.0.113.0/24, origin_as: 64500)",
+                "poc_explanation": "공격자 AS 64500이 합법적 피해자 AS 64496의 203.0.113.0/24 접두사를 동일하게 BGP UPDATE로 선언하여 더 짧은 AS-Path로 트래픽을 가로챕니다.",
+                "exploit_payload": '{"as_path": [64500], "prefix": "203.0.113.0/24", "origin_as": 64500, "med": 10}',
+                "defense": "AS-Path 및 Origin AS 필터링, RPKI ROV(Route Origin Validation) 도입으로 유효하지 않은 출처 AS(Invalid Origin) 차단.",
+                "sample_output": "📡 Exact Prefix Hijacked! Traffic rerouted to rogue AS64500 -> FLAG{BGP_EXACT_PREFIX_HIJACK_4401}"
+            },
+            {
+                "step": 2,
+                "name": "Sub-prefix LPM(최장 일치) 하이재킹",
+                "target": "POST /api/bgp/exploit/subprefix-hijack (as_path: [64500], prefix: 203.0.113.0/25, origin_as: 64500)",
+                "poc_explanation": "피해자의 /24 슈퍼넷보다 더 긴 서브넷인 /25를 분할 선언하여 최장 접두사 일치(Longest Prefix Match) 원리에 의해 AS-Path 길이에 상관없이 모든 트래픽을 흡수합니다.",
+                "exploit_payload": '{"as_path": [64500], "prefix": "203.0.113.0/25", "origin_as": 64500, "med": 50}',
+                "defense": "RPKI ROA max-length 정책 강제 (/24 초과 거부) 및 엄격한 수신 Prefix-List 길이 제한.",
+                "sample_output": "⚡ Sub-prefix LPM Hijack Succeeded! 100% target subnet redirected -> FLAG{BGP_SUBPREFIX_LPM_HIJACK_5512}"
+            },
+            {
+                "step": 3,
+                "name": "AS-Path 위조 및 피어 간 비정상 경로 누출(Route Leak)",
+                "target": "POST /api/bgp/exploit/aspath-leak (as_path: [64500, 64496], prefix: 203.0.113.0/24, leak_direction: peer-to-peer)",
+                "poc_explanation": "AS-Path 끝에 정당한 AS 64496을 붙여 원본 출처 검증을 우회하고, 피어로부터 수신한 경로를 다른 피어에게 무단 재광고(Peer-to-Peer Leak)하여 트래픽을 도청합니다.",
+                "exploit_payload": '{"as_path": [64500, 64496], "prefix": "203.0.113.0/24", "origin_as": 64496, "leak_direction": "peer-to-peer"}',
+                "defense": "RFC 9234 Only to Customer (OTC) BGP 커뮤니티 속성 검증 및 ASPA(Autonomous System Provider Authorization) 도입.",
+                "sample_output": "🔄 Route Leak Interception Active! Inter-AS transit compromised -> FLAG{BGP_ASPATH_LEAK_INTERCEPTION_6623}"
+            }
+        ]
     }
 }
 
