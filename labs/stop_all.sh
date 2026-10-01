@@ -94,6 +94,7 @@ LAB_DIRS=(
     "33_kisa_infrastructure_audit_lab"
     "34_osint_surface_recon_lab"
     "35_cloud_iam_privilege_escalation_lab"
+    "36_enterprise_database_security_lab"
 )
 
 LAB_NAMES=(
@@ -132,6 +133,7 @@ LAB_NAMES=(
     "KISA 주요정보통신기반시설 취약점 평가 & 하드닝 랩"
     "OSINT 서피스 정찰 & 섀도우 IT 헌터 랩"
     "클라우드 IAM 권한 상승 & 조직 거버넌스 랩"
+    "엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩"
 )
 
 

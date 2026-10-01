@@ -876,6 +876,7 @@
     initJwt();
     renderBgp("normal");
     initOAuth();
+    initDbShield();
   }
 
   function hidePlayground(){
@@ -886,7 +887,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -1504,6 +1505,174 @@
     confusionOut.textContent = jwtText;
   }
 
+  // --- 7. Enterprise DB RBAC & UDF Shield Simulator ---
+  let currentDbShieldScenario = "udf_rce";
+
+  function initDbShield(){
+    const engEl = document.getElementById("dbshieldEngineSelect");
+    const roleEl = document.getElementById("dbshieldRoleInput");
+    const sqlEl = document.getElementById("dbshieldSqlInput");
+    if (!engEl || !roleEl || !sqlEl) return;
+    renderDbShield("udf_rce");
+  }
+
+  function renderDbShield(scenario){
+    if (scenario && typeof scenario === "string") {
+      currentDbShieldScenario = scenario;
+    }
+    const engEl = document.getElementById("dbshieldEngineSelect");
+    const roleEl = document.getElementById("dbshieldRoleInput");
+    const secPlugEl = document.getElementById("dbshieldSecurePluginCheck");
+    const fgaEl = document.getElementById("dbshieldFgaCheck");
+    const sqlEl = document.getElementById("dbshieldSqlInput");
+    const execBadge = document.getElementById("dbshieldExecBadge");
+    const auditBadge = document.getElementById("dbshieldAuditBadge");
+    const traceOut = document.getElementById("dbshieldTraceOutput");
+    const auditOut = document.getElementById("dbshieldAuditOutput");
+
+    if (!engEl || !roleEl || !secPlugEl || !fgaEl || !sqlEl || !traceOut || !auditOut) return;
+
+    if (scenario === "udf_rce"){
+      engEl.value = "mysql";
+      roleEl.value = "db_app_readonly";
+      secPlugEl.checked = false;
+      fgaEl.checked = false;
+      sqlEl.value = "SELECT 0x7f454c46... INTO DUMPFILE '/usr/lib/mysql/plugin/udf_sys_eval.so'; CREATE FUNCTION sys_eval RETURNS string SONAME 'udf_sys_eval.so'; SELECT sys_eval('id');";
+    } else if (scenario === "xp_cmdshell"){
+      engEl.value = "mssql";
+      roleEl.value = "sa";
+      secPlugEl.checked = false;
+      fgaEl.checked = false;
+      sqlEl.value = "EXEC sp_configure 'show advanced options', 1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE; EXEC master..xp_cmdshell 'whoami.exe';";
+    } else if (scenario === "oracle_sysdba"){
+      engEl.value = "oracle";
+      roleEl.value = "SCOTT";
+      secPlugEl.checked = false;
+      fgaEl.checked = false;
+      sqlEl.value = "CREATE OR REPLACE PROCEDURE P_TRAP AUTHID DEFINER AS BEGIN EXECUTE IMMEDIATE 'GRANT DBA TO SCOTT'; END; / EXEC SYS.EXEC_ANY_PROC('SCOTT.P_TRAP');";
+    } else if (scenario === "shield_hardened"){
+      engEl.value = "mysql";
+      roleEl.value = "db_app_readonly";
+      secPlugEl.checked = true;
+      fgaEl.checked = true;
+      sqlEl.value = "SELECT 0x7f454c46... INTO DUMPFILE '/usr/lib/mysql/plugin/udf_sys_eval.so';";
+    }
+
+    const engine = engEl.value;
+    const role = (roleEl.value || "db_user").trim();
+    const secPlug = secPlugEl.checked;
+    const fga = fgaEl.checked;
+    const sql = (sqlEl.value || "").trim();
+
+    let isExploited = false;
+    let traceText = "=== AST & RUNTIME RBAC PARSE TREE ===\\n";
+    let auditText = "=== DBSHIELD POLICY ENGINE AUDIT TRAIL ===\\n";
+
+    if (secPlug && (sql.includes("INTO DUMPFILE") || sql.includes("plugin") || sql.includes("sys_eval"))){
+      isExploited = false;
+      traceText +=
+        "1. [SQL AST Parse] Statement Type: SELECT_INTO_DUMPFILE\\n" +
+        "   - Destination Path: /usr/lib/mysql/plugin/udf_sys_eval.so\\n" +
+        "2. [Kernel VFS Check] File System Access Evaluation:\\n" +
+        "   - Variable secure_file_priv: '/var/lib/mysql-files/' (STRICT)\\n" +
+        "   - Target directory outside authorized boundary.\\n" +
+        "3. [RBAC Privilege Gate]:\\n" +
+        "   - Session user '" + role + "' lacking SUPER / FILE privileges.\\n" +
+        "   - Target plugin directory mounted with MS_RDONLY.\\n" +
+        "4. [Verdict]: 🛡️ EXECUTION DENIED (ERROR 1290 HY000: The MySQL server is running with the --secure-file-priv option).\\n";
+    } else if (engine === "mysql" && sql.includes("sys_eval")){
+      isExploited = true;
+      traceText +=
+        "1. [SQL AST Parse] Multi-Statement DDL/DML Chain Detected:\\n" +
+        "   - Node 1: SELECT_INTO_DUMPFILE (Binary ELF payload 0x7f454c46...)\\n" +
+        "   - Node 2: CREATE_FUNCTION (SONAME: udf_sys_eval.so, Symbol: sys_eval)\\n" +
+        "   - Node 3: CALL_FUNCTION (sys_eval('id'))\\n" +
+        "2. [Kernel Dynamic Loader (dlopen)]:\\n" +
+        "   - dlopen('/usr/lib/mysql/plugin/udf_sys_eval.so', RTLD_NOW) -> 0x7fff910a2000\\n" +
+        "   - dlsym(handle, 'sys_eval') -> Exported native function resolved.\\n" +
+        "3. [Process Execution]:\\n" +
+        "   - fork() / execve('/bin/sh', ['-c', 'id']) executed under mysqld process!\\n" +
+        "   - Output: uid=1001(mysql) gid=1001(mysql) groups=1001(mysql)\\n" +
+        "4. [Verdict]: 🚨 CRITICAL: Arbitrary native code execution achieved via UDF dynamic library injection!\\n";
+    } else if (engine === "mssql" && sql.includes("xp_cmdshell")){
+      if (fga && role !== "sa"){
+        isExploited = false;
+        traceText +=
+          "1. [T-SQL AST Parse] EXEC sp_configure & EXEC xp_cmdshell\\n" +
+          "2. [RBAC Check] Role '" + role + "' lacks CONTROL SERVER permission.\\n" +
+          "3. [Verdict]: 🛡️ DENIED: Permission denied on extended stored procedure master..xp_cmdshell.\\n";
+      } else {
+        isExploited = true;
+        traceText +=
+          "1. [T-SQL AST Parse] Dynamic Extended Stored Procedure Invocation:\\n" +
+          "   - sp_configure 'show advanced options' -> 1 (Reconfigured)\\n" +
+          "   - sp_configure 'xp_cmdshell' -> 1 (Enabled)\\n" +
+          "   - EXEC master..xp_cmdshell 'whoami.exe'\\n" +
+          "2. [Subprocess Invocation]:\\n" +
+          "   - xprocs.dll!xp_cmdshell -> CreateProcessAsUserW('cmd.exe /c whoami.exe')\\n" +
+          "   - Process Spawned: NT SERVICE\\\\MSSQLSERVER (Privileged Service Token)\\n" +
+          "3. [Verdict]: 🚨 CRITICAL: Windows command shell execution achieved via unhardened T-SQL configuration!\\n";
+      }
+    } else if (engine === "oracle" && sql.includes("AUTHID DEFINER")){
+      isExploited = true;
+      traceText +=
+        "1. [PL/SQL AST Parse] Stored Procedure Specification:\\n" +
+        "   - Unit Name: SCOTT.P_TRAP\\n" +
+        "   - Invoker Rights Clause: AUTHID DEFINER (Executes with creator's or invoker's owner rights)\\n" +
+        "   - Injected Dynamic SQL: 'GRANT DBA TO SCOTT'\\n" +
+        "2. [Privilege Escalation Vector]:\\n" +
+        "   - SYSDBA executes SYS.EXEC_ANY_PROC calling SCOTT.P_TRAP.\\n" +
+        "   - Target procedure inherits administrative session privileges of SYS.\\n" +
+        "   - 'GRANT DBA TO SCOTT' succeeds under SYS schema authority!\\n" +
+        "3. [Verdict]: 🚨 CRITICAL: Privilege escalation trap succeeded! Low-privilege account granted DBA role.\\n";
+    } else {
+      traceText +=
+        "1. [SQL AST Parse] Standard Query Execution\\n" +
+        "   - Query: " + sql.substring(0, 100) + (sql.length > 100 ? "..." : "") + "\\n" +
+        "2. [RBAC Evaluation]: User '" + role + "' passed standard role boundary checks.\\n" +
+        "3. [Verdict]: NORMAL QUERY EXECUTION (No privileged escalation primitives detected).\\n";
+    }
+
+    if (fga){
+      auditBadge.textContent = "🛡️ FGA ENFORCED";
+      auditBadge.className = "token-tag token-lit";
+      auditText +=
+        "1. [Rule Engine: FGA_RULE_01_PRIV_ESCALATION]:\\n" +
+        "   - Monitored Actions: CREATE_FUNCTION, DUMPFILE, SP_CONFIGURE, GRANT_DBA\\n" +
+        "   - Matching Status: 🚨 SIGNATURE HIT (Pattern detected in query stream)\\n" +
+        "2. [Audit Telemetry Event]:\\n" +
+        "   - Session ID: 41829 | Client IP: 192.168.1.105 | DB User: " + role + "\\n" +
+        "   - Risk Score: 98/100 (ANOMALOUS_DDL_PRIVILEGE_ATTEMPT)\\n" +
+        "3. [Automated Quarantine Response]:\\n" +
+        "   - Action: KILL CONNECTION 41829; REVOKE ALL PRIVILEGES FROM '" + role + "'@'%';\\n" +
+        "   - Alert dispatched to SOC SIEM / Syslog endpoint (CEF format).\\n" +
+        "4. [Zero-Trust Posture]: 🛡️ COMPROMISE PREVENTED: Session terminated prior to payload persistence.";
+    } else {
+      auditBadge.textContent = "⚠️ AUDIT BLIND";
+      auditBadge.className = "token-tag token-inj";
+      auditText +=
+        "1. [Telemetry Status]: Native Audit Logging Disabled (AUDIT_TRAIL = NONE).\\n" +
+        "2. [Blind Spot Warning]:\\n" +
+        "   - DDL statements and binary file injection unmonitored by database engine.\\n" +
+        "   - Attack execution leaves zero trace in DBA_AUDIT_TRAIL or mysql.general_log.\\n" +
+        "3. [Security Recommendation]:\\n" +
+        "   - Enable DBShield Fine-Grained Auditing (FGA) and set secure_file_priv to a read-only directory!";
+    }
+
+    if (execBadge){
+      if (isExploited){
+        execBadge.textContent = "🚨 EXPLOIT SUCCESS";
+        execBadge.className = "token-tag token-inj";
+      } else {
+        execBadge.textContent = "🛡️ PROTECTED";
+        execBadge.className = "token-tag token-lit";
+      }
+    }
+
+    traceOut.textContent = traceText;
+    auditOut.textContent = auditText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -1771,6 +1940,8 @@
         openPlayground("bgp"); break;
       case "oauth": case "pkce":
         openPlayground("oauth"); break;
+      case "dbsec": case "dbshield": case "udf":
+        openPlayground("dbshield"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -2179,6 +2350,25 @@
       audio();
       const p = btn.getAttribute("data-oauth-preset");
       renderOAuth(p);
+    });
+  });
+
+  // DBShield Controls
+  const dbSimBtn = document.getElementById("dbshieldSimulateBtn");
+  if (dbSimBtn) dbSimBtn.addEventListener("click", () => { audio(); renderDbShield(); });
+  ["dbshieldRoleInput", "dbshieldSqlInput"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", () => renderDbShield());
+  });
+  ["dbshieldEngineSelect", "dbshieldSecurePluginCheck", "dbshieldFgaCheck"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("change", () => renderDbShield());
+  });
+  document.querySelectorAll("[data-dbshield-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-dbshield-preset");
+      renderDbShield(p);
     });
   });
 

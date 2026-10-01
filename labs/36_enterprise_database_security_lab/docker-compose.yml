@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  database-security-lab:
+    build: .
+    container_name: vhack-lab36-dbsec
+    ports:
+      - "8036:8036"
+    environment:
+      - PORT=8036
+    restart: unless-stopped

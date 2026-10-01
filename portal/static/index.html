@@ -80,6 +80,15 @@
     /* Toast */
     #toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background: #1f2937; border: 1px solid var(--accent-cyan); border-radius: 6px; color: var(--text); font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 9999; }
     #toast.show { opacity: 1; }
+
+    /* Category Filter & Batch Controls */
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; align-items: center; justify-content: space-between; background: #0f172a; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--card-border); }
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+    .filter-chip { background: #1f2937; border: 1px solid var(--card-border); color: var(--text-dim); padding: 0.35rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; font-weight: 500; }
+    .filter-chip:hover { border-color: var(--accent-cyan); color: var(--text); }
+    .filter-chip.active { background: #0e7490; color: #fff; border-color: var(--accent-cyan); font-weight: bold; }
+    .batch-actions { display: flex; gap: 0.5rem; align-items: center; }
+    .cat-badge { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; background: #1e293b; color: #38bdf8; border: 1px solid #334155; margin-left: 6px; }
   </style>
 </head>
 <body>
@@ -90,7 +99,7 @@
     <span>통합 보안 포털 & 관제 센터</span>
   </div>
   <nav>
-    <button class="nav-btn active" onclick="switchView('labs')">🧪 20대 실습 랩</button>
+    <button class="nav-btn active" onclick="switchView('labs')">🧪 36대 실습 랩</button>
     <button class="nav-btn" onclick="switchView('docs')">📚 교재 리더 (:3000)</button>
     <button class="nav-btn" onclick="switchView('wargame')">🎮 워게임 (:8000)</button>
     <button class="nav-btn" onclick="switchView('ctf')">🏆 CTF 경기장 (:8888)</button>
@@ -107,7 +116,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-title">활성 실습 랩</div>
-        <div class="stat-val" id="stat-active-labs">- / 31</div>
+        <div class="stat-val" id="stat-active-labs">- / 36</div>
       </div>
       <div class="stat-card">
         <div class="stat-title">CPU 점유율</div>
@@ -120,8 +129,19 @@
     </div>
 
     <div class="section-header">
-      <h2>🛡️ 실전 침투 & 방어 실습 환경 (31 Labs)</h2>
-      <button class="btn btn-cyan" onclick="fetchLabs()">🔄 새로고침</button>
+      <h2>🛡️ 실전 침투 & 방어 실습 환경 (36 Labs)</h2>
+      <button class="btn btn-cyan" onclick="fetchLabs(); fetchCategories();">🔄 새로고침</button>
+    </div>
+
+    <!-- Category Filter & Batch Controls Bar -->
+    <div class="filter-bar">
+      <div class="filter-chips" id="category-filters">
+        <button class="filter-chip active" onclick="setCategoryFilter('')">전체 (36)</button>
+      </div>
+      <div class="batch-actions">
+        <button class="btn btn-green" onclick="batchControl('start')">▶ 일괄 가동</button>
+        <button class="btn btn-red" onclick="batchControl('stop')">■ 일괄 정지</button>
+      </div>
     </div>
 
     <div class="labs-grid" id="labs-list">
@@ -172,9 +192,58 @@
     }
   }
 
+  let currentCategory = '';
+
+  async function fetchCategories() {
+    try {
+      const res = await fetch('/api/labs/categories');
+      const data = await res.json();
+      const container = document.getElementById('category-filters');
+      container.innerHTML = `<button class="filter-chip ${currentCategory === '' ? 'active' : ''}" onclick="setCategoryFilter('')">전체 (${data.total_labs})</button>`;
+      
+      const catNames = Object.keys(data.categories).sort();
+      catNames.forEach(cat => {
+        const info = data.categories[cat];
+        const btn = document.createElement('button');
+        btn.className = `filter-chip ${currentCategory === cat ? 'active' : ''}`;
+        btn.innerHTML = `${cat.toUpperCase()} (${info.count})`;
+        btn.onclick = () => setCategoryFilter(cat);
+        container.appendChild(btn);
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function setCategoryFilter(cat) {
+    currentCategory = cat;
+    fetchCategories();
+    fetchLabs();
+  }
+
+  async function batchControl(action) {
+    const targetLabel = currentCategory ? `[${currentCategory.toUpperCase()}] 카테고리` : '전체 36개';
+    if (!confirm(`${targetLabel} 랩을 일괄 ${action === 'start' ? '가동' : '정지'}하시겠습니까?`)) return;
+    showToast(`${targetLabel} 일괄 ${action} 요청 중...`);
+    try {
+      const body = currentCategory ? { category: currentCategory } : {};
+      const res = await fetch(`/api/labs/batch/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      showToast(`일괄 ${action} 완료: ${data.targeted_count}개 랩 대상 처리`);
+      setTimeout(() => { fetchLabs(); fetchCategories(); }, 2000);
+    } catch (e) {
+      showToast(`일괄 제어 실패: ${e.message}`);
+    }
+  }
+
   async function fetchLabs() {
     try {
-      const res = await fetch('/api/labs');
+      const url = currentCategory ? `/api/labs?category=${encodeURIComponent(currentCategory)}` : '/api/labs';
+      const res = await fetch(url);
       const data = await res.json();
       const container = document.getElementById('labs-list');
       container.innerHTML = '';
@@ -197,7 +266,10 @@
         card.innerHTML = `
           <div>
             <div class="lab-top">
-              <span class="lab-badge">LAB ${lab.id} (${lab.difficulty})</span>
+              <div>
+                <span class="lab-badge">LAB ${lab.id} (${lab.difficulty})</span>
+                <span class="cat-badge">${lab.category}</span>
+              </div>
               ${statusHtml}
             </div>
             <div class="lab-title">${lab.name}</div>
@@ -216,7 +288,7 @@
         container.appendChild(card);
       });
 
-      document.getElementById('stat-active-labs').innerText = `${runningCount} / ${data.total}`;
+      document.getElementById('stat-active-labs').innerText = `${runningCount} / 36`;
     } catch (e) {
       console.error(e);
       showToast('랩 목록 로드 실패');
@@ -356,9 +428,11 @@
   });
 
   fetchStatus();
+  fetchCategories();
   fetchLabs();
   setInterval(fetchStatus, 5000);
   setInterval(fetchLabs, 10000);
+  setInterval(fetchCategories, 15000);
 </script>
 
 <!-- Terminal Modal -->

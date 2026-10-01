@@ -801,6 +801,38 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Cloud Governance Enforced! SCP Deny & Permission Boundary Active -> FLAG{CLOUD_ORG_SCP_PERMISSION_BOUNDARY_ENFORCED_3342}"
             }
         ]
+    },
+    "36": {
+        "title": "엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩 (DBShield)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "2차 SQL 인젝션 (Second-Order SQLi) 유발 및 DBA 암호 해시 탈취",
+                "target": "POST /api/db/password-reset (저장된 닉네임: admin' OR 1=1 --)",
+                "poc_explanation": "신규 계정 등록 시 닉네임 필드에 전달한 SQLi 페이로드가 안전하게 저장된 후, 비밀번호 재설정 모듈에서 동적으로 쿼리에 결합될 때 실행되어 DBA의 비밀번호 해시를 탈취합니다.",
+                "exploit_payload": '{"username": "attacker", "nickname_payload": "admin\' OR 1=1 --"} -> trigger /api/db/password-reset',
+                "defense": "모든 내부 쿼리에 Prepared Statement를 일관되게 적용하고 사용자 프로필 데이터에 대한 엄격한 정규식 화이트리스트 검증.",
+                "sample_output": "⚡ Second-Order SQLi Executed! DBA hash extracted -> FLAG{DB_SECOND_ORDER_SQLI_METADATA_EXFIL_8831}"
+            },
+            {
+                "step": 2,
+                "name": "MySQL UDF (User-Defined Function) 바이너리 인젝션 및 호스트 RCE",
+                "target": "POST /api/db/udf-exec (function: sys_eval, cmd: whoami)",
+                "poc_explanation": "DB의 FILE 및 SUPER 권한을 악용하여 악성 공유 라이브러리(raptor_udf2.so)를 플러그인 디렉터리에 적재하고 sys_eval 함수를 호출하여 호스트 운영체제 루트 셸을 획득합니다.",
+                "exploit_payload": '{"function_name": "sys_eval", "cmd": "whoami"}',
+                "defense": "DB 전용 저권한 데몬 계정 사용, secure_file_priv=NULL 강제 설정 및 AppArmor/SELinux를 통한 플러그인 로드 원천 차단.",
+                "sample_output": "🎯 UDF RCE Success! root privilege confirmed -> FLAG{DB_UDF_LIBRARY_INJECTION_ROOT_RCE_7492}"
+            },
+            {
+                "step": 3,
+                "name": "엔터프라이즈 RDBMS 다계층 하드닝 (FGA 감사 & 파라미터화 & TDE)",
+                "target": "POST /api/db/harden (enable_prepared_statements, enforce_secure_file_priv, isolate_least_privilege, enable_fga_audit)",
+                "poc_explanation": "전체 DML 쿼리의 파라미터화 강제, secure_file_priv=NULL 경로 차단, 최소 권한 역할 분리 및 FGA(Fine-Grained Auditing) 불변 감사 로그를 가동하여 완전한 DB 방어 태세를 구축합니다.",
+                "exploit_payload": '{"enable_prepared_statements": true, "enforce_secure_file_priv": true, "isolate_least_privilege": true, "enable_fga_audit": true}',
+                "defense": "엔터프라이즈 CIS Database Benchmark 준수, TDE 암호화 적용, 최소 권한 원칙 및 정기적인 권한 감사 수행.",
+                "sample_output": "🛡️ Enterprise DB Hardened! FGA & Prepared Statements Active -> FLAG{DB_AUDIT_LOG_TDE_LEAST_PRIVILEGE_SECURED_3914}"
+            }
+        ]
     }
 }
 

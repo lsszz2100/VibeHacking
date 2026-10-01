@@ -525,12 +525,12 @@ body{
   align-items: center;
   margin-top: 14px;
 }
-.bgp-grid, .oauth-grid {
+.bgp-grid, .oauth-grid, .dbshield-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
-.bgp-card, .oauth-card {
+.bgp-card, .oauth-card, .dbshield-card {
   background: rgba(3, 16, 9, 0.6);
   border: 1px solid var(--line);
   border-radius: 6px;

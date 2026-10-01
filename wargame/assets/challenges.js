@@ -444,6 +444,14 @@ const TRACKS = [
     "en": "Cloud IAM Privilege Escalation & Governance",
     "desc_ko": "AWS IAM 정책 평가 로직·iam:PassRole·sts:AssumeRole 크로스 어카운트·조직 SCP 가드레일 및 권한 경계(Permission Boundary).",
     "desc_en": "AWS IAM evaluation logic, PassRole escalation, cross-account AssumeRole, Organization SCP guardrails, and Permission Boundaries."
+  },
+  {
+    "id": "dbsec",
+    "icon": "🗄️",
+    "ko": "엔터프라이즈 DB 침투·하드닝",
+    "en": "Enterprise DB Security & Hardening",
+    "desc_ko": "2차 SQLi·MySQL UDF 바이너리 인젝션·Oracle PL/SQL 권한상승·OOB DNS 유출·FGA/TDE 다계층 DB 하드닝.",
+    "desc_en": "Second-order SQLi, MySQL UDF binary injection, Oracle PL/SQL privilege escalation, OOB DNS exfiltration, and FGA/TDE hardening."
   }
 ];
 
@@ -48520,6 +48528,987 @@ const CHALLENGES = [
     ]
   },
   "hash": "fbb7dedfbed3be5e0dc95de3cd523398e4cd2f2caf881af8ebaa9ba6e11a61ec"
+}
+,
+{
+  "id": "t0_dbsec_rdbms_privilege_model",
+  "tier": 0,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 RDBMS 롤 기반 권한 체계",
+    "en": "Enterprise RDBMS Role-Based Access Control Architecture"
+  },
+  "prompt": {
+    "ko": "DBA, SYSDBA, sa, SUPER 등 고권한 롤과 일반 애플리케이션 DML 계정 간의 권한 격리 모델을 분석합니다.\n지정된 식별자 `dbsec_rdbms_privilege_model_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_rdbms_privilege_model_v1\") 앞 20자리}`",
+    "en": "Analyze RBAC models and privilege separation between DBA/sa and application users.\nCompute the first 20 hex characters of SHA256(\"dbsec_rdbms_privilege_model_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_rdbms_privilege_model_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "DBA 권한과 최소 권한 DML 계정의 차이를 확인하세요.",
+      "식별자 `dbsec_rdbms_privilege_model_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Distinguish administrative roles from least-privilege DML accounts.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_rdbms_privilege_model_v1\")."
+    ]
+  },
+  "hash": "8aec396a3880e6bc17b5c17065f546d10263d5c3754bf43dc71f4908c43c21f0"
+},
+{
+  "id": "t0_dbsec_sql_parser_and_ast",
+  "tier": 0,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SQL 파서 및 추상 구문 트리(AST) 쿼리 분해",
+    "en": "SQL Query Parser & Abstract Syntax Tree (AST) Tokenization"
+  },
+  "prompt": {
+    "ko": "Lexer와 Parser가 SQL 토큰을 결합하여 AST를 구축할 때 연산자 우선순위 변조 원리를 분석합니다.\n지정된 식별자 `dbsec_sql_parser_and_ast_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_sql_parser_and_ast_v1\") 앞 20자리}`",
+    "en": "Examine how SQL lexers and parsers construct ASTs and how syntax injection alters query trees.\nCompute the first 20 hex characters of SHA256(\"dbsec_sql_parser_and_ast_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_sql_parser_and_ast_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "파서가 인라인 따옴표를 식별자/문자열 경계로 처리함을 확인하세요.",
+      "식별자 `dbsec_sql_parser_and_ast_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect quotes as string delimiter tokens in AST generation.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_sql_parser_and_ast_v1\")."
+    ]
+  },
+  "hash": "eb1783c70fc4649e6872b6dc02afdd0128d7cc74d107a986e8de0424da23f9ca"
+},
+{
+  "id": "t0_dbsec_prepared_statement_mechanism",
+  "tier": 0,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Prepared Statement 데이터-코드 분리 메커니즘",
+    "en": "Prepared Statements & Parameterized Execution Mechanism"
+  },
+  "prompt": {
+    "ko": "DB 드라이버가 쿼리 템플릿을 사전 컴파일하고 파라미터를 리터럴로 바인딩하는 메커니즘을 분석합니다.\n지정된 식별자 `dbsec_prepared_statement_mechanism_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_prepared_statement_mechanism_v1\") 앞 20자리}`",
+    "en": "Review pre-compilation protocols and placeholder binding that prevent code/data confusion.\nCompute the first 20 hex characters of SHA256(\"dbsec_prepared_statement_mechanism_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_prepared_statement_mechanism_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "파라미터 바인딩 시 따옴표가 이스케이프 문자열로만 전달됨을 확인하세요.",
+      "식별자 `dbsec_prepared_statement_mechanism_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Verify bound parameters are strictly evaluated as literals.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_prepared_statement_mechanism_v1\")."
+    ]
+  },
+  "hash": "8e75dac5b6e8ccb746e86ccfb195a32966042f62849273fd081f93da3b9d848f"
+},
+{
+  "id": "t0_dbsec_mysql_information_schema",
+  "tier": 0,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MySQL information_schema 시스템 딕셔너리 정찰",
+    "en": "MySQL information_schema Catalog Metadata Enumeration"
+  },
+  "prompt": {
+    "ko": "TABLES, COLUMNS, SCHEMATA 메타데이터 뷰를 조회하여 데이터베이스 구조를 정찰하는 원리를 분석합니다.\n지정된 식별자 `dbsec_mysql_information_schema_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_mysql_information_schema_v1\") 앞 20자리}`",
+    "en": "Inspect information_schema.tables and columns metadata catalog structure.\nCompute the first 20 hex characters of SHA256(\"dbsec_mysql_information_schema_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_mysql_information_schema_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "테이블 목록 덤프 시 table_schema를 필터링하는 쿼리를 확인하세요.",
+      "식별자 `dbsec_mysql_information_schema_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review filtering by table_schema for metadata extraction.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_mysql_information_schema_v1\")."
+    ]
+  },
+  "hash": "cdc251f71fbb4994e8db6e43f065ccd5b71342c31c5302a9cc986f5713ac914c"
+},
+{
+  "id": "t0_dbsec_oracle_data_dictionary",
+  "tier": 0,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Oracle 데이터 딕셔너리 뷰 (ALL/USER/DBA_TABLES)",
+    "en": "Oracle Data Dictionary Architecture (ALL / USER / DBA Views)"
+  },
+  "prompt": {
+    "ko": "USER_TABLES, ALL_TAB_COLUMNS, DBA_ROLE_PRIVS 뷰를 활용한 오라클 스키마 정찰을 분석합니다.\n지정된 식별자 `dbsec_oracle_data_dictionary_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_oracle_data_dictionary_v1\") 앞 20자리}`",
+    "en": "Classify the three tiers of Oracle data dictionary views and catalog security.\nCompute the first 20 hex characters of SHA256(\"dbsec_oracle_data_dictionary_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_oracle_data_dictionary_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "접근 가능한 객체 범위(USER vs ALL vs DBA)를 확인하세요.",
+      "식별자 `dbsec_oracle_data_dictionary_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Distinguish dictionary accessibility across user scopes.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_oracle_data_dictionary_v1\")."
+    ]
+  },
+  "hash": "66e2f64210b414ec49aeb3c786b86fb35525a91d648b2b720557ad5f90dd20bf"
+},
+{
+  "id": "t0_dbsec_password_hashing_algorithms",
+  "tier": 0,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RDBMS 계정 암호 해싱 알고리즘 변천사",
+    "en": "RDBMS User Authentication & Password Hashing Algorithms"
+  },
+  "prompt": {
+    "ko": "MySQL mysql_native_password vs caching_sha2_password, Oracle 11g SHA-1 vs 12c+ PBKDF2-SHA512 암호 저장을 분석합니다.\n지정된 식별자 `dbsec_password_hashing_algorithms_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_password_hashing_algorithms_v1\") 앞 20자리}`",
+    "en": "Trace password hashing algorithms from SHA-1 to caching_sha2 and PBKDF2 across enterprise DBs.\nCompute the first 20 hex characters of SHA256(\"dbsec_password_hashing_algorithms_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_password_hashing_algorithms_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "최신 DB가 솔트가 포함된 솔루션을 채택함을 확인하세요.",
+      "식별자 `dbsec_password_hashing_algorithms_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Modern DBMS engines use salted iterations to deter rainbow tables.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_password_hashing_algorithms_v1\")."
+    ]
+  },
+  "hash": "3245eaa9ae450200084306a96510d5a06008abf2273e211a6039705e1dc808a7"
+},
+{
+  "id": "t0_dbsec_audit_trail_basics",
+  "tier": 0,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "데이터베이스 Audit Trail 감사 로그 기본 원리",
+    "en": "Database Audit Trail Architecture & Standard Event Logging"
+  },
+  "prompt": {
+    "ko": "연결 성공/실패, 관리자 DDL/DCL 이벤트 및 트랜잭션 redo 로그의 감사 기록 구조를 분석합니다.\n지정된 식별자 `dbsec_audit_trail_basics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_audit_trail_basics_v1\") 앞 20자리}`",
+    "en": "Analyze basic audit trail mechanisms, connection auditing, and transactional event logs.\nCompute the first 20 hex characters of SHA256(\"dbsec_audit_trail_basics_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_audit_trail_basics_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "감사 기록이 변조되지 않도록 분리된 스토리지에 저장되어야 함을 확인하세요.",
+      "식별자 `dbsec_audit_trail_basics_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Ensure audit trails are directed to append-only storage.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_audit_trail_basics_v1\")."
+    ]
+  },
+  "hash": "e780d5c3f0aa6fcb21690a93a6aac05baf339388dae4569b5896581d71efe9d3"
+},
+{
+  "id": "t1_dbsec_second_order_sqli_concept",
+  "tier": 1,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "2차 SQL 인젝션(Second-Order) 지연 실행 메커니즘",
+    "en": "Second-Order SQL Injection Storage & Trigger Mechanism"
+  },
+  "prompt": {
+    "ko": "사용자 입력이 1차 INSERT 시점에는 안전하게 적재된 후, 2차 내부 쿼리 실행 시 발현되는 지연 인젝션 흐름을 분석합니다.\n지정된 식별자 `dbsec_second_order_sqli_concept_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_second_order_sqli_concept_v1\") 앞 20자리}`",
+    "en": "Trace the two-phase lifecycle of stored payloads triggering in secondary trusted queries.\nCompute the first 20 hex characters of SHA256(\"dbsec_second_order_sqli_concept_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_second_order_sqli_concept_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "저장 시점이 아니라 재조회 및 동적 조합 시점에 인젝션이 발생함을 확인하세요.",
+      "식별자 `dbsec_second_order_sqli_concept_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Identify the decoupled storage phase from the execution phase.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_second_order_sqli_concept_v1\")."
+    ]
+  },
+  "hash": "7e37418bffc71015711808d872d222fd827c07943bc70278512605b7363bd6f4"
+},
+{
+  "id": "t1_dbsec_blind_time_based_inference",
+  "tier": 1,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Blind Time-Based SQL 인젝션 SLEEP/WAITFOR 추론",
+    "en": "Blind Time-Based SQL Injection (SLEEP / WAITFOR Inference)"
+  },
+  "prompt": {
+    "ko": "SLEEP(), pg_sleep(), WAITFOR DELAY를 악용하여 참/거짓 조건에 따른 지연 응답으로 한 글자씩 데이터를 카빙합니다.\n지정된 식별자 `dbsec_blind_time_based_inference_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_blind_time_based_inference_v1\") 앞 20자리}`",
+    "en": "Model time-based boolean deduction via SLEEP and WAITFOR DELAY side channels.\nCompute the first 20 hex characters of SHA256(\"dbsec_blind_time_based_inference_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_blind_time_based_inference_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "SUBSTRING 및 ASCII 함수로 각 자리 문자를 이진 탐색함을 확인하세요.",
+      "식별자 `dbsec_blind_time_based_inference_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Use binary search on ASCII values combined with conditional sleep.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_blind_time_based_inference_v1\")."
+    ]
+  },
+  "hash": "d380755187e472ccec8743f81172f7cbf9a1493a8959f556d6e21a681913b9a3"
+},
+{
+  "id": "t1_dbsec_mysql_into_outfile_rce",
+  "tier": 1,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "INTO OUTFILE 웹셸 생성 및 secure_file_priv 제약",
+    "en": "MySQL SELECT INTO OUTFILE Web Shell Writing & secure_file_priv"
+  },
+  "prompt": {
+    "ko": "웹 디렉터리에 PHP 웹셸을 작성하기 위한 `SELECT ... INTO OUTFILE` 구문과 `secure_file_priv` 제약 우회를 분석합니다.\n지정된 식별자 `dbsec_mysql_into_outfile_rce_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_mysql_into_outfile_rce_v1\") 앞 20자리}`",
+    "en": "Examine web shell dropping via INTO OUTFILE and barriers imposed by secure_file_priv.\nCompute the first 20 hex characters of SHA256(\"dbsec_mysql_into_outfile_rce_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_mysql_into_outfile_rce_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "secure_file_priv가 빈 문자열일 때만 임의 경로에 파일 쓰기가 가능함을 확인하세요.",
+      "식별자 `dbsec_mysql_into_outfile_rce_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "File writes succeed only when secure_file_priv is set to an empty string.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_mysql_into_outfile_rce_v1\")."
+    ]
+  },
+  "hash": "238ee16a7a54678970edf0be10a30f0633538b99a3ec0a82e5cf469b8ede8ce2"
+},
+{
+  "id": "t1_dbsec_mssql_xp_cmdshell_execution",
+  "tier": 1,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MSSQL xp_cmdshell 확장 저장 프로시저 커맨드 실행",
+    "en": "MSSQL xp_cmdshell Extended Stored Procedure OS Execution"
+  },
+  "prompt": {
+    "ko": "sp_configure 'show advanced options', 1 및 'xp_cmdshell', 1 설정을 활성화하여 OS 셸을 탈취하는 공격을 분석합니다.\n지정된 식별자 `dbsec_mssql_xp_cmdshell_execution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_mssql_xp_cmdshell_execution_v1\") 앞 20자리}`",
+    "en": "Analyze enabling and exploiting xp_cmdshell on MS SQL Server to drop into cmd.exe.\nCompute the first 20 hex characters of SHA256(\"dbsec_mssql_xp_cmdshell_execution_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_mssql_xp_cmdshell_execution_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "sysadmin 권한이 있어야 sp_configure로 프로시저를 재활성화할 수 있음을 확인하세요.",
+      "식별자 `dbsec_mssql_xp_cmdshell_execution_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "sysadmin role is required to re-enable disabled procedures via sp_configure.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_mssql_xp_cmdshell_execution_v1\")."
+    ]
+  },
+  "hash": "ddaef77b7409bb0dc321764299fb32ad64f38381e6bda17a2836977d3371a886"
+},
+{
+  "id": "t1_dbsec_postgresql_copy_from_program",
+  "tier": 1,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PostgreSQL COPY ... FROM PROGRAM RCE 벡터",
+    "en": "PostgreSQL COPY ... FROM PROGRAM Arbitrary Command Execution"
+  },
+  "prompt": {
+    "ko": "PostgreSQL 9.3+ 슈퍼유저 권한에서 `COPY table FROM PROGRAM 'cmd'` 구문으로 OS 명령을 실행하는 원리를 분석합니다.\n지정된 식별자 `dbsec_postgresql_copy_from_program_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_postgresql_copy_from_program_v1\") 앞 20자리}`",
+    "en": "Evaluate PostgreSQL superuser command injection via COPY ... FROM PROGRAM pipe syntax.\nCompute the first 20 hex characters of SHA256(\"dbsec_postgresql_copy_from_program_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_postgresql_copy_from_program_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "pg_execute_server_program 롤이 명령 실행에 관여함을 확인하세요.",
+      "식별자 `dbsec_postgresql_copy_from_program_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Check membership in the pg_execute_server_program role.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_postgresql_copy_from_program_v1\")."
+    ]
+  },
+  "hash": "33c3ce41a200fb1b9119c48853bd055d4b11740618108f959d55d2ede54e9e04"
+},
+{
+  "id": "t1_dbsec_mysql_load_file_sensitive_carving",
+  "tier": 1,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "LOAD_FILE()을 통한 시스템 중요 설정 및 키 유출",
+    "en": "MySQL LOAD_FILE() System Configuration & Key Carving"
+  },
+  "prompt": {
+    "ko": "`SELECT LOAD_FILE('/etc/passwd')` 또는 `/etc/mysql/my.cnf`를 호출하여 서버 내부 자격증명을 탈취합니다.\n지정된 식별자 `dbsec_mysql_load_file_sensitive_carving_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_mysql_load_file_sensitive_carving_v1\") 앞 20자리}`",
+    "en": "Analyze extracting sensitive host files via LOAD_FILE() and path traversal requirements.\nCompute the first 20 hex characters of SHA256(\"dbsec_mysql_load_file_sensitive_carving_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_mysql_load_file_sensitive_carving_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "파일 읽기 대상이 OS 파일 권한상 mysql 프로세스에 읽기 가능해야 함을 확인하세요.",
+      "식별자 `dbsec_mysql_load_file_sensitive_carving_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Ensure target files have read permissions granted to the mysqld daemon user.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_mysql_load_file_sensitive_carving_v1\")."
+    ]
+  },
+  "hash": "adb216116ba620cf394df3506da9c3c933fe97932ce8a952921993677ae14bd3"
+},
+{
+  "id": "t1_dbsec_db_fingerprinting_heuristics",
+  "tier": 1,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 40,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "RDBMS 방언(Dialect) 휴리스틱 핑거프린팅",
+    "en": "RDBMS SQL Dialect & Behavioral Heuristic Fingerprinting"
+  },
+  "prompt": {
+    "ko": "문자열 결합(`||` vs `+` vs `CONCAT()`), 시스템 주석, 버전 함수(`@@version`, `VERSION()`, `BANNER`)로 엔진을 판별합니다.\n지정된 식별자 `dbsec_db_fingerprinting_heuristics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_db_fingerprinting_heuristics_v1\") 앞 20자리}`",
+    "en": "Heuristically fingerprint database vendors using concatenation syntax and version constants.\nCompute the first 20 hex characters of SHA256(\"dbsec_db_fingerprinting_heuristics_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_db_fingerprinting_heuristics_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "오라클은 FROM DUAL이 필수이며 MSSQL은 @@version을 지원함을 확인하세요.",
+      "식별자 `dbsec_db_fingerprinting_heuristics_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Note Oracle mandates DUAL table syntax while MSSQL uses @@version.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_db_fingerprinting_heuristics_v1\")."
+    ]
+  },
+  "hash": "976a4b401b0d09fcb61883c40c6e0665571862ac8cbd7fd6d2063bd587017425"
+},
+{
+  "id": "t2_dbsec_udf_dynamic_library_injection",
+  "tier": 2,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MySQL UDF 악성 공유 라이브러리 적재 및 sys_eval RCE",
+    "en": "MySQL UDF (User-Defined Function) Shared Library Injection & sys_eval"
+  },
+  "prompt": {
+    "ko": "16진수 ELF 라이브러리를 플러그인 디렉터리에 DUMPFILE로 쓰고 `CREATE FUNCTION sys_eval`로 루트 셸을 탈취합니다.\n지정된 식별자 `dbsec_udf_dynamic_library_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_udf_dynamic_library_injection_v1\") 앞 20자리}`",
+    "en": "Drop a malicious .so into the plugin directory and register sys_eval for host code execution.\nCompute the first 20 hex characters of SHA256(\"dbsec_udf_dynamic_library_injection_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_udf_dynamic_library_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "plugin_dir 경로와 secure_file_priv 설정을 확인하세요.",
+      "식별자 `dbsec_udf_dynamic_library_injection_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Check plugin_dir and ensure secure_file_priv does not restrict dumping.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_udf_dynamic_library_injection_v1\")."
+    ]
+  },
+  "hash": "e04014c920287d4cfc0e8cf0c001fae8f7f0857f2014cf31a59094b90c26607c"
+},
+{
+  "id": "t2_dbsec_oracle_plsql_definer_rights_privesc",
+  "tier": 2,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Oracle AUTHID DEFINER 패키지 인젝션 및 DBA 권한상승",
+    "en": "Oracle PL/SQL AUTHID DEFINER Package Injection to DBA Escalation"
+  },
+  "prompt": {
+    "ko": "SYS 계정의 정의자 권한(AUTHID DEFINER) 프로시저에 동적 SQL 인젝션을 유도하여 일반 계정에 DBA 롤을 부여합니다.\n지정된 식별자 `dbsec_oracle_plsql_definer_rights_privesc_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_oracle_plsql_definer_rights_privesc_v1\") 앞 20자리}`",
+    "en": "Exploit dynamic EXECUTE IMMEDIATE inside SYS definer-rights procedures to grant DBA roles.\nCompute the first 20 hex characters of SHA256(\"dbsec_oracle_plsql_definer_rights_privesc_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_oracle_plsql_definer_rights_privesc_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "PRAGMA AUTONOMOUS_TRANSACTION으로 독립 트랜잭션을 실행함을 확인하세요.",
+      "식별자 `dbsec_oracle_plsql_definer_rights_privesc_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Use autonomous transactions to execute privileged DDL inside query context.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_oracle_plsql_definer_rights_privesc_v1\")."
+    ]
+  },
+  "hash": "1fe7b54066645c8d38915b38531ab8656ba185447b7d5f1f4e5c17e3a02af26e"
+},
+{
+  "id": "t2_dbsec_oob_dns_exfiltration_tunnel",
+  "tier": 2,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "대역외(OOB) DNS 터널링을 통한 데이터 은닉 유출",
+    "en": "Out-of-Band (OOB) DNS Tunneling & Subdomain Data Exfiltration"
+  },
+  "prompt": {
+    "ko": "UTL_INADDR, xp_dirtree, dblink_connect를 통해 쿼리 결과를 16진수로 인코딩하여 DNS 질의로 유출합니다.\n지정된 식별자 `dbsec_oob_dns_exfiltration_tunnel_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_oob_dns_exfiltration_tunnel_v1\") 앞 20자리}`",
+    "en": "Tunnel exfiltrated query results as hex-encoded DNS queries via network procedures.\nCompute the first 20 hex characters of SHA256(\"dbsec_oob_dns_exfiltration_tunnel_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_oob_dns_exfiltration_tunnel_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "인그레스 방화벽이 외부 직접 연결을 막더라도 DNS 재귀 조회가 동작함을 확인하세요.",
+      "식별자 `dbsec_oob_dns_exfiltration_tunnel_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "DNS recursive queries bypass outbound TCP egress firewalls.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_oob_dns_exfiltration_tunnel_v1\")."
+    ]
+  },
+  "hash": "169379339c821959992d5b199cd0526bb58ac3184a9277d32e353a1d408c2f55"
+},
+{
+  "id": "t2_dbsec_mssql_linked_servers_pivot",
+  "tier": 2,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MSSQL Linked Servers 체인을 악용한 인접 DB 피벗",
+    "en": "MSSQL Linked Servers Chain Pivoting & RPC Impersonation"
+  },
+  "prompt": {
+    "ko": "`OPENQUERY()` 및 RPC Out 설정을 악용하여 연결된 원격 SQL Server 인스턴스로 권한을 횡적으로 전파합니다.\n지정된 식별자 `dbsec_mssql_linked_servers_pivot_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_mssql_linked_servers_pivot_v1\") 앞 20자리}`",
+    "en": "Traverse linked SQL Server configurations via OPENQUERY to execute remote administrative tasks.\nCompute the first 20 hex characters of SHA256(\"dbsec_mssql_linked_servers_pivot_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_mssql_linked_servers_pivot_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "sp_linkedservers 뷰를 확인하여 링크된 인스턴스를 열거하세요.",
+      "식별자 `dbsec_mssql_linked_servers_pivot_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Query sys.servers and sp_linkedservers to discover remote links.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_mssql_linked_servers_pivot_v1\")."
+    ]
+  },
+  "hash": "56e16d508d9016dda194ddf809598e28443a053f6b00c5852ebe90004067ae60"
+},
+{
+  "id": "t2_dbsec_postgresql_large_objects_carving",
+  "tier": 2,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PostgreSQL Large Objects (pg_largeobject) 파일 주입",
+    "en": "PostgreSQL Large Object (pg_largeobject) Arbitrary File Staging"
+  },
+  "prompt": {
+    "ko": "`lo_create()`, `lo_put()` 함수를 이용해 악성 공유 객체 청크를 DB에 적재한 뒤 디스크에 생성하는 공격을 분석합니다.\n지정된 식별자 `dbsec_postgresql_large_objects_carving_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_postgresql_large_objects_carving_v1\") 앞 20자리}`",
+    "en": "Stage binary payloads via pg_largeobject chunking and export them to disk via lo_export.\nCompute the first 20 hex characters of SHA256(\"dbsec_postgresql_large_objects_carving_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_postgresql_large_objects_carving_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "lo_export()로 파일시스템에 바이너리를 쓰는 절차를 확인하세요.",
+      "식별자 `dbsec_postgresql_large_objects_carving_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Use lo_export() to dump in-database large objects into filesystem binaries.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_postgresql_large_objects_carving_v1\")."
+    ]
+  },
+  "hash": "c764bfe1f7f23e9f63324f8a1d662d3e22d4f134469220776f15eeacb45c3a05"
+},
+{
+  "id": "t2_dbsec_mysql_general_log_webshell",
+  "tier": 2,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MySQL general_log 파일 경로 변조를 통한 웹셸 주입",
+    "en": "MySQL general_log Logfile Overwrite & Web Shell Poisoning"
+  },
+  "prompt": {
+    "ko": "`SET GLOBAL general_log = 'ON'` 및 `general_log_file = '/var/www/html/shell.php'`를 지정하여 웹셸을 투하합니다.\n지정된 식별자 `dbsec_mysql_general_log_webshell_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_mysql_general_log_webshell_v1\") 앞 20자리}`",
+    "en": "Repoint MySQL general_log_file to web roots and issue payload queries to drop shells.\nCompute the first 20 hex characters of SHA256(\"dbsec_mysql_general_log_webshell_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_mysql_general_log_webshell_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "global 변수 수정 시 SUPER 권한이 필요함을 확인하세요.",
+      "식별자 `dbsec_mysql_general_log_webshell_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Manipulating general_log_file requires the SUPER or SYSTEM_VARIABLES_ADMIN privilege.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_mysql_general_log_webshell_v1\")."
+    ]
+  },
+  "hash": "4839daa9839e8f9f03c92fc9e58fec480f05828c0bdabec99797ffc8c837640e"
+},
+{
+  "id": "t2_dbsec_database_network_tls_sniffing",
+  "tier": 2,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "데이터베이스 비암호화 통신 패킷 스니핑 & 자격증명 복원",
+    "en": "Database Cleartext Traffic Sniffing & Credential Harvesting"
+  },
+  "prompt": {
+    "ko": "TLS/SSL이 강제되지 않은 MySQL/Oracle 통신에서 Wireshark로 사용자 쿼리 및 인증 핸드셰이크를 복원합니다.\n지정된 식별자 `dbsec_database_network_tls_sniffing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_database_network_tls_sniffing_v1\") 앞 20자리}`",
+    "en": "Capture and reconstruct unencrypted database traffic to harvest plaintext credentials and data.\nCompute the first 20 hex characters of SHA256(\"dbsec_database_network_tls_sniffing_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_database_network_tls_sniffing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "REQUIRE SSL 옵션이 없는 사용자 계정의 위험성을 확인하세요.",
+      "식별자 `dbsec_database_network_tls_sniffing_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Verify accounts configured without REQUIRE SSL expose transit data to sniffing.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_database_network_tls_sniffing_v1\")."
+    ]
+  },
+  "hash": "2f9f8acc1eb27d20bef45d9bd5bd491485ffb4ca3b65d724954acdfa9631fc51"
+},
+{
+  "id": "t3_dbsec_oracle_fga_fine_grained_auditing",
+  "tier": 3,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Oracle Fine-Grained Auditing (FGA) 정책 설계 및 감사",
+    "en": "Oracle Fine-Grained Auditing (FGA) Policy Design & Compliance"
+  },
+  "prompt": {
+    "ko": "DBMS_FGA.ADD_POLICY를 통해 특정 민감 컬럼(급여, 주민번호) 조회 시 조건부 불변 감사 로그를 기록합니다.\n지정된 식별자 `dbsec_oracle_fga_fine_grained_auditing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_oracle_fga_fine_grained_auditing_v1\") 앞 20자리}`",
+    "en": "Deploy DBMS_FGA policies to capture fine-grained SQL queries and bind variables on sensitive columns.\nCompute the first 20 hex characters of SHA256(\"dbsec_oracle_fga_fine_grained_auditing_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_oracle_fga_fine_grained_auditing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "FGA 감사 뷰(DBA_FGA_AUDIT_TRAIL)에서 실행 쿼리 전문을 확인하세요.",
+      "식별자 `dbsec_oracle_fga_fine_grained_auditing_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect DBA_FGA_AUDIT_TRAIL for captured SQL text and bind parameters.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_oracle_fga_fine_grained_auditing_v1\")."
+    ]
+  },
+  "hash": "e2bbdc3e49386dfee8a42eaf7ba3013a07804d1c64e208d4e7ac5d84fd9545de"
+},
+{
+  "id": "t3_dbsec_transparent_data_encryption_tde",
+  "tier": 3,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "투명 데이터 암호화(TDE) 키 관리 및 테이블스페이스 보호",
+    "en": "Transparent Data Encryption (TDE) Keystore & Tablespace Protection"
+  },
+  "prompt": {
+    "ko": "스토리지 레벨(Data at Rest)에서 AES-256 암호화를 적용하여 물리 디스크 탈취 시 데이터 유출을 원천 방어합니다.\n지정된 식별자 `dbsec_transparent_data_encryption_tde_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_transparent_data_encryption_tde_v1\") 앞 20자리}`",
+    "en": "Encrypt database tablespaces at rest with AES-256 and isolate master encryption keys.\nCompute the first 20 hex characters of SHA256(\"dbsec_transparent_data_encryption_tde_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_transparent_data_encryption_tde_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "마스터 키가 HSM 또는 안전한 키스토어에 저장됨을 확인하세요.",
+      "식별자 `dbsec_transparent_data_encryption_tde_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Master keys must be stored in external hardware security modules or secure keystores.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_transparent_data_encryption_tde_v1\")."
+    ]
+  },
+  "hash": "1691e2ba956730a6b8ec96b3ccd37c06572a157743093ac27a42e7b67eca3497"
+},
+{
+  "id": "t3_dbsec_secure_file_priv_isolation",
+  "tier": 3,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "secure_file_priv=NULL 설정을 통한 파일 입출력 원천 차단",
+    "en": "Enforcing secure_file_priv=NULL to Block Disk Staging & UDFs"
+  },
+  "prompt": {
+    "ko": "MySQL my.cnf에 `secure_file_priv = NULL`을 설정하여 INTO OUTFILE 및 LOAD_FILE() 공격을 완전히 무력화합니다.\n지정된 식별자 `dbsec_secure_file_priv_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_secure_file_priv_isolation_v1\") 앞 20자리}`",
+    "en": "Lock down file operations by setting secure_file_priv to NULL across configuration files.\nCompute the first 20 hex characters of SHA256(\"dbsec_secure_file_priv_isolation_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_secure_file_priv_isolation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "NULL 설정 시 어떤 디렉터리도 파일 입출력 대상으로 허용되지 않음을 확인하세요.",
+      "식별자 `dbsec_secure_file_priv_isolation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "A NULL setting completely disables all LOAD DATA and SELECT ... INTO OUTFILE commands.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_secure_file_priv_isolation_v1\")."
+    ]
+  },
+  "hash": "b56690091403c0ef41e203b448cc4ab3de2430ef66ce80b9ae50c4fe53f4f6b1"
+},
+{
+  "id": "t3_dbsec_least_privilege_schema_rbac",
+  "tier": 3,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "최소 권한 원칙(PoLP)에 기반한 스키마 뷰 격리",
+    "en": "Schema View Isolation & Principle of Least Privilege (PoLP)"
+  },
+  "prompt": {
+    "ko": "애플리케이션 계정에 원본 테이블 대신 특정 컬럼만 필터링된 VIEW에 대한 SELECT 권한만 부여하여 침해 피해를 최소화합니다.\n지정된 식별자 `dbsec_least_privilege_schema_rbac_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_least_privilege_schema_rbac_v1\") 앞 20자리}`",
+    "en": "Constrain application connections to filtered views rather than underlying tables.\nCompute the first 20 hex characters of SHA256(\"dbsec_least_privilege_schema_rbac_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_least_privilege_schema_rbac_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "DCL/DDL 권한을 철저히 배제하고 DML 권한도 뷰 단위로 세분화하세요.",
+      "식별자 `dbsec_least_privilege_schema_rbac_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Revoke raw table access in favor of restricted columnar views.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_least_privilege_schema_rbac_v1\")."
+    ]
+  },
+  "hash": "cdaa5b7929527551ee967a6c88e9b028daced26b721c519420ddc4294326ad2f"
+},
+{
+  "id": "t3_dbsec_sql_firewall_and_allowlist",
+  "tier": 3,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SQL 방화벽(SQL Firewall) 학습 및 정상 쿼리 화이트리스트",
+    "en": "Database SQL Firewall Behavioral Learning & Query Whitelisting"
+  },
+  "prompt": {
+    "ko": "정상 애플리케이션의 쿼리 시그니처와 컨텍스트(사용자, IP, 쿼리 해시)를 학습하여 변조된 쿼리를 인라인 차단합니다.\n지정된 식별자 `dbsec_sql_firewall_and_allowlist_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_sql_firewall_and_allowlist_v1\") 앞 20자리}`",
+    "en": "Implement Oracle SQL Firewall or GreenSQL reverse proxy whitelists to block unauthorized ASTs.\nCompute the first 20 hex characters of SHA256(\"dbsec_sql_firewall_and_allowlist_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_sql_firewall_and_allowlist_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "학습 모드(Training)에서 실운영 모드(Enforcing)로 전환하는 절차를 확인하세요.",
+      "식별자 `dbsec_sql_firewall_and_allowlist_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Switch from learning to blocking mode to reject unseen query signatures.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_sql_firewall_and_allowlist_v1\")."
+    ]
+  },
+  "hash": "b10a82697f9562a3f5330551aeb425eedd3d461183eab6103d559df88c19c855"
+},
+{
+  "id": "t3_dbsec_data_masking_and_tokenization",
+  "tier": 3,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "동적 데이터 마스킹(DDM) 및 비가역 토큰화",
+    "en": "Dynamic Data Masking (DDM) & Cryptographic Tokenization"
+  },
+  "prompt": {
+    "ko": "조회 계정의 권한에 따라 주민등록번호 뒷자리나 카드 번호를 실시간으로 마스킹(`XXXX-XXXX-XXXX-1234`) 처리합니다.\n지정된 식별자 `dbsec_data_masking_and_tokenization_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_data_masking_and_tokenization_v1\") 앞 20자리}`",
+    "en": "Mask sensitive PII dynamically based on user identity without altering underlying storage.\nCompute the first 20 hex characters of SHA256(\"dbsec_data_masking_and_tokenization_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_data_masking_and_tokenization_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "UNMASK 권한을 가진 인가된 보안 담당자만 평문을 조회할 수 있음을 확인하세요.",
+      "식별자 `dbsec_data_masking_and_tokenization_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Only identities explicitly granted the UNMASK privilege see unredacted values.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_data_masking_and_tokenization_v1\")."
+    ]
+  },
+  "hash": "5b6fc133953ab5c1e0a5de26ff7e534fe4f95e691bc14b4288376df02d5fcdec"
+},
+{
+  "id": "t3_dbsec_binlog_forensics_reconstruction",
+  "tier": 3,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "MySQL Binlog / Oracle Redo Log 침해 사고 포렌식",
+    "en": "Binary Log & Redo Log Digital Forensics Reconstruction"
+  },
+  "prompt": {
+    "ko": "`mysqlbinlog --base64-output=DECODE-ROWS -v`로 공격자의 침투 쿼리 타임라인과 위변조된 레코드를 역추적합니다.\n지정된 식별자 `dbsec_binlog_forensics_reconstruction_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_binlog_forensics_reconstruction_v1\") 앞 20자리}`",
+    "en": "Reconstruct malicious attacker transactions by decoding binary logs and redo streams.\nCompute the first 20 hex characters of SHA256(\"dbsec_binlog_forensics_reconstruction_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_binlog_forensics_reconstruction_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Row-based binlog에서 UPDATE 전후(Before/After) 이미지를 비교하세요.",
+      "식별자 `dbsec_binlog_forensics_reconstruction_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Compare before-and-after image tuples recorded in row-based replication logs.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_binlog_forensics_reconstruction_v1\")."
+    ]
+  },
+  "hash": "ef738d189b2cd61b59d56d19e8443533b65e56b97a7eac0adc7c742274a43cb9"
+},
+{
+  "id": "t4_dbsec_apparmor_selinux_mysqld_containment",
+  "tier": 4,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AppArmor/SELinux 강제 모드를 통한 DB 프로세스 격리",
+    "en": "AppArmor / SELinux Enforcing Containment for Database Daemons"
+  },
+  "prompt": {
+    "ko": "mysqld 프로세스에 SELinux enforcing 및 엄격한 AppArmor 프로파일을 적용하여 플러그인 로드 및 임의 바이너리 실행을 차단합니다.\n지정된 식별자 `dbsec_apparmor_selinux_mysqld_containment_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_apparmor_selinux_mysqld_containment_v1\") 앞 20자리}`",
+    "en": "Contain database processes via SELinux mysqld_t domains and AppArmor enforcement.\nCompute the first 20 hex characters of SHA256(\"dbsec_apparmor_selinux_mysqld_containment_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_apparmor_selinux_mysqld_containment_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "UDF가 적재되더라도 시스템 셸 popen() 호출 시 AVC 데니얼이 발생함을 확인하세요.",
+      "식별자 `dbsec_apparmor_selinux_mysqld_containment_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Kernel LSM denials block popen() and execve() even if UDFs are instantiated.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_apparmor_selinux_mysqld_containment_v1\")."
+    ]
+  },
+  "hash": "afe9421388fd60085efdc9bff8c256c33f55ccf8af8b2df8f8d411836ff2827f"
+},
+{
+  "id": "t4_dbsec_zero_trust_database_access_mesh",
+  "tier": 4,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 105,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Zero Trust 데이터베이스 접근 제어 (mTLS & 임시 토큰)",
+    "en": "Zero Trust Database Access Architecture (mTLS & Ephemeral Credentials)"
+  },
+  "prompt": {
+    "ko": "정적 비밀번호를 전면 폐기하고 HashiCorp Vault 또는 AWS IAM DB 인증을 통한 15분 만료 임시 토큰 및 mTLS 통신을 강제합니다.\n지정된 식별자 `dbsec_zero_trust_database_access_mesh_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_zero_trust_database_access_mesh_v1\") 앞 20자리}`",
+    "en": "Eliminate static database credentials using HashiCorp Vault dynamic leases and mTLS client certs.\nCompute the first 20 hex characters of SHA256(\"dbsec_zero_trust_database_access_mesh_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_zero_trust_database_access_mesh_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "단기 토큰 만료로 인해 자격증명이 유출되더라도 즉각 무효화됨을 확인하세요.",
+      "식별자 `dbsec_zero_trust_database_access_mesh_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Ephemeral tokens ensure compromised connection strings expire within minutes.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_zero_trust_database_access_mesh_v1\")."
+    ]
+  },
+  "hash": "716544a3ea14202fe9302174e5b8cc417fcd0a3bd9ce02d5662f3f769c7028bb"
+},
+{
+  "id": "t4_dbsec_oracle_unified_auditing_tamper_proof",
+  "tier": 4,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Oracle Unified Auditing 불변 감사 및 SIEM 연동 파이프라인",
+    "en": "Oracle Unified Auditing Immutable Audit Trails & SIEM Ingestion"
+  },
+  "prompt": {
+    "ko": "전통적 감사 뷰를 Unified Audit Trail(AUDSYS)로 전환하고 syslog/Kafka 파이프라인으로 SIEM에 실시간 전송합니다.\n지정된 식별자 `dbsec_oracle_unified_auditing_tamper_proof_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_oracle_unified_auditing_tamper_proof_v1\") 앞 20자리}`",
+    "en": "Centralize tamper-proof AUDSYS unified auditing and stream telemetry to enterprise SIEMs.\nCompute the first 20 hex characters of SHA256(\"dbsec_oracle_unified_auditing_tamper_proof_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_oracle_unified_auditing_tamper_proof_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "DBA 계정도 AUDSYS 테이블의 감사 기록을 수정할 수 없음을 확인하세요.",
+      "식별자 `dbsec_oracle_unified_auditing_tamper_proof_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "AUDSYS partition tables are protected from tampering even by DBAs.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_oracle_unified_auditing_tamper_proof_v1\")."
+    ]
+  },
+  "hash": "2e9d237dcd0945a7ca42816558944477305f64b316055925330a1c76304122f2"
+},
+{
+  "id": "t4_dbsec_quantum_resistant_db_cryptography",
+  "tier": 4,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 105,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "포스트 퀀텀(PQC) RDBMS 스토리지 암호화 아키텍처",
+    "en": "Post-Quantum Cryptography (PQC) RDBMS Column-Level Protection"
+  },
+  "prompt": {
+    "ko": "NIST FIPS 203/204 표준(ML-KEM / ML-DSA)을 기반으로 장기 보존 민감 데이터 컬럼을 양자 컴퓨터 해독으로부터 보호합니다.\n지정된 식별자 `dbsec_quantum_resistant_db_cryptography_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_quantum_resistant_db_cryptography_v1\") 앞 20자리}`",
+    "en": "Shield long-retention encrypted columns with NIST post-quantum ML-KEM/ML-DSA primitives.\nCompute the first 20 hex characters of SHA256(\"dbsec_quantum_resistant_db_cryptography_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_quantum_resistant_db_cryptography_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Harvest Now, Decrypt Later(HNDL) 공격을 차단하는 원리를 확인하세요.",
+      "식별자 `dbsec_quantum_resistant_db_cryptography_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "PQC protection mitigates Harvest-Now-Decrypt-Later threats against archive databases.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_quantum_resistant_db_cryptography_v1\")."
+    ]
+  },
+  "hash": "82b75124da9be4edcfe980a86e16f47425903c74e3dfc97d7165eca189cd2383"
+},
+{
+  "id": "t4_dbsec_ebpf_database_kernel_monitoring",
+  "tier": 4,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "eBPF 커널 레벨 데이터베이스 쿼리 및 소켓 무결성 감시",
+    "en": "eBPF Kernel-Level Database Wire Protocol & Socket Auditing"
+  },
+  "prompt": {
+    "ko": "TDS/MySQL 프로토콜 통신을 eBPF uprobe/kprobe로 커널 공간에서 직접 파싱하여 은닉 SQLi 및 데이터 유출을 감지합니다.\n지정된 식별자 `dbsec_ebpf_database_kernel_monitoring_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_ebpf_database_kernel_monitoring_v1\") 앞 20자리}`",
+    "en": "Monitor database socket buffers and query telemetry in kernel space via eBPF probes.\nCompute the first 20 hex characters of SHA256(\"dbsec_ebpf_database_kernel_monitoring_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_ebpf_database_kernel_monitoring_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "사용자 영역 디버거를 거치지 않고 커널에서 제로 오버헤드로 패킷을 검사함을 확인하세요.",
+      "식별자 `dbsec_ebpf_database_kernel_monitoring_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "eBPF inspects query buffers without introducing user-space proxy latency.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_ebpf_database_kernel_monitoring_v1\")."
+    ]
+  },
+  "hash": "c5a35f6af48d015e8e1e8eb5f49de755fdd1fb8060a1269f8ac1380384e0fb99"
+},
+{
+  "id": "t4_dbsec_soar_automated_db_quarantine",
+  "tier": 4,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SOAR 연동 이상 쿼리 탐지 시 계정 자동 잠금 플레이북",
+    "en": "SOAR-Driven Automated Database Threat Containment & Account Lockout"
+  },
+  "prompt": {
+    "ko": "대용량 테이블 스캔 및 UDF 생성 징후 탐지 시 방화벽 세션 강제 종료(KILL CONNECTION) 및 계정 즉시 잠금을 수행합니다.\n지정된 식별자 `dbsec_soar_automated_db_quarantine_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_soar_automated_db_quarantine_v1\") 앞 20자리}`",
+    "en": "Orchestrate automatic account suspension and connection termination upon malicious query alarms.\nCompute the first 20 hex characters of SHA256(\"dbsec_soar_automated_db_quarantine_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_soar_automated_db_quarantine_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ALTER USER account ACCOUNT LOCK 구문이 자동 호출됨을 확인하세요.",
+      "식별자 `dbsec_soar_automated_db_quarantine_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "SOAR triggers automated account locks and socket severance to isolate attacks.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_soar_automated_db_quarantine_v1\")."
+    ]
+  },
+  "hash": "19bc7f471ad514f15fa6813a88a4c13fb3607b297ae834b91103ea05003fd281"
+},
+{
+  "id": "t4_dbsec_capstone_full_enterprise_audit",
+  "tier": 4,
+  "cat": "database",
+  "track": "dbsec",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 데이터베이스 캡스톤 종합 보안 침투 & 감사",
+    "en": "Enterprise Database Security Capstone Full Chain Audit"
+  },
+  "prompt": {
+    "ko": "2차 SQLi, UDF 메모리 침투, 권한 상승을 진단하고 TDE, FGA, 최소 권한으로 완벽 하드닝을 완성하는 캡스톤 평가입니다.\n지정된 식별자 `dbsec_capstone_full_enterprise_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"dbsec_capstone_full_enterprise_audit_v1\") 앞 20자리}`",
+    "en": "Synthesize the entire attack and defense spectrum across Second-Order SQLi, UDFs, and FGA hardening.\nCompute the first 20 hex characters of SHA256(\"dbsec_capstone_full_enterprise_audit_v1\").\n\nFormat: `FLAG{SHA256(\"dbsec_capstone_full_enterprise_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "침투 단계와 방어 단계를 종합 검증하여 캡스톤 플래그를 획득하세요.",
+      "식별자 `dbsec_capstone_full_enterprise_audit_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Unify offensive exploitation with enterprise defensive posture.",
+      "Extract first 20 hex chars of SHA256(\"dbsec_capstone_full_enterprise_audit_v1\")."
+    ]
+  },
+  "hash": "5192190bf84f3f0474d3e799fad64a3c3d2ac341b1695d0685d63c7a6cb51430"
 }
 ];
 

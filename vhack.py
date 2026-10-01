@@ -430,6 +430,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [14, 49, 71],
     },
+    "36": {
+        "name": "엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩",
+        "dir":  "36_enterprise_database_security_lab",
+        "desc": "DBShield: 2차 SQL 인젝션을 통한 DBA 해시 탈취 · MySQL UDF 동적 라이브러리 바이너리 주입 및 root RCE · FGA 세밀 감사 및 TDE 다계층 DB 하드닝",
+        "url":  "웹 콘솔 & DB 보안 대시보드: http://localhost:8036",
+        "difficulty": "★★★★",
+        "related": [23, 5, 74],
+    },
 }
 
 
@@ -1439,6 +1447,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8033, "Lab 33 (KisaAuditLab KISA Infrastructure Lab)"),
         (8034, "Lab 34 (OsintHunterLab OSINT Surface Recon Lab)"),
         (8035, "Lab 35 (CloudPwnLab AWS Cloud IAM Lab)"),
+        (8036, "Lab 36 (DBShield Enterprise Database Security Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

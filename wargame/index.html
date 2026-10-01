@@ -31,7 +31,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/1715</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/1750</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -53,6 +53,7 @@
     <button class="chip" data-cmd="playground">playground</button>
     <button class="chip" data-cmd="bgp">bgp</button>
     <button class="chip" data-cmd="oauth">oauth</button>
+    <button class="chip" data-cmd="dbshield">dbshield</button>
     <button class="chip" data-cmd="ls">ls</button>
     <button class="chip" data-cmd="tracks">tracks</button>
     <button class="chip" data-cmd="map">map</button>
@@ -101,6 +102,7 @@
         <button class="pg-tab" data-tab="jwt">🔑 JWT None Tester</button>
         <button class="pg-tab" data-tab="bgp">🛣️ BGP Hijack &amp; RPKI</button>
         <button class="pg-tab" data-tab="oauth">🔑 OAuth PKCE &amp; Key Confusion</button>
+        <button class="pg-tab" data-tab="dbshield">🗄️ DB RBAC &amp; UDF Shield</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -321,6 +323,64 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
 -----END PUBLIC KEY-----</textarea>
                   <div id="oauthConfusionOutput" class="ast-view" style="font-size:11px;min-height:90px;"></div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enterprise DB RBAC & UDF Shield Panel -->
+        <div id="pgPanel-dbshield" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Attack &amp; Defense Scenarios:</span>
+              <button class="pg-btn danger" data-dbshield-preset="udf_rce">1. MySQL UDF Binary Injection &amp; RCE</button>
+              <button class="pg-btn danger" data-dbshield-preset="xp_cmdshell">2. MSSQL xp_cmdshell Escalation</button>
+              <button class="pg-btn danger" data-dbshield-preset="oracle_sysdba">3. Oracle AUTHID DEFINER Trap</button>
+              <button class="pg-btn" data-dbshield-preset="shield_hardened">4. 🛡️ DBShield FGA &amp; secure_file_priv</button>
+            </div>
+            <div class="bgp-controls-row">
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Target DBMS:</label>
+                <select id="dbshieldEngineSelect" style="background:#020804;border:1px solid var(--line);color:var(--txt);font-family:var(--mono);padding:4px 8px;font-size:11px;border-radius:4px;">
+                  <option value="mysql">MySQL 8.0</option>
+                  <option value="mssql">Microsoft SQL Server 2022</option>
+                  <option value="oracle">Oracle Database 21c</option>
+                </select>
+              </div>
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Active Session Role:</label>
+                <input id="dbshieldRoleInput" type="text" value="db_app_readonly" style="width:130px;background:#020804;border:1px solid var(--line);color:var(--green);font-family:var(--mono);padding:4px 8px;font-size:11px;border-radius:4px;">
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="dbshieldSecurePluginCheck" type="checkbox"> Read-Only Plugin &amp; secure_file_priv
+                </label>
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="dbshieldFgaCheck" type="checkbox"> Fine-Grained Audit (FGA) Firewall
+                </label>
+              </div>
+              <button id="dbshieldSimulateBtn" class="pg-btn">Simulate Query &amp; RBAC</button>
+            </div>
+            <div style="margin: 8px 0;">
+              <label class="dim" style="font-size:11px;">Injected SQL Statement / DDL Payload:</label>
+              <textarea id="dbshieldSqlInput" rows="2" style="width:100%;box-sizing:border-box;background:#020804;border:1px solid var(--line);color:var(--txt);font-family:var(--mono);padding:6px 8px;font-size:11px;border-radius:4px;resize:none;margin-top:4px;" spellcheck="false">SELECT 0x7f454c46... INTO DUMPFILE '/usr/lib/mysql/plugin/udf_sys_eval.so'; CREATE FUNCTION sys_eval RETURNS string SONAME 'udf_sys_eval.so'; SELECT sys_eval('id');</textarea>
+            </div>
+            <div class="dbshield-grid">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>⚙️ AST &amp; Kernel RBAC Execution Trace</span>
+                  <span id="dbshieldExecBadge" class="token-tag token-inj">RCE EXPLOITED</span>
+                </div>
+                <div id="dbshieldTraceOutput" class="ast-view" style="font-size:11px;min-height:160px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ DBShield Policy Engine &amp; Audit Trail</span>
+                  <span id="dbshieldAuditBadge" class="token-tag token-inj">AUDIT: BLIND</span>
+                </div>
+                <div id="dbshieldAuditOutput" class="ast-view" style="font-size:11px;min-height:160px;"></div>
               </div>
             </div>
           </div>

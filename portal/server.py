@@ -10,7 +10,7 @@ try:
 except ImportError:
     psutil = None
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
@@ -82,11 +82,57 @@ def get_system_status():
     }
 
 
+LAB_CATEGORIES: Dict[str, str] = {
+    "01": "web", "02": "system", "03": "web", "04": "network", "05": "web",
+    "06": "system", "07": "dfir", "08": "web", "09": "iot", "10": "cloud",
+    "11": "web", "12": "dfir", "13": "dfir", "14": "cloud", "15": "network",
+    "16": "reversing", "17": "system", "18": "ai", "19": "mobile", "20": "system",
+    "21": "automotive", "22": "web", "23": "dfir", "24": "pwn", "25": "ai",
+    "26": "malware", "27": "wireless", "28": "network", "29": "ad", "30": "reversing",
+    "31": "web", "32": "network", "33": "compliance", "34": "osint", "35": "cloud",
+    "36": "database",
+}
+
+
+def get_lab_category(lab_id: str) -> str:
+    return LAB_CATEGORIES.get(lab_id, "general")
+
+
+class BatchLabRequest(BaseModel):
+    category: Optional[str] = None
+    lab_ids: Optional[List[str]] = None
+
+
+@app.get("/api/labs/categories")
+def get_lab_categories():
+    """36개 랩 카테고리별 통계 및 분포 반환"""
+    stats: Dict[str, dict] = {}
+    for lid, meta in LABS.items():
+        cat = get_lab_category(lid)
+        if cat not in stats:
+            stats[cat] = {"count": 0, "running": 0, "labs": []}
+        port = get_lab_port(lid)
+        is_port_active = check_port_open(port) if port else False
+        stats[cat]["count"] += 1
+        if is_port_active:
+            stats[cat]["running"] += 1
+        stats[cat]["labs"].append(lid)
+    return {
+        "categories": stats,
+        "total_categories": len(stats),
+        "total_labs": len(LABS),
+    }
+
+
 @app.get("/api/labs")
-def list_labs():
-    """26개 전체 실습 랩의 최신 상태 및 메타데이터 반환"""
+def list_labs(category: Optional[str] = None):
+    """36개 전체 실습 랩의 최신 상태 및 카테고리 필터링 지원 메타데이터 반환"""
     result = []
+    target_cat = category.strip().lower() if category else None
     for lid, meta in sorted(LABS.items()):
+        cat = get_lab_category(lid)
+        if target_cat and cat != target_cat:
+            continue
         port = get_lab_port(lid)
         is_port_active = check_port_open(port) if port else False
         result.append({
@@ -96,11 +142,68 @@ def list_labs():
             "desc": meta["desc"],
             "url": meta["url"],
             "port": port,
+            "category": cat,
             "difficulty": meta["difficulty"],
             "related": meta["related"],
             "is_running": is_port_active,
         })
-    return {"labs": result, "total": len(result)}
+    return {"labs": result, "total": len(result), "filter_category": target_cat}
+
+
+@app.post("/api/labs/batch/start")
+def batch_start_labs(req: BatchLabRequest):
+    """지정 카테고리 또는 랩 ID 목록 일괄 가동"""
+    target_ids = []
+    if req.lab_ids:
+        target_ids = [lid for lid in req.lab_ids if lid in LABS]
+    elif req.category:
+        cat = req.category.strip().lower()
+        target_ids = [lid for lid in LABS if get_lab_category(lid) == cat]
+    else:
+        target_ids = list(LABS.keys())
+
+    results = {}
+    for lid in target_ids:
+        meta = LABS[lid]
+        target_dir = LABS_DIR / meta["dir"]
+        compose_file = target_dir / "docker-compose.yml"
+        if not compose_file.exists():
+            results[lid] = {"status": "simulated", "message": "Standalone lab"}
+            continue
+        try:
+            proc = subprocess.run(["docker", "compose", "up", "-d"], cwd=str(target_dir), capture_output=True, text=True, timeout=30)
+            results[lid] = {"status": "success" if proc.returncode == 0 else "error"}
+        except Exception as e:
+            results[lid] = {"status": "error", "error": str(e)}
+    return {"status": "completed", "targeted_count": len(target_ids), "results": results}
+
+
+@app.post("/api/labs/batch/stop")
+def batch_stop_labs(req: BatchLabRequest):
+    """지정 카테고리 또는 랩 ID 목록 일괄 정지"""
+    target_ids = []
+    if req.lab_ids:
+        target_ids = [lid for lid in req.lab_ids if lid in LABS]
+    elif req.category:
+        cat = req.category.strip().lower()
+        target_ids = [lid for lid in LABS if get_lab_category(lid) == cat]
+    else:
+        target_ids = list(LABS.keys())
+
+    results = {}
+    for lid in target_ids:
+        meta = LABS[lid]
+        target_dir = LABS_DIR / meta["dir"]
+        compose_file = target_dir / "docker-compose.yml"
+        if not compose_file.exists():
+            results[lid] = {"status": "simulated", "message": "No compose file"}
+            continue
+        try:
+            proc = subprocess.run(["docker", "compose", "down"], cwd=str(target_dir), capture_output=True, text=True, timeout=30)
+            results[lid] = {"status": "success" if proc.returncode == 0 else "error"}
+        except Exception as e:
+            results[lid] = {"status": "error", "error": str(e)}
+    return {"status": "completed", "targeted_count": len(target_ids), "results": results}
 
 
 @app.post("/api/labs/{lab_id}/start")

@@ -10,6 +10,7 @@
 | [04_nosql_and_cloud_db_attacks.md](./04_nosql_and_cloud_db_attacks.md) | **NoSQL 및 클라우드 DB 공격** — 관계형 DB (SQL): |
 | [05_database_defense_and_hardening.md](./05_database_defense_and_hardening.md) | **DB 방어 및 하드닝** — 데이터베이스는 조직의 핵심 자산(개인정보, 금융 데이터, 영업 기밀)을 저장합니다. DB가 침해되면 단순한 시스템 침해와 달리 데이터 자체가 유출되므로 복구가 불가능한 피해가 발생합니다. |
 | [06_database_ctf_lab.md](./06_database_ctf_lab.md) | **데이터베이스 해킹 CTF 실습 랩** — SQL 인젝션, 권한 상승, NoSQL 인젝션, 데이터베이스 포렌식을 실습하는 CTF 환경입니다. |
+| [07_enterprise_rdbms_privilege_escalation_and_injection_deepdive.md](./07_enterprise_rdbms_privilege_escalation_and_injection_deepdive.md) | **엔터프라이즈 RDBMS 권한 상승 & 심층 SQL 인젝션 실전 분석** — 2차 SQLi, UDF 바이너리 인젝션 RCE, Oracle PL/SQL 권한상승, OOB DNS 유출, FGA/TDE/최소권한 하드닝 |
 
 ## 학습 목표
 

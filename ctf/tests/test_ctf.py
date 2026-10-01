@@ -95,6 +95,9 @@ def test_get_challenges(client):
     assert "LAB35_PASSROLE" in ids
     assert "LAB35_ASSUME" in ids
     assert "LAB35_SCP" in ids
+    assert "LAB36_INJECTION" in ids
+    assert "LAB36_UDF" in ids
+    assert "LAB36_HARDEN" in ids
 
     # Check hints_count field
     fuzz_chal = next(c for c in data["challenges"] if c["id"] == "LAB24_FUZZ")
@@ -237,4 +240,72 @@ def test_hint_unlock_and_penalty(client):
         "hint_index": 999,
     })
     assert res_404.status_code == 404
+
+
+def test_ctf_progressive_unlock_mode(client):
+    """CTF 대회 순차적 문제 해금(Progressive Challenge Unlock) 모드 검증"""
+    # 1. Config 확인 및 모드 활성화
+    conf = client.get("/api/ctf/config").json()
+    assert "progressive_unlock" in conf
+    orig_mode = conf["progressive_unlock"]
+
+    try:
+        # 모드 활성화
+        res_mode = client.post("/api/ctf/config/mode", json={"progressive_unlock": True})
+        assert res_mode.status_code == 200
+        assert res_mode.json()["progressive_unlock"] is True
+
+        # 신규 팀 등록
+        team_test = "UnlockTester_Team"
+        client.post("/api/ctf/register", json={"team_name": team_test})
+
+        # 2. 문제 목록 조회 시 선행 조건 및 잠김 상태 확인
+        res_chals = client.get(f"/api/ctf/challenges?team_name={team_test}").json()
+        assert res_chals["progressive_unlock"] is True
+        chal_map = {c["id"]: c for c in res_chals["challenges"]}
+
+        # LAB36_INJECTION은 선행 조건 없음 -> is_unlocked == True
+        assert chal_map["LAB36_INJECTION"]["is_unlocked"] is True
+        assert len(chal_map["LAB36_INJECTION"]["prerequisites"]) == 0
+
+        # LAB36_UDF는 LAB36_INJECTION 선행 조건 있음 -> is_unlocked == False
+        assert chal_map["LAB36_UDF"]["is_unlocked"] is False
+        assert chal_map["LAB36_UDF"]["prerequisites"] == ["LAB36_INJECTION"]
+
+        # 3. 잠긴 문제(LAB36_UDF)에 플래그 직접 제출 시 403 Forbidden 차단
+        res_blocked = client.post("/api/ctf/submit", json={
+            "team_name": team_test,
+            "chal_id": "LAB36_UDF",
+            "flag": "FLAG{DB_UDF_LIBRARY_INJECTION_ROOT_RCE_7492}"
+        })
+        assert res_blocked.status_code == 403
+        assert "locked" in res_blocked.json()["detail"].lower()
+
+        # 4. 선행 문제(LAB36_INJECTION) 해결
+        res_solve1 = client.post("/api/ctf/submit", json={
+            "team_name": team_test,
+            "chal_id": "LAB36_INJECTION",
+            "flag": "FLAG{DB_SECOND_ORDER_SQLI_METADATA_EXFIL_8831}"
+        })
+        assert res_solve1.status_code == 200
+        assert res_solve1.json()["status"] == "correct"
+
+        # 5. 선행 문제 해결 후 LAB36_UDF 자동 해금 확인
+        res_chals_after = client.get(f"/api/ctf/challenges?team_name={team_test}").json()
+        chal_map_after = {c["id"]: c for c in res_chals_after["challenges"]}
+        assert chal_map_after["LAB36_UDF"]["is_unlocked"] is True
+
+        # 6. 해금된 LAB36_UDF 정상 제출 성공
+        res_solve2 = client.post("/api/ctf/submit", json={
+            "team_name": team_test,
+            "chal_id": "LAB36_UDF",
+            "flag": "FLAG{DB_UDF_LIBRARY_INJECTION_ROOT_RCE_7492}"
+        })
+        assert res_solve2.status_code == 200
+        assert res_solve2.json()["status"] == "correct"
+
+    finally:
+        # 모드 원복
+        client.post("/api/ctf/config/mode", json={"progressive_unlock": orig_mode})
+
 

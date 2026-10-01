@@ -780,16 +780,100 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "AWS Organizations SCP와 개발자 권한 경계를 결합하여 무단 PassRole 및 외부 임의 AssumeRole을 원천 차단하세요."}
                 ],
             },
+            "LAB36_INJECTION": {
+                "id": "LAB36_INJECTION",
+                "title": "DBShield: Second-Order SQL Injection & Metadata Exfiltration",
+                "category": "database",
+                "initial_points": 500,
+                "flag": "FLAG{DB_SECOND_ORDER_SQLI_METADATA_EXFIL_8831}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "신규 프로필 등록 시 닉네임에 SQL 인젝션 구문을 전달한 뒤 비밀번호 재설정을 호출하여 DBA 해시를 추출하세요."}
+                ],
+            },
+            "LAB36_UDF": {
+                "id": "LAB36_UDF",
+                "title": "DBShield: MySQL UDF Shared Object Injection & Host Root RCE",
+                "category": "database",
+                "initial_points": 500,
+                "flag": "FLAG{DB_UDF_LIBRARY_INJECTION_ROOT_RCE_7492}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "DB의 SUPER/FILE 권한을 악용하여 sys_eval UDF 함수를 등록하고 whoami 명령으로 루트 권한을 증명하세요."}
+                ],
+            },
+            "LAB36_HARDEN": {
+                "id": "LAB36_HARDEN",
+                "title": "DBShield: Enterprise Database Hardening (FGA Audit & Least Privilege)",
+                "category": "database",
+                "initial_points": 500,
+                "flag": "FLAG{DB_AUDIT_LOG_TDE_LEAST_PRIVILEGE_SECURED_3914}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "파라미터화 쿼리 강제, secure_file_priv=NULL, 최소 권한 분리 및 FGA 세밀 감사 정책을 일괄 적용하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
         self.score_timeline: List[dict] = []
         self.subscribers: List[asyncio.Queue] = []
+        self.progressive_unlock: bool = False
+        self._init_prerequisites()
 
         # Initialize base timeline
         t0 = int(time.time()) - 60
         self.score_timeline.append({"time": t0, "team": "Admin_RedTeam", "score": 0, "chal_id": "INIT"})
         self.score_timeline.append({"time": t0, "team": "BlueGuardians", "score": 0, "chal_id": "INIT"})
+
+    def _init_prerequisites(self):
+        """카테고리/단계별 선행 문제(prerequisites) 자동 구성"""
+        chains = [
+            ["LAB19_ROOT", "LAB19_PINNING", "LAB19_JNI"],
+            ["LAB21_CAN", "LAB21_UDS"],
+            ["LAB22_BOLA", "LAB22_GRAPHQL", "LAB22_JWT"],
+            ["LAB23_SYSMON", "LAB23_SURICATA", "LAB23_SIEM"],
+            ["LAB24_FUZZ", "LAB24_ASAN", "LAB24_TRIAGE"],
+            ["LAB25_INDIRECT", "LAB25_GUARDRAIL", "LAB25_SHADOW"],
+            ["LAB26_STATIC", "LAB26_YARA", "LAB26_SANDBOX"],
+            ["LAB27_PMKID", "LAB27_SAE", "LAB27_MFP"],
+            ["LAB28_SNMP", "LAB28_VLAN", "LAB28_HARDEN"],
+            ["LAB29_ESC1", "LAB29_PKINIT", "LAB29_DELEG"],
+            ["LAB30_SYMBOL", "LAB30_CFF", "LAB30_PATCH"],
+            ["LAB31_REDIRECT", "LAB31_PKCE", "LAB31_JWT"],
+            ["LAB32_PREFIX", "LAB32_SUBPREFIX", "LAB32_LEAK"],
+            ["LAB33_ACCOUNT", "LAB33_SERVICE", "LAB33_HARDEN"],
+            ["LAB34_SHODAN", "LAB34_DATABASE", "LAB34_GIT"],
+            ["LAB35_PASSROLE", "LAB35_ASSUME", "LAB35_SCP"],
+            ["LAB36_INJECTION", "LAB36_UDF", "LAB36_HARDEN"],
+        ]
+        for chain in chains:
+            for i in range(1, len(chain)):
+                cid = chain[i]
+                prev_cid = chain[i - 1]
+                if cid in self.challenges:
+                    self.challenges[cid]["prerequisites"] = [prev_cid]
+
+    def is_unlocked(self, chal_id: str, team_name: Optional[str] = None) -> bool:
+        """대회 모드(Progressive Unlock) 기준 문제 해금 여부 판정"""
+        if not self.progressive_unlock:
+            return True
+        if not team_name:
+            return True
+        team = self.teams.get(team_name)
+        if not team:
+            return True
+        chal = self.challenges.get(chal_id)
+        if not chal:
+            return False
+        prereqs = chal.get("prerequisites") or []
+        for p in prereqs:
+            if p not in team["solves"]:
+                return False
+        return True
 
     def broadcast_event(self, event: dict):
         """Broadcast real-time event to all connected SSE clients"""
@@ -832,11 +916,42 @@ class HintUnlockRequest(BaseModel):
     hint_index: int = 0
 
 
+class ModeConfigRequest(BaseModel):
+    progressive_unlock: bool
+
+
+@app.get("/api/ctf/config")
+def get_ctf_config():
+    """대회 운영 모드 및 설정 조회"""
+    return {
+        "progressive_unlock": state.progressive_unlock,
+        "total_challenges": len(state.challenges),
+        "total_teams": len(state.teams),
+    }
+
+
+@app.post("/api/ctf/config/mode")
+def set_ctf_mode(req: ModeConfigRequest):
+    """대회 순차적 해금(Progressive Unlock) 모드 토글"""
+    state.progressive_unlock = req.progressive_unlock
+    state.broadcast_event({
+        "type": "mode_changed",
+        "progressive_unlock": state.progressive_unlock,
+        "time": int(time.time()),
+    })
+    return {
+        "status": "success",
+        "progressive_unlock": state.progressive_unlock,
+        "message": f"CTF mode updated: progressive_unlock={state.progressive_unlock}"
+    }
+
+
 @app.get("/api/ctf/challenges")
-def get_challenges():
+def get_challenges(team_name: Optional[str] = None):
     """모의해킹 대회 문제 목록 및 현재 실시간 배점 반환"""
     data = []
     for cid, c in state.challenges.items():
+        is_unlocked = state.is_unlocked(cid, team_name)
         data.append({
             "id": cid,
             "title": c["title"],
@@ -846,8 +961,10 @@ def get_challenges():
             "solves_count": len(c["solves"]),
             "first_blood": c["first_blood"],
             "hints_count": len(c.get("hints", [])),
+            "is_unlocked": is_unlocked,
+            "prerequisites": c.get("prerequisites", []),
         })
-    return {"challenges": data}
+    return {"challenges": data, "progressive_unlock": state.progressive_unlock}
 
 
 @app.get("/api/ctf/firstbloods")
@@ -971,6 +1088,12 @@ def submit_flag(req: FlagSubmitRequest):
     team = state.teams[tname]
     if req.chal_id in team["solves"]:
         return {"status": "already_solved", "message": "Challenge already solved by your team."}
+
+    if state.progressive_unlock and not state.is_unlocked(req.chal_id, tname):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Challenge {req.chal_id} is locked. Complete prerequisite challenges first."
+        )
 
     submitted_flag = req.flag.strip()
     is_correct = (submitted_flag == chal["flag"])

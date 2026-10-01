@@ -30,16 +30,16 @@ def test_system_status(client):
     data = res.json()
     assert "cpu_usage_percent" in data
     assert "total_labs" in data
-    assert data["total_labs"] == 35
+    assert data["total_labs"] == 36
 
 
 def test_list_labs(client):
     res = client.get("/api/labs")
     assert res.status_code == 200
     data = res.json()
-    assert data["total"] == 35
-    assert len(data["labs"]) == 35
-    # Check Lab 19~35 presence
+    assert data["total"] == 36
+    assert len(data["labs"]) == 36
+    # Check Lab 19~36 presence
     ids = [l["id"] for l in data["labs"]]
     assert "19" in ids
     assert "20" in ids
@@ -58,6 +58,7 @@ def test_list_labs(client):
     assert "33" in ids
     assert "34" in ids
     assert "35" in ids
+    assert "36" in ids
 
 
 def test_lab_logs(client):
@@ -98,4 +99,37 @@ def test_lab_logs_bounded_tail(client):
     assert res.status_code == 200
     data = res.json()
     assert "logs" in data
+
+
+def test_list_labs_category_filter(client):
+    res = client.get("/api/labs?category=database")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total"] >= 1
+    assert data["filter_category"] == "database"
+    assert all(l["category"] == "database" for l in data["labs"])
+    assert any(l["id"] == "36" for l in data["labs"])
+
+
+def test_get_lab_categories(client):
+    res = client.get("/api/labs/categories")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total_labs"] == 36
+    assert "database" in data["categories"]
+    assert "36" in data["categories"]["database"]["labs"]
+    assert data["total_categories"] >= 10
+
+
+def test_batch_labs_control(client):
+    res = client.post("/api/labs/batch/start", json={"category": "database"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "completed"
+    assert data["targeted_count"] >= 1
+
+    res = client.post("/api/labs/batch/stop", json={"category": "database"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "completed"
 
