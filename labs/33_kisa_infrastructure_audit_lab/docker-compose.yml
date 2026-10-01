@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  kisa-audit-lab:
+    build: .
+    container_name: vhack-lab33-kisa
+    ports:
+      - "8033:8033"
+    environment:
+      - PORT=8033
+    restart: unless-stopped

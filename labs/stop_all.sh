@@ -91,6 +91,9 @@ LAB_DIRS=(
     "30_ghidra_deobfuscation_lab"
     "31_oauth_sso_lab"
     "32_bgp_routeguard_lab"
+    "33_kisa_infrastructure_audit_lab"
+    "34_osint_surface_recon_lab"
+    "35_cloud_iam_privilege_escalation_lab"
 )
 
 LAB_NAMES=(
@@ -126,6 +129,9 @@ LAB_NAMES=(
     "바이너리 분석 & 고급 난독화 해제 랩"
     "OAuth 2.0 & OIDC SSO 취약점 실전 랩"
     "BGP 라우팅 하이재킹 & RPKI ROA 실전 랩"
+    "KISA 주요정보통신기반시설 취약점 평가 & 하드닝 랩"
+    "OSINT 서피스 정찰 & 섀도우 IT 헌터 랩"
+    "클라우드 IAM 권한 상승 & 조직 거버넌스 랩"
 )
 
 

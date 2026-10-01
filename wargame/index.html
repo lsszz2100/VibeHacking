@@ -31,7 +31,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/1610</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/1715</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -51,6 +51,8 @@
   <div id="chips">
     <button class="chip" data-cmd="help">help</button>
     <button class="chip" data-cmd="playground">playground</button>
+    <button class="chip" data-cmd="bgp">bgp</button>
+    <button class="chip" data-cmd="oauth">oauth</button>
     <button class="chip" data-cmd="ls">ls</button>
     <button class="chip" data-cmd="tracks">tracks</button>
     <button class="chip" data-cmd="map">map</button>
@@ -97,6 +99,8 @@
         <button class="pg-tab" data-tab="sqli">💉 SQLi AST Visualizer</button>
         <button class="pg-tab" data-tab="adcs">🪪 AD CS ASN.1 Inspector</button>
         <button class="pg-tab" data-tab="jwt">🔑 JWT None Tester</button>
+        <button class="pg-tab" data-tab="bgp">🛣️ BGP Hijack &amp; RPKI</button>
+        <button class="pg-tab" data-tab="oauth">🔑 OAuth PKCE &amp; Key Confusion</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -224,6 +228,101 @@
               <span id="jwtEncoded" style="color:var(--txt);"></span>
             </div>
             <div id="jwtVerificationResult" class="ast-view" style="min-height:80px;"></div>
+          </div>
+        </div>
+
+        <!-- BGP Route Hijack & RPKI ROV Simulator Panel -->
+        <div id="pgPanel-bgp" class="pg-panel">
+          <div class="bgp-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Scenarios:</span>
+              <button class="pg-btn" data-bgp-preset="normal">1. Normal Route (AS200)</button>
+              <button class="pg-btn danger" data-bgp-preset="exact">2. Exact Prefix Hijack (/24)</button>
+              <button class="pg-btn danger" data-bgp-preset="subprefix">3. Sub-Prefix Hijack (/25 LPM)</button>
+              <button class="pg-btn" data-bgp-preset="rpki">4. Toggle RPKI ROV Filter</button>
+            </div>
+            <div class="bgp-controls-row">
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Prefix:</label>
+                <input id="bgpPrefixInput" type="text" value="203.0.113.0/24" style="width:120px;">
+              </div>
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Origin AS:</label>
+                <input id="bgpOriginInput" type="text" value="200" style="width:60px;">
+              </div>
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">AS-Path:</label>
+                <input id="bgpPathInput" type="text" value="300 200" style="width:130px;">
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="bgpRpkiCheck" type="checkbox"> RPKI Route Origin Validation (ROV)
+                </label>
+              </div>
+              <button id="bgpSimulateBtn" class="pg-btn">Simulate Route</button>
+            </div>
+            <div class="bgp-grid">
+              <div class="bgp-card">
+                <div class="pane-title">
+                  <span>🗺️ Global BGP AS Topology &amp; Traffic Flow</span>
+                  <span id="bgpFlowBadge" class="token-tag token-lit">TRAFFIC: NORMAL</span>
+                </div>
+                <div id="bgpGraphOutput" class="ast-view" style="font-size:11px;min-height:170px;"></div>
+              </div>
+              <div class="bgp-card">
+                <div class="pane-title">
+                  <span>📋 Border Gateway RIB Table &amp; RPKI ROV Decision</span>
+                  <span id="bgpDecisionBadge" class="token-tag token-lit">ROV: VALID</span>
+                </div>
+                <div id="bgpRibOutput" class="ast-view" style="font-size:11px;min-height:170px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OAuth 2.0 PKCE & Key Confusion Panel -->
+        <div id="pgPanel-oauth" class="pg-panel">
+          <div class="oauth-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Modes:</span>
+              <button class="pg-btn" data-oauth-preset="pkce_s256">1. PKCE S256 Code Challenge</button>
+              <button class="pg-btn danger" data-oauth-preset="pkce_downgrade">2. Downgrade to Plain</button>
+              <button class="pg-btn danger" data-oauth-preset="key_confusion">3. RS256 -&gt; HS256 Key Confusion</button>
+              <button class="pg-btn" data-oauth-preset="fapi_secure">4. Secure FAPI Hardening</button>
+            </div>
+            <div class="oauth-grid">
+              <div class="oauth-card">
+                <div class="pane-title">
+                  <span>🔐 PKCE S256 Challenge Generator</span>
+                  <span id="oauthPkceBadge" class="token-tag token-lit">RFC 7636 S256</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <label class="dim" style="font-size:11px;">code_verifier (High-Entropy Client Secret):</label>
+                  <input id="oauthVerifierInput" type="text" value="dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk" style="background:#020804;border:1px solid var(--line);color:var(--green);font-family:var(--mono);padding:5px 8px;font-size:11px;border-radius:4px;">
+                  <div style="display:flex;gap:10px;align-items:center;">
+                    <label class="dim" style="font-size:11px;">code_challenge_method:</label>
+                    <select id="oauthMethodSelect" style="background:#020804;border:1px solid var(--line);color:var(--txt);font-family:var(--mono);padding:4px 8px;font-size:11px;border-radius:4px;">
+                      <option value="S256">S256 (Base64URL-SHA256)</option>
+                      <option value="plain">plain (Insecure / Deprecated)</option>
+                    </select>
+                  </div>
+                  <div id="oauthPkceOutput" class="ast-view" style="font-size:11px;min-height:90px;"></div>
+                </div>
+              </div>
+              <div class="oauth-card">
+                <div class="pane-title">
+                  <span>💥 RS256 to HS256 Public Key Confusion Exploit</span>
+                  <span id="oauthJwtBadge" class="token-tag token-lit">VERIFY: ASYMMETRIC</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <label class="dim" style="font-size:11px;">Server Public Key (PEM format, freely accessible via JWKS):</label>
+                  <textarea id="oauthPubKeyInput" rows="3" style="background:#020804;border:1px solid var(--line);color:var(--muted);font-family:var(--mono);padding:5px 8px;font-size:10px;border-radius:4px;resize:none;">-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
+-----END PUBLIC KEY-----</textarea>
+                  <div id="oauthConfusionOutput" class="ast-view" style="font-size:11px;min-height:90px;"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

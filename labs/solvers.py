@@ -705,6 +705,102 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🔄 Route Leak Interception Active! Inter-AS transit compromised -> FLAG{BGP_ASPATH_LEAK_INTERCEPTION_6623}"
             }
         ]
+    },
+    "33": {
+        "title": "KISA 주요정보통신기반시설 기술적 취약점 분석·평가 & 하드닝 랩 (KisaAuditLab)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "KISA U-01~U-04 계정 관리 취약점 전수 진단",
+                "target": "POST /api/kisa/audit/accounts (check_u01_root_remote, check_u02_password_complexity, check_u03_lockout_threshold, check_u04_shadow_permission)",
+                "poc_explanation": "root 원격 직접 접속 허용(PermitRootLogin yes), 패스워드 최소길이 4자, 계정 잠금 임계값 모듈 미적용 및 /etc/shadow 0644 권한 노출을 진단 스크립트로 전수 적발합니다.",
+                "exploit_payload": '{"check_u01_root_remote": true, "check_u02_password_complexity": true, "check_u03_lockout_threshold": true, "check_u04_shadow_permission": true}',
+                "defense": "sshd_config PermitRootLogin no, pwquality minlen=8 복잡도 강제, pam_faillock deny=5 설정 및 chmod 400 /etc/shadow 적용.",
+                "sample_output": "🔍 KISA Account Audit Complete! 4 items vulnerable -> FLAG{KISA_U01_U04_ACCOUNT_AUDIT_PWNED_1109}"
+            },
+            {
+                "step": 2,
+                "name": "U-20 익명 FTP 파일 탈취 및 U-44 SSH 취약 알고리즘 프로빙",
+                "target": "POST /api/kisa/exploit/services (target_service: ftp/ssh, action: anonymous_download/cipher_probe)",
+                "poc_explanation": "Anonymous FTP로 /var/ftp/pub 디렉터리의 백업 자격증명을 무단 다운로드하고 취약한 CBC 대칭암호 및 레거시 SSH 배너 정보를 수집합니다.",
+                "exploit_payload": '{"target_service": "ssh", "action": "cipher_probe"}',
+                "defense": "vsftpd anonymous_enable=NO 차단 및 sshd_config 안전한 Chacha20/AES-GCM 암호 강제 및 배너 은닉.",
+                "sample_output": "🔓 Vulnerable Services Exploited! Anonymous FTP & SSH cipher leak -> FLAG{KISA_U20_U44_VULN_SERVICE_EXPLOITED_2241}"
+            },
+            {
+                "step": 3,
+                "name": "원클릭 KISA 주요정보통신기반시설 컴플라이언스 하드닝",
+                "target": "POST /api/kisa/harden (remediate_u01, remediate_u02, remediate_u03, remediate_u04, remediate_u20, remediate_u44)",
+                "poc_explanation": "6대 점검 항목을 KISA 기술적 취약점 분석·평가 기준의 '양호' 규격으로 자동 재구성하여 컴플라이언스 100% 적합 인증을 달성합니다.",
+                "exploit_payload": '{"remediate_u01": true, "remediate_u02": true, "remediate_u03": true, "remediate_u04": true, "remediate_u20": true, "remediate_u44": true}',
+                "defense": "정기 보안 감사 스크립트 주기적 실행, 변경 감시(AIDE/Tripwire) 및 최소 권한 원칙 항시 유지.",
+                "sample_output": "🛡️ KISA Infrastructure Hardened! 100% Compliance Pass -> FLAG{KISA_HARDENING_COMPLIANCE_PASSED_3378}"
+            }
+        ]
+    },
+    "34": {
+        "title": "OSINT 서피스 정찰 & 섀도우 IT 헌터 랩 (OsintHunterLab)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Shodan / Censys 글로벌 검색엔진을 통한 섀도우 IT 인프라 매핑",
+                "target": "POST /api/osint/scan/shodan (query: org:'Megacorp' port:6379,9200)",
+                "poc_explanation": "인터넷 전수 스캔 데이터베이스에서 조직명과 미인가 서비스 포트(Redis 6379, Elasticsearch 9200, Nginx 80)를 필터링하여 노출된 호스트 목록을 식별합니다.",
+                "exploit_payload": '{"query": "org:\'Megacorp\' port:6379,9200"}',
+                "defense": "외부 공격 표면 관리(EASM) 솔루션 도입, 미승인 퍼블릭 IP/포트 개방 지속 모니터링 및 방화벽 인그레스 차단.",
+                "sample_output": "🔍 OSINT Recon Complete! 3 Shadow IT hosts mapped -> FLAG{OSINT_SHODAN_EXPOSED_SERVICES_RECON_7712}"
+            },
+            {
+                "step": 2,
+                "name": "인증 결여 Redis / Elasticsearch 데이터베이스 덤프 및 민감 정보 카빙",
+                "target": "POST /api/osint/leak/database (target: 198.51.100.42:6379, command: KEYS *)",
+                "poc_explanation": "패스워드 인증 없이 인터넷에 열려 있는 개발용 Redis 캐시 및 Elasticsearch 클러스터에 접속하여 세션 토큰, 관리자 계정, JWT 시크릿을 덤프합니다.",
+                "exploit_payload": '{"target": "198.51.100.42:6379", "command": "KEYS *"}',
+                "defense": "데이터베이스 requirepass 인증 강제, VPC 프라이빗 서브넷 격리 및 공용 인터넷 바인딩 금지 (0.0.0.0 -> 127.0.0.1).",
+                "sample_output": "🔓 Database Dumped! JWT secrets & session records carved -> FLAG{OSINT_ELASTIC_REDIS_UNAUTH_DUMP_PWNED_8823}"
+            },
+            {
+                "step": 3,
+                "name": "노출된 .git 리포지토리 커밋 히스토리 추적 및 삭제된 클라우드 키 복원",
+                "target": "POST /api/osint/git/reconstruct (target: 198.51.100.44:80/.git, action: log)",
+                "poc_explanation": "웹 서버에 잘못 노출된 /.git 디렉터리의 객체 파일(commit/tree/blob)을 크롤링하여 git log -p를 복원하고, 삭제 커밋 이전의 고권한 AWS API 키를 추출합니다.",
+                "exploit_payload": '{"target": "198.51.100.44:80/.git", "action": "log"}',
+                "defense": "웹 서버 설정에서 /.git 접근 403 차단, Git pre-commit hook(TruffleHog/Gitleaks) 비밀 유출 방지 및 AWS IAM 키 즉시 무효화/로테이션.",
+                "sample_output": "🔑 Git History Reconstructed! AWS Access Key recovered -> FLAG{OSINT_GIT_LEAKED_SECRET_RECONSTRUCTED_9934}"
+            }
+        ]
+    },
+    "35": {
+        "title": "클라우드 IAM 권한 상승 & 조직 거버넌스 랩 (CloudPwnLab)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "iam:PassRole 및 ec2:RunInstances 결합을 통한 관리자 권한 상승",
+                "target": "POST /api/cloud/iam/passrole (target_role: CloudSecAdminRole, service_type: ec2)",
+                "poc_explanation": "저권한 사용자가 리소스 제한 없는 iam:PassRole을 악용하여 EC2 인스턴스에 CloudSecAdminRole을 위임하고 IMDS에서 관리자 임시 자격증명을 추출합니다.",
+                "exploit_payload": '{"target_role": "CloudSecAdminRole", "service_type": "ec2"}',
+                "defense": "iam:PassRole 대상 역할을 iam:PassedToService 태그 및 특정 리소스 ARN으로 한정하고 권한 경계(Permission Boundary)를 강제 설정.",
+                "sample_output": "⚡ iam:PassRole Escalation Success! AdministratorAccess acquired -> FLAG{CLOUD_IAM_PASSROLE_EC2_PRIV_ESCALATED_1120}"
+            },
+            {
+                "step": 2,
+                "name": "와일드카드 Principal 신뢰 정책 악용 및 sts:AssumeRole 횡적이동",
+                "target": "POST /api/cloud/iam/assumerole (role_arn: arn:aws:iam::123456789012:role/CrossAccountAuditRole)",
+                "poc_explanation": "신뢰 정책 내 Principal: {\'AWS\': \'*\'} 설정 오류를 악용하여 외부 계정에서 크로스 어카운트 감사 역할을 인수(AssumeRole)하고 세션 토큰을 탈취합니다.",
+                "exploit_payload": '{"role_arn": "arn:aws:iam::123456789012:role/CrossAccountAuditRole", "role_session_name": "vibe-audit"}',
+                "defense": "신뢰 정책에 명시적 계정 ID 및 aws:PrincipalOrgID 조건문 강제, 외부 ID(sts:ExternalId) 필수 검증 적용.",
+                "sample_output": "🎯 Cross-Account Role Assumed! SecurityAudit & S3FullAccess token -> FLAG{CLOUD_STS_ASSUMEROLE_TRUST_POLICY_PWNED_2231}"
+            },
+            {
+                "step": 3,
+                "name": "다계층 클라우드 거버넌스 하드닝 (SCP Deny 정책 & 권한 경계)",
+                "target": "POST /api/cloud/iam/scp/harden (enforce_scp: true, enforce_permission_boundary: true, restrict_passrole_resources: true)",
+                "poc_explanation": "AWS Organizations 서비스 제어 정책(SCP)으로 무단 PassRole 및 외부 AssumeRole을 명시적 거부(Deny)하고 개발자 권한 경계를 적용하여 완전 무결한 보안 태세를 확립합니다.",
+                "exploit_payload": '{"enforce_scp": true, "enforce_permission_boundary": true, "restrict_passrole_resources": true}',
+                "defense": "AWS Well-Architected 보안 기둥 준수, SCP 중앙 통제, 최소 권한 원칙 및 CloudTrail/GuardDuty 실시간 이상 탐지 가동.",
+                "sample_output": "🛡️ Cloud Governance Enforced! SCP Deny & Permission Boundary Active -> FLAG{CLOUD_ORG_SCP_PERMISSION_BOUNDARY_ENFORCED_3342}"
+            }
+        ]
     }
 }
 

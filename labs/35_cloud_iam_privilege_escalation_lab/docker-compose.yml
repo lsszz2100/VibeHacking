@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  cloud-iam-lab:
+    build: .
+    container_name: vhack-lab35-cloudiam
+    ports:
+      - "8035:8035"
+    environment:
+      - PORT=8035
+    restart: unless-stopped

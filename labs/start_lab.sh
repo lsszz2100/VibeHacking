@@ -105,6 +105,9 @@ start_lab() {
         "30_ghidra_deobfuscation_lab"
         "31_oauth_sso_lab"
         "32_bgp_routeguard_lab"
+        "33_kisa_infrastructure_audit_lab"
+        "34_osint_surface_recon_lab"
+        "35_cloud_iam_privilege_escalation_lab"
     )
 
     local lab_names=(
@@ -141,6 +144,9 @@ start_lab() {
         "바이너리 분석 & 고급 난독화 해제 랩"
         "OAuth 2.0 & OIDC SSO 취약점 실전 랩"
         "BGP 라우팅 하이재킹 & RPKI ROA 실전 랩"
+        "KISA 주요정보통신기반시설 취약점 평가 & 하드닝 랩"
+        "OSINT 서피스 정찰 & 섀도우 IT 헌터 랩"
+        "클라우드 IAM 권한 상승 & 조직 거버넌스 랩"
     )
 
     local lab_ports=(
@@ -177,10 +183,13 @@ start_lab() {
         "웹 콘솔 & 리버싱 워크벤치: http://localhost:8030"
         "웹 콘솔 & SSO 취약점 랩: http://localhost:8031"
         "웹 콘솔 & BGP 관제 센터: http://localhost:8032"
+        "웹 콘솔 & KISA 감사 센터: http://localhost:8033"
+        "웹 콘솔 & OSINT 정찰 패널: http://localhost:8034"
+        "웹 콘솔 & Cloud IAM 대시보드: http://localhost:8035"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 32 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~32 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 35 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~35 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"

@@ -406,6 +406,30 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [2, 14, 32],
     },
+    "33": {
+        "name": "KISA 주요정보통신기반시설 취약점 평가 & 하드닝 랩",
+        "dir":  "33_kisa_infrastructure_audit_lab",
+        "desc": "KisaAuditLab: U-01~U-04 계정 관리 자동 진단 · U-20 익명 FTP 및 U-44 SSH 취약 암호 익스플로잇 · KISA 기술적 취약점 기준 원클릭 보안 하드닝",
+        "url":  "웹 콘솔 & 감사 대시보드: http://localhost:8033",
+        "difficulty": "★★★★",
+        "related": [26, 41, 74],
+    },
+    "34": {
+        "name": "OSINT 서피스 정찰 & 섀도우 IT 헌터 랩",
+        "dir":  "34_osint_surface_recon_lab",
+        "desc": "OsintHunterLab: Shodan/Censys 인터넷 공격 표면 자동 탐색 · 인증 결여 Redis & Elasticsearch 데이터베이스 카빙 · 노출된 .git 커밋 이력 추적 및 클라우드 키 복원",
+        "url":  "웹 콘솔 & OSINT 정찰 패널: http://localhost:8034",
+        "difficulty": "★★★☆",
+        "related": [33, 48, 70],
+    },
+    "35": {
+        "name": "클라우드 IAM 권한 상승 & 조직 거버넌스 랩",
+        "dir":  "35_cloud_iam_privilege_escalation_lab",
+        "desc": "CloudPwnLab: iam:PassRole & ec2:RunInstances 결합 관리자 탈취 · 와일드카드 Principal sts:AssumeRole 횡적이동 · AWS Organizations SCP & 권한 경계(Permission Boundary) 다계층 거버넌스",
+        "url":  "웹 콘솔 & Cloud IAM 대시보드: http://localhost:8035",
+        "difficulty": "★★★★",
+        "related": [14, 49, 71],
+    },
 }
 
 
@@ -1412,6 +1436,9 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8030, "Lab 30 (GhidraRev Binary Analysis & Deobfuscation Lab)"),
         (8031, "Lab 31 (SSOShield OAuth 2.0 & OIDC SSO Lab)"),
         (8032, "Lab 32 (BGPRouteGuard BGP Hijack & RPKI Lab)"),
+        (8033, "Lab 33 (KisaAuditLab KISA Infrastructure Lab)"),
+        (8034, "Lab 34 (OsintHunterLab OSINT Surface Recon Lab)"),
+        (8035, "Lab 35 (CloudPwnLab AWS Cloud IAM Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

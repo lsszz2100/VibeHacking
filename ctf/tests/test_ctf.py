@@ -86,6 +86,15 @@ def test_get_challenges(client):
     assert "LAB32_PREFIX" in ids
     assert "LAB32_SUBPREFIX" in ids
     assert "LAB32_LEAK" in ids
+    assert "LAB33_ACCOUNT" in ids
+    assert "LAB33_SERVICE" in ids
+    assert "LAB33_HARDEN" in ids
+    assert "LAB34_SHODAN" in ids
+    assert "LAB34_DATABASE" in ids
+    assert "LAB34_GIT" in ids
+    assert "LAB35_PASSROLE" in ids
+    assert "LAB35_ASSUME" in ids
+    assert "LAB35_SCP" in ids
 
     # Check hints_count field
     fuzz_chal = next(c for c in data["challenges"] if c["id"] == "LAB24_FUZZ")

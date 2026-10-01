@@ -14,6 +14,7 @@
 | [04_GCP_Azure_Pentest.md](./04_GCP_Azure_Pentest.md) | **GCP 및 Azure 침투테스트** — GCP(Google Cloud Platform)와 Microsoft Azure는 AWS와 함께 전 세계 클라우드 시장을 이끄는 주요 플랫폼입니다. 각 플랫폼은 고유한 인증 체계, 권한... |
 | [05_cloud_lateral_movement.md](./05_cloud_lateral_movement.md) | **클라우드 횡이동 — 계정 피버팅·서비스 간 이동·탐지** — 클라우드 횡이동(Cloud Lateral Movement)은 초기 침투 후 공격자가 하나의 클라우드 서비스에서 다른 서비스로 권한을 확장하며 이동하는 기법입니다. 온프레미스에서 서버에... |
 | [06_cloud_security_ctf_lab.md](./06_cloud_security_ctf_lab.md) | **클라우드 보안 CTF 실습 랩** — version: "3.9" |
+| [07_aws_iam_privilege_escalation_deepdive.md](./07_aws_iam_privilege_escalation_deepdive.md) | **AWS IAM 권한 상승 및 클라우드 거버넌스 심층 분석** — PassRole 익스플로잇, STS AssumeRole 횡적이동 및 SCP 하드닝 (Lab 35) |
 
 ## 🎯 학습 목표
 

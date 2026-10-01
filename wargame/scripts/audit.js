@@ -128,6 +128,8 @@ const NOT_PLANTED = {
   t4_fuzzing_browser_dom_fuzzing: 'asks for a browser DOM fuzzing concept; DOM tree mutation is a parser concept, not this page',
   t1_airedteam_indirect_injection: 'asks for an indirect prompt injection concept; 외부 데이터 소스 주입 시나리오 개념 질문, not this page',
   t3_netinfra_cisco_ios_rommon_recovery: 'asks for the Cisco ROMmon configuration register by name; serial console break is a hardware concept, not this page',
+  t1_kisa_u05_root_path: 'asks for PATH environment variable delimiter hazard; PATH environment configuration concept, not this page',
+  t3_osint_ci_cd_webhook_secret: 'asks for CI/CD secret token leakage in public VCS; Git repository secret finding concept, not this page',
 };
 
 const aBad = [], aRows = [];

@@ -238,7 +238,7 @@
     if (tid === TIERS[0].id) {
       const ENTRY_POOL = 6, ENTRY_NEED = 4, ENTRY_CURVE = 0.85;
       const n = ENTRY_NEED * Math.pow(pool / ENTRY_POOL, ENTRY_CURVE);
-      return Math.min(pool, Math.max(1, Math.round(n)));
+      return Math.min(pool, Math.max(Math.ceil(0.4 * pool), Math.round(n)));
     }
     const at = TIER_NEED_AT[tid];
     if (at == null) return (TIERS.find(x => x.id === tid) || {}).need || 0;
@@ -874,6 +874,8 @@
     renderSqli();
     renderAdcs("esc1");
     initJwt();
+    renderBgp("normal");
+    initOAuth();
   }
 
   function hidePlayground(){
@@ -884,7 +886,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -1205,6 +1207,303 @@
     resEl.textContent = result;
   }
 
+  // --- 5. BGP Route Hijack & RPKI ROV Simulator ---
+  let currentBgpScenario = "normal";
+
+  function renderBgp(scenario){
+    if (scenario && typeof scenario === "string") {
+      currentBgpScenario = scenario;
+    }
+    const prefixEl = document.getElementById("bgpPrefixInput");
+    const originEl = document.getElementById("bgpOriginInput");
+    const pathEl = document.getElementById("bgpPathInput");
+    const rpkiEl = document.getElementById("bgpRpkiCheck");
+    const flowBadge = document.getElementById("bgpFlowBadge");
+    const decisionBadge = document.getElementById("bgpDecisionBadge");
+    const graphEl = document.getElementById("bgpGraphOutput");
+    const ribEl = document.getElementById("bgpRibOutput");
+
+    if (!prefixEl || !originEl || !pathEl || !rpkiEl || !graphEl || !ribEl) return;
+
+    if (scenario === "normal"){
+      prefixEl.value = "203.0.113.0/24";
+      originEl.value = "200";
+      pathEl.value = "300 200";
+    } else if (scenario === "exact"){
+      prefixEl.value = "203.0.113.0/24";
+      originEl.value = "666";
+      pathEl.value = "666";
+    } else if (scenario === "subprefix"){
+      prefixEl.value = "203.0.113.0/25";
+      originEl.value = "666";
+      pathEl.value = "300 400 666";
+    } else if (scenario === "rpki"){
+      rpkiEl.checked = !rpkiEl.checked;
+    }
+
+    const prefix = prefixEl.value.trim();
+    const origin = originEl.value.trim();
+    const asPath = pathEl.value.trim();
+    const rpkiActive = rpkiEl.checked;
+
+    const isSubprefix = prefix.endsWith("/25");
+    const isRogueOrigin = origin === "666";
+    const pathHops = asPath.split(/\s+/).filter(Boolean);
+
+    // ROA database:
+    // Authorized: Prefix 203.0.113.0/24, MaxLength: 24, Origin: AS200
+    let rovState = "VALID";
+    let rovReason = "Origin AS matches ROA and prefix length <= MaxLength 24";
+    if (isRogueOrigin) {
+      rovState = "INVALID";
+      rovReason = "Origin AS" + origin + " does not match ROA authorized ASN (AS200)";
+    } else if (isSubprefix) {
+      rovState = "INVALID";
+      rovReason = "Prefix length /25 exceeds ROA MaxLength /24";
+    }
+
+    let isHijacked = false;
+    let flowStateText = "TRAFFIC: NORMAL (AS200)";
+    let flowClass = "token-tag token-lit";
+
+    if (isRogueOrigin || isSubprefix){
+      if (rpkiActive && rovState === "INVALID"){
+        isHijacked = false;
+        flowStateText = "🛡️ PROTECTED: INVALID ROUTE DROPPED";
+        flowClass = "token-tag token-lit";
+      } else {
+        isHijacked = true;
+        flowStateText = isSubprefix ? "🚨 100% HIJACKED: LPM (/25 > /24)" : "🚨 HIJACKED: SHORTER AS-PATH (AS666)";
+        flowClass = "token-tag token-inj";
+      }
+    }
+
+    let decisionText = "ROV: " + rovState + (rpkiActive ? " (ENFORCED)" : " (MONITOR ONLY)");
+    let decisionClass = rovState === "VALID" ? "token-tag token-lit" : "token-tag token-inj";
+
+    if (flowBadge){
+      flowBadge.textContent = flowStateText;
+      flowBadge.className = flowClass;
+    }
+    if (decisionBadge){
+      decisionBadge.textContent = decisionText;
+      decisionBadge.className = decisionClass;
+    }
+
+    // ASCII Graph
+    let graphText = "=== GLOBAL AS TOPOLOGY & TRAFFIC FORWARDING ===\n";
+    if (isHijacked){
+      if (isSubprefix){
+        graphText +=
+          "  [ AS100 (Client Border Gateway) ]\n" +
+          "        │  Dest: 203.0.113.42 (Matches /25 More Specific!)\n" +
+          "        ▼\n" +
+          "  [ AS300 -> AS400 -> AS666 (ROGUE SINKHOLE) ]  <-- 🚨 100% TRAFFIC HIJACKED!\n\n" +
+          "  [ AS200 (Legitimate Host: 203.0.113.0/24) ]   <-- ⚠️ Starved (LPM Overridden)\n\n" +
+          "[ANALYSIS] Longest Prefix Match rule dictates forwarding to /25 rather than /24,\n" +
+          "regardless of AS-path length (" + pathHops.length + " hops vs 2 hops).";
+      } else {
+        graphText +=
+          "  [ AS100 (Client Border Gateway) ]\n" +
+          "        │\n" +
+          "        ├── (Path Len: " + pathHops.length + ") ──> [ AS666 (ROGUE AS) ]  <-- 🚨 TRAFFIC DIVERTED!\n" +
+          "        │\n" +
+          "        └── (Path Len: 2) ──> [ AS300 -> AS200 ] (Ignored: Longer AS-Path)\n\n" +
+          "[ANALYSIS] Border Gateway selected Rogue AS666 due to shorter AS-Path (" + pathHops.length + " < 2).\n" +
+          "Unauthenticated BGP accepted the spoofed origin advertisement.";
+      }
+    } else {
+      if (rpkiActive && (isRogueOrigin || isSubprefix)){
+        graphText +=
+          "  [ AS100 (Client Border Gateway - RPKI ROV ACTIVE) ]\n" +
+          "        │\n" +
+          "        ├── [ AS666 Route: " + prefix + " ] ──> 🛡️ [ROV FILTER: DROPPED INVALID]\n" +
+          "        │\n" +
+          "        └── (Path: 300 200) ──> [ AS300 -> AS200 (Legit: 203.0.113.0/24) ] ✅ NORMAL FLOW\n\n" +
+          "[ANALYSIS] RPKI Route Origin Validation identified invalid advertisement.\n" +
+          "Rogue announcement discarded; traffic safely falls back to AS200.";
+      } else {
+        graphText +=
+          "  [ AS100 (Client Border Gateway) ]\n" +
+          "        │  (eBGP Session)\n" +
+          "        ▼\n" +
+          "  [ AS300 (Tier-1 Transit Provider) ]\n" +
+          "        │  (AS-Path: 300 200)\n" +
+          "        ▼\n" +
+          "  [ AS200 (Legitimate Origin: 203.0.113.0/24) ]  <-- ✅ TRAFFIC REACHES TARGET\n\n" +
+          "[ANALYSIS] Standard routing operational. Legitimate origin AS200 matches registered ROA.";
+      }
+    }
+    graphEl.textContent = graphText;
+
+    // RIB Table
+    let ribText = "=== BORDER GATEWAY ROUTING INFORMATION BASE (RIB) ===\n" +
+      "Status  Network         Next-Hop       Metric  LocPrf  AS-Path      ROV State\n";
+
+    if (isHijacked){
+      ribText += "*> (act) " + prefix.padEnd(16) + "198.51.100.2   0       100     " + asPath.padEnd(13) + (rpkiActive ? "INVALID(PASS)" : "NOT EVALUATED") + "\n";
+      ribText += "*  (alt) 203.0.113.0/24  198.51.100.1   0       100     300 200      VALID\n\n";
+    } else if (rpkiActive && (isRogueOrigin || isSubprefix)){
+      ribText += "-- (drop)" + prefix.padEnd(16) + "198.51.100.2   0       100     " + asPath.padEnd(13) + "INVALID ❌\n";
+      ribText += "*> (act) 203.0.113.0/24  198.51.100.1   0       100     300 200      VALID   ✅\n\n";
+    } else {
+      ribText += "*> (act) 203.0.113.0/24  198.51.100.1   0       100     300 200      VALID   ✅\n\n";
+    }
+
+    ribText += "=== RPKI ROUTE ORIGIN AUTHORIZATION (ROA) EVALUATION ===\n" +
+      "ROA DB Entry   : Prefix 203.0.113.0/24 | Max-Length 24 | Authorized ASN: AS200\n" +
+      "Announced Route: Prefix " + prefix + " | AS-Path: [" + asPath + "] | Origin: AS" + origin + "\n" +
+      "RPKI Validation: " + rovState + " (" + rovReason + ")\n" +
+      "Policy Action  : " + (rpkiActive ? (rovState === "INVALID" ? "DROP ROUTE (Filter Active)" : "ACCEPT ROUTE") : "NO FILTER (Accept all routes regardless of ROV state)") + "\n" +
+      "FIB Installation: " + (isHijacked ? "🚨 COMPROMISED (Traffic routed to attacker AS" + origin + ")" : "🛡️ CLEAN (Traffic routed to legitimate AS200)");
+
+    ribEl.textContent = ribText;
+  }
+
+  // --- 6. OAuth 2.0 PKCE & Key Confusion Inspector ---
+  let currentOAuthMode = "pkce_s256";
+
+  function initOAuth(){
+    const verifierEl = document.getElementById("oauthVerifierInput");
+    const methodEl = document.getElementById("oauthMethodSelect");
+    const pubKeyEl = document.getElementById("oauthPubKeyInput");
+    if (!verifierEl || !methodEl || !pubKeyEl) return;
+    if (!verifierEl.value){
+      verifierEl.value = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+    }
+    if (!pubKeyEl.value){
+      pubKeyEl.value = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...\n-----END PUBLIC KEY-----";
+    }
+    renderOAuth("pkce_s256");
+  }
+
+  function renderOAuth(mode){
+    if (mode) currentOAuthMode = mode;
+    const verifierEl = document.getElementById("oauthVerifierInput");
+    const methodEl = document.getElementById("oauthMethodSelect");
+    const pubKeyEl = document.getElementById("oauthPubKeyInput");
+    const pkceBadge = document.getElementById("oauthPkceBadge");
+    const jwtBadge = document.getElementById("oauthJwtBadge");
+    const pkceOut = document.getElementById("oauthPkceOutput");
+    const confusionOut = document.getElementById("oauthConfusionOutput");
+
+    if (!verifierEl || !methodEl || !pkceOut || !confusionOut) return;
+
+    if (mode === "pkce_s256"){
+      methodEl.value = "S256";
+    } else if (mode === "pkce_downgrade"){
+      methodEl.value = "plain";
+    }
+
+    const verifier = (verifierEl.value || "").trim();
+    const method = methodEl.value;
+
+    // Calculate PKCE challenge
+    let challenge = "";
+    let hexHash = "";
+    if (method === "S256"){
+      hexHash = sha256js(verifier);
+      let bin = "";
+      for (let i = 0; i < hexHash.length; i += 2){
+        bin += String.fromCharCode(parseInt(hexHash.substr(i, 2), 16));
+      }
+      try {
+        challenge = btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      } catch(e) {
+        challenge = hexHash;
+      }
+    } else {
+      challenge = verifier;
+    }
+
+    if (pkceBadge){
+      if (method === "S256"){
+        pkceBadge.textContent = "RFC 7636 S256";
+        pkceBadge.className = "token-tag token-lit";
+      } else {
+        pkceBadge.textContent = "⚠️ INSECURE PLAIN";
+        pkceBadge.className = "token-tag token-inj";
+      }
+    }
+
+    let pkceText = "=== PKCE (RFC 7636) EVALUATION ===\n";
+    if (method === "S256"){
+      pkceText +=
+        "1. [Client Nonce] code_verifier: " + verifier + " (Len: " + verifier.length + ")\n" +
+        "2. [Hash Step]    SHA256: " + hexHash + "\n" +
+        "3. [Calculated]   code_challenge: " + challenge + "\n" +
+        "4. [Auth Request] GET /authorize?response_type=code&client_id=vibe-client\n" +
+        "                  &code_challenge=" + challenge + "&code_challenge_method=S256\n" +
+        "5. [Token Redeem] POST /token  code=AUTH_CODE&code_verifier=" + verifier + "\n" +
+        "6. [AS Check]     BASE64URL(SHA256(code_verifier)) === code_challenge  --> ✅ MATCH!\n\n" +
+        "[VERDICT] 🛡️ SECURE: Stolen auth_code cannot be redeemed without unhashed code_verifier.";
+    } else {
+      pkceText +=
+        "1. [Client Nonce] code_verifier: " + verifier + "\n" +
+        "2. [Downgraded]   code_challenge_method: plain\n" +
+        "3. [Plain Value]  code_challenge: " + challenge + "\n" +
+        "4. [Auth Request] GET /authorize?response_type=code&client_id=vibe-client\n" +
+        "                  &code_challenge=" + challenge + "&code_challenge_method=plain\n" +
+        "5. [Attack Vector]⚠️ Raw verifier exposed in query string, OS custom URI scheme, or logs!\n" +
+        "                  Attacker sniffs auth_code AND code_verifier simultaneously!\n\n" +
+        "[VERDICT] 🚨 VULNERABLE: 'plain' provides ZERO cryptographic authorization code binding.";
+    }
+    pkceOut.textContent = pkceText;
+
+    // Key Confusion / JWT Mode
+    let jwtText = "";
+    if (mode === "key_confusion"){
+      if (jwtBadge){
+        jwtBadge.textContent = "🚨 KEY CONFUSION EXPLOIT";
+        jwtBadge.className = "token-tag token-inj";
+      }
+      jwtText =
+        "=== RS256 -> HS256 PUBLIC KEY CONFUSION (CVE-2015-9235) ===\n" +
+        "1. [Asymmetric Design Intention]:\n" +
+        "   - Authorization Server signs JWT with Private Key (RS256).\n" +
+        "   - Resource Servers verify JWT with Public Key (PEM format via JWKS).\n\n" +
+        "2. [Attacker Exploit Flow]:\n" +
+        "   - Attacker downloads Server Public Key (freely accessible on public web).\n" +
+        "   - Attacker crafts token: Header: {\"alg\":\"HS256\",\"typ\":\"JWT\"}\n" +
+        "                           Payload: {\"sub\":\"attacker\",\"role\":\"admin\"}\n" +
+        "   - Attacker generates HMAC signature using the Server Public Key PEM string as secret key!\n\n" +
+        "3. [Vulnerable Server Verification]:\n" +
+        "   // Naive verification without algorithm whitelist:\n" +
+        "   jwt.verify(token, SERVER_PUBLIC_KEY);\n" +
+        "   --> Library sees 'HS256', treats SERVER_PUBLIC_KEY as symmetric HMAC secret!\n" +
+        "   --> HMAC-SHA256(header.payload, SERVER_PUBLIC_KEY) == attacker_signature --> ✅ VALID!\n\n" +
+        "VERDICT: 🚨 CRITICAL: Attacker forged valid admin token using public server key!";
+    } else if (mode === "fapi_secure"){
+      if (jwtBadge){
+        jwtBadge.textContent = "🛡️ FAPI 2.0 HARDENED";
+        jwtBadge.className = "token-tag token-lit";
+      }
+      jwtText =
+        "=== FAPI 2.0 / FINANCIAL-GRADE API ZERO-TRUST HARDENING ===\n" +
+        "1. [Cryptographic Token Binding]:\n" +
+        "   - DPoP (RFC 9449): Access tokens bound to client key thumbprint (jkt).\n" +
+        "   - Network eavesdropping or token leak rendered harmless.\n\n" +
+        "2. [Strict Algorithm Whitelist]:\n" +
+        "   - jwt.verify(token, SERVER_PUBLIC_KEY, { algorithms: ['RS256', 'ES256'] });\n" +
+        "   - Symmetric algorithms (HS256/384/512) strictly rejected.\n\n" +
+        "3. [Pushed Authorization Requests (PAR - RFC 9126)]:\n" +
+        "   - Authorization params submitted over encrypted back-channel POST.\n" +
+        "   - Front-channel URL parameters replaced with opaque request_uri.\n\n" +
+        "VERDICT: 🛡️ HARDENED: Key confusion, downgrade, and token replay fully mitigated.";
+    } else {
+      if (jwtBadge){
+        jwtBadge.textContent = "VERIFY: ASYMMETRIC";
+        jwtBadge.className = "token-tag token-lit";
+      }
+      jwtText =
+        "=== STANDARD ASYMMETRIC VERIFICATION ===\n" +
+        "Server Public Key: Loaded from JWKS endpoint.\n" +
+        "Active Verification Policy: Enforce RS256 algorithm match.\n" +
+        "Select '3. RS256 -> HS256 Key Confusion' above to test algorithm confusion attack.";
+    }
+    confusionOut.textContent = jwtText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -1468,6 +1767,10 @@
         openPlayground("adcs"); break;
       case "jwt":
         openPlayground("jwt"); break;
+      case "bgp": case "rpki":
+        openPlayground("bgp"); break;
+      case "oauth": case "pkce":
+        openPlayground("oauth"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -1844,6 +2147,38 @@
         if (sigEl) sigEl.value = "c8f2a1b9d4e5f607182930a4b5c6d7e8";
       }
       updateJwtDisplay();
+    });
+  });
+
+  // BGP Controls
+  const bgpSimBtn = document.getElementById("bgpSimulateBtn");
+  if (bgpSimBtn) bgpSimBtn.addEventListener("click", () => { audio(); renderBgp(); });
+  ["bgpPrefixInput", "bgpOriginInput", "bgpPathInput"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", () => renderBgp());
+  });
+  const bgpRpkiBox = document.getElementById("bgpRpkiCheck");
+  if (bgpRpkiBox) bgpRpkiBox.addEventListener("change", () => renderBgp());
+  document.querySelectorAll("[data-bgp-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-bgp-preset");
+      renderBgp(p);
+    });
+  });
+
+  // OAuth Controls
+  const oauthVerIn = document.getElementById("oauthVerifierInput");
+  if (oauthVerIn) oauthVerIn.addEventListener("input", () => renderOAuth(currentOAuthMode));
+  const oauthMethSel = document.getElementById("oauthMethodSelect");
+  if (oauthMethSel) oauthMethSel.addEventListener("change", () => renderOAuth(currentOAuthMode));
+  const oauthPubIn = document.getElementById("oauthPubKeyInput");
+  if (oauthPubIn) oauthPubIn.addEventListener("input", () => renderOAuth(currentOAuthMode));
+  document.querySelectorAll("[data-oauth-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-oauth-preset");
+      renderOAuth(p);
     });
   });
 

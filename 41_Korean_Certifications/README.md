@@ -14,6 +14,7 @@
 | [05_security_laws_and_compliance.md](./05_security_laws_and_compliance.md) | **한국 정보보안 관련 법령 완전 정리** — 법령 위반 시 결과: |
 | [06_korean_cert_ctf_lab.md](./06_korean_cert_ctf_lab.md) | **한국 정보보안 자격증 CTF 실습 랩** — python3 --version   # 3.10 이상 확인 |
 | [07_kisa_critical_infrastructure_assessment.md](./07_kisa_critical_infrastructure_assessment.md) | **주요정보통신기반시설 기술적 취약점 분석·평가 실무 완전 가이드** — [주요정보통신기반시설 취약점 평가 체계] |
+| [08_kisa_infrastructure_vulnerability_assessment_deepdive.md](./08_kisa_infrastructure_vulnerability_assessment_deepdive.md) | **KISA 주요정보통신기반시설 기술적 취약점 분석·평가 심층 해부: 엔터프라이즈 서버 진단 자동화 및 컴플라이언스 하드닝** |
 
 ## 🎯 학습 목표
 

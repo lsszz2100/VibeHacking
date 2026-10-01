@@ -672,6 +672,114 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "AS-Path 끝에 정당한 AS 64496을 붙여 출처를 위조하고 피어 간 비정상 경로 누출(Route Leak)을 유발하세요."}
                 ],
             },
+            "LAB33_ACCOUNT": {
+                "id": "LAB33_ACCOUNT",
+                "title": "KisaAuditLab: U-01~U-04 Account Management Full Audit & Detection",
+                "category": "compliance",
+                "initial_points": 500,
+                "flag": "FLAG{KISA_U01_U04_ACCOUNT_AUDIT_PWNED_1109}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "root 원격 접속, 패스워드 복잡도/잠금 임계값 및 shadow 권한 항목을 전수 진단하세요."}
+                ],
+            },
+            "LAB33_SERVICE": {
+                "id": "LAB33_SERVICE",
+                "title": "KisaAuditLab: U-20 Anonymous FTP & U-44 SSH Weak Cipher Exploitation",
+                "category": "compliance",
+                "initial_points": 500,
+                "flag": "FLAG{KISA_U20_U44_VULN_SERVICE_EXPLOITED_2241}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Anonymous FTP 백업 파일 다운로드 및 SSH CBC 모드 암호 프로빙을 모두 완수하세요."}
+                ],
+            },
+            "LAB33_HARDEN": {
+                "id": "LAB33_HARDEN",
+                "title": "KisaAuditLab: One-Click KISA Infrastructure Compliance Hardening",
+                "category": "compliance",
+                "initial_points": 500,
+                "flag": "FLAG{KISA_HARDENING_COMPLIANCE_PASSED_3378}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "6대 핵심 취약 항목을 KISA 기술적 취약점 평가 '양호' 기준에 맞게 일괄 하드닝하세요."}
+                ],
+            },
+            "LAB34_SHODAN": {
+                "id": "LAB34_SHODAN",
+                "title": "OsintHunterLab: Internet Attack Surface Discovery via Shodan / Censys",
+                "category": "osint",
+                "initial_points": 500,
+                "flag": "FLAG{OSINT_SHODAN_EXPOSED_SERVICES_RECON_7712}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "조직명 또는 미인가 포트(Redis 6379, Elastic 9200) dork 쿼리로 노출된 인프라를 매핑하세요."}
+                ],
+            },
+            "LAB34_DATABASE": {
+                "id": "LAB34_DATABASE",
+                "title": "OsintHunterLab: Unauthenticated Redis & Elasticsearch Dump & Key Carving",
+                "category": "osint",
+                "initial_points": 500,
+                "flag": "FLAG{OSINT_ELASTIC_REDIS_UNAUTH_DUMP_PWNED_8823}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "열려 있는 Redis(6379) 또는 Elasticsearch(9200) 데이터베이스에 쿼리를 전송하여 내부 자격증명을 덤프하세요."}
+                ],
+            },
+            "LAB34_GIT": {
+                "id": "LAB34_GIT",
+                "title": "OsintHunterLab: Exposed .git Commit History Tracing & Cloud Secret Recovery",
+                "category": "osint",
+                "initial_points": 500,
+                "flag": "FLAG{OSINT_GIT_LEAKED_SECRET_RECONSTRUCTED_9934}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "노출된 /.git의 분리된 객체 및 커밋 변경 이력을 추적하여 과거 삭제된 AWS 프로덕션 API 키를 복구하세요."}
+                ],
+            },
+            "LAB35_PASSROLE": {
+                "id": "LAB35_PASSROLE",
+                "title": "CloudPwnLab: Compute Instance Launch & iam:PassRole Escalation",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{CLOUD_IAM_PASSROLE_EC2_PRIV_ESCALATED_1120}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "ec2:RunInstances 실행 시 고권한 CloudSecAdminRole을 인스턴스 프로파일로 위임하여 IMDS에서 자격증명을 탈취하세요."}
+                ],
+            },
+            "LAB35_ASSUME": {
+                "id": "LAB35_ASSUME",
+                "title": "CloudPwnLab: Cross-Account Wildcard Trust sts:AssumeRole Abuse",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{CLOUD_STS_ASSUMEROLE_TRUST_POLICY_PWNED_2231}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "신뢰 정책에 Principal: {'AWS': '*'} 와일드카드가 선언된 CrossAccountAuditRole 역할을 sts:AssumeRole로 획득하세요."}
+                ],
+            },
+            "LAB35_SCP": {
+                "id": "LAB35_SCP",
+                "title": "CloudPwnLab: Multi-Layered Cloud Governance Hardening (SCP & Boundaries)",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{CLOUD_ORG_SCP_PERMISSION_BOUNDARY_ENFORCED_3342}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "AWS Organizations SCP와 개발자 권한 경계를 결합하여 무단 PassRole 및 외부 임의 AssumeRole을 원천 차단하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []

@@ -420,6 +420,30 @@ const TRACKS = [
     "en": "BGP Routing & RPKI Security",
     "desc_ko": "BGP-4 피어링·Exact/Sub-prefix LPM 하이재킹·AS-Path 위조·경로 누출·RPKI ROA 검증 및 MANRS 하드닝.",
     "desc_en": "BGP-4 peering, exact/sub-prefix LPM hijacking, AS-Path forgery, route leaks, RPKI ROA validation, and MANRS hardening."
+  },
+  {
+    "id": "kisa",
+    "icon": "🏛️",
+    "ko": "KISA 기반시설 취약점 평가·하드닝",
+    "en": "KISA Infrastructure Audit & Hardening",
+    "desc_ko": "주요정보통신기반시설 기술적 취약점 분석·평가 기준·U-01~U-72 진단·계정/서비스 익스플로잇·원클릭 컴플라이언스 하드닝.",
+    "desc_en": "KISA critical infrastructure vulnerability assessment criteria, U-01~U-72 Linux audit, service exploitation, and one-click compliance hardening."
+  },
+  {
+    "id": "osintrecon",
+    "icon": "🛰️",
+    "ko": "OSINT 공격 표면 정찰·섀도우 IT",
+    "en": "OSINT Surface Recon & Shadow IT",
+    "desc_ko": "인터넷 전수 스캔(Shodan/Censys)·공격 표면 관리(ASM)·무인증 DB 카빙·노출된 .git 커밋 이력 및 클라우드 키 복원.",
+    "desc_en": "Internet-wide reconnaissance via Shodan/Censys, attack surface management, database carving, and exposed .git secret recovery."
+  },
+  {
+    "id": "cloudiam",
+    "icon": "☁️",
+    "ko": "클라우드 IAM 권한 상승·거버넌스",
+    "en": "Cloud IAM Privilege Escalation & Governance",
+    "desc_ko": "AWS IAM 정책 평가 로직·iam:PassRole·sts:AssumeRole 크로스 어카운트·조직 SCP 가드레일 및 권한 경계(Permission Boundary).",
+    "desc_en": "AWS IAM evaluation logic, PassRole escalation, cross-account AssumeRole, Organization SCP guardrails, and Permission Boundaries."
   }
 ];
 
@@ -45553,6 +45577,2949 @@ const CHALLENGES = [
     ]
   },
   "hash": "fccdc5d3ff1f071f0b7267f3b9a2ba24f6352978a60a53e26a56cdf766ac6c30"
+}
+,
+{
+  "id": "t0_kisa_legal_framework",
+  "tier": 0,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "「정보통신기반 보호법」 제9조 및 평가 체계",
+    "en": "Information Infrastructure Protection Act & Assessment Framework"
+  },
+  "prompt": {
+    "ko": "「정보통신기반 보호법」 제9조에 따른 기술적 취약점 분석·평가 의무와 6대 시스템 진단 체계를 분석합니다.\n지정된 식별자 `kisa_legal_framework_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_legal_framework_v1\") 앞 20자리}`",
+    "en": "Analyze Article 9 of the Information Communication Infrastructure Protection Act and its 6-system assessment framework.\nCompute the first 20 hex characters of SHA256(\"kisa_legal_framework_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_legal_framework_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "정보통신기반 보호법 제9조에 따른 정기 취약점 평가 의무를 확인하세요.",
+      "식별자 `kisa_legal_framework_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review legal obligations under Article 9 of the Infrastructure Protection Act.",
+      "Extract first 20 hex chars of SHA256(\"kisa_legal_framework_v1\")."
+    ]
+  },
+  "hash": "01cf9b0a8b1e26671c68aadb30212b16cbcd20c7df1d7dc1f25591543827261e"
+},
+{
+  "id": "t0_kisa_category_structure",
+  "tier": 0,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "주요정보통신기반시설 6대 시스템 진단 분류 체계",
+    "en": "Six Core System Diagnostic Categories in KISA Guidelines"
+  },
+  "prompt": {
+    "ko": "Unix(U), Windows(W), Network(N), Security(S), Database(D), Web(WEB) 6대 진단 체계를 분석합니다.\n지정된 식별자 `kisa_category_structure_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_category_structure_v1\") 앞 20자리}`",
+    "en": "Classify the six diagnostic categories across Unix, Windows, Network, Security, DB, and Web.\nCompute the first 20 hex characters of SHA256(\"kisa_category_structure_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_category_structure_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Unix/Linux 서버 진단 코드가 U-01~U-72임을 확인하세요.",
+      "식별자 `kisa_category_structure_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Note that Unix/Linux items span from U-01 to U-72.",
+      "Extract first 20 hex chars of SHA256(\"kisa_category_structure_v1\")."
+    ]
+  },
+  "hash": "bf33b4f0d8b3e5a66cf5068f5ea4a41d985b9bca1a4d97bd76fe8f96896fab45"
+},
+{
+  "id": "t0_kisa_u01_root_remote",
+  "tier": 0,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-01 root 계정 원격 접속 제한 규정",
+    "en": "U-01 Direct Remote Root Login Restriction Standard"
+  },
+  "prompt": {
+    "ko": "sshd_config 내 PermitRootLogin no 및 /etc/securetty 가상 터미널 제한 원리를 분석합니다.\n지정된 식별자 `kisa_u01_root_remote_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u01_root_remote_v1\") 앞 20자리}`",
+    "en": "Inspect sshd_config PermitRootLogin directives and securetty virtual terminal restrictions.\nCompute the first 20 hex characters of SHA256(\"kisa_u01_root_remote_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u01_root_remote_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "root 직접 원격 로그인을 차단하고 sudo를 경유해야 함을 확인하세요.",
+      "식별자 `kisa_u01_root_remote_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Root logins must be blocked in favor of sudo escalation.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u01_root_remote_v1\")."
+    ]
+  },
+  "hash": "a851342482e0ec51341b5910e69dc261d42b8a116b8f9ae5dc4a64ad7f967437"
+},
+{
+  "id": "t0_kisa_u02_password_policy",
+  "tier": 0,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-02 패스워드 복잡성 규정 및 최소 길이 기준",
+    "en": "U-02 Password Complexity & Minimum Length Standards"
+  },
+  "prompt": {
+    "ko": "영문 대/소문자, 숫자, 특수문자 조합 최소 8자리 이상 복잡도 강제 설정을 분석합니다.\n지정된 식별자 `kisa_u02_password_policy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u02_password_policy_v1\") 앞 20자리}`",
+    "en": "Examine 8+ character complexity enforcement across uppercase, lowercase, digits, and symbols.\nCompute the first 20 hex characters of SHA256(\"kisa_u02_password_policy_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u02_password_policy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "pwquality.conf의 minlen=8 설정을 확인하세요.",
+      "식별자 `kisa_u02_password_policy_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Check pwquality.conf minlen=8 directive.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u02_password_policy_v1\")."
+    ]
+  },
+  "hash": "587a7d28139886828a27a8abed94e2cefea78c845800f114bdbb4e397027b054"
+},
+{
+  "id": "t0_kisa_u03_lockout_faillock",
+  "tier": 0,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-03 계정 잠금 임계값 및 무차별 대입 방어",
+    "en": "U-03 Account Lockout Threshold & Brute-Force Defense"
+  },
+  "prompt": {
+    "ko": "로그인 5회 연속 실패 시 10분간 잠금을 수행하는 pam_faillock 모듈 설정을 분석합니다.\n지정된 식별자 `kisa_u03_lockout_faillock_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u03_lockout_faillock_v1\") 앞 20자리}`",
+    "en": "Analyze pam_faillock denying access for 10 minutes after 5 failed authentication attempts.\nCompute the first 20 hex characters of SHA256(\"kisa_u03_lockout_faillock_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u03_lockout_faillock_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "deny=5 및 unlock_time=600 파라미터를 파악하세요.",
+      "식별자 `kisa_u03_lockout_faillock_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Identify deny=5 and unlock_time=600 parameters.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u03_lockout_faillock_v1\")."
+    ]
+  },
+  "hash": "77669bba34ac74d164e288053746ca734b311418d2a695d9642a9366e33da032"
+},
+{
+  "id": "t0_kisa_u04_shadow_permission",
+  "tier": 0,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-04 패스워드 파일 권한 보호 (/etc/shadow)",
+    "en": "U-04 Shadow Password File Permissions (/etc/shadow)"
+  },
+  "prompt": {
+    "ko": "/etc/shadow 파일의 소유자가 root이고 권한이 400 또는 000이어야 하는 보안 요건을 분석합니다.\n지정된 식별자 `kisa_u04_shadow_permission_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u04_shadow_permission_v1\") 앞 20자리}`",
+    "en": "Inspect permission requirements where /etc/shadow must be owned by root with 400 or 000 permissions.\nCompute the first 20 hex characters of SHA256(\"kisa_u04_shadow_permission_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u04_shadow_permission_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "일반 사용자가 shadow 해시를 읽을 수 없도록 격리해야 합니다.",
+      "식별자 `kisa_u04_shadow_permission_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Regular users must be barred from reading shadow hashes.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u04_shadow_permission_v1\")."
+    ]
+  },
+  "hash": "159edc1b9637fab0352bb9c1f777dd97fd5a754d3900e6383a5104e16c11603c"
+},
+{
+  "id": "t0_kisa_severity_ratings",
+  "tier": 0,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "KISA 상·중·하 중요도 산정 및 가중 배점 기준",
+    "en": "KISA High/Medium/Low Risk Severity Scoring Methodology"
+  },
+  "prompt": {
+    "ko": "직접적 침해사고 유발 항목(상)과 간접적 보안 정책 미비(하)의 중요도 가중치 산정법을 분석합니다.\n지정된 식별자 `kisa_severity_ratings_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_severity_ratings_v1\") 앞 20자리}`",
+    "en": "Understand scoring weights between critical compromise vectors and policy baselines.\nCompute the first 20 hex characters of SHA256(\"kisa_severity_ratings_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_severity_ratings_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "계정 관리의 U-01~U-04가 모두 '상' 등급임을 확인하세요.",
+      "식별자 `kisa_severity_ratings_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Notice that U-01 through U-04 are all categorized as High severity.",
+      "Extract first 20 hex chars of SHA256(\"kisa_severity_ratings_v1\")."
+    ]
+  },
+  "hash": "dec75fa9003833cb7e672eef48ae89ec26fc7d8665afe2a70ac763215014e8e7"
+},
+{
+  "id": "t1_kisa_u05_root_path",
+  "tier": 1,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 40,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-05 root 계정 PATH 환경변수 내 현재 디렉터리 제거",
+    "en": "U-05 Root PATH Environment Variable Current Directory Elimination"
+  },
+  "prompt": {
+    "ko": "PATH 변수 맨 앞이나 중간에 `.`(현재 디렉터리)이 포함될 경우 발생하는 트로이목마 실행 위협을 분석합니다.\n지정된 식별자 `kisa_u05_root_path_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u05_root_path_v1\") 앞 20자리}`",
+    "en": "Analyze trojan execution risks when dot (.) appears at the start of root's PATH variable.\nCompute the first 20 hex characters of SHA256(\"kisa_u05_root_path_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u05_root_path_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "PATH 변수 맨 끝에 .을 배치하거나 완전히 제거해야 합니다.",
+      "식별자 `kisa_u05_root_path_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Dot must be placed at the end or eliminated from PATH.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u05_root_path_v1\")."
+    ]
+  },
+  "hash": "e8bfb892a83d45e972ee1dca4a3cbf485df82868719abb64fd99507938c54b91"
+},
+{
+  "id": "t1_kisa_u07_passwd_owner",
+  "tier": 1,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 40,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-07 /etc/passwd 파일 소유자 및 권한 설정",
+    "en": "U-07 /etc/passwd Ownership & Permission Hardening"
+  },
+  "prompt": {
+    "ko": "/etc/passwd 파일의 소유자가 root이고 쓰기 권한이 root에게만 부여되어 있는지 검증합니다.\n지정된 식별자 `kisa_u07_passwd_owner_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u07_passwd_owner_v1\") 앞 20자리}`",
+    "en": "Verify that /etc/passwd is strictly owned by root with 644 or tighter permissions.\nCompute the first 20 hex characters of SHA256(\"kisa_u07_passwd_owner_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u07_passwd_owner_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "일반 사용자에게 쓰기 권한이 부여되면 UID 0 계정을 생성할 수 있습니다.",
+      "식별자 `kisa_u07_passwd_owner_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Write access allows arbitrary UID 0 account creation.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u07_passwd_owner_v1\")."
+    ]
+  },
+  "hash": "358bd677312fefbd5947c90b2bad07ff728bccd5e1e2aa31f07c92df3fdfed2a"
+},
+{
+  "id": "t1_kisa_u10_xinetd_conf",
+  "tier": 1,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-10 /etc/xinetd.conf 파일 소유자 및 권한 관리",
+    "en": "U-10 Super-Server Configuration Permissions (/etc/xinetd.conf)"
+  },
+  "prompt": {
+    "ko": "xinetd 및 슈퍼서버 환경설정 파일의 권한을 600 또는 644로 관리하는 기준을 분석합니다.\n지정된 식별자 `kisa_u10_xinetd_conf_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u10_xinetd_conf_v1\") 앞 20자리}`",
+    "en": "Examine access permissions on super-server daemon configurations.\nCompute the first 20 hex characters of SHA256(\"kisa_u10_xinetd_conf_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u10_xinetd_conf_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "비인가 수정 시 임의 네트워크 서비스가 데몬으로 구동될 수 있습니다.",
+      "식별자 `kisa_u10_xinetd_conf_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Unauthorized modification can spawn arbitrary listener daemons.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u10_xinetd_conf_v1\")."
+    ]
+  },
+  "hash": "52cf5d827c417ee50a26170f12d5378f2e32c55119daa554c7af5cc0dc52f0e6"
+},
+{
+  "id": "t1_kisa_u20_anonymous_ftp",
+  "tier": 1,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-20 Anonymous FTP 비활성화 및 무인증 파일 유출 차단",
+    "en": "U-20 Anonymous FTP Deactivation & Data Exfiltration Prevention"
+  },
+  "prompt": {
+    "ko": "FTP 서비스에서 anonymous 접속을 차단(anonymous_enable=NO)하는 KISA 양호 기준을 분석합니다.\n지정된 식별자 `kisa_u20_anonymous_ftp_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u20_anonymous_ftp_v1\") 앞 20자리}`",
+    "en": "Analyze KISA baseline requiring anonymous FTP disablement in vsftpd configuration.\nCompute the first 20 hex characters of SHA256(\"kisa_u20_anonymous_ftp_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u20_anonymous_ftp_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "익명 접속으로 공개 디렉터리 내 백업 파일이 유출되는 시나리오를 검토하세요.",
+      "식별자 `kisa_u20_anonymous_ftp_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review how exposed pub directories leak sensitive database dumps.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u20_anonymous_ftp_v1\")."
+    ]
+  },
+  "hash": "662b06439e494ebb4a36bc1a878a995386a2f0075c46ceb9d639c8d3be2409b9"
+},
+{
+  "id": "t1_kisa_u23_dos_services",
+  "tier": 1,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 45,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-23 DoS 공격에 취약한 레거시 서비스 비활성화",
+    "en": "U-23 Deactivation of Legacy Services Vulnerable to DoS"
+  },
+  "prompt": {
+    "ko": "echo(포트 7), discard(포트 9), daytime(포트 13), chargen(포트 19) 비활성화 원리를 분석합니다.\n지정된 식별자 `kisa_u23_dos_services_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u23_dos_services_v1\") 앞 20자리}`",
+    "en": "Understand why echo, discard, daytime, and chargen are disabled to stop UDP amplification DoS.\nCompute the first 20 hex characters of SHA256(\"kisa_u23_dos_services_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u23_dos_services_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "chargen과 echo 간 루프백 DoS 증폭 공격을 방지해야 합니다.",
+      "식별자 `kisa_u23_dos_services_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Looping amplification between chargen and echo must be blocked.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u23_dos_services_v1\")."
+    ]
+  },
+  "hash": "5f992890995bf55590f0cbfd2ce172d11a773334c6e03dbfdd0a3fd97f98ddf2"
+},
+{
+  "id": "t1_kisa_u44_ssh_cipher",
+  "tier": 1,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-44 SSH 원격 접속 프로토콜 취약 알고리즘 비활성화",
+    "en": "U-44 SSH Protocol & Insecure Cipher Hardening"
+  },
+  "prompt": {
+    "ko": "SSH-1 비활성화 및 CBC 모드 취약 대칭 암호(3DES-CBC, AES-CBC) 차단 기준을 분석합니다.\n지정된 식별자 `kisa_u44_ssh_cipher_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u44_ssh_cipher_v1\") 앞 20자리}`",
+    "en": "Enforce SSH-2 and disallow vulnerable CBC ciphers in sshd_config.\nCompute the first 20 hex characters of SHA256(\"kisa_u44_ssh_cipher_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u44_ssh_cipher_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "CTR 또는 GCM 모드 암호만을 명시적으로 허용해야 합니다.",
+      "식별자 `kisa_u44_ssh_cipher_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Only CTR and GCM cipher suites should be explicitly permitted.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u44_ssh_cipher_v1\")."
+    ]
+  },
+  "hash": "3c8fee53e26a5ff5fb0a843787c1f85081eb2e0155b8fa4cd27bf73c714f1e57"
+},
+{
+  "id": "t1_kisa_audit_regex_parsing",
+  "tier": 1,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "진단 쉘 스크립트 정규식 파싱 및 주석 오탐 방지",
+    "en": "Audit Shell Script Regex Parsing & False Positive Avoidance"
+  },
+  "prompt": {
+    "ko": "설정 파일 진단 시 `#` 주석 라인을 제외하고 유효한 지시어만을 정규식으로 파싱하는 기법을 분석합니다.\n지정된 식별자 `kisa_audit_regex_parsing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_audit_regex_parsing_v1\") 앞 20자리}`",
+    "en": "Design robust regex filters that ignore commented directives to avoid audit false positives.\nCompute the first 20 hex characters of SHA256(\"kisa_audit_regex_parsing_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_audit_regex_parsing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "grep -v '^[[:space:]]*#' 필터를 적용하여 유효 설정만 판별합니다.",
+      "식별자 `kisa_audit_regex_parsing_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Use grep -v filters to strip commented configurations.",
+      "Extract first 20 hex chars of SHA256(\"kisa_audit_regex_parsing_v1\")."
+    ]
+  },
+  "hash": "0c7dc4957a9fe4dd9b9776b4de257e62f70630ca388bfbe4fd0288c7a67a8079"
+},
+{
+  "id": "t2_kisa_u14_suid_sgid",
+  "tier": 2,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-14 SUID/SGID 불필요 실행파일 전수 탐색 및 제거",
+    "en": "U-14 SUID/SGID Binary Inventory & Privilege Escalation Defenses"
+  },
+  "prompt": {
+    "ko": "find 명령어로 SUID(-perm -4000) 파일을 탐색하고 취약 바이너리에서 특권을 제거하는 기법을 분석합니다.\n지정된 식별자 `kisa_u14_suid_sgid_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u14_suid_sgid_v1\") 앞 20자리}`",
+    "en": "Locate SUID binaries and strip unnecessary execution privileges to halt local privilege escalation.\nCompute the first 20 hex characters of SHA256(\"kisa_u14_suid_sgid_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u14_suid_sgid_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "chmod -s 명령으로 불필요한 SUID 비트를 제거합니다.",
+      "식별자 `kisa_u14_suid_sgid_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Strip SUID bits using chmod -s on untrusted tools.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u14_suid_sgid_v1\")."
+    ]
+  },
+  "hash": "d4b9d2aa6f9f96cd1485e69df5df6be1573728cb4636f51b4ce6cabab120940b"
+},
+{
+  "id": "t2_kisa_u17_r_commands",
+  "tier": 2,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-17 rlogin, rsh, rexec 무인증 서비스 차단",
+    "en": "U-17 Legacy r-commands Elimination (.rhosts & hosts.equiv)"
+  },
+  "prompt": {
+    "ko": ".rhosts 및 hosts.equiv 기반의 IP 신뢰 기반 무인증 원격 쉘 서비스 차단 기준을 분석합니다.\n지정된 식별자 `kisa_u17_r_commands_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u17_r_commands_v1\") 앞 20자리}`",
+    "en": "Eliminate IP-spoofable rlogin/rsh mechanisms and remove legacy .rhosts files.\nCompute the first 20 hex characters of SHA256(\"kisa_u17_r_commands_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u17_r_commands_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "암호화되지 않은 r-commands를 SSH로 전면 대체해야 합니다.",
+      "식별자 `kisa_u17_r_commands_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Replace unencrypted r-commands with secure SSH sessions.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u17_r_commands_v1\")."
+    ]
+  },
+  "hash": "fd6ab22cf3b24642f0854eafae674563d4032260b5171f580d8e7dbbfce2e97d"
+},
+{
+  "id": "t2_kisa_u22_cron_permission",
+  "tier": 2,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-22 crontab 명령어 권한 및 크론 설정 디렉터리 보호",
+    "en": "U-22 Crontab Daemon Access & Task Script Permissions"
+  },
+  "prompt": {
+    "ko": "/etc/cron.allow 및 cron.deny 파일을 통한 일반 사용자 크론 실행 통제 기법을 분석합니다.\n지정된 식별자 `kisa_u22_cron_permission_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u22_cron_permission_v1\") 앞 20자리}`",
+    "en": "Control scheduled task execution via /etc/cron.allow and /etc/cron.deny access controls.\nCompute the first 20 hex characters of SHA256(\"kisa_u22_cron_permission_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u22_cron_permission_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "cron 스크립트에 일반 사용자 쓰기 권한이 있으면 권한상승이 가능합니다.",
+      "식별자 `kisa_u22_cron_permission_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Writable cron scripts allow trivial root escalation.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u22_cron_permission_v1\")."
+    ]
+  },
+  "hash": "f82f41ae2d3ef15a3bb4745d9721132596339b1010a50654e0002176fe45e44c"
+},
+{
+  "id": "t2_kisa_u45_pam_wheel",
+  "tier": 2,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 60,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-45 su 명령어 사용 제한 및 wheel 그룹 바인딩",
+    "en": "U-45 su Command Execution Restrictions via pam_wheel.so"
+  },
+  "prompt": {
+    "ko": "pam_wheel.so 모듈을 통해 허가된 wheel 그룹 사용자만 root 전환(su)을 허용하는 메커니즘을 분석합니다.\n지정된 식별자 `kisa_u45_pam_wheel_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u45_pam_wheel_v1\") 앞 20자리}`",
+    "en": "Restrict su escalation strictly to members of the wheel administrative group via pam_wheel.so.\nCompute the first 20 hex characters of SHA256(\"kisa_u45_pam_wheel_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u45_pam_wheel_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "/etc/pam.d/su 파일에서 pam_wheel.so auth required 설정을 확인하세요.",
+      "식별자 `kisa_u45_pam_wheel_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Verify pam_wheel.so configuration inside /etc/pam.d/su.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u45_pam_wheel_v1\")."
+    ]
+  },
+  "hash": "905c6828af45f531c382ea84d9db66cbde6fc4c8a82420b5b34065061ad40d54"
+},
+{
+  "id": "t2_kisa_u72_rsyslog_remote",
+  "tier": 2,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-72 시스템 보안 로깅 및 중앙 원격 로그 전송",
+    "en": "U-72 System Security Logging & Remote Log Forwarding"
+  },
+  "prompt": {
+    "ko": "/etc/rsyslog.conf를 통한 authpriv.* 로깅 및 SIEM으로의 UDP/TCP 514 원격 전송 설정을 분석합니다.\n지정된 식별자 `kisa_u72_rsyslog_remote_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u72_rsyslog_remote_v1\") 앞 20자리}`",
+    "en": "Configure centralized authpriv logging and remote forwarding to secure SIEM collectors.\nCompute the first 20 hex characters of SHA256(\"kisa_u72_rsyslog_remote_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u72_rsyslog_remote_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "침해사고 발생 시 로컬 로그 삭제를 방지하기 위해 원격 전송이 필수적입니다.",
+      "식별자 `kisa_u72_rsyslog_remote_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Remote forwarding guarantees forensic preservation even if local logs are wiped.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u72_rsyslog_remote_v1\")."
+    ]
+  },
+  "hash": "0940962b34cbdcafc60c49d20d19b416728d6f216184527e3e86d82e5067c682"
+},
+{
+  "id": "t2_kisa_ftp_pub_data_leak",
+  "tier": 2,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-20 익명 FTP 디렉터리 탐색 및 백업 파일 탈취",
+    "en": "U-20 Anonymous FTP Directory Traversal & Backup Data Leak"
+  },
+  "prompt": {
+    "ko": "vsftpd 익명 접근을 통해 방치된 pub 디렉터리에서 서버 백업 파일을 탈취하는 공격을 분석합니다.\n지정된 식별자 `kisa_ftp_pub_data_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_ftp_pub_data_leak_v1\") 앞 20자리}`",
+    "en": "Demonstrate data leakage risks when anonymous users traverse public FTP directories.\nCompute the first 20 hex characters of SHA256(\"kisa_ftp_pub_data_leak_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_ftp_pub_data_leak_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Lab 33 Step 2 FTP 익스플로잇 요청 흐름을 확인하세요.",
+      "식별자 `kisa_ftp_pub_data_leak_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review Lab 33 Step 2 FTP exploit workflow.",
+      "Extract first 20 hex chars of SHA256(\"kisa_ftp_pub_data_leak_v1\")."
+    ]
+  },
+  "hash": "64c61a8ba8478150795d5d33094ce136734239903925f631b0f7edace49cf142"
+},
+{
+  "id": "t2_kisa_ssh_banner_fingerprint",
+  "tier": 2,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "U-44 SSH 버전 정보 노출 및 배너 그래빙 공격",
+    "en": "U-44 SSH Banner Grabbing & OS Version Fingerprinting"
+  },
+  "prompt": {
+    "ko": "SSH 접속 시 반환되는 OS 배너(/etc/issue.net)를 통해 타깃 커널 버전을 핑거프린팅하는 과정을 분석합니다.\n지정된 식별자 `kisa_ssh_banner_fingerprint_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_ssh_banner_fingerprint_v1\") 앞 20자리}`",
+    "en": "Fingerprint target Linux distributions through unsuppressed SSH greeting banners.\nCompute the first 20 hex characters of SHA256(\"kisa_ssh_banner_fingerprint_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_ssh_banner_fingerprint_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Banner none 설정을 통해 상세 운영체제 정보를 은닉해야 합니다.",
+      "식별자 `kisa_ssh_banner_fingerprint_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Banner none suppresses kernel details from scanning reconnaissance.",
+      "Extract first 20 hex chars of SHA256(\"kisa_ssh_banner_fingerprint_v1\")."
+    ]
+  },
+  "hash": "e080cd68845b72e1d84c6bd1d39c40d37314bca571a22a6d031603e328f2a219"
+},
+{
+  "id": "t3_kisa_u01_u04_audit_chain",
+  "tier": 3,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 75,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "계정 관리 4대 항목 전수 진단 스크립트 체이닝",
+    "en": "Chained Automation for U-01 through U-04 Account Audits"
+  },
+  "prompt": {
+    "ko": "U-01부터 U-04까지 계정 보안 4대 항목을 단일 트랜잭션으로 진단하여 취약점을 적발하는 로직을 분석합니다.\n지정된 식별자 `kisa_u01_u04_audit_chain_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_u01_u04_audit_chain_v1\") 앞 20자리}`",
+    "en": "Chain automated auditing across root login, complexity, lockout, and shadow permissions.\nCompute the first 20 hex characters of SHA256(\"kisa_u01_u04_audit_chain_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_u01_u04_audit_chain_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "모든 항목이 취약 판정 시 Step 1 플래그가 반환됨을 확인하세요.",
+      "식별자 `kisa_u01_u04_audit_chain_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Step 1 flag triggers when all four account checks identify vulnerabilities.",
+      "Extract first 20 hex chars of SHA256(\"kisa_u01_u04_audit_chain_v1\")."
+    ]
+  },
+  "hash": "8079ee0eae1d584825967f0b615e92c0a23cb818de83c9453348ae6ee0b89b6f"
+},
+{
+  "id": "t3_kisa_pam_faillock_bypass",
+  "tier": 3,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 75,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PAM 스택 오설정 및 auth 실패 우회 방어",
+    "en": "PAM Stack Configuration Hazards & Lockout Bypass Mitigation"
+  },
+  "prompt": {
+    "ko": "pam_faillock.so 선언 순서가 잘못되어 계정 잠금이 우회되는 스택 취약점을 분석하고 방어합니다.\n지정된 식별자 `kisa_pam_faillock_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_pam_faillock_bypass_v1\") 앞 20자리}`",
+    "en": "Analyze PAM stack misconfigurations where misplaced faillock directives bypass lockout logic.\nCompute the first 20 hex characters of SHA256(\"kisa_pam_faillock_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_pam_faillock_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "pam_faillock.so preauth 및 authfail의 올바른 배치 순서를 파악하세요.",
+      "식별자 `kisa_pam_faillock_bypass_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Position preauth and authfail correctly in the PAM evaluation stack.",
+      "Extract first 20 hex chars of SHA256(\"kisa_pam_faillock_bypass_v1\")."
+    ]
+  },
+  "hash": "c3ade4f601622e6481bb75800eb348934d1a6db23019b2a24005f74a258a4678"
+},
+{
+  "id": "t3_kisa_shadow_hashcat_crack",
+  "tier": 3,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "권한 노출된 shadow SHA-512 crypt 오프라인 크래킹",
+    "en": "Offline Hashcat Cracking on Exposed SHA-512 Crypt Hashes"
+  },
+  "prompt": {
+    "ko": "0644 권한으로 노출된 /etc/shadow의 $6$ 해시를 덤프하여 GPU 오프라인 사전 공격을 수행하는 원리를 분석합니다.\n지정된 식별자 `kisa_shadow_hashcat_crack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_shadow_hashcat_crack_v1\") 앞 20자리}`",
+    "en": "Demonstrate offline GPU cracking against $6$ SHA-512 crypt hashes leaked from exposed shadow files.\nCompute the first 20 hex characters of SHA256(\"kisa_shadow_hashcat_crack_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_shadow_hashcat_crack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Hashcat mode 1800(SHA512-crypt)의 오프라인 침투 파급력을 확인하세요.",
+      "식별자 `kisa_shadow_hashcat_crack_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Hashcat mode 1800 breaks weak passwords within seconds.",
+      "Extract first 20 hex chars of SHA256(\"kisa_shadow_hashcat_crack_v1\")."
+    ]
+  },
+  "hash": "f9c89c1ba4e2b9e0b458e1b729d1e408b5fafa873af857057a5bfdf2702785cf"
+},
+{
+  "id": "t3_kisa_vsftpd_rce_backdoor",
+  "tier": 3,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "vsftpd 취약 버전 백도어 및 익명 업로드 RCE 방어",
+    "en": "vsftpd Backdoor Vulnerabilities & Anonymous Upload RCE Defense"
+  },
+  "prompt": {
+    "ko": "FTP 익명 업로드(write_enable) 허용 시 웹 루트 웹쉘 업로드로 이어지는 RCE 체인을 분석합니다.\n지정된 식별자 `kisa_vsftpd_rce_backdoor_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_vsftpd_rce_backdoor_v1\") 앞 20자리}`",
+    "en": "Halt remote code execution chains arising from anonymous FTP uploads to web directories.\nCompute the first 20 hex characters of SHA256(\"kisa_vsftpd_rce_backdoor_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_vsftpd_rce_backdoor_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "anonymous_enable=NO 및 anon_upload_enable=NO를 강제해야 합니다.",
+      "식별자 `kisa_vsftpd_rce_backdoor_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Disallow anon_upload_enable to block arbitrary webshell drops.",
+      "Extract first 20 hex chars of SHA256(\"kisa_vsftpd_rce_backdoor_v1\")."
+    ]
+  },
+  "hash": "4bb38bee6b2d33b682d46e550b56f23437a37356a76116075cc4faa4195cfc59"
+},
+{
+  "id": "t3_kisa_ssh_cbc_plain_injection",
+  "tier": 3,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SSH CBC 모드 평문 주입 취약점(CVE-2008-5161) 방어",
+    "en": "SSH CBC Mode Plaintext Injection (CVE-2008-5161) Hardening"
+  },
+  "prompt": {
+    "ko": "CBC 모드 대칭 암호화 취약점을 이용한 32비트 블록 평문 복원 공격 원리와 ChaCha20/GCM 완화책을 분석합니다.\n지정된 식별자 `kisa_ssh_cbc_plain_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_ssh_cbc_plain_injection_v1\") 앞 20자리}`",
+    "en": "Examine 32-bit plaintext recovery risks under CBC ciphers and enforce modern AEAD suites.\nCompute the first 20 hex characters of SHA256(\"kisa_ssh_cbc_plain_injection_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_ssh_cbc_plain_injection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "chacha20-poly1305 및 aes256-gcm만을 Ciphers에 등록하세요.",
+      "식별자 `kisa_ssh_cbc_plain_injection_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Register only ChaCha20-Poly1305 and AES-GCM suites in sshd_config.",
+      "Extract first 20 hex chars of SHA256(\"kisa_ssh_cbc_plain_injection_v1\")."
+    ]
+  },
+  "hash": "d6f9f8abb8c5a875279cf4ab0ad521557b008e429e5e95906ef73990972e555a"
+},
+{
+  "id": "t3_kisa_oneclick_hardening",
+  "tier": 3,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 85,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "원클릭 KISA 보안 하드닝 및 자동 설정 스크립트",
+    "en": "One-Click KISA Infrastructure Hardening & Configuration Automation"
+  },
+  "prompt": {
+    "ko": "KISA 6대 핵심 점검 항목을 즉시 '양호' 기준으로 일괄 변경하는 하드닝 엔진 아키텍처를 분석합니다.\n지정된 식별자 `kisa_oneclick_hardening_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_oneclick_hardening_v1\") 앞 20자리}`",
+    "en": "Design unified hardening routines that transition vulnerable servers to 100% KISA compliance.\nCompute the first 20 hex characters of SHA256(\"kisa_oneclick_hardening_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_oneclick_hardening_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Lab 33 Step 3 하드닝 요청이 컴플라이언스 합격을 달성함을 확인하세요.",
+      "식별자 `kisa_oneclick_hardening_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Verify Lab 33 Step 3 compliance approval upon full remediation.",
+      "Extract first 20 hex chars of SHA256(\"kisa_oneclick_hardening_v1\")."
+    ]
+  },
+  "hash": "c55af79fd147b4054e767563e78f0fed89b7cb49bd82ef92338a6824cde5e290"
+},
+{
+  "id": "t3_kisa_rollback_architecture",
+  "tier": 3,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "설정 변경 실패 시 자동 백업 복원 롤백 아키텍처",
+    "en": "Automated Backup & Atomic Rollback Architecture for Hardening"
+  },
+  "prompt": {
+    "ko": "보안 하드닝 적용 중 서비스 장애 발생 시 설정 파일을 원상 복구하는 원자적(Atomic) 롤백 설계를 분석합니다.\n지정된 식별자 `kisa_rollback_architecture_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_rollback_architecture_v1\") 앞 20자리}`",
+    "en": "Implement atomic configuration snapshotting to automatically revert failed hardening actions.\nCompute the first 20 hex characters of SHA256(\"kisa_rollback_architecture_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_rollback_architecture_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "수정 전 .bak 파일 생성 및 유효성 검증 실패 시 즉시 복원을 구현합니다.",
+      "식별자 `kisa_rollback_architecture_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Generate .bak snapshots and verify syntax before committing daemon reloads.",
+      "Extract first 20 hex chars of SHA256(\"kisa_rollback_architecture_v1\")."
+    ]
+  },
+  "hash": "a33e700ffb9c7f77f982c8b9622379b483cd72bad6ed415b355a49eb580bdf7f"
+},
+{
+  "id": "t4_kisa_capstone_full_audit",
+  "tier": 4,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 95,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "KISA 72개 전 항목 자동 감사 파이프라인 구축",
+    "en": "Capstone: Complete 72-Item Automated Linux Audit Pipeline"
+  },
+  "prompt": {
+    "ko": "U-01부터 U-72까지 전 영역을 병렬로 점검하고 JSON 규격으로 증적을 생성하는 엔터프라이즈 파이프라인을 분석합니다.\n지정된 식별자 `kisa_capstone_full_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_capstone_full_audit_v1\") 앞 20자리}`",
+    "en": "Construct an enterprise assessment pipeline auditing all 72 KISA checkpoints into structured JSON.\nCompute the first 20 hex characters of SHA256(\"kisa_capstone_full_audit_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_capstone_full_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "모든 점검 결과를 구조화된 JSON 형태로 파이프라인에 전송합니다.",
+      "식별자 `kisa_capstone_full_audit_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Structure comprehensive audit findings into automated JSON schemas.",
+      "Extract first 20 hex chars of SHA256(\"kisa_capstone_full_audit_v1\")."
+    ]
+  },
+  "hash": "b586ceef62f7a88de1dda4e5678cf628590b39bcf49c384e905b7c8c9695f873"
+},
+{
+  "id": "t4_kisa_zero_trust_linux_posture",
+  "tier": 4,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "리눅스 제로트러스트 엔드포인트 포스처 검증",
+    "en": "Zero-Trust Linux Endpoint Posture & Compliance Attestation"
+  },
+  "prompt": {
+    "ko": "서버가 네트워크 접속 및 API 호출 시 KISA 하드닝 포스처를 mTLS 토큰에 증명하는 제로트러스트 모델을 분석합니다.\n지정된 식별자 `kisa_zero_trust_linux_posture_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_zero_trust_linux_posture_v1\") 앞 20자리}`",
+    "en": "Attest host hardening compliance via cryptographic posture claims bound to mTLS sessions.\nCompute the first 20 hex characters of SHA256(\"kisa_zero_trust_linux_posture_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_zero_trust_linux_posture_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "컴플라이언스 미달 호스트의 코어 네트워크 격리를 구현합니다.",
+      "식별자 `kisa_zero_trust_linux_posture_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Isolate non-compliant endpoints automatically at the ingress gateway.",
+      "Extract first 20 hex chars of SHA256(\"kisa_zero_trust_linux_posture_v1\")."
+    ]
+  },
+  "hash": "2359bc50a8a9d3de225be947862bbfb969d3ea43037c6d69c9951a7972cfce81"
+},
+{
+  "id": "t4_kisa_aide_integrity_monitor",
+  "tier": 4,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AIDE/Tripwire 파일 무결성 실시간 모니터링 연동",
+    "en": "AIDE & Tripwire File Integrity Monitoring Integration"
+  },
+  "prompt": {
+    "ko": "핵심 시스템 파일(/bin, /sbin, /etc)의 SHA-256 체크섬 변조를 실시간 감지하여 U-04, U-07 위협을 차단합니다.\n지정된 식별자 `kisa_aide_integrity_monitor_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_aide_integrity_monitor_v1\") 앞 20자리}`",
+    "en": "Detect binary tampering across system directories using cryptographic file integrity monitoring.\nCompute the first 20 hex characters of SHA256(\"kisa_aide_integrity_monitor_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_aide_integrity_monitor_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "AIDE 데이터베이스 정합성 검사를 크론으로 정기 실행합니다.",
+      "식별자 `kisa_aide_integrity_monitor_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Automate periodic AIDE verification via scheduled root crontabs.",
+      "Extract first 20 hex chars of SHA256(\"kisa_aide_integrity_monitor_v1\")."
+    ]
+  },
+  "hash": "7b18ee9a481947f8657fb72b79709275403dca372644893e147d026005930c1b"
+},
+{
+  "id": "t4_kisa_selinux_enforcing_policy",
+  "tier": 4,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 105,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SELinux Enforcing 모드 및 커스텀 정책 하드닝",
+    "en": "SELinux Enforcing Mode & Custom Type Enforcement Hardening"
+  },
+  "prompt": {
+    "ko": "DAC(임의적 접근 제어) 취약점을 극복하기 위해 MAC(강제적 접근 제어) SELinux 정책을 Enforcing으로 유지합니다.\n지정된 식별자 `kisa_selinux_enforcing_policy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_selinux_enforcing_policy_v1\") 앞 20자리}`",
+    "en": "Enforce Mandatory Access Control (MAC) via SELinux Enforcing modes to constrain compromised services.\nCompute the first 20 hex characters of SHA256(\"kisa_selinux_enforcing_policy_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_selinux_enforcing_policy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "setenforce 1 및 /etc/selinux/config 내 SELINUX=enforcing 설정을 확인하세요.",
+      "식별자 `kisa_selinux_enforcing_policy_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Verify SELINUX=enforcing configuration in /etc/selinux/config.",
+      "Extract first 20 hex chars of SHA256(\"kisa_selinux_enforcing_policy_v1\")."
+    ]
+  },
+  "hash": "f291dee9947a08c9af316d1181d6406caaccaee71d8855080d44c075de078681"
+},
+{
+  "id": "t4_kisa_compliance_report_generator",
+  "tier": 4,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "KISA 표준 기술적 취약점 평가 결과 보고서 자동 생성",
+    "en": "KISA Technical Assessment Compliance Audit Report Generation"
+  },
+  "prompt": {
+    "ko": "진단된 취약점 증적과 조치 결과를 취합하여 KISA 공표 표준 양식의 PDF/HTML 진단 보고서를 렌더링합니다.\n지정된 식별자 `kisa_compliance_report_generator_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_compliance_report_generator_v1\") 앞 20자리}`",
+    "en": "Render official compliance audit reports with structured findings according to KISA publishing standards.\nCompute the first 20 hex characters of SHA256(\"kisa_compliance_report_generator_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_compliance_report_generator_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "항목별 양호/취약 현황과 권고 조치 가이드를 보고서에 반영합니다.",
+      "식별자 `kisa_compliance_report_generator_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Synthesize good/vulnerable statuses and mitigation plans into the report.",
+      "Extract first 20 hex chars of SHA256(\"kisa_compliance_report_generator_v1\")."
+    ]
+  },
+  "hash": "612caded6f15198e662ff164e9c292a67e5ccac1fc0f8b47755205d533a92faa"
+},
+{
+  "id": "t4_kisa_ebpf_runtime_audit",
+  "tier": 4,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 115,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "eBPF 기반 KISA 보안 감사 실시간 커널 탐지 연동",
+    "en": "eBPF Kernel Instrumentation for Real-Time Security Audit Telemetry"
+  },
+  "prompt": {
+    "ko": "Kprobe 시스템콜 및 eBPF LSM을 통해 /etc/shadow 접근 및 불법 su 시도를 커널 레벨에서 즉시 차단합니다.\n지정된 식별자 `kisa_ebpf_runtime_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_ebpf_runtime_audit_v1\") 앞 20자리}`",
+    "en": "Instrument eBPF tracepoints and LSM hooks to intercept shadow file access and unauthorized su attempts.\nCompute the first 20 hex characters of SHA256(\"kisa_ebpf_runtime_audit_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_ebpf_runtime_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "eBPF BPF_PROG_TYPE_LSM 후크로 파일 접근을 실시간 필터링합니다.",
+      "식별자 `kisa_ebpf_runtime_audit_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Filter file accesses at the kernel boundary using eBPF LSM hooks.",
+      "Extract first 20 hex chars of SHA256(\"kisa_ebpf_runtime_audit_v1\")."
+    ]
+  },
+  "hash": "ba8f11d7ee20ff3db164ff9e831fbcb19d7f19db77052ae9a9adcf113a01f8c5"
+},
+{
+  "id": "t4_kisa_enterprise_cert_audit",
+  "tier": 4,
+  "cat": "kisa",
+  "track": "kisa",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "금융/공공 기관 ISMS-P 및 기반시설 합동 수검 대비",
+    "en": "ISMS-P & Critical Infrastructure Joint Enterprise Audit Preparation"
+  },
+  "prompt": {
+    "ko": "연례 법정 취약점 진단 및 ISMS-P 인증 심사를 통과하기 위한 다층 보안 거버넌스 및 감사 대응 체계를 분석합니다.\n지정된 식별자 `kisa_enterprise_cert_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"kisa_enterprise_cert_audit_v1\") 앞 20자리}`",
+    "en": "Prepare enterprise security governance workflows for annual ISMS-P certification and infrastructure compliance audits.\nCompute the first 20 hex characters of SHA256(\"kisa_enterprise_cert_audit_v1\").\n\nFormat: `FLAG{SHA256(\"kisa_enterprise_cert_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "기술적 점검과 관리적/물리적 보호 대책의 상호 연계성을 확인하세요.",
+      "식별자 `kisa_enterprise_cert_audit_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Connect technical audit outcomes with managerial security governance.",
+      "Extract first 20 hex chars of SHA256(\"kisa_enterprise_cert_audit_v1\")."
+    ]
+  },
+  "hash": "2ee1da19b98df07a8e7dbfbe67f9002b3fdbc756b35f3aedd92e0108fda1c3e4"
+}
+,
+{
+  "id": "t0_osint_recon_framework",
+  "tier": 0,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "OSINT 6단계 정찰 라이프사이클",
+    "en": "OSINT Six-Phase Reconnaissance Lifecycle"
+  },
+  "prompt": {
+    "ko": "요구사항 정의부터 수집, 처리, 분석, 배포로 이어지는 OSINT 수집 사이클을 분석합니다.\n지정된 식별자 `osint_recon_framework_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_recon_framework_v1\") 앞 20자리}`",
+    "en": "Analyze the 6-phase intelligence cycle from requirement scoping to collection, analysis, and dissemination.\nCompute the first 20 hex characters of SHA256(\"osint_recon_framework_v1\").\n\nFormat: `FLAG{SHA256(\"osint_recon_framework_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "OSINT 인텔리전스 주기의 6단계를 확인하세요.",
+      "식별자 `osint_recon_framework_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review the 6-phase intelligence lifecycle.",
+      "Extract first 20 hex chars of SHA256(\"osint_recon_framework_v1\")."
+    ]
+  },
+  "hash": "ab510a14a2a5161318dccd0cfed2cb622dfb204dc22b676108915634d230df83"
+},
+{
+  "id": "t0_osint_passive_vs_active",
+  "tier": 0,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "패시브 vs 액티브 정찰 경계 및 로깅 위험",
+    "en": "Passive vs Active Reconnaissance Boundaries & Logging Risk"
+  },
+  "prompt": {
+    "ko": "표적 시스템과 직접 패킷을 교환하지 않는 수동적 정찰과 능동적 스캔의 보안 경계를 분석합니다.\n지정된 식별자 `osint_passive_vs_active_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_passive_vs_active_v1\") 앞 20자리}`",
+    "en": "Differentiate passive caching intelligence from active probe scanning that leaves firewall logs.\nCompute the first 20 hex characters of SHA256(\"osint_passive_vs_active_v1\").\n\nFormat: `FLAG{SHA256(\"osint_passive_vs_active_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "타사 캐시 인덱스 질의가 패시브 정찰의 핵심임을 확인하세요.",
+      "식별자 `osint_passive_vs_active_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Third-party scanner queries represent passive recon.",
+      "Extract first 20 hex chars of SHA256(\"osint_passive_vs_active_v1\")."
+    ]
+  },
+  "hash": "76c33caa5de4d4de61b4fe82c4c0bfc598ac7a1b0e0e3ec2c3dcfd2d54df7c49"
+},
+{
+  "id": "t0_osint_whois_rdap_triage",
+  "tier": 0,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WHOIS 및 RDAP 레지스트리 질의 분석",
+    "en": "WHOIS & RDAP Domain Registry Triage"
+  },
+  "prompt": {
+    "ko": "도메인 등록 정보 조회를 위한 레거시 WHOIS와 RESTful RDAP 프로토콜의 네임서버 및 등록자 레코드를 분석합니다.\n지정된 식별자 `osint_whois_rdap_triage_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_whois_rdap_triage_v1\") 앞 20자리}`",
+    "en": "Inspect domain registrant records, registrar nameservers, and RDAP JSON responses.\nCompute the first 20 hex characters of SHA256(\"osint_whois_rdap_triage_v1\").\n\nFormat: `FLAG{SHA256(\"osint_whois_rdap_triage_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "RDAP 프로토콜이 구조화된 JSON 응답을 제공함을 확인하세요.",
+      "식별자 `osint_whois_rdap_triage_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "RDAP returns standardized RESTful JSON objects.",
+      "Extract first 20 hex chars of SHA256(\"osint_whois_rdap_triage_v1\")."
+    ]
+  },
+  "hash": "9242b07cbe405d7437999e3d60bc9d44933d086115bde5d029306bbc5026cfd8"
+},
+{
+  "id": "t0_osint_dns_record_enumeration",
+  "tier": 0,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "DNS 레코드(A, MX, TXT, SPF) 전수 수집",
+    "en": "DNS Record & SPF Verification"
+  },
+  "prompt": {
+    "ko": "A, CNAME, MX, TXT 레코드 분석을 통한 호스팅 제공자, 메일 게이트웨이 및 클라우드 서비스 매핑을 수행합니다.\n지정된 식별자 `osint_dns_record_enumeration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_dns_record_enumeration_v1\") 앞 20자리}`",
+    "en": "Enumerate DNS resource records to discover mail gateways and cloud provider verification tokens.\nCompute the first 20 hex characters of SHA256(\"osint_dns_record_enumeration_v1\").\n\nFormat: `FLAG{SHA256(\"osint_dns_record_enumeration_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "TXT 레코드 내 SPF 및 서드파티 인증 토큰을 점검하세요.",
+      "식별자 `osint_dns_record_enumeration_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Check TXT records for SPF policies and SaaS tokens.",
+      "Extract first 20 hex chars of SHA256(\"osint_dns_record_enumeration_v1\")."
+    ]
+  },
+  "hash": "44256339bd1876bd6d150be553f4a2814dbf422962f02de115f4a3a16e3cba73"
+},
+{
+  "id": "t0_osint_asn_bgp_prefix_lookup",
+  "tier": 0,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BGP 라우팅 프리픽스 및 ASN 매핑",
+    "en": "BGP Autonomous System IP Mapping"
+  },
+  "prompt": {
+    "ko": "자율 시스템 번호(ASN) 및 공표된 CIDR IP 대역을 조회하여 조직의 외부 IP 공간을 전수 식별합니다.\n지정된 식별자 `osint_asn_bgp_prefix_lookup_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_asn_bgp_prefix_lookup_v1\") 앞 20자리}`",
+    "en": "Map corporate IP space via BGP route announcements and Autonomous System Numbers.\nCompute the first 20 hex characters of SHA256(\"osint_asn_bgp_prefix_lookup_v1\").\n\nFormat: `FLAG{SHA256(\"osint_asn_bgp_prefix_lookup_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "BGP 라우팅 테이블에서 조직의 전체 공표 프리픽스를 추출하세요.",
+      "식별자 `osint_asn_bgp_prefix_lookup_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Aggregate all announced prefixes from BGP routing tables.",
+      "Extract first 20 hex chars of SHA256(\"osint_asn_bgp_prefix_lookup_v1\")."
+    ]
+  },
+  "hash": "0618388aaa9a1aba5e237e0ce59276bf7e2aa180bd34e692fa2b42042bb1e158"
+},
+{
+  "id": "t0_osint_crt_sh_transparency",
+  "tier": 0,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "인증서 투명성(CT) 로그 서브도메인 탐색",
+    "en": "Certificate Transparency Log Enumeration"
+  },
+  "prompt": {
+    "ko": "crt.sh 데이터베이스에서 TLS 인증서 발급 이력을 쿼리하여 숨겨진 스테이징 및 개발 서브도메인을 발견합니다.\n지정된 식별자 `osint_crt_sh_transparency_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_crt_sh_transparency_v1\") 앞 20자리}`",
+    "en": "Query Certificate Transparency (CT) append-only logs on crt.sh to discover unlisted subdomains.\nCompute the first 20 hex characters of SHA256(\"osint_crt_sh_transparency_v1\").\n\nFormat: `FLAG{SHA256(\"osint_crt_sh_transparency_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "와일드카드 및 SAN(Subject Alternative Name) 필드를 분석하세요.",
+      "식별자 `osint_crt_sh_transparency_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect SAN entries in historic TLS certificates.",
+      "Extract first 20 hex chars of SHA256(\"osint_crt_sh_transparency_v1\")."
+    ]
+  },
+  "hash": "274c4b8a53c157bdd144e333a8924a9cf02b01cebed05266f075ea3902a0baaa"
+},
+{
+  "id": "t0_osint_google_dorking_syntax",
+  "tier": 0,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "구글 해킹 데이터베이스(GHDB) 문법",
+    "en": "Google Advanced Search Operators"
+  },
+  "prompt": {
+    "ko": "site, filetype, intitle, inurl 고급 검색 연산자를 조합하여 노출된 환경설정 파일 및 백업을 탐색합니다.\n지정된 식별자 `osint_google_dorking_syntax_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_google_dorking_syntax_v1\") 앞 20자리}`",
+    "en": "Combine advanced dorking operators to discover sensitive backups and exposed administrative endpoints.\nCompute the first 20 hex characters of SHA256(\"osint_google_dorking_syntax_v1\").\n\nFormat: `FLAG{SHA256(\"osint_google_dorking_syntax_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "filetype:env 또는 intitle:'index of' dork를 확인하세요.",
+      "식별자 `osint_google_dorking_syntax_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review filetype:env and index-of dorks.",
+      "Extract first 20 hex chars of SHA256(\"osint_google_dorking_syntax_v1\")."
+    ]
+  },
+  "hash": "26c39867a32c6bc900541afb14d574e0c650aaa0ce288ffd7dcd9e4fd6459917"
+},
+{
+  "id": "t1_osint_shodan_host_filter",
+  "tier": 1,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Shodan 호스트 필터(org, net, port) 문법",
+    "en": "Shodan Network & Organization Filters"
+  },
+  "prompt": {
+    "ko": "Shodan의 org, net, port, country 필터를 사용하여 엔터프라이즈 소유 자산만을 정확히 격리 수집합니다.\n지정된 식별자 `osint_shodan_host_filter_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_shodan_host_filter_v1\") 앞 20자리}`",
+    "en": "Filter enterprise-owned assets using Shodan org, net, and port search directives.\nCompute the first 20 hex characters of SHA256(\"osint_shodan_host_filter_v1\").\n\nFormat: `FLAG{SHA256(\"osint_shodan_host_filter_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "org:'Company' net:CIDR 복합 쿼리를 점검하세요.",
+      "식별자 `osint_shodan_host_filter_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Combine organization name and CIDR filters.",
+      "Extract first 20 hex chars of SHA256(\"osint_shodan_host_filter_v1\")."
+    ]
+  },
+  "hash": "e723f41b798780a3dda9ec504a5994362d81bf88719556d0681ad2fdfe6b5538"
+},
+{
+  "id": "t1_osint_censys_search_language",
+  "tier": 1,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Censys Search 2.0 구조화 쿼리",
+    "en": "Censys Advanced Search Syntax"
+  },
+  "prompt": {
+    "ko": "Censys JSON 스키마에서 autonomous_system.asn 및 services.service_name 필드로 인프라를 조회합니다.\n지정된 식별자 `osint_censys_search_language_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_censys_search_language_v1\") 앞 20자리}`",
+    "en": "Query Censys Search 2.0 JSON structures using ASN and service name predicates.\nCompute the first 20 hex characters of SHA256(\"osint_censys_search_language_v1\").\n\nFormat: `FLAG{SHA256(\"osint_censys_search_language_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "services.port 및 TLS issuer 필터링 구문을 확인하세요.",
+      "식별자 `osint_censys_search_language_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Examine structured Censys JSON search syntax.",
+      "Extract first 20 hex chars of SHA256(\"osint_censys_search_language_v1\")."
+    ]
+  },
+  "hash": "da0b72bafbfa61ce82373cc1322f273ac9179040e1dffd7a822c7bab51d9d525"
+},
+{
+  "id": "t1_osint_subdomain_takeover_cname",
+  "tier": 1,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CNAME 댕글링 및 서브도메인 테이크오버",
+    "en": "CNAME Dangling Subdomain Takeover"
+  },
+  "prompt": {
+    "ko": "폐기된 S3 버킷, GitHub Pages 또는 Zendesk를 가리키는 고립된 CNAME 레코드 탈취 벡터를 분석합니다.\n지정된 식별자 `osint_subdomain_takeover_cname_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_subdomain_takeover_cname_v1\") 앞 20자리}`",
+    "en": "Analyze dangling CNAME pointers to abandoned cloud hosting services that allow domain hijacking.\nCompute the first 20 hex characters of SHA256(\"osint_subdomain_takeover_cname_v1\").\n\nFormat: `FLAG{SHA256(\"osint_subdomain_takeover_cname_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "DNS CNAME이 가리키는 클라우드 대상이 미등록 상태인지 검증하세요.",
+      "식별자 `osint_subdomain_takeover_cname_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Verify unallocated cloud storage behind dangling CNAMEs.",
+      "Extract first 20 hex chars of SHA256(\"osint_subdomain_takeover_cname_v1\")."
+    ]
+  },
+  "hash": "29ef72ac9fedc1c44936588753efb917fbd77d1ccfcbe571f6efbe52c3bf76ac"
+},
+{
+  "id": "t1_osint_unauth_redis_banner",
+  "tier": 1,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "미인가 Redis 6379 포트 배너 분석",
+    "en": "Unauthenticated Redis Service Discovery"
+  },
+  "prompt": {
+    "ko": "Shodan에서 redis_version 및 role:master 배너 응답을 파싱하여 인증이 결여된 캐시 노드를 식별합니다.\n지정된 식별자 `osint_unauth_redis_banner_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_unauth_redis_banner_v1\") 앞 20자리}`",
+    "en": "Parse Redis banner parameters such as role:master to detect open caching daemons.\nCompute the first 20 hex characters of SHA256(\"osint_unauth_redis_banner_v1\").\n\nFormat: `FLAG{SHA256(\"osint_unauth_redis_banner_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "6379 포트의 NOAUTH 에러 부재 여부를 확인하세요.",
+      "식별자 `osint_unauth_redis_banner_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Check for missing NOAUTH challenge on port 6379.",
+      "Extract first 20 hex chars of SHA256(\"osint_unauth_redis_banner_v1\")."
+    ]
+  },
+  "hash": "7084f03e8b737a01408b22ab027098ebe63dee75bbd9f9834d488eb9a6192b00"
+},
+{
+  "id": "t1_osint_open_elasticsearch_rest",
+  "tier": 1,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "오픈 Elasticsearch 9200 클러스터 식별",
+    "en": "Open Elasticsearch REST Mapping"
+  },
+  "prompt": {
+    "ko": "Elasticsearch 기본 9200 포트에서 cluster_name, version, tagline 응답을 통해 노출된 분석 노드를 식별합니다.\n지정된 식별자 `osint_open_elasticsearch_rest_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_open_elasticsearch_rest_v1\") 앞 20자리}`",
+    "en": "Identify exposed analytics clusters by querying the root REST JSON endpoint on port 9200.\nCompute the first 20 hex characters of SHA256(\"osint_open_elasticsearch_rest_v1\").\n\nFormat: `FLAG{SHA256(\"osint_open_elasticsearch_rest_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "/_cluster/health 엔드포인트의 오픈 상태를 점검하세요.",
+      "식별자 `osint_open_elasticsearch_rest_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Check for unauthenticated root endpoint responses.",
+      "Extract first 20 hex chars of SHA256(\"osint_open_elasticsearch_rest_v1\")."
+    ]
+  },
+  "hash": "a4a752b19803b54f51ce5bd6f9e06544d64e575ee79ae48a185361d69bb9eb33"
+},
+{
+  "id": "t1_osint_git_head_ref_probing",
+  "tier": 1,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 75,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "웹 서버 /.git/HEAD 파일 노출 탐지",
+    "en": "Exposed Git HEAD Reference Detection"
+  },
+  "prompt": {
+    "ko": "웹 디렉터리에 노출된 /.git/HEAD 파일을 HTTP GET 요청하여 'ref: refs/heads/' 문자열을 확인합니다.\n지정된 식별자 `osint_git_head_ref_probing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_git_head_ref_probing_v1\") 앞 20자리}`",
+    "en": "Probe web endpoints for exposed /.git/HEAD files returning ref: refs/heads/ branch indicators.\nCompute the first 20 hex characters of SHA256(\"osint_git_head_ref_probing_v1\").\n\nFormat: `FLAG{SHA256(\"osint_git_head_ref_probing_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "HTTP 상태 코드 200과 함께 반환되는 HEAD 참조 포맷을 확인하세요.",
+      "식별자 `osint_git_head_ref_probing_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Verify 200 OK responses with ref: refs/heads/main.",
+      "Extract first 20 hex chars of SHA256(\"osint_git_head_ref_probing_v1\")."
+    ]
+  },
+  "hash": "edd325aa976e058d3c73d10db76d2e4004d27225b520f89af01148c8c4d86d11"
+},
+{
+  "id": "t1_osint_s3_bucket_enumeration",
+  "tier": 1,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "퍼블릭 AWS S3 버킷 명명 규칙 탐색",
+    "en": "AWS Public S3 Bucket Discovery"
+  },
+  "prompt": {
+    "ko": "기업명과 dev, stage, backup, assets 등의 접미사를 결합한 S3 URL 유효성을 열거하고 ListBucket 권한을 진단합니다.\n지정된 식별자 `osint_s3_bucket_enumeration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_s3_bucket_enumeration_v1\") 앞 20자리}`",
+    "en": "Permute enterprise keywords with deployment suffixes to detect public AWS S3 bucket listings.\nCompute the first 20 hex characters of SHA256(\"osint_s3_bucket_enumeration_v1\").\n\nFormat: `FLAG{SHA256(\"osint_s3_bucket_enumeration_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ListBucketResult XML 응답 및 익명 다운로드 가능 여부를 확인하세요.",
+      "식별자 `osint_s3_bucket_enumeration_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Check ListBucketResult XML for public read permissions.",
+      "Extract first 20 hex chars of SHA256(\"osint_s3_bucket_enumeration_v1\")."
+    ]
+  },
+  "hash": "81bf476ce8498df692965a81f4a792693b518c65a0f2a6e8c45fcccec37ad9fb"
+},
+{
+  "id": "t2_osint_redis_keys_dump",
+  "tier": 2,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Redis 인메모리 세션 및 JWT 키 추출",
+    "en": "Redis In-Memory Key Extraction"
+  },
+  "prompt": {
+    "ko": "무인증 Redis 서버에 접속하여 KEYS * 명령으로 인메모리 데이터베이스를 전수 덤프하고 세션 토큰을 탈취합니다.\n지정된 식별자 `osint_redis_keys_dump_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_redis_keys_dump_v1\") 앞 20자리}`",
+    "en": "Extract in-memory user sessions, JWT secrets, and payment API keys from open Redis instances.\nCompute the first 20 hex characters of SHA256(\"osint_redis_keys_dump_v1\").\n\nFormat: `FLAG{SHA256(\"osint_redis_keys_dump_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "GET sess:user 또는 cfg:jwt_secret 키를 조회하세요.",
+      "식별자 `osint_redis_keys_dump_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Retrieve session keys and secret configuration values.",
+      "Extract first 20 hex chars of SHA256(\"osint_redis_keys_dump_v1\")."
+    ]
+  },
+  "hash": "e3bd5efc929e488b5ebf2381ee4f0862d080733310838b2dcb5270835cdd8bc3"
+},
+{
+  "id": "t2_osint_elastic_indices_search",
+  "tier": 2,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 115,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Elasticsearch 인덱스 카빙 및 문서 덤프",
+    "en": "Elasticsearch Index Carving & Search"
+  },
+  "prompt": {
+    "ko": "/_cat/indices 엔드포인트로 인덱스를 식별하고 /<index>/_search 쿼리를 통해 감사 로그와 PII를 덤프합니다.\n지정된 식별자 `osint_elastic_indices_search_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_elastic_indices_search_v1\") 앞 20자리}`",
+    "en": "Enumerate cluster indices via /_cat/indices and dump sensitive documents via /_search queries.\nCompute the first 20 hex characters of SHA256(\"osint_elastic_indices_search_v1\").\n\nFormat: `FLAG{SHA256(\"osint_elastic_indices_search_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "docs.count 필드와 _source 내 개인 식별 정보를 확인하세요.",
+      "식별자 `osint_elastic_indices_search_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect index doc counts and JSON _source payloads.",
+      "Extract first 20 hex chars of SHA256(\"osint_elastic_indices_search_v1\")."
+    ]
+  },
+  "hash": "62b7754de4e196b6535f2c9daf7585a6888d2b48abbce8fc8d9a4b2fd1fe4a63"
+},
+{
+  "id": "t2_osint_git_commit_tree_carving",
+  "tier": 2,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Git 객체 트리 역압축 및 커밋 추적",
+    "en": "Git Object Tree & Blob Extraction"
+  },
+  "prompt": {
+    "ko": "노출된 /.git/objects 폴더의 2자리 디렉터리와 38자리 해시 파일을 zlib로 압축 해제하여 트리 구조를 복원합니다.\n지정된 식별자 `osint_git_commit_tree_carving_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_git_commit_tree_carving_v1\") 앞 20자리}`",
+    "en": "Download and decompress zlib-packed Git commit, tree, and blob objects from /.git/objects.\nCompute the first 20 hex characters of SHA256(\"osint_git_commit_tree_carving_v1\").\n\nFormat: `FLAG{SHA256(\"osint_git_commit_tree_carving_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "commit 객체의 tree 해시와 parent 해시 연결 관계를 파싱하세요.",
+      "식별자 `osint_git_commit_tree_carving_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Parse commit parent pointers and tree object references.",
+      "Extract first 20 hex chars of SHA256(\"osint_git_commit_tree_carving_v1\")."
+    ]
+  },
+  "hash": "4aaca4054ce13895715c78d5fb31683753cff9916ba85f84d0e894c23a1ceea3"
+},
+{
+  "id": "t2_osint_mongodb_unauth_collection",
+  "tier": 2,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 125,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "미인증 MongoDB 27017 컬렉션 덤프",
+    "en": "MongoDB Unauthenticated Collection Dump"
+  },
+  "prompt": {
+    "ko": "MongoDB 27017 포트에서 listDatabases 명령을 전송하여 인증 없이 사내 컬렉션 데이터를 추출합니다.\n지정된 식별자 `osint_mongodb_unauth_collection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_mongodb_unauth_collection_v1\") 앞 20자리}`",
+    "en": "Send listDatabases wire-protocol packets to dump unprotected MongoDB collections.\nCompute the first 20 hex characters of SHA256(\"osint_mongodb_unauth_collection_v1\").\n\nFormat: `FLAG{SHA256(\"osint_mongodb_unauth_collection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "system.users 컬렉션 및 기본 admin DB 접근 여부를 점검하세요.",
+      "식별자 `osint_mongodb_unauth_collection_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect admin DB and application collection contents.",
+      "Extract first 20 hex chars of SHA256(\"osint_mongodb_unauth_collection_v1\")."
+    ]
+  },
+  "hash": "9ee67f2d034addd57588feca414e5949feb3a5b48c89fa5f479a9639baabb481"
+},
+{
+  "id": "t2_osint_cloud_metadata_ssrf_finder",
+  "tier": 2,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "외부 노출 프록시를 통한 IMDS 탐색",
+    "en": "Cloud Metadata IMDS Endpoint Discovery"
+  },
+  "prompt": {
+    "ko": "외부에 노출된 오픈 웹 프록시나 리버스 프록시를 통해 클라우드 메타데이터 엔드포인트를 프로빙합니다.\n지정된 식별자 `osint_cloud_metadata_ssrf_finder_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_cloud_metadata_ssrf_finder_v1\") 앞 20자리}`",
+    "en": "Detect cloud metadata exposure by sending request forwardings to link-local addresses.\nCompute the first 20 hex characters of SHA256(\"osint_cloud_metadata_ssrf_finder_v1\").\n\nFormat: `FLAG{SHA256(\"osint_cloud_metadata_ssrf_finder_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "호스트 포워딩 헤더 및 링크-로컬 엔드포인트를 점검하세요.",
+      "식별자 `osint_cloud_metadata_ssrf_finder_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Examine reverse proxy forwarding to cloud metadata addresses.",
+      "Extract first 20 hex chars of SHA256(\"osint_cloud_metadata_ssrf_finder_v1\")."
+    ]
+  },
+  "hash": "1f96ed10a99239045a2a5a06dd240d7db7acf44d103bf51d833599bcd164b02d"
+},
+{
+  "id": "t2_osint_exposed_actuator_env",
+  "tier": 2,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 135,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Spring Boot Actuator /env 엔드포인트 누출",
+    "en": "Spring Boot Actuator Environment Leak"
+  },
+  "prompt": {
+    "ko": "인증 없이 노출된 /actuator/env 또는 /actuator/heapdump에서 환경 변수 및 데이터베이스 자격증명을 파싱합니다.\n지정된 식별자 `osint_exposed_actuator_env_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_exposed_actuator_env_v1\") 앞 20자리}`",
+    "en": "Parse plaintext environment variables and DB passwords exposed under /actuator/env.\nCompute the first 20 hex characters of SHA256(\"osint_exposed_actuator_env_v1\").\n\nFormat: `FLAG{SHA256(\"osint_exposed_actuator_env_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "propertySources 배열 내 스프링 데이터소스 패스워드를 확인하세요.",
+      "식별자 `osint_exposed_actuator_env_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Examine propertySources JSON entries for datasource credentials.",
+      "Extract first 20 hex chars of SHA256(\"osint_exposed_actuator_env_v1\")."
+    ]
+  },
+  "hash": "f191e4ed022c227bcce8bc389105074a1ddfe071fec68b9f29c6a16d810476ee"
+},
+{
+  "id": "t2_osint_swagger_api_schema_leak",
+  "tier": 2,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "공개 Swagger/OpenAPI 명세 분석",
+    "en": "Swagger OpenAPI Schema Reconnaissance"
+  },
+  "prompt": {
+    "ko": "/v2/api-docs 또는 /openapi.json 엔드포인트에서 미공개 내부 관리 API 명세 및 파라미터 구조를 추출합니다.\n지정된 식별자 `osint_swagger_api_schema_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_swagger_api_schema_leak_v1\") 앞 20자리}`",
+    "en": "Extract unpublished administrative endpoints and parameters from open Swagger JSON schemas.\nCompute the first 20 hex characters of SHA256(\"osint_swagger_api_schema_leak_v1\").\n\nFormat: `FLAG{SHA256(\"osint_swagger_api_schema_leak_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "paths 객체 내 숨겨진 /admin 및 /internal 라우트를 식별하세요.",
+      "식별자 `osint_swagger_api_schema_leak_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect paths object for hidden admin endpoints.",
+      "Extract first 20 hex chars of SHA256(\"osint_swagger_api_schema_leak_v1\")."
+    ]
+  },
+  "hash": "f3ca720644d1225cca7025e41b4a4a5601b4b5df36273a586e2d8d280d227e2e"
+},
+{
+  "id": "t3_osint_git_log_diff_secret_recovery",
+  "tier": 3,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 175,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "삭제된 커밋 diff 기반 AWS 자격증명 복원",
+    "en": "Git Leaked Secret Diff Recovery"
+  },
+  "prompt": {
+    "ko": "git log -p 변경 내역을 역추적하여 커밋 삭제 처리된 과거의 프로덕션 AWS_ACCESS_KEY_ID를 완벽히 복원합니다.\n지정된 식별자 `osint_git_log_diff_secret_recovery_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_git_log_diff_secret_recovery_v1\") 앞 20자리}`",
+    "en": "Trace git commit diff histories (git log -p) to reconstruct deleted production AWS access keys.\nCompute the first 20 hex characters of SHA256(\"osint_git_log_diff_secret_recovery_v1\").\n\nFormat: `FLAG{SHA256(\"osint_git_log_diff_secret_recovery_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "'-AWS_ACCESS_KEY_ID='로 시작하는 삭제 라인을 추적하세요.",
+      "식별자 `osint_git_log_diff_secret_recovery_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Search deleted line diffs (-AWS_ACCESS_KEY_ID=).",
+      "Extract first 20 hex chars of SHA256(\"osint_git_log_diff_secret_recovery_v1\")."
+    ]
+  },
+  "hash": "c247164cdaa38781c8db46ef9065a378125e4e0301e13ace7f89c739526b5903"
+},
+{
+  "id": "t3_osint_reflog_dangling_commit",
+  "tier": 3,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 185,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "고립된(Dangling) 커밋 해시 리플로그 추적",
+    "en": "Dangling Commit Blob Reconstruction"
+  },
+  "prompt": {
+    "ko": "브랜치에서 분리되어 HEAD가 가리키지 않는 고립된(Dangling) 커밋 블롭을 git fsck/reflog로 재조합합니다.\n지정된 식별자 `osint_reflog_dangling_commit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_reflog_dangling_commit_v1\") 앞 20자리}`",
+    "en": "Reconstruct detached Git commits and unreachable blob objects unreferenced by active branch pointers.\nCompute the first 20 hex characters of SHA256(\"osint_reflog_dangling_commit_v1\").\n\nFormat: `FLAG{SHA256(\"osint_reflog_dangling_commit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "/.git/logs/HEAD 파일의 이전 커밋 SHA-1 체크포인트를 분석하세요.",
+      "식별자 `osint_reflog_dangling_commit_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect reflog checkpoints in /.git/logs/HEAD.",
+      "Extract first 20 hex chars of SHA256(\"osint_reflog_dangling_commit_v1\")."
+    ]
+  },
+  "hash": "a538d936e8c7e3a7453d690edc964439ebbe14e638395e7aa6b1e0aad88b87dc"
+},
+{
+  "id": "t3_osint_k8s_api_server_unauth",
+  "tier": 3,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 195,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "인터넷에 개방된 Kubernetes API Server 탐색",
+    "en": "Open Kubernetes API Endpoint Audit"
+  },
+  "prompt": {
+    "ko": "포트 6443 또는 8443에서 system:anonymous 권한으로 /api/v1/namespaces 조회가 허용된 K8s 클러스터를 탐색합니다.\n지정된 식별자 `osint_k8s_api_server_unauth_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_k8s_api_server_unauth_v1\") 앞 20자리}`",
+    "en": "Detect Kubernetes master nodes on port 6443 granting anonymous cluster inspection privileges.\nCompute the first 20 hex characters of SHA256(\"osint_k8s_api_server_unauth_v1\").\n\nFormat: `FLAG{SHA256(\"osint_k8s_api_server_unauth_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "anonymous-auth=true 설정에 따른 정보 누출을 확인하세요.",
+      "식별자 `osint_k8s_api_server_unauth_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Check anonymous access to /api/v1/namespaces.",
+      "Extract first 20 hex chars of SHA256(\"osint_k8s_api_server_unauth_v1\")."
+    ]
+  },
+  "hash": "b7f5c2a2df4d0de92522207ccadab9757aa7e71eb0d55dba4c26f0e18c7cbb60"
+},
+{
+  "id": "t3_osint_jfrog_artifactory_leak",
+  "tier": 3,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "아티팩토리 익명 접근 및 패키지 카빙",
+    "en": "Exposed Artifact Repository Carving"
+  },
+  "prompt": {
+    "ko": "JFrog Artifactory 또는 Nexus 저장소의 익명 읽기 권한을 악용하여 내부 프라이빗 npm/Maven 패키지를 다운로드합니다.\n지정된 식별자 `osint_jfrog_artifactory_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_jfrog_artifactory_leak_v1\") 앞 20자리}`",
+    "en": "Exploit anonymous read permissions on internal artifact repositories to extract proprietary binaries.\nCompute the first 20 hex characters of SHA256(\"osint_jfrog_artifactory_leak_v1\").\n\nFormat: `FLAG{SHA256(\"osint_jfrog_artifactory_leak_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "/artifactory/api/storage 엔드포인트의 디렉터리 브라우징을 점검하세요.",
+      "식별자 `osint_jfrog_artifactory_leak_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect storage APIs on unauthenticated package mirrors.",
+      "Extract first 20 hex chars of SHA256(\"osint_jfrog_artifactory_leak_v1\")."
+    ]
+  },
+  "hash": "7cd9d57fbc2e33b2f25cf7d10bc3bae3eeb860545bd11cfd4ead9166a27dd095"
+},
+{
+  "id": "t3_osint_graphql_introspection_schema",
+  "tier": 3,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 205,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "GraphQL 인트로스펙션 스키마 추출",
+    "en": "GraphQL Introspection Surface Recon"
+  },
+  "prompt": {
+    "ko": "__schema 인트로스펙션 질의를 전송하여 서버의 모든 쿼리, 뮤테이션 및 비즈니스 객체 모델을 일괄 추출합니다.\n지정된 식별자 `osint_graphql_introspection_schema_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_graphql_introspection_schema_v1\") 앞 20자리}`",
+    "en": "Execute __schema GraphQL introspection queries to discover hidden backend mutations and types.\nCompute the first 20 hex characters of SHA256(\"osint_graphql_introspection_schema_v1\").\n\nFormat: `FLAG{SHA256(\"osint_graphql_introspection_schema_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "__schema { types { name fields { name } } } 질의를 분석하세요.",
+      "식별자 `osint_graphql_introspection_schema_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Analyze full __schema type and field definitions.",
+      "Extract first 20 hex chars of SHA256(\"osint_graphql_introspection_schema_v1\")."
+    ]
+  },
+  "hash": "a33cfc89d5e4d0feed1565b0a2dd86dd9398c5260436ead9652c43914ea63713"
+},
+{
+  "id": "t3_osint_ci_cd_webhook_secret",
+  "tier": 3,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 215,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "노출된 CI/CD 웹훅 시크릿 토큰 탈취",
+    "en": "Exposed CI/CD Webhook Token Analysis"
+  },
+  "prompt": {
+    "ko": "GitHub/GitLab 공개 웹훅 URL 파라미터 또는 오픈 젠킨스 작업 콘솔에 기록된 시크릿 토큰을 탐지합니다.\n지정된 식별자 `osint_ci_cd_webhook_secret_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_ci_cd_webhook_secret_v1\") 앞 20자리}`",
+    "en": "Detect exposed CI/CD webhook secret tokens printed in open build console logs.\nCompute the first 20 hex characters of SHA256(\"osint_ci_cd_webhook_secret_v1\").\n\nFormat: `FLAG{SHA256(\"osint_ci_cd_webhook_secret_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "파이프라인 빌드 로그 내 마스킹되지 않은 인증 헤더를 확인하세요.",
+      "식별자 `osint_ci_cd_webhook_secret_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect unmasked authorization headers in build console logs.",
+      "Extract first 20 hex chars of SHA256(\"osint_ci_cd_webhook_secret_v1\")."
+    ]
+  },
+  "hash": "3f583fc39f197af4cce4ac8b134da8e1e8eae39d5f286fedbee6e5562892c218"
+},
+{
+  "id": "t3_osint_azure_blob_sas_token",
+  "tier": 3,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 220,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Azure Storage Blob SAS 토큰 권한 분석",
+    "en": "Azure Blob SAS Token Parameter Analysis"
+  },
+  "prompt": {
+    "ko": "클라이언트 번들 또는 로그에 노출된 Shared Access Signature (sp, se, sig) 파라미터의 만료일과 쓰기 권한을 분석합니다.\n지정된 식별자 `osint_azure_blob_sas_token_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_azure_blob_sas_token_v1\") 앞 20자리}`",
+    "en": "Analyze Azure Blob Shared Access Signature (SAS) tokens to evaluate permissions (sp=racwd) and expiry.\nCompute the first 20 hex characters of SHA256(\"osint_azure_blob_sas_token_v1\").\n\nFormat: `FLAG{SHA256(\"osint_azure_blob_sas_token_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "sp=rwdl 권한 플래그와 서명 유효기간을 점검하세요.",
+      "식별자 `osint_azure_blob_sas_token_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Examine sp permissions and expiry timestamps in SAS query strings.",
+      "Extract first 20 hex chars of SHA256(\"osint_azure_blob_sas_token_v1\")."
+    ]
+  },
+  "hash": "f6cb0ec1bfb601e6519a45cedf8ba0cf215f6973e8471dc1856fdfca3cea6bb7"
+},
+{
+  "id": "t4_osint_capstone_full_surface_audit",
+  "tier": 4,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 300,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "섀도우 IT 및 외부 공격 표면 전수 진단",
+    "en": "Full Attack Surface EASM Capstone"
+  },
+  "prompt": {
+    "ko": "Shodan/Censys 스캔, 무인증 데이터베이스 덤프 및 Git 커밋 diff 복원을 결합한 3단계 침투 시나리오를 완성합니다.\n지정된 식별자 `osint_capstone_full_surface_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_capstone_full_surface_audit_v1\") 앞 20자리}`",
+    "en": "Synthesize Shodan reconnaissance, database carving, and Git diff reconstruction into a unified audit.\nCompute the first 20 hex characters of SHA256(\"osint_capstone_full_surface_audit_v1\").\n\nFormat: `FLAG{SHA256(\"osint_capstone_full_surface_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Lab 34의 3단계 전수 익스플로잇 흐름을 완료하세요.",
+      "식별자 `osint_capstone_full_surface_audit_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Complete all 3 stages of Lab 34.",
+      "Extract first 20 hex chars of SHA256(\"osint_capstone_full_surface_audit_v1\")."
+    ]
+  },
+  "hash": "12dbf26288093907bcdf0ea2ccbbc17123671fb07d0858a77938c00300ecdb4d"
+},
+{
+  "id": "t4_osint_easm_automated_scanning",
+  "tier": 4,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 320,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "EASM 자동화 스캔 파이프라인 아키텍처",
+    "en": "Continuous Attack Surface Management"
+  },
+  "prompt": {
+    "ko": "신규 등록 도메인, IP 대역 및 변경된 포트를 24/7 실시간 모니터링하여 경보를 발행하는 EASM 파이프라인을 설계합니다.\n지정된 식별자 `osint_easm_automated_scanning_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_easm_automated_scanning_v1\") 앞 20자리}`",
+    "en": "Architect a continuous EASM pipeline tracking delta changes across enterprise ASNs and domains.\nCompute the first 20 hex characters of SHA256(\"osint_easm_automated_scanning_v1\").\n\nFormat: `FLAG{SHA256(\"osint_easm_automated_scanning_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ASM 델타 감지 주기와 SIEM 경보 파이프라인을 검토하세요.",
+      "식별자 `osint_easm_automated_scanning_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review automated delta detection algorithms.",
+      "Extract first 20 hex chars of SHA256(\"osint_easm_automated_scanning_v1\")."
+    ]
+  },
+  "hash": "89f851e05393705ab9b8ac25b94a1df45dca9c38d654ec9d2dc1a3395eb2e9f5"
+},
+{
+  "id": "t4_osint_trufflehog_gitleaks_pipeline",
+  "tier": 4,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 330,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CI/CD 커밋 시크릿 사전 차단 파이프라인",
+    "en": "Automated Secret Leak Prevention Pipeline"
+  },
+  "prompt": {
+    "ko": "Git pre-commit 훅 및 CI/CD 워크플로에 TruffleHog와 Gitleaks를 탑재하여 엔트로피 기반 시크릿 커밋을 원천 차단합니다.\n지정된 식별자 `osint_trufflehog_gitleaks_pipeline_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_trufflehog_gitleaks_pipeline_v1\") 앞 20자리}`",
+    "en": "Deploy pre-commit entropy filters and CI scanning engines to block leaked credentials before push.\nCompute the first 20 hex characters of SHA256(\"osint_trufflehog_gitleaks_pipeline_v1\").\n\nFormat: `FLAG{SHA256(\"osint_trufflehog_gitleaks_pipeline_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "높은 샤논 엔트로피 문자열 및 정규식 탐지 규칙을 확인하세요.",
+      "식별자 `osint_trufflehog_gitleaks_pipeline_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Check Shannon entropy scanning rules and regex patterns.",
+      "Extract first 20 hex chars of SHA256(\"osint_trufflehog_gitleaks_pipeline_v1\")."
+    ]
+  },
+  "hash": "6469b2a43b1ec56f6a81dfb5cbb7415c5600bd3cf45eae75d86f9f47ddd53f65"
+},
+{
+  "id": "t4_osint_zero_trust_ingress_quarantine",
+  "tier": 4,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 340,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "인터넷 노출 서비스 제로트러스트 격리",
+    "en": "Zero Trust Ingress Isolation Architecture"
+  },
+  "prompt": {
+    "ko": "공개 IP를 완전히 제거하고 Cloudflare Tunnel 또는 AWS PrivateLink 기반 인증 프록시 뒤로 내부 리소스를 격리합니다.\n지정된 식별자 `osint_zero_trust_ingress_quarantine_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_zero_trust_ingress_quarantine_v1\") 앞 20자리}`",
+    "en": "Isolate internal data stores behind Zero Trust identity-aware reverse tunnels without public IP addresses.\nCompute the first 20 hex characters of SHA256(\"osint_zero_trust_ingress_quarantine_v1\").\n\nFormat: `FLAG{SHA256(\"osint_zero_trust_ingress_quarantine_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "인바운드 포트 완전 폐쇄 및 아웃바운드 터널링 원리를 점검하세요.",
+      "식별자 `osint_zero_trust_ingress_quarantine_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Examine zero-open-port reverse tunnel architectures.",
+      "Extract first 20 hex chars of SHA256(\"osint_zero_trust_ingress_quarantine_v1\")."
+    ]
+  },
+  "hash": "7c1948f01bd83683672a84d42bbdbdbc8e4eff1627fc8d58abc381b93877974b"
+},
+{
+  "id": "t4_osint_cloud_posture_cspm_remediation",
+  "tier": 4,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CSPM 정책 위반 자동 수정 플레이북",
+    "en": "Automated CSPM Remediation Playbook"
+  },
+  "prompt": {
+    "ko": "AWS Security Hub / GuardDuty와 연계하여 0.0.0.0/0 보안 그룹 개방 시 자동 격리하는 람다 플레이북을 설계합니다.\n지정된 식별자 `osint_cloud_posture_cspm_remediation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_cloud_posture_cspm_remediation_v1\") 앞 20자리}`",
+    "en": "Deploy automated event-driven Lambda functions to revoke overly permissive 0.0.0.0/0 security group rules.\nCompute the first 20 hex characters of SHA256(\"osint_cloud_posture_cspm_remediation_v1\").\n\nFormat: `FLAG{SHA256(\"osint_cloud_posture_cspm_remediation_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "EventBridge와 결합된 보안 그룹 자동 회수 로직을 확인하세요.",
+      "식별자 `osint_cloud_posture_cspm_remediation_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review EventBridge-driven auto-remediation workflows.",
+      "Extract first 20 hex chars of SHA256(\"osint_cloud_posture_cspm_remediation_v1\")."
+    ]
+  },
+  "hash": "c8a972b265014b8b3196dda5f4e4160691ae9775eafcd9dd79ca09548dbb119e"
+},
+{
+  "id": "t4_osint_darkweb_credential_intelligence",
+  "tier": 4,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 360,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "다크웹 유출 자격증명 모니터링 체계",
+    "en": "Dark Web Credential Breach Intelligence"
+  },
+  "prompt": {
+    "ko": "Tor 및 I2P 기반 유출 포럼, 텔레그램 채널의 임직원 자격증명 콤보 리스트를 인텔리전스 피드로 연동합니다.\n지정된 식별자 `osint_darkweb_credential_intelligence_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_darkweb_credential_intelligence_v1\") 앞 20자리}`",
+    "en": "Integrate dark web breach telemetry and stealer log feeds to proactively revoke leaked enterprise credentials.\nCompute the first 20 hex characters of SHA256(\"osint_darkweb_credential_intelligence_v1\").\n\nFormat: `FLAG{SHA256(\"osint_darkweb_credential_intelligence_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "정보 스틸러(RedLine, Lumma) 로그 모니터링 체계를 분석하세요.",
+      "식별자 `osint_darkweb_credential_intelligence_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Monitor info-stealer malware marketplace feeds.",
+      "Extract first 20 hex chars of SHA256(\"osint_darkweb_credential_intelligence_v1\")."
+    ]
+  },
+  "hash": "f8a0e92b20d0aaace220ed594e83f96831fa87cd24406fc6c709e44f74a03b3f"
+},
+{
+  "id": "t4_osint_threat_actor_infrastructure_tracking",
+  "tier": 4,
+  "cat": "osintrecon",
+  "track": "osintrecon",
+  "points": 380,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "위협 행위자 C2 인프라 추적 기법",
+    "en": "Threat Actor Infrastructure Tracking"
+  },
+  "prompt": {
+    "ko": "TLS 인증서 시리얼, JARM 해시 및 고유 HTTP 응답 헤더를 교차 분석하여 적대적 C2 서버 인프라를 추적합니다.\n지정된 식별자 `osint_threat_actor_infrastructure_tracking_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"osint_threat_actor_infrastructure_tracking_v1\") 앞 20자리}`",
+    "en": "Track adversary C2 infrastructure using TLS fingerprints, JARM hashes, and favicon hashes.\nCompute the first 20 hex characters of SHA256(\"osint_threat_actor_infrastructure_tracking_v1\").\n\nFormat: `FLAG{SHA256(\"osint_threat_actor_infrastructure_tracking_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "JARM TLS 핸드셰이크 지문과 파비콘 MD5/MurmurHash 계산법을 확인하세요.",
+      "식별자 `osint_threat_actor_infrastructure_tracking_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Combine JARM fingerprints and favicon hashes for C2 attribution.",
+      "Extract first 20 hex chars of SHA256(\"osint_threat_actor_infrastructure_tracking_v1\")."
+    ]
+  },
+  "hash": "7fc18a23210491b8dd64ae5090b12b0d919d24bca44477da9928d9e9bf661ed4"
+}
+,
+{
+  "id": "t0_cloudiam_eval_logic_order",
+  "tier": 0,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AWS IAM 6단계 정책 평가 우선순위",
+    "en": "IAM Policy Evaluation Logic Order"
+  },
+  "prompt": {
+    "ko": "명시적 거부(Deny), SCP, 리소스 정책, 권한 경계, 세션 정책, 아이덴티티 정책 순서의 평가 로직을 분석합니다.\n지정된 식별자 `cloudiam_eval_logic_order_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_eval_logic_order_v1\") 앞 20자리}`",
+    "en": "Analyze the 6-layer policy evaluation logic: Explicit Deny, SCP, Resource policy, Boundary, Session, and Identity.\nCompute the first 20 hex characters of SHA256(\"cloudiam_eval_logic_order_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_eval_logic_order_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "어떤 허용(Allow)도 명시적 거부(Explicit Deny)를 번복할 수 없음을 확인하세요.",
+      "식별자 `cloudiam_eval_logic_order_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Explicit Deny overrides all Allow statements.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_eval_logic_order_v1\")."
+    ]
+  },
+  "hash": "2198eaad201668e07e13ad42e794bbed091dfd443aa9cad640d4b6e585520466"
+},
+{
+  "id": "t0_cloudiam_explicit_deny",
+  "tier": 0,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "명시적 거부(Explicit Deny) 절대 우선권",
+    "en": "Explicit Deny Precedence"
+  },
+  "prompt": {
+    "ko": "Identity 정책에 Allow가 있더라도 SCP 또는 인라인 정책의 Deny가 요청을 즉시 차단하는 불변 규칙을 점검합니다.\n지정된 식별자 `cloudiam_explicit_deny_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_explicit_deny_v1\") 앞 20자리}`",
+    "en": "Examine the rule where an explicit Deny in any matching policy immediately terminates evaluation with Access Denied.\nCompute the first 20 hex characters of SHA256(\"cloudiam_explicit_deny_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_explicit_deny_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Effect: Deny 문맥의 최우선 적용 원리를 분석하세요.",
+      "식별자 `cloudiam_explicit_deny_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review absolute precedence of Effect: Deny.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_explicit_deny_v1\")."
+    ]
+  },
+  "hash": "4fe6c73b6f1925745fe3499530113b217e6e0c52fcd8266c4fd25be35cc9288d"
+},
+{
+  "id": "t0_cloudiam_arn_structure",
+  "tier": 0,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AWS 리소스 ARN 구조와 파티션",
+    "en": "AWS ARN Structure & Partition Parsing"
+  },
+  "prompt": {
+    "ko": "arn:partition:service:region:account-id:resource-id 6개 필드로 구성되는 Amazon Resource Name을 분석합니다.\n지정된 식별자 `cloudiam_arn_structure_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_arn_structure_v1\") 앞 20자리}`",
+    "en": "Parse the 6 standard colon-delimited components of an Amazon Resource Name (ARN).\nCompute the first 20 hex characters of SHA256(\"cloudiam_arn_structure_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_arn_structure_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "arn:aws:iam::account:role/name 포맷을 확인하세요.",
+      "식별자 `cloudiam_arn_structure_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Check arn:aws:iam::account:role/name syntax.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_arn_structure_v1\")."
+    ]
+  },
+  "hash": "daddc81ae75ac26d69a8fe843bd639243f4a88ddce15056f4cb62fabdb667ccc"
+},
+{
+  "id": "t0_cloudiam_principal_types",
+  "tier": 0,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IAM 보안 주체(Principal) 유형 분류",
+    "en": "IAM Principal Types: User, Role, Service"
+  },
+  "prompt": {
+    "ko": "AWS 계정 루트, IAM 사용자, 역할(Role), AWS 서비스 및 연합(Federated) 신원 등 Principal 선언 유형을 분류합니다.\n지정된 식별자 `cloudiam_principal_types_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_principal_types_v1\") 앞 20자리}`",
+    "en": "Classify AWS principal types: IAM users, federated identities, assumed roles, and AWS service principals.\nCompute the first 20 hex characters of SHA256(\"cloudiam_principal_types_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_principal_types_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Service: ec2.amazonaws.com 등 서비스 주체 표현을 확인하세요.",
+      "식별자 `cloudiam_principal_types_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review service principal declarations like ec2.amazonaws.com.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_principal_types_v1\")."
+    ]
+  },
+  "hash": "b3ba99b276aa1523d61a74e4dbbfe3ac696a8229aaa7466604d270faae3a8283"
+},
+{
+  "id": "t0_cloudiam_action_wildcards",
+  "tier": 0,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 30,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IAM Action 와일드카드 축약 규정",
+    "en": "IAM Action Wildcard Syntax"
+  },
+  "prompt": {
+    "ko": "s3:* 또는 ec2:Describe* 등 와일드카드(*)를 사용할 때 의도치 않게 고권한 액션이 포함되는 위험성을 분석합니다.\n지정된 식별자 `cloudiam_action_wildcards_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_action_wildcards_v1\") 앞 20자리}`",
+    "en": "Evaluate over-permissive wildcard actions (s3:*, iam:*) granting destructive administrative APIs.\nCompute the first 20 hex characters of SHA256(\"cloudiam_action_wildcards_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_action_wildcards_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "iam:* 와일드카드가 관리자 권한과 동등함을 확인하세요.",
+      "식별자 `cloudiam_action_wildcards_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Wildcard iam:* effectively grants full account takeover.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_action_wildcards_v1\")."
+    ]
+  },
+  "hash": "7bd6e20527f7c4afeb8cc682569fe51db24a6b2fc3722e4a89c9c7744dc8926e"
+},
+{
+  "id": "t0_cloudiam_condition_operators",
+  "tier": 0,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IAM Condition 연산자(StringEquals, ArnLike)",
+    "en": "IAM Condition Key Evaluation"
+  },
+  "prompt": {
+    "ko": "StringEquals, ArnLike, Bool, IpAddress 등 정책 요청 컨텍스트를 검증하는 Condition 블록의 평가 메커니즘을 분석합니다.\n지정된 식별자 `cloudiam_condition_operators_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_condition_operators_v1\") 앞 20자리}`",
+    "en": "Analyze IAM condition keys (aws:PrincipalArn, aws:RequestedRegion) and operators (StringEquals, IpAddress).\nCompute the first 20 hex characters of SHA256(\"cloudiam_condition_operators_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_condition_operators_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "aws:PrincipalOrgID 조건 키를 통한 조직 단위 접근 제어를 확인하세요.",
+      "식별자 `cloudiam_condition_operators_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect aws:PrincipalOrgID condition keys.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_condition_operators_v1\")."
+    ]
+  },
+  "hash": "23ff8813056eeb1d6e08e38b551fd5274361d420d5c9f5812eaa29c8e1c1f011"
+},
+{
+  "id": "t0_cloudiam_sts_get_caller_identity",
+  "tier": 0,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 35,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "STS GetCallerIdentity 신원 검증",
+    "en": "STS GetCallerIdentity Verification"
+  },
+  "prompt": {
+    "ko": "탈취한 액세스 키의 계정 ID, 사용자 ARN, 역할 세션 ID를 파악하기 위한 aws sts get-caller-identity 명령을 점검합니다.\n지정된 식별자 `cloudiam_sts_get_caller_identity_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_sts_get_caller_identity_v1\") 앞 20자리}`",
+    "en": "Run sts:GetCallerIdentity to reveal current AWS account ID, caller ARN, and assumed role credentials.\nCompute the first 20 hex characters of SHA256(\"cloudiam_sts_get_caller_identity_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_sts_get_caller_identity_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "UserId, Account, Arn 필드가 반환되는 기본 응답을 확인하세요.",
+      "식별자 `cloudiam_sts_get_caller_identity_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Examine UserId, Account, and Arn fields in STS response.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_sts_get_caller_identity_v1\")."
+    ]
+  },
+  "hash": "496b3b4c346f57aff393d0d16ee64cf736fa6a282aa3955c3cc71640f927e45c"
+},
+{
+  "id": "t1_cloudiam_passrole_service_link",
+  "tier": 1,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "iam:PassRole과 서비스 위임 원리",
+    "en": "iam:PassRole Service Linkage"
+  },
+  "prompt": {
+    "ko": "사용자가 생성하거나 기동하는 AWS 리소스(EC2, Lambda)에 IAM 역할을 전달할 때 필요한 iam:PassRole 권한을 분석합니다.\n지정된 식별자 `cloudiam_passrole_service_link_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_passrole_service_link_v1\") 앞 20자리}`",
+    "en": "Understand iam:PassRole semantics enabling users to assign IAM service roles to compute resources.\nCompute the first 20 hex characters of SHA256(\"cloudiam_passrole_service_link_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_passrole_service_link_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "iam:PassRole은 서비스가 역할을 수탁받도록 승인하는 행위임을 확인하세요.",
+      "식별자 `cloudiam_passrole_service_link_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "PassRole authorizes a service to assume an execution role.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_passrole_service_link_v1\")."
+    ]
+  },
+  "hash": "785ec980a68769d751b3d59e4fe8619b6da81d7c39ae08127075420661382946"
+},
+{
+  "id": "t1_cloudiam_instance_profile_assoc",
+  "tier": 1,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 55,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "EC2 인스턴스 프로파일과 역할 연결",
+    "en": "EC2 Instance Profile Association"
+  },
+  "prompt": {
+    "ko": "EC2 인스턴스가 IAM 역할을 전달받기 위한 컨테이너 객체인 Instance Profile의 생성 및 연결 구조를 분석합니다.\n지정된 식별자 `cloudiam_instance_profile_assoc_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_instance_profile_assoc_v1\") 앞 20자리}`",
+    "en": "Inspect EC2 Instance Profile wrappers linking IAM roles to virtual machine metadata services.\nCompute the first 20 hex characters of SHA256(\"cloudiam_instance_profile_assoc_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_instance_profile_assoc_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "iam:AddRoleToInstanceProfile 명령 구조를 점검하세요.",
+      "식별자 `cloudiam_instance_profile_assoc_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review AddRoleToInstanceProfile API operations.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_instance_profile_assoc_v1\")."
+    ]
+  },
+  "hash": "d315e5855085151232e9c2d20b50495b645950804128ce366a122696a268510d"
+},
+{
+  "id": "t1_cloudiam_imds_v1_vs_v2",
+  "tier": 1,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IMDSv1 vs IMDSv2 토큰 헤더 방어",
+    "en": "IMDSv1 vs IMDSv2 Security Token"
+  },
+  "prompt": {
+    "ko": "SSRF 공격에 취약한 IMDSv1 단순 GET 요청과 PUT 세션 토큰(X-aws-ec2-metadata-token)을 강제하는 IMDSv2를 비교합니다.\n지정된 식별자 `cloudiam_imds_v1_vs_v2_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_imds_v1_vs_v2_v1\") 앞 20자리}`",
+    "en": "Compare simple GET metadata requests in IMDSv1 against session token headers (X-aws-ec2-metadata-token) in IMDSv2.\nCompute the first 20 hex characters of SHA256(\"cloudiam_imds_v1_vs_v2_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_imds_v1_vs_v2_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "HttpTokens=required 설정을 통한 IMDSv2 강제 적용을 확인하세요.",
+      "식별자 `cloudiam_imds_v1_vs_v2_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Enforce IMDSv2 with HttpTokens=required.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_imds_v1_vs_v2_v1\")."
+    ]
+  },
+  "hash": "c5ab4cb52eb27215d67f116a4e25c96b3419d2d1451f57a3e61f3fcb9f12d2fa"
+},
+{
+  "id": "t1_cloudiam_trust_policy_syntax",
+  "tier": 1,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IAM 역할 신뢰 정책(AssumeRolePolicyDocument)",
+    "en": "Role Trust Relationship Policy Syntax"
+  },
+  "prompt": {
+    "ko": "어떤 Principal이 해당 역할을 맡을(Assume) 수 있는지 정의하는 AssumeRolePolicyDocument 신뢰 정책 구조를 분석합니다.\n지정된 식별자 `cloudiam_trust_policy_syntax_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_trust_policy_syntax_v1\") 앞 20자리}`",
+    "en": "Inspect AssumeRolePolicyDocument blocks specifying which AWS services or identities can assume a role.\nCompute the first 20 hex characters of SHA256(\"cloudiam_trust_policy_syntax_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_trust_policy_syntax_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "sts:AssumeRole 액션이 신뢰 정책의 유일한 허용 대상임을 확인하세요.",
+      "식별자 `cloudiam_trust_policy_syntax_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Ensure sts:AssumeRole is explicitly permitted in trust policies.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_trust_policy_syntax_v1\")."
+    ]
+  },
+  "hash": "f74149391df0360f52ed3e65b42e628ae66139542772749e083d4addb2ba6a4c"
+},
+{
+  "id": "t1_cloudiam_inline_vs_managed",
+  "tier": 1,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 70,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "인라인 정책 vs 고객 관리형 정책 차이",
+    "en": "Inline vs Customer Managed Policies"
+  },
+  "prompt": {
+    "ko": "단일 IAM 주체에 영구 결합되는 인라인 정책과 여러 주체에 재사용 가능한 독립 ARN 관리형 정책의 특성을 비교합니다.\n지정된 식별자 `cloudiam_inline_vs_managed_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_inline_vs_managed_v1\") 앞 20자리}`",
+    "en": "Differentiate standalone customer-managed policies with versioning from inline embedded policies.\nCompute the first 20 hex characters of SHA256(\"cloudiam_inline_vs_managed_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_inline_vs_managed_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "관리형 정책은 최대 5개 버전을 유지할 수 있음을 확인하세요.",
+      "식별자 `cloudiam_inline_vs_managed_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Managed policies support up to 5 concurrent versions.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_inline_vs_managed_v1\")."
+    ]
+  },
+  "hash": "2ceb951bd472b90146f7693b39f4aa0c2b39b285eb0c5a10fb7f0d0a21240a07"
+},
+{
+  "id": "t1_cloudiam_sts_token_expiration",
+  "tier": 1,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 75,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "STS 임시 자격증명 만료 메커니즘",
+    "en": "STS Temporary Credentials Expiry"
+  },
+  "prompt": {
+    "ko": "AccessKeyId(ASIA), SecretAccessKey 및 SessionToken으로 구성되는 STS 자격증명의 15분~12시간 수명 주기를 분석합니다.\n지정된 식별자 `cloudiam_sts_token_expiration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_sts_token_expiration_v1\") 앞 20자리}`",
+    "en": "Analyze lifetime constraints (15 minutes to 12 hours) and rotation mechanics of ASIA-prefixed session tokens.\nCompute the first 20 hex characters of SHA256(\"cloudiam_sts_token_expiration_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_sts_token_expiration_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "임시 키의 접두사가 ASIA로 시작함을 확인하세요.",
+      "식별자 `cloudiam_sts_token_expiration_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Temporary session credentials use the ASIA prefix.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_sts_token_expiration_v1\")."
+    ]
+  },
+  "hash": "eab8a92771a1f49cb5c64326df8007fd22b0cc59f0b17ba8bb2c866277977944"
+},
+{
+  "id": "t1_cloudiam_confused_deputy_problem",
+  "tier": 1,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 80,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "대리인 혼동(Confused Deputy) 문제",
+    "en": "Confused Deputy Problem & sts:ExternalId"
+  },
+  "prompt": {
+    "ko": "서드파티 SaaS 연동 시 다른 고객의 권한을 대리 행사하게 되는 취약점과 sts:ExternalId 방어 검증을 점검합니다.\n지정된 식별자 `cloudiam_confused_deputy_problem_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_confused_deputy_problem_v1\") 앞 20자리}`",
+    "en": "Prevent confused deputy exploitation across multi-tenant SaaS vendors by mandating sts:ExternalId conditions.\nCompute the first 20 hex characters of SHA256(\"cloudiam_confused_deputy_problem_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_confused_deputy_problem_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "sts:ExternalId 일치 조건을 통해 대리인 혼동을 차단하세요.",
+      "식별자 `cloudiam_confused_deputy_problem_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Validate sts:ExternalId in trust policy condition blocks.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_confused_deputy_problem_v1\")."
+    ]
+  },
+  "hash": "c32b2ee3e7284057283cccdff6d486e3c528dfce23d3e45317cfb6e694e7c71a"
+},
+{
+  "id": "t2_cloudiam_ec2_runinstances_passrole",
+  "tier": 2,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ec2:RunInstances + iam:PassRole 결합 권한 상승",
+    "en": "EC2 RunInstances PassRole Escalation"
+  },
+  "prompt": {
+    "ko": "ec2:RunInstances 실행 시 고권한 역할을 인스턴스에 넘겨 UserData 스크립트로 관리자 키를 추출하는 1단계 공격을 분석합니다.\n지정된 식별자 `cloudiam_ec2_runinstances_passrole_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_ec2_runinstances_passrole_v1\") 앞 20자리}`",
+    "en": "Combine ec2:RunInstances with iam:PassRole to launch an instance with CloudSecAdminRole and carve admin tokens.\nCompute the first 20 hex characters of SHA256(\"cloudiam_ec2_runinstances_passrole_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_ec2_runinstances_passrole_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Lab 35의 Step 1 PassRole 공격 흐름을 확인하세요.",
+      "식별자 `cloudiam_ec2_runinstances_passrole_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review Step 1 of Lab 35.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_ec2_runinstances_passrole_v1\")."
+    ]
+  },
+  "hash": "8a5ae2e79631c2e4f50dd808a8b4eaba7f3f782b2dcaff876b44f5e9bee96c9e"
+},
+{
+  "id": "t2_cloudiam_lambda_create_passrole",
+  "tier": 2,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 115,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "lambda:CreateFunction을 통한 임의 코드 실행",
+    "en": "Lambda CreateFunction PassRole Execution"
+  },
+  "prompt": {
+    "ko": "lambda:CreateFunction 및 iam:PassRole 권한으로 고권한 실행 역할을 주입한 뒤 Invoke하여 플래그를 회수합니다.\n지정된 식별자 `cloudiam_lambda_create_passrole_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_lambda_create_passrole_v1\") 앞 20자리}`",
+    "en": "Deploy a serverless function with high-privilege execution roles using lambda:CreateFunction and iam:PassRole.\nCompute the first 20 hex characters of SHA256(\"cloudiam_lambda_create_passrole_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_lambda_create_passrole_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "람다 핸들러 환경변수 및 STS 세션을 확인하세요.",
+      "식별자 `cloudiam_lambda_create_passrole_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Invoke custom Lambda payloads to exfiltrate execution role credentials.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_lambda_create_passrole_v1\")."
+    ]
+  },
+  "hash": "fc589915fee5b70b245d3541022eea146c64e56b0da56266930fd03977a34de4"
+},
+{
+  "id": "t2_cloudiam_create_policy_version",
+  "tier": 2,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "iam:CreatePolicyVersion 기본 버전 변경 상승",
+    "en": "IAM CreatePolicyVersion Escalation"
+  },
+  "prompt": {
+    "ko": "iam:CreatePolicyVersion 권한으로 Action:* Resource:* 관리자 정책을 v2로 생성하고 set-as-default를 적용합니다.\n지정된 식별자 `cloudiam_create_policy_version_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_create_policy_version_v1\") 앞 20자리}`",
+    "en": "Escalate permissions by publishing a new default policy version containing full administrator privileges.\nCompute the first 20 hex characters of SHA256(\"cloudiam_create_policy_version_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_create_policy_version_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "set-as-default 플래그를 통한 즉시 활성화를 점검하세요.",
+      "식별자 `cloudiam_create_policy_version_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Pass --set-as-default to instantly activate escalated policy versions.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_create_policy_version_v1\")."
+    ]
+  },
+  "hash": "8e6c052be9fdf6acedb77581686c8d1a1f76ab2d975ca97166657292f80e5ba0"
+},
+{
+  "id": "t2_cloudiam_attach_user_policy",
+  "tier": 2,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 125,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "iam:AttachUserPolicy 관리자 정책 직접 연결",
+    "en": "IAM AttachUserPolicy Direct Escalation"
+  },
+  "prompt": {
+    "ko": "iam:AttachUserPolicy 권한을 가진 사용자가 자신의 계정에 AdministratorAccess 관리형 정책을 직접 첨부합니다.\n지정된 식별자 `cloudiam_attach_user_policy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_attach_user_policy_v1\") 앞 20자리}`",
+    "en": "Attach AWS managed AdministratorAccess policy directly to the caller using iam:AttachUserPolicy.\nCompute the first 20 hex characters of SHA256(\"cloudiam_attach_user_policy_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_attach_user_policy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "arn:aws:iam::aws:policy/AdministratorAccess ARN을 확인하세요.",
+      "식별자 `cloudiam_attach_user_policy_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Target arn:aws:iam::aws:policy/AdministratorAccess.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_attach_user_policy_v1\")."
+    ]
+  },
+  "hash": "beb303791971c8067541fa85df67904abebc9c853bd8bdf5c075878c0878b9b1"
+},
+{
+  "id": "t2_cloudiam_put_role_policy",
+  "tier": 2,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "iam:PutRolePolicy 역할 인라인 정책 주입",
+    "en": "IAM PutRolePolicy Inline Injection"
+  },
+  "prompt": {
+    "ko": "호출자가 맡을 수 있는 대상 역할에 iam:PutRolePolicy로 와일드카드 관리 권한 인라인 정책을 주입합니다.\n지정된 식별자 `cloudiam_put_role_policy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_put_role_policy_v1\") 앞 20자리}`",
+    "en": "Inject arbitrary inline policy documents into an existing role using iam:PutRolePolicy.\nCompute the first 20 hex characters of SHA256(\"cloudiam_put_role_policy_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_put_role_policy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "역할의 인라인 정책 문서에 Action:*을 추가하세요.",
+      "식별자 `cloudiam_put_role_policy_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inject wildcard permissions into target role inline policies.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_put_role_policy_v1\")."
+    ]
+  },
+  "hash": "35ca06cd7594b5462d826c7d268932eb8afee48c1b51a416799eccff2b9bbffc"
+},
+{
+  "id": "t2_cloudiam_update_assume_role_policy",
+  "tier": 2,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 135,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "역할 신뢰 관계 변조(UpdateAssumeRolePolicy)",
+    "en": "UpdateAssumeRolePolicy Backdoor"
+  },
+  "prompt": {
+    "ko": "iam:UpdateAssumeRolePolicy를 실행하여 고권한 역할의 신뢰 정책에 공격자의 IAM 사용자 ARN을 주입합니다.\n지정된 식별자 `cloudiam_update_assume_role_policy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_update_assume_role_policy_v1\") 앞 20자리}`",
+    "en": "Backdoor a high-privilege role by rewriting its trust policy to include attacker identity ARN via UpdateAssumeRolePolicy.\nCompute the first 20 hex characters of SHA256(\"cloudiam_update_assume_role_policy_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_update_assume_role_policy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "신뢰 관계에 Principal AWS: caller_arn을 추가하세요.",
+      "식별자 `cloudiam_update_assume_role_policy_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Add caller ARN to role trust relationship.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_update_assume_role_policy_v1\")."
+    ]
+  },
+  "hash": "6463511d4d827c737f6cbffe5225ec48aada5e8c7fb5e237d1be419ae73d70f0"
+},
+{
+  "id": "t2_cloudiam_glue_dev_endpoint",
+  "tier": 2,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "glue:CreateDevEndpoint SSH 키 주입 상승",
+    "en": "AWS Glue DevEndpoint PassRole Escalation"
+  },
+  "prompt": {
+    "ko": "glue:CreateDevEndpoint API와 iam:PassRole을 결합하여 고권한 Glue 서비스 인스턴스에 SSH 공용키를 주입합니다.\n지정된 식별자 `cloudiam_glue_dev_endpoint_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_glue_dev_endpoint_v1\") 앞 20자리}`",
+    "en": "Exploit glue:CreateDevEndpoint to pass an administrative service role and attach an attacker SSH public key.\nCompute the first 20 hex characters of SHA256(\"cloudiam_glue_dev_endpoint_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_glue_dev_endpoint_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "PublicKey 파라미터를 통한 원격 접속 획득을 점검하세요.",
+      "식별자 `cloudiam_glue_dev_endpoint_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect SSH PublicKey parameter injection in Glue DevEndpoints.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_glue_dev_endpoint_v1\")."
+    ]
+  },
+  "hash": "bcf661dfac5f651816633c3860fe63bf41b1b2727f9750fe76b10285cb8277e8"
+},
+{
+  "id": "t3_cloudiam_cross_account_wildcard_assume",
+  "tier": 3,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 175,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "와일드카드 Principal(*) 크로스 어카운트 장악",
+    "en": "Cross-Account Wildcard AssumeRole Takeover"
+  },
+  "prompt": {
+    "ko": "신뢰 정책 내 Principal: {'AWS': '*'} 설정 오류를 악용하여 외부 계정에서 감사 역할을 인수(AssumeRole)합니다.\n지정된 식별자 `cloudiam_cross_account_wildcard_assume_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_cross_account_wildcard_assume_v1\") 앞 20자리}`",
+    "en": "Abuse open wildcard Principals in cross-account trust policies to assume CrossAccountAuditRole from outside.\nCompute the first 20 hex characters of SHA256(\"cloudiam_cross_account_wildcard_assume_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_cross_account_wildcard_assume_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Lab 35의 Step 2 AssumeRole 공격 흐름을 확인하세요.",
+      "식별자 `cloudiam_cross_account_wildcard_assume_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review Step 2 of Lab 35.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_cross_account_wildcard_assume_v1\")."
+    ]
+  },
+  "hash": "3b103059c22b70326820d551ca3480fe941ec33620109ab31b864ae019f83a20"
+},
+{
+  "id": "t3_cloudiam_cloudtrail_stop_logging",
+  "tier": 3,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 185,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "cloudtrail:StopLogging 침해 흔적 은폐",
+    "en": "CloudTrail StopLogging Defense Evasion"
+  },
+  "prompt": {
+    "ko": "관리자 권한을 획득한 공격자가 감사 로깅을 중지(cloudtrail:StopLogging)하여 사후 포렌식을 방해하는 행위를 분석합니다.\n지정된 식별자 `cloudiam_cloudtrail_stop_logging_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_cloudtrail_stop_logging_v1\") 앞 20자리}`",
+    "en": "Analyze defense evasion tactics stopping CloudTrail logging streams via StopLogging and DeleteTrail APIs.\nCompute the first 20 hex characters of SHA256(\"cloudiam_cloudtrail_stop_logging_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_cloudtrail_stop_logging_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "SCP를 통해 CloudTrail 설정 수정을 금지해야 함을 확인하세요.",
+      "식별자 `cloudiam_cloudtrail_stop_logging_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Use SCPs to disallow StopLogging across all accounts.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_cloudtrail_stop_logging_v1\")."
+    ]
+  },
+  "hash": "d69b2c93ccf4ec6f1bc77b06e4b181b6d103040ff381ee9d7a8535d2f85d7b9d"
+},
+{
+  "id": "t3_cloudiam_kms_decrypt_secrets",
+  "tier": 3,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 195,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "kms:Decrypt 권한을 악용한 SSM 시크릿 탈취",
+    "en": "SSM Parameter Decryption via KMS"
+  },
+  "prompt": {
+    "ko": "SSM Parameter Store에 SecureString으로 암호화된 데이터베이스 자격증명을 kms:Decrypt 권한으로 복호화합니다.\n지정된 식별자 `cloudiam_kms_decrypt_secrets_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_kms_decrypt_secrets_v1\") 앞 20자리}`",
+    "en": "Extract and decrypt sensitive database passwords stored in AWS SSM Parameter Store using kms:Decrypt.\nCompute the first 20 hex characters of SHA256(\"cloudiam_kms_decrypt_secrets_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_kms_decrypt_secrets_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "WithDecryption=true 파라미터 요청 구조를 확인하세요.",
+      "식별자 `cloudiam_kms_decrypt_secrets_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Execute GetParameter with WithDecryption=true.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_kms_decrypt_secrets_v1\")."
+    ]
+  },
+  "hash": "5afd7a9814bde9001302ca2827856b83f51461c271ae7a5dbbe5e618bce409f1"
+},
+{
+  "id": "t3_cloudiam_session_policy_restriction",
+  "tier": 3,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "STS AssumeRole 세션 정책 다운그레이드",
+    "en": "STS Session Policy Downscoping"
+  },
+  "prompt": {
+    "ko": "AssumeRole 호출 시 인라인 세션 정책을 전달하여 역할이 가진 기존 권한을 최소 권한 세션으로 축소 격리합니다.\n지정된 식별자 `cloudiam_session_policy_restriction_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_session_policy_restriction_v1\") 앞 20자리}`",
+    "en": "Pass session policies during sts:AssumeRole calls to intersect and downscope maximum permissions.\nCompute the first 20 hex characters of SHA256(\"cloudiam_session_policy_restriction_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_session_policy_restriction_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "역할 정책과 세션 정책의 교집합(Intersection) 원리를 점검하세요.",
+      "식별자 `cloudiam_session_policy_restriction_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Effective permissions evaluate as the intersection of role and session policies.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_session_policy_restriction_v1\")."
+    ]
+  },
+  "hash": "73431e19dde09bd16a7402cbcf56efb67b37bba518bb37a675ac81b0868ec4ef"
+},
+{
+  "id": "t3_cloudiam_permission_boundary_bypass",
+  "tier": 3,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 205,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "권한 경계 미부착 신규 사용자 생성 우회",
+    "en": "IAM Permission Boundary Circumvention"
+  },
+  "prompt": {
+    "ko": "iam:CreateUser에 permissions-boundary 강제 조건문이 결여되었을 때 경계 없는 관리자 계정을 생성하는 기법을 분석합니다.\n지정된 식별자 `cloudiam_permission_boundary_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_permission_boundary_bypass_v1\") 앞 20자리}`",
+    "en": "Circumvent permission boundaries if CreateUser lacks the iam:PermissionsBoundary condition key.\nCompute the first 20 hex characters of SHA256(\"cloudiam_permission_boundary_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_permission_boundary_bypass_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "iam:PermissionsBoundary 조건문 누락 여부를 확인하세요.",
+      "식별자 `cloudiam_permission_boundary_bypass_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Check for missing PermissionsBoundary policy condition checks.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_permission_boundary_bypass_v1\")."
+    ]
+  },
+  "hash": "cc9b9f5e1a98470c17005f89470f01f54c08c74ff997c27345276b4547833509"
+},
+{
+  "id": "t3_cloudiam_cloudformation_create_stack",
+  "tier": 3,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 215,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CloudFormation CAPABILITY_IAM 스택 배포",
+    "en": "CloudFormation PassRole Stack Escalation"
+  },
+  "prompt": {
+    "ko": "cloudformation:CreateStack 실행 시 CAPABILITY_IAM을 선언하여 스택 템플릿 내에 관리자 IAM 역할을 생성합니다.\n지정된 식별자 `cloudiam_cloudformation_create_stack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_cloudformation_create_stack_v1\") 앞 20자리}`",
+    "en": "Escalate permissions by orchestrating new administrator roles through CloudFormation CAPABILITY_IAM stacks.\nCompute the first 20 hex characters of SHA256(\"cloudiam_cloudformation_create_stack_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_cloudformation_create_stack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "템플릿 내 AWS::IAM::Role 리소스 정의를 점검하세요.",
+      "식별자 `cloudiam_cloudformation_create_stack_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Inspect AWS::IAM::Role declarations in CloudFormation templates.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_cloudformation_create_stack_v1\")."
+    ]
+  },
+  "hash": "65cbb49a51351b9e31e387e8b929a4f850292c36edd607b0be5e56848c5700dd"
+},
+{
+  "id": "t3_cloudiam_codebuild_start_build",
+  "tier": 3,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 220,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CodeBuild 빌드 환경변수 자격증명 추출",
+    "en": "CodeBuild Environment Variable Key Carving"
+  },
+  "prompt": {
+    "ko": "codebuild:StartBuild 권한으로 빌드 스펙(buildspec) 오버라이드를 전달하여 빌드 러너의 IAM 자격증명을 C2로 유출합니다.\n지정된 식별자 `cloudiam_codebuild_start_build_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_codebuild_start_build_v1\") 앞 20자리}`",
+    "en": "Override CodeBuild buildspec commands to exfiltrate build-runner IAM role credentials to external listeners.\nCompute the first 20 hex characters of SHA256(\"cloudiam_codebuild_start_build_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_codebuild_start_build_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "buildspecOverride 파라미터 주입을 확인하세요.",
+      "식별자 `cloudiam_codebuild_start_build_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Review buildspecOverride parameter execution.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_codebuild_start_build_v1\")."
+    ]
+  },
+  "hash": "df219f64828e519078b5ae96d3c750944f3d3d9474b059c016a21d12b122d869"
+},
+{
+  "id": "t4_cloudiam_capstone_full_pwn",
+  "tier": 4,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 300,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "PassRole 및 AssumeRole 종합 권한 상승 캡스톤",
+    "en": "Full IAM Escalation & Lateral Movement Capstone"
+  },
+  "prompt": {
+    "ko": "저권한 사용자 침투, EC2 PassRole 권한 상승, 크로스 어카운트 AssumeRole 횡적이동 및 거버넌스 하드닝을 완성합니다.\n지정된 식별자 `cloudiam_capstone_full_pwn_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_capstone_full_pwn_v1\") 앞 20자리}`",
+    "en": "Synthesize end-to-end cloud IAM privilege escalation, cross-account lateral movement, and SCP governance.\nCompute the first 20 hex characters of SHA256(\"cloudiam_capstone_full_pwn_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_capstone_full_pwn_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Lab 35의 3단계 전체 공격 및 하드닝 과정을 완료하세요.",
+      "식별자 `cloudiam_capstone_full_pwn_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Complete all 3 stages of Lab 35.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_capstone_full_pwn_v1\")."
+    ]
+  },
+  "hash": "a9363f6a83f42f47be9baa0380839af743edd80e2c076c286d10cc28511ff26d"
+},
+{
+  "id": "t4_cloudiam_org_scp_deny_guardrails",
+  "tier": 4,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 320,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "AWS Organizations SCP 중앙 Deny 가드레일",
+    "en": "Organization SCP Multi-Account Governance"
+  },
+  "prompt": {
+    "ko": "조직 최상위 루트 또는 OU 수준에서 민감 IAM 수정 및 비인가 PassRole을 원천 차단하는 SCP 거버넌스 아키텍처를 설계합니다.\n지정된 식별자 `cloudiam_org_scp_deny_guardrails_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_org_scp_deny_guardrails_v1\") 앞 20자리}`",
+    "en": "Architect AWS Organizations Service Control Policies (SCPs) establishing explicit DENY perimeters across all member accounts.\nCompute the first 20 hex characters of SHA256(\"cloudiam_org_scp_deny_guardrails_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_org_scp_deny_guardrails_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "SCP의 계정 관리자 통제 무력화 방지 기능을 확인하세요.",
+      "식별자 `cloudiam_org_scp_deny_guardrails_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "SCPs constrain even account root users.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_org_scp_deny_guardrails_v1\")."
+    ]
+  },
+  "hash": "b7ce446ffb33b6d01b8124fc296e5f869de4e9a7c393757c4892b73ce3dd0eeb"
+},
+{
+  "id": "t4_cloudiam_permission_boundary_enforcement",
+  "tier": 4,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 330,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "모든 IAM 주체 권한 경계(Boundary) 강제",
+    "en": "Enforcing Organization Permission Boundaries"
+  },
+  "prompt": {
+    "ko": "개발자가 역할을 생성할 때 승인된 권한 경계 정책을 반드시 첨부하도록 강제하여 권한 확장을 원천 봉쇄합니다.\n지정된 식별자 `cloudiam_permission_boundary_enforcement_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_permission_boundary_enforcement_v1\") 앞 20자리}`",
+    "en": "Mandate IAM Permission Boundaries on all role creations to ensure delegated developers cannot elevate beyond scope.\nCompute the first 20 hex characters of SHA256(\"cloudiam_permission_boundary_enforcement_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_permission_boundary_enforcement_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "iam:PermissionsBoundary 조건 키 필수 적용을 검토하세요.",
+      "식별자 `cloudiam_permission_boundary_enforcement_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Enforce iam:PermissionsBoundary conditions on IAM delegation.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_permission_boundary_enforcement_v1\")."
+    ]
+  },
+  "hash": "49753a7094d1027e4e25187fac137e04662af3a81a70c1cdf1917777603f7e77"
+},
+{
+  "id": "t4_cloudiam_abac_tag_based_passrole",
+  "tier": 4,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 340,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "태그 기반 속성 접근 제어(ABAC) PassRole 제약",
+    "en": "ABAC Tag-Scoped PassRole Security"
+  },
+  "prompt": {
+    "ko": "iam:PassedToService 태그 및 aws:ResourceTag 조건을 결합하여 승인된 애플리케이션 역할만 전달하도록 제한합니다.\n지정된 식별자 `cloudiam_abac_tag_based_passrole_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_abac_tag_based_passrole_v1\") 앞 20자리}`",
+    "en": "Constrain iam:PassRole using Attribute-Based Access Control (ABAC) matching aws:ResourceTag project metadata.\nCompute the first 20 hex characters of SHA256(\"cloudiam_abac_tag_based_passrole_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_abac_tag_based_passrole_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "태그 불일치 시 PassRole 거부 조건을 분석하세요.",
+      "식별자 `cloudiam_abac_tag_based_passrole_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Validate ABAC tags preventing unauthorized cross-project role passing.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_abac_tag_based_passrole_v1\")."
+    ]
+  },
+  "hash": "29da7c9435210dbc277148186ff53c41472d4bd9648f970eedcd404e460b4dfc"
+},
+{
+  "id": "t4_cloudiam_guardduty_iam_threat_detection",
+  "tier": 4,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 350,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "GuardDuty 실시간 IAM 이상 탐지 자동화",
+    "en": "Automated GuardDuty IAM Threat Response"
+  },
+  "prompt": {
+    "ko": "PrivilegeEscalation:IAMUser/AnomalousPolicyModification 발견 시 해당 키를 즉각 비활성화하는 자동화 람다를 배포합니다.\n지정된 식별자 `cloudiam_guardduty_iam_threat_detection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_guardduty_iam_threat_detection_v1\") 앞 20자리}`",
+    "en": "Deploy automated event-driven incident response revoking exposed credentials upon GuardDuty IAM finding generation.\nCompute the first 20 hex characters of SHA256(\"cloudiam_guardduty_iam_threat_detection_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_guardduty_iam_threat_detection_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "EventBridge와 결합된 UpdateAccessKey(Inactive) 자동화 로직을 확인하세요.",
+      "식별자 `cloudiam_guardduty_iam_threat_detection_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Automate AccessKey deactivation via EventBridge rules.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_guardduty_iam_threat_detection_v1\")."
+    ]
+  },
+  "hash": "e67211bbdaf5d51671edae4e5341636b7049acafcf865230d8b383e5afeffda0"
+},
+{
+  "id": "t4_cloudiam_iam_access_analyzer_audit",
+  "tier": 4,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 360,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "IAM Access Analyzer 기반 미사용 권한 회수",
+    "en": "Automated IAM Access Analyzer Least Privilege"
+  },
+  "prompt": {
+    "ko": "CloudTrail 실행 이력을 바탕으로 실제로 사용된 서비스 액션만 남기고 불필요한 과다 권한을 자동 회수하는 체계를 구축합니다.\n지정된 식별자 `cloudiam_iam_access_analyzer_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_iam_access_analyzer_audit_v1\") 앞 20자리}`",
+    "en": "Generate least-privilege fine-grained IAM policies from observed CloudTrail telemetry via IAM Access Analyzer.\nCompute the first 20 hex characters of SHA256(\"cloudiam_iam_access_analyzer_audit_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_iam_access_analyzer_audit_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Access Analyzer 정책 생성 기능을 점검하세요.",
+      "식별자 `cloudiam_iam_access_analyzer_audit_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Generate least-privilege policies from CloudTrail logs.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_iam_access_analyzer_audit_v1\")."
+    ]
+  },
+  "hash": "638186c0b73e8aa00538a8dcb9855c3c42f8cb2fbbb2a763c7128c012fba5271"
+},
+{
+  "id": "t4_cloudiam_zero_trust_temporary_credentials",
+  "tier": 4,
+  "cat": "cloudiam",
+  "track": "cloudiam",
+  "points": 380,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "정적 장기 자격증명 완전 폐기 아키텍처",
+    "en": "Zero Standing Privileges IAM Architecture"
+  },
+  "prompt": {
+    "ko": "정적 IAM 사용자 액세스 키를 전면 퇴출하고 IAM Identity Center(SSO) 및 단기 임시 자격증명(STS)만을 허용하는 제로스탠딩 권한 체계를 설계합니다.\n지정된 식별자 `cloudiam_zero_trust_temporary_credentials_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"cloudiam_zero_trust_temporary_credentials_v1\") 앞 20자리}`",
+    "en": "Eliminate static long-term IAM access keys across the enterprise in favor of Zero Standing Privileges (ZSP) and temporary STS sessions.\nCompute the first 20 hex characters of SHA256(\"cloudiam_zero_trust_temporary_credentials_v1\").\n\nFormat: `FLAG{SHA256(\"cloudiam_zero_trust_temporary_credentials_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "정적 액세스 키 비활성화 및 IAM Identity Center 도입을 검토하세요.",
+      "식별자 `cloudiam_zero_trust_temporary_credentials_v1`의 해시 앞 20자리를 제출하세요."
+    ],
+    "en": [
+      "Transition to AWS IAM Identity Center and short-lived STS credentials.",
+      "Extract first 20 hex chars of SHA256(\"cloudiam_zero_trust_temporary_credentials_v1\")."
+    ]
+  },
+  "hash": "fbb7dedfbed3be5e0dc95de3cd523398e4cd2f2caf881af8ebaa9ba6e11a61ec"
 }
 ];
 

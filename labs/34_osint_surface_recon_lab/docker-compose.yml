@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  osint-recon-lab:
+    build: .
+    container_name: vhack-lab34-osint
+    ports:
+      - "8034:8034"
+    environment:
+      - PORT=8034
+    restart: unless-stopped
