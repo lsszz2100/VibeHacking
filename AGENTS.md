@@ -31,7 +31,7 @@
     21. `23_Database_Hacking/07_enterprise_rdbms_privilege_escalation_and_injection_deepdive.md` (엔터프라이즈 RDBMS 권한 상승 & 인젝션 심층 분석: Oracle AUTHID DEFINER 권한 상승, MSSQL xp_cmdshell OLE 자동화 RCE, MySQL UDF 악성 공유 라이브러리 로딩, PostgreSQL CVE-2019-9193, DBShield FGA 세분화 감사 및 secure_file_priv 하드닝)
   - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `docs/vendor/` 오프라인 자산화 완비), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 36개 실전 랩 완비** (`labs/01` ~ `labs/36`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 37개 실전 랩 완비** (`labs/01` ~ `labs/37`)
   - **Lab 19 (DroidShield)**: 안드로이드 리버싱 & Frida 후킹 랩 (루팅 탐지 우회, SSL Pinning 패치, Native 심볼 후킹, JNI Crypto 암호문 복호화, 포트: `8019`)
   - **Lab 20 (WinAppSec)**: 윈도우 바이너리 & 커널 드라이버 랩 (SEH 스택 오버라이트, SafeSEH/DEP/ASLR 회피, UAC 바이패스, HEVD IOCTL 임의 메모리 쓰기, Token Stealing 권한상승, 포트: `8020`)
   - **Lab 21 (CarCanLab)**: 차량 보안 & CAN Bus 실전 랩 (CAN 버스 패킷 스니핑/주입, 계기판 속도 스푸핑, UDS SecurityAccess 시드키 인증 우회, ECU hardReset DoS, 포트: `8021`)
@@ -50,14 +50,15 @@
   - **Lab 34 (OSINTHunter)**: OSINT 서피스 정찰 & 섀도우 IT 헌터 랩 (WHOIS/DNS/crt.sh 정보 수집, Shodan/Censys 배너 및 취약 포트 정찰, Dangling S3 버킷 및 서브도메인 테이크오버 탐지, 노출된 Spring Actuator 환경변수/Git 리포지토리/Secret 카빙, 포트: `8034`)
   - **Lab 35 (CloudIAMGuard)**: 클라우드 IAM 권한 상승 & 조직 거버넌스 랩 (IAM 와일드카드 정책 및 PassRole 권한상승, AssumeRole 교차 계정 신뢰 악용 Confused Deputy 공격, IMDSv1 vs IMDSv2 토큰 방어, SCP 서비스 제어 정책 및 최소 권한 롤 하드닝, 포트: `8035`)
   - **Lab 36 (DBShield)**: 엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩 (MySQL UDF RCE 방지, MSSQL xp_cmdshell 비활성화, Oracle AUTHID DEFINER 권한 상승 탐지, PostgreSQL CVE-2019-9193, DBShield FGA 세분화 감사 및 secure_file_priv 하드닝, 포트: `8036`)
-- **브라우저 & 터미널 워게임**: **총 50개 트랙 / 1,750문제** 달성 (`wargame/index.html`, HUD `0/1750`, `vhack play`)
-  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 50개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`) 자동 저장 완비
+  - **Lab 37 (BLEShield)**: 블루투스 저에너지 & SDR 무선 보안 실전 랩 (BLE GATT 계층 모델 정찰, 비인가 특성 쓰기, SDR RF OOK/ASK 스펙트럼 복조, 고정 Nonce Replay 공격 및 암호학적 하드닝, 포트: `8037`)
+- **브라우저 & 터미널 워게임**: **총 51개 트랙 / 1,785문제** 달성 (`wargame/index.html`, HUD `0/1785`, `vhack play`)
+  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 51개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`) 자동 저장 완비
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
-  - **워게임 7대 인터랙티브 보안 플레이그라운드**: 차량 CAN 버스 주입기, SQLi AST 구문트리, AD CS X.509/Kerberos 인스펙터, JWT none 검증기, KISA 기반시설 점검기, OSINT 정찰 레이더, **DB RBAC & UDF Shield** (`playground`, `sim`, `can`, `sqli`, `adcs`, `jwt`, `kisa`, `osint`, `dbsec`, `dbshield`, `udf` 명령어 및 🔬 HUD 버튼)
-  - **신규 50번째 트랙 완비**:
-    - `dbsec` 🏛️ 엔터프라이즈 데이터베이스 보안 & RDBMS 권한상승 (35개 문제: Tier 0~4)
-  - **4대 엄격 검증 스위트 100% All Green**: `verify.js`, `audit.js --strict` (0결함), `leakscan.js` (0유출), `solve-derivable.js` (783/1750 통과)
+  - **워게임 7대 인터랙티브 보안 플레이그라운드**: 차량 CAN 버스 주입기, SQLi AST 구문트리, AD CS X.509/Kerberos 인스펙터, JWT none 검증기, KISA 기반시설 점검기, OSINT 정찰 레이더, DB RBAC & UDF Shield
+  - **신규 51번째 트랙 완비**:
+    - `blehack` 📡 블루투스 저에너지 & SDR RF 해킹 (35개 문제: Tier 0~4)
+  - **4대 엄격 검증 스위트 100% All Green**: `verify.js`, `audit.js --strict` (0결함), `leakscan.js` (0유출), `solve-derivable.js` (818/1785 통과)
 - **통합 웹 관제 대시보드 (Portal)**:
   - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(36개 랩 시작/중지/재시작), 12대 카테고리 필터링 탭 바 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 자원 모니터링 (`vhack portal [--port 8800]`)
 - **실습 랩 자동 익스플로잇 솔버 (Solvers)**:
