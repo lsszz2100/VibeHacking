@@ -62,6 +62,11 @@ docker-compose --version
 | 30 | [바이너리 분석 & 고급 난독화 해제 랩](./30_ghidra_deobfuscation_lab/) | Ghidra Headless 심볼 복원, CFF 상태 머신 디플래트닝, 불투명 술어 제거, 안티 탬퍼 우회 & 패칭 | ★★★★ | [04장 리버스 엔지니어링](../04_Reverse_Engineering/07_ghidra_advanced_deobfuscation_deepdive.md) | `ghidra` / `reversing` |
 | 31 | [OAuth 2.0 & OIDC SSO 취약점 실전 랩](./31_oauth_sso_lab/) | OAuth 2.0 Redirect URI 우회, PKCE S256 다운그레이드/생략, JWT RS256/HS256 Key Confusion 및 SSO 계정 탈취 | ★★★★ | [05장 웹 해킹](../05_Web_Hacking/07_advanced_oauth2_oidc_and_sso_exploitation_deepdive.md) | `oauth` / `web` |
 | 32 | [BGP 라우팅 하이재킹 & RPKI ROA 실전 랩](./32_bgp_routeguard_lab/) | BGP-4 Exact Prefix 하이재킹, Sub-prefix 최장 일치(LPM) 가로채기, AS-Path 위조 & RPKI ROA 유효성 검증 | ★★★★ | [32장 네트워크 장비 해킹](../32_Network_Device_Hacking/08_bgp_route_hijacking_and_rpki_deepdive.md) | `bgp` / `netinfra` |
+| 33 | [KISA 주요정보통신기반시설 취약점 평가 & 하드닝 랩](./33_kisa_infrastructure_audit_lab/) | U-01~U-72 점검 가이드, 계정 보안, 취약 xinetd 비활성화, eBPF 런타임 감사 | ★★★★ | [41장 정보보안 자격증](../41_Korean_Certifications/08_kisa_infrastructure_vulnerability_assessment_deepdive.md) | `kisa` / `compliance` |
+| 34 | [OSINT 공격 표면 & 섀도우 IT 헌터 랩](./34_osint_surface_recon_lab/) | Shodan/Censys 배너 분석, Dangling S3 탈취, Actuator/Git 노출 Secret 정찰 | ★★★★ | [33장 OSINT](../33_OSINT_Social_Engineering/07_shodan_and_attack_surface_recon_deepdive.md) | `osintrecon` / `osint` |
+| 35 | [클라우드 IAM 권한상승 & 거버넌스 랩](./35_cloud_iam_privilege_escalation_lab/) | IAM PassRole 권한상승, AssumeRole 크로스 어카운트 악용, IMDSv2 방어, SCP 가드레일 | ★★★★ | [14장 클라우드 보안](../14_Cloud_Security/07_aws_iam_privilege_escalation_deepdive.md) | `cloudiam` / `cloud` |
+| 36 | [엔터프라이즈 데이터베이스 보안 랩](./36_enterprise_database_security_lab/) | 2차 SQLi 메타데이터 탈취, MySQL UDF 라이브러리 인젝션 RCE, FGA 세밀 감사 & 하드닝 | ★★★★ | [23장 데이터베이스 해킹](../23_Database_Hacking/07_enterprise_rdbms_privilege_escalation_and_injection_deepdive.md) | `dbsec` / `database` |
+| 37 | [블루투스 저에너지 & SDR 무선 보안 랩](./37_bluetooth_sdr_security_lab/) | GATT 프로파일 정찰, 비인가 Characteristic 쓰기, 레거시 Just Works TK 크래킹, LESC ECDH 무선 하드닝 | ★★★★ | [71장 블루투스 해킹](../71_Bluetooth_RF_Hacking/README.md), [15장 WiFi 해킹](../15_WiFi_Hacking/README.md) | `blehack` / `wireless` |
 
 ---
 

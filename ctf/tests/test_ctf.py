@@ -98,6 +98,10 @@ def test_get_challenges(client):
     assert "LAB36_INJECTION" in ids
     assert "LAB36_UDF" in ids
     assert "LAB36_HARDEN" in ids
+    assert "LAB37_RECON" in ids
+    assert "LAB37_WRITE" in ids
+    assert "LAB37_REPLAY" in ids
+    assert "LAB37_HARDEN" in ids
 
     # Check hints_count field
     fuzz_chal = next(c for c in data["challenges"] if c["id"] == "LAB24_FUZZ")

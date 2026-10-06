@@ -816,6 +816,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "파라미터화 쿼리 강제, secure_file_priv=NULL, 최소 권한 분리 및 FGA 세밀 감사 정책을 일괄 적용하세요."}
                 ],
             },
+            "LAB37_RECON": {
+                "id": "LAB37_RECON",
+                "title": "BLEShield: BLE Advertising Sniffing & GATT Handle Recon",
+                "category": "iot",
+                "initial_points": 300,
+                "flag": "FLAG{BLE_GATT_SERVICE_RECON_HANDLE_EXPOSED_8841}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "스마트 도어락의 BLE 브로드캐스트 패킷을 캡처하고 0xFFE0 서비스의 0x0014 핸들을 정찰하세요."}
+                ],
+            },
+            "LAB37_WRITE": {
+                "id": "LAB37_WRITE",
+                "title": "BLEShield: Unauthenticated GATT Characteristic Write (Doorlock Pwn)",
+                "category": "iot",
+                "initial_points": 400,
+                "flag": "FLAG{BLE_UNAUTH_GATT_WRITE_DOORLOCK_OPENED_7732}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "권한 검사가 누락된 Handle 0x0014에 01 (UNLOCK) 커맨드를 직접 전송하세요."}
+                ],
+            },
+            "LAB37_REPLAY": {
+                "id": "LAB37_REPLAY",
+                "title": "BLEShield: Legacy Just Works TK Cracking & Token Replay",
+                "category": "iot",
+                "initial_points": 450,
+                "flag": "FLAG{BLE_LEGACY_JUSTWORKS_REPLAY_MITM_CRACKED_5519}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "레거시 Just Works의 기본 임시 키 TK=000000을 크래킹하고 스니핑된 인증 토큰을 재생하세요."}
+                ],
+            },
+            "LAB37_HARDEN": {
+                "id": "LAB37_HARDEN",
+                "title": "BLEShield: LE Secure Connections (ECDH) & Anti-Replay Hardening",
+                "category": "iot",
+                "initial_points": 500,
+                "flag": "FLAG{BLE_LESC_ECDH_SECURE_CONNECTIONS_HARDENED_9921}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "LESC P-256 ECDH 비대칭 키 교환, 인증된 쓰기 강제, 단조 카운터 기반 Anti-Replay를 활성화하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -849,6 +897,7 @@ class CTFState:
             ["LAB34_SHODAN", "LAB34_DATABASE", "LAB34_GIT"],
             ["LAB35_PASSROLE", "LAB35_ASSUME", "LAB35_SCP"],
             ["LAB36_INJECTION", "LAB36_UDF", "LAB36_HARDEN"],
+            ["LAB37_RECON", "LAB37_WRITE", "LAB37_REPLAY", "LAB37_HARDEN"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

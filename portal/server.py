@@ -90,7 +90,7 @@ LAB_CATEGORIES: Dict[str, str] = {
     "21": "automotive", "22": "web", "23": "dfir", "24": "pwn", "25": "ai",
     "26": "malware", "27": "wireless", "28": "network", "29": "ad", "30": "reversing",
     "31": "web", "32": "network", "33": "compliance", "34": "osint", "35": "cloud",
-    "36": "database",
+    "36": "database", "37": "wireless",
 }
 
 
@@ -105,7 +105,7 @@ class BatchLabRequest(BaseModel):
 
 @app.get("/api/labs/categories")
 def get_lab_categories():
-    """36개 랩 카테고리별 통계 및 분포 반환"""
+    """37개 랩 카테고리별 통계 및 분포 반환"""
     stats: Dict[str, dict] = {}
     for lid, meta in LABS.items():
         cat = get_lab_category(lid)

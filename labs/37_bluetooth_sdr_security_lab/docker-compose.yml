@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ble-security-lab:
+    build: .
+    container_name: vhack-lab37-ble
+    ports:
+      - "127.0.0.1:8037:8037"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

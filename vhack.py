@@ -438,6 +438,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [23, 5, 74],
     },
+    "37": {
+        "name": "블루투스 저에너지 & SDR 무선 보안 실전 랩",
+        "dir":  "37_bluetooth_sdr_security_lab",
+        "desc": "BLEShield: GATT 프로파일 정찰 · 비인가 특성 쓰기 도어락 언락 · 레거시 Just Works TK 크래킹 및 Replay · LESC ECDH 무선 하드닝",
+        "url":  "웹 콘솔 & BLE 보안 대시보드: http://localhost:8037",
+        "difficulty": "★★★★",
+        "related": [71, 15, 48],
+    },
 }
 
 
@@ -1448,6 +1456,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8034, "Lab 34 (OsintHunterLab OSINT Surface Recon Lab)"),
         (8035, "Lab 35 (CloudPwnLab AWS Cloud IAM Lab)"),
         (8036, "Lab 36 (DBShield Enterprise Database Security Lab)"),
+        (8037, "Lab 37 (BLEShield Bluetooth LE & SDR Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

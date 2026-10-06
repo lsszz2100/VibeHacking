@@ -109,6 +109,7 @@ start_lab() {
         "34_osint_surface_recon_lab"
         "35_cloud_iam_privilege_escalation_lab"
         "36_enterprise_database_security_lab"
+        "37_bluetooth_sdr_security_lab"
     )
 
     local lab_names=(
@@ -149,6 +150,7 @@ start_lab() {
         "OSINT 서피스 정찰 & 섀도우 IT 헌터 랩"
         "클라우드 IAM 권한 상승 & 조직 거버넌스 랩"
         "엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩"
+        "블루투스 저에너지 & SDR 무선 보안 실전 랩"
     )
 
     local lab_ports=(
@@ -189,10 +191,11 @@ start_lab() {
         "웹 콘솔 & OSINT 정찰 패널: http://localhost:8034"
         "웹 콘솔 & Cloud IAM 대시보드: http://localhost:8035"
         "웹 콘솔 & DB 보안 대시보드: http://localhost:8036"
+        "웹 콘솔 & BLE 보안 대시보드: http://localhost:8037"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 36 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~36 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 37 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~37 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -351,6 +354,11 @@ case "$ARG" in
     30)   start_lab 30 ;;
     31)   start_lab 31 ;;
     32)   start_lab 32 ;;
+    33)   start_lab 33 ;;
+    34)   start_lab 34 ;;
+    35)   start_lab 35 ;;
+    36)   start_lab 36 ;;
+    37)   start_lab 37 ;;
 
     all|ALL) start_all ;;
     ps|status) print_summary ;;

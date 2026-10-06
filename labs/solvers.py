@@ -833,6 +833,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Enterprise DB Hardened! FGA & Prepared Statements Active -> FLAG{DB_AUDIT_LOG_TDE_LEAST_PRIVILEGE_SECURED_3914}"
             }
         ]
+    },
+    "37": {
+        "title": "블루투스 저에너지 & SDR 무선 보안 실전 랩 (BLEShield)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "BLE 어드버타이징 패킷 스니핑 & GATT 프로파일 정찰",
+                "target": "GET /api/ble/services?mac=AA:BB:CC:11:22:33",
+                "poc_explanation": "BLE 브로드캐스트 패킷을 캡처하고 GATT Primary Service를 정찰하여 액추에이터 제어 Characteristic Handle(0x0014)과 인증 핸들(0x0016)을 식별합니다.",
+                "exploit_payload": "curl -s http://localhost:8037/api/ble/services?mac=AA:BB:CC:11:22:33",
+                "defense": "불필요한 디버그 서비스/특성 숨김, 비가시 모드(Non-discoverable) 전환 및 UUID 난독화 적용.",
+                "sample_output": "📡 BLE GATT Recon Success! Handle 0x0014 discovered -> FLAG{BLE_GATT_SERVICE_RECON_HANDLE_EXPOSED_8841}"
+            },
+            {
+                "step": 2,
+                "name": "비인가 Characteristic 쓰기를 통한 도어락 언락",
+                "target": "POST /api/ble/write (handle: 0x0014, value: 01)",
+                "poc_explanation": "도어락 제어 특성에 적절한 쓰기 인증/암호화 권한 비트가 누락되어 비인가 공격자가 UNLOCK 명령을 직접 주입하여 문을 개방합니다.",
+                "exploit_payload": '{"mac": "AA:BB:CC:11:22:33", "handle": "0x0014", "value": "01"}',
+                "defense": "GATT Characteristic 속성에 Authenticated Write 및 암호화 필수 속성(Encryption Required) 비트 강제.",
+                "sample_output": "🔓 Doorlock Unlocked! Actuator command triggered -> FLAG{BLE_UNAUTH_GATT_WRITE_DOORLOCK_OPENED_7732}"
+            },
+            {
+                "step": 3,
+                "name": "레거시 Just Works TK 크래킹 및 인증 토큰 Replay 공격",
+                "target": "POST /api/ble/crack_pairing & POST /api/ble/replay_auth",
+                "poc_explanation": "레거시 Just Works 페어링의 TK=0 취약점을 악용하여 STK를 오프라인 역산하고 고정 Nonce로 보호된 챌린지 인증 토큰을 재생하여 시스템을 우회합니다.",
+                "exploit_payload": '{"mac": "AA:BB:CC:11:22:33", "tk_guess": "000000"} -> {"auth_token": "BLE_AUTH_REPLAY_TKN_9942FA"}',
+                "defense": "LE Secure Connections (P-256 ECDH) 강제 전환, 단조 증가 시퀀스 카운터 및 타임스탬프 기반 Anti-Replay 토큰 검증.",
+                "sample_output": "🎯 TK Cracked & Replay Accepted! Token replay success -> FLAG{BLE_LEGACY_JUSTWORKS_REPLAY_MITM_CRACKED_5519}"
+            },
+            {
+                "step": 4,
+                "name": "LE Secure Connections (ECDH) 및 보안 속성 하드닝",
+                "target": "POST /api/ble/harden (enforce_lesc_ecdh, require_gatt_auth, enable_anti_replay)",
+                "poc_explanation": "ECDH 비대칭 키 교환 및 인증된 쓰기 강제, Anti-Replay 방어를 일괄 활성화하여 도청, 비인가 조작, 재전송 공격을 원천 차단합니다.",
+                "exploit_payload": '{"enforce_lesc_ecdh": true, "require_gatt_auth": true, "enable_anti_replay": true}',
+                "defense": "BLE Core Specification 5.x 준수, LESC Numeric Comparison 강제 및 보안 부트/펌웨어 무결성 검증.",
+                "sample_output": "🛡️ BLE Security Hardened! LESC ECDH & Anti-Replay Active -> FLAG{BLE_LESC_ECDH_SECURE_CONNECTIONS_HARDENED_9921}"
+            }
+        ]
     }
 }
 

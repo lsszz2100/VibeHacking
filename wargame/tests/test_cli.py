@@ -26,8 +26,8 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 50
-    assert len(challenges) == 1750
+    assert len(tracks) == 51
+    assert len(challenges) == 1785
     assert any(t["id"] == "carcan" for t in tracks)
     assert any(t["id"] == "apisec" for t in tracks)
     assert any(t["id"] == "sochunt" for t in tracks)
@@ -41,6 +41,7 @@ def test_load_wargame_db():
     assert any(t["id"] == "kisa" for t in tracks)
     assert any(t["id"] == "osintrecon" for t in tracks)
     assert any(t["id"] == "cloudiam" for t in tracks)
+    assert any(t["id"] == "blehack" for t in tracks)
 
 
 def test_verify_flag_logic():
@@ -73,6 +74,13 @@ def test_verify_flag_logic():
     h20_adcs = hashlib.sha256(ident_adcs.encode("utf-8")).hexdigest()[:20]
     flag_adcs = f"FLAG{{{h20_adcs}}}"
     assert verify_flag(ch_adcs, flag_adcs) is True
+
+    # Test blehack first challenge
+    ch_ble = next(c for c in challenges if c["id"] == "t0_blehack_gatt_architecture")
+    ident_ble = "blehack_gatt_architecture_profile_v1"
+    h20_ble = hashlib.sha256(ident_ble.encode("utf-8")).hexdigest()[:20]
+    flag_ble = f"FLAG{{{h20_ble}}}"
+    assert verify_flag(ch_ble, flag_ble) is True
 
     assert verify_flag(ch, "") is False
 

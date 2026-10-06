@@ -452,6 +452,14 @@ const TRACKS = [
     "en": "Enterprise DB Security & Hardening",
     "desc_ko": "2차 SQLi·MySQL UDF 바이너리 인젝션·Oracle PL/SQL 권한상승·OOB DNS 유출·FGA/TDE 다계층 DB 하드닝.",
     "desc_en": "Second-order SQLi, MySQL UDF binary injection, Oracle PL/SQL privilege escalation, OOB DNS exfiltration, and FGA/TDE hardening."
+  },
+  {
+    "id": "blehack",
+    "icon": "📡",
+    "ko": "블루투스 저에너지 & SDR RF 해킹",
+    "en": "Bluetooth LE & SDR RF Security",
+    "desc_ko": "BLE GATT 프로파일 정찰·비인가 Characteristic 쓰기·레거시 Just Works 스니핑·SDR OOK/FSK 디코딩·LESC ECDH 및 롤링 코드 하드닝.",
+    "desc_en": "BLE GATT profile recon, unauthenticated characteristic writes, legacy Just Works sniffing, SDR OOK/FSK decoding, LESC ECDH, and rolling code hardening."
   }
 ];
 
@@ -49509,6 +49517,985 @@ const CHALLENGES = [
     ]
   },
   "hash": "5192190bf84f3f0474d3e799fad64a3c3d2ac341b1695d0685d63c7a6cb51430"
+},
+{
+  "id": "t0_blehack_gatt_architecture",
+  "tier": 0,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BLE GATT 계층 구조 및 서비스·특성 모델",
+    "en": "BLE GATT Architecture and Service-Characteristic Hierarchy"
+  },
+  "prompt": {
+    "ko": "BLE Generic Attribute Profile(GATT)의 Profile, Service, Characteristic, Descriptor 4단계 계층 구조와 ATT 프로토콜 속성 테이블을 분석합니다.\n지정된 식별자 `blehack_gatt_architecture_profile_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_gatt_architecture_profile_v1\") 앞 20자리}`",
+    "en": "Analyze the BLE GATT 4-tier hierarchy: Profile, Service, Characteristic, and Descriptor with ATT attribute tables.\nCompute the first 20 hex characters of SHA256(\"blehack_gatt_architecture_profile_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_gatt_architecture_profile_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "GATT 계층 구조와 ATT 속성 테이블의 역할을 검토하세요.",
+      "식별자 `blehack_gatt_architecture_profile_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review the GATT hierarchy and ATT attribute table roles.",
+      "Extract first 20 hex chars of SHA256(\"blehack_gatt_architecture_profile_v1\")."
+    ]
+  },
+  "hash": "6c206c6b9faaace60568f056ece10f202c37fc49c0214adf3030d553545b4fa1"
+},
+{
+  "id": "t0_blehack_adv_packet_structure",
+  "tier": 0,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 25,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BLE 어드버타이징 패킷 PDU 및 AD 구조",
+    "en": "BLE Advertising Packet PDU and AD Data Structure"
+  },
+  "prompt": {
+    "ko": "BLE 31바이트 레거시 Advertising 데이터 패킷의 Length, AD Type(Flags, Complete UUIDs, Local Name), AD Data 구조를 분석합니다.\n지정된 식별자 `blehack_adv_packet_structure_format_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_adv_packet_structure_format_v1\") 앞 20자리}`",
+    "en": "Analyze the 31-byte legacy BLE Advertising data packet format including Length, AD Type, and AD Data fields.\nCompute the first 20 hex characters of SHA256(\"blehack_adv_packet_structure_format_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_adv_packet_structure_format_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "어드버타이징 PDU의 AD Type 비트 구조를 확인하세요.",
+      "식별자 `blehack_adv_packet_structure_format_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect the AD Type bit layout in advertising PDUs.",
+      "Extract first 20 hex chars of SHA256(\"blehack_adv_packet_structure_format_v1\")."
+    ]
+  },
+  "hash": "86bb5a6cd32e8ef7630884a91fc04d280fef79546f088659bb4f8a54b191ff3b"
+},
+{
+  "id": "t1_blehack_uuid_handle_mapping",
+  "tier": 1,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "ATT 프로토콜 UUID 및 16비트 Handle 매핑",
+    "en": "ATT Protocol UUID and 16-bit Handle Attribute Mapping"
+  },
+  "prompt": {
+    "ko": "ATT 프로토콜에서 128비트 표준/벤더 UUID가 16비트 순차 핸들(Handle)로 매핑되어 클라이언트와 통신하는 메커니즘을 분석합니다.\n지정된 식별자 `blehack_uuid_handle_mapping_att_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_uuid_handle_mapping_att_v1\") 앞 20자리}`",
+    "en": "Analyze how 128-bit standard and proprietary UUIDs map to 16-bit sequential attribute handles in the ATT protocol.\nCompute the first 20 hex characters of SHA256(\"blehack_uuid_handle_mapping_att_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_uuid_handle_mapping_att_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ATT 속성 핸들의 순차적 할당 규칙을 검토하세요.",
+      "식별자 `blehack_uuid_handle_mapping_att_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review sequential handle allocation rules in ATT tables.",
+      "Extract first 20 hex chars of SHA256(\"blehack_uuid_handle_mapping_att_v1\")."
+    ]
+  },
+  "hash": "84fd897ee55d1fa5209db0966e920165ab98c4a629d2d05149728a7a8fe9bf53"
+},
+{
+  "id": "t1_blehack_char_properties_permissions",
+  "tier": 1,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Characteristic Properties 비트마스크 및 ATT 권한",
+    "en": "Characteristic Properties Bitmask and ATT Permissions"
+  },
+  "prompt": {
+    "ko": "Read, Write, Write Without Response, Notify, Indicate 등 특성 속성 비트마스크와 보안 권한 플래그의 차이를 분석합니다.\n지정된 식별자 `blehack_char_properties_permissions_bits_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_char_properties_permissions_bits_v1\") 앞 20자리}`",
+    "en": "Analyze the distinction between Characteristic Properties bitmasks (Read/Write/Notify) and security permissions.\nCompute the first 20 hex characters of SHA256(\"blehack_char_properties_permissions_bits_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_char_properties_permissions_bits_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "속성 비트마스크(Properties)와 보안 권한(Permissions)의 차이를 확인하세요.",
+      "식별자 `blehack_char_properties_permissions_bits_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Distinguish property bitmasks from security access permissions.",
+      "Extract first 20 hex chars of SHA256(\"blehack_char_properties_permissions_bits_v1\")."
+    ]
+  },
+  "hash": "b638cae2f1738baf42ec7daafe9d9bf73699bf7305d0dd5d08f350f71dadfd67"
+},
+{
+  "id": "t1_blehack_legacy_just_works_pairing",
+  "tier": 1,
+  "cat": "blepairing",
+  "track": "blehack",
+  "points": 50,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "레거시 Just Works 페어링 및 TK=0 취약점",
+    "en": "Legacy Just Works Pairing and Default Zero TK Flaw"
+  },
+  "prompt": {
+    "ko": "BLE 4.0/4.1 레거시 페어링의 Just Works 모드에서 임시 키(Temporary Key, TK)가 항상 0x00000000으로 고정되는 취약점을 분석합니다.\n지정된 식별자 `blehack_legacy_just_works_tk_zero_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_legacy_just_works_tk_zero_v1\") 앞 20자리}`",
+    "en": "Analyze the vulnerability where legacy Just Works pairing fixes the Temporary Key (TK) to 0x00000000.\nCompute the first 20 hex characters of SHA256(\"blehack_legacy_just_works_tk_zero_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_legacy_just_works_tk_zero_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Just Works 페어링 시 SMP 사양의 기본 TK 값을 확인하세요.",
+      "식별자 `blehack_legacy_just_works_tk_zero_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Check default TK specifications in legacy Just Works SMP.",
+      "Extract first 20 hex chars of SHA256(\"blehack_legacy_just_works_tk_zero_v1\")."
+    ]
+  },
+  "hash": "97f15de9e383bd3a253c03a8b08213668cca1b039528987c252a57c9396cf8eb"
+},
+{
+  "id": "t1_blehack_passkey_entry_mitm_risk",
+  "tier": 1,
+  "cat": "blepairing",
+  "track": "blehack",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Passkey Entry 6자리 PIN 오프라인 전수조사",
+    "en": "Passkey Entry 6-digit PIN Offline Brute Force Feasibility"
+  },
+  "prompt": {
+    "ko": "Display 또는 Keypad 기반 Passkey Entry에서 6자리 숫자(000000~999999, 약 20비트 엔트로피)가 오프라인 사전 공격에 노출되는 원리를 분석합니다.\n지정된 식별자 `blehack_passkey_entry_mitm_risk_smp_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_passkey_entry_mitm_risk_smp_v1\") 앞 20자리}`",
+    "en": "Analyze why 6-digit PIN Passkey Entry (000000-999999, ~20 bits entropy) is susceptible to offline brute-force attacks.\nCompute the first 20 hex characters of SHA256(\"blehack_passkey_entry_mitm_risk_smp_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_passkey_entry_mitm_risk_smp_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "6자리 숫자의 제한된 키 공간과 SMP c1 함수를 고려하세요.",
+      "식별자 `blehack_passkey_entry_mitm_risk_smp_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Consider the limited key space of 6 digits and SMP c1 function.",
+      "Extract first 20 hex chars of SHA256(\"blehack_passkey_entry_mitm_risk_smp_v1\")."
+    ]
+  },
+  "hash": "e98716cd80ee0e0951c59199804645cd28fde1c14414e7e2a7fe859664bab3f9"
+},
+{
+  "id": "t1_blehack_sdr_ook_ask_modulation",
+  "tier": 1,
+  "cat": "rfsdr",
+  "track": "blehack",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SDR RF 신호 수신 및 OOK/ASK 변조 원리",
+    "en": "SDR RF Signal Capture and OOK/ASK Modulation Principles"
+  },
+  "prompt": {
+    "ko": "Software Defined Radio(SDR)를 활용하여 315/433MHz 대역의 On-Off Keying(OOK) 및 진폭 편이 변조(ASK) 신호를 포착하는 원리를 분석합니다.\n지정된 식별자 `blehack_sdr_ook_ask_modulation_radio_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_sdr_ook_ask_modulation_radio_v1\") 앞 20자리}`",
+    "en": "Analyze how Software Defined Radio captures On-Off Keying (OOK) and Amplitude Shift Keying (ASK) in ISM bands.\nCompute the first 20 hex characters of SHA256(\"blehack_sdr_ook_ask_modulation_radio_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_sdr_ook_ask_modulation_radio_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "진폭 유무로 비트를 표현하는 OOK 신호의 특징을 확인하세요.",
+      "식별자 `blehack_sdr_ook_ask_modulation_radio_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Understand binary representation in amplitude-keyed signals.",
+      "Extract first 20 hex chars of SHA256(\"blehack_sdr_ook_ask_modulation_radio_v1\")."
+    ]
+  },
+  "hash": "978354731397fbfc3f73aea9b4c9ee7edeea9115efa1678af25b387db5a4906e"
+},
+{
+  "id": "t1_blehack_rf_spectrum_waterfall",
+  "tier": 1,
+  "cat": "rfsdr",
+  "track": "blehack",
+  "points": 65,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "FFT 스펙트로그램 및 워터폴 대역 분석",
+    "en": "FFT Spectrogram and Waterfall RF Band Analysis"
+  },
+  "prompt": {
+    "ko": "GQRX 및 Inspectrum 도구를 통한 Fast Fourier Transform(FFT) 스펙트로그램 분석과 시간에 따른 주파수 점유(워터폴) 패턴을 분석합니다.\n지정된 식별자 `blehack_rf_spectrum_waterfall_fft_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_rf_spectrum_waterfall_fft_v1\") 앞 20자리}`",
+    "en": "Analyze RF spectral occupancy and temporal signal patterns using FFT spectrograms and waterfall displays.\nCompute the first 20 hex characters of SHA256(\"blehack_rf_spectrum_waterfall_fft_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_rf_spectrum_waterfall_fft_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "워터폴 다이어그램에서 버스트 신호의 시간-주파수 특성을 확인하세요.",
+      "식별자 `blehack_rf_spectrum_waterfall_fft_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Analyze time-frequency signatures in waterfall plots.",
+      "Extract first 20 hex chars of SHA256(\"blehack_rf_spectrum_waterfall_fft_v1\")."
+    ]
+  },
+  "hash": "2a5b68689acd11eda7adcf7c9ac8834ad1dab5d2f83a3423cd67eaa255df40c1"
+},
+{
+  "id": "t2_blehack_unauth_actuator_write",
+  "tier": 2,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "비인가 Characteristic 쓰기를 통한 액추에이터 제어",
+    "en": "Unauthenticated Characteristic Write for Actuator Manipulation"
+  },
+  "prompt": {
+    "ko": "스마트 도어락이나 밸브 제어 특성에 인증 및 암호화 필수 비트가 누락되었을 때 임의 클라이언트가 UNLOCK 명령을 주입하는 기법을 분석합니다.\n지정된 식별자 `blehack_unauth_actuator_write_pwn_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_unauth_actuator_write_pwn_v1\") 앞 20자리}`",
+    "en": "Analyze how missing encryption/authentication permissions enable unauthorized clients to inject actuator unlock commands.\nCompute the first 20 hex characters of SHA256(\"blehack_unauth_actuator_write_pwn_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_unauth_actuator_write_pwn_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "액추에이터 제어 핸들의 쓰기 권한 설정을 점검하세요.",
+      "식별자 `blehack_unauth_actuator_write_pwn_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Audit write permission bits on actuator control handles.",
+      "Extract first 20 hex chars of SHA256(\"blehack_unauth_actuator_write_pwn_v1\")."
+    ]
+  },
+  "hash": "f2bb5b380ecaf781947fe4211a43f3f8ee89cc874143f32e04f8d786743b6e39"
+},
+{
+  "id": "t2_blehack_client_char_config_cccd",
+  "tier": 2,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 90,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "CCCD 디스크립터 조작 및 센서 데이터 비인가 수신",
+    "en": "CCCD Descriptor Manipulation for Unauthorized Telemetry Sniffing"
+  },
+  "prompt": {
+    "ko": "Client Characteristic Configuration Descriptor(CCCD, 0x2902)에 0x0001(Notify) 또는 0x0002(Indicate)를 써서 센서 스트림을 도청하는 기법을 분석합니다.\n지정된 식별자 `blehack_client_char_config_cccd_notify_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_client_char_config_cccd_notify_v1\") 앞 20자리}`",
+    "en": "Analyze unauthorized telemetry eavesdropping by writing 0x0001 (Notify) or 0x0002 (Indicate) to the CCCD descriptor.\nCompute the first 20 hex characters of SHA256(\"blehack_client_char_config_cccd_notify_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_client_char_config_cccd_notify_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "CCCD 디스크립터(0x2902)의 알림 활성화 메커니즘을 확인하세요.",
+      "식별자 `blehack_client_char_config_cccd_notify_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Check notification enablement mechanisms via CCCD handles.",
+      "Extract first 20 hex chars of SHA256(\"blehack_client_char_config_cccd_notify_v1\")."
+    ]
+  },
+  "hash": "bff15febcc88722c221207e279fecda76a07df1db5fe82b864b14c58908c86ce"
+},
+{
+  "id": "t2_blehack_stk_derivation_crack",
+  "tier": 2,
+  "cat": "blepairing",
+  "track": "blehack",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SMP c1 암호화 함수 및 STK(Short Term Key) 역산",
+    "en": "SMP c1 Cryptographic Function and STK Derivation Reversal"
+  },
+  "prompt": {
+    "ko": "스니핑된 Mrand, Srand, Mconfirm, Sconfirm 패킷과 추정된 TK를 입력으로 AES-128 기반 c1 함수를 역산하여 STK를 복원하는 절차를 분석합니다.\n지정된 식별자 `blehack_stk_derivation_crack_c1_func_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_stk_derivation_crack_c1_func_v1\") 앞 20자리}`",
+    "en": "Analyze the procedure for deriving the Short Term Key (STK) from captured Mrand/Srand/confirmations via SMP c1 function.\nCompute the first 20 hex characters of SHA256(\"blehack_stk_derivation_crack_c1_func_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_stk_derivation_crack_c1_func_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "SMP c1 함수의 파라미터 구성과 STK 도출 과정을 검토하세요.",
+      "식별자 `blehack_stk_derivation_crack_c1_func_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review SMP c1 function inputs and STK derivation steps.",
+      "Extract first 20 hex chars of SHA256(\"blehack_stk_derivation_crack_c1_func_v1\")."
+    ]
+  },
+  "hash": "cf959f250d32d0d7d18132b3e685af1bf176e4a66eeae54aed844c4a0b8b81ca"
+},
+{
+  "id": "t2_blehack_nonce_static_replay",
+  "tier": 2,
+  "cat": "blemitm",
+  "track": "blehack",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "고정 Nonce 챌린지 패킷 재전송(Replay) 공격",
+    "en": "Static Nonce Challenge-Response Replay Attack"
+  },
+  "prompt": {
+    "ko": "애플리케이션 계층 챌린지-응답 인증에서 난수 생성기 결함으로 동일한 Nonce가 재사용될 때 인증 토큰을 재생하는 공격을 분석합니다.\n지정된 식별자 `blehack_nonce_static_replay_attack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_nonce_static_replay_attack_v1\") 앞 20자리}`",
+    "en": "Analyze authentication bypass attacks exploiting predictable or static challenge nonces in BLE application layers.\nCompute the first 20 hex characters of SHA256(\"blehack_nonce_static_replay_attack_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_nonce_static_replay_attack_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "챌린지 난수의 예측 가능성 및 단조 증가 검증 부재를 확인하세요.",
+      "식별자 `blehack_nonce_static_replay_attack_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Check predictable nonces and missing freshness validation.",
+      "Extract first 20 hex chars of SHA256(\"blehack_nonce_static_replay_attack_v1\")."
+    ]
+  },
+  "hash": "5ac7dc92135808b31381b17c3b6d40f9e40615fa9614717e310edf3a1320fe52"
+},
+{
+  "id": "t2_blehack_fsk_gfsk_deviation",
+  "tier": 2,
+  "cat": "rfsdr",
+  "track": "blehack",
+  "points": 100,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "GFSK 변조 대역폭 및 주파수 편이 복조",
+    "en": "GFSK Modulation Bandwidth and Frequency Deviation Demodulation"
+  },
+  "prompt": {
+    "ko": "Gaussian Frequency Shift Keying(GFSK)의 BT 곱(Bandwidth-Time Product) 0.5 필터링과 주파수 편이(Deviation) 특성을 복조하는 수학적 모델을 분석합니다.\n지정된 식별자 `blehack_fsk_gfsk_deviation_demod_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_fsk_gfsk_deviation_demod_v1\") 앞 20자리}`",
+    "en": "Analyze mathematical models for demodulating Gaussian Frequency Shift Keying (GFSK) with BT=0.5 filtering.\nCompute the first 20 hex characters of SHA256(\"blehack_fsk_gfsk_deviation_demod_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_fsk_gfsk_deviation_demod_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "가우시안 필터와 심볼 전이 주파수 편이 관계를 검토하세요.",
+      "식별자 `blehack_fsk_gfsk_deviation_demod_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Examine Gaussian pulse shaping and frequency deviation.",
+      "Extract first 20 hex chars of SHA256(\"blehack_fsk_gfsk_deviation_demod_v1\")."
+    ]
+  },
+  "hash": "9b6a8aa62863d912056e0974e3f79406859dc60d0e2c666012842682a990d7a6"
+},
+{
+  "id": "t2_blehack_fixed_code_rf_replay",
+  "tier": 2,
+  "cat": "rfsdr",
+  "track": "blehack",
+  "points": 110,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "315/433MHz 고정 코드 무선 리모컨 Replay",
+    "en": "315/433MHz Fixed Code Wireless Remote Replay Attack"
+  },
+  "prompt": {
+    "ko": "DIP 스위치나 고정 ID를 송출하는 차고 문 및 도어락 무선 RF 패킷을 HackRF/RTL-SDR로 녹음하여 재송신(Replay)하는 취약점을 분석합니다.\n지정된 식별자 `blehack_fixed_code_rf_replay_hackrf_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_fixed_code_rf_replay_hackrf_v1\") 앞 20자리}`",
+    "en": "Analyze replay vulnerabilities in fixed-code garage doors and keyfobs captured via SDR and retransmitted directly.\nCompute the first 20 hex characters of SHA256(\"blehack_fixed_code_rf_replay_hackrf_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_fixed_code_rf_replay_hackrf_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "고정 코드 무선 패킷의 롤링 코드 미적용 위험성을 확인하세요.",
+      "식별자 `blehack_fixed_code_rf_replay_hackrf_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Evaluate security implications of missing rolling codes.",
+      "Extract first 20 hex chars of SHA256(\"blehack_fixed_code_rf_replay_hackrf_v1\")."
+    ]
+  },
+  "hash": "ab83b15f02469658d457bb79a551da4a15c08dbae7d1de78e880f95055524489"
+},
+{
+  "id": "t2_blehack_adv_channel_freq",
+  "tier": 2,
+  "cat": "rfsdr",
+  "track": "blehack",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BLE Advertising 37/38/39 채널 주파수 도약 계산",
+    "en": "BLE Primary Advertising Channels (37, 38, 39) Frequency Hopping"
+  },
+  "prompt": {
+    "ko": "Wi-Fi 채널 1, 6, 11 간섭을 회피하기 위해 배치된 BLE Advertising 채널 37(2402MHz), 38(2426MHz), 39(2480MHz)의 배치 원리를 분석합니다.\n지정된 식별자 `blehack_adv_channel_freq_ch37_39_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_adv_channel_freq_ch37_39_v1\") 앞 20자리}`",
+    "en": "Analyze frequency allocation of BLE primary advertising channels 37 (2402MHz), 38 (2426MHz), and 39 (2480MHz) avoiding Wi-Fi interference.\nCompute the first 20 hex characters of SHA256(\"blehack_adv_channel_freq_ch37_39_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_adv_channel_freq_ch37_39_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "2.4GHz ISM 대역에서 Wi-Fi와 BLE 어드버타이징 채널 배치를 대조하세요.",
+      "식별자 `blehack_adv_channel_freq_ch37_39_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Contrast Wi-Fi 1/6/11 frequencies with BLE advertising channels.",
+      "Extract first 20 hex chars of SHA256(\"blehack_adv_channel_freq_ch37_39_v1\")."
+    ]
+  },
+  "hash": "0101901b3f32a2f5bfe82ba85d58b9c0af62b0762726500fd5f40999289e3064"
+},
+{
+  "id": "t2_blehack_btlejuice_proxy_mitm",
+  "tier": 2,
+  "cat": "blemitm",
+  "track": "blehack",
+  "points": 120,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BtleJuice/GATTacker 프록시 기반 BLE MITM",
+    "en": "BtleJuice and GATTacker Virtual Proxy Man-in-the-Middle"
+  },
+  "prompt": {
+    "ko": "BLE Central과 Peripheral 사이에 가상 프록시를 개입시켜 서비스 UUID와 특성을 복제하고 트래픽을 변조하는 MITM 아키텍처를 분석합니다.\n지정된 식별자 `blehack_btlejuice_proxy_mitm_core_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_btlejuice_proxy_mitm_core_v1\") 앞 20자리}`",
+    "en": "Analyze virtual proxy MITM architectures cloning peripheral GATT services to intercept and manipulate active BLE connections.\nCompute the first 20 hex characters of SHA256(\"blehack_btlejuice_proxy_mitm_core_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_btlejuice_proxy_mitm_core_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "BtleJuice 프록시의 Core와 Agent 간 패킷 인터셉트 구조를 점검하세요.",
+      "식별자 `blehack_btlejuice_proxy_mitm_core_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review packet interception between proxy core and agent.",
+      "Extract first 20 hex chars of SHA256(\"blehack_btlejuice_proxy_mitm_core_v1\")."
+    ]
+  },
+  "hash": "a369b7e5d6aa8dc5f09a2cfdb96c331f87e2ac11ffd71dec0ee7a0f03751b129"
+},
+{
+  "id": "t3_blehack_lesc_ecdh_p256_pairing",
+  "tier": 3,
+  "cat": "blepairing",
+  "track": "blehack",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "LE Secure Connections (ECDH P-256) 비대칭 페어링",
+    "en": "LE Secure Connections ECDH P-256 Asymmetric Key Agreement"
+  },
+  "prompt": {
+    "ko": "NIST P-256 타원곡선 디피-헬만(ECDH)을 도입하여 수동 도청(Passive Eavesdropping)에 대한 완벽한 암호학적 내성을 제공하는 LESC 모델을 분석합니다.\n지정된 식별자 `blehack_lesc_ecdh_p256_pairing_lesc_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_lesc_ecdh_p256_pairing_lesc_v1\") 앞 20자리}`",
+    "en": "Analyze LE Secure Connections utilizing NIST P-256 ECDH to provide mathematical resilience against passive eavesdropping.\nCompute the first 20 hex characters of SHA256(\"blehack_lesc_ecdh_p256_pairing_lesc_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_lesc_ecdh_p256_pairing_lesc_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "P-256 타원곡선 기반 비대칭 키 교환 및 LTK 파생 공식을 확인하세요.",
+      "식별자 `blehack_lesc_ecdh_p256_pairing_lesc_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Verify P-256 curve operations and long-term key derivation.",
+      "Extract first 20 hex chars of SHA256(\"blehack_lesc_ecdh_p256_pairing_lesc_v1\")."
+    ]
+  },
+  "hash": "4d7141e41073279e3a8f966677cfc4e1764c7091788de5c927f4dbc22696cda2"
+},
+{
+  "id": "t3_blehack_numeric_comparison_mitm_guard",
+  "tier": 3,
+  "cat": "blepairing",
+  "track": "blehack",
+  "points": 130,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Numeric Comparison 6자리 확인 코드 MITM 방어",
+    "en": "Numeric Comparison 6-digit Confirmation Code MITM Defense"
+  },
+  "prompt": {
+    "ko": "양방향 디스플레이 장치에서 6자리 확인 코드를 사용자가 시각적으로 대조하여 중간자 공격(MITM)을 수학적으로 탐지하는 프로토콜을 분석합니다.\n지정된 식별자 `blehack_numeric_comparison_mitm_guard_check_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_numeric_comparison_mitm_guard_check_v1\") 앞 20자리}`",
+    "en": "Analyze the Numeric Comparison association model verifying 6-digit confirmation codes to mathematically prevent active MITM.\nCompute the first 20 hex characters of SHA256(\"blehack_numeric_comparison_mitm_guard_check_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_numeric_comparison_mitm_guard_check_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Numeric Comparison 확인 코드의 암호학적 해시 생성 과정을 검토하세요.",
+      "식별자 `blehack_numeric_comparison_mitm_guard_check_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Examine cryptographic hash derivation for confirmation codes.",
+      "Extract first 20 hex chars of SHA256(\"blehack_numeric_comparison_mitm_guard_check_v1\")."
+    ]
+  },
+  "hash": "c90d92244938cd59ec7d1d7a4c1cdf0c3d8b154b861178c9eee655ed812a03cd"
+},
+{
+  "id": "t3_blehack_l2cap_packet_overflow",
+  "tier": 3,
+  "cat": "blemitm",
+  "track": "blehack",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "L2CAP 시그널링 MTU 경계 오버플로우 DoS",
+    "en": "L2CAP Signaling MTU Boundary Buffer Overflow DoS"
+  },
+  "prompt": {
+    "ko": "L2CAP 레이어의 Signaling 채널(CID 0x0005)에서 비정상적인 Command Reject 또는 과도한 길이 필드를 전송하여 블루투스 스택을 크래시시키는 기법을 분석합니다.\n지정된 식별자 `blehack_l2cap_packet_overflow_mtu_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_l2cap_packet_overflow_mtu_v1\") 앞 20자리}`",
+    "en": "Analyze L2CAP signaling channel buffer overflows triggering kernel or controller crashes via oversized length fields.\nCompute the first 20 hex characters of SHA256(\"blehack_l2cap_packet_overflow_mtu_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_l2cap_packet_overflow_mtu_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "L2CAP MTU 경계값 처리 및 패킷 단편화 결함을 확인하세요.",
+      "식별자 `blehack_l2cap_packet_overflow_mtu_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect MTU boundary handling and fragmentation bugs.",
+      "Extract first 20 hex chars of SHA256(\"blehack_l2cap_packet_overflow_mtu_v1\")."
+    ]
+  },
+  "hash": "afaa0afcbb3e32adc294f018951eda5954d8297c94317f0539b7d1e412a097e0"
+},
+{
+  "id": "t3_blehack_keeloq_rolling_code_differential",
+  "tier": 3,
+  "cat": "rfsdr",
+  "track": "blehack",
+  "points": 140,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "KeeLoq 롤링 코드 NLFSR 상태 차분 공격",
+    "en": "KeeLoq Rolling Code NLFSR Non-Linear State Differential Cryptanalysis"
+  },
+  "prompt": {
+    "ko": "비선형 피드백 시프트 레지스터(NLFSR) 64비트 마스터 키 기반 KeeLoq 알고리즘의 차분 전력 분석(DPA) 및 암호학적 취약점을 분석합니다.\n지정된 식별자 `blehack_keeloq_rolling_code_differential_nlfsr_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_keeloq_rolling_code_differential_nlfsr_v1\") 앞 20자리}`",
+    "en": "Analyze differential power analysis and cryptographic weaknesses in 64-bit KeeLoq NLFSR rolling code implementations.\nCompute the first 20 hex characters of SHA256(\"blehack_keeloq_rolling_code_differential_nlfsr_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_keeloq_rolling_code_differential_nlfsr_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "KeeLoq 32비트 호핑 코드와 카운터 동기화 원리를 검토하세요.",
+      "식별자 `blehack_keeloq_rolling_code_differential_nlfsr_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review KeeLoq hopping code generation and counter synchronization.",
+      "Extract first 20 hex chars of SHA256(\"blehack_keeloq_rolling_code_differential_nlfsr_v1\")."
+    ]
+  },
+  "hash": "6fcdd16fe73055a9e7f7cf6cc29fd2b51fbeafc972f1535f5f032202a4419f4a"
+},
+{
+  "id": "t3_blehack_rolljam_two_stage_reactive",
+  "tier": 3,
+  "cat": "rfsdr",
+  "track": "blehack",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Rolljam 2단계 RF 재밍 및 미사용 코드 선점",
+    "en": "Rolljam Two-Stage Reactive RF Jamming and Desynchronization"
+  },
+  "prompt": {
+    "ko": "차량 수신기를 협대역 잡음으로 재밍하면서 첫 번째 롤링 코드를 도청하고, 2차 신호 수신 시 1차 코드를 릴레이하여 최신 코드를 비축하는 공격을 분석합니다.\n지정된 식별자 `blehack_rolljam_two_stage_reactive_jam_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_rolljam_two_stage_reactive_jam_v1\") 앞 20자리}`",
+    "en": "Analyze Rolljam attacks jamming receiver channels while capturing fresh rolling codes for subsequent unauthorized replay.\nCompute the first 20 hex characters of SHA256(\"blehack_rolljam_two_stage_reactive_jam_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_rolljam_two_stage_reactive_jam_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "동시 재밍-스니핑 기법과 코드 비동기화 상태를 분석하세요.",
+      "식별자 `blehack_rolljam_two_stage_reactive_jam_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Analyze simultaneous jamming-capturing and desync states.",
+      "Extract first 20 hex chars of SHA256(\"blehack_rolljam_two_stage_reactive_jam_v1\")."
+    ]
+  },
+  "hash": "5d77af2f043b7728b3499b0a2f49876359b22a44e76456e2efef8d12e4f5b122"
+},
+{
+  "id": "t3_blehack_anti_replay_monotonic_counter",
+  "tier": 3,
+  "cat": "blemitm",
+  "track": "blehack",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "단조 증가 시퀀스 카운터 및 슬라이딩 윈도우 방어",
+    "en": "Monotonic Increment Counter and Sliding Window Anti-Replay"
+  },
+  "prompt": {
+    "ko": "무선 제어 패킷에 비휘발성 단조 증가 카운터와 슬라이딩 윈도우 알고리즘을 적용하여 이전 프레임의 재전송을 원천 무력화하는 방어 체계를 분석합니다.\n지정된 식별자 `blehack_anti_replay_monotonic_counter_seq_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_anti_replay_monotonic_counter_seq_v1\") 앞 20자리}`",
+    "en": "Analyze anti-replay defense architectures combining non-volatile monotonic counters with cryptographic sliding windows.\nCompute the first 20 hex characters of SHA256(\"blehack_anti_replay_monotonic_counter_seq_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_anti_replay_monotonic_counter_seq_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "슬라이딩 윈도우의 비트마스크 추적 및 카운터 증가 검증을 확인하세요.",
+      "식별자 `blehack_anti_replay_monotonic_counter_seq_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Check bitmask window tracking and counter freshness validation.",
+      "Extract first 20 hex chars of SHA256(\"blehack_anti_replay_monotonic_counter_seq_v1\")."
+    ]
+  },
+  "hash": "ab9795b2af76b2c329b1a84ccc14678f08c00479463bbabf16ae5eefa7e8c098"
+},
+{
+  "id": "t3_blehack_mac_address_resolvable_rpa",
+  "tier": 3,
+  "cat": "blepairing",
+  "track": "blehack",
+  "points": 150,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Resolvable Private Address(RPA) 및 IRK 프라이버시",
+    "en": "Resolvable Private Address (RPA) and Identity Resolving Key Privacy"
+  },
+  "prompt": {
+    "ko": "기기 추적을 방지하기 위해 15분마다 변경되는 RPA 주소와 신뢰 기기 간 Identity Resolving Key(IRK) 해시 매칭 알고리즘을 분석합니다.\n지정된 식별자 `blehack_mac_address_resolvable_rpa_irk_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_mac_address_resolvable_rpa_irk_v1\") 앞 20자리}`",
+    "en": "Analyze RPA privacy mechanisms rotating MAC addresses periodically while enabling trusted peers to resolve identities via IRK.\nCompute the first 20 hex characters of SHA256(\"blehack_mac_address_resolvable_rpa_irk_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_mac_address_resolvable_rpa_irk_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ah 해시 함수(AES-128 기반)를 통한 RPA 주소 해석 원리를 검토하세요.",
+      "식별자 `blehack_mac_address_resolvable_rpa_irk_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Examine RPA resolution using the AES-128 ah hash function.",
+      "Extract first 20 hex chars of SHA256(\"blehack_mac_address_resolvable_rpa_irk_v1\")."
+    ]
+  },
+  "hash": "f41852a00d99567d9933d3fd18bc985ce26341f4bcfb4ef253003a0540212b06"
+},
+{
+  "id": "t3_blehack_sweyntooth_ble_firmware_flaws",
+  "tier": 3,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SweynTooth BLE SoC 펌웨어 취약점(LLID 데드락, 크래시)",
+    "en": "SweynTooth BLE SoC Controller Flaws (LLID Deadlock & Memory Corruption)"
+  },
+  "prompt": {
+    "ko": "주요 상용 BLE SoC 컨트롤러(TI, Nordic, Telink 등)의 Link Layer 패킷 처리 루틴에서 발견된 SweynTooth 계열 취약점을 분석합니다.\n지정된 식별자 `blehack_sweyntooth_ble_firmware_flaws_cve_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_sweyntooth_ble_firmware_flaws_cve_v1\") 앞 20자리}`",
+    "en": "Analyze SweynTooth vulnerabilities in commercial BLE SoC controllers triggering Link Layer deadlocks and crashes.\nCompute the first 20 hex characters of SHA256(\"blehack_sweyntooth_ble_firmware_flaws_cve_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_sweyntooth_ble_firmware_flaws_cve_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "비정상적인 LLID 및 제어 PDU 시퀀스 처리 오류를 점검하세요.",
+      "식별자 `blehack_sweyntooth_ble_firmware_flaws_cve_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review malformed LLID and control PDU error handling.",
+      "Extract first 20 hex chars of SHA256(\"blehack_sweyntooth_ble_firmware_flaws_cve_v1\")."
+    ]
+  },
+  "hash": "28f87c0ea8c861b43e970f4e685abaf8f1b07a8229ac67aa25fca75e822faf66"
+},
+{
+  "id": "t3_blehack_authenticated_write_attribute_harden",
+  "tier": 3,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 160,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Authenticated Write 및 속성 레벨 암호화 강제",
+    "en": "Authenticated Write and Attribute-Level Cryptographic Enforcement"
+  },
+  "prompt": {
+    "ko": "GATT 속성 테이블에서 민감 제어 특성에 대해 Authenticated Signed Writes 또는 암호화된 링크(LESC) 필수 속성을 설정하는 하드닝 방안을 분석합니다.\n지정된 식별자 `blehack_authenticated_write_attribute_harden_att_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_authenticated_write_attribute_harden_att_v1\") 앞 20자리}`",
+    "en": "Analyze hardening configurations requiring Authenticated Signed Writes and LESC encrypted channels on sensitive characteristics.\nCompute the first 20 hex characters of SHA256(\"blehack_authenticated_write_attribute_harden_att_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_authenticated_write_attribute_harden_att_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ATT_ERR_INSUFFICIENT_AUTHENTICATION 오류 반환 규칙을 확인하세요.",
+      "식별자 `blehack_authenticated_write_attribute_harden_att_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Enforce ATT_ERR_INSUFFICIENT_AUTHENTICATION error policies.",
+      "Extract first 20 hex chars of SHA256(\"blehack_authenticated_write_attribute_harden_att_v1\")."
+    ]
+  },
+  "hash": "062d0c185b0c0aa4136e3ad7c899c0b417a2a1dd080a383a63af2153c0f147f0"
+},
+{
+  "id": "t4_blehack_knob_encryption_key_negotiation",
+  "tier": 4,
+  "cat": "blepairing",
+  "track": "blehack",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "KNOB(Key Negotiation of Bluetooth) 엔트로피 축소 공격",
+    "en": "KNOB (Key Negotiation of Bluetooth) Entropy Reduction Attack"
+  },
+  "prompt": {
+    "ko": "블루투스 암호화 키 협상 과정에서 공격자가 패킷을 주입하여 암호화 키 엔트로피를 1바이트(8비트)로 다운그레이드시키는 KNOB 취약점을 분석합니다.\n지정된 식별자 `blehack_knob_encryption_key_negotiation_entropy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_knob_encryption_key_negotiation_entropy_v1\") 앞 20자리}`",
+    "en": "Analyze the KNOB attack manipulating LM encryption negotiation to reduce session key entropy to a single byte.\nCompute the first 20 hex characters of SHA256(\"blehack_knob_encryption_key_negotiation_entropy_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_knob_encryption_key_negotiation_entropy_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "최소 암호화 키 엔트로피(16바이트) 강제 통제 방안을 검토하세요.",
+      "식별자 `blehack_knob_encryption_key_negotiation_entropy_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Enforce minimum 16-byte key entropy requirements in controllers.",
+      "Extract first 20 hex chars of SHA256(\"blehack_knob_encryption_key_negotiation_entropy_v1\")."
+    ]
+  },
+  "hash": "90dc382eb28240760109a8b8aa85f7aff28aac64c71f58466466044cdc789bf2"
+},
+{
+  "id": "t4_blehack_bluetooth_forward_secrecy_pfs",
+  "tier": 4,
+  "cat": "blepairing",
+  "track": "blehack",
+  "points": 170,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BLE Perfect Forward Secrecy 및 임시 Diffie-Hellman",
+    "en": "BLE Perfect Forward Secrecy and Ephemeral Diffie-Hellman Keys"
+  },
+  "prompt": {
+    "ko": "장기 키(LTK)가 유출되더라도 과거 세션 트래픽이 복호화되지 않도록 보장하는 완전 순방향 비밀성(PFS) 아키텍처를 분석합니다.\n지정된 식별자 `blehack_bluetooth_forward_secrecy_pfs_dhkey_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_bluetooth_forward_secrecy_pfs_dhkey_v1\") 앞 20자리}`",
+    "en": "Analyze Perfect Forward Secrecy (PFS) in Bluetooth architectures protecting past session traffic against LTK compromise.\nCompute the first 20 hex characters of SHA256(\"blehack_bluetooth_forward_secrecy_pfs_dhkey_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_bluetooth_forward_secrecy_pfs_dhkey_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "임시 ECDH 키 교환과 세션별 파생 키 폐기 주기를 확인하세요.",
+      "식별자 `blehack_bluetooth_forward_secrecy_pfs_dhkey_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect ephemeral key agreement and forward secrecy bounds.",
+      "Extract first 20 hex chars of SHA256(\"blehack_bluetooth_forward_secrecy_pfs_dhkey_v1\")."
+    ]
+  },
+  "hash": "66ccbf8f3eedede9a8ef354016e35e20b1ff520f310d3efc6ef9e26d3f3eacf8"
+},
+{
+  "id": "t4_blehack_ble_sniffing_whad_framework",
+  "tier": 4,
+  "cat": "blemitm",
+  "track": "blehack",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "WHAD(Wireless Hacking Automation Device) 기반 패킷 인젝션",
+    "en": "WHAD Framework Automated Sniffing and Packet Injection Pipeline"
+  },
+  "prompt": {
+    "ko": "WHAD 프로토콜을 활용하여 nRF52 동글 및 SDR 장비를 단일 추상화 인터페이스로 제어하고 실시간 패킷 주입을 자동화하는 기술을 분석합니다.\n지정된 식별자 `blehack_ble_sniffing_whad_framework_packet_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_ble_sniffing_whad_framework_packet_v1\") 앞 20자리}`",
+    "en": "Analyze WHAD abstraction framework automating multi-hardware BLE packet capture, injection, and fuzzing pipelines.\nCompute the first 20 hex characters of SHA256(\"blehack_ble_sniffing_whad_framework_packet_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_ble_sniffing_whad_framework_packet_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "WHAD 프로토콜 메시지 계층과 하드웨어 드라이버 추상화를 확인하세요.",
+      "식별자 `blehack_ble_sniffing_whad_framework_packet_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review WHAD protocol layers and hardware abstraction.",
+      "Extract first 20 hex chars of SHA256(\"blehack_ble_sniffing_whad_framework_packet_v1\")."
+    ]
+  },
+  "hash": "b08c21586bf2bccf88ab226fb44d4bbf40c001d49196ecbb60636327d4415fb7"
+},
+{
+  "id": "t4_blehack_subghz_gnss_spoofing_resilience",
+  "tier": 4,
+  "cat": "rfsdr",
+  "track": "blehack",
+  "points": 180,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "Sub-GHz ISM 대역 RF 스푸핑 탐지 및 수신 감도 분석",
+    "en": "Sub-GHz ISM Band RF Spoofing Detection and Signal Power Triage"
+  },
+  "prompt": {
+    "ko": "SDR을 이용한 불법 RF 전송 시 비정상적인 RSSI 급증, SNR 변동, 도플러 시프트 이상을 탐지하여 RF 스푸핑을 방어하는 신호처리 기법을 분석합니다.\n지정된 식별자 `blehack_subghz_gnss_spoofing_resilience_rf_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_subghz_gnss_spoofing_resilience_rf_v1\") 앞 20자리}`",
+    "en": "Analyze signal processing heuristics detecting RF spoofing via anomalous RSSI spikes, SNR fluctuations, and Doppler shifts.\nCompute the first 20 hex characters of SHA256(\"blehack_subghz_gnss_spoofing_resilience_rf_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_subghz_gnss_spoofing_resilience_rf_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "신호 대 잡음비(SNR) 및 전력 임계치를 활용한 이상 탐지를 검토하세요.",
+      "식별자 `blehack_subghz_gnss_spoofing_resilience_rf_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Evaluate power thresholds and SNR anomaly detection heuristics.",
+      "Extract first 20 hex chars of SHA256(\"blehack_subghz_gnss_spoofing_resilience_rf_v1\")."
+    ]
+  },
+  "hash": "d591aa6fb53e203dca5e208395f1d84123d877f115a8c291e600903919dd9412"
+},
+{
+  "id": "t4_blehack_bluetooth_mesh_replay_seq_cache",
+  "tier": 4,
+  "cat": "blemitm",
+  "track": "blehack",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BLE Mesh Sequence Number Cache 고갈 및 Replay",
+    "en": "BLE Mesh Replay Protection List (RPL) Cache Exhaustion and Replay"
+  },
+  "prompt": {
+    "ko": "BLE Mesh 네트워크에서 노드의 Replay Protection List(RPL) 캐시를 대량의 허위 시퀀스로 채워 고갈시킨 후 이전 메시지를 주입하는 취약점을 분석합니다.\n지정된 식별자 `blehack_bluetooth_mesh_replay_seq_cache_replay_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_bluetooth_mesh_replay_seq_cache_replay_v1\") 앞 20자리}`",
+    "en": "Analyze Replay Protection List (RPL) cache exhaustion attacks in BLE Mesh networks enabling stale message injection.\nCompute the first 20 hex characters of SHA256(\"blehack_bluetooth_mesh_replay_seq_cache_replay_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_bluetooth_mesh_replay_seq_cache_replay_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "Mesh IV Index 업데이트 및 RPL 캐시 엔트리 보호 정책을 점검하세요.",
+      "식별자 `blehack_bluetooth_mesh_replay_seq_cache_replay_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review IV Index synchronization and RPL eviction policies.",
+      "Extract first 20 hex chars of SHA256(\"blehack_bluetooth_mesh_replay_seq_cache_replay_v1\")."
+    ]
+  },
+  "hash": "9971fb5673a4132959b67968c160f0b8ab732bec3d5e4d32c95cd76d9ecbf12a"
+},
+{
+  "id": "t4_blehack_ble_gatt_fuzzing_defensics",
+  "tier": 4,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 190,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "BLE GATT 프로토콜 퍼징 및 크래시 트리아지",
+    "en": "BLE GATT Protocol Mutation Fuzzing and Crash Triage"
+  },
+  "prompt": {
+    "ko": "Defensics 및 커스텀 Scapy-BLE 스크립트를 통해 ATT 명령 필드에 경계값 및 돌연변이 페이로드를 주입하여 펌웨어 크래시를 트리거하는 퍼징을 분석합니다.\n지정된 식별자 `blehack_ble_gatt_fuzzing_defensics_protocol_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_ble_gatt_fuzzing_defensics_protocol_v1\") 앞 20자리}`",
+    "en": "Analyze protocol mutation fuzzing against ATT/GATT implementations evaluating memory safety and fault tolerance.\nCompute the first 20 hex characters of SHA256(\"blehack_ble_gatt_fuzzing_defensics_protocol_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_ble_gatt_fuzzing_defensics_protocol_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "ATT Opcode, Handle, 길이 필드 변이 퍼징 기법을 검토하세요.",
+      "식별자 `blehack_ble_gatt_fuzzing_defensics_protocol_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Examine mutational fuzzing heuristics for ATT packet headers.",
+      "Extract first 20 hex chars of SHA256(\"blehack_ble_gatt_fuzzing_defensics_protocol_v1\")."
+    ]
+  },
+  "hash": "011456ff4bfa5d424a64456ad98900e6956774f098be5406b1821abef4950d39"
+},
+{
+  "id": "t4_blehack_sdr_iq_constellation_diagram",
+  "tier": 4,
+  "cat": "rfsdr",
+  "track": "blehack",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "SDR I/Q 데이터 성좌도(Constellation) 왜곡 분석",
+    "en": "SDR I/Q Data Constellation Diagram Distortion and EVM Analysis"
+  },
+  "prompt": {
+    "ko": "In-phase(I) 및 Quadrature(Q) 기저대역 신호의 성좌도(Constellation) 다이어그램과 EVM(Error Vector Magnitude) 계측을 통한 RF 신호 무결성을 분석합니다.\n지정된 식별자 `blehack_sdr_iq_constellation_diagram_quad_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_sdr_iq_constellation_diagram_quad_v1\") 앞 20자리}`",
+    "en": "Analyze I/Q constellation diagrams and Error Vector Magnitude (EVM) metrics to audit RF transmitter physical integrity.\nCompute the first 20 hex characters of SHA256(\"blehack_sdr_iq_constellation_diagram_quad_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_sdr_iq_constellation_diagram_quad_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "성좌도 상의 위상 잡음 및 진폭 불균형 왜곡 패턴을 확인하세요.",
+      "식별자 `blehack_sdr_iq_constellation_diagram_quad_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Inspect phase noise and amplitude imbalance patterns in I/Q plots.",
+      "Extract first 20 hex chars of SHA256(\"blehack_sdr_iq_constellation_diagram_quad_v1\")."
+    ]
+  },
+  "hash": "4e87778afc243fef7936a2c636b5b24a4dd5f07391a4d434fd649e44c4cbd3c8"
+},
+{
+  "id": "t4_blehack_hardware_secure_element_ble_key",
+  "tier": 4,
+  "cat": "blepairing",
+  "track": "blehack",
+  "points": 200,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "하드웨어 보안 요소(SE) 기반 BLE 개인키 격리",
+    "en": "Hardware Secure Element (SE) Isolation for BLE Cryptographic Keys"
+  },
+  "prompt": {
+    "ko": "ATECC608 또는 전용 Secure Enclave를 통해 BLE ECDH 개인키와 LTK를 물리적으로 격리하고 DPA 부채널 방어를 적용하는 하드웨어 설계를 분석합니다.\n지정된 식별자 `blehack_hardware_secure_element_ble_key_vault_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_hardware_secure_element_ble_key_vault_v1\") 앞 20자리}`",
+    "en": "Analyze hardware Secure Element (SE) architectures isolating BLE ECDH private keys with physical side-channel defenses.\nCompute the first 20 hex characters of SHA256(\"blehack_hardware_secure_element_ble_key_vault_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_hardware_secure_element_ble_key_vault_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "보안 요소의 하드웨어 암호화 가속기 및 키 래핑 원리를 검토하세요.",
+      "식별자 `blehack_hardware_secure_element_ble_key_vault_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Review hardware crypto accelerator isolation and key wrapping.",
+      "Extract first 20 hex chars of SHA256(\"blehack_hardware_secure_element_ble_key_vault_v1\")."
+    ]
+  },
+  "hash": "0260f832162e49b9c315d3a67370dd9c35bdf358343e1b26dfcde2ed2fbd2571"
+},
+{
+  "id": "t4_blehack_zero_trust_wireless_mesh_defense",
+  "tier": 4,
+  "cat": "blemitm",
+  "track": "blehack",
+  "points": 220,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "무선 IoT 제로 트러스트 마이크로세그멘테이션",
+    "en": "Zero Trust Wireless IoT Microsegmentation and Dynamic Quarantine"
+  },
+  "prompt": {
+    "ko": "모든 무선 센서 및 BLE 게이트웨이에 대해 지속적인 동적 상호 인증, 행위 기반 텔레메트리 감사 및 자동 격리 정책을 강제하는 제로 트러스트를 분석합니다.\n지정된 식별자 `blehack_zero_trust_wireless_mesh_defense_zt_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_zero_trust_wireless_mesh_defense_zt_v1\") 앞 20자리}`",
+    "en": "Analyze Zero Trust architectures enforcing continuous mutual authentication and dynamic quarantine across wireless IoT nodes.\nCompute the first 20 hex characters of SHA256(\"blehack_zero_trust_wireless_mesh_defense_zt_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_zero_trust_wireless_mesh_defense_zt_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "mTLS 또는 시그니처 기반 게이트웨이 인증 체계를 점검하세요.",
+      "식별자 `blehack_zero_trust_wireless_mesh_defense_zt_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Audit mutual authentication and dynamic isolation rules.",
+      "Extract first 20 hex chars of SHA256(\"blehack_zero_trust_wireless_mesh_defense_zt_v1\")."
+    ]
+  },
+  "hash": "7eef80d87a3b0ab611ddce28e006d47d796090f5ceffd5625c828fe7c5ca6e7d"
+},
+{
+  "id": "t4_blehack_capstone_rf_ble_full_audit",
+  "tier": 4,
+  "cat": "blegatt",
+  "track": "blehack",
+  "points": 250,
+  "ci": false,
+  "fmt": "FLAG{...}",
+  "title": {
+    "ko": "엔터프라이즈 스마트 빌딩 BLE/SDR 무선 침투 종합 감사",
+    "en": "Enterprise Smart Facility BLE and SDR Full-Spectrum Wireless Audit"
+  },
+  "prompt": {
+    "ko": "스마트 도어락, 환경 센서, 무선 조명 제어기 등 시설 내 모든 BLE/SDR 자산에 대한 포괄적 침투 테스트와 다계층 무선 방어 거버넌스 수립을 분석합니다.\n지정된 식별자 `blehack_capstone_rf_ble_full_audit_enterprise_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"blehack_capstone_rf_ble_full_audit_enterprise_v1\") 앞 20자리}`",
+    "en": "Execute a full-spectrum wireless security audit assessing smart locks, sensors, and SDR perimeters across enterprise facilities.\nCompute the first 20 hex characters of SHA256(\"blehack_capstone_rf_ble_full_audit_enterprise_v1\").\n\nFormat: `FLAG{SHA256(\"blehack_capstone_rf_ble_full_audit_enterprise_v1\") first 20 hex}`"
+  },
+  "hints": {
+    "ko": [
+      "물리-사이버 융합 환경에서의 무선 침투 및 종합 방어 대책을 종합 검토하세요.",
+      "식별자 `blehack_capstone_rf_ble_full_audit_enterprise_v1`의 해시 앞 20자리를 추출하세요."
+    ],
+    "en": [
+      "Synthesize physical-cyber converged wireless assessment metrics.",
+      "Extract first 20 hex chars of SHA256(\"blehack_capstone_rf_ble_full_audit_enterprise_v1\")."
+    ]
+  },
+  "hash": "abf39a6904ccc40e6417b5e9498325f76411f0d44ea36989c801773d3bda5a0b"
 }
 ];
-
