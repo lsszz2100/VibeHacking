@@ -76,7 +76,15 @@
   - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8038 가용성 등 시스템 진단
   - `vhack lab test [--all | <lab_id>]`: 38개 실습 랩 자동 무결성 검증 (372개 테스트 All Green)
   - `vhack lab status`: 38개 랩 종합 상태 대시보드
-- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~38, `vhack doctor`, Pytest 전체 399개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
+- **CI/CD 및 자동 색인 파이프라인**:
+  - [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml): Labs 01~38, `vhack doctor`, Pytest 전체 399개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화
+  - [`.github/workflows/deploy-docs.yml`](file:///.github/workflows/deploy-docs.yml) & [`.github/workflows/deploy-wargame.yml`](file:///.github/workflows/deploy-wargame.yml): GitHub Pages 배포 자동화
+  - [`.github/workflows/seo-submit.yml`](file:///.github/workflows/seo-submit.yml): 커밋 시 검색엔진 자동 색인 및 IndexNow 즉시 전송
+- **검색엔진 최적화 (SEO) & 웹 홍보 툴킷**:
+  - `Open Graph / Twitter Cards / Schema.org JSON-LD`: 1200x630 터미널 배너(`assets/og-preview.svg`) 및 리치 카드 최적화
+  - `sitemap.xml` & `robots.txt`: 75개 섹션, 38개 랩, 워게임 전체 URL 표준 색인 매핑 및 크롤러 허용
+  - `IndexNow 실시간 색인`: Bing, Naver, Yandex, Seznam 대상 HTTP 202 Accepted 전송 (`tools/submit_seo_sitemap.py`)
+  - `커뮤니티 홍보 툴킷`: GeekNews, Reddit, X, Disquiet 맞춤 문안 및 원클릭 공유 배지 (`tools/promo_kit.py`, `README.md`)
 
 ---
 
@@ -200,6 +208,26 @@ node wargame/scripts/solve-derivable.js
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
+
+- **2026-10-11 (Web Promotion & Comprehensive SEO Optimization Pipeline Milestone)**:
+  - **검색엔진 최적화 (SEO) 완전 구축**:
+    - `index.html` (Docsify 포털): 75개 섹션, 38개 실습 랩, 52트랙 1,820개 워게임 최신 수치 동기화, `og:image` 1200x630 해커 다크 터미널 배너(`assets/og-preview.svg`), Twitter Card, `Schema.org Course` JSON-LD 주입
+    - `wargame/index.html`: `og:*`, `twitter:*`, `keywords`, `canonical`, `Schema.org WebApplication` 구조화 데이터 주입 (*CTF 플래그 메타태그 및 소스 주석 100% 무결성 유지*)
+    - `assets/og-preview.svg` & `wargame/assets/og-preview.svg`: 고해상도 벡터 오픈그래프 미리보기 배너 제작
+    - `sitemap.xml` & `wargame/sitemap.xml`: 75개 섹션, 38개 랩, 워게임 전체 URL 표준 색인 매핑 및 크롤러 허용 (`tools/generate_sitemap.py`)
+    - `robots.txt` & `wargame/robots.txt`: 검색엔진 크롤러 전면 허용 및 사이트맵 명시
+  - **검색엔진 즉시 색인(Instant Indexing) & 자동 제출 파이프라인**:
+    - IndexNow 프로토콜 완전 도입 (`4a8f9c12b7e53d0684a1e90f2b6c7d1e.txt`) -> Bing, Naver, Yandex, Seznam 대상 HTTP 202 Accepted 실시간 전송 확인
+    - `tools/submit_seo_sitemap.py`: Google/Bing 최신 표준 안내 및 IndexNow 자동 제출 CLI
+    - `.github/workflows/seo-submit.yml`: GitHub Actions 배포 시 검색엔진 자동 제출 파이프라인 구축
+  - **웹 자동 홍보 툴킷 & 소셜 바이럴 루프 구축**:
+    - `tools/promo_kit.py`: GeekNews, Reddit r/netsec, X/Twitter, Disquiet 맞춤형 홍보 문안 자동 생성, 원클릭 소셜 공유 URL, Discord/Slack 웹훅 브로드캐스트 지원
+    - `README.md`: 원클릭 소셜 공유(Share on X, Reddit, LinkedIn) 배지 추가
+    - `docs/PROMOTION_AND_SEO.md`: 홍보 및 SEO 종합 가이드 문서 작성
+  - **무결성 검증 100% All Green**:
+    - 워게임 4대 가드(`verify.js`, `audit.js --strict`, `leakscan.js`, `solve-derivable.js`) 전원 무결격 통과
+    - 전체 399개 Pytest 통과 (`pytest -q`: 399 passed)
+    - 원격 저장소(`origin/main`) 푸시 완료 (`56e1b73`, `cd10176`)
 
 - **2026-10-11 (Goal 1~3 Complete: Lab 38 EDRShield, Deepdive 22 EDR Userland Unhooking, Wargame Track 52 edrbypass 1,820 Milestone, 8th Simulator EDR Inspector, 399 Tests All Green, Offline Bundle v2.1.0 Sync)**:
   - **Lab 38 EDR 방어 회피 & 메모리 패칭 랩 신규 구축 (`labs/38_edr_evasion_c2_lab/`)**:
