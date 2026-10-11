@@ -47,7 +47,10 @@ def ping_search_engine(name: str, endpoint_url: str, dry_run: bool = False) -> b
             print(f"    [+] {name} ping succeeded (HTTP {status})")
             return status in (200, 201, 202, 204)
     except urllib.error.HTTPError as e:
-        print(f"    [-] {name} HTTP error: {e.code} {e.reason}")
+        if e.code in (404, 410):
+            print(f"    [i] {name} legacy /ping endpoint is deprecated by {name}. (Modern standard relies on robots.txt Sitemap directive & IndexNow protocol)")
+        else:
+            print(f"    [-] {name} HTTP error: {e.code} {e.reason}")
         return False
     except Exception as e:
         print(f"    [-] {name} failed: {e}")
