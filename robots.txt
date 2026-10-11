@@ -1,0 +1,9 @@
+# Robots.txt for VibeHacking
+# https://lsszz2100.github.io/VibeHacking/
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://lsszz2100.github.io/VibeHacking/sitemap.xml
+Sitemap: https://lsszz2100.github.io/VibeHacking/wargame/sitemap.xml

@@ -28,6 +28,7 @@
 <br/>
 
 문의 · 자료 공유 &nbsp;→&nbsp; [![Email](https://img.shields.io/badge/이메일-leemanrank%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:leemanrank@gmail.com) &nbsp; [![KakaoTalk](https://img.shields.io/badge/카카오톡_오픈채팅-인공지능_자료_공유-FAE100?style=flat-square&logo=kakao&logoColor=000000)](https://open.kakao.com/o/sv3aJD4h)
+&nbsp;│&nbsp; 소셜 공유 &nbsp;→&nbsp; [![Share on X](https://img.shields.io/badge/Share_on_X-000000?style=flat-square&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=%F0%9F%94%A5%20VibeHacking%202.0%20%EC%8B%A4%EC%A0%84%20%EC%82%AC%EC%9D%B4%EB%B2%84%EB%B3%B4%EC%95%88%20%EB%B0%94%EC%9D%B4%EB%B8%94%20%26%201%2C820%EC%A0%9C%20%EC%9B%8C%EA%B2%8C%EC%9E%84%20%F0%9F%91%89%20https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F) &nbsp; [![Share on Reddit](https://img.shields.io/badge/Share_on_Reddit-FF4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Flsszz2100%2FVibeHacking&title=VibeHacking:+Open-source+cybersecurity+bible+(75+sections,+38+labs)+and+terminal+wargame+with+1820+challenges) &nbsp; [![Share on LinkedIn](https://img.shields.io/badge/Share_on_LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Flsszz2100.github.io%2FVibeHacking%2F)
 
 </div>
 
@@ -61,7 +62,7 @@ features = {
     "한국어 완성도"  : "처음부터 한국어로 기획·작성",
     "이중언어"       : "한국어 / English 전 파일 제공",
     "완전한 커버리지": "75섹션 전 보안 영역",
-    "CTF 실습 환경"  : "도커 기반 15개 랩 즉시 구동",
+    "CTF 실습 환경"  : "도커 기반 38개 랩 즉시 구동",
 }
 assert all(features.values()), "All checks passed ✓"
 ```

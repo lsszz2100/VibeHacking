@@ -1,0 +1,32 @@
+name: Automated SEO Ping & IndexNow Submission
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sitemap.xml'
+      - 'wargame/sitemap.xml'
+      - 'index.html'
+      - 'wargame/index.html'
+      - 'README.md'
+      - 'labs/**'
+      - '[0-9][0-9]_*/**'
+  workflow_dispatch:
+
+jobs:
+  seo-ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Wait for Pages CDN Propagation
+        run: sleep 20
+
+      - name: Submit Sitemaps & Instant IndexNow to Search Engines
+        run: python3 tools/submit_seo_sitemap.py
