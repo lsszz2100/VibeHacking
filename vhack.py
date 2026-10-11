@@ -446,6 +446,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★",
         "related": [71, 15, 48],
     },
+    "38": {
+        "name": "EDR 유저랜드 후킹 우회 & 차세대 C2 실전 랩",
+        "dir":  "38_edr_evasion_c2_lab",
+        "desc": "EDRShield: AMSI/ETW 인메모리 패치 · 디스크 ntdll 매핑 클린 .text 언후킹 · Halo's Gate 동적 SSN 추출 및 간접 시스템 콜 · Ekko 타이머 큐 ROP 슬립 난독화",
+        "url":  "웹 콘솔 & EDR 회피 대시보드: http://localhost:8038",
+        "difficulty": "★★★★★",
+        "related": [55, 67, 49],
+    },
 }
 
 
@@ -1457,6 +1465,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8035, "Lab 35 (CloudPwnLab AWS Cloud IAM Lab)"),
         (8036, "Lab 36 (DBShield Enterprise Database Security Lab)"),
         (8037, "Lab 37 (BLEShield Bluetooth LE & SDR Lab)"),
+        (8038, "Lab 38 (EDRShield EDR Evasion & Next-Gen C2 Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

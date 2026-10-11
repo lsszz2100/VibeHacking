@@ -13,6 +13,7 @@
 | [04_log_evasion.md](./04_log_evasion.md) | **로그 우회 — 이벤트 로그 조작·흔적 제거·포렌식 대응** — 왜 로그가 중요한가: |
 | [05_evasion_detection_and_hunting.md](./05_evasion_detection_and_hunting.md) | **탐지 회피 기법 사냥 (Threat Hunting)** — 수동적 방어 (Reactive): |
 | [06_evasion_ctf_lab.md](./06_evasion_ctf_lab.md) | **탐지 우회 기법 CTF 실습 랩** — AV 우회, 프로세스 인젝션, 로그 지우기, AMSI 우회 기법을 실습하는 CTF 환경입니다. |
+| [07_edr_userland_unhooking_and_indirect_syscalls_deepdive.md](./07_edr_userland_unhooking_and_indirect_syscalls_deepdive.md) | **EDR 유저랜드 후킹 해제 & 간접 시스템 콜 실전 심층 분석 (EDR Userland Unhooking & Indirect Syscalls Deep-dive)** — 현대 엔드포인트 탐지 및 대응(EDR, Endpoint Detection and Response) 솔루션은 악성 프로세스의 행위를 실시간 감시하기 위해 운영체제의 유저 공간(Userl... |
 
 ## 🎯 학습 목표
 

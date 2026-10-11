@@ -874,6 +874,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ BLE Security Hardened! LESC ECDH & Anti-Replay Active -> FLAG{BLE_LESC_ECDH_SECURE_CONNECTIONS_HARDENED_9921}"
             }
         ]
+    },
+    "38": {
+        "title": "EDR 유저랜드 후킹 우회 & 차세대 C2 실전 랩 (EDRShield)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "AMSI & ETW 인메모리 패칭 및 텔레메트리 침묵",
+                "target": "POST /api/edr/amsi-etw/patch (target: both, patch_hex: b8 57 00 07 80 c3)",
+                "poc_explanation": "스크립트 검사 함수 AmsiScanBuffer를 패치하여 E_INVALIDARG를 강제 반환하고, EtwEventWrite를 ret(0xC3)로 무력화하여 메모리 스캔 및 이벤트 로깅을 차단합니다.",
+                "exploit_payload": '{"target": "both", "patch_hex": "b8 57 00 07 80 c3", "verify_bypass": true}',
+                "defense": "드라이버 레벨에서 ntdll/amsi 메모리 보호 속성 쓰기 감사(PsSetCreateProcessNotifyRoutineEx) 및 커널 ETW-Ti 텔레메트리 모니터링.",
+                "sample_output": "🛡️ AMSI/ETW In-Memory Patched! Scanning bypassed -> FLAG{AMSI_ETW_INLINE_PATCH_MEMORY_BYPASS_8819}"
+            },
+            {
+                "step": 2,
+                "name": "ntdll.dll 디스크 매핑 및 클린 .text 섹션 언후킹",
+                "target": "POST /api/edr/ntdll/unhook (method: disk_mapping, target_section: .text)",
+                "poc_explanation": "디스크 상의 원본 ntdll.dll 파일을 새로 매핑하여 메모리 상의 EDR 5바이트 JMP 인라인 후킹 트램펄린을 덮어써 순수한 시스템 콜 스텁을 복원합니다.",
+                "exploit_payload": '{"method": "disk_mapping", "target_section": ".text", "restore_bytes": true}',
+                "defense": "KnownDlls 섹션 무결성 검증, 메모리 페이지 불일치(Image Mapped vs Modified Private) 실시간 메모리 스캐너(Moneta/PE-sieve) 탐지.",
+                "sample_output": "🎯 ntdll .text Overwritten! 4 EDR hooks removed -> FLAG{NTDLL_DISK_UNHOOKING_FRESH_COPY_RESTORED_7721}"
+            },
+            {
+                "step": 3,
+                "name": "Halo's Gate 동적 SSN 추출 및 간접 시스템 콜 실행",
+                "target": "POST /api/edr/syscalls/invoke (function: NtAllocateVirtualMemory, ssn_mode: halos_gate, mode: indirect_syscall)",
+                "poc_explanation": "인접한 ntdll 스텁을 탐색하여 SSN을 계산하고 ntdll 내부의 'syscall; ret' 가젯으로 간접 점프하여 정상적인 호출 스택 프레임을 유지한 채 EDR을 우회합니다.",
+                "exploit_payload": '{"function_name": "NtAllocateVirtualMemory", "ssn_extraction": "halos_gate", "execution_mode": "indirect_syscall", "allocation_size": 4096}',
+                "defense": "커널 ETW-Ti를 통한 실제 스레드 콜 스택 심층 분석(Synthetic Call Stack Detection) 및 비인가 메모리 영역에서의 실행 차단.",
+                "sample_output": "🚀 Indirect Syscall Dispatched! Clean call stack verified -> FLAG{INDIRECT_SYSCALL_HELLS_GATE_STACK_CLEAN_9934}"
+            },
+            {
+                "step": 4,
+                "name": "Ekko 타이머 큐 ROP 체인 슬립 난독화 무력화",
+                "target": "POST /api/edr/c2/sleep-obfuscate (technique: ekko_rop_timer, mask_protection: PAGE_READWRITE)",
+                "poc_explanation": "비컨 대기 시 타이머 큐를 통해 메모리 보호를 PAGE_READWRITE로 전환하고 쉘코드를 SystemFunction032로 암호화하여 활성 YARA 메모리 스캐너를 무력화합니다.",
+                "exploit_payload": '{"technique": "ekko_rop_timer", "sleep_seconds": 10, "mask_protection": "PAGE_READWRITE", "encryption_algo": "SystemFunction032_XOR"}',
+                "defense": "스레드 대기 상태 및 대기 스택 검사(Sleep Stack Spoofing 탐지), 타이머 큐 콜백 함수 포인터 무결성 감사.",
+                "sample_output": "🌙 Ekko Timer Sleep Obfuscation Arm! YARA 0 matches -> FLAG{EKKO_SLEEP_OBFUSCATION_TIMER_QUEUE_ROP_4412}"
+            }
+        ]
     }
 }
 

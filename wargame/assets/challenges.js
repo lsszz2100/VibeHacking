@@ -460,6 +460,14 @@ const TRACKS = [
     "en": "Bluetooth LE & SDR RF Security",
     "desc_ko": "BLE GATT 프로파일 정찰·비인가 Characteristic 쓰기·레거시 Just Works 스니핑·SDR OOK/FSK 디코딩·LESC ECDH 및 롤링 코드 하드닝.",
     "desc_en": "BLE GATT profile recon, unauthenticated characteristic writes, legacy Just Works sniffing, SDR OOK/FSK decoding, LESC ECDH, and rolling code hardening."
+  },
+  {
+    "id": "edrbypass",
+    "icon": "🛡️",
+    "ko": "EDR 유저랜드 후킹 우회 & 차세대 C2",
+    "en": "EDR Evasion & Next-Gen C2",
+    "desc_ko": "AMSI/ETW 인메모리 패치·ntdll 디스크 언후킹·Halo's Gate 동적 SSN·간접 시스템 콜·Ekko 타이머 큐 ROP 슬립 난독화.",
+    "desc_en": "AMSI/ETW in-memory patching, ntdll disk unhooking, Halo's Gate dynamic SSN, indirect syscalls, and Ekko timer-queue sleep obfuscation."
   }
 ];
 
@@ -50497,5 +50505,986 @@ const CHALLENGES = [
     ]
   },
   "hash": "abf39a6904ccc40e6417b5e9498325f76411f0d44ea36989c801773d3bda5a0b"
-}
+},
+  // ── [52] edrbypass (EDR 유저랜드 후킹 우회 & 차세대 C2) ───────────────────────
+  {
+    "id": "t0_edrbypass_userland_inline_hook",
+    "tier": 0,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 50,
+    "ci": true,
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "유저랜드 API 인라인 후킹 메커니즘",
+      "en": "Userland API Inline Hooking Mechanism"
+    },
+    "prompt": {
+      "ko": "엔드포인트 보안 솔루션이 타깃 프로세스의 ntdll 내부 함수 시작부를 무조건 점프 명령어로 변조하여 검사 루틴으로 가로채는 기법의 명칭을 영문 한 단어로 제출하세요.",
+      "en": "Submit the single English term for the technique where endpoint agents modify function prologues in ntdll to divert execution flow to inspection engines."
+    },
+    "hints": {
+      "ko": [
+        "코드 인라인에 점프 패치를 삽입하는 후킹 방식입니다.",
+        "영문 10글자 소문자입니다."
+      ],
+      "en": [
+        "Direct patching of instructions within the target function code.",
+        "Ten letters in lowercase."
+      ]
+    },
+    "hash": "cf94399c14d179344f7c14a049259206fea689bfb7f2bf8e055c7533b1e0dc42"
+  },
+  {
+    "id": "t0_edrbypass_userland_privilege_ring",
+    "tier": 0,
+    "cat": "sleepobf",
+    "track": "edrbypass",
+    "points": 50,
+    "ci": true,
+    "fmt": "한 단어 / one word (5글자 / 5 chars)",
+    "title": {
+      "ko": "x64 아키텍처 유저 공간 권한 링",
+      "en": "x64 Architecture User Mode Privilege Ring"
+    },
+    "prompt": {
+      "ko": "Windows x64 CPU 아키텍처에서 일반 사용자 애플리케이션 및 유저랜드 라이브러리가 격리 실행되는 권한 레벨을 나타내는 영문 식별자를 공백 없이 소문자로 제출하세요.",
+      "en": "Submit the lowercase token representing the userland protection ring in x64 architecture without spaces."
+    },
+    "hints": {
+      "ko": [
+        "커널은 0번 링이며, 유저는 3번째 링입니다.",
+        "영문 5글자 소문자입니다."
+      ],
+      "en": [
+        "The kernel executes in Ring 0, while user processes run in Ring 3.",
+        "Five letters in lowercase."
+      ]
+    },
+    "hash": "037170e9534d3b8cceed4646a595ebced648da872baa594bb602debd51f42e3e"
+  },
+  {
+    "id": "t1_edrbypass_amsi_return_status",
+    "tier": 1,
+    "cat": "unhook",
+    "track": "edrbypass",
+    "points": 65,
+    "ci": true,
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "스크립트 검사 패치 에러 결과 코드",
+      "en": "Script Inspection Patch Return Result Code"
+    },
+    "prompt": {
+      "ko": "스크립트 검사 루틴 진입부를 패치할 때 잘못된 인자(E_INVALIDARG) 반환을 통해 시그니처 판정을 강제 통과시키는 결과 상태 식별자를 영문 한 단어로 제출하세요.",
+      "en": "Submit the single English identifier representing the scan result status bypassed via invalid argument return."
+    },
+    "hints": {
+      "ko": [
+        "안티멀웨어 검사 결과 상태를 뜻합니다.",
+        "영문 10글자 소문자입니다."
+      ],
+      "en": [
+        "Designates the bypassed evaluation result status.",
+        "Ten lowercase letters."
+      ]
+    },
+    "hash": "8b38c5bd904e68adc808a75ef1137079bb9ef15dfe6d1c98c366a38dd619b739"
+  },
+  {
+    "id": "t1_edrbypass_etw_inline_silencing",
+    "tier": 1,
+    "cat": "unhook",
+    "track": "edrbypass",
+    "points": 65,
+    "ci": true,
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "이벤트 추적 로깅 인라인 침묵 기법",
+      "en": "Event Tracing Logging Inline Silencing Technique"
+    },
+    "prompt": {
+      "ko": "윈도우 이벤트 추적 로깅 함수의 진입부에 ret 명령어를 패치하여 런타임 보안 텔레메트리 전송을 인라인으로 침묵시키는 합성어를 영문으로 제출하세요.",
+      "en": "Submit the English compound term for inline suppression of userland event tracing via ret instruction patching."
+    },
+    "hints": {
+      "ko": [
+        "이벤트 추적 약어와 인라인의 결합입니다.",
+        "영문 9글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of event tracing acronym and inline.",
+        "Nine letters in lowercase."
+      ]
+    },
+    "hash": "2977a81f85909cf4e7ccf6614945d39b70bd8f345d7b594dbdb539d992330ee0"
+  },
+  {
+    "id": "t1_edrbypass_syscall_service_identifier",
+    "tier": 1,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 65,
+    "ci": true,
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "시스템 서비스 번호 인덱스 식별자",
+      "en": "System Service Number Index Identifier"
+    },
+    "prompt": {
+      "ko": "Windows NT 커널 진입 시 EAX 레지스터에 탑재되어 디스패처가 목적 함수를 찾도록 지정하는 시스템 콜 고유 식별 번호를 지칭하는 합성어를 영문으로 제출하세요.",
+      "en": "Submit the English compound token for the system call dispatch index loaded into EAX register."
+    },
+    "hints": {
+      "ko": [
+        "시스템 호출과 식별자의 합성어입니다.",
+        "영문 9글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of system call and identifier.",
+        "Nine letters in lowercase."
+      ]
+    },
+    "hash": "6963a410b39cb85183d037b6dce6d0c95f9fb3adf1a85c3fcdfcefb3acbfb243"
+  },
+  {
+    "id": "t1_edrbypass_call_stack_trace_hazard",
+    "tier": 1,
+    "cat": "sleepobf",
+    "track": "edrbypass",
+    "points": 65,
+    "ci": true,
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "직접 시스템 콜 호출 시 반환 프레임 검사",
+      "en": "Direct Syscall Return Frame Inspection"
+    },
+    "prompt": {
+      "ko": "직접 시스템 호출 시 커널에서 역추적되어 명령어 포인터 불일치가 드러나는 유저랜드 실행 프레임 구조를 영문으로 제출하세요.",
+      "en": "Submit the single English term for the userland return frame structure inspected by defenders during direct syscall invocation."
+    },
+    "hints": {
+      "ko": [
+        "호출 시 프레임이 쌓이는 구조입니다.",
+        "영문 9글자 소문자입니다."
+      ],
+      "en": [
+        "Structure holding frame return addresses.",
+        "Nine letters in lowercase."
+      ]
+    },
+    "hash": "4499a3975ab407832b5df7b62191f35f5fb5cc5a4e50a30d74822d1c779fad5d"
+  },
+  {
+    "id": "t1_edrbypass_known_dlls_section_object",
+    "tier": 1,
+    "cat": "c2evade",
+    "track": "edrbypass",
+    "points": 65,
+    "ci": true,
+    "fmt": "한 단어 / one word (12글자 / 12 chars)",
+    "title": {
+      "ko": "시스템 기본 사전 로드 DLL 섹션 객체 식별자",
+      "en": "Preloaded System DLL Section Object Identifier"
+    },
+    "prompt": {
+      "ko": "Windows 객체 관리자에서 시스템 기본 공유 라이브러리를 사전 캐시해 두는 가상 섹션 객체 저장소를 지칭하는 합성어를 영문으로 제출하세요.",
+      "en": "Submit the English compound token designating the virtual section directory caching baseline system DLLs."
+    },
+    "hints": {
+      "ko": [
+        "알려진 DLL 객체를 뜻하는 합성어입니다.",
+        "영문 12글자 소문자입니다."
+      ],
+      "en": [
+        "Designates the preloaded system module cache.",
+        "Twelve letters in lowercase."
+      ]
+    },
+    "hash": "5f4e83117b19cdeeaba56d2fd25de1ef83a1b1c7d30a0c317fadd57cb5f1f2ae"
+  },
+  {
+    "id": "t1_edrbypass_inline_jmp_opcode_byte",
+    "tier": 1,
+    "cat": "c2evade",
+    "track": "edrbypass",
+    "points": 65,
+    "ci": true,
+    "fmt": "16진수 / hex (2글자 / 2 chars)",
+    "title": {
+      "ko": "인라인 점프 트램펄린 니모닉 바이트",
+      "en": "Inline Jump Trampoline Mnemonic Opcode"
+    },
+    "prompt": {
+      "ko": "x86/x64 환경에서 엔드포인트 솔루션이 5바이트 상대 점프 훅을 설치할 때 사용하는 1바이트 점프 opcode 16진수 값을 접두사 없이 2글자로 제출하세요.",
+      "en": "Submit the 2-character hex opcode byte (without prefix) for the 5-byte relative jump instruction used in trampoline hooks."
+    },
+    "hints": {
+      "ko": [
+        "상대 점프 머신코드 바이트입니다.",
+        "알파벳 e로 시작하는 16진수입니다."
+      ],
+      "en": [
+        "Machine opcode byte for relative jump.",
+        "Two hex chars starting with e."
+      ]
+    },
+    "hash": "0b227dd238234a0b1a29605d2857ea067969f6bdae3c268720dc57f875a48e54"
+  },
+  {
+    "id": "t2_edrbypass_ssn_lookup",
+    "tier": 2,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "ntdll 함수 스텁 오프셋 SSN 파싱 역산",
+      "en": "ntdll Stub Offset SSN Parsing Computation"
+    },
+    "prompt": {
+      "ko": "ntdll 함수 스텁 바이트에서 시스템 서비스 번호를 추출하여 플래그를 도출하세요.\n\n```\nfunction_target: NtAllocateVirtualMemory\nbase_opcode: 4c 8b d1 b8 18 00 00 00\nkernel_offset: 0x0018\nsubsystem_tag: NT_ALLOC\n```\n\n형식: `FLAG{SSN_<kernel_offset>_<subsystem_tag>}`",
+      "en": "Extract the System Service Number from ntdll stub bytes and derive the flag.\n\n```\nfunction_target: NtAllocateVirtualMemory\nbase_opcode: 4c 8b d1 b8 18 00 00 00\nkernel_offset: 0x0018\nsubsystem_tag: NT_ALLOC\n```\n\nFormat: `FLAG{SSN_<kernel_offset>_<subsystem_tag>}`"
+    },
+    "hints": {
+      "ko": [
+        "kernel_offset과 subsystem_tag 값을 확인하세요.",
+        "지정된 형식으로 플래그를 결합하세요."
+      ],
+      "en": [
+        "Inspect kernel_offset and subsystem_tag in the code block.",
+        "Assemble parameters according to the format."
+      ]
+    },
+    "hash": "8c942ba10930cf3189f4e4924d9a486ba897669070902629acd03f8535641505"
+  },
+  {
+    "id": "t2_edrbypass_amsi_patch_calc",
+    "tier": 2,
+    "cat": "unhook",
+    "track": "edrbypass",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "메모리 검사 진입점 패치 바이트 검증",
+      "en": "Memory Scan Entrypoint Patch Byte Verification"
+    },
+    "prompt": {
+      "ko": "메모리 검사 루틴 패치 파라미터에서 반환 코드와 상태 태그를 조합하여 플래그를 생성하세요.\n\n```\napi_target: BufferScanRoutine\nreturn_code: 0x80070057\nopcode_hex: b8 57 00 07 80 c3\npatch_status: CLEAN\n```\n\n형식: `FLAG{AMSI_PATCH_<return_code>_<patch_status>}`",
+      "en": "Combine return code and patch status from the parameters to generate the flag.\n\n```\napi_target: BufferScanRoutine\nreturn_code: 0x80070057\nopcode_hex: b8 57 00 07 80 c3\npatch_status: CLEAN\n```\n\nFormat: `FLAG{AMSI_PATCH_<return_code>_<patch_status>}`"
+    },
+    "hints": {
+      "ko": [
+        "0x80070057과 상태 태그를 결합하세요.",
+        "형식에 맞춰 플래그를 완성하세요."
+      ],
+      "en": [
+        "Concatenate return_code and patch_status in order.",
+        "Assemble parameters according to the format."
+      ]
+    },
+    "hash": "0fdfceaff4e2e21e19ec045d6609cee55f204c3c2cb83d82deabc55439b597ea"
+  },
+  {
+    "id": "t2_edrbypass_hells_gate_research_group",
+    "tier": 2,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 90,
+    "ci": true,
+    "fmt": "한 단어 / one word (13글자 / 13 chars)",
+    "title": {
+      "ko": "동적 시스템 콜 기법 발표 보안 연구 집단",
+      "en": "Dynamic Syscall Technique Research Collective"
+    },
+    "prompt": {
+      "ko": "ntdll 메모리에서 직접 바이트 패턴을 읽어내는 기법 논문과 소스코드를 공개한 악성코드 연구 플랫폼 집단의 명칭을 하이픈 없이 소문자로 제출하세요.",
+      "en": "Submit the lowercase name (no hyphens) of the research collective that authored and published the direct stub parsing paper."
+    },
+    "hints": {
+      "ko": [
+        "유명 악성코드 소스코드 리서치 플랫폼 이름입니다.",
+        "영문 13글자 소문자입니다."
+      ],
+      "en": [
+        "Well-known malware source research collective.",
+        "Thirteen letters in lowercase."
+      ]
+    },
+    "hash": "27d80af81d4e86fdcd8b9309dfe5832eff368c73c572ded7db0afc7dcd17cd39"
+  },
+  {
+    "id": "t2_edrbypass_halos_gate_neighbor_scan",
+    "tier": 2,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 90,
+    "ci": true,
+    "fmt": "한 단어 / one word (12글자 / 12 chars)",
+    "title": {
+      "ko": "인접 함수 스텁 스캔 인덱스 역산 기법",
+      "en": "Neighboring Function Stub Scan Index Technique"
+    },
+    "prompt": {
+      "ko": "후킹으로 오염된 함수 대신 인접 함수의 온전한 스텁을 탐색하여 오프셋을 역산하는 원리를 나타내는 합성어를 영문으로 제출하세요.",
+      "en": "Submit the English compound term for inspecting adjacent unhooked function stubs to calculate dispatch indices."
+    },
+    "hints": {
+      "ko": [
+        "이웃을 뜻하는 영단어와 스텁의 결합입니다.",
+        "영문 12글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of neighbor and stub.",
+        "Twelve letters in lowercase."
+      ]
+    },
+    "hash": "6673d0ff6ae9ba64066dc3457861a2c88000782be69d2ab16b418cee74dab349"
+  },
+  {
+    "id": "t2_edrbypass_multi_byte_hook_triage",
+    "tier": 2,
+    "cat": "unhook",
+    "track": "edrbypass",
+    "points": 90,
+    "ci": true,
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "다중 오프셋 코드 패치 탐지 패턴",
+      "en": "Multi-Offset Code Patch Detection Pattern"
+    },
+    "prompt": {
+      "ko": "시작부뿐 아니라 함수 내부 깊숙이 설치된 다단계 훅 패턴을 탐색하여 시스템 인덱스를 복원하는 기법 원리를 영문 한 단어로 제출하세요.",
+      "en": "Submit the single English compound term for identifying complex multi-stage hook patterns at deep offsets."
+    },
+    "hints": {
+      "ko": [
+        "다중을 뜻하는 접두사와 후크의 결합입니다.",
+        "영문 9글자 소문자입니다."
+      ],
+      "en": [
+        "Combination of multi and hook.",
+        "Nine letters in lowercase."
+      ]
+    },
+    "hash": "ded4d4cb25be14293e9b34b4741436015674d5b4f61792d047dd1beedc954ae9"
+  },
+  {
+    "id": "t2_edrbypass_peruns_fart_suspended_copy",
+    "tier": 2,
+    "cat": "unhook",
+    "track": "edrbypass",
+    "points": 90,
+    "ci": true,
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "일시정지 프로세스 클린 시스템 라이브러리 복제",
+      "en": "Suspended Process Clean System Library Replication"
+    },
+    "prompt": {
+      "ko": "새 프로세스를 일시정지 상태로 생성하여 보안 센서가 로드되기 전에 순수한 시스템 라이브러리 바이트를 복제해오는 유명 기법의 명칭을 영문으로 제출하세요.",
+      "en": "Submit the single English name of the technique that creates a suspended process to copy clean library bytes before sensor injection."
+    },
+    "hints": {
+      "ko": [
+        "슬라브 신화 천둥신 이름과 방귀를 뜻하는 영단어의 결합입니다.",
+        "영문 10글자 소문자입니다."
+      ],
+      "en": [
+        "Named after Slavic deity Perun.",
+        "Ten letters in lowercase."
+      ]
+    },
+    "hash": "b9302064c8777e64e01aa149774462e03a3ebe5ea394a9893306664398ef9718"
+  },
+  {
+    "id": "t2_edrbypass_systemfunction032_rc4",
+    "tier": 2,
+    "cat": "sleepobf",
+    "track": "edrbypass",
+    "points": 90,
+    "ci": true,
+    "fmt": "한 단어 / one word (18글자 / 18 chars)",
+    "title": {
+      "ko": "미공개 스트림 암호화 헬퍼 함수",
+      "en": "Undocumented Stream Cryptography API"
+    },
+    "prompt": {
+      "ko": "슬립 상태 전환 시 페이로드를 인메모리 암호화/복호화하기 위해 자주 활용되는 시스템 라이브러리의 미공개 헬퍼 함수명을 소문자로 제출하세요.",
+      "en": "Submit the lowercase undocumented API function name utilized to encrypt beacon memory during sleep transitions."
+    },
+    "hints": {
+      "ko": [
+        "032 번호가 붙은 시스템 암호화 헬퍼 함수입니다.",
+        "영문 18글자 소문자입니다."
+      ],
+      "en": [
+        "Undocumented system helper API numbered 032.",
+        "Eighteen letters in lowercase."
+      ]
+    },
+    "hash": "94b73e0fd6ac136d222e39efdde5e6bf337a5c7e84c7aa10199c8beb9ff45848"
+  },
+  {
+    "id": "t2_edrbypass_malleable_c2_profile",
+    "tier": 2,
+    "cat": "c2evade",
+    "track": "edrbypass",
+    "points": 90,
+    "ci": true,
+    "fmt": "한 단어 / one word (16글자 / 16 chars)",
+    "title": {
+      "ko": "비컨 트래픽 위장 가변 프로파일 체계",
+      "en": "Beacon Traffic Dynamic Evasion Profile"
+    },
+    "prompt": {
+      "ko": "네트워크 탐지를 회피하기 위해 비컨의 통신 헤더와 페이로드 구조를 합법적 트래픽 형태로 정밀 위장하는 가변 프로파일 메커니즘을 영문으로 제출하세요.",
+      "en": "Submit the English compound term for polymorphic beacon traffic profiles masking communication as benign traffic."
+    },
+    "hints": {
+      "ko": [
+        "변형 가능한을 뜻하는 영단어와 프로필의 결합입니다.",
+        "영문 16글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of malleable and profile.",
+        "Sixteen letters in lowercase."
+      ]
+    },
+    "hash": "41d1f1681d8ad7cac631d6a8db0cd5b071274a6348a543fa4960235a159e6460"
+  },
+  {
+    "id": "t3_edrbypass_ekko_sleep_checksum",
+    "tier": 3,
+    "cat": "sleepobf",
+    "track": "edrbypass",
+    "points": 200,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "타이머 체인 슬립 암호화 체크섬",
+      "en": "Timer Chain Sleep Cryptographic Checksum"
+    },
+    "prompt": {
+      "ko": "타이머 체인 슬립 파라미터에서 밀리초를 16진수로 변환하고 키와 결합하여 플래그를 도출하세요.\n\n```\ntechnique: Ekko_Timer_Chain\nsleep_ms: 40000\nxor_key_byte: 0xA7\ngadget_count: 6\n```\n\n형식: `FLAG{EKKO_SLEEP_<hex_ms>_KEY_<xor_key_byte>_GADGET_<gadget_count>}` (예: 40000 ms -> 0x9C40)",
+      "en": "Convert sleep milliseconds to uppercase hex and combine with key and gadget count to derive the flag.\n\n```\ntechnique: Ekko_Timer_Chain\nsleep_ms: 40000\nxor_key_byte: 0xA7\ngadget_count: 6\n```\n\nFormat: `FLAG{EKKO_SLEEP_<hex_ms>_KEY_<xor_key_byte>_GADGET_<gadget_count>}`"
+    },
+    "hints": {
+      "ko": [
+        "40000의 16진수는 0x9C40입니다.",
+        "포맷 규칙에 맞춰 플래그를 조립하세요."
+      ],
+      "en": [
+        "40000 in hex is 0x9C40.",
+        "Assemble parameters according to the format."
+      ]
+    },
+    "hash": "ce402bf3d5f4d2f3ab26566c3813842ab98c774a27b09d61ae87fbed88af7524"
+  },
+  {
+    "id": "t3_edrbypass_ekko_rop_timer_queue",
+    "tier": 3,
+    "cat": "sleepobf",
+    "track": "edrbypass",
+    "points": 130,
+    "ci": true,
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "타이머 대기열 기반 슬립 암호화 기법",
+      "en": "Timer Mechanism Gadget Sleep Cryptography"
+    },
+    "prompt": {
+      "ko": "CreateTimerQueueTimer API와 비동기 콜백 체인을 활용하여 메인 스레드 정지 중 반환 지향 가젯 체인으로 페이로드를 암호화하는 슬립 은닉 대표 기법을 영문으로 제출하세요.",
+      "en": "Submit the English compound token for the timer mechanism technique executing return-oriented gadget encryption during dormant states."
+    },
+    "hints": {
+      "ko": [
+        "기법 고유명과 타이머의 결합입니다.",
+        "영문 9글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of technique name and timer.",
+        "Nine letters in lowercase."
+      ]
+    },
+    "hash": "cab379d81e46ce935bafc70f756fa687e43c8ff0fe2ee89fb25c119c9e981e27"
+  },
+  {
+    "id": "t3_edrbypass_cronos_event_sleep",
+    "tier": 3,
+    "cat": "sleepobf",
+    "track": "edrbypass",
+    "points": 130,
+    "ci": true,
+    "fmt": "한 단어 / one word (11글자 / 11 chars)",
+    "title": {
+      "ko": "동기화 이벤트 기반 수면 메모리 은닉 기법",
+      "en": "Event Synchronization Dormant Memory Masking Technique"
+    },
+    "prompt": {
+      "ko": "대기 이벤트 객체와 비동기 콜백 스케줄러를 결합하여 비컨 메모리 권한을 마스킹하는 슬립 기법을 영문으로 제출하세요.",
+      "en": "Submit the English compound term for sleep masking combining synchronization events and asynchronous callbacks."
+    },
+    "hints": {
+      "ko": [
+        "시간의 신 이름과 수면의 결합입니다.",
+        "영문 11글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of deity name and sleep.",
+        "Eleven letters in lowercase."
+      ]
+    },
+    "hash": "dd14d912156ac8f8620b0d7ef1177d891fe522bcff742f9cd5ef68855fded917"
+  },
+  {
+    "id": "t3_edrbypass_foliage_apc_sleep",
+    "tier": 3,
+    "cat": "sleepobf",
+    "track": "edrbypass",
+    "points": 130,
+    "ci": true,
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "비동기 호출 대기열 기반 슬립 은닉 기법",
+      "en": "Asynchronous Queue Chained Sleep Evasion Technique"
+    },
+    "prompt": {
+      "ko": "NtQueueApcThread 시스템 콜을 연속 호출하여 비컨을 잠재우고 반환 프레임을 숨기는 고급 슬립 기법을 영문으로 제출하세요.",
+      "en": "Submit the English compound term for the advanced dormant memory masking technique utilizing chained NtQueueApcThread calls."
+    },
+    "hints": {
+      "ko": [
+        "고급 슬립 기법명과 비동기 호출 대기열 약어의 결합입니다.",
+        "영문 10글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of technique name and queue acronym.",
+        "Ten letters in lowercase."
+      ]
+    },
+    "hash": "d12ee536fd82d3ff581336df9116028f41538da8baee7a1ba3d8a0de7adf2e22"
+  },
+  {
+    "id": "t3_edrbypass_indirect_syscall_clean_gadget",
+    "tier": 3,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 130,
+    "ci": true,
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "합법적 시스템 콜 반환 명령어 가젯",
+      "en": "Legitimate Syscall Return Instruction Gadget"
+    },
+    "prompt": {
+      "ko": "간접 디스패치 시 반환 주소 검사를 통과하기 위해 ntdll 내부에서 탐색하는 시스템 콜과 반환 명령어의 연속쌍을 공백 없이 영문으로 제출하세요.",
+      "en": "Submit the continuous English instruction pair searched inside ntdll to legitimize return address traces."
+    },
+    "hints": {
+      "ko": [
+        "시스템 호출 명령어와 리턴 명령어의 결합입니다.",
+        "영문 10글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of syscall and ret instructions.",
+        "Ten letters in lowercase."
+      ]
+    },
+    "hash": "f2dfde56d6fa1fbd7dbb3600f7820c71abfee70b8834234f19564fc2fd8c3b83"
+  },
+  {
+    "id": "t3_edrbypass_synthetic_stack_telemetry",
+    "tier": 3,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 130,
+    "ci": true,
+    "fmt": "한 단어 / one word (14글자 / 14 chars)",
+    "title": {
+      "ko": "합성 프레임 분석 블루팀 탐지 기술",
+      "en": "Synthetic Frame Telemetry Blue Team Analysis"
+    },
+    "prompt": {
+      "ko": "커널 진입 시 호출 프레임의 상위 구조와 바이너리 심볼 정합성을 감사하여 위조된 프레임을 식별하는 블루팀 텔레메트리 기법을 영문으로 제출하세요.",
+      "en": "Submit the English compound term for verifying frame integrity against unwinding symbols to detect forged caller chains."
+    },
+    "hints": {
+      "ko": [
+        "스택과 합성 인공물을 뜻하는 단어의 결합입니다.",
+        "영문 14글자 소문자입니다."
+      ],
+      "en": [
+        "Combination of stack and synthetic.",
+        "Fourteen letters in lowercase."
+      ]
+    },
+    "hash": "f7313c46942ca0db8d7f37b5f0425abc99d1862cb7ead9262ea2dbe95a8977bd"
+  },
+  {
+    "id": "t3_edrbypass_moneta_memory_scanner_tool",
+    "tier": 3,
+    "cat": "unhook",
+    "track": "edrbypass",
+    "points": 130,
+    "ci": true,
+    "fmt": "한 단어 / one word (10글자 / 10 chars)",
+    "title": {
+      "ko": "메모리 이상 아티팩트 실시간 분석 툴",
+      "en": "Real-Time In-Memory Anomaly Scanner Tool"
+    },
+    "prompt": {
+      "ko": "프로세스 메모리 내 이상 페이지 권한, 디스크와 불일치하는 수정 코드 및 메모리 은닉을 심층 검사하는 대표적인 메모리 스캐너 도구명을 합성어로 제출하세요.",
+      "en": "Submit the compound tool token for the open-source in-memory scanner auditing private commits and anomalous protections."
+    },
+    "hints": {
+      "ko": [
+        "유명 메모리 진단 도구와 스캔의 합성어입니다.",
+        "영문 10글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of diagnostic tool name and scan.",
+        "Ten letters in lowercase."
+      ]
+    },
+    "hash": "7dcef76defcd5fcb8b94e3fa11d2a1ed6e7f09452dc617505412fd2216843f27"
+  },
+  {
+    "id": "t3_edrbypass_pe_sieve_hook_detector",
+    "tier": 3,
+    "cat": "unhook",
+    "track": "edrbypass",
+    "points": 130,
+    "ci": true,
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "실행 중 PE 인라인 패치 탐지 스캐너",
+      "en": "Running PE Inline Patch Detection Scanner"
+    },
+    "prompt": {
+      "ko": "메모리 상의 PE 헤더 및 섹션을 디스크 원본 파일과 대조하여 인라인 후킹 및 쉘코드 주입을 실시간 식별하는 오픈소스 탐지 툴의 이름을 하이픈 없이 소문자로 제출하세요.",
+      "en": "Submit the lowercase name (no hyphens) of the open-source tool scanning active process memory against on-disk PE files to spot inline patches."
+    },
+    "hints": {
+      "ko": [
+        "PE 구조와 체(sieve)의 결합입니다.",
+        "영문 7글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of pe and sieve.",
+        "Seven letters in lowercase."
+      ]
+    },
+    "hash": "af2fbc26d0801de8d437263fd2d9072945292b9ddfa6b0e86406dbf3278beb1f"
+  },
+  {
+    "id": "t3_edrbypass_parent_pid_spoofing",
+    "tier": 3,
+    "cat": "c2evade",
+    "track": "edrbypass",
+    "points": 130,
+    "ci": true,
+    "fmt": "한 단어 / one word (12글자 / 12 chars)",
+    "title": {
+      "ko": "부모 프로세스 ID 위장 실행 기법",
+      "en": "Parent Process ID Spoofing Execution"
+    },
+    "prompt": {
+      "ko": "자식 프로세스 생성 시 확장 프로세스 구조체를 조작하여 부모 프로세스를 정상 시스템 데몬으로 위장하는 회피 기법을 영문으로 제출하세요.",
+      "en": "Submit the English compound term for altering parent process lineage via extended attributes to bypass process tree heuristics."
+    },
+    "hints": {
+      "ko": [
+        "부모 프로세스 식별자 약어와 위장의 결합입니다.",
+        "영문 12글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of parent PID acronym and spoofing.",
+        "Twelve letters in lowercase."
+      ]
+    },
+    "hash": "5cd8b925c0a442ec269d1916194282fab48a9c2d4b98b8c6ee840d4b2f343f65"
+  },
+  {
+    "id": "t4_edrbypass_capstone_full_audit",
+    "tier": 4,
+    "cat": "c2evade",
+    "track": "edrbypass",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 차세대 EDR 침투 회피 종합 감사",
+      "en": "Enterprise Full-Chain Next-Gen EDR Evasion Audit"
+    },
+    "prompt": {
+      "ko": "침투 회피 종합 인시던트 보고서 파라미터에서 핵심 메커니즘을 종합하여 최종 마스터 플래그를 도출하세요.\n\n```\nunhook_method: FRESH_NTDLL_DISK\nsyscall_technique: HALOS_GATE\nsleep_obfuscation: EKKO_TIMER_QUEUE\nincident_id: EDR_CHAIN_7718\n```\n\n형식: `FLAG{EDR_FRESH_NTDLL_<syscall_technique>_EKKO_<incident_number>}` (예: incident_id에서 숫자 추출)",
+      "en": "Synthesize full-chain evasion parameters into the composite capstone flag.\n\n```\nunhook_method: FRESH_NTDLL_DISK\nsyscall_technique: HALOS_GATE\nsleep_obfuscation: EKKO_TIMER_QUEUE\nincident_id: EDR_CHAIN_7718\n```\n\nFormat: `FLAG{EDR_FRESH_NTDLL_<syscall_technique>_EKKO_<incident_number>}`"
+    },
+    "hints": {
+      "ko": [
+        "HALOS_GATE와 사건 번호 7718을 결합하세요.",
+        "형식에 맞춰 마스터 플래그를 완성하세요."
+      ],
+      "en": [
+        "Combine HALOS_GATE and incident 7718.",
+        "Assemble master flag according to the format."
+      ]
+    },
+    "hash": "f6d4b96c1436152190431b7f0ca0b255cfb740baeb7281e1d8d3994ab07adb2e"
+  },
+  {
+    "id": "t4_edrbypass_blockdlls_mitigation",
+    "tier": 4,
+    "cat": "c2evade",
+    "track": "edrbypass",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word (9글자 / 9 chars)",
+    "title": {
+      "ko": "비서명 서드파티 모듈 인젝션 차단 정책",
+      "en": "Non-Microsoft Signed Third-Party Module Mitigation"
+    },
+    "prompt": {
+      "ko": "새 프로세스 생성 시 Microsoft 서명이 없는 서드파티 모듈이 주소공간에 로드되는 것을 차단하는 완화 정책의 통칭을 영문으로 제출하세요.",
+      "en": "Submit the common English name for the process mitigation policy preventing unsigned third-party modules from injecting into the process."
+    },
+    "hints": {
+      "ko": [
+        "차단과 dlls의 결합입니다.",
+        "영문 9글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of block and dlls.",
+        "Nine letters in lowercase."
+      ]
+    },
+    "hash": "517666a32a475f3035e94fb020a961ab8cfe15707c50afe76c073e46646f9fc6"
+  },
+  {
+    "id": "t4_edrbypass_ti_indicator_telemetry",
+    "tier": 4,
+    "cat": "c2evade",
+    "track": "edrbypass",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word (11글자 / 11 chars)",
+    "title": {
+      "ko": "커널 위협 인텔리전스 텔레메트리 센서",
+      "en": "Kernel Threat Intelligence Telemetry Sensor"
+    },
+    "prompt": {
+      "ko": "커널 단에서 프로세스 메모리 할당 및 스레드 생성 이벤트를 센서 드라이버로 중계하는 위협 인텔리전스 인디케이터 식별자를 영문으로 제출하세요.",
+      "en": "Submit the English compound term designating kernel-level threat intelligence event indicators dispatching syscall telemetry."
+    },
+    "hints": {
+      "ko": [
+        "위협 인텔리전스 약어 TI와 지표의 결합입니다.",
+        "영문 11글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of threat intelligence acronym and indicator.",
+        "Eleven letters in lowercase."
+      ]
+    },
+    "hash": "9ad151c17d3a4c5f40b1558901770e9522e7ab7741b2411e651a877b775d04de"
+  },
+  {
+    "id": "t4_edrbypass_call_stack_spoofing_advanced",
+    "tier": 4,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word (14글자 / 14 chars)",
+    "title": {
+      "ko": "심층 실행 프레임 완전 위조 기술",
+      "en": "Deep Execution Frame Emulation and Spoofing"
+    },
+    "prompt": {
+      "ko": "시스템 호출 시 전체 반환 프레임 계층을 정상 소프트웨어 실행 경로와 완벽히 일치하도록 위조하는 기법을 영문으로 제출하세요.",
+      "en": "Submit the English compound token for synthetic manipulation of return frame pathways to mimic legitimate execution."
+    },
+    "hints": {
+      "ko": [
+        "프레임 스택과 스푸핑의 결합입니다.",
+        "영문 14글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of frame stack and spoofing.",
+        "Fourteen letters in lowercase."
+      ]
+    },
+    "hash": "c9f8201d30e306f756a33916a68ebc280878d1694cf588722ca36dbe3d6b3f28"
+  },
+  {
+    "id": "t4_edrbypass_silent_process_exit_monitoring",
+    "tier": 4,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word (17글자 / 17 chars)",
+    "title": {
+      "ko": "무음 프로세스 종료 감시 레지스트리 메커니즘",
+      "en": "Silent Process Exit Diagnostic Mechanism"
+    },
+    "prompt": {
+      "ko": "프로세스가 비정상 종료되거나 은밀히 소멸할 때 디버깅 모니터를 자동 트리거하는 윈도우 레지스트리 진단 메커니즘을 공백 없이 영문으로 제출하세요.",
+      "en": "Submit the English phrase without spaces for the Windows diagnostic registry mechanism triggering telemetry on silent process termination."
+    },
+    "hints": {
+      "ko": [
+        "조용한 프로세스 종료 세 단어의 결합입니다.",
+        "영문 17글자 소문자입니다."
+      ],
+      "en": [
+        "Three words silent, process, and exit concatenated.",
+        "Seventeen letters in lowercase."
+      ]
+    },
+    "hash": "e441721e4de24368b6a2e88d27a3cbb82718b78678eac8d8185cb9f8d6ca34e3"
+  },
+  {
+    "id": "t4_edrbypass_fltmgr_filter_manager",
+    "tier": 4,
+    "cat": "unhook",
+    "track": "edrbypass",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word (6글자 / 6 chars)",
+    "title": {
+      "ko": "커널 파일시스템 필터 매니저 드라이버",
+      "en": "Kernel Filesystem Filter Manager Driver"
+    },
+    "prompt": {
+      "ko": "윈도우 파일시스템 미니필터 드라이버들의 고도(Altitude) 순위와 IRP 디스패치를 총괄하는 핵심 커널 드라이버 바이너리 명칭을 확장자 없이 6글자로 제출하세요.",
+      "en": "Submit the 6-character name (without extension) of the core kernel driver managing filesystem minifilters and altitude ordering."
+    },
+    "hints": {
+      "ko": [
+        "Filter Manager 드라이버의 기본 이름입니다.",
+        "영문 6글자 소문자입니다."
+      ],
+      "en": [
+        "Base name of Filter Manager driver.",
+        "Six letters in lowercase."
+      ]
+    },
+    "hash": "c8073bdaae0a738d2deac9311e6bf55ecb78eddb74fdcad2ffa073edd93919d5"
+  },
+  {
+    "id": "t4_edrbypass_full_text_section_restoration",
+    "tier": 4,
+    "cat": "unhook",
+    "track": "edrbypass",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word (7글자 / 7 chars)",
+    "title": {
+      "ko": "ntdll 실행 코드 섹션 일괄 복원 메커니즘",
+      "en": "ntdll Executable Code Section Overwrite"
+    },
+    "prompt": {
+      "ko": "개별 API를 하나씩 복구하지 않고 ntdll의 실행 코드 영역 전체를 디스크 원본으로 통째로 덮어쓰는 타깃 섹션의 명칭을 기호 없이 영문으로 제출하세요.",
+      "en": "Submit the lowercase token representing the entire executable code section overwritten during wholesale unhooking."
+    },
+    "hints": {
+      "ko": [
+        "점(dot)과 텍스트 코드 섹션의 결합입니다.",
+        "영문 7글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of dot and text.",
+        "Seven letters in lowercase."
+      ]
+    },
+    "hash": "721f88f730478cea446ab62612f49c9870bf208d3d91ad65c103d23b253d1d75"
+  },
+  {
+    "id": "t4_edrbypass_rop_chain_gadget_pipeline",
+    "tier": 4,
+    "cat": "sleepobf",
+    "track": "edrbypass",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "타이머 연동 가젯 명령어 연쇄 체인",
+      "en": "Timer Linked Gadget Instruction Pipeline"
+    },
+    "prompt": {
+      "ko": "메인 스레드의 활성 개입 없이 비동기 워커 스레드가 메모리 보호 전환과 암호화를 순차 실행하도록 구성된 반환 지향 가젯 명령어 연쇄를 영문 한 단어로 제출하세요.",
+      "en": "Submit the single English compound term for the return-oriented gadget instruction sequence chained in asynchronous timer mechanisms."
+    },
+    "hints": {
+      "ko": [
+        "가젯 연쇄와 체인의 결합입니다.",
+        "영문 8글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of gadget and chain.",
+        "Eight letters in lowercase."
+      ]
+    },
+    "hash": "927ed487ea7ce38ae5a1d0971b454e19e3283bdb7587b70bcd23022dd4dd3f0a"
+  },
+  {
+    "id": "t4_edrbypass_gargoyle_apc_sleep_evasion",
+    "tier": 4,
+    "cat": "sleepobf",
+    "track": "edrbypass",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word (8글자 / 8 chars)",
+    "title": {
+      "ko": "비동기 프로시저 콜 기반 슬립 마스크 기법",
+      "en": "Asynchronous Procedure Call Memory Evasion Technique"
+    },
+    "prompt": {
+      "ko": "비동기 프로시저 콜을 활용하여 비컨의 메모리 실행 권한을 PAGE_NOACCESS로 봉인했다가 깨어나는 원조 슬립 난독화 PoC의 명칭을 영문으로 제출하세요.",
+      "en": "Submit the single English name of the foundational sleep evasion PoC that utilizes asynchronous procedure calls to revoke execution permissions during rest."
+    },
+    "hints": {
+      "ko": [
+        "석상 괴수 가고일의 영문 이름입니다.",
+        "영문 8글자 소문자입니다."
+      ],
+      "en": [
+        "Named after the architectural stone monster.",
+        "Eight letters in lowercase."
+      ]
+    },
+    "hash": "79ca2057b15f4a24e5c8e620b58187666f234208e3318b8f71f6b14be68fa4dd"
+  },
+  {
+    "id": "t4_edrbypass_kernel_callbacks_evasion",
+    "tier": 4,
+    "cat": "syscall",
+    "track": "edrbypass",
+    "points": 160,
+    "ci": true,
+    "fmt": "한 단어 / one word (14글자 / 14 chars)",
+    "title": {
+      "ko": "커널 프로세스 알림 콜백 구조체 변조",
+      "en": "Kernel Process Notification Callback Tampering"
+    },
+    "prompt": {
+      "ko": "보안 드라이버가 등록한 커널 이벤트 알림 포인터 배열을 커널 익스플로잇이나 동적 메모리 변조로 무력화하는 기법 대상을 영문으로 제출하세요.",
+      "en": "Submit the English compound term designating kernel notification callback structures targeted to neutralize security routines."
+    },
+    "hints": {
+      "ko": [
+        "커널과 콜백의 결합입니다.",
+        "영문 14글자 소문자입니다."
+      ],
+      "en": [
+        "Compound of kernel and callback.",
+        "Fourteen letters in lowercase."
+      ]
+    },
+    "hash": "2a6fbc9fc1da41b4056e64f4235bbb7153271a6a6e52ac982f5bbc1eb571b3aa"
+  }
 ];

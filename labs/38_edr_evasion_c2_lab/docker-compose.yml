@@ -1,0 +1,9 @@
+services:
+  edr-shield-lab:
+    build: .
+    container_name: vibehacking-lab38-edrshield
+    ports:
+      - "8038:8038"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

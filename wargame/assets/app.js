@@ -877,6 +877,7 @@
     renderBgp("normal");
     initOAuth();
     initDbShield();
+    initEdr();
   }
 
   function hidePlayground(){
@@ -887,7 +888,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -1673,6 +1674,216 @@
     auditOut.textContent = auditText;
   }
 
+  // --- 8. EDR Evasion & Memory Patching Inspector ---
+  let currentEdrScenario = "amsi_patch";
+
+  function initEdr(){
+    const targetEl = document.getElementById("edrTargetInput");
+    const modeEl = document.getElementById("edrModeSelect");
+    if (!targetEl || !modeEl) return;
+    renderEdr("amsi_patch");
+  }
+
+  function renderEdr(scenario){
+    if (scenario && typeof scenario === "string") {
+      currentEdrScenario = scenario;
+    }
+    const targetEl = document.getElementById("edrTargetInput");
+    const modeEl = document.getElementById("edrModeSelect");
+    const hookCheck = document.getElementById("edrUserlandHookCheck");
+    const etwCheck = document.getElementById("edrEtwTiCheck");
+    const memScanCheck = document.getElementById("edrMemScanCheck");
+    const payloadEl = document.getElementById("edrPayloadInput");
+    const memBadge = document.getElementById("edrMemBadge");
+    const telemetryBadge = document.getElementById("edrTelemetryBadge");
+    const memTraceOut = document.getElementById("edrMemTraceOutput");
+    const telemetryOut = document.getElementById("edrTelemetryOutput");
+
+    if (!targetEl || !modeEl || !hookCheck || !etwCheck || !memScanCheck || !payloadEl || !memBadge || !telemetryBadge || !memTraceOut || !telemetryOut) return;
+
+    if (scenario === "amsi_patch"){
+      targetEl.value = "amsi.dll!AmsiScanBuffer";
+      modeEl.value = "amsi";
+      hookCheck.checked = true;
+      etwCheck.checked = true;
+      memScanCheck.checked = true;
+      payloadEl.value = "[Memory Patch] amsi!AmsiScanBuffer -> b8 57 00 07 80 c3 (mov eax, 0x80070057; ret)";
+    } else if (scenario === "unhook_ntdll"){
+      targetEl.value = "ntdll.dll!NtAllocateVirtualMemory";
+      modeEl.value = "unhook";
+      hookCheck.checked = true;
+      etwCheck.checked = true;
+      memScanCheck.checked = true;
+      payloadEl.value = "[Unhooking] Map \\KnownDlls\\ntdll.dll -> Overwrite .text section -> Restore clean original syscall stubs";
+    } else if (scenario === "indirect_syscall"){
+      targetEl.value = "ntdll.dll!NtCreateThreadEx";
+      modeEl.value = "syscall";
+      hookCheck.checked = true;
+      etwCheck.checked = true;
+      memScanCheck.checked = true;
+      payloadEl.value = "[Indirect Syscall] Halo's Gate neighbor SSN resolution -> Jump to clean 'syscall; ret' gadget in ntdll memory";
+    } else if (scenario === "sleep_obf"){
+      targetEl.value = "kernel32.dll!Sleep (Ekko ROP)";
+      modeEl.value = "sleep";
+      hookCheck.checked = true;
+      etwCheck.checked = true;
+      memScanCheck.checked = true;
+      payloadEl.value = "[Sleep Mask] CreateTimerQueueTimer -> ROP chain: VirtualProtect(RW) -> RC4 encrypt -> WaitForSingleObject -> decrypt -> VirtualProtect(RX)";
+    } else if (scenario === "naive_injection"){
+      targetEl.value = "kernel32.dll!VirtualAlloc";
+      modeEl.value = "naive";
+      hookCheck.checked = true;
+      etwCheck.checked = true;
+      memScanCheck.checked = true;
+      payloadEl.value = "[Naive Execution] Standard Win32 API VirtualAlloc(PAGE_EXECUTE_READWRITE) -> memcpy shellcode -> CreateThread";
+    }
+
+    const mode = modeEl.value;
+    const target = (targetEl.value || "").trim();
+    const hooksActive = hookCheck.checked;
+    const etwActive = etwCheck.checked;
+    const memScanActive = memScanCheck.checked;
+
+    let memText = "=== MEMORY DUMP & DISASSEMBLY TRACE ===\n";
+    let teleText = "=== EDR DRIVER & KERNEL SENSOR TELEMETRY ===\n";
+
+    if (mode === "amsi"){
+      memText +=
+        "Target Address: 0x7ffd81201080 (" + target + ")\n" +
+        "Original Opcode (Pre-patch):\n" +
+        "  0x7ffd81201080: 4c 8b dc              mov  r11, rsp\n" +
+        "  0x7ffd81201083: 49 89 5b 08           mov  [r11+8], rbx\n" +
+        "Applied Patch Sequence (6 bytes):\n" +
+        "  0x7ffd81201080: b8 57 00 07 80        mov  eax, 0x80070057  ; E_INVALIDARG / AMSI_RESULT_CLEAN\n" +
+        "  0x7ffd81201085: c3                    ret\n" +
+        "Memory Protection: PAGE_EXECUTE_READ (temporarily VirtualProtect RWX -> RX)\n" +
+        "Scan Result: Bypassed. All buffer analysis returns SUCCESS (Clean payload).";
+
+      teleText +=
+        "Sensor 1 [AMSI Provider]: Invoked by wscript.exe / powershell.exe.\n" +
+        "  - Return Code: 0x80070057 (Fake Invalid Argument / Clean disposition)\n" +
+        "  - Script buffer inspection aborted early by design.\n" +
+        "Sensor 2 [ETW Userland Trace]: Silenced / No malware telemetry dispatched.\n" +
+        "Sensor 3 [Kernel TI Sensor]: Process running normally, no suspicious thread creation.\n" +
+        "Final Disposition: 🟢 EVASION SUCCESSFUL (AMSI Inspection Neutralized)";
+      memBadge.textContent = "STATE: PATCHED (CLEAN)";
+      memBadge.className = "token-tag token-lit";
+      telemetryBadge.textContent = "VERDICT: BYPASSED";
+      telemetryBadge.className = "token-tag token-lit";
+
+    } else if (mode === "unhook"){
+      memText +=
+        "Target Module: " + target + "\n" +
+        "Pre-Unhook State:\n" +
+        (hooksActive ? "  0x7fff4020a000: e9 5c 32 f1 03        jmp  0x7fff4411d261 ; [EDR_Sensor.dll!HookTrampoline]\n" : "  0x7fff4020a000: 4c 8b d1 b8 18 00 00  mov r10, rcx; mov eax, 0x18 ; Clean syscall stub\n") +
+        "Unhooking Action:\n" +
+        "  - NtOpenSection('\\KnownDlls\\ntdll.dll', SECTION_MAP_READ) -> Handle: 0x1a4\n" +
+        "  - NtMapViewOfSection(Clean ntdll) -> Base: 0x7fff60000000\n" +
+        "  - VirtualProtect(.text, PAGE_EXECUTE_READWRITE)\n" +
+        "  - rep movsb (Overwriting 0x120000 bytes with original disk bytes)\n" +
+        "  - VirtualProtect(.text, PAGE_EXECUTE_READ)\n" +
+        "Post-Unhook State:\n" +
+        "  0x7fff4020a000: 4c 8b d1              mov  r10, rcx\n" +
+        "  0x7fff4020a003: b8 18 00 00 00        mov  eax, 0x0018      ; Syscall SSN (NtAllocateVirtualMemory)\n" +
+        "  0x7fff4020a008: 0f 05                 syscall\n" +
+        "  0x7fff4020a00a: c3                    ret";
+
+      teleText +=
+        "Sensor 1 [EDR Userland Inline Hook]:\n" +
+        "  - Hook integrity check: Integrity FAIL (Trampoline jmp overwritten with clean bytes)\n" +
+        "  - Userland hook telemetry lost! Interception disabled.\n" +
+        "Sensor 2 [Kernel File/Memory Minifilter]:\n" +
+        "  - Section remapping: Clean read from KnownDlls section object.\n" +
+        "Final Disposition: 🟢 EVASION SUCCESSFUL (Inline Hooks Cleared)";
+      memBadge.textContent = "STATE: RESTORED (UNHOOKED)";
+      memBadge.className = "token-tag token-lit";
+      telemetryBadge.textContent = "VERDICT: UNHOOKED";
+      telemetryBadge.className = "token-tag token-lit";
+
+    } else if (mode === "syscall"){
+      memText +=
+        "Target API: " + target + "\n" +
+        "Halo's Gate Analysis:\n" +
+        "  - Stub at 0x7fff4020b120 has EDR inline hook (0xe9 ...)\n" +
+        "  - Scanning neighbor stubs: Offset +0x20 is also hooked\n" +
+        "  - Neighbor -0x20 is CLEAN: SSN = 0x24 -> Target SSN calculated: 0x25\n" +
+        "Indirect Execution Sequence:\n" +
+        "  - Allocating Synthetic Stack Frame\n" +
+        "  - mov r10, rcx\n" +
+        "  - mov eax, 0x0025\n" +
+        "  - jmp [ntdll!syscall_ret_gadget: 0x7fff4020b128]  ; Clean execution within ntdll memory range!\n" +
+        "Call Stack Backtrace:\n" +
+        "  #0 ntdll!NtCreateThreadEx+0x8 (RIP pointing inside ntdll.dll)\n" +
+        "  #1 kernel32!CreateThread+0x34\n" +
+        "  #2 legitimate_app!main+0x120";
+
+      teleText +=
+        "Sensor 1 [Userland Hook]: Bypassed (Execution hopped over hook instruction)\n" +
+        "Sensor 2 [ETW-TI Kernel Telemetry]:\n" +
+        "  - Event: THREATINT_STACKTRACE_NTCREATETHREAD\n" +
+        "  - Stack Walking: Verified. RIP resides in legitimate ntdll.dll module space.\n" +
+        "  - Anomaly Flag: CLEAN (No unbacked / private executable memory origin detected)\n" +
+        "Final Disposition: 🟢 EVASION SUCCESSFUL (Indirect Syscall Legitimated)";
+      memBadge.textContent = "STATE: INDIRECT GADGET";
+      memBadge.className = "token-tag token-lit";
+      telemetryBadge.textContent = "VERDICT: CLEAN RIP";
+      telemetryBadge.className = "token-tag token-lit";
+
+    } else if (mode === "sleep"){
+      memText +=
+        "Technique: Ekko ROP Sleep Mask via CreateTimerQueueTimer\n" +
+        "Sleep Cycle Sequence:\n" +
+        "  1. [ROP 1] VirtualProtect(Payload, PAGE_READWRITE) -> RX permission stripped\n" +
+        "  2. [ROP 2] SystemFunction032(Payload, EncryptionKey) -> RC4 in-place ciphertext\n" +
+        "  3. [ROP 3] WaitForSingleObject(hEvent, SleepDuration: 10000ms)\n" +
+        "  4. [ROP 4] SystemFunction032(Payload, EncryptionKey) -> Decrypt payload\n" +
+        "  5. [ROP 5] VirtualProtect(Payload, PAGE_EXECUTE_READ) -> Restored execution\n" +
+        "Active State during Sleep:\n" +
+        "  - Memory Region: Private Read/Write (Encrypted random high-entropy bytes)\n" +
+        "  - Executable (RX/RWX) flags in target heap/stack: NONE (Zero executable pages)";
+
+      teleText +=
+        "Sensor 1 [Memory Scanner (Moneta / PE-sieve)]:\n" +
+        "  - Scan target process memory regions...\n" +
+        "  - Executable private memory (RWX): 0 regions found.\n" +
+        "  - Known beacon/meterpreter payload patterns: 0 signatures matched.\n" +
+        "Sensor 2 [Thread Stack Analysis]:\n" +
+        "  - Thread wait state: Normal wait on clean kernel synchronization object.\n" +
+        "Final Disposition: 🟢 EVASION SUCCESSFUL (Memory Cloaked in Sleep)";
+      memBadge.textContent = "STATE: ENCRYPTED (RW)";
+      memBadge.className = "token-tag token-lit";
+      telemetryBadge.textContent = "VERDICT: SIGNATURE 0";
+      telemetryBadge.className = "token-tag token-lit";
+
+    } else {
+      memText +=
+        "Execution Mode: Naive Injection (Unprotected)\n" +
+        "Allocated Memory:\n" +
+        "  - Address: 0x0000021a80400000\n" +
+        "  - Protection: PAGE_EXECUTE_READWRITE (RWX) [Unbacked private memory]\n" +
+        "Hook & Call Analysis:\n" +
+        "  - Invoked API: " + target + "\n" +
+        "  - Userland hook triggered: jmp EDR_Sensor.dll (Trampoline intercepted)\n" +
+        "  - Shellcode byte pattern: 48 31 c9 48 81 e9 ... (Classic Metasploit stager pattern)";
+
+      teleText +=
+        "Sensor 1 [EDR Userland Inline Hook]:\n" +
+        "  🚨 ALERT: Intercepted call to VirtualAlloc with PAGE_EXECUTE_READWRITE (RWX) flags!\n" +
+        "Sensor 2 [ETW-TI Kernel Telemetry]:\n" +
+        "  🚨 ALERT: Thread creation originating from unbacked private memory (RIP: 0x0000021a80400000)!\n" +
+        "Sensor 3 [Moneta Memory Scanner]:\n" +
+        "  🚨 CRITICAL: Modified code detected in private executable allocation.\n" +
+        "Final Disposition: 🛑 DETECTED & TERMINATED (Malicious Process Killed)";
+      memBadge.textContent = "STATE: RWX DETECTED";
+      memBadge.className = "token-tag token-inj";
+      telemetryBadge.textContent = "ALERT: KILLED";
+      telemetryBadge.className = "token-tag token-inj";
+    }
+
+    memTraceOut.textContent = memText;
+    telemetryOut.textContent = teleText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -1942,6 +2153,8 @@
         openPlayground("oauth"); break;
       case "dbsec": case "dbshield": case "udf":
         openPlayground("dbshield"); break;
+      case "edr": case "edrbypass": case "unhook": case "amsi": case "syscall":
+        openPlayground("edr"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -2369,6 +2582,25 @@
       audio();
       const p = btn.getAttribute("data-dbshield-preset");
       renderDbShield(p);
+    });
+  });
+
+  // EDR Inspector Controls
+  const edrSimBtn = document.getElementById("edrSimulateBtn");
+  if (edrSimBtn) edrSimBtn.addEventListener("click", () => { audio(); renderEdr(); });
+  ["edrTargetInput", "edrPayloadInput"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", () => renderEdr());
+  });
+  ["edrModeSelect", "edrUserlandHookCheck", "edrEtwTiCheck", "edrMemScanCheck"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("change", () => renderEdr());
+  });
+  document.querySelectorAll("[data-edr-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-edr-preset");
+      renderEdr(p);
     });
   });
 

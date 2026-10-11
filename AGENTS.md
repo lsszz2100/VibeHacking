@@ -31,7 +31,7 @@
     21. `23_Database_Hacking/07_enterprise_rdbms_privilege_escalation_and_injection_deepdive.md` (엔터프라이즈 RDBMS 권한 상승 & 인젝션 심층 분석: Oracle AUTHID DEFINER 권한 상승, MSSQL xp_cmdshell OLE 자동화 RCE, MySQL UDF 악성 공유 라이브러리 로딩, PostgreSQL CVE-2019-9193, DBShield FGA 세분화 감사 및 secure_file_priv 하드닝)
   - **75개 전 챕터 웹 뷰어 / 온라인 리더 포털 구축**: Docsify 기반 다크 테마 웹 리더(`index.html`, `docs/`, `docs/vendor/` 오프라인 자산화 완비), `vhack docs [--port 3000]` 로컬 포털 CLI 완비
   - **75개 전 섹션 README.md 인덱스 동기화 완비**: [tools/sync_section_readmes.py](file:///mnt/d/바이브해킹%20자료/vibe-hacking/tools/sync_section_readmes.py)를 통한 자동 동기화
-- **인터랙티브 실습 랩 (Docker Labs)**: **총 37개 실전 랩 완비** (`labs/01` ~ `labs/37`)
+- **인터랙티브 실습 랩 (Docker Labs)**: **총 38개 실전 랩 완비** (`labs/01` ~ `labs/38`)
   - **Lab 19 (DroidShield)**: 안드로이드 리버싱 & Frida 후킹 랩 (루팅 탐지 우회, SSL Pinning 패치, Native 심볼 후킹, JNI Crypto 암호문 복호화, 포트: `8019`)
   - **Lab 20 (WinAppSec)**: 윈도우 바이너리 & 커널 드라이버 랩 (SEH 스택 오버라이트, SafeSEH/DEP/ASLR 회피, UAC 바이패스, HEVD IOCTL 임의 메모리 쓰기, Token Stealing 권한상승, 포트: `8020`)
   - **Lab 21 (CarCanLab)**: 차량 보안 & CAN Bus 실전 랩 (CAN 버스 패킷 스니핑/주입, 계기판 속도 스푸핑, UDS SecurityAccess 시드키 인증 우회, ECU hardReset DoS, 포트: `8021`)
@@ -51,34 +51,36 @@
   - **Lab 35 (CloudIAMGuard)**: 클라우드 IAM 권한 상승 & 조직 거버넌스 랩 (IAM 와일드카드 정책 및 PassRole 권한상승, AssumeRole 교차 계정 신뢰 악용 Confused Deputy 공격, IMDSv1 vs IMDSv2 토큰 방어, SCP 서비스 제어 정책 및 최소 권한 롤 하드닝, 포트: `8035`)
   - **Lab 36 (DBShield)**: 엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩 (MySQL UDF RCE 방지, MSSQL xp_cmdshell 비활성화, Oracle AUTHID DEFINER 권한 상승 탐지, PostgreSQL CVE-2019-9193, DBShield FGA 세분화 감사 및 secure_file_priv 하드닝, 포트: `8036`)
   - **Lab 37 (BLEShield)**: 블루투스 저에너지 & SDR 무선 보안 실전 랩 (BLE GATT 계층 모델 정찰, 비인가 특성 쓰기, SDR RF OOK/ASK 스펙트럼 복조, 고정 Nonce Replay 공격 및 암호학적 하드닝, 포트: `8037`)
-- **브라우저 & 터미널 워게임**: **총 51개 트랙 / 1,785문제** 달성 (`wargame/index.html`, HUD `0/1785`, `vhack play`)
-  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 51개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`) 자동 저장 완비
+  - **Lab 38 (EDRShield)**: EDR 방어 회피 & 메모리 패칭 실전 랩 (AMSI 3-Byte 메모리 패치, ntdll .text KnownDlls 언후킹, Halo's Gate 간접 시스템콜 및 Ekko ROP 수면 난독화, 포트: `8038`)
+- **브라우저 & 터미널 워게임**: **총 52개 트랙 / 1,820문제** 달성 (`wargame/index.html`, HUD `0/1820`, `vhack play`)
+  - **터미널 네이티브 워게임 클라이언트 (`vhack play`)**: 52개 트랙 로드맵, 문제 검색, 지문/힌트 열람, 플래그 제출 및 로컬 진행도(`~/.vhack_wargame_progress.json`) 자동 저장 완비
   - **PWA 및 오프라인 지원 완비**: `manifest.json`, `sw.js` 서비스 워커 적용 및 데스크톱/모바일 앱 설치 지원
   - **워게임 UX 기능 고도화**: 진행도 JSON 파일 백업/복원(`export json`, `import [file]`, 💾/📂 버튼), 10대 요원 업적/뱃지 시스템(`badges` 명령어, 🏆 HUD 버튼 및 모달 팝업, CRT 토스트 알림) 완비
-  - **워게임 7대 인터랙티브 보안 플레이그라운드**: 차량 CAN 버스 주입기, SQLi AST 구문트리, AD CS X.509/Kerberos 인스펙터, JWT none 검증기, KISA 기반시설 점검기, OSINT 정찰 레이더, DB RBAC & UDF Shield
-  - **신규 51번째 트랙 완비**:
+  - **워게임 8대 인터랙티브 보안 플레이그라운드**: 차량 CAN 버스 주입기, SQLi AST 구문트리, AD CS X.509/Kerberos 인스펙터, JWT none 검증기, BGP 하이재킹 & RPKI, OAuth PKCE & Key Confusion, DB RBAC & UDF Shield, EDR 회피 & 메모리 패칭 인스펙터
+  - **신규 51~52번째 트랙 완비**:
     - `blehack` 📡 블루투스 저에너지 & SDR RF 해킹 (35개 문제: Tier 0~4)
-  - **4대 엄격 검증 스위트 100% All Green**: `verify.js`, `audit.js --strict` (0결함), `leakscan.js` (0유출), `solve-derivable.js` (818/1785 통과)
+    - `edrbypass` 🛡️ EDR 회피·메모리 패치 (35개 문제: Tier 0~4)
+  - **4대 엄격 검증 스위트 100% All Green**: `verify.js`, `audit.js --strict` (0결함), `leakscan.js` (0유출), `solve-derivable.js` (822/1820 통과)
 - **통합 웹 관제 대시보드 (Portal)**:
-  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(36개 랩 시작/중지/재시작), 12대 카테고리 필터링 탭 바 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 자원 모니터링 (`vhack portal [--port 8800]`)
+  - `portal/server.py`, `portal/static/index.html` 기반 실시간 랩 제어(38개 랩 시작/중지/재시작), 12대 카테고리 필터링 탭 바 및 일괄 가동/정지 지원, 웹 셸 콘솔(`💻 셸`), 실시간 컨테이너 로그 스트리밍(`📜 로그`), PoC 익스플로잇 솔루션 뷰어(`💡 솔루션`), 자원 모니터링 (`vhack portal [--port 8800]`)
 - **실습 랩 자동 익스플로잇 솔버 (Solvers)**:
-  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 36개 전체 랩의 1~3단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
+  - `labs/solvers.py`, `labs/tests/test_lab_solvers.py`: 38개 전체 랩의 1~4단계 PoC 익스플로잇, 취약점 원리, 방어 대책 솔버 완비 및 CLI (`vhack solve <lab_id>`, `vhack lab solve <lab_id> [--step N]`)
 - **CTF 대회 스코어보드 & 채점 엔진 (CTF)**:
-  - `ctf/server.py`, `ctf/tests/test_ctf.py`: 71개 랩 플래그 풀, 순차 해금 모드(Progressive Unlock) 지원, 💡 인터랙티브 힌트 상점 모달 UI 및 점수 차감 시스템 (`POST /api/ctf/hints/unlock`), First Blood 알림 및 +50pt 보너스, Dynamic Scoring 감쇠 공식, HTML5 실시간 점수 추이 시계열 그래프, 실시간 SSE 스트리밍 (`vhack ctf [--port 8888]`)
+  - `ctf/server.py`, `ctf/tests/test_ctf.py`: 75개 랩 플래그 풀, 순차 해금 모드(Progressive Unlock) 지원, 💡 인터랙티브 힌트 상점 모달 UI 및 점수 차감 시스템 (`POST /api/ctf/hints/unlock`), First Blood 알림 및 +50pt 보너스, Dynamic Scoring 감쇠 공식, HTML5 실시간 점수 추이 시계열 그래프, 실시간 SSE 스트리밍 (`vhack ctf [--port 8888]`)
 - **오프라인 번들러 및 릴리스 배포 파이프라인 (Bundler & Release)**:
-  - `tools/bundle_offline.py`, `tools/verify_offline_deployment.sh`, `release/SHA256SUMS` 및 `vhack bundle [--tar <path>]` 통한 36개 랩, 50개 트랙(1,750문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증, SHA-256 검증 및 배포 아카이브(`release/vibehacking-v2.0.0.tar.gz`) 생성 지원
+  - `tools/bundle_offline.py`, `tools/verify_offline_deployment.sh`, `release/SHA256SUMS` 및 `vhack bundle [--tar <path>]` 통한 38개 랩, 52개 트랙(1,820문제), 75개 교재, 로컬 CDN 벤더 자산 전수 무결성 검증, SHA-256 검증 및 배포 아카이브(`release/vibehacking-v2.0.0.tar.gz`) 생성 지원
 - **vhack CLI 고도화**:
-  - `vhack play`: 50개 트랙 1,750문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리)
+  - `vhack play`: 52개 트랙 1,820문제 터미널 네이티브 워게임 클라이언트 (목록/검색/풀이/진행도 관리)
   - `vhack logs <lab_id> [-f] [-n N]`: 실습 랩 컨테이너 실시간 로그 스트리밍 단독 명령어 지원
-  - `vhack solve`: 36개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
-  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8036 가용성 등 시스템 진단
-  - `vhack lab test [--all | <lab_id>]`: 36개 실습 랩 자동 무결성 검증 (334개 테스트 All Green)
-  - `vhack lab status`: 36개 랩 종합 상태 대시보드
-- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~36, `vhack doctor`, Pytest 전체 361개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
+  - `vhack solve`: 38개 실습 랩의 단계별 취약점 익스플로잇 자동 시뮬레이션 및 플래그 획득
+  - `vhack doctor`: Python, Git, Docker, Compose, Node.js, 의존성 9종, 디스크, 포트 8000~8038 가용성 등 시스템 진단
+  - `vhack lab test [--all | <lab_id>]`: 38개 실습 랩 자동 무결성 검증 (372개 테스트 All Green)
+  - `vhack lab status`: 38개 랩 종합 상태 대시보드
+- **CI/CD 파이프라인**: [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml) (Labs 01~38, `vhack doctor`, Pytest 전체 399개 테스트 All Green, Wargame 4대 엄격 검증 스위트 자동화) 및 Docs 배포 워크플로우
 
 ---
 
-## 2. 실습 랩(01~36) & 교재 & 워게임 연계 매트릭스
+## 2. 실습 랩(01~38) & 교재 & 워게임 연계 매트릭스
 
 | 랩 ID | 랩 이름 | 주요 침투/방어 주제 | 연계 교재 챕터 | 워게임 트랙 | 실행 명령 |
 | :---: | :--- | :--- | :--- | :--- | :---: | :--- |
@@ -118,6 +120,8 @@
 | **34** | OSINT 서피스 정찰 & 섀도우 IT 랩 (OSINTHunter) | WHOIS/DNS/crt.sh 정보 수집, Shodan/Censys 배너 분석, Dangling S3 탈취, Spring Actuator/Git/Secret 헌팅 | `33_OSINT_Social_Engineering` | `osintrecon` | `vhack lab start 34` |
 | **35** | 클라우드 IAM 권한상승 & 거버넌스 랩 (CloudIAMGuard) | IAM 와일드카드 PassRole 권한상승, AssumeRole 교차 계정 신뢰 악용 Confused Deputy, IMDSv2 방어, SCP 가드레일 하드닝 | `14_Cloud_Security` | `cloudiam` | `vhack lab start 35` |
 | **36** | 엔터프라이즈 DB 보안 랩 (DBShield) | MySQL UDF RCE 방지, MSSQL xp_cmdshell 비활성화, Oracle AUTHID DEFINER 권한 상승 탐지, DBShield FGA/secure_file_priv 하드닝 | `23_Database_Hacking` | `dbsec` | `vhack lab start 36` |
+| **37** | 블루투스 저에너지 & SDR 무선 보안 랩 (BLEShield) | BLE GATT 정찰/변조, SDR RF OOK 복조, Nonce Replay | `71_Bluetooth_RF_Hacking`, `15_WiFi_Hacking` | `blehack` | `vhack lab start 37` |
+| **38** | EDR 방어 회피 & 메모리 패칭 랩 (EDRShield) | AMSI 패치, ntdll 언후킹, Halo's Gate 간접 시스템콜, Ekko 수면 난독화 | `55_Evasion_Techniques`, `45_Malware_Development` | `edrbypass` | `vhack lab start 38` |
 
 ---
 
@@ -126,15 +130,15 @@
 코드나 문서, 워게임 수정 시 반드시 다음 검증 스위트를 통과해야 합니다:
 
 ```bash
-# 1. 전체 단위/통합 테스트 (361개 테스트 전원 통과: Labs 01~36, Solvers, Portal, CTF, Wargame CLI)
+# 1. 전체 단위/통합 테스트 (399개 테스트 전원 통과: Labs 01~38, Solvers, Portal, CTF, Wargame CLI)
 pytest -q
 
-# 2. 실습 랩 CLI 자동 무결성 검증 (36개 랩 334개 테스트 통과)
+# 2. 실습 랩 CLI 자동 무결성 검증 (38개 랩 372개 테스트 통과)
 python3 vhack.py lab test --all
 # 또는 vhack이 설치된 경우:
 vhack lab test --all
 
-# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 36개 랩 포트 충돌 검사 완비)
+# 3. 환경 진단 검사 (8개 영역 100% 정상 확인, 38개 랩 포트 충돌 검사 완비)
 vhack doctor
 
 # 4. 오프라인 패키징 및 무결성 전수 검사
@@ -155,10 +159,10 @@ vhack portal
 # 9. 모의해킹 대회 스코어보드 & Progressive Unlock 엔진 실행 (힌트 상점 완비)
 vhack ctf
 
-# 10. 36개 실습 랩 자동 익스플로잇 솔버 실행
+# 10. 38개 실습 랩 자동 익스플로잇 솔버 실행
 vhack solve 01 --step 1
 
-# 11. 워게임 무결성 및 구조 검증 (1,750문제, 50트랙, 5티어)
+# 11. 워게임 무결성 및 구조 검증 (1,820문제, 52트랙, 5티어)
 node wargame/scripts/verify.js
 
 # 12. 워게임 지문/힌트 간 교차 정답 노출(Leak) 스캔 (0건)
@@ -196,6 +200,22 @@ node wargame/scripts/solve-derivable.js
 ---
 
 ## 5. 주요 마일스톤 이력 (Milestone History)
+
+- **2026-10-11 (Goal 1~3 Complete: Lab 38 EDRShield, Deepdive 22 EDR Userland Unhooking, Wargame Track 52 edrbypass 1,820 Milestone, 8th Simulator EDR Inspector, 399 Tests All Green, Offline Bundle v2.1.0 Sync)**:
+  - **Lab 38 EDR 방어 회피 & 메모리 패칭 랩 신규 구축 (`labs/38_edr_evasion_c2_lab/`)**:
+    - AMSI 3-Byte 메모리 패치, ntdll .text KnownDlls 언후킹, Halo's Gate 간접 시스템콜, Ekko ROP 수면 난독화 (포트 8038, 20개 단위/통합 테스트 전원 통과)
+  - **심층 교재 22편 인제스천 완성**:
+    - 22. `55_Evasion_Techniques/07_edr_userland_unhooking_and_indirect_syscalls_deepdive.md` (EDR 유저랜드 후킹 해제, KnownDlls 섹션 매핑, Halo's Gate 이웃 SSN 탐색, Ekko ROP 타이머 큐 수면 은닉, ETW-TI 커널 센서 대응)
+  - **워게임 52번째 트랙 (`edrbypass`) 확장 및 1,820문제 대기록 달성**:
+    - 35개 문제 추가 (총 52개 트랙, 1,820개 챌린지)
+    - 4대 엄격 검증 스위트 All Green: `verify.js` (1,820제 52트랙 5티어), `audit.js --strict` ([A]~[J] 0결함), `leakscan.js` (0유출), `solve-derivable.js` (822/1,820 통과)
+  - **워게임 8번째 인터랙티브 보안 시뮬레이터 구축 (`EDR Evasion & Memory Inspector`)**:
+    - AMSI 3-Byte Patch, ntdll .text Unhooking, Halo's Gate Indirect Syscall, Ekko ROP Sleep Obfuscation, Naive RWX Injection 5대 시나리오 실시간 모의 실행 및 패치 시각화
+    - HUD 🔬 모달 및 명령어(`edr`, `unhook`, `amsi`, `syscall`) 완비
+  - **전 플랫폼 연동 및 전체 399개 테스트 100% All Green**:
+    - `pytest -q`: **399 passed** (Labs 01~38 372개 + solvers 4개 + portal 11개 + ctf 8개 + wargame cli 4개)
+    - `vhack lab test --all`: 38개 랩 372개 테스트 전원 통과
+    - `vhack doctor`: 포트 8000~8038 정밀 진단 및 38개 랩 충돌 0건
 
 - **2026-10-02 (Option 1~4 Complete: Lab 36 DBShield, Deepdive 21 Ingestion, Wargame Track 50 dbsec 1,750 Milestone, 7th Simulator DB RBAC, CTF Progressive Unlock & Portal Category Dashboard, 361 Tests All Green, Offline Bundle v2.0.0 Sync)**:
   - **Lab 36 엔터프라이즈 데이터베이스 보안 랩 신규 구축 (`labs/36_enterprise_database_security_lab/`)**:

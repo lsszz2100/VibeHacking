@@ -1387,6 +1387,32 @@ const SOLVERS = new Map([
     const hash = crypto.createHash('sha256').update(m[1]).digest('hex').slice(0, 20);
     return `FLAG{${hash}}`;
   } }],
+  // ── edrbypass (EDR 유저랜드 후킹 우회 & 차세대 C2) ──
+  ['t2_edrbypass_ssn_lookup', { kind: 'computed', via: 'kernel offset and subsystem tag', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/kernel_offset:\s*(0x[0-9a-fA-F]+)[\s\S]*?subsystem_tag:\s*(\w+)/);
+    if (!m) throw new Error('stub params not found in prompt');
+    return `FLAG{SSN_${m[1]}_${m[2]}}`;
+  } }],
+  ['t2_edrbypass_amsi_patch_calc', { kind: 'computed', via: 'return code and patch status', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/return_code:\s*(0x[0-9a-fA-F]+)[\s\S]*?patch_status:\s*(\w+)/);
+    if (!m) throw new Error('patch params not found in prompt');
+    return `FLAG{AMSI_PATCH_${m[1]}_${m[2]}}`;
+  } }],
+  ['t3_edrbypass_ekko_sleep_checksum', { kind: 'computed', via: 'sleep hex and key', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/sleep_ms:\s*(\d+)[\s\S]*?xor_key_byte:\s*(0x[0-9a-fA-F]+)[\s\S]*?gadget_count:\s*(\d+)/);
+    if (!m) throw new Error('ekko params not found in prompt');
+    const hexMs = '0x' + parseInt(m[1], 10).toString(16).toUpperCase();
+    return `FLAG{EKKO_SLEEP_${hexMs}_KEY_${m[2]}_GADGET_${m[3]}}`;
+  } }],
+  ['t4_edrbypass_capstone_full_audit', { kind: 'computed', via: 'capstone incident audit parameters', solve: (ch) => {
+    const text = ch.prompt.ko || ch.prompt.en;
+    const m = text.match(/syscall_technique:\s*([A-Z_]+)[\s\S]*?incident_id:\s*EDR_CHAIN_(\d+)/);
+    if (!m) throw new Error('capstone params not found in prompt');
+    return `FLAG{EDR_FRESH_NTDLL_${m[1]}_EKKO_${m[2]}}`;
+  } }],
 ]);
 
 // DroidShield (Android) & WinAppSec (Windows Client) challenges: computed from identifier in prompt

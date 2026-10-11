@@ -31,7 +31,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/1785</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/1820</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -103,6 +103,7 @@
         <button class="pg-tab" data-tab="bgp">🛣️ BGP Hijack &amp; RPKI</button>
         <button class="pg-tab" data-tab="oauth">🔑 OAuth PKCE &amp; Key Confusion</button>
         <button class="pg-tab" data-tab="dbshield">🗄️ DB RBAC &amp; UDF Shield</button>
+        <button class="pg-tab" data-tab="edr">🛡️ EDR Evasion &amp; Memory Inspector</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -381,6 +382,72 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="dbshieldAuditBadge" class="token-tag token-inj">AUDIT: BLIND</span>
                 </div>
                 <div id="dbshieldAuditOutput" class="ast-view" style="font-size:11px;min-height:160px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EDR Evasion & Memory Patching Inspector Panel -->
+        <div id="pgPanel-edr" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Evasion Presets:</span>
+              <button class="pg-btn" data-edr-preset="amsi_patch">AMSI 3-Byte Patch</button>
+              <button class="pg-btn" data-edr-preset="unhook_ntdll">ntdll .text Unhooking</button>
+              <button class="pg-btn" data-edr-preset="indirect_syscall">Halo's Gate Indirect Syscall</button>
+              <button class="pg-btn" data-edr-preset="sleep_obf">Ekko ROP Sleep Obfuscation</button>
+              <button class="pg-btn danger" data-edr-preset="naive_injection">Naive RWX Injection (No Evasion)</button>
+            </div>
+            <div class="bgp-controls-bar" style="margin-top:6px;">
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Target Module / API:</label>
+                <input id="edrTargetInput" type="text" value="amsi.dll!AmsiScanBuffer" style="width:190px;background:#020804;border:1px solid var(--line);color:var(--green);font-family:var(--mono);padding:4px 8px;font-size:11px;border-radius:4px;">
+              </div>
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Technique Mode:</label>
+                <select id="edrModeSelect" style="background:#020804;border:1px solid var(--line);color:var(--txt);font-family:var(--mono);padding:4px 8px;font-size:11px;border-radius:4px;">
+                  <option value="amsi">AMSI Memory Patching</option>
+                  <option value="unhook">ntdll KnownDlls Unhooking</option>
+                  <option value="syscall">Indirect Syscalls (Halo's Gate)</option>
+                  <option value="sleep">TimerQueue ROP Sleep Mask</option>
+                  <option value="naive">Naive Plain Execution</option>
+                </select>
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="edrUserlandHookCheck" type="checkbox" checked> EDR Userland Hooks Active
+                </label>
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="edrEtwTiCheck" type="checkbox" checked> ETW-TI Kernel Telemetry
+                </label>
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="edrMemScanCheck" type="checkbox" checked> Moneta / PE-sieve Scanner
+                </label>
+              </div>
+              <button id="edrSimulateBtn" class="pg-btn">Simulate Evasion &amp; Inspect</button>
+            </div>
+            <div style="margin: 8px 0;">
+              <label class="dim" style="font-size:11px;">Payload / Execution Context:</label>
+              <textarea id="edrPayloadInput" rows="2" style="width:100%;box-sizing:border-box;background:#020804;border:1px solid var(--line);color:var(--txt);font-family:var(--mono);padding:6px 8px;font-size:11px;border-radius:4px;resize:none;margin-top:4px;" spellcheck="false">[Memory Patch] amsi!AmsiScanBuffer -> b8 57 00 07 80 c3 (mov eax, 0x80070057; ret)</textarea>
+            </div>
+            <div class="dbshield-grid">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🔬 Memory Bytes, Disassembly &amp; Call Stack</span>
+                  <span id="edrMemBadge" class="token-tag token-inj">STATE: HOOKED</span>
+                </div>
+                <div id="edrMemTraceOutput" class="ast-view" style="font-size:11px;min-height:160px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ EDR Agent, ETW-TI &amp; Kernel Sensor Telemetry</span>
+                  <span id="edrTelemetryBadge" class="token-tag token-inj">ALERT: CRITICAL</span>
+                </div>
+                <div id="edrTelemetryOutput" class="ast-view" style="font-size:11px;min-height:160px;"></div>
               </div>
             </div>
           </div>

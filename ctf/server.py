@@ -864,6 +864,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "LESC P-256 ECDH 비대칭 키 교환, 인증된 쓰기 강제, 단조 카운터 기반 Anti-Replay를 활성화하세요."}
                 ],
             },
+            "LAB38_AMSI_ETW": {
+                "id": "LAB38_AMSI_ETW",
+                "title": "EDRShield: AMSI & ETW In-Memory Inline Patching",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{AMSI_ETW_INLINE_PATCH_MEMORY_BYPASS_8819}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "AmsiScanBuffer 함수 시작부를 b8 57 00 07 80 c3로 패치하여 에러를 강제 반환하고 EtwEventWrite를 c3(ret)로 침묵시키세요."}
+                ],
+            },
+            "LAB38_UNHOOK": {
+                "id": "LAB38_UNHOOK",
+                "title": "EDRShield: ntdll.dll Disk Mapping & Fresh .text Unhooking",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{NTDLL_DISK_UNHOOKING_FRESH_COPY_RESTORED_7721}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "디스크 상의 원본 ntdll.dll 파일을 새로 매핑하여 메모리 상의 EDR 5바이트 JMP 인라인 훅을 원본 시스템 콜 스텁으로 복원하세요."}
+                ],
+            },
+            "LAB38_SYSCALL": {
+                "id": "LAB38_SYSCALL",
+                "title": "EDRShield: Dynamic SSN Extraction & Clean Indirect Syscalls",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{INDIRECT_SYSCALL_HELLS_GATE_STACK_CLEAN_9934}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Halo's Gate로 인접 스텁에서 SSN을 유도하고 ntdll 내부의 syscall; ret 가젯으로 간접 점프하여 콜 스택을 보호하세요."}
+                ],
+            },
+            "LAB38_SLEEPOBF": {
+                "id": "LAB38_SLEEPOBF",
+                "title": "EDRShield: Ekko Timer Queue ROP Sleep Obfuscation",
+                "category": "endpoint",
+                "initial_points": 500,
+                "flag": "FLAG{EKKO_SLEEP_OBFUSCATION_TIMER_QUEUE_ROP_4412}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "CreateTimerQueueTimer ROP 체인으로 대기 시간 동안 메모리를 PAGE_READWRITE로 전환하고 암호화하여 YARA 스캐너를 우회하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -898,6 +946,7 @@ class CTFState:
             ["LAB35_PASSROLE", "LAB35_ASSUME", "LAB35_SCP"],
             ["LAB36_INJECTION", "LAB36_UDF", "LAB36_HARDEN"],
             ["LAB37_RECON", "LAB37_WRITE", "LAB37_REPLAY", "LAB37_HARDEN"],
+            ["LAB38_AMSI_ETW", "LAB38_UNHOOK", "LAB38_SYSCALL", "LAB38_SLEEPOBF"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

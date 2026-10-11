@@ -96,6 +96,7 @@ LAB_DIRS=(
     "35_cloud_iam_privilege_escalation_lab"
     "36_enterprise_database_security_lab"
     "37_bluetooth_sdr_security_lab"
+    "38_edr_evasion_c2_lab"
 )
 
 LAB_NAMES=(
@@ -136,6 +137,7 @@ LAB_NAMES=(
     "클라우드 IAM 권한 상승 & 조직 거버넌스 랩"
     "엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩"
     "블루투스 저에너지 & SDR 무선 보안 실전 랩"
+    "EDR 유저랜드 후킹 우회 & 차세대 C2 실전 랩"
 )
 
 
