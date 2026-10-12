@@ -878,6 +878,7 @@
     initOAuth();
     initDbShield();
     initEdr();
+    initCrypto();
   }
 
   function hidePlayground(){
@@ -888,7 +889,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -1884,6 +1885,253 @@
     telemetryOut.textContent = teleText;
   }
 
+  // --- 9. AES-CBC Padding Oracle & Bit-Flipping Inspector ---
+  let currentCryptoScenario = "oracle_decrypt";
+
+  function initCrypto(){
+    const primitiveEl = document.getElementById("cryptoPrimitiveSelect");
+    if (!primitiveEl) return;
+    renderCrypto("oracle_decrypt");
+  }
+
+  function renderCrypto(scenario){
+    if (scenario && typeof scenario === "string") {
+      currentCryptoScenario = scenario;
+    }
+    const primitiveEl = document.getElementById("cryptoPrimitiveSelect");
+    const targetEl = document.getElementById("cryptoTargetInput");
+    const oracleLeakCheck = document.getElementById("cryptoOracleLeakCheck");
+    const aeadCheck = document.getElementById("cryptoAeadCheck");
+    const ivInput = document.getElementById("cryptoIvInput");
+    const ctInput = document.getElementById("cryptoCtInput");
+    const stateBadge = document.getElementById("cryptoStateBadge");
+    const oracleBadge = document.getElementById("cryptoOracleBadge");
+    const traceOut = document.getElementById("cryptoTraceOutput");
+    const oracleOut = document.getElementById("cryptoOracleOutput");
+
+    if (!primitiveEl || !targetEl || !oracleLeakCheck || !aeadCheck || !ivInput || !ctInput || !stateBadge || !oracleBadge || !traceOut || !oracleOut) return;
+
+    if (scenario === "oracle_decrypt"){
+      primitiveEl.value = "cbc_oracle";
+      targetEl.value = "Block 1 (Byte 15 - Pad Target)";
+      oracleLeakCheck.checked = true;
+      aeadCheck.checked = false;
+      ivInput.value = "a1 b2 c3 d4 e5 f6 07 18 29 3a 4b 5c 6d 7e 8f 3d";
+      ctInput.value = "7e 44 91 2b c0 88 1a 23 99 d4 e1 f0 aa bb cc dd";
+    } else if (scenario === "bit_flip"){
+      primitiveEl.value = "cbc_bitflip";
+      targetEl.value = "IV Byte 6 (admin=0 -> admin=1)";
+      oracleLeakCheck.checked = true;
+      aeadCheck.checked = false;
+      ivInput.value = "00 00 00 00 00 00 31 00 00 00 00 00 00 00 00 00";
+      ctInput.value = "8a 3f 12 99 bc de f0 11 22 33 44 55 66 77 88 99";
+    } else if (scenario === "rsa_forge"){
+      primitiveEl.value = "rsa_bleichenbacher";
+      targetEl.value = "RSA 2048 e=3 Cube-Root Forgery";
+      oracleLeakCheck.checked = true;
+      aeadCheck.checked = false;
+      ivInput.value = "00 01 ff ff ff ff ff ff 00 30 31 30 0d 06 09 60";
+      ctInput.value = "86 48 01 65 03 04 02 01 05 00 04 20 [SHA256_DIGEST_32B] [GARBAGE_SUFFIX]";
+    } else if (scenario === "ecdsa_nonce"){
+      primitiveEl.value = "ecdsa_k_reuse";
+      targetEl.value = "secp256k1 Nonce k Collided (r1 == r2)";
+      oracleLeakCheck.checked = true;
+      aeadCheck.checked = false;
+      ivInput.value = "r: d47ce4c025c35ec440bc81d99834a624875161a26... (same r)";
+      ctInput.value = "s1: 44e1ff12... | s2: 9b20ca01... | z1: 0xhash1 | z2: 0xhash2";
+    } else if (scenario === "pqc_hybrid"){
+      primitiveEl.value = "ml_kem_hybrid";
+      targetEl.value = "ML-KEM-768 (Kyber) + X25519";
+      oracleLeakCheck.checked = false;
+      aeadCheck.checked = true;
+      ivInput.value = "Hybrid KEM Shared Secret: KDF(ss_x25519 || ss_kyber, 32)";
+      ctInput.value = "AES-256-GCM (12B Nonce + Ciphertext + 16B Poly1305/GHASH Tag)";
+    }
+
+    const mode = primitiveEl.value;
+    const target = (targetEl.value || "").trim();
+    const isOracleLeak = oracleLeakCheck.checked;
+    const isAead = aeadCheck.checked;
+
+    let traceText = "=== CRYPTANALYTIC STATE & BYTE MATRIX TRACE ===\\n";
+    let oracleText = "=== DECRYPTION ORACLE & SERVER DISPOSITION ===\\n";
+
+    if (mode === "cbc_oracle"){
+      traceText +=
+        "Target Block: C_1 = [7e 44 91 2b c0 88 1a 23 99 d4 e1 f0 aa bb cc dd]\\n" +
+        "Brute-Force Probe on Preceding Block C_0'[15]:\\n" +
+        "  Tested Probe Byte: 0x3d\\n" +
+        "  AES Decryption Block Output: I_1[15] = D_K(C_1)[15] = 0x3c\\n" +
+        "  Resulting Plaintext Byte: P'_1[15] = C_0'[15] ^ I_1[15] = 0x3d ^ 0x3c = 0x01\\n" +
+        "  Valid PKCS#7 Padding Condition: Byte matches valid 0x01 padding!\\n" +
+        "Intermediate State Recovery:\\n" +
+        "  I_1[15] = C_0'[15] ^ 0x01 = 0x3d ^ 0x01 = 0x3c\\n" +
+        "Original Plaintext Recovery:\\n" +
+        "  P_1[15] = C_0[15] ^ I_1[15] = 0x90 ^ 0x3c = 0xac ('\\\\xac' or padding byte)\\n" +
+        "Complexity: 256 oracle requests per byte (max 4,096 probes for full 16-byte block).";
+
+      if (isAead){
+        oracleText +=
+          "Protocol: AES-GCM Authenticated Encryption with Associated Data (AEAD)\\n" +
+          "Status: 🛑 REJECTED BY INTEGRITY CHECK (GHASH Tag Mismatch)\\n" +
+          "HTTP Response: 403 Forbidden (Bad Authenticator Tag)\\n" +
+          "Evaluation: Modifying ciphertext blocks destroys authentication tag. Decryption aborted before padding check.\\n" +
+          "Verdict: Vaudenay Padding Oracle Attack IMMUNE.";
+        stateBadge.textContent = "STATE: AEAD SECURED";
+        stateBadge.className = "token-tag token-lit";
+        oracleBadge.textContent = "HTTP 403: BAD AUTH TAG";
+        oracleBadge.className = "token-tag token-lit";
+      } else if (isOracleLeak){
+        oracleText +=
+          "Server Endpoint: POST /api/crypto/decrypt (Legacy CBC Mode)\\n" +
+          "Decrypted Padding Assessment: Last byte evaluates to 0x01 (PKCS#7 Valid).\\n" +
+          "Side-Channel Feedback:\\n" +
+          "  HTTP Response: 200 OK (or 400 Bad Request: 'Invalid JSON', not padding)\\n" +
+          "  Padding Oracle Leak: SERVER DISTINGUISHES VALID PADDING FROM 500 PADDING ERROR!\\n" +
+          "Attack Progress: Byte 15 intermediate state solved. Next: Byte 14 with C_0'[15] = I_1[15] ^ 0x02.\\n" +
+          "Verdict: 💥 FULL PLAINTEXT LEAKAGE IN O(256 * N) QUERIES";
+        stateBadge.textContent = "STATE: ORACLE LEAKING";
+        stateBadge.className = "token-tag token-inj";
+        oracleBadge.textContent = "HTTP 200: VALID PAD (LEAK)";
+        oracleBadge.className = "token-tag token-inj";
+      } else {
+        oracleText +=
+          "Server Endpoint: POST /api/crypto/decrypt\\n" +
+          "Status: Constant-time generic error returned for all failures.\\n" +
+          "HTTP Response: 400 Bad Request (Generic)\\n" +
+          "Verdict: Padding error suppressed, but unauthenticated CBC remains vulnerable to bit-flipping.";
+        stateBadge.textContent = "STATE: PADDING MASKED";
+        stateBadge.className = "token-tag token-lit";
+        oracleBadge.textContent = "HTTP 400: GENERIC ERR";
+        oracleBadge.className = "token-tag token-lit";
+      }
+
+    } else if (mode === "cbc_bitflip"){
+      traceText +=
+        "Attack Type: CBC Initial Vector (IV) Malleability Exploit\\n" +
+        "Original Plaintext: P_0 = \\\"admin=0;role=user;uid=1092\\\"\\n" +
+        "Target Modification: Index 6 ('0' [0x30] -> '1' [0x31])\\n" +
+        "Bit-Flip Delta:\\n" +
+        "  Delta = '0' ^ '1' = 0x30 ^ 0x31 = 0x01\\n" +
+        "Modified IV Calculation:\\n" +
+        "  IV'[6] = IV[6] ^ Delta = 0x00 ^ 0x01 = 0x01\\n" +
+        "Server-Side CBC Decryption:\\n" +
+        "  P'_0[6] = IV'[6] ^ D_K(C_0)[6]\\n" +
+        "          = (IV[6] ^ Delta) ^ D_K(C_0)[6]\\n" +
+        "          = P_0[6] ^ Delta = '0' ^ 0x01 = '1'\\n" +
+        "Resulting Tampered Plaintext: \\\"admin=1;role=user;uid=1092\\\"\\n" +
+        "Block Distortion: Block 0 is cleanly modified with zero corruption because delta is applied directly to IV!";
+
+      if (isAead){
+        oracleText +=
+          "Protocol: AES-GCM / Encrypt-then-MAC (EtM)\\n" +
+          "Integrity Verification: Computed MAC does not match ciphertext header.\\n" +
+          "HTTP Response: 401 Unauthorized (Cryptographic Signature / MAC Mismatch)\\n" +
+          "Verdict: 🛡️ Bit-flipping prevented by cryptographic authentication layer.";
+        stateBadge.textContent = "STATE: MAC ENFORCED";
+        stateBadge.className = "token-tag token-lit";
+        oracleBadge.textContent = "REJECT: TAMPER DETECTED";
+        oracleBadge.className = "token-tag token-lit";
+      } else {
+        oracleText +=
+          "Target Session: Cookie auth_token=iv.ciphertext\\n" +
+          "Server Processing: Decrypted plaintext parsed as session parameters.\\n" +
+          "Session Auth Check:\\n" +
+          "  admin parameter: 1 (Elevated to Superadmin)\\n" +
+          "  role parameter: user (Ignored due to admin override)\\n" +
+          "HTTP Response: 200 OK (Welcome, Administrator!)\\n" +
+          "Flag: FLAG{cbc_iv_bitflip_privilege_escalated}\\n" +
+          "Verdict: 🚨 100% DETERMINISTIC PRIVILEGE ESCALATION ACHIEVED";
+        stateBadge.textContent = "STATE: ADMIN ESCALATED";
+        stateBadge.className = "token-tag token-inj";
+        oracleBadge.textContent = "AUTH: ADMIN GRANTED";
+        oracleBadge.className = "token-tag token-inj";
+      }
+
+    } else if (mode === "rsa_bleichenbacher"){
+      traceText +=
+        "Vulnerability: Bleichenbacher '06 RSA Signature Verification Flaw (CVE-2006-3450)\\n" +
+        "Public Key Exponent: e = 3, Modulus N = 2048 bits\\n" +
+        "Defective Verification Logic:\\n" +
+        "  Checks prefix: 00 01 FF ... 00 [DigestInfo ASN.1] [32B SHA256]\\n" +
+        "  FAILS to enforce that padding extends to the very end of the modulus!\\n" +
+        "Constructing Forged Number D:\\n" +
+        "  D = 2^(2048-15-288) * (00 01 FF 00 || ASN.1 || SHA256(M)) + Garbage\\n" +
+        "Cube Root Computation:\\n" +
+        "  s = ceil(cbrt(D))\\n" +
+        "  When server calculates s^3 mod N, upper 2048-bit prefix perfectly matches valid PKCS#1 v1.5 format!\\n" +
+        "Forged Signature Size: Exactly 256 bytes (2048 bits).";
+
+      oracleText +=
+        "Server RSA Verification Step:\\n" +
+        "  1. Compute decrypted signature: Dec = s^e mod N = s^3 mod N\\n" +
+        "  2. Check prefix: 00 01 FF 00 (Pass)\\n" +
+        "  3. Match ASN.1 OID (SHA-256): 30 31 30 0d ... (Pass)\\n" +
+        "  4. Verify Hash: 32 bytes match sha256(token) (Pass)\\n" +
+        "  5. Trailing bytes check: SKIPPED DUE TO REGEX SEARCH FLAW!\\n" +
+        "HTTP Response: 200 OK (Signature Verified by CA: 'CN=root-ca')\\n" +
+        "Verdict: 🚨 ARBITRARY DIGITAL SIGNATURE FORGED WITHOUT PRIVATE KEY";
+      stateBadge.textContent = "STATE: RSA FORGED";
+      stateBadge.className = "token-tag token-inj";
+      oracleBadge.textContent = "VERIFY: 200 FORGERY OK";
+      oracleBadge.className = "token-tag token-inj";
+
+    } else if (mode === "ecdsa_nonce"){
+      traceText +=
+        "Vulnerability: ECDSA Nonce (k) Reuse on secp256k1 Curve (Sony PS3 Cryptographic Flaw)\\n" +
+        "Observed Signatures:\\n" +
+        "  Sig 1: (r, s1) on message m1 (hash z1)\\n" +
+        "  Sig 2: (r, s2) on message m2 (hash z2)  <-- Notice IDENTICAL r value!\\n" +
+        "Mathematical Exploitation:\\n" +
+        "  s1 = k^(-1) * (z1 + r * d) mod n\\n" +
+        "  s2 = k^(-1) * (z2 + r * d) mod n\\n" +
+        "  s1 - s2 = k^(-1) * (z1 - z2) mod n\\n" +
+        "  Recover Nonce k:\\n" +
+        "    k = (z1 - z2) / (s1 - s2) mod n\\n" +
+        "  Recover Private Key d:\\n" +
+        "    d = (s1 * k - z1) * r^(-1) mod n";
+
+      oracleText +=
+        "Cryptanalytic Resolution:\\n" +
+        "  Calculated k: 0x7a89f104d... (Ephemeral Nonce Exposed)\\n" +
+        "  Calculated d: 0x51c4a981b2e... (ECDSA Private Key Recovered!)\\n" +
+        "Impact: Attacker now possesses the root signing key and can sign arbitrary transactions & firmware updates.\\n" +
+        "Mitigation: Implement RFC 6979 deterministic nonce generation: k = HMAC-SHA256(d || z).\\n" +
+        "Verdict: 💥 ROOT PRIVATE KEY FULLY EXTRACTED VIA NONCE COLLISION";
+      stateBadge.textContent = "STATE: KEY EXTRACTED";
+      stateBadge.className = "token-tag token-inj";
+      oracleBadge.textContent = "RECOVERED: PRIVATE KEY";
+      oracleBadge.className = "token-tag token-inj";
+
+    } else { // ml_kem_hybrid
+      traceText +=
+        "Defense Architecture: Hybrid Post-Quantum Key Encapsulation (FIPS 203 + RFC 7748)\\n" +
+        "Key Exchange Layers:\\n" +
+        "  Layer 1 (Classical): X25519 Elliptic Curve Diffie-Hellman (128-bit classical security)\\n" +
+        "  Layer 2 (Post-Quantum): ML-KEM-768 (Kyber-768 Module Lattice LWE, Category 3 NIST PQC)\\n" +
+        "Hybrid Key Derivation Function (HKDF):\\n" +
+        "  ss_classical = ECDH(sk_alice, pk_bob)\\n" +
+        "  (ct_pqc, ss_pqc) = ML-KEM-768.Encaps(pk_kyber)\\n" +
+        "  Master Key K = HKDF-Extract-Expand(ss_classical || ss_pqc || ct_pqc, \\\"tls13 hybrid\\\")\\n" +
+        "Dual Security Guarantee: If EITHER X25519 or Kyber-768 holds unbroken, the shared key K is mathematically secure!";
+
+      oracleText +=
+        "Threat Assessment: Harvest Now, Decrypt Later (HNDL) Threat Modeling\\n" +
+        "Quantum Attack Simulation (Shor's Algorithm on QPU with 4,096 logical qubits):\\n" +
+        "  - Shor's discrete logarithm attacks X25519 -> Classical layer broken in poly-time.\\n" +
+        "  - Lattice-based ML-KEM-768 resists Shor's algorithm (Shortest Vector Problem in ideal lattices).\\n" +
+        "  - Hybrid key K remains uncompromised with 192 bits of post-quantum security.\\n" +
+        "Verdict: 🛡️ IMMUNE TO STORE-NOW-DECRYPT-LATER QUANTUM SURVEILLANCE";
+      stateBadge.textContent = "STATE: PQC SECURED";
+      stateBadge.className = "token-tag token-lit";
+      oracleBadge.textContent = "QUANTUM: SAFE (FIPS 203)";
+      oracleBadge.className = "token-tag token-lit";
+    }
+
+    traceOut.textContent = traceText;
+    oracleOut.textContent = oracleText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -2155,6 +2403,8 @@
         openPlayground("dbshield"); break;
       case "edr": case "edrbypass": case "unhook": case "amsi": case "syscall":
         openPlayground("edr"); break;
+      case "crypto": case "oracle": case "padding": case "bitflip": case "cbc":
+        openPlayground("crypto"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -2601,6 +2851,25 @@
       audio();
       const p = btn.getAttribute("data-edr-preset");
       renderEdr(p);
+    });
+  });
+
+  // Crypto Inspector Controls
+  const cryptoSimBtn = document.getElementById("cryptoSimulateBtn");
+  if (cryptoSimBtn) cryptoSimBtn.addEventListener("click", () => { audio(); renderCrypto(); });
+  ["cryptoTargetInput", "cryptoIvInput", "cryptoCtInput"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", () => renderCrypto());
+  });
+  ["cryptoPrimitiveSelect", "cryptoOracleLeakCheck", "cryptoAeadCheck"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("change", () => renderCrypto());
+  });
+  document.querySelectorAll("[data-crypto-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-crypto-preset");
+      renderCrypto(p);
     });
   });
 

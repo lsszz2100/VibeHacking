@@ -15,6 +15,7 @@
 | [05_malware_triage_and_containment.md](./05_malware_triage_and_containment.md) | **악성코드 트리아지 및 억제** — 트리아지(Triage)는 의료 분야에서 유래한 용어로 "빠른 분류 및 우선순위 결정"을 의미한다. 악성코드 트리아지는 사고 발생 초기에 빠른 시간(수 분~수십 분) 안에 악성코드의 유... |
 | [06_ir_dfir_ctf_lab.md](./06_ir_dfir_ctf_lab.md) | **침해사고 대응 / DFIR CTF 실습 랩** — pip install volatility3 yara-python scapy dpkt pyshark |
 | [07_soc_siem_threat_hunting_deepdive.md](./07_soc_siem_threat_hunting_deepdive.md) | **차세대 SOC 관제 및 SIEM 실전 위협 헌팅 심층 가이드 (Modern SOC & SIEM Threat Hunting Deep-Dive)** — 엔터프라이즈 보안관제(SOC)는 단순 경보 알림(Alert-driven) 방식에서 가설 기반의 능동적 위협 헌팅(Hypothesis-driven Threat Hunting)으로 진화했... |
+| [08_enterprise_incident_response_playbook_deepdive.md](./08_enterprise_incident_response_playbook_deepdive.md) | **엔터프라이즈 침해사고 대응 플레이북 및 DFIR 거버넌스 심층 가이드 (Enterprise Incident Response Playbook & DFIR Governance Deep-Dive)** — 현대 엔터프라이즈 환경에서 보안 침해사고 대응은 단순한 "악성 프로세스 강제 종료"를 넘어, 기업 비즈니스 영속성(BCP), 법적 책임(Regulatory Liability), 브랜드... |
 
 ## 🎯 학습 목표
 

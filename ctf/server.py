@@ -912,6 +912,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "CreateTimerQueueTimer ROP 체인으로 대기 시간 동안 메모리를 PAGE_READWRITE로 전환하고 암호화하여 YARA 스캐너를 우회하세요."}
                 ],
             },
+            "LAB39_CBC_ORACLE": {
+                "id": "LAB39_CBC_ORACLE",
+                "title": "CryptoShield: AES-CBC Padding Oracle & IV Bit-Flipping",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{CBC_PADDING_ORACLE_AND_BITFLIP_MASTER_8831}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "IV[6]의 비트를 '0' ^ '1'로 XOR 조작하여 복호화된 평문의 admin=0을 admin=1로 조작하세요."}
+                ],
+            },
+            "LAB39_RSA_BLEICHENBACHER": {
+                "id": "LAB39_RSA_BLEICHENBACHER",
+                "title": "CryptoShield: RSA Bleichenbacher PKCS#1 v1.5 Signature Forgery",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{RSA_BLEICHENBACHER_SIGNATURE_FORGERY_PWN_7742}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "00 01 ff 00 || ASN1 || SHA256(msg) 접두사 뒤에 0을 채운 뒤 정수 세제곱근 s = ceil(cbrt(D))를 계산하세요."}
+                ],
+            },
+            "LAB39_ECDSA_NONCE": {
+                "id": "LAB39_ECDSA_NONCE",
+                "title": "CryptoShield: ECDSA Nonce Reuse Private Key Carving",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{ECDSA_REUSED_NONCE_PRIVATE_KEY_CARVED_9953}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "k = (z1 - z2) * (s1 - s2)^-1 mod n; d = r^-1 * (s1 * k - z1) mod n으로 개인키 d를 복원하세요."}
+                ],
+            },
+            "LAB39_PQC_SECURED": {
+                "id": "LAB39_PQC_SECURED",
+                "title": "CryptoShield: Post-Quantum ML-KEM-768 Hybrid Key Exchange",
+                "category": "crypto",
+                "initial_points": 500,
+                "flag": "FLAG{POST_QUANTUM_HYBRID_KYBER_KEM_IMMUNE_4421}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "NIST FIPS 203 ML-KEM-768 (Kyber) + X25519 하이브리드 KEM을 활성화하여 양자 공격을 방어하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -947,6 +995,7 @@ class CTFState:
             ["LAB36_INJECTION", "LAB36_UDF", "LAB36_HARDEN"],
             ["LAB37_RECON", "LAB37_WRITE", "LAB37_REPLAY", "LAB37_HARDEN"],
             ["LAB38_AMSI_ETW", "LAB38_UNHOOK", "LAB38_SYSCALL", "LAB38_SLEEPOBF"],
+            ["LAB39_CBC_ORACLE", "LAB39_RSA_BLEICHENBACHER", "LAB39_ECDSA_NONCE", "LAB39_PQC_SECURED"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

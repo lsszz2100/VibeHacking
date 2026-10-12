@@ -1,0 +1,9 @@
+services:
+  crypto-shield-lab:
+    build: .
+    container_name: vibehacking-lab39-cryptoshield
+    ports:
+      - "8039:8039"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

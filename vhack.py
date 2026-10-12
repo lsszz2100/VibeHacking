@@ -454,6 +454,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [55, 67, 49],
     },
+    "39": {
+        "name": "현대 응용 암호학 & 암호 분석 실전 랩",
+        "dir":  "39_modern_cryptography_lab",
+        "desc": "CryptoShield: AES-CBC 패딩 오라클 & 비트 플리핑 · RSA Bleichenbacher '06 e=3 서명 위조 · ECDSA 난수 재사용 개인키 역산 · NIST FIPS 203 ML-KEM-768(Kyber) 포스트 퀀텀 하이브리드 키 교환 방어",
+        "url":  "웹 콘솔 & 암호 분석 대시보드: http://localhost:8039",
+        "difficulty": "★★★★★",
+        "related": [16, 57],
+    },
 }
 
 
@@ -1466,6 +1474,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8036, "Lab 36 (DBShield Enterprise Database Security Lab)"),
         (8037, "Lab 37 (BLEShield Bluetooth LE & SDR Lab)"),
         (8038, "Lab 38 (EDRShield EDR Evasion & Next-Gen C2 Lab)"),
+        (8039, "Lab 39 (CryptoShield Modern Cryptography Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

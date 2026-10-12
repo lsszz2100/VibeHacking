@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 39: CryptoShield — Modern Cryptography & Cryptanalysis Lab</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --text: #f3f4f6;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.3);
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --cyan: #06b6d4;
+      --purple: #8b5cf6;
+      --border: #1f2937;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'JetBrains Mono', monospace, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 2rem; min-height: 100vh; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+    h1 { font-size: 1.75rem; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); display: flex; align-items: center; gap: 0.5rem; }
+    .badge { padding: 0.35rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; font-weight: bold; background: #064e3b; color: #6ee7b7; border: 1px solid #059669; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 1.5rem; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
+    .card h2 { font-size: 1.2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--cyan); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    .status-pill { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 0.5rem; background: var(--danger); }
+    .status-pill.complete { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.85rem; margin-bottom: 0.35rem; color: #9ca3af; }
+    input, textarea { width: 100%; background: #1f2937; border: 1px solid #374151; color: #fff; padding: 0.6rem; border-radius: 0.375rem; font-size: 0.85rem; }
+    textarea { resize: vertical; min-height: 60px; }
+    button { background: #059669; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 0.375rem; font-weight: bold; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; }
+    button:hover { background: #10b981; box-shadow: 0 0 10px var(--accent-glow); }
+    button.secondary { background: #374151; }
+    button.secondary:hover { background: #4b5563; }
+    .output-box { background: #000; border: 1px solid #374151; border-radius: 0.375rem; padding: 0.75rem; font-size: 0.8rem; color: #10b981; max-height: 140px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-top: 0.75rem; }
+    .flag-banner { background: rgba(16, 185, 129, 0.1); border: 1px dashed var(--accent); padding: 0.75rem; border-radius: 0.5rem; color: #34d399; font-weight: bold; margin-top: 0.75rem; display: none; }
+    .hud { display: flex; gap: 1rem; margin-bottom: 2rem; background: #1f2937; padding: 1rem; border-radius: 0.5rem; }
+    .hud-item { flex: 1; text-align: center; }
+    .hud-label { font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; }
+    .hud-val { font-size: 1.25rem; font-weight: bold; color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🛡️ Lab 39: CryptoShield — Modern Cryptography</h1>
+      <div>
+        <span class="badge">Port 8039</span>
+        <button class="secondary" onclick="resetLab()" style="margin-left: 0.5rem;">↺ Reset</button>
+      </div>
+    </header>
+
+    <div class="hud">
+      <div class="hud-item">
+        <div class="hud-label">Stage 1: AES-CBC Oracle</div>
+        <div class="hud-val" id="hud-s1">PENDING</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">Stage 2: RSA Bleichenbacher</div>
+        <div class="hud-val" id="hud-s2">PENDING</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">Stage 3: ECDSA Nonce Reuse</div>
+        <div class="hud-val" id="hud-s3">PENDING</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">Stage 4: Post-Quantum Kyber</div>
+        <div class="hud-val" id="hud-s4">PENDING</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Stage 1 -->
+      <div class="card">
+        <h2><span class="status-pill" id="pill-s1"></span> Stage 1: AES-CBC Padding Oracle</h2>
+        <p style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 1rem;">
+          IV/Ciphertext bit-flipping 또는 패딩 오라클 피드백을 통해 관리자 권한(admin=true)으로 토큰을 변조하십시오.
+        </p>
+        <button onclick="getCbcProfile()" class="secondary">1. 프로필 암호문 조회</button>
+        <div class="form-group" style="margin-top: 0.75rem;">
+          <label>IV (16 bytes hex):</label>
+          <input type="text" id="cbc-iv" placeholder="e.g. 5a1b..." />
+        </div>
+        <div class="form-group">
+          <label>Ciphertext (hex):</label>
+          <textarea id="cbc-ct" placeholder="e.g. 8f2c..."></textarea>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button onclick="testOracle()" class="secondary">오라클 패딩 검사</button>
+          <button onclick="verifyCbc()">관리자 인증 제출</button>
+        </div>
+        <div class="output-box" id="cbc-out">Ready...</div>
+        <div class="flag-banner" id="flag-s1"></div>
+      </div>
+
+      <!-- Stage 2 -->
+      <div class="card">
+        <h2><span class="status-pill" id="pill-s2"></span> Stage 2: RSA Bleichenbacher (e=3)</h2>
+        <p style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 1rem;">
+          느슨한 PKCS#1 v1.5 검증 파서를 우회하기 위해 정수 세제곱근 서명 위조 공격을 수행하십시오.
+        </p>
+        <button onclick="getRsaPubkey()" class="secondary">공개키 & 규격 조회</button>
+        <div class="form-group" style="margin-top: 0.75rem;">
+          <label>Target Message:</label>
+          <input type="text" id="rsa-msg" value="admin_access_token_v1" readonly />
+        </div>
+        <div class="form-group">
+          <label>Forged Signature s (Hex or Int):</label>
+          <textarea id="rsa-sig" placeholder="Hex-encoded signature integer..."></textarea>
+        </div>
+        <button onclick="verifyRsaSig()">위조 서명 제출</button>
+        <div class="output-box" id="rsa-out">Ready...</div>
+        <div class="flag-banner" id="flag-s2"></div>
+      </div>
+
+      <!-- Stage 3 -->
+      <div class="card">
+        <h2><span class="status-pill" id="pill-s3"></span> Stage 3: ECDSA Nonce Reuse Carving</h2>
+        <p style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 1rem;">
+          동일한 서명 난수 k로 생성된 2개 트랜잭션 서명 (r, s1, s2)로부터 타원곡선 개인키 d를 복원하십시오.
+        </p>
+        <button onclick="getEcdsaSamples()" class="secondary">중복 난수 서명 샘플 조회</button>
+        <div class="form-group" style="margin-top: 0.75rem;">
+          <label>Recovered Private Key d (Hex or Int):</label>
+          <input type="text" id="ecdsa-key" placeholder="0x1337c0de..." />
+        </div>
+        <button onclick="submitEcdsaKey()">복원 개인키 제출</button>
+        <div class="output-box" id="ecdsa-out">Ready...</div>
+        <div class="flag-banner" id="flag-s3"></div>
+      </div>
+
+      <!-- Stage 4 -->
+      <div class="card">
+        <h2><span class="status-pill" id="pill-s4"></span> Stage 4: Post-Quantum Kyber Hybrid KEM</h2>
+        <p style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 1rem;">
+          고전 암호에 대한 Shor 양자 공격을 시뮬레이션하고, ML-KEM-768(Kyber) 하이브리드 키 교환을 활성화하십시오.
+        </p>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+          <button onclick="simulateQuantum()" class="secondary" style="background: #b91c1c;">1. Shor 양자 침해 시뮬레이션</button>
+          <button onclick="enableHybridKem()">2. ML-KEM-768 하이브리드 방어 활성화</button>
+        </div>
+        <div class="output-box" id="pqc-out">Ready...</div>
+        <div class="flag-banner" id="flag-s4"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function updateStatus() {
+      const res = await fetch('/api/crypto/status');
+      const data = await res.json();
+      const s = data.steps;
+      updateUI('s1', s.step1_cbc_oracle);
+      updateUI('s2', s.step2_rsa_bleichenbacher);
+      updateUI('s3', s.step3_ecdsa_nonce);
+      updateUI('s4', s.step4_hybrid_kem);
+    }
+
+    function updateUI(id, done) {
+      const pill = document.getElementById(`pill-${id}`);
+      const hud = document.getElementById(`hud-${id}`);
+      if (done) {
+        pill.classList.add('complete');
+        hud.textContent = 'COMPLETED';
+        hud.style.color = '#10b981';
+      } else {
+        pill.classList.remove('complete');
+        hud.textContent = 'PENDING';
+        hud.style.color = '#f3f4f6';
+      }
+    }
+
+    async function resetLab() {
+      await fetch('/api/crypto/reset', { method: 'POST' });
+      alert('Lab has been reset.');
+      location.reload();
+    }
+
+    async function getCbcProfile() {
+      const res = await fetch('/api/crypto/cbc/profile');
+      const data = await res.json();
+      document.getElementById('cbc-iv').value = data.iv;
+      document.getElementById('cbc-ct').value = data.ciphertext;
+      document.getElementById('cbc-out').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function testOracle() {
+      const iv = document.getElementById('cbc-iv').value.trim();
+      const ct = document.getElementById('cbc-ct').value.trim();
+      const res = await fetch('/api/crypto/cbc/oracle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ iv, ciphertext: ct })
+      });
+      const data = await res.json();
+      document.getElementById('cbc-out').textContent = `[HTTP ${res.status}] ${JSON.stringify(data, null, 2)}`;
+    }
+
+    async function verifyCbc() {
+      const iv = document.getElementById('cbc-iv').value.trim();
+      const ct = document.getElementById('cbc-ct').value.trim();
+      const res = await fetch('/api/crypto/cbc/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ iv, ciphertext: ct })
+      });
+      const data = await res.json();
+      document.getElementById('cbc-out').textContent = JSON.stringify(data, null, 2);
+      if (data.flag) {
+        const b = document.getElementById('flag-s1');
+        b.textContent = data.flag;
+        b.style.display = 'block';
+      }
+      updateStatus();
+    }
+
+    async function getRsaPubkey() {
+      const res = await fetch('/api/crypto/rsa/pubkey');
+      const data = await res.json();
+      document.getElementById('rsa-out').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function verifyRsaSig() {
+      const sig = document.getElementById('rsa-sig').value.trim();
+      const msg = document.getElementById('rsa-msg').value.trim();
+      const res = await fetch('/api/crypto/rsa/verify-signature', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, signature: sig })
+      });
+      const data = await res.json();
+      document.getElementById('rsa-out').textContent = JSON.stringify(data, null, 2);
+      if (data.flag) {
+        const b = document.getElementById('flag-s2');
+        b.textContent = data.flag;
+        b.style.display = 'block';
+      }
+      updateStatus();
+    }
+
+    async function getEcdsaSamples() {
+      const res = await fetch('/api/crypto/ecdsa/samples');
+      const data = await res.json();
+      document.getElementById('ecdsa-out').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function submitEcdsaKey() {
+      const key = document.getElementById('ecdsa-key').value.trim();
+      const res = await fetch('/api/crypto/ecdsa/submit-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ private_key: key })
+      });
+      const data = await res.json();
+      document.getElementById('ecdsa-out').textContent = JSON.stringify(data, null, 2);
+      if (data.flag) {
+        const b = document.getElementById('flag-s3');
+        b.textContent = data.flag;
+        b.style.display = 'block';
+      }
+      updateStatus();
+    }
+
+    async function simulateQuantum() {
+      const res = await fetch('/api/crypto/pqc/simulate-quantum-attack', { method: 'POST' });
+      const data = await res.json();
+      document.getElementById('pqc-out').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function enableHybridKem() {
+      const res = await fetch('/api/crypto/pqc/enable-hybrid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_public_share: 'a1b2c3d4' })
+      });
+      const data = await res.json();
+      document.getElementById('pqc-out').textContent = JSON.stringify(data, null, 2);
+      if (data.flag) {
+        const b = document.getElementById('flag-s4');
+        b.textContent = data.flag;
+        b.style.display = 'block';
+      }
+      updateStatus();
+    }
+
+    updateStatus();
+  </script>
+</body>
+</html>

@@ -136,7 +136,7 @@
     <!-- Category Filter & Batch Controls Bar -->
     <div class="filter-bar">
       <div class="filter-chips" id="category-filters">
-        <button class="filter-chip active" onclick="setCategoryFilter('')">전체 (36)</button>
+        <button class="filter-chip active" onclick="setCategoryFilter('')">전체 (39)</button>
       </div>
       <div class="batch-actions">
         <button class="btn btn-green" onclick="batchControl('start')">▶ 일괄 가동</button>
@@ -222,7 +222,7 @@
   }
 
   async function batchControl(action) {
-    const targetLabel = currentCategory ? `[${currentCategory.toUpperCase()}] 카테고리` : '전체 36개';
+    const targetLabel = currentCategory ? `[${currentCategory.toUpperCase()}] 카테고리` : '전체 39개';
     if (!confirm(`${targetLabel} 랩을 일괄 ${action === 'start' ? '가동' : '정지'}하시겠습니까?`)) return;
     showToast(`${targetLabel} 일괄 ${action} 요청 중...`);
     try {

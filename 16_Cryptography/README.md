@@ -13,6 +13,7 @@
 | [04_PKI_TLS_Attacks.md](./04_PKI_TLS_Attacks.md) | **PKI 인프라 및 TLS/SSL 공격** — PKI(Public Key Infrastructure)는 인터넷 보안의 신뢰 기반으로, 인증서를 통해 서버의 신원을 보증하는 체계입니다. TLS(Transport Layer Secur... |
 | [05_crypto_implementation_attacks.md](./05_crypto_implementation_attacks.md) | **암호화 구현 취약점 공격 — 패딩 오라클·타이밍 공격·약한 난수** — 암호화 알고리즘 자체는 안전해도, 잘못된 구현 방식이 공격 경로를 만들어냅니다. 패딩 오라클 공격은 서버의 패딩 에러 응답을 이용해 암호문을 바이트 단위로 복호화합니다. 타이밍 공격은... |
 | [06_crypto_ctf_practical_lab.md](./06_crypto_ctf_practical_lab.md) | **암호학 CTF 실습 랩 — 고전암호·RSA·ECC·해시 종합** — pip install pycryptodome sympy gmpy2 |
+| [07_practical_padding_oracle_and_elliptic_curve_deepdive.md](./07_practical_padding_oracle_and_elliptic_curve_deepdive.md) | **현대 응용 암호학 취약점 & 포스트 퀀텀 하이브리드 방어 심층 분석 (Modern Cryptanalysis & Post-Quantum Hybrid Defense Deep-dive)** — 현대 디지털 보안 인프라의 신뢰성은 수학적 난제(이산대수, 소인수분해, 격자 문제)에 기반한 암호학적 원시(Cryptographic Primitives)에 전적으로 의존합니다. |
 
 ## 🎯 학습 목표
 

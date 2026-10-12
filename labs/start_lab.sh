@@ -111,6 +111,7 @@ start_lab() {
         "36_enterprise_database_security_lab"
         "37_bluetooth_sdr_security_lab"
         "38_edr_evasion_c2_lab"
+        "39_modern_cryptography_lab"
     )
 
     local lab_names=(
@@ -153,6 +154,7 @@ start_lab() {
         "엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩"
         "블루투스 저에너지 & SDR 무선 보안 실전 랩"
         "EDR 유저랜드 후킹 우회 & 차세대 C2 실전 랩"
+        "현대 응용 암호학 & 암호 분석 실전 랩"
     )
 
     local lab_ports=(
@@ -195,10 +197,11 @@ start_lab() {
         "웹 콘솔 & DB 보안 대시보드: http://localhost:8036"
         "웹 콘솔 & BLE 보안 대시보드: http://localhost:8037"
         "웹 콘솔 & EDR 회피 대시보드: http://localhost:8038"
+        "웹 콘솔 & 암호 분석 대시보드: http://localhost:8039"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 38 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~38 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 39 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~39 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -363,6 +366,7 @@ case "$ARG" in
     36)   start_lab 36 ;;
     37)   start_lab 37 ;;
     38)   start_lab 38 ;;
+    39)   start_lab 39 ;;
 
     all|ALL) start_all ;;
     ps|status) print_summary ;;

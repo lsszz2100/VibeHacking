@@ -139,7 +139,6 @@ const ALLOWLIST = new Map([
   ['t2_apisec_bola_idor_orders -> t2_idor', 'BOLA challenge analyzes Insecure Direct Object References'],
   ['t2_apisec_graphql_schema_intro -> t4_graphql', 'GraphQL introspection challenge examines GraphQL schemas'],
   ['t2_apisec_ssrf_webhook -> t3_imds', 'Webhook SSRF challenge analyzes cloud metadata queries'],
-  ['t3_apisec_jwt_key_confusion_rs256_hs256 -> t2_rsa', 'Algorithm confusion involves RSA public keys'],
   ['t3_apisec_jwt_kid_path_traversal -> t4_wasmrce', 'Key ID path traversal discussion cites RCE impact'],
   ['t3_apisec_token_side_jacking -> t4_oauth', 'Token side-jacking discusses OAuth token replay'],
   ['t4_apisec_zero_trust_api_mesh_defense -> t2_ztspiffe', 'API mesh defense integrates SPIFFE identities'],
@@ -297,7 +296,6 @@ const ALLOWLIST = new Map([
   // OAuth 2.0 & OIDC SSO Exploitation domain terms
   ['t0_oauth_pkce_rfc7636 -> t1_scspa', 'PKCE for public clients discusses SPA architecture'],
   ['t1_oauth_redirect_path_traversal -> t4_maldoccabtraversal', 'Redirect URI path traversal discusses directory traversal'],
-  ['t2_oauth_key_confusion_rs256_hs256 -> t2_rsa', 'Key confusion attack discusses RS256 RSA public key'],
   ['t3_oauth_ssrf_token_endpoint -> t3_imds', 'Token endpoint SSRF discusses IMDS metadata access'],
   ['t3_oauth_ssrf_token_endpoint -> t3_pivoting', 'Token endpoint SSRF discusses internal network pivoting'],
   ['t3_oauth_dpop_proof_tampering -> t4_oauth', 'DPoP proof tampering discusses OAuth authorization framework'],
@@ -312,7 +310,6 @@ const ALLOWLIST = new Map([
   ['t4_bgp_tier1_transit_interception -> t2_ghdetour', 'Tier-1 route leak interception discusses traffic detour'],
   ['t4_bgp_zero_trust_peering_architecture -> t2_ptpipeline', 'Zero-trust peering discusses automated validation pipeline'],
   ['t4_bgp_zero_trust_peering_architecture -> t3_screpro', 'Automated route server policy ensures reproducible standards'],
-  ['t4_bgp_quantum_resistant_bgpsec -> t4_nist', 'Post-quantum BGPsec discusses NIST PQC algorithms'],
   ['t4_bgp_quantum_resistant_bgpsec -> t0_mtu', 'Post-quantum BGPsec discusses MTU limitations'],
   ['t4_bgp_soar_automated_ir_isolation -> t4_soar', 'Automated incident response discusses SOAR playbooks'],
   // KISA Major Infrastructure Vulnerability Assessment domain terms
@@ -369,7 +366,6 @@ const ALLOWLIST = new Map([
   ['t2_dbsec_database_network_tls_sniffing -> t2_wireshark', 'TDS protocol plaintext capture inspects packet streams in Wireshark'],
   ['t3_dbsec_transparent_data_encryption_tde -> t4_hsm', 'TDE key management utilizes hardware security modules (HSM)'],
   ['t3_dbsec_transparent_data_encryption_tde -> t2_keystore', 'TDE cryptographic architecture manages external keystore wallets'],
-  ['t4_dbsec_quantum_resistant_db_cryptography -> t4_nist', 'Post-quantum database encryption follows NIST standardization'],
   ['t4_dbsec_soar_automated_db_quarantine -> t4_soar', 'Automated database incident response executes SOAR containment playbook'],
   // Bluetooth LE & SDR RF Hacking domain terms
   ['t0_blehack_gatt_architecture -> t4_gatt', 'BLE GATT architecture defines GATT service model'],
@@ -378,7 +374,6 @@ const ALLOWLIST = new Map([
   ['t2_blehack_unauth_actuator_write -> t2_scadaactuator', 'BLE smart lock unauthorized write controls mechanical actuator'],
   ['t2_blehack_nonce_static_replay -> t3_freshness', 'Static nonce replay vulnerability lacks cryptographic freshness'],
   ['t2_blehack_btlejuice_proxy_mitm -> t4_gatt', 'BtleJuice proxy intercepts GATT attribute traffic'],
-  ['t3_blehack_lesc_ecdh_p256_pairing -> t4_nist', 'LE Secure Connections ECDH P-256 curve is defined by NIST'],
   ['t3_blehack_lesc_ecdh_p256_pairing -> t3_ptresilience', 'Cryptographic pairing posture improves cyber resilience'],
   ['t3_blehack_l2cap_packet_overflow -> t0_mtu', 'L2CAP signaling packet buffer overflow analyzes MTU payload limit'],
   ['t3_blehack_keeloq_rolling_code_differential -> t2_scdpa', 'KeeLoq rolling code cryptanalysis protects against DPA power side-channels'],
@@ -394,6 +389,14 @@ const ALLOWLIST = new Map([
   ['t4_blehack_hardware_secure_element_ble_key -> t4_secureenclave', 'Hardware cryptographic isolation utilizes Secure Enclave technology'],
   ['t4_blehack_zero_trust_wireless_mesh_defense -> t1_ztmicro', 'Zero trust wireless IoT defense enforces microsegmentation'],
   ['t4_blehack_zero_trust_wireless_mesh_defense -> t2_quarantine', 'Dynamic isolation policy isolates rogue mesh nodes in quarantine'],
+  // Modern Cryptography & Cryptanalysis domain terms
+  ['t1_cryptanalysis_aes_sbox_nonlinearity -> t3_inversion', 'AES S-box generation involves GF(2^8) multiplicative inversion'],
+  ['t2_cryptanalysis_rsa_euler_totient -> t3_inversion', 'RSA private exponent calculation performs modular multiplicative inversion'],
+  ['t2_cryptanalysis_aead_gcm_ghash_authenticity -> t4_gcm', 'Galois/Counter Mode (GCM) authenticity verification evaluates GHASH'],
+  ['t3_cryptanalysis_cbc_iv_bit_flipping_exploit -> t3_cbc', 'Cipher Block Chaining (CBC) malleability exploit targets predictable IVs'],
+  ['t3_cryptanalysis_dual_ec_drbg_nsa_backdoor -> t4_prng', 'Dual_EC_DRBG backdoor exploits kleptographic PRNG design flaw'],
+  ['t3_cryptanalysis_grover_algorithm_brute_force -> t3_amplification', 'Grovers quantum search algorithm uses amplitude amplification'],
+  ['t4_cryptanalysis_rsa_pss_probabilistic_padding -> t3_salt', 'RSA-PSS probabilistic signature padding incorporates random salt'],
 ]);
 
 function loadChallenges() {

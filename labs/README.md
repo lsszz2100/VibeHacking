@@ -67,6 +67,8 @@ docker-compose --version
 | 35 | [클라우드 IAM 권한상승 & 거버넌스 랩](./35_cloud_iam_privilege_escalation_lab/) | IAM PassRole 권한상승, AssumeRole 크로스 어카운트 악용, IMDSv2 방어, SCP 가드레일 | ★★★★ | [14장 클라우드 보안](../14_Cloud_Security/07_aws_iam_privilege_escalation_deepdive.md) | `cloudiam` / `cloud` |
 | 36 | [엔터프라이즈 데이터베이스 보안 랩](./36_enterprise_database_security_lab/) | 2차 SQLi 메타데이터 탈취, MySQL UDF 라이브러리 인젝션 RCE, FGA 세밀 감사 & 하드닝 | ★★★★ | [23장 데이터베이스 해킹](../23_Database_Hacking/07_enterprise_rdbms_privilege_escalation_and_injection_deepdive.md) | `dbsec` / `database` |
 | 37 | [블루투스 저에너지 & SDR 무선 보안 랩](./37_bluetooth_sdr_security_lab/) | GATT 프로파일 정찰, 비인가 Characteristic 쓰기, 레거시 Just Works TK 크래킹, LESC ECDH 무선 하드닝 | ★★★★ | [71장 블루투스 해킹](../71_Bluetooth_RF_Hacking/README.md), [15장 WiFi 해킹](../15_WiFi_Hacking/README.md) | `blehack` / `wireless` |
+| 38 | [EDR 유저랜드 후킹 우회 & 차세대 C2 실전 랩](./38_edr_evasion_c2_lab/) | AMSI/ETW 인메모리 패치, ntdll 디스크 매핑 언후킹, Halo's Gate 간접 시스템 콜, Ekko ROP 슬립 난독화 | ★★★★★ | [55장 탐지 우회 기법](../55_Evasion_Techniques/07_edr_userland_unhooking_and_indirect_syscalls_deepdive.md) | `edrbypass` / `endpoint` |
+| 39 | [현대 응용 암호학 & 암호 분석 실전 랩](./39_modern_cryptography_lab/) | AES-CBC 패딩 오라클/비트플리핑, RSA Bleichenbacher '06 e=3 서명 위조, ECDSA Nonce 재사용 개인키 역산, ML-KEM-768 PQC 하이브리드 KEM | ★★★★★ | [16장 암호학](../16_Cryptography/07_practical_padding_oracle_and_elliptic_curve_deepdive.md) | `crypto` / `crypto` |
 
 ---
 
@@ -373,7 +375,68 @@ docker-compose --version
 - RPKI ROV(Route Origin Validation) 활성화, Prefix Max-Length 필터링, MANRS Best Practice 및 Only-To-Customer(OTC) 하드닝
 - **교재 챕터 연계**: [32장 네트워크 장비 해킹 심층 딥다이브](../32_Network_Device_Hacking/08_bgp_route_hijacking_and_rpki_deepdive.md)
 - **워게임 트랙**: `bgp` / `netinfra` (35개 문제)
-- **빠른 실행**: `python3 vhack.py lab start 32` (웹 콘솔 & BGP 관제 센터: `http://localhost:8032`)
+### 33. KISA 주요정보통신기반시설 취약점 평가 & 하드닝 랩 (KISAShield)
+- KISA 주요정보통신기반시설 기술적 취약점 분석·평가 기준 U-01~U-72 전수 점검
+- root 계정 원격 접속 제한(U-01), 패스워드 복잡도 및 암호화 관리(U-02/U-03)
+- 취약 xinetd 서비스 비활성화(U-10), DoS 취약 서비스 차단(U-23), SSH 보안(U-44)
+- eBPF 기반 런타임 보안 모니터링 및 파일 무결성 감사
+- **교재 챕터 연계**: [41장 자격증 심층 딥다이브](../41_Korean_Certifications/08_kisa_infrastructure_vulnerability_assessment_deepdive.md)
+- **워게임 트랙**: `kisa` / `compliance` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 33` (웹 콘솔 & KISA 감사 센터: `http://localhost:8033`)
+
+### 34. OSINT 공격 표면 & 섀도우 IT 헌터 랩 (OSINTHunter)
+- WHOIS, DNS 브루트포스, crt.sh 인증서 투명성 로그 수집을 통한 서브도메인 열거
+- Shodan/Censys 배너 분석 및 미인가 개방 포트 정찰
+- 미등록/Dangling S3 버킷 및 탈취 가능한 DNS CNAME 레코드 서브도메인 테이크오버
+- 공개 노출된 Spring Actuator 환경변수, .git 디렉터리 카빙, 하드코딩된 API Secret 헌팅
+- **교재 챕터 연계**: [33장 OSINT 심층 딥다이브](../33_OSINT_Social_Engineering/07_shodan_and_attack_surface_recon_deepdive.md)
+- **워게임 트랙**: `osintrecon` / `osint` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 34` (웹 콘솔 & OSINT 정찰 패널: `http://localhost:8034`)
+
+### 35. 클라우드 IAM 권한상승 & 거버넌스 랩 (CloudIAMGuard)
+- 와일드카드 IAM 정책 및 iam:PassRole 권한상승 벡터 실습
+- sts:AssumeRole 교차 계정 신뢰 악용 및 Confused Deputy 공격
+- IMDSv1 SSRF vs IMDSv2 Hop Limit 1 보안 가드레일 비교
+- SCP(Service Control Policy) 및 권한 경계(Permission Boundary) 최소 권한 하드닝
+- **교재 챕터 연계**: [14장 클라우드 보안 심층 딥다이브](../14_Cloud_Security/07_aws_iam_privilege_escalation_deepdive.md)
+- **워게임 트랙**: `cloudiam` / `cloud` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 35` (웹 콘솔 & Cloud IAM 대시보드: `http://localhost:8035`)
+
+### 36. 엔터프라이즈 데이터베이스 보안 & 권한 탈취/하드닝 랩 (DBShield)
+- 2차 SQL 인젝션(Second-Order SQLi)을 통한 메타데이터 탈취
+- MySQL UDF 악성 공유 라이브러리 인젝션 및 RCE 방어
+- Oracle AUTHID DEFINER 권한 상승 및 MSSQL xp_cmdshell 무력화
+- FGA(Fine-Grained Auditing) 세분화 감사 및 secure_file_priv 하드닝
+- **교재 챕터 연계**: [23장 데이터베이스 해킹 심층 딥다이브](../23_Database_Hacking/07_enterprise_rdbms_privilege_escalation_and_injection_deepdive.md)
+- **워게임 트랙**: `dbsec` / `database` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 36` (웹 콘솔 & DB 보안 대시보드: `http://localhost:8036`)
+
+### 37. 블루투스 저에너지 & SDR 무선 보안 실전 랩 (BLEShield)
+- BLE GATT 서비스/특성 정찰 및 비인가 쓰기를 통한 제어 탈취
+- 무선 SDR RF OOK/ASK 스펙트럼 복조 및 신호 분석
+- 고정 Nonce Replay 공격 및 암호학적 Anti-Replay 하드닝
+- LESC P-256 ECDH 비대칭 키 교환 및 인증된 암호화 적용
+- **교재 챕터 연계**: [71장 블루투스/RF 해킹](../71_Bluetooth_RF_Hacking/README.md), [15장 WiFi 해킹](../15_WiFi_Hacking/README.md)
+- **워게임 트랙**: `blehack` / `wireless` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 37` (웹 콘솔 & BLE 보안 대시보드: `http://localhost:8037`)
+
+### 38. EDR 유저랜드 후킹 우회 & 차세대 C2 실전 랩 (EDRShield)
+- 스크립트 엔진 메모리 검사(AmsiScanBuffer) 및 ETW 텔레메트리 인라인 패치
+- ntdll.dll 디스크 이미지 매핑을 통한 EDR 5-byte JMP 인라인 훅 언후킹
+- Halo's Gate 동적 SSN 추출 및 ntdll 'syscall; ret' 가젯 간접 시스템 콜
+- Ekko 타이머 큐 ROP 체인 슬립 난독화(PAGE_READWRITE & SystemFunction032)
+- **교재 챕터 연계**: [55장 탐지 우회 기법 심층 딥다이브](../55_Evasion_Techniques/07_edr_userland_unhooking_and_indirect_syscalls_deepdive.md)
+- **워게임 트랙**: `edrbypass` / `endpoint` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 38` (웹 콘솔 & EDR 회피 대시보드: `http://localhost:8038`)
+
+### 39. 현대 응용 암호학 & 암호 분석 실전 랩 (CryptoShield)
+- AES-CBC 패딩 오라클 피드백 및 IV 비트 플리핑(admin=1) 권한 상승
+- RSA Bleichenbacher PKCS#1 v1.5 정수 세제곱근 서명 위조 (e=3)
+- ECDSA 동일 난수(Nonce Reuse) 재사용 시 개인키 d 수학적 역산
+- NIST FIPS 203 ML-KEM-768(Kyber) 포스트 퀀텀 하이브리드 키 교환 방어
+- **교재 챕터 연계**: [16장 암호학 심층 딥다이브](../16_Cryptography/07_practical_padding_oracle_and_elliptic_curve_deepdive.md)
+- **워게임 트랙**: `crypto` (35개 문제)
+- **빠른 실행**: `python3 vhack.py lab start 39` (웹 콘솔 & 암호 분석 대시보드: `http://localhost:8039`)
 
 ---
 

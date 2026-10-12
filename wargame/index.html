@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VibeHacking Wargame — 브라우저 터미널 실전 사이버보안 침투 CTF (1,820제)</title>
-<meta name="description" content="브라우저에서 가짜 셸(connect, cat, submit)로 즐기는 52개 트랙, 1,820개 단계별 사이버보안 침투 워게임. A browser-based, terminal-style cybersecurity infiltration wargame.">
+<title>Vibe Hacking Wargame</title>
+<meta name="description" content="브라우저에서 가짜 셸(connect, cat, submit)로 즐기는 53개 트랙, 1,855개 단계별 사이버보안 침투 워게임. A browser-based, terminal-style cybersecurity infiltration wargame.">
 <meta name="keywords" content="사이버보안 워게임, CTF, 해킹 실습, 브라우저 워게임, 침투 테스트, cybersecurity wargame, CTF challenges, red team simulation, offensive security">
 <meta name="author" content="lsszz2100">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VibeHacking Wargame">
 <meta property="og:title" content="VibeHacking Wargame — 브라우저 터미널 실전 사이버보안 침투 CTF">
-<meta property="og:description" content="브라우저에서 가짜 셸로 표적 vibe.corp의 5대 보안 계층을 침투하는 52개 트랙 1,820개 단계별 사이버보안 워게임.">
+<meta property="og:description" content="브라우저에서 가짜 셸로 표적 vibe.corp의 5대 보안 계층을 침투하는 53개 트랙 1,855개 단계별 사이버보안 워게임.">
 <meta property="og:url" content="https://lsszz2100.github.io/VibeHacking/wargame/">
 <meta property="og:image" content="https://lsszz2100.github.io/VibeHacking/wargame/assets/og-preview.svg">
 <meta property="og:image:width" content="1200">
@@ -25,7 +25,7 @@
 <!-- Twitter / X Cards -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="VibeHacking Wargame — 브라우저 터미널 사이버보안 침투 CTF">
-<meta name="twitter:description" content="브라우저에서 즐기는 단계별 52개 트랙 1,820개 사이버보안 침투 챌린지. 실시간 터미널 & 8대 취약점 시뮬레이터 탑재.">
+<meta name="twitter:description" content="브라우저에서 즐기는 단계별 53개 트랙 1,855개 사이버보안 침투 챌린지. 실시간 터미널 & 8대 취약점 시뮬레이터 탑재.">
 <meta name="twitter:image" content="https://lsszz2100.github.io/VibeHacking/wargame/assets/og-preview.svg">
 
 <!-- Schema.org Structured Data -->
@@ -34,7 +34,7 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "VibeHacking Wargame",
-  "description": "A browser-based terminal simulation wargame with 52 tracks and 1,820 progressive cybersecurity infiltration challenges.",
+  "description": "A browser-based terminal simulation wargame with 53 tracks and 1,855 progressive cybersecurity infiltration challenges.",
   "applicationCategory": "EducationalApplication, GameApplication",
   "operatingSystem": "All modern browsers",
   "offers": {
@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/1820</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/1855</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -100,6 +100,7 @@
     <button class="chip" data-cmd="bgp">bgp</button>
     <button class="chip" data-cmd="oauth">oauth</button>
     <button class="chip" data-cmd="dbshield">dbshield</button>
+    <button class="chip" data-cmd="crypto">crypto</button>
     <button class="chip" data-cmd="ls">ls</button>
     <button class="chip" data-cmd="tracks">tracks</button>
     <button class="chip" data-cmd="map">map</button>
@@ -150,6 +151,7 @@
         <button class="pg-tab" data-tab="oauth">🔑 OAuth PKCE &amp; Key Confusion</button>
         <button class="pg-tab" data-tab="dbshield">🗄️ DB RBAC &amp; UDF Shield</button>
         <button class="pg-tab" data-tab="edr">🛡️ EDR Evasion &amp; Memory Inspector</button>
+        <button class="pg-tab" data-tab="crypto">🔐 AES-CBC Oracle &amp; Bit-Flip</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -494,6 +496,73 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="edrTelemetryBadge" class="token-tag token-inj">ALERT: CRITICAL</span>
                 </div>
                 <div id="edrTelemetryOutput" class="ast-view" style="font-size:11px;min-height:160px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AES-CBC Padding Oracle & Bit-Flipping Inspector Panel -->
+        <div id="pgPanel-crypto" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Cryptanalysis Presets:</span>
+              <button class="pg-btn" data-crypto-preset="oracle_decrypt">1. Padding Oracle Decryption (Vaudenay)</button>
+              <button class="pg-btn danger" data-crypto-preset="bit_flip">2. CBC IV Bit-Flipping (admin=1 Escalation)</button>
+              <button class="pg-btn danger" data-crypto-preset="rsa_forge">3. RSA Bleichenbacher '06 e=3 Forgery</button>
+              <button class="pg-btn danger" data-crypto-preset="ecdsa_nonce">4. ECDSA Nonce Reuse Key Carving</button>
+              <button class="pg-btn" data-crypto-preset="pqc_hybrid">5. 🛡️ ML-KEM-768 PQC Hybrid Defense</button>
+            </div>
+            <div class="bgp-controls-bar" style="margin-top:6px;">
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Crypto Primitive / Oracle:</label>
+                <select id="cryptoPrimitiveSelect" style="background:#020804;border:1px solid var(--line);color:var(--txt);font-family:var(--mono);padding:4px 8px;font-size:11px;border-radius:4px;">
+                  <option value="cbc_oracle">AES-128-CBC Padding Oracle</option>
+                  <option value="cbc_bitflip">AES-128-CBC Bit-Flipping</option>
+                  <option value="rsa_bleichenbacher">RSA PKCS#1 v1.5 e=3 Signature Forgery</option>
+                  <option value="ecdsa_k_reuse">ECDSA secp256k1 Nonce Reuse</option>
+                  <option value="ml_kem_hybrid">ML-KEM-768 + X25519 Hybrid KEM</option>
+                </select>
+              </div>
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Attack Target / Block Index:</label>
+                <input id="cryptoTargetInput" type="text" value="Block 1 (Byte 15)" style="width:130px;background:#020804;border:1px solid var(--line);color:var(--green);font-family:var(--mono);padding:4px 8px;font-size:11px;border-radius:4px;">
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="cryptoOracleLeakCheck" type="checkbox" checked> Leak Padding Exception (Oracle Active)
+                </label>
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="cryptoAeadCheck" type="checkbox"> AEAD (AES-GCM Authenticated Tag)
+                </label>
+              </div>
+              <button id="cryptoSimulateBtn" class="pg-btn">Execute Cryptanalysis &amp; Probe</button>
+            </div>
+            <div style="margin: 8px 0;display:flex;gap:10px;">
+              <div style="flex:1;">
+                <label class="dim" style="font-size:11px;">Initialization Vector (IV - 16 Bytes Hex):</label>
+                <input id="cryptoIvInput" type="text" value="a1 b2 c3 d4 e5 f6 07 18 29 3a 4b 5c 6d 7e 8f 90" style="width:100%;box-sizing:border-box;background:#020804;border:1px solid var(--line);color:var(--green);font-family:var(--mono);padding:5px 8px;font-size:11px;border-radius:4px;margin-top:2px;">
+              </div>
+              <div style="flex:2;">
+                <label class="dim" style="font-size:11px;">Ciphertext Payload / Blocks (Hex):</label>
+                <input id="cryptoCtInput" type="text" value="7e 44 91 2b c0 88 1a 23 99 d4 e1 f0 aa bb cc dd 11 22 33 44 55 66 77 88 99 00 aa bb cc dd ee ff" style="width:100%;box-sizing:border-box;background:#020804;border:1px solid var(--line);color:var(--txt);font-family:var(--mono);padding:5px 8px;font-size:11px;border-radius:4px;margin-top:2px;">
+              </div>
+            </div>
+            <div class="dbshield-grid">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🔬 Byte Matrix, Intermediate Vector I[k] &amp; XOR Transform</span>
+                  <span id="cryptoStateBadge" class="token-tag token-inj">STATE: EXPLOITABLE</span>
+                </div>
+                <div id="cryptoTraceOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ Decryption Server Oracle &amp; Security Validation Response</span>
+                  <span id="cryptoOracleBadge" class="token-tag token-inj">HTTP 200: VALID PADDING</span>
+                </div>
+                <div id="cryptoOracleOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
               </div>
             </div>
           </div>

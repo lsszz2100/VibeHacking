@@ -915,6 +915,48 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🌙 Ekko Timer Sleep Obfuscation Arm! YARA 0 matches -> FLAG{EKKO_SLEEP_OBFUSCATION_TIMER_QUEUE_ROP_4412}"
             }
         ]
+    },
+    "39": {
+        "title": "Lab 39: CryptoShield — Modern Cryptography & Cryptanalysis Lab",
+        "description": "AES-CBC 패딩 오라클 및 비트 플리핑, RSA Bleichenbacher '06 e=3 서명 위조, ECDSA 취약 난수(Nonce Reuse) 개인키 역산, NIST FIPS 203 ML-KEM-768(Kyber) 포스트 퀀텀 하이브리드 키 교환 방어",
+        "steps": [
+            {
+                "step": 1,
+                "name": "AES-CBC IV 비트 플리핑 관리자 권한 상승",
+                "target": "POST /api/crypto/cbc/verify (iv: IV[6] ^= '0' ^ '1', ciphertext: ct)",
+                "poc_explanation": "CBC 복호화 메커니즘에서 이전 블록(또는 IV)의 바이트 변조가 다음 블록의 평문 바이트에 1:1로 반영되는 특성을 악용하여 IV의 오프셋 6 바이트를 조작하여 admin=0을 admin=1로 변조합니다.",
+                "exploit_payload": '{"iv": "<tampered_iv_hex>", "ciphertext": "<original_ciphertext_hex>"}',
+                "defense": "CBC 모드 단독 사용을 지양하고, AEAD(AES-GCM, ChaCha20-Poly1305) 또는 Encrypt-then-MAC(HMAC-SHA256)을 적용하여 암호문 무결성을 필수 검증.",
+                "sample_output": "🎯 Admin Privileges Obtained via CBC Bit-Flipping! -> FLAG{CBC_PADDING_ORACLE_AND_BITFLIP_MASTER_8831}"
+            },
+            {
+                "step": 2,
+                "name": "RSA Bleichenbacher PKCS#1 v1.5 정수 세제곱근 서명 위조",
+                "target": "POST /api/crypto/rsa/verify-signature (message: admin_access_token_v1, signature: s)",
+                "poc_explanation": "공개 지수 e=3 환경에서 PKCS#1 v1.5 서명 검증기가 패딩 길이를 엄격히 검사하지 않고 접두사만 파싱하는 취약점을 악용하여, 대상 해시 접두사에 대한 정수 세제곱근 s = ceil(cbrt(D))를 계산해 유효한 서명을 위조합니다.",
+                "exploit_payload": '{"message": "admin_access_token_v1", "signature": "<cube_root_s_hex>"}',
+                "defense": "RSA PSS(Probabilistic Signature Scheme)를 도입하거나, PKCS#1 v1.5 검증 시 ASN.1 DigestInfo 뒤에 어떠한 가비지 바이트도 존재하지 않음을 엄격히 검증.",
+                "sample_output": "🔑 Root Signature Accepted by Vulnerable Parser! -> FLAG{RSA_BLEICHENBACHER_SIGNATURE_FORGERY_PWN_7742}"
+            },
+            {
+                "step": 3,
+                "name": "ECDSA 동일 난수(Nonce Reuse) 재사용 개인키 역산",
+                "target": "POST /api/crypto/ecdsa/submit-key (private_key: d)",
+                "poc_explanation": "동일한 비밀 난수 k로 서명된 두 트랜잭션 (r, s1, s2)로부터 k = (z1 - z2) * (s1 - s2)^-1 mod n을 구한 뒤 개인키 d = r^-1 * (s1 * k - z1) mod n을 수학적으로 복원하여 제출합니다.",
+                "exploit_payload": '{"private_key": "0x1337c0decafebeef1337c0decafebeef1337c0decafebeef1337c0decafebeef"}',
+                "defense": "RFC 6979 결정론적 ECDSA 서명 생성 방식을 적용하여 비밀키와 메시지 해시의 HMAC으로 k를 생성하거나 Ed25519(EdDSA)를 채택.",
+                "sample_output": "⚡ Elliptic Curve Private Key Carved! -> FLAG{ECDSA_REUSED_NONCE_PRIVATE_KEY_CARVED_9953}"
+            },
+            {
+                "step": 4,
+                "name": "NIST FIPS 203 ML-KEM-768(Kyber) 포스트 퀀텀 하이브리드 KEM 방어",
+                "target": "POST /api/crypto/pqc/enable-hybrid (algorithm: X25519 + ML-KEM-768)",
+                "poc_explanation": "양자 컴퓨터 쇼어 알고리즘에 취약한 고전 키 교환을 격자 기반 모듈 LWE(ML-KEM-768)와 X25519를 결합한 하이브리드 KEM으로 전환하여 양자 도청 및 Harvest Now Decrypt Later 공격을 차단합니다.",
+                "exploit_payload": '{"client_public_share": "<pqc_hybrid_share_hex>"}',
+                "defense": "하이브리드 포스트 퀀텀 키 교환(X25519Kyber768Draft00 / ML-KEM) 조기 도입 및 완전한 PQC 알고리즘 마이그레이션.",
+                "sample_output": "🛡️ Post-Quantum Hybrid KEM Activated! 192-bit Quantum Shield -> FLAG{POST_QUANTUM_HYBRID_KYBER_KEM_IMMUNE_4421}"
+            }
+        ]
     }
 }
 
