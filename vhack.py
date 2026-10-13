@@ -462,6 +462,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [16, 57],
     },
+    "40": {
+        "name": "엔터프라이즈 침해사고 대응 & DFIR 실전 랩",
+        "dir":  "40_enterprise_dfir_ir_lab",
+        "desc": "IRShield: Sysmon 라이브 메모리/프로세스 트리 아티팩트 트리아지 · MFT 타임라인 & 랜섬웨어 파일 암호화 흔적 분석 · C2 비콘 통신 식별 & 네트워크/호스트 격리 봉쇄 · SOAR 플레이북 자동 대응 및 복구 무결성 검증",
+        "url":  "웹 콘솔 & DFIR 침해대응 대시보드: http://localhost:8040",
+        "difficulty": "★★★★★",
+        "related": [44, 7, 23],
+    },
 }
 
 
@@ -1475,6 +1483,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8037, "Lab 37 (BLEShield Bluetooth LE & SDR Lab)"),
         (8038, "Lab 38 (EDRShield EDR Evasion & Next-Gen C2 Lab)"),
         (8039, "Lab 39 (CryptoShield Modern Cryptography Lab)"),
+        (8040, "Lab 40 (IRShield Enterprise DFIR Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

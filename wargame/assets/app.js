@@ -879,6 +879,7 @@
     initDbShield();
     initEdr();
     initCrypto();
+    initDfir();
   }
 
   function hidePlayground(){
@@ -889,7 +890,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -2132,6 +2133,247 @@
     oracleOut.textContent = oracleText;
   }
 
+  // --- 10. Enterprise DFIR Live Triage & Memory Timeline Inspector ---
+  let currentDfirScenario = "lockbit";
+
+  function initDfir(){
+    const hostEl = document.getElementById("dfirHostInput");
+    if (!hostEl) return;
+    renderDfir("lockbit");
+  }
+
+  function renderDfir(scenario){
+    if (scenario && typeof scenario === "string") {
+      currentDfirScenario = scenario;
+    }
+    const hostEl = document.getElementById("dfirHostInput");
+    const streamEl = document.getElementById("dfirStreamSelect");
+    const containCheck = document.getElementById("dfirContainmentCheck");
+    const memDumpCheck = document.getElementById("dfirMemoryDumpCheck");
+    const soarCheck = document.getElementById("dfirSoarRemediateCheck");
+    const queryEl = document.getElementById("dfirQueryInput");
+    const procBadge = document.getElementById("dfirProcBadge");
+    const containBadge = document.getElementById("dfirContainBadge");
+    const procTraceOut = document.getElementById("dfirProcTraceOutput");
+    const timelineOut = document.getElementById("dfirTimelineOutput");
+
+    if (!hostEl || !streamEl || !containCheck || !memDumpCheck || !soarCheck || !queryEl || !procBadge || !containBadge || !procTraceOut || !timelineOut) return;
+
+    if (scenario === "lockbit"){
+      hostEl.value = "WKSTN-FIN-042 (10.100.14.88)";
+      streamEl.value = "lockbit";
+      containCheck.checked = false;
+      memDumpCheck.checked = true;
+      soarCheck.checked = false;
+      queryEl.value = "volatility3 -f mem.dmp windows.malfind --pid 5120 | parse-timeline --mft C:\\$MFT";
+    } else if (scenario === "reflective"){
+      hostEl.value = "SRV-DC-01 (10.100.10.5)";
+      streamEl.value = "reflective";
+      containCheck.checked = false;
+      memDumpCheck.checked = true;
+      soarCheck.checked = false;
+      queryEl.value = "volatility3 -f mem.dmp windows.vadinfo --pid 3320 | windows.psscan";
+    } else if (scenario === "mft_timestomp"){
+      hostEl.value = "WKSTN-DEV-007 (10.100.14.22)";
+      streamEl.value = "mft_timestomp";
+      containCheck.checked = false;
+      memDumpCheck.checked = false;
+      soarCheck.checked = false;
+      queryEl.value = "analyzeMFT.py -f C:\\$MFT --output-csv timeline.csv | grep malware.sys";
+    } else if (scenario === "soar_contain"){
+      hostEl.value = "WKSTN-FIN-042 (10.100.14.88)";
+      streamEl.value = "soar_contain";
+      containCheck.checked = true;
+      memDumpCheck.checked = true;
+      soarCheck.checked = true;
+      queryEl.value = "soar_playbook_runner.py --incident IR-2026-0042 --action full_containment";
+    } else if (scenario === "clean_state"){
+      hostEl.value = "WKSTN-BASELINE-01 (10.100.14.10)";
+      streamEl.value = "clean_state";
+      containCheck.checked = false;
+      memDumpCheck.checked = true;
+      soarCheck.checked = false;
+      queryEl.value = "volatility3 -f clean.dmp windows.malfind | parse-timeline";
+    }
+
+    const host = (hostEl.value || "WKSTN-FIN-042").trim();
+    const mode = streamEl.value;
+    const isContained = containCheck.checked;
+    const isMemScan = memDumpCheck.checked;
+    const isSoar = soarCheck.checked;
+    const query = (queryEl.value || "").trim();
+
+    let procText = "=== PROCESS TREE & IN-MEMORY ARTIFACT TRACE ===\n";
+    let timelineText = "=== NTFS MFT TIMELINE, C2 NETFLOW & REMEDIATION ===\n";
+
+    if (mode === "lockbit"){
+      procText +=
+        "Target Endpoint: " + host + "\n" +
+        "[Process Hierarchy Breakdown]:\n" +
+        "  PID 912: svchost.exe (RPC Endpoint Mapper)\n" +
+        "   └─ PID 4812: powershell.exe -Enc JABj... (Dropper / Stager)\n" +
+        "       ├─ PID 4816: vssadmin.exe delete shadows /all /quiet (Volume Shadow Wiped)\n" +
+        "       └─ PID 5120: locker.exe (High I/O Operations, 1,420 file writes/sec)\n" +
+        "[VAD Memory Allocations]:\n" +
+        "  Region: 0x000001f4c0200000 (Size: 0x64000) | Prot: PAGE_EXECUTE_READWRITE (RWX)\n" +
+        "  Entropy: 7.98 (High entropy cryptographic routine detected in private heap)\n" +
+        "[Canary File Tripwire Telemetry]:\n" +
+        "  🚨 ALERT: Decoy file 'salary_confidential.docx.canary' modified & renamed to '.lockbit'!\n" +
+        "  Query Executed: " + query;
+
+      timelineText +=
+        "[NTFS $MFT & USN Journal Timeline Reconstruction]:\n" +
+        "  04:12:01.100 - $MFT Record 41029: C:\\Share\\Finance\\Q3_Report.xlsx -> Encrypted\n" +
+        "  04:12:01.120 - $MFT Record 41030: C:\\Share\\Finance\\Q3_Report.xlsx.locked created\n" +
+        "  04:12:01.150 - USN Journal: File attribute change flag: ARCHIVE | REPARSE\n" +
+        "[C2 Beaconing & Lateral Infection Assessment]:\n" +
+        "  Active Socket: " + host + ":49210 -> 198.51.100.44:8443 (ESTABLISHED)\n" +
+        "  Protocol: TLS 1.3 / Beacon interval: 30s (Jitter 12.4%)\n";
+
+      if (isContained || isSoar){
+        timelineText +=
+          "[Remediation Status]:\n" +
+          "  🛡️ EDR Host Network Containment Enforced!\n" +
+          "  - NIC isolated: Only SOC controller telemetry permitted.\n" +
+          "  - Kill tasks dispatched: PID 4812, 4816, 5120 terminated immediately.\n" +
+          "  - Lateral spread halted across internal enterprise subnet.\n" +
+          "Verdict: 🟢 INCIDENT CONTAINED (Ransomware Execution Neutralized)";
+        procBadge.textContent = "TRIAGE: ISOLATED";
+        procBadge.className = "token-tag token-lit";
+        containBadge.textContent = "STATUS: CONTAINED";
+        containBadge.className = "token-tag token-lit";
+      } else {
+        timelineText +=
+          "[Remediation Status]:\n" +
+          "  ⚠️ Host Containment OFF: Ransomware actively traversing SMB admin shares!\n" +
+          "Verdict: 🚨 CRITICAL: Active ransomware detonation in progress.";
+        procBadge.textContent = "TRIAGE: MALICIOUS";
+        procBadge.className = "token-tag token-inj";
+        containBadge.textContent = "STATUS: ACTIVE INFECTION";
+        containBadge.className = "token-tag token-inj";
+      }
+
+    } else if (mode === "reflective"){
+      procText +=
+        "Target Endpoint: " + host + "\n" +
+        "[Process & Thread Inspection]:\n" +
+        "  PID 3320: spoolsv.exe (Print Spooler Service - SYSTEM)\n" +
+        "   └─ Thread TID 4410: Injected Thread (Unbacked Virtual Memory Region)\n" +
+        "[VAD Memory Carving]:\n" +
+        "  Address: 0x00007ff810400000 | Protection: PAGE_EXECUTE_READWRITE (RWX)\n" +
+        "  PE Header Carving: MZ magic bytes (0x5A4D) recovered from unbacked pool!\n" +
+        "  Module Linking: Process unlinked from PEB InLoadOrderModuleList (Stealth)\n" +
+        "  Scanner Finding: In-memory reflective loader payload identified!";
+
+      timelineText +=
+        "[Disk Forensic Trace]:\n" +
+        "  - Disk Footprint: 0 files written ($MFT clean, fileless execution)\n" +
+        "  - Prefetch Cache: No anomalous binary invocation recorded\n" +
+        "[C2 Network Triage]:\n" +
+        "  - Connection: " + host + ":52104 -> 203.0.113.89:443 (HTTPS Beacon)\n" +
+        "  - JA3 Fingerprint: 72c6498a1290 (Known C2 profile match)\n" +
+        "  - Data Exfiltration: 48 KB encrypted staging buffer in memory\n";
+
+      if (isContained || isSoar){
+        timelineText +=
+          "[SOAR Remediation Response]:\n" +
+          "  🛡️ Thread TID 4410 suspended and VirtualFree(0x00007ff810400000) executed.\n" +
+          "  Perimeter firewall rule deployed: Block destination 203.0.113.89.\n" +
+          "Verdict: 🟢 FILELESS BEACON SEVERED & MEMORY SANITIZED";
+        procBadge.textContent = "TRIAGE: MEMORY WIPED";
+        procBadge.className = "token-tag token-lit";
+        containBadge.textContent = "STATUS: CLEANED";
+        containBadge.className = "token-tag token-lit";
+      } else {
+        timelineText +=
+          "[Triage Disposition]:\n" +
+          "  🚨 High-priority C2 connection beaconing every 45s without disk footprint.\n" +
+          "Verdict: 💥 COVERT IN-MEMORY ACCESS MAINTAINED";
+        procBadge.textContent = "TRIAGE: REFLECTIVE DLL";
+        procBadge.className = "token-tag token-inj";
+        containBadge.textContent = "STATUS: C2 BEACONING";
+        containBadge.className = "token-tag token-inj";
+      }
+
+    } else if (mode === "mft_timestomp"){
+      procText +=
+        "Target Endpoint: " + host + "\n" +
+        "[Process Context]:\n" +
+        "  PID 1844: cmd.exe -> Executed binary timestamp modification utility\n" +
+        "[Artifact Analysis Target]:\n" +
+        "  Target File: C:\\Windows\\System32\\drivers\\malware.sys\n" +
+        "  SHA-256: 7f83b194092b77a0... (Suspicious unsigned driver)\n" +
+        "[Discrepancy Evaluation]:\n" +
+        "  - $STANDARD_INFORMATION (Userland Accessible):\n" +
+        "      Created: 2021-04-12 09:12:00.000 (Forged to mimic kernel32.dll)\n" +
+        "  - $FILE_NAME (NTFS Kernel Driver Only):\n" +
+        "      Created: 2026-10-13 04:15:22.418 (Actual File Write Timestamp!)\n" +
+        "  - Delta: 5 years, 6 months discrepancy between $STD and $FN!";
+
+      timelineText +=
+        "[NTFS USN Journal Forensic Sequence]:\n" +
+        "  Record 9182034: USN_REASON_FILE_CREATE (2026-10-13 04:15:22)\n" +
+        "  Record 9182035: USN_REASON_DATA_EXTEND (2026-10-13 04:15:23)\n" +
+        "  Record 9182036: USN_REASON_BASIC_INFO_CHANGE (2026-10-13 04:15:25 - Timestomp event)\n" +
+        "[Forensic Evidence Assessment]:\n" +
+        "  - Anti-forensic evasion attempt was completely defeated by NTFS duality.\n" +
+        "  - Evidence preserved: Dropped file quarantined into forensic vault.\n" +
+        "Verdict: 🚨 TIMESTOMPING DETECTED & REAL CREATION TIME RECOVERED";
+      procBadge.textContent = "TRIAGE: TIMESTOMP";
+      procBadge.className = "token-tag token-inj";
+      containBadge.textContent = "EVIDENCE: RECOVERED";
+      containBadge.className = "token-tag token-lit";
+
+    } else if (mode === "soar_contain"){
+      procText +=
+        "Target Endpoint: " + host + "\n" +
+        "[SOAR Incident Response Orchestration Playbook]:\n" +
+        "  Incident ID: IR-2026-0042 (Severity: CRITICAL P1)\n" +
+        "  Phase 1: Process Hierarchy Termination:\n" +
+        "    - Killed PID 4812 (powershell.exe) -> Exit 0\n" +
+        "    - Killed PID 5120 (locker.exe) -> Exit 0\n" +
+        "  Phase 2: Memory Carving & Deallocation:\n" +
+        "    - VirtualFree(0x000001f4c0200000, MEM_RELEASE) -> RWX pages reclaimed\n" +
+        "  Phase 3: Active Directory Identity Isolation:\n" +
+        "    - Disabled user 'finance_intern_02' & revoked Kerberos TGT tickets";
+
+      timelineText +=
+        "[Network Perimeter & Host Quarantine]:\n" +
+        "  - EDR Host Containment API: HTTP 200 OK (Host isolated from LAN)\n" +
+        "  - Edge Firewall BGP Blackhole: 198.51.100.44 null-routed across all routers\n" +
+        "  - DNS Sinkhole: Redirected adversary domains to 127.0.0.1\n" +
+        "  - Metrics: MTTD = 1m 24s | MTTR = 48s (Exceeds SLA threshold)\n" +
+        "Verdict: 🟢 ENTERPRISE RESILIENCE: 100% CONTAINED & REMEDIATED";
+      procBadge.textContent = "SOAR: REMEDIATED";
+      procBadge.className = "token-tag token-lit";
+      containBadge.textContent = "CONTAINMENT: 100%";
+      containBadge.className = "token-tag token-lit";
+
+    } else { // clean_state
+      procText +=
+        "Target Endpoint: " + host + "\n" +
+        "[Baseline Workstation Inspection]:\n" +
+        "  - Process Hierarchy: All running processes verified against Microsoft catalog\n" +
+        "  - Memory Allocations: 0 unbacked executable (RWX) memory regions found\n" +
+        "  - Thread Call Stacks: Clean RIP pointers within legitimate signed modules\n" +
+        "  - Injection Scanner: 0 anomalous hooks or injected threads";
+
+      timelineText +=
+        "[NTFS & Telemetry Baseline]:\n" +
+        "  - NTFS Timestamps: $STD and $FN timestamps perfectly consistent\n" +
+        "  - Network Connections: Only approved corporate cloud endpoints connected\n" +
+        "  - Incident Status: No compromise detected\n" +
+        "Verdict: 🛡️ CLEAN BASELINE WORKSTATION";
+      procBadge.textContent = "TRIAGE: CLEAN";
+      procBadge.className = "token-tag token-lit";
+      containBadge.textContent = "STATUS: HEALTHY";
+      containBadge.className = "token-tag token-lit";
+    }
+
+    procTraceOut.textContent = procText;
+    timelineOut.textContent = timelineText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -2405,6 +2647,8 @@
         openPlayground("edr"); break;
       case "crypto": case "oracle": case "padding": case "bitflip": case "cbc":
         openPlayground("crypto"); break;
+      case "dfir": case "triage": case "timeline": case "forensics": case "ir": case "contain":
+        openPlayground("dfir"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -2870,6 +3114,25 @@
       audio();
       const p = btn.getAttribute("data-crypto-preset");
       renderCrypto(p);
+    });
+  });
+
+  // DFIR Inspector Controls
+  const dfirSimBtn = document.getElementById("dfirSimulateBtn");
+  if (dfirSimBtn) dfirSimBtn.addEventListener("click", () => { audio(); renderDfir(); });
+  ["dfirHostInput", "dfirQueryInput"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", () => renderDfir());
+  });
+  ["dfirStreamSelect", "dfirContainmentCheck", "dfirMemoryDumpCheck", "dfirSoarRemediateCheck"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("change", () => renderDfir());
+  });
+  document.querySelectorAll("[data-dfir-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-dfir-preset");
+      renderDfir(p);
     });
   });
 

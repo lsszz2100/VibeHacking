@@ -2,7 +2,7 @@
 
 > 🚨 **VibeHacking 교재 섹션 44**
 > - **CLI 학습**: `python3 vhack.py study 44`
-> - **연계 실습 랩**: [Lab 05: 전체 시나리오 통합 랩](../labs/), [Lab 11: Active Directory & Kerberos 침투 랩](../labs/)
+> - **연계 실습 랩**: [Lab 05: 전체 시나리오 통합 랩](../labs/), [Lab 11: Active Directory & Kerberos 침투 랩](../labs/), [Lab 40: 엔터프라이즈 침해사고 대응 & DFIR 실전 랩](../labs/40_enterprise_dfir_ir_lab/)
 
 ## 📚 목차
 
@@ -16,6 +16,7 @@
 | [06_ir_dfir_ctf_lab.md](./06_ir_dfir_ctf_lab.md) | **침해사고 대응 / DFIR CTF 실습 랩** — pip install volatility3 yara-python scapy dpkt pyshark |
 | [07_soc_siem_threat_hunting_deepdive.md](./07_soc_siem_threat_hunting_deepdive.md) | **차세대 SOC 관제 및 SIEM 실전 위협 헌팅 심층 가이드 (Modern SOC & SIEM Threat Hunting Deep-Dive)** — 엔터프라이즈 보안관제(SOC)는 단순 경보 알림(Alert-driven) 방식에서 가설 기반의 능동적 위협 헌팅(Hypothesis-driven Threat Hunting)으로 진화했... |
 | [08_enterprise_incident_response_playbook_deepdive.md](./08_enterprise_incident_response_playbook_deepdive.md) | **엔터프라이즈 침해사고 대응 플레이북 및 DFIR 거버넌스 심층 가이드 (Enterprise Incident Response Playbook & DFIR Governance Deep-Dive)** — 현대 엔터프라이즈 환경에서 보안 침해사고 대응은 단순한 "악성 프로세스 강제 종료"를 넘어, 기업 비즈니스 영속성(BCP), 법적 책임(Regulatory Liability), 브랜드... |
+| [09_live_triage_memory_timeline_and_anti_forensics_deepdive.md](./09_live_triage_memory_timeline_and_anti_forensics_deepdive.md) | **엔터프라이즈 라이브 트리아지, 메모리 VAD 구조 분석 및 NTFS 타임라인 안티포렌식 무력화 심층 가이드 (Enterprise Live Triage, Memory VAD Forensics & Anti-Forensics Neutralization Deep-Dive)** — 침해사고가 발생했을 때 초기 1시간(Golden Hour) 내의 대응 품질이 전사 피해 규모를 결정합니다. 현대 공격자들은 디스크에 흔적을 남기지 않는 파일리스(Fileless) 기법... |
 
 ## 🎯 학습 목표
 

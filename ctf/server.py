@@ -960,6 +960,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "NIST FIPS 203 ML-KEM-768 (Kyber) + X25519 하이브리드 KEM을 활성화하여 양자 공격을 방어하세요."}
                 ],
             },
+            "LAB40_PROCESS_TRIAGE": {
+                "id": "LAB40_PROCESS_TRIAGE",
+                "title": "IRShield: Live Process Lineage & PPID Spoofing Detection",
+                "category": "dfir",
+                "initial_points": 500,
+                "flag": "FLAG{dfir_live_process_triage_pid4920_detected}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "spoolsv.exe(PID 4920)의 실제 생성자가 powershell.exe(3480)이며 unbacked memory를 보유한 이상 징후를 확인하세요."}
+                ],
+            },
+            "LAB40_MFT_FORENSICS": {
+                "id": "LAB40_MFT_FORENSICS",
+                "title": "IRShield: MFT Timeline & Ransomware Artifact Reconstruction",
+                "category": "dfir",
+                "initial_points": 500,
+                "flag": "FLAG{dfir_mft_timeline_vssadmin_ransom_unmasked}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "vssadmin.exe delete shadows /all /quiet 명령과 최초 암호화 레코드 84912(.locked)를 파싱하세요."}
+                ],
+            },
+            "LAB40_C2_CONTAINMENT": {
+                "id": "LAB40_C2_CONTAINMENT",
+                "title": "IRShield: C2 Beacon Detection & Host Isolation",
+                "category": "dfir",
+                "initial_points": 500,
+                "flag": "FLAG{dfir_c2_network_isolation_firewall_locked}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "60초 지터 비콘 목적지인 198.51.100.77:8443을 차단하고 호스트 네트워크 격리를 발령하세요."}
+                ],
+            },
+            "LAB40_SOAR_REMEDIATION": {
+                "id": "LAB40_SOAR_REMEDIATION",
+                "title": "IRShield: SOAR Automated Remediation & Integrity Verification",
+                "category": "dfir",
+                "initial_points": 500,
+                "flag": "FLAG{dfir_soar_playbook_enterprise_remediated_100}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "스케줄러 작업 삭제, 악성 프로세스 종료, WMI 구독 제거, 불변 골드 스냅샷 복구 4단계를 전수 실행하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -996,6 +1044,7 @@ class CTFState:
             ["LAB37_RECON", "LAB37_WRITE", "LAB37_REPLAY", "LAB37_HARDEN"],
             ["LAB38_AMSI_ETW", "LAB38_UNHOOK", "LAB38_SYSCALL", "LAB38_SLEEPOBF"],
             ["LAB39_CBC_ORACLE", "LAB39_RSA_BLEICHENBACHER", "LAB39_ECDSA_NONCE", "LAB39_PQC_SECURED"],
+            ["LAB40_PROCESS_TRIAGE", "LAB40_MFT_FORENSICS", "LAB40_C2_CONTAINMENT", "LAB40_SOAR_REMEDIATION"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

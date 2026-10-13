@@ -25,7 +25,7 @@
 <!-- Twitter / X Cards -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="VibeHacking Wargame — 브라우저 터미널 사이버보안 침투 CTF">
-<meta name="twitter:description" content="브라우저에서 즐기는 단계별 53개 트랙 1,855개 사이버보안 침투 챌린지. 실시간 터미널 & 8대 취약점 시뮬레이터 탑재.">
+<meta name="twitter:description" content="브라우저에서 즐기는 단계별 54개 트랙 1,890개 사이버보안 침투 챌린지. 실시간 터미널 & 10대 취약점 시뮬레이터 탑재.">
 <meta name="twitter:image" content="https://lsszz2100.github.io/VibeHacking/wargame/assets/og-preview.svg">
 
 <!-- Schema.org Structured Data -->
@@ -77,7 +77,7 @@
     <span class="hud-item">TARGET <b id="hudTarget">vibe.corp</b></span>
     <span class="hud-item">SCORE <b id="hudScore">0</b></span>
     <span class="hud-item">RANK <b id="hudRank">🥚</b></span>
-    <span class="hud-item">BREACH <b id="hudSolved">0/1855</b></span>
+    <span class="hud-item">BREACH <b id="hudSolved">0/1890</b></span>
     <span class="hud-bar"><span id="hudBar"></span></span>
     <span class="hud-tools">
       <button id="playgroundBtn" class="hud-btn" title="Vulnerability Playground & Simulators">🔬</button>
@@ -152,6 +152,7 @@
         <button class="pg-tab" data-tab="dbshield">🗄️ DB RBAC &amp; UDF Shield</button>
         <button class="pg-tab" data-tab="edr">🛡️ EDR Evasion &amp; Memory Inspector</button>
         <button class="pg-tab" data-tab="crypto">🔐 AES-CBC Oracle &amp; Bit-Flip</button>
+        <button class="pg-tab" data-tab="dfir">🚨 DFIR Live Triage &amp; Timeline</button>
       </div>
       <div class="playground-body">
         <!-- CAN Bus Panel -->
@@ -563,6 +564,72 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Y8v...
                   <span id="cryptoOracleBadge" class="token-tag token-inj">HTTP 200: VALID PADDING</span>
                 </div>
                 <div id="cryptoOracleOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DFIR Live Triage & Memory Timeline Inspector Panel -->
+        <div id="pgPanel-dfir" class="pg-panel">
+          <div class="dbshield-container">
+            <div class="preset-row">
+              <span class="dim" style="font-size:11px;">Triage Presets:</span>
+              <button class="pg-btn danger" data-dfir-preset="lockbit">1. Ransomware LockBit (Process + Canary + VSS)</button>
+              <button class="pg-btn danger" data-dfir-preset="reflective">2. In-Memory Reflective DLL (Fileless Beacon)</button>
+              <button class="pg-btn danger" data-dfir-preset="mft_timestomp">3. NTFS MFT Timestomp ($STD vs $FN Anomaly)</button>
+              <button class="pg-btn" data-dfir-preset="soar_contain">4. Host Containment &amp; SOAR Isolation</button>
+              <button class="pg-btn" data-dfir-preset="clean_state">5. 🛡️ Clean Baseline Workstation</button>
+            </div>
+            <div class="bgp-controls-bar" style="margin-top:6px;">
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Endpoint Host / IP:</label>
+                <input id="dfirHostInput" type="text" value="WKSTN-FIN-042 (10.100.14.88)" style="width:190px;background:#020804;border:1px solid var(--line);color:var(--green);font-family:var(--mono);padding:4px 8px;font-size:11px;border-radius:4px;">
+              </div>
+              <div class="bgp-ctrl-group">
+                <label class="dim" style="font-size:11px;">Artifact Stream:</label>
+                <select id="dfirStreamSelect" style="background:#020804;border:1px solid var(--line);color:var(--txt);font-family:var(--mono);padding:4px 8px;font-size:11px;border-radius:4px;">
+                  <option value="lockbit">Ransomware Behavioral Telemetry</option>
+                  <option value="reflective">In-Memory Injection &amp; VAD Scanner</option>
+                  <option value="mft_timestomp">NTFS $MFT &amp; USN Journal Timeline</option>
+                  <option value="soar_contain">EDR &amp; SOAR Host Containment API</option>
+                  <option value="clean_state">Baseline Legitimate Enterprise Workstation</option>
+                </select>
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="dfirContainmentCheck" type="checkbox"> EDR Network Host Containment
+                </label>
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="dfirMemoryDumpCheck" type="checkbox" checked> VAD &amp; Memory Dump Scanner
+                </label>
+              </div>
+              <div class="bgp-ctrl-group checkbox-group">
+                <label style="font-size:11px;cursor:pointer;color:var(--txt);">
+                  <input id="dfirSoarRemediateCheck" type="checkbox"> SOAR Auto-Remediation Playbook
+                </label>
+              </div>
+              <button id="dfirSimulateBtn" class="pg-btn">Execute Triage &amp; Parse Forensics</button>
+            </div>
+            <div style="margin: 8px 0;">
+              <label class="dim" style="font-size:11px;">Forensic Query / Artifact Context Stream:</label>
+              <textarea id="dfirQueryInput" rows="2" style="width:100%;box-sizing:border-box;background:#020804;border:1px solid var(--line);color:var(--txt);font-family:var(--mono);padding:6px 8px;font-size:11px;border-radius:4px;resize:none;margin-top:4px;" spellcheck="false">volatility3 -f memory.dmp windows.malfind --pid 4812 | parse-timeline --mft C:\$MFT --vss-diff</textarea>
+            </div>
+            <div class="dbshield-grid">
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🔬 Process Tree, VAD Region &amp; In-Memory Carving</span>
+                  <span id="dfirProcBadge" class="token-tag token-inj">TRIAGE: MALICIOUS</span>
+                </div>
+                <div id="dfirProcTraceOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
+              </div>
+              <div class="dbshield-card">
+                <div class="pane-title">
+                  <span>🛡️ NTFS MFT Timeline, C2 NetFlow &amp; SOAR Containment</span>
+                  <span id="dfirContainBadge" class="token-tag token-inj">STATUS: ACTIVE INFECTION</span>
+                </div>
+                <div id="dfirTimelineOutput" class="ast-view" style="font-size:11px;min-height:165px;"></div>
               </div>
             </div>
           </div>

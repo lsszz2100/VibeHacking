@@ -957,6 +957,48 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🛡️ Post-Quantum Hybrid KEM Activated! 192-bit Quantum Shield -> FLAG{POST_QUANTUM_HYBRID_KYBER_KEM_IMMUNE_4421}"
             }
         ]
+    },
+    "40": {
+        "title": "Lab 40: IRShield — Enterprise DFIR & Incident Response Lab",
+        "description": "엔터프라이즈 침해사고 대응: Sysmon 라이브 메모리/프로세스 트리 아티팩트 트리아지, MFT 타임라인 & 랜섬웨어 암호화 흔적 분석, C2 비콘 통신 식별 & 네트워크/호스트 격리 봉쇄, SOAR 자동 복구 플레이북 무결성 검증",
+        "steps": [
+            {
+                "step": 1,
+                "name": "Sysmon 라이브 프로세스 계통 & PPID 스푸핑 트리아지",
+                "target": "POST /api/stage1/triage (suspect_pid: 4920, detection_reason: ppid_spoofing)",
+                "poc_explanation": "합법적인 서비스 프로세스(spoolsv.exe)의 외형을 띠고 있으나, 실제 생성자 PID가 powershell.exe(3480)이며 unbacked 실행 메모리 영역(0x7ffe0000)을 보유한 악성 인젝션 프로세스(PID 4920)를 식별하여 제출합니다.",
+                "exploit_payload": '{"suspect_pid": 4920, "detection_reason": "ppid_spoofing"}',
+                "defense": "Sysmon Event ID 1 프로세스 생성 이벤트의 ParentCommandLine과 실제 계통 트리를 감사하고 EDR Process Lineage 상관분석을 강제.",
+                "sample_output": "🔎 Anomalous Process Identified! PID 4920 PPID Spoofing -> FLAG{dfir_live_process_triage_pid4920_detected}"
+            },
+            {
+                "step": 2,
+                "name": "$MFT 레코드 & 랜섬웨어 아티팩트 타임라인 포렌식",
+                "target": "POST /api/stage2/mft-analyze (shadow_deletion_cmd, ransom_extension: .locked, mft_record: 84912)",
+                "poc_explanation": "NTFS $MFT 및 USN 저널 분석을 통해 vssadmin 볼륨 섀도우 복사본 강제 삭제와 파일 확장자 대량 변조(.locked) 최초 암호화 레코드 84912를 타임라인으로 재구성합니다.",
+                "exploit_payload": '{"shadow_deletion_cmd": "vssadmin.exe delete shadows /all /quiet", "ransom_extension": ".locked", "mft_record": 84912}',
+                "defense": "vssadmin/wbadmin 실행 차단(ASR 규칙) 및 랜섬웨어 카나리 파일(Canary Files) 접근 모니터링 적용.",
+                "sample_output": "⏱️ MFT Forensic Timeline Reconstructed! Shadow Wiped & Record 84912 -> FLAG{dfir_mft_timeline_vssadmin_ransom_unmasked}"
+            },
+            {
+                "step": 3,
+                "name": "C2 주기적 비콘 탐지 & 엔터프라이즈 호스트 네트워크 격리",
+                "target": "POST /api/stage3/contain (c2_ip: 198.51.100.77, c2_port: 8443, isolation_mode: isolate_host, block_firewall: true)",
+                "poc_explanation": "60초 인터벌 및 15% 지터를 갖는 HTTPS 비콘 및 DNS 터널링 통신 목적지(198.51.100.77:8443)를 식별하고 엔터프라이즈 방화벽 규칙과 호스트 격리를 즉시 발령합니다.",
+                "exploit_payload": '{"c2_ip": "198.51.100.77", "c2_port": 8443, "isolation_mode": "isolate_host", "block_firewall": true}',
+                "defense": "TLS JA3/JA4 핑거프린팅 탐지, DNS 터널링 엔트로피 필터링 및 EDR 네트워크 격리 API 연동.",
+                "sample_output": "🔒 Network Containment Enacted! Host Isolated & C2 Blocked -> FLAG{dfir_c2_network_isolation_firewall_locked}"
+            },
+            {
+                "step": 4,
+                "name": "SOAR 엔터프라이즈 침해 대응 자동화 및 복구 무결성 검증",
+                "target": "POST /api/stage4/remediate (remediation_actions: [remove_scheduled_task, kill_suspect_process, clean_wmi_subscription, restore_immutable_snapshot])",
+                "poc_explanation": "스케줄러 작업 및 WMI 이벤트 구독 지속성을 박멸하고 의심 프로세스 강제 종료 후 불변 에어갭 골드 스냅샷으로 복구하여 무결성 해시를 검증합니다.",
+                "exploit_payload": '{"remediation_actions": ["remove_scheduled_task", "kill_suspect_process", "clean_wmi_subscription", "restore_immutable_snapshot"]}',
+                "defense": "SOAR 오케스트레이션 기반 플레이북 전사 배포 및 불변 백업(WORM 스토리지) 다계층 보존 정책 적용.",
+                "sample_output": "🚀 Enterprise SOAR Remediation Complete! All Threats Eradicated -> FLAG{dfir_soar_playbook_enterprise_remediated_100}"
+            }
+        ]
     }
 }
 

@@ -30,16 +30,16 @@ def test_system_status(client):
     data = res.json()
     assert "cpu_usage_percent" in data
     assert "total_labs" in data
-    assert data["total_labs"] == 39
+    assert data["total_labs"] == 40
 
 
 def test_list_labs(client):
     res = client.get("/api/labs")
     assert res.status_code == 200
     data = res.json()
-    assert data["total"] == 39
-    assert len(data["labs"]) == 39
-    # Check Lab 19~39 presence
+    assert data["total"] == 40
+    assert len(data["labs"]) == 40
+    # Check Lab 19~40 presence
     ids = [l["id"] for l in data["labs"]]
     assert "19" in ids
     assert "20" in ids
@@ -62,6 +62,7 @@ def test_list_labs(client):
     assert "37" in ids
     assert "38" in ids
     assert "39" in ids
+    assert "40" in ids
 
 
 def test_lab_logs(client):
@@ -118,7 +119,7 @@ def test_get_lab_categories(client):
     res = client.get("/api/labs/categories")
     assert res.status_code == 200
     data = res.json()
-    assert data["total_labs"] == 39
+    assert data["total_labs"] == 40
     assert "database" in data["categories"]
     assert "36" in data["categories"]["database"]["labs"]
     assert "wireless" in data["categories"]
@@ -127,6 +128,8 @@ def test_get_lab_categories(client):
     assert "38" in data["categories"]["endpoint"]["labs"]
     assert "crypto" in data["categories"]
     assert "39" in data["categories"]["crypto"]["labs"]
+    assert "dfir" in data["categories"]
+    assert "40" in data["categories"]["dfir"]["labs"]
     assert data["total_categories"] >= 10
 
 

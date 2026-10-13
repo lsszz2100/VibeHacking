@@ -130,6 +130,8 @@ const NOT_PLANTED = {
   t3_netinfra_cisco_ios_rommon_recovery: 'asks for the Cisco ROMmon configuration register by name; serial console break is a hardware concept, not this page',
   t1_kisa_u05_root_path: 'asks for PATH environment variable delimiter hazard; PATH environment configuration concept, not this page',
   t3_osint_ci_cd_webhook_secret: 'asks for CI/CD secret token leakage in public VCS; Git repository secret finding concept, not this page',
+  t3_dfir_network_host_containment_api: 'asks for EDR host containment API; management console is an enterprise endpoint server, not this page',
+  t3_dfir_browser_history_session_hijack: 'analyzes infostealer SQLite cookie file artifacts, not this page cookie',
 };
 
 const aBad = [], aRows = [];
