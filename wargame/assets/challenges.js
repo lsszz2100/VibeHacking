@@ -485,6 +485,15 @@ const TRACKS = [
     "desc_ko": "Sysmon 프로세스 계통·PPID 스푸핑 트리아지·NTFS $MFT 및 USN 저널 포렌식·랜섬웨어 카나리·C2 비콘 탐지 및 네트워크 격리·SOAR 불변 복구 플레이북.",
     "desc_en": "Sysmon process lineage, PPID spoofing triage, NTFS $MFT & USN journal forensics, ransomware canary analysis, C2 beacon network isolation, and SOAR immutable recovery playbooks."
   }
+,
+  {
+    "id": "sbom",
+    "icon": "🧬",
+    "ko": "SBOM & 소프트웨어 공급망 보안",
+    "en": "SBOM & Software Supply Chain",
+    "desc_ko": "CycloneDX/SPDX SBOM 파싱·의존성 혼동(Dependency Confusion)·Typosquatting 탐지·Sigstore Cosign 전자서명 및 Rekor 로그 검증·SLSA Level 3 빌드 거버넌스.",
+    "desc_en": "CycloneDX/SPDX SBOM parsing, dependency confusion & typosquatting detection, Sigstore Cosign cryptographic signing, Rekor transparency verification, and SLSA Level 3 governance."
+  }
 ];
 
 const CHALLENGES = [
@@ -53462,5 +53471,986 @@ const CHALLENGES = [
       ]
     },
     "hash": "70bdda7685eda50f39729f6488525d8c6fbc9f5efb4f38e1fd60e12ea2c47ef3"
+  }
+,
+  {
+    "id": "t0_sbom_ecosystem_manifest_basics",
+    "tier": 0,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "패키지 매니페스트 및 디펜던시 락파일 무결성 분석",
+      "en": "Package Manifest & Lockfile Integrity Analysis"
+    },
+    "prompt": {
+      "ko": "패키지 매니저의 매니페스트(package.json, pyproject.toml)와 락파일(package-lock.json, poetry.lock)의 의존성 고정 원리를 분석합니다.\n지정된 식별자 `sbom_ecosystem_manifest_basics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_ecosystem_manifest_basics_v1\") 앞 20자리}`",
+      "en": "Analyze package manifest and lockfile integrity mechanics in modern packaging ecosystems.\nCompute the first 20 hex characters of SHA256(\"sbom_ecosystem_manifest_basics_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_ecosystem_manifest_basics_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "락파일은 transitive 의존성의 정확한 버전과 해시를 고정하여 빌드 재현성을 보장합니다.",
+        "식별자 `sbom_ecosystem_manifest_basics_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Lockfiles pin exact versions and cryptographic hashes of transitive dependencies.",
+        "Extract first 20 hex chars of SHA256(\"sbom_ecosystem_manifest_basics_v1\")."
+      ]
+    },
+    "hash": "810bd9efc6e9a073f9622032464a25ddd2d22ec6159a2a118687af39b0d7f7e8"
+  },
+  {
+    "id": "t0_sbom_cyclonedx_spdx_formats",
+    "tier": 0,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 25,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SBOM 포맷 표준 (CycloneDX 1.6 vs SPDX 3.0)",
+      "en": "SBOM Standards: CycloneDX 1.6 vs SPDX 3.0"
+    },
+    "prompt": {
+      "ko": "OWASP CycloneDX와 Linux Foundation SPDX 표준의 데이터 구조 및 소프트웨어 컴포넌트 메타데이터를 비교 분석합니다.\n지정된 식별자 `sbom_cyclonedx_spdx_formats_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_cyclonedx_spdx_formats_v1\") 앞 20자리}`",
+      "en": "Compare structural metadata between OWASP CycloneDX and Linux Foundation SPDX specifications.\nCompute the first 20 hex characters of SHA256(\"sbom_cyclonedx_spdx_formats_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_cyclonedx_spdx_formats_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "CycloneDX는 보안/취약점 중심, SPDX는 라이선스 및 오픈소스 거버넌스 중심 표준입니다.",
+        "식별자 `sbom_cyclonedx_spdx_formats_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "CycloneDX focuses heavily on vulnerabilities, whereas SPDX originated in open source licensing.",
+        "Extract first 20 hex chars of SHA256(\"sbom_cyclonedx_spdx_formats_v1\")."
+      ]
+    },
+    "hash": "6f1a66e98702cfc69d991229a02c46022d45ff4ce8e45825c7f7d3ba9f51902e"
+  },
+  {
+    "id": "t1_sbom_typosquatting_lexical_distance",
+    "tier": 1,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "타이포스쿼팅(Typosquatting) 레벤슈타인 편집 거리 탐지",
+      "en": "Typosquatting Lexical Distance & Evasion Detection"
+    },
+    "prompt": {
+      "ko": "인기 오픈소스 라이브러리와 유사한 오타 패키지명을 생성하여 배포하는 타이포스쿼팅 기법과 레벤슈타인 편집 거리 탐지 알고리즘을 분석합니다.\n지정된 식별자 `sbom_typosquatting_lexical_distance_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_typosquatting_lexical_distance_v1\") 앞 20자리}`",
+      "en": "Evaluate typosquatting naming collisions targeting popular packages using Levenshtein distance metrics.\nCompute the first 20 hex characters of SHA256(\"sbom_typosquatting_lexical_distance_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_typosquatting_lexical_distance_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "단일 문자 삽입, 삭제, 치환에 따른 편집 거리 1~2 패키지 등록을 사전에 차단해야 합니다.",
+        "식별자 `sbom_typosquatting_lexical_distance_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Monitor registry submissions with low edit distances to popular package names.",
+        "Extract first 20 hex chars of SHA256(\"sbom_typosquatting_lexical_distance_v1\")."
+      ]
+    },
+    "hash": "2c5b6b624969f0268729f62cbd98715491258e4a4b89f5828ba0c9c22eab7e16"
+  },
+  {
+    "id": "t1_sbom_pypi_metadata_inspect",
+    "tier": 1,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PyPI/NPM 메타데이터 및 생명주기 후크 감사",
+      "en": "PyPI & NPM Package Metadata Lifecycle Audit"
+    },
+    "prompt": {
+      "ko": "패키지 등록 일자, 다운로드 추이, 관리자 계정 변경 및 install 생명주기 스크립트 실행 권한을 감사하는 휴리스틱 탐지 기법을 분석합니다.\n지정된 식별자 `sbom_pypi_metadata_inspect_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_pypi_metadata_inspect_v1\") 앞 20자리}`",
+      "en": "Audit package release dates, download velocity, maintainer transfers, and lifecycle installation scripts.\nCompute the first 20 hex characters of SHA256(\"sbom_pypi_metadata_inspect_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_pypi_metadata_inspect_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "신규 등록 직후 비정상적으로 높은 버전 번호를 갖거나 install 후크를 포함한 패키지를 경계하세요.",
+        "식별자 `sbom_pypi_metadata_inspect_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Inspect recently registered packages featuring excessive semantic version numbers or install hooks.",
+        "Extract first 20 hex chars of SHA256(\"sbom_pypi_metadata_inspect_v1\")."
+      ]
+    },
+    "hash": "5b24cf828a335692e22a27854e116347cb72ff371ed9d6e9d67cd47b4c42afcc"
+  },
+  {
+    "id": "t1_sbom_semantic_versioning_risks",
+    "tier": 1,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "시맨틱 버저닝(SemVer) 와일드카드 범위 공격 분석",
+      "en": "Semantic Versioning Wildcard Range Risks"
+    },
+    "prompt": {
+      "ko": "캐럿(^)이나 틸드(~) 연산자로 인해 의도치 않은 마이너/패치 버전 업그레이드가 발생하여 악성 의존성이 주입되는 경로를 분석합니다.\n지정된 식별자 `sbom_semantic_versioning_risks_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_semantic_versioning_risks_v1\") 앞 20자리}`",
+      "en": "Investigate unexpected minor/patch version upgrades via caret or tilde wildcards leading to malicious updates.\nCompute the first 20 hex characters of SHA256(\"sbom_semantic_versioning_risks_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_semantic_versioning_risks_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "프로덕션 환경에서는 엄격한 고정 버전과 락파일을 필수로 사용하여 의도치 않은 패키지 유입을 차단합니다.",
+        "식별자 `sbom_semantic_versioning_risks_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Use strict pinned versions and lockfiles to eliminate unexpected package drift.",
+        "Extract first 20 hex chars of SHA256(\"sbom_semantic_versioning_risks_v1\")."
+      ]
+    },
+    "hash": "05380792e8b56abb7fc98760703dcda0bf38245c41e9e4e72f3f426aa49303ba"
+  },
+  {
+    "id": "t1_sbom_git_commit_cryptographic_sign",
+    "tier": 1,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Git 커밋 GPG/SSH 암호학적 서명 및 무결성 검증",
+      "en": "Git Commit Cryptographic GPG & SSH Signing"
+    },
+    "prompt": {
+      "ko": "개발자 신원을 보증하고 커밋 위조(Impersonation)를 원천 차단하기 위해 GPG 또는 SSH 키페어로 커밋을 암호학적으로 서명하는 절차를 분석합니다.\n지정된 식별자 `sbom_git_commit_cryptographic_sign_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_git_commit_cryptographic_sign_v1\") 앞 20자리}`",
+      "en": "Implement cryptographic commit signing via GPG or SSH keypairs to prevent author spoofing.\nCompute the first 20 hex characters of SHA256(\"sbom_git_commit_cryptographic_sign_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_git_commit_cryptographic_sign_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "git config commit.gpgsign true 설정을 통해 모든 커밋에 전자서명을 강제할 수 있습니다.",
+        "식별자 `sbom_git_commit_cryptographic_sign_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enforce signed commits across repository branches via branch protection rules.",
+        "Extract first 20 hex chars of SHA256(\"sbom_git_commit_cryptographic_sign_v1\")."
+      ]
+    },
+    "hash": "95bb651c1a86fffe85277aba4f42ce61380a582b4ab816ca9a121c75acf9500c"
+  },
+  {
+    "id": "t1_sbom_purl_package_url_syntax",
+    "tier": 1,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "PURL(Package URL) 표준 문법 및 컴포넌트 식별",
+      "en": "Package URL (PURL) Standard Specification"
+    },
+    "prompt": {
+      "ko": "서로 다른 패키지 생태계(pypi, npm, golang, deb, maven)의 패키지를 일관되게 고유 식별하기 위한 PURL 표준 문법을 분석합니다.\n지정된 식별자 `sbom_purl_package_url_syntax_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_purl_package_url_syntax_v1\") 앞 20자리}`",
+      "en": "Analyze Package URL standard syntax parsing package ecosystem, namespace, name, and version.\nCompute the first 20 hex characters of SHA256(\"sbom_purl_package_url_syntax_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_purl_package_url_syntax_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "pkg:pypi/requests@2.31.0 와 같이 생태계 타입과 네임스페이스, 버전이 규격화됩니다.",
+        "식별자 `sbom_purl_package_url_syntax_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "PURL formats normalize cross-ecosystem package locators into canonical URIs.",
+        "Extract first 20 hex chars of SHA256(\"sbom_purl_package_url_syntax_v1\")."
+      ]
+    },
+    "hash": "71ee88bad067d0cbdb74699d8955a33056bcea080367d6b6ec7885df42c2c37a"
+  },
+  {
+    "id": "t1_sbom_trivy_grype_vulnerability_scan",
+    "tier": 1,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 50,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Trivy/Grype 취약점 스캐너와 CVE 매핑",
+      "en": "Trivy & Grype Container Vulnerability Scanning"
+    },
+    "prompt": {
+      "ko": "컨테이너 이미지 및 파일시스템 레이어를 분석하여 기알려진 CVE 취약점 데이터베이스와 매핑하는 자동화 취약점 스캐너 동작 원리를 분석합니다.\n지정된 식별자 `sbom_trivy_grype_vulnerability_scan_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_trivy_grype_vulnerability_scan_v1\") 앞 20자리}`",
+      "en": "Examine vulnerability scanner engines mapping container layers to known CVE databases.\nCompute the first 20 hex characters of SHA256(\"sbom_trivy_grype_vulnerability_scan_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_trivy_grype_vulnerability_scan_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "스캐너는 OS 패키지 DB 및 언어별 매니페스트를 색인하여 CVE 심각도를 산출합니다.",
+        "식별자 `sbom_trivy_grype_vulnerability_scan_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Scanner utilities index OS package databases and application manifests against CVE feeds.",
+        "Extract first 20 hex chars of SHA256(\"sbom_trivy_grype_vulnerability_scan_v1\")."
+      ]
+    },
+    "hash": "e3a7c3979749f2ffedb6ade3d9a047a97100364e149713e2eb06d5108ec05450"
+  },
+  {
+    "id": "t2_sbom_dependency_confusion_precedence",
+    "tier": 2,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "사내 프라이빗 패키지 Dependency Confusion 네임스페이스 탈취",
+      "en": "Internal Dependency Confusion Precedence Hijacking"
+    },
+    "prompt": {
+      "ko": "사내 비공개 레지스트리와 공용 PyPI가 혼용될 때 더 높은 버전 번호를 가진 공용 패키지를 우선 다운로드하는 Dependency Confusion 취약점을 분석합니다.\n지정된 식별자 `sbom_dependency_confusion_precedence_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_dependency_confusion_precedence_v1\") 앞 20자리}`",
+      "en": "Inspect package precedence attacks where public registries override private packages via higher version numbers.\nCompute the first 20 hex characters of SHA256(\"sbom_dependency_confusion_precedence_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_dependency_confusion_precedence_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "pip의 --extra-index-url은 두 인덱스 중 최신 버전을 무조건 우선하므로 네임스페이스 스코핑이 필수입니다.",
+        "식별자 `sbom_dependency_confusion_precedence_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Extra index URLs blindly prioritize higher semantic versions across registries.",
+        "Extract first 20 hex chars of SHA256(\"sbom_dependency_confusion_precedence_v1\")."
+      ]
+    },
+    "hash": "01db24b21fd1da665c86e57bf89ae8779b49a0439699e9f8c20f3370e3f01750"
+  },
+  {
+    "id": "t2_sbom_pip_hash_pinning_defense",
+    "tier": 2,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "pip --require-hashes 및 SHA-256 해시 피닝 방어",
+      "en": "Strict Pip Hash Pinning Defense Strategy"
+    },
+    "prompt": {
+      "ko": "requirements.txt에 각 패키지 바이너리 아티팩트의 암호학적 SHA-256 체크섬을 명시하여 중간자 변조 및 버전 하이재킹을 원천 차단하는 기법을 분석합니다.\n지정된 식별자 `sbom_pip_hash_pinning_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_pip_hash_pinning_defense_v1\") 앞 20자리}`",
+      "en": "Enforce binary artifact checksum verification in requirements.txt via pip --require-hashes.\nCompute the first 20 hex characters of SHA256(\"sbom_pip_hash_pinning_defense_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_pip_hash_pinning_defense_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "--hash=sha256:... 옵션을 모든 의존성에 부여하면 해시가 일치하지 않는 패키지 설치가 거부됩니다.",
+        "식별자 `sbom_pip_hash_pinning_defense_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Require hashes enforces exact cryptographic matching for every downloaded wheel or source tarball.",
+        "Extract first 20 hex chars of SHA256(\"sbom_pip_hash_pinning_defense_v1\")."
+      ]
+    },
+    "hash": "a40472d0fff969220c6dd94282ea6d319195c57b10dcce5339dae0353d73995c"
+  },
+  {
+    "id": "t2_sbom_github_actions_pull_request_target",
+    "tier": 2,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GitHub Actions pull_request_target Pwn Request 취약점",
+      "en": "GitHub Actions pull_request_target Pwn Request"
+    },
+    "prompt": {
+      "ko": "pull_request_target 트리거가 기본 저장소의 쓰기 권한 및 시크릿에 접근하면서 외부 포크 PR의 코드를 체크아웃할 때 발생하는 RCE 경로를 분석합니다.\n지정된 식별자 `sbom_github_actions_pull_request_target_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_github_actions_pull_request_target_v1\") 앞 20자리}`",
+      "en": "Analyze Pwn Request vulnerabilities where pull_request_target checks out untrusted fork code with elevated token secrets.\nCompute the first 20 hex characters of SHA256(\"sbom_github_actions_pull_request_target_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_github_actions_pull_request_target_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "외부 기여자의 코드를 실행하는 잡에서는 pull_request 트리거를 사용하고 읽기 전용 권한을 강제해야 합니다.",
+        "식별자 `sbom_github_actions_pull_request_target_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Never checkout untrusted PR head refs in workflows possessing repository write secrets.",
+        "Extract first 20 hex chars of SHA256(\"sbom_github_actions_pull_request_target_v1\")."
+      ]
+    },
+    "hash": "86fdbc1848c61438ad3a06b33262cf59f16d3dacf1622394bde69b6ca18bb2f7"
+  },
+  {
+    "id": "t2_sbom_npm_preinstall_lifecycle_rce",
+    "tier": 2,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "NPM preinstall/postinstall 임의 코드 실행 공격",
+      "en": "NPM Lifecycle Script RCE Mitigation"
+    },
+    "prompt": {
+      "ko": "악성 NPM 패키지가 package.json scripts 필드의 preinstall/postinstall 후크를 통해 설치 즉시 쉘 명령어를 실행하는 메커니즘을 분석합니다.\n지정된 식별자 `sbom_npm_preinstall_lifecycle_rce_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_npm_preinstall_lifecycle_rce_v1\") 앞 20자리}`",
+      "en": "Investigate NPM lifecycle script abuse executing malicious shell payloads during package installation.\nCompute the first 20 hex characters of SHA256(\"sbom_npm_preinstall_lifecycle_rce_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_npm_preinstall_lifecycle_rce_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "npm install --ignore-scripts 플래그를 설정하여 신뢰할 수 없는 패키지의 빌드 후크 실행을 무력화할 수 있습니다.",
+        "식별자 `sbom_npm_preinstall_lifecycle_rce_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Use --ignore-scripts to disable automatic lifecycle script execution during package installations.",
+        "Extract first 20 hex chars of SHA256(\"sbom_npm_preinstall_lifecycle_rce_v1\")."
+      ]
+    },
+    "hash": "cdb17034d204fef33bc11e9557352889ceef037ea344e1b4e9b1aaf2d228cb64"
+  },
+  {
+    "id": "t2_sbom_spdx_license_compliance_audit",
+    "tier": 2,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SPDX 라이선스 식별자 및 GPL 라이선스 오염 감사",
+      "en": "SPDX License Compliance & Tainted Dependencies"
+    },
+    "prompt": {
+      "ko": "상용 엔터프라이즈 소프트웨어에 감염성 라이선스(GPL, AGPL)를 가진 오픈소스 컴포넌트가 무단 유입되는 위험을 SPDX 태그 기반으로 필터링하는 원리를 분석합니다.\n지정된 식별자 `sbom_spdx_license_compliance_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_spdx_license_compliance_audit_v1\") 앞 20자리}`",
+      "en": "Audit SPDX license expression tags preventing viral GPL or AGPL license contamination in commercial software.\nCompute the first 20 hex characters of SHA256(\"sbom_spdx_license_compliance_audit_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_spdx_license_compliance_audit_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "SPDX-License-Identifier 헤더를 파싱하여 호환되지 않는 라이선스를 CI 빌드 파이프라인에서 자동 차단합니다.",
+        "식별자 `sbom_spdx_license_compliance_audit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Parse canonical SPDX identifiers to reject incompatible viral licenses in CI pipelines.",
+        "Extract first 20 hex chars of SHA256(\"sbom_spdx_license_compliance_audit_v1\")."
+      ]
+    },
+    "hash": "8df4c72faa0d3fcb72f9153c1304835352b777943f0de652636ab30cecf85b69"
+  },
+  {
+    "id": "t2_sbom_docker_multistage_minimal_base",
+    "tier": 2,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Docker 멀티스테이지 및 Distroless 최소 베이스 이미지",
+      "en": "Docker Multistage & Distroless Build Hardening"
+    },
+    "prompt": {
+      "ko": "빌드 도구와 패키지 매니저를 최종 배포 이미지에서 완전히 배제하여 공격 표면과 취약 컴포넌트 수를 80% 이상 감축하는 Distroless 아키텍처를 분석합니다.\n지정된 식별자 `sbom_docker_multistage_minimal_base_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_docker_multistage_minimal_base_v1\") 앞 20자리}`",
+      "en": "Harden container images via multistage compilation and Google Distroless runtime bases.\nCompute the first 20 hex characters of SHA256(\"sbom_docker_multistage_minimal_base_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_docker_multistage_minimal_base_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Distroless 이미지는 쉘(/bin/sh)이나 패키지 매니저(apt)를 포함하지 않아 침투자의 지속성을 차단합니다.",
+        "식별자 `sbom_docker_multistage_minimal_base_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Distroless base images exclude package managers and shells, drastically reducing runtime CVEs.",
+        "Extract first 20 hex chars of SHA256(\"sbom_docker_multistage_minimal_base_v1\")."
+      ]
+    },
+    "hash": "5c510730fdd5abe5d05b536ce9dd663034a4e4eba8001dc696a8c8d9b72c64de"
+  },
+  {
+    "id": "t2_sbom_rekor_transparency_log_leaf",
+    "tier": 2,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Rekor 투명성 로그 머클 트리(Merkle Tree) 잎 검증",
+      "en": "Rekor Transparency Log Merkle Leaf Verification"
+    },
+    "prompt": {
+      "ko": "Sigstore Rekor 투명성 분산 원장에서 아티팩트 서명 기록의 불변성을 증명하는 SHA-256 머클 트리 포함 증명(Inclusion Proof)을 분석합니다.\n지정된 식별자 `sbom_rekor_transparency_log_leaf_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_rekor_transparency_log_leaf_v1\") 앞 20자리}`",
+      "en": "Verify cryptographic Merkle tree inclusion proofs confirming artifact signature entries in Rekor.\nCompute the first 20 hex characters of SHA256(\"sbom_rekor_transparency_log_leaf_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_rekor_transparency_log_leaf_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "투명성 로그는 일단 기록되면 소급 수정이나 삭제가 불가능하여 서명 무결성을 수학적으로 보증합니다.",
+        "식별자 `sbom_rekor_transparency_log_leaf_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Append-only cryptographic transparency logs prevent undetectable retroactive signature tampering.",
+        "Extract first 20 hex chars of SHA256(\"sbom_rekor_transparency_log_leaf_v1\")."
+      ]
+    },
+    "hash": "1f66cbbb31c1f58f950dc7c571a6b7f6504bcff44fd6f12aaf3779a8edd9dbc2"
+  },
+  {
+    "id": "t2_sbom_vex_vulnerability_justification",
+    "tier": 2,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 100,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "VEX(Vulnerability Exploitability eXchange) 악용 가능성 판정",
+      "en": "VEX Vulnerability Exploitability Status"
+    },
+    "prompt": {
+      "ko": "SBOM에 포함된 특정 라이브러리에 CVE가 존재하더라도 실제 코드 경로에서 호출되지 않음을 정당화하는 VEX 상태 머신(not_affected, affected, fixed)을 분석합니다.\n지정된 식별자 `sbom_vex_vulnerability_justification_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_vex_vulnerability_justification_v1\") 앞 20자리}`",
+      "en": "Analyze VEX status assertions confirming whether downstream applications actually invoke vulnerable library code.\nCompute the first 20 hex characters of SHA256(\"sbom_vex_vulnerability_justification_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_vex_vulnerability_justification_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "code_not_reachable 또는 inline_mitigations_exist 사유를 통해 불필요한 보안 경보 피로를 방지합니다.",
+        "식별자 `sbom_vex_vulnerability_justification_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "VEX statements clarify exploitability state, avoiding false alarms for unreachable vulnerable functions.",
+        "Extract first 20 hex chars of SHA256(\"sbom_vex_vulnerability_justification_v1\")."
+      ]
+    },
+    "hash": "f4f10a273c69b7ab703ae66be325041b85bfb58b5b482484a7d643b301c1777a"
+  },
+  {
+    "id": "t3_sbom_xz_cve_2024_3094_m4_macro",
+    "tier": 3,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "xz-utils(CVE-2024-3094) M4 매크로 난독화 백도어 해부",
+      "en": "xz-utils (CVE-2024-3094) M4 Macro Backdoor Analysis"
+    },
+    "prompt": {
+      "ko": "배포용 tarball 내 autoconf m4 매크로와 가짜 테스트 압축 파일에 은닉되어 빌드 타임에 liblzma.so에 컴파일 주입된 세기의 공급망 백도어를 분석합니다.\n지정된 식별자 `sbom_xz_cve_2024_3094_m4_macro_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_xz_cve_2024_3094_m4_macro_v1\") 앞 20자리}`",
+      "en": "Deconstruct the xz-utils CVE-2024-3094 build-time backdoor concealed inside release tarball m4 scripts and corrupt test payloads.\nCompute the first 20 hex characters of SHA256(\"sbom_xz_cve_2024_3094_m4_macro_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_xz_cve_2024_3094_m4_macro_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Git 저장소 소스와 공식 릴리스 tarball 간의 불일치를 탐지하는 빌드 투명성 검증이 요구됩니다.",
+        "식별자 `sbom_xz_cve_2024_3094_m4_macro_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Release tarballs differing from Git repository sources represent critical supply chain divergence.",
+        "Extract first 20 hex chars of SHA256(\"sbom_xz_cve_2024_3094_m4_macro_v1\")."
+      ]
+    },
+    "hash": "ff138663284d94b292d29d8c1d1ac62d13bd2ea651945238adecd38bb2a6fc7f"
+  },
+  {
+    "id": "t3_sbom_solarwinds_sunburst_compromise",
+    "tier": 3,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SolarWinds SUNBURST 빌드 시스템 메모리 패칭 공격",
+      "en": "SolarWinds SUNBURST Build System Injection"
+    },
+    "prompt": {
+      "ko": "소스코드 형상관리 시스템을 건드리지 않고 컴파일러 프로세스 메모리에 직접 악성 페이로드를 인라인 패칭한 SUNBURST 공격 아키텍처를 분석합니다.\n지정된 식별자 `sbom_solarwinds_sunburst_compromise_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_solarwinds_sunburst_compromise_v1\") 앞 20자리}`",
+      "en": "Analyze the SolarWinds SUNBURST memory-injection implant patching compiler pipelines on the fly without modifying source code.\nCompute the first 20 hex characters of SHA256(\"sbom_solarwinds_sunburst_compromise_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_solarwinds_sunburst_compromise_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "빌드 시스템 자체의 호스트 메모리 무결성과 hermetic 빌드 환경 격리가 필수적입니다.",
+        "식별자 `sbom_solarwinds_sunburst_compromise_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Hermetic isolated ephemeral build workers neutralize persistent compiler memory hooks.",
+        "Extract first 20 hex chars of SHA256(\"sbom_solarwinds_sunburst_compromise_v1\")."
+      ]
+    },
+    "hash": "bb0d0e522dfb678f4b98ffb2dd798ee7063f1e872640cf7f7c9aec3dfc39a969"
+  },
+  {
+    "id": "t3_sbom_sigstore_cosign_keyless_oidc",
+    "tier": 3,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Sigstore Cosign 키리스(Keyless) OIDC 서명 아키텍처",
+      "en": "Sigstore Cosign Keyless OIDC Architecture"
+    },
+    "prompt": {
+      "ko": "장기 보관용 개인키 관리 부담을 제거하고 OpenID Connect 아이덴티티 토큰과 단명 인증서를 결합한 Cosign Keyless 서명 파이프라인을 분석합니다.\n지정된 식별자 `sbom_sigstore_cosign_keyless_oidc_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_sigstore_cosign_keyless_oidc_v1\") 앞 20자리}`",
+      "en": "Examine Sigstore Cosign keyless signature flows linking OIDC identity assertions to ephemeral certificates.\nCompute the first 20 hex characters of SHA256(\"sbom_sigstore_cosign_keyless_oidc_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_sigstore_cosign_keyless_oidc_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Fulcio가 OIDC 토큰을 검증하여 10분 유효 단명 X.509를 발급하고 Rekor에 서명을 기록합니다.",
+        "식별자 `sbom_sigstore_cosign_keyless_oidc_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Keyless signing replaces static private keys with ephemeral certificates backed by transparency logs.",
+        "Extract first 20 hex chars of SHA256(\"sbom_sigstore_cosign_keyless_oidc_v1\")."
+      ]
+    },
+    "hash": "fa82dfbe64b882e276ee9e395e0ed82e5687b82328d3c2bb5b9d129325cd501e"
+  },
+  {
+    "id": "t3_sbom_fulcio_ephemeral_x509_ca",
+    "tier": 3,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Fulcio 단명 X.509 루트 CA 발급 메커니즘",
+      "en": "Fulcio Ephemeral X.509 Certificate Issuance"
+    },
+    "prompt": {
+      "ko": "GitHub Actions, Google, Microsoft OIDC ID 토큰을 검증하여 SAN(Subject Alternative Name)에 빌더 워크플로우 URL을 매핑하는 Fulcio CA를 분석합니다.\n지정된 식별자 `sbom_fulcio_ephemeral_x509_ca_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_fulcio_ephemeral_x509_ca_v1\") 앞 20자리}`",
+      "en": "Analyze Fulcio CA validating OIDC claims and binding workflow URIs into X.509 Subject Alternative Names.\nCompute the first 20 hex characters of SHA256(\"sbom_fulcio_ephemeral_x509_ca_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_fulcio_ephemeral_x509_ca_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "인증서의 수명이 10분으로 짧아 인증서 폐기 목록(CRL) 관리 부담이 원천 해소됩니다.",
+        "식별자 `sbom_fulcio_ephemeral_x509_ca_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Short-lived certificates eliminate revocation complexity by expiring in minutes.",
+        "Extract first 20 hex chars of SHA256(\"sbom_fulcio_ephemeral_x509_ca_v1\")."
+      ]
+    },
+    "hash": "c19d6125661c483be0946c37bd8c2d733a4083f60a7a73dc26394a339cfba983"
+  },
+  {
+    "id": "t3_sbom_in_toto_slsa_provenance_spec",
+    "tier": 3,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "In-Toto v1.0 SLSA Provenance 어테스테이션 명세",
+      "en": "In-Toto SLSA Provenance Specification"
+    },
+    "prompt": {
+      "ko": "소프트웨어 아티팩트의 소스 저장소, 커밋 SHA, 빌더 환경, 파라미터 및 진입점을 구조화하여 보증하는 in-toto Statement JSON 명세를 분석합니다.\n지정된 식별자 `sbom_in_toto_slsa_provenance_spec_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_in_toto_slsa_provenance_spec_v1\") 앞 20자리}`",
+      "en": "Review in-toto Statement provenance schemas asserting source commit SHAs, builder environments, and build parameters.\nCompute the first 20 hex characters of SHA256(\"sbom_in_toto_slsa_provenance_spec_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_in_toto_slsa_provenance_spec_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "_type: https://in-toto.io/Statement/v1 및 predicateType: https://slsa.dev/provenance/v1 규격을 준수합니다.",
+        "식별자 `sbom_in_toto_slsa_provenance_spec_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "In-toto statements cryptographically bind build inputs and outputs to verified identities.",
+        "Extract first 20 hex chars of SHA256(\"sbom_in_toto_slsa_provenance_spec_v1\")."
+      ]
+    },
+    "hash": "ffec36d1e0c3729597c24fc6401c5d32955cf71fb1677ccd413afec310b4daa4"
+  },
+  {
+    "id": "t3_sbom_slsa_level3_hermetic_isolation",
+    "tier": 3,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "SLSA Level 3 Hermetic 밀폐형 빌드 격리 모델",
+      "en": "SLSA Level 3 Hermetic Build Isolation"
+    },
+    "prompt": {
+      "ko": "빌드 프로세스 실행 중 일체의 외부 인터넷 네트워크 접근을 차단하고 사전에 선언된 불변 의존성만 사용하는 Hermetic 격리 원칙을 분석합니다.\n지정된 식별자 `sbom_slsa_level3_hermetic_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_slsa_level3_hermetic_isolation_v1\") 앞 20자리}`",
+      "en": "Evaluate SLSA Build Level 3 requirements demanding hermetic, isolated, and parameterless build execution.\nCompute the first 20 hex characters of SHA256(\"sbom_slsa_level3_hermetic_isolation_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_slsa_level3_hermetic_isolation_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Hermetic 빌드는 컴파일 도중 외부에서 은밀하게 추가 스크립트나 바이너리를 다운로드하는 행위를 원천 방지합니다.",
+        "식별자 `sbom_slsa_level3_hermetic_isolation_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Hermetic environments deny network access during compilation, guaranteeing all inputs were pre-declared.",
+        "Extract first 20 hex chars of SHA256(\"sbom_slsa_level3_hermetic_isolation_v1\")."
+      ]
+    },
+    "hash": "87a909d35a03e40e25aedf8c0a7e7b9174ba80a633ac672a29e8aab025ea8990"
+  },
+  {
+    "id": "t3_sbom_reproducible_builds_bit_identical",
+    "tier": 3,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "재현 가능 빌드(Reproducible Builds) 비트 단위 일치 검증",
+      "en": "Reproducible Builds Bit-for-Bit Verification"
+    },
+    "prompt": {
+      "ko": "동일한 소스코드와 빌드 지시자로부터 독립된 두 개 이상의 빌더에서 컴파일했을 때 바이트 단위로 100% 동일한 출력을 산출하는 검증 기법을 분석합니다.\n지정된 식별자 `sbom_reproducible_builds_bit_identical_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_reproducible_builds_bit_identical_v1\") 앞 20자리}`",
+      "en": "Verify reproducible build invariants where independent builders yield bit-identical binary hashes from identical sources.\nCompute the first 20 hex characters of SHA256(\"sbom_reproducible_builds_bit_identical_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_reproducible_builds_bit_identical_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "SOURCE_DATE_EPOCH 환경변수를 통하여 파일 타임스탬프와 로케일 차이로 인한 바이너리 불일치를 제거합니다.",
+        "식별자 `sbom_reproducible_builds_bit_identical_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Normalize timestamps and locale variations via SOURCE_DATE_EPOCH to ensure deterministic binary output.",
+        "Extract first 20 hex chars of SHA256(\"sbom_reproducible_builds_bit_identical_v1\")."
+      ]
+    },
+    "hash": "d4b63d8455ead40d13be69271e828c578befd74dae529e31d66cccba33f8a11f"
+  },
+  {
+    "id": "t3_sbom_github_actions_oidc_claims_audit",
+    "tier": 3,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "GitHub Actions OIDC 토큰 클레임(repo, ref) 접근 제어",
+      "en": "GitHub Actions OIDC Subject Claims Auditing"
+    },
+    "prompt": {
+      "ko": "AWS IAM 및 GCP Workload Identity Federation과 연동 시 'sub' 클레임의 repository_owner, repository, ref 조건을 엄격히 제한하는 보안 정책을 분석합니다.\n지정된 식별자 `sbom_github_actions_oidc_claims_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_github_actions_oidc_claims_audit_v1\") 앞 20자리}`",
+      "en": "Audit GitHub Actions OIDC subject claim trust policies across AWS and GCP Workload Identity Federation.\nCompute the first 20 hex characters of SHA256(\"sbom_github_actions_oidc_claims_audit_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_github_actions_oidc_claims_audit_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "StringEquals: token.actions.githubusercontent.com:sub 조건에 대상 저장소와 main 브랜치를 정확히 지정해야 합니다.",
+        "식별자 `sbom_github_actions_oidc_claims_audit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Constrain OIDC subject claims strictly to target repository and main branch references.",
+        "Extract first 20 hex chars of SHA256(\"sbom_github_actions_oidc_claims_audit_v1\")."
+      ]
+    },
+    "hash": "da18440ab9027429091b6173d7ae0743eb8373c22ed2fb4c186ac7ecca04cfb4"
+  },
+  {
+    "id": "t3_sbom_rekor_search_log_index",
+    "tier": 3,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 150,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Rekor CLI 및 REST API 기반 서명 인덱스 조회",
+      "en": "Rekor Search API & Entry Verification"
+    },
+    "prompt": {
+      "ko": "SHA-256 아티팩트 해시를 질의하여 Rekor 투명성 로그의 LogIndex, 통합 타임스탬프, 공개키 및 서명 페이로드를 검증하는 절차를 분석합니다.\n지정된 식별자 `sbom_rekor_search_log_index_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_rekor_search_log_index_v1\") 앞 20자리}`",
+      "en": "Query Rekor transparency APIs using artifact digests to extract log indices and cryptographic timestamps.\nCompute the first 20 hex characters of SHA256(\"sbom_rekor_search_log_index_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_rekor_search_log_index_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "rekor-cli search --sha 옵션을 사용하여 분산 투명성 원장에 기록된 불변 엔트리를 검증합니다.",
+        "식별자 `sbom_rekor_search_log_index_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Search immutable transparency log records via rekor-cli to audit signature registration timestamps.",
+        "Extract first 20 hex chars of SHA256(\"sbom_rekor_search_log_index_v1\")."
+      ]
+    },
+    "hash": "ddaf4cc5b07a8b4f027e82b329da6b13e3269ae101bbbf185a6a9f13ab424a0c"
+  },
+  {
+    "id": "t4_sbom_repack_supply_chain_implant",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "바이너리 배포 아티팩트 리패키징 & 트로이목마 탐지",
+      "en": "Binary Distribution Repackaging & Trojan Detection"
+    },
+    "prompt": {
+      "ko": "공식 패키지 다운로드 미러 서버를 하이재킹하거나 배포 캐시 에지를 오염시켜 변조된 바이너리를 배포하는 공급망 공격과 서명 대조 탐지 기법을 분석합니다.\n지정된 식별자 `sbom_repack_supply_chain_implant_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_repack_supply_chain_implant_v1\") 앞 20자리}`",
+      "en": "Detect binary mirror poisoning and repackaged distribution artifacts via cryptographic signature audits.\nCompute the first 20 hex characters of SHA256(\"sbom_repack_supply_chain_implant_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_repack_supply_chain_implant_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "업스트림 제작자의 신뢰할 수 있는 서명 공개키와 에지 배포본의 체크섬을 상호 대조해야 합니다.",
+        "식별자 `sbom_repack_supply_chain_implant_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Verify binary releases against publisher PGP/Cosign signatures rather than trusting mirror transport integrity.",
+        "Extract first 20 hex chars of SHA256(\"sbom_repack_supply_chain_implant_v1\")."
+      ]
+    },
+    "hash": "7ec65e10f8c1709df1e9ab63199ca43b2f1ce23978d64747600f6e7f9e35525c"
+  },
+  {
+    "id": "t4_sbom_runner_memory_token_exfiltration",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "CI/CD 러너 프로세스 메모리 토큰 덤프 차단",
+      "en": "CI/CD Runner Memory Token Exfiltration Defense"
+    },
+    "prompt": {
+      "ko": "임의 코드가 실행 가능한 CI/CD 러너 환경에서 /proc/$PID/mem 또는 프로세스 디버깅 트레이싱을 통해 상위 빌드 에이전트의 시크릿을 카빙하는 공격을 차단하는 메커니즘을 분석합니다.\n지정된 식별자 `sbom_runner_memory_token_exfiltration_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_runner_memory_token_exfiltration_v1\") 앞 20자리}`",
+      "en": "Mitigate runner memory dumps targeting parent agent process secrets via Linux memory inspection and tracing.\nCompute the first 20 hex characters of SHA256(\"sbom_runner_memory_token_exfiltration_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_runner_memory_token_exfiltration_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "러너 컨테이너에 프로세스 트레이싱 능력을 제거하고 AppArmor와 엄격한 시스템콜 격리 프로파일로 프로세스 메모리 접근을 차단합니다.",
+        "식별자 `sbom_runner_memory_token_exfiltration_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Strip process tracing capabilities and apply strict syscall sandboxing profiles to protect parent runner credentials.",
+        "Extract first 20 hex chars of SHA256(\"sbom_runner_memory_token_exfiltration_v1\")."
+      ]
+    },
+    "hash": "2487504bc9f314a6ed180f7d102191b1745fa736a18fe057e46ffe557ebb6e90"
+  },
+  {
+    "id": "t4_sbom_npm_2fa_token_leak_bypass",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "패키지 릴리스 자동화 토큰 탈취 및 2FA 우회 방어",
+      "en": "Package Release Token Abuse & 2FA Bypass Defense"
+    },
+    "prompt": {
+      "ko": "NPM/PyPI 배포 자동화에 사용되는 Automation Access Token이 유출될 경우 2FA 검증 없이 악성 버전을 게시하는 위협을 방어하는 기법을 분석합니다.\n지정된 식별자 `sbom_npm_2fa_token_leak_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_npm_2fa_token_leak_bypass_v1\") 앞 20자리}`",
+      "en": "Defend against compromised package publisher automation tokens bypassing interactive two-factor authentication.\nCompute the first 20 hex characters of SHA256(\"sbom_npm_2fa_token_leak_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_npm_2fa_token_leak_bypass_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "정적 토큰을 폐기하고 PyPI Trusted Publishers(OIDC) 기반 단명 토큰 발행 모델로 전면 전환해야 합니다.",
+        "식별자 `sbom_npm_2fa_token_leak_bypass_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Migrate from long-lived automation tokens to PyPI Trusted Publishing backed by short-lived OIDC exchange.",
+        "Extract first 20 hex chars of SHA256(\"sbom_npm_2fa_token_leak_bypass_v1\")."
+      ]
+    },
+    "hash": "9898dc7b08748db611d61fc73cc54d27d7fe262aacb1401154b3d8de8590a807"
+  },
+  {
+    "id": "t4_sbom_rust_cargo_build_rs_rce",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Rust Cargo build.rs 빌드타임 컴파일러 RCE",
+      "en": "Rust Cargo build.rs Compile-time RCE Defense"
+    },
+    "prompt": {
+      "ko": "Rust 패키지 매니저 Cargo가 의존성을 빌드할 때 build.rs 스크립트를 로컬 호스트 권한으로 컴파일 및 자동 실행하는 공급망 취약점을 분석합니다.\n지정된 식별자 `sbom_rust_cargo_build_rs_rce_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_rust_cargo_build_rs_rce_v1\") 앞 20자리}`",
+      "en": "Analyze Rust Cargo compile-time execution hazards via build.rs scripts executing arbitrary commands during cargo build.\nCompute the first 20 hex characters of SHA256(\"sbom_rust_cargo_build_rs_rce_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_rust_cargo_build_rs_rce_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "cargo-vet 및 격리 샌드박스를 적용하여 빌드 스크립트의 네트워크 및 호스트 파일 접근을 차단합니다.",
+        "식별자 `sbom_rust_cargo_build_rs_rce_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Apply cargo-vet and process sandboxes to restrict build.rs network and filesystem access.",
+        "Extract first 20 hex chars of SHA256(\"sbom_rust_cargo_build_rs_rce_v1\")."
+      ]
+    },
+    "hash": "040415ef55aed9d2cf5e26bd4ae7520226900e3932153b6194521236078f4f00"
+  },
+  {
+    "id": "t4_sbom_trusting_trust_compiler_trojan",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Reflections on Trusting Trust 컴파일러 백도어 검증",
+      "en": "Reflections on Trusting Trust Compiler Trojans"
+    },
+    "prompt": {
+      "ko": "Ken Thompson의 'Reflections on Trusting Trust' 원리에 따라 소스코드에는 보이지 않고 컴파일러 바이너리 자체에 상주하여 백도어를 복제하는 공격의 방어책을 분석합니다.\n지정된 식별자 `sbom_trusting_trust_compiler_trojan_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_trusting_trust_compiler_trojan_v1\") 앞 20자리}`",
+      "en": "Evaluate Diverse Double-Compiling (DDC) techniques defeating Ken Thompson Reflections on Trusting Trust compiler backdoors.\nCompute the first 20 hex characters of SHA256(\"sbom_trusting_trust_compiler_trojan_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_trusting_trust_compiler_trojan_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "서로 다른 독립된 컴파일러로 교차 컴파일하여 출력 바이너리 비트 일치성을 검증하는 DDC(다양성 이중 컴파일)를 적용합니다.",
+        "식별자 `sbom_trusting_trust_compiler_trojan_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Diverse Double-Compiling verifies compiler integrity by building compiler sources with independent trusted toolchains.",
+        "Extract first 20 hex chars of SHA256(\"sbom_trusting_trust_compiler_trojan_v1\")."
+      ]
+    },
+    "hash": "5ea6f3c9b65195485cf60e92bdf188026e4f3cc4b3e7ba9730a64c638669fb83"
+  },
+  {
+    "id": "t4_sbom_ebpf_build_pipeline_runtime_audit",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "eBPF 기반 CI/CD 파이프라인 런타임 파일 변조 감시",
+      "en": "eBPF CI/CD Pipeline Runtime Integrity Monitoring"
+    },
+    "prompt": {
+      "ko": "빌드 러너 커널에 eBPF kprobe/tracepoint를 부착하여 컴파일 도중 비인가 프로세스가 생성되거나 소스코드가 변조되는 이상 징후를 나노초 단위로 추적하는 기법을 분석합니다.\n지정된 식별자 `sbom_ebpf_build_pipeline_runtime_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_ebpf_build_pipeline_runtime_audit_v1\") 앞 20자리}`",
+      "en": "Deploy eBPF kernel probes tracking unexpected process forks and source file tampering during compiler execution.\nCompute the first 20 hex characters of SHA256(\"sbom_ebpf_build_pipeline_runtime_audit_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_ebpf_build_pipeline_runtime_audit_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "커널 런타임 보안 센서를 활용하여 빌드 워커 컨테이너의 시스템콜 실행 프로파일을 엄격히 통제합니다.",
+        "식별자 `sbom_ebpf_build_pipeline_runtime_audit_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enforce runtime syscall security profiles across build runners using kernel eBPF monitors.",
+        "Extract first 20 hex chars of SHA256(\"sbom_ebpf_build_pipeline_runtime_audit_v1\")."
+      ]
+    },
+    "hash": "79f1d2e6d68926f0b1b0307fdc85103a8b7eb94f9683da1e4a3399e3e38870d0"
+  },
+  {
+    "id": "t4_sbom_airgap_artifact_hash_chain",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "에어갭(Air-Gapped) 망 아티팩트 암호학적 해시 체이닝",
+      "en": "Air-Gapped Artifact Hash Chaining & WORM Storage"
+    },
+    "prompt": {
+      "ko": "인터넷 연결이 차단된 폐쇄망 군사/금융 인프라에 반입되는 소프트웨어 아티팩트를 WORM(Write Once Read Many) 스토리지와 해시 체인으로 봉인하는 거버넌스를 분석합니다.\n지정된 식별자 `sbom_airgap_artifact_hash_chain_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_airgap_artifact_hash_chain_v1\") 앞 20자리}`",
+      "en": "Construct cryptographic artifact hash chains and WORM immutable storage pipelines for air-gapped deployments.\nCompute the first 20 hex characters of SHA256(\"sbom_airgap_artifact_hash_chain_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_airgap_artifact_hash_chain_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "외부 반입 매체의 단방향 데이터 다이오드 전송 및 반입 전후 SHA-256/512 무결성 대조를 필수로 거칩니다.",
+        "식별자 `sbom_airgap_artifact_hash_chain_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Enforce cryptographic chaining and unidirectional data diodes for air-gapped package ingression.",
+        "Extract first 20 hex chars of SHA256(\"sbom_airgap_artifact_hash_chain_v1\")."
+      ]
+    },
+    "hash": "8c8770b672dfa7cee17f186d931482c96b18d3eb1c4ad614d664b9cddf0df9da"
+  },
+  {
+    "id": "t4_sbom_sigstore_bundle_offline_verify",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Sigstore 오프라인 번들(Rekor Bundle + Cert) 자체 검증",
+      "en": "Sigstore Offline Bundle Standalone Verification"
+    },
+    "prompt": {
+      "ko": "인터넷 Rekor/Fulcio 서버에 직접 접속할 수 없는 격리 환경에서 암호학적 서명, 단명 인증서, Rekor 머클 검증 증명을 패키징한 번들을 독립 검증하는 절차를 분석합니다.\n지정된 식별자 `sbom_sigstore_bundle_offline_verify_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_sigstore_bundle_offline_verify_v1\") 앞 20자리}`",
+      "en": "Verify Sigstore self-contained bundles (signatures, certificates, and Rekor inclusion proofs) in offline environments.\nCompute the first 20 hex characters of SHA256(\"sbom_sigstore_bundle_offline_verify_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_sigstore_bundle_offline_verify_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "cosign verify-blob --bundle bundle.json --certificate-identity ... 옵션으로 오프라인 검증을 완수합니다.",
+        "식별자 `sbom_sigstore_bundle_offline_verify_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Validate self-contained cryptographic bundles offline without live Rekor network connections.",
+        "Extract first 20 hex chars of SHA256(\"sbom_sigstore_bundle_offline_verify_v1\")."
+      ]
+    },
+    "hash": "d4e69432a64b829129dbf523e0b821e0ad221d473f2334600b1ef600fb4b27c2"
+  },
+  {
+    "id": "t4_sbom_slsa_l3_policy_admission_controller",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "Kyverno/Gatekeeper 기반 SLSA L3 배포 어드미션 제어",
+      "en": "Kyverno & Gatekeeper SLSA L3 Admission Enforcement"
+    },
+    "prompt": {
+      "ko": "쿠버네티스 클러스터 인그레스 단계에서 Cosign 및 in-toto 증명을 검증하여 SLSA Level 3를 만족하지 못하거나 서명이 결여된 컨테이너 배포를 100% 거부하는 정책을 분석합니다.\n지정된 식별자 `sbom_slsa_l3_policy_admission_controller_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_slsa_l3_policy_admission_controller_v1\") 앞 20자리}`",
+      "en": "Deploy Kyverno or admission webhooks enforcing SLSA Level 3 provenance policies on container images.\nCompute the first 20 hex characters of SHA256(\"sbom_slsa_l3_policy_admission_controller_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_slsa_l3_policy_admission_controller_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "Admission Webhook 단계에서 서명 및 provenance 불일치 시 워크로드 생성이 403 Forbidden으로 차단됩니다.",
+        "식별자 `sbom_slsa_l3_policy_admission_controller_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Reject unsigned or non-compliant SLSA container admissions via validating admission webhook controllers.",
+        "Extract first 20 hex chars of SHA256(\"sbom_slsa_l3_policy_admission_controller_v1\")."
+      ]
+    },
+    "hash": "7acd700a4481c1c7cfe2f970ec1290dd33be36d6b3a4e216e612be475f26ac15"
+  },
+  {
+    "id": "t4_sbom_capstone_full_spectrum_supply_chain",
+    "tier": 4,
+    "cat": "sbom",
+    "track": "sbom",
+    "points": 250,
+    "ci": false,
+    "fmt": "FLAG{...}",
+    "title": {
+      "ko": "엔터프라이즈 풀스펙트럼 소프트웨어 공급망 보안 캡스톤",
+      "en": "Enterprise Full-Spectrum Software Supply Chain Capstone"
+    },
+    "prompt": {
+      "ko": "패키지 네임스페이스 스코핑부터 CI/CD 러너 분리, CycloneDX/SPDX SBOM 취약점 트리아지, Sigstore 키리스 서명 및 SLSA Level 3 거버넌스 전 과정을 완수합니다.\n지정된 식별자 `sbom_capstone_full_spectrum_supply_chain_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"sbom_capstone_full_spectrum_supply_chain_v1\") 앞 20자리}`",
+      "en": "Synthesize complete software supply chain assurance spanning scoped registries, runner isolation, SBOM triage, and SLSA Level 3 attestations.\nCompute the first 20 hex characters of SHA256(\"sbom_capstone_full_spectrum_supply_chain_v1\").\n\nFormat: `FLAG{SHA256(\"sbom_capstone_full_spectrum_supply_chain_v1\") first 20 hex}`"
+    },
+    "hints": {
+      "ko": [
+        "개발자 워크스테이션부터 소스 저장소, 빌드 파이프라인, 아티팩트 레지스트리 및 런타임 배포에 이르는 전 생명주기를 보호해야 합니다.",
+        "식별자 `sbom_capstone_full_spectrum_supply_chain_v1`의 해시 앞 20자리를 추출하세요."
+      ],
+      "en": [
+        "Secure all links across developers, source VCS, CI runners, registries, and production admission controllers.",
+        "Extract first 20 hex chars of SHA256(\"sbom_capstone_full_spectrum_supply_chain_v1\")."
+      ]
+    },
+    "hash": "b7a48f57d2200643e5279906c65df42ac0e11a37d30b8bad4d0a323805567684"
   }
 ];

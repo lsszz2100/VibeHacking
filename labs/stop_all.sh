@@ -98,6 +98,8 @@ LAB_DIRS=(
     "37_bluetooth_sdr_security_lab"
     "38_edr_evasion_c2_lab"
     "39_modern_cryptography_lab"
+    "40_enterprise_dfir_ir_lab"
+    "41_supply_chain_security_lab"
 )
 
 LAB_NAMES=(
@@ -140,6 +142,8 @@ LAB_NAMES=(
     "블루투스 저에너지 & SDR 무선 보안 실전 랩"
     "EDR 유저랜드 후킹 우회 & 차세대 C2 실전 랩"
     "현대 응용 암호학 & 암호 분석 실전 랩"
+    "엔터프라이즈 침해사고 대응 & DFIR 실전 랩"
+    "소프트웨어 공급망 보안 & SBOM 실전 랩"
 )
 
 

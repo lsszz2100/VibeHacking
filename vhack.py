@@ -470,6 +470,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [44, 7, 23],
     },
+    "41": {
+        "name": "소프트웨어 공급망 보안 & SBOM 실전 랩",
+        "dir":  "41_supply_chain_security_lab",
+        "desc": "SupplyChainShield: Dependency Confusion & Typosquatting 네임스페이스 하이재킹 · CI/CD 러너 하이재킹(pull_request_target Pwn Request) 시크릿 유출 진단 · CycloneDX SBOM 파싱 & xz-utils(CVE-2024-3094) 유사 백도어 격리 · SLSA Level 3 & Sigstore Cosign OIDC 키리스 증명 검증",
+        "url":  "웹 콘솔 & 공급망 보안 대시보드: http://localhost:8041",
+        "difficulty": "★★★★★",
+        "related": [35, 18, 74],
+    },
 }
 
 
@@ -1484,6 +1492,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8038, "Lab 38 (EDRShield EDR Evasion & Next-Gen C2 Lab)"),
         (8039, "Lab 39 (CryptoShield Modern Cryptography Lab)"),
         (8040, "Lab 40 (IRShield Enterprise DFIR Lab)"),
+        (8041, "Lab 41 (SupplyChainShield Software Supply Chain Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

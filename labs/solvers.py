@@ -999,6 +999,48 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🚀 Enterprise SOAR Remediation Complete! All Threats Eradicated -> FLAG{dfir_soar_playbook_enterprise_remediated_100}"
             }
         ]
+    },
+    "41": {
+        "title": "Lab 41: SupplyChainShield — 소프트웨어 공급망 보안 & SBOM 실전 랩",
+        "description": "Dependency Confusion & Typosquatting 네임스페이스 하이재킹 분석, CI/CD 러너 하이재킹(pull_request_target Pwn Request) 시크릿 유출 진단, CycloneDX SBOM 파싱 & xz-utils(CVE-2024-3094) 유사 백도어 격리, SLSA Level 3 & Sigstore Cosign 증명 검증 실전 솔버",
+        "steps": [
+            {
+                "step": 1,
+                "name": "사내 패키지 Dependency Confusion & Typosquatting 네임스페이스 하이재킹 분석",
+                "target": "POST /api/stage1/resolve (target_package: corp-auth-core, vulnerability_type: dependency_confusion, defense_strategy: scoped_registry_or_pinning)",
+                "poc_explanation": "사내 비공개 패키지(corp-auth-core v1.2.0)와 공격자가 공개 PyPI에 올린 상위 버전(v99.0.0) 간의 레지스트리 우선순위 하이재킹 취약점을 규명하고 스코프 격리 및 sha256 해시 피닝을 적용합니다.",
+                "exploit_payload": '{"target_package": "corp-auth-core", "vulnerability_type": "dependency_confusion", "defense_strategy": "scoped_registry_or_pinning"}',
+                "defense": "사내 프라이빗 저장소 전용 스코프 강제(@corp 또는 내부 단독 인덱스) 및 pip --require-hashes 해시 고정 적용.",
+                "sample_output": "📦 Dependency Confusion Resolved! Scoped Registry & SHA-256 Pinned -> FLAG{supplychain_dependency_confusion_pypi_hijacked}"
+            },
+            {
+                "step": 2,
+                "name": "GitHub Actions CI/CD 러너 하이재킹 & Pwn Request 시크릿 유출 진단",
+                "target": "POST /api/stage2/audit-pipeline (trigger_hazard: pull_request_target, leaked_secret: AWS_SECRET_ACCESS_KEY, recommended_fix: pull_request_read_only)",
+                "poc_explanation": "pull_request_target 트리거와 포크 PR 코드 체크아웃 결합 취약점(Pwn Request)을 감사하여 러너에 주입된 AWS_SECRET_ACCESS_KEY 유출 경로를 차단하고 권한을 분리합니다.",
+                "exploit_payload": '{"trigger_hazard": "pull_request_target", "leaked_secret": "AWS_SECRET_ACCESS_KEY", "recommended_fix": "pull_request_read_only"}',
+                "defense": "외부 기여 PR에 대해 pull_request_target 대신 읽기 전용 pull_request 워크플로우를 사용하고 시크릿 접근을 엄격히 차단.",
+                "sample_output": "🛡️ CI/CD Runner Hardened! Untrusted Forks Isolated from Secrets -> FLAG{supplychain_pwn_request_actions_secret_leaked}"
+            },
+            {
+                "step": 3,
+                "name": "CycloneDX SBOM 파싱 & xz-utils(CVE-2024-3094) 유사 백도어 격리",
+                "target": "POST /api/stage3/triage-sbom (compromised_component: liblzma-build-hook, cve_id: CVE-2024-3094, hash_mismatch: true, action: isolate_component)",
+                "poc_explanation": "CycloneDX 1.6 SBOM JSON 컴포넌트를 전수 파싱하여 liblzma-build-hook의 M4 매크로 난독화 백도어 및 암호학적 해시 불일치를 식별하고 빌드 그래프에서 격리합니다.",
+                "exploit_payload": '{"compromised_component": "liblzma-build-hook", "cve_id": "CVE-2024-3094", "hash_mismatch": true, "action": "isolate_component"}',
+                "defense": "SBOM 자동 생성(Syft/Trivy) 파이프라인 구축 및 업스트림 소스 해시 대조를 통한 변조 감지 강화.",
+                "sample_output": "🧬 SBOM Triage Complete! Backdoored Build Hook Quarantined -> FLAG{supplychain_sbom_cyclonedx_backdoor_isolated}"
+            },
+            {
+                "step": 4,
+                "name": "SLSA Level 3 & Sigstore Cosign 키리스 전자서명 및 Rekor 검증",
+                "target": "POST /api/stage4/verify-provenance (image_digest: sha256:4a8f9c12b7..., issuer_oidc: https://token.actions.githubusercontent.com, slsa_level: SLSA_BUILD_LEVEL_3, enforce_policy: true)",
+                "poc_explanation": "Sigstore Cosign OIDC 토큰과 Rekor 투명성 로그를 대조 검증하고 격리된 Hermetic 빌드 환경을 요구하는 SLSA Level 3 증명 정책을 강제합니다.",
+                "exploit_payload": '{"image_digest": "sha256:4a8f9c12b7e53d0684a1e90f2b6c7d1e8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f", "issuer_oidc": "https://token.actions.githubusercontent.com", "slsa_level": "SLSA_BUILD_LEVEL_3", "enforce_policy": true}',
+                "defense": "Cosign 어드미션 컨트롤러(Kyverno/Policy Controller) 연동 및 비인가 아티팩트 쿠버네티스 클러스터 배포 원천 차단.",
+                "sample_output": "🚀 SLSA L3 Provenance Enforced! Cryptographic Attestation Validated -> FLAG{supplychain_slsa_cosign_hermetic_verified_100}"
+            }
+        ]
     }
 }
 

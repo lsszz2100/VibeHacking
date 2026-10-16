@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  supplychain-shield:
+    build: .
+    container_name: vhack-lab41-supplychain
+    ports:
+      - "8041:8041"
+    restart: unless-stopped
+    networks:
+      - vhack-net
+
+networks:
+  vhack-net:
+    driver: bridge

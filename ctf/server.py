@@ -1008,6 +1008,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "스케줄러 작업 삭제, 악성 프로세스 종료, WMI 구독 제거, 불변 골드 스냅샷 복구 4단계를 전수 실행하세요."}
                 ],
             },
+            "LAB41_DEP_CONFUSION": {
+                "id": "LAB41_DEP_CONFUSION",
+                "title": "SupplyChainShield: PyPI Dependency Confusion & Typosquatting",
+                "category": "supplychain",
+                "initial_points": 500,
+                "flag": "FLAG{supplychain_dependency_confusion_pypi_hijacked}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "사내 패키지(corp-auth-core v1.2.0)와 공개 PyPI 상위 버전(v99.0.0) 간의 레지스트리 우선순위 및 해시 피닝을 적용하세요."}
+                ],
+            },
+            "LAB41_CI_INJECTION": {
+                "id": "LAB41_CI_INJECTION",
+                "title": "SupplyChainShield: CI/CD Runner Poisoning & Pwn Request",
+                "category": "supplychain",
+                "initial_points": 500,
+                "flag": "FLAG{supplychain_pwn_request_actions_secret_leaked}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "pull_request_target 워크플로우에서 포크 PR 코드가 AWS_SECRET_ACCESS_KEY 시크릿에 접근하지 못하도록 읽기 전용으로 격리하세요."}
+                ],
+            },
+            "LAB41_SBOM_TRIAGE": {
+                "id": "LAB41_SBOM_TRIAGE",
+                "title": "SupplyChainShield: CycloneDX SBOM Backdoor Triage",
+                "category": "supplychain",
+                "initial_points": 500,
+                "flag": "FLAG{supplychain_sbom_cyclonedx_backdoor_isolated}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "CycloneDX 1.6 SBOM JSON에서 liblzma-build-hook(CVE-2024-3094)의 해시 불일치를 식별하고 격리하세요."}
+                ],
+            },
+            "LAB41_SLSA_COSIGN": {
+                "id": "LAB41_SLSA_COSIGN",
+                "title": "SupplyChainShield: SLSA Level 3 & Sigstore Cosign Attestation",
+                "category": "supplychain",
+                "initial_points": 500,
+                "flag": "FLAG{supplychain_slsa_cosign_hermetic_verified_100}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Sigstore Cosign OIDC 키리스 서명과 Rekor 투명성 로그를 검증하고 SLSA Level 3 거버넌스 정책을 강제하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -1045,6 +1093,7 @@ class CTFState:
             ["LAB38_AMSI_ETW", "LAB38_UNHOOK", "LAB38_SYSCALL", "LAB38_SLEEPOBF"],
             ["LAB39_CBC_ORACLE", "LAB39_RSA_BLEICHENBACHER", "LAB39_ECDSA_NONCE", "LAB39_PQC_SECURED"],
             ["LAB40_PROCESS_TRIAGE", "LAB40_MFT_FORENSICS", "LAB40_C2_CONTAINMENT", "LAB40_SOAR_REMEDIATION"],
+            ["LAB41_DEP_CONFUSION", "LAB41_CI_INJECTION", "LAB41_SBOM_TRIAGE", "LAB41_SLSA_COSIGN"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):

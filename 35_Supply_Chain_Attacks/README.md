@@ -161,6 +161,7 @@ source /tmp/supply-chain-lab/bin/activate
 | [04_Open_Source_Backdoor_Techniques.md](./04_Open_Source_Backdoor_Techniques.md) | **오픈소스 백도어 삽입 기법** — 오픈소스 백도어 삽입은 공격자가 오픈소스 프로젝트에 기여자로 위장해 장기간 신뢰를 쌓은 뒤, 악성 코드를 코드베이스에 몰래 삽입하는 공격이다. 소스 코드가 공개되어 있음에도 코드 리뷰... |
 | [05_supply_chain_defense.md](./05_supply_chain_defense.md) | **공급망 보안 방어 — SBOM·의존성 스캔·벤더 위험 관리** — 공급망 공격은 직접 표적을 공격하는 대신, 표적이 신뢰하는 소프트웨어/하드웨어 공급자를 공격합니다. SolarWinds(2020), Log4Shell(2021), XZ Utils(20... |
 | [06_supply_chain_ctf_lab.md](./06_supply_chain_ctf_lab.md) | **공급망 공격 CTF 실습 랩** — version: "3.9" |
+| [07_advanced_software_supply_chain_and_slsa_deepdive.md](./07_advanced_software_supply_chain_and_slsa_deepdive.md) | **소프트웨어 공급망 보안 심층 분석: SLSA v1.0, Sigstore, CycloneDX SBOM 및 빌드 파이프라인 방어 아키텍처** — 현대 애플리케이션의 80%~90% 이상은 오픈소스 라이브러리와 서드파티 패키지로 구성됩니다. 개발자가 직접 작성하는 코드는 전체 코드베이스의 일부분에 불과하며, 애플리케이션의 런타임 ... |
 
 ---
 

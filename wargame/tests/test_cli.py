@@ -26,8 +26,8 @@ from wargame.cli import (
 def test_load_wargame_db():
     tiers, tracks, challenges = load_wargame_db()
     assert len(tiers) == 5
-    assert len(tracks) == 54
-    assert len(challenges) == 1890
+    assert len(tracks) == 55
+    assert len(challenges) == 1925
     assert any(t["id"] == "carcan" for t in tracks)
     assert any(t["id"] == "apisec" for t in tracks)
     assert any(t["id"] == "sochunt" for t in tracks)
@@ -45,6 +45,7 @@ def test_load_wargame_db():
     assert any(t["id"] == "edrbypass" for t in tracks)
     assert any(t["id"] == "cryptanalysis" for t in tracks)
     assert any(t["id"] == "dfir" for t in tracks)
+    assert any(t["id"] == "sbom" for t in tracks)
 
 
 def test_verify_flag_logic():
@@ -84,6 +85,13 @@ def test_verify_flag_logic():
     h20_ble = hashlib.sha256(ident_ble.encode("utf-8")).hexdigest()[:20]
     flag_ble = f"FLAG{{{h20_ble}}}"
     assert verify_flag(ch_ble, flag_ble) is True
+
+    # Test sbom first challenge
+    ch_sbom = next(c for c in challenges if c["id"] == "t0_sbom_ecosystem_manifest_basics")
+    ident_sbom = "sbom_ecosystem_manifest_basics_v1"
+    h20_sbom = hashlib.sha256(ident_sbom.encode("utf-8")).hexdigest()[:20]
+    flag_sbom = f"FLAG{{{h20_sbom}}}"
+    assert verify_flag(ch_sbom, flag_sbom) is True
 
     assert verify_flag(ch, "") is False
 
