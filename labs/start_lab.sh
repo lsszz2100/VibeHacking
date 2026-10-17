@@ -114,6 +114,7 @@ start_lab() {
         "39_modern_cryptography_lab"
         "40_enterprise_dfir_ir_lab"
         "41_supply_chain_security_lab"
+        "42_serverless_security_lab"
     )
 
     local lab_names=(
@@ -159,6 +160,7 @@ start_lab() {
         "현대 응용 암호학 & 암호 분석 실전 랩"
         "엔터프라이즈 침해사고 대응 & DFIR 실전 랩"
         "소프트웨어 공급망 보안 & SBOM 실전 랩"
+        "서버리스 클라우드 보안 & 이벤트 인젝션 랩"
     )
 
     local lab_ports=(
@@ -204,10 +206,11 @@ start_lab() {
         "웹 콘솔 & 암호 분석 대시보드: http://localhost:8039"
         "웹 콘솔 & DFIR 침해대응 대시보드: http://localhost:8040"
         "웹 콘솔 & 공급망 보안 대시보드: http://localhost:8041"
+        "웹 콘솔 & 서버리스 대시보드: http://localhost:8042"
     )
 
-    if [[ $lab_num -lt 1 || $lab_num -gt 41 ]]; then
-        error "잘못된 랩 번호: $lab_num (1~41 사이)"
+    if [[ $lab_num -lt 1 || $lab_num -gt 42 ]]; then
+        error "잘못된 랩 번호: $lab_num (1~42 사이)"
     fi
 
     local dir_name="${lab_dirs[$lab_num]}"
@@ -375,6 +378,7 @@ case "$ARG" in
     39)   start_lab 39 ;;
     40)   start_lab 40 ;;
     41)   start_lab 41 ;;
+    42)   start_lab 42 ;;
 
     all|ALL) start_all ;;
     ps|status) print_summary ;;

@@ -13,6 +13,7 @@
 | [04_serverless_hardening.md](./04_serverless_hardening.md) | **서버리스 보안 강화 — SAST·런타임 보호·자동 감사** — 전통적 보안: |
 | [05_serverless_incident_response.md](./05_serverless_incident_response.md) | **서버리스 사고 대응** — 1. 준비 (Preparation) |
 | [06_serverless_ctf_lab.md](./06_serverless_ctf_lab.md) | **서버리스 보안 CTF 실습 랩** — pip install boto3 aws-lambda-powertools moto requests |
+| [07_serverless_event_injection_and_lambda_runtime_deepdive.md](./07_serverless_event_injection_and_lambda_runtime_deepdive.md) | **서버리스 클라우드 보안 심층 분석: AWS Lambda 런타임 해부, 이벤트 인젝션, Warm 컨테이너 영속성 및 최소 권한 방어 아키텍처** — 서버리스(Serverless / FaaS) 아키텍처는 인프라 관리 부담을 클라우드 제공자(CSP)에게 위임하고 이벤트 기반으로 코드를 실행함으로써 비즈니스 민첩성을 극대화합니다. 그러... |
 
 ## 🎯 학습 목표
 

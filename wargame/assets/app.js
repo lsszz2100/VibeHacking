@@ -881,6 +881,7 @@
     initCrypto();
     initDfir();
     renderSbom("dep_confusion");
+    renderServerless("event_inject");
   }
 
   function hidePlayground(){
@@ -891,7 +892,7 @@
   }
 
   function switchPlaygroundTab(tabName){
-    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom"];
+    const validTabs = ["canbus", "sqli", "adcs", "jwt", "bgp", "oauth", "dbshield", "edr", "crypto", "dfir", "sbom", "serverless"];
     if (!validTabs.includes(tabName)) tabName = "canbus";
     document.querySelectorAll(".pg-tab").forEach(tab => {
       tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
@@ -2587,6 +2588,184 @@
     attestOut.textContent = attestText;
   }
 
+  // --- 12. Serverless & Warm Container Inspector ---
+  let currentServerlessScenario = "event_inject";
+
+  function renderServerless(scenario){
+    if (scenario) currentServerlessScenario = scenario;
+    const keyEl = document.getElementById("serverlessKeyInput");
+    const runtimeEl = document.getElementById("serverlessRuntimeSelect");
+    const traceBadge = document.getElementById("serverlessTraceBadge");
+    const verdictBadge = document.getElementById("serverlessVerdictBadge");
+    const traceOut = document.getElementById("serverlessTraceOutput");
+    const verdictOut = document.getElementById("serverlessVerdictOutput");
+
+    if (!keyEl || !runtimeEl || !traceBadge || !verdictBadge || !traceOut || !verdictOut) return;
+
+    if (scenario === "event_inject"){
+      keyEl.value = "invoices/2026_q1.pdf; cat /proc/self/environ";
+    } else if (scenario === "warm_container"){
+      keyEl.value = "receipts/statement.png";
+    } else if (scenario === "iam_escalate"){
+      keyEl.value = "admin/sts_assume_role_query";
+    } else if (scenario === "runtime_harden"){
+      keyEl.value = "sanitized/clean_contract.pdf";
+      runtimeEl.value = "immutable_container";
+    }
+
+    const key = keyEl.value.trim();
+    const runtime = runtimeEl.value;
+    const mode = currentServerlessScenario;
+
+    let traceText = "";
+    let verdictText = "";
+
+    const hasShellMeta = /[;&|`$><\(\)]/.test(key);
+
+    if (mode === "event_inject"){
+      traceText =
+        "[S3 ObjectCreated Event Notification AST]:\n" +
+        "  Event: s3:ObjectCreated:Put\n" +
+        "  Bucket: arn:aws:s3:::corp-invoices-2026\n" +
+        "  ObjectKey: " + key + "\n" +
+        "[Lambda Execution Handler Trace]:\n" +
+        "  def handler(event, context):\n" +
+        "    s3_key = event['Records'][0]['s3']['object']['key']\n" +
+        "    # Vulnerable command construction:\n" +
+        "    cmd = f\"pdftotext /tmp/{s3_key} /tmp/output.txt\"\n" +
+        "    subprocess.run(cmd, shell=True)\n" +
+        "[Shell Subprocess Tokenizer]:\n" +
+        (hasShellMeta ? "  ⚠️ Command Metacharacter Detected: Execution flow chained!" : "  ✓ Safe alphanumeric path tokens parsed.");
+
+      if (runtime === "hardened_microvm" || runtime === "immutable_container"){
+        traceText += "\n\n[Firecracker Hardened Validator Gate]:\n" +
+          "  ✓ Strict Regex Enforced: ^[a-zA-Z0-9_\\-\\./]+$\n" +
+          "  ✓ Command Metacharacters Rejected: 400 Bad Request.";
+        verdictText =
+          "[Runtime Ingestion Gate]:\n" +
+          "  - Event Validation: 400 BAD REQUEST (Metacharacters Rejected)\n" +
+          "  - Subprocess Execution: PREVENTED\n" +
+          "  - Environment Variables: PROTECTED\n" +
+          "Verdict: 🛡️ S3 EVENT INJECTION BLOCKED & HARDENED";
+        traceBadge.textContent = "VALIDATION: PASSED";
+        traceBadge.className = "token-tag token-lit";
+        verdictBadge.textContent = "VERDICT: SECURE";
+        verdictBadge.className = "token-tag token-lit";
+      } else {
+        verdictText =
+          "[MicroVM Subprocess Sandbox Escape]:\n" +
+          "  - Execution Context: uid=993(sbx_user1051) gid=990(sbx_user1051)\n" +
+          "  - Injected Shell Command: " + (hasShellMeta ? key.split(/[;&|]/).slice(1).join(";") : "none") + "\n" +
+          "  - Process Memory: Dumped AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN\n" +
+          "Verdict: 🚨 S3 EVENT INJECTION RCE & CREDENTIAL EXFILTRATION";
+        traceBadge.textContent = "VALIDATION: BYPASS";
+        traceBadge.className = "token-tag token-inj";
+        verdictBadge.textContent = "VERDICT: EXPLOITED";
+        verdictBadge.className = "token-tag token-inj";
+      }
+
+    } else if (mode === "warm_container"){
+      traceText =
+        "[Warm Container Execution Lifecycle]:\n" +
+        "  Container ID: microvm-warm-88421c (Reused across 4 invocations)\n" +
+        "  Ephemeral Storage: /tmp (512 MB mounted ext4)\n" +
+        "  Handler Invocation 1 (User A): Stored user_session_token.jwt into /tmp\n" +
+        "  Handler Invocation 2 (Attacker): Inspected /tmp directory contents\n" +
+        "[Artifact Residency Scan]:\n" +
+        "  /tmp/session_token.json (size: 418 bytes, mode: 0644)\n" +
+        "  /tmp/cached_auth.db (size: 1.2 MB, mode: 0644)";
+
+      if (runtime === "immutable_container" || runtime === "hardened_microvm"){
+        traceText += "\n\n[Ephemeral Storage Scrubbing Hook]:\n" +
+          "  ✓ shred -u /tmp/* executed on handler exit.\n" +
+          "  ✓ Zero residual state between concurrent tenant invocations.";
+        verdictText =
+          "[MicroVM Isolation & Scrubbing]:\n" +
+          "  - Ephemeral /tmp Scrubbing: ACTIVE (0 files residual)\n" +
+          "  - Cross-Tenant Memory Isolation: ENFORCED\n" +
+          "  - Session Carving Attempt: 404 NOT FOUND\n" +
+          "Verdict: 🛡️ WARM CONTAINER RESIDUE ELIMINATED";
+        traceBadge.textContent = "WARM SBX: CLEAN";
+        traceBadge.className = "token-tag token-lit";
+        verdictBadge.textContent = "DATA: ISOLATED";
+        verdictBadge.className = "token-tag token-lit";
+      } else {
+        verdictText =
+          "[Warm Container Data Residue Vulnerability]:\n" +
+          "  - Ephemeral /tmp Scrubbing: DISABLED (Default Lambda)\n" +
+          "  - Residual Session Leak: Extracted User A JWT bearer token from /tmp\n" +
+          "  - Account Takeover: Attacker forged User A requests\n" +
+          "Verdict: 💥 WARM CONTAINER DATA LEAK & SESSION TAKEOVER";
+        traceBadge.textContent = "WARM SBX: RESIDUE";
+        traceBadge.className = "token-tag token-inj";
+        verdictBadge.textContent = "DATA: LEAKED";
+        verdictBadge.className = "token-tag token-inj";
+      }
+
+    } else if (mode === "iam_escalate"){
+      traceText =
+        "[Lambda Execution Role & STS Token Inspection]:\n" +
+        "  Role ARN: arn:aws:iam::123456789012:role/CorpLambdaInvoiceRole\n" +
+        "  STS Endpoint: https://sts.amazonaws.com/\n" +
+        "  Target Policy Action: sts:AssumeRole\n" +
+        "  Target Role: arn:aws:iam::123456789012:role/CorpAdministrator\n" +
+        "[IAM Policy Evaluation Tree]:\n" +
+        "  Statement[0]: Effect: Allow, Action: ['sts:AssumeRole'], Resource: '*'\n" +
+        "  Wildcard Target: Permitted to assume any enterprise IAM role!";
+
+      if (runtime === "hardened_microvm" || runtime === "immutable_container"){
+        traceText += "\n\n[Scoped Least Privilege IAM Policy]:\n" +
+          "  ✓ Action restricted strictly to s3:GetObject on specific bucket.\n" +
+          "  ✓ sts:AssumeRole denied by Organization Service Control Policy (SCP).";
+        verdictText =
+          "[IAM STS Authorization Verdict]:\n" +
+          "  - Target Role: arn:aws:iam::123456789012:role/CorpAdministrator\n" +
+          "  - Evaluation: 403 ACCESS DENIED (Least Privilege Enforced)\n" +
+          "  - Privilege Escalation Path: SEVERED\n" +
+          "Verdict: 🛡️ IAM LEAST PRIVILEGE ENFORCED & ESCALATION BLOCKED";
+        traceBadge.textContent = "IAM: SCOPED";
+        traceBadge.className = "token-tag token-lit";
+        verdictBadge.textContent = "STS: DENIED (403)";
+        verdictBadge.className = "token-tag token-lit";
+      } else {
+        verdictText =
+          "[IAM Privilege Escalation Chain]:\n" +
+          "  - AssumeRole Status: 200 OK\n" +
+          "  - Acquired Credentials: AWS_ACCESS_KEY_ID (ASIA...), RoleArn: CorpAdministrator\n" +
+          "  - Blast Radius: Complete AWS cloud account compromise\n" +
+          "Verdict: 🚨 OVERPRIVILEGED IAM ROLE ESCALATION TO CLOUD ADMIN";
+        traceBadge.textContent = "IAM: OVERPRIVILEGED";
+        traceBadge.className = "token-tag token-inj";
+        verdictBadge.textContent = "STS: ASSUMED (200)";
+        verdictBadge.className = "token-tag token-inj";
+      }
+
+    } else { // runtime_harden
+      traceText =
+        "[Serverless Defense-in-Depth Architecture]:\n" +
+        "  1. Input Gate: Strict JSON Schema + Alphanumeric Key Validation\n" +
+        "  2. Filesystem: Immutable ReadOnlyRootFilesystem (Container/MicroVM)\n" +
+        "  3. Ephemeral Storage: /tmp Automated Scrubbing on Handler Exit\n" +
+        "  4. IAM Governance: Scoped Resource ARN & SCP Guardrails\n" +
+        "  5. Observability: GuardDuty Runtime & CloudTrail Telemetry Monitoring";
+
+      verdictText =
+        "[Firecracker & OCI Defense-in-Depth Summary]:\n" +
+        "  - Event Injection: MITIGATED (Zero shell invocation)\n" +
+        "  - Warm Container Leaks: NEUTRALIZED (Ephemeral shred hook)\n" +
+        "  - IAM Escalation: PREVENTED (Least privilege scoping)\n" +
+        "  - Root Filesystem: READ-ONLY (EroFS immutable layer)\n" +
+        "Verdict: 🟢 100% SERVERLESSGUARD RUNTIME HARDENING ENFORCED";
+      traceBadge.textContent = "RUNTIME: IMMUTABLE";
+      traceBadge.className = "token-tag token-lit";
+      verdictBadge.textContent = "POSTURE: 100% COMPLIANT";
+      verdictBadge.className = "token-tag token-lit";
+    }
+
+    traceOut.textContent = traceText;
+    verdictOut.textContent = verdictText;
+  }
+
   /* ===== export & import ===== */
   function exportJSON(){
     const payload = {
@@ -2864,6 +3043,8 @@
         openPlayground("dfir"); break;
       case "sbom": case "supplychain": case "cosign": case "slsa": case "cyclonedx": case "dep":
         openPlayground("sbom"); break;
+      case "serverless": case "lambda": case "faas": case "warm": case "eventsec": case "firecracker":
+        openPlayground("serverless"); break;
       case "search": case "find": case "검색": doSearch(arg); break;
       case "export": case "backup": doExport(arg); break;
       case "import": case "restore": doImport(arg); break;
@@ -3370,6 +3551,28 @@
       audio();
       const p = btn.getAttribute("data-sbom-preset");
       renderSbom(p);
+    });
+  });
+
+  // Serverless Inspector Controls
+  const serverlessRunBtn = document.getElementById("btnRunServerlessSim");
+  if (serverlessRunBtn) serverlessRunBtn.addEventListener("click", () => { audio(); renderServerless(); });
+  const serverlessHardenBtn = document.getElementById("btnEnforceServerlessHarden");
+  if (serverlessHardenBtn) serverlessHardenBtn.addEventListener("click", () => {
+    audio();
+    const sel = document.getElementById("serverlessRuntimeSelect");
+    if (sel) sel.value = "hardened_microvm";
+    renderServerless();
+  });
+  const serverlessKeyInput = document.getElementById("serverlessKeyInput");
+  if (serverlessKeyInput) serverlessKeyInput.addEventListener("input", () => renderServerless());
+  const serverlessRuntimeSelect = document.getElementById("serverlessRuntimeSelect");
+  if (serverlessRuntimeSelect) serverlessRuntimeSelect.addEventListener("change", () => renderServerless());
+  document.querySelectorAll("[data-serverless-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      audio();
+      const p = btn.getAttribute("data-serverless-preset");
+      renderServerless(p);
     });
   });
 

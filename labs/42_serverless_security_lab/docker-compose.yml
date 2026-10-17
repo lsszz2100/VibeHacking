@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  serverless-lab:
+    build: .
+    container_name: vibehacking-lab42-serverless
+    ports:
+      - "127.0.0.1:8042:8042"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "lab=42"

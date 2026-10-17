@@ -1041,6 +1041,47 @@ SOLVERS: Dict[str, Dict[str, Any]] = {
                 "sample_output": "🚀 SLSA L3 Provenance Enforced! Cryptographic Attestation Validated -> FLAG{supplychain_slsa_cosign_hermetic_verified_100}"
             }
         ]
+    },
+    "42": {
+        "title": "서버리스 클라우드 보안 & 이벤트 인젝션 랩 (ServerlessGuard)",
+        "steps": [
+            {
+                "step": 1,
+                "name": "S3 이벤트 메타데이터 인젝션을 통한 임의 명령 실행",
+                "target": "POST /api/stage1/invoke-event (Records[0].s3.object.key)",
+                "poc_explanation": "S3 ObjectCreated 이벤트 처리기에서 객체 키(s3.object.key)에 쉘 메타문자(; id 또는 ; env)를 삽입하여 Lambda 서브프로세스 쉘을 하이재킹하고 임의 명령어를 실행합니다.",
+                "exploit_payload": '{"Records": [{"eventSource": "aws:s3", "eventName": "ObjectCreated:Put", "s3": {"bucket": {"name": "corp-invoice-intake"}, "object": {"key": "invoice_poc.pdf; id"}}}]}',
+                "defense": "이벤트 입력값에 대해 엄격한 JSON Schema/정규식 화이트리스트 검증을 적용하고, 서브프로세스 호출 시 쉘 래핑 없이 shlex/인자 리스트로만 전달.",
+                "sample_output": "🔥 Event Injection Succeeded! Shell Metacharacters Executed -> FLAG{serverless_event_injection_s3_key_rce_pwned}"
+            },
+            {
+                "step": 2,
+                "name": "Warm Container /tmp 잔존 캐시 카빙 및 AWS 세션 토큰 탈취",
+                "target": "POST /api/stage2/dump-secrets (action: dump_secrets)",
+                "poc_explanation": "서버리스 컨테이너 재사용(Warm Container) 특성을 악용하여 이전 호출이 /tmp/session_cache.json에 남긴 AWS_SESSION_TOKEN 및 데이터베이스 접속 정보를 카빙합니다.",
+                "exploit_payload": '{"action": "dump_secrets"}',
+                "defense": "호출 완료 즉시 /tmp 디렉터리를 스크러빙하거나 비휘발성 민감 정보 캐싱을 금지하고, AWS Secrets Manager 실시간 조회를 권장.",
+                "sample_output": "🔓 Warm Container /tmp Secret Carved! Session Token Leaked -> FLAG{serverless_warm_container_tmp_persistence_token_leaked}"
+            },
+            {
+                "step": 3,
+                "name": "과도한 IAM 실행 권한을 악용한 STS AssumeRole 수직 권한 상승",
+                "target": "POST /api/stage3/escalate-iam (target_role_arn: arn:aws:iam::123456789012:role/CorpCloudAdminRole)",
+                "poc_explanation": "Lambda 실행 역할(ServerlessEventProcessorRole)의 과도한 sts:AssumeRole 와일드카드 권한을 악용하여 상위 관리자 역할(CorpCloudAdminRole)을 임시 수임하여 클라우드 관리자 권한을 획득합니다.",
+                "exploit_payload": '{"target_role_arn": "arn:aws:iam::123456789012:role/CorpCloudAdminRole", "session_name": "PwnSession"}',
+                "defense": "IAM 최소 권한 원칙(Least Privilege)을 적용하여 sts:AssumeRole 권한을 제거하고 필수 S3 리소스 ARN에 한해서만 권한을 부여.",
+                "sample_output": "👑 IAM Privilege Escalation Complete! AdministratorAccess Acquired -> FLAG{serverless_iam_overprivileged_role_escalated}"
+            },
+            {
+                "step": 4,
+                "name": "서버리스 런타임 하드닝 및 IAM 최소 권한 정책 강제",
+                "target": "POST /api/stage4/harden-runtime (readonly_root_fs: true, clean_tmp_per_invocation: true, event_schema_validation: true, iam_least_privilege: true)",
+                "poc_explanation": "읽기 전용 루트 파일시스템, 호출 간 /tmp 스크러빙, 엄격한 JSON Schema 이벤트 검증, 그리고 s3:GetObject로 한정된 IAM 최소 권한 정책 4대 통제를 일괄 적용하여 런타임을 보호합니다.",
+                "exploit_payload": '{"readonly_root_fs": true, "clean_tmp_per_invocation": true, "event_schema_validation": true, "iam_least_privilege": true}',
+                "defense": "서버리스 보안 포스처 관리(SSPM) 도구 연동 및 배포 파이프라인 정적 정책 감사(Checkov/tfsec) 자동화.",
+                "sample_output": "🛡️ Serverless Runtime Fully Hardened! Ephemeral isolation enforced -> FLAG{serverless_hardened_least_privilege_runtime_secured}"
+            }
+        ]
     }
 }
 

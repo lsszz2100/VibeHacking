@@ -478,6 +478,14 @@ LABS: dict[str, dict] = {
         "difficulty": "★★★★★",
         "related": [35, 18, 74],
     },
+    "42": {
+        "name": "서버리스 클라우드 보안 & 이벤트 인젝션 랩",
+        "dir":  "42_serverless_security_lab",
+        "desc": "ServerlessGuard: S3 Event Injection RCE · Warm Container /tmp 영속성 & AWS_SESSION_TOKEN 탈취 · 과도한 IAM 실행 역할 sts:AssumeRole 권한 상승 · Ephemeral 격리 및 IAM 최소 권한 런타임 하드닝",
+        "url":  "웹 콘솔 & 서버리스 대시보드: http://localhost:8042",
+        "difficulty": "★★★★★",
+        "related": [53, 14, 48],
+    },
 }
 
 
@@ -1493,6 +1501,7 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         (8039, "Lab 39 (CryptoShield Modern Cryptography Lab)"),
         (8040, "Lab 40 (IRShield Enterprise DFIR Lab)"),
         (8041, "Lab 41 (SupplyChainShield Software Supply Chain Lab)"),
+        (8042, "Lab 42 (ServerlessGuard Serverless Security Lab)"),
         (8888, "Lab 05 (Full APT)"),
         (3001, "Lab 01 (Juice Shop)"),
     ]

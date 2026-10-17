@@ -69,6 +69,9 @@ docker-compose --version
 | 37 | [블루투스 저에너지 & SDR 무선 보안 랩](./37_bluetooth_sdr_security_lab/) | GATT 프로파일 정찰, 비인가 Characteristic 쓰기, 레거시 Just Works TK 크래킹, LESC ECDH 무선 하드닝 | ★★★★ | [71장 블루투스 해킹](../71_Bluetooth_RF_Hacking/README.md), [15장 WiFi 해킹](../15_WiFi_Hacking/README.md) | `blehack` / `wireless` |
 | 38 | [EDR 유저랜드 후킹 우회 & 차세대 C2 실전 랩](./38_edr_evasion_c2_lab/) | AMSI/ETW 인메모리 패치, ntdll 디스크 매핑 언후킹, Halo's Gate 간접 시스템 콜, Ekko ROP 슬립 난독화 | ★★★★★ | [55장 탐지 우회 기법](../55_Evasion_Techniques/07_edr_userland_unhooking_and_indirect_syscalls_deepdive.md) | `edrbypass` / `endpoint` |
 | 39 | [현대 응용 암호학 & 암호 분석 실전 랩](./39_modern_cryptography_lab/) | AES-CBC 패딩 오라클/비트플리핑, RSA Bleichenbacher '06 e=3 서명 위조, ECDSA Nonce 재사용 개인키 역산, ML-KEM-768 PQC 하이브리드 KEM | ★★★★★ | [16장 암호학](../16_Cryptography/07_practical_padding_oracle_and_elliptic_curve_deepdive.md) | `crypto` / `crypto` |
+| 40 | [엔터프라이즈 침해사고 대응 & DFIR 실전 랩](./40_enterprise_dfir_ir_lab/) | 프로세스 트리 트리아지, VAD 인메모리 주입 탐지, NTFS $MFT 타임라인 재구성, C2 통신 격리 & SOAR 대응 | ★★★★★ | [44장 침해 대응](../44_Incident_Response_DFIR/09_live_triage_memory_timeline_and_anti_forensics_deepdive.md) | `dfir` / `dfir` |
+| 41 | [소프트웨어 공급망 보안 & SBOM 실전 랩](./41_supply_chain_security_lab/) | Dependency Confusion 탐지, Actions Pwn Request 감사, CycloneDX 1.6 vs SPDX 3.0 VEX, SLSA L3 & Cosign Rekor | ★★★★★ | [35장 공급망 공격](../35_Supply_Chain_Attacks/07_advanced_software_supply_chain_and_slsa_deepdive.md) | `sbom` / `supplychain` |
+| 42 | [서버리스 클라우드 보안 & 이벤트 인젝션 랩](./42_serverless_security_lab/) | S3 이벤트 인젝션 RCE, Warm Container /tmp 영속성 & 세션 토큰 탈취, 과도한 IAM AssumeRole 권한 상승, 런타임 하드닝 | ★★★★★ | [53장 서버리스 보안](../53_Serverless_Security/07_serverless_event_injection_and_lambda_runtime_deepdive.md) | `serverless` / `cloud` |
 
 ---
 

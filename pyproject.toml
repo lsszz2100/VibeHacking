@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "vibehacking"
 version = "2.0.0"
-description = "VibeHacking — The Practical Cybersecurity & AI Hacking Bible (75 Sections, 38 Labs, 1820 Wargame Challenges)"
+description = "VibeHacking — The Practical Cybersecurity & AI Hacking Bible (75 Sections, 42 Labs, 1960 Wargame Challenges)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}

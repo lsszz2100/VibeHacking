@@ -1,0 +1,493 @@
+#!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+
+const ROOT = path.resolve(__dirname, '..');
+const CHALLENGES_JS = path.join(ROOT, 'wargame/assets/challenges.js');
+const SOLVE_DERIVABLE_JS = path.join(ROOT, 'wargame/scripts/solve-derivable.js');
+
+function computeHash(id) {
+  const ident = id.replace(/^t\d_/, '') + "_v1";
+  const flag = "FLAG{" + crypto.createHash('sha256').update(ident).digest('hex').substring(0, 20) + "}";
+  return crypto.createHash('sha256').update(flag).digest('hex');
+}
+
+const challengesDef = [
+  // Tier 0 (2)
+  {
+    id: "t0_serverless_shared_responsibility_faas",
+    tier: 0, cat: "serverless", track: "serverless", points: 25, ci: false, fmt: "FLAG{...}",
+    title: { ko: "FaaS 클라우드 보안 공동 책임 모델 분석", en: "FaaS Cloud Shared Responsibility Architecture" },
+    prompt: {
+      ko: "서버리스 FaaS 환경에서 클라우드 제공자(물리 서버, 가상화 계층, 런타임 OS)와 고객(이벤트 검증, IAM 권한, 함수 코드, 데이터 보안) 간의 보안 책임 경계를 분석합니다.\n지정된 식별자 `serverless_shared_responsibility_faas_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_shared_responsibility_faas_v1\") 앞 20자리}`",
+      en: "Analyze the shared responsibility model in FaaS dividing physical/hypervisor duties from customer-managed event validation, IAM, and code.\nCompute the first 20 hex characters of SHA256(\"serverless_shared_responsibility_faas_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_shared_responsibility_faas_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["서버리스에서도 코드 취약점과 IAM 권한 관리는 전적으로 고객의 책임입니다.", "식별자 `serverless_shared_responsibility_faas_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Customer maintains full responsibility for application logic, event validation, and IAM policies.", "Extract first 20 hex chars of SHA256(\"serverless_shared_responsibility_faas_v1\")."]
+    }
+  },
+  {
+    id: "t0_serverless_microvm_firecracker_isolation",
+    tier: 0, cat: "serverless", track: "serverless", points: 25, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Firecracker MicroVM 경량 가상화 격리 메커니즘", en: "Firecracker MicroVM Lightweight Sandbox Isolation" },
+    prompt: {
+      ko: "AWS Lambda에서 각 함수 실행 인스턴스를 수 밀리초 만에 부팅하고 KVM 기반 하이퍼바이저 수준으로 격리하는 Firecracker MicroVM 아키텍처를 분석합니다.\n지정된 식별자 `serverless_microvm_firecracker_isolation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_microvm_firecracker_isolation_v1\") 앞 20자리}`",
+      en: "Examine Firecracker MicroVM architecture powering AWS Lambda with minimalist Linux sandboxes booting in milliseconds via KVM.\nCompute the first 20 hex characters of SHA256(\"serverless_microvm_firecracker_isolation_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_microvm_firecracker_isolation_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["Firecracker는 최소화된 가상 디바이스 모델로 공격 표면을 극도로 줄입니다.", "식별자 `serverless_microvm_firecracker_isolation_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Minimalist device emulators minimize kernel hypervisor vulnerability exposure.", "Extract first 20 hex chars of SHA256(\"serverless_microvm_firecracker_isolation_v1\")."]
+    }
+  },
+
+  // Tier 1 (6)
+  {
+    id: "t1_serverless_s3_event_notification_schema",
+    tier: 1, cat: "serverless", track: "serverless", points: 50, ci: false, fmt: "FLAG{...}",
+    title: { ko: "S3 ObjectCreated 이벤트 알림 JSON 스키마 분석", en: "S3 ObjectCreated Event Notification JSON Schema" },
+    prompt: {
+      ko: "S3 버킷 파일 생성 시 Lambda로 전달되는 `Records[0].s3.object.key` 및 bucket 메타데이터 구조를 분석합니다.\n지정된 식별자 `serverless_s3_event_notification_schema_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_s3_event_notification_schema_v1\") 앞 20자리}`",
+      en: "Deconstruct S3 ObjectCreated JSON notifications carrying `Records[0].s3.object.key` parameters into Lambda handlers.\nCompute the first 20 hex characters of SHA256(\"serverless_s3_event_notification_schema_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_s3_event_notification_schema_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["URL 인코딩된 객체 키가 핸들러에서 적절히 디코딩되지 않거나 검증 없이 사용되는 경로를 점검하세요.", "식별자 `serverless_s3_event_notification_schema_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Inspect URL-encoded object keys ingested directly by backend document processors.", "Extract first 20 hex chars of SHA256(\"serverless_s3_event_notification_schema_v1\")."]
+    }
+  },
+  {
+    id: "t1_serverless_cold_start_vs_warm_container",
+    tier: 1, cat: "serverless", track: "serverless", points: 50, ci: false, fmt: "FLAG{...}",
+    title: { ko: "콜드 스타트 초기화와 웜 컨테이너 수명주기", en: "Cold Start Initialization vs Warm Container Lifecycle" },
+    prompt: {
+      ko: "최초 실행 시 발생하는 다운로드/초기화 지연(Cold Start)과 후속 요청 처리를 위해 샌드박스를 재사용하는 웜 컨테이너 수명주기 간의 보안적 차이를 분석합니다.\n지정된 식별자 `serverless_cold_start_vs_warm_container_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_cold_start_vs_warm_container_v1\") 앞 20자리}`",
+      en: "Contrast cold-start environment initialization with warm container reuse across consecutive function handler invocations.\nCompute the first 20 hex characters of SHA256(\"serverless_cold_start_vs_warm_container_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_cold_start_vs_warm_container_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["웜 컨테이너는 핸들러 외부의 전역 변수와 메모리 상태를 그대로 보존합니다.", "식별자 `serverless_cold_start_vs_warm_container_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Warm execution environments preserve global variables and memory structures between calls.", "Extract first 20 hex chars of SHA256(\"serverless_cold_start_vs_warm_container_v1\")."]
+    }
+  },
+  {
+    id: "t1_serverless_api_gateway_payload_injection",
+    tier: 1, cat: "serverless", track: "serverless", points: 50, ci: false, fmt: "FLAG{...}",
+    title: { ko: "API Gateway 프록시 통합 요청 바디 인젝션 벡터", en: "API Gateway Proxy Integration Body Injection Vectors" },
+    prompt: {
+      ko: "API Gateway와 Lambda 간의 HTTP 프록시 연동 시 `event.body` 문자열 파싱 결함을 악용한 인젝션 공격 표면을 분석합니다.\n지정된 식별자 `serverless_api_gateway_payload_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_api_gateway_payload_injection_v1\") 앞 20자리}`",
+      en: "Examine API Gateway proxy integration forwarding raw `event.body` strings without schema sanitization.\nCompute the first 20 hex characters of SHA256(\"serverless_api_gateway_payload_injection_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_api_gateway_payload_injection_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["API Gateway 레벨의 요청 모델 검증(Request Validator) 부재 시 악성 페이로드가 런타임에 직접 도달합니다.", "식별자 `serverless_api_gateway_payload_injection_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Unvalidated API Gateway proxy integrations pass malicious payloads straight to business logic.", "Extract first 20 hex chars of SHA256(\"serverless_api_gateway_payload_injection_v1\")."]
+    }
+  },
+  {
+    id: "t1_serverless_environment_variables_leak",
+    tier: 1, cat: "serverless", track: "serverless", points: 50, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Lambda 기본 환경변수 텔레메트리 정보 수집", en: "Lambda Standard Environment Variables Telemetry Recon" },
+    prompt: {
+      ko: "AWS_LAMBDA_FUNCTION_NAME, AWS_REGION, _HANDLER 등 컨테이너 내부에 노출된 기본 환경변수를 통해 인프라 구성을 정찰하는 기법을 분석합니다.\n지정된 식별자 `serverless_environment_variables_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_environment_variables_leak_v1\") 앞 20자리}`",
+      en: "Audit standard Lambda runtime environment variables including AWS_REGION, _HANDLER, and runtime paths.\nCompute the first 20 hex characters of SHA256(\"serverless_environment_variables_leak_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_environment_variables_leak_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["환경변수에 하드코딩된 데이터베이스 접속 정보와 API 키는 프로세스 덤프로 손쉽게 노출됩니다.", "식별자 `serverless_environment_variables_leak_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Hardcoded secrets in function environment variables leak via /proc/self/environ.", "Extract first 20 hex chars of SHA256(\"serverless_environment_variables_leak_v1\")."]
+    }
+  },
+  {
+    id: "t1_serverless_sqs_batch_failure_handling",
+    tier: 1, cat: "serverless", track: "serverless", points: 50, ci: false, fmt: "FLAG{...}",
+    title: { ko: "SQS 이벤트 배치 처리 결함 및 DLQ 분석", en: "SQS Event Batch Failure Handling & Dead Letter Queues" },
+    prompt: {
+      ko: "SQS 메시지 배치 처리 중 악성 메시지 하나로 전체 배치가 롤백되거나 무한 재시도(Poison Message)가 발생하는 보안 리스크를 분석합니다.\n지정된 식별자 `serverless_sqs_batch_failure_handling_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_sqs_batch_failure_handling_v1\") 앞 20자리}`",
+      en: "Assess SQS poison message handling causing cascading batch retries and service exhaustion without DLQ policies.\nCompute the first 20 hex characters of SHA256(\"serverless_sqs_batch_failure_handling_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_sqs_batch_failure_handling_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["ReportBatchItemFailures 설정을 적용하여 실패한 메시지만 격리 처리해야 합니다.", "식별자 `serverless_sqs_batch_failure_handling_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Configure partial batch response handling to isolate poison pill payloads into dead letter queues.", "Extract first 20 hex chars of SHA256(\"serverless_sqs_batch_failure_handling_v1\")."]
+    }
+  },
+  {
+    id: "t1_serverless_ephemeral_tmp_storage_basics",
+    tier: 1, cat: "serverless", track: "serverless", points: 50, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Lambda 런타임 /tmp 임시 스토리지 특징과 한계", en: "Lambda Runtime /tmp Ephemeral Storage Architecture" },
+    prompt: {
+      ko: "Lambda 샌드박스에 제공되는 유일한 쓰기 가능 영역인 `/tmp` 디렉터리의 수명주기와 권한 설정을 분석합니다.\n지정된 식별자 `serverless_ephemeral_tmp_storage_basics_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_ephemeral_tmp_storage_basics_v1\") 앞 20자리}`",
+      en: "Investigate /tmp scratchpad storage constraints, persistence behavior, and write privileges inside MicroVM sandboxes.\nCompute the first 20 hex characters of SHA256(\"serverless_ephemeral_tmp_storage_basics_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_ephemeral_tmp_storage_basics_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["루트 파일시스템(/var/task 등)은 읽기 전용이지만 /tmp는 쓰기가 허용되어 공격자의 스테이징 영역이 됩니다.", "식별자 `serverless_ephemeral_tmp_storage_basics_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["The /tmp folder provides the only writable filesystem zone for temporary staging.", "Extract first 20 hex chars of SHA256(\"serverless_ephemeral_tmp_storage_basics_v1\")."]
+    }
+  },
+
+  // Tier 2 (8)
+  {
+    id: "t2_serverless_s3_key_command_injection",
+    tier: 2, cat: "serverless", track: "serverless", points: 100, ci: false, fmt: "FLAG{...}",
+    title: { ko: "S3 object.key 쉘 메타문자 인젝션을 통한 서브프로세스 RCE", en: "S3 Key Shell Metacharacter Subprocess RCE" },
+    prompt: {
+      ko: "S3 이벤트의 객체 키에 `;` 또는 `|` 메타문자를 삽입하여 `subprocess.run(shell=True)` 호출을 하이재킹하는 원리를 분석합니다.\n지정된 식별자 `serverless_s3_key_command_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_s3_key_command_injection_v1\") 앞 20자리}`",
+      en: "Exploit command injection vulnerabilities where unsanitized S3 object keys are passed directly into shell=True subprocess calls.\nCompute the first 20 hex characters of SHA256(\"serverless_s3_key_command_injection_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_s3_key_command_injection_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["쉘 실행을 제거하고 인자 리스트(shlex.split)를 통해 직접 바이너리를 호출해야 합니다.", "식별자 `serverless_s3_key_command_injection_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Avoid shell=True and pass validated arguments as structured arrays to execve.", "Extract first 20 hex chars of SHA256(\"serverless_s3_key_command_injection_v1\")."]
+    }
+  },
+  {
+    id: "t2_serverless_warm_container_tmp_persistence",
+    tier: 2, cat: "serverless", track: "serverless", points: 100, ci: false, fmt: "FLAG{...}",
+    title: { ko: "웜 컨테이너 재사용 시 /tmp 잔존 세션 토큰 카빙", en: "Warm Container /tmp Residue Session Token Carving" },
+    prompt: {
+      ko: "이전 사용자의 인증 토큰이나 캐시 파일이 웜 컨테이너의 `/tmp` 디렉터리에 남아 후속 호출자에게 유출되는 취약점을 분석합니다.\n지정된 식별자 `serverless_warm_container_tmp_persistence_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_warm_container_tmp_persistence_v1\") 앞 20자리}`",
+      en: "Carve sensitive session tokens and credentials preserved inside /tmp across warm container execution reuse.\nCompute the first 20 hex characters of SHA256(\"serverless_warm_container_tmp_persistence_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_warm_container_tmp_persistence_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["컨테이너 인스턴스가 파기되기 전까지 /tmp에 기록된 모든 파일은 지속됩니다.", "식별자 `serverless_warm_container_tmp_persistence_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Temporary files survive across invocations within the same container sandbox lifecycle.", "Extract first 20 hex chars of SHA256(\"serverless_warm_container_tmp_persistence_v1\")."]
+    }
+  },
+  {
+    id: "t2_serverless_sns_message_deserialization",
+    tier: 2, cat: "serverless", track: "serverless", points: 100, ci: false, fmt: "FLAG{...}",
+    title: { ko: "SNS 메시지 페이로드 비직렬화(Deserialization) 결함", en: "SNS Message Payload Insecure Deserialization" },
+    prompt: {
+      ko: "Amazon SNS 알림 이벤트의 `Message` 본문을 Python pickle이나 안전하지 않은 YAML 로더로 파싱할 때 발생하는 객체 역직렬화 RCE를 분석합니다.\n지정된 식별자 `serverless_sns_message_deserialization_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_sns_message_deserialization_v1\") 앞 20자리}`",
+      en: "Analyze remote code execution via unsafe deserialization of SNS message payload strings via pickle or unsafe YAML.\nCompute the first 20 hex characters of SHA256(\"serverless_sns_message_deserialization_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_sns_message_deserialization_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["항상 json.loads() 또는 pydantic strict 모드를 사용하여 임의 객체 인스턴스화를 차단하세요.", "식별자 `serverless_sns_message_deserialization_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Enforce json.loads() and reject dynamic object instantiation formats.", "Extract first 20 hex chars of SHA256(\"serverless_sns_message_deserialization_v1\")."]
+    }
+  },
+  {
+    id: "t2_serverless_overprivileged_wildcard_iam",
+    tier: 2, cat: "serverless", track: "serverless", points: 100, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Execution Role 와일드카드 권한 부여의 보안 위험", en: "Execution Role Wildcard IAM Permission Hazards" },
+    prompt: {
+      ko: "Lambda 실행 역할에 `Action: *`, `Resource: *`를 부여할 때 단일 함수 침해가 전체 클라우드 계정 장악으로 이어지는 위험성을 분석합니다.\n지정된 식별자 `serverless_overprivileged_wildcard_iam_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_overprivileged_wildcard_iam_v1\") 앞 20자리}`",
+      en: "Evaluate lateral movement blast radius when Lambda execution policies grant broad wildcard permissions on AWS resources.\nCompute the first 20 hex characters of SHA256(\"serverless_overprivileged_wildcard_iam_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_overprivileged_wildcard_iam_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["함수별로 분리된 전용 IAM 역할을 생성하고 필요 최소한의 API 액션만 명시해야 합니다.", "식별자 `serverless_overprivileged_wildcard_iam_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Grant deterministic least-privilege IAM roles dedicated to individual functions.", "Extract first 20 hex chars of SHA256(\"serverless_overprivileged_wildcard_iam_v1\")."]
+    }
+  },
+  {
+    id: "t2_serverless_lambda_layer_poisoning",
+    tier: 2, cat: "serverless", track: "serverless", points: 100, ci: false, fmt: "FLAG{...}",
+    title: { ko: "공유 Lambda Layer 오염을 통한 공급망 침투", en: "Shared Lambda Layer Poisoning & Supply Chain Tampering" },
+    prompt: {
+      ko: "외부 계정에서 공유된 공개 Lambda Layer나 타사 종속성 레이어가 악성코드로 오염되어 함수 런타임에 주입되는 메커니즘을 분석합니다.\n지정된 식별자 `serverless_lambda_layer_poisoning_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_lambda_layer_poisoning_v1\") 앞 20자리}`",
+      en: "Investigate supply chain risks where shared cross-account Lambda Layers inject malicious runtime dependencies.\nCompute the first 20 hex characters of SHA256(\"serverless_lambda_layer_poisoning_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_lambda_layer_poisoning_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["사내 자체 빌드 파이프라인에서 검증된 레이어만 ARN 화이트리스트로 바인딩해야 합니다.", "식별자 `serverless_lambda_layer_poisoning_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Verify Layer hashes and avoid untrusted public Layer ARNs in production functions.", "Extract first 20 hex chars of SHA256(\"serverless_lambda_layer_poisoning_v1\")."]
+    }
+  },
+  {
+    id: "t2_serverless_vpc_internal_network_pivot",
+    tier: 2, cat: "serverless", track: "serverless", points: 100, ci: false, fmt: "FLAG{...}",
+    title: { ko: "VPC 프라이빗 서브넷 연동 Lambda를 통한 내부망 피버팅", en: "VPC-Attached Lambda Private Subnet Internal Pivoting" },
+    prompt: {
+      ko: "VPC 내부 서브넷에 연결된 Lambda 함수가 침해되었을 때 사내 내부 RDS, ElastiCache, 내부 관리 포털로 피버팅하는 공격 경로를 분석합니다.\n지정된 식별자 `serverless_vpc_internal_network_pivot_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_vpc_internal_network_pivot_v1\") 앞 20자리}`",
+      en: "Assess internal network pivot paths when a compromised VPC-attached Lambda targets private subnets, databases, and microservices.\nCompute the first 20 hex characters of SHA256(\"serverless_vpc_internal_network_pivot_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_vpc_internal_network_pivot_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["보안 그룹(Security Group)을 통해 Lambda의 아웃바운드 트래픽을 엄격히 제한해야 합니다.", "식별자 `serverless_vpc_internal_network_pivot_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Apply strict egress Security Group rules isolating function communications.", "Extract first 20 hex chars of SHA256(\"serverless_vpc_internal_network_pivot_v1\")."]
+    }
+  },
+  {
+    id: "t2_serverless_cloudwatch_logs_secret_leak",
+    tier: 2, cat: "serverless", track: "serverless", points: 100, ci: false, fmt: "FLAG{...}",
+    title: { ko: "CloudWatch Logs 로깅을 통한 시크릿 및 토큰 유출", en: "CloudWatch Logs Accidental Secret Leakage" },
+    prompt: {
+      ko: "디버깅 목적으로 전체 event 객체나 환경변수를 print()하여 CloudWatch Logs에 영구 저장된 인증 토큰이 열람되는 취약점을 분석합니다.\n지정된 식별자 `serverless_cloudwatch_logs_secret_leak_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_cloudwatch_logs_secret_leak_v1\") 앞 20자리}`",
+      en: "Audit unintentional leakage where debug print(event) statements commit API keys and tokens into CloudWatch log groups.\nCompute the first 20 hex characters of SHA256(\"serverless_cloudwatch_logs_secret_leak_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_cloudwatch_logs_secret_leak_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["민감 키워드(token, password, secret)에 대한 자동 마스킹 필터를 로깅 파이프라인에 적용하세요.", "식별자 `serverless_cloudwatch_logs_secret_leak_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Mask sensitive parameter keys prior to emitting stdout logs.", "Extract first 20 hex chars of SHA256(\"serverless_cloudwatch_logs_secret_leak_v1\")."]
+    }
+  },
+  {
+    id: "t2_serverless_denial_of_wallet_concurrency",
+    tier: 2, cat: "serverless", track: "serverless", points: 100, ci: false, fmt: "FLAG{...}",
+    title: { ko: "동시성 한도 고갈 및 Denial of Wallet 과금 DoS", en: "Concurrency Exhaustion & Denial of Wallet DoS" },
+    prompt: {
+      ko: "동시성 한도(Reserved Concurrency) 제한이 없는 공개 API 엔드포인트를 대량 호출하여 계정 쿼터를 고갈시키고 막대한 과금을 유발하는 공격을 분석합니다.\n지정된 식별자 `serverless_denial_of_wallet_concurrency_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_denial_of_wallet_concurrency_v1\") 앞 20자리}`",
+      en: "Analyze denial-of-wallet vectors flooding unthrottled serverless endpoints to exhaust account concurrency and incur catastrophic billing.\nCompute the first 20 hex characters of SHA256(\"serverless_denial_of_wallet_concurrency_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_denial_of_wallet_concurrency_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["API Gateway 쓰로틀링(Rate Limiting)과 함수별 Reserved Concurrency 한도를 명시적으로 설정하세요.", "식별자 `serverless_denial_of_wallet_concurrency_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Configure reserved concurrency caps and API Gateway rate-limiting throttle limits.", "Extract first 20 hex chars of SHA256(\"serverless_denial_of_wallet_concurrency_v1\")."]
+    }
+  },
+
+  // Tier 3 (9)
+  {
+    id: "t3_serverless_sts_assume_role_escalation",
+    tier: 3, cat: "serverless", track: "serverless", points: 150, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Lambda 실행 역할 악용 STS AssumeRole 수직 권한 상승", en: "Lambda Execution Role STS AssumeRole Escalation" },
+    prompt: {
+      ko: "함수에 부여된 임시 자격증명으로 `sts:AssumeRole` API를 호출하여 더 높은 권한의 관리자 역할을 획득하는 권한 상승 메커니즘을 분석합니다.\n지정된 식별자 `serverless_sts_assume_role_escalation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_sts_assume_role_escalation_v1\") 앞 20자리}`",
+      en: "Exploit permissive `sts:AssumeRole` statements in Lambda execution policies to pivot into high-privilege corporate roles.\nCompute the first 20 hex characters of SHA256(\"serverless_sts_assume_role_escalation_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_sts_assume_role_escalation_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["역할 간 신뢰 관계(Trust Relationship)와 IAM 권한 경계(Permissions Boundary)를 설정하세요.", "식별자 `serverless_sts_assume_role_escalation_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Enforce strict IAM permissions boundaries and avoid broad AssumeRole statements.", "Extract first 20 hex chars of SHA256(\"serverless_sts_assume_role_escalation_v1\")."]
+    }
+  },
+  {
+    id: "t3_serverless_dynamodb_stream_injection",
+    tier: 3, cat: "serverless", track: "serverless", points: 150, ci: false, fmt: "FLAG{...}",
+    title: { ko: "DynamoDB Streams 변경 피드 레코드 오염 및 2차 공격", en: "DynamoDB Streams Change Feed Tampering" },
+    prompt: {
+      ko: "DynamoDB 스트림에 삽입된 악성 필드가 하류(downstream) Lambda 함수에 의해 처리될 때 발생하는 2차 이벤트 인젝션 흐름을 분석합니다.\n지정된 식별자 `serverless_dynamodb_stream_injection_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_dynamodb_stream_injection_v1\") 앞 20자리}`",
+      en: "Trace secondary event injection attacks where poisoned DynamoDB stream attributes compromise downstream serverless consumers.\nCompute the first 20 hex characters of SHA256(\"serverless_dynamodb_stream_injection_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_dynamodb_stream_injection_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["내부 데이터베이스 스트림이라 하더라도 외부 입력과 동일하게 검증해야 합니다.", "식별자 `serverless_dynamodb_stream_injection_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Validate internal stream records under Zero Trust event ingestion principles.", "Extract first 20 hex chars of SHA256(\"serverless_dynamodb_stream_injection_v1\")."]
+    }
+  },
+  {
+    id: "t3_serverless_ssrf_internal_metadata",
+    tier: 3, cat: "serverless", track: "serverless", points: 150, ci: false, fmt: "FLAG{...}",
+    title: { ko: "SSRF 취약점을 통한 내부 메타데이터 엔드포인트 도청", en: "Serverless SSRF Internal Metadata Interception" },
+    prompt: {
+      ko: "URL 다운로드 기능이 있는 Lambda 핸들러의 SSRF를 악용하여 컨테이너 내부 환경 자격증명 엔드포인트에 비인가 접근하는 공격을 분석합니다.\n지정된 식별자 `serverless_ssrf_internal_metadata_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_ssrf_internal_metadata_v1\") 앞 20자리}`",
+      en: "Exploit server-side request forgery (SSRF) in document handlers to query local container metadata ports.\nCompute the first 20 hex characters of SHA256(\"serverless_ssrf_internal_metadata_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_ssrf_internal_metadata_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["외부 URL 요청 시 사설 IP 대역(RFC 1918) 및 로컬 루프백 접속을 차단하는 egress 프록시를 적용하세요.", "식별자 `serverless_ssrf_internal_metadata_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Enforce egress network filtering blocking RFC 1918 private address ranges.", "Extract first 20 hex chars of SHA256(\"serverless_ssrf_internal_metadata_v1\")."]
+    }
+  },
+  {
+    id: "t3_serverless_readonly_root_fs_enforce",
+    tier: 3, cat: "serverless", track: "serverless", points: 150, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Read-only 루트 파일시스템 강제를 통한 런타임 보호", en: "Read-Only Root Filesystem Runtime Lockdown" },
+    prompt: {
+      ko: "컨테이너 이미지 기반 Lambda 런타임에서 `ReadOnlyRootFilesystem: true` 설정을 통해 악성 바이너리 다운로드 및 툴킷 설치를 차단하는 원리를 분석합니다.\n지정된 식별자 `serverless_readonly_root_fs_enforce_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_readonly_root_fs_enforce_v1\") 앞 20자리}`",
+      en: "Enforce immutable container root filesystems preventing malicious artifact installation inside serverless execution contexts.\nCompute the first 20 hex characters of SHA256(\"serverless_readonly_root_fs_enforce_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_readonly_root_fs_enforce_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["불변 파일시스템은 공격자가 C2 도구를 디스크에 저장하고 실행 권한을 부여하는 행위를 원천 방어합니다.", "식별자 `serverless_readonly_root_fs_enforce_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Read-only filesystems disrupt dropper execution chains in serverless containers.", "Extract first 20 hex chars of SHA256(\"serverless_readonly_root_fs_enforce_v1\")."]
+    }
+  },
+  {
+    id: "t3_serverless_ephemeral_tmp_scrubbing",
+    tier: 3, cat: "serverless", track: "serverless", points: 150, ci: false, fmt: "FLAG{...}",
+    title: { ko: "호출 종료 시 /tmp 파일시스템 안전 소거(Scrubbing)", en: "Post-Invocation Ephemeral /tmp Scrubbing" },
+    prompt: {
+      ko: "핸들러 종료 훅에서 `/tmp` 디렉터리의 잔존 파일을 안전하게 삭제하여 웜 컨테이너를 통한 크리덴셜 유출을 무력화하는 기법을 분석합니다.\n지정된 식별자 `serverless_ephemeral_tmp_scrubbing_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_ephemeral_tmp_scrubbing_v1\") 앞 20자리}`",
+      en: "Implement post-handler invocation hooks scrubbing /tmp files to eliminate sensitive residual state in reused containers.\nCompute the first 20 hex characters of SHA256(\"serverless_ephemeral_tmp_scrubbing_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_ephemeral_tmp_scrubbing_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["finally 블록 또는 런타임 래퍼를 통해 예외 발생 시에도 소거가 보장되도록 구현하세요.", "식별자 `serverless_ephemeral_tmp_scrubbing_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Guarantee cleanup in finally blocks to ensure reliable purging during errors.", "Extract first 20 hex chars of SHA256(\"serverless_ephemeral_tmp_scrubbing_v1\")."]
+    }
+  },
+  {
+    id: "t3_serverless_json_schema_event_validation",
+    tier: 3, cat: "serverless", track: "serverless", points: 150, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Pydantic/JSON Schema 기반 엄격한 이벤트 화이트리스트 검증", en: "Pydantic Strict JSON Schema Event Validation" },
+    prompt: {
+      ko: "모든 인바운드 이벤트 페이로드에 대해 엄격한 정규식과 타입 정의를 갖춘 스키마를 강제하여 이벤트 인젝션을 원천 차단하는 방어 설계를 분석합니다.\n지정된 식별자 `serverless_json_schema_event_validation_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_json_schema_event_validation_v1\") 앞 20자리}`",
+      en: "Deploy strict Pydantic event models enforcing alphanumeric regex constraints to neutralize event metadata injection.\nCompute the first 20 hex characters of SHA256(\"serverless_json_schema_event_validation_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_json_schema_event_validation_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["알파숫자와 허용된 구분자만 통과시키는 정규식(`^[a-zA-Z0-9_-]+\\.pdf$`)을 적용하세요.", "식별자 `serverless_json_schema_event_validation_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Enforce strict whitelisting patterns rejecting shell control characters.", "Extract first 20 hex chars of SHA256(\"serverless_json_schema_event_validation_v1\")."]
+    }
+  },
+  {
+    id: "t3_serverless_iam_least_privilege_scoping",
+    tier: 3, cat: "serverless", track: "serverless", points: 150, ci: false, fmt: "FLAG{...}",
+    title: { ko: "리소스 ARN 접두사 스코핑 기반 IAM 최소 권한 정책", en: "Scoped IAM Least Privilege Resource Policies" },
+    prompt: {
+      ko: "Lambda의 IAM 역할을 `arn:aws:s3:::corp-invoice-intake/*.pdf`에 한정된 `s3:GetObject`로 엄격히 제한하여 침해 시 피해 범위를 극소화하는 정책을 분석합니다.\n지정된 식별자 `serverless_iam_least_privilege_scoping_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_iam_least_privilege_scoping_v1\") 앞 20자리}`",
+      en: "Design tightly scoped IAM execution policies restricting permissions strictly to deterministic S3 ARN prefixes.\nCompute the first 20 hex characters of SHA256(\"serverless_iam_least_privilege_scoping_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_iam_least_privilege_scoping_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["불필요한 쓰기, 삭제 및 STS 임무 수임 권한을 완전히 박탈해야 합니다.", "식별자 `serverless_iam_least_privilege_scoping_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Omit broad wildcard actions and lock down resources to deterministic object ARNs.", "Extract first 20 hex chars of SHA256(\"serverless_iam_least_privilege_scoping_v1\")."]
+    }
+  },
+  {
+    id: "t3_serverless_guardduty_runtime_monitoring",
+    tier: 3, cat: "serverless", track: "serverless", points: 150, ci: false, fmt: "FLAG{...}",
+    title: { ko: "AWS GuardDuty Serverless Runtime Monitoring 이상 탐지", en: "AWS GuardDuty Serverless Runtime Threat Detection" },
+    prompt: {
+      ko: "Lambda 실행 환경 내부의 악성 프로세스 기동, 비정상 네트워크 아웃바운드, 암호화폐 채굴 시도를 실시간 탐지하는 GuardDuty 런타임 모니터링을 분석합니다.\n지정된 식별자 `serverless_guardduty_runtime_monitoring_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_guardduty_runtime_monitoring_v1\") 앞 20자리}`",
+      en: "Examine GuardDuty Lambda Runtime Monitoring detecting suspicious process spawning, crypto mining, and abnormal network traffic.\nCompute the first 20 hex characters of SHA256(\"serverless_guardduty_runtime_monitoring_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_guardduty_runtime_monitoring_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["MicroVM 내부의 프로세스 및 네트워크 텔레메트리를 분석하여 침해 징후를 즉시 경보합니다.", "식별자 `serverless_guardduty_runtime_monitoring_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Runtime sensors flag execution anomalies inside serverless function invocations.", "Extract first 20 hex chars of SHA256(\"serverless_guardduty_runtime_monitoring_v1\")."]
+    }
+  },
+  {
+    id: "t3_serverless_secrets_manager_dynamic_fetch",
+    tier: 3, cat: "serverless", track: "serverless", points: 150, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Secrets Manager 인메모리 단기 조회 및 환경변수 배제", en: "Secrets Manager In-Memory Dynamic Retrieval" },
+    prompt: {
+      ko: "시크릿을 정적 환경변수에 저장하지 않고 AWS Secrets Manager/Parameter Store 확장을 통해 인메모리에서 단기로 동적 조회하는 방어 패턴을 분석합니다.\n지정된 식별자 `serverless_secrets_manager_dynamic_fetch_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_secrets_manager_dynamic_fetch_v1\") 앞 20자리}`",
+      en: "Adopt dynamic secret fetching patterns retrieving credentials on-demand into memory instead of persistent environment variables.\nCompute the first 20 hex characters of SHA256(\"serverless_secrets_manager_dynamic_fetch_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_secrets_manager_dynamic_fetch_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["AWS Parameters and Secrets Lambda Extension을 사용하여 안전하게 로컬 캐싱하고 주기를 짧게 설정하세요.", "식별자 `serverless_secrets_manager_dynamic_fetch_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Use official Lambda extensions with short TTLs to minimize credential exposure windows.", "Extract first 20 hex chars of SHA256(\"serverless_secrets_manager_dynamic_fetch_v1\")."]
+    }
+  },
+
+  // Tier 4 (10)
+  {
+    id: "t4_serverless_eventbridge_rule_hijack",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "EventBridge 버스 라우팅 룰 하이재킹 및 데이터 탈취", en: "EventBridge Bus Routing Rule Tampering" },
+    prompt: {
+      ko: "과도한 IAM 권한으로 EventBridge 규칙에 공격자의 SQS 또는 외부 웹훅 대상을 추가하여 기업 이벤트 스트림 전체를 미러링하는 공격을 분석합니다.\n지정된 식별자 `serverless_eventbridge_rule_hijack_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_eventbridge_rule_hijack_v1\") 앞 20자리}`",
+      en: "Assess risks where compromised credentials attach unauthorized external targets to enterprise EventBridge buses.\nCompute the first 20 hex characters of SHA256(\"serverless_eventbridge_rule_hijack_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_eventbridge_rule_hijack_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["EventBridge 버스에 리소스 정책을 적용하여 승인된 엔터프라이즈 계정 외의 규칙 수정을 금지하세요.", "식별자 `serverless_eventbridge_rule_hijack_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Enforce resource policies restricting rule creation on event routing buses.", "Extract first 20 hex chars of SHA256(\"serverless_eventbridge_rule_hijack_v1\")."]
+    }
+  },
+  {
+    id: "t4_serverless_step_functions_state_pollution",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "AWS Step Functions 상태 머신 페이로드 조작 공격", en: "AWS Step Functions State Machine Payload Tampering" },
+    prompt: {
+      ko: "분산 트랜잭션을 조율하는 Step Functions 상태 머신의 실행 입력값을 변조하여 후속 워커 함수의 실행 로직을 왜곡하는 공격을 분석합니다.\n지정된 식별자 `serverless_step_functions_state_pollution_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_step_functions_state_pollution_v1\") 앞 20자리}`",
+      en: "Investigate workflow state manipulation attacks distorting conditional branching inside Step Functions orchestrations.\nCompute the first 20 hex characters of SHA256(\"serverless_step_functions_state_pollution_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_step_functions_state_pollution_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["상태 머신 전이(State Transition) 단계마다 입력값 검증과 암호학적 HMAC 무결성을 점검하세요.", "식별자 `serverless_step_functions_state_pollution_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Validate state transitions and apply HMAC integrity tokens across workflow steps.", "Extract first 20 hex chars of SHA256(\"serverless_step_functions_state_pollution_v1\")."]
+    }
+  },
+  {
+    id: "t4_serverless_cross_account_resource_policy",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "크로스 어카운트 자원 기반 정책(Resource Policy) 감사", en: "Cross-Account Serverless Resource Policy Auditing" },
+    prompt: {
+      ko: "Lambda 및 연계 SQS/S3의 자원 기반 정책(Resource-based Policy)에서 Principal 와일드카드(`*`)가 허용되어 발생하는 외부 계정 침투를 분석합니다.\n지정된 식별자 `serverless_cross_account_resource_policy_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_cross_account_resource_policy_v1\") 앞 20자리}`",
+      en: "Audit cross-account resource policies preventing unauthorized external AWS accounts from invoking internal Lambda endpoints.\nCompute the first 20 hex characters of SHA256(\"serverless_cross_account_resource_policy_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_cross_account_resource_policy_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["aws:PrincipalOrgID 조건 키를 사용하여 사내 AWS Organization 소속 계정으로만 접근을 제한하세요.", "식별자 `serverless_cross_account_resource_policy_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Constrain function resource policies with aws:PrincipalOrgID condition checks.", "Extract first 20 hex chars of SHA256(\"serverless_cross_account_resource_policy_v1\")."]
+    }
+  },
+  {
+    id: "t4_serverless_lambda_extension_telemetry_tap",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Lambda Telemetry API 및 내부 확장(Extension) 프로세스 도청", en: "Lambda Telemetry API & Internal Extension Interception" },
+    prompt: {
+      ko: "동일 MicroVM 내에서 함수와 병렬 실행되는 Lambda Internal/External Extension 프로세스를 분석하고 텔레메트리 스트림 보안을 점검합니다.\n지정된 식별자 `serverless_lambda_extension_telemetry_tap_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_lambda_extension_telemetry_tap_v1\") 앞 20자리}`",
+      en: "Assess security boundaries between core function handlers and co-located Lambda extension processes sharing the sandbox.\nCompute the first 20 hex characters of SHA256(\"serverless_lambda_extension_telemetry_tap_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_lambda_extension_telemetry_tap_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["확장 프로세스는 함수 핸들러와 동일한 OS 사용자 및 프로세스 네임스페이스를 공유하므로 레이어 출처 검증이 필수적입니다.", "식별자 `serverless_lambda_extension_telemetry_tap_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Extensions execute with identical OS privileges inside the same MicroVM namespace.", "Extract first 20 hex chars of SHA256(\"serverless_lambda_extension_telemetry_tap_v1\")."]
+    }
+  },
+  {
+    id: "t4_serverless_container_image_cve_exploit",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "커스텀 OCI 컨테이너 이미지 기반 Lambda 런타임 익스플로잇", en: "Custom OCI Container Image Lambda Runtime Exploitation" },
+    prompt: {
+      ko: "최대 10GB의 커스텀 OCI 컨테이너 이미지로 배포된 Lambda 환경에서 베이스 이미지의 취약한 라이브러리를 악용한 런타임 익스플로잇을 분석합니다.\n지정된 식별자 `serverless_container_image_cve_exploit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_container_image_cve_exploit_v1\") 앞 20자리}`",
+      en: "Evaluate vulnerability surfaces in container-packaged Lambda images carrying unpatched base OS packages.\nCompute the first 20 hex characters of SHA256(\"serverless_container_image_cve_exploit_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_container_image_cve_exploit_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["ECR 향상된 스캔(Amazon Inspector) 및 최소한의 distroless 베이스 이미지를 적용하세요.", "식별자 `serverless_container_image_cve_exploit_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Adopt minimal distroless base images and automated container vulnerability triage.", "Extract first 20 hex chars of SHA256(\"serverless_container_image_cve_exploit_v1\")."]
+    }
+  },
+  {
+    id: "t4_serverless_api_gateway_authorizer_bypass",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "Lambda Custom Authorizer 캐싱 결함 악용 인증 우회", en: "Lambda Custom Authorizer Cache Poisoning Bypass" },
+    prompt: {
+      ko: "API Gateway의 Lambda Authorizer가 반환하는 IAM Policy 결과가 토큰별이 아닌 요청자 ID 기준으로 오캐싱되어 발생하는 인가 우회를 분석합니다.\n지정된 식별자 `serverless_api_gateway_authorizer_bypass_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_api_gateway_authorizer_bypass_v1\") 앞 20자리}`",
+      en: "Examine authorization bypasses where flawed Lambda Authorizer policy caching allows unauthenticated requests.\nCompute the first 20 hex characters of SHA256(\"serverless_api_gateway_authorizer_bypass_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_api_gateway_authorizer_bypass_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["Authorizer 캐시 키에 identity source(Authorization 헤더)를 정확히 바인딩하거나 캐시 TTL을 비활성화하세요.", "식별자 `serverless_api_gateway_authorizer_bypass_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Bind cache keys strictly to individual authorization tokens rather than generic identities.", "Extract first 20 hex chars of SHA256(\"serverless_api_gateway_authorizer_bypass_v1\")."]
+    }
+  },
+  {
+    id: "t4_serverless_runtime_ebpf_sandbox_audit",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "서버리스 호스트 커널 eBPF 기반 시스템콜 감사 및 차단", en: "Host Kernel eBPF Syscall Auditing for Serverless" },
+    prompt: {
+      ko: "KNative 등 사설 FaaS 환경에서 eBPF 추적기를 통해 MicroVM/컨테이너 내부의 비정상 시스템콜(ptrace, bpf)을 탐지하고 차단하는 아키텍처를 분석합니다.\n지정된 식별자 `serverless_runtime_ebpf_sandbox_audit_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_runtime_ebpf_sandbox_audit_v1\") 앞 20자리}`",
+      en: "Deploy host-level eBPF sensors intercepting anomalous syscalls executed by serverless microVM container runtimes.\nCompute the first 20 hex characters of SHA256(\"serverless_runtime_ebpf_sandbox_audit_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_runtime_ebpf_sandbox_audit_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["Tetragon 또는 Falco eBPF 드라이버를 통해 컨테이너 네임스페이스 수준에서 위협을 차단합니다.", "식별자 `serverless_runtime_ebpf_sandbox_audit_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Enforce kernel-level telemetry and enforcement using eBPF security hooks.", "Extract first 20 hex chars of SHA256(\"serverless_runtime_ebpf_sandbox_audit_v1\")."]
+    }
+  },
+  {
+    id: "t4_serverless_sspm_automated_posture_governance",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "IaC 기반 서버리스 보안 포스처(SSPM) 자동화 거버넌스", en: "IaC Serverless Security Posture Management (SSPM)" },
+    prompt: {
+      ko: "Terraform/SAM/Serverless Framework 템플릿의 와일드카드 IAM, 퍼블릭 함수 URL, 미암호화 환경변수를 CI/CD에서 사전 차단하는 SSPM 규칙을 분석합니다.\n지정된 식별자 `serverless_sspm_automated_posture_governance_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_sspm_automated_posture_governance_v1\") 앞 20자리}`",
+      en: "Build automated SSPM pipelines enforcing OPA / Checkov guardrails against insecure serverless IaC configurations.\nCompute the first 20 hex characters of SHA256(\"serverless_sspm_automated_posture_governance_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_sspm_automated_posture_governance_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["Checkov 및 tfsec 정적 분석을 통해 배포 전 취약한 서버리스 리소스를 100% 차단하세요.", "식별자 `serverless_sspm_automated_posture_governance_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Shift security left with automated static policy scanning on IaC templates.", "Extract first 20 hex chars of SHA256(\"serverless_sspm_automated_posture_governance_v1\")."]
+    }
+  },
+  {
+    id: "t4_serverless_zero_trust_service_mesh",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "서버리스 워크로드 간 SPIFFE/mTLS 제로 트러스트 인증", en: "Zero Trust Serverless Service Mesh & SPIFFE Identity" },
+    prompt: {
+      ko: "동적으로 생성/소멸하는 수천 개의 서버리스 함수 간에 SPIFFE SVID 기반의 단기 mTLS 암호화 상호 인증을 확립하는 제로 트러스트 아키텍처를 분석합니다.\n지정된 식별자 `serverless_zero_trust_service_mesh_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_zero_trust_service_mesh_v1\") 앞 20자리}`",
+      en: "Implement Zero Trust service-to-service cryptographic authentication using SPIFFE identities and short-lived mTLS tokens.\nCompute the first 20 hex characters of SHA256(\"serverless_zero_trust_service_mesh_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_zero_trust_service_mesh_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["IP나 서브넷 기반 신뢰를 배제하고 암호학적으로 검증된 워크로드 아이덴티티를 사용하세요.", "식별자 `serverless_zero_trust_service_mesh_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Replace network perimeter assumptions with cryptographic workload identity validation.", "Extract first 20 hex chars of SHA256(\"serverless_zero_trust_service_mesh_v1\")."]
+    }
+  },
+  {
+    id: "t4_serverless_capstone_full_spectrum_defense",
+    tier: 4, cat: "serverless", track: "serverless", points: 250, ci: false, fmt: "FLAG{...}",
+    title: { ko: "엔터프라이즈 풀스펙트럼 서버리스 클라우드 보안 캡스톤", en: "Enterprise Full-Spectrum Serverless Security Capstone" },
+    prompt: {
+      ko: "이벤트 입력 스키마 검증, 웜 컨테이너 /tmp 스크러빙, 불변 루트 파일시스템, IAM 최소 권한 및 런타임 위협 모니터링을 결합한 종합 캡스톤을 완수합니다.\n지정된 식별자 `serverless_capstone_full_spectrum_defense_v1`의 SHA-256 해시 앞 20자리를 추출하여 플래그를 제출하세요.\n\n형식: `FLAG{SHA256(\"serverless_capstone_full_spectrum_defense_v1\") 앞 20자리}`",
+      en: "Synthesize full-spectrum serverless defenses spanning event validation, /tmp scrubbing, read-only containers, and scoped IAM.\nCompute the first 20 hex characters of SHA256(\"serverless_capstone_full_spectrum_defense_v1\").\n\nFormat: `FLAG{SHA256(\"serverless_capstone_full_spectrum_defense_v1\") first 20 hex}`"
+    },
+    hints: {
+      ko: ["개발부터 배포, 런타임 모니터링까지 서버리스 전 생명주기에 걸친 다계층 심층 방어 체계를 구축하세요.", "식별자 `serverless_capstone_full_spectrum_defense_v1`의 해시 앞 20자리를 추출하세요."],
+      en: ["Unify defense-in-depth across the entire serverless application lifecycle.", "Extract first 20 hex chars of SHA256(\"serverless_capstone_full_spectrum_defense_v1\")."]
+    }
+  }
+];
+
+// Add hash to each challenge
+const processedChallenges = challengesDef.map(ch => ({
+  ...ch,
+  hash: computeHash(ch.id)
+}));
+
+console.log(`Generated ${processedChallenges.length} challenges for Track 56 (serverless).`);
+
+// Export processed challenges as JSON string for insertion
+fs.writeFileSync(path.join(__dirname, 'track56_challenges.json'), JSON.stringify(processedChallenges, null, 2), 'utf8');
+console.log('Saved to track56_challenges.json');

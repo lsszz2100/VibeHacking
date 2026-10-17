@@ -1056,6 +1056,54 @@ class CTFState:
                     {"index": 0, "cost": 50, "text": "Sigstore Cosign OIDC 키리스 서명과 Rekor 투명성 로그를 검증하고 SLSA Level 3 거버넌스 정책을 강제하세요."}
                 ],
             },
+            "LAB42_EVENT_INJECT": {
+                "id": "LAB42_EVENT_INJECT",
+                "title": "ServerlessGuard: S3 Event Injection RCE",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{serverless_event_injection_s3_key_rce_pwned}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "S3 ObjectCreated 이벤트의 s3.object.key에 쉘 메타문자(; id 등)를 삽입하여 Lambda 서브프로세스 쉘을 하이재킹하세요."}
+                ],
+            },
+            "LAB42_WARM_CONTAINER": {
+                "id": "LAB42_WARM_CONTAINER",
+                "title": "ServerlessGuard: Warm Container /tmp Persistence & Token Leak",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{serverless_warm_container_tmp_persistence_token_leaked}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "서버리스 컨테이너 재사용 특성을 악용하여 /tmp/session_cache.json에 잔존하는 AWS_SESSION_TOKEN을 카빙하세요."}
+                ],
+            },
+            "LAB42_IAM_ESCALATE": {
+                "id": "LAB42_IAM_ESCALATE",
+                "title": "ServerlessGuard: Overprivileged IAM Role & STS AssumeRole",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{serverless_iam_overprivileged_role_escalated}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "Lambda 실행 역할의 과도한 sts:AssumeRole 권한을 악용하여 CorpCloudAdminRole로 수직 권한 상승을 수행하세요."}
+                ],
+            },
+            "LAB42_HARDEN_RUNTIME": {
+                "id": "LAB42_HARDEN_RUNTIME",
+                "title": "ServerlessGuard: Serverless Runtime Hardening & Least Privilege",
+                "category": "cloud",
+                "initial_points": 500,
+                "flag": "FLAG{serverless_hardened_least_privilege_runtime_secured}",
+                "solves": [],
+                "first_blood": None,
+                "hints": [
+                    {"index": 0, "cost": 50, "text": "읽기 전용 루트 파일시스템, /tmp 스크러빙, JSON Schema 검증 및 s3:GetObject로 한정된 IAM 최소 권한을 모두 활성화하세요."}
+                ],
+            },
         }
         self.submissions_log: List[dict] = []
         self.first_bloods_feed: List[dict] = []
@@ -1094,6 +1142,7 @@ class CTFState:
             ["LAB39_CBC_ORACLE", "LAB39_RSA_BLEICHENBACHER", "LAB39_ECDSA_NONCE", "LAB39_PQC_SECURED"],
             ["LAB40_PROCESS_TRIAGE", "LAB40_MFT_FORENSICS", "LAB40_C2_CONTAINMENT", "LAB40_SOAR_REMEDIATION"],
             ["LAB41_DEP_CONFUSION", "LAB41_CI_INJECTION", "LAB41_SBOM_TRIAGE", "LAB41_SLSA_COSIGN"],
+            ["LAB42_EVENT_INJECT", "LAB42_WARM_CONTAINER", "LAB42_IAM_ESCALATE", "LAB42_HARDEN_RUNTIME"],
         ]
         for chain in chains:
             for i in range(1, len(chain)):
